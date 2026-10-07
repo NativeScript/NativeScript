@@ -1,8 +1,14 @@
 import Foundation
 
+/// An ArrayBuffer, a typed array or a DataView: bytes a native API reads and writes in place.
+public protocol JSBufferSource: AnyObject {
+    /// The bytes the value covers, at an address that stays put while the value lives.
+    var jsBytes: UnsafeMutableRawBufferPointer { get }
+}
+
 /// `ArrayBuffer`: a fixed number of bytes, zeroed when made, at an address that stays put for
 /// as long as the buffer lives (native APIs read and write them in place).
-public final class JSArrayBuffer: JSDynamic, JSToStringTag {
+public final class JSArrayBuffer: JSDynamic, JSToStringTag, JSBufferSource {
     public let count: Int
     let bytes: UnsafeMutableRawPointer
 
@@ -24,6 +30,7 @@ public final class JSArrayBuffer: JSDynamic, JSToStringTag {
     deinit { bytes.deallocate() }
 
     public var byteLength: Double { Double(count) }
+    public var jsBytes: UnsafeMutableRawBufferPointer { UnsafeMutableRawBufferPointer(start: bytes, count: count) }
     /// The bytes as Foundation holds them, copied.
     public var data: Data { Data(bytes: bytes, count: count) }
 
@@ -52,7 +59,7 @@ public final class JSArrayBuffer: JSDynamic, JSToStringTag {
 
 /// `Uint8Array`: a view of bytes of a buffer. Elements read past the end are undefined and
 /// writes there are ignored; a written number is stored modulo 256.
-public final class JSUint8Array: JSDynamic, JSToStringTag {
+public final class JSUint8Array: JSDynamic, JSToStringTag, JSBufferSource {
     public let buffer: JSArrayBuffer
     let offset: Int
     let count: Int
@@ -101,6 +108,7 @@ public final class JSUint8Array: JSDynamic, JSToStringTag {
     public var length: Double { Double(count) }
     public var byteLength: Double { Double(count) }
     public var byteOffset: Double { Double(offset) }
+    public var jsBytes: UnsafeMutableRawBufferPointer { UnsafeMutableRawBufferPointer(start: buffer.bytes + offset, count: count) }
     /// The viewed bytes as Foundation holds them, copied.
     public var data: Data { Data(bytes: buffer.bytes + offset, count: count) }
     var values: [Any?] { (0..<count).map { Double(buffer.bytes.load(fromByteOffset: offset + $0, as: UInt8.self)) } }
@@ -150,8 +158,7 @@ public enum interop {
 /// The bytes a native API reads of a buffer or a view passed untyped (`dataWithData(buffer as any)`).
 public func jsNativeData(_ value: Any?) -> Data {
     switch jsFlat(value) {
-    case let buffer as JSArrayBuffer: return buffer.data
-    case let view as JSUint8Array: return view.data
+    case let source as JSBufferSource: return Data(source.jsBytes)
     case let data as Data: return data
     case let data as NSData: return data as Data
     default: return Data()
@@ -161,8 +168,7 @@ public func jsNativeData(_ value: Any?) -> Data {
 /// The address of a buffer's or a view's bytes, as the iOS runtime passes them to a native pointer parameter.
 public func jsNativeBytes(_ value: Any?) -> UnsafeRawPointer? {
     switch jsFlat(value) {
-    case let buffer as JSArrayBuffer: return UnsafeRawPointer(buffer.bytes)
-    case let view as JSUint8Array: return UnsafeRawPointer(view.buffer.bytes + view.offset)
+    case let source as JSBufferSource: return source.jsBytes.baseAddress.map(UnsafeRawPointer.init)
     default: return nil
     }
 }

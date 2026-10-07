@@ -112,3 +112,70 @@ coverage report: which core APIs the kit implements, per module.
   used. Reachability from the app's entry, as for plugins, plus the size
   settings the kit already builds with, should keep it near today's
   1.1–2.5 MB.
+
+## Where it stands (2026-10-07)
+
+The kit's `Core/` is generated from core 9.1.3 as merged with main
+(`45b3b99`, iOS 27 TabView fixes included): 214 files, one per core module,
+plus `__Exports.swift` (the functions core's index exports, as an app imports
+them) and `__Objects.swift`.
+
+| Proof | Result |
+| --- | --- |
+| recipes-vue against its NativeScript Release build on the same core | 0 px: home, detail, the detail after interacting, home after going back; still running with the search field focused |
+| gallery-vue, 41 screens and their scripted steps | every screen runs its steps without crashing (`tools/smoke.py`) |
+| Differential tests, Swift | 43 of 43 match Node, `41-core-semantics` added |
+| Core's own unit tests (Vitest) | 530 pass, 1 skipped |
+| recipes-vue archive | 6,556 KB (hand-ported kit: 1,264 KB; NativeScript: 45,904 KB) |
+
+### What generating the kit taught
+
+Almost every failure was the translator reading JavaScript more strictly
+than JavaScript does. Core is written without `strictNullChecks`, so its
+types promise values that are often undefined. The fixes that mattered:
+
+- **Undefined stays undefined.** An array read untyped (`cache[key]`), an
+  optional member (`entry.backstackVisible`), `a || b` of two missing objects,
+  a registered property never set: each was read as the type's zero (an empty
+  array, `false`, a fresh object). Zeros make wrong code run quietly: a cache
+  miss became a hit, navigation replaced pages, every view's native setters
+  were skipped. Held as undefined, the same code either works or stops where
+  JavaScript would throw.
+- **`this` is the receiver.** A function declaration that reads `this`
+  (`function get() { return this[key]; }`, stored as an accessor) takes it
+  from its caller, as any JavaScript function does.
+- **What script hands native code is marshalled as the runtime marshals it.**
+  Plain objects become dictionaries, script functions become blocks and
+  native blocks become script functions, a `Date` becomes an `NSDate`, a
+  number becomes a native enum.
+- **Properties reach their accessors.** Every property class
+  (`CssAnimationProperty` included) puts its accessor on the prototype, and a
+  setter that only forwards (`set color(v) { this.style.color = v }`) passes
+  on what script gave it, unconverted.
+- **The JS runtime's own behaviour has to exist:** microtasks drain after
+  every batch of UIKit work, promises have `then`/`catch`/`finally` by name,
+  and native properties forwarded by UIKit (`UITextView`'s input traits) are
+  reached as a message send reaches them.
+
+### Tools that made it tractable
+
+`tools/kit-from-core/README.md` describes them: the regenerate-build-run
+loop, the probe (the view tree with each view's CSS cascade), native stacks
+for uncaught errors, the XCUITest UI driver that replaced idb, and
+`smoke.py` with `--lldb`. Two of them exist because a check passed without
+checking anything: idb's taps had stopped landing on Xcode 27, and both apps
+compared equal on a screen neither left. The comparisons now fail when an
+interaction leaves the screen unchanged.
+
+### Next
+
+1. **Gallery-vue at 0 px** against its Release build, screen by screen
+   (`tools/gallery.py`), the TabView screen with `role: 'search'` included.
+2. **A closed world for core.** The archive grew fivefold because every core
+   module is compiled into every app, and module initializers and dynamic
+   dispatch tables keep it all alive; every file importing WebKit and Photos
+   also loads both at launch. Compiling only the core modules an app reaches,
+   as `reach.ts` already does for plugins, addresses size and launch together.
+3. **Core's `apps/automated` suite** compiled as an app and run on the kit.
+4. **Android:** the Kotlin toolchain for the differential tests (Gradle's
+   cached `kotlinc` is gone), then the kit generated for Android.

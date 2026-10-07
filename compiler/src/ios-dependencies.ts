@@ -43,6 +43,8 @@ export function swiftPackages(app: string): SwiftPackage[] {
         pkg.path = resolve(app, p.path);
         if (plugin && !existsSync(pkg.path) && existsSync(resolve(dir, p.path))) pkg.path = resolve(dir, p.path);
         if (!existsSync(pkg.path)) throw new Error(`${relative(app, join(dir, 'nativescript.config.ts')) || 'nativescript.config.ts'}: the Swift package ${name} is not at ${pkg.path}`);
+        // The JavaScript engine's headers (@nativescript/canvas's NativeScriptV8): no engine runs a compiled app.
+        if (boundToEngine(pkg.path)) continue;
       } else {
         pkg.url = p.repositoryURL as string;
         pkg.version = String(p.version);
@@ -281,9 +283,21 @@ ${packages.length ? `    dependencies:\n${productLines(packages)}` : ''}    sett
     args.push('-I', maps);
     for (const f of readdirSync(maps)) if (f.endsWith('.modulemap')) modules.add(basename(f, '.modulemap'));
   }
+  // A binary target of a static library: its headers and module map are copied to `include`.
+  const include = join(products, 'include');
+  if (existsSync(include)) {
+    args.push('-I', include);
+    for (const f of readdirSync(include, { recursive: true }) as string[]) {
+      if (basename(f) !== 'module.modulemap') continue;
+      for (const m of readFileSync(join(include, f), 'utf8').matchAll(/^\s*(?:framework\s+)?module\s+(\w+)/gm)) modules.add(m[1]);
+    }
+  }
+  // A binary target's framework is copied to the products themselves.
+  if (readdirSync(products).some((f) => f.endsWith('.framework'))) args.push('-F', products);
   for (const f of readdirSync(products)) {
     const p = join(products, f);
     if (f.endsWith('.swiftmodule')) modules.add(basename(f, '.swiftmodule'));
+    else if (f.endsWith('.framework') && f !== `${SCRATCH_TARGET}.framework` && existsSync(join(p, 'Modules'))) modules.add(basename(f, '.framework'));
     else if (statSync(p).isDirectory() && !/\.(framework|bundle)$/.test(f)) {
       const frameworks = readdirSync(p).filter((x) => x.endsWith('.framework'));
       if (frameworks.length) args.push('-F', p);
@@ -291,6 +305,13 @@ ${packages.length ? `    dependencies:\n${productLines(packages)}` : ''}    sett
     }
   }
   return { dir, args, modules: [...modules].sort() };
+}
+
+/** A directory of the V8 engine's headers, or of sources written against them. */
+export function boundToEngine(dir: string): boolean {
+  if (basename(dir) === 'NativeScriptV8' || existsSync(join(dir, 'include', 'v8.h'))) return true;
+  const sources = (readdirSync(dir, { recursive: true }) as string[]).filter((f) => /\.(cpp|cc|mm)$/.test(f));
+  return sources.length > 0 && sources.some((f) => /\bv8::|#include\s*[<"]v8\.h[>"]/.test(readFileSync(join(dir, f), 'utf8')));
 }
 
 function filesUnder(dir: string): string[] {

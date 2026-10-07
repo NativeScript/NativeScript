@@ -14,7 +14,6 @@ export const NATIVE_VIEWS: Record<string, string> = {
   ListView: 'UITableView', Progress: 'UIProgressView', DatePicker: 'UIDatePicker', TimePicker: 'UIDatePicker', WebView: 'WKWebView', View: 'UIView',
 };
 const NATIVE_MEMBERS = new Set(['ios', 'nativeView', 'nativeViewProtected']);
-export const KIT_NAMES: Record<string, string> = { Font: 'CoreFont', ViewBase: 'View', ViewCommon: 'View', EditableTextBase: 'TextBase', LayoutBaseCommon: 'LayoutBase' };
 /** View methods whose arguments core reads as plain script objects. */
 const SCRIPT_OBJECTS = new Set(['animate', 'createAnimation', 'open', 'close', 'openShadeCover', 'closeShadeCover', 'showModal', 'closeModal']);
 
@@ -150,17 +149,28 @@ export class CoreAPI {
     // `View & { extra?: … }`: the core class.
     if (type.isIntersection()) type = type.types.find((u) => (u.getSymbol()?.flags ?? 0) & ts.SymbolFlags.Class && isCoreDeclaration(u.getSymbol()?.declarations?.[0])) ?? type;
     const sym = type.getSymbol();
+    // `global`, typed as `typeof globalThis`: the program's global object, which core's typings only augment.
+    if (sym?.name === 'globalThis' && sym.flags & ts.SymbolFlags.ValueModule) return null;
     const mixin = this.t.mixinOf(sym);
     if (mixin) return { name: mixin, isStatic: false };
     // An interface extending a core class (`interface MenuView extends View`): that class.
     if (sym && sym.flags & ts.SymbolFlags.Interface && !isCoreDeclaration(sym.declarations?.[0]) && type.isClassOrInterface()) {
       const base = c.getBaseTypes(type as ts.InterfaceType).map((b) => b.getSymbol()).find((b) => b && b.flags & ts.SymbolFlags.Class && isCoreDeclaration(b.declarations?.[0]));
-      if (base) return { name: Object.hasOwn(KIT_NAMES, base.name) ? KIT_NAMES[base.name] : base.name, isStatic: false };
+      if (base) return { name: base.name, isStatic: false };
     }
     if (!sym || !isCoreDeclaration(sym.declarations?.[0]) || this.t.compiledCounterpart(sym)) return null;
     // Core's event data types are the kit's one EventData, whose members the translator reads directly.
     if (this.t.type(type, e) === 'EventData') return null;
-    return { name: Object.hasOwn(KIT_NAMES, sym.name) ? KIT_NAMES[sym.name] : sym.name, isStatic: false };
+    const name = sym.name;
+    // An interface core's typings declare (`Screen.mainScreen: ScreenMetrics`) where the kit's member holds its class (`MainScreen`).
+    if (!this.index.has(name) && sym.flags & ts.SymbolFlags.Interface && ts.isPropertyAccessExpression(e)) {
+      const outer = this.owner(e.expression);
+      const held = outer && kitMember(this.index, outer.name, e.name.text)?.type.replace(/[?!]$/, '');
+      if (held && this.index.has(held)) return { name: held, isStatic: false };
+    }
+    // A shape core's typings declare (`{ unit: 'dip'; value: number }`) that the kit has no type for: read as any object is.
+    if (!this.index.has(name) && (sym.flags & ts.SymbolFlags.TypeLiteral || sym.flags & ts.SymbolFlags.Interface)) return null;
+    return { name, isStatic: false };
   }
 
   /**
@@ -283,7 +293,7 @@ export class CoreAPI {
       const sym = ts.isIdentifier(e.expression) ? this.t.resolve(e.expression) : undefined;
       const decl = sym?.declarations?.[0];
       if (!sym || !(sym.flags & ts.SymbolFlags.Class) || !isCoreDeclaration(decl) || this.t.compiledCounterpart(sym)) return false;
-      const name = Object.hasOwn(KIT_NAMES, sym.name) ? KIT_NAMES[sym.name] : sym.name;
+      const name = sym.name;
       return (this.index.get(name)?.members.get('init') ?? []).some((m) => m.throws);
     }
     if (!ts.isPropertyAccessExpression(e.expression) || this.mixinOwn(e.expression.name)) return false;
@@ -381,7 +391,7 @@ export class CoreAPI {
     if (!sym || !isCoreDeclaration(sym.declarations?.[0]) || this.t.compiledCounterpart(sym)) return null;
     const t = this.t;
     const args = e.arguments ?? ts.factory.createNodeArray();
-    const kitName = Object.hasOwn(KIT_NAMES, sym.name) ? KIT_NAMES[sym.name] : sym.name;
+    const kitName = sym.name;
     if (!this.index.has(kitName)) throw t.error(e, `new ${sym.name} (NativeScriptKit has no such class)`);
     // Core's constructor takes its arguments as a rest parameter; numbers never make it throw.
     if (sym.name === 'Color') {

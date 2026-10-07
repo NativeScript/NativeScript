@@ -158,9 +158,9 @@ struct JSOrderedSlots<Key, Value> {
 }
 
 /// A JavaScript `Map`: insertion-ordered, reference semantics, SameValueZero keys.
-public final class JSMap<Key, Value>: Sequence, JSMapProtocol, JSReactiveConvertible, CustomStringConvertible {
+open class JSMap<Key, Value>: Sequence, JSMapProtocol, JSReactiveConvertible, CustomStringConvertible {
     private var table = JSOrderedSlots<Key, Value>()
-    public var jsTracker: JSTracker?
+    public final var jsTracker: JSTracker?
 
     public init() {}
 
@@ -174,14 +174,14 @@ public final class JSMap<Key, Value>: Sequence, JSMapProtocol, JSReactiveConvert
         jsTracker != nil ? jsReactive(value) : value
     }
 
-    public func get(_ key: Key) -> Value? {
+    public final func get(_ key: Key) -> Value? {
         jsTracker?.track()
         guard let position = table.find(JSCollectionKey.of(key)) else { return nil }
         return read(table.entry(at: position).value)
     }
 
     @discardableResult
-    public func set(_ key: Key, _ value: Value) -> JSMap<Key, Value> {
+    public final func set(_ key: Key, _ value: Value) -> JSMap<Key, Value> {
         let hashKey = JSCollectionKey.of(key)
         if let position = table.find(hashKey) {
             table.update(at: position, value)
@@ -192,40 +192,40 @@ public final class JSMap<Key, Value>: Sequence, JSMapProtocol, JSReactiveConvert
         return self
     }
 
-    public func has(_ key: Key) -> Bool {
+    public final func has(_ key: Key) -> Bool {
         jsTracker?.track()
         return table.find(JSCollectionKey.of(key)) != nil
     }
 
     @discardableResult
-    public func delete(_ key: Key) -> Bool {
+    public final func delete(_ key: Key) -> Bool {
         guard table.remove(JSCollectionKey.of(key)) else { return false }
         jsTracker?.trigger()
         return true
     }
 
-    public func clear() {
+    public final func clear() {
         guard table.live > 0 || !table.slots.isEmpty else { return }
         table.removeAll()
         jsTracker?.trigger()
     }
 
-    public var size: Double {
+    public final var size: Double {
         jsTracker?.track()
         return Double(table.live)
     }
 
-    public func forEach(_ body: (Value, Key) throws -> Void) rethrows {
+    public final func forEach(_ body: (Value, Key) throws -> Void) rethrows {
         jsTracker?.track()
         let cursor = table.makeCursor()
         while let entry = table.next(cursor) { try body(read(entry.value), entry.key) }
     }
 
-    public func forEach(_ body: (Value, Key, JSMap<Key, Value>) throws -> Void) rethrows {
+    public final func forEach(_ body: (Value, Key, JSMap<Key, Value>) throws -> Void) rethrows {
         try forEach { value, key in try body(value, key, self) }
     }
 
-    public func keys() -> JSIterator<Key> {
+    public final func keys() -> JSIterator<Key> {
         jsTracker?.track()
         let cursor = table.makeCursor()
         return JSIterator { [self] in
@@ -234,7 +234,7 @@ public final class JSMap<Key, Value>: Sequence, JSMapProtocol, JSReactiveConvert
         }
     }
 
-    public func values() -> JSIterator<Value> {
+    public final func values() -> JSIterator<Value> {
         jsTracker?.track()
         let cursor = table.makeCursor()
         return JSIterator { [self] in
@@ -244,7 +244,7 @@ public final class JSMap<Key, Value>: Sequence, JSMapProtocol, JSReactiveConvert
         }
     }
 
-    public func entries() -> JSIterator<(Key, Value)> {
+    public final func entries() -> JSIterator<(Key, Value)> {
         jsTracker?.track()
         let cursor = table.makeCursor()
         return JSIterator { [self] in
@@ -254,44 +254,44 @@ public final class JSMap<Key, Value>: Sequence, JSMapProtocol, JSReactiveConvert
         }
     }
 
-    public func makeIterator() -> JSIterator<(Key, Value)> { entries() }
+    public final func makeIterator() -> JSIterator<(Key, Value)> { entries() }
 
-    public var jsSize: Int { Int(size) }
+    public final var jsSize: Int { Int(size) }
 
-    public var jsAnyEntries: [(Any?, Any?)] {
+    public final var jsAnyEntries: [(Any?, Any?)] {
         jsTracker?.track()
         return table.entries.map { (jsFlat($0.key), jsFlat(read($0.value))) }
     }
 
-    public func jsAnyGet(_ key: Any?) -> Any? {
+    public final func jsAnyGet(_ key: Any?) -> Any? {
         jsTracker?.track()
         guard let position = table.find(JSCollectionKey.of(key)) else { return nil }
         return jsFlat(read(table.entry(at: position).value))
     }
 
-    public func jsAnyHas(_ key: Any?) -> Bool {
+    public final func jsAnyHas(_ key: Any?) -> Bool {
         jsTracker?.track()
         return table.find(JSCollectionKey.of(key)) != nil
     }
 
-    public func jsAnySet(_ key: Any?, _ value: Any?) throws {
+    public final func jsAnySet(_ key: Any?, _ value: Any?) throws {
         guard let k = jsCast(key, to: Key.self), let v = jsCast(value, to: Value.self) else {
             throw JSException(JSTypeError("A Map of \(Key.self) to \(Value.self) cannot hold \(jsInspect(key)) → \(jsInspect(value))"))
         }
         set(k, v)
     }
 
-    public func jsAnyDelete(_ key: Any?) -> Bool {
+    public final func jsAnyDelete(_ key: Any?) -> Bool {
         guard table.remove(JSCollectionKey.of(key)) else { return false }
         jsTracker?.trigger()
         return true
     }
 
-    public func jsMakeReactive() {
+    public final func jsMakeReactive() {
         if jsTracker == nil { jsTracker = JSTracker() }
     }
 
-    public var description: String { jsInspect(self) }
+    public final var description: String { jsInspect(self) }
 }
 
 extension JSMap where Key == Any?, Value == Any? {
@@ -311,9 +311,9 @@ extension JSMap where Key == Any?, Value == Any? {
 }
 
 /// A JavaScript `Set`: insertion-ordered, reference semantics, SameValueZero values.
-public final class JSSet<Element>: Sequence, JSSetProtocol, JSReactiveConvertible, CustomStringConvertible {
+open class JSSet<Element>: Sequence, JSSetProtocol, JSReactiveConvertible, CustomStringConvertible {
     private var table = JSOrderedSlots<Element, Void>()
-    public var jsTracker: JSTracker?
+    public final var jsTracker: JSTracker?
 
     public init() {}
 
@@ -328,7 +328,7 @@ public final class JSSet<Element>: Sequence, JSSetProtocol, JSReactiveConvertibl
     }
 
     @discardableResult
-    public func add(_ value: Element) -> JSSet<Element> {
+    public final func add(_ value: Element) -> JSSet<Element> {
         let hashKey = JSCollectionKey.of(value)
         if table.find(hashKey) == nil {
             table.append(hashKey, jsNormalizedKey(value), ())
@@ -337,40 +337,40 @@ public final class JSSet<Element>: Sequence, JSSetProtocol, JSReactiveConvertibl
         return self
     }
 
-    public func has(_ value: Element) -> Bool {
+    public final func has(_ value: Element) -> Bool {
         jsTracker?.track()
         return table.find(JSCollectionKey.of(value)) != nil
     }
 
     @discardableResult
-    public func delete(_ value: Element) -> Bool {
+    public final func delete(_ value: Element) -> Bool {
         guard table.remove(JSCollectionKey.of(value)) else { return false }
         jsTracker?.trigger()
         return true
     }
 
-    public func clear() {
+    public final func clear() {
         guard table.live > 0 || !table.slots.isEmpty else { return }
         table.removeAll()
         jsTracker?.trigger()
     }
 
-    public var size: Double {
+    public final var size: Double {
         jsTracker?.track()
         return Double(table.live)
     }
 
-    public func forEach(_ body: (Element) throws -> Void) rethrows {
+    public final func forEach(_ body: (Element) throws -> Void) rethrows {
         jsTracker?.track()
         let cursor = table.makeCursor()
         while let entry = table.next(cursor) { try body(read(entry.key)) }
     }
 
-    public func forEach(_ body: (Element, Element) throws -> Void) rethrows {
+    public final func forEach(_ body: (Element, Element) throws -> Void) rethrows {
         try forEach { value in try body(value, value) }
     }
 
-    public func values() -> JSIterator<Element> {
+    public final func values() -> JSIterator<Element> {
         jsTracker?.track()
         let cursor = table.makeCursor()
         return JSIterator { [self] in
@@ -380,9 +380,9 @@ public final class JSSet<Element>: Sequence, JSSetProtocol, JSReactiveConvertibl
         }
     }
 
-    public func keys() -> JSIterator<Element> { values() }
+    public final func keys() -> JSIterator<Element> { values() }
 
-    public func entries() -> JSIterator<(Element, Element)> {
+    public final func entries() -> JSIterator<(Element, Element)> {
         let iterator = values()
         return JSIterator {
             guard let value = iterator.next() else { return nil }
@@ -390,38 +390,38 @@ public final class JSSet<Element>: Sequence, JSSetProtocol, JSReactiveConvertibl
         }
     }
 
-    public func makeIterator() -> JSIterator<Element> { values() }
+    public final func makeIterator() -> JSIterator<Element> { values() }
 
-    public var jsSize: Int { Int(size) }
+    public final var jsSize: Int { Int(size) }
 
-    public var jsAnyValues: [Any?] {
+    public final var jsAnyValues: [Any?] {
         jsTracker?.track()
         return table.entries.map { jsFlat(read($0.key)) }
     }
 
-    public func jsAnyHas(_ value: Any?) -> Bool {
+    public final func jsAnyHas(_ value: Any?) -> Bool {
         jsTracker?.track()
         return table.find(JSCollectionKey.of(value)) != nil
     }
 
-    public func jsAnyAdd(_ value: Any?) throws {
+    public final func jsAnyAdd(_ value: Any?) throws {
         guard let v = jsCast(value, to: Element.self) else {
             throw JSException(JSTypeError("A Set of \(Element.self) cannot hold \(jsInspect(value))"))
         }
         add(v)
     }
 
-    public func jsAnyDelete(_ value: Any?) -> Bool {
+    public final func jsAnyDelete(_ value: Any?) -> Bool {
         guard table.remove(JSCollectionKey.of(value)) else { return false }
         jsTracker?.trigger()
         return true
     }
 
-    public func jsMakeReactive() {
+    public final func jsMakeReactive() {
         if jsTracker == nil { jsTracker = JSTracker() }
     }
 
-    public var description: String { jsInspect(self) }
+    public final var description: String { jsInspect(self) }
 }
 
 /// A `Map`'s methods read by name from untyped code (`changeMap.forEach(fn)` where the map is `any`),

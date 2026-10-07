@@ -323,7 +323,7 @@ const typings = program.getSourceFiles().filter((f) => f.isDeclarationFile).map(
 const owners = packages.flatMap((p) => (p.pluginDir ? [p.pluginDir + '/'] : []));
 const nativeTypings = typings.filter((f) => !f.startsWith('/__shims__/') && (!f.includes('/node_modules/') || owners.some((d) => f.startsWith(d))));
 const native = pluginNative(plugins.all(), out, {
-  deps: dependencies, packages, declarations: typings, say,
+  deps: dependencies, packages, declarations: typings, say, bindings: join(kit, 'Bindings'),
   app: { module: name, src: join(appResourcesDir(app), 'iOS', 'src'), declarations: nativeTypings },
 });
 dependencies.dispose();
@@ -413,7 +413,7 @@ const appSwift = readdirSync(join(out, 'Sources')).filter((f) => f.endsWith('.sw
 const closedWorld = coreClosedWorld(join(kit, 'Sources', 'NativeScriptKit'), appSwift + start);
 say(`core in this app: ${closedWorld.initializers.length} module initializers run, ${closedWorld.excluded.length} files left out`);
 const entryStart = start.replace('        CoreModules.initialize()\n', `        CoreModules.initializers = [\n${closedWorld.initializers.map((i) => `            ${i},\n`).join('')}        ]\n        CoreModules.initialize()\n`);
-writeFileSync(join(out, 'Sources', '__Entry.swift'), `// Compiled by ns-native: the app's entry and its CSS.\nimport NativeScriptKit\n\n@main\nenum ${name}App {\n    static func main() {\n${entryStart}    }\n}\n\nlet appCSS = """\n${css.replace(/\\/g, '\\\\').replace(/"""/g, '\\"""')}"""\n\n// What core reads as \`~/package.json\`.\nlet appPackageJSON = """\n${appPackageJSON(app).replace(/\\/g, '\\\\').replace(/"""/g, '\\"""')}\n"""\n`);
+writeFileSync(join(out, 'Sources', '__Entry.swift'), `// Compiled by ns-native: the app's entry and its CSS.\nimport NativeScriptKit\n\n@main\nenum ${name}App {\n    static func main() {\n${native.bindings.map((b) => `        ${b.installer}.install()\n`).join('')}${entryStart}    }\n}\n\nlet appCSS = """\n${css.replace(/\\/g, '\\\\').replace(/"""/g, '\\"""')}"""\n\n// What core reads as \`~/package.json\`.\nlet appPackageJSON = """\n${appPackageJSON(app).replace(/\\/g, '\\\\').replace(/"""/g, '\\"""')}\n"""\n`);
 say(`${components.length} components and ${modules.length} modules from ${framework} compiled to Swift in ${Date.now() - started} ms → ${relative(process.cwd(), join(out, 'Sources'))}`);
 
 // 4. The Xcode project. The kit is a static library target rather than its

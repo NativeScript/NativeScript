@@ -254,6 +254,16 @@ public struct JSBigInt: Hashable, Comparable, CustomStringConvertible, Expressib
         return JSBigInt(negative: false, magnitude: JSBigUInt(limbs: out))
     }
 
+    /// The value modulo 2^64 as a signed integer, as `BigInt64Array` stores it.
+    public var int64: Int64 { Int64(bitPattern: uint64) }
+
+    /// The value modulo 2^64, as `BigUint64Array` stores it.
+    public var uint64: UInt64 {
+        let limbs = Self.asUintN(64, self).magnitude.limbs
+        let low = limbs.count > 0 ? UInt64(limbs[0]) : 0, high = limbs.count > 1 ? UInt64(limbs[1]) : 0
+        return high << 32 | low
+    }
+
     /// `BigInt.asIntN(bits, value)`.
     public static func asIntN(_ bits: Double, _ value: JSBigInt) -> JSBigInt {
         let n = Int(bits)

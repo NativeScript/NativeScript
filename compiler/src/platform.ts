@@ -19,6 +19,7 @@ export function foldPlatform(text: string, fileName: string, platform: Platform)
     isAndroid: platform === 'android', __ANDROID__: platform === 'android', __VISIONOS__: false, __DEV__: false,
   };
   const kind = fileName.endsWith('x') ? ts.ScriptKind.TSX : ts.ScriptKind.TS;
+  let folded = false;
   // One edit per pass, outermost first, until nothing folds.
   for (let pass = 0; pass < 10_000; pass++) {
     const sf = ts.createSourceFile(fileName, text, ts.ScriptTarget.Latest, true, kind);
@@ -29,10 +30,51 @@ export function foldPlatform(text: string, fileName: string, platform: Platform)
       if (ts.isPropertyAccessExpression(n) && ts.isIdentifier(n.expression) && ['global', 'globalThis'].includes(n.expression.text) && n.name.text in flags) return flags[n.name.text];
       return undefined;
     });
-    if (!edit) return text;
+    if (!edit) return folded ? dropUnreferenced(text, fileName, kind) : text;
     text = apply(text, edit);
+    folded = true;
   }
   throw new Error(`${fileName}: platform folding did not settle`);
+}
+
+/**
+ * Module-level helpers that only the removed branches used: unexported
+ * functions, and constants whose initializer runs nothing, that the rest of
+ * the file no longer names. They are the other platform's too.
+ */
+function dropUnreferenced(text: string, fileName: string, kind: ts.ScriptKind): string {
+  for (;;) {
+    const sf = ts.createSourceFile(fileName, text, ts.ScriptTarget.Latest, true, kind);
+    const uses = new Map<string, number[]>();
+    const collect = (n: ts.Node): void => {
+      if (ts.isIdentifier(n)) (uses.get(n.text) ?? uses.set(n.text, []).get(n.text)!).push(n.getStart(sf));
+      ts.forEachChild(n, collect);
+    };
+    collect(sf);
+    const unused = (name: ts.Identifier, decl: ts.Node) =>
+      (uses.get(name.text) ?? []).every((at) => at >= decl.getStart(sf) && at < decl.getEnd());
+    const dead = sf.statements.find((st) => {
+      if (ts.getCombinedModifierFlags(st as ts.Declaration) & (ts.ModifierFlags.Export | ts.ModifierFlags.Ambient)) return false;
+      if (ts.isFunctionDeclaration(st)) return !!st.name && unused(st.name, st);
+      if (!ts.isVariableStatement(st) || st.declarationList.declarations.length !== 1) return false;
+      const d = st.declarationList.declarations[0];
+      return ts.isIdentifier(d.name) && (!d.initializer || inert(d.initializer)) && unused(d.name, st);
+    });
+    if (!dead) return text;
+    text = apply(text, { span: [dead.getStart(sf), dead.getEnd()], keep: null });
+  }
+}
+
+/** An initializer whose evaluation has no effect: a literal, a function, or an empty collection. */
+function inert(e: ts.Expression): boolean {
+  while (ts.isParenthesizedExpression(e) || ts.isAsExpression(e) || ts.isSatisfiesExpression(e)) e = e.expression;
+  if (ts.isLiteralExpression(e) || ts.isNoSubstitutionTemplateLiteral(e) || ts.isArrowFunction(e) || ts.isFunctionExpression(e)) return true;
+  if ([ts.SyntaxKind.TrueKeyword, ts.SyntaxKind.FalseKeyword, ts.SyntaxKind.NullKeyword].includes(e.kind)) return true;
+  if (ts.isPrefixUnaryExpression(e)) return ts.isNumericLiteral(e.operand);
+  if (ts.isNewExpression(e)) return ts.isIdentifier(e.expression) && ['Map', 'Set', 'WeakMap', 'WeakSet', 'Array'].includes(e.expression.text) && !e.arguments?.length;
+  if (ts.isArrayLiteralExpression(e)) return e.elements.every(inert);
+  if (ts.isObjectLiteralExpression(e)) return e.properties.every((p) => ts.isPropertyAssignment(p) && !ts.isComputedPropertyName(p.name) && inert(p.initializer));
+  return false;
 }
 
 let defines: [string, string][] = [];
@@ -49,7 +91,8 @@ function applyDefines(text: string, fileName: string): string {
   if (!defines.length || /[\\/]node_modules[\\/]/.test(fileName)) return text;
   for (const [key, value] of defines) {
     if (!text.includes(key)) continue;
-    const pattern = new RegExp(`(?<![\\w$.])${key.replace(/[.$]/g, (c) => '\\' + c)}(?![\\w$])`, 'g');
+    // A bundler replaces the expression, never a declaration of the name (`declare var __non_webpack_require__`).
+    const pattern = new RegExp(`(?<![\\w$.])(?<!\\b(?:var|let|const|function|class)\\s+)${key.replace(/[.$]/g, (c) => '\\' + c)}(?![\\w$])`, 'g');
     text = text.replace(pattern, (m) => `(${value})`.padEnd(m.length, ' '));
   }
   return text;

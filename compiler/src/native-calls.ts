@@ -1,5 +1,5 @@
 import ts from 'typescript';
-import { CF_CLASSES, optionalType, splitTopLevel, type Translator } from './swift.ts';
+import { CF_CLASSES, functionParts, optionalType, splitTopLevel, type Translator } from './swift.ts';
 import {
   categoryModule, conformsTo, lookupClass, lookupConstant, lookupConstructor, lookupEnum, lookupFunction, lookupInit, lookupMember, lookupStruct, lookupTypealias, moduleOfDeclaration, nativeTable,
   type NativeMethod, type NativeProperty, type SwiftType,
@@ -516,7 +516,7 @@ export class NativeAPI {
     if (en) return `String(${this.unwrapped(callee.expression)}${en.swift ? '.rawValue' : ''})`;
     // The runtime's wrapper of a native object converts to its `description`.
     if (!r.isStatic && name === 'toString' && !e.arguments.length && cls?.kind === 'class') return this.fromSwift(`${this.unwrapped(callee.expression)}.description`, 'String', e);
-    const m = this.found(lookupMember(r.module, r.name, name, r.isStatic)) ?? this.optionsSibling(r, name, e.arguments.length);
+    const m = this.found(lookupMember(r.module, r.name, name, r.isStatic)) ?? this.optionsSibling(r, name, e.arguments.length) ?? (r.isStatic ? this.factoryInit(r, name) : null);
     if (!m) {
       // `o.setX(v)` for a property `x` the d.ts also lists as a method.
       const setter = /^set([A-Z]\w*)$/.exec(name);
@@ -527,7 +527,10 @@ export class NativeAPI {
     this.checkAvailable(m, e, `${r.name}.${name}()`);
     // An Objective-C method Swift imports as a property.
     const chained = ts.isPropertyAccessExpression(callee) && !!callee.questionDotToken;
-    const recv = r.isStatic ? '' : !chained ? this.unwrapped(callee.expression)
+    // Foundation's own methods (`enumerateKeysAndObjectsUsingBlock`) on what Swift imports as its collection.
+    const st = this.t.typeOf(callee.expression);
+    const bridged = !r.isStatic && !chained && ((r.name === 'NSDictionary' && /^\[.*:.*\]$/.test(st)) || (r.name === 'NSArray' && /^\[[^:]*\]$/.test(st)));
+    const recv = r.isStatic ? '' : bridged ? `(${this.unwrapped(callee.expression)} as ${r.name})` : !chained ? this.unwrapped(callee.expression)
       : this.t.typeOf(callee.expression).endsWith('?') ? `${this.t.expr(callee.expression)}?` : this.chainHead(callee.expression).slice(0, -1);
     if (m.kind === 'property') return this.fromSwift(isolated(`${r.isStatic ? this.className(lookupClass(r.module, r.name)!) : recv}.${m.swift}`, m), m.type, e);
     const args = [...e.arguments];
@@ -540,6 +543,13 @@ export class NativeAPI {
     // A chain that stops before the call gives undefined, as a number, string or boolean reads it.
     const tsType = this.t.typeOf(e);
     return (chained || ts.isOptionalChain(e)) && !this.keepOptional.has(e) && ['Bool', 'Double', 'String'].includes(tsType) ? this.t.undefinedAs(result, tsType) : result;
+  }
+
+  /** `NSNumber.numberWithLong(n)`, a factory Swift imports only as its initializer (`initWithLong:`, `NSNumber(value:)`). */
+  private factoryInit(r: { module: string; name: string }, name: string): NativeMethod | null {
+    const factory = /^[a-z]+(With[A-Z]\w*)$/.exec(name);
+    const init = factory && this.found(lookupInit(r.module, r.name, `init${factory[1]}`));
+    return init && init.kind === 'init' ? init : null;
   }
 
   /**
@@ -1178,6 +1188,9 @@ export class NativeAPI {
       return isOptional ? `${code}.map { ${this.t.boxFunction('$0', plain)} }` : this.t.boxFunction(code, plain);
     }
     if (NUMBERS.has(b) && tsType === 'Double') return b === 'Double' ? code : optional(swiftType) ? `Double(${code}!)` : `Double(${code})`;
+    // A block whose parameters Swift bridges (`URLRequest?`) where TypeScript declares the Foundation class (`NSURLRequest`).
+    const block = functionParts(swiftType.replace(/@\w+\s+/g, '').trim()), fn = functionParts(tsType);
+    if (block && fn && block.params.some((p, k) => p !== fn.params[k])) return this.t.convert(code, block.text, tsType);
     // A parameter TypeScript declares as the app's own subclass (`navigationController: UINavigationControllerImpl`).
     const own = tsType.replace(/[?!]$/, '');
     if (own !== b && /^(\w+\.)?[A-Z]\w*$/.test(own) && /^[A-Z]\w*$/.test(b) && !this.isEnumType(b) && !this.isStructType(b) && this.t.lenientRef(own) !== own) return `jsImplicit(${code} as? ${own})`;

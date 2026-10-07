@@ -5,7 +5,7 @@ import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, 
 import { tmpdir } from 'node:os';
 import { basename, dirname, join, relative, sep } from 'node:path';
 import { iosTarget, moduleOfDeclaration, nativeTable, registerDeclarationModule } from '../natives/symbols.ts';
-import { productLines, type Dependencies, type SwiftPackage } from '../ios-dependencies.ts';
+import { boundToEngine, productLines, type Dependencies, type SwiftPackage } from '../ios-dependencies.ts';
 import type { PluginSource } from './source.ts';
 
 /**
@@ -34,6 +34,8 @@ export interface PluginNative {
   swift: { name: string; dir: string; packages: SwiftPackage[] }[];
   /** The app's own Swift (absolute), compiled into the app target; null when it has none. */
   appSwift: string | null;
+  /** The kit's Swift bindings of plugins' engine-bound code (absolute), compiled into the app target, each with the type whose `install()` the app calls first. */
+  bindings: { dir: string; installer: string }[];
 }
 
 interface Target {
@@ -57,7 +59,12 @@ const PACKAGE = 'NSPlugins';
 /** A set of native sources: a plugin's `platforms/ios`, or the app's `App_Resources/iOS/src` (whose Swift module is the app's). */
 interface NativeSources { name: string; version: string; dir: string; ios: string; typings: string[]; appModule?: string }
 
-export function pluginNative(sources: PluginSource[], outDir: string, o: { deps: Dependencies; packages: SwiftPackage[]; app?: { module: string; src: string; declarations: string[] }; declarations: string[]; say: (m: string) => void }): PluginNative {
+/**
+ * A plugin whose iOS code installs objects into the JavaScript engine (`global.CanvasModule`)
+ * has their Swift counterpart in the kit, at `Bindings/<package>/ios`: the same objects over the
+ * same native API, which `NSBinding_<package>.install()` puts in `globalThis`.
+ */
+export function pluginNative(sources: PluginSource[], outDir: string, o: { deps: Dependencies; packages: SwiftPackage[]; app?: { module: string; src: string; declarations: string[] }; declarations: string[]; bindings: string; say: (m: string) => void }): PluginNative {
   const root = join(outDir, 'Plugins');
   rmSync(root, { recursive: true, force: true });
   const errors: string[] = [];
@@ -113,6 +120,11 @@ export function pluginNative(sources: PluginSource[], outDir: string, o: { deps:
       if (best !== undefined && score(best) > 0) registerDeclarationModule(dts, candidates[best].module);
     }
   }
+  const bindings = sets.filter((x) => !x.appModule && existsSync(join(o.bindings, x.name, 'ios'))).map((x) => {
+    const dir = join(root, 'Bindings', derivedModule(x.name).replace(/^NSPlugin_/, ''));
+    cpSync(join(o.bindings, x.name, 'ios'), dir, { recursive: true });
+    return { dir, installer: derivedModule(x.name).replace(/^NSPlugin_/, 'NSBinding_') };
+  });
   // A package's or pod's module is imported where the program declares something of it.
   const declared = new Set(o.declarations.map(moduleOfDeclaration));
   const app = all.find((t) => t.inApp && !left.has(t));
@@ -121,6 +133,7 @@ export function pluginNative(sources: PluginSource[], outDir: string, o: { deps:
     package: packaged.length ? { dir: root, name: PACKAGE, products: packaged.map((t) => t.name) } : null,
     swift: all.filter((t) => t.kind === 'swift' && !t.inApp).map((t) => ({ name: t.name, dir: join(root, t.path), packages: o.packages.filter((p) => p.plugin === perPackage.find((x) => x.targets.includes(t))!.source.name) })),
     appSwift: app ? join(root, app.path) : null,
+    bindings,
   };
 }
 
@@ -134,7 +147,7 @@ export function xcodegenLines(native: PluginNative, projectDir: string): { packa
       ...(p?.products ?? []).map((product) => `      - package: ${p!.name}\n        product: ${product}\n`),
       ...native.swift.map((t) => `      - target: ${t.name}\n`),
     ].join(''),
-    sources: native.appSwift ? `      - path: ${relative(projectDir, native.appSwift)}\n` : '',
+    sources: [native.appSwift, ...native.bindings.map((b) => b.dir)].filter(Boolean).map((d) => `      - path: ${relative(projectDir, d!)}\n`).join(''),
   };
 }
 
@@ -155,6 +168,9 @@ function targetsOf(source: NativeSources, errors: string[], deps: Dependencies):
       if (f === '.DS_Store' || /\.md$/i.test(f)) continue;
       else if (f === 'native-api-usage.json') continue;
       if (statSync(p).isDirectory()) {
+        // Code bound to the V8 engine (`v8::` objects installed into the JavaScript runtime, as @nativescript/canvas's
+        // CanvasModule): no engine runs a compiled app, whose Swift binding of the same API the kit provides.
+        if (boundToEngine(p)) continue;
         if (f.endsWith('.xcframework')) xcframeworks.push(p);
         else if (f.endsWith('.framework')) fail(p, 'a .framework is not supported yet (an .xcframework is)');
         else if (f.endsWith('.bundle')) fail(p, 'resource bundles are not supported yet');

@@ -124,6 +124,7 @@ private func callMethod(_ object: Any?, _ key: String, _ arguments: [Any?]) thro
         let name = String(describing: cls).components(separatedBy: "<")[0]
         return cls is JSStaticKeyed.Type ? "class \(name) { }" : "function \(name.replacingOccurrences(of: "JS", with: "", options: .anchored))() { [native code] }"
     }
+    if let host = jsFlat(object) as? JSHostObject, let result = try host.jsInvoke(key, arguments) { return result }
     var f = try jsGet(object, key)
     // What every object inherits (`hasOwnProperty`), where the object has nothing of that name.
     if jsFlat(f) == nil, jsFlat(object) is JSDynamic, JSPrototypes.objectPrototype.has(key) { f = JSPrototypes.objectPrototype[key] }
@@ -131,6 +132,13 @@ private func callMethod(_ object: Any?, _ key: String, _ arguments: [Any?]) thro
     if let function = jsFlat(f) as? JSFunction { return try function(arguments) }
     if let moot = jsFlat(f) as? JSMootValue { throw moot.unavailable() }
     throw JSException(JSTypeError("\(jsInspect(f)) is not a function"))
+}
+
+/// An object a native binding implements, as an engine's host objects are: a method call
+/// reaches it by name, without the method first read as a function value.
+public protocol JSHostObject: JSDynamic {
+    /// The named method's result, or nil when the object has no method of that name.
+    func jsInvoke(_ key: String, _ arguments: [Any?]) throws -> Any??
 }
 
 /// An object whose accessor properties print as `[Getter]`, `[Setter]` or `[Getter/Setter]`.

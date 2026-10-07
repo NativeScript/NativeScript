@@ -780,6 +780,7 @@ export function lookupMember(module: string, jsClass: string, jsMember: string, 
     const m = Object.hasOwn(members, jsMember) ? members[jsMember] : null;
     if (m) return rehome(m, c, receiver);
   }
+  if (!isStatic && !jsMember.startsWith('init') && cLong.test(jsMember)) return lookupMember(module, jsClass, jsMember.replace(cLong, 'LongLong'), false);
   if (!isStatic) return jsMember.startsWith('init') ? lookupInit(module, jsClass, jsMember) : null;
   // Swift drops a factory named after its class (`+[NSArray arrayWithArray:]`, `+[UIBezierPath bezierPath]`)
   // when an initializer has the same Swift name (`init(array:)`, `init()`).
@@ -805,6 +806,16 @@ export function lookupConstructor(module: string, jsClass: string, keys: string[
 }
 
 export function lookupInit(module: string, jsClass: string, jsInitName: string): NativeMethod | null {
+  return ownInit(module, jsClass, jsInitName) ?? (cLong.test(jsInitName) ? ownInit(module, jsClass, jsInitName.replace(cLong, 'Integer')) : null);
+}
+
+/**
+ * C's `long` in a selector (`initWithLong:`, `longValue`), which Swift imports no differently
+ * from the 64-bit one beside it (`initWithInteger:`, `longLongValue`), so the table has only that.
+ */
+const cLong = /Long(?!Long)/;
+
+function ownInit(module: string, jsClass: string, jsInitName: string): NativeMethod | null {
   return findInit(module, jsClass, (c) => c.inits[jsInitName], (init) => {
     let rest = jsInitName.replace(/^init(With)?/, '');
     const take = (label: string | null) => {
