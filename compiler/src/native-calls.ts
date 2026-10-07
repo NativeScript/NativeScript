@@ -296,12 +296,12 @@ export class NativeAPI {
   }
 
   /** `x?.prop` of a native property on a receiver Swift holds as optional (`receiver`): its Swift name, a number as script reads it; null for anything else. */
-  chainedProperty(e: ts.PropertyAccessExpression, receiver: string): string | null {
+  chainedProperty(e: ts.PropertyAccessExpression, receiver: string, dot = '?.'): string | null {
     const type = this.memberType(e);
     if (type === null || this.receiver(e.expression)?.isStatic) return null;
     const r = this.receiver(e.expression)!;
     const m = lookupMember(r.module, r.name, e.name.text, false);
-    const chained = `${receiver}?.${m && m.kind === 'property' ? m.swift : e.name.text}`;
+    const chained = `${receiver}${dot}${m && m.kind === 'property' ? m.swift : e.name.text}`;
     const b = base(type);
     return NUMBERS.has(b) && b !== 'Double' && b !== 'TimeInterval' && this.t.typeOf(e).replace(/\?$/, '') === 'Double' ? `(${chained}).map { Double($0) }` : chained;
   }
@@ -315,6 +315,16 @@ export class NativeAPI {
     if (struct) return struct.fields[e.name.text] ?? null;
     const m = lookupMember(r.module, r.name, e.name.text, r.isStatic);
     return m?.kind === 'property' ? m.type : null;
+  }
+
+  /** The Swift type a native instance method call `x.m()` returns, or null for anything else. */
+  methodReturns(call: ts.CallExpression): SwiftType | null {
+    const callee = call.expression;
+    if (!ts.isPropertyAccessExpression(callee) || this.appMember(callee.name)) return null;
+    const r = this.receiver(callee.expression);
+    if (!r || r.isStatic) return null;
+    const m = lookupMember(r.module, r.name, callee.name.text, false);
+    return m?.kind === 'method' ? m.returns : null;
   }
 
   /** The value an optional chain ending in a native member of Swift type `type` reads, as TypeScript types it. */
@@ -1067,7 +1077,8 @@ export class NativeAPI {
     const result = ret === 'Void'
       ? (tsRet !== 'Void' ? `        ${throws ? 'jsReport { _ = try ' : '_ = '}${call}${throws ? ' }' : ''}` : throws ? `        jsReport { try ${call} }` : body.slice(2, -2).replace(/^ {8}/, '        '))
       : `        let __result: ${tsRet} = ${throws ? 'try! ' : ''}${call}\n        return ${this.toSwiftValue('__result', tsRet, ret)}`;
-    return [`    ${override ? 'override ' : ''}func ${target.swift}(${swiftParams.join(', ')})${ret === 'Void' ? '' : ` -> ${ret}`} {`, ...binds, result, '    }'].join('\n');
+    const available = target.introduced && parseFloat(target.introduced) > DEPLOYMENT ? `@available(iOS ${target.introduced}, *) ` : '';
+    return [`    ${available}${override ? 'override ' : ''}func ${target.swift}(${swiftParams.join(', ')})${ret === 'Void' ? '' : ` -> ${ret}`} {`, ...binds, result, '    }'].join('\n');
   }
 
   /**

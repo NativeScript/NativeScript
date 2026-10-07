@@ -423,7 +423,7 @@ export class Translator implements AsyncTranslator {
     this.lowering = new AsyncLowering(this);
     this.core = new CoreAPI(this);
     this.native = new NativeAPI(this);
-    this.throwsInfo = new Throws(checker, files, (n) => { try { return this.typeOf(n) === 'Any?'; } catch { return false; } }, (c) => this.native.throwingCall(c) || this.replaceableCall(c) || (!!this.library && ts.isElementAccessExpression(c.expression) && !!this.setNativeOf(c.expression.argumentExpression)), (d) => this.compiledMember(d), (e) => { try { return this.declaredOnly(e); } catch { return false; } });
+    this.throwsInfo = new Throws(checker, files, (n) => { try { return this.typeOf(n) === 'Any?'; } catch { return false; } }, (c) => this.native.throwingCall(c) || this.replaceableCall(c) || (!!this.library && ts.isElementAccessExpression(c.expression) && !!this.setNativeOf(c.expression.argumentExpression)), (d) => this.compiledMember(d), (e) => { try { return this.isExpando(e); } catch { return false; } });
     for (const f of files) {
       const visit = (n: ts.Node) => {
         if (ts.isClassLike(n)) {
@@ -4917,7 +4917,12 @@ export class Translator implements AsyncTranslator {
     if (ts.isPropertyAccessExpression(e) && e.questionDotToken && !this.typeOf(e.expression).endsWith('?')) {
       const target = this.maybeUndefined(e.expression);
       if (target && this.isExpando(e)) return `jsGetIfPresent(${target} as Any?, ${swiftString(e.name.text)})`;
-      if (target) return this.native.chainedProperty(e, target) ?? `${target}?.${ident(e.name.text)}`;
+      if (target) {
+        // A native method's result inside the chain (`c?.ios?.colorWithAlphaComponent(1)?.CGColor`): Swift continues past a non-optional one with `.`.
+        const link = ts.isCallExpression(e.expression) && ts.isOptionalChain(e.expression) ? this.native.methodReturns(e.expression) : null;
+        const dot = link && !/[?!]$/.test(link) ? '.' : '?.';
+        return this.native.chainedProperty(e, target, dot) ?? `${target}${dot}${ident(e.name.text)}`;
+      }
     }
     // `this[side + 'Drawer']`: a member by computed key, missing when the object has none.
     let access: ts.Expression = e;
@@ -5289,7 +5294,13 @@ export class Translator implements AsyncTranslator {
       if (/^JS(AsyncIterator|AsyncGenerator)</.test(t) && ['next', 'return', 'throw'].includes(method)) {
         return `${this.expr(target)}${q}.${ident(method)}(${e.arguments[0] ? this.coerce(e.arguments[0], 'Any?') : method === 'throw' ? 'nil' : ''})`;
       }
-      if (t.startsWith('JSMap<') || t.startsWith('JSSet<')) return this.collectionMethod(method, target, e, q);
+      if (t.startsWith('JSMap<') || t.startsWith('JSSet<')) {
+        // `seen?.has(x)` on a value TypeScript types as present: cast to optional, valid whether Swift holds it as present or implicitly unwrapped.
+        if (!callee.questionDotToken || q) return this.collectionMethod(method, target, e, q);
+        const code = this.collectionMethod(method, target, e, '', `(${this.expr(target)} as ${optionalType(receiverType)})?`);
+        const rt = this.typeOf(e);
+        return rt.endsWith('?') || rt === 'Any?' || rt === 'Void' || ts.isExpressionStatement(e.parent) ? code : this.undefinedAs(`(${code})`, rt);
+      }
       // `this.method.bind(this)`: the method, which Swift binds to its object already.
       if (method === 'bind' && e.arguments.length === 1 && e.arguments[0].kind === ts.SyntaxKind.ThisKeyword && ts.isPropertyAccessExpression(target) && target.expression.kind === ts.SyntaxKind.ThisKeyword) {
         return this.expr(target);
@@ -6040,8 +6051,8 @@ export class Translator implements AsyncTranslator {
     throw this.error(e, `Promise.${name}`);
   }
 
-  private collectionMethod(name: string, target: ts.Expression, e: ts.CallExpression, q: string): string {
-    const t = `${this.expr(target)}${q}`;
+  private collectionMethod(name: string, target: ts.Expression, e: ts.CallExpression, q: string, receiver?: string): string {
+    const t = receiver ?? `${this.expr(target)}${q}`;
     const type = this.typeOf(target).replace(/\?$/, '');
     const [k, v] = /^JSMap<(.*), (.*)>$/.exec(type)?.slice(1) ?? [/^JSSet<(.*)>$/.exec(type)?.[1] ?? 'Any?', ''];
     const arg = (n: number, as: string) => this.coerce(e.arguments[n], as);
