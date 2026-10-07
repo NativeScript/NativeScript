@@ -96,14 +96,16 @@ export interface NativeTable {
 const COMPILER = fileURLToPath(new URL('../..', import.meta.url));
 const TARGET = 'arm64-apple-ios17.0-simulator';
 
-let sdkInfo: { path: string; version: string } | undefined;
+let sdkInfo: { path: string; version: string; build: string } | undefined;
 function sdk() {
   return sdkInfo ??= {
     path: execFileSync('xcrun', ['--sdk', 'iphonesimulator', '--show-sdk-path'], { encoding: 'utf8' }).trim(),
     version: execFileSync('xcrun', ['--sdk', 'iphonesimulator', '--show-sdk-version'], { encoding: 'utf8' }).trim(),
+    build: execFileSync('xcrun', ['--sdk', 'iphonesimulator', '--show-sdk-build-version'], { encoding: 'utf8' }).trim(),
   };
 }
-const cacheDir = () => join(process.env.NS_NATIVE_TABLE_CACHE ?? join(COMPILER, '.cache'), `ios-${sdk().version}`);
+// By the SDK's build too: a beta and its release candidate share a version and differ in API.
+const cacheDir = () => join(process.env.NS_NATIVE_TABLE_CACHE ?? join(COMPILER, '.cache'), `ios-${sdk().version}-${sdk().build}`);
 /** The layout tables are written in: availability of enums, escaping block parameters, optional protocol properties. */
 const TABLE_FORMAT = 3;
 

@@ -55,7 +55,19 @@ export class NativeAPI {
 
   /** The module a native declaration comes from ('UIKit'), or null for anything else. */
   module(decl: ts.Declaration | undefined): string | null {
-    return decl ? moduleOfDeclaration(decl.getSourceFile().fileName) : null;
+    if (!decl) return null;
+    const known = moduleOfDeclaration(decl.getSourceFile().fileName);
+    if (known) return known;
+    // An app's own declaration of an SDK type newer than the published typings (`declare class UIArrangementViewController`
+    // in its uikit-duo.d.ts): the SDK module whose table has a type of that name.
+    const file = decl.getSourceFile();
+    if (!file.isDeclarationFile || /[\\/]node_modules[\\/]/.test(file.fileName)) return null;
+    const named = (ts.isClassDeclaration(decl) || ts.isInterfaceDeclaration(decl) || ts.isEnumDeclaration(decl)) && decl.name ? decl.name.text : null;
+    if (!named) return null;
+    for (const m of new Set(['UIKit', 'Foundation', ...this.modules])) {
+      if (lookupClass(m, named) || lookupEnum(m, named)) return m;
+    }
+    return null;
   }
 
   private symbolModule(sym: ts.Symbol | undefined): { module: string; name: string } | null {
@@ -504,7 +516,7 @@ export class NativeAPI {
     if (en) return `String(${this.unwrapped(callee.expression)}${en.swift ? '.rawValue' : ''})`;
     // The runtime's wrapper of a native object converts to its `description`.
     if (!r.isStatic && name === 'toString' && !e.arguments.length && cls?.kind === 'class') return this.fromSwift(`${this.unwrapped(callee.expression)}.description`, 'String', e);
-    const m = this.found(lookupMember(r.module, r.name, name, r.isStatic));
+    const m = this.found(lookupMember(r.module, r.name, name, r.isStatic)) ?? this.optionsSibling(r, name, e.arguments.length);
     if (!m) {
       // `o.setX(v)` for a property `x` the d.ts also lists as a method.
       const setter = /^set([A-Z]\w*)$/.exec(name);
@@ -520,13 +532,32 @@ export class NativeAPI {
     if (m.kind === 'property') return this.fromSwift(isolated(`${r.isStatic ? this.className(lookupClass(r.module, r.name)!) : recv}.${m.swift}`, m), m.type, e);
     const args = [...e.arguments];
     if (m.errorParam !== undefined) args.splice(m.errorParam, 1);
-    const list = this.argList(args, m.labels, m.params);
+    const defaults = (m as NativeMethod & { defaults?: string[] }).defaults ?? [];
+    const list = [this.argList(args, m.labels, m.params), ...defaults].filter(Boolean).join(', ');
     const target = r.isStatic ? this.className(cls!) : recv;
     const code = isolated(m.kind === 'init' ? `${target}(${list})` : `${target}.${m.swift}(${list})`, m);
     const result = this.errorCall(code, m, e);
     // A chain that stops before the call gives undefined, as a number, string or boolean reads it.
     const tsType = this.t.typeOf(e);
     return (chained || ts.isOptionalChain(e)) && !this.keepOptional.has(e) && ['Bool', 'Double', 'String'].includes(tsType) ? this.t.undefinedAs(result, tsType) : result;
+  }
+
+  /**
+   * `session.setActiveError(true)` where Swift has no `setActive:error:` of its own: its overlay folds it into
+   * `setActive(_:options:)`, whose options default to none. The sibling taking the same leading arguments
+   * and only option sets beyond them, those passed empty, as Swift's default does.
+   */
+  private optionsSibling(r: { module: string; name: string; isStatic: boolean }, name: string, given: number): (NativeMethod & { defaults: string[] }) | null {
+    if (!name.endsWith('Error')) return null;
+    const stem = name.slice(0, -'Error'.length);
+    const cls = lookupClass(r.module, r.name);
+    const members = cls ? (r.isStatic ? cls.static : cls.instance) : {};
+    const candidates = Object.entries(members).filter(([k, v]) => k !== name && k.startsWith(`${stem}With`) && k.endsWith('Error') && v.kind === 'method' && v.throws && v.params.length > given
+      && v.params.slice(given).every((p) => this.isOptionSet(base(p)))) as [string, NativeMethod][];
+    const best = candidates.sort((a, b) => a[1].params.length - b[1].params.length)[0]?.[1];
+    if (!best) return null;
+    // The option sets beyond the given arguments are empty, as the overlay's defaults are; the error stays last.
+    return { ...best, params: best.params.slice(0, given), labels: best.labels.slice(0, given), defaults: best.params.slice(given).map((_, k) => `${best.labels[given + k] ?? '_'}: []`), errorParam: given } as NativeMethod & { defaults: string[] };
   }
 
   /**

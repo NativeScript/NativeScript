@@ -277,6 +277,11 @@ export function generateKit(o: KitOptions): KitResult {
     if (name) exports.set(name, [...(exports.get(name) ?? []), fn.trim()]);
   }
   for (const [name, fns] of exports) out.push({ name: `__Export.${name}.swift`, code: header(new Set(sdk)) + fns.join('\n\n') + '\n', sources: {} });
+  // The namespaces core's index exports (`export * as Utils from './utils'`), as an app reaches them: `Utils.layout.EXACTLY`.
+  const codeOf = (file: string) => { const f = [...paths].find(([, p]) => p === file)?.[0]; return f ? f.code : undefined; };
+  for (const [name, code] of indexNamespaces(program, checker, join(core, 'index.ts'), compiled, (f) => enumName(relOf(f), barrels), sourceOf, codeOf)) {
+    out.push({ name: `__Namespace.${name}.swift`, code: header(new Set(sdk)) + code + '\n', sources: {} });
+  }
   const shapes = publicize(translator.shapesCode().trim());
   for (const shape of shapes ? shapes.split(/\n(?=public final class )/) : []) {
     const name = /^public final class (\w+)/.exec(shape.trim())?.[1];
@@ -341,6 +346,84 @@ function indexFunctions(program: ts.Program, checker: ts.TypeChecker, index: str
     lines.push(`public func ${e.name}${generics}(${params})${throws}${ret ? ` -> ${ret.trim()}` : ''} {\n    ${ret ? 'return ' : ''}${throws ? 'try ' : ''}${module}.${target.name}(${args.join(', ')})\n}`);
   }
   return lines.length ? `// What @nativescript/core's index exports as functions, as an app imports them.\n\n${lines.join('\n\n')}\n` : '';
+}
+
+/**
+ * The namespaces core's index exports, each as a Swift enum of the same name forwarding to the
+ * generated code: a function to its module's, a variable to its module's (read and written), a
+ * namespace (`layout`) as a nested enum of its own members. Types are the module's own already.
+ */
+function indexNamespaces(program: ts.Program, checker: ts.TypeChecker, index: string, compiled: Set<string>, moduleOf: (file: string) => string, sourceOf: (dts: string) => string | null, codeOf: (file: string) => string | undefined): Map<string, string> {
+  const result = new Map<string, string>();
+  const sf = program.getSourceFile(index);
+  const sym = sf && checker.getSymbolAtLocation(sf);
+  if (!sym) return result;
+  const resolveAlias = (e: ts.Symbol) => (e.flags & ts.SymbolFlags.Alias ? checker.getAliasedSymbol(e) : e);
+  // A module a declaration file stands for (`utils/index.d.ts`) is the platform file beside it.
+  const implementationModule = (m: ts.Symbol): ts.Symbol => {
+    const dts = m.declarations?.[0]?.getSourceFile().fileName;
+    const file = dts?.endsWith('.d.ts') ? sourceOf(dts) : null;
+    const impl = file ? program.getSourceFile(file) : undefined;
+    return (impl && checker.getSymbolAtLocation(impl)) ?? m;
+  };
+  const members = (exports: ts.Symbol[], indent: string, own?: string): string[] => {
+    const lines: string[] = [];
+    const seen = new Set<string>();
+    for (const e of exports) {
+      if (seen.has(e.name) || e.name === 'default') continue;
+      const target = resolveAlias(e);
+      const decl = target.valueDeclaration ?? target.declarations?.[0];
+      if (!decl) continue;
+      const file = decl.getSourceFile().fileName;
+      if (!compiled.has(file)) continue;
+      const code = codeOf(file);
+      if (!code) continue;
+      if (ts.isModuleDeclaration(decl) && decl.body && ts.isModuleBlock(decl.body)) {
+        // A namespace compiled to an enum of its name: its own exports, nested.
+        if (!new RegExp(`\\npublic enum ${target.name} \\{`).test(code)) continue;
+        // Qualified with the module: inside the nested enum of the same name, the bare name is the nested enum.
+        const inner = members(checker.getExportsOfModule(target).map((x) => x), indent + '    ').map((l) => l.replace(new RegExp(`\\bOWNER\\b`, 'g'), `NativeScriptKit.${target.name}`));
+        if (inner.length) { lines.push(`${indent}public enum ${e.name} {`, ...inner, `${indent}}`); seen.add(e.name); }
+        continue;
+      }
+      const owner = ts.isModuleBlock(decl.parent) || (ts.isVariableDeclaration(decl) && ts.isModuleBlock(decl.parent.parent.parent)) ? 'OWNER' : `NativeScriptKit.${moduleOf(file)}`;
+      // The barrel's own members are its enum's already.
+      if (own && owner === `NativeScriptKit.${own}`) continue;
+      if (ts.isFunctionDeclaration(decl) && decl.body) {
+        const m = new RegExp(`\\n\\s*public static func ${target.name}(<[^>]*>)?\\((.*)\\)( throws)?( -> ([^{]+))? \\{\\n`).exec(code);
+        if (!m) continue;
+        const [, generics = '', params, throws = '', , ret] = m;
+        const args = splitTop(params).filter(Boolean).map((p) => {
+          const [label, n] = p.trim().split(':')[0].trim().split(/\s+/);
+          return label === '_' ? (n ?? label) : `${label}: ${n ?? label}`;
+        });
+        lines.push(`${indent}public static func ${e.name}${generics}(${params})${throws}${ret ? ` -> ${ret.trim()}` : ''} { ${ret ? 'return ' : ''}${throws ? 'try ' : ''}${owner}.${target.name}(${args.join(', ')}) }`);
+        seen.add(e.name);
+        continue;
+      }
+      if (ts.isVariableDeclaration(decl)) {
+        const m = new RegExp(`\\n\\s*public static (var|let) ${target.name}: ([^=\\n{]+?)(?: =|\\s*\\{|\\n)`).exec(code);
+        if (!m) continue;
+        const type = m[2].trim();
+        lines.push(m[1] === 'var'
+          ? `${indent}public static var ${e.name}: ${type} { get { ${owner}.${target.name} } set { ${owner}.${target.name} = newValue } }`
+          : `${indent}public static var ${e.name}: ${type} { ${owner}.${target.name} }`);
+        seen.add(e.name);
+      }
+    }
+    return lines;
+  };
+  for (const e of checker.getExportsOfModule(sym)) {
+    const target = resolveAlias(e);
+    if (!(target.flags & ts.SymbolFlags.ValueModule) || !target.declarations?.some(ts.isSourceFile)) continue;
+    const module = implementationModule(target);
+    // A barrel compiled to an enum of the namespace's name (`utils/index` as `Utils`) gains what it re-exports.
+    const barrel = module.declarations?.[0] && ts.isSourceFile(module.declarations[0]) ? moduleOf(module.declarations[0].fileName) : null;
+    const extending = barrel === e.name;
+    const body = members(checker.getExportsOfModule(module), '    ', extending ? e.name : undefined);
+    if (body.length) result.set(e.name, `// What @nativescript/core's index exports as the namespace ${e.name}, as an app reaches it.\n${extending ? `extension ${e.name}` : `public enum ${e.name}`} {\n${body.join('\n')}\n}`);
+  }
+  return result;
 }
 
 /** A Swift parameter list split at its top-level commas. */

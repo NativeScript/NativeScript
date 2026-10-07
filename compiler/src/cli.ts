@@ -78,7 +78,18 @@ for (const f of files.filter((x) => /\.tsx?$/.test(x) && !x.endsWith('.d.ts'))) 
     for (const c of [base + '.ts', base + thisPlatform, base + '/index.ts']) if (files.includes(c)) usedBy.set(c, (usedBy.get(c) ?? new Set()).add(f));
   }
 }
-const sources = platformSources.filter((f) => { const users = usedBy.get(f); return !users || ![...users].every((u) => otherPlatform.test(u)); });
+// Transitively: a file only such files use is out too (an Android track engine its worker imports).
+const leftOut = new Set<string>();
+for (let changed = true; changed; ) {
+  changed = false;
+  for (const f of platformSources) {
+    const users = usedBy.get(f);
+    if (leftOut.has(f) || !users || ![...users].every((u) => otherPlatform.test(u) || leftOut.has(u))) continue;
+    leftOut.add(f);
+    changed = true;
+  }
+}
+const sources = platformSources.filter((f) => !leftOut.has(f));
 // Virtual replacements for app modules the release build reads differently (a zustand store).
 const overrides = new Map<string, string>();
 
