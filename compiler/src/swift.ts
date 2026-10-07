@@ -2569,7 +2569,8 @@ export class Translator implements AsyncTranslator {
       if (keys?.accessors.has(n) && this.baseDeclares(appBase, n)) continue;
       if (this.library && (registeredName || keys?.accessors.has(n))) {
         // A field under a registered property's name is the accessor `register` defines on the prototype.
-        const unset = !t.endsWith('?') && !t.endsWith('!') && this.zero(t) === null && !isFunctionType(t);
+        // Undefined until set, an array included (`if (!this.items)`): only a string, number or boolean reads as its zero.
+        const unset = !t.endsWith('?') && !t.endsWith('!') && (this.zero(t) === null || /^JS(Array|Map|Set)</.test(t)) && !isFunctionType(t);
         const vt = unset ? optionalType(t) : t;
         lines.push(`    var ${ident(n)}: ${unset && this.lenient ? this.lenientRef(t) : vt} {`, `        get { ${this.fromAnyCode(`jsExpandoGet(self, ${swiftString(n)})`, vt, true)} }`, `        set { jsExpandoSet(self, ${swiftString(n)}, ${this.convert('newValue', vt, 'Any?')}) }`, '    }');
         if (m.initializer) {
@@ -2581,8 +2582,8 @@ export class Translator implements AsyncTranslator {
       }
       if (registered(n)) {
         // A field under a registered property's name is the property: core's accessor on the prototype.
-        // A property registered without a default is undefined until set: an object-typed one reads as nil.
-        const unset = !t.endsWith('?') && !t.endsWith('!') && this.zero(t) === null && !isFunctionType(t);
+        // A property registered without a default is undefined until set: an object-typed one, an array included, reads as nil.
+        const unset = !t.endsWith('?') && !t.endsWith('!') && (this.zero(t) === null || /^JS(Array|Map|Set)</.test(t)) && !isFunctionType(t);
         lines.push(`    var ${ident(n)}: ${unset ? this.deferred(t) : t} {`, `        get { ${this.fromAnyCode(`get(${swiftString(n)})`, unset ? optionalType(t) : t, true)} }`, `        set { set(${swiftString(n)}, ${this.convert('newValue', unset ? optionalType(t) : t, 'Any?')}) }`, '    }');
         if (m.initializer) {
           this.indent = '        ';
@@ -3415,6 +3416,13 @@ export class Translator implements AsyncTranslator {
       }
       const holes = this.holeyArray(d, t);
       if (holes) return `${i}let ${name}: ${holes.type} = ${holes.type}(Array(repeating: nil, count: Int(${this.toNumber(holes.length)})))`;
+      // Lenient code: a string, number or boolean read from an optional member (`entry.backstackVisible`) may be undefined, which the code may test for.
+      const member = this.lenient && !lowered && ['Bool', 'Double', 'String'].includes(t) ? this.optionalMember(d.initializer) : null;
+      if (member && this.isAny(member.expression)) {
+        const sym = this.resolve(d.name);
+        if (sym) this.undefinedVars.set(sym, optionalType(t));
+        return `${i}${constant ? 'let' : 'var'} ${name}: ${optionalType(t)} = (try jsGet(${this.expr(member.expression)}, ${swiftString(member.name.text)}) as? ${t})`;
+      }
       const maybe = !lowered && !t.endsWith('?') ? this.maybeUndefined(d.initializer) : null;
       if (maybe) {
         const sym = this.resolve(d.name);
@@ -3427,7 +3435,10 @@ export class Translator implements AsyncTranslator {
       }
       // A native struct is a value in Swift: a constant one's fields can still be assigned in JavaScript.
       const binding = constant && !this.native.isStructType(t) ? 'let' : 'var';
-      return `${i}${binding} ${name}: ${this.lenientRef(t)} = ${this.tryPrefix(d.initializer)}${this.keptOptional(this.coerce(d.initializer, t), this.lenientRef(t))}`;
+      const value = this.keptOptional(this.coerce(d.initializer, t), this.lenientRef(t));
+      // Lenient code: a native dictionary or array that may be nil (`titleTextAttributesForState` before any are set) is held as given, undefined until tested.
+      if (this.lenient && t.startsWith('[') && this.lenientRef(t) === t && /[\w)\]]!$/.test(value)) return `${i}${binding} ${name}: ${t}! = ${this.tryPrefix(d.initializer)}${value.slice(0, -1)}`;
+      return `${i}${binding} ${name}: ${this.lenientRef(t)} = ${this.tryPrefix(d.initializer)}${value}`;
     }
     const tmp = this.fresh('__d');
     return `${i}let ${tmp}${this.destructured(d.name, d.initializer!)}\n${this.bindTo(d.name, tmp, ts.isArrayBindingPattern(d.name) && this.jsIteration(d.initializer!) && !/^JSMatch[?!]?$/.test(this.typeOf(d.initializer!)) ? 'iterated' : this.typeOf(d.initializer!), !constant)}`;
@@ -4508,6 +4519,14 @@ export class Translator implements AsyncTranslator {
       this.globalAliases.set(alias, `var ${alias}: ${t} {${constant ? ` ${ident(e.text)} ` : ` get { ${ident(e.text)} } set { ${ident(e.text)} = newValue } `}}`);
     }
     return alias;
+  }
+
+  /** A read of a member its interface or class declares optional (`backstackVisible?: boolean`), not a write: the access. */
+  private optionalMember(e: ts.Expression): ts.PropertyAccessExpression | null {
+    while (ts.isParenthesizedExpression(e)) e = e.expression;
+    if (!ts.isPropertyAccessExpression(e) || isWriteTarget(e) || e.questionDotToken) return null;
+    const sym = this.checker.getSymbolAtLocation(e.name);
+    return sym && sym.flags & ts.SymbolFlags.Optional && sym.declarations?.some((d) => (ts.isPropertySignature(d) || ts.isPropertyDeclaration(d)) && !!d.questionToken) ? e : null;
   }
 
   /** Locals made with empty slots of an element type that cannot hold undefined (`const merged: T[] = new Array(n)`). */

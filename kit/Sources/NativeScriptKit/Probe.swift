@@ -21,6 +21,10 @@ enum Probe {
         let app = Core_ui_styling_style_scope.self
         print("PROBE css: app selectors \(app.applicationCssSelectors?.length ?? -1), merged \(app.mergedApplicationCssSelectors?.length ?? -1)")
         guard let root = (try? Core_application_application.Application.getRootView()) ?? nil else { print("PROBE no root view"); return }
+        if let frame = root as? Frame, let nav = frame.viewController as? UINavigationController {
+            let top = nav.topViewController
+            print("PROBE navigation: \(nav.viewControllers.count) controllers, backstack \(frame.backStack?.length ?? -1), bar hidden \(nav.isNavigationBarHidden), top hidesBackButton \(top?.navigationItem.hidesBackButton ?? false), left items \(top?.navigationItem.leftBarButtonItems?.count ?? 0), backItem \(nav.navigationBar.backItem?.title ?? "nil"), leftItemsSupplementBackButton \(top?.navigationItem.leftItemsSupplementBackButton ?? false)")
+        }
         visit(root, 0)
         if let view = firstMatched(root) { cascade(view) }
         print("PROBE end")
@@ -68,6 +72,9 @@ enum Probe {
             line += " bg=\(jsToString(style.backgroundColor)) color=\(jsToString(style.color)) font=\(jsToString(style.fontSize)) pad=\(jsToString(style.paddingTop))"
             if let native = v.nativeViewProtected as? UIView {
                 line += " frame=\(native.frame)"
+                if let segments = native as? UISegmentedControl {
+                    line += " segments=\(segments.numberOfSegments) native=\(segments.selectedSegmentIndex) selectedIndex=\(jsToString((try? jsGet(v, "selectedIndex")) ?? nil)) listening=\((try? v.hasListeners("selectedIndexChange")) ?? false)"
+                }
                 if let recognizers = native.gestureRecognizers, !recognizers.isEmpty {
                     line += " gestures=[\(recognizers.map { "\(type(of: $0))\($0.isEnabled ? "" : " disabled")" }.joined(separator: ","))] interactive=\(native.isUserInteractionEnabled)"
                 }

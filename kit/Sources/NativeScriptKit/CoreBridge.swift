@@ -126,6 +126,10 @@ public func kitNavigateBack() {
 /// The app: its stylesheet, which core loads as `app.css`, then the root view the template makes, as `Application.run({ create })` starts it.
 public enum NativeScriptApplication {
     public static func run(css: String, _ root: @escaping () -> View) {
+        // Console output reaches a pipe (`simctl launch --console`, Xcode) line by line, as the JS runtime's does.
+        setvbuf(stdout, nil, _IOLBF, 0)
+        // Promise callbacks and reactive updates run after each batch of UIKit work (an event handler, a layout pass), as the JS runtime drains microtasks after native calls into script.
+        JSEventLoop.installRunLoopObserver()
         CorePackages.appCSS = css
         CorePackages.installModuleLoader()
         CoreModules.initialize()
