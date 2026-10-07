@@ -12,7 +12,8 @@ import { calc } from '@csstools/css-calc';
 export { unsetValue } from './property-shared';
 
 const cssPropertyNames: string[] = [];
-const cssShorthandConverters = new Map<string, (value: string) => [any, any][]>();
+// Probed with `unsetValue` (getCssShorthandLonghands) as well as called with values, so typed for any value.
+const cssShorthandConverters = new Map<string, (value: any) => [any, any][]>();
 const cssShorthandLonghands = new Map<string, string[]>();
 const HAS_OWN = Object.prototype.hasOwnProperty;
 const symbolPropertyMap = {};
@@ -1389,7 +1390,7 @@ export class ShorthandProperty<T extends Style, P> implements ShorthandProperty<
 
 		this.cssName = `css:${options.cssName}`;
 		this.cssLocalName = `${options.cssName}`;
-		cssShorthandConverters.set(options.cssName, options.converter as (value: string) => [any, any][]);
+		cssShorthandConverters.set(options.cssName, options.converter as (value: any) => [any, any][]);
 
 		const converter = options.converter;
 
