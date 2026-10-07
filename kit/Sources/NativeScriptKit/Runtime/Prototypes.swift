@@ -12,6 +12,23 @@ public enum JSPrototypes {
     /// Accessors a class declares, put on its prototype when the prototype is first made.
     nonisolated(unsafe) private static var declared: [ObjectIdentifier: [(String, JSPropertyDescriptor)]] = [:]
     nonisolated(unsafe) private static var builtins: [String: JSObject] = [:]
+    /// A class's static members by name, each read when script reads it (`Handler.initWithOwner`).
+    nonisolated(unsafe) private static var statics: [ObjectIdentifier: [String: () -> Any?]] = [:]
+
+    /// The static methods and properties a class declares, for script that holds the class as a value.
+    public static func declareStatics(_ cls: AnyClass, _ members: [(String, () -> Any?)]) {
+        for (key, read) in members { statics[ObjectIdentifier(cls), default: [:]][key] = read }
+    }
+
+    /// A static member of a class or of a class it extends, as JavaScript's classes inherit statics; nil where none has it.
+    static func staticMember(_ cls: AnyClass, _ key: String) -> Any?? {
+        var c: AnyClass? = cls
+        while let k = c {
+            if let read = statics[ObjectIdentifier(k)]?[key] { return .some(read()) }
+            c = class_getSuperclass(k)
+        }
+        return nil
+    }
 
     /// `Object.prototype`, with the methods translated code calls on any object.
     public static let objectPrototype: JSObject = {

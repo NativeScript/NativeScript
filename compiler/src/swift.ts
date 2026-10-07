@@ -788,6 +788,8 @@ export class Translator implements AsyncTranslator {
       if (init && (ts.isArrowFunction(init) || (ts.isFunctionExpression(init) && !isMethodValue(init))) && this.returnsMethod(init)) return returningAny(this.type(this.checker.getTypeAtLocation(init), init));
     }
     if ((ts.isIdentifier(n) || ts.isVariableDeclaration(n)) && this.untypedRecord(n)) return 'JSRecord<Any?>';
+    const keyed = (ts.isIdentifier(n) || ts.isVariableDeclaration(n)) ? this.numberKeyedArray(n) : null;
+    if (keyed) return `JSRecord<${keyed}>`;
     // A choice between function literals is the function type they are written for: each literal takes its slot's signature.
     if (ts.isConditionalExpression(n) && [n.whenTrue, n.whenFalse].every(isFunctionLiteral)) {
       const context = this.checker.getContextualType(n);
@@ -812,6 +814,44 @@ export class Translator implements AsyncTranslator {
     let init: ts.Expression = d.initializer;
     while (ts.isParenthesizedExpression(init)) init = init.expression;
     return (ts.isPropertyAccessExpression(init) || ts.isIdentifier(init)) && this.declaredUndefined(init);
+  }
+
+  private numberKeyedArrays = new Map<ts.Node, string | null>();
+  /**
+   * A local array that is only indexed and read back with `for…in`
+   * (`parsed[time] = keyframe` at times 0, 0.5 and 1): JavaScript holds it as a map from
+   * each number's string form to a value, which an array of the element type cannot be.
+   * The element type when it is one, held as a record of it.
+   */
+  private numberKeyedArray(n: ts.Identifier | ts.VariableDeclaration): string | null {
+    const d = ts.isVariableDeclaration(n) ? n : ts.isVariableDeclaration(n.parent) && n.parent.name === n ? n.parent : this.resolve(n)?.valueDeclaration;
+    if (!d || !ts.isVariableDeclaration(d) || !ts.isIdentifier(d.name) || !d.initializer) return null;
+    let found = this.numberKeyedArrays.get(d);
+    if (found !== undefined) return found;
+    this.numberKeyedArrays.set(d, null);
+    let init: ts.Expression = d.initializer;
+    while (ts.isParenthesizedExpression(init) || ts.isAsExpression(init)) init = init.expression;
+    const empty = (ts.isNewExpression(init) && ts.isIdentifier(init.expression) && init.expression.text === 'Array' && !init.arguments?.length) || (ts.isArrayLiteralExpression(init) && !init.elements.length);
+    const scope = ts.findAncestor(d, (x) => ts.isFunctionLike(x) || ts.isSourceFile(x));
+    const el = this.checker.getTypeAtLocation(d.name).getNumberIndexType();
+    if (!empty || !scope || !el) return null;
+    const sym = this.checker.getSymbolAtLocation(d.name);
+    let ok = true, iterated = false;
+    const visit = (x: ts.Node): void => {
+      if (!ok) return;
+      if (ts.isIdentifier(x) && x !== d.name && this.checker.getSymbolAtLocation(x) === sym) {
+        const p = x.parent;
+        if (ts.isElementAccessExpression(p) && p.expression === x) return;
+        if (ts.isForInStatement(p) && p.expression === x) { iterated = true; return; }
+        ok = false;
+        return;
+      }
+      ts.forEachChild(x, visit);
+    };
+    visit(scope);
+    found = ok && iterated ? this.type(el, d) : null;
+    this.numberKeyedArrays.set(d, found);
+    return found;
   }
 
   private untypedRecords = new Map<ts.Node, boolean>();
@@ -1182,7 +1222,7 @@ export class Translator implements AsyncTranslator {
             this.staticInits = null;
           }
           // Library mode: the class's accessors are its prototype's, and its decorators run once it is defined.
-          if (library && (st.members.some((m) => ts.isAccessor(m) && !isStatic(m)) || ts.getDecorators(st)?.length)) later(() => this.classDefinition(st));
+          if (library && (st.members.some((m) => ts.isAccessor(m) && !isStatic(m)) || ts.getDecorators(st)?.length || this.heldAsValue(st))) later(() => this.classDefinition(st));
         }
         continue;
       }
@@ -3124,9 +3164,58 @@ export class Translator implements AsyncTranslator {
       });
       lines.push(...entries);
     }
+    // A class script holds as a value (`TouchControlHandler = TouchHandlerImpl`) is asked for its statics by name.
+    if (this.heldAsValue(cls)) {
+      const statics = cls.members.flatMap((m): string[] => {
+        // A native subclass's `ObjCProtocols` and `ObjCExposedMethods` are the runtime's metadata, compiled into its declaration, no members.
+        if (!isStatic(m) || !m.name || !ts.isIdentifier(m.name) || ['ObjCProtocols', 'ObjCExposedMethods'].includes(m.name.text)) return [];
+        const n = m.name.text, ref = `${name}.${ident(n)}`;
+        if (ts.isMethodDeclaration(m)) {
+          if (!m.body || m.typeParameters?.length || m.asteriskToken || isAsync(m) || cls.members.filter((x) => ts.isMethodDeclaration(x) && x.name.getText() === n).length > 1) return [];
+          const sig = this.signatureOf(m);
+          // Implicitly unwrapped in a signature, optional in a function type.
+          const plainOpt = (t: string) => t.replace(/^\((.*)\)!$/, '($1)?').replace(/!$/, '?');
+          return [`(${swiftString(n)}, { () -> Any? in ${this.boxFunction(ref, `(${sig.params.map((p) => escapingParam(plainOpt(p.type))).join(', ')}) throws -> ${plainOpt(sig.ret)}`)} })`];
+        }
+        if (ts.isPropertyDeclaration(m) || (ts.isGetAccessorDeclaration(m) && !this.throwsInfo.fn(m))) return [`(${swiftString(n)}, { () -> Any? in ${this.convert(ref, this.typeOf(m.name), 'Any?')} })`];
+        return [];
+      });
+      if (statics.length) lines.push(`${i}JSPrototypes.declareStatics(${name}.self, [${statics.join(', ')}])`);
+    }
     const decorators = (ts.getDecorators(cls) ?? []).filter((d) => !(ts.isIdentifier(d.expression) && this.library?.identities?.has(d.expression.text)) && !/^(CSSType|NativeClass|ObjCClass)\b/.test(d.expression.getText()));
     if (decorators.length) lines.push(`${i}try jsDecorate(${name}.self, [${decorators.map((d) => this.coerce(d.expression, 'Any?')).join(', ')}])`);
     return lines.join('\n');
+  }
+
+  private valueClasses: Set<ts.Symbol> | null = null;
+  /**
+   * Whether the program holds a class as a value (assigned, stored, passed, returned) rather than
+   * only constructing it, extending it, testing against it or reaching its statics through its name:
+   * script then reads its statics from wherever it is held.
+   */
+  private heldAsValue(cls: ts.ClassDeclaration): boolean {
+    if (!this.valueClasses) {
+      const found = new Set<ts.Symbol>();
+      const visit = (x: ts.Node): void => {
+        if (ts.isIdentifier(x)) {
+          const p = x.parent;
+          const plainUse = (ts.isNewExpression(p) && p.expression === x) || (ts.isPropertyAccessExpression(p) && p.expression === x) || (ts.isCallExpression(p) && p.expression === x)
+            || ts.isExpressionWithTypeArguments(p) || (ts.isBinaryExpression(p) && p.right === x && p.operatorToken.kind === ts.SyntaxKind.InstanceOfKeyword)
+            || ts.isTypeReferenceNode(p) || ts.isTypeQueryNode(p) || ts.isImportSpecifier(p) || ts.isExportSpecifier(p) || ts.isImportClause(p)
+            || ts.isClassDeclaration(p) || ts.isDecorator(p) || ts.isQualifiedName(p) || ((ts.isPropertyAccessExpression(p) || ts.isQualifiedName(p)) && p.name === x);
+          if (!plainUse) {
+            const sym = this.checker.getSymbolAtLocation(x);
+            const target = sym && sym.flags & ts.SymbolFlags.Alias ? this.checker.getAliasedSymbol(sym) : sym;
+            if (target && target.flags & ts.SymbolFlags.Class) found.add(target);
+          }
+        }
+        ts.forEachChild(x, visit);
+      };
+      for (const sf of this.sourceFiles) if (!sf.isDeclarationFile) visit(sf);
+      this.valueClasses = found;
+    }
+    const sym = cls.name && this.checker.getSymbolAtLocation(cls.name);
+    return !!sym && this.valueClasses.has(sym);
   }
 
   /** The core class at the root of a class's chain of app and plugin classes, when NativeScriptKit has it. */
@@ -3439,10 +3528,13 @@ export class Translator implements AsyncTranslator {
         if (!this.capturesLocals(s)) {
           const saved = this.indent;
           this.indent = '';
-          try {
-            const native = this.native.classDecl(s);
-            if (native) { this.hoisted.push(native); return ''; }
-          } finally { this.indent = saved; }
+          let native: string | null;
+          try { native = this.native.classDecl(s); } finally { this.indent = saved; }
+          if (native) {
+            this.hoisted.push(native);
+            // Its statics are declared where the class is defined, for script that holds it as a value.
+            return this.library && this.heldAsValue(s) ? this.classDefinition(s) : '';
+          }
         }
         throw this.error(s, 'a class declared inside a function');
       }
@@ -3937,6 +4029,8 @@ export class Translator implements AsyncTranslator {
     let bare: ts.Expression = e;
     while (ts.isParenthesizedExpression(bare) || ts.isAsExpression(bare)) bare = bare.expression;
     if (ts.isArrayLiteralExpression(bare) && !bare.elements.length && /^JSArray<.*>$/.test(target.replace(/\?$/, ''))) return `${target.replace(/\?$/, '')}()`;
+    // An empty array held as a map from number to value (`numberKeyedArray`): an empty record.
+    if (/^JSRecord<.*>$/.test(target) && ((ts.isArrayLiteralExpression(bare) && !bare.elements.length) || (ts.isNewExpression(bare) && ts.isIdentifier(bare.expression) && bare.expression.text === 'Array' && !bare.arguments?.length))) return `${target}()`;
     // An array literal where any value may go holds any value: script may store a string in `const list: any = [1, 2]`.
     if (ts.isArrayLiteralExpression(bare) && target === 'Any?' && !ts.isAsExpression(e) && !!(this.checker.getContextualType(bare)?.flags! & ts.TypeFlags.Any)) return this.array(bare, 'JSArray<Any?>');
     // An array of tuples where the slot's type has them typed (`[[property, color]]` for `[any, any][]` returned as `[CssProperty, Color][]`).

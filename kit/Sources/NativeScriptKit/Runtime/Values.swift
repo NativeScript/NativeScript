@@ -379,7 +379,7 @@ public func jsGetIfPresent(_ object: Any?, _ key: String) throws -> Any? {
 
 public func jsGet(_ object: Any?, _ key: String) throws -> Any? {
     // A class itself (`cls.prototype`), before any cast a class object could wrongly pass as an instance.
-    if let cls = jsFlat(object) as? AnyClass { return key == "prototype" ? JSPrototypes.of(cls) : nil }
+    if let cls = jsFlat(object) as? AnyClass { return key == "prototype" ? JSPrototypes.of(cls) : JSPrototypes.staticMember(cls, key) ?? nil }
     switch jsFlat(object) {
     case nil:
         throw JSException(JSTypeError("Cannot read properties of undefined (reading '\(key)')"))
