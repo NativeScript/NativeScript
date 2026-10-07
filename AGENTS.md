@@ -57,6 +57,7 @@ To add a skill: create `.agent/skills/<kebab-case-name>/SKILL.md` with `name` an
   - Watch mode: `npx nx run core:test --watch`
   - Single suite by describe name: `npx nx run core:test -t 'XmlParser'`
 - Unit tests run in Node with NativeScript platform globals mocked in `packages/core/vitest.setup.ts` — they cannot exercise real native APIs. Behavior that touches iOS/Android at runtime is covered by the e2e suite: `npx nx run apps-automated:ios` or `npx nx run apps-automated:android` (requires a configured NativeScript environment with simulators/emulators).
+- `npx nx run core:typecheck-strict` type-checks core under `strictNullChecks` against the per-file error counts in `packages/core/strict-baseline.json` (CI enforces it). Fixing strict errors? Run it with `--update` to lower the baseline in the same change; it refuses to record increases.
 - Prefer adding a unit test for logic changes; add or extend an `apps/automated` test for native runtime behavior.
 
 ## Formatting & Commits
