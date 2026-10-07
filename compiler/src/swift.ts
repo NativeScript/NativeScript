@@ -5525,7 +5525,10 @@ export class Translator implements AsyncTranslator {
         // A list known only when it runs (`arguments`, a rest array): each parameter its element, undefined past its end.
         const list = this.fresh('__list');
         const f = `${this.expr(target)}${isOptional(type) || type.endsWith('!') ? '!' : ''}`;
-        const call = `${f}(${fn.params.map((p, k) => this.fromAnyCode(`jsArg(${list}.storage, ${k})`, p.replace(/^@escaping /, ''), true)).join(', ')})`;
+        // A rest parameter (`(...args) => …`) takes the rest of the list, as an array.
+        const signature = this.checker.getSignaturesOfType(this.checker.getNonNullableType(this.checker.getTypeAtLocation(target)), ts.SignatureKind.Call)[0];
+        const restAt = signature?.getParameters().findIndex((p) => !!p.valueDeclaration && ts.isParameter(p.valueDeclaration) && !!p.valueDeclaration.dotDotDotToken) ?? -1;
+        const call = `${f}(${fn.params.map((p, k) => (k === restAt ? this.fromAny(`JSArray<Any?>(Array(${list}.storage.dropFirst(${k})))`, p.replace(/^@escaping /, '')) : this.fromAnyCode(`jsArg(${list}.storage, ${k})`, p.replace(/^@escaping /, ''), true))).join(', ')})`;
         return this.convert(`{ (${list}: JSArray<Any?>) throws -> ${fn.result} in try ${call} }(${this.coerce(rest[0], 'JSArray<Any?>')})`, fn.result, this.typeOf(e));
       }
       items = rest.length ? (rest[0] as ts.ArrayLiteralExpression).elements : [];
@@ -6534,6 +6537,10 @@ export class Translator implements AsyncTranslator {
           const z = this.zero(t);
           if (z) return `({ () ${throws}-> ${t} in let ${v} = ${lt}${leftCode}; return jsTruthy(${v}) ? ${rt}${right} : ${z} }())`;
           if (this.lenientRef(t) !== t) return `jsImplicit(({ () ${throws}-> ${optionalType(t)} in let ${v} = ${lt}${leftCode}; return jsTruthy(${v}) ? ${rt}${right} : nil }()))`;
+        }
+        // Lenient code: `a || b` of objects is undefined when both are (`span.style.backgroundColor || parent.backgroundColor`).
+        if (this.lenient && op === K.BarBarToken && t !== 'Any?' && this.lenientRef(t) !== t && !t.endsWith('!')) {
+          return `jsImplicit(({ () ${throws}-> ${optionalType(t)} in let ${v} = ${lt}${leftCode}; return jsTruthy(${v}) ? ${leftValue} : ${rt}${right} }()))`;
         }
         return op === K.BarBarToken
           ? `({ () ${throws}-> ${t} in let ${v} = ${lt}${leftCode}; return jsTruthy(${v}) ? ${leftValue} : ${rt}${right} }())`

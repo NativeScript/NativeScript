@@ -781,6 +781,8 @@ export class NativeAPI {
   fromSwift(code: string, swiftType: SwiftType, e: ts.Expression): string {
     // A result nothing reads: a nil one is no error.
     if (this.keepOptional.has(e) || ts.isExpressionStatement(e.parent)) return code;
+    // A value only tested (`if (controller.viewControllers)`): nil is falsy, not an error.
+    if (optional(swiftType) && onlyTested(e)) return code;
     const tsType = this.t.typeOf(e);
     const b = base(swiftType);
     const bridged = bridge(code, swiftType, tsType);
@@ -1131,6 +1133,13 @@ export class NativeAPI {
   /** A Swift parameter value as the TypeScript body reads it. */
   private fromSwiftValue(code: string, swiftType: SwiftType, tsType: string): string {
     const b = base(swiftType);
+    // A block given to script untyped (`decisionHandler: any`): a script function, its arguments converted to the block's types.
+    if (tsType === 'Any?' && /->/.test(swiftType)) {
+      const fn = swiftType.replace(/@\w+\s+/g, '').trim();
+      const isOptional = /\)[?!]$/.test(fn) && fn.startsWith('((');
+      const plain = isOptional ? fn.replace(/^\((.*)\)[?!]$/, '$1') : fn;
+      return isOptional ? `${code}.map { ${this.t.boxFunction('$0', plain)} }` : this.t.boxFunction(code, plain);
+    }
     if (NUMBERS.has(b) && tsType === 'Double') return b === 'Double' ? code : optional(swiftType) ? `Double(${code}!)` : `Double(${code})`;
     // A parameter TypeScript declares as the app's own subclass (`navigationController: UINavigationControllerImpl`).
     const own = tsType.replace(/[?!]$/, '');
@@ -1249,6 +1258,16 @@ export class NativeAPI {
 }
 
 /** An expression whose value only decides a branch: a condition, the operand of `!`, or an operand of `&&`/`||` that is one or comes first. */
+/** An expression whose value is only tested for truthiness: a condition, or what `!` negates. */
+function onlyTested(e: ts.Expression): boolean {
+  const p = e.parent;
+  if (ts.isParenthesizedExpression(p)) return onlyTested(p);
+  if (ts.isPrefixUnaryExpression(p)) return p.operator === ts.SyntaxKind.ExclamationToken;
+  if (ts.isIfStatement(p) || ts.isWhileStatement(p) || ts.isDoStatement(p)) return p.expression === e;
+  if (ts.isConditionalExpression(p) || ts.isForStatement(p)) return p.condition === e;
+  return false;
+}
+
 function tested(e: ts.Expression): boolean {
   const p = e.parent;
   if (ts.isParenthesizedExpression(p)) return tested(p);

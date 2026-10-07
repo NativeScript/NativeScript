@@ -166,23 +166,35 @@ private func jsExpandos(_ object: NSObject, create: Bool = false) -> JSObject? {
 nonisolated(unsafe) private var jsExpandoKey: UInt8 = 0
 
 /// Whether the class or one it extends declares an Objective-C property of that name.
-/// The object whose class implements the getter of an Objective-C property (its own name, or
-/// the custom one the property declares), following `forwardingTarget(for:)` as a message send
-/// does (`UITextView`'s text input traits): what key-value coding can read it from, or nil.
-func jsGetterReceiver(_ object: NSObject, _ key: String, depth: Int = 0) -> NSObject? {
-    var getter = key
-    var c: AnyClass? = type(of: object)
-    while let current = c, getter == key {
+/// The accessor an Objective-C property declares under a custom name (`G` getter or `S` setter attribute), if any.
+private func jsCustomAccessor(_ cls: AnyClass, _ key: String, _ attribute: Character) -> String? {
+    var c: AnyClass? = cls
+    while let current = c {
         if let property = class_getProperty(current, key), let attributes = property_getAttributes(property).map(String.init(cString:)) {
-            if let custom = attributes.split(separator: ",").first(where: { $0.hasPrefix("G") }) { getter = String(custom.dropFirst()) }
-            break
+            return attributes.split(separator: ",").first(where: { $0.first == attribute }).map { String($0.dropFirst()) }
         }
         c = class_getSuperclass(current)
     }
-    let selector = NSSelectorFromString(getter)
+    return nil
+}
+
+/// The object whose class implements `selector`, following `forwardingTarget(for:)` as a
+/// message send does (`UITextView`'s text input traits): what key-value coding can reach.
+private func jsImplementer(_ object: NSObject, _ selector: ObjectiveC.Selector, depth: Int = 0) -> NSObject? {
     if class_getInstanceMethod(type(of: object), selector) != nil { return object }
     guard depth < 4, let target = object.forwardingTarget(for: selector) as? NSObject, target !== object else { return nil }
-    return jsGetterReceiver(target, key, depth: depth + 1)
+    return jsImplementer(target, selector, depth: depth + 1)
+}
+
+/// Where a property's getter is implemented, or nil.
+func jsGetterReceiver(_ object: NSObject, _ key: String) -> NSObject? {
+    jsImplementer(object, NSSelectorFromString(jsCustomAccessor(type(of: object), key, "G") ?? key))
+}
+
+/// Where a property's setter is implemented, or nil.
+func jsSetterReceiver(_ object: NSObject, _ key: String) -> NSObject? {
+    let setter = jsCustomAccessor(type(of: object), key, "S") ?? "set" + key.prefix(1).uppercased() + key.dropFirst() + ":"
+    return jsImplementer(object, NSSelectorFromString(setter))
 }
 
 func jsHasObjCProperty(_ cls: AnyClass, _ name: String) -> Bool {
@@ -247,12 +259,12 @@ public func jsNativePropertySet(_ native: Any?, _ setter: String, _ value: Any?)
 public func jsOr(_ a: Any?, _ b: Any?) -> Any? { jsTruthy(a) ? a : b }
 
 func jsNativeSet(_ object: NSObject, _ key: String, _ value: Any?) {
-    let setter = "set" + key.prefix(1).uppercased() + key.dropFirst() + ":"
-    guard object.responds(to: NSSelectorFromString(setter)) else {
+    // Key-value coding raises where the setter is only forwarded; script's message send reaches it.
+    guard let receiver = jsSetterReceiver(object, key) else {
         jsExpandos(object, create: true)?[key] = value
         return
     }
-    object.setValue(jsToNative(value), forKey: key)
+    receiver.setValue(jsToNative(value), forKey: key)
 }
 
 /// A native value as script reads it.
@@ -316,6 +328,12 @@ public func jsToNative(_ value: Any?) -> Any? {
     case let s as String: return s as NSString
     case let d as JSDate: return jsNativeDate(d) as NSDate
     case let a as JSArrayProtocol: return a.jsAnyElements.map { jsToNative($0) ?? NSNull() }
+    // A plain object (an object literal, whatever shape the translator gave it; no class of the program's),
+    // as the runtime marshals it for an `id`: a dictionary of its own enumerable members.
+    case let plain as JSDynamic where plain.jsClassName == nil:
+        let dictionary = NSMutableDictionary()
+        for key in plain.jsKeys { if let value = jsToNative(plain[jsKey: key]) { dictionary[key] = value } }
+        return dictionary
     case let v?: return v
     }
 }
