@@ -13,6 +13,10 @@ public protocol JSArrayProtocol: AnyObject {
     func jsSetElements(_ values: [Any?]) throws
 }
 
+/// A function type's rest parameter (`(...args) => void`): an array to Swift, marked so that a script
+/// function called as that type takes the array's elements as its arguments.
+public typealias JSRest<Element> = JSArray<Element>
+
 /// A JavaScript array: reference semantics, JavaScript method names, `Double` indexes and lengths.
 ///
 /// Limits: a subscript read past the end traps (JavaScript gives `undefined`, which a non-optional

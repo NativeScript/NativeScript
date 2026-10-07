@@ -51,27 +51,59 @@ export function evaluationOrder(program: ts.Program, files: string[], resolvedBy
   const wanted = new Set(files);
   const seen = new Set<string>();
   const order: string[] = [];
-  const sourceOf = (file: string) => program.getSourceFile(file) ?? (entries.length && ts.sys.fileExists(file) ? ts.createSourceFile(file, ts.sys.readFile(file)!, ts.ScriptTarget.Latest, true) : undefined);
   const visit = (file: string) => {
     if (seen.has(file)) return;
     seen.add(file);
-    const sf = sourceOf(file);
-    if (!sf) return;
-    const values = valueNames(sf);
-    for (const st of sf.statements) {
-      if (!ts.isImportDeclaration(st) && !(ts.isExportDeclaration(st) && st.moduleSpecifier)) continue;
-      if (elided(st, values)) continue;
-      const spec = (st.moduleSpecifier as ts.StringLiteral).text;
-      // As the program resolved it (a plugin's import reaches its source), else as TypeScript would.
-      const resolved = resolvedBy?.(file, spec) ?? ts.resolveModuleName(spec, file, program.getCompilerOptions(), ts.sys).resolvedModule?.resolvedFileName
-        ?? (program as any).getResolvedModule?.(sf, spec, undefined)?.resolvedModule?.resolvedFileName;
+    for (const resolved of importedFiles(program, file, resolvedBy, entries.length > 0)) {
       // A module that only re-exports (a plugin's index) is passed through to the modules it imports.
-      if (resolved && (wanted.has(resolved) || !(program.getSourceFile(resolved) ?? sourceOf(resolved))?.isDeclarationFile)) visit(resolved);
+      if (wanted.has(resolved) || !(program.getSourceFile(resolved) ?? parsed(program, resolved, entries.length > 0))?.isDeclarationFile) visit(resolved);
     }
     if (wanted.has(file)) order.push(file);
   };
   for (const f of [...entries, ...files]) visit(f);
   return order;
+}
+
+/**
+ * The files of `files` that evaluating `file` evaluates first: its imports that the
+ * emit keeps, each passed through to what it imports when it is not among `files`
+ * itself (a barrel). What runs a module's top level runs these modules' first.
+ */
+export function evaluatedImports(program: ts.Program, file: string, files: ReadonlySet<string>, resolvedBy?: (containing: string, specifier: string) => string | undefined): string[] {
+  const found = new Set<string>();
+  const seen = new Set<string>([file]);
+  const visit = (from: string) => {
+    for (const resolved of importedFiles(program, from, resolvedBy, false)) {
+      if (seen.has(resolved)) continue;
+      seen.add(resolved);
+      if (files.has(resolved)) found.add(resolved);
+      else if (!program.getSourceFile(resolved)?.isDeclarationFile) visit(resolved);
+    }
+  };
+  visit(file);
+  return [...found];
+}
+
+function parsed(program: ts.Program, file: string, outside: boolean): ts.SourceFile | undefined {
+  return program.getSourceFile(file) ?? (outside && ts.sys.fileExists(file) ? ts.createSourceFile(file, ts.sys.readFile(file)!, ts.ScriptTarget.Latest, true) : undefined);
+}
+
+/** The files a file's imports and re-exports resolve to, leaving out those the emit drops (`import type`, bindings used only as types). */
+function importedFiles(program: ts.Program, file: string, resolvedBy: ((containing: string, specifier: string) => string | undefined) | undefined, outside: boolean): string[] {
+  const sf = parsed(program, file, outside);
+  if (!sf) return [];
+  const values = valueNames(sf);
+  const out: string[] = [];
+  for (const st of sf.statements) {
+    if (!ts.isImportDeclaration(st) && !(ts.isExportDeclaration(st) && st.moduleSpecifier)) continue;
+    if (elided(st, values)) continue;
+    const spec = (st.moduleSpecifier as ts.StringLiteral).text;
+    // As the program resolved it (a plugin's import reaches its source), else as TypeScript would.
+    const resolved = resolvedBy?.(file, spec) ?? ts.resolveModuleName(spec, file, program.getCompilerOptions(), ts.sys).resolvedModule?.resolvedFileName
+      ?? (program as any).getResolvedModule?.(sf, spec, undefined)?.resolvedModule?.resolvedFileName;
+    if (resolved) out.push(resolved);
+  }
+  return out;
 }
 
 /** The names a file reads as values, outside its imports and its types. */

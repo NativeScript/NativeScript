@@ -654,6 +654,8 @@ export class Translator implements AsyncTranslator {
         if (p.valueDeclaration && ts.isParameter(p.valueDeclaration) && (p.valueDeclaration.questionToken || p.valueDeclaration.initializer || nullableTypeNode(p.valueDeclaration.type))) return optionalType(pt);
         // Lenient code may pass null for an object: the parameter is optional, as a closure's implicitly unwrapped one is.
         if (this.lenientRef(pt) !== pt && !(p.valueDeclaration && ts.isParameter(p.valueDeclaration) && p.valueDeclaration.dotDotDotToken)) return optionalType(pt);
+        // A rest parameter is spelled `JSRest` (an array, to Swift): a script function called as this type takes the array's elements as its arguments.
+        if (p.valueDeclaration && ts.isParameter(p.valueDeclaration) && p.valueDeclaration.dotDotDotToken && pt.startsWith('JSArray<')) return `JSRest<${pt.slice(8)}`;
         return isFunctionType(pt) ? `@escaping ${pt}` : pt;
       });
       return `(${params.join(', ')}) throws -> ${this.type(s.getReturnType(), where)}`;
@@ -1691,6 +1693,7 @@ export class Translator implements AsyncTranslator {
   /** A typed function value as an untyped JavaScript function, callable through `jsCall`. */
   boxFunction(code: string, type: string, restAt = -1): string {
     let fn = functionParts(isOptional(type) ? type.replace(/\?$/, '').replace(/^\((.*)\)$/, '$1') : type)!;
+    if (restAt < 0) restAt = fn.rest;
     // Lenient code: the function's own declaration may give undefined for an object.
     if (this.lenientRef(fn.result) !== fn.result) fn = functionParts(`(${fn.params.join(', ')}) throws -> ${optionalType(fn.result)}`)!;
     const args = fn.params.map((p, k) => k === restAt ? `${p}(__a.dropFirst(${k}).map { ${this.fromAnyCode('$0', p.replace(/^JSArray<(.*)>$/, '$1'), true)} })` : this.fromAnyCode(`jsArg(__a, ${k})`, p.replace(/^@escaping /, ''), true));
@@ -1702,7 +1705,10 @@ export class Translator implements AsyncTranslator {
   /** An untyped function value called as the typed function `fn`. */
   private unboxFunction(code: string, fn: FunctionParts): string {
     const params = fn.params.map((p, k) => `__p${k}: ${p}`);
-    const call = `try jsCall(__f${fn.params.map((p, k) => `, ${this.convert(`__p${k}`, p.replace(/^@escaping /, ''), 'Any?')}`).join('')})`;
+    const arg = (p: string, k: number) => this.convert(`__p${k}`, p.replace(/^@escaping /, ''), 'Any?');
+    const call = fn.rest >= 0
+      ? `try jsCall(__f, spread: [${fn.params.slice(0, fn.rest).map(arg).join(', ')}] + __p${fn.rest}.storage.map { $0 as Any? })`
+      : `try jsCall(__f${fn.params.map((p, k) => `, ${arg(p, k)}`).join('')})`;
     const body = fn.result === 'Void' ? `_ = ${call}` : `return ${this.fromAnyCode(call, fn.result, true)}`;
     // A closure of exactly this type passes through as it is.
     return `{ (__f: Any?) -> ${fn.text} in (jsFlat(__f) as? ${fn.text}) ?? { (${params.join(', ')}) throws -> ${fn.result} in ${body} } }(${code})`;
@@ -7265,7 +7271,8 @@ export function splitTopLevel(text: string): string[] {
   return out;
 }
 
-interface FunctionParts { text: string; params: string[]; result: string }
+/** `rest`: the parameter a `JSRest` type marks as a rest parameter (spelled `JSArray` in `params`), else -1. */
+interface FunctionParts { text: string; params: string[]; result: string; rest: number }
 
 /** `(A, B) throws -> R` split into its parameter and result types; null for any other type. */
 function functionParts(type: string): FunctionParts | null {
@@ -7281,7 +7288,7 @@ function functionParts(type: string): FunctionParts | null {
   if (!rest) return null;
   const inner = t.slice(1, close).trim();
   const params = inner ? splitTopLevel(inner) : [];
-  return { text: `(${params.join(', ')}) throws -> ${rest[1]}`, params, result: rest[1] };
+  return { text: `(${params.join(', ')}) throws -> ${rest[1]}`, params: params.map((p) => p.replace(/^JSRest</, 'JSArray<')), result: rest[1], rest: params.findIndex((p) => p.startsWith('JSRest<')) };
 }
 
 /** A parameter's type, escaping if it is a function: the closure may keep it. */

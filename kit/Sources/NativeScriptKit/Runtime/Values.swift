@@ -420,8 +420,9 @@ public func jsGet(_ object: Any?, _ key: String) throws -> Any? {
         return nil
     case let thenable as JSThenable:
         return jsPromiseMember(thenable, key)
-    // A Swift struct casts to NSObject too (boxed): a geometry struct is read by its fields first.
-    case let value? where jsIsStruct(value):
+    // A Swift struct casts to NSObject too (boxed): a geometry struct is read by its fields first. An NSValue,
+    // which Swift bridges to the struct it holds, is the native object (`toValue.CGRectValue`).
+    case let value? where !(type(of: value) is AnyClass) && jsIsStruct(value):
         return jsStructMember(value, key)
     case let native as NSObject:
         return jsNativeGet(native, key)

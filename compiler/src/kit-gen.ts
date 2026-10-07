@@ -9,7 +9,7 @@ import { dirname, join, relative, resolve } from 'node:path';
 import { foldPlatform } from './platform.ts';
 import { Translator } from './swift.ts';
 import { collectProperties } from './properties.ts';
-import { evaluationOrder } from './modules.ts';
+import { evaluatedImports, evaluationOrder } from './modules.ts';
 import { kitIndexOptions } from './kit-index.ts';
 import { loadCoreNativeTables } from './natives/core-ios.ts';
 import { nativeTable } from './natives/symbols.ts';
@@ -57,10 +57,21 @@ export interface KitFile {
   sources: Record<string, string>;
 }
 
+/**
+ * What an app's closed world is computed from: each generated file's initializer (its module's
+ * top level), in the order core's index evaluates them, and the files whose modules evaluating
+ * it evaluates first. An app runs the initializers of the modules it reaches, and nothing else
+ * keeps the others in its binary.
+ */
+export interface KitGraph {
+  [file: string]: { init?: string; imports: string[] };
+}
+
 export interface KitResult {
   files: KitFile[];
   /** With `report`: each construct that did not translate, at its file and line. */
   errors: string[];
+  graph: KitGraph;
 }
 
 const KIT = resolve(import.meta.dirname, '../../kit/Sources/NativeScriptKit');
@@ -225,7 +236,7 @@ export function generateKit(o: KitOptions): KitResult {
   const out: KitFile[] = [];
   const paths = new Map<KitFile, string>();
   const imports = new Map<KitFile, string[]>();
-  const inits: string[] = [];
+  const initOf = new Map<string, string | undefined>();
   const hash = (text: string) => createHash('sha1').update(text).digest('hex').slice(0, 12);
   for (const file of order) {
     const sf = program.getSourceFile(file)!;
@@ -243,7 +254,7 @@ export function generateKit(o: KitOptions): KitResult {
     }
     if (!result) continue;
     const code = result.code + (result.init.length ? `\nfunc ${init}() {\n${result.init.some((l) => /\btry\b/.test(l)) ? `    jsReport {\n${result.init.map((l) => '    ' + l).join('\n')}\n    }` : result.init.join('\n')}\n}\n` : '');
-    if (result.init.length) inits.push(init);
+    initOf.set(file, result.init.length ? init : undefined);
     const kitFile = { name: rel.replace(/\.ts$/, '').replace(/\//g, '.') + '.swift', code, sources: { [rel]: hash(sources.get(file) ?? '') } };
     paths.set(kitFile, file);
     out.push(kitFile);
@@ -261,10 +272,17 @@ export function generateKit(o: KitOptions): KitResult {
   if (exported) out.push({ name: '__Exports.swift', code: header(new Set(sdk)) + exported, sources: {} });
   const shapes = translator.shapesCode().trim();
   if (shapes) out.push({ name: '__Objects.swift', code: header(new Set([...sdk, ...importsOf(shapes)])) + publicize(shapes) + '\n', sources: {} });
-  // Core's modules run their top level once, in the order JavaScript evaluates them, before the app's.
-  out.push({ name: '__Modules.swift', sources: {}, code: `${header()}public enum CoreModules {\n    private static var initialized = false\n\n    public static func initialize() {\n        if initialized { return }\n        initialized = true\n${inits.map((i) => `        ${i}()\n`).join('')}    }\n}\n` });
+  // Core's modules run their top level once, before the app's: those the app reaches, in the order JavaScript evaluates them,
+  // which its build lists (the manifest's graph), so that nothing in the kit keeps the others in its binary.
+  out.push({ name: '__Modules.swift', sources: {}, code: `${header()}public enum CoreModules {\n    private static var initialized = false\n\n    /// The initializers of the core modules the app reaches, in the order core's index evaluates them.\n    public static var initializers: [() -> Void] = []\n\n    public static func initialize() {\n        if initialized { return }\n        initialized = true\n        for run in initializers { run() }\n    }\n}\n` });
   if (errors.length && !o.report) throw new Error(errors.join('\n'));
-  return { files: out, errors: [...new Set(errors)] };
+  const nameOf = new Map([...paths].map(([f, path]) => [path, f.name]));
+  const graph: KitGraph = {};
+  for (const [path, name] of nameOf) {
+    const imports = evaluatedImports(program, path, compiled, (c, sp) => resolutions.get(`${c}\0${sp}`)).flatMap((f) => nameOf.get(f) ?? []);
+    graph[name] = { ...(initOf.get(path) ? { init: initOf.get(path) } : {}), imports: imports.sort() };
+  }
+  return { files: out, errors: [...new Set(errors)], graph };
 }
 
 /**

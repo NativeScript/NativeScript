@@ -30,6 +30,10 @@ func jsNativeGet(_ object: NSObject, _ key: String) -> Any? {
     // Collections answer key-value coding for their elements, not themselves (`value(forKey: "count")` maps over an array).
     if let collection = jsCollectionMember(object, key) { return collection }
     if jsHasObjCProperty(type(of: object), key) {
+        // Key-value coding cannot box a Core Foundation object (`UIColor.CGColor`) and raises; the getter's message send gives it.
+        if let getter = jsCFObjectGetter(type(of: object), key), object.responds(to: getter) {
+            return object.perform(getter)?.takeUnretainedValue()
+        }
         // Key-value coding raises where the getter is only forwarded; script's message send reaches it.
         guard let reader = jsGetterReceiver(object, key) else { return nil }
         return jsFromNative(reader.value(forKey: key))
@@ -195,6 +199,21 @@ func jsGetterReceiver(_ object: NSObject, _ key: String) -> NSObject? {
 func jsSetterReceiver(_ object: NSObject, _ key: String) -> NSObject? {
     let setter = jsCustomAccessor(type(of: object), key, "S") ?? "set" + key.prefix(1).uppercased() + key.dropFirst() + ":"
     return jsImplementer(object, NSSelectorFromString(setter))
+}
+
+/// The getter of a property whose type is a Core Foundation object (`@property CGColorRef CGColor`, encoded `T^{CGColor=}`).
+func jsCFObjectGetter(_ cls: AnyClass, _ name: String) -> ObjectiveC.Selector? {
+    var c: AnyClass? = cls
+    while let current = c {
+        if let property = class_getProperty(current, name), let raw = property_getAttributes(property) {
+            let attributes = String(cString: raw).split(separator: ",")
+            guard attributes.first?.hasPrefix("T^{") == true else { return nil }
+            let custom = attributes.first { $0.hasPrefix("G") }.map { String($0.dropFirst()) }
+            return NSSelectorFromString(custom ?? name)
+        }
+        c = class_getSuperclass(current)
+    }
+    return nil
 }
 
 func jsHasObjCProperty(_ cls: AnyClass, _ name: String) -> Bool {

@@ -384,7 +384,12 @@ for (const f of readdirSync(join(out, 'Sources'))) {
 // A kit type an imported SDK module also declares (`Progress`): the app's module resolves the name to the kit's.
 const clashes = translator.native.kitClashes(translator.kitTypes());
 if (clashes.length) writeFileSync(join(out, 'Sources', '__KitNames.swift'), `// Compiled by ns-native: the kit's types whose names the SDK also declares.\nimport NativeScriptKit\n\n${clashes.map((n) => `typealias ${n} = NativeScriptKit.${n}\n`).join('')}`);
-writeFileSync(join(out, 'Sources', '__Entry.swift'), `// Compiled by ns-native: the app's entry and its CSS.\nimport NativeScriptKit\n\n@main\nenum ${name}App {\n    static func main() {\n${start}    }\n}\n\nlet appCSS = """\n${css.replace(/\\/g, '\\\\').replace(/"""/g, '\\"""')}"""\n\n// What core reads as \`~/package.json\`.\nlet appPackageJSON = """\n${appPackageJSON(app).replace(/\\/g, '\\\\').replace(/"""/g, '\\"""')}\n"""\n`);
+// Core's modules the app reaches, listed for the kit to run: nothing else names the others, so the link leaves them out.
+const appSwift = readdirSync(join(out, 'Sources')).filter((f) => f.endsWith('.swift') && f !== '__Entry.swift').map((f) => readFileSync(join(out, 'Sources', f), 'utf8')).join('\n');
+const reachedCore = coreInitializers(join(kit, 'Sources', 'NativeScriptKit'), appSwift + start);
+say(`${reachedCore.length} of core's module initializers run in this app`);
+const entryStart = start.replace('        CoreModules.initialize()\n', `        CoreModules.initializers = [\n${reachedCore.map((i) => `            ${i},\n`).join('')}        ]\n        CoreModules.initialize()\n`);
+writeFileSync(join(out, 'Sources', '__Entry.swift'), `// Compiled by ns-native: the app's entry and its CSS.\nimport NativeScriptKit\n\n@main\nenum ${name}App {\n    static func main() {\n${entryStart}    }\n}\n\nlet appCSS = """\n${css.replace(/\\/g, '\\\\').replace(/"""/g, '\\"""')}"""\n\n// What core reads as \`~/package.json\`.\nlet appPackageJSON = """\n${appPackageJSON(app).replace(/\\/g, '\\\\').replace(/"""/g, '\\"""')}\n"""\n`);
 say(`${components.length} components and ${modules.length} modules from ${framework} compiled to Swift in ${Date.now() - started} ms → ${relative(process.cwd(), join(out, 'Sources'))}`);
 
 // 4. The Xcode project. The kit is a static library target rather than its
@@ -414,6 +419,10 @@ else removePods(out, name);
 const resources = iosProjectResources({ app, appDir, out, name, pods: !!pods, say });
 const extensions = iosExtensions({ app, out, bundle, packages, signing, team: resources.team, say });
 const appSettings = { PRODUCT_BUNDLE_IDENTIFIER: bundle, SWIFT_VERSION: '"5.9"', ...resources.settings, ...coreNative.settings, ...signing };
+// Reflection metadata keeps every type's descriptor, and through it the type and all it calls, in the
+// binary; the kit reflects only on tuples (Mirror of a tuple needs none), so a Release build has none.
+// A framework the kit imports for code the app never reaches (WebKit for WebView, Photos for saving
+// images) is left out of the link, and so not loaded at launch, by `-dead_strip_dylibs`.
 // Virtual function and witness elimination hold only when every Swift module in the link is compiled
 // for them: code from pods and packages, built without, would call methods they removed or thunks they need.
 const wholeProgram = !pods && !packages.length && !pluginLines.packages;
@@ -428,6 +437,8 @@ settings:
       SWIFT_OPTIMIZATION_LEVEL: -Osize
       SWIFT_LTO: YES
 ${wholeProgram ? '      OTHER_SWIFT_FLAGS: -Xfrontend -enable-llvm-vfe -Xfrontend -enable-llvm-wme -Xfrontend -internalize-at-link\n' : ''}      DEAD_CODE_STRIPPING: YES
+      OTHER_LDFLAGS: "$(inherited) -Wl,-dead_strip_dylibs"
+      SWIFT_REFLECTION_METADATA_LEVEL: none
 ${pluginLines.packages || packages.length ? `packages:\n${pluginLines.packages}${packageLines(packages, out)}` : ''}targets:
   NativeScriptKit:
     type: library.static
@@ -496,6 +507,41 @@ function kitFilesUnreached(dir: string, appSwift: string, linked: string[]): str
     }
   }
   return pending.map((p) => p.path).sort();
+}
+
+/**
+ * The initializers of the core modules an app reaches, in the order core's index evaluates them
+ * (the kit manifest's graph): the modules declaring what the app's Swift and the kit's own name,
+ * what the functions core's index exports forward to where the app calls them, and every module
+ * those evaluate first, as importing a module runs its imports' top levels.
+ */
+function coreInitializers(kitSources: string, appSwift: string): string[] {
+  const manifest = join(kitSources, 'Core', 'manifest.json');
+  const graph: Record<string, { init?: string; imports: string[] }> | undefined = existsSync(manifest) ? JSON.parse(readFileSync(manifest, 'utf8')).graph : undefined;
+  if (!graph) throw new Error(`${manifest} has no module graph: regenerate the kit from core (tools/native-kit/generate.mts)`);
+  const used = new Set<string>();
+  const read = (text: string) => { for (const m of text.matchAll(/\b[A-Za-z_]\w*\b/g)) used.add(m[0]); };
+  read(appSwift);
+  for (const f of readdirSync(kitSources, { recursive: true }) as string[]) if (f.endsWith('.swift') && !f.startsWith('Core/')) read(readFileSync(join(kitSources, f), 'utf8'));
+  // `__Exports.swift` forwards each function core's index exports to the module it is compiled into.
+  const exported = join(kitSources, 'Core', '__Exports.swift');
+  if (existsSync(exported)) for (const fn of readFileSync(exported, 'utf8').split(/^(?=public func )/m)) {
+    const name = /^public func (\w+)/.exec(fn)?.[1];
+    if (name && used.has(name)) read(fn);
+  }
+  const declaring = new Map<string, string>();
+  for (const file of Object.keys(graph)) {
+    const text = readFileSync(join(kitSources, 'Core', file), 'utf8');
+    for (const m of text.matchAll(/^(?:@\w+(?:\([^)]*\))?\s+)*(?:(?:open|public|final|indirect)\s+)*(?:class|struct|enum|protocol|func|typealias|let|var)\s+(\w+)/gm)) declaring.set(m[1], file);
+  }
+  const reached = new Set<string>();
+  const visit = (file: string) => {
+    if (reached.has(file)) return;
+    reached.add(file);
+    for (const i of graph[file]?.imports ?? []) visit(i);
+  };
+  for (const [name, file] of declaring) if (used.has(name)) visit(file);
+  return Object.keys(graph).filter((f) => reached.has(f) && graph[f].init).map((f) => graph[f].init!);
 }
 
 /** The app's package.json as its bundle has it, or an empty object. */
