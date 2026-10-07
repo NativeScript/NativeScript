@@ -1616,7 +1616,8 @@ export class Translator implements AsyncTranslator {
     if (this.lenient && ['String', 'Double', 'Bool'].includes(type)) return `((${code} as? ${type}) ?? ${this.zero(type)})`;
     // Lenient code: an object of another type passed for a class made without arguments, as JavaScript lets structurally.
     const plain = this.lenient ? this.plainClass(type) : null;
-    if (plain) return `jsImplicit(jsShaped(${code}) { try ${type}.init() })`;
+    // Module-qualified: inside an object of the program's that holds the class under its name (`{ Declaration }`), the bare name is that field.
+    if (plain) return `jsImplicit(jsShaped(${code}) { try ${this.appModule ? `${this.appModule}.` : ''}${type}() })`;
     return this.lenientRef(type) !== type ? `jsImplicit(${code} as? ${type})` : `(${code} as! ${type})`;
   }
 
