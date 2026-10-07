@@ -22,6 +22,7 @@ open class JSError: JSDynamic, CustomStringConvertible {
     public init(_ message: String = "", cause: Any? = nil) {
         self.message = message
         self.cause = cause
+        if NativeStack.logsErrors { print("error made: \(type(of: self)) \(message)\n\(nativeFrames ?? "")") }
     }
 
     /// `new Error(message)` with a message of any type: undefined is "", anything else its string form.

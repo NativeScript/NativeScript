@@ -6,8 +6,12 @@ import Foundation
 enum NativeStack {
     static let enabled: Bool = {
         let env = ProcessInfo.processInfo.environment
-        return env["NS_KIT_STACK"] != nil || env["NS_KIT_TRACE"] != nil
+        return env["NS_KIT_STACK"] != nil || env["NS_KIT_TRACE"] != nil || env["NS_KIT_ERRORS"] != nil
     }()
+
+    /// `NS_KIT_ERRORS`: every error script makes is printed where it is made, caught or not
+    /// (as a debugger's break on all exceptions), for failures core catches and only traces.
+    static let logsErrors = ProcessInfo.processInfo.environment["NS_KIT_ERRORS"] != nil
 
     /// `    at <function>` lines for the frames above the runtime's own, nearest first.
     static func capture() -> String? {

@@ -365,6 +365,12 @@ public func jsRecordOf<T>(_ value: Any?, _ element: (Any?) -> T) -> JSRecord<T> 
     return JSRecord(object.jsKeys.map { ($0, element(object[jsKey: $0])) })
 }
 
+/// The RegExp match, matchAll and search make of a pattern that is not one.
+private func regExp(_ pattern: Any?, _ flags: String) throws -> JSRegExp {
+    if let re = jsFlat(pattern) as? JSRegExp { return re }
+    return try JSRegExp(jsToString(pattern), flags)
+}
+
 /// A string's methods read by name from untyped code (`value.split('/')` where `value` is `any`): the common ones.
 func jsStringMethod(_ s: String, _ key: String) -> JSMethod? {
     let number = { (args: [Any?], i: Int) -> Double? in jsIsNullish(jsArg(args, i)) ? nil : jsToNumber(jsArg(args, i)) }
@@ -381,6 +387,43 @@ func jsStringMethod(_ s: String, _ key: String) -> JSMethod? {
     case "endsWith": return { _, args in jsEndsWith(s, jsToString(jsArg(args, 0)), number(args, 1)) }
     case "indexOf": return { _, args in jsIndexOf(s, jsToString(jsArg(args, 0)), number(args, 1)) }
     case "trim": return { _, _ in jsTrim(s) }
+    case "trimStart": return { _, _ in jsTrimStart(s) }
+    case "trimEnd": return { _, _ in jsTrimEnd(s) }
+    case "replace", "replaceAll":
+        return { _, args in
+            let pattern = jsFlat(jsArg(args, 0)), replacement = jsArg(args, 1)
+            let all = key == "replaceAll"
+            // A function replacement receives the match, its groups, the offset and the input, as String.prototype.replace passes them.
+            if let fn = jsFlat(replacement), fn is JSFunction || fn is JSMethod {
+                let re = try (pattern as? JSRegExp) ?? JSRegExp(NSRegularExpression.escapedPattern(for: jsToString(pattern)), all ? "g" : "")
+                return try jsReplace(s, re) { m in jsToString(try jsCall(fn, spread: m.values.elements.map { $0 as Any? } + [m.index, m.input])) }
+            }
+            if all, let re = pattern as? JSRegExp { return try jsReplaceAll(s, re, jsToString(replacement)) }
+            if all { return jsReplaceAll(s, jsToString(pattern), jsToString(replacement)) }
+            return jsReplace(s, untyped: pattern, jsToString(replacement))
+        }
+    case "match":
+        return { _, args in
+            return jsMatch(s, try regExp(jsArg(args, 0), "")) as Any?
+        }
+    case "matchAll": return { _, args in try jsMatchAll(s, regExp(jsArg(args, 0), "g")) }
+    case "search": return { _, args in try jsSearch(s, regExp(jsArg(args, 0), "")) }
+    case "charAt": return { _, args in jsStringAt(s, number(args, 0) ?? 0).flatMap { (number(args, 0) ?? 0) < 0 ? nil : $0 } ?? "" }
+    case "charCodeAt": return { _, args in jsCharCodeAt(s, number(args, 0) ?? 0) }
+    case "codePointAt": return { _, args in jsCodePointAt(s, number(args, 0) ?? 0) }
+    case "at": return { _, args in jsStringAt(s, number(args, 0) ?? 0) }
+    case "lastIndexOf": return { _, args in jsLastIndexOf(s, jsToString(jsArg(args, 0))) }
+    case "padEnd": return { _, args in jsPadEnd(s, number(args, 0) ?? 0, jsIsNullish(jsArg(args, 1)) ? " " : jsToString(jsArg(args, 1))) }
+    case "padStart":
+        return { _, args in
+            let fill = jsIsNullish(jsArg(args, 1)) ? " " : jsToString(jsArg(args, 1))
+            let padded = jsPadEnd("", max(0, (number(args, 0) ?? 0) - Double(s.utf16.count)), fill)
+            return padded + s
+        }
+    case "repeat": return { _, args in try jsRepeat(s, number(args, 0) ?? 0) }
+    case "substr": return { _, args in jsSubstr(s, number(args, 0) ?? 0, number(args, 1)) }
+    case "concat": return { _, args in s + args.map { jsToString($0) }.joined() }
+    case "localeCompare": return { _, args in jsLocaleCompare(s, jsToString(jsArg(args, 0))) }
     case "toLowerCase": return { _, _ in s.lowercased() }
     case "toUpperCase": return { _, _ in s.uppercased() }
     case "toString", "valueOf": return { _, _ in s }

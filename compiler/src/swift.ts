@@ -539,7 +539,8 @@ export class Translator implements AsyncTranslator {
     if (t.flags & (F.String | F.StringLiteral | F.TemplateLiteral)) return 'String';
     if (t.flags & (F.Boolean | F.BooleanLiteral)) return 'Bool';
     if (t.flags & F.BigIntLike) return 'JSBigInt';
-    if (c.isTupleType(t)) return `(${c.getTypeArguments(t as ts.TypeReference).map((a) => this.type(a, where)).join(', ')})`;
+    // Lenient code: an object in a tuple may be missing (a shorthand's converter probed with `unsetValue` pairs each longhand with it).
+    if (c.isTupleType(t)) return `(${c.getTypeArguments(t as ts.TypeReference).map((a) => { const at = this.type(a, where); return this.lenient && this.lenientRef(at) !== at ? optionalType(at) : at; }).join(', ')})`;
     if (c.isArrayType(t)) {
       const el = c.getTypeArguments(t as ts.TypeReference)[0];
       // `[]`'s `never[]` holds anything once it is written to.
@@ -3519,6 +3520,11 @@ export class Translator implements AsyncTranslator {
       if (el.initializer) read = `(${read} ?? ${this.coerce(el.initializer, this.typeOf(el.name))})`;
       if (ts.isIdentifier(el.name)) {
         const t = this.typeOf(el.name);
+        // An array's element past its end is undefined, which a number, string or boolean cannot hold: `if (second)` tests it.
+        if (arrayValue && !el.initializer && mutable !== 'assign' && /^(Double|String|Bool)$/.test(t) && !ts.isObjectBindingPattern(name) && !this.checker.isTupleType(source)) {
+          lines.push(`${i}${kw}${ident(el.name.text)}: ${this.bindsOptional(el.name, t)} = ${value}.element(${k})`);
+          return;
+        }
         const fromAny = (this.isAny(name) || _type === 'Any?') && t !== 'Any?' ? this.fromAny(read, t) : read;
         lines.push(declare(el.name, t, fromAny));
       } else {
@@ -4886,13 +4892,18 @@ export class Translator implements AsyncTranslator {
       const code = `${target}${q}[jsIndex: ${this.toNumber(key)}]`;
       return isWriteTarget(e) ? code : this.undefinedAs(code, this.typeOf(e));
     }
-    if (t.startsWith('(') && ts.isNumericLiteral(key)) return `${target}.${key.text}`;
+    if (t.startsWith('(') && ts.isNumericLiteral(key)) {
+      const part = splitTopLevel(t.slice(1, -1))[Number(key.text)];
+      const rt = this.typeOf(e);
+      return part && isOptional(part) && !isOptional(rt) && !isWriteTarget(e) ? this.undefinedAs(`${target}.${key.text}`, rt) : `${target}.${key.text}`;
+    }
     // A tuple at a computed index (`pool[next++ % 5]`): its elements as an array, undefined past them.
     if (t.startsWith('(') && this.checker.isTupleType(this.checker.getNonNullableType(this.checker.getTypeAtLocation(e.expression))) && !isWriteTarget(e)) {
       const parts = splitTopLevel(t.slice(1, -1));
       const el = parts.every((x) => x === parts[0]) ? parts[0] : 'Any?';
       const tuple = this.fresh('__tuple');
-      const read = `{ (${tuple}: ${t}) -> ${optionalType(el)} in JSArray<${el}>([${parts.map((_, k) => `${tuple}.${k}`).join(', ')}]).element(${this.toNumber(key)}) }(${target})`;
+      // An optional element (a lenient tuple's object) read past the end is still one undefined, not an optional of one.
+      const read = `{ (${tuple}: ${t}) -> ${optionalType(el)} in JSArray<${el}>([${parts.map((_, k) => `${tuple}.${k}`).join(', ')}]).element(${this.toNumber(key)})${isOptional(el) ? ' ?? nil' : ''} }(${target})`;
       const rt = this.typeOf(e);
       return el === 'Any?' && rt !== 'Any?' ? this.fromAny(`(${read} ?? nil)`, rt) : this.undefinedAs(read, rt);
     }

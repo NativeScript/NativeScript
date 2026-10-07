@@ -32,7 +32,7 @@ import { Translator, type ComponentInfo } from './swift.ts';
 import { isFragment, render, SCHEDULE, type Framework } from './codegen.ts';
 import { createRequire } from 'node:module';
 import { addInterfaces, translateModules } from './modules.ts';
-import { appStylesheets, importedStylesheets, kitCss } from './css.ts';
+import { appStylesheets, importedStylesheets, kitAst, kitCss } from './css.ts';
 import { PluginSources, configuredOverrides } from './plugins/source.ts';
 import { pluginNative, xcodegenLines } from './plugins/native.ts';
 import { reachability } from './reach.ts';
@@ -362,7 +362,8 @@ for (const m of translated) {
 const shapes = SourceLines.strip(translator.shapesCode());
 if (shapes) writeFileSync(join(out, 'Sources', '__Objects.swift'), `// Compiled by ns-native: the app's object literals without a declared type.\nimport Foundation\nimport NativeScriptKit\n${native.modules.length || /\bUI[A-Z]/.test(shapes) ? `import UIKit\n${native.modules.map((m) => `import ${m}\n`).join('')}` : ''}${SDK_IMPORTS}\n${shapes}\n`);
 const inits = translated.filter((m) => m.init).map((m) => `        ${m.init}()\n`).join('');
-const css = kitCss(sheets);
+// The app's CSS as its NativeScript build ships it: the AST core applies.
+const css = kitAst(sheets);
 const patched = corePatches(app, nodeModules(app));
 if (patched?.patches.length) say(`${relative(app, patched.file)}: ${patched.patches.join(', ')}`);
 if (routeTree) prelude = `        Router.shared.config = ${routeConfig(routeTree, '        ', translator.throwingInits)}\n`;
@@ -371,8 +372,8 @@ const switches = (zone ? '        Zone.enabled = true\n' : '') + (patched?.patch
 // Core's modules first, as the app's bundle evaluates @nativescript/core before its own code.
 const start = switches + `        CorePackages.useAppConfig(appPackageJSON)\n        CoreModules.initialize()\n        Reactivity.schedule = .${SCHEDULE[framework]}\n` + (mounted
   // The entry's own statements run the app (`Application.run`), after every module it imports.
-  ? `        NativeScriptApplication.css = appCSS\n${inits}`
-  : `${inits}${prelude}        NativeScriptApplication.run(css: appCSS) { ${root}().render() }\n`);
+  ? `        NativeScriptApplication.cssAST = appCSS\n${inits}`
+  : `${inits}${prelude}        NativeScriptApplication.run(cssAST: appCSS) { ${root}().render() }\n`);
 if (translator.usedAppNative.size) writeFileSync(join(out, 'Sources', '__AppNative.swift'), `// Compiled by ns-native: the app's own Swift classes, called by name from untyped TypeScript.\nimport Foundation\nimport NativeScriptKit\n\n${appNativeObjects([...translator.usedAppNative].map((c) => appNative[c]))}`);
 const sdkModules = translator.native.sdkModules().filter((m) => !['Foundation', 'UIKit', ...native.modules].includes(m));
 for (const f of readdirSync(join(out, 'Sources'))) {

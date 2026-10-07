@@ -31,11 +31,16 @@ public enum CorePackages {
 
     /// The app's stylesheet, which core loads as the module `app.css` (`global.loadModule`).
     static var appCSS = ""
+    /// The app's stylesheet as its build parsed it (rework-css's AST, as `css2json-loader` ships it):
+    /// what `app.css` loads as instead of the text, so core applies what the NativeScript build applies.
+    static var appCSSAST: String?
 
     static func installModuleLoader() {
         let load: JSFunction = { args in
             let name = jsToString(args.first ?? nil)
-            return name.split(separator: "/").last.map(String.init) == "app.css" ? CorePackages.appCSS : nil
+            guard name.split(separator: "/").last.map(String.init) == "app.css" else { return nil }
+            if let ast = CorePackages.appCSSAST { return try jsJSONParse(ast) }
+            return CorePackages.appCSS
         }
         _ = try? jsSet(jsGlobalThis, "loadModule", load)
     }

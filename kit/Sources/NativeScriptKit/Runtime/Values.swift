@@ -803,11 +803,12 @@ public func jsSameFunction<A, B>(_ a: A, _ b: B) -> Bool {
 
 /// An object of another type where code checked as core is passes it for a class
 /// (`rule.declarations` as `KeyframeDeclaration[]`): the value itself where it is
-/// one, else a new instance holding the value's members of the class's names.
+/// one, else a new instance holding the value's own members, as script reads them
+/// from the value itself (a member undefined on a new instance is still the value's).
 public func jsShaped<T: AnyObject>(_ value: Any?, _ make: () throws -> T) -> T? {
     guard let v = jsFlat(value), !(v is JSNull) else { return nil }
     if let same = v as? T { return same }
     guard let made = try? make(), let keyed = made as? JSDynamic else { return nil }
-    for key in keyed.jsKeys { keyed[jsKey: key] = (try? jsGet(v, key)) ?? nil }
+    for key in jsKeysOf(v) { keyed[jsKey: key] = (try? jsGet(v, key)) ?? nil }
     return made
 }

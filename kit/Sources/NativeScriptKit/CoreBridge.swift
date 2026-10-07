@@ -125,6 +125,18 @@ public func kitNavigateBack() {
 
 /// The app: its stylesheet, which core loads as `app.css`, then the root view the template makes, as `Application.run({ create })` starts it.
 public enum NativeScriptApplication {
+    /// The app's stylesheet as its build parsed it, for an app whose own entry runs core's `Application.run`.
+    public static var cssAST: String? {
+        get { CorePackages.appCSSAST }
+        set { CorePackages.appCSSAST = newValue; CorePackages.installModuleLoader() }
+    }
+
+    /// The app, its stylesheet given as the AST its NativeScript build ships (`css2json-loader`'s).
+    public static func run(cssAST: String, _ root: @escaping () -> View) {
+        CorePackages.appCSSAST = cssAST
+        run(css: "", root)
+    }
+
     public static func run(css: String, _ root: @escaping () -> View) {
         // Console output reaches a pipe (`simctl launch --console`, Xcode) line by line, as the JS runtime's does.
         setvbuf(stdout, nil, _IOLBF, 0)

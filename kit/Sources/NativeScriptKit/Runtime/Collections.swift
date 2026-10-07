@@ -4,12 +4,23 @@ import Foundation
 public protocol JSMapProtocol: AnyObject {
     var jsSize: Int { get }
     var jsAnyEntries: [(Any?, Any?)] { get }
+    func jsAnyGet(_ key: Any?) -> Any?
+    func jsAnyHas(_ key: Any?) -> Bool
+    /// Throws a TypeError for a key or value the map's Swift types cannot hold.
+    func jsAnySet(_ key: Any?, _ value: Any?) throws
+    func jsAnyDelete(_ key: Any?) -> Bool
+    func clear()
 }
 
 /// Any `JSSet`, for code that inspects values dynamically.
 public protocol JSSetProtocol: AnyObject {
     var jsSize: Int { get }
     var jsAnyValues: [Any?] { get }
+    func jsAnyHas(_ value: Any?) -> Bool
+    /// Throws a TypeError for a value the set's Swift type cannot hold.
+    func jsAnyAdd(_ value: Any?) throws
+    func jsAnyDelete(_ value: Any?) -> Bool
+    func clear()
 }
 
 /// A `Map`/`Set` key under SameValueZero: strings by code units, numbers by value with NaN equal
@@ -252,6 +263,30 @@ public final class JSMap<Key, Value>: Sequence, JSMapProtocol, JSReactiveConvert
         return table.entries.map { (jsFlat($0.key), jsFlat(read($0.value))) }
     }
 
+    public func jsAnyGet(_ key: Any?) -> Any? {
+        jsTracker?.track()
+        guard let position = table.find(JSCollectionKey.of(key)) else { return nil }
+        return jsFlat(read(table.entry(at: position).value))
+    }
+
+    public func jsAnyHas(_ key: Any?) -> Bool {
+        jsTracker?.track()
+        return table.find(JSCollectionKey.of(key)) != nil
+    }
+
+    public func jsAnySet(_ key: Any?, _ value: Any?) throws {
+        guard let k = jsCast(key, to: Key.self), let v = jsCast(value, to: Value.self) else {
+            throw JSException(JSTypeError("A Map of \(Key.self) to \(Value.self) cannot hold \(jsInspect(key)) → \(jsInspect(value))"))
+        }
+        set(k, v)
+    }
+
+    public func jsAnyDelete(_ key: Any?) -> Bool {
+        guard table.remove(JSCollectionKey.of(key)) else { return false }
+        jsTracker?.trigger()
+        return true
+    }
+
     public func jsMakeReactive() {
         if jsTracker == nil { jsTracker = JSTracker() }
     }
@@ -364,6 +399,24 @@ public final class JSSet<Element>: Sequence, JSSetProtocol, JSReactiveConvertibl
         return table.entries.map { jsFlat(read($0.key)) }
     }
 
+    public func jsAnyHas(_ value: Any?) -> Bool {
+        jsTracker?.track()
+        return table.find(JSCollectionKey.of(value)) != nil
+    }
+
+    public func jsAnyAdd(_ value: Any?) throws {
+        guard let v = jsCast(value, to: Element.self) else {
+            throw JSException(JSTypeError("A Set of \(Element.self) cannot hold \(jsInspect(value))"))
+        }
+        add(v)
+    }
+
+    public func jsAnyDelete(_ value: Any?) -> Bool {
+        guard table.remove(JSCollectionKey.of(value)) else { return false }
+        jsTracker?.trigger()
+        return true
+    }
+
     public func jsMakeReactive() {
         if jsTracker == nil { jsTracker = JSTracker() }
     }
@@ -371,8 +424,8 @@ public final class JSSet<Element>: Sequence, JSSetProtocol, JSReactiveConvertibl
     public var description: String { jsInspect(self) }
 }
 
-/// A `Map`'s methods read by name from untyped code (`changeMap.forEach(fn)` where the map is `any`):
-/// the read-only ones, over its entries as JavaScript values; keys, values and entries as arrays.
+/// A `Map`'s methods read by name from untyped code (`changeMap.forEach(fn)` where the map is `any`),
+/// over its entries as JavaScript values; keys, values and entries as arrays.
 func jsMapMethod(_ map: JSMapProtocol, _ key: String) -> JSMethod? {
     switch key {
     case "forEach":
@@ -380,8 +433,11 @@ func jsMapMethod(_ map: JSMapProtocol, _ key: String) -> JSMethod? {
             for (k, v) in map.jsAnyEntries { _ = try jsCall(jsArg(args, 0), v, k, map) }
             return nil
         }
-    case "has": return { _, args in map.jsAnyEntries.contains { jsSameValueZero($0.0, jsArg(args, 0)) } }
-    case "get": return { _, args in map.jsAnyEntries.first { jsSameValueZero($0.0, jsArg(args, 0)) }?.1 ?? nil }
+    case "has": return { _, args in map.jsAnyHas(jsArg(args, 0)) }
+    case "get": return { _, args in map.jsAnyGet(jsArg(args, 0)) }
+    case "set": return { _, args in try map.jsAnySet(jsArg(args, 0), jsArg(args, 1)); return map }
+    case "delete": return { _, args in map.jsAnyDelete(jsArg(args, 0)) }
+    case "clear": return { _, _ in map.clear(); return nil }
     case "keys": return { _, _ in JSArray<Any?>(map.jsAnyEntries.map(\.0)) }
     case "values": return { _, _ in JSArray<Any?>(map.jsAnyEntries.map(\.1)) }
     case "entries": return { _, _ in JSArray<Any?>(map.jsAnyEntries.map { JSArray<Any?>([$0.0, $0.1]) as Any? }) }
@@ -389,7 +445,7 @@ func jsMapMethod(_ map: JSMapProtocol, _ key: String) -> JSMethod? {
     }
 }
 
-/// A `Set`'s read-only methods read by name from untyped code, as `jsMapMethod`'s.
+/// A `Set`'s methods read by name from untyped code, as `jsMapMethod`'s.
 func jsSetMethod(_ set: JSSetProtocol, _ key: String) -> JSMethod? {
     switch key {
     case "forEach":
@@ -397,7 +453,10 @@ func jsSetMethod(_ set: JSSetProtocol, _ key: String) -> JSMethod? {
             for v in set.jsAnyValues { _ = try jsCall(jsArg(args, 0), v, v, set) }
             return nil
         }
-    case "has": return { _, args in set.jsAnyValues.contains { jsSameValueZero($0, jsArg(args, 0)) } }
+    case "has": return { _, args in set.jsAnyHas(jsArg(args, 0)) }
+    case "add": return { _, args in try set.jsAnyAdd(jsArg(args, 0)); return set }
+    case "delete": return { _, args in set.jsAnyDelete(jsArg(args, 0)) }
+    case "clear": return { _, _ in set.clear(); return nil }
     case "keys", "values": return { _, _ in JSArray<Any?>(set.jsAnyValues) }
     case "entries": return { _, _ in JSArray<Any?>(set.jsAnyValues.map { JSArray<Any?>([$0, $0]) as Any? }) }
     default: return nil

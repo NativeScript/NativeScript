@@ -104,6 +104,22 @@ export function kitCss(sheets: Stylesheet[]): string {
   return lines.join('\n') + '\n';
 }
 
+/**
+ * The stylesheets as one AST, as their NativeScript build ships them (`css2json-loader`'s
+ * rework-css AST without positions): core applies it as it is, `@media` and `@keyframes`
+ * included, where core's own runtime parser would drop every at-rule but `@import`.
+ */
+export function kitAst(sheets: Stylesheet[]): string {
+  const rules: CssNode[] = [];
+  for (const sheet of sheets) {
+    for (const node of sheet.ast.stylesheet.rules) {
+      if (node.type === 'import') throw new Error(`@import ${(node as { import?: string }).import}: the build leaves it for core to load at run time`);
+      rules.push(node);
+    }
+  }
+  return JSON.stringify({ type: 'stylesheet', stylesheet: { rules } }) + '\n';
+}
+
 /** The installed package's type-stripping hook, which a child process under node_modules needs to run the compiler's .ts. */
 function stripTypes(): string[] {
   const hook = fileURLToPath(new URL('../../bin/strip-types.js', import.meta.url));
