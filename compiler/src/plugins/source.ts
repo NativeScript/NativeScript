@@ -371,7 +371,10 @@ function normalize(text: string, file: string): string[] {
     return true;
   });
   const printer = ts.createPrinter({ removeComments: true });
-  return kept.flatMap((st) => printer.printNode(ts.EmitHint.Unspecified, st, sf).split('\n'))
+  // Decorator metadata (`__metadata("design:paramtypes", [])`), which a build with emitDecoratorMetadata adds.
+  const printed = kept.map((st) => printer.printNode(ts.EmitHint.Unspecified, st, sf)).join('\n')
+    .replace(/,?\s*(?:\b(?:tslib_\d+|tslib)\.)?__metadata\("design:\w+",\s*(?:\[[^\]]*\]|[\w.$]+|void 0)\)/g, '');
+  return printed.split('\n')
     .map((l) => l.trim().replace(/\b(tslib_\d+|tslib)\.(__\w+)/g, '$2'))
     .filter((l) => l && !l.startsWith('//# sourceMappingURL') && l !== 'export {};');
 }
