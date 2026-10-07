@@ -2,7 +2,7 @@ import { EventData, Observable } from '../data/observable';
 import { Screen } from '../platform/screen';
 import { getApplicationProperties, toggleApplicationEventListeners } from '../application/helpers-common';
 import type { ApplicationEventData } from '../application/application-interfaces';
-import { matchQuery, MediaQueryType } from '../css-mediaquery';
+import { isEvaluableMediaQuery, matchQuery, MediaQueryType } from '../css-mediaquery';
 import { Trace } from '../trace';
 
 const mediaQueryLists: MediaQueryListImpl[] = [];
@@ -10,7 +10,27 @@ const mediaQueryLists: MediaQueryListImpl[] = [];
 // In browser, developers cannot create MediaQueryList instances without calling matchMedia
 let isMediaInitializationEnabled: boolean = false;
 
+// Query results only change with orientation, appearance or screen metrics.
+const matchResultCache = new Map<string, boolean>();
+let isCacheInvalidationRegistered = false;
+
+function clearMatchResultCache() {
+	matchResultCache.clear();
+}
+
+function registerCacheInvalidation() {
+	if (isCacheInvalidationRegistered) {
+		return;
+	}
+
+	isCacheInvalidationRegistered = true;
+	toggleApplicationEventListeners(true, clearMatchResultCache);
+}
+
 function onDeviceChange(args: ApplicationEventData) {
+	// Listener order is not guaranteed, so never re-evaluate against stale results
+	clearMatchResultCache();
+
 	for (const mql of mediaQueryLists) {
 		const matches = checkIfMediaQueryMatches(mql.media);
 		if (mql.matches !== matches) {
@@ -27,25 +47,54 @@ function onDeviceChange(args: ApplicationEventData) {
 }
 
 function checkIfMediaQueryMatches(mediaQueryString: string): boolean {
-	const { widthPixels, heightPixels } = Screen.mainScreen;
+	const cachedResult = matchResultCache.get(mediaQueryString);
+	if (cachedResult !== undefined) {
+		return cachedResult;
+	}
 
 	let matches: boolean;
 
-	try {
-		const appProperties = getApplicationProperties();
-		matches = matchQuery(mediaQueryString, {
-			type: MediaQueryType.screen,
-			width: widthPixels,
-			height: heightPixels,
-			'device-width': widthPixels,
-			'device-height': heightPixels,
-			orientation: appProperties.orientation,
-			'prefers-color-scheme': appProperties.systemAppearance,
-		});
-	} catch (err) {
+	if (isEvaluableMediaQuery(mediaQueryString)) {
+		registerCacheInvalidation();
+
+		// Native reads are deferred until a feature in the query asks for them
+		let screenPixels: { width: number; height: number };
+		let appProperties: ReturnType<typeof getApplicationProperties>;
+		const getScreenPixels = () => (screenPixels ??= { width: Screen.mainScreen.widthPixels, height: Screen.mainScreen.heightPixels });
+		const getAppProperties = () => (appProperties ??= getApplicationProperties());
+
+		try {
+			matches = matchQuery(mediaQueryString, {
+				type: MediaQueryType.screen,
+				get width() {
+					return getScreenPixels().width;
+				},
+				get height() {
+					return getScreenPixels().height;
+				},
+				get 'device-width'() {
+					return getScreenPixels().width;
+				},
+				get 'device-height'() {
+					return getScreenPixels().height;
+				},
+				get orientation() {
+					return getAppProperties().orientation;
+				},
+				get 'prefers-color-scheme'() {
+					return getAppProperties().systemAppearance;
+				},
+			});
+		} catch (err) {
+			matches = false;
+			Trace.write(err, Trace.categories.MediaQuery, Trace.messageType.error);
+		}
+	} else {
 		matches = false;
-		Trace.write(err, Trace.categories.MediaQuery, Trace.messageType.error);
+		Trace.write(`Media query '${mediaQueryString}' cannot be evaluated and will never match`, Trace.categories.MediaQuery, Trace.messageType.warn);
 	}
+
+	matchResultCache.set(mediaQueryString, matches);
 
 	return matches;
 }
