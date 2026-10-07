@@ -10,7 +10,27 @@ const mediaQueryLists: MediaQueryListImpl[] = [];
 // In browser, developers cannot create MediaQueryList instances without calling matchMedia
 let isMediaInitializationEnabled: boolean = false;
 
+// Query results only change with orientation, appearance or screen metrics.
+const matchResultCache = new Map<string, boolean>();
+let isCacheInvalidationRegistered = false;
+
+function clearMatchResultCache() {
+	matchResultCache.clear();
+}
+
+function registerCacheInvalidation() {
+	if (isCacheInvalidationRegistered) {
+		return;
+	}
+
+	isCacheInvalidationRegistered = true;
+	toggleApplicationEventListeners(true, clearMatchResultCache);
+}
+
 function onDeviceChange(args: ApplicationEventData) {
+	// Listener order is not guaranteed, so never re-evaluate against stale results
+	clearMatchResultCache();
+
 	for (const mql of mediaQueryLists) {
 		const matches = checkIfMediaQueryMatches(mql.media);
 		if (mql.matches !== matches) {
@@ -27,6 +47,13 @@ function onDeviceChange(args: ApplicationEventData) {
 }
 
 function checkIfMediaQueryMatches(mediaQueryString: string): boolean {
+	const cachedResult = matchResultCache.get(mediaQueryString);
+	if (cachedResult !== undefined) {
+		return cachedResult;
+	}
+
+	registerCacheInvalidation();
+
 	const { widthPixels, heightPixels } = Screen.mainScreen;
 
 	let matches: boolean;
@@ -46,6 +73,8 @@ function checkIfMediaQueryMatches(mediaQueryString: string): boolean {
 		matches = false;
 		Trace.write(err, Trace.categories.MediaQuery, Trace.messageType.error);
 	}
+
+	matchResultCache.set(mediaQueryString, matches);
 
 	return matches;
 }

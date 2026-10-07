@@ -47,8 +47,20 @@ export interface MediaQueryFeature {
 	value: string;
 }
 
+const parsedQueryCache = new Map<string, MediaQueryExpression[]>();
+
+function getParsedQuery(mediaQuery: string): MediaQueryExpression[] {
+	let expressions = parsedQueryCache.get(mediaQuery);
+	if (!expressions) {
+		expressions = parseQuery(mediaQuery);
+		parsedQueryCache.set(mediaQuery, expressions);
+	}
+
+	return expressions;
+}
+
 export function matchQuery(mediaQuery: string, values: MediaQueryEnvironmentParams): boolean {
-	const expressions = parseQuery(mediaQuery);
+	const expressions = getParsedQuery(mediaQuery);
 
 	return expressions.some((query) => {
 		const { type, inverse, features } = query;
