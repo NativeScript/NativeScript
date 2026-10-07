@@ -46,6 +46,8 @@ const SHIMS: Record<string, string> = {
     export declare class BehaviorSubject<T> extends Subject<T> { constructor(value: T); readonly value: T; getValue(): T }
     export declare class ReplaySubject<T> extends Subject<T> { constructor(bufferSize?: number) }
     export declare function map<T, R>(project: (value: T, index: number) => R): OperatorFunction<T, R>;
+    export declare function filter<T, S extends T>(predicate: (value: T, index: number) => value is S): OperatorFunction<T, S>;
+    export declare function filter<T>(predicate: (value: T, index: number) => boolean): OperatorFunction<T, T>;
     export declare function take<T>(count: number): OperatorFunction<T, T>;
     export declare function firstValueFrom<T>(source: Observable<T>): Promise<T>;
   `,
@@ -92,9 +94,20 @@ const SHIMS: Record<string, string> = {
     export interface OnInit { ngOnInit(): void }
     export interface AfterViewInit { ngAfterViewInit(): void }
   `,
+  '@angular/core/rxjs-interop': `
+    import type { Observable, OperatorFunction } from 'rxjs';
+    import type { Signal, DestroyRef } from '@angular/core';
+    export declare function toSignal<T>(source: Observable<T>, options: { initialValue: T; injector?: any; requireSync?: boolean }): Signal<T>;
+    export declare function toSignal<T>(source: Observable<T>, options?: { injector?: any; requireSync?: boolean }): Signal<T | undefined>;
+    export declare function toObservable<T>(source: Signal<T>, options?: { injector?: any }): Observable<T>;
+    export declare function takeUntilDestroyed<T>(destroyRef?: DestroyRef): OperatorFunction<T, T>;
+  `,
   '@angular/router': `
     import type { Observable } from 'rxjs';
     export declare class ActivatedRoute { snapshot: { params: Record<string, string> }; params: Observable<Record<string, string>> }
+    export declare class NavigationEnd { readonly id: number; readonly url: string; readonly urlAfterRedirects: string }
+    export type Event = NavigationEnd;
+    export declare class Router { readonly url: string; readonly events: Observable<Event>; navigate(commands: any[], extras?: any): Promise<boolean>; navigateByUrl(url: string, extras?: any): Promise<boolean> }
     export type Routes = { path: string; component?: any; redirectTo?: string; pathMatch?: string; outlet?: string; children?: Routes; loadChildren?: () => Promise<any>; loadComponent?: () => Promise<any> }[];
   `,
   '@nativescript/angular': `
@@ -254,7 +267,9 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
         // A platform's own file first, as NativeScript's bundler resolves `./x` to `x.ios.ts`.
         // A platform file importing its own module's name (`import type { HingeListener } from './hinge-tracker'` in
         // hinge-tracker.ios.ts) means the module's declarations: `x.d.ts`, else the platforms' shared `x.ts`.
-        const own = containing === `${base}.${platform}.ts`;
+        const typeOnly = (ts.isImportDeclaration(lit.parent) && !!lit.parent.importClause?.isTypeOnly) || (ts.isExportDeclaration(lit.parent) && lit.parent.isTypeOnly);
+        // A type-only import is TypeScript's, which reads `x.d.ts` beside the platforms' files; only the bundler picks `x.ios.ts`.
+        const own = containing === `${base}.${platform}.ts` || (typeOnly && existsSync(base + '.d.ts'));
         for (const candidate of own ? [base + '.d.ts', base + '.ts'] : [`${base}.${platform}.ts`, base + '.ts', base + '.tsx', `${base}/index.${platform}.ts`, base + '/index.ts', base.endsWith('.vue') ? base + '.ts' : '']) {
           if (candidate && (files.has(candidate) || existsSync(candidate))) {
             if (candidate.endsWith('.d.ts')) return { resolvedModule: { resolvedFileName: candidate, extension: ts.Extension.Dts } };

@@ -157,8 +157,10 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
         out.push({ kind: 'if', branches: n.branches.map((b) => {
           // `@if (x; as y)`: y is the condition's value in the branch.
           const alias = (b as ng.TmplAstIfBlockBranch & { expressionAlias?: ng.TmplAstVariable | null }).expressionAlias;
+          // The condition is read before its alias exists: `@if (person(); as person)` names the value of the `person` it reads.
+          const cond = b.expression ? expr(sourceOf(b.expression), loops) : null;
           if (alias && b.expression) aliases.set(alias.name, rewrite(clean(sourceOf(b.expression)), local(loops)));
-          const branch = { cond: b.expression ? expr(sourceOf(b.expression), loops) : null, body: nodes(b.children, loops) };
+          const branch = { cond, body: nodes(b.children, loops) };
           if (alias) aliases.delete(alias.name);
           return branch;
         }) });
@@ -225,8 +227,10 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
       const p = [params(loops), `$item = ${rows}[0]`, '$index = 0'].filter(Boolean).join(', ');
       // Called as core calls it, with (item, index, items): a method of the component that declares fewer takes the ones it declares.
       const name = sourceOf(selector.value).trim();
-      const method = cls.members.find((x): x is ts.MethodDeclaration => ts.isMethodDeclaration(x) && x.name.getText() === name);
-      const given = ['$item', '$index', list].slice(0, method ? method.parameters.length : 3);
+      const member = cls.members.find((x) => (ts.isMethodDeclaration(x) || ts.isPropertyDeclaration(x)) && x.name.getText() === name);
+      // A method, or a property holding an arrow (`rowTemplate = (row) => …`): the parameters it declares.
+      const fn = member && ts.isMethodDeclaration(member) ? member : member && ts.isPropertyDeclaration(member) && member.initializer && (ts.isArrowFunction(member.initializer) || ts.isFunctionExpression(member.initializer)) ? member.initializer : undefined;
+      const given = ['$item', '$index', list].slice(0, fn ? fn.parameters.length : 3);
       methods.push(`  ${m}(${p}): string { return ${rewrite(clean(sourceOf(selector.value)), local(loops))}(${given.join(', ')}); }`);
       attrs.push({ name: 'itemTemplateSelector', method: m });
     }
@@ -249,7 +253,10 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
         else if (what === 'odd') names[v.name] = `(${index} % 2 !== 0)`;
         else if (!['$implicit', 'item', 'index'].includes(what)) throw new Error(`${path}: a ${host} template's "${what}" is not part of its context`);
       }
-      const loop: Loop = { item, index, param: `${item} = ${rows}[0], ${index} = 0`, names };
+      // Keyed templates tell apart the kinds of row a list mixes (`Person | typeof BYLINE_ROW`): each reads its row
+      // untyped, as Angular types an ng-template's context.
+      const keyed = n.children.filter((c) => c instanceof ng.TmplAstTemplate).length > 1;
+      const loop: Loop = { item, index, param: `${item}${keyed ? ': any' : ''} = ${rows}[0], ${index} = 0`, names };
       out.push({ kind: 'template', key, item, index, body: nodes(t.children, [...loops, loop]) });
     }
     const header = attrs.findIndex((a) => a.name === 'stickyHeaderTemplate');

@@ -68,7 +68,17 @@ const entryText = readFileSync(entry, 'utf8');
 const otherPlatform = opt('--platform') === 'android' ? /\.ios\.tsx?$/ : /\.android\.tsx?$/;
 // `x.ts` beside `x.ios.ts` is the other platforms' module: the platform's own file is the one `./x` resolves to.
 const thisPlatform = platform === 'android' ? '.android.ts' : '.ios.ts';
-const sources = files.filter((f) => f.endsWith('.ts') && !f.endsWith('.d.ts') && f !== entry && !/polyfills\.ts$/.test(f) && !otherPlatform.test(f) && !(!/\.(ios|android)\.ts$/.test(f) && files.includes(f.replace(/\.ts$/, thisPlatform))));
+const platformSources = files.filter((f) => f.endsWith('.ts') && !f.endsWith('.d.ts') && f !== entry && !/polyfills\.ts$/.test(f) && !otherPlatform.test(f) && !(!/\.(ios|android)\.ts$/.test(f) && files.includes(f.replace(/\.ts$/, thisPlatform))));
+// A file only the other platform's files use (an Android audio worker) is no module of this build.
+const usedBy = new Map<string, Set<string>>();
+for (const f of files.filter((x) => /\.tsx?$/.test(x) && !x.endsWith('.d.ts'))) {
+  const text = readFileSync(f, 'utf8');
+  for (const m of text.matchAll(/(?:from\s*|import\s*\(\s*|new\s+Worker\s*\(\s*(?:new\s+URL\s*\(\s*)?|require\s*\(\s*)['"](\.{1,2}\/[^'"]+)['"]/g)) {
+    const base = resolve(dirname(f), m[1]).replace(/\.(ts|js)$/, '');
+    for (const c of [base + '.ts', base + thisPlatform, base + '/index.ts']) if (files.includes(c)) usedBy.set(c, (usedBy.get(c) ?? new Set()).add(f));
+  }
+}
+const sources = platformSources.filter((f) => { const users = usedBy.get(f); return !users || ![...users].every((u) => otherPlatform.test(u)); });
 // Virtual replacements for app modules the release build reads differently (a zustand store).
 const overrides = new Map<string, string>();
 
@@ -272,6 +282,8 @@ function keyStore() {
 const allowUnapplied = args.includes('--allow-unimplemented-properties') || releaseOptions(app, platform).allowUnimplementedProperties === true;
 const kitName = platform === 'android' ? 'kit-android' : 'NativeScriptKit';
 const unapplied = await (async () => {
+  // A kit generated from core (its Core/ manifest) applies every property core declares, as core is its source.
+  if (platform === 'ios' && existsSync(join(KIT, 'Core', 'manifest.json'))) return [];
   const kit = platform === 'android'
     ? await import('./core-kotlin.ts').then((k) => ({ index: k.kotlinKitIndex(k.KIT), sources: k.KIT }))
     : { index: kitIndex(KIT), sources: KIT };
