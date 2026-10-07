@@ -99,9 +99,22 @@ extension ViewBase {
         jsReport { try self.set(name, value) }
     }
 
-    /// A listener for a template's event binding.
+    /// A listener for a template's event binding. A list's `itemTap` carries the row's item context
+    /// (`item`, `index`, `even`, `odd`), as nativescript-vue's ListView adds it.
     public func kitOn(_ eventName: String, _ handler: @escaping (EventData) -> Void) {
-        jsReport { try self.on(eventName, { (data: EventData?) in if let data { handler(data) } }) }
+        let list = eventName == "itemTap" ? self as? ListView : nil
+        jsReport {
+            try self.on(eventName, { (data: EventData?) in
+                guard let data else { return }
+                if let list {
+                    let index = jsToNumber(data[jsKey: "index"])
+                    jsReport { data[jsKey: "item"] = try list._getDataItem(index) }
+                    data[jsKey: "even"] = jsMod(index, 2) == 0
+                    data[jsKey: "odd"] = jsMod(index, 2) != 0
+                }
+                handler(data)
+            })
+        }
     }
 }
 

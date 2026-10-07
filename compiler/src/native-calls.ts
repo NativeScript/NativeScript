@@ -662,6 +662,8 @@ export class NativeAPI {
     if (/^any [A-Z]\w*$/.test(b) && /^[A-Z][\w.]*[?!]?$/.test(source) && !this.isEnumType(base(source)) && !this.isStructType(base(source)) && !['Double', 'String', 'Bool'].includes(base(source))) return `(${t.expr(e)} as? ${b})${optional(target) ? '' : '!'}`;
     // An untyped value where Swift takes a BOOL: its truthiness, as the runtime marshals it.
     if (source === 'Any?' && b === 'Bool') return `jsTruthy(${t.expr(e)})`;
+    // A boolean or string held optional (declared `boolean | undefined`) where Swift takes one: a missing one as Objective-C reads nil.
+    if (!optional(target) && (b === 'Bool' || b === 'String') && source === `${b}?`) return `(${t.expr(e)} ?? ${b === 'Bool' ? 'false' : '""'})`;
     // A dispatch queue, which TypeScript types as NSObject: the queue, cast.
     if (base(source) === 'NSObject' && (b === 'DispatchQueue' || base(this.unalias(b)) === 'DispatchQueue')) {
       return optional(target) ? `(${t.expr(e)} as? ${b})` : `(${t.expr(e)} as! ${b})`;

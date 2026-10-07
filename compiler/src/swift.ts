@@ -791,7 +791,25 @@ export class Translator implements AsyncTranslator {
       const context = this.checker.getContextualType(n);
       if (context?.getCallSignatures().length) return this.type(context, n);
     }
-    return this.type(this.checker.getTypeAtLocation(n), n);
+    const t = this.type(this.checker.getTypeAtLocation(n), n);
+    if (this.lenient && (t === 'Bool' || t === 'String' || t === 'Double') && this.declaredUndefined(n)) return `${t}?`;
+    return t;
+  }
+
+  /**
+   * Lenient code: a field, variable or parameter declared `T | undefined`, which the checker reads as `T`,
+   * holds undefined apart from any `T` (`private pending: boolean | undefined`); so does a variable it initializes.
+   */
+  private declaredUndefined(n: ts.Node): boolean {
+    const named = ts.isPropertyAccessExpression(n) ? n.name : ts.isPropertyDeclaration(n) || ts.isVariableDeclaration(n) || ts.isParameter(n) ? n.name : n;
+    if (!ts.isIdentifier(named) && !ts.isPrivateIdentifier(named)) return false;
+    const d = this.checker.getSymbolAtLocation(named)?.valueDeclaration;
+    if (!d || !(ts.isPropertyDeclaration(d) || ts.isVariableDeclaration(d) || ts.isParameter(d))) return false;
+    if (d.type) return ts.isUnionTypeNode(d.type) && d.type.types.some((x) => x.kind === ts.SyntaxKind.UndefinedKeyword);
+    if (!ts.isVariableDeclaration(d) || !d.initializer || d.initializer === n) return false;
+    let init: ts.Expression = d.initializer;
+    while (ts.isParenthesizedExpression(init)) init = init.expression;
+    return (ts.isPropertyAccessExpression(init) || ts.isIdentifier(init)) && this.declaredUndefined(init);
   }
 
   private untypedRecords = new Map<ts.Node, boolean>();
@@ -975,7 +993,8 @@ export class Translator implements AsyncTranslator {
     const root = ts.isPropertyDeclaration(decl) ? this.redeclaredField(decl) : null;
     if (root) return this.redeclaredType(root);
     if (!(ts.isVariableDeclaration(decl) || ts.isParameter(decl) || ts.isPropertyDeclaration(decl) || ts.isPropertySignature(decl) || ts.isBindingElement(decl) || ts.isGetAccessorDeclaration(decl))) return null;
-    return this.type(this.checker.getTypeOfSymbolAtLocation(sym, decl), decl);
+    const t = this.type(this.checker.getTypeOfSymbolAtLocation(sym, decl), decl);
+    return this.lenient && (t === 'Bool' || t === 'String' || t === 'Double') && this.declaredUndefined(e) ? `${t}?` : t;
   }
 
   /**
@@ -3880,6 +3899,8 @@ export class Translator implements AsyncTranslator {
       const fn = resolvers.type === 'Void' ? `{ ${resolvers.name}.resolve() }` : this.expr(e);
       return target === 'Any?' ? this.boxFunction(fn, own) : this.convert(fn, own, target);
     }
+    // A value declared `T | undefined` where a `T` goes (`scrollEnabled = this._scrollWasEnabled`): undefined reads as it converts.
+    if ((target === 'Bool' || target === 'String' || target === 'Double') && this.lenient && this.typeOf(e) === `${target}?` && this.declaredUndefined(e)) return this.undefinedAs(this.expr(e), target);
     // An iterable where the type names only its iteration: the kit's iterable of it.
     const iterableSlot = /^JS(Async)?Iterable<.*>\??$/.exec(target);
     if (iterableSlot && !/^JS(Async)?(Iterable|Iterator|Generator)</.test(this.typeOf(e))) return `${iterableSlot[1] ? 'jsAsyncIterable' : 'jsIterable'}(${this.expr(e)})`;

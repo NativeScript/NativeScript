@@ -72,6 +72,10 @@ enum Probe {
             line += " bg=\(jsToString(style.backgroundColor)) color=\(jsToString(style.color)) font=\(jsToString(style.fontSize)) pad=\(jsToString(style.paddingTop))"
             if let native = v.nativeViewProtected as? UIView {
                 line += " frame=\(native.frame)"
+                if let text = v as? TextBase {
+                    let native = (native as? UITextView)?.text ?? (native as? UILabel)?.text ?? (native as? UITextField)?.text ?? (native as? UIButton)?.title(for: .normal)
+                    line += " text=\(jsInspect(text.text)) hint=\(jsInspect((try? jsGet(text, "hint")) ?? nil)) native=\(jsInspect(native))"
+                }
                 if let segments = native as? UISegmentedControl {
                     line += " segments=\(segments.numberOfSegments) native=\(segments.selectedSegmentIndex) selectedIndex=\(jsToString((try? jsGet(v, "selectedIndex")) ?? nil)) listening=\((try? v.hasListeners("selectedIndexChange")) ?? false)"
                 }
