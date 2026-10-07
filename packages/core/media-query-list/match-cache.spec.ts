@@ -23,6 +23,7 @@ vi.mock('../application/helpers-common', async (importOriginal) => ({
 }));
 
 import { checkIfMediaQueryMatches, matchMedia } from '.';
+import { Screen } from '../platform/screen';
 
 function notifyDeviceChange() {
 	for (const listener of [...device.listeners]) {
@@ -53,15 +54,35 @@ describe('media-query-list match cache', () => {
 		expect(device.propertyReads).toBe(readsAfterFirstCheck + 1);
 	});
 
-	it('caches queries that do not match', () => {
+	it('reads no device state for a query it cannot evaluate', () => {
 		const unsupportedQuery = '(color-gamut: p3)';
+		const screenReads = vi.spyOn(Screen.mainScreen, 'widthPixels', 'get');
+		const readsBefore = device.propertyReads;
 
 		expect(checkIfMediaQueryMatches(unsupportedQuery)).toBe(false);
-
-		const readsAfterFirstCheck = device.propertyReads;
-
 		expect(checkIfMediaQueryMatches(unsupportedQuery)).toBe(false);
-		expect(device.propertyReads).toBe(readsAfterFirstCheck);
+		expect(device.propertyReads).toBe(readsBefore);
+		expect(screenReads).not.toHaveBeenCalled();
+
+		screenReads.mockRestore();
+	});
+
+	it('reads only the device state the query names', () => {
+		const widthQuery = `(max-width: ${Screen.mainScreen.widthDIPs})`;
+		const screenReads = vi.spyOn(Screen.mainScreen, 'widthPixels', 'get');
+		const readsBefore = device.propertyReads;
+
+		expect(checkIfMediaQueryMatches(widthQuery)).toBe(true);
+		expect(device.propertyReads).toBe(readsBefore);
+		expect(screenReads).toHaveBeenCalled();
+
+		screenReads.mockClear();
+
+		expect(checkIfMediaQueryMatches('(orientation: portrait)')).toBe(true);
+		expect(device.propertyReads).toBe(readsBefore + 1);
+		expect(screenReads).not.toHaveBeenCalled();
+
+		screenReads.mockRestore();
 	});
 
 	it('keeps MediaQueryList change notifications in sync with the cache', () => {
