@@ -2012,14 +2012,18 @@ export class Translator implements AsyncTranslator {
     const visit = (n: ts.Node) => {
       if (found || (n !== fn && ts.isFunctionLike(n))) return;
       if (ts.isReturnStatement(n)) {
-        const e = n.expression;
+        let e = n.expression;
+        // `a ?? b`, `a || b`: what the last operand gives when the first gives nothing; `c ? a : b`: either branch.
+        while (e && ts.isParenthesizedExpression(e)) e = e.expression;
+        while (e && ts.isBinaryExpression(e) && (e.operatorToken.kind === ts.SyntaxKind.QuestionQuestionToken || e.operatorToken.kind === ts.SyntaxKind.BarBarToken)) e = e.right;
+        if (e && ts.isConditionalExpression(e) && [e.whenTrue, e.whenFalse].some((b) => isNullish(b))) e = [e.whenTrue, e.whenFalse].find((b) => isNullish(b));
         const local = e && ts.isIdentifier(e) ? this.checker.getSymbolAtLocation(e)?.valueDeclaration : undefined;
         // A library call that may give undefined (`map.get(key)`), which the lenient checker reads as its value type.
         const sig = e && ts.isCallExpression(e) ? this.checker.getResolvedSignature(e)?.getDeclaration() : undefined;
         const declared = sig && !ts.isJSDocSignature(sig) ? sig.type : undefined;
         if (declared && isLibDeclaration(sig as ts.Declaration) && ts.isUnionTypeNode(declared) && declared.types.some((y) => y.kind === ts.SyntaxKind.UndefinedKeyword)) found = true;
         // An optional parameter, or a local declared without a value, may still be undefined.
-        if (!e || isNullish(e) || (ts.isCallExpression(e) && this.typeOf(e) === 'Void') || (ts.isIdentifier(e) && optionalParams.has(this.checker.getSymbolAtLocation(e))) || (local && ts.isVariableDeclaration(local) && !local.initializer && ts.findAncestor(local, (n) => n === fn))) found = true;
+        if (!e || isNullish(e) || (ts.isCallExpression(e) && this.typeOf(e) === 'Void') || (ts.isIdentifier(e) && optionalParams.has(this.checker.getSymbolAtLocation(e))) || (local && ts.isVariableDeclaration(local) && (!local.initializer || isNullish(local.initializer)) && ts.findAncestor(local, (n) => n === fn))) found = true;
       }
       ts.forEachChild(n, visit);
     };
@@ -3643,6 +3647,13 @@ export class Translator implements AsyncTranslator {
         if (sym) this.undefinedVars.set(sym, optionalType(t));
         return `${i}${constant ? 'let' : 'var'} ${name}: ${optionalType(t)} = (try jsGet(${this.expr(member.expression)}, ${swiftString(member.name.text)}) as? ${t})`;
       }
+      // Lenient code: a string, number or boolean declared null until assigned (`let prominentIdentifier: string = null`)
+      // holds undefined, read as undefined reads where its type is wanted and as the optional by `??` and `??=`.
+      if (this.lenient && !constant && isNullish(d.initializer) && (t === 'String' || t === 'Double' || t === 'Bool')) {
+        const sym = this.resolve(d.name);
+        if (sym) this.undefinedVars.set(sym, optionalType(t));
+        return `${i}var ${name}: ${optionalType(t)} = nil`;
+      }
       const maybe = !lowered && !t.endsWith('?') ? this.maybeUndefined(d.initializer) : null;
       if (maybe) {
         const sym = this.resolve(d.name);
@@ -5205,6 +5216,11 @@ export class Translator implements AsyncTranslator {
       const holder = this.typeOf(e.expression).replace(/[?!]$/, '');
       if (holder === 'Any' || holder === 'JSObject') return this.fromAny(`(try jsGet(${this.expr(e.expression)}, ${this.propertyKey(e.argumentExpression)}))`, optionalType(this.typeOf(e)));
     }
+    // `a ?? b` where `b` may give undefined: the optional `b` gives when `a` gives nothing.
+    if (ts.isBinaryExpression(e) && e.operatorToken.kind === ts.SyntaxKind.QuestionQuestionToken && ['String', 'Double', 'Bool'].includes(this.typeOf(e))) {
+      const right = this.maybeUndefined(e.right);
+      if (right) return `(${this.maybeUndefined(e.left) ?? this.coerce(e.left, optionalType(this.typeOf(e)))} ?? ${right})`;
+    }
     // `c ? a : b` where a branch may give undefined: each branch as the optional it may be.
     if (ts.isConditionalExpression(e) && ['String', 'Double', 'Bool'].includes(this.typeOf(e))) {
       const branches = [e.whenTrue, e.whenFalse].map((b) => this.maybeUndefined(b));
@@ -6725,6 +6741,8 @@ export class Translator implements AsyncTranslator {
       case K.AsteriskAsteriskEqualsToken: return `${target()} = jsPow(${l()}, ${this.toNumber(e.right)})`;
       case K.QuestionQuestionEqualsToken:
         if (this.isAny(e.left)) return `if ${this.tryPrefix(e.left)}jsIsNullish(${l()}) { ${this.tryPrefix(e)}${this.assignment(e)} }`;
+        // A variable held optional while undefined: assigned only while it is.
+        if (ts.isIdentifier(e.left) && this.undefinedVars.has(this.resolve(e.left)!)) return `if ${target()} == nil { ${this.tryPrefix(e.right)}${target()} = ${this.coerce(e.right, this.typeOf(e.left).replace(/\?$/, ''))} }`;
         return `${target()} = ${l()} ?? ${this.coerce(e.right, this.typeOf(e.left).replace(/\?$/, ''))}`;
       case K.BarBarEqualsToken: return `if !jsTruthy(${this.tryPrefix(e.left)}${l()}) { ${this.tryPrefix(e)}${target()} = ${this.coerce(e.right, this.typeOf(e.left))} }`;
       case K.AmpersandAmpersandEqualsToken: return `if jsTruthy(${this.tryPrefix(e.left)}${l()}) { ${this.tryPrefix(e)}${target()} = ${this.coerce(e.right, this.typeOf(e.left))} }`;
