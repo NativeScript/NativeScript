@@ -788,6 +788,7 @@ export class Translator implements AsyncTranslator {
       if (init && (ts.isArrowFunction(init) || (ts.isFunctionExpression(init) && !isMethodValue(init))) && this.returnsMethod(init)) return returningAny(this.type(this.checker.getTypeAtLocation(init), init));
     }
     if ((ts.isIdentifier(n) || ts.isVariableDeclaration(n)) && this.untypedRecord(n)) return 'JSRecord<Any?>';
+    if (ts.isIdentifier(n) && this.widenedParameter(n)) return 'Any?';
     const keyed = (ts.isIdentifier(n) || ts.isVariableDeclaration(n)) ? this.numberKeyedArray(n) : null;
     if (keyed) return `JSRecord<${keyed}>`;
     // A choice between function literals is the function type they are written for: each literal takes its slot's signature.
@@ -814,6 +815,30 @@ export class Translator implements AsyncTranslator {
     let init: ts.Expression = d.initializer;
     while (ts.isParenthesizedExpression(init)) init = init.expression;
     return (ts.isPropertyAccessExpression(init) || ts.isIdentifier(init)) && this.declaredUndefined(init);
+  }
+
+  private widenedParameters = new Map<ts.Node, boolean>();
+  /**
+   * Lenient code: a function literal's parameter typed a string, number or boolean where its slot passes
+   * any value (`scale: (value: number) => ({ property: 'scale', value })` stored where a `Pair | number` is
+   * passed): JavaScript passes the value through unconverted, so the parameter holds it untyped.
+   */
+  private widenedParameter(n: ts.Identifier): boolean {
+    if (!this.lenient) return false;
+    const d = ts.isParameter(n.parent) && n.parent.name === n ? n.parent : this.resolve(n)?.valueDeclaration;
+    if (!d || !ts.isParameter(d) || !ts.isIdentifier(d.name) || d.dotDotDotToken) return false;
+    let found = this.widenedParameters.get(d);
+    if (found !== undefined) return found;
+    found = false;
+    const fn = d.parent;
+    if (ts.isArrowFunction(fn) || ts.isFunctionExpression(fn)) {
+      const own = this.type(this.checker.getTypeAtLocation(d.name), d);
+      const k = fn.parameters.indexOf(d);
+      const slot = this.slotOf(fn)?.getParameters()[k];
+      found = (own === 'Double' || own === 'String' || own === 'Bool') && !!slot && this.type(this.checker.getTypeOfSymbolAtLocation(slot, fn), fn) === 'Any?';
+    }
+    this.widenedParameters.set(d, found);
+    return found;
   }
 
   private numberKeyedArrays = new Map<ts.Node, string | null>();
@@ -1584,7 +1609,7 @@ export class Translator implements AsyncTranslator {
     lines.push(`    var jsKeys: [String] { jsOrder ?? [${fields.map((f) => swiftString(f.name)).join(', ')}] }`);
     lines.push('    var jsClassName: String? { nil }');
     lines.push('    subscript(jsKey key: String) -> Any? {', '        get {', '            switch key {');
-    for (const f of fields) lines.push(`            case ${swiftString(f.name)}: return ${f.accessor?.throws ? `(try? self.${ident(f.name)}) ?? nil` : `self.${ident(f.name)}`}`);
+    for (const f of fields) lines.push(`            case ${swiftString(f.name)}: return ${f.accessor?.throws ? `(try? self.${ident(f.name)}) ?? nil` : this.boxedField(`self.${ident(f.name)}`, f.type)}`);
     lines.push('            default: return nil', '            }', '        }', '        set {', '            switch key {');
     for (const f of fields) if (!f.accessor || f.accessor.set) lines.push(`            case ${swiftString(f.name)}: self.${ident(f.name)} = ${this.fromAny('newValue', f.type)}`);
     lines.push('            default: break', '            }', '        }', '    }');
@@ -1621,7 +1646,7 @@ export class Translator implements AsyncTranslator {
       `    ${o}subscript(jsKey key: String) -> Any? {`,
       '        get {',
       '            switch key {',
-      ...fields.map((f) => `            case ${swiftString(f.name)}: return ${raw.has(f.name) ? `jsExpandoGet(self, ${swiftString(f.name)})` : this.untypedEnum(`self.${ident(f.name)}`, f.type)}`),
+      ...fields.map((f) => `            case ${swiftString(f.name)}: return ${raw.has(f.name) ? `jsExpandoGet(self, ${swiftString(f.name)})` : isFunctionType(f.type.replace(/^\((.*)\)[?!]$/, '$1')) ? this.boxedField(`self.${ident(f.name)}`, f.type) : this.untypedEnum(`self.${ident(f.name)}`, f.type)}`),
       ...symbols.map((f) => `            case ${f.key}: return ${f.member}`),
       ...methods.filter((m) => !fields.some((f) => f.name === m.name)).map((m) => m.available
         ? `            case ${swiftString(m.name)}: if #available(iOS ${m.available}, *) { return ${this.boxFunction(`self.${ident(m.name)}`, m.type)} } else { return nil }`
@@ -2363,6 +2388,13 @@ export class Translator implements AsyncTranslator {
     if (fn.name && refersTo(fn.body, this.checker.getSymbolAtLocation(fn.name), this.checker)) throw this.error(fn, 'a named function expression');
     const extra = this.unusedParameters(fn).map((t, k) => `_ __unused${k}: ${t}`);
     return `{ (${[this.params(fn, true), ...extra, ...pad].filter(Boolean).join(', ')}) ${throws}-> ${ret} in${this.functionBody(fn, ret, this.indent).slice(1)}`;
+  }
+
+  /** A field read by name: a function it holds as the script function a caller can call (`TRANSFORM_MATRIXES[property](value)`). */
+  private boxedField(code: string, type: string): string {
+    const inner = type.replace(/^\((.*)\)[?!]$/, '$1');
+    // Through an optional: a field Swift holds implicitly unwrapped is nil until set, which reads as undefined.
+    return functionParts(inner) ? this.convert(code, `(${inner})?`, 'Any?') : code;
   }
 
   /** A Swift function type's parameters and result, or null for any other type. */
@@ -5155,6 +5187,11 @@ export class Translator implements AsyncTranslator {
         try { return this.expr(e); } finally { this.rawOptional.delete(e); }
       }
     }
+    // A string, number or boolean read by key from an untyped object (`map[symbol] ?? fallback`): undefined where it has no such key.
+    if (ts.isElementAccessExpression(e) && !isWriteTarget(e) && ['String', 'Double', 'Bool'].includes(this.typeOf(e))) {
+      const holder = this.typeOf(e.expression).replace(/[?!]$/, '');
+      if (holder === 'Any' || holder === 'JSObject') return this.fromAny(`(try jsGet(${this.expr(e.expression)}, ${this.propertyKey(e.argumentExpression)}))`, optionalType(this.typeOf(e)));
+    }
     // `c ? a : b` where a branch may give undefined: each branch as the optional it may be.
     if (ts.isConditionalExpression(e) && ['String', 'Double', 'Bool'].includes(this.typeOf(e))) {
       const branches = [e.whenTrue, e.whenFalse].map((b) => this.maybeUndefined(b));
@@ -6441,6 +6478,8 @@ export class Translator implements AsyncTranslator {
       if (args.length === 1) return `JSDate(${this.isString(args[0]) ? this.expr(args[0]) : this.toNumber(args[0])})`;
       return `JSDate(${args.map((a) => this.toNumber(a)).join(', ')})`;
     }
+    // A pattern that may be a RegExp itself (`new RegExp(/…/g)`) gives its source and flags, not its string form.
+    if (name === 'RegExp' && args[0] && !this.isString(args[0])) return `JSRegExp.construct(${this.coerce(args[0], 'Any?')}${args[1] ? `, ${this.coerce(args[1], 'Any?')}` : ''})`;
     if (name === 'RegExp') return `JSRegExp(${this.str(args[0])}${args[1] ? `, ${this.str(args[1])}` : ''})`;
     const intl = intlConstructor(callee, this.checker);
     if (intl) return `JS${intl}(${args.map((a) => this.coerce(a, 'Any?')).join(', ')})`;

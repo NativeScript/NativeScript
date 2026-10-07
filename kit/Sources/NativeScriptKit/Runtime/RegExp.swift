@@ -24,6 +24,13 @@ public final class JSRegExp: JSDynamic, JSStringConvertible {
         }
     }
 
+    /// `new RegExp(pattern, flags)` of a pattern that may be a RegExp: its source, and its flags unless others are given.
+    public static func construct(_ pattern: Any?, _ flags: Any? = nil) throws -> JSRegExp {
+        let given = jsIsUndefined(jsFlat(flags) as Any?) ? nil : jsToString(flags)
+        if let re = jsFlat(pattern) as? JSRegExp { return try JSRegExp(re.source, given ?? re.flags) }
+        return try JSRegExp(jsFlat(pattern) == nil ? "(?:)" : jsToString(pattern), given ?? "")
+    }
+
     public var global: Bool { flags.contains("g") }
     public var ignoreCase: Bool { flags.contains("i") }
     public var multiline: Bool { flags.contains("m") }
