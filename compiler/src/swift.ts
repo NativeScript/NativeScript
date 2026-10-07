@@ -1920,13 +1920,17 @@ export class Translator implements AsyncTranslator {
 
   /**
    * A method whose root declares it may give nothing (`getCssVariable(name: string): string | null`), which the lenient
-   * checker reads as the bare type: it and every override give an optional, as overrides share one signature.
+   * checker reads as the bare type: where that is a string, number or boolean, it and every override give an optional,
+   * as overrides share one signature.
    */
   private declaresNullableReturn(fn: ts.MethodDeclaration): boolean {
     let root = fn;
     for (let b = this.baseMethod(root); b; b = this.baseMethod(root)) root = b;
     const t = root.type;
-    return !!t && ts.isUnionTypeNode(t) && t.types.some((x) => x.kind === ts.SyntaxKind.UndefinedKeyword || (ts.isLiteralTypeNode(x) && x.literal.kind === ts.SyntaxKind.NullKeyword));
+    if (!t || !ts.isUnionTypeNode(t) || !t.types.some((x) => x.kind === ts.SyntaxKind.UndefinedKeyword || (ts.isLiteralTypeNode(x) && x.literal.kind === ts.SyntaxKind.NullKeyword))) return false;
+    // An object is held implicitly unwrapped already, nil where undefined; only a string, number or boolean needs the optional.
+    const sig = this.checker.getSignatureFromDeclaration(root);
+    return !!sig && ['String', 'Double', 'Bool'].includes(this.type(sig.getReturnType(), root));
   }
 
   private returnsUndefined(fn: ts.FunctionDeclaration | ts.MethodDeclaration): boolean {
