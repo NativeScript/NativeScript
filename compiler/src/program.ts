@@ -252,8 +252,12 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
       if (m.startsWith('.')) {
         const base = resolve(dirname(containing), m);
         // A platform's own file first, as NativeScript's bundler resolves `./x` to `x.ios.ts`.
-        for (const candidate of [`${base}.${platform}.ts`, base + '.ts', base + '.tsx', `${base}/index.${platform}.ts`, base + '/index.ts', base.endsWith('.vue') ? base + '.ts' : '']) {
+        // A platform file importing its own module's name (`import type { HingeListener } from './hinge-tracker'` in
+        // hinge-tracker.ios.ts) means the module's declarations: `x.d.ts`, else the platforms' shared `x.ts`.
+        const own = containing === `${base}.${platform}.ts`;
+        for (const candidate of own ? [base + '.d.ts', base + '.ts'] : [`${base}.${platform}.ts`, base + '.ts', base + '.tsx', `${base}/index.${platform}.ts`, base + '/index.ts', base.endsWith('.vue') ? base + '.ts' : '']) {
           if (candidate && (files.has(candidate) || existsSync(candidate))) {
+            if (candidate.endsWith('.d.ts')) return { resolvedModule: { resolvedFileName: candidate, extension: ts.Extension.Dts } };
             // A plugin's own modules are compiled with it.
             if (pluginFiles.has(containing)) pluginFiles.add(candidate);
             return { resolvedModule: { resolvedFileName: candidate, extension: candidate.endsWith('.tsx') ? ts.Extension.Tsx : ts.Extension.Ts } };

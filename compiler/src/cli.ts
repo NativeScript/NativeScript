@@ -183,7 +183,8 @@ if (framework === 'vue') {
   const routesFile = tree ? undefined : sources.find((f) => /Routes\b/.test(readFileSync(f, 'utf8')) && /component:/.test(readFileSync(f, 'utf8')));
   const { routes, initial } = routesFile ? angularRoutes(readFileSync(routesFile, 'utf8')) : { routes: [], initial: '/' };
   const routeFiles = new Set([...(tree?.files ?? []), ...(routesFile ? [routesFile] : [])]);
-  const elements = registeredElements(sources, nodeModules(app));
+  // Tags the entry registers too (`registerElement('Glass', …)` in main.ts, before the app bootstraps).
+  const elements = registeredElements([...(entry && !sources.includes(entry) ? [entry] : []), ...sources], nodeModules(app));
   // zone.js change detection, which Angular 22 runs only where the app provides it.
   zone = [entryText, ...sources.map((f) => readFileSync(f, 'utf8'))].some((t) => /\bprovideZoneChangeDetection\(/.test(t));
   components = sources.map((f) => angularComponent(f, readFileSync(f, 'utf8'), selectors, { zone, elements: new Map([...elements].map(([tag, e]) => [tag, e.name])) })).filter((c): c is NonNullable<typeof c> => !!c);

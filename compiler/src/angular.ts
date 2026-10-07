@@ -115,7 +115,14 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
 
   const nodes = (list: ng.TmplAstNode[], loops: Loop[]): TNode[] => {
     const out: TNode[] = [];
+    // `@let name = expression`: the expression wherever the name is read after it in this block.
+    const declared: string[] = [];
     for (const n of list) {
+      if (n instanceof ng.TmplAstLetDeclaration) {
+        aliases.set(n.name, rewrite(clean(sourceOf(n.value)), local(loops)));
+        declared.push(n.name);
+        continue;
+      }
       if (n instanceof ng.TmplAstElement) {
         const attrs: Attr[] = [];
         const events: Event[] = [];
@@ -193,6 +200,7 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
       if (n instanceof ng.TmplAstText || n instanceof ng.TmplAstBoundText) continue;
       throw new Error(`${path}: ${n.constructor.name} in a template is not supported in a release build yet`);
     }
+    for (const name of declared) aliases.delete(name);
     return out;
   };
 
