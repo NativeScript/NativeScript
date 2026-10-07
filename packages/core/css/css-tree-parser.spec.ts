@@ -13,6 +13,13 @@ describe('CssTreeParser', () => {
 		expect(reworkAST.stylesheet.rules[0].declarations[0].value).toBe('red');
 	});
 
+	it('keeps escaped commas inside a selector', () => {
+		const testCase = '.grid-cols-\\[repeat\\(auto-fill\\,minmax\\(260px\\,1fr\\)\\)\\], .a\\\\, .b { color: red; }';
+		const expected = ['.grid-cols-\\[repeat\\(auto-fill\\,minmax\\(260px\\,1fr\\)\\)\\]', '.a\\\\', '.b'];
+		expect(reworkCssParse(testCase, { source: 'file.css' }).stylesheet.rules[0].selectors).toEqual(expected);
+		expect(cssTreeParse(testCase, 'file.css').stylesheet.rules[0].selectors).toEqual(expected);
+	});
+
 	it('empty rule', () => {
 		const css = `.test {
 	        color: red;

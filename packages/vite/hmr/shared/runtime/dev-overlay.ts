@@ -13,6 +13,7 @@ import { DEFAULT_SNAPSHOT, createBootOverlaySnapshot, createConnectionOverlaySna
 import { getHmrDevOverlayPosition, getOverlayGlobal, getRuntimeState, type HmrOverlayRuntimeState } from './dev-overlay-shared.js';
 import { applySnapshotToBootRefs, applySnapshotToLiveRefs, buildBootOverlayRefs, ensureLiveOverlayRefs, updateBootStatusLabel } from './dev-overlay-tree.js';
 import { applySnapshotToIosRefs, ensureIosOverlayRefs, getIosOverlayHost } from './dev-overlay-ios.js';
+import { applySnapshotToAndroidRefs, ensureAndroidOverlayRefs, getAndroidOverlayHost } from './dev-overlay-android.js';
 import { resolveOverlayEnabled } from './overlay-flag.js';
 
 // Re-export the snapshot model and backend pure helpers so existing
@@ -23,6 +24,8 @@ export { getHmrDevOverlayPosition } from './dev-overlay-shared.js';
 export { computeAndroidToastMargin } from './dev-overlay-tree.js';
 export type { AndroidSafeAreaInsets, AndroidToastMargin } from './dev-overlay-tree.js';
 export { computeIosOverlayLayout, computeIosOverlayWindowLevel } from './dev-overlay-ios.js';
+export { computeAndroidPanelLayout, getAndroidOverlayHost, hexRgbaToAndroidArgb } from './dev-overlay-android.js';
+export type { AndroidOverlayHost, AndroidPanelLayout } from './dev-overlay-android.js';
 export type { IosOverlayLayout, IosRect, IosSafeInsets } from './dev-overlay-ios.js';
 
 type HmrOverlayApi = {
@@ -85,7 +88,20 @@ function applyRuntimeSnapshot(snapshot: HmrOverlaySnapshot): HmrOverlaySnapshot 
 		}
 	}
 
-	if (!handledByIos) {
+	// Android attaches to the Activity's DecorView; only when no Activity is
+	// reachable (tests, early boot) does the chip fall back to the in-tree
+	// mount, which re-parents the page content and destroys native surfaces.
+	let handledByAndroid = false;
+	if (!handledByIos && getAndroidOverlayHost()) {
+		if (wantsOverlay) {
+			const androidRefs = ensureAndroidOverlayRefs(state);
+			handledByAndroid = applySnapshotToAndroidRefs(androidRefs, snapshot);
+		} else if (state.androidRefs) {
+			handledByAndroid = applySnapshotToAndroidRefs(state.androidRefs, snapshot);
+		}
+	}
+
+	if (!handledByIos && !handledByAndroid) {
 		if (wantsOverlay) {
 			const liveRefs = ensureLiveOverlayRefs(snapshot);
 			applySnapshotToLiveRefs(liveRefs, snapshot);

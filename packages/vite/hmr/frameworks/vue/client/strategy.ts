@@ -1,8 +1,8 @@
 import type { FrameworkClientStrategy, FrameworkClientMountContext, FrameworkClientBatchContext, FrameworkClientMessageContext } from '../../../client/framework-client-strategy.js';
 import { ENV_VERBOSE as VERBOSE, getGraphVersion } from '../../../client/utils.js';
-import { installNsVueDevShims, ensureBackWrapperInstalled, getRootForVue, loadSfcComponent, ensureVueGlobals, recordVuePayloadChanges, handleVueSfcRegistry, handleVueSfcRegistryUpdate, sfcArtifactMap, sfcChangedInVersion } from './index.js';
+import { installNsVueDevShims, ensureBackWrapperInstalled, getRootForVue, loadSfcComponent, ensureVueGlobals, recordVuePayloadChanges, handleVueSfcRegistry, handleVueSfcRegistryUpdate, sfcArtifactMap, sfcChangedInVersion, tryInPlaceVueReload } from './index.js';
 import { installVueNavigateUsingApp } from './navigate-app.js';
-import { driveVueSfcUpdateOverlay } from './vue-sfc-update-overlay.js';
+import { APPLIED_IN_PLACE, driveVueSfcUpdateOverlay } from './vue-sfc-update-overlay.js';
 import { findNearestSfcBoundaries } from './dep-propagation.js';
 
 const VUE_SFC_RE = /\.vue$/i;
@@ -11,6 +11,7 @@ const VUE_SFC_RE = /\.vue$/i;
 export interface VueDepPropagationDeps {
 	findBoundaries: typeof findNearestSfcBoundaries;
 	loadComponent: (targetVuePath: string) => Promise<any | null>;
+	reloadInPlace: (component: any) => boolean;
 	sfcChangedInVersion: (version: number) => boolean;
 	getVersion: () => number;
 	driveOverlay: typeof driveVueSfcUpdateOverlay;
@@ -19,6 +20,7 @@ export interface VueDepPropagationDeps {
 const defaultPropagationDeps: VueDepPropagationDeps = {
 	findBoundaries: findNearestSfcBoundaries,
 	loadComponent: loadSfcComponent,
+	reloadInPlace: (component) => tryInPlaceVueReload(component),
 	sfcChangedInVersion,
 	getVersion: getGraphVersion,
 	driveOverlay: driveVueSfcUpdateOverlay,
@@ -26,15 +28,17 @@ const defaultPropagationDeps: VueDepPropagationDeps = {
 
 /**
  * Non-SFC dependency propagation. When a plain `.ts`/`.js` module changes, the
- * shared queue evicts + re-imports it, but the live component instance still
- * holds bindings to the OLD module instance — nothing on the Vue side remounts
+ * shared queue evicts + re-imports it, but the live component instances still
+ * hold bindings to the OLD module instance — nothing on the Vue side remounts
  * (the server only emits `ns:vue-sfc-registry-update` for `.vue` edits). Walk
- * the reverse import graph to the nearest `.vue` boundary and remount it the
- * same way the registry-update path does: `loadSfcComponent` re-assembles the
- * SFC at the bumped graph version, whose rewritten static imports resolve to
- * the freshly re-imported dep modules.
+ * the reverse import graph to every `.vue` boundary, re-assemble each one
+ * (`loadSfcComponent` links the freshly re-imported deps) and reload its
+ * mounted instances in place, as the registry-update path does. Boundaries
+ * with no mounted instance are a no-op for Vue's HMR runtime, so only visible
+ * components re-render and the app shell and navigation stay put. Without the
+ * runtime, the nearest boundary is remounted as the root instead.
  *
- * Returns true when a boundary remount cycle ran (and drove the overlay to
+ * Returns true when a propagation cycle ran (and drove the overlay to
  * 'complete' itself); false when the caller should fall through to the plain
  * overlay-complete frame (no boundary found, mixed batch handled by the
  * registry-update path, or missing context).
@@ -48,20 +52,23 @@ export async function propagateDepChangeToSfcBoundary(drained: string[], ctx: Fr
 		}
 		const boundaries = deps.findBoundaries(drained, ctx.graph);
 		if (!boundaries.length) return false;
-		// Remount the NEAREST boundary only — resetRoot replaces the whole root,
-		// so multiple resets would be wasted work with last-wins semantics. This
-		// mirrors the registry-update policy of remounting the SFC closest to the
-		// change. Surface skipped boundaries so multi-importer cases are diagnosable.
-		const target = boundaries[0];
-		if (boundaries.length > 1 && VERBOSE) {
-			console.log('[hmr][vue][dep-propagation] multiple SFC boundaries import the change; remounting nearest', { target, skipped: boundaries.slice(1) });
-		}
-		if (VERBOSE) console.log('[hmr][vue][dep-propagation] remounting SFC boundary for dep change', { target, drained });
+		if (VERBOSE) console.log('[hmr][vue][dep-propagation] reloading SFC boundaries for dep change', { boundaries, drained });
 		const performResetRoot = ctx.performResetRoot;
 		await deps.driveOverlay(
 			{
-				filePath: target,
-				loadComponent: () => deps.loadComponent(target),
+				filePath: boundaries[0],
+				loadComponent: async () => {
+					let reloaded = false;
+					for (const target of boundaries) {
+						const component = await deps.loadComponent(target);
+						if (!component) continue;
+						if (!deps.reloadInPlace(component)) {
+							return reloaded ? APPLIED_IN_PLACE : component;
+						}
+						reloaded = true;
+					}
+					return reloaded ? APPLIED_IN_PLACE : null;
+				},
 				applyComponent: (component) => Promise.resolve(performResetRoot(component)),
 			},
 			{ getOverlay: ctx.getOverlay ?? (() => null) },

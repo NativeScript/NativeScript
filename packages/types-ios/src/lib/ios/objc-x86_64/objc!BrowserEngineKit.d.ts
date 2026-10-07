@@ -32,6 +32,18 @@ declare const enum BEAccessibilityContainerType {
 }
 
 /**
+ * @since 27
+ */
+declare const enum BEAccessibilityOrientation {
+
+	Unknown = 0,
+
+	Vertical = 1,
+
+	Horizontal = 2
+}
+
+/**
  * @since 18.0
  */
 declare const enum BEAccessibilityPressedState {
@@ -558,6 +570,10 @@ declare class BEMediaEnvironment extends NSObject {
 
 	constructor(o: { XPCRepresentation: NSObject & OS_xpc_object; });
 
+	/**
+	 * @since 17.4
+	 * @deprecated 27.0
+	 */
 	activateWithError(error?: interop.Reference<NSError>): boolean;
 
 	createXPCRepresentation(): NSObject & OS_xpc_object;
@@ -568,6 +584,10 @@ declare class BEMediaEnvironment extends NSObject {
 
 	makeCaptureSessionWithError(error?: interop.Reference<NSError>): AVCaptureSession | null;
 
+	/**
+	 * @since 17.4
+	 * @deprecated 27.0
+	 */
 	suspendWithError(error?: interop.Reference<NSError>): boolean;
 }
 
@@ -645,9 +665,24 @@ declare class BEProcessCapability extends NSObject {
 
 	static new(): BEProcessCapability; // inherited from NSObject
 
+	/**
+	 * @since 27.0
+	 */
+	static screenCaptureWithEnvironment(environment: BEMediaEnvironment): BEProcessCapability;
+
 	static suspended(): BEProcessCapability;
 
+	/**
+	 * @since 27.0
+	 */
+	activateWithError(error?: interop.Reference<NSError>): boolean;
+
 	requestWithError(error?: interop.Reference<NSError>): BEProcessCapabilityGrant;
+
+	/**
+	 * @since 27.0
+	 */
+	suspendWithError(error?: interop.Reference<NSError>): boolean;
 }
 
 /**
@@ -1294,6 +1329,30 @@ declare class BEWebContentFilter extends NSObject {
 	allowURLCompletionHandler(url: NSURL, completionHandler: (p1: boolean, p2: NSError | null) => void): void;
 
 	evaluateURLCompletionHandler(url: NSURL, completionHandler: (p1: boolean, p2: NSData | null) => void): void;
+
+	/**
+	 * @since 27.0
+	 */
+	evaluateURLMainFrameURLIsMainFrameCompletionHandler(url: NSURL, mainFrameURL: NSURL, isMainFrame: boolean, completionHandler: (p1: boolean, p2: NSData | null) => void): void;
+
+	/**
+	 * @since 27.0
+	 */
+	requestPermissionForURLReferrerURLPresentingViewCompletionHandler(url: NSURL, referrerURL: NSURL | null, presentingView: UIView | null, completionHandler: (p1: BEWebContentFilterPermissionDecision, p2: NSError | null) => void): void;
+}
+
+/**
+ * @since 27.0
+ */
+declare const enum BEWebContentFilterPermissionDecision {
+
+	Error = 0,
+
+	Allowed = 1,
+
+	Denied = 2,
+
+	Pending = 3
 }
 
 /**

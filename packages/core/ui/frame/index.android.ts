@@ -70,8 +70,6 @@ export class Frame extends FrameBase {
 	private _containerViewId = -1;
 	private _tearDownPending = false;
 	private _attachedToWindow = false;
-	_defaultOverflowEdge: number;
-	_defaultOverflowEdgeValue: string;
 	/**
 	 * This property indicates that the view is to be reused as a root view or has been previously disposed.
 	 */
@@ -545,14 +543,6 @@ export class Frame extends FrameBase {
 		this._android.rootViewGroup = null;
 		this._removeFromFrameStack();
 		super.disposeNativeView();
-	}
-
-	public _popFromFrameStack() {
-		if (!this._isInFrameStack) {
-			return;
-		}
-
-		super._popFromFrameStack();
 	}
 
 	public _getNavBarVisible(page: Page): boolean {

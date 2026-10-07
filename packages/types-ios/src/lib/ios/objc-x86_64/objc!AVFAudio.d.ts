@@ -584,8 +584,14 @@ declare class AVAudioEngine extends NSObject {
 
 	/**
 	 * @since 16.0
+	 * @deprecated 27.0
 	 */
 	connectMIDIToFormatEventListBlock(sourceNode: AVAudioNode, destinationNode: AVAudioNode, format: AVAudioFormat | null, tapBlock: (p1: number, p2: number, p3: interop.Pointer | interop.Reference<MIDIEventList> | null) => number | null): void;
+
+	/**
+	 * @since 27.0
+	 */
+	connectMIDIToFormatEventListProvider(sourceNode: AVAudioNode, destinationNode: AVAudioNode, format: AVAudioFormat | null, tapBlock: (p1: number, p2: number, p3: interop.Pointer | interop.Reference<MIDIEventList> | null) => number | null): void;
 
 	/**
 	 * @since 13.0
@@ -595,17 +601,47 @@ declare class AVAudioEngine extends NSObject {
 
 	/**
 	 * @since 16.0
+	 * @deprecated 27.0
 	 */
 	connectMIDIToNodesFormatEventListBlock(sourceNode: AVAudioNode, destinationNodes: NSArray<AVAudioNode> | AVAudioNode[], format: AVAudioFormat | null, tapBlock: (p1: number, p2: number, p3: interop.Pointer | interop.Reference<MIDIEventList> | null) => number | null): void;
 
 	/**
+	 * @since 27.0
+	 */
+	connectMIDIToNodesFormatEventListProvider(sourceNode: AVAudioNode, destinationNodes: NSArray<AVAudioNode> | AVAudioNode[], format: AVAudioFormat | null, tapBlock: (p1: number, p2: number, p3: interop.Pointer | interop.Reference<MIDIEventList> | null) => number | null): void;
+
+	/**
 	 * @since 9.0
+	 * @deprecated 27.0
 	 */
 	connectToConnectionPointsFromBusFormat(sourceNode: AVAudioNode, destNodes: NSArray<AVAudioConnectionPoint> | AVAudioConnectionPoint[], sourceBus: number, format: AVAudioFormat | null): void;
 
+	/**
+	 * @since 27.0
+	 */
+	connectToConnectionPointsFromBusFormatError(sourceNode: AVAudioNode, destNodes: NSArray<AVAudioConnectionPoint> | AVAudioConnectionPoint[], sourceBus: number, format: AVAudioFormat | null, error?: interop.Reference<NSError>): boolean;
+
+	/**
+	 * @since 8.0
+	 * @deprecated 27.0
+	 */
 	connectToFormat(node1: AVAudioNode, node2: AVAudioNode, format: AVAudioFormat | null): void;
 
+	/**
+	 * @since 27.0
+	 */
+	connectToFormatError(node1: AVAudioNode, node2: AVAudioNode, format: AVAudioFormat | null, error?: interop.Reference<NSError>): boolean;
+
+	/**
+	 * @since 8.0
+	 * @deprecated 27.0
+	 */
 	connectToFromBusToBusFormat(node1: AVAudioNode, node2: AVAudioNode, bus1: number, bus2: number, format: AVAudioFormat | null): void;
+
+	/**
+	 * @since 27.0
+	 */
+	connectToFromBusToBusFormatError(node1: AVAudioNode, node2: AVAudioNode, bus1: number, bus2: number, format: AVAudioFormat | null, error?: interop.Reference<NSError>): boolean;
 
 	detachNode(node: AVAudioNode): void;
 
@@ -977,6 +1013,7 @@ declare class AVAudioFormat extends NSObject implements NSSecureCoding {
 
 	/**
 	 * @since 9.0
+	 * @deprecated 27.0
 	 */
 	constructor(o: { CMAudioFormatDescription: any; });
 
@@ -985,6 +1022,11 @@ declare class AVAudioFormat extends NSObject implements NSSecureCoding {
 	constructor(o: { commonFormat: AVAudioCommonFormat; sampleRate: number; channels: number; interleaved: boolean; });
 
 	constructor(o: { commonFormat: AVAudioCommonFormat; sampleRate: number; interleaved: boolean; channelLayout: AVAudioChannelLayout; });
+
+	/**
+	 * @since 27
+	 */
+	constructor(o: { formatDescription: any; });
 
 	constructor(o: { settings: NSDictionary<string, any>; });
 
@@ -1000,6 +1042,7 @@ declare class AVAudioFormat extends NSObject implements NSSecureCoding {
 
 	/**
 	 * @since 9.0
+	 * @deprecated 27.0
 	 */
 	initWithCMAudioFormatDescription(formatDescription: any): this;
 
@@ -1008,6 +1051,11 @@ declare class AVAudioFormat extends NSObject implements NSSecureCoding {
 	initWithCommonFormatSampleRateChannelsInterleaved(format: AVAudioCommonFormat, sampleRate: number, channels: number, interleaved: boolean): this;
 
 	initWithCommonFormatSampleRateInterleavedChannelLayout(format: AVAudioCommonFormat, sampleRate: number, interleaved: boolean, layout: AVAudioChannelLayout): this;
+
+	/**
+	 * @since 27
+	 */
+	initWithFormatDescription(formatDescription: any): this;
 
 	initWithSettings(settings: NSDictionary<string, any>): this;
 
@@ -1143,6 +1191,11 @@ declare class AVAudioInputNode extends AVAudioIONode implements AVAudioMixing {
 	 * @since 17.0
 	 */
 	setMutedSpeechActivityEventListener(listenerBlock: (p1: AVAudioVoiceProcessingSpeechActivityEvent) => void | null): boolean;
+
+	/**
+	 * @since 27.0
+	 */
+	setRealtimeSafeManualRenderingInputPCMFormatInputBlock(format: AVAudioFormat, block: (p1: number) => interop.Pointer | interop.Reference<AudioBufferList> | null): boolean;
 }
 
 /**
@@ -1352,7 +1405,16 @@ declare class AVAudioNode extends NSObject {
 
 	inputFormatForBus(bus: number): AVAudioFormat;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 27.0
+	 */
 	installTapOnBusBufferSizeFormatBlock(bus: number, bufferSize: number, format: AVAudioFormat | null, tapBlock: (p1: AVAudioPCMBuffer, p2: AVAudioTime) => void): void;
+
+	/**
+	 * @since 27.0
+	 */
+	installTapOnBusBufferSizeFormatErrorBlock(bus: number, bufferSize: number, format: AVAudioFormat | null, outError: interop.Pointer | interop.Reference<NSError | null> | ArrayBufferLike | ArrayBufferView | null, tapBlock: (p1: AVAudioPCMBuffer, p2: AVAudioTime) => void): boolean;
 
 	nameForInputBus(bus: number): string | null;
 
@@ -1637,9 +1699,27 @@ declare class AVAudioPlayerNode extends AVAudioNode implements AVAudioMixing {
 
 	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 27.0
+	 */
 	play(): void;
 
+	/**
+	 * @since 27.0
+	 */
+	playAndReturnError(error?: interop.Reference<NSError>): boolean;
+
+	/**
+	 * @since 8.0
+	 * @deprecated 27.0
+	 */
 	playAtTime(when: AVAudioTime | null): void;
+
+	/**
+	 * @since 27.0
+	 */
+	playAtTimeError(when: AVAudioTime | null, error?: interop.Reference<NSError>): boolean;
 
 	playerTimeForNodeTime(nodeTime: AVAudioTime): AVAudioTime | null;
 
@@ -2306,6 +2386,16 @@ declare class AVAudioSession extends NSObject {
 	readonly supportsMultichannelContent: boolean;
 
 	/**
+	 * @since 27.0
+	 */
+	activateWithOptionsCompletionHandler(options: AVAudioSessionActivationOptions, handler: (p1: boolean, p2: NSError | null) => void): void;
+
+	/**
+	 * @since 27.0
+	 */
+	deactivateWithOptionsCompletionHandler(options: AVAudioSessionDeactivationOptions, handler: (p1: boolean, p2: NSError | null) => void): void;
+
+	/**
 	 * @since 6.0
 	 */
 	overrideOutputAudioPortError(portOverride: AVAudioSessionPortOverride, error?: interop.Reference<NSError>): boolean;
@@ -2617,6 +2707,42 @@ declare class AVAudioSessionDataSourceDescription extends NSObject {
 }
 
 /**
+ * @since 27.0
+ */
+declare class AVAudioSessionDeactivationContext extends NSObject {
+
+	static alloc(): AVAudioSessionDeactivationContext; // inherited from NSObject
+
+	static new(): AVAudioSessionDeactivationContext; // inherited from NSObject
+
+	readonly interruptionContext: AVAudioSessionInterruptionContext | null;
+
+	readonly source: AVAudioSessionDeactivationSource;
+}
+
+/**
+ * @since 27.0
+ */
+declare var AVAudioSessionDeactivationContextKey: string;
+
+declare const enum AVAudioSessionDeactivationOptions {
+
+	None = 0,
+
+	NotifyOthersOnDeactivation = 1
+}
+
+/**
+ * @since 27.0
+ */
+declare const enum AVAudioSessionDeactivationSource {
+
+	App = 1,
+
+	System = 2
+}
+
+/**
  * @since 3.0
  * @deprecated 6.0
  */
@@ -2638,11 +2764,33 @@ declare var AVAudioSessionDelegate: {
 	prototype: AVAudioSessionDelegate;
 };
 
+/**
+ * @since 27.0
+ */
+declare var AVAudioSessionDidBecomeActiveNotification: string;
+
+/**
+ * @since 27.0
+ */
+declare var AVAudioSessionDidBecomeInactiveNotification: string;
+
 declare const enum AVAudioSessionIOType {
 
 	NotSpecified = 0,
 
 	Aggregated = 1
+}
+
+/**
+ * @since 27.0
+ */
+declare class AVAudioSessionInterruptionContext extends NSObject {
+
+	static alloc(): AVAudioSessionInterruptionContext; // inherited from NSObject
+
+	static new(): AVAudioSessionInterruptionContext; // inherited from NSObject
+
+	readonly reason: AVAudioSessionInterruptionReason;
 }
 
 declare const AVAudioSessionInterruptionFlags_ShouldResume: number;
@@ -2657,6 +2805,10 @@ declare var AVAudioSessionInterruptionNotification: string;
  */
 declare var AVAudioSessionInterruptionOptionKey: string;
 
+/**
+ * @since 6.0
+ * @deprecated 27.0
+ */
 declare const enum AVAudioSessionInterruptionOptions {
 
 	ShouldResume = 1
@@ -2678,6 +2830,10 @@ declare const enum AVAudioSessionInterruptionReason {
  */
 declare var AVAudioSessionInterruptionReasonKey: string;
 
+/**
+ * @since 6.0
+ * @deprecated 27.0
+ */
 declare const enum AVAudioSessionInterruptionType {
 
 	Began = 1,
@@ -3012,6 +3168,11 @@ declare var AVAudioSessionPortLineIn: string;
  */
 declare var AVAudioSessionPortLineOut: string;
 
+/**
+ * @since 27.0
+ */
+declare var AVAudioSessionPortMediaDeviceExtension: string;
+
 declare const enum AVAudioSessionPortOverride {
 
 	None = 0,
@@ -3086,6 +3247,38 @@ declare var AVAudioSessionRenderingModeChangeNotification: string;
  * @since 17.2
  */
 declare var AVAudioSessionRenderingModeNewRenderingModeKey: string;
+
+/**
+ * @since 27.0
+ */
+declare class AVAudioSessionResumptionContext extends NSObject {
+
+	static alloc(): AVAudioSessionResumptionContext; // inherited from NSObject
+
+	static new(): AVAudioSessionResumptionContext; // inherited from NSObject
+
+	readonly recommendation: AVAudioSessionResumptionRecommendation;
+}
+
+/**
+ * @since 27.0
+ */
+declare var AVAudioSessionResumptionContextKey: string;
+
+/**
+ * @since 27.0
+ */
+declare const enum AVAudioSessionResumptionRecommendation {
+
+	ShouldNotResume = 0,
+
+	ShouldResume = 1
+}
+
+/**
+ * @since 27.0
+ */
+declare var AVAudioSessionResumptionRecommendationNotification: string;
 
 /**
  * @since 6.0
@@ -3202,7 +3395,17 @@ declare class AVAudioSinkNode extends AVAudioNode {
 
 	static new(): AVAudioSinkNode; // inherited from NSObject
 
+	/**
+	 * @since 27.0
+	 */
+	constructor(o: { realtimeSafeReceiverBlock: (p1: interop.Pointer | interop.Reference<AudioTimeStamp> | null, p2: number, p3: interop.Pointer | interop.Reference<AudioBufferList> | null) => number; });
+
 	constructor(o: { receiverBlock: (p1: interop.Pointer | interop.Reference<AudioTimeStamp> | null, p2: number, p3: interop.Pointer | interop.Reference<AudioBufferList> | null) => number; });
+
+	/**
+	 * @since 27.0
+	 */
+	initWithRealtimeSafeReceiverBlock(block: (p1: interop.Pointer | interop.Reference<AudioTimeStamp> | null, p2: number, p3: interop.Pointer | interop.Reference<AudioBufferList> | null) => number): this;
 
 	initWithReceiverBlock(block: (p1: interop.Pointer | interop.Reference<AudioTimeStamp> | null, p2: number, p3: interop.Pointer | interop.Reference<AudioBufferList> | null) => number): this;
 }
@@ -3254,7 +3457,17 @@ declare class AVAudioSourceNode extends AVAudioNode implements AVAudioMixing {
 
 	readonly  // inherited from NSObjectProtocol
 
+	/**
+	 * @since 27.0
+	 */
+	constructor(o: { format: AVAudioFormat; realtimeSafeRenderBlock: (p1: interop.Pointer | interop.Reference<boolean> | null, p2: interop.Pointer | interop.Reference<AudioTimeStamp> | null, p3: number, p4: interop.Pointer | interop.Reference<AudioBufferList> | null) => number; });
+
 	constructor(o: { format: AVAudioFormat; renderBlock: (p1: interop.Pointer | interop.Reference<boolean> | null, p2: interop.Pointer | interop.Reference<AudioTimeStamp> | null, p3: number, p4: interop.Pointer | interop.Reference<AudioBufferList> | null) => number; });
+
+	/**
+	 * @since 27.0
+	 */
+	constructor(o: { realtimeSafeRenderBlock: (p1: interop.Pointer | interop.Reference<boolean> | null, p2: interop.Pointer | interop.Reference<AudioTimeStamp> | null, p3: number, p4: interop.Pointer | interop.Reference<AudioBufferList> | null) => number; });
 
 	constructor(o: { renderBlock: (p1: interop.Pointer | interop.Reference<boolean> | null, p2: interop.Pointer | interop.Reference<AudioTimeStamp> | null, p3: number, p4: interop.Pointer | interop.Reference<AudioBufferList> | null) => number; });
 
@@ -3267,7 +3480,17 @@ declare class AVAudioSourceNode extends AVAudioNode implements AVAudioMixing {
 	 */
 	destinationForMixerBus(mixer: AVAudioNode, bus: number): AVAudioMixingDestination | null;
 
+	/**
+	 * @since 27.0
+	 */
+	initWithFormatRealtimeSafeRenderBlock(format: AVAudioFormat, block: (p1: interop.Pointer | interop.Reference<boolean> | null, p2: interop.Pointer | interop.Reference<AudioTimeStamp> | null, p3: number, p4: interop.Pointer | interop.Reference<AudioBufferList> | null) => number): this;
+
 	initWithFormatRenderBlock(format: AVAudioFormat, block: (p1: interop.Pointer | interop.Reference<boolean> | null, p2: interop.Pointer | interop.Reference<AudioTimeStamp> | null, p3: number, p4: interop.Pointer | interop.Reference<AudioBufferList> | null) => number): this;
+
+	/**
+	 * @since 27.0
+	 */
+	initWithRealtimeSafeRenderBlock(block: (p1: interop.Pointer | interop.Reference<boolean> | null, p2: interop.Pointer | interop.Reference<AudioTimeStamp> | null, p3: number, p4: interop.Pointer | interop.Reference<AudioBufferList> | null) => number): this;
 
 	initWithRenderBlock(block: (p1: interop.Pointer | interop.Reference<boolean> | null, p2: interop.Pointer | interop.Reference<AudioTimeStamp> | null, p3: number, p4: interop.Pointer | interop.Reference<AudioBufferList> | null) => number): this;
 
@@ -3876,7 +4099,9 @@ declare const enum AVAudioUnitReverbPreset {
 
 	MediumHall3 = 11,
 
-	LargeHall2 = 12
+	LargeHall2 = 12,
+
+	OutdoorGeneral = 24
 }
 
 /**

@@ -1,8 +1,9 @@
 import type { ScrollEventData } from './scroll-view-common';
-import { ScrollViewBase, scrollBarIndicatorVisibleProperty, isScrollEnabledProperty, iosContentInsetAdjustmentBehaviorProperty } from './scroll-view-common';
+import { ScrollViewBase, scrollBarIndicatorVisibleProperty, isScrollEnabledProperty, iosContentInsetAdjustmentBehaviorProperty, iosScrollEdgeEffectProperty } from './scroll-view-common';
 import { layout } from '../../utils';
 import { SDK_VERSION } from '../../utils/constants';
 import { View } from '../core/view';
+import { IOSHelper, ScrollEdgeContainers } from '../core/view/view-helper';
 import { CoreTypes } from '../enums';
 
 export * from './scroll-view-common';
@@ -40,6 +41,7 @@ export class ScrollView extends ScrollViewBase {
 	private _contentMeasuredHeight = 0;
 	private _isFirstLayout: boolean = true;
 	private _delegate: UIScrollViewDelegateImpl;
+	private _scrollEdgeContainers: ScrollEdgeContainers;
 
 	public createNativeView() {
 		return UIScrollView.new();
@@ -52,12 +54,25 @@ export class ScrollView extends ScrollViewBase {
 		// UIKit defaults to `automatic` while the property defaults to `never`, and
 		// setNative only runs for non-default values — so apply it up front.
 		this.updateContentInsetAdjustmentBehavior(this.iosContentInsetAdjustmentBehavior);
+		this._scrollEdgeContainers?.attach();
 	}
 
 	public disposeNativeView() {
+		this._scrollEdgeContainers?.detach();
 		super.disposeNativeView();
 
 		this._isFirstLayout = true;
+	}
+
+	public addScrollEdgeContainer(view: View, edge: CoreTypes.ScrollEdgeType): void {
+		if (!this._scrollEdgeContainers) {
+			this._scrollEdgeContainers = new ScrollEdgeContainers(this);
+		}
+		this._scrollEdgeContainers.add(view, edge);
+	}
+
+	public removeScrollEdgeContainer(view: View): void {
+		this._scrollEdgeContainers?.remove(view);
 	}
 
 	_setNativeClipToBounds() {
@@ -153,17 +168,31 @@ export class ScrollView extends ScrollViewBase {
 		this.updateContentInsetAdjustmentBehavior(value);
 	}
 
+	[iosScrollEdgeEffectProperty.setNative](value: CoreTypes.ScrollEdgeEffectType) {
+		IOSHelper.setScrollEdgeEffect(this.nativeViewProtected, value);
+	}
+
+	// The offset is set directly rather than through scrollRectToVisible with a
+	// viewport-sized rect: that rect cannot fit inside a content inset, so UIKit
+	// would land contentInset.bottom (or .right) past the requested offset. The
+	// value is clamped to the range a user scroll can reach.
 	public scrollToVerticalOffset(value: number, animated: boolean) {
-		if (this.nativeViewProtected && this.orientation === 'vertical' && this.isScrollEnabled) {
-			const bounds = this.nativeViewProtected.bounds.size;
-			this.nativeViewProtected.scrollRectToVisibleAnimated(CGRectMake(0, value, bounds.width, bounds.height), animated);
+		const nativeView = this.nativeViewProtected;
+		if (nativeView && this.orientation === 'vertical' && this.isScrollEnabled) {
+			const inset = nativeView.adjustedContentInset;
+			const min = -inset.top;
+			const max = Math.max(min, nativeView.contentSize.height + inset.bottom - nativeView.bounds.size.height);
+			nativeView.setContentOffsetAnimated(CGPointMake(nativeView.contentOffset.x, Math.min(Math.max(value, min), max)), animated);
 		}
 	}
 
 	public scrollToHorizontalOffset(value: number, animated: boolean) {
-		if (this.nativeViewProtected && this.orientation === 'horizontal' && this.isScrollEnabled) {
-			const bounds = this.nativeViewProtected.bounds.size;
-			this.nativeViewProtected.scrollRectToVisibleAnimated(CGRectMake(value, 0, bounds.width, bounds.height), animated);
+		const nativeView = this.nativeViewProtected;
+		if (nativeView && this.orientation === 'horizontal' && this.isScrollEnabled) {
+			const inset = nativeView.adjustedContentInset;
+			const min = -inset.left;
+			const max = Math.max(min, nativeView.contentSize.width + inset.right - nativeView.bounds.size.width);
+			nativeView.setContentOffsetAnimated(CGPointMake(Math.min(Math.max(value, min), max), nativeView.contentOffset.y), animated);
 		}
 	}
 

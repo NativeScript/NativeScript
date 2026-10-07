@@ -4,9 +4,9 @@ import type { Page } from '../page';
 import { View, CustomLayoutView, CSSType } from '../core/view';
 import { Property } from '../core/properties';
 import { Trace } from '../../trace';
-import { frameStack, topmost as frameStackTopmost, _pushInFrameStack, _popFromFrameStack, _removeFromFrameStack, _isFrameStackEmpty } from './frame-stack';
+import { frameStack, topmost as frameStackTopmost, _pushInFrameStack, _insertAtFrameStackBottom, _popFromFrameStack, _removeFromFrameStack, _isFrameStackEmpty } from './frame-stack';
 import { viewMatchesModuleContext } from '../core/view/view-common';
-import { getAncestor } from '../core/view-base';
+import { getAncestor, ViewBase } from '../core/view-base';
 import { Builder } from '../builder';
 import { sanitizeModuleName } from '../../utils/common';
 import { profile } from '../../profiling';
@@ -17,6 +17,22 @@ import type { WindowBase } from '../../native-window';
 
 export { NavigationType } from './frame-interfaces';
 export type { AndroidActivityCallbacks, AndroidFragmentCallbacks, AndroidFrame, BackstackEntry, NavigationContext, NavigationEntry, NavigationTransition, TransitionState, ViewEntry, iOSFrame, NavigationData } from './frame-interfaces';
+
+/**
+ * A view is presented while every ancestor shows the child leading to it; a frame in an
+ * unselected tab is loaded on Android but must never outrank the tab that is shown.
+ */
+function isPresented(view: ViewBase): boolean {
+	while (view.parent) {
+		if (!view.parent._isChildPresented(view)) {
+			return false;
+		}
+
+		view = view.parent;
+	}
+
+	return true;
+}
 
 function buildEntryFromArgs(arg: any): NavigationEntry {
 	let entry: NavigationEntry;
@@ -82,32 +98,29 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
 
 	static goBack(frame?: FrameBase): boolean {
 		const top = frame ?? FrameBase.topmost();
-		if (top && top.canGoBack()) {
+		if (!top) {
+			return false;
+		}
+
+		if (top.canGoBack()) {
 			top.goBack();
-
 			return true;
-		} else if (top) {
-			let parentFrameCanGoBack = false;
-			let parentFrame = getAncestor(top, 'Frame');
+		}
 
-			while (parentFrame && !parentFrameCanGoBack) {
-				if (parentFrame && parentFrame.canGoBack()) {
-					parentFrameCanGoBack = true;
-				} else {
-					parentFrame = getAncestor(parentFrame, 'Frame');
-				}
-			}
+		let parentFrameCanGoBack = false;
+		let parentFrame = getAncestor(top, 'Frame');
 
-			if (parentFrame && parentFrameCanGoBack) {
-				parentFrame.goBack();
-
-				return true;
+		while (parentFrame && !parentFrameCanGoBack) {
+			if (parentFrame && parentFrame.canGoBack()) {
+				parentFrameCanGoBack = true;
+			} else {
+				parentFrame = getAncestor(parentFrame, 'Frame');
 			}
 		}
 
-		// Popping is only valid for the frame at the top of the stack - an explicitly passed frame may sit lower.
-		if (frameStack.length > 1 && frameStack[frameStack.length - 1] === top) {
-			top._popFromFrameStack();
+		if (parentFrame && parentFrameCanGoBack) {
+			parentFrame.goBack();
+			return true;
 		}
 
 		return false;
@@ -560,7 +573,11 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
 	}
 
 	public _pushInFrameStack() {
-		_pushInFrameStack(this);
+		if (isPresented(this)) {
+			_pushInFrameStack(this);
+		} else {
+			_insertAtFrameStackBottom(this);
+		}
 	}
 
 	public _popFromFrameStack() {

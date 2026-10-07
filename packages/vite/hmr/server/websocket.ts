@@ -1,5 +1,4 @@
 import type { Plugin, ViteDevServer } from 'vite';
-import { createRequire } from 'node:module';
 import { readFileSync } from 'fs';
 import { WebSocketServer } from 'ws';
 import * as path from 'path';
@@ -17,7 +16,7 @@ import { javascriptServerStrategy } from '../frameworks/javascript/server/strate
 import { getFrameworkFlavor } from '../framework-flavors.js';
 import { getProjectAppPath, getProjectAppRelativePath, getProjectAppVirtualPath } from '../../helpers/utils.js';
 import { getVitePackageVersion } from '../../helpers/vite-package-version.js';
-import { shouldIncludeRuntimeGraphFile, shouldSkipRuntimeGraphDirectoryName } from './runtime-graph-filter.js';
+import { listRuntimeGraphSourceFiles } from './runtime-graph-filter.js';
 import { getHmrSourceRoots } from '../../helpers/hmr-scope.js';
 import { getTsConfigData } from '../../helpers/ts-config-paths.js';
 import { createAngularComponentUpdateLedger, normalizeHotReloadMatchPath, shouldSuppressAngularComponentUpdatePayload, shouldSuppressViteFullReloadPayload, type PendingAngularReloadSuppressionEntry } from '../frameworks/angular/server/websocket-angular-hot-update.js';
@@ -221,19 +220,6 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 		const tStart = Date.now();
 		const versionAtStart = moduleGraph.version;
 		const root = server.config.root || process.cwd();
-		// Avoid direct require in ESM build: lazily obtain fs & path via createRequire or dynamic import
-		let fs: typeof import('fs');
-		let pathMod: typeof import('path');
-		try {
-			// Prefer createRequire to stay synchronous
-			const req = createRequire(import.meta.url);
-			fs = req('fs');
-			pathMod = req('path');
-		} catch {
-			// Fallback to dynamic imports (should not normally happen)
-			fs = await import('fs');
-			pathMod = await import('path');
-		}
 		// Route every bulk transform through `sharedTransformRequest` when it's
 		// already been wired up — this way the background walk shares the 60s
 		// TTL cache with live /ns/m requests, so the device sees cached results
@@ -246,41 +232,29 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 			}
 			return server.transformRequest(rel) as Promise<{ code?: string } | null | undefined>;
 		};
-		async function walk(dir: string) {
-			for (const name of fs.readdirSync(dir)) {
-				if (name === 'node_modules' || name.startsWith('.') || shouldSkipRuntimeGraphDirectoryName(name)) continue;
-				const full = pathMod.join(dir, name);
-				try {
-					const stat = fs.statSync(full);
-					if (stat.isDirectory()) await walk(full);
-					else if (stat.isFile()) {
-						if (shouldIncludeRuntimeGraphFile(full, /\.(vue|ts|js|mjs|tsx|jsx)$/i)) {
-							const rel = '/' + pathMod.relative(root, full).split(pathMod.sep).join('/');
-							// Transform via Vite to gather deps (ignore failures)
-							try {
-								const transformed = await bulkTransform(rel);
-								const code = transformed?.code || '';
-								const deps: string[] = [];
-								// fallback to import relationships via moduleGraph
-								const modNode = server.moduleGraph.getModuleById(full) || server.moduleGraph.getModuleById(rel);
-								if (modNode) {
-									for (const m of modNode.importedModules) {
-										if (m.id) deps.push(m.id.split('?')[0]);
-									}
-								}
-								// bumpVersion: false — the initial walk is a bulk load, not a live
-								// edit. Keeping graphVersion stable during cold boot avoids double
-								// cache-key drift.
-								moduleGraph.upsert(rel, code, deps, { bumpVersion: false });
-							} catch {}
-						}
+		// The configured `appPath` (nativescript.config), not a fixed `src/`:
+		// without these importer edges the client cannot trace a plain `.ts`
+		// edit back to the component that must re-render.
+		for (const full of listRuntimeGraphSourceFiles(path.join(root, APP_ROOT_DIR), /\.(vue|ts|js|mjs|tsx|jsx)$/i)) {
+			const rel = '/' + path.relative(root, full).split(path.sep).join('/');
+			// Transform via Vite to gather deps (ignore failures)
+			try {
+				const transformed = await bulkTransform(rel);
+				const code = transformed?.code || '';
+				const deps: string[] = [];
+				// fallback to import relationships via moduleGraph
+				const modNode = server.moduleGraph.getModuleById(full) || server.moduleGraph.getModuleById(rel);
+				if (modNode) {
+					for (const m of modNode.importedModules) {
+						if (m.id) deps.push(m.id.split('?')[0]);
 					}
-				} catch {}
-			}
+				}
+				// bumpVersion: false — the initial walk is a bulk load, not a live
+				// edit. Keeping graphVersion stable during cold boot avoids double
+				// cache-key drift.
+				moduleGraph.upsert(rel, code, deps, { bumpVersion: false });
+			} catch {}
 		}
-		try {
-			await walk(pathMod.join(root, 'src'));
-		} catch {}
 		// Diagnostic summary. Gated behind the verbose flag so the
 		// dev console stays quiet on a normal save. Flip
 		// NS_VITE_VERBOSE=1 to surface slow cold-boot walks; a
@@ -557,24 +531,16 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 				next();
 			});
 
-			// Give `populateInitialGraph` a head start: kicking it off at
-			// `configureServer` time gives populate the full app build/launch
-			// window (typically 2-3s on simulator), so more of its work lands
-			// before the device even connects and starts competing for the
-			// transform slots. Disable via `NS_VITE_HMR_DISABLE_POPULATE=1`
-			// when profiling whether populate is helping or hurting a
-			// specific app.
-			try {
-				const disablePopulate = process.env.NS_VITE_HMR_DISABLE_POPULATE === '1' || process.env.NS_VITE_HMR_DISABLE_POPULATE === 'true';
-				if (disablePopulate) {
-					if (verbose) console.info('[hmr-ws][populate] disabled via NS_VITE_HMR_DISABLE_POPULATE');
-					// Short-circuit: mark as resolved so /ns/m never schedules it and
-					// HMR still works (handleHotUpdate just has no pre-warmed graph).
-					graphInitialPopulationPromise = Promise.resolve();
-				} else {
-					ensureInitialGraphPopulationStarted(server);
-				}
-			} catch {}
+			// Populate is started from the post hook returned below, not here.
+			// Disable via `NS_VITE_HMR_DISABLE_POPULATE=1` when profiling whether
+			// populate is helping or hurting a specific app.
+			const disablePopulate = process.env.NS_VITE_HMR_DISABLE_POPULATE === '1' || process.env.NS_VITE_HMR_DISABLE_POPULATE === 'true';
+			if (disablePopulate) {
+				if (verbose) console.info('[hmr-ws][populate] disabled via NS_VITE_HMR_DISABLE_POPULATE');
+				// Short-circuit: mark as resolved so /ns/m never schedules it and
+				// HMR still works (handleHotUpdate just has no pre-warmed graph).
+				graphInitialPopulationPromise = Promise.resolve();
+			}
 
 			// Attempt early vendor manifest bootstrap once per server.
 			if (!vendorBootstrapDone) {
@@ -827,6 +793,18 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 				}
 				moduleGraph.emitFullGraph(ws as any);
 			});
+
+			// Vite runs post hooks after every plugin's `configureServer`. Starting
+			// populate any earlier transforms modules before framework plugins hold
+			// the dev server (@vitejs/plugin-vue then emits SFCs without HMR code
+			// and with their script imports split out of the graph), and the shared
+			// transform cache serves those results to the device. It still gets the
+			// whole app build/launch window as a head start.
+			return () => {
+				try {
+					ensureInitialGraphPopulationStarted(server);
+				} catch {}
+			};
 		},
 
 		async handleHotUpdate(ctx) {

@@ -2,7 +2,7 @@ import { getPackageJson, getProjectFilePath, getProjectRootPath } from './projec
 import fs from 'fs';
 import path from 'path';
 import { preprocessCSS, type ResolvedConfig, type ViteDevServer } from 'vite';
-import { parse as parseCssToAst } from 'css';
+import { parseCssAst as parseCssToAst } from './css-ast.js';
 import { getProjectFlavor } from './flavor.js';
 import { getProjectAppPath, getProjectAppRelativePath, getProjectAppVirtualPath, resolveProjectGlobalCssPath } from './utils.js';
 import { getResolvedAppComponents } from './app-components.js';
@@ -13,6 +13,7 @@ import { setAppCssState } from './app-css-state.js';
 import { createAppCssRefresher } from './app-css-refresh.js';
 import { rewritePlatformCssImports } from './css-platform-plugin.js';
 import { buildGlobalSeedStatements, getRuntimeSeedValues } from './global-defines.js';
+import { BUNDLE_CSS_AST_SENTINEL, inlineBundleCss } from './bundle-css.js';
 // Switched to runtime modules to avoid fragile string injection and enable TS checks
 const projectRoot = getProjectRootPath();
 const appRootDir = getProjectAppPath();
@@ -63,7 +64,6 @@ const APP_CSS_RESOLVED = '\0' + APP_CSS_VIRTUAL_ID;
 // `nsSfcStylesPlugin` workaround — apps no longer need their own.
 const BUNDLE_CSS_VIRTUAL_ID = 'virtual:ns-bundle-css';
 const BUNDLE_CSS_RESOLVED = '\0' + BUNDLE_CSS_VIRTUAL_ID;
-const BUNDLE_CSS_AST_SENTINEL = '__NS_BUNDLE_CSS_AST__';
 
 // Virtual module that installs the XHR polyfill from @nativescript/core/xhr.
 // Rolldown tree-shakes the polyfill-xhr.ts side-effect import from @nativescript/core/globals,
@@ -121,31 +121,10 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 		generateBundle(_outputOptions: unknown, bundle: Record<string, any>) {
 			if (opts.hmrActive) return;
 			try {
-				const cssAssets = Object.values(bundle).filter((f: any) => f && f.type === 'asset' && typeof f.fileName === 'string' && f.fileName.endsWith('.css'));
-				let cssText = '';
-				for (const a of cssAssets) {
-					const src = (a as any).source;
-					cssText += (typeof src === 'string' ? src : new TextDecoder().decode(src as Uint8Array)) + '\n';
-				}
 				// Rework AST, position-stripped (the form app.css uses; ~halves size).
-				const ast = parseCssToAst(cssText, { silent: true });
-				const astJson = JSON.stringify(ast, (key, value) => (key === 'position' ? undefined : value));
-				// Rewrite the sentinel in whichever chunk carries the applier.
-				const sentinelRe = new RegExp(`(['"])${BUNDLE_CSS_AST_SENTINEL}\\1`);
-				let replaced = false;
-				for (const file of Object.values(bundle)) {
-					if (file && (file as any).type === 'chunk' && typeof (file as any).code === 'string' && sentinelRe.test((file as any).code)) {
-						(file as any).code = (file as any).code.replace(sentinelRe, () => astJson);
-						replaced = true;
-						break;
-					}
-				}
-				// Drop the orphan asset only after its rules are applied above.
-				if (replaced) {
-					for (const a of cssAssets) delete bundle[(a as any).fileName];
-				}
+				const result = inlineBundleCss(bundle, (cssText) => JSON.stringify(parseCssToAst(cssText, { silent: true }), (key, value) => (key === 'position' ? undefined : value)));
 				if (opts.verbose) {
-					console.info(`[ns-entry] bundle CSS: ${cssAssets.length} asset(s), ${cssText.length} bytes, applied=${replaced}`);
+					console.info(`[ns-entry] bundle CSS: ${result.assetCount} asset(s), ${result.bytes} bytes, applied=${result.replaced}`);
 				}
 			} catch (e: any) {
 				if (opts.verbose) console.warn('[ns-entry] bundle CSS injection failed:', e?.message || e);

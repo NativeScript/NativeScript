@@ -233,6 +233,7 @@ global.UIUserInterfaceIdiom = {
 	Mac: 4,
 };
 global.UIGestureRecognizer = function () {};
+global.UIPanGestureRecognizer = function () {};
 global.UIGestureRecognizerDelegate = function () {};
 global.UIAdaptivePresentationControllerDelegate = function () {};
 global.UIPopoverPresentationControllerDelegate = function () {};

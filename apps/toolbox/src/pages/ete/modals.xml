@@ -1,0 +1,23 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" actionBarHidden="true" androidOverflowEdge="ignore" backgroundColor="#3f0d12">
+  <GridLayout id="probe" backgroundColor="#166534" androidOverflowEdge="none">
+    <GridLayout backgroundColor="#1d4ed8" rows="auto, *, auto">
+      <StackLayout row="0" padding="12">
+        <Label text="Modals" color="#ffffff" fontWeight="bold" fontSize="17" />
+        <Label text="A fullscreen modal gets its own edge-to-edge window, so it should look exactly like a normal page. A non-fullscreen one must stay a floating dialog and not go edge to edge." color="#bfdbfe" fontSize="13" textWrap="true" />
+      </StackLayout>
+
+      <ScrollView row="1">
+        <StackLayout padding="12">
+          <Label text="{{ lastResult }}" color="#fde68a" fontFamily="monospace" fontSize="13" textWrap="true" />
+        </StackLayout>
+      </ScrollView>
+
+      <StackLayout row="2" padding="8">
+        <Button text="fullscreen modal (none)" tap="{{ openFullscreenNone }}" color="#ffffff" backgroundColor="#1e40af" />
+        <Button text="fullscreen modal (bottom overflow)" tap="{{ openFullscreenBottom }}" color="#ffffff" backgroundColor="#1e40af" marginTop="4" />
+        <Button text="floating dialog (not fullscreen)" tap="{{ openDialog }}" color="#ffffff" backgroundColor="#1e40af" marginTop="4" />
+        <Button text="back" tap="{{ back }}" color="#ffffff" backgroundColor="#1e40af" marginTop="4" />
+      </StackLayout>
+    </GridLayout>
+  </GridLayout>
+</Page>

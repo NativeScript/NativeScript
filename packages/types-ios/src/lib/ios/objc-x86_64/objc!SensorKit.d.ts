@@ -862,9 +862,126 @@ declare class SRFetchResult<SampleType> extends NSObject implements NSCopying {
 
 	readonly sample: any;
 
+	/**
+	 * @since 27.0
+	 */
+	readonly sourceDevice: SRSourceDevice | null;
+
 	readonly timestamp: number;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
+}
+
+/**
+ * @since 27.0
+ */
+declare class SRHeadphoneSettings extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): SRHeadphoneSettings; // inherited from NSObject
+
+	static new(): SRHeadphoneSettings; // inherited from NSObject
+
+	readonly adaptiveAudioStrength: SRHeadphoneSettingsAdaptiveAudioStrength;
+
+	readonly conversationAwarenessEnabled: SRHeadphoneSettingsSettingEnablement;
+
+	readonly hearingAssistance: SRHeadphoneSettingsHearingAssistance | null;
+
+	readonly listeningMode: SRHeadphoneSettingsListeningMode;
+
+	readonly personalizedSpatialAudioEnabled: SRHeadphoneSettingsSettingEnablement;
+
+	readonly personalizedVolumeEnabled: SRHeadphoneSettingsSettingEnablement;
+
+	readonly spatialAudioEnabled: SRHeadphoneSettingsSettingEnablement;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+/**
+ * @since 27.0
+ */
+declare const enum SRHeadphoneSettingsAdaptiveAudioStrength {
+
+	Low = 1,
+
+	Medium = 2,
+
+	High = 3
+}
+
+/**
+ * @since 27.0
+ */
+declare class SRHeadphoneSettingsHearingAssistance extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): SRHeadphoneSettingsHearingAssistance; // inherited from NSObject
+
+	static new(): SRHeadphoneSettingsHearingAssistance; // inherited from NSObject
+
+	readonly adjustMediaEnabled: SRHeadphoneSettingsSettingEnablement;
+
+	readonly adjustVoiceEnabled: SRHeadphoneSettingsSettingEnablement;
+
+	readonly ambientNoiseReduction: number;
+
+	readonly conversationBoostEnabled: SRHeadphoneSettingsSettingEnablement;
+
+	readonly hearingAidAmplification: number;
+
+	readonly hearingAidBalance: number;
+
+	readonly hearingAidEnabled: SRHeadphoneSettingsSettingEnablement;
+
+	readonly hearingAidTone: number;
+
+	readonly hearingProtectionEnabled: SRHeadphoneSettingsSettingEnablement;
+
+	readonly mediaAssistEnabled: SRHeadphoneSettingsSettingEnablement;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+/**
+ * @since 27.0
+ */
+declare const enum SRHeadphoneSettingsListeningMode {
+
+	Normal = 1,
+
+	ActiveNoiseCancelling = 2,
+
+	Transparency = 3,
+
+	AutoActiveNoiseCancelling = 4
+}
+
+/**
+ * @since 27.0
+ */
+declare const enum SRHeadphoneSettingsSettingEnablement {
+
+	Unsupported = 0,
+
+	Enabled = 1,
+
+	Disabled = 2
 }
 
 /**
@@ -1403,6 +1520,16 @@ declare var SRSensorElectrocardiogram: string;
 declare var SRSensorFaceMetrics: string;
 
 /**
+ * @since 27.0
+ */
+declare var SRSensorHeadphoneMotion: string;
+
+/**
+ * @since 27.0
+ */
+declare var SRSensorHeadphoneSettings: string;
+
+/**
  * @since 17.0
  */
 declare var SRSensorHeartRate: string;
@@ -1448,7 +1575,7 @@ declare var SRSensorPhoneUsageReport: string;
 declare var SRSensorPhotoplethysmogram: string;
 
 /**
- * @since 14.0
+ * @since 13.0
  */
 declare class SRSensorReader extends NSObject {
 
@@ -1478,7 +1605,7 @@ declare class SRSensorReader extends NSObject {
 }
 
 /**
- * @since 14.0
+ * @since 13.0
  */
 interface SRSensorReaderDelegate extends NSObjectProtocol {
 
@@ -1551,6 +1678,36 @@ declare class SRSleepSession extends NSObject implements NSCopying, NSSecureCodi
 	readonly identifier: string;
 
 	readonly startDate: Date;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+/**
+ * @since 27.0
+ */
+declare class SRSourceDevice extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): SRSourceDevice; // inherited from NSObject
+
+	static new(): SRSourceDevice; // inherited from NSObject
+
+	readonly firmwareVersion: string | null;
+
+	readonly hardwareVersion: string | null;
+
+	readonly localIdentifier: string;
+
+	readonly manufacturer: string | null;
+
+	readonly model: string | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 

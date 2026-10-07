@@ -115,17 +115,7 @@ class UITabBarControllerDelegateImpl extends NSObject implements UITabBarControl
 			Trace.write('TabView.delegate.SHOULD_select(' + tabBarController + ', ' + viewController + ');', Trace.categories.Debug);
 		}
 
-		const owner = this._owner?.deref();
-		if (owner) {
-			// "< More" cannot be visible after clicking on the main tab bar buttons.
-			owner._handleTwoNavigationBars(false);
-		}
-
-		if (tabBarController.selectedViewController === viewController) {
-			return false;
-		}
-
-		return true;
+		return this._shouldSelect(tabBarController, tabBarController.selectedViewController === viewController);
 	}
 
 	public tabBarControllerDidSelectViewController(tabBarController: UITabBarController, viewController: UIViewController): void {
@@ -133,6 +123,37 @@ class UITabBarControllerDelegateImpl extends NSObject implements UITabBarControl
 			Trace.write('TabView.delegate.DID_select(' + tabBarController + ', ' + viewController + ');', Trace.categories.Debug);
 		}
 
+		this._didSelect(tabBarController, viewController);
+	}
+
+	// Tabs-configured controllers (iOS 27+) report selection only through the UITab callbacks.
+	public tabBarControllerShouldSelectTab(tabBarController: UITabBarController, tab: UITab): boolean {
+		if (tabBarController.viewControllers) {
+			return true;
+		}
+
+		return this._shouldSelect(tabBarController, tabBarController.selectedTab === tab);
+	}
+
+	public tabBarControllerDidSelectTabPreviousTab(tabBarController: UITabBarController, selectedTab: UITab, previousTab: UITab): void {
+		if (tabBarController.viewControllers) {
+			return;
+		}
+
+		this._didSelect(tabBarController, selectedTab.viewController);
+	}
+
+	private _shouldSelect(tabBarController: UITabBarController, isAlreadySelected: boolean): boolean {
+		const owner = this._owner?.deref();
+		if (owner) {
+			// "< More" cannot be visible after clicking on the main tab bar buttons.
+			owner._handleTwoNavigationBars(false);
+		}
+
+		return !isAlreadySelected;
+	}
+
+	private _didSelect(tabBarController: UITabBarController, viewController: UIViewController): void {
 		const owner = this._owner?.deref();
 		if (owner) {
 			// iOS lazily initializes moreNavigationController (e.g. on first access of
@@ -170,7 +191,7 @@ class UINavigationControllerDelegateImpl extends NSObject implements UINavigatio
 		if (owner) {
 			// If viewController is one of our tab item controllers, then "< More" will be visible shortly.
 			// Otherwise viewController is the UIMoreListController which shows the list of all tabs beyond the 4th tab.
-			const backToMoreWillBeVisible = navigationController.tabBarController?.viewControllers?.containsObject(viewController);
+			const backToMoreWillBeVisible = owner._indexOfViewController(navigationController.tabBarController, viewController) > -1;
 			owner._handleTwoNavigationBars(backToMoreWillBeVisible);
 		}
 	}
@@ -390,12 +411,15 @@ export class TabView extends TabViewBase {
 		return this._ios;
 	}
 
-	public layoutNativeView(left: number, top: number, right: number, bottom: number): void {
-		//
+	public _setNativeViewFrame(nativeView: UIView, frame: CGRect) {
+		// UIKit lays out the controller's view inside a container controller, but not inside a NativeScript view.
+		if (IOSHelper.isHostedInView(this)) {
+			super._setNativeViewFrame(nativeView, frame);
+		}
 	}
 
-	public _setNativeViewFrame(nativeView: UIView, frame: CGRect) {
-		//
+	protected applySafeAreaInsets(frame: CGRect): CGRect {
+		return IOSHelper.extendUnderContainerSafeArea(this.nativeViewProtected, frame);
 	}
 
 	public onSelectedIndexChanged(oldIndex: number, newIndex: number): void {
@@ -440,13 +464,35 @@ export class TabView extends TabViewBase {
 		if (Trace.isEnabled()) {
 			Trace.write('TabView._onViewControllerShown(' + viewController + ');', Trace.categories.Debug);
 		}
-		if (tabBarController?.viewControllers && tabBarController.viewControllers.containsObject(viewController)) {
-			this.selectedIndex = tabBarController.viewControllers.indexOfObject(viewController);
+		const index = this._indexOfViewController(tabBarController, viewController);
+		if (index > -1) {
+			this.selectedIndex = index;
 		} else {
 			if (Trace.isEnabled()) {
 				Trace.write('TabView._onViewControllerShown: viewController is not one of our viewControllers', Trace.categories.Debug);
 			}
 		}
+	}
+
+	public _indexOfViewController(tabBarController: UITabBarController, viewController: UIViewController): number {
+		if (!tabBarController || !viewController) {
+			return -1;
+		}
+
+		if (tabBarController.viewControllers) {
+			return tabBarController.viewControllers.containsObject(viewController) ? tabBarController.viewControllers.indexOfObject(viewController) : -1;
+		}
+
+		// Controllers configured through tabs are not reported by viewControllers.
+		const tabs = SDK_VERSION >= 18 ? tabBarController.tabs : null;
+		for (let i = 0; i < (tabs?.count ?? 0); i++) {
+			const tab = tabs.objectAtIndex(i);
+			if (tab.viewController === viewController) {
+				return parseInt(tab.identifier);
+			}
+		}
+
+		return -1;
 	}
 
 	public _handleTwoNavigationBars(backToMoreWillBeVisible: boolean) {
@@ -548,6 +594,8 @@ export class TabView extends TabViewBase {
 			// iOS 18+: build UITab instances and assign them to the controller.
 			const tabs = [];
 			const controllers = [];
+			let prominentIdentifier: string = null;
+			let searchIdentifier: string = null;
 			items.forEach((item, i) => {
 				const controller = this.getViewController(item);
 				controllers.push(controller);
@@ -555,7 +603,11 @@ export class TabView extends TabViewBase {
 				const title = item.title || '';
 				const identifier = `${i}`;
 				let tab: UITab;
+				if (item.role === 'prominent') {
+					prominentIdentifier ??= identifier;
+				}
 				if (item.role === 'search') {
+					searchIdentifier ??= identifier;
 					tab = UISearchTab.alloc().initWithTitleImageIdentifierViewControllerProvider(title, icon, identifier, (t) => {
 						return controller;
 					});
@@ -573,7 +625,13 @@ export class TabView extends TabViewBase {
 				// Prefer animated setter when available.
 				this._ios.tabs = NSArray.arrayWithArray(tabs);
 			} catch (e) {}
-			this._ios.viewControllers = NSArray.arrayWithArray(controllers);
+			if (SDK_VERSION >= 27) {
+				// Assigning viewControllers replaces the tabs configuration on iOS 27+, dropping UISearchTab placement.
+				// Search tabs are only separated by default when they automatically activate search.
+				this._ios.prominentTabIdentifier = prominentIdentifier ?? searchIdentifier;
+			} else {
+				this._ios.viewControllers = NSArray.arrayWithArray(controllers);
+			}
 			this._ios.customizableViewControllers = null;
 		} else {
 			// iOS < 18: keep using UITabBarItem-based configuration.
@@ -715,6 +773,12 @@ export class TabView extends TabViewBase {
 	[itemsProperty.setNative](value: TabViewItem[]) {
 		this.setViewControllers(value);
 		selectedIndexProperty.coerce(this);
+
+		// Items added to a loaded TabView were loaded before their controllers existed.
+		const selectedItem = value?.[this.selectedIndex];
+		if (selectedItem) {
+			selectedItem.loadView(selectedItem.view);
+		}
 	}
 
 	[tabTextFontSizeProperty.getDefault](): number {

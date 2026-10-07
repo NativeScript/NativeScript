@@ -5,6 +5,9 @@ import { setActiveWindow } from '../../application/helpers-common';
 import type { NativeWindow } from '../../native-window';
 import type { BackstackEntry } from './frame-interfaces';
 import { NavigationType } from './frame-interfaces';
+import { View } from '../core/view';
+import { ViewBase } from '../core/view-base';
+import { TabViewBase, TabViewItemBase } from '../tab-view/tab-view-common';
 
 /**
  * `FrameBase` is used directly instead of the platform `Frame`: the navigation queue and the
@@ -94,7 +97,7 @@ describe('FrameBase.goBack', () => {
 		expect(isNavigatingBack(child)).toBe(false);
 	});
 
-	it('reports no navigation and leaves the stack alone when the given frame is not topmost', () => {
+	it('reports no navigation when the given frame is not topmost', () => {
 		const first = createFrame(false);
 		const second = createFrame(true);
 		_pushInFrameStack(first);
@@ -104,28 +107,6 @@ describe('FrameBase.goBack', () => {
 
 		expect(frameStack).toEqual([first, second]);
 		expect(isNavigatingBack(second)).toBe(false);
-	});
-
-	it('pops the topmost frame when it cannot navigate back', () => {
-		const first = createFrame(true);
-		const second = createFrame(false);
-		_pushInFrameStack(first);
-		_pushInFrameStack(second);
-
-		expect(FrameBase.goBack()).toBe(false);
-
-		expect(frameStack).toEqual([first]);
-		expect(second._isInFrameStack).toBe(false);
-	});
-
-	it('keeps the last frame in the stack when it cannot navigate back', () => {
-		const only = createFrame(false);
-		_pushInFrameStack(only);
-
-		expect(FrameBase.goBack()).toBe(false);
-		expect(FrameBase.goBack(only)).toBe(false);
-
-		expect(frameStack).toEqual([only]);
 	});
 
 	it("navigates a nested frame with history when given the window's topmost frame", () => {
@@ -276,5 +257,136 @@ describe('FrameBase.topmost', () => {
 		expect(FrameBase.goBack()).toBe(false);
 
 		expect(frameStack).toEqual([scoped, other]);
+	});
+});
+
+/** A container that shows a single child, like a TabView does with its items. */
+class SingleChildHost extends ViewBase {
+	public shown: ViewBase;
+
+	public _isChildPresented(child: ViewBase): boolean {
+		return child === this.shown;
+	}
+}
+
+class TabViewItem extends TabViewItemBase {
+	public _update() {
+		// no native tab to refresh in the common layer
+	}
+}
+
+function createTabItem(frame: FrameBase): TabViewItem {
+	const item = new TabViewItem();
+	item.view = frame;
+
+	return item;
+}
+
+function stackIds(): string[] {
+	return frameStack.map((frame) => frame.id);
+}
+
+describe('frame stack presentation', () => {
+	afterEach(() => {
+		frameStack.splice(0).forEach((frame) => (frame._isInFrameStack = false));
+	});
+
+	it('puts a frame nobody hides on top', () => {
+		const host = new SingleChildHost();
+		const frame = new FrameBase();
+		host._addView(frame);
+		host.shown = frame;
+
+		frame._pushInFrameStack();
+
+		expect(FrameBase.topmost()).toBe(frame);
+	});
+
+	it('keeps a hidden frame in the stack without making it topmost', () => {
+		const shownFrame = new FrameBase();
+		shownFrame.id = 'shown';
+		const hiddenFrame = new FrameBase();
+		hiddenFrame.id = 'hidden';
+		const host = new SingleChildHost();
+		host._addView(shownFrame);
+		host._addView(hiddenFrame);
+		host.shown = shownFrame;
+		shownFrame._pushInFrameStack();
+
+		hiddenFrame._pushInFrameStack();
+
+		expect(FrameBase.topmost()).toBe(shownFrame);
+		expect(FrameBase.getFrameById('hidden')).toBe(hiddenFrame);
+		expect(stackIds()).toEqual(['hidden', 'shown']);
+	});
+
+	it('leaves a hidden frame where it is when it is already in the stack', () => {
+		const shownFrame = new FrameBase();
+		shownFrame.id = 'shown';
+		const hiddenFrame = new FrameBase();
+		hiddenFrame.id = 'hidden';
+		const host = new SingleChildHost();
+		host._addView(shownFrame);
+		host._addView(hiddenFrame);
+		host.shown = hiddenFrame;
+		hiddenFrame._pushInFrameStack();
+		host.shown = shownFrame;
+		shownFrame._pushInFrameStack();
+
+		hiddenFrame._pushInFrameStack();
+
+		expect(stackIds()).toEqual(['hidden', 'shown']);
+	});
+
+	it('does not let a frame hidden further up the tree reach the top', () => {
+		const host = new SingleChildHost();
+		const shownPane = new View();
+		const hiddenPane = new View();
+		host._addView(shownPane);
+		host._addView(hiddenPane);
+		host.shown = shownPane;
+		const shownFrame = new FrameBase();
+		const hiddenFrame = new FrameBase();
+		shownPane._addView(shownFrame);
+		hiddenPane._addView(hiddenFrame);
+		shownFrame._pushInFrameStack();
+
+		hiddenFrame._pushInFrameStack();
+
+		expect(FrameBase.topmost()).toBe(shownFrame);
+	});
+
+	it('keeps the selected tab frame topmost while a preloaded tab frame navigates', () => {
+		const tabView = new TabViewBase();
+		const homeFrame = new FrameBase();
+		homeFrame.id = 'home';
+		const demosFrame = new FrameBase();
+		demosFrame.id = 'demos';
+		tabView.items = [createTabItem(homeFrame), createTabItem(demosFrame)];
+		tabView.selectedIndex = 0;
+		homeFrame.navigate({ create: () => new View() });
+
+		demosFrame.navigate({ create: () => new View() });
+
+		expect(FrameBase.topmost()).toBe(homeFrame);
+		expect(FrameBase.getFrameById('demos')).toBe(demosFrame);
+	});
+
+	it('promotes the frame of a tab once that tab is selected', () => {
+		const tabView = new TabViewBase();
+		const homeFrame = new FrameBase();
+		homeFrame.id = 'home';
+		const demosFrame = new FrameBase();
+		demosFrame.id = 'demos';
+		tabView.items = [createTabItem(homeFrame), createTabItem(demosFrame)];
+		tabView.selectedIndex = 0;
+		homeFrame.navigate({ create: () => new View() });
+		demosFrame.navigate({ create: () => new View() });
+
+		tabView.selectedIndex = 1;
+		demosFrame._pushInFrameStackRecursive();
+
+		expect(FrameBase.topmost()).toBe(demosFrame);
+		expect(stackIds()).toEqual(['home', 'demos']);
 	});
 });

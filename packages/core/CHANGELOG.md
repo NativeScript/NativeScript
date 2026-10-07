@@ -1,3 +1,41 @@
+## 9.1.3 (2026-10-06)
+
+### 🚀 Features
+
+- **ios:** iPhone Duo support ([#11438](https://github.com/NativeScript/NativeScript/pull/11438))
+- **core:** iOS 26 scroll edge effect on ScrollView and ListView ([#11447](https://github.com/NativeScript/NativeScript/pull/11447))
+- **gestures:** pan gesture start position support ([#11435](https://github.com/NativeScript/NativeScript/pull/11435))
+- **core:** add origin to PropertyChangeData ([#11412](https://github.com/NativeScript/NativeScript/pull/11412))
+
+### 🩹 Fixes
+
+- **ios:** TabView search tab placement on iOS 27 ([#11509](https://github.com/NativeScript/NativeScript/pull/11509))
+- **ios:** use parent padding in flexbox child measure specs ([#11469](https://github.com/NativeScript/NativeScript/pull/11469))
+- **ios:** keep a keystroke from repeating what a textChange listener wrote ([#11443](https://github.com/NativeScript/NativeScript/pull/11443))
+- **core:** nested tab frames stay loaded and never outrank the selected tab ([#11446](https://github.com/NativeScript/NativeScript/pull/11446))
+- **core:** android edge to edge stabilization ([#11434](https://github.com/NativeScript/NativeScript/pull/11434))
+- **core:** iOS child index mapping skips the glass effect subview ([#11410](https://github.com/NativeScript/NativeScript/pull/11410))
+- **core:** iOS scrollToVerticalOffset lands past the offset when there is a content inset ([#11409](https://github.com/NativeScript/NativeScript/pull/11409))
+- **core:** insert iOS child views relative to their sibling, not by raw index ([#11406](https://github.com/NativeScript/NativeScript/pull/11406))
+- keep escaped commas inside CSS selectors ([#11463](https://github.com/NativeScript/NativeScript/pull/11463))
+- **android:** ContentLayout measures children against unreduced parent spec ([#11439](https://github.com/NativeScript/NativeScript/pull/11439))
+- **android:** re-apply edge-to-edge system bar style on appearance change ([#11418](https://github.com/NativeScript/NativeScript/pull/11418))
+- **core:** iOS box-shadow alpha was applied twice ([#11407](https://github.com/NativeScript/NativeScript/pull/11407))
+- **core:** prevent goBack from removing topmost frame from stack ([#11437](https://github.com/NativeScript/NativeScript/pull/11437))
+
+### 🔥 Performance
+
+- **ios:** request layout once per turn and append subviews without copying ([#11507](https://github.com/NativeScript/NativeScript/pull/11507))
+- **ios:** rebuild label text once per native update batch ([#11510](https://github.com/NativeScript/NativeScript/pull/11510))
+
+### ❤️ Thank You
+
+- Alec Larson @aleclarson
+- Dimitris-Rafail Katsampas @CatchABus
+- Eduardo Speroni @edusperoni
+- Nathan Walker
+- Osei Fortune @triniwiz
+
 ## 9.1.2 (2026-09-14)
 
 ### 🚀 Features

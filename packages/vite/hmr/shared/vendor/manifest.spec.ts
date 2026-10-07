@@ -5,6 +5,8 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import { createVendorBundleRuntimeModule } from './manifest.js';
 import { collectVendorModules } from './manifest-collect.js';
+import { registerFrameworkFlavor } from '../../framework-flavors.js';
+import { typescriptServerStrategy } from '../../frameworks/typescript/server/strategy.js';
 
 describe('collectVendorModules', () => {
 	const tempRoots: string[] = [];
@@ -165,6 +167,26 @@ describe('collectVendorModules', () => {
 		const collected = collectVendorModules(root, 'ios', 'vue');
 
 		expect(collected.entries).toContain('solid-js');
+	});
+
+	it('keeps a package root the registered flavor excludes out of vendor, even as a peer of a vendored package', () => {
+		// Octane shape: the app lists `octane` only to satisfy the renderer
+		// package's peer range, and the compiler rewrites every `from 'octane'`
+		// in compiled components to the renderer package. Seeding `octane` would
+		// evaluate its DOM runtime on device for nothing.
+		const root = mkdtempSync(join(tmpdir(), 'ns-vendor-manifest-'));
+		tempRoots.push(root);
+
+		writeFileSync(join(root, 'package.json'), JSON.stringify({ name: 'fixture-app', version: '0.0.0', dependencies: { '@acme/octane-ns': '*', octane: '*' } }, null, 2));
+		mkdirSync(join(root, 'node_modules', '@acme', 'octane-ns'), { recursive: true });
+		writeFileSync(join(root, 'node_modules', '@acme', 'octane-ns', 'package.json'), JSON.stringify({ name: '@acme/octane-ns', version: '1.0.0', peerDependencies: { octane: '*' } }, null, 2));
+		mkdirSync(join(root, 'node_modules', 'octane'), { recursive: true });
+		writeFileSync(join(root, 'node_modules', 'octane', 'package.json'), JSON.stringify({ name: 'octane', version: '1.0.0' }, null, 2));
+		registerFrameworkFlavor({ flavor: 'acme', server: { ...typescriptServerStrategy, flavor: 'acme' }, client: '@acme/octane-ns/client', vendor: { exclude: ['octane'] } });
+
+		expect(collectVendorModules(root, 'ios', 'acme').entries).toEqual(['@acme/octane-ns']);
+		// The policy belongs to the flavor that declared it.
+		expect(collectVendorModules(root, 'ios', 'typescript').entries).toEqual(['@acme/octane-ns', 'octane']);
 	});
 
 	it('emits the same runtime bundle contract for served vendor modules', () => {

@@ -202,6 +202,13 @@ declare class SFSafariSettings extends NSObject {
 	static openExtensionsSettingsForIdentifiersCompletionHandler(extensionIdentifiers: NSArray<string> | string[], completionHandler: (p1: NSError | null) => void | null): void;
 }
 
+declare const enum SFSafariSettingsError {
+
+	NotAllowed = 0,
+
+	Failed = 1
+}
+
 /**
  * @since 9.0
  */

@@ -2529,6 +2529,8 @@ declare function nw_tcp_options_set_retransmit_connection_drop_time(options: NSO
  */
 declare function nw_tcp_options_set_retransmit_fin_drop(options: NSObject & OS_nw_protocol_options, retransmit_fin_drop: boolean): void;
 
+declare function nw_tcp_set_max_pacing_rate(metadata: NSObject & OS_nw_protocol_metadata, max_pacing_rate: number): number;
+
 /**
  * @since 12.0
  */

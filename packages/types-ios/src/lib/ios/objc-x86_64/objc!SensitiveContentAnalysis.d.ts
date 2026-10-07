@@ -1,5 +1,15 @@
 
 /**
+ * @since 27.0
+ */
+declare var SCSensitiveContentTypeGoreOrViolence: string;
+
+/**
+ * @since 27.0
+ */
+declare var SCSensitiveContentTypeSexuallyExplicit: string;
+
+/**
  * @since 17.0
  */
 declare class SCSensitivityAnalysis extends NSObject {
@@ -7,6 +17,11 @@ declare class SCSensitivityAnalysis extends NSObject {
 	static alloc(): SCSensitivityAnalysis; // inherited from NSObject
 
 	static new(): SCSensitivityAnalysis; // inherited from NSObject
+
+	/**
+	 * @since 27.0
+	 */
+	readonly detectedTypes: NSSet<string>;
 
 	readonly sensitive: boolean;
 

@@ -304,7 +304,7 @@ function readCachedAndroidSafeAreaInsets(): AndroidSafeAreaInsets | null {
  * is attached) reuses the previous value instead of snapping the chip
  * back under the status bar.
  */
-function readAndroidSafeAreaInsets(): AndroidSafeAreaInsets | null {
+export function readAndroidSafeAreaInsets(): AndroidSafeAreaInsets | null {
 	const g = getOverlayGlobal();
 	// `android.*` is exposed as a global only on the NativeScript Android
 	// runtime; its absence means iOS, web, or a test environment.

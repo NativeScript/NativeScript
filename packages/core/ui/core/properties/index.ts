@@ -1,5 +1,5 @@
 import { ViewBase } from '../view-base';
-import { PropertyChangeData, WrappedValue } from '../../../data/observable';
+import { PropertyChangeData, PropertyChangeOrigin, WrappedValue } from '../../../data/observable';
 import { Trace } from '../../../trace';
 
 import { Style } from '../../styling/style';
@@ -299,7 +299,7 @@ export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<
 	public isStyleProperty: boolean;
 
 	public get: () => U;
-	public set: (value: U) => void;
+	public set: (value: U, origin?: PropertyChangeOrigin) => void;
 	public overrideHandlers: (options: PropertyOptions<T, U>) => void;
 	public enumerable = true;
 	public configurable = true;
@@ -349,7 +349,7 @@ export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<
 
 		const property = this;
 
-		this.set = function (this: T, boxedValue: U): void {
+		this.set = function (this: T, boxedValue: U, origin?: PropertyChangeOrigin): void {
 			const reset = isResetValue(boxedValue);
 			let value: U;
 			let wrapped: boolean;
@@ -415,6 +415,7 @@ export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<
 						propertyName,
 						value,
 						oldValue,
+						origin: origin ?? 'script',
 					});
 				}
 
@@ -452,6 +453,7 @@ export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<
 						propertyName,
 						value,
 						oldValue,
+						origin: 'native',
 					});
 				}
 
@@ -599,6 +601,7 @@ export class CoercibleProperty<T extends ViewBase, U> extends Property<T, U> imp
 						propertyName,
 						value,
 						oldValue,
+						origin: 'script',
 					});
 				}
 
@@ -658,7 +661,7 @@ export class InheritedProperty<T extends ViewBase, U> extends Property<T, U> imp
 
 				// take currentValue before calling base - base may change it.
 				const currentValue = that[key];
-				setBase.call(that, unboxedValue);
+				setBase.call(that, unboxedValue, valueSource === ValueSource.Local ? 'script' : 'inherited');
 
 				const newValue = that[key];
 				that[sourceKey] = newValueSource;
@@ -837,6 +840,7 @@ export class CssProperty<T extends Style, U> {
 						propertyName,
 						value,
 						oldValue,
+						origin: 'script',
 					});
 				}
 
@@ -921,6 +925,7 @@ export class CssProperty<T extends Style, U> {
 						propertyName,
 						value,
 						oldValue,
+						origin: 'css',
 					});
 				}
 
@@ -1041,6 +1046,8 @@ export class CssAnimationProperty<T extends Style, U> implements CssAnimationPro
 		const property = this;
 
 		function descriptor(symbol: symbol, propertySource: ValueSource, enumerable: boolean, configurable: boolean, getsComputed: boolean): PropertyDescriptor {
+			const origin: PropertyChangeOrigin = propertySource === ValueSource.Keyframe ? 'animation' : propertySource === ValueSource.Css ? 'css' : 'script';
+
 			return {
 				enumerable,
 				configurable,
@@ -1128,6 +1135,7 @@ export class CssAnimationProperty<T extends Style, U> implements CssAnimationPro
 							propertyName,
 							value,
 							oldValue,
+							origin,
 						});
 					}
 				},
@@ -1231,6 +1239,8 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
 
 		const setFunc = (valueSource: ValueSource) => {
 			const isLocalWrite = valueSource === ValueSource.Local;
+			// Default is only used by the cascade below, to reset a child that inherited this value.
+			const origin: PropertyChangeOrigin = isLocalWrite ? 'script' : valueSource === ValueSource.Css ? 'css' : 'inherited';
 
 			return function (this: T, boxedValue: any): void {
 				const view = this.viewRef.get();
@@ -1320,6 +1330,7 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
 							propertyName,
 							value,
 							oldValue,
+							origin,
 						});
 					}
 

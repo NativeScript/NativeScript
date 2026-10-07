@@ -1363,7 +1363,11 @@ declare const enum VNErrorCode {
 
 	UnsupportedComputeStage = 21,
 
-	UnsupportedComputeDevice = 22
+	UnsupportedComputeDevice = 22,
+
+	ResourceUnavailable = 23,
+
+	ResourceCorrupted = 24
 }
 
 /**

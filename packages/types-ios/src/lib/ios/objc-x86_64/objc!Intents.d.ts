@@ -319,6 +319,7 @@ declare const enum INAddMediaMediaItemUnsupportedReason {
 
 /**
  * @since 11.0
+ * @deprecated 27.0
  */
 declare class INAddTasksIntent extends INIntent {
 
@@ -364,6 +365,7 @@ declare class INAddTasksIntent extends INIntent {
 
 /**
  * @since 11.0
+ * @deprecated 27.0
  */
 interface INAddTasksIntentHandling extends NSObjectProtocol {
 
@@ -383,10 +385,6 @@ interface INAddTasksIntentHandling extends NSObjectProtocol {
 	 */
 	resolveTargetTaskListForAddTasksCompletion?(intent: INAddTasksIntent, completion: (p1: INAddTasksTargetTaskListResolutionResult) => void): void;
 
-	/**
-	 * @since 11.0
-	 * @deprecated 13.0
-	 */
 	resolveTargetTaskListForAddTasksWithCompletion?(intent: INAddTasksIntent, completion: (p1: INTaskListResolutionResult) => void): void;
 
 	resolveTaskTitlesForAddTasksWithCompletion?(intent: INAddTasksIntent, completion: (p1: NSArray<INSpeakableStringResolutionResult>) => void): void;
@@ -396,10 +394,6 @@ interface INAddTasksIntentHandling extends NSObjectProtocol {
 	 */
 	resolveTemporalEventTriggerForAddTasksCompletion?(intent: INAddTasksIntent, completion: (p1: INAddTasksTemporalEventTriggerResolutionResult) => void): void;
 
-	/**
-	 * @since 11.0
-	 * @deprecated 13.0
-	 */
 	resolveTemporalEventTriggerForAddTasksWithCompletion?(intent: INAddTasksIntent, completion: (p1: INTemporalEventTriggerResolutionResult) => void): void;
 }
 declare var INAddTasksIntentHandling: {
@@ -409,6 +403,7 @@ declare var INAddTasksIntentHandling: {
 
 /**
  * @since 11.0
+ * @deprecated 27.0
  */
 declare class INAddTasksIntentResponse extends INIntentResponse {
 
@@ -429,6 +424,7 @@ declare class INAddTasksIntentResponse extends INIntentResponse {
 
 /**
  * @since 11.0
+ * @deprecated 27.0
  */
 declare const enum INAddTasksIntentResponseCode {
 
@@ -447,6 +443,7 @@ declare const enum INAddTasksIntentResponseCode {
 
 /**
  * @since 13.0
+ * @deprecated 27.0
  */
 declare const enum INAddTasksTargetTaskListConfirmationReason {
 
@@ -455,6 +452,7 @@ declare const enum INAddTasksTargetTaskListConfirmationReason {
 
 /**
  * @since 13.0
+ * @deprecated 27.0
  */
 declare class INAddTasksTargetTaskListResolutionResult extends INTaskListResolutionResult {
 
@@ -493,6 +491,7 @@ declare class INAddTasksTargetTaskListResolutionResult extends INTaskListResolut
 
 /**
  * @since 13.0
+ * @deprecated 27.0
  */
 declare class INAddTasksTemporalEventTriggerResolutionResult extends INTemporalEventTriggerResolutionResult {
 
@@ -531,6 +530,7 @@ declare class INAddTasksTemporalEventTriggerResolutionResult extends INTemporalE
 
 /**
  * @since 13.0
+ * @deprecated 27.0
  */
 declare const enum INAddTasksTemporalEventTriggerUnsupportedReason {
 
@@ -2380,6 +2380,7 @@ declare const enum INConditionalOperator {
 
 /**
  * @since 11.0
+ * @deprecated 27.0
  */
 declare class INCreateNoteIntent extends INIntent {
 
@@ -2400,6 +2401,7 @@ declare class INCreateNoteIntent extends INIntent {
 
 /**
  * @since 11.0
+ * @deprecated 27.0
  */
 interface INCreateNoteIntentHandling extends NSObjectProtocol {
 
@@ -2420,6 +2422,7 @@ declare var INCreateNoteIntentHandling: {
 
 /**
  * @since 11.0
+ * @deprecated 27.0
  */
 declare class INCreateNoteIntentResponse extends INIntentResponse {
 
@@ -2438,6 +2441,7 @@ declare class INCreateNoteIntentResponse extends INIntentResponse {
 
 /**
  * @since 11.0
+ * @deprecated 27.0
  */
 declare const enum INCreateNoteIntentResponseCode {
 
@@ -2778,6 +2782,7 @@ declare class INDateRelevanceProvider extends INRelevanceProvider {
 
 /**
  * @since 11.0
+ * @deprecated 27.0
  */
 declare const enum INDateSearchType {
 
@@ -2792,6 +2797,7 @@ declare const enum INDateSearchType {
 
 /**
  * @since 11.0
+ * @deprecated 27.0
  */
 declare class INDateSearchTypeResolutionResult extends INIntentResolutionResult {
 
@@ -4413,6 +4419,7 @@ declare class INImage extends NSObject implements NSCopying, NSSecureCoding {
 
 /**
  * @since 11.0
+ * @deprecated 27.0
  */
 declare class INImageNoteContent extends INNoteContent implements NSCopying, NSSecureCoding {
 
@@ -4964,6 +4971,7 @@ declare class INLocationRelevanceProvider extends INRelevanceProvider {
 
 /**
  * @since 11.0
+ * @deprecated 27.0
  */
 declare const enum INLocationSearchType {
 
@@ -4974,6 +4982,7 @@ declare const enum INLocationSearchType {
 
 /**
  * @since 11.0
+ * @deprecated 27.0
  */
 declare class INLocationSearchTypeResolutionResult extends INIntentResolutionResult {
 
@@ -5859,6 +5868,7 @@ declare var INMessagesDomainHandling: {
 
 /**
  * @since 11.0
+ * @deprecated 27.0
  */
 declare class INNote extends NSObject implements NSCopying, NSSecureCoding {
 
@@ -5895,6 +5905,7 @@ declare class INNote extends NSObject implements NSCopying, NSSecureCoding {
 
 /**
  * @since 11.0
+ * @deprecated 27.0
  */
 declare class INNoteContent extends NSObject implements NSCopying, NSSecureCoding {
 
@@ -5915,6 +5926,7 @@ declare class INNoteContent extends NSObject implements NSCopying, NSSecureCodin
 
 /**
  * @since 11.0
+ * @deprecated 27.0
  */
 declare class INNoteContentResolutionResult extends INIntentResolutionResult {
 
@@ -5991,6 +6003,7 @@ declare class INNoteContentTypeResolutionResult extends INIntentResolutionResult
 
 /**
  * @since 11.0
+ * @deprecated 27.0
  */
 declare class INNoteResolutionResult extends INIntentResolutionResult {
 
@@ -6034,6 +6047,7 @@ declare var INNotebookDomainHandling: {
 
 /**
  * @since 11.0
+ * @deprecated 27.0
  */
 declare const enum INNotebookItemType {
 
@@ -6048,6 +6062,7 @@ declare const enum INNotebookItemType {
 
 /**
  * @since 11.0
+ * @deprecated 27.0
  */
 declare class INNotebookItemTypeResolutionResult extends INIntentResolutionResult {
 
@@ -10126,6 +10141,7 @@ declare const enum INSearchForMessagesIntentResponseCode {
 
 /**
  * @since 11.0
+ * @deprecated 27.0
  */
 declare class INSearchForNotebookItemsIntent extends INIntent {
 
@@ -10201,6 +10217,7 @@ declare class INSearchForNotebookItemsIntent extends INIntent {
 
 /**
  * @since 11.0
+ * @deprecated 27.0
  */
 interface INSearchForNotebookItemsIntentHandling extends NSObjectProtocol {
 
@@ -10241,6 +10258,7 @@ declare var INSearchForNotebookItemsIntentHandling: {
 
 /**
  * @since 11.0
+ * @deprecated 27.0
  */
 declare class INSearchForNotebookItemsIntentResponse extends INIntentResponse {
 
@@ -10265,6 +10283,7 @@ declare class INSearchForNotebookItemsIntentResponse extends INIntentResponse {
 
 /**
  * @since 11.0
+ * @deprecated 27.0
  */
 declare const enum INSearchForNotebookItemsIntentResponseCode {
 
@@ -11843,6 +11862,7 @@ declare const enum INSetSeatSettingsInCarIntentResponseCode {
 
 /**
  * @since 11.0
+ * @deprecated 27.0
  */
 declare class INSetTaskAttributeIntent extends INIntent {
 
@@ -11893,6 +11913,7 @@ declare class INSetTaskAttributeIntent extends INIntent {
 
 /**
  * @since 11.0
+ * @deprecated 27.0
  */
 interface INSetTaskAttributeIntentHandling extends NSObjectProtocol {
 
@@ -11921,10 +11942,6 @@ interface INSetTaskAttributeIntentHandling extends NSObjectProtocol {
 	 */
 	resolveTemporalEventTriggerForSetTaskAttributeCompletion?(intent: INSetTaskAttributeIntent, completion: (p1: INSetTaskAttributeTemporalEventTriggerResolutionResult) => void): void;
 
-	/**
-	 * @since 11.0
-	 * @deprecated 13.0
-	 */
 	resolveTemporalEventTriggerForSetTaskAttributeWithCompletion?(intent: INSetTaskAttributeIntent, completion: (p1: INTemporalEventTriggerResolutionResult) => void): void;
 }
 declare var INSetTaskAttributeIntentHandling: {
@@ -11934,6 +11951,7 @@ declare var INSetTaskAttributeIntentHandling: {
 
 /**
  * @since 11.0
+ * @deprecated 27.0
  */
 declare class INSetTaskAttributeIntentResponse extends INIntentResponse {
 
@@ -11952,6 +11970,7 @@ declare class INSetTaskAttributeIntentResponse extends INIntentResponse {
 
 /**
  * @since 11.0
+ * @deprecated 27.0
  */
 declare const enum INSetTaskAttributeIntentResponseCode {
 
@@ -11970,6 +11989,7 @@ declare const enum INSetTaskAttributeIntentResponseCode {
 
 /**
  * @since 13.0
+ * @deprecated 27.0
  */
 declare class INSetTaskAttributeTemporalEventTriggerResolutionResult extends INTemporalEventTriggerResolutionResult {
 
@@ -12008,6 +12028,7 @@ declare class INSetTaskAttributeTemporalEventTriggerResolutionResult extends INT
 
 /**
  * @since 13.0
+ * @deprecated 27.0
  */
 declare const enum INSetTaskAttributeTemporalEventTriggerUnsupportedReason {
 
@@ -12148,6 +12169,7 @@ declare const enum INSiriAuthorizationStatus {
 
 /**
  * @since 13.0
+ * @deprecated 27.0
  */
 declare class INSnoozeTasksIntent extends INIntent {
 
@@ -12168,6 +12190,7 @@ declare class INSnoozeTasksIntent extends INIntent {
 
 /**
  * @since 13.0
+ * @deprecated 27.0
  */
 interface INSnoozeTasksIntentHandling extends NSObjectProtocol {
 
@@ -12186,6 +12209,7 @@ declare var INSnoozeTasksIntentHandling: {
 
 /**
  * @since 13.0
+ * @deprecated 27.0
  */
 declare class INSnoozeTasksIntentResponse extends INIntentResponse {
 
@@ -12204,6 +12228,7 @@ declare class INSnoozeTasksIntentResponse extends INIntentResponse {
 
 /**
  * @since 13.0
+ * @deprecated 27.0
  */
 declare const enum INSnoozeTasksIntentResponseCode {
 
@@ -12222,6 +12247,7 @@ declare const enum INSnoozeTasksIntentResponseCode {
 
 /**
  * @since 13.0
+ * @deprecated 27.0
  */
 declare class INSnoozeTasksTaskResolutionResult extends INTaskResolutionResult {
 
@@ -12260,6 +12286,7 @@ declare class INSnoozeTasksTaskResolutionResult extends INTaskResolutionResult {
 
 /**
  * @since 13.0
+ * @deprecated 27.0
  */
 declare const enum INSnoozeTasksTaskUnsupportedReason {
 
@@ -12268,6 +12295,7 @@ declare const enum INSnoozeTasksTaskUnsupportedReason {
 
 /**
  * @since 11.0
+ * @deprecated 27.0
  */
 declare const enum INSortType {
 
@@ -13314,6 +13342,7 @@ declare class INStringResolutionResult extends INIntentResolutionResult {
 
 /**
  * @since 11.0
+ * @deprecated 27.0
  */
 declare class INTask extends NSObject implements NSCopying, NSSecureCoding {
 
@@ -13369,6 +13398,7 @@ declare class INTask extends NSObject implements NSCopying, NSSecureCoding {
 
 /**
  * @since 11.0
+ * @deprecated 27.0
  */
 declare class INTaskList extends NSObject implements NSCopying, NSSecureCoding {
 
@@ -13405,6 +13435,7 @@ declare class INTaskList extends NSObject implements NSCopying, NSSecureCoding {
 
 /**
  * @since 11.0
+ * @deprecated 27.0
  */
 declare class INTaskListResolutionResult extends INIntentResolutionResult {
 
@@ -13437,6 +13468,7 @@ declare class INTaskListResolutionResult extends INIntentResolutionResult {
 
 /**
  * @since 13.0
+ * @deprecated 27.0
  */
 declare const enum INTaskPriority {
 
@@ -13449,6 +13481,7 @@ declare const enum INTaskPriority {
 
 /**
  * @since 13.0
+ * @deprecated 27.0
  */
 declare class INTaskPriorityResolutionResult extends INIntentResolutionResult {
 
@@ -13479,6 +13512,7 @@ declare class INTaskPriorityResolutionResult extends INIntentResolutionResult {
 
 /**
  * @since 11.0
+ * @deprecated 27.0
  */
 declare class INTaskResolutionResult extends INIntentResolutionResult {
 
@@ -13511,6 +13545,7 @@ declare class INTaskResolutionResult extends INIntentResolutionResult {
 
 /**
  * @since 11.0
+ * @deprecated 27.0
  */
 declare const enum INTaskStatus {
 
@@ -13523,6 +13558,7 @@ declare const enum INTaskStatus {
 
 /**
  * @since 11.0
+ * @deprecated 27.0
  */
 declare class INTaskStatusResolutionResult extends INIntentResolutionResult {
 
@@ -13553,6 +13589,7 @@ declare class INTaskStatusResolutionResult extends INIntentResolutionResult {
 
 /**
  * @since 11.0
+ * @deprecated 27.0
  */
 declare const enum INTaskType {
 
@@ -13655,6 +13692,7 @@ declare class INTemporalEventTriggerResolutionResult extends INIntentResolutionR
 
 /**
  * @since 13.0
+ * @deprecated 27.0
  */
 declare const enum INTemporalEventTriggerTypeOptions {
 
@@ -13667,6 +13705,7 @@ declare const enum INTemporalEventTriggerTypeOptions {
 
 /**
  * @since 13.0
+ * @deprecated 27.0
  */
 declare class INTemporalEventTriggerTypeOptionsResolutionResult extends INIntentResolutionResult {
 
@@ -13727,6 +13766,7 @@ declare class INTermsAndConditions extends NSObject implements NSCopying, NSSecu
 
 /**
  * @since 11.0
+ * @deprecated 27.0
  */
 declare class INTextNoteContent extends INNoteContent implements NSCopying, NSSecureCoding {
 

@@ -1,3 +1,103 @@
+## 8.0.18 (2026-10-05)
+
+### 🩹 Fixes
+
+- **vite:** serve worker re-exports per module, not from the deps bundle ([#11504](https://github.com/NativeScript/NativeScript/pull/11504))
+
+### ❤️ Thank You
+
+- Osei Fortune @triniwiz
+
+## 8.0.17 (2026-09-30)
+
+### 🩹 Fixes
+
+- **vite:** decode percent-encoded /ns/m request paths ([#11483](https://github.com/NativeScript/NativeScript/pull/11483))
+
+### ❤️ Thank You
+
+- Alec Larson @aleclarson
+
+## 8.0.16 (2026-09-30)
+
+### 🩹 Fixes
+
+- **vite:** start HMR graph population after every plugin's configureServer ([#11479](https://github.com/NativeScript/NativeScript/pull/11479))
+
+### ❤️ Thank You
+
+- Nathan Walker
+
+## 8.0.15 (2026-09-29)
+
+### 🩹 Fixes
+
+- **vite:** hot-update vue screens on plain .ts edits ([#11478](https://github.com/NativeScript/NativeScript/pull/11478))
+
+### ❤️ Thank You
+
+- Nathan Walker
+
+## 8.0.14 (2026-09-29)
+
+### 🩹 Fixes
+
+- keep escaped commas inside CSS selectors ([#11463](https://github.com/NativeScript/NativeScript/pull/11463))
+- **vite:** resolve a file before a same-named directory ([#11464](https://github.com/NativeScript/NativeScript/pull/11464))
+- **vite:** evaluate transitively bundled deps on first use ([#11465](https://github.com/NativeScript/NativeScript/pull/11465))
+- **vite:** decode dots in prebundled subpath specifiers ([#11466](https://github.com/NativeScript/NativeScript/pull/11466))
+- **vite:** inline release bundle css with minified sentinel, in import order ([#11477](https://github.com/NativeScript/NativeScript/pull/11477))
+- **vite:** resolve workspace css specs to /@fs before ?inline transform ([#11474](https://github.com/NativeScript/NativeScript/pull/11474))
+- **vite:** mask comments before scanning module export names ([#11473](https://github.com/NativeScript/NativeScript/pull/11473))
+- **vite:** serve pnpm-isolated transitive deps over /ns/m ([#11475](https://github.com/NativeScript/NativeScript/pull/11475))
+- **vite:** route unvendored plugin-patterned deps through /ns/m HTTP ([#11459](https://github.com/NativeScript/NativeScript/pull/11459))
+
+### ❤️ Thank You
+
+- Alec Larson @aleclarson
+- Nathan Walker
+- Osei Fortune @triniwiz
+
+## 8.0.13 (2026-09-25)
+
+### 🩹 Fixes
+
+- **vite:** android dev overlay improvements ([345acfc51](https://github.com/NativeScript/NativeScript/commit/345acfc51))
+
+### ❤️ Thank You
+
+- Nathan Walker
+
+## 8.0.12 (2026-09-25)
+
+### 🩹 Fixes
+
+- **vite:** type check TSRX imports ([#11450](https://github.com/NativeScript/NativeScript/pull/11450))
+
+### ❤️ Thank You
+
+- Alec Larson @aleclarson
+
+## 8.0.11 (2026-09-22)
+
+### 🩹 Fixes
+
+- **vite:** let a framework flavor exclude packages from the dev deps bundle seed ([#11442](https://github.com/NativeScript/NativeScript/pull/11442), [#11440](https://github.com/NativeScript/NativeScript/issues/11440))
+
+### ❤️ Thank You
+
+- Nathan Walker
+
+## 8.0.10 (2026-09-16)
+
+### 🩹 Fixes
+
+- **vite:** declare @babel/traverse and @babel/types as dependencies ([ba45aefcd](https://github.com/NativeScript/NativeScript/commit/ba45aefcd))
+
+### ❤️ Thank You
+
+- Nathan Walker
+
 ## 8.0.9 (2026-09-14)
 
 ### 🩹 Fixes

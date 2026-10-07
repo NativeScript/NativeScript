@@ -27,6 +27,18 @@ const PFLAG_FORCE_LAYOUT = 1;
 const PFLAG_MEASURED_DIMENSION_SET = 1 << 1;
 const PFLAG_LAYOUT_REQUIRED = 1 << 2;
 
+// Views whose requestLayout already climbed this turn; cleared by a microtask.
+let requestedThisTurn: Set<View> | null = null;
+
+function isAncestorChainLayoutRequested(view: View): boolean {
+	for (let parent = view.parent as View; parent; parent = parent.parent as View) {
+		if (!parent.isLayoutRequested) {
+			return false;
+		}
+	}
+	return true;
+}
+
 export class View extends ViewCommon {
 	// @ts-ignore
 	nativeViewProtected: UIView;
@@ -80,6 +92,11 @@ export class View extends ViewCommon {
 	}
 
 	public requestLayout(): void {
+		// A layout pass in the same turn (e.g. layoutIfNeeded) can clear an ancestor that
+		// skipped this view, so only a fully flagged chain lets the native climb be skipped.
+		if (requestedThisTurn?.has(this) && this.isLayoutRequested && isAncestorChainLayoutRequested(this)) {
+			return;
+		}
 		this._privateFlags |= PFLAG_FORCE_LAYOUT;
 		super.requestLayout();
 
@@ -91,6 +108,12 @@ export class View extends ViewCommon {
 		if (this.viewController && this.viewController.view !== nativeView) {
 			this.viewController.view.setNeedsLayout();
 		}
+
+		if (!requestedThisTurn) {
+			requestedThisTurn = new Set();
+			queueMicrotask(() => (requestedThisTurn = null));
+		}
+		requestedThisTurn.add(this);
 	}
 
 	public measure(widthMeasureSpec: number, heightMeasureSpec: number): void {
@@ -1003,6 +1026,19 @@ export class View extends ViewCommon {
 		IOSHelper.invalidateStatusBarAppearance(ownerController, `View.updateStatusBarStyle:${value}`);
 	}
 
+	public _childIndexToNativeChildIndex(index?: number): number {
+		if (typeof index !== 'number') {
+			return index;
+		}
+		// The glass effect view is a subview but not a child: it sits at subview
+		// 0, so every child's subview index is one past its child index.
+		const effectView = this._glassEffectView;
+		if (effectView && effectView.superview === this.nativeViewProtected) {
+			return index + 1;
+		}
+		return index;
+	}
+
 	[iosGlassEffectProperty.setNative](value: GlassEffectType) {
 		if (!this.nativeViewProtected || !supportsGlass()) {
 			return;
@@ -1270,11 +1306,7 @@ export class CustomLayoutView extends ContainerView {
 		const childNativeView: NativeScriptUIView = <NativeScriptUIView>child.nativeViewProtected;
 
 		if (parentNativeView && childNativeView) {
-			if (typeof atIndex !== 'number' || atIndex >= parentNativeView.subviews.count) {
-				parentNativeView.addSubview(childNativeView);
-			} else {
-				parentNativeView.insertSubviewAtIndex(childNativeView, atIndex);
-			}
+			IOSHelper.insertNativeSubview(parentNativeView, childNativeView, atIndex);
 
 			// Add outer shadow layer manually as it belongs to parent layer tree (this is needed for reusable views)
 			if (childNativeView.outerShadowContainerLayer && !childNativeView.outerShadowContainerLayer.superlayer) {

@@ -1,4 +1,4 @@
-﻿import type { GesturesObserverDefinition, GestureEvents, GestureStateTypes, SwipeDirection, TouchAction, GestureEventData, TapGestureEventData, TouchGestureEventData, Pointer, GestureEventDataWithState, PinchGestureEventData, SwipeGestureEventData, PanGestureEventData, RotationGestureEventData } from './gestures-types';
+﻿import type { GesturesObserverDefinition, GestureEventData } from './gestures-types';
 import { GestureTypes } from './gestures-types';
 import type { View } from '../core/view';
 

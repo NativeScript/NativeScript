@@ -6,7 +6,7 @@ import * as path from 'path';
 import { existsSync } from 'fs';
 import * as PAT from './constants.js';
 import { getProjectRootPath } from '../../helpers/project.js';
-import { isLikelyNativeScriptRuntimePluginSpecifier, isNativeScriptCoreModule, isNativeScriptPluginModule, normalizeNativeScriptCoreSpecifier, normalizeNodeModulesSpecifier, resolveNodeModulesPackageBoundary, resolveVendorFromCandidate, viteDepsPathToBareSpecifier } from './websocket-module-specifiers.js';
+import { decodeFlattenedId, isLikelyNativeScriptRuntimePluginSpecifier, isNativeScriptCoreModule, isNativeScriptPluginModule, normalizeNativeScriptCoreSpecifier, normalizeNodeModulesSpecifier, resolveNodeModulesPackageBoundary, resolveVendorFromCandidate, viteDepsPathToBareSpecifier } from './websocket-module-specifiers.js';
 import { collectTopLevelImportRecords } from './websocket-served-module-helpers.js';
 
 // Bare specifiers and special skip patterns (virtual, data:, etc.)
@@ -16,6 +16,15 @@ const SKIP_PATTERNS = /^(?:data:|blob:|node:|virtual:|vite:|\0|\/@@?id|\/__vite|
 // One warning per dep so vendor-manifest misses are visible without spamming
 // the console on every served module.
 const warnedVendorMisses = new Set<string>();
+
+function packageIsInstalled(packageName: string): boolean {
+	if (!packageName) return false;
+	try {
+		return existsSync(path.join(getProjectRootPath(), 'node_modules', ...packageName.split('/'), 'package.json'));
+	} catch {
+		return false;
+	}
+}
 
 /**
  * Vendor-manifest miss fallback — e.g. `emoji-regex`, a transitive dep of
@@ -32,26 +41,6 @@ const warnedVendorMisses = new Set<string>();
  * being committed; if nothing resolves, the first candidate is used anyway —
  * a loud 404 on device beats a silent undefined binding.
  */
-function decodeFlattenedDepId(flat: string): string {
-	// Reverse Vite's flattenId, which encodes '.' as '__' and '/' (and ':') as
-	// '_'. Split on the '__' (dot) boundaries first so a single '_' inside each
-	// segment becomes a '/', then rejoin the segments with '.'. This avoids any
-	// placeholder sentinel (a literal NUL would corrupt the served module).
-	return flat
-		.split('__')
-		.map((segment) => segment.replace(/_/g, '/'))
-		.join('.');
-}
-
-function packageIsInstalled(packageName: string): boolean {
-	if (!packageName) return false;
-	try {
-		return existsSync(path.join(getProjectRootPath(), 'node_modules', ...packageName.split('/'), 'package.json'));
-	} catch {
-		return false;
-	}
-}
-
 function bareSpecifierFromFlatDepPath(depPath: string): string {
 	const flat = depPath.split('?')[0].replace(/\.m?js$/, '');
 	// flattenId is lossy (names may contain '_'), so build candidates from the
@@ -64,7 +53,7 @@ function bareSpecifierFromFlatDepPath(depPath: string): string {
 	const pushCandidate = (c: string) => {
 		if (c && !candidates.includes(c)) candidates.push(c);
 	};
-	pushCandidate(decodeFlattenedDepId(flat));
+	pushCandidate(decodeFlattenedId(flat));
 	if (flat.startsWith('@')) {
 		// Scope-only decode: just the first '_' is the scope separator.
 		pushCandidate(flat.replace('_', '/'));

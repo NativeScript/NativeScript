@@ -302,6 +302,57 @@ declare class CPButton extends NSObject {
 declare var CPButtonMaximumImageSize: CGSize;
 
 /**
+ * @since 27.0
+ */
+declare class CPChargingStationConnection extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): CPChargingStationConnection; // inherited from NSObject
+
+	static new(): CPChargingStationConnection; // inherited from NSObject
+
+	readonly connector: CPChargingStationConnectionConnector;
+
+	readonly power: NSMeasurement<NSUnitPower>;
+
+	readonly voltage: NSMeasurement<NSUnitElectricPotentialDifference>;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { connector: CPChargingStationConnectionConnector; voltage: NSMeasurement<NSUnitElectricPotentialDifference>; power: NSMeasurement<NSUnitPower>; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+
+	initWithConnectorVoltagePower(connector: CPChargingStationConnectionConnector, voltage: NSMeasurement<NSUnitElectricPotentialDifference>, power: NSMeasurement<NSUnitPower>): this;
+}
+
+declare const enum CPChargingStationConnectionConnector {
+
+	CCS1 = 0,
+
+	CCS2 = 1,
+
+	J1772 = 2,
+
+	CHAdeMO = 3,
+
+	Mennekes = 4,
+
+	GBTDC = 5,
+
+	GBTAC = 6,
+
+	NACSDC = 7,
+
+	NACSAC = 8
+}
+
+/**
  * @since 14.0
  */
 declare class CPContact extends NSObject implements NSSecureCoding {
@@ -927,6 +978,11 @@ declare class CPInterfaceController extends NSObject {
 	dismissTemplateAnimatedCompletion(animated: boolean, completion: (p1: boolean, p2: NSError | null) => void | null): void;
 
 	/**
+	 * @since 27.0
+	 */
+	hideOverlayTemplateAnimatedCompletion(animated: boolean, completion: (p1: boolean, p2: NSError | null) => void | null): void;
+
+	/**
 	 * @since 12.0
 	 * @deprecated 14.0
 	 */
@@ -991,6 +1047,11 @@ declare class CPInterfaceController extends NSObject {
 	 * @since 14.0
 	 */
 	setRootTemplateAnimatedCompletion(rootTemplate: CPTemplate, animated: boolean, completion: (p1: boolean, p2: NSError | null) => void | null): void;
+
+	/**
+	 * @since 27.0
+	 */
+	showOverlayTemplateAnimatedCompletion(templateToShow: CPTemplate, animated: boolean, completion: (p1: boolean, p2: NSError | null) => void | null): void;
 }
 
 /**
@@ -2350,6 +2411,120 @@ declare class CPMapButton extends NSObject implements NSSecureCoding {
 }
 
 /**
+ * @since 27.0
+ */
+declare class CPMapPanel extends CPPanel {
+
+	static alloc(): CPMapPanel; // inherited from NSObject
+
+	static new(): CPMapPanel; // inherited from NSObject
+
+	readonly buttonConfiguration: CPMapPanelButtonConfiguration | null;
+
+	delegate: CPMapPanelDelegate | null;
+
+	sections: NSArray<CPMapPanelSection>;
+
+	readonly title: string | null;
+
+	constructor(o: { title: string | null; sections: NSArray<CPMapPanelSection> | CPMapPanelSection[]; buttonConfiguration: CPMapPanelButtonConfiguration | null; });
+
+	initWithTitleSectionsButtonConfiguration(title: string | null, sections: NSArray<CPMapPanelSection> | CPMapPanelSection[], buttonConfiguration: CPMapPanelButtonConfiguration | null): this;
+}
+
+/**
+ * @since 27.0
+ */
+declare class CPMapPanelButtonConfiguration extends CPPanelButtonConfiguration {
+
+	static alloc(): CPMapPanelButtonConfiguration; // inherited from NSObject
+
+	static new(): CPMapPanelButtonConfiguration; // inherited from NSObject
+
+	readonly secondaryButton: CPButton | null;
+
+	travelEstimates: CPTravelEstimates | null;
+
+	constructor(o: { primaryAction: CPTextButton; secondaryButton: CPButton | null; travelEstimates: CPTravelEstimates; });
+
+	initWithPrimaryActionSecondaryButtonTravelEstimates(primaryAction: CPTextButton, secondaryButton: CPButton | null, travelEstimates: CPTravelEstimates): this;
+}
+
+/**
+ * @since 27.0
+ */
+interface CPMapPanelDelegate extends NSObjectProtocol {
+
+	panelDidHide?(panel: CPMapPanel): void;
+
+	panelDidShow?(panel: CPMapPanel): void;
+}
+declare var CPMapPanelDelegate: {
+
+	prototype: CPMapPanelDelegate;
+};
+
+/**
+ * @since 27.0
+ */
+declare class CPMapPanelItem extends CPPanelItem {
+
+	static alloc(): CPMapPanelItem; // inherited from NSObject
+
+	static new(): CPMapPanelItem; // inherited from NSObject
+
+	constructor(o: { chargingStationConnection: CPChargingStationConnection; handler: (p1: CPMapPanelItem, p2: () => void) => void | null; });
+
+	constructor(o: { mapTemplateWaypoint: CPMapTemplateWaypoint; image: UIImage | null; handler: (p1: CPMapPanelItem, p2: () => void) => void | null; });
+
+	constructor(o: { routeChoice: CPRouteChoice; handler: (p1: CPMapPanelItem, p2: () => void) => void | null; });
+
+	constructor(o: { routeDetails: NSArray<CPRouteDetail> | CPRouteDetail[]; handler: (p1: CPMapPanelItem, p2: () => void) => void | null; });
+
+	constructor(o: { travelEstimates: CPTravelEstimates; handler: (p1: CPMapPanelItem, p2: () => void) => void | null; });
+
+	constructor(o: { trip: CPTrip; handler: (p1: CPMapPanelItem, p2: () => void) => void | null; });
+
+	initWithChargingStationConnectionHandler(chargingStationConnection: CPChargingStationConnection, handler: (p1: CPMapPanelItem, p2: () => void) => void | null): this;
+
+	initWithMapTemplateWaypointImageHandler(mapTemplateWaypoint: CPMapTemplateWaypoint, image: UIImage | null, handler: (p1: CPMapPanelItem, p2: () => void) => void | null): this;
+
+	initWithRouteChoiceHandler(routeChoice: CPRouteChoice, handler: (p1: CPMapPanelItem, p2: () => void) => void | null): this;
+
+	initWithRouteDetailsHandler(routeDetails: NSArray<CPRouteDetail> | CPRouteDetail[], handler: (p1: CPMapPanelItem, p2: () => void) => void | null): this;
+
+	initWithTravelEstimatesHandler(travelEstimates: CPTravelEstimates, handler: (p1: CPMapPanelItem, p2: () => void) => void | null): this;
+
+	initWithTripHandler(trip: CPTrip, handler: (p1: CPMapPanelItem, p2: () => void) => void | null): this;
+}
+
+/**
+ * @since 27.0
+ */
+declare class CPMapPanelSection extends NSObject implements NSSecureCoding {
+
+	static alloc(): CPMapPanelSection; // inherited from NSObject
+
+	static new(): CPMapPanelSection; // inherited from NSObject
+
+	items: NSArray<CPMapPanelItem>;
+
+	title: string | null;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { title: string | null; items: NSArray<CPMapPanelItem> | CPMapPanelItem[]; });
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+
+	initWithTitleItems(title: string | null, items: NSArray<CPMapPanelItem> | CPMapPanelItem[]): this;
+}
+
+/**
  * @since 12.0
  */
 declare class CPMapTemplate extends CPTemplate implements CPBarButtonProviding {
@@ -2400,6 +2575,11 @@ declare class CPMapTemplate extends CPTemplate implements CPBarButtonProviding {
 
 	dismissPanningInterfaceAnimated(animated: boolean): void;
 
+	/**
+	 * @since 27.0
+	 */
+	hidePanelWithCompletion(completion: (p1: boolean, p2: NSError | null) => void | null): void;
+
 	hideTripPreviews(): void;
 
 	isEqual(object: any): boolean;
@@ -2414,13 +2594,28 @@ declare class CPMapTemplate extends CPTemplate implements CPBarButtonProviding {
 
 	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
 
+	/**
+	 * @since 27.0
+	 */
+	popPanelWithCompletion(completion: (p1: boolean, p2: NSError | null) => void | null): void;
+
 	presentNavigationAlertAnimated(navigationAlert: CPNavigationAlert, animated: boolean): void;
+
+	/**
+	 * @since 27.0
+	 */
+	pushPanelCompletion(panel: CPMapPanel, completion: (p1: boolean, p2: NSError | null) => void | null): void;
 
 	respondsToSelector(aSelector: string): boolean;
 
 	retainCount(): number;
 
 	self(): this;
+
+	/**
+	 * @since 27.0
+	 */
+	showPanelCompletion(panel: CPMapPanel, completion: (p1: boolean, p2: NSError | null) => void | null): void;
 
 	showPanningInterfaceAnimated(animated: boolean): void;
 
@@ -2491,9 +2686,24 @@ interface CPMapTemplateDelegate extends NSObjectProtocol {
 	mapTemplateDidReceiveUpdatedRouteSource?(mapTemplate: CPMapTemplate, routeSource: CPRouteSource): void;
 
 	/**
+	 * @since 27.0
+	 */
+	mapTemplateDidRequestMultiStopCardConfigurationWithCompletion?(mapTemplate: CPMapTemplate, completion: (p1: CPMultiStopCardConfiguration) => void): void;
+
+	/**
 	 * @since 26.4
 	 */
 	mapTemplateDidRequestToInsertWaypointIntoSegmentCompletion?(mapTemplate: CPMapTemplate, waypoint: CPNavigationWaypoint, segment: CPRouteSegment, completion: (p1: CPTravelEstimates) => void): void;
+
+	/**
+	 * @since 27.0
+	 */
+	mapTemplateDidRequestToRemoveDestination?(mapTemplate: CPMapTemplate, waypoint: CPNavigationWaypoint): void;
+
+	/**
+	 * @since 27.0
+	 */
+	mapTemplateDidRequestToRemoveWaypoint?(mapTemplate: CPMapTemplate, waypoint: CPNavigationWaypoint): void;
 
 	/**
 	 * @since 26.0
@@ -2510,6 +2720,11 @@ interface CPMapTemplateDelegate extends NSObjectProtocol {
 	mapTemplateDidShowPanningInterface?(mapTemplate: CPMapTemplate): void;
 
 	mapTemplateDidUpdatePanGestureWithTranslationVelocity?(mapTemplate: CPMapTemplate, translation: CGPoint, velocity: CGPoint): void;
+
+	/**
+	 * @since 27.0
+	 */
+	mapTemplateDidUpdateRouteSharingEnabled?(mapTemplate: CPMapTemplate, enabled: boolean): void;
 
 	/**
 	 * @since 26.0
@@ -2545,6 +2760,11 @@ interface CPMapTemplateDelegate extends NSObjectProtocol {
 	mapTemplateRotationDidEndWithVelocity?(mapTemplate: CPMapTemplate, velocity: number): void;
 
 	mapTemplateSelectedPreviewForTripUsingRouteChoice?(mapTemplate: CPMapTemplate, trip: CPTrip, routeChoice: CPRouteChoice): void;
+
+	/**
+	 * @since 27.0
+	 */
+	mapTemplateShouldProvideMultiStopRouting?(mapTemplate: CPMapTemplate): boolean;
 
 	/**
 	 * @since 17.4
@@ -2583,7 +2803,7 @@ declare var CPMapTemplateDelegate: {
 /**
  * @since 26.4
  */
-declare class CPMapTemplateWaypoint extends NSObject {
+declare class CPMapTemplateWaypoint extends NSObject implements NSSecureCoding {
 
 	static alloc(): CPMapTemplateWaypoint; // inherited from NSObject
 
@@ -2593,7 +2813,15 @@ declare class CPMapTemplateWaypoint extends NSObject {
 
 	waypoint: CPNavigationWaypoint;
 
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
 	constructor(o: { waypoint: CPNavigationWaypoint; travelEstimates: CPTravelEstimates; });
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
 
 	initWithWaypointTravelEstimates(waypoint: CPNavigationWaypoint, travelEstimates: CPTravelEstimates): this;
 }
@@ -2771,6 +2999,38 @@ declare const enum CPMessageTrailingItem {
 }
 
 /**
+ * @since 27.0
+ */
+declare class CPMultiStopCardConfiguration extends NSObject implements NSSecureCoding {
+
+	static alloc(): CPMultiStopCardConfiguration; // inherited from NSObject
+
+	static new(): CPMultiStopCardConfiguration; // inherited from NSObject
+
+	readonly buttons: NSArray<CPTextButton>;
+
+	readonly image: UIImage | null;
+
+	readonly title: string | null;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { title: string | null; buttons: NSArray<CPTextButton> | CPTextButton[]; });
+
+	constructor(o: { title: string | null; buttons: NSArray<CPTextButton> | CPTextButton[]; image: UIImage | null; });
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+
+	initWithTitleButtons(title: string | null, buttons: NSArray<CPTextButton> | CPTextButton[]): this;
+
+	initWithTitleButtonsImage(title: string | null, buttons: NSArray<CPTextButton> | CPTextButton[], image: UIImage | null): this;
+}
+
+/**
  * @since 12.0
  */
 declare class CPNavigationAlert extends NSObject implements NSSecureCoding {
@@ -2778,6 +3038,21 @@ declare class CPNavigationAlert extends NSObject implements NSSecureCoding {
 	static alloc(): CPNavigationAlert; // inherited from NSObject
 
 	static new(): CPNavigationAlert; // inherited from NSObject
+
+	/**
+	 * @since 27.0
+	 */
+	readonly actions: NSArray<CPAlertAction>;
+
+	/**
+	 * @since 27.0
+	 */
+	readonly alertImage: UIImage | null;
+
+	/**
+	 * @since 27.0
+	 */
+	readonly avatarImage: UIImage | null;
 
 	readonly duration: number;
 
@@ -2789,13 +3064,38 @@ declare class CPNavigationAlert extends NSObject implements NSSecureCoding {
 
 	readonly secondaryAction: CPAlertAction | null;
 
+	/**
+	 * @since 27.0
+	 */
+	showsCloseButton: boolean;
+
 	readonly subtitleVariants: NSArray<string>;
 
 	readonly titleVariants: NSArray<string>;
 
+	/**
+	 * @since 27.0
+	 */
+	static readonly maximumActionsCount: number;
+
+	/**
+	 * @since 27.0
+	 */
+	static readonly maximumAlertImageSize: CGSize;
+
+	/**
+	 * @since 27.0
+	 */
+	static readonly maximumAvatarImageSize: CGSize;
+
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	/**
+	 * @since 27.0
+	 */
+	constructor(o: { titleVariants: NSArray<string> | string[]; subtitleVariants: NSArray<string> | string[]; avatarImage: UIImage | null; alertImage: UIImage | null; actions: NSArray<CPAlertAction> | CPAlertAction[]; duration: number; });
 
 	constructor(o: { titleVariants: NSArray<string> | string[]; subtitleVariants: NSArray<string> | string[] | null; image: UIImage | null; primaryAction: CPAlertAction; secondaryAction: CPAlertAction | null; duration: number; });
 
@@ -2809,6 +3109,11 @@ declare class CPNavigationAlert extends NSObject implements NSSecureCoding {
 
 	initWithCoder(coder: NSCoder): this;
 
+	/**
+	 * @since 27.0
+	 */
+	initWithTitleVariantsSubtitleVariantsAvatarImageAlertImageActionsDuration(titleVariants: NSArray<string> | string[], subtitleVariants: NSArray<string> | string[], avatarImage: UIImage | null, alertImage: UIImage | null, actions: NSArray<CPAlertAction> | CPAlertAction[], duration: number): this;
+
 	initWithTitleVariantsSubtitleVariantsImagePrimaryActionSecondaryActionDuration(titleVariants: NSArray<string> | string[], subtitleVariants: NSArray<string> | string[] | null, image: UIImage | null, primaryAction: CPAlertAction, secondaryAction: CPAlertAction | null, duration: number): this;
 
 	/**
@@ -2818,6 +3123,11 @@ declare class CPNavigationAlert extends NSObject implements NSSecureCoding {
 	initWithTitleVariantsSubtitleVariantsImageSetPrimaryActionSecondaryActionDuration(titleVariants: NSArray<string> | string[], subtitleVariants: NSArray<string> | string[] | null, imageSet: CPImageSet | null, primaryAction: CPAlertAction, secondaryAction: CPAlertAction | null, duration: number): this;
 
 	updateTitleVariantsSubtitleVariants(newTitleVariants: NSArray<string> | string[], newSubtitleVariants: NSArray<string> | string[]): void;
+
+	/**
+	 * @since 27.0
+	 */
+	updateTitleVariantsSubtitleVariantsAvatarImageAlertImageActionsDuration(newTitleVariants: NSArray<string> | string[], newSubtitleVariants: NSArray<string> | string[], avatarImage: UIImage | null, alertImage: UIImage | null, actions: NSArray<CPAlertAction> | CPAlertAction[], duration: number): void;
 }
 
 /**
@@ -2864,9 +3174,24 @@ declare class CPNavigationSession extends NSObject {
 	maneuverState: CPManeuverState;
 
 	/**
+	 * @since 27.0
+	 */
+	optionsPanel: CPMapPanel | null;
+
+	/**
 	 * @since 26.4
 	 */
 	readonly routeSegments: NSArray<CPRouteSegment>;
+
+	/**
+	 * @since 27.0
+	 */
+	readonly routeSharingEnabled: boolean;
+
+	/**
+	 * @since 27.0
+	 */
+	readonly routeSharingSupported: boolean;
 
 	readonly trip: CPTrip;
 
@@ -2899,6 +3224,11 @@ declare class CPNavigationSession extends NSObject {
 	pauseTripForReasonDescriptionTurnCardColor(reason: CPTripPauseReason, description: string | null, turnCardColor: UIColor | null): void;
 
 	/**
+	 * @since 27.0
+	 */
+	resumeNavigationWithUpdatedTripRouteSegmentsCurrentSegmentRerouteReason(trip: CPTrip, routeSegments: NSArray<CPRouteSegment> | CPRouteSegment[], currentSegment: CPRouteSegment, rerouteReason: CPRerouteReason): void;
+
+	/**
 	 * @since 17.4
 	 */
 	resumeTripWithUpdatedRouteInformation(routeInformation: CPRouteInformation): void;
@@ -2920,7 +3250,16 @@ declare class CPNavigationWaypoint extends NSObject implements NSSecureCoding {
 
 	static new(): CPNavigationWaypoint; // inherited from NSObject
 
+	/**
+	 * @since 26.4
+	 * @deprecated 27.0
+	 */
 	readonly address: string | null;
+
+	/**
+	 * @since 27.0
+	 */
+	readonly addressVariants: NSArray<string>;
 
 	readonly centerPoint: CPLocationCoordinate3D;
 
@@ -2930,13 +3269,28 @@ declare class CPNavigationWaypoint extends NSObject implements NSSecureCoding {
 
 	readonly locationThreshold: NSMeasurement<NSUnitLength> | null;
 
+	/**
+	 * @since 26.4
+	 * @deprecated 27.0
+	 */
 	readonly name: string | null;
+
+	/**
+	 * @since 27.0
+	 */
+	readonly nameVariants: NSArray<string>;
 
 	readonly timeZone: NSTimeZone | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
+	/**
+	 * @since 26.4
+	 * @deprecated 27.0
+	 */
 	constructor(o: { centerPoint: CPLocationCoordinate3D; locationThreshold: NSMeasurement<NSUnitLength> | null; name: string | null; address: string | null; entryPoints: interop.Pointer | interop.Reference<CPLocationCoordinate3D> | ArrayBufferLike | ArrayBufferView; entryPointsCount: number; timeZone: NSTimeZone | null; });
+
+	constructor(o: { centerPoint: CPLocationCoordinate3D; locationThreshold: NSMeasurement<NSUnitLength> | null; nameVariants: NSArray<string> | string[]; addressVariants: NSArray<string> | string[]; entryPoints: interop.Pointer | interop.Reference<CPLocationCoordinate3D> | ArrayBufferLike | ArrayBufferView; entryPointsCount: number; timeZone: NSTimeZone | null; });
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -2944,7 +3298,13 @@ declare class CPNavigationWaypoint extends NSObject implements NSSecureCoding {
 
 	encodeWithCoder(coder: NSCoder): void;
 
+	/**
+	 * @since 26.4
+	 * @deprecated 27.0
+	 */
 	initWithCenterPointLocationThresholdNameAddressEntryPointsEntryPointsCountTimeZone(centerPoint: CPLocationCoordinate3D, locationThreshold: NSMeasurement<NSUnitLength> | null, name: string | null, address: string | null, entryPoints: interop.Pointer | interop.Reference<CPLocationCoordinate3D> | ArrayBufferLike | ArrayBufferView, entryPointsCount: number, timeZone: NSTimeZone | null): this;
+
+	initWithCenterPointLocationThresholdNameVariantsAddressVariantsEntryPointsEntryPointsCountTimeZone(centerPoint: CPLocationCoordinate3D, locationThreshold: NSMeasurement<NSUnitLength> | null, nameVariants: NSArray<string> | string[], addressVariants: NSArray<string> | string[], entryPoints: interop.Pointer | interop.Reference<CPLocationCoordinate3D> | ArrayBufferLike | ArrayBufferView, entryPointsCount: number, timeZone: NSTimeZone | null): this;
 
 	initWithCoder(coder: NSCoder): this;
 
@@ -3230,6 +3590,11 @@ declare class CPNowPlayingTemplate extends CPTemplate {
 
 	albumArtistButtonEnabled: boolean;
 
+	/**
+	 * @since 27.0
+	 */
+	allowsMiniPlayer: boolean;
+
 	readonly nowPlayingButtons: NSArray<CPNowPlayingButton>;
 
 	/**
@@ -3278,6 +3643,86 @@ declare const enum CPPanDirection {
 	Up = 4,
 
 	Down = 8
+}
+
+/**
+ * @since 27.0
+ */
+declare class CPPanel extends NSObject implements NSSecureCoding {
+
+	static alloc(): CPPanel; // inherited from NSObject
+
+	static new(): CPPanel; // inherited from NSObject
+
+	showsCloseButton: boolean;
+
+	static readonly maximumPanelItemsCount: number;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+/**
+ * @since 27.0
+ */
+declare class CPPanelButtonConfiguration extends NSObject implements NSSecureCoding {
+
+	static alloc(): CPPanelButtonConfiguration; // inherited from NSObject
+
+	static new(): CPPanelButtonConfiguration; // inherited from NSObject
+
+	readonly primaryAction: CPTextButton;
+
+	readonly secondaryAction: CPTextButton | null;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { primaryAction: CPTextButton; secondaryAction: CPTextButton | null; });
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+
+	initWithPrimaryActionSecondaryAction(primaryAction: CPTextButton, secondaryAction: CPTextButton | null): this;
+}
+
+/**
+ * @since 27.0
+ */
+declare class CPPanelItem extends NSObject implements NSSecureCoding {
+
+	static alloc(): CPPanelItem; // inherited from NSObject
+
+	static new(): CPPanelItem; // inherited from NSObject
+
+	enabled: boolean;
+
+	showsBottomSeparator: boolean;
+
+	userInfo: any | null;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { gridButtons: NSArray<CPGridButton> | CPGridButton[]; });
+
+	constructor(o: { listItem: CPListItem; });
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+
+	initWithGridButtons(gridButtons: NSArray<CPGridButton> | CPGridButton[]): this;
+
+	initWithListItem(listItem: CPListItem): this;
 }
 
 /**
@@ -3542,6 +3987,11 @@ declare class CPRouteChoice extends NSObject implements NSCopying, NSSecureCodin
 
 	readonly summaryVariants: NSArray<string>;
 
+	/**
+	 * @since 27.0
+	 */
+	readonly travelEstimates: CPTravelEstimates | null;
+
 	userInfo: any | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
@@ -3550,6 +4000,11 @@ declare class CPRouteChoice extends NSObject implements NSCopying, NSSecureCodin
 
 	constructor(o: { summaryVariants: NSArray<string> | string[]; additionalInformationVariants: NSArray<string> | string[]; selectionSummaryVariants: NSArray<string> | string[]; });
 
+	/**
+	 * @since 27.0
+	 */
+	constructor(o: { summaryVariants: NSArray<string> | string[]; additionalInformationVariants: NSArray<string> | string[]; selectionSummaryVariants: NSArray<string> | string[]; travelEstimates: CPTravelEstimates | null; });
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	encodeWithCoder(coder: NSCoder): void;
@@ -3557,6 +4012,65 @@ declare class CPRouteChoice extends NSObject implements NSCopying, NSSecureCodin
 	initWithCoder(coder: NSCoder): this;
 
 	initWithSummaryVariantsAdditionalInformationVariantsSelectionSummaryVariants(summaryVariants: NSArray<string> | string[], additionalInformationVariants: NSArray<string> | string[], selectionSummaryVariants: NSArray<string> | string[]): this;
+
+	/**
+	 * @since 27.0
+	 */
+	initWithSummaryVariantsAdditionalInformationVariantsSelectionSummaryVariantsTravelEstimates(summaryVariants: NSArray<string> | string[], additionalInformationVariants: NSArray<string> | string[], selectionSummaryVariants: NSArray<string> | string[], travelEstimates: CPTravelEstimates | null): this;
+}
+
+/**
+ * @since 27.0
+ */
+declare class CPRouteDetail extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): CPRouteDetail; // inherited from NSObject
+
+	static new(): CPRouteDetail; // inherited from NSObject
+
+	static routeDetailWithBatteryLevel(batteryLevel: number): CPRouteDetail;
+
+	static routeDetailWithCarbonFootprint(carbonFootprint: NSMeasurement<NSUnitMass>): CPRouteDetail;
+
+	static routeDetailWithEcoScore(value: number): CPRouteDetail;
+
+	static routeDetailWithEmissions(emissions: NSMeasurement<NSUnitMass>): CPRouteDetail;
+
+	static routeDetailWithFuelEnergy(fuelEnergy: NSMeasurement<NSUnitEnergy>): CPRouteDetail;
+
+	static routeDetailWithFuelLevel(fuelLevel: NSMeasurement<NSUnitVolume>): CPRouteDetail;
+
+	static routeDetailWithFuelMass(fuelMass: NSMeasurement<NSUnitMass>): CPRouteDetail;
+
+	static routeDetailWithHOV(hovInfo: string): CPRouteDetail;
+
+	static routeDetailWithInfo(info: string): CPRouteDetail;
+
+	static routeDetailWithKilowattHours(kilowattHours: NSMeasurement<NSUnitEnergy>): CPRouteDetail;
+
+	static routeDetailWithParking(parking: string): CPRouteDetail;
+
+	static routeDetailWithRating(rating: number): CPRouteDetail;
+
+	static routeDetailWithSymbolNameValue(symbolName: string, value: string): CPRouteDetail;
+
+	static routeDetailWithTollAmountLocale(value: number, locale: NSLocale): CPRouteDetail;
+
+	static routeDetailWithTrafficLights(trafficLights: number): CPRouteDetail;
+
+	static routeDetailWithWarning(warning: string): CPRouteDetail;
+
+	symbolTintColor: UIColor | null;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
 }
 
 /**
@@ -4038,6 +4552,11 @@ declare class CPThumbnailImage extends NSObject implements NSSecureCoding {
 
 	static alloc(): CPThumbnailImage; // inherited from NSObject
 
+	/**
+	 * @since 27.0
+	 */
+	static maximumImageSizeForAspectRatio(aspectRatio: number): CGSize;
+
 	static new(): CPThumbnailImage; // inherited from NSObject
 
 	/**
@@ -4124,6 +4643,11 @@ declare class CPTravelEstimates extends NSObject implements NSSecureCoding {
 	 */
 	readonly distanceRemainingToDisplay: NSMeasurement<NSUnitLength>;
 
+	/**
+	 * @since 27.0
+	 */
+	readonly routeDetails: NSArray<CPRouteDetail>;
+
 	readonly timeRemaining: number;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
@@ -4135,6 +4659,11 @@ declare class CPTravelEstimates extends NSObject implements NSSecureCoding {
 	 */
 	constructor(o: { distanceRemaining: NSMeasurement<NSUnitLength>; distanceRemainingToDisplay: NSMeasurement<NSUnitLength>; timeRemaining: number; });
 
+	/**
+	 * @since 27.0
+	 */
+	constructor(o: { distanceRemaining: NSMeasurement<NSUnitLength>; distanceRemainingToDisplay: NSMeasurement<NSUnitLength>; timeRemaining: number; routeDetails: NSArray<CPRouteDetail> | CPRouteDetail[]; });
+
 	constructor(o: { distanceRemaining: NSMeasurement<NSUnitLength>; timeRemaining: number; });
 
 	encodeWithCoder(coder: NSCoder): void;
@@ -4145,6 +4674,11 @@ declare class CPTravelEstimates extends NSObject implements NSSecureCoding {
 	 * @since 17.4
 	 */
 	initWithDistanceRemainingDistanceRemainingToDisplayTimeRemaining(distanceRemaining: NSMeasurement<NSUnitLength>, distanceRemainingToDisplay: NSMeasurement<NSUnitLength>, time: number): this;
+
+	/**
+	 * @since 27.0
+	 */
+	initWithDistanceRemainingDistanceRemainingToDisplayTimeRemainingRouteDetails(distanceRemaining: NSMeasurement<NSUnitLength>, distanceRemainingToDisplay: NSMeasurement<NSUnitLength>, time: number, routeDetails: NSArray<CPRouteDetail> | CPRouteDetail[]): this;
 
 	initWithDistanceRemainingTimeRemaining(distance: NSMeasurement<NSUnitLength>, time: number): this;
 }
@@ -4166,6 +4700,7 @@ declare class CPTrip extends NSObject implements NSSecureCoding {
 
 	/**
 	 * @since 17.4
+	 * @deprecated 27.0
 	 */
 	destinationNameVariants: NSArray<string> | null;
 
@@ -4298,6 +4833,11 @@ declare class CPVoiceControlState extends NSObject implements NSSecureCoding {
 	 */
 	actionButtons: NSArray<CPButton>;
 
+	/**
+	 * @since 27.0
+	 */
+	readonly backgroundImage: UIImage | null;
+
 	readonly identifier: string;
 
 	readonly image: UIImage | null;
@@ -4315,11 +4855,21 @@ declare class CPVoiceControlState extends NSObject implements NSSecureCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
+	/**
+	 * @since 27.0
+	 */
+	constructor(o: { identifier: string; titleVariants: NSArray<string> | string[] | null; image: UIImage | null; backgroundImage: UIImage | null; repeats: boolean; });
+
 	constructor(o: { identifier: string; titleVariants: NSArray<string> | string[] | null; image: UIImage | null; repeats: boolean; });
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
+
+	/**
+	 * @since 27.0
+	 */
+	initWithIdentifierTitleVariantsImageBackgroundImageRepeats(identifier: string, titleVariants: NSArray<string> | string[] | null, image: UIImage | null, backgroundImage: UIImage | null, repeats: boolean): this;
 
 	initWithIdentifierTitleVariantsImageRepeats(identifier: string, titleVariants: NSArray<string> | string[] | null, image: UIImage | null, repeats: boolean): this;
 }

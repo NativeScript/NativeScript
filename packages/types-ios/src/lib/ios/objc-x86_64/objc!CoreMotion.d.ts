@@ -192,6 +192,16 @@ declare class CMBatchedSensorManager extends NSObject {
 	stopDeviceMotionUpdates(): void;
 }
 
+/**
+ * @since 27.0
+ */
+interface CMBodyIdentifiable extends NSObjectProtocol {
+}
+declare var CMBodyIdentifiable: {
+
+	prototype: CMBodyIdentifiable;
+};
+
 interface CMCalibratedMagneticField {
 	field: CMMagneticField;
 	accuracy: CMMagneticFieldCalibrationAccuracy;
@@ -215,6 +225,11 @@ declare class CMDeviceMotion extends CMLogItem {
 	 * @since 11.0
 	 */
 	readonly heading: number;
+
+	/**
+	 * @since 27.0
+	 */
+	readonly headingAccuracy: number;
 
 	/**
 	 * @since 5.0
@@ -584,6 +599,11 @@ declare class CMMotionManager extends NSObject {
 
 	readonly deviceMotionAvailable: boolean;
 
+	/**
+	 * @since 27.0
+	 */
+	deviceMotionBody: CMBodyIdentifiable | null;
+
 	deviceMotionUpdateInterval: number;
 
 	readonly gyroActive: boolean;
@@ -905,6 +925,20 @@ declare class CMRecordedAccelerometerData extends CMAccelerometerData {
 }
 
 /**
+ * @since 27
+ */
+declare class CMRecordedDeviceMotion extends CMDeviceMotion {
+
+	static alloc(): CMRecordedDeviceMotion; // inherited from NSObject
+
+	static new(): CMRecordedDeviceMotion; // inherited from NSObject
+
+	readonly identifier: number;
+
+	readonly startDate: Date;
+}
+
+/**
  * @since 12.0
  */
 declare class CMRecordedPressureData extends CMAmbientPressureData {
@@ -1119,13 +1153,13 @@ declare class CMWaterSubmersionManager extends NSObject {
  */
 interface CMWaterSubmersionManagerDelegate extends NSObjectProtocol {
 
-	managerDidUpdateEvent(manager: CMWaterSubmersionManager, event: CMWaterSubmersionEvent): void;
+	managerDidUpdateEvent?(manager: CMWaterSubmersionManager, event: CMWaterSubmersionEvent): void;
 
-	managerDidUpdateMeasurement(manager: CMWaterSubmersionManager, measurement: CMWaterSubmersionMeasurement): void;
+	managerDidUpdateMeasurement?(manager: CMWaterSubmersionManager, measurement: CMWaterSubmersionMeasurement): void;
 
-	managerDidUpdateTemperature(manager: CMWaterSubmersionManager, measurement: CMWaterTemperature): void;
+	managerDidUpdateTemperature?(manager: CMWaterSubmersionManager, measurement: CMWaterTemperature): void;
 
-	managerErrorOccurred(manager: CMWaterSubmersionManager, error: NSError): void;
+	managerErrorOccurred?(manager: CMWaterSubmersionManager, error: NSError): void;
 }
 declare var CMWaterSubmersionManagerDelegate: {
 
