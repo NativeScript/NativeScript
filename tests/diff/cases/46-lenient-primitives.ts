@@ -47,3 +47,9 @@ sink.flag = undefined;
 sink.target = undefined;
 sink.target = sink;
 console.log(sink.seen, sink.flag === undefined);
+class HtmlStyle {
+  fontSize: number;
+}
+const html: any = { style: new HtmlStyle() };
+const css = `font-size: ${(html.style as HtmlStyle).fontSize}px;`;
+console.log(css.startsWith('font-size: ') && !css.includes(' 0px'), (html.style as HtmlStyle).fontSize * 2);

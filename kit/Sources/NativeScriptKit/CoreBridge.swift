@@ -96,9 +96,23 @@ extension ViewBase {
     @discardableResult
     public func kitAddRegion(_ region: Region) -> Region { templateChildren.addRegion(region) }
 
-    /// An attribute's value: a string goes through the property's converter, as from XML.
+    /// An attribute's value, as nativescript-vue sets it: `android:` attributes are for the other platform,
+    /// `ios:` ones for this; a dotted name sets the path's last member (`ios.position` sets `ios`'s
+    /// `position`, as `set-value` does), making objects along a path that has none.
     public func kitSet(_ name: String, _ value: Any?) {
-        jsReport { try self.set(name, value) }
+        if name.hasPrefix("android:") || name.hasPrefix("android.") { return }
+        let key = name.hasPrefix("ios:") ? String(name.dropFirst(4)) : name
+        jsReport {
+            let path = key.split(separator: ".").map(String.init)
+            guard path.count > 1 else { return try self.set(key, value) }
+            var target: Any? = self
+            for member in path.dropLast() {
+                var next = try jsGet(target, member)
+                if jsIsNullish(next) { next = JSObject(); try jsSet(target, member, next) }
+                target = next
+            }
+            try jsSet(target, path.last!, value)
+        }
     }
 
     /// A listener for a template's event binding. A list's `itemTap` carries the row's item context

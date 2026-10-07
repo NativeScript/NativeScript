@@ -6,6 +6,7 @@ import {
 } from './natives/symbols.ts';
 
 const NUMBERS = new Set(['CGFloat', 'Double', 'Float', 'Float32', 'Float64', 'Int', 'UInt', 'Int8', 'Int16', 'Int32', 'Int64', 'UInt8', 'UInt16', 'UInt32', 'UInt64', 'TimeInterval', 'NSInteger', 'NSUInteger']);
+const INTEGERS = new Set(['Int', 'UInt', 'Int8', 'Int16', 'Int32', 'Int64', 'UInt8', 'UInt16', 'UInt32', 'UInt64', 'NSInteger', 'NSUInteger']);
 const base = (t: SwiftType) => t.replace(/[?!]$/, '').replace(/^\((.*)\)$/, '$1');
 const optional = (t: SwiftType) => /[?!]$/.test(t);
 /** Foundation's classes Swift imports as its value types where an API takes or returns one (`NSURL` as `URL`). */
@@ -693,9 +694,11 @@ export class NativeAPI {
       return `NSSelectorFromString(${t.expr(e)})`;
     }
     if (NUMBERS.has(b)) {
+      // An integer from a number as the runtime marshals one: NaN (an unset `maxLines`) is 0, the rest truncated and clamped.
+      if (source === 'Double' && INTEGERS.has(b)) return ts.isNumericLiteral(e) ? t.expr(e) : `jsNativeInteger(${t.expr(e)}, ${b}.self)`;
       if (source === 'Double' && b !== 'Double' && b !== 'TimeInterval') return ts.isNumericLiteral(e) ? t.expr(e) : `${b}(${t.expr(e)})`;
       // An untyped value: the number the runtime marshals it as.
-      if (source === 'Any?') return b === 'Double' || b === 'TimeInterval' ? `jsToNumber(${t.expr(e)})` : `${b}(jsToNumber(${t.expr(e)}))`;
+      if (source === 'Any?') return b === 'Double' || b === 'TimeInterval' ? `jsToNumber(${t.expr(e)})` : INTEGERS.has(b) ? `jsNativeInteger(jsToNumber(${t.expr(e)}), ${b}.self)` : `${b}(jsToNumber(${t.expr(e)}))`;
       return t.expr(e);
     }
     if (this.isNumericConstants(b) && ['Double', 'Double?', 'Any?'].includes(source)) {

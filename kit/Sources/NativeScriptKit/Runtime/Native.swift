@@ -20,6 +20,16 @@ func jsNativeBoolean(_ v: Any) -> Bool? {
     return n.boolValue
 }
 
+/// A number where native code takes an integer, as the runtime marshals it: NaN and the infinities are 0,
+/// anything else truncated toward zero and clamped to the type's range.
+public func jsNativeInteger<T: FixedWidthInteger>(_ value: Double, _: T.Type) -> T {
+    guard value.isFinite else { return 0 }
+    let truncated = value.rounded(.towardZero)
+    if truncated <= Double(T.min) { return T.min }
+    if truncated >= Double(T.max) { return T.max }
+    return T(truncated)
+}
+
 /// A program's subclass of a native class: its own members by name, which Objective-C cannot see; nil for a name it does not declare.
 public protocol JSNativeMembers: AnyObject {
     func jsMember(_ key: String) -> Any??

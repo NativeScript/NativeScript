@@ -712,10 +712,11 @@ public func jsLenientBool(_ value: Any?) -> Bool {
     return jsTruthy(value)
 }
 
-/// A value code checked without strictNullChecks declares a number: undefined and null are 0, anything else converts.
+/// A value code checked without strictNullChecks declares a number, converted as JavaScript converts it where
+/// it is used: undefined is NaN (an unset style's `font-size: ${fontSize}px` is no size), null is 0.
 public func jsLenientNumber(_ value: Any?) -> Double {
     if let d = value as? Double { return d }
-    return jsIsNullish(value) ? 0 : jsToNumber(value)
+    return jsToNumber(value)
 }
 
 /// A value code checked without strictNullChecks declares a string: undefined and null are "", anything else converts.
