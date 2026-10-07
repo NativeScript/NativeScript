@@ -268,10 +268,21 @@ export function generateKit(o: KitOptions): KitResult {
     const code = (translator.interfacesOf(paths.get(f)!) + f.code).trim();
     f.code = header(new Set([...sdk, ...importsOf(code, imports.get(f))])) + publicize(code) + '\n';
   }
+  // Each function core's index exports and each object shape is a file of its own: an app's build compiles
+  // those the code it keeps names, as it does core's modules.
   const exported = indexFunctions(program, checker, join(core, 'index.ts'), compiled, (f) => enumName(relOf(f), barrels), sourceOf, out, KIT, o.replaces);
-  if (exported) out.push({ name: '__Exports.swift', code: header(new Set(sdk)) + exported, sources: {} });
-  const shapes = translator.shapesCode().trim();
-  if (shapes) out.push({ name: '__Objects.swift', code: header(new Set([...sdk, ...importsOf(shapes)])) + publicize(shapes) + '\n', sources: {} });
+  const exports = new Map<string, string[]>();
+  for (const fn of exported.split(/\n(?=public func )/)) {
+    const name = /^public func (\w+)/.exec(fn)?.[1];
+    if (name) exports.set(name, [...(exports.get(name) ?? []), fn.trim()]);
+  }
+  for (const [name, fns] of exports) out.push({ name: `__Export.${name}.swift`, code: header(new Set(sdk)) + fns.join('\n\n') + '\n', sources: {} });
+  const shapes = publicize(translator.shapesCode().trim());
+  for (const shape of shapes ? shapes.split(/\n(?=public final class )/) : []) {
+    const name = /^public final class (\w+)/.exec(shape.trim())?.[1];
+    if (!name) throw new Error(`an object shape that is no class: ${shape.slice(0, 80)}`);
+    out.push({ name: `__Object.${hash(name)}.swift`, code: header(new Set([...sdk, ...importsOf(shape)])) + shape.trim() + '\n', sources: {} });
+  }
   // Core's modules run their top level once, before the app's: those the app reaches, in the order JavaScript evaluates them,
   // which its build lists (the manifest's graph), so that nothing in the kit keeps the others in its binary.
   out.push({ name: '__Modules.swift', sources: {}, code: `${header()}public enum CoreModules {\n    private static var initialized = false\n\n    /// The initializers of the core modules the app reaches, in the order core's index evaluates them.\n    public static var initializers: [() -> Void] = []\n\n    public static func initialize() {\n        if initialized { return }\n        initialized = true\n        for run in initializers { run() }\n    }\n}\n` });

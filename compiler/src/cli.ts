@@ -386,9 +386,9 @@ const clashes = translator.native.kitClashes(translator.kitTypes());
 if (clashes.length) writeFileSync(join(out, 'Sources', '__KitNames.swift'), `// Compiled by ns-native: the kit's types whose names the SDK also declares.\nimport NativeScriptKit\n\n${clashes.map((n) => `typealias ${n} = NativeScriptKit.${n}\n`).join('')}`);
 // Core's modules the app reaches, listed for the kit to run: nothing else names the others, so the link leaves them out.
 const appSwift = readdirSync(join(out, 'Sources')).filter((f) => f.endsWith('.swift') && f !== '__Entry.swift').map((f) => readFileSync(join(out, 'Sources', f), 'utf8')).join('\n');
-const reachedCore = coreInitializers(join(kit, 'Sources', 'NativeScriptKit'), appSwift + start);
-say(`${reachedCore.length} of core's module initializers run in this app`);
-const entryStart = start.replace('        CoreModules.initialize()\n', `        CoreModules.initializers = [\n${reachedCore.map((i) => `            ${i},\n`).join('')}        ]\n        CoreModules.initialize()\n`);
+const closedWorld = coreClosedWorld(join(kit, 'Sources', 'NativeScriptKit'), appSwift + start);
+say(`core in this app: ${closedWorld.initializers.length} module initializers run, ${closedWorld.excluded.length} files left out`);
+const entryStart = start.replace('        CoreModules.initialize()\n', `        CoreModules.initializers = [\n${closedWorld.initializers.map((i) => `            ${i},\n`).join('')}        ]\n        CoreModules.initialize()\n`);
 writeFileSync(join(out, 'Sources', '__Entry.swift'), `// Compiled by ns-native: the app's entry and its CSS.\nimport NativeScriptKit\n\n@main\nenum ${name}App {\n    static func main() {\n${entryStart}    }\n}\n\nlet appCSS = """\n${css.replace(/\\/g, '\\\\').replace(/"""/g, '\\"""')}"""\n\n// What core reads as \`~/package.json\`.\nlet appPackageJSON = """\n${appPackageJSON(app).replace(/\\/g, '\\\\').replace(/"""/g, '\\"""')}\n"""\n`);
 say(`${components.length} components and ${modules.length} modules from ${framework} compiled to Swift in ${Date.now() - started} ms → ${relative(process.cwd(), join(out, 'Sources'))}`);
 
@@ -408,7 +408,7 @@ const pluginLines = xcodegenLines(native, out);
 const kitSources = join(kit, 'Sources', 'NativeScriptKit');
 const core = installedCore(app);
 const coreModules = core ? coreNativeModules(core).map((m) => m.module) : [];
-const excluded = kitFilesUnreached(kitSources, readdirSync(join(out, 'Sources')).map((f) => readFileSync(join(out, 'Sources', f), 'utf8')).join('\n'), coreModules);
+const excluded = [...kitFilesUnreached(kitSources, readdirSync(join(out, 'Sources')).map((f) => readFileSync(join(out, 'Sources', f), 'utf8')).join('\n'), coreModules, new Set(closedWorld.excluded)), ...closedWorld.excluded];
 const coreNative = coreNativeProject(core ?? '', kitImports(kitSources, excluded, coreModules), out);
 const profile = opt('--provision') ? findProfile(opt('--provision')!) : null;
 const team = !profile && opt('--team-id') ? { id: opt('--team-id')!, method: opt('--export-method', 'debugging') as ExportMethod } : undefined;
@@ -484,14 +484,14 @@ if (args.includes('--build')) {
  * fifty images) whether or not the app reaches the code that uses it.
  * Core's own native modules (`linked`) are part of the kit as Foundation is.
  */
-function kitFilesUnreached(dir: string, appSwift: string, linked: string[]): string[] {
+function kitFilesUnreached(dir: string, appSwift: string, linked: string[], leftOut: ReadonlySet<string>): string[] {
   const names = new Set<string>();
   const read = (text: string) => { for (const m of text.matchAll(/\b[A-Za-z_]\w*\b/g)) names.add(m[0]); };
   read(appSwift);
   // A file importing only what every app links stays, and what it names is reached; the others stay when something that stays names one of their types.
   const pending: { path: string; text: string; types: string[] }[] = [];
   for (const f of readdirSync(dir, { recursive: true }) as string[]) {
-    if (!f.endsWith('.swift')) continue;
+    if (!f.endsWith('.swift') || leftOut.has(f)) continue;
     const text = readFileSync(join(dir, f), 'utf8');
     // Core's modules are one program: each one's initializer runs at launch, as core's index imports them all.
     if (f.startsWith('Core/') || [...text.matchAll(/^import (\w+)/gm)].every((m) => ['Foundation', 'UIKit', 'ObjectiveC', ...linked].includes(m[1]))) { read(text); continue; }
@@ -510,38 +510,48 @@ function kitFilesUnreached(dir: string, appSwift: string, linked: string[]): str
 }
 
 /**
- * The initializers of the core modules an app reaches, in the order core's index evaluates them
- * (the kit manifest's graph): the modules declaring what the app's Swift and the kit's own name,
- * what the functions core's index exports forward to where the app calls them, and every module
- * those evaluate first, as importing a module runs its imports' top levels.
+ * Core as an app reaches it, from the kit manifest's graph. What runs: the modules declaring
+ * what the app's Swift and the kit's own name (or name through a function core's index exports
+ * or an object shape), and every module those evaluate first, as importing a module runs its
+ * imports' top levels; their initializers, in the order core's index evaluates them. What is
+ * compiled: those files and every file declaring a name they mention, which Swift needs whether
+ * or not it runs; the others are left out of the kit's target, and with them the frameworks
+ * only they use (WebKit with WebView).
  */
-function coreInitializers(kitSources: string, appSwift: string): string[] {
-  const manifest = join(kitSources, 'Core', 'manifest.json');
+function coreClosedWorld(kitSources: string, appSwift: string): { initializers: string[]; excluded: string[] } {
+  const coreDir = join(kitSources, 'Core');
+  const manifest = join(coreDir, 'manifest.json');
   const graph: Record<string, { init?: string; imports: string[] }> | undefined = existsSync(manifest) ? JSON.parse(readFileSync(manifest, 'utf8')).graph : undefined;
   if (!graph) throw new Error(`${manifest} has no module graph: regenerate the kit from core (tools/native-kit/generate.mts)`);
-  const used = new Set<string>();
-  const read = (text: string) => { for (const m of text.matchAll(/\b[A-Za-z_]\w*\b/g)) used.add(m[0]); };
-  read(appSwift);
-  for (const f of readdirSync(kitSources, { recursive: true }) as string[]) if (f.endsWith('.swift') && !f.startsWith('Core/')) read(readFileSync(join(kitSources, f), 'utf8'));
-  // `__Exports.swift` forwards each function core's index exports to the module it is compiled into.
-  const exported = join(kitSources, 'Core', '__Exports.swift');
-  if (existsSync(exported)) for (const fn of readFileSync(exported, 'utf8').split(/^(?=public func )/m)) {
-    const name = /^public func (\w+)/.exec(fn)?.[1];
-    if (name && used.has(name)) read(fn);
-  }
+  const files = readdirSync(coreDir).filter((f) => f.endsWith('.swift') && f !== '__Modules.swift');
+  const text = new Map(files.map((f) => [f, readFileSync(join(coreDir, f), 'utf8')]));
+  const words = (code: string) => new Set(code.match(/\b[A-Za-z_]\w*\b/g) ?? []);
   const declaring = new Map<string, string>();
-  for (const file of Object.keys(graph)) {
-    const text = readFileSync(join(kitSources, 'Core', file), 'utf8');
-    for (const m of text.matchAll(/^(?:@\w+(?:\([^)]*\))?\s+)*(?:(?:open|public|final|indirect)\s+)*(?:class|struct|enum|protocol|func|typealias|let|var)\s+(\w+)/gm)) declaring.set(m[1], file);
-  }
-  const reached = new Set<string>();
-  const visit = (file: string) => {
-    if (reached.has(file)) return;
-    reached.add(file);
-    for (const i of graph[file]?.imports ?? []) visit(i);
+  for (const [f, code] of text) for (const m of code.matchAll(/^(?:@\w+(?:\([^)]*\))?\s+)*(?:(?:open|public|final|indirect)\s+)*(?:class|struct|enum|protocol|func|typealias|let|var)\s+(\w+)/gm)) if (!declaring.has(m[1])) declaring.set(m[1], f);
+  const named = (code: string) => [...words(code)].flatMap((w) => declaring.get(w) ?? []);
+  let roots = named(appSwift);
+  for (const f of readdirSync(kitSources, { recursive: true }) as string[]) if (f.endsWith('.swift') && !f.startsWith('Core/')) roots.push(...named(readFileSync(join(kitSources, f), 'utf8')));
+  const running = new Set<string>();
+  const seen = new Set<string>();
+  const run = (f: string) => {
+    if (seen.has(f)) return;
+    seen.add(f);
+    // A module runs, and so do its imports; an export or a shape runs nothing itself, only what it names.
+    if (graph[f]) { running.add(f); graph[f].imports.forEach(run); } else named(text.get(f) ?? '').forEach(run);
   };
-  for (const [name, file] of declaring) if (used.has(name)) visit(file);
-  return Object.keys(graph).filter((f) => reached.has(f) && graph[f].init).map((f) => graph[f].init!);
+  roots.forEach(run);
+  const compiled = new Set<string>();
+  const compile = (f: string) => {
+    if (compiled.has(f) || !text.has(f)) return;
+    compiled.add(f);
+    named(text.get(f)!).forEach(compile);
+    graph[f]?.imports.forEach(compile);
+  };
+  [...roots, ...running].forEach(compile);
+  return {
+    initializers: Object.keys(graph).filter((f) => running.has(f) && graph[f].init).map((f) => graph[f].init!),
+    excluded: files.filter((f) => !compiled.has(f)).map((f) => `Core/${f}`),
+  };
 }
 
 /** The app's package.json as its bundle has it, or an empty object. */

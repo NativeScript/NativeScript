@@ -42,7 +42,9 @@ final class TemplateChildren: RegionHost {
                     let at = layout.getChildIndex(view)
                     if at == Double(index) { continue }
                     if at >= 0 { try layout.removeChild(view) }
-                    _ = try layout.insertChild(view, Double(index))
+                    // At the end, added as nativescript-vue adds it: core then appends the native view, where an index
+                    // would place it below the native view at that position (a border's, which is no child).
+                    if Double(index) == layout.getChildrenCount() { try layout.addChild(view) } else { _ = try layout.insertChild(view, Double(index)) }
                 }
             } else if let page = owner as? Page {
                 if let bar = next.last(where: { $0 is ActionBar }) as? ActionBar, bar !== page.actionBar { page.actionBar = bar }

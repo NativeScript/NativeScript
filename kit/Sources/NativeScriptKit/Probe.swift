@@ -72,6 +72,7 @@ enum Probe {
             line += " bg=\(jsToString(style.backgroundColor)) color=\(jsToString(style.color)) font=\(jsToString(style.fontSize)) pad=\(jsToString(style.paddingTop))"
             if let native = v.nativeViewProtected as? UIView {
                 line += " frame=\(native.frame)"
+                if let siblings = native.superview?.subviews, siblings.count > 1, let at = siblings.firstIndex(of: native) { line += " subview=\(at)/\(siblings.count)" }
                 if let text = v as? TextBase {
                     let native = (native as? UITextView)?.text ?? (native as? UILabel)?.text ?? (native as? UITextField)?.text ?? (native as? UIButton)?.title(for: .normal)
                     line += " text=\(jsInspect(text.text)) hint=\(jsInspect((try? jsGet(text, "hint")) ?? nil)) native=\(jsInspect(native))"

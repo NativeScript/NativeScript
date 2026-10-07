@@ -110,6 +110,8 @@ function importedFiles(program: ts.Program, file: string, resolvedBy: ((containi
 function valueNames(sf: ts.SourceFile): Set<string> {
   const names = new Set<string>();
   const walk = (n: ts.Node) => {
+    // A class's base (`class Color extends ColorBase`) is evaluated, though TypeScript's nodes count it among type nodes.
+    if (ts.isExpressionWithTypeArguments(n) && ts.isHeritageClause(n.parent) && n.parent.token === ts.SyntaxKind.ExtendsKeyword && ts.isClassLike(n.parent.parent)) return walk(n.expression);
     if (ts.isImportDeclaration(n) || ts.isTypeNode(n) || ts.isInterfaceDeclaration(n) || ts.isTypeAliasDeclaration(n)) return;
     if (ts.isHeritageClause(n) && n.token === ts.SyntaxKind.ImplementsKeyword) return;
     if (ts.isIdentifier(n)) names.add(n.text);
