@@ -5,6 +5,9 @@ import {
   type NativeMethod, type NativeProperty, type SwiftType,
 } from './natives/symbols.ts';
 
+/** A buffer, a view of one, or an untyped value that may be either. */
+const BUFFER_SOURCE = /^(JSArrayBuffer|JSDataView|JSArrayBufferView|JS(Int8|Uint8|Uint8Clamped|Int16|Uint16|Int32|Uint32|Float32|Float64|BigInt64|BigUint64)Array|Any)\??$/;
+
 const NUMBERS = new Set(['CGFloat', 'Double', 'Float', 'Float32', 'Float64', 'Int', 'UInt', 'Int8', 'Int16', 'Int32', 'Int64', 'UInt8', 'UInt16', 'UInt32', 'UInt64', 'TimeInterval', 'NSInteger', 'NSUInteger']);
 const INTEGERS = new Set(['Int', 'UInt', 'Int8', 'Int16', 'Int32', 'Int64', 'UInt8', 'UInt16', 'UInt32', 'UInt64', 'NSInteger', 'NSUInteger']);
 const base = (t: SwiftType) => t.replace(/[?!]$/, '').replace(/^\((.*)\)$/, '$1');
@@ -711,8 +714,8 @@ export class NativeAPI {
       return optional(target) ? `(${t.expr(e)} as? ${b})` : `(${t.expr(e)} as! ${b})`;
     }
     // An ArrayBuffer or a typed array where Swift takes bytes: a copy of them, or their address, as the iOS runtime passes them.
-    if (b === 'Data' && /^(JSArrayBuffer|JSUint8Array|Any)\??$/.test(source)) return `jsNativeData(${t.expr(e)})`;
-    if (/^Unsafe(Mutable)?RawPointer$/.test(b) && /^(JSArrayBuffer|JSUint8Array|Any)\??$/.test(source)) {
+    if (b === 'Data' && BUFFER_SOURCE.test(source)) return `jsNativeData(${t.expr(e)})`;
+    if (/^Unsafe(Mutable)?RawPointer$/.test(b) && BUFFER_SOURCE.test(source)) {
       const bytes = b === 'UnsafeRawPointer' ? `jsNativeBytes(${t.expr(e)})` : `jsNativeBytes(${t.expr(e)}).map { UnsafeMutableRawPointer(mutating: $0) }`;
       return `${bytes}${optional(target) ? '' : '!'}`;
     }

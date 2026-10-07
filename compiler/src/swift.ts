@@ -129,10 +129,14 @@ export interface ComponentInfo {
   props: string[];
 }
 
+const TYPED_ARRAYS = ['Int8Array', 'Uint8Array', 'Uint8ClampedArray', 'Int16Array', 'Uint16Array', 'Int32Array', 'Uint32Array', 'Float32Array', 'Float64Array', 'BigInt64Array', 'BigUint64Array'];
+/** The library's buffer types, each the runtime's class of its name with a `JS` prefix. */
+const BUFFER_TYPES = ['ArrayBuffer', ...TYPED_ARRAYS, 'DataView'];
+const isTypedArrayType = (t: string) => /^JS(Int8|Uint8|Uint8Clamped|Int16|Uint16|Int32|Uint32|Float32|Float64|BigInt64|BigUint64)Array$/.test(t);
 // No prototype: a name like `toString` is no error class.
-const BUILTIN_CLASSES: Record<string, string> = Object.assign(Object.create(null), { Promise: 'JSThenable', Array: 'JSArrayProtocol', Map: 'JSMapProtocol', Set: 'JSSetProtocol', Date: 'JSDate', ArrayBuffer: 'JSArrayBuffer', Uint8Array: 'JSUint8Array' });
+const BUILTIN_CLASSES: Record<string, string> = Object.assign(Object.create(null), { Promise: 'JSThenable', Array: 'JSArrayProtocol', Map: 'JSMapProtocol', Set: 'JSSetProtocol', Date: 'JSDate' }, Object.fromEntries(BUFFER_TYPES.map((n) => [n, `JS${n}`])));
 const ERRORS: Record<string, string> = Object.assign(Object.create(null), { Error: 'JSError', TypeError: 'JSTypeError', RangeError: 'JSRangeError', SyntaxError: 'JSSyntaxError', ReferenceError: 'JSReferenceError', AggregateError: 'JSAggregateError' });
-const LIB_GLOBALS = new Set(['Math', 'JSON', 'Object', 'Array', 'Number', 'Promise', 'console', 'String', 'Boolean', 'Map', 'Set', 'Date', 'WeakRef', 'Symbol', 'WeakMap', 'WeakSet', 'BigInt', 'ArrayBuffer', 'Uint8Array']);
+const LIB_GLOBALS = new Set(['Math', 'JSON', 'Object', 'Array', 'Number', 'Promise', 'console', 'String', 'Boolean', 'Map', 'Set', 'Date', 'WeakRef', 'Symbol', 'WeakMap', 'WeakSet', 'BigInt', ...BUFFER_TYPES]);
 
 /** Swift code with its closures' bodies left out: what runs where it stands. */
 function outsideClosures(code: string): string {
@@ -593,6 +597,7 @@ export class Translator implements AsyncTranslator {
     const name = sym?.getName() === 'default' ? declName ?? 'default' : sym?.getName();
     const args = () => t.aliasTypeArguments ?? c.getTypeArguments(t as ts.TypeReference);
     const arg = (k: number) => this.type(args()[k], where);
+    if (name && BUFFER_TYPES.includes(name) && isLibDeclaration(sym?.declarations?.[0])) return `JS${name}`;
     switch (name) {
       case 'Sig': case 'Ref': case 'VueRef': case 'WritableSignal': case 'InputSignal': case 'Writable': return `Signal<${arg(0)}>`;
       case 'Signal': return arg(0);
@@ -617,9 +622,9 @@ export class Translator implements AsyncTranslator {
       // A weak reference holds an object: an untyped target is any object.
       case 'WeakRef': { const target = arg(0); return `JSWeakRef<${target === 'Any?' ? 'AnyObject' : target.replace(/[?!]$/, '')}>`; }
       case 'TemplateStringsArray': return 'JSArray<String>';
-      case 'ArrayBuffer': case 'Uint8Array': if (isLibDeclaration(sym?.declarations?.[0])) return `JS${name}`; break;
-      // The views the runtime has are bytes.
-      case 'ArrayBufferView': if (isLibDeclaration(sym?.declarations?.[0])) return 'JSUint8Array'; break;
+      case 'ArrayBufferView': if (isLibDeclaration(sym?.declarations?.[0])) return 'JSArrayBufferView'; break;
+      // An array, a typed array or any object with a length: read by index and length, untyped.
+      case 'ArrayLike': if (isLibDeclaration(sym?.declarations?.[0])) return 'Any?'; break;
       case 'NumberFormat': case 'DateTimeFormat': if (isLibDeclaration(sym?.declarations?.[0])) return `JS${name}`; break;
       case 'NumberFormatOptions': case 'DateTimeFormatOptions': case 'ResolvedNumberFormatOptions': case 'ResolvedDateTimeFormatOptions': case 'LocalesArgument':
         if (isLibDeclaration(sym?.declarations?.[0])) return 'Any?';
@@ -5087,7 +5092,7 @@ export class Translator implements AsyncTranslator {
       if (cls) return `${cls}.jsName`;
     }
     // `ArrayBuffer.prototype`: an object of the class's tag, all a program reads of it.
-    if (name === 'prototype' && ts.isIdentifier(target) && ['ArrayBuffer', 'Uint8Array'].includes(target.text) && this.isLibGlobal(target)) return `JS${target.text}.jsPrototype`;
+    if (name === 'prototype' && ts.isIdentifier(target) && ['ArrayBuffer', ...TYPED_ARRAYS].includes(target.text) && this.isLibGlobal(target)) return `JS${target.text}.jsPrototype`;
     // `Cls.prototype` (library mode): what script defines there, which the class's instances read.
     if (name === 'prototype' && this.library && this.resolve(target)?.flags! & ts.SymbolFlags.Class) return `JSPrototypes.of(${this.expr(target).replace(/(\.self)?$/, '.self')})`;
     if (name === 'prototype' && this.library && this.typeOf(target).endsWith('.Type')) return `JSPrototypes.of(${this.expr(target)})`;
@@ -5100,6 +5105,7 @@ export class Translator implements AsyncTranslator {
     if (ts.isIdentifier(target) && this.isLibGlobal(target)) {
       const constant = LIB_CONSTANTS[`${target.text}.${name}`];
       if (constant) return constant;
+      if (name === 'BYTES_PER_ELEMENT' && TYPED_ARRAYS.includes(target.text)) return `JS${target.text}.BYTES_PER_ELEMENT`;
       // `const round = Math.round`: the function as a value.
       if (target.text === 'Math' && MATH_ONE[name]) return this.convert(`{ (__x: Double) -> Double in ${MATH_ONE[name]}(__x) }`, '(Double) throws -> Double', this.typeOf(e));
       throw this.error(e, `${target.text}.${name}`);
@@ -5216,8 +5222,9 @@ export class Translator implements AsyncTranslator {
       return this.undefinedAs(this.maybeUndefined(e)!, rt);
     }
     if (t === 'JSMatch') return `${target}${q}[Int(${this.expr(key)})]`;
-    if (t === 'JSUint8Array') {
-      const code = `${target}${q}[jsIndex: ${this.toNumber(key)}]`;
+    if (isTypedArrayType(t)) {
+      const assigned = ts.isBinaryExpression(e.parent) && e.parent.operatorToken.kind === ts.SyntaxKind.EqualsToken;
+      const code = `${target}${q}[${isWriteTarget(e) && !assigned ? 'jsElement' : 'jsIndex'}: ${this.toNumber(key)}]`;
       return isWriteTarget(e) ? code : this.undefinedAs(code, this.typeOf(e));
     }
     if (t.startsWith('(') && ts.isNumericLiteral(key)) {
@@ -5373,7 +5380,7 @@ export class Translator implements AsyncTranslator {
         return `({ () ${tr ? 'throws ' : ''}-> ${optionalType(t)} in let ${v}: ${optionalType(t)} = ${tr}${left ?? this.expr(e.left)}; return jsTruthy(${v} as Any?) ? ${truthy} : ${falsy} }())`;
       }
     }
-    if (ts.isElementAccessExpression(e) && !isWriteTarget(e) && this.typeOf(e.expression).replace(/[?!]$/, '') === 'JSUint8Array') {
+    if (ts.isElementAccessExpression(e) && !isWriteTarget(e) && isTypedArrayType(this.typeOf(e.expression).replace(/[?!]$/, ''))) {
       return `${this.expr(e.expression)}${e.questionDotToken || this.continuesOptional(e.expression) ? '?' : ''}[jsIndex: ${this.toNumber(e.argumentExpression)}]`;
     }
     if (ts.isElementAccessExpression(e) && !isWriteTarget(e) && this.typeOf(e.expression).replace(/\?$/, '').startsWith('JSArray<')) {
@@ -6096,6 +6103,13 @@ export class Translator implements AsyncTranslator {
     const a = () => this.args(e);
     const arg = (k: number) => e.arguments[k];
     const T = () => this.typeOf(e);
+    if (TYPED_ARRAYS.includes(owner) && (method === 'of' || method === 'from')) {
+      const t = `JS${owner}`;
+      const value = owner.startsWith('Big') ? 'JSBigInt' : 'Double';
+      if (method === 'of') return e.arguments.some(ts.isSpreadElement) ? `${t}(${this.packed(e.arguments, `JSArray<${value}>`)}.storage)` : `${t}.of(${e.arguments.map((x) => this.coerce(x, value)).join(', ')})`;
+      if (e.arguments.length === 1) return this.typedArrayOf(t, arg(0));
+      return `${t}(JSArray<${this.elementTypeOf(arg(0))}>.from(${this.iterable(arg(0))}).map(${this.fn(arg(1))}).storage)`;
+    }
     switch (owner) {
       case 'Math': return this.math(method, e);
       case 'ArrayBuffer': if (method === 'isView') return `JSArrayBuffer.isView(${arg(0) ? this.coerce(arg(0), 'Any?') : 'nil'})`; break;
@@ -6578,6 +6592,27 @@ export class Translator implements AsyncTranslator {
   /** `new (Cls as any)(…)` constructs Cls: the type of the expression made without the cast. */
   private constructedTypes = new Map<ts.Node, string>();
 
+  /** `new Float32Array(x, …)`: a length, a view of a buffer's bytes, or values converted. */
+  private newTypedArray(t: string, args: readonly ts.Expression[]): string {
+    const a = args[0];
+    if (!a) return `${t}(length: 0)`;
+    const at = this.typeOf(a).replace(/!$/, '');
+    if (at === 'Double') return `${t}(length: ${this.expr(a)})`;
+    if (at === 'JSArrayBuffer') return `${t}(buffer: ${[this.expr(a), ...args.slice(1).map((x) => this.toNumber(x))].join(', ')})`;
+    return this.typedArrayOf(t, a);
+  }
+
+  /** A typed array of an iterable's or an array-like's values (`new Float32Array(xs)`, `Float32Array.from(xs)`). */
+  private typedArrayOf(t: string, a: ts.Expression): string {
+    const at = this.typeOf(a).replace(/!$/, '');
+    const value = t.startsWith('JSBig') ? 'JSBigInt' : 'Double';
+    if (isTypedArrayType(at)) return `${t}(${this.expr(a)})`;
+    if (at === `JSArray<${value}>`) return `${t}(${this.expr(a)}.storage)`;
+    if (/^JSArray<.*>$/.test(at)) return `${t}(${this.coerce(a, 'JSArray<Any?>')}.storage)`;
+    if (!isOptional(at) && at !== 'Any?' && this.elementTypeOf(a) === value) return `${t}(Array(${this.iterable(a)}))`;
+    return `${t}.from(${this.coerce(a, 'Any?')})`;
+  }
+
   private newExpr(e: ts.NewExpression): string {
     if (ts.isParenthesizedExpression(e.expression)) {
       // `new (Cls as any)(…)`: the class itself constructed; a cast left in would be parenthesized again.
@@ -6650,14 +6685,11 @@ export class Translator implements AsyncTranslator {
       return `InteropReference(${value ? this.coerce(value, 'Any?') : ''})`;
     }
     if (name === 'ArrayBuffer' && this.isLibGlobal(callee as ts.Identifier)) return `JSArrayBuffer(${args[0] ? this.toNumber(args[0]) : ''})`;
-    if (name === 'Uint8Array' && this.isLibGlobal(callee as ts.Identifier)) {
-      const a = args[0];
-      if (!a) return 'JSUint8Array(length: 0)';
-      const at = this.typeOf(a).replace(/[?!]$/, '');
-      if (at === 'Double') return `JSUint8Array(length: ${this.expr(a)})`;
-      if (at === 'JSArrayBuffer') return `JSUint8Array(buffer: ${[this.expr(a), ...args.slice(1).map((x) => this.toNumber(x))].join(', ')})`;
-      if (/^JSArray<.*>$/.test(at)) return `JSUint8Array(${this.coerce(a, 'JSArray<Any?>')}.storage)`;
-      return `JSUint8Array.from(${this.coerce(a, 'Any?')})`;
+    if (TYPED_ARRAYS.includes(name) && this.isLibGlobal(callee as ts.Identifier)) return this.newTypedArray(`JS${name}`, args);
+    if (name === 'DataView' && this.isLibGlobal(callee as ts.Identifier)) {
+      const rest = args.slice(1).map((x) => this.toNumber(x));
+      if (args[0] && this.typeOf(args[0]).replace(/!$/, '') === 'JSArrayBuffer') return `JSDataView(buffer: ${[this.expr(args[0]), ...rest].join(', ')})`;
+      return `JSDataView.from(${[args[0] ? this.coerce(args[0], 'Any?') : 'nil', ...rest].join(', ')})`;
     }
     // `new Array(n)` of a type holding undefined: n holes, each read as undefined.
     if (name === 'Array' && args.length === 1 && this.typeOf(args[0]) === 'Double' && /^JSArray<(Any\?|.*\?)>$/.test(t)) return `${t}(Array(repeating: nil, count: Int(${this.toNumber(args[0])})))`;

@@ -1,0 +1,53 @@
+// @swift
+// Typed arrays' element conversions as the specification gives them: integers wrap,
+// Uint8Clamped clamps and rounds halves to even, Float32 rounds, BigInts wrap at 64 bits.
+const inputs = [0, -0, 1.5, -1.5, 2.5, 127, 128, 255.5, 256, -129, 65535, 65536, -32769, 2147483648, 4294967297, -1, 1e20, -1e20, NaN, Infinity, -Infinity];
+const show = (name: string, a: ArrayLike<number>) => {
+  const out: string[] = [];
+  for (let i = 0; i < a.length; i++) out.push(String(a[i]));
+  console.log(name, out.join(' '));
+};
+show('Int8', new Int8Array(inputs));
+show('Uint8', new Uint8Array(inputs));
+show('Uint8Clamped', new Uint8ClampedArray(inputs));
+show('Int16', new Int16Array(inputs));
+show('Uint16', new Uint16Array(inputs));
+show('Int32', new Int32Array(inputs));
+show('Uint32', new Uint32Array(inputs));
+show('Float32', new Float32Array(inputs));
+show('Float64', new Float64Array(inputs));
+const clamped = new Uint8ClampedArray(8);
+[0.5, 1.5, 2.5, 3.5, 254.5, 253.5, -0.5, 300].forEach((v, i) => (clamped[i] = v));
+console.log(clamped);
+const floats = new Float32Array(5);
+floats[0] = 0.1;
+floats[1] = 16777217;
+floats[2] = 1e40;
+floats[3] = 1.0000001;
+floats[4] = -3.4028235677973366e38;
+console.log(floats[0], floats[1], floats[2], floats[3], floats[4], floats[0] === 0.1, Math.fround(0.1) === floats[0]);
+const big = new BigInt64Array(4);
+big[0] = 2n ** 63n;
+big[1] = -1n;
+big[2] = 2n ** 64n + 5n;
+big[3] = -(2n ** 63n) - 1n;
+const ubig = new BigUint64Array(3);
+ubig[0] = -1n;
+ubig[1] = 2n ** 64n;
+ubig[2] = 12345678901234567890n;
+console.log(big, ubig, big[0], ubig[0] + 1n, typeof big[1]);
+const bytes = new Uint8Array(3);
+bytes[0] = 250;
+bytes[0] += 10;
+bytes[1]++;
+bytes[1]++;
+bytes[2] = bytes[0] * 2;
+bytes[5] = 9;
+bytes[1.5] = 9;
+console.log(bytes, bytes[5], bytes[-1], bytes[1.5], bytes[3] === undefined, bytes.length);
+console.log(Int8Array.BYTES_PER_ELEMENT, Uint16Array.BYTES_PER_ELEMENT, Float32Array.BYTES_PER_ELEMENT, Float64Array.BYTES_PER_ELEMENT, BigInt64Array.BYTES_PER_ELEMENT, new Int32Array(1).BYTES_PER_ELEMENT);
+let sum = 0;
+const halves = new Float64Array(6);
+for (let i = 0; i < halves.length; i++) halves[i] = i / 2;
+for (let i = 0; i < halves.length; i++) sum += halves[i];
+console.log(sum, halves);

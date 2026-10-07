@@ -266,17 +266,27 @@ private final class JSInspectContext {
             braces = ("[", "]")
             extrasType = .array
             formatter = { self.formatList(elements, $0) }
-        } else if let view = value as? JSUint8Array {
-            let elements = view.values
-            let prefix = "Uint8Array(\(elements.count)) "
+        } else if let view = value as? JSTypedArrayProtocol {
+            let elements = view.jsAnyValues
+            let className = view.jsClassName ?? ""
+            let prefix = "\(className)(\(elements.count)) "
             if elements.isEmpty { return prefix + "[]" }
-            name = "Uint8Array"
+            name = className
             braces = (prefix + "[", "]")
             extrasType = .array
             formatter = { self.formatList(elements, $0) }
         } else if let buffer = value as? JSArrayBuffer {
-            let hex = (0..<buffer.count).map { String(format: "%02x", buffer.bytes.load(fromByteOffset: $0, as: UInt8.self)) }.joined(separator: " ")
-            return "ArrayBuffer { [Uint8Contents]: <\(hex)>, [byteLength]: \(buffer.count) }"
+            name = "ArrayBuffer"
+            braces = ("ArrayBuffer {", "}")
+            formatter = { _ in self.formatArrayBuffer(buffer) }
+        } else if let view = value as? JSDataView {
+            name = "DataView"
+            braces = ("DataView {", "}")
+            formatter = { level in
+                self.indentationLvl += 2
+                defer { self.indentationLvl -= 2 }
+                return ["[byteLength]: \(view.count)", "[byteOffset]: \(view.offset)", "[buffer]: \(self.formatValue(view.buffer, level))"]
+            }
         } else if let set = value as? JSSetProtocol {
             let values = set.jsAnyValues
             let prefix = "Set(\(values.count)) "
@@ -367,6 +377,14 @@ private final class JSInspectContext {
         }
         if elements.count > count { output.append(remainingText(elements.count - count)) }
         return output
+    }
+
+    private func formatArrayBuffer(_ buffer: JSArrayBuffer) -> [String] {
+        let shown = min(maxArrayLength, buffer.count)
+        var hex = (0..<shown).map { String(format: "%02x", buffer.bytes.load(fromByteOffset: $0, as: UInt8.self)) }.joined(separator: " ")
+        let remaining = buffer.count - shown
+        if remaining > 0 { hex += " ... \(remaining) more byte\(remaining > 1 ? "s" : "")" }
+        return ["[Uint8Contents]: <\(hex)>", "[byteLength]: \(buffer.count)"]
     }
 
     private func formatSet(_ values: [Any?], _ recurseTimes: Int) -> [String] {
@@ -481,12 +499,14 @@ private final class JSInspectContext {
         let elements: [Any?]
         if let array = value as? JSArrayProtocol {
             elements = array.jsAnyElements
+        } else if let typed = value as? JSTypedArrayProtocol {
+            elements = typed.jsAnyValues
         } else {
             elements = Mirror(reflecting: value).children.map { jsFlat($0.value) }
         }
         for i in 0..<output.count {
             let element: Any? = i < elements.count ? elements[i] : nil
-            if element.flatMap(jsNumeric) == nil {
+            if element.flatMap(jsNumeric) == nil && !(element is JSBigInt) {
                 padStart = false
                 break
             }

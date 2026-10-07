@@ -51,6 +51,8 @@ function buildRuntime() {
  * generated for iOS first).
  */
 const lenient = (file: string) => readFileSync(file, 'utf8').startsWith('// @lenient');
+/** A case starting `// @swift` covers what only the Swift runtime has yet (typed arrays): it is not run as Kotlin. */
+const swiftOnly = (file: string) => lenient(file) || readFileSync(file, 'utf8').startsWith('// @swift');
 
 function translate(file: string, out: string): void {
   const loose = lenient(file);
@@ -192,7 +194,7 @@ if (targets.includes('kotlin')) {
   const translated: string[] = [];
   for (const c of cases) {
     const name = basename(c, '.ts');
-    if (lenient(join(here, 'cases', c))) { kotlinSkipped++; continue; }
+    if (swiftOnly(join(here, 'cases', c))) { kotlinSkipped++; continue; }
     try {
       translateKotlin(join(here, 'cases', c), join(build, 'kotlin', name), pkg(name));
       translated.push(name);

@@ -3,9 +3,13 @@ import { intlConstructor, isStringRaw, iterationThrows, unsafeReceiver } from '.
 
 type Fn = ts.SignatureDeclaration & { body?: ts.Node };
 
+/** The constructors of buffers and views, which throw a RangeError for a length or an offset out of bounds. */
+const BUFFER_TYPES = new Set(['ArrayBuffer', 'Int8Array', 'Uint8Array', 'Uint8ClampedArray', 'Int16Array', 'Uint16Array', 'Int32Array', 'Uint32Array', 'Float32Array', 'Float64Array', 'BigInt64Array', 'BigUint64Array', 'DataView']);
 /** Library functions that throw on their own (a TypeError, a SyntaxError, a RangeError). */
 const THROWING_BUILTINS = new Set(['JSON.parse', 'JSON.stringify', 'Array.reduce', 'Array.reduceRight', 'String.repeat', 'String.normalize', 'String.matchAll', 'String.replaceAll', 'Date.toISOString', 'Object.assign', 'Object.fromEntries', 'Object.defineProperty', 'Object.defineProperties', 'WeakMap.set', 'WeakSet.add',
   'Iterator.next', 'Iterator.return', 'Iterator.throw', 'Generator.next', 'Generator.return', 'Generator.throw',
+  ...['Int8', 'Uint8', 'Uint8Clamped', 'Int16', 'Uint16', 'Int32', 'Uint32', 'Float32', 'Float64', 'BigInt64', 'BigUint64'].flatMap((t) => [`${t}Array.set`, `${t}Array.reduce`, `${t}Array.reduceRight`, `${t}Array.from`]),
+  ...['Int8', 'Uint8', 'Int16', 'Uint16', 'Int32', 'Uint32', 'Float32', 'Float64', 'BigInt64', 'BigUint64'].flatMap((t) => [`DataView.get${t}`, `DataView.set${t}`]),
   'Number.toLocaleString', 'BigInt.toLocaleString', 'Function.apply', 'CallableFunction.apply', 'Object.defineProperties', 'Object.getPrototypeOf', 'Array.toLocaleString', 'Date.toLocaleString', 'Date.toLocaleDateString', 'Date.toLocaleTimeString', 'DateTimeFormat.format']);
 
 /**
@@ -176,7 +180,7 @@ export class Throws {
     });
     if (ts.isNewExpression(call) && ts.isIdentifier(call.expression) && call.expression.text === 'RegExp') return true;
     // A buffer or a view of an invalid length is a RangeError.
-    if (ts.isNewExpression(call) && ts.isIdentifier(call.expression) && ['ArrayBuffer', 'Uint8Array'].includes(call.expression.text) && c.getSymbolAtLocation(call.expression)?.declarations?.every((d) => d.getSourceFile().isDeclarationFile)) return true;
+    if (ts.isNewExpression(call) && ts.isIdentifier(call.expression) && BUFFER_TYPES.has(call.expression.text) && c.getSymbolAtLocation(call.expression)?.declarations?.every((d) => d.getSourceFile().isDeclarationFile)) return true;
     // A weak reference to an untyped value refuses a primitive.
     if (ts.isNewExpression(call) && ts.isIdentifier(call.expression) && call.expression.text === 'WeakRef' && args[0] && this.untyped(args[0])) return true;
     // Intl's constructors reject options out of range; BigInt() a value with no integer.
@@ -205,7 +209,7 @@ export class Throws {
       if (owner === 'String.match') return !args[0] || c.getTypeAtLocation(args[0]).getSymbol()?.name !== 'RegExp';
       // `f.call(…)` and `f.apply(…)` run f, whose Swift function type throws.
       if (owner && /^(Callable|Newable)?Function\.(call|apply)$/.test(owner)) return true;
-      if (owner && THROWING_BUILTINS.has(owner)) return owner === 'Array.reduce' || owner === 'Array.reduceRight' ? args.length < 2 || callbackThrows() : true;
+      if (owner && THROWING_BUILTINS.has(owner)) return /\.reduce(Right)?$/.test(owner) ? args.length < 2 || callbackThrows() : true;
       // The library runs callbacks synchronously (map, forEach, sort, find): it rethrows. A promise's callbacks reject instead.
       if (/[\\/]lib\.[\w.]*\.d\.ts$/.test(file.fileName) && !/^Promise/.test(owner ?? '')) return callbackThrows();
       return false;
