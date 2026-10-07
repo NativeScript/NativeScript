@@ -1964,13 +1964,16 @@ export class Translator implements AsyncTranslator {
   }
 
   /**
-   * An instance method giving a native struct (`applySafeAreaInsets(): CGRect`), with every
-   * override of its root: its result may be null, which a struct cannot hold, so where any
-   * of them may give undefined they all give an optional, as overrides share one signature.
+   * An instance method giving a native struct (`applySafeAreaInsets(): CGRect`), a string, a
+   * number or a boolean, with every override of its root: its result may be undefined, which
+   * none of them can hold, so where any of them may give undefined they all give an optional,
+   * as overrides share one signature.
    */
   private structMethodFamily(fn: ts.MethodDeclaration): ts.MethodDeclaration[] | null {
     const sig = this.checker.getSignatureFromDeclaration(fn);
-    if (!sig || !this.native.isStructType(this.type(sig.getReturnType(), fn)) || this.inNativeClass(fn)) return null;
+    const t = sig && this.type(sig.getReturnType(), fn);
+    // A string, number or boolean too: `_childIndexToNativeChildIndex(index?)` gives undefined for no index, which means "append".
+    if (!sig || !(this.native.isStructType(t!) || t === 'Double' || t === 'String' || t === 'Bool') || this.inNativeClass(fn)) return null;
     let root = fn;
     for (let b = this.baseMethod(root); b; b = this.baseMethod(root)) root = b;
     this.hierarchyExtras(root);
@@ -2292,6 +2295,8 @@ export class Translator implements AsyncTranslator {
       const from = base.params[k] ? plain(base.params[k].type) : null, to = plain(t);
       // An argument the base takes as optional, for a parameter with a default: the default when it is missing.
       if (from && p.initializer && from.endsWith('?') && !to.endsWith('?')) return `${pad}let ${ident(p.name.text)}: ${t} = ${this.convert(`__b${k}`, from, optionalType(to))} ?? ${this.coerce(p.initializer, to)}`;
+      // Lenient code: a string, number or boolean the base takes as optional stays undefined where it is, though this override declares it present.
+      if (this.lenient && from === `${to}?` && (to === 'Double' || to === 'String' || to === 'Bool')) return `${pad}let ${ident(p.name.text)}: ${this.bindsOptional(p.name, to)} = __b${k}`;
       const converted = from ? this.convert(`__b${k}`, from, to) : (this.zero(t) ?? 'nil');
       // A parameter narrowed to a subclass: the argument as that class, undefined where it is not one.
       const value = from && converted === `__b${k}` && from !== to && this.lenientRef(to.replace(/\?$/, '')) !== to.replace(/\?$/, '') ? `(__b${k} as? ${to.replace(/\?$/, '')})` : converted;
