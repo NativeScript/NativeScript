@@ -130,6 +130,8 @@ public enum NativeScriptApplication {
         CorePackages.installModuleLoader()
         CoreModules.initialize()
         let app: iOSApplication = Core_application_application.Application
+        Probe.traceIfRequested()
+        Probe.scheduleIfRequested()
         jsReport {
             try app.run(JSObject([("create", { (_: [Any?]) throws -> Any? in root() } as JSFunction)]))
         }

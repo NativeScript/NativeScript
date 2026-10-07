@@ -412,6 +412,12 @@ public func jsGet(_ object: Any?, _ key: String) throws -> Any? {
         return key == "size" ? Double(map.jsSize) : jsMapMethod(map, key)
     case let set as JSSetProtocol:
         return key == "size" ? Double(set.jsSize) : jsSetMethod(set, key)
+    // A typed tuple (`[CssProperty, unknown]`) read untyped is the array script made it as.
+    case let value? where Mirror(reflecting: value).displayStyle == .tuple:
+        let elements = Mirror(reflecting: value).children.map { $0.value }
+        if key == "length" { return Double(elements.count) }
+        if let index = jsArrayIndex(key) { return Int(index) < elements.count ? jsFlat(elements[Int(index)]) : nil }
+        return nil
     // A Swift struct casts to NSObject too (boxed): a geometry struct is read by its fields first.
     case let value? where jsIsStruct(value):
         return jsStructMember(value, key)

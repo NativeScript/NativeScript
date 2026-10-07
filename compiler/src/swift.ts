@@ -891,8 +891,7 @@ export class Translator implements AsyncTranslator {
   private thisFunction(e: ts.Identifier): ts.FunctionDeclaration | null {
     if (!this.library || (ts.isCallExpression(e.parent) && e.parent.expression === e)) return null;
     const decl = this.resolve(e)?.valueDeclaration;
-    const first = decl && ts.isFunctionDeclaration(decl) && decl.body ? decl.parameters[0] : undefined;
-    return first && ts.isIdentifier(first.name) && first.name.text === 'this' && first.type?.kind !== ts.SyntaxKind.VoidKeyword ? decl as ts.FunctionDeclaration : null;
+    return decl && ts.isFunctionDeclaration(decl) && decl.body && takesThis(decl) ? decl : null;
   }
 
   /** Whether a function returns method values. */
@@ -1561,6 +1560,8 @@ export class Translator implements AsyncTranslator {
   /** An untyped value read as `type`; with `orZero`, a missing value is the type's zero rather than a trap. */
   fromAnyCode(code: string, type: string, orZero = false): string {
     const zero = this.zero(type);
+    // An array of another element type (`[CssProperty, unknown][]` read as `[any, any][]`) is no Swift cast: its elements are read, undefined giving none.
+    if (orZero && /^JSArray<.*>$/.test(type)) return this.fromAny(code, type);
     if (orZero && zero && zero !== 'nil' && !type.endsWith('?')) return `((${code} as? ${type}) ?? ${zero})`;
     return this.fromAny(code, type);
   }
@@ -1741,8 +1742,9 @@ export class Translator implements AsyncTranslator {
 
   private params(fn: ts.SignatureDeclaration, closure: boolean): string {
     if (this.readsArguments(fn)) return `${closure ? '' : '_ '}__arguments: JSArray<Any?>`;
+    const receiver = implicitThis(fn) ? [`${closure ? '' : '_ '}${ident('this')}: Any?`] : [];
     // `this: void` only says the function reads no `this`: no parameter.
-    return fn.parameters.filter((p) => !(ts.isIdentifier(p.name) && p.name.text === 'this' && p.type?.kind === ts.SyntaxKind.VoidKeyword)).map((p, k) => {
+    return [...receiver, ...fn.parameters.filter((p) => !(ts.isIdentifier(p.name) && p.name.text === 'this' && p.type?.kind === ts.SyntaxKind.VoidKeyword)).map((p, k) => {
       const name = ts.isIdentifier(p.name) ? ident(p.name.text) : `__p${k}`;
       if (p.dotDotDotToken) return `${closure ? '' : '_ '}${name}: ${this.typeOf(p.name)}`;
       let t = this.typeOf(p.name);
@@ -1755,7 +1757,7 @@ export class Translator implements AsyncTranslator {
       }
       if (isFunctionType(t)) t = '@escaping ' + t;
       return closure ? `${name}: ${t}` : `_ ${name}: ${t}${given}`;
-    }).join(', ');
+    })].join(', ');
   }
 
   /** A parameter Swift gives its default value itself: a constant, unless the method it overrides takes the parameter as optional. */
@@ -2078,8 +2080,8 @@ export class Translator implements AsyncTranslator {
     if (needs) { this.gatedFunctions.set(fn, needs); modifiers = `@available(iOS ${needs}, *) ${modifiers}`; }
     // A function declaring `this` reads it as its first parameter.
     const first = fn.parameters[0];
-    const body = ts.isFunctionDeclaration(fn) && first && ts.isIdentifier(first.name) && first.name.text === 'this' && first.type?.kind !== ts.SyntaxKind.VoidKeyword
-      ? this.withThis(fn, ident('this'), this.paramType(first) === 'Any?', () => this.functionBody(fn, ret, this.indent))
+    const body = ts.isFunctionDeclaration(fn) && takesThis(fn)
+      ? this.withThis(fn, ident('this'), !declaresThis(fn) || this.paramType(first) === 'Any?', () => this.functionBody(fn, ret, this.indent))
       : this.functionBody(fn, ret, this.indent);
     return `${modifiers}func ${name}${this.generics(fn)}(${params})${throws}${ret === 'Void' ? '' : ` -> ${declared}`} ${body}`;
   }
@@ -4289,9 +4291,10 @@ export class Translator implements AsyncTranslator {
     // A function declaring `this`, as a value: a method value calling it with the receiver it is given.
     const thisFn = this.thisFunction(e);
     if (thisFn) {
-      const params = thisFn.parameters.slice(1);
+      const declared = declaresThis(thisFn);
+      const params = declared ? thisFn.parameters.slice(1) : [...thisFn.parameters];
       const args = params.map((p, k) => this.fromAnyCode(`jsArg(__a, ${k})`, this.paramType(p), true));
-      const self = this.paramType(thisFn.parameters[0]);
+      const self = declared ? this.paramType(thisFn.parameters[0]) : 'Any?';
       const call = `${this.throwsInfo.fn(thisFn) ? 'try ' : ''}${this.refName(e)}(${[self === 'Any?' ? '__this' : this.fromAnyCode('__this', self, true), ...args].join(', ')})`;
       const ret = this.returnTypeOf(thisFn);
       return `({ (__this: Any?, __a: [Any?]) throws -> Any? in ${ret === 'Void' ? `${call}; return nil` : `return ${this.convert(call, ret, 'Any?')}`} } as JSMethod)`;
@@ -5059,8 +5062,7 @@ export class Translator implements AsyncTranslator {
     if (restAt >= 0 && appDeclared && list.length <= restAt) out.push(`${this.restType(params[restAt])}()`);
     // A function declaring `this`, called plainly: its `this` is undefined.
     const own = sig?.getDeclaration();
-    const thisParam = own && ts.isFunctionDeclaration(own) ? own.parameters[0] : undefined;
-    if (thisParam && ts.isIdentifier(thisParam.name) && thisParam.name.text === 'this' && thisParam.type?.kind !== ts.SyntaxKind.VoidKeyword && ts.isCallExpression(e) && ts.isIdentifier(e.expression)) out.unshift('nil');
+    if (own && ts.isFunctionDeclaration(own) && takesThis(own) && ts.isCallExpression(e) && ts.isIdentifier(e.expression)) out.unshift('nil');
     // A function value takes every parameter: the ones JavaScript leaves out are undefined.
     const decl = sig?.getDeclaration();
     const held = ts.isCallExpression(e) && this.isClosureValue(e.expression);
@@ -6886,6 +6888,35 @@ const LIB_CONSTANTS: Record<string, string> = {
 interface ShapeField { name: string; type: string; accessor?: { get: boolean; set: boolean; throws: boolean; value: string }; symbol?: boolean }
 
 /** The `this` nodes of a function, and of the arrow functions inside it. */
+/** A function declaration with a `this` parameter (not `this: void`). */
+function declaresThis(fn: ts.SignatureDeclaration): boolean {
+  const first = fn.parameters[0];
+  return !!first && ts.isIdentifier(first.name) && first.name.text === 'this' && first.type?.kind !== ts.SyntaxKind.VoidKeyword;
+}
+
+/**
+ * A function declaration reading a `this` it does not declare (`function get() { return this[key]; }`
+ * stored as an accessor): JavaScript gives it the receiver it is called on, so it takes `this` as
+ * if it declared `this: any`. A constructor function (`new Position(…)`) is left as it is.
+ */
+function implicitThis(fn: ts.SignatureDeclaration): boolean {
+  if (!ts.isFunctionDeclaration(fn) || !fn.body || !fn.name || declaresThis(fn) || fn.parameters[0]?.name.getText() === 'this' || !thisNodes(fn).length) return false;
+  const name = fn.name.text;
+  let constructed = false;
+  const visit = (n: ts.Node) => {
+    if (constructed) return;
+    if (ts.isNewExpression(n) && ts.isIdentifier(n.expression) && n.expression.text === name) constructed = true;
+    else ts.forEachChild(n, visit);
+  };
+  visit(fn.getSourceFile());
+  return !constructed;
+}
+
+/** A function declaration that takes `this` as its first parameter, declared or read. */
+function takesThis(fn: ts.SignatureDeclaration): boolean {
+  return ts.isFunctionDeclaration(fn) && (declaresThis(fn) || implicitThis(fn));
+}
+
 function thisNodes(fn: ts.Node): ts.Node[] {
   const out: ts.Node[] = [];
   const visit = (n: ts.Node) => {

@@ -1,6 +1,6 @@
 import ts from 'typescript';
 
-const PROPERTY_CLASSES = new Set(['Property', 'CssProperty', 'InheritedProperty', 'InheritedCssProperty', 'CoercibleProperty', 'ShorthandProperty']);
+const PROPERTY_CLASSES = new Set(['Property', 'CssProperty', 'InheritedProperty', 'InheritedCssProperty', 'CoercibleProperty', 'ShorthandProperty', 'CssAnimationProperty']);
 
 /**
  * The view properties the program defines with core's `Property` and
