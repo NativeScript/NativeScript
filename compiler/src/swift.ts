@@ -3909,6 +3909,13 @@ export class Translator implements AsyncTranslator {
     if (target === 'Any?') {
       // Null kept as untyped values hold it, apart from undefined.
       if (bare.kind === ts.SyntaxKind.NullKeyword) return 'jsNull';
+      // A function with a rest parameter (`function count(...args)`) held untyped: called by script, it takes the rest of the arguments.
+      const fnType = !source.endsWith('?') && hasTopLevelArrow(source) ? functionParts(source.replace(/^\((.*)\)!?$/, '$1')) : null;
+      if (fnType && (ts.isIdentifier(bare) || ts.isPropertyAccessExpression(bare))) {
+        const signature = this.checker.getSignaturesOfType(this.checker.getNonNullableType(this.checker.getTypeAtLocation(bare)), ts.SignatureKind.Call)[0];
+        const restAt = signature?.getParameters().findIndex((p) => !!p.valueDeclaration && ts.isParameter(p.valueDeclaration) && !!p.valueDeclaration.dotDotDotToken) ?? -1;
+        if (restAt >= 0) return this.boxFunction(this.expr(e), fnType.text, restAt);
+      }
       // A Promise executor's resolve held untyped: a function resolving the promise.
       const resolvers = ts.isIdentifier(bare) ? this.resolvers.get(this.resolve(bare)!) : undefined;
       if (resolvers) return `({ (__a: [Any?]) throws -> Any? in ${resolvers.name}.resolve(${resolvers.type === 'Void' ? '' : this.fromAnyCode('jsArg(__a, 0)', resolvers.type, true)}); return nil } as JSFunction)`;
@@ -5381,7 +5388,7 @@ export class Translator implements AsyncTranslator {
         if (!callee.questionDotToken || q || !this.lenient) return this.arrayMethod(method, target, e, q);
         const code = this.arrayMethod(method, target, e, '', `(${this.expr(target)} as ${optionalType(receiverType)})?`);
         const rt = this.typeOf(e);
-        return rt.endsWith('?') || rt === 'Any?' || rt === 'Void' || ts.isExpressionStatement(e.parent) ? code : this.undefinedAs(`(${code})`, rt);
+        return rt.endsWith('?') || rt === 'Any?' || rt === 'Void' || ts.isExpressionStatement(e.parent) || comparedToNullish(e) ? code : this.undefinedAs(`(${code})`, rt);
       }
       if (t === 'JSMatch' && method !== 'toString') {
         this.subst.set(target, `${this.expr(target)}${q}.values`);
@@ -5424,7 +5431,7 @@ export class Translator implements AsyncTranslator {
         if (!callee.questionDotToken || q) return this.collectionMethod(method, target, e, q);
         const code = this.collectionMethod(method, target, e, '', `(${this.expr(target)} as ${optionalType(receiverType)})?`);
         const rt = this.typeOf(e);
-        return rt.endsWith('?') || rt === 'Any?' || rt === 'Void' || ts.isExpressionStatement(e.parent) ? code : this.undefinedAs(`(${code})`, rt);
+        return rt.endsWith('?') || rt === 'Any?' || rt === 'Void' || ts.isExpressionStatement(e.parent) || comparedToNullish(e) ? code : this.undefinedAs(`(${code})`, rt);
       }
       // `this.method.bind(this)`: the method, which Swift binds to its object already.
       if (method === 'bind' && e.arguments.length === 1 && e.arguments[0].kind === ts.SyntaxKind.ThisKeyword && ts.isPropertyAccessExpression(target) && target.expression.kind === ts.SyntaxKind.ThisKeyword) {
@@ -5520,23 +5527,25 @@ export class Translator implements AsyncTranslator {
     const fn = functionParts(type.replace(/^\((.*)\)[?!]$/, '$1'))!;
     const optional = !own && (isOptional(type) || type.endsWith('!'));
     let items: readonly ts.Expression[] = rest;
+    // A rest parameter (`(...args) => …`) takes the rest of the arguments, as an array.
+    const signature = this.checker.getSignaturesOfType(this.checker.getNonNullableType(this.checker.getTypeAtLocation(target)), ts.SignatureKind.Call)[0];
+    const restAt = signature?.getParameters().findIndex((p) => !!p.valueDeclaration && ts.isParameter(p.valueDeclaration) && !!p.valueDeclaration.dotDotDotToken) ?? -1;
     if (method === 'apply') {
       if (rest.length && !ts.isArrayLiteralExpression(rest[0])) {
         // A list known only when it runs (`arguments`, a rest array): each parameter its element, undefined past its end.
         const list = this.fresh('__list');
         const f = `${this.expr(target)}${isOptional(type) || type.endsWith('!') ? '!' : ''}`;
-        // A rest parameter (`(...args) => …`) takes the rest of the list, as an array.
-        const signature = this.checker.getSignaturesOfType(this.checker.getNonNullableType(this.checker.getTypeAtLocation(target)), ts.SignatureKind.Call)[0];
-        const restAt = signature?.getParameters().findIndex((p) => !!p.valueDeclaration && ts.isParameter(p.valueDeclaration) && !!p.valueDeclaration.dotDotDotToken) ?? -1;
         const call = `${f}(${fn.params.map((p, k) => (k === restAt ? this.fromAny(`JSArray<Any?>(Array(${list}.storage.dropFirst(${k})))`, p.replace(/^@escaping /, '')) : this.fromAnyCode(`jsArg(${list}.storage, ${k})`, p.replace(/^@escaping /, ''), true))).join(', ')})`;
         return this.convert(`{ (${list}: JSArray<Any?>) throws -> ${fn.result} in try ${call} }(${this.coerce(rest[0], 'JSArray<Any?>')})`, fn.result, this.typeOf(e));
       }
       items = rest.length ? (rest[0] as ts.ArrayLiteralExpression).elements : [];
     }
     if (items.some(ts.isSpreadElement)) throw this.error(e, `${method} with a spread argument`);
-    if (items.length > fn.params.length && !items.slice(fn.params.length).every((x) => this.pure(x))) throw this.error(items[fn.params.length], 'an extra argument that has side effects');
+    if (restAt < 0 && items.length > fn.params.length && !items.slice(fn.params.length).every((x) => this.pure(x))) throw this.error(items[fn.params.length], 'an extra argument that has side effects');
     const param = (k: number) => fn.params[k].replace(/^@escaping /, '');
-    const given = items.slice(0, fn.params.length).map((x, k) => this.coerce(x, param(k)));
+    const given = restAt >= 0 && restAt < fn.params.length && method !== 'bind'
+      ? fn.params.map((_, k) => (k === restAt ? `${param(k).replace(/[?!]$/, '')}([${items.slice(k).map((x) => this.coerce(x, param(k).replace(/^JSArray<(.*)>[?!]?$/, '$1'))).join(', ')}])` : items[k] ? this.coerce(items[k], param(k)) : 'nil'))
+      : items.slice(0, fn.params.length).map((x, k) => this.coerce(x, param(k)));
     const f = `${this.expr(target)}${optional && !e.questionDotToken && !ts.isOptionalChain(e) ? '!' : ''}`;
     if (method !== 'bind') {
       const missing = fn.params.slice(given.length).map((p) => (p === 'Void' ? '()' : 'nil'));
@@ -6991,6 +7000,17 @@ function implicitThis(fn: ts.SignatureDeclaration): boolean {
 /** A function declaration that takes `this` as its first parameter, declared or read. */
 function takesThis(fn: ts.SignatureDeclaration): boolean {
   return ts.isFunctionDeclaration(fn) && (declaresThis(fn) || implicitThis(fn));
+}
+
+/** An expression compared with undefined or null (`x?.find(f) === undefined`): its optional is what the comparison reads. */
+function comparedToNullish(e: ts.Expression): boolean {
+  let n: ts.Node = e;
+  while (ts.isParenthesizedExpression(n.parent)) n = n.parent;
+  const p = n.parent;
+  if (!ts.isBinaryExpression(p)) return false;
+  const k = p.operatorToken.kind;
+  if (![ts.SyntaxKind.EqualsEqualsEqualsToken, ts.SyntaxKind.ExclamationEqualsEqualsToken, ts.SyntaxKind.EqualsEqualsToken, ts.SyntaxKind.ExclamationEqualsToken].includes(k)) return false;
+  return isNullish(p.left === n ? p.right : p.left);
 }
 
 function thisNodes(fn: ts.Node): ts.Node[] {
