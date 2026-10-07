@@ -1568,7 +1568,7 @@ export function applyAllNativeSetters(view: ViewBase): void {
 	const style = view.style;
 	symbols = Object.getOwnPropertySymbols(style);
 	for (const symbol of symbols) {
-		const property: CssProperty<any, any> = cssSymbolPropertyMap[symbol];
+		const property: CssProperty<any, any> | CssAnimationProperty<any, any> = cssSymbolPropertyMap[symbol];
 		if (!property) {
 			continue;
 		}
@@ -1607,7 +1607,7 @@ export function resetNativeView(view: ViewBase): void {
 
 	symbols = Object.getOwnPropertySymbols(style);
 	for (const symbol of symbols) {
-		const property: CssProperty<any, any> = cssSymbolPropertyMap[symbol];
+		const property: CssProperty<any, any> | CssAnimationProperty<any, any> = cssSymbolPropertyMap[symbol];
 		if (!property) {
 			continue;
 		}
