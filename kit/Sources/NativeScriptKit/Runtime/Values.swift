@@ -683,6 +683,46 @@ func jsToPrimitive(_ value: Any?) -> Any? {
     }
 }
 
+/// `a < b` of values typed only at run time: two strings compare by code units, anything else as
+/// numbers. Nil when either is NaN, where every comparison is false: `a <= b` is `jsGreaterThan(a, b) == false`.
+public func jsLessThan(_ a: Any?, _ b: Any?) -> Bool? {
+    func primitive(_ value: Any?) -> Any? {
+        guard let v = jsFlat(value) else { return nil }
+        switch v {
+        case is String, is Bool, is JSNull, is JSSymbol, is JSBigInt: return v
+        default:
+            if let n = jsNumeric(v) { return n }
+            if let user = jsUserPrimitive(v, "number") { return user }
+            return jsToString(v)
+        }
+    }
+    let x = primitive(a), y = primitive(b)
+    if let x = x as? String, let y = y as? String { return jsCompare(x, y) < 0 }
+    let m = jsToNumber(x), n = jsToNumber(y)
+    return m.isNaN || n.isNaN ? nil : m < n
+}
+
+/// `a > b` of values typed only at run time, as `jsLessThan`.
+public func jsGreaterThan(_ a: Any?, _ b: Any?) -> Bool? { jsLessThan(b, a) }
+
+/// A value code checked without strictNullChecks declares a boolean, as its uses read it: by truthiness.
+public func jsLenientBool(_ value: Any?) -> Bool {
+    if let b = value as? Bool { return b }
+    return jsTruthy(value)
+}
+
+/// A value code checked without strictNullChecks declares a number: undefined and null are 0, anything else converts.
+public func jsLenientNumber(_ value: Any?) -> Double {
+    if let d = value as? Double { return d }
+    return jsIsNullish(value) ? 0 : jsToNumber(value)
+}
+
+/// A value code checked without strictNullChecks declares a string: undefined and null are "", anything else converts.
+public func jsLenientString(_ value: Any?) -> String {
+    if let s = value as? String { return s }
+    return jsIsNullish(value) ? "" : jsToString(value)
+}
+
 /// A `+` operand beside a string: ToString(ToPrimitive(value, default)).
 public func jsToStringDefault(_ value: Any?) -> String { jsToString(jsToPrimitive(value)) }
 

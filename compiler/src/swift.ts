@@ -1616,8 +1616,9 @@ export class Translator implements AsyncTranslator {
     // A geometry struct the runtime gives script as an object (`{ origin, size }`): the struct again.
     if (['CGRect', 'CGSize', 'CGPoint', 'UIEdgeInsets'].includes(base)) return type.endsWith('?') ? `jsNativeStruct(${code}, ${base}.self)` : `jsNativeStruct(${code}, ${base}.self)!`;
     if (type.endsWith('?')) return `(${code} as? ${base})`;
-    // Lenient code: an untyped value read as an object may be undefined; read as a string, number or boolean, undefined is the type's zero.
-    if (this.lenient && ['String', 'Double', 'Bool'].includes(type)) return `((${code} as? ${type}) ?? ${this.zero(type)})`;
+    // Lenient code: an untyped value read as a string, number or boolean is converted as JavaScript would where it is used
+    // (`textWrap = "true"` tests true); undefined is the type's zero.
+    if (this.lenient && ['String', 'Double', 'Bool'].includes(type)) return `jsLenient${type === 'Double' ? 'Number' : type}(${code})`;
     // Lenient code: an object of another type passed for a class made without arguments, as JavaScript lets structurally.
     const plain = this.lenient ? this.plainClass(type) : null;
     // Module-qualified: inside an object of the program's that holds the class under its name (`{ Declaration }`), the bare name is that field.
@@ -3856,6 +3857,8 @@ export class Translator implements AsyncTranslator {
     let bare: ts.Expression = e;
     while (ts.isParenthesizedExpression(bare) || ts.isAsExpression(bare)) bare = bare.expression;
     if (ts.isArrayLiteralExpression(bare) && !bare.elements.length && /^JSArray<.*>$/.test(target.replace(/\?$/, ''))) return `${target.replace(/\?$/, '')}()`;
+    // An array literal where any value may go holds any value: script may store a string in `const list: any = [1, 2]`.
+    if (ts.isArrayLiteralExpression(bare) && target === 'Any?' && !ts.isAsExpression(e) && !!(this.checker.getContextualType(bare)?.flags! & ts.TypeFlags.Any)) return this.array(bare, 'JSArray<Any?>');
     // An array of tuples where the slot's type has them typed (`[[property, color]]` for `[any, any][]` returned as `[CssProperty, Color][]`).
     const tuples = /^(JSArray<)?(\(.*\))>?$/.exec(target.replace(/\?$/, ''));
     const arity = tuples && !hasTopLevelArrow(tuples[2]) ? splitTopLevel(tuples[2].slice(1, -1)).length : 0;
@@ -6454,7 +6457,7 @@ export class Translator implements AsyncTranslator {
       const n = (x: string) => `jsToNumber(${x})`;
       const arithmetic: Partial<Record<ts.SyntaxKind, (old: string, v: string) => string>> = {
         [K.PlusEqualsToken]: (o) => `jsAdd(${o}, ${this.coerce(e.right, 'Any?')})`,
-        [K.MinusEqualsToken]: (o, v) => `${n(o)} - ${v}`, [K.AsteriskEqualsToken]: (o, v) => `${n(o)} * ${v}`, [K.SlashEqualsToken]: (o, v) => `${n(o)} / ${v}`,
+        [K.MinusEqualsToken]: (o, v) => `${n(o)} - (${v})`, [K.AsteriskEqualsToken]: (o, v) => `${n(o)} * (${v})`, [K.SlashEqualsToken]: (o, v) => `${n(o)} / (${v})`,
         [K.PercentEqualsToken]: (o, v) => `jsMod(${n(o)}, ${v})`, [K.AsteriskAsteriskEqualsToken]: (o, v) => `jsPow(${n(o)}, ${v})`,
       };
       for (const [k, b] of Object.entries(compound)) arithmetic[+k as ts.SyntaxKind] = (o, v) => `${bit[b!]}(${n(o)}, ${v})`;
@@ -6473,16 +6476,16 @@ export class Translator implements AsyncTranslator {
     // A number variable lenient code may read before it is assigned (held optional): the operation on what it holds, NaN when undefined.
     const arithmetic: Partial<Record<ts.SyntaxKind, string>> = { [K.PlusEqualsToken]: '+', [K.MinusEqualsToken]: '-', [K.AsteriskEqualsToken]: '*', [K.SlashEqualsToken]: '/' };
     const held = ts.isIdentifier(e.left) ? this.resolve(e.left) : undefined;
-    if (arithmetic[op] && held && this.undefinedVars.get(held) === 'Double?' && !this.isString(e.right)) return `${target()} = (${target()} ?? .nan) ${arithmetic[op]} ${this.toNumber(e.right)}`;
+    if (arithmetic[op] && held && this.undefinedVars.get(held) === 'Double?' && !this.isString(e.right)) return `${target()} = (${target()} ?? .nan) ${arithmetic[op]} (${this.toNumber(e.right)})`;
     switch (op) {
       case K.EqualsToken: return this.assignment(e);
       // An untyped variable holds whatever the operation gives: a string, or a number.
       case K.PlusEqualsToken:
         if (this.isAny(e.left)) return `${target()} = jsAdd(${l()}, ${this.coerce(e.right, 'Any?')})`;
         return this.isString(e.left) ? `${target()} += ${this.str(e.right)}` : `${target()} += ${this.toNumber(e.right)}`;
-      case K.MinusEqualsToken: return this.isAny(e.left) ? `${target()} = ${this.toNumber(e.left)} - ${this.toNumber(e.right)}` : `${target()} -= ${this.toNumber(e.right)}`;
-      case K.AsteriskEqualsToken: return this.isAny(e.left) ? `${target()} = ${this.toNumber(e.left)} * ${this.toNumber(e.right)}` : `${target()} *= ${this.toNumber(e.right)}`;
-      case K.SlashEqualsToken: return this.isAny(e.left) ? `${target()} = ${this.toNumber(e.left)} / ${this.toNumber(e.right)}` : `${target()} /= ${this.toNumber(e.right)}`;
+      case K.MinusEqualsToken: return this.isAny(e.left) ? `${target()} = ${this.toNumber(e.left)} - (${this.toNumber(e.right)})` : `${target()} -= ${this.toNumber(e.right)}`;
+      case K.AsteriskEqualsToken: return this.isAny(e.left) ? `${target()} = ${this.toNumber(e.left)} * (${this.toNumber(e.right)})` : `${target()} *= ${this.toNumber(e.right)}`;
+      case K.SlashEqualsToken: return this.isAny(e.left) ? `${target()} = ${this.toNumber(e.left)} / (${this.toNumber(e.right)})` : `${target()} /= ${this.toNumber(e.right)}`;
       case K.PercentEqualsToken: return `${target()} = jsMod(${l()}, ${this.toNumber(e.right)})`;
       case K.AsteriskAsteriskEqualsToken: return `${target()} = jsPow(${l()}, ${this.toNumber(e.right)})`;
       case K.QuestionQuestionEqualsToken:
@@ -6505,6 +6508,12 @@ export class Translator implements AsyncTranslator {
       case K.LessThanToken: case K.GreaterThanToken: case K.LessThanEqualsToken: case K.GreaterThanEqualsToken: {
         const sym = ts.tokenToString(op)!;
         if (this.isString(e.left) && this.isString(e.right)) return `jsCompare(${l()}, ${r()}) ${sym} 0`;
+        // An untyped side may hold a string, and two strings compare as strings.
+        if (this.isAny(e.left) || this.isAny(e.right)) {
+          const [a, b] = [this.coerce(e.left, 'Any?'), this.coerce(e.right, 'Any?')];
+          return op === K.LessThanToken ? `(jsLessThan(${a}, ${b}) == true)` : op === K.GreaterThanToken ? `(jsGreaterThan(${a}, ${b}) == true)`
+            : op === K.LessThanEqualsToken ? `(jsGreaterThan(${a}, ${b}) == false)` : `(jsLessThan(${a}, ${b}) == false)`;
+        }
         return `${this.toNumber(e.left)} ${sym} ${this.toNumber(e.right)}`;
       }
       case K.QuestionQuestionToken: {

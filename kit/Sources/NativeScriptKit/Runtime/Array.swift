@@ -9,6 +9,8 @@ public protocol JSArrayProtocol: AnyObject {
     /// `array[index] = value`; throws a TypeError when `value` is not an `Element`.
     func jsSetElement(_ value: Any?, at index: Int) throws
     func jsSetLength(_ length: Int) throws
+    /// Replaces every element; throws a TypeError, changing nothing, when one is not an `Element`.
+    func jsSetElements(_ values: [Any?]) throws
 }
 
 /// A JavaScript array: reference semantics, JavaScript method names, `Double` indexes and lengths.
@@ -827,6 +829,19 @@ public final class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Seq
         setLength(length)
     }
 
+    public func jsSetElements(_ values: [Any?]) throws {
+        var elements: [Element] = []
+        elements.reserveCapacity(values.count)
+        for value in values {
+            guard let element: Element = jsCast(value) else {
+                throw JSException(JSTypeError("Cannot store \(jsTypeof(value)) in an array of \(Element.self)"))
+            }
+            elements.append(element)
+        }
+        storage = elements
+        trigger()
+    }
+
     public func jsMakeReactive() {
         if jsTracker == nil { jsTracker = JSTracker() }
     }
@@ -910,11 +925,32 @@ func jsMergeSort<T>(_ values: inout [T], _ less: (T, T) throws -> Bool) rethrows
     values = source
 }
 
-/// An array's methods read by name from untyped code (`value.map(fn)` where `value` is `any`): the
-/// common read-only ones, over the elements as JavaScript values; the results are untyped arrays.
+/// An array's methods read by name from untyped code (`value.map(fn)` where `value` is `any`), over the
+/// elements as JavaScript values. New arrays are untyped; the methods that change the array store into
+/// its own element type, and throw a TypeError for a value it cannot hold.
 func jsArrayMethod(_ array: JSArrayProtocol, _ key: String) -> JSMethod? {
     let each = { (callback: Any?, body: (Any?, Any?) throws -> Bool) throws in
         for (i, element) in array.jsAnyElements.enumerated() where try !body(element, try jsCall(callback, element, Double(i), array)) { return }
+    }
+    let number = { (args: [Any?], i: Int) -> Double? in jsIsNullish(jsArg(args, i)) ? nil : jsToNumber(jsArg(args, i)) }
+    /// The position a relative index argument names, `fallback` when it is absent.
+    let position = { (args: [Any?], i: Int, fallback: Int) -> Int in number(args, i).map { jsRelativeIndex($0, array.jsLength) } ?? fallback }
+    let fold = { (args: [Any?], indices: [Int]) throws -> Any? in
+        let elements = array.jsAnyElements
+        var order = indices[...]
+        var accumulator: Any?
+        if args.count > 1 {
+            accumulator = args[1]
+        } else {
+            guard let first = order.popFirst() else { throw JSException(JSTypeError("Reduce of empty array with no initial value")) }
+            accumulator = elements[first]
+        }
+        for i in order { accumulator = try jsCall(jsArg(args, 0), accumulator, elements[i], Double(i), array) }
+        return accumulator
+    }
+    let findLast = { (args: [Any?]) throws -> Int? in
+        let elements = array.jsAnyElements
+        return try elements.indices.reversed().first { jsTruthy(try jsCall(jsArg(args, 0), elements[$0], Double($0), array)) }
     }
     switch key {
     case "map":
@@ -929,14 +965,30 @@ func jsArrayMethod(_ array: JSArrayProtocol, _ key: String) -> JSMethod? {
             try each(jsArg(args, 0)) { e, r in if jsTruthy(r) { out.append(e) }; return true }
             return JSArray<Any?>(out)
         }
+    case "flatMap":
+        return { _, args in
+            var out: [Any?] = []
+            try each(jsArg(args, 0)) { _, r in
+                if let nested = r as? JSArrayProtocol { out += nested.jsAnyElements } else { out.append(r) }
+                return true
+            }
+            return JSArray<Any?>(out)
+        }
     case "forEach":
         return { _, args in try each(jsArg(args, 0)) { _, _ in true }; return nil }
-    case "find":
+    case "find", "findIndex":
         return { _, args in
-            var found: Any? = nil
-            try each(jsArg(args, 0)) { e, r in if jsTruthy(r) { found = e; return false }; return true }
-            return found
+            var found: Any? = nil, index = -1.0
+            var i = 0.0
+            try each(jsArg(args, 0)) { e, r in
+                if jsTruthy(r) { found = e; index = i; return false }
+                i += 1
+                return true
+            }
+            return key == "find" ? found : index
         }
+    case "findLast": return { _, args in try findLast(args).map { array.jsAnyElements[$0] } ?? nil }
+    case "findLastIndex": return { _, args in Double(try findLast(args) ?? -1) }
     case "some", "every":
         return { _, args in
             var result = key == "every"
@@ -946,12 +998,112 @@ func jsArrayMethod(_ array: JSArrayProtocol, _ key: String) -> JSMethod? {
             }
             return result
         }
+    case "reduce": return { _, args in try fold(args, Array(0..<array.jsLength)) }
+    case "reduceRight": return { _, args in try fold(args, Array((0..<array.jsLength).reversed())) }
     case "includes":
-        return { _, args in array.jsAnyElements.contains { jsSameValueZero($0, jsArg(args, 0)) } }
-    case "join":
+        return { _, args in array.jsAnyElements[min(position(args, 1, 0), array.jsLength)...].contains { jsSameValueZero($0, jsArg(args, 0)) } }
+    case "indexOf":
         return { _, args in
-            let separator = jsIsNullish(jsArg(args, 0)) ? "," : jsToString(jsArg(args, 0))
-            return array.jsAnyElements.map { jsIsNullish($0) ? "" : jsToString($0) }.joined(separator: separator)
+            let elements = array.jsAnyElements
+            return Double((position(args, 1, 0)..<elements.count).first { jsStrictEquals(elements[$0], jsArg(args, 0)) } ?? -1)
+        }
+    case "lastIndexOf":
+        return { _, args in
+            let elements = array.jsAnyElements
+            let from = args.count > 1 ? (number(args, 1) ?? 0) : Double(elements.count - 1)
+            let last = from < 0 ? elements.count + Int(jsToIntegerOrInfinity(max(from, -Double(elements.count) - 1))) : min(Int(jsToIntegerOrInfinity(min(from, Double(elements.count)))), elements.count - 1)
+            guard last >= 0 else { return -1.0 }
+            return Double((0...last).reversed().first { jsStrictEquals(elements[$0], jsArg(args, 0)) } ?? -1)
+        }
+    case "at":
+        return { _, args in
+            let i = Int(jsToIntegerOrInfinity(number(args, 0) ?? 0))
+            return array.jsElement(at: i < 0 ? array.jsLength + i : i)
+        }
+    case "join", "toString":
+        return { _, args in
+            let separator = key == "toString" || jsIsNullish(jsArg(args, 0)) ? "," : jsToString(jsArg(args, 0))
+            return array.jsAnyElements.map { jsIsNullish($0) || $0 is JSNull ? "" : jsToString($0) }.joined(separator: separator)
+        }
+    case "slice":
+        return { _, args in
+            let elements = array.jsAnyElements
+            let from = position(args, 0, 0), to = position(args, 1, elements.count)
+            return JSArray<Any?>(from < to ? Array(elements[from..<to]) : [])
+        }
+    case "concat":
+        return { _, args in
+            var out = array.jsAnyElements
+            for item in args { if let nested = jsFlat(item) as? JSArrayProtocol { out += nested.jsAnyElements } else { out.append(item) } }
+            return JSArray<Any?>(out)
+        }
+    case "keys", "values", "entries":
+        // Live, as JavaScript's: an element pushed while iterating is reached.
+        return { _, _ in
+            var i = 0
+            return JSIterator<Any?> {
+                guard i < array.jsLength else { return nil }
+                defer { i += 1 }
+                return key == "keys" ? Double(i) : key == "values" ? array.jsElement(at: i) : JSArray<Any?>([Double(i), array.jsElement(at: i)])
+            }
+        }
+    case "flat":
+        return { _, args in JSArray<Any?>(array.jsAnyElements).flat(number(args, 0) ?? 1) }
+    case "push":
+        return { _, args in
+            try array.jsSetElements(array.jsAnyElements + args)
+            return Double(array.jsLength)
+        }
+    case "unshift":
+        return { _, args in
+            try array.jsSetElements(args + array.jsAnyElements)
+            return Double(array.jsLength)
+        }
+    case "pop", "shift":
+        return { _, _ in
+            var elements = array.jsAnyElements
+            guard !elements.isEmpty else { return nil }
+            let removed = key == "pop" ? elements.removeLast() : elements.removeFirst()
+            try array.jsSetElements(elements)
+            return removed
+        }
+    case "splice":
+        return { _, args in
+            var elements = array.jsAnyElements
+            let start = position(args, 0, 0)
+            let count = args.isEmpty ? 0 : args.count == 1 ? elements.count - start : max(0, min(Int(jsToIntegerOrInfinity(number(args, 1) ?? 0)), elements.count - start))
+            let removed = Array(elements[start..<start + count])
+            elements.replaceSubrange(start..<start + count, with: args.dropFirst(2))
+            try array.jsSetElements(elements)
+            return JSArray<Any?>(removed)
+        }
+    case "reverse":
+        return { _, _ in try array.jsSetElements(array.jsAnyElements.reversed()); return array }
+    case "fill":
+        return { _, args in
+            var elements = array.jsAnyElements
+            let from = position(args, 1, 0), to = position(args, 2, elements.count)
+            if from < to { for i in from..<to { elements[i] = jsArg(args, 0) } }
+            try array.jsSetElements(elements)
+            return array
+        }
+    case "sort":
+        return { _, args in
+            let compare = jsArg(args, 0)
+            var defined = array.jsAnyElements.filter { $0 != nil }
+            let undefined = array.jsAnyElements.filter { $0 == nil }
+            if jsIsNullish(compare) {
+                var keyed = defined.map { (jsToString($0), $0) }
+                jsMergeSort(&keyed) { jsStringLess($0.0, $1.0) }
+                defined = keyed.map { $0.1 }
+            } else {
+                try jsMergeSort(&defined) { a, b in
+                    let order = jsToNumber(try jsCall(compare, a, b))
+                    return !order.isNaN && order < 0
+                }
+            }
+            try array.jsSetElements(defined + undefined)
+            return array
         }
     default:
         return nil
