@@ -2989,6 +2989,18 @@ export class Translator implements AsyncTranslator {
     return lines.join('\n').replace(/__\w+_(initNativeView|disposeNativeView)\(\) throws/g, (x) => x);
   }
 
+  /** A setter that only assigns its value to a member of `this`'s (`this.style.color = value`): that member. */
+  private forwardedTo(set: ts.SetAccessorDeclaration): ts.PropertyAccessExpression | null {
+    const p = set.parameters[0];
+    const only = set.body?.statements.length === 1 ? set.body.statements[0] : undefined;
+    if (!p || !ts.isIdentifier(p.name) || !only || !ts.isExpressionStatement(only)) return null;
+    const e = only.expression;
+    if (!ts.isBinaryExpression(e) || e.operatorToken.kind !== ts.SyntaxKind.EqualsToken || !ts.isIdentifier(e.right) || e.right.text !== p.name.text || !ts.isPropertyAccessExpression(e.left)) return null;
+    let base: ts.Expression = e.left.expression;
+    while (ts.isPropertyAccessExpression(base)) base = base.expression;
+    return base.kind === ts.SyntaxKind.ThisKeyword ? e.left : null;
+  }
+
   /** What defining a class does beyond declaring it (library mode): its accessors on its prototype, then its decorators, the last first. */
   private classDefinition(cls: ts.ClassDeclaration): string {
     const i = this.indent;
@@ -3006,7 +3018,11 @@ export class Translator implements AsyncTranslator {
         const t = (a.get && this.narrowedFrom(a.get)) ?? (a.get ? this.returnTypeOf(a.get) : optionalType(this.typeOf(a.set!.parameters[0].name)));
         const self = `guard let __o = __this as? ${name} else { throw JSException(JSTypeError("Illegal invocation")) }`;
         const get = a.get ? `{ (__this: Any?) throws -> Any? in ${self}; return ${this.convert(`${this.throwsInfo.fn(a.get) ? 'try ' : ''}__o.${ident(n)}`, t, 'Any?')} }` : 'nil';
-        const set = a.set ? `{ (__this: Any?, __v: Any?) throws -> Void in ${self}; __o.${ident(n)} = ${this.fromAny('__v', t)} }` : 'nil';
+        const forward = a.set ? this.forwardedTo(a.set) : null;
+        const set = !a.set ? 'nil'
+          // `set color(value) { this.style.color = value; }`: the value script gives (a string the style converts) goes on as it is.
+          : forward ? `{ (__this: Any?, __v: Any?) throws -> Void in ${self}; try jsSet(${this.withThis(a.set, '__o', false, () => this.expr(forward.expression))}, ${swiftString(forward.name.text)}, __v) }`
+          : `{ (__this: Any?, __v: Any?) throws -> Void in ${self}; __o.${ident(n)} = ${this.fromAny('__v', t)} }`;
         return `${i}JSPrototypes.declare(${name}.self, ${swiftString(n)}, get: ${get}, set: ${set})`;
       });
       lines.push(...entries);
