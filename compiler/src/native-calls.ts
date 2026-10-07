@@ -674,6 +674,8 @@ export class NativeAPI {
     }
     // A script Date where Swift takes a Foundation Date: the same instant.
     if (b === 'Date' && base(source) === 'JSDate') return source.endsWith('?') ? `${t.expr(e)}.map { jsNativeDate($0) }` : `jsNativeDate(${t.expr(e)})`;
+    // An untyped value where Swift takes a Foundation Date (`<any>date` of a `Date | NSDate`): whichever it holds.
+    if (b === 'Date' && source === 'Any?') return optional(target) ? `jsNativeDate(any: ${t.expr(e)})` : `jsNativeDate(any: ${t.expr(e)})!`;
     // An out-parameter: the cell's storage of the pointee's type, written back.
     const pointee = /^UnsafeMutablePointer<(\w+)>$/.exec(b)?.[1];
     if (pointee && source === 'InteropReference') return `&${t.expr(e)}.${pointee === 'CGFloat' ? 'cgFloat' : pointee === 'Bool' || pointee === 'ObjCBool' ? 'bool' : NUMBERS.has(pointee) && pointee !== 'Double' ? 'int' : 'value'}`;

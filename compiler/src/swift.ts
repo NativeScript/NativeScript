@@ -1578,7 +1578,8 @@ export class Translator implements AsyncTranslator {
       return 'nil';
     }
     const m = /^JSArray<(.*)>$/.exec(type);
-    if (m) return `jsArrayOf(${code}) { ${this.fromAny('$0', m[1])} }`;
+    // Lenient code: undefined where an array is declared stays undefined (`let result: string[] = cache[key]; if (result) …`).
+    if (m) return `${this.lenient ? 'jsArrayOrNil' : 'jsArrayOf'}(${code}) { ${this.fromAny('$0', m[1])} }`;
     // A promise held untyped (core's `animate()` gives its AnimationPromise as `any`): itself, or one adopting it.
     const pm = /^JSPromise<(.*)>$/.exec(type);
     if (pm) return `jsPromiseOf(${code}) { ${pm[1] === 'Void' ? '_ in ()' : this.fromAny('$0', pm[1])} }`;
@@ -1609,6 +1610,8 @@ export class Translator implements AsyncTranslator {
     if (/^(CG|CT|CF)[A-Z]\w*$/.test(base) && CF_CLASSES.has(base)) return type.endsWith('?') ? `(${code}).map { $0 as! ${base} }` : `(${code} as! ${base})`;
     // A type parameter may stand for an interface: an object read untyped becomes one (`JSON.parse` of a cached `T[]`).
     if (this.genericNames.has(base)) return type.endsWith('?') ? `jsCast(${code}, to: ${base}.self)` : `jsCast(${code}, to: ${base}.self)!`;
+    // A native enum or option set read untyped (`textView.returnKeyType`): the number script holds, as that type's raw value.
+    if (this.native.isEnumType(base)) return type.endsWith('?') ? `{ (__n: Any?) -> ${base}? in jsIsNullish(__n) ? nil : ${this.native.enumFromNumber('jsToNumber(__n)', base)} }(${code})` : this.native.enumFromNumber(`jsToNumber(${code})`, base);
     // A geometry struct the runtime gives script as an object (`{ origin, size }`): the struct again.
     if (['CGRect', 'CGSize', 'CGPoint', 'UIEdgeInsets'].includes(base)) return type.endsWith('?') ? `jsNativeStruct(${code}, ${base}.self)` : `jsNativeStruct(${code}, ${base}.self)!`;
     if (type.endsWith('?')) return `(${code} as? ${base})`;
@@ -3478,7 +3481,8 @@ export class Translator implements AsyncTranslator {
   bindTo(name: ts.BindingName, value: string, _type: string, mutable: boolean | 'assign'): string {
     const i = this.indent;
     const kw = mutable === 'assign' ? '' : mutable ? 'var ' : 'let ';
-    const declare = (n: ts.Identifier, t: string, v: string) => (mutable === 'assign' ? `${i}${ident(n.text)} = ${v}` : `${i}${kw}${ident(n.text)}: ${t} = ${v}`);
+    // Lenient code holds a destructured object as it holds any other: implicitly unwrapped, undefined where the source lacks it.
+    const declare = (n: ts.Identifier, t: string, v: string) => (mutable === 'assign' ? `${i}${ident(n.text)} = ${v}` : `${i}${kw}${ident(n.text)}: ${this.lenientRef(t)} = ${v}`);
     if (ts.isIdentifier(name)) return declare(name, this.typeOf(name), value);
     const lines: string[] = [];
     const source = this.checker.getTypeAtLocation(name);
@@ -5372,7 +5376,13 @@ export class Translator implements AsyncTranslator {
         const at = t === 'JSArray<Any?>' && declared?.startsWith('JSArray<') ? declared : t;
         return `${at}(Array(repeating: ${this.coerce(e.arguments[0], at.replace(/^JSArray<(.*)>$/, '$1'))}, count: Int(${this.expr(target.arguments[0])})))`;
       }
-      if (t.startsWith('JSArray<')) return this.arrayMethod(method, target, e, q);
+      if (t.startsWith('JSArray<')) {
+        // `observers?.find(…)` on an array TypeScript types as present, which lenient code may hold as undefined: cast to optional, valid either way.
+        if (!callee.questionDotToken || q || !this.lenient) return this.arrayMethod(method, target, e, q);
+        const code = this.arrayMethod(method, target, e, '', `(${this.expr(target)} as ${optionalType(receiverType)})?`);
+        const rt = this.typeOf(e);
+        return rt.endsWith('?') || rt === 'Any?' || rt === 'Void' || ts.isExpressionStatement(e.parent) ? code : this.undefinedAs(`(${code})`, rt);
+      }
       if (t === 'JSMatch' && method !== 'toString') {
         this.subst.set(target, `${this.expr(target)}${q}.values`);
         try { return this.arrayMethod(method, target, e, ''); } finally { this.subst.delete(target); }
@@ -5949,10 +5959,10 @@ export class Translator implements AsyncTranslator {
     return ts.isArrowFunction(e) || ts.isFunctionExpression(e) ? this.closure(e) : this.expr(e);
   }
 
-  private arrayMethod(name: string, target: ts.Expression, e: ts.CallExpression, q: string): string {
+  private arrayMethod(name: string, target: ts.Expression, e: ts.CallExpression, q: string, receiver?: string): string {
     const held = this.typeOf(target);
     // Lenient code holds arrays implicitly unwrapped, where `map` and `flatMap` would be Optional's.
-    const t = !q && this.lenient && ['map', 'flatMap'].includes(name) && /^JSArray<.*>$/.test(held) ? `(${this.expr(target)} as ${held})` : `${this.expr(target)}${q}`;
+    const t = receiver ?? (!q && this.lenient && ['map', 'flatMap'].includes(name) && /^JSArray<.*>$/.test(held) ? `(${this.expr(target)} as ${held})` : `${this.expr(target)}${q}`);
     const a = () => this.args(e);
     const el = held.replace(/\?$/, '').replace(/^JSArray<(.*)>$/, '$1');
     switch (name) {
@@ -6260,12 +6270,13 @@ export class Translator implements AsyncTranslator {
       return `JSUint8Array.from(${this.coerce(a, 'Any?')})`;
     }
     // `new Array(n)` of a type holding undefined: n holes, each read as undefined.
-    if (name === 'Array' && args.length === 1 && !this.isString(args[0]) && /^JSArray<(Any\?|.*\?)>$/.test(t)) return `${t}(Array(repeating: nil, count: Int(${this.toNumber(args[0])})))`;
+    if (name === 'Array' && args.length === 1 && this.typeOf(args[0]) === 'Double' && /^JSArray<(Any\?|.*\?)>$/.test(t)) return `${t}(Array(repeating: nil, count: Int(${this.toNumber(args[0])})))`;
     if (name === 'Array' && this.isLibGlobal(callee as ts.Identifier)) {
       const el = t.replace(/^JSArray<(.*)>$/, '$1');
       if (args.length !== 1) return `${t}([${args.map((a) => this.coerce(a, el)).join(', ')}])`;
       if (this.typeOf(args[0]) !== 'Double') {
-        if (this.typeOf(args[0]) === 'Any?') throw this.error(e, 'new Array of one untyped value (a length or an element)');
+        // One untyped value: a length or the one element, as it turns out at run time.
+        if (this.typeOf(args[0]) === 'Any?') return t === 'JSArray<Any?>' ? `jsNewArray(${this.expr(args[0])})` : `jsArrayOf(jsNewArray(${this.expr(args[0])})) { ${this.fromAny('$0', el)} }`;
         return `${t}([${this.coerce(args[0], el)}])`;
       }
       // n empty slots: a number, string or boolean cannot hold undefined, so its zero stands in until written.

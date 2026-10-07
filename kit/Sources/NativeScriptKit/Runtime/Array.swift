@@ -32,8 +32,11 @@ public final class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Seq
         return storage[index]
     }
 
+    /// What an empty slot holds: undefined in an array of optionals, and in an array of numbers
+    /// NaN, as an undefined number reads where code holds numbers as Double.
     static var hole: Element? {
-        (Element.self as? JSOptionalProtocol.Type).map { $0.jsNone as! Element }
+        if Element.self == Double.self { return (Double.nan as! Element) }
+        return (Element.self as? JSOptionalProtocol.Type).map { $0.jsNone as! Element }
     }
 
     private func outOfRange(_ index: Int) -> Never {
@@ -969,4 +972,12 @@ public func jsFilled<T>(_ array: JSArray<T?>) -> JSArray<T> {
         guard let value else { fatalError("JSArray<\(T.self)>: slot \(k) of \(array.storage.count) was never written") }
         return value
     })
+}
+
+/// `new Array(x)` of a value typed only at run time: `x` empty slots for a number (a
+/// RangeError when it is no valid length), otherwise an array holding `x`.
+public func jsNewArray(_ value: Any?) throws -> JSArray<Any?> {
+    guard let length = jsFlat(value) as? Double else { return JSArray<Any?>([value]) }
+    guard length >= 0, length <= 4_294_967_295, length == length.rounded(.towardZero) else { throw JSException(JSRangeError("Invalid array length")) }
+    return JSArray<Any?>(Array(repeating: nil, count: Int(length)))
 }

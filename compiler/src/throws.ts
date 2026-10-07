@@ -127,6 +127,8 @@ export class Throws {
       const t = c.getNonNullableType(c.getTypeAtLocation(n.initializer));
       if (n.name.elements.some((el) => !el.dotDotDotToken && (t.getProperty((el.propertyName ?? el.name).getText())?.declarations ?? []).some((d) => ts.isGetAccessorDeclaration(d) && !!d.body && this.fn(d)))) return true;
     }
+    // `new Array(x)` of an untyped x: a length that is no valid one is a RangeError.
+    if (ts.isNewExpression(n) && ts.isIdentifier(n.expression) && n.expression.text === 'Array' && n.arguments?.length === 1 && this.untyped(n.arguments[0])) return true;
     if (ts.isCallExpression(n) || ts.isNewExpression(n)) return this.callThrows(n);
     if (ts.isTaggedTemplateExpression(n)) return !isStringRaw(n.tag, c) && this.tagThrows(n);
     if (ts.isPropertyAccessExpression(n) || ts.isElementAccessExpression(n)) {

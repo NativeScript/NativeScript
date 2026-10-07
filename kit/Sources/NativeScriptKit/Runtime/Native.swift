@@ -29,7 +29,11 @@ func jsNativeGet(_ object: NSObject, _ key: String) -> Any? {
     if let own = object as? JSNativeMembers, let value = own.jsMember(key) { return value }
     // Collections answer key-value coding for their elements, not themselves (`value(forKey: "count")` maps over an array).
     if let collection = jsCollectionMember(object, key) { return collection }
-    if jsHasObjCProperty(type(of: object), key) { return jsFromNative(object.value(forKey: key)) }
+    if jsHasObjCProperty(type(of: object), key) {
+        // Key-value coding raises where the getter is only forwarded; script's message send reaches it.
+        guard let reader = jsGetterReceiver(object, key) else { return nil }
+        return jsFromNative(reader.value(forKey: key))
+    }
     // A method: callable as JavaScript calls it, with no argument or one object.
     let none = NSSelectorFromString(key), one = NSSelectorFromString(key + ":")
     if object.responds(to: none) {
@@ -162,6 +166,25 @@ private func jsExpandos(_ object: NSObject, create: Bool = false) -> JSObject? {
 nonisolated(unsafe) private var jsExpandoKey: UInt8 = 0
 
 /// Whether the class or one it extends declares an Objective-C property of that name.
+/// The object whose class implements the getter of an Objective-C property (its own name, or
+/// the custom one the property declares), following `forwardingTarget(for:)` as a message send
+/// does (`UITextView`'s text input traits): what key-value coding can read it from, or nil.
+func jsGetterReceiver(_ object: NSObject, _ key: String, depth: Int = 0) -> NSObject? {
+    var getter = key
+    var c: AnyClass? = type(of: object)
+    while let current = c, getter == key {
+        if let property = class_getProperty(current, key), let attributes = property_getAttributes(property).map(String.init(cString:)) {
+            if let custom = attributes.split(separator: ",").first(where: { $0.hasPrefix("G") }) { getter = String(custom.dropFirst()) }
+            break
+        }
+        c = class_getSuperclass(current)
+    }
+    let selector = NSSelectorFromString(getter)
+    if class_getInstanceMethod(type(of: object), selector) != nil { return object }
+    guard depth < 4, let target = object.forwardingTarget(for: selector) as? NSObject, target !== object else { return nil }
+    return jsGetterReceiver(target, key, depth: depth + 1)
+}
+
 func jsHasObjCProperty(_ cls: AnyClass, _ name: String) -> Bool {
     var c: AnyClass? = cls
     while let current = c {
@@ -421,3 +444,15 @@ public let jsAppDirectory: String = Bundle.main.bundlePath + "/app"
 
 /// `import.meta` of the app's bundled script.
 public let jsImportMeta: JSObject = JSObject([("dirname", jsAppDirectory), ("filename", jsAppDirectory + "/bundle.mjs"), ("url", "file://" + jsAppDirectory + "/bundle.mjs")])
+
+/// An untyped value where Swift takes a Foundation Date: a script Date's instant, a native
+/// date as it is, or a time in milliseconds as script's Date takes it; nil for anything else.
+public func jsNativeDate(any value: Any?) -> Date? {
+    switch jsFlat(value) {
+    case let date as JSDate: return jsNativeDate(date)
+    case let date as Date: return date
+    case let date as NSDate: return date as Date
+    case let time as Double: return Date(timeIntervalSince1970: time / 1000)
+    default: return nil
+    }
+}

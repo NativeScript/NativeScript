@@ -65,6 +65,12 @@ public func jsArrayOf<T>(_ value: Any?, _ element: (Any?) -> T) -> JSArray<T> {
     return JSArray(array.jsAnyElements.map(element))
 }
 
+/// `jsArrayOf` for code that may hold undefined where it declares an array (a cache miss,
+/// `cache[key]`): undefined and null stay nil, as script's value stays undefined.
+public func jsArrayOrNil<T>(_ value: Any?, _ element: (Any?) -> T) -> JSArray<T>! {
+    jsIsNullish(value) ? nil : jsArrayOf(value, element)
+}
+
 /// A member of an untyped object, or undefined; reading a typed object from JSON never throws.
 public func jsField(_ object: Any?, _ key: String) -> Any? {
     (try? jsGet(object, key)) ?? nil
