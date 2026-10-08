@@ -134,6 +134,13 @@ extension ViewBase {
     }
 }
 
+extension RegionFragment {
+    /// The same vocabulary for a branch or row whose views a region holds.
+    public func kitAddChild(_ child: ViewBase) { addChild(child) }
+    public func kitAddTemplateChild(_ child: ViewBase) { addTemplateChild(child) }
+    public func kitAddRegion() -> Region { addRegion() }
+}
+
 extension EventData {
     /// What an event carries beyond its name and sender (`value`, `index`…), read by name.
     public var value: Any? { self[jsKey: "value"] }
