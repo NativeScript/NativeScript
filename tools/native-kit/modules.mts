@@ -73,6 +73,7 @@ export const ios = {
 		'ui/utils.ios.ts',
 		'ui/web-view/',
 		'utils/',
+		'http/',
 	],
 	/**
 	 * What the kit implements instead: a core file's function, an npm package's export
@@ -99,8 +100,8 @@ export const ios = {
 			_setResolver: 'CorePackages.noModuleResolver',
 		},
 	},
-	/** Modules a compiled app has no use for (the XML builder, the inspector, runtime module loading, the JavaScript network stack): what core reads from them is untyped, and using it throws. */
-	moot: ['debugger/', 'ui/builder/', 'module-name-resolver/', 'http/', 'xhr/', 'fetch/', 'wgc/', 'inspector_modules'],
+	/** Modules a compiled app has no use for (the XML builder, the inspector, runtime module loading, XMLHttpRequest and fetch): what core reads from them is untyped, and using it throws. */
+	moot: ['debugger/', 'ui/builder/', 'module-name-resolver/', 'xhr/', 'fetch/', 'wgc/', 'inspector_modules'],
 	/** Functions that give back what they are given and, as decorators, leave what they decorate as it is. */
 	identities: ['profile'],
 	/** npm packages compiled with core from the TypeScript they publish (relative to the package; the first is its entry). */
