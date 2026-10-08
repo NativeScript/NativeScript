@@ -172,6 +172,8 @@ export class Translator implements AsyncTranslator {
   private shaping = new Set<ts.Type>();
   /** Angular `computed()` fields, translated as getters: `this.total()` reads `self.total`. */
   private computed = new Set<string>();
+  /** A component's or service's fields holding a read-only signal it made (`toSignal`): read through `.value`. */
+  private signalFields = new Set<string>();
   /** Variables initialized from an element read (`const r = xs[i]`): Swift optionals, unwrapped where they are used. */
   private undefinedVars = new Map<ts.Symbol, string>();
   /** Optional chain reads whose undefined the context tests rather than converts (`a?.b || x`). */
@@ -870,7 +872,22 @@ export class Translator implements AsyncTranslator {
     if (this.lenient && (t === 'Bool' || t === 'String' || t === 'Double') && this.declaredUndefined(n)) return `${t}?`;
     // An element of an array literal typed `never[]` (`callbacks = []` under strict checks), which Swift holds as any value.
     if (t === 'Never' && (ts.isIdentifier(n) || ts.isVariableDeclaration(n)) && this.resolve(n)?.valueDeclaration && ts.isVariableDeclaration(this.resolve(n)!.valueDeclaration!)) return 'Any?';
-    return t;
+    return this.holdingNull(t, n);
+  }
+
+  /** `signal<Person>(null)` where null checks are off: the signal holds the null its type does not admit. */
+  private holdingNull(t: string, n: ts.Node): string {
+    return /^Signal<.*[^?]>$/.test(t) && t !== 'Signal<Any?>' && this.madeHoldingNull(n) ? t.replace(/>$/, '?>') : t;
+  }
+
+  /** Whether `n` is, names or declares a `signal(null)` or `signal(undefined)`. */
+  private madeHoldingNull(n: ts.Node): boolean {
+    const declaration = (ts.isVariableDeclaration(n.parent) || ts.isPropertyDeclaration(n.parent)) && n.parent.name === n ? n.parent
+      : ts.isIdentifier(n) || ts.isPropertyAccessExpression(n) ? this.resolve(n)?.valueDeclaration : undefined;
+    const made = ts.isCallExpression(n) ? n : declaration && (ts.isVariableDeclaration(declaration) || ts.isPropertyDeclaration(declaration)) ? declaration.initializer : undefined;
+    if (!made || !ts.isCallExpression(made) || this.calleeName(made) !== 'signal' || !this.resolve(made.expression)?.declarations?.[0]?.getSourceFile().isDeclarationFile) return false;
+    const value = made.arguments[0];
+    return !!value && (value.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(value) && value.text === 'undefined'));
   }
 
   /** The kit collection a program's class extending Array, Set or Map subclasses (`JSArray<Any?>` for `extends Array`), directly or through its program bases. */
@@ -1164,7 +1181,7 @@ export class Translator implements AsyncTranslator {
       if (kit?.kind === 'var') return kit.type;
     }
     if (!(ts.isVariableDeclaration(decl) || ts.isParameter(decl) || ts.isPropertyDeclaration(decl) || ts.isPropertySignature(decl) || ts.isBindingElement(decl) || ts.isGetAccessorDeclaration(decl))) return null;
-    const t = this.type(this.checker.getTypeOfSymbolAtLocation(sym, decl), decl);
+    const t = this.holdingNull(this.type(this.checker.getTypeOfSymbolAtLocation(sym, decl), decl), e);
     return this.lenient && (t === 'Bool' || t === 'String' || t === 'Double') && this.declaredUndefined(e) ? `${t}?` : t;
   }
 
@@ -2666,6 +2683,7 @@ ${members.join('\n')}
   componentMembers(cls: ts.ClassDeclaration, props: string[]): string[] {
     this.props = new Set(props);
     this.computed = new Set(cls.members.filter((m) => ts.isPropertyDeclaration(m) && m.initializer && this.calleeName(m.initializer) === 'computed').map((m) => (m.name as ts.Identifier).text));
+    this.signalFields = new Set(cls.members.filter((m) => ts.isPropertyDeclaration(m) && m.initializer && this.calleeName(m.initializer) === 'toSignal').map((m) => (m.name as ts.Identifier).text));
     const lines: string[] = [];
     const inits: string[] = [];
     const propParams: string[] = [];
@@ -2705,7 +2723,7 @@ ${members.join('\n')}
           else lines.push(`    var ${ident(name)}: ${t} ${this.functionBody(fn, t, '    ')}`);
           continue;
         }
-        const t = this.typeOf(m.name);
+        const t = this.signalFields.has(name) ? `Signal<${this.typeOf(m.name)}>` : this.typeOf(m.name);
         if (name === '$passed') {
           // The props the parent gave, for a spread that passes on only those.
           lines.push(`    let _passed: Set<String>`);
@@ -2733,7 +2751,7 @@ ${members.join('\n')}
         if (late) lines.push(`    var ${ident(name)}: ${t.endsWith('?') ? t : isFunctionType(t) ? `(${t})!` : `${t}!`}`);
         else lines.push(`    ${reassigned ? 'var' : 'let'} ${ident(name)}: ${t}`);
         this.indent = '        ';
-        inits.push(`        self.${ident(name)} = ${this.tryPrefix(m.initializer)}${this.coerce(m.initializer, t)}`);
+        inits.push(`        self.${ident(name)} = ${this.tryPrefix(m.initializer)}${this.signalFields.has(name) ? this.expr(m.initializer) : this.coerce(m.initializer, t)}`);
         this.indent = '    ';
         continue;
       }
@@ -2797,7 +2815,7 @@ ${members.join('\n')}
       const members = this.componentMembers(cls, []);
       // Angular's injector reports a throwing constructor as a fatal error.
       const make = members.some((m) => /^\s*init\(\) throws/m.test(m)) ? `try! ${name}()` : `${name}()`;
-      return [`final class ${name} {`, `    static let shared = ${make}`, '', ...members, '}'].join('\n');
+      return [`final class ${name} {`, `    static let shared = Injector.root { ${make} }`, '', ...members, '}'].join('\n');
     }
     const c = this.checker;
     const heritage = cls.heritageClauses?.find((h) => h.token === ts.SyntaxKind.ExtendsKeyword)?.types[0];
@@ -5794,7 +5812,10 @@ ${members.join('\n')}
     if (!e.arguments.length && ['WritableSignal', 'InputSignal', 'Signal'].includes(this.symbolName(callee))) {
       if (ts.isPropertyAccessExpression(callee) && this.isSelf(callee.expression) && this.computed.has(callee.name.text)) return `self.${ident(callee.name.text)}`;
       if (ts.isPropertyAccessExpression(callee) && this.isSelf(callee.expression) && this.props.has(callee.name.text)) return `self.${ident(callee.name.text)}.value`;
-      return this.symbolName(callee) === 'Signal' ? this.expr(callee) : `${this.expr(callee)}.value`;
+      if (ts.isPropertyAccessExpression(callee) && this.isSelf(callee.expression) && this.signalFields.has(callee.name.text)) return `self.${ident(callee.name.text)}.value`;
+      if (this.symbolName(callee) === 'Signal') return this.expr(callee);
+      // A signal holding a null its type does not admit is read as the type, as script reads it.
+      return /\?>$/.test(this.typeOf(callee)) && !/\?$/.test(this.typeOf(e)) ? `jsImplicit(${this.expr(callee)}.value)` : `${this.expr(callee)}.value`;
     }
     if (callee.kind === ts.SyntaxKind.SuperKeyword) throw this.error(e, 'super() outside the start of a constructor');
     // `getWindow<UIWindow>?.()`: the type arguments are only TypeScript's, and a function declaration is always there.
@@ -6155,6 +6176,11 @@ ${members.join('\n')}
       return injected(token);
     }
     if (name === 'effect' && lib) return `Effect.deferred(${this.callback(arg(0))})`;
+    if (name === 'toSignal' && lib) {
+      const options = arg(1) && ts.isObjectLiteralExpression(arg(1)) ? arg(1) as ts.ObjectLiteralExpression : undefined;
+      const initial = options?.properties.find((p): p is ts.PropertyAssignment => ts.isPropertyAssignment(p) && p.name.getText() === 'initialValue');
+      return `toSignal(${this.expr(arg(0))}${initial ? `, initialValue: ${this.coerce(initial.initializer, this.typeOf(e))}` : ''})`;
+    }
     if (name === 'firstValueFrom' && lib) return `rxFirstValueFrom(${this.expr(arg(0))})`;
     if (name === 'registerElement' && lib) return '()';
     if (name === '$navigateTo' && lib) return this.navigate(e);

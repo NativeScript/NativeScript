@@ -99,8 +99,9 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
     };
     return textOf(root);
   };
-  // `$any(x)` is Angular's escape from template type checking; the release build is typed by the component's code.
-  const clean = (code: string) => code.replace(/\$any\(/g, '(');
+  // `$any(x)` is Angular's escape from template type checking; the release build is typed by the component's code,
+  // except `$any($event)`, whose event data the handler reads as the type it declares.
+  const clean = (code: string) => code.replace(/\$any\(\s*\$event\s*\)/g, '($event as any)').replace(/\$any\(/g, '(');
   const expr = (code: string, loops: Loop[]) => {
     const m = `$b${next++}`;
     methods.push(`  ${m}(${params(loops)}) { return ${rewrite(clean(code), local(loops))}; }`);

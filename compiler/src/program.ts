@@ -1,6 +1,6 @@
 import ts from 'typescript';
 import { existsSync, readFileSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
+import { dirname, isAbsolute, resolve } from 'node:path';
 import { foldPlatform, type Platform } from './platform.ts';
 import { KIT_PLUGINS, nativeViewOf } from './core.ts';
 import type { PluginSources } from './plugins/source.ts';
@@ -67,7 +67,8 @@ const SHIMS: Record<string, string> = {
     export interface OutputEmitterRef<T> { emit(value: T): void }
     export declare function signal<T>(value: T): WritableSignal<T>;
     export declare function computed<T>(fn: () => T): Signal<T>;
-    export declare const input: { <T>(value: T): InputSignal<T>; required<T>(): InputSignal<T> };
+    export declare function input<T>(value: T): InputSignal<T>;
+    export declare namespace input { function required<T>(): InputSignal<T>; }
     export declare function output<T = void>(): OutputEmitterRef<T>;
     export declare function inject<T>(token: (abstract new (...args: any[]) => T) | InjectionToken<T>, options?: { optional?: boolean }): T;
     export declare class InjectionToken<T> { constructor(description: string) }
@@ -262,7 +263,8 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
     {
       const m = lit.text;
       if (SHIMS[m]) return { resolvedModule: { resolvedFileName: shimPath(m), extension: ts.Extension.Dts } };
-      if (m.startsWith('.')) {
+      // The build's own glue imports app modules by absolute path (`__elements.release.ts`).
+      if (m.startsWith('.') || (isAbsolute(m) && !m.startsWith('/__shims__/'))) {
         const base = resolve(dirname(containing), m);
         // A platform's own file first, as NativeScript's bundler resolves `./x` to `x.ios.ts`.
         // A platform file importing its own module's name (`import type { HingeListener } from './hinge-tracker'` in
