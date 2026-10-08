@@ -1,0 +1,31 @@
+{
+  "name": "@nativescript/compiler",
+  "version": "0.1.0",
+  "description": "Compiles a NativeScript app written with Vue, Angular, Svelte, React, Solid or Octane into a native iOS or Android app with no JavaScript runtime.",
+  "type": "module",
+  "bin": {
+    "ns-native": "bin/ns-native.js",
+    "ns-native-retrace": "bin/ns-native-retrace.js"
+  },
+  "files": [
+    "bin/",
+    "compiler/src/",
+    "kit/Package.swift",
+    "kit/Sources/",
+    "kit-android/build.gradle.kts",
+    "kit-android/gradlew",
+    "kit-android/gradle/",
+    "kit-android/src/",
+    "CLI.md"
+  ],
+  "engines": {
+    "node": ">=23.6.0"
+  },
+  "dependencies": {
+    "@angular/compiler": "^22.2.1",
+    "@vue/compiler-sfc": "^3.5.0",
+    "svelte": "^4.2.20",
+    "typescript": "~5.9.0"
+  },
+  "license": "Apache-2.0"
+}
