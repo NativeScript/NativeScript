@@ -3,11 +3,11 @@ import ts from 'typescript';
 import { Throws, isAsync, isStatic } from './throws.ts';
 import { intlConstructor, isObjectToStringCall, isStringRaw, leadingNeverRead, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces } from './lang.ts';
 import { AsyncLowering, type AsyncCtx, type AsyncSyntax, type AsyncTranslator } from './async.ts';
-import { CoreAPI, isCoreDeclaration } from './core.ts';
+import { CoreAPI, isCoreDeclaration, packageOf } from './core.ts';
 import type { KitMember } from './kit-index.ts';
 import type { Properties } from './properties.ts';
 import { recognizePatterns, type Patterns } from './patterns.ts';
-import { NativeAPI } from './native-calls.ts';
+import { DEPLOYMENT, NativeAPI } from './native-calls.ts';
 import { lookupClass, lookupMember, type NativeMethod } from './natives/symbols.ts';
 import type { Reach } from './reach.ts';
 
@@ -2405,13 +2405,18 @@ ${members.join('\n')}
   }
 
   /** A function's body block (`{ … }`), lowered when the function is async. */
-  /** The newest iOS version an API used by the function being translated needs, innermost function last. */
+  /** The newest iOS version an API used by the function or statement being translated needs, innermost last. */
   private availability: number[] = [];
 
   /** A type newer than the deployment target named inside a function body: the body runs only where the OS has it. Outside a body, nothing. */
-  requireTypeAvailability(version: number) {
-    if (this.availability.length) this.requireAvailability(version);
+  requireTypeAvailability(version: number, name?: string) {
+    if (!this.availability.length || version <= this.refinedVersion) return;
+    const named = name && this.statementTypes.get(this.availability.length);
+    if (named) named.set(name, Math.max(named.get(name) ?? 0, version));
+    else this.requireAvailability(version);
   }
+  /** By the depth of a statement's frame in `availability`: the newer types its translation looked up, which need the OS only where its code names them. */
+  private statementTypes = new Map<number, Map<string, number>>();
 
   requireAvailability(version: number) {
     if (version <= this.refinedVersion) return;
@@ -3760,7 +3765,17 @@ ${members.join('\n')}
   }
 
   private stmtChecked(s: ts.Statement): string {
-    let code = this.statementCode(s);
+    // A statement using an API newer than what is checked runs only on an OS that has it, so the code's own checks before it
+    // (`respondsToSelector`, early returns) still decide. A declaration's names are read after it: its enclosing statement is gated instead.
+    const gates = this.availability.length > 0 && !this.asyncCtx && !ts.isVariableStatement(s) && !ts.isFunctionDeclaration(s) && !ts.isClassDeclaration(s);
+    const types = new Map<string, number>();
+    if (gates) { this.availability.push(0); this.statementTypes.set(this.availability.length, types); }
+    let code: string;
+    let needs = 0;
+    try { code = this.statementCode(s); } finally {
+      if (gates) { this.statementTypes.delete(this.availability.length); needs = this.availability.pop()!; }
+    }
+    for (const [name, version] of types) if (version > needs && new RegExp(`(?<!\\w)${name.replace(/[.$]/g, '\\$&')}\\b`).test(code)) needs = version;
     // A return inside a try whose finally throws: recorded, and the finally runs before it is made.
     const pending = this.pendingReturn;
     if (pending && ts.isReturnStatement(s) && !this.asyncCtx) {
@@ -3770,6 +3785,7 @@ ${members.join('\n')}
       lines[lines.length - 1] = `${m[1]}${m[2] !== undefined && pending.value ? `${pending.value} = ${m[2]}; ` : ''}${pending.flag} = true; break ${pending.label}`;
       code = lines.join('\n');
     }
+    if (needs && code) code = this.availableOnly(needs, code, this.indent);
     return code && this.lines ? this.lines.mark(s) + code : code;
   }
 
@@ -4892,7 +4908,7 @@ ${members.join('\n')}
       if (this.lenient && [e.whenTrue, e.whenFalse].some(isNullish) && !['String', 'Double', 'Bool'].includes(t) && !isFunctionType(t) && t !== 'Any?' && !t.endsWith('!') && !this.native.isStructType(t)) t = optionalType(t);
       // Branches of different types are untyped values alike.
       const branch = (x: ts.Expression) => (t === 'Any?' && !['Any?', 'Void'].includes(this.typeOf(x)) && x.kind !== ts.SyntaxKind.NullKeyword ? `(${this.coerce(x, t)} as Any?)` : this.coerce(x, t));
-      return `(${this.cond(e.condition)} ? ${branch(e.whenTrue)} : ${branch(e.whenFalse)})`;
+      return this.ternary(e, t, branch);
     }
     if (ts.isArrayLiteralExpression(e)) return this.array(e);
     if (ts.isObjectLiteralExpression(e)) return this.object(e);
@@ -5626,8 +5642,7 @@ ${members.join('\n')}
       const branches = [e.whenTrue, e.whenFalse].map((b) => this.maybeUndefined(b));
       if (branches.some(Boolean)) {
         const t = optionalType(this.typeOf(e));
-        const [a, b] = [e.whenTrue, e.whenFalse].map((x, k) => branches[k] ?? this.coerce(x, t));
-        return `(${this.cond(e.condition)} ? ${a} : ${b})`;
+        return this.ternary(e, t, (x) => this.maybeUndefined(x) ?? this.coerce(x, t));
       }
     }
     if (ts.isPropertyAccessExpression(e) && !isWriteTarget(e) && this.isAddedMember(e)) {
@@ -5638,8 +5653,7 @@ ${members.join('\n')}
     if (ts.isConditionalExpression(e) && [e.whenTrue, e.whenFalse].some(isNullish) && ![e.whenTrue, e.whenFalse].every(isNullish)) {
       const t = this.typeOf(e);
       if (t !== 'Any?' && t !== 'Void' && !isOptional(t) && !t.endsWith('!')) {
-        const branch = (x: ts.Expression) => (isNullish(x) ? 'nil' : this.coerce(x, optionalType(t)));
-        return `(${this.cond(e.condition)} ? ${branch(e.whenTrue)} : ${branch(e.whenFalse)})`;
+        return this.ternary(e, optionalType(t), (x) => (isNullish(x) ? 'nil' : this.coerce(x, optionalType(t))));
       }
     }
     // `x?.m()` on an untyped value: undefined where x is, whatever its declared result.
@@ -7120,10 +7134,49 @@ ${members.join('\n')}
     return e.operatorToken.kind === ts.SyntaxKind.EqualsEqualsEqualsToken || e.operatorToken.kind === ts.SyntaxKind.EqualsEqualsToken ? same : !same;
   }
 
-  /** `typeof NewClass !== 'undefined'` of a class newer than the deployment target: the iOS version, and whether the test is for its presence. */
+  /** `c ? a : b` of a value of type `t`; a test of the iOS version is `#available`, so the newer branch may use what it tests for. */
+  private ternary(e: ts.ConditionalExpression, t: string, branch: (x: ts.Expression) => string): string {
+    const gate = this.availabilityTest(e.condition);
+    if (!gate) return `(${this.cond(e.condition)} ? ${branch(e.whenTrue)} : ${branch(e.whenFalse)})`;
+    const [newer, older] = gate.present ? [e.whenTrue, e.whenFalse] : [e.whenFalse, e.whenTrue];
+    const saved = this.refinedVersion;
+    this.refinedVersion = Math.max(saved, gate.version);
+    const a = branch(newer);
+    this.refinedVersion = saved;
+    const b = branch(older);
+    const throws = this.tryPrefix(newer) || this.tryPrefix(older);
+    return `({ () ${throws ? 'throws ' : ''}-> ${t} in if #available(iOS ${gate.version}, *) { return ${this.tryPrefix(newer)}${a} } else { return ${this.tryPrefix(older)}${b} } }())`;
+  }
+
+  /** Core's `SDK_VERSION` (`utils/constants`): the running iOS version, as `parseFloat` reads it. */
+  private isSdkVersion(e: ts.Expression): boolean {
+    while (ts.isParenthesizedExpression(e)) e = e.expression;
+    if (!ts.isIdentifier(e) && !ts.isPropertyAccessExpression(e)) return false;
+    let sym = this.checker.getSymbolAtLocation(ts.isPropertyAccessExpression(e) ? e.name : e);
+    if (sym && sym.flags & ts.SymbolFlags.Alias) sym = this.checker.getAliasedSymbol(sym);
+    const file = sym?.name === 'SDK_VERSION' ? sym.declarations?.[0]?.getSourceFile().fileName : undefined;
+    return !!file && /[\\/]utils[\\/]constants(\.ios)?(\.d)?\.ts$/.test(file) && packageOf(file)?.name === '@nativescript/core';
+  }
+
+  /**
+   * `SDK_VERSION >= N` (present) or `SDK_VERSION < N` (absent) for an N newer than the deployment target: the same test as
+   * `#available(iOS N, *)`, since `parseFloat` of the system version is at least N exactly when the OS is.
+   */
+  private sdkVersionTest(e: ts.BinaryExpression): { version: number; present: boolean } | null {
+    const K = ts.SyntaxKind;
+    const mirrored: Partial<Record<ts.SyntaxKind, ts.SyntaxKind>> = { [K.LessThanEqualsToken]: K.GreaterThanEqualsToken, [K.GreaterThanToken]: K.LessThanToken };
+    const [n, op] = this.isSdkVersion(e.left) ? [e.right, e.operatorToken.kind] : this.isSdkVersion(e.right) ? [e.left, mirrored[e.operatorToken.kind]] : [null, undefined];
+    if (!n || !ts.isNumericLiteral(n) || (op !== K.GreaterThanEqualsToken && op !== K.LessThanToken)) return null;
+    const version = parseFloat(n.text);
+    return version > DEPLOYMENT ? { version, present: op === K.GreaterThanEqualsToken } : null;
+  }
+
+  /** `typeof NewClass !== 'undefined'` of a class newer than the deployment target, or a test of `SDK_VERSION`: the iOS version, and whether the test is for its presence. */
   private availabilityTest(e: ts.Expression): { version: number; present: boolean } | null {
     while (ts.isParenthesizedExpression(e)) e = e.expression;
     if (!ts.isBinaryExpression(e)) return null;
+    const sdk = this.sdkVersionTest(e);
+    if (sdk) return sdk;
     const op = e.operatorToken.kind;
     const eq = op === ts.SyntaxKind.EqualsEqualsEqualsToken || op === ts.SyntaxKind.EqualsEqualsToken;
     if (!eq && op !== ts.SyntaxKind.ExclamationEqualsEqualsToken && op !== ts.SyntaxKind.ExclamationEqualsToken) return null;
@@ -7151,12 +7204,20 @@ ${members.join('\n')}
       const rest = all.filter((x) => !this.availabilityTest(x)?.present);
       const saved = this.refinedVersion;
       this.refinedVersion = Math.max(saved, present.version);
+      const conditions = rest.length ? `, ${join(rest, '&&')}` : '';
       const then = this.block(s.thenStatement);
       this.refinedVersion = saved;
-      return `${i}if #available(iOS ${present.version}, *)${rest.length ? `, ${join(rest, '&&')}` : ''} ${then}${s.elseStatement ? ` else ${this.block(s.elseStatement)}` : ''}`;
+      return `${i}if #available(iOS ${present.version}, *)${conditions} ${then}${s.elseStatement ? ` else ${this.block(s.elseStatement)}` : ''}`;
     }
     const any = terms(s.expression, ts.SyntaxKind.BarBarToken);
     const absent = any.map((x) => this.availabilityTest(x)).find((t) => t && !t.present);
+    if (absent && any.length === 1 && s.elseStatement) {
+      const saved = this.refinedVersion;
+      this.refinedVersion = Math.max(saved, absent.version);
+      const otherwise = this.block(s.elseStatement);
+      this.refinedVersion = saved;
+      return `${i}if #available(iOS ${absent.version}, *) ${otherwise} else ${this.block(s.thenStatement)}`;
+    }
     if (!absent || s.elseStatement || !exitsStatement(s.thenStatement)) return null;
     const rest = any.filter((x) => { const t = this.availabilityTest(x); return !(t && !t.present); });
     const exit = this.block(s.thenStatement);

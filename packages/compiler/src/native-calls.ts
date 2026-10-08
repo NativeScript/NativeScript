@@ -39,7 +39,7 @@ const isolated = (code: string, m: { mainActor?: boolean }) => (m.mainActor ? `$
 /** Classes NativeScript's typings rename where TypeScript's DOM library declares the name. */
 const RENAMED: Record<string, string> = { _UIEvent: 'UIEvent' };
 /** The iOS version the app targets: newer APIs need `if #available` the translation cannot add. */
-const DEPLOYMENT = 17;
+export const DEPLOYMENT = 17;
 
 /**
  * Direct calls to iOS APIs, as NativeScript apps write them in TypeScript
@@ -134,8 +134,8 @@ export class NativeAPI {
   }
 
   /** A native type newer than the deployment target, named in a function: the function's body runs only where the OS has it. */
-  private typeAvailable(t: { introduced?: string } | null | undefined) {
-    if (t?.introduced && parseFloat(t.introduced) > DEPLOYMENT) this.t.requireTypeAvailability(parseFloat(t.introduced));
+  private typeAvailable(t: { introduced?: string; swift?: string } | null | undefined) {
+    if (t?.introduced && parseFloat(t.introduced) > DEPLOYMENT) this.t.requireTypeAvailability(parseFloat(t.introduced), t.swift);
   }
 
   /** A native class's Swift name, qualified by its module where the kit declares a type of that name (`Foundation.Progress`). */
