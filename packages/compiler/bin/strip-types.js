@@ -8,7 +8,7 @@ const emitWarning = process.emitWarning;
 process.emitWarning = (warning, ...rest) => {
   if (!String(warning).includes('stripTypeScriptTypes')) emitWarning.call(process, warning, ...rest);
 };
-const compiler = new URL('../compiler/src/', import.meta.url).href;
+const compiler = new URL('../src/', import.meta.url).href;
 module.registerHooks({
   load(url, context, nextLoad) {
     if (!url.startsWith(compiler) || !url.endsWith('.ts')) return nextLoad(url, context);

@@ -7,4 +7,4 @@ if (major < 23 || (major === 23 && minor < 6)) {
 }
 
 await import('./strip-types.js');
-await import('../compiler/src/retrace.ts');
+await import('../src/retrace.ts');

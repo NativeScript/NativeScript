@@ -1,11 +1,11 @@
 import ts from 'typescript';
-import { fileURLToPath } from 'node:url';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { kitExtends, kitIndex, kitMember, type KitMember, type KitType } from './kit-index.ts';
 import { splitTopLevel, type Translator } from './swift.ts';
+import { KIT_APPLE_SOURCES } from './paths.ts';
 
-export const KIT = fileURLToPath(new URL('../../kit/Sources/NativeScriptKit', import.meta.url));
+export const KIT = KIT_APPLE_SOURCES;
 
 /** The native view a core class drives on iOS: what `view.ios` and `view.nativeView` are. */
 export const NATIVE_VIEWS: Record<string, string> = {
@@ -53,7 +53,7 @@ export function unappliedProperty(t: { resolve(n: ts.Node): ts.Symbol | undefine
 
 /**
  * Packages the kit implements, typed by their own declarations: core, and plugins whose
- * native release is a kit module (`kit/Sources/NativeScriptKit/Plugins/`) rather than their
+ * native release is a kit module (`kit-apple/Sources/NativeScriptKit/Plugins/`) rather than their
  * compiled source: @nstudio/nativescript-ui-pager's Pager. @nativescript/canvas is compiled
  * from its source over its native library, WebGPU included.
  */

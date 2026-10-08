@@ -8,6 +8,7 @@ import { existsSync, mkdtempSync, readFileSync, realpathSync, rmSync, statSync }
 import { tmpdir } from 'node:os';
 import { delimiter, dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { BIN } from './paths.ts';
 
 export type CssNode =
   | { type: 'rule'; selectors: string[]; declarations: CssDeclaration[] }
@@ -122,6 +123,6 @@ export function kitAst(sheets: Stylesheet[]): string {
 
 /** The installed package's type-stripping hook, which a child process under node_modules needs to run the compiler's .ts. */
 function stripTypes(): string[] {
-  const hook = fileURLToPath(new URL('../../bin/strip-types.js', import.meta.url));
+  const hook = join(BIN, 'strip-types.js');
   return existsSync(hook) ? ['--import', pathToFileURL(hook).href] : [];
 }

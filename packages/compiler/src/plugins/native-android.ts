@@ -5,6 +5,7 @@ import { homedir } from 'node:os';
 import { dirname, join, relative, resolve } from 'node:path';
 import { archiveClasses } from '../natives/classfiles.ts';
 import type { PluginSource } from './source.ts';
+import { KIT_ANDROID } from '../paths.ts';
 
 /**
  * The Android code plugins ship in `platforms/android`, built as the
@@ -44,7 +45,7 @@ const AGP = '8.12.1', KOTLIN = '2.2.20', COMPILE_SDK = 36, KIT_MIN_SDK = 24;
 const RECIPE = `agp ${AGP}, kotlin ${KOTLIN}, compileSdk ${COMPILE_SDK}, jvm 17, 1`;
 const DEFAULT_CACHE = join(homedir(), '.cache', 'ns-native', 'android-plugins');
 const GRADLE_CACHE = join(homedir(), '.gradle', 'caches', 'modules-2', 'files-2.1');
-const kit = resolve(dirname(new URL(import.meta.url).pathname), '../../../kit-android');
+const kit = KIT_ANDROID;
 
 /** Read by the NativeScript runtime's metadata generator and the CLI's livesync, not by a build. */
 const IGNORED = /^(native-api-usage\.json|sync|\.DS_Store|.*\.md)$/i;

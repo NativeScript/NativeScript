@@ -1,15 +1,16 @@
 import ts from 'typescript';
 import { existsSync, readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
 import { ident, numberLiteral, optionalType, type KotlinNative, type Translator } from './kotlin.ts';
 import {
   ACC_ABSTRACT, ACC_BRIDGE, ACC_FINAL, ACC_INTERFACE, ACC_PRIVATE, ACC_PROTECTED, ACC_PUBLIC, ACC_STATIC, ACC_SYNTHETIC, ACC_VARARGS,
   ClassPath, androidJar, javaTypeName, methodTypes, newer, signatureTypes, type JavaClass, type JavaMember,
 } from './natives/classfiles.ts';
+import { KIT_ANDROID } from './paths.ts';
 
 /** The SDK the generated Gradle project compiles against (android.ts). */
 const COMPILE_SDK = 36;
-const KIT_GRADLE = fileURLToPath(new URL('../../kit-android/build.gradle.kts', import.meta.url));
+const KIT_GRADLE = join(KIT_ANDROID, 'build.gradle.kts');
 
 /**
  * The classpath translated code is checked against: android.jar, core's widgets AAR, the plugins'

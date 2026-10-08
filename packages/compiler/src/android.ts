@@ -17,6 +17,7 @@ import type { Reach } from './reach.ts';
 import type { Properties } from './properties.ts';
 import { SourceLines } from './source-lines.ts';
 import { androidManifest, appResourcesDir, copyAndroidFonts, pluginManifests } from './app-resources.ts';
+import { KIT_ANDROID } from './paths.ts';
 
 export interface AndroidBuild {
   app: string;
@@ -66,7 +67,7 @@ export interface AndroidBuild {
 /** The flexbox react-nativescript-navigation's FrameNavigatorView renders a screen into. */
 const REACT_SCREEN_CONTENT = { flexGrow: '1', flexDirection: 'column', width: '100%', height: '100%' };
 
-const kit = resolve(dirname(new URL(import.meta.url).pathname), '../../kit-android');
+const kit = KIT_ANDROID;
 const say = (m: string) => console.log(`[ns-native] ${m}`);
 
 export async function writeAndroid(b: AndroidBuild): Promise<void> {

@@ -1,1 +1,9 @@
-{ "private": true, "type": "module" }
+{
+  "private": true,
+  "type": "module",
+  "description": "What the tests type their cases against, as an app's node_modules would hold it.",
+  "devDependencies": {
+    "@nativescript/core": "~9.1.0",
+    "@nativescript/types": "~9.0.0"
+  }
+}

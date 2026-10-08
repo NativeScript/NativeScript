@@ -44,11 +44,12 @@ import { appResourcesDir, iosDeploymentTarget, iosExtensionNames, iosExtensions,
 import { generateProject, iosDependencies, packageLines, podfile, productLines, PROJECT_MARKER, removePods, swiftPackages } from './ios-dependencies.ts';
 import { SourceLines } from './source-lines.ts';
 import { archive, automaticSigningSettings, findProfile, signingSettings, type ExportMethod } from './ios-signing.ts';
+import { KIT_APPLE } from './paths.ts';
 
 const args = process.argv.slice(2);
 const opt = (name: string, fallback?: string) => { const i = args.indexOf(name); return i >= 0 ? args[i + 1] : fallback; };
 const here = dirname(fileURLToPath(import.meta.url));
-const kit = resolve(here, '../../kit');
+const kit = KIT_APPLE;
 const app = resolve(args[0] ?? '.');
 const pkg = JSON.parse(readFileSync(join(app, 'package.json'), 'utf8'));
 const appDir = join(app, dirname(pkg.main ?? 'app/app.ts'));

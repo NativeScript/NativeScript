@@ -7,4 +7,4 @@ if (major < 23 || (major === 23 && minor < 6)) {
 }
 
 await import('./strip-types.js');
-await import('../compiler/src/cli.ts');
+await import('../src/cli.ts');

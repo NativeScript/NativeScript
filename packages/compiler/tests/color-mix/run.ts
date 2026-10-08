@@ -13,10 +13,10 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { kotlinToolchain } from '../kotlin-toolchain.ts';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const kit = resolve(here, '../../kit/Sources/NativeScriptKit');
+const kit = resolve(here, '../../kit-apple/Sources/NativeScriptKit');
 const kitAndroid = resolve(here, '../../kit-android/src/main/kotlin/org/nativescript/kit');
 const targets = process.argv.includes('--swift') ? ['swift'] : process.argv.includes('--kotlin') ? ['kotlin'] : ['swift', 'kotlin'];
-const fromCore = createRequire(resolve(here, '../../recipes-vue/node_modules/@nativescript/core/package.json'));
+const fromCore = createRequire(resolve(here, '../node_modules/@nativescript/core/package.json'));
 const load = (name: string) => import(pathToFileURL(fromCore.resolve(name)).href);
 const { color, serializeRGB } = await load('@csstools/css-color-parser');
 const { parseComponentValue } = await load('@csstools/css-parser-algorithms');

@@ -13,12 +13,15 @@ import { evaluatedImports, evaluationOrder } from './modules.ts';
 import { kitIndexOptions } from './kit-index.ts';
 import { loadCoreNativeTables } from './natives/core-ios.ts';
 import { nativeTable } from './natives/symbols.ts';
+import { KIT_APPLE_SOURCES } from './paths.ts';
 
 export interface KitOptions {
   /** `packages/core` of the NativeScript repository. */
   core: string;
   /** Core as published (`node_modules/@nativescript/core`): the declarations of the modules not compiled. */
   declarations: string;
+  /** `@nativescript/types-ios` (its `index.d.ts` and `lib/ios`), where none is installed beside the declarations (core's own repository). */
+  typesIos?: string;
   /** Core's files to compile, relative to `core`: a file, or a folder ending in `/` for everything in it. */
   modules: string[];
   /**
@@ -74,7 +77,7 @@ export interface KitResult {
   graph: KitGraph;
 }
 
-const KIT = resolve(import.meta.dirname, '../../kit/Sources/NativeScriptKit');
+const KIT = KIT_APPLE_SOURCES;
 const header = (imports: Iterable<string> = []) => `// Generated from @nativescript/core by tools/native-kit: edit core, not this file.\nimport Foundation\nimport UIKit\n${[...imports].sort().map((m) => `import ${m}\n`).join('')}\n`;
 
 /** The iOS files of a module list: a platform's file over the shared one, no tests, no other platform. */
@@ -123,6 +126,9 @@ export function generateKit(o: KitOptions): KitResult {
       if (dirname(dir) === dir) return join(modules, pkg);
     }
   };
+  // Without the iOS typings every native call would be untyped: no kit at all rather than that one.
+  const typesIos = o.typesIos ?? packageDir('@nativescript/types-ios');
+  if (!existsSync(join(typesIos, 'index.d.ts'))) throw new Error(`no @nativescript/types-ios at ${typesIos}: install it beside the declarations, or pass typesIos`);
   // A package's files by path, as `npm/<package>/<file>`; the file importing the package gives.
   const packageFiles = new Map<string, string>();
   const packageEntries = new Map<string, string>();
@@ -185,9 +191,9 @@ export function generateKit(o: KitOptions): KitResult {
   });
   // The iOS typings core references beyond types-ios' common set (Symbols, CoreText…), as types-ios publishes them.
   const references = join(core, 'references.d.ts');
-  const referenced = existsSync(references) ? [...readFileSync(references, 'utf8').matchAll(/types-ios\/src\/(lib\/ios\/[^"]+\.d\.ts)/g)].map((m) => join(packageDir('@nativescript/types-ios'), m[1])).filter(existsSync) : [];
+  const referenced = existsSync(references) ? [...readFileSync(references, 'utf8').matchAll(/types-ios\/src\/(lib\/ios\/[^"]+\.d\.ts)/g)].map((m) => join(typesIos, m[1])).filter(existsSync) : [];
   // Core's index (not compiled itself) gives the functions an app imports from `@nativescript/core`.
-  const roots = [...compiled, join(core, 'index.ts'), join(packageDir('@nativescript/types-ios'), 'index.d.ts'), ...referenced, join(o.declarations, 'global-types.d.ts'),
+  const roots = [...compiled, join(core, 'index.ts'), join(typesIos, 'index.d.ts'), ...referenced, join(o.declarations, 'global-types.d.ts'),
     ...['objc!NativeScriptUtils.d.ts', 'objc!MaterialComponents.d.ts'].map((t) => join(o.declarations, 'platforms/ios/typings', t)).filter(existsSync)];
   const program = ts.createProgram(roots, options, host);
   // Core's own native code (TNSWidgets, NativeScriptUtils…), as installed with the declarations: what the kit links.

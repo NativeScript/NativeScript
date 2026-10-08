@@ -9,14 +9,15 @@
   },
   "files": [
     "bin/",
-    "compiler/src/",
-    "kit/Package.swift",
-    "kit/Sources/",
+    "src/",
+    "kit-apple/Package.swift",
+    "kit-apple/Sources/",
+    "kit-apple/Bindings/",
     "kit-android/build.gradle.kts",
     "kit-android/gradlew",
     "kit-android/gradle/",
     "kit-android/src/",
-    "CLI.md"
+    "docs/CLI.md"
   ],
   "engines": {
     "node": ">=23.6.0"
@@ -27,5 +28,10 @@
     "svelte": "^4.2.20",
     "typescript": "~5.9.0"
   },
-  "license": "Apache-2.0"
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/NativeScript/NativeScript.git",
+    "directory": "packages/compiler"
+  }
 }

@@ -11,23 +11,23 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, wri
 import { basename, dirname, join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
-import { createProgram } from '../../compiler/src/program.ts';
-import { Translator } from '../../compiler/src/swift.ts';
-import { Translator as KotlinTranslator } from '../../compiler/src/kotlin.ts';
-import { SourceLines } from '../../compiler/src/source-lines.ts';
-import { collectProperties } from '../../compiler/src/properties.ts';
-import { addInterfaces, translateModules } from '../../compiler/src/modules.ts';
-import { addKotlinInterfaces, translateKotlinModules } from '../../compiler/src/kotlin-modules.ts';
-import ts from '../../compiler/node_modules/typescript/lib/typescript.js';
+import { createProgram } from '../../src/program.ts';
+import { Translator } from '../../src/swift.ts';
+import { Translator as KotlinTranslator } from '../../src/kotlin.ts';
+import { SourceLines } from '../../src/source-lines.ts';
+import { collectProperties } from '../../src/properties.ts';
+import { addInterfaces, translateModules } from '../../src/modules.ts';
+import { addKotlinInterfaces, translateKotlinModules } from '../../src/kotlin-modules.ts';
+import ts from 'typescript';
 import { kotlinToolchain } from '../kotlin-toolchain.ts';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = resolve(here, '../..');
-const kit = join(root, 'kit/Sources/NativeScriptKit');
+const kit = join(root, 'kit-apple/Sources/NativeScriptKit');
 const kitAndroid = join(root, 'kit-android/src/main/kotlin/org/nativescript/kit');
 const build = process.env.NS_DIFF_BUILD ?? join(tmpdir(), 'ns-native-diff');
-// Any NativeScript app's node_modules: the cases are typed by core and the ES library like an app.
-const modulesDir = process.env.NS_DIFF_MODULES ?? join(root, 'recipes-vue/node_modules');
+// The cases are typed by core and the ES library as an app's are (tests/package.json).
+const modulesDir = process.env.NS_DIFF_MODULES ?? join(root, 'tests/node_modules');
 const args = process.argv.slice(2).filter((a) => !a.startsWith('--'));
 const keep = process.argv.includes('--keep');
 const targets = process.argv.includes('--swift') ? ['swift'] : process.argv.includes('--kotlin') ? ['kotlin'] : ['swift', 'kotlin'];

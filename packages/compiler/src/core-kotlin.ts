@@ -1,14 +1,14 @@
 import ts from 'typescript';
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { isCoreDeclaration, unappliedProperty } from './core.ts';
 import { kitExtends, kitMember, readNames, type KitMember, type KitType } from './kit-index.ts';
 import { KIT_NAMES_ANDROID, kotlinString, numberLiteral, splitTopLevel, type KotlinCore, type Translator } from './kotlin.ts';
+import { KIT_ANDROID } from './paths.ts';
 
 /** The pseudo-type whose members are kit-android's public top-level functions (`getRootLayout`). */
 const TOP_LEVEL = '';
-export const KIT = fileURLToPath(new URL('../../kit-android/src/main/kotlin/org/nativescript/kit', import.meta.url));
+export const KIT = join(KIT_ANDROID, 'src/main/kotlin/org/nativescript/kit');
 const NATIVE_MEMBERS = new Set(['android', 'nativeView', 'nativeViewProtected']);
 /** View methods whose arguments core reads as plain script objects. */
 const SCRIPT_OBJECTS = new Set(['animate', 'createAnimation', 'open', 'close', 'openShadeCover', 'closeShadeCover', 'showModal', 'closeModal']);

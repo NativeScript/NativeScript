@@ -9,13 +9,13 @@ import { mkdirSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { generateKit } from '../../compiler/src/kit-gen.ts';
-import { swiftString } from '../../compiler/src/swift.ts';
+import { generateKit } from '../../src/kit-gen.ts';
+import { swiftString } from '../../src/swift.ts';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = resolve(here, '../..');
-const kit = join(root, 'kit/Sources/NativeScriptKit');
-const modulesDir = process.env.NS_DIFF_MODULES ?? join(root, 'recipes-vue/node_modules');
+const kit = join(root, 'kit-apple/Sources/NativeScriptKit');
+const modulesDir = process.env.NS_DIFF_MODULES ?? join(root, 'tests/node_modules');
 const build = join(process.env.NS_DIFF_BUILD ?? join(tmpdir(), 'ns-native-diff'), 'packages');
 
 /** A package, the call each input goes through (Swift and JavaScript), and the inputs. */

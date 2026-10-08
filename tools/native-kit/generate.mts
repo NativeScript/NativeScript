@@ -3,13 +3,13 @@
  * NativeScript compiler, one Swift file per core file, plus a manifest of the
  * sources each was generated from.
  *
- *   node tools/native-kit/generate.mts --out <kit>/Sources/NativeScriptKit/Core [--check] [--report]
- *     [--compiler <@nativescript/compiler's compiler folder>] [--declarations <published @nativescript/core>]
+ *   node tools/native-kit/generate.mts [--out <kit>/Sources/NativeScriptKit/Core] [--check] [--report]
+ *     [--compiler <the compiler package>] [--declarations <published @nativescript/core>] [--types-ios <@nativescript/types-ios>]
  *
  * --check exits non-zero when the files in --out differ from what core generates (CI).
  * --report lists every construct the compiler does not translate yet, and writes nothing.
  * --partial writes what translates, leaving out each construct --report would list (listed on stderr).
- * The compiler is $NS_NATIVE_COMPILER or the installed @nativescript/compiler; the
+ * The compiler is $NS_NATIVE_COMPILER or packages/compiler, and --out its kit-apple's Core; the
  * declarations are core as built (dist/packages/core) unless given.
  */
 import { execFileSync } from 'node:child_process';
@@ -24,18 +24,19 @@ const option = (name: string, fallback?: string) => {
 	const i = args.indexOf(name);
 	return i >= 0 ? args[i + 1] : fallback;
 };
-const out = option('--out');
+const compiler = resolve(option('--compiler', process.env.NS_NATIVE_COMPILER ?? join(root, 'packages/compiler')));
+const out = option('--out', join(compiler, 'kit-apple/Sources/NativeScriptKit/Core'));
 const check = args.includes('--check');
 const report = args.includes('--report');
 const partial = args.includes('--partial');
-const compiler = resolve(option('--compiler', process.env.NS_NATIVE_COMPILER ?? join(root, 'node_modules/@nativescript/compiler/compiler')));
 const declarations = resolve(option('--declarations', join(root, 'dist/packages/core')));
-if (!out && !report) throw new Error('--out <kit>/Sources/NativeScriptKit/Core is required');
+// This repository's iOS typings, unless the declarations come with their own (published core in an app's node_modules).
+const typesIos = option('--types-ios', option('--declarations') ? undefined : join(root, 'packages/types-ios/src'));
 if (!existsSync(join(compiler, 'src/kit-gen.ts'))) throw new Error(`${compiler}: not the NativeScript compiler (--compiler or NS_NATIVE_COMPILER)`);
 if (!existsSync(join(declarations, 'index.d.ts'))) throw new Error(`${declarations}: no core declarations (build core, or --declarations)`);
 
 const { generateKit } = await import(join(compiler, 'src/kit-gen.ts'));
-const result = generateKit({ core, declarations, modules: ios.compile, counterparts: ios.counterparts, moot: ios.moot, identities: ios.identities, packages: ios.packages, report: report || partial });
+const result = generateKit({ core, declarations, typesIos, modules: ios.compile, counterparts: ios.counterparts, moot: ios.moot, identities: ios.identities, packages: ios.packages, report: report || partial });
 if (partial && result.errors.length) console.error(result.errors.join('\n'));
 if (report) {
 	console.log(result.errors.join('\n') || 'every listed module translates');

@@ -1,14 +1,10 @@
 build/
-compiler/node_modules/
-kit/.build/
-kit/.swiftpm/
-kit/Examples/Recipes/build/
-kit/Examples/Recipes/*.xcodeproj
-kit/Examples/Recipes/compare/
-*/platforms/
-*/hooks/
-*/node_modules/
-*/node_modules
+node_modules/
+.cache/
+# Generated from @nativescript/core by tools/native-kit (nx run compiler:kit): never committed.
+kit-apple/Sources/NativeScriptKit/Core/
+kit-apple/.build/
+kit-apple/.swiftpm/
 kit-android/build/
 kit-android/.gradle/
 kit-android/.kotlin/
