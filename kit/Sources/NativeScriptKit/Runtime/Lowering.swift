@@ -378,6 +378,29 @@ private func regExp(_ pattern: Any?, _ flags: String) throws -> JSRegExp {
     return try JSRegExp(jsToString(pattern), flags)
 }
 
+/// A number's methods read by name from untyped code (`handle.toString()` where `handle` is `any`).
+func jsNumberMethod(_ x: Double, _ key: String) -> JSMethod? {
+    let optional = { (args: [Any?], i: Int) -> Double? in jsIsNullish(jsArg(args, i)) ? nil : jsToNumber(jsArg(args, i)) }
+    switch key {
+    case "toString": return { _, a in optional(a, 0).map { jsNumberToString(x, radix: $0) } ?? jsNumberToString(x) }
+    case "toLocaleString": return { _, _ in jsNumberToString(x) }
+    case "valueOf": return { _, _ in x }
+    case "toFixed": return { _, a in jsToFixed(x, optional(a, 0) ?? 0) }
+    case "toPrecision": return { _, a in jsToPrecision(x, optional(a, 0)) }
+    case "toExponential": return { _, a in jsToExponential(x, optional(a, 0)) }
+    default: return nil
+    }
+}
+
+/// A boolean's methods read by name from untyped code.
+func jsBooleanMethod(_ b: Bool, _ key: String) -> JSMethod? {
+    switch key {
+    case "toString", "toLocaleString": return { _, _ in b ? "true" : "false" }
+    case "valueOf": return { _, _ in b }
+    default: return nil
+    }
+}
+
 /// A string's methods read by name from untyped code (`value.split('/')` where `value` is `any`): the common ones.
 func jsStringMethod(_ s: String, _ key: String) -> JSMethod? {
     let number = { (args: [Any?], i: Int) -> Double? in jsIsNullish(jsArg(args, i)) ? nil : jsToNumber(jsArg(args, i)) }

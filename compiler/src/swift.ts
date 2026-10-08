@@ -1865,7 +1865,7 @@ ${members.join('\n')}
   }
 
   /** `JSDynamic`: the object's keys and members by name, for printing, JSON and untyped access. */
-  private dynamicMembers(fields: { name: string; type: string }[], className: string | null, override: boolean, methods: { name: string; type: string; available?: number }[] = [], symbols: { key: string; member: string; type: string }[] = [], expando = false, raw = new Set<string>()): string[] {
+  private dynamicMembers(fields: { name: string; type: string }[], className: string | null, override: boolean, methods: { name: string; type: string; available?: number }[] = [], symbols: { key: string; member: string; type: string }[] = [], expando = false, raw = new Set<string>(), accessors: { name: string; get: string | null; set: string | null }[] = []): string[] {
     const o = override ? 'override ' : '';
     const keys = fields.map((f) => (f.type.endsWith('?') ? `(self.${ident(f.name)} == nil ? [] : [${swiftString(f.name)}])` : `[${swiftString(f.name)}]`));
     const lines = [
@@ -1877,6 +1877,7 @@ ${members.join('\n')}
       '            switch key {',
       ...fields.map((f) => `            case ${swiftString(f.name)}: return ${raw.has(f.name) ? `jsExpandoGet(self, ${swiftString(f.name)})` : isFunctionType(f.type.replace(/^\((.*)\)[?!]$/, '$1')) ? this.boxedField(`self.${ident(f.name)}`, f.type) : this.untypedEnum(`self.${ident(f.name)}`, f.type)}`),
       ...symbols.map((f) => `            case ${f.key}: return ${f.member}`),
+      ...accessors.map((a) => `            case ${swiftString(a.name)}: return ${a.get ?? 'nil'}`),
       ...methods.filter((m) => !fields.some((f) => f.name === m.name)).map((m) => m.available
         ? `            case ${swiftString(m.name)}: if #available(iOS ${m.available}, *) { return ${this.boxFunction(`self.${ident(m.name)}`, m.type)} } else { return nil }`
         : `            case ${swiftString(m.name)}: return ${this.boxFunction(`self.${ident(m.name)}`, m.type)}`),
@@ -1887,6 +1888,7 @@ ${members.join('\n')}
       '            switch key {',
       ...fields.map((f) => `            case ${swiftString(f.name)}: ${raw.has(f.name) ? `jsExpandoSet(self, ${swiftString(f.name)}, newValue)` : `self.${ident(f.name)} = ${this.fromAny('newValue', f.type)}`}`),
       ...symbols.map((f) => `            case ${f.key}: ${f.member} = ${this.fromAny('newValue', f.type)}`),
+      ...accessors.filter((a) => a.set).map((a) => `            case ${swiftString(a.name)}: ${a.set}`),
       `            default: ${override ? 'super[jsKey: key] = newValue' : expando ? 'jsExpandoSet(self, key, newValue)' : 'break'}`,
       '            }',
       '        }',
@@ -3086,6 +3088,7 @@ ${members.join('\n')}
       // A class Swift gave `init()` only while it declared no other.
       if (!ctor && !fieldInits.length) lines.push('    init() {}');
     }
+    const dynAccessors: { name: string; get: string | null; set: string | null }[] = [];
     // Accessors pair into one property.
     const accessors = new Map<string, { get?: ts.GetAccessorDeclaration; set?: ts.SetAccessorDeclaration }>();
     for (const m of cls.members) {
@@ -3140,6 +3143,13 @@ ${members.join('\n')}
           : `        set {\n            ${value}${body.slice(1)}`);
       }
       lines.push(`    ${mods}var ${ident(n)}: ${declared} {`, ...parts, '    }');
+      // A plugin's objects are read untyped too (`navigator.gpu.native`): their accessors by name.
+      const own = (a.get ?? a.set)!;
+      if (this.pluginFiles.has(cls.getSourceFile().fileName) && !isStatic(own) && !overKit && !this.symbolMember(own.name)) {
+        const getThrows = !!a.get && this.throwsInfo.fn(a.get) && !reported;
+        const read = getThrows ? `(jsReported { try self.${ident(n)} } ?? nil)` : `self.${ident(n)}`;
+        dynAccessors.push({ name: n, get: a.get ? this.convert(read, getThrows ? optionalType(declared.replace(/!$/, '?')) : declared, 'Any?') : null, set: a.set ? `self.${ident(n)} = ${declared.endsWith('!') ? this.fromAny('newValue', declared.replace(/!$/, '?')) : this.fromAnyCode('newValue', declared, true)}` : null });
+      }
     }
     // A view class's type selector: its `@CSSType` name, else its class name, as core's `cssType` falls back to `typeName`.
     if (isView) {
@@ -3254,7 +3264,7 @@ ${members.join('\n')}
     lines.push(...witnesses);
     // Library mode: a registered property's value reaches its accessor as it is, which converts it (`col = "1"`).
     const raw = new Set(this.library ? fields.filter((f) => this.properties?.isRegistered(cls, f.name) || this.properties?.isRegisteredAnywhere(f.name)).map((f) => f.name) : []);
-    if (!isError) lines.push(...this.dynamicMembers(fields, name, !!appBase || !!kitRoot, dynMethods, symbolFields, expando, raw));
+    if (!isError) lines.push(...this.dynamicMembers(fields, name, !!appBase || !!kitRoot, dynMethods, symbolFields, expando, raw, dynAccessors));
     // Library mode: the class's `name`, which a static method reads of the class it is called on.
     if (this.library && !this.errorBased(cls)) lines.push(`    ${appBase ? 'override ' : ''}class var jsName: String { ${swiftString(cls.name!.text)} }`);
     if (symbolFields.length) conformances.push('JSSymbolKeyed');
