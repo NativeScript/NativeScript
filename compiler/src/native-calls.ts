@@ -113,11 +113,11 @@ export class NativeAPI {
 
   type(t: ts.Type): string | null {
     const sym = t.aliasSymbol ?? t.getSymbol();
-    const native = this.symbolModule(sym);
-    if (!native) return null;
     // A member's own type (`UIHingeStatus.Closed`): its enum's, found through the declaration where the symbol has no parent (a `declare const enum` of the app's).
-    const enumDecl = sym!.flags & ts.SymbolFlags.EnumMember && sym!.valueDeclaration && ts.isEnumDeclaration(sym!.valueDeclaration.parent) ? sym!.valueDeclaration.parent : null;
-    const enumOfLiteral = sym!.flags & ts.SymbolFlags.EnumMember ? this.symbolModule((sym as any).parent ?? (enumDecl && this.t.checker.getSymbolAtLocation(enumDecl.name))) : null;
+    const enumDecl = sym && sym.flags & ts.SymbolFlags.EnumMember && sym.valueDeclaration && ts.isEnumDeclaration(sym.valueDeclaration.parent) ? sym.valueDeclaration.parent : null;
+    const enumOfLiteral = sym && sym.flags & ts.SymbolFlags.EnumMember ? this.symbolModule((sym as any).parent ?? (enumDecl && this.t.checker.getSymbolAtLocation(enumDecl.name))) : null;
+    const native = enumOfLiteral ?? this.symbolModule(sym);
+    if (!native) return null;
     const en = enumOfLiteral ? lookupEnum(enumOfLiteral.module, enumOfLiteral.name) : t.flags & ts.TypeFlags.EnumLike || sym!.flags & ts.SymbolFlags.Enum ? lookupEnum(native.module, native.name) : undefined;
     if (en !== undefined) {
       this.typeAvailable(en);
@@ -547,7 +547,9 @@ export class NativeAPI {
     const list = [this.argList(args, m.labels, m.params), ...defaults].filter(Boolean).join(', ');
     const target = r.isStatic ? this.className(cls!) : recv;
     const code = isolated(m.kind === 'init' ? `${target}(${list})` : `${target}.${m.swift}(${list})`, m);
-    const result = this.errorCall(code, m, e);
+    let result = this.errorCall(code, m, e);
+    // `NSNumber.numberWithLong(n)` where TypeScript reads a number: the number it holds.
+    if (m.kind === 'init' && ['Double', 'String', 'Bool'].includes(this.t.typeOf(e))) result = this.fromSwift(result, m.returns, e);
     // A chain that stops before the call gives undefined, as a number, string or boolean reads it.
     const tsType = this.t.typeOf(e);
     return (chained || ts.isOptionalChain(e)) && !this.keepOptional.has(e) && ['Bool', 'Double', 'String'].includes(tsType) ? this.t.undefinedAs(result, tsType) : result;
@@ -1251,7 +1253,7 @@ export class NativeAPI {
 
   /** A native struct by its Swift name (`CGRect`, `CATransform3D`): a value Swift compares by value. */
   isStructType(swift: string): boolean {
-    if (!this.modules.size || !/^[A-Z][\w.]*$/.test(swift) || /^(Double|String|Bool|Void|Never|Signal|Emitter|EventData|Router)$|^JS/.test(swift)) return false;
+    if (!this.modules.size || !/^(__)?[A-Z][\w.]*$/.test(swift) || /^(Double|String|Bool|Void|Never|Signal|Emitter|EventData|Router)$|^JS/.test(swift)) return false;
     for (const m of this.searchModules()) if (Object.values(nativeTable(m).structs).some((x) => x.swift === swift)) return true;
     return false;
   }
@@ -1274,7 +1276,7 @@ export class NativeAPI {
 
   /** The raw type of a type of named constants (`UIAccessibilityTraits` holds a UInt64), or null. */
   private typedConstantsRaw(swift: string): string | null {
-    if (!this.modules.size || !/^[A-Z][\w.]*$/.test(swift)) return null;
+    if (!this.modules.size || !/^(__)?[A-Z][\w.]*$/.test(swift)) return null;
     for (const m of this.searchModules()) {
       const e = Object.values(nativeTable(m).enums).find((x) => x.swift === swift && x.kind === 'typedConstants');
       if (e) return e.raw;
@@ -1295,7 +1297,7 @@ export class NativeAPI {
 
   /** The raw type of a typed-constants struct (`UIFont.Weight` holds a CGFloat), or null. */
   private constantsRaw(swift: string): string | null {
-    if (!this.modules.size || !/^[A-Z][\w.]*$/.test(swift)) return null;
+    if (!this.modules.size || !/^(__)?[A-Z][\w.]*$/.test(swift)) return null;
     for (const m of this.searchModules()) for (const x of Object.values(nativeTable(m).enums)) if (x.swift === swift && x.kind === 'typedConstants' && x.raw) return x.raw;
     return null;
   }
@@ -1316,7 +1318,7 @@ export class NativeAPI {
 
   /** A native enum or option set by its Swift name, from the modules the program uses. */
   private enumInfo(swift: string): { raw: string; options: boolean } | null {
-    if (!this.modules.size || !/^[A-Z][\w.]*$/.test(swift) || /^(Double|String|Bool|Void|Never|Signal|Emitter|EventData|Router)$|^JS/.test(swift)) return null;
+    if (!this.modules.size || !/^(__)?[A-Z][\w.]*$/.test(swift) || /^(Double|String|Bool|Void|Never|Signal|Emitter|EventData|Router)$|^JS/.test(swift)) return null;
     if (!this.enumTypes.has(swift)) {
       let found: { raw: string; options: boolean } | null = null;
       for (const m of this.searchModules()) {

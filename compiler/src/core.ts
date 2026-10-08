@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { kitExtends, kitIndex, kitMember, type KitMember, type KitType } from './kit-index.ts';
-import type { Translator } from './swift.ts';
+import { splitTopLevel, type Translator } from './swift.ts';
 
 export const KIT = fileURLToPath(new URL('../../kit/Sources/NativeScriptKit', import.meta.url));
 
@@ -271,7 +271,8 @@ export class CoreAPI {
     const pluginOwn = (t.resolve(left.name)?.declarations ?? []).some((d) => KIT_PLUGINS.some((p) => d.getSourceFile().fileName.includes(`/node_modules/${p}/`)));
     if (!owner.isStatic && this.isView(owner.name) && (!kitMember(this.index, owner.name, name) || (this.isViewProperty(owner.name, name) && !pluginOwn))) {
       if (!this.isViewProperty(owner.name, name)) unappliedProperty(t, left.name, `${owner.name}.${name}`, 'NativeScriptKit');
-      return `${recv}.set(${JSON.stringify(name)}, ${t.coerce(value, 'Any?')})`;
+      // Core's `set` runs the property's change handlers, whose errors are reported as core reports them.
+      return `jsReport { try ${recv}.set(${JSON.stringify(name)}, ${t.coerce(value, 'Any?')}) }`;
     }
     const m = this.member(owner.name, name, left);
     // A kit member typed `Any?` holds what core reads as a plain script object (`TouchManager.animations`).
@@ -425,6 +426,16 @@ export class CoreAPI {
       return args.some((a) => t.typeOf(a) !== 'Double') ? `Color(${list})` : `(try! Color(${list}))`;
     }
     if (sym.name === 'Animation') return `Animation(${args.map((a) => this.scriptValue(a)).join(', ')})`;
+    // The arguments as the kit's initializer takes them (`ImageSource(_ nativeSource: UIImage!)` for core's `nativeSource?: any`).
+    const params = (this.index.get(kitName)?.members.get('init') ?? []).map((m) => ((m.params ?? '').trim() ? splitTopLevel(m.params!) : [])).find((ps) => ps.length >= args.length && !args.some(ts.isSpreadElement));
+    if (params && args.length && params.every((p) => p.includes(':'))) {
+      return `${kitName}(${args.map((a, k) => {
+        const p = params[k];
+        const label = p.slice(0, p.indexOf(':')).trim().split(/\s+/)[0];
+        const type = p.slice(p.indexOf(':') + 1).replace(/=.*$/, '').trim().replace(/^@escaping\s+/, '').replace(/!$/, '?');
+        return `${label === '_' ? '' : `${label}: `}${t.coerce(a, type)}`;
+      }).join(', ')})`;
+    }
     return `${kitName}(${t.args(e).join(', ')})`;
   }
 

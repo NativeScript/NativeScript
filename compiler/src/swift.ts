@@ -117,7 +117,7 @@ function hasTopLevelArrow(t: string): boolean {
   return false;
 }
 
-export const CF_CLASSES = new Set(['CGPath', 'CGMutablePath', 'CGColor', 'CGImage', 'CGContext', 'CGColorSpace', 'CGGradient', 'CTFont', 'CTLine', 'CTFrame', 'CFString', 'CFData', 'CFRunLoop', 'CFRunLoopTimer', 'CFRunLoopSource', 'CFRunLoopObserver']);
+export const CF_CLASSES = new Set(['CGPath', 'CGMutablePath', 'CGColor', 'CGImage', 'CGContext', 'CGColorSpace', 'CGGradient', 'CGFont', 'CTFont', 'CTLine', 'CTFrame', 'CFString', 'CFData', 'CFRunLoop', 'CFRunLoopTimer', 'CFRunLoopSource', 'CFRunLoopObserver']);
 
 /** An optional value type: `T?`, `(…)?`, but not a function returning an optional. */
 const isOptional = (t: string) => t.endsWith('?') && !hasTopLevelArrow(t);
@@ -3069,7 +3069,7 @@ ${members.join('\n')}
       this.indent = '    ';
       lines.push(`    ${sameAsBase ? 'override ' : ''}init(${this.params(ctor, false)})${throws} {`, ...body, '    }');
     } else if (fieldInits.length || this.throwsInfo.initThrows(cls)) {
-      const baseThrows = !!appBase && this.throwsInfo.initThrows(appBase);
+      const baseThrows = appBase ? this.throwsInfo.initThrows(appBase) : !!kitRoot && this.core.initThrows(kitRoot);
       if (baseCtor) lines.push(`    override init(${this.params(baseCtor, false)})${baseThrows || this.throwsInfo.initThrows(cls) ? ' throws' : ''} {`, `        ${baseThrows ? 'try ' : ''}super.init(${this.readsArguments(baseCtor) ? '__arguments' : baseCtor.parameters.map((p) => ident((p.name as ts.Identifier).text)).join(', ')})`, ...fieldInits, '    }');
       else lines.push(`    ${appBase || kitRoot ? 'override ' : ''}init()${this.throwsInfo.initThrows(cls) ? ' throws' : ''} {`, ...(appBase || kitRoot ? [`        ${baseThrows ? 'try ' : ''}super.init()`] : []), ...fieldInits, '    }');
     }
@@ -3570,8 +3570,9 @@ ${members.join('\n')}
     // declares it, for the program's calls, and the kit's override passing the kit's arguments on to it.
     const own = this.signatureOf(m);
     const plain = (t: string) => t.replace(/^@escaping\s+/, '');
-    const sameTypes = own.params.length === parsed.length && own.params.every((p, k) => plain(p.type) === parsed[k].type) && (own.ret === ret || (own.ret === 'Void' && ret === 'Void'));
-    if (!sameTypes && (!throws || kit.throws) && !m.parameters.some((p) => p.dotDotDotToken)) {
+    // Only parameters that differ: Swift cannot tell apart two methods differing in their result alone.
+    const sameParams = own.params.length === parsed.length && own.params.every((p, k) => plain(p.type) === parsed[k].type);
+    if (!sameParams && (!throws || kit.throws) && !m.parameters.some((p) => p.dotDotDotToken)) {
       const name = ident(m.name.getText());
       const declared = this.func(m, name, overridesProgram ? 'override ' : '');
       const args = m.parameters.map((p, k) => parsed[k] ? this.convert(`__k${k}`, parsed[k].type, this.typeOf(p.name)) : (this.zero(this.typeOf(p.name)) ?? 'nil'));
@@ -3818,7 +3819,9 @@ ${members.join('\n')}
           const label = this.takeLabel();
           const body = this.nested(() => this.block(s.statement));
           const bind = this.nested(() => this.nested(() => this.bindTo(decl.name, `${it}.jsCurrent`, /^Any\??$/.test(this.typeOf(s.expression)) ? 'Any?' : '', mutable)));
-          return `${i}do {\n${i}    let ${it} = try ${js}\n${i}    defer { ${it}.jsClose() }\n${i}    ${label}while try ${it}.jsAdvance() {\n${bind}\n${i}        do ${body}\n${i}    }\n${i}}`;
+          // Lenient code holds a generator a method returns implicitly unwrapped: the loop runs on the generator itself.
+          const held = this.lenient && this.lenientRef(this.typeOf(s.expression)) !== this.typeOf(s.expression) && !js.endsWith('!');
+          return `${i}do {\n${i}    let ${it} = try ${js}${held ? '!' : ''}\n${i}    defer { ${it}.jsClose() }\n${i}    ${label}while try ${it}.jsAdvance() {\n${bind}\n${i}        do ${body}\n${i}    }\n${i}}`;
         });
       }
       const iterable = this.iterable(s.expression);
@@ -5839,11 +5842,13 @@ ${members.join('\n')}
     return !!decl && decl.getSourceFile().isDeclarationFile;
   }
 
-  /** A browser global only TypeScript's DOM library declares (`window`, `navigator`, `Blob`): the global object's property of that name, untyped. */
+  /** A browser global only TypeScript's DOM library declares, or nothing does (`window`, `navigator`, `Blob`): the global object's property of that name, untyped. */
   private isDomGlobal(e: ts.Node): boolean {
     if (this.library || !ts.isIdentifier(e) || (ts.isPropertyAccessExpression(e.parent) && e.parent.name === e) || ts.isTypeNode(e.parent)) return false;
     const decls = this.resolve(e)?.declarations ?? [];
-    return decls.length > 0 && decls.every((d) => /[\\/]lib\.(dom|webworker)[\w.]*\.d\.ts$/.test(d.getSourceFile().fileName) && (ts.isVariableDeclaration(d) || ts.isFunctionDeclaration(d)));
+    // A plugin's name nothing declares here (`window` where its own build had the DOM's typings): the global object's, undefined.
+    if (!decls.length) return this.pluginFiles.has(e.getSourceFile().fileName) && !this.isArguments(e) && !['undefined', 'NaN', 'Infinity'].includes(e.text);
+    return decls.every((d) => /[\\/]lib\.(dom|webworker)[\w.]*\.d\.ts$/.test(d.getSourceFile().fileName) && (ts.isVariableDeclaration(d) || ts.isFunctionDeclaration(d)));
   }
 
   private isGlobalThis(e: ts.Node): boolean {
@@ -7234,7 +7239,8 @@ ${members.join('\n')}
         const maybe = this.maybeUndefined(e.left);
         if (maybe && t === 'Any?') return `jsNullishCoalesce(${maybe} as Any?, ${this.coerce(e.right, 'Any?')})`;
         // TypeScript types `s ?? 1` as the string `s` is declared; a missing `s` gives the fallback as a string.
-        if (maybe) return `(${maybe} ?? ${t === 'String' && this.typeOf(e.right) !== 'String' ? this.str(e.right) : this.coerce(e.right, t)})`;
+        // Parenthesized: the optional may be a conditional (`x == nil ? nil : T(jsObject: x)`), which binds looser than `??`.
+        if (maybe) return `((${maybe}) ?? ${t === 'String' && this.typeOf(e.right) !== 'String' ? this.str(e.right) : this.coerce(e.right, t)})`;
         if (this.isAny(e.left)) return `jsNullishCoalesce(${l()}, ${this.coerce(e.right, 'Any?')})`;
         return `(${l()} ?? ${this.coerce(e.right, t)})`;
       }
@@ -7269,7 +7275,9 @@ ${members.join('\n')}
         // The left operand is evaluated once; the result is it, unwrapped or boxed as the result's type needs.
         // A falsy left operand of another type is undefined or null where the result is optional.
         const leftValue = leftType === t && !t.endsWith('?') && t !== 'Void' ? `jsPresent(${v})` : leftType === t || t === 'Any?' ? v : leftType === optionalType(t) ? `${v}!` : leftType === 'Any?' ? this.fromAny(v, t) : t === 'Bool' ? `jsTruthy(${v})`
-          : t.endsWith('?') && leftType.endsWith('?') && op === K.AmpersandAmpersandToken ? 'nil' : v;
+          : t.endsWith('?') && leftType.endsWith('?') && op === K.AmpersandAmpersandToken ? 'nil'
+          // A falsy object of another type than the result (`child && hosts.get(child)`) is a missing one.
+          : t.endsWith('?') && op === K.AmpersandAmpersandToken && this.isObjectRef(left) && leftType.replace(/[?!]$/, '') !== t.replace(/[?!]$/, '') ? 'nil' : v;
         // Lenient code: `a && a.b` where a is an object and the result is not: a falsy a is undefined, read as the result's type reads it.
         // An object result: a falsy object operand is missing, so the result is.
         if (this.lenient && op === K.AmpersandAmpersandToken && t !== 'Any?' && this.lenientRef(t) !== t && (leftType.endsWith('?') || this.lenientRef(leftType) !== leftType)) {

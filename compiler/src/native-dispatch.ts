@@ -1,4 +1,5 @@
 import ts from 'typescript';
+import { CF_CLASSES } from './swift.ts';
 import { lookupClass, lookupInit, nativeTable, type NativeClass, type NativeMethod, type NativeProperty, type SwiftType } from './natives/symbols.ts';
 
 /**
@@ -147,6 +148,8 @@ function toNative(code: string, type: SwiftType): string | null {
     value = t.startsWith('UnsafeMutable') ? `UnsafeMutablePointer(mutating: ${raw})` : raw;
   } else if (/^Unsafe/.test(t) || /^\(/.test(t)) return null;
   else if (t === 'Any' || t === 'AnyObject') value = `jsToNative(${code}) as ${t}`;
+  // A Core Foundation object (`CGFont`): Swift casts to one only unconditionally.
+  else if (CF_CLASSES.has(t)) value = `(jsToNative(${code}) as! ${t})`;
   else value = `(jsToNative(${code}) as${optional ? '?' : '!'} ${t})`;
   if (!optional) return value;
   return /\bas\? /.test(value) ? value : `(jsIsNullish(${code}) ? nil : ${value})`;
