@@ -390,11 +390,11 @@ export class CoreAPI {
       const p = kitParams[k];
       if (!listener && p && (ts.isArrowFunction(a) || ts.isFunctionExpression(a)) && !a.parameters.length && (t.checker.getContextualType(a)?.getCallSignatures()[0]?.getParameters().length ?? 0) === 0 && /->/.test(p) && !/\bthrows\b/.test(p) && /\(\s*\)\s*->/.test(p)) args[k] = t.callback(a);
     });
-    if (!listener) this.matchKitParams(e, kitParams, args);
+    const packed = !listener && this.matchKitParams(e, kitParams, args);
     // A rest parameter (`join(...paths)`), which the kit takes as one array.
     const restAt = (t.checker.getResolvedSignature(e)?.getDeclaration() as ts.SignatureDeclaration | undefined)?.parameters?.findIndex((p) => !!p.dotDotDotToken) ?? -1;
     const restType = restAt >= 0 ? /:\s*(JSArray<.*>)\s*$/.exec(kitParams[restAt] ?? '')?.[1] : undefined;
-    if (restType && !listener && !e.arguments.some(ts.isSpreadElement) && args.length >= restAt) args.splice(restAt, args.length - restAt, `${restType}([${args.slice(restAt).join(', ')}])`);
+    if (restType && !listener && !packed && !e.arguments.some(ts.isSpreadElement) && args.length >= restAt) args.splice(restAt, args.length - restAt, `${restType}([${args.slice(restAt).join(', ')}])`);
     return this.fromKit(`${recv}.${name}(${args.join(', ')})`, chained && m.type !== 'Void' ? m.type.replace(/\??$/, '?') : m.type, t.typeOf(e));
   }
 
@@ -404,14 +404,17 @@ export class CoreAPI {
    * (`on(event, (data) => …)` for `(EventData?) throws -> Void`), and the arguments from a
    * rest parameter on (`closeModal('done')`) as the array the kit's rest parameter is.
    */
-  private matchKitParams(e: ts.CallExpression, kitParams: string[], args: string[]): void {
+  /** Whether it packed a rest parameter's arguments. */
+  private matchKitParams(e: ts.CallExpression, kitParams: string[], args: string[]): boolean {
     const t = this.t;
     const decl = t.checker.getResolvedSignature(e)?.getDeclaration();
     const declared = decl && !ts.isJSDocSignature(decl) ? decl.parameters : undefined;
+    let packed = false;
     kitParams.forEach((p, k) => {
       const type = kitParamType(p);
       if (declared?.[k]?.dotDotDotToken && /^JSArray<Any\?>$/.test(type)) {
         args.splice(k, args.length - k, `JSArray<Any?>([${e.arguments.slice(k).map((a) => t.coerce(a, 'Any?')).join(', ')}])`);
+        packed = true;
         return;
       }
       const a = e.arguments[k];
@@ -426,6 +429,7 @@ export class CoreAPI {
         }
       }
     });
+    return packed;
   }
 
   /**

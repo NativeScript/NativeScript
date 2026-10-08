@@ -1,7 +1,7 @@
 import ts from 'typescript';
 import { CF_CLASSES, functionParts, optionalType, splitTopLevel, type Translator } from './swift.ts';
 import {
-  categoryModule, conformsTo, lookupClass, lookupConstant, lookupConstructor, lookupEnum, lookupFunction, lookupInit, lookupMember, lookupStruct, lookupTypealias, moduleOfDeclaration, nativeTable,
+  categoryModule, conformsTo, isSubframework, lookupClass, lookupConstant, lookupConstructor, lookupEnum, lookupFunction, lookupInit, lookupMember, lookupStruct, lookupTypealias, moduleOfDeclaration, nativeTable,
   type NativeMethod, type NativeProperty, type SwiftType,
 } from './natives/symbols.ts';
 
@@ -100,7 +100,7 @@ export class NativeAPI {
 
   /** The SDK frameworks among them, as Swift imports them. */
   sdkModules(): string[] {
-    return [...this.modules].filter((m) => /^[A-Z]\w*$/.test(m) && !m.startsWith('NSPlugin_')).sort();
+    return [...this.modules].filter((m) => /^[A-Z]\w*$/.test(m) && !m.startsWith('NSPlugin_') && !isSubframework(m)).sort();
   }
 
   /** The Swift type for a native TypeScript type (a class, protocol, struct or enum), or null. */

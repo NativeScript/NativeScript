@@ -104,6 +104,11 @@ function sdk() {
     build: execFileSync('xcrun', ['--sdk', 'iphonesimulator', '--show-sdk-build-version'], { encoding: 'utf8' }).trim(),
   };
 }
+/** A framework the SDK ships only for its umbrella to re-export (`UIUtilities` by UIKit): imported, it auto-links nothing. */
+export function isSubframework(module: string): boolean {
+  return existsSync(join(sdk().path, 'System', 'Library', 'SubFrameworks', `${module}.framework`));
+}
+
 // By the SDK's build too: a beta and its release candidate share a version and differ in API.
 const cacheDir = () => join(process.env.NS_NATIVE_TABLE_CACHE ?? join(COMPILER, '.cache'), `ios-${sdk().version}-${sdk().build}`);
 /** The layout tables are written in: availability of enums, escaping block parameters, optional protocol properties. */
