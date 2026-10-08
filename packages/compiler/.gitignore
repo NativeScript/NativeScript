@@ -8,3 +8,5 @@ kit-apple/.swiftpm/
 kit-android/build/
 kit-android/.gradle/
 kit-android/.kotlin/
+tests/app/hooks/
+tests/app/platforms/

@@ -420,7 +420,7 @@ if (clashes.length) writeFileSync(join(out, 'Sources', '__KitNames.swift'), `// 
 // Core's modules the app reaches, listed for the kit to run: nothing else names the others, so the link leaves them out.
 const appSwift = readdirSync(join(out, 'Sources')).filter((f) => f.endsWith('.swift') && f !== '__Entry.swift').map((f) => readFileSync(join(out, 'Sources', f), 'utf8')).join('\n');
 const closedWorld = coreClosedWorld(join(kit, 'Sources', 'NativeScriptKit'), appSwift + start);
-say(`core in this app: ${closedWorld.initializers.length} module initializers run, ${closedWorld.excluded.length} files left out`);
+say(`core in this app: ${closedWorld.initializers.length} module initializers run, ${args.includes('--whole-kit') ? 'every file compiled (--whole-kit)' : `${closedWorld.excluded.length} files left out`}`);
 const entryStart = start.replace('        CoreModules.initialize()\n', `        CoreModules.initializers = [\n${closedWorld.initializers.map((i) => `            ${i},\n`).join('')}        ]\n        CoreModules.initialize()\n`);
 writeFileSync(join(out, 'Sources', '__Entry.swift'), `// Compiled by ns-native: the app's entry and its CSS.\nimport NativeScriptKit\n\n@main\nenum ${name}App {\n    static func main() {\n${dispatch ? '        __NativeDispatch.install()\n' : ''}${native.bindings.map((b) => `        ${b.installer}.install()\n`).join('')}${entryStart}    }\n}\n\nlet appCSS = """\n${css.replace(/\\/g, '\\\\').replace(/"""/g, '\\"""')}"""\n\n// What core reads as \`~/package.json\`.\nlet appPackageJSON = """\n${appPackageJSON(app).replace(/\\/g, '\\\\').replace(/"""/g, '\\"""')}\n"""\n`);
 say(`${components.length} components and ${modules.length} modules from ${framework} compiled to Swift in ${Date.now() - started} ms → ${relative(process.cwd(), join(out, 'Sources'))}`);
@@ -441,7 +441,8 @@ const pluginLines = xcodegenLines(native, out);
 const kitSources = join(kit, 'Sources', 'NativeScriptKit');
 const core = installedCore(app);
 const coreModules = core ? coreNativeModules(core).map((m) => m.module) : [];
-const excluded = [...kitFilesUnreached(kitSources, readdirSync(join(out, 'Sources')).map((f) => readFileSync(join(out, 'Sources', f), 'utf8')).join('\n'), coreModules, new Set(closedWorld.excluded)), ...closedWorld.excluded];
+// `--whole-kit` compiles every file of the kit, however little of it the app reaches: a check that all of it builds.
+const excluded = args.includes('--whole-kit') ? [] : [...kitFilesUnreached(kitSources, readdirSync(join(out, 'Sources')).map((f) => readFileSync(join(out, 'Sources', f), 'utf8')).join('\n'), coreModules, new Set(closedWorld.excluded)), ...closedWorld.excluded];
 const coreNative = coreNativeProject(core ?? '', kitImports(kitSources, excluded, coreModules), out);
 const profile = opt('--provision') ? findProfile(opt('--provision')!) : null;
 const team = !profile && opt('--team-id') ? { id: opt('--team-id')!, method: opt('--export-method', 'debugging') as ExportMethod } : undefined;

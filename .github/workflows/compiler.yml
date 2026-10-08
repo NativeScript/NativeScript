@@ -52,6 +52,13 @@ jobs:
           path: packages/compiler/kit-apple/Sources/NativeScriptKit/Core
           if-no-files-found: error
 
+      - name: Upload the built core
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        with:
+          name: core-dist
+          path: dist/packages/core
+          if-no-files-found: error
+
   ios:
     name: Differential tests and the kit's build (iOS)
     needs: kit
@@ -72,6 +79,12 @@ jobs:
           name: kit-core
           path: packages/compiler/kit-apple/Sources/NativeScriptKit/Core
 
+      - name: Download the built core
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          name: core-dist
+          path: dist/packages/core
+
       - name: Install the compiler's dependencies
         working-directory: packages/compiler
         run: |
@@ -83,9 +96,10 @@ jobs:
         working-directory: packages/compiler
         run: node tests/diff/run.ts --swift
 
-      # The generated kit uses the newest iOS APIs behind availability checks, so this needs the newest Xcode.
+      # The kit builds only inside an app's project, beside core's native code (TNSWidgets, NativeScriptUtils…): a fixture app,
+      # with every file of the kit compiled. The generated kit uses the newest iOS APIs behind availability checks, so this needs the newest Xcode.
       - name: Build the kit
-        working-directory: packages/compiler/kit-apple
         run: |
+          command -v xcodegen >/dev/null || brew install xcodegen
           xcodebuild -version
-          xcodebuild -scheme NativeScriptKit -destination 'generic/platform=iOS Simulator' -quiet build
+          packages/compiler/tests/kit-build.sh dist/packages/core
