@@ -149,3 +149,22 @@ public func jsUnwrap<T>(_ value: T?, _ key: String, null: Bool = false) throws -
 public func jsReported<T>(_ body: () throws -> T) -> T? {
     do { return try body() } catch { jsReport { throw error }; return nil }
 }
+
+/// A loop's items from an expression that may throw: none when it does, the error reported.
+public func jsReportedItems<S: Sequence>(_ body: () throws -> S) -> [S.Element] {
+    jsReported { Array(try body()) } ?? []
+}
+
+public func jsReportedItems<S: Sequence>(_ body: () throws -> S?) -> [S.Element] {
+    guard let items = jsReported(body) ?? nil else { return [] }
+    return Array(items)
+}
+
+/// A loop's items from an untyped value: an iterable's elements, none for undefined or null, as Angular's `@for` takes them.
+public func jsItemsOf(_ value: Any?) throws -> [Any?] {
+    if jsIsNullish(value) { return [] }
+    let iterator = try jsIteratorOf(value)
+    var items: [Any?] = []
+    while try iterator.jsAdvance() { items.append(iterator.jsCurrent) }
+    return items
+}

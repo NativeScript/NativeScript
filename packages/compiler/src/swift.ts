@@ -2748,7 +2748,27 @@ ${members.join('\n')}
       else ts.forEachChild(n, visit);
     };
     for (const m of cls.members) if (!ts.isPropertyDeclaration(m) || m.initializer) ts.forEachChild(m, visit);
-    return found;
+    if (found) return true;
+    const member = cls.members.find((m) => ts.isPropertyDeclaration(m) && ts.isIdentifier(m.name) && m.name.text === name);
+    return !!member && this.writtenProperties().has(member);
+  }
+
+  private written: Set<ts.Declaration> | null = null;
+
+  /** Property declarations the program writes through any reference (`navigator.tabView = view`), not only `this`. */
+  private writtenProperties(): Set<ts.Declaration> {
+    if (this.written) return this.written;
+    const written = new Set<ts.Declaration>();
+    const note = (target: ts.Expression) => {
+      if (ts.isPropertyAccessExpression(target)) for (const d of this.checker.getSymbolAtLocation(target.name)?.declarations ?? []) written.add(d);
+    };
+    const visit = (n: ts.Node): void => {
+      if (ts.isBinaryExpression(n) && n.operatorToken.kind >= ts.SyntaxKind.FirstAssignment && n.operatorToken.kind <= ts.SyntaxKind.LastAssignment) note(n.left);
+      else if ((ts.isPrefixUnaryExpression(n) || ts.isPostfixUnaryExpression(n)) && (n.operator === ts.SyntaxKind.PlusPlusToken || n.operator === ts.SyntaxKind.MinusMinusToken)) note(n.operand);
+      ts.forEachChild(n, visit);
+    };
+    for (const f of this.sourceFiles) if (!f.isDeclarationFile) visit(f);
+    return (this.written = written);
   }
 
   componentMembers(cls: ts.ClassDeclaration, props: string[]): string[] {
@@ -4359,7 +4379,8 @@ ${members.join('\n')}
         const value = tuple ? `${tmp}.${k}` : elementType === 'Any?' && this.typeOf(target) !== 'Any?' ? this.fromAnyCode(`${tmp}.element(${k})`, this.typeOf(target), true) : `${tmp}[${k}]`;
         return `${this.lvalue(target)} = ${value}`;
       }).filter(Boolean);
-      return `do { let ${tmp} = ${this.tryPrefix(e.right)}${this.expr(e.right)}; ${assigns.join('; ')} }`;
+      // Typed as the tuple, so a literal takes its element's type (`[start, length] = [center, 0]`: 0 as a Double, not an Int).
+      return `do { let ${tmp}${tuple ? `: ${this.typeOf(e.right)}` : ''} = ${this.tryPrefix(e.right)}${this.expr(e.right)}; ${assigns.join('; ')} }`;
     }
     if (ts.isPostfixUnaryExpression(e) || ts.isPrefixUnaryExpression(e)) {
       const step = e.operator === ts.SyntaxKind.PlusPlusToken ? '+' : e.operator === ts.SyntaxKind.MinusMinusToken ? '-' : null;
@@ -6077,8 +6098,8 @@ ${members.join('\n')}
       // `xs?.find(…)` on a value Swift holds as present (a lenient array that starts empty): a plain call.
       const receiverType = this.typeOf(target);
       const q = callee.questionDotToken ? (receiverType.endsWith('?') || receiverType.endsWith('!') || ts.isOptionalChain(target) ? '?' : '') : receiverType.endsWith('?') || (ts.isCallExpression(target) && this.maybeUndefined(target)) ? '!' : '';
-      if (method === 'fill' && ts.isNewExpression(target) && ts.isIdentifier(target.expression) && target.expression.text === 'Array' && target.arguments?.length === 1 && e.arguments.length === 1) {
-        // `new Array(n).fill(v)`: n copies of v, typed as the array is declared (`const widths: number[] = …`).
+      if (method === 'fill' && this.isArrayConstruction(target) && target.arguments?.length === 1 && e.arguments.length === 1) {
+        // `new Array(n).fill(v)` or `Array(n).fill(v)`: n copies of v, typed as the array is declared (`const widths: number[] = …`).
         const context = this.checker.getContextualType(e);
         const declared = context ? this.type(context, e) : null;
         const at = t === 'JSArray<Any?>' && declared?.startsWith('JSArray<') ? declared : t;
@@ -6318,6 +6339,10 @@ ${members.join('\n')}
     const arg = (k: number) => e.arguments[k];
     const decl = this.resolve(callee)?.declarations?.[0];
     const lib = !decl || decl.getSourceFile().isDeclarationFile;
+    if (this.isArrayConstruction(e)) {
+      const made = this.newArray(e, this.typeOf(e), e.arguments);
+      if (made) return made;
+    }
     if (name === 'get' && e.arguments.length === 1 && this.symbolName(arg(0)) === 'Writable') return `${this.expr(arg(0))}.value`;
     if (name === 'navigate' && arg(0) && ts.isObjectLiteralExpression(arg(0))) return this.navigate(e);
     if (['$signal', 'ref', '$ref', 'signal', 'writable', '$writable'].includes(name) && lib) {
@@ -6990,6 +7015,29 @@ ${members.join('\n')}
     return `${t}.from(${this.coerce(a, 'Any?')})`;
   }
 
+  /** `new Array(…)`, or `Array(…)` called, which JavaScript treats the same. */
+  private isArrayConstruction(e: ts.Expression): e is ts.NewExpression | ts.CallExpression {
+    if (!(ts.isNewExpression(e) || ts.isCallExpression(e)) || !ts.isIdentifier(e.expression) || e.expression.text !== 'Array') return false;
+    return ts.isNewExpression(e) || this.isLibGlobal(e.expression);
+  }
+
+  /** An array constructed by the global `Array`, with or without `new`; null when `Array` is the program's own. */
+  private newArray(e: ts.NewExpression | ts.CallExpression, t: string, args: readonly ts.Expression[]): string | null {
+    // `new Array(n)` of a type holding undefined: n holes, each read as undefined.
+    if (args.length === 1 && this.typeOf(args[0]) === 'Double' && /^JSArray<(Any\?|.*\?)>$/.test(t)) return `${t}(Array(repeating: nil, count: Int(${this.toNumber(args[0])})))`;
+    if (!this.isLibGlobal(e.expression as ts.Identifier)) return null;
+    const el = t.replace(/^JSArray<(.*)>$/, '$1');
+    if (args.length !== 1) return `${t}([${args.map((a) => this.coerce(a, el)).join(', ')}])`;
+    if (this.typeOf(args[0]) !== 'Double') {
+      // One untyped value: a length or the one element, as it turns out at run time.
+      if (this.typeOf(args[0]) === 'Any?') return t === 'JSArray<Any?>' ? `jsNewArray(${this.expr(args[0])})` : `jsArrayOf(jsNewArray(${this.expr(args[0])})) { ${this.fromAny('$0', el)} }`;
+      return `${t}([${this.coerce(args[0], el)}])`;
+    }
+    // n empty slots: a number, string or boolean cannot hold undefined, so its zero stands in until written.
+    if (['Double', 'String', 'Bool'].includes(el)) return `${t}(Array(repeating: ${this.zero(el)}, count: Int(${this.expr(args[0])})))`;
+    throw this.error(e, `new Array of a length, of ${el} (empty slots need an optional element type)`);
+  }
+
   private newExpr(e: ts.NewExpression): string {
     if (ts.isParenthesizedExpression(e.expression)) {
       // `new (Cls as any)(…)`: the class itself constructed; a cast left in would be parenthesized again.
@@ -7081,19 +7129,9 @@ ${members.join('\n')}
       if (args[0] && this.typeOf(args[0]).replace(/!$/, '') === 'JSArrayBuffer') return `JSDataView(buffer: ${[this.expr(args[0]), ...rest].join(', ')})`;
       return `JSDataView.from(${[args[0] ? this.coerce(args[0], 'Any?') : 'nil', ...rest].join(', ')})`;
     }
-    // `new Array(n)` of a type holding undefined: n holes, each read as undefined.
-    if (name === 'Array' && args.length === 1 && this.typeOf(args[0]) === 'Double' && /^JSArray<(Any\?|.*\?)>$/.test(t)) return `${t}(Array(repeating: nil, count: Int(${this.toNumber(args[0])})))`;
-    if (name === 'Array' && this.isLibGlobal(callee as ts.Identifier)) {
-      const el = t.replace(/^JSArray<(.*)>$/, '$1');
-      if (args.length !== 1) return `${t}([${args.map((a) => this.coerce(a, el)).join(', ')}])`;
-      if (this.typeOf(args[0]) !== 'Double') {
-        // One untyped value: a length or the one element, as it turns out at run time.
-        if (this.typeOf(args[0]) === 'Any?') return t === 'JSArray<Any?>' ? `jsNewArray(${this.expr(args[0])})` : `jsArrayOf(jsNewArray(${this.expr(args[0])})) { ${this.fromAny('$0', el)} }`;
-        return `${t}([${this.coerce(args[0], el)}])`;
-      }
-      // n empty slots: a number, string or boolean cannot hold undefined, so its zero stands in until written.
-      if (['Double', 'String', 'Bool'].includes(el)) return `${t}(Array(repeating: ${this.zero(el)}, count: Int(${this.expr(args[0])})))`;
-      throw this.error(e, `new Array of a length, of ${el} (empty slots need an optional element type)`);
+    if (name === 'Array') {
+      const made = this.newArray(e, t, args);
+      if (made) return made;
     }
     const core = this.core.construct(e) ?? this.native.construct(e);
     if (core) return core;
@@ -7504,6 +7542,15 @@ ${members.join('\n')}
     return null;
   }
 
+  /** A method call or property read the iOS SDK declares (`userDefaults.objectForKey(key)`). */
+  private readsSdk(x: ts.Expression): boolean {
+    while (ts.isParenthesizedExpression(x)) x = x.expression;
+    const target = ts.isCallExpression(x) ? x.expression : x;
+    if (!ts.isPropertyAccessExpression(target)) return false;
+    const decl = this.checker.getSymbolAtLocation(target.name)?.declarations?.[0];
+    return !!decl && /[\\/]objc![^\\/]+\.d\.ts$/.test(decl.getSourceFile().fileName);
+  }
+
   /** Whether a value's type is a class the program declares (not the SDK's or the runtime's). */
   private programClass(e: ts.Expression): boolean {
     const t = this.checker.getNonNullableType(this.checker.getTypeAtLocation(e));
@@ -7547,6 +7594,10 @@ ${members.join('\n')}
     }
     // Lenient code holds an undefined or null number as NaN.
     if (this.lenient && (isNullish(b) && lt === 'Double' || isNullish(a) && rt === 'Double')) return `${negate ? '!' : ''}${this.expr(isNullish(b) ? a : b)}.isNaN`;
+    // An SDK read typed `any` (`userDefaults.objectForKey(key) !== null`): the runtime hands script Objective-C's nil as null.
+    if (strict && ((b.kind === K.NullKeyword && lt === 'Any?' && this.readsSdk(a)) || (a.kind === K.NullKeyword && rt === 'Any?' && this.readsSdk(b)))) {
+      return `${this.expr(b.kind === K.NullKeyword ? a : b)} ${negate ? '!=' : '=='} nil`;
+    }
     // An optional the read unwraps (a native property TypeScript declares non-null) is compared as it is.
     const tested = (x: ts.Expression) => this.expr(x).replace(/!$/, '');
     if (isNullish(b) && lt !== 'Any?') return `${tested(a)} ${negate ? '!=' : '=='} nil`;

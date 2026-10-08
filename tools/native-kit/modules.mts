@@ -7,6 +7,7 @@ export const ios = {
 	compile: [
 		'accessibility/',
 		'application/',
+		'application-settings/',
 		'color/',
 		'core-types/',
 		'css-mediaquery/',

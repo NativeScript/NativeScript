@@ -261,13 +261,15 @@ public final class Router {
             let page = try Page()
             page.route = route
             let owner = Owner(parent: nil)
+            // Shown before the component renders, as Angular's URL is current by activation: a navigation the
+            // component makes while rendering (a tab view filling its outlets) finds this route already there.
+            let entry = Entry(owner: owner, route: route)
+            outlet?.entries.append(entry)
             ActivatedRoute.current = route
             Page.building.append(page)
             let view = owner.run(make)
             Page.building.removeLast()
             if view !== page { page.content = view }
-            let entry = Entry(owner: owner, route: route)
-            outlet?.entries.append(entry)
             try page.on(Page.navigatedFromEvent, { [weak self, weak outlet] (data: EventData?) in
                 guard jsTruthy(data?[jsKey: "isBackNavigation"]) else { return }
                 owner.dispose()
@@ -340,11 +342,3 @@ public final class Router {
 /// A key of an options object script passes, nil when absent.
 private func field(_ object: Any?, _ key: String) -> Any? { object == nil ? nil : (try? jsGet(object, key)) ?? nil }
 
-/// A loop's items from an untyped value: an iterable's elements, none for undefined or null.
-private func jsItemsOf(_ value: Any?) throws -> [Any?] {
-    if jsIsNullish(value) { return [] }
-    let iterator = try jsIteratorOf(value)
-    var items: [Any?] = []
-    while try iterator.jsAdvance() { items.append(iterator.jsCurrent) }
-    return items
-}
