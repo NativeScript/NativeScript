@@ -37,11 +37,14 @@ export function untypedMembers(checker: ts.TypeChecker, files: readonly ts.Sourc
 interface Candidate { js: string; cls: NativeClass; depth: number }
 
 /** The Swift source of `__NativeDispatch`, or null when no plugin class has a member script uses untyped. */
-export function nativeDispatch(modules: string[], uses: Map<string, UntypedUse>, deploymentTarget: string): string | null {
+export function nativeDispatch(modules: string[], uses: Map<string, UntypedUse>, deploymentTarget: string, defined: Record<string, string[]> = {}): string | null {
   const candidates: Candidate[] = [];
   for (const module of modules) {
+    // A class its headers declare and its binary does not define is no class at run time.
+    const built = defined[module] ? new Set(defined[module]) : null;
     for (const [js, cls] of Object.entries(nativeTable(module).classes)) {
       if (cls.kind !== 'class' || cls.extension || cls.module !== module) continue;
+      if (built && !built.has(js)) continue;
       let depth = 0;
       for (let b = cls.base; b; b = lookupClass(module, b)?.base) depth++;
       candidates.push({ js, cls, depth });

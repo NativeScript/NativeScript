@@ -547,9 +547,7 @@ export class NativeAPI {
     const list = [this.argList(args, m.labels, m.params), ...defaults].filter(Boolean).join(', ');
     const target = r.isStatic ? this.className(cls!) : recv;
     const code = isolated(m.kind === 'init' ? `${target}(${list})` : `${target}.${m.swift}(${list})`, m);
-    let result = this.errorCall(code, m, e);
-    // `NSNumber.numberWithLong(n)` where TypeScript reads a number: the number it holds.
-    if (m.kind === 'init' && ['Double', 'String', 'Bool'].includes(this.t.typeOf(e))) result = this.fromSwift(result, m.returns, e);
+    const result = this.errorCall(code, m, e);
     // A chain that stops before the call gives undefined, as a number, string or boolean reads it.
     const tsType = this.t.typeOf(e);
     return (chained || ts.isOptionalChain(e)) && !this.keepOptional.has(e) && ['Bool', 'Double', 'String'].includes(tsType) ? this.t.undefinedAs(result, tsType) : result;
@@ -864,6 +862,8 @@ export class NativeAPI {
       if (b === 'Double' || b === 'TimeInterval') return optional(swiftType) && !tsType.endsWith('?') ? `${code}!` : code;
       return optional(swiftType) ? `${code}.map { Double($0) }${tsType.endsWith('?') ? '' : '!'}` : `Double(${code})`;
     }
+    // The runtime gives script an NSNumber as the number it holds.
+    if (b === 'NSNumber' && /^Double\??$/.test(tsType)) return optional(swiftType) ? `${code}${tsType.endsWith('?') ? '?' : '!'}.doubleValue` : `${code}.doubleValue`;
     if ((this.isEnumType(b) || this.isNumericConstants(b)) && tsType === 'Double') return optional(swiftType) ? `Double(${code}!.rawValue)` : `Double(${code}.rawValue)`;
     // A Core Foundation string (`kUTTypePlainText`), a string to TypeScript.
     if (b === 'CFString' && /^String\??$/.test(tsType)) return optional(swiftType) ? `(${code} as String?)${tsType.endsWith('?') ? '' : '!'}` : `(${code} as String)`;

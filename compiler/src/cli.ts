@@ -404,7 +404,7 @@ const start = switches + `        CorePackages.useAppConfig(appPackageJSON)\n   
   // The entry's own statements run the app (`Application.run`), after every module it imports.
   ? `        NativeScriptApplication.cssAST = appCSS\n${inits}`
   : `${inits}${prelude}        NativeScriptApplication.run(cssAST: appCSS) { ${root}().render() }\n`);
-const dispatch = nativeDispatch(native.modules, untypedMembers(checker, sourceFiles), deploymentTarget);
+const dispatch = nativeDispatch(native.modules, untypedMembers(checker, sourceFiles), deploymentTarget, native.classes);
 if (dispatch) writeFileSync(join(out, 'Sources', '__NativeDispatch.swift'), `// Compiled by ns-native: the plugins' native members untyped TypeScript calls, by name.\nimport Foundation\nimport UIKit\nimport NativeScriptKit\n${native.modules.map((m) => `import ${m}\n`).join('')}\n${dispatch}`);
 if (translator.usedAppNative.size) writeFileSync(join(out, 'Sources', '__AppNative.swift'), `// Compiled by ns-native: the app's own Swift classes, called by name from untyped TypeScript.\nimport Foundation\nimport NativeScriptKit\n\n${appNativeObjects([...translator.usedAppNative].map((c) => appNative[c]))}`);
 const sdkModules = translator.native.sdkModules().filter((m) => !['Foundation', 'UIKit', ...native.modules].includes(m));

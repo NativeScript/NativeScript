@@ -195,6 +195,8 @@ export interface Dependencies {
   modules: string[];
   /** Arguments that let the Swift compiler and the extractor see those modules; the first call builds them. */
   searchArgs: () => string[];
+  /** The Objective-C classes each module's built binary defines, by module; a module missing here is not known. */
+  classes: Record<string, string[]>;
   /** Removes what the build left. */
   dispose: () => void;
 }
@@ -210,12 +212,13 @@ const SCRATCH_TARGET = 'NSDependencies';
  */
 export function iosDependencies(o: { app: string; packages: SwiftPackage[]; deploymentTarget: string; say: (m: string) => void }): Dependencies {
   const pods = podfile({ app: o.app, name: SCRATCH_TARGET, deploymentTarget: o.deploymentTarget });
-  if (!o.packages.length && !pods) return { modules: [], searchArgs: () => [], dispose: () => {} };
+  if (!o.packages.length && !pods) return { modules: [], searchArgs: () => [], classes: {}, dispose: () => {} };
   const key = dependencyKey(o.packages, pods);
-  let built: { dir: string; args: string[]; modules: string[] } | null = null;
+  let built: Built | null = null;
   const build = () => built ??= buildDependencies(o.packages, pods, o.deploymentTarget, o.say);
   const manifest = join(moduleCache(), `dependencies-${key}.json`);
-  const modules: string[] = existsSync(manifest) ? JSON.parse(readFileSync(manifest, 'utf8')).modules : build().modules;
+  const cached: { modules: string[]; classes?: Record<string, string[]> } | null = existsSync(manifest) ? JSON.parse(readFileSync(manifest, 'utf8')) : null;
+  const { modules, classes } = cached?.classes ? { modules: cached.modules, classes: cached.classes } : build();
   for (const m of modules) {
     try {
       nativeTable(m, { key, extraArgs: () => build().args });
@@ -225,10 +228,11 @@ export function iosDependencies(o: { app: string; packages: SwiftPackage[]; depl
     }
   }
   mkdirSync(moduleCache(), { recursive: true });
-  writeFileSync(manifest, JSON.stringify({ modules }));
+  writeFileSync(manifest, JSON.stringify({ modules, classes }));
   return {
     modules,
     searchArgs: () => build().args,
+    classes,
     dispose: () => { if (built) rmSync(built.dir, { recursive: true, force: true }); },
   };
 }
@@ -242,7 +246,9 @@ function dependencyKey(packages: SwiftPackage[], pods: string | null): string {
   return h.digest('hex').slice(0, 16);
 }
 
-function buildDependencies(packages: SwiftPackage[], pods: string | null, deploymentTarget: string, say: (m: string) => void): { dir: string; args: string[]; modules: string[] } {
+interface Built { dir: string; args: string[]; modules: string[]; classes: Record<string, string[]> }
+
+function buildDependencies(packages: SwiftPackage[], pods: string | null, deploymentTarget: string, say: (m: string) => void): Built {
   const dir = mkdtempSync(join(tmpdir(), 'ns-dependencies-'));
   say(`building the Swift packages and pods once for their symbol tables (${[...packages.map((p) => p.name), ...(pods ? ['CocoaPods'] : [])].join(', ')})`);
   mkdirSync(join(dir, 'Empty'));
@@ -304,7 +310,45 @@ ${packages.length ? `    dependencies:\n${productLines(packages)}` : ''}    sett
       for (const fw of frameworks) modules.add(basename(fw, '.framework'));
     }
   }
-  return { dir, args, modules: [...modules].sort() };
+  // What each module's binary (`libX.a`, `X.o`, `X.framework/X`) defines.
+  const classes: Record<string, string[]> = {};
+  for (const f of readdirSync(products, { recursive: true }) as string[]) {
+    const name = /(?:^|\/)(?:lib(\w+)\.a|(\w+)\.o|(\w+)\.framework\/\3)$/.exec(f);
+    const module = name && (name[1] ?? name[2] ?? name[3]);
+    if (module && modules.has(module) && statSync(join(products, f)).isFile()) classes[module] = definedObjCClasses([join(products, f)]);
+  }
+  return { dir, args, modules: [...modules].sort(), classes };
+}
+
+/**
+ * The Objective-C classes a binary defines, by their runtime names: a class a header declares
+ * may have no implementation, and NativeScript's runtime then has no class of that name.
+ */
+export function definedObjCClasses(binaries: string[]): string[] {
+  const out = new Set<string>();
+  for (const f of binaries) {
+    let names: string;
+    try {
+      names = execFileSync('nm', ['-gUj', '-arch', 'arm64', f], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], maxBuffer: 1 << 28 });
+    } catch { continue; }
+    for (const m of names.matchAll(/^_OBJC_CLASS_\$_(\S+)$/gm)) out.add(swiftClassName(m[1]) ?? m[1]);
+  }
+  return [...out].sort();
+}
+
+/** A Swift class without an Objective-C name, `_TtC<module><name>` each length-prefixed: its name. */
+function swiftClassName(symbol: string): string | null {
+  if (!symbol.startsWith('_TtC')) return null;
+  let at = 4;
+  const part = () => {
+    const digits = /^\d+/.exec(symbol.slice(at))?.[0];
+    if (!digits) return null;
+    at += digits.length;
+    const text = symbol.slice(at, at + Number(digits));
+    at += Number(digits);
+    return text;
+  };
+  return part() !== null ? part() : null;
 }
 
 /** A directory of the V8 engine's headers, or of sources written against them. */

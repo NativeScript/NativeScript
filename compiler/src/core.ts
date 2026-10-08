@@ -1,6 +1,6 @@
 import ts from 'typescript';
 import { fileURLToPath } from 'node:url';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { kitExtends, kitIndex, kitMember, type KitMember, type KitType } from './kit-index.ts';
 import { splitTopLevel, type Translator } from './swift.ts';
@@ -319,12 +319,36 @@ export class CoreAPI {
       if (name === 'Color') return (e.arguments ?? []).some((a) => this.t.typeOf(a) !== 'Double');
       return (this.index.get(this.platformClass(name))?.members.get('init') ?? []).some((m) => m.throws);
     }
+    // A function core's index exports (`fromObject`), as the kit compiled it.
+    if (ts.isIdentifier(e.expression)) {
+      const decl = this.t.resolve(e.expression)?.declarations?.[0];
+      return !!decl && isCoreDeclaration(decl) && ts.isFunctionDeclaration(decl) && this.throwingExports().has(e.expression.text);
+    }
     if (!ts.isPropertyAccessExpression(e.expression) || this.mixinOwn(e.expression.name)) return false;
     // `super.initNativeView()`, `this.requestLayout()` in a program's class of a core one: the core class declaring the method.
     const member = this.t.resolve(e.expression.name)?.declarations?.[0];
     const declaring = member && isCoreDeclaration(member) && ts.isClassLike(member.parent) && member.parent.name ? member.parent.name.text : null;
     const owner = this.owner(e.expression.expression)?.name ?? declaring;
     return !!owner && !!kitMember(this.index, owner, e.expression.name.text)?.throws;
+  }
+
+  private exportsThrowing: Set<string> | null = null;
+  /** The functions the kit's index exports that throw. */
+  private throwingExports(): Set<string> {
+    if (!this.exportsThrowing) {
+      this.exportsThrowing = new Set();
+      const dir = join(KIT, 'Core');
+      for (const f of existsSync(dir) ? readdirSync(dir) : []) {
+        if (!f.startsWith('__Export.')) continue;
+        for (const m of readFileSync(join(dir, f), 'utf8').matchAll(/^public func (\w+)(?:<[^>]*>)?(\(.*)$/gm)) {
+          // `throws` right after the parameter list, not inside a function type it returns.
+          let depth = 0, end = 0;
+          for (; end < m[2].length; end++) { if (m[2][end] === '(') depth++; else if (m[2][end] === ')' && --depth === 0) break; }
+          if (/^\s*throws\b/.test(m[2].slice(end + 1))) this.exportsThrowing.add(m[1]);
+        }
+      }
+    }
+    return this.exportsThrowing;
   }
 
   /** Whether `target.method` is a method the kit declares on target's class (an optional call of it is a plain call). */
@@ -361,6 +385,10 @@ export class CoreAPI {
       if (!listener && p && (ts.isArrowFunction(a) || ts.isFunctionExpression(a)) && !a.parameters.length && (t.checker.getContextualType(a)?.getCallSignatures()[0]?.getParameters().length ?? 0) === 0 && /->/.test(p) && !/\bthrows\b/.test(p) && /\(\s*\)\s*->/.test(p)) args[k] = t.callback(a);
     });
     if (!listener) this.matchKitParams(e, kitParams, args);
+    // A rest parameter (`join(...paths)`), which the kit takes as one array.
+    const restAt = (t.checker.getResolvedSignature(e)?.getDeclaration() as ts.SignatureDeclaration | undefined)?.parameters?.findIndex((p) => !!p.dotDotDotToken) ?? -1;
+    const restType = restAt >= 0 ? /:\s*(JSArray<.*>)\s*$/.exec(kitParams[restAt] ?? '')?.[1] : undefined;
+    if (restType && !listener && !e.arguments.some(ts.isSpreadElement) && args.length >= restAt) args.splice(restAt, args.length - restAt, `${restType}([${args.slice(restAt).join(', ')}])`);
     return this.fromKit(`${recv}.${name}(${args.join(', ')})`, chained && m.type !== 'Void' ? m.type.replace(/\??$/, '?') : m.type, t.typeOf(e));
   }
 

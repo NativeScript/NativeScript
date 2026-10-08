@@ -5,7 +5,7 @@ import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, 
 import { tmpdir } from 'node:os';
 import { basename, dirname, join, relative, sep } from 'node:path';
 import { iosTarget, moduleOfDeclaration, nativeTable, registerDeclarationModule } from '../natives/symbols.ts';
-import { boundToEngine, productLines, type Dependencies, type SwiftPackage } from '../ios-dependencies.ts';
+import { boundToEngine, definedObjCClasses, productLines, type Dependencies, type SwiftPackage } from '../ios-dependencies.ts';
 import type { PluginSource } from './source.ts';
 
 /**
@@ -34,6 +34,8 @@ export interface PluginNative {
   swift: { name: string; dir: string; packages: SwiftPackage[] }[];
   /** The app's own Swift (absolute), compiled into the app target; null when it has none. */
   appSwift: string | null;
+  /** The Objective-C classes each module's binary defines, for the modules whose binary is known. */
+  classes: Record<string, string[]>;
   /** The kit's Swift bindings of plugins' engine-bound code (absolute), compiled into the app target, each with the type whose `install()` the app calls first. */
   bindings: { dir: string; installer: string }[];
 }
@@ -48,6 +50,8 @@ interface Target {
   path: string;
   files: string[];
   publicHeaders?: string;
+  /** A binary target's simulator binary. */
+  binary?: string;
   /** Swift compiled into the app target, its internal declarations in its table. */
   inApp?: boolean;
   /** Arguments that let the extractor see the module, given the copied files and a scratch directory. */
@@ -134,6 +138,7 @@ export function pluginNative(sources: PluginSource[], outDir: string, o: { deps:
     swift: all.filter((t) => t.kind === 'swift' && !t.inApp).map((t) => ({ name: t.name, dir: join(root, t.path), packages: o.packages.filter((p) => p.plugin === perPackage.find((x) => x.targets.includes(t))!.source.name) })),
     appSwift: app ? join(root, app.path) : null,
     bindings,
+    classes: { ...o.deps.classes, ...Object.fromEntries(all.filter((t) => t.binary).map((t) => [t.module, definedObjCClasses([t.binary!])])) },
   };
 }
 
@@ -241,7 +246,8 @@ function targetsOf(source: NativeSources, errors: string[], deps: Dependencies):
     }
     const mapFile = join(xc, slice, framework, 'Modules', 'module.modulemap');
     const module = (existsSync(mapFile) && /framework\s+module\s+(\w+)/.exec(readFileSync(mapFile, 'utf8'))?.[1]) || basename(framework, '.framework');
-    targets.push({ kind: 'binary', name, module, from: xc, path: `Binaries/${name}.xcframework`, files: filesUnder(xc), extract: () => ['-F', join(xc, slice)] });
+    const binary = join(xc, slice, framework, basename(framework, '.framework'));
+    targets.push({ kind: 'binary', name, module, from: xc, path: `Binaries/${name}.xcframework`, files: filesUnder(xc), binary: existsSync(binary) ? binary : undefined, extract: () => ['-F', join(xc, slice)] });
   }
   return targets;
 }
