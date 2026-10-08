@@ -200,7 +200,7 @@ jobs:
           tag_name="${GITHUB_REF_NAME}"
 
           # Find the project by matching the tag suffix against known releaseable packages.
-          projects=$(npx nx show projects --projects "packages/*" --type lib --exclude "ui-mobile-base,types-minimal,winter-tc,types,types-ios,types-android" --sep ' ')
+          projects=$(npx nx show projects --projects "packages/*" --type lib --exclude "ui-mobile-base,types-minimal,winter-tc,types,types-ios,types-android,compiler" --sep ' ')
 
           best_match=""
           best_len=0
@@ -504,7 +504,7 @@ jobs:
             exit 0
           fi
 
-          projects=$(npx nx show projects --projects "packages/*" --type lib --exclude "ui-mobile-base,types-minimal,winter-tc,types,types-ios,types-android" --sep ' ')
+          projects=$(npx nx show projects --projects "packages/*" --type lib --exclude "ui-mobile-base,types-minimal,winter-tc,types,types-ios,types-android,compiler" --sep ' ')
 
           for tag in $tags; do
             # Tag format is {version}-{projectName} (nx.json releaseTag.pattern); take the

@@ -1,0 +1,170 @@
+name: '@nativescript/compiler -> npm'
+
+# The compiler ships NativeScriptKit generated from one core release, so it is released with core,
+# at core's version: every core release tag (`{version}-core`, see nx.json releaseTag) publishes it.
+
+on:
+  push:
+    tags:
+      - '*-core'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'The core release tag to build from (e.g. 9.1.4-core)'
+        required: true
+        type: string
+      dry-run:
+        description: 'Build and pack without publishing'
+        required: false
+        type: boolean
+        default: true
+
+concurrency:
+  group: compiler-release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  kit:
+    name: Generate NativeScriptKit from the core release
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.release.outputs.version }}
+      dist_tag: ${{ steps.release.outputs.dist_tag }}
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+        with:
+          egress-policy: audit
+
+      - name: Checkout the core release
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+
+      - name: Version and dist-tag from the tag
+        id: release
+        shell: bash
+        run: |
+          set -euo pipefail
+          tag="${{ inputs.tag || github.ref_name }}"
+          version="${tag%-core}"
+          if [[ "$version" == "$tag" ]]; then echo "'$tag' is not a core release tag ({version}-core)" >&2; exit 1; fi
+          if [[ "$version" == *-* ]]; then dist_tag=next; else dist_tag=latest; fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "dist_tag=$dist_tag" >> "$GITHUB_OUTPUT"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate the kit
+        run: npx nx run compiler:kit
+
+      - name: Upload the generated kit
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        with:
+          name: kit-core
+          path: packages/compiler/kit-apple/Sources/NativeScriptKit/Core
+          if-no-files-found: error
+
+  verify:
+    name: Differential tests and the kit's build (iOS)
+    needs: kit
+    runs-on: warp-macos-15-arm64-6x
+    steps:
+      - name: Checkout the core release
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24'
+
+      - name: Download the generated kit
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          name: kit-core
+          path: packages/compiler/kit-apple/Sources/NativeScriptKit/Core
+
+      - name: Install the compiler's dependencies
+        working-directory: packages/compiler
+        run: |
+          npm ci --no-audit --no-fund
+          npm install --prefix tests --no-audit --no-fund
+
+      - name: Differential tests (Swift)
+        working-directory: packages/compiler
+        run: node tests/diff/run.ts --swift
+
+      - name: Build the kit
+        working-directory: packages/compiler/kit-apple
+        run: |
+          xcodebuild -version
+          xcodebuild -scheme NativeScriptKit -destination 'generic/platform=iOS Simulator' -quiet build
+
+  publish:
+    name: Publish (gated by environment)
+    needs: [kit, verify]
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ (github.event_name == 'workflow_dispatch' && inputs.dry-run) && 'npm-publish-dry-run' || 'npm-publish' }}
+    permissions:
+      contents: read
+      id-token: write # npm provenance / trusted publishing (OIDC)
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+        with:
+          egress-policy: audit
+
+      - name: Checkout the core release
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Update npm (required for OIDC trusted publishing)
+        run: npm install -g npm@^11.5.1
+
+      # The kit that was verified, not a second generation.
+      - name: Download the generated kit
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          name: kit-core
+          path: packages/compiler/kit-apple/Sources/NativeScriptKit/Core
+
+      - name: Set the version to core's
+        working-directory: packages/compiler
+        run: npm version --no-git-tag-version --allow-same-version "${{ needs.kit.outputs.version }}"
+
+      - name: Publish (OIDC)
+        if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.dry-run) }}
+        working-directory: packages/compiler
+        env:
+          NPM_CONFIG_PROVENANCE: true
+          NODE_AUTH_TOKEN: ''
+        run: |
+          set -euo pipefail
+          unset NODE_AUTH_TOKEN
+          rm -f ~/.npmrc || true
+          npm publish --access public --tag "${{ needs.kit.outputs.dist_tag }}"
+
+      - name: Pack (dry run)
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.dry-run }}
+        working-directory: packages/compiler
+        run: npm pack --dry-run
