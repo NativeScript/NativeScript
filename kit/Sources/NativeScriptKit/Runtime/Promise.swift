@@ -564,6 +564,12 @@ public func jsAwait<T>(_ promise: JSPromise<T>, _ onFulfilled: @escaping (T) -> 
     promise.performThen(onFulfilled, onRejected)
 }
 
+/// `await p?.request()`: an optional chain that may give no promise, which awaits as undefined does.
+public func jsAwait<T>(_ promise: JSPromise<T>?, _ onFulfilled: @escaping (T?) -> Void, _ onRejected: @escaping (Any?) -> Void) {
+    guard let promise else { return jsAwait(value: T?.none, onFulfilled, onRejected) }
+    promise.performThen({ onFulfilled($0) }, onRejected)
+}
+
 /// `await value` for a value that is not statically a promise: one tick for a plain value; a
 /// promise of any type held dynamically is awaited as itself.
 public func jsAwait<T>(value: T, _ onFulfilled: @escaping (T) -> Void, _ onRejected: @escaping (Any?) -> Void) {

@@ -1939,7 +1939,8 @@ ${members.join('\n')}
     const base = type.replace(/\?$/, '');
     if (this.interfaces.has(base) || [...this.shapes.values()].some((s) => s.name === base)) {
       this.used.add(base);
-      return type.endsWith('?') ? `jsIsNullish(${code}) ? nil : ${base}(jsObject: ${code})` : `${base}(jsObject: ${code})`;
+      // The value once (it may be a call), in parentheses: a conditional binds looser than what follows it.
+      return type.endsWith('?') ? `{ (__o: Any?) -> ${base}? in jsIsNullish(__o) ? nil : ${base}(jsObject: __o) }(${code})` : `${base}(jsObject: ${code})`;
     }
     const fn = functionParts(/^\(.*\)$/.test(base) && hasTopLevelArrow(base.slice(1, -1)) ? base.slice(1, -1) : base);
     if (fn) return type.endsWith('?') || type.endsWith(')?') ? `{ (__f: Any?) -> ${type} in jsIsNullish(__f) ? nil : ${this.unboxFunction('__f', fn)} }(${code})` : this.unboxFunction(code, fn);
@@ -4356,8 +4357,13 @@ ${members.join('\n')}
 
   /** An expression where Swift needs a value of `target`. */
   coerce(e: ts.Expression, target: string): string {
-    // `x as never` (a value the checker is told to take anywhere): the value, as the slot takes it.
-    if (ts.isAsExpression(e) && e.type.kind === ts.SyntaxKind.NeverKeyword) return this.coerce(e.expression, target);
+    // `x as never` (a value the checker is told to take anywhere): the value, as the slot takes it;
+    // a number where the slot is a string (`ret.format = parseVertexFormat(ret.format) as never`) converted as script reads it there.
+    if (ts.isAsExpression(e) && e.type.kind === ts.SyntaxKind.NeverKeyword) {
+      const inner = this.typeOf(e.expression).replace(/[?!]$/, ''), want = target.replace(/[?!]$/, '');
+      if (['String', 'Double', 'Bool'].includes(want) && ['String', 'Double', 'Bool'].includes(inner) && inner !== want) return `jsLenient${want === 'Double' ? 'Number' : want}(${this.expr(e.expression)} as Any?)`;
+      return this.coerce(e.expression, target);
+    }
     return this.keptOptional(this.coerced(e, target), target);
   }
 
@@ -4759,7 +4765,10 @@ ${members.join('\n')}
     if (ts.isBinaryExpression(e) && isCompoundAssignment(e.operatorToken.kind) && !statementLevel(e)) {
       const t = this.declaredTypeOf(e.left) ?? this.typeOf(e.left);
       const tp = this.tryPrefix(e);
-      return `({ () ${tp ? 'throws ' : ''}-> ${t} in ${tp}${this.binary(e)}; return ${this.expr(e.left)} }())`;
+      // A member by key (`scope[SLOT] ??= new Map()`) reads back untyped: as the target's type.
+      const target = this.expr(e.left);
+      const read = /\[jsKey: [^\]]+\]$/.test(target) && t !== 'Any?' ? this.fromAnyCode(target, t, true) : target;
+      return `({ () ${tp ? 'throws ' : ''}-> ${t} in ${tp}${this.binary(e)}; return ${read} }())`;
     }
     if (ts.isNumericLiteral(e)) return numberLiteral(e.text);
     if (ts.isBigIntLiteral(e)) return `JSBigInt(literal: ${swiftString(e.text.replace(/n$/, ''))})`;
@@ -6391,7 +6400,7 @@ ${members.join('\n')}
         return `${fn}(${e.arguments.map((x) => this.coerce(x, 'Any?')).join(', ')})`;
       }
       case 'JSON':
-        if (method === 'parse') return `jsJSONParse(${this.expr(arg(0))})`;
+        if (method === 'parse') return `jsJSONParse(${this.str(arg(0))})`;
         // Undefined, a function or a symbol stringifies to undefined.
         if (method === 'stringify') return this.undefinedAs(`jsJSONStringifyChecked(${this.coerce(arg(0), 'Any?')}${arg(2) ? `, ${this.coerce(arg(2), 'Any?')}` : ''})`, T());
         break;
@@ -6477,7 +6486,9 @@ ${members.join('\n')}
         if (method === 'UTC') return `JSDate.UTC(${e.arguments.map((x) => this.toNumber(x)).join(', ')})`;
         break;
       case 'Promise': {
-        const t = T();
+        // `return Promise.resolve(x)` where the function declares the promise's type: that type, the value converted to it.
+        const wanted = method === 'resolve' && this.checker.getContextualType(e) ? this.type(this.checker.getContextualType(e)!, e) : null;
+        const t = wanted && /^JSPromise<.*>$/.test(wanted) && this.lenient ? wanted : T();
         if (method === 'resolve') return arg(0) ? (this.typeOf(arg(0)).startsWith('JSPromise<') ? `${t}.resolve(${this.expr(arg(0))})` : `${t}.resolve(${this.coerce(arg(0), t.replace(/^JSPromise<(.*)>$/, '$1'))})`) : `${t}.resolve(())`;
         if (method === 'reject') return `${t}.reject(${arg(0) ? this.coerce(arg(0), 'Any?') : 'nil'})`;
         if (['all', 'allSettled', 'race', 'any'].includes(method)) {
@@ -6507,7 +6518,7 @@ ${members.join('\n')}
       const value = `${this.tryPrefix(target)}${this.expr(target)}`;
       this.subst.set(target, tmp);
       try {
-        return `({ () throws -> Any? in let ${tmp} = ${value}; return ${this.defineProperties(target, map)} }())`;
+        return `({ () throws -> Any? in let ${tmp} = ${value}; return try ${this.defineProperties(target, map)} }())`;
       } finally {
         this.subst.delete(target);
       }
@@ -6790,16 +6801,19 @@ ${members.join('\n')}
   }
 
   /** A rejection handler: it takes the reason untyped, whatever its parameter declares. */
-  private rejectionHandler(e: ts.Expression): string {
+  private rejectionHandler(e: ts.Expression, result?: string): string {
     if (!(ts.isArrowFunction(e) || ts.isFunctionExpression(e))) return this.fn(e);
+    // A handler that only rethrows (`(error) => { …; throw error; }`) is typed as the promise's other handler.
+    const own = this.returnTypeOf(e);
+    const typed = own === 'Never' && result ? result : own;
     if (!e.parameters.length) {
       // A handler that ignores the reason still takes it.
-      const ret = this.returnTypeOf(e);
+      const ret = typed;
       return `{ (_: Any?) ${this.throwsInfo.fn(e) ? 'throws ' : ''}-> ${ret} in\n${this.functionBody(e, ret, this.indent).slice(1)}`;
     }
     const p = e.parameters[0];
-    if (this.typeOf(p.name) === 'Any?' && ts.isIdentifier(p.name)) return this.closure(e);
-    const ret = this.returnTypeOf(e);
+    if (this.typeOf(p.name) === 'Any?' && ts.isIdentifier(p.name) && typed === own) return this.closure(e);
+    const ret = typed;
     const reason = this.fresh('__reason');
     const body = this.functionBody(e, ret, this.indent);
     const bind = this.nested(() => this.bindTo(p.name, ts.isIdentifier(p.name) ? this.fromAny(reason, this.typeOf(p.name)) : reason, '', false));
@@ -6817,7 +6831,7 @@ ${members.join('\n')}
         // A handler that ignores the value still takes it.
         const ignores = f && (ts.isArrowFunction(f) || ts.isFunctionExpression(f)) && !f.parameters.length && value !== 'Void';
         const onFulfilled = ignores ? this.closure(f as ts.ArrowFunction, [`_ __unused: ${value}`]) : f && this.fn(f);
-        return `${t}.${adopt ? 'thenAdopt' : 'then'}(${[onFulfilled, g && this.rejectionHandler(g)].filter(Boolean).join(', ')})`;
+        return `${t}.${adopt ? 'thenAdopt' : 'then'}(${[onFulfilled, g && this.rejectionHandler(g, f && (ts.isArrowFunction(f) || ts.isFunctionExpression(f)) ? this.returnTypeOf(f) : undefined)].filter(Boolean).join(', ')})`;
       }
       case 'catch': {
         const result = this.typeOf(e).replace(/^JSPromise<(.*)>$/, '$1');
@@ -6860,6 +6874,19 @@ ${members.join('\n')}
       }
     }
     throw this.error(e, `${type.startsWith('JSMap') ? 'Map' : 'Set'}.${name}`);
+  }
+
+  /** A class whose constructors, its own and its program bases', are none, under one of the library's errors. */
+  private extendsLibError(cls: ts.ClassLikeDeclaration): boolean {
+    for (let c: ts.ClassLikeDeclaration | undefined = cls; c; ) {
+      if (c.members.some(ts.isConstructorDeclaration)) return false;
+      const h = c.heritageClauses?.find((x) => x.token === ts.SyntaxKind.ExtendsKeyword)?.types[0];
+      if (!h) return false;
+      if (ts.isIdentifier(h.expression) && ERRORS[h.expression.text] && this.isLibGlobal(h.expression)) return true;
+      const d = this.checker.getTypeAtLocation(h.expression).getSymbol()?.valueDeclaration;
+      c = d && ts.isClassLike(d) && !d.getSourceFile().isDeclarationFile ? d : undefined;
+    }
+    return false;
   }
 
   /** `new (Cls as any)(…)` constructs Cls: the type of the expression made without the cast. */
@@ -6908,6 +6935,9 @@ ${members.join('\n')}
     if (/^JS(Map|Set)</.test(t) || (collection && /^JS(Map|Set)</.test(collection))) {
       if (!args.length) return `${t}()`;
       const src = args[0];
+      // A Set of typed values from an untyped iterable (`new GPUSupportedFeatures(native.features)`): each value converted.
+      const element = /^JSSet<(.*)>$/.exec(collection ?? t)?.[1];
+      if (element && element !== 'Any?' && this.isAny(src)) return `${t}(try jsIteratorOf(${this.expr(src)}).jsCollect().map { ${this.fromAnyCode('$0', element, true)} })`;
       return `${t}(${this.iterable(src)})`;
     }
     if (t.startsWith('JSPromise<')) {
@@ -6927,6 +6957,11 @@ ${members.join('\n')}
       return `${t}(${args.length ? this.coerce(args[0], 'String') : ''})`;
     }
     if (ERRORS[name]) return this.errorValue(name, args);
+    // A program's error class declaring no constructor (`class GPUValidationError extends GPUError {}`): Error's, taking the message as a string.
+    const errorClass = ts.isIdentifier(callee) ? this.resolve(callee)?.valueDeclaration : undefined;
+    if (errorClass && ts.isClassDeclaration(errorClass) && !errorClass.getSourceFile().isDeclarationFile && this.extendsLibError(errorClass)) {
+      return `${t}(${args[0] ? this.str(args[0]) : '""'})`;
+    }
     if (name === 'Date' && this.isLibGlobal(callee as ts.Identifier)) {
       if (args.length === 1) return `JSDate(${this.isString(args[0]) ? this.expr(args[0]) : this.toNumber(args[0])})`;
       return `JSDate(${args.map((a) => this.toNumber(a)).join(', ')})`;
@@ -7937,7 +7972,7 @@ function nativeResult(code: string, type: string): string {
   if (t === 'Bool' || t === 'ObjCBool') return `jsTruthy(${code})`;
   if (['Double', 'Float', 'CGFloat'].includes(t)) return `${t}(jsToNumber(${code}))`;
   if (/^U?Int(8|16|32|64)?$/.test(t)) return `jsNativeIntegerArgument(${code}, ${t}.self)`;
-  if (t === 'String') return /[?!]$/.test(type) ? `(jsIsNullish(${code}) ? nil : jsToString(${code}))` : `jsToString(${code})`;
+  if (t === 'String') return /[?!]$/.test(type) ? `{ (__s: Any?) -> String? in jsIsNullish(__s) ? nil : jsToString(__s) }(${code})` : `jsToString(${code})`;
   return /[?!]$/.test(type) ? `(jsToNative(${code}) as? ${t})` : `(jsToNative(${code}) as! ${t})`;
 }
 

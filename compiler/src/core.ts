@@ -315,7 +315,9 @@ export class CoreAPI {
       const decl = sym?.declarations?.[0];
       if (!sym || !(sym.flags & ts.SymbolFlags.Class) || !isCoreDeclaration(decl) || this.t.compiledCounterpart(sym)) return false;
       const name = sym.name;
-      return (this.index.get(name)?.members.get('init') ?? []).some((m) => m.throws);
+      // A color made of a string throws where the string is no color.
+      if (name === 'Color') return (e.arguments ?? []).some((a) => this.t.typeOf(a) !== 'Double');
+      return (this.index.get(this.platformClass(name))?.members.get('init') ?? []).some((m) => m.throws);
     }
     if (!ts.isPropertyAccessExpression(e.expression) || this.mixinOwn(e.expression.name)) return false;
     // `super.initNativeView()`, `this.requestLayout()` in a program's class of a core one: the core class declaring the method.
@@ -346,7 +348,8 @@ export class CoreAPI {
     const m = this.member(owner.name, name, e.expression);
     // `this.hud?.animate(…)`: nothing runs where the object is missing.
     const chained = !owner.isStatic && !!e.expression.questionDotToken && t.typeOf(e.expression.expression).endsWith('?');
-    const recv = owner.isStatic ? owner.name : t.expr(e.expression.expression) + (chained ? '?' : '');
+    // A namespace of core's by its module (`path.join`), which a local of the name (`path: string`) would shadow.
+    const recv = owner.isStatic ? (/^[a-z]/.test(owner.name) ? `NativeScriptKit.${owner.name}` : owner.name) : t.expr(e.expression.expression) + (chained ? '?' : '');
     if (name === 'navigate' && kitExtends(this.index, owner.name, 'Frame')) return this.navigate(recv, e);
     const listener = this.listenerArgs(e, m);
     // A kit method takes the arguments given; its own defaults stand for the rest.
