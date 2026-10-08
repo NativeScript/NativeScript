@@ -198,6 +198,15 @@ export function iosProjectResources(o: { app: string; appDir: string; out: strin
   // Fonts in the app folder, registered at launch as core registers app/fonts.
   const fonts = join(o.appDir, 'fonts');
   if (existsSync(fonts) && statSync(fonts).isDirectory()) sources.push(`      - path: ${relative(o.out, fonts)}\n        type: folder\n        buildPhase: resources\n`);
+  // What the app's own build copies beside its bundle, at `app/` where `~/assets/logo.png` resolves.
+  const appFiles = join(o.out, 'AppFiles');
+  rmSync(appFiles, { recursive: true, force: true });
+  const files = copiedAppFiles(o.appDir, readConfig(o.app).bundler === 'vite');
+  for (const f of files) {
+    mkdirSync(dirname(join(appFiles, 'app', f)), { recursive: true });
+    copyFileSync(join(o.appDir, f), join(appFiles, 'app', f));
+  }
+  if (files.length) sources.push(`      - path: AppFiles/app\n        type: folder\n        buildPhase: resources\n`);
 
   const team = configured('DEVELOPMENT_TEAM');
   return {
@@ -376,6 +385,19 @@ export function pluginManifests(o: { app: string; applicationId: string; dir: st
     out.push(to);
   }
   return out;
+}
+
+/**
+ * The app folder's files its NativeScript build copies as they are, fonts aside: `assets/**` by both
+ * bundlers, and every `.jpg` and `.png` too by webpack's default copy rules.
+ */
+function copiedAppFiles(appDir: string, vite: boolean): string[] {
+  if (!existsSync(appDir)) return [];
+  return (readdirSync(appDir, { recursive: true }) as string[])
+    .map((f) => f.split('\\').join('/'))
+    .filter((f) => !/(^|\/)(node_modules|App_Resources|\.[^/]+)(\/|$)/.test(f) && statSync(join(appDir, f)).isFile())
+    .filter((f) => f.startsWith('assets/') || (!vite && !f.startsWith('fonts/') && /\.(jpg|png)$/.test(f)))
+    .sort();
 }
 
 /** Fonts in the app folder, as assets at `app/fonts/`, where core reads them. */
