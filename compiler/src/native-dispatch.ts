@@ -1,5 +1,5 @@
 import ts from 'typescript';
-import { CF_CLASSES } from './swift.ts';
+import { CF_CLASSES, functionParts } from './swift.ts';
 import { lookupClass, lookupInit, nativeTable, type NativeClass, type NativeMethod, type NativeProperty, type SwiftType } from './natives/symbols.ts';
 
 /**
@@ -135,8 +135,11 @@ const STRUCTS = new Set(['CGRect', 'CGSize', 'CGPoint', 'UIEdgeInsets']);
 /** Script's value as a native parameter of this type, as the runtime marshals it; null for a type it cannot marshal here. */
 function toNative(code: string, type: SwiftType): string | null {
   const optional = /[?!]$/.test(type);
-  const t = type.replace(/[?!]$/, '');
-  if (/->/.test(t)) return null;
+  const t = type.replace(/[?!]$/, '').replace(/^\((.*)\)$/, (whole, inner) => (functionParts(inner) ? inner : whole));
+  if (/->/.test(t)) {
+    const block = blockOf(code, t);
+    return block && optional ? `(jsIsNullish(${code}) ? nil : ${block})` : block;
+  }
   let value: string;
   if (t === 'String') value = `jsToString(${code})`;
   else if (t === 'Bool' || t === 'ObjCBool') value = `jsTruthy(${code})`;
@@ -153,9 +156,18 @@ function toNative(code: string, type: SwiftType): string | null {
   else if (t === 'Any' || t === 'AnyObject') value = `jsToNative(${code}) as ${t}`;
   // A Core Foundation object (`CGFont`): Swift casts to one only unconditionally.
   else if (CF_CLASSES.has(t)) value = `(jsToNative(${code}) as! ${t})`;
-  else value = `(jsToNative(${code}) as${optional ? '?' : '!'} ${t})`;
+  else value = `jsNativeArgument(${code}, ${t}.self)`;
   if (!optional) return value;
   return /\bas\? /.test(value) ? value : `(jsIsNullish(${code}) ? nil : ${value})`;
+}
+
+/** A script function as a block of this type, which calls it with the block's arguments as script reads them; null for a block returning a value. */
+function blockOf(code: string, type: SwiftType): string | null {
+  const fn = functionParts(type.replace(/@(escaping|Sendable) /g, ''));
+  if (!fn || fn.result !== 'Void' || fn.params.some((p) => /->/.test(p))) return null;
+  const params = fn.params.map((p, k) => `__b${k}: ${p}`);
+  const args = fn.params.map((p, k) => fromNative(`__b${k}`, p));
+  return `{ [__f = jsFlat(${code})] (${params.join(', ')}) -> Void in jsReport { _ = try jsCall(__f${args.map((a) => `, ${a}`).join('')}) } }`;
 }
 
 /** A native result as script reads it. */
@@ -164,7 +176,7 @@ function fromNative(code: string, type: SwiftType): string {
   const optional = /[?!]$/.test(type);
   if (INTEGERS.has(t) || FLOATS.has(t)) return optional ? `(${code}).map { Double($0) } as Any?` : `Double(${code}) as Any?`;
   if (t === 'String' || t === 'Bool') return `${code} as Any?`;
-  return `jsFromNative(${code})`;
+  return `jsNativeResult(${code})`;
 }
 
 function newer(version: string, than: string): boolean {

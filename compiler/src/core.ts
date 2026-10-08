@@ -239,15 +239,21 @@ export class CoreAPI {
     if (!owner) return null;
     const t = this.t;
     const name = e.name.text;
-    const chained = !owner.isStatic && !!e.questionDotToken && t.typeOf(e.expression).endsWith('?');
-    const recv = owner.isStatic ? owner.name : t.expr(e.expression) + (chained ? '?' : '');
+    // `a?.b`: Swift chains only on an optional, and lenient code types none; as optional, valid for an implicitly unwrapped one too.
+    const tt = t.typeOf(e.expression);
+    const chained = !owner.isStatic && !!e.questionDotToken;
+    const recv = owner.isStatic ? owner.name : chained ? (tt.endsWith('?') ? `${t.expr(e.expression)}?` : `(${t.expr(e.expression)} as ${tt.replace(/!$/, '')}?)?`) : t.expr(e.expression);
+    // Swift's chain, as script's, goes on to what follows (`a?.b.c`), reading the optional.
+    const continued = ts.isOptionalChain(e.parent) && (e.parent as ts.PropertyAccessExpression).expression === e;
+    const inChain = chained || (ts.isOptionalChain(e) && !owner.isStatic);
     if (!owner.isStatic && NATIVE_MEMBERS.has(name) && this.isView(owner.name)) return `${recv}.nativeView`;
     if (!owner.isStatic && this.isView(owner.name) && !kitMember(this.index, owner.name, name)) {
       if (!this.isViewProperty(owner.name, name)) unappliedProperty(t, e.name, `${owner.name}.${name}`, 'NativeScriptKit');
       return t.fromAnyCode(`${recv}.get(${JSON.stringify(name)})`, t.typeOf(e), true);
     }
     const m = this.member(owner.name, name, e);
-    return this.fromKit(`${recv}.${name}`, chained ? m.type.replace(/\??$/, '?') : m.type, t.typeOf(e));
+    if (inChain && continued) return `${recv}.${name}`;
+    return this.fromKit(`${recv}.${name}`, inChain ? m.type.replace(/[?!]?$/, '?') : m.type, t.typeOf(e));
   }
 
   /** A constant core declares with a literal type (`CoreTypes.AnimationCurve.easeIn` is "easeIn"), as that literal. */

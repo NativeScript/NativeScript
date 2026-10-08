@@ -46,6 +46,26 @@ public func jsNativeIntegerArgument<T: FixedWidthInteger>(_ value: Any?, _: T.Ty
     return jsNativeInteger(jsToNumber(value), T.self)
 }
 
+/// What script passes where native code takes a value of this type, as the runtime marshals it.
+public func jsNativeArgument<T>(_ value: Any?, _: T.Type) -> T { jsToNative(value) as! T }
+
+/// An enum or option set from the number script passes: its raw value, a case the type does not list included.
+public func jsNativeArgument<T: RawRepresentable>(_ value: Any?, _: T.Type) -> T where T.RawValue: FixedWidthInteger {
+    if let v = jsFlat(value) as? T { return v }
+    let raw = jsNativeIntegerArgument(value, T.RawValue.self)
+    if let v = T(rawValue: raw) { return v }
+    precondition(MemoryLayout<T>.size == MemoryLayout<T.RawValue>.size, "\(T.self) has no case \(raw)")
+    return withUnsafeBytes(of: raw) { $0.load(as: T.self) }
+}
+
+/// A native result as script reads it.
+public func jsNativeResult(_ value: Any?) -> Any? { jsFromNative(value) }
+
+/// An enum or option set, a number to script.
+public func jsNativeResult<T: RawRepresentable>(_ value: T) -> Any? where T.RawValue: FixedWidthInteger { Double(value.rawValue) }
+
+public func jsNativeResult<T: RawRepresentable>(_ value: T?) -> Any? where T.RawValue: FixedWidthInteger { value.map { Double($0.rawValue) } }
+
 /// The plugins' native members untyped script reaches, by name: the app's `__NativeDispatch`, generated from the
 /// plugins' metadata. Each answers nil (or false) for an object or name it has nothing for.
 public enum JSNativeDispatch {
@@ -82,6 +102,8 @@ public protocol JSNativeMembers: AnyObject {
 
 func jsNativeGet(_ object: NSObject, _ key: String) -> Any? {
     if let value = JSNativeDispatch.get?(object, key) { return value }
+    // A function script set, which `jsNativeSet` keeps as script's own.
+    if let own = jsExpandos(object), own.has(key) { return own[key] }
     if let own = object as? JSNativeMembers, let value = own.jsMember(key) { return value }
     // Collections answer key-value coding for their elements, not themselves (`value(forKey: "count")` maps over an array).
     if let collection = jsCollectionMember(object, key) { return collection }
@@ -335,8 +357,11 @@ public func jsOr(_ a: Any?, _ b: Any?) -> Any? { jsTruthy(a) ? a : b }
 
 func jsNativeSet(_ object: NSObject, _ key: String, _ value: Any?) {
     if JSNativeDispatch.set?(object, key, value) == true { return }
+    // A block property the headers declare is set by the dispatch, of its block type; key-value coding
+    // cannot make a block of a script function, and a property the headers do not declare is script's own.
+    let function = jsFlat(value).map(jsIsFunction) ?? false
     // Key-value coding raises where the setter is only forwarded; script's message send reaches it.
-    guard let receiver = jsSetterReceiver(object, key) else {
+    guard !function, let receiver = jsSetterReceiver(object, key) else {
         jsExpandos(object, create: true)?[key] = value
         return
     }
