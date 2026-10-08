@@ -115,7 +115,9 @@ export class NativeAPI {
     const sym = t.aliasSymbol ?? t.getSymbol();
     const native = this.symbolModule(sym);
     if (!native) return null;
-    const enumOfLiteral = sym!.flags & ts.SymbolFlags.EnumMember ? this.symbolModule((sym as any).parent) : null;
+    // A member's own type (`UIHingeStatus.Closed`): its enum's, found through the declaration where the symbol has no parent (a `declare const enum` of the app's).
+    const enumDecl = sym!.flags & ts.SymbolFlags.EnumMember && sym!.valueDeclaration && ts.isEnumDeclaration(sym!.valueDeclaration.parent) ? sym!.valueDeclaration.parent : null;
+    const enumOfLiteral = sym!.flags & ts.SymbolFlags.EnumMember ? this.symbolModule((sym as any).parent ?? (enumDecl && this.t.checker.getSymbolAtLocation(enumDecl.name))) : null;
     const en = enumOfLiteral ? lookupEnum(enumOfLiteral.module, enumOfLiteral.name) : t.flags & ts.TypeFlags.EnumLike || sym!.flags & ts.SymbolFlags.Enum ? lookupEnum(native.module, native.name) : undefined;
     if (en !== undefined) {
       this.typeAvailable(en);
@@ -915,6 +917,9 @@ export class NativeAPI {
   private blockParam(code: string, swiftType: SwiftType, tsType: string): string {
     const b = base(swiftType);
     if (NUMBERS.has(b) && tsType === 'Double') return b === 'Double' ? code : `Double(${code})`;
+    // A block handed to the block (`completion([UIMenuElement])`) where TypeScript types it otherwise (`(items: any[]) => void`): called with its arguments converted.
+    const plain = swiftType.replace(/^@escaping\s+/, '').trim();
+    if (functionParts(plain) && functionParts(tsType) && plain !== tsType) return this.t.convert(code, plain, tsType);
     // A Foundation value type the TypeScript declarations name by its class (`Notification` as `NSNotification`).
     const bridged = bridge(code, swiftType, tsType);
     if (bridged) return bridged;

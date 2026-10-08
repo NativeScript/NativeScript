@@ -561,7 +561,9 @@ export class Translator implements AsyncTranslator {
     const sym = t.aliasSymbol ?? t.getSymbol();
     const decl = sym && sym.flags & (ts.SymbolFlags.Class | ts.SymbolFlags.Interface) ? sym.declarations?.[0] : undefined;
     const file = decl?.getSourceFile().fileName;
-    return !!file && !!this.compiledFiles && this.pluginFiles.has(file) && !this.compiledFiles.has(file);
+    if (!file || !this.compiledFiles || !this.pluginFiles.has(file) || this.compiledFiles.has(file)) return false;
+    // An interface extending a class (`MenuView extends View`) is that class.
+    return !(t.isClassOrInterface() && t.symbol.flags & ts.SymbolFlags.Interface && this.checker.getBaseTypes(t as ts.InterfaceType).some((b) => b.symbol?.flags & ts.SymbolFlags.Class));
   }
 
   type(t: ts.Type, where?: ts.Node): string {
@@ -571,6 +573,12 @@ export class Translator implements AsyncTranslator {
     if (t.flags & F.EnumLike) {
       const native = this.native.type(t);
       if (native) return native;
+    }
+    // A native enum that may be missing (`hinge?.status`): the optional enum.
+    if (t.isUnion() && t.types.some((u) => u.flags & (F.Undefined | F.Null))) {
+      const present = c.getNonNullableType(t);
+      const native = present !== t && present.flags & F.EnumLike ? this.native.type(present) : null;
+      if (native) return optionalType(native);
     }
     if (t.flags & (F.Any | F.Unknown)) return 'Any?';
     // A namespace as a value (`{ Accuracy: CoreTypes.Accuracy }`): its enum's metatype.
@@ -768,6 +776,8 @@ export class Translator implements AsyncTranslator {
       // Library mode: an interface only a declaration file has (the DOM's `MediaQueryListEvent`, core's `AddChildFromBuilder`) has no Swift type.
       if (this.library && sym && sym.flags & ts.SymbolFlags.Interface && !(sym.flags & ts.SymbolFlags.Class) && sym.declarations?.every((d) => d.getSourceFile().isDeclarationFile && ((isLibDeclaration(d) && (/lib\.dom/.test(d.getSourceFile().fileName) || DESCRIPTORS.has(name))) || isCoreDeclaration(d)))) return 'Any?';
       if (sym?.declarations?.some((d) => !d.getSourceFile().isDeclarationFile)) this.used.add(name);
+      // A core class its declarations name as the platform file's (`Font` of `font.ios.ts`), which the kit names apart from the common one.
+      if (!this.library && sym && sym.flags & ts.SymbolFlags.Class && isCoreDeclaration(sym.declarations?.[0])) return this.core.platformClass(name);
       return name;
     }
     const props = t.getProperties().map((p) => p.name);
@@ -2000,6 +2010,13 @@ ${members.join('\n')}
   /** Swift code of type `from` where Swift needs `to`: functions are adapted parameter by parameter. */
   convert(code: string, from: string, to: string): string {
     if (from === to) return code;
+    // A tuple (`['a', 'b'] as const`) where an array is wanted: an array of its elements.
+    const tuple = /^\((.*)\)$/.exec(from)?.[1];
+    const element = /^JSArray<(.*)>[?!]?$/.exec(to)?.[1];
+    if (tuple && element && !functionParts(from)) {
+      const items = splitTopLevel(tuple);
+      if (items.length > 1) return `{ (__t: ${from}) -> ${to.replace(/[?!]$/, '')} in JSArray<${element}>([${items.map((it, k) => this.convert(`__t.${k}`, it, element)).join(', ')}]) }(${code})`;
+    }
     // One interface's object where another, structurally the same, is wanted (`DuoFold` for `StageFold`): an object of that one with its keys.
     const fromShape = from.replace(/[?!]$/, ''), toShape = to.replace(/[?!]$/, '');
     if (fromShape !== toShape && this.isObjectShape(fromShape) && this.isObjectShape(toShape)) {
@@ -4527,6 +4544,8 @@ ${members.join('\n')}
     if (each) return missing ? `(${this.expr(e)})?.map(${each})` : `${this.expr(e)}.map(${each})`;
     // Library mode: a class where a subclass is declared (`this` of ViewCommon where core's declarations say View).
     if (this.library && this.isSubclassOf(target.replace(/[?!]$/, ''), source.replace(/[?!]$/, ''))) return `(${this.expr(e)} as${target.endsWith('?') || source.endsWith('?') ? '?' : '!'} ${target.replace(/[?!]$/, '')})`;
+    // Interfaces structurally equal (`DuoFold` for `StageFold`).
+    if (source.replace(/[?!]$/, '') !== target.replace(/[?!]$/, '') && this.isObjectShape(source.replace(/[?!]$/, '')) && this.isObjectShape(target.replace(/[?!]$/, ''))) return this.convert(this.expr(e), source, target);
     return this.expr(e);
   }
 
@@ -4914,8 +4933,8 @@ ${members.join('\n')}
       if (found) return found;
     }
     if (this.library && (!libDecl || /[\\/]types-android[\\/]/.test(libDecl.getSourceFile().fileName))) return `jsMoot(${swiftString(name)})`;
-    // Library mode: a global a module declares itself (`declare let __startCPUProfiler: any`) is the global object's, set by whatever provides it.
-    if (this.library && libDecl && ts.isVariableDeclaration(libDecl) && !libDecl.getSourceFile().isDeclarationFile && hasModifier(libDecl.parent.parent, ts.SyntaxKind.DeclareKeyword)) {
+    // A global a module declares itself (`declare let __startCPUProfiler: any`, a plugin's `declare var CanvasModule`) is the global object's, set by whatever provides it.
+    if ((this.library || this.pluginFiles.has(e.getSourceFile().fileName)) && libDecl && ts.isVariableDeclaration(libDecl) && !libDecl.getSourceFile().isDeclarationFile && hasModifier(libDecl.parent.parent, ts.SyntaxKind.DeclareKeyword)) {
       return this.fromAnyCode(`jsGlobalThis[jsKey: ${swiftString(name)}]`, this.typeOf(e));
     }
     if (name === 'parseFloat' && isLibDeclaration(libDecl) && !(ts.isCallExpression(e.parent) && e.parent.expression === e)) return 'jsParseFloat';
@@ -5320,6 +5339,10 @@ ${members.join('\n')}
       // `const round = Math.round`: the function as a value.
       if (target.text === 'Math' && MATH_ONE[name]) return this.convert(`{ (__x: Double) -> Double in ${MATH_ONE[name]}(__x) }`, '(Double) throws -> Double', this.typeOf(e));
       throw this.error(e, `${target.text}.${name}`);
+    }
+    // A tuple's `length` (`LEVELS.length` of an `as const` list): its element count.
+    if (name === 'length' && this.checker.isTupleType(this.checker.getNonNullableType(this.checker.getTypeAtLocation(target))) && /^\(/.test(this.typeOf(target))) {
+      return `Double(${(this.checker.getTypeArguments(this.checker.getNonNullableType(this.checker.getTypeAtLocation(target)) as ts.TypeReference)).length})`;
     }
     // A member of an enum a library declares (core's GestureStateTypes.began): its value.
     const enumMember = this.checker.getSymbolAtLocation(e.name)?.valueDeclaration;
@@ -6147,7 +6170,8 @@ ${members.join('\n')}
       : items.slice(0, fn.params.length).map((x, k) => this.coerce(x, param(k)));
     const f = `${this.expr(target)}${optional && !e.questionDotToken && !ts.isOptionalChain(e) ? '!' : ''}`;
     if (method !== 'bind') {
-      const missing = fn.params.slice(given.length).map((p) => (p === 'Void' ? '()' : 'nil'));
+      // A parameter left out is undefined: NaN where lenient code holds a number, the type's zero where it holds another value.
+      const missing = fn.params.slice(given.length).map((p) => (p === 'Void' ? '()' : isOptional(p) || p === 'Any?' ? 'nil' : p === 'Double' ? '.nan' : this.zero(p.replace(/^@escaping /, '')) ?? 'nil'));
       return this.convert(`${f}${e.questionDotToken ? '?' : ''}(${[...given, ...missing].join(', ')})`, fn.result, this.typeOf(e));
     }
     const left = fn.params.slice(given.length);
@@ -6778,7 +6802,8 @@ ${members.join('\n')}
   }
 
   private promiseMethod(name: string, target: ts.Expression, e: ts.CallExpression): string {
-    const t = this.expr(target);
+    // A promise an optional chain may not make (`this.hud?.animate(…).catch(…)`): nothing chained runs without it.
+    const t = `${this.expr(target)}${ts.isOptionalChain(target) && this.typeOf(target).endsWith('?') ? '?' : ''}`;
     const [f, g] = e.arguments;
     const value = this.typeOf(target).replace(/^JSPromise<(.*)>\??$/, '$1');
     switch (name) {
@@ -7480,7 +7505,10 @@ ${members.join('\n')}
         // A variable Swift holds optional that the checker narrowed (`{ chord }` after `if (!chord) continue`), for a field that is not.
         const variable = fn && (ts.isVariableDeclaration(fn) || ts.isParameter(fn)) && ts.isIdentifier(fn.name) ? this.typeOf(fn.name) : null;
         const unwrap = !!want && !isOptional(want) && want !== 'Any?' && !!variable && isOptional(variable) && variable !== 'Any?' && !isOptional(this.typeOf(p.name));
-        given.set(p.name.text, actual && want && functionParts(want) && actual !== want ? this.convert(code, actual, want) : unwrap && !code.endsWith('!') ? `${code}!` : code);
+        // A variable held optional while it may be undefined (`const y = ys[i]`): undefined as the field's type reads it.
+        const valueSym = this.checker.getShorthandAssignmentValueSymbol(p);
+        const undefinedVar = !!valueSym && this.undefinedVars.has(valueSym) && !!want && !isOptional(want) && want !== 'Any?';
+        given.set(p.name.text, actual && want && functionParts(want) && actual !== want ? this.convert(code, actual, want) : undefinedVar ? this.undefinedAs(code, want!) : unwrap && !code.endsWith('!') ? `${code}!` : code);
       }
       else if (ts.isSpreadAssignment(p)) {
         const src = this.expr(p.expression);

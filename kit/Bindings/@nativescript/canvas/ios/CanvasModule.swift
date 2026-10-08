@@ -20,7 +20,10 @@ protocol CanvasModulePart {
 
 /// `global.CanvasModule`, as @nativescript/canvas's `CanvasJSIModule::install` makes it for the
 /// engine: the same functions and classes, over the same C API (`canvas_native_*`).
-final class CanvasModule: CanvasHost {
+final class CanvasModule: CanvasHost, JSConstructible {
+    /// `new CanvasModule().install()`, which the plugin runs to install the engine's module: already installed.
+    func jsConstruct(_ arguments: [Any?]) throws -> Any? { self }
+
     private static let parts: [CanvasModulePart.Type] = [Canvas2DPart.self, WebGPUPart.self, WebGLPart.self]
     private static let classes = parts.reduce(into: [String: JSConstructor]()) { all, part in all.merge(part.classes) { a, _ in a } }
     private static let functions = parts.reduce(into: Set<String>()) { all, part in all.formUnion(part.functions) }
@@ -35,6 +38,7 @@ final class CanvasModule: CanvasHost {
     }
 
     override func invoke(_ key: String, _ args: Args) throws -> Any?? {
+        if key == "install" { return .some(nil) }
         for part in Self.parts { if let result = try part.call(key, args) { return result } }
         return nil
     }

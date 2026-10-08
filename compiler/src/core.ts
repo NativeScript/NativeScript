@@ -105,6 +105,12 @@ export class CoreAPI {
     return this.index.has(name);
   }
 
+  /** The kit's class of a core class name: the iOS file's where the kit names it apart (`Font__font_ios`), else the class of that name. */
+  platformClass(name: string): string {
+    const ios = `${name}__${name.replace(/[A-Z]/g, (c, k) => (k ? '_' : '') + c.toLowerCase())}_ios`;
+    return this.index.has(ios) ? ios : name;
+  }
+
   /** Whether a kit class's initializer taking no arguments throws. */
   initThrows(name: string): boolean {
     for (let t = this.index.get(name); t; t = t.base ? this.index.get(t.base) : undefined) {
@@ -337,7 +343,9 @@ export class CoreAPI {
     const t = this.t;
     const name = e.expression.name.text;
     const m = this.member(owner.name, name, e.expression);
-    const recv = owner.isStatic ? owner.name : t.expr(e.expression.expression);
+    // `this.hud?.animate(…)`: nothing runs where the object is missing.
+    const chained = !owner.isStatic && !!e.expression.questionDotToken && t.typeOf(e.expression.expression).endsWith('?');
+    const recv = owner.isStatic ? owner.name : t.expr(e.expression.expression) + (chained ? '?' : '');
     if (name === 'navigate' && kitExtends(this.index, owner.name, 'Frame')) return this.navigate(recv, e);
     const listener = this.listenerArgs(e, m);
     // A kit method takes the arguments given; its own defaults stand for the rest.
@@ -349,7 +357,7 @@ export class CoreAPI {
       if (!listener && p && (ts.isArrowFunction(a) || ts.isFunctionExpression(a)) && !a.parameters.length && (t.checker.getContextualType(a)?.getCallSignatures()[0]?.getParameters().length ?? 0) === 0 && /->/.test(p) && !/\bthrows\b/.test(p) && /\(\s*\)\s*->/.test(p)) args[k] = t.callback(a);
     });
     if (!listener) this.matchKitParams(e, kitParams, args);
-    return this.fromKit(`${recv}.${name}(${args.join(', ')})`, m.type, t.typeOf(e));
+    return this.fromKit(`${recv}.${name}(${args.join(', ')})`, chained && m.type !== 'Void' ? m.type.replace(/\??$/, '?') : m.type, t.typeOf(e));
   }
 
   /**
@@ -408,7 +416,7 @@ export class CoreAPI {
     if (!sym || !isCoreDeclaration(sym.declarations?.[0]) || this.t.compiledCounterpart(sym)) return null;
     const t = this.t;
     const args = e.arguments ?? ts.factory.createNodeArray();
-    const kitName = sym.name;
+    const kitName = this.platformClass(sym.name);
     if (!this.index.has(kitName)) throw t.error(e, `new ${sym.name} (NativeScriptKit has no such class)`);
     // Core's constructor takes its arguments as a rest parameter; numbers never make it throw.
     if (sym.name === 'Color') {

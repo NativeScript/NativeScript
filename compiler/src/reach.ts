@@ -189,8 +189,21 @@ export function reachability(program: ts.Program, resolved: (containing: string,
     return exported ? (exported.flags & ts.SymbolFlags.Alias ? checker.getAliasedSymbol(exported) : exported) : sym;
   };
 
+  // A name a `.d.ts` beside a plugin's platform file declares (`font-face.d.ts` of `font-face.ios.ts`), through a barrel: the platform file's export.
+  const platformTwin = (sym: ts.Symbol): ts.Symbol => {
+    const file = sym.declarations?.[0]?.getSourceFile().fileName;
+    if (!file?.endsWith('.d.ts')) return sym;
+    const twin = file.replace(/\.d\.ts$/, `.${platform}.ts`);
+    const sf = pluginFiles.has(twin) ? program.getSourceFile(twin) : undefined;
+    const module = sf && checker.getSymbolAtLocation(sf);
+    const found = module && checker.getExportsOfModule(module).find((x) => x.escapedName === sym.escapedName);
+    if (!found) return sym;
+    load(twin);
+    return found.flags & ts.SymbolFlags.Alias ? checker.getAliasedSymbol(found) : found;
+  };
+
   const reachDecl = (sym: ts.Symbol, at: ts.Node) => {
-    const s = runtimeOf(sym, at);
+    const s = platformTwin(runtimeOf(sym, at));
     for (const d of s.declarations ?? []) {
       const sf = d.getSourceFile();
       if (sf.isDeclarationFile || !isPlugin(sf)) continue;
