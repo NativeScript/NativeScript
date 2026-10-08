@@ -60,7 +60,8 @@ export function archive(o: { out: string; name: string; project: string[]; bundl
   rmSync(archivePath, { recursive: true, force: true });
   rmSync(exportPath, { recursive: true, force: true });
   execFileSync('xcodebuild', ['archive', ...o.project, '-scheme', o.name, '-configuration', 'Release', '-destination', 'generic/platform=iOS',
-    '-derivedDataPath', 'build', '-archivePath', archivePath, '-quiet', ...(o.team ? ['-allowProvisioningUpdates'] : [])], { cwd: o.out, stdio: 'inherit' });
+    '-derivedDataPath', 'build', '-archivePath', archivePath, '-quiet', ...(o.team ? ['-allowProvisioningUpdates'] : []),
+    ...(o.profile || o.team ? [] : ['CODE_SIGNING_ALLOWED=NO'])], { cwd: o.out, stdio: 'inherit' });
   mkdirSync(exportPath, { recursive: true });
   if (o.profile || o.team) {
     const options = join(o.out, 'ExportOptions.plist');

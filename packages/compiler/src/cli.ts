@@ -446,7 +446,9 @@ const excluded = args.includes('--whole-kit') ? [] : [...kitFilesUnreached(kitSo
 const coreNative = coreNativeProject(core ?? '', kitImports(kitSources, excluded, coreModules), out);
 const profile = opt('--provision') ? findProfile(opt('--provision')!) : null;
 const team = !profile && opt('--team-id') ? { id: opt('--team-id')!, method: opt('--export-method', 'debugging') as ExportMethod } : undefined;
-const signing: Record<string, string> = profile ? signingSettings(profile) : team ? automaticSigningSettings(team.id) : { CODE_SIGNING_ALLOWED: 'NO' };
+// Unsigned only for the simulator: a device archive made from the generated project in Xcode signs
+// with the team chosen there, and an archive built here without one passes CODE_SIGNING_ALLOWED=NO.
+const signing: Record<string, string> = profile ? signingSettings(profile) : team ? automaticSigningSettings(team.id) : { '"CODE_SIGNING_ALLOWED[sdk=iphonesimulator*]"': 'NO' };
 const pods = podfile({ app, name, deploymentTarget, nested: native.swift.map((t) => t.name), extensions: iosExtensionNames(app) });
 if (pods) writeFileSync(join(out, 'Podfile'), pods);
 else removePods(out, name);
