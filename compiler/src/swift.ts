@@ -4917,7 +4917,13 @@ ${members.join('\n')}
       return `${shadowed ? `${this.appModule}.` : ''}${name}.self`;
     }
     if (this.isNamespace(e)) return `${this.refName(e)}.self`;
-    return this.narrowed(e, this.globalAlias(e) ?? this.refName(e));
+    const ref = this.globalAlias(e) ?? this.refName(e);
+    // A module's function or constant read inside a class with a member of its name (`readonly initials = initials`): the module's.
+    const top = sym?.valueDeclaration;
+    const topLevel = !!top && (ts.isFunctionDeclaration(top) ? ts.isSourceFile(top.parent) : ts.isVariableDeclaration(top) && ts.isVariableStatement(top.parent.parent) && ts.isSourceFile(top.parent.parent.parent));
+    const cls = ts.findAncestor(e, ts.isClassLike);
+    if (this.appModule && topLevel && cls?.members.some((m) => m.name && ts.isIdentifier(m.name) && ident(m.name.text) === ref)) return this.narrowed(e, `${this.appModule}.${ref}`);
+    return this.narrowed(e, ref);
   }
 
   /** A name imported from a module a compiled app has no use for (library mode): a value whose use throws. */
@@ -6199,7 +6205,11 @@ ${members.join('\n')}
           return `js${name[0].toUpperCase()}${name.slice(1)}(${this.callback(arg(0))}, ${arg(1) ? this.expr(arg(1)) : '0'})`;
         case 'clearTimeout': case 'clearInterval': return `js${name[0].toUpperCase()}${name.slice(1)}(${arg(0) ? this.coerce(arg(0), 'Double?') : 'nil'})`;
         case 'queueMicrotask': return `jsQueueMicrotask(${this.callback(arg(0))})`;
-        case 'requestAnimationFrame': return `jsRequestAnimationFrame({ __t in jsReport { try ${this.expr(arg(0))}(__t) } })`;
+        case 'requestAnimationFrame': {
+          // A callback declaring no parameter is called with none: Swift's function type has no slot for the time.
+          const takesTime = this.checker.getTypeAtLocation(arg(0)).getCallSignatures().some((sig) => sig.parameters.length > 0);
+          return `jsRequestAnimationFrame({ __t in jsReport { try ${this.expr(arg(0))}(${takesTime ? '__t' : ''}) } })`;
+        }
         case 'cancelAnimationFrame': return `jsCancelAnimationFrame(${this.expr(arg(0))})`;
         case 'unescape': return `jsUnescape(${this.str(arg(0))})`;
         case 'encodeURIComponent': case 'encodeURI': case 'decodeURIComponent': case 'decodeURI':
