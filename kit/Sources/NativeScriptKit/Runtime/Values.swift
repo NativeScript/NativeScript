@@ -83,6 +83,9 @@ func jsIsUndefined<T>(_ value: T) -> Bool {
 
 func jsIsObject(_ value: Any) -> Bool { type(of: value) is AnyClass }
 
+/// A typed tuple (`[number, number, number]`), an array to script.
+func jsIsTuple(_ value: Any) -> Bool { Mirror(reflecting: value).displayStyle == .tuple }
+
 /// Whether `value` is a Swift closure (a JavaScript function).
 func jsIsFunction(_ value: Any) -> Bool {
     if value is JSFunction { return true }

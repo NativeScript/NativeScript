@@ -331,7 +331,7 @@ public final class JSTypedArray<Kind: JSTypedArrayElement>: JSTypedArrayProtocol
             return try JSTypedArray(typed.jsAnyValues)
         case let v?:
             if let n = jsNumeric(v) { return try JSTypedArray(length: n) }
-            if !jsIsObject(v) { return try JSTypedArray(length: jsToNumber(v)) }
+            if !jsIsObject(v) && !jsIsTuple(v) { return try JSTypedArray(length: jsToNumber(v)) }
             return try JSTypedArray(jsArrayLikeValues(v))
         }
     }
@@ -424,7 +424,7 @@ public final class JSTypedArray<Kind: JSTypedArrayElement>: JSTypedArrayProtocol
             return
         }
         if jsIsNullish(source) { throw JSException(JSTypeError("Cannot convert undefined or null to object")) }
-        let values = jsFlat(source).map { jsIsObject($0) || $0 is String ? jsArrayLikeValues($0) : [] } ?? []
+        let values = jsFlat(source).map { jsIsObject($0) || jsIsTuple($0) || $0 is String ? jsArrayLikeValues($0) : [] } ?? []
         let start = try setOffset(offset, values.count)
         for (k, v) in values.enumerated() { put(try Kind.convert(v), start + k) }
     }
