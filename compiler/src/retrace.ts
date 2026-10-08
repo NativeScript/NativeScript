@@ -24,6 +24,7 @@ if (existsSync(mapping)) {
   } finally { rmSync(scratch, { recursive: true, force: true }); }
 }
 
+if (!existsSync(join(project, 'source-lines.json'))) { console.error(`${project} has no source-lines.json: give the compiled Android project (platforms/compiled/android), built without --no-source-lines`); process.exit(1); }
 const lines: { package: string; files: Record<string, [number, string, number][]> } = JSON.parse(readFileSync(join(project, 'source-lines.json'), 'utf8'));
 // Frames of the app's classes; retrace names a file R8 kept no name for after its class, with .java.
 process.stdout.write(trace.replace(/(\bat\s+([\w$.]+)\.[\w$<>-]+\s*)\(([\w$]+)\.(?:kt|java):(\d+)\)/g, (whole, frame: string, cls: string, file: string, line: string) => {

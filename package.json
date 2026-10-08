@@ -4,7 +4,8 @@
   "description": "Compiles a NativeScript app written with Vue, Angular, Svelte, React, Solid or Octane into a native iOS or Android app with no JavaScript runtime.",
   "type": "module",
   "bin": {
-    "ns-native": "bin/ns-native.js"
+    "ns-native": "bin/ns-native.js",
+    "ns-native-retrace": "bin/ns-native-retrace.js"
   },
   "files": [
     "bin/",
