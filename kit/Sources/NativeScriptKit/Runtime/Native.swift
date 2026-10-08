@@ -34,6 +34,12 @@ public func jsNativeInteger<T: FixedWidthInteger>(_ value: Double, _: T.Type) ->
     return T(truncated)
 }
 
+/// Whether the OS is this iOS version or newer: `typeof NewClass` where the deployment target predates the class.
+public func jsOSAtLeast(_ version: Double) -> Bool {
+    let major = Int(version), minor = Int(((version - Double(major)) * 10).rounded())
+    return ProcessInfo.processInfo.isOperatingSystemAtLeast(OperatingSystemVersion(majorVersion: major, minorVersion: minor, patchVersion: 0))
+}
+
 /// A number where native code takes an integer, from what script passes: a number, or a BigInt (a 64-bit handle).
 public func jsNativeIntegerArgument<T: FixedWidthInteger>(_ value: Any?, _: T.Type) -> T {
     if let big = jsFlat(value) as? JSBigInt { return T.isSigned ? T(truncatingIfNeeded: big.int64) : T(truncatingIfNeeded: big.uint64) }
@@ -46,6 +52,21 @@ public enum JSNativeDispatch {
     nonisolated(unsafe) public static var get: ((AnyObject, String) -> Any??)?
     nonisolated(unsafe) public static var set: ((AnyObject, String, Any?) -> Bool)?
     nonisolated(unsafe) public static var call: ((AnyObject, String, [Any?]) throws -> Any??)?
+}
+
+/// A native class script made with `Cls.extend(methods, { protocols })`: `new()` makes an instance answering from the methods.
+public final class JSExtendedClass {
+    let make: () -> NSObject
+    public init(_ make: @escaping () -> NSObject) { self.make = make }
+}
+
+/// A method of the object an extended class was made with, called with the instance as `this`; undefined where it has none.
+public func jsCallExtended(_ object: AnyObject, _ methods: Any?, _ key: String, _ arguments: [Any?]) throws -> Any? {
+    switch jsFlat(try jsGet(methods, key)) {
+    case let method as JSMethod: return try method(object, arguments)
+    case let function as JSFunction: return try function(arguments)
+    default: return nil
+    }
 }
 
 /// `Cls.alloc()` on a class script holds untyped: the class, until an initializer (`initWithFrame`) makes the object.

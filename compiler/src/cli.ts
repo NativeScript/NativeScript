@@ -339,6 +339,7 @@ translator.plainFields = framework === 'angular';
 const appNative = native.appSwift ? nativeTable(name).classes : {};
 translator.appNativeClasses = new Set(Object.keys(appNative).filter((c) => !appNative[c].extension && appNative[c].kind === 'class'));
 for (const m of native.modules) for (const [js, c] of Object.entries(nativeTable(m).classes)) if (c.kind === 'class' && !c.extension && c.module === m) translator.pluginNativeClasses.set(js, c.swift);
+translator.pluginModules = native.modules;
 translator.allowUnapplied = allowUnapplied;
 if (args.includes('--all-errors')) translator.errors = allowUnapplied ? [] : [...unapplied];
 

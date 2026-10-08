@@ -129,6 +129,7 @@ private func callMethod(_ object: Any?, _ key: String, _ arguments: [Any?]) thro
         if let result = try JSNativeDispatch.call?(native, key, arguments) { return result }
         if key == "alloc", arguments.isEmpty, let cls = native as? NSObject.Type { return JSNativeAllocation(cls) }
     }
+    if let extended = jsFlat(object) as? JSExtendedClass, key == "new" { return extended.make() }
     if let allocation = jsFlat(object) as? JSNativeAllocation {
         if let result = try JSNativeDispatch.call?(allocation, key, arguments) { return result }
         if key == "init", arguments.isEmpty, let cls = allocation.cls as? NSObject.Type { return cls.init() }

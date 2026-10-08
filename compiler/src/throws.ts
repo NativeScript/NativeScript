@@ -70,9 +70,9 @@ export class Throws {
     // Swift overrides share `throws`: a method throws if any method of its name in the hierarchy does.
     if ((ts.isMethodDeclaration(fn) || ts.isGetAccessorDeclaration(fn)) && ts.isClassLike(fn.parent) && fn.name) {
       const name = fn.name.getText();
-      for (const other of [...this.ancestors(fn.parent), ...this.descendants(fn.parent)]) {
-        const m = other.members.find((x) => x.name?.getText() === name && x !== fn);
-        if (m && this.throwing.has(m)) return true;
+      // Every declaration of the name: an overloaded method's implementation follows its signatures.
+      for (const other of [fn.parent, ...this.ancestors(fn.parent), ...this.descendants(fn.parent)]) {
+        if (other.members.some((x) => x !== fn && x.name?.getText() === name && this.throwing.has(x))) return true;
       }
     }
     return false;
@@ -170,6 +170,8 @@ export class Throws {
     if (ts.isCallExpression(call) && init && ts.isIdentifier(init) && ['parseInt', 'parseFloat'].includes(init.text) && !holder!.getSourceFile().isDeclarationFile) return true;
     if (ts.isCallExpression(call) && holder && !holder.getSourceFile().isDeclarationFile && !signature?.getSourceFile().isDeclarationFile
       && (ts.isVariableDeclaration(holder) || ts.isParameter(holder) || ts.isPropertyDeclaration(holder) || ts.isPropertySignature(holder) || ts.isPropertyAssignment(holder) || ts.isGetAccessorDeclaration(holder) || ts.isShorthandPropertyAssignment(holder))) return true;
+    // A local holding a library function (`const dip = Utils.layout.toDeviceIndependentPixels`): a Swift function value, which throws.
+    if (ts.isCallExpression(call) && holder && ts.isVariableDeclaration(holder) && !holder.getSourceFile().isDeclarationFile && holder.initializer && ts.isPropertyAccessExpression(skipParens(holder.initializer))) return true;
     const decl = c.getResolvedSignature(call)?.getDeclaration();
     const args = call.arguments ?? ts.factory.createNodeArray();
     // A callback the callee runs: a closure literal throws if its body does; any other function value is assumed to.
