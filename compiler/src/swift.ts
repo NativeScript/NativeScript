@@ -1250,8 +1250,6 @@ export class Translator implements AsyncTranslator {
         const ptype = this.checker.getTypeOfSymbolAtLocation(p, where ?? p.valueDeclaration!);
         // A field of a type parameter (`{ at, data: T }`): shared by every instantiation, it holds any value.
         let pt = ptype.flags & ts.TypeFlags.TypeParameter ? 'Any?' : this.type(ptype, where);
-        // Lenient code: an object field may be missing though its type says not (a spread without it).
-        if (this.lenient && this.lenientRef(pt) !== pt) pt = this.lenientRef(pt);
         const symbolic = wellKnownMember(p.name);
         if (symbolic) return { name: symbolic, type: pt, symbol: true };
         if (pt === 'Void' || pt === 'Never') pt = 'Any?';
@@ -7444,8 +7442,10 @@ ${members.join('\n')}
           const tmp = this.fresh('__spread');
           spreadTemps.push(`let ${tmp}: Any? = ${this.tryPrefix(p.expression)}${src}`);
           for (const f of order) {
-            const prev = given.get(f.name) ?? (f.type.endsWith('?') ? 'nil' : this.zero(f.type) ?? 'nil');
-            given.set(f.name, `(jsHasKey(${tmp}, ${swiftString(f.name)}) ? ${this.fromAnyCode(`jsField(${tmp}, ${swiftString(f.name)})`, f.type, true)} : ${prev})`);
+            const read = this.fromAnyCode(`jsField(${tmp}, ${swiftString(f.name)})`, f.type, true);
+            const prev = given.get(f.name) ?? (f.type.endsWith('?') ? 'nil' : this.zero(f.type));
+            // A field no other key gives and no zero fills (`device: GPUDevice`): only the spread can.
+            given.set(f.name, prev === null ? read : `(jsHasKey(${tmp}, ${swiftString(f.name)}) ? ${read} : ${prev})`);
           }
           continue;
         }
