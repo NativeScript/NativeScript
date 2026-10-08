@@ -1,6 +1,6 @@
 import ts from 'typescript';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { kitExtends, kitIndex, kitMember, type KitMember, type KitType } from './kit-index.ts';
 import { splitTopLevel, type Translator } from './swift.ts';
 import { KIT_APPLE_SOURCES } from './paths.ts';
@@ -32,12 +32,40 @@ function coreBarrels(root: string): Map<string, string> {
 /** A declaration of core's TypeScript API; the typings of its own native code (`objc!NativeScriptUtils.d.ts`) are native declarations. */
 export function isCoreDeclaration(decl: ts.Declaration | undefined): boolean {
   const file = decl?.getSourceFile().fileName;
-  return !!file && KIT_PACKAGES.test(file) && !/[\\/]objc![^\\/]+\.d\.ts$/.test(file);
+  return !!file && (KIT_PACKAGES.test(file) || kitPackageDeclaration(file)) && !/[\\/]objc![^\\/]+\.d\.ts$/.test(file);
+}
+
+/**
+ * A declaration file of core or a kit plugin by the package it is in, as Node finds the nearest package.json:
+ * where the package is not under `node_modules/<name>` (core's own repository: `packages/core`, `dist/packages/core`).
+ */
+function kitPackageDeclaration(file: string): boolean {
+  if (!file.endsWith('.d.ts')) return false;
+  const name = packageOf(file)?.name;
+  return name === '@nativescript/core' || (!!name && KIT_PLUGINS.includes(name));
+}
+
+const packages = new Map<string, { name: string; root: string } | null>();
+/** The package a file is in: the nearest package.json naming one. */
+export function packageOf(file: string): { name: string; root: string } | null {
+  const seen: string[] = [];
+  let found: { name: string; root: string } | null = null;
+  for (let dir = dirname(file); ; dir = dirname(dir)) {
+    if (packages.has(dir)) { found = packages.get(dir)!; break; }
+    seen.push(dir);
+    const manifest = join(dir, 'package.json');
+    const name = existsSync(manifest) ? (JSON.parse(readFileSync(manifest, 'utf8')) as { name?: string }).name : undefined;
+    if (name) { found = { name, root: dir }; break; }
+    if (dirname(dir) === dir) break;
+  }
+  for (const d of seen) packages.set(d, found);
+  return found;
 }
 
 /** A member core's declarations mark as a view property (`@nsProperty`). */
 export function isCoreProperty(decl: ts.Declaration): boolean {
-  return /[\\/]@nativescript[\\/]core[\\/]/.test(decl.getSourceFile().fileName) && ts.getJSDocTags(decl).some((t) => t.tagName.text === 'nsProperty');
+  const file = decl.getSourceFile().fileName;
+  return (/[\\/]@nativescript[\\/]core[\\/]/.test(file) || (file.endsWith('.d.ts') && packageOf(file)?.name === '@nativescript/core')) && ts.getJSDocTags(decl).some((t) => t.tagName.text === 'nsProperty');
 }
 
 /**
@@ -206,7 +234,7 @@ export class CoreAPI {
     const constant = !!target && !!(target.flags & ts.SymbolFlags.Variable) && !!decl && ts.isVariableDeclaration(decl) && ts.isSourceFile(decl.parent.parent.parent);
     if (!target || !(target.flags & ts.SymbolFlags.ValueModule || constant) || !decl || !isCoreDeclaration(decl)) return null;
     const file = decl.getSourceFile().fileName;
-    const root = /^(.*[\\/]@nativescript[\\/]core)[\\/]/.exec(file)?.[1];
+    const root = /^(.*[\\/]@nativescript[\\/]core)[\\/]/.exec(file)?.[1] ?? (packageOf(file)?.name === '@nativescript/core' ? packageOf(file)!.root : undefined);
     const barrel = root ? coreBarrels(root).get(file.slice(root.length + 1).split(/[\\/]/)[0]) : undefined;
     const candidates = ts.isSourceFile(decl) ? [barrel] : [barrel && `${barrel}.${target.name}`, constant ? undefined : target.name];
     return candidates.find((c): c is string => !!c && this.index.has(c)) ?? null;

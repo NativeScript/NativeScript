@@ -210,11 +210,12 @@ export function generateKit(o: KitOptions): KitResult {
   kitIndexOptions.exclude = o.replaces ? new RegExp(`^Core/|${o.replaces.source}`) : /^Core\//;
   const kitInternal = internalTypes(KIT, o.replaces);
   const counterparts = new Map<string, Record<string, string>>(Object.entries(o.counterparts ?? {}).map(([f, m]) => [f.startsWith('npm:') ? `${MOOT}npm/${f.slice(4)}.d.ts` : f.startsWith('moot:') ? MOOT + f.slice(5).replace(/\.ts$/, '.d.ts') : f.startsWith('~/') ? f : join(core, f), m]));
-  // The compiled core file a published declaration (`ui/layouts/root-layout/index.d.ts`) declares.
+  // The compiled core file a declaration (`ui/layouts/root-layout/index.d.ts`) declares: published, or beside core's own source.
   const sourceOf = (dts: string): string | null => {
     const declarations = resolve(o.declarations);
-    if (!dts.startsWith(declarations + '/')) return null;
-    const base = join(core, relative(declarations, dts).replace(/\.d\.ts$/, ''));
+    const root = dts.startsWith(declarations + '/') ? declarations : dts.startsWith(resolve(core) + '/') ? resolve(core) : null;
+    if (!root) return null;
+    const base = join(core, relative(root, dts).replace(/\.d\.ts$/, ''));
     return [`${base}.ios.ts`, `${base}.ts`].find((c) => compiled.has(c)) ?? null;
   };
   let translator: Translator;

@@ -5430,7 +5430,9 @@ ${members.join('\n')}
     if (native) return native;
     const dot = e.questionDotToken ? '?.' : '.';
     if (name === 'length' && this.isString(target)) {
-      return this.typeOf(target).endsWith('?') ? `${this.expr(target)}.map { Double($0.utf16.count) }` : `Double(${this.expr(target)}.utf16.count)`;
+      if (!this.typeOf(target).endsWith('?')) return `Double(${this.expr(target)}.utf16.count)`;
+      // Only a chain (`s?.length`) reads undefined; `s.length` of null or undefined throws, as unwrapping traps.
+      return e.questionDotToken || ts.isOptionalChain(e) ? `${this.expr(target)}.map { Double($0.utf16.count) }` : `Double(${this.expr(target)}!.utf16.count)`;
     }
     if (this.isAny(target)) {
       const t = this.typeOf(e);
@@ -6099,6 +6101,13 @@ ${members.join('\n')}
         this.subst.set(target, v);
         try {
           return `(${recv}).map { (${v}: ${t}) in ${t === 'String' ? this.stringMethod(method, target, e) : this.numberMethod(method, target, e)} }`;
+        } finally { this.subst.delete(target); }
+      }
+      // `s.slice(…)` of null or undefined throws, as unwrapping traps; only a chain reads undefined.
+      if ((t === 'String' || t === 'Double') && this.typeOf(target).endsWith('?') && !ts.isOptionalChain(e)) {
+        this.subst.set(target, `${this.expr(target)}!`);
+        try {
+          return t === 'String' ? this.stringMethod(method, target, e) : this.numberMethod(method, target, e);
         } finally { this.subst.delete(target); }
       }
       if (t === 'String') return this.stringMethod(method, target, e);
