@@ -2,14 +2,7 @@ import Foundation
 import NativeScriptKit
 import CanvasNative
 
-/// A host object of another area that `GPUQueue.copyExternalImageToTexture` copies from.
-// CROSS-AREA: ImageBitmap and ImageAsset (`.imageAsset`), ImageData (`.imageData`),
-// CanvasRenderingContext2D (`.context2D`) and the WebGL contexts (`.webgl`) conform in their own areas.
-protocol GPUImageCopySource: AnyObject {
-    var gpuImageCopySource: GPUImageSource { get }
-}
-
-/// The native object a copy source holds, as `canvas_native.h` types it.
+/// The native object a `copyExternalImageToTexture` source holds, as `canvas_native.h` types it.
 enum GPUImageSource {
     /// `const ImageAsset *`
     case imageAsset(OpaquePointer?)
@@ -19,6 +12,18 @@ enum GPUImageSource {
     case context2D(OpaquePointer?)
     /// `const WebGLState *`
     case webgl(OpaquePointer?)
+
+    /// The source an ImageBitmap, ImageAsset, ImageData, 2D context or WebGL context holds; nil for any other value.
+    init?(_ value: Any?) {
+        switch value {
+        case let bitmap as ImageBitmapHost: self = .imageAsset(bitmap.asset)
+        case let asset as ImageAssetHost: self = .imageAsset(asset.asset)
+        case let data as ImageDataHost: self = .imageData(data.imageData)
+        case let context as CanvasRenderingContext2DHost: self = .context2D(context.context)
+        case let gl as WebGLRenderingContextHost: self = .webgl(gl.state)
+        default: return nil
+        }
+    }
 }
 
 /// `GPUQueue`.
@@ -114,7 +119,7 @@ final class GPUQueueHost: GPUObjectHost {
         let sourceValue = args[0], destinationValue = args[1], sizeValue = args[2]
         guard gpuIsObject(sourceValue), gpuIsObject(destinationValue), gpuIsObject(sizeValue) else { return }
 
-        let image = (gpuMember(sourceValue, "source") as? GPUImageCopySource)?.gpuImageCopySource
+        let image = GPUImageSource(gpuMember(sourceValue, "source"))
         var width: UInt32 = 0
         var height: UInt32 = 0
         var nativeTexture: UnsafeMutableRawPointer?

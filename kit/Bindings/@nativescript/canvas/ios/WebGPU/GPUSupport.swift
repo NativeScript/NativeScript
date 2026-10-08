@@ -74,14 +74,14 @@ func gpuString(_ value: Any?) -> String { jsToString(value) }
 func gpuLabel(_ value: Any?) -> String? { value as? String }
 
 /// A typed array of that kind (`IsUint32Array`): its bytes.
-func gpuTypedArray(_ value: Any?, _ name: String) -> UnsafeMutableRawBufferPointer? {
-    guard let source = value as? JSBufferSource, (source as? JSDynamic)?.jsClassName == name else { return nil }
+func gpuTypedArray(_ value: Any?, _ kind: JSTypedArrayKind) -> UnsafeMutableRawBufferPointer? {
+    guard let source = value as? JSBufferSource, source.jsElementKind == kind else { return nil }
     return source.jsBytes
 }
 
 /// `IsTypedArray() || IsArrayBuffer()`: the bytes of an ArrayBuffer or a typed array, not a DataView.
 func gpuBufferBytes(_ value: Any?) -> UnsafeMutableRawBufferPointer? {
-    guard let source = value as? JSBufferSource, (source as? JSDynamic)?.jsClassName != "DataView" else { return nil }
+    guard let source = value as? JSBufferSource, source is JSArrayBuffer || source.jsElementKind != nil else { return nil }
     return source.jsBytes
 }
 
@@ -411,7 +411,7 @@ func gpuImageCopyBuffer(_ value: Any?) -> CanvasImageCopyBuffer {
 func gpuSetBindGroup(_ args: Args, _ set: (UInt32, OpaquePointer?, UnsafePointer<UInt32>?, UInt, UInt, UInt) -> Void) {
     let index = gpuUint32(args[0])
     let group = (args[1] as? GPUBindGroupHost)?.group
-    if let bytes = gpuTypedArray(args[2], "Uint32Array") {
+    if let bytes = gpuTypedArray(args[2], .uint32) {
         set(index, group, bytes.baseAddress.map { UnsafePointer($0.assumingMemoryBound(to: UInt32.self)) },
             UInt(bytes.count / 4), gpuSize(args.number(3)), gpuSize(args.number(4)))
     } else {

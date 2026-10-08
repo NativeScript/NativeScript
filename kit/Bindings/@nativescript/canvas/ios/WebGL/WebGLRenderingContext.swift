@@ -265,8 +265,7 @@ class WebGLRenderingContextHost: CanvasHost {
         case .deleteFramebuffer:
             if let framebuffer = args.host(0, WebGLFramebufferHost.self) { canvas_native_webgl_delete_framebuffer(framebuffer.name, state) }
         case .deleteProgram:
-            // The C++ binding deletes a program through the framebuffer call; kept for fidelity.
-            if let program = args.host(0, WebGLProgramHost.self) { canvas_native_webgl_delete_framebuffer(program.name, state) }
+            if let program = args.host(0, WebGLProgramHost.self) { canvas_native_webgl_delete_program(program.name, state) }
         case .deleteRenderbuffer:
             if let renderbuffer = args.host(0, WebGLRenderbufferHost.self) { canvas_native_webgl_delete_renderbuffer(renderbuffer.name, state) }
         case .deleteShader:
@@ -721,15 +720,16 @@ class WebGLRenderingContextHost: CanvasHost {
                 canvas_native_webgl_tex_image2d_webgl(target, level, internalformat, format, type, gl.state, state)
                 return
             }
-            guard let source = pixels as? WebGLPixelSource else { return }
-            switch source.webglPixels {
+            guard let source = WebGLPixels(pixels) else { return }
+            switch source {
             case .imageAsset(let asset), .imageBitmap(let asset):
                 canvas_native_webgl_tex_image2d_image_asset(target, level, internalformat, format, type, asset, state)
             case .canvas2D(let context):
                 canvas_native_webgl_tex_image2d_canvas2d(target, level, internalformat, format, type, context, state)
             case .imageData(let data):
-                let image = webglImageDataPixels(data)
-                canvas_native_webgl_tex_image2d(target, level, internalformat, image.width, image.height, 0, format, type, image.bytes, image.count, state)
+                withWebGLImageDataPixels(data) { width, height, bytes, count in
+                    canvas_native_webgl_tex_image2d(target, level, internalformat, width, height, 0, format, type, bytes, count, state)
+                }
             }
         case 8:
             canvas_native_webgl_tex_image2d_none(args.int32(0), args.int32(1), args.int32(2), args.int32(3), args.int32(4), args.int32(5), args.int32(6), args.int32(7), state)
@@ -743,9 +743,9 @@ class WebGLRenderingContextHost: CanvasHost {
                 canvas_native_webgl_tex_image2d(target, level, internalformat, width, height, border, format, type, webglU8(bytes), UInt(bytes.count), state)
             } else if let gl = value as? WebGLRenderingContextHost {
                 canvas_native_webgl2_tex_image2d_webgl(target, level, internalformat, UInt32(bitPattern: width), UInt32(bitPattern: height), border, format, type, gl.state, state)
-            } else if let source = value as? WebGLPixelSource {
+            } else if let source = WebGLPixels(value) {
                 let (w, h) = (UInt32(bitPattern: width), UInt32(bitPattern: height))
-                switch source.webglPixels {
+                switch source {
                 case .imageAsset(let asset), .imageBitmap(let asset):
                     canvas_native_webgl2_tex_image2d_image_asset(target, level, internalformat, w, h, border, format, type, asset, state)
                 case .canvas2D(let context):
@@ -769,16 +769,16 @@ class WebGLRenderingContextHost: CanvasHost {
                 canvas_native_webgl_tex_sub_image2d_webgl(target, level, xoffset, yoffset, format, type, gl.state, state)
                 return
             }
-            guard let source = pixels as? WebGLPixelSource else { return }
-            switch source.webglPixels {
+            guard let source = WebGLPixels(pixels) else { return }
+            switch source {
             case .imageAsset(let asset), .imageBitmap(let asset):
                 canvas_native_webgl_tex_sub_image2d_asset(target, level, xoffset, yoffset, format, type, asset, state)
             case .canvas2D(let context):
                 canvas_native_webgl_tex_sub_image2d_canvas2d(target, level, xoffset, yoffset, format, type, context, state)
             case .imageData(let data):
-                let image = webglImageDataPixels(data)
-                canvas_native_webgl_tex_sub_image2d(target, level, xoffset, yoffset, image.width, image.height, format, Int32(GL.RGBA),
-                                                    image.bytes, image.count, state)
+                withWebGLImageDataPixels(data) { width, height, bytes, count in
+                    canvas_native_webgl_tex_sub_image2d(target, level, xoffset, yoffset, width, height, format, Int32(GL.RGBA), bytes, count, state)
+                }
             }
         } else if args.count == 9, let bytes = webglBytesToBufferEnd(args[8]) {
             canvas_native_webgl_tex_sub_image2d(args.uint32(0), args.int32(1), args.int32(2), args.int32(3), args.int32(4), args.int32(5),

@@ -36,13 +36,11 @@ final class TextEncoderHost: CanvasHost {
         guard key == "encode" else { return nil }
         guard let encoder else { return .some(nil) }
         let encoded = args.string(0).withCString { canvas_native_text_encoder_encode(encoder, $0) }
-        // TYPED-ARRAY: Uint8ClampedArray
-        return .some(try JSUint8Array(buffer: takeArrayBuffer(encoded)))
+        return .some(takeClampedArrayNoCopy(encoded))
     }
 }
 
-/// `TextDecoder`. What it decodes it gives as the engine binding makes the string: one byte per
-/// character (Latin-1), so text beyond ASCII comes out as its UTF-8 bytes.
+/// `TextDecoder`. The C API decodes by the label it was made with and gives the text as UTF-8.
 final class TextDecoderHost: CanvasHost {
     let decoder: OpaquePointer?
 
@@ -74,9 +72,9 @@ final class TextDecoderHost: CanvasHost {
             let bytes = source.jsBytes
             let data = bytes.baseAddress?.assumingMemoryBound(to: UInt8.self)
             if source is JSArrayBuffer {
-                return .some(takeOneByteString(canvas_native_text_decoder_decode(decoder, data, UInt(bytes.count))))
+                return .some(takeString(canvas_native_text_decoder_decode(decoder, data, UInt(bytes.count))))
             }
-            return .some(takeOneByteString(cow: canvas_native_text_decoder_decode_as_cow(decoder, data, UInt(bytes.count))))
+            return .some(takeUTF8String(cow: canvas_native_text_decoder_decode_as_cow(decoder, data, UInt(bytes.count))))
         case "decodeAsync":
             let (promise, resolve, reject) = JSPromise<Any?>.withResolvers()
             guard isJSObject(args[0]) else {
@@ -96,7 +94,7 @@ final class TextDecoderHost: CanvasHost {
                 let decoded = withExtendedLifetime((self, source)) {
                     canvas_native_text_decoder_decode_as_cow(decoder, bytes.baseAddress?.assumingMemoryBound(to: UInt8.self), UInt(bytes.count))
                 }
-                CanvasWorker.onMain { resolve(takeOneByteString(cow: decoded)) }
+                CanvasWorker.onMain { resolve(takeUTF8String(cow: decoded)) }
             }
             return .some(promise)
         default:

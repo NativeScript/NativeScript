@@ -223,7 +223,7 @@ final class WebGL2RenderingContextHost: WebGLRenderingContextHost {
             return activeUniforms(args)
         case .getBufferSubData:
             guard let view = args[2] as? JSBufferSource, !(view is JSArrayBuffer), let bytes = webglBytesToBufferEnd(view) else { return nil }
-            let bytesPerElement = WebGLBufferKind(view).bytesPerElement
+            let bytesPerElement = view.jsElementKind?.bytesPerElement ?? 0
             let dstOffset = args.isNumber(3) ? webglInt(args.number(3)) &* bytesPerElement : 0
             let length = args.isNumber(4) ? webglInt(args.number(4)) &* bytesPerElement : 0
             canvas_native_webgl2_get_buffer_sub_data(args.uint32(0), webglInt(args.number(1)), webglU8(bytes), UInt(bytes.count),
@@ -438,9 +438,8 @@ final class WebGL2RenderingContextHost: WebGLRenderingContextHost {
         guard args.count > 8 else { return }
         let (target, level, xoffset, yoffset, zoffset) = (args.uint32(0), args.int32(1), args.int32(2), args.int32(3), args.int32(4))
         let (width, height, depth, format) = (args.int32(5), args.int32(6), args.int32(7), args.uint32(8))
-        // The C++ binding reads the data or image size from the first argument (the target), not the tenth.
-        guard webglIsObject(args[9]) else { return }
-        if let bytes = webglViewBytes(args[0]) {
+        if webglIsObject(args[9]) {
+            guard let bytes = webglViewBytes(args[9]) else { return }
             let srcOffset = args.isNumber(10) ? webglUInt(args.number(10)) : 0
             let srcLengthOverride = args.isNumber(11) ? webglUInt(args.number(11)) : 0
             canvas_native_webgl2_compressed_tex_sub_image3d(target, level, xoffset, yoffset, zoffset, width, height, depth, format,
@@ -448,7 +447,7 @@ final class WebGL2RenderingContextHost: WebGLRenderingContextHost {
         } else {
             let offset = args.isNumber(10) ? args.int32(10) : 0
             canvas_native_webgl2_compressed_tex_sub_image3d_none(target, level, xoffset, yoffset, zoffset, width, height, depth, format,
-                                                                 args.int32(0), UInt(bitPattern: Int(offset)), state)
+                                                                 args.int32(9), UInt(bitPattern: Int(offset)), state)
         }
     }
 
@@ -466,16 +465,16 @@ final class WebGL2RenderingContextHost: WebGLRenderingContextHost {
                                                       UInt(bitPattern: webglInt(args.number(9))), state)
             } else if let bytes = webglViewBytes(source) {
                 canvas_native_webgl2_tex_image3d(target, level, internalformat, width, height, depth, border, format, type, webglU8(bytes), UInt(bytes.count), state)
-            } else if let pixels = (source as? WebGLPixelSource)?.webglPixels {
+            } else if let pixels = WebGLPixels(source) {
                 switch pixels {
                 case .canvas2D(let context):
                     canvas_native_webgl2_tex_image3d_canvas2d(target, level, internalformat, width, height, depth, border, format, type, context, state)
                 case .imageAsset(let asset), .imageBitmap(let asset):
                     canvas_native_webgl2_tex_image3d_asset(target, level, internalformat, width, height, depth, border, format, type, asset, state)
                 case .imageData(let data):
-                    let image = webglImageDataPixels(data)
-                    canvas_native_webgl2_tex_image3d(target, level, internalformat, image.width, image.height, depth, border, format, GL.RGBA,
-                                                     image.bytes, image.count, state)
+                    withWebGLImageDataPixels(data) { width, height, bytes, count in
+                        canvas_native_webgl2_tex_image3d(target, level, internalformat, width, height, depth, border, format, GL.RGBA, bytes, count, state)
+                    }
                 }
             }
         } else if args.count > 10, let bytes = webglViewBytes(source) {
@@ -498,16 +497,16 @@ final class WebGL2RenderingContextHost: WebGLRenderingContextHost {
             } else if let bytes = webglViewBytes(source) {
                 canvas_native_webgl2_tex_sub_image3d(target, level, xoffset, yoffset, zoffset, width, height, depth, format, type,
                                                      webglU8(bytes), UInt(bytes.count), state)
-            } else if let pixels = (source as? WebGLPixelSource)?.webglPixels {
+            } else if let pixels = WebGLPixels(source) {
                 switch pixels {
                 case .imageAsset(let asset):
                     canvas_native_webgl2_tex_sub_image3d_asset(target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, asset, state)
                 case .canvas2D(let context):
                     canvas_native_webgl2_tex_sub_image3d_canvas2d(target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, context, state)
                 case .imageData(let data):
-                    let image = webglImageDataPixels(data)
-                    canvas_native_webgl2_tex_sub_image3d(target, level, xoffset, yoffset, zoffset, image.width, image.height, depth, format, GL.RGBA,
-                                                         image.bytes, image.count, state)
+                    withWebGLImageDataPixels(data) { width, height, bytes, count in
+                        canvas_native_webgl2_tex_sub_image3d(target, level, xoffset, yoffset, zoffset, width, height, depth, format, GL.RGBA, bytes, count, state)
+                    }
                 case .imageBitmap:
                     break
                 }

@@ -329,6 +329,8 @@ const native = pluginNative(plugins.all(), out, {
 });
 dependencies.dispose();
 const translator = new Translator(checker, infos, sourceFiles, { pluginFiles, reach, properties });
+const writtenStrictness = new Map<string, boolean>();
+for (const f of pluginFiles) if (!writtenStrict(f)) translator.lenientFiles.add(f);
 translator.lines = sourceLines;
 const located = (code: string) => (sourceLines ? sourceLines.swift(code) : code);
 translator.appModule = name;
@@ -586,6 +588,20 @@ function coreClosedWorld(kitSources: string, appSwift: string): { initializers: 
     initializers: Object.keys(graph).filter((f) => running.has(f) && graph[f].init).map((f) => graph[f].init!),
     excluded: files.filter((f) => !compiled.has(f)).map((f) => `Core/${f}`),
   };
+}
+
+/** Whether a source's own tsconfig (its `extends` followed) checks null: code written without it is translated as core is. */
+function writtenStrict(file: string, strictness = writtenStrictness): boolean {
+  for (let dir = dirname(file); dirname(dir) !== dir; dir = dirname(dir)) {
+    const config = join(dir, 'tsconfig.json');
+    if (!existsSync(config)) continue;
+    if (!strictness.has(config)) {
+      const o = ts.getParsedCommandLineOfConfigFile(config, {}, { ...ts.sys, onUnRecoverableConfigFileDiagnostic: () => {} })?.options ?? {};
+      strictness.set(config, !!(o.strictNullChecks ?? o.strict));
+    }
+    return strictness.get(config)!;
+  }
+  return true;
 }
 
 /** The app's package.json as its bundle has it, or an empty object. */

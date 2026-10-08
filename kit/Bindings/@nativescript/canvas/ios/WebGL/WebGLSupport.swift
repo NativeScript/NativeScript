@@ -2,46 +2,10 @@ import Foundation
 import NativeScriptKit
 import CanvasNative
 
-/// A buffer argument as V8 tells them apart (`IsArrayBuffer`, `IsFloat32Array` …).
-enum WebGLBufferKind {
-    case arrayBuffer, int8, uint8, uint8Clamped, int16, uint16, int32, uint32, float32, float64, bigInt64, bigUint64
-    /// A DataView, or a view of no element type the binding knows.
-    case dataView
-
-    init(_ source: JSBufferSource) {
-        if source is JSArrayBuffer { self = .arrayBuffer; return }
-        switch (source as? JSDynamic)?.jsClassName {
-        case "Float32Array": self = .float32
-        case "Uint8Array": self = .uint8
-        case "Int32Array": self = .int32
-        case "Uint32Array": self = .uint32
-        case "Uint16Array": self = .uint16
-        case "Int16Array": self = .int16
-        case "Int8Array": self = .int8
-        case "Uint8ClampedArray": self = .uint8Clamped
-        case "Float64Array": self = .float64
-        case "BigInt64Array": self = .bigInt64
-        case "BigUint64Array": self = .bigUint64
-        default: self = .dataView
-        }
-    }
-
-    /// `BYTES_PER_ELEMENT`, 0 for a view that has none.
-    var bytesPerElement: Int {
-        switch self {
-        case .int8, .uint8, .uint8Clamped: return 1
-        case .int16, .uint16: return 2
-        case .int32, .uint32, .float32: return 4
-        case .float64, .bigInt64, .bigUint64: return 8
-        case .arrayBuffer, .dataView: return 0
-        }
-    }
-}
-
 /// A typed array's elements, when the value is a typed array of that kind.
 @inline(__always)
-func webglElements<T>(_ value: Any?, _ kind: WebGLBufferKind, _: T.Type) -> UnsafeBufferPointer<T>? {
-    guard let source = value as? JSBufferSource, WebGLBufferKind(source) == kind else { return nil }
+func webglElements<T>(_ value: Any?, _ kind: JSTypedArrayKind, _: T.Type) -> UnsafeBufferPointer<T>? {
+    guard let source = value as? JSBufferSource, source.jsElementKind == kind else { return nil }
     let bytes = source.jsBytes
     return UnsafeBufferPointer(start: bytes.baseAddress?.assumingMemoryBound(to: T.self), count: bytes.count / MemoryLayout<T>.stride)
 }
@@ -49,7 +13,7 @@ func webglElements<T>(_ value: Any?, _ kind: WebGLBufferKind, _: T.Type) -> Unsa
 /// The values of a typed array of that kind, or else (where `convert` is given) of an array, each
 /// number converted: a typed array is read in place, an array copied, as the C++ binding does.
 @inline(__always)
-func withWebGLValues<T>(_ value: Any?, _ kind: WebGLBufferKind, array convert: ((Double) -> T)?, _ body: (UnsafePointer<T>?, UInt) -> Void) {
+func withWebGLValues<T>(_ value: Any?, _ kind: JSTypedArrayKind, array convert: ((Double) -> T)?, _ body: (UnsafePointer<T>?, UInt) -> Void) {
     if let typed = webglElements(value, kind, T.self) {
         body(typed.baseAddress, UInt(typed.count))
         return
@@ -80,10 +44,9 @@ func webglViewBytes(_ value: Any?) -> UnsafeMutableRawBufferPointer? {
 func webglBytesToBufferEnd(_ value: Any?) -> UnsafeMutableRawBufferPointer? {
     guard let source = value as? JSBufferSource else { return nil }
     let bytes = source.jsBytes
-    guard !(source is JSArrayBuffer), let start = bytes.baseAddress,
-          let buffer = (source as? JSDynamic)?[jsKey: "buffer"] as? JSArrayBuffer,
-          let bufferStart = buffer.jsBytes.baseAddress else { return bytes }
-    let end = bufferStart + buffer.count
+    guard let view = source as? JSArrayBufferView, let start = bytes.baseAddress,
+          let bufferStart = view.buffer.jsBytes.baseAddress else { return bytes }
+    let end = bufferStart + view.buffer.count
     return end > start ? UnsafeMutableRawBufferPointer(start: start, count: end - start) : bytes
 }
 
@@ -146,33 +109,31 @@ func webglString(_ c: UnsafePointer<CChar>?) -> String {
 
 /// A `Float32Array` of an F32Buffer the caller owns, which this releases.
 func webglFloat32Array(_ buffer: OpaquePointer?) -> Any? {
-    guard let buffer else { return webglTypedArray(nil, 0) }
+    guard let buffer else { return webglTypedArray(JSFloat32Element.self, nil, 0) }
     defer { canvas_native_f32_buffer_release(buffer) }
-    // TYPED-ARRAY: Float32Array
-    return webglTypedArray(UnsafeRawPointer(canvas_native_f32_buffer_get_bytes(buffer)), Int(canvas_native_f32_buffer_get_length(buffer)) * 4)
+    return webglTypedArray(JSFloat32Element.self, canvas_native_f32_buffer_get_bytes(buffer), Int(canvas_native_f32_buffer_get_length(buffer)))
 }
 
 /// An `Int32Array` of an I32Buffer the caller owns, which this releases.
 func webglInt32Array(_ buffer: OpaquePointer?) -> Any? {
-    guard let buffer else { return webglTypedArray(nil, 0) }
+    guard let buffer else { return webglTypedArray(JSInt32Element.self, nil, 0) }
     defer { canvas_native_i32_buffer_release(buffer) }
-    // TYPED-ARRAY: Int32Array
-    return webglTypedArray(UnsafeRawPointer(canvas_native_i32_buffer_get_bytes(buffer)), Int(canvas_native_i32_buffer_get_length(buffer)) * 4)
+    return webglTypedArray(JSInt32Element.self, canvas_native_i32_buffer_get_bytes(buffer), Int(canvas_native_i32_buffer_get_length(buffer)))
 }
 
 /// A `Uint32Array` of a U32Buffer the caller owns, which this releases.
 func webglUint32Array(_ buffer: OpaquePointer?) -> Any? {
-    guard let buffer else { return webglTypedArray(nil, 0) }
+    guard let buffer else { return webglTypedArray(JSUint32Element.self, nil, 0) }
     defer { canvas_native_u32_buffer_release(buffer) }
-    // TYPED-ARRAY: Uint32Array
-    return webglTypedArray(UnsafeRawPointer(canvas_native_u32_buffer_get_bytes(buffer)), Int(canvas_native_u32_buffer_get_length(buffer)) * 4)
+    return webglTypedArray(JSUint32Element.self, canvas_native_u32_buffer_get_bytes(buffer), Int(canvas_native_u32_buffer_get_length(buffer)))
 }
 
-/// The bytes copied into a new buffer, where the C++ binding returns a typed array over them.
-private func webglTypedArray(_ bytes: UnsafeRawPointer?, _ count: Int) -> Any? {
-    guard let buffer = try? JSArrayBuffer(Double(count)) else { return nil }
-    if let bytes, count > 0, let to = buffer.jsBytes.baseAddress { to.copyMemory(from: bytes, byteCount: count) }
-    return buffer
+/// A typed array of a copy of `count` native elements.
+private func webglTypedArray<Kind: JSTypedArrayElement>(_: Kind.Type, _ elements: UnsafeRawPointer?, _ count: Int) -> Any? {
+    guard let array = try? JSTypedArray<Kind>(length: Double(count)) else { return nil }
+    let bytes = array.jsBytes
+    if let elements, let to = bytes.baseAddress, bytes.count > 0 { to.copyMemory(from: elements, byteCount: bytes.count) }
+    return array
 }
 
 /// An array of booleans of a U8Buffer the caller owns (a byte of 1 is true), which this releases.
@@ -184,15 +145,9 @@ func webglBoolArray(_ buffer: OpaquePointer?) -> JSArray<Any?> {
     return JSArray<Any?>((0..<count).map { bytes[$0] == 1 })
 }
 
-// MARK: - Pixel sources of other areas
+// MARK: - Pixel sources
 
-// CROSS-AREA: the hosts of ImageAsset, ImageBitmap, CanvasRenderingContext2D and ImageData adopt
-// `WebGLPixelSource`, so that `texImage2D`, `texSubImage2D`, `texImage3D` and `texSubImage3D` read them.
-/// A host `texImage2D` and its kin read pixels from, as the C++ binding tells them apart by native type.
-protocol WebGLPixelSource: AnyObject {
-    var webglPixels: WebGLPixels { get }
-}
-
+/// What `texImage2D` and its kin read pixels from, as the C++ binding tells hosts apart by native type.
 enum WebGLPixels {
     /// An ImageAsset's `ImageAsset *`.
     case imageAsset(OpaquePointer)
@@ -202,11 +157,31 @@ enum WebGLPixels {
     case canvas2D(OpaquePointer)
     /// An ImageData's `ImageData *`.
     case imageData(OpaquePointer)
+
+    /// The pixels of an ImageAsset, ImageBitmap, 2D context or ImageData; nil for any other value.
+    init?(_ value: Any?) {
+        switch value {
+        case let image as ImageAssetHost:
+            guard let asset = image.asset else { return nil }
+            self = .imageAsset(asset)
+        case let bitmap as ImageBitmapHost:
+            guard let asset = bitmap.asset else { return nil }
+            self = .imageBitmap(asset)
+        case let context as CanvasRenderingContext2DHost:
+            self = .canvas2D(context.context)
+        case let data as ImageDataHost:
+            guard let imageData = data.imageData else { return nil }
+            self = .imageData(imageData)
+        default:
+            return nil
+        }
+    }
 }
 
-/// An ImageData's size and pixels, as the C++ binding reads them for `texImage2D` and its kin.
-func webglImageDataPixels(_ data: OpaquePointer) -> (width: Int32, height: Int32, bytes: UnsafePointer<UInt8>?, count: UInt) {
+/// Calls `body` with an ImageData's size and pixels, as the C++ binding reads them for `texImage2D` and its kin.
+func withWebGLImageDataPixels(_ data: OpaquePointer, _ body: (_ width: Int32, _ height: Int32, _ bytes: UnsafePointer<UInt8>?, _ count: UInt) -> Void) {
     let buffer = canvas_native_image_data_get_data(data)
-    return (canvas_native_image_data_get_width(data), canvas_native_image_data_get_height(data),
-            canvas_native_u8_buffer_get_bytes(buffer), UInt(canvas_native_u8_buffer_get_length(buffer)))
+    defer { canvas_native_u8_buffer_release(buffer) }
+    body(canvas_native_image_data_get_width(data), canvas_native_image_data_get_height(data),
+         canvas_native_u8_buffer_get_bytes(buffer), UInt(canvas_native_u8_buffer_get_length(buffer)))
 }

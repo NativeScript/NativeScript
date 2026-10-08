@@ -167,7 +167,7 @@ final class GPUDeviceHost: GPUObjectHost {
         let buffer = gpuWithCString(label) {
             canvas_native_webgpu_device_create_buffer(device, $0, size, usage, mappedAtCreation)
         }
-        return buffer.map { GPUBufferHost($0, mappedForWrite: mappedAtCreation) }
+        return buffer.map { GPUBufferHost($0) }
     }
 
     private func createPipelineLayout(_ options: Any?) -> Any? {

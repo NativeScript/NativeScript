@@ -487,8 +487,8 @@ final class CanvasRenderingContext2DHost: CanvasHost {
             default: canvas_native_context_draw_image_context(context, image.context, args.float(1), args.float(2), args.float(3), args.float(4), args.float(5), args.float(6), args.float(7), args.float(8))
             }
             markDirty()
-        case let image as CanvasWebGLStateSource:
-            guard let state = image.webGLState else { return }
+        case let image as WebGLRenderingContextHost:
+            let state = image.state
             switch count {
             case 3: canvas_native_context_draw_image_dx_dy_webgl(context, state, args.float(1), args.float(2))
             case 5: canvas_native_context_draw_image_dx_dy_dw_dh_webgl(context, state, args.float(1), args.float(2), args.float(3), args.float(4))
@@ -532,8 +532,8 @@ final class CanvasRenderingContext2DHost: CanvasHost {
             make = { canvas_native_context_create_pattern_asset(self.context, asset, $0) }
         case let source as CanvasRenderingContext2DHost:
             make = { canvas_native_context_create_pattern_canvas2d(source.context, self.context, $0) }
-        case let source as CanvasWebGLStateSource:
-            guard let state = source.webGLState else { return nil }
+        case let source as WebGLRenderingContextHost:
+            let state = source.state
             make = { canvas_native_context_create_pattern_webgl(state, self.context, $0) }
         default:
             return jsNull
@@ -544,7 +544,7 @@ final class CanvasRenderingContext2DHost: CanvasHost {
     }
 
     private func putImageData(_ args: Args) {
-        guard let host = args.host(0, ImageDataHost.self), let imageData = host.syncedImageData() else { return }
+        guard let host = args.host(0, ImageDataHost.self), let imageData = host.imageData else { return }
         switch args.count {
         case 3:
             let width = Float(canvas_native_image_data_get_width(imageData)), height = Float(canvas_native_image_data_get_height(imageData))

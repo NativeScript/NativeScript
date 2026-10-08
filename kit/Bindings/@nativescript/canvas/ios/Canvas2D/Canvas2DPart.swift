@@ -97,9 +97,9 @@ enum Canvas2DPart: CanvasModulePart {
         switch args[1] {
         case let buffer as JSArrayBuffer:
             bytes = buffer.jsBytes
-        case let view as JSBufferSource where jsClassNameOf(view) != "DataView":
+        case let view as JSArrayBufferView where view.jsElementKind != nil:
             // A typed array gives the whole buffer it views, as the engine binding reads it.
-            bytes = (member(view, "buffer") as? JSArrayBuffer)?.jsBytes ?? view.jsBytes
+            bytes = view.buffer.jsBytes
         default:
             return
         }
@@ -220,7 +220,7 @@ enum Canvas2DPart: CanvasModulePart {
         let decode: (() -> Bool)?
         switch image {
         case let data as ImageDataHost:
-            guard let source = data.syncedImageData() else {
+            guard let source = data.imageData else {
                 decode = nil
                 break
             }

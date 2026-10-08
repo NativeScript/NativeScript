@@ -207,12 +207,11 @@ final class DOMMatrixHost: CanvasHost {
     }
 }
 
-/// `ImageData`. Its `data` is read once and kept, as the engine's lazy data property is.
+/// `ImageData`. Its `data` is made once and kept, as the engine's lazy data property is: a
+/// Uint8ClampedArray over the native pixels, which holds its own reference to them.
 final class ImageDataHost: CanvasHost {
     let imageData: OpaquePointer?
-    // TYPED-ARRAY: Uint8ClampedArray over the native pixels. Until script's array can share
-    // the native bytes, it holds a copy that `syncedImageData` writes back before native use.
-    private var dataArray: JSUint8Array?
+    private var dataArray: JSUint8ClampedArray?
 
     override class var className: String? { "ImageData" }
     override var jsKeys: [String] { ["width", "height", "data"] }
@@ -226,7 +225,7 @@ final class ImageDataHost: CanvasHost {
         }
         if args.isNumber(0) {
             self.init(canvas_native_context_create_image_data(args.cInt(0), args.cInt(1)))
-        } else if jsClassNameOf(args[0]) == "Uint8ClampedArray", let source = args.buffer(0) {
+        } else if let source = args.buffer(0), source.jsElementKind == .uint8Clamped {
             let bytes = source.jsBytes
             self.init(canvas_native_context_create_image_data_with_data(args.cInt(1), args.cInt(2), bytes.baseAddress?.assumingMemoryBound(to: UInt8.self), UInt(bytes.count)))
         } else {
@@ -236,19 +235,6 @@ final class ImageDataHost: CanvasHost {
 
     deinit { if let imageData { canvas_native_image_data_release(imageData) } }
 
-    /// The native image data, with what script wrote through `data` in place.
-    func syncedImageData() -> OpaquePointer? {
-        guard let imageData, let dataArray else { return imageData }
-        if let buffer = canvas_native_image_data_get_data(imageData) {
-            if let bytes = canvas_native_u8_buffer_get_bytes_mut(buffer) {
-                let source = dataArray.jsBytes
-                memcpy(bytes, source.baseAddress, min(source.count, Int(canvas_native_u8_buffer_get_length(buffer))))
-            }
-            canvas_native_u8_buffer_release(buffer)
-        }
-        return imageData
-    }
-
     override func get(_ key: String) -> Any?? {
         switch key {
         case "width": return .some(Double(imageData.map(canvas_native_image_data_get_width) ?? 0))
@@ -256,9 +242,8 @@ final class ImageDataHost: CanvasHost {
         case "data":
             if let dataArray { return .some(dataArray) }
             guard let imageData else { return .some(nil) }
-            let array = (try? JSUint8Array(buffer: takeArrayBuffer(canvas_native_image_data_get_data(imageData)))) ?? nil
-            dataArray = array
-            return .some(array)
+            dataArray = takeClampedArrayNoCopy(canvas_native_image_data_get_data(imageData))
+            return .some(dataArray)
         default: return nil
         }
     }

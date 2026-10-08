@@ -79,10 +79,9 @@ extension WebGLConstantsExtensionHost {
                 "COMPRESSED_RGBA_ATC_INTERPOLATED_ALPHA_WEBGL": Double(GL.ATC_RGBA_INTERPOLATED_ALPHA_AMD),
             ])
         case WebGLExtensionTypeWebGLExtensionTypeWEBGL_compressed_texture_etc1:
-            // The C++ binding gives this the PVRTC enum, not ETC1's 0x8D64.
             return .init("WEBGL_compressed_texture_etc1", [
                 "ext_name": "WEBGL_compressed_texture_etc1",
-                "COMPRESSED_RGB_ETC1_WEBGL": Double(GL.COMPRESSED_RGB_PVRTC_4BPPV1_IMG),
+                "COMPRESSED_RGB_ETC1_WEBGL": 0x8D64 as Double,
             ])
         case WebGLExtensionTypeWebGLExtensionTypeWEBGL_compressed_texture_s3tc:
             return .init("WEBGL_compressed_texture_s3tc", [
@@ -161,16 +160,17 @@ final class ANGLEInstancedArraysHost: CanvasHost {
     }
 }
 
-/// `EXT_disjoint_timer_query`. Its methods are named `…Ext`, as the C++ binding names them.
+/// `EXT_disjoint_timer_query`. Each method answers to its spec name (`createQueryEXT`) and to the
+/// `…Ext` name the C++ binding gave it.
 final class EXTDisjointTimerQueryHost: CanvasHost {
     let query: OpaquePointer
     init(_ query: OpaquePointer) { self.query = query }
     deinit { canvas_native_webgl_EXT_disjoint_timer_query_destroy(query) }
 
     override class var className: String? { "EXT_disjoint_timer_query" }
-    override class var methods: Set<String> {
-        ["createQueryExt", "deleteQueryExt", "isQueryExt", "beginQueryExt", "endQueryExt", "queryCounterExt", "getQueryExt", "getQueryObjectExt", "getQueryParameterExt"]
-    }
+    override class var methods: Set<String> { Self.names }
+    private static let names = Set(["createQuery", "deleteQuery", "isQuery", "beginQuery", "endQuery", "queryCounter", "getQuery", "getQueryObject", "getQueryParameter"]
+        .flatMap { [$0 + "EXT", $0 + "Ext"] })
 
     override func get(_ key: String) -> Any?? {
         switch key {
@@ -187,25 +187,26 @@ final class EXTDisjointTimerQueryHost: CanvasHost {
     }
 
     override func invoke(_ key: String, _ args: Args) throws -> Any?? {
-        switch key {
-        case "createQueryExt":
+        guard Self.names.contains(key) else { return nil }
+        switch key.dropLast(3) {
+        case "createQuery":
             return .some(WebGLQueryHost(canvas_native_webgl_ext_disjoint_timer_query_create_query_ext(query)))
-        case "deleteQueryExt":
+        case "deleteQuery":
             if let q = args.host(0, WebGLQueryHost.self) { canvas_native_webgl_ext_disjoint_timer_query_delete_query_ext(q.name, query) }
-        case "isQueryExt":
+        case "isQuery":
             guard let q = args.host(0, WebGLQueryHost.self) else { return .some(false) }
             return .some(canvas_native_webgl_ext_disjoint_timer_query_is_query_ext(q.name, query))
-        case "beginQueryExt":
+        case "beginQuery":
             let target = args.uint32(0)
             if let q = args.host(1, WebGLQueryHost.self) { canvas_native_webgl_ext_disjoint_timer_query_begin_query_ext(target, q.name, query) }
-        case "endQueryExt":
+        case "endQuery":
             canvas_native_webgl_ext_disjoint_timer_query_end_query_ext(args.uint32(0), query)
-        case "queryCounterExt":
+        case "queryCounter":
             let target = args.uint32(1)
             if let q = args.host(0, WebGLQueryHost.self) { canvas_native_webgl_ext_disjoint_timer_query_query_counter_ext(q.name, target, query) }
-        case "getQueryExt":
+        case "getQuery":
             return .some(Double(canvas_native_webgl_ext_disjoint_timer_query_get_query_ext(args.uint32(0), args.uint32(1), query)))
-        case "getQueryObjectExt", "getQueryParameterExt":
+        case "getQueryObject", "getQueryParameter":
             guard let q = args.host(0, WebGLQueryHost.self) else { return .some(nil) }
             let pname = args.uint32(1)
             guard let result = canvas_native_webgl_ext_disjoint_timer_query_get_query_object_ext(q.name, pname, query) else { return .some(nil) }

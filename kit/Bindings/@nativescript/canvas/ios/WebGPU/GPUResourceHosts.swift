@@ -5,10 +5,6 @@ import CanvasNative
 /// `GPUBuffer`.
 final class GPUBufferHost: GPUObjectHost {
     let buffer: OpaquePointer
-    /// Ranges handed out by `getMappedRange`, as copies, and where each came from.
-    private var mappedRanges: [(copy: JSArrayBuffer, source: UnsafeMutableRawPointer)] = []
-    /// Whether the mapping is writable, so `unmap` writes the copies back.
-    private var mappedForWrite: Bool
 
     override class var className: String? { "GPUBuffer" }
     override class var methods: Set<String> { Self.names }
@@ -16,10 +12,7 @@ final class GPUBufferHost: GPUObjectHost {
     override class var lazyProperties: Set<String> { Self.lazy }
     private static let lazy: Set<String> = ["usage", "size", "label"]
 
-    init(_ buffer: OpaquePointer, mappedForWrite: Bool = false) {
-        self.buffer = buffer
-        self.mappedForWrite = mappedForWrite
-    }
+    init(_ buffer: OpaquePointer) { self.buffer = buffer }
     deinit { canvas_native_webgpu_buffer_release(buffer) }
 
     override func readLazy(_ key: String) -> Any? {
@@ -37,12 +30,6 @@ final class GPUBufferHost: GPUObjectHost {
             canvas_native_webgpu_buffer_destroy(buffer)
             return .some(nil)
         case "unmap":
-            if mappedForWrite {
-                for range in mappedRanges {
-                    if let copy = range.copy.jsBytes.baseAddress { range.source.copyMemory(from: copy, byteCount: range.copy.count) }
-                }
-            }
-            mappedRanges.removeAll()
             canvas_native_webgpu_buffer_unmap(buffer)
             return .some(nil)
         case "mapAsync":
@@ -60,7 +47,6 @@ final class GPUBufferHost: GPUObjectHost {
         let offset = (args[1] as? Double).map(gpuInt64) ?? -1
         let size = (args[2] as? Double).map(gpuInt64) ?? -1
         let (promise, resolve, reject) = JSPromise<Any?>.withResolvers()
-        mappedForWrite = mode != 1
         let box = GPUCallbackBox<(UnsafeMutablePointer<CChar>?) -> Void> { error in
             let message = gpuOwnedString(error)
             gpuMainTask {
@@ -73,7 +59,8 @@ final class GPUBufferHost: GPUObjectHost {
         return promise
     }
 
-    /// `getMappedRange(offset?, size?)`: an ArrayBuffer of the mapped bytes, empty when nothing is mapped.
+    /// `getMappedRange(offset?, size?)`: an ArrayBuffer over the mapped bytes themselves, empty
+    /// when nothing is mapped. It keeps the buffer alive; after `unmap` its bytes are no longer the buffer's.
     private func getMappedRange(_ args: Args) -> JSArrayBuffer {
         let offset = (args[0] as? Double).map(gpuInt64) ?? -1
         var size = (args[1] as? Double).map(gpuInt64) ?? -1
@@ -81,11 +68,7 @@ final class GPUBufferHost: GPUObjectHost {
             return JSArrayBuffer(data: Data())
         }
         if size < 0 { size = Int64(canvas_native_webgpu_buffer_size(buffer)) - max(offset, 0) }
-        // RUNTIME: the range should be an ArrayBuffer over the mapped memory itself; until the
-        // runtime can make one, script gets a copy that `unmap` writes back.
-        let copy = JSArrayBuffer(data: Data(bytes: bytes, count: Int(max(size, 0))))
-        mappedRanges.append((copy, bytes))
-        return copy
+        return JSArrayBuffer(bytesNoCopy: bytes, count: Int(max(size, 0))) { withExtendedLifetime(self) {} }
     }
 }
 

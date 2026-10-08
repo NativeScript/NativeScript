@@ -105,6 +105,11 @@ export class CoreAPI {
     return this.index.has(name);
   }
 
+  /** Whether a kit type extends another (`View` extends `ViewBase`). */
+  extendsKit(sub: string, base: string): boolean {
+    return sub !== base && kitExtends(this.index, sub, base);
+  }
+
   /** Whether a kit type is a view (extends View). */
   isKitView(name: string): boolean {
     return kitExtends(this.index, name, 'View');
@@ -297,8 +302,11 @@ export class CoreAPI {
       return (this.index.get(name)?.members.get('init') ?? []).some((m) => m.throws);
     }
     if (!ts.isPropertyAccessExpression(e.expression) || this.mixinOwn(e.expression.name)) return false;
-    const owner = this.owner(e.expression.expression);
-    return !!owner && !!kitMember(this.index, owner.name, e.expression.name.text)?.throws;
+    // `super.initNativeView()`, `this.requestLayout()` in a program's class of a core one: the core class declaring the method.
+    const member = this.t.resolve(e.expression.name)?.declarations?.[0];
+    const declaring = member && isCoreDeclaration(member) && ts.isClassLike(member.parent) && member.parent.name ? member.parent.name.text : null;
+    const owner = this.owner(e.expression.expression)?.name ?? declaring;
+    return !!owner && !!kitMember(this.index, owner, e.expression.name.text)?.throws;
   }
 
   /** Whether `target.method` is a method the kit declares on target's class (an optional call of it is a plain call). */

@@ -47,9 +47,6 @@ extension Args {
 /// The elements of an array argument as floats, each `NumberValue`.
 func floats(_ elements: [Any?]) -> [Float] { elements.map { Float(jsToNumber($0)) } }
 
-/// The class name a typed array carries (`IsUint8ClampedArray` and the like).
-func jsClassNameOf(_ value: Any?) -> String? { (value as? JSDynamic)?.jsClassName }
-
 // MARK: Strings
 
 /// A string the C API returns and the caller frees, read as UTF-8; empty when the API returns none.
@@ -71,12 +68,12 @@ func takeOneByteString(_ c: UnsafePointer<CChar>?) -> String {
     return c.withMemoryRebound(to: UInt8.self, capacity: n) { oneByteString(UnsafeBufferPointer(start: $0, count: n)) }
 }
 
-/// A `CCow` the caller owns, read as one-byte and released.
-func takeOneByteString(cow: OpaquePointer?) -> String {
+/// A `CCow` the caller owns, read as UTF-8 and released.
+func takeUTF8String(cow: OpaquePointer?) -> String {
     guard let cow else { return "" }
     defer { canvas_native_ccow_release(cow) }
     guard let bytes = canvas_native_ccow_get_bytes(cow) else { return "" }
-    return oneByteString(UnsafeBufferPointer(start: bytes, count: Int(canvas_native_ccow_get_length(cow))))
+    return String(decoding: UnsafeBufferPointer(start: bytes, count: Int(canvas_native_ccow_get_length(cow))), as: UTF8.self)
 }
 
 /// A copy of a `U8Buffer`'s bytes as an ArrayBuffer; the buffer is released.
@@ -85,6 +82,24 @@ func takeArrayBuffer(_ buffer: OpaquePointer?) -> JSArrayBuffer {
     defer { canvas_native_u8_buffer_release(buffer) }
     guard let bytes = canvas_native_u8_buffer_get_bytes(buffer) else { return JSArrayBuffer(data: Data()) }
     return JSArrayBuffer(data: Data(bytes: bytes, count: Int(canvas_native_u8_buffer_get_length(buffer))))
+}
+
+/// An ArrayBuffer over a `U8Buffer`'s bytes in place, which takes the buffer over and releases
+/// it when the ArrayBuffer goes away.
+func takeArrayBufferNoCopy(_ buffer: OpaquePointer?) -> JSArrayBuffer {
+    guard let buffer else { return JSArrayBuffer(data: Data()) }
+    guard let bytes = canvas_native_u8_buffer_get_bytes_mut(buffer) else {
+        canvas_native_u8_buffer_release(buffer)
+        return JSArrayBuffer(data: Data())
+    }
+    return JSArrayBuffer(bytesNoCopy: bytes, count: Int(canvas_native_u8_buffer_get_length(buffer))) {
+        canvas_native_u8_buffer_release(buffer)
+    }
+}
+
+/// A Uint8ClampedArray over a `U8Buffer`'s bytes in place, as `takeArrayBufferNoCopy` makes its buffer.
+func takeClampedArrayNoCopy(_ buffer: OpaquePointer?) -> JSUint8ClampedArray? {
+    try? JSUint8ClampedArray(buffer: takeArrayBufferNoCopy(buffer))
 }
 
 // MARK: Threads
@@ -112,15 +127,4 @@ func callScript(_ callback: Any?, _ arguments: [Any?], swallow: Bool = false) {
     do { _ = try f(arguments) } catch {
         if !swallow { jsReportUncaught(jsCaught(error)) }
     }
-}
-
-// MARK: Bridging to the WebGL area
-
-// CROSS-AREA: the WebGL and WebGL2 context hosts conform to this, so the 2D context can draw
-// them (`drawImage`) and make patterns of them (`createPattern`), as the C++ reads
-// `WebGLRenderingContextBase::GetState()`.
-/// A WebGL or WebGL2 rendering context, as the 2D context reads its native state.
-protocol CanvasWebGLStateSource: AnyObject {
-    /// The context's `WebGLState *`.
-    var webGLState: OpaquePointer? { get }
 }

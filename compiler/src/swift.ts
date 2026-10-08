@@ -319,7 +319,23 @@ export class Translator implements AsyncTranslator {
   /** A member's Swift name as `e` reaches it: a shadowing static's own name (see `staticName`). */
   private memberName(e: ts.PropertyAccessExpression): string {
     const decl = this.resolve(e.name)?.valueDeclaration;
+    const gated = decl && this.gatedFields.get(decl);
+    if (gated) this.requireAvailability(gated);
     return ident((decl && ts.isClassElement(decl) && this.staticName(decl)) || e.name.text);
+  }
+
+  /** Fields of a native type newer than the deployment target, with the iOS version their accessor needs. */
+  private gatedFields = new Map<ts.Node, number>();
+
+  /** The iOS version a field's Swift type needs beyond the deployment target, or 0. */
+  private fieldAvailability(m: ts.PropertyDeclaration): number {
+    this.availability.push(0);
+    try {
+      this.typeOf(m.name);
+      return this.availability[this.availability.length - 1];
+    } finally {
+      this.availability.pop();
+    }
   }
 
   private ownCalls = new Set<ts.Node>();
@@ -450,7 +466,7 @@ export class Translator implements AsyncTranslator {
 
   constructor(checker: ts.TypeChecker, components: Map<string, ComponentInfo>, files: readonly ts.SourceFile[], options: { pluginFiles?: Iterable<string>; reach?: Reach; properties?: Properties; library?: Translator['library']; lenient?: boolean } = {}) {
     this.library = options.library ?? null;
-    this.lenient = options.lenient ?? false;
+    this.lenientAll = options.lenient ?? false;
     this.pluginFiles = new Set(options.pluginFiles ?? []);
     this.reach = options.reach ?? null;
     this.properties = options.properties ?? null;
@@ -1265,6 +1281,12 @@ export class Translator implements AsyncTranslator {
 
   /** A module's declarations, and the statements that run when it is first imported. */
   module(sf: ts.SourceFile): { code: string; init: string[] } {
+    const outer = this.currentFile;
+    this.currentFile = sf.fileName;
+    try { return this.moduleOf(sf); } finally { this.currentFile = outer; }
+  }
+
+  private moduleOf(sf: ts.SourceFile): { code: string; init: string[] } {
     this.props = new Set();
     this.hoisted = [];
     const out: string[] = [];
@@ -2852,6 +2874,14 @@ export class Translator implements AsyncTranslator {
         }
         continue;
       }
+      // A field of a type the OS has only from a newer version (`controller: UIArrangementViewController`): held as an object, typed where the OS has it.
+      const needs = this.gatedFields.get(m) ?? this.fieldAvailability(m);
+      if (needs && (!m.initializer || m.initializer.kind === ts.SyntaxKind.NullKeyword)) {
+        this.gatedFields.set(m, needs);
+        const held = t.replace(/[?!]$/, '');
+        lines.push(`    private var __gated_${n}: AnyObject?`, `    @available(iOS ${needs}, *) var ${ident(n)}: ${held}? { get { __gated_${n} as? ${held} } set { __gated_${n} = newValue } }`);
+        continue;
+      }
       fields.push({ name: n, type: t });
       // `field: string = null` in code checked without strictNullChecks: unset, read as the type's zero or an unwrapped nil.
       if (m.initializer && (m.initializer.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(m.initializer) && m.initializer.text === 'undefined')) && !isOptional(t)) { lines.push(`    var ${ident(n)}: ${this.fieldType(t)}`); continue; }
@@ -2938,8 +2968,8 @@ export class Translator implements AsyncTranslator {
       const mods = `${a.get && isStatic(a.get) ? (this.library ? 'class ' : 'static ') : ''}${inherited.has(n) || overKit ? 'override ' : ''}`;
       const declared = a.get && this.inNativeClass(a.get) ? t : this.lenientRef(t);
       const parts: string[] = [];
-      // Library and plugin code: what an accessor of a pair throws is reported, as the JavaScript runtime reports what nothing catches; Swift's setters cannot throw.
-      const reported = (!!this.library || this.pluginFiles.has(cls.getSourceFile().fileName)) && !!a.set && ((!!a.get && this.throwsInfo.fn(a.get)) || this.throwsInfo.fn(a.set));
+      // What an accessor of a pair throws is reported, as the JavaScript runtime reports what nothing catches; Swift's setters cannot throw.
+      const reported = !!a.set && ((!!a.get && this.throwsInfo.fn(a.get)) || this.throwsInfo.fn(a.set));
       if (a.get && reported && this.throwsInfo.fn(a.get)) {
         // An implicitly unwrapped property's getter gives nothing where it throws, or where it gives nothing.
         const got = declared.endsWith('!') ? declared.replace(/!$/, '?') : t;
@@ -3047,7 +3077,8 @@ export class Translator implements AsyncTranslator {
       const n = m.name.getText();
       // A class's toString is what JavaScript's string conversion calls, named or not.
       if (!this.library && this.pluginFiles.has(cls.getSourceFile().fileName) && !inherited.has(n) && !(kitRoot && this.core.kitMember(kitRoot, n)) && !this.isNamed(n) && n !== 'toString') continue;
-      const kit = kitRoot && !isStatic(m) && !inherited.has(n) ? this.core.kitMember(kitRoot, n) : null;
+      // Over a kit method, directly or through a program base that overrides it: the kit's signature.
+      const kit = kitRoot && !isStatic(m) ? this.core.kitMember(kitRoot, n) : null;
       if (kit && kit.kind === 'func') { lines.push(this.kitOverride(m, kit)); continue; }
       // An override declaring fewer parameters than the method it overrides takes the rest unused, as Swift matches signatures.
       const overridden = inherited.has(n) && !isStatic(m) ? this.inheritedMethod(cls, n) : undefined;
@@ -3387,16 +3418,20 @@ export class Translator implements AsyncTranslator {
     const ret = kit.type === 'Void' ? 'Void' : kit.type;
     const binds = m.parameters.map((p, k) => {
       const tsType = this.typeOf(p.name);
-      const value = parsed[k] ? this.convert(`__k${k}`, parsed[k].type, tsType) : (this.zero(tsType) ?? 'nil');
+      let value = parsed[k] ? this.convert(`__k${k}`, parsed[k].type, tsType) : (this.zero(tsType) ?? 'nil');
+      // A parameter the override declares as a subclass of the kit's (`child: View` over `ViewBase`): the argument as that class.
+      const own = tsType.replace(/[?!]$/, '');
+      if (parsed[k] && value === `__k${k}` && own !== parsed[k].type.replace(/[?!]$/, '') && /^[A-Z]\w*$/.test(own) && (this.isSubclassOf(own, parsed[k].type.replace(/[?!]$/, '')) || this.core.extendsKit(own, parsed[k].type.replace(/[?!]$/, '')))) value = `jsImplicit(__k${k} as? ${own})`;
       return ts.isIdentifier(p.name) ? `        let ${ident(p.name.text)}: ${tsType} = ${value}` : '';
     }).filter(Boolean);
     const throws = this.throwsInfo.fn(m);
     const body = this.inFunction(tsRet, () => this.functionBody(m, tsRet, '        '));
     const call = `{ () ${throws ? 'throws ' : ''}-> ${tsRet} in${body.slice(1)}()`;
+    // A kit method that throws passes on what the override throws, as core's caller catches it.
     const result = ret === 'Void'
-      ? (throws ? `        jsReport { _ = try ${call} }` : `        _ = ${call}`)
-      : `        let __result: ${tsRet} = ${throws ? 'try! ' : ''}${call}\n        return ${this.convert('__result', tsRet, ret)}`;
-    return [`    override func ${ident(m.name.getText())}(${parsed.map((p) => p.decl).join(', ')})${ret === 'Void' ? '' : ` -> ${ret}`} {`, ...binds, result, '    }'].join('\n');
+      ? (throws ? (kit.throws ? `        _ = try ${call}` : `        jsReport { _ = try ${call} }`) : `        _ = ${call}`)
+      : `        let __result: ${tsRet} = ${throws ? (kit.throws ? 'try ' : 'try! ') : ''}${call}\n        return ${this.convert('__result', tsRet, ret)}`;
+    return [`    override func ${ident(m.name.getText())}(${parsed.map((p) => p.decl).join(', ')})${kit.throws ? ' throws' : ''}${ret === 'Void' ? '' : ` -> ${ret}`} {`, ...binds, result, '    }'].join('\n');
   }
 
   /** The method of this name a class's app or plugin base classes declare. */
@@ -3508,7 +3543,11 @@ export class Translator implements AsyncTranslator {
   allowUnapplied = false;
 
   /** Code checked without strictNullChecks (core): an undefined where a value type is declared reads as the type's zero. */
-  lenient = false;
+  get lenient(): boolean { return this.lenientAll || (!!this.currentFile && this.lenientFiles.has(this.currentFile)); }
+  private lenientAll = false;
+  /** Files of plugins written without strictNullChecks, translated as core is. */
+  readonly lenientFiles = new Set<string>();
+  private currentFile: string | null = null;
 
   /** With `--all-errors`: what each statement could not translate, collected so one run reports them all. */
   errors: string[] | null = null;
@@ -4094,7 +4133,13 @@ export class Translator implements AsyncTranslator {
       // `[a, b] = [b, a]`: the right side is evaluated before any target is written.
       const tmp = this.fresh('__swap');
       const tuple = this.checker.isTupleType(this.checker.getTypeAtLocation(e.right));
-      const assigns = e.left.elements.map((target, k) => (ts.isOmittedExpression(target) ? '' : `${this.lvalue(target)} = ${tuple ? `${tmp}.${k}` : `${tmp}[${k}]`}`)).filter(Boolean);
+      const elementType = tuple ? null : this.typeOf(e.right).replace(/[?!]$/, '').replace(/^JSArray<(.*)>$/, '$1');
+      const assigns = e.left.elements.map((target, k) => {
+        if (ts.isOmittedExpression(target)) return '';
+        // An untyped element (`[x, y] = args.slice(1)`) as the variable's type.
+        const value = tuple ? `${tmp}.${k}` : elementType === 'Any?' && this.typeOf(target) !== 'Any?' ? this.fromAnyCode(`${tmp}.element(${k})`, this.typeOf(target), true) : `${tmp}[${k}]`;
+        return `${this.lvalue(target)} = ${value}`;
+      }).filter(Boolean);
       return `do { let ${tmp} = ${this.tryPrefix(e.right)}${this.expr(e.right)}; ${assigns.join('; ')} }`;
     }
     if (ts.isPostfixUnaryExpression(e) || ts.isPrefixUnaryExpression(e)) {
@@ -5386,6 +5431,9 @@ export class Translator implements AsyncTranslator {
     if (ts.isElementAccessExpression(e) && !isWriteTarget(e) && this.typeOf(e.expression).replace(/\?$/, '').startsWith('JSArray<')) {
       const q = e.questionDotToken || this.continuesOptional(e.expression) ? '?' : '';
       const code = `${this.expr(e.expression)}${q}.element(${this.toNumber(e.argumentExpression)})`;
+      // An untyped element narrowed to a class (`args[0] instanceof Path2D`): the element as that class.
+      const narrowed = this.typeOf(e).replace(/[?!]$/, '');
+      if (/^JSArray<Any\?>[?!]?$/.test(this.typeOf(e.expression)) && narrowed !== 'Any' && this.isObjectRef(e)) return `(${code} as? ${narrowed})`;
       return this.typeOf(e).endsWith('?') || q ? `(${code} ?? nil)` : code;
     }
     if (ts.isIdentifier(e)) {

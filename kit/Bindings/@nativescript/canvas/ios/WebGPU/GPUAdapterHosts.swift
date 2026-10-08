@@ -34,13 +34,16 @@ final class GPUHost: CanvasHost {
             power_preference: CanvasGPUPowerPreferenceNone, force_fallback_adapter: false, feature_level: CanvasGPUFeatureLevelCore)
         let optionsValue = args[0]
         if gpuIsObject(optionsValue) {
-            let power = gpuMember(optionsValue, "powerPreference")
-            if power is Double {
+            switch gpuMember(optionsValue, "powerPreference") {
+            case let power as Double:
                 switch gpuInt32(power) {
                 case 1: options.power_preference = CanvasGPUPowerPreferenceLowPower
                 case 2: options.power_preference = CanvasGPUPowerPreferenceHighPerformance
                 default: break
                 }
+            case "low-power" as String: options.power_preference = CanvasGPUPowerPreferenceLowPower
+            case "high-performance" as String: options.power_preference = CanvasGPUPowerPreferenceHighPerformance
+            default: break
             }
             if gpuMember(optionsValue, "featureLevel") as? String == "compatibility" {
                 options.feature_level = CanvasGPUFeatureLevelCompatibility
@@ -190,7 +193,7 @@ final class GPUSupportedLimitsHost: CanvasHost {
     }
 
     private static let order: [String] = [
-        "maxTextureDimension1D", "maxTextureDimension2D", "maxTextureDimension3D", "maxTextureArrayLayers",
+        "maxTextureDimension1d", "maxTextureDimension2d", "maxTextureDimension3d", "maxTextureArrayLayers",
         "maxBindGroups", "maxBindingsPerBindGroup", "maxDynamicUniformBuffersPerPipelineLayout",
         "maxDynamicStorageBuffersPerPipelineLayout", "maxSampledTexturesPerShaderStage", "maxSamplersPerShaderStage",
         "maxStorageBuffersPerShaderStage", "maxStorageTexturesPerShaderStage", "maxUniformBuffersPerShaderStage",
@@ -205,6 +208,10 @@ final class GPUSupportedLimitsHost: CanvasHost {
 
     /// Each limit's field and the value read when there are no native limits.
     private static let fields: [String: Field] = [
+        "maxTextureDimension1d": .u32(\.max_texture_dimension_1d, 8192),
+        "maxTextureDimension2d": .u32(\.max_texture_dimension_2d, 8192),
+        "maxTextureDimension3d": .u32(\.max_texture_dimension_3d, 2048),
+        // The WebGPU spec's names, which script outside the plugin uses; not enumerated.
         "maxTextureDimension1D": .u32(\.max_texture_dimension_1d, 8192),
         "maxTextureDimension2D": .u32(\.max_texture_dimension_2d, 8192),
         "maxTextureDimension3D": .u32(\.max_texture_dimension_3d, 2048),
