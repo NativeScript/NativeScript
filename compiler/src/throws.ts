@@ -35,7 +35,7 @@ export class Throws {
   /** A member read by name at run time (library mode: one only a declaration file declares), which throws on undefined. */
   private dynamicMember: (e: ts.PropertyAccessExpression) => boolean;
 
-  constructor(checker: ts.TypeChecker, files: readonly ts.SourceFile[], untyped: (n: ts.Node) => boolean, nativeThrows: (call: ts.CallExpression | ts.NewExpression) => boolean = () => false, implementation: (decl: ts.Declaration) => ts.Declaration | null = () => null, dynamicMember: (e: ts.PropertyAccessExpression) => boolean = () => false, baseInitThrows: (cls: ts.ClassLikeDeclaration) => boolean = () => false) {
+  constructor(checker: ts.TypeChecker, files: readonly ts.SourceFile[], untyped: (n: ts.Node) => boolean, nativeThrows: (call: ts.CallExpression | ts.NewExpression) => boolean = () => false, implementation: (decl: ts.Declaration) => ts.Declaration | null = () => null, dynamicMember: (e: ts.PropertyAccessExpression) => boolean = () => false, baseInitThrows: (cls: ts.ClassLikeDeclaration) => boolean = () => false, replaced: (fn: ts.Node) => boolean = () => false) {
     this.baseInitThrows = baseInitThrows;
     this.implementation = implementation;
     this.dynamicMember = dynamicMember;
@@ -53,7 +53,8 @@ export class Throws {
       changed = false;
       for (const fn of fns) {
         if (this.throwing.has(fn) || isAsync(fn) || (fn as ts.FunctionLikeDeclaration).asteriskToken) continue;
-        if (this.bodyThrows(fn)) { this.throwing.add(fn); changed = true; }
+        // A member the kit implements instead is a call into its Swift, which throws.
+        if (replaced(fn) || this.bodyThrows(fn)) { this.throwing.add(fn); changed = true; }
       }
     }
   }
@@ -71,9 +72,9 @@ export class Throws {
     // Swift overrides share `throws`: a method throws if any method of its name in the hierarchy does.
     if ((ts.isMethodDeclaration(fn) || ts.isGetAccessorDeclaration(fn)) && ts.isClassLike(fn.parent) && fn.name) {
       const name = fn.name.getText();
-      // Every declaration of the name: an overloaded method's implementation follows its signatures.
+      // An overloaded method's signatures and implementation are one Swift method; a getter is not its setter.
       for (const other of [fn.parent, ...this.ancestors(fn.parent), ...this.descendants(fn.parent)]) {
-        if (other.members.some((x) => x !== fn && x.name?.getText() === name && this.throwing.has(x))) return true;
+        if (other.members.some((x) => x !== fn && x.kind === fn.kind && x.name?.getText() === name && this.throwing.has(x))) return true;
       }
     }
     return false;
