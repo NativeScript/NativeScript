@@ -1253,6 +1253,8 @@ export class Translator implements AsyncTranslator {
     if (t.getProperties().some((p) => !p.name.startsWith('__@') && !/^[A-Za-z$][\w$]*$|^_[\w$]+$/.test(p.name))) return 'JSObject';
     // Library mode: `{}` is an object script adds keys to (`symbolPropertyMap[key] = property`).
     if (this.library && !t.getProperties().length && !t.getCallSignatures().length) return 'JSObject';
+    // `{}` (what `unknown` narrows to once tested truthy) is any value but null and undefined, a native object included.
+    if (!t.getProperties().length && !t.getCallSignatures().length && !t.getConstructSignatures().length) return 'Any?';
     if (this.shaping.has(t)) throw this.error(where, 'a recursive object type without a name');
     this.shaping.add(t);
     try {
@@ -1864,13 +1866,27 @@ ${members.join('\n')}
     return out;
   }
 
+  /** Whether a program base class conforms to `JSSymbolKeyed` already: a root class keeping expandos, or one with symbol-keyed fields. */
+  private inheritsSymbolKeyed(cls: ts.ClassLikeDeclaration): boolean {
+    const baseOf = (c: ts.ClassLikeDeclaration): ts.ClassLikeDeclaration | undefined => {
+      const h = c.heritageClauses?.find((x) => x.token === ts.SyntaxKind.ExtendsKeyword)?.types[0];
+      const d = h && this.checker.getTypeAtLocation(h.expression).getSymbol()?.valueDeclaration;
+      return d && ts.isClassLike(d) && !d.getSourceFile().isDeclarationFile ? d : undefined;
+    };
+    for (let b = baseOf(cls); b; b = baseOf(b)) {
+      if (b.members.some((m) => ts.isPropertyDeclaration(m) && !isStatic(m) && !!this.symbolMember(m.name)?.key)) return true;
+      if (!baseOf(b) && !b.heritageClauses?.some((x) => x.token === ts.SyntaxKind.ExtendsKeyword) && (!!this.library || this.pluginFiles.has(b.getSourceFile().fileName))) return true;
+    }
+    return false;
+  }
+
   /** `JSDynamic`: the object's keys and members by name, for printing, JSON and untyped access. */
-  private dynamicMembers(fields: { name: string; type: string }[], className: string | null, override: boolean, methods: { name: string; type: string; available?: number }[] = [], symbols: { key: string; member: string; type: string }[] = [], expando = false, raw = new Set<string>(), accessors: { name: string; get: string | null; set: string | null }[] = []): string[] {
+  private dynamicMembers(fields: { name: string; type: string }[], className: string | null, override: boolean, methods: { name: string; type: string; available?: number }[] = [], symbols: { key: string; member: string; type: string }[] = [], expando = false, raw = new Set<string>(), accessors: { name: string; get: string | null; set: string | null }[] = [], symbolKeyedBase = false): string[] {
     const o = override ? 'override ' : '';
     const keys = fields.map((f) => (f.type.endsWith('?') ? `(self.${ident(f.name)} == nil ? [] : [${swiftString(f.name)}])` : `[${swiftString(f.name)}]`));
     const lines = [
       `    ${o}var jsKeys: [String] { ${[override ? 'super.jsKeys' : '', ...keys, expando ? '(jsExpando?.jsKeys ?? [])' : ''].filter(Boolean).join(' + ') || '[]'} }`,
-      ...(symbols.length ? [`    var jsSymbolKeys: [String] { [${symbols.map((f) => f.key).join(', ')}] }`] : []),
+      ...(symbols.length ? [`    ${symbolKeyedBase ? 'override ' : ''}var jsSymbolKeys: [String] { ${symbolKeyedBase ? 'super.jsSymbolKeys + ' : ''}[${symbols.map((f) => f.key).join(', ')}]${expando ? ' + (jsExpando?.jsSymbolKeys ?? [])' : ''} }`] : []),
       `    ${o}var jsClassName: String? { ${className ? swiftString(className) : 'nil'} }`,
       `    ${o}subscript(jsKey key: String) -> Any? {`,
       '        get {',
@@ -2887,8 +2903,9 @@ ${members.join('\n')}
     if (collection && !appBase && (cls.members.some((m) => ts.isConstructorDeclaration(m)) || cls.members.some((m) => ts.isPropertyDeclaration(m) && !isStatic(m))))
       throw this.error(cls.name ?? cls, `a class extending ${heritage!.expression.getText()} with its own constructor or fields`);
     const isError = !!base && !appBase && !kitRoot && !collection;
-    // Library mode: a class at the root of its hierarchy keeps what script adds to its instances (JSExpando).
-    const expando = !!this.library && !base;
+    // A class at the root of its hierarchy keeps what script adds to its instances (JSExpando): core's, and a
+    // plugin's, written as JavaScript is (`device[adapter_] = adapter`).
+    const expando = (!!this.library || this.pluginFiles.has(cls.getSourceFile().fileName)) && !base;
     const isView = !!kitRoot && this.core.isKitView(kitRoot);
     const registered = (n: string) => isView && !!this.properties?.isRegistered(cls, n);
     // The library's interfaces (`Iterable<T>`, `Iterator<T>`) are protocols of the kit's, conformed to below.
@@ -3211,7 +3228,7 @@ ${members.join('\n')}
     }
     if (expando) {
       conformances.push('JSExpando');
-      lines.push('    var jsExpando: JSObject?', '    var jsSymbolKeys: [String] { jsExpando?.jsSymbolKeys ?? [] }', '    func jsDeleteOwn(_ key: String) -> Bool { jsExpando?.delete(key) ?? true }');
+      lines.push('    var jsExpando: JSObject?', ...(symbolFields.length ? [] : ['    var jsSymbolKeys: [String] { jsExpando?.jsSymbolKeys ?? [] }']), '    func jsDeleteOwn(_ key: String) -> Bool { jsExpando?.delete(key) ?? true }');
     }
     if (setters.length) {
       if (!isView) throw this.error(cls, 'native setters on a class that is not a view');
@@ -3264,10 +3281,11 @@ ${members.join('\n')}
     lines.push(...witnesses);
     // Library mode: a registered property's value reaches its accessor as it is, which converts it (`col = "1"`).
     const raw = new Set(this.library ? fields.filter((f) => this.properties?.isRegistered(cls, f.name) || this.properties?.isRegisteredAnywhere(f.name)).map((f) => f.name) : []);
-    if (!isError) lines.push(...this.dynamicMembers(fields, name, !!appBase || !!kitRoot, dynMethods, symbolFields, expando, raw, dynAccessors));
+    const symbolKeyedBase = !!kitRoot || this.inheritsSymbolKeyed(cls);
+    if (!isError) lines.push(...this.dynamicMembers(fields, name, !!appBase || !!kitRoot, dynMethods, symbolFields, expando, raw, dynAccessors, symbolKeyedBase));
     // Library mode: the class's `name`, which a static method reads of the class it is called on.
     if (this.library && !this.errorBased(cls)) lines.push(`    ${appBase ? 'override ' : ''}class var jsName: String { ${swiftString(cls.name!.text)} }`);
-    if (symbolFields.length) conformances.push('JSSymbolKeyed');
+    if (symbolFields.length && !symbolKeyedBase) conformances.push('JSSymbolKeyed');
     // Library mode: the static members script can test for by name (`'tapEvent' in view.constructor`).
     if (this.library && !this.inNativeClass(cls.members[0] ?? cls)) {
       const statics = cls.members.filter((m) => m.name && isStatic(m) && !ts.isComputedPropertyName(m.name)).map((m) => m.name!.getText().replace(/^['"]|['"]$/g, ''));
