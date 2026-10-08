@@ -385,7 +385,7 @@ for (const m of translated) {
   taken.add(file.toLowerCase());
   writeFileSync(join(out, 'Sources', file + '.swift'), header(m.file) + located(m.code));
 }
-const shapes = SourceLines.strip(translator.shapesCode());
+const shapes = SourceLines.strip((translator.interfacesOutside(new Set(translated.map((m) => m.file))) + translator.shapesCode()).trim());
 if (shapes) writeFileSync(join(out, 'Sources', '__Objects.swift'), `// Compiled by ns-native: the app's object literals without a declared type.\nimport Foundation\nimport NativeScriptKit\n${native.modules.length || /\bUI[A-Z]/.test(shapes) ? `import UIKit\n${native.modules.map((m) => `import ${m}\n`).join('')}` : ''}${SDK_IMPORTS}\n${shapes}\n`);
 const inits = translated.filter((m) => m.init).map((m) => `        ${m.init}()\n`).join('');
 // The app's CSS as its NativeScript build ships it: the AST core applies.

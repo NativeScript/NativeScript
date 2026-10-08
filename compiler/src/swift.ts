@@ -380,7 +380,7 @@ export class Translator implements AsyncTranslator {
 
   /** Library mode: the field or accessor a source base class declares under a field's name, which the field redeclares. */
   private redeclaredField(m: ts.PropertyDeclaration): ts.PropertyDeclaration | ts.AccessorDeclaration | null {
-    if (!this.library || isStatic(m) || !ts.isClassLike(m.parent)) return null;
+    if (isStatic(m) || !ts.isClassLike(m.parent)) return null;
     const name = m.name.getText();
     let found: ts.PropertyDeclaration | ts.AccessorDeclaration | null = null;
     for (let b = this.sourceBase(m.parent); b; b = this.sourceBase(b)) {
@@ -539,6 +539,8 @@ export class Translator implements AsyncTranslator {
       // A library's generic signature (`ClassDecorator`'s `TFunction`) in library mode: erased as the program's own are.
       if (decl && this.library && decl.getSourceFile().isDeclarationFile) return 'Any?';
       if (decl && ts.isTypeParameterDeclaration(decl) && erasedTypeParameter(decl)) return 'Any?';
+      // Inside an object shape, a class of its own outside every generic scope: any value.
+      if (this.shaping.size) return 'Any?';
       return t.symbol?.name ?? 'Any?';
     }
     // `UIView & { nsView?: … }`, `ScrollView & { … }`: the class; the members the literal adds are read by name.
@@ -826,6 +828,8 @@ export class Translator implements AsyncTranslator {
     }
     const t = this.type(this.checker.getTypeAtLocation(n), n);
     if (this.lenient && (t === 'Bool' || t === 'String' || t === 'Double') && this.declaredUndefined(n)) return `${t}?`;
+    // An element of an array literal typed `never[]` (`callbacks = []` under strict checks), which Swift holds as any value.
+    if (t === 'Never' && (ts.isIdentifier(n) || ts.isVariableDeclaration(n)) && this.resolve(n)?.valueDeclaration && ts.isVariableDeclaration(this.resolve(n)!.valueDeclaration!)) return 'Any?';
     return t;
   }
 
@@ -1590,6 +1594,22 @@ export class Translator implements AsyncTranslator {
       more = false;
       for (const [name, decl] of this.interfaces) {
         if (decl.file !== file || emitted.has(name) || !this.used.has(name)) continue;
+        out = decl.code() + '\n\n' + out;
+        emitted.add(name);
+        more = true;
+      }
+    }
+    return out;
+  }
+
+  /** The interfaces the code uses that files the build leaves out declare (a plugin's `CanvasRenderingContext`, implemented elsewhere). */
+  interfacesOutside(files: ReadonlySet<string>): string {
+    let out = '';
+    const emitted = new Set<string>();
+    for (let more = true; more; ) {
+      more = false;
+      for (const [name, decl] of this.interfaces) {
+        if (files.has(decl.file) || emitted.has(name) || !this.used.has(name)) continue;
         out = decl.code() + '\n\n' + out;
         emitted.add(name);
         more = true;
@@ -2904,9 +2924,13 @@ export class Translator implements AsyncTranslator {
       if (a.get && isStatic(a.get) && this.forwardsToBaseStatic(cls, n, a)) continue;
       // A property with only a setter reads as undefined in JavaScript.
       // An override that narrows its type (`get ios(): UIColor` over `get ios(): any`) keeps the type it overrides, as Swift requires.
-      const t = (a.get && this.narrowedFrom(a.get)) ?? (a.get ? this.returnTypeOf(a.get) : optionalType(this.typeOf(a.set!.parameters[0].name)));
+      const ownType = a.get ? this.returnTypeOf(a.get) : optionalType(this.typeOf(a.set!.parameters[0].name));
+      // Over a kit property of the name (`set width(value)` over core's `width`): the kit's type.
+      const kitVar = kitRoot && !(a.get ?? a.set)!.modifiers?.some((x) => x.kind === ts.SyntaxKind.StaticKeyword) ? this.core.kitMember(kitRoot, n) : null;
+      const overKit = kitVar?.kind === 'var' && !inherited.has(n);
+      const t = (a.get && this.narrowedFrom(a.get)) ?? (overKit && kitVar!.type !== ownType ? kitVar!.type : ownType);
       // Library mode: a class's static accessors are `class` ones, which a subclass's can override.
-      const mods = `${a.get && isStatic(a.get) ? (this.library ? 'class ' : 'static ') : ''}${inherited.has(n) ? 'override ' : ''}`;
+      const mods = `${a.get && isStatic(a.get) ? (this.library ? 'class ' : 'static ') : ''}${inherited.has(n) || overKit ? 'override ' : ''}`;
       const declared = a.get && this.inNativeClass(a.get) ? t : this.lenientRef(t);
       const parts: string[] = [];
       // Library and plugin code: what an accessor of a pair throws is reported, as the JavaScript runtime reports what nothing catches; Swift's setters cannot throw.
@@ -2936,7 +2960,7 @@ export class Translator implements AsyncTranslator {
     if (isView) {
       const cssType = (ts.getDecorators(cls) ?? []).map((d) => d.expression).find((e): e is ts.CallExpression => ts.isCallExpression(e) && e.expression.getText() === 'CSSType');
       const typeName = cssType && ts.isStringLiteralLike(cssType.arguments[0]) ? cssType.arguments[0].text : name;
-      lines.push(`    override class var cssType: String { ${swiftString(typeName)} }`);
+      lines.push(`    override var cssType: String { get { ${swiftString(typeName)} } set {} }`);
     }
     for (const d of ts.getDecorators(cls) ?? []) {
       if (ts.isIdentifier(d.expression) && this.library?.identities?.has(d.expression.text)) continue;
@@ -2967,8 +2991,8 @@ export class Translator implements AsyncTranslator {
       }
       if (keyed?.key) { lines.push('    ' + this.func(m, keyed.member)); continue; }
       if (keyed) throw this.error(m.name, 'a method named by this symbol');
-      // A core property's (`[isUserInteractionEnabledProperty.setNative]`) on a class of a core view: the kit's core finds it by its symbol, as core does.
-      if (this.library || (kitRoot && !this.setNativeOf(m.name.expression))) {
+      // On a class of a core view (`[isUserInteractionEnabledProperty.setNative]`): core's property system finds it by its symbol.
+      if (this.library || kitRoot) {
         // `[prop.setNative](value)`: a method under a symbol known when the program runs, found by its key.
         const method = this.fresh('__symbol_');
         symbolMethods.push({ key: this.propertyKey(m.name.expression), method, params: m.parameters.map((p) => this.paramType(p)), ret: this.returnTypeOf(m), throws: this.throwsInfo.fn(m) });
@@ -3032,10 +3056,6 @@ export class Translator implements AsyncTranslator {
         const plain = (t: string) => t.replace(/^\((any .*)\)!$/, '$1?').replace(/!$/, '?');
         dynMethods.push({ name: n, type: `(${sig.params.map((p) => (isFunctionType(p.type) ? `@escaping ${p.type}` : plain(p.type))).join(', ')}) throws -> ${plain(sig.ret)}`, available: this.gatedFunctions.get(m) });
       }
-    }
-    if (isView) {
-      const own = fields.map((f) => f.name);
-      if (own.length) lines.push(`    override func hasJSProperty(_ name: String) -> Bool { [${own.map(swiftString).join(', ')}].contains(name) || super.hasJSProperty(name) }`);
     }
     const protocol = this.iteratorProtocol(cls.members.filter((m): m is ts.MethodDeclaration => ts.isMethodDeclaration(m) && !!m.body && !isStatic(m) && ['next', 'return', 'throw'].includes(m.name.getText())).map((m) => ({
       name: m.name.getText(), params: m.parameters.length, ret: this.returnTypeOf(m), throws: this.throwsInfo.fn(m),
@@ -4683,7 +4703,7 @@ export class Translator implements AsyncTranslator {
     const libDecl = this.resolve(e)?.declarations?.[0];
     // Library mode: core's `global` is the program's global object; the Android SDK's namespaces exist only there.
     // A name nothing declares for iOS (`android`, `java`, Node's `__dirname`) is a value whose use throws.
-    if (name === 'global' && (this.library ? !libDecl || libDecl.getSourceFile().isDeclarationFile : !!libDecl && libDecl.getSourceFile().isDeclarationFile && isCoreDeclaration(libDecl))) return 'jsGlobalThis';
+    if (name === 'global' && (this.library ? !libDecl || libDecl.getSourceFile().isDeclarationFile : !!libDecl && libDecl.getSourceFile().isDeclarationFile)) return 'jsGlobalThis';
     // The runtime gives the bundled app's module its folder in the app bundle.
     if (this.library && name === '__dirname' && (!libDecl || libDecl.getSourceFile().isDeclarationFile)) return 'jsAppDirectory';
     // Library mode: an import of what only the app has (`import appConfig from '~/package.json'`): the kit's counterpart, given by the app.
@@ -6555,14 +6575,22 @@ export class Translator implements AsyncTranslator {
     throw this.error(e, `${type.startsWith('JSMap') ? 'Map' : 'Set'}.${name}`);
   }
 
+  /** `new (Cls as any)(…)` constructs Cls: the type of the expression made without the cast. */
+  private constructedTypes = new Map<ts.Node, string>();
+
   private newExpr(e: ts.NewExpression): string {
     if (ts.isParenthesizedExpression(e.expression)) {
       // `new (Cls as any)(…)`: the class itself constructed; a cast left in would be parenthesized again.
       let inner: ts.Expression = e.expression;
       while (ts.isParenthesizedExpression(inner) || ts.isAsExpression(inner) || ts.isTypeAssertionExpression(inner) || ts.isNonNullExpression(inner)) inner = inner.expression;
-      if (!ts.isParenthesizedExpression(inner)) return this.newExpr(ts.factory.updateNewExpression(e, inner as ts.LeftHandSideExpression, e.typeArguments, e.arguments));
+      if (!ts.isParenthesizedExpression(inner)) {
+        const cls = this.resolve(inner);
+        const made = ts.factory.updateNewExpression(e, inner as ts.LeftHandSideExpression, e.typeArguments, e.arguments);
+        if (cls && cls.flags & ts.SymbolFlags.Class) this.constructedTypes.set(made, this.type(this.checker.getDeclaredTypeOfSymbol(cls), e));
+        return this.newExpr(made);
+      }
     }
-    const t = this.typeOf(e);
+    const t = this.constructedTypes.get(e) ?? this.typeOf(e);
     const callee = e.expression;
     const name = ts.isIdentifier(callee) ? callee.text : '';
     const args = e.arguments ?? ts.factory.createNodeArray();

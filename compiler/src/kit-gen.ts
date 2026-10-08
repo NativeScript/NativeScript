@@ -272,8 +272,8 @@ export function generateKit(o: KitOptions): KitResult {
   // those the code it keeps names, as it does core's modules.
   const exported = indexFunctions(program, checker, join(core, 'index.ts'), compiled, (f) => enumName(relOf(f), barrels), sourceOf, out, KIT, o.replaces);
   const exports = new Map<string, string[]>();
-  for (const fn of exported.split(/\n(?=public func )/)) {
-    const name = /^public func (\w+)/.exec(fn)?.[1];
+  for (const fn of exported.split(/\n(?=public (?:func|var) )/)) {
+    const name = /^public (?:func|var) (\w+)/.exec(fn)?.[1];
     if (name) exports.set(name, [...(exports.get(name) ?? []), fn.trim()]);
   }
   for (const [name, fns] of exports) out.push({ name: `__Export.${name}.swift`, code: header(new Set(sdk)) + fns.join('\n\n') + '\n', sources: {} });
@@ -302,9 +302,9 @@ export function generateKit(o: KitOptions): KitResult {
 }
 
 /**
- * The functions core's index exports (`getRootLayout`), as an app imports them from
- * `@nativescript/core`: top-level functions forwarding to the module enum each is compiled
- * into, with that function's own Swift signature. Names the hand-written kit declares at the
+ * The functions and constants core's index exports (`getRootLayout`, `widthProperty`), as an
+ * app imports them from `@nativescript/core`: top-level functions and globals forwarding to the
+ * module enum each is compiled into, with its own Swift signature or type. Names the hand-written kit declares at the
  * top level already are left to it.
  */
 function indexFunctions(program: ts.Program, checker: ts.TypeChecker, index: string, compiled: Set<string>, moduleOf: (file: string) => string, sourceOf: (dts: string) => string | null, out: KitFile[], kit: string, replaces?: RegExp): string {
@@ -328,8 +328,20 @@ function indexFunctions(program: ts.Program, checker: ts.TypeChecker, index: str
     const found = module && checker.getExportsOfModule(module).find((x) => x.name === target.name);
     return found ? resolveAlias(found) : target;
   };
+  // A type of the kit's (`Application`) keeps its name: a constant of the same name is reached as the type is.
+  const types = new Set<string>();
+  for (const f of out) for (const m of f.code.matchAll(/^(?:(?:open|public|final)\s+)*(?:class|struct|enum|protocol|typealias)\s+(\w+)/gm)) types.add(m[1]);
   for (const e of checker.getExportsOfModule(sym)) {
     const target = implementation(resolveAlias(e));
+    // A constant (`widthProperty`): a global reading the module's static.
+    const variable = target.declarations?.find((d): d is ts.VariableDeclaration => ts.isVariableDeclaration(d));
+    if (variable && compiled.has(variable.getSourceFile().fileName) && !taken.has(e.name) && !types.has(e.name) && e.name === target.name) {
+      const module = moduleOf(variable.getSourceFile().fileName);
+      const code = out.find((f) => f.code.includes(`enum ${module} {`))?.code;
+      const m = code && new RegExp(`\\n\\s*public static (?:var|let) ${target.name}: ([^={\\n]+?)\\s*(?:=|\\{|\\n)`).exec(code);
+      if (m) lines.push(`public var ${e.name}: ${m[1].trim()} { ${module}.${target.name} }`);
+      continue;
+    }
     const decl = target.declarations?.find((d): d is ts.FunctionDeclaration => ts.isFunctionDeclaration(d) && !!d.body);
     if (!decl || !compiled.has(decl.getSourceFile().fileName) || taken.has(e.name)) continue;
     const module = moduleOf(decl.getSourceFile().fileName);
@@ -345,7 +357,7 @@ function indexFunctions(program: ts.Program, checker: ts.TypeChecker, index: str
     });
     lines.push(`public func ${e.name}${generics}(${params})${throws}${ret ? ` -> ${ret.trim()}` : ''} {\n    ${ret ? 'return ' : ''}${throws ? 'try ' : ''}${module}.${target.name}(${args.join(', ')})\n}`);
   }
-  return lines.length ? `// What @nativescript/core's index exports as functions, as an app imports them.\n\n${lines.join('\n\n')}\n` : '';
+  return lines.length ? `// What @nativescript/core's index exports as functions and constants, as an app imports them.\n\n${lines.join('\n\n')}\n` : '';
 }
 
 /**
