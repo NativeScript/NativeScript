@@ -268,9 +268,15 @@ private func jsImplementer(_ object: NSObject, _ selector: ObjectiveC.Selector, 
     return jsImplementer(target, selector, depth: depth + 1)
 }
 
-/// Where a property's getter is implemented, or nil.
+/// Where a property's getter is implemented, or nil. A getter the property's attributes do not name
+/// (`active`, read by `isActive`) is found by key-value coding's names for it, as `value(forKey:)` finds it.
 func jsGetterReceiver(_ object: NSObject, _ key: String) -> NSObject? {
-    jsImplementer(object, NSSelectorFromString(jsCustomAccessor(type(of: object), key, "G") ?? key))
+    if let custom = jsCustomAccessor(type(of: object), key, "G") { return jsImplementer(object, NSSelectorFromString(custom)) }
+    let capitalized = key.prefix(1).uppercased() + key.dropFirst()
+    for name in ["get" + capitalized, key, "is" + capitalized] {
+        if let receiver = jsImplementer(object, NSSelectorFromString(name)) { return receiver }
+    }
+    return nil
 }
 
 /// Where a property's setter is implemented, or nil.

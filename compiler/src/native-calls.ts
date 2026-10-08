@@ -254,7 +254,7 @@ export class NativeAPI {
       if (e.questionDotToken || ts.isOptionalChain(e)) return this.chainEnd(e, `${this.chainHead(e.expression)}${e.name.text}`, field);
       return this.fromSwift(`${this.t.expr(e.expression)}.${e.name.text}`, field, e);
     }
-    const collection = !r.isStatic ? this.collectionMember(e.expression, e.name.text, null) : null;
+    const collection = !r.isStatic ? this.collectionMember(e.expression, e.name.text, null, e) : null;
     if (collection) return collection;
     const m = this.found(lookupMember(r.module, r.name, e.name.text, r.isStatic));
     if (!m) throw this.t.error(e, `${r.name}.${e.name.text} (no Swift counterpart in ${r.module})`);
@@ -366,12 +366,15 @@ export class NativeAPI {
    * Foundation's collection methods on what Swift imports as its own
    * collections (`NSArray` as `[T]`, `NSDictionary` as `[K: V]`).
    */
-  private collectionMember(target: ts.Expression, name: string, args: readonly ts.Expression[] | null): string | null {
+  private collectionMember(target: ts.Expression, name: string, args: readonly ts.Expression[] | null, read: ts.Expression): string | null {
     const st = this.t.typeOf(target).replace(/\?$/, '');
     const isArray = /^\[[^:]*\]$/.test(st), isDict = /^\[.*:.*\]$/.test(st);
     if (!isArray && !isDict) return null;
     const recv = this.unwrapped(target);
-    const result = (code: string) => code;
+    // An element of `NSArray<UIViewReservedRegion>`, which Swift has as `[Any]`: the native class the declaration names.
+    const element = isArray ? this.type(this.t.checker.getNonNullableType(this.t.checker.getTypeAtLocation(read))) : null;
+    const cls = element && /^[A-Za-z_][\w.]*$/.test(element) && !this.isEnumType(element) && !this.isStructType(element) ? element : null;
+    const result = (code: string) => (cls ? `(${code.replace(/ as Any\?\)$/, ')')} as? ${cls})` : code);
     // `xs?.count`: the chain's count, when there is one.
     const count = recv.endsWith('?') ? `(${recv}.count).map { Double($0) }` : `Double(${recv}.count)`;
     if (isArray) {
@@ -379,7 +382,7 @@ export class NativeAPI {
       if (args === null && name === 'count') return recv.endsWith('?') ? `(${count} ?? .nan)` : count;
       if (args === null && name === 'firstObject') return result(`(${recv}.first as Any?)`);
       if (args === null && name === 'lastObject') return result(`(${recv}.last as Any?)`);
-      if (args && name === 'objectAtIndex') return `(${recv}[Int(${this.t.expr(args[0])})] as Any?)`;
+      if (args && name === 'objectAtIndex') return cls ? `(${recv}[Int(${this.t.expr(args[0])})] as! ${cls})` : `(${recv}[Int(${this.t.expr(args[0])})] as Any?)`;
       if (args && !args.length && name === 'mutableCopy') return `NSMutableArray(array: ${recv})`;
       // By Foundation's own lookup: isEqual:, and NSNotFound where the array lacks the object.
       if (args && name === 'indexOfObject' && args.length === 1 && !recv.endsWith('?')) return `Double((${recv} as NSArray).index(of: ${this.t.coerce(args[0], 'Any?')} as Any))`;
@@ -512,7 +515,7 @@ export class NativeAPI {
       const cls = this.t.expr(callee.expression);
       return cls.endsWith('.self') ? cls : `${cls}.self`;
     }
-    const collection = !r.isStatic ? this.collectionMember(callee.expression, name, e.arguments) : null;
+    const collection = !r.isStatic ? this.collectionMember(callee.expression, name, e.arguments, e) : null;
     if (collection) return collection;
     const cls = lookupClass(r.module, r.name);
     if (r.isStatic && name === 'new' && cls) return `${this.className(cls)}()`;

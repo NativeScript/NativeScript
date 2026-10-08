@@ -138,7 +138,19 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
             attrs.push({ name: 'text', method: expr('`' + parts.join('') + '`', loops) });
           }
         }
-        for (const i of n.inputs) if (!(isList && i.name === 'itemTemplateSelector')) attrs.push({ name: i.name, method: expr(code(i.value, loops), loops) });
+        // `[class.on]="cond"` toggles a class beside the static ones: one bound `class` naming them all.
+        const toggles = n.inputs.filter((i) => i.type === ng.BindingType.Class);
+        if (toggles.length) {
+          const fixed = attrs.findIndex((a) => a.name === 'class');
+          const base = fixed >= 0 ? attrs.splice(fixed, 1)[0].value ?? '' : '';
+          const parts = [JSON.stringify(base), ...toggles.map((t) => `(${code(t.value, loops)}) ? ${JSON.stringify(t.name)} : ''`)];
+          attrs.push({ name: 'class', method: expr(`[${parts.join(', ')}].filter((c) => !!c).join(' ')`, loops) });
+        }
+        for (const i of n.inputs) {
+          if (i.type === ng.BindingType.Class || (isList && i.name === 'itemTemplateSelector')) continue;
+          if (i.type !== ng.BindingType.Property && i.type !== ng.BindingType.TwoWay) throw new Error(`${path}: the [${ng.BindingType[i.type].toLowerCase()}.${i.name}] binding is not supported in a release build yet`);
+          attrs.push({ name: i.name, method: expr(code(i.value, loops), loops) });
+        }
         for (const o of n.outputs) events.push({ name: o.name, method: handler(code(o.handler, loops), loops, selectors.has(n.name)), ...(selectors.has(n.name) ? { payload: true } : {}) });
         if (n.name === 'ng-container') {
           if (attrs.length || events.length) throw new Error(`${path}: <ng-container> takes no bindings`);
