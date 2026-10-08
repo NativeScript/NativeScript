@@ -246,7 +246,8 @@ export class CoreAPI {
     // Swift's chain, as script's, goes on to what follows (`a?.b.c`), reading the optional.
     const continued = ts.isOptionalChain(e.parent) && (e.parent as ts.PropertyAccessExpression).expression === e;
     const inChain = chained || (ts.isOptionalChain(e) && !owner.isStatic);
-    if (!owner.isStatic && NATIVE_MEMBERS.has(name) && this.isView(owner.name)) return `${recv}.nativeView`;
+    // A kit without the member (`ios` is a Page's controller where the kit has it from core).
+    if (!owner.isStatic && NATIVE_MEMBERS.has(name) && this.isView(owner.name) && !kitMember(this.index, owner.name, name)) return `${recv}.nativeView`;
     if (!owner.isStatic && this.isView(owner.name) && !kitMember(this.index, owner.name, name)) {
       if (!this.isViewProperty(owner.name, name)) unappliedProperty(t, e.name, `${owner.name}.${name}`, 'NativeScriptKit');
       return t.fromAnyCode(`${recv}.get(${JSON.stringify(name)})`, t.typeOf(e), true);
