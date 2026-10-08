@@ -434,7 +434,10 @@ export class NativeAPI {
     if (!m || m.kind !== 'property') throw this.t.error(left, `${r.name}.${left.name.text} (no settable Swift property)`);
     if (m.readonly) throw this.t.error(left, `${r.name}.${left.name.text} (read-only)`);
     this.checkAvailable(m, left, `${r.name}.${left.name.text}`);
-    const target = r.isStatic ? this.className(lookupClass(r.module, r.name)!) : cast ? `(${this.t.expr(left.expression)} as! ${cast})` : this.t.expr(left.expression);
+    // An object Swift holds as optional (`this.delay.wetDryMix = …`, `delay: AVAudioUnitDelay | null`): JavaScript's TypeError where it is missing.
+    const held = this.t.typeOf(left.expression);
+    const unwrap = !r.isStatic && !cast && held.endsWith('?') && held !== 'Any?' && !left.questionDotToken ? '!' : '';
+    const target = r.isStatic ? this.className(lookupClass(r.module, r.name)!) : cast ? `(${this.t.expr(left.expression)} as! ${cast})` : `${this.t.expr(left.expression)}${unwrap}`;
     if (m.optional && !r.isStatic && !cast && lookupClass(r.module, r.name)?.kind === 'protocol') {
       return isolated(`jsSetOptionalNativeProperty(${target}, ${JSON.stringify(left.name.text)}, ${this.toSwift(value, m.type)})`, m);
     }
@@ -607,7 +610,7 @@ export class NativeAPI {
       return r ? lookupInit(r.module, r.name, name) : null;
     }
     const r = this.receiver(callee.expression);
-    const m = r ? lookupMember(r.module, r.name, name, r.isStatic) : null;
+    const m = r ? lookupMember(r.module, r.name, name, r.isStatic) ?? this.optionsSibling(r, name, e.arguments.length) ?? (r.isStatic ? this.factoryInit(r, name) : null) : null;
     return m && m.kind !== 'property' ? m : null;
   }
 
@@ -684,7 +687,16 @@ export class NativeAPI {
   }
 
   /** A TypeScript value where a Swift API takes `target`. */
+  /** A typealias of a number (`AVAudioFrameCount`): the number type it names, which conversions know; any other type as it is. */
+  private numericAlias(type: SwiftType): SwiftType {
+    const b = base(type);
+    if (NUMBERS.has(b) || !/^[A-Z]\w*$/.test(b)) return type;
+    const u = base(this.unalias(b));
+    return NUMBERS.has(u) ? type.replace(b, u) : type;
+  }
+
   toSwift(e: ts.Expression, target: SwiftType): string {
+    target = this.numericAlias(target);
     const t = this.t;
     while ((ts.isAsExpression(e) || ts.isTypeAssertionExpression(e)) && ['any', 'unknown', 'never'].includes(e.type.getText())) e = e.expression;
     const b = base(target);
@@ -829,6 +841,7 @@ export class NativeAPI {
 
   /** A Swift API's value as TypeScript reads it: numbers are Double, an implicitly unwrapped or optional object is the object. */
   fromSwift(code: string, swiftType: SwiftType, e: ts.Expression): string {
+    swiftType = this.numericAlias(swiftType);
     // A result nothing reads: a nil one is no error.
     if (this.keepOptional.has(e) || ts.isExpressionStatement(e.parent)) return code;
     // A value only tested (`if (controller.viewControllers)`): nil is falsy, not an error.
@@ -870,7 +883,8 @@ export class NativeAPI {
     const sig = [fnType.text, fnType.params.join(', '), fnType.result];
     const params = fnType.params;
     const names = fn.parameters.map((p, k) => (ts.isIdentifier(p.name) ? p.name.text : `__p${k}`));
-    const swiftParams = params.map((p, k) => `__b${k}: ${p}`);
+    // A block's own block parameters (`completion` of a deferred menu's provider) escape: Objective-C marks none noescape here.
+    const swiftParams = params.map((p, k) => `__b${k}: ${/->/.test(p) && !/[?!]$/.test(p.trim()) && !p.startsWith('@escaping') ? `@escaping ${p}` : p}`);
     const binds = params.map((p, k) => {
       if (!names[k]) return '';
       const param = fn.parameters[k], type = t.typeOf(param.name);

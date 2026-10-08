@@ -105,6 +105,15 @@ export class CoreAPI {
     return this.index.has(name);
   }
 
+  /** Whether a kit class's initializer taking no arguments throws. */
+  initThrows(name: string): boolean {
+    for (let t = this.index.get(name); t; t = t.base ? this.index.get(t.base) : undefined) {
+      const plain = (t.members.get('init') ?? []).find((m) => !(m.params ?? '').trim());
+      if (plain) return !!plain.throws;
+    }
+    return false;
+  }
+
   /** Whether a kit type extends another (`View` extends `ViewBase`). */
   extendsKit(sub: string, base: string): boolean {
     return sub !== base && kitExtends(this.index, sub, base);

@@ -329,6 +329,7 @@ const native = pluginNative(plugins.all(), out, {
 });
 dependencies.dispose();
 const translator = new Translator(checker, infos, sourceFiles, { pluginFiles, reach, properties });
+translator.compiledFiles = new Set(compiledPlugins);
 const writtenStrictness = new Map<string, boolean>();
 for (const f of pluginFiles) if (!writtenStrict(f)) translator.lenientFiles.add(f);
 translator.lines = sourceLines;

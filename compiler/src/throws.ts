@@ -35,7 +35,8 @@ export class Throws {
   /** A member read by name at run time (library mode: one only a declaration file declares), which throws on undefined. */
   private dynamicMember: (e: ts.PropertyAccessExpression) => boolean;
 
-  constructor(checker: ts.TypeChecker, files: readonly ts.SourceFile[], untyped: (n: ts.Node) => boolean, nativeThrows: (call: ts.CallExpression | ts.NewExpression) => boolean = () => false, implementation: (decl: ts.Declaration) => ts.Declaration | null = () => null, dynamicMember: (e: ts.PropertyAccessExpression) => boolean = () => false) {
+  constructor(checker: ts.TypeChecker, files: readonly ts.SourceFile[], untyped: (n: ts.Node) => boolean, nativeThrows: (call: ts.CallExpression | ts.NewExpression) => boolean = () => false, implementation: (decl: ts.Declaration) => ts.Declaration | null = () => null, dynamicMember: (e: ts.PropertyAccessExpression) => boolean = () => false, baseInitThrows: (cls: ts.ClassLikeDeclaration) => boolean = () => false) {
+    this.baseInitThrows = baseInitThrows;
     this.implementation = implementation;
     this.dynamicMember = dynamicMember;
     this.checker = checker;
@@ -155,7 +156,7 @@ export class Throws {
     if (call.expression.kind === ts.SyntaxKind.SuperKeyword) {
       const cls = ts.findAncestor(call, ts.isClassLike);
       const base = cls && this.ancestors(cls)[1];
-      return base ? this.initThrows(base) : false;
+      return base ? this.initThrows(base) : !!cls && this.baseInitThrows(cls);
     }
     // A call through a variable, parameter, property or getter holding a function: Swift function types throw.
     const callee = ts.isPropertyAccessExpression(call.expression) ? call.expression.name : call.expression;
@@ -239,6 +240,9 @@ export class Throws {
   }
 
   /** Whether making an instance of a class throws: its own constructor's or its base's, or (Swift initializers sharing `throws`) one a subclass declares. */
+  /** Whether the initializer a program class's native or kit base gives it without arguments throws (`super()` of a core view). */
+  private baseInitThrows: (cls: ts.ClassLikeDeclaration) => boolean;
+
   initThrows(decl: ts.ClassLikeDeclaration): boolean {
     const chain = this.ancestors(decl);
     for (const cls of chain) {
@@ -246,6 +250,7 @@ export class Throws {
       const ctor = cls.members.find(ts.isConstructorDeclaration);
       if (ctor) return this.fn(ctor);
     }
+    if (this.baseInitThrows(chain.at(-1)!)) return true;
     // An inherited initializer throws if any constructor of the hierarchy it comes from does.
     const root = this.ancestors(decl).at(-1)!;
     return [root, ...this.descendants(root)].some((d) => { const ctor = d.members.find(ts.isConstructorDeclaration); return !!ctor && this.throwing.has(ctor); });

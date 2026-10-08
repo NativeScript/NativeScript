@@ -71,3 +71,24 @@ public func jsEncodeURI(_ s: String) -> String { encode(s) { isAlphaNumeric($0) 
 public func jsDecodeURIComponent(_ s: String) -> String { decode(s, reserved: []) }
 
 public func jsDecodeURI(_ s: String) -> String { decode(s, reserved: reservedAndHash) }
+
+/// Annex B's `unescape(string)`: each `%XX` and `%uXXXX` escape as the UTF-16 code unit it names; anything else as it is.
+public func jsUnescape(_ s: String) -> String {
+    let units = Array(s.utf16)
+    var out: [UInt16] = []
+    out.reserveCapacity(units.count)
+    let hex = { (from: Int, count: Int) -> UInt16? in
+        guard from + count <= units.count else { return nil }
+        return UInt16(String(utf16CodeUnits: Array(units[from..<from + count]), count: count), radix: 16)
+    }
+    var i = 0
+    while i < units.count {
+        if units[i] == 0x25 {
+            if i + 1 < units.count, units[i + 1] == 0x75, let v = hex(i + 2, 4) { out.append(v); i += 6; continue }
+            if let v = hex(i + 1, 2) { out.append(v); i += 3; continue }
+        }
+        out.append(units[i])
+        i += 1
+    }
+    return String(utf16CodeUnits: out, count: out.count)
+}
