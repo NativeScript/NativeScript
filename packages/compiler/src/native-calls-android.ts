@@ -252,6 +252,12 @@ export class AndroidNativeAPI implements KotlinNative {
       const native = this.nativeHeritage(decl);
       if (native) return [native.base.name, ...native.interfaces.map((i) => i.name)];
     }
+    // An interface of the program's adding fields to Java classes (`interface OwnerSeekBar extends android.widget.SeekBar`): those classes.
+    const own = sym.declarations?.find((d): d is ts.InterfaceDeclaration => ts.isInterfaceDeclaration(d) && !d.getSourceFile().isDeclarationFile);
+    if (own && sym.flags & ts.SymbolFlags.Interface && !(sym.flags & ts.SymbolFlags.Class)) {
+      const bases = (own.heritageClauses ?? []).flatMap((h) => h.types.map((x) => this.classesOf(c.getTypeAtLocation(x)) ?? []).flat());
+      if (bases.length) return bases;
+    }
     return null;
   }
 
@@ -905,7 +911,7 @@ export class AndroidNativeAPI implements KotlinNative {
       const p = fn.parameters[k];
       const tsType = p ? t.typeOf(p.name) : 'Any?';
       const ref = desc.startsWith('L') || desc.startsWith('[');
-      return `__a${k}: ${types[k]}${ref && (tsType.endsWith('?') || !p || target.m.nullableParams?.[k]) ? '?' : ''}`;
+      return `__a${k}: ${types[k]}${ref && !target.m.nonNullParams?.[k] && (tsType.endsWith('?') || !p || target.m.nullableParams?.[k]) ? '?' : ''}`;
     });
     const binds = fn.parameters.map((p, k) => {
       if (!target.params[k] || !ts.isIdentifier(p.name)) return '';
@@ -1328,8 +1334,7 @@ ${indent}}`;
   private arrayCreate(e: ts.CallExpression): Raw | null {
     const callee = e.expression;
     if (!ts.isPropertyAccessExpression(callee) || callee.name.text !== 'create' || !ts.isIdentifier(callee.expression) || callee.expression.text !== 'Array' || e.arguments.length !== 2) return null;
-    const decl = this.t.resolve(callee)?.declarations?.[0];
-    if (!decl || !this.isNativeDeclaration(decl)) return null;
+    if (!(this.t.resolve(callee) ?? this.t.resolve(callee.name))?.declarations?.some((d) => this.isNativeDeclaration(d))) return null;
     const [type, length] = e.arguments;
     let el: string;
     if (ts.isStringLiteralLike(type)) {

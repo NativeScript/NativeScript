@@ -80,7 +80,7 @@ function translate(file: string, out: string): void {
 function translateKotlin(file: string, out: string, pkg: string): void {
   const loose = lenient(file);
   const { checker, program, files } = createProgram([file], new Map(), 'android', modulesDir, undefined, [], {}, loose ? { strict: false, useDefineForClassFields: false } : {});
-  const library = { identities: new Set<string>(), counterpart: () => null };
+  const library = { identities: new Set<string>(), counterpart: () => null, moduleName: (f: string) => (f.endsWith('.d.ts') ? null : 'Module_' + basename(f).replace(/\W/g, '_')) };
   const translator = new KotlinTranslator(checker, new Map(), files, loose ? { lenient: true, library, pluginFiles: files.map((f) => f.fileName), properties: collectProperties(checker, files) } : {});
   translator.appModule = pkg;
   const lines = translator.lines = new SourceLines(new Map());

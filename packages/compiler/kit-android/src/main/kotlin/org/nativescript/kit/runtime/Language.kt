@@ -257,7 +257,9 @@ class JSMethod(val call: (Any?, Array<out Any?>) -> Any?) : Function<Any?>
 
 /** `object.method(args)` on an untyped object: a method sees the object as `this`. */
 fun jsCallMethod(target: Any?, key: String, vararg args: Any?): Any? {
-    val f = jsGet(target, key)
+    var f = jsGet(target, key)
+    // What every object inherits (`hasOwnProperty`), where the object has nothing of that name.
+    if (jsBox(f) == null && jsBox(target) is JSDynamic && JSPrototypes.objectPrototype.has(key)) f = JSPrototypes.objectPrototype[key]
     if (f is JSMethod) return jsBox(f.call(target, args))
     return jsCall(f, *args)
 }
@@ -278,12 +280,19 @@ fun jsDefineProperty(target: Any?, key: String, descriptor: Any?): Any? {
     val d = JSPropertyDescriptor.of(descriptor)
     when (val v = jsBox(target)) {
         is JSObject -> v.defineProperty(key, d)
+        is JSExpando -> (v.jsExpando ?: JSObject().also { v.jsExpando = it }).defineProperty(key, d)
         is JSDynamic -> {
             if (d.get != null || d.set != null) throw JSException(JSTypeError("Cannot define an accessor on a typed object: $key"))
             if (d.hasValue) v.jsSet(key, d.value)
         }
         else -> throw JSException(JSTypeError("Object.defineProperty called on non-object"))
     }
+    return target
+}
+
+/** `Object.defineProperties(object, descriptors)`. */
+fun jsDefineProperties(target: Any?, descriptors: Any?): Any? {
+    for (key in jsKeysOf(descriptors)) jsDefineProperty(target, key, jsGet(descriptors, key))
     return target
 }
 

@@ -9,7 +9,7 @@ import { createHash } from 'node:crypto';
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 import { foldPlatform } from './platform.ts';
-import { Translator } from './kotlin.ts';
+import { Translator, splitTopLevel } from './kotlin.ts';
 import { AndroidNativeAPI, androidClassPath } from './native-calls-android.ts';
 import { collectProperties } from './properties.ts';
 import { evaluationOrder } from './modules.ts';
@@ -74,9 +74,14 @@ export function coreFilesAndroid(core: string, modules: string[]): string[] {
   return [...out].sort();
 }
 
-/** A core file's Kotlin file name and init suffix: `ui/core/view/index.android.ts` → `ui_core_view_index`. */
+/** A core file's Kotlin file name: `ui/core/view/index.android.ts` → `ui_core_view_index`. */
 export function kotlinModuleName(rel: string): string {
   return rel.replace(/\.(android\.)?ts$/, '').replace(/[^A-Za-z0-9]+/g, '_');
+}
+
+/** The object holding a module's functions and variables, named as the Swift kit's module enum: `Core_ui_core_view_index`, `Package_css_what_src_parse`. */
+export function moduleObjectName(rel: string): string {
+  return rel.startsWith('npm/') ? 'Package_' + rel.slice(4).replace(/\.ts$/, '').replace(/[^A-Za-z0-9]+/g, '_') : 'Core_' + kotlinModuleName(rel);
 }
 
 export function generateKotlinKit(o: KotlinKitOptions): KotlinKitResult {
@@ -161,6 +166,7 @@ export function generateKotlinKit(o: KotlinKitOptions): KotlinKitResult {
     library: {
       identities: new Set(o.identities ?? []),
       counterpart: (file, name) => counterparts.get(file)?.[name] ?? null,
+      moduleName: (file) => (compiled.has(file) ? moduleObjectName(relOf(file)) : null),
     },
   });
   translator.appModule = KIT_PACKAGE;
@@ -176,6 +182,7 @@ export function generateKotlinKit(o: KotlinKitOptions): KotlinKitResult {
   const inits: string[] = [];
   const hash = (text: string) => createHash('sha1').update(text).digest('hex').slice(0, 12);
   let translated = 0;
+  const results = new Map<string, { code: string; init: string[] }>();
   for (const file of order) {
     const sf = program.getSourceFile(file)!;
     const rel = relOf(file);
@@ -192,19 +199,99 @@ export function generateKotlinKit(o: KotlinKitOptions): KotlinKitResult {
     }
     if (!result) continue;
     if (!dropped) translated++;
-    const init = result.init.length ? `__init_${name}` : null;
-    if (init) inits.push(init);
-    const kitFile = { name: `${name}.kt`, code: result.code + (init ? `\nfun ${init}() {\n${result.init.join('\n')}\n}\n` : ''), sources: { [rel]: hash(sources.get(file) ?? '') } };
+    results.set(file, result);
+  }
+  // Again, now that every declaration the first pass found nullable (a field core leaves unset) is known where code
+  // translated before it reads it.
+  for (const file of order) {
+    if (!results.has(file)) continue;
+    const sf = program.getSourceFile(file)!;
+    const rel = relOf(file);
+    const name = kotlinModuleName(rel);
+    let result = results.get(file)!;
+    try { result = translator.module(sf); } catch (e) { errors.push(located(e, sf, core)); }
+    if (result.init.length) inits.push(`${moduleObjectName(rel)}.__init`);
+    const kitFile = { name: `${name}.kt`, code: result.code, sources: { [rel]: hash(sources.get(file) ?? '') } };
     paths.set(kitFile, file);
     out.push(kitFile);
   }
+  // A declaration file of core's (`ui/dialogs/index.d.ts`) stands for the compiled file beside it.
+  const sourceOf = (dts: string): string | null => {
+    if (!dts.startsWith(resolve(o.declarations) + '/')) return null;
+    const rel = relative(o.declarations, dts).replace(/\.d\.ts$/, '');
+    return [`${rel}.android.ts`, `${rel}.ts`].map((c) => join(core, c)).find((c) => compiled.has(c)) ?? null;
+  };
+  const exported = indexExports(program, checker, join(core, 'index.ts'), compiled, (f) => moduleObjectName(relOf(f)), sourceOf, out);
   for (const f of out) f.code = withImports((translator.interfacesOf(paths.get(f)!) + f.code).trim());
+  if (exported) out.push({ name: '__Exports.kt', code: withImports(exported.trim()), sources: {} });
   const shapes = translator.shapesCode().trim();
   if (shapes) out.push({ name: '__Objects.kt', code: withImports(shapes), sources: {} });
   // Core's modules run their top level once, in the order core's index evaluates them.
   out.push({ name: '__Modules.kt', sources: {}, code: `${header()}object CoreModules {\n    private var initialized = false\n\n    fun initialize() {\n        if (initialized) return\n        initialized = true\n${inits.map((i) => `        ${i}()\n`).join('')}    }\n}\n` });
   if (errors.length && !o.report) throw new Error(errors.join('\n'));
   return { files: out, errors: [...new Set(errors)], attempted: order.length, translated };
+}
+
+/**
+ * The functions and constants core's index exports (`getRootLayout`, `widthProperty`), as an app
+ * imports them from `@nativescript/core`: top-level declarations forwarding to the module object each
+ * is compiled into, with its own Kotlin signature. A default argument other than a literal may name
+ * what only the module's object sees: the forwarding function has an overload without it instead.
+ */
+function indexExports(program: ts.Program, checker: ts.TypeChecker, index: string, compiled: Set<string>, moduleOf: (file: string) => string, sourceOf: (dts: string) => string | null, out: KotlinKitFile[]): string {
+  const sf = program.getSourceFile(index);
+  const sym = sf && checker.getSymbolAtLocation(sf);
+  if (!sym) return '';
+  const types = new Set<string>();
+  for (const f of out) for (const m of f.code.matchAll(/^(?:(?:open|abstract|data|enum|sealed|final)\s+)*(?:class|interface|object|typealias)\s+(\w+)/gm)) types.add(m[1]);
+  const codeOf = (module: string) => out.find((f) => f.code.includes(`object ${module} {\n`))?.code;
+  const implementation = (target: ts.Symbol): ts.Symbol => {
+    const dts = target.declarations?.[0]?.getSourceFile().fileName;
+    const file = dts?.endsWith('.d.ts') ? sourceOf(dts) : null;
+    const impl = file ? program.getSourceFile(file) : undefined;
+    const module = impl && checker.getSymbolAtLocation(impl);
+    const found = module && checker.getExportsOfModule(module).find((x) => x.name === target.name);
+    return found ? (found.flags & ts.SymbolFlags.Alias ? checker.getAliasedSymbol(found) : found) : target;
+  };
+  const lines: string[] = [];
+  const seen = new Set<string>();
+  for (const e of checker.getExportsOfModule(sym)) {
+    const aliased = e.flags & ts.SymbolFlags.Alias ? checker.getAliasedSymbol(e) : e;
+    const target = implementation(aliased);
+    if (seen.has(e.name) || types.has(e.name) || e.name === 'default') continue;
+    const decl = target.declarations?.find((d) => (ts.isFunctionDeclaration(d) && !!d.body) || ts.isVariableDeclaration(d));
+    if (!decl || !compiled.has(decl.getSourceFile().fileName) || !ts.isSourceFile(ts.isVariableDeclaration(decl) ? decl.parent.parent.parent : decl.parent)) continue;
+    const own = (decl as ts.FunctionDeclaration | ts.VariableDeclaration).name?.getText() ?? target.name;
+    const module = moduleOf(decl.getSourceFile().fileName);
+    const code = codeOf(module);
+    if (!code) continue;
+    if (ts.isVariableDeclaration(decl)) {
+      const m = new RegExp(`\\n    (?:@\\S+ )*(lateinit )?(var|val) ${own}: (.+?)(?: = .*)?\\n`).exec(code);
+      if (!m) continue;
+      lines.push(m[2] === 'var' ? `var ${e.name}: ${m[3]}\n    get() = ${module}.${own}\n    set(value) { ${module}.${own} = value }` : `val ${e.name}: ${m[3]} get() = ${module}.${own}`);
+      seen.add(e.name);
+      continue;
+    }
+    const m = new RegExp(`\\n    fun (<[^>]*> )?${own}\\((.*)\\)(?:: (.+?))? \\{\\n`).exec(code);
+    if (!m) continue;
+    const [, generics = '', list, ret] = m;
+    const params = splitTopLevel(list).filter(Boolean).map((p) => {
+      const [, vararg, name, type, value] = /^(vararg )?(\S+): (.+?)(?: = (.+))?$/.exec(p)!;
+      return { vararg: !!vararg, name, type, value };
+    });
+    const literal = (v?: string) => !v || /^(null|true|false|-?[\d.]+|Double\.NaN|"[^"\\$]*")$/.test(v);
+    let keep = params.length;
+    for (;;) {
+      const used = params.slice(0, keep);
+      const decls = used.map((p) => `${p.vararg ? 'vararg ' : ''}${p.name}: ${p.type}${p.value && literal(p.value) ? ` = ${p.value}` : ''}`);
+      const args = used.map((p) => (p.vararg ? `*${p.name}` : p.name));
+      lines.push(`fun ${generics}${e.name}(${decls.join(', ')})${ret ? `: ${ret}` : ''} = ${module}.${own}(${args.join(', ')})`);
+      if (!keep || !params[keep - 1].value || literal(params[keep - 1].value)) break;
+      keep--;
+    }
+    seen.add(e.name);
+  }
+  return lines.length ? `// What @nativescript/core's index exports as functions and constants, as an app imports them.\n\n${lines.join('\n\n')}\n` : '';
 }
 
 /**

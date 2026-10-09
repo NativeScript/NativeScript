@@ -130,7 +130,7 @@ fun jsFormatLogLine(args: List<Any?>): String {
 
 /** Whether `%s` inspects the value rather than converting it: no `toString` of its own. */
 private fun hasBuiltInToString(value: Any): Boolean =
-    value !is JSStringConvertible || value is JSDate || value is JSRegExp || value is JSMatch
+    value !is JSStringConvertible || value is JSDate || value is JSRegExp || value is JSMatch || value is JSTypedArray<*, *>
 
 private fun formatNumber(n: Double): String = if (n == 0.0 && 1.0 / n < 0) "-0" else jsNumberToString(n)
 
@@ -300,6 +300,30 @@ private class JSInspectContext(var depth: Int = 2, val showHidden: Boolean = fal
                 arrayType = true
                 formatter = { formatList(elements, it) }
             }
+            is JSTypedArray<*, *> -> {
+                val elements = value.jsAnyValues
+                val prefix = "${value.kind.constructorName}(${elements.size}) "
+                if (elements.isEmpty()) return prefix + "[]"
+                name = value.kind.constructorName
+                open = "$prefix["; close = "]"
+                arrayType = true
+                formatter = { formatList(elements, it) }
+            }
+            is JSArrayBuffer -> {
+                name = "ArrayBuffer"
+                open = "ArrayBuffer {"
+                formatter = { formatArrayBuffer(value) }
+            }
+            is JSDataView -> {
+                name = "DataView"
+                open = "DataView {"
+                formatter = { level ->
+                    indentationLvl += 2
+                    val out = arrayListOf("[byteLength]: ${value.count}", "[byteOffset]: ${value.offset}", "[buffer]: ${formatValue(value.buffer, level)}")
+                    indentationLvl -= 2
+                    out
+                }
+            }
             is JSSet<*> -> {
                 val values = value.jsValues
                 val prefix = "Set(${values.size}) "
@@ -389,6 +413,15 @@ private class JSInspectContext(var depth: Int = 2, val showHidden: Boolean = fal
         }
         if (elements.size > count) output.add(remainingText(elements.size - count))
         return output
+    }
+
+    private fun formatArrayBuffer(buffer: JSArrayBuffer): MutableList<String> {
+        val shown = minOf(maxArrayLength, buffer.count)
+        val bytes = buffer.view(java.nio.ByteOrder.BIG_ENDIAN)
+        var hex = (0 until shown).joinToString(" ") { String.format("%02x", bytes.get(it).toInt() and 0xFF) }
+        val remaining = buffer.count - shown
+        if (remaining > 0) hex += " ... $remaining more byte${if (remaining > 1) "s" else ""}"
+        return arrayListOf("[Uint8Contents]: <$hex>", "[byteLength]: ${buffer.count}")
     }
 
     private fun formatSet(values: List<Any?>, recurseTimes: Int): MutableList<String> {
@@ -522,7 +555,7 @@ private class JSInspectContext(var depth: Int = 2, val showHidden: Boolean = fal
             val elements = elementsOf(value)
             var padStart = true
             for (i in output.indices) {
-                if (i >= elements.size || jsNumeric(jsBox(elements[i])) == null) {
+                if (i >= elements.size || (jsNumeric(jsBox(elements[i])) == null && elements[i] !is JSBigInt)) {
                     padStart = false
                     break
                 }
@@ -562,6 +595,7 @@ private class JSInspectContext(var depth: Int = 2, val showHidden: Boolean = fal
         is JSArray<*> -> value.storage
         is JSMatch -> value.values.storage
         is JSMatchIndices -> value.values.storage
+        is JSTypedArray<*, *> -> value.jsAnyValues
         else -> tupleElements(value)
     }
 }

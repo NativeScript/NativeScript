@@ -135,6 +135,39 @@ class JavaMethodRef(private val target: Any?, private val cls: Class<*>, private
     }
 }
 
+/** NativeScript's `Array.create(type, n)` called untyped: a Java array of n default elements, of a primitive by its name or of a class. */
+fun jsArrayCreate(type: Any?, length: Double): Any {
+    val element = when (type) {
+        is Class<*> -> type
+        "boolean" -> Boolean::class.javaPrimitiveType!!
+        "byte" -> Byte::class.javaPrimitiveType!!
+        "char" -> Char::class.javaPrimitiveType!!
+        "short" -> Short::class.javaPrimitiveType!!
+        "int" -> Int::class.javaPrimitiveType!!
+        "long" -> Long::class.javaPrimitiveType!!
+        "float" -> Float::class.javaPrimitiveType!!
+        "double" -> Double::class.javaPrimitiveType!!
+        is String -> Class.forName(type)
+        else -> throw JSException(JSTypeError("Array.create: ${jsTypeof(type)} is no Java type"))
+    }
+    return JavaArray.newInstance(element, length.toInt())
+}
+
+/** `new C(args)` where `C` is a class held as a value: the constructor the arguments fit best. */
+fun jsNew(cls: Any?, vararg args: Any?): Any? {
+    val c = cls as? Class<*> ?: throw JSException(JSTypeError("${jsTypeof(cls)} is not a constructor"))
+    val chosen = c.constructors.filter { it.parameterCount == args.size }.mapNotNull { k ->
+        var total = 0
+        for ((i, type) in k.parameterTypes.withIndex()) total += javaScore(args[i], type) ?: return@mapNotNull null
+        k to total
+    }.minByOrNull { it.second }?.first ?: throw JSException(JSTypeError("${c.simpleName}: no constructor takes these ${args.size} arguments"))
+    return try {
+        chosen.newInstance(*chosen.parameterTypes.mapIndexed { i, type -> toJavaValue(args[i], type) }.toTypedArray())
+    } catch (e: java.lang.reflect.InvocationTargetException) {
+        throw e.targetException
+    }
+}
+
 /** How well a script value fits a Java parameter type: lower is closer, null is not at all. */
 private fun javaScore(value: Any?, type: Class<*>): Int? {
     val rank: Map<Class<*>?, Int> = mapOf(Int::class.javaPrimitiveType to 0, Long::class.javaPrimitiveType to 1, Float::class.javaPrimitiveType to 2, Double::class.javaPrimitiveType to 3, Short::class.javaPrimitiveType to 4, Byte::class.javaPrimitiveType to 5)

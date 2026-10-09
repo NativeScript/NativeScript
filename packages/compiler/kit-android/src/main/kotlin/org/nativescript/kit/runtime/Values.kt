@@ -96,6 +96,15 @@ class JSObject() : JSDynamic, JSSymbolKeyed, JSAccessorKeyed, JSReactiveConverti
         return jsReactiveAny(storage[key])
     }
 
+    /** `object[key]` read for `receiver`, which an accessor sees as `this` (an instance reading its prototype's). */
+    fun get(key: String, receiver: Any?): Any? {
+        if (slots.isNotEmpty()) slots[key]?.let { if (it.isAccessor) return it.get?.invoke(receiver) }
+        return this[key]
+    }
+
+    /** The setter of an accessor property; it takes the receiver as `this`. */
+    fun setter(key: String): ((Any?, Any?) -> Unit)? = slots[key]?.takeIf { it.isAccessor }?.set
+
     operator fun set(key: String, value: Any?) = put(key, value)
 
     /**
@@ -264,6 +273,7 @@ fun jsGet(target: Any?, key: String): Any? = when (target) {
     is JSMap<*, *> -> if (key == "size") target.size else null
     is JSSet<*> -> if (key == "size") target.size else null
     is Double, is Boolean, is Function<*>, is JSFunction, is JSSymbol, is JSBigInt, Unit -> null
+    is Class<*> -> jsClassGet(target, key)
     else -> jsJavaGet(target, key)
 }
 
@@ -358,6 +368,7 @@ fun <T : JSDynamic> jsObjectAssign(target: T, vararg sources: Any?): T {
 /** `key in object`. */
 fun jsHasKey(target: Any?, key: String): Boolean = when (target) {
     is JSObject -> target.has(key)
+    is JSExpando -> key in target.jsKeys || jsExpandoHas(target, key)
     is JSDynamic -> if (jsIsSymbolKey(key)) (target as? JSSymbolKeyed)?.jsSymbolKeys?.contains(key) ?: false else key in target.jsKeys
     is JSArray<*> -> key == "length" || (jsArrayIndex(key)?.let { it < target.size } ?: false)
     else -> false
@@ -548,3 +559,6 @@ fun jsLiteralKeyOrder(parts: List<List<String>>, fields: List<String>): List<Str
     val index = { k: String -> k.length <= 10 && (k == "0" || (k[0] != '0' && k.all(Char::isDigit))) && k.toLong() < 4294967295L }
     return keys.filter(index).sortedBy { it.toLong() } + keys.filter { !index(it) }
 }
+
+/** `globalThis`. */
+val jsGlobalThis: JSObject = JSObject()

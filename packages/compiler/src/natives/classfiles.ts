@@ -27,6 +27,8 @@ export interface JavaMember {
   nullable?: boolean;
   /** The method's parameters annotated `@Nullable`. */
   nullableParams?: boolean[];
+  /** The method's parameters annotated `@NonNull`, which Kotlin types `T`: an override must take them so. */
+  nonNullParams?: boolean[];
 }
 
 export interface JavaClass {
@@ -156,25 +158,36 @@ export function parseClass(b: Buffer): JavaClass {
     for (let k = 0; k < pairs; k++) { q += 2; skipValue(); }
     return type;
   };
-  const nullableIn = (): boolean => {
-    let found = false;
+  /** Whether the annotations read are `@Nullable` (1), `@NonNull` (2) or neither (0). */
+  const nullableIn = (): number => {
+    let found = 0;
     const n = b.readUInt16BE(q); q += 2;
-    for (let k = 0; k < n; k++) if (/\/Nullable;$/.test(annotation())) found = true;
+    for (let k = 0; k < n; k++) {
+      const type = annotation();
+      if (/\/Nullable;$/.test(type)) found = 1;
+      else if (/\/(NonNull|NotNull|RecentlyNonNull);$/.test(type) && !found) found = 2;
+    }
     return found;
   };
-  const attributes = (owner: { signature?: string; nullable?: boolean; nullableParams?: boolean[] }) => {
+  const attributes = (owner: { signature?: string; nullable?: boolean; nullableParams?: boolean[]; nonNullParams?: boolean[] }) => {
     const n = b.readUInt16BE(p); p += 2;
     for (let k = 0; k < n; k++) {
       const attr = utf8[b.readUInt16BE(p)];
       const len = b.readUInt32BE(p + 2);
       q = p + 6;
       if (attr === 'Signature') owner.signature = utf8[b.readUInt16BE(p + 6)];
-      else if (attr === 'RuntimeVisibleAnnotations' || attr === 'RuntimeInvisibleAnnotations') { if (nullableIn()) owner.nullable = true; }
+      else if (attr === 'RuntimeVisibleAnnotations' || attr === 'RuntimeInvisibleAnnotations') { if (nullableIn() === 1) owner.nullable = true; }
       else if (attr === 'RuntimeVisibleParameterAnnotations' || attr === 'RuntimeInvisibleParameterAnnotations') {
         const count = b[q++];
         const list = owner.nullableParams ?? [];
-        for (let i = 0; i < count; i++) if (nullableIn()) list[i] = true;
+        const nonNull = owner.nonNullParams ?? [];
+        for (let i = 0; i < count; i++) {
+          const kind = nullableIn();
+          if (kind === 1) list[i] = true;
+          else if (kind === 2) nonNull[i] = true;
+        }
         owner.nullableParams = list;
+        owner.nonNullParams = nonNull;
       }
       p += 6 + len;
     }
