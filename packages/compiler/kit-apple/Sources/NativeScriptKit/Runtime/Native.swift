@@ -10,13 +10,13 @@ import UIKit
 
 /// An NSNumber (not a Swift number boxed in `Any`).
 func jsIsNativeNumber(_ v: Any) -> Bool {
-    guard let n = v as? NSNumber, String(describing: type(of: v)).hasPrefix("__NSCF") else { return false }
+    guard jsTypeKind(v) == .objCClass, let n = v as? NSNumber, String(describing: type(of: v)).hasPrefix("__NSCF") else { return false }
     return CFGetTypeID(n) != CFBooleanGetTypeID()
 }
 
 /// A CFBoolean NSNumber's value.
 func jsNativeBoolean(_ v: Any) -> Bool? {
-    guard let n = v as? NSNumber, String(describing: type(of: v)).hasPrefix("__NSCF"), CFGetTypeID(n) == CFBooleanGetTypeID() else { return nil }
+    guard jsTypeKind(v) == .objCClass, let n = v as? NSNumber, String(describing: type(of: v)).hasPrefix("__NSCF"), CFGetTypeID(n) == CFBooleanGetTypeID() else { return nil }
     return n.boolValue
 }
 
@@ -229,11 +229,12 @@ nonisolated(unsafe) private var jsSelectors: [ObjectIdentifier: [String: Objecti
 
 /// The selector of the class or one it extends that script names `key`.
 private func jsSelector(_ cls: AnyClass, _ key: String) -> ObjectiveC.Selector? {
-    let id = ObjectIdentifier(cls)
-    if jsSelectors[id] == nil {
-        var names: [String: ObjectiveC.Selector] = [:]
-        var c: AnyClass? = cls
-        while let current = c {
+    // Each class's own methods are listed once, and shared by every class extending it.
+    var c: AnyClass? = cls
+    while let current = c {
+        let id = ObjectIdentifier(current)
+        if jsSelectors[id] == nil {
+            var names: [String: ObjectiveC.Selector] = [:]
             var count: UInt32 = 0
             if let list = class_copyMethodList(current, &count) {
                 for i in 0..<Int(count) {
@@ -245,11 +246,12 @@ private func jsSelector(_ cls: AnyClass, _ key: String) -> ObjectiveC.Selector? 
                 }
                 free(list)
             }
-            c = class_getSuperclass(current)
+            jsSelectors[id] = names
         }
-        jsSelectors[id] = names
+        if let selector = jsSelectors[id]?[key] { return selector }
+        c = class_getSuperclass(current)
     }
-    return jsSelectors[id]?[key]
+    return nil
 }
 
 /// Properties script added to a native object, kept with the object (an associated object).

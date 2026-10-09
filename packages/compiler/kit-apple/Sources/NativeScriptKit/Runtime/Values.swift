@@ -55,9 +55,64 @@ extension Optional: JSOptionalProtocol {
 @inline(__always)
 public func jsFlat(_ value: Any?) -> Any? {
     guard let value else { return nil }
+    guard jsTypeKind(value) == .optional else { return value }
     if let optional = value as? JSOptionalProtocol { return optional.jsFlattened }
     return value
 }
+
+// MARK: - What a value is, read from its type's metadata
+
+/// The kind word that starts every type's metadata (the Swift ABI's `MetadataKind`). Hot paths read it
+/// before casting: a cast to a protocol or a bridged type looks up conformances, slowly for each new type.
+enum JSTypeKind: UInt {
+    case swiftClass = 0
+    case `struct` = 0x200
+    case `enum` = 0x201
+    case optional = 0x202
+    case tuple = 0x301
+    case function = 0x302
+    case metatype = 0x304
+    case objCClass = 0x305
+    case existentialMetatype = 0x306
+    case other = 0xFFFF
+}
+
+@inline(__always)
+func jsTypeKind(_ value: Any) -> JSTypeKind {
+    let word = unsafeBitCast(type(of: value), to: UnsafePointer<UInt>.self).pointee
+    // A class's metadata starts with its isa pointer, never a small kind number.
+    if word > 0x7FF { return .swiftClass }
+    return JSTypeKind(rawValue: word) ?? .other
+}
+
+/// An object no cast to a Swift number, string or boolean unwraps: a Swift object, or an
+/// Objective-C one that is not an NSNumber, an NSString or a boxed Swift value.
+func jsIsOpaqueObject(_ value: Any) -> Bool {
+    switch jsTypeKind(value) {
+    case .swiftClass: if !(value is NSObject) { return true }
+    case .objCClass: if !(value is NSObject) { return false }
+    default: return false
+    }
+    if value is NSNumber || value is NSString { return false }
+    return jsSwiftValueClass.map { object_getClass(value as AnyObject) !== $0 } ?? true
+}
+
+private let jsSwiftValueClass: AnyClass? = NSClassFromString("__SwiftValue")
+
+/// Whether an Objective-C object's class takes none of the runtime's protocols `jsGet` tries, once per class.
+private func jsIsNativeOnly(_ object: NSObject) -> Bool {
+    let cls: AnyClass = type(of: object)
+    let id = ObjectIdentifier(cls)
+    jsNativeOnlyLock.lock()
+    defer { jsNativeOnlyLock.unlock() }
+    if let known = jsNativeOnlyClasses[id] { return known }
+    let only = !(cls is JSDynamic.Type || cls is JSArrayProtocol.Type || cls is JSMapProtocol.Type || cls is JSSetProtocol.Type || cls is JSThenable.Type)
+    jsNativeOnlyClasses[id] = only
+    return only
+}
+
+nonisolated(unsafe) private var jsNativeOnlyClasses: [ObjectIdentifier: Bool] = [:]
+private let jsNativeOnlyLock = NSLock()
 
 /// `value` as `T`: undefined becomes nil for an optional `T`, and any value is `()` for `Void`.
 public func jsCast<T>(_ value: Any?, to type: T.Type = T.self) -> T? {
@@ -84,10 +139,11 @@ func jsIsUndefined<T>(_ value: T) -> Bool {
 func jsIsObject(_ value: Any) -> Bool { type(of: value) is AnyClass }
 
 /// A typed tuple (`[number, number, number]`), an array to script.
-func jsIsTuple(_ value: Any) -> Bool { Mirror(reflecting: value).displayStyle == .tuple }
+func jsIsTuple(_ value: Any) -> Bool { jsTypeKind(value) == .tuple }
 
 /// Whether `value` is a Swift closure (a JavaScript function).
 func jsIsFunction(_ value: Any) -> Bool {
+    guard jsTypeKind(value) == .function else { return false }
     if value is JSFunction { return true }
     let name = String(describing: type(of: value))
     guard name.first == "(" else { return false }
@@ -381,9 +437,18 @@ public func jsGetIfPresent(_ object: Any?, _ key: String) throws -> Any? {
 }
 
 public func jsGet(_ object: Any?, _ key: String) throws -> Any? {
+    let object = jsFlat(object)
+    if let value = object, jsIsOpaqueObject(value) {
+        if let native = value as? NSObject {
+            if jsIsNativeOnly(native) { return jsNativeGet(native, key) }
+        } else {
+            if let plain = value as? JSObject { return try plain.get(key) }
+            if let dynamic = value as? JSDynamic { return dynamic[jsKey: key] }
+        }
+    }
     // A class itself (`cls.prototype`), before any cast a class object could wrongly pass as an instance.
-    if let cls = jsFlat(object) as? AnyClass { return key == "prototype" ? JSPrototypes.of(cls) : JSPrototypes.staticMember(cls, key) ?? nil }
-    switch jsFlat(object) {
+    if let cls = object as? AnyClass { return key == "prototype" ? JSPrototypes.of(cls) : JSPrototypes.staticMember(cls, key) ?? nil }
+    switch object {
     case nil:
         throw JSException(JSTypeError("Cannot read properties of undefined (reading '\(key)')"))
     case is JSNull:
@@ -416,7 +481,7 @@ public func jsGet(_ object: Any?, _ key: String) throws -> Any? {
     case let set as JSSetProtocol:
         return key == "size" ? Double(set.jsSize) : jsSetMethod(set, key)
     // A typed tuple (`[CssProperty, unknown]`) read untyped is the array script made it as.
-    case let value? where Mirror(reflecting: value).displayStyle == .tuple:
+    case let value? where jsIsTuple(value):
         let elements = Mirror(reflecting: value).children.map { $0.value }
         if key == "length" { return Double(elements.count) }
         if let index = jsArrayIndex(key) { return Int(index) < elements.count ? jsFlat(elements[Int(index)]) : nil }
@@ -587,6 +652,7 @@ public func jsObjectAssign<T: JSDynamic>(_ target: T, _ sources: Any?...) -> T {
 /// `typeof value`.
 public func jsTypeof(_ value: Any?) -> String {
     guard let v = jsFlat(value) else { return "undefined" }
+    if jsIsOpaqueObject(v) { return v is JSSymbol ? "symbol" : "object" }
     if let boolean = jsNativeBoolean(v) { _ = boolean; return "boolean" }
     if jsIsNativeNumber(v) { return "number" }
     switch v {
@@ -609,7 +675,9 @@ public func jsIsNullish(_ value: Any?) -> Bool {
 
 /// JavaScript truthiness: false for undefined, null, false, 0, -0, NaN and "".
 public func jsIsTruthy(_ value: Any?) -> Bool {
-    switch jsFlat(value) {
+    let value = jsFlat(value)
+    if let object = value, jsIsOpaqueObject(object) { return !(object is JSNull) }
+    switch value {
     case nil: return false
     case let b as Bool: return b
     case let d as Double: return d != 0 && !d.isNaN
@@ -626,6 +694,9 @@ public func jsIsTruthy(_ value: Any?) -> Bool {
 /// objects by identity. Closures cannot be compared in Swift and are never equal.
 public func jsStrictEquals(_ a: Any?, _ b: Any?) -> Bool {
     let a = jsFlat(a), b = jsFlat(b)
+    if let x = a, let y = b, jsIsOpaqueObject(x) || jsIsOpaqueObject(y) {
+        return jsIsObject(x) && jsIsObject(y) && (x as AnyObject) === (y as AnyObject)
+    }
     switch (a, b) {
     case (nil, nil): return true
     case (nil, _), (_, nil): return false
