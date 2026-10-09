@@ -14,17 +14,30 @@ export interface BaseHttpContent {
 	toNativeString: (encoding?: HttpResponseEncoding) => any;
 }
 
-const currentDevice = UIDevice.currentDevice;
-const device = currentDevice.userInterfaceIdiom === UIUserInterfaceIdiom.Phone ? 'Phone' : 'Pad';
-const osVersion = currentDevice.systemVersion;
-
 const GET = 'GET';
 const USER_AGENT_HEADER = 'User-Agent';
-const USER_AGENT = `Mozilla/5.0 (i${device}; CPU OS ${osVersion.replace('.', '_')} like Mac OS X) AppleWebKit/536.26 (KHTML, like Gecko) Version/${osVersion} Mobile/10A5355d Safari/8536.25`;
-// mitigate iOS 18.4 simulator regression
-// https://developer.apple.com/forums/thread/777999
-const sessionConfig = SDK_VERSION === 18.4 && !isRealDevice() ? NSURLSessionConfiguration.ephemeralSessionConfiguration : NSURLSessionConfiguration.defaultSessionConfiguration;
-const queue = NSOperationQueue.mainQueue;
+
+// Made on the first request rather than when the module loads: a session configuration costs milliseconds of app launch.
+let userAgent: string;
+function getUserAgent(): string {
+	if (!userAgent) {
+		const currentDevice = UIDevice.currentDevice;
+		const device = currentDevice.userInterfaceIdiom === UIUserInterfaceIdiom.Phone ? 'Phone' : 'Pad';
+		const osVersion = currentDevice.systemVersion;
+		userAgent = `Mozilla/5.0 (i${device}; CPU OS ${osVersion.replace('.', '_')} like Mac OS X) AppleWebKit/536.26 (KHTML, like Gecko) Version/${osVersion} Mobile/10A5355d Safari/8536.25`;
+	}
+	return userAgent;
+}
+
+let sessionConfig: NSURLSessionConfiguration;
+function getSessionConfig(): NSURLSessionConfiguration {
+	if (!sessionConfig) {
+		// mitigate iOS 18.4 simulator regression
+		// https://developer.apple.com/forums/thread/777999
+		sessionConfig = SDK_VERSION === 18.4 && !isRealDevice() ? NSURLSessionConfiguration.ephemeralSessionConfiguration : NSURLSessionConfiguration.defaultSessionConfiguration;
+	}
+	return sessionConfig;
+}
 
 @NativeClass
 class NSURLSessionTaskDelegateImpl extends NSObject implements NSURLSessionTaskDelegate {
@@ -33,19 +46,19 @@ class NSURLSessionTaskDelegateImpl extends NSObject implements NSURLSessionTaskD
 		completionHandler(null);
 	}
 }
-const sessionTaskDelegateInstance: NSURLSessionTaskDelegateImpl = <NSURLSessionTaskDelegateImpl>NSURLSessionTaskDelegateImpl.new();
 
 let defaultSession;
 function ensureDefaultSession() {
 	if (!defaultSession) {
-		defaultSession = NSURLSession.sessionWithConfigurationDelegateDelegateQueue(sessionConfig, null, queue);
+		defaultSession = NSURLSession.sessionWithConfigurationDelegateDelegateQueue(getSessionConfig(), null, NSOperationQueue.mainQueue);
 	}
 }
 
 let sessionNotFollowingRedirects;
 function ensureSessionNotFollowingRedirects() {
 	if (!sessionNotFollowingRedirects) {
-		sessionNotFollowingRedirects = NSURLSession.sessionWithConfigurationDelegateDelegateQueue(sessionConfig, sessionTaskDelegateInstance, queue);
+		const delegate = <NSURLSessionTaskDelegateImpl>NSURLSessionTaskDelegateImpl.new();
+		sessionNotFollowingRedirects = NSURLSession.sessionWithConfigurationDelegateDelegateQueue(getSessionConfig(), delegate, NSOperationQueue.mainQueue);
 	}
 }
 
@@ -64,7 +77,7 @@ export function requestInternal<T extends object>(options: HttpRequestOptions, c
 
 			urlRequest.HTTPMethod = types.isDefined(options.method) ? options.method : GET;
 
-			urlRequest.setValueForHTTPHeaderField(USER_AGENT, USER_AGENT_HEADER);
+			urlRequest.setValueForHTTPHeaderField(getUserAgent(), USER_AGENT_HEADER);
 
 			if (options.headers) {
 				for (const header in options.headers) {
