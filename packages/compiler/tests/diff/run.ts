@@ -20,6 +20,9 @@ import { addInterfaces, translateModules } from '../../src/modules.ts';
 import { addKotlinInterfaces, translateKotlinModules } from '../../src/kotlin-modules.ts';
 import ts from 'typescript';
 import { kotlinToolchain } from '../kotlin-toolchain.ts';
+import { JsGraph } from '../../src/js-modules.ts';
+import { JsEmitter } from '../../src/js-dynamic.ts';
+import { JsBoundary } from '../../src/js-boundary.ts';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = resolve(here, '../..');
@@ -58,18 +61,25 @@ const swiftOnly = (file: string) => (lenient(file) && !kotlinOnly(file)) || read
 
 function translate(file: string, out: string): void {
   const loose = lenient(file);
-  const { checker, program, files } = createProgram([file], new Map(), 'ios', modulesDir, undefined, [], {}, loose ? { strict: false, useDefineForClassFields: false } : {});
+  // A case importing JavaScript files (`./js/…`) has them compiled as an npm package's published JavaScript is.
+  const graph = new JsGraph('ios', modulesDir);
+  const { checker, program, files, jsImports, jsDeclared } = createProgram([file], new Map(), 'ios', modulesDir, undefined, [], {}, loose ? { strict: false, useDefineForClassFields: false } : {}, graph);
   // In library mode, as the kit generated from core is: each module's functions and variables in an enum.
   const library = loose ? { moduleName: (f: string) => (f.endsWith('.d.ts') ? null : 'Module_' + basename(f).replace(/\W/g, '_')) } : null;
-  const translator = new Translator(checker, new Map(), files, { lenient: loose, library, ...(loose ? { pluginFiles: files.map((f) => f.fileName), properties: collectProperties(checker, files) } : {}) });
+  const emitter = jsImports.size ? new JsEmitter(graph, null) : null;
+  const boundary = emitter ? new JsBoundary(graph, emitter, checker, jsImports, jsDeclared) : null;
+  boundary?.reach(program.getSourceFiles().filter((f) => !f.isDeclarationFile));
+  const translator = new Translator(checker, new Map(), files, { lenient: loose, library, js: boundary, ...(loose ? { pluginFiles: files.map((f) => f.fileName), properties: collectProperties(checker, files) } : {}) });
   translator.appModule = 'Main';
   // With source lines, as an app is built: the directives must compile wherever a statement can be.
   const lines = translator.lines = new SourceLines(new Map());
+  if (emitter) emitter.lines = lines;
   const modules = translateModules(translator, program, [file, ...importsOf(program, file)]);
   addInterfaces(translator, modules);
   rmSync(out, { recursive: true, force: true });
   mkdirSync(out, { recursive: true });
   const header = 'import Foundation\nimport NativeScriptKit\n\n';
+  if (emitter) for (const m of graph.compiled()) writeFileSync(join(out, m.name + '.swift'), header + lines.swift(emitter.emitModule(m)));
   for (const m of modules) writeFileSync(join(out, m.name + '.swift'), header + lines.swift(m.code));
   writeFileSync(join(out, '__Objects.swift'), header + translator.shapesCode() + '\n');
   const inits = modules.filter((m) => m.init).map((m) => `${m.init}()\n`).join('');
@@ -104,7 +114,7 @@ function importsOf(program: import('typescript').Program, file: string): string[
     if (!sf) return;
     for (const st of sf.statements) {
       const spec = (st as any).moduleSpecifier?.text as string | undefined;
-      if (!spec?.startsWith('.')) continue;
+      if (!spec?.startsWith('.') || /\.([mc]?js|json)$/.test(spec)) continue;
       const target = resolve(dirname(f), spec.replace(/\.ts$/, '') + '.ts');
       if (!out.has(target)) { out.add(target); visit(target); }
     }
@@ -118,6 +128,12 @@ function toJavaScript(dir: string, out: string) {
   mkdirSync(out, { recursive: true });
   writeFileSync(join(out, 'package.json'), '{ "type": "module" }');
   for (const f of readdirSync(dir, { recursive: true }) as string[]) {
+    // A case's JavaScript files, as they are.
+    if (/\.([mc]?js|json)$/.test(f)) {
+      mkdirSync(dirname(join(out, f)), { recursive: true });
+      writeFileSync(join(out, f), readFileSync(join(dir, f)));
+      continue;
+    }
     if (!f.endsWith('.ts')) continue;
     const text = readFileSync(join(dir, f), 'utf8');
     // A lenient case runs as core is built: class fields assigned, not defined (a declared field leaves the prototype's accessor visible).
