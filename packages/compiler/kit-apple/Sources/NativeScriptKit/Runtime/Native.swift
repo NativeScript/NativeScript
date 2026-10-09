@@ -112,7 +112,8 @@ func jsNativeGet(_ object: NSObject, _ key: String) -> Any? {
     if let own = object as? JSNativeMembers, let value = own.jsMember(key) { return value }
     // Collections answer key-value coding for their elements, not themselves (`value(forKey: "count")` maps over an array).
     if let collection = jsCollectionMember(object, key) { return collection }
-    if jsHasObjCProperty(type(of: object), key) {
+    let absent = jsNativeAbsent(type(of: object), key)
+    if !absent, jsHasObjCProperty(type(of: object), key) {
         // Key-value coding cannot box a Core Foundation object (`UIColor.CGColor`) and raises; the getter's message send gives it.
         if let getter = jsCFObjectGetter(type(of: object), key), object.responds(to: getter) {
             return object.perform(getter)?.takeUnretainedValue()
@@ -130,8 +131,34 @@ func jsNativeGet(_ object: NSObject, _ key: String) -> Any? {
     if object.responds(to: one), jsPerformable(type(of: object), one) {
         return { (args: [Any?]) throws -> Any? in jsFromNative(object.perform(one, with: jsToNative(jsArg(args, 0)))?.takeUnretainedValue()) } as JSFunction
     }
-    if let method = jsNativeMethod(object, key) { return method }
+    if !absent {
+        if let method = jsNativeMethod(object, key) { return method }
+        jsNativeMarkAbsent(type(of: object), key)
+    }
     return jsExpandos(object)?[key]
+}
+
+/// A key a class has neither an Objective-C property nor a script-named method for: a property script
+/// sets on native objects, read before it is set (`view.outerShadowContainerLayer`). Looking it up again
+/// walks every class's property list and selector table.
+private struct JSNativeMemberKey: Hashable {
+    let cls: ObjectIdentifier
+    let key: String
+}
+
+nonisolated(unsafe) private var jsNativeAbsentKeys = Set<JSNativeMemberKey>()
+private let jsNativeAbsentLock = NSLock()
+
+private func jsNativeAbsent(_ cls: AnyClass, _ key: String) -> Bool {
+    jsNativeAbsentLock.lock()
+    defer { jsNativeAbsentLock.unlock() }
+    return jsNativeAbsentKeys.contains(JSNativeMemberKey(cls: ObjectIdentifier(cls), key: key))
+}
+
+private func jsNativeMarkAbsent(_ cls: AnyClass, _ key: String) {
+    jsNativeAbsentLock.lock()
+    defer { jsNativeAbsentLock.unlock() }
+    jsNativeAbsentKeys.insert(JSNativeMemberKey(cls: ObjectIdentifier(cls), key: key))
 }
 
 /// Whether a method takes and gives only objects (or nothing back), as `perform` assumes; one only forwarded has no types to tell.
