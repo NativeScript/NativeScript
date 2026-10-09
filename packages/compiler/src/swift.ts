@@ -656,6 +656,10 @@ export class Translator implements AsyncTranslator {
       // `T & string`, a type parameter narrowed by typeof: the primitive.
       const primitive = t.types.find((u) => u.flags & (F.StringLike | F.NumberLike | F.BooleanLike));
       if (primitive && t.types.every((u) => u === primitive || u.flags & F.TypeParameter)) return this.type(primitive, where);
+      // `T & Record<K, unknown>`, a type parameter narrowed by `key in owner`: the type parameter, its key read by name.
+      const param = t.types.find((u) => u.flags & F.TypeParameter);
+      const inNarrowing = (u: ts.Type) => !!(u.flags & F.Object) && !u.getCallSignatures().length && u.getProperties().every((p) => c.getTypeOfSymbol(p).flags & F.Unknown);
+      if (param && t.types.every((u) => u === param || inNarrowing(u))) return this.type(param, where);
     }
     if (t.isUnion()) {
       let parts = t.types.filter((u) => !(u.flags & (F.Undefined | F.Null | F.Void)));
