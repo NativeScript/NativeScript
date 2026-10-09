@@ -8,6 +8,7 @@ import { getProjectRootPath } from '../../helpers/project.js';
 import { extractRootPackageName } from '../shared/package-classifier.js';
 import { isEsmFrameworkPackageSpecifier, isLikelyNativeScriptPluginSpecifier, isLikelyNativeScriptRuntimePluginSpecifier, normalizeNodeModulesSpecifier, resolveInternalRuntimePluginBareSpecifier, resolveNodeModulesPackageBoundary, resolveVendorFromCandidate, shouldPreserveBareRuntimePluginSubpathImport } from './websocket-module-specifiers.js';
 import { MODULE_IMPORT_ANALYSIS_PLUGINS } from './websocket-served-module-helpers.js';
+import { stripViteFsPrefix } from '../../helpers/normalize-id.js';
 import { getVendorManifest } from '../shared/vendor/registry.js';
 
 /**
@@ -68,7 +69,7 @@ interface TopLevelImportRecord {
 }
 
 const sourceImportIntentCache = new Map<string, SourceImportIntentCacheEntry>();
-const EXPLICIT_RUNTIME_PLUGIN_SCRIPT_EXT_RE = /(?:\.(?:ios|android|visionos))?\.(?:ts|tsx|js|jsx|mjs|mts|cts)$/i;
+const EXPLICIT_RUNTIME_PLUGIN_SCRIPT_EXT_RE = /(?:\.(?:ios|android|visionos|windows))?\.(?:ts|tsx|js|jsx|mjs|mts|cts)$/i;
 
 function hasExplicitRuntimePluginScriptExtension(segment: string): boolean {
 	return EXPLICIT_RUNTIME_PLUGIN_SCRIPT_EXT_RE.test(segment);
@@ -496,7 +497,7 @@ function isRuntimePluginRootEntrySpecifier(specifier: string, projectRoot: strin
 
 	const packageBaseName = packageName.split('/').pop() || '';
 	const withoutExt = hasExplicitRuntimePluginScriptExtension(subpath) ? subpath.replace(/\.[^.]+$/, '') : subpath;
-	const withoutPlatform = withoutExt.replace(/\.(ios|android|visionos)$/i, '');
+	const withoutPlatform = withoutExt.replace(/\.(ios|android|visionos|windows)$/i, '');
 	return withoutPlatform === 'index' || withoutPlatform === packageBaseName;
 }
 
@@ -569,7 +570,7 @@ function getResolvedSpecifierCandidateKeys(sourceSpecifier: string): string[] {
 		return [];
 	}
 
-	const suffixes = ['', '.js', '.ts', '.mjs', '.cjs', '.ios.js', '.android.js', '.visionos.js', '/index.js', '/index.ts', '/index.mjs', '/index.ios.js', '/index.android.js', '/index.visionos.js'];
+	const suffixes = ['', '.js', '.ts', '.mjs', '.cjs', '.ios.js', '.android.js', '.visionos.js', '.windows.js', '/index.js', '/index.ts', '/index.mjs', '/index.ios.js', '/index.android.js', '/index.visionos.js', '/index.windows.js'];
 	return Array.from(new Set(suffixes.map((suffix) => (suffix ? `${normalized}${suffix}` : normalized))));
 }
 
@@ -616,19 +617,19 @@ function resolveProcessCodeSourceFilePath(sourceId: string, projectRoot: string)
 
 		const normalizedCandidate = candidate.replace(/\\/g, '/');
 		const lastSegment = normalizedCandidate.split('/').pop() || '';
-		const hasExplicitExtension = /(?:\.(?:ios|android|visionos))?\.(?:ts|tsx|js|jsx|mjs|mts|cts)$/i.test(lastSegment);
+		const hasExplicitExtension = /(?:\.(?:ios|android|visionos|windows))?\.(?:ts|tsx|js|jsx|mjs|mts|cts)$/i.test(lastSegment);
 		if (hasExplicitExtension) {
 			return [candidate];
 		}
 
-		const suffixes = ['', '.ts', '.tsx', '.js', '.jsx', '.mjs', '.mts', '.cts', '.ios.ts', '.ios.js', '.android.ts', '.android.js', '.visionos.ts', '.visionos.js', '/index.ts', '/index.tsx', '/index.js', '/index.jsx', '/index.mjs', '/index.mts', '/index.cts', '/index.ios.ts', '/index.ios.js', '/index.android.ts', '/index.android.js', '/index.visionos.ts', '/index.visionos.js'];
+		const suffixes = ['', '.ts', '.tsx', '.js', '.jsx', '.mjs', '.mts', '.cts', '.ios.ts', '.ios.js', '.android.ts', '.android.js', '.visionos.ts', '.visionos.js', '.windows.ts', '.windows.js', '/index.ts', '/index.tsx', '/index.js', '/index.jsx', '/index.mjs', '/index.mts', '/index.cts', '/index.ios.ts', '/index.ios.js', '/index.android.ts', '/index.android.js', '/index.visionos.ts', '/index.visionos.js', '/index.windows.ts', '/index.windows.js'];
 
 		return Array.from(new Set(suffixes.map((suffix) => `${candidate}${suffix}`)));
 	};
 
 	const candidates: string[] = [];
 	if (cleaned.startsWith('/@fs/')) {
-		candidates.push(...expandCandidateVariants(cleaned.slice('/@fs'.length)));
+		candidates.push(...expandCandidateVariants(stripViteFsPrefix(cleaned)));
 	}
 	if (/^(?:[A-Za-z]:)?\//.test(cleaned)) {
 		candidates.push(...expandCandidateVariants(cleaned));

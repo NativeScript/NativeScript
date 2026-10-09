@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { getGlobalDefines, getUserDefineEntries, isHmrProgressOverlayEnabled, setUserDefineEntries } from './global-defines.js';
+import { buildDefineShimStatements, buildGuardedDefineSeedStatement, getGlobalDefines, getRuntimeDefineValues, getRuntimeSeedValues, getUserDefineEntries, isHmrProgressOverlayEnabled, setUserDefineEntries } from './global-defines.js';
 
 describe('setUserDefineEntries / getUserDefineEntries', () => {
 	afterEach(() => setUserDefineEntries(undefined));
@@ -65,5 +65,62 @@ describe('getGlobalDefines — webpack compatibility', () => {
 		expect((defines as Record<string, unknown>).__non_webpack_require__).toBe('globalThis.require');
 		// Must be a bare expression, not JSON.stringified (which would inject a string).
 		expect((defines as Record<string, unknown>).__non_webpack_require__).not.toBe('"globalThis.require"');
+	});
+});
+
+describe('windows platform defines', () => {
+	it('sets __WINDOWS__ and keeps every other platform flag (including __APPLE__) false', () => {
+		const values = getRuntimeDefineValues({ platform: 'windows', isDevMode: true, verbose: false });
+		expect(values.__WINDOWS__).toBe(true);
+		expect(values.__ANDROID__).toBe(false);
+		expect(values.__IOS__).toBe(false);
+		expect(values.__VISIONOS__).toBe(false);
+		expect(values.__APPLE__).toBe(false);
+	});
+
+	it('keeps __WINDOWS__ false on the existing platforms', () => {
+		for (const platform of ['android', 'ios', 'visionos']) {
+			expect(getRuntimeDefineValues({ platform, isDevMode: true, verbose: false }).__WINDOWS__).toBe(false);
+		}
+	});
+
+	it('mirrors webpack: __WINDOWS__ and global.isWindows in the Vite define map', () => {
+		const defines = getGlobalDefines({ platform: 'windows', targetMode: 'development', verbose: false, flavor: 'typescript' }) as Record<string, unknown>;
+		expect(defines.__WINDOWS__).toBe('true');
+		expect(defines['global.isWindows']).toBe('true');
+		expect(defines['global.isIOS']).toBe('false');
+		expect(defines['global.isAndroid']).toBe('false');
+		const ios = getGlobalDefines({ platform: 'ios', targetMode: 'development', verbose: false, flavor: 'typescript' }) as Record<string, unknown>;
+		expect(ios.__WINDOWS__).toBe('false');
+		expect(ios['global.isWindows']).toBe('false');
+	});
+
+	it('seeds the legacy isWindows runtime global', () => {
+		const seed = getRuntimeSeedValues({ platform: 'windows', isDevMode: true, verbose: false, flavor: 'typescript' });
+		expect(seed.isWindows).toBe(true);
+		expect(seed.isIOS).toBe(false);
+		expect(seed.isAndroid).toBe(false);
+		expect(getRuntimeSeedValues({ platform: 'android', isDevMode: true, verbose: false, flavor: 'typescript' }).isWindows).toBe(false);
+	});
+
+	it('guarded seed plants __WINDOWS__ / isWindows only when no platform flag is set yet', () => {
+		const stmt = buildGuardedDefineSeedStatement(getRuntimeDefineValues({ platform: 'windows', isDevMode: true, verbose: false }));
+		const run = (g: Record<string, unknown>) => new Function('globalThis', stmt)(g);
+
+		const fresh: Record<string, unknown> = {};
+		run(fresh);
+		expect(fresh).toMatchObject({ __WINDOWS__: true, __ANDROID__: false, __IOS__: false, __APPLE__: false, isWindows: true, isIOS: false, isAndroid: false });
+
+		// A seed that already ran (bundle entry) must win.
+		const seeded: Record<string, unknown> = { __WINDOWS__: true, isWindows: true };
+		run(seeded);
+		expect(seeded.__IOS__).toBeUndefined();
+		expect(seeded.isIOS).toBeUndefined();
+	});
+
+	it('emits a per-module __WINDOWS__ shim', () => {
+		const shims = buildDefineShimStatements(getRuntimeDefineValues({ platform: 'windows', isDevMode: true, verbose: false }));
+		expect(shims).toContain('const __WINDOWS__ = globalThis.__WINDOWS__ !== undefined ? globalThis.__WINDOWS__ : true;');
+		expect(shims).toContain('const __APPLE__ = globalThis.__APPLE__ !== undefined ? globalThis.__APPLE__ : false;');
 	});
 });

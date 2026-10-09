@@ -29,7 +29,7 @@ try {
 	const flags = getCliFlags();
 	for (const [k, v] of Object.entries(flags || {})) {
 		// Skip internal NativeScript build flags
-		if (['ios', 'android', 'visionos', 'platform', 'hmr', 'verbose'].includes(k)) continue;
+		if (['ios', 'android', 'visionos', 'windows', 'platform', 'hmr', 'verbose'].includes(k)) continue;
 		__processEnvEntries[k] = String(v);
 	}
 } catch {}

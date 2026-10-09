@@ -31,7 +31,7 @@ import { vendorManifestPlugin } from '../hmr/shared/vendor/manifest.js';
 import { resolveVerboseFlag, createFilteredViteLogger } from '../helpers/logging.js';
 import { externalConfigsPlugin } from '../helpers/external-configs.js';
 import { getHMRPlugins } from '../hmr/server/index.js';
-import type { Platform } from '../helpers/platform-types.js';
+import { isApplePlatform, platformExtensions as platformFirstExtensions, type Platform } from '../helpers/platform-types.js';
 import { packagePlatformResolverPlugin } from '../helpers/package-platform-aliases.js';
 import { findPackageInNodeModules } from '../helpers/module-resolution.js';
 import { createPlatformCssPlugin } from '../helpers/css-platform-plugin.js';
@@ -100,6 +100,8 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 		platform = 'ios';
 	} else if (cliFlags.visionos) {
 		platform = 'visionos';
+	} else if (cliFlags.windows) {
+		platform = 'windows';
 	}
 	if (verbose) {
 		console.log('--------------');
@@ -137,9 +139,9 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 	const platformExtensions = (() => {
 		const base = ['.tsx', '.jsx', '.ts', '.js'] as const;
 		const exts: string[] = [];
-		if (platform === 'android') {
-			exts.push('.android.tsx', '.tsx', '.android.jsx', '.jsx', '.android.ts', '.ts', '.android.js', '.js');
-		} else if (platform === 'ios' || platform === 'visionos') {
+		if (platform === 'android' || platform === 'windows') {
+			exts.push(...platformFirstExtensions(platform, base));
+		} else if (isApplePlatform(platform)) {
 			// Treat visionOS like iOS for file resolution
 			exts.push('.ios.tsx', '.tsx', '.ios.jsx', '.jsx', '.ios.ts', '.ts', '.ios.js', '.js');
 		} else {
@@ -177,6 +179,9 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 				// Keep capture group to preserve deep paths
 				replacement: `${NS_CORE_ROOT}/$1`,
 			},
+			// Generic theme css -> platform specific variant. Must precede the deep-path
+			// catch-all below: the first matching alias wins.
+			...themeGenericAliases,
 			// Resolve hoisted nativescript-theme-core if present at workspace root
 			// Support both exact package and deep paths like nativescript-theme-core/css/core.light.css
 			...(THEME_CORE_ROOT
@@ -192,9 +197,6 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 			},
 			// Ensure set-value resolves to an absolute shim to avoid alias warnings and duplication
 			{ find: /^set-value$/, replacement: resolveRelativeToImportMeta(import.meta.url, '../shims/set-value.js') },
-			// nativescript-theme-core root + deep paths (hoisted resolution)
-			// Generic theme css -> platform specific variant
-			...themeGenericAliases,
 			...aliasCssTree,
 			// 1) Catch exactly `~/package.json` → virtual module (MUST be first!)
 			{ find: /^~\/package\.json$/, replacement: '~/package.json' },
@@ -461,7 +463,9 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 					// LAN address devices use is visible at startup. The URL
 					// host devices are told to use is decided separately by
 					// `resolveDeviceReachableHost`. `NS_HMR_HOST` overrides.
-					host: process.env.NS_HMR_HOST || '0.0.0.0',
+					// Windows apps run on this machine, so loopback suffices and
+					// avoids the firewall prompt a wildcard bind triggers.
+					host: process.env.NS_HMR_HOST || (platform === 'windows' ? '127.0.0.1' : '0.0.0.0'),
 					// The CLI picks a free port per platform session and hands
 					// it in as `NS_HMR_PORT`; that same port is baked into
 					// `bundle.mjs` and tunnelled with `adb reverse`, so Vite
@@ -565,12 +569,12 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 					// Preserve side effects for NativeScript core so classes/functions
 					// aren't tree-shaken out inadvertently. This does NOT cause cross‑chunk duplication;
 					// it only prevents Rollup from dropping modules it considers side‑effect free.
-					// Also preserve side effects for .android and .ios files which may contain
+					// Also preserve side effects for .android/.ios/.windows files which may contain
 					// other decorated classes that register with the native runtime
 					moduleSideEffects: (id) => {
 						if (/node_modules[\\\/]\@nativescript[\\\/]core[\\\/]/.test(id)) return true;
 						// Activity and Application files have side effects (class registration)
-						if (/\.(android|ios)\.(ts|js)$/.test(id)) return true;
+						if (/\.(android|ios|windows)\.(ts|js)$/.test(id)) return true;
 						return null;
 					},
 				},

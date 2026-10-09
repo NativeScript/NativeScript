@@ -18,7 +18,8 @@
 	"nativescript": {
 		"platforms": {
 			"ios": "6.0.0",
-			"android": "6.0.0"
+			"android": "6.0.0",
+			"windows": "9.1.0"
 		}
 	}
 }

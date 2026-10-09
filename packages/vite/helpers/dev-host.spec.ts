@@ -1009,3 +1009,55 @@ describe('resolveDeviceReachableOrigin — adb-reverse threaded through', () => 
 		expect(r.source).toBe('platform-default');
 	});
 });
+
+describe('resolveDeviceReachableHost on Windows (app runs on the dev machine)', () => {
+	beforeEach(() => {
+		__resetAdbReverseCacheForTests();
+	});
+
+	it('wildcard → 127.0.0.1 without consulting LAN NICs or adb', () => {
+		let lanCalls = 0;
+		const adbCalls: string[] = [];
+		const r = resolveDeviceReachableHost({
+			host: '0.0.0.0',
+			platform: 'windows',
+			env: {},
+			port: 5173,
+			lanHostResolver: () => {
+				lanCalls++;
+				return '192.168.1.42';
+			},
+			adbExec: adbStub(() => '', adbCalls),
+		});
+		expect(r.host).toBe('127.0.0.1');
+		expect(r.source).toBe('platform-default');
+		expect(lanCalls).toBe(0);
+		expect(adbCalls).toEqual([]);
+	});
+
+	it('loopback bind (the Windows server.host default) passes through unchanged', () => {
+		const r = resolveDeviceReachableHost({
+			host: '127.0.0.1',
+			platform: 'windows',
+			env: {},
+			lanHostResolver: () => '192.168.1.42',
+		});
+		expect(r.host).toBe('127.0.0.1');
+		expect(r.source).toBe('explicit');
+	});
+
+	it('NS_HMR_HOST still overrides', () => {
+		const r = resolveDeviceReachableHost({
+			host: '127.0.0.1',
+			platform: 'windows',
+			env: { NS_HMR_HOST: 'tunnel.example.com' },
+		});
+		expect(r.host).toBe('tunnel.example.com');
+		expect(r.source).toBe('env');
+	});
+
+	it('assembles an IPv4 loopback origin', () => {
+		const r = resolveDeviceReachableOrigin({ host: '0.0.0.0', platform: 'windows', env: {}, port: 6173 });
+		expect(r.origin).toBe('http://127.0.0.1:6173');
+	});
+});
