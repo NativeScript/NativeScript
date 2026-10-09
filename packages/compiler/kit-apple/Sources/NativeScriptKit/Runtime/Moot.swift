@@ -27,6 +27,7 @@ public func jsConstruct(_ f: Any?, _ arguments: Any?...) throws -> Any? {
 
 /// `new f(...args)` on an untyped value.
 public func jsConstruct(_ f: Any?, spread arguments: [Any?]) throws -> Any? {
+    if let fn = jsFlat(f) as? JSFunctionObject { return try fn.construct(arguments) }
     if let c = jsFlat(f) as? JSConstructor { return try c.make(arguments) }
     if let c = jsFlat(f) as? JSConstructible { return try c.jsConstruct(arguments) }
     if let moot = jsFlat(f) as? JSMootValue { throw moot.unavailable() }

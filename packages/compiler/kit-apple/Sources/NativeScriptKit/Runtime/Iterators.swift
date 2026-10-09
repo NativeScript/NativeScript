@@ -241,6 +241,17 @@ public func jsIteratorOf(_ value: Any?) throws -> JSIterator<Any?> {
     case let map as JSMapProtocol:
         var entries = map.jsAnyEntries.makeIterator()
         return JSIterator<Any?> { entries.next().map { JSArray<Any?>([$0.0, $0.1]) as Any? } }
+    // A script object with `[Symbol.iterator]()`: the iterator it makes, stepped through `next()`.
+    case let v? where v is JSObject || v is JSFunctionObject || v is JSProxy || v is JSScriptInstance:
+        let make = try jsGet(v, JSSymbol.iterator.key)
+        guard !jsIsNullish(make) else { throw JSException(JSTypeError("\(jsToString(value)) is not iterable")) }
+        let iterator = try jsInvoke(make, v, [])
+        if let typed = jsFlat(iterator) as? JSIterator<Any?> { return typed }
+        if let inner = jsFlat(iterator) as? JSIteratorProtocol { return JSIteratorAdapter(inner) }
+        let next = try jsGet(iterator, "next")
+        let ret = try jsGet(iterator, "return")
+        return JSScriptIterator<Any?>(next: { arg in try jsInvoke(next, iterator, arg == nil ? [] : [arg]) },
+                                     return: jsIsNullish(ret) ? nil : { arg in try jsInvoke(ret, iterator, [arg]) })
     default:
         throw JSException(JSTypeError("\(jsToString(value)) is not iterable"))
     }

@@ -88,7 +88,7 @@ func jsIsTuple(_ value: Any) -> Bool { Mirror(reflecting: value).displayStyle ==
 
 /// Whether `value` is a Swift closure (a JavaScript function).
 func jsIsFunction(_ value: Any) -> Bool {
-    if value is JSFunction { return true }
+    if value is JSFunction || value is JSFunctionObject { return true }
     let name = String(describing: type(of: value))
     guard name.first == "(" else { return false }
     var depth = 0
@@ -173,6 +173,8 @@ public final class JSObject: JSDynamic, JSSymbolKeyed, JSAccessorKeyed, JSReacti
     private var slots: [JSPropertyKey: JSPropertySlot] = [:]
     public private(set) var extensible = true
     public var jsTracker: JSTracker?
+    /// The object's [[Prototype]] where script gave it one (`Object.create`, `new F`): nil is Object.prototype, `jsNull` none.
+    public var jsProto: AnyObject?
 
     public init() {}
 
@@ -194,7 +196,7 @@ public final class JSObject: JSDynamic, JSSymbolKeyed, JSAccessorKeyed, JSReacti
             return jsReactiveAny(storage[JSPropertyKey(key)] ?? nil)
         }
         set {
-            if !slots.isEmpty || !extensible {
+            if !slots.isEmpty || !extensible || jsProto != nil {
                 do { try put(key, newValue) } catch { jsReportUncaught(jsCaught(error)) }
                 return
             }
@@ -219,10 +221,16 @@ public final class JSObject: JSDynamic, JSSymbolKeyed, JSAccessorKeyed, JSReacti
         return slot.set ?? { _, _ in throw JSException(JSTypeError("Cannot set property \(key) of #<Object> which has only a getter")) }
     }
 
-    /// `object[key]`, running a getter.
+    /// `object[key]`, running a getter, through the prototype chain.
     public func get(_ key: String) throws -> Any? {
         if !slots.isEmpty, let getter = slots[JSPropertyKey(key)]?.get { return try getter(self) }
-        return self[key]
+        guard let proto = jsProto else { return self[key] }
+        if let value = storage[JSPropertyKey(key)] {
+            jsTracker?.track()
+            return value
+        }
+        if key == "__proto__" { return proto }
+        return try jsProtoGet(proto, key, self)
     }
 
     /// `object[key] = value` in strict code: a read-only property, a getter without a setter
@@ -235,6 +243,8 @@ public final class JSObject: JSDynamic, JSSymbolKeyed, JSAccessorKeyed, JSReacti
                 return try setter(self, value)
             }
             if !slot.writable { throw JSException(JSTypeError("Cannot assign to read only property '\(key)' of object '#<Object>'")) }
+        } else if storage[k] == nil, let proto = jsProto, !(proto is JSNull), let setter = jsProtoSetter(proto, key) {
+            return try setter(self, value)
         } else if !extensible && storage[k] == nil {
             throw JSException(JSTypeError("Cannot add property \(key), object is not extensible"))
         }
@@ -259,6 +269,8 @@ public final class JSObject: JSDynamic, JSSymbolKeyed, JSAccessorKeyed, JSReacti
         if d.get != nil || d.set != nil {
             slot.get = d.get
             slot.set = d.set
+            slot.getFunction = d.getFunction
+            slot.setFunction = d.setFunction
             slot.isAccessor = true
             slot.writable = false
         } else if d.value != nil || d.writable != nil {
@@ -278,7 +290,7 @@ public final class JSObject: JSDynamic, JSSymbolKeyed, JSAccessorKeyed, JSReacti
         guard storage[k] != nil else { return nil }
         let slot = slots[k] ?? JSPropertySlot()
         if slot.isAccessor {
-            return JSObject([("get", slot.get.map { g in { (_: [Any?]) throws -> Any? in try g(self) } as JSFunction } as Any?), ("set", slot.set.map { s in { (a: [Any?]) throws -> Any? in try s(self, jsArg(a, 0)); return nil } as JSFunction } as Any?),
+            return JSObject([("get", slot.getFunction ?? slot.get.map { g in { (_: [Any?]) throws -> Any? in try g(self) } as JSFunction } as Any?), ("set", slot.setFunction ?? slot.set.map { s in { (a: [Any?]) throws -> Any? in try s(self, jsArg(a, 0)); return nil } as JSFunction } as Any?),
                              ("enumerable", slot.enumerable), ("configurable", slot.configurable)])
         }
         return JSObject([("value", storage[k] ?? nil), ("writable", slot.writable), ("enumerable", slot.enumerable), ("configurable", slot.configurable)])
@@ -382,20 +394,43 @@ public func jsGetIfPresent(_ object: Any?, _ key: String) throws -> Any? {
 
 public func jsGet(_ object: Any?, _ key: String) throws -> Any? {
     // A class itself (`cls.prototype`), before any cast a class object could wrongly pass as an instance.
-    if let cls = jsFlat(object) as? AnyClass { return key == "prototype" ? JSPrototypes.of(cls) : JSPrototypes.staticMember(cls, key) ?? nil }
+    if let cls = jsFlat(object) as? AnyClass {
+        if key == "prototype" { return JSPrototypes.of(cls) }
+        if let member = JSPrototypes.staticMember(cls, key) { return member }
+        // A native class's own members (`UIApplication.sharedApplication`), as the iOS runtime reads them by name.
+        if let native = (cls as AnyObject) as? NSObject, class_isMetaClass(object_getClass(native)) { return jsNativeGet(native, key) }
+        return nil
+    }
     switch jsFlat(object) {
     case nil:
         throw JSException(JSTypeError("Cannot read properties of undefined (reading '\(key)')"))
     case is JSNull:
         throw JSException(JSTypeError("Cannot read properties of null (reading '\(key)')"))
     case let plain as JSObject:
-        return try plain.get(key)
+        let value = try plain.get(key)
+        // What every object inherits (`constructor`, `hasOwnProperty`), where the object has nothing of that name.
+        if value == nil, plain.jsProto == nil, plain !== JSPrototypes.objectPrototype, !plain.has(key) {
+            if key == "__proto__" { return JSPrototypes.objectPrototype }
+            if JSPrototypes.objectPrototype.has(key) { return try JSPrototypes.objectPrototype.get(key, receiver: plain) }
+        }
+        return value
+    case let f as JSFunctionObject:
+        return try f.get(key, receiver: f)
+    case let proxy as JSProxy:
+        return try proxy.get(key, receiver: proxy)
+    case let error as JSScriptError:
+        return try error.get(key)
     case let dynamic as JSDynamic:
-        return dynamic[jsKey: key]
+        if let value = dynamic[jsKey: key] { return value }
+        // The runtime's own errors, dates and expressions inherit their builtin prototype's members (`constructor`, `toString`, `getTime`).
+        if dynamic is JSDate || dynamic is JSRegExp || (dynamic is JSError && !(dynamic is JSScriptError)), let proto = try jsGetPrototypeOf(dynamic) as? JSObject {
+            return try jsProtoGet(proto, key, dynamic)
+        }
+        return nil
     case let array as JSArrayProtocol:
         if key == "length" { return Double(array.jsLength) }
         if let index = jsArrayIndex(key) { return Int(index) < array.jsLength ? array.jsElement(at: Int(index)) : nil }
-        return jsArrayMethod(array, key)
+        return jsArrayMethod(array, key) ?? JSPrototypes.builtinMember("Array", key, array)
     case let string as String:
         if key == "length" { return Double(string.utf16.count) }
         if let index = jsArrayIndex(key) {
@@ -404,17 +439,26 @@ public func jsGet(_ object: Any?, _ key: String) throws -> Any? {
             let unit = units[units.index(units.startIndex, offsetBy: Int(index))]
             return String(decoding: [unit], as: UTF16.self)
         }
-        return jsStringMethod(string, key)
+        return jsStringMethod(string, key) ?? JSPrototypes.builtinMember("String", key, string)
     case let match as JSMatch:
         if key == "length" { return match.length }
         if key == "index" { return match.index }
         if key == "input" { return match.input }
         if let index = jsArrayIndex(key) { return match.values.element(Double(index)) ?? nil }
+        if key == "groups" { return match.groups.map { $0 as Any? } ?? nil }
+        // The array script holds a match as: its elements, with the array's methods.
+        return jsArrayMethod(match.values, key)
+    case let sub as JSScriptInstance:
+        if key == "size", let m = sub as? JSMapProtocol { return Double(m.jsSize) }
+        if key == "size", let s = sub as? JSSetProtocol { return Double(s.jsSize) }
+        if let own = try jsScriptInstanceGet(sub, key) { return own }
+        if let m = sub as? JSMapProtocol { return jsMapMethod(m, key) }
+        if let s = sub as? JSSetProtocol { return jsSetMethod(s, key) }
         return nil
     case let map as JSMapProtocol:
-        return key == "size" ? Double(map.jsSize) : jsMapMethod(map, key)
+        return key == "size" ? Double(map.jsSize) : jsMapMethod(map, key) ?? JSPrototypes.builtinMember("Map", key, map)
     case let set as JSSetProtocol:
-        return key == "size" ? Double(set.jsSize) : jsSetMethod(set, key)
+        return key == "size" ? Double(set.jsSize) : jsSetMethod(set, key) ?? JSPrototypes.builtinMember("Set", key, set)
     // A typed tuple (`[CssProperty, unknown]`) read untyped is the array script made it as.
     case let value? where Mirror(reflecting: value).displayStyle == .tuple:
         let elements = Mirror(reflecting: value).children.map { $0.value }
@@ -424,9 +468,9 @@ public func jsGet(_ object: Any?, _ key: String) throws -> Any? {
     case let thenable as JSThenable:
         return jsPromiseMember(thenable, key)
     case let bool as Bool:
-        return jsBooleanMethod(bool, key)
+        return jsBooleanMethod(bool, key) ?? JSPrototypes.builtinMember("Boolean", key, bool)
     case let number as Double:
-        return jsNumberMethod(number, key)
+        return jsNumberMethod(number, key) ?? JSPrototypes.builtinMember("Number", key, number)
     // A Swift struct casts to NSObject too (boxed): a geometry struct is read by its fields first. An NSValue,
     // which Swift bridges to the struct it holds, is the native object (`toValue.CGRectValue`).
     case let value? where !(type(of: value) is AnyClass) && jsIsStruct(value):
@@ -494,7 +538,14 @@ public func jsSet(_ object: Any?, _ key: String, _ value: Any?) throws {
     case is JSNull:
         throw JSException(JSTypeError("Cannot set properties of null (setting '\(key)')"))
     case let plain as JSObject:
+        if key == "__proto__" { try jsSetPrototypeOf(plain, value); return }
         try plain.put(key, value)
+    case let f as JSFunctionObject:
+        try f.put(key, value)
+    case let proxy as JSProxy:
+        try proxy.set(key, value)
+    case let sub as JSScriptInstance:
+        try jsScriptInstanceSet(sub, key, value)
     case let dynamic as JSDynamic:
         let level = jsRestriction(dynamic)
         if level > 0 {
@@ -532,6 +583,7 @@ public func jsCall(_ function: Any?, _ arguments: Any?...) throws -> Any? {
 /// `f(...args)` on an untyped value.
 @discardableResult
 public func jsCall(_ function: Any?, spread arguments: [Any?]) throws -> Any? {
+    if let f = jsFlat(function) as? JSFunctionObject { return try f.call(nil, arguments) }
     if let f = jsFlat(function) as? JSFunction { return try f(arguments) }
     if let method = jsFlat(function) as? JSMethod { return try method(nil, arguments) }
     if let moot = jsFlat(function) as? JSMootValue { throw moot.unavailable() }

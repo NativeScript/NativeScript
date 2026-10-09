@@ -34,19 +34,21 @@ public enum JSPrototypes {
     public static let objectPrototype: JSObject = {
         let p = JSObject()
         let key = { (a: [Any?]) -> String in (jsFlat(jsArg(a, 0)) as? JSSymbol)?.key ?? jsToString(jsArg(a, 0)) }
-        p["hasOwnProperty"] = { this, a in jsHasOwn(this, key(a)) } as JSMethod
-        p["propertyIsEnumerable"] = { this, a in jsHasOwn(this, key(a)) && jsKeysOf(this).contains(key(a)) } as JSMethod
-        p["isPrototypeOf"] = { this, a in
+        func method(_ name: String, _ length: Int, _ body: @escaping JSMethod) { p[name] = JSFunctionObject(name, length, kind: .builtin, body) }
+        method("hasOwnProperty", 1) { this, a in jsScriptHasOwn(this, key(a)) }
+        method("propertyIsEnumerable", 1) { this, a in jsScriptHasOwn(this, key(a)) && (jsKeysOf(this).contains(key(a)) || (jsFlat(this) as? JSObject)?.keys.contains(key(a)) == true) }
+        method("isPrototypeOf", 1) { this, a in
             var current = try? jsGetPrototypeOf(jsArg(a, 0))
             while let c = jsFlat(current), !(c is JSNull) {
-                if let o = c as? JSObject, let t = jsFlat(this) as? JSObject, o === t { return true }
+                if let t = jsFlat(this), jsIsObjectValue(t), (c as AnyObject) === (t as AnyObject) { return true }
                 current = try? jsGetPrototypeOf(c)
             }
             return false
-        } as JSMethod
-        p["toString"] = { this, _ in jsObjectToString(this) } as JSMethod
-        p["valueOf"] = { this, _ in this } as JSMethod
-        for k in ["hasOwnProperty", "propertyIsEnumerable", "isPrototypeOf", "toString", "valueOf"] {
+        }
+        method("toString", 0) { this, _ in jsObjectToString(this) }
+        method("toLocaleString", 0) { this, _ in try jsInvokeMember(this, "toString", []) }
+        method("valueOf", 0) { this, _ in this }
+        for k in ["hasOwnProperty", "propertyIsEnumerable", "isPrototypeOf", "toString", "toLocaleString", "valueOf"] {
             try? p.defineProperty(k, JSPropertyDescriptor(enumerable: false))
         }
         return p
@@ -70,11 +72,25 @@ public enum JSPrototypes {
     }
 
     /// The prototype a built-in kind of value has (`Array.prototype`), its own object.
-    static func builtin(_ name: String) -> JSObject {
+    public static func builtin(_ name: String) -> JSObject {
         if let p = builtins[name] { return p }
         let p = JSObject()
         builtins[name] = p
+        if name.hasSuffix("Error") && name != "Error" { p.jsProto = builtin("Error") }
+        JSScriptGlobal.populate(prototype: p, name)
         return p
+    }
+
+    /// A member a builtin kind of value has on its prototype beyond the runtime's own methods (`constructor`, a polyfill), once script has made the prototype.
+    static func builtinMember(_ name: String, _ key: String, _ receiver: Any?) -> Any? {
+        guard let p = builtins[name] else { return nil }
+        return (try? jsProtoGet(p, key, receiver)) ?? nil
+    }
+
+    /// The runtime's own error classes, whose prototypes are the builtins of their names.
+    static func isKitError(_ e: JSError) -> Bool {
+        let t = type(of: e)
+        return t == JSError.self || t == JSTypeError.self || t == JSRangeError.self || t == JSSyntaxError.self || t == JSReferenceError.self || t == JSAggregateError.self
     }
 
     /// `Object.getPrototypeOf` of a plain object: a class's prototype leads to its superclass's.
@@ -110,7 +126,13 @@ public enum JSPrototypes {
 public func jsGetPrototypeOf(_ value: Any?) throws -> Any? {
     guard let v = jsFlat(value), !(v is JSNull) else { throw JSException(JSTypeError("Cannot convert undefined or null to object")) }
     switch v {
-    case let o as JSObject: return JSPrototypes.prototypeOf(object: o)
+    case let o as JSObject:
+        if let p = o.jsProto { return p }
+        return JSPrototypes.prototypeOf(object: o)
+    case let f as JSFunctionObject: return f.jsProto ?? JSPrototypes.builtin("Function")
+    case let e as JSScriptError: return e.jsProto ?? JSPrototypes.builtin(e.name)
+    case let p as JSProxy: return try p.getPrototypeOf()
+    case let sub as JSScriptInstance: return sub.jsProto ?? JSPrototypes.builtin(sub is JSMapProtocol ? "Map" : "Set")
     case is AnyClass: return JSPrototypes.builtin("Function")
     case is JSArrayProtocol: return JSPrototypes.builtin("Array")
     case is String: return JSPrototypes.builtin("String")
@@ -119,6 +141,12 @@ public func jsGetPrototypeOf(_ value: Any?) throws -> Any? {
     case is JSMapProtocol: return JSPrototypes.builtin("Map")
     case is JSSetProtocol: return JSPrototypes.builtin("Set")
     case is JSSymbol: return JSPrototypes.builtin("Symbol")
+    case is JSDate: return JSPrototypes.builtin("Date")
+    case is JSRegExp: return JSPrototypes.builtin("RegExp")
+    case is JSThenable: return JSPrototypes.builtin("Promise")
+    case let e as JSError where JSPrototypes.isKitError(e): return JSPrototypes.builtin(e.name)
+    // An object literal the app's typed code made: a plain object to script.
+    case let d as JSDynamic where d.jsClassName == nil && !(d is JSExpando): return JSPrototypes.objectPrototype
     default:
         if jsIsFunction(v) { return JSPrototypes.builtin("Function") }
         if jsIsObject(v) { return JSPrototypes.of(type(of: v as AnyObject)) }
@@ -197,6 +225,7 @@ public func jsOwnProperty(_ object: Any?, _ key: String) -> Any?? {
 @discardableResult
 public func jsCallValue(_ function: Any?, this: Any?, optional: Bool, _ arguments: [Any?]) throws -> Any? {
     if optional && jsIsNullish(function) { return nil }
+    if let f = jsFlat(function) as? JSFunctionObject { return try f.call(this, arguments) }
     if let method = jsFlat(function) as? JSMethod { return try method(this, arguments) }
     return try jsCall(function, spread: arguments)
 }

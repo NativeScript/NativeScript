@@ -28,6 +28,9 @@ public func jsDelete(_ object: Any?, _ key: String) throws -> Bool {
 struct JSPropertySlot {
     var get: ((Any?) throws -> Any?)?
     var set: ((Any?, Any?) throws -> Void)?
+    /// The function values script gave for the getter and setter, as `getOwnPropertyDescriptor` gives them back.
+    var getFunction: Any?
+    var setFunction: Any?
     var isAccessor = false
     var enumerable = true
     var writable = true
@@ -44,6 +47,8 @@ public struct JSPropertyDescriptor {
     public var enumerable: Bool?
     public var writable: Bool?
     public var configurable: Bool?
+    var getFunction: Any?
+    var setFunction: Any?
 
     public init(value: Any?? = nil, get: ((Any?) throws -> Any?)? = nil, set: ((Any?, Any?) throws -> Void)? = nil, enumerable: Bool? = nil, writable: Bool? = nil, configurable: Bool? = nil) {
         self.value = value
@@ -59,8 +64,8 @@ public struct JSPropertyDescriptor {
         guard let o = jsFlat(object) as? JSDynamic else { throw JSException(JSTypeError("Property description must be an object: \(jsToString(object))")) }
         let has = { (k: String) in jsHasKey(o, k) }
         if has("value") { value = .some(o[jsKey: "value"]) }
-        if has("get"), let g = jsFlat(o[jsKey: "get"]) { let f = jsReceiving(g); get = { this in try f(this, []) } }
-        if has("set"), let s = jsFlat(o[jsKey: "set"]) { let f = jsReceiving(s); set = { this, v in _ = try f(this, [v]) } }
+        if has("get"), let g = jsFlat(o[jsKey: "get"]) { let f = jsReceiving(g); get = { this in try f(this, []) }; getFunction = g }
+        if has("set"), let s = jsFlat(o[jsKey: "set"]) { let f = jsReceiving(s); set = { this, v in _ = try f(this, [v]) }; setFunction = s }
         if has("enumerable") { enumerable = jsIsTruthy(o[jsKey: "enumerable"]) }
         if has("writable") { writable = jsIsTruthy(o[jsKey: "writable"]) }
         if has("configurable") { configurable = jsIsTruthy(o[jsKey: "configurable"]) }
@@ -69,6 +74,7 @@ public struct JSPropertyDescriptor {
 
 /// A function value called with a receiver: a method sees it as `this`.
 private func jsReceiving(_ f: Any) -> (Any?, [Any?]) throws -> Any? {
+    if let function = f as? JSFunctionObject { return { this, args in try function.call(this, args) } }
     if let method = f as? JSMethod { return { this, args in try method(this, args) } }
     if let function = f as? JSFunction { return { _, args in try function(args) } }
     return { _, _ in throw JSException(JSTypeError("Getter must be a function: \(jsInspect(f))")) }
@@ -101,6 +107,13 @@ public func jsCallMethodIfPresent(_ object: Any?, _ key: String, spread argument
 }
 
 private func callMethod(_ object: Any?, _ key: String, _ arguments: [Any?]) throws -> Any? {
+    if let f = jsFlat(object) as? JSFunctionObject, !f.hasOwn(key) {
+        switch key {
+        case "call": return try f.call(arguments.first ?? nil, Array(arguments.dropFirst()))
+        case "apply": return try f.call(arguments.first ?? nil, try jsArgumentList(arguments.count > 1 ? arguments[1] : nil))
+        default: break
+        }
+    }
     // `f.call(thisArg, …)` and `f.apply(thisArg, args)` on a function value.
     if key == "call" || key == "apply", let f = jsFlat(object), f is JSMethod || f is JSFunction {
         let this = arguments.first ?? nil
@@ -138,10 +151,25 @@ private func callMethod(_ object: Any?, _ key: String, _ arguments: [Any?]) thro
     var f = try jsGet(object, key)
     // What every object inherits (`hasOwnProperty`), where the object has nothing of that name.
     if jsFlat(f) == nil, jsFlat(object) is JSDynamic, JSPrototypes.objectPrototype.has(key) { f = JSPrototypes.objectPrototype[key] }
+    if let function = jsFlat(f) as? JSFunctionObject { return try function.call(object, arguments) }
     if let method = jsFlat(f) as? JSMethod { return try method(object, arguments) }
     if let function = jsFlat(f) as? JSFunction { return try function(arguments) }
     if let moot = jsFlat(f) as? JSMootValue { throw moot.unavailable() }
+    if jsFlat(f) == nil { throw JSException(JSTypeError("\(jsReceiverName(object)).\(jsKeyDescription(key)) is not a function")) }
     throw JSException(JSTypeError("\(jsInspect(f)) is not a function"))
+}
+
+/// How an error message names a receiver: its class, or its type.
+func jsReceiverName(_ object: Any?) -> String {
+    switch jsFlat(object) {
+    case is String: return "string"
+    case is Double: return "number"
+    case is Bool: return "boolean"
+    case is JSArrayProtocol: return "array"
+    case let f as JSFunctionObject: return f.name.isEmpty ? "function" : f.name
+    case let v?: return (v as? JSDynamic)?.jsClassName ?? (ProcessInfo.processInfo.environment["NS_KIT_ERRORS"] != nil ? "\(type(of: v))" : "object")
+    case nil: return "undefined"
+    }
 }
 
 /// An object a native binding implements, as an engine's host objects are: a method call

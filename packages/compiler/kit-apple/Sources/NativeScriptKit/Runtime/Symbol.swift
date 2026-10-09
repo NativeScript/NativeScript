@@ -84,6 +84,9 @@ public func jsObjectToString(_ value: Any?) -> String {
     case nil: return "[object Undefined]"
     case is JSNull: return "[object Null]"
     case let tagged as JSToStringTag: return "[object \(tagged.jsToStringTag)]"
+    case let o as JSObject:
+        if let tag = (try? jsGet(o, JSSymbol.toStringTag.key)) as? String { return "[object \(tag)]" }
+        return "[object Object]"
     case is JSArrayProtocol: return "[object Array]"
     case is String: return "[object String]"
     case is Bool: return "[object Boolean]"

@@ -185,7 +185,7 @@ public final class JSPromise<T>: JSThenable, CustomStringConvertible {
             }
             return
         }
-        if let object = resolution as? JSDynamic, !(object is JSError), let then = jsFlat(object[jsKey: "then"]) as? JSFunction {
+        if let object = resolution as? JSDynamic, !(object is JSError), let then = jsFlat(object is JSObject || object is JSFunctionObject || object is JSProxy ? ((try? jsGet(object, "then")) ?? nil) : object[jsKey: "then"]), then is JSFunction || then is JSFunctionObject {
             Microtasks.enqueue { [self] in
                 let resolvers = JSResolvers(self)
                 let resolve: JSFunction = { arguments in
@@ -198,7 +198,7 @@ public final class JSPromise<T>: JSThenable, CustomStringConvertible {
                     return nil
                 }
                 do {
-                    _ = try then([resolve, reject])
+                    _ = try jsInvoke(then, object, [resolve, reject])
                 } catch {
                     resolvers.reject(jsCaught(error))
                 }
