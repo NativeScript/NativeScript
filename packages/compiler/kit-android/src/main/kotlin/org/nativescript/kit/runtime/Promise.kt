@@ -91,7 +91,7 @@ class JSResolvers<T> internal constructor(val promise: JSPromise<T>) {
 }
 
 /** A JavaScript `Promise` (ECMA-262 §27.2). Rejection reasons are any JavaScript value. */
-class JSPromise<T> internal constructor() : JSThenable {
+class JSPromise<T> internal constructor() : JSThenable, JSDynamic {
     private var state = JSPromiseState.PENDING
     private var result: Any? = null
     private var reason: Any? = null
@@ -102,6 +102,53 @@ class JSPromise<T> internal constructor() : JSThenable {
     var canceler: (() -> Unit)? = null
 
     fun cancel() { canceler?.invoke() }
+
+    /**
+     * `promise.then = function () { … }`, `promise.catch = …`: what script puts in place of the methods (core's
+     * `fixupAnimationPromise`), which the typed `then` and `catch` calls go through as script's would. `await`
+     * goes through neither, as PerformPromiseThen does not.
+     */
+    private var scriptThen: Any? = null
+    private var scriptCatch: Any? = null
+    private var properties: JSObject? = null
+
+    @Suppress("UNCHECKED_CAST")
+    private fun <U> viaScript(hook: Any?, vararg args: Any?): JSPromise<U>? {
+        if (hook == null) return null
+        val r = if (hook is JSMethod) hook.call(this, args) else jsCall(hook, *args)
+        return jsBox(r) as? JSPromise<U> ?: throw JSException(JSTypeError("then did not give a promise"))
+    }
+
+    /** The built-in `then`, over script's functions of any kind. */
+    private fun thenUntyped(onFulfilled: Any?, onRejected: Any?): JSPromise<Any?> {
+        val (derived, resolvers) = pending<Any?>()
+        val settle = { f: Any?, v: Any?, rejected: Boolean ->
+            if (!jsIsFunction(f)) { if (rejected) resolvers.reject(v) else resolvers.resolve(v) }
+            else try { resolvers.resolve(jsBox(jsCall(f, v))) } catch (e: Throwable) { resolvers.reject(jsCaught(e)) }
+        }
+        performThen({ settle(onFulfilled, jsBox(it), false) }, { settle(onRejected, it, true) })
+        return derived
+    }
+
+    override fun jsGet(key: String): Any? = when (key) {
+        // Called detached (held in a variable, `_then.apply(promise, …)` through a typed function): on the promise it was read from.
+        "then" -> scriptThen ?: JSMethod { self, a -> ((self as? JSPromise<*>) ?: this).thenUntyped(a.getOrNull(0), a.getOrNull(1)) }
+        "catch" -> scriptCatch ?: JSMethod { self, a -> ((self as? JSPromise<*>) ?: this).thenUntyped(null, a.getOrNull(0)) }
+        "cancel" -> JSMethod { self, _ -> ((self as? JSPromise<*>) ?: this).cancel(); null }
+        else -> properties?.get(key)
+    }
+
+    override fun jsSet(key: String, value: Any?) {
+        when (key) {
+            "then" -> scriptThen = value
+            "catch" -> scriptCatch = value
+            "cancel" -> canceler = if (jsIsNullish(value)) null else { { jsCall(value) } }
+            else -> (properties ?: JSObject().also { properties = it })[key] = value
+        }
+    }
+
+    override val jsKeys: List<String> get() = properties?.keys ?: emptyList()
+    override val jsClassName: String? get() = "Promise"
 
     /** `new Promise((resolve, reject) => …)` whose executor gets the resolving functions. A thrown error rejects the promise. */
     constructor(executor: (JSResolvers<T>) -> Unit) : this() {
@@ -201,6 +248,7 @@ class JSPromise<T> internal constructor() : JSThenable {
     // then / catch / finally
 
     fun <U> then(onFulfilled: (T) -> U): JSPromise<U> {
+        viaScript<U>(scriptThen, onFulfilled)?.let { return it }
         val (derived, resolvers) = pending<U>()
         performThen({ v ->
             try { resolvers.resolve(onFulfilled(v)) } catch (e: Throwable) { resolvers.reject(jsCaught(e)) }
@@ -209,6 +257,7 @@ class JSPromise<T> internal constructor() : JSThenable {
     }
 
     fun <U> then(onFulfilled: (T) -> U, onRejected: (Any?) -> U): JSPromise<U> {
+        viaScript<U>(scriptThen, onFulfilled, onRejected)?.let { return it }
         val (derived, resolvers) = pending<U>()
         performThen({ v ->
             try { resolvers.resolve(onFulfilled(v)) } catch (e: Throwable) { resolvers.reject(jsCaught(e)) }
@@ -220,6 +269,7 @@ class JSPromise<T> internal constructor() : JSThenable {
 
     /** `then` whose callback returns a promise, which the derived promise adopts (two extra ticks). */
     fun <U> thenAdopt(onFulfilled: (T) -> JSPromise<U>): JSPromise<U> {
+        viaScript<U>(scriptThen, onFulfilled)?.let { return it }
         val (derived, resolvers) = pending<U>()
         performThen({ v ->
             try { resolvers.resolvePromise(onFulfilled(v)) } catch (e: Throwable) { resolvers.reject(jsCaught(e)) }
@@ -228,6 +278,7 @@ class JSPromise<T> internal constructor() : JSThenable {
     }
 
     fun <U> thenAdopt(onFulfilled: (T) -> JSPromise<U>, onRejected: (Any?) -> JSPromise<U>): JSPromise<U> {
+        viaScript<U>(scriptThen, onFulfilled, onRejected)?.let { return it }
         val (derived, resolvers) = pending<U>()
         performThen({ v ->
             try { resolvers.resolvePromise(onFulfilled(v)) } catch (e: Throwable) { resolvers.reject(jsCaught(e)) }
@@ -239,6 +290,7 @@ class JSPromise<T> internal constructor() : JSThenable {
 
     /** `catch` recovering with a value of the promise's own type. */
     fun catch(onRejected: (Any?) -> T): JSPromise<T> {
+        (viaScript<T>(scriptCatch, onRejected) ?: viaScript<T>(scriptThen, null, onRejected))?.let { return it }
         val (derived, resolvers) = pending<T>()
         performThen({ resolvers.resolve(it) }, { r ->
             try { resolvers.resolve(onRejected(r)) } catch (e: Throwable) { resolvers.reject(jsCaught(e)) }
@@ -248,6 +300,7 @@ class JSPromise<T> internal constructor() : JSThenable {
 
     /** `catch` whose callback returns a promise to adopt. */
     fun catchAdopt(onRejected: (Any?) -> JSPromise<T>): JSPromise<T> {
+        (viaScript<T>(scriptCatch, onRejected) ?: viaScript<T>(scriptThen, null, onRejected))?.let { return it }
         val (derived, resolvers) = pending<T>()
         performThen({ resolvers.resolve(it) }, { r ->
             try { resolvers.resolvePromise(onRejected(r)) } catch (e: Throwable) { resolvers.reject(jsCaught(e)) }
@@ -257,6 +310,7 @@ class JSPromise<T> internal constructor() : JSThenable {
 
     /** `catch` recovering with another type (`p.catch(e => console.error(e))`): the result is dynamic. */
     fun catchAny(onRejected: (Any?) -> Any?): JSPromise<Any?> {
+        (viaScript<Any?>(scriptCatch, onRejected) ?: viaScript<Any?>(scriptThen, null, onRejected))?.let { return it }
         val (derived, resolvers) = pending<Any?>()
         performThen({ resolvers.resolve(jsBox(it)) }, { r ->
             try { resolvers.resolve(jsBox(onRejected(r))) } catch (e: Throwable) { resolvers.reject(jsCaught(e)) }

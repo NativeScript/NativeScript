@@ -318,6 +318,7 @@ fun jsCall(function: Any?, vararg args: Any?): Any? {
         is Function6<*, *, *, *, *, *, *> -> (function as (Any?, Any?, Any?, Any?, Any?, Any?) -> Any?)(a(0), a(1), a(2), a(3), a(4), a(5))
         is Function7<*, *, *, *, *, *, *, *> -> (function as (Any?, Any?, Any?, Any?, Any?, Any?, Any?) -> Any?)(a(0), a(1), a(2), a(3), a(4), a(5), a(6))
         is JSFunction -> function.body(args.toList())
+        is JSMethod -> function.call(null, args)
         is JavaMethodRef -> function.call(args.toList())
         else -> throw JSException(JSTypeError("${jsInspect(function)} is not a function"))
     }

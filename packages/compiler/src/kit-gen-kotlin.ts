@@ -167,6 +167,7 @@ export function generateKotlinKit(o: KotlinKitOptions): KotlinKitResult {
       identities: new Set(o.identities ?? []),
       counterpart: (file, name) => counterparts.get(file)?.[name] ?? null,
       moduleName: (file) => (compiled.has(file) ? moduleObjectName(relOf(file)) : null),
+      internalTypes: handWrittenTypes(),
     },
   });
   translator.appModule = KIT_PACKAGE;
@@ -400,4 +401,18 @@ const CORE_DEFINES: Record<string, string> = { __UI_USE_EXTERNAL_RENDERER__: 'fa
 function withCoreDefines(text: string): string {
   for (const [key, value] of Object.entries(CORE_DEFINES)) text = text.replace(new RegExp(`(?<![\\w$.])${key}(?![\\w$])`, 'g'), (m) => `(${value})`.padEnd(m.length, ' '));
   return text;
+}
+
+/**
+ * The top-level types of the hand-written Kotlin a `-PgeneratedKit` build compiles beside the generated
+ * code: the runtime and the hand port's files kit-android's build.gradle.kts keeps.
+ */
+function handWrittenTypes(): Set<string> {
+  const kit = resolve(import.meta.dirname, '../kit-android/src/main/kotlin/org/nativescript/kit');
+  const files = [...['Signals.kt', 'ColorMix.kt'].map((f) => join(kit, f)), ...readdirSync(join(kit, 'runtime')).filter((f) => f.endsWith('.kt')).map((f) => join(kit, 'runtime', f))];
+  const names = new Set<string>();
+  for (const f of files.filter(existsSync)) {
+    for (const m of readFileSync(f, 'utf8').matchAll(/^(?:(?:public|internal|open|abstract|sealed|data|enum|fun|value|annotation)\s+)*(?:class|interface|object|typealias)\s+(\w+)/gm)) names.add(m[1]);
+  }
+  return names;
 }

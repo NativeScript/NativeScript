@@ -1,4 +1,3 @@
-// @swift
 // TextEncoder, TextDecoder, btoa and atob as the NativeScript runtime has them (WinterTC).
 const encoder = new TextEncoder();
 const bytes = encoder.encode('héllo €😀');
