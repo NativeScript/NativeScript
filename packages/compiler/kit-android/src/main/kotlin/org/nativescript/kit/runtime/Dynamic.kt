@@ -18,6 +18,33 @@ class JSFunction(val body: (List<Any?>) -> Any?) {
 
 fun jsFunction(body: (List<Any?>) -> Any?): JSFunction = JSFunction(body)
 
+/** An untyped value used as a property key: a symbol's own key, anything else as its string. */
+fun jsPropertyKey(value: Any?): String = if (value is JSSymbol) value.key else jsToString(value)
+
+/** `value instanceof type` of a class held in a value (a Java class an alias names, a class passed in). */
+fun jsInstanceOf(value: Any?, type: Any?): Boolean = type is Class<*> && value != null && value !== JSNull && type.isInstance(jsBox(value))
+
+/**
+ * A function value taken where another signature is wanted (`() -> Unit` passed as an `(EventData) -> Unit`
+ * listener): equal to every adaptation of the same function, as script compares the function itself
+ * (`off(name, handler)` removing what `on(name, handler)` added).
+ */
+abstract class JSAdapted(val original: Any) {
+    override fun equals(other: Any?): Boolean = other is JSAdapted && other.javaClass == javaClass && other.original == original
+    override fun hashCode(): Int = original.hashCode()
+}
+class JSAdapted0<R>(original: Any, private val body: () -> R) : JSAdapted(original), () -> R { override fun invoke(): R = body() }
+class JSAdapted1<A, R>(original: Any, private val body: (A) -> R) : JSAdapted(original), (A) -> R { override fun invoke(a: A): R = body(a) }
+class JSAdapted2<A, B, R>(original: Any, private val body: (A, B) -> R) : JSAdapted(original), (A, B) -> R { override fun invoke(a: A, b: B): R = body(a, b) }
+class JSAdapted3<A, B, C, R>(original: Any, private val body: (A, B, C) -> R) : JSAdapted(original), (A, B, C) -> R { override fun invoke(a: A, b: B, c: C): R = body(a, b, c) }
+class JSAdapted4<A, B, C, D, R>(original: Any, private val body: (A, B, C, D) -> R) : JSAdapted(original), (A, B, C, D) -> R { override fun invoke(a: A, b: B, c: C, d: D): R = body(a, b, c, d) }
+
+fun <R> jsAdapt0(original: Any, body: () -> R): () -> R = JSAdapted0(original, body)
+fun <A, R> jsAdapt1(original: Any, body: (A) -> R): (A) -> R = JSAdapted1(original, body)
+fun <A, B, R> jsAdapt2(original: Any, body: (A, B) -> R): (A, B) -> R = JSAdapted2(original, body)
+fun <A, B, C, R> jsAdapt3(original: Any, body: (A, B, C) -> R): (A, B, C) -> R = JSAdapted3(original, body)
+fun <A, B, C, D, R> jsAdapt4(original: Any, body: (A, B, C, D) -> R): (A, B, C, D) -> R = JSAdapted4(original, body)
+
 // A function value held untyped, as a Kotlin function of its arity (cast to the typed function by the caller).
 @Suppress("UNCHECKED_CAST")
 fun jsFunction0(f: Any?): () -> Any? = f as? Function0<Any?> ?: { jsCall(f) }
@@ -220,6 +247,9 @@ private fun javaScore(value: Any?, type: Class<*>): Int? {
 }
 
 /** A script value as a Java parameter of `type` takes it. */
+/** A script value passed to a Java parameter of an object type: null for JavaScript's null and undefined. */
+fun jsJavaArgument(value: Any?): Any? = if (value === JSNull || value === Unit) null else value
+
 fun toJavaValue(value: Any?, type: Class<*>): Any? = when {
     value == null || value === JSNull || value === Unit -> null
     value is Double && type.isPrimitive -> when (type) {

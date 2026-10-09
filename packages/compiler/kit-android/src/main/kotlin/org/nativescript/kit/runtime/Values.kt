@@ -256,7 +256,7 @@ class JSObject() : JSDynamic, JSSymbolKeyed, JSAccessorKeyed, JSReactiveConverti
 fun jsGetOptional(target: Any?, key: String): Any? = if (target == null || target === JSNull) null else jsGet(target, key)
 
 /** `object[key]` / `object.key` on a dynamic value. Reading from undefined or null throws a TypeError. */
-fun jsGet(target: Any?, key: String): Any? = when (target) {
+fun jsGet(target: Any?, key: String): Any? = if (key == "constructor" && target != null && target !== JSNull && target !is JSObject && target !is Class<*>) jsConstructorOf(target) else when (target) {
     null -> throw JSException(JSTypeError("Cannot read properties of undefined (reading '$key')"))
     JSNull -> throw JSException(JSTypeError("Cannot read properties of null (reading '$key')"))
     // What every object inherits (`{}.toString`), where the object has nothing of that name.
@@ -272,8 +272,8 @@ fun jsGet(target: Any?, key: String): Any? = when (target) {
     }
     is Pair<*, *> -> when (key) { "0" -> target.first; "1" -> target.second; "length" -> 2.0; else -> null }
     is Triple<*, *, *> -> when (key) { "0" -> target.first; "1" -> target.second; "2" -> target.third; "length" -> 3.0; else -> null }
-    is JSMap<*, *> -> if (key == "size") target.size else null
-    is JSSet<*> -> if (key == "size") target.size else null
+    is JSMap<*, *> -> if (key == "size") target.size else jsMapMethod(target, key)
+    is JSSet<*> -> if (key == "size") target.size else jsSetMethod(target, key)
     is Double, is Boolean, is Function<*>, is JSFunction, is JSSymbol, is JSBigInt, Unit -> null
     is Class<*> -> jsClassGet(target, key)
     else -> jsJavaGet(target, key)
@@ -371,8 +371,9 @@ fun <T : JSDynamic> jsObjectAssign(target: T, vararg sources: Any?): T {
 /** `key in object`. */
 fun jsHasKey(target: Any?, key: String): Boolean = when (target) {
     is JSObject -> target.has(key)
-    is JSExpando -> key in target.jsKeys || jsExpandoHas(target, key)
-    is JSDynamic -> if (jsIsSymbolKey(key)) (target as? JSSymbolKeyed)?.jsSymbolKeys?.contains(key) ?: false else key in target.jsKeys
+    // A symbol is no key a class declares: only its own symbol-keyed members (methods its `jsGet` gives) and what was set on it have one (reading `jsKeys` runs accessors).
+    is JSExpando -> if (jsIsSymbolKey(key)) ((target as? JSSymbolKeyed)?.jsSymbolKeys?.contains(key) ?: false) || jsExpandoHas(target, key) || target.jsGet(key) != null else jsExpandoHas(target, key) || key in target.jsKeys
+    is JSDynamic -> if (jsIsSymbolKey(key)) ((target as? JSSymbolKeyed)?.jsSymbolKeys?.contains(key) ?: false) || target.jsGet(key) != null else key in target.jsKeys
     is JSArray<*> -> key == "length" || (jsArrayIndex(key)?.let { it < target.size } ?: false)
     else -> false
 }
@@ -418,6 +419,7 @@ fun jsStrictEquals(a: Any?, b: Any?): Boolean {
     val m = jsNumeric(x)
     val n = jsNumeric(y)
     if (m != null || n != null) return m != null && n != null && m == n
+    if (x is JSAdapted || y is JSAdapted) return x == y
     return x === y
 }
 
@@ -565,3 +567,43 @@ fun jsLiteralKeyOrder(parts: List<List<String>>, fields: List<String>): List<Str
 
 /** `globalThis`, with the constructors NativeScript's runtime puts there. */
 val jsGlobalThis: JSObject = JSObject().also { it["DOMException"] = JSDOMException::class.java }
+
+/** `value.constructor` of a typed object: its own member of that name, else its class. */
+private fun jsConstructorOf(target: Any): Any? = (if (target is JSDynamic) target.jsGet("constructor") else null) ?: when (target) {
+    is String, is Double, is Boolean, is JSArray<*>, is Function<*> -> null
+    else -> target.javaClass
+}
+
+/** A Map's method read by name (`changeMap.forEach(…)` on an untyped map). */
+@Suppress("UNCHECKED_CAST")
+private fun jsMapMethod(target: JSMap<*, *>, key: String): Any? {
+    val map = target as JSMap<Any?, Any?>
+    return when (key) {
+        "get" -> JSMethod { _, a -> map.get(a.getOrNull(0)) }
+        "set" -> JSMethod { _, a -> map.set(a.getOrNull(0), a.getOrNull(1)) }
+        "has" -> JSMethod { _, a -> map.has(a.getOrNull(0)) }
+        "delete" -> JSMethod { _, a -> map.delete(a.getOrNull(0)) }
+        "clear" -> JSMethod { _, _ -> map.clear(); null }
+        "keys" -> JSMethod { _, _ -> map.keys() }
+        "values" -> JSMethod { _, _ -> map.values() }
+        "entries" -> JSMethod { _, _ -> map.entries() }
+        "forEach" -> JSMethod { _, a -> val f = a.getOrNull(0); map.forEach { v: Any?, k: Any? -> jsCall(f, v, k, map) }; null }
+        else -> null
+    }
+}
+
+/** A Set's method read by name. */
+@Suppress("UNCHECKED_CAST")
+private fun jsSetMethod(target: JSSet<*>, key: String): Any? {
+    val set = target as JSSet<Any?>
+    return when (key) {
+        "add" -> JSMethod { _, a -> set.add(a.getOrNull(0)) }
+        "has" -> JSMethod { _, a -> set.has(a.getOrNull(0)) }
+        "delete" -> JSMethod { _, a -> set.delete(a.getOrNull(0)) }
+        "clear" -> JSMethod { _, _ -> set.clear(); null }
+        "keys", "values" -> JSMethod { _, _ -> set.values() }
+        "entries" -> JSMethod { _, _ -> set.entries() }
+        "forEach" -> JSMethod { _, a -> val f = a.getOrNull(0); set.forEach { v: Any?, k: Any? -> jsCall(f, v, k, set) }; null }
+        else -> null
+    }
+}

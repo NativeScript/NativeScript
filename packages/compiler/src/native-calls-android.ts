@@ -229,6 +229,14 @@ export class AndroidNativeAPI implements KotlinNative {
     return !!sym && sym.name === 'Array' && this.isNativeSymbol(sym) && this.t.checker.getFullyQualifiedName(sym) === 'androidNative.Array';
   }
 
+  /** The nearest class the Java classes of these types all extend (`StyleableTextView` and `EditText`: a `TextView`), as Kotlin names it. */
+  sharedClassType(parts: ts.Type[]): string | null {
+    const names = parts.map((p) => this.classesOf(p)?.[0]);
+    if (!names.length || names.some((n) => !n)) return null;
+    const shared = this.classpath.supertypes(names[0]!).find((c) => !(c.access & ACC_INTERFACE) && names.every((n) => this.classpath.distance(n!, c.name) !== null));
+    return shared ? this.kotlinTypeName(shared.name) : null;
+  }
+
   /** The one class among several every other one extends (`AppCompatActivity | Activity` is an Activity). */
   private commonClass(parts: ts.Type[]): string | null {
     const names = parts.map((p) => this.classesOf(p)?.[0]);
@@ -328,7 +336,7 @@ export class AndroidNativeAPI implements KotlinNative {
       if (NUMERIC.has(desc)) return `jsToNumber(${a})${CONVERT[desc]}`;
       if (desc === 'Z') return `jsTruthy(${a})`;
       if (desc === 'C') return `jsToString(${a})[0]`;
-      return `(${a} as ${this.kotlinType(desc, 'Any?')}${chosen.m.nonNullParams?.[k] ? '' : '?'})`;
+      return `(jsJavaArgument(${a}) as ${this.kotlinType(desc, 'Any?')}${chosen.m.nonNullParams?.[k] ? '' : '?'})`;
     });
     const zuper = this.t.thisAlias ? `super@${ts.findAncestor(e, ts.isClassLike)?.name?.text ?? ''}` : 'super';
     const call = `${zuper}.${ident(name)}(${args.join(', ')})`;
@@ -514,6 +522,8 @@ export class AndroidNativeAPI implements KotlinNative {
     if (tsType.endsWith('?') || tsType === 'Any?') return raw.code;
     // An optional chain (`?.`) TypeScript types as present: the value, as the code reads it.
     if (raw.optional && !ts.isPropertyAccessExpression(e.parent) && !ts.isCallExpression(e.parent) && !ts.isElementAccessExpression(e.parent)) return `${raw.code}!!`;
+    // Tested or passed on as it is (`intent.getAction() && …`): null is the test's to see.
+    if (raw.nullable && this.t.library && raw.desc.startsWith('L') && raw.desc !== 'Ljava/lang/CharSequence;' && this.t.nullTolerant(e)) return raw.code;
     return raw.nullable && !raw.optional ? `${raw.code}!!` : raw.code;
   }
 
@@ -634,7 +644,13 @@ export class AndroidNativeAPI implements KotlinNative {
     const ownerClass = given?.length ? this.classpath.get(owner) : undefined;
     const typeVar = ownerClass ? (n: string) => { const k = this.typeParamNames(ownerClass).indexOf(n); return k >= 0 && given![k] ? this.t.type(given![k], e) : 'Any?'; } : undefined;
     const args = this.argList(e.arguments, chosen, candidates, typeVar);
-    const target = r.isStatic ? this.kotlinName(chosen.m.owner) : this.target(callee.expression, callee);
+    let target = r.isStatic ? this.kotlinName(chosen.m.owner) : this.target(callee.expression, callee);
+    // Library mode: a receiver held as a wider class than script types it (`nativeTextViewProtected`, a TextView): the method's class, as script trusts it.
+    // The class Kotlin holds it as: its type, or the class a cast in its code names (an unchecked script cast, widened).
+    const cast = /\bas ([a-z][\w.]*\.[A-Z][\w.]*)\??\)(!!)?$/.exec(target)?.[1];
+    const holder = this.t.library && !r.isStatic ? cast ?? this.t.typeOf(callee.expression).replace(/\?$/, '') : '';
+    const heldClass = holder && /^[a-z][\w.]*\.[A-Z]/.test(holder) ? this.classpath.get(holder.replace(/\./g, '/')) : undefined;
+    if (heldClass && this.classpath.distance(heldClass.name, chosen.m.owner) === null) target = `(${target.replace(/(\?|!!)$/, '')} as ${this.kotlinTypeName(chosen.m.owner)})`;
     // `java.lang.String` methods Kotlin's String does not have (`getBytes`): on the Java class it is.
     if (!r.isStatic && chosen.m.owner === 'java/lang/String' && ['getBytes', 'getChars', 'intern', 'codePointAt'].includes(name)) {
       return { code: `(${this.t.expr(callee.expression)} as java.lang.String).${ident(name)}(${args})`, desc: chosen.ret, nullable: chosen.m.nullable };
@@ -916,6 +932,8 @@ export class AndroidNativeAPI implements KotlinNative {
       if (overloaded && (desc.startsWith('L') || desc.startsWith('[')) && (loose === 'null' || loose === 'any')) code = `(${code} as ${this.kotlinType(desc, 'Any?')}${nonNull && loose === 'any' ? '' : '?'})`;
       // An array where Kotlin declares `vararg`: spread, or Kotlin passes it as one element.
       if (k === last && code !== 'null') return `*${code.endsWith('?)') ? `${code}!!` : atom(code)}`;
+      // `getMethod(name, null)`: Java's null array is no arguments there.
+      if (k === last && code === 'null' && args.length === chosen.params.length) return '*arrayOf()';
       return code;
     }).join(', ');
   }
@@ -1489,7 +1507,8 @@ ${indent}}`;
 
   private ownCall(fn: ts.FunctionLikeDeclaration, name: string, e: ts.CallExpression): string {
     if (fn.parameters.some((p) => p.dotDotDotToken)) throw this.t.error(e, `${name}() (a rest parameter in an extend class)`);
-    const args = e.arguments.slice(0, fn.parameters.length).map((a, k) => this.t.coerce(a, this.t.typeOf(fn.parameters[k].name)));
+    // As the method declares its parameters in Kotlin: a lenient one nullable.
+    const args = e.arguments.slice(0, fn.parameters.length).map((a, k) => this.t.coerce(a, this.t.library ? this.t.paramType(fn.parameters[k]) : this.t.typeOf(fn.parameters[k].name)));
     return `${this.t.expr((e.expression as ts.PropertyAccessExpression).expression)}.${ident(name)}(${args.join(', ')})`;
   }
 
