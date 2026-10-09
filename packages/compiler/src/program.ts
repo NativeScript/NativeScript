@@ -334,7 +334,9 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
     2783, 2869]);
   // Strict narrowing leaves a lenient program's value `never` where its own build reads it as declared.
   const neverRead = (d: ts.Diagnostic) => d.code === 2339 && /on type 'never'/.test(ts.flattenDiagnosticMessageText(d.messageText, '\n'));
-  const diagnostics = ts.getPreEmitDiagnostics(program).filter((d) => d.category === ts.DiagnosticCategory.Error && (!d.file || isApp(d.file.fileName)) && !(lenient && (strictOnly.has(d.code) || neverRead(d))));
+  // Another platform's file (`x.android.ts`, which a declaration file may import for its types) is not part of this build.
+  const otherPlatform = platform === 'android' ? /\.ios\.tsx?$/ : /\.android\.tsx?$/;
+  const diagnostics = ts.getPreEmitDiagnostics(program).filter((d) => d.category === ts.DiagnosticCategory.Error && (!d.file || (isApp(d.file.fileName) && !otherPlatform.test(d.file.fileName))) && !(lenient && (strictOnly.has(d.code) || neverRead(d))));
   if (diagnostics.length) {
     const text = ts.formatDiagnostics(diagnostics.slice(0, Number(process.env.NS_NATIVE_DIAGNOSTICS ?? 12)), { getCanonicalFileName: (f) => f, getCurrentDirectory: () => '/', getNewLine: () => '\n' });
     throw new Error(`the app does not type-check as the release build sees it:\n${text}`);

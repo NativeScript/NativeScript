@@ -71,6 +71,17 @@ async function webpackSheets(configPath: string): Promise<Sheet[]> {
     throw new Error(`loader ${name} not found in ${loaderDirs.join(', ')}`);
   };
   const descriptionData = JSON.parse(readFileSync(join(app, 'package.json'), 'utf8'));
+  // `this.getResolve(options)`, which sass-loader resolves `@import`s with: webpack's resolver, given the build's options and the loader's.
+  const { ResolverFactory, CachedInputFileSystem } = fromWebpack('enhanced-resolve');
+  const files = new CachedInputFileSystem(fs, 4000);
+  const getResolve = (options: object) => {
+    const resolver = ResolverFactory.createResolver({ fileSystem: files, ...config.resolve, ...options });
+    return (from: string, request: string, callback?: (e: Error | null, r?: string) => void) => {
+      const found = new Promise<string>((ok, no) => resolver.resolve({}, from, request, {}, (e: Error | null, r?: string | false) => (e || !r ? no(e ?? new Error(`${request} not found from ${from}`)) : ok(r))));
+      if (!callback) return found;
+      found.then((r) => callback(null, r), (e) => callback(e));
+    };
+  };
   const run = (resource: string, loaders: { loader: string; options?: unknown }[], content?: string) =>
     new Promise<string>((done, fail) => {
       const context = {
@@ -79,7 +90,7 @@ async function webpackSheets(configPath: string): Promise<Sheet[]> {
         getOptions(this: { query: unknown }) { return typeof this.query === 'object' && this.query ? this.query : {}; },
         emitWarning: (e: Error) => console.error(`[css] ${resource}: ${e?.message ?? e}`),
         emitError: (e: Error) => console.error(`[css] ${resource}: ${e?.message ?? e}`),
-        getLogger: () => console,
+        getLogger: () => console, getResolve,
         addBuildDependency() {}, addMissingDependency() {}, emitFile() {},
       };
       runLoaders({
