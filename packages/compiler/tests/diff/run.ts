@@ -61,7 +61,9 @@ function translate(file: string, out: string): void {
   const { checker, program, files } = createProgram([file], new Map(), 'ios', modulesDir, undefined, [], {}, loose ? { strict: false, useDefineForClassFields: false } : {});
   // In library mode, as the kit generated from core is: each module's functions and variables in an enum.
   const library = loose ? { moduleName: (f: string) => (f.endsWith('.d.ts') ? null : 'Module_' + basename(f).replace(/\W/g, '_')) } : null;
-  const translator = new Translator(checker, new Map(), files, { lenient: loose, library, ...(loose ? { pluginFiles: files.map((f) => f.fileName), properties: collectProperties(checker, files) } : {}) });
+  // Every module of the case, as an app's are: names its modules share are told apart across them.
+  const all = [...files, ...importsOf(program, file).map((f) => program.getSourceFile(f)!).filter((f) => f && !files.includes(f))];
+  const translator = new Translator(checker, new Map(), all, { lenient: loose, library, ...(loose ? { pluginFiles: all.map((f) => f.fileName), properties: collectProperties(checker, all) } : {}) });
   translator.appModule = 'Main';
   // With source lines, as an app is built: the directives must compile wherever a statement can be.
   const lines = translator.lines = new SourceLines(new Map());
