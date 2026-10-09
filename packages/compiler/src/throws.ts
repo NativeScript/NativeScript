@@ -193,6 +193,8 @@ export class Throws {
     if (ts.isIdentifier(call.expression) && call.expression.text === 'BigInt' && c.getSymbolAtLocation(call.expression)?.declarations?.every((d) => d.getSourceFile().isDeclarationFile)) return true;
     // A weak collection made from entries rejects a primitive key.
     if (ts.isNewExpression(call) && args.length && ts.isIdentifier(call.expression) && ['WeakMap', 'WeakSet'].includes(call.expression.text)) return true;
+    // A program class constructed by the constructor it inherits from a declared one (`class TestClass extends ViewBase`): its own initializer.
+    if (ts.isNewExpression(call) && decl && ts.isConstructorDeclaration(decl) && decl.getSourceFile().isDeclarationFile && this.implicitConstructorThrows(call)) return true;
     if (!decl || ts.isJSDocSignature(decl)) {
       if (ts.isNewExpression(call)) return this.implicitConstructorThrows(call);
       return true;

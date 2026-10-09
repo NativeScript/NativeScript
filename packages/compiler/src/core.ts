@@ -247,15 +247,17 @@ export class CoreAPI {
    * `@nativescript/core/module-name-resolver`): the kit's module enum it was compiled into, which has no top-level forwarder for it.
    */
   moduleFunction(decl: ts.Declaration): string | null {
-    if (!ts.isFunctionDeclaration(decl) || !decl.name || !isCoreDeclaration(decl)) return null;
-    const name = decl.name.text;
+    // Or a module's variable (`_rootModalViews` of view-common).
+    const variable = ts.isVariableDeclaration(decl) && ts.isIdentifier(decl.name) && ts.isSourceFile(decl.parent.parent.parent);
+    if (!(ts.isFunctionDeclaration(decl) || variable) || !(decl as ts.NamedDeclaration).name || !isCoreDeclaration(decl)) return null;
+    const name = ((decl as ts.NamedDeclaration).name as ts.Identifier).text;
     if (existsSync(join(KIT, 'Core', `__Export.${name}.swift`))) return null;
     const file = decl.getSourceFile().fileName;
     const root = /^(.*[\\/]@nativescript[\\/]core)[\\/]/.exec(file)?.[1] ?? (packageOf(file)?.name === '@nativescript/core' ? packageOf(file)!.root : undefined);
     if (!root) return null;
     const rel = file.slice(root.length + 1).replace(/\\/g, '/').replace(/(\.(ios|android))?\.d\.ts$|(\.(ios|android))?\.ts$/, '');
     const owner = `Core_${rel.replace(/[^A-Za-z0-9]+/g, '_')}`;
-    return kitMember(this.index, owner, name)?.kind === 'func' ? `${owner}.${name}` : null;
+    return kitMember(this.index, owner, name)?.kind === (variable ? 'var' : 'func') ? `${owner}.${name}` : null;
   }
 
   private moduleOwner(e: ts.Identifier): string | null {
@@ -444,6 +446,38 @@ export class CoreAPI {
     return this.exportsThrowing;
   }
 
+  /** A call of a core module's function the kit compiled into its module enum, its result as the declarations type it. */
+  moduleCall(decl: ts.Declaration, code: string, tsType: string): string {
+    const owned = ts.isFunctionDeclaration(decl) && this.moduleFunction(decl);
+    const m = owned && kitMember(this.index, owned.split('.')[0], (decl as ts.FunctionDeclaration).name!.text);
+    return m ? this.fromKit(code, m.type, tsType) : code;
+  }
+
+  private exportParams = new Map<string, string[] | null>();
+  /** The arguments of a call of a function core's index exports, as the kit's forwarder takes them (`addWeakEventListener(…, target.onEvent, …)`). */
+  exportArgs(e: ts.CallExpression, decl: ts.Declaration, args: string[]): string[] {
+    if (!ts.isFunctionDeclaration(decl) || !decl.name || !isCoreDeclaration(decl) || this.moduleFunction(decl)) return args;
+    const name = decl.name.text;
+    if (!this.exportParams.has(name)) {
+      const file = join(KIT, 'Core', `__Export.${name}.swift`);
+      const text = existsSync(file) ? readFileSync(file, 'utf8') : '';
+      const at = text.indexOf(`\npublic func ${name}(`);
+      let params: string[] | null = null;
+      if (at >= 0) {
+        const open = text.indexOf('(', at);
+        let depth = 0, end = open;
+        for (; end < text.length; end++) { if (text[end] === '(') depth++; else if (text[end] === ')' && --depth === 0) break; }
+        params = splitParams(text.slice(open + 1, end));
+      }
+      this.exportParams.set(name, params);
+    }
+    const params = this.exportParams.get(name);
+    if (!params || params.length < e.arguments.length) return args;
+    const out = [...args];
+    this.matchKitParams(e, params, out);
+    return out;
+  }
+
   /** Whether `target.method` is a method the kit declares on target's class (an optional call of it is a plain call). */
   isKitMethod(callee: ts.Expression): boolean {
     if (!ts.isPropertyAccessExpression(callee)) return false;
@@ -458,7 +492,7 @@ export class CoreAPI {
     if (e.expression.getText() === 'CoreTypes.AnimationCurve.cubicBezier' && isCoreDeclaration(this.t.resolve(e.expression.name)?.declarations?.[0])) {
       return `CubicBezierAnimationCurve(${e.arguments.map((a) => this.t.coerce(a, 'Double')).join(', ')})`;
     }
-    const owner = this.mixinOwn(e.expression.name) ? null : this.owner(e.expression.expression);
+    const owner = this.mixinOwn(e.expression.name) ? null : this.owner(e.expression.expression) ?? this.inheritedOwner(e.expression.expression, e.expression.name);
     if (!owner) return null;
     const t = this.t;
     const name = e.expression.name.text;
@@ -518,8 +552,11 @@ export class CoreAPI {
     let packed = false;
     kitParams.forEach((p, k) => {
       const type = kitParamType(p);
-      // `...args: any` the kit compiled as one untyped parameter, which the function reads as the array script passes.
-      if (declared?.[k]?.dotDotDotToken && /^(JSArray<Any\?>|Any\?)$/.test(type)) {
+      // `...args: any` the kit compiled as one untyped parameter, which the function reads as the array script passes;
+      // or a method reading `arguments`, which takes them all so.
+      // Not where the kit spreads the rest over parameters of its own (`showModal(_ __b0: Any?, _ __b1: Any?)`).
+      const wholeRest = type === 'JSArray<Any?>' || (type === 'Any?' && k === kitParams.length - 1 && !/^_\s+__b\d/.test(p.trim()));
+      if ((declared?.[k]?.dotDotDotToken && wholeRest) || (k === 0 && kitParams.length === 1 && /^_ __arguments: JSArray<Any\?>$/.test(p.trim()))) {
         args.splice(k, args.length - k, `JSArray<Any?>([${e.arguments.slice(k).map((a) => t.coerce(a, 'Any?')).join(', ')}])`);
         packed = true;
         return;
@@ -588,6 +625,9 @@ export class CoreAPI {
       return args.some((a) => t.typeOf(a) !== 'Double') ? `Color(${list})` : `(try! Color(${list}))`;
     }
     if (sym.name === 'Animation') return `Animation(${args.map((a) => this.scriptValue(a)).join(', ')})`;
+    const inits = (this.index.get(kitName)?.members.get('init') ?? []).map((m) => ((m.params ?? '').trim() ? splitTopLevel(m.params!) : []));
+    // A constructor reading `arguments`, which the kit's takes as the one array script passes.
+    if (inits.length === 1 && inits[0].length === 1 && /^_ __arguments: JSArray<Any\?>$/.test(inits[0][0].trim())) return `${kitName}(${t.packed(args, 'JSArray<Any?>')})`;
     // The arguments as the kit's initializer takes them (`ImageSource(_ nativeSource: UIImage!)` for core's `nativeSource?: any`).
     const params = (this.index.get(kitName)?.members.get('init') ?? []).map((m) => ((m.params ?? '').trim() ? splitTopLevel(m.params!) : [])).find((ps) => ps.length >= args.length && !args.some(ts.isSpreadElement));
     if (params && args.length && params.every((p) => p.includes(':'))) {
@@ -665,6 +705,9 @@ export class CoreAPI {
     // What the kit generated from core gives untyped (`animate()`'s promise), read as the type the declarations give it.
     if (k === 'Any?' && tsType !== 'Any?' && tsType !== 'Void') return this.t.fromAnyCode(code, tsType, true);
     if (k === 'JSArray<Any?>' && /^JSArray<.+>$/.test(tsType) && tsType !== k) return `jsArrayOf(${code}) { ${this.t.fromAny('$0', tsType.slice(8, -1))} }`;
+    // An array of a base class (`Frame._stack()` of FrameBase) that TypeScript types as of a subclass.
+    const ke = /^JSArray<([A-Z]\w*)>[?!]?$/.exec(k)?.[1], te = /^JSArray<([A-Z]\w*)>$/.exec(tsType)?.[1];
+    if (ke && te && ke !== te && !['Any', 'Double', 'String', 'Bool'].includes(te)) return `JSArray<${te}>((${code})${/[?!]$/.test(k) ? '!' : ''}.storage.map { $0 as! ${te} })`;
     const numeric = /^(Int|UInt|Int32|UInt32|Int64|UInt64|CGFloat|Float)\??$/.exec(k);
     if (numeric && tsType.startsWith('Double')) return k.endsWith('?') ? `${code}.map { Double($0) }` : `Double(${code})`;
     // A member the kit types as a base class (`EventData.object` is an Observable) that TypeScript types as a subclass.

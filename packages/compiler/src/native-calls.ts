@@ -363,6 +363,12 @@ export class NativeAPI {
   /** Native calls whose optional Swift result an optional chain reads. */
   private keepOptional = new Set<ts.Node>();
 
+  /** What `read` translates `e` to, an optional chain's end read as the optional it is. */
+  readOptional(e: ts.Node, read: () => string): string {
+    this.keepOptional.add(e);
+    try { return read(); } finally { this.keepOptional.delete(e); }
+  }
+
   /**
    * Foundation's collection methods on what Swift imports as its own
    * collections (`NSArray` as `[T]`, `NSDictionary` as `[K: V]`).

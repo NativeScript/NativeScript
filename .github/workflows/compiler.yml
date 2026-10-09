@@ -102,3 +102,13 @@ jobs:
         run: |
           xcodebuild -version
           packages/compiler/tests/kit-build.sh dist/packages/core
+
+      # The fixture app renders core's views at launch. The kit gates newer API by availability, which only an older iOS
+      # runs: the app launches on the newest simulator and on iOS 26, downloaded where the image has no such runtime.
+      - name: Launch on the newest iOS
+        run: packages/compiler/tests/launch-check.sh packages/compiler/tests/app/platforms/native latest 30
+
+      - name: Launch on iOS 26
+        run: |
+          xcrun simctl list runtimes | grep -q 'iOS 26\.' || xcodebuild -downloadPlatform iOS -buildVersion 26.5
+          packages/compiler/tests/launch-check.sh packages/compiler/tests/app/platforms/native 26 30

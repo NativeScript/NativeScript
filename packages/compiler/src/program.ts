@@ -373,6 +373,20 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
 function coreNamespaceMembers(program: ts.Program, isApp: (name: string) => boolean): Map<string, string> {
   const checker = program.getTypeChecker();
   const out = new Map<string, string>();
+  const writes = (sf: ts.SourceFile, symbol: ts.Symbol | undefined): boolean => {
+    let found = false;
+    const visit = (n: ts.Node) => {
+      if (found) return;
+      if (ts.isIdentifier(n) && checker.getSymbolAtLocation(n) === symbol && !ts.isVariableDeclaration(n.parent)) {
+        const p = n.parent;
+        found = (ts.isBinaryExpression(p) && p.left === n && p.operatorToken.kind >= ts.SyntaxKind.FirstAssignment && p.operatorToken.kind <= ts.SyntaxKind.LastAssignment)
+          || ((ts.isPrefixUnaryExpression(p) || ts.isPostfixUnaryExpression(p)) && (p.operator === ts.SyntaxKind.PlusPlusToken || p.operator === ts.SyntaxKind.MinusMinusToken));
+      }
+      ts.forEachChild(n, visit);
+    };
+    visit(sf);
+    return found;
+  };
   for (const sf of program.getSourceFiles()) {
     if (!isApp(sf.fileName)) continue;
     const edits: { at: number; end: number; text: string }[] = [];
@@ -384,14 +398,33 @@ function coreNamespaceMembers(program: ts.Program, isApp: (name: string) => bool
       const ns = clause.namedBindings.name;
       const local = checker.getSymbolAtLocation(ns);
       const members = new Map<string, string>();
+      const renamed: string[] = [];
       const aliasOf = (member: string) => members.get(member) ?? (members.set(member, `__${ns.text}_${member}`), members.get(member)!);
       const visit = (n: ts.Node) => {
         // `const { Color } = colorModule`: each name bound to the member imported by name.
         if (ts.isVariableDeclaration(n) && ts.isObjectBindingPattern(n.name) && n.initializer && ts.isIdentifier(n.initializer) && checker.getSymbolAtLocation(n.initializer) === local
           && n.name.elements.every((el) => !el.dotDotDotToken && !el.initializer && ts.isIdentifier(el.name) && (!el.propertyName || ts.isIdentifier(el.propertyName)))) {
+          const statement = n.parent.parent;
+          // At the module's top, alone in its statement: the names imported, a class then the class itself, as an import is.
+          if (ts.isVariableStatement(statement) && statement.parent === sf && statement.declarationList.declarations.length === 1) {
+            for (const el of n.name.elements) renamed.push(`${((el.propertyName ?? el.name) as ts.Identifier).text} as ${(el.name as ts.Identifier).text}`);
+            edits.push({ at: statement.getStart(), end: statement.getEnd(), text: ' '.repeat(statement.getEnd() - statement.getStart()) });
+            return;
+          }
           const bound = n.name.elements.map((el) => `${(el.name as ts.Identifier).text} = ${aliasOf(((el.propertyName ?? el.name) as ts.Identifier).text)}`);
           edits.push({ at: n.getStart(), end: n.getEnd(), text: bound.join(', ') });
           return;
+        }
+        // `var Color = colorModule.Color` at the module's top, never written again: imported under that name.
+        if (ts.isVariableStatement(n) && n.parent === sf && n.declarationList.declarations.length === 1) {
+          const d = n.declarationList.declarations[0];
+          const init = d.initializer;
+          if (ts.isIdentifier(d.name) && !d.type && init && ts.isPropertyAccessExpression(init) && ts.isIdentifier(init.expression) && checker.getSymbolAtLocation(init.expression) === local
+            && !n.modifiers?.length && !writes(sf, checker.getSymbolAtLocation(d.name))) {
+            renamed.push(`${init.name.text} as ${d.name.text}`);
+            edits.push({ at: n.getStart(), end: n.getEnd(), text: ' '.repeat(n.getEnd() - n.getStart()) });
+            return;
+          }
         }
         if (ts.isPropertyAccessExpression(n) && ts.isIdentifier(n.expression) && checker.getSymbolAtLocation(n.expression) === local
           && !(ts.isBinaryExpression(n.parent) && n.parent.left === n && n.parent.operatorToken.kind === ts.SyntaxKind.EqualsToken)) {
@@ -405,7 +438,8 @@ function coreNamespaceMembers(program: ts.Program, isApp: (name: string) => bool
         ts.forEachChild(n, visit);
       };
       visit(sf);
-      if (members.size) edits.push({ at: st.getEnd(), end: st.getEnd(), text: `\nimport { ${[...members].map(([m, a]) => `${m} as ${a}`).join(', ')} } from ${spec.getText()};` });
+      const names = [...[...members].map(([m, a]) => `${m} as ${a}`), ...renamed];
+      if (names.length) edits.push({ at: st.getEnd(), end: st.getEnd(), text: `\nimport { ${names.join(', ')} } from ${spec.getText()};` });
     }
     if (!edits.length) continue;
     let text = sf.text;

@@ -129,6 +129,12 @@ export function iosDeploymentTarget(app: string): string {
   return set && set.kind === 'setting' && parseFloat(set.value) > KIT_DEPLOYMENT_TARGET ? set.value.replace(/"/g, '') : `${KIT_DEPLOYMENT_TARGET}.0`;
 }
 
+/**
+ * The scene manifest NativeScript's app template declares: UIKit stops an app built with the current SDK that adopts no
+ * scene life cycle, and core's own scene delegate takes the session.
+ */
+const SCENE_MANIFEST: PlistDict = { UIApplicationPreferredDefaultSceneSessionRole: 'UIWindowSceneSessionRoleApplication', UIApplicationSupportsMultipleScenes: false };
+
 export function iosProjectResources(o: { app: string; appDir: string; out: string; name: string; pods: boolean; say: (m: string) => void }): IOSProjectResources {
   const res = join(appResourcesDir(o.app), 'iOS');
   const plugins = productionPlugins(o.app, 'ios').map((p) => join(p.dir, 'platforms', 'ios'));
@@ -141,11 +147,17 @@ export function iosProjectResources(o: { app: string; appDir: string; out: strin
     let plist: PlistDict = {};
     for (const file of [...plugins.map((p) => join(p, 'Info.plist')), appPlist]) if (existsSync(file)) plist = mergePlist(plist, readPlist(file));
     plist = mergePlist(plist, { CFBundleIdentifier: '$(PRODUCT_BUNDLE_IDENTIFIER)' });
+    if (!plist.UIApplicationSceneManifest) {
+      o.say(`${relative(o.app, appPlist)} declares no UIApplicationSceneManifest: the template's is added, as an app built with the current SDK must adopt scenes`);
+      plist.UIApplicationSceneManifest = SCENE_MANIFEST;
+    }
     writeFileSync(join(o.out, 'Info.plist'), writePlist(plist));
     settings.INFOPLIST_FILE = 'Info.plist';
   } else {
-    // No App_Resources Info.plist: Xcode writes one from the build settings.
+    // No App_Resources Info.plist: Xcode writes one from the build settings, into this one, which adopts scenes.
+    writeFileSync(join(o.out, 'Info.plist'), writePlist({ UIApplicationSceneManifest: SCENE_MANIFEST }));
     Object.assign(settings, {
+      INFOPLIST_FILE: 'Info.plist',
       GENERATE_INFOPLIST_FILE: 'YES',
       INFOPLIST_KEY_UILaunchScreen_Generation: 'YES',
       INFOPLIST_KEY_UISupportedInterfaceOrientations: 'UIInterfaceOrientationPortrait',

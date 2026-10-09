@@ -204,6 +204,8 @@ export class Translator implements AsyncTranslator {
   private extendedDecls = new Set<ts.Node>();
   /** Interfaces an app class implements: Swift protocols, with a class for their object literals. */
   private protocols = new Set<string>();
+  /** Interfaces an app class meets without naming them, where its objects are given for one (`assertMeasure(button)`): conformed to as if implemented. */
+  private structural = new Map<ts.ClassLikeDeclaration, Set<ts.InterfaceDeclaration>>();
   indent = '';
   private tmp = 0;
   /** Expressions already evaluated into a Swift name (awaited values, operands read before an await). */
@@ -511,10 +513,22 @@ export class Translator implements AsyncTranslator {
           }
           for (const i of implementedInterfaces(this.checker, n)) this.protocols.add(i.expression.getText());
         }
+        const given = ts.isCallExpression(n) || ts.isNewExpression(n) ? n.arguments ?? [] : ts.isVariableDeclaration(n) && n.type && n.initializer ? [n.initializer]
+          : ts.isReturnStatement(n) && n.expression ? [n.expression] : ts.isBinaryExpression(n) && n.operatorToken.kind === ts.SyntaxKind.EqualsToken ? [n.right] : [];
+        if (!this.library) for (const x of given) this.noteStructural(x);
         ts.forEachChild(n, visit);
       };
       visit(f);
     }
+  }
+
+  private noteStructural(x: ts.Expression): void {
+    const iface = this.checker.getContextualType(x)?.getSymbol()?.declarations?.find(ts.isInterfaceDeclaration);
+    if (!iface || iface.getSourceFile().isDeclarationFile || iface.typeParameters?.length || iface.heritageClauses?.length) return;
+    const cls = this.checker.getTypeAtLocation(x).getSymbol()?.valueDeclaration;
+    if (!cls || !ts.isClassLike(cls) || cls.getSourceFile().isDeclarationFile || implementedInterfaces(this.checker, cls).some((i) => i.expression.getText() === iface.name.text)) return;
+    (this.structural.get(cls) ?? this.structural.set(cls, new Set()).get(cls)!).add(iface);
+    this.protocols.add(iface.name.text);
   }
 
   fresh(prefix: string): string {
@@ -1621,10 +1635,21 @@ export class Translator implements AsyncTranslator {
       const decl = sym.valueDeclaration;
       if (!decl || !(sym.flags & ts.SymbolFlags.Value) || sym.flags & ts.SymbolFlags.Class || ts.isSourceFile(decl)) continue;
       const ref = this.qualifiedDecl(decl, sym.name) ?? ident(sym.name);
-      const t = this.type(this.checker.getTypeOfSymbolAtLocation(sym, decl), decl);
+      const t = this.boxedGeneric(decl, this.type(this.checker.getTypeOfSymbolAtLocation(sym, decl), decl));
       entries.push(`(${swiftString(exported.name)}, ${this.convert(ref, t, 'Any?')})`);
     }
     return `JSObject([${entries.join(', ')}])`;
+  }
+
+  /** A generic function's type as one value (held untyped): each type parameter its class bound, or any value. */
+  private boxedGeneric(decl: ts.Declaration | undefined, type: string): string {
+    let t = type;
+    for (const p of decl && ts.isFunctionDeclaration(decl) ? (decl.typeParameters ?? []).filter((p) => !erasedTypeParameter(p)) : []) {
+      const c = p.constraint && this.checker.getTypeFromTypeNode(p.constraint);
+      const bound = c && (c.getSymbol()?.flags ?? 0) & ts.SymbolFlags.Class ? this.type(c, p) : null;
+      t = t.replace(new RegExp(`\\b${p.name.text}\\b([?!]?)`, 'g'), (_, opt: string) => (bound ? bound + opt : 'Any?'));
+    }
+    return t;
   }
 
   /** An identifier as a reference to what it names: qualified where its declaration is a namespace's or a library module's. */
@@ -1643,6 +1668,7 @@ export class Translator implements AsyncTranslator {
     if (!this.appModule || !decl || ts.isSourceFile(decl)) return name;
     const statement = ts.isVariableDeclaration(decl) ? decl.parent.parent : decl;
     if (!ts.isSourceFile(statement.parent)) return name;
+    if (ts.isFunctionDeclaration(decl) && SWIFT_GLOBAL_FUNCTIONS.has(name) && !decl.getSourceFile().isDeclarationFile) return `${this.appModule}.${name}`;
     for (let n: ts.Node | undefined = at.parent; n; n = n.parent) {
       if (!ts.isModuleBlock(n)) continue;
       const shadows = n.statements.some((st) => (ts.isFunctionDeclaration(st) || ts.isModuleDeclaration(st) || ts.isEnumDeclaration(st)) ? st.name?.getText() === name
@@ -1765,7 +1791,7 @@ export class Translator implements AsyncTranslator {
     let found = false;
     const visit = (n: ts.Node) => {
       if (found) return;
-      if (ts.isClassDeclaration(n) && n.heritageClauses?.some((h) => h.token === ts.SyntaxKind.ImplementsKeyword && h.types.some((x) => x.expression.getText() === iface))) {
+      if (ts.isClassDeclaration(n) && (n.heritageClauses?.some((h) => h.token === ts.SyntaxKind.ImplementsKeyword && h.types.some((x) => x.expression.getText() === iface)) || [...this.structural.get(n) ?? []].some((d) => d.name.text === iface))) {
         const accessors = n.members.filter((x): x is ts.AccessorDeclaration => ts.isAccessor(x) && x.name.getText() === field);
         if (accessors.length && accessors.every(ts.isGetAccessorDeclaration)) found = true;
       }
@@ -2086,7 +2112,8 @@ ${members.join('\n')}
     const plain = this.lenient ? this.plainClass(type) : null;
     // Module-qualified: inside an object of the program's that holds the class under its name (`{ Declaration }`), the bare name is that field.
     if (plain) return `jsImplicit(jsShaped(${code}) { try ${this.appModule ? `${this.appModule}.` : ''}${type}() })`;
-    return this.lenientRef(type) !== type ? `jsImplicit(${code} as? ${type})` : `(${code} as! ${type})`;
+    // Lenient code holds a native collection implicitly unwrapped too (`sceneManifest = bundle.objectForInfoDictionaryKey(…)`): nil where it is missing.
+    return this.lenientRef(type) !== type || (this.lenient && /^\[.*\]$/.test(type)) ? `jsImplicit(${code} as? ${type})` : `(${code} as! ${type})`;
   }
 
   /** Lenient code: a setter without a getter given undefined runs with it, as the type's zero for a primitive. */
@@ -2195,6 +2222,8 @@ ${members.join('\n')}
     // Lenient code: one class where another is declared (a base class's value where a subclass is wanted): the value as it, undefined where it is not.
     const fb = from.replace(/[?!]$/, ''), tb = to.replace(/[?!]$/, '');
     if (fb !== tb && /^[A-Z]\w*$/.test(fb) && /^[A-Z]\w*$/.test(tb) && this.lenientRef(fb) !== fb && this.lenientRef(tb) !== tb && !['JSObject', 'EventData'].includes(fb)) return `jsImplicit(${code} as? ${tb})`;
+    // A kit class's object, maybe missing, where a subclass is declared (`eachChildView` passing a `ViewCommon?` to a `(child: View) => …`).
+    if (!this.library && /[?!]$/.test(from) && !/[?!]$/.test(to) && this.core.extendsKit(tb, fb)) return `(${code} as! ${tb})`;
     return code;
   }
 
@@ -2521,9 +2550,9 @@ ${members.join('\n')}
     const bound = (p: ts.TypeParameterDeclaration) => {
       const c = p.constraint && this.checker.getTypeFromTypeNode(p.constraint);
       const cls = c?.getSymbol()?.declarations?.find(ts.isClassDeclaration);
-      return cls && !cls.getSourceFile().isDeclarationFile ? `: ${this.type(c!, p)}` : '';
+      return cls && (!cls.getSourceFile().isDeclarationFile || (!this.library && isCoreDeclaration(cls) && !!cls.name && this.core.has(cls.name.text))) ? `: ${this.type(c!, p)}` : '';
     };
-    return kept.length ? `<${kept.map((p) => `${p.name.text}${this.library ? bound(p) : ''}`).join(', ')}>` : '';
+    return kept.length ? `<${kept.map((p) => `${p.name.text}${this.library || ts.isClassLike(fn) ? bound(p) : ''}`).join(', ')}>` : '';
   }
 
   /** A function's body block (`{ … }`), lowered when the function is async. */
@@ -2609,7 +2638,7 @@ ${members.join('\n')}
   func(fn: ts.FunctionDeclaration | ts.MethodDeclaration, name: string, modifiers = '', extraParams: string[] = []): string {
     const base = ts.isMethodDeclaration(fn) && /\boverride\b/.test(modifiers) ? this.baseMethod(fn) : null;
     if (base && ts.isMethodDeclaration(fn)) {
-      const b = this.emittedSignature(base), own = this.signatureOf(fn);
+      const b = this.emittedSignature(fn), own = this.signatureOf(fn);
       if (b.ret !== own.ret || b.params.length !== own.params.length || b.params.some((p, k) => p.type !== own.params[k].type)) return this.adaptedOverride(fn, name, modifiers, b);
     }
     // A signature naming a native type newer than the deployment target: the function exists only where the OS has it.
@@ -2646,10 +2675,51 @@ ${members.join('\n')}
 
   /** The Swift signature a method is emitted with: its root's, which every override in Swift matches. */
   private emittedSignature(m: ts.MethodDeclaration): { params: { decl: string; type: string }[]; ret: string } {
-    const base = this.baseMethod(m);
-    if (base) return this.emittedSignature(base);
+    let root = m;
+    for (let b = this.baseMethod(root); b; b = this.baseMethod(root)) root = b;
+    if (root !== m) {
+      const sig = this.emittedSignature(root);
+      const bound = this.boundTypeParameters(m.parent as ts.ClassLikeDeclaration, root.parent as ts.ClassLikeDeclaration);
+      if (!bound.size) return sig;
+      const sub = (t: string) => t.replace(/\b[A-Z]\w*\b/g, (n) => bound.get(n) ?? n);
+      return { params: sig.params.map((p) => ({ decl: p.decl.slice(0, p.decl.indexOf(':') + 1) + sub(p.decl.slice(p.decl.indexOf(':') + 1)), type: sub(p.type) })), ret: sub(sig.ret) };
+    }
     const own = this.signatureOf(m);
     return { params: [...own.params, ...this.hierarchyExtras(m)], ret: own.ret };
+  }
+
+  /** `<DatePicker>` of `extends UITest<DatePicker>`: the arguments a generic program class is extended with. */
+  private typeArguments(heritage: ts.ExpressionWithTypeArguments, base: ts.ClassLikeDeclaration): string {
+    const params = (base.typeParameters ?? []).filter((p) => !erasedTypeParameter(p));
+    if (!params.length || (this.pluginFiles.has(base.getSourceFile().fileName) && !this.keepsGenerics(base))) return '';
+    const args = (base.typeParameters ?? []).map((p, k) => (erasedTypeParameter(p) ? null : this.typeArgument(p, heritage.typeArguments?.[k]))).filter((a): a is string => a !== null);
+    return `<${args.join(', ')}>`;
+  }
+
+  /** A type parameter's argument: `any`, or none, is what the parameter is bound to (`UITest<any>` is `UITest<View>`). */
+  private typeArgument(p: ts.TypeParameterDeclaration, a: ts.TypeNode | undefined): string {
+    const node = a ?? p.default;
+    const t = node ? this.type(this.checker.getTypeFromTypeNode(node), node) : 'Any?';
+    if (t !== 'Any?' || !p.constraint) return t;
+    const bound = this.checker.getTypeFromTypeNode(p.constraint);
+    return bound.getSymbol()?.flags! & ts.SymbolFlags.Class ? this.type(bound, p.constraint) : t;
+  }
+
+  /** The Swift types a class binds an ancestor's type parameters to (`T` of `UITest<T>` as `DatePicker` from `extends UITest<DatePicker>`). */
+  private boundTypeParameters(cls: ts.ClassLikeDeclaration, ancestor: ts.ClassLikeDeclaration): Map<string, string> {
+    let bound = new Map<string, string>();
+    for (let c: ts.ClassLikeDeclaration | undefined = cls; c && c !== ancestor; ) {
+      const h = c.heritageClauses?.find((x) => x.token === ts.SyntaxKind.ExtendsKeyword)?.types[0];
+      const base = this.sourceBase(c);
+      if (!h || !base) break;
+      const below = bound;
+      bound = new Map((base.typeParameters ?? []).map((p, k) => {
+        const t = this.typeArgument(p, h.typeArguments?.[k]);
+        return [p.name.text, t.replace(/\b[A-Z]\w*\b/g, (n) => below.get(n) ?? n)];
+      }));
+      c = base;
+    }
+    return bound;
   }
 
   private methodFamilies: Map<ts.MethodDeclaration, ts.MethodDeclaration[]> | null = null;
@@ -3040,7 +3110,7 @@ ${members.join('\n')}
     const collection = this.collectionBase(cls);
     if (heritage) {
       const baseName = heritage.expression.getText();
-      if (appBase) base = this.className(appBase);
+      if (appBase) base = this.className(appBase) + this.typeArguments(heritage, appBase);
       else if (kitRoot && isCoreDeclaration(baseDecl)) base = kitRoot;
       else if (ERRORS[baseName]) base = ERRORS[baseName];
       else if (collection) base = collection;
@@ -3057,14 +3127,16 @@ ${members.join('\n')}
     const registered = (n: string) => isView && !!this.properties?.isRegistered(cls, n);
     // The library's interfaces (`Iterable<T>`, `Iterator<T>`) are protocols of the kit's, conformed to below.
     const witnesses: string[] = [];
-    const implemented = implementedInterfaces(this.checker, cls).filter((i) => !isLibDeclaration(this.checker.getTypeAtLocation(i).getSymbol()?.declarations?.[0]) && !this.uncompiledType(this.checker.getTypeAtLocation(i)))
+    const named = implementedInterfaces(this.checker, cls).map((i) => ({ name: i.expression.getText(), type: this.checker.getTypeAtLocation(i) }));
+    const met = [...this.structural.get(cls) ?? []].map((d) => ({ name: d.name.text, type: this.checker.getTypeAtLocation(d.name) }));
+    const implemented = [...named, ...met.filter((m) => !named.some((n) => n.name === m.name))].filter((i) => !isLibDeclaration(i.type.getSymbol()?.declarations?.[0]) && !this.uncompiledType(i.type))
       // Library mode: an interface only a declaration file has is no Swift protocol.
-      .filter((i) => !this.library || !(this.checker.getTypeAtLocation(i).getSymbol()?.declarations ?? []).every((d) => d.getSourceFile().isDeclarationFile))
+      .filter((i) => !this.library || !(i.type.getSymbol()?.declarations ?? []).every((d) => d.getSourceFile().isDeclarationFile))
       // A protocol a base class conforms to is inherited; one the class's signatures cannot meet is left out.
-      .filter((i) => !this.baseImplements(cls, i.expression.getText()) && this.protocolWitnesses(cls, i, witnesses))
+      .filter((i) => !this.baseImplements(cls, i.name) && this.protocolWitnesses(cls, i.name, i.type, witnesses))
       // An interface a kit class's own methods meet (`ICanvasBase.on` by View's `on`): script's structural typing, no Swift protocol.
-      .filter((i) => !kitRoot || !this.checker.getTypeAtLocation(i).getProperties().some((p) => !!this.core.kitMember(kitRoot, p.name)))
-      .map((i) => i.expression.getText());
+      .filter((i) => !kitRoot || !i.type.getProperties().some((p) => !!this.core.kitMember(kitRoot, p.name)))
+      .map((i) => i.name);
     for (const i of implemented) this.used.add(i);
     const conformances = [...(base ? [base] : []), ...implemented];
     // A class's own toString is what JavaScript's string conversion calls.
@@ -3397,6 +3469,8 @@ ${members.join('\n')}
     const dynMethods: { name: string; type: string; available?: number }[] = [];
     for (const m of cls.members) {
       if (ts.isMethodDeclaration(m) && m.body && ts.isComputedPropertyName(m.name)) continue;
+      // A generic method is no one function value.
+      const generic = ts.isMethodDeclaration(m) && !!m.typeParameters?.some((p) => !erasedTypeParameter(p));
       if (ts.isMethodDeclaration(m) && !m.body && hasModifier(m, ts.SyntaxKind.AbstractKeyword)) {
         // An overloaded abstract method is its first signature, which overrides take (`baseMethod`).
         if (cls.members.find((x) => ts.isMethodDeclaration(x) && !x.body && x.name.getText() === m.name.getText()) !== m) continue;
@@ -3424,7 +3498,7 @@ ${members.join('\n')}
       const modifiers = isStatic(m) ? (overriddenStatic && sameParams(m, overriddenStatic) ? 'override class ' : 'class ') : inherited.has(n) ? 'override ' : '';
       lines.push('    ' + this.func(m, ident(n), modifiers, extra));
       // A plugin's objects are read untyped too (`handler.attachToView(view)` on an `any`): their methods by name.
-      if ((this.pluginFiles.has(cls.getSourceFile().fileName) || this.appMembersByName) && !isStatic(m) && !m.parameters.some((p) => p.dotDotDotToken) && !extra.length) {
+      if ((this.pluginFiles.has(cls.getSourceFile().fileName) || this.appMembersByName) && !isStatic(m) && !m.parameters.some((p) => p.dotDotDotToken) && !extra.length && !generic) {
         // The signature Swift has for the method: an override's is its root's.
         const sig = this.emittedSignature(m);
         const plain = (t: string) => t.replace(/^\((any .*)\)!$/, '$1?').replace(/!$/, '?');
@@ -3967,6 +4041,12 @@ ${members.join('\n')}
       // A native subclass's `super.dealloc()`: its deinit (see NativeAPI.classDecl), after which Swift runs the base's.
       if (this.inNativeClassBody && ts.isCallExpression(s.expression) && !s.expression.arguments.length && ts.isPropertyAccessExpression(s.expression.expression)
         && s.expression.expression.expression.kind === ts.SyntaxKind.SuperKeyword && s.expression.expression.name.text === 'dealloc') return '';
+      // `ready && log()` of a call giving nothing: the call where the test holds, as there is no value to choose.
+      const x = s.expression;
+      if (ts.isBinaryExpression(x) && (x.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken || x.operatorToken.kind === ts.SyntaxKind.BarBarToken) && this.typeOf(x.right) === 'Void') {
+        const test = this.cond(x.left);
+        return `${i}if ${this.tryPrefix(x.left)}${x.operatorToken.kind === ts.SyntaxKind.BarBarToken ? `!(${test})` : test} { ${this.tryPrefix(x.right)}${this.exprStatement(x.right)} }`;
+      }
       const code = this.exprStatement(s.expression);
       // `s = String(s)` of a string: the same value, which Swift refuses to assign to itself.
       const self = /^([\w.]+) = (.+)$/.exec(code);
@@ -4687,10 +4767,14 @@ ${members.join('\n')}
     // Library mode: an object literal of an event type is core's EventData over it.
     if (this.library && ts.isObjectLiteralExpression(bare) && target.replace(/[?!]$/, '') === 'EventData') return `EventData(jsObject: ${this.coerce(e, 'Any?')})`;
     // Library mode: a function literal for a slot an erased generic types otherwise (`(value: Span) => …` where `(Any?) -> Void` is taken): adapted.
-    if (this.library && (ts.isArrowFunction(bare) || ts.isFunctionExpression(bare)) && !this.carriesMethod(bare) && functionParts(target)) {
+    // Elsewhere where Swift does not convert the function itself: a typed parameter where the slot passes any value,
+    // or one declared as an array where the slot passes a tuple (`(views: View[])` for `[T, Page]`).
+    if ((ts.isArrowFunction(bare) || ts.isFunctionExpression(bare)) && !(this.library && this.carriesMethod(bare)) && functionParts(target)) {
       const own = this.closureType(bare);
       const want = functionParts(target)!, have = functionParts(own);
-      if (have && have.params.length <= want.params.length && have.params.some((p, k) => p.replace(/^@escaping /, '') !== want.params[k].replace(/^@escaping /, ''))) return this.convert(this.expr(e), own, target);
+      const p = (t: string) => t.replace(/^@escaping /, '');
+      const differs = (t: string, k: number) => p(t) !== p(want.params[k]) && (this.library || p(want.params[k]) === 'Any?' || (/^\(.*\)$/.test(p(want.params[k])) && !functionParts(p(want.params[k])) && /^JSArray</.test(p(t))));
+      if (have && have.params.length <= want.params.length && have.params.some(differs)) return this.convert(this.expr(e), own, target);
     }
     // An async function where a function returning nothing is wanted (a callback typed `() => void`): its promise is dropped.
     const want = functionParts(target.replace(/^\((.*)\)[?!]$/, '$1')), have = functionParts(this.typeOf(e).replace(/^\((.*)\)[?!]$/, '$1'));
@@ -4755,7 +4839,7 @@ ${members.join('\n')}
         const rest = e.parameters.findIndex((p) => p.dotDotDotToken);
         return rest < 0 ? this.convert(this.expr(e), this.closureType(e), 'Any?') : this.boxFunction(this.expr(e), this.closureType(e), rest);
       }
-      if (functionParts(source.replace(/\?$/, '').replace(/^\((.*)\)$/, '$1'))) return this.convert(this.expr(e), source, 'Any?');
+      if (functionParts(source.replace(/\?$/, '').replace(/^\((.*)\)$/, '$1'))) return this.convert(this.expr(e), ts.isIdentifier(bare) ? this.boxedGeneric(this.resolve(bare)?.valueDeclaration, source) : source, 'Any?');
       // An object read with an unwrap (`view.parent!`) is undefined where it is missing, as an untyped value can be.
       const code = this.expr(e);
       return /[\w)\]]!$/.test(code) && this.isObjectRef(e) ? code.slice(0, -1) : code;
@@ -4811,10 +4895,29 @@ ${members.join('\n')}
     if (each) return missing ? `(${this.expr(e)})?.map(${each})` : `${this.expr(e)}.map(${each})`;
     // Library mode: a class where a subclass is declared (`this` of ViewCommon where core's declarations say View).
     if (this.library && this.isSubclassOf(target.replace(/[?!]$/, ''), source.replace(/[?!]$/, ''))) return `(${this.expr(e)} as${target.endsWith('?') || source.endsWith('?') ? '?' : '!'} ${target.replace(/[?!]$/, '')})`;
+    // A class's object where a shape of only methods is wanted (`frame: { navigationQueueIsEmpty(): boolean }`): one calling them on it.
+    const methods = this.methodShapeOf(bare, source, target);
+    if (methods) return methods;
     // Interfaces structurally equal (`DuoFold` for `StageFold`), or a tuple where an array is wanted.
     if (source.replace(/[?!]$/, '') !== target.replace(/[?!]$/, '') && this.isObjectShape(source.replace(/[?!]$/, '')) && this.isObjectShape(target.replace(/[?!]$/, ''))) return this.convert(this.expr(e), source, target);
     if (/^\(.*\)$/.test(source) && !functionParts(source) && /^JSArray<.*>[?!]?$/.test(target)) return this.convert(this.expr(e), source, target);
     return this.expr(e);
+  }
+
+  private methodShapeOf(e: ts.Expression, source: string, target: string): string | null {
+    const from = source.replace(/[?!]$/, ''), to = target.replace(/[?!]$/, '');
+    const shape = /^Object_\w+$/.test(to) ? [...this.shapes.values()].find((x) => x.name === to) : undefined;
+    if (!shape?.fields.length || from === to || !/^[A-Z]\w*$/.test(from) || this.isObjectShape(from) || this.protocols.has(from)) return null;
+    const own = this.checker.getNonNullableType(this.checker.getTypeAtLocation(e));
+    if (!((own.getSymbol()?.flags ?? 0) & ts.SymbolFlags.Class)) return null;
+    const parts = shape.fields.map((f) => ({ f, fn: functionParts(f.type) }));
+    if (!parts.every(({ f, fn }) => fn && fn.rest < 0 && !f.accessor && own.getProperty(f.name)?.declarations?.some((d) => ts.isMethodDeclaration(d) || ts.isMethodSignature(d)))) return null;
+    const fields = parts.map(({ f, fn }) => {
+      const params = fn!.params.map((p, k) => `__p${k}: ${p.replace(/^@escaping /, '')}`);
+      return `${ident(f.name)}: { (${params.join(', ')}) throws -> ${fn!.result} in ${fn!.result === 'Void' ? '' : 'return '}try __o.${ident(f.name)}(${fn!.params.map((_, k) => `__p${k}`).join(', ')}) }`;
+    });
+    const make = `{ (__o: ${from}) -> ${to} in ${to}(${fields.join(', ')}) }`;
+    return source.endsWith('?') ? `(${this.expr(e)}).map(${make})${target.endsWith('?') ? '' : '!'}` : `${make}(${this.expr(e)})`;
   }
 
   /** A function taking a rest parameter (`(...args) => void`) where a function of fixed parameters is wanted: those past the rest's start packed into its array. */
@@ -5296,7 +5399,8 @@ ${members.join('\n')}
     const target = alias ? this.checker.getAliasedSymbol(local) : local;
     const decl = target.valueDeclaration;
     if (decl && this.topNames().has(decl)) return this.topNames().get(decl)!;
-    if (!alias || !decl || decl.getSourceFile().isDeclarationFile || target.name === 'default' || target.flags & ts.SymbolFlags.ValueModule) return e.text;
+    // Core's declarations are the kit's names, whatever the import calls them (`requestAnimationFrame as raf`).
+    if (!alias || !decl || (decl.getSourceFile().isDeclarationFile && !isCoreDeclaration(decl)) || target.name === 'default' || target.flags & ts.SymbolFlags.ValueModule) return e.text;
     return target.name;
   }
 
@@ -5533,9 +5637,9 @@ ${members.join('\n')}
    * `handlerError(error: Error)`) conforms through a witness of the protocol's
    * signature that calls it; any other difference leaves the protocol out.
    */
-  private protocolWitnesses(cls: ts.ClassLikeDeclaration, i: ts.ExpressionWithTypeArguments, out: string[]): boolean {
-    const decl = this.checker.getTypeAtLocation(i).getSymbol()?.declarations?.find(ts.isInterfaceDeclaration);
-    if (!decl || !this.protocols.has(i.expression.getText())) return true;
+  private protocolWitnesses(cls: ts.ClassLikeDeclaration, name: string, type: ts.Type, out: string[]): boolean {
+    const decl = type.getSymbol()?.declarations?.find(ts.isInterfaceDeclaration);
+    if (!decl || !this.protocols.has(name)) return true;
     const own = (name: string) => {
       for (let c: ts.ClassLikeDeclaration | undefined = cls; c; c = this.sourceBase(c)) {
         const m = c.members.find((x) => x.name?.getText() === name);
@@ -5853,6 +5957,11 @@ ${members.join('\n')}
         return this.ternary(e, t, (x) => this.maybeUndefined(x) ?? this.coerce(x, t));
       }
     }
+    // Lenient code: a variable of a string, number or boolean an optional chain reads (`scene?.session?.persistentIdentifier`) is undefined where the chain stops.
+    if (this.lenient && ts.isPropertyAccessExpression(e) && ts.isOptionalChain(e) && ts.isVariableDeclaration(ts.walkUpParenthesizedExpressions(e.parent)) && !this.optionalReads.has(e) && ['String', 'Double', 'Bool'].includes(this.typeOf(e))) {
+      this.optionalReads.set(e, false);
+      try { return this.native.readOptional(e, () => this.expr(e)); } finally { this.optionalReads.delete(e); }
+    }
     if (ts.isPropertyAccessExpression(e) && !isWriteTarget(e) && this.isAddedMember(e)) {
       const t = this.typeOf(e);
       if (t !== 'Any?' && !isOptional(t)) return this.fromAny(`jsField(${this.expr(e.expression)}, ${swiftString(e.name.text)})`, optionalType(t));
@@ -6000,7 +6109,9 @@ ${members.join('\n')}
         continue;
       }
       // A method of a generic class, which library mode erases: the parameter's type as the method declares it.
-      const erased = this.library && decl && ts.isParameter(decl) && ts.isClassLike(decl.parent.parent) && !!decl.parent.parent.typeParameters?.length && !decl.getSourceFile().isDeclarationFile;
+      const erased = (this.library && decl && ts.isParameter(decl) && ts.isClassLike(decl.parent.parent) && !!decl.parent.parent.typeParameters?.length && !decl.getSourceFile().isDeclarationFile)
+        // A program function's type parameter Swift erases (`U extends { root: View }`): the parameter as declared, the argument's type erased with it.
+        || (!!decl && ts.isParameter(decl) && !!decl.type && !decl.getSourceFile().isDeclarationFile && !!(decl.parent as ts.SignatureDeclaration).typeParameters?.some((tp) => erasedTypeParameter(tp) && new RegExp(`\\b${tp.name.text}\\b`).test(decl.type!.getText())));
       // In code the checker finds unreachable a parameter's type is never: its declared type.
       const at = this.type(this.checker.getTypeOfSymbolAtLocation(p, e), e);
       // An override emitted with its root's signature (library mode): the parameter as Swift has it.
@@ -6030,7 +6141,8 @@ ${members.join('\n')}
   private isClosureValue(callee: ts.Expression): boolean {
     const name = ts.isPropertyAccessExpression(callee) ? callee.name : ts.isIdentifier(callee) ? callee : null;
     const d = name && this.resolve(name)?.valueDeclaration;
-    return !!d && !d.getSourceFile().isDeclarationFile && (ts.isPropertyDeclaration(d) || ts.isPropertySignature(d) || ts.isVariableDeclaration(d) || ts.isParameter(d));
+    // A program interface's or shape's method is a function field or a protocol requirement: neither has defaults.
+    return !!d && !d.getSourceFile().isDeclarationFile && (ts.isPropertyDeclaration(d) || ts.isPropertySignature(d) || ts.isVariableDeclaration(d) || ts.isParameter(d) || ts.isMethodSignature(d));
   }
 
   /** The assignments of a module-level class's static fields whose initializers throw, run in the module's order. */
@@ -6086,7 +6198,7 @@ ${members.join('\n')}
   }
 
   /** Arguments (spreads included) as one `JSArray` of `arrayType`. */
-  private packed(items: readonly ts.Expression[], arrayType: string): string {
+  packed(items: readonly ts.Expression[], arrayType: string): string {
     const el = arrayType.replace(/^JSArray<(.*)>$/, '$1');
     const parts: string[] = [];
     let run: string[] = [];
@@ -6529,9 +6641,10 @@ ${members.join('\n')}
     }
     const native = this.native.call(e);
     if (native) return native;
-    const name = callee.text;
-    const arg = (k: number) => e.arguments[k];
     const decl = this.resolve(callee)?.declarations?.[0];
+    // A core function imported under another name (`timer.setTimeout`, read as `__timer_setTimeout`): by its own.
+    const name = decl && isCoreDeclaration(decl) && ts.isFunctionDeclaration(decl) && decl.name ? decl.name.text : callee.text;
+    const arg = (k: number) => e.arguments[k];
     const lib = !decl || decl.getSourceFile().isDeclarationFile;
     if (this.isArrayConstruction(e)) {
       const made = this.newArray(e, this.typeOf(e), e.arguments);
@@ -6604,7 +6717,9 @@ ${members.join('\n')}
     if (this.typeOf(callee) === 'Any?') return `jsCall(${this.expr(callee)}${this.untypedArgs(e.arguments)})`;
     const fn = ts.isIdentifier(callee) ? this.refName(callee) : ident(name);
     const qualified = this.appModule && shadowedByMember(e, this.resolve(callee)?.declarations?.[0], fn, ident) ? `${this.appModule}.${fn}` : fn;
-    return `${this.narrowed(callee, qualified)}(${this.args(e, isFunctionValue ? undefined : this.arity(e)).join(', ')})`;
+    const args = this.args(e, isFunctionValue ? undefined : this.arity(e));
+    const call = `${this.narrowed(callee, qualified)}(${(!this.library && decl ? this.core.exportArgs(e, decl, args) : args).join(', ')})`;
+    return !this.library && decl ? this.core.moduleCall(decl, call, this.typeOf(e)) : call;
   }
 
   /** `renderNativeScriptApp(host, Component, props)`: the component rendered into the host as Octane's root. */
@@ -7105,7 +7220,14 @@ ${members.join('\n')}
 
   /** A rejection handler: it takes the reason untyped, whatever its parameter declares. */
   private rejectionHandler(e: ts.Expression, result?: string): string {
-    if (!(ts.isArrowFunction(e) || ts.isFunctionExpression(e))) return this.fn(e);
+    if (!(ts.isArrowFunction(e) || ts.isFunctionExpression(e))) {
+      // An untyped function (`.catch(done)`): called as script calls it, with the reason.
+      if (result && this.typeOf(e) === 'Any?') {
+        const call = `try jsCall(${this.expr(e)}, __reason)`;
+        return `{ (__reason: Any?) throws -> ${result} in ${result === 'Void' ? `_ = ${call}` : `return ${this.fromAnyCode(call, result, true)}`} }`;
+      }
+      return this.fn(e);
+    }
     // A handler that only rethrows (`(error) => { …; throw error; }`) is typed as the promise's other handler.
     const own = this.returnTypeOf(e);
     const typed = own === 'Never' && result ? result : own;
@@ -7140,7 +7262,7 @@ ${members.join('\n')}
         // An optional chain's promise (`a?.animate().catch(…)`) settles with the same values.
         const result = this.typeOf(e).replace(/[?!]$/, '').replace(/^JSPromise<(.*)>$/, '$1');
         const adopt = this.returnsPromise(f);
-        if (result === value) return `${t}.${adopt ? 'catchAdopt' : 'catch'}(${this.rejectionHandler(f)})`;
+        if (result === value) return `${t}.${adopt ? 'catchAdopt' : 'catch'}(${this.rejectionHandler(f, ts.isArrowFunction(f) || ts.isFunctionExpression(f) ? undefined : value)})`;
         // The fulfilled value passes through as the wider type the catch handler's result makes.
         const pass = `{ (__value: ${value}) -> ${adopt ? `JSPromise<${result}>` : result} in ${value === 'Never' ? 'switch __value {}' : adopt ? `JSPromise<${result}>.resolve(__value)` : 'return __value'} }`;
         // A handler returning nothing settles the wider promise with undefined.
@@ -8464,6 +8586,9 @@ function capturesThis(e: ts.Expression): boolean {
 }
 
 /** Whether a module function `fn` called at `at` is shadowed by a member of the class around it, as a bare name is in Swift and Kotlin. */
+/** Swift's own global functions, which a program's top-level function of the name loses overload resolution to (`assert(x)`). */
+const SWIFT_GLOBAL_FUNCTIONS = new Set(['assert', 'assertionFailure', 'precondition', 'preconditionFailure', 'print', 'debugPrint', 'dump', 'min', 'max', 'abs', 'zip', 'stride', 'swap', 'sequence', 'repeatElement', 'readLine', 'type']);
+
 function shadowedByMember(at: ts.Node, decl: ts.Declaration | undefined, fn: string, ident: (name: string) => string): boolean {
   if (!decl || !ts.isFunctionDeclaration(decl) || !ts.isSourceFile(decl.parent)) return false;
   const cls = ts.findAncestor(at, ts.isClassLike);
@@ -8491,6 +8616,8 @@ function erasedTypeParameter(p: ts.TypeParameterDeclaration): boolean {
   // An interface is a class of fields: one class for every instantiation.
   if (ts.isInterfaceDeclaration(fn) || ts.isTypeAliasDeclaration(fn)) return true;
   if (!ts.isFunctionDeclaration(fn) && !ts.isMethodDeclaration(fn) && !ts.isArrowFunction(fn) && !ts.isFunctionExpression(fn)) return false;
+  // Bound to a shape (`U extends { root: View }`), which no Swift constraint states: any value, its members read by name.
+  if (p.constraint && ts.isTypeLiteralNode(p.constraint)) return true;
   const named = new RegExp(`\\b${p.name.text}\\b`);
   return !fn.parameters.some((q) => q.type && named.test(q.type.getText()));
 }
