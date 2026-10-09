@@ -405,11 +405,15 @@ function withCoreDefines(text: string): string {
 
 /**
  * The top-level types of the hand-written Kotlin a `-PgeneratedKit` build compiles beside the generated
- * code: the runtime and the hand port's files kit-android's build.gradle.kts keeps.
+ * code: the runtime, src/fromcore, and the hand port's files kit-android's build.gradle.kts keeps.
  */
 function handWrittenTypes(): Set<string> {
-  const kit = resolve(import.meta.dirname, '../kit-android/src/main/kotlin/org/nativescript/kit');
-  const files = [...['Signals.kt', 'ColorMix.kt'].map((f) => join(kit, f)), ...readdirSync(join(kit, 'runtime')).filter((f) => f.endsWith('.kt')).map((f) => join(kit, 'runtime', f))];
+  const android = resolve(import.meta.dirname, '../kit-android');
+  const kit = join(android, 'src/main/kotlin/org/nativescript/kit');
+  const fromCore = join(android, 'src/fromcore/kotlin/org/nativescript/kit');
+  const kept = /val kept = setOf\(([^)]*)\)/.exec(readFileSync(join(android, 'build.gradle.kts'), 'utf8'))?.[1].match(/[\w.]+\.kt/g) ?? [];
+  const dir = (d: string) => (existsSync(d) ? readdirSync(d).filter((f) => f.endsWith('.kt')).map((f) => join(d, f)) : []);
+  const files = [...kept.map((f) => join(kit, f)), ...dir(join(kit, 'runtime')), ...dir(fromCore)];
   const names = new Set<string>();
   for (const f of files.filter(existsSync)) {
     for (const m of readFileSync(f, 'utf8').matchAll(/^(?:(?:public|internal|open|abstract|sealed|data|enum|fun|value|annotation)\s+)*(?:class|interface|object|typealias)\s+(\w+)/gm)) names.add(m[1]);

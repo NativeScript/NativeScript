@@ -259,6 +259,8 @@ fun jsGetOptional(target: Any?, key: String): Any? = if (target == null || targe
 fun jsGet(target: Any?, key: String): Any? = when (target) {
     null -> throw JSException(JSTypeError("Cannot read properties of undefined (reading '$key')"))
     JSNull -> throw JSException(JSTypeError("Cannot read properties of null (reading '$key')"))
+    // What every object inherits (`{}.toString`), where the object has nothing of that name.
+    is JSObject -> target.jsGet(key) ?: if (!target.has(key) && JSPrototypes.objectPrototype.has(key)) JSPrototypes.objectPrototype[key] else null
     is JSDynamic -> target.jsGet(key)
     is JSArray<*> -> when {
         key == "length" -> target.size.toDouble()

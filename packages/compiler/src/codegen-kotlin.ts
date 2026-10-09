@@ -68,7 +68,7 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
   const binding = (depth: number, text: string) => (deferBindings && templates.length ? templates.at(-1)!.bindings.push({ depth, text }) : say(depth, text));
   /** Puts a view into its container or region at the point its framework inserts it. */
   const attach = (depth: number, v: string, parent: string | null, region: string | null, at: 'created' | 'built') => {
-    const text = parent ? (options.slots ? `${parent}.addTemplateChild(${v})` : `${parent}.addChild(${v})`) : region ? `${region}.attach(${v})` : null;
+    const text = parent ? (options.slots ? `${parent}.kitAddTemplateChild(${v})` : `${parent}.kitAddChild(${v})`) : region ? `${region}.attach(${v})` : null;
     if (!text) return;
     if (insertion === 'mounted' && templates.length) { if (at === 'created') templates.at(-1)!.inserts.push({ depth, text }); return; }
     if ((insertion === 'created') === (at === 'created')) say(depth, text);
@@ -82,13 +82,13 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
     }
     if ('value' in a) {
       if (a.name === 'class') say(depth, `${v}.className = ${kotlinString(a.value)}`);
-      else say(depth, `${v}.set(${kotlinString(a.name)}, ${kotlinString(a.value)})`);
+      else say(depth, `${v}.kitSet(${kotlinString(a.name)}, ${kotlinString(a.value)})`);
     } else if (options.zone) {
-      binding(depth, `Check({ ${call(a.method, loops)} }) { ${a.name === 'class' ? `${v}.className = it` : `${v}.set(${kotlinString(a.name)}, it)`} }`);
+      binding(depth, `Check({ ${call(a.method, loops)} }) { ${a.name === 'class' ? `${v}.className = it` : `${v}.kitSet(${kotlinString(a.name)}, it)`} }`);
     } else if (a.name === 'class') {
       binding(depth, `Effect { jsReport { ${v}.className = ${options.slots ? `octaneClassName(${call(a.method, loops)})` : call(a.method, loops)} } }`);
     } else {
-      binding(depth, `Effect { jsReport { ${v}.set(${kotlinString(a.name)}, ${options.slots ? `octaneValue(${call(a.method, loops)})` : call(a.method, loops)}) } }`);
+      binding(depth, `Effect { jsReport { ${v}.kitSet(${kotlinString(a.name)}, ${options.slots ? `octaneValue(${call(a.method, loops)})` : call(a.method, loops)}) } }`);
     }
   };
 
@@ -107,7 +107,7 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
           const props = () => {
             for (const a of node.attrs) if (!isList || !LIST_BINDINGS.has(a.name)) attr(depth, v, a, loops);
             for (const e of node.events) {
-              const listen = `${v}.on(${kotlinString(e.name)}) { event -> ${handler(call(e.method, loops, ['event']))} }`;
+              const listen = `${v}.kitOn(${kotlinString(e.name)}) { event -> ${handler(call(e.method, loops, ['event']))} }`;
               const guarded = e.when ? `if (jsTruthy(${caught(call(e.when, loops))})) ${listen}` : listen;
               listener(depth, e.ifPassed ? `if (this._passed.contains(${kotlinString(e.ifPassed)})) ${guarded}` : guarded);
             }
@@ -139,7 +139,7 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
           for (const a of node.props) if (!info.props.includes(a.name)) attr(depth, v, a, loops);
           for (const e of node.events) {
             if (info.outputs?.includes(e.name)) say(depth, `${c0}.${ident(info.outputFields?.[e.name] ?? e.name)}.on { value -> ${handler(call(e.method, loops, [`EventData(${kotlinString(e.name)}, ${v}, value)`]))} }`);
-            else say(depth, `${v}.on(${kotlinString(e.name)}) { event -> ${handler(call(e.method, loops, ['event']))} }`);
+            else say(depth, `${v}.kitOn(${kotlinString(e.name)}) { event -> ${handler(call(e.method, loops, ['event']))} }`);
           }
           attach(depth, v, parent, region, 'created');
         }
@@ -153,12 +153,12 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
       const live = insertion !== 'built' ? `r${n++}` : null;
       if (live && insertion === 'mounted' && templates.length) {
         say(depth, `val ${live} = Region(null)`);
-        templates.at(-1)!.inserts.push({ depth, text: `${parent}.addRegion(${live})` });
-      } else if (live) say(depth, `val ${live} = ${parent}.addRegion()`);
+        templates.at(-1)!.inserts.push({ depth, text: `${parent}.kitAddRegion(${live})` });
+      } else if (live) say(depth, `val ${live} = ${parent}.kitAddRegion()`);
       // A branch or row with an if/for of its own (where views attach once built) returns a fragment holding the regions nested in this one.
       const nested = (body: TNode[]) => body.some((x) => x.kind === 'if' || x.kind === 'for');
       const fragmented = !live && (node.kind === 'if' ? node.branches.some((b) => nested(b.body)) : nested(node.body));
-      let host = live ?? `${parent}.addRegion()`;
+      let host = live ?? `${parent}.kitAddRegion()`;
       if (fragmented) {
         const r = `r${n++}`;
         say(depth, `val ${r} = ${host}`);
@@ -299,10 +299,10 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
       template(d, () => {
         emit(c.template.filter(isBar), d, [], 'page', null);
         say(d, 'val content = FlexboxLayout()');
-        for (const [name, value] of Object.entries(options.screenContent!)) say(d, `content.set(${kotlinString(name)}, ${kotlinString(value)})`);
+        for (const [name, value] of Object.entries(options.screenContent!)) say(d, `content.kitSet(${kotlinString(name)}, ${kotlinString(value)})`);
         emit(c.template.filter((n) => !isBar(n)), d, [], 'content', null);
       });
-      say(d, 'page.addChild(content)');
+      say(d, 'page.kitAddChild(content)');
     } else {
       template(d, () => emit(c.template, d, [], 'page', null));
     }

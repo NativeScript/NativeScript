@@ -361,7 +361,7 @@ function mergeXcconfig(into: XcconfigEntry[], from: XcconfigEntry[]): XcconfigEn
  * out (the native app has neither). The package attribute goes: the Gradle
  * project's namespace replaces it.
  */
-export function androidManifest(o: { app: string; applicationId: string; activity: string }): string | null {
+export function androidManifest(o: { app: string; applicationId: string; activity: string; application?: string }): string | null {
   const file = join(appResourcesDir(o.app), 'Android', 'src', 'main', 'AndroidManifest.xml');
   if (!existsSync(file)) return null;
   let xml = readFileSync(file, 'utf8').replace(/__PACKAGE__/g, o.applicationId);
@@ -371,7 +371,9 @@ export function androidManifest(o: { app: string; applicationId: string; activit
   xml = xml.replace(/(<application\b[^>]*?)\s+android:name="com\.tns\.NativeScriptApplication"/, '$1');
   const custom = /<application\b[^>]*?android:name="([^"]+)"/.exec(xml);
   if (custom) throw new Error(`${relative(o.app, file)}: the application class ${custom[1]} extends the JavaScript runtime's; a native release has none`);
-  const runtime = /android:name="(com\.tns\.[\w.]+)"/.exec(xml);
+  // The kit compiled from core starts the app from an application class of the app's, and core's own activity shows it.
+  if (o.application) xml = xml.replace(/<application\b/, `<application android:name="${o.application}"`);
+  const runtime = /android:name="(com\.tns\.[\w.]+)"/.exec(xml.replaceAll(`android:name="${o.activity}"`, ''));
   if (runtime) throw new Error(`${relative(o.app, file)}: ${runtime[1]} is part of the JavaScript runtime; a native release has none`);
   return xml;
 }

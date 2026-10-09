@@ -1,5 +1,5 @@
 import ts from 'typescript';
-import { readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { isCoreDeclaration, unappliedProperty } from './core.ts';
 import { kitExtends, kitMember, readNames, type KitMember, type KitType } from './kit-index.ts';
@@ -19,11 +19,11 @@ const SCRIPT_OBJECTS = new Set(['animate', 'createAnimation', 'open', 'close', '
  * members (a companion's or an object's are static), and the NativeScript
  * property names its `setProperty` handles (`"text" ->`).
  */
-export function kotlinKitIndex(sources: string): Map<string, KitType> {
+export function kotlinKitIndex(sources: string | string[]): Map<string, KitType> {
   const types = new Map<string, KitType>();
-  const files = (readdirSync(sources, { recursive: true }) as string[]).filter((f) => f.endsWith('.kt'));
+  const files = (Array.isArray(sources) ? sources : [sources]).flatMap((d) => (d.endsWith('.kt') ? [d] : existsSync(d) ? (readdirSync(d, { recursive: true }) as string[]).filter((f) => f.endsWith('.kt')).map((f) => join(d, f)) : []));
   for (const f of files) {
-    const text = readFileSync(join(sources, f), 'utf8').replace(/\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '');
+    const text = readFileSync(f, 'utf8').replace(/\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '');
     const imports = new Map([...text.matchAll(/^import\s+([\w.]+)\.(\w+)(?:\s+as\s+(\w+))?\s*$/gm)].map((m) => [m[3] ?? m[2], `${m[1]}.${m[2]}`]));
     const stack: { type: KitType | null; depth: number; companion: boolean }[] = [];
     let depth = 0;
@@ -88,7 +88,7 @@ export function kotlinKitIndex(sources: string): Map<string, KitType> {
   }
   // Shorthands (`borderRadius`, `margin`) any view takes, expanded by a top-level function.
   for (const f of files) {
-    const text = readFileSync(join(sources, f), 'utf8');
+    const text = readFileSync(f, 'utf8');
     const at = text.indexOf('\nfun expandShorthand(');
     if (at < 0) continue;
     const body = text.slice(at, text.indexOf('\n}\n', at));
@@ -134,9 +134,10 @@ export class CoreKotlin implements KotlinCore {
   private index: Map<string, KitType>;
   private t: Translator;
 
-  constructor(t: Translator) {
+  /** `generated`: the kit compiled from core (`-PgeneratedKit`), whose classes are core's own, in place of the hand port. */
+  constructor(t: Translator, generated = false) {
     this.t = t;
-    this.index = kotlinKitIndex(KIT);
+    this.index = kotlinKitIndex(generated ? generatedKitSources() : KIT);
   }
 
   type(_t: ts.Type): string | null { return null; }
@@ -438,4 +439,10 @@ function keepsNullable(e: ts.Expression): boolean {
   const p = n.parent;
   return ts.isExpressionStatement(p) || (ts.isConditionalExpression(p) && p.condition === n) || (ts.isIfStatement(p) && p.expression === n)
     || (ts.isPrefixUnaryExpression(p) && p.operator === ts.SyntaxKind.ExclamationToken);
+}
+
+/** What a `-PgeneratedKit` build compiles: the generated code, src/fromcore, the runtime and the hand port's files the build keeps. */
+export function generatedKitSources(): string[] {
+  const kept = /val kept = setOf\(([^)]*)\)/.exec(readFileSync(join(KIT_ANDROID, 'build.gradle.kts'), 'utf8'))?.[1].match(/[\w.]+\.kt/g) ?? [];
+  return [join(KIT_ANDROID, 'generated/kotlin'), join(KIT_ANDROID, 'src/fromcore/kotlin'), join(KIT, 'runtime'), ...kept.map((f) => join(KIT, f))];
 }
