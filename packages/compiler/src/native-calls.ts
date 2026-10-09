@@ -25,6 +25,8 @@ function bridge(code: string, from: SwiftType, to: SwiftType): string | null {
   if (f === 'CFArray' && /^\[[^:]*\]$/.test(b)) return optional(to) ? `(${code}).map { $0 as NSArray as! ${b} }` : `(${code}${optional(from) ? '!' : ''} as NSArray as! ${b})`;
   // `NSSet` and Swift's `Set<T>`: toward the typed set the cast checks the elements.
   const typedSet = /^NS(Mutable)?Set$/.test(f) && /^Set<.+>$/.test(b);
+  // A mutable request where a request is taken: Swift bridges it as its immutable base.
+  if (f === 'NSMutableURLRequest' && b === 'URLRequest') return `(${code} as URLRequest${optional(to) ? '?' : ''})`;
   if (BRIDGED[f] !== b && BRIDGED[b] !== f && !typedSet && !(/^Set<.+>$/.test(f) && b === 'NSSet')) return null;
   const want = b === 'any Error' ? '(any Error)' : b;
   if (optional(to)) return `(${code} as${typedSet ? '?' : ''} ${want}${typedSet ? '' : '?'})`;
@@ -915,6 +917,8 @@ export class NativeAPI {
       const param = fn.parameters[k], type = t.typeOf(param.name);
       // A nil object argument reaches a closure that takes it implicitly unwrapped (core's `(image) => { if (image) … }`).
       if (optional(p) && base(p) === type && t.mayBeNull(param)) return `let ${names[k]}: ${type}? = __b${k}`;
+      // Bridged or a subclass (`data: NSData` for `Data?`, `response: NSHTTPURLResponse` for `URLResponse?`): converted as an optional, nil kept.
+      if (optional(p) && t.mayBeNull(param)) return `let ${names[k]}: ${type}? = ${this.blockParam(`__b${k}`, p, `${type}?`)}`;
       return `let ${names[k]}: ${type} = ${this.blockParam(`__b${k}`, p, type)}`;
     }).filter(Boolean);
     const body = t.closure(fn);
@@ -939,7 +943,14 @@ export class NativeAPI {
 
   /** Whether a native class extends another (`AVURLAsset` of `AVAsset`). */
   private isSubclass(sub: string, base: string): boolean {
-    for (const m of new Set(['Foundation', 'UIKit', ...this.modules])) if (lookupClass(m, sub)?.kind === 'class') return conformsTo(m, sub, base);
+    const modules = new Set(['Foundation', 'UIKit', ...this.modules]);
+    // By JavaScript name: a Foundation class Swift names without its prefix (`HTTPURLResponse`) is found under it.
+    const js = (m: string, n: string) => (lookupClass(m, n) ? n : lookupClass(m, `NS${n}`)?.swift === n ? `NS${n}` : null);
+    const b = [...modules].map((m) => js(m, base)).find(Boolean) ?? base;
+    for (const m of modules) {
+      const s = js(m, sub);
+      if (s && lookupClass(m, s)?.kind === 'class') return conformsTo(m, s, b);
+    }
     return false;
   }
 

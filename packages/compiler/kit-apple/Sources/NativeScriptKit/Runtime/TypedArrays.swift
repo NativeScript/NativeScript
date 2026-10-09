@@ -63,7 +63,7 @@ public protocol JSTypedArrayProtocol: JSArrayBufferView {
 
 /// `ArrayBuffer`: a fixed number of bytes, zeroed when made, at an address that stays put for
 /// as long as the buffer lives (native APIs read and write them in place).
-public final class JSArrayBuffer: JSDynamic, JSToStringTag, JSBufferSource {
+public final class JSArrayBuffer: JSDynamic, JSToStringTag, JSBufferSource, JSHostObject {
     public let count: Int
     let bytes: UnsafeMutableRawPointer
     /// Set for memory the buffer does not own: called instead of freeing it.
@@ -128,6 +128,13 @@ public final class JSArrayBuffer: JSDynamic, JSToStringTag, JSBufferSource {
     public var jsToStringTag: String { "ArrayBuffer" }
     public var jsKeys: [String] { [] }
     public var jsClassName: String? { "ArrayBuffer" }
+
+    /// `slice`, called by untyped code.
+    public func jsInvoke(_ key: String, _ arguments: [Any?]) throws -> Any?? {
+        guard key == "slice" else { return nil }
+        let number = { (i: Int) -> Double? in jsIsNullish(jsArg(arguments, i)) ? nil : jsToNumber(jsArg(arguments, i)) }
+        return .some(slice(number(0), number(1)))
+    }
     public subscript(jsKey key: String) -> Any? {
         get { key == "byteLength" ? byteLength : nil }
         set {}

@@ -820,13 +820,26 @@ public func jsCallOptional(_ function: Any?, spread arguments: [Any?]) throws ->
 }
 
 /// `globalThis` read as an object: the runtime's globals (`NativeScriptRuntime`, `com.tns`) are not
-/// in a native app, so reading one gives undefined.
-public let jsGlobalThis = JSObject([])
+/// in a native app, so reading one gives undefined. `DOMException`, which core's fetch reads from it, is there.
+public let jsGlobalThis = JSObject([("DOMException", jsDOMExceptionConstructor)])
 
 /// Lenient code: a value that may be undefined where its type says an object, read as
 /// an optional where one is taken and unwrapped (JavaScript's TypeError if missing) elsewhere.
 @inline(__always)
 public func jsImplicit<T>(_ value: T?) -> T! { value }
+
+/// `value instanceof Name` for a class the kit knows only by that name (`FormData`, which the runtime's globals
+/// take from core): an object of a kit class of the name, or of a subclass of one. A class whose name another
+/// of core's took is named `Name__file`.
+public func jsInstanceOfNamed(_ value: Any?, _ name: String) -> Bool {
+    guard let object = jsFlat(value), Mirror(reflecting: object).displayStyle == .class else { return false }
+    var cls: AnyClass? = type(of: object as AnyObject)
+    while let c = cls {
+        if String(describing: c).components(separatedBy: "__")[0] == name { return true }
+        cls = class_getSuperclass(c)
+    }
+    return false
+}
 
 /// `value.constructor.name`: the name of the class that made the value.
 public func jsConstructorName(_ value: Any?) -> String {

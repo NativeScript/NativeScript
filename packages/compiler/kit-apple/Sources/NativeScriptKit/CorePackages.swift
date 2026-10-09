@@ -19,6 +19,9 @@ public enum CorePackages {
         try JSRegExp(#"\p{Extended_Pictographic}|\p{Emoji_Presentation}|\p{Regional_Indicator}"#, "gu")
     }
 
+    /// The debugger module core's HTTP reports requests to: no inspector attaches to a compiled app, so it has no network domain.
+    public static let debugger: Any? = JSObject([("getNetwork", { _ in nil } as JSFunction)])
+
     /// module-name-resolver's `prepareAppForModuleResolver`, `clearResolverCache` and `_setResolver`:
     /// a compiled app resolves no module names at run time, so there is nothing to prepare or clear.
     public static let noModuleResolver: JSFunction = { _ in nil }

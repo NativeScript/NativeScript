@@ -13,6 +13,12 @@ public final class JSDOMException: JSError {
     }
 }
 
+/// `new DOMException(message, name)` on the global object.
+let jsDOMExceptionConstructor = JSConstructor { arguments in
+    let message = jsArg(arguments, 0), name = jsArg(arguments, 1)
+    return JSDOMException(message == nil ? "" : jsToString(message), name: name == nil ? "Error" : jsToString(name))
+}
+
 private func domException(_ name: String, _ message: String) -> JSException {
     JSException(JSDOMException(message, name: name))
 }
