@@ -375,6 +375,12 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
     for (const [name, text] of named) files.set(name, text);
     program = ts.createProgram(rootNames, options, host, program);
   }
+  // kit-android does not compile core's fetch and XMLHttpRequest yet.
+  const webGlobals = platform === 'ios' ? coreGlobalImports(program, isSource, modules) : new Map<string, string>();
+  if (webGlobals.size) {
+    for (const [name, text] of webGlobals) files.set(name, text);
+    program = ts.createProgram(rootNames, options, host, program);
+  }
   // `view.ios` is `any` in core's declarations: typed as the view's native class, everything read from it is typed too.
   const casts = nativeViewCasts(program, isSource, platform);
   if (casts.size) {
@@ -487,6 +493,55 @@ function coreNamespaceMembers(program: ts.Program, isApp: (name: string) => bool
     let text = sf.text;
     for (const e of edits.sort((a, b) => b.at - a.at)) text = text.slice(0, e.at) + e.text + text.slice(e.end);
     out.set(sf.fileName, text);
+  }
+  return out;
+}
+
+/**
+ * The globals core installs from its own modules (`globals/index.ts`), and the types the web names beside them
+ * (`type`): what the NativeScript runtime runs for `fetch` or `new XMLHttpRequest()` is core's module.
+ */
+const CORE_GLOBALS: [module: string, names: string[]][] = [
+  ['@nativescript/core/fetch', ['fetch', 'Headers', 'Request', 'Response', 'type BodyInit', 'type HeadersInit', 'type RequestInfo', 'type RequestInit', 'type ResponseInit']],
+  ['@nativescript/core/xhr', ['XMLHttpRequest', 'FormData', 'Blob', 'File', 'FileReader']],
+  ['@nativescript/core/abortcontroller', ['AbortController', 'AbortSignal']],
+];
+
+/**
+ * Each app file's text with the core globals it names (and does not declare or import) imported from core's
+ * modules at its end, where the import moves no line: `fetch(…)` is then core's `fetch`, as the kit has it.
+ * A core whose module has no typed declarations (a fetch before core's own TypeScript one) is left out.
+ */
+function coreGlobalImports(program: ts.Program, isApp: (name: string) => boolean, modules: string): Map<string, string> {
+  const checker = program.getTypeChecker() as ts.TypeChecker & { resolveName(name: string, at: ts.Node, meaning: ts.SymbolFlags, excludeGlobals: boolean): ts.Symbol | undefined };
+  const available = CORE_GLOBALS.filter(([m]) => existsSync(resolve(modules, m, 'index.d.ts')));
+  const wanted = new Map(available.flatMap(([m, names]) => names.map((n) => [n.replace(/^type /, ''), { module: m, spec: n }] as const)));
+  const K = ts.SyntaxKind;
+  const named = (n: ts.Identifier): boolean => {
+    const p = n.parent;
+    if (ts.isPropertyAccessExpression(p)) return p.name === n;
+    if (ts.isQualifiedName(p)) return p.right === n;
+    if (ts.isBindingElement(p)) return p.propertyName === n;
+    if ([K.PropertyAssignment, K.PropertyDeclaration, K.PropertySignature, K.MethodDeclaration, K.MethodSignature, K.GetAccessor, K.SetAccessor, K.EnumMember, K.JsxAttribute].includes(p.kind)) return (p as ts.NamedDeclaration).name === n;
+    return [K.ImportSpecifier, K.ExportSpecifier, K.ImportClause, K.NamespaceImport, K.LabeledStatement, K.BreakStatement, K.ContinueStatement].includes(p.kind);
+  };
+  // Undeclared (the DOM's names, which the program's library leaves out), or declared in the global scope by a declaration file.
+  const global = (s: ts.Symbol | undefined) => !s || (!(s.flags & ts.SymbolFlags.Alias) && !(s as { parent?: ts.Symbol }).parent && !!s.declarations?.length && s.declarations.every((d) => d.getSourceFile().isDeclarationFile));
+  const out = new Map<string, string>();
+  for (const sf of program.getSourceFiles()) {
+    if (!isApp(sf.fileName) || !wanted.size) continue;
+    const used = new Map<string, Set<string>>();
+    const visit = (n: ts.Node) => {
+      if (ts.isImportDeclaration(n)) return;
+      const want = ts.isIdentifier(n) ? wanted.get(n.text) : undefined;
+      if (want && !named(n as ts.Identifier) && global(checker.resolveName((n as ts.Identifier).text, n, ts.SymbolFlags.Value | ts.SymbolFlags.Type, false))) {
+        (used.get(want.module) ?? used.set(want.module, new Set()).get(want.module)!).add(want.spec);
+      }
+      ts.forEachChild(n, visit);
+    };
+    visit(sf);
+    if (!used.size) continue;
+    out.set(sf.fileName, sf.text + [...used].map(([m, names]) => `\nimport { ${[...names].join(', ')} } from '${m}';`).join(''));
   }
   return out;
 }
