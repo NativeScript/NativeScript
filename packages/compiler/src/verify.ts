@@ -182,7 +182,15 @@ async function run(udid: string, driver: UIDriver, app: string, label: string, s
   for (const screen of screens) {
     // An app launched over another in front shows a back link to it in the status bar.
     for (const b of [bundle, other]) try { simctl('terminate', udid, b); } catch {}
-    simctl('launch', udid, bundle);
+    try {
+      simctl('launch', udid, bundle);
+    } catch {
+      // Another tool can shut the device down (CoreDevice shuts every simulator down at times): boot it and retry
+      // once; a driver it ended is restarted at its next unanswered command.
+      try { simctl('boot', udid); } catch {}
+      simctl('bootstatus', udid, '-b');
+      simctl('launch', udid, bundle);
+    }
     await sleep(2);
     for (const [op, ...args] of screen.steps) {
       if (op === 'shot') await settledShot(udid, join(out, `${label}-${screen.name}-${args[0]}.png`));
