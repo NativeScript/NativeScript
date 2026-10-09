@@ -15,6 +15,14 @@ export * from './frame-common';
 // dropping the Completed callback that restores the final transform/opacity).
 const _activeTransitions = new Set<Microsoft.UI.Xaml.Media.Animation.Storyboard>();
 
+function lookupResource<T>(key: string): T | null {
+	try {
+		return Microsoft.UI.Xaml.Application.Current.Resources.Lookup(key) as T;
+	} catch (_e) {
+		return null;
+	}
+}
+
 export class Frame extends FrameBase {
 	declare nativeViewProtected: Microsoft.UI.Xaml.Controls.Grid; // container
 	// Single-cell Grid hosting the current page; Grid.Children.Append() avoids template/binding issues.
@@ -34,6 +42,7 @@ export class Frame extends FrameBase {
 	// StackPanel in column 2 of _topBar; holds Button elements for ActionItems.
 	private _actionArea: Microsoft.UI.Xaml.Controls.StackPanel | null = null;
 	private _backButtonDelegate: any = null;
+	private _backButtonStyle: Microsoft.UI.Xaml.Style | null = null;
 	// GC guard: delegates held only by btn.Click can be collected before the user taps.
 	private _actionItemDelegates: any[] = [];
 	// ActionBar `color` brush for the current page; applied to title, back button and action items.
@@ -79,7 +88,7 @@ export class Frame extends FrameBase {
 			this._topBar.ColumnDefinitions.Append(colActions);
 
 			this._backButton = new Microsoft.UI.Xaml.Controls.Button();
-			this._backButton.Content = '←';
+			this._backButtonStyle = lookupResource<Microsoft.UI.Xaml.Style>('TitleBarBackButtonStyle') ?? lookupResource<Microsoft.UI.Xaml.Style>('NavigationBackButtonNormalStyle');
 			this._backButton.Margin = { Left: 2, Top: 2, Right: 2, Bottom: 2 };
 			Microsoft.UI.Xaml.Controls.Grid.SetColumn(this._backButton, 0);
 			this._topBar.Children.Append(this._backButton);
@@ -586,7 +595,7 @@ export class Frame extends FrameBase {
 			const navBtn = (page as any).actionBar?.navigationButton;
 			const navIconSrc: string = navBtn?.windows?.icon ?? navBtn?.icon ?? '';
 			const navIcon = navIconSrc ? this._createActionItemIcon(navIconSrc, navBtn) : null;
-			this._backButton.Content = (navIcon ?? navBtn?.text ?? '←') as never;
+			this._applyBackButtonContent(navIcon, navBtn?.text);
 			this._backButton.Visibility = this.canGoBack() ? 0 : 1;
 		}
 
@@ -682,6 +691,18 @@ export class Frame extends FrameBase {
 				children.Append(btn);
 			} catch (_e) {}
 		}
+	}
+
+	private _applyBackButtonContent(icon: Microsoft.UI.Xaml.UIElement | null, text: string | undefined): void {
+		const button = this._backButton;
+		const custom = icon ?? (text || null);
+		if (custom === null && this._backButtonStyle) {
+			button.Style = this._backButtonStyle;
+			button.ClearValue(Microsoft.UI.Xaml.Controls.ContentControl.ContentProperty);
+			return;
+		}
+		button.ClearValue(Microsoft.UI.Xaml.FrameworkElement.StyleProperty);
+		button.Content = (custom ?? '←') as never;
 	}
 
 	// Resolves an ActionItem icon URI to a XAML element: font:// → glyph TextBlock, res://|~/|file →
