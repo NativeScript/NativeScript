@@ -311,15 +311,34 @@ nonisolated(unsafe) private var jsExpandoKey: UInt8 = 0
 /// Whether the class or one it extends declares an Objective-C property of that name.
 /// The accessor an Objective-C property declares under a custom name (`G` getter or `S` setter attribute), if any.
 private func jsCustomAccessor(_ cls: AnyClass, _ key: String, _ attribute: Character) -> String? {
+    jsObjCPropertyAttributes(cls, key)?.split(separator: ",").first(where: { $0.first == attribute }).map { String($0.dropFirst()) }
+}
+
+/// The attributes of the Objective-C property a class or the nearest class it extends declares under a name,
+/// looked up once per class and name: `class_getProperty` scans each class's property list by name.
+func jsObjCPropertyAttributes(_ cls: AnyClass, _ name: String) -> String? {
+    let id = JSClassKey(cls: ObjectIdentifier(cls), key: name)
+    jsPropertyAttributesLock.lock()
+    let known = jsPropertyAttributes[id]
+    jsPropertyAttributesLock.unlock()
+    if let known { return known }
+    var found: String?
     var c: AnyClass? = cls
     while let current = c {
-        if let property = class_getProperty(current, key), let attributes = property_getAttributes(property).map(String.init(cString:)) {
-            return attributes.split(separator: ",").first(where: { $0.first == attribute }).map { String($0.dropFirst()) }
+        if let property = class_getProperty(current, name), let attributes = property_getAttributes(property) {
+            found = String(cString: attributes)
+            break
         }
         c = class_getSuperclass(current)
     }
-    return nil
+    jsPropertyAttributesLock.lock()
+    jsPropertyAttributes[id] = .some(found)
+    jsPropertyAttributesLock.unlock()
+    return found
 }
+
+nonisolated(unsafe) private var jsPropertyAttributes: [JSClassKey: String?] = [:]
+private let jsPropertyAttributesLock = NSLock()
 
 /// The object whose class implements `selector`, following `forwardingTarget(for:)` as a
 /// message send does (`UITextView`'s text input traits): what key-value coding can reach.
@@ -348,26 +367,13 @@ func jsSetterReceiver(_ object: NSObject, _ key: String) -> NSObject? {
 
 /// The getter of a property whose type is a Core Foundation object (`@property CGColorRef CGColor`, encoded `T^{CGColor=}`).
 func jsCFObjectGetter(_ cls: AnyClass, _ name: String) -> ObjectiveC.Selector? {
-    var c: AnyClass? = cls
-    while let current = c {
-        if let property = class_getProperty(current, name), let raw = property_getAttributes(property) {
-            let attributes = String(cString: raw).split(separator: ",")
-            guard attributes.first?.hasPrefix("T^{") == true else { return nil }
-            let custom = attributes.first { $0.hasPrefix("G") }.map { String($0.dropFirst()) }
-            return NSSelectorFromString(custom ?? name)
-        }
-        c = class_getSuperclass(current)
-    }
-    return nil
+    guard let attributes = jsObjCPropertyAttributes(cls, name)?.split(separator: ","), attributes.first?.hasPrefix("T^{") == true else { return nil }
+    let custom = attributes.first { $0.hasPrefix("G") }.map { String($0.dropFirst()) }
+    return NSSelectorFromString(custom ?? name)
 }
 
 func jsHasObjCProperty(_ cls: AnyClass, _ name: String) -> Bool {
-    var c: AnyClass? = cls
-    while let current = c {
-        if class_getProperty(current, name) != nil { return true }
-        c = class_getSuperclass(current)
-    }
-    return false
+    jsObjCPropertyAttributes(cls, name) != nil
 }
 
 /// A native object read and written by a computed key (`view[property]`), as the runtime marshals its properties.
