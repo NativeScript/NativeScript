@@ -746,6 +746,7 @@ public func jsLooseEquals(_ a: Any?, _ b: Any?) -> Bool {
     let bNullish = b == nil || b is JSNull
     if aNullish || bNullish { return aNullish && bNullish }
     guard let x = a, let y = b else { return false }
+    if jsIsOpaqueObject(x) && jsIsOpaqueObject(y) { return jsStrictEquals(x, y) }
     if let big = x as? JSBigInt { return jsBigIntLooseEquals(big, y) }
     if let big = y as? JSBigInt { return jsBigIntLooseEquals(big, x) }
     if let m = jsNumeric(x), let n = jsNumeric(y) { return m == n }
@@ -841,11 +842,20 @@ enum JSJoinGuard {
 
 /// `String(value)`: arrays join with ",", plain objects are "[object Object]", errors "Name: message".
 public func jsToString(_ value: Any?) -> String {
-    switch jsFlat(value) {
+    let value = jsFlat(value)
+    if let object = value, jsIsOpaqueObject(object) { return jsObjectToString(object) }
+    switch value {
     case nil: return "undefined"
     case let s as String: return s
     case let d as Double: return jsNumberToString(d)
     case let b as Bool: return b ? "true" : "false"
+    case let v?: return jsObjectToString(v)
+    }
+}
+
+/// `String(value)` of what is not undefined, a string, a number or a boolean.
+private func jsObjectToString(_ value: Any) -> String {
+    switch value {
     case is JSNull: return "null"
     case let v as JSToPrimitive: return jsToString(jsUserPrimitive(v, "string") ?? nil)
     case let v as JSStringConvertible:
@@ -859,7 +869,7 @@ public func jsToString(_ value: Any?) -> String {
     case is JSMapProtocol: return "[object Map]"
     case is JSSetProtocol: return "[object Set]"
     case is JSThenable: return "[object Promise]"
-    case let v?:
+    case let v:
         if let n = jsNumeric(v) { return jsNumberToString(n) }
         if jsIsFunction(v) { return "function () { [native code] }" }
         if jsIsObject(v) { return "[object Object]" }
