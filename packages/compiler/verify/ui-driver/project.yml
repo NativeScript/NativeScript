@@ -1,0 +1,24 @@
+name: UIDriver
+options:
+  bundleIdPrefix: org.nativescript.uidriver
+targets:
+  UIDriverHost:
+    type: application
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources: [Host]
+    settings:
+      CODE_SIGNING_ALLOWED: NO
+      GENERATE_INFOPLIST_FILE: YES
+      INFOPLIST_KEY_UILaunchScreen_Generation: YES
+  UIDriverTests:
+    type: bundle.ui-testing
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources: [Tests]
+    dependencies:
+      - target: UIDriverHost
+    settings:
+      CODE_SIGNING_ALLOWED: NO
+      GENERATE_INFOPLIST_FILE: YES
+      TEST_TARGET_NAME: UIDriverHost
