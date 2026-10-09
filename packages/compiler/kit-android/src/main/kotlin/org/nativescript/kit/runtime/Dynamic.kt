@@ -142,6 +142,13 @@ private fun javaField(target: Any, name: String, static: Boolean): Field? {
 private fun javaMethods(cls: Class<*>, name: String, static: Boolean): List<Method> =
     cls.methods.filter { it.name == name && Modifier.isStatic(it.modifiers) == static }
 
+/** `key in javaObject`: a public method or field of its class, or a property script added to it. */
+fun jsJavaHas(target: Any, key: String): Boolean {
+    val static = target is Class<*>
+    val cls = if (static) target as Class<*> else target.javaClass
+    return javaExpandos[target]?.has(key) == true || javaField(target, key, static) != null || javaMethods(cls, key, static).isNotEmpty()
+}
+
 /** A Java method read as a value: called later with script arguments, the overload chosen then. */
 class JavaMethodRef(private val target: Any?, private val cls: Class<*>, private val name: String, private val methods: List<Method>) {
     fun call(args: List<Any?>): Any? {

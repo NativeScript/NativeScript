@@ -1382,7 +1382,7 @@ export class Translator implements AsyncTranslator {
   }
 
   /** `JSDynamic`: the object's keys and members by name, for printing, JSON and untyped access. */
-  private dynamicMembers(fields: { name: string; type: string }[], className: string | null, inherits: boolean, fallbackGet = 'null', fallbackSet = '', symbols: { key: string; member: string; type: string }[] = [], methods: { name: string; key?: string; params: string[]; ret: string }[] = [], expando = false, accessors: { name: string; type: string; settable: boolean }[] = []): string[] {
+  private dynamicMembers(fields: { name: string; type: string }[], className: string | null, inherits: boolean, fallbackGet = 'null', fallbackSet = '', symbols: { key: string; member: string; type: string }[] = [], methods: { name: string; key?: string; params: string[]; ret: string }[] = [], expando = false, accessors: { name: string; type: string; readable: boolean; settable: boolean }[] = []): string[] {
     accessors = accessors.filter((a) => !fields.some((f) => f.name === a.name) && !methods.some((m) => m.name === a.name));
     const keys = [...fields.map((f) => (f.type.endsWith('?') ? `(if (${ident(f.name)} == null) listOf() else listOf(${kotlinString(f.name)}))` : `listOf(${kotlinString(f.name)})`)), ...(expando ? ['(jsExpando?.jsKeys ?: listOf())'] : [])];
     // A method read by name is a script function calling it with the arguments it is given.
@@ -1397,7 +1397,7 @@ export class Translator implements AsyncTranslator {
       `    override val jsClassName: String? get() = ${className ? kotlinString(className) : 'null'}`,
       `    override fun jsGet(key: String): Any? = when (key) {`,
       ...fields.map((f) => `        ${kotlinString(f.name)} -> this.${ident(f.name)}`),
-      ...accessors.map((a) => `        ${kotlinString(a.name)} -> this.${ident(a.name)}`),
+      ...accessors.filter((a) => a.readable).map((a) => `        ${kotlinString(a.name)} -> this.${ident(a.name)}`),
       ...symbols.map((f) => `        ${f.key} -> this.${f.member}`),
       ...methods.filter((m) => !fields.some((f) => f.name === m.name)).map(method),
       `        else -> ${inherits ? 'super.jsGet(key)' : fallbackGet}`,
@@ -2029,7 +2029,7 @@ export class Translator implements AsyncTranslator {
       }
     }
     if (accessors.has('jsToStringTag')) supertypes.push('JSToStringTag');
-    const dynAccessors: { name: string; type: string; settable: boolean }[] = [];
+    const dynAccessors: { name: string; type: string; readable: boolean; settable: boolean }[] = [];
     for (const [n, a] of accessors) {
       let t = a.get ? this.returnTypeOf(a.get) : optionalType(this.typeOf(a.set!.parameters[0].name));
       // Library mode: an accessor over a base's optional field (`accessibilityServiceEnabled?: boolean`) keeps the field's type.
@@ -2064,7 +2064,8 @@ export class Translator implements AsyncTranslator {
       target.push(`${pad}${a.get && isStatic(a.get) ? '' : n === 'jsToStringTag' ? 'override ' : mods(n)}${a.set ? 'var' : 'val'} ${ident(n)}: ${t}`, ...parts);
       // Library mode: read and set by name as well (`node.cssType` of an untyped node), as the prototype's accessor is.
       // A setter taking more than the getter gives (`string | Color`) is left to the prototype's.
-      if (this.library && a.get && !isStatic(a.get) && !this.symbolMember((a.get ?? a.set)!.name)) dynAccessors.push({ name: n, type: t, settable: !!a.set && optionalType(this.typeOf(a.set.parameters[0].name)) === optionalType(t) });
+      const own = (a.get ?? a.set)!;
+      if (this.library && !isStatic(own) && !this.symbolMember(own.name)) dynAccessors.push({ name: n, type: t, readable: !!a.get, settable: !!a.set && optionalType(this.typeOf(a.set.parameters[0].name)) === optionalType(t) });
     }
     // A view class's type selector: its `@CSSType` name, else its class name, as core's `cssType` falls back to `typeName`.
     if (isView) {
@@ -4300,6 +4301,11 @@ export class Translator implements AsyncTranslator {
         && !(ts.isCallExpression(e.parent) && e.parent.expression === e) && !((ts.isPropertyAccessExpression(e.parent) || ts.isElementAccessExpression(e.parent)) && e.parent.expression === e)
         && !(ts.isIdentifier(e.expression) && (this.isLibGlobal(e.expression) || this.namesClass(e.expression)))) {
       return this.fromAny(`${e.questionDotToken ? 'jsGetOptional' : 'jsGet'}(${this.expr(e.expression)}, ${kotlinString(e.name.text)})`, optionalType(this.typeOf(e)));
+    }
+    // So is an element of one (`this._gestureObservers[type]`), an array or object it may not have.
+    if (this.library && ts.isElementAccessExpression(e) && !e.questionDotToken && !isWriteTarget(e) && this.typeOf(e.expression) === 'Any?' && this.isObjectType(this.typeOf(e)) && !isNullable(this.typeOf(e))
+        && !(ts.isCallExpression(e.parent) && e.parent.expression === e) && !((ts.isPropertyAccessExpression(e.parent) || ts.isElementAccessExpression(e.parent)) && e.parent.expression === e)) {
+      return this.fromAny(`jsGet(${this.expr(e.expression)}, ${this.propertyKey(e.argumentExpression)})`, optionalType(this.typeOf(e)));
     }
     // Library mode: a member core's declarations type that its compiled class holds untyped (`Style.fontStyle`): missing as null.
     if (this.library && ts.isPropertyAccessExpression(e) && !e.questionDotToken && !isWriteTarget(e) && this.typeOf(e) !== 'Any?') {

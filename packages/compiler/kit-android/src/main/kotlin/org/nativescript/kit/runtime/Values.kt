@@ -375,7 +375,9 @@ fun jsHasKey(target: Any?, key: String): Boolean = when (target) {
     is JSExpando -> if (jsIsSymbolKey(key)) ((target as? JSSymbolKeyed)?.jsSymbolKeys?.contains(key) ?: false) || jsExpandoHas(target, key) || target.jsGet(key) != null else jsExpandoHas(target, key) || key in target.jsKeys
     is JSDynamic -> if (jsIsSymbolKey(key)) ((target as? JSSymbolKeyed)?.jsSymbolKeys?.contains(key) ?: false) || target.jsGet(key) != null else key in target.jsKeys
     is JSArray<*> -> key == "length" || (jsArrayIndex(key)?.let { it < target.size } ?: false)
-    else -> false
+    null, JSNull, is String, is Number, is Boolean, is Function<*>, is JSFunction -> false
+    // A Java object (a native view): its methods and fields, as NativeScript's runtime exposes them.
+    else -> !jsIsSymbolKey(key) && !target.javaClass.name.startsWith("org.nativescript.kit.") && jsJavaHas(target, key)
 }
 
 /** A member of an untyped object, or undefined; reading a typed object from JSON never throws. */
