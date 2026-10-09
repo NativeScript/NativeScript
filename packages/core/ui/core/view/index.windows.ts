@@ -1476,6 +1476,15 @@ export class View extends ViewCommon {
 		} catch (_e) { }
 	}
 
+	/**
+	 * A parent that lays out its children itself can take over a child's percentage width or height
+	 * (`fraction` 0-1, `null` once it is no longer a percentage) by returning `true`: the child then
+	 * leaves its XAML size unset and skips its own percent sizing.
+	 */
+	_setChildPercentSize(child: View, horizontal: boolean, fraction: number | null): boolean {
+		return false;
+	}
+
 	private _applyPercentSizing(): void {
 		const nativeView = this.nativeViewProtected as any;
 		if (!nativeView) {
@@ -1521,6 +1530,11 @@ export class View extends ViewCommon {
 
 		if (value && typeof value === 'object' && (value as any).unit === '%') {
 			const pct = (value as any).value;
+			if (this.parent instanceof View && this.parent._setChildPercentSize(this, true, pct)) {
+				this._percentWidth = null;
+				this.nativeViewProtected.Width = NaN;
+				return;
+			}
 			this._percentWidth = pct;
 			this._ensureSizeWatch(); // re-apply percent when the parent resizes
 			this.nativeViewProtected.Width = NaN;
@@ -1543,6 +1557,7 @@ export class View extends ViewCommon {
 		}
 
 		this._percentWidth = null;
+		if (this.parent instanceof View) this.parent._setChildPercentSize(this, true, null);
 		// Clear any previously set flex-basis so the C++ widget falls back to DesiredSize.
 		try {
 			(NativeScript as any).Widgets.FlexboxLayout.SetFlexBasisPercent(
@@ -1560,6 +1575,11 @@ export class View extends ViewCommon {
 
 		if (value && typeof value === 'object' && (value as any).unit === '%') {
 			const pct = (value as any).value;
+			if (this.parent instanceof View && this.parent._setChildPercentSize(this, false, pct)) {
+				this._percentHeight = null;
+				this.nativeViewProtected.Height = NaN;
+				return;
+			}
 			this._percentHeight = pct;
 			this._ensureSizeWatch(); // re-apply percent when the parent resizes
 			this.nativeViewProtected.Height = NaN;
@@ -1577,6 +1597,7 @@ export class View extends ViewCommon {
 		}
 
 		this._percentHeight = null;
+		if (this.parent instanceof View) this.parent._setChildPercentSize(this, false, null);
 		this.nativeViewProtected.Height = toXamlLength(value);
 	}
 
