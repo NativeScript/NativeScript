@@ -5,7 +5,7 @@
 // Steps (verify.json), as points on the device's screen:
 //   { "screens": [{ "name": "home", "steps": [["shot", "start"], ["tap", 200, 400], ["wait", 1], ["type", "Ada"], ["shot", "typed"]] }] }
 // Each screen launches the app afresh. Without steps: one screen, a shot once it settles.
-import { execFileSync, spawn } from 'node:child_process';
+import { type ChildProcess, execFileSync, spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, readdirSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
@@ -34,7 +34,11 @@ function makeDevice(): string {
 class UIDriver {
   private dir = '';
   private n = 0;
-  constructor(private udid: string) {}
+  private child: ChildProcess | null = null;
+  private udid: string;
+  constructor(udid: string) {
+    this.udid = udid;
+  }
 
   private xctestrun(): string {
     const project = fileURLToPath(new URL('../verify/ui-driver', import.meta.url));
@@ -54,7 +58,7 @@ class UIDriver {
     this.dir = join(process.env.TMPDIR ?? '/tmp', `ns-ui-driver-${this.udid}`);
     rmSync(this.dir, { recursive: true, force: true });
     mkdirSync(this.dir, { recursive: true });
-    const child = spawn('xcodebuild', ['test-without-building', '-xctestrun', this.xctestrun(), '-destination', `id=${this.udid}`, '-only-testing:UIDriverTests/Driver/testServe'],
+    const child = this.child = spawn('xcodebuild', ['test-without-building', '-xctestrun', this.xctestrun(), '-destination', `id=${this.udid}`, '-only-testing:UIDriverTests/Driver/testServe'],
       { env: { ...process.env, TEST_RUNNER_DRIVER_DIR: this.dir }, stdio: 'ignore', detached: true });
     child.unref();
     for (let waited = 0; !existsSync(join(this.dir, 'ready')); waited += 0.3) {
@@ -78,8 +82,28 @@ class UIDriver {
     if (result !== 'ok') throw new Error(`${JSON.stringify(command)}: ${result}`);
   }
 
+  /** A command, retried once on a new driver when it goes unanswered: XCUITest can wait on an app's idle state indefinitely. */
+  async run(command: Record<string, unknown>): Promise<void> {
+    try {
+      await this.send(command);
+    } catch (e) {
+      if (!String(e).includes('did not answer')) throw e;
+      this.kill();
+      await this.start();
+      await this.send(command);
+    }
+  }
+
   async stop(): Promise<void> {
-    if (this.dir && existsSync(join(this.dir, 'ready'))) await this.send({ op: 'stop' }, 10).catch(() => {});
+    const answered = this.dir && existsSync(join(this.dir, 'ready')) && (await this.send({ op: 'stop' }, 10).then(() => true, () => false));
+    if (!answered) this.kill();
+  }
+
+  /** Ends a driver that no longer answers: its xcodebuild and the runner it left on the device, which would otherwise hold the device. */
+  private kill(): void {
+    if (this.child?.pid && this.child.exitCode === null) try { process.kill(-this.child.pid, 'SIGKILL'); } catch {}
+    this.child = null;
+    try { simctl('terminate', this.udid, 'org.nativescript.uidriver.UIDriverTests.xctrunner'); } catch {}
   }
 }
 
@@ -147,24 +171,27 @@ async function settledShot(udid: string, file: string): Promise<void> {
   }
 }
 
-async function run(udid: string, driver: UIDriver, app: string, label: string, screens: Screen[], out: string): Promise<string[]> {
-  const bundle = execFileSync('plutil', ['-extract', 'CFBundleIdentifier', 'raw', join(app, 'Info.plist')], { encoding: 'utf8' }).trim();
+const bundleId = (app: string) => execFileSync('plutil', ['-extract', 'CFBundleIdentifier', 'raw', join(app, 'Info.plist')], { encoding: 'utf8' }).trim();
+
+async function run(udid: string, driver: UIDriver, app: string, label: string, screens: Screen[], out: string, other: string): Promise<string[]> {
+  const bundle = bundleId(app);
   // A build installed over another of the same id keeps the other's files.
   try { simctl('uninstall', udid, bundle); } catch {}
   simctl('install', udid, app);
   const crashes: string[] = [];
   for (const screen of screens) {
-    try { simctl('terminate', udid, bundle); } catch {}
+    // An app launched over another in front shows a back link to it in the status bar.
+    for (const b of [bundle, other]) try { simctl('terminate', udid, b); } catch {}
     simctl('launch', udid, bundle);
     await sleep(2);
     for (const [op, ...args] of screen.steps) {
       if (op === 'shot') await settledShot(udid, join(out, `${label}-${screen.name}-${args[0]}.png`));
       else if (op === 'wait') await sleep(Number(args[0]));
-      else if (op === 'tap') await driver.send({ op: 'tap', x: args[0], y: args[1], duration: args[2] ?? 0 });
-      else if (op === 'taps') await driver.send({ op: 'taps', x: args[0], y: args[1], count: args[2] ?? 2 });
-      else if (op === 'swipe') await driver.send({ op: 'swipe', x: args[0], y: args[1], toX: args[2], toY: args[3] });
-      else if (op === 'drag') await driver.send({ op: 'drag', x: args[0], y: args[1], toX: args[2], toY: args[3], duration: args[4] ?? 0.5 });
-      else if (op === 'type') await driver.send({ op: 'type', app: bundle, text: String(args[0]) });
+      else if (op === 'tap') await driver.run({ op: 'tap', x: args[0], y: args[1], duration: args[2] ?? 0 });
+      else if (op === 'taps') await driver.run({ op: 'taps', x: args[0], y: args[1], count: args[2] ?? 2 });
+      else if (op === 'swipe') await driver.run({ op: 'swipe', x: args[0], y: args[1], toX: args[2], toY: args[3] });
+      else if (op === 'drag') await driver.run({ op: 'drag', x: args[0], y: args[1], toX: args[2], toY: args[3], duration: args[4] ?? 0.5 });
+      else if (op === 'type') await driver.run({ op: 'type', app: bundle, text: String(args[0]) });
       else if (op === 'openurl') simctl('openurl', udid, String(args[0]));
       else throw new Error(`${screen.name}: unknown step ${op}`);
     }
@@ -187,7 +214,7 @@ export async function verify(o: { js: string; compiled: string; steps?: string; 
     // The clock and the signal would differ between two runs.
     simctl('status_bar', udid, 'override', '--time', '9:41', '--batteryState', 'charged', '--batteryLevel', '100', '--cellularBars', '4', '--wifiBars', '3');
     if (screens.some((s) => s.steps.some(([op]) => ['tap', 'taps', 'swipe', 'drag', 'type'].includes(op)))) await driver.start();
-    const crashes = [...await run(udid, driver, o.js, 'js', screens, o.out), ...await run(udid, driver, o.compiled, 'compiled', screens, o.out)];
+    const crashes = [...await run(udid, driver, o.js, 'js', screens, o.out, bundleId(o.compiled)), ...await run(udid, driver, o.compiled, 'compiled', screens, o.out, bundleId(o.js))];
     const shots: Shot[] = [];
     for (const screen of screens) {
       for (const [op, name] of screen.steps) {
