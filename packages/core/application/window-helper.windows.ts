@@ -179,6 +179,46 @@ export function getCurrentWindowScale(preferredElement?: FrameworkElementLike | 
 	return 1;
 }
 
+const _appWindows = new WeakMap<object, any>();
+
+function getAppWindow(xamlRoot: any): any {
+	const cached = _appWindows.get(xamlRoot);
+	if (cached) {
+		return cached;
+	}
+	let appWindow = null;
+	try {
+		const id = xamlRoot.ContentIslandEnvironment?.AppWindowId;
+		appWindow = id ? Microsoft.UI.Windowing.AppWindow.GetFromWindowId(id) : null;
+	} catch (_e) { }
+	appWindow ??= (getCurrentWindow() as any)?.AppWindow ?? null;
+	if (appWindow) {
+		_appWindows.set(xamlRoot, appWindow);
+	}
+	return appWindow;
+}
+
+export function getClientOriginOnScreen(xamlRoot: any): { x: number; y: number } | null {
+	if (!xamlRoot) {
+		return null;
+	}
+	const appWindow = getAppWindow(xamlRoot);
+	if (!appWindow) {
+		return null;
+	}
+	try {
+		const position = appWindow.Position;
+		const size = appWindow.Size;
+		const client = appWindow.ClientSize;
+		const border = Math.max(0, (size.Width - client.Width) / 2);
+		const top = Math.max(0, size.Height - client.Height - border);
+		const scale = getCurrentWindowScale();
+		return { x: (position.X + border) / scale, y: (position.Y + top) / scale };
+	} catch (_e) {
+		return null;
+	}
+}
+
 export function getCurrentWindowBounds(preferredElement?: FrameworkElementLike | null): { Width: number; Height: number } | null {
 	const window = getApplicationWindow() || getLegacyCurrentWindow() || _ownedWindow;
 	const windowBounds = getBoundsFromSize(window?.Bounds);
