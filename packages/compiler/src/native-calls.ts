@@ -547,7 +547,7 @@ export class NativeAPI {
     const chained = ts.isPropertyAccessExpression(callee) && !!callee.questionDotToken;
     // Foundation's own methods (`enumerateKeysAndObjectsUsingBlock`) on what Swift imports as its collection.
     const st = this.t.typeOf(callee.expression);
-    const bridged = !r.isStatic && !chained && ((r.name === 'NSDictionary' && /^\[.*:.*\]$/.test(st)) || (r.name === 'NSArray' && /^\[[^:]*\]$/.test(st)));
+    const bridged = !r.isStatic && !chained && ((r.name === 'NSDictionary' && /^\[.*:.*\][?!]?$/.test(st)) || (r.name === 'NSArray' && /^\[[^:]*\][?!]?$/.test(st)));
     const recv = r.isStatic ? '' : bridged ? `(${this.unwrapped(callee.expression)} as ${r.name})` : !chained ? this.unwrapped(callee.expression)
       : this.t.typeOf(callee.expression).endsWith('?') ? `${this.t.expr(callee.expression)}?` : this.chainHead(callee.expression).slice(0, -1);
     if (m.kind === 'property') return this.fromSwift(isolated(`${r.isStatic ? this.className(lookupClass(r.module, r.name)!) : recv}.${m.swift}`, m), m.type, e);
@@ -717,6 +717,13 @@ export class NativeAPI {
     if ((e.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(e) && e.text === 'undefined')) && !optional(target) && this.isStructType(b)) return `${b}()`;
     if (e.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(e) && e.text === 'undefined')) return optional(target) || !b.startsWith('[') ? 'nil' : b.includes(':') ? '[:]' : '[]';
     if (ts.isArrowFunction(e) || ts.isFunctionExpression(e)) return this.block(e, target);
+    // A Promise executor's resolve as the completion (`getNotificationSettingsWithCompletionHandler(resolve)`): the promise resolved with its argument.
+    const resolver = t.promiseResolver(e);
+    const block = resolver ? blockType(this.unalias(target)) : null;
+    if (resolver && block && block.result === 'Void' && block.params.length <= 1) {
+      const value = resolver.type === 'Void' ? '' : block.params.length ? this.blockParam('__b0', block.params[0], resolver.type) : (t.zero(resolver.type) ?? 'nil');
+      return `{ (${block.params.map((p, k) => `__b${k}: ${p}`).join(', ')}) in ${resolver.name}.resolve(${value}) }`;
+    }
     const source = t.typeOf(e);
     // A value Swift holds as optional though TypeScript types it present (a nullable parameter passed on): nil stays nil.
     const maybe = optional(target) && base(source) === b ? t.maybeUndefined(e) : null;
@@ -929,6 +936,12 @@ export class NativeAPI {
     return `(${code}).map(${wrap})${optional(target) ? '' : '!'}`;
   }
 
+  /** Whether a native class extends another (`AVURLAsset` of `AVAsset`). */
+  private isSubclass(sub: string, base: string): boolean {
+    for (const m of new Set(['Foundation', 'UIKit', ...this.modules])) if (lookupClass(m, sub)?.kind === 'class') return conformsTo(m, sub, base);
+    return false;
+  }
+
   private blockParam(code: string, swiftType: SwiftType, tsType: string): string {
     const b = base(swiftType);
     if (NUMBERS.has(b) && tsType === 'Double') return b === 'Double' ? code : `Double(${code})`;
@@ -939,6 +952,9 @@ export class NativeAPI {
     const bridged = bridge(code, swiftType, tsType);
     if (bridged) return bridged;
     if (b === 'Date' && base(tsType) === 'JSDate') return optional(swiftType) ? `${code}.map { JSDate($0) }${tsType.endsWith('?') ? '' : '!'}` : `JSDate(${code})`;
+    // A block parameter the handler declares as a subclass (`(urlAsset: AVURLAsset)` for an `AVAsset`): the object as it.
+    const tb = tsType.replace(/[?!]$/, '');
+    if (b !== tb && /^[A-Z]\w*$/.test(b) && /^[A-Z]\w*$/.test(tb) && this.isSubclass(tb, b)) return tsType.endsWith('?') ? `(${code} as? ${tb})` : `(${code} as! ${tb})`;
     if (optional(swiftType) && !tsType.endsWith('?') && tsType !== 'Any?') return `${code}!`;
     return code;
   }
@@ -1000,7 +1016,8 @@ export class NativeAPI {
     if (!base) return null;
     const baseCls = lookupClass(base.module, base.name);
     if (!baseCls) throw t.error(heritage, `extending ${base.name} (no Swift class)`);
-    const name = t.topName(cls, cls.name!.text);
+    // A namespace's class is declared inside the namespace's enum, by its own name.
+    const name = ts.isModuleBlock(cls.parent) ? cls.name!.text : t.topName(cls, cls.name!.text);
     const protocols: { module: string; name: string; swift: string }[] = [];
     const addProtocol = (e: ts.Expression) => {
       const p = this.symbolModule(t.resolve(e));

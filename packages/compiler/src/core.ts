@@ -256,8 +256,12 @@ export class CoreAPI {
     const root = /^(.*[\\/]@nativescript[\\/]core)[\\/]/.exec(file)?.[1] ?? (packageOf(file)?.name === '@nativescript/core' ? packageOf(file)!.root : undefined);
     if (!root) return null;
     const rel = file.slice(root.length + 1).replace(/\\/g, '/').replace(/(\.(ios|android))?\.d\.ts$|(\.(ios|android))?\.ts$/, '');
+    const kind = variable ? 'var' : 'func';
     const owner = `Core_${rel.replace(/[^A-Za-z0-9]+/g, '_')}`;
-    return kitMember(this.index, owner, name)?.kind === (variable ? 'var' : 'func') ? `${owner}.${name}` : null;
+    if (kitMember(this.index, owner, name)?.kind === kind) return `${owner}.${name}`;
+    // A module core's index exports as a namespace (`export * as Http from './http'`): the kit's type of that name.
+    const barrel = rel.endsWith('/index') || !rel.includes('/') ? coreBarrels(root).get(rel.split('/')[0]) : undefined;
+    return barrel && kitMember(this.index, barrel, name)?.kind === kind ? `${barrel}.${name}` : null;
   }
 
   private moduleOwner(e: ts.Identifier): string | null {
@@ -359,6 +363,9 @@ export class CoreAPI {
     const m = this.member(owner.name, name, left);
     // A kit member typed `Any?` holds what core reads as a plain script object (`TouchManager.animations`).
     if (m.type.trim() === 'Any?') return `${recv}.${name} = ${this.scriptValue(value)}`;
+    // Undefined where the kit holds a string, number or boolean: its zero, as core's own code assigning it was compiled.
+    const zero = ({ String: '""', Double: '0', Bool: 'false' } as Record<string, string>)[m.type.trim()];
+    if (zero && (value.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(value) && value.text === 'undefined'))) return `${recv}.${name} = ${zero}`;
     return `${recv}.${name} = ${this.toKit(t.coerce(value, t.typeOf(left)), m.type)}`;
   }
 
@@ -683,12 +690,16 @@ export class CoreAPI {
    */
   private scriptValue(e: ts.Expression): string {
     if (ts.isObjectLiteralExpression(e)) {
-      const entries = e.properties.map((p) => {
-        if (ts.isPropertyAssignment(p)) return `(${JSON.stringify(p.name.getText().replace(/^['"]|['"]$/g, ''))}, ${this.scriptValue(p.initializer)})`;
-        if (ts.isShorthandPropertyAssignment(p)) return `(${JSON.stringify(p.name.text)}, ${this.t.coerce(p.name, 'Any?')})`;
+      const entry = (p: ts.ObjectLiteralElementLike): [string, string] => {
+        if (ts.isPropertyAssignment(p)) return [JSON.stringify(p.name.getText().replace(/^['"]|['"]$/g, '')), this.scriptValue(p.initializer)];
+        if (ts.isShorthandPropertyAssignment(p)) return [JSON.stringify(p.name.text), this.t.coerce(p.name, 'Any?')];
         throw this.t.error(p, 'this member in an animation definition');
-      });
-      return `JSObject([${entries.join(', ')}])`;
+      };
+      if (!e.properties.some(ts.isSpreadAssignment)) return `JSObject([${e.properties.map((p) => `(${entry(p).join(', ')})`).join(', ')}])`;
+      // `{ ...base, duration: 150 }`: each in order, a later key over an earlier one.
+      const steps = e.properties.map((p) => (ts.isSpreadAssignment(p) ? `try jsObjectSpread(__o, ${this.t.coerce(p.expression, 'Any?').replace(/^try /, '')})` : `__o[${entry(p)[0]}] = try ${entry(p)[1].replace(/^try /, '')}`));
+      const body = `let __o = JSObject([]); ${steps.join('; ')}; return __o`;
+      return `(try { () throws -> JSObject in ${body} }())`;
     }
     if (ts.isArrayLiteralExpression(e)) return `JSArray<Any?>([${e.elements.map((x) => this.scriptValue(x)).join(', ')}])`;
     if (ts.isArrowFunction(e) || ts.isFunctionExpression(e)) {

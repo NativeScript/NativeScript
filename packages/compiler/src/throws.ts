@@ -174,8 +174,8 @@ export class Throws {
       && (['parseInt', 'parseFloat'].includes(init.getText()) || !!signature?.getSourceFile().isDeclarationFile)) return true;
     if (ts.isCallExpression(call) && holder && !holder.getSourceFile().isDeclarationFile && !signature?.getSourceFile().isDeclarationFile
       && (ts.isVariableDeclaration(holder) || ts.isParameter(holder) || ts.isPropertyDeclaration(holder) || ts.isPropertySignature(holder) || ts.isPropertyAssignment(holder) || ts.isGetAccessorDeclaration(holder) || ts.isShorthandPropertyAssignment(holder))) return true;
-    // A local holding a library function (`const dip = Utils.layout.toDeviceIndependentPixels`): a Swift function value, which throws.
-    if (ts.isCallExpression(call) && holder && ts.isVariableDeclaration(holder) && !holder.getSourceFile().isDeclarationFile && holder.initializer && ts.isPropertyAccessExpression(skipParens(holder.initializer))) return true;
+    // A local holding a library function (`const dip = Utils.layout.toDeviceIndependentPixels`), or one a call made (`view.dispose.bind(view)`): a Swift function value, which throws.
+    if (ts.isCallExpression(call) && holder && ts.isVariableDeclaration(holder) && !holder.getSourceFile().isDeclarationFile && holder.initializer && (ts.isPropertyAccessExpression(skipParens(holder.initializer)) || ts.isCallExpression(skipParens(holder.initializer)))) return true;
     const decl = c.getResolvedSignature(call)?.getDeclaration();
     const args = call.arguments ?? ts.factory.createNodeArray();
     // A callback the callee runs: a closure literal throws if its body does; any other function value is assumed to.

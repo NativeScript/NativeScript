@@ -284,7 +284,7 @@ const declarations = platform === 'ios' ? [
 ] : [];
 const replacements = pluginReplacements(app, platform);
 modules.push(...Object.values(replacements).filter((f) => !modules.includes(f)));
-const { checker, program, files: sourceFiles, pluginFiles, resolved } = createProgram(modules, virtual, platform, undefined, plugins, declarations, replacements);
+const { checker, program, files: sourceFiles, pluginFiles, resolved, lenient: lenientApp } = createProgram(modules, virtual, platform, undefined, plugins, declarations, replacements);
 const infos = new Map<string, ComponentInfo & { outputs?: string[]; outputFields?: Record<string, string>; optional?: string[]; passed?: boolean; fragment?: boolean; initThrows?: boolean }>(components.map((c) => [c.name, { name: c.name, props: c.props, outputs: c.outputs, outputFields: c.outputFields, optional: c.optional, passed: c.passed, fragment: framework === 'angular' && !c.page && isFragment(c.template) }]));
 // A closed world: the plugin code the app reaches, checked against what npm installed before it is compiled.
 const appFiles = [...modules, ...components.map((c) => c.file)];
@@ -358,6 +358,7 @@ for (const f of pluginFiles) if (!writtenStrict(f)) translator.lenientFiles.add(
 translator.lines = sourceLines;
 const located = (code: string) => (sourceLines ? sourceLines.swift(code) : code);
 translator.appModule = name;
+translator.lenientApp = lenientApp;
 translator.plainFields = framework === 'angular';
 translator.appMembersByName = framework === 'core';
 // The app's own Swift classes (`App_Resources/iOS/src`) that TypeScript declares untyped (`declare const X: any`): objects calling them by NativeScript's names.
@@ -424,9 +425,10 @@ if (routeTree) prelude = `        Router.shared.config = ${routeConfig(routeTree
 // A plain XML app's pages, page stylesheets and the core classes its XML names, registered before its modules run.
 let xmlModules = '';
 if (xml) {
-  const kit = new Set(translator.kitTypes());
+  const kit = new Set(translator.kitElements());
   // An element core has no class for (an XML file of data, not a page; `<template>`) fails where a page names it, as in the app's JavaScript build.
-  const unknown = xml.elements.filter((e) => !kit.has(e));
+  // Platform blocks (`<ios>`, `<visionos>`) and `<template>` are the builder's own.
+  const unknown = xml.elements.filter((e) => !kit.has(e) && !['ios', 'android', 'apple', 'visionos', 'template'].includes(e));
   if (unknown.length) console.warn(`warning: ${unknown.join(', ')}: element${unknown.length > 1 ? 's' : ''} the XML names that NativeScriptKit has no class for`);
   xml.elements = xml.elements.filter((e) => kit.has(e));
   const rel = (f: string) => relative(appDir, f).split('\\').join('/');

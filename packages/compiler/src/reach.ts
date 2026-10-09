@@ -140,8 +140,9 @@ export function reachability(program: ts.Program, resolved: (containing: string,
 
   const topLevel = (decl: ts.Node): ts.Statement | null => {
     let n: ts.Node | undefined = decl;
-    while (n && !ts.isSourceFile(n.parent)) n = n.parent;
-    return n && ts.isSourceFile(n.parent) ? (n as ts.Statement) : null;
+    // A module's own symbol is declared by its source file, which has no parent.
+    while (n?.parent && !ts.isSourceFile(n.parent)) n = n.parent;
+    return n?.parent && ts.isSourceFile(n.parent) ? (n as ts.Statement) : null;
   };
   const load = (file: string) => {
     if (modules.has(file)) return;
@@ -238,6 +239,11 @@ export function reachability(program: ts.Program, resolved: (containing: string,
     if (ts.isVariableDeclaration(n) && patterns.requiredCore(n)) return;
     if (ts.isInterfaceDeclaration(n) || ts.isTypeAliasDeclaration(n)) return;
     if (ts.isImportDeclaration(n)) return;
+    // A member of a module imported whole (`permissions.request(…)`): what the module exports under that name.
+    if (ts.isPropertyAccessExpression(n) && ts.isIdentifier(n.expression) && (resolveSym(n.expression)?.flags ?? 0) & ts.SymbolFlags.ValueModule) {
+      const member = resolveSym(n.name);
+      if (member && isValue(member)) reachDecl(member, n.name);
+    }
     if (ts.isIdentifier(n) && !isDeclarationName(n)) {
       const sym = resolveSym(n);
       if (sym && isValue(sym)) {

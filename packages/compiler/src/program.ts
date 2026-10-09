@@ -241,6 +241,8 @@ export interface Program {
   pluginFiles: string[];
   /** The file a module specifier resolved to from a file, as the program resolved it. */
   resolved: (containing: string, specifier: string) => string | undefined;
+  /** The app's own configuration checks without strictNullChecks. */
+  lenient: boolean;
 }
 
 /**
@@ -359,6 +361,9 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
   const rootNames = [...roots, ...virtual.keys(), '/__shims__/globals.d.ts', platformTypes, ...(otherTypes && existsSync(otherTypes) ? [otherTypes] : []), resolve(modules, '@nativescript/core/global-types.d.ts'), ...declarations];
   // A copy: a program keeps the array it is given, and a later program with equal root names reuses its files.
   let program = ts.createProgram([...rootNames], options, host);
+  // A plugin's sources use frameworks the default typings leave out (CoreLocation): every framework's, where the package has them.
+  const complete = platform === 'ios' ? resolve(dirname(platformTypes), 'complete.d.ts') : null;
+  if (pluginFiles.size && complete && existsSync(complete)) extraRoots.add(complete);
   // A plugin's native API declarations (`typings/ios.d.ts`) are found as its sources are.
   if (extraRoots.size) {
     rootNames.push(...extraRoots);
@@ -399,7 +404,7 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
     throw new Error(`the app does not type-check as the release build sees it:\n${text}`);
   }
   const ordered = [...roots, ...virtual.keys(), ...pluginFiles].map((f) => program.getSourceFile(f)!).filter(Boolean);
-  return { program, checker: program.getTypeChecker(), files: ordered, pluginFiles: [...pluginFiles], resolved: (containing, specifier) => resolutions.get(`${containing}\0${specifier}`) };
+  return { program, checker: program.getTypeChecker(), files: ordered, pluginFiles: [...pluginFiles], resolved: (containing, specifier) => resolutions.get(`${containing}\0${specifier}`), lenient };
 }
 
 /**

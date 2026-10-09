@@ -86,6 +86,8 @@ export interface AsyncSyntax {
 /** What the lowering needs from a translator. */
 export interface AsyncTranslator {
   indent: string;
+  /** Variables a function declared before them reads, declared first (Swift's local functions cannot capture later ones). */
+  forwardDeclarations?(list: ts.Statement[]): string[];
   readonly subst: Map<ts.Node, string>;
   readonly checker: ts.TypeChecker;
   readonly syntax: AsyncSyntax;
@@ -209,7 +211,7 @@ export class AsyncLowering {
   /** A statement list, its tail moved into a continuation at the first statement that awaits. */
   list(list: ts.Statement[], ctx: AsyncCtx): string[] {
     const t = this.t;
-    const out: string[] = [];
+    const out: string[] = t.forwardDeclarations?.(list) ?? [];
     for (const [ix, fn] of hoistedFunctions(list)) { out.push(t.withAsync(ctx, () => t.stmt(fn))); list = list.filter((_, k) => k !== ix); }
     for (let k = 0; k < list.length; k++) {
       const s = list[k];
