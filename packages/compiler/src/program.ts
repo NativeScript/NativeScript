@@ -176,6 +176,8 @@ const GLOBALS = `
   declare var global: typeof globalThis;
   declare function requestAnimationFrame(callback: (frameTime: number) => void): number;
   declare function cancelAnimationFrame(id: number): void;
+  declare function __nsRegisterAppModules(modules: any): void;
+  declare function __nsClass(make: () => any): any;
 `;
 
 /** The platform's native API typings, as an app's `references.d.ts` includes them. */

@@ -118,14 +118,29 @@ func jsNativeGet(_ object: NSObject, _ key: String) -> Any? {
     }
     // A method: callable as JavaScript calls it, with no argument or one object.
     let none = NSSelectorFromString(key), one = NSSelectorFromString(key + ":")
-    if object.responds(to: none) {
+    // `perform` passes and gives objects: a number, enum or boolean (`imageWithRenderingMode:`) goes through `jsNativeMethod`, by its type.
+    if object.responds(to: none), jsPerformable(type(of: object), none) {
         return { (_: [Any?]) throws -> Any? in jsFromNative(object.perform(none)?.takeUnretainedValue()) } as JSFunction
     }
-    if object.responds(to: one) {
+    if object.responds(to: one), jsPerformable(type(of: object), one) {
         return { (args: [Any?]) throws -> Any? in jsFromNative(object.perform(one, with: jsToNative(jsArg(args, 0)))?.takeUnretainedValue()) } as JSFunction
     }
     if let method = jsNativeMethod(object, key) { return method }
     return jsExpandos(object)?[key]
+}
+
+/// Whether a method takes and gives only objects (or nothing back), as `perform` assumes; one only forwarded has no types to tell.
+private func jsPerformable(_ cls: AnyClass, _ selector: ObjectiveC.Selector) -> Bool {
+    guard let method = class_getInstanceMethod(cls, selector) else { return true }
+    let r = method_copyReturnType(method)
+    defer { free(r) }
+    guard ["@", "v", "#"].contains(String(cString: r).prefix(1)) else { return false }
+    for i in 2..<method_getNumberOfArguments(method) {
+        guard let p = method_copyArgumentType(method, i) else { return false }
+        defer { free(p) }
+        if !["@", "#"].contains(String(cString: p).prefix(1)) { return false }
+    }
+    return true
 }
 
 /// A method script names as the runtime does, its selector's parts joined

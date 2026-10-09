@@ -27,6 +27,7 @@ export const ios = {
 		'image-source/',
 		'js-libs/easysax/',
 		'matrix/',
+		'module-name-resolver/',
 		'media-query-list/',
 		'native-window/',
 		'platform/',
@@ -36,6 +37,7 @@ export const ios = {
 		'ui/action-bar/',
 		'ui/activity-indicator/',
 		'ui/animation/',
+		'ui/builder/',
 		'ui/button/',
 		'ui/content-view/',
 		'ui/core/',
@@ -99,6 +101,8 @@ export const ios = {
 			'iOSApplication.addDelegateHandler': 'ApplicationDelegateClass.addDelegateHandler',
 		},
 		'application/scene-delegate-bridge.ts': { getLegacyMethod: 'ApplicationDelegateClass.getLegacyMethod' },
+		// acorn is JavaScript: binding expressions are parsed by core's TypeScript parser, which gives acorn's ESTree.
+		'ui/core/bindable/bindable-expressions.ts': { parseExpression: 'Core_ui_core_bindable_expression_parser.parseExpressionNode' },
 		'connectivity/index.ios.ts': {
 			_createReachability: 'CoreConnectivity.createReachability',
 			_getReachabilityFlags: 'CoreConnectivity.reachabilityFlags',
@@ -108,16 +112,9 @@ export const ios = {
 		'npm:@csstools/css-calc': { calc: 'CorePackages.calc' },
 		'npm:emoji-regex': { '*': 'CorePackages.emojiRegex' },
 		'~/package.json': { default: 'CorePackages.appConfig' },
-		'moot:ui/builder/index.ts': { Builder: 'CorePackages.builder' },
-		'moot:module-name-resolver/index.ts': { resolveModuleName: 'CorePackages.resolveModuleName' },
-		'moot:module-name-resolver/helpers.ts': {
-			prepareAppForModuleResolver: 'CorePackages.noModuleResolver',
-			clearResolverCache: 'CorePackages.noModuleResolver',
-			_setResolver: 'CorePackages.noModuleResolver',
-		},
 	},
-	/** Modules a compiled app has no use for (the XML builder, the inspector, runtime module loading, XMLHttpRequest and fetch): what core reads from them is untyped, and using it throws. */
-	moot: ['debugger/', 'ui/builder/', 'module-name-resolver/', 'xhr/', 'fetch/', 'wgc/', 'inspector_modules'],
+	/** Modules a compiled app has no use for (the debugger, the inspector, XMLHttpRequest and fetch): what core reads from them is untyped, and using it throws. */
+	moot: ['debugger/', 'xhr/', 'fetch/', 'wgc/', 'inspector_modules'],
 	/** Functions that give back what they are given and, as decorators, leave what they decorate as it is. */
 	identities: ['profile', 'zonedCallback'],
 	/** npm packages compiled with core from the TypeScript they publish (relative to the package; the first is its entry). */

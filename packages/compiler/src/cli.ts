@@ -28,7 +28,8 @@ import { corePatches, corePatchesAndroid } from './core-patches.ts';
 import { KIT, KIT_PLUGINS } from './core.ts';
 import { kitIndex } from './kit-index.ts';
 import { describe, PropertyGuard } from './unimplemented.ts';
-import { Translator, type ComponentInfo } from './swift.ts';
+import { swiftString, Translator, type ComponentInfo } from './swift.ts';
+import { xmlApp, type XmlApp } from './xml-app.ts';
 import { isFragment, render, SCHEDULE, type Framework } from './codegen.ts';
 import { createRequire } from 'node:module';
 import { addInterfaces, translateModules } from './modules.ts';
@@ -63,7 +64,9 @@ const walk = (d: string) => { for (const f of readdirSync(d)) { const p = join(d
 walk(appDir);
 const entry = join(app, pkg.main ?? 'app/app.ts');
 const deps = { ...pkg.dependencies };
-const framework = deps['nativescript-vue'] ? 'vue' : deps['@nativescript/angular'] ? 'angular' : deps['@nativescript-community/svelte-native'] ? 'svelte' : deps['react-nativescript'] ? 'react' : deps['@nativescript-community/solid-js'] ? 'solid' : deps['@nativescript-community/octane'] ? 'octane' : null;
+const framework = deps['nativescript-vue'] ? 'vue' : deps['@nativescript/angular'] ? 'angular' : deps['@nativescript-community/svelte-native'] ? 'svelte' : deps['react-nativescript'] ? 'react' : deps['@nativescript-community/solid-js'] ? 'solid' : deps['@nativescript-community/octane'] ? 'octane'
+  // No framework, XML pages: core's own Builder makes the views, as in the app's JavaScript build.
+  : files.some((f) => f.endsWith('.xml') && f.startsWith(appDir)) ? 'core' : null;
 if (!framework) throw new Error('no supported framework in package.json');
 const entryText = readFileSync(entry, 'utf8');
 // `x.ios.ts` and `x.android.ts` are one module, `./x`, for their platform.
@@ -109,6 +112,8 @@ let routing: { routes: { path: string; component: string }[]; initial: string } 
 let routeTree: RouteNode[] | null = null;
 /** The app mounts its own roots (Octane's `renderNativeScriptApp` in the entry): the entry is a module that runs the app. */
 let mounted = false;
+/** A plain XML app: its pages, page stylesheets and the elements its XML names. */
+let xml: XmlApp | null = null;
 /** The framework as its templates update: Svelte 5 orders updates as Svelte 4 does not. */
 let style: Framework = framework;
 /** Angular checked by zone.js: every binding re-read after each task. */
@@ -193,6 +198,14 @@ if (framework === 'vue') {
   const rootFile = rootImport && new RegExp(`import\\s+${rootImport}\\s+from\\s+['"]([^'"]+)['"]`).exec(entryText)?.[1];
   if (!rootFile) throw new Error(`${entry}: no svelteNative(Component)`);
   root = basename(rootFile, '.svelte');
+} else if (framework === 'core') {
+  xml = xmlApp(appDir, files, sources, entry);
+  components = [];
+  overrides.set(xml.registry.file, xml.registry.source);
+  // The entry's own `Application.run` starts the app, after the registry and every module it imports.
+  mounted = true;
+  modules = [...sources, xml.registry.file, entry];
+  root = '';
 } else {
   // The Angular components of plugins the app imports (`<package>/angular`), compiled from their source with the app's.
   const libraries = angularLibraries(sources, nodeModules(app), plugins);
@@ -250,7 +263,10 @@ if (framework === 'vue') {
 
 // The app's CSS through its own build's pipeline, which also gives the bundler's defines the sources are read with.
 const componentStyles = components.flatMap((c) => c.styles ?? []);
-const sheets = appStylesheets(app, platform, importedStylesheets(entry, appDir, componentStyles), componentStyles);
+const allSheets = appStylesheets(app, platform, [...importedStylesheets(entry, appDir, componentStyles), ...(xml?.pageStyles ?? [])], componentStyles);
+// A page's own stylesheet applies to its page, which core's Builder loads it for: not the app's CSS.
+const pageSheets = allSheets.filter((sh) => xml?.pageStyles.includes(sh.file));
+const sheets = allSheets.filter((sh) => !pageSheets.includes(sh));
 
 // 3. Type-check everything as one program, then translate.
 // `const { X } = await import('./x')` reads an app module the build links statically: the module evaluates at startup.
@@ -340,6 +356,7 @@ translator.lines = sourceLines;
 const located = (code: string) => (sourceLines ? sourceLines.swift(code) : code);
 translator.appModule = name;
 translator.plainFields = framework === 'angular';
+translator.appMembersByName = framework === 'core';
 // The app's own Swift classes (`App_Resources/iOS/src`) that TypeScript declares untyped (`declare const X: any`): objects calling them by NativeScript's names.
 const appNative = native.appSwift ? nativeTable(name).classes : {};
 translator.appNativeClasses = new Set(Object.keys(appNative).filter((c) => !appNative[c].extension && appNative[c].kind === 'class'));
@@ -401,12 +418,28 @@ const css = kitAst(sheets);
 const patched = corePatches(app, nodeModules(app));
 if (patched?.patches.length) say(`${relative(app, patched.file)}: ${patched.patches.join(', ')}`);
 if (routeTree) prelude = `        Router.shared.config = ${routeConfig(routeTree, '        ', translator.throwingInits)}\n`;
+// A plain XML app's pages, page stylesheets and the core classes its XML names, registered before its modules run.
+let xmlModules = '';
+if (xml) {
+  const kit = new Set(translator.kitTypes());
+  const unknown = xml.elements.filter((e) => !kit.has(e));
+  if (unknown.length) throw new Error(`${unknown.join(', ')}: element${unknown.length > 1 ? 's' : ''} the XML names that NativeScriptKit has no class for`);
+  const rel = (f: string) => relative(appDir, f).split('\\').join('/');
+  xmlModules = [
+    ...xml.xml.map((x) => `        AppModules.register(file: ${swiftString(x.name)}) { ${swiftString(x.text)} }
+`),
+    ...pageSheets.map((sh) => `        AppModules.register(file: ${swiftString(rel(sh.file).replace(/\.scss$/, '.css'))}) { try jsJSONParse(${swiftString(JSON.stringify(sh.ast))}) }
+`),
+    `        AppModules.register(["@nativescript/core/ui"]) { JSObject([${xml.elements.map((e) => `(${swiftString(e)}, JSConstructor { _ in try ${e}() } as Any?)`).join(', ')}]) }
+`,
+  ].join('');
+}
 // Set before the module initializers run: they may make views.
 const switches = (zone ? '        Zone.enabled = true\n' : '') + (patched?.patches ?? []).map((p) => `        CorePatches.${p} = true\n`).join('');
 // Core's modules first, as the app's bundle evaluates @nativescript/core before its own code.
 const start = switches + `        CorePackages.useAppConfig(appPackageJSON)\n        CoreModules.initialize()\n        Reactivity.schedule = .${SCHEDULE[framework]}\n` + (mounted
   // The entry's own statements run the app (`Application.run`), after every module it imports.
-  ? `        NativeScriptApplication.cssAST = appCSS\n${inits}`
+  ? `${xmlModules}        NativeScriptApplication.cssAST = appCSS\n${inits}`
   : `${inits}${prelude}        NativeScriptApplication.run(cssAST: appCSS) { ${root}().render() }\n`);
 const dispatch = nativeDispatch(native.modules, untypedMembers(checker, sourceFiles), deploymentTarget, native.classes);
 if (dispatch) writeFileSync(join(out, 'Sources', '__NativeDispatch.swift'), `// Compiled by ns-native: the plugins' native members untyped TypeScript calls, by name.\nimport Foundation\nimport UIKit\nimport NativeScriptKit\n${native.modules.map((m) => `import ${m}\n`).join('')}\n${dispatch}`);

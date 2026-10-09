@@ -2203,7 +2203,14 @@ export class Translator implements AsyncTranslator {
     if (ts.isForInStatement(s)) {
       const list = s.initializer as ts.VariableDeclarationList;
       const name = ident((list.declarations[0].name as ts.Identifier).text);
-      return this.loopBody(() => `${i}${this.takeLabel()}for (${name} in jsKeysOf(${this.expr(s.expression)})) ${this.block(s.statement)}`);
+      if (!assignsTo(s.statement, this.checker.getSymbolAtLocation(list.declarations[0].name), this.checker)) return this.loopBody(() => `${i}${this.takeLabel()}for (${name} in jsKeysOf(${this.expr(s.expression)})) ${this.block(s.statement)}`);
+      // A key the body reassigns: a variable of each key (Kotlin's loop variable is a val).
+      return this.loopBody(() => {
+        const label = this.takeLabel();
+        const key = this.fresh('__key');
+        const body = this.block(s.statement);
+        return `${i}${label}for (${key} in jsKeysOf(${this.expr(s.expression)})) {\n${this.nested(() => this.bindTo(list.declarations[0].name, key, '', true))}\n${body.slice(2)}`;
+      });
     }
     if (ts.isForStatement(s)) return this.forStatement(s);
     if (ts.isWhileStatement(s)) return this.loopBody(() => `${i}${this.takeLabel()}while (${this.cond(s.expression)}) ${this.block(s.statement)}`);

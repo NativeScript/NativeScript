@@ -36,13 +36,11 @@ public enum CorePackages {
     static var appCSSAST: String?
 
     static func installModuleLoader() {
-        let load: JSFunction = { args in
-            let name = jsToString(args.first ?? nil)
-            guard name.split(separator: "/").last.map(String.init) == "app.css" else { return nil }
+        AppModules.register(file: "app.css") {
             if let ast = CorePackages.appCSSAST { return try jsJSONParse(ast) }
             return CorePackages.appCSS
         }
-        _ = try? jsSet(jsGlobalThis, "loadModule", load)
+        AppModules.install()
     }
 
     /// ui/builder's `Builder`, which a compiled app has no XML for: views from an entry's `create`.

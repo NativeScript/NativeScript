@@ -1,7 +1,7 @@
 import Foundation
 
 /// NativeScript's `WeakRef`: `get()` (and the standard `deref()`) is the object while it lives.
-public final class JSWeakRef<T: AnyObject>: JSDynamic, JSToStringTag {
+public final class JSWeakRef<T: AnyObject>: JSHostObject, JSToStringTag {
     private weak var target: T?
 
     public init(_ target: T) { self.target = target }
@@ -15,6 +15,14 @@ public final class JSWeakRef<T: AnyObject>: JSDynamic, JSToStringTag {
         set {}
     }
     public var jsKeys: [String] { [] }
+    /// `ref.get()` where the reference is untyped (`let pair; pair.tagetRef.get()`).
+    public func jsInvoke(_ key: String, _ arguments: [Any?]) throws -> Any?? {
+        switch key {
+        case "get", "deref": return .some(target)
+        case "clear": target = nil; return .some(nil)
+        default: return nil
+        }
+    }
     public var jsClassName: String? { "WeakRef" }
     public var jsToStringTag: String { "WeakRef" }
 }

@@ -17,10 +17,15 @@ export function isStringRaw(tag: ts.Expression, checker: ts.TypeChecker): boolea
 
 /**
  * A name the app only declares (`declare const x`), outside the names a
- * bundler defines (`__DEV__`, `__IOS__`): nothing defines it at run time, so
- * `typeof` reads it as undefined.
+ * bundler defines (`__DEV__`, `__IOS__`), or a member the language's library
+ * does not declare on one of its globals (`Reflect.metadata`, which a shim
+ * adds): nothing defines it at run time, so `typeof` reads it as undefined.
  */
 export function neverDefined(e: ts.Expression, checker: ts.TypeChecker): boolean {
+  if (ts.isPropertyAccessExpression(e) && ts.isIdentifier(e.expression)) {
+    const decls = checker.getSymbolAtLocation(e.expression)?.declarations;
+    return !!decls?.length && decls.every((d) => /[\\/]lib\.[\w.]*\.d\.ts$/.test(d.getSourceFile().fileName)) && !checker.getTypeAtLocation(e.expression).getProperty(e.name.text);
+  }
   if (!ts.isIdentifier(e) || e.text.startsWith('__')) return false;
   const decls = checker.getSymbolAtLocation(e)?.declarations;
   return !!decls?.length && decls.every((d) => !d.getSourceFile().isDeclarationFile && !!(d.flags & ts.NodeFlags.Ambient));

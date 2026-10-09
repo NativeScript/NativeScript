@@ -105,6 +105,9 @@ public final class JSRegExp: JSDynamic, JSStringConvertible {
 /// The array `exec` and `match` return: the matched text, then each group
 /// (undefined when it did not take part), with `index` and `groups`.
 public final class JSMatch {
+    /// The match as the array of strings script holds it (`s.match(/x/g)` typed `string[]`); an unmatched group reads as "".
+    public var jsStrings: JSArray<String> { JSArray<String>(values.storage.map { $0 ?? "" }) }
+
     public let index: Double
     public let input: String
     public let values: JSArray<String?>

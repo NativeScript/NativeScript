@@ -1,10 +1,10 @@
 import type { Attr, ComponentIR, TNode } from './ir.ts';
 import { ident, swiftString } from './swift.ts';
 
-export type Framework = 'vue' | 'angular' | 'svelte' | 'svelte5' | 'react' | 'solid' | 'octane';
+export type Framework = 'vue' | 'angular' | 'svelte' | 'svelte5' | 'react' | 'solid' | 'octane' | 'core';
 
 /** When each framework applies the updates a write causes (`Reactivity.Schedule`). */
-export const SCHEDULE: Record<Framework, 'now' | 'microtask' | 'task' | 'event'> = { vue: 'microtask', svelte: 'microtask', svelte5: 'microtask', solid: 'microtask', angular: 'task', react: 'now', octane: 'event' };
+export const SCHEDULE: Record<Framework, 'now' | 'microtask' | 'task' | 'event'> = { vue: 'microtask', svelte: 'microtask', svelte5: 'microtask', solid: 'microtask', angular: 'task', react: 'now', octane: 'event', core: 'now' };
 
 /** Frameworks that do something around each template handler (`Reactivity.event`). */
 export const EVENT_SCOPED = new Set<string>(['angular', 'react', 'octane']);

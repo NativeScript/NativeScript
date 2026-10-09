@@ -227,6 +227,12 @@ private final class JSInspectContext {
         }
         if let n = jsNumeric(v) { return jsInspectNumber(n) }
         if jsIsFunction(v) { return "[Function (anonymous)]" }
+        // A class held as a value, as Node prints one; read as an object, its statics would be taken for an instance's.
+        if let cls = v as? AnyClass {
+            // A root Swift class's superclass is the runtime's own (`_SwiftObject`).
+            let base: AnyClass? = class_getSuperclass(cls).flatMap { jsClassName($0).hasPrefix("_") ? nil : $0 }
+            return "[class \(jsClassName(cls))\(base.map { " extends \(jsClassName($0))" } ?? "")]"
+        }
         if jsIsObject(v) {
             let id = ObjectIdentifier(v as AnyObject)
             if seen.contains(id) {
@@ -540,4 +546,8 @@ private final class JSInspectContext {
         if maxArrayLength < output.count { grouped.append(output[outputLength]) }
         return grouped
     }
+}
+
+private func jsClassName(_ cls: AnyClass) -> String {
+    String(describing: cls).components(separatedBy: "<")[0]
 }

@@ -302,9 +302,13 @@ export function generateKit(o: KitOptions): KitResult {
   if (errors.length && !o.report) throw new Error(errors.join('\n'));
   const nameOf = new Map([...paths].map(([f, path]) => [path, f.name]));
   const graph: KitGraph = {};
+  // A counterpart in a generated module (`parseExpression` → `Core_ui_core_bindable_expression_parser`) is that module's import.
+  const nameOfEnum = new Map([...nameOf].map(([path, name]) => [enumName(relOf(path), barrels), name]));
+  const reachedBy = new Set([...compiled, ...counterparts.keys()]);
   for (const [path, name] of nameOf) {
-    const imports = evaluatedImports(program, path, compiled, (c, sp) => resolutions.get(`${c}\0${sp}`)).flatMap((f) => nameOf.get(f) ?? []);
-    graph[name] = { ...(initOf.get(path) ? { init: initOf.get(path) } : {}), imports: imports.sort() };
+    const imports = evaluatedImports(program, path, reachedBy, (c, sp) => resolutions.get(`${c}\0${sp}`)).flatMap((f) =>
+      [...(nameOf.has(f) ? [nameOf.get(f)!] : []), ...Object.values(counterparts.get(f) ?? {}).flatMap((target) => nameOfEnum.get(target.split('.')[0]) ?? [])]);
+    graph[name] = { ...(initOf.get(path) ? { init: initOf.get(path) } : {}), imports: [...new Set(imports)].filter((i) => i !== name).sort() };
   }
   return { files: out, errors: [...new Set(errors)], graph };
 }
