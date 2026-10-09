@@ -3469,8 +3469,9 @@ ${members.join('\n')}
     const dynMethods: { name: string; type: string; available?: number }[] = [];
     for (const m of cls.members) {
       if (ts.isMethodDeclaration(m) && m.body && ts.isComputedPropertyName(m.name)) continue;
-      // A generic method is no one function value.
-      const generic = ts.isMethodDeclaration(m) && !!m.typeParameters?.some((p) => !erasedTypeParameter(p));
+      // A generic method of the program's is no one function value; core's (`notify<T extends EventData>`) is read by name
+      // (`globalEvents.notify.bind(globalEvents)`), its type parameters as the slot's context gives them.
+      const generic = !this.library && ts.isMethodDeclaration(m) && !!m.typeParameters?.some((p) => !erasedTypeParameter(p));
       if (ts.isMethodDeclaration(m) && !m.body && hasModifier(m, ts.SyntaxKind.AbstractKeyword)) {
         // An overloaded abstract method is its first signature, which overrides take (`baseMethod`).
         if (cls.members.find((x) => ts.isMethodDeclaration(x) && !x.body && x.name.getText() === m.name.getText()) !== m) continue;
