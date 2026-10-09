@@ -40,7 +40,8 @@ function cliLibrary(app: string): string {
 export function appStylesheets(app: string, platform: 'ios' | 'android', imported: string[] = [], components: readonly ComponentStyle[] = []): Stylesheet[] {
   const dir = mkdtempSync(join(tmpdir(), 'ns-native-css-'));
   const out = join(dir, 'sheets.json');
-  const worker = join(dirname(fileURLToPath(import.meta.url)), 'css-worker.ts');
+  const self = fileURLToPath(import.meta.url);
+  const worker = join(dirname(self), self.endsWith('.js') ? 'css-worker.js' : 'css-worker.ts');
   // Components' stylesheets have no file of their own: the worker reads their text from here, by their paths.
   const virtual = join(dir, 'components.json');
   writeFileSync(virtual, JSON.stringify(Object.fromEntries(components.map((c) => [resolve(c.file), c.css]))));
@@ -136,5 +137,5 @@ export function kitAst(sheets: Stylesheet[]): string {
 /** The installed package's type-stripping hook, which a child process under node_modules needs to run the compiler's .ts. */
 function stripTypes(): string[] {
   const hook = join(BIN, 'strip-types.js');
-  return existsSync(hook) ? ['--import', pathToFileURL(hook).href] : [];
+  return !fileURLToPath(import.meta.url).endsWith('.js') && existsSync(hook) ? ['--import', pathToFileURL(hook).href] : [];
 }

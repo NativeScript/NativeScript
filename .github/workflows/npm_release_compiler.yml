@@ -161,6 +161,11 @@ jobs:
           name: kit-core
           path: packages/compiler/kit-apple/Sources/NativeScriptKit/Core
 
+      # prepack compiles the compiler to JavaScript (dist/) with its TypeScript dependency.
+      - name: Install the compiler's dependencies
+        working-directory: packages/compiler
+        run: npm ci --no-audit --no-fund
+
       - name: Set the version to core's
         working-directory: packages/compiler
         run: npm version --no-git-tag-version --allow-same-version "${{ needs.kit.outputs.version }}"

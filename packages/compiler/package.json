@@ -9,6 +9,7 @@
   },
   "files": [
     "bin/",
+    "dist/",
     "src/",
     "kit-apple/Package.swift",
     "kit-apple/Sources/",
@@ -20,7 +21,7 @@
     "docs/CLI.md"
   ],
   "engines": {
-    "node": ">=23.6.0"
+    "node": ">=20.0.0"
   },
   "dependencies": {
     "@angular/compiler": "^22.2.1",
@@ -33,5 +34,8 @@
     "type": "git",
     "url": "https://github.com/NativeScript/NativeScript.git",
     "directory": "packages/compiler"
+  },
+  "scripts": {
+    "prepack": "node bin/build-dist.mjs"
   }
 }
