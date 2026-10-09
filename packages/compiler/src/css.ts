@@ -4,10 +4,11 @@
 // from that AST (style-scope's _populateRules); the kit gets those, as CSS text.
 import { execFileSync } from 'node:child_process';
 import { setDefines } from './platform.ts';
-import { existsSync, mkdtempSync, readFileSync, realpathSync, rmSync, statSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, realpathSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { delimiter, dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import type { ComponentStyle } from './ir.ts';
 import { BIN } from './paths.ts';
 
 export type CssNode =
@@ -36,12 +37,15 @@ function cliLibrary(app: string): string {
  * app.css (or its platform or Sass variant), then `imported` (stylesheets
  * modules import, in evaluation order).
  */
-export function appStylesheets(app: string, platform: 'ios' | 'android', imported: string[] = []): Stylesheet[] {
+export function appStylesheets(app: string, platform: 'ios' | 'android', imported: string[] = [], components: readonly ComponentStyle[] = []): Stylesheet[] {
   const dir = mkdtempSync(join(tmpdir(), 'ns-native-css-'));
   const out = join(dir, 'sheets.json');
   const worker = join(dirname(fileURLToPath(import.meta.url)), 'css-worker.ts');
+  // Components' stylesheets have no file of their own: the worker reads their text from here, by their paths.
+  const virtual = join(dir, 'components.json');
+  writeFileSync(virtual, JSON.stringify(Object.fromEntries(components.map((c) => [resolve(c.file), c.css]))));
   try {
-    execFileSync(process.execPath, [...stripTypes(), worker, out, cliLibrary(app), platform, ...imported.map((f) => resolve(f))], { cwd: resolve(app), stdio: ['ignore', 'ignore', 'inherit'] });
+    execFileSync(process.execPath, [...stripTypes(), worker, out, cliLibrary(app), platform, ...imported.map((f) => resolve(f))], { cwd: resolve(app), stdio: ['ignore', 'ignore', 'inherit'], env: { ...process.env, NS_NATIVE_COMPONENT_CSS: virtual } });
     const result = JSON.parse(readFileSync(out, 'utf8'));
     setDefines(result.defines);
     return result.sheets;
@@ -53,9 +57,16 @@ export function appStylesheets(app: string, platform: 'ios' | 'android', importe
 /**
  * The stylesheets the app's modules import (`import './theme.css'`), in the
  * order they evaluate from `entry`: a module's imports in source order, each
- * module's own before the module.
+ * module's own before the module. A component's own stylesheets (`components`,
+ * by the module that adds them) follow its imports, as its module adds them
+ * when it evaluates.
  */
-export function importedStylesheets(entry: string, appDir: string): string[] {
+export function importedStylesheets(entry: string, appDir: string, components: readonly ComponentStyle[] = []): string[] {
+  const owned = new Map<string, string[]>();
+  for (const c of components) {
+    const owner = resolve(c.file.replace(/\.style\d+\.css$/, ''));
+    owned.set(owner, [...(owned.get(owner) ?? []), c.file]);
+  }
   const sheets: string[] = [];
   const visited = new Set<string>();
   const resolveModule = (from: string, spec: string) => {
@@ -72,6 +83,7 @@ export function importedStylesheets(entry: string, appDir: string): string[] {
       if (/\.s?css$/.test(target)) { if (!sheets.includes(target)) sheets.push(target); }
       else if (!visited.has(target)) walk(target);
     }
+    for (const own of owned.get(resolve(file)) ?? []) if (!sheets.includes(own)) sheets.push(own);
   };
   walk(entry);
   return sheets;

@@ -15,6 +15,8 @@ import { dirname, join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 const [outFile, cliLib, platform, ...stylesheets] = process.argv.slice(2);
+/** Components' stylesheets, by path: they have no file of their own. */
+const componentCss: Record<string, string> = process.env.NS_NATIVE_COMPONENT_CSS ? JSON.parse(readFileSync(process.env.NS_NATIVE_COMPONENT_CSS, 'utf8')) : {};
 const app = process.cwd();
 const appRequire = createRequire(join(app, 'package.json'));
 
@@ -99,9 +101,12 @@ async function webpackSheets(configPath: string): Promise<Sheet[]> {
     for (const e of effects) if (e.type === 'use') (e.enforce === 'post' ? post : e.enforce === 'pre' ? pre : normal).push(e.value);
     const chain = [...post, ...normal, ...pre];
     const json = chain.findIndex((l) => /(^|[\\/])css2json-loader([\\/]|$)/.test(l.loader));
-    if (json < 0) throw new Error(`${file}: its loaders (${chain.map((l) => l.loader).join(', ')}) do not include css2json-loader`);
-    const css = await run(file, chain.slice(json + 1));
-    const module = await run(file, [chain[json]], css);
+    // A component's stylesheet its framework reads as text (Angular's raw-loader), which core parses when the component adds it.
+    const asText = json < 0 && file in componentCss;
+    if (json < 0 && !asText) throw new Error(`${file}: its loaders (${chain.map((l) => l.loader).join(', ')}) do not include css2json-loader`);
+    const toJson = asText ? { loader: fromNsWebpack.resolve('./dist/loaders/css2json-loader') } : chain[json];
+    const css = await run(file, asText ? chain.filter((l) => !/(^|[\\/])raw-loader([\\/]|$)/.test(l.loader)) : chain.slice(json + 1), componentCss[file]);
+    const module = await run(file, [toJson], css);
     const [imports, exported] = module.split('const ___CSS2JSON_LOADER_EXPORT___ = ');
     if (/\brequire\(/.test(imports)) throw new Error(`${file}: an @import the build loads as a stylesheet of its own`);
     sheets.push({ file, css, ast: JSON.parse(exported.slice(0, exported.indexOf('\n'))) });
@@ -120,14 +125,17 @@ async function viteSheets(configPath: string): Promise<Sheet[]> {
   const config = await vite.resolveConfig({ configFile: configPath, mode: 'production' }, 'build', 'production', 'production');
   defines = Object.fromEntries(Object.entries(config.define ?? {}).filter(([k, v]) => /^[\w$.]+$/.test(k) && typeof v === 'string'));
   const appCss: string | null = resolveProjectGlobalCssPath(app);
-  const imported = stylesheets.filter((f) => f !== appCss);
+  const imported = stylesheets.filter((f) => f !== appCss && !(f in componentCss));
   if (imported.length) throw new Error(`${imported.join(', ')}: stylesheets imported from modules are not read for vite apps yet`);
-  if (!appCss) return [];
-  const raw = readFileSync(appCss, 'utf8');
-  const code = rewritePlatformCssImports(raw, dirname(appCss), platform) ?? raw;
-  const result = await vite.preprocessCSS(code, appCss, config);
-  const ast = JSON.parse(JSON.stringify(parse(result.code, { silent: true }), (key, value) => (key === 'position' ? undefined : value)));
-  return [{ file: appCss, css: result.code, ast }];
+  const sheet = async (file: string, raw: string): Promise<Sheet> => {
+    const code = rewritePlatformCssImports(raw, dirname(file), platform) ?? raw;
+    const result = await vite.preprocessCSS(code, file, config);
+    const ast = JSON.parse(JSON.stringify(parse(result.code, { silent: true }), (key, value) => (key === 'position' ? undefined : value)));
+    return { file, css: result.code, ast };
+  };
+  const sheets: Sheet[] = appCss ? [await sheet(appCss, readFileSync(appCss, 'utf8'))] : [];
+  for (const f of stylesheets) if (f in componentCss) sheets.push(await sheet(f, componentCss[f]));
+  return sheets;
 }
 
 /** The bundler's compile-time replacements (vite's `define`), as source text by the expression they replace. */

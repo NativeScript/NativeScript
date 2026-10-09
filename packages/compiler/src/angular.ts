@@ -1,8 +1,10 @@
 import * as ng from '@angular/compiler';
 import ts from 'typescript';
+import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import type { Attr, ComponentIR, Event, TNode } from './ir.ts';
+import { createRequire } from 'node:module';
+import { dirname, extname, join } from 'node:path';
+import { scopeTemplate, type Attr, type ComponentIR, type ComponentStyle, type Event, type TNode } from './ir.ts';
 import { rewrite, type Scope } from './rewrite.ts';
 import { canonical } from './elements.ts';
 
@@ -22,6 +24,8 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
   let sf = ts.createSourceFile(path, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
   let cls = sf.statements.find((s): s is ts.ClassDeclaration => ts.isClassDeclaration(s) && !!decorator(s, 'Component'));
   if (!cls || !cls.name) return null;
+  const others = sf.statements.filter((s) => s !== cls && ts.isClassDeclaration(s) && !!decorator(s, 'Component'));
+  if (others.length) throw new Error(`${path}: ${others.length + 1} components in one file; a compiled release takes one @Component per file`);
   // A class with decorated inputs and outputs, or constructor injection, as the signal-style class the translator reads.
   const classic = classicClass(path, text, cls);
   if (classic) {
@@ -391,7 +395,44 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
   const end = cls.members.end;
   for (const p of pipes) methods.push(`  readonly ${p} = new AsyncPipe();`);
   const source = `import { ${pipes.length ? 'AsyncPipe, ' : ''}type EventData as $EventData } from '@nativescript/release';\n` + text.slice(0, end) + '\n' + methods.join('\n') + '\n' + text.slice(end);
-  return { name: cls.name.text, file: path.replace(/\.ts$/, '.release.ts'), source, props, optional, outputs, template: tree, selector, ...(init ? { init: 'ngOnInit' } : {}) } as AngularComponent;
+  const { styles, scope: styleScope } = angularStyles(path, prop);
+  const scoped = styleScope ? scopeTemplate(tree, styleScope.content).map((n) => (n.kind === 'element' ? { ...n, attrs: [...n.attrs, { name: styleScope.host, value: '' }] } : n)) : tree;
+  return { name: cls.name.text, file: path.replace(/\.ts$/, '.release.ts'), source, props, optional, outputs, template: scoped, selector, styles, ...(init ? { init: 'ngOnInit' } : {}) } as AngularComponent;
+}
+
+/**
+ * The component's `styles`, `styleUrl` and `styleUrls`, as NativeScript Angular adds them: Sass compiled by the app's own
+ * `sass`, and, unless `encapsulation: ViewEncapsulation.None`, each selector limited to the component's elements
+ * (`_ngcontent-<id>`, which its renderer sets on each element the component creates) and `:host` to `_nghost-<id>`. The
+ * compiled component has no host view of its own: its top-level elements carry the host attribute.
+ */
+function angularStyles(path: string, prop: (name: string) => ts.Expression | undefined): { styles: ComponentStyle[]; scope: { content: string; host: string } | null } {
+  const texts: { css: string; lang: string; from: string }[] = [];
+  const literal = (e: ts.Expression): string | null => (ts.isStringLiteral(e) || ts.isNoSubstitutionTemplateLiteral(e) ? e.text : null);
+  const inline = prop('styles');
+  for (const e of inline ? (ts.isArrayLiteralExpression(inline) ? [...inline.elements] : [inline]) : []) {
+    const css = literal(e);
+    if (css === null) throw new Error(`${path}: styles must be string literals in a compiled release`);
+    texts.push({ css, lang: 'css', from: path });
+  }
+  const urls = [prop('styleUrl'), ...(() => { const u = prop('styleUrls'); return u && ts.isArrayLiteralExpression(u) ? [...u.elements] : []; })()].filter((e): e is ts.Expression => !!e);
+  for (const e of urls) {
+    const url = literal(e);
+    if (url === null) throw new Error(`${path}: styleUrl must be a string literal in a compiled release`);
+    const file = join(dirname(path), url);
+    if (!existsSync(file)) throw new Error(`${path}: styleUrl ${url} not found`);
+    texts.push({ css: readFileSync(file, 'utf8'), lang: extname(file).slice(1), from: file });
+  }
+  if (!texts.length) return { styles: [], scope: null };
+  const none = prop('encapsulation')?.getText() === 'ViewEncapsulation.None';
+  const id = `c${createHash('sha256').update(path).digest('hex').slice(0, 8)}`;
+  const styles = texts.map((t, k): ComponentStyle => {
+    let css = t.css;
+    if (t.lang === 'scss' || t.lang === 'sass') css = (createRequire(path)('sass') as { compileString(s: string, o: object): { css: string } }).compileString(css, { loadPaths: [dirname(t.from)], syntax: t.lang === 'sass' ? 'indented' : 'scss' }).css;
+    else if (t.lang !== 'css') throw new Error(`${t.from}: ${t.lang} stylesheets are not supported in a compiled release yet`);
+    return { file: `${path}.style${k}.css`, css: none ? css : ng.encapsulateStyle(css, id) };
+  });
+  return { styles, scope: none ? null : { content: `_ngcontent-${id}`, host: `_nghost-${id}` } };
 }
 
 /** The `BindingPipe`s in an expression, outermost first (not those inside another pipe). */

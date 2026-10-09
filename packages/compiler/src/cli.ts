@@ -13,7 +13,7 @@
 // builds an app that sets properties core declares and the kit does not apply, warning for each.
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, relative, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import ts from 'typescript';
 import type { ComponentIR } from './ir.ts';
 import { vueComponent } from './vue.ts';
@@ -168,8 +168,9 @@ if (framework === 'vue') {
   root = app.root;
 } else if (framework === 'svelte' && Number(JSON.parse(readFileSync(join(nodeModules(app), 'svelte', 'package.json'), 'utf8')).version.split('.')[0]) >= 5) {
   // Svelte 5: parsed by the app's own compiler; `.svelte.ts` modules' runes as Svelte compiles them.
-  const { parse } = createRequire(join(app, 'package.json'))('svelte/compiler');
-  components = files.filter((f) => f.endsWith('.svelte')).map((f) => svelte5Component(f, readFileSync(f, 'utf8'), parse, platform));
+  const { parse, compile } = createRequire(join(app, 'package.json'))('svelte/compiler');
+  const styled = (await svelteCss(app, 'external')) === 'injected';
+  components = files.filter((f) => f.endsWith('.svelte')).map((f) => svelte5Component(f, readFileSync(f, 'utf8'), parse, platform, styled ? compile : undefined));
   for (const f of sources) {
     const module = f.endsWith('.svelte.ts') ? svelteModule(f, readFileSync(f, 'utf8')) : null;
     if (module) overrides.set(f, module);
@@ -182,10 +183,11 @@ if (framework === 'vue') {
   root = basename(rootFile, '.svelte');
 } else if (framework === 'svelte') {
   const isStoreFile = (f: string) => /from\s+['"]svelte\/store['"]/.test(readFileSync(f, 'utf8'));
+  const styled = (await svelteCss(app, 'injected')) === 'injected';
   components = files.filter((f) => f.endsWith('.svelte')).map((f) => svelteComponent(f, readFileSync(f, 'utf8'), (spec) => {
     const target = resolve(dirname(f), spec);
     return [target + '.ts', target + '/index.ts'].some((t) => existsSync(t) && isStoreFile(t));
-  }));
+  }, styled ? createRequire(join(app, 'package.json'))('svelte/compiler').compile : undefined));
   modules = sources;
   const rootImport = /svelteNative(?:NoFrame)?\(\s*(\w+)/.exec(entryText)?.[1];
   const rootFile = rootImport && new RegExp(`import\\s+${rootImport}\\s+from\\s+['"]([^'"]+)['"]`).exec(entryText)?.[1];
@@ -247,7 +249,8 @@ if (framework === 'vue') {
 }
 
 // The app's CSS through its own build's pipeline, which also gives the bundler's defines the sources are read with.
-const sheets = appStylesheets(app, platform, importedStylesheets(entry, appDir));
+const componentStyles = components.flatMap((c) => c.styles ?? []);
+const sheets = appStylesheets(app, platform, importedStylesheets(entry, appDir, componentStyles), componentStyles);
 
 // 3. Type-check everything as one program, then translate.
 // `const { X } = await import('./x')` reads an app module the build links statically: the module evaluates at startup.
@@ -599,6 +602,19 @@ function coreClosedWorld(kitSources: string, appSwift: string): { initializers: 
     initializers: Object.keys(graph).filter((f) => running.has(f) && graph[f].init).map((f) => graph[f].init!),
     excluded: files.filter((f) => !compiled.has(f)).map((f) => `Core/${f}`),
   };
+}
+
+/**
+ * Where the app's Svelte puts a component's `<style>` (`compilerOptions.css` of svelte.config.js, else the version's
+ * default): `injected` styles svelte-native adds when the component mounts; `external` ones svelte-loader drops unless
+ * the app emits them itself, as NativeScript's webpack configuration does not.
+ */
+async function svelteCss(app: string, fallback: 'injected' | 'external'): Promise<string> {
+  const file = ['svelte.config.js', 'svelte.config.mjs', 'svelte.config.cjs'].map((f) => join(app, f)).find((f) => existsSync(f));
+  if (!file) return fallback;
+  const config = await import(pathToFileURL(file).href);
+  const css = (config.default ?? config)?.compilerOptions?.css;
+  return css === true ? 'injected' : css === false ? 'external' : typeof css === 'string' ? css : fallback;
 }
 
 /** Whether a source's own tsconfig (its `extends` followed) checks null: code written without it is translated as core is. */

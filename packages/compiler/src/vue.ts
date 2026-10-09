@@ -1,7 +1,9 @@
-import { parse, type SFCDescriptor } from '@vue/compiler-sfc';
+import { compileStyle, parse, type SFCDescriptor } from '@vue/compiler-sfc';
 import ts from 'typescript';
+import { createHash } from 'node:crypto';
+import { createRequire } from 'node:module';
 import { basename } from 'node:path';
-import type { Attr, ComponentIR, Event, TNode, Watcher } from './ir.ts';
+import { scopeTemplate, type Attr, type ComponentIR, type ComponentStyle, type Event, type TNode, type Watcher } from './ir.ts';
 import { rewrite, type Scope } from './rewrite.ts';
 import { ELEMENTS, MODELS } from './elements.ts';
 
@@ -51,7 +53,31 @@ export function vueComponent(path: string, text: string): ComponentIR {
   for (const f of b.later) f();
 
   const { members, template } = vueTemplate(path, descriptor, b);
-  return { name, file: path + '.ts', source: classSource(name, descriptor, b, members), props: b.props, template };
+  const { styles, scope } = vueStyles(path, descriptor);
+  return { name, file: path + '.ts', source: classSource(name, descriptor, b, members), props: b.props, template: scope ? scopeTemplate(template, scope) : template, styles };
+}
+
+/**
+ * The component's `<style>` blocks as vue-loader hands them to the app's CSS chain: preprocessed (`lang="scss"`) and, where
+ * `scoped`, each selector limited to elements carrying the component's `data-v-` attribute, which nativescript-vue sets on
+ * every element of the component's template (`setScopeId`).
+ */
+function vueStyles(path: string, descriptor: SFCDescriptor): { styles: ComponentStyle[]; scope: string | null } {
+  if (!descriptor.styles.length) return { styles: [], scope: null };
+  const scope = descriptor.styles.some((s) => s.scoped) ? `data-v-${createHash('sha256').update(path).digest('hex').slice(0, 8)}` : null;
+  const appRequire = createRequire(path);
+  const styles = descriptor.styles.map((block, k) => {
+    if (block.module) throw new Error(`${path}: <style module> (CSS modules) is not supported in a compiled release yet`);
+    if (block.src) throw new Error(`${path}: <style src> is not supported in a compiled release yet`);
+    const lang = block.lang && block.lang !== 'css' ? block.lang : undefined;
+    const result = compileStyle({
+      source: block.content, filename: path, id: scope ?? 'data-v-unscoped', scoped: !!block.scoped,
+      preprocessLang: lang as Parameters<typeof compileStyle>[0]['preprocessLang'], preprocessCustomRequire: (id: string) => appRequire(id),
+    });
+    if (result.errors.length) throw new Error(`${path}: <style> ${result.errors[0]}`);
+    return { file: `${path}.style${k}.css`, css: result.code };
+  });
+  return { styles, scope };
 }
 
 function importOf(b: Bindings, st: ts.ImportDeclaration) {
@@ -514,5 +540,6 @@ function vueOptions(path: string, descriptor: SFCDescriptor): ComponentIR {
   const { members, template } = vueTemplate(path, descriptor, b, (code) => emitCall(code, '$emit'));
   for (const g of globals) if (!b.imports.some((i) => i.includes(g))) b.imports.push(`import { ${g} } from 'nativescript-vue';`);
   const preamble = emits.size ? [`import { output } from '@angular/core';`] : [];
-  return { name, file: path + '.ts', source: classSource(name, descriptor, b, members, preamble), props: b.props, optional: optional.length ? optional : undefined, template, outputs: emits.size ? [...emits.keys()] : undefined, outputFields: emits.size ? outputFields : undefined, watchers: watchers.length ? watchers : undefined };
+  const { styles, scope } = vueStyles(path, descriptor);
+  return { name, file: path + '.ts', source: classSource(name, descriptor, b, members, preamble), props: b.props, optional: optional.length ? optional : undefined, template: scope ? scopeTemplate(template, scope) : template, styles, outputs: emits.size ? [...emits.keys()] : undefined, outputFields: emits.size ? outputFields : undefined, watchers: watchers.length ? watchers : undefined };
 }

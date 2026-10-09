@@ -80,6 +80,7 @@ const SHIMS: Record<string, string> = {
     export declare function Output(options?: any): any;
     export declare class EventEmitter<T = void> { emit(value: T): void }
     export declare enum ChangeDetectionStrategy { OnPush = 0, Eager = 1, Default = 1 }
+    export declare enum ViewEncapsulation { Emulated = 0, None = 2, ShadowDom = 3, ExperimentalIsolatedShadowDom = 4 }
     export declare function provideZoneChangeDetection(options?: any): any;
     export declare function provideZonelessChangeDetection(): any;
     export interface WritableSignal<T> { asReadonly(): Signal<T> }

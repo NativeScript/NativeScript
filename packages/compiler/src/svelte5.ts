@@ -1,6 +1,6 @@
 import ts from 'typescript';
 import { basename } from 'node:path';
-import type { Attr, ComponentIR, Event, TNode, Watcher } from './ir.ts';
+import { scopeTemplate, svelteStyles, type Attr, type ComponentIR, type Event, type SvelteCompile, type TNode, type Watcher } from './ir.ts';
 import { rewrite, type Scope } from './rewrite.ts';
 import { canonical } from './elements.ts';
 
@@ -13,7 +13,7 @@ export type SvelteParse = (source: string, options: { modern: true }) => any;
  * virtual class: state is a ref (deep, compared with `Object.is`, as a `$state`
  * proxy is), derived values are getters, and `$effect`s are watchers.
  */
-export function svelte5Component(path: string, text: string, parse: SvelteParse, platform: 'ios' | 'android' = 'ios'): ComponentIR {
+export function svelte5Component(path: string, text: string, parse: SvelteParse, platform: 'ios' | 'android' = 'ios', compile?: SvelteCompile): ComponentIR {
   const name = basename(path, '.svelte');
   const ast = parse(text, { modern: true });
   if (ast.module) throw new Error(`${path}: <script module> is not supported in a release build yet`);
@@ -272,7 +272,8 @@ export function svelte5Component(path: string, text: string, parse: SvelteParse,
     '}',
     '',
   ].join('\n');
-  return { name, file: path + '.ts', source, props, template, watchers: watchers.length ? watchers : undefined };
+  const { styles, scope: styleScope } = compile ? svelteStyles(path, text, compile, 'client') : { styles: [], scope: null };
+  return { name, file: path + '.ts', source, props, template: styleScope ? scopeTemplate(template, styleScope) : template, styles, watchers: watchers.length ? watchers : undefined };
 }
 
 function derivedBody(init: ts.CallExpression, kind: string, scope: Scope, path: string): string {

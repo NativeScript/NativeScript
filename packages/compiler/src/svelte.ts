@@ -1,7 +1,7 @@
 import { parse } from 'svelte/compiler';
 import ts from 'typescript';
 import { basename } from 'node:path';
-import type { Attr, ComponentIR, Event, TNode } from './ir.ts';
+import { scopeTemplate, svelteStyles, type Attr, type ComponentIR, type Event, type SvelteCompile, type TNode } from './ir.ts';
 import { rewrite, type Scope } from './rewrite.ts';
 import { canonical } from './elements.ts';
 
@@ -9,7 +9,7 @@ import { canonical } from './elements.ts';
  * A Svelte Native component (Svelte 4: `export let` props, reactive `let`s,
  * `$:` declarations, `$store` reads, `{#if}`/`{#each}`) as a virtual class.
  */
-export function svelteComponent(path: string, text: string, isStoreModule: (specifier: string) => boolean): ComponentIR {
+export function svelteComponent(path: string, text: string, isStoreModule: (specifier: string) => boolean, compile?: SvelteCompile): ComponentIR {
   const name = basename(path, '.svelte');
   // Svelte 4 parses scripts as JavaScript; the TypeScript is read separately, and blanked
   // to spaces in the markup so the template's offsets stay those of the file.
@@ -236,7 +236,8 @@ export function svelteComponent(path: string, text: string, isStoreModule: (spec
     '}',
     '',
   ].join('\n');
-  return { name, file: path + '.ts', source, props, template, derived };
+  const { styles, scope: styleScope } = compile ? svelteStyles(path, text, compile, 'dom') : { styles: [], scope: null };
+  return { name, file: path + '.ts', source, props, template: styleScope ? scopeTemplate(template, styleScope) : template, styles, derived };
 }
 
 /** `$favoriteIds` reads the store `favoriteIds`. */
