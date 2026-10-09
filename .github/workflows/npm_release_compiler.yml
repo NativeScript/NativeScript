@@ -124,6 +124,14 @@ jobs:
           xcodebuild -version
           packages/compiler/tests/kit-build.sh dist/packages/core
 
+      - name: Launch on the newest iOS
+        run: packages/compiler/tests/launch-check.sh packages/compiler/tests/app/platforms/native latest 30
+
+      - name: Launch on iOS 26
+        run: |
+          xcrun simctl list runtimes | grep -q 'iOS 26\.' || xcodebuild -downloadPlatform iOS -buildVersion 26.5
+          packages/compiler/tests/launch-check.sh packages/compiler/tests/app/platforms/native 26 30
+
   publish:
     name: Publish (gated by environment)
     needs: [kit, verify]
