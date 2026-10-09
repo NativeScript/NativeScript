@@ -125,7 +125,7 @@ private func callMethod(_ object: Any?, _ key: String, _ arguments: [Any?]) thro
         return cls is JSStaticKeyed.Type ? "class \(name) { }" : "function \(name.replacingOccurrences(of: "JS", with: "", options: .anchored))() { [native code] }"
     }
     if let host = jsFlat(object) as? JSHostObject, let result = try host.jsInvoke(key, arguments) { return result }
-    if let native = jsFlat(object) as? NSObject {
+    if let native = jsFlat(object).flatMap(jsAsNSObject) {
         if let result = try JSNativeDispatch.call?(native, key, arguments) { return result }
         if key == "alloc", arguments.isEmpty, let cls = native as? NSObject.Type { return JSNativeAllocation(cls) }
     }

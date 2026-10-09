@@ -656,6 +656,10 @@ export class Translator implements AsyncTranslator {
       // `T & string`, a type parameter narrowed by typeof: the primitive.
       const primitive = t.types.find((u) => u.flags & (F.StringLike | F.NumberLike | F.BooleanLike));
       if (primitive && t.types.every((u) => u === primitive || u.flags & F.TypeParameter)) return this.type(primitive, where);
+      // `T & Record<K, unknown>`, a type parameter narrowed by `key in owner`: the type parameter, its key read by name.
+      const param = t.types.find((u) => u.flags & F.TypeParameter);
+      const inNarrowing = (u: ts.Type) => !!(u.flags & F.Object) && !u.getCallSignatures().length && u.getProperties().every((p) => c.getTypeOfSymbol(p).flags & F.Unknown);
+      if (param && t.types.every((u) => u === param || inNarrowing(u))) return this.type(param, where);
     }
     if (t.isUnion()) {
       let parts = t.types.filter((u) => !(u.flags & (F.Undefined | F.Null | F.Void)));
@@ -1979,7 +1983,7 @@ ${members.join('\n')}
     lines.push('    convenience init(jsObject: Any?) {');
     lines.push(`        self.init(${[...fields.map((f) => `${ident(f.name)}: ${this.fromAny(`jsField(jsObject, ${swiftString(f.name)})`, f.type)}`), 'jsOrder: (jsObject as? JSDynamic)?.jsKeys'].join(', ')})`);
     lines.push('        jsExtra = jsObject as? JSDynamic', '    }');
-    const members = this.dynamicMembers(fields, className, false).map((l) => l.replace('default: return nil', 'default: return jsExtra?[jsKey: key] ?? nil').replace('default: break', 'default: if jsExtra == nil { jsExtra = JSObject() }; jsExtra?[jsKey: key] = newValue'));
+    const members = this.dynamicMembers(fields, className, false, [], [], false, new Set(), [], false, true);
     const optional = fields.filter((f) => f.type.endsWith('?'));
     members[0] = `    var jsKeys: [String] {\n        let order = jsOrder ?? [${fields.map((f) => swiftString(f.name)).join(', ')}]\n        let keys = order + (jsExtra?.jsKeys ?? []).filter { !order.contains($0) }\n        return keys.filter { key in ${optional.length ? `switch key { ${optional.map((f) => `case ${swiftString(f.name)}: return ${ident(f.name)} != nil`).join('; ')}; default: return true }` : 'true'} }\n    }`;
     lines.push(...members);
@@ -2058,7 +2062,7 @@ ${members.join('\n')}
   }
 
   /** `JSDynamic`: the object's keys and members by name, for printing, JSON and untyped access. */
-  private dynamicMembers(fields: { name: string; type: string }[], className: string | null, override: boolean, methods: { name: string; type: string; available?: number }[] = [], symbols: { key: string; member: string; type: string }[] = [], expando = false, raw = new Set<string>(), accessors: { name: string; get: string | null; set: string | null }[] = [], symbolKeyedBase = false): string[] {
+  private dynamicMembers(fields: { name: string; type: string }[], className: string | null, override: boolean, methods: { name: string; type: string; available?: number }[] = [], symbols: { key: string; member: string; type: string }[] = [], expando = false, raw = new Set<string>(), accessors: { name: string; get: string | null; set: string | null }[] = [], symbolKeyedBase = false, extra = false): string[] {
     const o = override ? 'override ' : '';
     const keys = fields.map((f) => (f.type.endsWith('?') ? `(self.${ident(f.name)} == nil ? [] : [${swiftString(f.name)}])` : `[${swiftString(f.name)}]`));
     const lines = [
@@ -2067,26 +2071,52 @@ ${members.join('\n')}
       `    ${o}var jsClassName: String? { ${className ? swiftString(className) : 'nil'} }`,
       `    ${o}subscript(jsKey key: String) -> Any? {`,
       '        get {',
-      '            switch key {',
-      ...fields.map((f) => `            case ${swiftString(f.name)}: return ${raw.has(f.name) ? `jsExpandoGet(self, ${swiftString(f.name)})` : isFunctionType(f.type.replace(/^\((.*)\)[?!]$/, '$1')) ? this.boxedField(`self.${ident(f.name)}`, f.type) : this.untypedEnum(`self.${ident(f.name)}`, f.type)}`),
-      ...symbols.map((f) => `            case ${f.key}: return ${f.member}`),
-      ...accessors.map((a) => `            case ${swiftString(a.name)}: return ${a.get ?? 'nil'}`),
-      ...methods.filter((m) => !fields.some((f) => f.name === m.name)).map((m) => m.available
-        ? `            case ${swiftString(m.name)}: if #available(iOS ${m.available}, *) { return ${this.boxFunction(`self.${ident(m.name)}`, m.type)} } else { return nil }`
-        : `            case ${swiftString(m.name)}: return ${this.boxFunction(`self.${ident(m.name)}`, m.type)}`),
-      `            default: return ${override ? 'super[jsKey: key]' : expando ? 'jsExpandoGet(self, key)' : 'nil'}`,
-      '            }',
+      ...this.keySwitch([
+        ...fields.map((f) => ({ name: f.name, code: `return ${raw.has(f.name) ? `jsExpandoGet(self, ${swiftString(f.name)})` : isFunctionType(f.type.replace(/^\((.*)\)[?!]$/, '$1')) ? this.boxedField(`self.${ident(f.name)}`, f.type) : this.untypedEnum(`self.${ident(f.name)}`, f.type)}` })),
+        ...accessors.map((a) => ({ name: a.name, code: `return ${a.get ?? 'nil'}` })),
+        ...methods.filter((m) => !fields.some((f) => f.name === m.name)).map((m) => ({ name: m.name, code: m.available
+          ? `if #available(iOS ${m.available}, *) { return ${this.boxFunction(`self.${ident(m.name)}`, m.type)} } else { return nil }`
+          : `return ${this.boxFunction(`self.${ident(m.name)}`, m.type)}` })),
+      ], symbols.map((f) => `            case ${f.key}: return ${f.member}`), `return ${override ? 'super[jsKey: key]' : expando ? 'jsExpandoGet(self, key)' : extra ? 'jsExtra?[jsKey: key] ?? nil' : 'nil'}`),
       '        }',
       '        set {',
-      '            switch key {',
-      ...fields.map((f) => `            case ${swiftString(f.name)}: ${raw.has(f.name) ? `jsExpandoSet(self, ${swiftString(f.name)}, newValue)` : `self.${ident(f.name)} = ${this.fromAny('newValue', f.type)}`}`),
-      ...symbols.map((f) => `            case ${f.key}: ${f.member} = ${this.fromAny('newValue', f.type)}`),
-      ...accessors.filter((a) => a.set).map((a) => `            case ${swiftString(a.name)}: ${a.set}`),
-      `            default: ${override ? 'super[jsKey: key] = newValue' : expando ? 'jsExpandoSet(self, key, newValue)' : 'break'}`,
-      '            }',
+      ...this.keySwitch([
+        ...fields.map((f) => ({ name: f.name, code: `${raw.has(f.name) ? `jsExpandoSet(self, ${swiftString(f.name)}, newValue)` : `self.${ident(f.name)} = ${this.fromAny('newValue', f.type)}`}; return` })),
+        ...accessors.filter((a) => a.set).map((a) => ({ name: a.name, code: `${a.set}; return` })),
+      ], symbols.map((f) => `            case ${f.key}: ${f.member} = ${this.fromAny('newValue', f.type)}`), override ? 'super[jsKey: key] = newValue' : expando ? 'jsExpandoSet(self, key, newValue)' : extra ? 'if jsExtra == nil { jsExtra = JSObject() }; jsExtra?[jsKey: key] = newValue' : 'break'),
       '        }',
       '    }',
     ];
+    return lines;
+  }
+
+  /**
+   * A `subscript(jsKey:)` body: the named cases switched on the key's UTF-8 length first, so a key compares
+   * only with names of its length (Swift tests a string switch's cases one by one, and a class's key that
+   * misses walks every case of each class up its chain). Each case ends the accessor; symbol-keyed cases,
+   * whose keys are known only at run time, and then `fallback`, come after.
+   */
+  private keySwitch(cases: { name: string; code: string }[], symbols: string[], fallback: string): string[] {
+    const seen = new Set<string>();
+    const byLength = new Map<number, { name: string; code: string }[]>();
+    for (const c of cases) {
+      if (seen.has(c.name)) continue;
+      seen.add(c.name);
+      const n = Buffer.byteLength(c.name, 'utf8');
+      byLength.set(n, [...(byLength.get(n) ?? []), c]);
+    }
+    const lines: string[] = [];
+    if (byLength.size) {
+      lines.push('            switch key.utf8.count {');
+      for (const [n, group] of [...byLength].sort((a, b) => a[0] - b[0])) {
+        lines.push(`            case ${n}:`, '                switch key {');
+        for (const c of group) lines.push(`                case ${swiftString(c.name)}: ${c.code}`);
+        lines.push('                default: break', '                }');
+      }
+      lines.push('            default: break', '            }');
+    }
+    if (symbols.length) lines.push('            switch key {', ...symbols, `            default: ${fallback}`, '            }');
+    else if (fallback !== 'break') lines.push(`            ${fallback}`);
     return lines;
   }
 
