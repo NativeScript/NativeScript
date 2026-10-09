@@ -10,14 +10,19 @@ import UIKit
 
 /// An NSNumber (not a Swift number boxed in `Any`).
 func jsIsNativeNumber(_ v: Any) -> Bool {
-    guard jsTypeKind(v) == .objCClass, let n = v as? NSNumber, String(describing: type(of: v)).hasPrefix("__NSCF") else { return false }
+    guard jsTypeKind(v) == .objCClass, let n = v as? NSNumber, jsIsCFNumber(n) else { return false }
     return CFGetTypeID(n) != CFBooleanGetTypeID()
 }
 
 /// A CFBoolean NSNumber's value.
 func jsNativeBoolean(_ v: Any) -> Bool? {
-    guard jsTypeKind(v) == .objCClass, let n = v as? NSNumber, String(describing: type(of: v)).hasPrefix("__NSCF"), CFGetTypeID(n) == CFBooleanGetTypeID() else { return nil }
+    guard jsTypeKind(v) == .objCClass, let n = v as? NSNumber, jsIsCFNumber(n), CFGetTypeID(n) == CFBooleanGetTypeID() else { return nil }
     return n.boolValue
+}
+
+/// A number Core Foundation made (`__NSCFNumber`, `__NSCFBoolean`), not a Swift number bridged into one.
+private func jsIsCFNumber(_ n: NSNumber) -> Bool {
+    object_getClass(n).map { NSStringFromClass($0).hasPrefix("__NSCF") } ?? false
 }
 
 /// A number where native code takes a floating-point one, as the runtime marshals it: undefined is 0,
@@ -351,7 +356,7 @@ public func jsSetNativeExpando(_ object: NSObject?, _ key: String, _ value: Any?
 /// `object.key = value` of a protocol's optional property, which Swift can't assign through the
 /// protocol: the object's setter where it implements one, else nothing.
 public func jsSetOptionalNativeProperty(_ object: Any?, _ key: String, _ value: Any?) {
-    guard let object = jsFlat(object) as? NSObject, let first = key.first else { return }
+    guard let object = jsFlat(object).flatMap(jsAsNSObject), let first = key.first else { return }
     guard object.responds(to: NSSelectorFromString("set\(first.uppercased())\(key.dropFirst()):")) else { return }
     object.setValue(value, forKey: key)
 }
@@ -364,13 +369,13 @@ public func __releaseNativeCounterpart(_ object: NSObject?) {}
 
 /// A native-property decorator's getter: the native object's getter method if it has one, else the fallback.
 public func jsNativePropertyGet(_ native: Any?, _ getter: String, fallback: Any?) -> Any? {
-    guard let object = jsFlat(native) as? NSObject, object.responds(to: NSSelectorFromString(getter)) else { return fallback }
+    guard let object = jsFlat(native).flatMap(jsAsNSObject), object.responds(to: NSSelectorFromString(getter)) else { return fallback }
     return jsFromNative(object.perform(NSSelectorFromString(getter))?.takeUnretainedValue())
 }
 
 /// A native-property decorator's setter: the native setter `setFoo:` called with the value, by key.
 public func jsNativePropertySet(_ native: Any?, _ setter: String, _ value: Any?) {
-    guard let object = jsFlat(native) as? NSObject, setter.hasPrefix("set"), object.responds(to: NSSelectorFromString(setter + ":")) else { return }
+    guard let object = jsFlat(native).flatMap(jsAsNSObject), setter.hasPrefix("set"), object.responds(to: NSSelectorFromString(setter + ":")) else { return }
     let key = setter.dropFirst(3).prefix(1).lowercased() + setter.dropFirst(4)
     object.setValue(jsToNative(value), forKey: key)
 }
@@ -445,7 +450,9 @@ extension JSDate {
 }
 
 public func jsToNative(_ value: Any?) -> Any? {
-    switch jsFlat(value) {
+    let value = jsFlat(value)
+    if let object = value, jsIsOpaqueObject(object), let native = jsAsNSObject(object), jsIsNativeOnly(native) { return native }
+    switch value {
     case nil, is JSNull: return nil
     case let d as Double: return NSNumber(value: d)
     case let b as Bool: return NSNumber(value: b)

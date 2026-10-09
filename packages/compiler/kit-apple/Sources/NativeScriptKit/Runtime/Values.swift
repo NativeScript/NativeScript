@@ -89,7 +89,7 @@ func jsTypeKind(_ value: Any) -> JSTypeKind {
 /// Objective-C one that is not an NSNumber, an NSString or a boxed Swift value.
 func jsIsOpaqueObject(_ value: Any) -> Bool {
     switch jsTypeKind(value) {
-    case .swiftClass: if !(value is NSObject) { return true }
+    case .swiftClass: if jsAsNSObject(value) == nil { return true }
     case .objCClass: if !(value is NSObject) { return false }
     default: return false
     }
@@ -99,8 +99,20 @@ func jsIsOpaqueObject(_ value: Any) -> Bool {
 
 private let jsSwiftValueClass: AnyClass? = NSClassFromString("__SwiftValue")
 
+/// `value as? NSObject`, which for an instance of a Swift class first looks for a bridging conformance, slowly for each new class.
+func jsAsNSObject(_ value: Any) -> NSObject? {
+    guard jsTypeKind(value) == .swiftClass else { return value as? NSObject }
+    let object = value as AnyObject
+    var cls: AnyClass? = object_getClass(object)
+    while let current = cls {
+        if current === NSObject.self { return unsafeDowncast(object, to: NSObject.self) }
+        cls = class_getSuperclass(current)
+    }
+    return nil
+}
+
 /// Whether an Objective-C object's class takes none of the runtime's protocols `jsGet` tries, once per class.
-private func jsIsNativeOnly(_ object: NSObject) -> Bool {
+func jsIsNativeOnly(_ object: NSObject) -> Bool {
     let cls: AnyClass = type(of: object)
     let id = ObjectIdentifier(cls)
     jsNativeOnlyLock.lock()
@@ -439,7 +451,7 @@ public func jsGetIfPresent(_ object: Any?, _ key: String) throws -> Any? {
 public func jsGet(_ object: Any?, _ key: String) throws -> Any? {
     let object = jsFlat(object)
     if let value = object, jsIsOpaqueObject(value) {
-        if let native = value as? NSObject {
+        if let native = jsAsNSObject(value) {
             if jsIsNativeOnly(native) { return jsNativeGet(native, key) }
         } else {
             if let plain = value as? JSObject { return try plain.get(key) }
