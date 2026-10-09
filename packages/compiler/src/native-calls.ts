@@ -1061,6 +1061,19 @@ export class NativeAPI {
     const fnType = blockType(this.unalias(target));
     if (!fnType) return t.expr(fn);
     const sig = [fnType.text, fnType.params.join(', '), fnType.result];
+    // A block Swift declares to return an object (`-> CachedURLResponse`, NS_ASSUME_NONNULL) that script returns null from: Swift has no such value.
+    const result = fnType.result.trim();
+    if (/^[A-Z][\w.]*$/.test(result) && !NUMBERS.has(result) && !['String', 'Bool', 'Void'].includes(result) && !this.isStructType(result) && !this.isEnumType(result)) {
+      const nulls: ts.Node[] = [];
+      const visit = (n: ts.Node) => {
+        if (n !== fn && ts.isFunctionLike(n)) return;
+        const returned = ts.isReturnStatement(n) ? n.expression : n === fn.body && !ts.isBlock(n) ? (n as ts.Expression) : undefined;
+        if (returned && (returned.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(returned) && returned.text === 'undefined'))) nulls.push(returned);
+        ts.forEachChild(n, visit);
+      };
+      visit(fn.body);
+      if (nulls.length) throw t.error(nulls[0], `null returned from a block Swift declares to return a ${result} (nonnull)`);
+    }
     const params = fnType.params;
     const names = fn.parameters.map((p, k) => (ts.isIdentifier(p.name) ? p.name.text : `__p${k}`));
     // A block's own block parameters (`completion` of a deferred menu's provider) escape: Objective-C marks none noescape here.

@@ -61,6 +61,24 @@ export function xmlApp(appDir: string, files: string[], sources: string[], entry
     const value = (n: string) => (classes.has(n) ? `__nsClass(() => new ${local(n)}())` : local(n));
     entries.push(`  ${JSON.stringify(rel(f))}: { ${names.map((n) => `${JSON.stringify(n)}: ${value(n)}`).join(', ')} },`);
   });
+  // A package an XML file names as a namespace (`xmlns:Lottie="@nativescript-community/ui-lottie"`): the module under that
+  // name, with the classes the XML makes of it (`<Lottie:LottieView>`), as the bundle's XML loader registers it.
+  const packages = new Map<string, Set<string>>();
+  for (const { text } of xml) {
+    const source = text.replace(/<!--[\s\S]*?-->/g, '');
+    for (const [, prefix, name] of source.matchAll(/\bxmlns:(\w+)\s*=\s*"([^"]+)"/g)) {
+      if (/^(https?:|~|\.|\/)/.test(name)) continue;
+      const used = packages.get(name) ?? new Set<string>();
+      for (const m of source.matchAll(new RegExp(`<${prefix}:([A-Za-z_]\\w*)(?=[\\s/>])`, 'g'))) used.add(m[1]);
+      packages.set(name, used);
+    }
+  }
+  [...packages].forEach(([name, used], k) => {
+    if (!used.size) return;
+    const local = (n: string) => `__x${k}_${n}`;
+    imports.push(`import { ${[...used].map((n) => `${n} as ${local(n)}`).join(', ')} } from '${name}';`);
+    entries.push(`  ${JSON.stringify(name)}: { ${[...used].map((n) => `${JSON.stringify(n)}: __nsClass(() => new ${local(n)}())`).join(', ')} },`);
+  });
   const source = `${imports.join('\n')}\n\n__nsRegisterAppModules({\n${entries.join('\n')}\n});\n`;
   return { registry: { file: join(appDir, '__app_modules.ts'), source }, xml, pageStyles, elements: [...elements].sort() };
 }
