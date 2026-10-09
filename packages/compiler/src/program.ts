@@ -182,6 +182,43 @@ const GLOBALS = `
   declare function cancelAnimationFrame(id: number): void;
   declare function __nsRegisterAppModules(modules: any): void;
   declare function __nsClass(make: () => any): any;
+  declare function atob(data: string): string;
+  declare function btoa(data: string): string;
+  interface TextEncoder { readonly encoding: string; encode(input?: string): Uint8Array<ArrayBuffer> }
+  declare var TextEncoder: { prototype: TextEncoder; new (): TextEncoder };
+  interface TextDecoderOptions { fatal?: boolean; ignoreBOM?: boolean }
+  interface TextDecoder { readonly encoding: string; readonly fatal: boolean; readonly ignoreBOM: boolean; decode(input?: AllowSharedBufferSource): string }
+  declare var TextDecoder: { prototype: TextDecoder; new (label?: string, options?: TextDecoderOptions): TextDecoder };
+  type AllowSharedBufferSource = ArrayBufferLike | ArrayBufferView;
+  type BufferSource = ArrayBufferView<ArrayBuffer> | ArrayBuffer;
+  interface Algorithm { name: string }
+  type AlgorithmIdentifier = Algorithm | string;
+  type HashAlgorithmIdentifier = AlgorithmIdentifier;
+  type BigInteger = Uint8Array<ArrayBuffer>;
+  type KeyType = 'private' | 'public' | 'secret';
+  type KeyUsage = 'decrypt' | 'deriveBits' | 'deriveKey' | 'encrypt' | 'sign' | 'unwrapKey' | 'verify' | 'wrapKey';
+  interface KeyAlgorithm { name: string }
+  interface HmacKeyGenParams extends Algorithm { hash: HashAlgorithmIdentifier; length?: number }
+  interface RsaKeyGenParams extends Algorithm { modulusLength: number; publicExponent: BigInteger }
+  interface RsaHashedKeyGenParams extends RsaKeyGenParams { hash: HashAlgorithmIdentifier }
+  interface RsaOaepParams extends Algorithm { label?: BufferSource }
+  interface CryptoKey { readonly algorithm: KeyAlgorithm; readonly extractable: boolean; readonly type: KeyType; readonly usages: KeyUsage[] }
+  interface CryptoKeyPair { privateKey: CryptoKey; publicKey: CryptoKey }
+  interface SubtleCrypto {
+    digest(algorithm: AlgorithmIdentifier, data: BufferSource): Promise<ArrayBuffer>;
+    generateKey(algorithm: RsaHashedKeyGenParams, extractable: boolean, keyUsages: ReadonlyArray<KeyUsage>): Promise<CryptoKeyPair>;
+    generateKey(algorithm: HmacKeyGenParams, extractable: boolean, keyUsages: ReadonlyArray<KeyUsage>): Promise<CryptoKey>;
+    sign(algorithm: AlgorithmIdentifier, key: CryptoKey, data: BufferSource): Promise<ArrayBuffer>;
+    verify(algorithm: AlgorithmIdentifier, key: CryptoKey, signature: BufferSource, data: BufferSource): Promise<boolean>;
+    encrypt(algorithm: AlgorithmIdentifier | RsaOaepParams, key: CryptoKey, data: BufferSource): Promise<ArrayBuffer>;
+    decrypt(algorithm: AlgorithmIdentifier | RsaOaepParams, key: CryptoKey, data: BufferSource): Promise<ArrayBuffer>;
+  }
+  interface Crypto {
+    readonly subtle: SubtleCrypto;
+    getRandomValues<T extends ArrayBufferView | null>(array: T): T;
+    randomUUID(): \`\${string}-\${string}-\${string}-\${string}-\${string}\`;
+  }
+  declare var crypto: Crypto;
 `;
 
 /** The platform's native API typings, as an app's `references.d.ts` includes them. */

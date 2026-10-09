@@ -10,7 +10,8 @@ const THROWING_BUILTINS = new Set(['JSON.parse', 'JSON.stringify', 'Array.reduce
   'Iterator.next', 'Iterator.return', 'Iterator.throw', 'Generator.next', 'Generator.return', 'Generator.throw',
   ...['Int8', 'Uint8', 'Uint8Clamped', 'Int16', 'Uint16', 'Int32', 'Uint32', 'Float32', 'Float64', 'BigInt64', 'BigUint64'].flatMap((t) => [`${t}Array.set`, `${t}Array.reduce`, `${t}Array.reduceRight`, `${t}Array.from`]),
   ...['Int8', 'Uint8', 'Int16', 'Uint16', 'Int32', 'Uint32', 'Float32', 'Float64', 'BigInt64', 'BigUint64'].flatMap((t) => [`DataView.get${t}`, `DataView.set${t}`]),
-  'Number.toLocaleString', 'BigInt.toLocaleString', 'Function.apply', 'CallableFunction.apply', 'Object.defineProperties', 'Object.getPrototypeOf', 'Array.toLocaleString', 'Date.toLocaleString', 'Date.toLocaleDateString', 'Date.toLocaleTimeString', 'DateTimeFormat.format']);
+  'Number.toLocaleString', 'BigInt.toLocaleString', 'Function.apply', 'CallableFunction.apply', 'Object.defineProperties', 'Object.getPrototypeOf', 'Array.toLocaleString', 'Date.toLocaleString', 'Date.toLocaleDateString', 'Date.toLocaleTimeString', 'DateTimeFormat.format',
+  'atob', 'btoa', 'Crypto.getRandomValues', 'TextDecoder.decode']);
 
 /**
  * Which functions throw, worked out across the call graph: a function is

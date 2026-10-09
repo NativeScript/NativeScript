@@ -139,6 +139,10 @@ export interface ComponentInfo {
 const TYPED_ARRAYS = ['Int8Array', 'Uint8Array', 'Uint8ClampedArray', 'Int16Array', 'Uint16Array', 'Int32Array', 'Uint32Array', 'Float32Array', 'Float64Array', 'BigInt64Array', 'BigUint64Array'];
 /** The library's buffer types, each the runtime's class of its name with a `JS` prefix. */
 const BUFFER_TYPES = ['ArrayBuffer', ...TYPED_ARRAYS, 'DataView'];
+/** WinterTC's web classes as NativeScript's globals declare them: the runtime's class of each name with a `JS` prefix. */
+const WEB_CLASSES = ['TextEncoder', 'TextDecoder', 'Crypto', 'SubtleCrypto', 'CryptoKey', 'CryptoKeyPair', 'KeyAlgorithm'];
+/** The web's option and algorithm dictionaries, which script writes as object literals and the runtime reads by key. */
+const WEB_DICTIONARIES = ['TextDecoderOptions', 'Algorithm', 'HmacKeyGenParams', 'RsaKeyGenParams', 'RsaHashedKeyGenParams', 'RsaOaepParams'];
 const isTypedArrayType = (t: string) => /^JS(Int8|Uint8|Uint8Clamped|Int16|Uint16|Int32|Uint32|Float32|Float64|BigInt64|BigUint64)Array$/.test(t);
 // No prototype: a name like `toString` is no error class.
 const BUILTIN_CLASSES: Record<string, string> = Object.assign(Object.create(null), { Promise: 'JSThenable', Array: 'JSArrayProtocol', Map: 'JSMapProtocol', Set: 'JSSetProtocol', Date: 'JSDate' }, Object.fromEntries(BUFFER_TYPES.map((n) => [n, `JS${n}`])));
@@ -680,6 +684,10 @@ export class Translator implements AsyncTranslator {
     const args = () => t.aliasTypeArguments ?? c.getTypeArguments(t as ts.TypeReference);
     const arg = (k: number) => this.type(args()[k], where);
     if (name && BUFFER_TYPES.includes(name) && isLibDeclaration(sym?.declarations?.[0])) return `JS${name}`;
+    if (name && sym?.declarations?.[0]?.getSourceFile().fileName === '/__shims__/globals.d.ts') {
+      if (WEB_CLASSES.includes(name)) return `JS${name}`;
+      if (WEB_DICTIONARIES.includes(name)) return 'Any?';
+    }
     switch (name) {
       case 'Sig': case 'Ref': case 'VueRef': case 'WritableSignal': case 'InputSignal': case 'Writable': return `Signal<${arg(0)}>`;
       case 'Signal': return arg(0);
@@ -6697,6 +6705,7 @@ ${members.join('\n')}
         }
         case 'cancelAnimationFrame': return `jsCancelAnimationFrame(${this.expr(arg(0))})`;
         case 'unescape': return `jsUnescape(${this.str(arg(0))})`;
+        case 'atob': case 'btoa': return `js${name[0].toUpperCase()}${name.slice(1)}(${this.str(arg(0))})`;
         case 'encodeURIComponent': case 'encodeURI': case 'decodeURIComponent': case 'decodeURI':
           return `js${name[0].toUpperCase()}${name.slice(1)}(${this.str(arg(0))})`;
         case 'Symbol': return `jsSymbol(${arg(0) ? this.str(arg(0)) : 'nil'})`;
