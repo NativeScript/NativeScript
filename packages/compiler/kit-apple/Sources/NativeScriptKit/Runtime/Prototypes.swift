@@ -161,7 +161,7 @@ public protocol JSExpando: JSDynamic, JSSymbolKeyed, JSDeletable {
 
 /// A key a class does not declare as a field: a symbol-named method, the instance's own property, or its prototype's.
 public func jsExpandoGet(_ object: JSExpando, _ key: String) -> Any? {
-    if jsIsSymbolKey(key), let method = object.jsSymbolMethod(key) { return method }
+    if jsIsSymbolKey(key), let method = jsClassSymbolMethod(object, key) { return method }
     if let own = object.jsExpando, own.has(key) {
         do { return try own.get(key, receiver: object) } catch { jsReportUncaught(jsCaught(error)); return nil }
     }
@@ -180,10 +180,34 @@ public func jsExpandoSet(_ object: JSExpando, _ key: String, _ value: Any?) {
     object.jsExpando![key] = value
 }
 
+/// A class's method for a symbol key, looked up once per class: `jsSymbolMethod` compares the key with
+/// every symbol its class and superclasses declare a method under, and core asks for one with each
+/// property it sets. The methods take their receiver as `this`, so a class's are the same for every instance.
+func jsClassSymbolMethod(_ object: JSExpando, _ key: String) -> JSMethod? {
+    let id = JSClassKey(cls: ObjectIdentifier(type(of: object)), key: key)
+    jsSymbolMethodsLock.lock()
+    let known = jsSymbolMethods[id]
+    jsSymbolMethodsLock.unlock()
+    if let known { return known }
+    let method = object.jsSymbolMethod(key)
+    jsSymbolMethodsLock.lock()
+    jsSymbolMethods[id] = .some(method)
+    jsSymbolMethodsLock.unlock()
+    return method
+}
+
+struct JSClassKey: Hashable {
+    let cls: ObjectIdentifier
+    let key: String
+}
+
+nonisolated(unsafe) private var jsSymbolMethods: [JSClassKey: JSMethod?] = [:]
+private let jsSymbolMethodsLock = NSLock()
+
 /// `key in object` for what the object does not declare as a field.
 public func jsExpandoHas(_ object: JSExpando, _ key: String) -> Bool {
     if object.jsExpando?.has(key) == true { return true }
-    if jsIsSymbolKey(key), object.jsSymbolMethod(key) != nil { return true }
+    if jsIsSymbolKey(key), jsClassSymbolMethod(object, key) != nil { return true }
     return JSPrototypes.holder(type(of: object), key) != nil
 }
 

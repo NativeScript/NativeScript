@@ -10,14 +10,19 @@ import UIKit
 
 /// An NSNumber (not a Swift number boxed in `Any`).
 func jsIsNativeNumber(_ v: Any) -> Bool {
-    guard let n = v as? NSNumber, String(describing: type(of: v)).hasPrefix("__NSCF") else { return false }
+    guard jsTypeKind(v) == .objCClass, let n = v as? NSNumber, jsIsCFNumber(n) else { return false }
     return CFGetTypeID(n) != CFBooleanGetTypeID()
 }
 
 /// A CFBoolean NSNumber's value.
 func jsNativeBoolean(_ v: Any) -> Bool? {
-    guard let n = v as? NSNumber, String(describing: type(of: v)).hasPrefix("__NSCF"), CFGetTypeID(n) == CFBooleanGetTypeID() else { return nil }
+    guard jsTypeKind(v) == .objCClass, let n = v as? NSNumber, jsIsCFNumber(n), CFGetTypeID(n) == CFBooleanGetTypeID() else { return nil }
     return n.boolValue
+}
+
+/// A number Core Foundation made (`__NSCFNumber`, `__NSCFBoolean`), not a Swift number bridged into one.
+private func jsIsCFNumber(_ n: NSNumber) -> Bool {
+    object_getClass(n).map { NSStringFromClass($0).hasPrefix("__NSCF") } ?? false
 }
 
 /// A number where native code takes a floating-point one, as the runtime marshals it: undefined is 0,
@@ -107,7 +112,8 @@ func jsNativeGet(_ object: NSObject, _ key: String) -> Any? {
     if let own = object as? JSNativeMembers, let value = own.jsMember(key) { return value }
     // Collections answer key-value coding for their elements, not themselves (`value(forKey: "count")` maps over an array).
     if let collection = jsCollectionMember(object, key) { return collection }
-    if jsHasObjCProperty(type(of: object), key) {
+    let absent = jsNativeAbsent(type(of: object), key)
+    if !absent, jsHasObjCProperty(type(of: object), key) {
         // Key-value coding cannot box a Core Foundation object (`UIColor.CGColor`) and raises; the getter's message send gives it.
         if let getter = jsCFObjectGetter(type(of: object), key), object.responds(to: getter) {
             return object.perform(getter)?.takeUnretainedValue()
@@ -125,8 +131,34 @@ func jsNativeGet(_ object: NSObject, _ key: String) -> Any? {
     if object.responds(to: one), jsPerformable(type(of: object), one) {
         return { (args: [Any?]) throws -> Any? in jsFromNative(object.perform(one, with: jsToNative(jsArg(args, 0)))?.takeUnretainedValue()) } as JSFunction
     }
-    if let method = jsNativeMethod(object, key) { return method }
+    if !absent {
+        if let method = jsNativeMethod(object, key) { return method }
+        jsNativeMarkAbsent(type(of: object), key)
+    }
     return jsExpandos(object)?[key]
+}
+
+/// A key a class has neither an Objective-C property nor a script-named method for: a property script
+/// sets on native objects, read before it is set (`view.outerShadowContainerLayer`). Looking it up again
+/// walks every class's property list and selector table.
+private struct JSNativeMemberKey: Hashable {
+    let cls: ObjectIdentifier
+    let key: String
+}
+
+nonisolated(unsafe) private var jsNativeAbsentKeys = Set<JSNativeMemberKey>()
+private let jsNativeAbsentLock = NSLock()
+
+private func jsNativeAbsent(_ cls: AnyClass, _ key: String) -> Bool {
+    jsNativeAbsentLock.lock()
+    defer { jsNativeAbsentLock.unlock() }
+    return jsNativeAbsentKeys.contains(JSNativeMemberKey(cls: ObjectIdentifier(cls), key: key))
+}
+
+private func jsNativeMarkAbsent(_ cls: AnyClass, _ key: String) {
+    jsNativeAbsentLock.lock()
+    defer { jsNativeAbsentLock.unlock() }
+    jsNativeAbsentKeys.insert(JSNativeMemberKey(cls: ObjectIdentifier(cls), key: key))
 }
 
 /// Whether a method takes and gives only objects (or nothing back), as `perform` assumes; one only forwarded has no types to tell.
@@ -229,27 +261,41 @@ nonisolated(unsafe) private var jsSelectors: [ObjectIdentifier: [String: Objecti
 
 /// The selector of the class or one it extends that script names `key`.
 private func jsSelector(_ cls: AnyClass, _ key: String) -> ObjectiveC.Selector? {
-    let id = ObjectIdentifier(cls)
-    if jsSelectors[id] == nil {
-        var names: [String: ObjectiveC.Selector] = [:]
-        var c: AnyClass? = cls
-        while let current = c {
+    // Each class's own methods are listed once, and shared by every class extending it.
+    var c: AnyClass? = cls
+    while let current = c {
+        let id = ObjectIdentifier(current)
+        if jsSelectors[id] == nil {
+            var names: [String: ObjectiveC.Selector] = [:]
             var count: UInt32 = 0
             if let list = class_copyMethodList(current, &count) {
+                var bytes: [UInt8] = []
                 for i in 0..<Int(count) {
                     let selector = method_getName(list[i])
-                    let parts = NSStringFromSelector(selector).split(separator: ":", omittingEmptySubsequences: true).map(String.init)
-                    guard let first = parts.first else { continue }
-                    let name = first + parts.dropFirst().map { $0.prefix(1).uppercased() + $0.dropFirst() }.joined()
+                    // The selector's parts joined, each after the first capitalized: the bytes of its C name, without
+                    // the strings a split and join of thousands of UIKit selectors would make.
+                    bytes.removeAll(keepingCapacity: true)
+                    var p = sel_getName(selector)
+                    var partStart = false
+                    while p.pointee != 0 {
+                        let c = UInt8(bitPattern: p.pointee)
+                        if c == UInt8(ascii: ":") { partStart = !bytes.isEmpty }
+                        else if partStart { bytes.append(c >= 0x61 && c <= 0x7A ? c - 0x20 : c); partStart = false }
+                        else { bytes.append(c) }
+                        p += 1
+                    }
+                    if bytes.isEmpty { continue }
+                    let name = String(decoding: bytes, as: UTF8.self)
                     if names[name] == nil { names[name] = selector }
                 }
                 free(list)
             }
-            c = class_getSuperclass(current)
+            jsSelectors[id] = names
         }
-        jsSelectors[id] = names
+        if let selector = jsSelectors[id]?[key] { return selector }
+        c = class_getSuperclass(current)
     }
-    return jsSelectors[id]?[key]
+    return nil
 }
 
 /// Properties script added to a native object, kept with the object (an associated object).
@@ -265,15 +311,34 @@ nonisolated(unsafe) private var jsExpandoKey: UInt8 = 0
 /// Whether the class or one it extends declares an Objective-C property of that name.
 /// The accessor an Objective-C property declares under a custom name (`G` getter or `S` setter attribute), if any.
 private func jsCustomAccessor(_ cls: AnyClass, _ key: String, _ attribute: Character) -> String? {
+    jsObjCPropertyAttributes(cls, key)?.split(separator: ",").first(where: { $0.first == attribute }).map { String($0.dropFirst()) }
+}
+
+/// The attributes of the Objective-C property a class or the nearest class it extends declares under a name,
+/// looked up once per class and name: `class_getProperty` scans each class's property list by name.
+func jsObjCPropertyAttributes(_ cls: AnyClass, _ name: String) -> String? {
+    let id = JSClassKey(cls: ObjectIdentifier(cls), key: name)
+    jsPropertyAttributesLock.lock()
+    let known = jsPropertyAttributes[id]
+    jsPropertyAttributesLock.unlock()
+    if let known { return known }
+    var found: String?
     var c: AnyClass? = cls
     while let current = c {
-        if let property = class_getProperty(current, key), let attributes = property_getAttributes(property).map(String.init(cString:)) {
-            return attributes.split(separator: ",").first(where: { $0.first == attribute }).map { String($0.dropFirst()) }
+        if let property = class_getProperty(current, name), let attributes = property_getAttributes(property) {
+            found = String(cString: attributes)
+            break
         }
         c = class_getSuperclass(current)
     }
-    return nil
+    jsPropertyAttributesLock.lock()
+    jsPropertyAttributes[id] = .some(found)
+    jsPropertyAttributesLock.unlock()
+    return found
 }
+
+nonisolated(unsafe) private var jsPropertyAttributes: [JSClassKey: String?] = [:]
+private let jsPropertyAttributesLock = NSLock()
 
 /// The object whose class implements `selector`, following `forwardingTarget(for:)` as a
 /// message send does (`UITextView`'s text input traits): what key-value coding can reach.
@@ -302,26 +367,13 @@ func jsSetterReceiver(_ object: NSObject, _ key: String) -> NSObject? {
 
 /// The getter of a property whose type is a Core Foundation object (`@property CGColorRef CGColor`, encoded `T^{CGColor=}`).
 func jsCFObjectGetter(_ cls: AnyClass, _ name: String) -> ObjectiveC.Selector? {
-    var c: AnyClass? = cls
-    while let current = c {
-        if let property = class_getProperty(current, name), let raw = property_getAttributes(property) {
-            let attributes = String(cString: raw).split(separator: ",")
-            guard attributes.first?.hasPrefix("T^{") == true else { return nil }
-            let custom = attributes.first { $0.hasPrefix("G") }.map { String($0.dropFirst()) }
-            return NSSelectorFromString(custom ?? name)
-        }
-        c = class_getSuperclass(current)
-    }
-    return nil
+    guard let attributes = jsObjCPropertyAttributes(cls, name)?.split(separator: ","), attributes.first?.hasPrefix("T^{") == true else { return nil }
+    let custom = attributes.first { $0.hasPrefix("G") }.map { String($0.dropFirst()) }
+    return NSSelectorFromString(custom ?? name)
 }
 
 func jsHasObjCProperty(_ cls: AnyClass, _ name: String) -> Bool {
-    var c: AnyClass? = cls
-    while let current = c {
-        if class_getProperty(current, name) != nil { return true }
-        c = class_getSuperclass(current)
-    }
-    return false
+    jsObjCPropertyAttributes(cls, name) != nil
 }
 
 /// A native object read and written by a computed key (`view[property]`), as the runtime marshals its properties.
@@ -349,7 +401,7 @@ public func jsSetNativeExpando(_ object: NSObject?, _ key: String, _ value: Any?
 /// `object.key = value` of a protocol's optional property, which Swift can't assign through the
 /// protocol: the object's setter where it implements one, else nothing.
 public func jsSetOptionalNativeProperty(_ object: Any?, _ key: String, _ value: Any?) {
-    guard let object = jsFlat(object) as? NSObject, let first = key.first else { return }
+    guard let object = jsFlat(object).flatMap(jsAsNSObject), let first = key.first else { return }
     guard object.responds(to: NSSelectorFromString("set\(first.uppercased())\(key.dropFirst()):")) else { return }
     object.setValue(value, forKey: key)
 }
@@ -362,13 +414,13 @@ public func __releaseNativeCounterpart(_ object: NSObject?) {}
 
 /// A native-property decorator's getter: the native object's getter method if it has one, else the fallback.
 public func jsNativePropertyGet(_ native: Any?, _ getter: String, fallback: Any?) -> Any? {
-    guard let object = jsFlat(native) as? NSObject, object.responds(to: NSSelectorFromString(getter)) else { return fallback }
+    guard let object = jsFlat(native).flatMap(jsAsNSObject), object.responds(to: NSSelectorFromString(getter)) else { return fallback }
     return jsFromNative(object.perform(NSSelectorFromString(getter))?.takeUnretainedValue())
 }
 
 /// A native-property decorator's setter: the native setter `setFoo:` called with the value, by key.
 public func jsNativePropertySet(_ native: Any?, _ setter: String, _ value: Any?) {
-    guard let object = jsFlat(native) as? NSObject, setter.hasPrefix("set"), object.responds(to: NSSelectorFromString(setter + ":")) else { return }
+    guard let object = jsFlat(native).flatMap(jsAsNSObject), setter.hasPrefix("set"), object.responds(to: NSSelectorFromString(setter + ":")) else { return }
     let key = setter.dropFirst(3).prefix(1).lowercased() + setter.dropFirst(4)
     object.setValue(jsToNative(value), forKey: key)
 }
@@ -443,7 +495,9 @@ extension JSDate {
 }
 
 public func jsToNative(_ value: Any?) -> Any? {
-    switch jsFlat(value) {
+    let value = jsFlat(value)
+    if let object = value, jsIsOpaqueObject(object), let native = jsAsNSObject(object), jsIsNativeOnly(native) { return native }
+    switch value {
     case nil, is JSNull: return nil
     case let d as Double: return NSNumber(value: d)
     case let b as Bool: return NSNumber(value: b)
