@@ -560,5 +560,5 @@ fun jsLiteralKeyOrder(parts: List<List<String>>, fields: List<String>): List<Str
     return keys.filter(index).sortedBy { it.toLong() } + keys.filter { !index(it) }
 }
 
-/** `globalThis`. */
-val jsGlobalThis: JSObject = JSObject()
+/** `globalThis`, with the constructors NativeScript's runtime puts there. */
+val jsGlobalThis: JSObject = JSObject().also { it["DOMException"] = JSDOMException::class.java }

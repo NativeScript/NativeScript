@@ -25,6 +25,8 @@ export interface JavaMember {
   owner: string;
   /** Annotated `@Nullable`: the field's value or the method's result, which Kotlin then types `T?`. */
   nullable?: boolean;
+  /** Annotated `@NonNull`: the method's result, which an override must give as `T`. */
+  nonNull?: boolean;
   /** The method's parameters annotated `@Nullable`. */
   nullableParams?: boolean[];
   /** The method's parameters annotated `@NonNull`, which Kotlin types `T`: an override must take them so. */
@@ -173,14 +175,18 @@ export function parseClass(b: Buffer): JavaClass {
     }
     return found;
   };
-  const attributes = (owner: { signature?: string; nullable?: boolean; nullableParams?: boolean[]; nonNullParams?: boolean[] }) => {
+  const attributes = (owner: { signature?: string; nullable?: boolean; nonNull?: boolean; nullableParams?: boolean[]; nonNullParams?: boolean[] }) => {
     const n = b.readUInt16BE(p); p += 2;
     for (let k = 0; k < n; k++) {
       const attr = utf8[b.readUInt16BE(p)];
       const len = b.readUInt32BE(p + 2);
       q = p + 6;
       if (attr === 'Signature') owner.signature = utf8[b.readUInt16BE(p + 6)];
-      else if (attr === 'RuntimeVisibleAnnotations' || attr === 'RuntimeInvisibleAnnotations') { if (nullableIn() === 1) owner.nullable = true; }
+      else if (attr === 'RuntimeVisibleAnnotations' || attr === 'RuntimeInvisibleAnnotations') {
+        const kind = nullableIn();
+        if (kind === 1) owner.nullable = true;
+        else if (kind === 2) owner.nonNull = true;
+      }
       else if (attr === 'RuntimeVisibleParameterAnnotations' || attr === 'RuntimeInvisibleParameterAnnotations') {
         const count = b[q++];
         const list = owner.nullableParams ?? [];

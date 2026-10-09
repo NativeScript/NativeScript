@@ -348,7 +348,10 @@ class JSArray<T>(storage: ArrayList<T>) : Iterable<T>, JSReactiveConvertible {
         return acc
     }
 
+    fun <U> reduce(f: (U, T, Double, JSArray<T>) -> U, initial: U): U = reduce({ a, v, i -> f(a, v, i, this) }, initial)
+
     fun reduce(f: (T, T) -> T): T = reduce { a, v, _ -> f(a, v) }
+    fun reduce(f: (T, T, Double, JSArray<T>) -> T): T = reduce { a, v, i -> f(a, v, i, this) }
     fun reduce(f: (T, T, Double) -> T): T {
         if (size == 0) throw JSException(JSTypeError("Reduce of empty array with no initial value"))
         var acc = read(0)
@@ -363,10 +366,14 @@ class JSArray<T>(storage: ArrayList<T>) : Iterable<T>, JSReactiveConvertible {
         return acc
     }
 
-    fun reduceRight(f: (T, T) -> T): T {
+    fun <U> reduceRight(f: (U, T, Double, JSArray<T>) -> U, initial: U): U = reduceRight({ a, v, i -> f(a, v, i, this) }, initial)
+
+    fun reduceRight(f: (T, T) -> T): T = reduceRight { a, v, _ -> f(a, v) }
+    fun reduceRight(f: (T, T, Double, JSArray<T>) -> T): T = reduceRight { a, v, i -> f(a, v, i, this) }
+    fun reduceRight(f: (T, T, Double) -> T): T {
         if (size == 0) throw JSException(JSTypeError("Reduce of empty array with no initial value"))
         var acc = read(size - 1)
-        for (i in size - 2 downTo 0) acc = f(acc, read(i))
+        for (i in size - 2 downTo 0) acc = f(acc, read(i), i.toDouble())
         return acc
     }
 

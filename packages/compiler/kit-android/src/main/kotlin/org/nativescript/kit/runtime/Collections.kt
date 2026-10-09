@@ -159,6 +159,7 @@ class JSMap<K, V>() : Iterable<Pair<K, V>>, JSReactiveConvertible {
     val size: Double get() { jsTracker?.track(); return table.live.toDouble() }
 
     fun forEach(f: (V) -> Unit) = forEach { v, _ -> f(v) }
+    fun forEach(f: (V, K, JSMap<K, V>) -> Unit) = forEach { v, k -> f(v, k, this) }
     fun forEach(f: (V, K) -> Unit) {
         val cursor = table.makeCursor()
         while (true) { val e = table.next(cursor) ?: break; f(e.value, e.key) }
@@ -229,6 +230,7 @@ class JSSet<T>() : Iterable<T>, JSReactiveConvertible {
     val size: Double get() { jsTracker?.track(); return table.live.toDouble() }
 
     fun forEach(f: (T) -> Unit) = forEach { v, _ -> f(v) }
+    fun forEach(f: (T, T, JSSet<T>) -> Unit) = forEach { v, k -> f(v, k, this) }
     fun forEach(f: (T, T) -> Unit) {
         val cursor = table.makeCursor()
         while (true) { val e = table.next(cursor) ?: break; f(e.key, e.key) }
@@ -273,7 +275,7 @@ class JSRecord<V>(val obj: JSObject) : JSDynamic, JSReactiveConvertible {
     @Suppress("UNCHECKED_CAST")
     operator fun get(key: String): V? = obj[key] as V?
 
-    operator fun set(key: String, value: V) { obj[key] = value }
+    operator fun set(key: String, value: V?) { obj[key] = value }
 
     fun delete(key: String): Boolean = obj.delete(key)
     fun has(key: String): Boolean = obj.has(key)
