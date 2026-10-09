@@ -58,7 +58,7 @@ const CODE_FILE = 'codeFile';
 const CSS_FILE = 'cssFile';
 const IMPORT = 'import';
 
-const createComponentInstance = profile('createComponentInstance', (elementName: string, namespace: string): { instance: View; instanceModule: Object } => {
+const createComponentInstance = profile('createComponentInstance', (elementName: string, namespace: string | undefined): { instance: View; instanceModule: Object } => {
 	let instance: View;
 	let instanceModule: Object;
 	// Get module id.
@@ -176,7 +176,7 @@ const applyComponentAttributes = profile('applyComponentAttributes', (instance: 
 	}
 });
 
-export function getComponentModule(elementName: string, namespace: string, attributes: Object, moduleExports: Object, moduleNamePath?: string, isRootComponent?: boolean): ComponentModule {
+export function getComponentModule(elementName: string, namespace: string | undefined, attributes: Object, moduleExports: Object, moduleNamePath?: string, isRootComponent?: boolean): ComponentModule {
 	// Support lower-case-dashed component declaration in the XML (https://github.com/NativeScript/NativeScript/issues/309).
 	elementName = elementName
 		.split('-')

@@ -538,7 +538,7 @@ export namespace xml2ui {
 			return this._templateProperty.elementName;
 		}
 
-		private parseStartElement(prefix: string, namespace: string, elementName: string, attributes: Object) {
+		private parseStartElement(prefix: string | undefined, namespace: string | undefined, elementName: string, attributes: Object) {
 			if (this._state === TemplateParser.State.EXPECTING_START) {
 				this._state = TemplateParser.State.PARSING;
 			} else if (this._state === TemplateParser.State.FINISHED) {

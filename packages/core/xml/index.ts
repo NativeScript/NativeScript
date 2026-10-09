@@ -47,8 +47,8 @@ export class ParserEventType {
 export class ParserEvent {
 	private _eventType: string;
 	private _position: Position;
-	private _prefix: string;
-	private _namespace: string;
+	private _prefix: string | undefined;
+	private _namespace: string | undefined;
 	private _elementName: string;
 	private _attributes: Object;
 	private _data: string;
@@ -95,14 +95,14 @@ export class ParserEvent {
 	/**
 	 * If namespace processing is enabled, returns the prefix of the element in case the eventType is ParserEventType.StartElement or ParserEventType.EndElement.
 	 */
-	public get prefix(): string {
+	public get prefix(): string | undefined {
 		return this._prefix;
 	}
 
 	/**
 	 *  If namespace processing is enabled, returns the namespace of the element in case the eventType is ParserEventType.StartElement or ParserEventType.EndElement.
 	 */
-	public get namespace(): string {
+	public get namespace(): string | undefined {
 		return this._namespace;
 	}
 

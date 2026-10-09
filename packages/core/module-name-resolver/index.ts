@@ -15,7 +15,7 @@ export class ModuleNameResolver implements ModuleNameResolverType {
 		initAppForModuleResolver();
 	}
 
-	public resolveModuleName(path: string, ext: string): string {
+	public resolveModuleName(path: string, ext: string): string | null {
 		const key = path + ext;
 		let result: string = this._cache[key];
 		if (result === undefined) {
@@ -34,7 +34,7 @@ export class ModuleNameResolver implements ModuleNameResolverType {
 		this._cache = {};
 	}
 
-	private resolveModuleNameImpl(path: string, ext: string): string {
+	private resolveModuleNameImpl(path: string, ext: string): string | null {
 		let result: string = null;
 		ext = ext ? '.' + ext : '';
 
@@ -52,7 +52,7 @@ export class ModuleNameResolver implements ModuleNameResolverType {
 	}
 }
 
-export function resolveModuleName(path: string, ext: string): string {
+export function resolveModuleName(path: string, ext: string): string | null {
 	if (global.__snapshot) {
 		return resolveModuleSnapshot(path, ext);
 	}
