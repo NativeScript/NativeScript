@@ -36,18 +36,10 @@ public protocol JSStringConvertible {
 // MARK: - Optionals inside Any
 
 protocol JSOptionalProtocol {
-    var jsFlattened: Any? { get }
     static var jsNone: Any { get }
 }
 
 extension Optional: JSOptionalProtocol {
-    var jsFlattened: Any? {
-        switch self {
-        case .none: return nil
-        case .some(let wrapped): return jsFlat(wrapped)
-        }
-    }
-
     static var jsNone: Any { Optional<Wrapped>.none as Any }
 }
 
@@ -56,7 +48,8 @@ extension Optional: JSOptionalProtocol {
 public func jsFlat(_ value: Any?) -> Any? {
     guard let value else { return nil }
     guard jsTypeKind(value) == .optional else { return value }
-    if let optional = value as? JSOptionalProtocol { return optional.jsFlattened }
+    // A cast to `Any?` unwraps one level of any optional without looking up its type's conformance to a protocol.
+    if let unwrapped = value as? Any? { return jsFlat(unwrapped) }
     return value
 }
 
