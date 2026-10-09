@@ -184,9 +184,12 @@ func jsNumeric(_ value: Any) -> Double? {
 // MARK: - Strings compared as JavaScript compares them
 
 /// `a === b` for strings: equal code units (Swift's `==` also equates canonically equivalent strings).
-@inline(__always)
 public func jsStringEquals(_ a: String, _ b: String) -> Bool {
-    a.utf8.count == b.utf8.count && a.utf8.elementsEqual(b.utf8)
+    let x = a.utf8, y = b.utf8
+    let count = x.count
+    guard count == y.count else { return false }
+    if let same = x.withContiguousStorageIfAvailable({ p in y.withContiguousStorageIfAvailable { q in count == 0 || memcmp(p.baseAddress!, q.baseAddress!, count) == 0 } }), let same { return same }
+    return x.elementsEqual(y)
 }
 
 /// `a < b` for strings: UTF-16 code unit order.
@@ -201,11 +204,14 @@ struct JSPropertyKey: Hashable {
 
     static func == (a: JSPropertyKey, b: JSPropertyKey) -> Bool { jsStringEquals(a.string, b.string) }
 
+    /// The bytes folded into one word first (FNV-1a), which the seeded Hasher then mixes once: hashing every
+    /// byte through Hasher made each property lookup on a JavaScript object about twice as slow.
     func hash(into hasher: inout Hasher) {
+        var folded: UInt64 = 0xcbf2_9ce4_8422_2325
         let utf8 = string.utf8
-        let hashed: Void? = utf8.withContiguousStorageIfAvailable { hasher.combine(bytes: UnsafeRawBufferPointer($0)) }
-        if hashed == nil { for byte in utf8 { hasher.combine(byte) } }
-        hasher.combine(utf8.count)
+        let hashed: Void? = utf8.withContiguousStorageIfAvailable { for byte in $0 { folded = (folded ^ UInt64(byte)) &* 0x100_0000_01b3 } }
+        if hashed == nil { for byte in utf8 { folded = (folded ^ UInt64(byte)) &* 0x100_0000_01b3 } }
+        hasher.combine(folded)
     }
 }
 
