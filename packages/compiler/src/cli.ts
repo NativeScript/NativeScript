@@ -444,7 +444,7 @@ const switches = (zone ? '        Zone.enabled = true\n' : '') + (patched?.patch
 // Core's modules first, as the app's bundle evaluates @nativescript/core before its own code.
 const start = switches + `        CorePackages.useAppConfig(appPackageJSON)\n        CoreModules.initialize()\n        Reactivity.schedule = .${SCHEDULE[framework]}\n` + (mounted
   // The entry's own statements run the app (`Application.run`), after every module it imports.
-  ? `${xmlModules}        NativeScriptApplication.cssAST = appCSS\n${inits}`
+  ? `${xmlModules}        NativeScriptApplication.prepare(cssAST: appCSS)\n${inits}`
   : `${inits}${prelude}        NativeScriptApplication.run(cssAST: appCSS) { ${root}().render() }\n`);
 const dispatch = nativeDispatch(native.modules, untypedMembers(checker, sourceFiles), deploymentTarget, native.classes);
 if (dispatch) writeFileSync(join(out, 'Sources', '__NativeDispatch.swift'), `// Compiled by ns-native: the plugins' native members untyped TypeScript calls, by name.\nimport Foundation\nimport UIKit\nimport NativeScriptKit\n${native.modules.map((m) => `import ${m}\n`).join('')}\n${dispatch}`);

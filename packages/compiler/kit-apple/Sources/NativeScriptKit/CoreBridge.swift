@@ -173,11 +173,17 @@ public enum NativeScriptApplication {
         run(css: "", root)
     }
 
-    public static func run(css: String, _ root: @escaping () -> View) {
+    /// What every app's entry sets up before its first module runs, whether the kit runs the app or the app's own `Application.run` does.
+    public static func prepare(cssAST: String? = nil) {
         // Console output reaches a pipe (`simctl launch --console`, Xcode) line by line, as the JS runtime's does.
         setvbuf(stdout, nil, _IOLBF, 0)
         // Promise callbacks and reactive updates run after each batch of UIKit work (an event handler, a layout pass), as the JS runtime drains microtasks after native calls into script.
         JSEventLoop.installRunLoopObserver()
+        if let cssAST { self.cssAST = cssAST }
+    }
+
+    public static func run(css: String, _ root: @escaping () -> View) {
+        prepare()
         CorePackages.appCSS = css
         CorePackages.installModuleLoader()
         CoreModules.initialize()
