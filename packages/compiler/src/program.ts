@@ -1,10 +1,12 @@
 import ts from 'typescript';
-import { existsSync, readFileSync } from 'node:fs';
-import { dirname, isAbsolute, resolve } from 'node:path';
+import { existsSync, readFileSync, realpathSync } from 'node:fs';
+import { dirname, isAbsolute, join, resolve } from 'node:path';
 import { foldPlatform, type Platform } from './platform.ts';
 import { KIT_PLUGINS, NATIVE_CONTROLLERS, NATIVE_VIEWS, nativeViewOf } from './core.ts';
 import type { PluginSources } from './plugins/source.ts';
-import { packageOf, runtimeFile } from './plugins/resolve.ts';
+import { packageDirOf, packageOf, readPackage, runtimeFile, runtimeRelativeJs } from './plugins/resolve.ts';
+import { packageKind } from './plugins/kind.ts';
+import type { JsGraph } from './js-modules.ts';
 import { NATIVE_VIEWS_ANDROID } from './core-kotlin.ts';
 
 /**
@@ -243,6 +245,10 @@ export interface Program {
   resolved: (containing: string, specifier: string) => string | undefined;
   /** The app's own configuration checks without strictNullChecks. */
   lenient: boolean;
+  /** Imports of packages compiled from their published JavaScript: the importing file and specifier → the JavaScript file it loads. */
+  jsImports: Map<string, string>;
+  /** Whether a declaration file types such a package (its own, its `@types`, or a dependency's): its types are dynamic values in Swift. */
+  jsDeclared: (file: string) => boolean;
 }
 
 /**
@@ -258,7 +264,7 @@ const notPlugin = (pkg: string) => NOT_PLUGINS.test(pkg) || KIT_PLUGINS.includes
  * typed by the real ES2022 library, @nativescript/core's own declarations
  * and the platform's native API typings.
  */
-export function createProgram(roots: string[], virtual: Map<string, string>, platform: Platform = 'ios', modulesDir?: string, plugins?: PluginSources, declarations: string[] = [], replacements: Record<string, string> = {}, overrides: ts.CompilerOptions = {}): Program {
+export function createProgram(roots: string[], virtual: Map<string, string>, platform: Platform = 'ios', modulesDir?: string, plugins?: PluginSources, declarations: string[] = [], replacements: Record<string, string> = {}, overrides: ts.CompilerOptions = {}, js?: JsGraph, warn: (message: string) => void = console.warn): Program {
   const shimPath = (m: string) => `/__shims__/${m.replace(/[@/]/g, '_')}.d.ts`;
   const files = new Map<string, string>(virtual);
   for (const [m, text] of Object.entries(SHIMS)) files.set(shimPath(m), text);
@@ -299,6 +305,49 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
   const readFile = host.readFile.bind(host);
   host.readFile = (name) => files.get(name) ?? readFile(name);
   const resolutions = new Map<string, string>();
+  const jsImports = new Map<string, string>();
+  const jsDirs = new Set<string>();
+  const jsDeclarationFiles = new Set<string>();
+  /** Plugins compiled from their published JavaScript, their source not found or not matching it. */
+  const fallbacks = new Set<string>();
+  const real = (f: string) => { try { return realpathSync(f); } catch { return f; } };
+  /** A package compiled from its JavaScript, its `@types` and its dependencies: what declares the types its values have. */
+  const addJsDirs = (dir: string) => {
+    const r = real(dir);
+    if (jsDirs.has(r)) return;
+    jsDirs.add(r);
+    const pkg = readPackage(dir);
+    const types = join(modules, '@types', String(pkg.name ?? '').replace(/^@([^/]+)\//, '$1__'));
+    if (existsSync(join(types, 'package.json')) && !String(pkg.name).startsWith('@types/')) addJsDirs(types);
+    for (const dep of Object.keys({ ...pkg.dependencies, ...pkg.peerDependencies })) {
+      const d = packageDirOf(dep, modules, join(dir, 'package.json'));
+      if (d && packageKind(d) === 'library') addJsDirs(d);
+    }
+  };
+  /** Declarations of `any` for a JavaScript module with none: an ES module's exports by name, a CommonJS module's as a whole. */
+  const untypedShim = (pkg: string, file?: string) => {
+    const path = `/__shims__/untyped/${(file ?? pkg).replace(/[@/.]/g, '_')}.d.ts`;
+    if (files.has(path)) return path;
+    const m = file && js ? js.module(file) : null;
+    if (m?.kind === 'esm') {
+      const names = js!.exportNames(m).filter((n) => n !== 'default' && /^[A-Za-z_$][\w$]*$/.test(n));
+      files.set(path, [...names.map((n) => `export declare const ${n}: any;`), 'declare const __default: any;', 'export default __default;', ''].join('\n'));
+    } else files.set(path, 'declare const untyped: any;\nexport = untyped;\n');
+    return path;
+  };
+  /** A bare import of a package compiled from its published JavaScript: typed by its declarations, or `any` where it has none. */
+  const jsLibrary = (lit: ts.StringLiteralLike, containing: string, file: string, packageDir: string, from: string): ts.ResolvedModuleWithFailedLookupLocations => {
+    jsImports.set(`${containing}\0${lit.text}`, file);
+    addJsDirs(packageDir);
+    const typed = ts.resolveModuleName(lit.text, from, options, host);
+    const f = typed.resolvedModule?.resolvedFileName;
+    if (f && /\.d\.[mc]?ts$/.test(f)) {
+      const owner = /^(.*[\\/]node_modules[\\/](?:@types[\\/])?(?:@[^\\/]+[\\/])?[^\\/]+)[\\/]/.exec(f)?.[1];
+      if (owner) jsDirs.add(real(owner));
+      return typed;
+    }
+    return { resolvedModule: { resolvedFileName: untypedShim(packageOf(lit.text), file), extension: ts.Extension.Dts } };
+  };
   host.resolveModuleNameLiterals = (literals, containing) =>
     literals.map((lit) => {
       const r = resolveLiteral(lit, containing);
@@ -326,6 +375,14 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
             return { resolvedModule: { resolvedFileName: candidate, extension: candidate.endsWith('.tsx') ? ts.Extension.Tsx : ts.Extension.Ts } };
           }
         }
+        // The app's own JavaScript file (`import x from './legacy.cjs'`): compiled as a package's published JavaScript is.
+        const jsFile = js && isSource(containing) && !typeOnly ? runtimeRelativeJs(m, containing, platform) : null;
+        if (jsFile && /\.[mc]?js$/.test(jsFile)) {
+          jsImports.set(`${containing}\0${lit.text}`, jsFile);
+          const declaration = ['.d.ts', '.d.cts', '.d.mts'].map((x) => jsFile.replace(/\.[mc]?js$/, x)).find((f) => existsSync(f));
+          if (declaration) { jsDeclarationFiles.add(real(declaration)); return { resolvedModule: { resolvedFileName: declaration, extension: ts.Extension.Dts } }; }
+          return { resolvedModule: { resolvedFileName: untypedShim(jsFile, jsFile), extension: ts.Extension.Dts } };
+        }
       }
       // A package the app replaces for the native build is the app's module.
       const replacement = !m.startsWith('.') && !m.startsWith('/') ? replacements[packageOf(m)] : undefined;
@@ -334,15 +391,31 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
       // A type-only import still resolves to the source where the file also imports values from the package: TypeScript resolves a specifier once per file.
       const valueImport = (st: ts.Statement) => ts.isImportDeclaration(st) && !st.importClause?.isTypeOnly && ts.isStringLiteral(st.moduleSpecifier) && st.moduleSpecifier.text === m;
       const typeOnly = ts.isImportDeclaration(lit.parent) && !!lit.parent.importClause?.isTypeOnly && !(lit.parent.parent && ts.isSourceFile(lit.parent.parent) && lit.parent.parent.statements.some(valueImport));
-      if (plugins && isSource(containing) && !m.startsWith('.') && !m.startsWith('/') && !notPlugin(packageOf(m)) && !typeOnly) {
-        const js = runtimeFile(m, modules, platform, 'import', containing);
-        if (js) {
-          plugins.get(js.packageDir);
-          const source = plugins.sourceOf(js.file);
-          if (source) {
-            pluginFiles.add(source);
-            for (const t of plugins.get(js.packageDir).typings) extraRoots.add(t);
-            return { resolvedModule: { resolvedFileName: source, extension: source.endsWith('.tsx') ? ts.Extension.Tsx : ts.Extension.Ts } };
+      if ((plugins || js) && isSource(containing) && !m.startsWith('.') && !m.startsWith('/') && !notPlugin(packageOf(m)) && !typeOnly) {
+        const found = runtimeFile(m, modules, platform, 'import', containing);
+        if (found) {
+          const typesFrom = pluginFiles.has(containing) || (!containing.startsWith(dirname(modules) + '/')) ? resolve(modules, '..', 'index.ts') : containing;
+          if (js && (packageKind(found.packageDir) === 'library' || fallbacks.has(found.packageDir))) return jsLibrary(lit, containing, found.file, found.packageDir, typesFrom);
+          if (plugins) {
+            let source: string | null = null;
+            try {
+              plugins.get(found.packageDir);
+              source = plugins.sourceOf(found.file);
+              if (source) plugins.verify([source]);
+            } catch (e) {
+              // A plugin whose source cannot be found or does not match what npm installed: its published JavaScript.
+              if (!js) throw e;
+              if (!fallbacks.has(found.packageDir)) {
+                fallbacks.add(found.packageDir);
+                warn(`warning: ${(e as Error).message.split('\n')[0].replace(/:$/, '')}; compiling ${packageOf(m)}'s published JavaScript instead`);
+              }
+              return jsLibrary(lit, containing, found.file, found.packageDir, typesFrom);
+            }
+            if (source) {
+              pluginFiles.add(source);
+              for (const t of plugins.get(found.packageDir).typings) extraRoots.add(t);
+              return { resolvedModule: { resolvedFileName: source, extension: source.endsWith('.tsx') ? ts.Extension.Tsx : ts.Extension.Ts } };
+            }
           }
         }
       }
@@ -404,7 +477,14 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
     throw new Error(`the app does not type-check as the release build sees it:\n${text}`);
   }
   const ordered = [...roots, ...virtual.keys(), ...pluginFiles].map((f) => program.getSourceFile(f)!).filter(Boolean);
-  return { program, checker: program.getTypeChecker(), files: ordered, pluginFiles: [...pluginFiles], resolved: (containing, specifier) => resolutions.get(`${containing}\0${specifier}`), lenient };
+  const jsDeclared = (file: string) => {
+    if (file.startsWith('/__shims__/untyped/')) return true;
+    const r = real(file);
+    if (jsDeclarationFiles.has(r)) return true;
+    for (const d of jsDirs) if (r.startsWith(d + '/')) return true;
+    return false;
+  };
+  return { program, checker: program.getTypeChecker(), files: ordered, pluginFiles: [...pluginFiles], resolved: (containing, specifier) => resolutions.get(`${containing}\0${specifier}`), lenient, jsImports, jsDeclared };
 }
 
 /**

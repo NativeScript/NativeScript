@@ -46,6 +46,9 @@ import { generateProject, iosDependencies, packageLines, podfile, productLines, 
 import { SourceLines } from './source-lines.ts';
 import { archive, automaticSigningSettings, findProfile, signingSettings, type ExportMethod } from './ios-signing.ts';
 import { KIT_APPLE } from './paths.ts';
+import { JsGraph } from './js-modules.ts';
+import { JsEmitter } from './js-dynamic.ts';
+import { JsBoundary } from './js-boundary.ts';
 
 const args = process.argv.slice(2);
 const opt = (name: string, fallback?: string) => { const i = args.indexOf(name); return i >= 0 ? args[i + 1] : fallback; };
@@ -284,7 +287,9 @@ const declarations = platform === 'ios' ? [
 ] : [];
 const replacements = pluginReplacements(app, platform);
 modules.push(...Object.values(replacements).filter((f) => !modules.includes(f)));
-const { checker, program, files: sourceFiles, pluginFiles, resolved, lenient: lenientApp } = createProgram(modules, virtual, platform, undefined, plugins, declarations, replacements);
+// npm packages that are not NativeScript plugins compile from the JavaScript npm installed (iOS).
+const jsGraph = platform === 'ios' ? new JsGraph(platform, nodeModules(app)) : undefined;
+const { checker, program, files: sourceFiles, pluginFiles, resolved, lenient: lenientApp, jsImports, jsDeclared } = createProgram(modules, virtual, platform, undefined, plugins, declarations, replacements, {}, jsGraph, (m) => console.warn(m));
 const infos = new Map<string, ComponentInfo & { outputs?: string[]; outputFields?: Record<string, string>; optional?: string[]; passed?: boolean; fragment?: boolean; initThrows?: boolean }>(components.map((c) => [c.name, { name: c.name, props: c.props, outputs: c.outputs, outputFields: c.outputFields, optional: c.optional, passed: c.passed, fragment: framework === 'angular' && !c.page && isFragment(c.template) }]));
 // A closed world: the plugin code the app reaches, checked against what npm installed before it is compiled.
 const appFiles = [...modules, ...components.map((c) => c.file)];
@@ -351,7 +356,10 @@ const native = pluginNative(plugins.all(), out, {
   app: { module: name, src: join(appResourcesDir(app), 'iOS', 'src'), declarations: nativeTypings },
 });
 dependencies.dispose();
-const translator = new Translator(checker, infos, sourceFiles, { pluginFiles, reach, properties });
+const jsEmitter = jsGraph ? new JsEmitter(jsGraph, sourceLines) : null;
+const jsBoundary = jsGraph && jsEmitter && jsImports.size ? new JsBoundary(jsGraph, jsEmitter, checker, jsImports, jsDeclared) : null;
+jsBoundary?.reach(program.getSourceFiles().filter((f) => !f.isDeclarationFile));
+const translator = new Translator(checker, infos, sourceFiles, { pluginFiles, reach, properties, js: jsBoundary });
 translator.compiledFiles = new Set(compiledPlugins);
 const writtenStrictness = new Map<string, boolean>();
 for (const f of pluginFiles) if (!writtenStrict(f)) translator.lenientFiles.add(f);
@@ -413,6 +421,26 @@ for (const m of translated) {
   while (taken.has(file.toLowerCase())) file += '_module';
   taken.add(file.toLowerCase());
   writeFileSync(join(out, 'Sources', file + '.swift'), header(m.file) + located(m.code));
+}
+// The npm packages' modules the app reaches, one Swift file each.
+if (translator.js && jsEmitter) {
+  const t0 = Date.now();
+  const jsHeader = (from: string) => `// Compiled by ns-native from ${relative(app, from)}; JavaScript npm installed.\nimport Foundation\nimport NativeScriptKit\n\n`;
+  const compiled = jsGraph!.compiled();
+  for (const m of compiled) {
+    try {
+      writeFileSync(join(out, 'Sources', `${m.name}.swift`), jsHeader(m.file) + located(jsEmitter.emitModule(m)));
+    } catch (e) {
+      if (!translator.errors) throw e;
+      translator.errors.push((e as Error).message);
+    }
+  }
+  for (const w of new Set(jsGraph!.warnings)) console.warn(`warning: ${w}`);
+  say(`${compiled.length} JavaScript modules of ${new Set(compiled.map((m) => m.file.replace(/^.*\/node_modules\/((?:@[^/]+\/)?[^/]+).*$/, '$1'))).size} npm packages compiled to Swift in ${Date.now() - t0} ms`);
+  if (translator.errors?.length) {
+    console.error([...new Set(translator.errors)].join('\n'));
+    if (!args.includes('--keep-going')) throw new Error(`${new Set(translator.errors).size} constructs the release build cannot translate yet`);
+  }
 }
 const shapes = SourceLines.strip((translator.interfacesOutside(new Set(translated.map((m) => m.file))) + translator.shapesCode()).trim());
 if (shapes) writeFileSync(join(out, 'Sources', '__Objects.swift'), `// Compiled by ns-native: the app's object literals without a declared type.\nimport Foundation\nimport NativeScriptKit\n${native.modules.length || /\bUI[A-Z]/.test(shapes) ? `import UIKit\n${native.modules.map((m) => `import ${m}\n`).join('')}` : ''}${SDK_IMPORTS}\n${shapes}\n`);

@@ -189,6 +189,8 @@ function targetsOf(source: NativeSources, errors: string[], deps: Dependencies):
       else if (f === 'Info.plist') fail(p, `an Info.plist is merged into the app's only from ${relative(source.dir, ios)}/Info.plist`);
       else if (/\.(xcconfig|entitlements)$/.test(f)) fail(p, `build settings and entitlements are read only from ${relative(source.dir, ios)}/build.xcconfig and app.entitlements`);
       else if (f.endsWith('.a')) fail(p, 'static libraries are not supported yet (an .xcframework is)');
+      // TypeScript declarations of the native API (`typings/objc!Module.d.ts`), which the build reads from the native module itself.
+      else if (f.endsWith('.d.ts')) continue;
       else fail(p, 'not a source file the build knows what to do with');
     }
   };

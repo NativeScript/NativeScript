@@ -10,6 +10,7 @@ import { recognizePatterns, type Patterns } from './patterns.ts';
 import { DEPLOYMENT, NativeAPI } from './native-calls.ts';
 import { lookupClass, lookupMember, type NativeMethod } from './natives/symbols.ts';
 import type { Reach } from './reach.ts';
+import type { JsBoundary } from './js-boundary.ts';
 
 /**
  * TypeScript to Swift, typed by the checker, with JavaScript's semantics
@@ -499,7 +500,8 @@ export class Translator implements AsyncTranslator {
   /** Library mode: generated classes whose names the hand-ported kit also declares. */
   readonly kitClashes: string[] = [];
 
-  constructor(checker: ts.TypeChecker, components: Map<string, ComponentInfo>, files: readonly ts.SourceFile[], options: { pluginFiles?: Iterable<string>; reach?: Reach; properties?: Properties; library?: Translator['library']; lenient?: boolean } = {}) {
+  constructor(checker: ts.TypeChecker, components: Map<string, ComponentInfo>, files: readonly ts.SourceFile[], options: { pluginFiles?: Iterable<string>; reach?: Reach; properties?: Properties; library?: Translator['library']; lenient?: boolean; js?: JsBoundary | null } = {}) {
+    this.js = options.js ?? null;
     this.library = options.library ?? null;
     this.lenientAll = options.lenient ?? false;
     this.pluginFiles = new Set(options.pluginFiles ?? []);
@@ -512,7 +514,7 @@ export class Translator implements AsyncTranslator {
     this.lowering = new AsyncLowering(this);
     this.core = new CoreAPI(this);
     this.native = new NativeAPI(this);
-    this.throwsInfo = new Throws(checker, files, (n) => { try { return this.typeOf(n) === 'Any?'; } catch { return false; } }, (c) => (ts.isCallExpression(c) && (this.native.throwingCall(c) || this.replaceableCall(c) || (!!this.library && ts.isElementAccessExpression(c.expression) && !!this.setNativeOf(c.expression.argumentExpression)))) || (!this.library && this.core.throwingCall(c)), (d) => this.compiledMember(d), (e) => { try { return this.isExpando(e) || (!this.library && !isWriteTarget(e) && this.core.throwingAccess(e)); } catch { return false; } }, (cls) => { const kit = this.library ? null : this.kitRootOf(cls); return !!kit && this.core.initThrows(kit); }, (fn) => ts.isFunctionLike(fn) && !!this.memberCounterpart(fn as ts.FunctionLikeDeclaration));
+    this.throwsInfo = new Throws(checker, files, (n) => { try { return this.typeOf(n) === 'Any?'; } catch { return false; } }, (c) => (!!this.js && this.typeOf(c.expression) === 'Any?') || (ts.isCallExpression(c) && (this.native.throwingCall(c) || this.replaceableCall(c) || (!!this.library && ts.isElementAccessExpression(c.expression) && !!this.setNativeOf(c.expression.argumentExpression)))) || (!this.library && this.core.throwingCall(c)), (d) => this.compiledMember(d), (e) => { try { return this.isExpando(e) || (!this.library && !isWriteTarget(e) && this.core.throwingAccess(e)); } catch { return false; } }, (cls) => { const kit = this.library ? null : this.kitRootOf(cls); return !!kit && this.core.initThrows(kit); }, (fn) => ts.isFunctionLike(fn) && !!this.memberCounterpart(fn as ts.FunctionLikeDeclaration));
     for (const f of files) {
       const visit = (n: ts.Node) => {
         if (ts.isClassLike(n)) {
@@ -592,6 +594,20 @@ export class Translator implements AsyncTranslator {
   /** The plugin files the build compiles; a class or interface only the others declare is no Swift type. */
   compiledFiles: ReadonlySet<string> | null = null;
 
+  /** The npm packages compiled from their published JavaScript: what the app imports from them, and the declarations that type them. */
+  js: JsBoundary | null = null;
+
+  /**
+   * A type a JavaScript package's declarations give (a class, an interface, a function, an alias of
+   * theirs): its values are the dynamic values the package's compiled code makes, read and called by name.
+   */
+  private jsDeclaredType(t: ts.Type): boolean {
+    if (!this.js) return false;
+    const sym = t.aliasSymbol ?? t.getSymbol();
+    const decls = sym?.declarations;
+    return !!decls?.length && decls.every((d) => this.js!.declared(d.getSourceFile().fileName));
+  }
+
   /** A plugin's class or interface in a file the build leaves out (`TextMetrics` named only in a cast): any value. */
   private uncompiledType(t: ts.Type): boolean {
     const sym = t.aliasSymbol ?? t.getSymbol();
@@ -606,6 +622,7 @@ export class Translator implements AsyncTranslator {
     const c = this.checker;
     const F = ts.TypeFlags;
     if (this.uncompiledType(t)) return 'Any?';
+    if (this.jsDeclaredType(t)) return 'Any?';
     if (t.flags & F.EnumLike) {
       const native = this.native.type(t);
       if (native) return native;
@@ -1476,6 +1493,8 @@ export class Translator implements AsyncTranslator {
     };
     for (const st of sf.statements) {
       current = st;
+      // A JavaScript package's modules evaluate before the module importing them.
+      if (ts.isImportDeclaration(st) && this.js) for (const m of this.js.evaluatedBy(st)) later(() => `    try ${m}.evaluate()`);
       if (ts.isImportDeclaration(st) || ts.isExportDeclaration(st) || ts.isExportAssignment(st)) continue;
       if (hasModifier(st, ts.SyntaxKind.DeclareKeyword)) continue;
       // An interface merged into a class of its name only types it: the class is the declaration.
@@ -5337,6 +5356,11 @@ ${members.join('\n')}
 
   private identifier(e: ts.Identifier): string {
     const name = e.text;
+    const fromJs = this.js?.importRead(e);
+    if (fromJs) {
+      const t = this.typeOf(e);
+      return t === 'Any?' ? fromJs : this.fromAny(fromJs, t);
+    }
     // `parseInt`, `parseFloat` as values (`valueConverter: parseInt`): functions of the string they are given.
     const parse = this.parseFunction(e);
     if (parse) return parse.code;
@@ -5764,6 +5788,12 @@ ${members.join('\n')}
   private propertyRead(e: ts.PropertyAccessExpression): string {
     const name = e.name.text;
     const target = e.expression;
+    // `R.map` of `import * as R` from a JavaScript package: the export itself.
+    const member = ts.isIdentifier(target) && !isWriteTarget(e) ? this.js?.namespaceMember(target, name) : null;
+    if (member) {
+      const t = this.typeOf(e);
+      return t === 'Any?' ? member : this.fromAny(member, t);
+    }
     if (this.isNativeExpando(e)) {
       const t = this.typeOf(e);
       const read = `jsNativeExpando(${this.expr(target)}, ${swiftString(name)})`;
@@ -6789,7 +6819,11 @@ ${members.join('\n')}
     const declared = this.checker.getResolvedSignature(e)?.getDeclaration();
     const isFunctionValue = !declared || ts.isJSDocSignature(declared) || !('body' in declared && declared.body) || ts.isArrowFunction(declared) || ts.isFunctionExpression(declared);
     // A function held untyped (one of several function types): called as script calls it.
-    if (this.typeOf(callee) === 'Any?') return `jsCall(${this.expr(callee)}${this.untypedArgs(e.arguments)})`;
+    if (this.typeOf(callee) === 'Any?') {
+      const code = `jsCall(${this.expr(callee)}${this.untypedArgs(e.arguments)})`;
+      const t = this.typeOf(e);
+      return t === 'Any?' || t === 'Void' || !this.js ? code : this.fromAny(code, t);
+    }
     const fn = ts.isIdentifier(callee) ? this.refName(callee) : ident(name);
     const qualified = this.appModule && shadowedByMember(e, this.resolve(callee)?.declarations?.[0], fn, ident) ? `${this.appModule}.${fn}` : fn;
     const args = this.args(e, isFunctionValue ? undefined : this.arity(e));
@@ -8317,7 +8351,7 @@ ${members.join('\n')}
 }
 
 /** Swift's spelling of what the async lowering writes. */
-const SWIFT_SYNTAX: AsyncSyntax = {
+export const SWIFT_SYNTAX: AsyncSyntax = {
   voidType: 'Void',
   fnType: (params, ret) => `(${params.map((p) => (p === '() -> Void' ? `@escaping ${p}` : p)).join(', ')}) -> ${ret}`,
   constant: (name, type, value) => `let ${name}${type ? `: ${type}` : ''} = ${value}`,
