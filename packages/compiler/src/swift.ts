@@ -650,6 +650,8 @@ export class Translator implements AsyncTranslator {
       // `UIApplicationDelegate & { prototype: UIApplicationDelegate }`: a native class object, as the iOS typings write one.
       const prototype = (u: ts.Type) => { const p = !this.native.type(u) && u.getProperty('prototype'); return !!p && !!this.native.type(c.getTypeOfSymbol(p)); };
       if (t.types.some(prototype) && t.types.some((u) => this.native.type(u))) return 'AnyClass';
+      // Whichever of unrelated native classes an object is (`NSDictionary & NSData & NSArray`): NativeAPI.either.
+      if (this.native.either(t)) return 'NSObject';
       // Two classes (`value: UIColor` narrowed by `instanceof Color`): the one the test found, which comes last.
       const cls = [...t.types].reverse().find((u) => this.native.type(u) || (u.getSymbol()?.flags ?? 0) & ts.SymbolFlags.Class);
       if (cls) return this.type(cls, where);
@@ -743,6 +745,9 @@ export class Translator implements AsyncTranslator {
       case 'PropertyDescriptor': case 'PropertyDescriptorMap': if (isLibDeclaration(sym?.declarations?.[0])) return 'Any?'; break;
       case 'Reference':
         if (sym?.declarations?.[0] && /[\\/]interop\.d\.ts$/.test(sym.declarations[0].getSourceFile().fileName)) return 'InteropReference';
+        break;
+      case 'Pointer':
+        if (sym?.declarations?.[0] && /[\\/]interop\.d\.ts$/.test(sym.declarations[0].getSourceFile().fileName)) return 'InteropPointer';
         break;
       case 'WeakMap': return `JSWeakMap<${arg(0)}, ${arg(1)}>`;
       case 'WeakSet': return `JSWeakSet<${arg(0)}>`;
@@ -4761,6 +4766,10 @@ ${members.join('\n')}
   }
 
   private coerced(e: ts.Expression, target: string): string {
+    // An either-class value (NativeAPI.either) where one of its classes is taken: the object as it.
+    const either = /^NSObject[?!]?$/.test(this.typeOf(e)) ? this.native.either(this.checker.getTypeAtLocation(e)) : null;
+    const one = target.replace(/[?!]$/, '');
+    if (either && one !== 'NSObject' && either.some((c) => c.cls.swift === one)) return `(${this.expr(e)} as${isOptional(target) ? '?' : '!'} ${one})`;
     // A match where an array of strings is wanted (`return s.match(/x/g)` declared `string[]`).
     if (/^JSArray<String>[?!]?$/.test(target) && /^JSMatch[?!]?$/.test(this.typeOf(e))) return this.convert(this.expr(e), 'JSMatch?', target);
     // A member of an untyped object where any value goes: the value as it is, undefined staying undefined
@@ -6448,6 +6457,8 @@ ${members.join('\n')}
         const listed = LIST_APPLIED[`${target.expression.text}.${target.name.text}`];
         if (listed) return `${listed}(${this.coerce(e.arguments[1], 'Any?')})`;
       }
+      const prototypeCall = method === 'call' ? this.native.prototypeCall(e) : null;
+      if (prototypeCall) return prototypeCall;
       if (['call', 'apply', 'bind'].includes(method) && isLibDeclaration(this.checker.getResolvedSignature(e)?.getDeclaration()) && functionParts(this.typeOf(target).replace(/^\((.*)\)[?!]$/, '$1'))) return this.functionMethod(method, target, e);
       const core = this.core.call(e) ?? this.native.call(e);
       if (core) return core;
@@ -7529,6 +7540,11 @@ ${members.join('\n')}
     }
     if ((name === 'WeakMap' || name === 'WeakSet') && this.isLibGlobal(callee as ts.Identifier)) return args.length ? `${t}(${this.iterable(args[0])})` : `${t}()`;
     // `new interop.Reference(type, value)`: the type is only the runtime's; a sole argument of `interop.types` is a type too.
+    // `new interop.Pointer()`: the null pointer; one at an address is a value no compiled code has.
+    if (t === 'InteropPointer') {
+      if (args.length) throw this.error(e, 'interop.Pointer at an address');
+      return 'InteropPointer()';
+    }
     if (t === 'InteropReference') {
       const isType = (x: ts.Expression) => ts.isPropertyAccessExpression(x) && x.expression.getText() === 'interop.types';
       const value = args.length > 1 ? args[1] : args[0] && !isType(args[0]) ? args[0] : undefined;

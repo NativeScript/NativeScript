@@ -529,6 +529,16 @@ public func jsToNativeDictionary(_ value: Any?) -> [AnyHashable: Any] {
     }
 }
 
+/// An untyped value where Objective-C takes an NSArray: script's array with its elements as the runtime marshals them (undefined and null as NSNull), or a Foundation array as it is.
+public func jsToNativeArray(_ value: Any?) -> [Any] {
+    switch jsFlat(value) {
+    case let array as JSArrayProtocol: return array.jsAnyElements.map { jsToNativeMember($0) ?? NSNull() }
+    case let array as [Any]: return array
+    case let array as NSArray: return array as [AnyObject]
+    default: return []
+    }
+}
+
 private func jsToNativeMember(_ value: Any?) -> Any? {
     switch jsFlat(value) {
     case let array as JSArrayProtocol: return array.jsAnyElements.map { jsToNativeMember($0) ?? NSNull() }

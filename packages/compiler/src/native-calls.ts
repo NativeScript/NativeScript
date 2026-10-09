@@ -2,7 +2,7 @@ import ts from 'typescript';
 import { CF_CLASSES, functionParts, optionalType, splitTopLevel, type Translator } from './swift.ts';
 import {
   categoryModule, conformsTo, isSubframework, lookupClass, lookupConstant, lookupConstructor, lookupEnum, lookupFunction, lookupInit, lookupMember, lookupStruct, lookupTypealias, moduleOfDeclaration, nativeTable,
-  type NativeMethod, type NativeProperty, type SwiftType,
+  type NativeClass, type NativeMethod, type NativeProperty, type SwiftType,
 } from './natives/symbols.ts';
 
 /** A buffer, a view of one, or an untyped value that may be either. */
@@ -83,6 +83,13 @@ export class NativeAPI {
   private uses(module: string) {
     this.modules.add(module);
     this.used.add(module);
+  }
+
+  /** Why a name of `module` has no Swift spelling: the module has none, or the build has no such module at all (a pod no Podfile names). */
+  private noCounterpart(module: string): string {
+    const t = nativeTable(module);
+    const empty = ![t.classes, t.enums, t.functions, t.constants, t.structs].some((x) => Object.keys(x).length);
+    return empty ? `${module} is a module of neither the SDK nor the Swift packages and pods the app and its plugins build` : `no Swift counterpart in ${module}`;
   }
 
   /** A member found in a table: the module of a category adding it is used too. */
@@ -210,7 +217,8 @@ export class NativeAPI {
   private unalias(type: SwiftType): SwiftType {
     const optionalType = /[?!]$/.test(type);
     const name = type.replace(/[?!]$/, '');
-    for (const m of this.modules) {
+    // Darwin's last: its C typedefs (`OSStatus`, `OSErr` of MacTypes) are what SDK functions return, and no framework's table has them.
+    for (const m of [...this.modules, 'Darwin']) {
       const found = lookupTypealias(m, name);
       if (found) return optionalType ? `(${found})?` : found;
     }
@@ -246,6 +254,8 @@ export class NativeAPI {
     const enumCase = this.enumMember(e);
     if (enumCase) return enumCase;
     if (this.appMember(e.name)) return null;
+    const either = this.eitherRead(e);
+    if (either) return either;
     const r = this.receiver(e.expression);
     if (!r) return null;
     const struct = !r.isStatic && lookupStruct(r.module, r.name);
@@ -258,7 +268,7 @@ export class NativeAPI {
     const collection = !r.isStatic ? this.collectionMember(e.expression, e.name.text, null, e) : null;
     if (collection) return collection;
     const m = this.found(lookupMember(r.module, r.name, e.name.text, r.isStatic));
-    if (!m) throw this.t.error(e, `${r.name}.${e.name.text} (no Swift counterpart in ${r.module})`);
+    if (!m) throw this.t.error(e, `${r.name}.${e.name.text} (${this.noCounterpart(r.module)})`);
     this.checkAvailable(m, e, `${r.name}.${e.name.text}`);
     if ((e.questionDotToken || ts.isOptionalChain(e)) && !r.isStatic && m.kind === 'property') return this.chainEnd(e, isolated(`${this.chainHead(e.expression)}${m.swift}`, m), m.type);
     const target = r.isStatic ? this.className(lookupClass(r.module, r.name)!) : this.unwrapped(e.expression);
@@ -280,12 +290,28 @@ export class NativeAPI {
   private unwrapped(x: ts.Expression): string {
     const code = this.t.expr(x);
     const t = this.t.typeOf(x);
+    const erased = t === 'Any?' ? this.erasedReceiver(x, code) : null;
+    if (erased) return erased;
     // `x?.objectForKey(k)`: the chain continues past a value Swift may hold as optional.
     const p = x.parent;
     if (ts.isPropertyAccessExpression(p) && p.expression === x && p.questionDotToken && t !== 'Any?' && !t.includes('->')) return `(${code} as ${t.replace(/\?$/, '')}?)?`;
     if (this.t.givesUndefined(x) && t !== 'Any?' && !t.includes('->')) return `(${code} as ${optionalType(t.replace(/[?!]$/, ''))})!`;
     if (!t.endsWith('?') || t === 'Any?' || t.includes('->')) return code;
     return `(${code} as ${t})!`;
+  }
+
+  /**
+   * A native object Swift holds untyped though TypeScript knows its class (`this.native` of a
+   * `Handler<T extends GestureHandler>`, a field of the generic base typed `T`): the object as that class.
+   */
+  private erasedReceiver(x: ts.Expression, code: string): string | null {
+    const c = this.t.checker;
+    const t = c.getNonNullableType(c.getTypeAtLocation(x));
+    if (!(t.flags & ts.TypeFlags.TypeParameter)) return null;
+    const r = this.receiver(x);
+    const cls = r && !r.isStatic ? lookupClass(r.module, r.name) : null;
+    if (!cls) return null;
+    return `(jsFlat(${code}) as! ${cls.kind === 'protocol' ? `any ${this.className(cls)}` : this.className(cls)})`;
   }
 
   /**
@@ -449,7 +475,8 @@ export class NativeAPI {
     // An object Swift holds as optional (`this.delay.wetDryMix = …`, `delay: AVAudioUnitDelay | null`): JavaScript's TypeError where it is missing.
     const held = this.t.typeOf(left.expression);
     const unwrap = !r.isStatic && !cast && held.endsWith('?') && held !== 'Any?' && !left.questionDotToken ? '!' : '';
-    const target = r.isStatic ? this.className(lookupClass(r.module, r.name)!) : cast ? `(${this.t.expr(left.expression)} as! ${cast})` : `${this.t.expr(left.expression)}${unwrap}`;
+    const erased = !r.isStatic && !cast && held === 'Any?' ? this.erasedReceiver(left.expression, this.t.expr(left.expression)) : null;
+    const target = r.isStatic ? this.className(lookupClass(r.module, r.name)!) : cast ? `(${this.t.expr(left.expression)} as! ${cast})` : erased ?? `${this.t.expr(left.expression)}${unwrap}`;
     if (m.optional && !r.isStatic && !cast && lookupClass(r.module, r.name)?.kind === 'protocol') {
       return isolated(`jsSetOptionalNativeProperty(${target}, ${JSON.stringify(left.name.text)}, ${this.toSwift(value, m.type)})`, m);
     }
@@ -467,7 +494,7 @@ export class NativeAPI {
       // `UIApplicationMain(0, null, …)`: Swift's overlay reads the process's arguments, which the runtime passes for it.
       if (native.name === 'UIApplicationMain' && e.arguments.length === 4) return `UIApplicationMain(CommandLine.argc, CommandLine.unsafeArgv, ${this.toSwift(e.arguments[2], 'String?')}, ${this.toSwift(e.arguments[3], 'String?')})`;
       const f = lookupFunction(native.module, native.name);
-      if (!f) throw this.t.error(e, `${native.name}() (no Swift counterpart in ${native.module})`);
+      if (!f) throw this.t.error(e, `${native.name}() (${this.noCounterpart(native.module)})`);
       this.checkAvailable(f, e, `${native.name}()`);
       const args = [...e.arguments];
       const selfCode = (x: ts.Expression) => (f.owner ? this.toSwift(x, f.owner) : this.t.expr(x));
@@ -515,6 +542,8 @@ export class NativeAPI {
       const allocated = this.t.resolve(callee.expression.expression.expression)?.valueDeclaration;
       if (allocated && ts.isClassDeclaration(allocated) && !allocated.getSourceFile().isDeclarationFile) return `${this.t.topName(allocated, allocated.name!.text)}()`;
     }
+    const either = this.eitherCall(e);
+    if (either) return either;
     const r = this.receiver(callee.expression);
     if (!r) return null;
     // `Cls.class()`: the class itself, which Swift names `Cls.self`.
@@ -540,7 +569,7 @@ export class NativeAPI {
       const setter = /^set([A-Z]\w*)$/.exec(name);
       const prop = setter && e.arguments.length === 1 ? this.found(lookupMember(r.module, r.name, setter[1][0].toLowerCase() + setter[1].slice(1), r.isStatic)) : null;
       if (prop && prop.kind === 'property') return `${r.isStatic ? this.className(lookupClass(r.module, r.name)!) : this.t.expr(callee.expression)}.${prop.swift} = ${this.toSwift(e.arguments[0], prop.type)}`;
-      throw this.t.error(e, `${r.name}.${name}() (no Swift counterpart in ${r.module})`);
+      throw this.t.error(e, `${r.name}.${name}() (${this.noCounterpart(r.module)})`);
     }
     this.checkAvailable(m, e, `${r.name}.${name}()`);
     // An Objective-C method Swift imports as a property.
@@ -554,13 +583,109 @@ export class NativeAPI {
     const args = [...e.arguments];
     if (m.errorParam !== undefined) args.splice(m.errorParam, 1);
     const defaults = (m as NativeMethod & { defaults?: string[] }).defaults ?? [];
-    const list = [this.argList(args, m.labels, m.params), ...defaults].filter(Boolean).join(', ');
+    const out = this.errorOut(m, args.length);
+    const list = [this.argList(args, m.labels, m.params), ...defaults, ...(out ? [out] : [])].filter(Boolean).join(', ');
     const target = r.isStatic ? this.className(cls!) : recv;
-    const code = isolated(m.kind === 'init' ? `${target}(${list})` : `${target}.${m.swift}(${list})`, m);
+    const called = isolated(m.kind === 'init' ? `${target}(${list})` : `${target}.${m.swift}(${list})`, m);
+    const code = out ? withErrorOut(called, m.returns) : called;
     const result = this.errorCall(code, m, e);
     // A chain that stops before the call gives undefined, as a number, string or boolean reads it.
     const tsType = this.t.typeOf(e);
     return (chained || ts.isOptionalChain(e)) && !this.keepOptional.has(e) && ['Bool', 'Double', 'String'].includes(tsType) ? this.t.undefinedAs(result, tsType) : result;
+  }
+
+  /**
+   * `UIViewControllerTransitionCoordinator.prototype.animateAlongsideTransitionCompletion.call(coordinator, …)`:
+   * the native class's or protocol's method sent to the object, as the runtime sends it.
+   */
+  prototypeCall(e: ts.CallExpression): string | null {
+    const found = this.prototypeMethod(e);
+    if (!found) return null;
+    const { native, cls, name, m } = found;
+    const [object, ...args] = e.arguments;
+    if (!object) throw this.t.error(e, `${native.name}.prototype.${name}.call without an object`);
+    this.checkAvailable(m, e, `${native.name}.${name}()`);
+    if (m.errorParam !== undefined && args.length > m.errorParam) throw this.t.error(args[m.errorParam], 'an NSError out-parameter');
+    const out = this.errorOut(m, args.length);
+    const list = [this.argList(args, m.labels, m.params), ...(out ? [out] : [])].filter(Boolean).join(', ');
+    const receiver = `(${this.t.expr(object)} as! ${cls.kind === 'protocol' ? `any ${this.className(cls)}` : this.className(cls)})`;
+    const called = isolated(`${receiver}.${m.swift}(${list})`, m);
+    const code = out ? withErrorOut(called, m.returns) : m.throws ? `(try ${called})` : called;
+    return this.fromSwift(code, m.returns, e);
+  }
+
+  private prototypeMethod(e: ts.CallExpression): { native: { module: string; name: string }; cls: NativeClass; name: string; m: NativeMethod } | null {
+    const callee = e.expression;
+    if (!ts.isPropertyAccessExpression(callee) || callee.name.text !== 'call' || !ts.isPropertyAccessExpression(callee.expression)) return null;
+    const method = callee.expression;
+    if (!ts.isPropertyAccessExpression(method.expression) || method.expression.name.text !== 'prototype') return null;
+    const native = this.symbolModule(this.t.resolve(method.expression.expression));
+    const cls = native && lookupClass(native.module, native.name);
+    if (!native || !cls) return null;
+    const name = method.name.text;
+    const m = this.found(lookupMember(native.module, native.name, name, false));
+    if (!m || m.kind === 'property') throw this.t.error(e, `${native.name}.prototype.${name} (no Swift method)`);
+    return { native, cls, name, m };
+  }
+
+  /**
+   * The classes of an intersection that stands for whichever of them an object is (`data: NSDictionary & NSData & NSArray`,
+   * as plugins type a value an API gives untyped): unrelated native classes, one of them a Swift collection, which no one
+   * Swift type holds but NSObject. Null for any other type (a class narrowed by `instanceof` to another it does not extend keeps its rules).
+   */
+  either(t: ts.Type): { module: string; name: string; cls: NativeClass }[] | null {
+    const type = this.t.checker.getNonNullableType(t);
+    if (!type.isIntersection()) return null;
+    const found = type.types.map((u) => this.symbolModule(u.getSymbol())).map((n) => n && { ...n, cls: lookupClass(n.module, n.name)! });
+    if (found.length < 2 || found.some((f) => !f || f.cls?.kind !== 'class')) return null;
+    const classes = found as { module: string; name: string; cls: NativeClass }[];
+    if (classes.some((a) => classes.some((b) => a !== b && conformsTo(a.module, a.name, b.name)))) return null;
+    return type.types.some((u) => /^\[/.test(this.type(u) ?? '')) ? classes : null;
+  }
+
+  /** `data.writeToFileAtomically(path, true)` on an `either` value: the member of the class the object is, as the runtime finds it. */
+  private eitherCall(e: ts.CallExpression): string | null {
+    const callee = e.expression;
+    if (!ts.isPropertyAccessExpression(callee)) return null;
+    const classes = this.either(this.t.checker.getTypeAtLocation(callee.expression));
+    if (!classes) return null;
+    const name = callee.name.text;
+    const ret = this.t.typeOf(e);
+    const cases = classes.flatMap((c) => {
+      const m = this.found(lookupMember(c.module, c.name, name, false));
+      if (!m || m.kind === 'property') return [];
+      const args = [...e.arguments];
+      if (m.errorParam !== undefined) {
+        if (args.length > m.errorParam) throw this.t.error(args[m.errorParam], 'an NSError out-parameter');
+      }
+      const out = this.errorOut(m, args.length);
+      const list = [this.argList(args, m.labels, m.params), ...(out ? [out] : [])].filter(Boolean).join(', ');
+      const called = isolated(`__o.${m.swift}(${list})`, m);
+      const code = out ? withErrorOut(called, m.returns) : m.throws ? `(try ${called})` : called;
+      const value = this.fromSwift(code, m.returns, e);
+      return [`if let __o = __either as? ${this.className(c.cls)} { ${ret === 'Void' ? `${value}; return` : `return ${value}`} }`];
+    });
+    if (!cases.length) throw this.t.error(e, `${classes.map((c) => c.name).join(' & ')}.${name}() (no Swift method of these classes)`);
+    const recv = this.t.expr(callee.expression);
+    return `({ () throws -> ${ret} in let __either: AnyObject? = ${recv}; ${cases.join(' ')}; throw JSException(JSTypeError(${JSON.stringify(`${name} is not a function`)})) }())`;
+  }
+
+  /** `data.length` on an `either` value: the property of the class the object is. */
+  private eitherRead(e: ts.PropertyAccessExpression): string | null {
+    if (ts.isCallExpression(e.parent) && e.parent.expression === e) return null;
+    const classes = this.either(this.t.checker.getTypeAtLocation(e.expression));
+    if (!classes) return null;
+    const name = e.name.text;
+    const ret = this.t.typeOf(e);
+    const cases = classes.flatMap((c) => {
+      const m = this.found(lookupMember(c.module, c.name, name, false));
+      if (!m) return [];
+      const read = m.kind === 'property' ? `__o.${m.swift}` : m.kind === 'method' && !m.params.length ? `__o.${m.swift}()` : null;
+      return read ? [`if let __o = __either as? ${this.className(c.cls)} { return ${this.fromSwift(isolated(read, m), m.kind === 'property' ? m.type : m.returns, e)} }`] : [];
+    });
+    if (!cases.length) return null;
+    const none = optional(ret) ? 'return nil' : `throw JSException(JSTypeError(${JSON.stringify(`no ${name} on this object`)}))`;
+    return `({ () throws -> ${ret} in let __either: AnyObject? = ${this.t.expr(e.expression)}; ${cases.join(' ')}; ${none} }())`;
   }
 
   /** `NSNumber.numberWithLong(n)`, a factory Swift imports only as its initializer (`initWithLong:`, `NSNumber(value:)`). */
@@ -607,9 +732,22 @@ export class NativeAPI {
   /** Whether a call is of a method Swift imports as `throws`, with the error argument left out: the iOS runtime throws the error. */
   throwingCall(e: ts.CallExpression): boolean {
     try {
-      const m = this.calledMethod(e);
-      return !!m?.throws && e.arguments.length <= m.errorParam!;
+      const sent = this.prototypeMethod(e);
+      const m = sent?.m ?? this.calledMethod(e);
+      const given = e.arguments.length - (sent ? 1 : 0);
+      return !!m && ((!!m.throws && given <= m.errorParam!) || !!this.errorOut(m, given));
     } catch { return false; }
+  }
+
+  /**
+   * The argument for a last `NSError **` that Swift keeps as a parameter (`canEvaluatePolicy(_:error:)`,
+   * NS_SWIFT_NOTHROW) where the call leaves it out: the iOS runtime passes its own and throws the error
+   * the method writes. Null where the call passes it or the method has none.
+   */
+  private errorOut(m: NativeMethod, given: number): string | null {
+    const last = m.params.length - 1;
+    if (m.throws || last < 0 || given !== last || !/^(NSErrorPointer|AutoreleasingUnsafeMutablePointer<NSError\?>)\??$/.test(m.params[last])) return null;
+    return `${m.labels[last] ? `${m.labels[last]}: ` : ''}&__nsError`;
   }
 
   /** The native method or initializer a call runs, as `call` finds it; null for anything else. */
@@ -653,7 +791,7 @@ export class NativeAPI {
     if (native && sym!.flags & ts.SymbolFlags.Function) return this.functionValue(e, native);
     if (!native || !(sym!.flags & ts.SymbolFlags.Variable)) return null;
     const k = lookupConstant(native.module, native.name);
-    if (!k) throw this.t.error(e, `${native.name} (no Swift counterpart in ${native.module})`);
+    if (!k) throw this.t.error(e, `${native.name} (${this.noCounterpart(native.module)})`);
     return this.fromSwift(k.swift, k.type, e);
   }
 
@@ -725,6 +863,10 @@ export class NativeAPI {
       return `{ (${block.params.map((p, k) => `__b${k}: ${p}`).join(', ')}) in ${resolver.name}.resolve(${value}) }`;
     }
     const source = t.typeOf(e);
+    // A native constant of the type Swift takes (`kCFAllocatorDefault`, which TypeScript types `any`): the constant itself.
+    const constantOf = ts.isIdentifier(e) ? this.symbolModule(this.t.resolve(e)) : null;
+    const typedConstant = constantOf && lookupConstant(constantOf.module, constantOf.name);
+    if (typedConstant && base(typedConstant.type) === b) return typedConstant.swift;
     // A value Swift holds as optional though TypeScript types it present (a nullable parameter passed on): nil stays nil.
     const maybe = optional(target) && base(source) === b ? t.maybeUndefined(e) : null;
     if (maybe) return maybe;
@@ -758,6 +900,13 @@ export class NativeAPI {
     const pointee = /^UnsafeMutablePointer<(\w+)>$/.exec(b)?.[1];
     if (pointee && source === 'InteropReference') return `&${t.expr(e)}.${pointee === 'CGFloat' ? 'cgFloat' : pointee === 'Bool' || pointee === 'ObjCBool' ? 'bool' : NUMBERS.has(pointee) && pointee !== 'Double' ? 'int' : 'value'}`;
     if (source === 'InteropReference' && b === 'UnsafeMutablePointer<Unmanaged<CFError>?>') return `&${t.expr(e)}.cfError`;
+    // An object out-parameter (`UnsafeMutablePointer<CFTypeRef?>`): the cell holds what the function writes, as its type.
+    // The null pointer (`new interop.Pointer()`) where Swift takes a pointer: none.
+    if (base(source) === 'InteropPointer' && (/^(Unsafe|AutoreleasingUnsafe|OpaquePointer)/.test(b) || b === 'NSErrorPointer') && (optional(target) || b === 'NSErrorPointer')) return 'nil';
+    const objectPointee = b === 'NSErrorPointer' ? 'NSError' : /^(?:AutoreleasingUnsafeMutablePointer|UnsafeMutablePointer)<([A-Z][\w.]*)\?>$/.exec(b)?.[1];
+    if (objectPointee && base(source) === 'InteropReference' && !NUMBERS.has(objectPointee) && !this.isStructType(objectPointee) && !this.isEnumType(objectPointee)) {
+      return `&${t.expr(e)}${optional(source) ? '!' : ''}[pointee: ${objectPointee}.self]`;
+    }
     const pointed = /^UnsafePointer<(\w+)>$/.exec(b)?.[1];
     if (pointed && this.isStructType(pointed) && (source === 'Any?' || base(source) === pointed)) return `jsStructPointer(${t.expr(e)}, ${pointed}.self)${optional(target) ? '' : '!'}`;
     // By the function, not the type's initializer: core declares a class named Selector (CSS selectors).
@@ -829,6 +978,11 @@ export class NativeAPI {
     if (source === '[Any]' && b.startsWith('[') && b !== '[Any]') return `(${t.expr(e)} as! ${b})`;
     // An untyped object where Swift takes a dictionary: its keys and values as the runtime marshals them.
     if (source === 'Any?' && /^\[\w+\s*:\s*Any\]$/.test(b)) return `jsToNativeDictionary(${t.expr(e)})`;
+    // An untyped value where Swift takes an array (`initWithActivityItems(items, null)`): its elements as the runtime marshals them.
+    if (source === 'Any?' && /^\[[^:]*\]$/.test(b)) {
+      const array = b === '[Any]' ? `jsToNativeArray(__a)` : `(jsToNativeArray(__a) as! ${b})`;
+      return `{ (__a: Any?) -> ${b}${optional(target) ? '?' : ''} in ${optional(target) ? `jsIsNullish(__a) ? nil : ` : ''}${array} }(${t.expr(e)})`;
+    }
     // An object of a literal's shape likewise.
     if (/^(Object_\w+|JSObject|JSRecord<.*>)[?!]?$/.test(source) && b === '[AnyHashable: Any]') {
       return optional(target) && /[?!]$/.test(source) ? `{ (__o: Any?) -> ${b}? in jsIsNullish(__o) ? nil : jsToNativeDictionary(__o) }(${t.expr(e)})` : `jsToNativeDictionary(${t.expr(e)})`;
@@ -841,6 +995,8 @@ export class NativeAPI {
     const native = ts.isIdentifier(e) ? this.symbolModule(this.t.resolve(e)) : null;
     const constant = native && lookupConstant(native.module, native.name);
     if (constant && base(constant.type) === b) return constant.swift;
+    // A Core Foundation constant (`kSecAttrAccessibleWhenUnlockedThisDeviceOnly`, a CFString) where Swift takes any object: the constant itself.
+    if (constant && /^(CFTypeRef|AnyObject)$/.test(b) && CF_CLASSES.has(base(constant.type))) return constant.swift;
     // A constant of a typed-constants struct (`CFRunLoopMode`) where Swift takes any object: its raw value.
     if (constant && /^(CFTypeRef|AnyObject|Any)$/.test(b) && this.isTypedConstants(base(constant.type))) return `(${constant.swift}.rawValue as CFTypeRef)`;
     if (/^String\??$/.test(source) && b !== 'String' && this.isStringConstants(b) && !native) {
@@ -854,7 +1010,7 @@ export class NativeAPI {
     // A string where Foundation takes a copyable key (`setObject(_:forKey:)`).
     if (/^String\??$/.test(source) && /^(any )?NSCopying$/.test(b)) return `(${t.expr(e)} as NSString)`;
     // A string or a number where a generic class takes any object (`NSCache<AnyObject, AnyObject>`): its Foundation object.
-    if (b === 'AnyObject' && source === 'String') return `(${t.expr(e)} as NSString)`;
+    if (/^(AnyObject|CFTypeRef)$/.test(b) && source === 'String') return `(${t.expr(e)} as NSString)`;
     if (b === 'AnyObject' && source === 'Double') return `NSNumber(value: ${t.expr(e)})`;
     // Null where Swift takes a collection it marks nonnull: Objective-C receives nil, which reads as empty.
     if (!optional(target) && source.endsWith('?') && ['NSDictionary', 'NSArray'].includes(b)) return `(${t.expr(e)} ?? ${b}())`;
@@ -1368,6 +1524,13 @@ export class NativeAPI {
 
 /** An expression whose value only decides a branch: a condition, the operand of `!`, or an operand of `&&`/`||` that is one or comes first. */
 /** An expression whose value is only tested for truthiness: a condition, or what `!` negates. */
+/** A call given `&__nsError` (`errorOut`): the error it writes thrown, as the iOS runtime throws it. */
+function withErrorOut(call: string, returns: SwiftType): string {
+  const ret = returns === 'Void' ? 'Void' : returns;
+  const body = returns === 'Void' ? `${call}; if let __nsError { throw __nsError }` : `let __r = ${call}; if let __nsError { throw __nsError }; return __r`;
+  return `({ () throws -> ${ret} in var __nsError: NSError? = nil; ${body} }())`;
+}
+
 function onlyTested(e: ts.Expression): boolean {
   const p = e.parent;
   if (ts.isParenthesizedExpression(p)) return onlyTested(p);
@@ -1377,7 +1540,7 @@ function onlyTested(e: ts.Expression): boolean {
   return false;
 }
 
-function tested(e: ts.Expression): boolean {
+export function tested(e: ts.Expression): boolean {
   const p = e.parent;
   if (ts.isParenthesizedExpression(p)) return tested(p);
   if (ts.isPrefixUnaryExpression(p)) return p.operator === ts.SyntaxKind.ExclamationToken;
