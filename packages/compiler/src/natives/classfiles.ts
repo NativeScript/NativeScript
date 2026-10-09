@@ -40,6 +40,8 @@ export interface JavaClass {
   signature?: string;
   fields: JavaMember[];
   methods: JavaMember[];
+  /** Compiled from Kotlin (annotated `kotlin.Metadata`): Kotlin reads its getters and setters as properties only. */
+  kotlin?: boolean;
 }
 
 // ---- Zip archives ------------------------------------------------------------------------------
@@ -158,12 +160,14 @@ export function parseClass(b: Buffer): JavaClass {
     for (let k = 0; k < pairs; k++) { q += 2; skipValue(); }
     return type;
   };
+  let kotlin = false;
   /** Whether the annotations read are `@Nullable` (1), `@NonNull` (2) or neither (0). */
   const nullableIn = (): number => {
     let found = 0;
     const n = b.readUInt16BE(q); q += 2;
     for (let k = 0; k < n; k++) {
       const type = annotation();
+      if (type === 'Lkotlin/Metadata;') kotlin = true;
       if (/\/Nullable;$/.test(type)) found = 1;
       else if (/\/(NonNull|NotNull|RecentlyNonNull);$/.test(type) && !found) found = 2;
     }
@@ -206,7 +210,9 @@ export function parseClass(b: Buffer): JavaClass {
   const fields = members();
   const methods = members();
   const result: JavaClass = { name, access, superName, interfaces, fields, methods };
+  kotlin = false;
   attributes(result);
+  if (kotlin) result.kotlin = true;
   return result;
 }
 

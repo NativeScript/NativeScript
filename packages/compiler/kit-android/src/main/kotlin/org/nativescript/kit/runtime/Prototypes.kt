@@ -110,6 +110,8 @@ internal fun jsClassGet(cls: Class<*>, key: String): Any? {
     JSPrototypes.staticMember(cls, key)?.let { return it.value }
     // A class's `name` is its own, as script declared it, before any static Java member.
     if (key == "name") return cls.simpleName
+    // A nested class (`android.view.View.OnClickListener`).
+    cls.classes.firstOrNull { it.simpleName == key }?.let { return it }
     return jsJavaGet(cls, key)
 }
 

@@ -135,6 +135,14 @@ class JavaMethodRef(private val target: Any?, private val cls: Class<*>, private
     }
 }
 
+/** A Java package read untyped (`(<any>androidx).core.view`): its classes and packages by name, as NativeScript's runtime gives them. */
+class JSJavaPackage(val name: String) : JSDynamic {
+    override fun jsGet(key: String): Any? = try { Class.forName("$name.$key") } catch (_: ClassNotFoundException) { JSJavaPackage("$name.$key") }
+    override fun jsSet(key: String, value: Any?) {}
+    override val jsKeys: List<String> get() = listOf()
+    override val jsClassName: String? get() = null
+}
+
 /** NativeScript's `Array.create(type, n)` called untyped: a Java array of n default elements, of a primitive by its name or of a class. */
 fun jsArrayCreate(type: Any?, length: Double): Any {
     val element = when (type) {

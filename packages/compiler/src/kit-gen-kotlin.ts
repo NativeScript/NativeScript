@@ -57,7 +57,7 @@ export interface KotlinKitResult {
 
 export const KIT_PACKAGE = 'org.nativescript.kit';
 const SUPPRESS = '@file:Suppress("unused", "UNUSED_VARIABLE", "RedundantExplicitType", "NAME_SHADOWING", "UNCHECKED_CAST", "UNREACHABLE_CODE", "UNUSED_PARAMETER", "REDUNDANT_CALL_OF_CONVERSION_METHOD")';
-const header = () => `// Generated from @nativescript/core by tools/native-kit: edit core, not this file.\n${SUPPRESS}\npackage ${KIT_PACKAGE}\n\n`;
+const header = (pkg = KIT_PACKAGE) => `// Generated from @nativescript/core by tools/native-kit: edit core, not this file.\n${SUPPRESS}\npackage ${pkg}\n\n${pkg === KIT_PACKAGE ? '' : `import ${KIT_PACKAGE}.*\n\n`}`;
 
 /** The Android files of a module list: a platform's file over the shared one, no tests, no other platform. */
 export function coreFilesAndroid(core: string, modules: string[]): string[] {
@@ -201,6 +201,7 @@ export function generateKotlinKit(o: KotlinKitOptions): KotlinKitResult {
     if (!dropped) translated++;
     results.set(file, result);
   }
+  translator.foreign.length = 0;
   // Again, now that every declaration the first pass found nullable (a field core leaves unset) is known where code
   // translated before it reads it.
   for (const file of order) {
@@ -224,6 +225,10 @@ export function generateKotlinKit(o: KotlinKitOptions): KotlinKitResult {
   const exported = indexExports(program, checker, join(core, 'index.ts'), compiled, (f) => moduleObjectName(relOf(f)), sourceOf, out);
   for (const f of out) f.code = withImports((translator.interfacesOf(paths.get(f)!) + f.code).trim());
   if (exported) out.push({ name: '__Exports.kt', code: withImports(exported.trim()), sources: {} });
+  // Classes under Java names of other packages (`com.tns.NativeScriptActivity`), as an app's manifest names them.
+  for (const f of new Map(translator.foreign.map((x) => [x.name, x])).values()) {
+    out.push({ name: `${f.name}.kt`, code: withImports(f.code.trim(), f.name.slice(0, f.name.lastIndexOf('.'))), sources: {} });
+  }
   const shapes = translator.shapesCode().trim();
   if (shapes) out.push({ name: '__Objects.kt', code: withImports(shapes), sources: {} });
   // Core's modules run their top level once, in the order core's index evaluates them.
@@ -318,7 +323,9 @@ const JAVA_NAME = /(?<![\w.$`])(?:android|androidx|java|javax|dalvik|org\.(?:nat
  * A file's code with the Java classes it names imported under aliases (`android_view_View`): core's classes
  * have members named `android`, which a qualified name inside them would resolve to, and Kotlin has no root qualifier.
  */
-function withImports(code: string): string {
+function withImports(code: string, pkg = KIT_PACKAGE): string {
+  // Kotlin's `run { … }` by its package: core's classes declare a `run` of their own (`Application.run()`), which would take the block.
+  code = code.replace(/(?<=[\s(=,!])run (?=\{|\w+@ \{)/g, 'kotlin.run ');
   const aliases = new Map<string, string>();
   const alias = (name: string) => {
     const a = name.replace(/\./g, '_');
@@ -351,7 +358,7 @@ function withImports(code: string): string {
     out += c; i = j + 1;
   }
   const imports = [...aliases].sort().map(([name, a]) => `import ${name} as ${a}\n`).join('');
-  return header() + (imports ? imports + '\n' : '') + out + '\n';
+  return header(pkg) + (imports ? imports + '\n' : '') + out + '\n';
 }
 
 function located(e: unknown, sf: ts.SourceFile, core: string): string {

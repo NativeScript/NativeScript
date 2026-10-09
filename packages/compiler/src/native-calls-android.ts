@@ -1,7 +1,7 @@
 import ts from 'typescript';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { ident, numberLiteral, optionalType, type KotlinNative, type Translator } from './kotlin.ts';
+import { functionTypeParts, ident, kotlinString, numberLiteral, optionalType, type KotlinNative, type Translator } from './kotlin.ts';
 import {
   ACC_ABSTRACT, ACC_BRIDGE, ACC_FINAL, ACC_INTERFACE, ACC_PRIVATE, ACC_PROTECTED, ACC_PUBLIC, ACC_STATIC, ACC_SYNTHETIC, ACC_VARARGS,
   ClassPath, androidJar, javaTypeName, methodTypes, newer, signatureTypes, type JavaClass, type JavaMember,
@@ -60,9 +60,9 @@ type Kind =
 /** A Java method or constructor; `fixed` when a varargs call passes its last parameter's elements one by one after that many arguments. */
 interface Callable { m: JavaMember; params: string[]; ret: string; fixed?: number }
 /** A Java class NativeScript's `Base.extend({ … })` makes, as the Kotlin class `name` declared where `owner` is. */
-interface Extension { call: ts.CallExpression; literal: ts.ObjectLiteralExpression; base: JavaClass; interfaces: JavaClass[]; owner: ts.VariableDeclaration | null; name: string }
+interface Extension { call: ts.CallExpression; literal: ts.ObjectLiteralExpression; base: JavaClass; interfaces: JavaClass[]; owner: ts.VariableDeclaration | null; name: string; javaName?: string }
 /** Java code and its Java type; `nullable` when it is annotated `@Nullable` and so typed `T?` in Kotlin. */
-interface Raw { code: string; desc: string; optional?: boolean; nullable?: boolean }
+interface Raw { code: string; desc: string; optional?: boolean; nullable?: boolean; script?: boolean }
 
 /**
  * Direct calls to Android APIs, as NativeScript apps write them in TypeScript
@@ -113,6 +113,8 @@ export class AndroidNativeAPI implements KotlinNative {
       let found: JavaClass | null = null;
       for (let k = segs.length - 1; k >= 1 && !found; k--) found = this.classpath.get(`${segs.slice(0, k).join('/')}/${segs.slice(k).join('$')}`);
       this.symbols.set(sym, found);
+      // Library mode: a type core's code names that no Android version has (`View.androidviewViewAccessibilityDelegate`), untyped.
+      if (!found && this.t.library) return null;
       if (!found) throw this.t.error(where, `${segs.join('.')} (no class file on the classpath: android.jar, the widgets AAR, androidx in the Gradle cache)`);
     }
     return this.symbols.get(sym)!;
@@ -297,7 +299,37 @@ export class AndroidNativeAPI implements KotlinNative {
   }
 
   isClassAlias(d: ts.VariableDeclaration): boolean {
-    return this.nativeAlias(d) || !!this.extensionOf(d);
+    return this.nativeAlias(d) || !!this.extensionOf(d) || !!this.prototypeOf(d);
+  }
+
+  /** `const superProto = androidx.fragment.app.Fragment.prototype`: the Java class whose methods it holds. */
+  private prototypeOf(d: ts.VariableDeclaration): JavaClass | null {
+    const init = d.initializer && skipCasts(d.initializer);
+    if (!init || !ts.isPropertyAccessExpression(init) || init.name.text !== 'prototype') return null;
+    return this.untypedClass(init.expression) ?? this.classOf(this.classSymbol(init.expression), init.expression);
+  }
+
+  /**
+   * `superProto.onCreate` in a method of a Java subclass: a function calling the superclass's method (the overload of
+   * the enclosing method's arity when it is that one), taking `this` and script's arguments as `fn.call(this, …)` gives them.
+   */
+  private superMethodValue(e: ts.PropertyAccessExpression, base: JavaClass): string {
+    const name = e.name.text;
+    const candidates = this.methods([base.name], name, false).filter((c) => !(c.m.access & ACC_ABSTRACT));
+    const fn = ts.findAncestor(e.parent, (n) => ts.isFunctionLike(n) && !ts.isArrowFunction(n)) as ts.FunctionLikeDeclaration | undefined;
+    const own = fn && (ts.isMethodDeclaration(fn) || ts.isFunctionExpression(fn)) ? (ts.isMethodDeclaration(fn) ? fn.name.getText() : ts.isPropertyAssignment(fn.parent) ? fn.parent.name.getText() : '') : '';
+    const chosen = (own === name ? candidates.find((c) => c.params.length === fn!.parameters.length) : undefined) ?? (candidates.length === 1 ? candidates[0] : candidates.find((c) => c.params.length === (fn?.parameters.length ?? 0)) ?? candidates[0]);
+    if (!chosen) throw this.t.error(e, `${javaTypeName(`L${base.name};`)}.${name} (no Java method of that name to call as super)`);
+    const args = chosen.params.map((desc, k) => {
+      const a = `__a.getOrNull(${k})`;
+      if (NUMERIC.has(desc)) return `jsToNumber(${a})${CONVERT[desc]}`;
+      if (desc === 'Z') return `jsTruthy(${a})`;
+      if (desc === 'C') return `jsToString(${a})[0]`;
+      return `(${a} as ${this.kotlinType(desc, 'Any?')}${chosen.m.nonNullParams?.[k] ? '' : '?'})`;
+    });
+    const zuper = this.t.thisAlias ? `super@${ts.findAncestor(e, ts.isClassLike)?.name?.text ?? ''}` : 'super';
+    const call = `${zuper}.${ident(name)}(${args.join(', ')})`;
+    return `JSMethod { _, __a -> ${chosen.ret === 'V' ? `${call}; null` : call} }`;
   }
 
   private nativeAlias(d: ts.VariableDeclaration): boolean {
@@ -413,8 +445,26 @@ export class AndroidNativeAPI implements KotlinNative {
     if (own) return `${this.t.expr(e.expression)}${own.fn ? '::' : '.'}${ident(e.name.text)}`;
     if (e.name.text === 'super' && this.extensionOfThis(e.expression)) throw this.t.error(e, 'this.super other than to call a superclass method (`this.super.onDraw(canvas)`)');
     if (this.appMember(e.name)) return null;
+    const held = ts.isIdentifier(e.expression) ? this.t.resolve(e.expression)?.valueDeclaration : undefined;
+    const proto = this.t.library && held && ts.isVariableDeclaration(held) ? this.prototypeOf(held) : null;
+    if (proto) return this.superMethodValue(e, proto);
     const raw = this.read(e);
+    if (raw?.script) return raw.code;
     return raw ? this.fromJava(this.unwrap(raw, e), raw.desc, raw.optional) : null;
+  }
+
+  /** Library mode: a static Java method used as a function value of the type the code gives it (`setPixels: ViewHelper.setMarginTop`). */
+  private staticMethodValue(e: ts.PropertyAccessExpression, cls: string): Raw | null {
+    const parts = this.t.library ? functionTypeParts(this.t.typeOf(e).replace(/^\((.*)\)\?$/, '$1')) : null;
+    const m = parts && this.methods([cls], e.name.text, true).find((c) => c.params.length === parts.params.length);
+    if (!parts || !m) return null;
+    const args = m.params.map((desc, k) => {
+      const p = parts.params[k];
+      if (NUMERIC.has(desc)) return `__a${k}${p === 'Double' ? '' : '!!'}${CONVERT[desc]}`;
+      return p.endsWith('?') && !m.m.nullableParams?.[k] ? `__a${k}!!` : `__a${k}`;
+    });
+    const call = `${this.kotlinName(m.m.owner)}.${ident(e.name.text)}(${args.join(', ')})`;
+    return { code: `{ ${parts.params.map((p, k) => `__a${k}: ${p}`).join(', ')} -> ${parts.ret === 'Unit' ? `${call}; Unit` : this.fromJava(call, m.ret)} }`, desc: '', script: true };
   }
 
   /** `X.FIELD`, `obj.field`, `X.class`: the Kotlin code and the Java type it has. */
@@ -426,6 +476,8 @@ export class AndroidNativeAPI implements KotlinNative {
       if (name === 'class') return { code: `${this.kotlinName(r.cls.name)}::class.java`, desc: 'Ljava/lang/Class;' };
       const f = this.field([r.cls.name], name, true);
       if (!f) {
+        const fn = this.staticMethodValue(e, r.cls.name);
+        if (fn) return fn;
         if (this.classOf(this.t.resolve(e))) throw this.t.error(e, `${javaTypeName(`L${r.cls.name};`)}.${name} (a Java class used as a value)`);
         throw this.t.error(e, `${javaTypeName(`L${r.cls.name};`)}.${name} (no static Java field of that name)`);
       }
@@ -481,6 +533,12 @@ export class AndroidNativeAPI implements KotlinNative {
   }
 
   call(e: ts.CallExpression): string | null {
+    // Library mode: `Base.extend('com.tns.NativeScriptActivity', { … })` as a statement declares that class.
+    const named = this.t.library && ts.isExpressionStatement(e.parent) ? this.extension(e) : null;
+    if (named?.javaName && !named.owner) {
+      this.extensionCode(named);
+      return 'Unit';
+    }
     const made = this.arrayCreate(e);
     if (made) {
       // Held as the Java array itself (Java methods fill it in place), unless the code declares a JavaScript array.
@@ -488,6 +546,7 @@ export class AndroidNativeAPI implements KotlinNative {
       return ctx && (this.isJavaArray(ctx) || this.t.checker.isArrayType(ctx)) ? this.fromJava(made.code, made.desc) : made.code;
     }
     const raw = this.invoke(e);
+    if (raw?.script) return this.t.fromAnyCode(raw.code, this.t.typeOf(e), true);
     return raw ? this.fromJava(this.unwrap(raw, e), raw.desc, raw.optional) : null;
   }
 
@@ -505,6 +564,22 @@ export class AndroidNativeAPI implements KotlinNative {
     if (own) return own.fn ? { code: this.ownCall(own.fn, callee.name.text, e), desc: 'Ljava/lang/Object;' } : null;
     const zuper = ts.isPropertyAccessExpression(callee.expression) && callee.expression.name.text === 'super' ? this.extensionOfThis(callee.expression.expression) : null;
     if (zuper) return this.superCall(zuper, callee.name.text, e);
+    // A method of the program's overriding a Java method (`this.getCount()` of an adapter): Kotlin's override has Java's signature.
+    const appMethod = this.t.library ? this.t.checker.getSymbolAtLocation(callee.name)?.valueDeclaration : undefined;
+    const appClass = appMethod && ts.isMethodDeclaration(appMethod) && appMethod.body && ts.isClassDeclaration(appMethod.parent) ? appMethod.parent : undefined;
+    const heritage = appClass ? this.nativeHeritage(appClass) : null;
+    if (heritage && appMethod && ts.isMethodDeclaration(appMethod)) {
+      const target = this.overrideTargets(appMethod, [heritage.base.name, ...heritage.interfaces.map((i) => i.name)], callee.name.text)[0];
+      if (target && target.params.length === e.arguments.length) return { code: `${this.t.expr(callee.expression)}.${ident(callee.name.text)}(${this.argList(e.arguments, target, [target])})`, desc: target.ret, nullable: target.m.nullable };
+    }
+    // Library mode: `superProto.toString()` in a method of a Java subclass, the superclass's method.
+    const held = this.t.library && ts.isIdentifier(callee.expression) ? this.t.resolve(callee.expression)?.valueDeclaration : undefined;
+    const proto = held && ts.isVariableDeclaration(held) ? this.prototypeOf(held) : null;
+    if (proto) {
+      const candidates = this.methods([proto.name], callee.name.text, false);
+      const chosen = this.resolveOverload(candidates, [...e.arguments], e, proto.name, callee.name.text);
+      return { code: `super.${ident(callee.name.text)}(${this.argList(e.arguments, chosen, candidates)})`, desc: chosen.ret, nullable: chosen.m.nullable };
+    }
     if (this.appMember(callee.name)) return null;
     const r = this.receiver(callee.expression);
     if (!r) return null;
@@ -517,13 +592,41 @@ export class AndroidNativeAPI implements KotlinNative {
       const other = this.methods(classes, name, !r.isStatic).length;
       throw this.t.error(e, `${javaTypeName(`L${owner};`)}.${name}() (${other ? (r.isStatic ? 'an instance method called on the class' : 'a static method called on an instance') : 'no Java method of that name'})`);
     }
-    const chosen = this.resolveOverload(candidates, [...e.arguments], e, owner, name);
+    const chosen = this.overloadOrNull(candidates, [...e.arguments], e, owner, name);
+    if (!chosen) {
+      const recv = r.isStatic ? `${this.kotlinName(owner)}::class.java` : this.t.coerce(callee.expression, 'Any?');
+      return { code: `jsCallMethod(${[recv, kotlinString(name), ...e.arguments.map((a) => this.t.coerce(a, 'Any?'))].join(', ')})`, desc: '', script: true };
+    }
     const args = this.argList(e.arguments, chosen, candidates);
     const target = r.isStatic ? this.kotlinName(chosen.m.owner) : this.target(callee.expression, callee);
+    // `java.lang.String` methods Kotlin's String does not have (`getBytes`): on the Java class it is.
+    if (!r.isStatic && chosen.m.owner === 'java/lang/String' && ['getBytes', 'getChars', 'intern', 'codePointAt'].includes(name)) {
+      return { code: `(${this.t.expr(callee.expression)} as java.lang.String).${ident(name)}(${args})`, desc: chosen.ret, nullable: chosen.m.nullable };
+    }
+    const property = r.isStatic ? null : this.kotlinProperty(chosen);
+    if (property) return { code: e.arguments.length ? `run { ${target}.${ident(property)} = ${args} }` : `${target}.${ident(property)}`, desc: e.arguments.length ? 'V' : chosen.ret, optional: target.endsWith('?'), nullable: chosen.m.nullable };
     const mapped = r.isStatic ? null : this.mapped(classes, name, chosen.m.descriptor);
     // Kotlin's own member keeps a function's call parentheses (`toInt()`, `get(i)`) and drops a property's.
     const call = mapped ? (/^\.(get|to\w+)$/.test(mapped) ? `${mapped}(${args})` : mapped) : `.${ident(name)}(${args})`;
     return { code: `${target}${call}`, desc: chosen.ret, optional: target.endsWith('?'), nullable: chosen.m.nullable };
+  }
+
+  /**
+   * A getter or setter of a class compiled from Kotlin (`OnBackPressedCallback.setEnabled`), which Kotlin calls only as its
+   * property (`isEnabled`): the property's name, known by the field or delegate holding it, or by its accessor pair.
+   */
+  private kotlinProperty(c: Callable): string | null {
+    const m = /^(get|set|is)([A-Z]\w*)$/.exec(c.m.name);
+    if (!m || (m[1] === 'set' ? c.params.length !== 1 : c.params.length)) return null;
+    // A Java class's getter of a property a Kotlin interface it implements declares (`ComponentActivity.getOnBackPressedDispatcher`).
+    const kotlinInterface = m[1] !== 'set' && this.classpath.supertypes(c.m.owner).some((x) => x.kotlin && x.access & ACC_INTERFACE && x.methods.some((y) => y.name === c.m.name && y.descriptor === c.m.descriptor));
+    if (kotlinInterface) return m[1] === 'is' ? c.m.name : m[2][0].toLowerCase() + m[2].slice(1);
+    const owner = this.classpath.get(c.m.owner);
+    if (!owner?.kotlin) return null;
+    const base = m[2][0].toLowerCase() + m[2].slice(1);
+    const names = m[1] === 'is' ? [c.m.name] : m[1] === 'set' ? [`is${m[2]}`, base] : [base];
+    const has = (n: string) => owner.fields.some((f) => f.name === n || f.name === `${n}$delegate`) || (n.startsWith('is') ? owner.methods.some((x) => x.name === n) && owner.methods.some((x) => x.name === `set${m[2]}`) : owner.methods.some((x) => x.name === `set${m[2]}`) && owner.methods.some((x) => x.name === `get${m[2]}`));
+    return names.find(has) ?? null;
   }
 
   private mapped(classes: string[], name: string, descriptor: string): string | null {
@@ -561,9 +664,28 @@ export class AndroidNativeAPI implements KotlinNative {
       if (!literal) throw this.t.error(e, `new ${javaTypeName(`L${cls.name};`)} (an ${cls.access & ACC_INTERFACE ? 'interface' : 'abstract class'} takes one object literal implementing it)`);
       return this.implementation(cls, literal, e);
     }
+    // `new java.lang.Integer(n)` and the other boxes: Kotlin's number, boxed where a Java parameter takes the box.
+    const box = ({ 'java/lang/Integer': 'I', 'java/lang/Long': 'J', 'java/lang/Float': 'F', 'java/lang/Double': 'D', 'java/lang/Short': 'S', 'java/lang/Byte': 'B', 'java/lang/Boolean': 'Z' } as Record<string, string>)[cls.name];
+    if (box && args.length === 1 && this.t.library) return this.toJava(args[0], box);
+    // `new java.lang.String(text)`: Kotlin holds Java's strings as its own.
+    if (cls.name === 'java/lang/String' && args.length === 1 && this.t.typeOf(args[0]).replace(/\?$/, '') === 'String') return this.t.str(args[0]);
     const ctors = this.constructors(cls);
-    const chosen = this.resolveOverload(ctors, args, e, cls.name, '<init>');
-    return `${this.kotlinName(cls.name)}(${this.argList(args, chosen, ctors)})`;
+    const chosen = this.overloadOrNull(ctors, args, e, cls.name, '<init>');
+    if (!chosen) return this.t.fromAnyCode(`jsNew(${[`${this.kotlinName(cls.name)}::class.java`, ...args.map((a) => this.t.coerce(a, 'Any?'))].join(', ')})`, this.t.typeOf(e));
+    // Library mode: a generic class made without type arguments (`new java.util.ArrayList()`), of any values.
+    const generic = this.t.library && !(e.typeArguments?.length) && this.typeParamCount(cls) ? this.classRef(cls, undefined, 'Any?', e) : this.kotlinName(cls.name);
+    return `${generic}(${this.argList(args, chosen, ctors)})`;
+  }
+
+  /**
+   * Library mode: an overload the argument types cannot pick (untyped arguments, or none fits their declared types)
+   * is null, the call then made through reflection, chosen by the values it is given as NativeScript's runtime chooses.
+   */
+  private overloadOrNull(candidates: Callable[], args: ts.Expression[], node: ts.Node, owner: string, name: string): Callable | null {
+    try { return this.resolveOverload(candidates, args, node, owner, name); } catch (e) {
+      if (this.t.library && candidates.length && !args.some(ts.isSpreadElement) && e instanceof Error && /\((ambiguous between|no Java overload takes)/.test(e.message)) return null;
+      throw e;
+    }
   }
 
   identifier(e: ts.Identifier): string | null {
@@ -724,10 +846,11 @@ export class AndroidNativeAPI implements KotlinNative {
     const last = chosen.fixed === undefined && chosen.m.access & ACC_VARARGS ? chosen.params.length - 1 : -1;
     return args.map((a, k) => {
       const desc = chosen.params[k];
-      let code = this.toJava(a, desc, !!chosen.m.nullableParams?.[k]);
+      const nonNull = !!chosen.m.nonNullParams?.[k];
+      let code = this.toJava(a, desc, !!chosen.m.nullableParams?.[k], nonNull);
       // Kotlin resolves the overload again: a null or untyped argument names the parameter type it means.
       const loose = this.kind(a).kind;
-      if (overloaded && (desc.startsWith('L') || desc.startsWith('[')) && (loose === 'null' || loose === 'any')) code = `(${code} as ${this.kotlinType(desc, 'Any?')}?)`;
+      if (overloaded && (desc.startsWith('L') || desc.startsWith('[')) && (loose === 'null' || loose === 'any')) code = `(${code} as ${this.kotlinType(desc, 'Any?')}${nonNull && loose === 'any' ? '' : '?'})`;
       // An array where Kotlin declares `vararg`: spread, or Kotlin passes it as one element.
       if (k === last && code !== 'null') return `*${code.endsWith('?)') ? `${code}!!` : atom(code)}`;
       return code;
@@ -752,19 +875,25 @@ export class AndroidNativeAPI implements KotlinNative {
       const made = this.arrayCreate(e);
       if (made) return made;
     }
-    if (ts.isPropertyAccessExpression(e) && !this.appMember(e.name) && !e.questionDotToken && this.receiver(e.expression)) return this.read(e);
-    if (ts.isCallExpression(e) && !e.questionDotToken && ts.isPropertyAccessExpression(e.expression) && !this.appMember(e.expression.name) && this.receiver(e.expression.expression)) return this.invoke(e);
+    if (ts.isPropertyAccessExpression(e) && !this.appMember(e.name) && !e.questionDotToken && this.receiver(e.expression)) {
+      const r = this.read(e);
+      return r?.script ? null : r;
+    }
+    if (ts.isCallExpression(e) && !e.questionDotToken && ts.isPropertyAccessExpression(e.expression) && !this.appMember(e.expression.name) && this.receiver(e.expression.expression)) {
+      const r = this.invoke(e);
+      return r?.script ? null : r;
+    }
     return null;
   }
 
   /** A TypeScript value where a Java parameter or field of type `desc` takes it. */
-  toJava(e: ts.Expression, desc: string, nullableParam = false): string {
+  toJava(e: ts.Expression, desc: string, nullableParam = false, nonNullParam = false): string {
     const t = this.t;
     let inner = e;
     while (ts.isParenthesizedExpression(inner)) inner = inner.expression;
     if (inner.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(inner) && inner.text === 'undefined')) return 'null';
     const forced = this.forced(inner);
-    if (forced) return this.toJava(forced.inner, desc, nullableParam);
+    if (forced) return this.toJava(forced.inner, desc, nullableParam, nonNullParam);
     const literal = numericLiteral(inner);
     if (literal !== null && (NUMERIC.has(desc) || desc === 'C')) return primitiveLiteral(literal, desc);
     const found = this.raw(inner);
@@ -785,7 +914,7 @@ export class AndroidNativeAPI implements KotlinNative {
     }
     if (desc.startsWith('[')) return this.toJavaArray(inner, desc);
     const k = this.kind(inner);
-    if (k.kind === 'any') return `(${t.expr(inner)} as ${this.kotlinType(desc, 'Any?')}?)`;
+    if (k.kind === 'any') return `(${t.expr(inner)} as ${this.kotlinType(desc, 'Any?')}${nonNullParam ? '' : '?'})`;
     if (k.kind === 'number' || k.kind === 'string' || k.kind === 'boolean') return t.coerce(inner, k.kind === 'number' ? 'Double' : k.kind === 'string' ? 'String' : 'Boolean');
     return t.expr(inner);
   }
@@ -880,19 +1009,27 @@ export class AndroidNativeAPI implements KotlinNative {
 
   /** The Java method a TypeScript method implements: by name, then by its parameter count and types. */
   private overrideTarget(fn: ts.SignatureDeclaration, classes: string[], name: string): Callable | null {
+    return this.overrideTargets(fn, classes, name, false)[0] ?? null;
+  }
+
+  /**
+   * The Java methods a TypeScript method overrides. Library mode: each overload its parameters fit, as NativeScript's runtime
+   * routes every overload of the name to the one function (`onReceivedError` of WebViewClient's two signatures).
+   */
+  private overrideTargets(fn: ts.SignatureDeclaration, classes: string[], name: string, every = !!this.t.library): Callable[] {
     const all = this.overridable(classes, name);
     if (!all.length) {
       const final = this.methods(classes, name, false).find((c) => c.m.access & ACC_FINAL);
       if (final) throw this.t.error(fn, `${name} (overrides the final Java method ${this.display(final.m.owner, name, final)})`);
-      return null;
+      return [];
     }
     const arity = fn.parameters.length;
     const exact = all.filter((c) => c.params.length === arity);
     const pool = exact.length ? exact : all.filter((c) => c.params.length > arity);
-    if (pool.length === 1) return pool[0];
+    if (pool.length === 1) return [pool[0]];
     const kinds = fn.parameters.map((p) => this.kindOfType(this.t.checker.getTypeAtLocation(p.name), p));
     const fits = pool.filter((c) => kinds.every((k, i) => k.kind === 'any' || this.score(k, c.params[i]) !== null));
-    if (fits.length === 1) return fits[0];
+    if (fits.length === 1 || (every && fits.length)) return fits;
     throw this.t.error(fn, `${name} (matches ${pool.map((c) => this.display(c.m.owner, name, c)).join(' and ')}; declare its parameter types)`);
   }
 
@@ -917,7 +1054,11 @@ export class AndroidNativeAPI implements KotlinNative {
       if (!target.params[k] || !ts.isIdentifier(p.name)) return '';
       const tsType = t.typeOf(p.name);
       const unwrapped = target.m.nullableParams?.[k] && !tsType.endsWith('?') && tsType !== 'Any?' ? `__a${k}!!` : `__a${k}`;
-      return `${indent}    val ${ident(p.name.text)}: ${tsType} = ${this.fromJava(unwrapped, target.params[k])}`;
+      const desc = target.params[k];
+      // Script types a parameter more narrowly than Java (`activity: AppCompatActivity` for an Activity, `result: string` for an Object): cast, as script trusts it.
+      const narrowed = t.library && desc.startsWith('L') && tsType !== 'Any?' && types[k].replace(/\?$/, '') !== tsType.replace(/\?$/, '');
+      const value = narrowed ? (desc === 'Ljava/lang/Object;' ? t.fromAnyCode(unwrapped, tsType, true) : `(${unwrapped} as ${tsType})`) : this.fromJava(unwrapped, desc);
+      return `${indent}    val ${ident(p.name.text)}: ${tsType} = ${value}`;
     }).filter(Boolean);
     const head = `${indent}override fun ${ident(name)}(${params.join(', ')})`;
     if (target.ret === 'V') {
@@ -927,7 +1068,7 @@ export class AndroidNativeAPI implements KotlinNative {
     const retType = sig ? this.kotlinType(sig.ret, typeVar) : this.kotlinType(target.ret, typeVar);
     const ref = target.ret.startsWith('L') || target.ret.startsWith('[');
     const body = t.functionBody(fn, tsRet, indent + '    ');
-    const result = NUMERIC.has(target.ret) ? `__result${CONVERT[target.ret]}` : target.ret === 'C' ? '__result[0]' : target.ret.startsWith('[') ? this.arrayValue('__result', target.ret) : '__result';
+    const result = NUMERIC.has(target.ret) ? `${tsRet === 'Double' ? '__result' : 'jsToNumber(__result)'}${CONVERT[target.ret]}` : target.ret === 'C' ? '__result[0]' : target.ret.startsWith('[') ? this.arrayValue('__result', target.ret) : '__result';
     return [
       `${head}: ${retType}${ref && nullableRet ? '?' : ''} {`,
       ...binds,
@@ -955,7 +1096,7 @@ export class AndroidNativeAPI implements KotlinNative {
 ${indent}    ${call}
 ${indent}}`;
     const retType = sig ? this.kotlinType(sig.ret, typeVar) : this.kotlinType(target.ret, typeVar);
-    const result = NUMERIC.has(target.ret) ? `__result${CONVERT[target.ret]}` : target.ret === 'C' ? '__result[0]' : '__result';
+    const result = NUMERIC.has(target.ret) ? `${tsRet === 'Double' ? '__result' : 'jsToNumber(__result)'}${CONVERT[target.ret]}` : target.ret === 'C' ? '__result[0]' : '__result';
     const ref = target.ret.startsWith('L') || target.ret.startsWith('[');
     return `${head}: ${retType}${ref ? '?' : ''} {
 ${indent}    val __result = ${call}
@@ -1036,10 +1177,15 @@ ${indent}}`;
       if (baseDecl && ts.isClassDeclaration(baseDecl) && !baseDecl.getSourceFile().isDeclarationFile && this.nativeHeritage(baseDecl)) throw t.error(heritage, `extending ${heritage.getText()}, an app class that extends a Java class`);
       return null;
     }
-    const { base, interfaces, listed } = native;
+    let { base, interfaces, listed } = native;
+    // Library mode: `class Impl extends android.app.Application.ActivityLifecycleCallbacks`, as NativeScript's runtime takes it: implementing the interface.
+    if (base.access & ACC_INTERFACE && t.library) {
+      interfaces = [base, ...interfaces.filter((i) => i !== base)];
+      base = this.classpath.get('java/lang/Object')!;
+    }
     if (base.access & ACC_INTERFACE) throw t.error(cls, `extending the Java interface ${javaTypeName(`L${base.name};`)} (implement it: \`static interfaces = [...]\` or \`new ${javaTypeName(`L${base.name};`)}({ … })\`)`);
     if (base.access & ACC_FINAL) throw t.error(cls, `extending the final Java class ${javaTypeName(`L${base.name};`)}`);
-    const name = cls.name!.text;
+    const name = t.topName(cls, cls.name!.text);
     const heritage = cls.heritageClauses!.find((h) => h.token === ts.SyntaxKind.ExtendsKeyword)!.types[0];
     const baseType = this.classRef(base, heritage.typeArguments?.map((a) => t.checker.getTypeFromTypeNode(a)), 'Any?', heritage);
     const plain = base.name === 'java/lang/Object';
@@ -1107,14 +1253,14 @@ ${indent}}`;
           t.indent = '    ';
           continue;
         }
-        const target = this.overrideTarget(m, classes, n);
-        lines.push(target ? this.overrideMethod(m, n, target, '    ') : '    ' + t.func(m, ident(n)));
+        const targets = this.overrideTargets(m, classes, n);
+        lines.push(targets.length ? targets.map((target) => this.overrideMethod(m, n, target, '    ')).join('\n') : '    ' + t.func(m, ident(n)));
       }
     } finally {
       t.indent = '';
     }
     if (statics.length) lines.push('    companion object {', ...statics, '    }');
-    return [`class ${ident(name)} : ${supers.join(', ')} {`, ...lines, '}'].join('\n');
+    return this.declared(name, (simple) => [`class ${ident(simple)}${supers.length ? ` : ${supers.join(', ')}` : ''} {`, ...lines, '}'].join('\n'));
   }
 
   // ---- `Base.extend({ … })` and `Array.create(type, length)` -----------------------------------
@@ -1173,8 +1319,10 @@ ${indent}}`;
       const d = this.t.resolve(p.left)?.valueDeclaration;
       if (d && ts.isVariableDeclaration(d) && ts.isIdentifier(d.name)) owner = d;
     }
-    const name = !owner ? '' : ts.isSourceFile(owner.parent.parent.parent) ? ident(this.t.topName(owner, owner.name.getText())) : ident(owner.name.getText());
-    return { call, literal, base, interfaces, owner, name };
+    // Library mode: `extend('com.tns.NativeScriptActivity', { … })` is that Java class, as an app's manifest names it.
+    const javaName = this.t.library && args.length === 2 && ts.isStringLiteralLike(args[0]) && args[0].text.includes('.') ? args[0].text : undefined;
+    const name = javaName ?? (!owner ? '' : ts.isSourceFile(owner.parent.parent.parent) ? ident(this.t.topName(owner, owner.name.getText())) : ident(owner.name.getText()));
+    return { call, literal, base, interfaces, owner, name, javaName };
   }
 
   /** The extend class a variable holds. */
@@ -1269,16 +1417,27 @@ ${indent}}`;
    */
   extensionClass(d: ts.VariableDeclaration): string | null {
     const x = this.extensionOf(d);
-    if (!x) return null;
+    return x ? this.extensionCode(x) : null;
+  }
+
+  /** A Java class's name a class takes: its own package's, declared in a file of that package; '' where the class is declared so. */
+  private declared(name: string, code: (simple: string) => string): string {
+    if (!name.includes('.')) return code(name);
+    this.t.foreign.push({ name, code: code(name.slice(name.lastIndexOf('.') + 1)) });
+    return '';
+  }
+
+  private extensionCode(x: Extension): string {
     const t = this.t;
+    const d = x.owner;
     const { base, interfaces, literal } = x;
     if (base.access & ACC_FINAL) throw t.error(x.call, `extending the final Java class ${javaTypeName(`L${base.name};`)}`);
-    const captured = this.capturedLocal(x);
-    if (captured) throw t.error(captured, `${captured.text} in an extend class assigned to ${d.name.getText()} (a local the class, declared with ${d.name.getText()}, cannot see)`);
+    const captured = d ? this.capturedLocal(x) : null;
+    if (captured) throw t.error(captured, `${captured.text} in an extend class assigned to ${d!.name.getText()} (a local the class, declared with ${d!.name.getText()}, cannot see)`);
     const plain = base.name === 'java/lang/Object';
     const supers = [...(plain ? [] : [this.classRef(base, undefined, 'Any?', x.call)]), ...interfaces.map((i) => this.classRef(i, undefined, 'Any?', x.call))];
     const classes = extensionClasses(x);
-    const outer = t.indent;
+    const outer = x.javaName ? '' : t.indent;
     const inner = outer + '    ';
     const fields: string[] = [];
     const ctors: string[] = [];
@@ -1314,8 +1473,8 @@ ${indent}}`;
           if (fn.parameters.length) throw t.error(p, 'init with parameters in an extend class');
           init = true;
         }
-        const target = name === 'init' ? null : this.overrideTarget(fn, classes, name);
-        methods.push(target ? this.overrideMethod(fn, name, target, inner) : inner + t.func(fn as ts.MethodDeclaration, ident(name)));
+        const targets = name === 'init' ? [] : this.overrideTargets(fn, classes, name);
+        methods.push(targets.length ? targets.map((target) => this.overrideMethod(fn, name, target, inner)).join('\n') : inner + t.func(fn as ts.MethodDeclaration, ident(name)));
       }
     } finally {
       t.indent = outer;
@@ -1327,7 +1486,7 @@ ${indent}}`;
       if (missing.length) throw t.error(literal, `an extend class implementing ${interfaces.map((i) => javaTypeName(`L${i.name};`)).join(', ')} without ${[...new Set(missing)].join(', ')}`);
     }
     const body = [...fields, ...ctors, ...(init ? [`${inner}init { init() }`] : []), ...methods];
-    return [`${outer}class ${x.name}${supers.length ? ` : ${supers.join(', ')}` : ''} {`, ...body, `${outer}}`].join('\n');
+    return this.declared(x.name, (simple) => [`${x.javaName ? '' : outer}class ${simple}${supers.length ? ` : ${supers.join(', ')}` : ''} {`, ...body, `${x.javaName ? '' : outer}}`].join('\n'));
   }
 
   /** `Array.create(java.lang.String, n)`, `Array.create('int', n)`: a Java array of n default elements. */
