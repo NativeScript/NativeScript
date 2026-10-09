@@ -211,7 +211,7 @@ export class Throws {
     if (file.isDeclarationFile) {
       const owner = builtinName(decl);
       // `s.match(x)` makes a RegExp of anything else, which can be a SyntaxError.
-      if (owner === 'String.match') return !args[0] || c.getTypeAtLocation(args[0]).getSymbol()?.name !== 'RegExp';
+      if (owner === 'String.match' || owner === 'String.search') return !args[0] || c.getTypeAtLocation(args[0]).getSymbol()?.name !== 'RegExp';
       // `f.call(…)` and `f.apply(…)` run f, whose Swift function type throws.
       if (owner && /^(Callable|Newable)?Function\.(call|apply)$/.test(owner)) return true;
       if (owner && THROWING_BUILTINS.has(owner)) return /\.reduce(Right)?$/.test(owner) ? args.length < 2 || callbackThrows() : true;

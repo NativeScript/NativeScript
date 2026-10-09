@@ -39,7 +39,7 @@ import { pluginNative, xcodegenLines } from './plugins/native.ts';
 import { nativeDispatch, untypedMembers } from './native-dispatch.ts';
 import { reachability } from './reach.ts';
 import { nativeTable, type NativeClass, type NativeMethod } from './natives/symbols.ts';
-import { coreNativeModules, coreNativeProject, installedCore } from './natives/core-ios.ts';
+import { coreNativeModules, coreNativeProject, installedCore, loadCoreNativeTables } from './natives/core-ios.ts';
 import { collectProperties } from './properties.ts';
 import { appResourcesDir, iosDeploymentTarget, iosExtensionNames, iosExtensions, iosProjectResources, mergePodsXcconfig, pluginReplacements, releaseOptions } from './app-resources.ts';
 import { generateProject, iosDependencies, packageLines, podfile, productLines, PROJECT_MARKER, removePods, swiftPackages } from './ios-dependencies.ts';
@@ -343,6 +343,9 @@ const typings = program.getSourceFiles().filter((f) => f.isDeclarationFile).map(
 // What may declare the app's own Swift and the packages' modules: the app's declarations, and those of the plugins that add packages.
 const owners = packages.flatMap((p) => (p.pluginDir ? [p.pluginDir + '/'] : []));
 const nativeTypings = typings.filter((f) => !f.startsWith('/__shims__/') && (!f.includes('/node_modules/') || owners.some((d) => f.startsWith(d))));
+// Core's own native code (TNSWidgets, NativeScriptUtils), which app code may call as core's does (`TNSLabel.font`):
+// its tables before anything reads a module of that name, as the first read of a table is the one kept.
+if (platform === 'ios') { const c = installedCore(app); if (c) loadCoreNativeTables(c); }
 const native = pluginNative(plugins.all(), out, {
   deps: dependencies, packages, declarations: typings, say, bindings: join(kit, 'Bindings'),
   app: { module: name, src: join(appResourcesDir(app), 'iOS', 'src'), declarations: nativeTypings },
@@ -422,8 +425,10 @@ if (routeTree) prelude = `        Router.shared.config = ${routeConfig(routeTree
 let xmlModules = '';
 if (xml) {
   const kit = new Set(translator.kitTypes());
+  // An element core has no class for (an XML file of data, not a page; `<template>`) fails where a page names it, as in the app's JavaScript build.
   const unknown = xml.elements.filter((e) => !kit.has(e));
-  if (unknown.length) throw new Error(`${unknown.join(', ')}: element${unknown.length > 1 ? 's' : ''} the XML names that NativeScriptKit has no class for`);
+  if (unknown.length) console.warn(`warning: ${unknown.join(', ')}: element${unknown.length > 1 ? 's' : ''} the XML names that NativeScriptKit has no class for`);
+  xml.elements = xml.elements.filter((e) => kit.has(e));
   const rel = (f: string) => relative(appDir, f).split('\\').join('/');
   xmlModules = [
     ...xml.xml.map((x) => `        AppModules.register(file: ${swiftString(x.name)}) { ${swiftString(x.text)} }
@@ -793,7 +798,7 @@ function angularEntryModule(file: string, text: string): string | null {
   return out;
 }
 
-/** `const { A, B } = await import('./x')` as a destructuring of names imported from './x' (appended: imports hoist), positions kept. */
+/** `const { A, B } = await import('./x')` as a destructuring of names imported from './x' (appended: imports hoist), positions kept where the text fits. */
 function staticImports(text: string): string {
   let n = 0;
   const added: string[] = [];
@@ -804,7 +809,16 @@ function staticImports(text: string): string {
     const value = `await Promise.resolve({ ${list.map((x) => `${x}: ${prefix}${x}`).join(', ')} })`;
     return `{${names}}${eq}${value}`.padEnd(whole.length, ' ');
   });
-  return added.length ? out + '\n' + added.join('\n') + '\n' : text;
+  // `const tests = await import('./x')`, read only as `tests.member`: an object of the members read, each imported by name.
+  const whole = out.replace(/\b(const|let|var)(\s+)(\w+)(\s*=\s*)await\s+import\((\s*['"](\.[^'"]+)['"]\s*)\)/g, (match, kw: string, sp: string, name: string, eq: string, arg: string, spec: string) => {
+    const reads = [...out.matchAll(new RegExp(`\\b${name}\\.(\\w+)`, 'g'))].map((m) => m[1]);
+    if (!reads.length || new RegExp(`\\b${name}\\b(?!\\s*[.=])`, 'g').exec(out.replace(match, ''))) return match;
+    const list = [...new Set(reads)];
+    const prefix = `__import${n++}_`;
+    added.push(`import { ${list.map((x) => `${x} as ${prefix}${x}`).join(', ')} } from '${spec}';`);
+    return `${kw}${sp}${name}${eq}await Promise.resolve({ ${list.map((x) => `${x}: ${prefix}${x}`).join(', ')} })`.padEnd(match.length, ' ');
+  });
+  return added.length ? whole + '\n' + added.join('\n') + '\n' : text;
 }
 
 /**

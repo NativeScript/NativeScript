@@ -12,7 +12,10 @@ export const NATIVE_VIEWS: Record<string, string> = {
   Label: 'UILabel', Button: 'UIButton', TextField: 'UITextField', TextView: 'UITextView', Image: 'UIImageView', Switch: 'UISwitch',
   Slider: 'UISlider', SegmentedBar: 'UISegmentedControl', ActivityIndicator: 'UIActivityIndicatorView', ScrollView: 'UIScrollView',
   ListView: 'UITableView', Progress: 'UIProgressView', DatePicker: 'UIDatePicker', TimePicker: 'UIDatePicker', WebView: 'WKWebView', View: 'UIView',
+  HtmlView: 'UITextView', SearchBar: 'UISearchBar', ListPicker: 'UIPickerView',
 };
+/** What `ios` is where it is a view controller, whose `nativeView` is the controller's view. */
+export const NATIVE_CONTROLLERS: Record<string, string> = { TabView: 'UITabBarController', Page: 'UIViewController' };
 const NATIVE_MEMBERS = new Set(['ios', 'nativeView', 'nativeViewProtected']);
 /** View methods whose arguments core reads as plain script objects. */
 const SCRIPT_OBJECTS = new Set(['animate', 'createAnimation', 'open', 'close', 'openShadeCover', 'closeShadeCover', 'showModal', 'closeModal']);
@@ -142,7 +145,11 @@ export class CoreAPI {
   /** The kit's class of a core class name: the iOS file's where the kit names it apart (`Font__font_ios`), else the class of that name. */
   platformClass(name: string): string {
     const ios = `${name}__${name.replace(/[A-Z]/g, (c, k) => (k ? '_' : '') + c.toLowerCase())}_ios`;
-    return this.index.has(ios) ? ios : name;
+    if (this.index.has(ios)) return ios;
+    if (this.index.has(name)) return name;
+    // A class the kit names by its file where another has its name (`Source__debug_source`): the one such class.
+    const renamed = [...this.index.keys()].filter((k) => k.startsWith(`${name}__`) && !k.includes('.'));
+    return renamed.length === 1 ? renamed[0] : name;
   }
 
   /** Whether a kit class's initializer taking no arguments throws. */
@@ -179,6 +186,9 @@ export class CoreAPI {
         const outer = this.owner(e.expression);
         const name = outer?.isStatic ? `${outer.name}.${e.name.text}` : null;
         if (name && this.index.has(name)) return { name, isStatic: true };
+        // A class a core namespace exports (`Utils.Source`): the class itself, under the kit's name for it.
+        const target = sym.flags & ts.SymbolFlags.Alias ? c.getAliasedSymbol(sym) : sym;
+        if (outer?.isStatic && target.flags & ts.SymbolFlags.Class && this.index.has(this.platformClass(target.name))) return { name: this.platformClass(target.name), isStatic: true };
       }
     }
     if (ts.isIdentifier(e)) {
@@ -188,7 +198,7 @@ export class CoreAPI {
       const decl = sym?.declarations?.[0];
       if (sym && isCoreDeclaration(decl) && (sym.flags & (ts.SymbolFlags.Class | ts.SymbolFlags.ValueModule | ts.SymbolFlags.Variable)) && !this.t.compiledCounterpart(sym)) {
         if (sym.flags & ts.SymbolFlags.ValueModule) return { name: e.text, isStatic: true };
-        if (sym.flags & ts.SymbolFlags.Class) return { name: sym.name, isStatic: true };
+        if (sym.flags & ts.SymbolFlags.Class) return { name: this.platformClass(sym.name), isStatic: true };
         // A constant core exports (`Device`): the kit has a type of that name with static members.
         if (this.index.has(sym.name)) return { name: sym.name, isStatic: true };
       }
@@ -262,6 +272,13 @@ export class CoreAPI {
     return candidates.find((c): c is string => !!c && this.index.has(c)) ?? null;
   }
 
+  /** A member the kit's class lacks that the program's own declarations give a core type (an intersection's added members). */
+  private addedMember(owner: string, e: ts.PropertyAccessExpression): boolean {
+    if (kitMember(this.index, owner, e.name.text)) return false;
+    const decls = this.t.resolve(e.name)?.declarations ?? [];
+    return decls.length > 0 && decls.every((d) => !isCoreDeclaration(d) && !d.getSourceFile().isDeclarationFile);
+  }
+
   private member(owner: string, name: string, e: ts.Node): KitMember {
     const m = kitMember(this.index, owner, name);
     if (!m) throw this.t.error(e, `${owner}.${name} (NativeScriptKit has no such member)`);
@@ -301,6 +318,12 @@ export class CoreAPI {
     if (!owner.isStatic && this.isView(owner.name) && !kitMember(this.index, owner.name, name)) {
       if (!this.isViewProperty(owner.name, name)) unappliedProperty(t, e.name, `${owner.name}.${name}`, 'NativeScriptKit');
       return t.fromAnyCode(`${recv}.get(${JSON.stringify(name)})`, t.typeOf(e), true);
+    }
+    // A namespace of core's held as a value (`knownFolders.ios[name]()`): an object of its functions that take nothing, as script reads it.
+    if (owner.isStatic && !kitMember(this.index, owner.name, name) && this.index.has(`${owner.name}.${name}`)) {
+      const ns = `${owner.name}.${name}`;
+      const fns = [...(this.index.get(ns)?.members ?? [])].filter(([, ms]) => ms.some((m) => m.kind === 'func' && m.static && !(m.params ?? '').trim()));
+      return `JSObject([${fns.map(([fn]) => `(${JSON.stringify(fn)}, { (_: [Any?]) throws -> Any? in ${kitMember(this.index, ns, fn)?.throws ? 'try ' : ''}${ns}.${fn}() } as JSFunction)`).join(', ')}])`;
     }
     const m = this.member(owner.name, name, e);
     if (inChain && continued) return `${recv}.${name}`;
@@ -388,6 +411,7 @@ export class CoreAPI {
     const member = this.t.resolve(e.expression.name)?.declarations?.[0];
     const declaring = member && isCoreDeclaration(member) && ts.isClassLike(member.parent) && member.parent.name ? member.parent.name.text : null;
     const owner = this.owner(e.expression.expression)?.name ?? declaring;
+    if (owner && this.addedMember(owner, e.expression)) return true;
     const m = owner ? kitMember(this.index, owner, e.expression.name.text) : null;
     // A property holding a function that throws (`on: ((String, …) throws -> Void)!`).
     return !!m && (!!m.throws || (m.kind === 'var' && /\)\s*throws\s*->[^>]*\)?[?!]?$/.test(m.type)));
@@ -438,6 +462,13 @@ export class CoreAPI {
     if (!owner) return null;
     const t = this.t;
     const name = e.expression.name.text;
+    // A method the app's own type adds to a core one (`View & { addChild(view: View): void }`): called by name, as script calls it.
+    if (this.addedMember(owner.name, e.expression)) {
+      const target = owner.isStatic ? owner.name : t.expr(e.expression.expression);
+      return this.fromKit(`jsCallMethod(${target}, ${JSON.stringify(name)}${e.arguments.map((a) => `, ${t.coerce(a, 'Any?')}`).join('')})`, 'Any?', t.typeOf(e));
+    }
+    // `toString()` of a kit object without its own: as script converts it.
+    if (name === 'toString' && !owner.isStatic && !e.arguments.length && !kitMember(this.index, owner.name, name)) return `jsToString(${t.expr(e.expression.expression)})`;
     const m = this.member(owner.name, name, e.expression);
     // `this.hud?.animate(…)`: nothing runs where the object is missing.
     const chained = !owner.isStatic && !!e.expression.questionDotToken && t.typeOf(e.expression.expression).endsWith('?');
@@ -446,7 +477,9 @@ export class CoreAPI {
     if (name === 'navigate' && kitExtends(this.index, owner.name, 'Frame')) return this.navigate(recv, e);
     const listener = this.listenerArgs(e, m);
     // A kit method takes the arguments given; its own defaults stand for the rest.
-    const args = listener ?? (SCRIPT_OBJECTS.has(name) && this.isView(owner.name) ? e.arguments.map((a) => this.scriptValue(a)) : t.args(e, e.arguments.length));
+    // A last argument spread into the kit's rest parameter is placed below, as the array it is.
+    const spreadLast = e.arguments.length > 0 && ts.isSpreadElement(e.arguments[e.arguments.length - 1]);
+    const args = listener ?? (SCRIPT_OBJECTS.has(name) && this.isView(owner.name) ? e.arguments.map((a) => this.scriptValue(a)) : spreadLast ? [...t.args(e, e.arguments.length - 1), ''] : t.args(e, e.arguments.length));
     // A property holding a function (`Application.on`, which core assigns in its constructor): its parameters are the function type's,
     // each of them passed, as a Swift function value has no defaults.
     const held = m.kind === 'var' && !m.params ? t.functionTypeParts(m.type.replace(/[?!]$/, '').replace(/^\((.*)\)$/, '$1')) : null;
@@ -461,6 +494,9 @@ export class CoreAPI {
     const restAt = (t.checker.getResolvedSignature(e)?.getDeclaration() as ts.SignatureDeclaration | undefined)?.parameters?.findIndex((p) => !!p.dotDotDotToken) ?? -1;
     const restType = restAt >= 0 ? /:\s*(JSArray<.*>)\s*$/.exec(kitParams[restAt] ?? '')?.[1] : undefined;
     if (restType && !listener && !packed && !e.arguments.some(ts.isSpreadElement) && args.length >= restAt) args.splice(restAt, args.length - restAt, `${restType}([${args.slice(restAt).join(', ')}])`);
+    // One array spread into the rest (`path.join(...parts)`): the array the kit's rest parameter is.
+    const spread = e.arguments[restAt];
+    if (restType && !listener && !packed && e.arguments.length === restAt + 1 && spread && ts.isSpreadElement(spread)) args.splice(restAt, args.length - restAt, t.coerce(spread.expression, restType));
     if (held) {
       while (args.length < held.params.length && /[?!]$/.test(held.params[args.length])) args.push('nil');
       return this.fromKit(`${recv}.${name}(${args.join(', ')})`, held.result, t.typeOf(e));
@@ -531,7 +567,19 @@ export class CoreAPI {
     const t = this.t;
     const args = e.arguments ?? ts.factory.createNodeArray();
     const className = coreSymbolName(sym);
-    const kitName = this.platformClass(className);
+    let kitName = this.platformClass(className);
+    // A class of a namespace (`Trace.DefaultErrorHandler`), nested in the kit as in core.
+    if (!this.index.has(kitName)) {
+      const path = [sym.name];
+      let p = (sym as ts.Symbol & { parent?: ts.Symbol }).parent;
+      for (; p && p.flags & ts.SymbolFlags.Module && !ts.isSourceFile(p.valueDeclaration ?? p.declarations![0]); p = (p as ts.Symbol & { parent?: ts.Symbol }).parent) path.unshift(p.name);
+      // A module core's index exports as a namespace (`export * as Trace from './trace'`): its public name.
+      const file = p?.valueDeclaration && ts.isSourceFile(p.valueDeclaration) ? p.valueDeclaration.fileName : undefined;
+      const root = file && /^(.*[\\/]@nativescript[\\/]core)[\\/]/.exec(file)?.[1];
+      const barrel = root ? coreBarrels(root).get(file!.slice(root.length + 1).split(/[\\/]/)[0]) : undefined;
+      if (barrel) path.unshift(barrel);
+      if (path.length > 1 && this.index.has(path.join('.'))) kitName = path.join('.');
+    }
     if (!this.index.has(kitName)) throw t.error(e, `new ${className} (NativeScriptKit has no such class)`);
     // Core's constructor takes its arguments as a rest parameter; numbers never make it throw.
     if (sym.name === 'Color') {
@@ -572,13 +620,19 @@ export class CoreAPI {
   /** `frame.navigate({ create: () => page })`: the kit builds what `create` returns. */
   private navigate(recv: string, e: ts.CallExpression): string {
     const entry = e.arguments[0];
-    if (!entry || !ts.isObjectLiteralExpression(entry)) throw this.t.error(e, 'frame.navigate with anything but a navigation entry object');
+    if (!entry) throw this.t.error(e, 'frame.navigate without an entry');
+    // A function making the page, which core calls for it: its result is the page.
+    const factory = (code: string) => `({ (_: [Any?]) throws -> Any? in try (${code})() } as JSFunction)`;
+    if (ts.isArrowFunction(entry) || ts.isFunctionExpression(entry)) return `${recv}.navigate(${factory(this.t.expr(entry))})`;
+    // A module name, or an entry held in a variable: as script gives it, its `create` boxed as script calls it.
+    if (!ts.isObjectLiteralExpression(entry)) return `${recv}.navigate(${this.t.coerce(entry, 'Any?')})`;
     // Core reads the entry as script gives it: `create` a function it calls for the page, the rest plain values.
     const fields = entry.properties.map((p) => {
+      if (ts.isShorthandPropertyAssignment(p)) return p.name.text === 'create' ? `("create", ${factory(this.t.expr(p.name))})` : `(${JSON.stringify(p.name.text)}, ${this.t.coerce(p.name, 'Any?')})`;
       if (!ts.isPropertyAssignment(p)) throw this.t.error(p, `the navigation entry's ${p.name?.getText()}`);
       const name = p.name.getText().replace(/^['"]|['"]$/g, '');
       if (name !== 'create') return `(${JSON.stringify(name)}, ${this.scriptValue(p.initializer)})`;
-      return `("create", { (_: [Any?]) throws -> Any? in try (${this.t.expr(p.initializer)})() } as JSFunction)`;
+      return `("create", ${factory(this.t.expr(p.initializer))})`;
     });
     return `${recv}.navigate(JSObject([${fields.join(', ')}]))`;
   }

@@ -283,6 +283,16 @@ public func jsObjectAssign(_ target: Any?, _ sources: Any?...) throws -> Any? {
     return target
 }
 
+/// `Object.assign(target, ...sources)` with the sources spread from an array.
+@discardableResult
+public func jsObjectAssign(_ target: Any?, spread sources: [Any?]) throws -> Any? {
+    for source in sources {
+        guard let dynamic = jsFlat(source) as? JSDynamic else { continue }
+        for key in dynamic.jsKeys { try jsSet(target, key, dynamic[jsKey: key]) }
+    }
+    return target
+}
+
 /// `{ ...source }` into an object literal being built: the source's own enumerable keys, in order.
 public func jsObjectSpread(_ target: JSObject, _ source: Any?) {
     guard let dynamic = jsFlat(source) as? JSDynamic else { return }

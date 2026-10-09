@@ -100,13 +100,14 @@ export function kitIndex(kitSources: string): Map<string, KitType> {
         if (owner?.type && depth === owner.depth + 1 && /\b(public|open)\b/.test(line)) {
           const isStatic = /\b(static|class)\s+(func|var|let)\b/.test(line);
           let m: RegExpExecArray | null;
-          if ((m = /\b(?:var|let)\s+(\w+)\s*:\s*([^={]+)/.exec(line))) {
+          // A name Swift reserves is written in backquotes (`` var `extension`: String ``).
+          if ((m = /\b(?:var|let)\s+`?(\w+)`?\s*:\s*([^={]+)/.exec(line))) {
             const member: KitMember = { kind: 'var', static: isStatic, type: m[2].trim() };
             add(owner.type, m[1], member);
             if (/\{\s*$/.test(line)) pendingGetter = { member, depth };
           }
           // An untyped stored property takes its literal's type.
-          else if ((m = /\b(?:var|let)\s+(\w+)\s*=\s*(true|false|"[^"]*"|-?\d+(\.\d+)?)\s*$/.exec(line))) add(owner.type, m[1], { kind: 'var', static: isStatic, type: /^(true|false)$/.test(m[2]) ? 'Bool' : m[2].startsWith('"') ? 'String' : m[3] ? 'Double' : 'Int' });
+          else if ((m = /\b(?:var|let)\s+`?(\w+)`?\s*=\s*(true|false|"[^"]*"|-?\d+(\.\d+)?)\s*$/.exec(line))) add(owner.type, m[1], { kind: 'var', static: isStatic, type: /^(true|false)$/.test(m[2]) ? 'Bool' : m[2].startsWith('"') ? 'String' : m[3] ? 'Double' : 'Int' });
           else if ((m = /\bfunc\s+`?(\w+)`?\s*(?:<[^>]*>)?\(/.exec(line))) {
             const [params, rest] = parenthesized(line, m.index + m[0].length);
             const ret = /^\s*(?:throws\s*)?(?:->\s*([^{]+))?/.exec(rest)![1];

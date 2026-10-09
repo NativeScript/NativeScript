@@ -35,6 +35,56 @@ public func jsError(spread arguments: [Any?]) {
     jsWriteStandardError(jsFormatLogLine(arguments) + "\n")
 }
 
+/// `console.time`, `timeLog`, `timeEnd`, `count`, `countReset`, `assert`, `dir` and `trace`, as Node prints them.
+public enum JSConsole {
+    nonisolated(unsafe) private static var timers: [String: Double] = [:]
+    nonisolated(unsafe) private static var counts: [String: Int] = [:]
+
+    private static func label(_ value: Any?) -> String { jsIsNullish(value) ? "default" : jsToString(value) }
+    private static func elapsed(_ start: Double) -> String {
+        let ms = (Date().timeIntervalSince1970 * 1000) - start
+        return ms >= 1000 ? String(format: "%.3fs", ms / 1000) : String(format: "%.3fms", ms)
+    }
+
+    public static func time(_ name: Any? = nil) {
+        let l = label(name)
+        if timers[l] != nil { return jsWriteStandardError("Warning: Label '\(l)' already exists for console.time()\n") }
+        timers[l] = Date().timeIntervalSince1970 * 1000
+    }
+    public static func timeLog(_ name: Any? = nil, _ data: [Any?] = []) {
+        let l = label(name)
+        guard let start = timers[l] else { return jsWriteStandardError("Warning: No such label '\(l)' for console.timeLog()\n") }
+        jsWriteStandardOutput(jsFormatLogLine(["\(l): \(elapsed(start))"] + data) + "\n")
+    }
+    public static func timeEnd(_ name: Any? = nil) {
+        let l = label(name)
+        guard let start = timers.removeValue(forKey: l) else { return jsWriteStandardError("Warning: No such label '\(l)' for console.timeEnd()\n") }
+        jsWriteStandardOutput("\(l): \(elapsed(start))\n")
+    }
+    public static func count(_ name: Any? = nil) {
+        let l = label(name)
+        counts[l, default: 0] += 1
+        jsWriteStandardOutput("\(l): \(counts[l]!)\n")
+    }
+    public static func countReset(_ name: Any? = nil) {
+        let l = label(name)
+        if counts[l] == nil { return jsWriteStandardError("Warning: Count for '\(l)' does not exist\n") }
+        counts[l] = 0
+    }
+    public static func assert(_ condition: Any?, _ data: [Any?] = []) {
+        if jsTruthy(condition) { return }
+        if let first = data.first, let s = jsFlat(first) as? String { return jsWriteStandardError(jsFormatLogLine(["Assertion failed: " + s] + data.dropFirst()) + "\n") }
+        jsWriteStandardError(jsFormatLogLine(["Assertion failed"] + data) + "\n")
+    }
+    public static func dir(_ value: Any?) {
+        jsWriteStandardOutput(jsInspect(value) + "\n")
+    }
+    public static func trace(_ data: [Any?] = []) {
+        let message = data.isEmpty ? "Trace" : "Trace: " + jsFormatLogLine(data)
+        jsWriteStandardError(message + "\n" + Thread.callStackSymbols.dropFirst().map { "    at " + $0 }.joined(separator: "\n") + "\n")
+    }
+}
+
 func jsWriteStandardOutput(_ text: String) {
     FileHandle.standardOutput.write(Data(text.utf8))
 }

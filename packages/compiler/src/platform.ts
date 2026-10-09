@@ -12,7 +12,9 @@ export type Platform = 'ios' | 'android';
 export function foldPlatform(text: string, fileName: string, platform: Platform): string {
   text = applyDefines(text, fileName);
   // A defined string compared with a literal (`'nativescript' === 'css-tree'`) folds as well.
-  if (!/\b(isIOS|isAndroid|__IOS__|__ANDROID__|__APPLE__|__VISIONOS__|__DEV__)\b|import\.meta\.hot|(['"])[^'"\n]*\2\)?\s*[!=]==?\s*\(?['"]/.test(text)) return text;
+  if (!/\b(isIOS|isAndroid|__IOS__|__ANDROID__|__APPLE__|__VISIONOS__|__DEV__)\b|\bApplication\.(android|ios)\b|import\.meta\.hot|(['"])[^'"\n]*\2\)?\s*[!=]==?\s*\(?['"]/.test(text)) return text;
+  // Core's `Application.android` and `Application.ios`, the platform's object or undefined: where the file imports core's Application.
+  const application = /import\s*\{[^}]*\bApplication\b[^}]*\}\s*from\s*['"]@nativescript\/core['"]/.test(text);
   // A release build: `__DEV__` is false, as the bundlers define it for one.
   const flags: Record<string, boolean> = {
     isIOS: platform === 'ios', __IOS__: platform === 'ios', __APPLE__: platform === 'ios',
@@ -28,6 +30,7 @@ export function foldPlatform(text: string, fileName: string, platform: Platform)
       if (isHot(n)) return false;
       if (ts.isIdentifier(n) && n.text in flags && isReference(n) && !declaredAround(n)) return flags[n.text];
       if (ts.isPropertyAccessExpression(n) && ts.isIdentifier(n.expression) && ['global', 'globalThis'].includes(n.expression.text) && n.name.text in flags) return flags[n.name.text];
+      if (application && ts.isPropertyAccessExpression(n) && ts.isIdentifier(n.expression) && n.expression.text === 'Application' && ['android', 'ios'].includes(n.name.text) && !declaredAround(n.expression) && isTested(n)) return n.name.text === platform;
       return undefined;
     });
     if (!edit) return folded ? dropUnreferenced(text, fileName, kind) : text;
@@ -271,4 +274,12 @@ function exits(st: ts.Statement): boolean {
   if (ts.isBlock(st)) return st.statements.length > 0 && exits(st.statements[st.statements.length - 1]);
   if (ts.isIfStatement(st)) return !!st.elseStatement && exits(st.thenStatement) && exits(st.elseStatement);
   return false;
+}
+
+/** An expression read for its truth (`if (Application.android)`, `!Application.ios`, `a && b`), not for its value. */
+function isTested(n: ts.Node): boolean {
+  let p = n.parent;
+  while (ts.isParenthesizedExpression(p) || (ts.isPrefixUnaryExpression(p) && p.operator === ts.SyntaxKind.ExclamationToken)) { n = p; p = p.parent; }
+  if (ts.isBinaryExpression(p) && [ts.SyntaxKind.AmpersandAmpersandToken, ts.SyntaxKind.BarBarToken].includes(p.operatorToken.kind)) return p.left === n || isTested(p);
+  return ((ts.isIfStatement(p) || ts.isWhileStatement(p)) && p.expression === n) || (ts.isConditionalExpression(p) && p.condition === n);
 }

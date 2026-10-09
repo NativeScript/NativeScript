@@ -896,6 +896,7 @@ export class Translator implements AsyncTranslator {
     }
     if ((ts.isIdentifier(n) || ts.isVariableDeclaration(n)) && this.untypedRecord(n)) return 'JSRecord<Any?>';
     if (ts.isIdentifier(n) && this.widenedParameter(n)) return 'Any?';
+    if (ts.isIdentifier(n) && this.appModuleOf(n)) return 'Any?';
     const keyed = (ts.isIdentifier(n) || ts.isVariableDeclaration(n)) ? this.numberKeyedArray(n) : null;
     if (keyed) return `JSRecord<${keyed}>`;
     // A choice between function literals is the function type they are written for: each literal takes its slot's signature.
@@ -1598,6 +1599,34 @@ export class Translator implements AsyncTranslator {
     return (decl && this.qualifiedDecl(decl, target!.name)) ?? ident(decl && this.topNames().has(decl) ? this.topNames().get(decl)! : p.name.text);
   }
 
+  /** An app module imported whole (`import * as tests from './x'`), where the name is the module. */
+  private appModuleOf(e: ts.Identifier): ts.Symbol | null {
+    if (this.library || (ts.isPropertyAccessExpression(e.parent) && e.parent.expression === e)) return null;
+    const local = this.checker.getSymbolAtLocation(e);
+    const target = local && local.flags & ts.SymbolFlags.Alias ? this.checker.getAliasedSymbol(local) : local;
+    const decl = target?.valueDeclaration;
+    return target && target.flags & ts.SymbolFlags.ValueModule && decl && ts.isSourceFile(decl) && !decl.isDeclarationFile ? target : null;
+  }
+
+  /**
+   * An app module held as a value (`allTests['GLOBALS'] = globalsTests`): an object of its exported values, its functions
+   * callable as script calls them, as script holds a module (a test runner calls each `test…` function it finds by name).
+   */
+  private moduleValue(e: ts.Identifier): string | null {
+    const module = this.appModuleOf(e);
+    if (!module) return null;
+    const entries: string[] = [];
+    for (const exported of this.checker.getExportsOfModule(module)) {
+      const sym = exported.flags & ts.SymbolFlags.Alias ? this.checker.getAliasedSymbol(exported) : exported;
+      const decl = sym.valueDeclaration;
+      if (!decl || !(sym.flags & ts.SymbolFlags.Value) || sym.flags & ts.SymbolFlags.Class || ts.isSourceFile(decl)) continue;
+      const ref = this.qualifiedDecl(decl, sym.name) ?? ident(sym.name);
+      const t = this.type(this.checker.getTypeOfSymbolAtLocation(sym, decl), decl);
+      entries.push(`(${swiftString(exported.name)}, ${this.convert(ref, t, 'Any?')})`);
+    }
+    return `JSObject([${entries.join(', ')}])`;
+  }
+
   /** An identifier as a reference to what it names: qualified where its declaration is a namespace's or a library module's. */
   private refName(e: ts.Identifier): string {
     // `{ prompt }`: the name's own symbol is the property; the value it reads is the variable or function of that name.
@@ -1611,7 +1640,7 @@ export class Translator implements AsyncTranslator {
 
   /** A module-level name read inside a namespace with a member of the same name: qualified by the app's module. */
   private unshadowed(at: ts.Node, decl: ts.Declaration | undefined, name: string): string {
-    if (!this.appModule || !decl) return name;
+    if (!this.appModule || !decl || ts.isSourceFile(decl)) return name;
     const statement = ts.isVariableDeclaration(decl) ? decl.parent.parent : decl;
     if (!ts.isSourceFile(statement.parent)) return name;
     for (let n: ts.Node | undefined = at.parent; n; n = n.parent) {
@@ -3895,7 +3924,11 @@ ${members.join('\n')}
     if (this.errors) {
       try { return this.stmtChecked(s); } catch (e) {
         const at = s.getSourceFile().getLineAndCharacterOfPosition(s.getStart());
-        this.errors.push(e instanceof RangeError ? `${s.getSourceFile().fileName}:${at.line + 1}: ${e.message}${process.env.NS_NATIVE_STACKS ? '\n' + [...new Set((e.stack ?? '').split('\n').slice(1, 400).map((l) => l.trim().split(' ')[1]))].slice(0, 30).join(' ') : ''}` : (e as Error).message);
+        const message = (e as Error).message;
+        // The translator's own errors name their place; a failure of its own code (a TypeError) gets the statement's.
+        const placed = /^\/[^:]+:\d+/.test(message);
+        const stack = process.env.NS_NATIVE_STACKS && !placed ? '\n' + [...new Set(((e as Error).stack ?? '').split('\n').slice(1, 400).map((l) => l.trim().split(' ')[1]))].slice(0, 30).join(' ') : '';
+        this.errors.push(placed ? message : `${s.getSourceFile().fileName}:${at.line + 1}: ${message}${stack}`);
         return '';
       }
     }
@@ -4071,6 +4104,13 @@ ${members.join('\n')}
             this.hoisted.push(native);
             // Its statics are declared where the class is defined, for script that holds it as a value.
             return this.library && this.heldAsValue(s) ? this.classDefinition(s) : '';
+          }
+          // A class of the program's that uses nothing of the function around it: the module's, as Swift declares classes.
+          if (s.name) {
+            const saved2 = this.indent;
+            this.indent = '';
+            try { this.hoisted.push(this.classDecl(s)); } finally { this.indent = saved2; }
+            return this.appMembersByName && (s.members.some((m) => ts.isAccessor(m) && !isStatic(m)) || this.heldAsValue(s)) ? this.classDefinition(s) : '';
           }
         }
         throw this.error(s, 'a class declared inside a function');
@@ -5000,7 +5040,7 @@ ${members.join('\n')}
     if (e.kind === ts.SyntaxKind.NullKeyword) return this.typeOf(e) === 'Any?' && !this.optionalContext(e) ? 'jsNull' : 'nil';
     if (e.kind === ts.SyntaxKind.ThisKeyword) return 'self';
     if (e.kind === ts.SyntaxKind.SuperKeyword) return 'super';
-    if (ts.isIdentifier(e)) return this.identifier(e);
+    if (ts.isIdentifier(e)) return this.moduleValue(e) ?? this.identifier(e);
     if (ts.isTemplateExpression(e)) {
       const pieces = e.templateSpans.map((span) => this.str(span.expression));
       // A string literal's interpolation is one line in Swift: a multi-line piece (a closure) joins the literal's parts instead.
@@ -6647,6 +6687,12 @@ ${members.join('\n')}
       case 'Math': return this.math(method, e);
       case 'ArrayBuffer': if (method === 'isView') return `JSArrayBuffer.isView(${arg(0) ? this.coerce(arg(0), 'Any?') : 'nil'})`; break;
       case 'console': {
+        const all = () => `[${e.arguments.map((x) => this.coerce(x, 'Any?')).join(', ')}]`;
+        const rest = () => `[${e.arguments.slice(1).map((x) => this.coerce(x, 'Any?')).join(', ')}]`;
+        const first = () => (e.arguments[0] ? this.coerce(e.arguments[0], 'Any?') : 'nil');
+        if (['time', 'timeEnd', 'count', 'countReset', 'dir'].includes(method)) return `JSConsole.${method}(${first()})`;
+        if (method === 'timeLog' || method === 'assert') return `JSConsole.${method}(${first()}, ${rest()})`;
+        if (method === 'trace') return `JSConsole.trace(${all()})`;
         const fn = ['warn', 'error'].includes(method) ? 'jsError' : 'jsLog';
         if (e.arguments.some(ts.isSpreadElement)) return `${fn}(spread: ${this.packed(e.arguments, 'JSArray<Any?>')}.storage)`;
         return `${fn}(${e.arguments.map((x) => this.coerce(x, 'Any?')).join(', ')})`;
@@ -6687,7 +6733,10 @@ ${members.join('\n')}
         if (method === 'assign') {
           // The target is an open JavaScript object: a literal there is untyped, so the sources' keys all land.
           const target = ts.isObjectLiteralExpression(arg(0)) ? this.dynamicObject(arg(0) as ts.ObjectLiteralExpression) : this.coerce(arg(0), 'Any?');
-          const code = `try jsObjectAssign(${[target, ...e.arguments.slice(1).map((x) => this.coerce(x, 'Any?'))].join(', ')})`;
+          // Sources spread from an array (`Object.assign({}, ...parts)`): each of its elements, in order.
+          const code = e.arguments.slice(1).some(ts.isSpreadElement)
+            ? `try jsObjectAssign(${target}, spread: ${this.packed(e.arguments.slice(1), 'JSArray<Any?>')}.storage)`
+            : `try jsObjectAssign(${[target, ...e.arguments.slice(1).map((x) => this.coerce(x, 'Any?'))].join(', ')})`;
           const t = T();
           return t === 'Any?' ? code : this.fromAnyCode(code, t, true);
         }
@@ -6986,6 +7035,7 @@ ${members.join('\n')}
       case 'substring': return `jsSubstring(${t}, ${a[0] ?? '0'}, ${opt(1)})`;
       case 'substr': return `jsSubstr(${t}, ${a[0] ?? '0'}, ${opt(1)})`;
       case 'match': return `jsMatch(${t}, jsRegExpFrom(${first ? this.coerce(first, 'Any?') : 'nil'}))`;
+      case 'search': return `jsSearch(${t}, jsRegExpFrom(${first ? this.coerce(first, 'Any?') : 'nil'}))`;
       case 'replace': return first && this.isAny(first) && e.arguments[1] && this.isString(e.arguments[1]) ? `jsReplace(${t}, untyped: ${this.expr(first)}, ${a[1]})` : `jsReplace(${t}, ${first && this.isString(first) ? this.str(first) : a[0]}, ${a[1]})`;
       case 'replaceAll': return `jsReplaceAll(${t}, ${a[0]}, ${a[1]})`;
       case 'charAt': return `jsCharAt(${t}, ${a[0] ?? '0'})`;
@@ -7198,7 +7248,8 @@ ${members.join('\n')}
       // `new (Cls as any)(…)`: the class itself constructed; a cast left in would be parenthesized again.
       let inner: ts.Expression = e.expression;
       while (ts.isParenthesizedExpression(inner) || ts.isAsExpression(inner) || ts.isTypeAssertionExpression(inner) || ts.isNonNullExpression(inner)) inner = inner.expression;
-      if (!ts.isParenthesizedExpression(inner)) {
+      // A call (`new (NSObject.extend({…}))()`) stays parenthesized: `new` would take the call's callee for its own.
+      if (!ts.isParenthesizedExpression(inner) && !ts.isCallExpression(inner)) {
         const cls = this.resolve(inner);
         const made = ts.factory.updateNewExpression(e, inner as ts.LeftHandSideExpression, e.typeArguments, e.arguments);
         if (cls && cls.flags & ts.SymbolFlags.Class) this.constructedTypes.set(made, this.type(this.checker.getDeclaredTypeOfSymbol(cls), e));

@@ -2,7 +2,7 @@ import ts from 'typescript';
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, isAbsolute, resolve } from 'node:path';
 import { foldPlatform, type Platform } from './platform.ts';
-import { KIT_PLUGINS, nativeViewOf } from './core.ts';
+import { KIT_PLUGINS, NATIVE_CONTROLLERS, NATIVE_VIEWS, nativeViewOf } from './core.ts';
 import type { PluginSources } from './plugins/source.ts';
 import { packageOf, runtimeFile } from './plugins/resolve.ts';
 import { NATIVE_VIEWS_ANDROID } from './core-kotlin.ts';
@@ -171,7 +171,11 @@ const SHIMS: Record<string, string> = {
 
 /** Globals NativeScript provides that neither the ES library nor core's declarations type. */
 const GLOBALS = `
-  declare var console: { log(...data: any[]): void; info(...data: any[]): void; warn(...data: any[]): void; error(...data: any[]): void; debug(...data: any[]): void };
+  declare var console: {
+    log(...data: any[]): void; info(...data: any[]): void; warn(...data: any[]): void; error(...data: any[]): void; debug(...data: any[]): void;
+    time(label?: string): void; timeLog(label?: string, ...data: any[]): void; timeEnd(label?: string): void;
+    count(label?: string): void; countReset(label?: string): void; assert(condition?: boolean, ...data: any[]): void; dir(item?: any, options?: any): void; trace(...data: any[]): void;
+  };
   declare function queueMicrotask(callback: () => void): void;
   declare var global: typeof globalThis;
   declare function requestAnimationFrame(callback: (frameTime: number) => void): number;
@@ -312,13 +316,21 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
   };
 
   // An Android build types iOS API too, as an app's references to `@nativescript/types` do: code reaching it is code NativeScript runs only on iOS.
-  const iosTypes = platform === 'android' ? resolve(modules, PLATFORM_TYPES.ios) : null;
-  const rootNames = [...roots, ...virtual.keys(), '/__shims__/globals.d.ts', platformTypes, ...(iosTypes && existsSync(iosTypes) ? [iosTypes] : []), resolve(modules, '@nativescript/core/global-types.d.ts'), ...declarations];
+  // An iOS build types Android API where the app names it (`android.view.View` in code shared by both platforms), which is large to load otherwise.
+  const namesAndroid = platform === 'ios' && roots.some((f) => /(?<![.\w$])(android|androidx|java|org)\.[a-z]/.test(ts.sys.readFile(f) ?? ''));
+  const otherTypes = platform === 'android' || namesAndroid ? resolve(modules, PLATFORM_TYPES[platform === 'android' ? 'ios' : 'android']) : null;
+  const rootNames = [...roots, ...virtual.keys(), '/__shims__/globals.d.ts', platformTypes, ...(otherTypes && existsSync(otherTypes) ? [otherTypes] : []), resolve(modules, '@nativescript/core/global-types.d.ts'), ...declarations];
   // A copy: a program keeps the array it is given, and a later program with equal root names reuses its files.
   let program = ts.createProgram([...rootNames], options, host);
   // A plugin's native API declarations (`typings/ios.d.ts`) are found as its sources are.
   if (extraRoots.size) {
     rootNames.push(...extraRoots);
+    program = ts.createProgram(rootNames, options, host, program);
+  }
+  // `import * as fs from '@nativescript/core/file-system'` then `fs.knownFolders`: each member read as it would be imported by name.
+  const named = coreNamespaceMembers(program, isSource);
+  if (named.size) {
+    for (const [name, text] of named) files.set(name, text);
     program = ts.createProgram(rootNames, options, host, program);
   }
   // `view.ios` is `any` in core's declarations: typed as the view's native class, everything read from it is typed too.
@@ -336,7 +348,15 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
   const neverRead = (d: ts.Diagnostic) => d.code === 2339 && /on type 'never'/.test(ts.flattenDiagnosticMessageText(d.messageText, '\n'));
   // Another platform's file (`x.android.ts`, which a declaration file may import for its types) is not part of this build.
   const otherPlatform = platform === 'android' ? /\.ios\.tsx?$/ : /\.android\.tsx?$/;
-  const diagnostics = ts.getPreEmitDiagnostics(program).filter((d) => d.category === ts.DiagnosticCategory.Error && (!d.file || (isApp(d.file.fileName) && !otherPlatform.test(d.file.fileName))) && !(lenient && (strictOnly.has(d.code) || neverRead(d))));
+  // The app is checked with its own configuration's checks; the program it is translated from stays strict, for the types it gives.
+  // Class fields as the app's target defines them: a field redeclaring a base accessor is an error only where fields are defined (ES2022).
+  const defineFields = appDefinesFields(roots[0] ?? [...virtual.keys()][0]);
+  const checks: ts.CompilerOptions = {
+    ...(lenient ? { strict: false, strictNullChecks: false, strictFunctionTypes: false, strictBindCallApply: false, strictPropertyInitialization: false, noImplicitAny: false, noImplicitThis: false, useUnknownInCatchVariables: false } : {}),
+    ...(defineFields === false ? { useDefineForClassFields: false } : {}),
+  };
+  const checked = Object.keys(checks).length ? ts.createProgram([...rootNames], { ...options, ...checks }, host, program) : program;
+  const diagnostics = ts.getPreEmitDiagnostics(checked).filter((d) => d.category === ts.DiagnosticCategory.Error && (!d.file || (isApp(d.file.fileName) && !otherPlatform.test(d.file.fileName))) && !(lenient && (strictOnly.has(d.code) || neverRead(d))));
   if (diagnostics.length) {
     const text = ts.formatDiagnostics(diagnostics.slice(0, Number(process.env.NS_NATIVE_DIAGNOSTICS ?? 12)), { getCanonicalFileName: (f) => f, getCurrentDirectory: () => '/', getNewLine: () => '\n' });
     throw new Error(`the app does not type-check as the release build sees it:\n${text}`);
@@ -345,11 +365,72 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
   return { program, checker: program.getTypeChecker(), files: ordered, pluginFiles: [...pluginFiles], resolved: (containing, specifier) => resolutions.get(`${containing}\0${specifier}`) };
 }
 
+/**
+ * Each app file's text with a core module imported whole (`import * as fs from '@nativescript/core/file-system'`) read
+ * by member: `fs.knownFolders` is `__fs_knownFolders`, imported by name from the same module, as the kit has each
+ * member under its own name, not the module's. A member written to (`ns.x = …`) stays as it is.
+ */
+function coreNamespaceMembers(program: ts.Program, isApp: (name: string) => boolean): Map<string, string> {
+  const checker = program.getTypeChecker();
+  const out = new Map<string, string>();
+  for (const sf of program.getSourceFiles()) {
+    if (!isApp(sf.fileName)) continue;
+    const edits: { at: number; end: number; text: string }[] = [];
+    for (const st of sf.statements) {
+      const clause = ts.isImportDeclaration(st) ? st.importClause : undefined;
+      if (!clause || clause.isTypeOnly || !clause.namedBindings || !ts.isNamespaceImport(clause.namedBindings)) continue;
+      const spec = (st as ts.ImportDeclaration).moduleSpecifier;
+      if (!ts.isStringLiteral(spec) || !/^@nativescript\/core(\/|$)/.test(spec.text)) continue;
+      const ns = clause.namedBindings.name;
+      const local = checker.getSymbolAtLocation(ns);
+      const members = new Map<string, string>();
+      const aliasOf = (member: string) => members.get(member) ?? (members.set(member, `__${ns.text}_${member}`), members.get(member)!);
+      const visit = (n: ts.Node) => {
+        // `const { Color } = colorModule`: each name bound to the member imported by name.
+        if (ts.isVariableDeclaration(n) && ts.isObjectBindingPattern(n.name) && n.initializer && ts.isIdentifier(n.initializer) && checker.getSymbolAtLocation(n.initializer) === local
+          && n.name.elements.every((el) => !el.dotDotDotToken && !el.initializer && ts.isIdentifier(el.name) && (!el.propertyName || ts.isIdentifier(el.propertyName)))) {
+          const bound = n.name.elements.map((el) => `${(el.name as ts.Identifier).text} = ${aliasOf(((el.propertyName ?? el.name) as ts.Identifier).text)}`);
+          edits.push({ at: n.getStart(), end: n.getEnd(), text: bound.join(', ') });
+          return;
+        }
+        if (ts.isPropertyAccessExpression(n) && ts.isIdentifier(n.expression) && checker.getSymbolAtLocation(n.expression) === local
+          && !(ts.isBinaryExpression(n.parent) && n.parent.left === n && n.parent.operatorToken.kind === ts.SyntaxKind.EqualsToken)) {
+          const member = checker.getSymbolAtLocation(n.name);
+          const target = member && member.flags & ts.SymbolFlags.Alias ? checker.getAliasedSymbol(member) : member;
+          if (target && target.flags & ts.SymbolFlags.Value) {
+            edits.push({ at: n.getStart(), end: n.getEnd(), text: aliasOf(n.name.text) });
+            return;
+          }
+        }
+        ts.forEachChild(n, visit);
+      };
+      visit(sf);
+      if (members.size) edits.push({ at: st.getEnd(), end: st.getEnd(), text: `\nimport { ${[...members].map(([m, a]) => `${m} as ${a}`).join(', ')} } from ${spec.getText()};` });
+    }
+    if (!edits.length) continue;
+    let text = sf.text;
+    for (const e of edits.sort((a, b) => b.at - a.at)) text = text.slice(0, e.at) + e.text + text.slice(e.end);
+    out.set(sf.fileName, text);
+  }
+  return out;
+}
+
 /** Each app file's text with `x.ios` (x a core view) written `(x.ios as UILabel)`, or `x.android` as its Android class. */
 function nativeViewCasts(program: ts.Program, isApp: (name: string) => boolean, platform: Platform): Map<string, string> {
   const members = platform === 'android' ? ['android', 'nativeView', 'nativeViewProtected'] : ['ios', 'nativeView', 'nativeViewProtected'];
   const table = platform === 'android' ? NATIVE_VIEWS_ANDROID : undefined;
   const checker = program.getTypeChecker();
+  // The cast only where what the code reads of it is the native class's: a member newer than the typings
+  // (`prominentTabIdentifier`), or a property called (`visibleCells()`), stays as untyped as core declares it.
+  const fits = (n: ts.PropertyAccessExpression, native: string): boolean => {
+    if (!ts.isPropertyAccessExpression(n.parent) || n.parent.expression !== n) return true;
+    const cls = (checker as unknown as { resolveName(name: string, at: ts.Node, meaning: ts.SymbolFlags, excludeGlobals: boolean): ts.Symbol | undefined }).resolveName(native, n, ts.SymbolFlags.Type, false);
+    if (!cls) return false;
+    const member = checker.getDeclaredTypeOfSymbol(cls).getProperty(n.parent.name.text);
+    if (!member) return false;
+    const called = ts.isCallExpression(n.parent.parent) && n.parent.parent.expression === n.parent;
+    return !called || checker.getTypeOfSymbolAtLocation(member, n).getCallSignatures().length > 0;
+  };
   const out = new Map<string, string>();
   for (const sf of program.getSourceFiles()) {
     if (!isApp(sf.fileName)) continue;
@@ -359,8 +440,8 @@ function nativeViewCasts(program: ts.Program, isApp: (name: string) => boolean, 
         // An optional chain stays as written: a cast around it would stop TypeScript narrowing its root.
         && !n.questionDotToken
         && checker.getTypeAtLocation(n).flags & ts.TypeFlags.Any) {
-        const native = nativeViewOf(checker, checker.getTypeAtLocation(n.expression), table);
-        if (native) edits.push({ at: n.getStart(), text: '(' }, { at: n.getEnd(), text: ` as ${native})` });
+        const native = nativeViewOf(checker, checker.getTypeAtLocation(n.expression), table ?? (n.name.text === 'ios' ? { ...NATIVE_VIEWS, ...NATIVE_CONTROLLERS } : NATIVE_VIEWS));
+        if (native && fits(n, native)) edits.push({ at: n.getStart(), text: '(' }, { at: n.getEnd(), text: ` as ${native})` });
       }
       ts.forEachChild(n, visit);
     };
@@ -382,6 +463,18 @@ export function appDeclarations(app: string): string[] {
 }
 
 /** Whether the app's tsconfig.json leaves strict checking off. */
+/** Whether the app's configuration defines class fields (`useDefineForClassFields`, on from target ES2022); undefined where it has none. */
+function appDefinesFields(from: string | undefined): boolean | undefined {
+  if (!from) return undefined;
+  for (let dir = dirname(from); dirname(dir) !== dir; dir = dirname(dir)) {
+    const file = resolve(dir, 'tsconfig.json');
+    if (!existsSync(file)) continue;
+    const o = ts.parseJsonConfigFileContent(ts.readConfigFile(file, ts.sys.readFile).config ?? {}, ts.sys, dir).options;
+    return o.useDefineForClassFields ?? (o.target ?? ts.ScriptTarget.ES5) >= ts.ScriptTarget.ES2022;
+  }
+  return undefined;
+}
+
 function appStrictness(from: string | undefined): boolean {
   if (!from) return false;
   for (let dir = dirname(from); dirname(dir) !== dir; dir = dirname(dir)) {
