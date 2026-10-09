@@ -497,7 +497,7 @@ if (pods) writeFileSync(join(out, 'Podfile'), pods);
 else removePods(out, name);
 const resources = iosProjectResources({ app, appDir, out, name, pods: !!pods, say });
 const extensions = iosExtensions({ app, out, bundle, packages, signing, team: resources.team, say });
-const appSettings = { PRODUCT_BUNDLE_IDENTIFIER: bundle, SWIFT_VERSION: '"5.9"', ...resources.settings, ...coreNative.settings, ...signing };
+const appSettings = { PRODUCT_BUNDLE_IDENTIFIER: bundle, SWIFT_VERSION: '"5.9"', ...resources.settings, ...coreNative.settings, ...pluginLines.settings, ...signing };
 // Reflection metadata keeps every type's descriptor, and through it the type and all it calls, in the
 // binary; the kit reflects only on tuples (Mirror of a tuple needs none), so a Release build has none.
 // A framework the kit imports for code the app never reaches (WebKit for WebView, Photos for saving

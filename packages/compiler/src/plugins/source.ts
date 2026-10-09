@@ -165,7 +165,7 @@ function acquire(dir: string, options: SourceOptions): PluginSource {
     say(`${name}: ${relative(options.app, patch)} applied to its source`);
   }
 
-  const typings = typingsNear([...files.values()].filter((f): f is string => !!f), options.platform);
+  const typings = typingsNear([...files.values()].filter((f): f is string => !!f), options.platform, root);
   say(`${name}@${version}: source from ${override ? `${override} (not verified: a configured source)` : `${repo} @ ${rev!.slice(0, 7)}`}`);
   return { name, version, dir, root, repo, rev, files, typings, checked: new Set(), verified: override ? 'override' : 'published' };
 }
@@ -298,10 +298,19 @@ function mapFiles(dir: string, root: string, repoFiles: string[], packageDir: st
   return out;
 }
 
-/** Native API declarations a package's source keeps beside it (its `references.d.ts` and `typings/`), for the platform. */
-function typingsNear(sources: string[], platform: 'ios' | 'android'): string[] {
+/**
+ * Native API declarations a package's source keeps beside it or in a folder above it within its
+ * source root (its `references.d.ts` and `typings/`; ui-material's are in `src/typings`), for the platform.
+ */
+function typingsNear(sources: string[], platform: 'ios' | 'android', root: string): string[] {
   const other = platform === 'ios' ? 'android' : 'ios';
-  const dirs = new Set(sources.map(dirname));
+  const dirs = new Set<string>();
+  for (const f of sources) {
+    for (let d = dirname(f); !dirs.has(d); d = dirname(d)) {
+      dirs.add(d);
+      if (d === root || !d.startsWith(root + sep)) break;
+    }
+  }
   const out = new Set<string>();
   for (const d of dirs) {
     if (existsSync(join(d, 'references.d.ts'))) out.add(join(d, 'references.d.ts'));
