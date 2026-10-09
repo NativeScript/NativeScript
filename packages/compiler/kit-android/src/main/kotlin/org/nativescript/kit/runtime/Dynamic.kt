@@ -161,6 +161,21 @@ fun jsArrayCreate(type: Any?, length: Double): Any {
     return JavaArray.newInstance(element, length.toInt())
 }
 
+/** A Java method Kotlin cannot reach from where core calls it (a protected one), found and called by reflection. */
+fun jsCallDeclared(target: Any?, name: String, vararg args: Any?): Any? {
+    val receiver = target ?: throw JSException(JSTypeError("Cannot read properties of undefined (reading '$name')"))
+    var c: Class<*>? = receiver.javaClass
+    while (c != null) {
+        val m = c.declaredMethods.firstOrNull { it.name == name && it.parameterCount == args.size && it.parameterTypes.withIndex().all { (i, t) -> javaScore(args[i], t) != null } }
+        if (m != null) {
+            m.isAccessible = true
+            return try { fromJavaValue(m.invoke(receiver, *m.parameterTypes.mapIndexed { i, t -> toJavaValue(args[i], t) }.toTypedArray())) } catch (e: java.lang.reflect.InvocationTargetException) { throw e.targetException }
+        }
+        c = c.superclass
+    }
+    throw JSException(JSTypeError("${receiver.javaClass.name}.$name: no method takes these ${args.size} arguments"))
+}
+
 /** `new C(args)` where `C` is a class held as a value: the constructor the arguments fit best. */
 fun jsNew(cls: Any?, vararg args: Any?): Any? {
     val c = cls as? Class<*> ?: throw JSException(JSTypeError("${jsTypeof(cls)} is not a constructor"))
