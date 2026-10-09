@@ -107,6 +107,8 @@ fun ViewBase.kitSet(name: String, value: Any?) {
     jsReport {
         val path = key.split(".")
         if (path.size == 1) {
+            // A style property the view's accessor passes to its style (`backgroundColor`), which converts what the template gives.
+            if (JSPrototypes.holder(javaClass, key) == null && JSPrototypes.holder(Style::class.java, key) != null) style?.let { jsSet(it, key, value); return@jsReport }
             set(key, value)
             return@jsReport
         }

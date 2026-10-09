@@ -931,7 +931,7 @@ export class AndroidNativeAPI implements KotlinNative {
       const loose = this.kind(a).kind;
       if (overloaded && (desc.startsWith('L') || desc.startsWith('[')) && (loose === 'null' || loose === 'any')) code = `(${code} as ${this.kotlinType(desc, 'Any?')}${nonNull && loose === 'any' ? '' : '?'})`;
       // An array where Kotlin declares `vararg`: spread, or Kotlin passes it as one element.
-      if (k === last && code !== 'null') return `*${code.endsWith('?)') ? `${code}!!` : atom(code)}`;
+      if (k === last && code !== 'null') return `*${code.endsWith('?)') ? `${code}!!` : /\?\.to\w*Array\(\)$/.test(code) ? `(${code} ?: arrayOf())` : atom(code)}`;
       // `getMethod(name, null)`: Java's null array is no arguments there.
       if (k === last && code === 'null' && args.length === chosen.params.length) return '*arrayOf()';
       return code;
@@ -978,7 +978,9 @@ export class AndroidNativeAPI implements KotlinNative {
     const literal = numericLiteral(inner);
     if (literal !== null && (NUMERIC.has(desc) || desc === 'C')) return primitiveLiteral(literal, desc);
     const found = this.raw(inner);
-    const raw = found && { ...found, code: found.nullable && !nullableParam ? `${found.code}!!` : found.code };
+    // Library mode: a Java parameter of an object nobody declares non-null takes null, as Java code does.
+    const takesNull = this.t.library && desc.startsWith('L') && !nonNullParam;
+    const raw = found && { ...found, code: found.nullable && !nullableParam && !takesNull ? `${found.code}!!` : found.code };
     if (raw) {
       if (raw.desc === desc) return raw.code;
       if (NUMERIC.has(raw.desc) && NUMERIC.has(desc)) return desc === 'D' ? `${atom(raw.code)}.toDouble()` : `${atom(raw.code)}${CONVERT[desc].replace('.toInt().', raw.desc === 'I' ? '.' : '.toInt().')}`;
@@ -1007,10 +1009,18 @@ export class AndroidNativeAPI implements KotlinNative {
     // Library mode: a number where Java takes one of its enums (core's typings declare them numbers): the constant of that ordinal.
     const enumClass = t.library && k.kind === 'number' && desc.startsWith('L') ? this.classpath.get(desc.slice(1, -1)) : undefined;
     if (enumClass && enumClass.access & ACC_ENUM) return `${this.kotlinName(enumClass.name)}.values()[${atom(t.toNumber(inner))}.toInt()]`;
+    if (k.kind === 'string' && takesNull) {
+      if (ts.isConditionalExpression(inner)) return `(if (${t.cond(inner.condition)}) ${this.toJava(inner.whenTrue, desc, nullableParam, nonNullParam)} else ${this.toJava(inner.whenFalse, desc, nullableParam, nonNullParam)})`;
+      return t.coerce(inner, 'String?');
+    }
     if (k.kind === 'number' || k.kind === 'string' || k.kind === 'boolean') return t.coerce(inner, k.kind === 'number' ? 'Double' : k.kind === 'string' ? 'String' : 'Boolean');
     // Library mode: a generic collection script fills untyped (`new java.util.HashSet<any>()`) where Java's parameter names its element type.
     if (t.library && signature?.includes('<') && !/\bT[A-Z]?;|<[A-Z];|[+\-*]/.test(signature) && this.classesOf(t.checker.getTypeAtLocation(inner))?.some((c) => this.classpath.distance(c, desc.slice(1, -1)) !== null)) {
       return `(${t.expr(inner)} as ${this.kotlinType(signature, 'Any?')}${nonNullParam ? '' : '?'})`;
+    }
+    if (takesNull && (ts.isIdentifier(inner) || ts.isPropertyAccessExpression(inner))) {
+      t.nullOk.add(inner);
+      try { return t.expr(inner); } finally { t.nullOk.delete(inner); }
     }
     return t.expr(inner);
   }
@@ -1027,12 +1037,17 @@ export class AndroidNativeAPI implements KotlinNative {
     const k = this.kind(e);
     // An untyped array where Java takes an array: converted element by element at run time, as the runtime marshals it.
     if (k.kind === 'any') return `(toJavaValue(${t.expr(e)}, ${this.kotlinType(desc, 'Any?')}::class.java) as ${this.kotlinType(desc, 'Any?')}?)`;
-    const list = `${atom(t.expr(e))}${t.typeOf(e).endsWith('?') ? '!!' : ''}.elements`;
-    if (!prim) return `${list}.map { it as ${this.kotlinType(el, 'Any?')} }.toTypedArray()`;
+    // Library mode: a missing array is null to Java, as the runtime marshals undefined.
+    const q = t.library ? '?' : '';
+    if (q && (ts.isIdentifier(e) || ts.isPropertyAccessExpression(e))) t.nullOk.add(e);
+    let code: string;
+    try { code = atom(t.expr(e)); } finally { t.nullOk.delete(e); }
+    const list = q ? `${code}?.elements` : `${code}${t.typeOf(e).endsWith('?') ? '!!' : ''}.elements`;
+    if (!prim) return `${list}${q}.map { it as ${this.kotlinType(el, 'Any?')} }${q}.toTypedArray()`;
     const kotlin = KOTLIN_PRIMITIVE[el];
-    if (el === 'D' || el === 'Z') return `${list}.to${kotlin}Array()`;
-    if (el === 'C') return `${list}.map { it[0] }.toCharArray()`;
-    return `${list}.map { it${CONVERT[el]} }.to${kotlin}Array()`;
+    if (el === 'D' || el === 'Z') return `${list}${q}.to${kotlin}Array()`;
+    if (el === 'C') return `${list}${q}.map { it[0] }${q}.toCharArray()`;
+    return `${list}${q}.map { it${CONVERT[el]} }${q}.to${kotlin}Array()`;
   }
 
   /** A Java value as TypeScript reads it: numbers are Double, a char is a string, an array is a JSArray. */

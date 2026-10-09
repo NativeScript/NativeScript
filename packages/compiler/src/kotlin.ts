@@ -249,7 +249,7 @@ export class Translator implements AsyncTranslator {
     return { add: (s: ts.Symbol) => { decls.add(key(s)); }, has: (s: ts.Symbol) => decls.has(key(s)) };
   })();
   /** Expressions whose value lands where null is fine (an optional slot): a nullable declaration is read as it is. */
-  private nullOk = new Set<ts.Node>();
+  nullOk = new Set<ts.Node>();
   /** What `this` is in an arrow function inside a Kotlin object expression, where Kotlin's `this` is the object. */
   thisAlias: string | null = null;
 
@@ -838,6 +838,11 @@ export class Translator implements AsyncTranslator {
   }
 
   /** `var name: type` holding a value assigned later. */
+  /** Library mode: a function declaration reading a `this` it does not declare (a property descriptor's `get`): it takes the caller's first. */
+  private implicitThis(fn: ts.Node): fn is ts.FunctionDeclaration {
+    return !!this.library && ts.isFunctionDeclaration(fn) && !!fn.body && !fn.parameters.some(isThisParameter) && thisNodes(fn).length > 0 && !this.readsArguments(fn);
+  }
+
   /** Whether code compares the variable with undefined or null (`density === undefined`). */
   private testedForUndefined(d: ts.VariableDeclaration): boolean {
     const sym = this.checker.getSymbolAtLocation(d.name);
@@ -1377,7 +1382,8 @@ export class Translator implements AsyncTranslator {
   }
 
   /** `JSDynamic`: the object's keys and members by name, for printing, JSON and untyped access. */
-  private dynamicMembers(fields: { name: string; type: string }[], className: string | null, inherits: boolean, fallbackGet = 'null', fallbackSet = '', symbols: { key: string; member: string; type: string }[] = [], methods: { name: string; key?: string; params: string[]; ret: string }[] = [], expando = false): string[] {
+  private dynamicMembers(fields: { name: string; type: string }[], className: string | null, inherits: boolean, fallbackGet = 'null', fallbackSet = '', symbols: { key: string; member: string; type: string }[] = [], methods: { name: string; key?: string; params: string[]; ret: string }[] = [], expando = false, accessors: { name: string; type: string; settable: boolean }[] = []): string[] {
+    accessors = accessors.filter((a) => !fields.some((f) => f.name === a.name) && !methods.some((m) => m.name === a.name));
     const keys = [...fields.map((f) => (f.type.endsWith('?') ? `(if (${ident(f.name)} == null) listOf() else listOf(${kotlinString(f.name)}))` : `listOf(${kotlinString(f.name)})`)), ...(expando ? ['(jsExpando?.jsKeys ?: listOf())'] : [])];
     // A method read by name is a script function calling it with the arguments it is given.
     const method = (m: { name: string; key?: string; params: string[]; ret: string }) => {
@@ -1391,6 +1397,7 @@ export class Translator implements AsyncTranslator {
       `    override val jsClassName: String? get() = ${className ? kotlinString(className) : 'null'}`,
       `    override fun jsGet(key: String): Any? = when (key) {`,
       ...fields.map((f) => `        ${kotlinString(f.name)} -> this.${ident(f.name)}`),
+      ...accessors.map((a) => `        ${kotlinString(a.name)} -> this.${ident(a.name)}`),
       ...symbols.map((f) => `        ${f.key} -> this.${f.member}`),
       ...methods.filter((m) => !fields.some((f) => f.name === m.name)).map(method),
       `        else -> ${inherits ? 'super.jsGet(key)' : fallbackGet}`,
@@ -1399,6 +1406,7 @@ export class Translator implements AsyncTranslator {
       '        when (key) {',
       // A registered property's accessor is the prototype's, which converts what script sets (`col = "1"`): the value as it is.
       ...fields.map((f) => `            ${kotlinString(f.name)} -> ${(f as { expando?: boolean }).expando ? `jsExpandoSet(this, ${kotlinString(f.name)}, value)` : `this.${ident(f.name)} = ${this.fromAny('value', f.type)}`}`),
+      ...accessors.filter((a) => a.settable).map((a) => `            ${kotlinString(a.name)} -> this.${ident(a.name)} = ${this.fromAnyCode('value', a.type, true)}`),
       ...symbols.map((f) => `            ${f.key} -> this.${f.member} = ${this.fromAny('value', f.type)}`),
       `            else -> ${inherits ? 'super.jsSet(key, value)' : fallbackSet || '{}'}`,
       '        }',
@@ -1480,7 +1488,8 @@ export class Translator implements AsyncTranslator {
   /** `override`: an override's, which takes a constant default from the method it overrides. */
   private params(fn: ts.SignatureDeclaration, closure: boolean, override = false): string {
     if (this.readsArguments(fn)) return '__arguments: JSArray<Any?>';
-    return fn.parameters.map((p, k) => {
+    const implicit = this.implicitThis(fn) ? ['__this: Any?'] : [];
+    return [...implicit, ...fn.parameters.map((p, k) => {
       // `this: void` declares there is none; a `this` the function reads is its first parameter.
       if (isThisParameter(p)) return this.voidThis(p) ? '' : `__this: ${this.type(this.checker.getTypeAtLocation(p.name), p)}`;
       const name = ts.isIdentifier(p.name) ? ident(p.name.text) : `__p${k}`;
@@ -1498,7 +1507,7 @@ export class Translator implements AsyncTranslator {
         else if (!(override && p.initializer && this.isConstant(p.initializer))) { t = optionalType(t); if (!closure) given = ' = null'; }
       }
       return `${name}: ${t}${given}`;
-    }).filter(Boolean).join(', ');
+    })].filter(Boolean).join(', ');
   }
 
   /** `this: void`, a `this` of no type, and any outside library mode: no parameter. */
@@ -1572,6 +1581,7 @@ export class Translator implements AsyncTranslator {
   functionBody(fn: ts.FunctionLikeDeclaration, ret: string, base: string): string {
     const self = fn.parameters.find((p) => isThisParameter(p) && !this.voidThis(p));
     if (self && !thisNodes(fn).every((n) => this.subst.has(n))) return this.withThis(fn, '__this', false, () => this.functionBody(fn, ret, base));
+    if (this.implicitThis(fn) && !thisNodes(fn).every((n) => this.subst.has(n))) return this.withThis(fn, '__this', true, () => this.functionBody(fn, ret, base));
     return this.inFunction(ret, () => {
       const saved = this.indent;
       this.indent = base + '    ';
@@ -2019,6 +2029,7 @@ export class Translator implements AsyncTranslator {
       }
     }
     if (accessors.has('jsToStringTag')) supertypes.push('JSToStringTag');
+    const dynAccessors: { name: string; type: string; settable: boolean }[] = [];
     for (const [n, a] of accessors) {
       let t = a.get ? this.returnTypeOf(a.get) : optionalType(this.typeOf(a.set!.parameters[0].name));
       // Library mode: an accessor over a base's optional field (`accessibilityServiceEnabled?: boolean`) keeps the field's type.
@@ -2051,6 +2062,9 @@ export class Translator implements AsyncTranslator {
         parts.push(a.get ? `${pad}    set(${ident(p.text)}) ${body}` : `${pad}    set(__value) {\n${pad}        val ${ident(p.text)} = __value!!${body.slice(1)}`);
       }
       target.push(`${pad}${a.get && isStatic(a.get) ? '' : n === 'jsToStringTag' ? 'override ' : mods(n)}${a.set ? 'var' : 'val'} ${ident(n)}: ${t}`, ...parts);
+      // Library mode: read and set by name as well (`node.cssType` of an untyped node), as the prototype's accessor is.
+      // A setter taking more than the getter gives (`string | Color`) is left to the prototype's.
+      if (this.library && a.get && !isStatic(a.get) && !this.symbolMember((a.get ?? a.set)!.name)) dynAccessors.push({ name: n, type: t, settable: !!a.set && optionalType(this.typeOf(a.set.parameters[0].name)) === optionalType(t) });
     }
     // A view class's type selector: its `@CSSType` name, else its class name, as core's `cssType` falls back to `typeName`.
     if (isView) {
@@ -2173,7 +2187,7 @@ export class Translator implements AsyncTranslator {
     if (protocol && !appBase) { supertypes.push(protocol.conformance); lines.push(...protocol.lines); }
     lines.push(...witnesses);
     if (expando) lines.push('    override var jsExpando: JSObject? = null');
-    if (!isError) lines.push(...this.dynamicMembers(fields, name, !!appBase || !!kitRoot, expando ? 'jsExpandoGet(this, key)' : 'null', expando ? 'jsExpandoSet(this, key, value)' : '', symbolFields, dynMethods, expando));
+    if (!isError) lines.push(...this.dynamicMembers(fields, name, !!appBase || !!kitRoot, expando ? 'jsExpandoGet(this, key)' : 'null', expando ? 'jsExpandoSet(this, key, value)' : '', symbolFields, dynMethods, expando, dynAccessors));
     if (symbolFields.length) supertypes.push('JSSymbolKeyed');
     // A merged namespace's enums and classes are the class's nested ones (`TemplateParser.State`), its values the companion's.
     const nestedType = (l: string) => /^(?:(?:open|abstract|enum|data)\s+)*(?:class|interface|object)\s/.test(l);
@@ -3911,8 +3925,8 @@ export class Translator implements AsyncTranslator {
       const ref = this.refName(e);
       const self = fnDecl.parameters.find((q) => isThisParameter(q) && !this.voidThis(q));
       // A function taking `this` as a value (a property descriptor's `set`): the receiver is the caller's.
-      if (self && !this.readsArguments(fnDecl)) {
-        const thisType = this.type(this.checker.getTypeAtLocation(self.name), self);
+      if ((self || this.implicitThis(fnDecl)) && !this.readsArguments(fnDecl)) {
+        const thisType = self ? this.type(this.checker.getTypeAtLocation(self.name), self) : 'Any?';
         const args = fnDecl.parameters.filter((q) => !isThisParameter(q)).map((q, k) => q.dotDotDotToken
           ? `JSArray(__a.drop(${k}).map { ${this.fromAnyCode('it', this.typeOf(q.name).replace(/^JSArray<(.*)>$/, '$1'), true)} }.toMutableList())`
           : this.fromAnyCode(`__a.getOrNull(${k})`, this.paramType(q), true));
@@ -4447,6 +4461,9 @@ export class Translator implements AsyncTranslator {
       if (/^js(Java)?Get(Optional)?\(/.test(fn)) return this.fromAnyCode(`jsCallOptional(${fn}${this.untypedArgs(e.arguments)})`, this.typeOf(e), true);
       return `${fn}?.invoke(${this.args(e).join(', ')})`;
     }
+    // A function taking an implicit `this`, called plainly: undefined is its `this`.
+    const implicitCallee = this.library && ts.isIdentifier(callee) ? this.resolve(callee)?.declarations?.find((d) => this.implicitThis(d)) : undefined;
+    if (implicitCallee) return `${this.refName(callee as ts.Identifier)}(${['null', ...this.args(e)].join(', ')})`;
     if (ts.isIdentifier(callee)) return this.core?.call(e) ?? this.globalCall(callee, e);
     const nsMember = ts.isPropertyAccessExpression(callee) ? this.namespaceMember(callee) : null;
     if (nsMember) {
