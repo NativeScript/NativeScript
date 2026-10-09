@@ -498,15 +498,12 @@ ${coreNative.appDependencies}${pluginLines.dependencies}${productLines(packages)
       base:
 ${Object.entries(appSettings).map(([k, v]) => `        ${k}: ${v}\n`).join('')}`);
 
-// A project with pods is generated and integrated here, so a build of it (the NativeScript CLI's) only builds its workspace.
-let project: string[] | null = null;
-if (pods) {
-  project = generateProject({ out, name, pods: true, mergeXcconfig: () => mergePodsXcconfig(out, name), say });
-  writeFileSync(join(out, PROJECT_MARKER), JSON.stringify({ workspace: `${name}.xcworkspace` }) + '\n');
-}
+// The Xcode project is generated here (and integrated with CocoaPods where the app has pods), so a build of it
+// (the NativeScript CLI's) only runs xcodebuild on what the marker names.
+const project = generateProject({ out, name, pods, mergeXcconfig: () => mergePodsXcconfig(out, name), say });
+writeFileSync(join(out, PROJECT_MARKER), JSON.stringify(pods ? { workspace: `${name}.xcworkspace` } : { project: `${name}.xcodeproj` }) + '\n');
 if (args.includes('--build')) {
   const { execFileSync } = await import('node:child_process');
-  project ??= generateProject({ out, name, pods: false, mergeXcconfig: () => {}, say });
   if (args.includes('--device')) {
     const built = archive({ out, name, project, bundle, profile, extensionProfiles: extensions.profiles, team, say });
     say(`archived ${relative(process.cwd(), built.archive)}, ${relative(process.cwd(), built.ipa)}`);

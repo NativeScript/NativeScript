@@ -100,6 +100,5 @@ jobs:
       # with every file of the kit compiled. The generated kit uses the newest iOS APIs behind availability checks, so this needs the newest Xcode.
       - name: Build the kit
         run: |
-          command -v xcodegen >/dev/null || brew install xcodegen
           xcodebuild -version
           packages/compiler/tests/kit-build.sh dist/packages/core

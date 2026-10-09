@@ -4,6 +4,7 @@
 // spm-service, spm-pbxproj-service) and CocoaPods (plugins' and the app's
 // Podfiles; cocoapods-service, cocoapods-platform-manager). Their modules get
 // symbol tables as the SDK's do, so TypeScript calls into them resolve.
+import { xcodegen } from './xcodegen.ts';
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
@@ -157,7 +158,7 @@ function podsOf(text: string): string[] {
 
 // ---------------------------------------------------------------- the project
 
-/** Written beside a generated project that the compiler has already generated and integrated with CocoaPods: build its workspace. */
+/** Written beside the project the compiler has generated (and integrated with CocoaPods): the project or workspace a build names. */
 export const PROJECT_MARKER = 'ns-native-project.json';
 
 /**
@@ -166,7 +167,7 @@ export const PROJECT_MARKER = 'ns-native-project.json';
  * Returns the arguments that name the project to xcodebuild.
  */
 export function generateProject(o: { out: string; name: string; pods: boolean; mergeXcconfig: () => void; say: (m: string) => void }): string[] {
-  execFileSync('xcodegen', ['generate', '--quiet'], { cwd: o.out, stdio: 'inherit' });
+  execFileSync(xcodegen(o.say), ['generate', '--quiet'], { cwd: o.out, stdio: 'inherit' });
   if (!o.pods) return ['-project', `${o.name}.xcodeproj`];
   o.say('pod install');
   podInstall(o.out);

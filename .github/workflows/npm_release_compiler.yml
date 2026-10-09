@@ -121,7 +121,6 @@ jobs:
 
       - name: Build the kit
         run: |
-          command -v xcodegen >/dev/null || brew install xcodegen
           xcodebuild -version
           packages/compiler/tests/kit-build.sh dist/packages/core
 
