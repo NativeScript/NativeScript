@@ -78,6 +78,7 @@ export class Frame extends FrameBase {
 
 			this._backButton = new Microsoft.UI.Xaml.Controls.Button();
 			this._backButton.Content = '←';
+			this._backButton.Margin = { Left: 4, Top: 0, Right: 0, Bottom: 0 };
 			Microsoft.UI.Xaml.Controls.Grid.SetColumn(this._backButton, 0);
 			this._topBar.Children.Append(this._backButton);
 
@@ -86,6 +87,7 @@ export class Frame extends FrameBase {
 
 			this._titleArea = new Microsoft.UI.Xaml.Controls.Grid();
 			this._titleArea.VerticalAlignment = 1; // Center
+			this._titleArea.Margin = { Left: 16, Top: 0, Right: 16, Bottom: 0 };
 			this._titleArea.Children.Append(this._titleBlock);
 			Microsoft.UI.Xaml.Controls.Grid.SetColumn(this._titleArea, 1);
 			this._topBar.Children.Append(this._titleArea);
