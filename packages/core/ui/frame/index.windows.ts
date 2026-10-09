@@ -65,6 +65,8 @@ export class Frame extends FrameBase {
 			this._topBar = new Microsoft.UI.Xaml.Controls.Grid();
 			this._topBar.HorizontalAlignment = 3; // Stretch
 			this._topBar.Height = 48;
+			// Spacing from WinUI's TitleBar template: 2px padding column, back button margin 2, 14px header column, title right margin 8.
+			this._topBar.Padding = { Left: 2, Top: 0, Right: 0, Bottom: 0 };
 
 			const colBack = new Microsoft.UI.Xaml.Controls.ColumnDefinition();
 			colBack.Width = Microsoft.UI.Xaml.GridLengthHelper.FromValueAndType(1, Microsoft.UI.Xaml.GridUnitType.Auto);
@@ -78,7 +80,7 @@ export class Frame extends FrameBase {
 
 			this._backButton = new Microsoft.UI.Xaml.Controls.Button();
 			this._backButton.Content = '←';
-			this._backButton.Margin = { Left: 4, Top: 0, Right: 0, Bottom: 0 };
+			this._backButton.Margin = { Left: 2, Top: 2, Right: 2, Bottom: 2 };
 			Microsoft.UI.Xaml.Controls.Grid.SetColumn(this._backButton, 0);
 			this._topBar.Children.Append(this._backButton);
 
@@ -87,7 +89,7 @@ export class Frame extends FrameBase {
 
 			this._titleArea = new Microsoft.UI.Xaml.Controls.Grid();
 			this._titleArea.VerticalAlignment = 1; // Center
-			this._titleArea.Margin = { Left: 16, Top: 0, Right: 16, Bottom: 0 };
+			this._titleArea.Margin = { Left: 14, Top: 0, Right: 8, Bottom: 0 };
 			this._titleArea.Children.Append(this._titleBlock);
 			Microsoft.UI.Xaml.Controls.Grid.SetColumn(this._titleArea, 1);
 			this._topBar.Children.Append(this._titleArea);
