@@ -269,11 +269,23 @@ private func jsSelector(_ cls: AnyClass, _ key: String) -> ObjectiveC.Selector? 
             var names: [String: ObjectiveC.Selector] = [:]
             var count: UInt32 = 0
             if let list = class_copyMethodList(current, &count) {
+                var bytes: [UInt8] = []
                 for i in 0..<Int(count) {
                     let selector = method_getName(list[i])
-                    let parts = NSStringFromSelector(selector).split(separator: ":", omittingEmptySubsequences: true).map(String.init)
-                    guard let first = parts.first else { continue }
-                    let name = first + parts.dropFirst().map { $0.prefix(1).uppercased() + $0.dropFirst() }.joined()
+                    // The selector's parts joined, each after the first capitalized: the bytes of its C name, without
+                    // the strings a split and join of thousands of UIKit selectors would make.
+                    bytes.removeAll(keepingCapacity: true)
+                    var p = sel_getName(selector)
+                    var partStart = false
+                    while p.pointee != 0 {
+                        let c = UInt8(bitPattern: p.pointee)
+                        if c == UInt8(ascii: ":") { partStart = !bytes.isEmpty }
+                        else if partStart { bytes.append(c >= 0x61 && c <= 0x7A ? c - 0x20 : c); partStart = false }
+                        else { bytes.append(c) }
+                        p += 1
+                    }
+                    if bytes.isEmpty { continue }
+                    let name = String(decoding: bytes, as: UTF8.self)
                     if names[name] == nil { names[name] = selector }
                 }
                 free(list)
