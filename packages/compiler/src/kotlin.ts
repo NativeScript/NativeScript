@@ -22,6 +22,8 @@ const KEYWORDS = new Set(['as', 'break', 'class', 'continue', 'do', 'else', 'fal
 
 export function ident(name: string): string {
   if (name === '_') return '__underscore';
+  // A name of punctuation alone (`'+'`, `'!'` keys) spells its characters, or every such name would be `_`.
+  if (!/[\w$#]/.test(name)) return '__k' + [...name].map((c) => c.codePointAt(0)!.toString(16)).join('_');
   const n = name.replace(/^#/, '_p_').replace(/\$/g, '_').replace(/^(?=\d)/, '_').replace(/[^\w]/g, '_');
   return KEYWORDS.has(n) ? `\`${n}\`` : n;
 }
@@ -47,7 +49,7 @@ function escapeText(text: string): string {
 
 /** `T?`, keeping an already nullable type and parenthesizing a function type. */
 export function optionalType(t: string): string {
-  if (t.endsWith('?') || t === 'Nothing') return t;
+  if ((t.endsWith('?') && !isFunctionType(t)) || t === 'Nothing') return t;
   return isFunctionType(t) ? `(${t})?` : `${t}?`;
 }
 
@@ -92,6 +94,14 @@ export interface KotlinNative {
   /** The nearest class `from` extends that is also a `to`, when `from` is not one itself. */
   sharedClass(from: string, to: string): string | null;
   toNumber(e: ts.Expression, t: string): string | null;
+}
+
+/** What the kit generated from core leaves out of core's modules, or implements itself. */
+export interface KotlinLibrary {
+  /** Functions that return their last argument, and as decorators leave what they decorate as it is (`profile`). */
+  identities: Set<string>;
+  /** The kit's Kotlin implementing a core module's function (`ColorMix.argbFromColorMix`), or null. */
+  counterpart(file: string, name: string): string | null;
 }
 
 /** @nativescript/core's API through the Android kit. */
@@ -226,8 +236,15 @@ export class Translator implements AsyncTranslator {
   /** What `this` is in an arrow function inside a Kotlin object expression, where Kotlin's `this` is the object. */
   thisAlias: string | null = null;
 
-  constructor(checker: ts.TypeChecker, components: Map<string, ComponentInfo>, files: readonly ts.SourceFile[], options: { pluginFiles?: Iterable<string>; reach?: Reach; properties?: Properties } = {}) {
+  /** Translating core itself (kit-gen-kotlin.ts): what of core's modules the kit leaves out or replaces. */
+  readonly library: KotlinLibrary | null;
+  /** Code checked without strictNullChecks, as core is: any declaration may hold null or undefined. */
+  readonly lenient: boolean;
+
+  constructor(checker: ts.TypeChecker, components: Map<string, ComponentInfo>, files: readonly ts.SourceFile[], options: { pluginFiles?: Iterable<string>; reach?: Reach; properties?: Properties; lenient?: boolean; library?: KotlinLibrary } = {}) {
     this.checker = checker;
+    this.library = options.library ?? null;
+    this.lenient = options.lenient ?? false;
     this.components = components;
     this.sourceFiles = files;
     this.pluginFiles = new Set(options.pluginFiles ?? []);
@@ -343,6 +360,9 @@ export class Translator implements AsyncTranslator {
     if (t.flags & (F.Boolean | F.BooleanLiteral)) return 'Boolean';
     if (t.flags & (F.ESSymbol | F.UniqueESSymbol)) return 'JSSymbol';
     if (t.flags & F.NonPrimitive) return 'Any?';
+    // A class as a value (`typeof Style`, `new () => T`): its Java class, untyped.
+    if (this.library && t.getConstructSignatures().length && !t.getCallSignatures().length && (!((t.getSymbol()?.flags ?? 0) & ts.SymbolFlags.Class) || !this.namesClass(where))) return 'Any?';
+    if (this.library && t.getProperties().length === 1 && t.getProperties()[0].name === 'prototype') return 'Any?';
     if (t.flags & F.BigIntLike) return 'JSBigInt';
     if (c.isTupleType(t)) {
       const args = c.getTypeArguments(t as ts.TypeReference).map((a) => this.type(a, where));
@@ -353,7 +373,8 @@ export class Translator implements AsyncTranslator {
     }
     if (c.isArrayType(t)) {
       const el = c.getTypeArguments(t as ts.TypeReference)[0];
-      return el.flags & F.Never ? 'JSArray<Any?>' : `JSArray<${this.type(el, where)}>`;
+      // Lenient code types `[]` as `undefined[]`: an array of anything.
+      return el.flags & F.Never || (this.lenient && el.flags & (F.Undefined | F.Null)) ? 'JSArray<Any?>' : `JSArray<${this.type(el, where)}>`;
     }
     const sym = t.aliasSymbol ?? t.getSymbol();
     if (sym?.declarations?.some((d) => IOS_TYPINGS.test(d.getSourceFile().fileName))) return 'Any?';
@@ -366,6 +387,7 @@ export class Translator implements AsyncTranslator {
       case 'Sig': case 'Ref': case 'VueRef': case 'WritableSignal': case 'InputSignal': case 'Writable': return `Signal<${arg(0)}>`;
       case 'Signal': return arg(0);
       case 'EventData': return 'EventData';
+      case 'Function': if (isLibDeclaration(sym?.declarations?.[0])) return 'Any?'; break;
       case 'OutputEmitterRef': return `Emitter<${arg(0)}>`;
       case 'RouterExtensions': return 'Router';
       case 'Promise': case 'PromiseLike': return `JSPromise<${arg(0)}>`;
@@ -423,7 +445,9 @@ export class Translator implements AsyncTranslator {
     const calls = t.getCallSignatures();
     if (calls.length && !t.getProperties().length) {
       const s = calls[0];
-      const params = s.getParameters().map((p) => {
+      const self = this.library ? (s as ts.Signature & { thisParameter?: ts.Symbol }).thisParameter : undefined;
+      const selfType = self && this.type(c.getTypeOfSymbolAtLocation(self, where ?? self.valueDeclaration!), where);
+      const params = [...(selfType && selfType !== 'Unit' ? [self!] : []), ...s.getParameters()].map((p) => {
         const pt = this.type(c.getTypeOfSymbolAtLocation(p, where ?? p.valueDeclaration!), where);
         if (p.valueDeclaration && ts.isParameter(p.valueDeclaration) && (p.valueDeclaration.questionToken || p.valueDeclaration.initializer)) return optionalType(pt);
         return pt;
@@ -441,6 +465,8 @@ export class Translator implements AsyncTranslator {
     if (name && Object.hasOwn(KIT_NAMES_ANDROID, name) && isCoreDeclaration(sym?.declarations?.[0])) return KIT_NAMES_ANDROID[name];
     const renamed = sym?.valueDeclaration && this.topNames().get(sym.valueDeclaration);
     if (renamed) return renamed;
+    const renamedType = this.library && sym && !sym.valueDeclaration && sym.declarations?.[0] ? this.topNames().get(sym.declarations[0]) : undefined;
+    if (renamedType) { this.used.add(renamedType); return renamedType; }
     // A mixin's class is the core class it is applied to.
     const mixin = this.mixinOf(sym);
     if (mixin) return mixin;
@@ -473,7 +499,9 @@ export class Translator implements AsyncTranslator {
       const decl = this.checker.getSymbolAtLocation(n)?.valueDeclaration;
       if (decl && (ts.isParameter(decl) || ts.isVariableDeclaration(decl)) && decl.type?.kind === ts.SyntaxKind.UnknownKeyword) return 'Any?';
     }
-    const t = this.type(this.checker.getTypeAtLocation(n), n);
+    const declared = this.type(this.checker.getTypeAtLocation(n), n);
+    const own = ts.isPropertySignature(n) || ts.isPropertyDeclaration(n) ? n : (n.parent as ts.NamedDeclaration | undefined)?.name === n ? n.parent : undefined;
+    const t = this.isLenientDecl(own) ? this.lenientRef(declared) : declared;
     if (!t.includes('.')) return t;
     const sym = ts.isIdentifier(n) ? this.checker.getSymbolAtLocation(n) : undefined;
     const decl = sym?.valueDeclaration;
@@ -499,6 +527,28 @@ export class Translator implements AsyncTranslator {
   /** `this` nodes that read an untyped object (a method of an object literal typed `any`). */
   private untypedThis = new Set<ts.Node>();
 
+  /**
+   * Lenient code: a declaration of an object type holds null and undefined as well, as Swift's implicitly unwrapped
+   * declarations do. Kotlin declares it nullable, and a read unwraps it unless it only tests or passes the value on.
+   */
+  lenientRef(t: string): string {
+    return this.lenient && !t.endsWith('?') && !['Nothing', 'JSSymbol', 'JSBigInt'].includes(t) && this.isObjectType(t) ? optionalType(t) : t;
+  }
+
+  /** A variable, parameter or field the program declares, in lenient code. */
+  private isLenientDecl(d: ts.Node | undefined): boolean {
+    return this.lenient && !!d && (ts.isVariableDeclaration(d) || ts.isParameter(d) || ts.isPropertyDeclaration(d) || ts.isPropertySignature(d)) && !d.getSourceFile().isDeclarationFile && !(ts.isParameter(d) && d.dotDotDotToken);
+  }
+
+  /** A call of a lenient function declared to give an object: unwrapped unless the value is only tested or passed on. */
+  private lenientResult(e: ts.CallExpression, code: string): string {
+    if (!this.lenient) return code;
+    const decl = this.checker.getResolvedSignature(e)?.getDeclaration();
+    if (!decl || ts.isJSDocSignature(decl) || decl.getSourceFile().isDeclarationFile || !(ts.isFunctionDeclaration(decl) || ts.isMethodDeclaration(decl))) return code;
+    const site = this.typeOf(e);
+    return this.returnTypeOf(decl) === optionalType(site) && site !== optionalType(site) && !this.nullTolerant(e) ? `${code}!!` : code;
+  }
+
   /** `this` as the class being translated, not a value a function rebinds it to. */
   private isSelf(e: ts.Expression): boolean {
     return e.kind === ts.SyntaxKind.ThisKeyword && !this.subst.has(e);
@@ -513,9 +563,11 @@ export class Translator implements AsyncTranslator {
 
   private declaredTypeOf(e: ts.Expression): string | null {
     // A shorthand property (`{ positions }`) names the variable it reads.
-    const sym = ts.isIdentifier(e) && ts.isShorthandPropertyAssignment(e.parent) && e.parent.name === e
+    let sym = ts.isIdentifier(e) && ts.isShorthandPropertyAssignment(e.parent) && e.parent.name === e
       ? this.checker.getShorthandAssignmentValueSymbol(e.parent)
       : this.checker.getSymbolAtLocation(ts.isPropertyAccessExpression(e) ? e.name : e);
+    // An imported variable is the module's.
+    if (sym && sym.flags & ts.SymbolFlags.Alias) sym = this.checker.getAliasedSymbol(sym);
     // A member of a mapped type (`Partial<T>`): optional where `T` declares it required.
     if (sym && !sym.valueDeclaration && sym.flags & ts.SymbolFlags.Optional && sym.declarations?.length) {
       return optionalType(this.type(this.checker.getNonNullableType(this.checker.getTypeOfSymbol(sym)), sym.declarations[0]));
@@ -526,6 +578,9 @@ export class Translator implements AsyncTranslator {
     if (maybe) return maybe;
     if (!(ts.isVariableDeclaration(decl) || ts.isParameter(decl) || ts.isPropertyDeclaration(decl) || ts.isPropertySignature(decl) || ts.isBindingElement(decl) || ts.isGetAccessorDeclaration(decl) || ts.isPropertyAssignment(decl))) return null;
     let t = this.type(this.checker.getTypeOfSymbolAtLocation(sym, decl), decl);
+    if (this.isLenientDecl(decl) || ts.isGetAccessorDeclaration(decl)) t = this.lenientRef(t);
+    // Lenient code: an optional member's type does not say it may be missing.
+    if (this.lenient && (ts.isPropertySignature(decl) || ts.isPropertyDeclaration(decl)) && decl.questionToken) t = optionalType(t);
     // A parameter with a default is nullable in its signature only; the body sees it filled in.
     if (ts.isParameter(decl) && decl.questionToken) t = optionalType(t);
     if (this.nullableDecls.has(sym) && t !== 'Any?') t = optionalType(t);
@@ -669,74 +724,79 @@ export class Translator implements AsyncTranslator {
     const later = (code: () => string) => { this.indent = '    '; try { init.push((current && this.lines ? this.lines.mark(current) : '') + code()); } finally { this.indent = ''; } };
     for (const st of sf.statements) {
       current = st;
-      if (ts.isImportDeclaration(st) || ts.isExportDeclaration(st) || ts.isExportAssignment(st)) continue;
-      if (hasModifier(st, ts.SyntaxKind.DeclareKeyword)) continue;
-      if (this.reach && !this.reach.keeps(st)) continue;
-      if (ts.isInterfaceDeclaration(st)) { this.registerInterface(st.name.text, sf.fileName, st.members, st); continue; }
-      if (ts.isTypeAliasDeclaration(st) && ts.isTypeLiteralNode(st.type)) { this.registerInterface(st.name.text, sf.fileName, st.type.members, st); continue; }
-      if (ts.isTypeAliasDeclaration(st)) continue;
-      if (ts.isEnumDeclaration(st)) {
-        // A namespace merged into the enum: members of its object.
-        const merged = (this.checker.getSymbolAtLocation(st.name)?.declarations ?? []).filter((d): d is ts.ModuleDeclaration => ts.isModuleDeclaration(d) && d.getSourceFile() === sf).flatMap((md) => this.namespaceMembers(md, later) ?? []);
-        out.push(this.enumDecl(st, merged));
-        continue;
-      }
-      if (ts.isModuleDeclaration(st) && this.mergedClass(st)) continue;
-      if (ts.isModuleDeclaration(st)) { const ns = this.namespaceDecl(st, this.topName(st, st.name.text), later); if (ns) out.push(ns); continue; }
-      if (ts.isFunctionDeclaration(st)) { if (st.name && st.body) out.push(this.func(st, ident(this.topName(st, st.name.text)))); continue; }
-      if (ts.isClassDeclaration(st)) {
-        const target = this.patterns.mixinTarget(st);
-        if (target) { out.push(this.mixinDecl(st, target)); continue; }
-        const component = (ts.getDecorators(st) ?? []).some((d) => d.expression.getText().startsWith('Component'));
-        if (!component && st.name) {
-          // A namespace merged into the class: its companion's members.
-          this.mergedStatics = (this.checker.getSymbolAtLocation(st.name)?.declarations ?? []).filter((d): d is ts.ModuleDeclaration => ts.isModuleDeclaration(d) && d.getSourceFile() === sf).flatMap((md) => this.namespaceMembers(md, later) ?? []);
-          this.staticInits = [];
-          try { out.push(this.classDecl(st)); } finally {
-            this.mergedStatics = [];
-            for (const line of this.staticInits) later(() => line);
-            this.staticInits = null;
-          }
+      try {
+        if (ts.isImportDeclaration(st) || ts.isExportDeclaration(st) || ts.isExportAssignment(st)) continue;
+        if (this.givesPrototypeDefault(st)) continue;
+        if (hasModifier(st, ts.SyntaxKind.DeclareKeyword)) continue;
+        if (this.reach && !this.reach.keeps(st)) continue;
+        if (ts.isInterfaceDeclaration(st) && this.library && this.checker.getSymbolAtLocation(st.name)?.declarations?.some(ts.isClassDeclaration)) continue;
+        if (ts.isInterfaceDeclaration(st)) { this.registerInterface(this.topName(st, st.name.text), sf.fileName, st.members, st); continue; }
+        if (ts.isTypeAliasDeclaration(st) && ts.isTypeLiteralNode(st.type)) { this.registerInterface(this.topName(st, st.name.text), sf.fileName, st.type.members, st); continue; }
+        if (ts.isTypeAliasDeclaration(st)) continue;
+        if (ts.isEnumDeclaration(st)) {
+          // A namespace merged into the enum: members of its object.
+          const merged = (this.checker.getSymbolAtLocation(st.name)?.declarations ?? []).filter((d): d is ts.ModuleDeclaration => ts.isModuleDeclaration(d) && d.getSourceFile() === sf).flatMap((md) => this.namespaceMembers(md, later) ?? []);
+          out.push(this.enumDecl(st, merged));
+          continue;
         }
-        continue;
-      }
-      if (ts.isVariableStatement(st)) {
-        const constant = !!(st.declarationList.flags & ts.NodeFlags.Const);
-        for (const d of st.declarationList.declarations) {
-          if (!ts.isIdentifier(d.name)) {
-            for (const n of boundNames(d.name)) out.push(moduleProperty(this.deferredDeclaration(ident(n.text), this.typeOf(n))));
-            const tmp = this.fresh('__d');
-            later(() => `    val ${tmp}${this.destructured(d.name, d.initializer!)}\n${this.bindTo(d.name, tmp, '', 'assign')}`);
-            continue;
+        if (ts.isModuleDeclaration(st) && this.mergedClass(st)) continue;
+        if (ts.isModuleDeclaration(st)) { const ns = this.namespaceDecl(st, this.topName(st, st.name.text), later); if (ns) out.push(ns); continue; }
+        if (ts.isFunctionDeclaration(st) && st.name && this.library?.counterpart(sf.fileName, st.name.text)) continue;
+        if (ts.isFunctionDeclaration(st)) { if (st.name && st.body) out.push(this.func(st, ident(this.topName(st, st.name.text)))); continue; }
+        if (ts.isClassDeclaration(st)) {
+          const target = this.patterns.mixinTarget(st);
+          if (target) { out.push(this.mixinDecl(st, target)); continue; }
+          const component = (ts.getDecorators(st) ?? []).some((d) => d.expression.getText().startsWith('Component'));
+          if (!component && st.name) {
+            // A namespace merged into the class: its companion's members.
+            this.mergedStatics = (this.checker.getSymbolAtLocation(st.name)?.declarations ?? []).filter((d): d is ts.ModuleDeclaration => ts.isModuleDeclaration(d) && d.getSourceFile() === sf).flatMap((md) => this.namespaceMembers(md, later) ?? []);
+            this.staticInits = [];
+            try { out.push(this.classDecl(st)); } finally {
+              this.mergedStatics = [];
+              for (const line of this.staticInits) later(() => line);
+              this.staticInits = null;
+            }
           }
-          const extension = this.native?.extensionClass(d);
-          if (extension) { out.push(extension); continue; }
-          if (this.patterns.requiredCore(d) || this.native?.isClassAlias(d)) continue;
-          const name = ident(this.topName(d, d.name.text));
-          const t = this.typeOf(d.name);
-          // A plugin's unset object variable (`let vibrator: Vibrator`, tested before it is assigned): nullable, unwrapped where it is read.
-          if (!d.initializer && this.pluginFiles.has(sf.fileName) && !t.endsWith('?') && this.isObjectType(t) && !isFunctionType(t)) {
-            const sym = this.checker.getSymbolAtLocation(d.name);
-            if (sym) this.nullableDecls.add(sym);
-            out.push(moduleProperty(`var ${name}: ${optionalType(t)} = null`));
-            continue;
-          }
-          if (!d.initializer) { out.push(moduleProperty(this.deferredDeclaration(name, t))); continue; }
-          const maybe = !t.endsWith('?') ? this.maybeUndefined(d.initializer) : null;
-          if (maybe) {
-            const sym = this.resolve(d.name);
-            if (sym) this.undefinedVars.set(sym, optionalType(t));
-            out.push(moduleProperty(`var ${name}: ${optionalType(t)} = null`));
-            later(() => `    ${name} = ${maybe}`);
-            continue;
-          }
-          if (this.pure(d.initializer)) { out.push(moduleProperty(`${constant && !this.mutatedLater(d) ? 'val' : 'var'} ${name}: ${t} = ${this.coerce(d.initializer, t)}`)); continue; }
-          out.push(moduleProperty(this.deferredDeclaration(name, t)));
-          later(() => `    ${name} = ${this.coerce(d.initializer!, t)}`);
+          continue;
         }
-        continue;
-      }
-      later(() => this.stmt(st));
+        if (ts.isVariableStatement(st)) {
+          const constant = !!(st.declarationList.flags & ts.NodeFlags.Const);
+          for (const d of st.declarationList.declarations) {
+            if (!ts.isIdentifier(d.name)) {
+              for (const n of boundNames(d.name)) out.push(moduleProperty(this.deferredDeclaration(ident(n.text), this.typeOf(n))));
+              const tmp = this.fresh('__d');
+              later(() => `    val ${tmp}${this.destructured(d.name, d.initializer!)}\n${this.bindTo(d.name, tmp, '', 'assign')}`);
+              continue;
+            }
+            const extension = this.native?.extensionClass(d);
+            if (extension) { out.push(extension); continue; }
+            if (this.patterns.requiredCore(d) || this.native?.isClassAlias(d)) continue;
+            const name = ident(this.topName(d, d.name.text));
+            const t = this.typeOf(d.name);
+            // A plugin's unset object variable (`let vibrator: Vibrator`, tested before it is assigned): nullable, unwrapped where it is read.
+            if (!d.initializer && this.pluginFiles.has(sf.fileName) && !t.endsWith('?') && this.isObjectType(t) && !isFunctionType(t)) {
+              const sym = this.checker.getSymbolAtLocation(d.name);
+              if (sym) this.nullableDecls.add(sym);
+              out.push(moduleProperty(`var ${name}: ${optionalType(t)} = null`));
+              continue;
+            }
+            if (!d.initializer) { out.push(moduleProperty(this.deferredDeclaration(name, t))); continue; }
+            const maybe = !t.endsWith('?') ? this.maybeUndefined(d.initializer) : null;
+            if (maybe) {
+              const sym = this.resolve(d.name);
+              if (sym) this.undefinedVars.set(sym, optionalType(t));
+              out.push(moduleProperty(`var ${name}: ${optionalType(t)} = null`));
+              later(() => `    ${name} = ${maybe}`);
+              continue;
+            }
+            if (this.pure(d.initializer)) { out.push(moduleProperty(`${constant && !this.mutatedLater(d) ? 'val' : 'var'} ${name}: ${t} = ${this.coerce(d.initializer, t)}`)); continue; }
+            out.push(moduleProperty(this.deferredDeclaration(name, t)));
+            later(() => `    ${name} = ${this.coerce(d.initializer!, t)}`);
+          }
+          continue;
+        }
+        later(() => this.stmt(st));
+      } catch (e) { throw this.located(e, st); } finally { out.push(...this.hoisted.splice(0)); }
     }
     return { code: out.join('\n\n') + '\n', init };
   }
@@ -787,6 +847,58 @@ export class Translator implements AsyncTranslator {
   }
 
   private mergedStatics: string[] = [];
+  /** Classes declared inside functions, declared at the module's top level. */
+  private hoisted: string[] = [];
+
+  /** Whether a class declared in a function reads nothing the function declares. */
+  private capturesNothing(cls: ts.ClassDeclaration): boolean {
+    const fn = ts.findAncestor(cls.parent, ts.isFunctionLike);
+    if (!fn) return true;
+    let captures = false;
+    const visit = (n: ts.Node): void => {
+      if (captures) return;
+      if (ts.isIdentifier(n)) {
+        const d = this.resolve(n)?.declarations?.[0];
+        if (d && d.getSourceFile() === cls.getSourceFile() && d.pos >= fn.pos && d.end <= fn.end && !(d.pos >= cls.pos && d.end <= cls.end)) captures = true;
+      }
+      ts.forEachChild(n, visit);
+    };
+    ts.forEachChild(cls, visit);
+    return !captures;
+  }
+
+  private prototypeStatements = new Set<ts.Node>();
+  /** A statement `prototypeDefaults` gives to the class it assigns. */
+  private givesPrototypeDefault(st: ts.Statement): boolean {
+    this.prototypeDefaults();
+    return this.prototypeStatements.has(st);
+  }
+  private prototypeFields: Map<ts.Node, { field: ts.PropertyDeclaration; value: ts.Expression }[]> | null = null;
+  /**
+   * Library code's `View.prototype.row = 0` at a module's top level: a field no class initializes, given a value
+   * every instance reads until it sets its own. Each instance of the class starts with it.
+   */
+  private prototypeDefaults(): Map<ts.Node, { field: ts.PropertyDeclaration; value: ts.Expression }[]> {
+    if (this.prototypeFields) return this.prototypeFields;
+    this.prototypeFields = new Map();
+    if (!this.library) return this.prototypeFields;
+    for (const sf of this.sourceFiles) {
+      if (sf.isDeclarationFile) continue;
+      for (const st of sf.statements) {
+        const x = ts.isExpressionStatement(st) && ts.isBinaryExpression(st.expression) && st.expression.operatorToken.kind === ts.SyntaxKind.EqualsToken ? st.expression : null;
+        const target = x && ts.isPropertyAccessExpression(x.left) && ts.isPropertyAccessExpression(x.left.expression) && x.left.expression.name.text === 'prototype' ? x.left : null;
+        if (!x || !target || !this.constantInit(x.right)) continue;
+        const cls = this.resolve((target.expression as ts.PropertyAccessExpression).expression)?.valueDeclaration;
+        if (!cls || !ts.isClassDeclaration(cls) || cls.getSourceFile().isDeclarationFile) continue;
+        const field = this.checker.getTypeAtLocation(cls).getProperty(target.name.text) ?? this.checker.getDeclaredTypeOfSymbol(this.resolve(cls.name!)!).getProperty(target.name.text);
+        const decls = field?.declarations ?? [];
+        if (!decls.length || !decls.every((d) => ts.isPropertyDeclaration(d) && !d.initializer && !isStatic(d) && !d.getSourceFile().isDeclarationFile)) continue;
+        (this.prototypeFields.get(cls) ?? this.prototypeFields.set(cls, []).get(cls)!).push({ field: decls[0] as ts.PropertyDeclaration, value: x.right });
+        this.prototypeStatements.add(st);
+      }
+    }
+    return this.prototypeFields;
+  }
   /** The assignments of a module-level class's static fields whose initializers read changing state, run in the module's order. */
   private staticInits: string[] | null = null;
   /** Whether a namespace merges into a class of its name in its file. */
@@ -815,6 +927,8 @@ export class Translator implements AsyncTranslator {
     const local = this.checker.getSymbolAtLocation(e);
     const target = local && local.flags & ts.SymbolFlags.Alias ? this.checker.getAliasedSymbol(local) : local;
     const decl = target?.valueDeclaration;
+    const counterpart = decl && ts.isFunctionDeclaration(decl) && ts.isSourceFile(decl.parent) ? this.library?.counterpart(decl.getSourceFile().fileName, target!.name) : null;
+    if (counterpart) return counterpart;
     return (decl && this.qualifiedDecl(decl, target!.name)) ?? this.unshadowed(e, decl, ident(this.declaredName(e)));
   }
 
@@ -913,7 +1027,7 @@ export class Translator implements AsyncTranslator {
     if (this.protocols.has(name)) { this.interfaces.set(name, { file, code: () => this.protocolCode(name, members) }); return; }
     const typeParams = (ts.isInterfaceDeclaration(decl) || ts.isTypeAliasDeclaration(decl)) ? decl.typeParameters : undefined;
     if (typeParams?.length) throw this.error(decl, 'a generic interface used as an object type');
-    this.interfaces.set(name, { file, code: () => this.objectClass(name, members.filter((m) => ts.isPropertySignature(m) || ts.isMethodSignature(m)).map((m) => {
+    this.interfaces.set(name, { file, code: () => this.objectClass(name, members.filter((m, k) => (ts.isPropertySignature(m) || ts.isMethodSignature(m)) && members.findIndex((x) => x.name?.getText() === m.name?.getText()) === k).map((m) => {
       const t = this.typeOf(m);
       return { name: (m.name as ts.Identifier).text, type: m.questionToken ? optionalType(t) : t };
     }), null) });
@@ -1031,13 +1145,13 @@ export class Translator implements AsyncTranslator {
   }
 
   /** `JSDynamic`: the object's keys and members by name, for printing, JSON and untyped access. */
-  private dynamicMembers(fields: { name: string; type: string }[], className: string | null, inherits: boolean, fallbackGet = 'null', fallbackSet = '', symbols: { key: string; member: string; type: string }[] = [], methods: { name: string; params: string[]; ret: string }[] = []): string[] {
+  private dynamicMembers(fields: { name: string; type: string }[], className: string | null, inherits: boolean, fallbackGet = 'null', fallbackSet = '', symbols: { key: string; member: string; type: string }[] = [], methods: { name: string; key?: string; params: string[]; ret: string }[] = []): string[] {
     const keys = fields.map((f) => (f.type.endsWith('?') ? `(if (${ident(f.name)} == null) listOf() else listOf(${kotlinString(f.name)}))` : `listOf(${kotlinString(f.name)})`));
     // A method read by name is a script function calling it with the arguments it is given.
-    const method = (m: { name: string; params: string[]; ret: string }) => {
+    const method = (m: { name: string; key?: string; params: string[]; ret: string }) => {
       const args = m.params.map((t, k) => this.fromAnyCode(`__a.getOrNull(${k})`, t, true));
       const call = `this.${ident(m.name)}(${args.join(', ')})`;
-      return `        ${kotlinString(m.name)} -> jsFunction { __a -> ${m.ret === 'Unit' ? `${call}; null` : call} }`;
+      return `        ${m.key ?? kotlinString(m.name)} -> jsFunction { __a -> ${m.ret === 'Unit' ? `${call}; null` : call} }`;
     };
     return [
       `    override val jsKeys: List<String> get() = ${[inherits ? 'super.jsKeys' : '', ...keys].filter(Boolean).join(' + ') || 'listOf()'}`,
@@ -1107,7 +1221,7 @@ export class Translator implements AsyncTranslator {
       const pair = `Pair<String, Any?>(${kotlinString(n)}, ${typeof v === 'string' ? kotlinString(v) : numberLiteral(String(v))})`;
       return typeof v === 'number' ? [pair, `Pair<String, Any?>(${kotlinString(String(v))}, ${kotlinString(n)})`] : [pair];
     });
-    lines.push(`    val jsEnumObject: JSObject by lazy { JSObject(listOf<Pair<String, Any?>>(${entries.join(', ')})) }`);
+    lines.push(`    val jsEnumObject: JSObject by kotlin.lazy { JSObject(listOf<Pair<String, Any?>>(${entries.join(', ')})) }`);
     lines.push(...merged.map((l) => l.split('\n').map((x) => (x ? '    ' + x : x)).join('\n')));
     lines.push('}');
     return lines.join('\n');
@@ -1130,6 +1244,8 @@ export class Translator implements AsyncTranslator {
   private params(fn: ts.SignatureDeclaration, closure: boolean): string {
     if (this.readsArguments(fn)) return '__arguments: JSArray<Any?>';
     return fn.parameters.map((p, k) => {
+      // `this: void` declares there is none; a `this` the function reads is its first parameter.
+      if (isThisParameter(p)) return this.voidThis(p) ? '' : `__this: ${this.type(this.checker.getTypeAtLocation(p.name), p)}`;
       const name = ts.isIdentifier(p.name) ? ident(p.name.text) : `__p${k}`;
       if (p.dotDotDotToken) return `${name}: ${this.typeOf(p.name)}`;
       let t = this.typeOf(p.name);
@@ -1144,7 +1260,12 @@ export class Translator implements AsyncTranslator {
         else { t = optionalType(t); if (!closure) given = ' = null'; }
       }
       return `${name}: ${t}${given}`;
-    }).join(', ');
+    }).filter(Boolean).join(', ');
+  }
+
+  /** `this: void`, a `this` of no type, and any outside library mode: no parameter. */
+  private voidThis(p: ts.ParameterDeclaration): boolean {
+    return !this.library || !p.type || p.type.kind === ts.SyntaxKind.VoidKeyword;
   }
 
   private isConstant(e: ts.Expression): boolean {
@@ -1171,6 +1292,7 @@ export class Translator implements AsyncTranslator {
       return lines;
     }
     fn.parameters.forEach((p, k) => {
+      if (isThisParameter(p)) return;
       const name = ts.isIdentifier(p.name) ? ident(p.name.text) : `__p${k}`;
       const closure = ts.isArrowFunction(fn) || ts.isFunctionExpression(fn) || (ts.isMethodDeclaration(fn) && ts.isObjectLiteralExpression(fn.parent));
       // A parameter the body assigns is a variable of its own (Kotlin parameters are constants).
@@ -1183,13 +1305,15 @@ export class Translator implements AsyncTranslator {
       }
       // A destructured parameter the body assigns binds variables.
       const body = (fn as ts.FunctionLikeDeclaration).body;
-      if (!ts.isIdentifier(p.name)) lines.push(this.bindTo(p.name, name, '', !!body && boundNames(p.name).some((b) => assignsTo(body, this.checker.getSymbolAtLocation(b), this.checker))));
+      const whole = this.lenient && !p.initializer && isNullable(this.typeOf(p.name)) ? `${name}!!` : name;
+      if (!ts.isIdentifier(p.name)) lines.push(this.bindTo(p.name, whole, '', !!body && boundNames(p.name).some((b) => assignsTo(body, this.checker.getSymbolAtLocation(b), this.checker))));
     });
     return lines;
   }
 
   returnTypeOf(fn: ts.SignatureDeclaration): string {
-    return this.type(this.checker.getSignatureFromDeclaration(fn)!.getReturnType(), fn);
+    const t = this.type(this.checker.getSignatureFromDeclaration(fn)!.getReturnType(), fn);
+    return fn.getSourceFile().isDeclarationFile || ts.isArrowFunction(fn) || ts.isFunctionExpression(fn) ? t : this.lenientRef(t);
   }
 
   private generics(fn: ts.SignatureDeclaration | ts.ClassLikeDeclaration): string {
@@ -1199,6 +1323,8 @@ export class Translator implements AsyncTranslator {
 
   /** A function's body block (`{ … }`), lowered when the function is async. */
   functionBody(fn: ts.FunctionLikeDeclaration, ret: string, base: string): string {
+    const self = fn.parameters.find((p) => isThisParameter(p) && !this.voidThis(p));
+    if (self && !thisNodes(fn).every((n) => this.subst.has(n))) return this.withThis(fn, '__this', false, () => this.functionBody(fn, ret, base));
     return this.inFunction(ret, () => {
       const saved = this.indent;
       this.indent = base + '    ';
@@ -1218,7 +1344,7 @@ export class Translator implements AsyncTranslator {
           lines = [...this.paramPrelude(fn), ret === 'Unit' ? this.indent + this.exprStatement(e) : `${this.indent}return ${this.coerce(e, ret)}`];
         }
         return `{\n${lines.filter(Boolean).join('\n')}\n${base}}`;
-      } finally { this.indent = saved; }
+      } catch (e) { throw this.located(e, fn); } finally { this.indent = saved; }
     });
   }
 
@@ -1234,7 +1360,7 @@ export class Translator implements AsyncTranslator {
     const slotRet = slot ? functionTypeParts(slot)?.ret : undefined;
     const voidSlot = (!!contextual && !!(contextual.getReturnType().flags & ts.TypeFlags.Void) && !isAsync(fn)) || slotRet === 'Unit';
     const ret = voidSlot ? 'Unit' : slotRet ?? this.returnTypeOf(fn);
-    if (!ts.isMethodDeclaration(fn) && fn.name) throw this.error(fn, 'a named function expression');
+    if (!ts.isMethodDeclaration(fn) && fn.name && fn.body && refersTo(fn.body, this.checker.getSymbolAtLocation(fn.name), this.checker)) throw this.error(fn, 'a named function expression');
     let params = this.params(fn, true);
     // A slot's function type may take more parameters than the literal declares (JavaScript ignores extras).
     const slotParams = slot ? functionTypeParts(slot)?.params ?? [] : [];
@@ -1338,6 +1464,8 @@ export class Translator implements AsyncTranslator {
       if (implemented && h.parent.parent === cls && !implemented.includes(h.expression.getText())) return;
       const t = c.getTypeAtLocation(h);
       if (isLibDeclaration(t.getSymbol()?.declarations?.[0])) return;
+      // A class implemented as an interface (core's `implements ListViewDefinition`, a subclass of its own) is no supertype.
+      if (this.library && t.getSymbol()?.declarations?.some((d) => ts.isClassDeclaration(d) && !d.getSourceFile().isDeclarationFile)) return;
       for (const p of t.getProperties()) out.add(p.name);
     };
     for (let b: ts.ClassLikeDeclaration | undefined = cls; b; ) {
@@ -1510,6 +1638,12 @@ export class Translator implements AsyncTranslator {
         lines.push(`    ${d.startsWith('lateinit') && fieldMods === '@JvmField ' ? '' : fieldMods}${d}`);
       }
     }
+    const defaults = this.prototypeDefaults().get(cls) ?? [];
+    if (defaults.length) {
+      this.indent = '        ';
+      lines.push('    init {', ...defaults.map((d) => `        this.${ident(d.field.name.getText())} = ${this.coerce(d.value, this.typeOf(d.field.name))}`), '    }');
+      this.indent = '    ';
+    }
     const baseCtor = appBase && this.constructorOf(appBase);
     if (ctor) {
       const body = this.inFunction('Unit', () => {
@@ -1552,7 +1686,8 @@ export class Translator implements AsyncTranslator {
       if (a.set) {
         const p = a.set.parameters[0].name as ts.Identifier;
         const body = this.functionBody(a.set, 'Unit', pad + '    ');
-        parts.push(`${pad}    set(__value) {\n${pad}        val ${ident(p.text)} = __value${a.get ? '' : '!!'}${body.slice(1)}`);
+        // The setter's parameter is the declared one: a body assigning it declares a variable of its own.
+        parts.push(a.get ? `${pad}    set(${ident(p.text)}) ${body}` : `${pad}    set(__value) {\n${pad}        val ${ident(p.text)} = __value!!${body.slice(1)}`);
       }
       target.push(`${pad}${a.get && isStatic(a.get) ? '' : n === 'jsToStringTag' ? 'override ' : mods(n)}${a.set ? 'var' : 'val'} ${ident(n)}: ${t}`, ...parts);
     }
@@ -1563,13 +1698,14 @@ export class Translator implements AsyncTranslator {
       lines.push(`    override val cssType: String get() = ${kotlinString(typeName)}`);
     }
     for (const d of ts.getDecorators(cls) ?? []) {
+      if (this.library?.identities.has(d.expression.getText().replace(/\(.*$/s, ''))) continue;
       if (!/^(CSSType|NativeClass|Injectable)\b/.test(d.expression.getText())) throw this.error(d, `the class decorator ${d.expression.getText()}`);
     }
     // `[fooProperty.setNative](value)`: the class's native setter for that registered property.
     const setters: { property: string; method: string; param: string }[] = [];
     for (const m of cls.members) {
       if (!ts.isMethodDeclaration(m) || !m.body || !ts.isComputedPropertyName(m.name)) continue;
-      const property = this.setNativeOf(m.name.expression);
+      const property = this.library ? null : this.setNativeOf(m.name.expression);
       if (!property) {
         if (!this.symbolMember(m.name)) throw this.error(m.name, 'a computed method name');
         continue;
@@ -1591,9 +1727,9 @@ export class Translator implements AsyncTranslator {
     // Members whose names a base class declares too.
     const inherited = new Set<string>();
     for (let b = appBase; b; b = this.baseClassOf(b)) for (const m of b.members) if (m.name) inherited.add(m.name.getText());
-    const dynMethods: { name: string; params: string[]; ret: string }[] = [];
+    const dynMethods: { name: string; key?: string; params: string[]; ret: string }[] = [];
     for (const m of cls.members) {
-      if (ts.isMethodDeclaration(m) && m.body && ts.isComputedPropertyName(m.name) && this.setNativeOf(m.name.expression)) continue;
+      if (ts.isMethodDeclaration(m) && m.body && ts.isComputedPropertyName(m.name) && !this.library && this.setNativeOf(m.name.expression)) continue;
       if (ts.isMethodDeclaration(m) && !m.body && hasModifier(m, ts.SyntaxKind.AbstractKeyword)) {
         const ret = this.returnTypeOf(m);
         lines.push(`    ${overridden.has(m.name.getText()) ? 'override ' : ''}abstract fun ${ident(m.name.getText())}(${this.params(m, false)})${ret === 'Unit' ? '' : `: ${ret}`}`);
@@ -1616,10 +1752,14 @@ export class Translator implements AsyncTranslator {
         lines.push(async ? '    override fun jsAnyAsyncIterator(): JSAsyncIteratorProtocol = jsSymbolAsyncIterator()' : '    override fun jsAnyIterator(): JSIteratorProtocol = jsSymbolIterator()');
         continue;
       }
-      if (keyed?.key) { lines.push('    ' + this.func(m, keyed.member)); continue; }
+      if (keyed?.key) {
+        lines.push('    ' + this.func(m, keyed.member, this.library ? mods(m.name.getText()) : ''));
+        if (this.library && !m.parameters.some((p) => p.dotDotDotToken)) dynMethods.push({ name: keyed.member, key: keyed.key, params: m.parameters.map((p) => this.paramType(p)), ret: this.returnTypeOf(m) });
+        continue;
+      }
       if (keyed) throw this.error(m.name, 'a method named by this symbol');
       const n = m.name.getText();
-      if (plugin && !inherited.has(n) && !(kitRoot && this.core?.kitMember(kitRoot, n)) && !this.isNamed(n)) continue;
+      if (plugin && !this.library && !inherited.has(n) && !(kitRoot && this.core?.kitMember(kitRoot, n)) && !this.isNamed(n)) continue;
       if (isStatic(m)) { this.indent = '        '; statics.push('        ' + this.func(m, ident(n))); this.indent = '    '; continue; }
       if (n === 'toString' && !m.parameters.length) { lines.push('    ' + this.func(m, 'toString', 'override ')); continue; }
       const kit = kitRoot && !inherited.has(n) ? this.core?.kitMember(kitRoot, n) : null;
@@ -1698,6 +1838,8 @@ export class Translator implements AsyncTranslator {
       return { member, key: null };
     }
     if (ts.isIdentifier(e) && this.typeOf(e) === 'JSSymbol') return { member: `__symbol_${e.text}`, key: `${this.expr(e)}.key` };
+    // `[fooProperty.setNative]`: core's property system finds the method by its symbol.
+    if (this.library && this.typeOf(e) === 'JSSymbol') return { member: `__symbol_${e.getText().replace(/\W+/g, '_')}`, key: `${this.expr(e)}.key` };
     return null;
   }
 
@@ -2032,6 +2174,7 @@ export class Translator implements AsyncTranslator {
   }
 
   private renamedTop: Map<ts.Node, string> | null = null;
+  private typeRenames = new Map<ts.Node, string>();
   /**
    * Module-level functions, classes and variables of the same name in several
    * modules (a plugin's `install` in its common and Android files): all but
@@ -2044,24 +2187,36 @@ export class Translator implements AsyncTranslator {
       if (sf.isDeclarationFile) continue;
       const add = (name: string, decl: ts.Node) => {
         const list = byName.get(name) ?? [];
+        // An interface beside a variable of its name (`let TabChangeListener: TabChangeListener`): the interface's class takes another.
+        const same = list.find((x) => x.file === sf);
+        const isType = (d: ts.Node) => ts.isInterfaceDeclaration(d) || ts.isTypeAliasDeclaration(d);
+        if (this.library && same && isType(same.decl) !== isType(decl)) { this.typeRenames.set(isType(decl) ? decl : same.decl, `${name}Interface`); if (isType(same.decl)) same.decl = decl; return; }
         if (!list.some((x) => x.file === sf)) list.push({ decl, file: sf });
         else if (ts.isFunctionDeclaration(decl)) list.find((x) => x.file === sf)!.decl = decl.body ? decl : list.find((x) => x.file === sf)!.decl;
         byName.set(name, list);
       };
       for (const st of sf.statements) {
         if (ts.isClassDeclaration(st) && st.name) add(st.name.text, st);
+        // An interface becomes a class of its name too.
+        if (this.library && (ts.isInterfaceDeclaration(st) || (ts.isTypeAliasDeclaration(st) && ts.isTypeLiteralNode(st.type)))) add(st.name.text, st);
         if (ts.isModuleDeclaration(st) && ts.isIdentifier(st.name) && !hasModifier(st, ts.SyntaxKind.DeclareKeyword)) add(st.name.text, st);
         if (ts.isFunctionDeclaration(st) && st.name) add(st.name.text, st);
         if (ts.isVariableStatement(st)) for (const d of st.declarationList.declarations) if (ts.isIdentifier(d.name)) add(d.name.text, d);
       }
+      // Classes declared in functions are declared at the top level too.
+      const local = (n: ts.Node): void => {
+        if (ts.isClassDeclaration(n) && n.name && !ts.isSourceFile(n.parent) && ts.findAncestor(n.parent, ts.isFunctionLike)) add(n.name.text, n);
+        ts.forEachChild(n, local);
+      };
+      if (this.library) ts.forEachChild(sf, local);
     }
-    this.renamedTop = new Map();
+    this.renamedTop = new Map(this.typeRenames);
     for (const [name, list] of byName) {
       // A plugin class named as a kit-android class (one extending core's `Observable`) takes its module's name too.
       const kitClash = list.some((x) => ts.isClassDeclaration(x.decl)) && !!this.core?.has(name);
       if (list.length < 2 && !kitClash) continue;
       // The app's declaration keeps its name; plugin modules' take theirs.
-      const keep = kitClash ? undefined : list.find((x) => !this.pluginFiles.has(x.file.fileName)) ?? list[0];
+      const keep = kitClash ? undefined : (this.library ? list.find((x) => ts.isClassDeclaration(x.decl)) : undefined) ?? list.find((x) => !this.pluginFiles.has(x.file.fileName)) ?? list[0];
       for (const x of list) {
         if (x === keep || !this.pluginFiles.has(x.file.fileName)) continue;
         const module = x.file.fileName.split('/').pop()!.replace(/\.[^.]+$/, '').replace(/\W/g, '_');
@@ -2138,7 +2293,8 @@ export class Translator implements AsyncTranslator {
   }
 
   stmt(s: ts.Statement): string {
-    const code = this.statementCode(s);
+    let code: string;
+    try { code = this.statementCode(s); } catch (e) { throw this.located(e, s); }
     return code && this.lines ? this.lines.mark(s) + code : code;
   }
 
@@ -2154,6 +2310,8 @@ export class Translator implements AsyncTranslator {
         const isPromise = this.isPromiseType(this.typeOf(e));
         return `${i}${a.ret(isPromise ? this.expr(e) : this.coerce(e, a.result), isPromise)}\n${i}return`;
       }
+      // Lenient code returning nothing from a function of a string, number or boolean: its zero value, as Swift's kit gives.
+      if (!s.expression && this.lenient && ['String', 'Double', 'Boolean'].includes(this.returnType)) return `${i}return ${this.zero(this.returnType)}`;
       if (!s.expression) return this.returnType.endsWith('?') ? `${i}return null` : `${i}return`;
       if (this.returnType === 'Unit') return `${i}${this.exprStatement(s.expression)}\n${i}return`;
       return `${i}return ${this.coerce(s.expression, this.returnType)}`;
@@ -2256,6 +2414,12 @@ export class Translator implements AsyncTranslator {
       return this.stmt(s.statement);
     }
     if (ts.isClassDeclaration(s) || ts.isInterfaceDeclaration(s) || ts.isTypeAliasDeclaration(s)) {
+      if (ts.isClassDeclaration(s) && this.library && this.capturesNothing(s)) {
+        // Core's lazily defined classes (`@NativeClass class Impl extends android.…` inside `initializeX()`): declared once, at the top level.
+        const saved = this.indent;
+        try { this.hoisted.push(this.classDecl(s)); } finally { this.indent = saved; }
+        return '';
+      }
       if (ts.isClassDeclaration(s)) throw this.error(s, 'a class declared inside a function');
       return '';
     }
@@ -2571,6 +2735,7 @@ export class Translator implements AsyncTranslator {
 
   /** An expression where Kotlin needs a value of `target`. */
   coerce(e: ts.Expression, target: string): string {
+    if (this.lenient && ['String', 'Double', 'Boolean'].includes(target) && (e.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(e) && e.text === 'undefined'))) return this.zero(target)!;
     if (ts.isNewExpression(e) && ts.isIdentifier(e.expression) && ['Map', 'Set'].includes(e.expression.text) && !e.arguments?.length && /^JS(Map|Set)</.test(target.replace(/\?$/, ''))) return `${target.replace(/\?$/, '')}()`;
     while (ts.isParenthesizedExpression(e) && (ts.isArrowFunction(e.expression) || ts.isFunctionExpression(e.expression) || ts.isParenthesizedExpression(e.expression))) e = e.expression;
     if (target.endsWith('?')) {
@@ -2634,7 +2799,29 @@ export class Translator implements AsyncTranslator {
       return `{ ${params.map((p, k) => `${names[k]}: ${p}`).join(', ')} -> ${this.functionValue(e)}(${names.join(', ')}); Unit }`;
     }
     if (target === 'Boolean' && source !== 'Boolean' && source !== 'Nothing') return `jsTruthy(${this.expr(e)})`;
+    // Core's common code typing a value by its platform's subclass (`picker: TimePicker` given a `TimePickerBase`): cast, as TypeScript checks it structurally.
+    const [sb, tb] = [source.replace(/\?$/, ''), target.replace(/\?$/, '')];
+    if (this.lenient && sb !== tb && this.sourceClassNames().has(sb) && this.sourceClassNames().has(tb)) return `(${this.functionValue(e)} as ${target})`;
     return this.functionValue(e);
+  }
+
+  /** `Color` in `Color.equals(…)`: a class by its name, not a value holding one. */
+  private namesClass(e: ts.Node | undefined): boolean {
+    if (!e || !(ts.isIdentifier(e) || ts.isPropertyAccessExpression(e)) || isDeclarationName(e)) return false;
+    return !!((this.resolve(ts.isPropertyAccessExpression(e) ? e.name : e)?.flags ?? 0) & ts.SymbolFlags.Class);
+  }
+
+  private classNames: Set<string> | null = null;
+  /** The Kotlin names of the classes the program declares. */
+  private sourceClassNames(): Set<string> {
+    if (this.classNames) return this.classNames;
+    this.classNames = new Set();
+    const visit = (n: ts.Node): void => {
+      if (ts.isClassDeclaration(n) && n.name) this.classNames!.add(this.className(n));
+      ts.forEachChild(n, visit);
+    };
+    for (const f of this.sourceFiles) if (!f.isDeclarationFile) visit(f);
+    return this.classNames;
   }
 
   /** An expression as a value: a declared function named by a reference. */
@@ -2726,6 +2913,11 @@ export class Translator implements AsyncTranslator {
       // A namespace's class as a value: the class.
       const decl = member ? this.resolve(e.name)?.valueDeclaration : undefined;
       if (decl && ts.isClassDeclaration(decl)) return `${member}::class.java`;
+      // A namespace's function as a value (`valueConverter: Length.parse`): a reference to it.
+      if (member && this.library && decl && ts.isFunctionDeclaration(decl) && !(ts.isCallExpression(e.parent) && e.parent.expression === e)) {
+        const dot = member.lastIndexOf('.');
+        return dot < 0 ? `::${member}` : `${member.slice(0, dot)}::${member.slice(dot + 1)}`;
+      }
       return member ? this.narrowed(e, member) : this.property(e);
     }
     if (ts.isElementAccessExpression(e)) return this.elementAccess(e);
@@ -2854,7 +3046,21 @@ export class Translator implements AsyncTranslator {
     if (required) return `${KIT_NAMES_ANDROID[required] ?? required}::class.java`;
     // A function core exports (`booleanConverter`) used as a value: kit-android's function of that name.
     if (sym && sym.flags & ts.SymbolFlags.Function && isCoreDeclaration(sym.declarations?.[0]) && !(ts.isCallExpression(e.parent) && e.parent.expression === e)) return `::${name}`;
+    // A module's function used as a value (`valueConverter: booleanConverter`): a reference to it.
+    const value = this.library && ts.isShorthandPropertyAssignment(e.parent) && e.parent.name === e ? this.checker.getShorthandAssignmentValueSymbol(e.parent) : sym;
+    const fnDecl = this.library && value && value.flags & ts.SymbolFlags.Function ? value.declarations?.find((d): d is ts.FunctionDeclaration => ts.isFunctionDeclaration(d) && !!d.body) : undefined;
+    if (fnDecl && !(ts.isCallExpression(e.parent) && e.parent.expression === e)) {
+      const ref = this.refName(e);
+      const dot = ref.lastIndexOf('.');
+      return dot < 0 ? `::${ref}` : `${ref.slice(0, dot)}::${ref.slice(dot + 1)}`;
+    }
     const p = e.parent;
+    // `Color.equals(…)` where ColorBase declares the static: Kotlin's companion members are not inherited.
+    if (sym && sym.flags & ts.SymbolFlags.Class && ts.isPropertyAccessExpression(p) && p.expression === e) {
+      const member = this.resolve(p.name)?.valueDeclaration;
+      const owner = member && (ts.isMethodDeclaration(member) || ts.isPropertyDeclaration(member) || ts.isAccessor(member)) && isStatic(member) && ts.isClassDeclaration(member.parent) && !member.getSourceFile().isDeclarationFile ? member.parent : undefined;
+      if (owner && owner !== sym.valueDeclaration) return this.className(owner);
+    }
     if (sym && sym.flags & ts.SymbolFlags.Class && !(ts.isPropertyAccessExpression(p) && p.expression === e) && !(ts.isNewExpression(p) && p.expression === e)
         && !(ts.isBinaryExpression(p) && p.operatorToken.kind === ts.SyntaxKind.InstanceOfKeyword && p.right === e) && !ts.isHeritageClause(p.parent ?? p)) {
       // A class used as a value (`prop.register(Drawer)`, `registerElement('drawer', Drawer)`): its Java class.
@@ -2893,7 +3099,7 @@ export class Translator implements AsyncTranslator {
     if (!declared) return code;
     const actual = this.typeOf(e);
     if (declared === actual || actual === 'Any?') return code;
-    if (declared === optionalType(actual)) return this.nullTolerant(e) ? code : `${code}!!`;
+    if (declared === optionalType(actual)) return this.nullTolerant(e) ? code : this.lenient ? this.undefinedAs(code, actual) : `${code}!!`;
     if (declared === 'Any?') return this.fromAny(code, actual);
     if (declared.replace(/\?$/, '') !== actual.replace(/\?$/, '') && (this.isObjectRef(e) || ['Double', 'String', 'Boolean'].includes(actual))) return `(${code} as ${actual})`;
     return code;
@@ -2921,7 +3127,8 @@ export class Translator implements AsyncTranslator {
     const maybe = this.maybeUndefined(e);
     if (maybe) return `jsToString(${maybe})`;
     const t = this.typeOf(e);
-    if (t === 'String') return this.expr(e);
+    // A string declared nullable converts as JavaScript converts undefined.
+    if (t === 'String') return this.declaredTypeOf(e)?.endsWith('?') ? `jsToString(${this.expr(e)})` : this.expr(e);
     if (t === 'Double' || t === 'Boolean') return `js(${this.expr(e)})`;
     return `jsToString(${this.expr(e)})`;
   }
@@ -2963,7 +3170,7 @@ export class Translator implements AsyncTranslator {
     // Inside an optional chain (`a?.b.c`) an undefined link ends the chain.
     const inChain = !!(e.flags & ts.NodeFlags.OptionalChain) && base.endsWith('?');
     const dot = e.questionDotToken || inChain ? '?.' : '.';
-    const recv = () => this.receiver(target, name) ?? (base.endsWith('?') && !e.questionDotToken && !inChain ? `${this.expr(target)}!!` : this.expr(target));
+    const recv = () => this.receiver(target, name) ?? (base.endsWith('?') && !e.questionDotToken && !inChain && !this.isSelf(target) ? `${this.expr(target)}!!` : this.expr(target));
     if (name === 'length' && this.isString(target)) {
       return e.questionDotToken || inChain ? `${this.expr(target)}?.length?.toDouble()` : `${recv()}.length.toDouble()`;
     }
@@ -3209,7 +3416,9 @@ export class Translator implements AsyncTranslator {
     const declaredFunction = (x: ts.Expression) => ts.isIdentifier(x) && !!this.resolve(x)?.declarations?.some(ts.isFunctionDeclaration);
     if (ts.isExpressionWithTypeArguments(callee) && (!e.questionDotToken || declaredFunction(callee.expression))) return this.call(ts.factory.updateCallExpression(e, callee.expression, callee.typeArguments, e.arguments));
     if (e.questionDotToken && this.isAny(callee)) return `jsCallOptional(${this.expr(callee)}${this.untypedArgs(e.arguments)})`;
-    if (e.questionDotToken && !this.core?.isKitMethod(callee) && !declaredFunction(callee)) return `${this.expr(callee)}?.invoke(${this.args(e).join(', ')})`;
+    // `this.method?.()`: a method the program declares is always there.
+    const declaredMethod = ts.isPropertyAccessExpression(callee) && !!this.resolve(callee.name)?.declarations?.some((d) => ts.isMethodDeclaration(d) && !!d.body);
+    if (e.questionDotToken && !(declaredMethod && this.library) && !this.core?.isKitMethod(callee) && !declaredFunction(callee)) return `${this.expr(callee)}?.invoke(${this.args(e).join(', ')})`;
     if (ts.isIdentifier(callee)) return this.core?.call(e) ?? this.globalCall(callee, e);
     const nsMember = ts.isPropertyAccessExpression(callee) ? this.namespaceMember(callee) : null;
     if (nsMember) {
@@ -3247,6 +3456,8 @@ export class Translator implements AsyncTranslator {
         if (listed) return `${listed}(${this.coerce(e.arguments[1], 'Any?')})`;
       }
       if (ts.isIdentifier(target) && this.isLibGlobal(target)) return this.staticCall(target.text, method, e);
+      const bound = this.library && (method === 'call' || method === 'bind') ? this.boundCall(method, target, e) : null;
+      if (bound) return bound;
       const core = this.core?.call(e) ?? this.native?.call(e);
       if (core) return core;
       if (this.isAny(target)) {
@@ -3303,6 +3514,16 @@ export class Translator implements AsyncTranslator {
       return this.fromPluginCall(e, call);
     }
     if (ts.isElementAccessExpression(callee) && isSymbolIterator(callee.argumentExpression, this.checker) && !e.arguments.length) return this.iteratorCode(callee.expression);
+    if (ts.isElementAccessExpression(callee) && this.library && this.typeOf(callee.argumentExpression) === 'JSSymbol') {
+      // `view[prop.setNative](value)`, `super[prop.setNative](value)`: the method under the symbol, found when the program runs.
+      const key = this.propertyKey(callee.argumentExpression);
+      if (callee.expression.kind === ts.SyntaxKind.SuperKeyword) {
+        const decl = this.checker.getResolvedSignature(e)?.getDeclaration();
+        const own = decl && !ts.isJSDocSignature(decl) && ts.isMethodDeclaration(decl) && !decl.getSourceFile().isDeclarationFile ? this.symbolMember(decl.name) : null;
+        return own ? `super.${own.member}(${this.args(e).join(', ')})` : `jsCall(super.jsGet(${key})${this.untypedArgs(e.arguments)})`;
+      }
+      return `jsCallMethod(${this.coerce(callee.expression, 'Any?')}, ${key}${this.untypedArgs(e.arguments)})`;
+    }
     if (ts.isElementAccessExpression(callee)) {
       const property = this.setNativeOf(callee.argumentExpression);
       if (property) return `${this.expr(callee.expression)}.__setNative_${property}(${e.arguments.map((a) => this.coerce(a, 'Any?')).join(', ')})`;
@@ -3323,9 +3544,38 @@ export class Translator implements AsyncTranslator {
     throw this.error(e, 'call');
   }
 
+  /**
+   * `f.call(thisArg, …)`, `f.bind(thisArg)` of a typed function: one declaring `this` takes it as its first
+   * parameter; any other ignores it, as an arrow function does.
+   */
+  private boundCall(method: string, target: ts.Expression, e: ts.CallExpression): string | null {
+    const member = this.checker.getSymbolAtLocation((e.expression as ts.PropertyAccessExpression).name);
+    if (!member?.declarations?.every(isLibDeclaration)) return null;
+    const sig = this.checker.getTypeAtLocation(target).getCallSignatures()[0];
+    const declared = this.declaredTypeOf(target) ?? this.typeOf(target);
+    const parts = functionTypeParts(declared.replace(/^\((.*)\)\?$/, '$1'));
+    if (!sig || !parts || e.arguments.some(ts.isSpreadElement)) return null;
+    const self = (sig as ts.Signature & { thisParameter?: ts.Symbol }).thisParameter;
+    const takesThis = !!self && this.type(this.checker.getTypeOfSymbolAtLocation(self, target), target) !== 'Unit';
+    const fn = `${this.expr(target)}${/\)\?$/.test(declared) ? '!!' : ''}`;
+    const [thisArg, ...rest] = e.arguments;
+    const effectless = (x: ts.Expression): boolean => x.kind === ts.SyntaxKind.ThisKeyword || ts.isIdentifier(x) || (ts.isPropertyAccessExpression(x) && effectless(x.expression)) || this.pure(x);
+    if (!takesThis && thisArg && !effectless(thisArg)) return null;
+    const given = [...(takesThis ? [thisArg] : []), ...rest];
+    if (method === 'bind') {
+      if (!takesThis && !rest.length) return fn;
+      const names = parts.params.map((_, k) => `__b${k}`);
+      const fixed = given.map((a, k) => (a ? this.coerce(a, parts.params[k]) : 'null'));
+      return `{ ${names.slice(given.length).map((n, k) => `${n}: ${parts.params[given.length + k]}`).join(', ')} -> ${fn}(${[...fixed, ...names.slice(given.length)].join(', ')}) }`;
+    }
+    const args = parts.params.map((t, k) => (given[k] ? this.coerce(given[k], t) : t.endsWith('?') ? 'null' : this.zero(t) ?? 'null'));
+    return `${fn}(${args.join(', ')})`;
+  }
+
   /** A call of a plugin function Kotlin types more loosely (a generic result is `Any?`): the value as the call site's type. */
   private fromPluginCall(e: ts.CallExpression, code: string): string {
     const decl = this.checker.getResolvedSignature(e)?.getDeclaration();
+    code = this.lenientResult(e, code);
     if (!decl || ts.isJSDocSignature(decl) || !this.pluginFiles.has(decl.getSourceFile().fileName)) return code;
     const declared = this.returnTypeOf(decl as ts.SignatureDeclaration);
     const site = this.typeOf(e);
@@ -3424,7 +3674,8 @@ export class Translator implements AsyncTranslator {
     const qualified = this.appModule && shadowedByMember(e, this.resolve(callee)?.declarations?.[0], own, ident) ? `${this.appModule}.${own}` : own;
     const fn = this.narrowed(callee, qualified);
     const nullable = /^\(.*\)\?$/.test(fnType) && isFunctionType(fnType.slice(1, -2));
-    return `${nullable && !fn.endsWith('!!') ? `${fn}!!` : fn}(${this.args(e, isFunctionValue ? undefined : this.arity(e)).join(', ')})`;
+    const call = `${nullable && !fn.endsWith('!!') ? `${fn}!!` : fn}(${this.args(e, isFunctionValue ? undefined : this.arity(e)).join(', ')})`;
+    return this.library ? this.fromPluginCall(e, call) : this.lenientResult(e, call);
   }
 
   private symbolName(e: ts.Expression): string {
@@ -3912,9 +4163,9 @@ export class Translator implements AsyncTranslator {
   }
 
   private newExpr(e: ts.NewExpression): string {
-    if (ts.isParenthesizedExpression(e.expression)) return this.newExpr(ts.factory.updateNewExpression(e, e.expression.expression, e.typeArguments, e.arguments));
     const t = this.typeOf(e);
-    const callee = e.expression;
+    let callee = e.expression;
+    while (ts.isParenthesizedExpression(callee)) callee = callee.expression;
     const name = ts.isIdentifier(callee) ? callee.text : '';
     const args = e.arguments ?? ts.factory.createNodeArray();
     if (/^JS(Map|Set)</.test(t)) {
@@ -3974,6 +4225,9 @@ export class Translator implements AsyncTranslator {
       if (decl && ts.isClassLike(decl) && !decl.getSourceFile().isDeclarationFile) return `${t}(${this.args(e).join(', ')})`;
       return `${t}(${this.args(e).join(', ')})`;
     }
+    // `new (initializeImpl())()`: the class a value of that class's type holds, once the value is computed.
+    const made = this.checker.getTypeAtLocation(e).getSymbol()?.valueDeclaration;
+    if (this.library && made && ts.isClassDeclaration(made) && !made.getSourceFile().isDeclarationFile) return `run { ${this.exprStatement(callee)}; ${t}(${this.args(e).join(', ')}) }`;
     throw this.error(e, 'new');
   }
 
@@ -4126,7 +4380,7 @@ export class Translator implements AsyncTranslator {
         // The library's classes: the runtime's type of any of their instances (a promise of any result).
         const builtin = BUILTIN_CLASSES[name];
         if (builtin && isLibDeclaration(this.resolve(e.right)?.declarations?.[0])) return `(${l()} is ${builtin})`;
-        return `(${l()} is ${ERRORS[name] ?? this.typeOf(e.right).replace(/^typeof /, '') ?? name})`;
+        return `(${l()} is ${ERRORS[name] ?? this.typeOf(e.right).replace(/^typeof /, '').replace(/\?$/, '') ?? name})`;
       }
       case K.CommaToken: return `run { ${this.exprStatement(e.left)}; ${r()} }`;
       case K.InKeyword: return `jsHasKey(${this.coerce(e.right, 'Any?')}, ${this.propertyKey(e.left)})`;
@@ -4410,6 +4664,12 @@ export class Translator implements AsyncTranslator {
     return `JSMethod { __this, __a -> ${binds.map((b) => b + '; ').join('')}(fun()${ret === 'Unit' ? '' : `: ${ret}`} ${body})() }`;
   }
 
+  /** An error the translation of `n` failed with, at `n` unless it says where already. */
+  private located(e: unknown, n: ts.Node): unknown {
+    if (!(e instanceof Error) || /^\/[^:]+:\d+:\d+: /.test(e.message)) return e;
+    return Object.assign(this.error(n, `what fails translating with "${e.message.split('\n')[0]}"`), { cause: e });
+  }
+
   error(n: ts.Node | undefined, what: string): Error {
     if (!n) return new Error(`${what} is not supported in a release build yet`);
     const sf = n.getSourceFile();
@@ -4515,6 +4775,17 @@ function superAt(ctor: ts.ConstructorDeclaration): ts.CallExpression | null {
     if (ts.isExpressionStatement(s) && ts.isCallExpression(s.expression) && s.expression.expression.kind === ts.SyntaxKind.SuperKeyword) return s.expression;
   }
   return null;
+}
+
+/** The name a parameter, variable or field declares. */
+function isDeclarationName(n: ts.Node | undefined): boolean {
+  const d = n?.parent;
+  return !!d && (ts.isParameter(d) || ts.isVariableDeclaration(d) || ts.isPropertyDeclaration(d) || ts.isPropertySignature(d)) && d.name === n;
+}
+
+/** A function's `this: T` parameter, which only TypeScript sees. */
+function isThisParameter(p: ts.ParameterDeclaration): boolean {
+  return ts.isIdentifier(p.name) && p.name.text === 'this';
 }
 
 function isWriteTarget(e: ts.Node): boolean {

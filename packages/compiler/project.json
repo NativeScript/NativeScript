@@ -23,6 +23,17 @@
 				"cwd": "{workspaceRoot}"
 			}
 		},
+		"kit-android": {
+			"executor": "nx:run-commands",
+			"dependsOn": ["deps", { "projects": ["core"], "target": "build" }],
+			"inputs": ["{projectRoot}/src/**/*", "{workspaceRoot}/packages/core/**/*", "{workspaceRoot}/tools/native-kit/**/*"],
+			"outputs": ["{projectRoot}/kit-android/generated"],
+			"options": {
+				"command": "node --stack-size=8000 tools/native-kit/generate-android.mts --partial",
+				"cwd": "{workspaceRoot}",
+				"forwardAllArgs": true
+			}
+		},
 		"test": {
 			"executor": "nx:run-commands",
 			"dependsOn": ["deps"],

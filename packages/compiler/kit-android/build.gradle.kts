@@ -21,6 +21,17 @@ kotlin {
     compilerOptions { jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17) }
 }
 
+// -PgeneratedKit: the kit generated from core (generated/kotlin, tools/native-kit/generate-android.mts) in place of the hand port,
+// on the runtime and the hand-written files the generated code calls (modules.mts' counterparts).
+if (providers.gradleProperty("generatedKit").isPresent) {
+    android.sourceSets["main"].java.srcDir("generated/kotlin")
+    val handPort = file("src/main/kotlin/org/nativescript/kit")
+    val kept = setOf("Signals.kt", "ColorMix.kt")
+    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+        exclude { !it.isDirectory && it.file.parentFile == handPort && it.file.name !in kept }
+    }
+}
+
 // The app's own @nativescript/core widgets AAR: the layout code NativeScript runs on Android.
 val widgetsAar: String = providers.gradleProperty("nativescriptWidgetsAar").get()
 

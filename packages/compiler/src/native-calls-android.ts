@@ -1062,6 +1062,12 @@ ${indent}}`;
       }
       const ctor = cls.members.find((m): m is ts.ConstructorDeclaration => ts.isConstructorDeclaration(m) && !!m.body);
       const ctors = this.constructors(base);
+      // `constructor(public owner: ListView)`: a field the constructor sets.
+      const paramProps = (ctor?.parameters ?? []).filter((p) => ts.isIdentifier(p.name) && ts.getModifiers(p)?.some((x) => [ts.SyntaxKind.PublicKeyword, ts.SyntaxKind.PrivateKeyword, ts.SyntaxKind.ProtectedKeyword, ts.SyntaxKind.ReadonlyKeyword].includes(x.kind)));
+      for (const p of paramProps) {
+        const d = t.deferredDeclaration(ident((p.name as ts.Identifier).text), t.typeOf(p.name));
+        lines.push(`    ${d.startsWith('lateinit') ? '' : '@JvmField '}${d}`);
+      }
       if (ctor) {
         const stmts = [...ctor.body!.statements];
         const superAt = stmts.findIndex((s) => ts.isExpressionStatement(s) && ts.isCallExpression(s.expression) && s.expression.expression.kind === ts.SyntaxKind.SuperKeyword);
@@ -1075,7 +1081,7 @@ ${indent}}`;
           return `${pn}: ${p.questionToken || p.initializer ? (pt.endsWith('?') ? pt : pt + '?') : pt}`;
         });
         t.indent = '        ';
-        const body = [...t.paramPrelude(ctor), ...t.statements(rest)];
+        const body = [...t.paramPrelude(ctor), ...paramProps.map((p) => `        this.${ident((p.name as ts.Identifier).text)} = ${ident((p.name as ts.Identifier).text)}`), ...t.statements(rest)];
         t.indent = '    ';
         const head = `    constructor(${params.join(', ')}) : super(${this.argList(superCall.arguments, chosen, ctors)})`;
         lines.push(body.length ? `${head} {\n${body.join('\n')}\n    }` : head);

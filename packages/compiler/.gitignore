@@ -8,6 +8,8 @@ kit-apple/.swiftpm/
 kit-android/build/
 kit-android/.gradle/
 kit-android/.kotlin/
+# Generated from @nativescript/core by tools/native-kit (nx run compiler:kit-android): never committed.
+kit-android/generated/
 tests/app/hooks/
 tests/app/platforms/
 dist/

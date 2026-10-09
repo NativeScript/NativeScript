@@ -124,3 +124,19 @@ export const ios = {
 		'css-what': ['src/index.ts', 'src/parse.ts', 'src/types.ts', 'src/stringify.ts'],
 	},
 };
+
+/**
+ * The core modules compiled into kit-android, from their Android files (`*.android.ts`) and the
+ * shared ones beside them. The kit's views are core's own: Android views and core's
+ * `org.nativescript.widgets` layouts, as NativeScript runs them.
+ */
+export const android = {
+	compile: ios.compile.map((m) => (m === 'ui/layouts/layout-base.ios.ts' ? 'ui/layouts/layout-base.android.ts' : m === 'ui/utils.ios.ts' ? 'ui/utils.android.ts' : m)),
+	/** As `ios.counterparts`, to the kit's Kotlin. */
+	counterparts: {
+		'color/color-utils.ts': { argbFromColorMix: 'ColorMix.argbFromColorMix' },
+	} as Record<string, Record<string, string>>,
+	moot: ios.moot,
+	identities: ios.identities,
+	packages: ios.packages,
+};

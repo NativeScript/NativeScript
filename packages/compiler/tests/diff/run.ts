@@ -48,11 +48,13 @@ function buildRuntime() {
 /**
  * A case starting `// @lenient` is checked as core is, without strictNullChecks, and translated
  * as the kit generated from core is, lenient and in library mode (Swift only, as the kit is
- * generated for iOS first).
+ * generated for iOS first). One starting `// @lenient-kotlin` is translated so as Kotlin only,
+ * as kit-gen-kotlin.ts generates kit-android.
  */
 const lenient = (file: string) => readFileSync(file, 'utf8').startsWith('// @lenient');
+const kotlinOnly = (file: string) => readFileSync(file, 'utf8').startsWith('// @lenient-kotlin');
 /** A case starting `// @swift` covers what only the Swift runtime has yet (typed arrays): it is not run as Kotlin. */
-const swiftOnly = (file: string) => lenient(file) || readFileSync(file, 'utf8').startsWith('// @swift');
+const swiftOnly = (file: string) => (lenient(file) && !kotlinOnly(file)) || readFileSync(file, 'utf8').startsWith('// @swift');
 
 function translate(file: string, out: string): void {
   const loose = lenient(file);
@@ -76,8 +78,10 @@ function translate(file: string, out: string): void {
 
 /** The case as Kotlin in package `pkg`, with a `main` running its modules' top level and then the event loop. */
 function translateKotlin(file: string, out: string, pkg: string): void {
-  const { checker, program, files } = createProgram([file], new Map(), 'android', modulesDir);
-  const translator = new KotlinTranslator(checker, new Map(), files);
+  const loose = lenient(file);
+  const { checker, program, files } = createProgram([file], new Map(), 'android', modulesDir, undefined, [], {}, loose ? { strict: false, useDefineForClassFields: false } : {});
+  const library = { identities: new Set<string>(), counterpart: () => null };
+  const translator = new KotlinTranslator(checker, new Map(), files, loose ? { lenient: true, library, pluginFiles: files.map((f) => f.fileName), properties: collectProperties(checker, files) } : {});
   translator.appModule = pkg;
   const lines = translator.lines = new SourceLines(new Map());
   const modules = translateKotlinModules(translator, program, [file, ...importsOf(program, file)]);
@@ -169,10 +173,12 @@ function report(name: string, target: string, want: { stdout: string; status: nu
   if (actual.stderr) console.log('    native stderr: ' + actual.stderr.split('\n').slice(0, 4).join('\n    '));
 }
 
+let swiftSkipped = 0;
 if (targets.includes('swift')) {
   for (const c of cases) {
     const name = basename(c, '.ts');
     const file = join(here, 'cases', c);
+    if (kotlinOnly(file)) { swiftSkipped++; continue; }
     const dir = join(build, name);
     try {
       translate(file, join(dir, 'Sources'));
@@ -227,6 +233,6 @@ if (targets.includes('kotlin')) {
   if (!keep) for (const d of readdirSync(build)) if (d.startsWith('kotlin-classes') || d === 'kotlin') rmSync(join(build, d), { recursive: true, force: true });
 }
 
-const total = cases.length * targets.length - (targets.includes('kotlin') ? kotlinSkipped : 0);
+const total = cases.length * targets.length - kotlinSkipped - swiftSkipped;
 console.log(`${total - failed} of ${total} runs match Node (${targets.join(', ')})`);
 process.exit(failed ? 1 : 0);

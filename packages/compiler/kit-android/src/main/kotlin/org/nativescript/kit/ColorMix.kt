@@ -22,6 +22,9 @@ object ColorMix {
         return serializeRGB(color)
     }
 
+    /** core's `argbFromColorMix`, which the kit generated from core calls: -1 where csstools does not parse the value. */
+    fun argbFromColorMix(value: String?): Double = argb(value ?: "")?.let { (it.toLong() and 0xFFFFFFFFL).toDouble() } ?: -1.0
+
     enum class Notation { HEX, RGB, SRGB, LINEAR_SRGB, HSL, HWB, LAB, LCH, OKLAB, OKLCH, XYZ_D50, XYZ_D65 }
 
     class ColorData(var notation: Notation, var channels: DoubleArray, var alpha: Double) {
