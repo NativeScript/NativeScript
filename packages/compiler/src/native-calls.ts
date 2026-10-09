@@ -890,7 +890,8 @@ export class NativeAPI {
     // A string-backed constant (`NSNotification.Name`), a string to TypeScript.
     // A number-backed constant (`UIFontWeightBold`), a number to TypeScript.
     if (tsType === 'Double' && NUMBERS.has(this.constantsRaw(b) ?? '')) return optional(swiftType) ? `Double(${code}!.rawValue)` : `Double(${code}.rawValue)`;
-    if (/^String\??$/.test(tsType) && this.isStringConstants(b)) return optional(swiftType) ? `${code}${tsType.endsWith('?') ? '?' : '!'}.rawValue` : `${code}.rawValue`;
+    // Lenient code tests a missing one (`textField.textContentType !== undefined`): held as script holds undefined.
+    if (/^String\??$/.test(tsType) && this.isStringConstants(b)) return optional(swiftType) ? (tsType.endsWith('?') ? `${code}?.rawValue` : this.t.lenient ? `jsImplicit(${code}?.rawValue)` : `${code}!.rawValue`) : `${code}.rawValue`;
     // A Foundation collection (`NSDictionary(dictionary:)`) where TypeScript reads the bridged Swift collection.
     if (/^NS(Mutable)?(Dictionary|Array|Set)$/.test(b) && tsType.startsWith('[')) return `(${code} as${optional(swiftType) ? '?' : '!'} ${tsType.replace(/\?$/, '')})`;
     if (b.startsWith('[') && tsType.startsWith('JSArray<')) return `JSArray(${code}${optional(swiftType) ? ' ?? []' : ''})`;
@@ -926,7 +927,7 @@ export class NativeAPI {
 
   /** A function value (Swift's are `throws`) where Swift takes a block returning nothing: called through one, what it throws reported. */
   private heldBlock(code: string, source: string, target: SwiftType): string | null {
-    const unwrapped = /^\(.*\)\?$/.test(source) && blockType(source.slice(1, -2)) ? source.slice(1, -2) : source;
+    const unwrapped = /^\(.*\)[?!]$/.test(source) && blockType(source.slice(1, -2)) ? source.slice(1, -2) : source;
     const fn = /\bthrows\b/.test(unwrapped) ? blockType(unwrapped) : null;
     const want = blockType(this.unalias(target));
     if (!fn || !want || want.result !== 'Void' || fn.params.length > want.params.length) return null;

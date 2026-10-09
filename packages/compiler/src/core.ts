@@ -285,6 +285,24 @@ export class CoreAPI {
     return decls.length > 0 && decls.every((d) => !isCoreDeclaration(d) && !d.getSourceFile().isDeclarationFile);
   }
 
+  /** A kit object's code as a receiver: a weak reference's target (`weakRef.get()`, typed present) is a TypeError's where it is gone. */
+  private receiver(e: ts.Expression): string {
+    const code = this.t.expr(e);
+    const weak = ts.isCallExpression(e) && ts.isPropertyAccessExpression(e.expression) && ['get', 'deref'].includes(e.expression.name.text) && this.t.typeOf(e.expression.expression).replace(/[?!]$/, '').startsWith('JSWeakRef<');
+    return weak && !this.t.typeOf(e).endsWith('?') ? `${code}!` : code;
+  }
+
+  /** The kit's method a call of `count` unlabeled arguments reaches, among overloads of its name (core's `bind(options)` beside the kit's own `bind(items:)`). */
+  private callMember(owner: string, name: string, count: number): KitMember | null {
+    const all: KitMember[] = [];
+    for (let t = this.index.get(owner); t; t = t.base ? this.index.get(t.base) : undefined) all.push(...(t.members.get(name) ?? []));
+    const fits = (m: KitMember) => {
+      const params = (m.params ?? '').trim() ? splitParams(m.params!) : [];
+      return params.every((p) => /^_\s/.test(p.trim())) && params.filter((p) => !/=/.test(p)).length <= count && (count <= params.length || params.some((p) => /JSArray|JSRest/.test(p)));
+    };
+    return all.find((m) => m.kind !== 'func' || fits(m)) ?? all[0] ?? null;
+  }
+
   private member(owner: string, name: string, e: ts.Node): KitMember {
     const m = kitMember(this.index, owner, name);
     if (!m) throw this.t.error(e, `${owner}.${name} (NativeScriptKit has no such member)`);
@@ -315,7 +333,7 @@ export class CoreAPI {
     // `a?.b`: Swift chains only on an optional, and lenient code types none; as optional, valid for an implicitly unwrapped one too.
     const tt = t.typeOf(e.expression);
     const chained = !owner.isStatic && !!e.questionDotToken;
-    const recv = owner.isStatic ? owner.name : chained ? (tt.endsWith('?') ? `${t.expr(e.expression)}?` : `(${t.expr(e.expression)} as ${tt.replace(/!$/, '')}?)?`) : t.expr(e.expression);
+    const recv = owner.isStatic ? owner.name : chained ? (tt.endsWith('?') ? `${t.expr(e.expression)}?` : `(${t.expr(e.expression)} as ${tt.replace(/!$/, '')}?)?`) : this.receiver(e.expression);
     // Swift's chain, as script's, goes on to what follows (`a?.b.c`), reading the optional.
     const continued = ts.isOptionalChain(e.parent) && (e.parent as ts.PropertyAccessExpression).expression === e;
     const inChain = chained || (ts.isOptionalChain(e) && !owner.isStatic);
@@ -352,7 +370,7 @@ export class CoreAPI {
     if (!owner) return null;
     const t = this.t;
     const name = left.name.text;
-    const recv = owner.isStatic ? owner.name : t.expr(left.expression);
+    const recv = owner.isStatic ? owner.name : this.receiver(left.expression);
     // A member a kit-implemented plugin declares itself (a Canvas's `width`, its surface in pixels) is not the view property of that name.
     const pluginOwn = (t.resolve(left.name)?.declarations ?? []).some((d) => KIT_PLUGINS.some((p) => d.getSourceFile().fileName.includes(`/node_modules/${p}/`)));
     if (!owner.isStatic && this.isView(owner.name) && (!kitMember(this.index, owner.name, name) || (this.isViewProperty(owner.name, name) && !pluginOwn))) {
@@ -412,8 +430,10 @@ export class CoreAPI {
     if (ts.isIdentifier(e.expression)) {
       const decl = this.t.resolve(e.expression)?.declarations?.[0];
       if (!decl || !isCoreDeclaration(decl) || !ts.isFunctionDeclaration(decl)) return false;
+      // By its own name, whatever the import calls it (`bindingBuilder.getBindingOptions`, read as `__bindingBuilder_getBindingOptions`).
+      const name = decl.name?.text ?? e.expression.text;
       const owned = this.moduleFunction(decl);
-      return owned ? !!kitMember(this.index, owned.split('.')[0], e.expression.text)?.throws : this.throwingExports().has(e.expression.text);
+      return owned ? !!kitMember(this.index, owned.slice(0, owned.lastIndexOf('.')), name)?.throws : this.throwingExports().has(name);
     }
     if (!ts.isPropertyAccessExpression(e.expression) || this.mixinOwn(e.expression.name)) return false;
     // `super.initNativeView()`, `this.requestLayout()` in a program's class of a core one: the core class declaring the method.
@@ -421,7 +441,7 @@ export class CoreAPI {
     const declaring = member && isCoreDeclaration(member) && ts.isClassLike(member.parent) && member.parent.name ? member.parent.name.text : null;
     const owner = this.owner(e.expression.expression)?.name ?? declaring;
     if (owner && this.addedMember(owner, e.expression)) return true;
-    const m = owner ? kitMember(this.index, owner, e.expression.name.text) : null;
+    const m = owner ? this.callMember(owner, e.expression.name.text, e.arguments.length) : null;
     // A property holding a function that throws (`on: ((String, …) throws -> Void)!`).
     return !!m && (!!m.throws || (m.kind === 'var' && /\)\s*throws\s*->[^>]*\)?[?!]?$/.test(m.type)));
   }
@@ -510,11 +530,12 @@ export class CoreAPI {
     }
     // `toString()` of a kit object without its own: as script converts it.
     if (name === 'toString' && !owner.isStatic && !e.arguments.length && !kitMember(this.index, owner.name, name)) return `jsToString(${t.expr(e.expression.expression)})`;
-    const m = this.member(owner.name, name, e.expression);
+    this.member(owner.name, name, e.expression);
+    const m = this.callMember(owner.name, name, e.arguments.length)!;
     // `this.hud?.animate(…)`: nothing runs where the object is missing.
     const chained = !owner.isStatic && !!e.expression.questionDotToken && t.typeOf(e.expression.expression).endsWith('?');
     // A namespace of core's by its module (`path.join`), which a local of the name (`path: string`) would shadow.
-    const recv = owner.isStatic ? (/^[a-z]/.test(owner.name) ? `NativeScriptKit.${owner.name}` : owner.name) : t.expr(e.expression.expression) + (chained ? '?' : '');
+    const recv = owner.isStatic ? (/^[a-z]/.test(owner.name) ? `NativeScriptKit.${owner.name}` : owner.name) : chained ? `${t.expr(e.expression.expression)}?` : this.receiver(e.expression.expression);
     if (name === 'navigate' && kitExtends(this.index, owner.name, 'Frame')) return this.navigate(recv, e);
     const listener = this.listenerArgs(e, m);
     // A kit method takes the arguments given; its own defaults stand for the rest.

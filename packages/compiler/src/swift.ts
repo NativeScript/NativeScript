@@ -939,6 +939,11 @@ export class Translator implements AsyncTranslator {
       if (context?.getCallSignatures().length) return this.type(context, n);
     }
     const t = this.type(this.checker.getTypeAtLocation(n), n);
+    // `var loaded;` assigned only in a callback: TypeScript reads it as undefined where the code reads it; Swift holds any value.
+    if (t === 'Void' && ts.isIdentifier(n) && !isWriteTarget(n)) {
+      const d = this.resolve(n)?.valueDeclaration;
+      if (d && ts.isVariableDeclaration(d) && !d.type && !d.initializer && this.typeOf(d.name) === 'Any?') return 'Any?';
+    }
     // A getter declared to give undefined (`get namespace(): string | undefined`) gives the optional its Swift property holds.
     if (ts.isPropertyAccessExpression(n) && !isWriteTarget(n) && ['String', 'Double', 'Bool'].includes(t)) {
       const getter = this.checker.getSymbolAtLocation(n.name)?.declarations?.find(ts.isGetAccessorDeclaration);
@@ -3369,6 +3374,9 @@ ${members.join('\n')}
       const baseThrows = appBase ? this.throwsInfo.initThrows(appBase) : !!kitRoot && this.core.initThrows(kitRoot);
       if (baseCtor) lines.push(`    override init(${this.params(baseCtor, false)})${baseThrows || this.throwsInfo.initThrows(cls) ? ' throws' : ''} {`, `        ${baseThrows ? 'try ' : ''}super.init(${this.readsArguments(baseCtor) ? '__arguments' : baseCtor.parameters.map((p) => ident((p.name as ts.Identifier).text)).join(', ')})`, ...fieldInits, '    }');
       else lines.push(`    ${appBase || kitRoot ? 'override ' : ''}init()${this.throwsInfo.initThrows(cls) ? ' throws' : ''} {`, ...(appBase || kitRoot ? [`        ${baseThrows ? 'try ' : ''}super.init()`] : []), ...fieldInits, '    }');
+    } else if (this.library && !base && !cls.members.some((m) => ts.isConstructorDeclaration(m)) && !this.literalClasses().has(cls)) {
+      // Library mode: Swift's implicit initializer is internal; an app makes the class (`new StyleScope()`) from another module.
+      lines.push('    init() {}');
     }
     // A class object literals are typed as (`const info = <Info>{}`): an instance made without its constructor or field initializers, as such a literal has none.
     if (this.library && !base && this.literalClasses().has(cls)) {
@@ -4318,6 +4326,8 @@ ${members.join('\n')}
       if ((ts.isArrowFunction(d.initializer) || ts.isFunctionExpression(d.initializer)) && refersTo(d.initializer, this.checker.getSymbolAtLocation(d.name), this.checker)) {
         return `${i}var ${name}: ${this.deferred(t)}\n${i}${name} = ${this.coerce(d.initializer, t)}`;
       }
+      // A non-strict app's object variable starting as null (`let ctrl: SegmentedBar = null`): unset until assigned.
+      if (this.lenientApp && !lowered && isNullish(d.initializer) && /^[A-Z][\w.]*(<.*>)?$/.test(t) && this.zero(t) === null) return `${i}var ${name}: ${t}! = nil`;
       // An object whose functions read the variable itself (`const sub = { done: () => off(sub) }`): declared, then assigned.
       if (ts.isObjectLiteralExpression(d.initializer) && !lowered && functionsReferTo(d.initializer, this.checker.getSymbolAtLocation(d.name), this.checker)) {
         return `${i}var ${name}: ${this.deferred(t)}\n${i}${name} = ${this.tryPrefix(d.initializer)}${this.coerce(d.initializer, t)}`;
@@ -4867,6 +4877,8 @@ ${members.join('\n')}
       if (maybe) return maybe;
     }
     if (target === 'Any?' && this.untypedEnum('', source)) return this.untypedEnum(this.expr(e), source);
+    const timer = target === 'Any?' ? this.timerFunction(bare) : null;
+    if (timer) return timer;
     if (target === 'Any?') {
       // Null kept as untyped values hold it, apart from undefined.
       if (bare.kind === ts.SyntaxKind.NullKeyword) return 'jsNull';
@@ -4934,6 +4946,8 @@ ${members.join('\n')}
       const all = ts.isCallExpression(bare) && ts.isPropertyAccessExpression(bare.expression) && bare.expression.name.text === 'all' && ts.isIdentifier(bare.expression.expression) && bare.expression.expression.text === 'Promise' && this.isLibGlobal(bare.expression.expression) && bare.arguments.length === 1 && !ts.isArrayLiteralExpression(bare.arguments[0]) ? bare : null;
       return all ? this.untypedAll(all.arguments[0], target) : this.promiseAs(this.expr(e), source, target);
     }
+    // A promise of a type where a promise of any value is wanted (`let p: Promise<any> = Promise.resolve()`): its value held untyped.
+    if (/^JSPromise<.+>$/.test(source) && /^JSPromise<Any\?>[?!]?$/.test(target) && source !== 'JSPromise<Any?>') return this.convert(this.expr(e), source, 'JSPromise<Any?>');
     const spread = source !== target ? this.restFunction(e, source, target) ?? this.defaultedFunction(e, source, target) : null;
     if (spread) return spread;
     // A function declaration giving undefined where its type says a value (lenient code): its Swift result is optional.
@@ -4957,7 +4971,11 @@ ${members.join('\n')}
     const missing = isOptional(source) || (this.lenient && ts.isConditionalExpression(bare) && [bare.whenTrue, bare.whenFalse].some(isNullish));
     if (each) return missing ? `(${this.expr(e)})?.map(${each})` : `${this.expr(e)}.map(${each})`;
     // Library mode: a class where a subclass is declared (`this` of ViewCommon where core's declarations say View).
-    if (this.library && this.isSubclassOf(target.replace(/[?!]$/, ''), source.replace(/[?!]$/, ''))) return `(${this.expr(e)} as${target.endsWith('?') || source.endsWith('?') ? '?' : '!'} ${target.replace(/[?!]$/, '')})`;
+    if (this.library && this.isSubclassOf(target.replace(/[?!]$/, ''), source.replace(/[?!]$/, ''))) {
+      // Lenient code's object may be missing (`measureChild(this, this.layoutView, …)`): it stays missing.
+      if ((this.lenient || source.endsWith('!')) && !target.endsWith('?') && !source.endsWith('?')) return `jsImplicit(${this.expr(e)} as? ${target.replace(/[?!]$/, '')})`;
+      return `(${this.expr(e)} as${target.endsWith('?') || source.endsWith('?') ? '?' : '!'} ${target.replace(/[?!]$/, '')})`;
+    }
     // A class's object where a shape of only methods is wanted (`frame: { navigationQueueIsEmpty(): boolean }`): one calling them on it.
     const methods = this.methodShapeOf(bare, source, target);
     if (methods) return methods;
@@ -4981,6 +4999,24 @@ ${members.join('\n')}
     });
     const make = `{ (__o: ${from}) -> ${to} in ${to}(${fields.join(', ')}) }`;
     return source.endsWith('?') ? `(${this.expr(e)}).map(${make})${target.endsWith('?') ? '' : '!'}` : `${make}(${this.expr(e)})`;
+  }
+
+  /** The library's or core's timer functions held as values (`assertNotEqual(timer.setTimeout, undefined)`): script functions calling the runtime's. */
+  private timerFunction(e: ts.Expression): string | null {
+    const name = ts.isIdentifier(e) ? e : ts.isPropertyAccessExpression(e) ? e.name : null;
+    const decl = name && this.resolve(name)?.declarations?.[0];
+    if (!decl || !ts.isFunctionDeclaration(decl) || !decl.name || !(decl.getSourceFile().isDeclarationFile || isCoreDeclaration(decl))) return null;
+    const call = '{ _ = try jsCall(jsArg(__a, 0), spread: Array(__a.dropFirst(2))) }';
+    const body: Record<string, string> = {
+      setTimeout: `return jsSetTimeout({ jsReport ${call} }, jsToNumber(jsArg(__a, 1)))`,
+      setInterval: `return jsSetInterval({ jsReport ${call} }, jsToNumber(jsArg(__a, 1)))`,
+      clearTimeout: 'jsClearTimeout(jsArg(__a, 0) as? Double); return nil',
+      clearInterval: 'jsClearInterval(jsArg(__a, 0) as? Double); return nil',
+      requestAnimationFrame: 'let __f = jsArg(__a, 0); return jsRequestAnimationFrame({ __t in jsReport { _ = try jsCall(__f, __t) } })',
+      cancelAnimationFrame: 'jsCancelAnimationFrame(jsToNumber(jsArg(__a, 0))); return nil',
+    };
+    const code = body[decl.name.text];
+    return code ? `({ (__a: [Any?]) throws -> Any? in ${code} } as JSFunction)` : null;
   }
 
   /** A function taking a rest parameter (`(...args) => void`) where a function of fixed parameters is wanted: those past the rest's start packed into its array. */
@@ -6759,8 +6795,21 @@ ${members.join('\n')}
         case 'parseFloat': return `jsParseFloat(${this.str(arg(0))})`;
         case 'isNaN': return `${this.toNumber(arg(0))}.isNaN`;
         case 'isFinite': return `${this.toNumber(arg(0))}.isFinite`;
-        case 'setTimeout': case 'setInterval':
-          return `js${name[0].toUpperCase()}${name.slice(1)}(${this.callback(arg(0))}, ${arg(1) ? this.expr(arg(1)) : '0'})`;
+        case 'setTimeout': case 'setInterval': {
+          const timer = `js${name[0].toUpperCase()}${name.slice(1)}`;
+          const ms = arg(1) ? (this.typeOf(arg(1)) === 'Double' ? this.expr(arg(1)) : this.toNumber(arg(1))) : '0';
+          const f = arg(0);
+          const literal = ts.isArrowFunction(f) || ts.isFunctionExpression(f);
+          const gives = literal && this.returnTypeOf(f) !== 'Void';
+          if (e.arguments.length <= 2 && !gives) return `${timer}(${this.callback(f)}, ${ms})`;
+          // The arguments after the delay are the callback's, evaluated now; what the callback gives is dropped.
+          const fn = functionParts((literal ? this.closureType(f) : this.typeOf(f)).replace(/^\((.*)\)[?!]$/, '$1'));
+          const params = fn?.params.map((p) => p.replace(/^@escaping /, '')) ?? [];
+          const binds = e.arguments.slice(2, 2 + params.length).map((a, k) => `let __t${k}: ${params[k]} = ${this.tryPrefix(a)}${this.coerce(a, params[k])}`);
+          const args = params.map((p, k) => (k < binds.length ? `__t${k}` : p === 'Void' ? '()' : 'nil'));
+          const body = `${[...binds, `let __f = ${this.expr(f)}`].join('; ')}; return ${timer}({ jsReport { _ = try __f(${args.join(', ')}) } }, ${ms})`;
+          return binds.some((b) => /\btry\b/.test(b)) || /\btry\b/.test(ms) ? `(try { () throws -> Double in ${body} }())` : `{ () -> Double in ${body} }()`;
+        }
         case 'clearTimeout': case 'clearInterval': return `js${name[0].toUpperCase()}${name.slice(1)}(${arg(0) ? this.coerce(arg(0), 'Double?') : 'nil'})`;
         case 'queueMicrotask': return `jsQueueMicrotask(${this.callback(arg(0))})`;
         case 'requestAnimationFrame': {
