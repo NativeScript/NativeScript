@@ -1600,9 +1600,12 @@ export class Translator implements AsyncTranslator {
 
   /** An identifier as a reference to what it names: qualified where its declaration is a namespace's or a library module's. */
   private refName(e: ts.Identifier): string {
-    const local = this.checker.getSymbolAtLocation(e);
+    // `{ prompt }`: the name's own symbol is the property; the value it reads is the variable or function of that name.
+    const local = ts.isShorthandPropertyAssignment(e.parent) && e.parent.name === e ? this.checker.getShorthandAssignmentValueSymbol(e.parent) : this.checker.getSymbolAtLocation(e);
     const target = local && local.flags & ts.SymbolFlags.Alias ? this.checker.getAliasedSymbol(local) : local;
     const decl = target?.valueDeclaration;
+    const owned = !this.library && decl ? this.core.moduleFunction(decl) : null;
+    if (owned) return owned;
     return (decl && this.qualifiedDecl(decl, target!.name)) ?? this.unshadowed(e, decl, identPath(this.declaredName(e)));
   }
 
@@ -2130,7 +2133,7 @@ ${members.join('\n')}
       if (fn && (opt || this.lenient)) {
         // As `boxFunction` takes it: lenient code's function may give undefined for an object.
         const held = this.lenientRef(fn.result) !== fn.result ? `(${fn.params.join(', ')}) throws -> ${optionalType(fn.result)}` : fn.text;
-        return `{ (__g: (${held})?) -> Any? in __g.map { ${this.boxFunction('$0', held)} } }(${code})`;
+        return `{ (__g: (${held})?) -> Any? in __g.map { ${this.boxFunction('$0', held, fn.rest)} } }(${code})`;
       }
       if (fn) return this.boxFunction(code, fn.text);
       return code;
@@ -4010,8 +4013,9 @@ ${members.join('\n')}
         const it = this.fresh('__it');
         return this.loopBody(() => {
           const label = this.takeLabel();
-          const body = this.nested(() => this.block(s.statement));
+          // The binding first: how it declares each name (an element past the end as optional) is how the body reads it.
           const bind = this.nested(() => this.nested(() => this.bindTo(decl.name, `${it}.jsCurrent`, /^Any\??$/.test(this.typeOf(s.expression)) ? 'Any?' : '', mutable)));
+          const body = this.nested(() => this.block(s.statement));
           return `${i}do {\n${i}    let ${it} = try ${js}\n${i}    defer { ${it}.jsClose() }\n${i}    ${label}while try ${it}.jsAdvance() {\n${bind}\n${i}        do ${body}\n${i}    }\n${i}}`;
         });
       }
@@ -4022,8 +4026,9 @@ ${members.join('\n')}
         const label = this.takeLabel();
         if (ts.isIdentifier(decl.name)) return `${i}${label}for ${mutable ? 'var ' : ''}${ident(decl.name.text)} in ${seq} ${this.block(s.statement)}`;
         const item = this.fresh('__item');
+        const bind = this.nested(() => this.bindTo(decl.name, item, this.isAny(s.expression) ? 'Any?' : '', mutable));
         const body = this.block(s.statement);
-        return `${i}${label}for ${item} in ${seq} {\n${this.nested(() => this.bindTo(decl.name, item, this.isAny(s.expression) ? 'Any?' : '', mutable))}\n${body.slice(2)}`;
+        return `${i}${label}for ${item} in ${seq} {\n${bind}\n${body.slice(2)}`;
       });
     }
     if (ts.isForInStatement(s)) {
@@ -7213,6 +7218,9 @@ ${members.join('\n')}
       // A Set of typed values from an untyped iterable (`new GPUSupportedFeatures(native.features)`): each value converted.
       const element = /^JSSet<(.*)>$/.exec(collection ?? t)?.[1];
       if (element && element !== 'Any?' && this.isAny(src)) return `${t}(try jsIteratorOf(${this.expr(src)}).jsCollect().map { ${this.fromAnyCode('$0', element, true)} })`;
+      // Entries written in place take the map's own types (a function value, which lenient code would hold optional).
+      const entry = /^JSMap<(.*)>$/.exec(collection ?? t)?.[1];
+      if (entry && ts.isArrayLiteralExpression(src) && splitTopLevel(entry).length === 2) return `${t}(${this.coerce(src, `JSArray<(${splitTopLevel(entry).join(', ')})>`)})`;
       return `${t}(${this.iterable(src)})`;
     }
     if (t.startsWith('JSPromise<')) {

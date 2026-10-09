@@ -232,6 +232,22 @@ export class CoreAPI {
    * '../utils'`, `import { ios as iosUtils } from './native-helper'`): the kit
    * type of its public path, `Utils` or `Utils.ios`, as core's index exports it.
    */
+  /**
+   * A function of a core module that core's index does not export (`resolveModuleName`, imported from
+   * `@nativescript/core/module-name-resolver`): the kit's module enum it was compiled into, which has no top-level forwarder for it.
+   */
+  moduleFunction(decl: ts.Declaration): string | null {
+    if (!ts.isFunctionDeclaration(decl) || !decl.name || !isCoreDeclaration(decl)) return null;
+    const name = decl.name.text;
+    if (existsSync(join(KIT, 'Core', `__Export.${name}.swift`))) return null;
+    const file = decl.getSourceFile().fileName;
+    const root = /^(.*[\\/]@nativescript[\\/]core)[\\/]/.exec(file)?.[1] ?? (packageOf(file)?.name === '@nativescript/core' ? packageOf(file)!.root : undefined);
+    if (!root) return null;
+    const rel = file.slice(root.length + 1).replace(/\\/g, '/').replace(/(\.(ios|android))?\.d\.ts$|(\.(ios|android))?\.ts$/, '');
+    const owner = `Core_${rel.replace(/[^A-Za-z0-9]+/g, '_')}`;
+    return kitMember(this.index, owner, name)?.kind === 'func' ? `${owner}.${name}` : null;
+  }
+
   private moduleOwner(e: ts.Identifier): string | null {
     const local = this.t.checker.getSymbolAtLocation(e);
     const target = local && local.flags & ts.SymbolFlags.Alias ? this.t.checker.getAliasedSymbol(local) : local;
@@ -363,14 +379,18 @@ export class CoreAPI {
     // A function core's index exports (`fromObject`), as the kit compiled it.
     if (ts.isIdentifier(e.expression)) {
       const decl = this.t.resolve(e.expression)?.declarations?.[0];
-      return !!decl && isCoreDeclaration(decl) && ts.isFunctionDeclaration(decl) && this.throwingExports().has(e.expression.text);
+      if (!decl || !isCoreDeclaration(decl) || !ts.isFunctionDeclaration(decl)) return false;
+      const owned = this.moduleFunction(decl);
+      return owned ? !!kitMember(this.index, owned.split('.')[0], e.expression.text)?.throws : this.throwingExports().has(e.expression.text);
     }
     if (!ts.isPropertyAccessExpression(e.expression) || this.mixinOwn(e.expression.name)) return false;
     // `super.initNativeView()`, `this.requestLayout()` in a program's class of a core one: the core class declaring the method.
     const member = this.t.resolve(e.expression.name)?.declarations?.[0];
     const declaring = member && isCoreDeclaration(member) && ts.isClassLike(member.parent) && member.parent.name ? member.parent.name.text : null;
     const owner = this.owner(e.expression.expression)?.name ?? declaring;
-    return !!owner && !!kitMember(this.index, owner, e.expression.name.text)?.throws;
+    const m = owner ? kitMember(this.index, owner, e.expression.name.text) : null;
+    // A property holding a function that throws (`on: ((String, …) throws -> Void)!`).
+    return !!m && (!!m.throws || (m.kind === 'var' && /\)\s*throws\s*->[^>]*\)?[?!]?$/.test(m.type)));
   }
 
   /** `signal.aborted`: a property of core's whose getter the kit compiled as throwing. */
@@ -427,8 +447,11 @@ export class CoreAPI {
     const listener = this.listenerArgs(e, m);
     // A kit method takes the arguments given; its own defaults stand for the rest.
     const args = listener ?? (SCRIPT_OBJECTS.has(name) && this.isView(owner.name) ? e.arguments.map((a) => this.scriptValue(a)) : t.args(e, e.arguments.length));
+    // A property holding a function (`Application.on`, which core assigns in its constructor): its parameters are the function type's,
+    // each of them passed, as a Swift function value has no defaults.
+    const held = m.kind === 'var' && !m.params ? t.functionTypeParts(m.type.replace(/[?!]$/, '').replace(/^\((.*)\)$/, '$1')) : null;
     // A closure for a kit parameter that cannot throw (`dispatchToMainThread`) reports what it throws, as a handler does.
-    const kitParams = (m.params ?? '').trim() ? splitParams(m.params!) : [];
+    const kitParams = (m.params ?? '').trim() ? splitParams(m.params!) : held ? held.params.map((p) => `_ p: ${p}`) : [];
     e.arguments.forEach((a, k) => {
       const p = kitParams[k];
       if (!listener && p && (ts.isArrowFunction(a) || ts.isFunctionExpression(a)) && !a.parameters.length && (t.checker.getContextualType(a)?.getCallSignatures()[0]?.getParameters().length ?? 0) === 0 && /->/.test(p) && !/\bthrows\b/.test(p) && /\(\s*\)\s*->/.test(p)) args[k] = t.callback(a);
@@ -438,6 +461,10 @@ export class CoreAPI {
     const restAt = (t.checker.getResolvedSignature(e)?.getDeclaration() as ts.SignatureDeclaration | undefined)?.parameters?.findIndex((p) => !!p.dotDotDotToken) ?? -1;
     const restType = restAt >= 0 ? /:\s*(JSArray<.*>)\s*$/.exec(kitParams[restAt] ?? '')?.[1] : undefined;
     if (restType && !listener && !packed && !e.arguments.some(ts.isSpreadElement) && args.length >= restAt) args.splice(restAt, args.length - restAt, `${restType}([${args.slice(restAt).join(', ')}])`);
+    if (held) {
+      while (args.length < held.params.length && /[?!]$/.test(held.params[args.length])) args.push('nil');
+      return this.fromKit(`${recv}.${name}(${args.join(', ')})`, held.result, t.typeOf(e));
+    }
     return this.fromKit(`${recv}.${name}(${args.join(', ')})`, chained && m.type !== 'Void' ? m.type.replace(/\??$/, '?') : m.type, t.typeOf(e));
   }
 
@@ -455,16 +482,19 @@ export class CoreAPI {
     let packed = false;
     kitParams.forEach((p, k) => {
       const type = kitParamType(p);
-      if (declared?.[k]?.dotDotDotToken && /^JSArray<Any\?>$/.test(type)) {
+      // `...args: any` the kit compiled as one untyped parameter, which the function reads as the array script passes.
+      if (declared?.[k]?.dotDotDotToken && /^(JSArray<Any\?>|Any\?)$/.test(type)) {
         args.splice(k, args.length - k, `JSArray<Any?>([${e.arguments.slice(k).map((a) => t.coerce(a, 'Any?')).join(', ')}])`);
         packed = true;
         return;
       }
       const a = e.arguments[k];
       if (a && /->/.test(type) && (ts.isArrowFunction(a) || ts.isFunctionExpression(a) || ts.isIdentifier(a) || ts.isPropertyAccessExpression(a))) {
-        const fn = t.functionTypeParts(type);
+        // An optional function parameter (`callback: ((Any?) throws -> Void)?`) takes a closure as the function it wraps.
+        const plain = type.replace(/^\((.*)\)[?!]$/, '$1');
+        const fn = t.functionTypeParts(plain);
         if ((ts.isArrowFunction(a) || ts.isFunctionExpression(a)) && fn) {
-          args[k] = this.closureArgument(a, type);
+          args[k] = this.closureArgument(a, plain);
         } else {
           const own = t.typeOf(a);
           args[k] = /->/.test(own) && own.replace(/^\((.*)\)$/, '$1') !== type ? t.convert(t.expr(a), own, type) : t.coerce(a, type);
