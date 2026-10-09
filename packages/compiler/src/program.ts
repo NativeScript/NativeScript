@@ -335,7 +335,7 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
       const valueImport = (st: ts.Statement) => ts.isImportDeclaration(st) && !st.importClause?.isTypeOnly && ts.isStringLiteral(st.moduleSpecifier) && st.moduleSpecifier.text === m;
       const typeOnly = ts.isImportDeclaration(lit.parent) && !!lit.parent.importClause?.isTypeOnly && !(lit.parent.parent && ts.isSourceFile(lit.parent.parent) && lit.parent.parent.statements.some(valueImport));
       if (plugins && isSource(containing) && !m.startsWith('.') && !m.startsWith('/') && !notPlugin(packageOf(m)) && !typeOnly) {
-        const js = runtimeFile(m, modules, platform);
+        const js = runtimeFile(m, modules, platform, 'import', containing);
         if (js) {
           plugins.get(js.packageDir);
           const source = plugins.sourceOf(js.file);
