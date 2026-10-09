@@ -1,0 +1,15 @@
+{
+  "name": "mixins-app",
+  "main": "app/app.ts",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A plugin's mixin (applyMixins(View, [ViewGlow])) wrapping initNativeView, adding a property's setNative and a method. Built with ns and compiled, the last label reads the same: 'init first, init second, init out, glow first true, glow second true | glowing second', and both glowing labels have an orange border.",
+  "dependencies": {
+    "@nativescript/core": "~9.1.0"
+  },
+  "devDependencies": {
+    "@nativescript/types": "~9.0.0",
+    "@nativescript/webpack": "~5.0.31",
+    "typescript": "~6.0.0"
+  }
+}

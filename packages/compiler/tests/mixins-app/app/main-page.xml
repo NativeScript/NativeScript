@@ -1,0 +1,7 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" loaded="onLoaded">
+  <StackLayout padding="40">
+    <Label id="first" text="first label" glow="true" />
+    <Label id="second" text="second label" />
+    <Label id="out" text="pending" textWrap="true" />
+  </StackLayout>
+</Page>
