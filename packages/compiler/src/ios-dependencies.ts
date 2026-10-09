@@ -288,7 +288,13 @@ ${packages.length ? `    dependencies:\n${productLines(packages)}` : ''}    sett
   const args = ['-I', products];
   if (existsSync(maps)) {
     args.push('-I', maps);
-    for (const f of readdirSync(maps)) if (f.endsWith('.modulemap')) modules.add(basename(f, '.modulemap'));
+    for (const f of readdirSync(maps)) {
+      if (!f.endsWith('.modulemap')) continue;
+      const module = basename(f, '.modulemap');
+      modules.add(module);
+      // Clang finds only `module.modulemap` on a search path: a C target's map (`ZipArchive.modulemap`) is loaded by name, as Xcode loads it.
+      if (!existsSync(join(products, `${module}.swiftmodule`))) args.push('-Xcc', `-fmodule-map-file=${join(maps, f)}`);
+    }
   }
   // A binary target of a static library: its headers and module map are copied to `include`.
   const include = join(products, 'include');
