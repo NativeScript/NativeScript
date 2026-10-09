@@ -170,7 +170,8 @@ export function generateKit(o: KitOptions): KitResult {
     const m = lit.text;
     let file: string | undefined;
     if (m.startsWith('.') && containing.startsWith(core + '/')) {
-      const base = resolve(dirname(containing), m);
+      // `./easysax.js` names the TypeScript module beside it, as TypeScript resolves it.
+      const base = resolve(dirname(containing), m.replace(/\.js$/, ''));
       const source = [`${base}.ios.ts`, `${base}.ts`, `${base}/index.ios.ts`, `${base}/index.ts`].find((c) => existsSync(c));
       // `from '.'` in a module's implementation names its declarations, as core's own build reads it.
       const self = (m === '.' || m === './index') && source === containing;

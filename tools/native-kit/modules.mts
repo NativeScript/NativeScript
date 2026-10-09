@@ -25,6 +25,7 @@ export const ios = {
 		'http/',
 		'image-asset/',
 		'image-source/',
+		'js-libs/easysax/',
 		'matrix/',
 		'media-query-list/',
 		'native-window/',

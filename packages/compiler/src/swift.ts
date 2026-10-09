@@ -4427,7 +4427,8 @@ ${members.join('\n')}
       try {
         for (const a of [...chain].reverse()) {
           out.push(`${this.tryPrefix(a)}${this.expr(a)}`);
-          this.subst.set(a, tmp);
+          // The next target reads what this one now holds, as its own type has it (`x = elem = opened`).
+          this.subst.set(a, ts.isIdentifier(a.left) ? this.expr(a.left) : tmp);
         }
       } finally { for (const r of [...read, ...chain]) this.subst.delete(r); }
       return `do { ${out.join('; ')} }`;
@@ -4903,6 +4904,8 @@ ${members.join('\n')}
       if (from === 'Double' && this.native.isEnumType(to)) return this.native.toSwift(e.expression, to);
       if (to === 'Never') return this.expr(e.expression);
       if (from === 'Any?' && to !== 'Any?') return this.fromAny(this.expr(e.expression), to);
+      // `x as string` of a string that may be undefined: the value as JavaScript then reads it as one.
+      if (['String', 'Double', 'Bool'].includes(to) && from === `${to}?`) return this.undefinedAs(this.expr(e.expression), to);
       // A typed function asserted to `any` (`<any>callback`): a script function, which any caller can call.
       if (to === 'Any?' && isFunctionType(from.replace(/^\((.*)\)[?!]$/, '$1'))) return this.convert(this.expr(e.expression), from, 'Any?');
       // `<Array<View>>views` of a ViewBase[]: Swift's arrays of the two are distinct types, so the elements are read as the asserted one, in a copy unless the array already is one.
@@ -5323,6 +5326,10 @@ ${members.join('\n')}
 
   /** A value as JavaScript converts it to a string (`String(x)`, `${x}`, `'' + x`). */
   str(e: ts.Expression): string {
+    // `x as string` only types x: the value converted is x's, which may be undefined.
+    let inner = e;
+    while (ts.isAsExpression(inner) || ts.isTypeAssertionExpression(inner) || ts.isNonNullExpression(inner) || ts.isParenthesizedExpression(inner)) inner = inner.expression;
+    if (inner !== e && /\?$/.test(this.typeOf(inner)) && this.typeOf(e) === 'String') return `jsToString(${this.expr(inner)} as Any?)`;
     const maybe = this.maybeUndefined(e);
     if (maybe) return `jsToString(${maybe} as Any?)`;
     const t = this.typeOf(e);
@@ -6245,6 +6252,8 @@ ${members.join('\n')}
       const maybe = !isOptional(this.typeOf(callee)) ? this.maybeUndefined(callee) : null;
       return `${maybe ? `jsCallee(${maybe})` : this.expr(callee)}(${this.args(e).join(', ')})`;
     }
+    // `handler!(…)`: the function, where undefined is not a function.
+    if (ts.isNonNullExpression(callee) && /[?!]$/.test(this.typeOf(callee.expression))) return `jsCallee(${this.expr(callee.expression)})(${this.args(e).join(', ')})`;
     throw this.error(e, 'call');
   }
 
@@ -6591,7 +6600,7 @@ ${members.join('\n')}
         if (method === 'isFinite') return `${this.expr(arg(0))}.isFinite`;
         if (method === 'isNaN') return `${this.expr(arg(0))}.isNaN`;
         if (method === 'parseFloat') return `jsParseFloat(${this.expr(arg(0))})`;
-        if (method === 'parseInt') return `jsParseInt(${this.expr(arg(0))}${arg(1) ? `, ${this.expr(arg(1))}` : ', nil'})`;
+        if (method === 'parseInt') return `jsParseInt(${this.str(arg(0))}${arg(1) ? `, ${this.expr(arg(1))}` : ', nil'})`;
         break;
       case 'String':
         if (method === 'fromCharCode') return `jsFromCharCode(${a().join(', ')})`;

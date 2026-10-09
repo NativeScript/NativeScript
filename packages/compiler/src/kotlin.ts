@@ -2700,6 +2700,8 @@ export class Translator implements AsyncTranslator {
       const shared = this.uncheckedCast(e);
       if (shared) return `(${this.expr(e.expression)} as ${shared})`;
       if (from === 'Any?' && to !== 'Any?') return this.fromAny(this.expr(e.expression), to);
+      // `x as string` of a string that may be undefined: the value as JavaScript then reads it as one.
+      if (['String', 'Double', 'Boolean'].includes(to) && from === `${to}?`) return this.undefinedAs(this.expr(e.expression), to);
       if (from !== to && from.replace(/\?$/, '') !== to.replace(/\?$/, '') && this.isObjectRef(e) && this.isObjectRef(e.expression)) return `(${this.expr(e.expression)} as ${to})`;
       if (from.endsWith('?') && !to.endsWith('?') && from.replace(/\?$/, '') === to) return `${this.expr(e.expression)}!!`;
       return this.expr(e.expression);
@@ -3309,6 +3311,8 @@ export class Translator implements AsyncTranslator {
     // A function read from a record may be missing: calling it then throws, as calling undefined does.
     if (ts.isElementAccessExpression(callee) && /^JSRecord</.test(this.typeOf(callee.expression))) return `jsCallable(${this.expr(callee)})(${this.args(e).join(', ')})`;
     if (ts.isElementAccessExpression(callee) || ts.isCallExpression(callee)) return `${this.expr(callee)}(${this.args(e).join(', ')})`;
+    // `handler!(…)`: the function, where undefined is not a function.
+    if (ts.isNonNullExpression(callee) && /\?$/.test(this.typeOf(callee.expression))) return `jsCallable(${this.expr(callee.expression)})(${this.args(e).join(', ')})`;
     throw this.error(e, 'call');
   }
 
