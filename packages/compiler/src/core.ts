@@ -361,6 +361,8 @@ export class CoreAPI {
       return `jsReport { try ${recv}.set(${JSON.stringify(name)}, ${t.coerce(value, 'Any?')}) }`;
     }
     const m = this.member(owner.name, name, left);
+    // `view._addViewToNativeVisualTree = () => false`: core's code calls its method directly, which a value on the object cannot replace.
+    if (m.kind === 'func') throw t.error(left, `${owner.name}.${name} replaced on an object: core calls ${name} statically, and replacing it is not supported yet`);
     // A kit member typed `Any?` holds what core reads as a plain script object (`TouchManager.animations`).
     if (m.type.trim() === 'Any?') return `${recv}.${name} = ${this.scriptValue(value)}`;
     // Undefined where the kit holds a string, number or boolean: its zero, as core's own code assigning it was compiled.
@@ -379,10 +381,19 @@ export class CoreAPI {
     return root ? { name: root, isStatic: false } : null;
   }
 
-  /** A member a mixin class declares: the extension it becomes has it by name. */
+  /**
+   * A member a mixin class declares: the extension it becomes has it by name. So too a member a plugin's
+   * typings add to the core class in a module augmentation (`declare module '@nativescript/core/ui/core/view'
+   * { interface View { showBottomSheet(…) } }`) where a mixin applied to that class declares it.
+   */
   private mixinOwn(name: ts.MemberName): boolean {
     const decl = this.t.checker.getSymbolAtLocation(name)?.valueDeclaration;
-    return !!decl && ts.isClassDeclaration(decl.parent) && !!this.t.mixinOf(this.t.checker.getSymbolAtLocation(decl.parent.name!));
+    if (!decl) return false;
+    if (ts.isClassDeclaration(decl.parent)) return !!this.t.mixinOf(this.t.checker.getSymbolAtLocation(decl.parent.name!));
+    const owner = decl.parent;
+    const augmented = ts.isInterfaceDeclaration(owner) && ts.isModuleBlock(owner.parent) && ts.isModuleDeclaration(owner.parent.parent)
+      && ts.isStringLiteral(owner.parent.parent.name) && owner.parent.parent.name.text.startsWith('@nativescript/core');
+    return augmented && this.t.patterns.mixinsOf(owner.name.text).some((c) => c.members.some((m) => m.name?.getText() === name.getText()));
   }
 
   /**

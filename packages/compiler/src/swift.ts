@@ -146,6 +146,16 @@ const WEB_DICTIONARIES = ['TextDecoderOptions', 'Algorithm', 'HmacKeyGenParams',
 const isTypedArrayType = (t: string) => /^JS(Int8|Uint8|Uint8Clamped|Int16|Uint16|Int32|Uint32|Float32|Float64|BigInt64|BigUint64)Array$/.test(t);
 // No prototype: a name like `toString` is no error class.
 const BUILTIN_CLASSES: Record<string, string> = Object.assign(Object.create(null), { Promise: 'JSThenable', Array: 'JSArrayProtocol', Map: 'JSMapProtocol', Set: 'JSSetProtocol', Date: 'JSDate' }, Object.fromEntries(BUFFER_TYPES.map((n) => [n, `JS${n}`])));
+/**
+ * The methods core calls directly on a view that plugins' mixins wrap (`applyMixins(View, [Extended])`): core's
+ * View overrides each to run the mixins applied to it around its own code (JSMixins.call). A mixin of another
+ * method core has stops the build.
+ */
+export const MIXIN_HOOKS = new Set(['createNativeView', 'initNativeView', 'disposeNativeView', 'onLoaded', 'onUnloaded']);
+
+/** The class mixins' lifecycle hooks are on: core's View, in the kit generated from core. */
+export const isMixinHost = (cls: ts.ClassLikeDeclaration) => cls.name?.text === 'View' && /[\\/]ui[\\/]core[\\/]view[\\/]index\.ios\.ts$/.test(cls.getSourceFile().fileName);
+
 const ERRORS: Record<string, string> = Object.assign(Object.create(null), { Error: 'JSError', TypeError: 'JSTypeError', RangeError: 'JSRangeError', SyntaxError: 'JSSyntaxError', ReferenceError: 'JSReferenceError', AggregateError: 'JSAggregateError' });
 const LIB_GLOBALS = new Set(['Math', 'JSON', 'Object', 'Array', 'Number', 'Promise', 'console', 'String', 'Boolean', 'Map', 'Set', 'Date', 'WeakRef', 'Symbol', 'WeakMap', 'WeakSet', 'BigInt', ...BUFFER_TYPES]);
 
@@ -1506,7 +1516,7 @@ export class Translator implements AsyncTranslator {
       if (ts.isModuleDeclaration(st)) { const ns = this.namespaceDecl(st, this.topName(st, st.name.text), later); if (ns) out.push(ns); continue; }
       // A function the kit implements in its place (core calling an npm package): references call the kit's.
       if (ts.isFunctionDeclaration(st) && st.name && this.library?.counterpart?.(sf.fileName, st.name.text)) continue;
-      if (ts.isFunctionDeclaration(st)) { if (st.name && st.body) member(this.func(st, ident(library ? st.name.text : this.topName(st, st.name.text)), library ? 'static ' : '')); continue; }
+      if (ts.isFunctionDeclaration(st)) { if (st.name && st.body && !this.patterns.replacedMixinFunction(st)) member(this.func(st, ident(library ? st.name.text : this.topName(st, st.name.text)), library ? 'static ' : '')); continue; }
       if (ts.isClassDeclaration(st)) {
         const target = this.patterns.mixinTarget(st);
         if (target) { out.push(this.mixinDecl(st, target)); continue; }
@@ -3516,14 +3526,20 @@ ${members.join('\n')}
       setters.push({ property, method, param: m.parameters[0] ? this.typeOf(m.parameters[0].name) : 'Void', throws: this.throwsInfo.fn(m) });
       lines.push('    ' + this.func(m, method));
     }
-    if (symbolMethods.length || expando) {
+    // Library mode: a symbol-keyed lookup resolving at this class passes the mixins applied to it (JSMixins), whatever the class declares.
+    const mixable = !!this.library && !cls.typeParameters?.length && (expando || this.inheritsSymbolKeyed(cls));
+    if (symbolMethods.length || expando || mixable) {
+      // A member named as the class (iOSApplication's `iOSApplication`) hides the class's name inside it: the kit's module names it.
+      const self = cls.members.some((x) => x.name?.getText() === name) || inherited.has(name) ? `NativeScriptKit.${ident(name)}` : ident(name);
+      const level = (found: string) => (mixable ? `JSMixins.resolve(${self}.self, key, ${found})` : found);
       lines.push(`    ${expando ? '' : 'override '}func jsSymbolMethod(_ key: String) -> JSMethod? {`);
       for (const sm of symbolMethods) {
         const args = sm.params.map((p, k) => this.fromAnyCode(`jsArg(__a, ${k})`, p, true));
         const call = `${sm.throws ? 'try ' : ''}(__this as! ${ident(name)}).${sm.method}(${args.join(', ')})`;
-        lines.push(`        if key == ${sm.key} { return { __this, __a in ${sm.ret === 'Void' ? `${call}; return nil` : `return ${this.convert(call, sm.ret, 'Any?')}`} } }`);
+        const method = `{ __this, __a in ${sm.ret === 'Void' ? `${call}; return nil` : `return ${this.convert(call, sm.ret, 'Any?')}`} }`;
+        lines.push(`        if key == ${sm.key} { return ${mixable ? level(`${method} as JSMethod`) : method} }`);
       }
-      lines.push(`        return ${expando ? 'nil' : 'super.jsSymbolMethod(key)'}`, '    }');
+      lines.push(`        return ${level(expando ? 'nil' : 'super.jsSymbolMethod(key)')}`, '    }');
     }
     if (expando) {
       conformances.push('JSExpando');
@@ -3570,6 +3586,8 @@ ${members.join('\n')}
       const overriddenStatic = isStatic(m) ? inheritedStatics.get(n) : undefined;
       const sameParams = (a: ts.MethodDeclaration, b: ts.MethodDeclaration) => { const x = this.signatureOf(a).params, y = this.signatureOf(b).params; return x.length === y.length && x.every((p, k) => p.type === y[k].type); };
       const modifiers = isStatic(m) ? (overriddenStatic && sameParams(m, overriddenStatic) ? 'override class ' : 'class ') : inherited.has(n) ? 'override ' : '';
+      // A lifecycle method of core's View that mixins wrap: its body under another name, which the override below runs.
+      if (this.library && isMixinHost(cls) && MIXIN_HOOKS.has(n) && !isStatic(m)) { lines.push('    ' + this.func(m, `__mixed_${n}`, '', extra)); continue; }
       lines.push('    ' + this.func(m, ident(n), modifiers, extra));
       // A plugin's objects are read untyped too (`handler.attachToView(view)` on an `any`): their methods by name.
       if ((this.pluginFiles.has(cls.getSourceFile().fileName) || this.appMembersByName) && !isStatic(m) && !m.parameters.some((p) => p.dotDotDotToken) && !extra.length && !generic) {
@@ -3579,6 +3597,17 @@ ${members.join('\n')}
         // A method reading `arguments` takes the call's arguments as one list.
         const params = this.readsArguments(m) ? ['JSRest<Any?>'] : sig.params.map((p) => (isFunctionType(p.type) ? `@escaping ${p.type}` : plain(p.type)));
         dynMethods.push({ name: n, type: `(${params.join(', ')}) throws -> ${plain(sig.ret)}`, available: this.gatedFunctions.get(m) });
+      }
+    }
+    if (this.library && isMixinHost(cls)) {
+      for (const n of MIXIN_HOOKS) {
+        const own = cls.members.find((x): x is ts.MethodDeclaration => ts.isMethodDeclaration(x) && !!x.body && !isStatic(x) && x.name.getText() === n);
+        const decl = own ?? this.inheritedMethod(cls, n);
+        if (!decl) throw this.error(cls, `${n}, which mixins wrap, on no class ${name} extends`);
+        const sig = this.emittedSignature(decl);
+        if (sig.params.length) throw this.error(decl, `${n} with parameters, which mixins wrap`);
+        const ret = sig.ret === 'Void' ? '' : ` -> ${sig.ret}`;
+        lines.push(`    override func ${n}() throws${ret} { try JSMixins.call(${ident(name)}.self, ${swiftString(n)}, self) { try ${own ? `self.__mixed_${n}` : `super.${n}`}() } }`);
       }
     }
     const protocol = this.iteratorProtocol(cls.members.filter((m): m is ts.MethodDeclaration => ts.isMethodDeclaration(m) && !!m.body && !isStatic(m) && ['next', 'return', 'throw'].includes(m.name.getText())).map((m) => ({
@@ -3731,17 +3760,23 @@ ${members.join('\n')}
   }
 
   /**
-   * A mixin class (`applyMixins(View, [ViewGestureExtended])`): its methods
-   * extend the core class; its native-view lifecycle methods run as hooks
-   * when a view of that class sets up and disposes its native view; its
-   * native setters are the class's setters for those properties. Its fields
-   * are not copied by the mixin: the methods keep them on the view by name.
+   * A mixin class (`applyMixins(View, [ViewGestureExtended], options)`): its methods extend the core
+   * class for the program's own calls, and its installer does to the class's prototype what the mixin
+   * function does at run time (JSMixins): a method the class has nowhere is added; one under a symbol
+   * (`[prop.setNative]`) or a lifecycle method core's View runs through its mixins is wrapped, in the
+   * options' order. Its fields are not copied by the mixin: the methods keep them on the view by name.
    */
   private mixinDecl(cls: ts.ClassDeclaration, target: string): string {
     const name = cls.name!.text;
+    const { order, omit } = this.patterns.mixinOptions(cls);
     const lines = [`extension ${target} {`];
-    const hooks: string[] = [];
-    const setters: string[] = [];
+    const installs: string[] = [];
+    const method = (m: ts.MethodDeclaration, swift: string) => {
+      const params = m.parameters.map((p, k) => this.fromAnyCode(`jsArg(__a, ${k})`, this.paramType(p), true));
+      const call = `${this.throwsInfo.fn(m) ? 'try ' : ''}(__this as! ${target}).${swift}(${params.join(', ')})`;
+      const ret = this.returnTypeOf(m);
+      return `{ __this, __a in ${ret === 'Void' ? `${call}; return nil` : `return ${this.convert(call, ret, 'Any?')}`} }`;
+    };
     this.indent = '    ';
     for (const m of cls.members) {
       if (ts.isPropertyDeclaration(m)) {
@@ -3750,28 +3785,50 @@ ${members.join('\n')}
         lines.push(`    var ${ident(n)}: ${t} {`, `        get { ${this.fromAnyCode(`self[jsKey: ${swiftString(n)}]`, t)} }`, `        set { self[jsKey: ${swiftString(n)}] = ${this.convert('newValue', t, 'Any?')} }`, '    }');
         continue;
       }
+      if (ts.isGetAccessorDeclaration(m) || ts.isSetAccessorDeclaration(m)) throw this.error(m, `an accessor of the mixin ${name}`);
       if (!ts.isMethodDeclaration(m) || !m.body) continue;
       if (ts.isComputedPropertyName(m.name)) {
-        const property = this.setNativeOf(m.name.expression);
-        if (!property) throw this.error(m.name, 'a computed method name');
-        const param = m.parameters[0] ? this.typeOf(m.parameters[0].name) : 'Void';
-        lines.push('    ' + this.func(m, `__setNative_${property}`));
-        setters.push(`    View.nativeSetterHooks[${swiftString(property)}] = { view, value in (view as? ${target})?.__setNative_${property}(${param === 'Void' ? '' : this.convert('value', 'Any?', param)}) }`);
+        // `[prop.setNative](value)`, `[prop.getDefault]()`: found by the symbol's key, as core's property system finds them.
+        if (!this.setNativeOf(m.name.expression) && !/\.getDefault$/.test(m.name.expression.getText())) throw this.error(m.name, 'a computed method name');
+        const swift = `__${name}_${this.fresh('symbol')}`;
+        lines.push('    ' + this.func(m, swift));
+        installs.push(`    JSMixins.wrap(${target}.self, ${this.propertyKey(m.name.expression)}, .${order}, ${method(m, swift)})`);
         continue;
       }
       const n = m.name.getText();
-      if (n === 'initNativeView' || n === 'disposeNativeView') {
+      if (omit.includes(n)) continue;
+      if (this.core.kitMember(target, n)) {
+        // A method the class has, which core's code calls on it directly: only those core's View runs through its mixins.
+        if (target !== 'View' || !MIXIN_HOOKS.has(n)) throw this.error(m.name, `${name}.${n} mixed into ${target}: core calls ${n} statically, and mixins of it are not supported yet`);
+        const swift = `__${name}_${n}`;
+        lines.push('    ' + this.func(m, swift));
+        installs.push(`    JSMixins.wrap(${target}.self, ${swiftString(n)}, .${order}, ${method(m, swift)})`);
+        continue;
+      }
+      // A name more than one mixin of the class declares: each one's body under its own name, the program's calls by the prototype's.
+      const others = this.patterns.mixinsOf(target).filter((c) => c !== cls && c.members.some((x) => ts.isMethodDeclaration(x) && x.name.getText() === n));
+      if (others.length) {
         lines.push('    ' + this.func(m, `__${name}_${n}`));
-        hooks.push(`${n}: { view in jsReport { try (view as? ${target})?.__${name}_${n}() } }`);
+        installs.push(`    JSMixins.add(${target}.self, ${swiftString(n)}, .${order}, ${method(m, `__${name}_${n}`)})`);
+        if (this.patterns.mixinsOf(target).find((c) => c === cls || others.includes(c)) === cls) lines.push(this.mixinDispatcher(m, target));
         continue;
       }
       lines.push('    ' + this.func(m, ident(n)));
+      installs.push(`    JSMixins.add(${target}.self, ${swiftString(n)}, .${order}, ${method(m, ident(n))})`);
     }
     this.indent = '';
-    lines.push('}', '', `func __install_${name}() {`);
-    if (hooks.length) lines.push(`    View.lifecycleHooks.append(View.LifecycleHook(${hooks.join(', ')}))`);
-    lines.push(...setters, '}');
-    return lines.join('\n').replace(/__\w+_(initNativeView|disposeNativeView)\(\) throws/g, (x) => x);
+    lines.push('}', '', `func __install_${name}() {`, ...installs, '}');
+    return lines.join('\n');
+  }
+
+  /** The program's calls of a method several mixins of a class declare: the method the prototype has, called with the object as `this`. */
+  private mixinDispatcher(m: ts.MethodDeclaration, target: string): string {
+    const n = m.name.getText();
+    const sig = this.signatureOf(m);
+    const params = sig.params.map((p, k) => `_ __p${k}: ${p.type}`).join(', ');
+    const call = `try jsCallMethod(self, ${swiftString(n)}${sig.params.map((p, k) => `, ${this.convert(`__p${k}`, p.type, 'Any?')}`).join('')})`;
+    const ret = sig.ret === 'Void' ? '' : ` -> ${sig.ret}`;
+    return `    func ${ident(n)}(${params}) throws${ret} { ${sig.ret === 'Void' ? `_ = ${call}` : `return ${this.fromAnyCode(call, sig.ret, true)}`} }`;
   }
 
   /** A setter that only assigns its value to a member of `this`'s (`this.style.color = value`): that member. */
