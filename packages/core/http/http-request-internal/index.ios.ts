@@ -35,14 +35,14 @@ class NSURLSessionTaskDelegateImpl extends NSObject implements NSURLSessionTaskD
 }
 const sessionTaskDelegateInstance: NSURLSessionTaskDelegateImpl = <NSURLSessionTaskDelegateImpl>NSURLSessionTaskDelegateImpl.new();
 
-let defaultSession;
+let defaultSession: NSURLSession;
 function ensureDefaultSession() {
 	if (!defaultSession) {
 		defaultSession = NSURLSession.sessionWithConfigurationDelegateDelegateQueue(sessionConfig, null, queue);
 	}
 }
 
-let sessionNotFollowingRedirects;
+let sessionNotFollowingRedirects: NSURLSession;
 function ensureSessionNotFollowingRedirects() {
 	if (!sessionNotFollowingRedirects) {
 		sessionNotFollowingRedirects = NSURLSession.sessionWithConfigurationDelegateDelegateQueue(sessionConfig, sessionTaskDelegateInstance, queue);
@@ -83,7 +83,7 @@ export function requestInternal<T extends object>(options: HttpRequestOptions, c
 				urlRequest.timeoutInterval = options.timeout / 1000;
 			}
 
-			let session;
+			let session: NSURLSession;
 			if (types.isBoolean(options.dontFollowRedirects) && options.dontFollowRedirects) {
 				ensureSessionNotFollowingRedirects();
 				session = sessionNotFollowingRedirects;
@@ -139,7 +139,8 @@ export function requestInternal<T extends object>(options: HttpRequestOptions, c
 						debugRequest.loadingFinished();
 					}
 
-					const content = {
+					// A plain object: the content handler's methods are assigned onto it.
+					const content: any = {
 						raw: data,
 						requestURL: options.url,
 						toNativeImage: () => {
