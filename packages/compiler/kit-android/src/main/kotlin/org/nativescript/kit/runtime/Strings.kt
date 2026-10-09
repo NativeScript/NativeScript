@@ -74,6 +74,15 @@ fun jsStringAt(s: String, index: Double): String? {
 
 fun jsFromCharCode(vararg codes: Double): String = String(CharArray(codes.size) { (jsToUint32(codes[it]).toInt() and 0xFFFF).toChar() })
 
+fun jsFromCodePoint(vararg points: Double): String {
+    val out = StringBuilder()
+    for (p in points) {
+        if (p < 0 || p > 0x10FFFF || p != Math.floor(p)) throw JSException(JSRangeError("Invalid code point ${jsNumberToString(p)}"))
+        out.appendCodePoint(p.toInt())
+    }
+    return out.toString()
+}
+
 /** What `for (const c of s)` visits: code points, a surrogate pair together. */
 fun jsCodePoints(s: String): List<String> {
     val out = ArrayList<String>()

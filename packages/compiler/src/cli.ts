@@ -572,7 +572,12 @@ function coreClosedWorld(kitSources: string, appSwift: string): { initializers: 
   }
   const named = (code: string) => [...words(code)].flatMap((w) => [...(declaring.has(w) ? [declaring.get(w)!] : []), ...(extending.get(w) ?? [])]);
   let roots = named(appSwift);
-  for (const f of readdirSync(kitSources, { recursive: true }) as string[]) if (f.endsWith('.swift') && !f.startsWith('Core/')) roots.push(...named(readFileSync(join(kitSources, f), 'utf8')));
+  // A kit file importing another framework (SystemConfiguration for connectivity) is core's only where core's code names it (kitFilesUnreached).
+  for (const f of readdirSync(kitSources, { recursive: true }) as string[]) {
+    if (!f.endsWith('.swift') || f.startsWith('Core/')) continue;
+    const code = readFileSync(join(kitSources, f), 'utf8');
+    if ([...code.matchAll(/^import (\w+)/gm)].every((m) => ['Foundation', 'UIKit', 'ObjectiveC', 'CoreGraphics'].includes(m[1]))) roots.push(...named(code));
+  }
   const running = new Set<string>();
   const seen = new Set<string>();
   const run = (f: string) => {

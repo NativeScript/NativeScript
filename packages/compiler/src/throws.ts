@@ -6,7 +6,7 @@ type Fn = ts.SignatureDeclaration & { body?: ts.Node };
 /** The constructors of buffers and views, which throw a RangeError for a length or an offset out of bounds. */
 const BUFFER_TYPES = new Set(['ArrayBuffer', 'Int8Array', 'Uint8Array', 'Uint8ClampedArray', 'Int16Array', 'Uint16Array', 'Int32Array', 'Uint32Array', 'Float32Array', 'Float64Array', 'BigInt64Array', 'BigUint64Array', 'DataView']);
 /** Library functions that throw on their own (a TypeError, a SyntaxError, a RangeError). */
-const THROWING_BUILTINS = new Set(['JSON.parse', 'JSON.stringify', 'Array.reduce', 'Array.reduceRight', 'String.repeat', 'String.normalize', 'String.matchAll', 'String.replaceAll', 'Date.toISOString', 'Object.assign', 'Object.fromEntries', 'Object.defineProperty', 'Object.defineProperties', 'WeakMap.set', 'WeakSet.add',
+const THROWING_BUILTINS = new Set(['JSON.parse', 'JSON.stringify', 'Array.reduce', 'Array.reduceRight', 'String.repeat', 'String.fromCodePoint', 'String.normalize', 'String.matchAll', 'String.replaceAll', 'Date.toISOString', 'Object.assign', 'Object.fromEntries', 'Object.defineProperty', 'Object.defineProperties', 'WeakMap.set', 'WeakSet.add',
   'Iterator.next', 'Iterator.return', 'Iterator.throw', 'Generator.next', 'Generator.return', 'Generator.throw',
   ...['Int8', 'Uint8', 'Uint8Clamped', 'Int16', 'Uint16', 'Int32', 'Uint32', 'Float32', 'Float64', 'BigInt64', 'BigUint64'].flatMap((t) => [`${t}Array.set`, `${t}Array.reduce`, `${t}Array.reduceRight`, `${t}Array.from`]),
   ...['Int8', 'Uint8', 'Int16', 'Uint16', 'Int32', 'Uint32', 'Float32', 'Float64', 'BigInt64', 'BigUint64'].flatMap((t) => [`DataView.get${t}`, `DataView.set${t}`]),

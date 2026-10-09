@@ -9,7 +9,7 @@ export interface KitMember {
   type: string;
   /** A function's parameter list as written (labels and types). */
   params?: string;
-  /** A function or initializer declared `throws`. */
+  /** A function or initializer declared `throws`, or a property whose getter is. */
   throws?: boolean;
 }
 
@@ -56,9 +56,10 @@ export function kitIndex(kitSources: string): Map<string, KitType> {
     const stack: { type: KitType | null; depth: number }[] = [];
     let depth = 0;
     let caseContinues = false;
+    let pendingGetter: { member: KitMember; depth: number } | null = null;
     let free: Set<string> | null = null;
     for (const line of text.split('\n')) {
-      const decl = /^\s*(?:@\w+\s+)*(?:(?:public|open|final|internal)\s+)*(class|struct|enum|extension|protocol)\s+(\w+)(?:<[^>]*>)?(?:\s*:\s*([\w.]+))?/.exec(line);
+      const decl = /^\s*(?:@\w+\s+)*(?:(?:public|open|final|internal)\s+)*(class|struct|enum|extension|protocol)\s+(?!(?:func|var|let|subscript)\b)(\w+)(?:<[^>]*>)?(?:\s*:\s*([\w.]+))?/.exec(line);
       const isPublic = /\b(public|open)\b/.test(line) || decl?.[1] === 'extension';
       if (decl && line.includes('{')) {
         // A nested type is known by its qualified name (`Utils.layout`).
@@ -93,10 +94,17 @@ export function kitIndex(kitSources: string): Map<string, KitType> {
           for (const m of line.matchAll(/(?<![\w.])([a-z]\w*)\(/g)) called.add(m[1]);
           calls.set(enclosing, called);
         }
+        // A computed property's getter declared on its own line: whether reading the property throws.
+        if (pendingGetter && depth === pendingGetter.depth + 1 && /^\s*get\s+throws\b/.test(line)) pendingGetter.member.throws = true;
+        if (pendingGetter && depth <= pendingGetter.depth) pendingGetter = null;
         if (owner?.type && depth === owner.depth + 1 && /\b(public|open)\b/.test(line)) {
           const isStatic = /\b(static|class)\s+(func|var|let)\b/.test(line);
           let m: RegExpExecArray | null;
-          if ((m = /\b(?:var|let)\s+(\w+)\s*:\s*([^={]+)/.exec(line))) add(owner.type, m[1], { kind: 'var', static: isStatic, type: m[2].trim() });
+          if ((m = /\b(?:var|let)\s+(\w+)\s*:\s*([^={]+)/.exec(line))) {
+            const member: KitMember = { kind: 'var', static: isStatic, type: m[2].trim() };
+            add(owner.type, m[1], member);
+            if (/\{\s*$/.test(line)) pendingGetter = { member, depth };
+          }
           // An untyped stored property takes its literal's type.
           else if ((m = /\b(?:var|let)\s+(\w+)\s*=\s*(true|false|"[^"]*"|-?\d+(\.\d+)?)\s*$/.exec(line))) add(owner.type, m[1], { kind: 'var', static: isStatic, type: /^(true|false)$/.test(m[2]) ? 'Bool' : m[2].startsWith('"') ? 'String' : m[3] ? 'Double' : 'Int' });
           else if ((m = /\bfunc\s+`?(\w+)`?\s*(?:<[^>]*>)?\(/.exec(line))) {

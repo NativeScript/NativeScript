@@ -488,7 +488,7 @@ export class Translator implements AsyncTranslator {
     this.lowering = new AsyncLowering(this);
     this.core = new CoreAPI(this);
     this.native = new NativeAPI(this);
-    this.throwsInfo = new Throws(checker, files, (n) => { try { return this.typeOf(n) === 'Any?'; } catch { return false; } }, (c) => (ts.isCallExpression(c) && (this.native.throwingCall(c) || this.replaceableCall(c) || (!!this.library && ts.isElementAccessExpression(c.expression) && !!this.setNativeOf(c.expression.argumentExpression)))) || (!this.library && this.core.throwingCall(c)), (d) => this.compiledMember(d), (e) => { try { return this.isExpando(e); } catch { return false; } }, (cls) => { const kit = this.library ? null : this.kitRootOf(cls); return !!kit && this.core.initThrows(kit); }, (fn) => ts.isFunctionLike(fn) && !!this.memberCounterpart(fn as ts.FunctionLikeDeclaration));
+    this.throwsInfo = new Throws(checker, files, (n) => { try { return this.typeOf(n) === 'Any?'; } catch { return false; } }, (c) => (ts.isCallExpression(c) && (this.native.throwingCall(c) || this.replaceableCall(c) || (!!this.library && ts.isElementAccessExpression(c.expression) && !!this.setNativeOf(c.expression.argumentExpression)))) || (!this.library && this.core.throwingCall(c)), (d) => this.compiledMember(d), (e) => { try { return this.isExpando(e) || (!this.library && !isWriteTarget(e) && this.core.throwingAccess(e)); } catch { return false; } }, (cls) => { const kit = this.library ? null : this.kitRootOf(cls); return !!kit && this.core.initThrows(kit); }, (fn) => ts.isFunctionLike(fn) && !!this.memberCounterpart(fn as ts.FunctionLikeDeclaration));
     for (const f of files) {
       const visit = (n: ts.Node) => {
         if (ts.isClassLike(n)) {
@@ -891,6 +891,11 @@ export class Translator implements AsyncTranslator {
       if (context?.getCallSignatures().length) return this.type(context, n);
     }
     const t = this.type(this.checker.getTypeAtLocation(n), n);
+    // An untyped value a guard narrows to a record (`isObject(v): v is Record<string, any>`): any object passes, so it stays untyped.
+    if (t.startsWith('JSRecord<') && (ts.isIdentifier(n) || ts.isElementAccessExpression(n) || ts.isPropertyAccessExpression(n))) {
+      const declared = ts.isElementAccessExpression(n) && /^JSArray<Any\?>[?!]?$/.test(this.typeOf(n.expression)) ? 'Any?' : this.declaredTypeOf(n as ts.Expression);
+      if (declared === 'Any?') return 'Any?';
+    }
     if (this.lenient && (t === 'Bool' || t === 'String' || t === 'Double') && this.declaredUndefined(n)) return `${t}?`;
     // An element of an array literal typed `never[]` (`callbacks = []` under strict checks), which Swift holds as any value.
     if (t === 'Never' && (ts.isIdentifier(n) || ts.isVariableDeclaration(n)) && this.resolve(n)?.valueDeclaration && ts.isVariableDeclaration(this.resolve(n)!.valueDeclaration!)) return 'Any?';
@@ -3086,9 +3091,11 @@ ${members.join('\n')}
     }
     // Members whose names a base class declares too.
     const inherited = new Set<string>();
+    const inheritedStatics = new Map<string, ts.MethodDeclaration>();
     for (let b = appBase; b; ) {
       // What the base emits: not an overload's signature, a bodiless declaration or a static member.
       for (const m of b.members) if (m.name && !(ts.isMethodDeclaration(m) && !m.body && !hasModifier(m, ts.SyntaxKind.AbstractKeyword)) && !isStatic(m)) inherited.add(m.name.getText());
+      for (const m of b.members) if (ts.isMethodDeclaration(m) && m.body && isStatic(m) && !inheritedStatics.has(m.name.getText())) inheritedStatics.set(m.name.getText(), m);
       const h = b.heritageClauses?.find((x) => x.token === ts.SyntaxKind.ExtendsKeyword)?.types[0];
       const d = h && c.getTypeAtLocation(h.expression).getSymbol()?.valueDeclaration;
       b = d && ts.isClassLike(d) && !d.getSourceFile().isDeclarationFile ? d : undefined;
@@ -3288,7 +3295,12 @@ ${members.join('\n')}
       const overridden = inherited.has(n) && !isStatic(m) ? this.inheritedMethod(cls, n) : undefined;
       if (overridden) m.parameters.forEach((p, k) => { const b = overridden.parameters[k]; if (b && (b.questionToken || (b.initializer && !this.constantDefault(b))) && this.constantDefault(p)) this.optionalDefaults.add(p); });
       const extra = overridden ? overridden.parameters.slice(m.parameters.length).map((p, k) => `_ __unused${k}: ${p.questionToken || p.initializer ? optionalType(this.typeOf(p.name)) : this.typeOf(p.name)}`) : [];
-      lines.push('    ' + this.func(m, ident(n), `${isStatic(m) ? 'static ' : ''}${inherited.has(n) && !isStatic(m) ? 'override ' : ''}`, extra));
+      // Static methods are class methods, which a subclass's static method of the same name overrides as JavaScript's does.
+      // One taking other parameter types is an overload of it instead, as Swift resolves them.
+      const overriddenStatic = isStatic(m) ? inheritedStatics.get(n) : undefined;
+      const sameParams = (a: ts.MethodDeclaration, b: ts.MethodDeclaration) => { const x = this.signatureOf(a).params, y = this.signatureOf(b).params; return x.length === y.length && x.every((p, k) => p.type === y[k].type); };
+      const modifiers = isStatic(m) ? (overriddenStatic && sameParams(m, overriddenStatic) ? 'override class ' : 'class ') : inherited.has(n) ? 'override ' : '';
+      lines.push('    ' + this.func(m, ident(n), modifiers, extra));
       // A plugin's objects are read untyped too (`handler.attachToView(view)` on an `any`): their methods by name.
       if (this.pluginFiles.has(cls.getSourceFile().fileName) && !isStatic(m) && !m.parameters.some((p) => p.dotDotDotToken) && !extra.length) {
         // The signature Swift has for the method: an override's is its root's.
@@ -3813,7 +3825,13 @@ ${members.join('\n')}
     const i = this.indent;
     const a = this.asyncCtx;
     if (ts.isExpressionStatement(s)) {
+      // A native subclass's `super.dealloc()`: its deinit (see NativeAPI.classDecl), after which Swift runs the base's.
+      if (this.inNativeClassBody && ts.isCallExpression(s.expression) && !s.expression.arguments.length && ts.isPropertyAccessExpression(s.expression.expression)
+        && s.expression.expression.expression.kind === ts.SyntaxKind.SuperKeyword && s.expression.expression.name.text === 'dealloc') return '';
       const code = this.exprStatement(s.expression);
+      // `s = String(s)` of a string: the same value, which Swift refuses to assign to itself.
+      const self = /^([\w.]+) = (.+)$/.exec(code);
+      if (self && self[1] === self[2]) return '';
       return i + (code.startsWith('do {') || code.startsWith('if ') ? '' : this.tryPrefix(s.expression)) + code;
     }
     if (ts.isReturnStatement(s)) {
@@ -4388,6 +4406,8 @@ ${members.join('\n')}
       const member = step ? this.untypedMember(e.operand) : null;
       if (member) return `jsPostUpdate(${member.object}, ${member.key}, ${step}1)`;
       if (step && (this.isAny(e.operand) || this.declaredTypeOf(e.operand) === 'Any?')) return `${this.lvalue(e.operand)} = jsToNumber(${this.expr(e.operand)}) ${step} 1`;
+      // A number declared without a value (`let i: number; for (i = 0; …; i++)`) is optional until assigned; undefined steps to NaN.
+      if (step && this.declaredTypeOf(e.operand) === 'Double?') return `${this.lvalue(e.operand)} = (${this.expr(e.operand)} ?? .nan) ${step} 1`;
       if (step) return `${this.lvalue(e.operand)} ${step}= 1`;
     }
     // `a = b = value`: the value once, then each target from the innermost out.
@@ -5978,6 +5998,11 @@ ${members.join('\n')}
       const cls = this.expr(callee.expression);
       return cls.endsWith('.self') ? cls : `${cls}.self`;
     }
+    // `o.hasOwnProperty(key)`, Object.prototype's: whether o has the key itself, whatever Swift type o is.
+    if (ts.isPropertyAccessExpression(callee) && callee.name.text === 'hasOwnProperty' && e.arguments.length === 1 && !this.isAny(callee.expression)
+      && this.resolve(callee.name)?.declarations?.some((d) => /[\\/]lib\.[\w.]*\.d\.ts$/.test(d.getSourceFile().fileName))) {
+      return `jsHasOwn(${this.coerce(callee.expression, 'Any?')}, ${this.propertyKey(e.arguments[0])})`;
+    }
     // Reading a callable signal (Angular, Solid) (`count()`, an input, a computed field).
     if (!e.arguments.length && ['WritableSignal', 'InputSignal', 'Signal'].includes(this.symbolName(callee))) {
       if (ts.isPropertyAccessExpression(callee) && this.isSelf(callee.expression) && this.computed.has(callee.name.text)) return `self.${ident(callee.name.text)}`;
@@ -6570,6 +6595,7 @@ ${members.join('\n')}
         break;
       case 'String':
         if (method === 'fromCharCode') return `jsFromCharCode(${a().join(', ')})`;
+        if (method === 'fromCodePoint') return `jsFromCodePoint(${a().join(', ')})`;
         break;
       case 'BigInt':
         if (method === 'asIntN' || method === 'asUintN') return `JSBigInt.${method}(${this.toNumber(arg(0))}, ${this.expr(arg(1))})`;
@@ -7269,6 +7295,10 @@ ${members.join('\n')}
     if (neverDefined(e.expression, this.checker)) return '"undefined"';
     const newer = this.native.introducedAfterDeployment(e.expression);
     if (newer) return `(jsOSAtLeast(${newer}) ? "function" : "undefined")`;
+    // A constructor or function of the language's library (`Symbol`, `Map`, `Promise`), which the kit always has.
+    const lib = ts.isIdentifier(e.expression) ? this.resolve(e.expression)?.declarations : undefined;
+    const callable = this.checker.getTypeAtLocation(e.expression);
+    if (lib?.length && lib.every((d) => /[\\/]lib\.[\w.]*\.d\.ts$/.test(d.getSourceFile().fileName)) && (callable.getConstructSignatures().length || callable.getCallSignatures().length)) return '"function"';
     const t = this.typeOf(e.expression);
     const base = t.replace(/\?$/, '');
     if (base === 'Void') return '"undefined"';

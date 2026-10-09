@@ -139,9 +139,10 @@ export class NativeAPI {
   }
 
   /** A native class's Swift name, qualified by its module where the kit declares a type of that name (`Foundation.Progress`). */
-  private className(cls: { swift: string; module?: string; introduced?: string }): string {
+  private className(cls: { swift: string; module?: string; introduced?: string; generics?: string[] }): string {
     this.typeAvailable(cls);
-    return cls.module && (this.t.isKitType(cls.swift) || this.internalTypes.has(cls.swift)) ? `${cls.module}.${cls.swift}` : cls.swift;
+    const name = cls.module && (this.t.isKitType(cls.swift) || this.internalTypes.has(cls.swift)) ? `${cls.module}.${cls.swift}` : cls.swift;
+    return cls.generics?.length ? `${name}<${cls.generics.map(() => 'AnyObject').join(', ')}>` : name;
   }
 
   /** The kit's internal types, which shadow native types of their names in code compiled into the kit. */
@@ -839,6 +840,9 @@ export class NativeAPI {
     if (raw && NUMBERS.has(raw)) return `${b}(rawValue: ${raw}(${t.expr(e)}))`;
     // A string where Foundation takes a copyable key (`setObject(_:forKey:)`).
     if (/^String\??$/.test(source) && /^(any )?NSCopying$/.test(b)) return `(${t.expr(e)} as NSString)`;
+    // A string or a number where a generic class takes any object (`NSCache<AnyObject, AnyObject>`): its Foundation object.
+    if (b === 'AnyObject' && source === 'String') return `(${t.expr(e)} as NSString)`;
+    if (b === 'AnyObject' && source === 'Double') return `NSNumber(value: ${t.expr(e)})`;
     // Null where Swift takes a collection it marks nonnull: Objective-C receives nil, which reads as empty.
     if (!optional(target) && source.endsWith('?') && ['NSDictionary', 'NSArray'].includes(b)) return `(${t.expr(e)} ?? ${b}())`;
     return t.expr(e);
@@ -1073,6 +1077,11 @@ export class NativeAPI {
       if (ts.getModifiers(m)?.some((x) => x.kind === ts.SyntaxKind.StaticKeyword)) {
         if (jsName === 'new' || jsName === 'alloc') continue;
         lines.push('    ' + t.func(m, jsName, 'static '));
+        continue;
+      }
+      // Swift has no `dealloc` to override: the object's deinit, which runs the base's teardown after it.
+      if (jsName === 'dealloc' && !m.parameters.length) {
+        lines.push(t.throwsInfo.fn(m) ? `    deinit {\n        jsReport ${t.functionBody(m, 'Void', '        ').trimStart()}\n    }` : `    deinit ${t.functionBody(m, 'Void', '    ').trimStart()}`);
         continue;
       }
       const init = /^init/.test(jsName) ? lookupInit(base.module, base.name, jsName) : null;

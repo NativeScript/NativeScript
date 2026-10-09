@@ -140,6 +140,7 @@ export function nativeTable(module: string, options: TableOptions = {}): NativeT
     writeFileSync(file, JSON.stringify(table));
   }
   tables.set(module, table);
+  for (const c of Object.values(table.classes)) if (c.generics?.length) eraseGenerics(c);
   // Memberwise idioms need only the table's structs: a table cached before one was added gets it here.
   for (const [js, spec] of Object.entries(IDIOMS[module] ?? {})) if (spec && !table.functions[js] && MEMBERWISE.test(spec)) memberwiseIdiom(table, js, spec);
   for (const c of Object.values(table.classes)) {
@@ -147,6 +148,19 @@ export function nativeTable(module: string, options: TableOptions = {}): NativeT
     for (const m of [...Object.values(c.instance), ...Object.values(c.static), ...Object.values(c.inits)]) categoryModules.set(m, module);
   }
   return table;
+}
+
+/**
+ * An Objective-C generic class (`NSCache<KeyType, ObjectType>`): its members take and give `AnyObject` for each
+ * parameter, as the class is named with `AnyObject` arguments (Objective-C generics are erased at run time).
+ */
+function eraseGenerics(c: NativeClass): void {
+  const erase = (t: string) => c.generics!.reduce((s, g) => s.replace(new RegExp(`\\b${g}\\b`, 'g'), 'AnyObject'), t);
+  for (const m of [...Object.values(c.instance), ...Object.values(c.static), ...Object.values(c.inits)] as Record<string, unknown>[]) {
+    if (Array.isArray(m.params)) m.params = (m.params as string[]).map(erase);
+    if (typeof m.returns === 'string') m.returns = erase(m.returns);
+    if (typeof m.type === 'string') m.type = erase(m.type);
+  }
 }
 
 const categoryModules = new WeakMap<object, string>();

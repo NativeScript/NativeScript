@@ -62,6 +62,12 @@ export function packageOf(file: string): { name: string; root: string } | null {
   return found;
 }
 
+/** A core symbol's name as the kit names it: a class exported as its module's default (`abortcontroller`) by the class's own name. */
+export function coreSymbolName(sym: ts.Symbol): string {
+  const decl = sym.declarations?.[0];
+  return sym.name === 'default' && decl && ts.isClassDeclaration(decl) && decl.name ? decl.name.text : sym.name;
+}
+
 /** A member core's declarations mark as a view property (`@nsProperty`). */
 export function isCoreProperty(decl: ts.Declaration): boolean {
   const file = decl.getSourceFile().fileName;
@@ -209,7 +215,7 @@ export class CoreAPI {
     if (!sym || !isCoreDeclaration(sym.declarations?.[0]) || this.t.compiledCounterpart(sym)) return null;
     // Core's event data types are the kit's one EventData, whose members the translator reads directly.
     if (this.t.type(type, e) === 'EventData') return null;
-    const name = sym.name;
+    const name = coreSymbolName(sym);
     // An interface core's typings declare (`Screen.mainScreen: ScreenMetrics`) where the kit's member holds its class (`MainScreen`).
     if (!this.index.has(name) && sym.flags & ts.SymbolFlags.Interface && ts.isPropertyAccessExpression(e)) {
       const outer = this.owner(e.expression);
@@ -349,7 +355,7 @@ export class CoreAPI {
       const sym = ts.isIdentifier(e.expression) ? this.t.resolve(e.expression) : undefined;
       const decl = sym?.declarations?.[0];
       if (!sym || !(sym.flags & ts.SymbolFlags.Class) || !isCoreDeclaration(decl) || this.t.compiledCounterpart(sym)) return false;
-      const name = sym.name;
+      const name = coreSymbolName(sym);
       // A color made of a string throws where the string is no color.
       if (name === 'Color') return (e.arguments ?? []).some((a) => this.t.typeOf(a) !== 'Double');
       return (this.index.get(this.platformClass(name))?.members.get('init') ?? []).some((m) => m.throws);
@@ -365,6 +371,14 @@ export class CoreAPI {
     const declaring = member && isCoreDeclaration(member) && ts.isClassLike(member.parent) && member.parent.name ? member.parent.name.text : null;
     const owner = this.owner(e.expression.expression)?.name ?? declaring;
     return !!owner && !!kitMember(this.index, owner, e.expression.name.text)?.throws;
+  }
+
+  /** `signal.aborted`: a property of core's whose getter the kit compiled as throwing. */
+  throwingAccess(e: ts.PropertyAccessExpression): boolean {
+    if (this.mixinOwn(e.name)) return false;
+    const owner = this.owner(e.expression)?.name;
+    const m = owner ? kitMember(this.index, owner, e.name.text) : null;
+    return m?.kind === 'var' && !!m.throws;
   }
 
   private exportsThrowing: Set<string> | null = null;
@@ -450,8 +464,7 @@ export class CoreAPI {
       if (a && /->/.test(type) && (ts.isArrowFunction(a) || ts.isFunctionExpression(a) || ts.isIdentifier(a) || ts.isPropertyAccessExpression(a))) {
         const fn = t.functionTypeParts(type);
         if ((ts.isArrowFunction(a) || ts.isFunctionExpression(a)) && fn) {
-          t.closureSlots.set(a, fn.params);
-          try { args[k] = t.coerce(a, type); } finally { t.closureSlots.delete(a); }
+          args[k] = this.closureArgument(a, type);
         } else {
           const own = t.typeOf(a);
           args[k] = /->/.test(own) && own.replace(/^\((.*)\)$/, '$1') !== type ? t.convert(t.expr(a), own, type) : t.coerce(a, type);
@@ -487,8 +500,9 @@ export class CoreAPI {
     if (!sym || !isCoreDeclaration(sym.declarations?.[0]) || this.t.compiledCounterpart(sym)) return null;
     const t = this.t;
     const args = e.arguments ?? ts.factory.createNodeArray();
-    const kitName = this.platformClass(sym.name);
-    if (!this.index.has(kitName)) throw t.error(e, `new ${sym.name} (NativeScriptKit has no such class)`);
+    const className = coreSymbolName(sym);
+    const kitName = this.platformClass(className);
+    if (!this.index.has(kitName)) throw t.error(e, `new ${className} (NativeScriptKit has no such class)`);
     // Core's constructor takes its arguments as a rest parameter; numbers never make it throw.
     if (sym.name === 'Color') {
       const list = `JSArray<Any?>([${args.map((a) => t.coerce(a, 'Any?')).join(', ')}])`;
@@ -503,10 +517,26 @@ export class CoreAPI {
         const p = params[k];
         const label = p.slice(0, p.indexOf(':')).trim().split(/\s+/)[0];
         const type = p.slice(p.indexOf(':') + 1).replace(/=.*$/, '').trim().replace(/^@escaping\s+/, '').replace(/!$/, '?');
-        return `${label === '_' ? '' : `${label}: `}${t.coerce(a, type)}`;
+        return `${label === '_' ? '' : `${label}: `}${(ts.isArrowFunction(a) || ts.isFunctionExpression(a)) && t.functionTypeParts(type) ? this.closureArgument(a, type) : t.coerce(a, type)}`;
       }).join(', ')})`;
     }
     return `${kitName}(${t.args(e).join(', ')})`;
+  }
+
+  /**
+   * A closure passed where the kit takes a function of a known Swift type: the type's parameters past those the closure
+   * declares, and, where core's lenient types differ from the app's (`(ParserEvent?) throws -> Void` for `(e: ParserEvent) => void`), adapted.
+   */
+  private closureArgument(a: ts.ArrowFunction | ts.FunctionExpression, type: string): string {
+    const t = this.t;
+    const want = t.functionTypeParts(type)!;
+    t.closureSlots.set(a, want.params);
+    try {
+      const code = t.coerce(a, type);
+      const own = t.typeOf(a);
+      const have = t.functionTypeParts(own.replace(/^\((.*)\)[?!]$/, '$1'));
+      return have && have.params.length === want.params.length && own.replace(/^\((.*)\)[?!]$/, '$1') !== type.replace(/^\((.*)\)[?!]$/, '$1') ? t.convert(code, own, type) : code;
+    } finally { t.closureSlots.delete(a); }
   }
 
   /** `frame.navigate({ create: () => page })`: the kit builds what `create` returns. */

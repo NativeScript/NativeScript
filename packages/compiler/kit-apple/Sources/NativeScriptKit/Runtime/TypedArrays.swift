@@ -927,6 +927,8 @@ public final class JSDataView: JSArrayBufferView, JSToStringTag, JSHostObject {
 public enum interop {
     /// `interop.bufferFromData(data)`: an ArrayBuffer of the data's bytes.
     public static func bufferFromData(_ data: NSData?) -> JSArrayBuffer { JSArrayBuffer(data: (data ?? NSData()) as Data) }
+    /// `new interop.FunctionReference(fn)`: the function, which a native callback parameter takes as it is.
+    public static let FunctionReference = JSConstructor { args in args.first ?? nil }
 }
 
 /// The bytes a native API reads of a buffer or a view passed untyped (`dataWithData(buffer as any)`).

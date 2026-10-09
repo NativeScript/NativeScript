@@ -3540,6 +3540,7 @@ export class Translator implements AsyncTranslator {
         break;
       case 'String':
         if (method === 'fromCharCode') return `jsFromCharCode(${a().join(', ')})`;
+        if (method === 'fromCodePoint') return `jsFromCodePoint(${a().join(', ')})`;
         break;
       case 'BigInt':
         if (method === 'asIntN' || method === 'asUintN') return `JSBigInt.${method}(${this.toNumber(arg(0))}, ${this.expr(arg(1))})`;

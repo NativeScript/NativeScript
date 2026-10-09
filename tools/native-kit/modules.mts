@@ -5,10 +5,12 @@
  */
 export const ios = {
 	compile: [
+		'abortcontroller/',
 		'accessibility/',
-		'application/',
 		'application-settings/',
+		'application/',
 		'color/',
+		'connectivity/',
 		'core-types/',
 		'css-mediaquery/',
 		'css-value/',
@@ -20,6 +22,7 @@ export const ios = {
 		'data/observable/',
 		'file-system/',
 		'globals/global-utils.ts',
+		'http/',
 		'image-asset/',
 		'image-source/',
 		'matrix/',
@@ -30,17 +33,20 @@ export const ios = {
 		'text/',
 		'trace/',
 		'ui/action-bar/',
+		'ui/activity-indicator/',
 		'ui/animation/',
 		'ui/button/',
 		'ui/content-view/',
 		'ui/core/',
 		'ui/date-picker/',
+		'ui/dialogs/',
 		'ui/editable-text-base/',
 		'ui/embedding/',
 		'ui/enums/',
 		'ui/frame/',
 		'ui/gestures/',
 		'ui/html-view/',
+		'ui/image-cache/',
 		'ui/image/',
 		'ui/label/',
 		'ui/layouts/absolute-layout/',
@@ -59,10 +65,12 @@ export const ios = {
 		'ui/placeholder/',
 		'ui/progress/',
 		'ui/proxy-view-container/',
+		'ui/repeater/',
 		'ui/scroll-view/',
 		'ui/search-bar/',
 		'ui/segmented-bar/',
 		'ui/slider/',
+		'ui/split-view/',
 		'ui/styling/',
 		'ui/switch/',
 		'ui/tab-view/',
@@ -74,7 +82,7 @@ export const ios = {
 		'ui/utils.ios.ts',
 		'ui/web-view/',
 		'utils/',
-		'http/',
+		'xml/',
 	],
 	/**
 	 * What the kit implements instead: a core file's function, an npm package's export
@@ -90,6 +98,12 @@ export const ios = {
 			'iOSApplication.addDelegateHandler': 'ApplicationDelegateClass.addDelegateHandler',
 		},
 		'application/scene-delegate-bridge.ts': { getLegacyMethod: 'ApplicationDelegateClass.getLegacyMethod' },
+		'connectivity/index.ios.ts': {
+			_createReachability: 'CoreConnectivity.createReachability',
+			_getReachabilityFlags: 'CoreConnectivity.reachabilityFlags',
+			startMonitoring: 'CoreConnectivity.startMonitoring',
+			stopMonitoring: 'CoreConnectivity.stopMonitoring',
+		},
 		'npm:@csstools/css-calc': { calc: 'CorePackages.calc' },
 		'npm:emoji-regex': { '*': 'CorePackages.emojiRegex' },
 		'~/package.json': { default: 'CorePackages.appConfig' },
@@ -104,7 +118,7 @@ export const ios = {
 	/** Modules a compiled app has no use for (the XML builder, the inspector, runtime module loading, XMLHttpRequest and fetch): what core reads from them is untyped, and using it throws. */
 	moot: ['debugger/', 'ui/builder/', 'module-name-resolver/', 'xhr/', 'fetch/', 'wgc/', 'inspector_modules'],
 	/** Functions that give back what they are given and, as decorators, leave what they decorate as it is. */
-	identities: ['profile'],
+	identities: ['profile', 'zonedCallback'],
 	/** npm packages compiled with core from the TypeScript they publish (relative to the package; the first is its entry). */
 	packages: {
 		'css-what': ['src/index.ts', 'src/parse.ts', 'src/types.ts', 'src/stringify.ts'],

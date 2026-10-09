@@ -266,6 +266,16 @@ public func jsFromCharCode(_ codes: Double...) -> String {
     string(codes.map { UInt16(truncatingIfNeeded: Int64(jsToUint32Bits($0))) }[...])
 }
 
+public func jsFromCodePoint(_ points: Double...) throws -> String {
+    var units: [UInt16] = []
+    for p in points {
+        guard p >= 0, p <= 0x10FFFF, p.rounded(.towardZero) == p else { throw JSException(JSRangeError("Invalid code point \(jsNumberToString(p))")) }
+        let v = UInt32(p)
+        if v < 0x10000 { units.append(UInt16(v)) } else { units += [UInt16(0xD800 + ((v - 0x10000) >> 10)), UInt16(0xDC00 + ((v - 0x10000) & 0x3FF))] }
+    }
+    return string(units[...])
+}
+
 /// What `for (const c of s)` visits: code points, a surrogate pair together.
 public func jsCodePoints(_ s: String) -> [String] {
     s.unicodeScalars.map { String($0) }
