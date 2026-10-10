@@ -624,7 +624,7 @@ export class CoreKotlin implements KotlinCore {
     const kb = k.replace(/\?$/, ''), tb = tsType.replace(/\?$/, '');
     if (this.generated && kb === 'Any' && ['String', 'Double', 'Boolean'].includes(tb)) return this.t.fromAnyCode(code, tsType, true);
     // An untyped result where the program's own class is declared (`getViewById` of an app's view): that class, as script trusts it.
-    if (this.generated && kb === 'Any' && ((/^[A-Z][\w.]*$/.test(tb) && !this.index.has(tb)) || /^JS(Array|Record)</.test(tb))) return `jsUnchecked<${tsType}>(${code})`;
+    if (this.generated && kb === 'Any' && tb !== 'Any' && ((/^[A-Z][\w.]*$/.test(tb) && !this.index.has(tb)) || /^JS(Array|Record)</.test(tb))) return `jsUnchecked<${tsType}>(${code})`;
     // One array of the kit's where TypeScript names another element class (`Frame._stack()`, FrameBase's).
     if (this.generated && /^JSArray<.*>$/.test(kb) && /^JSArray<.*>$/.test(tb) && kb !== tb) return `jsUnchecked<${tsType}>(${code})`;
     if (this.generated && kb !== tb && this.index.has(tb) && (kb === 'Any' || kitExtends(this.index, tb, kb))) return `(${code} as ${tb}${k.endsWith('?') && (tsType.endsWith('?') || keepNull) ? '?' : ''})`;
