@@ -18,7 +18,7 @@ import type { PluginSource } from './plugins/source.ts';
 import type { Reach } from './reach.ts';
 import type { Properties } from './properties.ts';
 import { SourceLines } from './source-lines.ts';
-import { androidManifest, appResourcesDir, copyAndroidFonts, pluginManifests } from './app-resources.ts';
+import { androidManifest, appResourcesDir, copyAndroidAppFiles, copyAndroidFonts, pluginManifests } from './app-resources.ts';
 import { KIT_ANDROID } from './paths.ts';
 
 export interface AndroidBuild {
@@ -199,7 +199,8 @@ export async function writeAndroid(b: AndroidBuild): Promise<void> {
   // A binding's objects are in place before any module runs, as the plugin's engine module is installed at startup.
   const installs = (b.bindings ?? []).map((x) => `        ${x.installer}.install()\n`).join('');
   if (b.generatedKit) {
-    const run = `${installs}${switches}        Reactivity.schedule = Reactivity.Schedule.${SCHEDULE[b.framework as Framework].toUpperCase()}\n` + (b.mounted
+    const extract = copyAndroidAppFiles(b.app, b.appDir, join(b.out, 'src', 'main', 'assets')) ? '        NativeScriptApplication.extractAppFiles(this)\n' : '';
+    const run = `${extract}${installs}${switches}        Reactivity.schedule = Reactivity.Schedule.${SCHEDULE[b.framework as Framework].toUpperCase()}\n` + (b.mounted
       ? `        NativeScriptApplication.prepare(cssAST = appCSS)\n        CoreModules.initialize()\n${inits}`
       : `        NativeScriptApplication.prepare(cssAST = appCSS)\n        CoreModules.initialize()\n${inits}${b.routeTree ? `        Router.shared.config = ${kotlinRouteConfig(b.routeTree, '        ')}\n` : routes}        NativeScriptApplication.start { ${b.root}().render() }\n`);
     writeFileSync(join(sources, '__Entry.kt'), `// Compiled by ns-native: the app's entry and its CSS.

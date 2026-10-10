@@ -412,6 +412,16 @@ function copiedAppFiles(appDir: string, vite: boolean): string[] {
     .sort();
 }
 
+/** The app folder's files its NativeScript build copies, as assets at `app/`, which the app extracts where `~/` paths resolve. */
+export function copyAndroidAppFiles(app: string, appDir: string, assets: string): boolean {
+  const files = copiedAppFiles(appDir, readConfig(app).bundler === 'vite');
+  for (const f of files) {
+    mkdirSync(dirname(join(assets, 'app', f)), { recursive: true });
+    copyFileSync(join(appDir, f), join(assets, 'app', f));
+  }
+  return files.length > 0;
+}
+
 /** Fonts in the app folder, as assets at `app/fonts/`, where core reads them. */
 export function copyAndroidFonts(appDir: string, assets: string): boolean {
   const fonts = join(appDir, 'fonts');

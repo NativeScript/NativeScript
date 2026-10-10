@@ -72,6 +72,31 @@ object NativeScriptApplication {
         AppModules.install()
     }
 
+    /**
+     * The app folder's files the build packs as assets under `app/` (`app/assets/logo.png`), copied to the files
+     * folder where core resolves `~/` paths, once per install or update, as NativeScript's runtime extracts them.
+     */
+    fun extractAppFiles(context: android.content.Context) {
+        val stamp = java.io.File(context.filesDir, "app/.extracted")
+        @Suppress("DEPRECATION")
+        val version = context.packageManager.getPackageInfo(context.packageName, 0).lastUpdateTime.toString()
+        if (stamp.exists() && stamp.readText() == version) return
+        fun copy(path: String) {
+            val children = context.assets.list(path) ?: emptyArray()
+            if (children.isNotEmpty()) return children.forEach { copy("$path/$it") }
+            val out = java.io.File(context.filesDir, path)
+            out.parentFile?.mkdirs()
+            try {
+                context.assets.open(path).use { input -> out.outputStream().use { input.copyTo(it) } }
+            } catch (_: java.io.FileNotFoundException) {
+                // An empty folder lists no children either.
+            }
+        }
+        copy("app")
+        stamp.parentFile?.mkdirs()
+        stamp.writeText(version)
+    }
+
     /** What every app's entry sets up before its first module runs, whether the kit runs the app or the app's own `Application.run` does. */
     fun prepare(cssAST: String? = null) {
         jsTraceErrors = AndroidLog.isLoggable("NSNative", AndroidLog.DEBUG)
