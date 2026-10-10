@@ -314,7 +314,7 @@ fun <T> stateSignal(signal: Signal<T>): Signal<T> {
 }
 
 /** Runs `body` now and again whenever a signal it read changes. */
-class Effect internal constructor(internal val key: List<Int>, private val derived: Boolean, body: () -> Unit) : Subscriber {
+class Effect internal constructor(internal val key: List<Int>, private val derived: Boolean, body: () -> Unit, deferred: Boolean = false) : Subscriber {
     private var body: (() -> Unit)? = body
     private val sources = LinkedHashSet<Source>()
     private var stale = false
@@ -326,7 +326,13 @@ class Effect internal constructor(internal val key: List<Int>, private val deriv
     init {
         Owner.current?.effects?.add(this)
         created?.invoke(this)
-        run()
+        if (deferred) {
+            stale = true
+            queue.add(this)
+            scheduleFlush()
+        } else {
+            run()
+        }
     }
 
     internal val disposed: Boolean get() = body == null
@@ -334,7 +340,13 @@ class Effect internal constructor(internal val key: List<Int>, private val deriv
     companion object {
         /** Called with each effect as it is made: zone.js change detection re-runs them all. */
         internal var created: ((Effect) -> Unit)? = null
+
+        /** Angular's `effect()`: its first run is in the next update, as change detection runs it, not at creation. */
+        fun deferred(body: () -> Unit): Effect = Effect(EffectOrder.key(), false, body, deferred = true)
     }
+
+    /** `EffectRef.destroy()`. */
+    fun destroy() = dispose()
 
     internal fun track(source: Source) {
         sources.add(source)

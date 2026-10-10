@@ -144,3 +144,34 @@ class AsyncPipe {
         latest = null
     }
 }
+
+/** `inject(DestroyRef)`: callbacks run when the injecting component's scope ends. */
+class DestroyRef internal constructor(owner: Owner?) {
+    private val owner = java.lang.ref.WeakReference(owner)
+
+    /** Registers the callback; the function returned unregisters it. */
+    fun onDestroy(callback: () -> Unit): () -> Unit {
+        var active = true
+        owner.get()?.onCleanup { if (active) jsReport { callback() } }
+        return { active = false }
+    }
+
+    companion object {
+        fun current(): DestroyRef = DestroyRef(Owner.current)
+    }
+}
+
+/** `takeUntilDestroyed(destroyRef?)`: the source's values until the scope it was called in (or `destroyRef`'s) ends. */
+fun <T> takeUntilDestroyed(destroyRef: DestroyRef? = null): RxOperatorFunction<T, T> {
+    val ref = destroyRef ?: DestroyRef.current()
+    return RxOperatorFunction { source ->
+        RxObservable { next ->
+            val subscription = source.subscribe(next)
+            val stop = ref.onDestroy { subscription.unsubscribe() }
+            RxSubscription {
+                stop()
+                subscription.unsubscribe()
+            }
+        }
+    }
+}

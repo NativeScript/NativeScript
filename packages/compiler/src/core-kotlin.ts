@@ -3,7 +3,7 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { isCoreDeclaration, unappliedProperty } from './core.ts';
 import { kitExtends, kitMember, readNames, type KitMember, type KitType } from './kit-index.ts';
-import { KIT_NAMES_ANDROID, kotlinString, numberLiteral, splitTopLevel, type KotlinCore, type Translator } from './kotlin.ts';
+import { KIT_NAMES_ANDROID, functionTypeParts, kotlinString, numberLiteral, splitTopLevel, type KotlinCore, type Translator } from './kotlin.ts';
 import { KIT_ANDROID } from './paths.ts';
 
 /** The pseudo-type whose members are kit-android's public top-level functions (`getRootLayout`). */
@@ -425,6 +425,9 @@ export class CoreKotlin implements KotlinCore {
     if (name === 'navigate' && kitExtends(this.index, owner.name, 'Frame')) return this.navigate(recv, e);
     const listener = this.listenerArgs(e, m);
     const args = listener ?? this.restArgs(e, m) ?? (SCRIPT_OBJECTS.has(name) && this.isView(owner.name) ? e.arguments.map((a) => this.scriptValue(a)) : t.args(e));
+    // A function held in a field (`Application.off`, core's bound `globalEvents.off`) takes every parameter: those not given are undefined.
+    const held = m.kind === 'var' ? functionTypeParts(m.type.replace(/^\((.*)\)\?$/, '$1')) : null;
+    if (held) for (let k = args.length; k < held.params.length; k++) args.push('null');
     // A super call names every argument: Kotlin does not fill in defaults there.
     if (recv === 'super') {
       const params = (m.params ?? '').trim() ? splitTopLevel(m.params!) : [];

@@ -1803,6 +1803,9 @@ export class Translator implements AsyncTranslator {
         continue;
       }
     }
+    // The constructor's body runs once every field has its value, as TypeScript's class fields come first.
+    const ctor = cls.members.find((m): m is ts.ConstructorDeclaration => ts.isConstructorDeclaration(m) && !!m.body?.statements.length);
+    if (ctor) lines.push(`    init ${this.block(ctor.body!, '    ')}`);
     this.indent = '';
     return { params, lines };
   }
@@ -5082,12 +5085,15 @@ export class Translator implements AsyncTranslator {
       return this.newSignal(t, arg(0) ? this.coerce(arg(0), t) : 'null', kind);
     }
     if (name === '$state' && lib) return `stateSignal(${this.expr(arg(0))})`;
+    // Angular's `effect()`.
+    if (name === 'effect' && lib && arg(0)) return `Effect.deferred(${this.callback(arg(0))})`;
     if ((name === 'nextTick' || name === 'tick') && !e.arguments.length && lib) return `Reactivity.${name}()`;
     if (name === 'output' && lib) return `${this.typeOf(e)}()`;
     if (name === 'inject' && lib) {
       const token = (arg(0) as ts.Identifier).text;
       if (token === 'RouterExtensions') return 'Router.shared';
       if (token === 'Page') return 'injectedPage()';
+      if (token === 'DestroyRef') return 'DestroyRef.current()';
       if (token === 'ActivatedRoute') return 'ActivatedRoute.current';
       return `${token}.shared`;
     }
@@ -5594,10 +5600,11 @@ export class Translator implements AsyncTranslator {
   }
 
   private promiseMethod(name: string, target: ts.Expression, e: ts.CallExpression): string {
-    const t = this.expr(target);
+    // A promise of an optional chain (`this.hud?.animate(…).catch(…)`): the chain's undefined passes through.
+    const t = `${this.expr(target)}${this.typeOf(target).endsWith('?') ? '?' : ''}`;
     const [f, g] = e.arguments;
     const value = this.typeOf(target).replace(/^JSPromise<(.*)>\??$/, '$1');
-    const result = this.typeOf(e).replace(/^JSPromise<(.*)>$/, '$1');
+    const result = this.typeOf(e).replace(/^JSPromise<(.*)>\??$/, '$1');
     switch (name) {
       case 'then': {
         const adopt = (f && this.returnsPromise(f)) || (g && this.returnsPromise(g));

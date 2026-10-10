@@ -301,7 +301,8 @@ androidComponents {
 ${overlays.map((m) => `        variant.sources.manifests.addStaticManifestFile(${kotlinString(m)})\n`).join('')}    }
 }
 ` : ''}${gradleFile('app.gradle')}`);
-  writeFileSync(join(b.out, 'proguard-rules.pro'), `-dontwarn org.nativescript.widgets.**\n${native.keepRules.map((r) => `${r}\n`).join('')}`);
+  // The app's classes held as values are constructed by reflection (`jsNew`), as the kit's are.
+  writeFileSync(join(b.out, 'proguard-rules.pro'), `-dontwarn org.nativescript.widgets.**\n-keepclassmembers class ${pkg}.** { <init>(...); }\n${native.keepRules.map((r) => `${r}\n`).join('')}`);
   mkdirSync(join(b.out, 'src', 'main', 'res', 'values'), { recursive: true });
   // The runtime template's strings.xml, named after the folder (letters and digits only), unless App_Resources replaces the file.
   const label = basename(resolve(b.app)).replace(/[^a-zA-Z0-9]/g, '');
