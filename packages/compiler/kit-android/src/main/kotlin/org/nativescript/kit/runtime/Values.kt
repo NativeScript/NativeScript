@@ -588,8 +588,8 @@ fun jsLiteralKeyOrder(parts: List<List<String>>, fields: List<String>): List<Str
     return keys.filter(index).sortedBy { it.toLong() } + keys.filter { !index(it) }
 }
 
-/** `globalThis`, with the constructors NativeScript's runtime puts there. */
-val jsGlobalThis: JSObject = JSObject().also { it["DOMException"] = JSDOMException::class.java }
+/** `globalThis` of the running realm: a worker thread's own, else the app's. */
+val jsGlobalThis: JSObject get() = JSRealm.current().global
 
 /** `value.constructor` of a typed object: its own member of that name, else its class. */
 private fun jsConstructorOf(target: Any): Any? = (if (target is JSDynamic) target.jsGet("constructor") else null) ?: when (target) {

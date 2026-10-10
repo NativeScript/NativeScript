@@ -121,7 +121,7 @@ inline fun jsReport(body: () -> Unit) {
 
 var jsUncaughtHandler: (Any?) -> Unit = { value -> jsError("Uncaught", value) }
 
-fun jsReportUncaught(value: Any?) = jsUncaughtHandler(value)
+fun jsReportUncaught(value: Any?) = (JSRealm.current().uncaught ?: jsUncaughtHandler)(value)
 
 /** A member read from a receiver its type promised (`x!.name`, `items[i].name`): JavaScript's TypeError when it is missing. */
 fun <T> jsUnwrap(value: T?, key: String, isNull: Boolean = false): T =

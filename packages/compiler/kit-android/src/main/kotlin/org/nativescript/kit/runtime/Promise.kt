@@ -3,8 +3,11 @@ package org.nativescript.kit
 // Promises and the microtask queue, following ECMA-262 §27.2 job for job so that the
 // interleaving of callbacks matches V8's exactly.
 
-/** The microtask queue (HTML "perform a microtask checkpoint", Node's `runMicrotasks`). */
-object Microtasks {
+/** The running realm's microtask queue. */
+val Microtasks: JSMicrotasks get() = JSRealm.current().microtasks
+
+/** A microtask queue (HTML "perform a microtask checkpoint", Node's `runMicrotasks`). */
+class JSMicrotasks internal constructor() {
     private val queue = ArrayDeque<() -> Unit>()
     private var draining = false
     internal val pendingRejections = ArrayList<JSRejection>()

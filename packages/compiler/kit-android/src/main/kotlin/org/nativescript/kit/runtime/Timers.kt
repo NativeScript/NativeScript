@@ -12,11 +12,14 @@ internal class JSTimerList(val duration: Double, var expiry: Double, var id: Int
     val timers = ArrayDeque<JSTimer>()
 }
 
+/** The running realm's timers. */
+val JSEventLoop: JSEventLoopState get() = JSRealm.current().loop
+
 /**
- * The event loop for timers: driven by the host's main looper in an app (`host`), or by
+ * An event loop for timers: driven by its thread's looper in an app (`host`), or by
  * `runUntilIdle()` in a command-line program.
  */
-object JSEventLoop {
+class JSEventLoopState internal constructor() {
     private val lists = HashMap<Double, JSTimerList>()
     private val timers = HashMap<Double, JSTimer>()
     private var nextTimerId = 1.0
