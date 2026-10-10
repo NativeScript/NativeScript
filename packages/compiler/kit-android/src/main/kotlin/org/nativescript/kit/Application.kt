@@ -73,6 +73,7 @@ abstract class NativeScriptActivity : AppCompatActivity() {
             JSEventLoop.processTimers()
             Microtasks.checkpoint()
         }
+        JSRealm.main.post = { job -> handler.post(job) }
         JSEventLoop.host = { delay ->
             handler.removeCallbacks(tick)
             if (delay != null) handler.postDelayed(tick, Math.ceil(delay).toLong())
