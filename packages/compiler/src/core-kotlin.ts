@@ -391,8 +391,13 @@ export class CoreKotlin implements KotlinCore {
     const narrowed = type?.isIntersection() ? type.types.map((x) => x.getSymbol()?.name).find((n) => !!n && n !== owner.name && !!kitMember(this.index, n, name)) : undefined;
     if (narrowed) return this.fromKit(`(${recv} as ${narrowed}).${name}`, kitMember(this.index, narrowed, name)!.type, t.typeOf(e), t.nullTolerant(e));
     if (!owner.isStatic && this.isView(owner.name) && !kitMember(this.index, owner.name, name)) {
-      if (!this.isViewProperty(owner.name, name)) unappliedProperty(t, e.name, `${owner.name}.${name}`, 'kit-android');
+      // The generated kit is core: a member it has no field for is one core keeps by name (`onAccessibilityPerformEscape`).
+      if (!this.generated && !this.isViewProperty(owner.name, name)) unappliedProperty(t, e.name, `${owner.name}.${name}`, 'kit-android');
       return t.fromAnyCode(`${recv}.get(${JSON.stringify(name)})`, t.typeOf(e), true);
+    }
+    // A member the kit's class has not, read in an optional chain (`container?.stabilizeLayout?.()`, an iOS API): undefined, as script finds none.
+    if (!kitMember(this.index, owner.name, name) && (e.questionDotToken || (ts.isCallExpression(e.parent) && e.parent.expression === e && !!e.parent.questionDotToken))) {
+      return `jsGetOptional(${t.coerce(e.expression, 'Any?')}, ${kotlinString(e.name.text)})`;
     }
     const m = this.member(owner.name, name, e);
     // A method read as a value (`typeof view.getSafeAreaInsets === 'function'`): bound to its object.
@@ -435,7 +440,7 @@ export class CoreKotlin implements KotlinCore {
     const name = left.name.text;
     const recv = owner.isStatic ? this.declaring(owner.name, left.name.text) : this.receiver(left.expression, left);
     if (!owner.isStatic && this.isView(owner.name) && !kitMember(this.index, owner.name, name)) {
-      if (!this.isViewProperty(owner.name, name)) unappliedProperty(t, left.name, `${owner.name}.${name}`, 'kit-android');
+      if (!this.generated && !this.isViewProperty(owner.name, name)) unappliedProperty(t, left.name, `${owner.name}.${name}`, 'kit-android');
       return `${recv}.set(${JSON.stringify(name)}, ${t.coerce(value, 'Any?')})`;
     }
     const m = this.member(owner.name, name, left);
@@ -460,6 +465,11 @@ export class CoreKotlin implements KotlinCore {
     if (!owner.isStatic && !kitMember(this.index, owner.name, name) && declared && !isCoreDeclaration(declared) && ts.isTypeLiteralNode(declared.parent)) {
       const call = `jsCallMethod(${t.expr(e.expression.expression)}, ${kotlinString(e.expression.name.text)}${e.arguments.map((a) => `, ${t.coerce(a, 'Any?')}`).join('')})`;
       return ts.isExpressionStatement(e.parent) ? call : t.fromAnyCode(call, t.typeOf(e), true);
+    }
+    // An optional call of a method the kit's class has not (`container?.stabilizeLayout?.()`, an iOS API): undefined, as script finds none.
+    if (!kitMember(this.index, owner.name, name) && e.questionDotToken) {
+      const key = kotlinString(e.expression.name.text);
+      return `run { val __o: Any? = ${t.coerce(e.expression.expression, 'Any?')}; if (jsIsNullish(__o) || jsIsNullish(jsGet(__o, ${key}))) null else jsCallMethod(__o, ${key}${e.arguments.map((a) => `, ${t.coerce(a, 'Any?')}`).join('')}) }`;
     }
     const m = this.member(owner.name, name, e.expression);
     // A static method called through a class held as a value (`Utils.Source.get`, a namespace's class): the class's.
@@ -562,14 +572,20 @@ export class CoreKotlin implements KotlinCore {
    * An argument core reads as a plain script object (an animation definition):
    * literals become JavaScript objects and arrays, whatever their declared type.
    */
+  private scriptEntry(p: ts.ObjectLiteralElementLike): string {
+    if (ts.isPropertyAssignment(p)) return `${kotlinString(p.name.getText().replace(/^['"]|['"]$/g, ''))} to ${this.scriptValue(p.initializer)}`;
+    if (ts.isShorthandPropertyAssignment(p)) return `${kotlinString(p.name.text)} to ${this.t.coerce(p.name, 'Any?')}`;
+    throw this.t.error(p, 'this member in an animation definition');
+  }
+
   private scriptValue(e: ts.Expression): string {
     if (ts.isObjectLiteralExpression(e)) {
-      const entries = e.properties.map((p) => {
-        if (ts.isPropertyAssignment(p)) return `${kotlinString(p.name.getText().replace(/^['"]|['"]$/g, ''))} to ${this.scriptValue(p.initializer)}`;
-        if (ts.isShorthandPropertyAssignment(p)) return `${kotlinString(p.name.text)} to ${this.t.coerce(p.name, 'Any?')}`;
-        throw this.t.error(p, 'this member in an animation definition');
-      });
-      return `JSObject(${entries.join(', ')})`;
+      // `{ ...base, duration: 150 }`: the spread object's keys, then the literal's, in order.
+      if (e.properties.some(ts.isSpreadAssignment)) {
+        const parts = e.properties.map((p) => (ts.isSpreadAssignment(p) ? this.t.coerce(p.expression, 'Any?') : `JSObject(${this.scriptEntry(p)})`));
+        return `jsAssign(JSObject(), ${parts.join(', ')})`;
+      }
+      return `JSObject(${e.properties.map((p) => this.scriptEntry(p)).join(', ')})`;
     }
     if (ts.isArrayLiteralExpression(e)) return `JSArray<Any?>(listOf(${e.elements.map((x) => this.scriptValue(x)).join(', ')}))`;
     if (ts.isArrowFunction(e) || ts.isFunctionExpression(e)) {
