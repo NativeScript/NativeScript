@@ -246,7 +246,7 @@ fun jsNew(cls: Any?, vararg args: Any?): Any? {
         var total = 0
         for ((i, type) in k.parameterTypes.withIndex()) total += javaScore(args[i], type) ?: return@mapNotNull null
         k to total
-    }.minByOrNull { it.second }?.first ?: throw JSException(JSTypeError("${c.simpleName}: no constructor takes these ${args.size} arguments"))
+    }.minByOrNull { it.second }?.first ?: throw JSException(JSTypeError("${c.name}: no constructor takes these ${args.size} arguments"))
     return try {
         chosen.newInstance(*chosen.parameterTypes.mapIndexed { i, type -> toJavaValue(args[i], type) }.toTypedArray())
     } catch (e: java.lang.reflect.InvocationTargetException) {
