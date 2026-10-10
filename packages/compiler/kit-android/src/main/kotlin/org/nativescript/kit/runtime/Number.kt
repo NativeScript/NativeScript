@@ -89,37 +89,7 @@ private fun v8Exponent(d: Double): Int = if (d == 0.0 || d < java.lang.Double.MI
  * The shortest decimal digits that round-trip to a positive finite `value` (the closest such
  * when several do), and `n` with value = 0.d₁d₂… × 10ⁿ.
  */
-internal fun jsShortestDigits(value: Double): Pair<String, Int> {
-    val exact = BigDecimal(value)
-    for (p in 1..17) {
-        val nearest = exact.round(MathContext(p, RoundingMode.HALF_EVEN))
-        if (roundTrips(nearest, value)) return digitsOf(nearest)
-        val other = exact.round(MathContext(p, if (nearest > exact) RoundingMode.DOWN else RoundingMode.UP))
-        if (roundTrips(other, value)) return digitsOf(other)
-    }
-    return digitsOf(exact.round(MathContext(17, RoundingMode.HALF_EVEN)))
-}
-
-/**
- * Whether `d` reads back as `value`: it lies within half an ulp of it, a tie going to the even
- * mantissa. Exact, where `Double.parseDouble` on some JVMs rounds a few inputs to the wrong neighbor.
- */
-private fun roundTrips(d: BigDecimal, value: Double): Boolean {
-    val v = BigDecimal(value)
-    val two = BigDecimal(2)
-    val lo = v.add(BigDecimal(Math.nextDown(value))).divide(two)
-    val hi = v.add(BigDecimal(Math.nextUp(value))).divide(two)
-    val even = (java.lang.Double.doubleToRawLongBits(value) and 1L) == 0L
-    val below = d.compareTo(lo)
-    val above = d.compareTo(hi)
-    return (below > 0 || (below == 0 && even)) && (above < 0 || (above == 0 && even))
-}
-
-private fun digitsOf(d: BigDecimal): Pair<String, Int> {
-    val unscaled = d.unscaledValue().toString()
-    val n = unscaled.length - d.scale()
-    return Pair(unscaled.trimEnd('0').ifEmpty { "0" }, n)
-}
+internal fun jsShortestDigits(value: Double): Pair<String, Int> = JSShortestDouble.digits(value)
 
 private fun jsExponentialLayout(digits: String, e: Int): String {
     val out = StringBuilder()
