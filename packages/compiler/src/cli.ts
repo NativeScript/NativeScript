@@ -277,11 +277,11 @@ for (const f of modules) {
   if (rewritten !== undefined && rewritten !== text) overrides.set(f, rewritten);
 }
 const virtual = new Map([...components.map((c) => [c.file, c.source] as [string, string]), ...overrides]);
-const declarations = platform === 'ios' ? [
+const declarations = [
   ...appDeclarations(app),
   // The native typings of plugins whose components compile with the app's.
   ...plugins.all().flatMap((p) => p.typings),
-] : [];
+];
 const replacements = pluginReplacements(app, platform);
 modules.push(...Object.values(replacements).filter((f) => !modules.includes(f)));
 const { checker, program, files: sourceFiles, pluginFiles, resolved, lenient: lenientApp } = createProgram(modules, virtual, platform, undefined, plugins, declarations, replacements);
@@ -332,7 +332,7 @@ else if (unapplied.length && !(platform === 'ios' && args.includes('--all-errors
 if (platform === 'android') {
   const { writeAndroid } = await import('./android.ts');
   const css = kitCss(sheets);
-  await writeAndroid({ app, out: resolve(opt('--out', join(app, 'platforms', 'native-android'))!), name, framework: style, zone, components, modules, program, checker, files: sourceFiles, infos, css, root, routes: routing, lines: sourceLines, applicationId: opt('--bundle'), widgetsAar: opt('--widgets'), appDir, build: args.includes('--build'), bundle: args.includes('--aab') || args.includes('--device'), keyStore: keyStore(), plugins: plugins.all(), pluginFiles, reach, properties, compiledPlugins, resolved, mounted, corePatches: corePatchesAndroid(app, nodeModules(app)), allowUnapplied });
+  await writeAndroid({ app, out: resolve(opt('--out', join(app, 'platforms', 'native-android'))!), name, framework: style, zone, components, modules, program, checker, files: sourceFiles, infos, css, root, routes: routing, lines: sourceLines, applicationId: opt('--bundle'), widgetsAar: opt('--widgets'), appDir, build: args.includes('--build'), bundle: args.includes('--aab') || args.includes('--device'), keyStore: keyStore(), plugins: plugins.all(), pluginFiles, reach, properties, compiledPlugins, resolved, mounted, corePatches: corePatchesAndroid(app, nodeModules(app)), allowUnapplied, allErrors: args.includes('--all-errors') });
   process.exit(0);
 }
 // Before the translator: it reads the plugin modules' symbol tables and which typings declare them.

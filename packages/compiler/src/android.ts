@@ -62,6 +62,8 @@ export interface AndroidBuild {
   corePatches?: string[];
   /** `--allow-unimplemented-properties`. */
   allowUnapplied?: boolean;
+  /** `--all-errors`: every construct the translator cannot handle, instead of the first. */
+  allErrors?: boolean;
 }
 
 /** The flexbox react-nativescript-navigation's FrameNavigatorView renders a screen into. */
@@ -85,6 +87,7 @@ export async function writeAndroid(b: AndroidBuild): Promise<void> {
   translator.allowUnapplied = !!b.allowUnapplied;
   translator.core = new CoreKotlin(translator);
   translator.lines = b.lines;
+  if (b.allErrors) translator.errors = [];
   const table: Record<string, [number, string, number][]> = {};
   /** A Kotlin file as written, its markers turned into ranges of the line table: [first Kotlin line, source file, source line]. */
   const write = (file: string, code: string) => {
@@ -106,10 +109,16 @@ export async function writeAndroid(b: AndroidBuild): Promise<void> {
   for (const c of b.components) {
     const sf = b.program.getSourceFile(c.file)!;
     const cls = sf.statements.find(ts.isClassDeclaration)!;
-    const { params, lines } = translator.componentMembers(cls, c.props);
-    const body = [`class ${c.name}(${params.join(', ')}) {`, ...lines, SourceLines.end, ...render(c, b.infos, { framework: b.framework, zone: b.zone, slots: b.mounted, rowSignals: b.mounted, ...(b.framework === 'react' ? { screenContent: REACT_SCREEN_CONTENT } : {}) }), '}'];
-    write(join(sources, c.name + '.kt'), header(c.file.replace(/\.ts$/, '')) + body.join('\n') + '\n');
+    try {
+      const { params, lines } = translator.componentMembers(cls, c.props);
+      const body = [`class ${c.name}(${params.join(', ')}) {`, ...lines, SourceLines.end, ...render(c, b.infos, { framework: b.framework, zone: b.zone, slots: b.mounted, rowSignals: b.mounted, ...(b.framework === 'react' ? { screenContent: REACT_SCREEN_CONTENT } : {}) }), '}'];
+      write(join(sources, c.name + '.kt'), header(c.file.replace(/\.ts$/, '')) + body.join('\n') + '\n');
+    } catch (e) {
+      if (!translator.errors) throw e;
+      translator.errors.push(`${c.name}: ${(e as Error).message}`);
+    }
   }
+  if (translator.errors?.length) throw new Error(`${new Set(translator.errors).size} constructs the release build cannot translate yet:\n  ${[...new Set(translator.errors)].join('\n  ')}`);
   addKotlinInterfaces(translator, modules);
   // File names differ in more than case: a module `streamdown.tsx` beside a component `Streamdown` would overwrite it on a case-insensitive disk.
   const taken = new Set(b.components.map((c) => c.name.toLowerCase()));

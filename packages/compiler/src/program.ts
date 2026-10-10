@@ -219,6 +219,17 @@ const GLOBALS = `
     randomUUID(): \`\${string}-\${string}-\${string}-\${string}-\${string}\`;
   }
   declare var crypto: Crypto;
+  interface MessageEvent<T = any> { readonly data: T }
+  interface ErrorEvent { readonly message: string }
+  interface Worker {
+    onmessage: ((this: Worker, ev: MessageEvent) => any) | null;
+    onerror: ((this: Worker, ev: ErrorEvent) => any) | null;
+    postMessage(message: any): void;
+    terminate(): void;
+  }
+  declare var Worker: { prototype: Worker; new (scriptURL: string | URL): Worker };
+  declare function postMessage(message: any): void;
+  declare function close(): void;
 `;
 
 /** The platform's native API typings, as an app's `references.d.ts` includes them. */

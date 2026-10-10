@@ -885,7 +885,11 @@ export class Translator implements AsyncTranslator {
           continue;
         }
         later(() => this.stmt(st));
-      } catch (e) { throw this.located(e, st); } finally { out.push(...this.hoisted.splice(0)); }
+      } catch (e) {
+        const located = this.located(e, st);
+        if (!this.errors) throw located;
+        this.errors.push((located as Error).message ?? String(located));
+      } finally { out.push(...this.hoisted.splice(0)); }
     }
     if (moduleObject) {
       const body = [...members, ...(init.length ? [`fun __init() {\n${init.join('\n')}\n}`] : [])];
@@ -2756,9 +2760,17 @@ export class Translator implements AsyncTranslator {
     } finally { this.indent = saved; }
   }
 
+  /** With `--all-errors`: what each statement could not translate, collected so one run reports them all. */
+  errors: string[] | null = null;
+
   stmt(s: ts.Statement): string {
     let code: string;
-    try { code = this.statementCode(s); } catch (e) { throw this.located(e, s); }
+    try { code = this.statementCode(s); } catch (e) {
+      const located = this.located(e, s);
+      if (!this.errors) throw located;
+      this.errors.push((located as Error).message ?? String(located));
+      return '';
+    }
     return code && this.lines ? this.lines.mark(s) + code : code;
   }
 
