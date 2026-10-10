@@ -69,6 +69,7 @@ public struct JSPropertyDescriptor {
 
 /// A function value called with a receiver: a method sees it as `this`.
 private func jsReceiving(_ f: Any) -> (Any?, [Any?]) throws -> Any? {
+    if let object = f as? JSFunctionObject { return { this, args in try object.call(this, args) } }
     if let method = f as? JSMethod { return { this, args in try method(this, args) } }
     if let function = f as? JSFunction { return { _, args in try function(args) } }
     return { _, _ in throw JSException(JSTypeError("Getter must be a function: \(jsInspect(f))")) }
@@ -101,6 +102,17 @@ public func jsCallMethodIfPresent(_ object: Any?, _ key: String, spread argument
 }
 
 private func callMethod(_ object: Any?, _ key: String, _ arguments: [Any?]) throws -> Any? {
+    if let f = jsFlat(object) as? JSFunctionObject, jsFlat(f[jsKey: key]) == nil {
+        let this = arguments.first ?? nil
+        switch key {
+        case "call": return try f.call(this, Array(arguments.dropFirst()))
+        case "apply": return try f.call(this, try jsArgumentList(arguments.count > 1 ? arguments[1] : nil))
+        case "bind":
+            let bound = Array(arguments.dropFirst())
+            return JSFunctionObject("bound \(f.name)", max(0, f.length - bound.count)) { _, rest in try f.call(this, bound + rest) }
+        default: break
+        }
+    }
     // `f.call(thisArg, …)` and `f.apply(thisArg, args)` on a function value.
     if key == "call" || key == "apply", let f = jsFlat(object), f is JSMethod || f is JSFunction {
         let this = arguments.first ?? nil
@@ -133,6 +145,7 @@ private func callMethod(_ object: Any?, _ key: String, _ arguments: [Any?]) thro
     var f = try jsGet(object, key)
     // What every object inherits (`hasOwnProperty`), where the object has nothing of that name.
     if jsFlat(f) == nil, jsFlat(object) is JSDynamic, JSPrototypes.objectPrototype.has(key) { f = JSPrototypes.objectPrototype[key] }
+    if let function = jsFlat(f) as? JSFunctionObject { return try function.call(object, arguments) }
     if let method = jsFlat(f) as? JSMethod { return try method(object, arguments) }
     if let function = jsFlat(f) as? JSFunction { return try function(arguments) }
     if let moot = jsFlat(f) as? JSMootValue { throw moot.unavailable() }

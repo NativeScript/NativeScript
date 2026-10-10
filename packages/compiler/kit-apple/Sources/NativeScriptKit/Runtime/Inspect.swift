@@ -276,6 +276,7 @@ private final class JSInspectContext {
         default: break
         }
         if let n = jsNumeric(v) { return jsInspectNumber(n) }
+        if let f = v as? JSFunctionObject { return f.description }
         if jsIsFunction(v) { return "[Function (anonymous)]" }
         // A class held as a value, as Node prints one; read as an object, its statics would be taken for an instance's.
         if let cls = v as? AnyClass {
