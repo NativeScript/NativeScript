@@ -1514,7 +1514,10 @@ export class Translator implements AsyncTranslator {
     // Library mode: JavaScript's null where an object goes (`cond ? entry.fragment : null`) is Kotlin's.
     // A string, number or boolean slot given another kind of value (core's `unsetValue` for a css variable) holds none.
     if (this.library && /^(String|Double|Boolean)\?$/.test(type)) return `(jsJavaArgument(${code}) as? ${type.slice(0, -1)})`;
-    if (this.library && isNullable(type)) return `(jsJavaArgument(${code}) as ${type})`;
+    // JavaScript's null (JSNull in an untyped object) where a nullable slot goes is Kotlin's.
+    if (isNullable(type)) return `(jsJavaArgument(${code}) as ${type})`;
+    // An object slot its declarations call non-null may still get null (`getAncestor` finding none), which JavaScript passes on.
+    if (this.isObjectType(type) && !/^(String|Double|Boolean)$/.test(type)) return `jsUnchecked<${type}>(jsJavaArgument(${code}))`;
     return `(${code} as ${type})`;
   }
 
@@ -1943,8 +1946,8 @@ export class Translator implements AsyncTranslator {
     const symbolFields: { key: string; member: string; type: string }[] = [];
     for (const m of cls.members) {
       if (!ts.isPropertyDeclaration(m)) continue;
-      // `declare width: number`: a type the field has, no field of its own.
-      if (hasModifier(m, ts.SyntaxKind.DeclareKeyword)) continue;
+      // `declare width: number` in an app class: the base's field, typed anew.
+      if (!this.library && hasModifier(m, ts.SyntaxKind.DeclareKeyword)) continue;
       const keyed = this.symbolMember(m.name);
       if (keyed?.key && !isStatic(m)) {
         const t = this.typeOf(m.name);
@@ -4107,6 +4110,16 @@ export class Translator implements AsyncTranslator {
   }
 
   private identifier(e: ts.Identifier): string {
+    // A function's literal constant read in a class the function declares: the literal, as a captured local would add a
+    // constructor parameter that a class held as a value (`PagerAdapter = FragmentPagerAdapter`, made by `new`) is not given.
+    const local = this.resolve(e)?.valueDeclaration;
+    if (local && ts.isVariableDeclaration(local) && local.parent.flags & ts.NodeFlags.Const && local.initializer && ts.findAncestor(local, ts.isFunctionLike)) {
+      let init: ts.Expression = local.initializer;
+      while (ts.isParenthesizedExpression(init)) init = init.expression;
+      const literal = ts.isNumericLiteral(init) || ts.isStringLiteral(init) || (ts.isPrefixUnaryExpression(init) && init.operator === ts.SyntaxKind.MinusToken && ts.isNumericLiteral(init.operand));
+      const cls = ts.findAncestor(e, ts.isClassLike);
+      if (literal && cls && ts.findAncestor(cls, ts.isFunctionLike) === ts.findAncestor(local, ts.isFunctionLike)) return this.expr(init);
+    }
     // A parameter held as its base's class (`appOverride`), read for a member only the narrower class declares: cast to it.
     if (this.widenedParams.size && ts.isPropertyAccessExpression(e.parent) && e.parent.expression === e) {
       const d = this.checker.getSymbolAtLocation(e)?.valueDeclaration;

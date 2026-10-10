@@ -6,7 +6,7 @@ import { OverflowEdgeIgnore, OverflowEdgeNone, parseEdges } from './overflow-edg
 import { directionProperty } from '../../styling/style-properties';
 import { layout } from '../../../utils';
 import { Trace } from '../../../trace';
-import { ShowModalOptions, hiddenProperty } from '../view-base';
+import { ShowModalOptions, ViewBase, hiddenProperty } from '../view-base';
 import { isCssWideKeyword } from '../properties/property-shared';
 import { EventData } from '../../../data/observable';
 
@@ -723,7 +723,8 @@ export class View extends ViewCommon {
 	public _getFragmentManager(): androidx.fragment.app.FragmentManager {
 		let manager = this._manager;
 		if (!manager) {
-			let view: View = this;
+			// An ancestor may be a ViewBase that is no View (a TabViewItem), which has fragments of its own.
+			let view: ViewBase = this;
 			let frameOrTabViewItemFound = false;
 			while (view) {
 				// when interacting with nested fragments instead of using getSupportFragmentManager
@@ -732,7 +733,10 @@ export class View extends ViewCommon {
 				// modal dialog fragments
 
 				// modal -> frame / tabview (frame / tabview use modal CHILD fm)
-				const dialogFragment = view._dialogFragment;
+				let dialogFragment: androidx.fragment.app.DialogFragment | undefined;
+				if (view instanceof View) {
+					dialogFragment = view._dialogFragment;
+				}
 				if (dialogFragment) {
 					manager = dialogFragment.getChildFragmentManager();
 					break;
@@ -742,18 +746,17 @@ export class View extends ViewCommon {
 				// - tabview -> frame1 (frame1 uses tabview item CHILD fm)
 				// - frame1 -> tabview (tabview uses frame1 CHILD fm)
 				// - frame1 -> tabview -> frame2 (tabview uses frame1 CHILD fm; frame2 uses tabview item CHILD fm)
-				if (view._hasFragments) {
+				const fragments = view as any;
+				if (fragments._hasFragments) {
 					if (frameOrTabViewItemFound) {
-						manager = view._getChildFragmentManager();
+						manager = fragments._getChildFragmentManager();
 						break;
 					}
 
 					frameOrTabViewItemFound = true;
 				}
 
-				// the case is needed because _dialogFragment is on View
-				// but parent may be ViewBase.
-				view = view.parent as View;
+				view = view.parent;
 			}
 
 			if (!manager) {
