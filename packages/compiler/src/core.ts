@@ -617,6 +617,11 @@ export class CoreAPI {
         args[k] = `JSArray<Any?>(${t.expr(a)}.storage.map { $0 as Any? })`;
         return;
       }
+      // An untyped value where the kit's parameter has a type (`releaseNativeObject(obj as any)` for an `NSObject!`): read as it.
+      if (a && !ts.isSpreadElement(a) && !/->/.test(type) && type !== 'Any?' && t.typeOf(a) === 'Any?') {
+        args[k] = t.coerce(a, type.replace(/!$/, '?'));
+        return;
+      }
       if (a && /->/.test(type) && (ts.isArrowFunction(a) || ts.isFunctionExpression(a) || ts.isIdentifier(a) || ts.isPropertyAccessExpression(a) || (ts.isCallExpression(a) && /->/.test(t.typeOf(a))))) {
         // An optional function parameter (`callback: ((Any?) throws -> Void)?`) takes a closure as the function it wraps.
         const plain = type.replace(/^\((.*)\)[?!]$/, '$1');
@@ -691,19 +696,23 @@ export class CoreAPI {
     const inits = (this.index.get(kitName)?.members.get('init') ?? []).map((m) => ((m.params ?? '').trim() ? splitTopLevel(m.params!) : []));
     // A constructor reading `arguments`, which the kit's takes as the one array script passes.
     if (inits.length === 1 && inits[0].length === 1 && /^_ __arguments: JSArray<Any\?>$/.test(inits[0][0].trim())) return `${kitName}(${t.packed(args, 'JSArray<Any?>')})`;
-    // The arguments as the kit's initializer takes them (`ImageSource(_ nativeSource: UIImage!)` for core's `nativeSource?: any`).
+    const given = this.kitInitArgs(kitName, args);
+    return `${kitName}(${(given ?? t.args(e)).join(', ')})`;
+  }
+
+  /** The arguments as an initializer of the kit's class takes them (`ImageSource(_ nativeSource: UIImage!)` for core's `nativeSource?: any`), or null. */
+  kitInitArgs(kitName: string, args: ts.NodeArray<ts.Expression>): string[] | null {
+    const t = this.t;
     const params = (this.index.get(kitName)?.members.get('init') ?? []).map((m) => ((m.params ?? '').trim() ? splitTopLevel(m.params!) : [])).find((ps) => ps.length >= args.length && !args.some(ts.isSpreadElement));
-    if (params && args.length && params.every((p) => p.includes(':'))) {
-      return `${kitName}(${args.map((a, k) => {
-        const p = params[k];
-        const label = p.slice(0, p.indexOf(':')).trim().split(/\s+/)[0];
-        const type = p.slice(p.indexOf(':') + 1).replace(/=.*$/, '').trim().replace(/^@escaping\s+/, '').replace(/!$/, '?');
-        // An optional function parameter takes the closure as the function it wraps.
-        const fnType = type.replace(/^\((.*)\)\?$/, '$1');
-        return `${label === '_' ? '' : `${label}: `}${(ts.isArrowFunction(a) || ts.isFunctionExpression(a)) && t.functionTypeParts(fnType) ? this.closureArgument(a, fnType) : t.coerce(a, type)}`;
-      }).join(', ')})`;
-    }
-    return `${kitName}(${t.args(e).join(', ')})`;
+    if (!params || !args.length || !params.every((p) => p.includes(':'))) return null;
+    return args.map((a, k) => {
+      const p = params[k];
+      const label = p.slice(0, p.indexOf(':')).trim().split(/\s+/)[0];
+      const type = p.slice(p.indexOf(':') + 1).replace(/=.*$/, '').trim().replace(/^@escaping\s+/, '').replace(/!$/, '?');
+      // An optional function parameter takes the closure as the function it wraps.
+      const fnType = type.replace(/^\((.*)\)\?$/, '$1');
+      return `${label === '_' ? '' : `${label}: `}${(ts.isArrowFunction(a) || ts.isFunctionExpression(a)) && t.functionTypeParts(fnType) ? this.closureArgument(a, fnType) : t.coerce(a, type)}`;
+    });
   }
 
   /**

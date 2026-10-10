@@ -335,6 +335,8 @@ export class Translator implements AsyncTranslator {
    * constructors each hold theirs, which Swift's statics cannot redeclare.
    */
   private staticName(m: ts.ClassElement): string | null {
+    const over = ts.isPropertyDeclaration(m) ? this.kitRedeclared(m) : null;
+    if (over && !over.same) return `${m.name.getText()}__${((m.parent as ts.ClassLikeDeclaration).name?.text ?? 'class').replace(/\W/g, '_')}`;
     if (!isStatic(m) || !ts.isPropertyDeclaration(m) || !m.name || ts.isComputedPropertyName(m.name) || !ts.isClassLike(m.parent)) return null;
     const name = m.name.getText();
     for (let b = this.sourceBase(m.parent); b; b = this.sourceBase(b)) {
@@ -425,6 +427,19 @@ export class Translator implements AsyncTranslator {
     return false;
   }
 
+  /**
+   * App mode: the kit property an app class's field redeclares (`presented: UIViewController` over core's PageTransition's):
+   * the kit's, where Swift's types agree; else, of an app type named like core's (the app's `PageTransitionController`), a field of its own.
+   */
+  private kitRedeclared(m: ts.PropertyDeclaration): { type: string; same: boolean } | null {
+    if (this.library || isStatic(m) || !ts.isClassLike(m.parent) || !ts.isIdentifier(m.name) || this.baseHasField(m.parent, m.name.text)) return null;
+    const kitRoot = this.kitRootOf(m.parent);
+    const kit = kitRoot ? this.core.kitMember(kitRoot, m.name.text) : null;
+    if (kit?.kind !== 'var') return null;
+    const plain = (t: string) => t.replace(/^\((.*)\)[?!]$/, '$1').replace(/[?!]$/, '');
+    return { type: kit.type, same: plain(this.typeOf(m.name)) === plain(kit.type) };
+  }
+
   /** Library mode: the field or accessor a source base class declares under a field's name, which the field redeclares. */
   private redeclaredField(m: ts.PropertyDeclaration): ts.PropertyDeclaration | ts.AccessorDeclaration | null {
     if (isStatic(m) || !ts.isClassLike(m.parent)) return null;
@@ -512,7 +527,7 @@ export class Translator implements AsyncTranslator {
     this.lowering = new AsyncLowering(this);
     this.core = new CoreAPI(this);
     this.native = new NativeAPI(this);
-    this.throwsInfo = new Throws(checker, files, (n) => { try { return this.typeOf(n) === 'Any?'; } catch { return false; } }, (c) => (ts.isCallExpression(c) && (this.native.throwingCall(c) || this.replaceableCall(c) || (!!this.library && ts.isElementAccessExpression(c.expression) && !!this.setNativeOf(c.expression.argumentExpression)))) || (!this.library && this.core.throwingCall(c)), (d) => this.compiledMember(d), (e) => { try { return this.isExpando(e) || (!this.library && !isWriteTarget(e) && this.core.throwingAccess(e)); } catch { return false; } }, (cls) => { const kit = this.library ? null : this.kitRootOf(cls); return !!kit && this.core.initThrows(kit); }, (fn) => ts.isFunctionLike(fn) && !!this.memberCounterpart(fn as ts.FunctionLikeDeclaration));
+    this.throwsInfo = new Throws(checker, files, (n) => { try { return this.typeOf(n) === 'Any?'; } catch { return false; } }, (c) => (ts.isCallExpression(c) && (this.native.throwingCall(c) || this.replaceableCall(c) || (!!this.library && ts.isElementAccessExpression(c.expression) && !!this.setNativeOf(c.expression.argumentExpression)))) || (!this.library && this.core.throwingCall(c)), (d) => this.compiledMember(d), (e) => { try { return this.isExpando(e) || (!this.library && !isWriteTarget(e) && this.core.throwingAccess(e)); } catch { return false; } }, (cls) => { const kit = this.library ? null : this.kitRootOf(cls); return !!kit && this.core.initThrows(kit); }, (fn) => ts.isFunctionLike(fn) && (!!this.memberCounterpart(fn as ts.FunctionLikeDeclaration) || !!this.functionCounterpart(fn)));
     for (const f of files) {
       const visit = (n: ts.Node) => {
         if (ts.isClassLike(n)) {
@@ -840,7 +855,11 @@ export class Translator implements AsyncTranslator {
       if (this.library && sym && sym.flags & ts.SymbolFlags.Interface && !(sym.flags & ts.SymbolFlags.Class) && sym.declarations?.every((d) => d.getSourceFile().isDeclarationFile && ((isLibDeclaration(d) && (/lib\.dom/.test(d.getSourceFile().fileName) || DESCRIPTORS.has(name))) || isCoreDeclaration(d)))) return 'Any?';
       if (sym?.declarations?.some((d) => !d.getSourceFile().isDeclarationFile)) this.used.add(name);
       // A core class its declarations name as the platform file's (`Font` of `font.ios.ts`), which the kit names apart from the common one.
-      if (!this.library && sym && sym.flags & ts.SymbolFlags.Class && isCoreDeclaration(sym.declarations?.[0])) return this.core.platformClass(name);
+      if (!this.library && sym && sym.flags & ts.SymbolFlags.Class && isCoreDeclaration(sym.declarations?.[0])) {
+        // A class of core's the kit has nothing of (Android's `AndroidApplication` on iOS): any value, undefined here.
+        const kit = this.core.platformClass(name);
+        return this.core.has(kit) ? kit : 'Any?';
+      }
       // App mode: a generic class of the app's keeps its arguments (`UITest<View>`).
       const generic = !this.library && classDecl && ts.isClassDeclaration(classDecl) && !classDecl.getSourceFile().isDeclarationFile ? classDecl.typeParameters ?? [] : [];
       const args = generic.length && t.flags & F.Object && (t as ts.ObjectType).objectFlags & ts.ObjectFlags.Reference ? c.getTypeArguments(t as ts.TypeReference).slice(0, generic.length) : [];
@@ -1338,6 +1357,8 @@ export class Translator implements AsyncTranslator {
     if (maybe) return maybe;
     const root = ts.isPropertyDeclaration(decl) ? this.redeclaredField(decl) : null;
     if (root) return this.redeclaredType(root);
+    const kitOver = ts.isPropertyDeclaration(decl) ? this.kitRedeclared(decl) : null;
+    if (kitOver?.same) return kitOver.type;
     // An accessor over a kit property (`get width()` over core's `width`): Swift's property has the kit's type.
     if ((ts.isGetAccessorDeclaration(decl) || ts.isSetAccessorDeclaration(decl)) && ts.isClassLike(decl.parent) && !isStatic(decl) && !this.narrowedFrom(decl)) {
       const kitRoot = this.kitRootOf(decl.parent);
@@ -1531,6 +1552,27 @@ export class Translator implements AsyncTranslator {
     const library = this.library?.moduleName(sf.fileName) ?? null;
     const members: string[] = [];
     const member = (code: string) => (library ? members : out).push(code);
+    // App mode: a `var` in a block of the module's statements (`if (…) { var observer = … }`) is the module's, as JavaScript
+    // hoists it: a global of the module's own name, which another module's of the name does not clash with.
+    if (!library) {
+      for (const st of sf.statements) {
+        if (ts.isVariableStatement(st) || ts.isFunctionDeclaration(st) || ts.isClassDeclaration(st) || ts.isModuleDeclaration(st) || hasModifier(st, ts.SyntaxKind.DeclareKeyword)) continue;
+        const collect = (n: ts.Node) => {
+          if (ts.isFunctionLike(n) || ts.isClassLike(n)) return;
+          if (ts.isVariableDeclarationList(n) && !(n.flags & ts.NodeFlags.BlockScoped) && !ts.isForInStatement(n.parent) && !ts.isForOfStatement(n.parent)) {
+            for (const d of n.declarations) {
+              if (!ts.isIdentifier(d.name) || !d.initializer || this.forwardDeclared.has(d) || (this.checker.getSymbolAtLocation(d.name)?.declarations?.length ?? 0) > 1) continue;
+              const name = `${d.name.text}__${sf.fileName.split(/[\\/]/).pop()!.replace(/\.tsx?$/, '').replace(/\W/g, '_')}`;
+              this.topNames().set(d, name);
+              this.forwardDeclared.add(d);
+              out.push(`var ${ident(name)}: ${this.deferred(this.typeOf(d.name))}`);
+            }
+          }
+          ts.forEachChild(n, collect);
+        };
+        ts.forEachChild(st, collect);
+      }
+    }
     let current: ts.Statement | null = null;
     const later = (code: () => string) => {
       this.indent = '    ';
@@ -1554,7 +1596,7 @@ export class Translator implements AsyncTranslator {
       if (ts.isEnumDeclaration(st)) { out.push(this.enumDecl(st)); continue; }
       if (ts.isModuleDeclaration(st)) { const ns = this.namespaceDecl(st, this.topName(st, st.name.text), later); if (ns) out.push(ns); continue; }
       // A function the kit implements in its place (core calling an npm package): references call the kit's.
-      if (ts.isFunctionDeclaration(st) && st.name && this.library?.counterpart?.(sf.fileName, st.name.text)) continue;
+      if (ts.isFunctionDeclaration(st) && st.name && this.library?.counterpart?.(sf.fileName, st.name.text) && !this.functionCounterpart(st)) continue;
       if (ts.isFunctionDeclaration(st)) { if (st.name && st.body) member(this.func(st, ident(library ? st.name.text : this.topName(st, st.name.text)), library ? 'static ' : '')); continue; }
       if (ts.isClassDeclaration(st)) {
         const target = this.patterns.mixinTarget(st);
@@ -2743,9 +2785,9 @@ ${members.join('\n')}
   }
 
   functionBody(fn: ts.FunctionLikeDeclaration, ret: string, base: string): string {
-    const counterpart = this.memberCounterpart(fn);
+    const counterpart = this.memberCounterpart(fn) ?? this.functionCounterpart(fn);
     if (counterpart) {
-      const args = ['self', ...fn.parameters.map((p) => ident((p.name as ts.Identifier).text))];
+      const args = [...(ts.isFunctionDeclaration(fn) ? [] : ['self']), ...fn.parameters.map((p) => ident((p.name as ts.Identifier).text))];
       const call = `${this.throwsInfo.fn(fn) ? 'try ' : ''}${counterpart}(${args.join(', ')})`;
       return `{\n${base}    ${ret === 'Void' ? call : `return ${call}`}\n${base}}`;
     }
@@ -2763,6 +2805,17 @@ ${members.join('\n')}
   private memberCounterpart(fn: ts.FunctionLikeDeclaration): string | null {
     if (!this.library?.counterpart || !(ts.isMethodDeclaration(fn) || ts.isAccessor(fn)) || !ts.isClassDeclaration(fn.parent) || !fn.parent.name || isStatic(fn)) return null;
     return this.library.counterpart(fn.getSourceFile().fileName, `${fn.parent.name.text}.${fn.name.getText()}`);
+  }
+
+  /**
+   * Library mode: the kit's implementation of a module's exported function that gives nothing (`startMonitoring` of connectivity),
+   * which the module's function of that name calls, for the app to call through the module.
+   */
+  functionCounterpart(fn: ts.Node): string | null {
+    if (!this.library?.counterpart || !ts.isFunctionDeclaration(fn) || !fn.name || !fn.body || !ts.isSourceFile(fn.parent) || fn.name.text.startsWith('_') || !hasModifier(fn, ts.SyntaxKind.ExportKeyword)) return null;
+    const counterpart = this.library.counterpart(fn.getSourceFile().fileName, fn.name.text);
+    const sig = counterpart && this.checker.getSignatureFromDeclaration(fn);
+    return counterpart && sig && /^[A-Z]\w*\.\w+$/.test(counterpart) && this.checker.getReturnTypeOfSignature(sig).flags & ts.TypeFlags.Void && fn.parameters.every((p) => ts.isIdentifier(p.name)) ? counterpart : null;
   }
 
   private functionBodyLines(fn: ts.FunctionLikeDeclaration, ret: string, base: string): string {
@@ -3429,10 +3482,11 @@ ${members.join('\n')}
       if (nativeProperty) { lines.push(nativeProperty); continue; }
       // A field its base declares already (`nativeViewProtected: UIView` over `any`): the base's, read as this field's type.
       const root = this.redeclaredField(m);
-      if (root) {
+      const kitOver = this.kitRedeclared(m);
+      if (root || kitOver?.same) {
         if (m.initializer) {
           this.indent = '        ';
-          fieldInits.push(`        self.${ident(n)} = ${this.tryPrefix(m.initializer)}${this.coerce(m.initializer, this.redeclaredType(root))}`);
+          fieldInits.push(`        self.${ident(n)} = ${this.tryPrefix(m.initializer)}${this.coerce(m.initializer, root ? this.redeclaredType(root) : kitOver!.type)}`);
           this.indent = '    ';
         }
         continue;
@@ -3487,7 +3541,8 @@ ${members.join('\n')}
         lines.push(`    private var __gated_${n}: AnyObject?`, `    @available(iOS ${needs}, *) var ${ident(n)}: ${held}? { get { __gated_${n} as? ${held} } set { __gated_${n} = newValue } }`);
         continue;
       }
-      fields.push({ name: n, type: t });
+      // A field of its own beside the kit's property of its name: script reads the property by that name, the kit's.
+      if (!this.kitRedeclared(m)) fields.push({ name: n, type: t });
       // `field: string = null` in code checked without strictNullChecks: unset, read as the type's zero or an unwrapped nil.
       if (m.initializer && (m.initializer.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(m.initializer) && m.initializer.text === 'undefined')) && !isOptional(t)) { lines.push(`    var ${ident(n)}: ${this.fieldType(t)}`); continue; }
       if (m.initializer && this.pure(m.initializer) && !refersToThis(m.initializer)) { lines.push(`    var ${ident(n)}: ${this.lenientRef(t)} = ${this.coerce(m.initializer, t)}`); continue; }
@@ -3527,7 +3582,9 @@ ${members.join('\n')}
         else {
           out.push(...this.statements(stmts.slice(0, superAt)));
           const call = (stmts[superAt] as ts.ExpressionStatement).expression as ts.CallExpression;
-          out.push(`        ${this.tryPrefix(call)}super.init(${this.args(call).join(', ')})`, ...own(), ...this.statements(stmts.slice(superAt + 1)));
+          // Over a kit class: its initializer's parameter types.
+          const given = !appBase && kitRoot ? this.core.kitInitArgs(kitRoot, call.arguments) : null;
+          out.push(`        ${this.tryPrefix(call)}super.init(${(given ?? this.args(call)).join(', ')})`, ...own(), ...this.statements(stmts.slice(superAt + 1)));
         }
         return out;
       });
@@ -4157,21 +4214,37 @@ ${members.join('\n')}
     return out;
   }
 
-  /** The variables of a list that a function declared before them reads, declared up front (see `forwardDeclared`). */
+  /**
+   * The variables of a list that a function declared before them reads, declared up front (see `forwardDeclared`); and,
+   * as JavaScript hoists a `var` to its function, one read before its declaration or declared in a nested block and read outside it.
+   */
   forwardDeclarations(list: ts.Statement[]): string[] {
     const forward: string[] = [];
+    const isVar = (l: ts.VariableDeclarationList) => !(l.flags & ts.NodeFlags.BlockScoped);
     list.forEach((st, k) => {
-      if (!ts.isVariableStatement(st)) return;
-      for (const d of st.declarationList.declarations) {
-        if (!ts.isIdentifier(d.name) || !d.initializer) continue;
+      const own = ts.isVariableStatement(st) ? st.declarationList.declarations.map((d) => ({ d, nested: false })) : [];
+      // `var` declarations in the statement's blocks (`if (…) { var observer = … }`), not in its functions or classes.
+      const nested: ts.VariableDeclaration[] = [];
+      const collect = (n: ts.Node) => {
+        if (ts.isFunctionLike(n) || ts.isClassLike(n)) return;
+        if (ts.isVariableDeclarationList(n) && isVar(n)) nested.push(...n.declarations);
+        ts.forEachChild(n, collect);
+      };
+      if (!ts.isVariableStatement(st) && !ts.isFunctionDeclaration(st) && !ts.isClassDeclaration(st)) ts.forEachChild(st, collect);
+      for (const { d, nested: inner } of [...own, ...nested.map((d) => ({ d, nested: true }))]) {
+        if (!ts.isIdentifier(d.name) || (!d.initializer && !inner) || this.forwardDeclared.has(d)) continue;
+        if (inner && (!d.initializer || !ts.isVariableDeclarationList(d.parent) || ts.isForInStatement(d.parent.parent) || ts.isForOfStatement(d.parent.parent))) continue;
         const sym = this.checker.getSymbolAtLocation(d.name);
+        // A `var` declared again (`var total = n; var total = total * 2`) is declared where it first is.
+        const hoisted = isVar(d.parent as ts.VariableDeclarationList) && (sym?.declarations?.length ?? 0) < 2;
+        if (inner && !hoisted) continue;
         let early = false;
         const visit = (n: ts.Node, inFn: boolean) => {
           if (early) return;
-          if (inFn && ts.isIdentifier(n) && n !== d.name && this.checker.getSymbolAtLocation(n) === sym) { early = true; return; }
+          if ((inFn || hoisted) && ts.isIdentifier(n) && n !== d.name && this.checker.getSymbolAtLocation(n) === sym) { early = true; return; }
           ts.forEachChild(n, (c) => visit(c, inFn || ts.isFunctionLike(c)));
         };
-        list.forEach((other, j) => { if (j < k || ts.isFunctionDeclaration(other)) visit(other, ts.isFunctionLike(other)); });
+        list.forEach((other, j) => { if (j < k || (inner && j > k) || ts.isFunctionDeclaration(other)) visit(other, ts.isFunctionLike(other)); });
         if (!early) continue;
         this.forwardDeclared.add(d);
         forward.push(`${this.indent}var ${ident(d.name.text)}: ${this.deferred(this.typeOf(d.name))}`);
@@ -4484,7 +4557,7 @@ ${members.join('\n')}
     if (ts.isIdentifier(d.name)) {
       const t = this.typeOf(d.name);
       const name = ident(d.name.text);
-      if (this.forwardDeclared.has(d)) return `${i}${name} = ${this.tryPrefix(d.initializer!)}${this.coerce(d.initializer!, t)}`;
+      if (this.forwardDeclared.has(d)) return `${i}${this.topNames().has(d) ? identPath(this.topNames().get(d)!) : name} = ${this.tryPrefix(d.initializer!)}${this.coerce(d.initializer!, t)}`;
       // `var m` again in the same block: the same variable, assigned.
       if (this.redeclaredVar(d)) return d.initializer ? `${i}${name} = ${this.tryPrefix(d.initializer)}${this.coerce(d.initializer, t)}` : '';
       // Lenient code may read it before any assignment (`let result: string; if (!result) …`): undefined until assigned.
@@ -6509,7 +6582,8 @@ ${members.join('\n')}
     if (target && !ts.isJSDocSignature(target) && this.readsArguments(target)) return [this.packed(all, 'JSArray<Any?>')];
     const out: string[] = [];
     const restAt = params.findIndex((p) => p.valueDeclaration && ts.isParameter(p.valueDeclaration) && p.valueDeclaration.dotDotDotToken);
-    const appDeclared = !!sig?.getDeclaration() && !sig!.getDeclaration().getSourceFile().isDeclarationFile;
+    // A function type's rest parameter too (`mainThreadify(fn)` gives `(...args) => void`): Swift's function type takes it as `JSRest`.
+    const appDeclared = !!sig?.getDeclaration() && (!sig!.getDeclaration().getSourceFile().isDeclarationFile || (!this.library && ts.isFunctionTypeNode(sig!.getDeclaration())));
     for (let k = 0; k < list.length; k++) {
       const a = list[k];
       if (restAt >= 0 && k >= restAt && appDeclared) {
@@ -6936,6 +7010,14 @@ ${members.join('\n')}
     // `view[setNative](value)` (library mode): the method under that key, called with the object as `this`.
     if (this.library && ts.isElementAccessExpression(callee) && (this.isAny(callee.expression) || this.typeOf(callee) === 'Any?')) {
       return `jsCallMethod(${this.coerce(callee.expression, 'Any?')}, ${this.propertyKey(callee.argumentExpression)}${this.untypedArgs(e.arguments)})`;
+    }
+    // App mode: a function held untyped (`closeModalGetter(args)(result)` of a `Function`, `knownFolders.ios[name]()`): called as script calls it.
+    if (!this.library && (ts.isElementAccessExpression(callee) || ts.isCallExpression(callee)) && this.typeOf(callee) === 'Any?') {
+      const code = ts.isElementAccessExpression(callee)
+        ? `jsCallMethod(${this.coerce(callee.expression, 'Any?')}, ${this.propertyKey(callee.argumentExpression)}${this.untypedArgs(e.arguments)})`
+        : `jsCall(${this.expr(callee)}${this.untypedArgs(e.arguments)})`;
+      const t = this.typeOf(e);
+      return t === 'Any?' || t === 'Void' ? code : this.fromAnyCode(code, t, true);
     }
     if (ts.isElementAccessExpression(callee) || ts.isCallExpression(callee)) {
       // A function that may be missing (`handlers.get(key)()`): undefined is not a function.
