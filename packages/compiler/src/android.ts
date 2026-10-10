@@ -391,12 +391,13 @@ function findWidgetsAar(app: string): string | null {
 }
 
 /**
- * Keep rules for the members code reaches on untyped Java objects by name (`detector.onTouchEvent(e)` on a
- * value typed `any`): R8 would otherwise rename or drop a library's method that nothing calls statically.
+ * Keep rules for the members code reaches on Java objects by name (`detector.onTouchEvent(e)` on a value typed
+ * `any`, `typeof feature.getOrientation`): R8 would otherwise rename or drop a library's method, and the read
+ * finds nothing while the static calls beside it still work.
  */
 function reflectedMemberRules(roots: string[]): string {
   const names = new Set<string>();
-  const access = /\bjs(?:CallMethod|CallMethodIfPresent|Get|GetOptional)\((?:[^()"]|\((?:[^()"]|\([^()]*\))*\))*?,\s*"([A-Za-z_$][\w$]*)"/g;
+  const access = /\bjs(?:CallMethod|CallMethodIfPresent|Get|GetOptional|Field|JavaGet|HasKey)\((?:[^()"]|\((?:[^()"]|\([^()]*\))*\))*?,\s*"([A-Za-z_$][\w$]*)"/g;
   const visit = (dir: string) => {
     if (!existsSync(dir)) return;
     for (const entry of readdirSync(dir, { withFileTypes: true })) {
