@@ -496,6 +496,13 @@ fun jsToNumber(value: Any?): Double = when (val v = jsBox(value)) {
     else -> jsNumeric(v) ?: jsNumberFromString(jsToString(v))
 }
 
+/** An untyped value where code declares a number: a string as `==` and arithmetic read it; anything else not a number, 0. */
+fun jsNumberOrZero(value: Any?): Double = when (value) {
+    is Double -> value
+    is String -> jsNumberFromString(value)
+    else -> 0.0
+}
+
 internal val jsJoinGuard = ArrayList<Any>()
 
 /** `String(value)`: arrays join with ",", plain objects are "[object Object]", errors "Name: message". */

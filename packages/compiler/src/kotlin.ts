@@ -1514,6 +1514,7 @@ export class Translator implements AsyncTranslator {
 
   fromAnyCode(code: string, type: string, orZero = false): string {
     const zero = this.zero(type);
+    if (orZero && type === 'Double') return `jsNumberOrZero(${code})`;
     if (orZero && zero && zero !== 'null' && !type.endsWith('?')) return `((${code} as? ${type}) ?: ${zero})`;
     return this.fromAny(code, type);
   }
