@@ -461,6 +461,7 @@ public func jsGet(_ object: Any?, _ key: String) throws -> Any? {
         if let native = jsAsNSObject(value) {
             if jsIsNativeOnly(native) { return jsNativeGet(native, key) }
         } else {
+            if let moot = value as? JSMootValue, moot.undeclared { throw moot.unavailable() }
             if let plain = value as? JSObject { return try plain.get(key) }
             if let dynamic = value as? JSDynamic { return dynamic[jsKey: key] }
         }
@@ -671,7 +672,7 @@ public func jsObjectAssign<T: JSDynamic>(_ target: T, _ sources: Any?...) -> T {
 /// `typeof value`.
 public func jsTypeof(_ value: Any?) -> String {
     guard let v = jsFlat(value) else { return "undefined" }
-    if jsIsOpaqueObject(v) { return v is JSSymbol ? "symbol" : "object" }
+    if jsIsOpaqueObject(v) { return v is JSSymbol ? "symbol" : (v as? JSMootValue)?.undeclared == true ? "undefined" : "object" }
     if let boolean = jsNativeBoolean(v) { _ = boolean; return "boolean" }
     if jsIsNativeNumber(v) { return "number" }
     switch v {

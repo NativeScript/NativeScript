@@ -5581,7 +5581,7 @@ ${members.join('\n')}
       if (found) return found;
     }
     // Android's API on iOS (`androidx.core.view.ViewCompat` behind a check that the code runs on Android): a value that throws when used.
-    if ((this.library && !libDecl) || (libDecl && /[\\/]types-android[\\/]/.test(libDecl.getSourceFile().fileName))) return `jsMoot(${swiftString(name)})`;
+    if ((this.library && !libDecl) || (libDecl && /[\\/]types-android[\\/]/.test(libDecl.getSourceFile().fileName))) return `${this.library ? 'jsMoot' : 'jsUndeclared'}(${swiftString(name)})`;
     // A global a module declares itself (`declare let __startCPUProfiler: any`, a plugin's `declare var CanvasModule`) is the global object's, set by whatever provides it.
     // An app's own declarations file too (`declare var __CI__`, which its bundler defines): undefined where nothing sets it.
     const appAmbient = !this.library && isAppDeclarationFile(libDecl);
