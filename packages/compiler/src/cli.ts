@@ -92,7 +92,8 @@ for (const f of files.filter((x) => /\.tsx?$/.test(x) && !x.endsWith('.d.ts'))) 
   }
 }
 // Transitively: a file only such files use is out too (an Android track engine its worker imports).
-const leftOut = new Set<string>([...workerScripts].filter((w) => !usedBy.has(w)));
+// Android compiles worker scripts: the kit runs each on a worker thread.
+const leftOut = new Set<string>(platform === 'android' ? [] : [...workerScripts].filter((w) => !usedBy.has(w)));
 for (let changed = true; changed; ) {
   changed = false;
   for (const f of platformSources) {
@@ -348,7 +349,7 @@ else if (unapplied.length && !(platform === 'ios' && args.includes('--all-errors
 if (platform === 'android') {
   const { writeAndroid } = await import('./android.ts');
   const css = kitCss(sheets);
-  await writeAndroid({ app, out: resolve(opt('--out', join(app, 'platforms', 'native-android'))!), name, framework: style, zone, components, modules, program, checker, files: sourceFiles, infos, css, root, routes: routing, routeTree, lines: sourceLines, applicationId: opt('--bundle'), widgetsAar: opt('--widgets'), appDir, build: args.includes('--build'), bundle: args.includes('--aab') || args.includes('--device'), keyStore: keyStore(), plugins: plugins.all(), pluginFiles, reach, properties, compiledPlugins, resolved, mounted, corePatches: corePatchesAndroid(app, nodeModules(app)), allowUnapplied, allErrors: args.includes('--all-errors'), lenient: lenientApp, bindings: bindings.filter((b) => replacements[b.package] === b.script), generatedKit, cssAST: generatedKit ? kitAst(sheets) : undefined });
+  await writeAndroid({ app, out: resolve(opt('--out', join(app, 'platforms', 'native-android'))!), name, framework: style, zone, components, modules, program, checker, files: sourceFiles, infos, css, root, routes: routing, routeTree, lines: sourceLines, applicationId: opt('--bundle'), widgetsAar: opt('--widgets'), appDir, build: args.includes('--build'), bundle: args.includes('--aab') || args.includes('--device'), keyStore: keyStore(), plugins: plugins.all(), pluginFiles, reach, properties, compiledPlugins, resolved, mounted, workers: [...workerScripts], corePatches: corePatchesAndroid(app, nodeModules(app)), allowUnapplied, allErrors: args.includes('--all-errors'), lenient: lenientApp, bindings: bindings.filter((b) => replacements[b.package] === b.script), generatedKit, cssAST: generatedKit ? kitAst(sheets) : undefined });
   process.exit(0);
 }
 // Before the translator: it reads the plugin modules' symbol tables and which typings declare them.

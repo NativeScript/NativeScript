@@ -59,6 +59,8 @@ export interface AndroidBuild {
   properties?: Properties;
   /** The plugin modules translated with the app. */
   compiledPlugins?: string[];
+  /** Worker scripts (`new Worker(new URL('./x.worker', import.meta.url))`), compiled as modules each worker thread runs. */
+  workers?: string[];
   resolved?: (containing: string, specifier: string) => string | undefined;
   /** The app mounts its own roots (Octane's `renderNativeScriptApp` in the entry): the entry is a module that runs the app. */
   mounted?: boolean;
@@ -161,6 +163,7 @@ export async function writeAndroid(b: AndroidBuild): Promise<void> {
   const suppress = '@file:Suppress("unused", "UNUSED_VARIABLE", "RedundantExplicitType", "NAME_SHADOWING", "UNCHECKED_CAST", "UNREACHABLE_CODE", "UNUSED_PARAMETER")';
   const header = (from: string) => `// Compiled by ns-native from ${relative(b.app, from)}; edit that file, not this one.\n${suppress}\npackage ${pkg}\n\nimport org.nativescript.kit.*\n\n`;
   // A component's file is a module too: what it declares beside the component (its constants and helpers).
+  translator.workerScripts = new Map((b.workers ?? []).map((f) => [f, relative(b.app, f)]));
   const modules = translateKotlinModules(translator, b.program, [...b.modules, ...b.components.map((c) => c.file), ...(b.compiledPlugins ?? [])], b.resolved);
   for (const c of b.components) {
     const sf = b.program.getSourceFile(c.file)!;
@@ -188,7 +191,9 @@ export async function writeAndroid(b: AndroidBuild): Promise<void> {
   writeFileSync(join(b.out, 'source-lines.json'), JSON.stringify({ package: pkg, files: table }) + '\n');
   const shapes = SourceLines.strip(translator.shapesCode());
   if (shapes) writeFileSync(join(sources, '__Objects.kt'), `// Compiled by ns-native: the app's object literals without a declared type.\n${suppress}\npackage ${pkg}\n\nimport org.nativescript.kit.*\n\n${shapes}\n`);
-  const inits = (b.zone ? '        Zone.enabled = true\n' : '') + modules.filter((m) => m.init).map((m) => `        ${m.init}()\n`).join('');
+  // A worker script's top level runs on its worker's thread, not with the app's modules.
+  const workers = modules.filter((m) => translator.workerScripts!.has(m.file)).map((m) => `        JSWorker.register(${kotlinString(translator.workerScripts!.get(m.file)!)}) { ${m.init ? `${m.init}()` : ''} }\n`).join('');
+  const inits = (b.zone ? '        Zone.enabled = true\n' : '') + workers + modules.filter((m) => m.init && !translator.workerScripts!.has(m.file)).map((m) => `        ${m.init}()\n`).join('');
   const routes = b.routes
     ? `        Router.shared.routes = listOf(${b.routes.routes.map((r) => `Route(${kotlinString(r.path)}) { ${r.component}().render() }`).join(', ')})\n        Router.shared.initial = ${kotlinString(b.routes.initial)}\n`
     : '';

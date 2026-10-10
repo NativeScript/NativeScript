@@ -1,5 +1,6 @@
 import type { SourceLines } from './source-lines.ts';
 import ts from 'typescript';
+import { dirname as pathDirname, resolve as pathResolve } from 'node:path';
 import { AsyncLowering, usedBefore, type AsyncCtx, type AsyncSyntax, type AsyncTranslator } from './async.ts';
 import { isAsync, isStatic } from './throws.ts';
 import { intlConstructor, isObjectToStringCall, isStringRaw, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces } from './lang.ts';
@@ -219,6 +220,8 @@ export class Translator implements AsyncTranslator {
   private lowering: AsyncLowering;
   core: KotlinCore | null = null;
   native: KotlinNative | null = null;
+  /** Android: the worker scripts compiled with the app, by file, and the name the entry registers each under. */
+  workerScripts: Map<string, string> | null = null;
   /** The app's package, which qualifies a module function a class member's name shadows. */
   appModule = '';
   /** `--allow-unimplemented-properties`: a core property the kit does not apply is set by name, with a warning. */
@@ -5816,6 +5819,33 @@ export class Translator implements AsyncTranslator {
     return `object : ${this.className(base)}() {\n${members.join('\n')}\n}`;
   }
 
+  /** `new URL('./x.worker', import.meta.url)`: the worker script it names, when the app compiled it. */
+  private workerScript(e: ts.Expression): string | null {
+    if (!ts.isNewExpression(e) || !ts.isIdentifier(e.expression) || e.expression.text !== 'URL') return null;
+    const [spec, base] = e.arguments ?? [];
+    if (!spec || !ts.isStringLiteralLike(spec) || !base || base.getText() !== 'import.meta.url') return null;
+    const stem = pathResolve(pathDirname(e.getSourceFile().fileName), spec.text).replace(/\.(ts|js)$/, '');
+    for (const f of [stem + '.ts', stem + '.android.ts', stem + '/index.ts']) {
+      const script = this.workerScripts?.get(f);
+      if (script) return script;
+    }
+    return null;
+  }
+
+  /**
+   * A function literal stored where untyped code calls it (`global.onmessage = (m: Msg) => …`): jsCall passes
+   * JavaScript values, so typed parameters are converted from them inside.
+   */
+  private untypedCallable(e: ts.Expression): string {
+    let f = e;
+    while (ts.isParenthesizedExpression(f)) f = f.expression;
+    if (!(ts.isArrowFunction(f) || ts.isFunctionExpression(f)) || f.parameters.some((p) => !ts.isIdentifier(p.name) || p.dotDotDotToken)) return this.coerce(e, 'Any?');
+    const types = f.parameters.map((p) => this.typeOf(p.name));
+    if (types.every((t) => t === 'Any?')) return this.coerce(e, 'Any?');
+    const names = types.map((_, k) => `__a${k}`);
+    return `run { val __f = ${this.closure(f)}; { ${names.map((n) => `${n}: Any?`).join(', ')} -> __f(${types.map((t, k) => this.fromAny(names[k], t)).join(', ')}) } }`;
+  }
+
   private newExpr(e: ts.NewExpression): string {
     const t = this.typeOf(e);
     let callee = e.expression;
@@ -5823,6 +5853,10 @@ export class Translator implements AsyncTranslator {
     const name = ts.isIdentifier(callee) ? callee.text : '';
     const args = e.arguments ?? ts.factory.createNodeArray();
     if (this.library && ts.isClassExpression(callee) && !args.length) return this.classExpressionObject(callee);
+    if (name === 'Worker' && this.workerScripts && args.length) {
+      const script = this.workerScript(args[0]);
+      if (script) return `JSWorker(${this.coerce(args[0], 'Any?')}, ${kotlinString(script)})`;
+    }
     if (BUFFER_TYPES.has(name) && this.resolve(callee)?.declarations?.every((d) => d.getSourceFile().isDeclarationFile)) return this.newBuffer(name, args);
     if (/^JS(Map|Set)</.test(t)) {
       if (!args.length) return `${t}()`;
@@ -5990,7 +6024,7 @@ export class Translator implements AsyncTranslator {
     const eventData = this.library && ts.isPropertyAccessExpression(left) && ((this.typeOf(left.expression).replace(/\?$/, '') === 'EventData' && !['eventName', 'object'].includes(left.name.text))
       // `promise.cancel = …` on the kit's promise: kept beside it, as script adds it.
       || this.isPromiseType(this.typeOf(left.expression).replace(/\?$/, '')));
-    if (ts.isPropertyAccessExpression(left) && !this.library && this.isGlobalObject(left.expression)) return `jsSet(jsGlobalThis, ${kotlinString(left.name.text)}, ${this.coerce(right, 'Any?')})`;
+    if (ts.isPropertyAccessExpression(left) && !this.library && this.isGlobalObject(left.expression)) return `jsSet(jsGlobalThis, ${kotlinString(left.name.text)}, ${this.untypedCallable(right)})`;
     // `record.key = v` of a `Record<string, T>`: its entry.
     const record = ts.isPropertyAccessExpression(left) ? /^JSRecord<(.*)>\??$/.exec(this.typeOf(left.expression)) : null;
     if (record && ts.isPropertyAccessExpression(left)) return `${this.expr(left.expression)}${this.typeOf(left.expression).endsWith('?') ? '!!' : ''}[${kotlinString(left.name.text)}] = ${this.coerce(right, record[1])}`;
