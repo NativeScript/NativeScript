@@ -503,6 +503,20 @@ fun jsNumberOrZero(value: Any?): Double = when (value) {
     else -> 0.0
 }
 
+/** An untyped value where code declares a string: a number or boolean as its string; undefined, null or anything else not a string, "". */
+fun jsStringOrEmpty(value: Any?): String = when (value) {
+    is String -> value
+    is Double, is Boolean -> jsToString(value)
+    else -> ""
+}
+
+/** As `jsStringOrEmpty`, with undefined and null kept apart from "" for code that tests for them. */
+fun jsStringOrNull(value: Any?): String? = when (value) {
+    is String -> value
+    is Double, is Boolean -> jsToString(value)
+    else -> null
+}
+
 internal val jsJoinGuard = ArrayList<Any>()
 
 /** `String(value)`: arrays join with ",", plain objects are "[object Object]", errors "Name: message". */

@@ -2067,7 +2067,9 @@ export class Translator implements AsyncTranslator {
         const kt = t === 'Any?' || isNullable(t) || (this.zero(t) && !/^JS(Array|Map|Set|Record)</.test(t)) ? t : optionalType(t);
         if (sym && kt !== t) this.nullableDecls.add(sym);
         fields.push({ name: n, type: kt, expando: true });
-        lines.push(`    ${mods(n)}var ${ident(n)}: ${kt}`, `        get() = ${this.fromAnyCode(`jsExpandoGet(this, ${kotlinString(n)})`, kt, true)}`, `        set(value) { jsExpandoSet(this, ${kotlinString(n)}, value) }`);
+        // A string property a template or script set to a number (`[text]="index + 1"`) reads as that number's string, as core's `text + ''` does.
+        const read = kt === 'String' ? `jsStringOrEmpty(jsExpandoGet(this, ${kotlinString(n)}))` : this.fromAnyCode(`jsExpandoGet(this, ${kotlinString(n)})`, kt, true);
+        lines.push(`    ${mods(n)}var ${ident(n)}: ${kt}`, `        get() = ${read}`, `        set(value) { jsExpandoSet(this, ${kotlinString(n)}, value) }`);
         if (m.initializer) {
           this.indent = '        ';
           lines.push('    init {', `        this.${ident(n)} = ${this.coerce(m.initializer, t)}`, '    }');
@@ -3423,7 +3425,8 @@ export class Translator implements AsyncTranslator {
           && (this.properties?.isRegistered(registered.parent, read.name.text) || this.properties?.isRegisteredAnywhere(read.name.text)) && this.testedForUndefined(d)) {
         const sym = this.checker.getSymbolAtLocation(d.name);
         if (sym) this.nullableDecls.add(sym);
-        return `${i}${constant ? 'val' : 'var'} ${name}: ${optionalType(t)} = (jsExpandoGet(${this.expr(read.expression)}, ${kotlinString(read.name.text)}) as? ${t})`;
+        const value = `jsExpandoGet(${this.expr(read.expression)}, ${kotlinString(read.name.text)})`;
+        return `${i}${constant ? 'val' : 'var'} ${name}: ${optionalType(t)} = ${t === 'String' ? `jsStringOrNull(${value})` : `(${value} as? ${t})`}`;
       }
       // A plugin's copy of a value declared nullable (`const side = this.mShowingSide`): nullable as well.
       if (d.initializer && !lowered && this.pluginFiles.has(d.getSourceFile().fileName) && !isNullable(t) && t !== 'Any' && t !== 'Any?' && isNullable(this.declaredTypeOf(d.initializer) ?? '')) {
