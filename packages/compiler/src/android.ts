@@ -6,6 +6,7 @@ import { basename, dirname, join, relative, resolve } from 'node:path';
 import ts from 'typescript';
 import type { ComponentIR } from './ir.ts';
 import { Translator, kotlinString } from './kotlin.ts';
+import type { RouteNode } from './angular.ts';
 import { render } from './codegen-kotlin.ts';
 import { SCHEDULE, type Framework } from './codegen.ts';
 import { addKotlinInterfaces, translateKotlinModules } from './kotlin-modules.ts';
@@ -36,6 +37,8 @@ export interface AndroidBuild {
   css: string;
   root: string;
   routes: { routes: { path: string; component: string }[]; initial: string } | null;
+  /** Angular's route tree (outlets, children, redirects), where the app configures one. */
+  routeTree?: RouteNode[] | null;
   /** Source lines for the Kotlin, written as `source-lines.json` for `retrace.ts`; null leaves them out. */
   lines: SourceLines | null;
   applicationId?: string;
@@ -71,6 +74,20 @@ export interface AndroidBuild {
   generatedKit?: boolean;
   /** The app's stylesheet as css2json-loader's AST, which core loads as `app.css` in the generated kit. */
   cssAST?: string;
+}
+
+/** A route tree as the kit's `RouteConfig`s. */
+function kotlinRouteConfig(routes: RouteNode[], indent: string): string {
+  const one = (r: RouteNode): string => {
+    const named = [
+      r.outlet ? `outlet = ${kotlinString(r.outlet)}` : '',
+      r.redirectTo !== undefined ? `redirectTo = ${kotlinString(r.redirectTo)}` : '',
+      r.full ? 'full = true' : '',
+      r.children?.length ? `children = ${kotlinRouteConfig(r.children, indent + '    ')}` : '',
+    ].filter(Boolean);
+    return `RouteConfig(${[kotlinString(r.path), ...named].join(', ')})${r.component ? ` { ${r.component}().render() }` : ''}`;
+  };
+  return `listOf(\n${routes.map((r) => `${indent}    ${one(r)}`).join(',\n')}\n${indent})`;
 }
 
 /** `packaging { … }` from what the plugins' include.gradle files exclude and pick first: native libraries under jniLibs, the rest resources. */
@@ -131,7 +148,8 @@ export async function writeAndroid(b: AndroidBuild): Promise<void> {
   }
   const suppress = '@file:Suppress("unused", "UNUSED_VARIABLE", "RedundantExplicitType", "NAME_SHADOWING", "UNCHECKED_CAST", "UNREACHABLE_CODE", "UNUSED_PARAMETER")';
   const header = (from: string) => `// Compiled by ns-native from ${relative(b.app, from)}; edit that file, not this one.\n${suppress}\npackage ${pkg}\n\nimport org.nativescript.kit.*\n\n`;
-  const modules = translateKotlinModules(translator, b.program, [...b.modules, ...(b.compiledPlugins ?? [])], b.resolved);
+  // A component's file is a module too: what it declares beside the component (its constants and helpers).
+  const modules = translateKotlinModules(translator, b.program, [...b.modules, ...b.components.map((c) => c.file), ...(b.compiledPlugins ?? [])], b.resolved);
   for (const c of b.components) {
     const sf = b.program.getSourceFile(c.file)!;
     const cls = sf.statements.find(ts.isClassDeclaration)!;
@@ -169,7 +187,7 @@ export async function writeAndroid(b: AndroidBuild): Promise<void> {
   if (b.generatedKit) {
     const run = `${switches}        Reactivity.schedule = Reactivity.Schedule.${SCHEDULE[b.framework as Framework].toUpperCase()}\n` + (b.mounted
       ? `        NativeScriptApplication.prepare(cssAST = appCSS)\n        CoreModules.initialize()\n${inits}`
-      : `        NativeScriptApplication.prepare(cssAST = appCSS)\n        CoreModules.initialize()\n${inits}        NativeScriptApplication.start { ${b.root}().render() }\n`);
+      : `        NativeScriptApplication.prepare(cssAST = appCSS)\n        CoreModules.initialize()\n${inits}${b.routeTree ? `        Router.shared.config = ${kotlinRouteConfig(b.routeTree, '        ')}\n` : routes}        NativeScriptApplication.start { ${b.root}().render() }\n`);
     writeFileSync(join(sources, '__Entry.kt'), `// Compiled by ns-native: the app's entry and its CSS.
 package ${pkg}
 

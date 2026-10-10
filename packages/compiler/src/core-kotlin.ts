@@ -135,7 +135,7 @@ export class CoreKotlin implements KotlinCore {
   private t: Translator;
 
   /** `generated`: the kit compiled from core (`-PgeneratedKit`), whose classes are core's own, in place of the hand port. */
-  private generated: boolean;
+  readonly generated: boolean;
   constructor(t: Translator, generated = false) {
     this.t = t;
     this.generated = generated;
@@ -447,8 +447,10 @@ export class CoreKotlin implements KotlinCore {
   /** The generated kit: the class declaring a static member (`Frame.topmost` is FrameBase's), as Kotlin's companions are not inherited. */
   private declaring(type: string, name: string): string {
     if (!this.generated) return type;
-    for (let k = this.index.get(type); k; k = k.base ? this.index.get(k.base) : undefined) if (k.members.has(name)) return k.name;
-    return type;
+    let found = type;
+    for (let k = this.index.get(type); k; k = k.base ? this.index.get(k.base) : undefined) if (k.members.has(name)) { found = k.name; break; }
+    // A namespace's object (`layout`, `knownFolders`) is named as a member of the code using it may be.
+    return /^[a-z]/.test(found) ? `org.nativescript.kit.${found}` : found;
   }
 
   /** The generated kit: a core function taking `...args` takes them as one array, as core's compiled signature does. */

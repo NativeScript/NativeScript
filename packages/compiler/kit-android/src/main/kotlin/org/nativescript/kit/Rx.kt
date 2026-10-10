@@ -45,6 +45,36 @@ fun <T, R> map(project: (T, Double) -> R): RxOperatorFunction<T, R> = RxOperator
 @JvmName("mapValue")
 fun <T, R> map(project: (T) -> R): RxOperatorFunction<T, R> = map { value: T, _: Double -> project(value) }
 
+/** `filter(predicate)`: the values the predicate holds for, with each value's index among those this subscription saw. */
+fun <T> filter(predicate: (T, Double) -> Boolean): RxOperatorFunction<T, T> = RxOperatorFunction { source ->
+    RxObservable { next ->
+        var index = 0.0
+        source.subscribe { value ->
+            val i = index
+            index += 1
+            try {
+                if (predicate(value, i)) next(value)
+            } catch (e: Throwable) {
+                jsReportUncaught(jsCaught(e))
+            }
+        }
+    }
+}
+
+@JvmName("filterValue")
+fun <T> filter(predicate: (T) -> Boolean): RxOperatorFunction<T, T> = filter { value: T, _: Double -> predicate(value) }
+
+/**
+ * `toSignal(source, { initialValue })`: a signal holding the source's latest value, subscribed for as
+ * long as the scope it was made in lives, its writes compared with `Object.is` as Angular's signals compare them.
+ */
+fun <T> toSignal(source: RxObservable<T>, initialValue: T): Signal<T> {
+    val signal = Signal(initialValue) { a, b -> jsSameValue(a, b) }
+    val subscription = source.subscribe { value -> signal.value = value }
+    Owner.current?.onCleanup { subscription.unsubscribe() }
+    return signal
+}
+
 open class RxSubject<T> : RxObservable<T>({ RxSubscription() }) {
     private class Observer<T>(val next: (T) -> Unit)
 

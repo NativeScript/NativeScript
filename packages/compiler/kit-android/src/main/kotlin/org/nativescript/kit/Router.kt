@@ -42,6 +42,9 @@ class Router {
     var routes: List<Route> = emptyList()
     var initial = "/"
 
+    /** A named outlet: this flat table has one. */
+    fun outlet(@Suppress("UNUSED_PARAMETER") name: String): View = outlet()
+
     /** The outlet: a frame showing the initial route's page. */
     fun outlet(): View {
         val frame = Frame()
@@ -86,3 +89,9 @@ class Router {
         val shared = Router()
     }
 }
+
+/** The page a routed component's template fills. */
+fun routedPage(): Page = Page()
+
+/** `inject(Page)`. */
+fun injectedPage(): Page = routedPage()

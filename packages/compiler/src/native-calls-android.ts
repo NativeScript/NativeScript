@@ -129,7 +129,9 @@ export class AndroidNativeAPI implements KotlinNative {
     if (internal === 'java/lang/Object') return 'Any';
     if (internal === 'java/lang/String') return 'String';
     if (internal === 'java/lang/CharSequence') return 'CharSequence';
-    return internal.replace(/[/$]/g, '.');
+    const name = internal.replace(/[/$]/g, '.');
+    // The generated kit has a top-level `android` (core's `Application.android`), which an app's star import of the kit brings in over the package.
+    return !this.t.library && (this.t.core as { generated?: boolean } | undefined)?.generated && name.startsWith('android.') ? `_root_ide_package_.${name}` : name;
   }
 
   /** A class as Kotlin names its type (static members keep the Java name: `java.util.List.of`). */

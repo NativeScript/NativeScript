@@ -98,7 +98,8 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
       if (node.kind === 'element' || node.kind === 'component') {
         const v = `v${n++}`;
         if (node.kind === 'element' && node.tag === 'Frame' && node.attrs.some((a) => a.name === 'router')) {
-          say(depth, `val ${v} = Router.shared.outlet()`);
+          const name = node.attrs.find((a) => a.name === 'router');
+          say(depth, `val ${v} = Router.shared.outlet(${name && 'value' in name && name.value !== 'true' && name.value !== 'primary' ? kotlinString(name.value) : ''})`);
           attach(depth, v, parent, region, 'created');
         } else if (node.kind === 'element') {
           say(depth, `val ${v} = ${node.tag}()`);
@@ -310,7 +311,7 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
   const userEffects = () => { for (const w of c.watchers ?? []) if (!w.source) say(d, `EffectOrder.user { Effect { jsReport { this.${ident(w.handler)}() } } }`); };
   if (c.page) {
     // A routed component's template is its page's content: the action bar and the view.
-    say(d, 'val page = Page()');
+    say(d, 'val page = routedPage()');
     if (options.screenContent) {
       const isBar = (n: TNode) => n.kind === 'element' && n.tag === 'ActionBar';
       template(d, () => {

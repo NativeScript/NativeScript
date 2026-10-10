@@ -437,6 +437,8 @@ export class Translator implements AsyncTranslator {
     const name = sym?.getName() === 'default' ? declName ?? 'default' : sym?.getName();
     const args = () => t.aliasTypeArguments ?? c.getTypeArguments(t as ts.TypeReference);
     const arg = (k: number) => this.type(args()[k], where);
+    // `URL`, which Node's typings declare where the app's build reads them.
+    if (name === 'URL' && sym?.declarations?.length && sym.declarations.every((d) => /[\\/](@types[\\/]node[\\/]|lib\.dom)/.test(d.getSourceFile().fileName))) return 'JSURL';
     if (name && sym?.declarations?.[0]?.getSourceFile().fileName === '/__shims__/globals.d.ts') {
       if (WEB_CLASSES.includes(name)) return `JS${name}`;
       if (WEB_DICTIONARIES.includes(name)) return 'Any?';
@@ -1714,7 +1716,7 @@ export class Translator implements AsyncTranslator {
   /** A component's members; the caller adds `render()`. Returns the constructor parameters and the lines inside the class. */
   componentMembers(cls: ts.ClassDeclaration, props: string[]): { params: string[]; lines: string[] } {
     this.props = new Set(props);
-    this.computed = new Set(cls.members.filter((m) => ts.isPropertyDeclaration(m) && m.initializer && this.calleeName(m.initializer) === 'computed').map((m) => (m.name as ts.Identifier).text));
+    this.computed = new Set(cls.members.filter((m) => ts.isPropertyDeclaration(m) && m.initializer && ['computed', 'toSignal'].includes(this.calleeName(m.initializer))).map((m) => (m.name as ts.Identifier).text));
     const lines: string[] = [];
     const params: string[] = [];
     this.indent = '    ';
@@ -1727,6 +1729,15 @@ export class Translator implements AsyncTranslator {
           const given = (m.initializer as ts.CallExpression).arguments[0];
           params.push(`${ident(name)}: ${t}${given ? ` = ${this.coerce(given, t)}` : ''}`);
           lines.push(`    val ${ident(name)}: Signal<${t}> = ${this.newSignal(t, ident(name), 'identity')}`);
+          continue;
+        }
+        if (callee === 'toSignal') {
+          // A signal of the source's latest value, read as a computed is: by its name.
+          const [source, options] = (m.initializer as ts.CallExpression).arguments;
+          const t = this.typeOf(m.name);
+          const initial = options && ts.isObjectLiteralExpression(options) ? options.properties.find((p): p is ts.PropertyAssignment => ts.isPropertyAssignment(p) && p.name.getText() === 'initialValue') : undefined;
+          if (!initial) throw this.error(m, 'toSignal without an initialValue');
+          lines.push(`    private val __${name}: Signal<${t}> = toSignal(${this.expr(source)}, ${this.coerce(initial.initializer, t)})`, `    val ${ident(name)}: ${t}`, `        get() = __${name}.value`);
           continue;
         }
         if (callee === 'computed') {
@@ -4990,6 +5001,7 @@ export class Translator implements AsyncTranslator {
     if (name === 'inject' && lib) {
       const token = (arg(0) as ts.Identifier).text;
       if (token === 'RouterExtensions') return 'Router.shared';
+      if (token === 'Page') return 'injectedPage()';
       if (token === 'ActivatedRoute') return 'ActivatedRoute.current';
       return `${token}.shared`;
     }

@@ -76,15 +76,21 @@ const thisPlatform = platform === 'android' ? '.android.ts' : '.ios.ts';
 const platformSources = files.filter((f) => f.endsWith('.ts') && !f.endsWith('.d.ts') && f !== entry && !/polyfills\.ts$/.test(f) && !otherPlatform.test(f) && !(!/\.(ios|android)\.ts$/.test(f) && files.includes(f.replace(/\.ts$/, thisPlatform))));
 // A file only the other platform's files use (an Android audio worker) is no module of this build.
 const usedBy = new Map<string, Set<string>>();
+// A worker's script runs in a worker, not as a module of the app; compiled apps start no workers yet (the kit's Worker throws).
+const workerScripts = new Set<string>();
 for (const f of files.filter((x) => /\.tsx?$/.test(x) && !x.endsWith('.d.ts'))) {
   const text = readFileSync(f, 'utf8');
-  for (const m of text.matchAll(/(?:from\s*|import\s*\(\s*|new\s+Worker\s*\(\s*(?:new\s+URL\s*\(\s*)?|require\s*\(\s*)['"](\.{1,2}\/[^'"]+)['"]/g)) {
-    const base = resolve(dirname(f), m[1]).replace(/\.(ts|js)$/, '');
-    for (const c of [base + '.ts', base + thisPlatform, base + '/index.ts']) if (files.includes(c)) usedBy.set(c, (usedBy.get(c) ?? new Set()).add(f));
+  for (const m of text.matchAll(/(?:from\s*|import\s*\(\s*|(new\s+Worker\s*\(\s*(?:new\s+URL\s*\(\s*)?)|require\s*\(\s*)['"](\.{1,2}\/[^'"]+)['"]/g)) {
+    const base = resolve(dirname(f), m[2]).replace(/\.(ts|js)$/, '');
+    for (const c of [base + '.ts', base + thisPlatform, base + '/index.ts']) {
+      if (!files.includes(c)) continue;
+      if (m[1]) workerScripts.add(c);
+      else usedBy.set(c, (usedBy.get(c) ?? new Set()).add(f));
+    }
   }
 }
 // Transitively: a file only such files use is out too (an Android track engine its worker imports).
-const leftOut = new Set<string>();
+const leftOut = new Set<string>([...workerScripts].filter((w) => !usedBy.has(w)));
 for (let changed = true; changed; ) {
   changed = false;
   for (const f of platformSources) {
@@ -332,7 +338,7 @@ else if (unapplied.length && !(platform === 'ios' && args.includes('--all-errors
 if (platform === 'android') {
   const { writeAndroid } = await import('./android.ts');
   const css = kitCss(sheets);
-  await writeAndroid({ app, out: resolve(opt('--out', join(app, 'platforms', 'native-android'))!), name, framework: style, zone, components, modules, program, checker, files: sourceFiles, infos, css, root, routes: routing, lines: sourceLines, applicationId: opt('--bundle'), widgetsAar: opt('--widgets'), appDir, build: args.includes('--build'), bundle: args.includes('--aab') || args.includes('--device'), keyStore: keyStore(), plugins: plugins.all(), pluginFiles, reach, properties, compiledPlugins, resolved, mounted, corePatches: corePatchesAndroid(app, nodeModules(app)), allowUnapplied, allErrors: args.includes('--all-errors'), generatedKit: args.includes('--generated-kit'), cssAST: args.includes('--generated-kit') ? kitAst(sheets) : undefined });
+  await writeAndroid({ app, out: resolve(opt('--out', join(app, 'platforms', 'native-android'))!), name, framework: style, zone, components, modules, program, checker, files: sourceFiles, infos, css, root, routes: routing, routeTree, lines: sourceLines, applicationId: opt('--bundle'), widgetsAar: opt('--widgets'), appDir, build: args.includes('--build'), bundle: args.includes('--aab') || args.includes('--device'), keyStore: keyStore(), plugins: plugins.all(), pluginFiles, reach, properties, compiledPlugins, resolved, mounted, corePatches: corePatchesAndroid(app, nodeModules(app)), allowUnapplied, allErrors: args.includes('--all-errors'), generatedKit: args.includes('--generated-kit'), cssAST: args.includes('--generated-kit') ? kitAst(sheets) : undefined });
   process.exit(0);
 }
 // Before the translator: it reads the plugin modules' symbol tables and which typings declare them.
