@@ -3683,6 +3683,13 @@ export class Translator implements AsyncTranslator {
     if (source === 'Any?' && target !== 'Unit') {
       if (ts.isArrowFunction(e) || ts.isFunctionExpression(e)) return this.closure(e, target);
       if (e.kind === ts.SyntaxKind.NullKeyword) return 'null';
+      // Library mode: a function declaring the `this` it takes (`setFunc(…)`), its Kotlin type taking that first: a JSMethod's receiver.
+      const parts = this.library ? functionTypeParts(target.replace(/^\((.*)\)\?$/, '$1')) : null;
+      const thisTaking = parts && parts.params.length >= 1 && parts.params.length <= 5 && this.checker.getTypeAtLocation(e).getCallSignatures().some((sig) => !!sig.thisParameter);
+      if (thisTaking) {
+        const code = `(jsThisFunction(__f, ${parts!.params.length}) as ${target.replace(/^\((.*)\)\?$/, '$1')})`;
+        return `run { val __f = ${this.expr(e)}; ${/\)\?$/.test(target) ? `if (jsIsNullish(__f)) null else ${code}` : code} }`;
+      }
       // Library mode: an untyped value where a string, number or boolean goes is that type's undefined when missing.
       return this.library ? this.fromAnyCode(this.expr(e), target, true) : this.fromAny(this.expr(e), target);
     }
