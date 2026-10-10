@@ -4957,7 +4957,7 @@ ${members.join('\n')}
     if (this.library && ts.isObjectLiteralExpression(bare) && target.replace(/[?!]$/, '') === 'EventData') return `EventData(jsObject: ${this.coerce(e, 'Any?')})`;
     // A function literal where its slot takes the arguments as a rest (`callback: (...args: any[]) => void`): each of its parameters from the list.
     const restSlot = functionParts(target.replace(/^\((.*)\)[?!]$/, '$1'));
-    if ((ts.isArrowFunction(bare) || ts.isFunctionExpression(bare)) && restSlot && restSlot.rest >= 0 && !bare.parameters.some((p) => p.dotDotDotToken) && !(this.library && this.carriesMethod(bare))) {
+    if ((ts.isArrowFunction(bare) || ts.isFunctionExpression(bare)) && restSlot && restSlot.rest >= 0 && !bare.parameters.some((p) => p.dotDotDotToken) && !(this.library && this.carriesMethod(bare)) && !this.takesRestArray(bare)) {
       const own = functionParts(this.closureType(bare));
       if (own && own.params.length > restSlot.rest) {
         const fixed = restSlot.params.slice(0, restSlot.rest).map((p, k) => `__q${k}: ${p.replace(/^@escaping /, '')}`);
