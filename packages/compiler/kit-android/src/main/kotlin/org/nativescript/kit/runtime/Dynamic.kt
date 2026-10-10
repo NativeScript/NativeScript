@@ -18,6 +18,37 @@ class JSFunction(val body: (List<Any?>) -> Any?) {
 
 fun jsFunction(body: (List<Any?>) -> Any?): JSFunction = JSFunction(body)
 
+/** A value where a collection's element type goes, null included, as script stores it (the element type is erased). */
+@Suppress("UNCHECKED_CAST")
+fun <T> jsUnchecked(value: Any?): T = value as T
+
+/** An untyped value used as a property key: a symbol's own key, anything else as its string. */
+fun jsPropertyKey(value: Any?): String = if (value is JSSymbol) value.key else jsToString(value)
+
+/** `value instanceof type` of a class held in a value (a Java class an alias names, a class passed in). */
+fun jsInstanceOf(value: Any?, type: Any?): Boolean = type is Class<*> && value != null && value !== JSNull && type.isInstance(jsBox(value))
+
+/**
+ * A function value taken where another signature is wanted (`() -> Unit` passed as an `(EventData) -> Unit`
+ * listener): equal to every adaptation of the same function, as script compares the function itself
+ * (`off(name, handler)` removing what `on(name, handler)` added).
+ */
+abstract class JSAdapted(val original: Any) {
+    override fun equals(other: Any?): Boolean = other is JSAdapted && other.javaClass == javaClass && other.original == original
+    override fun hashCode(): Int = original.hashCode()
+}
+class JSAdapted0<R>(original: Any, private val body: () -> R) : JSAdapted(original), () -> R { override fun invoke(): R = body() }
+class JSAdapted1<A, R>(original: Any, private val body: (A) -> R) : JSAdapted(original), (A) -> R { override fun invoke(a: A): R = body(a) }
+class JSAdapted2<A, B, R>(original: Any, private val body: (A, B) -> R) : JSAdapted(original), (A, B) -> R { override fun invoke(a: A, b: B): R = body(a, b) }
+class JSAdapted3<A, B, C, R>(original: Any, private val body: (A, B, C) -> R) : JSAdapted(original), (A, B, C) -> R { override fun invoke(a: A, b: B, c: C): R = body(a, b, c) }
+class JSAdapted4<A, B, C, D, R>(original: Any, private val body: (A, B, C, D) -> R) : JSAdapted(original), (A, B, C, D) -> R { override fun invoke(a: A, b: B, c: C, d: D): R = body(a, b, c, d) }
+
+fun <R> jsAdapt0(original: Any, body: () -> R): () -> R = JSAdapted0(original, body)
+fun <A, R> jsAdapt1(original: Any, body: (A) -> R): (A) -> R = JSAdapted1(original, body)
+fun <A, B, R> jsAdapt2(original: Any, body: (A, B) -> R): (A, B) -> R = JSAdapted2(original, body)
+fun <A, B, C, R> jsAdapt3(original: Any, body: (A, B, C) -> R): (A, B, C) -> R = JSAdapted3(original, body)
+fun <A, B, C, D, R> jsAdapt4(original: Any, body: (A, B, C, D) -> R): (A, B, C, D) -> R = JSAdapted4(original, body)
+
 // A function value held untyped, as a Kotlin function of its arity (cast to the typed function by the caller).
 @Suppress("UNCHECKED_CAST")
 fun jsFunction0(f: Any?): () -> Any? = f as? Function0<Any?> ?: { jsCall(f) }
@@ -35,6 +66,21 @@ fun jsFunction5(f: Any?): (Any?, Any?, Any?, Any?, Any?) -> Any? = f as? Functio
 fun jsFunction6(f: Any?): (Any?, Any?, Any?, Any?, Any?, Any?) -> Any? = f as? Function6<Any?, Any?, Any?, Any?, Any?, Any?, Any?> ?: { a, b, c, d, e, g -> jsCall(f, a, b, c, d, e, g) }
 @Suppress("UNCHECKED_CAST")
 fun jsFunction7(f: Any?): (Any?, Any?, Any?, Any?, Any?, Any?, Any?) -> Any? = f as? Function7<Any?, Any?, Any?, Any?, Any?, Any?, Any?, Any?> ?: { a, b, c, d, e, g, h -> jsCall(f, a, b, c, d, e, g, h) }
+
+/** A function value held untyped, as a Kotlin function taking its `this` first: a JSMethod gets it as its receiver. */
+fun jsThisFunction(f: Any?, arity: Int): Any = if (f !is JSMethod) when (arity) {
+    1 -> jsFunction1(f)
+    2 -> jsFunction2(f)
+    3 -> jsFunction3(f)
+    4 -> jsFunction4(f)
+    else -> jsFunction5(f)
+} else when (arity) {
+    1 -> { a: Any? -> f.call(a, arrayOf()) }
+    2 -> { a: Any?, b: Any? -> f.call(a, arrayOf(b)) }
+    3 -> { a: Any?, b: Any?, c: Any? -> f.call(a, arrayOf(b, c)) }
+    4 -> { a: Any?, b: Any?, c: Any?, d: Any? -> f.call(a, arrayOf(b, c, d)) }
+    else -> { a: Any?, b: Any?, c: Any?, d: Any?, e: Any? -> f.call(a, arrayOf(b, c, d, e)) }
+}
 
 /** Argument `index` of a dynamic call; a missing one is undefined. */
 fun jsArg(args: List<Any?>, index: Int): Any? = args.getOrNull(index)
@@ -114,6 +160,22 @@ private fun javaField(target: Any, name: String, static: Boolean): Field? {
 
 private fun javaMethods(cls: Class<*>, name: String, static: Boolean): List<Method> =
     cls.methods.filter { it.name == name && Modifier.isStatic(it.modifiers) == static }
+
+/** `key in javaObject`: a public method or field of its class, or a property script added to it. */
+fun jsJavaHas(target: Any, key: String): Boolean {
+    val static = target is Class<*>
+    val cls = if (static) target as Class<*> else target.javaClass
+    if (javaExpandos[target]?.has(key) == true || javaField(target, key, static) != null || javaMethods(cls, key, static).isNotEmpty()) return true
+    // A class's static member script declared (`static tapEvent`): a Kotlin companion's property, its field on the class.
+    if (static) {
+        var c: Class<*>? = cls
+        while (c != null) {
+            if (c.declaredFields.any { it.name == key && Modifier.isStatic(it.modifiers) }) return true
+            c = c.superclass
+        }
+    }
+    return false
+}
 
 /** A Java method read as a value: called later with script arguments, the overload chosen then. */
 class JavaMethodRef(private val target: Any?, private val cls: Class<*>, private val name: String, private val methods: List<Method>) {
@@ -195,7 +257,8 @@ fun jsNew(cls: Any?, vararg args: Any?): Any? {
 private fun javaScore(value: Any?, type: Class<*>): Int? {
     val rank: Map<Class<*>?, Int> = mapOf(Int::class.javaPrimitiveType to 0, Long::class.javaPrimitiveType to 1, Float::class.javaPrimitiveType to 2, Double::class.javaPrimitiveType to 3, Short::class.javaPrimitiveType to 4, Byte::class.javaPrimitiveType to 5)
     return when (value) {
-        null, JSNull, Unit -> if (type.isPrimitive) null else 1
+        // NativeScript passes null to a primitive parameter as its zero, after any overload taking an object.
+        null, JSNull, Unit -> if (type.isPrimitive) 60 else 1
         is Double -> rank[type] ?: when {
             type == java.lang.Double::class.java || type == java.lang.Number::class.java -> 9
             type == Any::class.java -> 30
@@ -220,15 +283,20 @@ private fun javaScore(value: Any?, type: Class<*>): Int? {
 }
 
 /** A script value as a Java parameter of `type` takes it. */
+/** A script value passed to a Java parameter of an object type: null for JavaScript's null and undefined. */
+fun jsJavaArgument(value: Any?): Any? = if (value === JSNull || value === Unit) null else value
+
 fun toJavaValue(value: Any?, type: Class<*>): Any? = when {
+    (value == null || value === JSNull || value === Unit) && type.isPrimitive -> JavaArray.get(JavaArray.newInstance(type, 1), 0)
     value == null || value === JSNull || value === Unit -> null
+    // Integers through Long: past Int's range a number wraps (ToInt32), as NativeScript converts it.
     value is Double && type.isPrimitive -> when (type) {
-        Int::class.javaPrimitiveType -> value.toInt()
+        Int::class.javaPrimitiveType -> value.toLong().toInt()
         Long::class.javaPrimitiveType -> value.toLong()
         Float::class.javaPrimitiveType -> value.toFloat()
-        Short::class.javaPrimitiveType -> value.toInt().toShort()
-        Byte::class.javaPrimitiveType -> value.toInt().toByte()
-        Char::class.javaPrimitiveType -> value.toInt().toChar()
+        Short::class.javaPrimitiveType -> value.toLong().toShort()
+        Byte::class.javaPrimitiveType -> value.toLong().toByte()
+        Char::class.javaPrimitiveType -> value.toLong().toInt().toChar()
         else -> value
     }
     value is String && type == Char::class.javaPrimitiveType -> value[0]

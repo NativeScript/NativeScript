@@ -1,5 +1,7 @@
 package org.nativescript.kit
 
+// The hand port's Regions.kt over core's ViewBase, which views that are no View (SegmentedBarItem, TabViewItem) extend.
+
 /**
  * A run of a container's children that a template's `if` or `for` owns.
  * The container keeps static children and regions in template order and
@@ -9,12 +11,12 @@ package org.nativescript.kit
 class Region(internal var host: RegionHost?) : RegionHost {
     private var parts: List<RegionPart> = emptyList()
 
-    val views: List<View> get() = parts.flatMap { it.views }
+    val views: List<ViewBase> get() = parts.flatMap { it.views }
 
     /** Set by `Choose` while it renders a branch: the branch's first `attach` replaces the old views. */
     internal var replacing = false
 
-    fun set(views: List<View>) = setParts(views.map { RegionPart.Child(it) })
+    fun set(views: List<ViewBase>) = setParts(views.map { RegionPart.Child(it) })
 
     internal fun setParts(parts: List<RegionPart>) {
         replacing = false
@@ -26,7 +28,7 @@ class Region(internal var host: RegionHost?) : RegionHost {
      * Puts a view of the content being rendered in place now, for frameworks
      * that insert views top-down; the render's result settles their order.
      */
-    fun attach(view: View) {
+    fun attach(view: ViewBase) {
         if (replacing) parts = emptyList()
         replacing = false
         parts = parts + RegionPart.Child(view)
@@ -40,14 +42,14 @@ class Region(internal var host: RegionHost?) : RegionHost {
 }
 
 internal sealed class RegionPart {
-    abstract val views: List<View>
+    abstract val views: List<ViewBase>
 
-    class Child(val view: View) : RegionPart() {
-        override val views: List<View> get() = listOf(view)
+    class Child(val view: ViewBase) : RegionPart() {
+        override val views: List<ViewBase> get() = listOf(view)
     }
 
     class Nested(val region: Region) : RegionPart() {
-        override val views: List<View> get() = region.views
+        override val views: List<ViewBase> get() = region.views
     }
 }
 
@@ -55,11 +57,11 @@ internal sealed class RegionPart {
 class RegionFragment(private val owner: Region) {
     internal val parts = mutableListOf<RegionPart>()
 
-    fun addChild(view: View) {
+    fun addChild(view: ViewBase) {
         parts.add(RegionPart.Child(view))
     }
 
-    fun addTemplateChild(view: View) = addChild(view)
+    fun addTemplateChild(view: ViewBase) = addChild(view)
 
     fun addRegion(): Region {
         val region = Region(owner)
@@ -67,8 +69,8 @@ class RegionFragment(private val owner: Region) {
         return region
     }
 
-    fun kitAddChild(view: View) = addChild(view)
-    fun kitAddTemplateChild(view: View) = addTemplateChild(view)
+    fun kitAddChild(view: ViewBase) = addChild(view)
+    fun kitAddTemplateChild(view: ViewBase) = addTemplateChild(view)
     fun kitAddRegion(): Region = addRegion()
 }
 
@@ -81,7 +83,7 @@ interface RegionHost {
  * `v-if`/`v-else-if`/`v-else`, `@if`/`@else`, `{#if}`, `<Show>`, `cond && <X/>`:
  * the views of the branch `which` selects, rebuilt only when the selection changes.
  */
-fun Choose(region: Region, which: () -> Int, render: (Int) -> List<View>) =
+fun Choose(region: Region, which: () -> Int, render: (Int) -> List<ViewBase>) =
     chooseParts(region, which) { branch -> render(branch).map { RegionPart.Child(it) } }
 
 fun ChooseFragment(region: Region, which: () -> Int, render: (Int) -> RegionFragment) =
@@ -105,7 +107,7 @@ private fun chooseParts(region: Region, which: () -> Int, render: (Int) -> List<
     }
 }
 
-fun If(region: Region, condition: () -> Boolean, then: () -> List<View>, otherwise: (() -> List<View>)? = null) {
+fun If(region: Region, condition: () -> Boolean, then: () -> List<ViewBase>, otherwise: (() -> List<ViewBase>)? = null) {
     Choose(region, { if (condition()) 0 else 1 }) { if (it == 0) then() else otherwise?.invoke() ?: emptyList() }
 }
 
@@ -113,7 +115,7 @@ fun If(region: Region, condition: () -> Boolean, then: () -> List<View>, otherwi
  * `v-for`, `@for`, `{#each}`, `<For>`, `.map()`: one set of views per item,
  * kept by key across changes, so a row that stays keeps its views and state.
  */
-fun <Item> For(region: Region, items: () -> List<Item>, key: (Item, Double) -> String, render: (Item, Double) -> List<View>) =
+fun <Item> For(region: Region, items: () -> List<Item>, key: (Item, Double) -> String, render: (Item, Double) -> List<ViewBase>) =
     forParts(region, items, key) { item, index -> render(item, index).map { RegionPart.Child(it) } }
 
 /** `For` whose rows have an `if` or `for` of their own. */
@@ -158,7 +160,7 @@ class ForRow<Item> internal constructor(item: Item, index: Double) {
     val index = Signal(index)
 }
 
-fun <Item> ForEach(region: Region, items: () -> List<Item>, key: (Item, Double) -> String, render: (ForRow<Item>) -> List<View>) =
+fun <Item> ForEach(region: Region, items: () -> List<Item>, key: (Item, Double) -> String, render: (ForRow<Item>) -> List<ViewBase>) =
     forEachParts(region, items, key) { row -> render(row).map { RegionPart.Child(it) } }
 
 fun <Item> ForEachFragment(region: Region, items: () -> List<Item>, key: (Item, Double) -> String, render: (ForRow<Item>) -> RegionFragment) =

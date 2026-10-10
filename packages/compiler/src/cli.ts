@@ -315,7 +315,7 @@ const allowUnapplied = args.includes('--allow-unimplemented-properties') || rele
 const kitName = platform === 'android' ? 'kit-android' : 'NativeScriptKit';
 const unapplied = await (async () => {
   // A kit generated from core (its Core/ manifest) applies every property core declares, as core is its source.
-  if (platform === 'ios' && existsSync(join(KIT, 'Core', 'manifest.json'))) return [];
+  if ((platform === 'ios' && existsSync(join(KIT, 'Core', 'manifest.json'))) || (platform === 'android' && args.includes('--generated-kit'))) return [];
   const kit = platform === 'android'
     ? await import('./core-kotlin.ts').then((k) => ({ index: k.kotlinKitIndex(k.KIT), sources: k.KIT }))
     : { index: kitIndex(KIT), sources: KIT };
@@ -332,7 +332,7 @@ else if (unapplied.length && !(platform === 'ios' && args.includes('--all-errors
 if (platform === 'android') {
   const { writeAndroid } = await import('./android.ts');
   const css = kitCss(sheets);
-  await writeAndroid({ app, out: resolve(opt('--out', join(app, 'platforms', 'native-android'))!), name, framework: style, zone, components, modules, program, checker, files: sourceFiles, infos, css, root, routes: routing, lines: sourceLines, applicationId: opt('--bundle'), widgetsAar: opt('--widgets'), appDir, build: args.includes('--build'), bundle: args.includes('--aab') || args.includes('--device'), keyStore: keyStore(), plugins: plugins.all(), pluginFiles, reach, properties, compiledPlugins, resolved, mounted, corePatches: corePatchesAndroid(app, nodeModules(app)), allowUnapplied, allErrors: args.includes('--all-errors') });
+  await writeAndroid({ app, out: resolve(opt('--out', join(app, 'platforms', 'native-android'))!), name, framework: style, zone, components, modules, program, checker, files: sourceFiles, infos, css, root, routes: routing, lines: sourceLines, applicationId: opt('--bundle'), widgetsAar: opt('--widgets'), appDir, build: args.includes('--build'), bundle: args.includes('--aab') || args.includes('--device'), keyStore: keyStore(), plugins: plugins.all(), pluginFiles, reach, properties, compiledPlugins, resolved, mounted, corePatches: corePatchesAndroid(app, nodeModules(app)), allowUnapplied, allErrors: args.includes('--all-errors'), generatedKit: args.includes('--generated-kit'), cssAST: args.includes('--generated-kit') ? kitAst(sheets) : undefined });
   process.exit(0);
 }
 // Before the translator: it reads the plugin modules' symbol tables and which typings declare them.

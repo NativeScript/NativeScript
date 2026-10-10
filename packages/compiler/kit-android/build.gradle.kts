@@ -23,10 +23,12 @@ kotlin {
 
 // -PgeneratedKit: the kit generated from core (generated/kotlin, tools/native-kit/generate-android.mts) in place of the hand port,
 // on the runtime and the hand-written files the generated code calls (modules.mts' counterparts).
+// src/fromcore: what compiled apps call (the code generator's vocabulary) over the generated classes, as kit-apple's CoreBridge.swift.
 if (providers.gradleProperty("generatedKit").isPresent) {
     android.sourceSets["main"].java.srcDir("generated/kotlin")
+    android.sourceSets["main"].java.srcDir("src/fromcore/kotlin")
     val handPort = file("src/main/kotlin/org/nativescript/kit")
-    val kept = setOf("Signals.kt", "ColorMix.kt")
+    val kept = setOf("Signals.kt", "ColorMix.kt", "JS.kt", "ChangeDetection.kt")
     tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
         exclude { !it.isDirectory && it.file.parentFile == handPort && it.file.name !in kept }
     }

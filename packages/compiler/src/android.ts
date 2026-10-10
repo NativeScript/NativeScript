@@ -64,6 +64,13 @@ export interface AndroidBuild {
   allowUnapplied?: boolean;
   /** `--all-errors`: every construct the translator cannot handle, instead of the first. */
   allErrors?: boolean;
+  /**
+   * `--generated-kit`: the kit compiled from core (`-PgeneratedKit`). Core's own activity runs the app, which the app's
+   * `android.app.Application` starts, as NativeScript's runtime does, with the stylesheet as its build parses it.
+   */
+  generatedKit?: boolean;
+  /** The app's stylesheet as css2json-loader's AST, which core loads as `app.css` in the generated kit. */
+  cssAST?: string;
 }
 
 /** The flexbox react-nativescript-navigation's FrameNavigatorView renders a screen into. */
@@ -85,7 +92,7 @@ export async function writeAndroid(b: AndroidBuild): Promise<void> {
   const translator = new Translator(b.checker, b.infos, b.files, { pluginFiles: b.pluginFiles, reach: b.reach, properties: b.properties });
   translator.appModule = pkg;
   translator.allowUnapplied = !!b.allowUnapplied;
-  translator.core = new CoreKotlin(translator);
+  translator.core = new CoreKotlin(translator, !!b.generatedKit);
   translator.lines = b.lines;
   if (b.allErrors) translator.errors = [];
   const table: Record<string, [number, string, number][]> = {};
@@ -140,7 +147,25 @@ export async function writeAndroid(b: AndroidBuild): Promise<void> {
   const switches = (b.corePatches ?? []).map((p) => `        CorePatches.${p} = true\n`).join('');
   // The entry's own statements run the app (`Application.run`), after every module it imports.
   const start = `${switches}        Reactivity.schedule = Reactivity.Schedule.${SCHEDULE[b.framework as Framework].toUpperCase()}\n` + (b.mounted ? `${inits}        return Application.rootView()\n` : `${inits}${routes}        return ${b.root}().render()\n`);
-  writeFileSync(join(sources, '__Entry.kt'), `// Compiled by ns-native: the app's entry and its CSS.
+  if (b.generatedKit) {
+    const run = `${switches}        Reactivity.schedule = Reactivity.Schedule.${SCHEDULE[b.framework as Framework].toUpperCase()}\n` + (b.mounted
+      ? `        NativeScriptApplication.prepare(cssAST = appCSS)\n        CoreModules.initialize()\n${inits}`
+      : `        NativeScriptApplication.prepare(cssAST = appCSS)\n        CoreModules.initialize()\n${inits}        NativeScriptApplication.start { ${b.root}().render() }\n`);
+    writeFileSync(join(sources, '__Entry.kt'), `// Compiled by ns-native: the app's entry and its CSS.
+package ${pkg}
+
+import org.nativescript.kit.*
+
+/** The app, started before core's activity (com.tns.NativeScriptActivity) shows it. */
+class MainApplication : android.app.Application() {
+    override fun onCreate() {
+        super.onCreate()
+${run}    }
+}
+
+val appCSS = ${kotlinString(b.cssAST ?? '{"type":"stylesheet","stylesheet":{"rules":[]}}')}
+`);
+  } else writeFileSync(join(sources, '__Entry.kt'), `// Compiled by ns-native: the app's entry and its CSS.
 package ${pkg}
 
 import org.nativescript.kit.*
@@ -185,7 +210,7 @@ project(":kit").projectDir = file(${kotlinString(relative(b.out, kit))})
   writeFileSync(join(b.out, 'gradle.properties'), `org.gradle.jvmargs=-Xmx4g -Dfile.encoding=UTF-8
 android.useAndroidX=true
 nativescriptWidgetsAar=${widgets}
-`);
+${b.generatedKit ? 'generatedKit=true\n' : ''}`);
   writeFileSync(join(b.out, 'build.gradle.kts'), `plugins {
     id("com.android.application") version "8.12.1"
     id("com.android.library") version "8.12.1" apply false
@@ -248,16 +273,17 @@ ${overlays.map((m) => `        variant.sources.manifests.addStaticManifestFile($
 `);
   copyAndroidFonts(b.appDir, join(b.out, 'src', 'main', 'assets'));
   // App_Resources' manifest, else the runtime template's activity: the launch theme, then AppTheme once created.
-  writeFileSync(join(b.out, 'src', 'main', 'AndroidManifest.xml'), androidManifest({ app: b.app, applicationId, activity: `${pkg}.MainActivity` }) ?? `<?xml version="1.0" encoding="utf-8"?>
+  const activity = b.generatedKit ? 'com.tns.NativeScriptActivity' : `${pkg}.MainActivity`;
+  writeFileSync(join(b.out, 'src', 'main', 'AndroidManifest.xml'), androidManifest({ app: b.app, applicationId, activity, application: b.generatedKit ? `${pkg}.MainApplication` : undefined }) ?? `<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <application
+    <application${b.generatedKit ? `\n        android:name="${pkg}.MainApplication"` : ''}
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme"
         android:hardwareAccelerated="true">
         <activity
-            android:name=".MainActivity"
+            android:name="${activity}"
             android:label="@string/title_activity_kimera"
             android:configChanges="keyboard|keyboardHidden|orientation|screenSize|smallestScreenSize|screenLayout|locale|uiMode"
             android:theme="@style/LaunchScreenTheme"

@@ -1,5 +1,6 @@
 package org.nativescript.kit
 
+import java.lang.ref.SoftReference
 import java.lang.ref.WeakReference
 import java.util.IdentityHashMap
 
@@ -95,9 +96,13 @@ fun jsObjectToString(value: Any?): String = when (val v = jsBox(value)) {
     else -> if (jsNumeric(v) != null) "[object Number]" else "[object Object]"
 }
 
-/** NativeScript's `WeakRef`: `get()` (and the standard `deref()`) is the object while it lives. */
+/**
+ * NativeScript's `WeakRef`: `get()` (and the standard `deref()`) is the object while it lives. Soft, as V8 clears a
+ * WeakRef only in a full collection: core holds objects this alone keeps (an Animation its AnimatorListener reaches
+ * through one) and expects them while they work; ART clears a weak reference in any collection.
+ */
 class JSWeakRef<T : Any>(target: T) : JSDynamic {
-    private var ref: WeakReference<T>? = WeakReference(target)
+    private var ref: SoftReference<T>? = SoftReference(target)
 
     fun get(): T? = ref?.get()
     fun deref(): T? = ref?.get()
@@ -255,9 +260,18 @@ private fun jsReceiving(f: Any): (Any?, Array<out Any?>) -> Any? = when (f) {
 /** A function that reads `this`: a method of an untyped object literal. */
 class JSMethod(val call: (Any?, Array<out Any?>) -> Any?) : Function<Any?>
 
+/** A method read from a prototype for an instance (`View.prototype._setMinWidthNative`): the instance is its `this`. */
+fun jsBoundTo(value: Any?, receiver: Any?): Any? = if (value is JSMethod) JSFunction { args -> value.call(receiver, args.toTypedArray()) } else value
+
 /** `object.method(args)` on an untyped object: a method sees the object as `this`. */
 fun jsCallMethod(target: Any?, key: String, vararg args: Any?): Any? {
     // `fn.call(thisArg, …)`, `fn.apply(thisArg, list)` of a function value: a method sees `thisArg`, any other function ignores it.
+    // `fn.bind(thisArg, …)`: a method sees `thisArg`; the arguments given come first.
+    if (key == "bind" && jsIsFunction(target)) {
+        val self = args.getOrNull(0)
+        val given = args.drop(1)
+        return JSMethod { _, a -> if (target is JSMethod) jsBox(target.call(self, (given + a).toTypedArray())) else jsCall(target, *(given + a).toTypedArray()) }
+    }
     if ((key == "call" || key == "apply") && jsIsFunction(target)) {
         val rest = if (key == "call") args.drop(1) else (jsBox(args.getOrNull(1)) as? JSArray<*>)?.storage?.toList() ?: listOf()
         return if (target is JSMethod) jsBox(target.call(args.getOrNull(0), rest.toTypedArray())) else jsCall(target, *rest.toTypedArray())
