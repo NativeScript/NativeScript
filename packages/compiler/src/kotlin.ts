@@ -887,6 +887,14 @@ export class Translator implements AsyncTranslator {
     return (this.plainObjectClassSet = candidates);
   }
 
+  /** Whether code sets the variable to null or undefined itself. */
+  private assignedNull(d: ts.VariableDeclaration): boolean {
+    const sym = this.checker.getSymbolAtLocation(d.name);
+    const visit = (n: ts.Node): boolean => (ts.isBinaryExpression(n) && n.operatorToken.kind === ts.SyntaxKind.EqualsToken && ts.isIdentifier(n.left) && this.checker.getSymbolAtLocation(n.left) === sym
+      && (n.right.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(n.right) && n.right.text === 'undefined'))) || !!ts.forEachChild(n, visit);
+    return !!sym && visit(d.parent.parent.parent);
+  }
+
   /** Whether code compares the variable with undefined or null (`density === undefined`). */
   private testedForUndefined(d: ts.VariableDeclaration): boolean {
     const sym = this.checker.getSymbolAtLocation(d.name);
@@ -3341,6 +3349,12 @@ export class Translator implements AsyncTranslator {
         if (sym) this.nullableDecls.add(sym);
         return `${i}var ${name}: ${optionalType(t)} = null`;
       }
+      // Library mode: a string declared unset and set null somewhere (`let uri: string; ... uri = null`): null until set, as Java takes it.
+      if (this.library && !d.initializer && !lowered && t === 'String' && this.assignedNull(d)) {
+        const sym = this.checker.getSymbolAtLocation(d.name);
+        if (sym) this.nullableDecls.add(sym);
+        return `${i}var ${name}: String? = null`;
+      }
       // Library mode: `a ?? null`, `a || null`: nullable, whatever the type (unchecked for null) says.
       const orNull = !!d.initializer && ts.isBinaryExpression(d.initializer) && [ts.SyntaxKind.QuestionQuestionToken, ts.SyntaxKind.BarBarToken].includes(d.initializer.operatorToken.kind) && d.initializer.right.kind === ts.SyntaxKind.NullKeyword;
       if (this.library && orNull && !lowered && !t.endsWith('?') && t !== 'Any' && (this.isObjectType(t) || isFunctionType(t))) {
@@ -3372,6 +3386,12 @@ export class Translator implements AsyncTranslator {
         const sym = this.checker.getSymbolAtLocation(d.name);
         if (sym) this.nullableDecls.add(sym);
         return `${i}${constant ? 'val' : 'var'} ${name}: ${optionalType(t)} = ${this.coerce(d.initializer, optionalType(t))}`;
+      }
+      // Library mode: `a && b`, compared with null: whatever `b`'s type, null where `a` is.
+      if (this.library && read && ts.isBinaryExpression(read) && read.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken && !lowered && ['String', 'Double', 'Boolean'].includes(t) && this.testedForUndefined(d)) {
+        const sym = this.checker.getSymbolAtLocation(d.name);
+        if (sym) this.nullableDecls.add(sym);
+        return `${i}${constant ? 'val' : 'var'} ${name}: ${optionalType(t)} = ${this.coerce(d.initializer!, optionalType(t))}`;
       }
       // Library mode: a registered property's string, number or boolean (`const title = this.title`), compared with undefined:
       // undefined while unset, which its accessor reads as the type's zero.
@@ -3745,6 +3765,11 @@ export class Translator implements AsyncTranslator {
       const made = /^jsArrayOf<(.*?)>\(/.exec(code)?.[1];
       return made && `JSArray<${made}>` !== target.replace(/\?$/, '') ? `(${code} as ${target})` : code;
     }
+    // Library mode: a call of a function declared `number` that returns undefined (as NaN), where a nullable number goes: null for it.
+    if (this.library && target === 'Double?' && source === 'Double' && ts.isCallExpression(e)) {
+      const fn = this.checker.getResolvedSignature(e)?.declaration;
+      if (fn && (ts.isFunctionDeclaration(fn) || ts.isMethodDeclaration(fn)) && fn.body && fn.type?.kind === ts.SyntaxKind.NumberKeyword && returnsNull(fn.body)) return `(${this.expr(e)}).takeUnless { it.isNaN() }`;
+    }
     // Library mode: a value Kotlin holds nullable where a string, number or boolean goes: as script reads it, undefined.
     if (this.library && ['String', 'Double', 'Boolean'].includes(target) && source === optionalType(target)) return this.undefinedAs(this.expr(e), target);
     // Library mode: a Java enum's constant where core's code declares a number (its typings' enums are numbers): its ordinal.
@@ -3789,8 +3814,8 @@ export class Translator implements AsyncTranslator {
       // Library mode: a function declaring the `this` it takes, held untyped (a property descriptor's `get`): a JSMethod, given its receiver.
       const takesThis = (x: ts.Expression) => ts.isFunctionExpression(x) && x.parameters.some((q) => isThisParameter(q) && !this.voidThis(q));
       if (this.library && takesThis(bare)) return this.thisMethod(bare as ts.FunctionExpression);
-      // Library mode: a function of numbers, strings or booleans held untyped (an options object's `valueChanged`), which script may call with undefined.
-      if (this.library && (ts.isArrowFunction(bare) || ts.isFunctionExpression(bare)) && !bare.parameters.some((q) => q.dotDotDotToken || isThisParameter(q) || !ts.isIdentifier(q.name))) {
+      // Library mode and plugins: a function of numbers, strings or booleans held untyped (an options object's `valueChanged`), which core may call with undefined.
+      if ((this.library || this.pluginFiles.has(bare.getSourceFile().fileName)) && (ts.isArrowFunction(bare) || ts.isFunctionExpression(bare)) && !bare.parameters.some((q) => q.dotDotDotToken || isThisParameter(q) || !ts.isIdentifier(q.name))) {
         const types = bare.parameters.map((q) => this.paramType(q));
         if (types.some((t) => ['Double', 'Boolean', 'String'].includes(t))) {
           const ret = this.returnTypeOf(bare);
@@ -6006,7 +6031,7 @@ export class Translator implements AsyncTranslator {
         // JavaScript returns an operand, not a Boolean.
         // Library mode: a function `a && a.getItem` gives may be missing: nullable where a nullable variable takes it.
         const declared = ts.isVariableDeclaration(e.parent) && e.parent.initializer === e && ts.isIdentifier(e.parent.name) ? this.declaredTypeOf(e.parent.name) : null;
-        const t = this.library && declared && isNullable(declared) && isFunctionType(declared.replace(/^\((.*)\)\?$/, '$1')) ? declared : this.typeOf(e);
+        const t = this.library && declared && isNullable(declared) && (isFunctionType(declared.replace(/^\((.*)\)\?$/, '$1')) || ['String?', 'Double?', 'Boolean?'].includes(declared)) ? declared : this.typeOf(e);
         const v = this.fresh('__v');
         // Library mode: a right operand declared nullable (a field left unset) is the result as its type reads undefined.
         const right = this.library && ['String', 'Double', 'Boolean'].includes(t) && this.declaredTypeOf(e.right) === optionalType(t) ? this.undefinedAs(this.expr(e.right), t) : this.coerce(e.right, t);
@@ -6608,7 +6633,15 @@ export class Translator implements AsyncTranslator {
   /** A method of an untyped object literal: a function value, or one taking `this` when its body reads it. */
   private untypedMethod(p: ts.MethodDeclaration): string {
     const rest = p.parameters.some((q) => q.dotDotDotToken);
-    if (!thisNodes(p).length && !rest) return this.closure(p);
+    if (!thisNodes(p).length && !rest) {
+      // Called untyped (an options object's `valueChanged`), with undefined where a number, string or boolean goes.
+      const types = p.parameters.map((q) => this.paramType(q));
+      if (!(this.library || this.pluginFiles.has(p.getSourceFile().fileName)) || !types.some((t) => ['Double', 'Boolean', 'String'].includes(t)) || p.parameters.some((q) => isThisParameter(q) || !ts.isIdentifier(q.name))) return this.closure(p);
+      const ret = this.returnTypeOf(p);
+      const names = types.map((_, k) => `__u${k}`);
+      const call = `__f(${types.map((t, k) => (t === 'Any?' ? names[k] : this.fromAnyCode(names[k], t, true))).join(', ')})`;
+      return `run { val __f = ${this.closure(p, `(${types.join(', ')}) -> ${ret}`)}; { ${names.map((n) => `${n}: Any?`).join(', ')} -> ${ret === 'Unit' ? `${call}; Unit` : call} } }`;
+    }
     const ret = this.returnTypeOf(p);
     const binds = p.parameters.filter((q) => !isThisParameter(q)).map((q, k) => `val ${ident((q.name as ts.Identifier).text)}: ${this.typeOf(q.name)} = ${q.dotDotDotToken
       ? `JSArray(__a.drop(${k}).map { ${this.fromAnyCode('it', this.typeOf(q.name).replace(/^JSArray<(.*)>$/, '$1'), true)} }.toMutableList())`

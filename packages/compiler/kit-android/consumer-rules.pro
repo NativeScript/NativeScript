@@ -4,3 +4,5 @@
 -keep class org.nativescript.** { *; }
 # Core checks for Material by this name before drawing a TabView's navigation with it.
 -keepnames class com.google.android.material.navigation.NavigationBarView
+# Core reads theme attributes by name (Utils.android.resources.getPaletteColor).
+-keep class androidx.appcompat.R$attr { public static <fields>; }

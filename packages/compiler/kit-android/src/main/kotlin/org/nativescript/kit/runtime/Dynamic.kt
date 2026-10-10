@@ -336,6 +336,8 @@ fun jsJavaGet(target: Any, key: String): Any? {
     javaField(target, key, static)?.let { return fromJavaValue(it.get(if (static) null else target)) }
     val methods = javaMethods(cls, key, static)
     if (methods.isNotEmpty()) return JavaMethodRef(if (static) null else target, cls, key, methods)
+    // A class held as a value is also a `java.lang.Class` (`Class.forName(name).getField(f)`), after its own static members.
+    if (static) javaMethods(Class::class.java, key, false).takeIf { it.isNotEmpty() }?.let { return JavaMethodRef(target, Class::class.java, key, it) }
     return null
 }
 
