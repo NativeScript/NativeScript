@@ -3232,7 +3232,14 @@ export class Translator implements AsyncTranslator {
       // So is a function read from an untyped object (`const getItem = (<ItemsSource>src).getItem`), which it may lack.
       let read = d.initializer;
       while (read && (ts.isParenthesizedExpression(read) || ts.isAsExpression(read) || ts.isTypeAssertionExpression(read))) read = read.expression;
-      const untypedFunction = !!read && ts.isPropertyAccessExpression(read) && isFunctionType(t) && this.typeOf(read.expression) === 'Any?';
+      const untypedRead = (x: ts.Expression): boolean => {
+        while (ts.isParenthesizedExpression(x) || ts.isAsExpression(x) || ts.isTypeAssertionExpression(x)) x = x.expression;
+        if (ts.isPropertyAccessExpression(x)) return this.typeOf(x.expression) === 'Any?';
+        if (ts.isBinaryExpression(x) && [ts.SyntaxKind.AmpersandAmpersandToken, ts.SyntaxKind.BarBarToken, ts.SyntaxKind.QuestionQuestionToken].includes(x.operatorToken.kind)) return untypedRead(x.left) || untypedRead(x.right);
+        if (ts.isConditionalExpression(x)) return untypedRead(x.whenTrue) || untypedRead(x.whenFalse);
+        return false;
+      };
+      const untypedFunction = !!read && isFunctionType(t) && untypedRead(read);
       if (this.library && d.initializer && !lowered && (this.untypedAssertion(d.initializer) || recordRead || untypedFunction)) {
         const sym = this.checker.getSymbolAtLocation(d.name);
         if (sym) this.nullableDecls.add(sym);
@@ -4489,10 +4496,17 @@ export class Translator implements AsyncTranslator {
       if (decl && ts.isParameter(decl) && appDeclared && !!(decl.parent as ts.FunctionLikeDeclaration).body && this.mayBeNull(decl)) pt = optionalType(pt);
       // Library mode: a parameter the method declares nullable in Kotlin takes what may be missing as it is.
       else if (this.library && !isNullable(pt) && pt !== 'Any?' && this.nullableArgument(a)) pt = optionalType(pt);
+      // So does one the compiled function declares nullable (`toString(settings: …[] | null)`), whatever the checker strips.
+      else if (this.library && appDeclared && !isNullable(pt) && this.isObjectType(pt) && !['String', 'Double', 'Boolean'].includes(pt) && decl && ts.isParameter(decl) && ts.isIdentifier(decl.name) && !decl.questionToken && !decl.initializer
+        && ts.isFunctionDeclaration(decl.parent) && !decl.getSourceFile().isDeclarationFile && isNullable(this.paramType(decl))
+        && ts.isCallExpression(e) && (ts.isIdentifier(e.expression) || (ts.isPropertyAccessExpression(e.expression) && !!this.namespaceMember(e.expression)))) pt = optionalType(pt);
       const constantDefault = !!decl && ts.isParameter(decl) && !!decl.initializer && this.isConstant(decl.initializer) && appDeclared && !this.templateParams;
       if (decl && ts.isParameter(decl) && (decl.questionToken || decl.initializer) && appDeclared && !constantDefault) pt = optionalType(pt);
       // An argument that may be undefined where Kotlin's parameter has the constant default JavaScript would use.
       if (constantDefault && this.typeOf(a) === optionalType(pt)) { out.push(`(${this.coerce(a, optionalType(pt))} ?: ${this.coerce((decl as ts.ParameterDeclaration).initializer!, pt)})`); continue; }
+      // Library mode: a value a library collection holds (`cache.set(key, result)` with a null result), as script stores it.
+      if (this.library && decl && isLibDeclaration(decl) && this.isObjectType(pt) && !isNullable(pt) && !['String', 'Double', 'Boolean'].includes(pt) && !isFunctionType(pt)
+          && (isNullable(this.declaredTypeOf(a) ?? this.typeOf(a)) || this.maybeUndefined(a))) { out.push(`jsUnchecked<${pt}>(${this.coerce(a, optionalType(pt))})`); continue; }
       out.push(this.coerce(a, pt));
     }
     if (restAt >= 0 && appDeclared && list.length <= restAt) out.push(`${this.typeOf((params[restAt].valueDeclaration as ts.ParameterDeclaration).name)}()`);
@@ -5443,7 +5457,10 @@ export class Translator implements AsyncTranslator {
     const t = `${this.expr(target)}${q}`;
     const type = this.typeOf(target).replace(/\?$/, '');
     const [k, v] = (() => { const m = /^JSMap<(.*)>$/.exec(type); if (m) return splitTopLevel(m[1]); return [/^JSSet<(.*)>$/.exec(type)?.[1] ?? 'Any?', '']; })();
-    const arg = (n: number, as: string) => this.coerce(e.arguments[n], as);
+    // Library mode: a value or key that may be null where the collection's type says not (`cache.set(key, null)`), stored as script stores it.
+    const arg = (n: number, as: string) => this.library && this.isObjectType(as) && !isNullable(as) && !['String', 'Double', 'Boolean'].includes(as) && !isFunctionType(as)
+      && (isNullable(this.declaredTypeOf(e.arguments[n]) ?? this.typeOf(e.arguments[n])) || !!this.maybeUndefined(e.arguments[n]))
+      ? `jsUnchecked<${as}>(${this.coerce(e.arguments[n], optionalType(as))})` : this.coerce(e.arguments[n], as);
     switch (name) {
       case 'get': {
         const read = `${t}.get(${arg(0, k)})`;
@@ -5744,7 +5761,9 @@ export class Translator implements AsyncTranslator {
         const sym = op === K.AmpersandAmpersandToken ? '&&' : '||';
         if (this.isBool(e.left) && this.isBool(e.right)) return `${l()} ${sym} ${r()}`;
         // JavaScript returns an operand, not a Boolean.
-        const t = this.typeOf(e);
+        // Library mode: a function `a && a.getItem` gives may be missing: nullable where a nullable variable takes it.
+        const declared = ts.isVariableDeclaration(e.parent) && e.parent.initializer === e && ts.isIdentifier(e.parent.name) ? this.declaredTypeOf(e.parent.name) : null;
+        const t = this.library && declared && isNullable(declared) && isFunctionType(declared.replace(/^\((.*)\)\?$/, '$1')) ? declared : this.typeOf(e);
         const v = this.fresh('__v');
         // Library mode: a right operand declared nullable (a field left unset) is the result as its type reads undefined.
         const right = this.library && ['String', 'Double', 'Boolean'].includes(t) && this.declaredTypeOf(e.right) === optionalType(t) ? this.undefinedAs(this.expr(e.right), t) : this.coerce(e.right, t);

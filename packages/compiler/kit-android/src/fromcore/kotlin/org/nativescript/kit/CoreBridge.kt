@@ -117,7 +117,13 @@ fun ViewBase.kitSet(name: String, value: Any?) {
         if (path.size == 1) {
             // A style property the view's accessor passes to its style (`backgroundColor`), which converts what the template gives;
             // without such an accessor (`zIndex`) the value lands on the object and styles nothing, as in NativeScript.
-            if (JSPrototypes.holder(Style::class.java, key) != null && hasStyleAccessor(javaClass, key)) style?.let { jsSet(it, key, value); return@jsReport }
+            val styled = JSPrototypes.holder(Style::class.java, key) != null
+            if (JSPrototypes.holder(javaClass, key) != null) {
+                // A property of the view's own (an ActionItem's `visibility`), or an accessor passing a typed value to the style.
+                try { set(key, value) } catch (e: ClassCastException) { if (styled) style?.let { jsSet(it, key, value) } ?: throw e else throw e }
+                return@jsReport
+            }
+            if (styled && hasStyleAccessor(javaClass, key)) style?.let { jsSet(it, key, value); return@jsReport }
             set(key, value)
             return@jsReport
         }

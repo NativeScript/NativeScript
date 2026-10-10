@@ -18,6 +18,10 @@ class JSFunction(val body: (List<Any?>) -> Any?) {
 
 fun jsFunction(body: (List<Any?>) -> Any?): JSFunction = JSFunction(body)
 
+/** A value where a collection's element type goes, null included, as script stores it (the element type is erased). */
+@Suppress("UNCHECKED_CAST")
+fun <T> jsUnchecked(value: Any?): T = value as T
+
 /** An untyped value used as a property key: a symbol's own key, anything else as its string. */
 fun jsPropertyKey(value: Any?): String = if (value is JSSymbol) value.key else jsToString(value)
 
