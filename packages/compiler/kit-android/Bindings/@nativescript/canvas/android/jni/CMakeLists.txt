@@ -11,4 +11,5 @@ set_target_properties(canvasnative PROPERTIES IMPORTED_LOCATION ${CANVAS_NATIVE_
 
 add_library(canvaskit SHARED canvas_kit.c webgpu_kit.c)
 target_include_directories(canvaskit PRIVATE include)
-target_link_libraries(canvaskit canvasnative log)
+target_compile_definitions(canvaskit PRIVATE TARGET_OS_ANDROID)
+target_link_libraries(canvaskit canvasnative android log)

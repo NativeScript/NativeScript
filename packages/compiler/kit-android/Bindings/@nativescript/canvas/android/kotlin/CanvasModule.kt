@@ -42,9 +42,7 @@ object CanvasModule : JSHostObject() {
         }
         // `(canvas)`: the view's WebGPU context, over the instance `__gpu` holds.
         "__createWebGPUContext" -> {
-            val canvas = jsBox(args.getOrNull(0)) as NSCCanvas
-            canvas.initWebGPUContext(GPUNative.instancePointer(gpu.instance))
-            canvas.nativeContext.takeIf { it != 0L }?.let { GPUCanvasContextHost(it) }
+            GPUCanvasContextHost.create(jsBox(args.getOrNull(0)) as NSCCanvas, GPUNative.instancePointer(gpu.instance))
         }
         else -> ABSENT
     }

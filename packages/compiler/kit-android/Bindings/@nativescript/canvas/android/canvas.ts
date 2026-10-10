@@ -60,12 +60,14 @@ export class Canvas extends View {
 					}
 				},
 				surfaceResize(width: number, height: number) {
+					owner._gpuContext?.__attach(owner._canvas);
 					owner.notify({ eventName: 'surfaceResize', object: owner, width, height } as EventData);
 				},
 				surfaceDestroyed() {
 					owner.notify({ eventName: 'surfaceDestroyed', object: owner });
 				},
 				surfaceCreated() {
+					owner._gpuContext?.__attach(owner._canvas);
 					owner.notify({ eventName: 'surfaceCreated', object: owner });
 				},
 			}),

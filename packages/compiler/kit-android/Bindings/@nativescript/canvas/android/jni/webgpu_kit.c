@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <android/log.h>
+#include <android/native_window_jni.h>
 #include "canvas_native.h"
 
 #define FN(ret, name) JNIEXPORT ret JNICALL Java_org_nativescript_kit_canvas_GPUNative_##name
@@ -393,6 +394,19 @@ FN(void, end)(JNIEnv *env, jclass cls, jlong pass) {
 }
 
 // Canvas context and textures
+
+/** The window a Surface holds, acquired: a second reference keeps its address from naming a later window. */
+FN(jlong, windowOf)(JNIEnv *env, jclass cls, jobject surface) { return J(ANativeWindow_fromSurface(env, surface)); }
+FN(void, windowRelease)(JNIEnv *env, jclass cls, jlong window) { ANativeWindow_release((ANativeWindow *) (intptr_t) window); }
+
+FN(jlong, contextCreate)(JNIEnv *env, jclass cls, jlong instance, jlong window, jint width, jint height) {
+    return J(canvas_native_webgpu_context_create((struct CanvasWebGPUInstance *) (intptr_t) instance, (void *) (intptr_t) window, (uint32_t) width, (uint32_t) height));
+}
+
+/** Gives the context a surface for a new window; called with the window it already draws to, it would make a second one. */
+FN(void, contextResize)(JNIEnv *env, jclass cls, jlong context, jlong window, jint width, jint height) {
+    canvas_native_webgpu_context_resize((struct CanvasGPUCanvasContext *) (intptr_t) context, (void *) (intptr_t) window, (uint32_t) width, (uint32_t) height);
+}
 
 FN(void, configure)(JNIEnv *env, jclass cls, jlong context, jlong device, jstring format, jint usage, jint presentMode, jint alphaMode, jint width, jint height) {
     struct CanvasGPUSurfaceConfiguration config = {0};

@@ -3,6 +3,7 @@ package org.nativescript.kit.canvas
 import android.os.Handler
 import android.os.Looper
 import java.nio.ByteBuffer
+import org.nativescript.canvas.NSCCanvas
 import org.nativescript.kit.*
 
 /** libcanvaskit's WebGPU layer (jni/webgpu_kit.c), native pointers as Long; descriptors flattened as its comments say. */
@@ -47,6 +48,10 @@ object GPUNative {
     @JvmStatic external fun drawIndexed(pass: Long, indexCount: Int, instanceCount: Int, firstIndex: Int, baseVertex: Int, firstInstance: Int)
     @JvmStatic external fun end(pass: Long)
 
+    @JvmStatic external fun windowOf(surface: android.view.Surface): Long
+    @JvmStatic external fun windowRelease(window: Long)
+    @JvmStatic external fun contextCreate(instance: Long, window: Long, width: Int, height: Int): Long
+    @JvmStatic external fun contextResize(context: Long, window: Long, width: Int, height: Int)
     @JvmStatic external fun configure(context: Long, device: Long, format: String, usage: Int, presentMode: Int, alphaMode: Int, width: Int, height: Int)
     @JvmStatic external fun unconfigure(context: Long)
     @JvmStatic external fun currentTexture(context: Long): Long
@@ -434,14 +439,49 @@ class GPUTextureViewHost(val view: Long) : JSHostObject() {
     override val jsClassName: String get() = "GPUTextureView"
 }
 
-/** `GPUCanvasContext` over the context the plugin's canvas view made for WebGPU (NSCCanvas.initWebGPUContext). */
-class GPUCanvasContextHost(private val context: Long) : JSHostObject() {
+/**
+ * `GPUCanvasContext` over the canvas view's window. The binding makes the context itself rather than through
+ * NSCCanvas.initWebGPUContext, after which the view resizes it on every layout by making another Vulkan surface for
+ * the window its first surface holds (ERROR_NATIVE_WINDOW_IN_USE_KHR). Here a size change is the app's
+ * `configure({ size })`, and only a new window, the SurfaceView's surface made again, gets a surface of its own.
+ */
+class GPUCanvasContextHost private constructor(private val context: Long, private var window: Long) : JSHostObject() {
     private var frame: GPUTextureHost? = null
 
     override val jsClassName: String get() = "GPUCanvasContext"
-    override val methods: Set<String> get() = setOf("configure", "unconfigure", "getCurrentTexture", "presentSurface", "getCapabilities")
+    override val methods: Set<String> get() = setOf("configure", "unconfigure", "getCurrentTexture", "presentSurface", "getCapabilities", "__attach")
+
+    companion object {
+        fun create(canvas: NSCCanvas, instance: Long): GPUCanvasContextHost? {
+            val surface = canvas.surface ?: return null
+            if (canvas.surfaceWidth <= 0 || canvas.surfaceHeight <= 0) return null
+            val window = GPUNative.windowOf(surface).takeIf { it != 0L } ?: return null
+            val context = GPUNative.contextCreate(instance, window, canvas.surfaceWidth, canvas.surfaceHeight)
+            if (context == 0L) {
+                GPUNative.windowRelease(window)
+                return null
+            }
+            return GPUCanvasContextHost(context, window)
+        }
+    }
+
+    /** The view's surface was created or resized: a new window gets a surface; the one the context draws to is left as configured. */
+    private fun attach(canvas: NSCCanvas) {
+        val surface = canvas.surface ?: return
+        val next = GPUNative.windowOf(surface).takeIf { it != 0L } ?: return
+        if (next == window) {
+            GPUNative.windowRelease(next)
+            return
+        }
+        frame?.release()
+        frame = null
+        GPUNative.contextResize(context, next, canvas.surfaceWidth, canvas.surfaceHeight)
+        GPUNative.windowRelease(window)
+        window = next
+    }
 
     override fun invoke(key: String, args: Array<out Any?>): Any? = when (key) {
+        "__attach" -> { attach(jsBox(args.getOrNull(0)) as NSCCanvas); null }
         "configure" -> { configure(args.arg(0)); null }
         "unconfigure" -> { GPUNative.unconfigure(context); null }
         "getCurrentTexture" -> GPUNative.currentTexture(context).takeIf { it != 0L }?.let { GPUTextureHost(it).also { t -> frame = t } }
