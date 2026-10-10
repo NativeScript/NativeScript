@@ -949,7 +949,7 @@ export class Translator implements AsyncTranslator {
         if (ts.isClassDeclaration(st)) {
           const target = this.patterns.mixinTarget(st);
           if (target) { out.push(this.mixinDecl(st, target)); continue; }
-          const component = (ts.getDecorators(st) ?? []).some((d) => d.expression.getText().startsWith('Component'));
+          const component = (ts.getDecorators(st) ?? []).some((d) => d.expression.getText().startsWith('Component')) || (!!st.name && this.components.has(st.name.text));
           if (!component && st.name) {
             // A namespace merged into the class: its companion's members.
             this.mergedStatics = (this.checker.getSymbolAtLocation(st.name)?.declarations ?? []).filter((d): d is ts.ModuleDeclaration => ts.isModuleDeclaration(d) && d.getSourceFile() === sf).flatMap((md) => this.namespaceMembers(md, later) ?? []);
