@@ -55,6 +55,12 @@ export function kotlinKitIndex(sources: string | string[]): Map<string, KitType>
           types.set(ext[2], receiver);
           add(receiver, ext[4], { kind: ext[1] === 'fun' ? 'func' : 'var', static: !!ext[3], type: ext[7].trim().replace(/\s+get\(\).*$/, '') || 'Unit', params: ext[6] });
         }
+        const top = depth === 0 && !ext ? /^(?:@\w+\s+)*(?:lateinit\s+)?(?:val|var)\s+`?(\w+)`?\s*:\s*([^={]+)/.exec(line) : null;
+        if (top) {
+          const global = types.get(TOP_LEVEL) ?? { name: TOP_LEVEL, base: null, members: new Map(), props: new Set() };
+          types.set(TOP_LEVEL, global);
+          add(global, top[1], { kind: 'var', static: true, type: top[2].trim() });
+        }
         const fn = depth === 0 && !ext ? /^(?:inline\s+)?fun\s+(?:<[^>]*>\s*)?(\w+)\s*\(([^)]*)\)\s*(?::\s*([^={]+))?/.exec(line) : null;
         if (fn) {
           const global = types.get(TOP_LEVEL) ?? { name: TOP_LEVEL, base: null, members: new Map(), props: new Set() };
@@ -363,6 +369,8 @@ export class CoreKotlin implements KotlinCore {
   private receiver(target: ts.Expression, access: ts.PropertyAccessExpression): string {
     const code = this.t.expr(target);
     if (code === 'super' || code === 'this' || code.endsWith('!!')) return code;
+    // A core variable the kit holds nullable until core sets it (`Application`).
+    if (ts.isIdentifier(target) && code === target.text && isCoreDeclaration(this.t.resolve(target)?.declarations?.[0]) && kitMember(this.index, TOP_LEVEL, code)?.type.endsWith('?')) return access.questionDotToken ? `${code}?` : `${code}!!`;
     const nullable = this.t.typeOf(target).endsWith('?');
     if (access.questionDotToken || (access.flags & ts.NodeFlags.OptionalChain && nullable)) return `${code}?`;
     return nullable ? `${code}!!` : code;

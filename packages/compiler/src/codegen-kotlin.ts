@@ -63,7 +63,8 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
   /** A value a binding computes; what it throws is reported and the value is undefined. */
   const caught = (code: string) => `try { ${code} } catch (__e: Throwable) { jsReportUncaught(jsCaught(__e)); null }`;
   // Mounted templates take any value as a condition (`{detail && <Label/>}`), as JSX does.
-  const cond = (m: string, loops: Loop[]) => (options.slots ? `jsTruthy(${caught(call(m, loops))})` : call(m, loops));
+  // A condition is any value (Angular's `@if (person(); as person)`), as JavaScript tests it.
+  const cond = (m: string, loops: Loop[]) => (options.slots ? `jsTruthy(${caught(call(m, loops))})` : `jsTruthy(${call(m, loops)})`);
 
   const binding = (depth: number, text: string) => (deferBindings && templates.length ? templates.at(-1)!.bindings.push({ depth, text }) : say(depth, text));
   /** Puts a view into its container or region at the point its framework inserts it. */

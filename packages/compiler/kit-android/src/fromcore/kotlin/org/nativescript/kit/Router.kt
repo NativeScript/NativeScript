@@ -20,9 +20,9 @@ fun Emitter<Unit>.emit() = emit(Unit)
 
 /** The route a component was created for (Angular `ActivatedRoute`): set by the router before it constructs the routed component. */
 class ActivatedRoute(params: Map<String, String>, internal val outlet: String = Router.PRIMARY, internal val url: List<String> = emptyList()) {
-    class Snapshot(val params: JSObject)
+    class Snapshot(val params: JSRecord<String>)
 
-    val snapshot = Snapshot(JSObject(params.map { it.key to (it.value as Any?) }))
+    val snapshot = Snapshot(JSRecord(params.toList()))
 
     /** `route.params`: the route's parameters, replayed to each subscriber. */
     val params = RxBehaviorSubject(snapshot.params)

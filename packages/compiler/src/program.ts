@@ -219,6 +219,10 @@ const GLOBALS = `
     randomUUID(): \`\${string}-\${string}-\${string}-\${string}-\${string}\`;
   }
   declare var crypto: Crypto;
+`;
+
+/** What the Android kit's runtime adds (kit-android `runtime/Workers.kt`): its Worker throws, so an app's main-thread fallback runs. */
+const ANDROID_GLOBALS = `
   interface MessageEvent<T = any> { readonly data: T }
   interface ErrorEvent { readonly message: string }
   interface Worker {
@@ -228,6 +232,8 @@ const GLOBALS = `
     terminate(): void;
   }
   declare var Worker: { prototype: Worker; new (scriptURL: string | URL): Worker };
+  interface URL { readonly href: string; toString(): string }
+  declare var URL: { prototype: URL; new (url: string | URL, base?: string | URL): URL };
   declare function postMessage(message: any): void;
   declare function close(): void;
 `;
@@ -273,7 +279,7 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
   const shimPath = (m: string) => `/__shims__/${m.replace(/[@/]/g, '_')}.d.ts`;
   const files = new Map<string, string>(virtual);
   for (const [m, text] of Object.entries(SHIMS)) files.set(shimPath(m), text);
-  files.set('/__shims__/globals.d.ts', GLOBALS);
+  files.set('/__shims__/globals.d.ts', platform === 'android' ? GLOBALS + ANDROID_GLOBALS : GLOBALS);
   const modules = modulesDir ?? nodeModules(dirname([...roots, ...virtual.keys()][0]));
   const platformTypes = resolve(modules, PLATFORM_TYPES[platform]);
   if (!existsSync(platformTypes)) throw new Error(`${platformTypes} is missing: install ${PLATFORM_TYPES[platform].split('/index')[0]}`);
