@@ -905,6 +905,28 @@ export class Translator implements AsyncTranslator {
     return !!sym && visit(d.getSourceFile());
   }
 
+  /** Whether a binding is read as a condition or compared with null or undefined anywhere in its scope. */
+  private truthTested(name: ts.Identifier): boolean {
+    const sym = this.checker.getSymbolAtLocation(name);
+    if (!sym) return false;
+    const refers = (x: ts.Node | undefined): boolean => {
+      while (x && ts.isParenthesizedExpression(x)) x = x.expression;
+      return !!x && ts.isIdentifier(x) && this.checker.getSymbolAtLocation(x) === sym;
+    };
+    const nullish = (x: ts.Expression) => x.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(x) && x.text === 'undefined');
+    const logical = [ts.SyntaxKind.AmpersandAmpersandToken, ts.SyntaxKind.BarBarToken, ts.SyntaxKind.QuestionQuestionToken];
+    const equality = [ts.SyntaxKind.EqualsEqualsEqualsToken, ts.SyntaxKind.EqualsEqualsToken, ts.SyntaxKind.ExclamationEqualsEqualsToken, ts.SyntaxKind.ExclamationEqualsToken];
+    const visit = (n: ts.Node): boolean =>
+      (ts.isConditionalExpression(n) && refers(n.condition))
+      || ((ts.isIfStatement(n) || ts.isWhileStatement(n) || ts.isDoStatement(n)) && refers(n.expression))
+      || (ts.isPrefixUnaryExpression(n) && n.operator === ts.SyntaxKind.ExclamationToken && refers(n.operand))
+      || (ts.isBinaryExpression(n) && logical.includes(n.operatorToken.kind) && refers(n.left))
+      || (ts.isBinaryExpression(n) && equality.includes(n.operatorToken.kind) && ((refers(n.left) && nullish(n.right)) || (refers(n.right) && nullish(n.left))))
+      || !!ts.forEachChild(n, visit);
+    const scope = ts.findAncestor(name, (n) => ts.isFunctionLike(n) || ts.isSourceFile(n)) ?? name.getSourceFile();
+    return visit(scope);
+  }
+
   deferredDeclaration(name: string, t: string): string {
     const z = this.zero(t);
     if (z) return `var ${name}: ${t} = ${z}`;
@@ -3482,7 +3504,16 @@ export class Translator implements AsyncTranslator {
         // An array pattern past the array's end binds undefined.
         read = `${value}.element(${k}.0)`;
         // Library mode: past the array's end binds undefined, which the binding holds as null.
-        if (!el.initializer && !t.endsWith('?') && !(this.library && ['String', 'Double', 'Boolean'].includes(t) && mutable !== 'assign')) read = this.undefinedAs(read, t);
+        if (!el.initializer && !t.endsWith('?') && !(this.library && ['String', 'Double', 'Boolean'].includes(t) && mutable !== 'assign')) {
+          // A string, number or boolean the code tests (`second ? … : …`) is held as null past the end: undefined is falsy, "undefined" is not.
+          if (!this.library && mutable !== 'assign' && ts.isIdentifier(el.name) && ['String', 'Double', 'Boolean'].includes(t) && this.truthTested(el.name)) {
+            const sym = this.checker.getSymbolAtLocation(el.name);
+            if (sym) this.nullableDecls.add(sym);
+            lines.push(`${i}${kw}${ident(el.name.text)}: ${optionalType(t)} = ${read}`);
+            return;
+          }
+          read = this.undefinedAs(read, t);
+        }
       }
       if (el.initializer) read = `(${read} ?: ${this.coerce(el.initializer, t)})`;
       if (ts.isIdentifier(el.name)) {
