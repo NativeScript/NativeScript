@@ -1,5 +1,6 @@
 package org.nativescript.kit
 
+import java.util.concurrent.ConcurrentHashMap
 import java.lang.reflect.Array as JavaArray
 import java.lang.reflect.Field
 import java.lang.reflect.Method
@@ -148,18 +149,32 @@ fun getClass(value: Any?): String = when (value) {
 /** Properties script added to a Java object, kept with the object. */
 private val javaExpandos = WeakHashMap<Any, JSObject>()
 
+/**
+ * A class's public members by name, looked up once: `getMethods()` copies and sorts every public
+ * method, and a missed `getField` throws, both too slow for script setting a view's text per frame.
+ */
+private class JavaMembers(private val cls: Class<*>) {
+    val methods: Map<String, List<Method>> = cls.methods.filter { !Modifier.isStatic(it.modifiers) }.groupBy { it.name }
+    val staticMethods: Map<String, List<Method>> = cls.methods.filter { Modifier.isStatic(it.modifiers) }.groupBy { it.name }
+    private val fields = ConcurrentHashMap<String, Any>()
+
+    fun field(name: String): Field? = fields.getOrPut(name) {
+        try { cls.getField(name) } catch (_: NoSuchFieldException) { Unit }
+    } as? Field
+}
+
+private val javaMembers = ConcurrentHashMap<Class<*>, JavaMembers>()
+
+private fun membersOf(cls: Class<*>): JavaMembers = javaMembers.getOrPut(cls) { JavaMembers(cls) }
+
 /** A public field of the object's class, or null. */
 private fun javaField(target: Any, name: String, static: Boolean): Field? {
     val cls = if (static && target is Class<*>) target else target.javaClass
-    return try {
-        cls.getField(name).takeIf { Modifier.isStatic(it.modifiers) == static }
-    } catch (_: NoSuchFieldException) {
-        null
-    }
+    return membersOf(cls).field(name)?.takeIf { Modifier.isStatic(it.modifiers) == static }
 }
 
 private fun javaMethods(cls: Class<*>, name: String, static: Boolean): List<Method> =
-    cls.methods.filter { it.name == name && Modifier.isStatic(it.modifiers) == static }
+    membersOf(cls).let { if (static) it.staticMethods else it.methods }[name] ?: emptyList()
 
 /** `key in javaObject`: a public method or field of its class, or a property script added to it. */
 fun jsJavaHas(target: Any, key: String): Boolean {
