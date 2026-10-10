@@ -1938,6 +1938,8 @@ export class Translator implements AsyncTranslator {
     }
 
     for (const n of notOverrides) overridden.delete(n);
+    // An accessor over a property of the generated kit's class (`get width()` of a view, its open `var width`).
+    if (this.generatedKit && kitRoot) for (const m of cls.members) if (ts.isAccessor(m) && !isStatic(m) && this.core?.kitMember(kitRoot, m.name.getText())?.kind === 'var') overridden.add(m.name.getText());
     const memberOpen = open ? 'open ' : '';
     const mods = (n: string, member = true) => (overridden.has(n) ? 'override ' : member ? memberOpen : '');
     const ctor = cls.members.find((m): m is ts.ConstructorDeclaration => ts.isConstructorDeclaration(m) && !!m.body);
@@ -2645,6 +2647,12 @@ export class Translator implements AsyncTranslator {
     const arg = heritage.typeArguments?.[0];
     const el = arg ? this.type(this.checker.getTypeFromTypeNode(arg), arg) : 'Any?';
     return heritage.expression.text === 'Array' ? `JSArray<${el}>` : `JSSet<${el}>`;
+  }
+
+  /** `global` or `globalThis` as declarations give them: the program's global object. */
+  private isGlobalObject(e: ts.Expression): boolean {
+    while (ts.isParenthesizedExpression(e) || ts.isAsExpression(e)) e = e.expression;
+    return ts.isIdentifier(e) && (e.text === 'global' || e.text === 'globalThis') && (this.resolve(e)?.declarations ?? []).every((d) => d.getSourceFile().isDeclarationFile);
   }
 
   /** Whether the app is built on the kit compiled from core, whose classes are core's own. */
@@ -4329,6 +4337,11 @@ export class Translator implements AsyncTranslator {
   private property(e: ts.PropertyAccessExpression): string {
     const name = e.name.text;
     const target = e.expression;
+    // A name of the global object (`global.CanvasModule`, which a binding installs): read by name, as script reads it.
+    if (!this.library && this.isGlobalObject(target)) {
+      const t = this.typeOf(e);
+      return t === 'Any?' ? `jsGet(jsGlobalThis, ${kotlinString(name)})` : this.fromAnyCode(`jsGet(jsGlobalThis, ${kotlinString(name)})`, t, true);
+    }
     if (this.isSelf(target) && this.props.has(name)) return `this.${ident(name)}.value`;
     if (name === 'raw' && this.symbolName(target) === 'TemplateStringsArray') return `jsTemplateRaw(${this.expr(target)})`;
     if (name === 'description' && this.typeOf(target) === 'JSSymbol') return `${this.expr(target)}.jsDescription`;
@@ -5899,6 +5912,7 @@ export class Translator implements AsyncTranslator {
     const eventData = this.library && ts.isPropertyAccessExpression(left) && ((this.typeOf(left.expression).replace(/\?$/, '') === 'EventData' && !['eventName', 'object'].includes(left.name.text))
       // `promise.cancel = …` on the kit's promise: kept beside it, as script adds it.
       || this.isPromiseType(this.typeOf(left.expression).replace(/\?$/, '')));
+    if (ts.isPropertyAccessExpression(left) && !this.library && this.isGlobalObject(left.expression)) return `jsSet(jsGlobalThis, ${kotlinString(left.name.text)}, ${this.coerce(right, 'Any?')})`;
     // `record.key = v` of a `Record<string, T>`: its entry.
     const record = ts.isPropertyAccessExpression(left) ? /^JSRecord<(.*)>\??$/.exec(this.typeOf(left.expression)) : null;
     if (record && ts.isPropertyAccessExpression(left)) return `${this.expr(left.expression)}${this.typeOf(left.expression).endsWith('?') ? '!!' : ''}[${kotlinString(left.name.text)}] = ${this.coerce(right, record[1])}`;

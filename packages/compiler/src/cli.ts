@@ -25,6 +25,7 @@ import { solidComponent, solidRoutes, solidStore } from './solid.ts';
 import { octaneApp } from './octane.ts';
 import { appDeclarations, createProgram, nodeModules } from './program.ts';
 import { corePatches, corePatchesAndroid } from './core-patches.ts';
+import { androidBindings } from './bindings-android.ts';
 import { KIT, KIT_PLUGINS } from './core.ts';
 import { kitIndex } from './kit-index.ts';
 import { describe, PropertyGuard } from './unimplemented.ts';
@@ -283,12 +284,19 @@ for (const f of modules) {
   if (rewritten !== undefined && rewritten !== text) overrides.set(f, rewritten);
 }
 const virtual = new Map([...components.map((c) => [c.file, c.source] as [string, string]), ...overrides]);
+// A plugin binding the engine is the kit's binding on Android: its script replaced, its native code linked, its typings read.
+const bindings = platform === 'android' ? androidBindings(app) : [];
+const kitReplacements: Record<string, string> = {};
+for (const b of bindings) {
+  kitReplacements[b.package] = b.script;
+  plugins.get(join(nodeModules(app), b.package));
+}
 const declarations = [
   ...appDeclarations(app),
   // The native typings of plugins whose components compile with the app's.
   ...plugins.all().flatMap((p) => p.typings),
 ];
-const replacements = pluginReplacements(app, platform);
+const replacements = { ...kitReplacements, ...pluginReplacements(app, platform) };
 modules.push(...Object.values(replacements).filter((f) => !modules.includes(f)));
 const { checker, program, files: sourceFiles, pluginFiles, resolved, lenient: lenientApp } = createProgram(modules, virtual, platform, undefined, plugins, declarations, replacements);
 const infos = new Map<string, ComponentInfo & { outputs?: string[]; outputFields?: Record<string, string>; optional?: string[]; passed?: boolean; fragment?: boolean; initThrows?: boolean }>(components.map((c) => [c.name, { name: c.name, props: c.props, outputs: c.outputs, outputFields: c.outputFields, optional: c.optional, passed: c.passed, fragment: framework === 'angular' && !c.page && isFragment(c.template) }]));
@@ -338,7 +346,7 @@ else if (unapplied.length && !(platform === 'ios' && args.includes('--all-errors
 if (platform === 'android') {
   const { writeAndroid } = await import('./android.ts');
   const css = kitCss(sheets);
-  await writeAndroid({ app, out: resolve(opt('--out', join(app, 'platforms', 'native-android'))!), name, framework: style, zone, components, modules, program, checker, files: sourceFiles, infos, css, root, routes: routing, routeTree, lines: sourceLines, applicationId: opt('--bundle'), widgetsAar: opt('--widgets'), appDir, build: args.includes('--build'), bundle: args.includes('--aab') || args.includes('--device'), keyStore: keyStore(), plugins: plugins.all(), pluginFiles, reach, properties, compiledPlugins, resolved, mounted, corePatches: corePatchesAndroid(app, nodeModules(app)), allowUnapplied, allErrors: args.includes('--all-errors'), lenient: lenientApp, generatedKit: args.includes('--generated-kit'), cssAST: args.includes('--generated-kit') ? kitAst(sheets) : undefined });
+  await writeAndroid({ app, out: resolve(opt('--out', join(app, 'platforms', 'native-android'))!), name, framework: style, zone, components, modules, program, checker, files: sourceFiles, infos, css, root, routes: routing, routeTree, lines: sourceLines, applicationId: opt('--bundle'), widgetsAar: opt('--widgets'), appDir, build: args.includes('--build'), bundle: args.includes('--aab') || args.includes('--device'), keyStore: keyStore(), plugins: plugins.all(), pluginFiles, reach, properties, compiledPlugins, resolved, mounted, corePatches: corePatchesAndroid(app, nodeModules(app)), allowUnapplied, allErrors: args.includes('--all-errors'), lenient: lenientApp, bindings: bindings.filter((b) => replacements[b.package] === b.script), generatedKit: args.includes('--generated-kit'), cssAST: args.includes('--generated-kit') ? kitAst(sheets) : undefined });
   process.exit(0);
 }
 // Before the translator: it reads the plugin modules' symbol tables and which typings declare them.

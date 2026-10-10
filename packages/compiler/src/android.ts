@@ -7,6 +7,7 @@ import ts from 'typescript';
 import type { ComponentIR } from './ir.ts';
 import { Translator, kotlinString } from './kotlin.ts';
 import type { RouteNode } from './angular.ts';
+import { ndk, prepareBindingArchives, type AndroidBinding } from './bindings-android.ts';
 import { render } from './codegen-kotlin.ts';
 import { SCHEDULE, type Framework } from './codegen.ts';
 import { addKotlinInterfaces, translateKotlinModules } from './kotlin-modules.ts';
@@ -69,6 +70,8 @@ export interface AndroidBuild {
   allErrors?: boolean;
   /** The app's own configuration leaves strict checking off. */
   lenient?: boolean;
+  /** The kit's bindings of plugins the app uses (bindings-android.ts). */
+  bindings?: AndroidBinding[];
   /**
    * `--generated-kit`: the kit compiled from core (`-PgeneratedKit`). Core's own activity runs the app, which the app's
    * `android.app.Application` starts, as NativeScript's runtime does, with the stylesheet as its build parses it.
@@ -121,6 +124,12 @@ export async function writeAndroid(b: AndroidBuild): Promise<void> {
   const widgets = b.widgetsAar ? resolve(b.widgetsAar) : findWidgetsAar(b.app);
   // Before the translator: calls into plugin classes are checked against the plugins' built AARs.
   const native = pluginNativeAndroid(b.plugins ?? [], { app: b.app, say });
+  const bindingDefines: string[] = [];
+  for (const binding of b.bindings ?? []) {
+    const prepared = prepareBindingArchives(binding, native.archives, join(b.out, 'bindings'));
+    native.archives = prepared.archives;
+    bindingDefines.push(...prepared.defines);
+  }
   const translator = new Translator(b.checker, b.infos, b.files, { pluginFiles: b.pluginFiles, reach: b.reach, properties: b.properties });
   translator.appModule = pkg;
   translator.allowUnapplied = !!b.allowUnapplied;
@@ -187,8 +196,10 @@ export async function writeAndroid(b: AndroidBuild): Promise<void> {
   const switches = (b.corePatches ?? []).map((p) => `        CorePatches.${p} = true\n`).join('');
   // The entry's own statements run the app (`Application.run`), after every module it imports.
   const start = `${switches}        Reactivity.schedule = Reactivity.Schedule.${SCHEDULE[b.framework as Framework].toUpperCase()}\n` + (b.mounted ? `${inits}        return Application.rootView()\n` : `${inits}${routes}        return ${b.root}().render()\n`);
+  // A binding's objects are in place before any module runs, as the plugin's engine module is installed at startup.
+  const installs = (b.bindings ?? []).map((x) => `        ${x.installer}.install()\n`).join('');
   if (b.generatedKit) {
-    const run = `${switches}        Reactivity.schedule = Reactivity.Schedule.${SCHEDULE[b.framework as Framework].toUpperCase()}\n` + (b.mounted
+    const run = `${installs}${switches}        Reactivity.schedule = Reactivity.Schedule.${SCHEDULE[b.framework as Framework].toUpperCase()}\n` + (b.mounted
       ? `        NativeScriptApplication.prepare(cssAST = appCSS)\n        CoreModules.initialize()\n${inits}`
       : `        NativeScriptApplication.prepare(cssAST = appCSS)\n        CoreModules.initialize()\n${inits}${b.routeTree ? `        Router.shared.config = ${kotlinRouteConfig(b.routeTree, '        ')}\n` : routes}        NativeScriptApplication.start { ${b.root}().render() }\n`);
     writeFileSync(join(sources, '__Entry.kt'), `// Compiled by ns-native: the app's entry and its CSS.
@@ -230,6 +241,10 @@ val appCSS = ${kotlinString(b.css)}
   // A plugin built into an AAR brings its manifest as a library's; the merger takes it from there.
   const overlays = pluginManifests({ app: b.app, applicationId, dir: join(b.out, 'plugin-manifests'), except: new Set((b.plugins ?? []).map((p) => p.name)) });
   const gradleFile = (f: string) => (existsSync(join(appResources, f)) ? `apply(from = ${kotlinString(join(appResources, f))})\n` : '');
+  if (b.bindings?.length) {
+    mkdirSync(join(b.out, 'bindings'), { recursive: true });
+    writeFileSync(join(b.out, 'bindings', 'CMakeLists.txt'), `cmake_minimum_required(VERSION 3.22)\nproject(bindings)\n${b.bindings.map((x, k) => `add_subdirectory(${JSON.stringify(x.jni)} binding${k})\n`).join('')}`);
+  }
   writeFileSync(join(b.out, 'settings.gradle.kts'), `pluginManagement {
     repositories {
         google()
@@ -267,8 +282,8 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "1.0.0"
-    }
-
+${bindingDefines.length ? `        externalNativeBuild { cmake { arguments += listOf(${bindingDefines.map(kotlinString).join(', ')}) } }\n` : ''}    }
+${b.bindings?.length ? `    ndkVersion = ${kotlinString(ndk().version)}\n    externalNativeBuild { cmake { path = file(${kotlinString(join(b.out, 'bindings', 'CMakeLists.txt'))}) } }\n${b.bindings.map((x) => `    sourceSets["main"].java.srcDirs(${kotlinString(x.kotlin)})\n`).join('')}` : ''}
     sourceSets["main"].res.srcDirs(${kotlinString(resources)}, "src/main/res")
 ${['java', 'assets'].filter((d) => existsSync(join(main, d))).map((d) => `    sourceSets["main"].${d}.srcDirs(${kotlinString(join(main, d))})\n`).join('')}
     buildTypes {

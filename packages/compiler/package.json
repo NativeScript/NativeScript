@@ -21,6 +21,7 @@
     "kit-android/gradlew",
     "kit-android/gradle/",
     "kit-android/src/",
+    "kit-android/Bindings/",
     "docs/CLI.md"
   ],
   "engines": {
