@@ -148,6 +148,7 @@ func jsIsTuple(_ value: Any) -> Bool { jsTypeKind(value) == .tuple }
 
 /// Whether `value` is a Swift closure (a JavaScript function).
 func jsIsFunction(_ value: Any) -> Bool {
+    if value is JSFunctionObject { return true }
     guard jsTypeKind(value) == .function else { return false }
     if value is JSFunction { return true }
     let name = String(describing: type(of: value))
@@ -608,6 +609,7 @@ public func jsCall(_ function: Any?, _ arguments: Any?...) throws -> Any? {
 /// `f(...args)` on an untyped value.
 @discardableResult
 public func jsCall(_ function: Any?, spread arguments: [Any?]) throws -> Any? {
+    if let f = jsFlat(function) as? JSFunctionObject { return try f.call(nil, arguments) }
     if let f = jsFlat(function) as? JSFunction { return try f(arguments) }
     if let method = jsFlat(function) as? JSMethod { return try method(nil, arguments) }
     if let moot = jsFlat(function) as? JSMootValue { throw moot.unavailable() }
@@ -663,6 +665,7 @@ public func jsObjectAssign<T: JSDynamic>(_ target: T, _ sources: Any?...) -> T {
 /// `typeof value`.
 public func jsTypeof(_ value: Any?) -> String {
     guard let v = jsFlat(value) else { return "undefined" }
+    if v is JSFunctionObject { return "function" }
     if jsIsOpaqueObject(v) { return v is JSSymbol ? "symbol" : "object" }
     if let boolean = jsNativeBoolean(v) { _ = boolean; return "boolean" }
     if jsIsNativeNumber(v) { return "number" }

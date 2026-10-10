@@ -926,7 +926,9 @@ export class Translator implements AsyncTranslator {
     if (this.isPrototypeRef(n) || this.isPrototypeMember(n) || (ts.isMetaProperty(n) && n.keywordToken === ts.SyntaxKind.ImportKeyword) || this.declaredNullable(n)) return 'Any?';
     // `value.constructor` (library mode) is read as its class, whatever the receiver.
     if (this.library && ts.isPropertyAccessExpression(n) && n.name.text === 'constructor' && !isWriteTarget(n) && !(ts.isPropertyAccessExpression(n.parent) && n.parent.expression === n && n.parent.name.text === 'name')) return 'Any?';
-    if (this.untypedThis.has(n) || (ts.isIdentifier(n) && n.text === 'globalThis' && this.isGlobalThis(n)) || this.isAmbientGlobal(n)) return 'Any?';
+    if (this.untypedThis.has(n) || (ts.isIdentifier(n) && n.text === 'globalThis' && this.isGlobalThis(n)) || this.isAmbientGlobal(n) || this.holdsFunctionObject(n)) return 'Any?';
+    // A function reading the `this` it is called with, as a value: the function object calling it so.
+    if (!this.library && ts.isIdentifier(n) && this.thisFunction(n)) return 'Any?';
     if (this.library && (this.holdsMethods(n) || ((ts.isIdentifier(n) || ts.isVariableDeclaration(n) || ts.isCallExpression(n) || ts.isFunctionExpression(n)) && this.carriesMethod(n)))) return 'Any?';
     if (this.library && (ts.isIdentifier(n) || ts.isVariableDeclaration(n))) {
       const own = ts.isVariableDeclaration(n) ? n : ts.isVariableDeclaration(n.parent) && n.parent.name === n ? n.parent : this.resolve(n)?.valueDeclaration;
@@ -1253,9 +1255,9 @@ export class Translator implements AsyncTranslator {
     return `({ (__this: Any?, __a: [Any?]) throws -> Any? in try jsSet(${target}, ${swiftString(forward.name.text)}, jsArg(__a, 0)); return nil } as JSMethod)`;
   }
 
-  /** Library mode: a function declaration with a `this` parameter, named as a value rather than called. */
+  /** A function declaration with a `this` parameter, named as a value rather than called. */
   private thisFunction(e: ts.Identifier): ts.FunctionDeclaration | null {
-    if (!this.library || (ts.isCallExpression(e.parent) && e.parent.expression === e)) return null;
+    if (ts.isCallExpression(e.parent) && e.parent.expression === e) return null;
     const decl = this.resolve(e)?.valueDeclaration;
     return decl && ts.isFunctionDeclaration(decl) && decl.body && takesThis(decl) ? decl : null;
   }
@@ -1307,7 +1309,7 @@ export class Translator implements AsyncTranslator {
   /** A declared type, before the narrowing the checker applies at a use. */
   declaredTypeOf(e: ts.Expression): string | null {
     if (ts.isElementAccessExpression(e) && this.typeOf(e.expression).replace(/[?!]$/, '') === 'JSRecord<Any?>') return 'Any?';
-    if (this.library && this.holdsMethods(e)) return 'Any?';
+    if ((this.library && this.holdsMethods(e)) || this.holdsFunctionObject(e)) return 'Any?';
     const sym = this.checker.getSymbolAtLocation(ts.isPropertyAccessExpression(e) ? e.name : e);
     // A member of a mapped type (`Partial<T>`): optional where `T` declares it required.
     if (sym && !sym.valueDeclaration && sym.flags & ts.SymbolFlags.Optional && sym.declarations?.length) {
@@ -1688,7 +1690,7 @@ export class Translator implements AsyncTranslator {
       const ref = ts.isModuleDeclaration(decl) ? `${named}.self` : named;
       // A declared function as Swift has it, its optional parameters as emitted.
       const t = this.boxedGeneric(decl, ts.isFunctionDeclaration(decl) && decl.body ? escapingFunction(functionParts(this.functionValueType(decl))!) : this.type(this.checker.getTypeOfSymbolAtLocation(sym, decl), decl));
-      entries.push(`(${swiftString(exported.name)}, ${this.convert(ref, t, 'Any?')})`);
+      entries.push(`(${swiftString(exported.name)}, ${ts.isFunctionDeclaration(decl) && decl.body && !takesThis(decl) ? this.boxDeclared(ref, decl) : this.convert(ref, t, 'Any?')})`);
     }
     return `JSObject([${entries.join(', ')}])`;
   }
@@ -2080,7 +2082,7 @@ ${members.join('\n')}
   }
 
   /** `JSDynamic`: the object's keys and members by name, for printing, JSON and untyped access. */
-  private dynamicMembers(fields: { name: string; type: string }[], className: string | null, override: boolean, methods: { name: string; type: string; available?: number }[] = [], symbols: { key: string; member: string; type: string }[] = [], expando = false, raw = new Set<string>(), accessors: { name: string; get: string | null; set: string | null }[] = [], symbolKeyedBase = false, extra = false): string[] {
+  private dynamicMembers(fields: { name: string; type: string }[], className: string | null, override: boolean, methods: { name: string; type: string; available?: number; length?: number }[] = [], symbols: { key: string; member: string; type: string }[] = [], expando = false, raw = new Set<string>(), accessors: { name: string; get: string | null; set: string | null }[] = [], symbolKeyedBase = false, extra = false): string[] {
     const o = override ? 'override ' : '';
     const keys = fields.map((f) => (f.type.endsWith('?') ? `(self.${ident(f.name)} == nil ? [] : [${swiftString(f.name)}])` : `[${swiftString(f.name)}]`));
     const lines = [
@@ -2093,8 +2095,8 @@ ${members.join('\n')}
         ...fields.map((f) => ({ name: f.name, code: `return ${raw.has(f.name) ? `jsExpandoGet(self, ${swiftString(f.name)})` : isFunctionType(f.type.replace(/^\((.*)\)[?!]$/, '$1')) ? this.boxedField(`self.${ident(f.name)}`, f.type) : this.untypedEnum(`self.${ident(f.name)}`, f.type)}` })),
         ...accessors.map((a) => ({ name: a.name, code: `return ${a.get ?? 'nil'}` })),
         ...methods.filter((m) => !fields.some((f) => f.name === m.name)).map((m) => ({ name: m.name, code: m.available
-          ? `if #available(iOS ${m.available}, *) { return ${this.boxFunction(`self.${ident(m.name)}`, m.type)} } else { return nil }`
-          : `return ${this.boxFunction(`self.${ident(m.name)}`, m.type)}` })),
+          ? `if #available(iOS ${m.available}, *) { return ${this.boxFunction(`self.${ident(m.name)}`, m.type, -1, m.name, m.length)} } else { return nil }`
+          : `return ${this.boxFunction(`self.${ident(m.name)}`, m.type, -1, m.name, m.length)}` })),
       ], symbols.map((f) => `            case ${f.key}: return ${f.member}`), `return ${override ? 'super[jsKey: key]' : expando ? 'jsExpandoGet(self, key)' : extra ? 'jsExtra?[jsKey: key] ?? nil' : 'nil'}`),
       '        }',
       '        set {',
@@ -2237,16 +2239,26 @@ ${members.join('\n')}
     return { throws: this.initThrows(type) };
   }
 
-  /** A typed function value as an untyped JavaScript function, callable through `jsCall`. */
-  boxFunction(code: string, type: string, restAt = -1): string {
+  /** A typed function value as an untyped JavaScript function, callable through `jsCall`, its `name` and `length` script's to read. */
+  boxFunction(code: string, type: string, restAt = -1, name = '', length?: number, trailing?: { ref: string; from: number }): string {
     let fn = functionParts(isOptional(type) ? type.replace(/\?$/, '').replace(/^\((.*)\)$/, '$1') : type)!;
     if (restAt < 0) restAt = fn.rest;
     // Lenient code: the function's own declaration may give undefined for an object.
     if (this.lenientRef(fn.result) !== fn.result) fn = functionParts(`(${fn.params.join(', ')}) throws -> ${optionalType(fn.result)}`)!;
     const args = fn.params.map((p, k) => k === restAt ? `${p}(__a.dropFirst(${k}).map { ${this.fromAnyCode('$0', p.replace(/^JSArray<(.*)>$/, '$1'), true)} })` : this.fromAnyCode(`jsArg(__a, ${k})`, p.replace(/^@escaping /, ''), true));
-    const call = `try __f(${args.join(', ')})`;
-    const body = fn.result === 'Void' ? `${call}; return nil` : `return ${this.convert(call, fn.result, 'Any?')}`;
-    return `{ (__f: @escaping ${fn.text}) -> JSFunction in { (__a: [Any?]) throws -> Any? in ${body} } }(${code})`;
+    const result = (call: string) => (fn.result === 'Void' ? `${call}; return nil` : `return ${this.convert(call, fn.result, 'Any?')}`);
+    // Called with fewer arguments, a function whose last parameters have defaults is called by name, which gives them.
+    const fewer = trailing ? Array.from({ length: fn.params.length - trailing.from }, (_, k) => trailing.from + k).map((n) => `if __a.count <= ${n} { ${result(`try ${trailing.ref}(${args.slice(0, n).join(', ')})`)} }; `).join('') : '';
+    const body = fewer + result(`try __f(${args.join(', ')})`);
+    return `{ (__f: @escaping ${fn.text}) -> JSFunctionObject in jsFunction(${swiftString(name)}, ${length ?? (restAt >= 0 ? restAt : fn.params.length)}) { (__a: [Any?]) throws -> Any? in ${body} } }(${code})`;
+  }
+
+  /** A function the program declares, held untyped: a function object of its name and `length`. */
+  private boxDeclared(ref: string, decl: ts.FunctionDeclaration): string {
+    const t = this.boxedGeneric(decl, escapingFunction(functionParts(this.functionValueType(decl))!));
+    const from = decl.parameters.findIndex((p) => p.initializer);
+    const byName = from >= 0 && !decl.typeParameters?.length && decl.parameters.slice(from).every((p) => p.initializer && !p.dotDotDotToken) && splitTopLevel(this.params(decl, false)).every((p) => p.trim().startsWith('_ '));
+    return this.boxFunction(ref, t, -1, decl.name?.text ?? '', scriptLength(decl), byName ? { ref, from } : undefined);
   }
 
   /** An untyped function value called as the typed function `fn`. */
@@ -3625,7 +3637,7 @@ ${members.join('\n')}
       }
       lines.push('        default: super.setProperty(name, value)', '        }', '    }');
     }
-    const dynMethods: { name: string; type: string; available?: number }[] = [];
+    const dynMethods: { name: string; type: string; available?: number; length?: number }[] = [];
     for (const m of cls.members) {
       if (ts.isMethodDeclaration(m) && m.body && ts.isComputedPropertyName(m.name)) continue;
       // A generic method of the program's is no one function value; core's (`notify<T extends EventData>`) is read by name
@@ -3664,7 +3676,7 @@ ${members.join('\n')}
         const plain = (t: string) => t.replace(/^\((any .*)\)!$/, '$1?').replace(/!$/, '?');
         // A method reading `arguments` takes the call's arguments as one list.
         const params = this.readsArguments(m) ? ['JSRest<Any?>'] : sig.params.map((p) => (isFunctionType(p.type) ? `@escaping ${p.type}` : plain(p.type)));
-        dynMethods.push({ name: n, type: `(${params.join(', ')}) throws -> ${plain(sig.ret)}`, available: this.gatedFunctions.get(m) });
+        dynMethods.push({ name: n, type: `(${params.join(', ')}) throws -> ${plain(sig.ret)}`, available: this.gatedFunctions.get(m), length: scriptLength(m) });
       }
     }
     const protocol = this.iteratorProtocol(cls.members.filter((m): m is ts.MethodDeclaration => ts.isMethodDeclaration(m) && !!m.body && !isStatic(m) && ['next', 'return', 'throw'].includes(m.name.getText())).map((m) => ({
@@ -3915,7 +3927,7 @@ ${members.join('\n')}
           const sig = this.signatureOf(m);
           // Implicitly unwrapped in a signature, optional in a function type.
           const plainOpt = (t: string) => t.replace(/^\((.*)\)!$/, '($1)?').replace(/!$/, '?');
-          return [`(${swiftString(n)}, { () -> Any? in ${this.boxFunction(ref, `(${sig.params.map((p) => escapingParam(plainOpt(p.type))).join(', ')}) throws -> ${plainOpt(sig.ret)}`)} })`];
+          return [`(${swiftString(n)}, { () -> Any? in ${this.boxFunction(ref, `(${sig.params.map((p) => escapingParam(plainOpt(p.type))).join(', ')}) throws -> ${plainOpt(sig.ret)}`, -1, n, scriptLength(m))} })`];
         }
         if (ts.isPropertyDeclaration(m) || (ts.isGetAccessorDeclaration(m) && !this.throwsInfo.fn(m))) return [`(${swiftString(n)}, { () -> Any? in ${this.convert(ref, this.typeOf(m.name), 'Any?')} })`];
         return [];
@@ -5043,6 +5055,7 @@ ${members.join('\n')}
       }
       if (functionParts(source.replace(/\?$/, '').replace(/^\((.*)\)$/, '$1'))) {
         const d = ts.isIdentifier(bare) ? this.resolve(bare)?.valueDeclaration : undefined;
+        if (d && ts.isFunctionDeclaration(d) && d.body && !d.getSourceFile().isDeclarationFile && !takesThis(d)) return this.boxDeclared(this.expr(e), d);
         return this.convert(this.expr(e), d ? this.boxedGeneric(d, ts.isFunctionDeclaration(d) && d.body && !d.getSourceFile().isDeclarationFile ? escapingFunction(functionParts(this.functionValueType(d))!) : source) : source, 'Any?');
       }
       // An object read with an unwrap (`view.parent!`) is undefined where it is missing, as an untyped value can be.
@@ -5545,7 +5558,8 @@ ${members.join('\n')}
       const self = declared ? this.paramType(thisFn.parameters[0]) : 'Any?';
       const call = `${this.throwsInfo.fn(thisFn) ? 'try ' : ''}${this.refName(e)}(${[self === 'Any?' ? '__this' : this.fromAnyCode('__this', self, true), ...args].join(', ')})`;
       const ret = this.returnTypeOf(thisFn);
-      return `({ (__this: Any?, __a: [Any?]) throws -> Any? in ${ret === 'Void' ? `${call}; return nil` : `return ${this.convert(call, ret, 'Any?')}`} } as JSMethod)`;
+      const method = `{ (__this: Any?, __a: [Any?]) throws -> Any? in ${ret === 'Void' ? `${call}; return nil` : `return ${this.convert(call, ret, 'Any?')}`} }`;
+      return this.library ? `(${method} as JSMethod)` : `jsMethodFunction(${swiftString(thisFn.name!.text)}, ${scriptLength(thisFn)}, ${method})`;
     }
     if (this.isArguments(e)) {
       const fn = ts.findAncestor(e.parent, (n) => ts.isFunctionLike(n) && !ts.isArrowFunction(n)) as ts.SignatureDeclaration | undefined;
@@ -5677,6 +5691,61 @@ ${members.join('\n')}
    * (a plugin's `install` in its common and iOS files): all but one take the
    * module's name as a suffix, as Swift has one namespace for the app.
    */
+  /**
+   * App mode: a function-typed field script reads as a function object (`entry.testFunc.length`, `.apply(…)`, `.call(…)`),
+   * held untyped as the function object it is given, with the fields of that name its interface and the classes
+   * implementing it declare, which Swift has of one type.
+   */
+  private holdsFunctionObject(n: ts.Node): boolean {
+    if (this.library) return false;
+    const decl = ts.isPropertyDeclaration(n) || ts.isPropertySignature(n) ? n
+      : ts.isIdentifier(n) && n.parent && (ts.isPropertyDeclaration(n.parent) || ts.isPropertySignature(n.parent)) && n.parent.name === n ? n.parent
+      : ts.isPropertyAccessExpression(n) ? this.checker.getSymbolAtLocation(n.name)?.valueDeclaration : undefined;
+    return !!decl && this.functionObjectFields().has(decl);
+  }
+
+  private functionObjectFieldSet?: Set<ts.Node>;
+  private functionObjectFields(): Set<ts.Node> {
+    if (this.functionObjectFieldSet) return this.functionObjectFieldSet;
+    const held = new Set<ts.PropertyDeclaration | ts.PropertySignature>();
+    this.functionObjectFieldSet = held;
+    const field = (d: ts.Node | undefined): d is ts.PropertyDeclaration | ts.PropertySignature => !!d && (ts.isPropertyDeclaration(d) || ts.isPropertySignature(d)) && !d.getSourceFile().isDeclarationFile && ts.isIdentifier(d.name);
+    const files = this.sourceFiles.filter((sf) => !sf.isDeclarationFile);
+    const visit = (x: ts.Node): void => {
+      if (ts.isPropertyAccessExpression(x) && ['length', 'apply', 'call'].includes(x.name.text) && ts.isPropertyAccessExpression(x.expression)) {
+        const d = this.checker.getSymbolAtLocation(x.expression.name)?.valueDeclaration;
+        if (field(d) && this.checker.getTypeAtLocation(x.expression).getCallSignatures().length) held.add(d);
+      }
+      ts.forEachChild(x, visit);
+    };
+    files.forEach(visit);
+    if (!held.size) return held;
+    // The same field of the interfaces and classes a type implements or extends, and of those implementing or extending it.
+    const types = files.flatMap((sf) => sf.statements.flatMap(function all(st: ts.Node): (ts.ClassDeclaration | ts.InterfaceDeclaration)[] {
+      if (ts.isClassDeclaration(st) || ts.isInterfaceDeclaration(st)) return [st];
+      return ts.isModuleDeclaration(st) && st.body && ts.isModuleBlock(st.body) ? st.body.statements.flatMap(all) : [];
+    }));
+    const bases = (t: ts.ClassDeclaration | ts.InterfaceDeclaration) => (t.heritageClauses ?? []).flatMap((h) => h.types.map((x) => {
+      const sym = this.checker.getSymbolAtLocation(x.expression);
+      return (sym && sym.flags & ts.SymbolFlags.Alias ? this.checker.getAliasedSymbol(sym) : sym)?.declarations?.find((d) => ts.isClassDeclaration(d) || ts.isInterfaceDeclaration(d));
+    })).filter((d): d is ts.ClassDeclaration | ts.InterfaceDeclaration => !!d);
+    const member = (t: ts.ClassDeclaration | ts.InterfaceDeclaration, name: string) => (t.members as ts.NodeArray<ts.Node>).find((m): m is ts.PropertyDeclaration | ts.PropertySignature => field(m) && (m.name as ts.Identifier).text === name);
+    for (let grew = true; grew;) {
+      grew = false;
+      for (const t of types) {
+        for (const b of bases(t)) {
+          for (const d of [...held]) {
+            const name = (d.name as ts.Identifier).text;
+            const own = member(t, name), base = member(b, name);
+            if (!own || !base || held.has(own) === held.has(base)) continue;
+            held.add(own); held.add(base); grew = true;
+          }
+        }
+      }
+    }
+    return held;
+  }
+
   private topNames(): Map<ts.Node, string> {
     if (this.renamedTop) return this.renamedTop;
     const byName = new Map<string, { decl: ts.Node; file: ts.SourceFile }[]>();
@@ -8683,6 +8752,13 @@ function thisNodes(fn: ts.Node): ts.Node[] {
 function isSymbolIterator(e: ts.Expression, checker: ts.TypeChecker): boolean {
   return ts.isPropertyAccessExpression(e) && e.name.text === 'iterator' && ts.isIdentifier(e.expression) && e.expression.text === 'Symbol'
     && !!checker.getSymbolAtLocation(e.expression)?.declarations?.every((d) => d.getSourceFile().isDeclarationFile);
+}
+
+/** A function's `length` as script reads it: its parameters before the first with a default or the rest. */
+function scriptLength(fn: ts.SignatureDeclaration): number {
+  const params = fn.parameters.filter((p) => !(ts.isIdentifier(p.name) && p.name.text === 'this'));
+  const k = params.findIndex((p) => p.initializer || p.dotDotDotToken);
+  return k < 0 ? params.length : k;
 }
 
 /** A declaration in a declarations file of the program's own (an app's `globals.d.ts`), not a package's, the compiler's shims or the ES library. */

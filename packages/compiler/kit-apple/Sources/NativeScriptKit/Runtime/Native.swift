@@ -88,6 +88,7 @@ public final class JSExtendedClass {
 /// A method of the object an extended class was made with, called with the instance as `this`; undefined where it has none.
 public func jsCallExtended(_ object: AnyObject, _ methods: Any?, _ key: String, _ arguments: [Any?]) throws -> Any? {
     switch jsFlat(try jsGet(methods, key)) {
+    case let function as JSFunctionObject: return try function.call(object, arguments)
     case let method as JSMethod: return try method(object, arguments)
     case let function as JSFunction: return try function(arguments)
     default: return nil

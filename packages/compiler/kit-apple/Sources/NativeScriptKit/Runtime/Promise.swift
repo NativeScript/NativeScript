@@ -185,7 +185,7 @@ public final class JSPromise<T>: JSThenable, CustomStringConvertible {
             }
             return
         }
-        if let object = resolution as? JSDynamic, !(object is JSError), let then = jsFlat(object[jsKey: "then"]) as? JSFunction {
+        if let object = resolution as? JSDynamic, !(object is JSError), let then = jsThenFunction(object) {
             Microtasks.enqueue { [self] in
                 let resolvers = JSResolvers(self)
                 let resolve: JSFunction = { arguments in
@@ -198,7 +198,7 @@ public final class JSPromise<T>: JSThenable, CustomStringConvertible {
                     return nil
                 }
                 do {
-                    _ = try then([resolve, reject])
+                    _ = try then(object, [resolve, reject])
                 } catch {
                     resolvers.reject(jsCaught(error))
                 }
@@ -680,4 +680,13 @@ public func jsPromiseOf<T>(_ value: Any?, _ element: @escaping (Any?) -> T) -> J
     jsPromiseResolveAny(value).jsSubscribe({ resolve(element($0)) }, reject)
     if let from = jsFlat(value) as? JSCancelable { promise.canceler = { from.canceler?() } }
     return promise
+}
+
+/// A thenable's `then`, called with the thenable as `this`.
+private func jsThenFunction(_ object: JSDynamic) -> JSMethod? {
+    switch jsFlat(object[jsKey: "then"]) {
+    case let f as JSFunctionObject: return { this, arguments in try f.call(this, arguments) }
+    case let f as JSFunction: return { _, arguments in try f(arguments) }
+    default: return nil
+    }
 }
