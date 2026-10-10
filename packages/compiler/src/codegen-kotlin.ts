@@ -244,20 +244,24 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
       const inner = [...loops, { item: node.item, index: node.index }];
       // A key may be any value (`:key="i"`); rows are kept by its string form.
       const key = node.key ? `{ ${ident(node.item)}, ${ident(node.index)} -> jsKey(${call(node.key, inner)}) }` : `{ item, _ -> jsKey(item) }`;
+      // Angular's @for keeps a row by its key and gives it the item now at that key: the row reads item and index as signals.
+      const row = framework === 'angular' ? `row${n++}` : null;
+      const rowLoops = row ? [...loops, { item: node.item, index: node.index, itemExpr: `${row}.item.value`, indexExpr: `${row}.index.value` }] : inner;
+      const opening = (kind: string) => `${row ? kind.replace(/^For/, 'ForEach') : kind}(${host}, { ${call(node.items, loops)}.elements }, ${key}) { ${row ?? `${ident(node.item)}, ${ident(node.index)}`} ->`;
       // Iterating reads the array through its tracker: a Vue ref's array re-renders on push.
       if (fragmented) {
-        say(depth, `ForFragment(${host}, { ${call(node.items, loops)}.elements }, ${key}) { ${ident(node.item)}, ${ident(node.index)} ->`);
-        fragment(node.body, depth + 1, inner);
+        say(depth, opening('ForFragment'));
+        fragment(node.body, depth + 1, rowLoops);
         say(depth, '}');
         continue;
       }
-      say(depth, `For(${host}, { ${call(node.items, loops)}.elements }, ${key}) { ${ident(node.item)}, ${ident(node.index)} ->`);
+      say(depth, opening('For'));
       const wrap = scoped('region');
       const d = wrap ? depth + 1 : depth;
       if (wrap) say(depth + 1, wrap);
       if (framework === 'angular' && hasRegion(node.body)) say(d + 1, 'val __view = EffectOrder.current');
       const made: string[] = [];
-      template(d + 1, () => emit(node.body, d + 1, inner, null, made, live));
+      template(d + 1, () => emit(node.body, d + 1, rowLoops, null, made, live));
       say(d + 1, `listOf(${made.join(', ')})`);
       if (wrap) say(depth + 1, '}');
       say(depth, '}');

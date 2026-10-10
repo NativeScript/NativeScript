@@ -171,12 +171,14 @@ private class ForEachEntry<Item>(val row: ForRow<Item>, val parts: List<RegionPa
 
 private fun <Item> forEachParts(region: Region, items: () -> List<Item>, key: (Item, Double) -> String, render: (ForRow<Item>) -> List<RegionPart>) {
     var rows = HashMap<String, ForEachEntry<Item>>()
+    var order: List<String>? = null
     Owner.current?.onCleanup { for (row in rows.values) row.owner.dispose() }
     Effect {
         val list = items()
         untrack {
             val next = HashMap<String, ForEachEntry<Item>>()
             val parts = mutableListOf<RegionPart>()
+            val keys = mutableListOf<String>()
             for ((index, item) in list.withIndex()) {
                 var k = key(item, index.toDouble())
                 while (next.containsKey(k)) k += "\u0000"
@@ -191,10 +193,13 @@ private fun <Item> forEachParts(region: Region, items: () -> List<Item>, key: (I
                     ForEachEntry(row, owner.run { render(row) }, owner)
                 }
                 next[k] = entry
+                keys.add(k)
                 parts.addAll(entry.parts)
             }
             for (removed in rows.values) removed.owner.dispose()
             rows = next
+            if (Zone.enabled && keys == order) return@untrack
+            order = keys
             region.setParts(parts)
         }
     }
