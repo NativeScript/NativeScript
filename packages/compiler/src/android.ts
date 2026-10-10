@@ -11,6 +11,7 @@ import { ndk, prepareBindingArchives, type AndroidBinding } from './bindings-and
 import { render } from './codegen-kotlin.ts';
 import { SCHEDULE, type Framework } from './codegen.ts';
 import { addKotlinInterfaces, translateKotlinModules } from './kotlin-modules.ts';
+import { sharedWorkerState, sharedWorkerStateError } from './worker-state.ts';
 import { CoreKotlin } from './core-kotlin.ts';
 import { AndroidNativeAPI, androidClassPath } from './native-calls-android.ts';
 import { pluginNativeAndroid } from './plugins/native-android.ts';
@@ -164,6 +165,10 @@ export async function writeAndroid(b: AndroidBuild): Promise<void> {
   const header = (from: string) => `// Compiled by ns-native from ${relative(b.app, from)}; edit that file, not this one.\n${suppress}\npackage ${pkg}\n\nimport org.nativescript.kit.*\n\n`;
   // A component's file is a module too: what it declares beside the component (its constants and helpers).
   translator.workerScripts = new Map((b.workers ?? []).map((f) => [f, relative(b.app, f)]));
+  if (b.workers?.length) {
+    const writes = sharedWorkerState(b.program, b.workers, new Set([...b.modules, ...b.components.map((c) => c.file), ...(b.compiledPlugins ?? [])]), b.resolved);
+    if (writes.length) throw sharedWorkerStateError(writes, b.app);
+  }
   const modules = translateKotlinModules(translator, b.program, [...b.modules, ...b.components.map((c) => c.file), ...(b.compiledPlugins ?? [])], b.resolved);
   for (const c of b.components) {
     const sf = b.program.getSourceFile(c.file)!;
