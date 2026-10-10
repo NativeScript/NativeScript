@@ -78,6 +78,14 @@ func jsTypeKind(_ value: Any) -> JSTypeKind {
     return JSTypeKind(rawValue: word) ?? .other
 }
 
+/// A class (or other type) held as a value. Swift casts a class object to a protocol its instances
+/// take, so it must be told apart before such a cast calls an instance member on the class itself.
+@inline(__always)
+func jsIsClassObject(_ value: Any) -> Bool {
+    let kind = jsTypeKind(value)
+    return kind == .metatype || kind == .existentialMetatype
+}
+
 /// An object no cast to a Swift number, string or boolean unwraps: a Swift object, or an
 /// Objective-C one that is not an NSNumber, an NSString or a boxed Swift value.
 func jsIsOpaqueObject(_ value: Any) -> Bool {
@@ -854,6 +862,7 @@ public func jsToString(_ value: Any?) -> String {
 
 /// `String(value)` of what is not undefined, a string, a number or a boolean.
 private func jsObjectToString(_ value: Any) -> String {
+    if jsIsClassObject(value), let cls = value as? Any.Type { return jsClassString(cls) }
     switch value {
     case is JSNull: return "null"
     case let v as JSToPrimitive: return jsToString(jsUserPrimitive(v, "string") ?? nil)
