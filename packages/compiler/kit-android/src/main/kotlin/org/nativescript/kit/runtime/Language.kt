@@ -255,6 +255,9 @@ private fun jsReceiving(f: Any): (Any?, Array<out Any?>) -> Any? = when (f) {
 /** A function that reads `this`: a method of an untyped object literal. */
 class JSMethod(val call: (Any?, Array<out Any?>) -> Any?) : Function<Any?>
 
+/** A method read from a prototype for an instance (`View.prototype._setMinWidthNative`): the instance is its `this`. */
+fun jsBoundTo(value: Any?, receiver: Any?): Any? = if (value is JSMethod) JSFunction { args -> value.call(receiver, args.toTypedArray()) } else value
+
 /** `object.method(args)` on an untyped object: a method sees the object as `this`. */
 fun jsCallMethod(target: Any?, key: String, vararg args: Any?): Any? {
     // `fn.call(thisArg, …)`, `fn.apply(thisArg, list)` of a function value: a method sees `thisArg`, any other function ignores it.

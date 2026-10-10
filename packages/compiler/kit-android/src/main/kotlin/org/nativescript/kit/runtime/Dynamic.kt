@@ -146,7 +146,16 @@ private fun javaMethods(cls: Class<*>, name: String, static: Boolean): List<Meth
 fun jsJavaHas(target: Any, key: String): Boolean {
     val static = target is Class<*>
     val cls = if (static) target as Class<*> else target.javaClass
-    return javaExpandos[target]?.has(key) == true || javaField(target, key, static) != null || javaMethods(cls, key, static).isNotEmpty()
+    if (javaExpandos[target]?.has(key) == true || javaField(target, key, static) != null || javaMethods(cls, key, static).isNotEmpty()) return true
+    // A class's static member script declared (`static tapEvent`): a Kotlin companion's property, its field on the class.
+    if (static) {
+        var c: Class<*>? = cls
+        while (c != null) {
+            if (c.declaredFields.any { it.name == key && Modifier.isStatic(it.modifiers) }) return true
+            c = c.superclass
+        }
+    }
+    return false
 }
 
 /** A Java method read as a value: called later with script arguments, the overload chosen then. */

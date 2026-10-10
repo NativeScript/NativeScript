@@ -315,7 +315,7 @@ const allowUnapplied = args.includes('--allow-unimplemented-properties') || rele
 const kitName = platform === 'android' ? 'kit-android' : 'NativeScriptKit';
 const unapplied = await (async () => {
   // A kit generated from core (its Core/ manifest) applies every property core declares, as core is its source.
-  if (platform === 'ios' && existsSync(join(KIT, 'Core', 'manifest.json'))) return [];
+  if ((platform === 'ios' && existsSync(join(KIT, 'Core', 'manifest.json'))) || (platform === 'android' && args.includes('--generated-kit'))) return [];
   const kit = platform === 'android'
     ? await import('./core-kotlin.ts').then((k) => ({ index: k.kotlinKitIndex(k.KIT), sources: k.KIT }))
     : { index: kitIndex(KIT), sources: KIT };

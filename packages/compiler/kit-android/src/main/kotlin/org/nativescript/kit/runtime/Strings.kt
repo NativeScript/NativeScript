@@ -296,6 +296,15 @@ internal fun jsArrayMethod(array: JSArray<*>, key: String): JSMethod? {
         "some" -> JSMethod { _, args -> var result = false; each(arg(args, 0)) { _, r -> if (jsTruthy(r)) { result = true; false } else true }; result }
         "every" -> JSMethod { _, args -> var result = true; each(arg(args, 0)) { _, r -> if (!jsTruthy(r)) { result = false; false } else true }; result }
         "includes" -> JSMethod { _, args -> elements().any { jsSameValueZero(it, arg(args, 0)) } }
+        "indexOf" -> JSMethod { _, args -> elements().indexOfFirst { jsStrictEquals(it, arg(args, 0)) }.toDouble() }
+        "lastIndexOf" -> JSMethod { _, args -> elements().indexOfLast { jsStrictEquals(it, arg(args, 0)) }.toDouble() }
+        "findIndex" -> JSMethod { _, args -> var at = -1; var i = 0; each(arg(args, 0)) { _, r -> if (jsTruthy(r)) { at = i; false } else { i++; true } }; at.toDouble() }
+        "slice" -> JSMethod { _, args -> val all = elements(); val n = all.size
+            fun clamp(v: Any?, d: Int): Int = if (v == null || v === JSNull) d else jsToNumber(v).let { x -> if (x.isNaN()) 0 else if (x < 0) maxOf(0, n + x.toInt()) else minOf(n, x.toInt()) }
+            val from = clamp(arg(args, 0), 0); val to = clamp(arg(args, 1), n)
+            JSArray(ArrayList(if (from < to) all.subList(from, to) else emptyList())) }
+        "concat" -> JSMethod { _, args -> val out = ArrayList<Any?>(elements()); for (a in args) { val b = jsBox(a); if (b is JSArray<*>) out.addAll(b.storage) else out.add(a) }; JSArray(out) }
+        "push" -> JSMethod { _, args -> @Suppress("UNCHECKED_CAST") val a = array as JSArray<Any?>; a.pushAll(args.toList()) }
         "join" -> JSMethod { _, args ->
             val separator = arg(args, 0).let { if (it == null || it === JSNull) "," else jsToString(it) }
             elements().joinToString(separator) { if (it == null || it === JSNull) "" else jsToString(it) }
@@ -324,6 +333,28 @@ internal fun jsStringMethod(s: String, key: String): JSMethod? {
         "toLowerCase" -> JSMethod { _, _ -> s.lowercase() }
         "toUpperCase" -> JSMethod { _, _ -> s.uppercase() }
         "toString", "valueOf" -> JSMethod { _, _ -> s }
+        "replace", "replaceAll" -> JSMethod { _, args ->
+            val pattern = arg(args, 0)
+            val with = arg(args, 1)
+            val all = key == "replaceAll"
+            if (pattern is JSRegExp) {
+                if (with is String) (if (all) jsReplaceAll(s, pattern, with) else jsReplace(s, pattern, with))
+                else { val f = { m: JSMatch -> jsToString(jsCall(with, *(m.values.storage + listOf<Any?>(m.index, m.input)).toTypedArray())) }; if (all) jsReplaceAll(s, pattern, f) else jsReplace(s, pattern, f) }
+            } else {
+                val text = jsToString(pattern)
+                val replacement = if (with is String) with else jsToString(jsCall(with, text))
+                if (all) jsReplaceAll(s, text, replacement) else jsReplace(s, text, replacement)
+            }
+        }
+        "match" -> JSMethod { _, args -> (arg(args, 0) as? JSRegExp)?.let { jsMatch(s, it) } }
+        "charAt" -> JSMethod { _, args -> jsCharAt(s, number(args, 0) ?: 0.0) }
+        "charCodeAt" -> JSMethod { _, args -> jsCharCodeAt(s, number(args, 0) ?: 0.0) }
+        "lastIndexOf" -> JSMethod { _, args -> jsLastIndexOf(s, jsToString(arg(args, 0))) }
+        "trimStart" -> JSMethod { _, _ -> jsTrimStart(s) }
+        "trimEnd" -> JSMethod { _, _ -> jsTrimEnd(s) }
+        "padStart" -> JSMethod { _, args -> jsPadStart(s, number(args, 0) ?: 0.0, arg(args, 1)?.let { jsToString(it) } ?: " ") }
+        "padEnd" -> JSMethod { _, args -> jsPadEnd(s, number(args, 0) ?: 0.0, arg(args, 1)?.let { jsToString(it) } ?: " ") }
+        "repeat" -> JSMethod { _, args -> jsRepeat(s, number(args, 0) ?: 0.0) }
         else -> null
     }
 }

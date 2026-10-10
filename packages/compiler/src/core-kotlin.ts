@@ -135,12 +135,32 @@ export class CoreKotlin implements KotlinCore {
   private t: Translator;
 
   /** `generated`: the kit compiled from core (`-PgeneratedKit`), whose classes are core's own, in place of the hand port. */
+  private generated: boolean;
   constructor(t: Translator, generated = false) {
     this.t = t;
+    this.generated = generated;
     this.index = kotlinKitIndex(generated ? generatedKitSources() : KIT);
   }
 
-  type(_t: ts.Type): string | null { return null; }
+  /** The generated kit's object for a core module (`Connectivity` of `export * as Connectivity` is `Core_connectivity_index`). */
+  private moduleObject(decl: ts.Node): string | null {
+    const file = decl.getSourceFile().fileName.replace(/\\/g, '/');
+    const rel = /[\/]@nativescript[\/]core[\/](.*)$/.exec(file)?.[1] ?? /[\/]packages[\/]core[\/](.*)$/.exec(file)?.[1];
+    if (!rel) return null;
+    const name = 'Core_' + rel.replace(/(\.(ios|android))?(\.d)?\.ts$/, '').replace(/[^A-Za-z0-9]+/g, '_');
+    return this.index.has(name) ? name : null;
+  }
+
+  /** The generated kit: a core interface it has no class for (`PanGestureEventData`, `PromptResult`) is a plain object, untyped. */
+  type(t: ts.Type): string | null {
+    if (!this.generated) return null;
+    const sym = t.aliasSymbol ?? t.getSymbol();
+    // An event's data beyond EventData's (`PanGestureEventData`, a ListView's item tap): the object core notifies with, read by name.
+    if (sym && sym.name !== 'EventData' && !(sym.flags & ts.SymbolFlags.TypeParameter) && t.getProperty('eventName') && t.getProperty('object') && t.getProperties().length > 2) return 'Any?';
+    if (!sym || !isCoreDeclaration(sym.declarations?.[0])) return null;
+    if (sym.flags & ts.SymbolFlags.Class || !(sym.flags & (ts.SymbolFlags.Interface | ts.SymbolFlags.TypeAlias))) return null;
+    return this.index.has(KIT_NAMES_ANDROID[sym.name] ?? sym.name) ? null : 'Any?';
+  }
 
   has(name: string): boolean {
     return this.index.has(name);
@@ -185,9 +205,18 @@ export class CoreKotlin implements KotlinCore {
       const sym = this.t.resolve(e);
       const decl = sym?.declarations?.[0];
       if (sym && isCoreDeclaration(decl) && (sym.flags & (ts.SymbolFlags.Class | ts.SymbolFlags.ValueModule | ts.SymbolFlags.Variable))) {
-        if (sym.flags & ts.SymbolFlags.ValueModule) return { name: e.text, isStatic: true };
+        if (sym.flags & ts.SymbolFlags.ValueModule) {
+          const module = this.generated ? this.moduleObject(sym.valueDeclaration ?? decl!) : null;
+          return { name: module ?? e.text, isStatic: true };
+        }
         if (sym.flags & ts.SymbolFlags.Class) return { name: sym.name, isStatic: true };
         if (this.index.has(sym.name)) return { name: sym.name, isStatic: true };
+        // A module's constant object of its own functions (`Dialogs = { alert, confirm, … }`): the module's object, which has them.
+        const value = sym.valueDeclaration;
+        if (this.generated && value && ts.isVariableDeclaration(value) && (value.initializer ? ts.isObjectLiteralExpression(value.initializer) && value.initializer.properties.every(ts.isShorthandPropertyAssignment) : !!value.type && ts.isTypeLiteralNode(value.type))) {
+          const module = this.moduleObject(value);
+          if (module) return { name: module, isStatic: true };
+        }
       }
       if (sym && sym.flags & ts.SymbolFlags.Alias) return null;
     }
@@ -204,7 +233,12 @@ export class CoreKotlin implements KotlinCore {
     }
     if (!sym || !isCoreDeclaration(sym.declarations?.[0])) return null;
     if (this.t.type(type, e) === 'EventData') return null;
-    return { name: KIT_NAMES_ANDROID[sym.name] ?? sym.name, isStatic: false };
+    // A module's default export class (`AbortSignal`): its declared name.
+    const decl = sym.valueDeclaration;
+    const name = sym.name === 'default' && decl && ts.isClassDeclaration(decl) && decl.name ? decl.name.text : sym.name;
+    // The generated kit holds a core interface it has no class for (`PromptResult`) as a plain object: read as script reads it.
+    if (this.generated && (this.type(type) === 'Any?' || (!(sym.flags & ts.SymbolFlags.Class) && !this.index.has(KIT_NAMES_ANDROID[name] ?? name)))) return null;
+    return { name: KIT_NAMES_ANDROID[name] ?? name, isStatic: false };
   }
 
   /** A core member read through a class of the app or a plugin that extends a core class (`this.isPassThroughParentEnabled` in a GridLayout subclass). */
@@ -271,7 +305,7 @@ export class CoreKotlin implements KotlinCore {
     if (!owner) return null;
     const t = this.t;
     const name = e.name.text;
-    const recv = owner.isStatic ? owner.name : this.receiver(e.expression, e);
+    const recv = owner.isStatic ? this.declaring(owner.name, e.name.text) : this.receiver(e.expression, e);
     // The other platform's native view: undefined, as on Android.
     if (!owner.isStatic && name === 'ios' && this.isView(owner.name)) return 'null';
     if (!owner.isStatic && NATIVE_MEMBERS.has(name) && this.isView(owner.name)) {
@@ -311,7 +345,7 @@ export class CoreKotlin implements KotlinCore {
     const owner = this.mixinOwn(e.name) ? null : this.owner(e.expression) ?? this.inheritedOwner(e.expression, e.name);
     if (!owner) return null;
     const m = kitMember(this.index, owner.name, e.name.text);
-    return m ? `${owner.isStatic ? owner.name : this.t.expr(e.expression)}.${e.name.text}` : null;
+    return m ? `${owner.isStatic ? this.declaring(owner.name, e.name.text) : this.t.expr(e.expression)}.${e.name.text}` : null;
   }
 
   assign(left: ts.PropertyAccessExpression, value: ts.Expression): string | null {
@@ -319,7 +353,7 @@ export class CoreKotlin implements KotlinCore {
     if (!owner) return null;
     const t = this.t;
     const name = left.name.text;
-    const recv = owner.isStatic ? owner.name : this.receiver(left.expression, left);
+    const recv = owner.isStatic ? this.declaring(owner.name, left.name.text) : this.receiver(left.expression, left);
     if (!owner.isStatic && this.isView(owner.name) && !kitMember(this.index, owner.name, name)) {
       if (!this.isViewProperty(owner.name, name)) unappliedProperty(t, left.name, `${owner.name}.${name}`, 'kit-android');
       return `${recv}.set(${JSON.stringify(name)}, ${t.coerce(value, 'Any?')})`;
@@ -342,10 +376,10 @@ export class CoreKotlin implements KotlinCore {
     const t = this.t;
     const name = e.expression.name.text;
     const m = this.member(owner.name, name, e.expression);
-    const recv = owner.isStatic ? owner.name : this.receiver(e.expression.expression, e.expression);
+    const recv = owner.isStatic ? this.declaring(owner.name, name) : this.receiver(e.expression.expression, e.expression);
     if (name === 'navigate' && kitExtends(this.index, owner.name, 'Frame')) return this.navigate(recv, e);
     const listener = this.listenerArgs(e, m);
-    const args = listener ?? (SCRIPT_OBJECTS.has(name) && this.isView(owner.name) ? e.arguments.map((a) => this.scriptValue(a)) : t.args(e));
+    const args = listener ?? this.restArgs(e, m) ?? (SCRIPT_OBJECTS.has(name) && this.isView(owner.name) ? e.arguments.map((a) => this.scriptValue(a)) : t.args(e));
     // A super call names every argument: Kotlin does not fill in defaults there.
     if (recv === 'super') {
       const params = (m.params ?? '').trim() ? splitTopLevel(m.params!) : [];
@@ -355,18 +389,40 @@ export class CoreKotlin implements KotlinCore {
   }
 
   construct(e: ts.NewExpression): string | null {
-    const sym = this.t.resolve(e.expression);
-    if (!sym || !isCoreDeclaration(sym.declarations?.[0])) return null;
+    const resolved = this.t.resolve(e.expression);
+    if (!resolved || !isCoreDeclaration(resolved.declarations?.[0])) return null;
     const t = this.t;
     const args = e.arguments ?? ts.factory.createNodeArray();
+    // A module's default export (`import AbortController from '@nativescript/core/abortcontroller'`): its class's name.
+    const declared = resolved.name === 'default' && resolved.valueDeclaration && ts.isClassDeclaration(resolved.valueDeclaration) ? resolved.valueDeclaration.name?.text : undefined;
+    const sym = declared ? { ...resolved, name: declared } as ts.Symbol : resolved;
     if (!this.index.has(sym.name)) throw t.error(e, `new ${sym.name} (kit-android has no such class)`);
+    if (sym.name === 'Color' && this.generated) return `Color(jsArrayOf<Any?>(${args.map((a) => t.coerce(a, 'Any?')).join(', ')}))`;
     if (sym.name === 'Color') {
       if (args.length === 1 && t.typeOf(args[0]) === 'String') return `Color.js(${t.expr(args[0])})`;
       if (args.length === 1) return `Color(${t.toNumber(args[0])}.toLong().toInt())`;
       return `Color.argb(${args.slice(0, 4).map((a) => t.toNumber(a)).join(', ')})`;
     }
     if (sym.name === 'Animation') return `Animation(${args.map((a) => this.scriptValue(a)).join(', ')})`;
-    return `${sym.name}(${t.args(e).join(', ')})`;
+    return `${sym.name}(${(this.restArgs(e) ?? t.args(e)).join(', ')})`;
+  }
+
+  /** The generated kit: the class declaring a static member (`Frame.topmost` is FrameBase's), as Kotlin's companions are not inherited. */
+  private declaring(type: string, name: string): string {
+    if (!this.generated) return type;
+    for (let k = this.index.get(type); k; k = k.base ? this.index.get(k.base) : undefined) if (k.members.has(name)) return k.name;
+    return type;
+  }
+
+  /** The generated kit: a core function taking `...args` takes them as one array, as core's compiled signature does. */
+  private restArgs(e: ts.CallExpression | ts.NewExpression, m?: KitMember): string[] | null {
+    if (!this.generated) return null;
+    const decl = this.t.checker.getResolvedSignature(e)?.getDeclaration();
+    const params = decl && !ts.isJSDocSignature(decl) ? decl.parameters : undefined;
+    // Core's typings may declare overloads where its implementation takes `...args` (`prompt`): the kit's signature says.
+    const restInKit = !!m && /^\s*args\s*:\s*JSArray<Any\?>\s*$/.test(m.params ?? '');
+    if (!restInKit && (!params || params.length !== 1 || !params[0].dotDotDotToken)) return null;
+    return [`jsArrayOf<Any?>(${(e.arguments ?? []).map((a) => this.t.coerce(a, 'Any?')).join(', ')})`];
   }
 
   /** A function core exports (`getRootLayout()`) that the kit declares at top level. */
@@ -374,7 +430,7 @@ export class CoreKotlin implements KotlinCore {
     if (!isCoreDeclaration(this.t.resolve(callee)?.declarations?.[0])) return null;
     const m = kitMember(this.index, TOP_LEVEL, callee.text);
     if (!m) return null;
-    return this.fromKit(`${callee.text}(${this.t.args(e).join(', ')})`, m.type, this.t.typeOf(e), keepsNullable(e));
+    return this.fromKit(`${callee.text}(${(this.restArgs(e, m) ?? this.t.args(e)).join(', ')})`, m.type, this.t.typeOf(e), keepsNullable(e));
   }
 
   /** `frame.navigate({ create: () => page })`: the kit builds what `create` returns. */
@@ -384,6 +440,7 @@ export class CoreKotlin implements KotlinCore {
     for (const p of entry.properties) if (p.name?.getText() !== 'create') throw this.t.error(p, `the navigation entry's ${p.name?.getText()}`);
     const create = entry.properties[0];
     if (!create || !ts.isPropertyAssignment(create)) throw this.t.error(entry, 'a navigation entry without create');
+    if (this.generated) return `${recv}.navigate(JSObject("create" to jsFunction { (${this.t.expr(create.initializer)})() }))`;
     return `${recv}.navigate { (${this.t.expr(create.initializer)})() }`;
   }
 

@@ -1176,6 +1176,11 @@ export class AndroidNativeAPI implements KotlinNative {
       const desc = target.params[k];
       // Script types a parameter more narrowly than Java (`activity: AppCompatActivity` for an Activity, `result: string` for an Object): cast, as script trusts it.
       const narrowed = t.library && desc.startsWith('L') && tsType !== 'Any?' && types[k].replace(/\?$/, '') !== tsType.replace(/\?$/, '');
+      // A Java class narrower than Java's (`host: ViewGroup` for any View): held as Java's, its methods cast to as script trusts.
+      if (narrowed && desc !== 'Ljava/lang/Object;' && /^[a-z]\w*[._]/.test(tsType)) {
+        t.widenedAccessors.set(p, types[k]);
+        return `${indent}    val ${ident(p.name.text)}: ${types[k]} = __a${k}`;
+      }
       const value = narrowed ? (desc === 'Ljava/lang/Object;' ? t.fromAnyCode(unwrapped, tsType, true) : `(${unwrapped} as ${tsType})`) : this.fromJava(unwrapped, desc);
       return `${indent}    val ${ident(p.name.text)}: ${tsType} = ${value}`;
     }).filter(Boolean);
