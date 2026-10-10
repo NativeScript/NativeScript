@@ -797,6 +797,12 @@ export class AndroidNativeAPI implements KotlinNative {
     const made = ts.isNewExpression(e) ? this.extensionNamed(e.expression) : null;
     if (made) return { kind: 'object', classes: extensionClasses(made) };
     if (e.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(e) && e.text === 'undefined')) return { kind: 'null' };
+    // `x as never` passes x as it is: the Java classes its type includes pick the overload.
+    if (ts.isAsExpression(e) && this.t.checker.getTypeAtLocation(e).flags & ts.TypeFlags.Never) {
+      const inner = this.t.checker.getNonNullableType(this.t.checker.getTypeAtLocation(e.expression));
+      const classes = (inner.isUnion() ? inner.types : [inner]).flatMap((p) => this.classesOf(p) ?? []);
+      if (classes.length) return { kind: 'object', classes };
+    }
     const forced = this.forced(e);
     if (forced) return { kind: 'number', forced: forced.desc };
     const literal = numericLiteral(e);
@@ -991,7 +997,8 @@ export class AndroidNativeAPI implements KotlinNative {
         return raw.code;
       }
     }
-    const created = this.createdArray(inner);
+    // A Java array the code made and holds as one (its declaration names no JavaScript array): itself.
+    const created = /^JSArray</.test(t.typeOf(inner)) ? null : this.createdArray(inner);
     if (created && (created.desc === desc || desc === 'Ljava/lang/Object;')) return `(${t.expr(inner)} as ${this.kotlinType(created.desc, 'Any?')})`;
     if (NUMERIC.has(desc)) return `${atom(t.toNumber(inner))}${CONVERT[desc]}`;
     if (desc === 'Z') return t.coerce(inner, 'Boolean');

@@ -2748,6 +2748,12 @@ export class Translator implements AsyncTranslator {
       const own = this.paramType(p);
       const sym = this.checker.getSymbolAtLocation(p.name);
       if (sym && this.mayBeNull(p)) this.nullableDecls.add(sym);
+      // A rest parameter over the base's fixed ones (`showModal(...args)`): the arguments from here on, as many as script
+      // passed, which code reads through `args.length`.
+      if (p.dotDotDotToken) {
+        const rest = baseTypes.slice(k).map((_, j) => `__o${k + j}`);
+        return `        val ${ident(p.name.text)}: ${own} = (JSArray<Any?>(listOf<Any?>(${rest.join(', ')}).dropLastWhile { it == null }) as ${own.replace(/\?$/, '')})`;
+      }
       // Library mode: a class narrower than the base's (`child: View` where core passes any ViewBase, a NavigationButton):
       // held as the base's, cast only where code needs the narrower class, as script trusts it.
       if (this.library && k < baseTypes.length && this.isObjectType(own) && this.isObjectType(baseTypes[k]) && own.replace(/\?$/, '') !== baseTypes[k].replace(/\?$/, '') && /^[A-Z]\w*\??$/.test(own) && /^[A-Z]\w*\??$/.test(baseTypes[k])) {
@@ -3462,12 +3468,18 @@ export class Translator implements AsyncTranslator {
     const label = this.fresh('switch');
     const subject = this.fresh('__switch');
     const start = this.fresh('__start');
-    const st = this.typeOf(s.expression);
     const clauses = s.caseBlock.clauses;
-    const lines = [`${i}run ${label}@ {`, `${i}    val ${subject}: ${st} = ${this.expr(s.expression)}`];
+    const missing = (x: ts.Expression) => x.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(x) && x.text === 'undefined');
+    // `case undefined:` on a string or boolean: the subject held nullable, as its missing value reads "undefined" otherwise.
+    const nullCase = clauses.some((c) => ts.isCaseClause(c) && missing(c.expression));
+    const declared = this.typeOf(s.expression);
+    const st = nullCase && ['String', 'Boolean'].includes(declared) ? `${declared}?` : declared;
+    const lines = [`${i}run ${label}@ {`, `${i}    val ${subject}: ${st} = ${st === declared ? this.expr(s.expression) : this.coerce(s.expression, st)}`];
     const tests: string[] = [];
     clauses.forEach((c, k) => {
       if (!ts.isCaseClause(c)) return;
+      if (missing(c.expression) && st !== 'Any?' && isNullable(st)) return tests.push(`${subject} == null -> ${k}`);
+      if (missing(c.expression) && st === 'Double') return tests.push(`${subject}.isNaN() -> ${k}`);
       const eq = st === 'Any?' || this.typeOf(c.expression) === 'Any?' || /^[A-Z]\??$/.test(st) ? `jsStrictEquals(${subject}, ${this.coerce(c.expression, 'Any?')})` : this.isObjectType(st) ? `${subject} === ${this.expr(c.expression)}` : `${subject} == ${this.coerce(c.expression, st.replace(/\?$/, ''))}`;
       tests.push(`${eq} -> ${k}`);
     });
@@ -3620,6 +3632,15 @@ export class Translator implements AsyncTranslator {
       }
       // A function reading `arguments`, held untyped: called as script calls it, with however many arguments.
       if (this.library && (ts.isArrowFunction(bare) || ts.isFunctionExpression(bare)) && this.readsArguments(bare)) return `run { val __f = ${this.expr(bare)}; JSMethod { _, __a -> __f(jsArrayOf<Any?>(*__a)) } }`;
+      // A function of a rest parameter held untyped (`(...args) => {}`): called with however many arguments, the rest packed.
+      if (this.library && (ts.isArrowFunction(bare) || ts.isFunctionExpression(bare)) && bare.parameters.at(-1)?.dotDotDotToken && !bare.parameters.some((q) => isThisParameter(q) || !ts.isIdentifier(q.name))) {
+        const types = bare.parameters.map((q) => this.paramType(q));
+        const ret = this.returnTypeOf(bare);
+        const n = types.length - 1;
+        const lead = types.slice(0, n).map((t, k) => (t === 'Any?' ? `__a.getOrNull(${k})` : this.fromAnyCode(`__a.getOrNull(${k})`, t, true)));
+        const call = `__f(${[...lead, `(JSArray<Any?>(__a.drop(${n})) as ${types[n].replace(/\?$/, '')})`].join(', ')})`;
+        return `run { val __f = ${this.closure(bare, `(${types.join(', ')}) -> ${ret}`)}; JSMethod { _, __a -> ${ret === 'Unit' ? `${call}; null` : call} } }`;
+      }
       if (bare.kind === ts.SyntaxKind.NullKeyword) return 'jsNull';
       // Library mode: a function declaring the `this` it takes, held untyped (a property descriptor's `get`): a JSMethod, given its receiver.
       const takesThis = (x: ts.Expression) => ts.isFunctionExpression(x) && x.parameters.some((q) => isThisParameter(q) && !this.voidThis(q));
@@ -4265,7 +4286,9 @@ export class Translator implements AsyncTranslator {
     const redeclared = this.library && symbol?.valueDeclaration && ts.isPropertyDeclaration(symbol.valueDeclaration) && this.redeclaredField(symbol.valueDeclaration);
     if (redeclared && !isWriteTarget(e)) {
       const t = this.typeOf(e);
-      if (t !== 'Any?' && t !== this.typeOf(redeclared.name)) return this.narrowed(e, `(${recv()}${dot}${ident(name)} as ${optionalType(t)})`);
+      const base = this.typeOf(redeclared.name);
+      // Over an untyped base field, which may hold JavaScript's null.
+      if (t !== 'Any?' && t !== base) return this.narrowed(e, base === 'Any?' ? this.fromAny(`${recv()}${dot}${ident(name)}`, optionalType(t)) : `(${recv()}${dot}${ident(name)} as ${optionalType(t)})`);
     }
     return this.narrowed(e, `${recv()}${dot}${ident(name)}`);
   }
