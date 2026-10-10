@@ -556,7 +556,9 @@ export class NativeAPI {
     const defaults = (m as NativeMethod & { defaults?: string[] }).defaults ?? [];
     const list = [this.argList(args, m.labels, m.params), ...defaults].filter(Boolean).join(', ');
     const target = r.isStatic ? this.className(cls!) : recv;
-    const code = isolated(m.kind === 'init' ? `${target}(${list})` : `${target}.${m.swift}(${list})`, m);
+    // An optional requirement called through its protocol: the method where the object has one, a TypeError where not.
+    const optionalCall = m.kind === 'method' && (m as NativeMethod).optional && !r.isStatic && lookupClass(r.module, r.name)?.kind === 'protocol' ? '!' : '';
+    const code = isolated(m.kind === 'init' ? `${target}(${list})` : `${target}.${m.swift}${optionalCall}(${list})`, m);
     const result = this.errorCall(code, m, e);
     // A chain that stops before the call gives undefined, as a number, string or boolean reads it.
     const tsType = this.t.typeOf(e);

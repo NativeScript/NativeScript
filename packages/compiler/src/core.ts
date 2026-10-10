@@ -285,11 +285,14 @@ export class CoreAPI {
     return decls.length > 0 && decls.every((d) => !isCoreDeclaration(d) && !d.getSourceFile().isDeclarationFile);
   }
 
-  /** A kit object's code as a receiver: a weak reference's target (`weakRef.get()`, typed present) is a TypeError's where it is gone. */
+  /**
+   * A kit object's code as a receiver: a weak reference's target (`weakRef.get()`, typed present), or what a call Swift has
+   * as optional gives (`getColor().hex` of a helper returning null), is a TypeError's where it is gone.
+   */
   private receiver(e: ts.Expression): string {
     const code = this.t.expr(e);
     const weak = ts.isCallExpression(e) && ts.isPropertyAccessExpression(e.expression) && ['get', 'deref'].includes(e.expression.name.text) && this.t.typeOf(e.expression.expression).replace(/[?!]$/, '').startsWith('JSWeakRef<');
-    return weak && !this.t.typeOf(e).endsWith('?') ? `${code}!` : code;
+    return (weak && !this.t.typeOf(e).endsWith('?')) || this.t.givesUndefined(e) ? `${code}!` : code;
   }
 
   /** The kit's method a call of `count` unlabeled arguments reaches, among overloads of its name (core's `bind(options)` beside the kit's own `bind(items:)`). */
@@ -506,8 +509,11 @@ export class CoreAPI {
   }
   /** The arguments of a call of a function core's index exports, as the kit's forwarder takes them (`addWeakEventListener(…, target.onEvent, …)`). */
   exportArgs(e: ts.CallExpression, decl: ts.Declaration, args: string[]): string[] {
-    if (!ts.isFunctionDeclaration(decl) || !decl.name || !isCoreDeclaration(decl) || this.moduleFunction(decl)) return args;
-    const params = this.exportSignature(decl.name.text)?.params;
+    if (!ts.isFunctionDeclaration(decl) || !decl.name || !isCoreDeclaration(decl)) return args;
+    // Or one compiled into its module's enum (`fpsMeter.addCallback`): that member's parameters.
+    const owned = this.moduleFunction(decl);
+    const member = owned ? kitMember(this.index, owned.slice(0, owned.lastIndexOf('.')), decl.name.text) : null;
+    const params = owned ? (member?.params?.trim() ? splitParams(member.params) : null) : this.exportSignature(decl.name.text)?.params;
     if (!params || params.length < e.arguments.length) return args;
     const out = [...args];
     this.matchKitParams(e, params, out);
@@ -599,6 +605,11 @@ export class CoreAPI {
         return;
       }
       const a = e.arguments[k];
+      // A typed array where the kit erased its element type (`VirtualArray<number>.load(index, items)`): its elements as any value.
+      if (a && !ts.isSpreadElement(a) && /^JSArray<Any\?>[?!]?$/.test(type) && /^JSArray<.+>$/.test(t.typeOf(a)) && t.typeOf(a) !== 'JSArray<Any?>') {
+        args[k] = `JSArray<Any?>(${t.expr(a)}.storage.map { $0 as Any? })`;
+        return;
+      }
       if (a && /->/.test(type) && (ts.isArrowFunction(a) || ts.isFunctionExpression(a) || ts.isIdentifier(a) || ts.isPropertyAccessExpression(a) || (ts.isCallExpression(a) && /->/.test(t.typeOf(a))))) {
         // An optional function parameter (`callback: ((Any?) throws -> Void)?`) takes a closure as the function it wraps.
         const plain = type.replace(/^\((.*)\)[?!]$/, '$1');

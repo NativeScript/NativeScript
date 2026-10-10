@@ -1678,7 +1678,9 @@ export class Translator implements AsyncTranslator {
       const sym = exported.flags & ts.SymbolFlags.Alias ? this.checker.getAliasedSymbol(exported) : exported;
       const decl = sym.valueDeclaration;
       if (!decl || !(sym.flags & ts.SymbolFlags.Value) || sym.flags & ts.SymbolFlags.Class || ts.isSourceFile(decl)) continue;
-      const ref = this.qualifiedDecl(decl, sym.name) ?? ident(sym.name);
+      // A function another module's of the same name made the program rename (`createTestCase__scroll_view_tests`): by that name.
+      const named = this.qualifiedDecl(decl, sym.name) ?? (this.topNames().has(decl) ? identPath(this.topNames().get(decl)!) : ident(sym.name));
+      const ref = ts.isModuleDeclaration(decl) ? `${named}.self` : named;
       // A declared function as Swift has it, its optional parameters as emitted.
       const t = this.boxedGeneric(decl, ts.isFunctionDeclaration(decl) && decl.body ? escapingFunction(functionParts(this.functionValueType(decl))!) : this.type(this.checker.getTypeOfSymbolAtLocation(sym, decl), decl));
       entries.push(`(${swiftString(exported.name)}, ${this.convert(ref, t, 'Any?')})`);
@@ -2456,7 +2458,9 @@ ${members.join('\n')}
   }
 
   private mayReturnUndefined(fn: ts.SignatureDeclaration): boolean {
-    if (!this.lenient || fn.getSourceFile().isDeclarationFile) return false;
+    if (fn.getSourceFile().isDeclarationFile) return false;
+    // A non-strict app's function returning null (`return null` from a `Color` helper): optional too.
+    if (!this.lenient) return this.lenientApp && ts.isFunctionDeclaration(fn) && !!fn.body && this.returnsUndefined(fn);
     if (ts.isMethodDeclaration(fn) && !isStatic(fn) && this.declaresNullableReturn(fn)) return true;
     // A function or getter declared `string | null`: a string, number or boolean it gives may be undefined.
     if ((ts.isGetAccessorDeclaration(fn) || ts.isFunctionDeclaration(fn) || (ts.isMethodDeclaration(fn) && isStatic(fn))) && fn.type && ts.isUnionTypeNode(fn.type) && fn.type.types.some((x) => x.kind === ts.SyntaxKind.UndefinedKeyword || (ts.isLiteralTypeNode(x) && x.literal.kind === ts.SyntaxKind.NullKeyword))) {
@@ -5493,7 +5497,7 @@ ${members.join('\n')}
     if (name === 'global' && (this.library ? !libDecl || libDecl.getSourceFile().isDeclarationFile : !!libDecl && libDecl.getSourceFile().isDeclarationFile)) return 'jsGlobalThis';
     if (this.isDomGlobal(e)) return `jsGlobalThis[jsKey: ${swiftString(name)}]`;
     // The runtime gives the bundled app's module its folder in the app bundle.
-    if (this.library && name === '__dirname' && (!libDecl || libDecl.getSourceFile().isDeclarationFile)) return 'jsAppDirectory';
+    if (name === '__dirname' && (!libDecl || libDecl.getSourceFile().isDeclarationFile)) return 'jsAppDirectory';
     // Library mode: an import of what only the app has (`import appConfig from '~/package.json'`): the kit's counterpart, given by the app.
     const appImport = this.library && !libDecl ? ts.findAncestor(this.checker.getSymbolAtLocation(e)?.declarations?.[0], ts.isImportDeclaration) : undefined;
     if (appImport && ts.isStringLiteral(appImport.moduleSpecifier)) {
@@ -5504,7 +5508,9 @@ ${members.join('\n')}
     // Android's API on iOS (`androidx.core.view.ViewCompat` behind a check that the code runs on Android): a value that throws when used.
     if ((this.library && !libDecl) || (libDecl && /[\\/]types-android[\\/]/.test(libDecl.getSourceFile().fileName))) return `jsMoot(${swiftString(name)})`;
     // A global a module declares itself (`declare let __startCPUProfiler: any`, a plugin's `declare var CanvasModule`) is the global object's, set by whatever provides it.
-    if ((this.library || this.pluginFiles.has(e.getSourceFile().fileName)) && libDecl && ts.isVariableDeclaration(libDecl) && !libDecl.getSourceFile().isDeclarationFile && hasModifier(libDecl.parent.parent, ts.SyntaxKind.DeclareKeyword)) {
+    // An app's own declarations file too (`declare var __CI__`, which its bundler defines): undefined where nothing sets it.
+    const appAmbient = !this.library && isAppDeclarationFile(libDecl);
+    if ((this.library || this.pluginFiles.has(e.getSourceFile().fileName) || appAmbient) && libDecl && ts.isVariableDeclaration(libDecl) && (!libDecl.getSourceFile().isDeclarationFile || appAmbient) && (hasModifier(libDecl.parent.parent, ts.SyntaxKind.DeclareKeyword) || appAmbient)) {
       return this.fromAnyCode(`jsGlobalThis[jsKey: ${swiftString(name)}]`, this.typeOf(e));
     }
     if (name === 'parseFloat' && isLibDeclaration(libDecl) && !(ts.isCallExpression(e.parent) && e.parent.expression === e)) return 'jsParseFloat';
@@ -6914,6 +6920,12 @@ ${members.join('\n')}
       // `Error('x')` constructs as `new Error('x')` does.
       if (ERRORS[name]) return this.errorValue(name, e.arguments);
       if (decl && /[\\/]lib\.[\w.]*\.d\.ts$/.test(decl.getSourceFile().fileName)) throw this.error(e, `${name}()`);
+    }
+    // A function the program only declares (`declare function __startCPUProfiler(name)`, which the runtime may provide): the global object's.
+    if (!this.library && decl && ts.isFunctionDeclaration(decl) && !decl.body && hasModifier(decl, ts.SyntaxKind.DeclareKeyword) && (!decl.getSourceFile().isDeclarationFile || isAppDeclarationFile(decl))) {
+      const call = `try jsCall(jsGlobalThis[jsKey: ${swiftString(name)}]${this.untypedArgs(e.arguments)})`;
+      const t = this.typeOf(e);
+      return t === 'Void' || t === 'Any?' ? call : this.fromAnyCode(call, t, true);
     }
     const resolvers = this.resolvers.get(this.resolve(callee)!);
     if (resolvers) {
@@ -8591,6 +8603,12 @@ function thisNodes(fn: ts.Node): ts.Node[] {
 function isSymbolIterator(e: ts.Expression, checker: ts.TypeChecker): boolean {
   return ts.isPropertyAccessExpression(e) && e.name.text === 'iterator' && ts.isIdentifier(e.expression) && e.expression.text === 'Symbol'
     && !!checker.getSymbolAtLocation(e.expression)?.declarations?.every((d) => d.getSourceFile().isDeclarationFile);
+}
+
+/** A declaration in a declarations file of the program's own (an app's `globals.d.ts`), not a package's, the compiler's shims or the ES library. */
+function isAppDeclarationFile(d: ts.Node | undefined): boolean {
+  const f = d?.getSourceFile();
+  return !!f && f.isDeclarationFile && !/[\\/]node_modules[\\/]/.test(f.fileName) && !f.fileName.startsWith('/__shims__/') && !isLibDeclaration(d);
 }
 
 function isLibDeclaration(d: ts.Node | undefined): boolean {
