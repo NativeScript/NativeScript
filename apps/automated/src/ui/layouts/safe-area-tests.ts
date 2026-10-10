@@ -57,6 +57,36 @@ export class SafeAreaTests extends testModule.UITest<any> {
 		TKUnit.assert(gridLayoutChangedCounter === 1, `${grid} layoutChanged event count - actual:${gridLayoutChangedCounter}; expected: 1`);
 	}
 
+	public test_overflow_reaches_bottom_when_page_view_is_offset() {
+		const page = <Page>Builder.parse(`
+        <Page actionBarHidden="false">
+            <ActionBar title="Offset Page" />
+            <GridLayout id="grid" rows="*, 44" backgroundColor="Crimson">
+                <Label id="label" row="1" text="bottom" iosOverflowSafeArea="true" backgroundColor="Gold"></Label>
+            </GridLayout>
+        </Page>
+        `);
+		// Page view starts below the navigation bar instead of at y=0.
+		(<UIViewController>page.ios).edgesForExtendedLayout = UIRectEdge.Bottom;
+		const grid = page.getViewById<GridLayout>('grid');
+		const label = page.getViewById<Label>('label');
+
+		try {
+			helper.navigate(() => page);
+			TKUnit.waitUntilReady(() => grid.isLayoutValid && label.isLayoutValid);
+
+			const pageTop = (<UIView>page.nativeViewProtected).frame.origin.y;
+			TKUnit.assert(pageTop > 0, `${page} native view should be offset - actual top:${pageTop}`);
+
+			const screenBottom = platform.Screen.mainScreen.heightPixels;
+			closeEnough(bottom(page), screenBottom, `${page}.bottom - actual:${bottom(page)}; expected: ${screenBottom}`);
+			closeEnough(bottom(grid), screenBottom, `${grid}.bottom - actual:${bottom(grid)}; expected: ${screenBottom}`);
+			closeEnough(bottom(label), screenBottom, `${label}.bottom - actual:${bottom(label)}; expected: ${screenBottom}`);
+		} finally {
+			helper.navigate(() => new Page());
+		}
+	}
+
 	// Common
 	private getViews(template: string) {
 		let root = Builder.parse(template);
