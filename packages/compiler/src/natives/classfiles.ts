@@ -259,6 +259,7 @@ export class ClassPath {
   private classes = new Map<string, JavaClass | null>();
   private gradleGroups = new Map<string, Zip[][] | null>();
   private allGroupsLoaded = false;
+  private stdlib: Zip[] | null = null;
   private pinned: Map<string, string>;
   private gradleCache: string;
 
@@ -280,6 +281,14 @@ export class ClassPath {
     if (!found && name.startsWith('androidx/')) {
       found = search(this.group('androidx.' + name.split('/')[1]));
       if (!found) found = search(this.allGroups());
+    }
+    // Kotlin's own classes (`kotlin.jvm.functions.Function1`, which Kotlin-written libraries take): the standard library the app builds with.
+    if (!found && name.startsWith('kotlin/')) {
+      const file = existsSync(join(this.gradleCache, 'org.jetbrains.kotlin', 'kotlin-stdlib')) ? this.artifactFile('org.jetbrains.kotlin', 'kotlin-stdlib') : null;
+      if (file) {
+        this.stdlib ??= openArchive(file);
+        found = search([this.stdlib]);
+      }
     }
     // Any other pinned dependency (a plugin's Maven AAR, Material) whose group is the class's package or a parent of it.
     if (!found) {

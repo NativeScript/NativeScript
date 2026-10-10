@@ -10,6 +10,8 @@ import { KIT_ANDROID } from './paths.ts';
 
 /** The SDK the generated Gradle project compiles against (android.ts). */
 const COMPILE_SDK = 36;
+/** The Kotlin the generated app builds with (android.ts). */
+const KOTLIN_VERSION = '2.2.20';
 const KIT_GRADLE = join(KIT_ANDROID, 'build.gradle.kts');
 
 /**
@@ -21,10 +23,12 @@ export function androidClassPath(widgetsAar: string | null, plugins?: { archives
   const pin = (artifact: string, version: string) => { if (!pinned.has(artifact) || newer(version, pinned.get(artifact)!)) pinned.set(artifact, version); };
   if (existsSync(KIT_GRADLE)) for (const m of readFileSync(KIT_GRADLE, 'utf8').matchAll(/"([a-z][\w.]*):([\w.-]+):([\w.-]+)"/g)) pin(`${m[1]}:${m[2]}`, m[3]);
   for (const d of plugins?.dependencies ?? []) { const [group, artifact, version] = d.coords.split(':'); if (version) pin(`${group}:${artifact}`, version); }
+  pin('org.jetbrains.kotlin:kotlin-stdlib', KOTLIN_VERSION);
   return new ClassPath([androidJar(COMPILE_SDK), ...(widgetsAar ? [widgetsAar] : []), ...(plugins?.archives ?? [])], pinned);
 }
 
 const NUMERIC = new Set(['B', 'S', 'I', 'J', 'F', 'D']);
+const BUFFER_TYPES = new Set(['ArrayBuffer', 'SharedArrayBuffer', 'DataView', 'Int8Array', 'Uint8Array', 'Uint8ClampedArray', 'Int16Array', 'Uint16Array', 'Int32Array', 'Uint32Array', 'Float32Array', 'Float64Array', 'BigInt64Array', 'BigUint64Array']);
 const KOTLIN_PRIMITIVE: Record<string, string> = { Z: 'Boolean', B: 'Byte', C: 'Char', S: 'Short', I: 'Int', J: 'Long', F: 'Float', D: 'Double', V: 'Unit' };
 // Through Long: a number past Int's range wraps, as NativeScript converts it (ToInt32), where Double.toInt() clamps (0xff1c1c1e).
 const CONVERT: Record<string, string> = { B: '.toLong().toByte()', S: '.toLong().toShort()', I: '.toLong().toInt()', J: '.toLong()', F: '.toFloat()', D: '' };
@@ -813,6 +817,7 @@ export class AndroidNativeAPI implements KotlinNative {
     if (e.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(e) && e.text === 'undefined')) return { kind: 'null' };
     // `x as never` passes x as it is: the Java classes its type includes pick the overload.
     if (ts.isAsExpression(e) && this.t.checker.getTypeAtLocation(e).flags & ts.TypeFlags.Never) {
+      if (this.isBuffer(e)) return { kind: 'object', classes: ['java/nio/ByteBuffer'] };
       const inner = this.t.checker.getNonNullableType(this.t.checker.getTypeAtLocation(e.expression));
       const classes = (inner.isUnion() ? inner.types : [inner]).flatMap((p) => this.classesOf(p) ?? []);
       if (classes.length) return { kind: 'object', classes };
@@ -829,6 +834,15 @@ export class AndroidNativeAPI implements KotlinNative {
       if (raw) return this.kindOfDescriptor(raw.desc);
     }
     return this.kindOfType(type, e);
+  }
+
+  /** An ArrayBuffer or a typed array (through `as never`): its bytes are what a ByteBuffer parameter takes, as NativeScript passes them. */
+  private isBuffer(e: ts.Expression): boolean {
+    while (ts.isParenthesizedExpression(e)) e = e.expression;
+    const c = this.t.checker;
+    const type = c.getNonNullableType(c.getTypeAtLocation(ts.isAsExpression(e) && c.getTypeAtLocation(e).flags & ts.TypeFlags.Never ? e.expression : e));
+    const parts = type.isUnion() ? type.types : [type];
+    return parts.every((p) => BUFFER_TYPES.has(p.getSymbol()?.name ?? ''));
   }
 
   private kindOfDescriptor(desc: string): Kind {
@@ -1021,6 +1035,10 @@ export class AndroidNativeAPI implements KotlinNative {
       return t.typeOf(inner) === 'String' ? `${atom(t.expr(inner))}[0]` : `${atom(t.toNumber(inner))}.toInt().toChar()`;
     }
     if (desc.startsWith('[')) return this.toJavaArray(inner, desc);
+    if (desc === 'Ljava/nio/ByteBuffer;' && this.isBuffer(inner)) {
+      const value = ts.isAsExpression(inner) ? inner.expression : inner;
+      return `(${t.expr(value)} as JSBufferSource).jsBytes`;
+    }
     const k = this.kind(inner);
     // Library mode: a read the translator holds untyped (checks narrowed it to nothing) where Java takes a class.
     if (t.library && k.kind !== 'any' && t.typeOf(inner) === 'Any?' && desc.startsWith('L') && desc !== 'Ljava/lang/Object;') return `(${t.expr(inner)} as ${this.kotlinType(desc, 'Any?')}${nonNullParam ? '' : '?'})`;

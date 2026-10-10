@@ -134,7 +134,7 @@ const ERRORS: Record<string, string> = Object.assign(Object.create(null), { Erro
 const TYPED_ARRAYS = ['Int8Array', 'Uint8Array', 'Uint8ClampedArray', 'Int16Array', 'Uint16Array', 'Int32Array', 'Uint32Array', 'Float32Array', 'Float64Array', 'BigInt64Array', 'BigUint64Array'];
 const BUFFER_TYPES = new Set(['ArrayBuffer', ...TYPED_ARRAYS, 'DataView']);
 /** WinterTC's web classes as NativeScript's globals declare them: the runtime's class of each name with a `JS` prefix. */
-const WEB_CLASSES = ['TextEncoder', 'TextDecoder', 'Crypto', 'SubtleCrypto', 'CryptoKey', 'CryptoKeyPair', 'KeyAlgorithm'];
+const WEB_CLASSES = ['TextEncoder', 'TextDecoder', 'Crypto', 'SubtleCrypto', 'CryptoKey', 'CryptoKeyPair', 'KeyAlgorithm', 'Worker', 'MessageEvent', 'ErrorEvent'];
 /** The web's option and algorithm dictionaries, which script writes as object literals and the runtime reads by key. */
 const WEB_DICTIONARIES = ['TextDecoderOptions', 'Algorithm', 'HmacKeyGenParams', 'RsaKeyGenParams', 'RsaHashedKeyGenParams', 'RsaOaepParams'];
 const LIB_GLOBALS = new Set(['Math', 'JSON', 'Object', 'Array', 'Number', 'Promise', 'console', 'String', 'Boolean', 'Map', 'Set', 'Date', 'WeakRef', 'Symbol', 'WeakMap', 'WeakSet', 'BigInt']);
@@ -559,6 +559,7 @@ export class Translator implements AsyncTranslator {
 
   typeOf(n: ts.Node): string {
     if (this.isArguments(n)) return 'JSArray<Any?>';
+    if (ts.isMetaProperty(n) && n.keywordToken === ts.SyntaxKind.ImportKeyword) return 'Any?';
     if (this.library && this.isThisValue(n)) return 'Any?';
     if (this.library && ts.isIdentifier(n) && this.passedParams.size) {
       const d = ts.isShorthandPropertyAssignment(n.parent) ? this.checker.getShorthandAssignmentValueSymbol(n.parent)?.valueDeclaration : this.checker.getSymbolAtLocation(n)?.valueDeclaration;
@@ -3892,6 +3893,8 @@ export class Translator implements AsyncTranslator {
     if (e.kind === ts.SyntaxKind.FalseKeyword) return 'false';
     if (e.kind === ts.SyntaxKind.NullKeyword) return this.typeOf(e) === 'Any?' && !this.optionalContext(e) ? 'jsNull' : 'null';
     if (e.kind === ts.SyntaxKind.ThisKeyword) return this.thisAlias ?? 'this';
+    // `import.meta` of the bundled app's module, in the app's files.
+    if (ts.isMetaProperty(e) && e.keywordToken === ts.SyntaxKind.ImportKeyword) return 'jsImportMeta';
     if (e.kind === ts.SyntaxKind.SuperKeyword) return 'super';
     if (ts.isIdentifier(e)) return this.identifier(e);
     if (ts.isTemplateExpression(e)) {

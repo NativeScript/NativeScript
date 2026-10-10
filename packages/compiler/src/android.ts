@@ -123,6 +123,12 @@ export async function writeAndroid(b: AndroidBuild): Promise<void> {
   };
   translator.native = new AndroidNativeAPI(translator, androidClassPath(widgets, native));
   for (const p of b.plugins ?? []) for (const t of p.typings) (translator.native as AndroidNativeAPI).pluginTypings.add(t);
+  // The app's own typings of Java APIs no package types (`declare module androidx { … }` in a script .d.ts).
+  const appDir = resolve(b.app) + '/';
+  for (const sf of b.program.getSourceFiles()) {
+    if (!sf.isDeclarationFile || !sf.fileName.startsWith(appDir) || sf.fileName.includes('/node_modules/')) continue;
+    if (!/^(import|export)\b/m.test(sf.text) && /^declare\s+(module|namespace)\s+(android|androidx|java|javax|com|org|kotlin|io)\b/m.test(sf.text)) (translator.native as AndroidNativeAPI).pluginTypings.add(sf.fileName);
+  }
   const suppress = '@file:Suppress("unused", "UNUSED_VARIABLE", "RedundantExplicitType", "NAME_SHADOWING", "UNCHECKED_CAST", "UNREACHABLE_CODE", "UNUSED_PARAMETER")';
   const header = (from: string) => `// Compiled by ns-native from ${relative(b.app, from)}; edit that file, not this one.\n${suppress}\npackage ${pkg}\n\nimport org.nativescript.kit.*\n\n`;
   const modules = translateKotlinModules(translator, b.program, [...b.modules, ...(b.compiledPlugins ?? [])], b.resolved);
