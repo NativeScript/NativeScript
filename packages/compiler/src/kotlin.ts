@@ -1917,7 +1917,7 @@ export class Translator implements AsyncTranslator {
     const service = (ts.getDecorators(cls) ?? []).some((d) => d.expression.getText().startsWith('Injectable'));
     if (service) {
       const { params, lines } = this.componentMembers(cls, []);
-      return [`class ${name}(${params.join(', ')}) {`, ...lines, '', '    companion object {', `        val shared = ${name}()`, '    }', '}'].join('\n');
+      return [`class ${name}(${params.join(', ')}) {`, ...lines, '', '    companion object {', `        val shared: ${name} get() = AppInjector.service(${name}::class.java) { ${name}() }`, '    }', '}'].join('\n');
     }
     if (!this.library && this.collectionAlias(cls)) {
       this.indent = '    ';

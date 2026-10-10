@@ -145,6 +145,31 @@ class AsyncPipe {
     }
 }
 
+/**
+ * The root injector: `providedIn: 'root'` services, each made on first use in the root scope (its
+ * `inject(DestroyRef)` and effects belong there) and destroyed with the app, after which the next
+ * use makes a new one, as a new bootstrap does.
+ */
+object AppInjector {
+    private var owner = Owner(null)
+    private val services = HashMap<Class<*>, Any>()
+
+    @Suppress("UNCHECKED_CAST")
+    fun <T : Any> service(type: Class<T>, make: () -> T): T {
+        services[type]?.let { return it as T }
+        val made = owner.run(make)
+        services[type] = made
+        return made
+    }
+
+    fun destroy() {
+        val old = owner
+        owner = Owner(null)
+        services.clear()
+        old.dispose()
+    }
+}
+
 /** `inject(DestroyRef)`: callbacks run when the injecting component's scope ends. */
 class DestroyRef internal constructor(owner: Owner?) {
     private val owner = java.lang.ref.WeakReference(owner)

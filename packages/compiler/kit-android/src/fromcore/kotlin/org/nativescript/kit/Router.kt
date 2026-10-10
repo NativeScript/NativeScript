@@ -91,6 +91,14 @@ class Router {
     /** The outlets in the order they were last navigated, for `back()`. */
     private val history = ArrayList<String>()
 
+    /** The app ended (core's exit event): every routed component is destroyed, newest first, and the outlets forgotten. */
+    fun destroy() {
+        for (outlet in outlets.values) for (entry in outlet.entries.asReversed()) entry.owner.dispose()
+        outlets.clear()
+        pending.clear()
+        history.clear()
+    }
+
     /** A `page-router-outlet`: a frame showing its outlet's URL. */
     fun outlet(name: String = PRIMARY): View {
         val frame = Frame()
