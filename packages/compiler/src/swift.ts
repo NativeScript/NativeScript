@@ -656,6 +656,10 @@ export class Translator implements AsyncTranslator {
       // `T & string`, a type parameter narrowed by typeof: the primitive.
       const primitive = t.types.find((u) => u.flags & (F.StringLike | F.NumberLike | F.BooleanLike));
       if (primitive && t.types.every((u) => u === primitive || u.flags & F.TypeParameter)) return this.type(primitive, where);
+      // `T & Record<K, unknown>`, a type parameter narrowed by `key in owner`: the type parameter, its key read by name.
+      const param = t.types.find((u) => u.flags & F.TypeParameter);
+      const inNarrowing = (u: ts.Type) => !!(u.flags & F.Object) && !u.getCallSignatures().length && u.getProperties().every((p) => c.getTypeOfSymbol(p).flags & F.Unknown);
+      if (param && t.types.every((u) => u === param || inNarrowing(u))) return this.type(param, where);
     }
     if (t.isUnion()) {
       let parts = t.types.filter((u) => !(u.flags & (F.Undefined | F.Null | F.Void)));
@@ -696,7 +700,8 @@ export class Translator implements AsyncTranslator {
     const args = () => t.aliasTypeArguments ?? c.getTypeArguments(t as ts.TypeReference);
     const arg = (k: number) => this.type(args()[k], where);
     if (name && BUFFER_TYPES.includes(name) && isLibDeclaration(sym?.declarations?.[0])) return `JS${name}`;
-    if (name && sym?.declarations?.[0]?.getSourceFile().fileName === '/__shims__/globals.d.ts') {
+    // Core's own code (library mode) is typed by the DOM's library, whose web classes are the runtime's too.
+    if (name && (sym?.declarations?.[0]?.getSourceFile().fileName === '/__shims__/globals.d.ts' || (this.library && isLibDeclaration(sym?.declarations?.[0])))) {
       if (WEB_CLASSES.includes(name)) return `JS${name}`;
       if (WEB_DICTIONARIES.includes(name)) return 'Any?';
     }
@@ -1996,7 +2001,7 @@ ${members.join('\n')}
     lines.push('    convenience init(jsObject: Any?) {');
     lines.push(`        self.init(${[...fields.map((f) => `${ident(f.name)}: ${this.fromAny(`jsField(jsObject, ${swiftString(f.name)})`, f.type)}`), 'jsOrder: (jsObject as? JSDynamic)?.jsKeys'].join(', ')})`);
     lines.push('        jsExtra = jsObject as? JSDynamic', '    }');
-    const members = this.dynamicMembers(fields, className, false).map((l) => l.replace('default: return nil', 'default: return jsExtra?[jsKey: key] ?? nil').replace('default: break', 'default: if jsExtra == nil { jsExtra = JSObject() }; jsExtra?[jsKey: key] = newValue'));
+    const members = this.dynamicMembers(fields, className, false, [], [], false, new Set(), [], false, true);
     const optional = fields.filter((f) => f.type.endsWith('?'));
     members[0] = `    var jsKeys: [String] {\n        let order = jsOrder ?? [${fields.map((f) => swiftString(f.name)).join(', ')}]\n        let keys = order + (jsExtra?.jsKeys ?? []).filter { !order.contains($0) }\n        return keys.filter { key in ${optional.length ? `switch key { ${optional.map((f) => `case ${swiftString(f.name)}: return ${ident(f.name)} != nil`).join('; ')}; default: return true }` : 'true'} }\n    }`;
     lines.push(...members);
@@ -2075,7 +2080,7 @@ ${members.join('\n')}
   }
 
   /** `JSDynamic`: the object's keys and members by name, for printing, JSON and untyped access. */
-  private dynamicMembers(fields: { name: string; type: string }[], className: string | null, override: boolean, methods: { name: string; type: string; available?: number }[] = [], symbols: { key: string; member: string; type: string }[] = [], expando = false, raw = new Set<string>(), accessors: { name: string; get: string | null; set: string | null }[] = [], symbolKeyedBase = false): string[] {
+  private dynamicMembers(fields: { name: string; type: string }[], className: string | null, override: boolean, methods: { name: string; type: string; available?: number }[] = [], symbols: { key: string; member: string; type: string }[] = [], expando = false, raw = new Set<string>(), accessors: { name: string; get: string | null; set: string | null }[] = [], symbolKeyedBase = false, extra = false): string[] {
     const o = override ? 'override ' : '';
     const keys = fields.map((f) => (f.type.endsWith('?') ? `(self.${ident(f.name)} == nil ? [] : [${swiftString(f.name)}])` : `[${swiftString(f.name)}]`));
     const lines = [
@@ -2084,26 +2089,52 @@ ${members.join('\n')}
       `    ${o}var jsClassName: String? { ${className ? swiftString(className) : 'nil'} }`,
       `    ${o}subscript(jsKey key: String) -> Any? {`,
       '        get {',
-      '            switch key {',
-      ...fields.map((f) => `            case ${swiftString(f.name)}: return ${raw.has(f.name) ? `jsExpandoGet(self, ${swiftString(f.name)})` : isFunctionType(f.type.replace(/^\((.*)\)[?!]$/, '$1')) ? this.boxedField(`self.${ident(f.name)}`, f.type) : this.untypedEnum(`self.${ident(f.name)}`, f.type)}`),
-      ...symbols.map((f) => `            case ${f.key}: return ${f.member}`),
-      ...accessors.map((a) => `            case ${swiftString(a.name)}: return ${a.get ?? 'nil'}`),
-      ...methods.filter((m) => !fields.some((f) => f.name === m.name)).map((m) => m.available
-        ? `            case ${swiftString(m.name)}: if #available(iOS ${m.available}, *) { return ${this.boxFunction(`self.${ident(m.name)}`, m.type)} } else { return nil }`
-        : `            case ${swiftString(m.name)}: return ${this.boxFunction(`self.${ident(m.name)}`, m.type)}`),
-      `            default: return ${override ? 'super[jsKey: key]' : expando ? 'jsExpandoGet(self, key)' : 'nil'}`,
-      '            }',
+      ...this.keySwitch([
+        ...fields.map((f) => ({ name: f.name, code: `return ${raw.has(f.name) ? `jsExpandoGet(self, ${swiftString(f.name)})` : isFunctionType(f.type.replace(/^\((.*)\)[?!]$/, '$1')) ? this.boxedField(`self.${ident(f.name)}`, f.type) : this.untypedEnum(`self.${ident(f.name)}`, f.type)}` })),
+        ...accessors.map((a) => ({ name: a.name, code: `return ${a.get ?? 'nil'}` })),
+        ...methods.filter((m) => !fields.some((f) => f.name === m.name)).map((m) => ({ name: m.name, code: m.available
+          ? `if #available(iOS ${m.available}, *) { return ${this.boxFunction(`self.${ident(m.name)}`, m.type)} } else { return nil }`
+          : `return ${this.boxFunction(`self.${ident(m.name)}`, m.type)}` })),
+      ], symbols.map((f) => `            case ${f.key}: return ${f.member}`), `return ${override ? 'super[jsKey: key]' : expando ? 'jsExpandoGet(self, key)' : extra ? 'jsExtra?[jsKey: key] ?? nil' : 'nil'}`),
       '        }',
       '        set {',
-      '            switch key {',
-      ...fields.map((f) => `            case ${swiftString(f.name)}: ${raw.has(f.name) ? `jsExpandoSet(self, ${swiftString(f.name)}, newValue)` : `self.${ident(f.name)} = ${this.fromAny('newValue', f.type)}`}`),
-      ...symbols.map((f) => `            case ${f.key}: ${f.member} = ${this.fromAny('newValue', f.type)}`),
-      ...accessors.filter((a) => a.set).map((a) => `            case ${swiftString(a.name)}: ${a.set}`),
-      `            default: ${override ? 'super[jsKey: key] = newValue' : expando ? 'jsExpandoSet(self, key, newValue)' : 'break'}`,
-      '            }',
+      ...this.keySwitch([
+        ...fields.map((f) => ({ name: f.name, code: `${raw.has(f.name) ? `jsExpandoSet(self, ${swiftString(f.name)}, newValue)` : `self.${ident(f.name)} = ${this.fromAny('newValue', f.type)}`}; return` })),
+        ...accessors.filter((a) => a.set).map((a) => ({ name: a.name, code: `${a.set}; return` })),
+      ], symbols.map((f) => `            case ${f.key}: ${f.member} = ${this.fromAny('newValue', f.type)}`), override ? 'super[jsKey: key] = newValue' : expando ? 'jsExpandoSet(self, key, newValue)' : extra ? 'if jsExtra == nil { jsExtra = JSObject() }; jsExtra?[jsKey: key] = newValue' : 'break'),
       '        }',
       '    }',
     ];
+    return lines;
+  }
+
+  /**
+   * A `subscript(jsKey:)` body: the named cases switched on the key's UTF-8 length first, so a key compares
+   * only with names of its length (Swift tests a string switch's cases one by one, and a class's key that
+   * misses walks every case of each class up its chain). Each case ends the accessor; symbol-keyed cases,
+   * whose keys are known only at run time, and then `fallback`, come after.
+   */
+  private keySwitch(cases: { name: string; code: string }[], symbols: string[], fallback: string): string[] {
+    const seen = new Set<string>();
+    const byLength = new Map<number, { name: string; code: string }[]>();
+    for (const c of cases) {
+      if (seen.has(c.name)) continue;
+      seen.add(c.name);
+      const n = Buffer.byteLength(c.name, 'utf8');
+      byLength.set(n, [...(byLength.get(n) ?? []), c]);
+    }
+    const lines: string[] = [];
+    if (byLength.size) {
+      lines.push('            switch key.utf8.count {');
+      for (const [n, group] of [...byLength].sort((a, b) => a[0] - b[0])) {
+        lines.push(`            case ${n}:`, '                switch key {');
+        for (const c of group) lines.push(`                case ${swiftString(c.name)}: ${c.code}`);
+        lines.push('                default: break', '                }');
+      }
+      lines.push('            default: break', '            }');
+    }
+    if (symbols.length) lines.push('            switch key {', ...symbols, `            default: ${fallback}`, '            }');
+    else if (fallback !== 'break') lines.push(`            ${fallback}`);
     return lines;
   }
 
@@ -2928,8 +2959,39 @@ ${members.join('\n')}
     const throws = !isAsync(fn) && this.throwsInfo.fn(fn) ? 'throws ' : '';
     // A function expression's name is only for itself: one that never refers to itself is an anonymous function.
     if (fn.name && refersTo(fn.body, this.checker.getSymbolAtLocation(fn.name), this.checker)) throw this.error(fn, 'a named function expression');
+    if (this.takesRestArray(fn) && !pad.length) {
+      const inner = this.indent + '    ';
+      const binds = fn.parameters.map((p, k) => {
+        const t = this.closureParamType(p);
+        const read = t.endsWith('!') ? optionalType(t.slice(0, -1)) : t;
+        return `\n${inner}let ${ident((p.name as ts.Identifier).text)}: ${t} = ${this.fromAnyCode(`jsArg(__rest.storage, ${k})`, read, true)}`;
+      });
+      return `{ (__rest: JSArray<Any?>) ${throws}-> ${ret} in${binds.join('')}${this.functionBody(fn, ret, this.indent).slice(1)}`;
+    }
     const extra = this.unusedParameters(fn).map((t, k) => `_ __unused${k}: ${t}`);
     return `{ (${[this.params(fn, true), ...extra, ...pad].filter(Boolean).join(', ')}) ${throws}-> ${ret} in${this.functionBody(fn, ret, this.indent).slice(1)}`;
+  }
+
+  /**
+   * A closure stored where a function taking all its arguments as one array is declared (`(...args: any[]) => void`,
+   * XMLHttpRequest's `onload`): it takes the array, and its parameters are the array's elements. A builtin's
+   * callback (`setTimeout`'s) is the closure the runtime calls with none.
+   */
+  private takesRestArray(fn: ts.ArrowFunction | ts.FunctionExpression): boolean {
+    const at = fn.parent;
+    const stored = (ts.isBinaryExpression(at) && at.operatorToken.kind === ts.SyntaxKind.EqualsToken && at.right === fn) || ((ts.isPropertyDeclaration(at) || ts.isVariableDeclaration(at)) && at.initializer === fn && !!at.type);
+    if (!stored || this.closureSlots.has(fn) || this.readsArguments(fn) || implicitThis(fn)) return false;
+    if (fn.parameters.some((p) => p.dotDotDotToken || p.initializer || !ts.isIdentifier(p.name) || p.name.text === 'this')) return false;
+    const first = this.slotOf(fn)?.getParameters()[0];
+    const decl = first?.valueDeclaration;
+    return !!decl && ts.isParameter(decl) && !!decl.dotDotDotToken && this.type(this.checker.getTypeOfSymbolAtLocation(first!, fn), fn) === 'JSArray<Any?>';
+  }
+
+  /** A closure parameter's Swift type, as `params` declares it. */
+  private closureParamType(p: ts.ParameterDeclaration): string {
+    let t = this.typeOf(p.name);
+    if (this.mayBeNull(p) || (nullableTypeNode(p.type) && !isOptional(t) && t !== 'Any?' && this.lenientRef(t) !== t)) t = `${t}!`;
+    return p.questionToken ? optionalType(t) : t;
   }
 
   /** A field read by name: a function it holds as the script function a caller can call (`TRANSFORM_MATRIXES[property](value)`). */
@@ -2985,6 +3047,7 @@ ${members.join('\n')}
   private closureType(fn: ts.ArrowFunction | ts.FunctionExpression): string {
     const params = fn.parameters.filter((p) => !(ts.isIdentifier(p.name) && p.name.text === 'this' && p.type?.kind === ts.SyntaxKind.VoidKeyword));
     const own = params.map((p) => (p.questionToken || this.mayBeNull(p) || nullableTypeNode(p.type) ? optionalType(this.typeOf(p.name)) : this.typeOf(p.name)));
+    if (this.takesRestArray(fn)) return `(JSArray<Any?>) throws -> ${this.closureReturn(fn)}`;
     return `(${[...own, ...(this.library && ts.isFunctionExpression(fn) && (isMethodValue(fn) || this.readsArguments(fn)) ? [] : this.unusedParameters(fn))].join(', ')}) throws -> ${this.closureReturn(fn)}`;
   }
 
@@ -3259,6 +3322,11 @@ ${members.join('\n')}
       }
       // `[Symbol.toStringTag] = 'TextDecoder'`: what Object.prototype.toString reports.
       if (keyed?.member === 'jsToStringTag' && !isStatic(m) && m.initializer) {
+        // Over a base's own tag (`File` over `Blob`): the base's property, set as the class's fields are.
+        if (this.redeclaredField(m)) {
+          fieldInits.push(`        self.jsToStringTag = ${this.coerce(m.initializer, 'String')}`);
+          continue;
+        }
         conformances.push('JSToStringTag');
         lines.push(`    var jsToStringTag: String = ${this.coerce(m.initializer, 'String')}`);
         continue;
@@ -4858,6 +4926,8 @@ ${members.join('\n')}
     const arity = tuples && !hasTopLevelArrow(tuples[2]) ? splitTopLevel(tuples[2].slice(1, -1)).length : 0;
     const fits = (x: ts.Expression) => ts.isArrayLiteralExpression(x) && x.elements.length === arity && !x.elements.some(ts.isSpreadElement);
     if (ts.isArrayLiteralExpression(bare) && arity > 1 && (tuples![1] ? bare.elements.every(fits) : fits(bare))) return this.array(bare, target.replace(/\?$/, ''));
+    // A pair the checker types as a tuple (its slot iterable of tuples, as `Headers` is) where an array is wanted: made as the array.
+    if (ts.isArrayLiteralExpression(bare) && /^JSArray<.+>$/.test(target.replace(/[?!]$/, '')) && /^\(.*\)$/.test(this.typeOf(bare)) && !functionParts(this.typeOf(bare)) && !bare.elements.some(ts.isSpreadElement)) return this.array(bare, target.replace(/[?!]$/, ''));
     // Branches typed otherwise than where the value goes: each as it is taken.
     if (ts.isConditionalExpression(bare) && tuples && arity > 1 && this.typeOf(bare) !== target && ![bare.whenTrue, bare.whenFalse].some(isNullish)) {
       return `(${this.cond(bare.condition)} ? ${this.coerce(bare.whenTrue, target)} : ${this.coerce(bare.whenFalse, target)})`;
@@ -5796,6 +5866,11 @@ ${members.join('\n')}
     const t = this.typeOf(e);
     if (t === 'String') return this.expr(e);
     if (t === 'Double' || t === 'Bool') return `js(${this.expr(e)})`;
+    // Typed `T | null` (`headers.get(name)`), held as an optional: missing is null, not undefined.
+    const declared = this.checker.getTypeAtLocation(e);
+    if (/\?$/.test(t) && t !== 'Any?' && declared.isUnion() && declared.types.some((x) => x.flags & ts.TypeFlags.Null) && !declared.types.some((x) => x.flags & ts.TypeFlags.Undefined)) {
+      return `(${this.expr(e)}.map { jsToString($0) } ?? "null")`;
+    }
     return `jsToString(${this.expr(e)})`;
   }
 
@@ -7705,6 +7780,8 @@ ${members.join('\n')}
     // `new CATransform3D(CATransform3DIdentity)`: a copy of the struct, which a Swift value is.
     if (this.native.isStructType(t) && args.length === 1 && this.typeOf(args[0]) === t) return this.expr(args[0]);
     if (this.native.isStructType(t) && !args.length) return `${t}()`;
+    // A web class the runtime has (`new TextEncoder()`), declared by the DOM's library for core's own code: the runtime's class.
+    if (ts.isIdentifier(callee) && WEB_CLASSES.includes(name) && t === `JS${name}` && !!this.resolve(callee)?.declarations?.[0]?.getSourceFile().isDeclarationFile) return `${t}(${this.args(e).join(', ')})`;
     // An untyped constructor (a moot module's class): constructed as script would, which a moot value refuses.
     if (this.typeOf(callee) === 'Any?') return t === 'Any?' ? `(try jsConstruct(${this.expr(callee)}${this.untypedArgs(args)}))` : this.fromAny(`(try jsConstruct(${this.expr(callee)}${this.untypedArgs(args)}))`, t);
     // `new Trace.Writer()`: a namespace's class.
@@ -8086,7 +8163,10 @@ ${members.join('\n')}
         // The library's classes: the runtime's type of any of their instances (a promise of any result).
         const builtin = BUILTIN_CLASSES[name];
         if (builtin && isLibDeclaration(this.resolve(e.right)?.declarations?.[0])) return `(${l()} is ${builtin})`;
-        return `(${l()} is ${ERRORS[name] ?? this.typeOf(e.right).replace(/^typeof /, '').replace(/\.Type$/, '') ?? name})`;
+        const swiftType = ERRORS[name] ?? this.typeOf(e.right).replace(/^typeof /, '').replace(/\.Type$/, '');
+        // A class the library declares that has no Swift type (the DOM's `FormData`): the kit's class of that name, as the runtime's globals are core's.
+        if (swiftType === 'Any?' && ts.isIdentifier(e.right) && isLibDeclaration(this.resolve(e.right)?.declarations?.[0])) return `jsInstanceOfNamed(${this.coerce(e.left, 'Any?')}, ${swiftString(name)})`;
+        return `(${l()} is ${swiftType ?? name})`;
       }
       case K.CommaToken: return `({ ${this.exprStatement(e.left)}; return ${r()} }())`;
       case K.InKeyword: return `jsHasKey(${this.coerce(e.right, 'Any?')}, ${this.propertyKey(e.left)})`;

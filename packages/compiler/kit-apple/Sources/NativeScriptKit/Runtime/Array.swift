@@ -800,7 +800,11 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
     public static func of(_ items: Element...) -> JSArray<Element> { JSArray(items) }
 
     /// `Array.isArray(value)`.
-    public static func isArray(_ value: Any?) -> Bool { jsFlat(value) is JSArrayProtocol }
+    public static func isArray(_ value: Any?) -> Bool {
+        // JSArrayProtocol is class-bound: a value of any other kind is no array, without a conformance lookup for its type.
+        guard let v = jsFlat(value), [.swiftClass, .objCClass].contains(jsTypeKind(v)) else { return false }
+        return v is JSArrayProtocol
+    }
 
     // MARK: JSArrayProtocol, JSReactiveConvertible
 
