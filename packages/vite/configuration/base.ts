@@ -44,6 +44,7 @@ import { resolveRelativeToImportMeta } from '../helpers/import-meta-path.js';
 import { normalizeModuleId } from '../helpers/normalize-id.js';
 import { getHmrWatchIgnoreGlobs } from '../helpers/hmr-scope.js';
 import { NS_OPTIMIZE_DEPS_EXCLUDE } from '../helpers/optimize-deps.js';
+import { sbgClassNamesPlugin } from '../helpers/sbg-class-names.js';
 const require = createRequire(import.meta.url);
 // Optional PostCSS import plugin (only used if available)
 // Try to load postcss-import to control CSS @import resolution simply
@@ -327,6 +328,11 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 				},
 			};
 
+	// The Android static binding generator finds a decorated class only from its own
+	// `X = __decorate([JavaProxy('name')], X)` statement; compressing statements into comma
+	// sequences hides those classes from it.
+	const sbgMinifyOutput = platform === 'android' && !debug ? { minify: { compress: { sequences: false }, mangle: true, codegen: true } } : {};
+
 	const baseViteConfig = {
 		// Suppress logs during HMR development if desired:
 		// ...(hmrActive ? { logLevel: "warn" as const } : {}),
@@ -416,6 +422,7 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 			...(!hmrActive ? [angularWorkerUrlPreservePlugin({ verbose })] : []),
 			// Transform Vite worker URLs to NativeScript format AFTER bundling
 			workerUrlPlugin(),
+			...(platform === 'android' ? [sbgClassNamesPlugin()] : []),
 			// Dev/HMR only: safety-net TypeScript transform for `.ts`/`.tsx` files
 			// that escape the Angular plugin's fileEmitter (e.g. worker entry files
 			// loaded via `new Worker(new URL('./foo.worker', import.meta.url))`,
@@ -518,6 +525,7 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 				// Don't externalize anything - bundle everything into the worker
 				external: [],
 				output: {
+					...sbgMinifyOutput,
 					// Inline all dynamic imports into a single worker bundle.
 					// `codeSplitting: false` is the modern Rolldown spelling of the
 					// deprecated `inlineDynamicImports: true`. See:
@@ -577,6 +585,7 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 				input: 'virtual:entry-with-polyfills',
 				output: {
 					format: 'es', // Emit ES modules (.mjs)
+					...sbgMinifyOutput,
 					entryFileNames: 'bundle.mjs',
 					// Prepend a tiny polyfill prelude to every emitted chunk so timer
 					// globals (`setTimeout`, `setInterval`, `clearTimeout`,
