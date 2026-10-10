@@ -54,6 +54,20 @@ object AppModules {
     }
 }
 
+/** The app's script modules' exports, by file (`main-page.ts`): what the compiled app registers before it runs. */
+fun __nsRegisterAppModules(modules: Any?) {
+    val record = modules as? JSObject ?: return
+    for (file in record.jsKeys) {
+        val exports = jsGet(record, file)
+        AppModules.register(file) { exports }
+    }
+}
+
+/** An app class as its module exports it to core's Builder, which makes components with `new Class()`. */
+fun __nsClass(make: () -> Any?): Any? = object : JSConstructible {
+    override fun jsConstruct(args: Array<out Any?>): Any? = make()
+}
+
 /**
  * The app: its stylesheet, which core loads as `app.css`, then the root view the template makes, as
  * `Application.run({ create })` starts it. Run from the app's `android.app.Application`, before core's

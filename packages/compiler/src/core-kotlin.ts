@@ -23,7 +23,8 @@ export function kotlinKitIndex(sources: string | string[]): Map<string, KitType>
   const types = new Map<string, KitType>();
   const files = (Array.isArray(sources) ? sources : [sources]).flatMap((d) => (d.endsWith('.kt') ? [d] : existsSync(d) ? (readdirSync(d, { recursive: true }) as string[]).filter((f) => f.endsWith('.kt')).map((f) => join(d, f)) : []));
   for (const f of files) {
-    const text = readFileSync(f, 'utf8').replace(/\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '');
+    // Comments, not a string's `//` (`"file://"`), whose brace after it would be lost with it.
+    const text = readFileSync(f, 'utf8').replace(/("(?:\\.|[^"\\\n])*")|\/\/.*$/gm, (_, s) => s ?? '').replace(/("(?:\\.|[^"\\\n])*")|\/\*[\s\S]*?\*\//g, (_, s) => s ?? '');
     const imports = new Map([...text.matchAll(/^import\s+([\w.]+)\.(\w+)(?:\s+as\s+(\w+))?\s*$/gm)].map((m) => [m[3] ?? m[2], `${m[1]}.${m[2]}`]));
     const stack: { type: KitType | null; depth: number; companion: boolean }[] = [];
     let depth = 0;
@@ -41,6 +42,8 @@ export function kotlinKitIndex(sources: string | string[]): Map<string, KitType>
           if (!type && isPublic) {
             type = { name, base, members: new Map(), props: new Set() };
             types.set(name, type);
+            const outer = [...stack].reverse().find((x) => !x.companion)?.type;
+            if (outer) type.outer = outer.outer ? `${outer.outer}.${outer.name}` : outer.name;
           }
           // Extension members in a file read earlier made the entry: the class declaration names the base.
           if (type && base) type.base = base;
@@ -75,6 +78,8 @@ export function kotlinKitIndex(sources: string | string[]): Map<string, KitType>
           const isStatic = owner.companion || !!(owner.type as KitType & { object?: boolean }).object;
           let m: RegExpExecArray | null;
           const made = /^\s*override\s+fun\s+createNativeView\(\)\s*:\s*NativeView\s*=\s*([\w.]+)\(/.exec(line);
+          // A constructor taking script's arguments as one list (`constructor(__arguments: JSArray<Any?>)`).
+          if (/^\s*constructor\(\s*__arguments\s*:\s*JSArray<Any\?>\s*\)/.test(line)) add(owner.type, '<init>', { kind: 'func', static: false, type: owner.type.name, params: '__arguments: JSArray<Any?>' });
           if (made) owner.type.native = imports.get(made[1]) ?? made[1];
           if ((m = /^\s*(?:@\w+\s+)*(?:(?:override|open|final|lateinit|const|abstract|protected|public)\s+)*(?:val|var)\s+`?(\w+)`?\s*:\s*([^={]+)/.exec(line))) add(owner.type, m[1], { kind: 'var', static: isStatic, type: m[2].trim().replace(/\s+get\(\).*$/, '') });
           else if ((m = /^\s*(?:(?:override|open|final|abstract|inline|operator|protected|public)\s+)*fun\s+(?:<[^>]*>\s*)?`?(\w+)`?\s*\(/.exec(line))) {
@@ -148,6 +153,11 @@ export class CoreKotlin implements KotlinCore {
     this.index = kotlinKitIndex(generated ? generatedKitSources() : KIT);
   }
 
+  /** The kit's view classes a page's XML can name (`Label`, `StackLayout`). */
+  kitElements(): string[] {
+    return [...this.index.keys()].filter((n) => kitExtends(this.index, n, 'ViewBase'));
+  }
+
   /** The generated kit's object for a core module (`Connectivity` of `export * as Connectivity` is `Core_connectivity_index`). */
   private moduleObject(decl: ts.Node): string | null {
     const file = decl.getSourceFile().fileName.replace(/\\/g, '/');
@@ -200,6 +210,18 @@ export class CoreKotlin implements KotlinCore {
   }
 
   owner(e: ts.Expression): { name: string; isStatic: boolean } | null {
+    const found = this.declaredOwner(e);
+    if (!found || !this.generated || this.index.has(found.name)) return found;
+    return this.renamedOwner(found) ?? found;
+  }
+
+  /** A class the generated kit renames for a clash (`Source` of utils/debug-source is `Source__debug_source`), that has `member`. */
+  private renamedOwner(owner: { name: string; isStatic: boolean }, member?: string): { name: string; isStatic: boolean } | null {
+    const renamed = [...this.index.keys()].filter((k) => k.startsWith(`${owner.name}__`) && (!member || !!kitMember(this.index, k, member)));
+    return renamed.length === 1 ? { ...owner, name: renamed[0] } : null;
+  }
+
+  private declaredOwner(e: ts.Expression): { name: string; isStatic: boolean } | null {
     const c = this.t.checker;
     // A namespace core nests in a static owner (`Utils.layout`, `Application.android`) is the kit object `UtilsLayout`.
     if (ts.isPropertyAccessExpression(e) && (ts.isIdentifier(e.expression) || ts.isPropertyAccessExpression(e.expression))) {
@@ -231,7 +253,8 @@ export class CoreKotlin implements KotlinCore {
         if (this.index.has(sym.name)) return { name: sym.name, isStatic: true };
         // A module's constant object of its own functions (`Dialogs = { alert, confirm, … }`): the module's object, which has them.
         const value = sym.valueDeclaration;
-        if (this.generated && value && ts.isVariableDeclaration(value) && (value.initializer ? ts.isObjectLiteralExpression(value.initializer) && value.initializer.properties.every(ts.isShorthandPropertyAssignment) : !!value.type && ts.isTypeLiteralNode(value.type))) {
+        const functionsOnly = (n: ts.TypeLiteralNode) => n.members.every((m) => ts.isMethodSignature(m) || (ts.isPropertySignature(m) && !!m.type && (ts.isFunctionTypeNode(m.type) || ts.isTypeQueryNode(m.type))));
+        if (this.generated && value && ts.isVariableDeclaration(value) && (value.initializer ? ts.isObjectLiteralExpression(value.initializer) && value.initializer.properties.every(ts.isShorthandPropertyAssignment) : !!value.type && ts.isTypeLiteralNode(value.type) && functionsOnly(value.type))) {
           const module = this.moduleObject(value);
           if (module) return { name: module, isStatic: true };
         }
@@ -270,8 +293,16 @@ export class CoreKotlin implements KotlinCore {
    * (`Utils.android` of utils/index is utils/native-helper's): that module's object.
    */
   private ownerOf(target: ts.Expression, name: ts.MemberName): { name: string; isStatic: boolean } | null {
-    const owner = this.mixinOwn(name) ? null : this.owner(target) ?? this.inheritedOwner(target, name);
+    let owner = this.mixinOwn(name) ? null : this.owner(target) ?? this.inheritedOwner(target, name);
+    if (owner && this.generated && !kitMember(this.index, owner.name, name.text)) owner = this.renamedOwner(owner, name.text) ?? owner;
     if (!owner || !this.generated || !owner.isStatic || !owner.name.startsWith('Core_') || kitMember(this.index, owner.name, name.text)) return owner;
+    // A namespace core's declarations give where its platform file declares a class of statics (`AndroidHelper`): the class.
+    const ns = this.aliased(ts.isPropertyAccessExpression(target) ? target.name : target as ts.Identifier);
+    if (ns && ns.flags & ts.SymbolFlags.ValueModule && kitMember(this.index, ns.name, name.text)) return { name: ns.name, isStatic: true };
+    // A member a barrel's declarations give that one of the package's modules implements (`Utils.executeOnMainThread`, utils/common's).
+    const family = owner.name.replace(/_index$/, '_');
+    const found = [...this.index.keys()].filter((k) => k.startsWith(family) && kitMember(this.index, k, name.text)?.static);
+    if (found.length === 1) return { name: found[0], isStatic: true };
     const sym = this.aliased(name);
     const decl = sym?.valueDeclaration ?? sym?.declarations?.[0];
     const module = decl && isCoreDeclaration(decl) ? this.moduleObject(decl) : null;
@@ -355,6 +386,10 @@ export class CoreKotlin implements KotlinCore {
       const native = t.typeOf(e);
       return native === 'Any?' ? `${recv}.nativeView` : `(${recv}.nativeView as ${native})`;
     }
+    // A view narrowed to another class as well (`headerView instanceof Label` of a StackLayout): that class's member.
+    const type = !owner.isStatic && !kitMember(this.index, owner.name, name) ? t.checker.getTypeAtLocation(e.expression) : undefined;
+    const narrowed = type?.isIntersection() ? type.types.map((x) => x.getSymbol()?.name).find((n) => !!n && n !== owner.name && !!kitMember(this.index, n, name)) : undefined;
+    if (narrowed) return this.fromKit(`(${recv} as ${narrowed}).${name}`, kitMember(this.index, narrowed, name)!.type, t.typeOf(e), t.nullTolerant(e));
     if (!owner.isStatic && this.isView(owner.name) && !kitMember(this.index, owner.name, name)) {
       if (!this.isViewProperty(owner.name, name)) unappliedProperty(t, e.name, `${owner.name}.${name}`, 'kit-android');
       return t.fromAnyCode(`${recv}.get(${JSON.stringify(name)})`, t.typeOf(e), true);
@@ -420,8 +455,16 @@ export class CoreKotlin implements KotlinCore {
     if (!owner) return null;
     const t = this.t;
     const name = this.kitName(owner.name, e.expression.name.text);
+    // A method the app's own type adds to a core class (`View & { addChild(view): void }`): called by name, as script calls it.
+    const declared = t.checker.getSymbolAtLocation(e.expression.name)?.declarations?.[0];
+    if (!owner.isStatic && !kitMember(this.index, owner.name, name) && declared && !isCoreDeclaration(declared) && ts.isTypeLiteralNode(declared.parent)) {
+      const call = `jsCallMethod(${t.expr(e.expression.expression)}, ${kotlinString(e.expression.name.text)}${e.arguments.map((a) => `, ${t.coerce(a, 'Any?')}`).join('')})`;
+      return ts.isExpressionStatement(e.parent) ? call : t.fromAnyCode(call, t.typeOf(e), true);
+    }
     const m = this.member(owner.name, name, e.expression);
-    const recv = owner.isStatic ? this.declaring(owner.name, name) : this.receiver(e.expression.expression, e.expression);
+    // A static method called through a class held as a value (`Utils.Source.get`, a namespace's class): the class's.
+    const staticCall = !!declared && ts.isClassElement(declared) && !!(ts.getCombinedModifierFlags(declared as ts.Declaration) & ts.ModifierFlags.Static);
+    const recv = owner.isStatic || staticCall ? this.declaring(owner.name, name) : this.receiver(e.expression.expression, e.expression);
     if (name === 'navigate' && kitExtends(this.index, owner.name, 'Frame')) return this.navigate(recv, e);
     const listener = this.listenerArgs(e, m);
     const args = listener ?? this.restArgs(e, m) ?? (SCRIPT_OBJECTS.has(name) && this.isView(owner.name) ? e.arguments.map((a) => this.scriptValue(a)) : t.args(e));
@@ -452,6 +495,8 @@ export class CoreKotlin implements KotlinCore {
       return `Color.argb(${args.slice(0, 4).map((a) => t.toNumber(a)).join(', ')})`;
     }
     if (sym.name === 'Animation') return `Animation(${args.map((a) => this.scriptValue(a)).join(', ')})`;
+    const packed = this.generated && args.length ? this.index.get(sym.name)?.members.get('<init>')?.[0] : undefined;
+    if (packed) return `${sym.name}(${this.t.packed(args, 'JSArray<Any?>')})`;
     return `${sym.name}(${(this.restArgs(e) ?? t.args(e)).join(', ')})`;
   }
 
@@ -461,6 +506,8 @@ export class CoreKotlin implements KotlinCore {
     let found = type;
     for (let k = this.index.get(type); k; k = k.base ? this.index.get(k.base) : undefined) if (k.members.has(name)) { found = k.name; break; }
     // A namespace's object (`layout`, `knownFolders`) is named as a member of the code using it may be.
+    const outer = this.index.get(found)?.outer;
+    if (outer) return `org.nativescript.kit.${outer}.${found}`;
     return /^[a-z]/.test(found) ? `org.nativescript.kit.${found}` : found;
   }
 
@@ -470,24 +517,39 @@ export class CoreKotlin implements KotlinCore {
     const decl = this.t.checker.getResolvedSignature(e)?.getDeclaration();
     const params = decl && !ts.isJSDocSignature(decl) ? decl.parameters : undefined;
     // Core's typings may declare overloads where its implementation takes `...args` (`prompt`): the kit's signature says.
-    const restInKit = !!m && /^\s*args\s*:\s*JSArray<Any\?>\s*$/.test(m.params ?? '');
+    const restInKit = !!m && /^\s*(args|__arguments)\s*:\s*JSArray<Any\?>\s*$/.test(m.params ?? '');
     if (!restInKit && (!params || params.length !== 1 || !params[0].dotDotDotToken)) return null;
     // A rest parameter overriding fixed ones (`showModal(...args)` over `showModal(view, options)`): the kit's fixed ones.
-    if (!restInKit && m?.params?.trim() && m.params.split(',').length >= (e.arguments?.length ?? 0)) return e.arguments.map((a) => this.t.coerce(a, 'Any?'));
-    return [`jsArrayOf<Any?>(${(e.arguments ?? []).map((a) => this.t.coerce(a, 'Any?')).join(', ')})`];
+    const spread = !!e.arguments?.some(ts.isSpreadElement);
+    if (!restInKit && !spread && m?.params?.trim() && m.params.split(',').length >= (e.arguments?.length ?? 0)) return e.arguments.map((a) => this.t.coerce(a, 'Any?'));
+    if (spread) return [this.t.packed(e.arguments, /^\s*\w+\s*:\s*(JSArray<[^,]*>)\s*$/.exec(m?.params ?? '')?.[1] ?? 'JSArray<Any?>')];
+    const element = /^\s*\w+\s*:\s*JSArray<([^,]*)>\s*$/.exec(m?.params ?? '')?.[1] ?? 'Any?';
+    return [`jsArrayOf<${element}>(${(e.arguments ?? []).map((a) => this.t.coerce(a, element)).join(', ')})`];
   }
 
   /** A function core exports (`getRootLayout()`) that the kit declares at top level. */
   private topLevelCall(e: ts.CallExpression, callee: ts.Identifier): string | null {
-    if (!isCoreDeclaration(this.t.resolve(callee)?.declarations?.[0])) return null;
-    const m = kitMember(this.index, TOP_LEVEL, callee.text);
+    const sym = this.t.resolve(callee);
+    const decl = sym?.declarations?.[0];
+    if (!isCoreDeclaration(decl)) return null;
+    // The function's own name, where the app imports it under another (`isDefined as __types_isDefined`).
+    const name = sym && sym.name !== 'default' ? sym.name : callee.text;
+    const m = kitMember(this.index, TOP_LEVEL, name);
+    // The generated kit: a function of a module the app imports by path (`resolveModuleName` of module-name-resolver), its module's object's.
+    const module = !m && this.generated && decl ? this.moduleObject(decl) : null;
+    const mm = module ? kitMember(this.index, module, name) : undefined;
+    if (module && mm) return this.fromKit(`${module}.${name}(${(this.restArgs(e, mm) ?? this.t.args(e)).join(', ')})`, mm.type, this.t.typeOf(e), keepsNullable(e));
     if (!m) return null;
-    return this.fromKit(`${callee.text}(${(this.restArgs(e, m) ?? this.t.args(e)).join(', ')})`, m.type, this.t.typeOf(e), keepsNullable(e));
+    return this.fromKit(`${name}(${(this.restArgs(e, m) ?? this.t.args(e)).join(', ')})`, m.type, this.t.typeOf(e), keepsNullable(e));
   }
 
   /** `frame.navigate({ create: () => page })`: the kit builds what `create` returns. */
   private navigate(recv: string, e: ts.CallExpression): string {
     const entry = e.arguments[0];
+    // Core's own Frame takes any entry (`{ moduleName }`, a page module's name), as it does in JavaScript.
+    if (this.generated && entry && !(ts.isObjectLiteralExpression(entry) && entry.properties.length === 1 && ts.isPropertyAssignment(entry.properties[0]) && entry.properties[0].name.getText() === 'create')) {
+      return `${recv}.navigate(${this.t.coerce(entry, 'Any?')})`;
+    }
     if (!entry || !ts.isObjectLiteralExpression(entry)) throw this.t.error(e, 'frame.navigate with anything but a { create } entry');
     for (const p of entry.properties) if (p.name?.getText() !== 'create') throw this.t.error(p, `the navigation entry's ${p.name?.getText()}`);
     const create = entry.properties[0];
@@ -527,6 +589,9 @@ export class CoreKotlin implements KotlinCore {
     const k = kitType.trim();
     const numeric = /^(Int|Long|Float|Short|Byte)\??$/.exec(k);
     if (numeric && tsType.startsWith('Double')) return k.endsWith('?') ? `${code}?.toDouble()` : `${code}.toDouble()`;
+    // A subclass core's declarations give where its base declares the member (`Frame.topmost(): Frame`, FrameBase's).
+    const kb = k.replace(/\?$/, ''), tb = tsType.replace(/\?$/, '');
+    if (this.generated && kb !== tb && this.index.has(tb) && (kb === 'Any' || kitExtends(this.index, tb, kb))) return `(${code} as ${tb}${k.endsWith('?') && (tsType.endsWith('?') || keepNull) ? '?' : ''})`;
     if (k.endsWith('?') && !tsType.endsWith('?') && tsType !== 'Any?') {
       const zero = tsType === 'String' ? '""' : tsType === 'Double' ? '0.0' : tsType === 'Boolean' ? 'false' : null;
       return zero ? `(${code} ?: ${zero})` : keepNull ? code : `${code}!!`;

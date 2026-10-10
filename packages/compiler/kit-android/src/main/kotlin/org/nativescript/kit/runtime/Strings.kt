@@ -325,6 +325,11 @@ internal fun jsStringMethod(s: String, key: String): JSMethod? {
         }
         "slice" -> JSMethod { _, args -> jsSlice(s, number(args, 0) ?: 0.0, number(args, 1)) }
         "substring" -> JSMethod { _, args -> jsSubstring(s, number(args, 0) ?: 0.0, number(args, 1)) }
+        "substr" -> JSMethod { _, args -> jsSubstr(s, number(args, 0) ?: 0.0, number(args, 1)) }
+        "search" -> JSMethod { _, args ->
+            val pattern = arg(args, 0)
+            jsSearch(s, pattern as? JSRegExp ?: JSRegExp(if (pattern == null) "(?:)" else jsToString(pattern)))
+        }
         "includes" -> JSMethod { _, args -> jsIncludes(s, jsToString(arg(args, 0)), number(args, 1)) }
         "startsWith" -> JSMethod { _, args -> jsStartsWith(s, jsToString(arg(args, 0)), number(args, 1)) }
         "endsWith" -> JSMethod { _, args -> jsEndsWith(s, jsToString(arg(args, 0)), number(args, 1)) }

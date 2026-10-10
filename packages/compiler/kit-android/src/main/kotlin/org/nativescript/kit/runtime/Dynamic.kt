@@ -14,10 +14,14 @@ import java.util.WeakHashMap
 
 /** A function script holds untyped: called with whatever arguments it is given. */
 class JSFunction(val body: (List<Any?>) -> Any?) {
+    /** `fn.length`: the parameters before the first optional one, as script declares them. */
+    var length = 0
     operator fun invoke(vararg args: Any?): Any? = body(args.toList())
 }
 
 fun jsFunction(body: (List<Any?>) -> Any?): JSFunction = JSFunction(body)
+
+fun jsFunction(length: Int, body: (List<Any?>) -> Any?): JSFunction = JSFunction(body).also { it.length = length }
 
 /** A value where a collection's element type goes, null included, as script stores it (the element type is erased). */
 @Suppress("UNCHECKED_CAST")
@@ -351,6 +355,18 @@ fun jsJavaGet(target: Any, key: String): Any? {
     javaField(target, key, static)?.let { return fromJavaValue(it.get(if (static) null else target)) }
     val methods = javaMethods(cls, key, static)
     if (methods.isNotEmpty()) return JavaMethodRef(if (static) null else target, cls, key, methods)
+    // A static member script declared on a base class (`ListViewBase.knownFunctions` read through ListView): a Kotlin
+    // companion's property, its backing field on the declaring class, as jsJavaHas finds it.
+    if (static) {
+        var c: Class<*>? = cls
+        while (c != null) {
+            c.declaredFields.firstOrNull { it.name == key && Modifier.isStatic(it.modifiers) }?.let { f ->
+                f.isAccessible = true
+                return fromJavaValue(f.get(null))
+            }
+            c = c.superclass
+        }
+    }
     // A class held as a value is also a `java.lang.Class` (`Class.forName(name).getField(f)`), after its own static members.
     if (static) javaMethods(Class::class.java, key, false).takeIf { it.isNotEmpty() }?.let { return JavaMethodRef(target, Class::class.java, key, it) }
     return null
