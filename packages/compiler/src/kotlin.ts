@@ -3383,7 +3383,9 @@ export class Translator implements AsyncTranslator {
     if (this.patterns.requiredCore(d) || this.native?.isClassAlias(d)) return '';
     if (ts.isIdentifier(d.name)) {
       // A variable only ever undefined (this platform's half of `__APPLE__ ? x : undefined`) holds nothing: any value.
-      const t = this.typeOf(d.name) === 'Unit' ? 'Any?' : this.typeOf(d.name);
+      let t = this.typeOf(d.name) === 'Unit' ? 'Any?' : this.typeOf(d.name);
+      const parts = this.literalFunctionLocal(d) ? functionTypeParts(t) : null;
+      if (parts) t = `(${parts.params.map((p) => (this.isObjectType(p) ? optionalType(p) : p)).join(', ')}) -> ${parts.ret}`;
       const name = ident(d.name.text);
       if (this.forwardDeclared.has(d)) return `${i}${name} = ${this.coerce(d.initializer!, t)}`;
       // `var m` again in the same block: the same variable, assigned.
@@ -3476,6 +3478,11 @@ export class Translator implements AsyncTranslator {
       }
       // Library mode: a function value's own Kotlin type, its parameters as lenient as its calls pass them.
       if (this.library && constant && !lowered && (ts.isArrowFunction(d.initializer) || ts.isFunctionExpression(d.initializer)) && d.initializer.parameters.some((p) => this.mayBeNull(p))) return `${i}val ${name} = ${this.coerce(d.initializer, t)}`;
+      if (parts && !lowered) {
+        let literal = d.initializer;
+        while (ts.isParenthesizedExpression(literal)) literal = literal.expression;
+        return `${i}val ${name}: ${t} = ${this.closure(literal as ts.ArrowFunction | ts.FunctionExpression)}`;
+      }
       return `${i}${constant && !lowered ? 'val' : 'var'} ${name}: ${t} = ${this.coerce(d.initializer, t)}`;
     }
     const tmp = this.fresh('__d');
@@ -4113,7 +4120,11 @@ export class Translator implements AsyncTranslator {
       if (from === 'Any' && to !== 'Any' && to !== 'Any?') return this.fromAny(this.expr(e.expression), to);
       // `x as string` of a string that may be undefined: the value as JavaScript then reads it as one.
       if (['String', 'Double', 'Boolean'].includes(to) && from === `${to}?`) return this.undefinedAs(this.expr(e.expression), to);
-      if (from !== to && from.replace(/\?$/, '') !== to.replace(/\?$/, '') && this.isObjectRef(e) && this.isObjectRef(e.expression)) return `(${this.expr(e.expression)} as ${to})`;
+      if (from !== to && from.replace(/\?$/, '') !== to.replace(/\?$/, '') && this.isObjectRef(e) && this.isObjectRef(e.expression)) {
+        // Library mode: a script assertion never fails, so a value of another class (a TabViewItem walked up to as a parent) reads as null where null fits.
+        if (this.library && this.isClassDowncast(e) && (isNullable(to) || this.functionLiteralArgument(e))) return `(${this.expr(e.expression)} as? ${to.replace(/\?$/, '')})`;
+        return `(${this.expr(e.expression)} as ${to})`;
+      }
       if (from.endsWith('?') && !to.endsWith('?') && from.replace(/\?$/, '') === to) return `${this.expr(e.expression)}!!`;
       return this.expr(e.expression);
     }
@@ -4690,7 +4701,10 @@ export class Translator implements AsyncTranslator {
       while (ts.isParenthesizedExpression(inner)) inner = inner.expression;
       if ((ts.isPropertyAccessExpression(inner) || ts.isIdentifier(inner)) && this.typeOf(inner) !== 'Any?' && isNullable(this.declaredTypeOf(inner) ?? '')) {
         this.nullOk.add(inner);
-        try { return `(${this.expr(inner)} as ${optionalType(this.typeOf(e))})`; } finally { this.nullOk.delete(inner); }
+        try {
+          const target = optionalType(this.typeOf(e));
+          return this.isClassDowncast(e) ? `(${this.expr(inner)} as? ${target.slice(0, -1)})` : `(${this.expr(inner)} as ${target})`;
+        } finally { this.nullOk.delete(inner); }
       }
     }
     // So is a map's `get` of a key it may lack.
@@ -5844,6 +5858,35 @@ export class Translator implements AsyncTranslator {
     if (types.every((t) => t === 'Any?')) return this.coerce(e, 'Any?');
     const names = types.map((_, k) => `__a${k}`);
     return `run { val __f = ${this.closure(f)}; { ${names.map((n) => `${n}: Any?`).join(', ')} -> __f(${types.map((t, k) => this.fromAny(names[k], t)).join(', ')}) } }`;
+  }
+
+  /** `<T>x` where T is a subclass of x's own class, neither of them native: what JavaScript may hold there is not always a T. */
+  private isClassDowncast(e: ts.AsExpression | ts.TypeAssertion | ts.SatisfiesExpression): boolean {
+    if (ts.isSatisfiesExpression(e)) return false;
+    const to = this.checker.getNonNullableType(this.checker.getTypeAtLocation(e));
+    const from = this.checker.getNonNullableType(this.checker.getTypeAtLocation(e.expression));
+    const isClass = (t: ts.Type) => !!(t.getSymbol()?.flags & ts.SymbolFlags.Class) && !this.native?.type(t);
+    return to !== from && isClass(to) && isClass(from) && this.checker.isTypeAssignableTo(to, from) && !this.checker.isTypeAssignableTo(from, to);
+  }
+
+  /** Library mode: an argument to a local function literal (`const matcher = (v: T) => …; matcher(<T>x)`), whose parameters are nullable there. */
+  private functionLiteralArgument(e: ts.Expression): boolean {
+    let arg: ts.Node = e;
+    while (ts.isParenthesizedExpression(arg.parent)) arg = arg.parent;
+    const call = arg.parent;
+    if (!ts.isCallExpression(call) || !call.arguments.includes(arg as ts.Expression) || !ts.isIdentifier(call.expression)) return false;
+    const d = this.resolve(call.expression)?.valueDeclaration;
+    return !!d && this.literalFunctionLocal(d);
+  }
+
+  private literalFunctionLocal(d: ts.Declaration): d is ts.VariableDeclaration {
+    if (!this.library || !ts.isVariableDeclaration(d) || d.type || !d.initializer || this.forwardDeclared.has(d) || !(ts.getCombinedNodeFlags(d) & ts.NodeFlags.Const)) return false;
+    let init = d.initializer;
+    while (ts.isParenthesizedExpression(init)) init = init.expression;
+    if (!ts.isArrowFunction(init) && !ts.isFunctionExpression(init)) return false;
+    const sym = this.checker.getSymbolAtLocation(d.name);
+    const refers = (n: ts.Node): boolean => (ts.isIdentifier(n) && this.checker.getSymbolAtLocation(n) === sym) || !!ts.forEachChild(n, refers);
+    return !refers(init);
   }
 
   private newExpr(e: ts.NewExpression): string {
