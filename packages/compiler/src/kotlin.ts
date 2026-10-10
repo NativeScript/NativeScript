@@ -142,6 +142,7 @@ export interface KotlinCore {
   /** A member of a kit type or a type it extends, as the kit declares it. */
   kitMember(owner: string, name: string): { kind: string; type: string; params?: string; static: boolean } | null;
   isKitMethod(callee: ts.Expression): boolean;
+  coreVariable?(e: ts.Identifier): string | null;
   nativeClassOf(e: ts.Expression): string | null;
   type(t: ts.Type): string | null;
   property(e: ts.PropertyAccessExpression): string | null;
@@ -4383,6 +4384,8 @@ export class Translator implements AsyncTranslator {
     const alias = this.checker.getSymbolAtLocation(e);
     const imported = alias && alias.flags & ts.SymbolFlags.Alias ? this.checker.getAliasedSymbol(alias) : undefined;
     if (imported && imported.name !== e.text && imported.flags & ts.SymbolFlags.Variable && isCoreDeclaration(imported.declarations?.[0]) && this.core?.kitMember('', imported.name)?.kind === 'var') return imported.name;
+    const moduleVariable = !this.library ? this.core?.coreVariable?.(e) : null;
+    if (moduleVariable) return moduleVariable;
     // A module of the program held as a value (`import * as tests`, handed to a runner): an object of its exports.
     const held = this.resolve(e);
     if (held && held.flags & ts.SymbolFlags.ValueModule && held.valueDeclaration && ts.isSourceFile(held.valueDeclaration) && !held.valueDeclaration.isDeclarationFile

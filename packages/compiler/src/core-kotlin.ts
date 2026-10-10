@@ -80,6 +80,7 @@ export function kotlinKitIndex(sources: string | string[]): Map<string, KitType>
           const made = /^\s*override\s+fun\s+createNativeView\(\)\s*:\s*NativeView\s*=\s*([\w.]+)\(/.exec(line);
           // A constructor taking script's arguments as one list (`constructor(__arguments: JSArray<Any?>)`).
           if (/^\s*constructor\(\s*__arguments\s*:\s*JSArray<Any\?>\s*\)/.test(line)) add(owner.type, '<init>', { kind: 'func', static: false, type: owner.type.name, params: '__arguments: JSArray<Any?>' });
+          if (/^\s*constructor\(\s*\)/.test(line)) add(owner.type, '<init0>', { kind: 'func', static: false, type: owner.type.name, params: '' });
           if (made) owner.type.native = imports.get(made[1]) ?? made[1];
           if ((m = /^\s*(?:@\w+\s+)*(?:(?:override|open|final|lateinit|const|abstract|protected|public)\s+)*(?:val|var)\s+`?(\w+)`?\s*:\s*([^={]+)/.exec(line))) add(owner.type, m[1], { kind: 'var', static: isStatic, type: m[2].trim().replace(/\s+get\(\).*$/, '') });
           else if ((m = /^\s*(?:(?:override|open|final|abstract|inline|operator|protected|public)\s+)*fun\s+(?:<[^>]*>\s*)?`?(\w+)`?\s*\(/.exec(line))) {
@@ -151,6 +152,16 @@ export class CoreKotlin implements KotlinCore {
     this.t = t;
     this.generated = generated;
     this.index = kotlinKitIndex(generated ? generatedKitSources() : KIT);
+  }
+
+  /** A core module's variable the app imports by name (`_rootModalViews` of ui/core/view): its module object's. */
+  coreVariable(e: ts.Identifier): string | null {
+    if (!this.generated) return null;
+    const sym = this.t.resolve(e);
+    const decl = sym?.declarations?.[0];
+    if (!sym || !(sym.flags & ts.SymbolFlags.Variable) || !isCoreDeclaration(decl) || kitMember(this.index, TOP_LEVEL, sym.name)) return null;
+    const module = this.moduleObject(decl!);
+    return module && kitMember(this.index, module, sym.name)?.kind === 'var' ? `${module}.${sym.name}` : null;
   }
 
   /** The kit's view classes a page's XML can name (`Label`, `StackLayout`). */
@@ -444,6 +455,9 @@ export class CoreKotlin implements KotlinCore {
       return `${recv}.set(${JSON.stringify(name)}, ${t.coerce(value, 'Any?')})`;
     }
     const m = this.member(owner.name, name, left);
+    // Null or undefined for a member the kit types non-null (`label.text = null`): set by name, as script sets it.
+    const unset = value.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(value) && value.text === 'undefined');
+    if (this.generated && unset && !m.type.trim().endsWith('?') && !owner.isStatic) return `jsSet(${recv}, ${kotlinString(name)}, null)`;
     // A kit member typed `Any?` holds what core reads as a plain script object (`TouchManager.animations`).
     if (m.type.trim() === 'Any?') return `${recv}.${name} = ${this.scriptValue(value)}`;
     return `${recv}.${name} = ${this.toKit(t.coerce(value, t.typeOf(left)), m.type)}`;
@@ -505,7 +519,8 @@ export class CoreKotlin implements KotlinCore {
       return `Color.argb(${args.slice(0, 4).map((a) => t.toNumber(a)).join(', ')})`;
     }
     if (sym.name === 'Animation') return `Animation(${args.map((a) => this.scriptValue(a)).join(', ')})`;
-    const packed = this.generated && args.length ? this.index.get(sym.name)?.members.get('<init>')?.[0] : undefined;
+    const made = this.index.get(sym.name);
+    const packed = this.generated && (args.length || !made?.members.has('<init0>')) ? made?.members.get('<init>')?.[0] : undefined;
     if (packed) return `${sym.name}(${this.t.packed(args, 'JSArray<Any?>')})`;
     return `${sym.name}(${(this.restArgs(e) ?? t.args(e)).join(', ')})`;
   }
@@ -607,6 +622,11 @@ export class CoreKotlin implements KotlinCore {
     if (numeric && tsType.startsWith('Double')) return k.endsWith('?') ? `${code}?.toDouble()` : `${code}.toDouble()`;
     // A subclass core's declarations give where its base declares the member (`Frame.topmost(): Frame`, FrameBase's).
     const kb = k.replace(/\?$/, ''), tb = tsType.replace(/\?$/, '');
+    if (this.generated && kb === 'Any' && ['String', 'Double', 'Boolean'].includes(tb)) return this.t.fromAnyCode(code, tsType, true);
+    // An untyped result where the program's own class is declared (`getViewById` of an app's view): that class, as script trusts it.
+    if (this.generated && kb === 'Any' && ((/^[A-Z][\w.]*$/.test(tb) && !this.index.has(tb)) || /^JS(Array|Record)</.test(tb))) return `jsUnchecked<${tsType}>(${code})`;
+    // One array of the kit's where TypeScript names another element class (`Frame._stack()`, FrameBase's).
+    if (this.generated && /^JSArray<.*>$/.test(kb) && /^JSArray<.*>$/.test(tb) && kb !== tb) return `jsUnchecked<${tsType}>(${code})`;
     if (this.generated && kb !== tb && this.index.has(tb) && (kb === 'Any' || kitExtends(this.index, tb, kb))) return `(${code} as ${tb}${k.endsWith('?') && (tsType.endsWith('?') || keepNull) ? '?' : ''})`;
     if (k.endsWith('?') && !tsType.endsWith('?') && tsType !== 'Any?') {
       const zero = tsType === 'String' ? '""' : tsType === 'Double' ? '0.0' : tsType === 'Boolean' ? 'false' : null;
