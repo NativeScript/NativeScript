@@ -69,6 +69,14 @@ class TemplateChildren internal constructor(owner: ViewBase) : RegionHost {
     }
 }
 
+private val styleAccessors = java.util.concurrent.ConcurrentHashMap<Pair<Class<*>, String>, Boolean>()
+
+/** Whether the view's class reads the key through an accessor of its own or its prototype's (`get flexGrow()`). */
+private fun hasStyleAccessor(cls: Class<*>, key: String): Boolean = styleAccessors.getOrPut(cls to key) {
+    val getter = "get" + key.replaceFirstChar { it.uppercase() }
+    JSPrototypes.holder(cls, key) != null || cls.methods.any { it.name == getter && it.parameterCount == 0 }
+}
+
 /** The name of a view's class as core's builder knows it (`ActionItem`). */
 private fun jsConstructorName(view: Any): String = (view as? JSDynamic)?.jsClassName ?: view.javaClass.simpleName
 
@@ -107,8 +115,9 @@ fun ViewBase.kitSet(name: String, value: Any?) {
     jsReport {
         val path = key.split(".")
         if (path.size == 1) {
-            // A style property the view's accessor passes to its style (`backgroundColor`), which converts what the template gives.
-            if (JSPrototypes.holder(javaClass, key) == null && JSPrototypes.holder(Style::class.java, key) != null) style?.let { jsSet(it, key, value); return@jsReport }
+            // A style property the view's accessor passes to its style (`backgroundColor`), which converts what the template gives;
+            // without such an accessor (`zIndex`) the value lands on the object and styles nothing, as in NativeScript.
+            if (JSPrototypes.holder(Style::class.java, key) != null && hasStyleAccessor(javaClass, key)) style?.let { jsSet(it, key, value); return@jsReport }
             set(key, value)
             return@jsReport
         }

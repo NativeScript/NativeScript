@@ -53,10 +53,15 @@ class JSArray<T>(storage: ArrayList<T>) : Iterable<T>, JSReactiveConvertible {
         }
     }
 
-    /** `a[i]` as JavaScript reads it: undefined unless `i` is an integer index in range. */
+    /** Properties under keys that are no index (`a[0.5] = x`), as script gives an array. */
+    var jsProperties: LinkedHashMap<String, Any?>? = null
+
+    /** `a[i]` as JavaScript reads it: undefined unless `i` is an integer index in range, or a key the array was given. */
+    @Suppress("UNCHECKED_CAST")
     fun element(i: Double): T? {
         track()
-        if (i != Math.floor(i) || i < 0 || i >= storage.size) return null
+        if (i != Math.floor(i) || i < 0) return jsProperties?.get(jsNumberToString(i)) as T?
+        if (i >= storage.size) return null
         return read(i.toInt())
     }
 
@@ -67,11 +72,15 @@ class JSArray<T>(storage: ArrayList<T>) : Iterable<T>, JSReactiveConvertible {
 
     operator fun get(i: Double): T = get(i.toInt())
 
+    /** Indices a write past the end skipped (`a[1] = x` of an empty array): holes, which `for…in` and `Object.keys` leave out. */
+    var jsHoles: java.util.BitSet? = null
+
     @Suppress("UNCHECKED_CAST")
     operator fun set(i: Int, value: T) {
         when {
-            i < storage.size -> storage[i] = value
+            i < storage.size -> { storage[i] = value; jsHoles?.clear(i) }
             else -> {
+                if (storage.size < i) (jsHoles ?: java.util.BitSet().also { jsHoles = it }).set(storage.size, i)
                 while (storage.size < i) storage.add(null as T)
                 storage.add(value)
             }
@@ -80,7 +89,10 @@ class JSArray<T>(storage: ArrayList<T>) : Iterable<T>, JSReactiveConvertible {
     }
 
     operator fun set(i: Double, value: T) {
-        if (i < 0 || i != Math.floor(i) || i >= 4_294_967_295.0) return
+        if (i < 0 || i != Math.floor(i) || i >= 4_294_967_295.0) {
+            (jsProperties ?: LinkedHashMap<String, Any?>().also { jsProperties = it })[jsNumberToString(i)] = value
+            return
+        }
         set(i.toInt(), value)
     }
 

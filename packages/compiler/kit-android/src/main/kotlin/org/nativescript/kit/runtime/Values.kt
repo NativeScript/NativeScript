@@ -337,7 +337,7 @@ fun jsCallOptional(function: Any?, vararg args: Any?): Any? = if (jsIsNullish(fu
 fun jsKeysOf(value: Any?): List<String> = when (value) {
     is String -> value.indices.map { it.toString() }
     is JSDynamic -> value.jsKeys
-    is JSArray<*> -> (0 until value.size.toInt()).map { it.toString() }
+    is JSArray<*> -> (0 until value.size.toInt()).filter { value.jsHoles?.get(it) != true }.map { it.toString() } + (value.jsProperties?.keys ?: emptySet())
     is String -> value.indices.map { it.toString() }
     else -> emptyList()
 }
