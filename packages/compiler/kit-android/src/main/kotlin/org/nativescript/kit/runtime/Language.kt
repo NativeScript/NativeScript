@@ -1,5 +1,6 @@
 package org.nativescript.kit
 
+import java.lang.ref.SoftReference
 import java.lang.ref.WeakReference
 import java.util.IdentityHashMap
 
@@ -95,9 +96,13 @@ fun jsObjectToString(value: Any?): String = when (val v = jsBox(value)) {
     else -> if (jsNumeric(v) != null) "[object Number]" else "[object Object]"
 }
 
-/** NativeScript's `WeakRef`: `get()` (and the standard `deref()`) is the object while it lives. */
+/**
+ * NativeScript's `WeakRef`: `get()` (and the standard `deref()`) is the object while it lives. Soft, as V8 clears a
+ * WeakRef only in a full collection: core holds objects this alone keeps (an Animation its AnimatorListener reaches
+ * through one) and expects them while they work; ART clears a weak reference in any collection.
+ */
 class JSWeakRef<T : Any>(target: T) : JSDynamic {
-    private var ref: WeakReference<T>? = WeakReference(target)
+    private var ref: SoftReference<T>? = SoftReference(target)
 
     fun get(): T? = ref?.get()
     fun deref(): T? = ref?.get()

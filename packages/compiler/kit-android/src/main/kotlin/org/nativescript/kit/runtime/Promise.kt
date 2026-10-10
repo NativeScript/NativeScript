@@ -15,7 +15,13 @@ object Microtasks {
      */
     var onUnhandledRejection: (Any?) -> Unit = { reason -> jsWriteStandardError("Uncaught (in promise) ${jsToString(reason)}\n") }
 
-    fun enqueue(job: () -> Unit) { queue.addLast(job) }
+    /** Called when a job is queued outside a checkpoint: the host arranges one once the current task returns. */
+    var onEnqueue: (() -> Unit)? = null
+
+    fun enqueue(job: () -> Unit) {
+        queue.addLast(job)
+        if (!draining) onEnqueue?.invoke()
+    }
 
     /** Called when a checkpoint ends after a task (`taskRan`) or a job ran: Angular's zone turning stable. */
     var onStable: (() -> Unit)? = null

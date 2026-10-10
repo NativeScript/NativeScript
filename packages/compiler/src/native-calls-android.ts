@@ -26,7 +26,8 @@ export function androidClassPath(widgetsAar: string | null, plugins?: { archives
 
 const NUMERIC = new Set(['B', 'S', 'I', 'J', 'F', 'D']);
 const KOTLIN_PRIMITIVE: Record<string, string> = { Z: 'Boolean', B: 'Byte', C: 'Char', S: 'Short', I: 'Int', J: 'Long', F: 'Float', D: 'Double', V: 'Unit' };
-const CONVERT: Record<string, string> = { B: '.toInt().toByte()', S: '.toInt().toShort()', I: '.toInt()', J: '.toLong()', F: '.toFloat()', D: '' };
+// Through Long: a number past Int's range wraps, as NativeScript converts it (ToInt32), where Double.toInt() clamps (0xff1c1c1e).
+const CONVERT: Record<string, string> = { B: '.toLong().toByte()', S: '.toLong().toShort()', I: '.toLong().toInt()', J: '.toLong()', F: '.toFloat()', D: '' };
 const ARRAY_OF: Record<string, string> = { Z: 'boolean', B: 'byte', C: 'char', S: 'short', I: 'int', J: 'long', F: 'float', D: 'double' };
 /** A JavaScript number's preference among numeric parameter types, as NativeScript's runtime ranks them for a whole number. */
 const NUMBER_RANK: Record<string, number> = { I: 0, J: 1, F: 2, D: 3, S: 4, B: 5 };
@@ -989,7 +990,7 @@ export class AndroidNativeAPI implements KotlinNative {
     const raw = found && { ...found, code: found.nullable && !nullableParam && !takesNull ? `${found.code}!!` : found.code };
     if (raw) {
       if (raw.desc === desc) return raw.code;
-      if (NUMERIC.has(raw.desc) && NUMERIC.has(desc)) return desc === 'D' ? `${atom(raw.code)}.toDouble()` : `${atom(raw.code)}${CONVERT[desc].replace('.toInt().', raw.desc === 'I' ? '.' : '.toInt().')}`;
+      if (NUMERIC.has(raw.desc) && NUMERIC.has(desc)) return desc === 'D' ? `${atom(raw.code)}.toDouble()` : `${atom(raw.code)}${raw.desc === 'I' ? CONVERT[desc].replace(/^\.toLong\(\)(?=\.)/, '') : CONVERT[desc]}`;
       if (raw.desc === 'Ljava/lang/String;' && desc === 'Ljava/lang/CharSequence;') return raw.code;
       if (raw.desc.startsWith('L') && desc.startsWith('L') && this.classpath.distance(raw.desc.slice(1, -1), desc.slice(1, -1)) !== null) {
         // A generic collection script fills untyped (`new java.util.HashSet<any>()`) where Java's parameter names its element type.
@@ -1734,7 +1735,7 @@ function primitiveLiteral(v: number, desc: string): string {
   switch (desc) {
     case 'D': return numberLiteral(String(v));
     case 'F': return Number.isFinite(v) ? `${String(v).replace(/e\+?/, 'e')}f` : `${numberLiteral(String(v))}.toFloat()`;
-    case 'I': return whole && Math.abs(v) <= 0x7fffffff ? String(v) : `(${numberLiteral(String(v))}).toInt()`;
+    case 'I': return whole && Math.abs(v) <= 0x7fffffff ? String(v) : `(${numberLiteral(String(v))}).toLong().toInt()`;
     case 'J': return whole && Number.isSafeInteger(v) ? `${v}L` : `(${numberLiteral(String(v))}).toLong()`;
     case 'C': return `${Math.trunc(v)}.toChar()`;
     default: return `(${whole ? v : numberLiteral(String(v))})${CONVERT[desc].replace('.toInt().', whole ? '.' : '.toInt().')}`;

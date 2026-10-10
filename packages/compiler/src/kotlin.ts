@@ -3259,6 +3259,15 @@ export class Translator implements AsyncTranslator {
         if (sym) this.nullableDecls.add(sym);
         return `${i}${constant ? 'val' : 'var'} ${name}: ${optionalType(t)} = ${this.coerce(d.initializer, optionalType(t))}`;
       }
+      // Library mode: a registered property's string, number or boolean (`const title = this.title`), compared with undefined:
+      // undefined while unset, which its accessor reads as the type's zero.
+      const registered = read && ts.isPropertyAccessExpression(read) ? this.resolve(read.name)?.valueDeclaration : undefined;
+      if (this.library && read && ts.isPropertyAccessExpression(read) && !lowered && ['String', 'Double', 'Boolean'].includes(t) && registered && ts.isPropertyDeclaration(registered) && ts.isClassLike(registered.parent)
+          && (this.properties?.isRegistered(registered.parent, read.name.text) || this.properties?.isRegisteredAnywhere(read.name.text)) && this.testedForUndefined(d)) {
+        const sym = this.checker.getSymbolAtLocation(d.name);
+        if (sym) this.nullableDecls.add(sym);
+        return `${i}${constant ? 'val' : 'var'} ${name}: ${optionalType(t)} = (jsExpandoGet(${this.expr(read.expression)}, ${kotlinString(read.name.text)}) as? ${t})`;
+      }
       // A plugin's copy of a value declared nullable (`const side = this.mShowingSide`): nullable as well.
       if (d.initializer && !lowered && this.pluginFiles.has(d.getSourceFile().fileName) && !isNullable(t) && t !== 'Any' && t !== 'Any?' && isNullable(this.declaredTypeOf(d.initializer) ?? '')) {
         const sym = this.checker.getSymbolAtLocation(d.name);

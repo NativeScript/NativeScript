@@ -432,6 +432,8 @@ fun <T> jsArrayFilled(length: Double, value: T): JSArray<T> = JSArray(ArrayList(
 /** An untyped value read as an array whose elements convert with `element`. */
 @Suppress("UNCHECKED_CAST")
 fun <T> jsArrayFrom(value: Any?, element: (Any?) -> T): JSArray<T> {
+    // A Java array (`Array.create(…)`): its elements, copied.
+    if (value != null && value.javaClass.isArray) return JSArray(ArrayList((0 until java.lang.reflect.Array.getLength(value)).map { element(fromJavaValue(java.lang.reflect.Array.get(value, it))) }))
     if (value !is JSArray<*>) return JSArray()
     val mapped = value.storage.map(element)
     // Elements that are already of the type: the same array, so what is written through either is in both.

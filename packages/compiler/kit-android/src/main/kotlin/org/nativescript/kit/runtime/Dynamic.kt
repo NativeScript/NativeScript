@@ -67,6 +67,21 @@ fun jsFunction6(f: Any?): (Any?, Any?, Any?, Any?, Any?, Any?) -> Any? = f as? F
 @Suppress("UNCHECKED_CAST")
 fun jsFunction7(f: Any?): (Any?, Any?, Any?, Any?, Any?, Any?, Any?) -> Any? = f as? Function7<Any?, Any?, Any?, Any?, Any?, Any?, Any?, Any?> ?: { a, b, c, d, e, g, h -> jsCall(f, a, b, c, d, e, g, h) }
 
+/** A function value held untyped, as a Kotlin function taking its `this` first: a JSMethod gets it as its receiver. */
+fun jsThisFunction(f: Any?, arity: Int): Any = if (f !is JSMethod) when (arity) {
+    1 -> jsFunction1(f)
+    2 -> jsFunction2(f)
+    3 -> jsFunction3(f)
+    4 -> jsFunction4(f)
+    else -> jsFunction5(f)
+} else when (arity) {
+    1 -> { a: Any? -> f.call(a, arrayOf()) }
+    2 -> { a: Any?, b: Any? -> f.call(a, arrayOf(b)) }
+    3 -> { a: Any?, b: Any?, c: Any? -> f.call(a, arrayOf(b, c)) }
+    4 -> { a: Any?, b: Any?, c: Any?, d: Any? -> f.call(a, arrayOf(b, c, d)) }
+    else -> { a: Any?, b: Any?, c: Any?, d: Any?, e: Any? -> f.call(a, arrayOf(b, c, d, e)) }
+}
+
 /** Argument `index` of a dynamic call; a missing one is undefined. */
 fun jsArg(args: List<Any?>, index: Int): Any? = args.getOrNull(index)
 
@@ -274,13 +289,14 @@ fun jsJavaArgument(value: Any?): Any? = if (value === JSNull || value === Unit) 
 fun toJavaValue(value: Any?, type: Class<*>): Any? = when {
     (value == null || value === JSNull || value === Unit) && type.isPrimitive -> JavaArray.get(JavaArray.newInstance(type, 1), 0)
     value == null || value === JSNull || value === Unit -> null
+    // Integers through Long: past Int's range a number wraps (ToInt32), as NativeScript converts it.
     value is Double && type.isPrimitive -> when (type) {
-        Int::class.javaPrimitiveType -> value.toInt()
+        Int::class.javaPrimitiveType -> value.toLong().toInt()
         Long::class.javaPrimitiveType -> value.toLong()
         Float::class.javaPrimitiveType -> value.toFloat()
-        Short::class.javaPrimitiveType -> value.toInt().toShort()
-        Byte::class.javaPrimitiveType -> value.toInt().toByte()
-        Char::class.javaPrimitiveType -> value.toInt().toChar()
+        Short::class.javaPrimitiveType -> value.toLong().toShort()
+        Byte::class.javaPrimitiveType -> value.toLong().toByte()
+        Char::class.javaPrimitiveType -> value.toLong().toInt().toChar()
         else -> value
     }
     value is String && type == Char::class.javaPrimitiveType -> value[0]

@@ -422,6 +422,8 @@ export class CoreKotlin implements KotlinCore {
     // Core's typings may declare overloads where its implementation takes `...args` (`prompt`): the kit's signature says.
     const restInKit = !!m && /^\s*args\s*:\s*JSArray<Any\?>\s*$/.test(m.params ?? '');
     if (!restInKit && (!params || params.length !== 1 || !params[0].dotDotDotToken)) return null;
+    // A rest parameter overriding fixed ones (`showModal(...args)` over `showModal(view, options)`): the kit's fixed ones.
+    if (!restInKit && m?.params?.trim() && m.params.split(',').length >= (e.arguments?.length ?? 0)) return e.arguments.map((a) => this.t.coerce(a, 'Any?'));
     return [`jsArrayOf<Any?>(${(e.arguments ?? []).map((a) => this.t.coerce(a, 'Any?')).join(', ')})`];
   }
 

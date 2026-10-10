@@ -111,5 +111,18 @@ object NativeScriptApplication {
             Microtasks.checkpoint()
             true
         }
+        // Jobs queued by a native callback (an animator's end, a listener) run once it returns, before the looper's
+        // next message, as V8 runs them when script returns to native code: a looper kept busy by frames never idles.
+        var checkpointPosted = false
+        val checkpoint = Runnable {
+            checkpointPosted = false
+            Microtasks.checkpoint()
+        }
+        Microtasks.onEnqueue = {
+            if (!checkpointPosted) {
+                checkpointPosted = true
+                handler.postAtFrontOfQueue(checkpoint)
+            }
+        }
     }
 }
