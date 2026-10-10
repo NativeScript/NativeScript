@@ -11,6 +11,7 @@
 // Swift's own errors show where the translation is incomplete.
 // --allow-unimplemented-properties (or release.allowUnimplementedProperties)
 // builds an app that sets properties core declares and the kit does not apply, warning for each.
+// --generated-kit (or android.release.generatedKit) builds on the Android kit generated from core.
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -326,10 +327,11 @@ function keyStore() {
 }
 // Properties the app sets that core declares and the kit does not apply: an error unless the app opts out.
 const allowUnapplied = args.includes('--allow-unimplemented-properties') || releaseOptions(app, platform).allowUnimplementedProperties === true;
+const generatedKit = platform === 'android' && (args.includes('--generated-kit') || releaseOptions(app, platform).generatedKit === true);
 const kitName = platform === 'android' ? 'kit-android' : 'NativeScriptKit';
 const unapplied = await (async () => {
   // A kit generated from core (its Core/ manifest) applies every property core declares, as core is its source.
-  if ((platform === 'ios' && existsSync(join(KIT, 'Core', 'manifest.json'))) || (platform === 'android' && args.includes('--generated-kit'))) return [];
+  if ((platform === 'ios' && existsSync(join(KIT, 'Core', 'manifest.json'))) || generatedKit) return [];
   const kit = platform === 'android'
     ? await import('./core-kotlin.ts').then((k) => ({ index: k.kotlinKitIndex(k.KIT), sources: k.KIT }))
     : { index: kitIndex(KIT), sources: KIT };
@@ -346,7 +348,7 @@ else if (unapplied.length && !(platform === 'ios' && args.includes('--all-errors
 if (platform === 'android') {
   const { writeAndroid } = await import('./android.ts');
   const css = kitCss(sheets);
-  await writeAndroid({ app, out: resolve(opt('--out', join(app, 'platforms', 'native-android'))!), name, framework: style, zone, components, modules, program, checker, files: sourceFiles, infos, css, root, routes: routing, routeTree, lines: sourceLines, applicationId: opt('--bundle'), widgetsAar: opt('--widgets'), appDir, build: args.includes('--build'), bundle: args.includes('--aab') || args.includes('--device'), keyStore: keyStore(), plugins: plugins.all(), pluginFiles, reach, properties, compiledPlugins, resolved, mounted, corePatches: corePatchesAndroid(app, nodeModules(app)), allowUnapplied, allErrors: args.includes('--all-errors'), lenient: lenientApp, bindings: bindings.filter((b) => replacements[b.package] === b.script), generatedKit: args.includes('--generated-kit'), cssAST: args.includes('--generated-kit') ? kitAst(sheets) : undefined });
+  await writeAndroid({ app, out: resolve(opt('--out', join(app, 'platforms', 'native-android'))!), name, framework: style, zone, components, modules, program, checker, files: sourceFiles, infos, css, root, routes: routing, routeTree, lines: sourceLines, applicationId: opt('--bundle'), widgetsAar: opt('--widgets'), appDir, build: args.includes('--build'), bundle: args.includes('--aab') || args.includes('--device'), keyStore: keyStore(), plugins: plugins.all(), pluginFiles, reach, properties, compiledPlugins, resolved, mounted, corePatches: corePatchesAndroid(app, nodeModules(app)), allowUnapplied, allErrors: args.includes('--all-errors'), lenient: lenientApp, bindings: bindings.filter((b) => replacements[b.package] === b.script), generatedKit, cssAST: generatedKit ? kitAst(sheets) : undefined });
   process.exit(0);
 }
 // Before the translator: it reads the plugin modules' symbol tables and which typings declare them.
