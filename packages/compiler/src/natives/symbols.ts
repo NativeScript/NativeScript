@@ -30,6 +30,8 @@ export interface NativeMethod {
   selector: string;
   /** Isolated to the main actor by a Swift module (Objective-C's isolation is preconcurrency and needs nothing). */
   mainActor?: boolean;
+  /** A protocol's optional requirement: called through the protocol type as `m!(…)`. */
+  optional?: boolean;
 }
 export interface NativeProperty {
   kind: 'property';
@@ -112,7 +114,7 @@ export function isSubframework(module: string): boolean {
 // By the SDK's build too: a beta and its release candidate share a version and differ in API.
 const cacheDir = () => join(process.env.NS_NATIVE_TABLE_CACHE ?? join(COMPILER, '.cache'), `ios-${sdk().version}-${sdk().build}`);
 /** The layout tables are written in: availability of enums, escaping block parameters, optional protocol properties. */
-const TABLE_FORMAT = 3;
+const TABLE_FORMAT = 4;
 
 const tables = new Map<string, NativeTable>();
 
@@ -484,6 +486,7 @@ function build(module: string, symbols: Map<string, Sym>, rels: Rel[]): NativeTa
         if (optionalRequirements.has(usr)) (target[js] as NativeProperty).optional = true;
       } else if (s.kind === 'swift.method' || s.kind === 'swift.type.method' || s.kind === 'swift.init') {
         const m = method(s, name, c.swift);
+        if (optionalRequirements.has(usr)) m.optional = true;
         const js = jsSelectorName(name);
         if (m.kind === 'init' && !isStatic) {
           c.inits[js] ??= m;

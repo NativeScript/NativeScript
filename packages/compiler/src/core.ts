@@ -285,11 +285,14 @@ export class CoreAPI {
     return decls.length > 0 && decls.every((d) => !isCoreDeclaration(d) && !d.getSourceFile().isDeclarationFile);
   }
 
-  /** A kit object's code as a receiver: a weak reference's target (`weakRef.get()`, typed present) is a TypeError's where it is gone. */
+  /**
+   * A kit object's code as a receiver: a weak reference's target (`weakRef.get()`, typed present), or what a call Swift has
+   * as optional gives (`getColor().hex` of a helper returning null), is a TypeError's where it is gone.
+   */
   private receiver(e: ts.Expression): string {
     const code = this.t.expr(e);
     const weak = ts.isCallExpression(e) && ts.isPropertyAccessExpression(e.expression) && ['get', 'deref'].includes(e.expression.name.text) && this.t.typeOf(e.expression.expression).replace(/[?!]$/, '').startsWith('JSWeakRef<');
-    return weak && !this.t.typeOf(e).endsWith('?') ? `${code}!` : code;
+    return (weak && !this.t.typeOf(e).endsWith('?')) || this.t.givesUndefined(e) ? `${code}!` : code;
   }
 
   /** The kit's method a call of `count` unlabeled arguments reaches, among overloads of its name (core's `bind(options)` beside the kit's own `bind(items:)`). */
@@ -473,18 +476,19 @@ export class CoreAPI {
     return this.exportsThrowing;
   }
 
-  /** A call of a core module's function the kit compiled into its module enum, its result as the declarations type it. */
+  /** A call of a core function, its result as the declarations type it: one the kit compiled into its module enum, or one core's index exports. */
   moduleCall(decl: ts.Declaration, code: string, tsType: string): string {
-    const owned = ts.isFunctionDeclaration(decl) && this.moduleFunction(decl);
-    const m = owned && kitMember(this.index, owned.split('.')[0], (decl as ts.FunctionDeclaration).name!.text);
-    return m ? this.fromKit(code, m.type, tsType) : code;
+    if (!ts.isFunctionDeclaration(decl) || !decl.name || !isCoreDeclaration(decl)) return code;
+    const owned = this.moduleFunction(decl);
+    const m = owned && kitMember(this.index, owned.slice(0, owned.lastIndexOf('.')), decl.name.text);
+    const result = m ? m.type : !owned ? this.exportSignature(decl.name.text)?.result : undefined;
+    return result ? this.fromKit(code, result, tsType) : code;
   }
 
   private exportParams = new Map<string, string[] | null>();
-  /** The arguments of a call of a function core's index exports, as the kit's forwarder takes them (`addWeakEventListener(…, target.onEvent, …)`). */
-  exportArgs(e: ts.CallExpression, decl: ts.Declaration, args: string[]): string[] {
-    if (!ts.isFunctionDeclaration(decl) || !decl.name || !isCoreDeclaration(decl) || this.moduleFunction(decl)) return args;
-    const name = decl.name.text;
+  private exportResults = new Map<string, string>();
+  /** The kit's forwarder of a function core's index exports: its parameters and result. */
+  private exportSignature(name: string): { params: string[]; result: string } | null {
     if (!this.exportParams.has(name)) {
       const file = join(KIT, 'Core', `__Export.${name}.swift`);
       const text = existsSync(file) ? readFileSync(file, 'utf8') : '';
@@ -495,10 +499,21 @@ export class CoreAPI {
         let depth = 0, end = open;
         for (; end < text.length; end++) { if (text[end] === '(') depth++; else if (text[end] === ')' && --depth === 0) break; }
         params = splitParams(text.slice(open + 1, end));
+        const tail = text.slice(end + 1, text.indexOf('{', end)).trim();
+        this.exportResults.set(name, /->\s*(.+)$/.exec(tail)?.[1].trim() ?? 'Void');
       }
       this.exportParams.set(name, params);
     }
     const params = this.exportParams.get(name);
+    return params ? { params, result: this.exportResults.get(name)! } : null;
+  }
+  /** The arguments of a call of a function core's index exports, as the kit's forwarder takes them (`addWeakEventListener(…, target.onEvent, …)`). */
+  exportArgs(e: ts.CallExpression, decl: ts.Declaration, args: string[]): string[] {
+    if (!ts.isFunctionDeclaration(decl) || !decl.name || !isCoreDeclaration(decl)) return args;
+    // Or one compiled into its module's enum (`fpsMeter.addCallback`): that member's parameters.
+    const owned = this.moduleFunction(decl);
+    const member = owned ? kitMember(this.index, owned.slice(0, owned.lastIndexOf('.')), decl.name.text) : null;
+    const params = owned ? (member?.params?.trim() ? splitParams(member.params) : null) : this.exportSignature(decl.name.text)?.params;
     if (!params || params.length < e.arguments.length) return args;
     const out = [...args];
     this.matchKitParams(e, params, out);
@@ -590,7 +605,12 @@ export class CoreAPI {
         return;
       }
       const a = e.arguments[k];
-      if (a && /->/.test(type) && (ts.isArrowFunction(a) || ts.isFunctionExpression(a) || ts.isIdentifier(a) || ts.isPropertyAccessExpression(a))) {
+      // A typed array where the kit erased its element type (`VirtualArray<number>.load(index, items)`): its elements as any value.
+      if (a && !ts.isSpreadElement(a) && /^JSArray<Any\?>[?!]?$/.test(type) && /^JSArray<.+>$/.test(t.typeOf(a)) && t.typeOf(a) !== 'JSArray<Any?>') {
+        args[k] = `JSArray<Any?>(${t.expr(a)}.storage.map { $0 as Any? })`;
+        return;
+      }
+      if (a && /->/.test(type) && (ts.isArrowFunction(a) || ts.isFunctionExpression(a) || ts.isIdentifier(a) || ts.isPropertyAccessExpression(a) || (ts.isCallExpression(a) && /->/.test(t.typeOf(a))))) {
         // An optional function parameter (`callback: ((Any?) throws -> Void)?`) takes a closure as the function it wraps.
         const plain = type.replace(/^\((.*)\)[?!]$/, '$1');
         const fn = t.functionTypeParts(plain);
