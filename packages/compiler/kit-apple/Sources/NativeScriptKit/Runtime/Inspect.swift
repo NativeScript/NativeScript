@@ -599,6 +599,9 @@ private final class JSInspectContext {
     }
 }
 
+/// A class's name as script declared it: Swift's without its generic arguments, or the module suffix (`Button__button_counter`)
+/// a program class takes apart from another of its name.
 private func jsClassName(_ cls: AnyClass) -> String {
-    String(describing: cls).components(separatedBy: "<")[0]
+    let name = String(describing: cls).components(separatedBy: "<")[0]
+    return name.range(of: "__").map { String(name[..<$0.lowerBound]) }.flatMap { $0.isEmpty ? nil : $0 } ?? name
 }

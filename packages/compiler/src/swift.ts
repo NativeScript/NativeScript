@@ -633,6 +633,12 @@ export class Translator implements AsyncTranslator {
     const F = ts.TypeFlags;
     if (this.uncompiledType(t)) return 'Any?';
     if (t.flags & F.EnumLike) {
+      // One member of a program's or core's enum (`AndroidDirectory.DOWNLOADS`, as a literal's field narrows it): its value's type.
+      const member = !t.isUnion() ? t.getSymbol()?.valueDeclaration : undefined;
+      if (member && ts.isEnumMember(member) && (isCoreDeclaration(member) || !member.getSourceFile().isDeclarationFile)) {
+        const v = c.getConstantValue(member);
+        return typeof v === 'string' ? 'String' : typeof v === 'number' ? 'Double' : 'Any?';
+      }
       const native = this.native.type(t);
       if (native) return native;
     }
@@ -972,6 +978,15 @@ export class Translator implements AsyncTranslator {
       if (init && (ts.isArrowFunction(init) || (ts.isFunctionExpression(init) && !isMethodValue(init))) && this.returnsMethod(init)) return returningAny(this.type(this.checker.getTypeAtLocation(init), init));
     }
     if ((ts.isIdentifier(n) || ts.isVariableDeclaration(n)) && this.untypedRecord(n)) return 'JSRecord<Any?>';
+    // `x[Symbol.iterator]()` of a collection whose method is a generator: the iterator the runtime adapts, not a generator of its own.
+    {
+      const own = ts.isVariableDeclaration(n) ? n : ts.isIdentifier(n) ? (ts.isVariableDeclaration(n.parent) && n.parent.name === n ? n.parent : this.resolve(n)?.valueDeclaration) : undefined;
+      const init = own && ts.isVariableDeclaration(own) && !own.type ? own.initializer : ts.isCallExpression(n) ? n : undefined;
+      if (init && ts.isCallExpression(init) && !init.arguments.length && ts.isElementAccessExpression(init.expression) && isSymbolIterator(init.expression.argumentExpression, this.checker)) {
+        const t = this.type(this.checker.getTypeAtLocation(init), init);
+        if (t.startsWith('JSGenerator<')) return t.replace(/^JSGenerator</, 'JSIterator<');
+      }
+    }
     if (ts.isIdentifier(n) && this.widenedParameter(n)) return 'Any?';
     if (ts.isIdentifier(n) && this.appModuleOf(n)) return 'Any?';
     const keyed = (ts.isIdentifier(n) || ts.isVariableDeclaration(n)) ? this.numberKeyedArray(n) : null;
@@ -2396,7 +2411,11 @@ ${members.join('\n')}
     const g = functionParts(to.replace(/^\((.*)\)\?$/, '$1'));
     if (f && g && f.params.length <= g.params.length) {
       const params = g.params.map((p, k) => `__q${k}: ${escapingParam(p)}`);
-      const args = f.params.map((p, k) => this.convert(`__q${k}`, g.params[k].replace(/^@escaping /, ''), p.replace(/^@escaping /, '')));
+      // A function taking the arguments as a rest (`(...args) => void`) where one of fixed parameters is wanted: those from the rest's start, as its array.
+      const element = f.rest >= 0 && g.rest < 0 ? /^JSArray<(.*)>$/.exec(f.params[f.rest])?.[1] : undefined;
+      const args = f.params.map((p, k) => (element !== undefined && k === f.rest
+        ? `JSArray<${element}>([${g.params.slice(k).map((q, j) => this.convert(`__q${k + j}`, q.replace(/^@escaping /, ''), element)).join(', ')}])`
+        : this.convert(`__q${k}`, g.params[k].replace(/^@escaping /, ''), p.replace(/^@escaping /, ''))));
       const call = `try __h(${args.join(', ')})`;
       const body = g.result === 'Void' ? `_ = ${call}` : f.result === 'Void' && isOptional(g.result) ? `${call}; return nil` : `return ${this.convert(call, f.result, g.result)}`;
       const wrap = `{ (__h: @escaping ${escapingFunction(f)}) -> ${g.text} in { (${params.join(', ')}) throws -> ${g.result} in ${body} } }`;
@@ -2835,7 +2854,7 @@ ${members.join('\n')}
           // A function that may give undefined (`if (big) return load();`) gives it past its last statement.
           else if (isOptional(ret) && last && !exitsStatement(last)) lines.push(`${this.indent}return nil`);
           // Lenient code: a function returning on some paths only gives undefined past them, read as its type reads undefined.
-          else if (this.lenient && !['Void', 'Never'].includes(ret) && last && !ts.isReturnStatement(last) && !ts.isThrowStatement(last)) {
+          else if (last && (this.lenient || (this.lenientApp && !exitsStatement(last))) && !['Void', 'Never'].includes(ret) && !ts.isReturnStatement(last) && !ts.isThrowStatement(last)) {
             const none = isOptional(ret) || ret === 'Any?' || ret.endsWith('!') ? 'nil' : this.zero(ret) ?? (this.native.isStructType(ret) ? `${ret}()` : null);
             lines.push(`${this.indent}${none ? `return ${none}` : 'fatalError("undefined where a value is declared")'}`);
           }
@@ -3798,7 +3817,8 @@ ${members.join('\n')}
     // Library mode: a registered property's value reaches its accessor as it is, which converts it (`col = "1"`).
     const raw = new Set(this.library ? fields.filter((f) => this.properties?.isRegistered(cls, f.name) || this.properties?.isRegisteredAnywhere(f.name)).map((f) => f.name) : []);
     const symbolKeyedBase = !!kitRoot || this.inheritsSymbolKeyed(cls);
-    if (!isError) lines.push(...this.dynamicMembers(fields, name, !!appBase || !!kitRoot, dynMethods, symbolFields, expando, raw, dynAccessors, symbolKeyedBase));
+    // Script knows the class by its own name, not the one Swift's module gives it apart from another of that name.
+    if (!isError) lines.push(...this.dynamicMembers(fields, cls.name?.text ?? name, !!appBase || !!kitRoot, dynMethods, symbolFields, expando, raw, dynAccessors, symbolKeyedBase));
     // Library mode: the class's `name`, which a static method reads of the class it is called on.
     if (this.library && !this.errorBased(cls)) lines.push(`    ${appBase ? 'override ' : ''}class var jsName: String { ${swiftString(cls.name!.text)} }`);
     if (symbolFields.length && !symbolKeyedBase) conformances.push('JSSymbolKeyed');
@@ -4971,7 +4991,8 @@ ${members.join('\n')}
       let value = chain.at(-1)!.right;
       while (ts.isParenthesizedExpression(value)) value = value.expression;
       const tmp = this.fresh('__assigned');
-      const out = [`let ${tmp}: ${this.typeOf(value)} = ${this.tryPrefix(value)}${this.expr(value)}`];
+      // An object literal is made as its context has it (a kit property's untyped object): held as made.
+      const out = [ts.isObjectLiteralExpression(value) ? `let ${tmp} = ${this.tryPrefix(value)}${this.expr(value)}` : `let ${tmp}: ${this.typeOf(value)} = ${this.tryPrefix(value)}${this.expr(value)}`];
       const read = [value, ...chain.slice(1)];
       this.subst.set(value, tmp);
       try {
@@ -5278,12 +5299,16 @@ ${members.join('\n')}
     const fields = parts.map((f) => {
       if (!f.method) return `${ident(f.name)}: try __o.${ident(f.name)}`;
       const fn = functionParts(f.type.replace(/^\((.*)\)[?!]$/, '$1'))!;
-      const params = fn.params.map((p, k) => `__p${k}: ${p.replace(/^@escaping /, '')}`);
+      const params = fn.params.map((p, k) => `__p${k}: ${escapingParam(p.replace(/^@escaping /, ''))}`);
       // An argument the shape may leave out, for a parameter the class method defaults (`timeoutSec: number = 1`): the default where it is missing.
       const method = f.decls.find((d): d is ts.MethodDeclaration => ts.isMethodDeclaration(d) && !!d.body);
+      // A kit class's method: its own parameter types (`Frame.on` taking `(EventData?) throws -> Void` for the shape's `(...args) => void`).
+      const kit = this.library ? null : this.core.kitParamTypes(from, f.name);
       const args = fn.params.map((p, k) => {
         const own = method?.parameters[k];
-        return own?.initializer && isOptional(p) && !isOptional(this.paramType(own)) ? `(__p${k} ?? ${this.coerce(own.initializer, this.paramType(own))})` : `__p${k}`;
+        if (own?.initializer && isOptional(p) && !isOptional(this.paramType(own))) return `(__p${k} ?? ${this.coerce(own.initializer, this.paramType(own))})`;
+        const want = kit?.[k]?.replace(/^@escaping /, '');
+        return want && want !== p.replace(/^@escaping /, '') ? this.convert(`__p${k}`, p.replace(/^@escaping /, ''), want) : `__p${k}`;
       });
       return `${ident(f.name)}: { (${params.join(', ')}) throws -> ${fn.result} in ${fn.result === 'Void' ? '' : 'return '}try __o.${ident(f.name)}(${args.join(', ')}) }`;
     });
@@ -5733,6 +5758,8 @@ ${members.join('\n')}
     }
     // A global function core or the app only declares (`zonedCallback`, which core's globals set), as a value: the global object's.
     if (!this.library && libDecl && ts.isFunctionDeclaration(libDecl) && !libDecl.body && (appAmbient || isCoreDeclaration(libDecl)) && ts.isSourceFile(libDecl.parent)) return 'jsGlobalThis[jsKey: ' + swiftString(name) + ']';
+    // `Object` as a value, not the receiver of a call the translation knows (`(<any>Object).entries(o)`): its functions as script has them.
+    if (name === 'Object' && isLibDeclaration(libDecl) && !(ts.isPropertyAccessExpression(e.parent) && e.parent.expression === e)) return 'jsObjectBuiltin';
     if (name === 'parseFloat' && isLibDeclaration(libDecl) && !(ts.isCallExpression(e.parent) && e.parent.expression === e)) return 'jsParseFloat';
     // A timer or microtask function held as a value (`const clear = clearTimeout`).
     const held = !!libDecl && libDecl.getSourceFile().isDeclarationFile && Object.hasOwn(LIB_FUNCTION_VALUES, name) && !(ts.isCallExpression(e.parent) && e.parent.expression === e) ? LIB_FUNCTION_VALUES[name] : undefined;
@@ -6867,6 +6894,10 @@ ${members.join('\n')}
         if (listed) return `${listed}(${this.coerce(e.arguments[1], 'Any?')})`;
       }
       if (['call', 'apply', 'bind'].includes(method) && isLibDeclaration(this.checker.getResolvedSignature(e)?.getDeclaration()) && functionParts(this.typeOf(target).replace(/^\((.*)\)[?!]$/, '$1'))) return this.functionMethod(method, target, e);
+      const required = this.library ? null : this.core.requiredModuleCall(e);
+      if (required) return required;
+      // `handler.toString()` of a typed function value: the text script gives a function the runtime holds.
+      if (method === 'toString' && !e.arguments.length && functionParts(this.typeOf(target).replace(/^\((.*)\)[?!]$/, '$1'))) return `jsToString(${this.coerce(target, 'Any?')})`;
       const core = this.core.call(e) ?? this.native.call(e);
       if (core) return core;
       // A member holding an untyped value (`closedCallback: Function`), called: with the object as `this`.
@@ -7204,7 +7235,10 @@ ${members.join('\n')}
         case 'queueMicrotask': return `jsQueueMicrotask(${this.callback(arg(0))})`;
         case 'requestAnimationFrame': {
           // A callback declaring no parameter is called with none: Swift's function type has no slot for the time.
-          const takesTime = this.checker.getTypeAtLocation(arg(0)).getCallSignatures().some((sig) => sig.parameters.length > 0);
+          let literal: ts.Expression = arg(0);
+          while (ts.isParenthesizedExpression(literal)) literal = literal.expression;
+          const takesTime = this.checker.getTypeAtLocation(arg(0)).getCallSignatures().some((sig) => sig.parameters.length > 0)
+            || ((ts.isArrowFunction(literal) || ts.isFunctionExpression(literal)) && this.unusedParameters(literal).length > 0);
           return `jsRequestAnimationFrame({ __t in jsReport { try ${this.expr(arg(0))}(${takesTime ? '__t' : ''}) } })`;
         }
         case 'cancelAnimationFrame': return `jsCancelAnimationFrame(${this.expr(arg(0))})`;
@@ -7792,6 +7826,11 @@ ${members.join('\n')}
           const call = `try (${onFulfilled})(${ignores || (f as ts.ArrowFunction).parameters.length ? '__v' : ''})`;
           onFulfilled = `{ (__v: ${value}) throws -> JSPromise<Any?> in (${call}).then { (__r: ${gives}) -> Any? in ${gives === 'Void' ? 'nil' : this.convert('__r', gives, 'Any?')} } }`;
         }
+        // A handler that only throws (`() => { throw new Error(…) }`) beside a rejection handler giving a value: typed as that one.
+        const other = g && (ts.isArrowFunction(g) || ts.isFunctionExpression(g)) ? this.returnTypeOf(g) : undefined;
+        if (!adopt && f && (ts.isArrowFunction(f) || ts.isFunctionExpression(f)) && this.closureReturn(f) === 'Never' && other && other !== 'Never') {
+          onFulfilled = `{ (__v: ${value}) throws -> ${other} in try (${onFulfilled})(${ignores || f.parameters.length ? '__v' : ''}) }`;
+        }
         return `${t}.${adopt ? 'thenAdopt' : 'then'}(${[onFulfilled, g && this.rejectionHandler(g, f && (ts.isArrowFunction(f) || ts.isFunctionExpression(f)) ? this.returnTypeOf(f) : undefined)].filter(Boolean).join(', ')})`;
       }
       case 'catch': {
@@ -8215,6 +8254,14 @@ ${members.join('\n')}
   /** `left = right` (also the assignment `??=` and `||=` make). */
   private assignment(e: ts.BinaryExpression): string {
     const left = e.left, right = e.right;
+    // App mode: `Button.prototype.recycleNativeView = 'never'`: the class's prototype object's, which script reads through.
+    if (!this.library && ts.isPropertyAccessExpression(left) && ts.isPropertyAccessExpression(left.expression) && left.expression.name.text === 'prototype') {
+      const sym = this.resolve(left.expression.expression);
+      if (sym && sym.flags & ts.SymbolFlags.Class) {
+        const cls = this.type(this.checker.getDeclaredTypeOfSymbol(sym), e).replace(/<.*$/, '');
+        return `JSPrototypes.of(${cls}.self)[${swiftString(left.name.text)}] = ${this.coerce(right, 'Any?')}`;
+      }
+    }
     if (ts.isPropertyAccessExpression(left) && this.symbolName(left.expression) === 'VueRef' && left.name.text === 'value') return `${this.lvalue(left)} = ${this.signalWrite(left.expression, right, this.typeOf(left))}`;
     if (ts.isArrayLiteralExpression(left)) throw this.error(left, 'a destructuring assignment');
     // Lenient code: null assigned to a local of a native struct declared without a value, which Swift holds implicitly unwrapped, is no struct.
@@ -8372,10 +8419,10 @@ ${members.join('\n')}
         if (this.lenient && op === K.AmpersandAmpersandToken && t !== 'Any?' && this.lenientRef(t) !== t && (leftType.endsWith('?') || this.lenientRef(leftType) !== leftType)) {
           return `jsImplicit(({ () ${throws}-> ${optionalType(t)} in let ${v} = ${lt}${leftCode}; return jsTruthy(${v}) ? ${rt}${right} : nil }()))`;
         }
-        if (this.lenient && op === K.AmpersandAmpersandToken && leftValue === v && leftType.replace(/[?!]$/, '') !== t.replace(/[?!]$/, '') && t !== 'Any?') {
+        if ((this.lenient || this.lenientApp) && op === K.AmpersandAmpersandToken && leftValue === v && leftType.replace(/[?!]$/, '') !== t.replace(/[?!]$/, '') && t !== 'Any?') {
           const z = this.zero(t);
           if (z) return `({ () ${throws}-> ${t} in let ${v} = ${lt}${leftCode}; return jsTruthy(${v}) ? ${rt}${right} : ${z} }())`;
-          if (this.lenientRef(t) !== t) return `jsImplicit(({ () ${throws}-> ${optionalType(t)} in let ${v} = ${lt}${leftCode}; return jsTruthy(${v}) ? ${rt}${right} : nil }()))`;
+          if (this.lenientRef(t) !== t || (this.lenientApp && !isFunctionType(t))) return `jsImplicit(({ () ${throws}-> ${optionalType(t)} in let ${v} = ${lt}${leftCode}; return jsTruthy(${v}) ? ${rt}${right} : nil }()))`;
         }
         // Lenient code: `a || b` of objects is undefined when both are (`span.style.backgroundColor || parent.backgroundColor`).
         if (this.lenient && op === K.BarBarToken && t !== 'Any?' && this.lenientRef(t) !== t && !t.endsWith('!')) {

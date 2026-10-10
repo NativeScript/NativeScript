@@ -2,7 +2,7 @@ import ts from 'typescript';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { kitExtends, kitIndex, kitMember, type KitMember, type KitType } from './kit-index.ts';
-import { splitTopLevel, type Translator } from './swift.ts';
+import { optionalType, splitTopLevel, type Translator } from './swift.ts';
 import { KIT_APPLE_SOURCES } from './paths.ts';
 
 export const KIT = KIT_APPLE_SOURCES;
@@ -361,7 +361,13 @@ export class CoreAPI {
       const kitFn = `(${(m.params ?? '').trim() ? splitParams(m.params!).map(kitParamType).map(plain).map((p) => (this.t.functionTypeParts(p) ? `@escaping ${p}` : p)).join(', ') : ''}) ${m.throws ? 'throws ' : ''}-> ${plain(m.type) || 'Void'}`;
       return this.fromKit(`(${recv}.${name} as ${kitFn})`, kitFn, t.typeOf(e));
     }
-    return this.fromKit(`${recv}.${name}`, inChain ? m.type.replace(/[?!]?$/, '?') : m.type, t.typeOf(e));
+    // A property the kit holds untyped, read as any value (`<any>style.borderColor` after `style.borderColor = hex`, which
+    // TypeScript narrows to the string assigned): what it holds, which a setter converted (a Color).
+    let outer: ts.Node = e.parent;
+    while (ts.isParenthesizedExpression(outer)) outer = outer.parent;
+    const untyped = (ts.isAsExpression(outer) || ts.isTypeAssertionExpression(outer)) && outer.type.kind === ts.SyntaxKind.AnyKeyword;
+    const read = m.type.trim() === 'Any?' && untyped && ['String', 'Double', 'Bool'].includes(t.typeOf(e)) ? 'Any?' : t.typeOf(e);
+    return this.fromKit(`${recv}.${name}`, inChain ? m.type.replace(/[?!]?$/, '?') : m.type, read);
   }
 
   /** A constant core declares with a literal type (`CoreTypes.AnimationCurve.easeIn` is "easeIn"), as that literal. */
@@ -393,7 +399,10 @@ export class CoreAPI {
     if (m.type.trim() === 'Any?') return `${recv}.${name} = ${this.scriptValue(value)}`;
     // Undefined where the kit holds a string, number or boolean: its zero, as core's own code assigning it was compiled.
     const zero = ({ String: '""', Double: '0', Bool: 'false' } as Record<string, string>)[m.type.trim()];
-    if (zero && (value.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(value) && value.text === 'undefined'))) return `${recv}.${name} = ${zero}`;
+    const nullish = value.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(value) && value.text === 'undefined');
+    if (zero && nullish) return `${recv}.${name} = ${zero}`;
+    // Null where the kit holds an object maybe missing (`view.backgroundColor = null`): none.
+    if (nullish && /[?!]$/.test(m.type.trim())) return `${recv}.${name} = nil`;
     return `${recv}.${name} = ${this.toKit(t.coerce(value, t.typeOf(left)), m.type)}`;
   }
 
@@ -617,6 +626,19 @@ export class CoreAPI {
         args[k] = `JSArray<Any?>(${t.expr(a)}.storage.map { $0 as Any? })`;
         return;
       }
+      // Code without null checks: undefined or null where the kit takes a value (`addWeakEventListener(source, name, undefined, target)`),
+      // the TypeError of its first use; a string, number or boolean where the kit takes another, converted as script converts it.
+      if (a && t.lenientApp && !ts.isSpreadElement(a)) {
+        let bare: ts.Expression = a;
+        while (ts.isParenthesizedExpression(bare) || ts.isAsExpression(bare) || ts.isTypeAssertionExpression(bare)) bare = bare.expression;
+        if ((bare.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(bare) && bare.text === 'undefined')) && !/[?!]$/.test(type) && !['String', 'Double', 'Bool', 'Any?'].includes(type)) {
+          args[k] = `try jsRequired(nil as ${optionalType(type.replace(/^@escaping /, ''))}, ${JSON.stringify(p.trim().split(/[\s:]+/)[1] ?? 'argument')})`;
+          return;
+        }
+        const own = t.typeOf(a);
+        const convert: Record<string, string> = { String: 'jsToString', Double: 'jsToNumber', Bool: 'jsTruthy' };
+        if (convert[type] && convert[own] && own !== type) { args[k] = `${convert[type]}(${t.coerce(a, own)})`; return; }
+      }
       // An untyped value where the kit's parameter has a type (`releaseNativeObject(obj as any)` for an `NSObject!`): read as it.
       if (a && !ts.isSpreadElement(a) && !/->/.test(type) && type !== 'Any?' && t.typeOf(a) === 'Any?') {
         args[k] = t.coerce(a, type.replace(/!$/, '?'));
@@ -698,6 +720,32 @@ export class CoreAPI {
     if (inits.length === 1 && inits[0].length === 1 && /^_ __arguments: JSArray<Any\?>$/.test(inits[0][0].trim())) return `${kitName}(${t.packed(args, 'JSArray<Any?>')})`;
     const given = this.kitInitArgs(kitName, args);
     return `${kitName}(${(given ?? t.args(e)).join(', ')})`;
+  }
+
+  /**
+   * `require('@nativescript/core/ui/animation').fn(args)`: the function the kit compiled into that module's enum
+   * (`Core_ui_animation_index`), its arguments as it takes them; null where the call is not one of a core module.
+   */
+  requiredModuleCall(e: ts.CallExpression): string | null {
+    if (!ts.isPropertyAccessExpression(e.expression)) return null;
+    let base: ts.Expression = e.expression.expression;
+    while (ts.isParenthesizedExpression(base) || ts.isAsExpression(base) || ts.isTypeAssertionExpression(base)) base = base.expression;
+    if (!ts.isCallExpression(base) || !ts.isIdentifier(base.expression) || base.expression.text !== 'require' || !base.arguments[0] || !ts.isStringLiteral(base.arguments[0])) return null;
+    const path = /^@nativescript\/core\/(.+)$/.exec(base.arguments[0].text)?.[1];
+    if (!path) throw this.t.error(base, `require('${base.arguments[0].text}') of a module other than core's`);
+    const name = e.expression.name.text;
+    const owner = [`Core_${path}_index`, `Core_${path}`].map((x) => x.replace(/\W/g, '_')).find((x) => kitMember(this.index, x, name)?.kind === 'func');
+    if (!owner) throw this.t.error(e, `require('${base.arguments[0].text}').${name}, which the kit has no function of`);
+    const m = kitMember(this.index, owner, name)!;
+    const params = (m.params ?? '').trim() ? splitParams(m.params!).map(kitParamType) : [];
+    const args = e.arguments.map((a, k) => this.t.coerce(a, (params[k] ?? 'Any?').replace(/^@escaping /, '').replace(/!$/, '?')));
+    return this.fromKit(`${m.throws ? 'try ' : ''}${owner}.${name}(${args.join(', ')})`, m.type, this.t.typeOf(e));
+  }
+
+  /** The parameter types of a kit class's method (`Frame.on`: `String`, `(EventData?) throws -> Void`, …), or null. */
+  kitParamTypes(owner: string, name: string): string[] | null {
+    const m = kitMember(this.index, owner, name);
+    return m?.kind === 'func' ? ((m.params ?? '').trim() ? splitParams(m.params!).map(kitParamType) : []) : null;
   }
 
   /** The arguments as an initializer of the kit's class takes them (`ImageSource(_ nativeSource: UIImage!)` for core's `nativeSource?: any`), or null. */

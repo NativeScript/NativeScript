@@ -539,6 +539,13 @@ func jsStructMember(_ value: Any?, _ key: String) -> Any? {
     #endif
 }
 
+/// Undefined or null given where a function needs a value of its type (`addWeakEventListener(source, name, undefined, target)`):
+/// the TypeError of the first use of it.
+public func jsRequired<T>(_ value: T?, _ name: String) throws -> T {
+    guard let value else { throw JSException(JSTypeError("\(name) is undefined")) }
+    return value
+}
+
 /// A function value that may be missing, about to be called: undefined is not a function.
 public func jsCallee<F>(_ function: F?) throws -> F {
     guard let function else { throw JSException(JSTypeError("undefined is not a function")) }
@@ -917,6 +924,14 @@ public func jsCallOptional(_ function: Any?, spread arguments: [Any?]) throws ->
 /// `globalThis` read as an object: the runtime's globals (`NativeScriptRuntime`, `com.tns`) are not
 /// in a native app, so reading one gives undefined. `DOMException`, which core's fetch reads from it, is there.
 public let jsGlobalThis = JSObject([("DOMException", jsDOMExceptionConstructor)])
+
+/// `Object` held as a value (`(<any>Object).entries(o)`): its functions over objects, called as script calls them.
+public let jsObjectBuiltin = JSObject([
+    ("keys", jsFunction("keys", 1) { a in jsObjectKeys(jsArg(a, 0)) }),
+    ("values", jsFunction("values", 1) { a in jsObjectValues(jsArg(a, 0)) }),
+    ("entries", jsFunction("entries", 1) { a in JSArray<Any?>(jsObjectEntries(jsArg(a, 0)).storage.map { JSArray<Any?>([$0.0, $0.1]) as Any? }) }),
+    ("assign", jsFunction("assign", 2) { a in try jsObjectAssign(jsArg(a, 0), spread: Array(a.dropFirst())) }),
+])
 
 /// Lenient code: a value that may be undefined where its type says an object, read as
 /// an optional where one is taken and unwrapped (JavaScript's TypeError if missing) elsewhere.
