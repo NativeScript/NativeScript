@@ -3255,6 +3255,24 @@ export class Translator implements AsyncTranslator {
         });
       }
       const seq = this.iterable(s.expression);
+      const indexed = this.typeOf(s.expression);
+      const typedArray = new RegExp(`^JS(${TYPED_ARRAYS.join('|')})$`).test(indexed);
+      if (typedArray || /^JSArray<.*>$/.test(indexed)) {
+        // An array's iteration reads by index up to its live length; an Iterator object per loop is garbage on hot paths.
+        return this.loopBody(() => {
+          const label = this.takeLabel();
+          const array = this.fresh('__a');
+          const k = this.fresh('__k');
+          const read = `${array}[${k}++]`;
+          const body = this.block(s.statement);
+          const simple = ts.isIdentifier(decl.name) && !mutable;
+          const item = simple ? '' : this.fresh('__item');
+          const bind = simple
+            ? `${i}    val ${ident((decl.name as ts.Identifier).text)} = ${read}`
+            : `${i}    val ${item} = ${read}\n${this.nested(() => this.bindTo(decl.name, item, '', mutable))}`;
+          return `${i}val ${array} = ${seq}\n${i}var ${k} = 0\n${i}${label}while (${k} < ${array}.${typedArray ? 'jsLength' : 'size'}) {\n${bind}\n${body.slice(2)}`;
+        });
+      }
       return this.loopBody(() => {
         const label = this.takeLabel();
         if (ts.isIdentifier(decl.name) && !mutable) return `${i}${label}for (${ident(decl.name.text)} in ${seq}) ${this.block(s.statement)}`;
