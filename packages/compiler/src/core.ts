@@ -354,6 +354,13 @@ export class CoreAPI {
     }
     const m = this.member(owner.name, name, e);
     if (inChain && continued) return `${recv}.${name}`;
+    // A method as a value (`Builder.load` given to `isFunction`): the function Swift has of it, adapted to the declared type.
+    const called = ts.isCallExpression(e.parent) && e.parent.expression === e;
+    if (m.kind === 'func' && !called && !inChain) {
+      const plain = (x: string) => x.trim().replace(/^\((.*)\)!$/, '($1)?').replace(/!$/, '?');
+      const kitFn = `(${(m.params ?? '').trim() ? splitParams(m.params!).map(kitParamType).map(plain).map((p) => (this.t.functionTypeParts(p) ? `@escaping ${p}` : p)).join(', ') : ''}) ${m.throws ? 'throws ' : ''}-> ${plain(m.type) || 'Void'}`;
+      return this.fromKit(`(${recv}.${name} as ${kitFn})`, kitFn, t.typeOf(e));
+    }
     return this.fromKit(`${recv}.${name}`, inChain ? m.type.replace(/[?!]?$/, '?') : m.type, t.typeOf(e));
   }
 
@@ -647,6 +654,14 @@ export class CoreAPI {
   }
 
   construct(e: ts.NewExpression): string | null {
+    const code = this.constructed(e);
+    // A local of the class's name (`var StackLayout = new sp.StackLayout()`) hides the kit's class: named through the kit.
+    const name = code && /^([A-Z]\w*)\(/.exec(code)?.[1];
+    const local = name ? this.t.checker.resolveName(name, e, ts.SymbolFlags.Value, false)?.valueDeclaration : undefined;
+    return local && (ts.isVariableDeclaration(local) || ts.isParameter(local)) && !local.getSourceFile().isDeclarationFile ? `NativeScriptKit.${code}` : code;
+  }
+
+  private constructed(e: ts.NewExpression): string | null {
     const sym = this.t.resolve(e.expression);
     if (!sym || !isCoreDeclaration(sym.declarations?.[0]) || this.t.compiledCounterpart(sym)) return null;
     const t = this.t;
@@ -683,7 +698,9 @@ export class CoreAPI {
         const p = params[k];
         const label = p.slice(0, p.indexOf(':')).trim().split(/\s+/)[0];
         const type = p.slice(p.indexOf(':') + 1).replace(/=.*$/, '').trim().replace(/^@escaping\s+/, '').replace(/!$/, '?');
-        return `${label === '_' ? '' : `${label}: `}${(ts.isArrowFunction(a) || ts.isFunctionExpression(a)) && t.functionTypeParts(type) ? this.closureArgument(a, type) : t.coerce(a, type)}`;
+        // An optional function parameter takes the closure as the function it wraps.
+        const fnType = type.replace(/^\((.*)\)\?$/, '$1');
+        return `${label === '_' ? '' : `${label}: `}${(ts.isArrowFunction(a) || ts.isFunctionExpression(a)) && t.functionTypeParts(fnType) ? this.closureArgument(a, fnType) : t.coerce(a, type)}`;
       }).join(', ')})`;
     }
     return `${kitName}(${t.args(e).join(', ')})`;
@@ -767,6 +784,9 @@ export class CoreAPI {
     if (kb !== tb && /^[A-Z]\w*$/.test(kb) && /^[A-Z]\w*$/.test(tb) && !['Double', 'String', 'Bool', 'Any'].includes(tb) && kb !== 'Any') {
       return tsType.endsWith('?') ? `(${code} as? ${tb})` : `(${code} as! ${tb})`;
     }
+    // A function the kit gives of other types (`lazy(…)`'s, its result untyped): adapted to the declared one.
+    const fn = (x: string) => this.t.functionTypeParts(x.replace(/^\((.*)\)[?!]$/, '$1'));
+    if (k !== tsType && fn(k) && fn(tsType) && fn(k)!.text !== fn(tsType)!.text) return this.t.convert(code, k.replace(/^\((.*)\)!$/, '($1)?'), tsType);
     if (k.endsWith('?') && !tsType.endsWith('?') && tsType !== 'Any?') {
       const zero = tsType === 'String' ? '""' : tsType === 'Double' ? '0' : tsType === 'Bool' ? 'false' : null;
       return zero ? `(${code} ?? ${zero})` : `${code}!`;
