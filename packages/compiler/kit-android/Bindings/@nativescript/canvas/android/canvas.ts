@@ -111,7 +111,7 @@ export class Canvas extends View {
 		}
 		if (type === 'webgpu') {
 			if (!this._gpuContext) {
-				this._gpuContext = module().__createWebGPUContext?.(this._canvas) ?? null;
+				this._gpuContext = module().__createWebGPUContext(this._canvas) ?? null;
 			}
 			return this._gpuContext;
 		}
@@ -188,15 +188,14 @@ export class Canvas extends View {
 	}
 }
 
-/** `navigator.gpu`: WebGPU's entry point, over the binding. */
+/** `navigator.gpu`: WebGPU's entry point, over the binding's instance. */
 export class GPU {
 	requestAdapter(options?: any): Promise<any> {
-		const gpu = module().__gpu;
-		return gpu ? gpu.requestAdapter(options) : Promise.resolve(null);
+		return module().__gpu.requestAdapter(options);
 	}
 
 	getPreferredCanvasFormat(): string {
-		return module().__gpu?.getPreferredCanvasFormat() ?? 'rgba8unorm';
+		return module().__gpu.getPreferredCanvasFormat();
 	}
 }
 

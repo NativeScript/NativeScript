@@ -9,6 +9,6 @@ add_library(canvasnative SHARED IMPORTED)
 # The library has no SONAME: linked by name, so the app loads it as the plugin's Java code does.
 set_target_properties(canvasnative PROPERTIES IMPORTED_LOCATION ${CANVAS_NATIVE_LIBS}/${ANDROID_ABI}/libcanvasnative.so IMPORTED_NO_SONAME TRUE)
 
-add_library(canvaskit SHARED canvas_kit.c)
+add_library(canvaskit SHARED canvas_kit.c webgpu_kit.c)
 target_include_directories(canvaskit PRIVATE include)
 target_link_libraries(canvaskit canvasnative log)

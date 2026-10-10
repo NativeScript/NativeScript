@@ -20,7 +20,12 @@ object NSBinding_nativescript_canvas {
 
 object CanvasModule : JSHostObject() {
     override val jsClassName: String get() = "CanvasModule"
-    override val methods: Set<String> get() = setOf("create2DContextWithPointer", "__create2DContext", "__resize")
+    override val methods: Set<String> get() = setOf("create2DContextWithPointer", "__create2DContext", "__createWebGPUContext")
+
+    /** `navigator.gpu`'s instance, made when script first asks for it. */
+    private val gpu by lazy { GPUHost() }
+
+    override fun get(key: String): Any? = if (key == "__gpu") gpu else ABSENT
 
     override fun invoke(key: String, args: Array<out Any?>): Any? = when (key) {
         "create2DContextWithPointer" -> {
@@ -34,6 +39,12 @@ object CanvasModule : JSHostObject() {
             val flag = { i: Int -> jsTruthy(args.getOrNull(i)) }
             val pointer = canvas.create2DContext(flag(1), flag(2), flag(3), flag(4), jsToNumber(args.getOrNull(5)).toInt(), flag(6), flag(7), flag(8), flag(9), flag(10), flag(11), jsToNumber(args.getOrNull(12)).toInt())
             CanvasRenderingContext2DHost(CanvasNative.contextCreateWithPointer(pointer))
+        }
+        // `(canvas)`: the view's WebGPU context, over the instance `__gpu` holds.
+        "__createWebGPUContext" -> {
+            val canvas = jsBox(args.getOrNull(0)) as NSCCanvas
+            canvas.initWebGPUContext(GPUNative.instancePointer(gpu.instance))
+            canvas.nativeContext.takeIf { it != 0L }?.let { GPUCanvasContextHost(it) }
         }
         else -> ABSENT
     }
