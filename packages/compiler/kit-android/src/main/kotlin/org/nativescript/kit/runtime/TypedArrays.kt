@@ -113,6 +113,11 @@ abstract class JSTypedArrayElement<V : Any>(val kind: JSTypedArrayKind) {
 }
 
 abstract class JSNumberElement(kind: JSTypedArrayKind) : JSTypedArrayElement<Double>(kind) {
+    /** Unboxed: `load`/`store` are generic, so the JVM boxes every value through them. */
+    abstract fun loadNumber(bytes: ByteBuffer, at: Int): Double
+    abstract fun storeNumber(bytes: ByteBuffer, at: Int, value: Double)
+    final override fun load(bytes: ByteBuffer, at: Int): Double = loadNumber(bytes, at)
+    final override fun store(bytes: ByteBuffer, at: Int, value: Double) = storeNumber(bytes, at, value)
     override fun convert(value: Any?): Double = jsToNumber(value)
     override val undefinedValue: Double? get() = Double.NaN
     override val zero: Double get() = 0.0
@@ -138,51 +143,51 @@ abstract class JSBigIntElement(kind: JSTypedArrayKind) : JSTypedArrayElement<JSB
 }
 
 object JSInt8Element : JSNumberElement(JSTypedArrayKind.INT8) {
-    override fun load(bytes: ByteBuffer, at: Int): Double = bytes.get(at).toDouble()
-    override fun store(bytes: ByteBuffer, at: Int, value: Double) { bytes.put(at, jsToInt32(value).toByte()) }
+    override fun loadNumber(bytes: ByteBuffer, at: Int): Double = bytes.get(at).toDouble()
+    override fun storeNumber(bytes: ByteBuffer, at: Int, value: Double) { bytes.put(at, jsToInt32(value).toByte()) }
 }
 
 object JSUint8Element : JSNumberElement(JSTypedArrayKind.UINT8) {
-    override fun load(bytes: ByteBuffer, at: Int): Double = (bytes.get(at).toInt() and 0xFF).toDouble()
-    override fun store(bytes: ByteBuffer, at: Int, value: Double) { bytes.put(at, jsToInt32(value).toByte()) }
+    override fun loadNumber(bytes: ByteBuffer, at: Int): Double = (bytes.get(at).toInt() and 0xFF).toDouble()
+    override fun storeNumber(bytes: ByteBuffer, at: Int, value: Double) { bytes.put(at, jsToInt32(value).toByte()) }
 }
 
 object JSUint8ClampedElement : JSNumberElement(JSTypedArrayKind.UINT8_CLAMPED) {
-    override fun load(bytes: ByteBuffer, at: Int): Double = (bytes.get(at).toInt() and 0xFF).toDouble()
+    override fun loadNumber(bytes: ByteBuffer, at: Int): Double = (bytes.get(at).toInt() and 0xFF).toDouble()
     /** ToUint8Clamp: clamped to 0…255, halves rounded to even. */
-    override fun store(bytes: ByteBuffer, at: Int, value: Double) {
+    override fun storeNumber(bytes: ByteBuffer, at: Int, value: Double) {
         bytes.put(at, if (value.isNaN()) 0 else Math.rint(minOf(maxOf(value, 0.0), 255.0)).toInt().toByte())
     }
 }
 
 object JSInt16Element : JSNumberElement(JSTypedArrayKind.INT16) {
-    override fun load(bytes: ByteBuffer, at: Int): Double = bytes.getShort(at).toDouble()
-    override fun store(bytes: ByteBuffer, at: Int, value: Double) { bytes.putShort(at, jsToInt32(value).toShort()) }
+    override fun loadNumber(bytes: ByteBuffer, at: Int): Double = bytes.getShort(at).toDouble()
+    override fun storeNumber(bytes: ByteBuffer, at: Int, value: Double) { bytes.putShort(at, jsToInt32(value).toShort()) }
 }
 
 object JSUint16Element : JSNumberElement(JSTypedArrayKind.UINT16) {
-    override fun load(bytes: ByteBuffer, at: Int): Double = (bytes.getShort(at).toInt() and 0xFFFF).toDouble()
-    override fun store(bytes: ByteBuffer, at: Int, value: Double) { bytes.putShort(at, jsToInt32(value).toShort()) }
+    override fun loadNumber(bytes: ByteBuffer, at: Int): Double = (bytes.getShort(at).toInt() and 0xFFFF).toDouble()
+    override fun storeNumber(bytes: ByteBuffer, at: Int, value: Double) { bytes.putShort(at, jsToInt32(value).toShort()) }
 }
 
 object JSInt32Element : JSNumberElement(JSTypedArrayKind.INT32) {
-    override fun load(bytes: ByteBuffer, at: Int): Double = bytes.getInt(at).toDouble()
-    override fun store(bytes: ByteBuffer, at: Int, value: Double) { bytes.putInt(at, jsToInt32(value)) }
+    override fun loadNumber(bytes: ByteBuffer, at: Int): Double = bytes.getInt(at).toDouble()
+    override fun storeNumber(bytes: ByteBuffer, at: Int, value: Double) { bytes.putInt(at, jsToInt32(value)) }
 }
 
 object JSUint32Element : JSNumberElement(JSTypedArrayKind.UINT32) {
-    override fun load(bytes: ByteBuffer, at: Int): Double = (bytes.getInt(at).toLong() and 0xFFFFFFFFL).toDouble()
-    override fun store(bytes: ByteBuffer, at: Int, value: Double) { bytes.putInt(at, jsToUint32(value).toInt()) }
+    override fun loadNumber(bytes: ByteBuffer, at: Int): Double = (bytes.getInt(at).toLong() and 0xFFFFFFFFL).toDouble()
+    override fun storeNumber(bytes: ByteBuffer, at: Int, value: Double) { bytes.putInt(at, jsToUint32(value).toInt()) }
 }
 
 object JSFloat32Element : JSNumberElement(JSTypedArrayKind.FLOAT32) {
-    override fun load(bytes: ByteBuffer, at: Int): Double = bytes.getFloat(at).toDouble()
-    override fun store(bytes: ByteBuffer, at: Int, value: Double) { bytes.putFloat(at, value.toFloat()) }
+    override fun loadNumber(bytes: ByteBuffer, at: Int): Double = bytes.getFloat(at).toDouble()
+    override fun storeNumber(bytes: ByteBuffer, at: Int, value: Double) { bytes.putFloat(at, value.toFloat()) }
 }
 
 object JSFloat64Element : JSNumberElement(JSTypedArrayKind.FLOAT64) {
-    override fun load(bytes: ByteBuffer, at: Int): Double = bytes.getDouble(at)
-    override fun store(bytes: ByteBuffer, at: Int, value: Double) { bytes.putDouble(at, value) }
+    override fun loadNumber(bytes: ByteBuffer, at: Int): Double = bytes.getDouble(at)
+    override fun storeNumber(bytes: ByteBuffer, at: Int, value: Double) { bytes.putDouble(at, value) }
 }
 
 object JSBigInt64Element : JSBigIntElement(JSTypedArrayKind.BIG_INT64) {
@@ -256,9 +261,9 @@ abstract class JSTypedArray<V : Any, A : JSTypedArray<V, A>> internal constructo
     final override val buffer: JSArrayBuffer = layout.buffer
     internal val offset: Int = layout.offset
     internal val count: Int = layout.count
-    private val stride = element.kind.bytesPerElement
+    internal val stride = element.kind.bytesPerElement
     /** In the platform's byte order, as typed arrays are. */
-    private val bytes: ByteBuffer = buffer.view(ByteOrder.nativeOrder())
+    internal val bytes: ByteBuffer = buffer.view(ByteOrder.nativeOrder())
 
     init {
         layout.values?.forEachIndexed { k, v -> put(element.convert(v), k) }
@@ -295,16 +300,11 @@ abstract class JSTypedArray<V : Any, A : JSTypedArray<V, A>> internal constructo
         return value(index.toInt())
     }
 
-    /** `array[i]` as a compound assignment (`+=`, `++`) reads it: undefined reads as NaN (0 in a BigInt array). */
-    operator fun get(index: Double): V = element(index) ?: element.undefinedValue ?: element.zero
-    operator fun get(index: Int): V = get(index.toDouble())
-
     /** `array[i] = value`: ignored out of range; undefined stores NaN converted (nothing in a BigInt array). */
     operator fun set(index: Double, value: V?) {
         if (index != Math.floor(index) || index < 0 || index >= count) return
         put(value ?: element.undefinedValue ?: return, index.toInt())
     }
-    operator fun set(index: Int, value: V) = set(index.toDouble(), value)
 
     // Copies and views
 
@@ -638,8 +638,39 @@ private fun arg(args: Array<out Any?>, i: Int): Any? = if (i < args.size) args[i
 /** An optional numeric argument of a method called by name: undefined and null are absent. */
 private fun optionalNumber(args: Array<out Any?>, i: Int): Double? = arg(args, i).let { if (jsIsNullish(it)) null else jsToNumber(it) }
 
+/**
+ * A typed array of numbers, its elements read and written as unboxed doubles: `array[i]` and
+ * `array[i] = x` on the generic `JSTypedArray` would box each one.
+ */
+abstract class JSNumberTypedArray<A : JSNumberTypedArray<A>> internal constructor(layout: JSTypedArrayLayout, private val numbers: JSNumberElement) :
+    JSTypedArray<Double, A>(layout, numbers) {
+
+    /** `array[i]` as a compound assignment (`+=`, `++`) reads it: undefined reads as NaN. */
+    operator fun get(index: Double): Double {
+        if (index != Math.floor(index) || index < 0 || index >= count) return Double.NaN
+        return numbers.loadNumber(bytes, offset + index.toInt() * stride)
+    }
+    operator fun get(index: Int): Double = get(index.toDouble())
+
+    operator fun set(index: Double, value: Double) {
+        if (index != Math.floor(index) || index < 0 || index >= count) return
+        numbers.storeNumber(bytes, offset + index.toInt() * stride, value)
+    }
+    operator fun set(index: Int, value: Double) = set(index.toDouble(), value)
+}
+
+/** A typed array of BigInts. */
+abstract class JSBigIntTypedArray<A : JSBigIntTypedArray<A>> internal constructor(layout: JSTypedArrayLayout, element: JSBigIntElement) :
+    JSTypedArray<JSBigInt, A>(layout, element) {
+
+    /** `array[i]` as a compound assignment reads it: undefined reads as 0. */
+    operator fun get(index: Double): JSBigInt = element(index) ?: element.zero
+    operator fun get(index: Int): JSBigInt = get(index.toDouble())
+    operator fun set(index: Int, value: JSBigInt) = set(index.toDouble(), value)
+}
+
 /** `Int8Array`. */
-class JSInt8Array private constructor(layout: JSTypedArrayLayout) : JSTypedArray<Double, JSInt8Array>(layout, JSInt8Element) {
+class JSInt8Array private constructor(layout: JSTypedArrayLayout) : JSNumberTypedArray<JSInt8Array>(layout, JSInt8Element) {
     /** `new Int8Array(length)`. */
     constructor(length: Double = 0.0) : this(JSTypedArrayLayout.ofLength(length, JSTypedArrayKind.INT8))
     /** `new Int8Array(buffer, byteOffset, length)`. */
@@ -657,7 +688,7 @@ class JSInt8Array private constructor(layout: JSTypedArrayLayout) : JSTypedArray
 }
 
 /** `Uint8Array`. */
-class JSUint8Array private constructor(layout: JSTypedArrayLayout) : JSTypedArray<Double, JSUint8Array>(layout, JSUint8Element) {
+class JSUint8Array private constructor(layout: JSTypedArrayLayout) : JSNumberTypedArray<JSUint8Array>(layout, JSUint8Element) {
     constructor(length: Double = 0.0) : this(JSTypedArrayLayout.ofLength(length, JSTypedArrayKind.UINT8))
     constructor(buffer: JSArrayBuffer, byteOffset: Double? = null, length: Double? = null) : this(JSTypedArrayLayout.ofBuffer(buffer, byteOffset, length, JSTypedArrayKind.UINT8))
     constructor(values: Iterable<*>) : this(JSTypedArrayLayout.ofValues(values, JSTypedArrayKind.UINT8))
@@ -671,7 +702,7 @@ class JSUint8Array private constructor(layout: JSTypedArrayLayout) : JSTypedArra
 }
 
 /** `Uint8ClampedArray`. */
-class JSUint8ClampedArray private constructor(layout: JSTypedArrayLayout) : JSTypedArray<Double, JSUint8ClampedArray>(layout, JSUint8ClampedElement) {
+class JSUint8ClampedArray private constructor(layout: JSTypedArrayLayout) : JSNumberTypedArray<JSUint8ClampedArray>(layout, JSUint8ClampedElement) {
     constructor(length: Double = 0.0) : this(JSTypedArrayLayout.ofLength(length, JSTypedArrayKind.UINT8_CLAMPED))
     constructor(buffer: JSArrayBuffer, byteOffset: Double? = null, length: Double? = null) : this(JSTypedArrayLayout.ofBuffer(buffer, byteOffset, length, JSTypedArrayKind.UINT8_CLAMPED))
     constructor(values: Iterable<*>) : this(JSTypedArrayLayout.ofValues(values, JSTypedArrayKind.UINT8_CLAMPED))
@@ -685,7 +716,7 @@ class JSUint8ClampedArray private constructor(layout: JSTypedArrayLayout) : JSTy
 }
 
 /** `Int16Array`. */
-class JSInt16Array private constructor(layout: JSTypedArrayLayout) : JSTypedArray<Double, JSInt16Array>(layout, JSInt16Element) {
+class JSInt16Array private constructor(layout: JSTypedArrayLayout) : JSNumberTypedArray<JSInt16Array>(layout, JSInt16Element) {
     constructor(length: Double = 0.0) : this(JSTypedArrayLayout.ofLength(length, JSTypedArrayKind.INT16))
     constructor(buffer: JSArrayBuffer, byteOffset: Double? = null, length: Double? = null) : this(JSTypedArrayLayout.ofBuffer(buffer, byteOffset, length, JSTypedArrayKind.INT16))
     constructor(values: Iterable<*>) : this(JSTypedArrayLayout.ofValues(values, JSTypedArrayKind.INT16))
@@ -699,7 +730,7 @@ class JSInt16Array private constructor(layout: JSTypedArrayLayout) : JSTypedArra
 }
 
 /** `Uint16Array`. */
-class JSUint16Array private constructor(layout: JSTypedArrayLayout) : JSTypedArray<Double, JSUint16Array>(layout, JSUint16Element) {
+class JSUint16Array private constructor(layout: JSTypedArrayLayout) : JSNumberTypedArray<JSUint16Array>(layout, JSUint16Element) {
     constructor(length: Double = 0.0) : this(JSTypedArrayLayout.ofLength(length, JSTypedArrayKind.UINT16))
     constructor(buffer: JSArrayBuffer, byteOffset: Double? = null, length: Double? = null) : this(JSTypedArrayLayout.ofBuffer(buffer, byteOffset, length, JSTypedArrayKind.UINT16))
     constructor(values: Iterable<*>) : this(JSTypedArrayLayout.ofValues(values, JSTypedArrayKind.UINT16))
@@ -713,7 +744,7 @@ class JSUint16Array private constructor(layout: JSTypedArrayLayout) : JSTypedArr
 }
 
 /** `Int32Array`. */
-class JSInt32Array private constructor(layout: JSTypedArrayLayout) : JSTypedArray<Double, JSInt32Array>(layout, JSInt32Element) {
+class JSInt32Array private constructor(layout: JSTypedArrayLayout) : JSNumberTypedArray<JSInt32Array>(layout, JSInt32Element) {
     constructor(length: Double = 0.0) : this(JSTypedArrayLayout.ofLength(length, JSTypedArrayKind.INT32))
     constructor(buffer: JSArrayBuffer, byteOffset: Double? = null, length: Double? = null) : this(JSTypedArrayLayout.ofBuffer(buffer, byteOffset, length, JSTypedArrayKind.INT32))
     constructor(values: Iterable<*>) : this(JSTypedArrayLayout.ofValues(values, JSTypedArrayKind.INT32))
@@ -727,7 +758,7 @@ class JSInt32Array private constructor(layout: JSTypedArrayLayout) : JSTypedArra
 }
 
 /** `Uint32Array`. */
-class JSUint32Array private constructor(layout: JSTypedArrayLayout) : JSTypedArray<Double, JSUint32Array>(layout, JSUint32Element) {
+class JSUint32Array private constructor(layout: JSTypedArrayLayout) : JSNumberTypedArray<JSUint32Array>(layout, JSUint32Element) {
     constructor(length: Double = 0.0) : this(JSTypedArrayLayout.ofLength(length, JSTypedArrayKind.UINT32))
     constructor(buffer: JSArrayBuffer, byteOffset: Double? = null, length: Double? = null) : this(JSTypedArrayLayout.ofBuffer(buffer, byteOffset, length, JSTypedArrayKind.UINT32))
     constructor(values: Iterable<*>) : this(JSTypedArrayLayout.ofValues(values, JSTypedArrayKind.UINT32))
@@ -741,7 +772,7 @@ class JSUint32Array private constructor(layout: JSTypedArrayLayout) : JSTypedArr
 }
 
 /** `Float32Array`. */
-class JSFloat32Array private constructor(layout: JSTypedArrayLayout) : JSTypedArray<Double, JSFloat32Array>(layout, JSFloat32Element) {
+class JSFloat32Array private constructor(layout: JSTypedArrayLayout) : JSNumberTypedArray<JSFloat32Array>(layout, JSFloat32Element) {
     constructor(length: Double = 0.0) : this(JSTypedArrayLayout.ofLength(length, JSTypedArrayKind.FLOAT32))
     constructor(buffer: JSArrayBuffer, byteOffset: Double? = null, length: Double? = null) : this(JSTypedArrayLayout.ofBuffer(buffer, byteOffset, length, JSTypedArrayKind.FLOAT32))
     constructor(values: Iterable<*>) : this(JSTypedArrayLayout.ofValues(values, JSTypedArrayKind.FLOAT32))
@@ -755,7 +786,7 @@ class JSFloat32Array private constructor(layout: JSTypedArrayLayout) : JSTypedAr
 }
 
 /** `Float64Array`. */
-class JSFloat64Array private constructor(layout: JSTypedArrayLayout) : JSTypedArray<Double, JSFloat64Array>(layout, JSFloat64Element) {
+class JSFloat64Array private constructor(layout: JSTypedArrayLayout) : JSNumberTypedArray<JSFloat64Array>(layout, JSFloat64Element) {
     constructor(length: Double = 0.0) : this(JSTypedArrayLayout.ofLength(length, JSTypedArrayKind.FLOAT64))
     constructor(buffer: JSArrayBuffer, byteOffset: Double? = null, length: Double? = null) : this(JSTypedArrayLayout.ofBuffer(buffer, byteOffset, length, JSTypedArrayKind.FLOAT64))
     constructor(values: Iterable<*>) : this(JSTypedArrayLayout.ofValues(values, JSTypedArrayKind.FLOAT64))
@@ -769,7 +800,7 @@ class JSFloat64Array private constructor(layout: JSTypedArrayLayout) : JSTypedAr
 }
 
 /** `BigInt64Array`. */
-class JSBigInt64Array private constructor(layout: JSTypedArrayLayout) : JSTypedArray<JSBigInt, JSBigInt64Array>(layout, JSBigInt64Element) {
+class JSBigInt64Array private constructor(layout: JSTypedArrayLayout) : JSBigIntTypedArray<JSBigInt64Array>(layout, JSBigInt64Element) {
     constructor(length: Double = 0.0) : this(JSTypedArrayLayout.ofLength(length, JSTypedArrayKind.BIG_INT64))
     constructor(buffer: JSArrayBuffer, byteOffset: Double? = null, length: Double? = null) : this(JSTypedArrayLayout.ofBuffer(buffer, byteOffset, length, JSTypedArrayKind.BIG_INT64))
     constructor(values: Iterable<*>) : this(JSTypedArrayLayout.ofValues(values, JSTypedArrayKind.BIG_INT64))
@@ -783,7 +814,7 @@ class JSBigInt64Array private constructor(layout: JSTypedArrayLayout) : JSTypedA
 }
 
 /** `BigUint64Array`. */
-class JSBigUint64Array private constructor(layout: JSTypedArrayLayout) : JSTypedArray<JSBigInt, JSBigUint64Array>(layout, JSBigUint64Element) {
+class JSBigUint64Array private constructor(layout: JSTypedArrayLayout) : JSBigIntTypedArray<JSBigUint64Array>(layout, JSBigUint64Element) {
     constructor(length: Double = 0.0) : this(JSTypedArrayLayout.ofLength(length, JSTypedArrayKind.BIG_UINT64))
     constructor(buffer: JSArrayBuffer, byteOffset: Double? = null, length: Double? = null) : this(JSTypedArrayLayout.ofBuffer(buffer, byteOffset, length, JSTypedArrayKind.BIG_UINT64))
     constructor(values: Iterable<*>) : this(JSTypedArrayLayout.ofValues(values, JSTypedArrayKind.BIG_UINT64))
