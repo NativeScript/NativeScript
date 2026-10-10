@@ -19,7 +19,7 @@ const KIT_GRADLE = join(KIT_ANDROID, 'build.gradle.kts');
 export function androidClassPath(widgetsAar: string | null, plugins?: { archives: string[]; dependencies: { coords: string }[] }): ClassPath {
   const pinned = new Map<string, string>();
   const pin = (artifact: string, version: string) => { if (!pinned.has(artifact) || newer(version, pinned.get(artifact)!)) pinned.set(artifact, version); };
-  if (existsSync(KIT_GRADLE)) for (const m of readFileSync(KIT_GRADLE, 'utf8').matchAll(/"(androidx\.[\w.]+):([\w.-]+):([\w.-]+)"/g)) pin(`${m[1]}:${m[2]}`, m[3]);
+  if (existsSync(KIT_GRADLE)) for (const m of readFileSync(KIT_GRADLE, 'utf8').matchAll(/"([a-z][\w.]*):([\w.-]+):([\w.-]+)"/g)) pin(`${m[1]}:${m[2]}`, m[3]);
   for (const d of plugins?.dependencies ?? []) { const [group, artifact, version] = d.coords.split(':'); if (version) pin(`${group}:${artifact}`, version); }
   return new ClassPath([androidJar(COMPILE_SDK), ...(widgetsAar ? [widgetsAar] : []), ...(plugins?.archives ?? [])], pinned);
 }
@@ -311,7 +311,19 @@ export class AndroidNativeAPI implements KotlinNative {
   }
 
   isClassAlias(d: ts.VariableDeclaration): boolean {
+    if (ts.isObjectBindingPattern(d.name)) return d.name.elements.length > 0 && d.name.elements.every((el) => !!this.destructuredClass(el));
     return this.nativeAlias(d) || !!this.extensionOf(d) || !!this.prototypeOf(d);
+  }
+
+  /** `const { AudioTrack } = android.media`: the Java class the name takes from its package. */
+  private destructuredClass(el: ts.BindingElement): ts.Symbol | undefined {
+    const d = el.parent.parent;
+    if (el.dotDotDotToken || !ts.isObjectBindingPattern(el.parent) || !ts.isVariableDeclaration(d) || !(d.parent.flags & ts.NodeFlags.Const) || !d.initializer) return undefined;
+    const pkg = this.t.resolve(skipCasts(d.initializer));
+    const key = el.propertyName ?? el.name;
+    if (!pkg || !(pkg.flags & ts.SymbolFlags.Namespace) || !this.isNativeSymbol(pkg) || !ts.isIdentifier(key)) return undefined;
+    const member = this.t.checker.tryGetMemberInModuleExports(key.text, pkg);
+    return member && member.flags & ts.SymbolFlags.Class && this.isNativeSymbol(member) ? member : undefined;
   }
 
   /** `const superProto = androidx.fragment.app.Fragment.prototype`: the Java class whose methods it holds. */
@@ -392,6 +404,7 @@ export class AndroidNativeAPI implements KotlinNative {
   private classSymbol(e: ts.Expression): ts.Symbol | undefined {
     const sym = this.t.resolve(e);
     const decl = sym?.valueDeclaration;
+    if (decl && ts.isBindingElement(decl)) return this.destructuredClass(decl) ?? sym;
     return decl && ts.isVariableDeclaration(decl) && this.nativeAlias(decl) ? this.aliasedClass(decl) : sym;
   }
 
@@ -477,7 +490,7 @@ export class AndroidNativeAPI implements KotlinNative {
 
   /** Library mode: a static Java method used as a function value of the type the code gives it (`setPixels: ViewHelper.setMarginTop`). */
   private staticMethodValue(e: ts.PropertyAccessExpression, cls: string): Raw | null {
-    const parts = this.t.library ? functionTypeParts(this.t.typeOf(e).replace(/^\((.*)\)\?$/, '$1')) : null;
+    const parts = functionTypeParts(this.t.typeOf(e).replace(/^\((.*)\)\?$/, '$1'));
     const m = parts && this.methods([cls], e.name.text, true).find((c) => c.params.length === parts.params.length);
     if (!parts || !m) return null;
     const args = m.params.map((desc, k) => {
@@ -1658,7 +1671,10 @@ ${indent}}`;
     if (!(this.t.resolve(callee) ?? this.t.resolve(callee.name))?.declarations?.some((d) => this.isNativeDeclaration(d))) return null;
     const [type, length] = e.arguments;
     let el: string;
-    if (ts.isStringLiteralLike(type)) {
+    if (ts.isStringLiteralLike(type) && /^\[+([ZBCSIJFD]|L[\w.$]+;)$/.test(type.text)) {
+      // A JVM descriptor (`'[I'`): an array of arrays.
+      el = type.text.replace(/\./g, '/');
+    } else if (ts.isStringLiteralLike(type)) {
       const prim = Object.keys(ARRAY_OF).find((k) => ARRAY_OF[k] === type.text);
       const cls = prim ? null : this.classpath.get(type.text.replace(/\./g, '/'));
       if (!prim && !cls) throw this.t.error(type, `Array.create of ${type.text} (no class file of that name on the classpath)`);

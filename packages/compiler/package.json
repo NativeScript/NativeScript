@@ -17,6 +17,7 @@
     "kit-apple/Sources/",
     "kit-apple/Bindings/",
     "kit-android/build.gradle.kts",
+    "kit-android/consumer-rules.pro",
     "kit-android/gradlew",
     "kit-android/gradle/",
     "kit-android/src/",

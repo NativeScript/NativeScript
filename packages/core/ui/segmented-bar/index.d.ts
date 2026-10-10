@@ -76,6 +76,16 @@ export class SegmentedBar extends View implements AddChildFromBuilder, AddArrayF
 	items: Array<SegmentedBarItem>;
 
 	/**
+	 * Gets or sets how Android draws the segments.
+	 * Valid values are:
+	 *  - tabs: tab indicators (the default)
+	 *  - pill: a rounded track with the selected segment as an inset pill, as iOS draws it; titles keep their case
+	 *
+	 * @nsProperty
+	 */
+	androidSegmentStyle: 'tabs' | 'pill';
+
+	/**
 	 * Adds a listener for the specified event name.
 	 *
 	 * @param eventName The name of the event.
@@ -115,6 +125,11 @@ export const selectedBackgroundColorProperty: CssProperty<Style, Color>;
  * Gets or sets the items dependency property of the SegmentedBar.
  */
 export const itemsProperty: Property<SegmentedBar, SegmentedBarItem[]>;
+
+/**
+ * Gets or sets how Android draws the segments of the SegmentedBar.
+ */
+export const androidSegmentStyleProperty: Property<SegmentedBar, 'tabs' | 'pill'>;
 
 /**
  * Gets or sets the selected text color property of the SegmentedBar.

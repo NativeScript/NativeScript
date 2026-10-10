@@ -13,6 +13,7 @@ import { FONT_PREFIX, isFontIconURI } from '../../utils/common';
 import { Frame } from '../frame';
 import { getNativeApp } from '../../application/helpers-common';
 import { AndroidHelper } from '../core/view';
+import { TabNavigation, requireMaterial } from './tab-navigation.android';
 
 export * from './tab-view-common';
 
@@ -389,7 +390,8 @@ export class TabViewItem extends TabViewItemBase {
 	public _update(): void {
 		const tv = this.nativeViewProtected;
 		const tabView = this.parent as TabView;
-		if (tv && tabView) {
+		// A navigation's items have no TextView: the navigation itself takes the update.
+		if ((tv || tabView?._navigation) && tabView) {
 			this.tabItemSpec = createTabItemSpec(this);
 			tabView.updateAndroidItemAt(this.index, this.tabItemSpec);
 		}
@@ -467,6 +469,7 @@ function iterateIndexRange(index: number, eps: number, lastIndex: number, callba
 
 export class TabView extends TabViewBase {
 	private _tabLayout: org.nativescript.widgets.TabLayout;
+	public _navigation: TabNavigation = null;
 	private _viewPager: androidx.viewpager.widget.ViewPager;
 	private _pagerAdapter: androidx.viewpager.widget.PagerAdapter & {
 		items: Array<TabViewItemDefinition>;
@@ -503,6 +506,10 @@ export class TabView extends TabViewBase {
 		initializeNativeClasses();
 		if (Trace.isEnabled()) {
 			Trace.write('TabView._createUI(' + this + ');', traceCategory);
+		}
+
+		if (this.androidTabsStyle === 'navigation') {
+			return this.createNavigationView();
 		}
 
 		const context: android.content.Context = this._context;
@@ -563,6 +570,22 @@ export class TabView extends TabViewBase {
 		return nativeView;
 	}
 
+	private createNavigationView(): org.nativescript.widgets.GridLayout {
+		requireMaterial();
+		const context: android.content.Context = this._context;
+		const nativeView = new org.nativescript.widgets.GridLayout(context);
+		const viewPager = new org.nativescript.widgets.TabViewPager(context);
+		// Navigation bars and rails select by tap only.
+		viewPager.setSwipePageEnabled(false);
+		const adapter = new PagerAdapter(new WeakRef(this));
+		viewPager.setAdapter(adapter);
+		(<any>viewPager).adapter = adapter;
+		(<any>nativeView).viewPager = viewPager;
+		(<any>nativeView).navigation = new TabNavigation(new WeakRef(this), nativeView, viewPager, androidUtils.resources.getPaletteColor(PRIMARY_COLOR, context));
+
+		return nativeView;
+	}
+
 	public initNativeView(): void {
 		super.initNativeView();
 		if (this._androidViewId < 0) {
@@ -576,6 +599,8 @@ export class TabView extends TabViewBase {
 		viewPager.setId(this._androidViewId);
 		this._viewPager = viewPager;
 		this._pagerAdapter = (<any>viewPager).adapter;
+		this._navigation = (<any>nativeView).navigation ?? null;
+		this._navigation?.attach(viewPager);
 	}
 
 	public _loadUnloadTabItems(newIndex: number) {
@@ -585,7 +610,7 @@ export class TabView extends TabViewBase {
 		}
 
 		const lastIndex = items.length - 1;
-		const offsideItems = this.androidTabsPosition === 'top' ? this.androidOffscreenTabLimit : 1;
+		const offsideItems = this.androidTabsPosition === 'top' && !this._navigation ? this.androidOffscreenTabLimit : 1;
 
 		const toUnload = [];
 		const toLoad = [];
@@ -643,7 +668,12 @@ export class TabView extends TabViewBase {
 	}
 
 	public disposeNativeView() {
-		this._tabLayout.setItems(null, null);
+		if (this._navigation) {
+			this._navigation.dispose();
+			this._navigation = null;
+		} else {
+			this._tabLayout.setItems(null, null);
+		}
 		this._pagerAdapter = null;
 
 		this._tabLayout = null;
@@ -718,7 +748,11 @@ export class TabView extends TabViewBase {
 
 			const length = items ? items.length : 0;
 			if (length === 0) {
-				this._tabLayout.setItems(null, null);
+				if (this._navigation) {
+					this._navigation.clear();
+				} else {
+					this._tabLayout.setItems(null, null);
+				}
 				this._pagerAdapter.notifyDataSetChanged();
 
 				return;
@@ -731,6 +765,13 @@ export class TabView extends TabViewBase {
 				item.tabItemSpec = tabItemSpec;
 				tabItems.push(tabItemSpec);
 			});
+
+			if (this._navigation) {
+				this._navigation.setItems(tabItems, this.selectedIndex, this.colorOf(this.style.tabTextColor), this.colorOf(this.style.selectedTabTextColor));
+				this._pagerAdapter.notifyDataSetChanged();
+
+				return;
+			}
 
 			const tabLayout = this._tabLayout;
 			tabLayout.setItems(tabItems, this._viewPager);
@@ -753,7 +794,20 @@ export class TabView extends TabViewBase {
 		}
 	}
 
+	private colorOf(value: Color | number): number | null {
+		return value instanceof Color ? value.android : null;
+	}
+
+	private applyNavigationColors(): void {
+		this._navigation.applyColors(this.colorOf(this.style.tabTextColor), this.colorOf(this.style.selectedTabTextColor));
+	}
+
 	public updateAndroidItemAt(index: number, spec: org.nativescript.widgets.TabItemSpec) {
+		if (this._navigation) {
+			this._navigation.updateItem(index, spec);
+
+			return;
+		}
 		this._tabLayout.updateItemAt(index, spec);
 	}
 
@@ -761,28 +815,34 @@ export class TabView extends TabViewBase {
 		return this._viewPager.getOffscreenPageLimit();
 	}
 	[androidOffscreenTabLimitProperty.setNative](value: number) {
-		this._viewPager.setOffscreenPageLimit(this.androidTabsPosition === 'top' ? value : 1);
+		this._viewPager.setOffscreenPageLimit(this.androidTabsPosition === 'top' && !this._navigation ? value : 1);
 	}
 
 	[androidIconRenderingModeProperty.getDefault](): 'alwaysOriginal' | 'alwaysTemplate' {
 		return 'alwaysOriginal';
 	}
 	[androidIconRenderingModeProperty.setNative](value: 'alwaysOriginal' | 'alwaysTemplate') {
+		if (this._navigation) {
+			this.applyNavigationColors();
+
+			return;
+		}
 		this._tabLayout.setIconRenderingMode(this.getNativeRenderingMode(value));
 	}
 
 	[androidTabsPositionProperty.setNative](value: 'top' | 'bottom') {
-		this._viewPager.setOffscreenPageLimit(value === 'top' ? this.androidOffscreenTabLimit : 1);
+		this._viewPager.setOffscreenPageLimit(value === 'top' && !this._navigation ? this.androidOffscreenTabLimit : 1);
 	}
 
 	[selectedIndexProperty.setNative](value: number) {
-		const smoothScroll = this.androidTabsPosition === 'top';
+		const smoothScroll = this.androidTabsPosition === 'top' && !this._navigation;
 
 		if (Trace.isEnabled()) {
 			Trace.write('TabView this._viewPager.setCurrentItem(' + value + ', ' + smoothScroll + ');', traceCategory);
 		}
 
 		this._viewPager.setCurrentItem(value, smoothScroll);
+		this._navigation?.check(value);
 	}
 
 	[itemsProperty.getDefault](): TabViewItem[] {
@@ -794,9 +854,14 @@ export class TabView extends TabViewBase {
 	}
 
 	[tabBackgroundColorProperty.getDefault](): android.graphics.drawable.Drawable {
-		return this._tabLayout.getBackground();
+		return (this._navigation?.bar ?? this._tabLayout).getBackground();
 	}
 	[tabBackgroundColorProperty.setNative](value: android.graphics.drawable.Drawable | Color) {
+		if (this._navigation) {
+			this._navigation.setBackground(value instanceof Color ? value.android : null, value instanceof Color ? null : AndroidHelper.getCopyOrDrawable(value, this.nativeViewProtected.getResources()));
+
+			return;
+		}
 		if (value instanceof Color) {
 			this._tabLayout.setBackgroundColor(value.android);
 		} else {
@@ -805,9 +870,13 @@ export class TabView extends TabViewBase {
 	}
 
 	[tabTextFontSizeProperty.getDefault](): number {
-		return this._tabLayout.getTabTextFontSize();
+		return this._navigation ? -1 : this._tabLayout.getTabTextFontSize();
 	}
 	[tabTextFontSizeProperty.setNative](value: number | { nativeSize: number }) {
+		// A navigation's label size comes from the theme (itemTextAppearanceActive/Inactive).
+		if (this._navigation) {
+			return;
+		}
 		if (typeof value === 'number') {
 			this._tabLayout.setTabTextFontSize(value);
 		} else {
@@ -816,17 +885,27 @@ export class TabView extends TabViewBase {
 	}
 
 	[tabTextColorProperty.getDefault](): number {
-		return this._tabLayout.getTabTextColor();
+		return this._navigation ? 0 : this._tabLayout.getTabTextColor();
 	}
 	[tabTextColorProperty.setNative](value: number | Color) {
+		if (this._navigation) {
+			this.applyNavigationColors();
+
+			return;
+		}
 		const color = value instanceof Color ? value.android : value;
 		this._tabLayout.setTabTextColor(color);
 	}
 
 	[selectedTabTextColorProperty.getDefault](): number {
-		return this._tabLayout.getSelectedTabTextColor();
+		return this._navigation ? 0 : this._tabLayout.getSelectedTabTextColor();
 	}
 	[selectedTabTextColorProperty.setNative](value: number | Color) {
+		if (this._navigation) {
+			this.applyNavigationColors();
+
+			return;
+		}
 		const color = value instanceof Color ? value.android : value;
 		this._tabLayout.setSelectedTabTextColor(color);
 	}
@@ -837,6 +916,11 @@ export class TabView extends TabViewBase {
 	[androidSelectedTabHighlightColorProperty.setNative](value: number | Color) {
 		const tabLayout = this._tabLayout;
 		const color = value instanceof Color ? value.android : value;
+		if (this._navigation) {
+			this._navigation.setIndicatorColor(color);
+
+			return;
+		}
 		tabLayout.setSelectedIndicatorColors([color]);
 	}
 }

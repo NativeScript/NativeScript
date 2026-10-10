@@ -30,6 +30,10 @@ export interface PluginNativeAndroid {
   repositories: string[];
   /** The app's minimum SDK: the kit's, or the highest a plugin asks for. */
   minSdk: number;
+  /** Dependency constraints the plugins declare. */
+  constraints: { configuration: 'implementation' | 'compileOnly' | 'runtimeOnly'; coords: string }[];
+  /** Packaging excludes and pick-firsts the plugins declare. */
+  packaging: { excludes: string[]; pickFirsts: string[] };
   /** R8 rules keeping every class the plugins ship: the app's code reaches them by name. */
   keepRules: string[];
 }
@@ -125,6 +129,8 @@ export function pluginNativeAndroid(sources: PluginSource[], options: AndroidPlu
     dependencies: [...new Map(dependencies.map((d) => [`${d.configuration} ${d.coords}`, d])).values()],
     repositories: [...new Set(includes.flatMap((i) => i.repositories))],
     minSdk: Math.max(KIT_MIN_SDK, ...includes.map((i) => i.minSdk ?? 0)),
+    constraints: [...new Map(includes.flatMap((i) => i.constraints).map((d) => [`${d.configuration} ${d.coords}`, d])).values()],
+    packaging: { excludes: [...new Set(includes.flatMap((i) => i.packaging.excludes))], pickFirsts: [...new Set(includes.flatMap((i) => i.packaging.pickFirsts))] },
     keepRules: topPackages(archives.flatMap(archiveClasses)).map(keepRule),
   };
 }
@@ -234,6 +240,10 @@ export interface IncludeGradle {
   /** Repository URLs beyond Google's and Maven Central. */
   repositories: string[];
   minSdk: number | null;
+  /** `dependencies { constraints { … } }`: versions the app's resolution must respect. */
+  constraints: PluginNativeAndroid['dependencies'];
+  /** `android { packagingOptions { exclude …; pickFirst … } }`. */
+  packaging: { excludes: string[]; pickFirsts: string[] };
   /** Its `import` lines and its `dependencies` and `repositories` blocks as written, for the plugin's own build. */
   imports: string[];
   libraryBlocks: string[];
@@ -256,11 +266,11 @@ export function parseIncludeGradle(text: string): IncludeGradle {
   const tokens = lex(text);
   const lines = text.split('\n');
   let i = 0;
-  const out: IncludeGradle = { dependencies: [], repositories: [], minSdk: null, imports: [], libraryBlocks: [] };
+  const out: IncludeGradle = { dependencies: [], repositories: [], minSdk: null, constraints: [], packaging: { excludes: [], pickFirsts: [] }, imports: [], libraryBlocks: [] };
   const peek = (k = 0) => tokens[Math.min(i + k, tokens.length - 1)];
   const is = (t: Token, kind: Token['kind'], text?: string) => t.kind === kind && (text === undefined || t.text === text);
   const unsupported = (t: Token): never => {
-    throw new Error(`line ${t.line}: \`${lines[t.line - 1].trim()}\` would change the app's build; only dependencies, repositories and minSdkVersion are read from include.gradle so far`);
+    throw new Error(`line ${t.line}: \`${lines[t.line - 1].trim()}\` would change the app's build; only dependencies (and their constraints), repositories, minSdkVersion, multiDexEnabled and packagingOptions are read from include.gradle so far`);
   };
   const expect = (kind: Token['kind'], text?: string) => {
     const t = peek();
@@ -326,6 +336,20 @@ export function parseIncludeGradle(text: string): IncludeGradle {
     } else if (blockOf('dependencies')) {
       i++;
       const close = statements((s) => {
+        if (blockOf('constraints')) {
+          i++;
+          statements((c) => {
+            const configuration = CONFIGURATIONS[c.text];
+            if (!is(c, 'id') || !configuration) unsupported(c);
+            i++;
+            const coords = stringArgument();
+            if (!/^[\w.-]+:[\w.-]+:[^:\s]+$/.test(coords)) unsupported(c);
+            // `{ because("…") }`: documentation only.
+            if (is(peek(), 'punct', '{')) skipBlock();
+            out.constraints.push({ configuration, coords });
+          });
+          return;
+        }
         const configuration = CONFIGURATIONS[s.text];
         if (!is(s, 'id') || !configuration) unsupported(s);
         i++;
@@ -334,30 +358,40 @@ export function parseIncludeGradle(text: string): IncludeGradle {
         out.dependencies.push({ configuration, coords });
       });
       out.libraryBlocks.push(text.slice(t.start, close.end));
+    } else if (blockOf('allprojects')) {
+      // Only repositories: what every project resolves from is what the app resolves from.
+      i++;
+      statements((s) => {
+        if (!blockOf('repositories')) unsupported(s);
+        i++;
+        repositories();
+      });
     } else if (blockOf('repositories')) {
       i++;
-      const close = statements((s) => {
-        if (is(s, 'id') && KNOWN_REPOSITORIES.has(s.text)) { i++; expect('punct', '('); expect('punct', ')'); return; }
-        if (!is(s, 'id', 'maven')) unsupported(s);
-        i++;
-        let url: string | null = null;
-        statements((m) => {
-          if (!is(m, 'id', 'url') || url) unsupported(m);
-          i++;
-          if (is(peek(), 'punct', '=')) i++;
-          if (is(peek(), 'id', 'uri')) i++;
-          url = stringArgument();
-        });
-        if (!url) unsupported(s);
-        out.repositories.push(url!);
-      });
+      const close = repositories();
       out.libraryBlocks.push(text.slice(t.start, close.end));
     } else if (blockOf('android')) {
       i++;
       statements((s) => {
+        if (blockOf('packagingOptions') || blockOf('packaging')) {
+          i++;
+          statements((p) => {
+            const list = is(p, 'id', 'exclude') ? out.packaging.excludes : is(p, 'id', 'pickFirst') ? out.packaging.pickFirsts : unsupported(p);
+            i++;
+            list.push(stringArgument());
+          });
+          return;
+        }
         if (!is(s, 'id', 'defaultConfig')) unsupported(s);
         i++;
         statements((d) => {
+          // Native multidex from minSdk 21; the kit's minimum is above it.
+          if (is(d, 'id', 'multiDexEnabled')) {
+            i++;
+            if (is(peek(), 'punct', '=')) i++;
+            expect('id', 'true');
+            return;
+          }
           if (!is(d, 'id', 'minSdkVersion') && !is(d, 'id', 'minSdk')) unsupported(d);
           i++;
           if (is(peek(), 'punct', '=')) i++;
@@ -370,6 +404,24 @@ export function parseIncludeGradle(text: string): IncludeGradle {
     } else if (!tempBuildBranch()) unsupported(t);
   }
   return out;
+
+  function repositories(): Token {
+    return statements((s) => {
+      if (is(s, 'id') && KNOWN_REPOSITORIES.has(s.text)) { i++; expect('punct', '('); expect('punct', ')'); return; }
+      if (!is(s, 'id', 'maven')) unsupported(s);
+      i++;
+      let url: string | null = null;
+      statements((m) => {
+        if (!is(m, 'id', 'url') || url) unsupported(m);
+        i++;
+        if (is(peek(), 'punct', '=')) i++;
+        if (is(peek(), 'id', 'uri')) i++;
+        url = stringArgument();
+      });
+      if (!url) unsupported(s);
+      out.repositories.push(url!);
+    });
+  }
 }
 
 function nextSignificant(tokens: Token[], from: number): Token | undefined {

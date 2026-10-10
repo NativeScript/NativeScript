@@ -35,6 +35,7 @@ export abstract class SegmentedBarBase extends View implements SegmentedBarDefin
 
 	public selectedIndex: number;
 	public items: Array<SegmentedBarItemDefinition>;
+	public androidSegmentStyle: 'tabs' | 'pill';
 
 	public get selectedBackgroundColor(): Color {
 		return this.style.selectedBackgroundColor;
@@ -154,6 +155,12 @@ export const itemsProperty = new Property<SegmentedBarBase, SegmentedBarItemDefi
 	},
 });
 itemsProperty.register(SegmentedBarBase);
+
+export const androidSegmentStyleProperty = new Property<SegmentedBarBase, 'tabs' | 'pill'>({
+	name: 'androidSegmentStyle',
+	defaultValue: 'tabs',
+});
+androidSegmentStyleProperty.register(SegmentedBarBase);
 
 export const selectedBackgroundColorProperty = new InheritedCssProperty<Style, Color>({
 	name: 'selectedBackgroundColor',

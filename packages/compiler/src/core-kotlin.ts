@@ -70,7 +70,7 @@ export function kotlinKitIndex(sources: string | string[]): Map<string, KitType>
           let m: RegExpExecArray | null;
           const made = /^\s*override\s+fun\s+createNativeView\(\)\s*:\s*NativeView\s*=\s*([\w.]+)\(/.exec(line);
           if (made) owner.type.native = imports.get(made[1]) ?? made[1];
-          if ((m = /^\s*(?:(?:override|open|final|lateinit|const|abstract|protected|public)\s+)*(?:val|var)\s+`?(\w+)`?\s*:\s*([^={]+)/.exec(line))) add(owner.type, m[1], { kind: 'var', static: isStatic, type: m[2].trim().replace(/\s+get\(\).*$/, '') });
+          if ((m = /^\s*(?:@\w+\s+)*(?:(?:override|open|final|lateinit|const|abstract|protected|public)\s+)*(?:val|var)\s+`?(\w+)`?\s*:\s*([^={]+)/.exec(line))) add(owner.type, m[1], { kind: 'var', static: isStatic, type: m[2].trim().replace(/\s+get\(\).*$/, '') });
           else if ((m = /^\s*(?:(?:override|open|final|abstract|inline|operator|protected|public)\s+)*fun\s+(?:<[^>]*>\s*)?`?(\w+)`?\s*\(/.exec(line))) {
             const [params, rest] = parenthesized(line, m.index + m[0].length);
             add(owner.type, m[1], { kind: 'func', static: isStatic, type: (/^\s*:\s*([^={]+)/.exec(rest)?.[1] ?? 'Unit').trim(), params });
@@ -201,12 +201,24 @@ export class CoreKotlin implements KotlinCore {
       const nested = outer?.isStatic ? outer.name + e.name.text[0].toUpperCase() + e.name.text.slice(1) : '';
       if (nested && this.index.has(nested)) return { name: nested, isStatic: true };
     }
+    // A core namespace re-exported by another module (`Utils.layout`): the generated kit's object for it.
+    if (this.generated && ts.isPropertyAccessExpression(e)) {
+      const sym = this.aliased(e.name);
+      const decl = sym?.valueDeclaration ?? sym?.declarations?.[0];
+      if (sym && sym.flags & ts.SymbolFlags.ValueModule && isCoreDeclaration(decl)) {
+        const module = (this.index.get(sym.name) as KitType & { object?: boolean } | undefined)?.object ? sym.name : this.moduleObject(decl!);
+        if (module) return { name: module, isStatic: true };
+      }
+    }
     if (ts.isIdentifier(e)) {
       const sym = this.t.resolve(e);
       const decl = sym?.declarations?.[0];
       if (sym && isCoreDeclaration(decl) && (sym.flags & (ts.SymbolFlags.Class | ts.SymbolFlags.ValueModule | ts.SymbolFlags.Variable))) {
         if (sym.flags & ts.SymbolFlags.ValueModule) {
-          const module = this.generated ? this.moduleObject(sym.valueDeclaration ?? decl!) : null;
+          // A namespace core declares (`knownFolders`): the kit's object of that name.
+          const value = sym.valueDeclaration ?? decl!;
+          if (this.generated && ts.isModuleDeclaration(value) && (this.index.get(sym.name) as KitType & { object?: boolean } | undefined)?.object) return { name: sym.name, isStatic: true };
+          const module = this.generated ? this.moduleObject(value) : null;
           return { name: module ?? e.text, isStatic: true };
         }
         if (sym.flags & ts.SymbolFlags.Class) return { name: sym.name, isStatic: true };
@@ -239,6 +251,25 @@ export class CoreKotlin implements KotlinCore {
     // The generated kit holds a core interface it has no class for (`PromptResult`) as a plain object: read as script reads it.
     if (this.generated && (this.type(type) === 'Any?' || (!(sym.flags & ts.SymbolFlags.Class) && !this.index.has(KIT_NAMES_ANDROID[name] ?? name)))) return null;
     return { name: KIT_NAMES_ANDROID[name] ?? name, isStatic: false };
+  }
+
+  private aliased(n: ts.Node): ts.Symbol | undefined {
+    const c = this.t.checker;
+    const sym = c.getSymbolAtLocation(n);
+    return sym && sym.flags & ts.SymbolFlags.Alias ? c.getAliasedSymbol(sym) : sym;
+  }
+
+  /**
+   * The owner of `target.name`, where a module object lacks a member another module declares and it re-exports
+   * (`Utils.android` of utils/index is utils/native-helper's): that module's object.
+   */
+  private ownerOf(target: ts.Expression, name: ts.MemberName): { name: string; isStatic: boolean } | null {
+    const owner = this.mixinOwn(name) ? null : this.owner(target) ?? this.inheritedOwner(target, name);
+    if (!owner || !this.generated || !owner.isStatic || !owner.name.startsWith('Core_') || kitMember(this.index, owner.name, name.text)) return owner;
+    const sym = this.aliased(name);
+    const decl = sym?.valueDeclaration ?? sym?.declarations?.[0];
+    const module = decl && isCoreDeclaration(decl) ? this.moduleObject(decl) : null;
+    return module && kitMember(this.index, module, name.text) ? { name: module, isStatic: true } : owner;
   }
 
   /** A core member read through a class of the app or a plugin that extends a core class (`this.isPassThroughParentEnabled` in a GridLayout subclass). */
@@ -280,6 +311,12 @@ export class CoreKotlin implements KotlinCore {
     return [t.str(event), t.coerce(callback, '(EventData) -> Unit'), thisArg ? t.coerce(thisArg, 'Any?') : 'null', ...between, key];
   }
 
+  /** The generated kit's name for a method named as a property's JVM accessor (`getRootView` beside `rootView` is `getRootView_`; kotlin.ts' methodIdent). */
+  private kitName(owner: string, name: string): string {
+    if (!this.generated || kitMember(this.index, owner, name) || !/^(get|set|is)[A-Z]/.test(name)) return name;
+    return kitMember(this.index, owner, `${name}_`) ? `${name}_` : name;
+  }
+
   private member(owner: string, name: string, e: ts.Node): KitMember {
     const m = kitMember(this.index, owner, name);
     if (!m) throw this.t.error(e, `${owner}.${name} (kit-android has no such member)`);
@@ -301,10 +338,10 @@ export class CoreKotlin implements KotlinCore {
   property(e: ts.PropertyAccessExpression): string | null {
     const constant = this.constant(e);
     if (constant !== null) return constant;
-    const owner = this.mixinOwn(e.name) ? null : this.owner(e.expression) ?? this.inheritedOwner(e.expression, e.name);
+    const owner = this.ownerOf(e.expression, e.name);
     if (!owner) return null;
     const t = this.t;
-    const name = e.name.text;
+    const name = this.kitName(owner.name, e.name.text);
     const recv = owner.isStatic ? this.declaring(owner.name, e.name.text) : this.receiver(e.expression, e);
     // The other platform's native view: undefined, as on Android.
     if (!owner.isStatic && name === 'ios' && this.isView(owner.name)) return 'null';
@@ -342,14 +379,14 @@ export class CoreKotlin implements KotlinCore {
   }
 
   lvalue(e: ts.PropertyAccessExpression): string | null {
-    const owner = this.mixinOwn(e.name) ? null : this.owner(e.expression) ?? this.inheritedOwner(e.expression, e.name);
+    const owner = this.ownerOf(e.expression, e.name);
     if (!owner) return null;
     const m = kitMember(this.index, owner.name, e.name.text);
     return m ? `${owner.isStatic ? this.declaring(owner.name, e.name.text) : this.t.expr(e.expression)}.${e.name.text}` : null;
   }
 
   assign(left: ts.PropertyAccessExpression, value: ts.Expression): string | null {
-    const owner = this.mixinOwn(left.name) ? null : this.owner(left.expression) ?? this.inheritedOwner(left.expression, left.name);
+    const owner = this.ownerOf(left.expression, left.name);
     if (!owner) return null;
     const t = this.t;
     const name = left.name.text;
@@ -371,10 +408,10 @@ export class CoreKotlin implements KotlinCore {
     if (e.expression.getText() === 'CoreTypes.AnimationCurve.cubicBezier' && isCoreDeclaration(this.t.resolve(e.expression.name)?.declarations?.[0])) {
       return `CubicBezierAnimationCurve(${e.arguments.map((a) => this.t.coerce(a, 'Double')).join(', ')})`;
     }
-    const owner = this.mixinOwn(e.expression.name) ? null : this.owner(e.expression.expression) ?? this.inheritedOwner(e.expression.expression, e.expression.name);
+    const owner = this.ownerOf(e.expression.expression, e.expression.name);
     if (!owner) return null;
     const t = this.t;
-    const name = e.expression.name.text;
+    const name = this.kitName(owner.name, e.expression.name.text);
     const m = this.member(owner.name, name, e.expression);
     const recv = owner.isStatic ? this.declaring(owner.name, name) : this.receiver(e.expression.expression, e.expression);
     if (name === 'navigate' && kitExtends(this.index, owner.name, 'Frame')) return this.navigate(recv, e);

@@ -100,6 +100,7 @@ export class TabViewBase extends View implements TabViewDefinition, AddChildFrom
 	public selectedIndex: number;
 	public androidOffscreenTabLimit: number;
 	public androidTabsPosition: 'top' | 'bottom';
+	public androidTabsStyle: 'tabs' | 'navigation';
 	public androidSwipeEnabled: boolean;
 	public iosIconRenderingMode: 'automatic' | 'alwaysOriginal' | 'alwaysTemplate';
 	public androidIconRenderingMode: 'alwaysOriginal' | 'alwaysTemplate';
@@ -312,6 +313,12 @@ export const androidTabsPositionProperty = new Property<TabViewBase, 'top' | 'bo
 	defaultValue: 'top',
 });
 androidTabsPositionProperty.register(TabViewBase);
+
+export const androidTabsStyleProperty = new Property<TabViewBase, 'tabs' | 'navigation'>({
+	name: 'androidTabsStyle',
+	defaultValue: 'tabs',
+});
+androidTabsStyleProperty.register(TabViewBase);
 
 export const androidSwipeEnabledProperty = new Property<TabViewBase, boolean>({
 	name: 'androidSwipeEnabled',

@@ -9,6 +9,7 @@ android {
 
     defaultConfig {
         minSdk = 24
+        consumerProguardFiles("consumer-rules.pro")
     }
 
     compileOptions {
@@ -46,4 +47,6 @@ dependencies {
     api("androidx.core:core:1.13.0")
     implementation("androidx.transition:transition:1.5.1")
     implementation("androidx.exifinterface:exifinterface:1.3.7")
+    // Core draws TabView's androidTabsStyle 'navigation' with Material and checks for it at runtime: an app using it adds Material.
+    compileOnly("com.google.android.material:material:1.8.0")
 }

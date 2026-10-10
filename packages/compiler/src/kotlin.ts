@@ -1294,7 +1294,9 @@ export class Translator implements AsyncTranslator {
     if (this.protocols.has(name)) { this.interfaces.set(name, { file, code: () => this.protocolCode(name, this.library ? this.withInherited(decl, members) : members) }); return; }
     const typeParams = (ts.isInterfaceDeclaration(decl) || ts.isTypeAliasDeclaration(decl)) ? decl.typeParameters : undefined;
     // Library mode: its type parameters erased, as the program's are (`PropertyOptions<T, U>` of untyped values).
-    if (typeParams?.length && !this.library) throw this.error(decl, 'a generic interface used as an object type');
+    // Parameters constrained to a primitive (`Option extends string`) erase to it, as the values they type are of it.
+    const primitive = (p: ts.TypeParameterDeclaration) => !!p.constraint && [ts.SyntaxKind.StringKeyword, ts.SyntaxKind.NumberKeyword, ts.SyntaxKind.BooleanKeyword].includes(p.constraint.kind);
+    if (typeParams?.length && !this.library && !typeParams.every(primitive)) throw this.error(decl, 'a generic interface used as an object type');
     this.interfaces.set(name, { file, code: () => this.objectClass(name, members.filter((m, k) => (ts.isPropertySignature(m) || ts.isMethodSignature(m)) && members.findIndex((x) => x.name?.getText() === m.name?.getText()) === k).map((m) => {
       const t = this.typeOf(m);
       return { name: (m.name as ts.Identifier).text, type: m.questionToken ? optionalType(t) : t };
@@ -4214,6 +4216,8 @@ export class Translator implements AsyncTranslator {
       const constant = LIB_CONSTANTS[`${target.text}.${name}`];
       if (constant) return constant;
       if (`${target.text}.${name}` === 'Date.now') return '{ JSDate.now() }';
+      // `const round = Math.round`: the function as a value.
+      if (target.text === 'Math' && MATH_UNARY[name]) return `{ __x: Double -> ${MATH_UNARY[name]}(__x) }`;
       throw this.error(e, `${target.text}.${name}`);
     }
     const enumMember = this.checker.getSymbolAtLocation(e.name)?.valueDeclaration;
@@ -4742,7 +4746,7 @@ export class Translator implements AsyncTranslator {
       }
       const t = this.typeOf(target).replace(/\?$/, '');
       const q = callee.questionDotToken || (callee.flags & ts.NodeFlags.OptionalChain && this.typeOf(target).endsWith('?')) ? '?' : this.typeOf(target).endsWith('?') ? '!!' : '';
-      if (method === 'fill' && ts.isNewExpression(target) && ts.isIdentifier(target.expression) && target.expression.text === 'Array' && target.arguments?.length === 1 && e.arguments.length === 1) {
+      if (method === 'fill' && (ts.isNewExpression(target) || ts.isCallExpression(target)) && ts.isIdentifier(target.expression) && target.expression.text === 'Array' && target.arguments?.length === 1 && e.arguments.length === 1) {
         return `jsArrayFilled<${t.replace(/^JSArray<(.*)>$/, '$1')}>(${this.toNumber(target.arguments[0])}, ${this.coerce(e.arguments[0], t.replace(/^JSArray<(.*)>$/, '$1'))})`;
       }
       if (t.startsWith('JSArray<')) return this.arrayMethod(method, target, e, q);
@@ -5009,8 +5013,9 @@ export class Translator implements AsyncTranslator {
         case 'encodeURIComponent': case 'encodeURI': case 'decodeURIComponent': case 'decodeURI':
           return `js${name[0].toUpperCase()}${name.slice(1)}(${this.str(arg(0))})`;
       }
-      // `Error('x')` constructs as `new Error('x')` does.
+      // `Error('x')` constructs as `new Error('x')` does; so does `Array(n)`.
       if (ERRORS[name]) return this.errorValue(name, e.arguments);
+      if (name === 'Array' && this.isLibGlobal(callee as ts.Identifier)) return this.arrayConstruct(e, this.typeOf(e), e.arguments);
       if (decl && /[\\/]lib\.[\w.]*\.d\.ts$/.test(decl.getSourceFile().fileName)) throw this.error(e, `${name}()`);
     }
     const resolvers = this.resolvers.get(this.resolve(callee)!);
@@ -5285,12 +5290,7 @@ export class Translator implements AsyncTranslator {
   private math(name: string, e: ts.CallExpression): string {
     if ((name === 'max' || name === 'min') && e.arguments.some(ts.isSpreadElement)) return `jsMath${name === 'max' ? 'Max' : 'Min'}Of(${this.packed(e.arguments, 'JSArray<Double>')})`;
     const a = e.arguments.map((x) => this.coerce(x, 'Double'));
-    const one: Record<string, string> = {
-      floor: 'Math.floor', ceil: 'Math.ceil', abs: 'Math.abs', sqrt: 'Math.sqrt', cbrt: 'Math.cbrt', trunc: 'jsTrunc',
-      sin: 'Math.sin', cos: 'Math.cos', tan: 'Math.tan', asin: 'Math.asin', acos: 'Math.acos', atan: 'Math.atan',
-      exp: 'Math.exp', log: 'Math.log', log2: 'jsLog2', log10: 'Math.log10', log1p: 'Math.log1p', expm1: 'Math.expm1',
-      sinh: 'Math.sinh', cosh: 'Math.cosh', tanh: 'Math.tanh', sign: 'jsSign', round: 'jsRound', fround: 'jsFround', clz32: 'jsClz32',
-    };
+    const one = MATH_UNARY;
     if (one[name]) return `${one[name]}(${a[0]})`;
     switch (name) {
       case 'pow': return `jsPow(${a[0]}, ${a[1]})`;
@@ -5626,7 +5626,15 @@ export class Translator implements AsyncTranslator {
     if (name === 'Object' && this.isLibGlobal(callee as ts.Identifier) && !args.length) return 'JSObject()';
     if (name === 'WeakRef' && this.isLibGlobal(callee as ts.Identifier)) return `${t}(${this.expr(args[0])}${this.library && (this.typeOf(args[0]) === 'Any?' || isNullable(this.declaredTypeOf(args[0]) ?? this.typeOf(args[0]))) ? '!!' : ''})`;
     if ((name === 'WeakMap' || name === 'WeakSet') && this.isLibGlobal(callee as ts.Identifier)) return args.length ? `${t}(${this.iterable(args[0])})` : `${t}()`;
-    if (name === 'Array' && this.isLibGlobal(callee as ts.Identifier)) {
+    if (name === 'Array' && this.isLibGlobal(callee as ts.Identifier)) return this.arrayConstruct(e, t, args);
+    const core = this.core?.construct(e) ?? this.native?.construct(e);
+    if (core) return core;
+    return this.newExprRest(e, t, callee, name, args);
+  }
+
+  /** `new Array(…)`, or `Array(…)`, which constructs the same. */
+  private arrayConstruct(e: ts.NewExpression | ts.CallExpression, t: string, args: ts.NodeArray<ts.Expression>): string {
+    {
       const el = t.replace(/^JSArray<(.*)>$/, '$1');
       if (args.length !== 1) return args.length ? `jsArrayOf<${el}>(${args.map((a) => this.coerce(a, el)).join(', ')})` : `${t}()`;
       if (this.typeOf(args[0]) !== 'Double') {
@@ -5639,8 +5647,9 @@ export class Translator implements AsyncTranslator {
       if (el.endsWith('?') || ['Double', 'String', 'Boolean'].includes(el)) return `jsArrayFilled<${el}>(${this.expr(args[0])}, ${this.zero(el)})`;
       throw this.error(e, `new Array of a length, of ${el} (empty slots need an optional element type)`);
     }
-    const core = this.core?.construct(e) ?? this.native?.construct(e);
-    if (core) return core;
+  }
+
+  private newExprRest(e: ts.NewExpression, t: string, callee: ts.Expression, name: string, args: ts.NodeArray<ts.Expression>): string {
     // `new Trace.Writer()`: a namespace's class.
     if (ts.isPropertyAccessExpression(callee) && this.namespaceMember(callee)) return `${t}(${this.args(e).join(', ')})`;
     if (ts.isIdentifier(callee)) {
@@ -6507,6 +6516,14 @@ function thisNodes(fn: ts.Node): ts.Node[] {
   visit(fn);
   return out;
 }
+
+/** Math's one-argument functions, as Kotlin calls them. */
+const MATH_UNARY: Record<string, string> = {
+  floor: 'Math.floor', ceil: 'Math.ceil', abs: 'Math.abs', sqrt: 'Math.sqrt', cbrt: 'Math.cbrt', trunc: 'jsTrunc',
+  sin: 'Math.sin', cos: 'Math.cos', tan: 'Math.tan', asin: 'Math.asin', acos: 'Math.acos', atan: 'Math.atan',
+  exp: 'Math.exp', log: 'Math.log', log2: 'jsLog2', log10: 'Math.log10', log1p: 'Math.log1p', expm1: 'Math.expm1',
+  sinh: 'Math.sinh', cosh: 'Math.cosh', tanh: 'Math.tanh', sign: 'jsSign', round: 'jsRound', fround: 'jsFround', clz32: 'jsClz32',
+};
 
 const LIB_CONSTANTS: Record<string, string> = {
   'Math.PI': 'Math.PI', 'Math.E': 'Math.E', 'Math.LN2': '0.6931471805599453', 'Math.LN10': '2.302585092994046', 'Math.LOG2E': '1.4426950408889634', 'Math.LOG10E': '0.4342944819032518', 'Math.SQRT2': '1.4142135623730951', 'Math.SQRT1_2': '0.7071067811865476',

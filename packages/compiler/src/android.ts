@@ -73,6 +73,19 @@ export interface AndroidBuild {
   cssAST?: string;
 }
 
+/** `packaging { … }` from what the plugins' include.gradle files exclude and pick first: native libraries under jniLibs, the rest resources. */
+function packagingBlock(p: { excludes: string[]; pickFirsts: string[] }): string {
+  const so = (f: string) => f.endsWith('.so');
+  const set = (items: string[]) => `setOf(${items.map(kotlinString).join(', ')})`;
+  const lines = [
+    ...(p.excludes.some(so) ? [`jniLibs.excludes += ${set(p.excludes.filter(so))}`] : []),
+    ...(p.pickFirsts.some(so) ? [`jniLibs.pickFirsts += ${set(p.pickFirsts.filter(so))}`] : []),
+    ...(p.excludes.some((f) => !so(f)) ? [`resources.excludes += ${set(p.excludes.filter((f) => !so(f)))}`] : []),
+    ...(p.pickFirsts.some((f) => !so(f)) ? [`resources.pickFirsts += ${set(p.pickFirsts.filter((f) => !so(f)))}`] : []),
+  ];
+  return lines.length ? `\n    packaging {\n${lines.map((l) => `        ${l}\n`).join('')}    }\n` : '';
+}
+
 /** The flexbox react-nativescript-navigation's FrameNavigatorView renders a screen into. */
 const REACT_SCREEN_CONTENT = { flexGrow: '1', flexDirection: 'column', width: '100%', height: '100%' };
 
@@ -245,7 +258,7 @@ ${['java', 'assets'].filter((d) => existsSync(join(main, d))).map((d) => `    so
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-}
+${packagingBlock(native.packaging)}}
 
 kotlin {
     compilerOptions { jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17) }
@@ -253,7 +266,7 @@ kotlin {
 
 dependencies {
     implementation(project(":kit"))
-${native.archives.map((a) => `    implementation(files(${kotlinString(a)}))\n`).join('')}${native.dependencies.map((d) => `    ${d.configuration}(${kotlinString(d.coords)})\n`).join('')}}
+${native.archives.map((a) => `    implementation(files(${kotlinString(a)}))\n`).join('')}${native.dependencies.map((d) => `    ${d.configuration}(${kotlinString(d.coords)})\n`).join('')}${native.constraints.length ? `    constraints {\n${native.constraints.map((d) => `        ${d.configuration}(${kotlinString(d.coords)})\n`).join('')}    }\n` : ''}}
 ${overlays.length ? `
 // The plugins' manifests, merged into the app's as the plugins' own would be.
 androidComponents {

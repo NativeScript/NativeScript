@@ -95,3 +95,12 @@ describe('TabViewBase._isChildPresented', () => {
 		expect(tabView._isChildPresented(second)).toBe(false);
 	});
 });
+
+describe('TabViewBase.androidTabsStyle', () => {
+	it('defaults to tabs and accepts navigation', () => {
+		const tabView = new TabViewBase();
+		expect(tabView.androidTabsStyle).toBe('tabs');
+		tabView.androidTabsStyle = 'navigation';
+		expect(tabView.androidTabsStyle).toBe('navigation');
+	});
+});

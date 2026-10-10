@@ -199,6 +199,19 @@ export class TabView extends View {
 	androidTabsPosition: 'top' | 'bottom';
 
 	/**
+	 * Gets or sets how Android presents the tabs.
+	 * Valid values are:
+	 *  - tabs: a tab strip, placed by androidTabsPosition (the default)
+	 *  - navigation: a Material 3 navigation bar below the content, which becomes a navigation rail
+	 *    beside it once the window is 600dp wide or wider. androidTabsPosition and androidSwipeEnabled
+	 *    do not apply. Needs `com.google.android.material:material` in the app's dependencies.
+	 * Read when the native view is created.
+	 *
+	 * @nsProperty
+	 */
+	androidTabsStyle: 'tabs' | 'navigation';
+
+	/**
 	 * Gets or sets a value indicating whether swipe gesture is enabled for Android.
 	 *
 	 * @nsProperty
@@ -234,3 +247,4 @@ export const androidSelectedTabHighlightColorProperty: CssProperty<Style, Color>
 export const androidOffscreenTabLimitProperty: Property<TabView, number>;
 export const iosIconRenderingModeProperty: Property<TabView, 'automatic' | 'alwaysOriginal' | 'alwaysTemplate'>;
 export const androidIconRenderingModeProperty: Property<TabView, 'alwaysOriginal' | 'alwaysTemplate'>;
+export const androidTabsStyleProperty: Property<TabView, 'tabs' | 'navigation'>;

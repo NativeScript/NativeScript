@@ -1,5 +1,5 @@
 import type { Attr, ComponentIR, TNode } from './ir.ts';
-import { EVENT_SCOPED, type Framework } from './codegen.ts';
+import { EVENT_SCOPED, isFragment, type Framework } from './codegen.ts';
 import { ident, kotlinString } from './kotlin.ts';
 
 /** ListView attributes that `bind` takes rather than `set`. */
@@ -130,6 +130,20 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
           });
           if (info.passed) args.push(`_passed = setOf(${node.props.map((a) => kotlinString(a.name)).concat(node.events.map((e) => kotlinString('on' + e.name[0].toUpperCase() + e.name.slice(1)))).join(', ')})`);
           say(depth, `val ${c0} = ${node.name}(${args.join(', ')})`);
+          if (info.fragment) {
+            // A component whose template is not one element: its views join the parent where its host is, as a ProxyViewContainer's do.
+            if (!parent) throw new Error(`${c.name}: <${node.name}>, whose template has no single root element, at the root of a template`);
+            for (const p of info.props) {
+              const a = given.get(p);
+              if (a && 'method' in a) say(depth, options.zone ? `Check({ ${call(a.method, loops)} }) { ${c0}.${ident(p)}.value = it }` : `Effect { jsReport { ${c0}.${ident(p)}.value = ${call(a.method, loops)} } }`);
+            }
+            for (const e of node.events) {
+              if (!info.outputs?.includes(e.name)) throw new Error(`${c.name}: <${node.name}> takes no ${e.name} event: its template has no single root view`);
+              say(depth, `${c0}.${ident(info.outputFields?.[e.name] ?? e.name)}.on { value -> ${handler(call(e.method, loops, [`EventData(${kotlinString(e.name)}, null, value)`]))} }`);
+            }
+            say(depth, `${c0}.render(${parent}.kitAddRegion())`);
+            continue;
+          }
           for (const p of info.props) {
             const a = given.get(p);
             if (a && 'method' in a) say(depth, options.zone ? `Check({ ${call(a.method, loops)} }) { ${c0}.${ident(p)}.value = it }` : `Effect { jsReport { ${c0}.${ident(p)}.value = ${call(a.method, loops)} } }`);
@@ -149,15 +163,17 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
       }
       if (node.kind === 'template') throw new Error(`${c.name}: an item template outside a ListView`);
       if (!parent) throw new Error(`${c.name}: an if/for at the root of a template`);
-      // A framework that inserts top-down puts a branch's views in place as it builds them.
-      const live = insertion !== 'built' ? `r${n++}` : null;
+      // A component whose views join its parent (no single root) is a region of the body it is in.
+      const nested = (body: TNode[]) => body.some((x) => x.kind === 'if' || x.kind === 'for' || (x.kind === 'component' && !!components.get(x.name)?.fragment));
+      const nestedBody = node.kind === 'if' ? node.branches.some((b) => nested(b.body)) : nested(node.body);
+      // A framework that inserts top-down puts a branch's views in place as it builds them; a body with regions of its own attaches as a fragment.
+      const live = insertion !== 'built' && !nestedBody ? `r${n++}` : null;
       if (live && insertion === 'mounted' && templates.length) {
         say(depth, `val ${live} = Region(null)`);
         templates.at(-1)!.inserts.push({ depth, text: `${parent}.kitAddRegion(${live})` });
       } else if (live) say(depth, `val ${live} = ${parent}.kitAddRegion()`);
       // A branch or row with an if/for of its own (where views attach once built) returns a fragment holding the regions nested in this one.
-      const nested = (body: TNode[]) => body.some((x) => x.kind === 'if' || x.kind === 'for');
-      const fragmented = !live && (node.kind === 'if' ? node.branches.some((b) => nested(b.body)) : nested(node.body));
+      const fragmented = !live && nestedBody;
       let host = live ?? `${parent}.kitAddRegion()`;
       if (fragmented) {
         const r = `r${n++}`;
@@ -275,7 +291,8 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
     say(depth, '}');
   };
 
-  say(1, 'fun render(): View {');
+  const fragment = framework === 'angular' && !c.page && isFragment(c.template);
+  say(1, fragment ? 'fun render(into: Region) {' : 'fun render(): View {');
   const wrap = scoped('template');
   const d = wrap ? 3 : 2;
   if (wrap) say(2, `return ${wrap}`);
@@ -308,6 +325,11 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
     }
     userEffects();
     result('page');
+  } else if (fragment) {
+    say(d, 'val root = RegionFragment(into)');
+    template(d, () => emit(c.template, d, [], 'root', null));
+    say(d, 'root.fill()');
+    userEffects();
   } else {
     const roots: string[] = [];
     template(d, () => emit(c.template, d, [], null, roots));

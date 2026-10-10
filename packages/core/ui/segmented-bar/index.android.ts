@@ -1,5 +1,5 @@
 import { Font } from '../styling/font';
-import { SegmentedBarItemBase, SegmentedBarBase, selectedIndexProperty, itemsProperty, selectedBackgroundColorProperty, selectedTextColorProperty } from './segmented-bar-common';
+import { SegmentedBarItemBase, SegmentedBarBase, selectedIndexProperty, itemsProperty, selectedBackgroundColorProperty, selectedTextColorProperty, androidSegmentStyleProperty } from './segmented-bar-common';
 import { AndroidHelper, isEnabledProperty } from '../core/view';
 import { colorProperty, fontInternalProperty, fontSizeProperty } from '../styling/style-properties';
 import { Color } from '../../color';
@@ -116,6 +116,9 @@ export class SegmentedBarItem extends SegmentedBarItemBase {
 
 		this.setNativeView(titleTextView);
 		if (titleTextView) {
+			if ((this.parent as SegmentedBar).androidSegmentStyle === 'pill') {
+				titleTextView.setAllCaps(false);
+			}
 			if (this.titleDirty) {
 				this._update();
 			}
@@ -167,6 +170,12 @@ export class SegmentedBarItem extends SegmentedBarItemBase {
 		return viewGroup.getBackground();
 	}
 	[selectedBackgroundColorProperty.setNative](value: Color | android.graphics.drawable.Drawable) {
+		const bar = this.parent as SegmentedBar;
+		if (bar?.androidSegmentStyle === 'pill') {
+			// The bar paints every segment from its own colors; a per-item drawable would fight it.
+			bar.setTabColor(bar.selectedIndex);
+			return;
+		}
 		const nativeView = this.nativeViewProtected;
 		const viewGroup = <android.view.ViewGroup>nativeView.getParent();
 		if (value instanceof Color) {
@@ -250,6 +259,9 @@ export class SegmentedBar extends SegmentedBarBase {
 		if (tabWidget) {
 			tabWidget.setEnabled(tabWidget.isEnabled());
 		}
+		if (this.androidSegmentStyle === 'pill' && this.items?.length) {
+			this.setTabColor(this.selectedIndex >= 0 ? this.selectedIndex : 0);
+		}
 	}
 
 	private insertTab(tabItem: SegmentedBarItem, index: number): void {
@@ -298,7 +310,9 @@ export class SegmentedBar extends SegmentedBarBase {
 				const selectedTextColor = this.getColorForAndroid(this?.selectedTextColor ?? '#000000');
 				const unselectedBackgroundColor = this.getColorForAndroid(this?.backgroundColor ?? '#dbdbdb');
 				const selectedBackgroundColor = this.getColorForAndroid(this?.selectedBackgroundColor ?? this?.backgroundColor ?? 'blue');
-				if (tabWidget) {
+				if (this.androidSegmentStyle === 'pill') {
+					this.paintPills(tabWidget, index, unselectedTextColor, selectedTextColor, unselectedBackgroundColor, selectedBackgroundColor);
+				} else if (tabWidget) {
 					for (let i = 0; i < tabWidget.getTabCount(); i++) {
 						const view = tabWidget.getChildTabViewAt(i);
 						const item = this.items[i];
@@ -319,6 +333,59 @@ export class SegmentedBar extends SegmentedBarBase {
 			}
 		} catch (e) {
 			Trace.error(e);
+		}
+	}
+	private paintPills(tabWidget: android.widget.TabWidget, index: number, unselectedTextColor: number, selectedTextColor: number, trackColor: number, pillColor: number): void {
+		const radius = layout.toDevicePixels(9);
+		const inset = Math.round(layout.toDevicePixels(2));
+		tabWidget.setDividerDrawable(null);
+		tabWidget.setShowDividers(android.widget.LinearLayout.SHOW_DIVIDER_NONE);
+		tabWidget.setStripEnabled(false);
+		// A bar with its own background-color is its own track (rounded by border-radius).
+		if (this.backgroundColor) {
+			tabWidget.setBackground(null);
+		} else {
+			const track = new android.graphics.drawable.GradientDrawable();
+			track.setColor(trackColor);
+			track.setCornerRadius(radius);
+			tabWidget.setBackground(track);
+			tabWidget.setClipToOutline(true);
+			tabWidget.setOutlineProvider(android.view.ViewOutlineProvider.BACKGROUND);
+		}
+		for (let i = 0; i < tabWidget.getTabCount(); i++) {
+			const view = tabWidget.getChildTabViewAt(i);
+			const item = this.items[i] as SegmentedBarItem;
+			const textView = item?.nativeViewProtected;
+			if (index == i) {
+				const pill = new android.graphics.drawable.GradientDrawable();
+				pill.setColor(pillColor);
+				pill.setCornerRadius(radius - inset);
+				// LayerDrawable insets by whole pixels; InsetDrawable's float overload reads a fraction.
+				const layers = Array.create(android.graphics.drawable.Drawable, 1);
+				layers[0] = pill;
+				const background = new android.graphics.drawable.LayerDrawable(layers);
+				background.setLayerInset(0, inset, inset, inset, inset);
+				view.setBackground(background);
+			} else {
+				view.setBackground(null);
+			}
+			if (textView) {
+				textView.setTextColor(index == i ? selectedTextColor : unselectedTextColor);
+			}
+		}
+	}
+	[androidSegmentStyleProperty.setNative](value: 'tabs' | 'pill') {
+		const tabWidget = this.nativeViewProtected.getTabWidget();
+		if (!tabWidget) {
+			return;
+		}
+		for (let i = 0; i < tabWidget.getTabCount(); i++) {
+			const item = this.items?.[i] as SegmentedBarItem;
+			const textView = item?.nativeViewProtected;
+			textView?.setAllCaps(value !== 'pill');
+		}
+		if (this.items?.length) {
+			this.setTabColor(this.selectedIndex >= 0 ? this.selectedIndex : 0);
 		}
 	}
 	private getColorForAndroid(color: string | Color): number {

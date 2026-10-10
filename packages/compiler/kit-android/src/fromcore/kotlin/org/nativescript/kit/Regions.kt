@@ -72,6 +72,9 @@ class RegionFragment(private val owner: Region) {
     fun kitAddChild(view: ViewBase) = addChild(view)
     fun kitAddTemplateChild(view: ViewBase) = addTemplateChild(view)
     fun kitAddRegion(): Region = addRegion()
+
+    /** Makes these views the owner region's content: a component whose template has no single root. */
+    fun fill() = owner.setParts(parts.toList())
 }
 
 /** A container whose children include regions. */

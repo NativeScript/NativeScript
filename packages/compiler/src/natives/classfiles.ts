@@ -281,6 +281,15 @@ export class ClassPath {
       found = search(this.group('androidx.' + name.split('/')[1]));
       if (!found) found = search(this.allGroups());
     }
+    // Any other pinned dependency (a plugin's Maven AAR, Material) whose group is the class's package or a parent of it.
+    if (!found) {
+      for (const key of this.pinned.keys()) {
+        const group = key.split(':')[0];
+        if (group.startsWith('androidx.') || !name.startsWith(group.replace(/\./g, '/') + '/')) continue;
+        found = search(this.group(group));
+        if (found) break;
+      }
+    }
     this.classes.set(name, found);
     return found;
   }
