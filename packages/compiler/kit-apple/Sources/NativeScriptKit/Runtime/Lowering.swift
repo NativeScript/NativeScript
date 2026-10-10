@@ -95,7 +95,12 @@ public func jsKeysOf(_ value: Any?) -> [String] {
 /// `key in object`.
 public func jsHasKey(_ object: Any?, _ key: String) -> Bool {
     if let plain = jsFlat(object) as? JSObject { return plain.has(key) }
-    if let cls = jsFlat(object) as? JSStaticKeyed.Type { return cls.jsStaticKeys.contains(key) }
+    // A class object passes a cast to a protocol its instances take; its keys are a function's own and its statics.
+    if let v = jsFlat(object), jsIsClassObject(v) {
+        if key == "name" || key == "length" || key == "prototype" { return true }
+        if let cls = v as? JSStaticKeyed.Type { return cls.jsStaticKeys.contains(key) }
+        return (v as? AnyClass).map { JSPrototypes.staticMember($0, key) != nil } ?? false
+    }
     // A typed object's `jsKeys` lists every field anew; a symbol key is never a field's.
     if let expando = jsFlat(object) as? JSExpando { return jsExpandoHas(expando, key) || (!jsIsSymbolKey(key) && expando.jsKeys.contains(key)) }
     if jsIsSymbolKey(key) { return (jsFlat(object) as? JSSymbolKeyed)?.jsSymbolKeys.contains(key) ?? false }
