@@ -158,7 +158,8 @@ const applyComponentAttributes = profile('applyComponentAttributes', (instance: 
 			}
 
 			if (attr.indexOf('.') !== -1) {
-				let subObj = instance;
+				// A dotted attribute (`ios.position`) sets a member of what the instance holds, any object.
+				let subObj: any = instance;
 				const properties = attr.split('.');
 				const subPropName = properties[properties.length - 1];
 
@@ -201,7 +202,7 @@ export function getComponentModule(elementName: string, namespace: string | unde
 	return componentModule;
 }
 
-export function setPropertyValue(instance: ViewBase, instanceModule: Object, exports: Object, propertyName: string, propertyValue: any) {
+export function setPropertyValue(instance: any, instanceModule: Object, exports: Object, propertyName: string, propertyValue: any) {
 	// Note: instanceModule can be null if we are loading custom component with no code-behind.
 	if (isBinding(propertyValue) && instance.bind) {
 		const bindOptions = getBindingOptions(propertyName, getBindingExpressionFromAttribute(propertyValue));
