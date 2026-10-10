@@ -3178,6 +3178,8 @@ ${members.join('\n')}
     if (own === 'Void' && slotType === 'Any?' && !voidSlot) return 'Any?';
     // A closure giving an untyped value where its slot says a type (lenient code): the slot's type, its value read as that.
     if (!voidSlot && slotType && own === 'Any?' && slotType !== 'Void' && this.lenient) return slotType;
+    // A non-strict app's closure giving a value that may be missing (a native `string | null`) where its slot says the value: the slot's.
+    if (!voidSlot && slotType && this.lenientApp && own === optionalType(slotType)) return slotType;
     return voidSlot ? 'Void' : slotType && slotType !== own && /^Object_/.test(own) ? slotType : own;
   }
 
@@ -5281,6 +5283,8 @@ ${members.join('\n')}
     if (source.replace(/[?!]$/, '') !== target.replace(/[?!]$/, '') && this.isObjectShape(source.replace(/[?!]$/, '')) && this.isObjectShape(target.replace(/[?!]$/, ''))) return this.convert(this.expr(e), source, target);
     if (/^\(.*\)$/.test(source) && !functionParts(source) && /^JSArray<.*>[?!]?$/.test(target)) return this.convert(this.expr(e), source, target);
     if (/^JSArray<\w+>[?!]?$/.test(source) && /^JSArray<\w+>[?!]?$/.test(target) && source.replace(/[?!]$/, '') !== target.replace(/[?!]$/, '')) return this.convert(this.expr(e), source, target);
+    // A non-strict app's value that may be missing (a native read typed `T | null`) where one is declared: unwrapped where used.
+    if (this.lenientApp && target !== 'Any?' && !isOptional(target) && !target.endsWith('!') && source === optionalType(target) && !isFunctionType(target)) return `${this.expr(e)}!`;
     return this.expr(e);
   }
 
@@ -5610,6 +5614,8 @@ ${members.join('\n')}
         if (this.lenient && this.lenientRef(to) !== to) return `jsImplicit(${this.expr(e.expression)} as? ${to})`;
         return `(${this.expr(e.expression)} as! ${to})`;
       }
+      // A non-strict app's assertion of a value that may be missing (`<UITableViewCell>table.cellForRow(…)`): unwrapped where used.
+      if (this.lenientApp && from === optionalType(to) && to !== 'Any?' && !isFunctionType(to)) return `${this.expr(e.expression)}!`;
       return this.expr(e.expression);
     }
     // `f<T>`: the function, its type arguments only TypeScript's.

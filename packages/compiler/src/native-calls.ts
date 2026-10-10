@@ -755,7 +755,7 @@ export class NativeAPI {
       return `${bytes}${optional(target) ? '' : '!'}`;
     }
     // A script Date where Swift takes a Foundation Date: the same instant.
-    if (b === 'Date' && base(source) === 'JSDate') return source.endsWith('?') ? `${t.expr(e)}.map { jsNativeDate($0) }` : `jsNativeDate(${t.expr(e)})`;
+    if (b === 'Date' && base(source) === 'JSDate') return source.endsWith('?') ? `${t.expr(e)}.map { jsNativeDate($0) }${optional(target) ? '' : '!'}` : `jsNativeDate(${t.expr(e)})`;
     // An untyped value where Swift takes a Foundation Date (`<any>date` of a `Date | NSDate`): whichever it holds.
     if (b === 'Date' && source === 'Any?') return optional(target) ? `jsNativeDate(any: ${t.expr(e)})` : `jsNativeDate(any: ${t.expr(e)})!`;
     // An out-parameter: the cell's storage of the pointee's type, written back.
@@ -848,7 +848,7 @@ export class NativeAPI {
     // A constant of a typed-constants struct (`CFRunLoopMode`) where Swift takes any object: its raw value.
     if (constant && /^(CFTypeRef|AnyObject|Any)$/.test(b) && this.isTypedConstants(base(constant.type))) return `(${constant.swift}.rawValue as CFTypeRef)`;
     if (/^String\??$/.test(source) && b !== 'String' && this.isStringConstants(b) && !native) {
-      return source.endsWith('?') ? `{ (__s: String?) -> ${b}? in __s.map { ${b}(rawValue: $0) } }(${t.expr(e)})` : `${b}(rawValue: ${t.expr(e)})`;
+      return source.endsWith('?') ? `{ (__s: String?) -> ${b}? in __s.map { ${b}(rawValue: $0) } }(${t.expr(e)})${optional(target) ? '' : '!'}` : `${b}(rawValue: ${t.expr(e)})`;
     }
     // Null where Swift takes a collection it marks nonnull: Objective-C receives nil, which reads as empty.
     if (source.endsWith('?') && !optional(target) && b.startsWith('[') && source.slice(0, -1) === b) return `(${t.expr(e)} ?? ${b.includes(':') ? '[:]' : '[]'})`;
@@ -862,6 +862,8 @@ export class NativeAPI {
     if (b === 'AnyObject' && source === 'Double') return `NSNumber(value: ${t.expr(e)})`;
     // Null where Swift takes a collection it marks nonnull: Objective-C receives nil, which reads as empty.
     if (!optional(target) && source.endsWith('?') && ['NSDictionary', 'NSArray'].includes(b)) return `(${t.expr(e)} ?? ${b}())`;
+    // A value the typings say may be null (`selectedViewController`) where Swift takes one: unwrapped, as the runtime would pass nil to a nonnull parameter.
+    if (!optional(target) && optional(source) && base(source) === b && !['Any', 'Double', 'String', 'Bool'].includes(b)) return `${t.expr(e)}!`;
     return t.expr(e);
   }
 
