@@ -310,7 +310,8 @@ export class Translator implements AsyncTranslator {
             const d = this.resolve(base.expression.name)?.valueDeclaration;
             if (d) this.extendedDecls.add(d);
           }
-          for (const i of implementedInterfaces(this.checker, n)) this.protocols.add(i.expression.getText());
+          // `implements TKUnit.TestInfoEntry`: the interface by its own name, as its module declares it.
+          for (const i of implementedInterfaces(this.checker, n)) this.protocols.add(ts.isPropertyAccessExpression(i.expression) ? i.expression.name.text : i.expression.getText());
         }
         ts.forEachChild(n, visit);
       };
@@ -2004,7 +2005,7 @@ export class Translator implements AsyncTranslator {
       .filter((i) => !this.library || !(this.checker.getTypeAtLocation(i).getSymbol()?.declarations ?? []).every((d) => d.getSourceFile().isDeclarationFile))
       // An interface the class's signatures cannot meet is left out; untyped parameters meet it through a witness.
       .filter((i) => this.protocolWitnesses(cls, i, witnesses, notOverrides))
-      .map((i) => i.expression.getText());
+      .map((i) => (ts.isPropertyAccessExpression(i.expression) ? i.expression.name.text : i.expression.getText()));
     for (const i of implemented) this.used.add(i);
     const ownToString = cls.members.some((m) => ts.isMethodDeclaration(m) && m.name.getText() === 'toString' && !m.parameters.length) && !this.inheritsToString(cls);
     const supertypes = [...implemented, ...(ownToString ? ['JSStringConvertible'] : [])];
@@ -4958,9 +4959,7 @@ export class Translator implements AsyncTranslator {
     }
     if (restAt >= 0 && appDeclared && list.length <= restAt) out.push(`${this.typeOf((params[restAt].valueDeclaration as ts.ParameterDeclaration).name)}()`);
     const decl = sig?.getDeclaration();
-    // So does a type literal's method, a function field of its object type (`waitUntilTestElementLayoutIsValid(timeoutSec?)`).
-    const literalMethod = !!decl && !ts.isJSDocSignature(decl) && ts.isMethodSignature(decl) && ts.isTypeLiteralNode(decl.parent);
-    if (count === undefined && decl && !ts.isJSDocSignature(decl) && (ts.isFunctionTypeNode(decl) || ts.isCallSignatureDeclaration(decl) || ts.isArrowFunction(decl) || ts.isFunctionExpression(decl) || literalMethod)) {
+    if (count === undefined && decl && !ts.isJSDocSignature(decl) && (ts.isFunctionTypeNode(decl) || ts.isCallSignatureDeclaration(decl) || ts.isArrowFunction(decl) || ts.isFunctionExpression(decl))) {
       for (let k = list.length; k < params.length; k++) {
         const pt = this.type(this.checker.getTypeOfSymbolAtLocation(params[k], e), e);
         out.push(pt === 'Unit' ? 'Unit' : 'null');
@@ -5203,7 +5202,9 @@ export class Translator implements AsyncTranslator {
       const checked = !callee.questionDotToken ? this.receiver(target, method) : null;
       const args = this.args(e, this.arity(e));
       // A field holding a function (an overloaded method type, its first signature's): the arguments script leaves out are undefined.
-      const field = !!held && (ts.isPropertyDeclaration(held) || ts.isPropertySignature(held) || (this.library && (ts.isPropertyAssignment(held) || ts.isShorthandPropertyAssignment(held)))) ? functionTypeParts((this.declaredTypeOf(callee) ?? this.typeOf(callee)).replace(/^\((.*)\)\?$/, '$1')) : null;
+      // So does an object type's method its class holds as a field (`waitUntilTestElementLayoutIsValid(timeoutSec?)`).
+      const signatureField = !!held && ts.isMethodSignature(held) && this.isFunctionField(this.checker.getSymbolAtLocation(callee.name)!);
+      const field = !!held && (ts.isPropertyDeclaration(held) || ts.isPropertySignature(held) || signatureField || (this.library && (ts.isPropertyAssignment(held) || ts.isShorthandPropertyAssignment(held)))) ? functionTypeParts((this.declaredTypeOf(callee) ?? this.typeOf(callee)).replace(/^\((.*)\)\?$/, '$1')) : null;
       for (let k = args.length; field && k < field.params.length; k++) args.push(field.params[k] === 'Unit' ? 'Unit' : 'null');
       // Kotlin's super calls take every argument: those script leaves out are the defaults the parameters declare.
       if (target.kind === ts.SyntaxKind.SuperKeyword) {
