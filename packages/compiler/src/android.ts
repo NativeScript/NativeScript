@@ -1,7 +1,7 @@
 // The Android target: the app's components and modules as Kotlin against
 // NativeScriptKit for Android (native-release/kit-android), in a Gradle
 // project whose resources are the app's own App_Resources/Android.
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, relative, resolve } from 'node:path';
 import ts from 'typescript';
 import type { ComponentIR } from './ir.ts';
@@ -317,7 +317,7 @@ ${overlays.map((m) => `        variant.sources.manifests.addStaticManifestFile($
 }
 ` : ''}${gradleFile('app.gradle')}`);
   // The app's members are reached by name through reflection, as the kit's are.
-  writeFileSync(join(b.out, 'proguard-rules.pro'), `-dontwarn org.nativescript.widgets.**\n-keep class ${pkg}.** { *; }\n${native.keepRules.map((r) => `${r}\n`).join('')}`);
+  writeFileSync(join(b.out, 'proguard-rules.pro'), `-dontwarn org.nativescript.widgets.**\n-keep class ${pkg}.** { *; }\n${native.keepRules.map((r) => `${r}\n`).join('')}${reflectedMemberRules([join(b.out, 'src'), join(kit, 'src'), join(kit, 'generated'), join(kit, 'Bindings')])}`);
   mkdirSync(join(b.out, 'src', 'main', 'res', 'values'), { recursive: true });
   // The runtime template's strings.xml, named after the folder (letters and digits only), unless App_Resources replaces the file.
   const label = basename(resolve(b.app)).replace(/[^a-zA-Z0-9]/g, '');
@@ -377,5 +377,24 @@ function findWidgetsAar(app: string): string | null {
     if (existsSync(candidate)) return candidate;
     if (dirname(dir) === dir) return null;
   }
+}
+
+/**
+ * Keep rules for the members code reaches on untyped Java objects by name (`detector.onTouchEvent(e)` on a
+ * value typed `any`): R8 would otherwise rename or drop a library's method that nothing calls statically.
+ */
+function reflectedMemberRules(roots: string[]): string {
+  const names = new Set<string>();
+  const access = /\bjs(?:CallMethod|CallMethodIfPresent|Get|GetOptional)\((?:[^()"]|\((?:[^()"]|\([^()]*\))*\))*?,\s*"([A-Za-z_$][\w$]*)"/g;
+  const visit = (dir: string) => {
+    if (!existsSync(dir)) return;
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      if (entry.isDirectory()) { if (entry.name !== 'build') visit(join(dir, entry.name)); }
+      else if (entry.name.endsWith('.kt')) for (const m of readFileSync(join(dir, entry.name), 'utf8').matchAll(access)) names.add(m[1]);
+    }
+  };
+  roots.forEach(visit);
+  if (!names.size) return '';
+  return `-keepclassmembers class * {\n${[...names].sort().map((n) => `    *** ${n}(...);\n    *** ${n};\n`).join('')}}\n`;
 }
 
