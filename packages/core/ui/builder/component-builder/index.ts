@@ -1,5 +1,6 @@
 // Definitions.
 import { View } from '../../core/view';
+import type { ViewBase } from '../../core/view-base';
 
 // Types.
 import { isEventOrGesture } from '../../core/bindable';
@@ -11,7 +12,8 @@ import { sanitizeModuleName } from '../../../utils/common';
 import { resolveModuleName } from '../../../module-name-resolver';
 
 export interface ComponentModule {
-	component: View;
+	// Any element: a view, or what a view holds (an ActionItem, a Span).
+	component: ViewBase;
 	exports: any;
 }
 
@@ -58,8 +60,8 @@ const CODE_FILE = 'codeFile';
 const CSS_FILE = 'cssFile';
 const IMPORT = 'import';
 
-const createComponentInstance = profile('createComponentInstance', (elementName: string, namespace: string | undefined): { instance: View; instanceModule: Object } => {
-	let instance: View;
+const createComponentInstance = profile('createComponentInstance', (elementName: string, namespace: string | undefined): { instance: ViewBase; instanceModule: Object } => {
+	let instance: ViewBase;
 	let instanceModule: Object;
 	// Get module id.
 	let resolvedModuleName;
@@ -101,7 +103,7 @@ const createComponentInstance = profile('createComponentInstance', (elementName:
 	return { instance, instanceModule };
 });
 
-const getComponentModuleExports = profile('getComponentModuleExports', (instance: View, moduleExports: Object, attributes: Object): Object => {
+const getComponentModuleExports = profile('getComponentModuleExports', (instance: ViewBase, moduleExports: Object, attributes: Object): Object => {
 	if (attributes) {
 		const codeFileAttribute = attributes[CODE_FILE] || attributes[IMPORT];
 		if (codeFileAttribute) {
@@ -140,7 +142,7 @@ const applyComponentCss = profile('applyComponentCss', (instance: View, moduleNa
 	}
 });
 
-const applyComponentAttributes = profile('applyComponentAttributes', (instance: View, instanceModule: Object, moduleExports: Object, attributes: Object) => {
+const applyComponentAttributes = profile('applyComponentAttributes', (instance: ViewBase, instanceModule: Object, moduleExports: Object, attributes: Object) => {
 	if (instance && instanceModule) {
 		for (let attr in attributes) {
 			const attrValue = <string>attributes[attr];
@@ -156,7 +158,8 @@ const applyComponentAttributes = profile('applyComponentAttributes', (instance: 
 			}
 
 			if (attr.indexOf('.') !== -1) {
-				let subObj = instance;
+				// A dotted attribute (`ios.position`) sets a member of what the instance holds, any object.
+				let subObj: any = instance;
 				const properties = attr.split('.');
 				const subPropName = properties[properties.length - 1];
 
@@ -186,7 +189,7 @@ export function getComponentModule(elementName: string, namespace: string | unde
 	const { instance, instanceModule } = createComponentInstance(elementName, namespace, null);
 	moduleExports = getComponentModuleExports(instance, <any>moduleExports, attributes);
 	if (isRootComponent) {
-		applyComponentCss(instance, moduleNamePath, attributes);
+		applyComponentCss(<View>instance, moduleNamePath, attributes);
 	}
 
 	applyComponentAttributes(instance, instanceModule, moduleExports, attributes);
@@ -199,7 +202,7 @@ export function getComponentModule(elementName: string, namespace: string | unde
 	return componentModule;
 }
 
-export function setPropertyValue(instance: View, instanceModule: Object, exports: Object, propertyName: string, propertyValue: any) {
+export function setPropertyValue(instance: any, instanceModule: Object, exports: Object, propertyName: string, propertyValue: any) {
 	// Note: instanceModule can be null if we are loading custom component with no code-behind.
 	if (isBinding(propertyValue) && instance.bind) {
 		const bindOptions = getBindingOptions(propertyName, getBindingExpressionFromAttribute(propertyValue));
@@ -243,6 +246,6 @@ function isBinding(value: any): boolean {
 
 // For example, ListView.itemTemplateSelector
 const KNOWN_FUNCTIONS = 'knownFunctions';
-function isKnownFunction(name: string, instance: View): boolean {
+function isKnownFunction(name: string, instance: ViewBase): boolean {
 	return instance.constructor && KNOWN_FUNCTIONS in instance.constructor && (instance.constructor[KNOWN_FUNCTIONS] as string).indexOf(name) !== -1;
 }

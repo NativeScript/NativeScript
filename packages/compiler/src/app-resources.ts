@@ -207,10 +207,8 @@ export function iosProjectResources(o: { app: string; appDir: string; out: strin
     sources.push(`      - path: Resources\n        buildPhase: resources\n${folders.length ? `        excludes: [${folders.map((f) => JSON.stringify(f + '/**')).join(', ')}]\n` : ''}`);
     for (const f of folders) sources.push(`      - path: Resources/${f}\n        type: folder\n        buildPhase: resources\n`);
   }
-  // Fonts in the app folder, registered at launch as core registers app/fonts.
-  const fonts = join(o.appDir, 'fonts');
-  if (existsSync(fonts) && statSync(fonts).isDirectory()) sources.push(`      - path: ${relative(o.out, fonts)}\n        type: folder\n        buildPhase: resources\n`);
-  // What the app's own build copies beside its bundle, at `app/` where `~/assets/logo.png` resolves.
+  // What the app's own build copies beside its bundle, at `app/` where `~/assets/logo.png` resolves, and
+  // its fonts, at `app/fonts/` where core registers them at launch.
   const appFiles = join(o.out, 'AppFiles');
   rmSync(appFiles, { recursive: true, force: true });
   const files = copiedAppFiles(o.appDir, readConfig(o.app).bundler === 'vite');
@@ -400,15 +398,15 @@ export function pluginManifests(o: { app: string; applicationId: string; dir: st
 }
 
 /**
- * The app folder's files its NativeScript build copies as they are, fonts aside: `assets/**` by both
- * bundlers, and every `.jpg` and `.png` too by webpack's default copy rules.
+ * The app folder's files its NativeScript build copies as they are: `assets/**` and the fonts by both
+ * bundlers, and every other `.jpg` and `.png` too by webpack's default copy rules.
  */
 function copiedAppFiles(appDir: string, vite: boolean): string[] {
   if (!existsSync(appDir)) return [];
   return (readdirSync(appDir, { recursive: true }) as string[])
     .map((f) => f.split('\\').join('/'))
     .filter((f) => !/(^|\/)(node_modules|App_Resources|\.[^/]+)(\/|$)/.test(f) && statSync(join(appDir, f)).isFile())
-    .filter((f) => f.startsWith('assets/') || (!vite && !f.startsWith('fonts/') && /\.(jpg|png)$/.test(f)))
+    .filter((f) => f.startsWith('assets/') || (f.startsWith('fonts/') && /\.(ttf|otf)$/i.test(f)) || (!vite && !f.startsWith('fonts/') && /\.(jpg|png)$/.test(f)))
     .sort();
 }
 

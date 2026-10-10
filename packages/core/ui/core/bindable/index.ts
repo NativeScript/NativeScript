@@ -79,7 +79,7 @@ export function isGesture(eventOrGestureName: string): boolean {
 
 // TODO: Make this instance function so that we dont need public static tapEvent = "tap"
 // in controls. They will just override this one and provide their own event support.
-export function isEventOrGesture(name: string, view: ViewBase): boolean {
+export function isEventOrGesture(name: string, view: ViewBase | object): boolean {
 	if (typeof name === 'string') {
 		const eventOrGestureName = getEventOrGestureName(name);
 		const evt = `${eventOrGestureName}Event`;

@@ -130,12 +130,7 @@ private func callMethod(_ object: Any?, _ key: String, _ arguments: [Any?]) thro
     }
     // `cls.new()` of a native class object: an instance of its plain initializer, as `[cls new]`.
     if key == "new", arguments.isEmpty, let cls = jsFlat(object) as? NSObject.Type { return cls.init() }
-    // A class's `toString()`: one the program declares as its source begins, any other as the
-    // runtime prints a native one (`function WeakRef() { [native code] }`).
-    if key == "toString", let cls = jsFlat(object) as? Any.Type {
-        let name = String(describing: cls).components(separatedBy: "<")[0]
-        return cls is JSStaticKeyed.Type ? "class \(name) { }" : "function \(name.replacingOccurrences(of: "JS", with: "", options: .anchored))() { [native code] }"
-    }
+    if key == "toString", let cls = jsFlat(object) as? Any.Type { return jsClassString(cls) }
     if let host = jsFlat(object) as? JSHostObject, let result = try host.jsInvoke(key, arguments) { return result }
     if let native = jsFlat(object).flatMap(jsAsNSObject) {
         if let result = try JSNativeDispatch.call?(native, key, arguments) { return result }
@@ -155,6 +150,13 @@ private func callMethod(_ object: Any?, _ key: String, _ arguments: [Any?]) thro
     if let function = jsFlat(f) as? JSFunction { return try function(arguments) }
     if let moot = jsFlat(f) as? JSMootValue { throw moot.unavailable() }
     throw JSException(JSTypeError("\(jsInspect(f)) is not a function"))
+}
+
+/// `String(cls)`: a class the program declares as its source begins, any other as the runtime prints a native one
+/// (`function WeakRef() { [native code] }`).
+func jsClassString(_ cls: Any.Type) -> String {
+    let name = String(describing: cls).components(separatedBy: "<")[0]
+    return cls is JSStaticKeyed.Type ? "class \(name) { }" : "function \(name.replacingOccurrences(of: "JS", with: "", options: .anchored))() { [native code] }"
 }
 
 /// An object a native binding implements, as an engine's host objects are: a method call

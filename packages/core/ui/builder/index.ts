@@ -112,7 +112,7 @@ export class Builder {
 			const exports = context ? getExports(context) : undefined;
 			const componentModule = parseInternal(value, exports);
 
-			return componentModule && componentModule.component;
+			return componentModule && <View>componentModule.component;
 		}
 	}
 
@@ -130,7 +130,7 @@ export class Builder {
 			componentModule = loadCustomComponent(pathOrOptions.path, pathOrOptions.name, pathOrOptions.attributes, pathOrOptions.exports, pathOrOptions.page, true);
 		}
 
-		return componentModule && componentModule.component;
+		return componentModule && <View>componentModule.component;
 	}
 
 	/**
@@ -746,7 +746,7 @@ export namespace xml2ui {
 							this.rootComponentModule = componentModule;
 
 							if (this.rootComponentModule) {
-								this.currentRootView = this.rootComponentModule.component;
+								this.currentRootView = <View>this.rootComponentModule.component;
 
 								if ((<any>this.currentRootView).exports) {
 									this.context = (<any>this.currentRootView).exports;
