@@ -657,6 +657,20 @@ export class NativeAPI {
     return this.fromSwift(k.swift, k.type, e);
   }
 
+  /**
+   * A global a source file declares for itself (`declare const UIBarButtonItemVisibilityPriorityHigh: number`, a
+   * constant typings newer than its own have) that an SDK module has as a constant: that constant, or null.
+   */
+  declaredConstant(e: ts.Identifier): string | null {
+    for (const module of new Set(['UIKit', 'Foundation', ...this.modules])) {
+      const k = lookupConstant(module, e.text);
+      if (!k) continue;
+      this.uses(module);
+      return this.fromSwift(k.swift, k.type, e);
+    }
+    return null;
+  }
+
   /** A native function of no arguments as a value (`isRunning = UIAccessibilityIsVoiceOverRunning`): a closure calling it, as Swift may have it as a property. */
   private functionValue(e: ts.Identifier, native: { module: string; name: string }): string | null {
     const f = lookupFunction(native.module, native.name);
