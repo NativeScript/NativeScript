@@ -661,6 +661,20 @@ export class NativeAPI {
     return this.fromSwift(k.swift, k.type, e);
   }
 
+  /**
+   * A global a source file declares for itself (`declare const UIBarButtonItemVisibilityPriorityHigh: number`, a
+   * constant typings newer than its own have) that an SDK module has as a constant: that constant, or null.
+   */
+  declaredConstant(e: ts.Identifier): string | null {
+    for (const module of new Set(['UIKit', 'Foundation', ...this.modules])) {
+      const k = lookupConstant(module, e.text);
+      if (!k) continue;
+      this.uses(module);
+      return this.fromSwift(k.swift, k.type, e);
+    }
+    return null;
+  }
+
   /** A native function of no arguments as a value (`isRunning = UIAccessibilityIsVoiceOverRunning`): a closure calling it, as Swift may have it as a property. */
   private functionValue(e: ts.Identifier, native: { module: string; name: string }): string | null {
     const f = lookupFunction(native.module, native.name);
@@ -881,16 +895,16 @@ export class NativeAPI {
     const narrowedTo = base(tsType);
     if (declared && /^[A-Z]\w*$/.test(narrowedTo) && narrowedTo !== b && /^[A-Z]\w*$/.test(b) && !this.isEnumType(narrowedTo) && !this.isStructType(narrowedTo)
         && base(this.t.type(this.t.checker.getTypeOfSymbol(declared), e)) === b) return `(${code} as${optional(tsType) ? '?' : '!'} ${narrowedTo})`;
-    if (b === 'Date' && base(tsType) === 'JSDate') return optional(swiftType) ? `${code}.map { JSDate($0) }${tsType.endsWith('?') ? '' : '!'}` : `JSDate(${code})`;
+    if (b === 'Date' && base(tsType) === 'JSDate') return optional(swiftType) ? unwrapAs(`${code}.map { JSDate($0) }`, tsType, this.t.lenient && this.t.lenientRef(tsType) !== tsType) : `JSDate(${code})`;
     if (NUMBERS.has(b) && tsType.replace(/\?$/, '') === 'Double') {
       if (b === 'Double' || b === 'TimeInterval') return optional(swiftType) && !tsType.endsWith('?') ? `${code}!` : code;
-      return optional(swiftType) ? `${code}.map { Double($0) }${tsType.endsWith('?') ? '' : '!'}` : `Double(${code})`;
+      return optional(swiftType) ? unwrapAs(`${code}.map { Double($0) }`, tsType, this.t.lenient && this.t.lenientRef(tsType) !== tsType) : `Double(${code})`;
     }
     // The runtime gives script an NSNumber as the number it holds.
     if (b === 'NSNumber' && /^Double\??$/.test(tsType)) return optional(swiftType) ? `${code}${tsType.endsWith('?') ? '?' : '!'}.doubleValue` : `${code}.doubleValue`;
     if ((this.isEnumType(b) || this.isNumericConstants(b)) && tsType === 'Double') return optional(swiftType) ? `Double(${code}!.rawValue)` : `Double(${code}.rawValue)`;
     // A Core Foundation string (`kUTTypePlainText`), a string to TypeScript.
-    if (b === 'CFString' && /^String\??$/.test(tsType)) return optional(swiftType) ? `(${code} as String?)${tsType.endsWith('?') ? '' : '!'}` : `(${code} as String)`;
+    if (b === 'CFString' && /^String\??$/.test(tsType)) return optional(swiftType) ? unwrapAs(`(${code} as String?)`, tsType, this.t.lenient && this.t.lenientRef(tsType) !== tsType) : `(${code} as String)`;
     // A string-backed constant (`NSNotification.Name`), a string to TypeScript.
     // A number-backed constant (`UIFontWeightBold`), a number to TypeScript.
     if (tsType === 'Double' && NUMBERS.has(this.constantsRaw(b) ?? '')) return optional(swiftType) ? `Double(${code}!.rawValue)` : `Double(${code}.rawValue)`;
@@ -939,7 +953,8 @@ export class NativeAPI {
     if (!fn || !want || want.result !== 'Void' || fn.params.length > want.params.length) return null;
     const args = fn.params.map((p, k) => this.blockParam(`__b${k}`, want.params[k], p.replace(/^@escaping /, '')));
     const wrap = `{ (__f: @escaping ${unwrapped}) -> ${want.text} in { (${want.params.map((p, k) => `__b${k}: ${p}`).join(', ')}) in jsReport { try __f(${args.join(', ')}) } } }`;
-    if (unwrapped === source) return `${wrap}(${code})`;
+    // An optional block parameter takes the function through an optional: lenient code holds a missing one (`fn || null`) as nil though its type says present.
+    if (unwrapped === source) return optional(target) ? `{ (__o: (${unwrapped})?) -> (${want.text})? in __o.map(${wrap}) }(${code})` : `${wrap}(${code})`;
     return `(${code}).map(${wrap})${optional(target) ? '' : '!'}`;
   }
 
@@ -965,7 +980,7 @@ export class NativeAPI {
     // A Foundation value type the TypeScript declarations name by its class (`Notification` as `NSNotification`).
     const bridged = bridge(code, swiftType, tsType);
     if (bridged) return bridged;
-    if (b === 'Date' && base(tsType) === 'JSDate') return optional(swiftType) ? `${code}.map { JSDate($0) }${tsType.endsWith('?') ? '' : '!'}` : `JSDate(${code})`;
+    if (b === 'Date' && base(tsType) === 'JSDate') return optional(swiftType) ? unwrapAs(`${code}.map { JSDate($0) }`, tsType, this.t.lenient && this.t.lenientRef(tsType) !== tsType) : `JSDate(${code})`;
     // A block parameter the handler declares as a subclass (`(urlAsset: AVURLAsset)` for an `AVAsset`): the object as it.
     const tb = tsType.replace(/[?!]$/, '');
     if (b !== tb && /^[A-Z]\w*$/.test(b) && /^[A-Z]\w*$/.test(tb) && this.isSubclass(tb, b)) return tsType.endsWith('?') ? `(${code} as? ${tb})` : `(${code} as! ${tb})`;
@@ -1269,7 +1284,7 @@ export class NativeAPI {
     if (own !== b && /^(\w+\.)?[A-Z]\w*$/.test(own) && /^[A-Z]\w*$/.test(b) && !this.isEnumType(b) && !this.isStructType(b) && this.t.lenientRef(own) !== own) return `jsImplicit(${code} as? ${own})`;
     const bridged = bridge(code, swiftType, tsType);
     if (bridged) return bridged;
-    if (b === 'Date' && base(tsType) === 'JSDate') return optional(swiftType) ? `${code}.map { JSDate($0) }${tsType.endsWith('?') ? '' : '!'}` : `JSDate(${code})`;
+    if (b === 'Date' && base(tsType) === 'JSDate') return optional(swiftType) ? unwrapAs(`${code}.map { JSDate($0) }`, tsType, this.t.lenient && this.t.lenientRef(tsType) !== tsType) : `JSDate(${code})`;
     // A native enum is a number in JavaScript.
     if (tsType === 'Double' && this.isEnumType(b)) return optional(swiftType) ? `Double(${code}!.rawValue)` : `Double(${code}.rawValue)`;
     if (optional(swiftType) && !tsType.endsWith('?') && tsType !== 'Any?') return `${code}!`;
@@ -1459,4 +1474,14 @@ function writesField(node: ts.Node, sym: ts.Symbol | undefined, checker: ts.Type
   };
   visit(node);
   return found;
+}
+
+/**
+ * An optional native value where script's type is `tsType`: optional stays optional; one lenient code holds implicitly
+ * unwrapped (`implicit`, or a `T!` type) is read through `jsImplicit`, which unwraps only where a value is needed, as
+ * JavaScript reads a missing one as undefined; anything else is unwrapped.
+ */
+function unwrapAs(optionalCode: string, tsType: string, implicit: boolean): string {
+  if (tsType.endsWith('?')) return optionalCode;
+  return implicit || tsType.endsWith('!') ? `jsImplicit(${optionalCode})` : `${optionalCode}!`;
 }

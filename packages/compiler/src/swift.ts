@@ -1697,7 +1697,12 @@ export class Translator implements AsyncTranslator {
         this.variables(st, (code) => lines.push(code), (d) => `${path}.${ident(d.name.getText())}`, (d) => ident(d.name.getText()), 'static ', later);
         continue;
       }
-      if (ts.isClassDeclaration(st)) { lines.push(this.classDecl(st)); continue; }
+      if (ts.isClassDeclaration(st)) {
+        lines.push(this.classDecl(st));
+        // As a module's class: its accessors are its prototype's, and its decorators run once it is defined.
+        if ((this.library || this.appMembersByName) && (st.members.some((m) => ts.isAccessor(m) && !isStatic(m)) || ts.getDecorators(st)?.length || this.heldAsValue(st))) later(() => this.classDefinition(st));
+        continue;
+      }
       later(() => this.stmt(st));
     }
     if (!values) return '';
@@ -5724,11 +5729,13 @@ ${members.join('\n')}
       if (found) return found;
     }
     // Android's API on iOS (`androidx.core.view.ViewCompat` behind a check that the code runs on Android): a value that throws when used.
-    if ((this.library && !libDecl) || (libDecl && /[\\/]types-android[\\/]/.test(libDecl.getSourceFile().fileName))) return `jsMoot(${swiftString(name)})`;
+    if ((this.library && !libDecl) || (libDecl && /[\\/]types-android[\\/]/.test(libDecl.getSourceFile().fileName))) return `${this.library ? 'jsMoot' : 'jsUndeclared'}(${swiftString(name)})`;
     // A global a module declares itself (`declare let __startCPUProfiler: any`, a plugin's `declare var CanvasModule`) is the global object's, set by whatever provides it.
     // An app's own declarations file too (`declare var __CI__`, which its bundler defines): undefined where nothing sets it.
     const appAmbient = !this.library && isAppDeclarationFile(libDecl);
     if (libDecl && ts.isVariableDeclaration(libDecl) && ((!libDecl.getSourceFile().isDeclarationFile && hasModifier(libDecl.parent.parent, ts.SyntaxKind.DeclareKeyword)) || appAmbient)) {
+      const sdk = this.native.declaredConstant(e);
+      if (sdk) return sdk;
       return this.fromAnyCode(`jsGlobalThis[jsKey: ${swiftString(name)}]`, this.typeOf(e));
     }
     // A global function core or the app only declares (`zonedCallback`, which core's globals set), as a value: the global object's.
@@ -8363,7 +8370,8 @@ ${members.join('\n')}
         this.optionalReads.delete(inner);
         // The left operand is evaluated once; the result is it, unwrapped or boxed as the result's type needs.
         // A falsy left operand of another type is undefined or null where the result is optional.
-        const leftValue = leftType === t && !t.endsWith('?') && t !== 'Void' ? `jsPresent(${v})` : leftType === t || t === 'Any?' ? v : leftType === optionalType(t) ? `${v}!` : leftType === 'Any?' ? this.fromAny(v, t) : t === 'Bool' ? `jsTruthy(${v})`
+        // A function operand where the result is untyped is boxed as a function value, as the other operand is.
+        const leftValue = leftType === t && !t.endsWith('?') && t !== 'Void' ? `jsPresent(${v})` : t === 'Any?' && leftType !== t && isFunctionType(leftType.replace(/^\((.*)\)[?!]$/, '$1')) ? this.convert(v, leftType, t) : leftType === t || t === 'Any?' ? v : leftType === optionalType(t) ? `${v}!` : leftType === 'Any?' ? this.fromAny(v, t) : t === 'Bool' ? `jsTruthy(${v})`
           : t.endsWith('?') && leftType.endsWith('?') && op === K.AmpersandAmpersandToken ? 'nil'
           // A falsy object of another type than the result (`child && hosts.get(child)`) is a missing one.
           : t.endsWith('?') && op === K.AmpersandAmpersandToken && this.isObjectRef(left) && leftType.replace(/[?!]$/, '') !== t.replace(/[?!]$/, '') ? 'nil' : v;
