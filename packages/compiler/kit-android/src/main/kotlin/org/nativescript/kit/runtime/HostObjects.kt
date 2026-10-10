@@ -51,3 +51,22 @@ abstract class JSHostObject : JSDynamic {
 interface JSConstructible {
     fun jsConstruct(args: Array<out Any?>): Any?
 }
+
+/** The native libraries a binding stands in for (`libcanvasnativev8.so`, which binds an engine a compiled app has none of). */
+object JSNativeLibraries {
+    val provided = mutableSetOf<String>()
+}
+
+/**
+ * `require(specifier)` of the global object. A compiled app has its modules linked already; what it can still
+ * require is a native library (`system_lib://libx.so`), loaded unless a binding stands in for it.
+ */
+fun jsRequire(specifier: Any?): Any? {
+    val spec = jsToString(specifier)
+    if (spec.startsWith("system_lib://")) {
+        val lib = spec.removePrefix("system_lib://").removePrefix("lib").removeSuffix(".so")
+        if (lib !in JSNativeLibraries.provided) System.loadLibrary(lib)
+        return null
+    }
+    throw JSException(JSError("Cannot find module '$spec'"))
+}

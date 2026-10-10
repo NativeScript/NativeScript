@@ -391,13 +391,20 @@ export class AndroidNativeAPI implements KotlinNative {
     const segs: string[] = [];
     let x: ts.Expression = e;
     while (ts.isPropertyAccessExpression(x)) { segs.unshift(x.name.text); x = x.expression; }
+    // `(<any>org).nativescript.canvas.NSCImageAsset`: the package root read untyped.
+    let cast = false;
+    while (ts.isParenthesizedExpression(x) || ts.isAsExpression(x) || ts.isTypeAssertionExpression(x)) {
+      if (!ts.isParenthesizedExpression(x)) cast = !!(this.t.checker.getTypeAtLocation(x).flags & ts.TypeFlags.Any);
+      x = x.expression;
+    }
     if (!ts.isIdentifier(x) || !segs.length) return null;
     const root = this.t.resolve(x);
     const decl = root?.valueDeclaration;
-    const ambient = decl && ts.isVariableDeclaration(decl) && !decl.initializer && !!(ts.getCombinedModifierFlags(decl) & ts.ModifierFlags.Ambient);
+    const nativeRoot = cast && !!root?.declarations?.length && root.declarations.every((d) => this.isNativeDeclaration(d));
+    const ambient = nativeRoot || (decl && ts.isVariableDeclaration(decl) && !decl.initializer && !!(ts.getCombinedModifierFlags(decl) & ts.ModifierFlags.Ambient));
     // Library mode: a Java class the typings lack under a package they have (`org.nativescript.widgets.Async.File`), found on the classpath.
     const missing = this.t.library && !!root && !!(root.flags & ts.SymbolFlags.Namespace) && !!root.declarations?.every((d) => this.isNativeDeclaration(d)) && !this.t.resolve(e) && !(ts.isPropertyAccessExpression(e) && this.t.resolve(e.name));
-    if (!missing && (!ambient || !(this.t.checker.getTypeAtLocation(x).flags & ts.TypeFlags.Any))) return null;
+    if (!missing && !nativeRoot && (!ambient || !(this.t.checker.getTypeAtLocation(x).flags & ts.TypeFlags.Any))) return null;
     segs.unshift(x.text);
     for (let k = segs.length - 1; k >= 1; k--) {
       const found = this.classpath.get(`${segs.slice(0, k).join('/')}/${segs.slice(k).join('$')}`);
@@ -776,12 +783,14 @@ export class AndroidNativeAPI implements KotlinNative {
   }
 
   /**
-   * Library mode: an overload the argument types cannot pick (untyped arguments, or none fits their declared types)
+   * Library mode and plugins: an overload the argument types cannot pick (untyped arguments, or none fits their declared types)
    * is null, the call then made through reflection, chosen by the values it is given as NativeScript's runtime chooses.
    */
   private overloadOrNull(candidates: Callable[], args: ts.Expression[], node: ts.Node, owner: string, name: string): Callable | null {
     try { return this.resolveOverload(candidates, args, node, owner, name); } catch (e) {
-      if (this.t.library && candidates.length && !args.some(ts.isSpreadElement) && e instanceof Error && /\((ambiguous between|no Java overload takes)/.test(e.message)) return null;
+      // So is a plugin's, written against NativeScript's runtime choosing them.
+      const reflective = this.t.library || this.t.pluginFiles.has(node.getSourceFile().fileName);
+      if (reflective && candidates.length && !args.some(ts.isSpreadElement) && e instanceof Error && /\((ambiguous between|no Java overload takes)/.test(e.message)) return null;
       throw e;
     }
   }

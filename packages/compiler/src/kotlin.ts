@@ -338,6 +338,8 @@ export class Translator implements AsyncTranslator {
       if (native) return native;
     }
     if (t.flags & (F.Any | F.Unknown)) return 'Any?';
+    const alias = !this.library && t.getSymbol()?.flags! & ts.SymbolFlags.Class ? this.collectionAlias(t.getSymbol()?.valueDeclaration) : null;
+    if (alias) return alias;
     // An iOS class (`page.ios as UIViewController` in code shared by both platforms): what this platform's code holds is no such thing.
     const iosDecls = t.getSymbol()?.declarations;
     if (iosDecls?.length && iosDecls.every((d) => /[\\/]@nativescript[\\/]types-ios[\\/]/.test(d.getSourceFile().fileName))) return 'Any?';
@@ -786,6 +788,8 @@ export class Translator implements AsyncTranslator {
     if (this.library && t.getProperties().length > 96 && (t.getSymbol()?.flags ?? 0) & ts.SymbolFlags.ObjectLiteral) return 'JSRecord<Any?>';
     const conforming = this.conformingInterface(t);
     if (conforming) { this.used.add(conforming); return conforming; }
+    // A plugin's (`bytes` narrowed by `Array.isArray` to a typed array that is also an array): read untyped.
+    if (this.shaping.has(t) && where && this.pluginFiles.has(where.getSourceFile().fileName)) return 'Any?';
     if (this.shaping.has(t)) throw this.error(where, 'a recursive object type without a name');
     this.shaping.add(t);
     try {
@@ -1881,6 +1885,14 @@ export class Translator implements AsyncTranslator {
       const { params, lines } = this.componentMembers(cls, []);
       return [`class ${name}(${params.join(', ')}) {`, ...lines, '', '    companion object {', `        val shared = ${name}()`, '    }', '}'].join('\n');
     }
+    if (!this.library && this.collectionAlias(cls)) {
+      this.indent = '    ';
+      const statics = cls.members.filter((m): m is ts.MethodDeclaration => ts.isMethodDeclaration(m) && isStatic(m) && !!m.body).map((m) => '    ' + this.func(m, ident(m.name.getText())));
+      this.indent = '';
+      const alias = this.collectionAlias(cls)!;
+      const methods = cls.members.filter((m): m is ts.MethodDeclaration => ts.isMethodDeclaration(m) && !isStatic(m) && !!m.body).map((m) => this.func(m, ident(m.name.getText())).replace(/^fun /, `fun ${alias}.`));
+      return [`object ${name} {`, ...statics, '}', ...methods].join('\n');
+    }
     const c = this.checker;
     const plugin = this.pluginFiles.has(cls.getSourceFile().fileName);
     const heritage = cls.heritageClauses?.find((h) => h.token === ts.SyntaxKind.ExtendsKeyword)?.types[0];
@@ -1962,6 +1974,14 @@ export class Translator implements AsyncTranslator {
       if (keyed?.member === 'jsToStringTag' && !isStatic(m) && m.initializer) {
         supertypes.push('JSToStringTag');
         lines.push(`    override var jsToStringTag: String = ${this.coerce(m.initializer, 'String')}`);
+        continue;
+      }
+      // `static [native_];`: a static field of that symbol, unset.
+      if (keyed?.key && isStatic(m)) {
+        const t = optionalType(this.typeOf(m.name));
+        this.indent = '        ';
+        statics.push(`        @JvmStatic var ${keyed.member}: ${t} = ${m.initializer ? this.coerce(m.initializer, t) : 'null'}`);
+        this.indent = '    ';
         continue;
       }
       if (keyed) throw this.error(m.name, 'a field named by this symbol');
@@ -2186,17 +2206,19 @@ export class Translator implements AsyncTranslator {
       this.staticInits!.push(`    jsDecorate(${name}::class.java, listOf(${decorators.map((d) => this.coerce(d.expression, 'Any?')).join(', ')}))`);
       this.indent = '    ';
     }
-    // `[fooProperty.setNative](value)`: the class's native setter for that registered property.
-    const setters: { property: string; method: string; param: string }[] = [];
+    // `[fooProperty.setNative](value)`: the class's native setter for that registered property. The generated kit
+    // reaches any property's setter by its symbol, core's (`isUserInteractionEnabledProperty`) included.
+    const nativeSetter = (x: ts.Expression): string | null => this.library ? null : this.setNativeOf(x) ?? (this.generatedKit && ts.isPropertyAccessExpression(x) && x.name.text === 'setNative' ? x.expression.getText().replace(/\W+/g, '_') : null);
+    const setters: { property: string; method: string; param: string; key: ts.Expression }[] = [];
     for (const m of cls.members) {
       if (!ts.isMethodDeclaration(m) || !m.body || !ts.isComputedPropertyName(m.name)) continue;
-      const property = this.library ? null : this.setNativeOf(m.name.expression);
+      const property = nativeSetter(m.name.expression);
       if (!property) {
         if (!this.symbolMember(m.name)) throw this.error(m.name, 'a computed method name');
         continue;
       }
       const method = `__setNative_${property}`;
-      setters.push({ property, method, param: m.parameters[0] ? this.typeOf(m.parameters[0].name) : 'Unit' });
+      setters.push({ property, method, param: m.parameters[0] ? this.typeOf(m.parameters[0].name) : 'Unit', key: m.name.expression });
       lines.push('    ' + this.func(m, method, open ? 'open ' : ''));
     }
     // The generated kit applies a property as core does: through the method its `setNative` symbol names (`jsGet`, below).
@@ -2215,11 +2237,10 @@ export class Translator implements AsyncTranslator {
     for (let b = appBase; b; b = this.baseClassOf(b)) for (const m of b.members) if (m.name) inherited.add(m.name.getText());
     const dynMethods: { name: string; key?: string; params: string[]; ret: string }[] = [];
     if (this.generatedKit) {
-      const named = cls.members.filter((m): m is ts.MethodDeclaration => ts.isMethodDeclaration(m) && !!m.body && ts.isComputedPropertyName(m.name) && !!this.setNativeOf(m.name.expression));
-      named.forEach((m, k) => dynMethods.push({ name: setters[k].method, key: `(${this.expr((m.name as ts.ComputedPropertyName).expression)} as JSSymbol).key`, params: setters[k].param === 'Unit' ? [] : [setters[k].param], ret: 'Unit' }));
+      for (const st of setters) dynMethods.push({ name: st.method, key: `(${this.expr(st.key)} as JSSymbol).key`, params: st.param === 'Unit' ? [] : [st.param], ret: 'Unit' });
     }
     for (const m of cls.members) {
-      if (ts.isMethodDeclaration(m) && m.body && ts.isComputedPropertyName(m.name) && !this.library && this.setNativeOf(m.name.expression)) continue;
+      if (ts.isMethodDeclaration(m) && m.body && ts.isComputedPropertyName(m.name) && nativeSetter(m.name.expression)) continue;
       if (ts.isMethodDeclaration(m) && !m.body && hasModifier(m, ts.SyntaxKind.AbstractKeyword)) {
         const ret = this.returnTypeOf(m);
         lines.push(`    ${overridden.has(m.name.getText()) ? 'override ' : ''}abstract fun ${ident(m.name.getText())}(${this.params(m, false)})${ret === 'Unit' ? '' : `: ${ret}`}`);
@@ -2610,6 +2631,22 @@ export class Translator implements AsyncTranslator {
   }
 
   /** `fooProperty.setNative`: the registered name of the property it belongs to. */
+  /**
+   * A class extending Array or Set that adds no instance state (`class TouchList extends Array { static empty() … }`):
+   * its instances are the kit's collection, its static members an object of its name.
+   */
+  collectionAlias(decl: ts.Node | undefined): string | null {
+    if (!decl || !ts.isClassDeclaration(decl) || decl.getSourceFile().isDeclarationFile) return null;
+    const heritage = decl.heritageClauses?.find((h) => h.token === ts.SyntaxKind.ExtendsKeyword)?.types[0];
+    if (!heritage || !ts.isIdentifier(heritage.expression) || !['Array', 'Set'].includes(heritage.expression.text) || !this.isLibGlobal(heritage.expression)) return null;
+    // Instance methods are extensions of the collection; a getter it has already (`length`) is its own.
+    const instance = decl.members.filter((m) => !isStatic(m) && !(m.name && ts.isComputedPropertyName(m.name) && /Symbol\.toStringTag/.test(m.name.getText())) && !ts.isMethodDeclaration(m) && !(ts.isGetAccessorDeclaration(m) && ['length', 'size'].includes(m.name.getText())));
+    if (instance.length) return null;
+    const arg = heritage.typeArguments?.[0];
+    const el = arg ? this.type(this.checker.getTypeFromTypeNode(arg), arg) : 'Any?';
+    return heritage.expression.text === 'Array' ? `JSArray<${el}>` : `JSSet<${el}>`;
+  }
+
   /** Whether the app is built on the kit compiled from core, whose classes are core's own. */
   get generatedKit(): boolean {
     return !this.library && !!(this.core as { generated?: boolean } | null)?.generated;
@@ -4732,6 +4769,11 @@ export class Translator implements AsyncTranslator {
 
   private call(e: ts.CallExpression): string {
     const callee = e.expression;
+    // A static method of a class whose instances are the kit's collection: its object's.
+    const aliasClass = ts.isPropertyAccessExpression(callee) && ts.isIdentifier(callee.expression) ? this.resolve(callee.expression)?.valueDeclaration : undefined;
+    if (!this.library && aliasClass && ts.isClassDeclaration(aliasClass) && this.collectionAlias(aliasClass)) return `${this.className(aliasClass)}.${ident((callee as ts.PropertyAccessExpression).name.text)}(${this.args(e).join(', ')})`;
+    // `require` of the global object (`__non_webpack_require__('system_lib://libx.so')`): the runtime's.
+    if (ts.isPropertyAccessExpression(callee) && callee.name.text === 'require' && ts.isIdentifier(callee.expression) && ['global', 'globalThis'].includes(callee.expression.text) && e.arguments.length === 1) return `jsRequire(${this.coerce(e.arguments[0], 'Any?')})`;
     // A generic lambda (`const find = <T extends View>(name) => …`), its type parameters erased to their constraints: its result as this call types it.
     const lambda = ts.isIdentifier(callee) ? this.resolve(callee)?.valueDeclaration : undefined;
     const init = lambda && ts.isVariableDeclaration(lambda) ? lambda.initializer : undefined;
@@ -5779,8 +5821,9 @@ export class Translator implements AsyncTranslator {
     // `new (initializeImpl())()`: the class a value of that class's type holds, once the value is computed.
     const made = this.checker.getTypeAtLocation(e).getSymbol()?.valueDeclaration;
     if (this.library && made && ts.isClassDeclaration(made) && !made.getSourceFile().isDeclarationFile && !hasModifier(made, ts.SyntaxKind.DeclareKeyword)) return `run { ${this.exprStatement(callee)}; ${t}(${this.args(e).join(', ')}) }`;
-    // Library mode: `new (initNativeScriptLifecycleCallbacks())()`, the class the call gives, constructed when this runs.
-    if (this.library) {
+    // Library mode: `new (initNativeScriptLifecycleCallbacks())()`, the class the call gives, constructed when this runs; and
+    // what any code constructs untyped (`new global.CanvasModule.Path2D()`).
+    if (this.library || this.typeOf(callee) === 'Any?') {
       const code = `jsNew(${this.coerce(callee, 'Any?')}${this.untypedArgs(args)})`;
       return t === 'Any?' ? code : this.fromAnyCode(code, t);
     }

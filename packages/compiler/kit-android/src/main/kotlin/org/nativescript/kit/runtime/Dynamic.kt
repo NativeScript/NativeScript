@@ -240,6 +240,7 @@ fun jsCallDeclared(target: Any?, name: String, vararg args: Any?): Any? {
 
 /** `new C(args)` where `C` is a class held as a value: the constructor the arguments fit best. */
 fun jsNew(cls: Any?, vararg args: Any?): Any? {
+    if (cls is JSConstructible) return cls.jsConstruct(args)
     val c = cls as? Class<*> ?: throw JSException(JSTypeError("${jsTypeof(cls)} is not a constructor"))
     val chosen = c.constructors.filter { it.parameterCount == args.size }.mapNotNull { k ->
         var total = 0
