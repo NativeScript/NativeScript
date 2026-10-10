@@ -144,7 +144,9 @@ export function comparePng(a: string, b: string): { differ: number; bbox: [numbe
   const x = decodePng(a), y = decodePng(b);
   if (x.width !== y.width || x.height !== y.height) return { differ: x.width * x.height, bbox: [0, 0, x.width, x.height] };
   let differ = 0, x0 = Infinity, y0 = Infinity, x1 = -1, y1 = -1;
-  for (let i = 0; i < x.width * x.height; i++) {
+  // The home indicator's strip at the bottom: iOS shows and hides it on its own, in either app.
+  const rows = x.height - Math.round(x.height * 0.02);
+  for (let i = 0; i < x.width * rows; i++) {
     const k = i * 4;
     if (x.rgba[k] === y.rgba[k] && x.rgba[k + 1] === y.rgba[k + 1] && x.rgba[k + 2] === y.rgba[k + 2]) continue;
     differ++;
@@ -182,7 +184,15 @@ async function run(udid: string, driver: UIDriver, app: string, label: string, s
   for (const screen of screens) {
     // An app launched over another in front shows a back link to it in the status bar.
     for (const b of [bundle, other]) try { simctl('terminate', udid, b); } catch {}
-    simctl('launch', udid, bundle);
+    try {
+      simctl('launch', udid, bundle);
+    } catch {
+      // Another tool can shut the device down (CoreDevice shuts every simulator down at times): boot it and retry
+      // once; a driver it ended is restarted at its next unanswered command.
+      try { simctl('boot', udid); } catch {}
+      simctl('bootstatus', udid, '-b');
+      simctl('launch', udid, bundle);
+    }
     await sleep(2);
     for (const [op, ...args] of screen.steps) {
       if (op === 'shot') await settledShot(udid, join(out, `${label}-${screen.name}-${args[0]}.png`));

@@ -96,7 +96,8 @@ public func jsKeysOf(_ value: Any?) -> [String] {
 public func jsHasKey(_ object: Any?, _ key: String) -> Bool {
     if let plain = jsFlat(object) as? JSObject { return plain.has(key) }
     if let cls = jsFlat(object) as? JSStaticKeyed.Type { return cls.jsStaticKeys.contains(key) }
-    if let expando = jsFlat(object) as? JSExpando { return expando.jsKeys.contains(key) || jsExpandoHas(expando, key) }
+    // A typed object's `jsKeys` lists every field anew; a symbol key is never a field's.
+    if let expando = jsFlat(object) as? JSExpando { return jsExpandoHas(expando, key) || (!jsIsSymbolKey(key) && expando.jsKeys.contains(key)) }
     if jsIsSymbolKey(key) { return (jsFlat(object) as? JSSymbolKeyed)?.jsSymbolKeys.contains(key) ?? false }
     if let dynamic = object as? JSDynamic { return dynamic.jsKeys.contains(key) }
     if let array = object as? JSArrayProtocol { return key == "length" || (Int(key).map { $0 >= 0 && $0 < array.jsAnyElements.count } ?? false) }
@@ -434,7 +435,7 @@ func jsStringMethod(_ s: String, _ key: String) -> JSMethod? {
             let pattern = jsFlat(jsArg(args, 0)), replacement = jsArg(args, 1)
             let all = key == "replaceAll"
             // A function replacement receives the match, its groups, the offset and the input, as String.prototype.replace passes them.
-            if let fn = jsFlat(replacement), fn is JSFunction || fn is JSMethod {
+            if let fn = jsFlat(replacement), fn is JSFunction || fn is JSMethod || fn is JSFunctionObject {
                 let re = try (pattern as? JSRegExp) ?? JSRegExp(NSRegularExpression.escapedPattern(for: jsToString(pattern)), all ? "g" : "")
                 return try jsReplace(s, re) { m in jsToString(try jsCall(fn, spread: m.values.elements.map { $0 as Any? } + [m.index, m.input])) }
             }

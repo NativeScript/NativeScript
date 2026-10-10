@@ -8,26 +8,48 @@ public final class JSRegExp: JSDynamic, JSStringConvertible {
     public let source: String
     public let flags: String
     public var lastIndex: Double = 0
-    let regex: NSRegularExpression
+    private var compiled: NSRegularExpression?
 
-    public init(_ source: String, _ flags: String = "") throws {
+    /// Compiled on first use when its pattern is already known good (a literal, or another RegExp's source):
+    /// core's modules make dozens at launch that the first screen never runs.
+    var regex: NSRegularExpression {
+        if let compiled { return compiled }
+        do {
+            let made = try JSRegExp.compile(source, flags)
+            compiled = made
+            return made
+        } catch { fatalError("/\(source)/\(flags) is not a pattern NSRegularExpression accepts: \(jsToString(jsCaught(error)))") }
+    }
+
+    public convenience init(_ source: String, _ flags: String = "") throws {
+        self.init(checked: source, flags)
+        compiled = try JSRegExp.compile(source, flags)
+    }
+
+    private init(checked source: String, _ flags: String) {
         self.source = source
         self.flags = String(flags.sorted())
+    }
+
+    private static func compile(_ source: String, _ flags: String) throws -> NSRegularExpression {
         var options: NSRegularExpression.Options = []
         if flags.contains("i") { options.insert(.caseInsensitive) }
         if flags.contains("m") { options.insert(.anchorsMatchLines) }
         if flags.contains("s") { options.insert(.dotMatchesLineSeparators) }
         do {
-            regex = try NSRegularExpression(pattern: JSRegExp.translate(source), options: options)
+            return try NSRegularExpression(pattern: JSRegExp.translate(source), options: options)
         } catch {
             throw JSException(value: JSSyntaxError("Invalid regular expression: /\(source)/\(flags): \(error.localizedDescription)"))
         }
     }
 
+    /// A literal's pattern, which TypeScript checked: compiled when first used.
+    static func literal(_ source: String, _ flags: String) -> JSRegExp { JSRegExp(checked: source, flags) }
+
     /// `new RegExp(pattern, flags)` of a pattern that may be a RegExp: its source, and its flags unless others are given.
     public static func construct(_ pattern: Any?, _ flags: Any? = nil) throws -> JSRegExp {
         let given = jsIsUndefined(jsFlat(flags) as Any?) ? nil : jsToString(flags)
-        if let re = jsFlat(pattern) as? JSRegExp { return try JSRegExp(re.source, given ?? re.flags) }
+        if let re = jsFlat(pattern) as? JSRegExp { return JSRegExp(checked: re.source, given ?? re.flags) }
         return try JSRegExp(jsFlat(pattern) == nil ? "(?:)" : jsToString(pattern), given ?? "")
     }
 
@@ -173,7 +195,7 @@ public func jsRegExpFrom(_ value: Any?) throws -> JSRegExp {
 
 /// A regular expression literal: TypeScript accepted its syntax; ICU must too.
 public func jsRegExpLiteral(_ source: String, _ flags: String) -> JSRegExp {
-    do { return try JSRegExp(source, flags) } catch { fatalError("/\(source)/\(flags) is not a pattern NSRegularExpression accepts: \(jsToString(jsCaught(error)))") }
+    JSRegExp.literal(source, flags)
 }
 
 /// `s.matchAll(re)` (re must be global).

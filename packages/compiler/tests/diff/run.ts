@@ -58,7 +58,9 @@ const swiftOnly = (file: string) => (lenient(file) && !kotlinOnly(file)) || read
 
 function translate(file: string, out: string): void {
   const loose = lenient(file);
-  const { checker, program, files } = createProgram([file], new Map(), 'ios', modulesDir, undefined, [], {}, loose ? { strict: false, useDefineForClassFields: false } : {});
+  const { checker, program, files: roots } = createProgram([file], new Map(), 'ios', modulesDir, undefined, [], {}, loose ? { strict: false, useDefineForClassFields: false } : {});
+  // The helper modules a case imports are the program's too, as an app's every module is.
+  const files = [...roots, ...importsOf(program, file).map((f) => program.getSourceFile(f)!).filter((sf) => sf && !roots.includes(sf))];
   // In library mode, as the kit generated from core is: each module's functions and variables in an enum.
   const library = loose ? { moduleName: (f: string) => (f.endsWith('.d.ts') ? null : 'Module_' + basename(f).replace(/\W/g, '_')) } : null;
   const translator = new Translator(checker, new Map(), files, { lenient: loose, library, ...(loose ? { pluginFiles: files.map((f) => f.fileName), properties: collectProperties(checker, files) } : {}) });

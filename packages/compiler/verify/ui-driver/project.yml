@@ -22,3 +22,14 @@ targets:
       CODE_SIGNING_ALLOWED: NO
       GENERATE_INFOPLIST_FILE: YES
       TEST_TARGET_NAME: UIDriverHost
+schemes:
+  UIDriverTests:
+    build:
+      targets:
+        UIDriverHost: all
+        UIDriverTests: [test]
+    test:
+      targets: [UIDriverTests]
+      # The test serves commands for a whole session: the screen recordings XCTest makes of it pile up on the device.
+      captureScreenshotsAutomatically: false
+      deleteScreenshotsWhenEachTestSucceeds: true

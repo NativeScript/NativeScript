@@ -502,6 +502,8 @@ const appSettings = { PRODUCT_BUNDLE_IDENTIFIER: bundle, SWIFT_VERSION: '"5.9"',
 // binary; the kit reflects only on tuples (Mirror of a tuple needs none), so a Release build has none.
 // A framework the kit imports for code the app never reaches (WebKit for WebView, Photos for saving
 // images) is left out of the link, and so not loaded at launch, by `-dead_strip_dylibs`.
+// Exclusive access is enforced as it compiles, not again at run time: the translated code's class and
+// static accesses would each call into the runtime (about 2% of launch, and 130 KB of code).
 // Virtual function and witness elimination hold only when every Swift module in the link is compiled
 // for them: code from pods and packages, built without, would call methods they removed or thunks they need.
 const wholeProgram = !pods && !packages.length && !pluginLines.packages;
@@ -518,6 +520,7 @@ settings:
 ${wholeProgram ? '      OTHER_SWIFT_FLAGS: -Xfrontend -enable-llvm-vfe -Xfrontend -enable-llvm-wme -Xfrontend -internalize-at-link\n' : ''}      DEAD_CODE_STRIPPING: YES
       OTHER_LDFLAGS: "$(inherited) -Wl,-dead_strip_dylibs"
       SWIFT_REFLECTION_METADATA_LEVEL: none
+      SWIFT_ENFORCE_EXCLUSIVE_ACCESS: compile-time
 ${pluginLines.packages || packages.length ? `packages:\n${pluginLines.packages}${packageLines(packages, out)}` : ''}targets:
   NativeScriptKit:
     type: library.static

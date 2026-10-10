@@ -3,13 +3,13 @@ import { request } from '../http';
 import { isString, isFunction } from '../utils/types';
 import { Trace } from '../trace';
 
-namespace XMLHttpRequestResponseType {
-	export const empty = '';
-	export const text = 'text';
-	export const json = 'json';
-	export const blob = 'blob';
-	export const arraybuffer = 'arraybuffer';
-}
+const XMLHttpRequestResponseType = {
+	empty: '',
+	text: 'text',
+	json: 'json',
+	blob: 'blob',
+	arraybuffer: 'arraybuffer',
+};
 
 export class XMLHttpRequest {
 	public UNSENT = 0;
@@ -375,13 +375,15 @@ export class FormData {
 	}
 }
 
+// Note: only for use by XHR
+class BlobInternalAccessor {
+	public static getBuffer(blob: Blob): Uint8Array {
+		return blob['_buffer'];
+	}
+}
+
 export class Blob {
-	// Note: only for use by XHR
-	public static InternalAccessor = class {
-		public static getBuffer(blob: Blob) {
-			return blob._buffer;
-		}
-	};
+	public static InternalAccessor = BlobInternalAccessor;
 
 	private _buffer: Uint8Array;
 	private _size: number;

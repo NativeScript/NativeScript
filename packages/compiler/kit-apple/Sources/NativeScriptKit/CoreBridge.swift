@@ -180,6 +180,8 @@ public enum NativeScriptApplication {
         // Promise callbacks and reactive updates run after each batch of UIKit work (an event handler, a layout pass), as the JS runtime drains microtasks after native calls into script.
         JSEventLoop.installRunLoopObserver()
         if let cssAST { self.cssAST = cssAST }
+        Probe.traceIfRequested()
+        Probe.scheduleIfRequested()
     }
 
     public static func run(css: String, _ root: @escaping () -> View) {
@@ -188,8 +190,6 @@ public enum NativeScriptApplication {
         CorePackages.installModuleLoader()
         CoreModules.initialize()
         let app: iOSApplication = Core_application_application.Application
-        Probe.traceIfRequested()
-        Probe.scheduleIfRequested()
         jsReport {
             try app.run(JSObject([("create", { (_: [Any?]) throws -> Any? in root() } as JSFunction)]))
         }

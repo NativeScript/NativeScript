@@ -21,6 +21,7 @@ export const ios = {
 		'data/observable-array/',
 		'data/observable/',
 		'data/virtual-array/',
+		'fetch/',
 		'file-system/',
 		'fps-meter/',
 		'globals/global-utils.ts',
@@ -89,6 +90,7 @@ export const ios = {
 		'ui/utils.ios.ts',
 		'ui/web-view/',
 		'utils/',
+		'xhr/',
 		'xml/',
 	],
 	/**
@@ -115,10 +117,11 @@ export const ios = {
 		},
 		'npm:@csstools/css-calc': { calc: 'CorePackages.calc' },
 		'npm:emoji-regex': { '*': 'CorePackages.emojiRegex' },
+		'moot:debugger/index.ts': { '*': 'CorePackages.debugger' },
 		'~/package.json': { default: 'CorePackages.appConfig' },
 	},
-	/** Modules a compiled app has no use for (the debugger, the inspector, XMLHttpRequest and fetch): what core reads from them is untyped, and using it throws. */
-	moot: ['debugger/', 'xhr/', 'fetch/', 'wgc/', 'inspector_modules'],
+	/** Modules a compiled app has no use for (the debugger, the inspector): what core reads from them is untyped, and using it throws. */
+	moot: ['debugger/', 'wgc/', 'inspector_modules'],
 	/** Functions that give back what they are given and, as decorators, leave what they decorate as it is. */
 	identities: ['profile', 'zonedCallback'],
 	/** npm packages compiled with core from the TypeScript they publish (relative to the package; the first is its entry). */
@@ -127,19 +130,22 @@ export const ios = {
 	},
 };
 
+/** fetch and XMLHttpRequest, which kit-android does not compile yet. */
+const iosOnly = ['fetch/', 'xhr/'];
+
 /**
  * The core modules compiled into kit-android, from their Android files (`*.android.ts`) and the
  * shared ones beside them. The kit's views are core's own: Android views and core's
  * `org.nativescript.widgets` layouts, as NativeScript runs them.
  */
 export const android = {
-	compile: ios.compile.filter((m) => !m.startsWith('ui/layouts/liquid-glass')).map((m) => (m === 'ui/layouts/layout-base.ios.ts' ? 'ui/layouts/layout-base.android.ts' : m === 'ui/utils.ios.ts' ? 'ui/utils.android.ts' : m)),
+	compile: ios.compile.filter((m) => !m.startsWith('ui/layouts/liquid-glass') && !iosOnly.includes(m)).map((m) => (m === 'ui/layouts/layout-base.ios.ts' ? 'ui/layouts/layout-base.android.ts' : m === 'ui/utils.ios.ts' ? 'ui/utils.android.ts' : m)),
 	/** As `ios.counterparts`, to the kit's Kotlin. */
 	counterparts: {
 		'color/color-utils.ts': { argbFromColorMix: 'ColorMix.argbFromColorMix' },
 		'npm:emoji-regex': { '*': 'CorePackages.emojiRegex' },
 	} as Record<string, Record<string, string>>,
-	moot: ios.moot,
+	moot: [...ios.moot, ...iosOnly],
 	identities: ios.identities,
 	packages: ios.packages,
 };

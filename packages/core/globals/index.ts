@@ -6,7 +6,7 @@ import * as animationFrame from '../animation-frame';
 import * as mediaQueryList from '../media-query-list';
 import * as text from '../text';
 import * as xhrImpl from '../xhr';
-import * as fetchPolyfill from '../fetch/index.mjs';
+import * as fetchPolyfill from '../fetch';
 import * as wgc from '../wgc';
 import * as cryptoImpl from '../wgc/crypto';
 import * as subtleCryptoImpl from '../wgc/crypto/SubtleCrypto';

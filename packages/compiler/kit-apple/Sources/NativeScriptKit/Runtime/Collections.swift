@@ -43,7 +43,9 @@ enum JSCollectionKey: Hashable {
     static func of<K>(_ key: K) -> JSCollectionKey {
         if K.self == String.self { return .string(JSPropertyKey(key as! String)) }
         if K.self == Double.self { return number(key as! Double) }
-        switch jsFlat(key) {
+        let key = jsFlat(key)
+        if let object = key, jsIsOpaqueObject(object) { return object is JSNull ? .null : .object(ObjectIdentifier(object as AnyObject)) }
+        switch key {
         case nil: return .undefined
         case let s as String: return .string(JSPropertyKey(s))
         case let d as Double: return number(d)
