@@ -1612,7 +1612,12 @@ export class Translator implements AsyncTranslator {
         this.variables(st, (code) => lines.push(code), (d) => `${path}.${ident(d.name.getText())}`, (d) => ident(d.name.getText()), 'static ', later);
         continue;
       }
-      if (ts.isClassDeclaration(st)) { lines.push(this.classDecl(st)); continue; }
+      if (ts.isClassDeclaration(st)) {
+        lines.push(this.classDecl(st));
+        // As a module's class: its accessors are its prototype's, and its decorators run once it is defined.
+        if ((this.library || this.appMembersByName) && (st.members.some((m) => ts.isAccessor(m) && !isStatic(m)) || ts.getDecorators(st)?.length || this.heldAsValue(st))) later(() => this.classDefinition(st));
+        continue;
+      }
       later(() => this.stmt(st));
     }
     if (!values) return '';
