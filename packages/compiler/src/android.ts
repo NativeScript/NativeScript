@@ -67,6 +67,8 @@ export interface AndroidBuild {
   allowUnapplied?: boolean;
   /** `--all-errors`: every construct the translator cannot handle, instead of the first. */
   allErrors?: boolean;
+  /** The app's own configuration leaves strict checking off. */
+  lenient?: boolean;
   /**
    * `--generated-kit`: the kit compiled from core (`-PgeneratedKit`). Core's own activity runs the app, which the app's
    * `android.app.Application` starts, as NativeScript's runtime does, with the stylesheet as its build parses it.
@@ -125,6 +127,7 @@ export async function writeAndroid(b: AndroidBuild): Promise<void> {
   translator.core = new CoreKotlin(translator, !!b.generatedKit);
   translator.lines = b.lines;
   if (b.allErrors) translator.errors = [];
+  translator.lenientApp = !!b.lenient;
   const table: Record<string, [number, string, number][]> = {};
   /** A Kotlin file as written, its markers turned into ranges of the line table: [first Kotlin line, source file, source line]. */
   const write = (file: string, code: string) => {

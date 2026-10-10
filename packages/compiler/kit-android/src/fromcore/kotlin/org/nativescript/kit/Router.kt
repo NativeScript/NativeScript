@@ -310,3 +310,6 @@ class Router {
 
 /** A key of an options object script passes, null when absent. */
 private fun field(target: Any?, key: String): Any? = if (jsIsNullish(target)) null else jsBox(jsGet(target, key)).let { if (it === JSNull) null else it }
+
+/** `registerElement(tag, () => Class)`: compiled templates name each view's class already. */
+fun registerElement(@Suppress("UNUSED_PARAMETER") tag: String, @Suppress("UNUSED_PARAMETER") type: Any?) {}

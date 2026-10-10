@@ -379,3 +379,7 @@ fun <V> jsObjectFromEntries(entries: Iterable<Pair<String, V>>): JSRecord<V> {
     for ((k, v) in entries) record[k] = v
     return record
 }
+
+/** Null where code checked without strictNullChecks puts it in a slot Kotlin types non-null; reads of it fail as JavaScript's would. */
+@Suppress("UNCHECKED_CAST")
+fun <T> jsUncheckedNull(): T = null as T
