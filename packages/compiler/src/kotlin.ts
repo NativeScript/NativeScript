@@ -1619,6 +1619,7 @@ export class Translator implements AsyncTranslator {
     if (this.library && this.thisValues().returning.has(fn)) return 'Any?';
     if (this.library && this.returnsNullApart(fn)) return 'Any?';
     const t = this.type(this.checker.getSignatureFromDeclaration(fn)!.getReturnType(), fn);
+    if (this.library && this.nullablePrimitiveReturn(fn) && ['String', 'Double', 'Boolean'].includes(t)) return optionalType(t);
     return fn.getSourceFile().isDeclarationFile || ts.isArrowFunction(fn) || ts.isFunctionExpression(fn) ? t : this.lenientRef(t);
   }
 
@@ -3251,6 +3252,13 @@ export class Translator implements AsyncTranslator {
         if (sym) this.nullableDecls.add(sym);
         return `${i}${constant ? 'val' : 'var'} ${name}: ${optionalType(t)} = ${this.coerce(d.initializer, optionalType(t))}`;
       }
+      // Library mode: a call's `string | null`, compared with null: nullable.
+      const call = read && ts.isCallExpression(read) ? this.checker.getResolvedSignature(read)?.declaration : undefined;
+      if (this.library && d.initializer && !lowered && ['String', 'Double', 'Boolean'].includes(t) && this.nullablePrimitiveReturn(call) && this.testedForUndefined(d)) {
+        const sym = this.checker.getSymbolAtLocation(d.name);
+        if (sym) this.nullableDecls.add(sym);
+        return `${i}${constant ? 'val' : 'var'} ${name}: ${optionalType(t)} = ${this.coerce(d.initializer, optionalType(t))}`;
+      }
       // A plugin's copy of a value declared nullable (`const side = this.mShowingSide`): nullable as well.
       if (d.initializer && !lowered && this.pluginFiles.has(d.getSourceFile().fileName) && !isNullable(t) && t !== 'Any' && t !== 'Any?' && isNullable(this.declaredTypeOf(d.initializer) ?? '')) {
         const sym = this.checker.getSymbolAtLocation(d.name);
@@ -4026,6 +4034,9 @@ export class Translator implements AsyncTranslator {
     if (name === 'undefined') return 'null';
     if (name === 'NaN') return 'Double.NaN';
     if (name === 'Infinity') return 'Double.POSITIVE_INFINITY';
+    // Before the global object's names: an import from an untyped package resolves to nothing.
+    const moot = this.mootImport(e);
+    if (moot) return moot;
     if (this.isAmbient(e)) return `jsGetOptional(jsGlobalThis, ${kotlinString(name)})`;
     // Library mode: `if (!console)`: a compiled program always has its console; `Reflect`, which it lacks, read from the global object.
     if (this.library && name === 'console' && isLibDeclaration(this.resolve(e)?.declarations?.[0]) && !(ts.isPropertyAccessExpression(e.parent) && e.parent.expression === e)) return '(true as Any?)';
@@ -4038,8 +4049,6 @@ export class Translator implements AsyncTranslator {
     if (this.library && (name === 'global' || name === 'globalThis') && (this.resolve(e)?.declarations ?? []).every((d) => d.getSourceFile().isDeclarationFile)) return 'jsGlobalThis';
     const native = this.native?.identifier(e);
     if (native) return native;
-    const moot = this.mootImport(e);
-    if (moot) return moot;
     const sym = this.resolve(e);
     // Library mode: a Java package read as a value (`(<any>androidx).core`), the runtime's view of it.
     if (this.library && this.isJavaPackage(sym) && (!ts.isPropertyAccessExpression(e.parent) || ts.isAsExpression(e.parent.parent) || ts.isParenthesizedExpression(e.parent) || !!e.parent.questionDotToken)) return `JSJavaPackage(${kotlinString(name)})`;
@@ -4222,7 +4231,9 @@ export class Translator implements AsyncTranslator {
       return e.questionDotToken || inChain ? `${this.expr(target)}?.length?.toDouble()` : `${recv()}.length.toDouble()`;
     }
     if (name === 'length' && (base.startsWith('Pair<') || base.startsWith('Triple<'))) return base.startsWith('Pair<') ? '2.0' : '3.0';
-    if (this.isAny(target)) {
+    // `this.x` in a static method, of a static field the class declares: the companion's.
+    const staticOwn = target.kind === ts.SyntaxKind.ThisKeyword && !!this.resolve(e.name)?.declarations?.some((d) => ts.isPropertyDeclaration(d) && isStatic(d));
+    if (this.isAny(target) && !staticOwn) {
       const t = this.typeOf(e);
       const code = `${e.questionDotToken || inChain ? 'jsGetOptional' : 'jsGet'}(${this.expr(target)}, ${kotlinString(name)})`;
       // Library mode: a member an untyped object may lack, as script reads it (its type's undefined).
@@ -4434,6 +4445,7 @@ export class Translator implements AsyncTranslator {
       try {
         const code = this.expr(e);
         if (code.endsWith('!!')) return code.slice(0, -2);
+        if (mapGet && /\.get\([^]*\)$/.test(code)) return code;
       } finally { this.optionalReads.delete(e); }
     }
     // Library mode: a member of an untyped object, where a nullable slot takes it: missing as null.
@@ -5488,7 +5500,7 @@ export class Translator implements AsyncTranslator {
       case 'get': {
         const read = `${t}.get(${arg(0, k)})`;
         const rt = this.typeOf(e);
-        return rt.endsWith('?') || rt === 'Any?' ? read : this.undefinedAs(read, rt);
+        return rt.endsWith('?') || rt === 'Any?' || this.optionalReads.has(e) ? read : this.undefinedAs(read, rt);
       }
       case 'has': case 'delete': return `${t}.${name}(${arg(0, k)})`;
       case 'set': return `${t}.set(${arg(0, k)}, ${arg(1, v)})`;
@@ -6191,6 +6203,14 @@ export class Translator implements AsyncTranslator {
    * Library mode: a function declared to give `T | null` (`notifyLaunch(): View | null`), which callers test with `=== null`
    * apart from undefined: untyped, holding JavaScript's null apart from undefined, as Kotlin's null is only one of them.
    */
+  /** Library mode: a function declared to return `string | null` (or a number or boolean): null kept, as callers test for it. */
+  private nullablePrimitiveReturn(fn: ts.Node | undefined): boolean {
+    if (!fn || !(ts.isMethodDeclaration(fn) || ts.isFunctionDeclaration(fn)) || !fn.body || fn.getSourceFile().isDeclarationFile || !fn.type || !ts.isUnionTypeNode(fn.type)) return false;
+    const missing = (x: ts.TypeNode) => (ts.isLiteralTypeNode(x) && x.literal.kind === ts.SyntaxKind.NullKeyword) || x.kind === ts.SyntaxKind.UndefinedKeyword;
+    const rest = fn.type.types.filter((x) => !missing(x));
+    return rest.length < fn.type.types.length && rest.length === 1 && [ts.SyntaxKind.StringKeyword, ts.SyntaxKind.NumberKeyword, ts.SyntaxKind.BooleanKeyword].includes(rest[0].kind);
+  }
+
   private returnsNullApart(fn: ts.SignatureDeclaration): boolean {
     if (!(ts.isMethodDeclaration(fn) || ts.isFunctionDeclaration(fn)) || !fn.body || fn.getSourceFile().isDeclarationFile || !fn.type || !ts.isUnionTypeNode(fn.type)) return false;
     const parts = fn.type.types;

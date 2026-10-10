@@ -242,7 +242,8 @@ fun jsNew(cls: Any?, vararg args: Any?): Any? {
 private fun javaScore(value: Any?, type: Class<*>): Int? {
     val rank: Map<Class<*>?, Int> = mapOf(Int::class.javaPrimitiveType to 0, Long::class.javaPrimitiveType to 1, Float::class.javaPrimitiveType to 2, Double::class.javaPrimitiveType to 3, Short::class.javaPrimitiveType to 4, Byte::class.javaPrimitiveType to 5)
     return when (value) {
-        null, JSNull, Unit -> if (type.isPrimitive) null else 1
+        // NativeScript passes null to a primitive parameter as its zero, after any overload taking an object.
+        null, JSNull, Unit -> if (type.isPrimitive) 60 else 1
         is Double -> rank[type] ?: when {
             type == java.lang.Double::class.java || type == java.lang.Number::class.java -> 9
             type == Any::class.java -> 30
@@ -271,6 +272,7 @@ private fun javaScore(value: Any?, type: Class<*>): Int? {
 fun jsJavaArgument(value: Any?): Any? = if (value === JSNull || value === Unit) null else value
 
 fun toJavaValue(value: Any?, type: Class<*>): Any? = when {
+    (value == null || value === JSNull || value === Unit) && type.isPrimitive -> JavaArray.get(JavaArray.newInstance(type, 1), 0)
     value == null || value === JSNull || value === Unit -> null
     value is Double && type.isPrimitive -> when (type) {
         Int::class.javaPrimitiveType -> value.toInt()

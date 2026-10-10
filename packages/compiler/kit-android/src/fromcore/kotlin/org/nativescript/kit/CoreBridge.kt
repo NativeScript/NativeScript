@@ -152,6 +152,8 @@ fun ViewBase.kitOn(eventName: String, handler: (EventData) -> Unit) {
                 jsSet(data, "odd", index % 2.0 != 0.0)
             }
             handler(data)
+            // Promise jobs run when a handler returns: a looper kept busy by redrawing views never idles.
+            Microtasks.checkpoint()
         })
     }
 }

@@ -143,6 +143,7 @@ export const android = {
 	/** As `ios.counterparts`, to the kit's Kotlin. */
 	counterparts: {
 		'color/color-utils.ts': { argbFromColorMix: 'ColorMix.argbFromColorMix' },
+		'npm:@csstools/css-calc': { calc: 'CorePackages.calc' },
 		'npm:emoji-regex': { '*': 'CorePackages.emojiRegex' },
 	} as Record<string, Record<string, string>>,
 	moot: [...ios.moot, ...iosOnly],
