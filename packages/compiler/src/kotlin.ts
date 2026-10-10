@@ -2238,6 +2238,18 @@ export class Translator implements AsyncTranslator {
     if (protocol && !appBase) { supertypes.push(protocol.conformance); lines.push(...protocol.lines); }
     lines.push(...witnesses);
     if (expando) lines.push('    override var jsExpando: JSObject? = null');
+    // Library mode: every method of the class is read by name as well (`font.getAndroidTypeface()` on an untyped font), overrides included.
+    if (this.library) {
+      for (const m of cls.members) {
+        if (!ts.isMethodDeclaration(m) || !m.body || isStatic(m) || ts.isComputedPropertyName(m.name) || m.parameters.some((p) => p.dotDotDotToken) || this.readsArguments(m)) continue;
+        const n = m.name.getText();
+        if (dynMethods.some((d) => d.name === n && !d.key) || n === 'toString' || n === 'equals') continue;
+        let root: ts.MethodDeclaration = m;
+        for (let up = this.inheritedMethod(cls, n); up; up = this.inheritedMethod(up.parent as ts.ClassLikeDeclaration, n)) root = up;
+        if (root.parameters.length !== m.parameters.length) continue;
+        dynMethods.push({ name: n, params: root.parameters.map((p) => this.paramType(p)), ret: this.returnTypeOf(root) });
+      }
+    }
     if (!isError) lines.push(...this.dynamicMembers(fields, name, !!appBase || !!kitRoot, expando ? 'jsExpandoGet(this, key)' : 'null', expando ? 'jsExpandoSet(this, key, value)' : '', symbolFields, dynMethods, expando, dynAccessors));
     if (symbolFields.length) supertypes.push('JSSymbolKeyed');
     // A merged namespace's enums and classes are the class's nested ones (`TemplateParser.State`), its values the companion's.
@@ -2380,6 +2392,7 @@ export class Translator implements AsyncTranslator {
   private passedParams = new Set<ts.ParameterDeclaration>();
   /** Library mode: getters typed as the Java class every override's value has, wider than script declares them. */
   widenedAccessors = new Map<ts.Node, string>();
+  private widenedParams = new Map<ts.Node, { base: ts.Type; own: string }>();
 
   paramType(p: ts.ParameterDeclaration): string {
     if (this.typeTested(p)) return 'Any?';
@@ -2735,6 +2748,13 @@ export class Translator implements AsyncTranslator {
       const own = this.paramType(p);
       const sym = this.checker.getSymbolAtLocation(p.name);
       if (sym && this.mayBeNull(p)) this.nullableDecls.add(sym);
+      // Library mode: a class narrower than the base's (`child: View` where core passes any ViewBase, a NavigationButton):
+      // held as the base's, cast only where code needs the narrower class, as script trusts it.
+      if (this.library && k < baseTypes.length && this.isObjectType(own) && this.isObjectType(baseTypes[k]) && own.replace(/\?$/, '') !== baseTypes[k].replace(/\?$/, '') && /^[A-Z]\w*\??$/.test(own) && /^[A-Z]\w*\??$/.test(baseTypes[k])) {
+        this.widenedAccessors.set(p, optionalType(baseTypes[k]));
+        this.widenedParams.set(p, { base: this.checker.getTypeAtLocation(base.parameters[k].name), own: optionalType(own) });
+        return `        val ${ident(p.name.text)}: ${optionalType(baseTypes[k])} = __o${k}`;
+      }
       const value = k < baseTypes.length ? this.convert(`__o${k}`, baseTypes[k], own) : (this.zero(own) ?? 'null');
       return `        val ${ident(p.name.text)}: ${own} = ${value}`;
     }).filter(Boolean);
@@ -3951,6 +3971,12 @@ export class Translator implements AsyncTranslator {
   }
 
   private identifier(e: ts.Identifier): string {
+    // A parameter held as its base's class (`appOverride`), read for a member only the narrower class declares: cast to it.
+    if (this.widenedParams.size && ts.isPropertyAccessExpression(e.parent) && e.parent.expression === e) {
+      const d = this.checker.getSymbolAtLocation(e)?.valueDeclaration;
+      const w = d && ts.isParameter(d) ? this.widenedParams.get(d) : undefined;
+      if (w && !this.checker.getPropertyOfType(w.base, e.parent.name.text)) return `(${ident(e.text)} as ${w.own})`;
+    }
     // `parseInt`, `parseFloat` as values: functions taking the parameters their slot gives (`map` passes an index, parseInt's radix).
     if ((e.text === 'parseInt' || e.text === 'parseFloat') && !(ts.isCallExpression(e.parent) && e.parent.expression === e) && this.resolve(e)?.declarations?.every((d) => d.getSourceFile().isDeclarationFile)) {
       const context = this.checker.getContextualType(e);
@@ -4265,9 +4291,16 @@ export class Translator implements AsyncTranslator {
       const code = `${this.expr(e.expression)}.jsEnumObject.jsGet(${this.propertyKey(key)})`;
       return rt === 'Any?' ? code : this.fromAny(code, rt);
     }
-    const target = this.expr(e.expression);
-    const t = this.typeOf(e.expression).replace(/\?$/, '');
+    // Library mode: an untyped variable narrowed by `key in owner` to a shape, read by key as it is.
+    const raw = this.library && ts.isIdentifier(e.expression) && this.declaredTypeOf(e.expression) === 'Any?' && this.isObjectRef(e.expression) && !this.typeOf(e.expression).startsWith('JS');
+    const target = raw ? ident((e.expression as ts.Identifier).text) : this.expr(e.expression);
+    const t = raw ? 'Any?' : this.typeOf(e.expression).replace(/\?$/, '');
     const q = e.questionDotToken ? '?' : '';
+    if (raw) {
+      const code = `jsGet(${target}, ${this.propertyKey(key)})`;
+      const rt = this.typeOf(e);
+      if (!isWriteTarget(e)) return rt === 'Any?' ? code : this.fromAnyCode(code, rt, true);
+    }
     if (t === 'String') return `jsCharAt(${target}, ${this.toNumber(key)})`;
     if (t.startsWith('JSArray<')) {
       if (isWriteTarget(e)) return `${target}${q}[${this.toNumber(key)}]`;
@@ -4313,7 +4346,8 @@ export class Translator implements AsyncTranslator {
     if (tag && !isWriteTarget(e) && this.checker.getNonNullableType(this.checker.getTypeAtLocation(e.expression)).getProperties().some((p) => wellKnownMember(p.escapedName.toString()) === 'jsToStringTag')) return `${target}${q}.jsToStringTag`;
     // A computed key on an object (`this[side + 'Drawer']`): its members by name.
     if (this.isObjectRef(e.expression)) {
-      const code = `jsGet(${target}, ${this.propertyKey(key)})`;
+      // Library mode: the object as it is, whatever shape its type gives it (a generic `owner: T`).
+      const code = `jsGet(${this.library && !isWriteTarget(e) ? this.coerce(e.expression, 'Any?') : target}, ${this.propertyKey(key)})`;
       const rt = this.typeOf(e);
       return rt === 'Any?' || isWriteTarget(e) ? code : this.fromAnyCode(code, rt, true);
     }

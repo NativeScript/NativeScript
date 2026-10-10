@@ -1181,7 +1181,9 @@ export class AndroidNativeAPI implements KotlinNative {
         t.widenedAccessors.set(p, types[k]);
         return `${indent}    val ${ident(p.name.text)}: ${types[k]} = __a${k}`;
       }
-      const value = narrowed ? (desc === 'Ljava/lang/Object;' ? t.fromAnyCode(unwrapped, tsType, true) : `(${unwrapped} as ${tsType})`) : this.fromJava(unwrapped, desc);
+      // A CharSequence script reads as a string (an EditText's Editable): its text.
+      const text = narrowed && desc === 'Ljava/lang/CharSequence;' && tsType.replace(/\?$/, '') === 'String' ? `${unwrapped}${tsType.endsWith('?') ? '?' : ''}.toString()` : null;
+      const value = text ?? (narrowed ? (desc === 'Ljava/lang/Object;' ? t.fromAnyCode(unwrapped, tsType, true) : `(${unwrapped} as ${tsType})`) : this.fromJava(unwrapped, desc));
       return `${indent}    val ${ident(p.name.text)}: ${tsType} = ${value}`;
     }).filter(Boolean);
     const head = `${indent}override fun ${ident(name)}(${params.join(', ')})`;
