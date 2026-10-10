@@ -221,20 +221,20 @@ const GLOBALS = `
   declare var crypto: Crypto;
 `;
 
-/** What the Android kit's runtime adds (kit-android `runtime/Workers.kt`): its Worker throws, so an app's main-thread fallback runs. */
+/** What the Android kit's runtime adds (kit-android `runtime/Workers.kt`): workers compiled with the app, a transfer list copied. */
 const ANDROID_GLOBALS = `
   interface MessageEvent<T = any> { readonly data: T }
   interface ErrorEvent { readonly message: string }
   interface Worker {
     onmessage: ((this: Worker, ev: MessageEvent) => any) | null;
     onerror: ((this: Worker, ev: ErrorEvent) => any) | null;
-    postMessage(message: any): void;
+    postMessage(message: any, transfer?: any[]): void;
     terminate(): void;
   }
   declare var Worker: { prototype: Worker; new (scriptURL: string | URL): Worker };
   interface URL { readonly href: string; toString(): string }
   declare var URL: { prototype: URL; new (url: string | URL, base?: string | URL): URL };
-  declare function postMessage(message: any): void;
+  declare function postMessage(message: any, transfer?: any[]): void;
   declare function close(): void;
 `;
 
