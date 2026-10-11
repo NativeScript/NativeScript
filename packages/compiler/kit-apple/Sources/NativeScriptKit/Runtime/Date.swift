@@ -208,6 +208,15 @@ func jsModPositive(_ a: Double, _ b: Double) -> Double {
     return r < 0 ? r + b : r
 }
 
+/// `new Date(value)` of a value not typed a number or a string: a date's time, a string parsed, anything else as its number.
+public func jsNewDate(_ value: Any?) -> JSDate {
+    switch jsFlat(value) {
+    case let date as JSDate: return JSDate(date.time)
+    case let text as String: return JSDate(text)
+    default: return JSDate(jsToNumber(value))
+    }
+}
+
 /// A value read untyped into a `Date`-typed field (an object from `JSON.parse`, where the date is still its
 /// string): the date it holds, or the date `new Date(value)` makes of it.
 public func jsDateOf(_ value: Any?) -> JSDate {

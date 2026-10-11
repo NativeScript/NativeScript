@@ -8257,6 +8257,7 @@ ${members.join('\n')}
       return `${t}(${message})`;
     }
     if (name === 'Date' && this.isLibGlobal(callee as ts.Identifier)) {
+      if (args.length === 1 && this.typeOf(args[0]) !== 'Double' && !this.isString(args[0])) return `jsNewDate(${this.coerce(args[0], 'Any?')})`;
       if (args.length === 1) return `JSDate(${this.isString(args[0]) ? this.expr(args[0]) : this.toNumber(args[0])})`;
       return `JSDate(${args.map((a) => this.toNumber(a)).join(', ')})`;
     }
