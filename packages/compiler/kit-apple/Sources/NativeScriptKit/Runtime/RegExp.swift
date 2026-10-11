@@ -320,7 +320,14 @@ public func jsReplaceAll(_ s: String, _ re: JSRegExp, _ replacement: String) thr
 }
 
 private func expand(_ template: String, _ m: JSMatch, in s: String) -> String {
+    jsSubstitution(template, matched: m.values[0] ?? "", at: Int(m.index), in: s, captures: m.values.storage, groups: m.groups)
+}
+
+/// GetSubstitution: `template` with `$$`, `$&`, `` $` ``, `$'`, `$n` and `$<name>` expanded for the match of `matched`
+/// at UTF-16 offset `position` of `s`. `captures` holds the match then each group.
+func jsSubstitution(_ template: String, matched: String, at position: Int, in s: String, captures: [String?], groups: JSRecord<String>?) -> String {
     let t = Array(template.utf16)
+    guard t.contains(36) else { return template }
     let ns = s as NSString
     var out: [UInt16] = []
     var i = 0
@@ -330,19 +337,19 @@ private func expand(_ template: String, _ m: JSMatch, in s: String) -> String {
         let c = t[i + 1]
         switch c {
         case 36: out.append(36); i += 2
-        case 38: append(m.values[0]); i += 2 // `$&`
-        case 96: append(ns.substring(to: Int(m.index))); i += 2 // `` $` ``
-        case 39: append(ns.substring(from: Int(m.index) + (m.values[0]?.utf16.count ?? 0))); i += 2 // `$'`
+        case 38: append(matched); i += 2 // `$&`
+        case 96: append(ns.substring(to: position)); i += 2 // `` $` ``
+        case 39: append(ns.substring(from: min(ns.length, position + matched.utf16.count))); i += 2 // `$'`
         case 60: // `$<name>`
-            if let close = t[(i + 2)...].firstIndex(of: 62), let groups = m.groups {
+            if let close = t[(i + 2)...].firstIndex(of: 62), let groups {
                 append(groups[String(decoding: t[(i + 2)..<close], as: UTF16.self)])
                 i = close + 1
             } else { out.append(t[i]); i += 1 }
         case 48...57:
             var n = Int(c - 48)
             var used = 2
-            if i + 2 < t.count, (48...57).contains(t[i + 2]), n * 10 + Int(t[i + 2] - 48) < m.values.count { n = n * 10 + Int(t[i + 2] - 48); used = 3 }
-            if n >= 1 && n < m.values.count { append(m.values[n]); i += used } else { out.append(t[i]); i += 1 }
+            if i + 2 < t.count, (48...57).contains(t[i + 2]), n * 10 + Int(t[i + 2] - 48) < captures.count { n = n * 10 + Int(t[i + 2] - 48); used = 3 }
+            if n >= 1 && n < captures.count { append(captures[n]); i += used } else { out.append(t[i]); i += 1 }
         default: out.append(t[i]); i += 1
         }
     }

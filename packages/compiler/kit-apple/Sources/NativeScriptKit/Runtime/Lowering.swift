@@ -223,13 +223,18 @@ private func jsToUint32Bits(_ v: Double) -> UInt32 {
 
 /// `s.replaceAll(pattern, replacement)` with a string pattern.
 public func jsReplaceAll(_ s: String, _ pattern: String, _ replacement: String) -> String {
-    if pattern.isEmpty {
-        let u = units(s)
-        var out = replacement
-        for c in u { out += string([c][...]) + replacement }
-        return out
+    let u = units(s), p = units(pattern)
+    var out: [UInt16] = []
+    var cursor = 0
+    var at = jsUnitsIndex(u, p, from: 0)
+    while let i = at {
+        out += u[cursor..<i]
+        out += jsSubstitution(replacement, matched: pattern, at: i, in: s, captures: [pattern], groups: nil).utf16
+        cursor = i + p.count
+        at = jsUnitsIndex(u, p, from: i + max(1, p.count))
     }
-    return jsSplit(s, pattern).join(replacement)
+    out += u[cursor...]
+    return string(out[...])
 }
 
 public func jsPadEnd(_ s: String, _ length: Double, _ fill: String = " ") -> String {

@@ -49,10 +49,25 @@ private func jsRange(_ count: Int, _ start: Double, _ end: Double?) -> (Int, Int
 
 public func jsCharAt(_ s: String, _ index: Double) -> String { jsSlice(s, index, index + 1) }
 
-/// `s.replace(a, b)` with a string pattern replaces the first match only.
+/// `s.replace(a, b)` with a string pattern replaces the first match only, found by UTF-16 units.
 public func jsReplace(_ s: String, _ pattern: String, _ replacement: String) -> String {
-    guard let r = s.range(of: pattern) else { return s }
-    return s.replacingCharacters(in: r, with: replacement)
+    let u = Array(s.utf16), p = Array(pattern.utf16)
+    guard let at = jsUnitsIndex(u, p, from: 0) else { return s }
+    var out = Array(u[..<at])
+    out += jsSubstitution(replacement, matched: pattern, at: at, in: s, captures: [pattern], groups: nil).utf16
+    out += u[(at + p.count)...]
+    return String(decoding: out, as: UTF16.self)
+}
+
+/// Where `p` first occurs in `u` at or after `from`.
+func jsUnitsIndex(_ u: [UInt16], _ p: [UInt16], from: Int) -> Int? {
+    guard let first = p.first else { return from <= u.count ? from : nil }
+    var i = from
+    while i + p.count <= u.count {
+        if u[i] == first && u[i..<(i + p.count)].elementsEqual(p) { return i }
+        i += 1
+    }
+    return nil
 }
 
 public func jsPadStart(_ s: String, _ length: Double, _ fill: String = " ") -> String {
