@@ -36,7 +36,11 @@ export class Throws {
   /** A member read by name at run time (library mode: one only a declaration file declares), which throws on undefined. */
   private dynamicMember: (e: ts.PropertyAccessExpression) => boolean;
 
-  constructor(checker: ts.TypeChecker, files: readonly ts.SourceFile[], untyped: (n: ts.Node) => boolean, nativeThrows: (call: ts.CallExpression | ts.NewExpression) => boolean = () => false, implementation: (decl: ts.Declaration) => ts.Declaration | null = () => null, dynamicMember: (e: ts.PropertyAccessExpression) => boolean = () => false, baseInitThrows: (cls: ts.ClassLikeDeclaration) => boolean = () => false, replaced: (fn: ts.Node) => boolean = () => false) {
+  /** Whether converting a value to the type its place declares can fail (an untyped value cast to a class), which throws a TypeError. */
+  private castThrows: (n: ts.Node) => boolean;
+
+  constructor(checker: ts.TypeChecker, files: readonly ts.SourceFile[], untyped: (n: ts.Node) => boolean, nativeThrows: (call: ts.CallExpression | ts.NewExpression) => boolean = () => false, implementation: (decl: ts.Declaration) => ts.Declaration | null = () => null, dynamicMember: (e: ts.PropertyAccessExpression) => boolean = () => false, baseInitThrows: (cls: ts.ClassLikeDeclaration) => boolean = () => false, replaced: (fn: ts.Node) => boolean = () => false, castThrows: (n: ts.Node) => boolean = () => false) {
+    this.castThrows = castThrows;
     this.baseInitThrows = baseInitThrows;
     this.implementation = implementation;
     this.dynamicMember = dynamicMember;
@@ -120,6 +124,7 @@ export class Throws {
 
   private nodeThrows(n: ts.Node): boolean {
     const c = this.checker;
+    if (this.castThrows(n)) return true;
     // A module's Angular `computed(fn)` read as a value (`readonly color = ink`) runs fn, as its Swift getter does.
     if (ts.isIdentifier(n) && !(ts.isCallExpression(n.parent) && n.parent.expression === n) && !ts.isImportSpecifier(n.parent) && !ts.isExportSpecifier(n.parent) && !ts.isImportClause(n.parent)) {
       let s = c.getSymbolAtLocation(n);

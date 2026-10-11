@@ -140,6 +140,66 @@ public func jsUnwrap<T>(_ value: T?, _ key: String, null: Bool = false) throws -
     return value
 }
 
+/// An untyped value where code declares `T` (`const p: Point = JSON.parse(s)`): the value as `T`,
+/// or a TypeError where it is none, which JavaScript would let through until a member is missing.
+@inline(__always)
+public func jsChecked<T>(_ value: Any?, _ type: T.Type) throws -> T {
+    if let same = value as? T { return same }
+    if let cast: T = jsCast(value) { return cast }
+    throw jsCastFailure(value, String(describing: T.self))
+}
+
+@inline(never)
+public func jsCastFailure(_ value: Any?, _ type: String) -> JSException {
+    JSException(JSTypeError("\(jsIsNullish(value) ? jsToString(value) : jsTypeof(value)) is not a \(type)"))
+}
+
+/// An untyped value where code declares an `Error` (`catch (e) { (e as Error).message }`,
+/// `.catch((e: Error) => …)`): the error itself, or a view reading the thrown value's members.
+public func jsErrorOf(_ value: Any?) -> JSError {
+    if let error = jsFlat(value) as? JSError { return error }
+    return JSThrownValue(value)
+}
+
+/// What was thrown or rejected that is no `Error`, seen as one: its members read as the value's own,
+/// undefined where it has none.
+public final class JSThrownValue: JSError {
+    public let value: Any?
+
+    init(_ value: Any?) {
+        self.value = value
+        super.init("")
+        name = Self.read(value, "name")
+        message = Self.read(value, "message")
+    }
+
+    private static func isObject(_ value: Any?) -> Bool { jsFlat(value).map(jsIsObject) ?? false }
+
+    private static func read(_ value: Any?, _ key: String) -> String {
+        let v = isObject(value) ? jsField(value, key) : nil
+        return jsIsNullish(v) ? "undefined" : jsToString(v)
+    }
+
+    public override var stack: String {
+        get { Self.read(value, "stack") }
+        set { super.stack = newValue }
+    }
+
+    public override subscript(jsKey key: String) -> Any? {
+        get { Self.isObject(value) ? jsField(value, key) : nil }
+        set { if Self.isObject(value) { try? jsSet(value, key, newValue) } }
+    }
+
+    public override var jsKeys: [String] { Self.isObject(value) ? jsKeysOf(value) : [] }
+}
+
+/// A dynamic write (`obj[key] = v`, a binding's set) a typed field refused: the TypeError `jsSet` throws after the write.
+nonisolated(unsafe) var jsRefusedWrite: JSTypeError?
+
+public func jsRefuseSet(_ value: Any?, _ key: String, _ type: String) {
+    jsRefusedWrite = JSTypeError("Cannot assign \(jsIsNullish(value) ? jsToString(value) : jsTypeof(value)) to '\(key)', a \(type)")
+}
+
 /// A truthy operand whose Swift type may still be optional (`a?.b` where TypeScript types `a` as present).
 @inline(__always) public func jsPresent<T>(_ value: T) -> T { value }
 @inline(__always) public func jsPresent<T>(_ value: T?) -> T { value! }

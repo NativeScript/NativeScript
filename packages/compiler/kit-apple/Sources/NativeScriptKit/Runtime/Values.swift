@@ -595,7 +595,12 @@ public func jsSet(_ object: Any?, _ key: String, _ value: Any?) throws {
             if !exists { throw JSException(JSTypeError("Cannot add property \(key), object is not extensible")) }
             if level == 3 { throw JSException(JSTypeError("Cannot assign to read only property '\(key)' of object '#<Object>'")) }
         }
+        jsRefusedWrite = nil
         dynamic[jsKey: key] = value
+        if let refused = jsRefusedWrite {
+            jsRefusedWrite = nil
+            throw JSException(refused)
+        }
     // `promise.cancel = fn` on the promise an animation returns: what its `cancel()` does.
     case let cancelable as JSCancelable where key == "cancel":
         cancelable.canceler = { jsReport { _ = try jsCall(value) } }

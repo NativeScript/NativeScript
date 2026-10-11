@@ -1762,6 +1762,8 @@ export class Translator implements AsyncTranslator {
   /** Kotlin code reading an untyped value (`Any?`) as `type`. */
   fromAny(code: string, type: string): string {
     if (type === 'Any?') return code;
+    // An Error held untyped (a caught or rejected value): the error, or a view of what was thrown instead.
+    if (type === 'JSError' && !this.lenient) return `jsErrorOf(${code})`;
     // A call's value read as nothing: the call still runs.
     if (type === 'Unit') return /^[\w.]+$/.test(code) ? 'Unit' : `run { ${code}; Unit }`;
     if (code === 'null' && type.endsWith('?')) return 'null';
