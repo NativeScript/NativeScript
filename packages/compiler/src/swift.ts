@@ -3725,7 +3725,7 @@ ${members.join('\n')}
         // An implicitly unwrapped property's getter gives nothing where it throws, or where it gives nothing.
         const got = declared.endsWith('!') ? declared.replace(/!$/, '?') : t;
         const fallback = isOptional(got) ? 'nil' : this.zero(t) ?? null;
-        parts.push(`        get { jsReported { () throws -> ${got} in${this.functionBody(a.get, got, '        ').slice(1)}${fallback ? ` ?? ${fallback}` : '!'} }`);
+        parts.push(`        get { jsReported { () throws -> ${got} in${this.functionBody(a.get, got, '        ').slice(1)} ?? ${fallback ?? `jsNativeZero(${got}.self)`} }`);
       } else if (a.get) parts.push(`        get${this.throwsInfo.fn(a.get) ? ' throws' : ''} ${this.functionBody(a.get, t, '        ')}`);
       else parts.push('        get { nil }');
       if (ignoredSet) parts.push('        set {}');
@@ -4258,7 +4258,7 @@ ${members.join('\n')}
     // A kit method that throws passes on what the override throws, as core's caller catches it.
     const result = ret === 'Void'
       ? (throws ? (kit.throws ? `        _ = try ${call}` : `        jsReport { _ = try ${call} }`) : `        _ = ${call}`)
-      : `        let __result: ${tsRet} = ${throws ? (kit.throws ? 'try ' : 'try! ') : ''}${call}\n        return ${this.convert('__result', tsRet, ret)}`;
+      : `        let __result: ${tsRet} = ${throws && !kit.throws ? `jsReportedOrZero { () throws -> ${tsRet} in${body.slice(1)}` : `${throws ? 'try ' : ''}${call}`}\n        return ${this.convert('__result', tsRet, ret)}`;
     return [`    override func ${ident(m.name.getText())}(${parsed.map((p) => p.decl).join(', ')})${kit.throws ? ' throws' : ''}${ret === 'Void' ? '' : ` -> ${ret}`} {`, ...binds, result, '    }'].join('\n');
   }
 
@@ -9266,7 +9266,7 @@ function nativeZero(type: string): string {
   if (t === 'Bool') return 'false';
   if (t === 'String') return '""';
   if (/^(U?Int(8|16|32|64)?|Double|Float|CGFloat)$/.test(t)) return '0';
-  return `{ fatalError("no ${t}") }()`;
+  return `jsNativeZero(${t}.self)`;
 }
 
 /** A statement after which control never continues: it ends in `return` or `throw`. */

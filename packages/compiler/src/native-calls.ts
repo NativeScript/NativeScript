@@ -1127,7 +1127,7 @@ export class NativeAPI {
     const throws = t.throwsInfo.fn(fn);
     const call = `(${body})(${names.map((n) => n).join(', ')})`;
     const ret = sig[2].trim();
-    const inner = ret === 'Void' ? (throws ? `jsReport { try ${call} }` : `${call}`) : `${throws ? 'try! ' : ''}${call}`;
+    const inner = ret === 'Void' ? (throws ? `jsReport { try ${call} }` : `${call}`) : throws ? `jsReportedOrZero { try ${call} }` : call;
     return `{ (${swiftParams.join(', ')}) -> ${ret} in ${binds.join('; ')}${binds.length ? '; ' : ''}${ret === 'Void' ? inner : `return ${inner}`} }`;
   }
 
@@ -1187,7 +1187,7 @@ export class NativeAPI {
     const params = m[1] ? splitTopLevel(m[1]).map((p, k) => `_ __a${k}: ${p.slice(p.indexOf(':') + 1).replace(/=.*$/, '').trim()}`) : [];
     const call = `try self.${jsName}(${params.map((_, k) => `__a${k}`).join(', ')})`;
     const ret = m[2];
-    const body = ret ? `jsReported { ${call} }${/[?!]$/.test(ret) ? ' ?? nil' : '!'}` : `jsReport { ${call} }`;
+    const body = ret ? `jsReportedOrZero { ${call} }` : `jsReport { ${call} }`;
     return `    @objc(${jsName}${':'.repeat(params.length)}) public func __objc_${jsName}(${params.join(', ')})${ret ? ` -> ${ret}` : ''} { ${body} }`;
   }
 
@@ -1285,7 +1285,7 @@ export class NativeAPI {
         const own = optional(native.type) && t.lenientRef(declared) !== declared ? optionalType(declared) : declared;
         const body = t.functionBody(a.get, own, '            ');
         const value = t.throwsInfo.fn(a.get) ? `jsReported { () throws -> ${own} in${body.slice(1)}${own.endsWith('?') && own !== 'Any?' ? ' ?? nil' : ''}` : `{ () -> ${own} in${body.slice(1)}()`;
-        const fallback = own.endsWith('?') || own === 'Any?' || optional(native.type) ? '' : t.zero(own) ? ` ?? ${t.zero(own)}` : '!';
+        const fallback = own.endsWith('?') || own === 'Any?' || optional(native.type) ? '' : t.zero(own) ? ` ?? ${t.zero(own)}` : ` ?? jsNativeZero(${own.replace(/!$/, "?")}.self)`;
         const get = `        get {\n            let __value: ${t.throwsInfo.fn(a.get) ? optionalType(own) : own} = ${value}\n            return ${this.toSwiftValue(`__value${t.throwsInfo.fn(a.get) ? fallback : ''}`, own, native.type)}\n        }`;
         const parts = [get];
         if (a.set) {
@@ -1401,7 +1401,7 @@ export class NativeAPI {
     // A value the TypeScript method returns where Objective-C returns nothing is dropped.
     const result = ret === 'Void'
       ? (tsRet !== 'Void' ? `        ${throws ? 'jsReport { _ = try ' : '_ = '}${call}${throws ? ' }' : ''}` : throws ? `        jsReport { try ${call} }` : body.slice(2, -2).replace(/^ {8}/, '        '))
-      : `        let __result: ${tsRet} = ${throws ? 'try! ' : ''}${call}\n        return ${this.toSwiftValue('__result', tsRet, ret)}`;
+      : `        let __result: ${tsRet} = ${throws ? `jsReportedOrZero { () throws -> ${tsRet} in${body.slice(1)}` : call}\n        return ${this.toSwiftValue('__result', tsRet, ret)}`;
     const available = target.introduced && parseFloat(target.introduced) > DEPLOYMENT ? `@available(iOS ${target.introduced}, *) ` : '';
     return [`    ${available}${override ? 'override ' : ''}func ${target.swift}(${swiftParams.join(', ')})${ret === 'Void' ? '' : ` -> ${ret}`} {`, ...binds, result, '    }'].join('\n');
   }

@@ -150,6 +150,38 @@ public func jsReported<T>(_ body: () throws -> T) -> T? {
     do { return try body() } catch { jsReport { throw error }; return nil }
 }
 
+/// A native callback's result from a body that may throw: what it throws is reported as uncaught,
+/// and the callback returns its type's neutral value (`jsNativeZero`), as NativeScript's runtime
+/// returns from a delegate whose JavaScript threw.
+public func jsReportedOrZero<T>(_ body: () throws -> T) -> T {
+    do { return try body() } catch {
+        jsReportUncaught(jsCaught(error))
+        return jsNativeZero(T.self)
+    }
+}
+
+/// Types whose neutral value is their empty one.
+protocol JSEmptyConstructible { static var jsEmpty: Self { get } }
+extension String: JSEmptyConstructible { static var jsEmpty: String { "" } }
+extension Array: JSEmptyConstructible { static var jsEmpty: Array { [] } }
+extension Dictionary: JSEmptyConstructible { static var jsEmpty: Dictionary { [:] } }
+extension Set: JSEmptyConstructible { static var jsEmpty: Set { [] } }
+
+/// A native type's neutral value: nil, zero bits for numbers, booleans, C structs and enums,
+/// empty for strings and collections, a new instance of an Objective-C class.
+public func jsNativeZero<T>(_ type: T.Type) -> T {
+    if let none = (T.self as? JSOptionalProtocol.Type)?.jsNone as? T { return none }
+    if let empty = (T.self as? JSEmptyConstructible.Type)?.jsEmpty as? T { return empty }
+    if let cls = T.self as? NSObject.Type, let made = cls.init() as? T { return made }
+    if _isPOD(T.self) {
+        return withUnsafeTemporaryAllocation(of: T.self, capacity: 1) { buffer in
+            UnsafeMutableRawPointer(buffer.baseAddress!).initializeMemory(as: UInt8.self, repeating: 0, count: MemoryLayout<T>.stride)
+            return buffer.baseAddress!.pointee
+        }
+    }
+    fatalError("\(T.self) has no neutral value to return where script threw")
+}
+
 /// A loop's items from an expression that may throw: none when it does, the error reported.
 public func jsReportedItems<S: Sequence>(_ body: () throws -> S) -> [S.Element] {
     jsReported { Array(try body()) } ?? []
