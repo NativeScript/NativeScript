@@ -7847,7 +7847,17 @@ ${members.join('\n')}
       case 'push': case 'unshift':
         if (e.arguments.some(ts.isSpreadElement)) return `${t}.${name}(contentsOf: ${this.packed(e.arguments, `JSArray<${el}>`)})`;
         return `${t}.${name}(${e.arguments.map((x) => this.coerce(x, el)).join(', ')})`;
-      case 'pop': case 'shift': case 'reverse': case 'toString': case 'keys': case 'entries': case 'values': case 'flat': return `${t}.${name}()`;
+      case 'pop': case 'shift': case 'reverse': case 'toString': case 'keys': case 'entries': case 'values': return `${t}.${name}()`;
+      case 'flat': {
+        const [depth] = e.arguments;
+        if (!depth) return `${t}.flat()`;
+        if (el === 'Any?') return `${t}.flat(${this.coerce(depth, 'Double')})`;
+        // A typed array flattens one level per `flat()`, as deep as its type nests.
+        const levels = Math.min(Number(ts.isNumericLiteral(depth) ? depth.text : NaN), (/^(JSArray<)*/.exec(el)![0].length / 8));
+        if (levels >= 1) return t + '.flat()'.repeat(levels);
+        if (q) throw this.error(e, 'flat with a depth on an optional array');
+        return this.convert(`JSArray<Any?>(${t}.jsAnyElements).flat(${this.coerce(depth, 'Double')})`, 'JSArray<Any?>', this.typeOf(e));
+      }
       case 'toLocaleString': if (!e.arguments.length) return `${t}.toLocaleString()`; break;
       case 'splice':
         if (e.arguments.slice(2).some(ts.isSpreadElement)) return `${t}.splice(${e.arguments.slice(0, 2).map((x) => this.coerce(x, 'Double')).join(', ')}, contentsOf: ${this.packed(e.arguments.slice(2), `JSArray<${el}>`)}.storage)`;
