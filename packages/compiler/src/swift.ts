@@ -2112,7 +2112,8 @@ ${members.join('\n')}
   shapesCode(): string {
     const shapes = [...this.shapes.values()].map((s) => this.objectClass(s.name, s.fields, null));
     // `implicit`: `jsImplicit` of the cell's function type, not the generic one, which would hand back a new thunk.
-    const cells = [...this.functionCells].map(([type, name]) => `struct ${name} {\n    let f: ${type}\n    static func implicit(_ value: (${type})?) -> (${type})! { value }\n}`);
+    const needs = (type: string) => Math.max(0, ...[...this.gatedTypes].filter(([n]) => new RegExp(`\\b${n.replace(/\./g, '\\.')}\\b`).test(type)).map(([, v]) => v));
+    const cells = [...this.functionCells].map(([type, name]) => `${needs(type) ? `@available(iOS ${needs(type)}, *)\n` : ''}struct ${name} {\n    let f: ${type}\n    static func implicit(_ value: (${type})?) -> (${type})! { value }\n}`);
     return [...shapes, ...this.globalAliases.values(), ...this.templateObjects, ...this.extendedClasses, ...cells].join('\n\n');
   }
 
@@ -2866,11 +2867,14 @@ ${members.join('\n')}
 
   /** A type newer than the deployment target named inside a function body: the body runs only where the OS has it. Outside a body, nothing. */
   requireTypeAvailability(version: number, name?: string) {
+    if (name) this.gatedTypes.set(name, Math.max(this.gatedTypes.get(name) ?? 0, version));
     if (!this.availability.length || version <= this.refinedVersion) return;
     const named = name && this.statementTypes.get(this.availability.length);
     if (named) named.set(name, Math.max(named.get(name) ?? 0, version));
     else this.requireAvailability(version);
   }
+  /** Every native type newer than the deployment target looked up: what a declaration outside any function naming it needs. */
+  private gatedTypes = new Map<string, number>();
   /** By the depth of a statement's frame in `availability`: the newer types its translation looked up, which need the OS only where its code names them. */
   private statementTypes = new Map<number, Map<string, number>>();
 
