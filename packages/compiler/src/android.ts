@@ -308,6 +308,16 @@ val appCSS = ${kotlinString(b.css)}
   // A plugin built into an AAR brings its manifest as a library's; the merger takes it from there.
   const overlays = pluginManifests({ app: b.app, applicationId, dir: join(b.out, 'plugin-manifests'), except: new Set((b.plugins ?? []).map((p) => p.name)) });
   const gradleFile = (f: string) => (existsSync(join(appResources, f)) ? `apply(from = ${kotlinString(join(appResources, f))})\n` : '');
+  // The app's own resources, which script names at run time (`res://ic_settings`, `getIdentifier`): kept by the resource shrinker.
+  const named = existsSync(resources) ? readdirSync(resources).flatMap((dir) => {
+    const type = /^(drawable|mipmap|raw|font|layout|xml)(-|$)/.exec(dir)?.[1];
+    return type ? readdirSync(join(resources, dir)).map((f) => `@${type}/${f.replace(/\..*$/, '')}`) : [];
+  }) : [];
+  const keep = join(b.out, 'src', 'main', 'res', 'raw');
+  if (named.length) {
+    mkdirSync(keep, { recursive: true });
+    writeFileSync(join(keep, 'ns_app_resources_keep.xml'), `<?xml version="1.0" encoding="utf-8"?>\n<resources xmlns:tools="http://schemas.android.com/tools" tools:keep="${[...new Set(named)].sort().join(',')}" />\n`);
+  }
   if (b.bindings?.length) {
     mkdirSync(join(b.out, 'bindings'), { recursive: true });
     writeFileSync(join(b.out, 'bindings', 'CMakeLists.txt'), `cmake_minimum_required(VERSION 3.22)\nproject(bindings)\n${b.bindings.map((x, k) => `add_subdirectory(${JSON.stringify(x.jni)} binding${k})\n`).join('')}`);

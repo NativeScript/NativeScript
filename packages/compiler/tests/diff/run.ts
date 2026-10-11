@@ -53,6 +53,8 @@ function buildRuntime() {
  */
 const lenient = (file: string) => readFileSync(file, 'utf8').startsWith('// @lenient');
 const kotlinOnly = (file: string) => readFileSync(file, 'utf8').startsWith('// @lenient-kotlin');
+/** A case starting `// @kotlin` covers what only the Kotlin translator does yet: it is not run as Swift. */
+const kotlinApp = (file: string) => readFileSync(file, 'utf8').startsWith('// @kotlin');
 /** A case starting `// @swift` covers what only the Swift runtime has yet (typed arrays): it is not run as Kotlin. */
 const swiftOnly = (file: string) => (lenient(file) && !kotlinOnly(file)) || readFileSync(file, 'utf8').startsWith('// @swift');
 
@@ -180,7 +182,7 @@ if (targets.includes('swift')) {
   for (const c of cases) {
     const name = basename(c, '.ts');
     const file = join(here, 'cases', c);
-    if (kotlinOnly(file)) { swiftSkipped++; continue; }
+    if (kotlinOnly(file) || kotlinApp(file)) { swiftSkipped++; continue; }
     const dir = join(build, name);
     try {
       translate(file, join(dir, 'Sources'));
