@@ -7481,7 +7481,7 @@ ${members.join('\n')}
         case 'Boolean': return arg(0) ? this.cond(arg(0)) : 'false';
         case 'parseInt': return `jsParseInt(${this.str(arg(0))}${arg(1) ? `, ${this.expr(arg(1))}` : ', nil'})`;
         case 'parseFloat': return `jsParseFloat(${this.str(arg(0))})`;
-        case 'isNaN': return `${this.toNumber(arg(0))}.isNaN`;
+        case 'isNaN': return `(${this.toNumber(arg(0))}).isNaN`;
         case 'isFinite': return `${this.toNumber(arg(0))}.isFinite`;
         case 'setTimeout': case 'setInterval': {
           const timer = `js${name[0].toUpperCase()}${name.slice(1)}`;
@@ -7704,7 +7704,7 @@ ${members.join('\n')}
         if (method === 'isInteger') return `jsIsInteger(${this.expr(arg(0))})`;
         if (method === 'isSafeInteger') return `jsIsSafeInteger(${this.expr(arg(0))})`;
         if (method === 'isFinite') return `${this.expr(arg(0))}.isFinite`;
-        if (method === 'isNaN') return `${this.expr(arg(0))}.isNaN`;
+        if (method === 'isNaN') return `(${this.expr(arg(0))}).isNaN`;
         if (method === 'parseFloat') return `jsParseFloat(${this.expr(arg(0))})`;
         if (method === 'parseInt') return `jsParseInt(${this.str(arg(0))}${arg(1) ? `, ${this.expr(arg(1))}` : ', nil'})`;
         break;
