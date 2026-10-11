@@ -14,9 +14,12 @@ public protocol JSArrayProtocol: AnyObject {
 }
 
 /// An empty slot of a `JSArray<Double>`: a signaling NaN, which arithmetic never produces (it gives a quiet NaN).
-@inline(__always) public var jsHoleNumber: Double { Double(bitPattern: 0x7FF4_0000_0000_4E53) }
+@inlinable public var jsHoleNumber: Double { Double(bitPattern: 0x7FF4_0000_0000_4E53) }
 /// An empty slot of a `JSArray<String>`: noncharacters no text carries.
 public let jsHoleString = String(String.UnicodeScalarView([Unicode.Scalar(0xFDD0)!, "\u{0}", Unicode.Scalar(0xFDD1)!]))
+
+/// Whether `s` is `jsHoleString`; its UTF-8 length first, which a native string knows without comparing text.
+@inlinable public func jsIsHoleString(_ s: String) -> Bool { s.utf8.count == 7 && s == jsHoleString }
 
 /// A function type's rest parameter (`(...args) => void`): an array to Swift, marked so that a script
 /// function called as that type takes the array's elements as its arguments.
@@ -52,9 +55,9 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
     }
 
     /// `JSArray<Double>` and `JSArray<String>` only: whether `e` is an empty slot's sentinel.
-    @inline(__always) static func isHole(_ e: Element) -> Bool {
+    @inlinable static func isHole(_ e: Element) -> Bool {
         if Element.self == Double.self { return unsafeBitCast(e, to: Double.self).bitPattern == jsHoleNumber.bitPattern }
-        if Element.self == String.self { return unsafeBitCast(e, to: String.self) == jsHoleString }
+        if Element.self == String.self { return jsIsHoleString(unsafeBitCast(e, to: String.self)) }
         return false
     }
 
@@ -112,10 +115,12 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
         }
     }
 
-    /// `a[i]` as JavaScript reads it: nil (undefined) unless `i` is an integer index in range.
-    public final func element(_ i: Double) -> Element? {
-        guard let k = Int(exactly: i), k >= 0, k < count else { return nil }
-        let e = self[k]
+    /// `a[i]` as JavaScript reads it: nil (undefined) unless `i` is an integer index in range of a slot that is not empty.
+    /// Inlinable: every typed element read goes through it, which the app's module then specializes.
+    @inlinable public final func element(_ i: Double) -> Element? {
+        jsTracker?.track()
+        guard let k = Int(exactly: i), k >= 0, k < storage.count else { return nil }
+        let e = jsTracker == nil ? storage[k] : jsReactive(storage[k])
         return JSArray.isHole(e) ? nil : e
     }
 
@@ -785,7 +790,7 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
     /// `array.join(separator)`: elements in their string form, undefined and null as "".
     public final func join(_ separator: String = ",") -> String {
         track()
-        if Element.self == String.self { return (storage as! [String]).map { $0 == jsHoleString ? "" : $0 }.joined(separator: separator) }
+        if Element.self == String.self { return (storage as! [String]).map { jsIsHoleString($0) ? "" : $0 }.joined(separator: separator) }
         if Element.self == Double.self { return (storage as! [Double]).map { $0.bitPattern == jsHoleNumber.bitPattern ? "" : jsNumberToString($0) }.joined(separator: separator) }
         return jsJoin(separator)
     }
