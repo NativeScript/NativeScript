@@ -58,7 +58,8 @@ export function kotlinString(text: string): string {
 }
 
 function escapeText(text: string): string {
-  return text.replace(/[\\"$\n\r\t\b]|[\u0000-\u001f\u007f]/g, (c) => {
+  // A lone surrogate is escaped: written to the UTF-8 source as itself, it would read as U+FFFD.
+  return text.replace(/[\\"$\n\r\t\b]|[\u0000-\u001f\u007f]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/g, (c) => {
     switch (c) {
       case '\\': return '\\\\';
       case '"': return '\\"';
