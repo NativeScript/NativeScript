@@ -4967,8 +4967,8 @@ ${members.join('\n')}
     const init = list ? this.declarationList(list, false) : s.initializer ? i + this.tryPrefix(s.initializer) + this.exprStatement(s.initializer as ts.Expression) : '';
     const cond = s.condition ? `${this.tryPrefix(s.condition)}${this.cond(s.condition)}` : 'true';
     const step = s.incrementor ? this.tryPrefix(s.incrementor) + this.exprStatement(s.incrementor) : '';
-    // `let` loop variables a closure in the body captures are a fresh binding per iteration, as in JavaScript.
-    const captured = list && !(list.flags & ts.NodeFlags.Const) && list.declarations.some((d) => ts.isIdentifier(d.name) && capturedIn(d.name, s.statement, this.checker));
+    // `let` loop variables a closure in the body captures are a fresh binding per iteration, as in JavaScript; `var` is one binding.
+    const captured = list && list.flags & ts.NodeFlags.Let && list.declarations.some((d) => ts.isIdentifier(d.name) && capturedIn(d.name, s.statement, this.checker));
     const labelName = ts.isLabeledStatement(s.parent) ? s.parent.label.text : null;
     const hasContinue = containsJump(s.statement, ts.SyntaxKind.ContinueStatement) || (!!labelName && continuesTo(s.statement, labelName));
     const label = this.takeLabel();
