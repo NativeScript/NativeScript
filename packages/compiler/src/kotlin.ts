@@ -4947,6 +4947,13 @@ export class Translator implements AsyncTranslator {
           : this.fromAnyCode(`__a.getOrNull(${k})`, this.paramType(q), true));
         return `JSMethod { __self, __a -> ${ref}(${[thisType === 'Any?' ? '__self' : `(__self as ${thisType})`, ...args].join(', ')}) }`;
       }
+      // Library mode: a function of an optional string, number or boolean held as a value (a shorthand's converter) may be given
+      // anything (core probes converters with `unsetValue`): another kind of value is none of them, as `typeof` finds it.
+      const kinds = fnDecl.parameters.map((p) => this.paramType(p));
+      if (this.library && kinds.length && kinds.every((k) => /^(String|Double|Boolean)\?$/.test(k) || k === 'Any?') && kinds.some((k) => k !== 'Any?') && !fnDecl.parameters.some((p) => p.dotDotDotToken)) {
+        const names = kinds.map((_, k) => `__v${k}`);
+        return `{ ${names.map((n) => `${n}: Any?`).join(', ')} -> ${ref}(${names.map((n, k) => (kinds[k] === 'Any?' ? n : `(${n} as? ${kinds[k].slice(0, -1)})`)).join(', ')}) }`;
+      }
       const dot = ref.lastIndexOf('.');
       return dot < 0 ? `::${ref}` : `${ref.slice(0, dot)}::${ref.slice(dot + 1)}`;
     }
