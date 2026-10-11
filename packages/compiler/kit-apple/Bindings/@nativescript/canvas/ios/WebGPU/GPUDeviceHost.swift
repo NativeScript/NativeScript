@@ -8,13 +8,19 @@ final class GPUDeviceHost: GPUObjectHost {
 
     override class var className: String? { "GPUDevice" }
     override class var methods: Set<String> { Self.names }
-    private static let names: Set<String> = [
+    private static let names: Set<String> = Set([
         "createBindGroup", "__getMetalDevicePointer", "createBindGroupLayout", "createBuffer", "createCommandEncoder",
         "createComputePipeline", "createComputePipelineAsync", "createPipelineLayout", "createQuerySet",
         "createRenderBundleEncoder", "createRenderPipeline", "createRenderPipelineAsync", "createSampler",
-        "createShaderModule", "createTexture", "importExternalTexture", "destroy", "popErrorScope", "pushErrorScope",
+        "createShaderModule", "createTexture", "destroy", "popErrorScope", "pushErrorScope",
         "setuncapturederror",
-    ]
+    ]).union(externalTextureNames)
+    // External textures came with a later CanvasNative than some apps install.
+    #if CANVAS_EXTERNAL_TEXTURE
+    private static let externalTextureNames: Set<String> = ["importExternalTexture"]
+    #else
+    private static let externalTextureNames: Set<String> = []
+    #endif
     override class var lazyProperties: Set<String> { Self.lazy }
     private static let lazy: Set<String> = ["label", "features", "queue", "limits", "lost"]
 
@@ -76,7 +82,9 @@ final class GPUDeviceHost: GPUObjectHost {
         case "createSampler": return .some(createSampler(args[0]))
         case "createShaderModule": return .some(createShaderModule(args[0]))
         case "createTexture": return .some(createTexture(args[0]))
+        #if CANVAS_EXTERNAL_TEXTURE
         case "importExternalTexture": return .some(importExternalTexture(args[0]))
+        #endif
         case "__getMetalDevicePointer":
             return .some(Double(UInt(bitPattern: canvas_native_webgpu_device_get_metal_device(device))))
         case "destroy":
@@ -300,6 +308,7 @@ final class GPUDeviceHost: GPUObjectHost {
         return canvas_native_webgpu_device_create_texture(device, &descriptor).map(GPUTextureHost.init)
     }
 
+    #if CANVAS_EXTERNAL_TEXTURE
     /// `importExternalTexture({ nativeTexture, width, height, label? })`, the frame's texture as a number.
     private func importExternalTexture(_ options: Any?) -> Any? {
         guard gpuIsObject(options) else { return nil }
@@ -312,6 +321,7 @@ final class GPUDeviceHost: GPUObjectHost {
         }
         return texture.map(GPUExternalTextureHost.init)
     }
+    #endif
 
     // MARK: Pipelines
 
@@ -625,9 +635,11 @@ func gpuBindGroupEntries(_ value: Any?) -> [CanvasBindGroupEntry] {
         case let view as GPUTextureViewHost:
             resource.tag = CanvasBindGroupEntryResourceTextureView
             resource.texture_view = view.view
+        #if CANVAS_EXTERNAL_TEXTURE
         case let texture as GPUExternalTextureHost:
             resource.tag = CanvasBindGroupEntryResourceExternalTexture
             resource.external_texture = texture.texture
+        #endif
         default:
             guard gpuIsObject(resourceValue), let buffer = gpuMember(resourceValue, "buffer") as? GPUBufferHost else { continue }
             let offset = (gpuMember(resourceValue, "offset") as? Double).map(gpuInt64) ?? -1
@@ -669,11 +681,13 @@ func gpuBindGroupLayoutEntries(_ value: Any?) -> [CanvasBindGroupLayoutEntry] {
             continue
         }
 
+        #if CANVAS_EXTERNAL_TEXTURE
         if gpuIsObject(gpuMember(entry, "externalTexture")) {
             type.tag = CanvasBindingTypeExternalTexture
             entries.append(CanvasBindGroupLayoutEntry(binding: binding, visibility: visibility, binding_type: type))
             continue
         }
+        #endif
 
         let sampler = gpuMember(entry, "sampler")
         if gpuIsObject(sampler) {

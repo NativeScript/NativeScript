@@ -208,6 +208,7 @@ final class GPUSamplerHost: GPUObjectHost {
     }
 }
 
+#if CANVAS_EXTERNAL_TEXTURE
 /// `GPUExternalTexture`.
 final class GPUExternalTextureHost: GPUObjectHost {
     let texture: OpaquePointer
@@ -218,6 +219,7 @@ final class GPUExternalTextureHost: GPUObjectHost {
         key == "label" ? gpuOwnedString(canvas_native_webgpu_external_texture_get_label(texture)) ?? "" : nil
     }
 }
+#endif
 
 /// `GPUShaderModule`.
 final class GPUShaderModuleHost: GPUObjectHost {

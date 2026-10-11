@@ -135,6 +135,11 @@ export class CoreAPI {
     return [...this.index.values()].filter((t) => t.declared && !t.name.includes('.')).map((t) => t.name);
   }
 
+  /** Whether NativeScriptKit has a top-level function or variable of this name (core's index exports it). */
+  exportsTopLevel(name: string): boolean {
+    return existsSync(join(KIT, 'Core', `__Export.${name}.swift`));
+  }
+
   /** Whether NativeScriptKit declares a type of this name. */
   has(name: string): boolean {
     return this.index.has(name);
@@ -350,7 +355,9 @@ export class CoreAPI {
       const fns = [...(this.index.get(ns)?.members ?? [])].filter(([, ms]) => ms.some((m) => m.kind === 'func' && m.static && !(m.params ?? '').trim()));
       return `JSObject([${fns.map(([fn]) => `(${JSON.stringify(fn)}, { (_: [Any?]) throws -> Any? in ${kitMember(this.index, ns, fn)?.throws ? 'try ' : ''}${ns}.${fn}() } as JSFunction)`).join(', ')}])`;
     }
-    const m = this.member(owner.name, name, e);
+    // `Color.equals` as a value: the class's own function of the name, not an instance method of it.
+    const own = (() => { for (let x = this.index.get(owner.name); x; x = x.base ? this.index.get(x.base) : undefined) { const f = x.members.get(name)?.find((y) => y.kind === 'func' && !!y.static === owner.isStatic); if (f) return f; } return undefined; })();
+    const m = own ?? this.member(owner.name, name, e);
     if (inChain && continued) return `${recv}.${name}`;
     // A method as a value (`Builder.load` given to `isFunction`): the function Swift has of it, adapted to the declared type.
     const called = ts.isCallExpression(e.parent) && e.parent.expression === e;
@@ -528,6 +535,10 @@ export class CoreAPI {
     const owned = this.moduleFunction(decl);
     const member = owned ? kitMember(this.index, owned.slice(0, owned.lastIndexOf('.')), decl.name.text) : null;
     const params = owned ? (member?.params?.trim() ? splitParams(member.params) : null) : this.exportSignature(decl.name.text)?.params;
+    // A rest parameter (`makeValidator(...values)`), which the kit takes as one array.
+    const restAt = decl.parameters.findIndex((p) => !!p.dotDotDotToken);
+    const restType = params && restAt >= 0 && restAt === params.length - 1 ? /:\s*(JSArray<.*>)\s*$/.exec(params[restAt])?.[1] : undefined;
+    if (restType && args.length >= restAt && !e.arguments.some(ts.isSpreadElement)) return [...args.slice(0, restAt), `${restType}([${args.slice(restAt).join(', ')}])`];
     if (!params || params.length < e.arguments.length) return args;
     const out = [...args];
     this.matchKitParams(e, params, out);
@@ -588,6 +599,8 @@ export class CoreAPI {
     // One array spread into the rest (`path.join(...parts)`): the array the kit's rest parameter is.
     const spread = e.arguments[restAt];
     if (restType && !listener && !packed && e.arguments.length === restAt + 1 && spread && ts.isSpreadElement(spread)) args.splice(restAt, args.length - restAt, t.coerce(spread.expression, restType));
+    // Fewer arguments than core declares (lenient code's `Builder.parseMultipleTemplates(value)`): undefined for each optional one left out.
+    if (!held && !listener && !packed && !e.arguments.some(ts.isSpreadElement)) while (args.length < kitParams.length && !kitParams[args.length].includes('=') && /[?!]\s*$/.test(kitParams[args.length])) args.push('nil');
     if (held) {
       while (args.length < held.params.length && /[?!]$/.test(held.params[args.length])) args.push('nil');
       return this.fromKit(`${recv}.${name}(${args.join(', ')})`, held.result, t.typeOf(e));

@@ -1,4 +1,6 @@
 import ts from 'typescript';
+import { implementedInterfaces } from './lang.ts';
+import { isStatic } from './throws.ts';
 import { CF_CLASSES, functionParts, optionalType, splitTopLevel, type Translator } from './swift.ts';
 import {
   categoryModule, conformsTo, isSubframework, lookupClass, lookupConstant, lookupConstructor, lookupEnum, lookupFunction, lookupInit, lookupMember, lookupStruct, lookupTypealias, moduleOfDeclaration, nativeTable,
@@ -242,6 +244,23 @@ export class NativeAPI {
   private appMember(name: ts.Node): boolean {
     const decl = this.t.checker.getSymbolAtLocation(name)?.declarations?.[0];
     return !!decl && !decl.getSourceFile().isDeclarationFile;
+  }
+
+  /**
+   * An app class's method implementing a native protocol's (`collectionViewNumberOfItemsInSection` of a
+   * UICollectionViewDataSource), which Swift declares and calls by the protocol's name.
+   */
+  private protocolRequirement(name: ts.MemberName): NativeMethod | NativeProperty | null {
+    const decl = this.t.checker.getSymbolAtLocation(name)?.declarations?.[0];
+    if (!decl || !ts.isMethodDeclaration(decl) || !ts.isClassLike(decl.parent) || isStatic(decl)) return null;
+    for (const i of implementedInterfaces(this.t.checker, decl.parent)) {
+      const p = this.symbolModule(this.t.checker.getTypeAtLocation(i).getSymbol());
+      if (p && lookupClass(p.module, p.name)?.kind === 'protocol') {
+        const m = this.found(lookupMember(p.module, p.name, name.getText(), false));
+        if (m) return m;
+      }
+    }
+    return null;
   }
 
   /** An app class's override of its native base's method (`setViewControllersAnimated` in a UINavigationController subclass): called by the native name. */
@@ -514,7 +533,8 @@ export class NativeAPI {
       return this.fromSwift(code, f.returns, e);
     }
     if (!ts.isPropertyAccessExpression(callee)) return null;
-    if (this.appMember(callee.name) && callee.name.text !== 'new' && !this.nativeOverride(callee.name)) return null;
+    const requirement = this.appMember(callee.name) ? this.protocolRequirement(callee.name) : null;
+    if (this.appMember(callee.name) && callee.name.text !== 'new' && !this.nativeOverride(callee.name) && !requirement) return null;
     const name = callee.name.text;
     // `X.alloc().initWithFrame(r)`, `X.alloc().init()`
     if (ts.isCallExpression(callee.expression) && ts.isPropertyAccessExpression(callee.expression.expression) && callee.expression.expression.name.text === 'alloc') {
@@ -568,7 +588,7 @@ export class NativeAPI {
     if (en) return `String(${this.unwrapped(callee.expression)}${en.swift ? '.rawValue' : ''})`;
     // The runtime's wrapper of a native object converts to its `description`.
     if (!r.isStatic && name === 'toString' && !e.arguments.length && cls?.kind === 'class') return this.fromSwift(`${this.unwrapped(callee.expression)}.description`, 'String', e);
-    const m = this.found(lookupMember(r.module, r.name, name, r.isStatic)) ?? this.optionsSibling(r, name, e.arguments.length) ?? (r.isStatic ? this.factoryInit(r, name) : null);
+    const m = this.found(lookupMember(r.module, r.name, name, r.isStatic)) ?? requirement ?? this.optionsSibling(r, name, e.arguments.length) ?? (r.isStatic ? this.factoryInit(r, name) : null);
     if (!m) {
       // `o.setX(v)` for a property `x` the d.ts also lists as a method.
       const setter = /^set([A-Z]\w*)$/.exec(name);

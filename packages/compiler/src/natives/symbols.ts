@@ -64,6 +64,8 @@ export interface NativeClass {
   /** Generic parameters Swift keeps (`NSHashTable<ObjectType>`); `swift` names the type without its arguments. */
   generics?: string[];
   introduced?: string;
+  /** A Swift class declaring initializers of its own, which inherits none of its base's. */
+  ownInits?: boolean;
 }
 export interface NativeEnum {
   /** '' when Swift imports the cases as global constants (a C enum without NS_ENUM): `cases[…].swift` is then the global's name. */
@@ -114,7 +116,7 @@ export function isSubframework(module: string): boolean {
 // By the SDK's build too: a beta and its release candidate share a version and differ in API.
 const cacheDir = () => join(process.env.NS_NATIVE_TABLE_CACHE ?? join(COMPILER, '.cache'), `ios-${sdk().version}-${sdk().build}`);
 /** The layout tables are written in: availability of enums, escaping block parameters, optional protocol properties. */
-const TABLE_FORMAT = 4;
+const TABLE_FORMAT = 5;
 
 const tables = new Map<string, NativeTable>();
 
@@ -207,6 +209,8 @@ interface Sym {
   returns?: Fragment[];
   introduced?: string;
   mainActor?: boolean;
+  /** A class Swift source declares with initializers of its own (any access level). */
+  declaresInit?: boolean;
 }
 interface Rel { kind: string; source: string; target: string; targetFallback?: string }
 
@@ -230,9 +234,12 @@ function generate(module: string, extraArgs: string[], plugin = false, internal 
       if (f !== `${module}.symbols.json` && !f.startsWith(`${module}@`)) continue;
       const graph = JSON.parse(readFileSync(join(dir, f), 'utf8'));
       rmSync(join(dir, f));
+      const initOwners = new Set<string>(plugin ? graph.symbols.filter((s: any) => s.kind.identifier === 'swift.init').map((s: any) => s.pathComponents.slice(0, -1).join('.')) : []);
       for (const s of graph.symbols) {
+        const swiftClass = plugin && s.kind.identifier === 'swift.class' && /^c:@M@/.test(s.identifier.precise);
         s.identifier.precise = objcUSR(s.identifier.precise);
         const sym = compact(s, internal);
+        if (sym && swiftClass && initOwners.has(sym.path.join('.'))) sym.declaresInit = true;
         if (sym && plugin && sym.decl.some((f, i) => f.spelling === 'MainActor' && sym.decl[i - 1]?.spelling === '@')) sym.mainActor = true;
         if (!sym) continue;
         const prev = symbols.get(sym.usr);
@@ -425,6 +432,7 @@ function build(module: string, symbols: Map<string, Sym>, rels: Rel[]): NativeTa
       };
       if (!own) c.extension = true;
       if (own?.introduced) c.introduced = own.introduced;
+      if (own?.declaresInit) c.ownInits = true;
       const generics = own?.decl.filter((f) => f.kind === 'genericParameter').map((f) => f.spelling);
       if (generics?.length) c.generics = generics;
     }
@@ -780,12 +788,14 @@ function findInit(module: string, jsClass: string, own: (c: NativeClass) => Nati
   for (const [, c] of hierarchy(module, jsClass)) {
     const m = own(c);
     if (m) return rehome(m, c, receiver);
+    if (c.ownInits) break;
   }
   for (const [, c] of hierarchy(module, jsClass)) {
     for (const init of c.swiftInits ?? []) {
       const m = overlay(init);
       if (m) return rehome(m, c, receiver);
     }
+    if (c.ownInits) break;
   }
   return null;
 }

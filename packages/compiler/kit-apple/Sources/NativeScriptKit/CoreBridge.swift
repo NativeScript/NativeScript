@@ -228,7 +228,9 @@ public struct ListItem<T> {
 private let listRowKey = JSSymbol("NativeScriptKit:listRow")
 private let listTemplateKey = JSSymbol("NativeScriptKit:listTemplate")
 
-extension ListView {
+// Any view hosting item templates as ListView does (items, itemTemplates, itemTemplateSelector, `itemLoading` taking
+// the row's view): ListView, and plugins' that follow it, the Pager.
+extension View {
     /// A ListView's items and the templates that render them, as nativescript-vue
     /// gives them to core: `itemTemplates` naming each template, the selector
     /// choosing a row's template, and each row's view made on `itemLoading`, where
@@ -273,6 +275,71 @@ extension ListView {
         Effect { [weak self] in
             current = items()
             let list = JSArray<Any?>(current.map { $0 as Any? })
+            untrack { self?.kitSet("items", list) }
+        }
+    }
+
+    /// A sectioned list (`sectioned` set): its items are the sections, each with its rows as core reads them
+    /// (`section.items`); a row's template and view as for `bind(items:)`, at the row's section and index.
+    /// A `header` renders the sticky header core makes for each section, from its `stickyHeaderTemplate` as a function, and
+    /// binds it to the section core gives it as its binding context.
+    public func bind<Section, Item>(sections: @escaping () -> [Section], rows: @escaping (Section) -> [Item], templates: [String] = ["default"],
+                                    selector: ((Item, Double) -> String)? = nil, render: ((String, ListRow<Item>) -> View)? = nil,
+                                    header: ((ListRow<Section>) -> View)? = nil) {
+        var current: [[Item]] = []
+        var sectionValues: [Section] = []
+        let listOwner = Owner.current
+        let itemAt = { (section: Double, index: Double) -> Item? in
+            guard section >= 0, Int(section) < current.count, index >= 0, Int(index) < current[Int(section)].count else { return nil }
+            return current[Int(section)][Int(index)]
+        }
+        if render != nil {
+            kitSet("itemTemplates", JSArray<Any?>(templates.map { key in
+                JSObject([("key", key), ("createView", { (_: [Any?]) throws -> Any? in nil } as JSFunction)]) as Any?
+            }))
+        }
+        if let selector {
+            // Core gives the row's item, its index in its section and the section's items.
+            kitSet("itemTemplateSelector", { (args: [Any?]) throws -> Any? in
+                guard let item = args.first.flatMap({ $0 as? Item }) else { return templates.first }
+                return selector(item, jsToNumber(args.count > 1 ? args[1] : nil))
+            } as JSFunction)
+        }
+        if let header {
+            kitSet("stickyHeaderTemplate", { (_: [Any?]) throws -> Any? in
+                guard let first = sectionValues.first else { return nil }
+                let row = ListRow(first, 0)
+                let view = Owner(parent: listOwner).run { header(row) }
+                view.kitOn("bindingContextChange") { [weak view] _ in
+                    guard let section = view?.bindingContext as? Section else { return }
+                    row.item.value = section
+                    row.index.value = Double(sectionValues.firstIndex { ($0 as AnyObject) === (section as AnyObject) } ?? 0)
+                }
+                return view
+            } as JSFunction)
+        }
+        kitOn("itemLoading") { data in
+            let index = jsToNumber(data[jsKey: "index"])
+            guard let item = itemAt(jsToNumber(data[jsKey: "section"]), index) else { return }
+            let key = selector?(item, index) ?? templates.first ?? "default"
+            if let view = data[jsKey: "view"] as? ViewBase, let row = view[jsKey: listRowKey.key] as? ListRow<Item>,
+               view[jsKey: listTemplateKey.key] as? String == key {
+                row.item.value = item
+                row.index.value = index
+                return
+            }
+            guard let render else { return }
+            let row = ListRow(item, index)
+            let view = Owner(parent: listOwner).run { render(key, row) }
+            view[jsKey: listRowKey.key] = row
+            view[jsKey: listTemplateKey.key] = key
+            data[jsKey: "view"] = view
+        }
+        Effect { [weak self] in
+            let all = sections()
+            sectionValues = all
+            current = all.map(rows)
+            let list = JSArray<Any?>(all.map { $0 as Any? })
             untrack { self?.kitSet("items", list) }
         }
     }

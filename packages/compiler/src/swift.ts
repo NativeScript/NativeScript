@@ -527,7 +527,7 @@ export class Translator implements AsyncTranslator {
     this.lowering = new AsyncLowering(this);
     this.core = new CoreAPI(this);
     this.native = new NativeAPI(this);
-    this.throwsInfo = new Throws(checker, files, (n) => { try { return this.typeOf(n) === 'Any?'; } catch { return false; } }, (c) => (ts.isCallExpression(c) && (this.native.throwingCall(c) || this.replaceableCall(c) || (!!this.library && ts.isElementAccessExpression(c.expression) && !!this.setNativeOf(c.expression.argumentExpression)))) || (!this.library && this.core.throwingCall(c)), (d) => this.compiledMember(d), (e) => { try { return this.isExpando(e) || (!this.library && !isWriteTarget(e) && this.core.throwingAccess(e)); } catch { return false; } }, (cls) => { const kit = this.library ? null : this.kitRootOf(cls); return !!kit && this.core.initThrows(kit); }, (fn) => ts.isFunctionLike(fn) && (!!this.memberCounterpart(fn as ts.FunctionLikeDeclaration) || !!this.functionCounterpart(fn)));
+    this.throwsInfo = new Throws(checker, files, (n) => { try { return this.typeOf(n) === 'Any?'; } catch { return false; } }, (c) => (ts.isCallExpression(c) && (this.native.throwingCall(c) || this.replaceableCall(c) || (ts.isElementAccessExpression(c.expression) && !!this.setNativeOf(c.expression.argumentExpression) && this.keyedSetNative(c.expression.expression)))) || (!this.library && this.core.throwingCall(c)), (d) => this.compiledMember(d), (e) => { try { return this.isExpando(e) || (!this.library && !isWriteTarget(e) && this.core.throwingAccess(e)); } catch { return false; } }, (cls) => { const kit = this.library ? null : this.kitRootOf(cls); return !!kit && this.core.initThrows(kit); }, (fn) => ts.isFunctionLike(fn) && (!!this.memberCounterpart(fn as ts.FunctionLikeDeclaration) || !!this.functionCounterpart(fn)));
     for (const f of files) {
       const visit = (n: ts.Node) => {
         if (ts.isClassLike(n)) {
@@ -2658,6 +2658,7 @@ ${members.join('\n')}
     }
     if (!fn.body) return false;
     if (ts.isFunctionDeclaration(fn) || (ts.isMethodDeclaration(fn) && isStatic(fn))) return this.returnsUndefined(fn);
+    if ((ts.isArrowFunction(fn) || ts.isFunctionExpression(fn)) && ts.isBlock(fn.body)) return this.returnsUndefined(fn);
     const family = ts.isMethodDeclaration(fn) ? this.structMethodFamily(fn) : null;
     return !!family?.some((m) => !!m.body && this.returnsUndefined(m));
   }
@@ -2677,7 +2678,7 @@ ${members.join('\n')}
     return !!sig && ['String', 'Double', 'Bool'].includes(this.type(sig.getReturnType(), root));
   }
 
-  private returnsUndefined(fn: ts.FunctionDeclaration | ts.MethodDeclaration): boolean {
+  private returnsUndefined(fn: ts.FunctionDeclaration | ts.MethodDeclaration | ts.ArrowFunction | ts.FunctionExpression): boolean {
     let found = this.undefinedReturns.get(fn);
     if (found !== undefined) return found;
     found = false;
@@ -3196,6 +3197,9 @@ ${members.join('\n')}
     // The app's own function types are Swift's as declared: every parameter, whatever the closure uses.
     const appSlot = !!slot?.getDeclaration() && !slot.getDeclaration().getSourceFile().isDeclarationFile;
     if (!((coreSlot && !fn.parameters.length) || appSlot)) return [];
+    // As the slot's Swift function type has them (an object parameter optional).
+    const whole = appSlot ? functionParts(this.type(this.checker.getNonNullableType(this.checker.getContextualType(fn)!), fn)) : null;
+    if (whole && whole.rest < 0 && whole.params.length === slot!.getParameters().length) return whole.params.slice(fn.parameters.length).map((p) => p.replace(/^@escaping /, ''));
     return slot!.getParameters().filter((p) => !(p.valueDeclaration && ts.isParameter(p.valueDeclaration) && p.valueDeclaration.dotDotDotToken)).slice(fn.parameters.length).map((p) => {
       const pt = this.type(this.checker.getTypeOfSymbolAtLocation(p, fn), fn);
       const optional = p.valueDeclaration && ts.isParameter(p.valueDeclaration) && (p.valueDeclaration.questionToken || p.valueDeclaration.initializer);
@@ -3221,7 +3225,7 @@ ${members.join('\n')}
     // A closure giving an untyped value where its slot says a type (lenient code): the slot's type, its value read as that.
     if (!voidSlot && slotType && own === 'Any?' && slotType !== 'Void' && this.lenient) return slotType;
     // A non-strict app's closure giving a value that may be missing (a native `string | null`) where its slot says the value: the slot's.
-    if (!voidSlot && slotType && this.lenientApp && own === optionalType(slotType)) return slotType;
+    if (!voidSlot && slotType && this.lenientApp && !this.lenient && own === optionalType(slotType)) return slotType;
     return voidSlot ? 'Void' : slotType && slotType !== own && /^Object_/.test(own) ? slotType : own;
   }
 
@@ -3454,8 +3458,8 @@ ${members.join('\n')}
     const named = implementedInterfaces(this.checker, cls).map((i) => ({ name: this.heritageName(i), type: this.checker.getTypeAtLocation(i) }));
     const met = [...this.structural.get(cls) ?? []].map((d) => ({ name: this.topName(d, d.name.text), type: this.checker.getTypeAtLocation(d.name) }));
     const implemented = [...named, ...met.filter((m) => !named.some((n) => n.name === m.name))].filter((i) => !isLibDeclaration(i.type.getSymbol()?.declarations?.[0]) && !this.uncompiledType(i.type))
-      // An interface only a declaration file has is no Swift protocol (a plugin's `IHttpsResponseLegacy` in its `.d.ts`), unless core's, which the kit has.
-      .filter((i) => !(i.type.getSymbol()?.declarations ?? []).every((d) => d.getSourceFile().isDeclarationFile && (this.library || !isCoreDeclaration(d))) || (!this.library && !i.type.getSymbol()?.declarations?.length))
+      // An interface only a declaration file has is no Swift protocol (a plugin's `IHttpsResponseLegacy` in its `.d.ts`), unless core's that the kit has.
+      .filter((i) => !(i.type.getSymbol()?.declarations ?? []).every((d) => d.getSourceFile().isDeclarationFile && (this.library || !isCoreDeclaration(d) || !this.core.has(i.name))) || (!this.library && !i.type.getSymbol()?.declarations?.length))
       // A protocol a base class conforms to is inherited; one the class's signatures cannot meet is left out.
       .filter((i) => !this.baseImplements(cls, i.name) && this.protocolWitnesses(cls, i.name, i.type, witnesses))
       // An interface a kit class's own methods meet (`ICanvasBase.on` by View's `on`): script's structural typing, no Swift protocol.
@@ -3588,7 +3592,7 @@ ${members.join('\n')}
         // A property registered without a default is undefined until set: an object-typed one, an array included, reads as nil.
         const unset = !t.endsWith('?') && !t.endsWith('!') && (this.zero(t) === null || /^JS(Array|Map|Set)</.test(t)) && !isFunctionType(t);
         // Core's `set` runs the property's change handlers, whose errors are reported as core reports them.
-        lines.push(`    var ${ident(n)}: ${unset ? this.deferred(t) : t} {`, `        get { ${this.fromAnyCode(this.library ? `get(${swiftString(n)})` : `(jsReported { try get(${swiftString(n)}) } ?? nil)`, unset ? optionalType(t) : t, true)} }`, `        set { jsReport { try set(${swiftString(n)}, ${this.convert('newValue', unset ? optionalType(t) : t, 'Any?')}) } }`, '    }');
+        lines.push(`    var ${ident(n)}: ${unset ? `${t}!` : t} {`, `        get { ${this.fromAnyCode(this.library ? `get(${swiftString(n)})` : `(jsReported { try get(${swiftString(n)}) } ?? nil)`, unset ? optionalType(t) : t, true)} }`, `        set { jsReport { try set(${swiftString(n)}, ${this.convert('newValue', unset ? optionalType(t) : t, 'Any?')}) } }`, '    }');
         if (m.initializer) {
           this.indent = '        ';
           fieldInits.push(`        self.${ident(n)} = ${this.tryPrefix(m.initializer)}${this.coerce(m.initializer, t)}`);
@@ -4175,6 +4179,14 @@ ${members.join('\n')}
     return decl.name ? identPath(this.topName(decl, decl.name.text)) : 'AnonymousClass';
   }
 
+  /** `x[prop.setNative](…)` where x's class keeps such methods under their symbol (library mode, or a class over a kit class): called by key. */
+  keyedSetNative(target: ts.Expression): boolean {
+    if (this.library) return true;
+    const t = this.checker.getNonNullableType(this.checker.getTypeAtLocation(target));
+    const cls = (t.isTypeParameter() ? t.getConstraint() ?? t : t).getSymbol()?.valueDeclaration;
+    return !!cls && ts.isClassLike(cls) && !!this.kitRootOf(cls);
+  }
+
   /** `fooProperty.setNative`: the registered name of the property it belongs to. */
   setNativeOf(e: ts.Expression): string | null {
     if (!ts.isPropertyAccessExpression(e) || e.name.text !== 'setNative') return null;
@@ -4204,6 +4216,17 @@ ${members.join('\n')}
     const plain = (t: string) => t.replace(/^@escaping\s+/, '');
     // Only parameters that differ: Swift cannot tell apart two methods differing in their result alone.
     const sameParams = own.params.length === parsed.length && own.params.every((p, k) => plain(p.type) === parsed[k].type);
+    // Taking functions of subclasses of the kit's parameters (`(View?) -> Bool` over `(ViewCommon?) -> Bool`): by contravariance Swift
+    // reads the method as overriding the kit's, so it is the override itself.
+    const narrower = (a: string, b: string) => a === b || (/[?!]$/.test(a) === /[?!]$/.test(b) && (this.isSubclassOf(a.replace(/[?!]$/, ''), b.replace(/[?!]$/, '')) || this.core.extendsKit(a.replace(/[?!]$/, ''), b.replace(/[?!]$/, ''))));
+    const overriding = (a: string, b: string) => {
+      if (a === b) return true;
+      const x = functionParts(a), y = functionParts(b);
+      return !!x && !!y && x.params.length === y.params.length && x.result === y.result && /\bthrows\b/.test(a) === /\bthrows\b/.test(b) && x.params.every((p, k) => narrower(p, y.params[k]));
+    };
+    if (!sameParams && own.params.length === parsed.length && own.params.every((p, k) => overriding(plain(p.type), parsed[k].type)) && (!throws || kit.throws) && tsRet === ret) {
+      return `    ${this.func(m, ident(m.name.getText()), 'override ')}`;
+    }
     if (!sameParams && (!throws || kit.throws) && !m.parameters.some((p) => p.dotDotDotToken)) {
       const name = ident(m.name.getText());
       const declared = this.func(m, name, overridesProgram ? 'override ' : '');
@@ -5080,6 +5103,11 @@ ${members.join('\n')}
       if (['String', 'Double', 'Bool'].includes(want) && ['String', 'Double', 'Bool'].includes(inner) && inner !== want) return `jsLenient${want === 'Double' ? 'Number' : want}(${this.expr(e.expression)} as Any?)`;
       return this.coerce(e.expression, target);
     }
+    // Lenient code's `let cell;` is untyped, as its own build reads it: the slot's type is read from the value, whatever class the checker narrowed it to.
+    if (this.lenient && ts.isIdentifier(e) && !isWriteTarget(e) && target !== 'Any?') {
+      const d = this.resolve(e)?.valueDeclaration;
+      if (d && ts.isVariableDeclaration(d) && !d.type && !d.initializer && this.declaredTypeOf(e) === 'Any?' && this.typeOf(e) !== target) return this.fromAny(this.refName(e), target);
+    }
     return this.keptOptional(this.coerced(e, target), target);
   }
 
@@ -5825,7 +5853,7 @@ ${members.join('\n')}
       return this.fromAnyCode(`jsGlobalThis[jsKey: ${swiftString(name)}]`, this.typeOf(e));
     }
     // A global function core or the app only declares (`zonedCallback`, which core's globals set), as a value: the global object's.
-    if (!this.library && libDecl && ts.isFunctionDeclaration(libDecl) && !libDecl.body && (appAmbient || isCoreDeclaration(libDecl)) && ts.isSourceFile(libDecl.parent)) return 'jsGlobalThis[jsKey: ' + swiftString(name) + ']';
+    if (!this.library && libDecl && ts.isFunctionDeclaration(libDecl) && !libDecl.body && (appAmbient || isCoreDeclaration(libDecl)) && ts.isSourceFile(libDecl.parent) && !hasModifier(libDecl, ts.SyntaxKind.ExportKeyword)) return 'jsGlobalThis[jsKey: ' + swiftString(name) + ']';
     // `Object` as a value, not the receiver of a call the translation knows (`(<any>Object).entries(o)`): its functions as script has them.
     if (name === 'Object' && isLibDeclaration(libDecl) && !(ts.isPropertyAccessExpression(e.parent) && e.parent.expression === e)) return 'jsObjectBuiltin';
     if (name === 'parseFloat' && isLibDeclaration(libDecl) && !(ts.isCallExpression(e.parent) && e.parent.expression === e)) return 'jsParseFloat';
@@ -5851,7 +5879,9 @@ ${members.join('\n')}
       // An Angular component as a value (`dialog.open(Sheet)`): what creating and rendering it gives.
       const decl = sym.valueDeclaration;
       if (decl && ts.isClassDeclaration(decl) && (ts.getDecorators(decl) ?? []).some((d) => /^Component\(/.test(d.expression.getText()))) {
-        return `ComponentFactory { ${this.initThrows(ident(this.declaredName(e))) ? 'try! ' : ''}${ident(this.declaredName(e))}().render() }`;
+        // Its class may be translated after this reference: whether creating it throws is the analysis's as well.
+        const throws = this.initThrows(ident(this.declaredName(e))) || this.throwsInfo.initThrows(decl);
+        return `ComponentFactory { ${throws ? 'try! ' : ''}${ident(this.declaredName(e))}().render() }`;
       }
       const name = identPath(this.declaredName(e));
       // A class read inside a class with a member of its name (`static UILayoutViewController = UILayoutViewController`): the module's.
@@ -6004,7 +6034,9 @@ ${members.join('\n')}
     this.renamedTop = new Map();
     for (const [name, list] of byName) {
       // A plugin class named as a NativeScriptKit class (one extending core's `Observable`) takes its module's name too.
-      const kitClash = list.some((x) => ts.isClassDeclaration(x.decl)) && (this.library ? this.core.declares(name) : this.core.has(name));
+      // A function or variable named as the kit's top-level one (a plugin's own `booleanConverter`) takes its module's name, which the app's imports of core's leave to the kit's.
+      const kitClash = (list.some((x) => ts.isClassDeclaration(x.decl)) && (this.library ? this.core.declares(name) : this.core.has(name)))
+        || (!this.library && list.some((x) => ts.isFunctionDeclaration(x.decl) || ts.isVariableDeclaration(x.decl)) && this.core.exportsTopLevel(name));
       // A generated class and a hand-ported one of the same name: the hand port of that module has to go first.
       if (kitClash && list.some((x) => this.library?.moduleName(x.file.fileName))) this.kitClashes.push(name);
       // A type the hand-written kit declares for itself (Signals' `Source`): the generated one takes its module's name.
@@ -6358,7 +6390,8 @@ ${members.join('\n')}
       // `a?.b?.c`: the chain goes on from what `a?.b` may be, undefined included.
       const p = e.parent;
       const chained = ts.isPropertyAccessExpression(p) && p.expression === e && !!p.questionDotToken && !hasTopLevelArrow(t);
-      return t === 'Any?' || isWriteTarget(e) ? code : chained ? `(${this.fromAny(code, optionalType(t))})` : this.fromAny(code, t);
+      // A declared string read so (`token.content?.length`) is empty where the object has none: what the chain reads of it is as falsy.
+      return t === 'Any?' || isWriteTarget(e) ? code : chained && t === 'String' ? `(${this.fromAny(code, 'String?')} ?? "")` : chained ? `(${this.fromAny(code, optionalType(t))})` : this.fromAny(code, t);
     }
     const base = this.typeOf(target);
     if (base.replace(/\?$/, '').startsWith('JSRecord<')) {
@@ -7088,7 +7121,7 @@ ${members.join('\n')}
       return plain;
     }
     if (ts.isElementAccessExpression(callee) && isSymbolIterator(callee.argumentExpression, this.checker) && !e.arguments.length) return this.iteratorCode(callee.expression);
-    if (ts.isElementAccessExpression(callee) && this.library && this.setNativeOf(callee.argumentExpression)) {
+    if (ts.isElementAccessExpression(callee) && this.setNativeOf(callee.argumentExpression) && this.keyedSetNative(callee.expression)) {
       // `super[prop.setNative](value)`: the base class's method under the symbol, with this object as `this`.
       const args = `[${e.arguments.map((a) => this.coerce(a, 'Any?')).join(', ')}]`;
       if (callee.expression.kind === ts.SyntaxKind.SuperKeyword) return `jsCallFound(super.jsSymbolMethod(${this.propertyKey(callee.argumentExpression)}), self, ${args})`;

@@ -52,6 +52,10 @@ export function nativeDispatch(modules: string[], uses: Map<string, UntypedUse>,
   }
   // A subclass's member before the one it inherits.
   candidates.sort((a, b) => b.depth - a.depth || a.js.localeCompare(b.js));
+  // A class name two modules declare is written with its module's.
+  const named = new Map<string, number>();
+  for (const { cls } of candidates) named.set(cls.swift, (named.get(cls.swift) ?? 0) + 1);
+  const typeName = (cls: NativeClass) => (named.get(cls.swift)! > 1 ? `${cls.module}.${cls.swift}` : cls.swift);
   const gets: string[] = [], sets: string[] = [], calls: string[] = [];
   const guarded = (introduced: string | undefined, code: string) => introduced && newer(introduced, deploymentTarget) ? `if #available(iOS ${introduced}, *) { ${code} }` : code;
   for (const [name, u] of [...uses].sort(([a], [b]) => a.localeCompare(b))) {
@@ -62,7 +66,7 @@ export function nativeDispatch(modules: string[], uses: Map<string, UntypedUse>,
         const own = isStatic ? cls.static : cls.instance;
         const m = Object.hasOwn(own, name) ? own[name] : null;
         if (!m) continue;
-        const self = isStatic ? `let o = object as? ${cls.swift}.Type` : `let o = object as? ${cls.swift}`;
+        const self = isStatic ? `let o = object as? ${typeName(cls)}.Type` : `let o = object as? ${typeName(cls)}`;
         if (m.kind === 'property') {
           const p = m as NativeProperty;
           if (u.get) get.push(guarded(p.introduced, `if ${self} { return .some(${fromNative(`o.${p.swift}`, p.type)}) }`));
@@ -85,7 +89,7 @@ export function nativeDispatch(modules: string[], uses: Map<string, UntypedUse>,
         const given = init ? init.params.length - (init.errorParam === undefined ? 0 : 1) : 0;
         if (init && u.arities.has(given)) {
           const args = argumentList(init);
-          if (args !== null) call.push(guarded(init.introduced, `if let a = object as? JSNativeAllocation, a.cls == ${cls.swift}.self { return .some(${init.throws ? 'try ' : ''}${cls.swift}(${args})) }`));
+          if (args !== null) call.push(guarded(init.introduced, `if let a = object as? JSNativeAllocation, a.cls == ${typeName(cls)}.self { return .some(${init.throws ? 'try ' : ''}${typeName(cls)}(${args})) }`));
         }
       }
     }
@@ -102,11 +106,12 @@ ${cases.join('')}        default: break
         return ${miss}
     }
 `;
-  return `enum __NativeDispatch {
-    static func install() {
-        JSNativeDispatch.get = get
-        JSNativeDispatch.set = set
-        JSNativeDispatch.call = call
+  // Script runs on the main thread: plugins' Swift classes isolated to it (explicitly, or as UIView subclasses) are reached directly.
+  return `@MainActor enum __NativeDispatch {
+    nonisolated static func install() {
+        JSNativeDispatch.get = { o, k in MainActor.assumeIsolated { get(o, k) } }
+        JSNativeDispatch.set = { o, k, v in MainActor.assumeIsolated { set(o, k, v) } }
+        JSNativeDispatch.call = { o, k, a in try MainActor.assumeIsolated { try call(o, k, a) } }
     }
 
 ${fn('get(_ object: AnyObject, _ key: String) -> Any??', gets, 'nil')}

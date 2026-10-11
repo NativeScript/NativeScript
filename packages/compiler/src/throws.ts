@@ -120,6 +120,14 @@ export class Throws {
 
   private nodeThrows(n: ts.Node): boolean {
     const c = this.checker;
+    // A module's Angular `computed(fn)` read as a value (`readonly color = ink`) runs fn, as its Swift getter does.
+    if (ts.isIdentifier(n) && !(ts.isCallExpression(n.parent) && n.parent.expression === n) && !ts.isImportSpecifier(n.parent) && !ts.isExportSpecifier(n.parent) && !ts.isImportClause(n.parent)) {
+      let s = c.getSymbolAtLocation(n);
+      if (s && s.flags & ts.SymbolFlags.Alias) s = c.getAliasedSymbol(s);
+      const d = s?.valueDeclaration;
+      const init = d && ts.isVariableDeclaration(d) && d.name !== n && ts.isSourceFile(d.parent.parent.parent) ? d.initializer : undefined;
+      if (init && ts.isCallExpression(init) && init.expression.getText() === 'computed' && init.arguments[0] && ts.isFunctionLike(init.arguments[0])) return this.fn(init.arguments[0]);
+    }
     // BigInt division, remainder and exponent throw a RangeError (a zero divisor, a negative exponent).
     if (ts.isBinaryExpression(n) && [ts.SyntaxKind.SlashToken, ts.SyntaxKind.PercentToken, ts.SyntaxKind.AsteriskAsteriskToken, ts.SyntaxKind.SlashEqualsToken, ts.SyntaxKind.PercentEqualsToken, ts.SyntaxKind.AsteriskAsteriskEqualsToken].includes(n.operatorToken.kind)
       && c.getTypeAtLocation(n.left).flags & ts.TypeFlags.BigIntLike) return true;

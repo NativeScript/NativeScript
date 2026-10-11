@@ -39,7 +39,7 @@ export interface PluginNative {
   /** The Objective-C classes each module's binary defines, for the modules whose binary is known. */
   classes: Record<string, string[]>;
   /** The kit's Swift bindings of plugins' engine-bound code (absolute), compiled into the app target, each with the type whose `install()` the app calls first. */
-  bindings: { dir: string; installer: string }[];
+  bindings: { dir: string; installer: string; conditions: string[] }[];
 }
 
 interface Target {
@@ -129,7 +129,7 @@ export function pluginNative(sources: PluginSource[], outDir: string, o: { deps:
   const bindings = sets.filter((x) => !x.appModule && existsSync(join(o.bindings, x.name, 'ios'))).map((x) => {
     const dir = join(root, 'Bindings', derivedModule(x.name).replace(/^NSPlugin_/, ''));
     cpSync(join(o.bindings, x.name, 'ios'), dir, { recursive: true });
-    return { dir, installer: derivedModule(x.name).replace(/^NSPlugin_/, 'NSBinding_') };
+    return { dir, installer: derivedModule(x.name).replace(/^NSPlugin_/, 'NSBinding_'), conditions: bindingConditions(join(o.bindings, x.name, 'ios.conditions.json'), x.ios) };
   });
   // A package's or pod's module is imported where the program declares something of it.
   const declared = new Set(o.declarations.map(moduleOfDeclaration));
@@ -148,6 +148,7 @@ export function pluginNative(sources: PluginSource[], outDir: string, o: { deps:
 /** The plugins in xcodegen's project.yml: the package under `packages:`, the Swift modules' targets, and the app target's `dependencies:` on both. */
 export function xcodegenLines(native: PluginNative, projectDir: string): { packages: string; targets: string; dependencies: string; sources: string; settings: Record<string, string> } {
   const p = native.package;
+  const conditions = [...new Set(native.bindings.flatMap((b) => b.conditions))];
   return {
     packages: p ? `  ${p.name}:\n    path: ${relative(projectDir, p.dir)}\n` : '',
     targets: native.swift.map((t) => `  ${t.name}:\n    type: library.static\n    platform: iOS\n    sources: [${relative(projectDir, t.dir)}]\n${t.packages.length ? `    dependencies:\n${productLines(t.packages, false)}` : ''}    settings:\n      base:\n        SWIFT_VERSION: "5"\n`).join(''),
@@ -157,9 +158,23 @@ export function xcodegenLines(native: PluginNative, projectDir: string): { packa
     ].join(''),
     sources: [native.appSwift, ...native.bindings.map((b) => b.dir)].filter(Boolean).map((d) => `      - path: ${relative(projectDir, d!)}\n`).join('')
       + native.appClang.map((d) => `      - path: ${relative(projectDir, d)}\n        excludes: ["**/*.modulemap"]\n`).join(''),
-    // The app's Swift imports their modules by the module maps beside them.
-    settings: native.appClang.length ? Object.fromEntries(['SWIFT_INCLUDE_PATHS', 'HEADER_SEARCH_PATHS'].map((k) => [k, JSON.stringify(['$(inherited)', ...native.appClang.map((d) => `$(SRCROOT)/${relative(projectDir, d)}`)].join(' '))])) : {},
+    settings: {
+      // The app's Swift imports their modules by the module maps beside them.
+      ...(native.appClang.length ? Object.fromEntries(['SWIFT_INCLUDE_PATHS', 'HEADER_SEARCH_PATHS'].map((k) => [k, JSON.stringify(['$(inherited)', ...native.appClang.map((d) => `$(SRCROOT)/${relative(projectDir, d)}`)].join(' '))])) : {}),
+      ...(conditions.length ? { SWIFT_ACTIVE_COMPILATION_CONDITIONS: JSON.stringify(['$(inherited)', ...conditions].join(' ')) } : {}),
+    },
   };
+}
+
+/**
+ * A binding's compilation conditions (`ios.conditions.json` beside its sources: condition → C symbol): each one whose
+ * symbol the plugin's headers declare, so one binding builds over the versions of the native library that differ in API.
+ */
+function bindingConditions(file: string, ios: string): string[] {
+  if (!existsSync(file)) return [];
+  const wanted = JSON.parse(readFileSync(file, 'utf8')) as Record<string, string>;
+  const headers = existsSync(ios) ? (readdirSync(ios, { recursive: true }) as string[]).filter((f) => f.endsWith('.h')).map((f) => readFileSync(join(ios, f), 'utf8')) : [];
+  return Object.entries(wanted).filter(([, symbol]) => headers.some((h) => new RegExp(`\\b${symbol}\\b`).test(h))).map(([condition]) => condition);
 }
 
 const derivedModule =(pkg: string) => 'NSPlugin_' + pkg.replace(/^@/, '').replace(/[^A-Za-z0-9]/g, '_');
