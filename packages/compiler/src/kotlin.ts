@@ -2040,6 +2040,17 @@ export class Translator implements AsyncTranslator {
       const names = fn.parameters.map((p) => ident((p.name as ts.Identifier).text));
       return `fun(${this.params(fn, true)}) { (${this.closure(fn)})(${names.join(', ')}) }`;
     }
+    // A slot taking the arguments as a rest (`callback: (...args: any[]) => void`) given a function of separate parameters: each read from the rest.
+    const slotParts = slot ? functionTypeParts(slot.replace(/^\((.*)\)\?$/, '$1')) : undefined;
+    const restAt = contextual?.getParameters().findIndex((p) => !!p.valueDeclaration && ts.isParameter(p.valueDeclaration) && !!p.valueDeclaration.dotDotDotToken) ?? -1;
+    if (slotParts && restAt >= 0 && restAt === slotParts.params.length - 1 && /^JSArray<.*>$/.test(slotParts.params[restAt]) && fn.parameters.length > restAt
+        && !fn.parameters.some((p) => p.dotDotDotToken) && !ts.isMethodDeclaration(fn)) {
+      const own = fn.parameters.map((p) => this.paramType(p));
+      const args = own.map((t, k) => (k < restAt ? (slotParts.params[k] === 'Any?' && t !== 'Any?' ? this.fromAnyCode(`__p${k}`, t, true) : `__p${k}`) : this.fromAnyCode(`__rest.element(${k - restAt}.0)`, t, true)));
+      const params = [...slotParts.params.slice(0, restAt).map((t, k) => `__p${k}: ${t}`), `__rest: ${slotParts.params[restAt]}`];
+      const call = `__f(${args.join(', ')})`;
+      return `run { val __f = ${this.closure(fn)}; fun(${params.join(', ')})${slotParts.ret === 'Unit' ? ` { ${call} }` : `: ${slotParts.ret} = ${call}`} }`;
+    }
     const voidSlot = (!!contextual && !!(contextual.getReturnType().flags & ts.TypeFlags.Void) && !isAsync(fn)) || slotRet === 'Unit';
     let ret = voidSlot ? 'Unit' : slotRet ?? this.returnTypeOf(fn);
     // Library mode: a function returning null where TypeScript (unchecked for null) infers an object: nullable.
