@@ -271,6 +271,50 @@ export class AndroidNativeAPI implements KotlinNative {
     return shared ? this.kotlinTypeName(shared.name) : null;
   }
 
+  /**
+   * A variable script asserts a Java class of an untyped value (`view.android as android.widget.ScrollView`), whose
+   * uses need only a class above it (`getWidth()`, a `View` parameter): that class, as Kotlin holds it, since the value
+   * may be another subclass of it (a `NestedScrollView`) where NativeScript's runtime never checks the assertion.
+   */
+  assertedWiderClass(d: ts.VariableDeclaration): string | null {
+    const t = this.t;
+    let init = d.initializer;
+    while (init && ts.isParenthesizedExpression(init)) init = init.expression;
+    if (!init || !(ts.isAsExpression(init) || ts.isTypeAssertionExpression(init)) || !ts.isIdentifier(d.name) || t.typeOf(init.expression) !== 'Any?') return null;
+    const asserted = this.classesOf(t.checker.getTypeAtLocation(init))?.[0];
+    const cls = asserted ? this.classpath.get(asserted) : null;
+    if (!cls || cls.access & ACC_INTERFACE) return null;
+    const sym = t.checker.getSymbolAtLocation(d.name);
+    const scope = ts.findAncestor(d, (n) => ts.isFunctionLike(n) || ts.isSourceFile(n));
+    if (!sym || !scope) return null;
+    const chain = this.classpath.supertypes(cls.name).filter((c) => !(c.access & ACC_INTERFACE));
+    let needed = chain.length - 1;
+    let ok = true;
+    const need = (internal: string | undefined) => {
+      const k = internal ? chain.findIndex((c) => c.name === internal) : -1;
+      if (k < 0) ok = false; else needed = Math.min(needed, k);
+    };
+    const visit = (n: ts.Node): void => {
+      if (!ok) return;
+      if (ts.isIdentifier(n) && n !== d.name && t.checker.getSymbolAtLocation(n) === sym) {
+        const p = n.parent;
+        if (ts.isPropertyAccessExpression(p) && p.expression === n) {
+          // The topmost class of the chain that declares the member.
+          const k = [...chain.keys()].reverse().find((i) => chain[i].methods.some((m) => m.name === p.name.text) || chain[i].fields.some((f) => f.name === p.name.text));
+          if (k === undefined) ok = false; else needed = Math.min(needed, k);
+        } else if ((ts.isCallExpression(p) || ts.isNewExpression(p)) && p.expression !== n) {
+          const decl = t.checker.getResolvedSignature(p)?.getDeclaration();
+          const k = p.arguments?.indexOf(n as ts.Expression) ?? -1;
+          const param = decl && !ts.isJSDocSignature(decl) && this.isNativeDeclaration(decl) ? decl.parameters[k] : undefined;
+          need(param ? this.classesOf(t.checker.getTypeAtLocation(param))?.[0] : undefined);
+        } else if (!(ts.isPrefixUnaryExpression(p) && p.operator === ts.SyntaxKind.ExclamationToken) && !ts.isIfStatement(p) && !(ts.isBinaryExpression(p) && [ts.SyntaxKind.BarBarToken, ts.SyntaxKind.AmpersandAmpersandToken].includes(p.operatorToken.kind))) ok = false;
+      }
+      ts.forEachChild(n, visit);
+    };
+    visit(scope);
+    return ok && needed > 0 ? this.kotlinTypeName(chain[needed].name) : null;
+  }
+
   /** The one class among several every other one extends (`AppCompatActivity | Activity` is an Activity). */
   private commonClass(parts: ts.Type[]): string | null {
     const names = parts.map((p) => this.classesOf(p)?.[0]);

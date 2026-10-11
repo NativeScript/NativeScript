@@ -4,7 +4,7 @@
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, relative, resolve } from 'node:path';
 import ts from 'typescript';
-import type { ComponentIR } from './ir.ts';
+import type { ComponentIR, TNode } from './ir.ts';
 import { Translator, kotlinString } from './kotlin.ts';
 import type { RouteNode } from './angular.ts';
 import { ndk, prepareBindingArchives, type AndroidBinding } from './bindings-android.ts';
@@ -251,9 +251,24 @@ export async function writeAndroid(b: AndroidBuild): Promise<void> {
         `        AppModules.register(listOf("@nativescript/core/ui")) { JSObject(listOf<Pair<String, Any?>>(${elements.map((e) => `Pair(${kotlinString(e)}, ${e}::class.java)`).join(', ')})) }\n`,
       ].join('');
     }
+    // XML core's Builder parses at run time in an app of another framework (a ListView's `stickyHeaderTemplate`): the elements it names.
+    if (!b.xml) {
+      const kit = new Set((translator.core as CoreKotlin).kitElements());
+      const named = new Set<string>();
+      const visit = (nodes: TNode[]) => {
+        for (const n of nodes) {
+          if (n.kind === 'template' && n.xml) for (const m of n.xml.matchAll(/<([A-Z][\w.]*)/g)) if (kit.has(m[1])) named.add(m[1]);
+          if ('children' in n && Array.isArray(n.children)) visit(n.children as TNode[]);
+          if ('body' in n && Array.isArray(n.body)) visit(n.body as TNode[]);
+          if ('branches' in n && Array.isArray(n.branches)) for (const br of n.branches as { body: TNode[] }[]) visit(br.body);
+        }
+      };
+      for (const c of b.components) visit(c.template);
+      if (named.size) xmlModules = `        AppModules.register(listOf("@nativescript/core/ui")) { JSObject(listOf<Pair<String, Any?>>(${[...named].sort().map((e) => `Pair(${kotlinString(e)}, ${e}::class.java)`).join(', ')})) }\n`;
+    }
     const run = `${extract}${installs}${switches}        Reactivity.schedule = Reactivity.Schedule.${SCHEDULE[b.framework as Framework].toUpperCase()}\n` + (b.mounted
       ? `        NativeScriptApplication.prepare(cssAST = appCSS)\n        CoreModules.initialize()\n${xmlModules}${inits}`
-      : `        NativeScriptApplication.prepare(cssAST = appCSS)\n        CoreModules.initialize()\n${inits}${b.routeTree ? `        Router.shared.config = ${kotlinRouteConfig(b.routeTree, '        ')}\n` : routes}        NativeScriptApplication.start { ${b.root}().render() }\n`);
+      : `        NativeScriptApplication.prepare(cssAST = appCSS)\n        CoreModules.initialize()\n${xmlModules}${inits}${b.routeTree ? `        Router.shared.config = ${kotlinRouteConfig(b.routeTree, '        ')}\n` : routes}        NativeScriptApplication.start { ${b.root}().render() }\n`);
     writeFileSync(join(sources, '__Entry.kt'), `// Compiled by ns-native: the app's entry and its CSS.
 package ${pkg}
 

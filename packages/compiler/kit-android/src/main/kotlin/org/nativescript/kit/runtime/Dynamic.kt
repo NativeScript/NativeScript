@@ -407,3 +407,14 @@ fun jsNativePropertySet(native: Any?, setter: String, value: Any?) {
     if (methods.isEmpty()) return
     JavaMethodRef(native, native.javaClass, setter, methods).call(listOf(value))
 }
+
+/** An untyped value read as a type parameter a call instantiates with an object class: the class's object for it (its `fromJS`). */
+inline fun <reified T> jsCastTo(value: Any?): T = if (value is T) value else jsConvertTo(value, T::class.java) as T
+
+fun jsConvertTo(value: Any?, cls: Class<*>): Any? {
+    if (value == null || cls.isInstance(value)) return value
+    if (cls == JSDate::class.java) return jsDateFrom(value)
+    val companion = try { cls.getField("Companion").get(null) } catch (_: Exception) { null } ?: return value
+    val fromJS = companion.javaClass.methods.firstOrNull { it.name == "fromJS" && it.parameterCount == 1 } ?: return value
+    return fromJS.invoke(companion, value)
+}
