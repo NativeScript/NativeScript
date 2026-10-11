@@ -1,4 +1,3 @@
-// @kotlin
 // An object rest pattern: the keys the pattern does not name, in a new object.
 interface Project { name: string; stars: number; tag?: string; site: string }
 const projects: Project[] = [{ name: 'node', stars: 3, tag: 'v', site: 'n.org' }, { name: 'deno', stars: 2, site: 'd.land' }];
