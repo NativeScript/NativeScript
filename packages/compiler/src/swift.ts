@@ -2110,7 +2110,25 @@ ${members.join('\n')}
 
   /** Classes for object types without a name. */
   shapesCode(): string {
-    return [...[...this.shapes.values()].map((s) => this.objectClass(s.name, s.fields, null)), ...this.globalAliases.values(), ...this.templateObjects, ...this.extendedClasses].join('\n\n');
+    const shapes = [...this.shapes.values()].map((s) => this.objectClass(s.name, s.fields, null));
+    // `implicit`: `jsImplicit` of the cell's function type, not the generic one, which would hand back a new thunk.
+    const cells = [...this.functionCells].map(([type, name]) => `struct ${name} {\n    let f: ${type}\n    static func implicit(_ value: (${type})?) -> (${type})! { value }\n}`);
+    return [...shapes, ...this.globalAliases.values(), ...this.templateObjects, ...this.extendedClasses, ...cells].join('\n\n');
+  }
+
+  private functionCells = new Map<string, string>();
+  /**
+   * The struct of one field of function type `type`, through which the runtime reads a closure's
+   * identity (`jsFunctionKey`); null for a type naming a type parameter, which no struct outside
+   * the generic can hold.
+   */
+  private functionCell(type: string): string | null {
+    // `JSRest<T>` is `JSArray<T>`: one Swift type, one cell (and one `jsImplicit` overload).
+    const t = type.trim().replace(/\bJSRest</g, 'JSArray<');
+    if (!functionParts(t) || [...this.genericNames].some((g) => new RegExp(`\\b${g}\\b`).test(t))) return null;
+    let name = this.functionCells.get(t);
+    if (!name) this.functionCells.set(t, name = `__JSFunctionCell${this.functionCells.size}`);
+    return name;
   }
 
   /** A plain JavaScript object of a known shape: a final class with a memberwise init, readable as a dynamic object. */
@@ -2314,7 +2332,7 @@ ${members.join('\n')}
     }
     const whole = hasTopLevelArrow(type) ? functionParts(type) : null;
     // Lenient code: undefined where a function is declared stays undefined (`if (valueConverter) …`).
-    if (whole && this.lenient) return `jsImplicit({ (__f: Any?) -> (${type})? in jsIsNullish(__f) ? nil : ${this.unboxFunction('__f', whole)} }(${code}))`;
+    if (whole && this.lenient) return this.implicit(`{ (__f: Any?) -> (${type})? in jsIsNullish(__f) ? nil : ${this.unboxFunction('__f', whole)} }(${code})`, type);
     if (whole) return this.unboxFunction(code, whole);
     const base = type.replace(/\?$/, '');
     if (this.protocols.has(base) && this.interfaces.has(base)) {
@@ -2382,7 +2400,9 @@ ${members.join('\n')}
     // Called with fewer arguments, a function whose last parameters have defaults is called by name, which gives them.
     const fewer = trailing ? Array.from({ length: fn.params.length - trailing.from }, (_, k) => trailing.from + k).map((n) => `if __a.count <= ${n} { ${result(`try ${trailing.ref}(${args.slice(0, n).join(', ')})`)} }; `).join('') : '';
     const body = fewer + result(`try __f(${args.join(', ')})`);
-    return `{ (__f: @escaping ${fn.text}) -> JSFunctionObject in jsFunction(${swiftString(name)}, ${length ?? (restAt >= 0 ? restAt : fn.params.length)}) { (__a: [Any?]) throws -> Any? in ${body} } }(${code})`;
+    const make = `jsFunction(${swiftString(name)}, ${length ?? (restAt >= 0 ? restAt : fn.params.length)}) { (__a: [Any?]) throws -> Any? in ${body} }`;
+    const cell = this.functionCell(fn.text);
+    return `{ (__f: @escaping ${fn.text}) -> JSFunctionObject in ${cell ? `jsBoxedFunction(${cell}(f: __f)) { ${make} }` : make} }(${code})`;
   }
 
   /** A function the program declares, held untyped: a function object of its name and `length`. */
@@ -2401,8 +2421,27 @@ ${members.join('\n')}
       ? `try jsCall(__f, spread: [${fn.params.slice(0, fn.rest).map(arg).join(', ')}] + __p${fn.rest}.storage.map { $0 as Any? })`
       : `try jsCall(__f${fn.params.map((p, k) => `, ${arg(p, k)}`).join('')})`;
     const body = fn.result === 'Void' ? `_ = ${call}` : `return ${this.fromAnyCode(call, fn.result, true)}`;
+    const cell = this.functionCell(fn.text);
+    const made = `{ (${params.join(', ')}) throws -> ${fn.result} in ${cell ? this.keeping('__i', body, fn.result) : body} }`;
     // A closure of exactly this type passes through as it is.
-    return `{ (__f: Any?) -> ${fn.text} in (jsFlat(__f) as? ${fn.text}) ?? { (${params.join(', ')}) throws -> ${fn.result} in ${body} } }(${code})`;
+    if (!cell) return `{ (__f: Any?) -> ${fn.text} in (jsFlat(__f) as? ${fn.text}) ?? ${made} }(${code})`;
+    return `{ (__f: Any?) -> ${fn.text} in if let __t = jsFlat(__f) as? ${fn.text} { return __t }; let __i = JSFunctionAlias(of: __f); return jsIdentified(${cell}(f: ${made}), __i).f }(${code})`;
+  }
+
+  /** A closure body that keeps `alias` alive with the closure: what makes the closure's key the alias's. */
+  private keeping(alias: string, body: string, result: string): string {
+    return result === 'Void' ? `try withExtendedLifetime(${alias}) { () throws -> Void in ${body} }` : `return try withExtendedLifetime(${alias}) { () throws -> ${result} in ${body} }`;
+  }
+
+  /**
+   * `{ (__h: F) -> G in … }`, a function adapting `__h` of type `from` to `to` (`params` and `body`
+   * of its closure): the closure made stands for `__h`, to `===`.
+   */
+  private adapter(from: string, to: FunctionParts, params: string[], body: string): string {
+    const hc = this.functionCell(from), gc = this.functionCell(to.text);
+    if (!hc || !gc) return `{ (__h: @escaping ${from}) -> ${to.text} in { (${params.join(', ')}) throws -> ${to.result} in ${body} } }`;
+    const closure = `{ (${params.join(', ')}) throws -> ${to.result} in ${this.keeping('__i', body, to.result)} }`;
+    return `{ (__h: @escaping ${from}) -> ${to.text} in { (__i: JSFunctionAlias) -> ${to.text} in jsIdentified(${gc}(f: ${closure}), __i).f }(JSFunctionAlias(cell: ${hc}(f: __h))) }`;
   }
 
   /** Swift code of type `from` where Swift needs `to`: functions are adapted parameter by parameter. */
@@ -2440,7 +2479,8 @@ ${members.join('\n')}
       if (fn && (opt || this.lenient)) {
         // As `boxFunction` takes it: lenient code's function may give undefined for an object.
         const held = this.lenientRef(fn.result) !== fn.result ? `(${fn.params.join(', ')}) throws -> ${optionalType(fn.result)}` : fn.text;
-        return `{ (__g: (${held})?) -> Any? in __g.map { ${this.boxFunction('$0', held, fn.rest)} } }(${code})`;
+        // `if let`, not `Optional.map`: a closure passed through a generic is a new thunk, another function to `===`.
+        return `{ (__g: (${held})?) -> Any? in if let __g { return ${this.boxFunction('__g', held, fn.rest)} } else { return nil } }(${code})`;
       }
       if (fn) return this.boxFunction(code, fn.text);
       return code;
@@ -2459,10 +2499,11 @@ ${members.join('\n')}
         : this.convert(`__q${k}`, g.params[k].replace(/^@escaping /, ''), p.replace(/^@escaping /, ''))));
       const call = `try __h(${args.join(', ')})`;
       const body = g.result === 'Void' ? `_ = ${call}` : f.result === 'Void' && isOptional(g.result) ? `${call}; return nil` : `return ${this.convert(call, f.result, g.result)}`;
-      const wrap = `{ (__h: @escaping ${escapingFunction(f)}) -> ${g.text} in { (${params.join(', ')}) throws -> ${g.result} in ${body} } }`;
+      const wrap = this.adapter(escapingFunction(f), g, params, body);
       if (!isOptional(from)) return `${wrap}(${code})`;
       // A missing function passed where one must be is a TypeError when called, as JavaScript's.
-      return isOptional(to) || to.endsWith('!') ? `(${code}).map(${wrap})` : `(${code}).map(${wrap})!`;
+      const mapped = `{ (__g: (${escapingFunction(f)})?) -> (${g.text})? in if let __g { return ${wrap}(__g) } else { return nil } }(${code})`;
+      return isOptional(to) || to.endsWith('!') ? mapped : `${mapped}!`;
     }
     // One promise where a promise of another type is wanted (`Promise.all(untyped)` returned as `Promise<void[]>`): its value converted.
     const pf = /^JSPromise<(.*)>[?!]?$/.exec(from)?.[1], pt = /^JSPromise<(.*)>[?!]?$/.exec(to)?.[1];
@@ -5453,7 +5494,7 @@ ${members.join('\n')}
       `JSArray<${element}>([${want.params.slice(fixed).map((t, k) => this.convert(`__q${fixed + k}`, p(t), element)).join(', ')}])`];
     const call = `try __h(${args.join(', ')})`;
     const body = want.result === 'Void' ? `_ = ${call}` : `return ${this.convert(call, have.result, want.result)}`;
-    return `{ (__h: @escaping ${escapingFunction(have)}) -> ${want.text} in { (${params.join(', ')}) throws -> ${want.result} in ${body} } }(${this.expr(e)})`;
+    return `${this.adapter(escapingFunction(have), want, params, body)}(${this.expr(e)})`;
   }
 
   /** A declared function where a function of fewer parameters is wanted: called by name, so the rest take their defaults. */
@@ -5466,9 +5507,22 @@ ${members.join('\n')}
     if (!decl.parameters.slice(want.params.length).every((p) => (p.questionToken || p.initializer) && !p.dotDotDotToken)) return null;
     const p = (t: string) => t.replace(/^@escaping /, '');
     const params = want.params.map((t, k) => `__q${k}: ${p(t)}`);
-    const call = `try ${this.expr(e)}(${want.params.map((t, k) => this.convert(`__q${k}`, p(t), p(have.params[k]))).join(', ')})`;
+    const callee = this.byName(() => this.expr(e));
+    const call = `try ${callee}(${want.params.map((t, k) => this.convert(`__q${k}`, p(t), p(have.params[k]))).join(', ')})`;
     const body = want.result === 'Void' ? `_ = ${call}` : `return ${this.convert(call, have.result, want.result)}`;
-    return `{ (${params.join(', ')}) throws -> ${want.result} in ${body} }`;
+    // A method's value (one per receiver and method) is the identity the adapter takes on; a declared function's own type is not this one's.
+    const value = ts.isPropertyAccessExpression(e) ? this.methodValueRead(e) : null;
+    const hc = value ? this.functionCell(have.text) : null, gc = this.functionCell(want.text);
+    if (!value || !hc || !gc) return `{ (${params.join(', ')}) throws -> ${want.result} in ${body} }`;
+    return `{ (__i: JSFunctionAlias) -> ${want.text} in jsIdentified(${gc}(f: { (${params.join(', ')}) throws -> ${want.result} in ${this.keeping('__i', body, want.result)} }), __i).f }(JSFunctionAlias(cell: ${hc}(f: ${value})))`;
+  }
+
+  /** Code a method reference is called by name in (`obj.method(…)`), not read as a value. */
+  private namedCall = false;
+  private byName(f: () => string): string {
+    const was = this.namedCall;
+    this.namedCall = true;
+    try { return f(); } finally { this.namedCall = was; }
   }
 
   /**
@@ -6454,7 +6508,37 @@ ${members.join('\n')}
       return rt.endsWith('?') || rt === 'Any?' ? code : this.undefinedAs(`(${code})`, rt);
     }
     const unwrap = (this.continuesOptional(target) || (ts.isCallExpression(target) && this.maybeUndefined(target))) && !e.questionDotToken;
+    if (!unwrap) {
+      const value = this.methodValueRead(e);
+      if (value) return value;
+    }
     return this.narrowed(e, `${this.expr(target)}${unwrap ? '!' : ''}${dot}${this.memberName(e)}`);
+  }
+
+  /**
+   * A program class's method read as a value (`source.on('tap', this.onTap, this)`): the one
+   * closure of that receiver and method (`jsMethodValue`), holding the receiver weakly. Null for
+   * any other read, and for a method called (`obj.m()`) or called by name (`namedCall`).
+   */
+  private methodValueRead(e: ts.PropertyAccessExpression): string | null {
+    if (this.namedCall || e.questionDotToken || isWriteTarget(e)) return null;
+    const p = e.parent;
+    if ((ts.isCallExpression(p) && p.expression === e) || ts.isPropertyAccessExpression(p) || ts.isElementAccessExpression(p) || ts.isTypeOfExpression(p) || ts.isDeleteExpression(p)) return null;
+    const decl = this.checker.getSymbolAtLocation(e.name)?.valueDeclaration;
+    if (!decl || !ts.isMethodDeclaration(decl) || isStatic(decl) || decl.typeParameters?.length || decl.asteriskToken || !ts.isClassDeclaration(decl.parent) || decl.getSourceFile().isDeclarationFile) return null;
+    if (decl.parameters.some((q) => q.dotDotDotToken)) return null;
+    if (e.expression.kind === ts.SyntaxKind.SuperKeyword || !(this.isSelf(e.expression) || this.programClass(e.expression))) return null;
+    const receiverType = this.typeOf(e.expression);
+    if (receiverType.endsWith('?')) return null;
+    const fn = functionParts(this.typeOf(e));
+    const cell = fn && fn.rest < 0 ? this.functionCell(fn.text) : null;
+    if (!fn || !cell) return null;
+    const name = e.name.text;
+    const params = fn.params.map((t, k) => `__p${k}: ${t}`);
+    const call = `try __r.${this.memberName(e)}(${fn.params.map((_, k) => `__p${k}`).join(', ')})`;
+    const body = fn.result === 'Void' ? `_ = ${call}` : `return ${call}`;
+    const closure = `{ [weak __r] (${params.join(', ')}) throws -> ${fn.result} in guard let __r else { throw jsReleasedReceiver(${swiftString(name)}) }; ${this.keeping('__i', body, fn.result)} }`;
+    return `jsMethodValue(${this.expr(e.expression)}, ${swiftString(name)}) { __r, __i in ${cell}(f: ${closure}) }.f`;
   }
 
   /** A receiver that can be missing though its type says not (`x!`, `items[i]`): JavaScript's TypeError when it is. */
@@ -6704,13 +6788,20 @@ ${members.join('\n')}
   }
 
   /** An undefined-or-value as the TypeScript type reads it: NaN, "undefined" and false are what undefined converts to. */
+  /** `jsImplicit(code)` of an optional value of `type`: a function's through its cell's own, which keeps its identity. */
+  private implicit(code: string, type: string): string {
+    const fn = type.replace(/^\((.*)\)[?!]$/, '$1');
+    const cell = isFunctionType(fn) ? this.functionCell(fn) : null;
+    return cell ? `${cell}.implicit(${code})` : `jsImplicit(${code})`;
+  }
+
   undefinedAs(code: string, type: string): string {
     if (isOptional(type)) return code.endsWith('?? nil)') ? code : `(${code} ?? nil)`;
     if (type === 'Double') return `(${code} ?? .nan)`;
     if (type === 'String') return `(${code} ?? "undefined")`;
     if (type === 'Bool') return `(${code} ?? false)`;
     // Lenient code: undefined read as the object type wanted, which may be a subclass of the value's.
-    return this.lenient ? (/^[A-Z][\w.]*$/.test(type) && !this.native.isStructType(type) ? `jsImplicit(${code} as? ${type})` : `jsImplicit(${code})`) : `${code}!`;
+    return this.lenient ? (/^[A-Z][\w.]*$/.test(type) && !this.native.isStructType(type) ? `jsImplicit(${code} as? ${type})` : this.implicit(code, type)) : `${code}!`;
   }
 
   args(e: ts.CallExpression | ts.NewExpression, count?: number): string[] {
@@ -8623,6 +8714,14 @@ ${members.join('\n')}
     return !!t.getSymbol()?.declarations?.some((d) => ts.isClassDeclaration(d) && !d.getSourceFile().isDeclarationFile) && !t.isUnion();
   }
 
+  /** A typed function value in its identity cell, optional (nil for undefined); null for an untyped one. */
+  private functionOperand(x: ts.Expression, type: string): string | null {
+    const fn = type.replace(/^\((.*)\)[?!]$/, '$1');
+    const cell = isFunctionType(fn) ? this.functionCell(fn) : null;
+    if (!cell) return null;
+    return fn === type ? `${cell}(f: ${this.expr(x)}) as ${cell}?` : `{ (__c: (${fn})?) -> ${cell}? in if let __c { return ${cell}(f: __c) } else { return nil } }(${this.expr(x)})`;
+  }
+
   private equality(e: ts.BinaryExpression): string {
     const K = ts.SyntaxKind;
     const op = e.operatorToken.kind;
@@ -8643,9 +8742,12 @@ ${members.join('\n')}
       const key = ts.isElementAccessExpression(x) ? this.propertyKey(x.argumentExpression) : swiftString((x as ts.PropertyAccessExpression).name.text);
       return `${ts.isOptionalChain(x) ? 'jsGetIfPresent' : 'jsGet'}(${this.expr(target)}, ${key})`;
     };
-    // Two typed function values: the same function when they hold the same closure.
+    // Function values: the same function when their closures stand for one (`jsSameFunction`).
     if (!isNullish(a) && !isNullish(b) && (isFunctionType(lt.replace(/^\((.*)\)[?!]$/, '$1')) || isFunctionType(rt.replace(/^\((.*)\)[?!]$/, '$1')))) {
-      return `${negate ? '!' : ''}jsSameFunction(${this.expr(a)}, ${this.expr(b)})`;
+      const ca = this.functionOperand(a, lt), cb = this.functionOperand(b, rt);
+      if (ca && cb) return `${negate ? '!' : ''}jsSameFunction(${ca}, ${cb})`;
+      // One side untyped: as script values, the typed one boxed as the one function object it stands for.
+      return `${negate ? '!' : ''}jsStrictEquals(${this.coerce(a, 'Any?')}, ${this.coerce(b, 'Any?')})`;
     }
     if ((isNullish(b) && untypedRead(a)) || (isNullish(a) && untypedRead(b))) {
       const [x, n] = isNullish(b) ? [a, b] : [b, a];
