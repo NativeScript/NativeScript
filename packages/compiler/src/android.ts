@@ -83,6 +83,8 @@ export interface AndroidBuild {
    * `android.app.Application` starts, as NativeScript's runtime does, with the stylesheet as its build parses it.
    */
   generatedKit?: boolean;
+  /** `android.release.narrowKitKeeps`: R8 keeps only what the kit's reflection needs (kitKeepRules). */
+  narrowKitKeeps?: boolean;
   /** The app's stylesheet as css2json-loader's AST, which core loads as `app.css` in the generated kit. */
   cssAST?: string;
 }
@@ -406,7 +408,7 @@ ${overlays.map((m) => `        variant.sources.manifests.addStaticManifestFile($
 }
 ` : ''}${gradleFile('app.gradle')}`);
   // The app's members are reached by name through reflection, as the kit's are.
-  writeFileSync(join(b.out, 'proguard-rules.pro'), `-dontwarn org.nativescript.widgets.**\n-keep class ${pkg}.** { *; }\n${native.keepRules.map((r) => `${r}\n`).join('')}${reflectedMemberRules([join(b.out, 'src'), join(kit, 'src'), join(kit, 'generated'), join(kit, 'Bindings')])}`);
+  writeFileSync(join(b.out, 'proguard-rules.pro'), `-dontwarn org.nativescript.widgets.**\n-keep class ${pkg}.** { *; }\n${kitKeepRules(!!b.narrowKitKeeps)}${native.keepRules.map((r) => `${r}\n`).join('')}${reflectedMemberRules([join(b.out, 'src'), join(kit, 'src'), join(kit, 'generated'), join(kit, 'Bindings')])}`);
   mkdirSync(join(b.out, 'src', 'main', 'res', 'values'), { recursive: true });
   // The runtime template's strings.xml, named after the folder (letters and digits only), unless App_Resources replaces the file.
   const label = basename(resolve(b.app)).replace(/[^a-zA-Z0-9]/g, '');
@@ -476,21 +478,49 @@ function findWidgetsAar(app: string): string | null {
 /**
  * Keep rules for the members code reaches on Java objects by name (`detector.onTouchEvent(e)` on a value typed
  * `any`, `typeof feature.getOrientation`): R8 would otherwise rename or drop a library's method, and the read
- * finds nothing while the static calls beside it still work.
+ * finds nothing while the static calls beside it still work. Those lookups see public members and static fields
+ * (jsJavaGet, jsJavaHas, jsNativePropertyGet); jsCallDeclared also sees a class's non-public methods.
  */
 function reflectedMemberRules(roots: string[]): string {
   const names = new Set<string>();
-  const access = /\bjs(?:CallMethod|CallMethodIfPresent|Get|GetOptional|Field|JavaGet|HasKey)\((?:[^()"]|\((?:[^()"]|\([^()]*\))*\))*?,\s*"([A-Za-z_$][\w$]*)"/g;
+  const declared = new Set<string>();
+  const args = '\\((?:[^()"]|\\((?:[^()"]|\\([^()]*\\))*\\))*?,\\s*"([A-Za-z_$][\\w$]*)"';
+  const access = new RegExp(`\\bjs(?:CallMethod|CallMethodIfPresent|Get|GetOptional|Set|Field|JavaGet|JavaSet|HasKey|NativePropertyGet|NativePropertySet)${args}`, 'g');
+  const declaredAccess = new RegExp(`\\bjsCallDeclared${args}`, 'g');
   const visit = (dir: string) => {
     if (!existsSync(dir)) return;
     for (const entry of readdirSync(dir, { withFileTypes: true })) {
       if (entry.isDirectory()) { if (entry.name !== 'build') visit(join(dir, entry.name)); }
-      else if (entry.name.endsWith('.kt')) for (const m of readFileSync(join(dir, entry.name), 'utf8').matchAll(access)) names.add(m[1]);
+      else if (entry.name.endsWith('.kt')) {
+        const text = readFileSync(join(dir, entry.name), 'utf8');
+        for (const m of text.matchAll(access)) names.add(m[1]);
+        for (const m of text.matchAll(declaredAccess)) declared.add(m[1]);
+      }
     }
   };
   roots.forEach(visit);
-  if (!names.size) return '';
-  return `-keepclassmembers class * {\n${[...names].sort().map((n) => `    *** ${n}(...);\n    *** ${n};\n`).join('')}}\n`;
+  if (!names.size && !declared.size) return '';
+  return `-keepclassmembers class * {\n${[...names].sort().map((n) => `    public *** ${n}(...);\n    public *** ${n};\n    static *** ${n};\n`).join('')}${[...declared].sort().map((n) => `    *** ${n}(...);\n`).join('')}}\n`;
+}
+
+/**
+ * The kit's own keeps. By default every class and member of org.nativescript is kept, as script reaches them by
+ * name. `narrow` keeps what the runtime's reflection needs and lets R8 drop the rest: class names (getClass,
+ * `constructor.name`, the runtime telling its objects by package), the names of the members that remain (jsJavaGet
+ * and computed keys), constructors (jsNew of a class held as a value), companions' fromJS (jsConvertTo) and view
+ * getters (kitSet's accessor check). A kit member reached only through a computed key and referenced nowhere else
+ * is dropped under `narrow`.
+ */
+function kitKeepRules(narrow: boolean): string {
+  if (!narrow) return '-keep class org.nativescript.** { *; }\n';
+  return [
+    '-keepnames class org.nativescript.**',
+    '-keepclassmembernames class org.nativescript.** { *; }',
+    '-keepclassmembers class org.nativescript.** { <init>(...); }',
+    '-keepclassmembers class org.nativescript.** { public static ** Companion; }',
+    '-keepclassmembers class org.nativescript.**$Companion { public *** fromJS(...); }',
+    '-keepclassmembers class * extends org.nativescript.kit.ViewBase { public *** get*(); }',
+  ].join('\n') + '\n';
 }
 
 /**
