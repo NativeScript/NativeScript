@@ -505,6 +505,8 @@ export class Translator implements AsyncTranslator {
     // An Angular component class as a value (`typeof SheetComponent`) is what creating and rendering it gives.
     const classDecl = sym?.valueDeclaration;
     if (classDecl && ts.isClassDeclaration(classDecl) && t.getConstructSignatures().length && isAngularComponent(classDecl)) return 'ComponentFactory';
+    // An app class as a value (`[Plain]`): its Java class, untyped.
+    if (!this.library && classDecl && ts.isClassDeclaration(classDecl) && !classDecl.getSourceFile().isDeclarationFile && t.getConstructSignatures().length && !t.getCallSignatures().length && !this.pluginFiles.has(classDecl.getSourceFile().fileName) && !this.namesClass(where)) return 'Any?';
     // Library mode: a class a module declares for what it makes at run time (`declare class NativeScriptLifecycleCallbacks extends …`): the class it extends.
     if (this.library && sym && sym.flags & ts.SymbolFlags.Class && sym.declarations?.length && sym.declarations.every((d) => ts.isClassDeclaration(d) && !d.getSourceFile().isDeclarationFile && hasModifier(d, ts.SyntaxKind.DeclareKeyword))) {
       const base = (t as ts.InterfaceType).isClassOrInterface?.() ? c.getBaseTypes(t as ts.InterfaceType)[0] : undefined;
