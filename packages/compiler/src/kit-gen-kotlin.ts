@@ -13,6 +13,7 @@ import { Translator, splitTopLevel } from './kotlin.ts';
 import { AndroidNativeAPI, androidClassPath } from './native-calls-android.ts';
 import { collectProperties } from './properties.ts';
 import { evaluationOrder } from './modules.ts';
+import { SourceLines } from './source-lines.ts';
 
 export interface KotlinKitOptions {
   /** `packages/core` of the NativeScript repository. */
@@ -53,6 +54,8 @@ export interface KotlinKitResult {
   /** The modules attempted and those translated with nothing left out. */
   attempted: number;
   translated: number;
+  /** For each file, `[first Kotlin line, core file relative to core, its line]` ranges, as an app's source-lines.json. */
+  lines: Record<string, [number, string, number][]>;
 }
 
 export const KIT_PACKAGE = 'org.nativescript.kit';
@@ -171,6 +174,7 @@ export function generateKotlinKit(o: KotlinKitOptions): KotlinKitResult {
     },
   });
   translator.appModule = KIT_PACKAGE;
+  const sourceLines = translator.lines = new SourceLines(new Map());
   const native = new AndroidNativeAPI(translator, androidClassPath(widgets));
   // The repository's typings are no installed package: their declarations are the SDK's all the same.
   for (const f of program.getSourceFiles()) if (f.isDeclarationFile && f.fileName.startsWith(resolve(typesAndroid) + '/')) native.pluginTypings.add(f.fileName);
@@ -224,18 +228,33 @@ export function generateKotlinKit(o: KotlinKitOptions): KotlinKitResult {
     return [`${rel}.android.ts`, `${rel}.ts`].map((c) => join(core, c)).find((c) => compiled.has(c)) ?? null;
   };
   const exported = indexExports(program, checker, join(core, 'index.ts'), compiled, (f) => moduleObjectName(relOf(f)), sourceOf, out);
-  for (const f of out) f.code = withImports((translator.interfacesOf(paths.get(f)!) + f.code).trim());
-  if (exported) out.push({ name: '__Exports.kt', code: withImports(exported.trim()), sources: {} });
+  // The statement markers, taken out before the imports are written, become the line table a stack trace's kit
+  // frames are read with (retrace.ts): `[first Kotlin line, core file, its line]` ranges.
+  const lines: Record<string, [number, string, number][]> = {};
+  const located = (name: string, code: string, pkg?: string): string => {
+    const body = sourceLines.kotlin(code);
+    const written = withImports(body.code, pkg);
+    const offset = written.split('\n').length - 1 - body.code.split('\n').length;
+    const ranges: [number, string, number][] = [];
+    body.lines.forEach((at, i) => {
+      const last = ranges.at(-1);
+      if (at ? !last || last[1] !== relative(core, at.file) || last[2] !== at.line : last && last[2] !== 0) ranges.push([i + 1 + offset, at ? relative(core, at.file) : '', at?.line ?? 0]);
+    });
+    if (ranges.length) lines[name] = ranges;
+    return written;
+  };
+  for (const f of out) f.code = located(f.name, (translator.interfacesOf(paths.get(f)!) + f.code).trim());
+  if (exported) out.push({ name: '__Exports.kt', code: located('__Exports.kt', exported.trim()), sources: {} });
   // Classes under Java names of other packages (`com.tns.NativeScriptActivity`), as an app's manifest names them.
   for (const f of new Map(translator.foreign.map((x) => [x.name, x])).values()) {
-    out.push({ name: `${f.name}.kt`, code: withImports(f.code.trim(), f.name.slice(0, f.name.lastIndexOf('.'))), sources: {} });
+    out.push({ name: `${f.name}.kt`, code: located(`${f.name}.kt`, f.code.trim(), f.name.slice(0, f.name.lastIndexOf('.'))), sources: {} });
   }
   const shapes = translator.shapesCode().trim();
-  if (shapes) out.push({ name: '__Objects.kt', code: withImports(shapes), sources: {} });
+  if (shapes) out.push({ name: '__Objects.kt', code: located('__Objects.kt', shapes), sources: {} });
   // Core's modules run their top level once, in the order core's index evaluates them.
   out.push({ name: '__Modules.kt', sources: {}, code: `${header()}object CoreModules {\n    private var initialized = false\n\n    fun initialize() {\n        if (initialized) return\n        initialized = true\n${inits.map((i) => `        ${i}()\n`).join('')}    }\n}\n` });
   if (errors.length && !o.report) throw new Error(errors.join('\n'));
-  return { files: out, errors: [...new Set(errors)], attempted: order.length, translated };
+  return { files: out, errors: [...new Set(errors)], attempted: order.length, translated, lines };
 }
 
 /**

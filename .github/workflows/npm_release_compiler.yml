@@ -1,7 +1,8 @@
 name: '@nativescript/compiler -> npm'
 
-# The compiler ships NativeScriptKit generated from one core release, so it is released with core,
-# at core's version: every core release tag (`{version}-core`, see nx.json releaseTag) publishes it.
+# The compiler ships NativeScriptKit generated from one core release, for iOS (Swift) and Android (Kotlin), so it is
+# released with core, at core's version: every core release tag (`{version}-core`, see nx.json releaseTag) publishes it,
+# with a peer dependency on exactly that core, which the compiler also checks at build time.
 
 on:
   push:
@@ -25,6 +26,10 @@ concurrency:
 
 permissions:
   contents: read
+
+env:
+  KOTLIN_VERSION: '2.2.20'
+  KOTLIN_SHA256: '81f0264c9073b5cbbdb3ff8418cf2c5dac076879fc156fa1a6462f5a5acc4420'
 
 jobs:
   kit:
@@ -65,14 +70,24 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Generate the kit
+      - name: Generate the iOS kit
         run: npx nx run compiler:kit
 
-      - name: Upload the generated kit
+      - name: Generate the Android kit
+        run: npx nx run compiler:kit-android
+
+      - name: Upload the generated iOS kit
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
           name: kit-core
           path: packages/compiler/kit-apple/Sources/NativeScriptKit/Core
+          if-no-files-found: error
+
+      - name: Upload the generated Android kit
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        with:
+          name: kit-android
+          path: packages/compiler/kit-android/generated
           if-no-files-found: error
 
       - name: Upload the built core
@@ -132,9 +147,93 @@ jobs:
           xcrun simctl list runtimes | grep -q 'iOS 26\.' || xcodebuild -downloadPlatform iOS -buildVersion 26.5
           packages/compiler/tests/launch-check.sh packages/compiler/tests/app/platforms/native 26 30
 
+  verify-android:
+    name: Differential tests (Kotlin), and the packed compiler building and launching an app (Android)
+    needs: kit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+        with:
+          egress-policy: audit
+
+      - name: Checkout the core release
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24'
+
+      - name: Setup Java
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Install kotlinc
+        run: |
+          curl -fsSL -o "$RUNNER_TEMP/kotlinc.zip" "https://github.com/JetBrains/kotlin/releases/download/v${KOTLIN_VERSION}/kotlin-compiler-${KOTLIN_VERSION}.zip"
+          echo "${KOTLIN_SHA256}  $RUNNER_TEMP/kotlinc.zip" | sha256sum -c -
+          unzip -q "$RUNNER_TEMP/kotlinc.zip" -d "$RUNNER_TEMP"
+          echo "KOTLINC=$RUNNER_TEMP/kotlinc/bin/kotlinc" >> "$GITHUB_ENV"
+
+      - name: Download the generated iOS kit
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          name: kit-core
+          path: packages/compiler/kit-apple/Sources/NativeScriptKit/Core
+
+      - name: Download the generated Android kit
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          name: kit-android
+          path: packages/compiler/kit-android/generated
+
+      - name: Download the built core
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          name: core-dist
+          path: dist/packages/core
+
+      - name: Install the compiler's dependencies
+        working-directory: packages/compiler
+        run: |
+          npm ci --no-audit --no-fund
+          npm install --prefix tests --no-audit --no-fund
+
+      - name: Differential tests (Kotlin)
+        working-directory: packages/compiler
+        run: node tests/diff/run.ts --kotlin
+
+      - name: Release checks
+        working-directory: packages/compiler
+        run: node tests/release-checks/run.ts
+
+      - name: Pack and build
+        run: packages/compiler/tests/pack-check.sh android dist/packages/core "$RUNNER_TEMP/pack"
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Launch on an emulator
+        uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
+        with:
+          api-level: 35
+          arch: x86_64
+          target: google_apis
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot
+          disable-animations: true
+          script: packages/compiler/tests/launch-check-android.sh "$RUNNER_TEMP/pack/app/platforms/compiled/android/build/outputs/apk/release/KitPackCheck-release.apk" org.nativescript.kitpackcheck 30
+
   publish:
     name: Publish (gated by environment)
-    needs: [kit, verify]
+    needs: [kit, verify, verify-android]
     runs-on: ubuntu-latest
     environment:
       name: ${{ (github.event_name == 'workflow_dispatch' && inputs.dry-run) && 'npm-publish-dry-run' || 'npm-publish' }}
@@ -161,21 +260,31 @@ jobs:
       - name: Update npm (required for OIDC trusted publishing)
         run: npm install -g npm@^11.5.1
 
-      # The kit that was verified, not a second generation.
-      - name: Download the generated kit
+      # The kits that were verified, not a second generation.
+      - name: Download the generated iOS kit
         uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
         with:
           name: kit-core
           path: packages/compiler/kit-apple/Sources/NativeScriptKit/Core
+
+      - name: Download the generated Android kit
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          name: kit-android
+          path: packages/compiler/kit-android/generated
 
       # prepack compiles the compiler to JavaScript (dist/) with its TypeScript dependency.
       - name: Install the compiler's dependencies
         working-directory: packages/compiler
         run: npm ci --no-audit --no-fund
 
-      - name: Set the version to core's
+      - name: Set the version to core's, with a peer dependency on exactly that core
         working-directory: packages/compiler
-        run: npm version --no-git-tag-version --allow-same-version "${{ needs.kit.outputs.version }}"
+        env:
+          VERSION: ${{ needs.kit.outputs.version }}
+        run: |
+          npm version --no-git-tag-version --allow-same-version "$VERSION"
+          node -e 'const f = "package.json", p = JSON.parse(require("fs").readFileSync(f, "utf8")); p.peerDependencies["@nativescript/core"] = process.env.VERSION; require("fs").writeFileSync(f, JSON.stringify(p, null, 2) + "\n")'
 
       - name: Publish (OIDC)
         if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.dry-run) }}

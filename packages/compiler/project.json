@@ -45,7 +45,7 @@
 		},
 		"pack": {
 			"executor": "nx:run-commands",
-			"dependsOn": ["kit"],
+			"dependsOn": ["kit", "kit-android"],
 			"outputs": ["{workspaceRoot}/dist/packages"],
 			"options": {
 				"command": "mkdir -p ../../dist/packages && npm pack --pack-destination ../../dist/packages",

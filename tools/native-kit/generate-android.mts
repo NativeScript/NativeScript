@@ -58,6 +58,8 @@ mkdirSync(out, { recursive: true });
 for (const f of readdirSync(out)) if (!files.has(f)) rmSync(join(out, f));
 for (const [name, code] of files) writeFileSync(join(out, name), code);
 writeFileSync(join(out, '..', '..', '..', '..', 'manifest.json'), JSON.stringify(manifest, null, '\t') + '\n');
+// Kit frames of a stack trace in core's lines (the compiler's retrace).
+writeFileSync(join(out, '..', '..', '..', '..', 'source-lines.json'), JSON.stringify({ package: 'org.nativescript.kit', core: version, files: result.lines }) + '\n');
 console.log(`${files.size} files in ${out}`);
 
 if (gradle) {

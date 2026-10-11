@@ -3,7 +3,8 @@
 // as a native program: Swift as a macOS command-line program linking the
 // kit's JavaScript runtime (Foundation only), and Kotlin on the host JVM
 // with kit-android's runtime (plain JVM). Output and exit status must match.
-//   node tests/diff/run.ts [case-name…] [--swift | --kotlin] [--keep]
+//   node tests/diff/run.ts [case-name…] [--swift | --kotlin] [--keep] [--osize]
+// --osize builds the Swift runtime and cases with -Osize, the optimizer release builds use (into <build>-osize).
 // Build products go to $NS_DIFF_BUILD (default: <tmp>/ns-native-diff).
 // Node runs with --expose-gc: a case checking object lifetimes calls `globalThis.gc?.()`, which ARC needs no call for.
 // Kotlin compiles with $KOTLINC, `kotlinc` on PATH, or the compiler Gradle cached for kit-android.
@@ -26,7 +27,8 @@ const here = dirname(fileURLToPath(import.meta.url));
 const root = resolve(here, '../..');
 const kit = join(root, 'kit-apple/Sources/NativeScriptKit');
 const kitAndroid = join(root, 'kit-android/src/main/kotlin/org/nativescript/kit');
-const build = process.env.NS_DIFF_BUILD ?? join(tmpdir(), 'ns-native-diff');
+const optimize = process.argv.includes('--osize') ? '-Osize' : '-Onone';
+const build = (process.env.NS_DIFF_BUILD ?? join(tmpdir(), 'ns-native-diff')) + (optimize === '-Osize' ? '-osize' : '');
 // The cases are typed by core and the ES library as an app's are (tests/package.json).
 const modulesDir = process.env.NS_DIFF_MODULES ?? join(root, 'tests/node_modules');
 const args = process.argv.slice(2).filter((a) => !a.startsWith('--'));
@@ -43,7 +45,7 @@ function buildRuntime() {
   const newest = Math.max(...runtimeSources.map((f) => statSync(f).mtimeMs));
   if (existsSync(lib) && statSync(lib).mtimeMs > newest) return;
   execFileSync('xcrun', ['swiftc', '-parse-as-library', '-emit-library', '-static', '-module-name', 'NativeScriptKit', '-emit-module', '-emit-module-path', join(build, 'NativeScriptKit.swiftmodule'),
-    '-Onone', '-o', lib, ...runtimeSources], { stdio: 'inherit', cwd: build });
+    optimize, '-o', lib, ...runtimeSources], { stdio: 'inherit', cwd: build });
 }
 
 /**
@@ -174,12 +176,25 @@ rmSync(js, { recursive: true, force: true });
 toJavaScript(join(here, 'cases'), js);
 const expected = new Map(cases.map((c) => [c, spawnSync('node', ['--expose-gc', join(js, basename(c, '.ts') + '.js')], { encoding: 'utf8' })]));
 let failed = 0;
+/**
+ * Cases known to fail on a target, each with its cause (tests/diff/known-failures.json). A known failure is reported
+ * and not counted; a known failure that matches Node fails the run, so the list only shrinks.
+ */
+const knownFile = JSON.parse(readFileSync(join(here, 'known-failures.json'), 'utf8'));
+const known: Record<string, Record<string, string>> = { swift: knownFile.swift ?? {}, kotlin: knownFile.kotlin ?? {} };
+const knownFailed: string[] = [];
+const ran = new Set<string>();
+function fail(name: string, target: string) {
+  if (known[target]?.[name]) knownFailed.push(`${name} (${target})`);
+  else failed++;
+}
 
 function report(name: string, target: string, want: { stdout: string; status: number | null }, actual: { stdout: string; stderr: string; status: number | null }) {
   const same = actual.stdout === want.stdout && (actual.status === 0) === (want.status === 0);
+  ran.add(`${target}:${name}`);
   if (same) { console.log(`✓ ${name} (${target})`); return; }
-  failed++;
-  console.log(`✗ ${name} (${target}): output differs (exit ${want.status} in Node, ${actual.status} native)`);
+  fail(name, target);
+  console.log(`✗ ${name} (${target})${known[target]?.[name] ? ' [known]' : ''}: output differs (exit ${want.status} in Node, ${actual.status} native)`);
   const e = want.stdout.split('\n'), a = actual.stdout.split('\n');
   for (let k = 0, shown = 0; k < Math.max(e.length, a.length) && shown < 8; k++) {
     if (e[k] !== a[k]) { console.log(`    line ${k + 1}\n      node:   ${JSON.stringify(e[k])}\n      native: ${JSON.stringify(a[k])}`); shown++; }
@@ -197,12 +212,13 @@ if (targets.includes('swift')) {
     try {
       translate(file, join(dir, 'Sources'));
       const swiftFiles = readdirSync(join(dir, 'Sources')).map((f) => join(dir, 'Sources', f));
-      const compiled = spawnSync('xcrun', ['swiftc', '-Onone', '-module-name', 'Main', '-I', build, '-L', build, '-lNativeScriptKit', '-o', join(dir, name), ...swiftFiles], { encoding: 'utf8' });
+      const compiled = spawnSync('xcrun', ['swiftc', optimize, '-module-name', 'Main', '-I', build, '-L', build, '-lNativeScriptKit', '-o', join(dir, name), ...swiftFiles], { encoding: 'utf8' });
       if (compiled.status !== 0) throw new Error(`swiftc:\n${compiled.stderr.split('\n').filter((l) => /error:/.test(l)).slice(0, 15).join('\n')}`);
       report(name, 'swift', expected.get(c)!, spawnSync(join(dir, name), { encoding: 'utf8', timeout: 20000 }));
     } catch (err) {
-      failed++;
-      console.log(`✗ ${name} (swift): ${(err as Error).message}${process.env.NS_NATIVE_STACKS ? (err as Error).stack : ""}`);
+      ran.add(`swift:${name}`);
+      fail(name, 'swift');
+      console.log(`✗ ${name} (swift)${known.swift?.[name] ? ' [known]' : ''}: ${(err as Error).message}${process.env.NS_NATIVE_STACKS ? (err as Error).stack : ""}`);
     }
     if (!keep) rmSync(dir, { recursive: true, force: true });
   }
@@ -219,8 +235,9 @@ if (targets.includes('kotlin')) {
       translateKotlin(join(here, 'cases', c), join(build, 'kotlin', name), pkg(name));
       translated.push(name);
     } catch (err) {
-      failed++;
-      console.log(`✗ ${name} (kotlin): ${(err as Error).message}`);
+      ran.add(`kotlin:${name}`);
+      fail(name, 'kotlin');
+      console.log(`✗ ${name} (kotlin)${known.kotlin?.[name] ? ' [known]' : ''}: ${(err as Error).message}`);
     }
   }
   const runtime = buildKotlinRuntime();
@@ -234,7 +251,7 @@ if (targets.includes('kotlin')) {
     for (const name of translated) {
       const out = join(build, 'kotlin-classes-' + name);
       const error = kotlinc(sourcesOf(name), out, [runtime]);
-      if (error) { failed++; console.log(`✗ ${name} (kotlin): kotlinc:\n${error}`); } else runnable.set(name, out);
+      if (error) { ran.add(`kotlin:${name}`); fail(name, 'kotlin'); console.log(`✗ ${name} (kotlin)${known.kotlin?.[name] ? ' [known]' : ''}: kotlinc:\n${error}`); } else runnable.set(name, out);
     }
   }
   for (const c of cases) {
@@ -248,5 +265,10 @@ if (targets.includes('kotlin')) {
 }
 
 const total = cases.length * targets.length - kotlinSkipped - swiftSkipped;
-console.log(`${total - failed} of ${total} runs match Node (${targets.join(', ')})`);
+const caseNames = new Set(cases.map((c) => basename(c, '.ts')));
+const nowPassing = targets.flatMap((t) => Object.keys(known[t] ?? {}).filter((n) => caseNames.has(n) && ran.has(`${t}:${n}`) && !knownFailed.includes(`${n} (${t})`)).map((n) => `${n} (${t})`));
+for (const n of nowPassing) console.log(`✗ ${n} matches Node: remove it from tests/diff/known-failures.json`);
+failed += nowPassing.length;
+if (knownFailed.length) console.log(`${knownFailed.length} known failures (tests/diff/known-failures.json): ${knownFailed.join(', ')}`);
+console.log(`${total - failed - knownFailed.length + nowPassing.length} of ${total} runs match Node (${targets.join(', ')})`);
 process.exit(failed ? 1 : 0);

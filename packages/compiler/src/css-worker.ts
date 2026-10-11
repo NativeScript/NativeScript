@@ -49,6 +49,7 @@ async function webpackSheets(configPath: string): Promise<Sheet[]> {
   const fromNsWebpack = createRequire(appRequire.resolve('@nativescript/webpack/package.json'));
   const { parseEnvFlags } = fromNsWebpack('./dist/cli/parseEnvFlags');
   const config = appRequire(configPath)(parseEnvFlags(flags));
+  defines = definePluginValues(config.plugins ?? []);
   const fromWebpack = createRequire(fromNsWebpack.resolve('webpack/package.json'));
   const rule = (name: string) => fromWebpack(`./lib/rules/${name}`);
   const Matcher = rule('BasicMatcherRulePlugin');
@@ -123,6 +124,25 @@ async function webpackSheets(configPath: string): Promise<Sheet[]> {
     sheets.push({ file, css, ast: JSON.parse(exported.slice(0, exported.indexOf('\n'))) });
   }
   return sheets;
+}
+
+/**
+ * DefinePlugin's definitions (and its subclasses', as @nativescript/webpack's CompatDefinePlugin) as source text by the expression they replace: a string is code, any other value its
+ * JSON, and an object's keys define `name.key` as webpack defines them. Runtime values (`DefinePlugin.runtimeValue`) are left out.
+ */
+function definePluginValues(plugins: any[]): Record<string, string> {
+  const out: Record<string, string> = {};
+  const add = (prefix: string, value: unknown) => {
+    // A name defined as a global (`process: 'global.process'`) reads the same in a compiled release, where a textual
+    // replacement would also hit locals of that name.
+    if (typeof value === 'string' && /^(global|globalThis|window|self)\.[\w$]+$/.test(value.trim())) return;
+    if (typeof value === 'string') out[prefix] = value;
+    else if (typeof value === 'number' || typeof value === 'boolean' || value === null) out[prefix] = JSON.stringify(value);
+    else if (value === undefined) out[prefix] = 'undefined';
+    else if (typeof value === 'object' && !Array.isArray(value) && Object.getPrototypeOf(value) === Object.prototype) for (const [k, v] of Object.entries(value)) add(`${prefix}.${k}`, v);
+  };
+  for (const p of plugins) if (/DefinePlugin$/.test(p?.constructor?.name ?? '') && p.definitions) for (const [k, v] of Object.entries(p.definitions)) if (/^[\w$.]+$/.test(k)) add(k, v);
+  return out;
 }
 
 async function viteSheets(configPath: string): Promise<Sheet[]> {

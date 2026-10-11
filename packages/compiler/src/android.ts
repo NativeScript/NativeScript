@@ -83,6 +83,8 @@ export interface AndroidBuild {
    * `android.app.Application` starts, as NativeScript's runtime does, with the stylesheet as its build parses it.
    */
   generatedKit?: boolean;
+  /** `android.release.narrowKitKeeps`: R8 keeps only what the kit's reflection needs (kitKeepRules). */
+  narrowKitKeeps?: boolean;
   /** The app's stylesheet as css2json-loader's AST, which core loads as `app.css` in the generated kit. */
   cssAST?: string;
 }
@@ -322,6 +324,12 @@ val appCSS = ${kotlinString(b.css)}
     mkdirSync(join(b.out, 'bindings'), { recursive: true });
     writeFileSync(join(b.out, 'bindings', 'CMakeLists.txt'), `cmake_minimum_required(VERSION 3.22)\nproject(bindings)\n${b.bindings.map((x, k) => `add_subdirectory(${JSON.stringify(x.jni)} binding${k})\n`).join('')}`);
   }
+  // The version the app's manifest declares, as the runtime's build keeps it; app.gradle, applied last, may set it again.
+  const manifestText = existsSync(join(main, 'AndroidManifest.xml')) ? readFileSync(join(main, 'AndroidManifest.xml'), 'utf8') : '';
+  const version = {
+    code: /android:versionCode\s*=\s*"(\d+)"/.exec(manifestText)?.[1] ?? '1',
+    name: /android:versionName\s*=\s*"([^"]+)"/.exec(manifestText)?.[1] ?? (JSON.parse(readFileSync(join(b.app, 'package.json'), 'utf8')).version ?? '1.0.0'),
+  };
   writeFileSync(join(b.out, 'settings.gradle.kts'), `pluginManagement {
     repositories {
         google()
@@ -357,8 +365,8 @@ android {
         applicationId = ${kotlinString(applicationId)}
         minSdk = ${native.minSdk}
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = ${version.code}
+        versionName = ${kotlinString(version.name)}
 ${bindingDefines.length ? `        externalNativeBuild { cmake { arguments += listOf(${bindingDefines.map(kotlinString).join(', ')}) } }\n` : ''}    }
 ${b.bindings?.length ? `    ndkVersion = ${kotlinString(ndk().version)}\n    externalNativeBuild { cmake { path = file(${kotlinString(join(b.out, 'bindings', 'CMakeLists.txt'))}) } }\n${b.bindings.map((x) => `    sourceSets["main"].java.srcDirs(${kotlinString(x.kotlin)})\n`).join('')}` : ''}
     sourceSets["main"].res.srcDirs(${kotlinString(resources)}, "src/main/res")
@@ -400,7 +408,7 @@ ${overlays.map((m) => `        variant.sources.manifests.addStaticManifestFile($
 }
 ` : ''}${gradleFile('app.gradle')}`);
   // The app's members are reached by name through reflection, as the kit's are.
-  writeFileSync(join(b.out, 'proguard-rules.pro'), `-dontwarn org.nativescript.widgets.**\n-keep class ${pkg}.** { *; }\n${native.keepRules.map((r) => `${r}\n`).join('')}${reflectedMemberRules([join(b.out, 'src'), join(kit, 'src'), join(kit, 'generated'), join(kit, 'Bindings')])}`);
+  writeFileSync(join(b.out, 'proguard-rules.pro'), `-dontwarn org.nativescript.widgets.**\n-keep class ${pkg}.** { *; }\n${kitKeepRules(!!b.narrowKitKeeps)}${native.keepRules.map((r) => `${r}\n`).join('')}${reflectedMemberRules([join(b.out, 'src'), join(kit, 'src'), join(kit, 'generated'), join(kit, 'Bindings')])}`);
   mkdirSync(join(b.out, 'src', 'main', 'res', 'values'), { recursive: true });
   // The runtime template's strings.xml, named after the folder (letters and digits only), unless App_Resources replaces the file.
   const label = basename(resolve(b.app)).replace(/[^a-zA-Z0-9]/g, '');
@@ -440,11 +448,16 @@ ${overlays.map((m) => `        variant.sources.manifests.addStaticManifestFile($
 `);
 
   if (b.build) {
-    const { execFileSync } = await import('node:child_process');
+    const { spawnSync } = await import('node:child_process');
+    const { mapKotlinDiagnostics } = await import('./kotlin-diagnostics.ts');
     // Signed with the keystore when one is given, as Android Studio's signed builds inject it.
     const k = b.keyStore;
     const signing = k ? [`-Pandroid.injected.signing.store.file=${resolve(k.path)}`, `-Pandroid.injected.signing.store.password=${k.password}`, `-Pandroid.injected.signing.key.alias=${k.alias}`, `-Pandroid.injected.signing.key.password=${k.aliasPassword}`] : [];
-    execFileSync(join(kit, 'gradlew'), ['-p', b.out, ':assembleRelease', ...(b.bundle ? [':bundleRelease'] : []), ...signing, '--quiet'], { stdio: 'inherit' });
+    // Kotlin's errors point into the generated files: printed with the TypeScript lines they came from.
+    const gradle = spawnSync(join(kit, 'gradlew'), ['-p', b.out, ':assembleRelease', ...(b.bundle ? [':bundleRelease'] : []), ...signing, '--quiet'], { stdio: ['inherit', 'pipe', 'pipe'], encoding: 'utf8', maxBuffer: 1 << 30 });
+    process.stdout.write(mapKotlinDiagnostics(gradle.stdout ?? '', b.out));
+    process.stderr.write(mapKotlinDiagnostics(gradle.stderr ?? '', b.out));
+    if (gradle.status !== 0) throw new Error(`the Gradle build failed (exit ${gradle.status ?? gradle.signal})`);
     const apk = join(b.out, 'build', 'outputs', 'apk', 'release', `${b.name}-release.apk`);
     say(`built ${relative(process.cwd(), existsSync(apk) ? apk : join(b.out, 'build', 'outputs', 'apk', 'release'))}`);
     const aab = join(b.out, 'build', 'outputs', 'bundle', 'release', `${b.name}-release.aab`);
@@ -465,21 +478,49 @@ function findWidgetsAar(app: string): string | null {
 /**
  * Keep rules for the members code reaches on Java objects by name (`detector.onTouchEvent(e)` on a value typed
  * `any`, `typeof feature.getOrientation`): R8 would otherwise rename or drop a library's method, and the read
- * finds nothing while the static calls beside it still work.
+ * finds nothing while the static calls beside it still work. Those lookups see public members and static fields
+ * (jsJavaGet, jsJavaHas, jsNativePropertyGet); jsCallDeclared also sees a class's non-public methods.
  */
 function reflectedMemberRules(roots: string[]): string {
   const names = new Set<string>();
-  const access = /\bjs(?:CallMethod|CallMethodIfPresent|Get|GetOptional|Field|JavaGet|HasKey)\((?:[^()"]|\((?:[^()"]|\([^()]*\))*\))*?,\s*"([A-Za-z_$][\w$]*)"/g;
+  const declared = new Set<string>();
+  const args = '\\((?:[^()"]|\\((?:[^()"]|\\([^()]*\\))*\\))*?,\\s*"([A-Za-z_$][\\w$]*)"';
+  const access = new RegExp(`\\bjs(?:CallMethod|CallMethodIfPresent|Get|GetOptional|Set|Field|JavaGet|JavaSet|HasKey|NativePropertyGet|NativePropertySet)${args}`, 'g');
+  const declaredAccess = new RegExp(`\\bjsCallDeclared${args}`, 'g');
   const visit = (dir: string) => {
     if (!existsSync(dir)) return;
     for (const entry of readdirSync(dir, { withFileTypes: true })) {
       if (entry.isDirectory()) { if (entry.name !== 'build') visit(join(dir, entry.name)); }
-      else if (entry.name.endsWith('.kt')) for (const m of readFileSync(join(dir, entry.name), 'utf8').matchAll(access)) names.add(m[1]);
+      else if (entry.name.endsWith('.kt')) {
+        const text = readFileSync(join(dir, entry.name), 'utf8');
+        for (const m of text.matchAll(access)) names.add(m[1]);
+        for (const m of text.matchAll(declaredAccess)) declared.add(m[1]);
+      }
     }
   };
   roots.forEach(visit);
-  if (!names.size) return '';
-  return `-keepclassmembers class * {\n${[...names].sort().map((n) => `    *** ${n}(...);\n    *** ${n};\n`).join('')}}\n`;
+  if (!names.size && !declared.size) return '';
+  return `-keepclassmembers class * {\n${[...names].sort().map((n) => `    public *** ${n}(...);\n    public *** ${n};\n    static *** ${n};\n`).join('')}${[...declared].sort().map((n) => `    *** ${n}(...);\n`).join('')}}\n`;
+}
+
+/**
+ * The kit's own keeps. By default every class and member of org.nativescript is kept, as script reaches them by
+ * name. `narrow` keeps what the runtime's reflection needs and lets R8 drop the rest: class names (getClass,
+ * `constructor.name`, the runtime telling its objects by package), the names of the members that remain (jsJavaGet
+ * and computed keys), constructors (jsNew of a class held as a value), companions' fromJS (jsConvertTo) and view
+ * getters (kitSet's accessor check). A kit member reached only through a computed key and referenced nowhere else
+ * is dropped under `narrow`.
+ */
+function kitKeepRules(narrow: boolean): string {
+  if (!narrow) return '-keep class org.nativescript.** { *; }\n';
+  return [
+    '-keepnames class org.nativescript.**',
+    '-keepclassmembernames class org.nativescript.** { *; }',
+    '-keepclassmembers class org.nativescript.** { <init>(...); }',
+    '-keepclassmembers class org.nativescript.** { public static ** Companion; }',
+    '-keepclassmembers class org.nativescript.**$Companion { public *** fromJS(...); }',
+    '-keepclassmembers class * extends org.nativescript.kit.ViewBase { public *** get*(); }',
+  ].join('\n') + '\n';
 }
 
 /**

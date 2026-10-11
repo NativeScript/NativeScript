@@ -47,7 +47,10 @@ import { appResourcesDir, iosDeploymentTarget, iosExtensionNames, iosExtensions,
 import { generateProject, iosDependencies, packageLines, podfile, productLines, PROJECT_MARKER, removePods, swiftPackages } from './ios-dependencies.ts';
 import { SourceLines } from './source-lines.ts';
 import { archive, automaticSigningSettings, findProfile, signingSettings, type ExportMethod } from './ios-signing.ts';
-import { KIT_APPLE } from './paths.ts';
+import { KIT_ANDROID, KIT_APPLE } from './paths.ts';
+import { checkContract } from './contract.ts';
+import { checkToolchain } from './toolchain.ts';
+import { formatPreflight, preflight } from './preflight.ts';
 
 const args = process.argv.slice(2);
 const opt = (name: string, fallback?: string) => { const i = args.indexOf(name); return i >= 0 ? args[i + 1] : fallback; };
@@ -61,6 +64,17 @@ const out = resolve(opt('--out', join(app, 'platforms', 'native'))!);
 const say = (m: string) => console.log(`[ns-native] ${m}`);
 const platform = opt('--platform') === 'android' ? 'android' : 'ios';
 useKitPlugins(platform);
+// Android builds on the kit generated from core when the package has it; --hand-port-kit or android.release.generatedKit: false uses the hand port.
+const generatedKit = platform === 'android' && !args.includes('--hand-port-kit')
+  && (args.includes('--generated-kit') || (releaseOptions(app, platform).generatedKit ?? existsSync(join(KIT_ANDROID, 'generated', 'manifest.json'))) === true);
+stopOn(args.includes('--skip-toolchain-check') ? { errors: [], warnings: [] } : checkToolchain(platform), 'toolchain');
+/** Prints the warnings, then the errors, and stops on any error. */
+function stopOn(r: { errors: string[]; warnings: string[] }, what: string) {
+  for (const w of r.warnings) console.warn(`warning: ${w}`);
+  if (!r.errors.length) return;
+  console.error(r.errors.map((e) => `error: ${e}`).join('\n'));
+  throw new Error(`${r.errors.length} ${what} problem${r.errors.length > 1 ? 's' : ''}`);
+}
 
 const files: string[] = [];
 const walk = (d: string) => { for (const f of readdirSync(d)) { const p = join(d, f); if (statSync(p).isDirectory()) walk(p); else files.push(p); } };
@@ -71,6 +85,7 @@ const framework = deps['nativescript-vue'] ? 'vue' : deps['@nativescript/angular
   // No framework, XML pages: core's own Builder makes the views, as in the app's JavaScript build.
   : files.some((f) => f.endsWith('.xml') && f.startsWith(appDir)) ? 'core' : null;
 if (!framework) throw new Error('no supported framework in package.json');
+stopOn(checkContract({ app, platform, generatedKit, framework, allowCoreMismatch: args.includes('--allow-core-mismatch') || releaseOptions(app, platform).allowCoreMismatch === true, allowUntestedFrameworks: args.includes('--allow-untested-frameworks') || releaseOptions(app, platform).allowUntestedFrameworks === true }), 'version');
 const entryText = readFileSync(entry, 'utf8');
 // `x.ios.ts` and `x.android.ts` are one module, `./x`, for their platform.
 const otherPlatform = opt('--platform') === 'android' ? /\.ios\.tsx?$/ : /\.android\.tsx?$/;
@@ -314,6 +329,12 @@ const sourceLines = args.includes('--no-source-lines') ? null : new SourceLines(
   ...components.map((c) => [c.file, componentSource(c)] as const),
   ...[...overrides.keys()].map((f) => [f, f] as const),
 ]));
+// Constructs no compiled release runs, all of them with their TypeScript lines, before anything is translated.
+const unsupported = preflight(checker, [...sourceFiles, ...compiledPlugins.map((f) => program.getSourceFile(f)!)], sourceLines ? (n) => sourceLines.locate(n) : undefined, (st) => !compiledPlugins.includes(st.getSourceFile().fileName) || reach.keeps(st));
+if (unsupported.length) {
+  console.error(formatPreflight(unsupported));
+  if (!args.includes('--keep-going')) throw new Error(`${unsupported.length} construct${unsupported.length > 1 ? 's' : ''} a compiled release does not support (docs: Supported subset and known differences)`);
+}
 /** The file a component was written in: beside its virtual file, or the .tsx declaring its function. */
 function componentSource(c: ComponentIR): string | null {
   for (const candidate of [c.file.replace(/\.release\.ts$/, '.ts'), c.file.replace(/\.ts$/, '')]) if (candidate !== c.file && existsSync(candidate)) return candidate;
@@ -329,7 +350,6 @@ function keyStore() {
 }
 // Properties the app sets that core declares and the kit does not apply: an error unless the app opts out.
 const allowUnapplied = args.includes('--allow-unimplemented-properties') || releaseOptions(app, platform).allowUnimplementedProperties === true;
-const generatedKit = platform === 'android' && (args.includes('--generated-kit') || releaseOptions(app, platform).generatedKit === true);
 const kitName = platform === 'android' ? 'kit-android' : 'NativeScriptKit';
 const unapplied = await (async () => {
   // A kit generated from core (its Core/ manifest) applies every property core declares, as core is its source.
@@ -350,7 +370,7 @@ else if (unapplied.length && !(platform === 'ios' && args.includes('--all-errors
 if (platform === 'android') {
   const { writeAndroid } = await import('./android.ts');
   const css = kitCss(sheets);
-  await writeAndroid({ app, out: resolve(opt('--out', join(app, 'platforms', 'native-android'))!), name, framework: style, zone, components, modules, program, checker, files: sourceFiles, infos, css, root, routes: routing, routeTree, lines: sourceLines, applicationId: opt('--bundle'), widgetsAar: opt('--widgets'), appDir, build: args.includes('--build'), bundle: args.includes('--aab') || args.includes('--device'), keyStore: keyStore(), plugins: plugins.all(), pluginFiles, reach, properties, compiledPlugins, resolved, mounted, workers: [...workerScripts], corePatches: corePatchesAndroid(app, nodeModules(app)), allowUnapplied, allErrors: args.includes('--all-errors'), lenient: lenientApp, bindings: bindings.filter((b) => replacements[b.package] === b.script), generatedKit, cssAST: generatedKit ? kitAst(sheets) : undefined,
+  await writeAndroid({ app, out: resolve(opt('--out', join(app, 'platforms', 'native-android'))!), name, framework: style, zone, components, modules, program, checker, files: sourceFiles, infos, css, root, routes: routing, routeTree, lines: sourceLines, applicationId: opt('--bundle'), widgetsAar: opt('--widgets'), appDir, build: args.includes('--build'), bundle: args.includes('--aab') || args.includes('--device'), keyStore: keyStore(), plugins: plugins.all(), pluginFiles, reach, properties, compiledPlugins, resolved, mounted, workers: [...workerScripts], corePatches: corePatchesAndroid(app, nodeModules(app)), allowUnapplied, allErrors: args.includes('--all-errors'), lenient: lenientApp, bindings: bindings.filter((b) => replacements[b.package] === b.script), generatedKit, narrowKitKeeps: releaseOptions(app, platform).narrowKitKeeps === true, cssAST: generatedKit ? kitAst(sheets) : undefined,
     xml: xml ? { pages: xml.xml, styles: pageSheets.map((sh) => ({ name: relative(appDir, sh.file).split('\\').join('/').replace(/\.scss$/, '.css'), ast: JSON.stringify(sh.ast) })), elements: xml.elements } : undefined });
   process.exit(0);
 }

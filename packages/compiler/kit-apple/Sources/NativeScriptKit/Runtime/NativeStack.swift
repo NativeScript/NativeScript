@@ -27,6 +27,31 @@ enum NativeStack {
         return frames.prefix(24).joined(separator: "\n")
     }
 
+    /// The return addresses an error is made at: recorded for every error (a frame-pointer walk, no symbol
+    /// lookup) and formatted only when its `stack` is read.
+    static func returnAddresses() -> [UInt] {
+        var buffer = [UnsafeMutableRawPointer?](repeating: nil, count: 32)
+        let count = Int(backtrace(&buffer, 32))
+        return count > 1 ? buffer[1..<count].map { UInt(bitPattern: $0) } : []
+    }
+
+    /// `    at <symbol> (<image>+0x<offset>)` for each address. A store build has no symbol names; its offsets
+    /// resolve with the archive's dSYM to the TypeScript lines the compiled code carries (#sourceLocation):
+    /// `atos -o <App>.app.dSYM/Contents/Resources/DWARF/<App> -l 0x100000000 <0x100000000 + offset>`.
+    static func frames(_ addresses: [UInt]) -> String {
+        var lines: [String] = []
+        for address in addresses {
+            var info = Dl_info()
+            guard let pointer = UnsafeRawPointer(bitPattern: address), dladdr(pointer, &info) != 0 else { continue }
+            let image = info.dli_fname.map { URL(fileURLWithPath: String(cString: $0)).lastPathComponent } ?? "?"
+            let offset = address - UInt(bitPattern: info.dli_fbase)
+            let symbol = info.dli_sname.map { demangle(String(cString: $0)) }
+            if let symbol, symbol.hasPrefix("NativeScriptKit.JS") || symbol.contains("NativeStack") { continue }
+            lines.append("    at \(symbol ?? "<compiled>") (\(image)+0x\(String(offset, radix: 16)))")
+        }
+        return lines.isEmpty ? "    at <anonymous>" : lines.joined(separator: "\n")
+    }
+
     private static func demangle(_ mangled: String) -> String {
         guard mangled.hasPrefix("$s") || mangled.hasPrefix("_$s") else { return mangled }
         return mangled.withCString { pointer in
