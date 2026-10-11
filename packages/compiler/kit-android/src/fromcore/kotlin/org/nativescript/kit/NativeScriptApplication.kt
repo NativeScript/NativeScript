@@ -167,6 +167,7 @@ object NativeScriptApplication {
             JSEventLoop.processTimers()
             Microtasks.checkpoint()
         }
+        JSRealm.main.thread = handler.looper.thread
         JSRealm.main.post = { job -> handler.post(job) }
         JSEventLoop.host = { delay ->
             handler.removeCallbacks(tick)

@@ -15,6 +15,7 @@ import { Translator } from '../../src/kotlin.ts';
 import { SourceLines } from '../../src/source-lines.ts';
 import { addKotlinInterfaces, translateKotlinModules } from '../../src/kotlin-modules.ts';
 import { kotlinToolchain } from '../kotlin-toolchain.ts';
+import { AndroidNativeAPI, androidClassPath } from '../../src/native-calls-android.ts';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = resolve(here, '../..');
@@ -61,6 +62,8 @@ function translate(dir: string, out: string, pkg: string): void {
   translator.workerScripts = new Map(workers.map((f) => [f, relative(dir, f)]));
   const lines = (translator.lines = new SourceLines(new Map()));
   const modules = translateKotlinModules(translator, program, files);
+  // Java's own classes (java.lang.Thread) run on the host JVM; android.* compiles but cannot run there.
+  translator.native = new AndroidNativeAPI(translator, androidClassPath(null));
   addKotlinInterfaces(translator, modules);
   rmSync(out, { recursive: true, force: true });
   mkdirSync(out, { recursive: true });

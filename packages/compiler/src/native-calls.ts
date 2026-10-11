@@ -1123,7 +1123,8 @@ export class NativeAPI {
     const call = `(${body})(${names.map((n) => n).join(', ')})`;
     const ret = sig[2].trim();
     const inner = ret === 'Void' ? (throws ? `jsReport { try ${call} }` : `${call}`) : `${throws ? 'try! ' : ''}${call}`;
-    return `{ (${swiftParams.join(', ')}) -> ${ret} in ${binds.join('; ')}${binds.length ? '; ' : ''}${ret === 'Void' ? inner : `return ${inner}`} }`;
+    const run = `${binds.join('; ')}${binds.length ? '; ' : ''}${ret === 'Void' ? inner : `return ${inner}`}`;
+    return `{ (${swiftParams.join(', ')}) -> ${ret} in ${posted(ret, params) ? `jsEnter { ${run} }` : `jsEnterAwaiting { () -> ${ret} in ${run} }`} }`;
   }
 
   /** A function value (Swift's are `throws`) where Swift takes a block returning nothing: called through one, what it throws reported. */
@@ -1133,7 +1134,8 @@ export class NativeAPI {
     const want = blockType(this.unalias(target));
     if (!fn || !want || want.result !== 'Void' || fn.params.length > want.params.length) return null;
     const args = fn.params.map((p, k) => this.blockParam(`__b${k}`, want.params[k], p.replace(/^@escaping /, '')));
-    const wrap = `{ (__f: @escaping ${unwrapped}) -> ${want.text} in { (${want.params.map((p, k) => `__b${k}: ${p}`).join(', ')}) in jsReport { try __f(${args.join(', ')}) } } }`;
+    const report = `jsReport { try __f(${args.join(', ')}) }`;
+    const wrap = `{ (__f: @escaping ${unwrapped}) -> ${want.text} in { (${want.params.map((p, k) => `__b${k}: ${p}`).join(', ')}) in ${posted('Void', want.params) ? `jsEnter { ${report} }` : `jsEnterAwaiting { ${report} }`} } }`;
     // An optional block parameter takes the function through an optional: lenient code holds a missing one (`fn || null`) as nil though its type says present.
     if (unwrapped === source) return optional(target) ? `{ (__o: (${unwrapped})?) -> (${want.text})? in __o.map(${wrap}) }(${code})` : `${wrap}(${code})`;
     return `(${code}).map(${wrap})${optional(target) ? '' : '!'}`;
@@ -1183,7 +1185,9 @@ export class NativeAPI {
     const call = `try self.${jsName}(${params.map((_, k) => `__a${k}`).join(', ')})`;
     const ret = m[2];
     const body = ret ? `jsReported { ${call} }${/[?!]$/.test(ret) ? ' ?? nil' : '!'}` : `jsReport { ${call} }`;
-    return `    @objc(${jsName}${':'.repeat(params.length)}) public func __objc_${jsName}(${params.join(', ')})${ret ? ` -> ${ret}` : ''} { ${body} }`;
+    const types = params.map((p) => p.slice(p.indexOf(':') + 1).trim());
+    const guard = enteredGuard(`__objc_${jsName}`, types.map(() => null), types, ret ?? 'Void', '');
+    return `    @objc(${jsName}${':'.repeat(params.length)}) public func __objc_${jsName}(${params.join(', ')})${ret ? ` -> ${ret}` : ''} { ${guard}; ${body} }`;
   }
 
   /** Exposed method name → its parameter count, from every `static ObjCExposedMethods` in the program. */
@@ -1398,7 +1402,8 @@ export class NativeAPI {
       ? (tsRet !== 'Void' ? `        ${throws ? 'jsReport { _ = try ' : '_ = '}${call}${throws ? ' }' : ''}` : throws ? `        jsReport { try ${call} }` : body.slice(2, -2).replace(/^ {8}/, '        '))
       : `        let __result: ${tsRet} = ${throws ? 'try! ' : ''}${call}\n        return ${this.toSwiftValue('__result', tsRet, ret)}`;
     const available = target.introduced && parseFloat(target.introduced) > DEPLOYMENT ? `@available(iOS ${target.introduced}, *) ` : '';
-    return [`    ${available}${override ? 'override ' : ''}func ${target.swift}(${swiftParams.join(', ')})${ret === 'Void' ? '' : ` -> ${ret}`} {`, ...binds, result, '    }'].join('\n');
+    const guard = enteredGuard(target.swift, target.labels, target.params, ret, '        ', target.escaping);
+    return [`    ${available}${override ? 'override ' : ''}func ${target.swift}(${swiftParams.join(', ')})${ret === 'Void' ? '' : ` -> ${ret}`} {`, guard, ...binds, result, '    }'].join('\n');
   }
 
   /**
@@ -1672,4 +1677,19 @@ function writesField(node: ts.Node, sym: ts.Symbol | undefined, checker: ts.Type
 function unwrapAs(optionalCode: string, tsType: string, implicit: boolean): string {
   if (tsType.endsWith('?')) return optionalCode;
   return implicit || tsType.endsWith('!') ? `jsImplicit(${optionalCode})` : `${optionalCode}!`;
+}
+
+/**
+ * Whether a native callback of this result and these parameters, entered from another thread, is
+ * posted to the main thread rather than awaited: one returning nothing, unless a pointer or a
+ * non-escaping block among its arguments lives only as long as the call.
+ */
+export function posted(ret: string, params: string[], escaping?: number[]): boolean {
+  return ret === 'Void' && !params.some((p, k) => /\bUnsafe/.test(p) || (/->/.test(p) && !/[?!]\s*$/.test(p) && !/@escaping/.test(p) && !escaping?.includes(k)));
+}
+
+/** The first statement of a method native code may call from any thread: from another, the call is made again on the main thread. */
+export function enteredGuard(name: string, labels: (string | null)[], params: string[], ret: string, indent: string, escaping?: number[]): string {
+  const call = `self.${name}(${params.map((_, k) => (labels[k] && labels[k] !== '_' ? `${labels[k]}: __a${k}` : `__a${k}`)).join(', ')})`;
+  return `${indent}if jsOffScriptThread() { ${posted(ret, params, escaping) ? `jsLater { ${call} }; return` : `return jsAwait { ${call} }`} }`;
 }

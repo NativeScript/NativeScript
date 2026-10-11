@@ -29,6 +29,9 @@ class JSEventLoopState internal constructor() {
     /** Arms a wake-up `delay` milliseconds from now that calls `processTimers`, replacing the previous one; null disarms. */
     var host: ((Double?) -> Unit)? = null
 
+    /** Jobs other threads post to the realm while no host loop takes them: `runUntilIdle` runs them. */
+    internal val jobs = java.util.concurrent.LinkedBlockingQueue<() -> Unit>()
+
     /** libuv's clock: whole milliseconds since the loop started. */
     fun now(): Double = ((System.nanoTime() - origin) / 1_000_000).toDouble()
 
@@ -133,10 +136,15 @@ class JSEventLoopState internal constructor() {
     fun runUntilIdle() {
         Microtasks.checkpoint()
         while (true) {
+            val job = jobs.poll()
+            if (job != null) {
+                job()
+                continue
+            }
             val expiry = nextExpiry ?: break
             val wait = expiry - (System.nanoTime() - origin) / 1_000_000.0
             if (wait > 0) {
-                Thread.sleep(minOf(wait.toLong() + 1, 1000))
+                jobs.poll(minOf(wait.toLong() + 1, 1000), java.util.concurrent.TimeUnit.MILLISECONDS)?.invoke()
                 continue
             }
             processTimers()
