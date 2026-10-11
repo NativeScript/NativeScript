@@ -140,6 +140,11 @@ public func jsUnwrap<T>(_ value: T?, _ key: String, null: Bool = false) throws -
     return value
 }
 
+/// What script meets on an OS older than an API it uses: the API's class is undefined there, and using it a TypeError.
+public func jsUnavailable(_ version: Double) -> JSException {
+    JSException(JSTypeError("This needs iOS \(jsNumberToString(version)) or newer"))
+}
+
 /// An untyped value where code declares `T` (`const p: Point = JSON.parse(s)`): the value as `T`,
 /// or a TypeError where it is none, which JavaScript would let through until a member is missing.
 @inline(__always)

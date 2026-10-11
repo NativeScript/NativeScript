@@ -1,7 +1,7 @@
 import ts from 'typescript';
 import { implementedInterfaces } from './lang.ts';
 import { isStatic } from './throws.ts';
-import { CF_CLASSES, functionParts, optionalType, splitTopLevel, type Translator } from './swift.ts';
+import { CF_CLASSES, functionParts, isWriteTarget, optionalType, splitTopLevel, type Translator } from './swift.ts';
 import {
   categoryModule, conformsTo, isSubframework, lookupClass, lookupConstant, lookupConstructor, lookupEnum, lookupFunction, lookupInit, lookupMember, lookupStruct, lookupTypealias, moduleOfDeclaration, nativeTable,
   type NativeClass, type NativeMethod, type NativeProperty, type SwiftType,
@@ -242,6 +242,17 @@ export class NativeAPI {
     return v && v > DEPLOYMENT ? v : null;
   }
 
+  /** `x.prop` of a native property newer than the deployment target (`preferredInspectorColumnWidthFraction`): its iOS version. */
+  propertyIntroducedAfterDeployment(e: ts.Expression): number | null {
+    while (ts.isParenthesizedExpression(e)) e = e.expression;
+    if (!ts.isPropertyAccessExpression(e)) return null;
+    const r = this.receiver(e.expression);
+    if (!r) return null;
+    const m = this.found(lookupMember(r.module, r.name, e.name.text, r.isStatic));
+    const v = m && m.kind === 'property' && m.introduced ? parseFloat(m.introduced) : null;
+    return v && v > DEPLOYMENT ? v : null;
+  }
+
   // ---- Reads, writes, calls ----------------------------------------------------------------
 
   /** `x.prop` and `X.classProp` on native types; also enum members (`UIViewContentMode.Center`). */
@@ -296,9 +307,17 @@ export class NativeAPI {
     if (collection) return collection;
     const m = this.found(lookupMember(r.module, r.name, e.name.text, r.isStatic));
     if (!m) throw this.t.error(e, `${r.name}.${e.name.text} (${this.noCounterpart(r.module)})`);
-    this.checkAvailable(m, e, `${r.name}.${e.name.text}`);
+    // A property newer than the deployment target, read (core's feature test `x.newProperty !== undefined`): undefined on an older OS, as script reads it there.
+    const newer = m.kind === 'property' && m.introduced && parseFloat(m.introduced) > DEPLOYMENT && !this.t.availabilityChecked(parseFloat(m.introduced)) ? parseFloat(m.introduced) : 0;
+    const absent = newer && !e.questionDotToken && !ts.isOptionalChain(e) && !isWriteTarget(e) ? this.t.undefinedValue(this.t.typeOf(e)) : null;
+    if (!absent) this.checkAvailable(m, e, `${r.name}.${e.name.text}`);
     if ((e.questionDotToken || ts.isOptionalChain(e)) && !r.isStatic && m.kind === 'property') return this.chainEnd(e, isolated(`${this.chainHead(e.expression)}${m.swift}`, m), m.type);
     const target = r.isStatic ? this.className(lookupClass(r.module, r.name)!) : this.unwrapped(e.expression);
+    if (absent) {
+      const read = this.fromSwift(isolated(`${target}.${m.swift}`, m), m.type, e);
+      const throws = /\btry\b/.test(read);
+      return `${throws ? '(try ' : ''}{ () ${throws ? 'throws ' : ''}-> ${this.t.typeOf(e)} in if #available(iOS ${newer}, *) { return ${read} } else { return ${absent} } }()${throws ? ')' : ''}`;
+    }
     if (m.kind === 'property') return this.fromSwift(isolated(`${target}.${m.swift}`, m), m.type, e);
     // A no-argument method read as a property in the d.ts (`UIColor.redColor` is a class property there).
     if (m.kind === 'method' && !m.params.length) return this.fromSwift(`${target}.${m.swift}()`, m.returns, e);

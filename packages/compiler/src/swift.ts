@@ -1622,7 +1622,7 @@ export class Translator implements AsyncTranslator {
       this.moduleAvailability = 0;
       try {
         const line = (current && this.lines ? this.lines.mark(current) : '') + code();
-        init.push(this.moduleAvailability ? this.availableOnly(this.moduleAvailability, line.replace(/^ {4}/gm, ''), '    ') : line);
+        init.push(this.moduleAvailability ? this.availableOnly(this.moduleAvailability, line.replace(/^ {4}/gm, ''), '    ', `jsReportUncaught(jsUnavailable(${this.moduleAvailability}).value)`) : line);
       } finally { this.indent = ''; this.moduleAvailability = 0; }
     };
     for (const st of sf.statements) {
@@ -2978,9 +2978,34 @@ ${members.join('\n')}
   }
   private moduleAvailability = 0;
 
-  /** Statements that use APIs newer than the deployment target, run only on an OS that has them (the app's own checks decide when). */
-  availableOnly(version: number, lines: string, base: string): string {
-    return `${base}if #available(iOS ${version}, *) {\n${lines.split('\n').map((l) => '    ' + l).join('\n')}\n${base}} else {\n${base}    fatalError("needs iOS ${version}")\n${base}}`;
+  /**
+   * Statements that use APIs newer than the deployment target, run only on an OS that has them (the app's own checks decide when).
+   * On an older one, `otherwise`: what script meets there, the TypeError of reading a member of the missing class.
+   */
+  availableOnly(version: number, lines: string, base: string, otherwise: string): string {
+    return `${base}if #available(iOS ${version}, *) {\n${lines.split('\n').map((l) => '    ' + l).join('\n')}\n${base}} else {\n${base}    ${otherwise}\n${base}}`;
+  }
+
+  /** Whether the code being translated already runs only on iOS `version` or newer (inside `if #available`). */
+  availabilityChecked(version: number): boolean {
+    return version <= this.refinedVersion;
+  }
+
+  /** The value undefined reads as where Swift holds `type` (nil, NaN, "undefined", false); null where it has none. */
+  undefinedValue(type: string): string | null {
+    if (isOptional(type) || type === 'Any?' || type.endsWith('!')) return 'nil';
+    return type === 'Double' ? '.nan' : type === 'String' ? '"undefined"' : type === 'Bool' ? 'false' : null;
+  }
+
+
+  /** Leaving a function on an OS without an API it uses: the TypeError thrown where it throws, else reported and undefined given. */
+  private unavailable(version: number, ret: string, throws: boolean): string {
+    const error = `jsUnavailable(${version})`;
+    if (throws) return `throw JSException(${error})`;
+    if (/^JSPromise<.*>$/.test(ret)) return `return ${ret}.reject(${error}.value)`;
+    const report = `jsReportUncaught(${error}.value); `;
+    if (ret === 'Void' || ret === 'Never') return `${report}return`;
+    return report + this.undefinedReturn(ret, false);
   }
 
   functionBody(fn: ts.FunctionLikeDeclaration, ret: string, base: string): string {
@@ -2997,7 +3022,7 @@ ${members.join('\n')}
     needs = this.availability.pop()!;
     if (!needs) return body;
     const inner = body.slice(2, body.length - base.length - 2);
-    return `{\n${this.availableOnly(needs, inner, base + '    ')}\n${base}}`;
+    return `{\n${this.availableOnly(needs, inner, base + '    ', this.unavailable(needs, ret, this.throwsInfo.fn(fn) && !isAsync(fn) && !fn.asteriskToken))}\n${base}}`;
   }
 
   /** The kit's implementation of a class's method or accessor (`iOSApplication.addDelegateHandler`), which its body calls with the object. */
@@ -4575,14 +4600,21 @@ ${members.join('\n')}
     // A statement using an API newer than what is checked runs only on an OS that has it, so the code's own checks before it
     // (`respondsToSelector`, early returns) still decide. A declaration's names are read after it: its enclosing statement is gated instead.
     const gates = this.availability.length > 0 && !this.asyncCtx && !ts.isVariableStatement(s) && !ts.isFunctionDeclaration(s) && !ts.isClassDeclaration(s);
+    // A declaration is not gated (its names are read after it), but only what its code names passes on to the statement enclosing it.
+    const declares = this.availability.length > 0 && !this.asyncCtx && ts.isVariableStatement(s);
     const types = new Map<string, number>();
-    if (gates) { this.availability.push(0); this.statementTypes.set(this.availability.length, types); }
+    if (gates || declares) { this.availability.push(0); this.statementTypes.set(this.availability.length, types); }
     let code: string;
     let needs = 0;
     try { code = this.statementCode(s); } finally {
-      if (gates) { this.statementTypes.delete(this.availability.length); needs = this.availability.pop()!; }
+      if (gates || declares) { this.statementTypes.delete(this.availability.length); needs = this.availability.pop()!; }
     }
-    for (const [name, version] of types) if (version > needs && new RegExp(`(?<!\\w)${name.replace(/[.$]/g, '\\$&')}\\b`).test(code)) needs = version;
+    const ungated = types.size ? withoutAvailableBlocks(code) : code;
+    for (const [name, version] of types) if (version > needs && new RegExp(`(?<!\\w)${name.replace(/[.$]/g, '\\$&')}\\b`).test(ungated)) needs = version;
+    if (declares) {
+      if (needs) this.requireAvailability(needs);
+      needs = 0;
+    }
     // A return inside a try whose finally throws: recorded, and the finally runs before it is made.
     const pending = this.pendingReturn;
     if (pending && ts.isReturnStatement(s) && !this.asyncCtx) {
@@ -4592,7 +4624,11 @@ ${members.join('\n')}
       lines[lines.length - 1] = `${m[1]}${m[2] !== undefined && pending.value ? `${pending.value} = ${m[2]}; ` : ''}${pending.flag} = true; break ${pending.label}`;
       code = lines.join('\n');
     }
-    if (needs && code) code = this.availableOnly(needs, code, this.indent);
+    if (needs && code) {
+      const fn = ts.findAncestor(s.parent, ts.isFunctionLike);
+      const throws = !!fn && this.throwsInfo.fn(fn) && !isAsync(fn) && !(fn as ts.FunctionLikeDeclaration).asteriskToken;
+      code = this.availableOnly(needs, code, this.indent, fn ? this.unavailable(needs, this.returnType, throws) : `jsReportUncaught(jsUnavailable(${needs}).value)`);
+    }
     return code && this.lines ? this.lines.mark(s) + code : code;
   }
 
@@ -5896,7 +5932,19 @@ ${members.join('\n')}
         if ((ts.isArrowFunction(x) || ts.isFunctionExpression(x)) && x.parameters.length < chosen!.params.length && !this.closureSlots.has(x)) this.closureSlots.set(x, chosen!.params);
       }
       // Branches of different types are untyped values alike.
-      const branch = (x: ts.Expression) => (t === 'Any?' && !['Any?', 'Void'].includes(this.typeOf(x)) && x.kind !== ts.SyntaxKind.NullKeyword ? `(${this.coerce(x, t)} as Any?)` : this.coerce(x, t));
+      const plain = (x: ts.Expression) => (t === 'Any?' && !['Any?', 'Void'].includes(this.typeOf(x)) && x.kind !== ts.SyntaxKind.NullKeyword ? `(${this.coerce(x, t)} as Any?)` : this.coerce(x, t));
+      // A branch using an API newer than the deployment target (`supported ? UIGlassEffect.effectWithStyle(s) : UIVisualEffect.new()`) is
+      // checked on its own, so the condition core tests the OS with still chooses; on an older OS it is the TypeError script meets there.
+      const branch = (x: ts.Expression) => {
+        if (!this.availability.length || this.asyncCtx) return plain(x);
+        this.availability.push(0);
+        let code: string, needs: number;
+        try { code = plain(x); } finally { needs = this.availability.pop()!; }
+        if (!needs) return code;
+        const throws = !!this.tryPrefix(x);
+        const otherwise = throws ? `throw JSException(jsUnavailable(${needs}))` : `jsReportUncaught(jsUnavailable(${needs}).value); return ${this.undefinedValue(t) ?? `jsNativeZero(${t}.self)`}`;
+        return `${throws ? '(try ' : ''}{ () ${throws ? 'throws ' : ''}-> ${t} in if #available(iOS ${needs}, *) { return ${this.tryPrefix(x)}${code} } else { ${otherwise} } }()${throws ? ')' : ''}`;
+      };
       return this.ternary(e, t, branch);
     }
     if (ts.isArrayLiteralExpression(e)) return this.array(e);
@@ -8449,6 +8497,11 @@ ${members.join('\n')}
     const op = e.operatorToken.kind;
     const eq = op === ts.SyntaxKind.EqualsEqualsEqualsToken || op === ts.SyntaxKind.EqualsEqualsToken;
     if (!eq && op !== ts.SyntaxKind.ExclamationEqualsEqualsToken && op !== ts.SyntaxKind.ExclamationEqualsToken) return null;
+    // `x.newProperty !== undefined`, core's test for a property the OS may not have: as `#available` of its version.
+    const isUndefined = (x: ts.Expression) => ts.isIdentifier(x) && x.text === 'undefined';
+    const tested = isUndefined(e.right) ? e.left : isUndefined(e.left) ? e.right : null;
+    const property = tested && this.native.propertyIntroducedAfterDeployment(tested);
+    if (property) return { version: property, present: !eq };
     const [t, lit] = ts.isTypeOfExpression(e.left) ? [e.left, e.right] : ts.isTypeOfExpression(e.right) ? [e.right, e.left] : [null, null];
     if (!t || !lit || !ts.isStringLiteral(lit) || lit.text !== 'undefined') return null;
     const version = this.native.introducedAfterDeployment(t.expression);
@@ -9327,7 +9380,7 @@ function numericLiteralOnly(e: ts.Expression): boolean {
   return false;
 }
 
-function isWriteTarget(e: ts.Node): boolean {
+export function isWriteTarget(e: ts.Node): boolean {
   const p = e.parent;
   if (ts.isBinaryExpression(p) && p.left === e && p.operatorToken.kind >= ts.SyntaxKind.FirstAssignment && p.operatorToken.kind <= ts.SyntaxKind.LastAssignment) return true;
   if ((ts.isPrefixUnaryExpression(p) || ts.isPostfixUnaryExpression(p)) && (p.operator === ts.SyntaxKind.PlusPlusToken || p.operator === ts.SyntaxKind.MinusMinusToken)) return true;
@@ -9435,6 +9488,24 @@ function nativeResult(code: string, type: string): string {
   if (/^U?Int(8|16|32|64)?$/.test(t)) return `jsNativeIntegerArgument(${code}, ${t}.self)`;
   if (t === 'String') return /[?!]$/.test(type) ? `{ (__s: Any?) -> String? in jsIsNullish(__s) ? nil : jsToString(__s) }(${code})` : `jsToString(${code})`;
   return /[?!]$/.test(type) ? `(jsToNative(${code}) as? ${t})` : `jsNativeArgument(${code}, ${t.startsWith('any ') ? `(${t})` : t}.self)`;
+}
+
+/** Swift code without the bodies of its `if #available(…) { … }` blocks: what it names outside them. */
+function withoutAvailableBlocks(code: string): string {
+  let out = '', i = 0;
+  for (;;) {
+    const at = code.indexOf('if #available(', i);
+    if (at < 0) return out + code.slice(i);
+    const open = code.indexOf('{', at);
+    if (open < 0) return out + code.slice(i);
+    let depth = 0, k = open;
+    for (; k < code.length; k++) {
+      if (code[k] === '{') depth++;
+      else if (code[k] === '}' && --depth === 0) break;
+    }
+    out += code.slice(i, open + 1) + '}';
+    i = k + 1;
+  }
 }
 
 /** A native result type's value where script's method threw. */
