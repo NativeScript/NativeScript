@@ -238,7 +238,7 @@ public func jsReplaceAll(_ s: String, _ pattern: String, _ replacement: String) 
 }
 
 public func jsPadEnd(_ s: String, _ length: Double, _ fill: String = " ") -> String {
-    let missing = Int(length) - s.utf16.count
+    let missing = (length.isNaN ? 0 : Int(min(length, Double(Int32.max)))) - s.utf16.count
     guard missing > 0, !fill.isEmpty else { return s }
     let pad = Array(String(repeating: fill, count: missing / fill.utf16.count + 1).utf16.prefix(missing))
     return s + string(pad[...])

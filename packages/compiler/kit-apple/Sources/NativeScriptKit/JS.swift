@@ -75,10 +75,12 @@ func jsUnitsIndex(_ u: [UInt16], _ p: [UInt16], from: Int) -> Int? {
     return nil
 }
 
+/// `s.padStart(length, fill)`: the fill cut to the UTF-16 units missing, as JavaScript counts a string's length.
 public func jsPadStart(_ s: String, _ length: Double, _ fill: String = " ") -> String {
-    let missing = Int(length) - s.utf16.count
+    let missing = (length.isNaN ? 0 : Int(min(length, Double(Int32.max)))) - s.utf16.count
     guard missing > 0, !fill.isEmpty else { return s }
-    return String(String(repeating: fill, count: missing / fill.count + 1).prefix(missing)) + s
+    let pad = Array(String(repeating: fill, count: missing / fill.utf16.count + 1).utf16.prefix(missing))
+    return String(decoding: pad, as: UTF16.self) + s
 }
 
 /// The key of an unkeyed `for` (Solid's `<For>`): the item itself, by reference for objects.
