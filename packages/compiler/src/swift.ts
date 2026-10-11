@@ -215,6 +215,8 @@ export class Translator implements AsyncTranslator {
   private tmp = 0;
   /** Expressions already evaluated into a Swift name (awaited values, operands read before an await). */
   readonly subst = new Map<ts.Node, string>();
+  /** A literal an assignment expression stores, made once and held by the temporary named here. */
+  private readonly storedLiterals = new Map<ts.Node, { code: string; type: string }>();
   asyncCtx: AsyncCtx | null = null;
   /** Enclosing statements that own a plain `break` / `continue` inside a lowered async region. */
   private plainBreak = 0;
@@ -998,6 +1000,8 @@ export class Translator implements AsyncTranslator {
 
   typeOf(n: ts.Node): string {
     if (this.isArguments(n)) return 'JSArray<Any?>';
+    const stored = this.storedLiteralType(n);
+    if (stored) return stored;
     if (ts.isIdentifier(n) && this.untypedLetReceiver(n)) return 'Any?';
     // What a class extending Array, Set or Map inherits is read as the kit's collection, which its Swift class subclasses.
     const inherited = n.parent && (ts.isPropertyAccessExpression(n.parent) || ts.isElementAccessExpression(n.parent)) && n.parent.expression === n ? this.inheritedCollection(n as ts.Expression) : null;
@@ -1053,6 +1057,23 @@ export class Translator implements AsyncTranslator {
     // An element of an array literal typed `never[]` (`callbacks = []` under strict checks), which Swift holds as any value.
     if (t === 'Never' && (ts.isIdentifier(n) || ts.isVariableDeclaration(n)) && this.resolve(n)?.valueDeclaration && ts.isVariableDeclaration(this.resolve(n)!.valueDeclaration!)) return 'Any?';
     return this.holdingNull(t, n);
+  }
+
+  /**
+   * `(map[k] = [])` as a value: the array or object stored, as its target holds it. Typed as the literal (`never[]`),
+   * the value would be converted, and a conversion copies.
+   */
+  private storedLiteralType(n: ts.Node): string | null {
+    while (ts.isParenthesizedExpression(n)) n = n.expression;
+    if (!ts.isBinaryExpression(n) || n.operatorToken.kind !== ts.SyntaxKind.EqualsToken || statementLevel(n) || !(ts.isPropertyAccessExpression(n.left) || ts.isElementAccessExpression(n.left))) return null;
+    let bare: ts.Expression = n.right;
+    while (ts.isParenthesizedExpression(bare) || ts.isAsExpression(bare)) bare = bare.expression;
+    if (!ts.isArrayLiteralExpression(bare) && !ts.isObjectLiteralExpression(bare)) return null;
+    const container = ts.isElementAccessExpression(n.left) ? /^JS(?:Array|Record)<(.*)>[?!]?$/.exec(this.typeOf(n.left.expression))?.[1] : undefined;
+    if (ts.isElementAccessExpression(n.left) && !container) return null;
+    if (container === 'Any?') return 'Any?';
+    const held = (container ?? this.declaredTypeOf(n.left) ?? this.typeOf(n.left)).replace(/[?!]$/, '');
+    return /^(JSArray|JSRecord)<.*>$/.test(held) || /^Object_\w+$/.test(held) ? held : null;
   }
 
   /** `signal<Person>(null)` where null checks are off: the signal holds the null its type does not admit. */
@@ -5177,6 +5198,8 @@ ${members.join('\n')}
 
   /** An expression where Swift needs a value of `target`. */
   coerce(e: ts.Expression, target: string): string {
+    const stored = this.storedLiterals.get(e);
+    if (stored && (target === 'Any?' || target.replace(/[?!]$/, '') === stored.type)) return stored.code;
     // `x as never` (a value the checker is told to take anywhere): the value, as the slot takes it;
     // a number where the slot is a string (`ret.format = parseVertexFormat(ret.format) as never`) converted as script reads it there.
     if (ts.isAsExpression(e) && e.type.kind === ts.SyntaxKind.NeverKeyword) {
@@ -5716,14 +5739,16 @@ ${members.join('\n')}
     if (ts.isParenthesizedExpression(e)) return `(${this.expr(e.expression)})`;
     // `(info.name = v)` as a value: the value assigned, evaluated once (Swift's assignment has none).
     if (ts.isBinaryExpression(e) && e.operatorToken.kind === ts.SyntaxKind.EqualsToken && !statementLevel(e) && !ts.isArrayLiteralExpression(e.left) && !this.subst.has(e.right)) {
-      const t = this.typeOf(e.right) === 'Void' ? 'Any?' : this.typeOf(e.right);
+      const stored = this.storedLiteralType(e);
+      const t = stored ?? (this.typeOf(e.right) === 'Void' ? 'Any?' : this.typeOf(e.right));
       const v = this.fresh('__assigned');
       const tp = this.tryPrefix(e);
       const value = `${this.tryPrefix(e.right)}${this.coerce(e.right, t)}`;
       this.subst.set(e.right, v);
+      if (stored) this.storedLiterals.set(e.right, { code: v, type: t });
       try {
         return `({ () ${tp ? 'throws ' : ''}-> ${t} in let ${v}: ${t} = ${value}; ${tp}${this.assignment(e)}; return ${v} }())`;
-      } finally { this.subst.delete(e.right); }
+      } finally { this.subst.delete(e.right); this.storedLiterals.delete(e.right); }
     }
     // `return (s += x)`: a compound assignment's value is its target after it (Swift's assignment has none).
     if (ts.isBinaryExpression(e) && isCompoundAssignment(e.operatorToken.kind) && !statementLevel(e)) {
