@@ -3967,9 +3967,9 @@ export class Translator implements AsyncTranslator {
         return `${i}var ${name}: ${optionalType(t)} = ${this.coerce(d.initializer, optionalType(t))}`;
       }
       if (!d.initializer) return `${i}${lowered || !t.endsWith('?') ? this.deferredDeclaration(name, t) : `var ${name}: ${t} = null`}`;
-      // A function that calls itself: declared first, so its body can name it.
-      if ((ts.isArrowFunction(d.initializer) || ts.isFunctionExpression(d.initializer)) && refersTo(d.initializer, this.checker.getSymbolAtLocation(d.name), this.checker)) {
-        return `${i}${t.endsWith('?') ? `var ${name}: ${t} = null` : `lateinit var ${name}: ${t}`}\n${i}${name} = ${this.coerce(d.initializer, t)}`;
+      // A value whose functions name it (a function calling itself, a listener removing itself): declared first, so they can.
+      if (refersTo(d.initializer, this.checker.getSymbolAtLocation(d.name), this.checker)) {
+        return `${i}${t.endsWith('?') ? `var ${name}: ${t} = null` : this.deferredDeclaration(name, t)}\n${i}${name} = ${this.coerce(d.initializer, t)}`;
       }
       const maybe = !lowered && !t.endsWith('?') ? this.maybeUndefined(d.initializer) : null;
       if (maybe) {
