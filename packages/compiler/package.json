@@ -21,8 +21,10 @@
     "kit-android/gradlew",
     "kit-android/gradle/",
     "kit-android/src/",
+    "kit-android/generated/",
     "kit-android/Bindings/",
-    "docs/CLI.md"
+    "docs/CLI.md",
+    "LICENSE"
   ],
   "engines": {
     "node": ">=20.0.0"
@@ -40,6 +42,6 @@
     "directory": "packages/compiler"
   },
   "scripts": {
-    "prepack": "node bin/build-dist.mjs"
+    "prepack": "node tests/kits-present.mjs && node bin/build-dist.mjs"
   }
 }

@@ -47,7 +47,7 @@ import { appResourcesDir, iosDeploymentTarget, iosExtensionNames, iosExtensions,
 import { generateProject, iosDependencies, packageLines, podfile, productLines, PROJECT_MARKER, removePods, swiftPackages } from './ios-dependencies.ts';
 import { SourceLines } from './source-lines.ts';
 import { archive, automaticSigningSettings, findProfile, signingSettings, type ExportMethod } from './ios-signing.ts';
-import { KIT_APPLE } from './paths.ts';
+import { KIT_ANDROID, KIT_APPLE } from './paths.ts';
 
 const args = process.argv.slice(2);
 const opt = (name: string, fallback?: string) => { const i = args.indexOf(name); return i >= 0 ? args[i + 1] : fallback; };
@@ -61,6 +61,9 @@ const out = resolve(opt('--out', join(app, 'platforms', 'native'))!);
 const say = (m: string) => console.log(`[ns-native] ${m}`);
 const platform = opt('--platform') === 'android' ? 'android' : 'ios';
 useKitPlugins(platform);
+// Android builds on the kit generated from core when the package has it; --hand-port-kit or android.release.generatedKit: false uses the hand port.
+const generatedKit = platform === 'android' && !args.includes('--hand-port-kit')
+  && (args.includes('--generated-kit') || (releaseOptions(app, platform).generatedKit ?? existsSync(join(KIT_ANDROID, 'generated', 'manifest.json'))) === true);
 
 const files: string[] = [];
 const walk = (d: string) => { for (const f of readdirSync(d)) { const p = join(d, f); if (statSync(p).isDirectory()) walk(p); else files.push(p); } };
@@ -329,7 +332,6 @@ function keyStore() {
 }
 // Properties the app sets that core declares and the kit does not apply: an error unless the app opts out.
 const allowUnapplied = args.includes('--allow-unimplemented-properties') || releaseOptions(app, platform).allowUnimplementedProperties === true;
-const generatedKit = platform === 'android' && (args.includes('--generated-kit') || releaseOptions(app, platform).generatedKit === true);
 const kitName = platform === 'android' ? 'kit-android' : 'NativeScriptKit';
 const unapplied = await (async () => {
   // A kit generated from core (its Core/ manifest) applies every property core declares, as core is its source.
