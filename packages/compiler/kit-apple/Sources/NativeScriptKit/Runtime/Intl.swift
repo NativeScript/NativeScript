@@ -43,6 +43,26 @@ private func jsNumberOption(_ options: Any?, _ key: String, _ min: Int, _ max: I
     return Int(n.rounded(.down))
 }
 
+// MARK: - Collation
+
+/// `a.localeCompare(b, locales, options)`: Intl.Collator's `numeric` and `sensitivity` (`base`, `accent`, `case`,
+/// `variant`) as Foundation's collation in the requested locale has them.
+public func jsLocaleCompare(_ a: String, _ b: String, _ locales: Any?, _ options: Any? = nil) -> Double {
+    var compare: String.CompareOptions = []
+    if jsIsTruthy(jsOption(options, "numeric")) { compare.insert(.numeric) }
+    switch jsFlat(jsOption(options, "sensitivity")).map(jsToString) {
+    case "base": compare.formUnion([.caseInsensitive, .diacriticInsensitive])
+    case "accent": compare.insert(.caseInsensitive)
+    case "case": compare.insert(.diacriticInsensitive)
+    default: break
+    }
+    switch a.compare(b, options: compare, range: nil, locale: Locale(identifier: jsRequestedLocale(locales))) {
+    case .orderedAscending: return -1
+    case .orderedDescending: return 1
+    case .orderedSame: return 0
+    }
+}
+
 // MARK: - Decimal digits
 
 /// A non-negative decimal as digits d₁d₂… with value 0.d₁d₂… × 10^point.

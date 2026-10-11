@@ -787,7 +787,7 @@ export class Translator implements AsyncTranslator {
       // An array, a typed array or any object with a length: read by index and length, untyped.
       case 'ArrayLike': if (isLibDeclaration(sym?.declarations?.[0])) return 'Any?'; break;
       case 'NumberFormat': case 'DateTimeFormat': if (isLibDeclaration(sym?.declarations?.[0])) return `JS${name}`; break;
-      case 'NumberFormatOptions': case 'DateTimeFormatOptions': case 'ResolvedNumberFormatOptions': case 'ResolvedDateTimeFormatOptions': case 'LocalesArgument':
+      case 'NumberFormatOptions': case 'DateTimeFormatOptions': case 'CollatorOptions': case 'ResolvedNumberFormatOptions': case 'ResolvedDateTimeFormatOptions': case 'LocalesArgument':
         if (isLibDeclaration(sym?.declarations?.[0])) return 'Any?';
         break;
       case 'Generator': if (isLibDeclaration(sym?.declarations?.[0])) return `JSGenerator<${arg(0)}>`; break;
@@ -7966,7 +7966,7 @@ ${members.join('\n')}
       case 'padStart': return `jsPadStart(${t}, ${a[0]}, ${a[1] ?? '" "'})`;
       case 'padEnd': return `jsPadEnd(${t}, ${a[0]}, ${a[1] ?? '" "'})`;
       case 'concat': return `(${[t, ...e.arguments.map((x) => this.str(x))].join(' + ')})`;
-      case 'localeCompare': return `jsLocaleCompare(${t}, ${a[0]})`;
+      case 'localeCompare': return e.arguments.length > 1 ? `jsLocaleCompare(${[t, a[0], ...e.arguments.slice(1).map((x) => this.coerce(x, 'Any?'))].join(', ')})` : `jsLocaleCompare(${t}, ${a[0]})`;
       case 'toString': case 'valueOf': return t;
     }
     throw this.error(e, `String.${name}`);
