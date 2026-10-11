@@ -14,27 +14,31 @@ fun jsTemplateObject(cooked: List<String>, raw: List<String>): JSArray<String> {
 /** `strings.raw`. */
 fun jsTemplateRaw(strings: JSArray<String>): JSArray<String> = templateRaws[strings] ?: strings
 
-private val templateRaws = IdentityHashMap<JSArray<String>, JSArray<String>>()
+private val templateRaws = java.util.Collections.synchronizedMap(IdentityHashMap<JSArray<String>, JSArray<String>>())
 
 /**
  * A JavaScript symbol: equal only to itself. As a property key it is `key`,
  * a string no JavaScript code spells, which `Object.keys`, `for…in` and JSON skip.
  */
 class JSSymbol(val jsDescription: String?) {
-    val key: String = "\u0000@@" + (++count)
+    val key: String = "\u0000@@" + count.incrementAndGet()
 
-    init { byKey[key] = this }
+    init {
+        byKey[key] = WeakReference(this)
+        if (count.get() % 256 == 0) byKey.values.removeIf { it.get() == null }
+    }
 
     override fun toString(): String = "Symbol(${jsDescription ?: ""})"
     fun valueOf(): JSSymbol = this
 
     companion object {
-        private var count = 0
-        private val byKey = HashMap<String, JSSymbol>()
-        private val registry = HashMap<String, JSSymbol>()
+        private val count = java.util.concurrent.atomic.AtomicInteger()
+        /** Weak: a symbol nothing holds any more is gone, though an object may still have a property under its key. */
+        private val byKey = java.util.concurrent.ConcurrentHashMap<String, WeakReference<JSSymbol>>()
+        private val registry = java.util.concurrent.ConcurrentHashMap<String, JSSymbol>()
 
         /** `Symbol.for(key)`: one symbol per key, program-wide. */
-        fun `for`(key: String): JSSymbol = registry.getOrPut(key) { JSSymbol(key) }
+        fun `for`(key: String): JSSymbol = registry.computeIfAbsent(key) { JSSymbol(it) }
 
         /** `Symbol.keyFor(symbol)`: the key of a registered symbol. */
         fun keyFor(symbol: JSSymbol): String? = symbol.jsDescription?.takeIf { registry[it] === symbol }
@@ -46,7 +50,7 @@ class JSSymbol(val jsDescription: String?) {
         val hasInstance = JSSymbol("Symbol.hasInstance")
 
         /** The symbol a property key stands for. */
-        fun of(key: String): JSSymbol? = if (jsIsSymbolKey(key)) byKey[key] else null
+        fun of(key: String): JSSymbol? = if (jsIsSymbolKey(key)) byKey[key]?.get() else null
     }
 }
 

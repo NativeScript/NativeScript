@@ -524,7 +524,12 @@ fun jsStringOrNull(value: Any?): String? = when (value) {
     else -> null
 }
 
-internal val jsJoinGuard = ArrayList<Any>()
+private val joinGuards = object : ThreadLocal<ArrayList<Any>>() {
+    override fun initialValue() = ArrayList<Any>()
+}
+
+/** The arrays the calling thread is turning into strings: one met again inside itself is "". */
+internal val jsJoinGuard: ArrayList<Any> get() = joinGuards.get()!!
 
 /** `String(value)`: arrays join with ",", plain objects are "[object Object]", errors "Name: message". */
 fun jsToString(value: Any?): String = when (val v = jsBox(value)) {
@@ -550,8 +555,9 @@ fun jsToString(value: Any?): String = when (val v = jsBox(value)) {
 }
 
 internal fun jsJoin(elements: List<Any?>, separator: String, owner: Any): String {
-    if (jsJoinGuard.any { it === owner }) return ""
-    jsJoinGuard.add(owner)
+    val guard = jsJoinGuard
+    if (guard.any { it === owner }) return ""
+    guard.add(owner)
     try {
         val out = StringBuilder()
         elements.forEachIndexed { i, e ->
@@ -560,7 +566,7 @@ internal fun jsJoin(elements: List<Any?>, separator: String, owner: Any): String
         }
         return out.toString()
     } finally {
-        jsJoinGuard.removeAt(jsJoinGuard.size - 1)
+        guard.removeAt(guard.size - 1)
     }
 }
 
