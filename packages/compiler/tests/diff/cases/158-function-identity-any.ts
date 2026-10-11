@@ -1,3 +1,4 @@
+// @swift
 // Function identity through untyped values and adapters: a function held as `any` and read back typed is the same
 // function, a method value is one function per receiver, and a function adapted to another type (fewer parameters
 // taken) is still the function it adapts.
