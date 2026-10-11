@@ -8461,6 +8461,8 @@ ${members.join('\n')}
     const callable = this.checker.getTypeAtLocation(e.expression);
     if (lib?.length && lib.every((d) => /[\\/]lib\.[\w.]*\.d\.ts$/.test(d.getSourceFile().fileName)) && (callable.getConstructSignatures().length || callable.getCallSignatures().length)) return '"function"';
     const t = this.typeOf(e.expression);
+    // A class, held by its name or typed as one (`typeof View`): a constructor, which is a function.
+    if (!(callable.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown)) && callable.getConstructSignatures().length && t !== 'Any?' && !t.endsWith('?')) return '"function"';
     const base = t.replace(/\?$/, '');
     if (base === 'Void') return '"undefined"';
     const known = base === 'Double' ? 'number' : base === 'String' ? 'string' : base === 'Bool' ? 'boolean' : base === 'JSSymbol' ? 'symbol' : base === 'JSBigInt' ? 'bigint' : base.includes('->') ? 'function' : base === 'Any' ? null : 'object';

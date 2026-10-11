@@ -701,7 +701,7 @@ public func jsTypeof(_ value: Any?) -> String {
     case is JSBigInt: return "bigint"
     default:
         if jsNumeric(v) != nil { return "number" }
-        return jsIsFunction(v) ? "function" : "object"
+        return jsIsFunction(v) || jsIsClassObject(v) ? "function" : "object"
     }
 }
 
