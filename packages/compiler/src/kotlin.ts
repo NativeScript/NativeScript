@@ -607,7 +607,8 @@ export class Translator implements AsyncTranslator {
     }
     if ((t as ts.ObjectType).objectFlags & ts.ObjectFlags.Mapped) return 'Any?';
     // `{}` (what `unknown` narrows to once tested truthy) is any value but null and undefined, a native object included.
-    if (!t.getProperties().length && !t.getCallSignatures().length && !t.getConstructSignatures().length && !index) return 'Any?';
+    const appClass = !!sym && !!(sym.flags & ts.SymbolFlags.Class) && !!sym.valueDeclaration && ts.isClassLike(sym.valueDeclaration) && !sym.valueDeclaration.getSourceFile().isDeclarationFile;
+    if (!t.getProperties().length && !t.getCallSignatures().length && !t.getConstructSignatures().length && !index && !appClass) return 'Any?';
     const calls = t.getCallSignatures();
     if (calls.length && !t.getProperties().length) {
       const s = calls[0];
