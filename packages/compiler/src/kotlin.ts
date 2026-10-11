@@ -6658,6 +6658,15 @@ export class Translator implements AsyncTranslator {
     return !!sig && this.isPromiseType(this.type(sig.getReturnType(), e));
   }
 
+  /** A handler's promise result: nullable where the handler may give undefined instead (`n > 0 ? promise : undefined`). */
+  private adoptedResult(handlers: (ts.Expression | undefined)[], result: string): string {
+    const maybeUndefined = handlers.some((h) => {
+      const sig = h && this.checker.getTypeAtLocation(h).getCallSignatures()[0];
+      return !!sig && this.isPromiseType(this.type(sig.getReturnType(), h)) && isNullable(this.type(sig.getReturnType(), h));
+    });
+    return `JSPromise<${result}>${maybeUndefined ? '?' : ''}`;
+  }
+
   /** A rejection handler: it takes the reason untyped, whatever its parameter declares. */
   private rejectionHandler(e: ts.Expression, ret?: string): string {
     if (!(ts.isArrowFunction(e) || ts.isFunctionExpression(e))) return this.isAny(e) ? this.fn(e, `(Any?) -> ${ret ?? 'Any?'}`) : this.fn(e);
@@ -6680,16 +6689,16 @@ export class Translator implements AsyncTranslator {
     switch (name) {
       case 'then': {
         const adopt = (f && this.returnsPromise(f)) || (g && this.returnsPromise(g));
-        const ret = adopt ? `JSPromise<${result}>` : result;
+        const ret = adopt ? this.adoptedResult([f, g], result) : result;
         const onF = f && this.fn(f, `(${value}) -> ${ret}`);
         return `${t}.${adopt ? 'thenAdopt' : 'then'}<${result}>(${[onF, g && this.rejectionHandler(g, ret)].filter(Boolean).join(', ')})`;
       }
       case 'catch': {
         const adopt = this.returnsPromise(f);
-        if (result === value) return `${t}.${adopt ? 'catchAdopt' : 'catch'}(${this.rejectionHandler(f, adopt ? `JSPromise<${result}>` : result)})`;
+        if (result === value) return `${t}.${adopt ? 'catchAdopt' : 'catch'}(${this.rejectionHandler(f, adopt ? this.adoptedResult([f], result) : result)})`;
         if (result === 'Any?' && !adopt) return `${t}.catchAny(${this.rejectionHandler(f, 'Any?')})`;
         const pass = `{ __value: ${value} -> ${adopt ? `JSPromise.resolve<${result}>(__value)` : '__value'} }`;
-        return `${t}.${adopt ? 'thenAdopt' : 'then'}<${result}>(${pass}, ${this.rejectionHandler(f, adopt ? `JSPromise<${result}>` : result)})`;
+        return `${t}.${adopt ? 'thenAdopt' : 'then'}<${result}>(${pass}, ${this.rejectionHandler(f, adopt ? this.adoptedResult([f], result) : result)})`;
       }
       case 'finally': return this.returnsPromise(f) ? `${t}.finallyAdopt(${this.fn(f)})` : `${t}.finally(${this.fn(f, '() -> Unit')})`;
       case 'cancel': return `${t}.cancel()`;
