@@ -2617,6 +2617,8 @@ export class Translator implements AsyncTranslator {
       lines.push(`    constructor(${this.params(ctor, false)})${delegation} {`, ...body, '    }');
     } else if (base) {
       if (baseCtor) lines.push(`    constructor(${this.params(baseCtor, false)}) : super(${this.readsArguments(baseCtor) ? '__arguments' : baseCtor.parameters.map((p) => ident((p.name as ts.Identifier).text)).join(', ')})`);
+      // `new HttpError(message, { cause })` of a class that declares no constructor: Error's.
+      else if (isError && base !== 'JSAggregateError') lines.push('    constructor(message: Any? = null, options: Any? = null) : super(if (message == null) "" else jsToString(message), jsGetOptional(options, "cause"))');
       else lines.push('    constructor() : super()');
     }
     const accessors = new Map<string, { get?: ts.GetAccessorDeclaration; set?: ts.SetAccessorDeclaration }>();
@@ -2837,6 +2839,10 @@ export class Translator implements AsyncTranslator {
       }
     }
     if (!isError) lines.push(...this.dynamicMembers(fields, name, !!appBase || !!kitRoot, expando ? 'jsExpandoGet(this, key)' : 'null', expando ? 'jsExpandoSet(this, key, value)' : '', symbolFields, dynMethods, expando, dynAccessors, base?.replace(/<.*$/, '')));
+    // An error's own fields by name, after JSError's `name`/`message`/`stack`; what script adds to it comes after the fields, and it prints as an error, not as `Name { … }`.
+    else lines.push(...this.dynamicMembers(fields, name, true, 'null', '', symbolFields, dynMethods, false, dynAccessors, base!.replace(/<.*$/, ''))
+      .filter((l) => !l.startsWith('    override val jsClassName'))
+      .map((l) => (l.startsWith('    override val jsKeys') && l.includes('super.jsKeys + ') ? l.replace('super.jsKeys + ', '') + ' + super.jsKeys' : l)));
     if (symbolFields.length) supertypes.push('JSSymbolKeyed');
     // A merged namespace's enums and classes are the class's nested ones (`TemplateParser.State`), its values the companion's.
     const nestedType = (l: string) => /^(?:(?:open|abstract|enum|data)\s+)*(?:class|interface|object)\s/.test(l);
