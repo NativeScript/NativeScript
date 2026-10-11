@@ -1,20 +1,30 @@
 #!/usr/bin/env node
-// A native Android release's stack trace in terms of the app's source:
+// A native Android release's stack trace, or its Gradle build log, in terms of the app's source:
 //   node compiler/src/retrace.ts <android project> [trace.txt]   (the trace on stdin without a file)
+//   node compiler/src/retrace.ts --build-log <android project> [gradle.log]   (Kotlin's errors only)
 // R8's retrace undoes the release build's renaming and line packing with the
 // build's mapping.txt; the project's source-lines.json then takes each frame
-// in a compiled Kotlin file to the .ts/.vue/.tsx/.svelte line it came from.
+// in a compiled Kotlin file to the .ts/.vue/.tsx/.svelte line it came from, and
+// the kit's own (kit-android/generated/source-lines.json) takes each frame in
+// the kit generated from core to core's .ts line. Kotlin compiler errors
+// (`e: file:///…/X.kt:12:3 …`) in a build log are mapped the same way.
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { homedir, tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { mapKotlinDiagnostics } from './kotlin-diagnostics.ts';
+import { KIT_ANDROID } from './paths.ts';
 
-const [project, traceFile] = process.argv.slice(2);
-if (!project) { console.error('usage: retrace.ts <android project> [trace.txt]'); process.exit(2); }
+const buildLog = process.argv.includes('--build-log');
+const [project, traceFile] = process.argv.slice(2).filter((a) => a !== '--build-log');
+if (!project) { console.error('usage: retrace.ts [--build-log] <android project> [trace.txt]'); process.exit(2); }
 let trace = readFileSync(traceFile ?? 0, 'utf8');
+if (!existsSync(join(project, 'source-lines.json'))) { console.error(`${project} has no source-lines.json: give the compiled Android project (platforms/compiled/android), built without --no-source-lines`); process.exit(1); }
+trace = mapKotlinDiagnostics(trace, project);
+if (buildLog) { process.stdout.write(trace); process.exit(0); }
 
 const mapping = join(project, 'build', 'outputs', 'mapping', 'release', 'mapping.txt');
-if (existsSync(mapping)) {
+if (existsSync(mapping) && /^\s*at\s/m.test(trace)) {
   const tool = r8Retrace();
   if (!tool) { console.error('R8 retrace not found (Android SDK cmdline-tools); set ANDROID_HOME'); process.exit(1); }
   const scratch = mkdtempSync(join(tmpdir(), 'ns-retrace-'));
@@ -24,15 +34,19 @@ if (existsSync(mapping)) {
   } finally { rmSync(scratch, { recursive: true, force: true }); }
 }
 
-if (!existsSync(join(project, 'source-lines.json'))) { console.error(`${project} has no source-lines.json: give the compiled Android project (platforms/compiled/android), built without --no-source-lines`); process.exit(1); }
-const lines: { package: string; files: Record<string, [number, string, number][]> } = JSON.parse(readFileSync(join(project, 'source-lines.json'), 'utf8'));
-// Frames of the app's classes; retrace names a file R8 kept no name for after its class, with .java.
+type Table = { package: string; files: Record<string, [number, string, number][]> };
+const app: Table = JSON.parse(readFileSync(join(project, 'source-lines.json'), 'utf8'));
+const kitLines = join(KIT_ANDROID, 'generated', 'source-lines.json');
+const kit: Table | null = existsSync(kitLines) ? JSON.parse(readFileSync(kitLines, 'utf8')) : null;
+// Frames of the app's classes and the generated kit's; retrace names a file R8 kept no name for after its class, with .java.
 process.stdout.write(trace.replace(/(\bat\s+([\w$.]+)\.[\w$<>-]+\s*)\(([\w$]+)\.(?:kt|java):(\d+)\)/g, (whole, frame: string, cls: string, file: string, line: string) => {
-  const ranges = cls.startsWith(lines.package + '.') ? lines.files[file + '.kt'] : undefined;
+  const table = cls.startsWith(app.package + '.') ? app : kit && cls.startsWith(kit.package + '.') ? kit : null;
+  const ranges = table?.files[file + '.kt'];
   if (!ranges) return whole;
   let at: [number, string, number] | undefined;
   for (const r of ranges) { if (r[0] > +line) break; at = r; }
-  return `${frame}(${at?.[1] ? `${at[1]}:${at[2]}` : `${file}.kt:${line}`})`;
+  if (!at?.[1]) return whole;
+  return `${frame}(${table === kit ? '@nativescript/core/' : ''}${at[1]}:${at[2]})`;
 }));
 
 function r8Retrace(): string | null {

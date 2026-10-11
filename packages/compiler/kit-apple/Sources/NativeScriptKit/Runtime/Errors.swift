@@ -16,8 +16,9 @@ open class JSError: JSDynamic, CustomStringConvertible {
     private var storedStack: String?
     private var properties: JSObject?
 
-    /// Where the error was made, when the app runs with `NS_KIT_STACK` (see `NativeStack`).
+    /// Where the error was made: demangled frames when the app runs with `NS_KIT_STACK` (see `NativeStack`), else return addresses.
     private let nativeFrames: String? = NativeStack.capture()
+    private let origin: [UInt] = NativeStack.enabled ? [] : NativeStack.returnAddresses()
 
     public init(_ message: String = "", cause: Any? = nil) {
         self.message = message
@@ -37,9 +38,9 @@ open class JSError: JSDynamic, CustomStringConvertible {
         return "\(name): \(message)"
     }
 
-    /// V8's `error.stack`: the header line and a placeholder frame.
+    /// V8's `error.stack`: the header line and the frames the error was made in.
     open var stack: String {
-        get { storedStack ?? "\(jsErrorString)\n\(nativeFrames ?? "    at <anonymous>")" }
+        get { storedStack ?? "\(jsErrorString)\n\(nativeFrames ?? NativeStack.frames(origin))" }
         set { storedStack = newValue }
     }
 

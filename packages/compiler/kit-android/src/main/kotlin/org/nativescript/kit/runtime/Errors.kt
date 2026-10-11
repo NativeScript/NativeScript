@@ -11,6 +11,7 @@ open class JSError(message: String = "", open var cause: Any? = null) : JSDynami
     open var message: String = message
     private var storedStack: String? = null
     private var properties: JSObject? = null
+    private val origin = ErrorOrigin()
 
     /** `"Name: message"`, as `String(error)` gives it. */
     val jsErrorString: String
@@ -20,9 +21,9 @@ open class JSError(message: String = "", open var cause: Any? = null) : JSDynami
             else -> "$name: $message"
         }
 
-    /** V8's `error.stack`: the header line and a placeholder frame. */
+    /** V8's `error.stack`: the header line and the frames the error was made in. */
     open var stack: String
-        get() = storedStack ?: "$jsErrorString\n    at <anonymous>"
+        get() = storedStack ?: "$jsErrorString\n${origin.frames()}"
         set(value) { storedStack = value }
 
     override fun jsGet(key: String): Any? = when (key) {
