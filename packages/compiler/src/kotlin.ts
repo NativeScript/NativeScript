@@ -170,6 +170,9 @@ const LIB_GLOBALS = new Set(['Math', 'JSON', 'Object', 'Array', 'Number', 'Promi
 export const KIT_NAMES_ANDROID: Record<string, string> = { ViewBase: 'View', ViewCommon: 'View', EditableTextBase: 'TextBase', LayoutBaseCommon: 'LayoutBase' };
 /** iOS SDK declarations an Android build types app code with: NativeScript leaves them undefined on Android. */
 const IOS_TYPINGS = /[\\/]@nativescript[\\/]types-ios[\\/]/;
+/** The nullable property beside a field read before it is set (`Translator.earlyField`). */
+const earlyBacking = (name: string) => `__early_${name.replace(/\W/g, '_')}`;
+
 const VALUE_TYPES = new Set(['Double', 'String', 'Boolean', 'Any?', 'Any', 'Unit', 'Nothing', 'JSBigInt', 'JSSymbol']);
 
 /**
@@ -2556,6 +2559,12 @@ export class Translator implements AsyncTranslator {
         continue;
       }
       fields.push({ name: n, type: t });
+      // Read early by a base class's constructor: null (undefined) until the class's own initialization sets it.
+      if (m.initializer && fieldMods !== '@JvmField ' && this.earlyField(m)) {
+        const backing = earlyBacking(n);
+        lines.push(`    var ${backing}: ${t}? = ${this.coerce(m.initializer, t)}`, `    ${fieldMods}var ${ident(n)}: ${t}`, `        get() = ${this.undefinedAs(backing, t)}`, `        set(value) { ${backing} = value }`);
+        continue;
+      }
       if (m.initializer) lines.push(`    ${fieldMods}var ${ident(n)}: ${t} = ${this.coerce(m.initializer, t)}`);
       else {
         const d = this.deferredDeclaration(ident(n), t);
@@ -2908,6 +2917,45 @@ export class Translator implements AsyncTranslator {
   }
 
   private subclassFieldNames: Map<ts.Node, Set<string>> | null = null;
+
+  private earlyFields = new Map<ts.PropertyDeclaration, boolean>();
+  /**
+   * An app class's string, number or boolean field with an initializer, in a class whose base class runs a method or getter
+   * the class declares (`this.kind()`) from its constructor or a field initializer: that code runs before the field is set,
+   * and reads it as undefined. It is held nullable beside the field (`earlyBacking`), which reads it as its type does undefined.
+   */
+  earlyField(m: ts.PropertyDeclaration): boolean {
+    let found = this.earlyFields.get(m);
+    if (found !== undefined) return found;
+    const cls = m.parent;
+    found = !this.library && ts.isClassLike(cls) && !isStatic(m) && !!m.initializer && !hasModifier(m, ts.SyntaxKind.DeclareKeyword) && ts.isIdentifier(m.name)
+      && !this.pluginFiles.has(m.getSourceFile().fileName) && ['String', 'Double', 'Boolean'].includes(this.typeOf(m.name)) && !this.properties?.isRegistered(cls, m.name.text) && !ts.getDecorators(m)?.length && this.readsFieldsEarly(cls);
+    this.earlyFields.set(m, found);
+    return found;
+  }
+
+  private readsFieldsEarly(cls: ts.ClassLikeDeclaration): boolean {
+    const own = new Set(cls.members.filter((m) => (ts.isMethodDeclaration(m) || ts.isGetAccessorDeclaration(m)) && !isStatic(m) && m.name && ts.isIdentifier(m.name)).map((m) => (m.name as ts.Identifier).text));
+    if (!own.size) return false;
+    const baseOf = (c: ts.ClassLikeDeclaration) => {
+      const h = c.heritageClauses?.find((x) => x.token === ts.SyntaxKind.ExtendsKeyword)?.types[0];
+      const d = h && this.checker.getTypeAtLocation(h.expression).getSymbol()?.valueDeclaration;
+      return d && ts.isClassLike(d) && !d.getSourceFile().isDeclarationFile ? d : undefined;
+    };
+    let found = false;
+    const visit = (n: ts.Node): void => {
+      if (found || (ts.isFunctionLike(n) && !ts.isArrowFunction(n)) || ts.isClassLike(n)) return;
+      if (ts.isPropertyAccessExpression(n) && n.expression.kind === ts.SyntaxKind.ThisKeyword && own.has(n.name.text)) found = true;
+      ts.forEachChild(n, visit);
+    };
+    for (let up = baseOf(cls); up && !found; up = baseOf(up)) {
+      for (const m of up.members) {
+        if (ts.isConstructorDeclaration(m) && m.body) ts.forEachChild(m.body, visit);
+        else if (ts.isPropertyDeclaration(m) && !isStatic(m) && m.initializer) visit(m.initializer);
+      }
+    }
+    return found;
+  }
 
   /** The fields some subclass of `cls` (in the program) declares again. */
   private subclassFields(cls: ts.ClassLikeDeclaration): Set<string> {
@@ -5468,6 +5516,10 @@ export class Translator implements AsyncTranslator {
     if (ts.isIdentifier(e)) {
       const sym = this.resolve(e);
       if (sym && this.undefinedVars.has(sym)) return ident(e.text);
+    }
+    if (ts.isPropertyAccessExpression(e) && e.expression.kind === ts.SyntaxKind.ThisKeyword && !isWriteTarget(e)) {
+      const d = this.resolve(e.name)?.valueDeclaration;
+      if (d && ts.isPropertyDeclaration(d) && this.earlyField(d)) return `${this.expr(e.expression)}.${earlyBacking(e.name.text)}`;
     }
     // Library mode: an optional chain's string, number or boolean (`bundle?.getString(key)`) is undefined where the chain stops.
     // Library mode: `<View>view.parent`, cast where a nullable slot takes it: missing as null.
