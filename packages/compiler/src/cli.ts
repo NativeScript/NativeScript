@@ -48,6 +48,7 @@ import { generateProject, iosDependencies, packageLines, podfile, productLines, 
 import { SourceLines } from './source-lines.ts';
 import { archive, automaticSigningSettings, findProfile, signingSettings, type ExportMethod } from './ios-signing.ts';
 import { KIT_ANDROID, KIT_APPLE } from './paths.ts';
+import { formatPreflight, preflight } from './preflight.ts';
 
 const args = process.argv.slice(2);
 const opt = (name: string, fallback?: string) => { const i = args.indexOf(name); return i >= 0 ? args[i + 1] : fallback; };
@@ -317,6 +318,12 @@ const sourceLines = args.includes('--no-source-lines') ? null : new SourceLines(
   ...components.map((c) => [c.file, componentSource(c)] as const),
   ...[...overrides.keys()].map((f) => [f, f] as const),
 ]));
+// Constructs no compiled release runs, all of them with their TypeScript lines, before anything is translated.
+const unsupported = preflight(checker, [...sourceFiles, ...compiledPlugins.map((f) => program.getSourceFile(f)!)], sourceLines ? (n) => sourceLines.locate(n) : undefined, (st) => !compiledPlugins.includes(st.getSourceFile().fileName) || reach.keeps(st));
+if (unsupported.length) {
+  console.error(formatPreflight(unsupported));
+  if (!args.includes('--keep-going')) throw new Error(`${unsupported.length} construct${unsupported.length > 1 ? 's' : ''} a compiled release does not support (docs: Supported subset and known differences)`);
+}
 /** The file a component was written in: beside its virtual file, or the .tsx declaring its function. */
 function componentSource(c: ComponentIR): string | null {
   for (const candidate of [c.file.replace(/\.release\.ts$/, '.ts'), c.file.replace(/\.ts$/, '')]) if (candidate !== c.file && existsSync(candidate)) return candidate;

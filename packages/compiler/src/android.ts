@@ -440,11 +440,16 @@ ${overlays.map((m) => `        variant.sources.manifests.addStaticManifestFile($
 `);
 
   if (b.build) {
-    const { execFileSync } = await import('node:child_process');
+    const { spawnSync } = await import('node:child_process');
+    const { mapKotlinDiagnostics } = await import('./kotlin-diagnostics.ts');
     // Signed with the keystore when one is given, as Android Studio's signed builds inject it.
     const k = b.keyStore;
     const signing = k ? [`-Pandroid.injected.signing.store.file=${resolve(k.path)}`, `-Pandroid.injected.signing.store.password=${k.password}`, `-Pandroid.injected.signing.key.alias=${k.alias}`, `-Pandroid.injected.signing.key.password=${k.aliasPassword}`] : [];
-    execFileSync(join(kit, 'gradlew'), ['-p', b.out, ':assembleRelease', ...(b.bundle ? [':bundleRelease'] : []), ...signing, '--quiet'], { stdio: 'inherit' });
+    // Kotlin's errors point into the generated files: printed with the TypeScript lines they came from.
+    const gradle = spawnSync(join(kit, 'gradlew'), ['-p', b.out, ':assembleRelease', ...(b.bundle ? [':bundleRelease'] : []), ...signing, '--quiet'], { stdio: ['inherit', 'pipe', 'pipe'], encoding: 'utf8', maxBuffer: 1 << 30 });
+    process.stdout.write(mapKotlinDiagnostics(gradle.stdout ?? '', b.out));
+    process.stderr.write(mapKotlinDiagnostics(gradle.stderr ?? '', b.out));
+    if (gradle.status !== 0) throw new Error(`the Gradle build failed (exit ${gradle.status ?? gradle.signal})`);
     const apk = join(b.out, 'build', 'outputs', 'apk', 'release', `${b.name}-release.apk`);
     say(`built ${relative(process.cwd(), existsSync(apk) ? apk : join(b.out, 'build', 'outputs', 'apk', 'release'))}`);
     const aab = join(b.out, 'build', 'outputs', 'bundle', 'release', `${b.name}-release.aab`);
