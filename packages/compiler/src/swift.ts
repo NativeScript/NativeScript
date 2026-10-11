@@ -3407,9 +3407,9 @@ ${members.join('\n')}
     if (collection && !appBase && (cls.members.some((m) => ts.isConstructorDeclaration(m)) || cls.members.some((m) => ts.isPropertyDeclaration(m) && !isStatic(m))))
       throw this.error(cls.name ?? cls, `a class extending ${heritage!.expression.getText()} with its own constructor or fields`);
     const isError = !!base && !appBase && !kitRoot && !collection;
-    // A class at the root of its hierarchy keeps what script adds to its instances (JSExpando): core's, and a
-    // plugin's, written as JavaScript is (`device[adapter_] = adapter`).
-    const expando = (!!this.library || this.pluginFiles.has(cls.getSourceFile().fileName)) && !base;
+    // A class at the root of its hierarchy keeps what script adds to its instances (JSExpando): core's, a plugin's,
+    // written as JavaScript is (`device[adapter_] = adapter`), and an app's (`test.name = name` on a test case).
+    const expando = !base;
     const isView = !!kitRoot && this.core.isKitView(kitRoot);
     const registered = (n: string) => isView && !!this.properties?.isRegistered(cls, n);
     // The library's interfaces (`Iterable<T>`, `Iterator<T>`) are protocols of the kit's, conformed to below.
@@ -5089,6 +5089,8 @@ ${members.join('\n')}
     if (/^JSRecord<.*>$/.test(target) && ((ts.isArrayLiteralExpression(bare) && !bare.elements.length) || (ts.isNewExpression(bare) && ts.isIdentifier(bare.expression) && bare.expression.text === 'Array' && !bare.arguments?.length))) return `${target}()`;
     // An array literal where any value may go holds any value: script may store a string in `const list: any = [1, 2]`.
     if (ts.isArrayLiteralExpression(bare) && target === 'Any?' && !ts.isAsExpression(e) && !!(this.checker.getContextualType(bare)?.flags! & ts.TypeFlags.Any)) return this.array(bare, 'JSArray<Any?>');
+    // The argument list of an untyped `fn.apply(self, [done])`, which the checker types as a tuple: a script array.
+    if (ts.isArrayLiteralExpression(bare) && target === 'Any?' && isApplyArguments(bare)) return this.array(bare, 'JSArray<Any?>');
     // An array of tuples where the slot's type has them typed (`[[property, color]]` for `[any, any][]` returned as `[CssProperty, Color][]`).
     const tuples = /^(JSArray<)?(\(.*\))>?$/.exec(target.replace(/\?$/, ''));
     const arity = tuples && !hasTopLevelArrow(tuples[2]) ? splitTopLevel(tuples[2].slice(1, -1)).length : 0;
@@ -6548,6 +6550,8 @@ ${members.join('\n')}
       const code = `${this.expr(e.expression)}${q}.element(${this.toNumber(e.argumentExpression)})`;
       // An untyped element narrowed (`args[0] instanceof Path2D`, `typeof arguments[0] === 'number'`): the element as that type.
       const narrowed = this.typeOf(e).replace(/[?!]$/, '');
+      // An array narrowed (`Array.isArray(arguments[0])`) may hold another element type (`number[]`), which no `as?` crosses.
+      if (/^JSArray<Any\?>[?!]?$/.test(this.typeOf(e.expression)) && /^JSArray<.*>$/.test(narrowed)) return this.fromAny(`(${code} ?? nil)`, `${narrowed}?`);
       if (/^JSArray<Any\?>[?!]?$/.test(this.typeOf(e.expression)) && narrowed !== 'Any' && (this.isObjectRef(e) || ['Double', 'String', 'Bool'].includes(narrowed))) return `((${code} ?? nil) as? ${narrowed})`;
       return this.typeOf(e).endsWith('?') || q ? `(${code} ?? nil)` : code;
     }
@@ -7632,7 +7636,12 @@ ${members.join('\n')}
         if (e.arguments.slice(2).some(ts.isSpreadElement)) return `${t}.splice(${e.arguments.slice(0, 2).map((x) => this.coerce(x, 'Double')).join(', ')}, contentsOf: ${this.packed(e.arguments.slice(2), `JSArray<${el}>`)}.storage)`;
         return `${t}.splice(${[...a().slice(0, 2), ...e.arguments.slice(2).map((x) => this.coerce(x, el))].join(', ')})`;
       case 'fill': return `${t}.fill(${a().join(', ')})`;
-      case 'slice': case 'indexOf': case 'lastIndexOf': case 'includes': case 'at': return `${t}.${name}(${a().join(', ')})`;
+      // An end undefined is the length, where NaN would be 0: an optional end goes as it is.
+      case 'slice': {
+        const end = e.arguments[1];
+        return end && ts.isIdentifier(end) && this.declaredTypeOf(end) === 'Double?' ? `${t}.slice(${a()[0]}, ${this.refName(end)})` : `${t}.slice(${a().join(', ')})`;
+      }
+      case 'indexOf': case 'lastIndexOf': case 'includes': case 'at': return `${t}.${name}(${a().join(', ')})`;
       case 'join': return `${t}.join(${!e.arguments[0] ? '' : this.isAny(e.arguments[0]) ? `jsJoinSeparator(${this.expr(e.arguments[0])})` : this.expr(e.arguments[0])})`;
       case 'concat':
         if (e.arguments.some(ts.isSpreadElement)) return `${t}.concat(spread: ${this.packed(e.arguments, `JSArray<${el}>`)}.storage)`;
@@ -7667,7 +7676,10 @@ ${members.join('\n')}
         }
         return this.ignoringThisArg(e, target, call());
       }
-      case 'sort': return e.arguments[0] ? `${t}.sort(${this.fn(e.arguments[0])})` : `${t}.sort()`;
+      case 'sort':
+        // A comparator that may be undefined sorts as none given.
+        if (e.arguments[0] && /[?!]$/.test(this.declaredTypeOf(e.arguments[0]) ?? '') && !ts.isArrowFunction(e.arguments[0]) && !ts.isFunctionExpression(e.arguments[0])) return `((${this.fn(e.arguments[0])}).map { __c in try ${t}.sort(__c) } ?? ${t}.sort())`;
+        return e.arguments[0] ? `${t}.sort(${this.fn(e.arguments[0])})` : `${t}.sort()`;
       case 'reduce': case 'reduceRight': {
         const init = e.arguments[1];
         const callback = e.arguments[0];
@@ -9019,6 +9031,11 @@ function numberLiteral(text: string): string {
 /** A type written with `| null` or `| undefined`, which code checked without strictNullChecks types without them. */
 function nullableTypeNode(t: ts.TypeNode | undefined): boolean {
   return !!t && ts.isUnionTypeNode(t) && t.types.some((x) => x.kind === ts.SyntaxKind.UndefinedKeyword || (ts.isLiteralTypeNode(x) && x.literal.kind === ts.SyntaxKind.NullKeyword));
+}
+
+function isApplyArguments(e: ts.Expression): boolean {
+  const call = ts.walkUpParenthesizedExpressions(e.parent);
+  return ts.isCallExpression(call) && call.arguments[1] === ts.walkUpParenthesizedExpressions(e) && ts.isPropertyAccessExpression(call.expression) && call.expression.name.text === 'apply';
 }
 
 function numericLiteralOnly(e: ts.Expression): boolean {

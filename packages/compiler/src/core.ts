@@ -639,6 +639,11 @@ export class CoreAPI {
         const convert: Record<string, string> = { String: 'jsToString', Double: 'jsToNumber', Bool: 'jsTruthy' };
         if (convert[type] && convert[own] && own !== type) { args[k] = `${convert[type]}(${t.coerce(a, own)})`; return; }
       }
+      // A number where the kit erased a type parameter (`reduce(callback, 5)` taking `Any?`): a Double, never the Int a bare literal makes.
+      if (a && !ts.isSpreadElement(a) && type === 'Any?' && t.typeOf(a) === 'Double') {
+        args[k] = t.coerce(a, 'Any?');
+        return;
+      }
       // An untyped value where the kit's parameter has a type (`releaseNativeObject(obj as any)` for an `NSObject!`): read as it.
       if (a && !ts.isSpreadElement(a) && !/->/.test(type) && type !== 'Any?' && t.typeOf(a) === 'Any?') {
         args[k] = t.coerce(a, type.replace(/!$/, '?'));
