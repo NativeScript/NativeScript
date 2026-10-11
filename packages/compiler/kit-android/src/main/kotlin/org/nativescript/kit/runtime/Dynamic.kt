@@ -282,6 +282,8 @@ private fun javaScore(value: Any?, type: Class<*>): Int? {
         is Double -> rank[type] ?: when {
             type == java.lang.Double::class.java || type == java.lang.Number::class.java -> 9
             type == Any::class.java -> 30
+            // A Java enum core's code types as a number (`getNativeRenderingMode(): number`): the kit holds it by its ordinal.
+            type.isEnum && value >= 0 && value.toInt() < type.enumConstants!!.size -> 20
             else -> null
         }
         is String -> when {
@@ -319,6 +321,7 @@ fun toJavaValue(value: Any?, type: Class<*>): Any? = when {
         Char::class.javaPrimitiveType -> value.toLong().toInt().toChar()
         else -> value
     }
+    value is Double && type.isEnum -> type.enumConstants!![value.toInt()]
     value is String && type == Char::class.javaPrimitiveType -> value[0]
     value is JSArray<*> && type.isArray -> {
         val element = type.componentType!!

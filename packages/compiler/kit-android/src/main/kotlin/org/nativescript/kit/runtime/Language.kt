@@ -209,6 +209,14 @@ fun jsObjectSpread(target: JSObject, source: Any?) {
     if (dynamic is JSSymbolKeyed) for (key in dynamic.jsSymbolKeys) target[key] = dynamic.jsGet(key)
 }
 
+/** `const { a, ...rest } = source`: a new object of the source's own enumerable keys but those the pattern names. */
+fun jsObjectRest(source: Any?, taken: List<String>): JSObject {
+    val rest = JSObject()
+    jsObjectSpread(rest, source)
+    for (key in taken) rest.delete(key)
+    return rest
+}
+
 /** A property's slot when it is an accessor or its attributes are not all true. */
 class JSPropertySlot(
     var get: ((Any?) -> Any?)? = null,

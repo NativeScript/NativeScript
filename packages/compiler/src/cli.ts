@@ -27,7 +27,7 @@ import { octaneApp } from './octane.ts';
 import { appDeclarations, createProgram, nodeModules } from './program.ts';
 import { corePatches, corePatchesAndroid } from './core-patches.ts';
 import { androidBindings } from './bindings-android.ts';
-import { KIT, KIT_PLUGINS } from './core.ts';
+import { KIT, KIT_PLUGINS, useKitPlugins } from './core.ts';
 import { kitIndex } from './kit-index.ts';
 import { describe, PropertyGuard } from './unimplemented.ts';
 import { swiftString, Translator, type ComponentInfo } from './swift.ts';
@@ -60,6 +60,7 @@ const name = opt('--name', basename(app).replace(/(^|[-_])(\w)/g, (_: string, __
 const out = resolve(opt('--out', join(app, 'platforms', 'native'))!);
 const say = (m: string) => console.log(`[ns-native] ${m}`);
 const platform = opt('--platform') === 'android' ? 'android' : 'ios';
+useKitPlugins(platform);
 
 const files: string[] = [];
 const walk = (d: string) => { for (const f of readdirSync(d)) { const p = join(d, f); if (statSync(p).isDirectory()) walk(p); else files.push(p); } };

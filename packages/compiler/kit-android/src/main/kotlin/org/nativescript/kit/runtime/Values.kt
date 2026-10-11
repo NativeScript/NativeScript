@@ -505,6 +505,8 @@ fun jsToNumber(value: Any?): Double = when (val v = jsBox(value)) {
 fun jsNumberOrZero(value: Any?): Double = when (value) {
     is Double -> value
     is String -> jsNumberFromString(value)
+    // A boxed Java number (a callback's `java.lang.Integer` context) is a number to script.
+    is Number -> value.toDouble()
     else -> 0.0
 }
 

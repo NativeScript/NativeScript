@@ -139,7 +139,7 @@ const iosOnly = ['fetch/', 'xhr/'];
  * `org.nativescript.widgets` layouts, as NativeScript runs them.
  */
 export const android = {
-	compile: ios.compile.filter((m) => !m.startsWith('ui/layouts/liquid-glass') && !iosOnly.includes(m)).map((m) => (m === 'ui/layouts/layout-base.ios.ts' ? 'ui/layouts/layout-base.android.ts' : m === 'ui/utils.ios.ts' ? 'ui/utils.android.ts' : m)),
+	compile: ios.compile.filter((m) => !iosOnly.includes(m)).map((m) => (m === 'ui/layouts/layout-base.ios.ts' ? 'ui/layouts/layout-base.android.ts' : m === 'ui/utils.ios.ts' ? 'ui/utils.android.ts' : m)),
 	/** As `ios.counterparts`, to the kit's Kotlin. */
 	counterparts: {
 		'color/color-utils.ts': { argbFromColorMix: 'ColorMix.argbFromColorMix' },

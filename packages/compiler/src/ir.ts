@@ -51,6 +51,8 @@ export type TNode =
       kind: 'template'; key: string; item: string; index: string; body: TNode[];
       /** A sectioned ListView's sticky header: its item is the section, its index the section's. */
       header?: boolean;
+      /** The header's NativeScript XML as written, for a kit whose ListView parses it as core does (`Builder.parse`). */
+      xml?: string;
     };
 
 export interface ComponentIR {

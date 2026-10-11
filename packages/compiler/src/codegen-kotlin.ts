@@ -1,8 +1,8 @@
 import type { Attr, ComponentIR, TNode } from './ir.ts';
-import { EVENT_SCOPED, isFragment, type Framework } from './codegen.ts';
+import { EVENT_SCOPED, TEMPLATE_HOSTS, isFragment, type Framework } from './codegen.ts';
 import { ident, kotlinString } from './kotlin.ts';
 
-/** ListView attributes that `bind` takes rather than `set`. */
+/** Template hosts' attributes that `bind` takes rather than `set`. */
 const LIST_BINDINGS = new Set(['items', 'itemTemplateSelector']);
 
 /**
@@ -105,7 +105,7 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
         } else if (node.kind === 'element') {
           say(depth, `val ${v} = ${node.tag}()`);
           if (node.ref) say(depth, `${call(node.ref, loops)}.current = ${v}`);
-          const isList = node.tag === 'ListView';
+          const isList = TEMPLATE_HOSTS.has(node.tag);
           const props = () => {
             for (const a of node.attrs) if (!isList || !LIST_BINDINGS.has(a.name)) attr(depth, v, a, loops);
             for (const e of node.events) {
@@ -141,7 +141,7 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
             }
             for (const e of node.events) {
               if (!info.outputs?.includes(e.name)) throw new Error(`${c.name}: <${node.name}> takes no ${e.name} event: its template has no single root view`);
-              say(depth, `${c0}.${ident(info.outputFields?.[e.name] ?? e.name)}.on { value -> ${handler(call(e.method, loops, [`EventData(${kotlinString(e.name)}, null, value)`]))} }`);
+              say(depth, `${c0}.${ident(info.outputFields?.[e.name] ?? e.name)}.on { value -> ${handler(call(e.method, loops, [e.payload ? 'value' : `EventData(${kotlinString(e.name)}, null, value)`]))} }`);
             }
             say(depth, `${c0}.render(${parent}.kitAddRegion())`);
             continue;
@@ -154,7 +154,7 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
           // Attributes that are not props fall through to the component's root view, as in Vue.
           for (const a of node.props) if (!info.props.includes(a.name)) attr(depth, v, a, loops);
           for (const e of node.events) {
-            if (info.outputs?.includes(e.name)) say(depth, `${c0}.${ident(info.outputFields?.[e.name] ?? e.name)}.on { value -> ${handler(call(e.method, loops, [`EventData(${kotlinString(e.name)}, ${v}, value)`]))} }`);
+            if (info.outputs?.includes(e.name)) say(depth, `${c0}.${ident(info.outputFields?.[e.name] ?? e.name)}.on { value -> ${handler(call(e.method, loops, [e.payload ? 'value' : `EventData(${kotlinString(e.name)}, ${v}, value)`]))} }`);
             else say(depth, `${v}.kitOn(${kotlinString(e.name)}) { event -> ${handler(call(e.method, loops, ['event']))} }`);
           }
           attach(depth, v, parent, region, 'created');
@@ -163,7 +163,7 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
         collect?.push(v);
         continue;
       }
-      if (node.kind === 'template') throw new Error(`${c.name}: an item template outside a ListView`);
+      if (node.kind === 'template') throw new Error(`${c.name}: an item template outside a ListView or Pager`);
       if (!parent) throw new Error(`${c.name}: an if/for at the root of a template`);
       // A component whose views join its parent (no single root) is a region of the body it is in.
       const nested = (body: TNode[]) => body.some((x) => x.kind === 'if' || x.kind === 'for' || (x.kind === 'component' && !!components.get(x.name)?.fragment));
@@ -247,7 +247,7 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
       // Angular's @for keeps a row by its key and gives it the item now at that key: the row reads item and index as signals.
       const row = framework === 'angular' ? `row${n++}` : null;
       const rowLoops = row ? [...loops, { item: node.item, index: node.index, itemExpr: `${row}.item.value`, indexExpr: `${row}.index.value` }] : inner;
-      const opening = (kind: string) => `${row ? kind.replace(/^For/, 'ForEach') : kind}(${host}, { ${call(node.items, loops)}.elements }, ${key}) { ${row ?? `${ident(node.item)}, ${ident(node.index)}`} ->`;
+      const opening = (kind: string) => `${row ? kind.replace(/^For/, 'ForEach') : kind}(${host}, { ${call(node.items, loops)}.forItems }, ${key}) { ${row ?? `${ident(node.item)}, ${ident(node.index)}`} ->`;
       // Iterating reads the array through its tracker: a Vue ref's array re-renders on push.
       if (fragmented) {
         say(depth, opening('ForFragment'));
@@ -268,17 +268,25 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
     }
   };
 
-  /** A ListView's items, selector and templates: one `bind`, whose closure renders a template for a row. */
+  /** A ListView's or Pager's items, selector and templates: one `bind`, whose closure renders a template for a row. */
   const list = (node: Extract<TNode, { kind: 'element' }>, depth: number, loops: Loop[], v: string) => {
     const items = node.attrs.find((a) => a.name === 'items');
-    if (!items || !('method' in items)) throw new Error(`${c.name}: <ListView> needs bound items`);
+    if (!items || !('method' in items)) throw new Error(`${c.name}: <${node.tag}> needs bound items`);
     const selector = node.attrs.find((a) => a.name === 'itemTemplateSelector');
     const sel = selector && 'method' in selector ? `, selector = { item, index -> ${call(selector.method, loops, ['item', 'index'])} }` : '';
-    const rowTemplates = node.children.filter((t): t is Extract<TNode, { kind: 'template' }> => t.kind === 'template');
-    if (!rowTemplates.length) { say(depth, `${v}.bind(items = { ${call(items.method, loops)}.elements }${sel})`); return; }
+    const all = node.children.filter((t): t is Extract<TNode, { kind: 'template' }> => t.kind === 'template');
+    const rowTemplates = all.filter((t) => !t.header);
+    // A sectioned list's header is core's: Android's ListView makes it from the XML with Builder.parse.
+    const header = all.find((t) => t.header);
+    if (header?.xml !== undefined) say(depth, `${v}.kitSet("stickyHeaderTemplate", ${kotlinString(header.xml)})`);
+    // Core's ListView binds its own; another host (a plugin's Pager) through the bridge's. A sectioned list's items are
+    // its sections, a row's item one of a section's `items`.
+    const bind = node.sections ? 'kitBindSections' : node.tag === 'ListView' ? 'bind' : 'kitBindItems';
+    const source = node.sections ? `sections = { ${call(items.method, loops)}.elements }, rows = { it.items.elements }` : `items = { ${call(items.method, loops)}.elements }`;
+    if (!rowTemplates.length) { say(depth, `${v}.${bind}(${source}${sel})`); return; }
     const row = `row${n++}`;
     const fallback = rowTemplates.find((t) => t.key === 'default') ?? rowTemplates[0];
-    say(depth, `${v}.bind(items = { ${call(items.method, loops)}.elements }, templates = listOf(${rowTemplates.map((t) => kotlinString(t.key)).join(', ')})${sel}) { key, ${row} ->`);
+    say(depth, `${v}.${bind}(${source}, templates = listOf(${rowTemplates.map((t) => kotlinString(t.key)).join(', ')})${sel}) { key, ${row} ->`);
     say(depth + 1, 'when (key) {');
     for (const t of [...rowTemplates.filter((t) => t !== fallback), fallback]) {
       say(depth + 2, `${t === fallback ? 'else' : kotlinString(t.key)} -> {`);
@@ -288,7 +296,7 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
       if (framework === 'angular' && hasRegion(t.body)) say(d + 1, 'val __view = EffectOrder.current');
       const made: string[] = [];
       template(d + 1, () => emit(t.body, d + 1, [...loops, { item: t.item, index: t.index, itemExpr: `${row}.item.value`, indexExpr: `${row}.index.value` }], null, made));
-      if (made.length !== 1) throw new Error(`${c.name}: a ListView template needs exactly one root element`);
+      if (made.length !== 1) throw new Error(`${c.name}: a ${node.tag} template needs exactly one root element`);
       say(d + 1, made[0]);
       if (wrap) say(depth + 3, '}');
       say(depth + 2, '}');
@@ -352,5 +360,5 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
 
 /** Whether a template holds an `if` or `for` of its own (not inside a ListView row). */
 function hasRegion(nodes: TNode[]): boolean {
-  return nodes.some((n) => n.kind === 'if' || n.kind === 'for' || (n.kind === 'element' && n.tag !== 'ListView' && hasRegion(n.children)));
+  return nodes.some((n) => n.kind === 'if' || n.kind === 'for' || (n.kind === 'element' && !TEMPLATE_HOSTS.has(n.tag) && hasRegion(n.children)));
 }

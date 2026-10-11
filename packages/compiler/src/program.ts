@@ -423,7 +423,11 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
     ...(defineFields === false ? { useDefineForClassFields: false } : {}),
   };
   const checked = Object.keys(checks).length ? ts.createProgram([...rootNames], { ...options, ...checks }, host, program) : program;
-  const diagnostics = ts.getPreEmitDiagnostics(checked).filter((d) => d.category === ts.DiagnosticCategory.Error && (!d.file || (isApp(d.file.fileName) && !otherPlatform.test(d.file.fileName))) && !(lenient && (strictOnly.has(d.code) || neverRead(d))));
+  // A plugin's components (`<package>/angular`) compile with the app's but are typed by the plugin's own build, against its declarations
+  // rather than this platform's implementation.
+  const pluginRoots = (plugins?.all() ?? []).map((p) => p.root + '/');
+  const ofPlugin = (name: string) => pluginRoots.some((r) => name.startsWith(r));
+  const diagnostics = ts.getPreEmitDiagnostics(checked).filter((d) => d.category === ts.DiagnosticCategory.Error && (!d.file || (isApp(d.file.fileName) && !ofPlugin(d.file.fileName) && !otherPlatform.test(d.file.fileName))) && !(lenient && (strictOnly.has(d.code) || neverRead(d))));
   if (diagnostics.length) {
     const text = ts.formatDiagnostics(diagnostics.slice(0, Number(process.env.NS_NATIVE_DIAGNOSTICS ?? 12)), { getCanonicalFileName: (f) => f, getCurrentDirectory: () => '/', getNewLine: () => '\n' });
     throw new Error(`the app does not type-check as the release build sees it:\n${text}`);

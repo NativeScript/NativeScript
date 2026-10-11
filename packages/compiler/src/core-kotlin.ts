@@ -439,7 +439,17 @@ export class CoreKotlin implements KotlinCore {
     const m = this.member(owner.name, name, e);
     // A method read as a value (`typeof view.getSafeAreaInsets === 'function'`): bound to its object.
     // A method as a value; read through `?.` (`child?.getChildAt`), undefined where the receiver is.
-    if (m.kind === 'func' && !(ts.isCallExpression(e.parent) && e.parent.expression === e)) return recv.endsWith('?') ? `${recv.slice(0, -1)}?.let { __r -> __r::${name} }` : `${recv}::${name}`;
+    if (m.kind === 'func' && !(ts.isCallExpression(e.parent) && e.parent.expression === e)) {
+      // A static method is its class's companion's: `ColorBase::equals` would be Any's instance `equals`, and the companion's
+      // own reference is ambiguous with it: a function calling it.
+      if (owner.isStatic && ['equals', 'hashCode', 'toString'].includes(name)) {
+        const arity = t.checker.getTypeAtLocation(e).getCallSignatures()[0]?.parameters.length ?? 0;
+        const ps = Array.from({ length: arity }, (_, k) => `__s${k}`);
+        return `{ ${ps.map((p) => `${p}: Any?`).join(', ')} -> ${recv}.${name}(${ps.join(', ')}) }`;
+      }
+      if (owner.isStatic) return `${recv}.Companion::${name}`;
+      return recv.endsWith('?') ? `${recv.slice(0, -1)}?.let { __r -> __r::${name} }` : `${recv}::${name}`;
+    }
     return this.fromKit(`${recv}.${name}`, m.type, t.typeOf(e), t.nullTolerant(e));
   }
 

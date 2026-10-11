@@ -199,26 +199,68 @@ private val listTemplateKey = jsSymbol("NativeScriptKit:listTemplate")
  * `itemTemplates` naming each template, the selector choosing a row's template, and each row's view made
  * on `itemLoading`, where a reused cell's view is kept when its template is the row's.
  */
-fun <Item> ListView.bind(items: () -> List<Item>, templates: List<String> = listOf("default"), selector: ((Item, Double) -> String)? = null, render: ((String, ListRow<Item>) -> View)? = null) {
+fun <Item> ListView.bind(items: () -> List<Item>, templates: List<String> = listOf("default"), selector: ((Item, Double) -> String)? = null, render: ((String, ListRow<Item>) -> View)? = null) =
+    kitBindItems(items, templates, selector, render)
+
+/** Any view taking core's item templates as ListView does (`itemTemplates`, `itemLoading`, `items`): a plugin's Pager. */
+fun <Item> ViewBase.kitBindItems(items: () -> List<Item>, templates: List<String> = listOf("default"), selector: ((Item, Double) -> String)? = null, render: ((String, ListRow<Item>) -> View)? = null) {
     var current: List<Item> = emptyList()
+    bindRows(
+        templates, selector, render,
+        selected = { args -> jsToNumber(args.getOrNull(1)).let { index -> if (index < 0 || index.toInt() >= current.size) null else current[index.toInt()] to index } },
+        loading = { data -> jsToNumber(jsGet(data, "index")).let { index -> if (index < 0 || index.toInt() >= current.size) null else current[index.toInt()] to index } },
+    )
+    val list = java.lang.ref.WeakReference(this)
+    Effect {
+        current = items()
+        val values = JSArray<Any?>(current.map { it as Any? })
+        untrack { list.get()?.kitSet("items", values) }
+    }
+}
+
+/**
+ * A sectioned ListView (`sectioned`): its items are the sections, each holding its rows in `items`, which core reads
+ * by name; `itemLoading` gives a row's `section` and its `index` in that section.
+ */
+fun <Section, Row> ListView.kitBindSections(sections: () -> List<Section>, rows: (Section) -> List<Row>, templates: List<String> = listOf("default"), selector: ((Row, Double) -> String)? = null, render: ((String, ListRow<Row>) -> View)? = null) {
+    var current: List<Section> = emptyList()
+    @Suppress("UNCHECKED_CAST")
+    bindRows(
+        templates, selector, render,
+        selected = { args -> (args.getOrNull(0) as Row) to jsToNumber(args.getOrNull(1)) },
+        loading = { data ->
+            val section = jsToNumber(jsGet(data, "section")).toInt()
+            val index = jsToNumber(jsGet(data, "index"))
+            val inSection = current.getOrNull(section)?.let(rows)
+            if (inSection == null || index < 0 || index.toInt() >= inSection.size) null else inSection[index.toInt()] to index
+        },
+    )
+    val list = java.lang.ref.WeakReference(this)
+    Effect {
+        current = sections()
+        val values = JSArray<Any?>(current.map { it as Any? })
+        untrack { list.get()?.kitSet("items", values) }
+    }
+}
+
+/** The templates, selector and `itemLoading` of a view taking item templates; `selected` and `loading` find a row and its index. */
+private fun <Row> ViewBase.bindRows(templates: List<String>, selector: ((Row, Double) -> String)?, render: ((String, ListRow<Row>) -> View)?, selected: (List<Any?>) -> Pair<Row, Double>?, loading: (EventData) -> Pair<Row, Double>?) {
     val listOwner = Owner.current
     if (render != null) {
         kitSet("itemTemplates", JSArray<Any?>(templates.map { key -> JSObject("key" to key, "createView" to jsFunction { null }) }))
     }
     if (selector != null) {
         kitSet("itemTemplateSelector", jsFunction { args ->
-            val index = jsToNumber(args.getOrNull(1))
-            if (index < 0 || index.toInt() >= current.size) templates.firstOrNull() else selector(current[index.toInt()], index)
+            val found = selected(args)
+            if (found == null) templates.firstOrNull() else selector(found.first, found.second)
         })
     }
     kitOn("itemLoading") { data ->
-        val index = jsToNumber(jsGet(data, "index"))
-        if (index < 0 || index.toInt() >= current.size) return@kitOn
-        val item = current[index.toInt()]
+        val (item, index) = loading(data) ?: return@kitOn
         val key = selector?.invoke(item, index) ?: templates.firstOrNull() ?: "default"
         val reused = jsGet(data, "view") as? ViewBase
         @Suppress("UNCHECKED_CAST")
-        val row = reused?.let { jsGet(it, listRowKey.key) as? ListRow<Item> }
+        val row = reused?.let { jsGet(it, listRowKey.key) as? ListRow<Row> }
         if (reused != null && row != null && jsGet(reused, listTemplateKey.key) == key) {
             row.item.value = item
             row.index.value = index
@@ -231,11 +273,5 @@ fun <Item> ListView.bind(items: () -> List<Item>, templates: List<String> = list
         jsSet(view, listRowKey.key, made)
         jsSet(view, listTemplateKey.key, key)
         jsSet(data, "view", view)
-    }
-    val list = java.lang.ref.WeakReference(this)
-    Effect {
-        current = items()
-        val values = JSArray<Any?>(current.map { it as Any? })
-        untrack { list.get()?.kitSet("items", values) }
     }
 }

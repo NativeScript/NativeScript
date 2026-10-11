@@ -143,6 +143,8 @@ export async function writeAndroid(b: AndroidBuild): Promise<void> {
   translator.lines = b.lines;
   if (b.allErrors) translator.errors = [];
   translator.lenientApp = !!b.lenient;
+  translator.plainFields = b.framework === 'angular';
+  translator.pluginRoots = (b.plugins ?? []).map((p) => p.root + '/');
   const table: Record<string, [number, string, number][]> = {};
   /** A Kotlin file as written, its markers turned into ranges of the line table: [first Kotlin line, source file, source line]. */
   // The generated kit names Java classes by import aliases (`android_animation_Animator`) in the signatures app code meets: the same aliases.
@@ -198,8 +200,8 @@ export async function writeAndroid(b: AndroidBuild): Promise<void> {
     const sf = b.program.getSourceFile(c.file)!;
     const cls = sf.statements.find(ts.isClassDeclaration)!;
     try {
-      const { params, lines } = translator.componentMembers(cls, c.props);
-      const body = [`class ${c.name}(${params.join(', ')}) {`, ...lines, SourceLines.end, ...render(c, b.infos, { framework: b.framework, zone: b.zone, slots: b.mounted, rowSignals: b.mounted, ...(b.framework === 'react' ? { screenContent: REACT_SCREEN_CONTENT } : {}) }), '}'];
+      const { params, lines, statics } = translator.componentMembers(cls, c.props);
+      const body = [`class ${c.name}(${params.join(', ')}) {`, ...lines, ...(statics.length ? ['    companion object {', ...statics, '    }'] : []), SourceLines.end, ...render(c, b.infos, { framework: b.framework, zone: b.zone, slots: b.mounted, rowSignals: b.mounted, ...(b.framework === 'react' ? { screenContent: REACT_SCREEN_CONTENT } : {}) }), '}'];
       write(join(sources, c.name + '.kt'), header(c.file.replace(/\.ts$/, '')) + body.join('\n') + '\n');
     } catch (e) {
       if (!translator.errors) throw e;
@@ -352,6 +354,12 @@ ${['java', 'assets'].filter((d) => existsSync(join(main, d))).map((d) => `    so
     }
 ${packagingBlock(native.packaging)}}
 
+// The settings' repositories again: an app.gradle declaring its own would leave the project only those.
+repositories {
+    google()
+    mavenCentral()
+${native.repositories.map((r) => `    maven { url = uri(${kotlinString(r)}) }\n`).join('')}}
+
 kotlin {
     compilerOptions { jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17) }
 }
@@ -359,7 +367,7 @@ kotlin {
 dependencies {
     implementation(project(":kit"))
 ${native.archives.map((a) => `    implementation(files(${kotlinString(a)}))\n`).join('')}${native.dependencies.map((d) => `    ${d.configuration}(${kotlinString(d.coords)})\n`).join('')}${native.constraints.length ? `    constraints {\n${native.constraints.map((d) => `        ${d.configuration}(${kotlinString(d.coords)})\n`).join('')}    }\n` : ''}}
-${overlays.length ? `
+${native.excludes.length ? `\nconfigurations.all {\n${native.excludes.map((e) => `    exclude(${[e.group !== undefined ? `group = ${kotlinString(e.group)}` : '', e.module !== undefined ? `module = ${kotlinString(e.module)}` : ''].filter(Boolean).join(', ')})\n`).join('')}}\n` : ''}${overlays.length ? `
 // The plugins' manifests, merged into the app's as the plugins' own would be.
 androidComponents {
     onVariants { variant ->

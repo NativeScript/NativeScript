@@ -94,8 +94,16 @@ export function unappliedProperty(t: { resolve(n: ts.Node): ts.Symbol | undefine
  * compiled source: @nstudio/nativescript-ui-pager's Pager. @nativescript/canvas is compiled
  * from its source over its native library, WebGPU included.
  */
-export const KIT_PLUGINS = ['@nstudio/nativescript-ui-pager'];
-const KIT_PACKAGES = new RegExp(`[\\\\/](${['@nativescript/core', ...KIT_PLUGINS].map((p) => p.replace(/\//g, '[\\\\/]')).join('|')})[\\\\/]`);
+const APPLE_KIT_PLUGINS = ['@nstudio/nativescript-ui-pager'];
+export const KIT_PLUGINS = [...APPLE_KIT_PLUGINS];
+const kitPackages = () => new RegExp(`[\\\\/](${['@nativescript/core', ...KIT_PLUGINS].map((p) => p.replace(/\//g, '[\\\\/]')).join('|')})[\\\\/]`);
+let KIT_PACKAGES = kitPackages();
+
+/** The kit plugins of `platform`'s kit: kit-android implements none, so every plugin compiles from its source there. */
+export function useKitPlugins(platform: 'ios' | 'android') {
+  KIT_PLUGINS.splice(0, KIT_PLUGINS.length, ...(platform === 'android' ? [] : APPLE_KIT_PLUGINS));
+  KIT_PACKAGES = kitPackages();
+}
 
 /** The native class a core class's `ios` is, walking up to the nearest one the table names. */
 export function nativeViewOf(checker: ts.TypeChecker, type: ts.Type, table: Record<string, string> = NATIVE_VIEWS): string | null {
