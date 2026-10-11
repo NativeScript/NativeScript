@@ -43,11 +43,14 @@ public func jsSlice(_ s: String, _ start: Double = 0, _ end: Double? = nil) -> S
 }
 
 private func jsRange(_ count: Int, _ start: Double, _ end: Double?) -> (Int, Int) {
-    func clamp(_ v: Double) -> Int { v < 0 ? max(0, count + Int(v)) : min(count, Int(v)) }
-    return (clamp(start), clamp(end ?? Double(count)))
+    (jsRelativeIndex(start, count), end.map { jsRelativeIndex($0, count) } ?? count)
 }
 
-public func jsCharAt(_ s: String, _ index: Double) -> String { jsSlice(s, index, index + 1) }
+public func jsCharAt(_ s: String, _ index: Double) -> String {
+    let i = jsToIntegerOrInfinity(index), u = s.utf16
+    guard i >= 0, i < Double(u.count) else { return "" }
+    return String(decoding: CollectionOfOne(u[u.index(u.startIndex, offsetBy: Int(i))]), as: UTF16.self)
+}
 
 /// `s[index]`: undefined unless the index is one of the string's.
 public func jsCharAtOrUndefined(_ s: String, _ index: Double) -> String? {
@@ -75,12 +78,8 @@ func jsUnitsIndex(_ u: [UInt16], _ p: [UInt16], from: Int) -> Int? {
     return nil
 }
 
-/// `s.padStart(length, fill)`: the fill cut to the UTF-16 units missing, as JavaScript counts a string's length.
-public func jsPadStart(_ s: String, _ length: Double, _ fill: String = " ") -> String {
-    let missing = (length.isNaN ? 0 : Int(min(length, Double(Int32.max)))) - s.utf16.count
-    guard missing > 0, !fill.isEmpty else { return s }
-    let pad = Array(String(repeating: fill, count: missing / fill.utf16.count + 1).utf16.prefix(missing))
-    return String(decoding: pad, as: UTF16.self) + s
+public func jsPadStart(_ s: String, _ length: Double, _ fill: String = " ") throws -> String {
+    try jsPadding(s, length, fill) + s
 }
 
 /// The key of an unkeyed `for` (Solid's `<For>`): the item itself, by reference for objects.

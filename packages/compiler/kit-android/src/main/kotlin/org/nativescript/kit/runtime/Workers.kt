@@ -86,7 +86,7 @@ class JSWorker(scriptURL: Any?, script: String? = null) : JSDynamic {
             previous = current
             this
         }
-        realm.global["postMessage"] = JSMethod { _, a -> fromWorker(a.getOrNull(0)); null }
+        realm.global["postMessage"] = JSMethod { _, a -> fromWorker(a.getOrNull(0), a.getOrNull(1)); null }
         realm.global["close"] = JSMethod { _, _ -> closing = true; null }
         realm.global["self"] = realm.global
         realm.global["global"] = realm.global
@@ -142,15 +142,15 @@ class JSWorker(scriptURL: Any?, script: String? = null) : JSDynamic {
         }
     }
 
-    /** `worker.postMessage(message, transfer)`: transferables are copied, not moved; a stopped worker drops it. */
-    fun postMessage(message: Any?, @Suppress("UNUSED_PARAMETER") transfer: Any? = null) {
+    /** `worker.postMessage(message, transfer)`: the buffers listed move to the worker; a stopped worker drops it. */
+    fun postMessage(message: Any?, transfer: Any? = null) {
         if (!live) return
-        val data = jsStructuredClone(message)
+        val data = jsStructuredClone(message, jsTransferred(transfer))
         inbox.put { jsGetOptional(realm.global, "onmessage")?.let { jsCall(it, JSMessageEvent(data)) } }
     }
 
-    private fun fromWorker(message: Any?) {
-        val data = jsStructuredClone(message)
+    private fun fromWorker(message: Any?, transfer: Any?) {
+        val data = jsStructuredClone(message, jsTransferred(transfer))
         if (!live) return
         owner.post?.invoke { if (!terminated) ownerTask { onmessage?.invoke(JSMessageEvent(data)) } }
     }
@@ -228,7 +228,7 @@ fun jsStructuredClone(value: Any?, seen: java.util.IdentityHashMap<Any, Any?> = 
     fun fail(): Nothing = throw JSException(JSDOMException("${getClass(value)} could not be cloned.", "DataCloneError"))
     if (jsIsFunction(value)) fail()
     return when (value) {
-        is JSArrayBuffer -> value.slice().also { seen[value] = it }
+        is JSArrayBuffer -> if (value.detached) throw JSException(JSDOMException("An ArrayBuffer is detached and could not be cloned.", "DataCloneError")) else value.slice().also { seen[value] = it }
         is JSTypedArray<*, *> -> {
             val buffer = jsStructuredClone(value.buffer, seen) as JSArrayBuffer
             value.make(JSTypedArrayLayout(buffer, value.offset, value.count)).also { seen[value] = it }
@@ -283,9 +283,27 @@ fun jsStructuredClone(value: Any?, seen: java.util.IdentityHashMap<Any, Any?> = 
     }
 }
 
-/** A worker script's own `postMessage(message, transfer)`: its realm's, which its Worker defines. Transferables are copied. */
-fun postMessage(message: Any?, @Suppress("UNUSED_PARAMETER") transfer: Any? = null) {
-    jsCall(jsGetOptional(jsGlobalThis, "postMessage"), message)
+/** A worker script's own `postMessage(message, transfer)`: its realm's, which its Worker defines. */
+fun postMessage(message: Any?, transfer: Any? = null) {
+    jsCall(jsGetOptional(jsGlobalThis, "postMessage"), message, transfer)
+}
+
+/**
+ * The clone's starting point for a transfer list (`[buffer]` or `{ transfer: [buffer] }`): each
+ * buffer already its moved self, so the message and its views take it uncopied.
+ */
+internal fun jsTransferred(transfer: Any?): java.util.IdentityHashMap<Any, Any?> {
+    val seen = java.util.IdentityHashMap<Any, Any?>()
+    val list = jsBox(transfer).let { if (it is JSArray<*> || it == null || it === JSNull) it else jsBox(jsGetOptional(it, "transfer")) }
+    if (list !is JSArray<*>) return seen
+    val buffers = list.storage.map { jsBox(it) }
+    for (b in buffers) {
+        if (b !is JSArrayBuffer) throw JSException(JSDOMException("Value at index ${buffers.indexOf(b)} does not have a transferable type.", "DataCloneError"))
+        if (seen.containsKey(b)) throw JSException(JSDOMException("ArrayBuffer at index ${buffers.indexOf(b)} is a duplicate of an earlier ArrayBuffer.", "DataCloneError"))
+        seen[b] = null
+    }
+    for (b in buffers) seen[b!!] = (b as JSArrayBuffer).transfer()
+    return seen
 }
 
 /** A worker script's own `close()`. */

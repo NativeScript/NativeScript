@@ -1,6 +1,7 @@
 package org.nativescript.kit
 
-import java.util.IdentityHashMap
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.CopyOnWriteArrayList
 
 /** What a lookup found, undefined included; a null `JSFound?` is a key nothing has. */
 class JSFound(val value: Any?)
@@ -13,18 +14,19 @@ class JSFound(val value: Any?)
  * is one object, chained to its superclass's and, at the root, to `Object.prototype`.
  */
 object JSPrototypes {
-    private val table = HashMap<Class<*>, JSObject>()
+    // Concurrent: a worker's thread reads and fills them as the main thread does. JSObject keeps identity equality.
+    private val table = ConcurrentHashMap<Class<*>, JSObject>()
     /** The class of each prototype object. */
-    private val owners = IdentityHashMap<JSObject, Class<*>>()
+    private val owners = ConcurrentHashMap<JSObject, Class<*>>()
     /** Accessors a class declares, put on its prototype when the prototype is first made. */
-    private val declared = HashMap<Class<*>, MutableList<Pair<String, JSPropertyDescriptor>>>()
-    private val builtins = HashMap<String, JSObject>()
+    private val declared = ConcurrentHashMap<Class<*>, MutableList<Pair<String, JSPropertyDescriptor>>>()
+    private val builtins = ConcurrentHashMap<String, JSObject>()
     /** A class's static members by name, each read when script reads it (`Handler.initWithOwner`). */
-    private val statics = HashMap<Class<*>, HashMap<String, () -> Any?>>()
+    private val statics = ConcurrentHashMap<Class<*>, ConcurrentHashMap<String, () -> Any?>>()
 
     /** The static methods and properties a class declares, for script that holds the class as a value. */
     fun declareStatics(cls: Class<*>, members: List<Pair<String, () -> Any?>>) {
-        val own = statics.getOrPut(cls) { HashMap() }
+        val own = statics.computeIfAbsent(cls) { ConcurrentHashMap() }
         for ((key, read) in members) own[key] = read
     }
 
@@ -61,24 +63,22 @@ object JSPrototypes {
 
     private fun arg0(a: Array<out Any?>): Any? = if (a.isEmpty()) null else a[0]
 
-    fun of(cls: Class<*>): JSObject {
-        table[cls]?.let { return it }
-        val p = JSObject()
-        table[cls] = p
-        owners[p] = cls
-        declared[cls]?.forEach { (key, d) -> try { p.defineProperty(key, d) } catch (_: JSException) {} }
-        return p
+    fun of(cls: Class<*>): JSObject = table[cls] ?: table.computeIfAbsent(cls) { c ->
+        JSObject().also { p ->
+            owners[p] = c
+            declared[c]?.forEach { (key, d) -> try { p.defineProperty(key, d) } catch (_: JSException) {} }
+        }
     }
 
     /** The accessors a class declares (`get text()`, `set text(v)`): its prototype's own properties. */
     fun declare(cls: Class<*>, key: String, get: ((Any?) -> Any?)?, set: ((Any?, Any?) -> Unit)?) {
         val d = JSPropertyDescriptor(get = get, set = set, enumerable = false, configurable = true)
-        declared.getOrPut(cls) { ArrayList() }.add(Pair(key, d))
+        declared.computeIfAbsent(cls) { CopyOnWriteArrayList() }.add(Pair(key, d))
         table[cls]?.let { try { it.defineProperty(key, d) } catch (_: JSException) {} }
     }
 
     /** The prototype a built-in kind of value has (`Array.prototype`), its own object. */
-    fun builtin(name: String): JSObject = builtins.getOrPut(name) { JSObject() }
+    fun builtin(name: String): JSObject = builtins[name] ?: builtins.computeIfAbsent(name) { JSObject() }
 
     /** `Object.getPrototypeOf` of a plain object: a class's prototype leads to its superclass's. */
     fun prototypeOf(o: JSObject): Any? {

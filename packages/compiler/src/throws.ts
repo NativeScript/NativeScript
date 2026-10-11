@@ -6,7 +6,7 @@ type Fn = ts.SignatureDeclaration & { body?: ts.Node };
 /** The constructors of buffers and views, which throw a RangeError for a length or an offset out of bounds. */
 const BUFFER_TYPES = new Set(['ArrayBuffer', 'Int8Array', 'Uint8Array', 'Uint8ClampedArray', 'Int16Array', 'Uint16Array', 'Int32Array', 'Uint32Array', 'Float32Array', 'Float64Array', 'BigInt64Array', 'BigUint64Array', 'DataView']);
 /** Library functions that throw on their own (a TypeError, a SyntaxError, a RangeError). */
-const THROWING_BUILTINS = new Set(['JSON.parse', 'JSON.stringify', 'Array.reduce', 'Array.reduceRight', 'String.repeat', 'String.fromCodePoint', 'String.normalize', 'String.matchAll', 'String.replaceAll', 'Date.toISOString', 'Object.assign', 'Object.fromEntries', 'Object.defineProperty', 'Object.defineProperties', 'WeakMap.set', 'WeakSet.add',
+const THROWING_BUILTINS = new Set(['JSON.parse', 'JSON.stringify', 'Array.reduce', 'Array.reduceRight', 'String.repeat', 'String.padStart', 'String.padEnd', 'String.fromCodePoint', 'String.normalize', 'String.matchAll', 'String.replaceAll', 'Date.toISOString', 'Object.assign', 'Object.fromEntries', 'Object.defineProperty', 'Object.defineProperties', 'WeakMap.set', 'WeakSet.add',
   'Iterator.next', 'Iterator.return', 'Iterator.throw', 'Generator.next', 'Generator.return', 'Generator.throw',
   ...['Int8', 'Uint8', 'Uint8Clamped', 'Int16', 'Uint16', 'Int32', 'Uint32', 'Float32', 'Float64', 'BigInt64', 'BigUint64'].flatMap((t) => [`${t}Array.set`, `${t}Array.reduce`, `${t}Array.reduceRight`, `${t}Array.from`]),
   ...['Int8', 'Uint8', 'Int16', 'Uint16', 'Int32', 'Uint32', 'Float32', 'Float64', 'BigInt64', 'BigUint64'].flatMap((t) => [`DataView.get${t}`, `DataView.set${t}`]),
@@ -36,7 +36,11 @@ export class Throws {
   /** A member read by name at run time (library mode: one only a declaration file declares), which throws on undefined. */
   private dynamicMember: (e: ts.PropertyAccessExpression) => boolean;
 
-  constructor(checker: ts.TypeChecker, files: readonly ts.SourceFile[], untyped: (n: ts.Node) => boolean, nativeThrows: (call: ts.CallExpression | ts.NewExpression) => boolean = () => false, implementation: (decl: ts.Declaration) => ts.Declaration | null = () => null, dynamicMember: (e: ts.PropertyAccessExpression) => boolean = () => false, baseInitThrows: (cls: ts.ClassLikeDeclaration) => boolean = () => false, replaced: (fn: ts.Node) => boolean = () => false) {
+  /** Whether converting a value to the type its place declares can fail (an untyped value cast to a class), which throws a TypeError. */
+  private castThrows: (n: ts.Node) => boolean;
+
+  constructor(checker: ts.TypeChecker, files: readonly ts.SourceFile[], untyped: (n: ts.Node) => boolean, nativeThrows: (call: ts.CallExpression | ts.NewExpression) => boolean = () => false, implementation: (decl: ts.Declaration) => ts.Declaration | null = () => null, dynamicMember: (e: ts.PropertyAccessExpression) => boolean = () => false, baseInitThrows: (cls: ts.ClassLikeDeclaration) => boolean = () => false, replaced: (fn: ts.Node) => boolean = () => false, castThrows: (n: ts.Node) => boolean = () => false) {
+    this.castThrows = castThrows;
     this.baseInitThrows = baseInitThrows;
     this.implementation = implementation;
     this.dynamicMember = dynamicMember;
@@ -120,6 +124,7 @@ export class Throws {
 
   private nodeThrows(n: ts.Node): boolean {
     const c = this.checker;
+    if (this.castThrows(n)) return true;
     // A module's Angular `computed(fn)` read as a value (`readonly color = ink`) runs fn, as its Swift getter does.
     if (ts.isIdentifier(n) && !(ts.isCallExpression(n.parent) && n.parent.expression === n) && !ts.isImportSpecifier(n.parent) && !ts.isExportSpecifier(n.parent) && !ts.isImportClause(n.parent)) {
       let s = c.getSymbolAtLocation(n);
@@ -128,6 +133,8 @@ export class Throws {
       const init = d && ts.isVariableDeclaration(d) && d.name !== n && ts.isSourceFile(d.parent.parent.parent) ? d.initializer : undefined;
       if (init && ts.isCallExpression(init) && init.expression.getText() === 'computed' && init.arguments[0] && ts.isFunctionLike(init.arguments[0])) return this.fn(init.arguments[0]);
     }
+    // `array.length = n` of an n that may be no valid length is a RangeError.
+    if (ts.isBinaryExpression(n) && n.operatorToken.kind === ts.SyntaxKind.EqualsToken && isArrayLengthWrite(n.left, n.right, c)) return true;
     // BigInt division, remainder and exponent throw a RangeError (a zero divisor, a negative exponent).
     if (ts.isBinaryExpression(n) && [ts.SyntaxKind.SlashToken, ts.SyntaxKind.PercentToken, ts.SyntaxKind.AsteriskAsteriskToken, ts.SyntaxKind.SlashEqualsToken, ts.SyntaxKind.PercentEqualsToken, ts.SyntaxKind.AsteriskAsteriskEqualsToken].includes(n.operatorToken.kind)
       && c.getTypeAtLocation(n.left).flags & ts.TypeFlags.BigIntLike) return true;
@@ -143,7 +150,8 @@ export class Throws {
       if (n.name.elements.some((el) => !el.dotDotDotToken && (t.getProperty((el.propertyName ?? el.name).getText())?.declarations ?? []).some((d) => ts.isGetAccessorDeclaration(d) && !!d.body && this.fn(d)))) return true;
     }
     // `new Array(x)` of an untyped x: a length that is no valid one is a RangeError.
-    if (ts.isNewExpression(n) && ts.isIdentifier(n.expression) && n.expression.text === 'Array' && n.arguments?.length === 1 && this.untyped(n.arguments[0])) return true;
+    if ((ts.isNewExpression(n) || ts.isCallExpression(n)) && ts.isIdentifier(n.expression) && n.expression.text === 'Array' && n.arguments?.length === 1 && !isArrayLengthLiteral(n.arguments[0])
+      && (this.untyped(n.arguments[0]) || !!(c.getTypeAtLocation(n.arguments[0]).flags & ts.TypeFlags.NumberLike))) return true;
     if (ts.isCallExpression(n) || ts.isNewExpression(n)) return this.callThrows(n);
     if (ts.isTaggedTemplateExpression(n)) return !isStringRaw(n.tag, c) && this.tagThrows(n);
     if (ts.isPropertyAccessExpression(n) || ts.isElementAccessExpression(n)) {
@@ -225,6 +233,10 @@ export class Throws {
       if (owner === 'String.match' || owner === 'String.search') return !args[0] || c.getTypeAtLocation(args[0]).getSymbol()?.name !== 'RegExp';
       // `f.call(…)` and `f.apply(…)` run f, whose Swift function type throws.
       if (owner && /^(Callable|Newable)?Function\.(call|apply)$/.test(owner)) return true;
+      // Digits or a radix out of range is a RangeError: only a literal in range is known not to throw.
+      if (owner === 'Number.toFixed') return !!args[0] && digitsLiteral(args[0], 0, 100, 0) === null;
+      if (owner === 'Number.toPrecision') return !!args[0] && digitsLiteral(args[0], 1, 100, null) === null;
+      if (owner === 'Number.toString') return !!args[0] && digitsLiteral(args[0], 2, 36, null) === null;
       if (owner && THROWING_BUILTINS.has(owner)) return /\.reduce(Right)?$/.test(owner) ? args.length < 2 || callbackThrows() : true;
       // The library runs callbacks synchronously (map, forEach, sort, find): it rethrows. A promise's callbacks reject instead.
       if (/[\\/]lib\.[\w.]*\.d\.ts$/.test(file.fileName) && !/^Promise/.test(owner ?? '')) return callbackThrows();
@@ -297,6 +309,28 @@ export function isAsync(fn: ts.Node): boolean {
 
 export function isStatic(m: ts.Node): boolean {
   return ts.canHaveModifiers(m) && !!ts.getModifiers(m)?.some((x) => x.kind === ts.SyntaxKind.StaticKeyword);
+}
+
+/** A digits or radix argument that is an integer literal in `min…max` (`toFixed(2)`), which cannot throw; `absent` where there is none. */
+export function digitsLiteral(e: ts.Expression | undefined, min: number, max: number, absent: number | null): number | null {
+  if (!e) return absent;
+  if (!ts.isNumericLiteral(e)) return null;
+  const n = Number(e.text);
+  return Number.isInteger(n) && n >= min && n <= max ? n : null;
+}
+
+/** `array.length = n` where n is not a literal valid length. */
+export function isArrayLengthWrite(left: ts.Expression, right: ts.Expression, c: ts.TypeChecker): left is ts.PropertyAccessExpression {
+  if (!ts.isPropertyAccessExpression(left) || left.name.text !== 'length' || isArrayLengthLiteral(right)) return false;
+  const t = c.getNonNullableType(c.getTypeAtLocation(left.expression));
+  return c.isArrayType(t);
+}
+
+/** A literal that is a valid array length (`new Array(3)`), which cannot throw. */
+export function isArrayLengthLiteral(e: ts.Expression): boolean {
+  if (!ts.isNumericLiteral(e)) return false;
+  const n = Number(e.text);
+  return Number.isInteger(n) && n >= 0 && n <= 4294967295;
 }
 
 function skipParens(e: ts.Expression): ts.Expression {

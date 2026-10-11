@@ -24,10 +24,14 @@ public func jsNumberToString(_ value: Double) -> String {
 }
 
 /// `n.toString(radix)` with V8's digits (DoubleToRadixCString), fractions included.
-public func jsNumberToRadixString(_ value: Double, _ radix: Double) -> String {
+public func jsNumberToRadixString(_ value: Double, _ radix: Double) throws -> String {
     let r = jsToIntegerOrInfinity(radix)
-    guard r >= 2 && r <= 36 else { fatalError("RangeError: toString() radix must be between 2 and 36") }
-    let base = Int(r)
+    guard r >= 2 && r <= 36 else { throw JSException(value: JSRangeError("toString() radix must be between 2 and 36")) }
+    return jsNumberToString(value, base: Int(r))
+}
+
+/// `n.toString(radix)` for a radix known to be in 2…36.
+public func jsNumberToString(_ value: Double, base: Int) -> String {
     if base == 10 || value.isNaN || value.isInfinite || value == 0 { return jsNumberToString(value) }
     if abs(value) < 9_007_199_254_740_992, value.rounded(.towardZero) == value {
         return String(Int64(value), radix: base)
@@ -126,13 +130,24 @@ public func jsToIntegerOrInfinity(_ value: Double) -> Double {
     value.isNaN ? 0 : value.rounded(.towardZero) + 0
 }
 
+/// A number as an Int without trapping: truncated toward zero, NaN as 0, clamped to Int's range.
+@inline(__always) public func jsClampedInt(_ value: Double) -> Int {
+    if value.isNaN { return 0 }
+    if value >= 0x1p63 { return Int.max }
+    if value < -0x1p63 { return Int.min }
+    return Int(value)
+}
+
 /// `n.toFixed(digits)`: the exact binary value rounded half up; |n| ≥ 1e21 prints as `String(n)`.
-/// Digits outside 0…100 trap (JavaScript throws a RangeError).
-public func jsToFixed(_ value: Double, _ fractionDigits: Double = 0) -> String {
+public func jsToFixed(_ value: Double, _ fractionDigits: Double = 0) throws -> String {
     let f = jsToIntegerOrInfinity(fractionDigits)
-    guard f >= 0 && f <= 100 else { fatalError("RangeError: toFixed() digits argument must be between 0 and 100") }
+    guard f >= 0 && f <= 100 else { throw JSException(value: JSRangeError("toFixed() digits argument must be between 0 and 100")) }
+    return jsToFixed(value, digits: Int(f))
+}
+
+/// `n.toFixed(digits)` for digits known to be in 0…100.
+public func jsToFixed(_ value: Double, digits: Int) -> String {
     if !value.isFinite || abs(value) >= 1e21 { return jsNumberToString(value) }
-    let digits = Int(f)
     let sign = value < 0 ? "-" : ""
     var m = jsScaledRound(abs(value), digits).decimalString()
     if digits > 0 {
@@ -142,13 +157,18 @@ public func jsToFixed(_ value: Double, _ fractionDigits: Double = 0) -> String {
     return sign + m
 }
 
-/// `n.toPrecision(precision)`; nil precision is `String(n)`. Precision outside 1…100 traps.
-public func jsToPrecision(_ value: Double, _ precision: Double?) -> String {
+/// `n.toPrecision(precision)`; nil precision is `String(n)`.
+public func jsToPrecision(_ value: Double, _ precision: Double?) throws -> String {
     guard let precision else { return jsNumberToString(value) }
     let p = jsToIntegerOrInfinity(precision)
     if !value.isFinite { return jsNumberToString(value) }
-    guard p >= 1 && p <= 100 else { fatalError("RangeError: toPrecision() argument must be between 1 and 100") }
-    let digitsCount = Int(p)
+    guard p >= 1 && p <= 100 else { throw JSException(value: JSRangeError("toPrecision() argument must be between 1 and 100")) }
+    return jsToPrecision(value, digits: Int(p))
+}
+
+/// `n.toPrecision(precision)` for a precision known to be in 1…100.
+public func jsToPrecision(_ value: Double, digits digitsCount: Int) -> String {
+    if !value.isFinite { return jsNumberToString(value) }
     let sign = value < 0 ? "-" : ""
     let (digits, e) = jsFixedDigits(abs(value), digitsCount)
     if e < -6 || e >= digitsCount {
@@ -159,8 +179,8 @@ public func jsToPrecision(_ value: Double, _ precision: Double?) -> String {
     return sign + "0." + String(repeating: "0", count: -(e + 1)) + jsDigitString(digits[...])
 }
 
-/// `n.toExponential(digits)`; nil digits uses as many as needed to round-trip. Digits outside 0…100 trap.
-public func jsToExponential(_ value: Double, _ fractionDigits: Double? = nil) -> String {
+/// `n.toExponential(digits)`; nil digits uses as many as needed to round-trip.
+public func jsToExponential(_ value: Double, _ fractionDigits: Double? = nil) throws -> String {
     if !value.isFinite { return jsNumberToString(value) }
     let sign = value < 0 ? "-" : ""
     let magnitude = abs(value)
@@ -170,7 +190,7 @@ public func jsToExponential(_ value: Double, _ fractionDigits: Double? = nil) ->
         return sign + jsExponential(digits[...], n - 1)
     }
     let f = jsToIntegerOrInfinity(fractionDigits)
-    guard f >= 0 && f <= 100 else { fatalError("RangeError: toExponential() argument must be between 0 and 100") }
+    guard f >= 0 && f <= 100 else { throw JSException(value: JSRangeError("toExponential() argument must be between 0 and 100")) }
     let (digits, e) = jsFixedDigits(magnitude, Int(f) + 1)
     return sign + jsExponential(digits[...], e)
 }

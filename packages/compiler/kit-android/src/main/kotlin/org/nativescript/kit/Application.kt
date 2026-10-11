@@ -25,6 +25,7 @@ abstract class NativeScriptActivity : AppCompatActivity() {
         super.onCreate(null)
         current = this
         jsTraceErrors = android.util.Log.isLoggable("NSNative", android.util.Log.DEBUG)
+        UncaughtErrors.install()
         setThemeOnLaunch()
         Utils.enableEdgeToEdge(this, 0, 0, LIGHT_SCRIM, DARK_SCRIM)
         installEventLoop()
@@ -73,7 +74,13 @@ abstract class NativeScriptActivity : AppCompatActivity() {
             JSEventLoop.processTimers()
             Microtasks.checkpoint()
         }
+        JSRealm.main.thread = handler.looper.thread
         JSRealm.main.post = { job -> handler.post(job) }
+        // A view's expandos live in a tag: they go with the view, though they reach it (a pager's adapter, its own child).
+        jsJavaExpandoHost = { target, create ->
+            if (target !is android.view.View) null
+            else target.getTag(EXPANDO_TAG) as? JSObject ?: if (create) JSObject().also { target.setTag(EXPANDO_TAG, it) } else null
+        }
         JSEventLoop.host = { delay ->
             handler.removeCallbacks(tick)
             if (delay != null) handler.postDelayed(tick, Math.ceil(delay).toLong())
@@ -101,3 +108,6 @@ abstract class NativeScriptActivity : AppCompatActivity() {
         private const val DARK_SCRIM = 0x801b1b1b.toInt()
     }
 }
+
+/** A view tag key no resource of an app's takes (`setTag` takes any key whose top byte is 2 or more). */
+private const val EXPANDO_TAG = 0x6e730001

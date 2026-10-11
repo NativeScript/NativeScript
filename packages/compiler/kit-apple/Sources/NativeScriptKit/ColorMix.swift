@@ -364,7 +364,7 @@ enum ColorMix {
     /// `toPrecision(e, 7)`.
     private static func toPrecision(_ v: Double, _ digits: Int = 7) -> Double {
         let integerDigits = String(Int(abs(v).rounded(.down))).count
-        if digits > integerDigits { return Double(jsToFixed(v, Double(digits - integerDigits)))! }
+        if digits > integerDigits { return Double(jsToFixed(v, digits: digits - integerDigits))! }
         let r = pow(10, Double(integerDigits - digits))
         return jsRound(v / r) * r
     }

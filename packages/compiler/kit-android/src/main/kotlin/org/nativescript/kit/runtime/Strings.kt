@@ -55,6 +55,12 @@ fun jsCharAt(s: String, index: Double): String {
     return if (i >= 0 && i < s.length) s[i.toInt()].toString() else ""
 }
 
+/** `s[index]`: undefined (null) past either end or at a fractional index, where `charAt` gives "". */
+fun jsCharAtOrNull(s: String, index: Double): String? {
+    val i = index.toInt()
+    return if (i >= 0 && i < s.length && i.toDouble() == index) s[i].toString() else null
+}
+
 fun jsCharCodeAt(s: String, index: Double): Double {
     val i = jsToIntegerOrInfinity(index)
     return if (i >= 0 && i < s.length) s[i.toInt()].code.toDouble() else Double.NaN

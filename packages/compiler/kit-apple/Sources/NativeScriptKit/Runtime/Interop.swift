@@ -12,7 +12,7 @@ public final class InteropReference {
         set { value = Double(newValue) }
     }
     public var int: Int {
-        get { Int(jsToNumber(value)) }
+        get { jsNativeInteger(jsToNumber(value), Int.self) }
         set { value = Double(newValue) }
     }
     public var bool: ObjCBool {

@@ -29,6 +29,9 @@ class JSEventLoopState internal constructor() {
     /** Arms a wake-up `delay` milliseconds from now that calls `processTimers`, replacing the previous one; null disarms. */
     var host: ((Double?) -> Unit)? = null
 
+    /** Jobs other threads post to the realm while no host loop takes them: `runUntilIdle` runs them. */
+    internal val jobs = java.util.concurrent.LinkedBlockingQueue<() -> Unit>()
+
     /** libuv's clock: whole milliseconds since the loop started. */
     fun now(): Double = ((System.nanoTime() - origin) / 1_000_000).toDouble()
 
@@ -133,10 +136,15 @@ class JSEventLoopState internal constructor() {
     fun runUntilIdle() {
         Microtasks.checkpoint()
         while (true) {
+            val job = jobs.poll()
+            if (job != null) {
+                job()
+                continue
+            }
             val expiry = nextExpiry ?: break
             val wait = expiry - (System.nanoTime() - origin) / 1_000_000.0
             if (wait > 0) {
-                Thread.sleep(minOf(wait.toLong() + 1, 1000))
+                jobs.poll(minOf(wait.toLong() + 1, 1000), java.util.concurrent.TimeUnit.MILLISECONDS)?.invoke()
                 continue
             }
             processTimers()
@@ -153,5 +161,17 @@ fun jsSetInterval(callback: () -> Unit, ms: Double = 0.0): Double = JSEventLoop.
 fun jsClearTimeout(id: Double?) = JSEventLoop.cancel(id)
 
 fun jsClearInterval(id: Double?) = JSEventLoop.cancel(id)
+
+private fun jsScheduleValue(args: List<Any?>, repeats: Boolean): Double {
+    val callback = args.getOrNull(0)
+    val given = if (args.size > 2) args.subList(2, args.size).toTypedArray() else emptyArray()
+    return JSEventLoop.schedule({ jsCall(callback, *given); Unit }, jsToNumber(args.getOrNull(1)), repeats)
+}
+
+/** The timer functions as values: called with any arguments, the ones after the delay the callback's. */
+val jsSetTimeoutValue = jsFunction(2) { jsScheduleValue(it, false) }
+val jsSetIntervalValue = jsFunction(2) { jsScheduleValue(it, true) }
+val jsClearTimeoutValue = jsFunction(1) { JSEventLoop.cancel(jsNumeric(it.getOrNull(0))); null }
+val jsClearIntervalValue = jsFunction(1) { JSEventLoop.cancel(jsNumeric(it.getOrNull(0))); null }
 
 fun jsQueueMicrotask(callback: () -> Unit) = Microtasks.enqueue(callback)

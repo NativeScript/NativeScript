@@ -81,7 +81,7 @@ public func jsArgumentList(_ list: Any?) throws -> [Any?] {
     case let v?:
         guard jsIsObject(v) else { throw JSException(JSTypeError("CreateListFromArrayLike called on non-object")) }
         let length = jsToNumber(try jsGet(v, "length"))
-        let n = length.isFinite ? max(0, Int(length)) : 0
+        let n = length.isFinite ? max(0, jsClampedInt(length)) : 0
         return try (0..<n).map { try jsGet(v, String($0)) }
     }
 }

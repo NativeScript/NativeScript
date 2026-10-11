@@ -18,7 +18,13 @@ public final class JSRegExp: JSDynamic, JSStringConvertible {
             let made = try JSRegExp.compile(source, flags)
             compiled = made
             return made
-        } catch { fatalError("/\(source)/\(flags) is not a pattern NSRegularExpression accepts: \(jsToString(jsCaught(error)))") }
+        } catch {
+            // A literal JavaScript accepts that ICU does not: reported, and matching nothing.
+            jsReportUncaught(jsCaught(error))
+            let never = try! NSRegularExpression(pattern: "(?!)")
+            compiled = never
+            return never
+        }
     }
 
     public convenience init(_ source: String, _ flags: String = "") throws {
@@ -172,7 +178,7 @@ public final class JSRegExp: JSDynamic, JSStringConvertible {
 
     /// `re.exec(s)`: the match array (with `index`), or null.
     public func exec(_ s: String) -> JSMatch? {
-        let start = global || sticky ? Int(lastIndex) : 0
+        let start = global || sticky ? Swift.max(0, jsClampedInt(lastIndex)) : 0
         guard let m = match(s, from: start) else {
             if global || sticky { lastIndex = 0 }
             return nil
@@ -301,7 +307,7 @@ public func jsReplace(_ s: String, _ re: JSRegExp, _ replacer: (JSMatch) throws 
     let ns = s as NSString
     var out = ""
     var cursor = 0
-    var from = re.sticky ? Int(re.lastIndex) : 0
+    var from = re.sticky ? max(0, jsClampedInt(re.lastIndex)) : 0
     while let raw = re.match(s, from: from) {
         let m = JSMatch(raw, in: s, regex: re.regex)
         out += ns.substring(with: NSRange(location: cursor, length: raw.range.location - cursor))
@@ -359,7 +365,7 @@ func jsSubstitution(_ template: String, matched: String, at position: Int, in s:
 /// `s.split(re)`: captured groups are spliced into the result, as in JavaScript.
 public func jsSplit(_ s: String, _ re: JSRegExp, _ limit: Double? = nil) -> JSArray<String?> {
     let ns = s as NSString
-    let max = limit.map { Int($0) } ?? Int.max
+    let max = limit.map { Int(jsToUint32($0)) } ?? Int.max
     var out: [String?] = []
     if ns.length == 0 { return JSArray(re.match(s, from: 0) == nil ? [s] : []) }
     // RegExp.prototype[@@split]: a match at q ending at e splits unless it would make an empty piece at p.

@@ -39,7 +39,21 @@ class JSArrayBuffer private constructor(val nativeObject: ByteBuffer, @Suppress(
 
     internal val count: Int = nativeObject.capacity()
 
-    val byteLength: Double get() = count.toDouble()
+    /**
+     * Transferred to another thread (`postMessage(m, [buffer])`): it reads as empty and no new view
+     * takes it. Views made before keep their bytes, which a program no longer touches once it gave them away.
+     */
+    @Volatile var detached = false
+        private set
+
+    val byteLength: Double get() = if (detached) 0.0 else count.toDouble()
+
+    /** The buffer the receiver of a transfer gets: these bytes, not copied; this one is detached. */
+    internal fun transfer(): JSArrayBuffer {
+        if (detached) throw JSException(JSDOMException("An ArrayBuffer is detached and could not be cloned.", "DataCloneError"))
+        detached = true
+        return JSArrayBuffer(nativeObject, Unit)
+    }
 
     /** The bytes in `order`, independent of the order `nativeObject` and other views use. */
     internal fun view(order: ByteOrder): ByteBuffer {
@@ -219,6 +233,7 @@ internal class JSTypedArrayLayout(val buffer: JSArrayBuffer, val offset: Int, va
         }
 
         fun ofBuffer(buffer: JSArrayBuffer, byteOffset: Double?, length: Double?, kind: JSTypedArrayKind): JSTypedArrayLayout {
+            if (buffer.detached) throw JSException(JSTypeError("Cannot perform Construct on a detached ArrayBuffer"))
             val size = kind.bytesPerElement
             val start = jsIndex(byteOffset ?: 0.0)
                 ?: throw JSException(JSRangeError("Start offset ${jsNumberToString(jsToIntegerOrInfinity(byteOffset ?: 0.0))} is outside the bounds of the buffer"))
