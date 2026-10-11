@@ -581,10 +581,10 @@ private fun jsToLocaleString(value: Any?): String = when (value) {
     is Double -> jsNumberToLocaleString(value)
     is JSBigInt -> jsBigIntToLocaleString(value)
     is JSDate -> value.toLocaleString()
-    is JSArray<*> -> if (jsJoinGuard.any { it === value }) "" else {
-        jsJoinGuard.add(value)
-        try { value.storage.joinToString(",") { jsToLocaleString(it) } } finally { jsJoinGuard.removeAt(jsJoinGuard.size - 1) }
-    }
+    is JSArray<*> -> jsJoinGuard.let { guard -> if (guard.any { it === value }) "" else {
+        guard.add(value)
+        try { value.storage.joinToString(",") { jsToLocaleString(it) } } finally { guard.removeAt(guard.size - 1) }
+    } }
     else -> jsToString(value)
 }
 

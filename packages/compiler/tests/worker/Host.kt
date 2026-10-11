@@ -34,6 +34,6 @@ object Host {
 
     fun pump(ms: Long) { pumpUntil(ms) { false } }
 
-    /** Until no job, main-realm timer or worker thread is left. */
-    fun pumpUntilIdle(ms: Long): Boolean = pumpUntil(ms) { jobs.isEmpty() && JSEventLoop.nextExpiry == null && workerThreads().isEmpty() }
+    /** Until no job, main-realm timer or worker thread is left. Threads first: what an ended worker posted is queued by then. */
+    fun pumpUntilIdle(ms: Long): Boolean = pumpUntil(ms) { workerThreads().isEmpty() && jobs.isEmpty() && JSEventLoop.nextExpiry == null }
 }

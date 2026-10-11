@@ -7,7 +7,7 @@ import { CoreAPI, isCoreDeclaration, packageOf } from './core.ts';
 import type { KitMember } from './kit-index.ts';
 import type { Properties } from './properties.ts';
 import { recognizePatterns, type Patterns } from './patterns.ts';
-import { DEPLOYMENT, NativeAPI, tested } from './native-calls.ts';
+import { DEPLOYMENT, NativeAPI, enteredGuard, tested } from './native-calls.ts';
 import { lookupClass, lookupMember, type NativeMethod } from './natives/symbols.ts';
 import type { Reach } from './reach.ts';
 
@@ -2089,7 +2089,7 @@ export class Translator implements AsyncTranslator {
       const params = found.params.map((t, k) => `${found.labels[k] ?? '_'} __a${k}: ${t}`).join(', ');
       const call = `try jsCallExtended(self, jsMethods, ${swiftString(m)}, [${found.params.map((_, k) => `jsFromNative(__a${k})`).join(', ')}])`;
       const result = found.returns === 'Void' ? `jsReport { _ = ${call} }` : `return jsReported { ${nativeResult(call, found.returns)} } ?? ${nativeZero(found.returns)}`;
-      members.push(`    @objc func ${found.swift}(${params})${found.returns === 'Void' ? '' : ` -> ${found.returns}`} { ${result} }`);
+      members.push(`    @objc func ${found.swift}(${params})${found.returns === 'Void' ? '' : ` -> ${found.returns}`} { ${enteredGuard(found.swift, found.labels, found.params, found.returns, '', found.escaping)}; ${result} }`);
     }
     this.extendedClasses.push(`final class ${name}: ${[baseClass.swift, ...protocols.map((p) => p!.swift)].join(', ')} {
     var jsMethods: Any?

@@ -88,6 +88,8 @@ internal class JSOrderedSlots<K, V> {
             if (slot != null) return slot
         }
         cursor.done = true
+        // A finished iteration needs no repositioning: dropped now, not at the next GC.
+        for (i in cursors.indices.reversed()) if (cursors[i].get().let { it == null || it === cursor }) cursors.removeAt(i)
         return null
     }
 

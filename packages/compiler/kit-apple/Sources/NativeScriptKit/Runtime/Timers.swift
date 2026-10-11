@@ -176,11 +176,13 @@ public enum JSEventLoop {
     /// until none remain.
     public static func runUntilIdle() {
         Microtasks.checkpoint()
-        while let expiry = nextExpiry {
+        while true {
+            if JSPosted.run() { continue }
+            guard let expiry = nextExpiry else { break }
             let due = UInt64(expiry) * 1_000_000
             let elapsed = elapsedNanoseconds()
             if due > elapsed {
-                usleep(useconds_t(min(due - elapsed, 1_000_000_000) / 1000 + 1))
+                _ = JSPosted.arrived.wait(timeout: .now() + .nanoseconds(Int(min(due - elapsed, 1_000_000_000)) + 1000))
                 continue
             }
             processTimers()

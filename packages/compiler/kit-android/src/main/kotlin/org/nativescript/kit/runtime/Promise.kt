@@ -85,6 +85,12 @@ class JSResolvers<T> internal constructor(val promise: JSPromise<T>) {
         promise.resolveWith(value)
     }
 
+    /** A handler's result, a promise or undefined (null): adopted, or the value undefined. */
+    @Suppress("UNCHECKED_CAST")
+    fun resolvePromiseOrUndefined(other: JSPromise<T>?) {
+        if (other != null) resolvePromise(other) else resolve(null as T)
+    }
+
     /** `resolve(promise)`: adopts `other`'s eventual state through a NewPromiseResolveThenableJob. */
     fun resolvePromise(other: JSPromise<T>) {
         if (alreadyResolved) return
@@ -277,22 +283,22 @@ class JSPromise<T> internal constructor() : JSThenable, JSDynamic {
     }
 
     /** `then` whose callback returns a promise, which the derived promise adopts (two extra ticks). */
-    fun <U> thenAdopt(onFulfilled: (T) -> JSPromise<U>): JSPromise<U> {
+    fun <U> thenAdopt(onFulfilled: (T) -> JSPromise<U>?): JSPromise<U> {
         viaScript<U>(scriptThen, onFulfilled)?.let { return it }
         val (derived, resolvers) = pending<U>()
         performThen({ v ->
-            try { resolvers.resolvePromise(onFulfilled(v)) } catch (e: Throwable) { resolvers.reject(jsCaught(e)) }
+            try { resolvers.resolvePromiseOrUndefined(onFulfilled(v)) } catch (e: Throwable) { resolvers.reject(jsCaught(e)) }
         }, { resolvers.reject(it) })
         return derived
     }
 
-    fun <U> thenAdopt(onFulfilled: (T) -> JSPromise<U>, onRejected: (Any?) -> JSPromise<U>): JSPromise<U> {
+    fun <U> thenAdopt(onFulfilled: (T) -> JSPromise<U>?, onRejected: (Any?) -> JSPromise<U>?): JSPromise<U> {
         viaScript<U>(scriptThen, onFulfilled, onRejected)?.let { return it }
         val (derived, resolvers) = pending<U>()
         performThen({ v ->
-            try { resolvers.resolvePromise(onFulfilled(v)) } catch (e: Throwable) { resolvers.reject(jsCaught(e)) }
+            try { resolvers.resolvePromiseOrUndefined(onFulfilled(v)) } catch (e: Throwable) { resolvers.reject(jsCaught(e)) }
         }, { r ->
-            try { resolvers.resolvePromise(onRejected(r)) } catch (e: Throwable) { resolvers.reject(jsCaught(e)) }
+            try { resolvers.resolvePromiseOrUndefined(onRejected(r)) } catch (e: Throwable) { resolvers.reject(jsCaught(e)) }
         })
         return derived
     }
@@ -308,11 +314,11 @@ class JSPromise<T> internal constructor() : JSThenable, JSDynamic {
     }
 
     /** `catch` whose callback returns a promise to adopt. */
-    fun catchAdopt(onRejected: (Any?) -> JSPromise<T>): JSPromise<T> {
+    fun catchAdopt(onRejected: (Any?) -> JSPromise<T>?): JSPromise<T> {
         (viaScript<T>(scriptCatch, onRejected) ?: viaScript<T>(scriptThen, null, onRejected))?.let { return it }
         val (derived, resolvers) = pending<T>()
         performThen({ resolvers.resolve(it) }, { r ->
-            try { resolvers.resolvePromise(onRejected(r)) } catch (e: Throwable) { resolvers.reject(jsCaught(e)) }
+            try { resolvers.resolvePromiseOrUndefined(onRejected(r)) } catch (e: Throwable) { resolvers.reject(jsCaught(e)) }
         })
         return derived
     }

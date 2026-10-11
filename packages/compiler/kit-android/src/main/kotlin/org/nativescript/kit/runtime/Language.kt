@@ -14,27 +14,31 @@ fun jsTemplateObject(cooked: List<String>, raw: List<String>): JSArray<String> {
 /** `strings.raw`. */
 fun jsTemplateRaw(strings: JSArray<String>): JSArray<String> = templateRaws[strings] ?: strings
 
-private val templateRaws = IdentityHashMap<JSArray<String>, JSArray<String>>()
+private val templateRaws = java.util.Collections.synchronizedMap(IdentityHashMap<JSArray<String>, JSArray<String>>())
 
 /**
  * A JavaScript symbol: equal only to itself. As a property key it is `key`,
  * a string no JavaScript code spells, which `Object.keys`, `for…in` and JSON skip.
  */
 class JSSymbol(val jsDescription: String?) {
-    val key: String = "\u0000@@" + (++count)
+    val key: String = "\u0000@@" + count.incrementAndGet()
 
-    init { byKey[key] = this }
+    init {
+        byKey[key] = WeakReference(this)
+        if (count.get() % 256 == 0) byKey.values.removeIf { it.get() == null }
+    }
 
     override fun toString(): String = "Symbol(${jsDescription ?: ""})"
     fun valueOf(): JSSymbol = this
 
     companion object {
-        private var count = 0
-        private val byKey = HashMap<String, JSSymbol>()
-        private val registry = HashMap<String, JSSymbol>()
+        private val count = java.util.concurrent.atomic.AtomicInteger()
+        /** Weak: a symbol nothing holds any more is gone, though an object may still have a property under its key. */
+        private val byKey = java.util.concurrent.ConcurrentHashMap<String, WeakReference<JSSymbol>>()
+        private val registry = java.util.concurrent.ConcurrentHashMap<String, JSSymbol>()
 
         /** `Symbol.for(key)`: one symbol per key, program-wide. */
-        fun `for`(key: String): JSSymbol = registry.getOrPut(key) { JSSymbol(key) }
+        fun `for`(key: String): JSSymbol = registry.computeIfAbsent(key) { JSSymbol(it) }
 
         /** `Symbol.keyFor(symbol)`: the key of a registered symbol. */
         fun keyFor(symbol: JSSymbol): String? = symbol.jsDescription?.takeIf { registry[it] === symbol }
@@ -46,7 +50,7 @@ class JSSymbol(val jsDescription: String?) {
         val hasInstance = JSSymbol("Symbol.hasInstance")
 
         /** The symbol a property key stands for. */
-        fun of(key: String): JSSymbol? = if (jsIsSymbolKey(key)) byKey[key] else null
+        fun of(key: String): JSSymbol? = if (jsIsSymbolKey(key)) byKey[key]?.get() else null
     }
 }
 
@@ -121,47 +125,59 @@ class JSWeakRef<T : Any>(target: T) : JSDynamic {
 /** A `WeakMap` or `WeakSet`, whose contents cannot be listed. */
 interface JSWeakCollection : JSDynamic
 
-private class WeakEntry<V>(key: Any, var value: V) {
-    val key = WeakReference(key)
-}
-
 /** The object a weak collection's key must be; null for a primitive. */
 private fun weakKey(key: Any?): Any? {
     val v = jsBox(key) ?: return null
     return if (v === JSNull || v is String || v is Boolean || v is JSSymbol || jsNumeric(v) != null) null else v
 }
 
-/** A JavaScript `WeakMap`: keys by identity, held weakly; an entry goes with its key. */
+/** The slots of a key that carries its weak collections' values itself; null for one that cannot. */
+private fun slotsOf(key: Any, create: Boolean): JSWeakSlots? {
+    val holder = when (key) {
+        is JSObject -> key
+        is JSExpando -> key.jsExpando ?: if (create) JSObject().also { key.jsExpando = it } else return null
+        else -> return null
+    }
+    return holder.weakSlots ?: if (create) synchronized(holder) { holder.weakSlots ?: JSWeakSlots().also { holder.weakSlots = it } } else null
+}
+
+/**
+ * A JavaScript `WeakMap`: keys by identity, held weakly; an entry goes with its key. A plain object
+ * or a script class instance keeps its own entries, so the value may reach the key; any other key's
+ * entry is the map's, its value held strongly.
+ */
 class JSWeakMap<K, V>() : JSWeakCollection {
-    private val table = HashMap<Int, MutableList<WeakEntry<V>>>()
-    private var writes = 0
+    private val table = JSWeakIdentityTable<Any?>()
 
     constructor(entries: Iterable<*>) : this() {
         @Suppress("UNCHECKED_CAST")
         for (e in entries) { val (k, v) = e as Pair<K, V>; set(k, v) }
     }
 
-    private fun find(key: Any?): WeakEntry<V>? {
+    @Suppress("UNCHECKED_CAST")
+    fun get(key: K): V? {
         val k = weakKey(key) ?: return null
-        return table[System.identityHashCode(k)]?.firstOrNull { it.key.get() === k }
+        slotsOf(k, false)?.let { return it.get(this) as V? }
+        return if (table.isEmpty) null else table.get(k) as V?
     }
 
-    fun get(key: K): V? = find(key)?.value
-    fun has(key: K): Boolean = find(key) != null
+    fun has(key: K): Boolean {
+        val k = weakKey(key) ?: return false
+        slotsOf(k, false)?.let { return it.has(this) }
+        return !table.isEmpty && table.containsKey(k)
+    }
 
     fun set(key: K, value: V): JSWeakMap<K, V> {
         val k = weakKey(key) ?: throw JSException(JSTypeError("Invalid value used as weak map key"))
-        if (++writes % 32 == 0) table.values.forEach { list -> list.removeAll { it.key.get() == null } }
-        val existing = find(k)
-        if (existing != null) existing.value = value
-        else table.getOrPut(System.identityHashCode(k)) { ArrayList() }.add(WeakEntry(k, value))
+        val slots = slotsOf(k, true)
+        if (slots != null) slots.set(this, value) else table.set(k, value)
         return this
     }
 
     fun delete(key: K): Boolean {
         val k = weakKey(key) ?: return false
-        val list = table[System.identityHashCode(k)] ?: return false
-        return list.removeAll { it.key.get() === k }
+        slotsOf(k, false)?.let { return it.remove(this) }
+        return table.remove(k)
     }
 
     override fun jsGet(key: String): Any? = null
@@ -345,25 +361,16 @@ fun jsOwnPropertyNames(value: Any?): JSArray<String> = when (val v = jsBox(value
 }
 
 /** How far `Object.preventExtensions`, `seal` or `freeze` closed an object other than a plain one. */
-private class JSRestriction(obj: Any, var level: Int) {
-    val ref = WeakReference(obj)
-}
-
-private val restricted = HashMap<Int, MutableList<JSRestriction>>()
+private val restricted = JSWeakIdentityTable<Int>()
 
 /** 0: open; 1: not extensible; 2: sealed; 3: frozen. */
-fun jsRestriction(obj: Any): Int = restricted[System.identityHashCode(obj)]?.firstOrNull { it.ref.get() === obj }?.level ?: 0
+fun jsRestriction(obj: Any): Int = if (restricted.isEmpty) 0 else restricted.get(obj) ?: 0
 
 private fun restrict(value: Any?, level: Int) {
     when (val v = jsBox(value)) {
         is JSObject -> v.restrict(level >= 2, level >= 3)
         null, JSNull, is String, is Boolean, is Double, is JSSymbol -> {}
-        else -> {
-            val list = restricted.getOrPut(System.identityHashCode(v)) { ArrayList() }
-            list.removeAll { it.ref.get() == null }
-            val existing = list.firstOrNull { it.ref.get() === v }
-            if (existing != null) existing.level = maxOf(existing.level, level) else list.add(JSRestriction(v, level))
-        }
+        else -> synchronized(restricted) { restricted.set(v, maxOf(restricted.get(v) ?: 0, level)) }
     }
 }
 

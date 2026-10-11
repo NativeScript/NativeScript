@@ -1338,11 +1338,12 @@ export class AndroidNativeAPI implements KotlinNative {
       return `${indent}    val ${ident(p.name.text)}: ${tsType} = ${value}`;
     }).filter(Boolean);
     const head = `${indent}override fun ${ident(name)}(${params.join(', ')})`;
+    const guard = enteredGuard(name, target, indent);
     if (target.ret === 'V') {
       const body = t.functionBody(fn, 'Unit', indent);
       // A parameter the body assigns is a variable of its own there, in a scope apart from its binding.
-      if (binds.length && t.paramPrelude(fn).length) return `${head} {\n${binds.join('\n')}\n${indent}    kotlin.run ${body.replace(/\n/g, '\n    ')}\n${indent}}`;
-      return binds.length ? `${head} {\n${binds.join('\n')}\n${body.slice(2)}` : `${head} ${body}`;
+      if (binds.length && t.paramPrelude(fn).length) return `${head} {\n${guard}\n${binds.join('\n')}\n${indent}    kotlin.run ${body.replace(/\n/g, '\n    ')}\n${indent}}`;
+      return `${head} {\n${[guard, ...binds].join('\n')}\n${body.slice(2)}`;
     }
     const retType = sig ? this.kotlinType(sig.ret, typeVar) : this.kotlinType(target.ret, typeVar);
     const ref = target.ret.startsWith('L') || target.ret.startsWith('[');
@@ -1350,6 +1351,7 @@ export class AndroidNativeAPI implements KotlinNative {
     const result = NUMERIC.has(target.ret) ? `${tsRet === 'Double' ? '__result' : 'jsToNumber(__result)'}${CONVERT[target.ret]}` : target.ret === 'C' ? '__result[0]' : target.ret.startsWith('[') ? this.arrayValue('__result', target.ret) : tsRet === 'Any?' && ref && retType !== 'Any' ? `(__result as ${retType}${target.m.nonNull ? '' : '?'})` : ref && nullableRet && target.m.nonNull ? '__result!!' : '__result';
     return [
       `${head}: ${retType}${ref && nullableRet && !target.m.nonNull ? '?' : ''} {`,
+      guard,
       ...binds,
       `${indent}    val __result: ${tsRet} = (fun(): ${tsRet} ${body})()`,
       `${indent}    return ${result}`,
@@ -1371,13 +1373,16 @@ export class AndroidNativeAPI implements KotlinNative {
     });
     const call = `(${t.expr(value)})(${args.join(', ')})`;
     const head = `${indent}override fun ${ident(name)}(${params.join(', ')})`;
+    const guard = enteredGuard(name, target, indent);
     if (target.ret === 'V') return `${head} {
+${guard}
 ${indent}    ${call}
 ${indent}}`;
     const retType = sig ? this.kotlinType(sig.ret, typeVar) : this.kotlinType(target.ret, typeVar);
     const result = NUMERIC.has(target.ret) ? `${tsRet === 'Double' ? '__result' : 'jsToNumber(__result)'}${CONVERT[target.ret]}` : target.ret === 'C' ? '__result[0]' : '__result';
     const ref = target.ret.startsWith('L') || target.ret.startsWith('[');
     return `${head}: ${retType}${ref ? '?' : ''} {
+${guard}
 ${indent}    val __result = ${call}
 ${indent}    return ${result}
 ${indent}}`;
@@ -1458,7 +1463,7 @@ ${indent}}`;
       const missing = this.classpath.supertypes(cls.name).flatMap((c) => c.methods.filter((m) => m.access & ACC_ABSTRACT && !(m.access & ACC_STATIC) && !provided.has(m.name) && !objectMethods.has(m.name + m.descriptor)).map((m) => m.name));
       if (missing.length) throw t.error(literal, `an implementation of ${javaTypeName(`L${cls.name};`)} without ${[...new Set(missing)].join(', ')}`);
     }
-    return `object : ${supertype} {\n${members.join('\n')}\n${base}}`;
+    return `object : ${supertype} {\n${withRealm(members, base + '    ').join('\n')}\n${base}}`;
   }
 
   /**
@@ -1584,7 +1589,7 @@ ${indent}}`;
       t.indent = '';
     }
     if (statics.length) lines.push('    companion object {', ...statics, '    }');
-    return this.declared(name, (simple) => [`class ${ident(simple)}${supers.length ? ` : ${supers.join(', ')}` : ''} {`, ...lines, '}'].join('\n'));
+    return this.declared(name, (simple) => [`class ${ident(simple)}${supers.length ? ` : ${supers.join(', ')}` : ''} {`, ...withRealm(lines, '    '), '}'].join('\n'));
   }
 
   // ---- `Base.extend({ … })` and `Array.create(type, length)` -----------------------------------
@@ -1810,7 +1815,7 @@ ${indent}}`;
       const missing = interfaces.flatMap((i) => this.classpath.supertypes(i.name)).flatMap((c) => c.methods.filter((m) => m.access & ACC_ABSTRACT && !(m.access & ACC_STATIC) && !provided.has(m.name) && !objectMethods.has(m.name + m.descriptor)).map((m) => m.name));
       if (missing.length) throw t.error(literal, `an extend class implementing ${interfaces.map((i) => javaTypeName(`L${i.name};`)).join(', ')} without ${[...new Set(missing)].join(', ')}`);
     }
-    const body = [...fields, ...ctors, ...(init ? [`${inner}init { init() }`] : []), ...methods];
+    const body = withRealm([...fields, ...ctors, ...(init ? [`${inner}init { init() }`] : []), ...methods], inner);
     return this.declared(x.name, (simple) => [`${x.javaName ? '' : outer}class ${simple}${supers.length ? ` : ${supers.join(', ')}` : ''} {`, ...body, `${x.javaName ? '' : outer}}`].join('\n'));
   }
 
@@ -1986,4 +1991,19 @@ function topLevelTypes(sig: string): string[] {
     else if (c === ';' && depth === 0) { out.push(sig.slice(start, i + 1)); start = i + 1; }
   }
   return out;
+}
+
+/**
+ * The first statement of an override Java may call from any thread: from a thread other than its
+ * realm's, the call is made again there, posted for a method returning nothing, awaited for one
+ * returning a value.
+ */
+function enteredGuard(name: string, target: Callable, indent: string): string {
+  const args = target.params.map((_, k) => `__a${k}`).join(', ');
+  return `${indent}    jsElsewhere(__realm)?.let { return it.${target.ret === 'V' ? 'later' : 'await'} { this.${ident(name)}(${args}) } }`;
+}
+
+/** A class's members, with the realm its overrides' guards read when any has one: the realm that made the object. */
+function withRealm(members: string[], indent: string): string[] {
+  return members.some((m) => m.includes('jsElsewhere(__realm)')) ? [`${indent}private val __realm: JSRealm? = JSRealm.current()`, ...members] : members;
 }

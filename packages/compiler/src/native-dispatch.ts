@@ -1,5 +1,6 @@
 import ts from 'typescript';
 import { CF_CLASSES, functionParts } from './swift.ts';
+import { posted } from './native-calls.ts';
 import { lookupClass, lookupInit, nativeTable, type NativeClass, type NativeMethod, type NativeProperty, type SwiftType } from './natives/symbols.ts';
 
 /**
@@ -172,7 +173,8 @@ function blockOf(code: string, type: SwiftType): string | null {
   if (!fn || fn.result !== 'Void' || fn.params.some((p) => /->/.test(p))) return null;
   const params = fn.params.map((p, k) => `__b${k}: ${p}`);
   const args = fn.params.map((p, k) => fromNative(`__b${k}`, p));
-  return `{ [__f = jsFlat(${code})] (${params.join(', ')}) -> Void in jsReport { _ = try jsCall(__f${args.map((a) => `, ${a}`).join('')}) } }`;
+  const report = `jsReport { _ = try jsCall(__f${args.map((a) => `, ${a}`).join('')}) }`;
+  return `{ [__f = jsFlat(${code})] (${params.join(', ')}) -> Void in ${posted('Void', fn.params) ? `jsEnter { ${report} }` : `jsEnterAwaiting { ${report} }`} }`;
 }
 
 /** A native result as script reads it. */

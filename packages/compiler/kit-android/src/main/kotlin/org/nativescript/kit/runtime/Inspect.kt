@@ -224,6 +224,7 @@ private class JSInspectContext(var depth: Int = 2, val showHidden: Boolean = fal
             is JSSymbol -> return v.toString()
             is JSBigInt -> return v.toString() + "n"
             is JSInspectAccessor -> return "[${v.kind}]"
+            is Class<*> -> return formatClass(v)
         }
         jsNumeric(v)?.let { return formatNumber(it) }
         if (seen.any { it === v }) {
@@ -232,6 +233,14 @@ private class JSInspectContext(var depth: Int = 2, val showHidden: Boolean = fal
             return "[Circular *$index]"
         }
         return formatRaw(v, recurseTimes)
+    }
+
+    /** A class as a value: the runtime's own classes are the platform's functions. */
+    private fun formatClass(cls: Class<*>): String {
+        val runtime = { c: Class<*> -> c.name.startsWith("org.nativescript.kit.JS") }
+        if (runtime(cls)) return "[Function: ${cls.simpleName.removePrefix("JS")}]"
+        val base = cls.superclass?.takeIf { it != Any::class.java }
+        return "[class ${cls.simpleName}${if (base == null) "" else " extends ${if (runtime(base)) base.simpleName.removePrefix("JS") else base.simpleName}"}]"
     }
 
     private fun formatString(value: String): String {

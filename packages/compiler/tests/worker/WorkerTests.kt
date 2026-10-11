@@ -222,12 +222,19 @@ private fun cloning() {
     val sendError = thrown { worker.postMessage(JSArray(arrayListOf<Any?>(JSMethod { _, _ -> null }))) } as? JSDOMException
     check("clone: posting a function throws DataCloneError to the sender", sendError?.name == "DataCloneError") { "$sendError" }
     val sent = JSArrayBuffer(16.0)
-    worker.postMessage(o, JSArray(arrayListOf<Any?>(sent)))
+    JSUint8Array(sent)[3] = 7.0
+    val view = JSUint8Array(sent, 2.0, 4.0)
+    worker.postMessage(o)
+    worker.postMessage(JSObject().also { it["view"] = view }, JSArray(arrayListOf<Any?>(sent)))
     worker.postMessage("function")
-    Host.pumpUntil(2000) { got.size == 1 && events.size == 1 }
+    val doubleTransfer = thrown { worker.postMessage(sent, JSArray(arrayListOf<Any?>(sent))) } as? JSDOMException
+    Host.pumpUntil(2000) { got.size == 2 && events.size == 1 }
     val back = got.firstOrNull() as? JSObject
     check("clone: a round trip through the worker keeps the data and its cycles", back != null && back !== o && back["self"] === back && jsInspect(back["map"]) == jsInspect(o["map"]) && (back["floats"] as JSFloat32Array)[0] == floats[0]) { "${got.firstOrNull()}" }
-    check("clone: a transfer list is copied, not detached", sent.byteLength == 16.0)
+    val moved = (got.getOrNull(1) as? JSObject)?.get("view") as? JSUint8Array
+    check("transfer: the sender's buffer is detached", sent.byteLength == 0.0 && thrown { JSUint8Array(sent) } is JSTypeError)
+    check("transfer: the receiver's view reads the moved bytes", moved != null && moved.buffer.byteLength == 16.0 && moved[1] == 7.0 && moved.length == 4.0) { "${moved?.let { jsInspect(it) }}" }
+    check("transfer: a detached buffer cannot be sent again", doubleTransfer?.name == "DataCloneError") { "$doubleTransfer" }
     check("clone: the worker posting a function is a DataCloneError in the worker", events.size == 1 && events[0].startsWith("Uncaught DataCloneError")) { "events $events" }
     worker.terminate()
     worker.thread.join(2000)

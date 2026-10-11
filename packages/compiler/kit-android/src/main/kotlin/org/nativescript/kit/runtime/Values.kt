@@ -29,6 +29,11 @@ interface JSDynamic {
 /** A class with its own `toString()`, which JavaScript's string conversion calls. */
 interface JSStringConvertible
 
+/** A class with its own `valueOf()`, which ToPrimitive calls before `toString()` (arithmetic, comparisons, `+`). */
+interface JSValueOf {
+    fun jsValueOf(): Any?
+}
+
 /** A value as JavaScript sees it: `Unit` (a void result) is undefined. */
 fun jsBox(value: Any?): Any? = if (value === Unit) null else value
 
@@ -82,6 +87,9 @@ class JSObject() : JSDynamic, JSSymbolKeyed, JSAccessorKeyed, JSReactiveConverti
 
     /** Created without a prototype (`Object.create(null)`, a match's `groups`): inspect prints `[Object: null prototype]`. */
     var jsNullPrototype = false
+
+    /** What weak collections hold for this object as their key. */
+    internal var weakSlots: JSWeakSlots? = null
 
     constructor(entries: List<Pair<String, Any?>>) : this() {
         for ((k, v) in entries) define(k, v)
@@ -396,7 +404,7 @@ fun jsTypeof(value: Any?): String = when (value) {
     is String -> "string"
     is Boolean -> "boolean"
     JSNull -> "object"
-    is Function<*>, is JSFunction, is JavaMethodRef -> "function"
+    is Function<*>, is JSFunction, is JavaMethodRef, is Class<*> -> "function"
     is JSSymbol -> "symbol"
     is JSBigInt -> "bigint"
     else -> if (jsNumeric(value) != null) "number" else "object"
@@ -477,11 +485,49 @@ fun jsLooseEquals(a: Any?, b: Any?): Boolean {
     return jsStrictEquals(x, y)
 }
 
-/** ToPrimitive with the default hint: a date or object becomes its string form. */
-fun jsToPrimitive(value: Any?): Any? = when (val v = jsBox(value)) {
+/** ToPrimitive: `hint` is "default", "number" or "string"; a date is its time only for "number". */
+fun jsToPrimitive(value: Any?, hint: String = "default"): Any? = when (val v = jsBox(value)) {
     null, is String, is Boolean, JSNull, is JSSymbol, is JSBigInt -> v
-    is JSToPrimitive -> jsUserPrimitive(v, "default")
-    else -> jsNumeric(v) ?: jsToString(v)
+    is JSToPrimitive -> jsUserPrimitive(v, hint)
+    is JSDate -> if (hint == "number") v.valueOf() else jsToString(v)
+    else -> jsNumeric(v) ?: (if (hint == "string") jsNotPrimitive else jsOwnValueOf(v)).let { if (it === jsNotPrimitive) jsToString(v) else it }
+}
+
+private val jsNotPrimitive = Any()
+
+/** What a class's or an object literal's own `valueOf()` gives, when that is a primitive; else `jsNotPrimitive`. */
+private fun jsOwnValueOf(v: Any): Any? {
+    val result = when (v) {
+        is JSValueOf -> jsBox(v.jsValueOf())
+        is JSObject -> if (jsIsFunction(v["valueOf"])) jsCallMethod(v, "valueOf") else return jsNotPrimitive
+        else -> return jsNotPrimitive
+    }
+    return if (result == null || result is String || result is Boolean || result === JSNull || result is JSSymbol || result is JSBigInt || jsNumeric(result) != null) result else jsNotPrimitive
+}
+
+/** `a < b` (the Abstract Relational Comparison): two strings by UTF-16 code units, anything else as numbers, false where either is NaN. */
+fun jsLess(a: Any?, b: Any?): Boolean {
+    val x = jsToPrimitive(a, "number")
+    val y = jsToPrimitive(b, "number")
+    return if (x is String && y is String) x < y else jsToNumber(x) < jsToNumber(y)
+}
+
+fun jsLessOrEqual(a: Any?, b: Any?): Boolean {
+    val x = jsToPrimitive(a, "number")
+    val y = jsToPrimitive(b, "number")
+    return if (x is String && y is String) x <= y else jsToNumber(x) <= jsToNumber(y)
+}
+
+fun jsGreater(a: Any?, b: Any?): Boolean {
+    val x = jsToPrimitive(a, "number")
+    val y = jsToPrimitive(b, "number")
+    return if (x is String && y is String) x > y else jsToNumber(x) > jsToNumber(y)
+}
+
+fun jsGreaterOrEqual(a: Any?, b: Any?): Boolean {
+    val x = jsToPrimitive(a, "number")
+    val y = jsToPrimitive(b, "number")
+    return if (x is String && y is String) x >= y else jsToNumber(x) >= jsToNumber(y)
 }
 
 /** A `+` operand beside a string: ToString(ToPrimitive(value, default)). */
@@ -498,6 +544,7 @@ fun jsToNumber(value: Any?): Double = when (val v = jsBox(value)) {
     is JSBigInt -> v.toDouble()
     is Function<*>, is JSSymbol -> Double.NaN
     is JSToPrimitive -> jsToNumber(jsUserPrimitive(v, "number"))
+    is JSValueOf, is JSObject -> jsToNumber(jsToPrimitive(v, "number"))
     else -> jsNumeric(v) ?: jsNumberFromString(jsToString(v))
 }
 
@@ -524,7 +571,12 @@ fun jsStringOrNull(value: Any?): String? = when (value) {
     else -> null
 }
 
-internal val jsJoinGuard = ArrayList<Any>()
+private val joinGuards = object : ThreadLocal<ArrayList<Any>>() {
+    override fun initialValue() = ArrayList<Any>()
+}
+
+/** The arrays the calling thread is turning into strings: one met again inside itself is "". */
+internal val jsJoinGuard: ArrayList<Any> get() = joinGuards.get()!!
 
 /** `String(value)`: arrays join with ",", plain objects are "[object Object]", errors "Name: message". */
 fun jsToString(value: Any?): String = when (val v = jsBox(value)) {
@@ -546,12 +598,14 @@ fun jsToString(value: Any?): String = when (val v = jsBox(value)) {
     is JSSet<*> -> "[object Set]"
     is JSThenable -> "[object Promise]"
     is Function<*> -> "function () { [native code] }"
+    is JSObject -> if (jsIsFunction(v["toString"])) jsCallMethod(v, "toString").let { if (it is JSObject) "[object Object]" else jsToString(it) } else "[object Object]"
     else -> jsNumeric(v)?.let { jsNumberToString(it) } ?: if (v is JSDynamic) "[object Object]" else v.toString()
 }
 
 internal fun jsJoin(elements: List<Any?>, separator: String, owner: Any): String {
-    if (jsJoinGuard.any { it === owner }) return ""
-    jsJoinGuard.add(owner)
+    val guard = jsJoinGuard
+    if (guard.any { it === owner }) return ""
+    guard.add(owner)
     try {
         val out = StringBuilder()
         elements.forEachIndexed { i, e ->
@@ -560,7 +614,7 @@ internal fun jsJoin(elements: List<Any?>, separator: String, owner: Any): String
         }
         return out.toString()
     } finally {
-        jsJoinGuard.removeAt(jsJoinGuard.size - 1)
+        guard.removeAt(guard.size - 1)
     }
 }
 

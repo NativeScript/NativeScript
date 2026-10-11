@@ -33,6 +33,20 @@ const cases: Case[] = [
     fails: /`STACK` of inner\.ts is mutated by pop\(\)/,
   },
   { name: 'a map set', files: { 'shared.ts': `export const SEEN = new Map<string, number>();\nexport function read() { return SEEN.get('a'); }\n`, 'main.ts': `import { SEEN } from './shared';\nexport function see() { SEEN.set('a', 1); }\n` }, fails: /`SEEN` of shared\.ts is mutated by set\(\)/ },
+  { name: 'a class static field written', files: { 'shared.ts': `export class Engine { static voices = 0; }\nexport function read() { return Engine.voices; }\n`, 'main.ts': `import { Engine } from './shared';\nexport function more() { Engine.voices++; }\n` }, fails: /`Engine` of shared\.ts is written \(`Engine\.voices`\)/ },
+  { name: 'a class static map set', files: { 'shared.ts': `export class Engine { static cache = new Map<string, number>(); }\nexport function read() { Engine.cache.set('a', 1); return 0; }\n`, 'main.ts': '' }, fails: /`Engine` of shared\.ts is mutated by set\(\)/ },
+  {
+    name: 'a singleton changed through its method',
+    files: { 'shared.ts': `class Mixer { gain = 1; setGain(g: number) { this.gain = g; } level() { return this.gain; } }\nexport const mixer = new Mixer();\nexport function read() { return mixer.level(); }\n`, 'main.ts': `import { mixer } from './shared';\nexport function louder() { mixer.setGain(2); }\n` },
+    fails: /`mixer` of shared\.ts is mutated by setGain\(\)/,
+  },
+  { name: 'a write through a local alias', files: { 'shared.ts': `export const LIST: number[] = [];\nexport function read() { const l = LIST; l.push(1); return l.length; }\n`, 'main.ts': '' }, fails: /`LIST` of shared\.ts is mutated by push\(\)/ },
+  { name: 'Object.assign into module state', files: { 'shared.ts': `export const CONFIG = { rate: 1 };\nexport function read() { Object.assign(CONFIG, { rate: 2 }); return CONFIG.rate; }\n`, 'main.ts': '' }, fails: /`CONFIG` of shared\.ts is changed by Object\.assign\(\)/ },
+  {
+    name: 'reads, and methods that only read, through instances and aliases',
+    files: { 'shared.ts': `class Mixer { gain = 1; level() { return this.gain; } }\nexport const mixer = new Mixer();\nexport class Engine { static voices = 4; }\nexport const LIST = [1];\nexport function read() { const l = LIST; return l[0] + mixer.level() + Engine.voices + Object.keys(l).length; }\n`, 'main.ts': '' },
+    fails: null,
+  },
 ];
 
 let failed = 0;
