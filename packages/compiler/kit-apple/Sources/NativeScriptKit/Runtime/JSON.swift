@@ -10,6 +10,33 @@ public func jsJSONParse(_ text: String) throws -> Any? {
     return try parser.parse()
 }
 
+/// `JSON.parse(text, reviver)`: the reviver sees each value after the values inside it, called on its holder with its key;
+/// a value it gives undefined for is deleted. A reviver that is not a function is ignored.
+public func jsJSONParse(_ text: String, reviver: Any?) throws -> Any? {
+    let value = try jsJSONParse(text)
+    guard let function = jsFlat(reviver), jsIsFunction(function) else { return value }
+    let root = JSObject()
+    root[""] = value
+    return try jsJSONInternalize(root, "", reviver)
+}
+
+private func jsJSONInternalize(_ holder: Any, _ key: String, _ reviver: Any?) throws -> Any? {
+    let value = try jsGet(holder, key)
+    switch jsFlat(value) {
+    case let array as JSArray<Any?>:
+        for i in 0..<array.storage.count where i < array.storage.count {
+            array.storage[i] = try jsJSONInternalize(array, String(i), reviver)
+        }
+    case let object as JSObject:
+        for k in object.keys {
+            let revived = try jsJSONInternalize(object, k, reviver)
+            if jsFlat(revived) == nil { _ = object.delete(k) } else { object[k] = revived }
+        }
+    default: break
+    }
+    return try jsInvoke(reviver, holder, [key, value])
+}
+
 private struct JSJSONParser {
     let source: [UInt16]
     var position = 0

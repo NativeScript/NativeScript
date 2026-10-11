@@ -8,6 +8,33 @@ package org.nativescript.kit
  */
 fun jsJSONParse(text: String): Any? = JSONParser(text).parse()
 
+/**
+ * `JSON.parse(text, reviver)`: the reviver sees each value after the values inside it, called on its holder with its key;
+ * a value it gives undefined for is deleted. A reviver that is not a function is ignored.
+ */
+fun jsJSONParse(text: String, reviver: Any?): Any? {
+    val value = jsJSONParse(text)
+    if (!jsIsFunction(reviver)) return value
+    val root = JSObject()
+    root[""] = value
+    return jsJSONInternalize(root, "", reviver)
+}
+
+private fun jsJSONInternalize(holder: Any, key: String, reviver: Any?): Any? {
+    val value = jsGet(holder, key)
+    when (value) {
+        is JSArray<*> -> {
+            @Suppress("UNCHECKED_CAST") val array = value as JSArray<Any?>
+            for (i in 0 until array.size) if (i < array.size) array.setAt(i, jsJSONInternalize(array, i.toString(), reviver))
+        }
+        is JSObject -> for (k in value.keys) {
+            val revived = jsJSONInternalize(value, k, reviver)
+            if (revived == null) value.delete(k) else value[k] = revived
+        }
+    }
+    return if (reviver is JSMethod) jsBox(reviver.call(holder, arrayOf(key, value))) else jsCall(reviver, key, value)
+}
+
 private class JSONParser(val source: String) {
     var position = 0
 
