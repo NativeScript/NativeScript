@@ -83,6 +83,9 @@ class JSObject() : JSDynamic, JSSymbolKeyed, JSAccessorKeyed, JSReactiveConverti
     /** Created without a prototype (`Object.create(null)`, a match's `groups`): inspect prints `[Object: null prototype]`. */
     var jsNullPrototype = false
 
+    /** What weak collections hold for this object as their key. */
+    internal var weakSlots: JSWeakSlots? = null
+
     constructor(entries: List<Pair<String, Any?>>) : this() {
         for ((k, v) in entries) define(k, v)
     }

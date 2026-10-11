@@ -5,7 +5,6 @@ import java.lang.reflect.Array as JavaArray
 import java.lang.reflect.Field
 import java.lang.reflect.Method
 import java.lang.reflect.Modifier
-import java.util.WeakHashMap
 
 // JavaScript's object operations on values translated code holds untyped:
 // what plugins written against loose types do with options bags, event
@@ -150,8 +149,23 @@ fun getClass(value: Any?): String = when (value) {
 
 // Java objects held untyped
 
-/** Properties script added to a Java object, kept with the object. */
-private val javaExpandos = WeakHashMap<Any, JSObject>()
+/** Properties script added to a Java object the host cannot keep them on, by the object's identity. */
+private val javaExpandos = JSWeakIdentityTable<JSObject>()
+
+/**
+ * Where the host keeps the properties script adds to a Java object of its own (an Android view, in
+ * a view tag): the object's, made when `create` and none is there; null leaves them to the runtime's
+ * table. Kept on the object, they go with it even when a value reaches back to it.
+ */
+@Volatile var jsJavaExpandoHost: ((target: Any, create: Boolean) -> JSObject?)? = null
+
+private fun javaExpando(target: Any): JSObject? {
+    jsJavaExpandoHost?.invoke(target, false)?.let { return it }
+    return if (javaExpandos.isEmpty) null else javaExpandos.get(target)
+}
+
+private fun javaExpandoForWrite(target: Any): JSObject =
+    jsJavaExpandoHost?.invoke(target, true) ?: javaExpandos.getOrPut(target) { JSObject() }
 
 /**
  * A class's public members by name, looked up once: `getMethods()` copies and sorts every public
@@ -184,7 +198,7 @@ private fun javaMethods(cls: Class<*>, name: String, static: Boolean): List<Meth
 fun jsJavaHas(target: Any, key: String): Boolean {
     val static = target is Class<*>
     val cls = if (static) target as Class<*> else target.javaClass
-    if (javaExpandos[target]?.has(key) == true || javaField(target, key, static) != null || javaMethods(cls, key, static).isNotEmpty()) return true
+    if (javaExpando(target)?.has(key) == true || javaField(target, key, static) != null || javaMethods(cls, key, static).isNotEmpty()) return true
     // A class's static member script declared (`static tapEvent`): a Kotlin companion's property, its field on the class.
     if (static) {
         var c: Class<*>? = cls
@@ -352,7 +366,7 @@ fun jsJavaGet(target: Any, key: String): Any? {
         val length = JavaArray.getLength(target)
         return if (key == "length") length.toDouble() else jsArrayIndex(key)?.let { if (it < length) fromJavaValue(JavaArray.get(target, it.toInt())) else null }
     }
-    javaExpandos[target]?.let { if (it.has(key)) return it[key] }
+    javaExpando(target)?.let { if (it.has(key)) return it[key] }
     val static = target is Class<*>
     val cls = if (static) target as Class<*> else target.javaClass
     javaField(target, key, static)?.let { return fromJavaValue(it.get(if (static) null else target)) }
@@ -389,7 +403,7 @@ fun jsJavaSet(target: Any, key: String, value: Any?) {
         field.set(if (static) null else target, toJavaValue(value, field.type))
         return
     }
-    javaExpandos.getOrPut(target) { JSObject() }[key] = value
+    javaExpandoForWrite(target)[key] = value
 }
 
 /** A native-property decorator's getter: the native object's getter method if it has one, else the fallback. */

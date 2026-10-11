@@ -169,6 +169,11 @@ object NativeScriptApplication {
         }
         JSRealm.main.thread = handler.looper.thread
         JSRealm.main.post = { job -> handler.post(job) }
+        // A view's expandos live in a tag: they go with the view, though they reach it (a pager's adapter, its own child).
+        jsJavaExpandoHost = { target, create ->
+            if (target !is _root_ide_package_.android.view.View) null
+            else target.getTag(EXPANDO_TAG) as? JSObject ?: if (create) JSObject().also { target.setTag(EXPANDO_TAG, it) } else null
+        }
         JSEventLoop.host = { delay ->
             handler.removeCallbacks(tick)
             if (delay != null) handler.postDelayed(tick, Math.ceil(delay).toLong())
@@ -192,3 +197,6 @@ object NativeScriptApplication {
         }
     }
 }
+
+/** A view tag key no resource of an app's takes (`setTag` takes any key whose top byte is 2 or more). */
+private const val EXPANDO_TAG = 0x6e730001
