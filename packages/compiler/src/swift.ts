@@ -7966,7 +7966,9 @@ ${members.join('\n')}
       case 'search': return `jsSearch(${s}, ${r})`;
       case 'split': {
         const call = `jsSplit(${s}, ${r}${second ? `, ${this.expr(second)}` : ''})`;
-        return this.typeOf(e) === 'JSArray<String>' ? `${call}.map { $0 ?? "" }` : call;
+        // A group that took no part splices in undefined, which only an untyped destination can hold.
+        const untyped = (this.checker.getContextualType(e)?.flags ?? 0) & (ts.TypeFlags.Any | ts.TypeFlags.Unknown);
+        return this.typeOf(e) === 'JSArray<String>' && !untyped ? `${call}.map { $0 ?? "" }` : call;
       }
       case 'replace': case 'replaceAll': {
         const fn = name === 'replace' ? 'jsReplace' : 'jsReplaceAll';
@@ -7980,7 +7982,9 @@ ${members.join('\n')}
         if (name === 'replaceAll') throw this.error(e, 'replaceAll with a function');
         // The replacer gets the match, then each group.
         const m = this.fresh('__match');
-        const binds = second.parameters.map((p, k) => `let ${ident((p.name as ts.Identifier).text)}: ${this.typeOf(p.name)} = ${this.typeOf(p.name) === 'Double' ? `${m}.index` : `${m}[${k}]`}`);
+        // A group that took no part is undefined, except where the parameter is declared `string`.
+        const group = (t: string, k: number) => t === 'Double' ? `${m}.index` : t === 'String' ? `${m}[${k}]` : this.undefinedAs(`(${m}.values.element(${k}) ?? nil)`, t);
+        const binds = second.parameters.map((p, k) => `let ${ident((p.name as ts.Identifier).text)}: ${this.typeOf(p.name)} = ${group(this.typeOf(p.name), k)}`);
         const body = this.functionBody(second, 'String', this.indent);
         const inner = this.indent + '    ';
         return `${fn}(${s}, ${r}) { (${m}: JSMatch) ${this.throwsInfo.fn(second) ? 'throws ' : ''}-> String in\n${binds.map((b) => inner + b).join('\n')}${body.slice(1)}`;
