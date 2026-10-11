@@ -6990,6 +6990,7 @@ export class Translator implements AsyncTranslator {
     // An iOS API (`typeof NSDate`): undefined on Android, without the ReferenceError reading it throws.
     const decls = ts.isIdentifier(e.expression) ? this.resolve(e.expression)?.declarations : undefined;
     if (decls?.length && decls.every((d) => IOS_TYPINGS.test(d.getSourceFile().fileName))) return '"undefined"';
+    if (this.namesClass(e.expression)) return '"function"';
     const t = this.typeOf(e.expression);
     const base = t.replace(/\?$/, '');
     if (base === 'Unit') return '"undefined"';

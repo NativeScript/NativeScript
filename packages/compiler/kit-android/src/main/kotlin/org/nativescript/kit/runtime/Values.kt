@@ -404,7 +404,7 @@ fun jsTypeof(value: Any?): String = when (value) {
     is String -> "string"
     is Boolean -> "boolean"
     JSNull -> "object"
-    is Function<*>, is JSFunction, is JavaMethodRef -> "function"
+    is Function<*>, is JSFunction, is JavaMethodRef, is Class<*> -> "function"
     is JSSymbol -> "symbol"
     is JSBigInt -> "bigint"
     else -> if (jsNumeric(value) != null) "number" else "object"
