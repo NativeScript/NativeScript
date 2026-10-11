@@ -3744,6 +3744,7 @@ ${members.join('\n')}
       const d = h && c.getTypeAtLocation(h.expression).getSymbol()?.valueDeclaration;
       b = d && ts.isClassLike(d) && !d.getSourceFile().isDeclarationFile ? d : undefined;
     }
+    if (appBase) this.warnConstructionOrder(cls, appBase);
     // The constructor: super() first, then parameter properties and field initializers, then the body (JavaScript's order).
     const baseCtor = appBase && this.constructorOf(appBase);
     if (ctor) {
@@ -4382,6 +4383,41 @@ ${members.join('\n')}
     const d = h && this.checker.getTypeAtLocation(h.expression).getSymbol()?.valueDeclaration;
     return d && ts.isClassLike(d) && !d.getSourceFile().isDeclarationFile ? d : undefined;
   }
+
+  /**
+   * Swift initializes a subclass's fields before its base's initializer runs; JavaScript after the base constructor
+   * returns. A base field initializer or constructor calling a method the subclass overrides to read its own fields
+   * sees their initial values in Swift where JavaScript sees undefined: a warning names each such override.
+   */
+  private warnConstructionOrder(cls: ts.ClassLikeDeclaration, appBase: ts.ClassLikeDeclaration): void {
+    const own = new Set<string>();
+    for (const m of cls.members) if (ts.isPropertyDeclaration(m) && !isStatic(m) && m.name && !ts.isComputedPropertyName(m.name)) own.add(m.name.getText());
+    for (const m of cls.members) if (ts.isConstructorDeclaration(m)) for (const p of m.parameters) if (ts.isParameterPropertyDeclaration(p, m) && ts.isIdentifier(p.name)) own.add(p.name.text);
+    if (!own.size) return;
+    const overrides = new Map<string, ts.MethodDeclaration>();
+    for (const m of cls.members) if (ts.isMethodDeclaration(m) && m.body && !isStatic(m) && !ts.isComputedPropertyName(m.name)) overrides.set(m.name.getText(), m);
+    // `this.<name>` in `n`, not inside a nested function, which construction need not call.
+    const thisReads = (n: ts.Node, out: ts.PropertyAccessExpression[] = []): ts.PropertyAccessExpression[] => {
+      if (ts.isPropertyAccessExpression(n) && n.expression.kind === ts.SyntaxKind.ThisKeyword) out.push(n);
+      if (!ts.isFunctionLike(n) || ts.isConstructorDeclaration(n)) ts.forEachChild(n, (c) => { if (!ts.isFunctionLike(c) || ts.isConstructorDeclaration(c)) thisReads(c, out); });
+      return out;
+    };
+    for (let b: ts.ClassLikeDeclaration | undefined = appBase; b; ) {
+      const construction = b.members.filter((m) => (ts.isPropertyDeclaration(m) && !isStatic(m) && m.initializer) || (ts.isConstructorDeclaration(m) && m.body));
+      for (const site of construction.flatMap((m) => thisReads(m))) {
+        const called = ts.isCallExpression(site.parent) && site.parent.expression === site ? overrides.get(site.name.text) : undefined;
+        const read = called && thisReads(called.body!).find((r) => own.has(r.name.text));
+        if (!read || this.constructionWarned.has(called!)) continue;
+        this.constructionWarned.add(called!);
+        const at = (n: ts.Node) => { const sf = n.getSourceFile(); return `${sf.fileName}:${sf.getLineAndCharacterOfPosition(n.getStart()).line + 1}`; };
+        console.warn(`warning: ${at(called!)}: ${cls.name?.text ?? 'a class'}.${site.name.text}() reads this.${read.name.text} while ${b.name?.text ?? 'its base'} is constructed (${at(site)}): JavaScript reads undefined there, the release build its initial value`);
+      }
+      const h = b.heritageClauses?.find((x) => x.token === ts.SyntaxKind.ExtendsKeyword)?.types[0];
+      const d = h && this.checker.getTypeAtLocation(h.expression).getSymbol()?.valueDeclaration;
+      b = d && ts.isClassLike(d) && !d.getSourceFile().isDeclarationFile ? d : undefined;
+    }
+  }
+  private readonly constructionWarned = new Set<ts.Node>();
 
   /** Whether a program class `cls` extends declares the method `name`. */
   private inheritsMethod(cls: ts.ClassLikeDeclaration, name: string): boolean {
