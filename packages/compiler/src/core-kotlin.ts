@@ -48,6 +48,7 @@ export function kotlinKitIndex(sources: string | string[]): Map<string, KitType>
           // Extension members in a file read earlier made the entry: the class declaration names the base.
           if (type && base) type.base = base;
           if (type && decl![2] === 'object') (type as KitType & { object?: boolean }).object = true;
+          if (type && decl![2] === 'interface') (type as KitType & { iface?: boolean }).iface = true;
           stack.push({ type: isPublic ? type : null, depth, companion: false });
         }
       } else {
@@ -64,11 +65,13 @@ export function kotlinKitIndex(sources: string | string[]): Map<string, KitType>
           types.set(TOP_LEVEL, global);
           add(global, top[1], { kind: 'var', static: true, type: top[2].trim() });
         }
-        const fn = depth === 0 && !ext ? /^(?:inline\s+)?fun\s+(?:<[^>]*>\s*)?(\w+)\s*\(([^)]*)\)\s*(?::\s*([^={]+))?/.exec(line) : null;
+        const fn = depth === 0 && !ext ? /^(?:inline\s+)?fun\s+(?:<[^>]*>\s*)?(\w+)\s*\(/.exec(line) : null;
         if (fn) {
           const global = types.get(TOP_LEVEL) ?? { name: TOP_LEVEL, base: null, members: new Map(), props: new Set() };
           types.set(TOP_LEVEL, global);
-          add(global, fn[1], { kind: 'func', static: true, type: (fn[3] ?? 'Unit').trim(), params: fn[2] });
+          // Parameters of function types (`callback: (ViewBase) -> Boolean`) nest parentheses.
+          const [params, rest] = parenthesized(line, fn.index + fn[0].length);
+          add(global, fn[1], { kind: 'func', static: true, type: (/^\s*:\s*([^={]+)/.exec(rest)?.[1] ?? 'Unit').trim(), params });
         }
         const owner = stack.at(-1);
         const enclosing = [...stack].reverse().find((x) => x.type)?.type;
@@ -81,6 +84,8 @@ export function kotlinKitIndex(sources: string | string[]): Map<string, KitType>
           // A constructor taking script's arguments as one list (`constructor(__arguments: JSArray<Any?>)`).
           if (/^\s*constructor\(\s*__arguments\s*:\s*JSArray<Any\?>\s*\)/.test(line)) add(owner.type, '<init>', { kind: 'func', static: false, type: owner.type.name, params: '__arguments: JSArray<Any?>' });
           if (/^\s*constructor\(\s*\)/.test(line)) add(owner.type, '<init0>', { kind: 'func', static: false, type: owner.type.name, params: '' });
+          const ctor = /^\s*(?:(?:public|protected)\s+)?constructor\(/.exec(line);
+          if (ctor) add(owner.type, '<ctor>', { kind: 'func', static: false, type: owner.type.name, params: parenthesized(line, ctor.index + ctor[0].length)[0] });
           if (made) owner.type.native = imports.get(made[1]) ?? made[1];
           if ((m = /^\s*(?:@\w+\s+)*(?:(?:override|open|final|lateinit|const|abstract|protected|public)\s+)*(?:val|var)\s+`?(\w+)`?\s*:\s*([^={]+)/.exec(line))) add(owner.type, m[1], { kind: 'var', static: isStatic, type: m[2].trim().replace(/\s+get\(\).*$/, '') });
           else if ((m = /^\s*(?:(?:override|open|final|abstract|inline|operator|protected|public)\s+)*fun\s+(?:<[^>]*>\s*)?`?(\w+)`?\s*\(/.exec(line))) {
@@ -161,7 +166,14 @@ export class CoreKotlin implements KotlinCore {
     const decl = sym?.declarations?.[0];
     if (!sym || !(sym.flags & ts.SymbolFlags.Variable) || !isCoreDeclaration(decl) || kitMember(this.index, TOP_LEVEL, sym.name)) return null;
     const module = this.moduleObject(decl!);
-    return module && kitMember(this.index, module, sym.name)?.kind === 'var' ? `${module}.${sym.name}` : null;
+    const m = module ? kitMember(this.index, module, sym.name) : null;
+    if (m?.kind !== 'var') return null;
+    const code = `${module}.${sym.name}`;
+    const p = e.parent;
+    const written = (ts.isBinaryExpression(p) && p.left === e && p.operatorToken.kind >= ts.SyntaxKind.FirstAssignment && p.operatorToken.kind <= ts.SyntaxKind.LastAssignment)
+      || ((ts.isPrefixUnaryExpression(p) || ts.isPostfixUnaryExpression(p)) && (p.operator === ts.SyntaxKind.PlusPlusToken || p.operator === ts.SyntaxKind.MinusMinusToken));
+    // Read as the app's declarations type it (`_rootModalViews`, `JSArray<ViewBase>?` in the kit).
+    return written ? code : this.fromKit(code, m.type, this.t.typeOf(e), keepsNullable(e));
   }
 
   /** The kit's view classes a page's XML can name (`Label`, `StackLayout`). */
@@ -185,12 +197,23 @@ export class CoreKotlin implements KotlinCore {
     // An event's data beyond EventData's (`PanGestureEventData`, a ListView's item tap): the object core notifies with, read by name.
     if (sym && sym.name !== 'EventData' && !(sym.flags & ts.SymbolFlags.TypeParameter) && t.getProperty('eventName') && t.getProperty('object') && t.getProperties().length > 2) return 'Any?';
     if (!sym || !isCoreDeclaration(sym.declarations?.[0])) return null;
-    if (sym.flags & ts.SymbolFlags.Class || !(sym.flags & (ts.SymbolFlags.Interface | ts.SymbolFlags.TypeAlias))) return null;
+    // A class the generated kit renames for a clash (`Source` of utils/debug-source is `Source__debug_source`).
+    if (sym.flags & ts.SymbolFlags.Class) {
+      const same = this.index.get(KIT_NAMES_ANDROID[sym.name] ?? sym.name) as (KitType & { iface?: boolean }) | undefined;
+      return same && !same.iface ? null : this.renamedOwner({ name: sym.name, isStatic: false })?.name ?? null;
+    }
+    if (!(sym.flags & (ts.SymbolFlags.Interface | ts.SymbolFlags.TypeAlias))) return null;
+    // A function type's alias (`ModuleListProvider`) types as the function, which the kit's signatures declare too.
+    if (sym.flags & ts.SymbolFlags.TypeAlias && t.getCallSignatures().length === 1 && !t.getProperties().length) return null;
     return this.index.has(KIT_NAMES_ANDROID[sym.name] ?? sym.name) ? null : 'Any?';
   }
 
   has(name: string): boolean {
     return this.index.has(name);
+  }
+
+  kitExtends(name: string, base: string): boolean {
+    return kitExtends(this.index, name, base);
   }
 
   isKitView(name: string): boolean {
@@ -393,6 +416,9 @@ export class CoreKotlin implements KotlinCore {
     const recv = owner.isStatic ? this.declaring(owner.name, e.name.text) : this.receiver(e.expression, e);
     // The other platform's native view: undefined, as on Android.
     if (!owner.isStatic && name === 'ios' && this.isView(owner.name)) return 'null';
+    // The generated kit: `android` of a class that types it as a kit object (Frame's `AndroidFrame`): that member.
+    const ownAndroid = this.generated && name === 'android' ? kitMember(this.index, owner.name, name) : null;
+    if (ownAndroid && this.index.has(ownAndroid.type.replace(/\?$/, '')) && !owner.isStatic) return this.fromKit(`${recv}.android`, ownAndroid.type, t.typeOf(e), t.nullTolerant(e));
     if (!owner.isStatic && NATIVE_MEMBERS.has(name) && this.isView(owner.name)) {
       const native = t.typeOf(e);
       return native === 'Any?' ? `${recv}.nativeView` : `(${recv}.nativeView as ${native})`;
@@ -412,7 +438,8 @@ export class CoreKotlin implements KotlinCore {
     }
     const m = this.member(owner.name, name, e);
     // A method read as a value (`typeof view.getSafeAreaInsets === 'function'`): bound to its object.
-    if (m.kind === 'func' && !(ts.isCallExpression(e.parent) && e.parent.expression === e)) return `${recv}::${name}`;
+    // A method as a value; read through `?.` (`child?.getChildAt`), undefined where the receiver is.
+    if (m.kind === 'func' && !(ts.isCallExpression(e.parent) && e.parent.expression === e)) return recv.endsWith('?') ? `${recv.slice(0, -1)}?.let { __r -> __r::${name} }` : `${recv}::${name}`;
     return this.fromKit(`${recv}.${name}`, m.type, t.typeOf(e), t.nullTolerant(e));
   }
 
@@ -458,6 +485,7 @@ export class CoreKotlin implements KotlinCore {
     // Null or undefined for a member the kit types non-null (`label.text = null`): set by name, as script sets it.
     const unset = value.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(value) && value.text === 'undefined');
     if (this.generated && unset && !m.type.trim().endsWith('?') && !owner.isStatic) return `jsSet(${recv}, ${kotlinString(name)}, null)`;
+    if (this.generated && unset && m.type.trim().endsWith('?') && m.type.trim() !== 'Any?') return `${recv}.${name} = null`;
     // A kit member typed `Any?` holds what core reads as a plain script object (`TouchManager.animations`).
     if (m.type.trim() === 'Any?') return `${recv}.${name} = ${this.scriptValue(value)}`;
     return `${recv}.${name} = ${this.toKit(t.coerce(value, t.typeOf(left)), m.type)}`;
@@ -491,7 +519,7 @@ export class CoreKotlin implements KotlinCore {
     const recv = owner.isStatic || staticCall ? this.declaring(owner.name, name) : this.receiver(e.expression.expression, e.expression);
     if (name === 'navigate' && kitExtends(this.index, owner.name, 'Frame')) return this.navigate(recv, e);
     const listener = this.listenerArgs(e, m);
-    const args = listener ?? this.restArgs(e, m) ?? (SCRIPT_OBJECTS.has(name) && this.isView(owner.name) ? e.arguments.map((a) => this.scriptValue(a)) : t.args(e));
+    const args = listener ?? this.restArgs(e, m) ?? (SCRIPT_OBJECTS.has(name) && this.isView(owner.name) ? e.arguments.map((a) => this.scriptValue(a)) : this.kitArgs(e, m, t.args(e)));
     // A function held in a field (`Application.off`, core's bound `globalEvents.off`) takes every parameter: those not given are undefined.
     const held = m.kind === 'var' ? functionTypeParts(m.type.replace(/^\((.*)\)\?$/, '$1')) : null;
     if (held) for (let k = args.length; k < held.params.length; k++) args.push('null');
@@ -500,7 +528,9 @@ export class CoreKotlin implements KotlinCore {
       const params = (m.params ?? '').trim() ? splitTopLevel(m.params!) : [];
       for (let k = args.length; k < params.length; k++) args.push(/=\s*(.+)$/.exec(params[k])?.[1].trim() ?? 'null');
     }
-    return this.fromKit(`${recv}.${name}(${args.join(', ')})`, m.type, t.typeOf(e), keepsNullable(e));
+    // A function held in a field the kit declares nullable (`CssAnimationProperty.register`): present where it is called.
+    const callee = held && /\)\?$/.test(m.type.trim()) ? `${recv}.${name}!!` : `${recv}.${name}`;
+    return this.fromKit(`${callee}(${args.join(', ')})`, m.type, t.typeOf(e), keepsNullable(e));
   }
 
   construct(e: ts.NewExpression): string | null {
@@ -521,8 +551,10 @@ export class CoreKotlin implements KotlinCore {
     if (sym.name === 'Animation') return `Animation(${args.map((a) => this.scriptValue(a)).join(', ')})`;
     const made = this.index.get(sym.name);
     const packed = this.generated && (args.length || !made?.members.has('<init0>')) ? made?.members.get('<init>')?.[0] : undefined;
-    if (packed) return `${sym.name}(${this.t.packed(args, 'JSArray<Any?>')})`;
-    return `${sym.name}(${(this.restArgs(e) ?? t.args(e)).join(', ')})`;
+    // A class nested in a namespace's object (`Trace.DefaultErrorHandler`): named through it.
+    const qualified = made?.outer ? `org.nativescript.kit.${made.outer}.${sym.name}` : sym.name;
+    if (packed) return `${qualified}(${this.t.packed(args, 'JSArray<Any?>')})`;
+    return `${qualified}(${(this.restArgs(e) ?? t.args(e)).join(', ')})`;
   }
 
   /** The generated kit: the class declaring a static member (`Frame.topmost` is FrameBase's), as Kotlin's companions are not inherited. */
@@ -563,9 +595,51 @@ export class CoreKotlin implements KotlinCore {
     // The generated kit: a function of a module the app imports by path (`resolveModuleName` of module-name-resolver), its module's object's.
     const module = !m && this.generated && decl ? this.moduleObject(decl) : null;
     const mm = module ? kitMember(this.index, module, name) : undefined;
-    if (module && mm) return this.fromKit(`${module}.${name}(${(this.restArgs(e, mm) ?? this.t.args(e)).join(', ')})`, mm.type, this.t.typeOf(e), keepsNullable(e));
+    if (module && mm) return this.fromKit(`${module}.${name}(${(this.restArgs(e, mm) ?? this.kitArgs(e, mm, this.t.args(e))).join(', ')})`, mm.type, this.t.typeOf(e), keepsNullable(e));
     if (!m) return null;
-    return this.fromKit(`${name}(${(this.restArgs(e, m) ?? this.t.args(e)).join(', ')})`, m.type, this.t.typeOf(e), keepsNullable(e));
+    return this.fromKit(`${name}(${(this.restArgs(e, m) ?? this.kitArgs(e, m, this.t.args(e))).join(', ')})`, m.type, this.t.typeOf(e), keepsNullable(e));
+  }
+
+  /**
+   * The generated kit: arguments the kit's signature types otherwise than core's declarations (`eachChildView`'s callback of
+   * `ViewCommon`, declared of `View`): a function adapted to the kit's parameters; a string, number or boolean where the kit
+   * takes another of them converted as script converts it (core's code takes what script passes).
+   */
+  private kitArgs(e: ts.CallExpression, m: KitMember, args: string[]): string[] {
+    if (!this.generated || !m.params?.trim()) return args;
+    const types = splitTopLevel(m.params).map((p) => /^\s*(?:vararg\s+)?[\w`]+\s*:\s*(.+?)(?:\s+=\s+.+)?$/.exec(p)?.[1]?.trim());
+    const PRIMITIVES = ['String', 'Double', 'Boolean'];
+    return args.map((code, k) => {
+      const a = e.arguments[k], want = types[k];
+      if (!a || !want || ts.isSpreadElement(a)) return code;
+      const have = this.t.typeOf(a);
+      const fn = (x: string) => functionTypeParts(x.replace(/^\((.*)\)\?$/, '$1'));
+      const [f, g] = [fn(have), fn(want)];
+      if (f && g && f.params.length <= g.params.length && (f.params.length < g.params.length || f.params.some((p, i) => p !== g.params[i]))) return this.t.coerce(a, want);
+      const bare = want.replace(/\?$/, '');
+      if (PRIMITIVES.includes(have) && PRIMITIVES.includes(bare) && have !== bare) {
+        const value = this.t.expr(a);
+        return bare === 'String' ? `jsToString(${value})` : bare === 'Double' ? `jsToNumber(${value})` : `jsTruthy(${value})`;
+      }
+      return code;
+    });
+  }
+
+  /**
+   * The generated kit: a subclass's `super(…)` arguments for the kit class's constructor. An argument Kotlin holds nullable
+   * where the constructor's parameter is not takes the parameter's default when undefined, as script's does (`duration = 350`).
+   */
+  superArgs(base: string, e: ts.CallExpression, args: string[]): string[] {
+    if (!this.generated) return args;
+    const ctors = (this.index.get(base)?.members.get('<ctor>') ?? []).map((m) => splitTopLevel(m.params ?? '').filter((x) => x.trim()));
+    const ctor = ctors.find((ps) => ps.length >= args.length);
+    if (!ctor) return args;
+    return args.map((code, k) => {
+      const m = /^\s*(?:vararg\s+)?[\w`]+\s*:\s*(.+?)(?:\s+=\s+(.+))?$/.exec(ctor[k]);
+      const a = e.arguments[k];
+      if (!m || !a || m[1].endsWith('?') || !this.t.typeOf(a).endsWith('?')) return code;
+      return m[2] ? `(${code} ?: ${m[2].trim()})` : code;
+    });
   }
 
   /** `frame.navigate({ create: () => page })`: the kit builds what `create` returns. */
@@ -625,6 +699,11 @@ export class CoreKotlin implements KotlinCore {
     if (this.generated && kb === 'Any' && ['String', 'Double', 'Boolean'].includes(tb)) return this.t.fromAnyCode(code, tsType, true);
     // An untyped result where the program's own class is declared (`getViewById` of an app's view): that class, as script trusts it.
     if (this.generated && kb === 'Any' && tb !== 'Any' && ((/^[A-Z][\w.]*$/.test(tb) && !this.index.has(tb)) || /^JS(Array|Record)</.test(tb))) return `jsUnchecked<${tsType}>(${code})`;
+    // A function of the kit's generics erased (`lazy`'s `() -> Any?`) where TypeScript names its types: as it names them.
+    const isFn = (x: string) => !!functionTypeParts(x.replace(/^\((.*)\)\?$/, '$1'));
+    if (this.generated && kb !== tb && isFn(k) && isFn(tsType) && !tsType.endsWith('?')) return `jsUnchecked<${tsType}>(${code})`;
+    // An untyped result where TypeScript names a function (`profile(name, fn)`): callable as that function.
+    if (this.generated && kb === 'Any' && isFn(tsType)) return this.t.fromAnyCode(code, tsType, true);
     // One array of the kit's where TypeScript names another element class (`Frame._stack()`, FrameBase's).
     if (this.generated && /^JSArray<.*>$/.test(kb) && /^JSArray<.*>$/.test(tb) && kb !== tb) return `jsUnchecked<${tsType}>(${code})`;
     if (this.generated && kb !== tb && this.index.has(tb) && (kb === 'Any' || kitExtends(this.index, tb, kb))) return `(${code} as ${tb}${k.endsWith('?') && (tsType.endsWith('?') || keepNull) ? '?' : ''})`;

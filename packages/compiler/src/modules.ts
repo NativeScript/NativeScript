@@ -69,11 +69,11 @@ export function evaluationOrder(program: ts.Program, files: string[], resolvedBy
  * emit keeps, each passed through to what it imports when it is not among `files`
  * itself (a barrel). What runs a module's top level runs these modules' first.
  */
-export function evaluatedImports(program: ts.Program, file: string, files: ReadonlySet<string>, resolvedBy?: (containing: string, specifier: string) => string | undefined): string[] {
+export function evaluatedImports(program: ts.Program, file: string, files: ReadonlySet<string>, resolvedBy?: (containing: string, specifier: string) => string | undefined, dynamic?: boolean): string[] {
   const found = new Set<string>();
   const seen = new Set<string>([file]);
   const visit = (from: string) => {
-    for (const resolved of importedFiles(program, from, resolvedBy, false)) {
+    for (const resolved of importedFiles(program, from, resolvedBy, false, from === file ? dynamic : false)) {
       if (seen.has(resolved)) continue;
       seen.add(resolved);
       if (files.has(resolved)) found.add(resolved);
@@ -89,7 +89,11 @@ function parsed(program: ts.Program, file: string, outside: boolean): ts.SourceF
 }
 
 /** The files a file's imports and re-exports resolve to, leaving out those the emit drops (`import type`, bindings used only as types). */
-function importedFiles(program: ts.Program, file: string, resolvedBy: ((containing: string, specifier: string) => string | undefined) | undefined, outside: boolean): string[] {
+/**
+ * `dynamic`: true for only the imports that stand for `await import(…)` (the names the build imports them under,
+ * `__import0_runAll`), false for only the others; left out, every import.
+ */
+function importedFiles(program: ts.Program, file: string, resolvedBy: ((containing: string, specifier: string) => string | undefined) | undefined, outside: boolean, dynamic?: boolean): string[] {
   const sf = parsed(program, file, outside);
   if (!sf) return [];
   const values = valueNames(sf);
@@ -97,6 +101,7 @@ function importedFiles(program: ts.Program, file: string, resolvedBy: ((containi
   for (const st of sf.statements) {
     if (!ts.isImportDeclaration(st) && !(ts.isExportDeclaration(st) && st.moduleSpecifier)) continue;
     if (elided(st, values)) continue;
+    if (dynamic !== undefined && isDynamicImport(st) !== dynamic) continue;
     const spec = (st.moduleSpecifier as ts.StringLiteral).text;
     // As the program resolved it (a plugin's import reaches its source), else as TypeScript would.
     const resolved = resolvedBy?.(file, spec) ?? ts.resolveModuleName(spec, file, program.getCompilerOptions(), ts.sys).resolvedModule?.resolvedFileName
@@ -133,4 +138,10 @@ function elided(st: ts.ImportDeclaration | ts.ExportDeclaration, values: Set<str
   if (nb && ts.isNamespaceImport(nb)) bound.push(nb.name.text);
   if (nb && ts.isNamedImports(nb)) for (const e of nb.elements) if (!e.isTypeOnly) bound.push(e.name.text);
   return !bound.some((b) => values.has(b));
+}
+
+/** An import the build adds for `await import(…)`: each name it imports under `__import<n>_`. */
+function isDynamicImport(st: ts.Statement): boolean {
+  const named = ts.isImportDeclaration(st) ? st.importClause?.namedBindings : undefined;
+  return !!named && ts.isNamedImports(named) && named.elements.length > 0 && named.elements.every((el) => /^__import\d+_/.test(el.name.text));
 }

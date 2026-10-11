@@ -257,8 +257,11 @@ private fun jsReceiving(f: Any): (Any?, Array<out Any?>) -> Any? = when (f) {
     else -> throw JSException(JSTypeError("Getter must be a function: ${jsInspect(f)}"))
 }
 
-/** A function that reads `this`: a method of an untyped object literal. */
-class JSMethod(val call: (Any?, Array<out Any?>) -> Any?) : Function<Any?>
+/** A function that reads `this`: a method of an untyped object literal. `length` is script's count of its parameters. */
+class JSMethod(val call: (Any?, Array<out Any?>) -> Any?) : Function<Any?> {
+    var length = 0
+    constructor(length: Int, call: (Any?, Array<out Any?>) -> Any?) : this(call) { this.length = length }
+}
 
 /** A method read from a prototype for an instance (`View.prototype._setMinWidthNative`): the instance is its `this`. */
 fun jsBoundTo(value: Any?, receiver: Any?): Any? = if (value is JSMethod) JSFunction { args -> value.call(receiver, args.toTypedArray()) } else value
@@ -383,3 +386,6 @@ fun <V> jsObjectFromEntries(entries: Iterable<Pair<String, V>>): JSRecord<V> {
 /** Null where code checked without strictNullChecks puts it in a slot Kotlin types non-null; reads of it fail as JavaScript's would. */
 @Suppress("UNCHECKED_CAST")
 fun <T> jsUncheckedNull(): T = null as T
+
+/** A field declared without a value (Kotlin's `lateinit`) read by name before it is set: undefined, as script reads it. */
+inline fun jsUnsetIsUndefined(read: () -> Any?): Any? = try { read() } catch (_: UninitializedPropertyAccessException) { null }

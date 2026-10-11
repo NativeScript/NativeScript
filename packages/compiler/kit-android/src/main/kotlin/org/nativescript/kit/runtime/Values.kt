@@ -277,7 +277,9 @@ fun jsGet(target: Any?, key: String): Any? = if (key == "constructor" && target 
     is JSMap<*, *> -> if (key == "size") target.size else jsMapMethod(target, key)
     is JSSet<*> -> if (key == "size") target.size else jsSetMethod(target, key)
     is JSFunction -> if (key == "length") target.length.toDouble() else null
-    is Double, is Boolean, is Function<*>, is JSSymbol, is JSBigInt, Unit -> null
+    is JSMethod -> if (key == "length") target.length.toDouble() else null
+    is Function<*> -> if (key == "length") jsFunctionArity(target)?.toDouble() else null
+    is Double, is Boolean, is JSSymbol, is JSBigInt, Unit -> null
     is Class<*> -> jsClassGet(target, key)
     else -> jsJavaGet(target, key)
 }
@@ -632,4 +634,15 @@ private fun jsSetMethod(target: JSSet<*>, key: String): Any? {
         "forEach" -> JSMethod { _, a -> val f = a.getOrNull(0); set.forEach { v: Any?, k: Any? -> jsCall(f, v, k, set) }; null }
         else -> null
     }
+}
+
+/** A Kotlin function's parameter count (script's `fn.length`), where its class says. */
+fun jsFunctionArity(f: Function<*>): Int? = when (f) {
+    is Function0<*> -> 0
+    is Function1<*, *> -> 1
+    is Function2<*, *, *> -> 2
+    is Function3<*, *, *, *> -> 3
+    is Function4<*, *, *, *, *> -> 4
+    is Function5<*, *, *, *, *, *> -> 5
+    else -> null
 }
