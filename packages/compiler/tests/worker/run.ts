@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // kit-android's Worker on the host JVM: WorkerTests.kt drives the runtime directly (lifecycle, errors,
-// structured clone, one live worker per script), and each case under cases/ is a small app of a main
+// structured clone, one live worker per script), RuntimeTests.kt its shared state under threads and its
+// weak tables under the GC, and each case under cases/ is a small app of a main
 // module and worker scripts, translated as an Android build translates them, whose output must match
 // the `//> ` lines at the top of its main.ts.
 //   node tests/worker/run.ts [--keep]
@@ -14,8 +15,8 @@ import { createProgram } from '../../src/program.ts';
 import { Translator } from '../../src/kotlin.ts';
 import { SourceLines } from '../../src/source-lines.ts';
 import { addKotlinInterfaces, translateKotlinModules } from '../../src/kotlin-modules.ts';
-import { kotlinToolchain } from '../kotlin-toolchain.ts';
 import { AndroidNativeAPI, androidClassPath } from '../../src/native-calls-android.ts';
+import { kotlinToolchain } from '../kotlin-toolchain.ts';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = resolve(here, '../..');
@@ -43,12 +44,14 @@ const java = (classes: string, main: string) => spawnSync('java', ['-Xss16m', '-
 
 let failed = 0;
 const tests = join(build, 'tests');
-kotlinc([join(here, 'Host.kt'), join(here, 'WorkerTests.kt')], tests, [runtime]);
-const unit = java(tests, 'workertest.WorkerTestsKt');
-process.stdout.write(unit.stdout);
-if (unit.status !== 0) {
-  failed++;
-  if (unit.stderr) console.log('  stderr: ' + unit.stderr.split('\n').slice(0, 8).join('\n  '));
+kotlinc([join(here, 'Host.kt'), join(here, 'WorkerTests.kt'), join(here, 'RuntimeTests.kt')], tests, [runtime]);
+for (const main of ['workertest.WorkerTestsKt', 'workertest.RuntimeTestsKt']) {
+  const unit = java(tests, main);
+  process.stdout.write(unit.stdout);
+  if (unit.status !== 0) {
+    failed++;
+    if (unit.stderr) console.log('  stderr: ' + unit.stderr.split('\n').slice(0, 8).join('\n  '));
+  }
 }
 
 /** A case's app as Kotlin in `pkg`, with a main that registers its workers, runs its main module and then the loop until idle. */
@@ -59,11 +62,11 @@ function translate(dir: string, out: string, pkg: string): void {
   const { checker, program, files: sources } = createProgram(roots, new Map(), 'android', modulesDir);
   const translator = new Translator(checker, new Map(), sources, {});
   translator.appModule = pkg;
+  // Java's own classes (java.lang.Thread) run on the host JVM; android.* compiles but cannot run there.
+  translator.native = new AndroidNativeAPI(translator, androidClassPath(null));
   translator.workerScripts = new Map(workers.map((f) => [f, relative(dir, f)]));
   const lines = (translator.lines = new SourceLines(new Map()));
   const modules = translateKotlinModules(translator, program, files);
-  // Java's own classes (java.lang.Thread) run on the host JVM; android.* compiles but cannot run there.
-  translator.native = new AndroidNativeAPI(translator, androidClassPath(null));
   addKotlinInterfaces(translator, modules);
   rmSync(out, { recursive: true, force: true });
   mkdirSync(out, { recursive: true });
