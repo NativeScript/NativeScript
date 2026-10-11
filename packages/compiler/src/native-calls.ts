@@ -1000,7 +1000,7 @@ export class NativeAPI {
       if (CF_CLASSES.has(cls)) return optional(target) ? `jsFlat(${t.expr(e)}).map { $0 as! ${cls} }` : `(jsFlat(${t.expr(e)}) as! ${cls})`;
       // A geometry struct the runtime gives script as an object (`window.screen.bounds`): the struct again.
       if (['CGRect', 'CGSize', 'CGPoint', 'UIEdgeInsets'].includes(cls)) return optional(target) ? `jsNativeStruct(${t.expr(e)}, ${cls}.self)` : `jsNativeStruct(${t.expr(e)}, ${cls}.self)!`;
-      return optional(target) ? `(jsFlat(${t.expr(e)}) as? ${b})` : `(jsFlat(${t.expr(e)}) as! ${b})`;
+      return optional(target) ? `(jsFlat(${t.expr(e)}) as? ${b})` : `jsNativeObject(${t.expr(e)}, ${b.startsWith('any ') ? `(${b})` : b}.self)`;
     }
     // An object where Swift takes one conforming to a protocol its class may not declare (a delegate the runtime would accept): checked when it runs.
     if (b.startsWith('any ') && source.replace(/[?!]$/, '') !== b && /^(\w+\.)?[A-Z]\w*$/.test(source.replace(/[?!]$/, ''))) return optional(target) ? `(${t.expr(e)} as? ${b})` : `(${t.expr(e)} as! ${b})`;
@@ -1083,7 +1083,7 @@ export class NativeAPI {
         && base(this.t.type(this.t.checker.getTypeOfSymbol(declared), e)) === b) return `(${code} as${optional(tsType) ? '?' : '!'} ${narrowedTo})`;
     if (b === 'Date' && base(tsType) === 'JSDate') return optional(swiftType) ? unwrapAs(`${code}.map { JSDate($0) }`, tsType, this.t.lenient && this.t.lenientRef(tsType) !== tsType) : `JSDate(${code})`;
     if (NUMBERS.has(b) && tsType.replace(/\?$/, '') === 'Double') {
-      if (b === 'Double' || b === 'TimeInterval') return optional(swiftType) && !tsType.endsWith('?') ? `${code}!` : code;
+      if (b === 'Double' || b === 'TimeInterval') return optional(swiftType) && !tsType.endsWith('?') ? `(${code} ?? .nan)` : code;
       return optional(swiftType) ? unwrapAs(`${code}.map { Double($0) }`, tsType, this.t.lenient && this.t.lenientRef(tsType) !== tsType) : `Double(${code})`;
     }
     // The runtime gives script an NSNumber as the number it holds.
@@ -1100,7 +1100,7 @@ export class NativeAPI {
     if (/^NS(Mutable)?(Dictionary|Array|Set)$/.test(b) && tsType.startsWith('[')) return `(${code} as${optional(swiftType) ? '?' : '!'} ${tsType.replace(/\?$/, '')})`;
     if (b.startsWith('[') && tsType.startsWith('JSArray<')) return `JSArray(${code}${optional(swiftType) ? ' ?? []' : ''})`;
     // Lenient code: a native object that may be nil is held as script holds null, unwrapped only where used.
-    if (swiftType.endsWith('?') && !tsType.endsWith('?') && tsType !== 'Any?') return this.t.lenient && this.t.lenientRef(tsType) !== tsType ? `jsImplicit(${code})` : `${code}!`;
+    if (swiftType.endsWith('?') && !tsType.endsWith('?') && tsType !== 'Any?') return this.absentAs(code, tsType);
     return code;
   }
 
@@ -1170,8 +1170,20 @@ export class NativeAPI {
     // A block parameter the handler declares as a subclass (`(urlAsset: AVURLAsset)` for an `AVAsset`): the object as it.
     const tb = tsType.replace(/[?!]$/, '');
     if (b !== tb && /^[A-Z]\w*$/.test(b) && /^[A-Z]\w*$/.test(tb) && this.isSubclass(tb, b)) return tsType.endsWith('?') ? `(${code} as? ${tb})` : `(${code} as! ${tb})`;
-    if (optional(swiftType) && !tsType.endsWith('?') && tsType !== 'Any?') return `${code}!`;
+    if (optional(swiftType) && !tsType.endsWith('?') && tsType !== 'Any?') return this.absentAs(code, tsType);
     return code;
+  }
+
+  /**
+   * A native optional TypeScript declares present (`stringForKey` returns `string`): nil as the value
+   * script then holds converts where a string, number or boolean is used (core tests `if (!uuid)`);
+   * an object stays missing until a member is read (lenient code), or unwraps.
+   */
+  private absentAs(code: string, tsType: string): string {
+    if (tsType === 'String') return `(${code} ?? "")`;
+    if (tsType === 'Bool') return `(${code} ?? false)`;
+    if (tsType === 'Double') return `(${code} ?? .nan)`;
+    return this.t.lenient && this.t.lenientRef(tsType) !== tsType ? `jsImplicit(${code})` : `${code}!`;
   }
 
   // ---- Subclasses of native classes ----------------------------------------------------------
@@ -1461,7 +1473,7 @@ export class NativeAPI {
       const plain = isOptional ? fn.replace(/^\((.*)\)[?!]$/, '$1') : fn;
       return isOptional ? `${code}.map { ${this.t.boxFunction('$0', plain)} }` : this.t.boxFunction(code, plain);
     }
-    if (NUMBERS.has(b) && tsType === 'Double') return b === 'Double' ? code : optional(swiftType) ? `Double(${code}!)` : `Double(${code})`;
+    if (NUMBERS.has(b) && tsType === 'Double') return b === 'Double' ? (optional(swiftType) ? `(${code} ?? .nan)` : code) : optional(swiftType) ? `(${code}.map { Double($0) } ?? .nan)` : `Double(${code})`;
     // A block whose parameters Swift bridges (`URLRequest?`) where TypeScript declares the Foundation class (`NSURLRequest`).
     const block = functionParts(swiftType.replace(/@\w+\s+/g, '').trim()), fn = functionParts(tsType);
     if (block && fn && block.params.some((p, k) => p !== fn.params[k])) return this.t.convert(code, block.text, tsType);
@@ -1473,7 +1485,7 @@ export class NativeAPI {
     if (b === 'Date' && base(tsType) === 'JSDate') return optional(swiftType) ? unwrapAs(`${code}.map { JSDate($0) }`, tsType, this.t.lenient && this.t.lenientRef(tsType) !== tsType) : `JSDate(${code})`;
     // A native enum is a number in JavaScript.
     if (tsType === 'Double' && this.isEnumType(b)) return optional(swiftType) ? `Double(${code}!.rawValue)` : `Double(${code}.rawValue)`;
-    if (optional(swiftType) && !tsType.endsWith('?') && tsType !== 'Any?') return `${code}!`;
+    if (optional(swiftType) && !tsType.endsWith('?') && tsType !== 'Any?') return this.absentAs(code, tsType);
     return code;
   }
 
@@ -1486,7 +1498,7 @@ export class NativeAPI {
       if (NUMBERS.has(b)) return b === 'Double' ? `jsToNumber(${code})` : integral(`jsToNumber(${code})`, b);
       // A BOOL the runtime marshals from any value: its truthiness.
       if (b === 'Bool' && !optional(swiftType)) return `jsTruthy(${code})`;
-      return optional(swiftType) ? `(jsToNative(${code}) as? ${b})` : `(jsToNative(${code}) as! ${b})`;
+      return optional(swiftType) ? `(jsToNative(${code}) as? ${b})` : `jsNativeArgument(${code}, ${b.startsWith('any ') ? `(${b})` : b}.self)`;
     }
     if (NUMBERS.has(b) && tsType === 'Double' && b !== 'Double') return integral(code, b);
     const bridged = bridge(code, tsType, swiftType);

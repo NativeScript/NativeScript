@@ -51,8 +51,25 @@ public func jsNativeIntegerArgument<T: FixedWidthInteger>(_ value: Any?, _: T.Ty
     return jsNativeInteger(jsToNumber(value), T.self)
 }
 
-/// What script passes where native code takes a value of this type, as the runtime marshals it.
-public func jsNativeArgument<T>(_ value: Any?, _: T.Type) -> T { jsToNative(value) as! T }
+/// What script passes where native code takes a value of this type, as the runtime marshals it. A value
+/// that is none (a function where a color is taken) is the TypeError the runtime throws, reported, and the
+/// type's neutral value goes to the native code instead.
+public func jsNativeArgument<T>(_ value: Any?, _: T.Type) -> T {
+    if let native = jsToNative(value) as? T { return native }
+    return jsNativeRefused(value, T.self)
+}
+
+/// An untyped object where native code takes one of this class or protocol (`(jsFlat(x) as? UIColor)` that is none): see `jsNativeArgument`.
+public func jsNativeObject<T>(_ value: Any?, _: T.Type) -> T {
+    if let object = jsFlat(value) as? T { return object }
+    return jsNativeRefused(value, T.self)
+}
+
+@inline(never)
+func jsNativeRefused<T>(_ value: Any?, _: T.Type) -> T {
+    jsReportUncaught(JSTypeError("Cannot marshal \(jsIsNullish(value) ? jsToString(value) : jsTypeof(value)) to \(T.self)"))
+    return jsNativeZero(T.self)
+}
 
 /// An enum or option set from the number script passes: its raw value, a case the type does not list included.
 public func jsNativeArgument<T: RawRepresentable>(_ value: Any?, _: T.Type) -> T where T.RawValue: FixedWidthInteger {

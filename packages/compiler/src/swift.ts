@@ -9256,7 +9256,7 @@ function nativeResult(code: string, type: string): string {
   if (['Double', 'Float', 'CGFloat'].includes(t)) return `${t}(jsToNumber(${code}))`;
   if (/^U?Int(8|16|32|64)?$/.test(t)) return `jsNativeIntegerArgument(${code}, ${t}.self)`;
   if (t === 'String') return /[?!]$/.test(type) ? `{ (__s: Any?) -> String? in jsIsNullish(__s) ? nil : jsToString(__s) }(${code})` : `jsToString(${code})`;
-  return /[?!]$/.test(type) ? `(jsToNative(${code}) as? ${t})` : `(jsToNative(${code}) as! ${t})`;
+  return /[?!]$/.test(type) ? `(jsToNative(${code}) as? ${t})` : `jsNativeArgument(${code}, ${t.startsWith('any ') ? `(${t})` : t}.self)`;
 }
 
 /** A native result type's value where script's method threw. */
