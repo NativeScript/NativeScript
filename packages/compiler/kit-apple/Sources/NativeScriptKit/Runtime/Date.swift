@@ -173,13 +173,15 @@ public final class JSDate: JSDynamic, JSStringConvertible {
 
     public static func parse(_ text: String) -> Double {
         let s = text.trimmingCharacters(in: .whitespaces)
-        let iso = #"^([+-]\d{6}|\d{4})(?:-(\d{2})(?:-(\d{2}))?)?(?:T(\d{2}):(\d{2})(?::(\d{2})(?:\.(\d{1,3})\d*)?)?(Z|[+-]\d{2}:\d{2})?)?$"#
+        let iso = #"^([+-][0-9]{6}|[0-9]{4})(?:-([0-9]{2})(?:-([0-9]{2}))?)?(?:T([0-9]{2}):([0-9]{2})(?::([0-9]{2})(?:\.([0-9]{1,3})[0-9]*)?)?(Z|[+-][0-9]{2}:[0-9]{2})?)?$"#
         guard let re = try? NSRegularExpression(pattern: iso), let m = re.firstMatch(in: s, range: NSRange(location: 0, length: (s as NSString).length)) else { return .nan }
         func group(_ i: Int) -> String? { let r = m.range(at: i); return r.location == NSNotFound ? nil : (s as NSString).substring(with: r) }
         let y = Double(group(1)!) ?? .nan
         let mo = (Double(group(2) ?? "1") ?? 1) - 1, d = Double(group(3) ?? "1") ?? 1
         let h = Double(group(4) ?? "0") ?? 0, mi = Double(group(5) ?? "0") ?? 0, sec = Double(group(6) ?? "0") ?? 0
         let ms = Double((group(7) ?? "0").padding(toLength: 3, withPad: "0", startingAt: 0)) ?? 0
+        // Out-of-range fields make the string invalid rather than roll over; a day past its month's end (Feb 30) rolls, as in V8.
+        guard (0...11).contains(mo), (1...31).contains(d), mi <= 59, sec <= 59, h < 24 || (h == 24 && mi == 0 && sec == 0 && ms == 0) else { return .nan }
         let t = makeDate(y, mo, d, h, mi, sec, ms)
         guard let zone = group(8) else {
             // Date-only forms are UTC; date-time forms without an offset are local time.
@@ -188,6 +190,7 @@ public final class JSDate: JSDynamic, JSStringConvertible {
         if zone == "Z" { return timeClip(t) }
         let sign: Double = zone.hasPrefix("-") ? -1 : 1
         let parts = zone.dropFirst().split(separator: ":").compactMap { Double($0) }
+        guard parts[0] <= 23, parts[1] <= 59 else { return .nan }
         return timeClip(t - sign * (parts[0] * 60 + parts[1]) * 60_000)
     }
 
