@@ -4735,6 +4735,9 @@ export class Translator implements AsyncTranslator {
       if (this.library && unset && this.typeOf(e.left) !== 'Any?') t = optionalType(this.typeOf(e.left));
       // Library mode: a target declared nullable (`let match: RegExpExecArray` set from `exec`) holds what may be missing.
       if (this.library && this.isObjectType(t) && this.declaredTypeOf(e.left) === optionalType(t) && this.nullTolerant(e)) t = optionalType(t);
+      // `(map[k] = [])`: TypeScript types the empty literal `never[]`; it is made as the target's array, the one stored.
+      const target = (this.declaredTypeOf(e.left) ?? this.typeOf(e.left)).replace(/\?$/, '');
+      if (ts.isArrayLiteralExpression(last) && !last.elements.length && t === 'JSArray<Any?>' && target.startsWith('JSArray<')) t = target;
       const v = this.fresh('__assigned');
       const value = this.coerce(e.right, t);
       this.subst.set(e.right, v);
