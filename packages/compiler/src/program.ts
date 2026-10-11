@@ -236,6 +236,8 @@ const ANDROID_GLOBALS = `
   declare var URL: { prototype: URL; new (url: string | URL, base?: string | URL): URL };
   declare function postMessage(message: any, transfer?: any[]): void;
   declare function close(): void;
+  declare function setTimeout(callback: (...args: any[]) => void): number;
+  declare function setInterval(callback: (...args: any[]) => void): number;
 `;
 
 /** The platform's native API typings, as an app's `references.d.ts` includes them. */
@@ -570,9 +572,18 @@ function nativeViewCasts(program: ts.Program, isApp: (name: string) => boolean, 
   const checker = program.getTypeChecker();
   // The cast only where what the code reads of it is the native class's: a member newer than the typings
   // (`prominentTabIdentifier`), or a property called (`visibleCells()`), stays as untyped as core declares it.
+  // A value given where a narrower type is declared (`let lb: LayoutBase = view.android`) stays untyped, as the app's assignment needs it.
   const fits = (n: ts.PropertyAccessExpression, native: string): boolean => {
-    if (!ts.isPropertyAccessExpression(n.parent) || n.parent.expression !== n) return true;
     const cls = (checker as unknown as { resolveName(name: string, at: ts.Node, meaning: ts.SymbolFlags, excludeGlobals: boolean): ts.Symbol | undefined }).resolveName(native, n, ts.SymbolFlags.Type, false);
+    if (!ts.isPropertyAccessExpression(n.parent) || n.parent.expression !== n) {
+      const wanted = checker.getContextualType(n);
+      if (!wanted || wanted.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown)) return true;
+      // A qualified Java class (`android.view.View`): its namespaces' exports, one name at a time.
+      const [first, ...rest] = native.split('.');
+      let sym = rest.length ? (checker as unknown as { resolveName(name: string, at: ts.Node, meaning: ts.SymbolFlags, excludeGlobals: boolean): ts.Symbol | undefined }).resolveName(first, n, ts.SymbolFlags.Namespace, false) : cls;
+      for (const part of rest) sym = sym && checker.getExportsOfModule(sym).find((s) => s.name === part);
+      return !sym || checker.isTypeAssignableTo(checker.getDeclaredTypeOfSymbol(sym), wanted);
+    }
     if (!cls) return false;
     const member = checker.getDeclaredTypeOfSymbol(cls).getProperty(n.parent.name.text);
     if (!member) return false;

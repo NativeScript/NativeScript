@@ -22,6 +22,8 @@ interface JSDynamic {
     fun jsSet(key: String, value: Any?)
     val jsKeys: List<String>
     val jsClassName: String?
+    /** A member the class declares (an accessor, a method), which `in` finds though it is no own key. */
+    fun jsHasMember(key: String): Boolean = false
 }
 
 /** A class with its own `toString()`, which JavaScript's string conversion calls. */
@@ -274,7 +276,8 @@ fun jsGet(target: Any?, key: String): Any? = if (key == "constructor" && target 
     is Triple<*, *, *> -> when (key) { "0" -> target.first; "1" -> target.second; "2" -> target.third; "length" -> 3.0; else -> null }
     is JSMap<*, *> -> if (key == "size") target.size else jsMapMethod(target, key)
     is JSSet<*> -> if (key == "size") target.size else jsSetMethod(target, key)
-    is Double, is Boolean, is Function<*>, is JSFunction, is JSSymbol, is JSBigInt, Unit -> null
+    is JSFunction -> if (key == "length") target.length.toDouble() else null
+    is Double, is Boolean, is Function<*>, is JSSymbol, is JSBigInt, Unit -> null
     is Class<*> -> jsClassGet(target, key)
     else -> jsJavaGet(target, key)
 }
@@ -372,8 +375,8 @@ fun <T : JSDynamic> jsObjectAssign(target: T, vararg sources: Any?): T {
 fun jsHasKey(target: Any?, key: String): Boolean = when (target) {
     is JSObject -> target.has(key)
     // A symbol is no key a class declares: only its own symbol-keyed members (methods its `jsGet` gives) and what was set on it have one (reading `jsKeys` runs accessors).
-    is JSExpando -> if (jsIsSymbolKey(key)) ((target as? JSSymbolKeyed)?.jsSymbolKeys?.contains(key) ?: false) || jsExpandoHas(target, key) || target.jsGet(key) != null else jsExpandoHas(target, key) || key in target.jsKeys
-    is JSDynamic -> if (jsIsSymbolKey(key)) ((target as? JSSymbolKeyed)?.jsSymbolKeys?.contains(key) ?: false) || target.jsGet(key) != null else key in target.jsKeys
+    is JSExpando -> if (jsIsSymbolKey(key)) ((target as? JSSymbolKeyed)?.jsSymbolKeys?.contains(key) ?: false) || jsExpandoHas(target, key) || target.jsGet(key) != null else jsExpandoHas(target, key) || key in target.jsKeys || target.jsHasMember(key)
+    is JSDynamic -> if (jsIsSymbolKey(key)) ((target as? JSSymbolKeyed)?.jsSymbolKeys?.contains(key) ?: false) || target.jsGet(key) != null else key in target.jsKeys || target.jsHasMember(key)
     is JSArray<*> -> key == "length" || (jsArrayIndex(key)?.let { it < target.size } ?: false)
     null, JSNull, is String, is Number, is Boolean, is Function<*>, is JSFunction -> false
     // A Java object (a native view): its methods and fields, as NativeScript's runtime exposes them.

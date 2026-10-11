@@ -23,6 +23,8 @@ export interface KitType {
   native?: string;
   /** Declared by the kit, not only extended by it (`extension UIView`). */
   declared?: boolean;
+  /** Kotlin: the object or class declaring it, for a nested one (`Trace` of `Trace.categories`). */
+  outer?: string;
 }
 
 /**

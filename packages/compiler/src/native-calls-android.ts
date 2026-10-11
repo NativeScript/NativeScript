@@ -259,6 +259,11 @@ export class AndroidNativeAPI implements KotlinNative {
       const common = this.commonClass(type.types);
       return common ? [common] : null;
     }
+    // A Java class with members the app's type adds (`NumberPicker & { valueChangedListener: … }`): the class's.
+    if (type.isIntersection()) {
+      const classes = type.types.flatMap((x) => this.classesOf(x) ?? []);
+      return classes.length ? classes : null;
+    }
     const sym = type.getSymbol();
     if (!sym) return null;
     if (this.isNativeSymbol(sym)) {
@@ -1720,7 +1725,14 @@ ${indent}}`;
   /** A `const` holding an `Array.create(…)`: the Java array's type, for choosing an overload. */
   private createdArray(e: ts.Expression): Raw | null {
     const d = ts.isIdentifier(e) ? this.t.resolve(e)?.valueDeclaration : undefined;
-    if (!d || !ts.isVariableDeclaration(d) || !(d.parent.flags & ts.NodeFlags.Const) || !d.initializer || !ts.isCallExpression(d.initializer)) return null;
+    if (!d || !ts.isVariableDeclaration(d) || !d.initializer || !ts.isCallExpression(d.initializer)) return null;
+    // A `var` or `let` holds the array while nothing assigns it again (`objectAnimators[0] = …` sets an element).
+    if (!(d.parent.flags & ts.NodeFlags.Const)) {
+      const sym = this.t.checker.getSymbolAtLocation(d.name);
+      const reassigned = (n: ts.Node): boolean => (ts.isBinaryExpression(n) && n.operatorToken.kind === ts.SyntaxKind.EqualsToken && ts.isIdentifier(n.left) && this.t.checker.getSymbolAtLocation(n.left) === sym) || !!ts.forEachChild(n, reassigned);
+      const scope = ts.findAncestor(d, (x) => ts.isFunctionLike(x) || ts.isSourceFile(x));
+      if (!sym || !scope || reassigned(scope)) return null;
+    }
     return this.arrayCreate(d.initializer);
   }
 }

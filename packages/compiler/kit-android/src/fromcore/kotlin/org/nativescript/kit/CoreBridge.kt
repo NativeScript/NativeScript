@@ -118,7 +118,13 @@ fun ViewBase.kitSet(name: String, value: Any?) {
             // A style property the view's accessor passes to its style (`backgroundColor`), which converts what the template gives;
             // without such an accessor (`zIndex`) the value lands on the object and styles nothing, as in NativeScript.
             val styled = JSPrototypes.holder(Style::class.java, key) != null
-            if (JSPrototypes.holder(javaClass, key) != null) {
+            val holder = JSPrototypes.holder(javaClass, key)
+            // View.prototype accessors core defines for style properties (`flexWrapBefore`) take a typed value, which a
+            // template's text would be coerced to (`"true"` to false); the style's converter parses it as NativeScript does.
+            if (styled && value is String && holder != null && holder === JSPrototypes.holder(View::class.java, key)) {
+                style?.let { jsSet(it, key, value); return@jsReport }
+            }
+            if (holder != null) {
                 // A property of the view's own (an ActionItem's `visibility`), or an accessor passing a typed value to the style.
                 try { set(key, value) } catch (e: ClassCastException) { if (styled) style?.let { jsSet(it, key, value) } ?: throw e else throw e }
                 return@jsReport

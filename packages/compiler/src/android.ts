@@ -65,6 +65,8 @@ export interface AndroidBuild {
   resolved?: (containing: string, specifier: string) => string | undefined;
   /** The app mounts its own roots (Octane's `renderNativeScriptApp` in the entry): the entry is a module that runs the app. */
   mounted?: boolean;
+  /** A plain XML app's pages, page stylesheets (path and AST) and the element names its XML uses, for core's Builder. */
+  xml?: { pages: { name: string; text: string }[]; styles: { name: string; ast: string }[]; elements: string[] };
   /** Kit switches the app's patch of core turns on. */
   corePatches?: string[];
   /** `--allow-unimplemented-properties`. */
@@ -210,8 +212,19 @@ export async function writeAndroid(b: AndroidBuild): Promise<void> {
   const installs = (b.bindings ?? []).map((x) => `        ${x.installer}.install()\n`).join('');
   if (b.generatedKit) {
     const extract = copyAndroidAppFiles(b.app, b.appDir, join(b.out, 'src', 'main', 'assets')) ? '        NativeScriptApplication.extractAppFiles(this)\n' : '';
+    let xmlModules = '';
+    if (b.xml) {
+      // An element the kit has no class for (`<template>`, a platform block) is the Builder's own, or fails where a page names it, as in JavaScript.
+      const kit = new Set((translator.core as CoreKotlin).kitElements());
+      const elements = b.xml.elements.filter((e) => kit.has(e));
+      xmlModules = [
+        ...b.xml.pages.map((x) => `        AppModules.register(${kotlinString(x.name)}) { ${kotlinString(x.text)} }\n`),
+        ...b.xml.styles.map((s) => `        AppModules.register(${kotlinString(s.name)}) { jsJSONParse(${kotlinString(s.ast)}) }\n`),
+        `        AppModules.register(listOf("@nativescript/core/ui")) { JSObject(listOf<Pair<String, Any?>>(${elements.map((e) => `Pair(${kotlinString(e)}, ${e}::class.java)`).join(', ')})) }\n`,
+      ].join('');
+    }
     const run = `${extract}${installs}${switches}        Reactivity.schedule = Reactivity.Schedule.${SCHEDULE[b.framework as Framework].toUpperCase()}\n` + (b.mounted
-      ? `        NativeScriptApplication.prepare(cssAST = appCSS)\n        CoreModules.initialize()\n${inits}`
+      ? `        NativeScriptApplication.prepare(cssAST = appCSS)\n        CoreModules.initialize()\n${xmlModules}${inits}`
       : `        NativeScriptApplication.prepare(cssAST = appCSS)\n        CoreModules.initialize()\n${inits}${b.routeTree ? `        Router.shared.config = ${kotlinRouteConfig(b.routeTree, '        ')}\n` : routes}        NativeScriptApplication.start { ${b.root}().render() }\n`);
     writeFileSync(join(sources, '__Entry.kt'), `// Compiled by ns-native: the app's entry and its CSS.
 package ${pkg}
