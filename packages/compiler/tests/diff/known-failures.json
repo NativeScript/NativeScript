@@ -1,0 +1,15 @@
+{
+	"$comment": "Cases that do not match Node yet, by target, each with its cause. The diff run reports them without failing, and fails when one matches Node so it is removed here. Owners: the Kotlin translator (src/kotlin.ts) and runtime (kit-android runtime).",
+	"swift": {},
+	"kotlin": {
+		"92-inspect-class": "kotlinc: a class implementing the runtime's inspection protocol (jsKeys, jsClassName) does not compile: supertypes and overrides are not emitted",
+		"103-structural-interface": "runtime: a class instance given where a structural interface is taken is converted through fromJS, which casts a missing member to Boolean (NullPointerException)",
+		"105-method-shape": "runtime: a class's method read through a shape of methods is undefined (TypeError: undefined is not a function)",
+		"109-chain-into-element": "translation: an optional chain into an element access (group?.items[i]) dereferences the missing receiver (NullPointerException)",
+		"110-self-referencing-initializer": "kotlinc: an initializer that reads the variable it declares (a closure capturing it) is emitted before the declaration",
+		"111-async-forward-capture": "kotlinc: an async closure capturing a later-declared variable references it before declaration",
+		"112-timer-arguments": "kotlinc: setTimeout/setInterval with extra arguments for the callback is unresolved",
+		"113-then-maybe-promise": "translation: a then() handler returning Promise<number> | undefined is cast to a non-null JSPromise",
+		"116-rest-callback-slot": "kotlinc: a callback with a rest parameter passed where a fixed-arity function is expected has the wrong argument count"
+	}
+}

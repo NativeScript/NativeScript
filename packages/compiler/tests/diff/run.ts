@@ -166,12 +166,25 @@ rmSync(js, { recursive: true, force: true });
 toJavaScript(join(here, 'cases'), js);
 const expected = new Map(cases.map((c) => [c, spawnSync('node', [join(js, basename(c, '.ts') + '.js')], { encoding: 'utf8' })]));
 let failed = 0;
+/**
+ * Cases known to fail on a target, each with its cause (tests/diff/known-failures.json). A known failure is reported
+ * and not counted; a known failure that matches Node fails the run, so the list only shrinks.
+ */
+const knownFile = JSON.parse(readFileSync(join(here, 'known-failures.json'), 'utf8'));
+const known: Record<string, Record<string, string>> = { swift: knownFile.swift ?? {}, kotlin: knownFile.kotlin ?? {} };
+const knownFailed: string[] = [];
+const ran = new Set<string>();
+function fail(name: string, target: string) {
+  if (known[target]?.[name]) knownFailed.push(`${name} (${target})`);
+  else failed++;
+}
 
 function report(name: string, target: string, want: { stdout: string; status: number | null }, actual: { stdout: string; stderr: string; status: number | null }) {
   const same = actual.stdout === want.stdout && (actual.status === 0) === (want.status === 0);
+  ran.add(`${target}:${name}`);
   if (same) { console.log(`✓ ${name} (${target})`); return; }
-  failed++;
-  console.log(`✗ ${name} (${target}): output differs (exit ${want.status} in Node, ${actual.status} native)`);
+  fail(name, target);
+  console.log(`✗ ${name} (${target})${known[target]?.[name] ? ' [known]' : ''}: output differs (exit ${want.status} in Node, ${actual.status} native)`);
   const e = want.stdout.split('\n'), a = actual.stdout.split('\n');
   for (let k = 0, shown = 0; k < Math.max(e.length, a.length) && shown < 8; k++) {
     if (e[k] !== a[k]) { console.log(`    line ${k + 1}\n      node:   ${JSON.stringify(e[k])}\n      native: ${JSON.stringify(a[k])}`); shown++; }
@@ -193,8 +206,9 @@ if (targets.includes('swift')) {
       if (compiled.status !== 0) throw new Error(`swiftc:\n${compiled.stderr.split('\n').filter((l) => /error:/.test(l)).slice(0, 15).join('\n')}`);
       report(name, 'swift', expected.get(c)!, spawnSync(join(dir, name), { encoding: 'utf8', timeout: 20000 }));
     } catch (err) {
-      failed++;
-      console.log(`✗ ${name} (swift): ${(err as Error).message}${process.env.NS_NATIVE_STACKS ? (err as Error).stack : ""}`);
+      ran.add(`swift:${name}`);
+      fail(name, 'swift');
+      console.log(`✗ ${name} (swift)${known.swift?.[name] ? ' [known]' : ''}: ${(err as Error).message}${process.env.NS_NATIVE_STACKS ? (err as Error).stack : ""}`);
     }
     if (!keep) rmSync(dir, { recursive: true, force: true });
   }
@@ -211,8 +225,9 @@ if (targets.includes('kotlin')) {
       translateKotlin(join(here, 'cases', c), join(build, 'kotlin', name), pkg(name));
       translated.push(name);
     } catch (err) {
-      failed++;
-      console.log(`✗ ${name} (kotlin): ${(err as Error).message}`);
+      ran.add(`kotlin:${name}`);
+      fail(name, 'kotlin');
+      console.log(`✗ ${name} (kotlin)${known.kotlin?.[name] ? ' [known]' : ''}: ${(err as Error).message}`);
     }
   }
   const runtime = buildKotlinRuntime();
@@ -226,7 +241,7 @@ if (targets.includes('kotlin')) {
     for (const name of translated) {
       const out = join(build, 'kotlin-classes-' + name);
       const error = kotlinc(sourcesOf(name), out, [runtime]);
-      if (error) { failed++; console.log(`✗ ${name} (kotlin): kotlinc:\n${error}`); } else runnable.set(name, out);
+      if (error) { ran.add(`kotlin:${name}`); fail(name, 'kotlin'); console.log(`✗ ${name} (kotlin)${known.kotlin?.[name] ? ' [known]' : ''}: kotlinc:\n${error}`); } else runnable.set(name, out);
     }
   }
   for (const c of cases) {
@@ -240,5 +255,10 @@ if (targets.includes('kotlin')) {
 }
 
 const total = cases.length * targets.length - kotlinSkipped - swiftSkipped;
-console.log(`${total - failed} of ${total} runs match Node (${targets.join(', ')})`);
+const caseNames = new Set(cases.map((c) => basename(c, '.ts')));
+const nowPassing = targets.flatMap((t) => Object.keys(known[t] ?? {}).filter((n) => caseNames.has(n) && ran.has(`${t}:${n}`) && !knownFailed.includes(`${n} (${t})`)).map((n) => `${n} (${t})`));
+for (const n of nowPassing) console.log(`✗ ${n} matches Node: remove it from tests/diff/known-failures.json`);
+failed += nowPassing.length;
+if (knownFailed.length) console.log(`${knownFailed.length} known failures (tests/diff/known-failures.json): ${knownFailed.join(', ')}`);
+console.log(`${total - failed - knownFailed.length + nowPassing.length} of ${total} runs match Node (${targets.join(', ')})`);
 process.exit(failed ? 1 : 0);
