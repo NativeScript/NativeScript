@@ -5,6 +5,7 @@
 // with kit-android's runtime (plain JVM). Output and exit status must match.
 //   node tests/diff/run.ts [case-name…] [--swift | --kotlin] [--keep]
 // Build products go to $NS_DIFF_BUILD (default: <tmp>/ns-native-diff).
+// Node runs with --expose-gc: a case checking object lifetimes calls `globalThis.gc?.()`, which ARC needs no call for.
 // Kotlin compiles with $KOTLINC, `kotlinc` on PATH, or the compiler Gradle cached for kit-android.
 import { execFileSync, spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
@@ -164,7 +165,7 @@ if (targets.includes('swift')) buildRuntime();
 const js = join(build, 'js');
 rmSync(js, { recursive: true, force: true });
 toJavaScript(join(here, 'cases'), js);
-const expected = new Map(cases.map((c) => [c, spawnSync('node', [join(js, basename(c, '.ts') + '.js')], { encoding: 'utf8' })]));
+const expected = new Map(cases.map((c) => [c, spawnSync('node', ['--expose-gc', join(js, basename(c, '.ts') + '.js')], { encoding: 'utf8' })]));
 let failed = 0;
 
 function report(name: string, target: string, want: { stdout: string; status: number | null }, actual: { stdout: string; stderr: string; status: number | null }) {

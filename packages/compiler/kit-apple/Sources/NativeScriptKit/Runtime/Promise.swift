@@ -19,6 +19,10 @@ public enum Microtasks {
 
     public static func enqueue(_ job: @escaping () -> Void) { queue.append(job) }
 
+    /// The targets of WeakRefs made in the current job, held until the checkpoint after it ends (ECMA-262 KeepDuringJob):
+    /// under ARC a target nothing else holds would otherwise be gone before the next statement.
+    nonisolated(unsafe) static var kept: [AnyObject] = []
+
     /// Called when a checkpoint ends after a task (`taskRan`) or a job ran: Angular's zone turning stable.
     nonisolated(unsafe) public static var onStable: (() -> Void)?
     nonisolated(unsafe) private static var turned = false
@@ -31,7 +35,10 @@ public enum Microtasks {
     public static func checkpoint() {
         guard !draining else { return }
         draining = true
-        defer { draining = false }
+        defer {
+            draining = false
+            if !kept.isEmpty { kept.removeAll() }
+        }
         while true {
             while head < queue.count {
                 let job = queue[head]!

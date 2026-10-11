@@ -4,7 +4,10 @@ import Foundation
 public final class JSWeakRef<T: AnyObject>: JSHostObject, JSToStringTag {
     private weak var target: T?
 
-    public init(_ target: T) { self.target = target }
+    public init(_ target: T) {
+        self.target = target
+        Microtasks.kept.append(target)
+    }
 
     public func get() -> T? { target }
     public func deref() -> T? { target }
