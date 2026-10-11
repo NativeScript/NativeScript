@@ -230,10 +230,13 @@ export class CoreAPI {
     if (this.t.type(type, e) === 'EventData') return null;
     const name = coreSymbolName(sym);
     // An interface core's typings declare (`Screen.mainScreen: ScreenMetrics`) where the kit's member holds its class (`MainScreen`).
-    if (!this.index.has(name) && sym.flags & ts.SymbolFlags.Interface && ts.isPropertyAccessExpression(e)) {
+    // Or a shape (`Utils.ios: { collections: {…} }`) where the kit's member holds an object of its class, or a type itself (`collections.Type`).
+    if (!this.index.has(name) && sym.flags & (ts.SymbolFlags.Interface | ts.SymbolFlags.TypeLiteral) && ts.isPropertyAccessExpression(e)) {
       const outer = this.owner(e.expression);
-      const held = outer && kitMember(this.index, outer.name, e.name.text)?.type.replace(/[?!]$/, '');
+      const held = outer && kitMember(this.index, outer.name, e.name.text)?.type.replace(/[?!]$/, '').replace(/^NativeScriptKit\./, '');
       if (held && this.index.has(held)) return { name: held, isStatic: false };
+      const meta = held && /^([\w.]+)\.Type$/.exec(held)?.[1];
+      if (meta && this.index.has(meta)) return { name: meta, isStatic: true };
     }
     // A shape core's typings declare (`{ unit: 'dip'; value: number }`) that the kit has no type for: read as any object is.
     if (!this.index.has(name) && (sym.flags & ts.SymbolFlags.TypeLiteral || sym.flags & ts.SymbolFlags.Interface)) return null;

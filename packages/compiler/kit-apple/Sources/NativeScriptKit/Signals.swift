@@ -33,6 +33,20 @@ public final class Owner {
 
     public func onCleanup(_ cleanup: @escaping () -> Void) { cleanups.append(cleanup) }
 
+    /// The effects this owner, its children and what their runs made own.
+    fileprivate func ownedEffects() -> Set<ObjectIdentifier> {
+        var found = Set<ObjectIdentifier>()
+        var owners = [self]
+        while let o = owners.popLast() {
+            for e in o.effects {
+                found.insert(ObjectIdentifier(e))
+                if let made = e.owner { owners.append(made) }
+            }
+            owners.append(contentsOf: o.children)
+        }
+        return found
+    }
+
     public func dispose() {
         guard !disposed else { return }
         disposed = true
@@ -95,6 +109,21 @@ public enum Reactivity {
         guard flushScheduled else { return .resolve() }
         if flushedPromise == nil { flushedPromise = JSPromise<Void>.pending().1 }
         return flushedPromise!.promise
+    }
+
+    /// Angular's `detectChanges()` on a view just created (a routed page, a dialog): the update its own effects
+    /// await runs now, so the view is complete before it is shown; other views' effects wait for the app's update.
+    public static func detectChanges(in owner: Owner) {
+        if flushing { return }
+        flushing = true
+        defer { flushing = false }
+        while true {
+            let own = owner.ownedEffects()
+            let pending = queue.filter { own.contains(ObjectIdentifier($0)) }.sorted { EffectOrder.precedes($0.key, $1.key) }
+            if pending.isEmpty { break }
+            queue.removeAll { own.contains(ObjectIdentifier($0)) }
+            for effect in pending { effect.runIfStale() }
+        }
     }
 
     /// Svelte's `tick()`: schedules an update and returns a settled promise, whose reactions follow it.
@@ -323,7 +352,7 @@ public final class Effect: Subscriber {
     private var body: (() -> Void)?
     private var sources: [ObjectIdentifier: Source] = [:]
     private var stale = false
-    private var owner: Owner?
+    fileprivate var owner: Owner?
     let key: [Int]
     private let height: Int?
     private let derived: Bool

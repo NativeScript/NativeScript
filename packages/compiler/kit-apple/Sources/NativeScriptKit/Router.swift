@@ -270,6 +270,7 @@ public final class Router {
             let view = owner.run(make)
             Page.building.removeLast()
             if view !== page { page.content = view }
+            if Reactivity.schedule == .task { Reactivity.detectChanges(in: owner) }
             try page.on(Page.navigatedFromEvent, { [weak self, weak outlet] (data: EventData?) in
                 guard jsTruthy(data?[jsKey: "isBackNavigation"]) else { return }
                 owner.dispose()

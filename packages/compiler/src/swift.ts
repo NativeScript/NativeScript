@@ -3540,9 +3540,16 @@ ${members.join('\n')}
         continue;
       }
       // A view class narrowing its native view's type (`nativeViewProtected: CHIBasePageControl`) reads the kit's `nativeView`.
-      if (isView && !m.initializer && (n === 'nativeViewProtected' || n === 'ios')) {
+      if (isView && !m.initializer && ['nativeViewProtected', 'ios'].includes(m.name.getText())) {
         const native = t.replace(/[?!]$/, '');
         lines.push(`    var ${ident(n)}: ${native}! { nativeView as? ${native} }`);
+        continue;
+      }
+      // A plugin's field with no value over a kit property (`borderRadius: number` on its view): only a type, as its
+      // build defines no fields on the instance; the kit's property, read as that type.
+      const typeOnly = !m.initializer && this.pluginFiles.has(cls.getSourceFile().fileName) ? this.kitRedeclared(m) : null;
+      if (typeOnly && !typeOnly.same) {
+        lines.push(`    var ${ident(n)}: ${t} {`, `        get { ${this.convert(`self.${ident(m.name.getText())}`, typeOnly.type, t)} }`, `        set { self.${ident(m.name.getText())} = ${this.convert('newValue', t, typeOnly.type)} }`, '    }');
         continue;
       }
       const nativeProperty = this.nativePropertyOf(m);
@@ -3741,7 +3748,7 @@ ${members.join('\n')}
       lines.push(`    ${mods}var ${ident(n)}: ${declared} {`, ...parts, '    }');
       // A plugin's objects are read untyped too (`navigator.gpu.native`): their accessors by name.
       const own = (a.get ?? a.set)!;
-      if (!this.library && (this.pluginFiles.has(cls.getSourceFile().fileName) || this.appMembersByName) && !isStatic(own) && !overKit && !this.symbolMember(own.name)) {
+      if (!this.library && (this.pluginFiles.has(cls.getSourceFile().fileName) || this.appMembersByName) && !isStatic(own) && !this.symbolMember(own.name)) {
         const getThrows = !!a.get && this.throwsInfo.fn(a.get) && !reported;
         const read = getThrows ? `(jsReported { try self.${ident(n)} } ?? nil)` : `self.${ident(n)}`;
         dynAccessors.push({ name: n, get: a.get ? this.convert(read, getThrows ? optionalType(declared.replace(/!$/, '?')) : declared, 'Any?') : null, set: anySetter ? `self.__set_${n.replace(/\W/g, '_')}(newValue)` : a.set ? `self.${ident(n)} = ${declared.endsWith('!') ? this.fromAny('newValue', declared.replace(/!$/, '?')) : this.fromAnyCode('newValue', declared, true)}` : null });
@@ -3852,12 +3859,13 @@ ${members.join('\n')}
       const modifiers = isStatic(m) ? (overriddenStatic && sameParams(m, overriddenStatic) ? 'override class ' : 'class ') : inherited.has(n) ? 'override ' : '';
       lines.push('    ' + this.func(m, ident(n), modifiers, extra));
       // A plugin's objects are read untyped too (`handler.attachToView(view)` on an `any`): their methods by name.
-      if ((this.pluginFiles.has(cls.getSourceFile().fileName) || this.appMembersByName) && !isStatic(m) && !m.parameters.some((p) => p.dotDotDotToken) && !extra.length && !generic) {
+      const restAt = m.parameters.findIndex((p) => p.dotDotDotToken);
+      if ((this.pluginFiles.has(cls.getSourceFile().fileName) || this.appMembersByName) && !isStatic(m) && (restAt < 0 || restAt === m.parameters.length - 1) && !extra.length && !generic) {
         // The signature Swift has for the method: an override's is its root's.
         const sig = this.emittedSignature(m);
         const plain = (t: string) => t.replace(/^\((any .*)\)!$/, '$1?').replace(/!$/, '?');
-        // A method reading `arguments` takes the call's arguments as one list.
-        const params = this.readsArguments(m) ? ['JSRest<Any?>'] : sig.params.map((p) => (isFunctionType(p.type) ? `@escaping ${p.type}` : plain(p.type)));
+        // A method reading `arguments` takes the call's arguments as one list; a rest parameter (`fill(...args)`) the arguments from its place.
+        const params = this.readsArguments(m) ? ['JSRest<Any?>'] : sig.params.map((p, k) => (k === restAt ? `JSRest<${/^JSArray<(.*)>$/.exec(plain(p.type))?.[1] ?? 'Any?'}>` : isFunctionType(p.type) ? `@escaping ${p.type}` : plain(p.type)));
         dynMethods.push({ name: n, type: `(${params.join(', ')}) throws -> ${plain(sig.ret)}`, available: this.gatedFunctions.get(m), length: scriptLength(m) });
       }
     }
