@@ -527,7 +527,7 @@ export class Translator implements AsyncTranslator {
     this.lowering = new AsyncLowering(this);
     this.core = new CoreAPI(this);
     this.native = new NativeAPI(this);
-    this.throwsInfo = new Throws(checker, files, (n) => { try { return this.typeOf(n) === 'Any?'; } catch { return false; } }, (c) => (ts.isCallExpression(c) && (this.native.throwingCall(c) || this.replaceableCall(c) || (ts.isElementAccessExpression(c.expression) && !!this.setNativeOf(c.expression.argumentExpression) && this.keyedSetNative(c.expression.expression)))) || (!this.library && this.core.throwingCall(c)), (d) => this.compiledMember(d), (e) => { try { return this.isExpando(e) || (!this.library && !isWriteTarget(e) && this.core.throwingAccess(e)); } catch { return false; } }, (cls) => { const kit = this.library ? null : this.kitRootOf(cls); return !!kit && this.core.initThrows(kit); }, (fn) => ts.isFunctionLike(fn) && (!!this.memberCounterpart(fn as ts.FunctionLikeDeclaration) || !!this.functionCounterpart(fn)), (n) => this.castThrows(n) || (ts.isPropertyAccessExpression(n) && this.assertedRead(n)));
+    this.throwsInfo = new Throws(checker, files, (n) => { try { return this.typeOf(n) === 'Any?'; } catch { return false; } }, (c) => (ts.isCallExpression(c) && (this.native.throwingCall(c) || this.replaceableCall(c) || (ts.isElementAccessExpression(c.expression) && !!this.setNativeOf(c.expression.argumentExpression) && this.keyedSetNative(c.expression.expression)))) || (!this.library && this.core.throwingCall(c)), (d) => this.compiledMember(d), (e) => { try { return this.isExpando(e) || (!this.library && !isWriteTarget(e) && this.core.throwingAccess(e)); } catch { return false; } }, (cls) => { const kit = this.library ? null : this.kitRootOf(cls); return !!kit && this.core.initThrows(kit); }, (fn) => ts.isFunctionLike(fn) && (!!this.memberCounterpart(fn as ts.FunctionLikeDeclaration) || !!this.functionCounterpart(fn) || this.selfRecursive(fn)), (n) => this.castThrows(n) || (ts.isPropertyAccessExpression(n) && this.assertedRead(n)));
     for (const f of files) {
       const visit = (n: ts.Node) => {
         if (ts.isClassLike(n)) {
@@ -2997,6 +2997,26 @@ ${members.join('\n')}
     return type === 'Double' ? '.nan' : type === 'String' ? '"undefined"' : type === 'Bool' ? 'false' : null;
   }
 
+  /**
+   * An app function that calls itself (`depth(n - 1)`): it checks the stack on entry, so recursion too deep for
+   * it is JavaScript's catchable RangeError rather than a crash. Library code (the kit) recurses over view trees only.
+   */
+  selfRecursive(fn: ts.Node): boolean {
+    if (this.library || this.lenient || !(ts.isFunctionDeclaration(fn) || ts.isMethodDeclaration(fn)) || !fn.body || isAsync(fn) || fn.asteriskToken) return false;
+    const own = fn.name && this.checker.getSymbolAtLocation(fn.name);
+    if (!own) return false;
+    let found = false;
+    const visit = (n: ts.Node): void => {
+      if (found) return;
+      if (ts.isCallExpression(n)) {
+        const callee = ts.isPropertyAccessExpression(n.expression) ? n.expression.name : n.expression;
+        if (this.checker.getSymbolAtLocation(callee) === own) { found = true; return; }
+      }
+      ts.forEachChild(n, visit);
+    };
+    visit(fn.body);
+    return found;
+  }
 
   /** Leaving a function on an OS without an API it uses: the TypeError thrown where it throws, else reported and undefined given. */
   private unavailable(version: number, ret: string, throws: boolean): string {
@@ -3064,7 +3084,7 @@ ${members.join('\n')}
         if (fn.asteriskToken) lines = this.lowering.generatorBody(fn, ret.replace(/^JS\w+<(.*)>$/, '$1'), isAsync(fn));
         else if (isAsync(fn)) lines = this.lowering.body(fn, ret.replace(/^JSPromise<(.*)>[?!]?$/, '$1'));
         else if (fn.body && ts.isBlock(fn.body)) {
-          lines = [...this.paramPrelude(fn), ...this.statements([...fn.body.statements])];
+          lines = [...(this.selfRecursive(fn) ? [`${this.indent}try jsCheckStack()`] : []), ...this.paramPrelude(fn), ...this.statements([...fn.body.statements])];
           // The checker proved every path returns (an exhaustive switch), or one that falls off the end returns undefined; Swift cannot see either.
           const last = fn.body.statements.at(-1);
           // A value outside the union the cases cover (from JSON, an untyped caller) gives undefined, as its type reads it.

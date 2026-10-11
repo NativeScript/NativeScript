@@ -316,6 +316,7 @@ private struct JSJSONWriter {
 
     private mutating func enter(_ object: AnyObject?) throws {
         guard let object else { return }
+        try jsCheckStack()
         let id = ObjectIdentifier(object)
         if stack.contains(id) { throw JSException(JSTypeError("Converting circular structure to JSON")) }
         stack.append(id)
