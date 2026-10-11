@@ -2390,7 +2390,8 @@ export class Translator implements AsyncTranslator {
     }
     for (const i of implemented) this.used.add(i);
     const ownToString = cls.members.some((m) => ts.isMethodDeclaration(m) && m.name.getText() === 'toString' && !m.parameters.length) && !this.inheritsToString(cls);
-    const supertypes = [...implemented, ...(ownToString ? ['JSStringConvertible'] : [])];
+    const ownValueOf = cls.members.some((m) => ts.isMethodDeclaration(m) && !isStatic(m) && !!m.body && m.name.getText() === 'valueOf' && !m.parameters.length) && !this.inheritedMethod(cls, 'valueOf');
+    const supertypes = [...implemented, ...(ownToString ? ['JSStringConvertible'] : []), ...(ownValueOf ? ['JSValueOf'] : [])];
     // Library mode: a class at the root of its hierarchy keeps what script adds to its instances, and reads its prototype's.
     const expando = !!this.library && !base;
     if (expando) supertypes.push('JSExpando');
@@ -2823,6 +2824,7 @@ export class Translator implements AsyncTranslator {
     if (protocol && !appBase) { supertypes.push(protocol.conformance); lines.push(...protocol.lines); }
     lines.push(...witnesses);
     if (expando) lines.push('    override var jsExpando: JSObject? = null');
+    if (ownValueOf) lines.push(`    override fun jsValueOf(): Any? = jsBox(this.${this.methodIdent('valueOf')}())`);
     // Library mode: every method of the class is read by name as well (`font.getAndroidTypeface()` on an untyped font), overrides included.
     if (this.library || byName || this.readByName.has(cls)) {
       for (const m of cls.members) {
@@ -4877,7 +4879,7 @@ export class Translator implements AsyncTranslator {
 
   /** An operand of `+` beside a string: an object converts with the default hint. */
   private concatOperand(e: ts.Expression): string {
-    return this.isObjectRef(e) && !this.maybeUndefined(e) && this.typeOf(e) !== 'JSSymbol' ? `jsToStringDefault(${this.expr(e)})` : this.str(e);
+    return (this.isObjectRef(e) || this.typeOf(e) === 'Any?') && !this.maybeUndefined(e) && this.typeOf(e) !== 'JSSymbol' ? `jsToStringDefault(${this.expr(e)})` : this.str(e);
   }
 
   /** A property key: a symbol's own key, anything else as a string. */
@@ -6478,7 +6480,7 @@ export class Translator implements AsyncTranslator {
 
   private math(name: string, e: ts.CallExpression): string {
     if ((name === 'max' || name === 'min') && e.arguments.some(ts.isSpreadElement)) return `jsMath${name === 'max' ? 'Max' : 'Min'}Of(${this.packed(e.arguments, 'JSArray<Double>')})`;
-    const a = e.arguments.map((x) => this.coerce(x, 'Double'));
+    const a = e.arguments.map((x) => (this.typeOf(x) === 'Any?' ? this.toNumber(x) : this.coerce(x, 'Double')));
     const one = MATH_UNARY;
     if (one[name]) return `${one[name]}(${a[0]})`;
     switch (name) {
