@@ -39,7 +39,10 @@ export class TabNavigation {
 	private insetLeft = 0;
 	private suppressSelection = false;
 	private pageListener: androidx.viewpager.widget.ViewPager.OnPageChangeListener;
+	private layoutListener: android.view.View.OnLayoutChangeListener;
+	private preDrawListener: android.view.ViewTreeObserver.OnPreDrawListener = null;
 	private viewPager: androidx.viewpager.widget.ViewPager;
+	private dispatched: androidx.core.view.WindowInsetsCompat = null;
 
 	/** The TabView's native view: the pages in row 0 column 1, the bar in row 1, the rail in column 0. */
 	constructor(
@@ -84,6 +87,7 @@ export class TabNavigation {
 		}
 		this.applyMode(this.prefersRail());
 		this.routeInsets(viewPager);
+		this.followNavigationBar();
 	}
 
 	get views(): com.google.android.material.navigation.NavigationBarView[] {
@@ -125,6 +129,13 @@ export class TabNavigation {
 			this.viewPager.removeOnPageChangeListener(this.pageListener);
 		}
 		androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(this.grid, null);
+		this.grid.removeOnLayoutChangeListener(this.layoutListener);
+		this.layoutListener = null;
+		if (this.preDrawListener) {
+			this.grid.getViewTreeObserver().removeOnPreDrawListener(this.preDrawListener);
+			this.preDrawListener = null;
+		}
+		this.dispatched = null;
 		this.pageListener = null;
 		this.viewPager = null;
 	}
@@ -267,7 +278,8 @@ export class TabNavigation {
 					const status = insets.getInsets(Type.statusBars());
 					const cutout = insets.getInsets(Type.displayCutout());
 					const rail = self.prefersRail();
-					self.insetBottom = bars.bottom;
+					self.dispatched = insets;
+					self.insetBottom = Math.max(bars.bottom, self.navigationBarOverlap());
 					self.insetLeft = Math.max(bars.left, cutout.left);
 					self.applyMode(rail);
 					const content = new androidx.core.view.WindowInsetsCompat.Builder(insets);
@@ -278,13 +290,86 @@ export class TabNavigation {
 						self.rail.setPadding(self.insetLeft, Math.max(status.top, cutout.top), 0, bars.bottom);
 					} else {
 						content.setInsets(Type.navigationBars(), Insets.of(bars.left, bars.top, bars.right, 0));
-						androidx.core.view.ViewCompat.dispatchApplyWindowInsets(self.bar, insets);
+						self.padBar();
 					}
 					androidx.core.view.ViewCompat.dispatchApplyWindowInsets(viewPager, content.build());
 					return androidx.core.view.WindowInsetsCompat.CONSUMED;
 				},
 			}),
 		);
+	}
+
+	/**
+	 * An ancestor that consumes the bottom inset without padding for it (androidOverflowEdge) leaves the
+	 * bar over the system navigation bar with no inset dispatched. Where the grid sits is only known
+	 * once it is laid out, which comes after the insets.
+	 */
+	private followNavigationBar(): void {
+		const navigation = new WeakRef(this);
+		this.layoutListener = new android.view.View.OnLayoutChangeListener({
+			onLayoutChange(view: android.view.View, left: number, top: number, right: number, bottom: number, oldLeft: number, oldTop: number, oldRight: number, oldBottom: number): void {
+				navigation.get()?.scheduleBottomInset();
+			},
+		});
+		this.grid.addOnLayoutChangeListener(this.layoutListener);
+	}
+
+	/** Checked before the next frame draws: resizing the bar during layout forces a second layout pass. */
+	private scheduleBottomInset(): void {
+		if (this.preDrawListener || this.railMode) {
+			return;
+		}
+		const navigation = new WeakRef(this);
+		this.preDrawListener = new android.view.ViewTreeObserver.OnPreDrawListener({
+			onPreDraw(): boolean {
+				return navigation.get()?.syncBottomInset() ?? true;
+			},
+		});
+		this.grid.getViewTreeObserver().addOnPreDrawListener(this.preDrawListener);
+	}
+
+	/** Returns whether the frame can draw as laid out. */
+	private syncBottomInset(): boolean {
+		this.grid.getViewTreeObserver().removeOnPreDrawListener(this.preDrawListener);
+		this.preDrawListener = null;
+		if (this.railMode) {
+			return true;
+		}
+		const dispatched = this.dispatched ? this.dispatched.getInsets(androidx.core.view.WindowInsetsCompat.Type.navigationBars()).bottom : 0;
+		const bottom = Math.max(dispatched, this.navigationBarOverlap());
+		if (bottom === this.insetBottom) {
+			return true;
+		}
+		this.insetBottom = bottom;
+		this.applyMode(false);
+		this.padBar();
+		return false;
+	}
+
+	/** How far the grid reaches into the system navigation bar at the bottom of the window. */
+	private navigationBarOverlap(): number {
+		const height = this.grid.getHeight();
+		const root = androidx.core.view.ViewCompat.getRootWindowInsets(this.grid);
+		if (!height || !root) {
+			return 0;
+		}
+		const bar = root.getInsets(androidx.core.view.WindowInsetsCompat.Type.navigationBars()).bottom;
+		if (!bar) {
+			return 0;
+		}
+		const location = Array.create('int', 2);
+		this.grid.getLocationInWindow(location);
+		const barTop = this.grid.getRootView().getHeight() - bar;
+		return Math.max(0, Math.min(bar, location[1] + height - barTop));
+	}
+
+	/** The bar pads itself by the navigation bar inset it is handed, so it is handed `insetBottom`. */
+	private padBar(): void {
+		const Type = androidx.core.view.WindowInsetsCompat.Type;
+		const insets = this.dispatched ?? new androidx.core.view.WindowInsetsCompat.Builder().build();
+		const bars = insets.getInsets(Type.navigationBars());
+		const forBar = bars.bottom === this.insetBottom ? insets : new androidx.core.view.WindowInsetsCompat.Builder(insets).setInsets(Type.navigationBars(), androidx.core.graphics.Insets.of(bars.left, bars.top, bars.right, this.insetBottom)).build();
+		androidx.core.view.ViewCompat.dispatchApplyWindowInsets(this.bar, forBar);
 	}
 
 	private drawable(spec: org.nativescript.widgets.TabItemSpec): android.graphics.drawable.Drawable | null {
