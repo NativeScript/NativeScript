@@ -3643,6 +3643,12 @@ export class Translator implements AsyncTranslator {
 
   statements(list: ts.Statement[]): string[] {
     const hoisted = list.filter((s, k) => ts.isFunctionDeclaration(s) && usedBefore(list, k));
+    return [...this.forwardDeclarations(list), ...[...hoisted, ...list.filter((s) => !hoisted.includes(s))].map((s) => this.stmt(s)).filter(Boolean)];
+  }
+
+  /** The variables of a list that a function declared before them reads, declared up front (see `forwardDeclared`). */
+  forwardDeclarations(list: ts.Statement[]): string[] {
+    const hoisted = list.filter((s, k) => ts.isFunctionDeclaration(s) && usedBefore(list, k));
     const forward: string[] = [];
     list.forEach((st, k) => {
       if (!ts.isVariableStatement(st)) return;
@@ -3666,7 +3672,7 @@ export class Translator implements AsyncTranslator {
         forward.push(`${this.indent}${read && t === 'Double' ? `var ${ident(d.name.text)}: Double = Double.NaN` : this.deferredDeclaration(ident(d.name.text), t)}`);
       }
     });
-    return [...forward, ...[...hoisted, ...list.filter((s) => !hoisted.includes(s))].map((s) => this.stmt(s)).filter(Boolean)];
+    return forward;
   }
 
   block(b: ts.Statement, base = this.indent): string {
