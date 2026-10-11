@@ -89,12 +89,10 @@ export function unappliedProperty(t: { resolve(n: ts.Node): ts.Symbol | undefine
 }
 
 /**
- * Packages the kit implements, typed by their own declarations: core, and plugins whose
- * native release is a kit module (`kit-apple/Sources/NativeScriptKit/Plugins/`) rather than their
- * compiled source: @nstudio/nativescript-ui-pager's Pager. @nativescript/canvas is compiled
- * from its source over its native library, WebGPU included.
+ * Packages the kit implements, typed by their own declarations, besides core; every other
+ * plugin, @nativescript/canvas included, is compiled from its source over its native library.
  */
-export const KIT_PLUGINS = ['@nstudio/nativescript-ui-pager'];
+export const KIT_PLUGINS: string[] = [];
 const KIT_PACKAGES = new RegExp(`[\\\\/](${['@nativescript/core', ...KIT_PLUGINS].map((p) => p.replace(/\//g, '[\\\\/]')).join('|')})[\\\\/]`);
 
 /** The native class a core class's `ios` is, walking up to the nearest one the table names. */
