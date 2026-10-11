@@ -23,16 +23,18 @@ public enum Zone {
     }
 }
 
-/// A binding as Angular checks it (`bindingUpdated`): re-read on every check,
-/// applied only when the value is not `Object.is` the last one applied.
-public func Check<T>(_ read: @escaping () -> T, _ apply: @escaping (T) -> Void) {
+/// A binding as Angular checks it (`bindingUpdated`): re-read on every check of its view,
+/// applied only when the value is not `Object.is` the last one applied; what reading it
+/// throws is reported, and nothing is applied.
+public func Check<T>(_ read: @escaping () throws -> T, _ apply: @escaping (T) -> Void) {
     var last: T?
-    Effect {
-        let value = read()
+    let effect = Effect {
+        guard let value = jsReported(read) else { return }
         if let previous = last, jsSameValue(previous, value) { return }
         last = value
         untrack { apply(value) }
     }
+    EffectOrder.current.view?.add(effect)
 }
 
 /// Vue's `watch`: `changed` runs with the new and old value when `source`'s

@@ -72,7 +72,12 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
     `${throws(method) ? 'try ' : ''}self.${ident(method)}(${[...loops.flatMap((l) => [l.itemExpr ?? ident(l.item), l.indexExpr ?? ident(l.index)]), ...extra].join(', ')})`;
   // What a binding or handler throws is reported, as the frameworks report errors in templates.
   const reported = (method: string, code: string) => (throws(method) ? `jsReport { ${code} }` : code);
-  const handler = (method: string, code: string) => (EVENT_SCOPED.has(framework) ? `Reactivity.event { ${reported(method, code)} }` : reported(method, code));
+  // Zoneless Angular checks a view when one of its listeners runs: each listener holds its view.
+  const zoneless = framework === 'angular' && !options.zone;
+  const captures = zoneless ? '[__dv = EffectOrder.current.view] ' : '';
+  const handler = (method: string, code: string) => (!EVENT_SCOPED.has(framework) ? reported(method, code) : zoneless ? `Reactivity.event(dirty: __dv) { ${reported(method, code)} }` : `Reactivity.event { ${reported(method, code)} }`);
+  /** A zoneless Angular binding: an effect that also re-reads when its view is checked. */
+  const check = (method: string, loops: Loop[], apply: string) => `Check({ ${call(method, loops)} }) { ${apply} }`;
 
   const checked = (m: string, loops: Loop[]) => {
     if (throws(m)) throw new Error(`${c.name}: a binding that can throw, in an app checked by zone.js, is not supported in a release build yet`);
@@ -102,6 +107,8 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
       else say(depth, `${v}.kitSet(${swiftString(a.name)}, ${swiftString(a.value)})`);
     } else if (options.zone) {
       binding(depth, `Check({ ${checked(a.method, loops)} }) { ${a.name === 'class' ? `${v}.className = $0` : `${v}.kitSet(${swiftString(a.name)}, $0)`} }`);
+    } else if (zoneless) {
+      binding(depth, check(a.method, loops, a.name === 'class' ? `${v}.className = $0` : `${v}.kitSet(${swiftString(a.name)}, $0)`));
     } else if (a.name === 'class') {
       const value = options.slots ? `octaneClassName(${call(a.method, loops)})` : call(a.method, loops);
       binding(depth, `Effect { ${reported(a.method, `${v}.className = ${value}`)} }`);
@@ -126,7 +133,7 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
           const props = () => {
             for (const a of node.attrs) if (!isList || !LIST_BINDINGS.has(a.name)) attr(depth, v, a, loops);
             for (const e of node.events) {
-              const listen = `${v}.kitOn(${swiftString(e.name)}) { event in ${handler(e.method, call(e.method, loops, ['event']))} }`;
+              const listen = `${v}.kitOn(${swiftString(e.name)}) { ${captures}event in ${handler(e.method, call(e.method, loops, ['event']))} }`;
               const guarded = e.when ? `if jsTruthy(${throws(e.when) ? `(try? ${call(e.when, loops).replace(/^try /, '')})` : call(e.when, loops)}) { ${listen} }` : listen;
               listener(depth, e.ifPassed ? `if self._passed.contains(${swiftString(e.ifPassed)}) { ${guarded} }` : guarded);
             }
@@ -156,25 +163,25 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
             if (!parent) throw new Error(`${c.name}: <${node.name}>, whose template has no single root element, at the root of a template`);
             for (const p of info.props) {
               const a = given.get(p);
-              if (a && 'method' in a) say(depth, `Effect { ${reported(a.method, `${c0}.${ident(p)}.value = ${call(a.method, loops)}`)} }`);
+              if (a && 'method' in a) say(depth, zoneless ? check(a.method, loops, `${c0}.${ident(p)}.value = $0`) : `Effect { ${reported(a.method, `${c0}.${ident(p)}.value = ${call(a.method, loops)}`)} }`);
             }
             for (const e of node.events) {
               if (!info.outputs?.includes(e.name)) throw new Error(`${c.name}: <${node.name}> takes no ${e.name} event: its template has no single root view`);
-              say(depth, `${c0}.${ident(info.outputFields?.[e.name] ?? e.name)}.on { value in ${handler(e.method, call(e.method, loops, [e.payload ? 'value' : `EventData(eventName: ${swiftString(e.name)}, object: nil, value: value)`]))} }`);
+              say(depth, `${c0}.${ident(info.outputFields?.[e.name] ?? e.name)}.on { ${captures}value in ${handler(e.method, call(e.method, loops, [e.payload ? 'value' : `EventData(eventName: ${swiftString(e.name)}, object: nil, value: value)`]))} }`);
             }
             say(depth, `${c0}.render(into: ${parent}.kitAddRegion())`);
             continue;
           }
           for (const p of info.props) {
             const a = given.get(p);
-            if (a && 'method' in a) say(depth, options.zone ? `Check({ ${checked(a.method, loops)} }) { ${c0}.${ident(p)}.value = $0 }` : `Effect { ${reported(a.method, `${c0}.${ident(p)}.value = ${call(a.method, loops)}`)} }`);
+            if (a && 'method' in a) say(depth, options.zone ? `Check({ ${checked(a.method, loops)} }) { ${c0}.${ident(p)}.value = $0 }` : zoneless ? check(a.method, loops, `${c0}.${ident(p)}.value = $0`) : `Effect { ${reported(a.method, `${c0}.${ident(p)}.value = ${call(a.method, loops)}`)} }`);
           }
           say(depth, `let ${v} = ${c0}.render()`);
           // Attributes that are not props fall through to the component's root view, as in Vue.
           for (const a of node.props) if (!info.props.includes(a.name)) attr(depth, v, a, loops);
           for (const e of node.events) {
-            if (info.outputs?.includes(e.name)) say(depth, `${c0}.${ident(info.outputFields?.[e.name] ?? e.name)}.on { value in ${handler(e.method, call(e.method, loops, [e.payload ? 'value' : `EventData(eventName: ${swiftString(e.name)}, object: ${v}, value: value)`]))} }`);
-            else say(depth, `${v}.kitOn(${swiftString(e.name)}) { event in ${handler(e.method, call(e.method, loops, ['event']))} }`);
+            if (info.outputs?.includes(e.name)) say(depth, `${c0}.${ident(info.outputFields?.[e.name] ?? e.name)}.on { ${captures}value in ${handler(e.method, call(e.method, loops, [e.payload ? 'value' : `EventData(eventName: ${swiftString(e.name)}, object: ${v}, value: value)`]))} }`);
+            else say(depth, `${v}.kitOn(${swiftString(e.name)}) { ${captures}event in ${handler(e.method, call(e.method, loops, ['event']))} }`);
           }
           attach(depth, v, parent, region, 'created');
         }

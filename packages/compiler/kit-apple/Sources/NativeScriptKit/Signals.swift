@@ -136,6 +136,37 @@ public enum Reactivity {
         eventDepth -= 1
         if eventDepth == 0 && schedule != .task { flush() }
     }
+
+    /// A listener of a zoneless Angular template: the update it schedules re-checks the bindings of
+    /// `view` and of every view above it.
+    public static func event(dirty view: AngularView?, _ handler: () -> Void) {
+        view?.markDirty()
+        event(handler)
+    }
+}
+
+/// An Angular component view as zoneless change detection refreshes it: a listener marks its view
+/// and the views above it dirty, and refreshing a view re-checks every binding (`Check`) of its
+/// template and of its embedded views, applying what is no longer `Object.is` the value last applied.
+/// Child components are refreshed only through their own inputs, which are signals here.
+public final class AngularView {
+    private weak var parent: AngularView?
+    private var checks: [Weak] = []
+
+    private struct Weak { weak var effect: Effect? }
+
+    init(parent: AngularView?) { self.parent = parent }
+
+    func add(_ effect: Effect) { checks.append(Weak(effect: effect)) }
+
+    func markDirty() {
+        var view: AngularView? = self
+        while let current = view {
+            current.checks.removeAll { $0.effect?.disposed ?? true }
+            for check in current.checks { check.effect?.invalidate() }
+            view = current.parent
+        }
+    }
 }
 
 /// Groups writes so each affected effect runs once, after the last write.
@@ -209,10 +240,13 @@ public enum EffectOrder {
         var counters = [0, 0, 0]
         /// Solid: templates under this many control-flow regions, keyed by the one global count.
         let height: Int?
+        /// Angular: the component view whose bindings this scope's checks are.
+        public let view: AngularView?
 
-        init(prefix: [Int], height: Int? = nil) {
+        init(prefix: [Int], height: Int? = nil, view: AngularView? = nil) {
             self.prefix = prefix
             self.height = height
+            self.view = view
         }
 
         func next(_ phase: Int) -> [Int] {
@@ -252,12 +286,12 @@ public enum EffectOrder {
 
     /// Angular's component view: after its parent view's bindings and embedded views.
     public static func view<T>(_ body: () -> T) -> T {
-        run(Scope(prefix: current.next(2)), body)
+        run(Scope(prefix: current.next(2), view: AngularView(parent: current.view)), body)
     }
 
     /// Angular's embedded view (`@if`, `@for` content): after its declaring view's own bindings.
     public static func embedded<T>(in view: Scope, _ body: () -> T) -> T {
-        run(Scope(prefix: view.next(1)), body)
+        run(Scope(prefix: view.next(1), view: view.view), body)
     }
 
     /// Solid's control-flow content: one level deeper than the template that holds it.
@@ -349,6 +383,7 @@ public final class Effect: Subscriber {
     private var owner: Owner?
     let key: [Int]
     private let height: Int?
+    private let view: AngularView?
     private let derived: Bool
 
     @discardableResult
@@ -361,6 +396,7 @@ public final class Effect: Subscriber {
         self.key = key
         self.derived = derived
         height = EffectOrder.current.height
+        view = EffectOrder.current.view
         Owner.current?.effects.append(self)
         Effect.created?(self)
         if deferred {
@@ -410,7 +446,7 @@ public final class Effect: Subscriber {
         owner = Owner(parent: nil)
         let previous = currentEffect
         currentEffect = self
-        EffectOrder.run(EffectOrder.Scope(prefix: key, height: height)) { owner?.run(body) }
+        EffectOrder.run(EffectOrder.Scope(prefix: key, height: height, view: view)) { owner?.run(body) }
         currentEffect = previous
     }
 
