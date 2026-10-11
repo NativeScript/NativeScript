@@ -37,7 +37,7 @@ public final class JSRegExp: JSDynamic, JSStringConvertible {
         if flags.contains("m") { options.insert(.anchorsMatchLines) }
         if flags.contains("s") { options.insert(.dotMatchesLineSeparators) }
         do {
-            return try NSRegularExpression(pattern: JSRegExp.translate(source), options: options)
+            return try NSRegularExpression(pattern: JSRegExp.translate(source, flags), options: options)
         } catch {
             throw JSException(value: JSSyntaxError("Invalid regular expression: /\(source)/\(flags): \(error.localizedDescription)"))
         }
@@ -58,45 +58,115 @@ public final class JSRegExp: JSDynamic, JSStringConvertible {
     public var multiline: Bool { flags.contains("m") }
     public var sticky: Bool { flags.contains("y") }
 
-    /// Pattern syntax ICU reads differently: `[^]` (any character), `[]` (no character), and inside a class
-    /// a `[` (ICU starts a nested set or a POSIX class there) or `&&` (ICU's intersection), which JavaScript takes literally.
-    private static func translate(_ pattern: String) -> String {
-        let chars = Array(pattern)
+    /// JavaScript's syntax in ICU's terms. ICU reads `[^]`, `[]`, `\0` and, inside a class, `[`, `&&` and `--` differently;
+    /// its `\d \w \s \b .` and `$` are Unicode-aware or line-aware where JavaScript's are ASCII or input-wide.
+    /// Without the `u` flag JavaScript matches UTF-16 code units: astral characters of the pattern become their
+    /// surrogates' stand-ins, as `subject` gives the input's (see `standIn`).
+    private static func translate(_ pattern: String, _ flags: String) -> String {
+        let unicode = flags.contains("u"), multiline = flags.contains("m"), dotAll = flags.contains("s")
+        // ICU closes ASCII classes over case with `ſ` and the Kelvin sign; JavaScript does so only with `u`.
+        let caseless = flags.contains("i") && !unicode
+        func exact(_ p: String) -> String { caseless ? "(?-i:\(p))" : p }
+        let word = "[A-Za-z0-9_]", notWord = "[^A-Za-z0-9_]"
+        let space = "\\t\\n\\x{0B}\\f\\r \\x{A0}\\x{1680}\\x{2000}-\\x{200A}\\x{2028}\\x{2029}\\x{202F}\\x{205F}\\x{3000}\\x{FEFF}"
+        let terminator = "[\\n\\r\\x{2028}\\x{2029}]"
+        let p = Array(pattern.unicodeScalars)
         var out = ""
         var i = 0
         var inClass = false
-        while i < chars.count {
-            let c = chars[i]
-            if c == "\\", i + 1 < chars.count {
-                out.append(c); out.append(chars[i + 1]); i += 2; continue
+        func unit(_ u: UInt32) -> String { "\\x{" + String(u, radix: 16) + "}" }
+        func literal(_ c: Unicode.Scalar) {
+            if !unicode && c.value > 0xFFFF { for u in String(c).utf16 { out += unit(UInt32(standIn(u))) } }
+            else { out.unicodeScalars.append(c) }
+        }
+        func hex(_ from: Int, _ count: Int) -> UInt32? {
+            guard from + count <= p.count else { return nil }
+            return UInt32(String(String.UnicodeScalarView(p[from..<(from + count)])), radix: 16)
+        }
+        while i < p.count {
+            let c = p[i]
+            if c == "\\", i + 1 < p.count {
+                let e = p[i + 1]
+                i += 2
+                switch e {
+                case "d": out += "[0-9]"
+                case "D": out += inClass ? "[^0-9]" : exact("[^0-9]")
+                case "w": out += inClass ? word : exact(word)
+                case "W": out += inClass ? notWord : exact(notWord)
+                case "s": out += "[\(space)]"
+                case "S": out += "[^\(space)]"
+                case "b" where inClass: out += "\\x{8}"
+                case "b": out += exact("(?:(?<=\(word))(?!\(word))|(?<!\(word))(?=\(word)))")
+                case "B": out += exact("(?:(?<=\(word))(?=\(word))|(?<!\(word))(?!\(word)))")
+                case "0" where i >= p.count || !("0"..."9").contains(p[i]): out += "\\x{0}"
+                case "u" where unicode && i < p.count && p[i] == "{":
+                    if let close = p[i...].firstIndex(of: "}"), let v = hex(i + 1, close - i - 1) { out += unit(v); i = close + 1 }
+                    else { out += "\\u" }
+                case "u" where !unicode:
+                    if let v = hex(i, 4), (0xD800...0xDFFF).contains(v) { out += unit(UInt32(standIn(UInt16(v)))); i += 4 }
+                    else { out += "\\u" }
+                default:
+                    if e.value > 0xFFFF { literal(e) } else { out.unicodeScalars.append(c); out.unicodeScalars.append(e) }
+                }
+                continue
             }
             if !inClass && c == "[" {
-                if i + 2 < chars.count, chars[i + 1] == "^", chars[i + 2] == "]" { out += "[\\s\\S]"; i += 3; continue }
-                if i + 1 < chars.count, chars[i + 1] == "]" { out += "(?!)"; i += 2; continue }
+                if i + 2 < p.count, p[i + 1] == "^", p[i + 2] == "]" { out += "[\\s\\S]"; i += 3; continue }
+                if i + 1 < p.count, p[i + 1] == "]" { out += "(?!)"; i += 2; continue }
                 inClass = true
-                out.append(c)
+                out += "["
                 // A `]` first in the class (after `^`) is JavaScript's end of an empty class, handled above.
-                if i + 1 < chars.count, chars[i + 1] == "^" { out.append("^"); i += 1 }
+                if i + 1 < p.count, p[i + 1] == "^" { out += "^"; i += 1 }
                 i += 1
                 continue
             }
             if inClass {
                 if c == "]" { inClass = false }
                 else if c == "[" { out += "\\["; i += 1; continue }
-                else if c == "&", i + 1 < chars.count, chars[i + 1] == "&" { out += "&\\&"; i += 2; continue }
+                else if c == "&" || c == "-", i + 1 < p.count, p[i + 1] == c { out.unicodeScalars.append(c); out += "\\"; out.unicodeScalars.append(c); i += 2; continue }
+            } else {
+                switch c {
+                case ".": out += dotAll ? "[\\s\\S]" : "[^\\n\\r\\x{2028}\\x{2029}]"; i += 1; continue
+                case "$": out += multiline ? "(?=\(terminator)|\\z)" : "\\z"; i += 1; continue
+                case "^": out += multiline ? "(?:\\A|(?<=\(terminator)))" : "\\A"; i += 1; continue
+                default: break
+                }
             }
-            out.append(c)
+            literal(c)
             i += 1
         }
         return out
     }
+
+    /// What ICU searches for `s`: without the `u` flag, each surrogate as its stand-in, so that `.`, `[^…]` and
+    /// the like match one UTF-16 unit of an astral character as JavaScript does. Offsets stay those of `s`.
+    func subject(_ s: String) -> String {
+        if flags.contains("u") { return s }
+        if let lastInput, lastInput == s { return lastSubject }
+        var units = Array(s.utf16)
+        var any = false
+        for k in units.indices where units[k] & 0xF800 == 0xD800 { units[k] = JSRegExp.standIn(units[k]); any = true }
+        lastInput = s
+        lastSubject = any ? String(decoding: units, as: UTF16.self) : s
+        return lastSubject
+    }
+    private var lastInput: String?
+    private var lastSubject = ""
+
+    /// A surrogate's stand-in: a private-use character, one UTF-16 unit as the surrogate is, which ICU matches alone.
+    /// Input that holds the private-use characters U+E000–U+E7FF itself reads as surrogates to patterns naming them.
+    static func standIn(_ unit: UInt16) -> UInt16 { 0xE000 + (unit - 0xD800) }
+
+    /// A search from an offset still sees the whole input, as JavaScript's from `lastIndex` does: lookbehind (and so `\b`)
+    /// reads the text before it, and `^` does not match there.
+    static let whole: NSRegularExpression.MatchingOptions = [.withTransparentBounds, .withoutAnchoringBounds]
 
     /// One match at or after `from`; sticky expressions only at `from`.
     func match(_ s: String, from: Int) -> NSTextCheckingResult? {
         let ns = s as NSString
         guard from <= ns.length else { return nil }
         let range = NSRange(location: from, length: ns.length - from)
-        guard let m = regex.firstMatch(in: s, options: sticky ? [.anchored] : [], range: range) else { return nil }
+        guard let m = regex.firstMatch(in: subject(s), options: sticky ? JSRegExp.whole.union(.anchored) : JSRegExp.whole, range: range) else { return nil }
         return m
     }
 
@@ -286,9 +356,10 @@ public func jsSplit(_ s: String, _ re: JSRegExp, _ limit: Double? = nil) -> JSAr
     var out: [String?] = []
     if ns.length == 0 { return JSArray(re.match(s, from: 0) == nil ? [s] : []) }
     // RegExp.prototype[@@split]: a match at q ending at e splits unless it would make an empty piece at p.
+    let subject = re.subject(s)
     var p = 0, q = 0
     while q < ns.length {
-        guard let m = re.regex.firstMatch(in: s, options: [.anchored], range: NSRange(location: q, length: ns.length - q)) else { q += 1; continue }
+        guard let m = re.regex.firstMatch(in: subject, options: JSRegExp.whole.union(.anchored), range: NSRange(location: q, length: ns.length - q)) else { q += 1; continue }
         let e = min(m.range.location + m.range.length, ns.length)
         if e == p { q += 1; continue }
         out.append(ns.substring(with: NSRange(location: p, length: q - p)))
