@@ -4245,7 +4245,7 @@ export class Translator implements AsyncTranslator {
     const init = list ? this.declarationList(list, true) : s.initializer ? i + this.exprStatement(s.initializer as ts.Expression) : '';
     const cond = s.condition ? this.cond(s.condition) : 'true';
     const step = s.incrementor ? this.exprStatement(s.incrementor) : '';
-    const captured = list && !(list.flags & ts.NodeFlags.Const) && list.declarations.some((d) => ts.isIdentifier(d.name) && capturedIn(d.name, s.statement, this.checker));
+    const captured = list && list.flags & ts.NodeFlags.Let && list.declarations.some((d) => ts.isIdentifier(d.name) && capturedIn(d.name, s.statement, this.checker));
     const labelName = ts.isLabeledStatement(s.parent) ? s.parent.label.text : null;
     const hasContinue = containsJump(s.statement, ts.SyntaxKind.ContinueStatement) || (!!labelName && continuesTo(s.statement, labelName));
     const label = this.takeLabel();
