@@ -2243,6 +2243,12 @@ ${members.join('\n')}
     const methods = ['next', 'return', 'throw'].map(fn).filter((m): m is NonNullable<typeof m> => !!m);
     const protocol = this.iteratorProtocol(methods);
     if (protocol) out.push(protocol);
+    // A literal's own valueOf and toString, in the order OrdinaryToPrimitive tries them for the hint.
+    const own = (n: string) => fields.some((f) => f.name === n && !f.accessor && !isOptional(f.type) && functionParts(f.type)?.params.length === 0);
+    if (own('valueOf') || own('toString')) {
+      const body = !own('valueOf') ? 'try toString()' : `hint == "string" ? ${own('toString') ? 'try toString()' : '"[object Object]"'} : try valueOf()`;
+      out.push({ conformance: 'JSToPrimitive', lines: [`    func jsToPrimitive(_ hint: String) throws -> Any? { ${body} }`] });
+    }
     if (fields.some((f) => f.name === 'jsSymbolIterator')) out.push({ conformance: 'JSIterableValue', lines: ['    func jsAnyIterator() throws -> JSIteratorProtocol { try jsSymbolIterator() }'] });
     if (fields.some((f) => f.name === 'jsSymbolAsyncIterator')) out.push({ conformance: 'JSAsyncIterableValue', lines: ['    func jsAnyAsyncIterator() throws -> JSAsyncIteratorProtocol { try jsSymbolAsyncIterator() }'] });
     return out;
@@ -3559,8 +3565,11 @@ ${members.join('\n')}
     const conformances = [...(base ? [base] : []), ...implemented];
     // A class's own toString is what JavaScript's string conversion calls.
     if (cls.members.some((m) => ts.isMethodDeclaration(m) && m.name.getText() === 'toString' && !m.parameters.length) && !this.inheritsToString(cls)) conformances.push('JSStringConvertible');
+    const valueOf = cls.members.some((m) => ts.isMethodDeclaration(m) && m.name.getText() === 'valueOf' && !!m.body && !m.parameters.length && !isStatic(m)) && !this.inheritsMethod(cls, 'valueOf');
+    if (valueOf) conformances.push('JSValueOfConvertible');
     const header = () => `${this.extended.has(name) || this.extendedDecls.has(cls) || this.library ? '' : 'final '}class ${ident(name)}${this.generics(cls)}: ${[...(base || implemented.length ? [] : ['JSDynamic']), ...conformances].join(', ')} {`;
     const lines = [''];
+    if (valueOf) lines.push('    func jsValueOf() throws -> Any? { try self.valueOf() }');
     const ctor = cls.members.find((m): m is ts.ConstructorDeclaration => ts.isConstructorDeclaration(m) && !!m.body);
     const paramProps = (ctor?.parameters ?? []).filter((p) => ts.canHaveModifiers(p) && ts.getModifiers(p)?.some((m) => [ts.SyntaxKind.PublicKeyword, ts.SyntaxKind.PrivateKeyword, ts.SyntaxKind.ProtectedKeyword, ts.SyntaxKind.ReadonlyKeyword].includes(m.kind)));
     const fieldInits: string[] = [];
@@ -4364,6 +4373,14 @@ ${members.join('\n')}
     const h = cls.heritageClauses?.find((x) => x.token === ts.SyntaxKind.ExtendsKeyword)?.types[0];
     const d = h && this.checker.getTypeAtLocation(h.expression).getSymbol()?.valueDeclaration;
     return d && ts.isClassLike(d) && !d.getSourceFile().isDeclarationFile ? d : undefined;
+  }
+
+  /** Whether a program class `cls` extends declares the method `name`. */
+  private inheritsMethod(cls: ts.ClassLikeDeclaration, name: string): boolean {
+    const h = cls.heritageClauses?.find((x) => x.token === ts.SyntaxKind.ExtendsKeyword)?.types[0];
+    const d = h && this.checker.getTypeAtLocation(h.expression).getSymbol()?.valueDeclaration;
+    if (!d || !ts.isClassLike(d) || d.getSourceFile().isDeclarationFile) return false;
+    return d.members.some((m) => ts.isMethodDeclaration(m) && m.name.getText() === name && !isStatic(m)) || this.inheritsMethod(d, name);
   }
 
   private inheritsToString(cls: ts.ClassLikeDeclaration): boolean {
@@ -6302,7 +6319,7 @@ ${members.join('\n')}
 
   /** An operand of `+` beside a string: an object converts with the default hint. */
   private concatOperand(e: ts.Expression): string {
-    return this.isObjectRef(e) && !this.maybeUndefined(e) && this.typeOf(e) !== 'JSSymbol' ? `jsToStringDefault(${this.expr(e)})` : this.str(e);
+    return (this.isObjectRef(e) || this.typeOf(e) === 'Any?') && !this.maybeUndefined(e) && this.typeOf(e) !== 'JSSymbol' ? `jsToStringDefault(${this.expr(e)})` : this.str(e);
   }
 
   /** A property key: a symbol's own key, anything else as a string. */

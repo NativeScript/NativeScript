@@ -101,8 +101,21 @@ public func jsObjectToString(_ value: Any?) -> String {
     }
 }
 
-/// ToPrimitive(value, hint) for an object with `[Symbol.toPrimitive]`; nil for anything else.
+/// ToPrimitive(value, hint) for an object with `[Symbol.toPrimitive]` or its own `valueOf`; nil for anything else.
 func jsUserPrimitive(_ value: Any, _ hint: String) -> Any?? {
+    if hint != "string", let convertible = value as? JSValueOfConvertible {
+        do {
+            let primitive = jsFlat(try convertible.jsValueOf())
+            // valueOf giving an object: OrdinaryToPrimitive goes on to toString.
+            switch primitive {
+            case nil, is String, is Double, is Bool, is JSNull, is JSSymbol, is JSBigInt: return .some(primitive)
+            default: if let n = jsNumeric(primitive!) { return .some(n) }
+            }
+        } catch {
+            jsReportUncaught(jsCaught(error))
+            return .some(nil)
+        }
+    }
     guard let convertible = value as? JSToPrimitive else { return nil }
     do { return .some(try convertible.jsToPrimitive(hint)) } catch {
         jsReportUncaught(jsCaught(error))

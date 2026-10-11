@@ -33,6 +33,11 @@ public protocol JSStringConvertible {
     func toString() throws -> String
 }
 
+/// A class with its own `valueOf()`, which ToPrimitive calls first unless a string is wanted.
+public protocol JSValueOfConvertible: AnyObject {
+    func jsValueOf() throws -> Any?
+}
+
 // MARK: - Optionals inside Any
 
 protocol JSOptionalProtocol {
@@ -454,6 +459,18 @@ public final class JSObject: JSDynamic, JSSymbolKeyed, JSAccessorKeyed, JSReacti
     }
 
     public var description: String { jsInspect(self) }
+}
+
+/// OrdinaryToPrimitive over an object's own `valueOf` and `toString` (a literal's methods).
+extension JSObject: JSToPrimitive {
+    public func jsToPrimitive(_ hint: String) throws -> Any? {
+        for name in hint == "string" ? ["toString", "valueOf"] : ["valueOf", "toString"] {
+            guard let method = self[name], jsIsFunction(method) else { continue }
+            let result = jsFlat(try jsInvoke(method, self, []))
+            if result == nil || !jsIsObject(result!) || result is JSNull || result is JSSymbol || result is JSBigInt { return result }
+        }
+        return "[object Object]"
+    }
 }
 
 // MARK: - Property access
