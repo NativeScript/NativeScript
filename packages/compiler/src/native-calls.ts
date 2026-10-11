@@ -248,6 +248,7 @@ export class NativeAPI {
     const enumCase = this.enumMember(e);
     if (enumCase) return enumCase;
     if (this.appMember(e.name)) return null;
+    if (ts.isIdentifier(e.expression) && this.t.untypedLetReceiver(e.expression)) return null;
     const r = this.receiver(e.expression);
     if (!r) return null;
     const struct = !r.isStatic && lookupStruct(r.module, r.name);
@@ -426,6 +427,7 @@ export class NativeAPI {
   /** `x.prop = value` on a native type. */
   assign(left: ts.PropertyAccessExpression, value: ts.Expression): string | null {
     if (this.appMember(left.name)) return null;
+    if (ts.isIdentifier(left.expression) && this.t.untypedLetReceiver(left.expression)) return null;
     let r = this.receiver(left.expression);
     if (!r) return null;
     // `view instanceof UIControl` narrowing a UISearchBar: the member is the narrowed class's, the object cast to it.
@@ -468,6 +470,7 @@ export class NativeAPI {
       if (/^CF(Retain|Release|Autorelease)$|^CG\w+(Retain|Release)$/.test(native.name)) return e.arguments[0] ? this.t.expr(e.arguments[0]) : '()';
       // `UIApplicationMain(0, null, …)`: Swift's overlay reads the process's arguments, which the runtime passes for it.
       if (native.name === 'UIApplicationMain' && e.arguments.length === 4) return `UIApplicationMain(CommandLine.argc, CommandLine.unsafeArgv, ${this.toSwift(e.arguments[2], 'String?')}, ${this.toSwift(e.arguments[3], 'String?')})`;
+      if (native.name === 'dispatch_get_current_queue' && !e.arguments.length) return this.fromSwift('jsDispatchCurrentQueue()', 'dispatch_queue_t', e);
       const f = lookupFunction(native.module, native.name);
       if (!f) throw this.t.error(e, `${native.name}() (no Swift counterpart in ${native.module})`);
       this.checkAvailable(f, e, `${native.name}()`);

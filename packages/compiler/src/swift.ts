@@ -960,8 +960,20 @@ export class Translator implements AsyncTranslator {
     return this.checker.getBaseTypes(target).some((b) => b.getSymbol()?.getName() === 'EventData' || this.isEventData(b));
   }
 
+  /**
+   * `let cell;` read as `cell.index` where the checker narrows `cell` to a class without that member: code checked without
+   * noImplicitAny (a plugin's) declares an untyped variable, read by name.
+   */
+  untypedLetReceiver(n: ts.Identifier): boolean {
+    const access = n.parent;
+    if (!access || !ts.isPropertyAccessExpression(access) || access.expression !== n || this.checker.getSymbolAtLocation(access.name)) return false;
+    const d = this.resolve(n)?.valueDeclaration;
+    return !!d && ts.isVariableDeclaration(d) && !d.type && !d.initializer;
+  }
+
   typeOf(n: ts.Node): string {
     if (this.isArguments(n)) return 'JSArray<Any?>';
+    if (ts.isIdentifier(n) && this.untypedLetReceiver(n)) return 'Any?';
     // What a class extending Array, Set or Map inherits is read as the kit's collection, which its Swift class subclasses.
     const inherited = n.parent && (ts.isPropertyAccessExpression(n.parent) || ts.isElementAccessExpression(n.parent)) && n.parent.expression === n ? this.inheritedCollection(n as ts.Expression) : null;
     if (inherited) return inherited;
@@ -3661,6 +3673,10 @@ ${members.join('\n')}
       // Library mode: a class's static accessors are `class` ones, which a subclass's can override.
       const mods = `${a.get && isStatic(a.get) ? (this.library ? 'class ' : 'static ') : ''}${inherited.has(n) || overKit ? 'override ' : ''}`;
       const declared = a.get && this.inNativeClass(a.get) ? t : this.lenientRef(t);
+      if (!(a.get ?? a.set)!.body) {
+        lines.push(`    ${mods}var ${ident(n)}: ${declared} { get { fatalError("abstract getter ${name}.${n}") }${a.set ? ` set { fatalError("abstract setter ${name}.${n}") }` : ''} }`);
+        continue;
+      }
       const parts: string[] = [];
       // A getter over a base's field, which Swift's override must keep writable: writing it does nothing, as it sets no own property.
       const ignoredSet = !a.set && !!a.get && !isStatic(a.get) && inherited.has(n) && this.baseHasField(cls, n);

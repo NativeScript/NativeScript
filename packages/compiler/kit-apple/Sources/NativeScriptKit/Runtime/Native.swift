@@ -651,3 +651,10 @@ public func jsNativeDate(any value: Any?) -> Date? {
     default: return nil
     }
 }
+
+/// `dispatch_get_current_queue()`: libdispatch still exports it, Swift's overlay marks it unavailable.
+public func jsDispatchCurrentQueue() -> DispatchQueue {
+    typealias Current = @convention(c) () -> OpaquePointer
+    let current = unsafeBitCast(dlsym(UnsafeMutableRawPointer(bitPattern: -2), "dispatch_get_current_queue"), to: Current.self)
+    return Unmanaged<DispatchQueue>.fromOpaque(UnsafeRawPointer(current())).takeUnretainedValue()
+}
