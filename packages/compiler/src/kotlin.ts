@@ -7122,6 +7122,12 @@ export class Translator implements AsyncTranslator {
       case K.LessThanToken: case K.GreaterThanToken: case K.LessThanEqualsToken: case K.GreaterThanEqualsToken: {
         const sym = ts.tokenToString(op)!;
         if (this.isString(e.left) && this.isString(e.right)) return `${l()} ${sym} ${r()}`;
+        // An untyped or object operand: compared as strings or as numbers by what it holds when the program runs.
+        const dynamic = (x: ts.Expression) => { const t = this.typeOf(x); return t === 'Any?' || t === 'Any' || t === 'String?' || /^[A-Z]\??$/.test(t) || (this.isObjectType(t) && !/^JSDate\??$/.test(t)); };
+        if (dynamic(e.left) || dynamic(e.right)) {
+          const fn = ({ [K.LessThanToken]: 'jsLess', [K.GreaterThanToken]: 'jsGreater', [K.LessThanEqualsToken]: 'jsLessOrEqual', [K.GreaterThanEqualsToken]: 'jsGreaterOrEqual' } as Partial<Record<ts.SyntaxKind, string>>)[op];
+          return `${fn}(${this.coerce(e.left, 'Any?')}, ${this.coerce(e.right, 'Any?')})`;
+        }
         return `${this.toNumber(e.left)} ${sym} ${this.toNumber(e.right)}`;
       }
       case K.QuestionQuestionToken: {

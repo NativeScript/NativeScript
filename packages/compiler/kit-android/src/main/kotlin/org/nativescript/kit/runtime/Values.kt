@@ -480,11 +480,37 @@ fun jsLooseEquals(a: Any?, b: Any?): Boolean {
     return jsStrictEquals(x, y)
 }
 
-/** ToPrimitive with the default hint: a date or object becomes its string form. */
-fun jsToPrimitive(value: Any?): Any? = when (val v = jsBox(value)) {
+/** ToPrimitive: `hint` is "default", "number" or "string"; a date is its time only for "number". */
+fun jsToPrimitive(value: Any?, hint: String = "default"): Any? = when (val v = jsBox(value)) {
     null, is String, is Boolean, JSNull, is JSSymbol, is JSBigInt -> v
-    is JSToPrimitive -> jsUserPrimitive(v, "default")
+    is JSToPrimitive -> jsUserPrimitive(v, hint)
+    is JSDate -> if (hint == "number") v.valueOf() else jsToString(v)
     else -> jsNumeric(v) ?: jsToString(v)
+}
+
+/** `a < b` (the Abstract Relational Comparison): two strings by UTF-16 code units, anything else as numbers, false where either is NaN. */
+fun jsLess(a: Any?, b: Any?): Boolean {
+    val x = jsToPrimitive(a, "number")
+    val y = jsToPrimitive(b, "number")
+    return if (x is String && y is String) x < y else jsToNumber(x) < jsToNumber(y)
+}
+
+fun jsLessOrEqual(a: Any?, b: Any?): Boolean {
+    val x = jsToPrimitive(a, "number")
+    val y = jsToPrimitive(b, "number")
+    return if (x is String && y is String) x <= y else jsToNumber(x) <= jsToNumber(y)
+}
+
+fun jsGreater(a: Any?, b: Any?): Boolean {
+    val x = jsToPrimitive(a, "number")
+    val y = jsToPrimitive(b, "number")
+    return if (x is String && y is String) x > y else jsToNumber(x) > jsToNumber(y)
+}
+
+fun jsGreaterOrEqual(a: Any?, b: Any?): Boolean {
+    val x = jsToPrimitive(a, "number")
+    val y = jsToPrimitive(b, "number")
+    return if (x is String && y is String) x >= y else jsToNumber(x) >= jsToNumber(y)
 }
 
 /** A `+` operand beside a string: ToString(ToPrimitive(value, default)). */
