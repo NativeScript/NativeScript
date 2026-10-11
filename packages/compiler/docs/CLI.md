@@ -66,13 +66,25 @@ the runtime platform as before. The app id is the project's
 (`nativescript.config` `id`), so the native release replaces the JavaScript
 build on a device, and `ns run` launches it by that id.
 
-The compiler package is `native-release/package.json`: `bin/ns-native.js`
-checks for Node 23.6+ and imports `compiler/src/cli.ts`. Node refuses to
-strip TypeScript types under `node_modules`, so the entry registers a load
-hook (`module.registerHooks` + `module.stripTypeScriptTypes`) for the
-compiler's own files. `files` ships `bin/`, `compiler/src/`,
-`kit/Package.swift`, `kit/Sources/` and `kit-android/` (sources and the
-Gradle wrapper): 80 files, 261 kB packed.
+The package is `packages/compiler` (`@nativescript/compiler`). Its `bin/ns-native.js` runs `dist/cli.js`, the
+compiler compiled to JavaScript by `prepack` (`bin/build-dist.mjs`), so the published package runs on Node 20+;
+a checkout without `dist/` runs `src/cli.ts` through Node 23.6+'s type stripping. `files` ships `bin/`, `dist/`,
+`src/`, `verify/`, `kit-apple/` (the Swift package, with the kit generated from core in
+`Sources/NativeScriptKit/Core`) and `kit-android/` (the Gradle project, with the kit generated from core in
+`generated/` and its line table `generated/source-lines.json`). `prepack` refuses to pack without both generated
+kits, or with kits from different cores (`tests/kits-present.mjs`); `tests/pack-check.sh` packs the package,
+installs the tarball into a fresh copy of `tests/app` and builds it, as CI does before every publish.
+
+Before compiling, the compiler checks, and stops with the file and line or the version and what to do:
+
+- the toolchain (`src/toolchain.ts`): Xcode 26 or newer for iOS; JDK 17 or newer and the Android SDK for Android;
+- the version contract (`src/contract.ts`): the app's `@nativescript/core` must be the core the kit was generated
+  from (`release.allowCoreMismatch: true` or `--allow-core-mismatch` builds anyway, with a warning), and the
+  app's framework packages must be in the ranges `package.json` declares under `nativescript.testedFrameworks`
+  (`release.allowUntestedFrameworks: true` or `--allow-untested-frameworks`);
+- unsupported constructs (`src/preflight.ts`): `Proxy`, `Reflect`, `eval`, `new Function`, `FinalizationRegistry`,
+  `SharedArrayBuffer`/`Atomics`, `with`, a computed `import()`/`require()`, `arguments.callee`, `__proto__`, and
+  bundler-style constants (`__API_URL__`, `process.env.X`) that nothing defines, each with a rewrite hint.
 
 ## Proof (recipes-vue copy, CLI from `feat/native-release`)
 
@@ -167,13 +179,8 @@ projects), so the CLI has nothing to add.
   	release?: IConfigRelease;
   ```
 
-- **Publish the compiler package** as `@nativescript/compiler`, with
-  versioning tied to the kit, and CI that packs it and builds an app from
-  the tarball for both platforms.
-- **A precompiled JavaScript build** of `compiler/src` (tsc or esbuild to
-  `dist/`), so it runs on the Node versions the CLI supports (Node 20+)
-  without the type-stripping hook. Today the entry needs Node 23.6+ and an
-  API that Node still marks experimental.
+- **Publish the compiler package**: `.github/workflows/npm_release_compiler.yml` publishes it from each core
+  release tag, at core's version, with both kits; it needs the npm environment and a first release.
 - **xcodegen** is a required tool for iOS (the CLI says how to install it).
   Writing the `.xcodeproj` directly, or a Swift package with an app target,
   would remove it.
@@ -186,12 +193,9 @@ projects), so the CLI has nothing to add.
   check.
 - **`ns debug --compiled`** should be refused with a message (the native app
   has no inspector); it is not handled specially.
-- **Hooks**: `before-prepare`/`after-prepare` run; `before-buildIOS` and
-  `before-buildAndroid` do not, because the platform services' build is not
-  called. Hooks that assume `platforms/<platform>` or the webpack bundle
-  (many plugins' hooks) do not apply. The compiler could run its own hook
-  points, or the service could fire `buildIOS`/`buildAndroid` hooks with
-  the native project root.
+- **Hooks**: `before-prepare`/`after-prepare` and `before-`/`after-buildIOS` and `buildAndroid` run, with the
+  compiled project as `projectRoot`. Hooks that assume `platforms/<platform>` or the webpack bundle (many
+  plugins' hooks) have nothing to change there.
 - **Workspaces**: with CocoaPods the compile generates the Xcode project
   and runs `pod install` itself, and writes
   `platforms/compiled/ios/ns-native-project.json` (`{"workspace":

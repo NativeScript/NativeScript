@@ -48,6 +48,8 @@ import { generateProject, iosDependencies, packageLines, podfile, productLines, 
 import { SourceLines } from './source-lines.ts';
 import { archive, automaticSigningSettings, findProfile, signingSettings, type ExportMethod } from './ios-signing.ts';
 import { KIT_ANDROID, KIT_APPLE } from './paths.ts';
+import { checkContract } from './contract.ts';
+import { checkToolchain } from './toolchain.ts';
 import { formatPreflight, preflight } from './preflight.ts';
 
 const args = process.argv.slice(2);
@@ -65,6 +67,14 @@ useKitPlugins(platform);
 // Android builds on the kit generated from core when the package has it; --hand-port-kit or android.release.generatedKit: false uses the hand port.
 const generatedKit = platform === 'android' && !args.includes('--hand-port-kit')
   && (args.includes('--generated-kit') || (releaseOptions(app, platform).generatedKit ?? existsSync(join(KIT_ANDROID, 'generated', 'manifest.json'))) === true);
+stopOn(args.includes('--skip-toolchain-check') ? { errors: [], warnings: [] } : checkToolchain(platform), 'toolchain');
+/** Prints the warnings, then the errors, and stops on any error. */
+function stopOn(r: { errors: string[]; warnings: string[] }, what: string) {
+  for (const w of r.warnings) console.warn(`warning: ${w}`);
+  if (!r.errors.length) return;
+  console.error(r.errors.map((e) => `error: ${e}`).join('\n'));
+  throw new Error(`${r.errors.length} ${what} problem${r.errors.length > 1 ? 's' : ''}`);
+}
 
 const files: string[] = [];
 const walk = (d: string) => { for (const f of readdirSync(d)) { const p = join(d, f); if (statSync(p).isDirectory()) walk(p); else files.push(p); } };
@@ -75,6 +85,7 @@ const framework = deps['nativescript-vue'] ? 'vue' : deps['@nativescript/angular
   // No framework, XML pages: core's own Builder makes the views, as in the app's JavaScript build.
   : files.some((f) => f.endsWith('.xml') && f.startsWith(appDir)) ? 'core' : null;
 if (!framework) throw new Error('no supported framework in package.json');
+stopOn(checkContract({ app, platform, generatedKit, framework, allowCoreMismatch: args.includes('--allow-core-mismatch') || releaseOptions(app, platform).allowCoreMismatch === true, allowUntestedFrameworks: args.includes('--allow-untested-frameworks') || releaseOptions(app, platform).allowUntestedFrameworks === true }), 'version');
 const entryText = readFileSync(entry, 'utf8');
 // `x.ios.ts` and `x.android.ts` are one module, `./x`, for their platform.
 const otherPlatform = opt('--platform') === 'android' ? /\.ios\.tsx?$/ : /\.android\.tsx?$/;

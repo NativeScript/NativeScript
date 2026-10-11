@@ -35,6 +35,40 @@
     "svelte": "^4.2.20",
     "typescript": "~5.9.0"
   },
+  "peerDependencies": {
+    "@nativescript/core": "*"
+  },
+  "peerDependenciesMeta": {
+    "@nativescript/core": {
+      "optional": true
+    }
+  },
+  "nativescript": {
+    "testedFrameworks": {
+      "vue": {
+        "nativescript-vue": ">=3.1.0 <4.0.0"
+      },
+      "angular": {
+        "@nativescript/angular": ">=22.0.0 <23.0.0",
+        "@angular/core": ">=22.0.0 <23.0.0"
+      },
+      "react": {
+        "react-nativescript": ">=5.0.0 <6.0.0",
+        "react": ">=18.2.0 <19.0.0"
+      },
+      "solid": {
+        "@nativescript-community/solid-js": ">=2.0.0-rc.0 <3.0.0",
+        "solid-js": ">=2.0.0-rc.0 <3.0.0"
+      },
+      "svelte": {
+        "@nativescript-community/svelte-native": ">=1.0.0 <2.0.0 || >=5.0.0-alpha.0 <6.0.0",
+        "svelte": ">=4.2.0 <5.0.0 || >=5.50.0 <6.0.0"
+      },
+      "octane": {
+        "@nativescript-community/octane": ">=0.2.4 <0.3.0"
+      }
+    }
+  },
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
@@ -42,6 +76,7 @@
     "directory": "packages/compiler"
   },
   "scripts": {
-    "prepack": "node tests/kits-present.mjs && node bin/build-dist.mjs"
+    "prepack": "node tests/kits-present.mjs && node bin/build-dist.mjs",
+    "postpack": "node -e \"require('fs').rmSync('dist', { recursive: true, force: true })\""
   }
 }
