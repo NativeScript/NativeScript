@@ -8646,7 +8646,8 @@ ${members.join('\n')}
       }
       case K.MinusToken: return `${this.toNumber(e.left)} - ${this.toNumber(e.right)}`;
       case K.AsteriskToken: return `${this.toNumber(e.left)} * ${this.toNumber(e.right)}`;
-      case K.SlashToken: return `${this.toNumber(e.left)} / ${this.toNumber(e.right)}`;
+      // Integer literals on both sides would divide as Int where no operand pins Double (`Double(1 / 8)`, `js(16 / 9)`).
+      case K.SlashToken: return numericLiteralOnly(e.left) && numericLiteralOnly(e.right) ? `(${this.expr(e.left)} as Double) / ${this.expr(e.right)}` : `${this.toNumber(e.left)} / ${this.toNumber(e.right)}`;
       case K.PercentToken: return `jsMod(${this.toNumber(e.left)}, ${this.toNumber(e.right)})`;
       case K.AsteriskAsteriskToken: return `jsPow(${this.toNumber(e.left)}, ${this.toNumber(e.right)})`;
       case K.EqualsEqualsEqualsToken: case K.ExclamationEqualsEqualsToken: case K.EqualsEqualsToken: case K.ExclamationEqualsToken:
