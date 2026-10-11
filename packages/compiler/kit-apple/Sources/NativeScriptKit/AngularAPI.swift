@@ -87,9 +87,10 @@ public final class NativeDialogService {
             defer { NativeDialogRef.current = previous }
             // The component in a ContentView of its own, the modal's root, as @nativescript/angular presents it:
             // the root takes the safe area its content then lays out within.
+            let pending = Reactivity.pending()
             let host = try! ContentView()
             host.content = factory.make()
-            if let owner = Owner.current { Reactivity.detectChanges(in: owner) }
+            Reactivity.detectChanges(after: pending)
             return host
         }
         return ref

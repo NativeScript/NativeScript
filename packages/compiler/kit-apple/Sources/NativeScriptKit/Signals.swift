@@ -33,19 +33,6 @@ public final class Owner {
 
     public func onCleanup(_ cleanup: @escaping () -> Void) { cleanups.append(cleanup) }
 
-    /// The effects this owner, its children and what their runs made own.
-    fileprivate func ownedEffects() -> Set<ObjectIdentifier> {
-        var found = Set<ObjectIdentifier>()
-        var owners = [self]
-        while let o = owners.popLast() {
-            for e in o.effects {
-                found.insert(ObjectIdentifier(e))
-                if let made = e.owner { owners.append(made) }
-            }
-            owners.append(contentsOf: o.children)
-        }
-        return found
-    }
 
     public func dispose() {
         guard !disposed else { return }
@@ -111,19 +98,26 @@ public enum Reactivity {
         return flushedPromise!.promise
     }
 
-    /// Angular's `detectChanges()` on a view just created (a routed page, a dialog): the update its own effects
-    /// await runs now, so the view is complete before it is shown; other views' effects wait for the app's update.
-    public static func detectChanges(in owner: Owner) {
+    /// Angular's `detectChanges()` on a view just created (a routed page, a dialog): what building it made pending runs
+    /// now, so the view is complete before it is shown; effects pending before (`before`, from `pending()`) wait for the app's update.
+    public static func detectChanges(after before: Set<ObjectIdentifier>) {
         if flushing { return }
         flushing = true
         defer { flushing = false }
         while true {
-            let own = owner.ownedEffects()
-            let pending = queue.filter { own.contains(ObjectIdentifier($0)) }.sorted { EffectOrder.precedes($0.key, $1.key) }
-            if pending.isEmpty { break }
-            queue.removeAll { own.contains(ObjectIdentifier($0)) }
-            for effect in pending { effect.runIfStale() }
+            let derived = derivedQueue.filter { !before.contains(ObjectIdentifier($0)) }
+            let effects = queue.filter { !before.contains(ObjectIdentifier($0)) }
+            if derived.isEmpty && effects.isEmpty { break }
+            let run = derived.isEmpty ? effects : derived
+            let ids = Set(run.map(ObjectIdentifier.init))
+            if derived.isEmpty { queue.removeAll { ids.contains(ObjectIdentifier($0)) } } else { derivedQueue.removeAll { ids.contains(ObjectIdentifier($0)) } }
+            for effect in run.sorted(by: { EffectOrder.precedes($0.key, $1.key) }) { effect.runIfStale() }
         }
+    }
+
+    /// The effects waiting for the next update.
+    public static func pending() -> Set<ObjectIdentifier> {
+        Set((queue + derivedQueue).map(ObjectIdentifier.init))
     }
 
     /// Svelte's `tick()`: schedules an update and returns a settled promise, whose reactions follow it.
@@ -352,7 +346,7 @@ public final class Effect: Subscriber {
     private var body: (() -> Void)?
     private var sources: [ObjectIdentifier: Source] = [:]
     private var stale = false
-    fileprivate var owner: Owner?
+    private var owner: Owner?
     let key: [Int]
     private let height: Int?
     private let derived: Bool

@@ -267,10 +267,11 @@ public final class Router {
             outlet?.entries.append(entry)
             ActivatedRoute.current = route
             Page.building.append(page)
+            let pending = Reactivity.pending()
             let view = owner.run(make)
             Page.building.removeLast()
             if view !== page { page.content = view }
-            if Reactivity.schedule == .task { Reactivity.detectChanges(in: owner) }
+            if Reactivity.schedule == .task { Reactivity.detectChanges(after: pending) }
             try page.on(Page.navigatedFromEvent, { [weak self, weak outlet] (data: EventData?) in
                 guard jsTruthy(data?[jsKey: "isBackNavigation"]) else { return }
                 owner.dispose()
