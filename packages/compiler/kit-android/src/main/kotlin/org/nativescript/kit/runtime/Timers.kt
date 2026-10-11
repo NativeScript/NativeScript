@@ -162,4 +162,16 @@ fun jsClearTimeout(id: Double?) = JSEventLoop.cancel(id)
 
 fun jsClearInterval(id: Double?) = JSEventLoop.cancel(id)
 
+private fun jsScheduleValue(args: List<Any?>, repeats: Boolean): Double {
+    val callback = args.getOrNull(0)
+    val given = if (args.size > 2) args.subList(2, args.size).toTypedArray() else emptyArray()
+    return JSEventLoop.schedule({ jsCall(callback, *given); Unit }, jsToNumber(args.getOrNull(1)), repeats)
+}
+
+/** The timer functions as values: called with any arguments, the ones after the delay the callback's. */
+val jsSetTimeoutValue = jsFunction(2) { jsScheduleValue(it, false) }
+val jsSetIntervalValue = jsFunction(2) { jsScheduleValue(it, true) }
+val jsClearTimeoutValue = jsFunction(1) { JSEventLoop.cancel(jsNumeric(it.getOrNull(0))); null }
+val jsClearIntervalValue = jsFunction(1) { JSEventLoop.cancel(jsNumeric(it.getOrNull(0))); null }
+
 fun jsQueueMicrotask(callback: () -> Unit) = Microtasks.enqueue(callback)

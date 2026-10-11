@@ -4874,6 +4874,13 @@ export class Translator implements AsyncTranslator {
       const radix = types.length > 1 ? '__p1' : 'null';
       return `{ ${params.join(', ')} -> ${e.text === 'parseInt' ? `jsParseInt(__p0, ${radix})` : 'jsParseFloat(__p0)'} }`;
     }
+    // The global timer functions as values (`const schedule: any = setTimeout`).
+    const timerValue = ({ setTimeout: 'jsSetTimeoutValue', setInterval: 'jsSetIntervalValue', clearTimeout: 'jsClearTimeoutValue', clearInterval: 'jsClearIntervalValue' } as Record<string, string>)[e.text];
+    if (timerValue && !(ts.isCallExpression(e.parent) && e.parent.expression === e) && !ts.isTypeOfExpression(e.parent)) {
+      const decls = this.resolve(e)?.declarations ?? [];
+      const global = (d: ts.Node) => d.getSourceFile().isDeclarationFile && (!ts.isExternalModule(d.getSourceFile()) || !!ts.findAncestor(d, (n) => ts.isModuleDeclaration(n) && n.name.text === 'global'));
+      if (decls.every(global)) return timerValue;
+    }
     const name = e.text;
     if (this.isArguments(e)) {
       const fn = ts.findAncestor(e.parent, (n) => ts.isFunctionLike(n) && !ts.isArrowFunction(n)) as ts.SignatureDeclaration | undefined;
