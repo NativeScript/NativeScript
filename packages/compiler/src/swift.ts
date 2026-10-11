@@ -6691,6 +6691,10 @@ ${members.join('\n')}
       const holder = this.typeOf(e.expression).replace(/[?!]$/, '');
       if (holder === 'Any' || holder === 'JSObject') return this.fromAny(`(try jsGet(${this.expr(e.expression)}, ${this.propertyKey(e.argumentExpression)}))`, optionalType(this.typeOf(e)));
     }
+    // A string's character past its end is undefined, though TypeScript types the read `string`.
+    if (ts.isElementAccessExpression(e) && !isWriteTarget(e) && !e.questionDotToken && this.typeOf(e.expression) === 'String' && this.typeOf(e) === 'String') {
+      return `jsCharAtOrUndefined(${this.expr(e.expression)}, ${this.coerce(e.argumentExpression, 'Double')})`;
+    }
     // `a ?? b` where `b` may give undefined: the optional `b` gives when `a` gives nothing.
     if (ts.isBinaryExpression(e) && e.operatorToken.kind === ts.SyntaxKind.QuestionQuestionToken && ['String', 'Double', 'Bool'].includes(this.typeOf(e))) {
       const right = this.maybeUndefined(e.right);

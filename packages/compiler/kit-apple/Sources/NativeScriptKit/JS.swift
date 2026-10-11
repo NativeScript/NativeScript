@@ -49,6 +49,11 @@ private func jsRange(_ count: Int, _ start: Double, _ end: Double?) -> (Int, Int
 
 public func jsCharAt(_ s: String, _ index: Double) -> String { jsSlice(s, index, index + 1) }
 
+/// `s[index]`: undefined unless the index is one of the string's.
+public func jsCharAtOrUndefined(_ s: String, _ index: Double) -> String? {
+    index >= 0 && index < Double(s.utf16.count) && index.rounded(.towardZero) == index ? jsCharAt(s, index) : nil
+}
+
 /// `s.replace(a, b)` with a string pattern replaces the first match only, found by UTF-16 units.
 public func jsReplace(_ s: String, _ pattern: String, _ replacement: String) -> String {
     let u = Array(s.utf16), p = Array(pattern.utf16)
