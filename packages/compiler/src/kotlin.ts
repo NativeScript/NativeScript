@@ -5377,6 +5377,7 @@ export class Translator implements AsyncTranslator {
       const rt = this.typeOf(e);
       if (!isWriteTarget(e)) return rt === 'Any?' ? code : this.fromAnyCode(code, rt, true);
     }
+    if (t === 'String' && !isWriteTarget(e) && !ts.isStringLiteral(key)) return this.undefinedAs(`jsCharAtOrNull(${target}, ${this.toNumber(key)})`, this.typeOf(e));
     if (t === 'String') return `jsCharAt(${target}, ${this.toNumber(key)})`;
     // A typed array's element by index: a number, read and written in place.
     if (/^JS(Int8|Uint8|Uint8Clamped|Int16|Uint16|Int32|Uint32|Float32|Float64)Array$/.test(t) && !ts.isStringLiteral(key)) return `${target}${q}[${this.toNumber(key)}]`;
@@ -5456,6 +5457,9 @@ export class Translator implements AsyncTranslator {
       const read = `${record}${this.typeOf(e.expression).endsWith('?') && !record.endsWith('!!') ? '!!' : ''}[${key}]`;
       // Library mode: an untyped value narrowed where it is read.
       return this.library && this.typeOf(e.expression).replace(/\?$/, '') === 'JSRecord<Any?>' && this.typeOf(e) !== 'Any?' ? this.fromAnyCode(read, optionalType(this.typeOf(e)), true) : read;
+    }
+    if (ts.isElementAccessExpression(e) && !isWriteTarget(e) && this.typeOf(e.expression) === 'String' && !ts.isStringLiteral(e.argumentExpression) && this.typeOf(e.argumentExpression) === 'Double') {
+      return `jsCharAtOrNull(${this.expr(e.expression)}, ${this.toNumber(e.argumentExpression)})`;
     }
     if (ts.isElementAccessExpression(e) && !isWriteTarget(e) && this.typeOf(e.expression).replace(/\?$/, '').startsWith('JSArray<')) {
       const q = e.questionDotToken || this.typeOf(e.expression).endsWith('?') || (e.flags & ts.NodeFlags.OptionalChain && ts.isPropertyAccessExpression(e.expression) && e.expression.questionDotToken) ? '?' : '';
