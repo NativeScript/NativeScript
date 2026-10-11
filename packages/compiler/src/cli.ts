@@ -713,6 +713,7 @@ function routeConfig(routes: RouteNode[], indent: string, throwing: Set<string> 
       r.outlet ? `outlet: ${JSON.stringify(r.outlet)}` : '',
       r.redirectTo !== undefined ? `redirectTo: ${JSON.stringify(r.redirectTo)}` : '',
       r.full ? 'full: true' : '',
+      r.emptyOutlet ? 'emptyOutlet: true' : '',
       r.children?.length ? `children: ${routeConfig(r.children, indent + '    ', throwing)}` : '',
     ].filter(Boolean);
     return `RouteConfig(${[JSON.stringify(r.path), ...named].join(', ')})${r.component ? ` { ${throwing.has(r.component) ? 'try! ' : ''}${r.component}().render() }` : ''}`;
