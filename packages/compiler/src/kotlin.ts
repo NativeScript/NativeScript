@@ -5194,7 +5194,9 @@ export class Translator implements AsyncTranslator {
     // Library mode: `object.constructor`, the class of the instance.
     if (name === 'constructor' && this.library && this.typeOf(target) !== 'Any?' && this.checker.getSymbolAtLocation(e.name)?.declarations?.every((d) => d.getSourceFile().isDeclarationFile)) return `${this.expr(target)}${this.typeOf(target).endsWith('?') ? '!!' : ''}.javaClass`;
     const maybeChain = e.questionDotToken ? this.maybeUndefined(e) : null;
-    if (maybeChain) return this.undefinedAs(maybeChain, this.typeOf(e));
+    // An array the chain reads an element of (`group?.items[i]`): the element read goes on with the chain.
+    const intoElement = ts.isElementAccessExpression(e.parent) && e.parent.expression === e && !!(e.parent.flags & ts.NodeFlags.OptionalChain) && !isWriteTarget(e.parent) && this.typeOf(e).startsWith('JSArray<');
+    if (maybeChain) return intoElement ? maybeChain : this.undefinedAs(maybeChain, this.typeOf(e));
     const core = this.core?.property(e);
     if (core) return core;
     if (this.isExpando(e)) {
@@ -5445,7 +5447,7 @@ export class Translator implements AsyncTranslator {
       return this.library && this.typeOf(e.expression).replace(/\?$/, '') === 'JSRecord<Any?>' && this.typeOf(e) !== 'Any?' ? this.fromAnyCode(read, optionalType(this.typeOf(e)), true) : read;
     }
     if (ts.isElementAccessExpression(e) && !isWriteTarget(e) && this.typeOf(e.expression).replace(/\?$/, '').startsWith('JSArray<')) {
-      const q = e.questionDotToken || this.typeOf(e.expression).endsWith('?') ? '?' : '';
+      const q = e.questionDotToken || this.typeOf(e.expression).endsWith('?') || (e.flags & ts.NodeFlags.OptionalChain && ts.isPropertyAccessExpression(e.expression) && e.expression.questionDotToken) ? '?' : '';
       return `${this.expr(e.expression)}${q}.element(${this.toNumber(e.argumentExpression)})`;
     }
     if (ts.isIdentifier(e)) {
