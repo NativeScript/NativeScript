@@ -6333,6 +6333,8 @@ ${members.join('\n')}
       // Inside an optional chain (`group?.items[i]`): the chain goes on through the optional.
       const p = e.parent;
       if (ts.isOptionalChain(e) && (ts.isPropertyAccessExpression(p) || ts.isElementAccessExpression(p) || ts.isCallExpression(p)) && p.expression === e && ts.isOptionalChain(p)) return code;
+      // `Error.stack`, optional in the ES library, is always a string in the runtime (`JSError.stack`).
+      if (ts.isPropertyAccessExpression(e) && e.name.text === 'stack' && isLibDeclaration(this.checker.getSymbolAtLocation(e.name)?.declarations?.[0])) return code;
       return ts.isOptionalChain(e) ? `(${code})!` : `${code}!`;
     }
     if (declared === 'Any?') return this.fromAny(code, actual);
