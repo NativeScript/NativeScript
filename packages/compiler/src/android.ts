@@ -322,6 +322,12 @@ val appCSS = ${kotlinString(b.css)}
     mkdirSync(join(b.out, 'bindings'), { recursive: true });
     writeFileSync(join(b.out, 'bindings', 'CMakeLists.txt'), `cmake_minimum_required(VERSION 3.22)\nproject(bindings)\n${b.bindings.map((x, k) => `add_subdirectory(${JSON.stringify(x.jni)} binding${k})\n`).join('')}`);
   }
+  // The version the app's manifest declares, as the runtime's build keeps it; app.gradle, applied last, may set it again.
+  const manifestText = existsSync(join(main, 'AndroidManifest.xml')) ? readFileSync(join(main, 'AndroidManifest.xml'), 'utf8') : '';
+  const version = {
+    code: /android:versionCode\s*=\s*"(\d+)"/.exec(manifestText)?.[1] ?? '1',
+    name: /android:versionName\s*=\s*"([^"]+)"/.exec(manifestText)?.[1] ?? (JSON.parse(readFileSync(join(b.app, 'package.json'), 'utf8')).version ?? '1.0.0'),
+  };
   writeFileSync(join(b.out, 'settings.gradle.kts'), `pluginManagement {
     repositories {
         google()
@@ -357,8 +363,8 @@ android {
         applicationId = ${kotlinString(applicationId)}
         minSdk = ${native.minSdk}
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = ${version.code}
+        versionName = ${kotlinString(version.name)}
 ${bindingDefines.length ? `        externalNativeBuild { cmake { arguments += listOf(${bindingDefines.map(kotlinString).join(', ')}) } }\n` : ''}    }
 ${b.bindings?.length ? `    ndkVersion = ${kotlinString(ndk().version)}\n    externalNativeBuild { cmake { path = file(${kotlinString(join(b.out, 'bindings', 'CMakeLists.txt'))}) } }\n${b.bindings.map((x) => `    sourceSets["main"].java.srcDirs(${kotlinString(x.kotlin)})\n`).join('')}` : ''}
     sourceSets["main"].res.srcDirs(${kotlinString(resources)}, "src/main/res")
