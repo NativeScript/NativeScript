@@ -318,7 +318,7 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
     const loop: Loop = { item: section, index: `$s${loops.length}`, param: `${section} = ${list}[0], $s${loops.length} = 0` };
     const body = nodes(parsed.nodes, [...loops, loop]);
     if (body.length !== 1 || body[0].kind !== 'element') throw new Error(`${path}: a stickyHeaderTemplate needs exactly one root element`);
-    return { kind: 'template', key: '$header', item: section, index: loop.index, body, header: true };
+    return { kind: 'template', key: '$header', item: section, index: loop.index, body, header: true, xml };
   };
 
   /** `*tabItem="{ title, iconSource, … }"` (TabViewItemDirective): a TabViewItem with those properties around the element. */

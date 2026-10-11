@@ -4,13 +4,14 @@
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, relative, resolve } from 'node:path';
 import ts from 'typescript';
-import type { ComponentIR } from './ir.ts';
+import type { ComponentIR, TNode } from './ir.ts';
 import { Translator, kotlinString } from './kotlin.ts';
 import type { RouteNode } from './angular.ts';
 import { ndk, prepareBindingArchives, type AndroidBinding } from './bindings-android.ts';
 import { render } from './codegen-kotlin.ts';
 import { SCHEDULE, type Framework } from './codegen.ts';
-import { addKotlinInterfaces, translateKotlinModules } from './kotlin-modules.ts';
+import { addKotlinInterfaces, translateKotlinModules, type KotlinModule } from './kotlin-modules.ts';
+import { evaluatedImports } from './modules.ts';
 import { sharedWorkerState, sharedWorkerStateError } from './worker-state.ts';
 import { CoreKotlin } from './core-kotlin.ts';
 import { AndroidNativeAPI, androidClassPath } from './native-calls-android.ts';
@@ -142,9 +143,27 @@ export async function writeAndroid(b: AndroidBuild): Promise<void> {
   translator.lines = b.lines;
   if (b.allErrors) translator.errors = [];
   translator.lenientApp = !!b.lenient;
+  translator.plainFields = b.framework === 'angular';
+  translator.pluginRoots = (b.plugins ?? []).map((p) => p.root + '/');
   const table: Record<string, [number, string, number][]> = {};
   /** A Kotlin file as written, its markers turned into ranges of the line table: [first Kotlin line, source file, source line]. */
-  const write = (file: string, code: string) => {
+  // The generated kit names Java classes by import aliases (`android_animation_Animator`) in the signatures app code meets: the same aliases.
+  let kitAliases: Map<string, string> | null = null;
+  const withKitAliases = (code: string): string => {
+    if (!b.generatedKit || !/\b(android|androidx|java|javax|com|org|kotlin|io)_\w+/.test(code)) return code;
+    if (!kitAliases) {
+      kitAliases = new Map();
+      const dir = join(KIT_ANDROID, 'generated/kotlin/org/nativescript/kit');
+      for (const f of existsSync(dir) ? readdirSync(dir) : []) {
+        if (!f.endsWith('.kt')) continue;
+        for (const m of readFileSync(join(dir, f), 'utf8').matchAll(/^import ([\w.]+) as (\w+)$/gm)) kitAliases.set(m[2], m[1]);
+      }
+    }
+    const used = [...new Set(code.match(/\b(?:android|androidx|java|javax|com|org|kotlin|io)_\w+/g) ?? [])].filter((a) => kitAliases!.has(a));
+    return used.length ? code.replace('import org.nativescript.kit.*\n', `import org.nativescript.kit.*\n${used.map((a) => `import ${kitAliases!.get(a)} as ${a}\n`).join('')}`) : code;
+  };
+  const write = (file: string, text: string) => {
+    const code = withKitAliases(text);
     if (!b.lines) { writeFileSync(file, code); return; }
     const located = b.lines.kotlin(code);
     writeFileSync(file, located.code);
@@ -171,13 +190,18 @@ export async function writeAndroid(b: AndroidBuild): Promise<void> {
     const writes = sharedWorkerState(b.program, b.workers, new Set([...b.modules, ...b.components.map((c) => c.file), ...(b.compiledPlugins ?? [])]), b.resolved);
     if (writes.length) throw sharedWorkerStateError(writes, b.app);
   }
-  const modules = translateKotlinModules(translator, b.program, [...b.modules, ...b.components.map((c) => c.file), ...(b.compiledPlugins ?? [])], b.resolved);
+  const moduleFiles = [...b.modules, ...b.components.map((c) => c.file), ...(b.compiledPlugins ?? [])];
+  // The generated kit: a module only `await import(…)` reaches (and what only it imports) runs when it is imported, as the
+  // bundle evaluates it then, not at launch: its top level may read what the app has only once it runs (the start activity).
+  const lazy = b.generatedKit ? importedLazily(b.program, moduleFiles, b.resolved) : new Map<string, string[]>();
+  if (lazy.size) translator.moduleKey = (file) => relative(b.app, file);
+  const modules = translateKotlinModules(translator, b.program, moduleFiles, b.resolved);
   for (const c of b.components) {
     const sf = b.program.getSourceFile(c.file)!;
     const cls = sf.statements.find(ts.isClassDeclaration)!;
     try {
-      const { params, lines } = translator.componentMembers(cls, c.props);
-      const body = [`class ${c.name}(${params.join(', ')}) {`, ...lines, SourceLines.end, ...render(c, b.infos, { framework: b.framework, zone: b.zone, slots: b.mounted, rowSignals: b.mounted, ...(b.framework === 'react' ? { screenContent: REACT_SCREEN_CONTENT } : {}) }), '}'];
+      const { params, lines, statics } = translator.componentMembers(cls, c.props);
+      const body = [`class ${c.name}(${params.join(', ')}) {`, ...lines, ...(statics.length ? ['    companion object {', ...statics, '    }'] : []), SourceLines.end, ...render(c, b.infos, { framework: b.framework, zone: b.zone, slots: b.mounted, rowSignals: b.mounted, ...(b.framework === 'react' ? { screenContent: REACT_SCREEN_CONTENT } : {}) }), '}'];
       write(join(sources, c.name + '.kt'), header(c.file.replace(/\.ts$/, '')) + body.join('\n') + '\n');
     } catch (e) {
       if (!translator.errors) throw e;
@@ -200,7 +224,11 @@ export async function writeAndroid(b: AndroidBuild): Promise<void> {
   if (shapes) writeFileSync(join(sources, '__Objects.kt'), `// Compiled by ns-native: the app's object literals without a declared type.\n${suppress}\npackage ${pkg}\n\nimport org.nativescript.kit.*\n\n${shapes}\n`);
   // A worker script's top level runs on its worker's thread, not with the app's modules.
   const workers = modules.filter((m) => translator.workerScripts!.has(m.file)).map((m) => `        JSWorker.register(${kotlinString(translator.workerScripts!.get(m.file)!)}) { ${m.init ? `${m.init}()` : ''} }\n`).join('');
-  const inits = (b.zone ? '        Zone.enabled = true\n' : '') + workers + modules.filter((m) => m.init && !translator.workerScripts!.has(m.file)).map((m) => `        ${m.init}()\n`).join('');
+  const lazyFiles = new Set(lazy.keys());
+  const loader = (m: KotlinModule) => `__load_${m.name}`;
+  const lazyLoaders = modules.filter((m) => m.init && lazyFiles.has(m.file)).map((m) => `private var ${loader(m)}_done = false\nprivate fun ${loader(m)}() {\n    if (${loader(m)}_done) return\n    ${loader(m)}_done = true\n    ${m.init}()\n}\n`).join('\n');
+  const lazyImports = [...lazy].map(([file, runs]) => `        AppModules.registerImport(${kotlinString(translator.moduleKey!(file))}) { ${modules.filter((m) => m.init && runs.has(m.file)).map((m) => `${loader(m)}()`).join('; ')} }\n`).join('');
+  const inits = (b.zone ? '        Zone.enabled = true\n' : '') + workers + lazyImports + modules.filter((m) => m.init && !translator.workerScripts!.has(m.file) && !lazyFiles.has(m.file)).map((m) => `        ${m.init}()\n`).join('');
   const routes = b.routes
     ? `        Router.shared.routes = listOf(${b.routes.routes.map((r) => `Route(${kotlinString(r.path)}) { ${r.component}().render() }`).join(', ')})\n        Router.shared.initial = ${kotlinString(b.routes.initial)}\n`
     : '';
@@ -223,9 +251,24 @@ export async function writeAndroid(b: AndroidBuild): Promise<void> {
         `        AppModules.register(listOf("@nativescript/core/ui")) { JSObject(listOf<Pair<String, Any?>>(${elements.map((e) => `Pair(${kotlinString(e)}, ${e}::class.java)`).join(', ')})) }\n`,
       ].join('');
     }
+    // XML core's Builder parses at run time in an app of another framework (a ListView's `stickyHeaderTemplate`): the elements it names.
+    if (!b.xml) {
+      const kit = new Set((translator.core as CoreKotlin).kitElements());
+      const named = new Set<string>();
+      const visit = (nodes: TNode[]) => {
+        for (const n of nodes) {
+          if (n.kind === 'template' && n.xml) for (const m of n.xml.matchAll(/<([A-Z][\w.]*)/g)) if (kit.has(m[1])) named.add(m[1]);
+          if ('children' in n && Array.isArray(n.children)) visit(n.children as TNode[]);
+          if ('body' in n && Array.isArray(n.body)) visit(n.body as TNode[]);
+          if ('branches' in n && Array.isArray(n.branches)) for (const br of n.branches as { body: TNode[] }[]) visit(br.body);
+        }
+      };
+      for (const c of b.components) visit(c.template);
+      if (named.size) xmlModules = `        AppModules.register(listOf("@nativescript/core/ui")) { JSObject(listOf<Pair<String, Any?>>(${[...named].sort().map((e) => `Pair(${kotlinString(e)}, ${e}::class.java)`).join(', ')})) }\n`;
+    }
     const run = `${extract}${installs}${switches}        Reactivity.schedule = Reactivity.Schedule.${SCHEDULE[b.framework as Framework].toUpperCase()}\n` + (b.mounted
       ? `        NativeScriptApplication.prepare(cssAST = appCSS)\n        CoreModules.initialize()\n${xmlModules}${inits}`
-      : `        NativeScriptApplication.prepare(cssAST = appCSS)\n        CoreModules.initialize()\n${inits}${b.routeTree ? `        Router.shared.config = ${kotlinRouteConfig(b.routeTree, '        ')}\n` : routes}        NativeScriptApplication.start { ${b.root}().render() }\n`);
+      : `        NativeScriptApplication.prepare(cssAST = appCSS)\n        CoreModules.initialize()\n${xmlModules}${inits}${b.routeTree ? `        Router.shared.config = ${kotlinRouteConfig(b.routeTree, '        ')}\n` : routes}        NativeScriptApplication.start { ${b.root}().render() }\n`);
     writeFileSync(join(sources, '__Entry.kt'), `// Compiled by ns-native: the app's entry and its CSS.
 package ${pkg}
 
@@ -239,7 +282,7 @@ ${run}    }
 }
 
 val appCSS = ${kotlinString(b.cssAST ?? '{"type":"stylesheet","stylesheet":{"rules":[]}}')}
-`);
+${lazyLoaders ? '\n' + lazyLoaders : ''}`);
   } else writeFileSync(join(sources, '__Entry.kt'), `// Compiled by ns-native: the app's entry and its CSS.
 package ${pkg}
 
@@ -265,6 +308,16 @@ val appCSS = ${kotlinString(b.css)}
   // A plugin built into an AAR brings its manifest as a library's; the merger takes it from there.
   const overlays = pluginManifests({ app: b.app, applicationId, dir: join(b.out, 'plugin-manifests'), except: new Set((b.plugins ?? []).map((p) => p.name)) });
   const gradleFile = (f: string) => (existsSync(join(appResources, f)) ? `apply(from = ${kotlinString(join(appResources, f))})\n` : '');
+  // The app's own resources, which script names at run time (`res://ic_settings`, `getIdentifier`): kept by the resource shrinker.
+  const named = existsSync(resources) ? readdirSync(resources).flatMap((dir) => {
+    const type = /^(drawable|mipmap|raw|font|layout|xml)(-|$)/.exec(dir)?.[1];
+    return type ? readdirSync(join(resources, dir)).map((f) => `@${type}/${f.replace(/\..*$/, '')}`) : [];
+  }) : [];
+  const keep = join(b.out, 'src', 'main', 'res', 'raw');
+  if (named.length) {
+    mkdirSync(keep, { recursive: true });
+    writeFileSync(join(keep, 'ns_app_resources_keep.xml'), `<?xml version="1.0" encoding="utf-8"?>\n<resources xmlns:tools="http://schemas.android.com/tools" tools:keep="${[...new Set(named)].sort().join(',')}" />\n`);
+  }
   if (b.bindings?.length) {
     mkdirSync(join(b.out, 'bindings'), { recursive: true });
     writeFileSync(join(b.out, 'bindings', 'CMakeLists.txt'), `cmake_minimum_required(VERSION 3.22)\nproject(bindings)\n${b.bindings.map((x, k) => `add_subdirectory(${JSON.stringify(x.jni)} binding${k})\n`).join('')}`);
@@ -326,6 +379,12 @@ ${['java', 'assets'].filter((d) => existsSync(join(main, d))).map((d) => `    so
     }
 ${packagingBlock(native.packaging)}}
 
+// The settings' repositories again: an app.gradle declaring its own would leave the project only those.
+repositories {
+    google()
+    mavenCentral()
+${native.repositories.map((r) => `    maven { url = uri(${kotlinString(r)}) }\n`).join('')}}
+
 kotlin {
     compilerOptions { jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17) }
 }
@@ -333,7 +392,7 @@ kotlin {
 dependencies {
     implementation(project(":kit"))
 ${native.archives.map((a) => `    implementation(files(${kotlinString(a)}))\n`).join('')}${native.dependencies.map((d) => `    ${d.configuration}(${kotlinString(d.coords)})\n`).join('')}${native.constraints.length ? `    constraints {\n${native.constraints.map((d) => `        ${d.configuration}(${kotlinString(d.coords)})\n`).join('')}    }\n` : ''}}
-${overlays.length ? `
+${native.excludes.length ? `\nconfigurations.all {\n${native.excludes.map((e) => `    exclude(${[e.group !== undefined ? `group = ${kotlinString(e.group)}` : '', e.module !== undefined ? `module = ${kotlinString(e.module)}` : ''].filter(Boolean).join(', ')})\n`).join('')}}\n` : ''}${overlays.length ? `
 // The plugins' manifests, merged into the app's as the plugins' own would be.
 androidComponents {
     onVariants { variant ->
@@ -423,3 +482,25 @@ function reflectedMemberRules(roots: string[]): string {
   return `-keepclassmembers class * {\n${[...names].sort().map((n) => `    *** ${n}(...);\n    *** ${n};\n`).join('')}}\n`;
 }
 
+/**
+ * The modules only `await import(…)` reaches, each with what running it runs first (itself and the modules only
+ * `await import(…)` reaches that it imports). The module registry (`__app_modules`) imports every module to name its
+ * exports, as the bundle's does without running them: it is no importer here.
+ */
+function importedLazily(program: ts.Program, files: string[], resolved?: (containing: string, specifier: string) => string | undefined): Map<string, Set<string>> {
+  const all = new Set(files);
+  const registry = (f: string) => basename(f) === '__app_modules.ts';
+  const statics = new Map(files.map((f) => [f, registry(f) ? [] : evaluatedImports(program, f, all, resolved, false)]));
+  const targets = new Set(files.flatMap((f) => evaluatedImports(program, f, all, resolved, true)));
+  if (!targets.size) return new Map();
+  const imported = new Set([...statics.values()].flat());
+  const closure = (roots: string[]) => {
+    const seen = new Set<string>();
+    const visit = (f: string) => { if (seen.has(f)) return; seen.add(f); for (const g of statics.get(f) ?? []) visit(g); };
+    roots.forEach(visit);
+    return seen;
+  };
+  const eager = closure(files.filter((f) => !imported.has(f) && !targets.has(f)));
+  const lazy = [...closure([...targets])].filter((f) => !eager.has(f));
+  return new Map(lazy.map((f) => [f, new Set([...closure([f])].filter((g) => !eager.has(g)))]));
+}

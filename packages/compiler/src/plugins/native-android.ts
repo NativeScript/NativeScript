@@ -36,6 +36,8 @@ export interface PluginNativeAndroid {
   packaging: { excludes: string[]; pickFirsts: string[] };
   /** R8 rules keeping every class the plugins ship: the app's code reaches them by name. */
   keepRules: string[];
+  /** Modules the plugins exclude from every configuration. */
+  excludes: DependencyExclude[];
 }
 
 export interface AndroidPluginOptions {
@@ -69,6 +71,8 @@ export function pluginNativeAndroid(sources: PluginSource[], options: AndroidPlu
   const archives: string[] = [];
   const includes: IncludeGradle[] = [];
   const libraries: Library[] = [];
+  // Plugins that only declare dependencies: built as empty libraries once, for Gradle to fetch what the translation reads classes from.
+  const fetches: Library[] = [];
   for (const source of [...sources].sort((a, b) => a.name.localeCompare(b.name))) {
     const dir = join(source.dir, 'platforms', 'android');
     if (!existsSync(dir)) continue;
@@ -107,6 +111,9 @@ export function pluginNativeAndroid(sources: PluginSource[], options: AndroidPlu
     // The CLI builds a library only from a manifest or sources; without either, a shipped AAR of its name is the plugin's.
     if (!manifest && !sourceSets.length) {
       archives.push(...shipped);
+      if (include?.dependencies.some((d) => !inGradleCache(d.coords))) {
+        fetches.push({ source, namespace: `org.nativescript.${short}`, manifest: '<manifest xmlns:android="http://schemas.android.com/apk/res/android"/>\n', sourceSets: [], include, aar: join(cache, '.fetched', `${short}.aar`) });
+      }
       continue;
     }
     archives.push(...shipped.filter((a) => a !== replaced));
@@ -121,7 +128,7 @@ export function pluginNativeAndroid(sources: PluginSource[], options: AndroidPlu
   const dependencies = includes.flatMap((i) => i.dependencies);
   // A cached AAR is rebuilt when a dependency it declares is not in Gradle's cache: the translation reads its classes from there.
   const stale = libraries.filter((l) => !existsSync(l.aar) || l.include?.dependencies.some((d) => !inGradleCache(d.coords)));
-  if (stale.length) buildLibraries(stale, options);
+  if (stale.length || fetches.length) buildLibraries([...stale, ...fetches], options);
   archives.push(...libraries.map((l) => l.aar));
 
   return {
@@ -131,6 +138,7 @@ export function pluginNativeAndroid(sources: PluginSource[], options: AndroidPlu
     minSdk: Math.max(KIT_MIN_SDK, ...includes.map((i) => i.minSdk ?? 0)),
     constraints: [...new Map(includes.flatMap((i) => i.constraints).map((d) => [`${d.configuration} ${d.coords}`, d])).values()],
     packaging: { excludes: [...new Set(includes.flatMap((i) => i.packaging.excludes))], pickFirsts: [...new Set(includes.flatMap((i) => i.packaging.pickFirsts))] },
+    excludes: [...new Map(includes.flatMap((i) => i.excludes).map((e) => [`${e.group ?? ''}:${e.module ?? ''}`, e])).values()],
     keepRules: topPackages(archives.flatMap(archiveClasses)).map(keepRule),
   };
 }
@@ -244,10 +252,14 @@ export interface IncludeGradle {
   constraints: PluginNativeAndroid['dependencies'];
   /** `android { packagingOptions { exclude …; pickFirst … } }`. */
   packaging: { excludes: string[]; pickFirsts: string[] };
+  /** `configurations { all*.exclude group: …, module: … }`: modules no configuration resolves. */
+  excludes: DependencyExclude[];
   /** Its `import` lines and its `dependencies` and `repositories` blocks as written, for the plugin's own build. */
   imports: string[];
   libraryBlocks: string[];
 }
+
+export interface DependencyExclude { group?: string; module?: string }
 
 interface Token { kind: 'id' | 'str' | 'num' | 'punct' | 'nl' | 'end'; text: string; line: number; start: number; end: number; interpolated?: boolean }
 
@@ -266,11 +278,11 @@ export function parseIncludeGradle(text: string): IncludeGradle {
   const tokens = lex(text);
   const lines = text.split('\n');
   let i = 0;
-  const out: IncludeGradle = { dependencies: [], repositories: [], minSdk: null, constraints: [], packaging: { excludes: [], pickFirsts: [] }, imports: [], libraryBlocks: [] };
+  const out: IncludeGradle = { dependencies: [], repositories: [], minSdk: null, constraints: [], packaging: { excludes: [], pickFirsts: [] }, excludes: [], imports: [], libraryBlocks: [] };
   const peek = (k = 0) => tokens[Math.min(i + k, tokens.length - 1)];
   const is = (t: Token, kind: Token['kind'], text?: string) => t.kind === kind && (text === undefined || t.text === text);
   const unsupported = (t: Token): never => {
-    throw new Error(`line ${t.line}: \`${lines[t.line - 1].trim()}\` would change the app's build; only dependencies (and their constraints), repositories, minSdkVersion, multiDexEnabled and packagingOptions are read from include.gradle so far`);
+    throw new Error(`line ${t.line}: \`${lines[t.line - 1].trim()}\` would change the app's build; only dependencies (and their constraints and excludes), repositories, minSdkVersion, multiDexEnabled and packagingOptions are read from include.gradle so far`);
   };
   const expect = (kind: Token['kind'], text?: string) => {
     const t = peek();
@@ -317,9 +329,28 @@ export function parseIncludeGradle(text: string): IncludeGradle {
       if (!tempBuildBranch()) { statement(t); endOfStatement(); }
     }
   };
+  /** `def x = project.hasProperty('x') ? project.x : 'default'`: the default, as a build that sets no such property reads it. */
+  const defaults = new Map<string, string>();
   const literal = (t: Token) => {
-    if (t.kind !== 'str' || t.interpolated) unsupported(t);
-    return t.text;
+    if (t.kind !== 'str') unsupported(t);
+    if (!t.interpolated) return t.text;
+    return t.text.replace(/\$(?:\{(\w+)\}|(\w+))/g, (_, braced, bare) => defaults.get(braced ?? bare) ?? unsupported(t));
+  };
+  const definition = () => {
+    expect('id', 'def');
+    const name = expect('id').text;
+    expect('punct', '=');
+    for (const w of ['project', '.', 'hasProperty']) expect(is(peek(), 'id') ? 'id' : 'punct', w);
+    const property = stringArgument();
+    expect('punct', '?');
+    expect('id', 'project');
+    expect('punct', '.');
+    if (is(peek(), 'id', 'property')) {
+      i++;
+      if (stringArgument() !== property) unsupported(peek());
+    } else if (expect('id').text !== property) unsupported(peek());
+    expect('punct', ':');
+    defaults.set(name, stringArgument());
   };
   const stringArgument = () => {
     if (is(peek(), 'punct', '(')) { i++; const s = literal(expect('str')); expect('punct', ')'); return s; }
@@ -336,6 +367,10 @@ export function parseIncludeGradle(text: string): IncludeGradle {
     } else if (blockOf('dependencies')) {
       i++;
       const close = statements((s) => {
+        if (is(s, 'id', 'def')) {
+          definition();
+          return;
+        }
         if (blockOf('constraints')) {
           i++;
           statements((c) => {
@@ -370,9 +405,17 @@ export function parseIncludeGradle(text: string): IncludeGradle {
       i++;
       const close = repositories();
       out.libraryBlocks.push(text.slice(t.start, close.end));
+    } else if (blockOf('configurations')) {
+      const close = configurations();
+      out.libraryBlocks.push(text.slice(t.start, close.end));
     } else if (blockOf('android')) {
       i++;
       statements((s) => {
+        if (blockOf('configurations')) {
+          const close = configurations();
+          out.libraryBlocks.push(text.slice(s.start, close.end));
+          return;
+        }
         if (blockOf('packagingOptions') || blockOf('packaging')) {
           i++;
           statements((p) => {
@@ -404,6 +447,44 @@ export function parseIncludeGradle(text: string): IncludeGradle {
     } else if (!tempBuildBranch()) unsupported(t);
   }
   return out;
+
+  /** `configurations { all*.exclude group: 'g', module: 'm' }` or `all { exclude … }`, with the `configurations` name next. */
+  function configurations(): Token {
+    i++;
+    return statements((c) => {
+      if (!is(c, 'id', 'all')) unsupported(c);
+      i++;
+      if (is(peek(), 'punct', '*')) {
+        i++;
+        expect('punct', '.');
+        exclude();
+        return;
+      }
+      statements((e) => {
+        if (!is(e, 'id')) unsupported(e);
+        exclude();
+      });
+    });
+  }
+
+  /** `exclude group: 'g', module: 'm'`, either key optional. */
+  function exclude() {
+    const start = expect('id', 'exclude');
+    const paren = is(peek(), 'punct', '(');
+    if (paren) i++;
+    const found: DependencyExclude = {};
+    for (;;) {
+      const key = expect('id');
+      if ((key.text !== 'group' && key.text !== 'module') || found[key.text]) unsupported(key);
+      expect('punct', ':');
+      found[key.text as 'group' | 'module'] = literal(expect('str'));
+      if (!is(peek(), 'punct', ',')) break;
+      i++;
+    }
+    if (paren) expect('punct', ')');
+    if (!found.group && !found.module) unsupported(start);
+    out.excludes.push(found);
+  }
 
   function repositories(): Token {
     return statements((s) => {

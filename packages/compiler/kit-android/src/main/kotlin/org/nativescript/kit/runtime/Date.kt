@@ -543,3 +543,18 @@ private class JSDateParser(val s: String) {
         }
     }
 }
+
+/** A value typed Date that may be its text or time (a parsed JSON payload's field): a Date, as `new Date(value)` makes it. */
+fun jsDateFrom(value: Any?): JSDate = when (val v = jsBox(value)) {
+    is JSDate -> v
+    is String -> JSDate(v)
+    is Double -> JSDate(v)
+    else -> JSDate(Double.NaN)
+}
+
+/** `new Date(value)` of an untyped value: a string parsed, a date's time copied, anything else as its number. */
+fun jsNewDate(value: Any?): JSDate = when (val v = jsBox(value)) {
+    is String -> JSDate(v)
+    is JSDate -> JSDate(v.valueOf())
+    else -> JSDate(jsToNumber(v))
+}

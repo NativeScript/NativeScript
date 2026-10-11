@@ -19,7 +19,17 @@ class RxSubscription internal constructor(private var teardown: (() -> Unit)? = 
 }
 
 open class RxObservable<T>(private val producer: ((T) -> Unit) -> RxSubscription) {
+    /** A source that settles once (an HTTP request): its value or its error, for `firstValueFrom`. */
+    var first: (() -> JSPromise<T>)? = null
+
     open fun subscribe(next: (T) -> Unit): RxSubscription = producer(next)
+
+    /** Each value converted: how a typed `get<T>()` reads the parsed body. */
+    fun <R> mapValues(transform: (T) -> R): RxObservable<R> {
+        val mapped = RxObservable<R> { next -> subscribe { next(transform(it)) } }
+        first?.let { settle -> mapped.first = { settle().then { transform(it) } } }
+        return mapped
+    }
 
     fun <A> pipe(a: RxOperatorFunction<T, A>): RxObservable<A> = a.apply(this)
 
@@ -63,6 +73,39 @@ fun <T> filter(predicate: (T, Double) -> Boolean): RxOperatorFunction<T, T> = Rx
 
 @JvmName("filterValue")
 fun <T> filter(predicate: (T) -> Boolean): RxOperatorFunction<T, T> = filter { value: T, _: Double -> predicate(value) }
+
+/** `take(count)`: the first `count` values of each subscription, then none. */
+fun <T> take(count: Double): RxOperatorFunction<T, T> = RxOperatorFunction { source ->
+    RxObservable { next ->
+        var taken = 0.0
+        var subscription: RxSubscription? = null
+        var done = false
+        subscription = source.subscribe { value ->
+            if (taken >= count) return@subscribe
+            taken += 1
+            next(value)
+            if (taken >= count) { done = true; subscription?.unsubscribe() }
+        }
+        if (done) subscription?.unsubscribe()
+        RxSubscription { subscription?.unsubscribe() }
+    }
+}
+
+/** `firstValueFrom(source)`: settles with the source's first value. */
+fun <T> rxFirstValueFrom(source: RxObservable<T>): JSPromise<T> {
+    source.first?.let { return it() }
+    val (promise, resolvers) = JSPromise.pending<T>()
+    var subscription: RxSubscription? = null
+    var settled = false
+    subscription = source.subscribe { value ->
+        if (settled) return@subscribe
+        settled = true
+        resolvers.resolve(value)
+        subscription?.unsubscribe()
+    }
+    if (settled) subscription?.unsubscribe()
+    return promise
+}
 
 /**
  * `toSignal(source, { initialValue })`: a signal holding the source's latest value, subscribed for as
@@ -110,6 +153,24 @@ class RxBehaviorSubject<T>(private var current: T) : RxSubject<T>() {
 
     override fun next(value: T) {
         current = value
+        super.next(value)
+    }
+}
+
+/** `new ReplaySubject(bufferSize)`: replays the last `bufferSize` values to each new subscriber. */
+class RxReplaySubject<T>(bufferSize: Double = Double.POSITIVE_INFINITY) : RxSubject<T>() {
+    private val buffer = ArrayDeque<T>()
+    private val size = if (bufferSize.isFinite()) maxOf(1, bufferSize.toInt()) else Int.MAX_VALUE
+
+    override fun add(next: (T) -> Unit): RxSubscription {
+        val subscription = super.add(next)
+        for (value in buffer.toList()) if (!subscription.closed) next(value)
+        return subscription
+    }
+
+    override fun next(value: T) {
+        buffer.addLast(value)
+        while (buffer.size > size) buffer.removeFirst()
         super.next(value)
     }
 }

@@ -24,7 +24,6 @@ class JSEventLoopState internal constructor() {
     private val timers = HashMap<Double, JSTimer>()
     private var nextTimerId = 1.0
     private var nextListId = 0
-    private var processing = false
     private val origin = System.nanoTime()
 
     /** Arms a wake-up `delay` milliseconds from now that calls `processTimers`, replacing the previous one; null disarms. */
@@ -79,10 +78,11 @@ class JSEventLoopState internal constructor() {
     /** When the next timer is due, on the `now()` clock. */
     val nextExpiry: Double? get() = earliestList()?.expiry
 
-    /** Node's `processTimers`: runs every due timer list in expiry order. */
+    /**
+     * Node's `processTimers`: runs every due timer list in expiry order. A timer's callback may run the looper itself
+     * (a modal loop waiting for a condition, as core's tests do): due timers run there too, or they would wait for it.
+     */
     fun processTimers() {
-        if (processing) return
-        processing = true
         try {
             val current = now()
             while (true) {
@@ -91,9 +91,8 @@ class JSEventLoopState internal constructor() {
                 listOnTimeout(list, current)
             }
         } finally {
-            processing = false
+            arm()
         }
-        arm()
     }
 
     private fun listOnTimeout(list: JSTimerList, current: Double) {

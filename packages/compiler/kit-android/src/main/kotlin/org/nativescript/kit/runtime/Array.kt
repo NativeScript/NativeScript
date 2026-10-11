@@ -497,3 +497,10 @@ fun jsArrayConstruct(items: List<Any?>): JSArray<Any?> {
     if (length < 0 || length > 4_294_967_295.0 || length != Math.floor(length)) throw JSException(JSRangeError("Invalid array length"))
     return JSArray(ArrayList<Any?>(List(length.toInt()) { null }))
 }
+
+/** What a template's `@for` renders: the array's elements, none where it is missing (`row?.children`). */
+val <T> JSArray<T>?.forItems: List<T> get() = this?.elements ?: emptyList()
+
+/** An untyped `@for` source: its elements as `Array.from` reads them, none where it is missing. */
+@get:JvmName("untypedForItems")
+val Any?.forItems: List<Any?> get() = if (jsIsNullish(this)) emptyList() else jsArrayFrom(this) { it }.elements

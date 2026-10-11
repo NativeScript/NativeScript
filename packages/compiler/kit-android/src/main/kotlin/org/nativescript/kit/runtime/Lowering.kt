@@ -43,10 +43,10 @@ private fun jsSettledCore(thenables: List<JSThenable>, finish: (List<JSObject>) 
 
 /** `Promise.allSettled([a, b])`. */
 @Suppress("UNCHECKED_CAST")
-fun jsPromiseAllSettled(a: Any?, b: Any?): JSPromise<Pair<Any?, Any?>> =
-    jsSettledCore(listOf(jsPromiseResolveAny(a), jsPromiseResolveAny(b))) { Pair(it[0], it[1]) }.first as JSPromise<Pair<Any?, Any?>>
+fun jsPromiseAllSettled(a: Any?, b: Any?): JSPromise<Pair<JSObject, JSObject>> =
+    jsSettledCore(listOf(jsPromiseResolveAny(a), jsPromiseResolveAny(b))) { Pair(it[0], it[1]) }.first as JSPromise<Pair<JSObject, JSObject>>
 
 /** `Promise.allSettled([a, b, c])`. */
 @Suppress("UNCHECKED_CAST")
-fun jsPromiseAllSettled(a: Any?, b: Any?, c: Any?): JSPromise<Triple<Any?, Any?, Any?>> =
-    jsSettledCore(listOf(jsPromiseResolveAny(a), jsPromiseResolveAny(b), jsPromiseResolveAny(c))) { Triple(it[0], it[1], it[2]) }.first as JSPromise<Triple<Any?, Any?, Any?>>
+fun jsPromiseAllSettled(a: Any?, b: Any?, c: Any?): JSPromise<Triple<JSObject, JSObject, JSObject>> =
+    jsSettledCore(listOf(jsPromiseResolveAny(a), jsPromiseResolveAny(b), jsPromiseResolveAny(c))) { Triple(it[0], it[1], it[2]) }.first as JSPromise<Triple<JSObject, JSObject, JSObject>>

@@ -170,6 +170,33 @@ export class AndroidNativeAPI implements KotlinNative {
   }
 
   /** The names of a generic class's type parameters, in order. */
+  /**
+   * The Kotlin types a class's type arguments give the type variables of `owner`, one of its supertypes
+   * (`MonthDayBinder<ViewContainer>` gives Binder's `Data` CalendarDay and its `Container` ViewContainer).
+   */
+  private supertypeVars(cls: JavaClass, args: string[], owner: string): (name: string) => string {
+    const visit = (c: JavaClass, given: string[], depth: number): { names: string[]; args: string[] } | null => {
+      const names = this.typeParamNames(c);
+      if (c.name === owner) return { names, args: given };
+      if (depth > 12) return null;
+      const sig = c.signature;
+      const supers = sig ? topLevelTypes(sig.startsWith('<') ? sig.slice(matchingAngle(sig, 0) + 1) : sig) : [c.superName, ...c.interfaces].filter((n): n is string => !!n).map((n) => `L${n};`);
+      const typeVar = (n: string) => given[names.indexOf(n)] ?? 'Any?';
+      for (const st of supers) {
+        const internal = /^L([^<;]+)/.exec(st)?.[1];
+        const sc = internal ? this.classpath.get(internal) : null;
+        if (!sc) continue;
+        const k = this.kotlinType(st, typeVar);
+        const inner = /<(.*)>$/.exec(k)?.[1];
+        const found = visit(sc, inner ? splitArgs(inner).map((a) => a.replace(/^(in|out) /, '')) : [], depth + 1);
+        if (found) return found;
+      }
+      return null;
+    };
+    const found = visit(cls, args, 0);
+    return (n: string) => (found ? found.args[found.names.indexOf(n)] ?? 'Any?' : 'Any?');
+  }
+
   private typeParamNames(c: JavaClass): string[] {
     const sig = c.signature;
     if (!sig?.startsWith('<')) return [];
@@ -244,6 +271,50 @@ export class AndroidNativeAPI implements KotlinNative {
     return shared ? this.kotlinTypeName(shared.name) : null;
   }
 
+  /**
+   * A variable script asserts a Java class of an untyped value (`view.android as android.widget.ScrollView`), whose
+   * uses need only a class above it (`getWidth()`, a `View` parameter): that class, as Kotlin holds it, since the value
+   * may be another subclass of it (a `NestedScrollView`) where NativeScript's runtime never checks the assertion.
+   */
+  assertedWiderClass(d: ts.VariableDeclaration): string | null {
+    const t = this.t;
+    let init = d.initializer;
+    while (init && ts.isParenthesizedExpression(init)) init = init.expression;
+    if (!init || !(ts.isAsExpression(init) || ts.isTypeAssertionExpression(init)) || !ts.isIdentifier(d.name) || t.typeOf(init.expression) !== 'Any?') return null;
+    const asserted = this.classesOf(t.checker.getTypeAtLocation(init))?.[0];
+    const cls = asserted ? this.classpath.get(asserted) : null;
+    if (!cls || cls.access & ACC_INTERFACE) return null;
+    const sym = t.checker.getSymbolAtLocation(d.name);
+    const scope = ts.findAncestor(d, (n) => ts.isFunctionLike(n) || ts.isSourceFile(n));
+    if (!sym || !scope) return null;
+    const chain = this.classpath.supertypes(cls.name).filter((c) => !(c.access & ACC_INTERFACE));
+    let needed = chain.length - 1;
+    let ok = true;
+    const need = (internal: string | undefined) => {
+      const k = internal ? chain.findIndex((c) => c.name === internal) : -1;
+      if (k < 0) ok = false; else needed = Math.min(needed, k);
+    };
+    const visit = (n: ts.Node): void => {
+      if (!ok) return;
+      if (ts.isIdentifier(n) && n !== d.name && t.checker.getSymbolAtLocation(n) === sym) {
+        const p = n.parent;
+        if (ts.isPropertyAccessExpression(p) && p.expression === n) {
+          // The topmost class of the chain that declares the member.
+          const k = [...chain.keys()].reverse().find((i) => chain[i].methods.some((m) => m.name === p.name.text) || chain[i].fields.some((f) => f.name === p.name.text));
+          if (k === undefined) ok = false; else needed = Math.min(needed, k);
+        } else if ((ts.isCallExpression(p) || ts.isNewExpression(p)) && p.expression !== n) {
+          const decl = t.checker.getResolvedSignature(p)?.getDeclaration();
+          const k = p.arguments?.indexOf(n as ts.Expression) ?? -1;
+          const param = decl && !ts.isJSDocSignature(decl) && this.isNativeDeclaration(decl) ? decl.parameters[k] : undefined;
+          need(param ? this.classesOf(t.checker.getTypeAtLocation(param))?.[0] : undefined);
+        } else if (!(ts.isPrefixUnaryExpression(p) && p.operator === ts.SyntaxKind.ExclamationToken) && !ts.isIfStatement(p) && !(ts.isBinaryExpression(p) && [ts.SyntaxKind.BarBarToken, ts.SyntaxKind.AmpersandAmpersandToken].includes(p.operatorToken.kind))) ok = false;
+      }
+      ts.forEachChild(n, visit);
+    };
+    visit(scope);
+    return ok && needed > 0 ? this.kotlinTypeName(chain[needed].name) : null;
+  }
+
   /** The one class among several every other one extends (`AppCompatActivity | Activity` is an Activity). */
   private commonClass(parts: ts.Type[]): string | null {
     const names = parts.map((p) => this.classesOf(p)?.[0]);
@@ -261,7 +332,8 @@ export class AndroidNativeAPI implements KotlinNative {
     }
     // A Java class with members the app's type adds (`NumberPicker & { valueChangedListener: … }`): the class's.
     if (type.isIntersection()) {
-      const classes = type.types.flatMap((x) => this.classesOf(x) ?? []);
+      // `T & {}` (a type parameter made non-null) names no class: the other parts only.
+      const classes = type.types.filter((x) => !(x.flags & ts.TypeFlags.TypeParameter)).flatMap((x) => this.classesOf(x) ?? []);
       return classes.length ? classes : null;
     }
     const sym = type.getSymbol();
@@ -465,6 +537,23 @@ export class AndroidNativeAPI implements KotlinNative {
     return null;
   }
 
+  private namesRead: Set<string> | null = null;
+  /** Whether script reads a member `name` anywhere: `x.name`, `x['name']`, `{ name }` read from a value. */
+  private calledByName(name: string): boolean {
+    if (!this.namesRead) {
+      const read = new Set<string>();
+      const visit = (n: ts.Node): void => {
+        if (ts.isPropertyAccessExpression(n)) read.add(n.name.text);
+        else if (ts.isElementAccessExpression(n) && ts.isStringLiteralLike(n.argumentExpression)) read.add(n.argumentExpression.text);
+        else if (ts.isBindingElement(n) && ts.isObjectBindingPattern(n.parent)) read.add((n.propertyName ?? n.name).getText());
+        ts.forEachChild(n, visit);
+      };
+      for (const sf of this.t.sourceFiles) if (!sf.isDeclarationFile) visit(sf);
+      this.namesRead = read;
+    }
+    return this.namesRead.has(name);
+  }
+
   private methods(classes: string[], name: string, isStatic: boolean): Callable[] {
     const out: Callable[] = [];
     const seen = new Set<string>();
@@ -627,7 +716,7 @@ export class AndroidNativeAPI implements KotlinNative {
     const zuper = ts.isPropertyAccessExpression(callee.expression) && callee.expression.name.text === 'super' ? this.extensionOfThis(callee.expression.expression) : null;
     if (zuper) return this.superCall(zuper, callee.name.text, e);
     // A method of the program's overriding a Java method (`this.getCount()` of an adapter): Kotlin's override has Java's signature.
-    const appMethod = this.t.library ? this.t.checker.getSymbolAtLocation(callee.name)?.valueDeclaration : undefined;
+    const appMethod = this.t.checker.getSymbolAtLocation(callee.name)?.valueDeclaration;
     const appClass = appMethod && ts.isMethodDeclaration(appMethod) && appMethod.body && ts.isClassDeclaration(appMethod.parent) ? appMethod.parent : undefined;
     const heritage = appClass ? this.nativeHeritage(appClass) : null;
     if (heritage && appMethod && ts.isMethodDeclaration(appMethod)) {
@@ -1161,6 +1250,11 @@ export class AndroidNativeAPI implements KotlinNative {
           args = [];
         } else { segment += c; i++; }
       }
+      // A Kotlin library's function type (`kotlin.jvm.functions.Function1<in CalendarMonth, Unit>`): Kotlin's own `(CalendarMonth) -> Unit`.
+      if (/^kotlin\/jvm\/functions\/Function\d+$/.test(internal) && args.length && !args.includes('*')) {
+        const plain = args.map((a) => a.replace(/^(in|out) /, ''));
+        return `((${plain.slice(0, -1).join(', ')}) -> ${plain[plain.length - 1]})`;
+      }
       if (!args.length) args = Array(this.typeParamCount(this.classpath.get(internal))).fill('*');
       return args.length ? `${this.kotlinTypeName(internal)}<${args.join(', ')}>` : this.kotlinTypeName(internal);
     };
@@ -1215,11 +1309,13 @@ export class AndroidNativeAPI implements KotlinNative {
     // Library mode: an object result may be null whatever the declaration says (`instantiateItem(…): java.lang.Object` returning null).
     const tsRet = t.library && declaredRet === 'Any' && (target.ret.startsWith('L') || target.ret.startsWith('[')) ? 'Any?' : declaredRet;
     const nullableRet = tsRet.endsWith('?') || tsRet === 'Any?';
+    // A parameter of a type variable takes the type argument as given (a Kotlin library's `Binder<CalendarDay, …>` is non-null).
+    const typeVarParam = (k: number) => !!sig && sig.params.length === target.params.length && /^T[\w$]+;$/.test(sig.params[k]) && types[k] !== 'Any?';
     const params = target.params.map((desc, k) => {
       const p = fn.parameters[k];
       const tsType = p ? t.typeOf(p.name) : 'Any?';
       const ref = desc.startsWith('L') || desc.startsWith('[');
-      return `__a${k}: ${types[k]}${ref && !types[k].endsWith('?') && !target.m.nonNullParams?.[k] && (tsType.endsWith('?') || !p || target.m.nullableParams?.[k]) ? '?' : ''}`;
+      return `__a${k}: ${types[k]}${ref && !types[k].endsWith('?') && !target.m.nonNullParams?.[k] && !typeVarParam(k) && (tsType.endsWith('?') || !p || target.m.nullableParams?.[k]) ? '?' : ''}`;
     });
     // `onReceivedError(...args)`, reading `arguments`: what Java passes, as one list.
     const rest = t.library && fn.parameters.length === 1 && !!fn.parameters[0].dotDotDotToken;
@@ -1337,6 +1433,8 @@ ${indent}}`;
     const typeNames = this.typeParamNames(cls);
     const chosen = argsGiven ? splitArgs(argsGiven) : [];
     const typeVar = (n: string) => chosen[typeNames.indexOf(n)] ?? 'Any?';
+    // A method an interface inherits takes its own interface's type variables, as the implemented one's arguments give them.
+    const ownerVar = (owner: string) => (owner === cls.name ? typeVar : this.supertypeVars(cls, chosen, owner));
     if (!isInterface) {
       if (!this.constructors(cls).some((c) => !c.params.length)) throw t.error(e, `new ${javaTypeName(`L${cls.name};`)} with an implementation (its constructors all take arguments)`);
       supertype += '()';
@@ -1353,7 +1451,7 @@ ${indent}}`;
       const target = this.overrideTarget(fn ?? (declared as ts.SignatureDeclaration), [cls.name], name);
       if (!target) throw t.error(p, `${name} (${javaTypeName(`L${cls.name};`)} has no method of that name to implement)`);
       provided.add(name);
-      members.push(fn ? this.overrideMethod(fn, name, target, base + '    ', typeVar) : this.overrideWithValue((p as ts.PropertyAssignment).initializer, declared as ts.SignatureDeclaration, name, target, base + '    ', typeVar));
+      members.push(fn ? this.overrideMethod(fn, name, target, base + '    ', ownerVar(target.m.owner)) : this.overrideWithValue((p as ts.PropertyAssignment).initializer, declared as ts.SignatureDeclaration, name, target, base + '    ', ownerVar(target.m.owner)));
     }
     if (isInterface) {
       const objectMethods = new Set((this.classpath.get('java/lang/Object')?.methods ?? []).map((m) => m.name + m.descriptor));
@@ -1451,10 +1549,28 @@ ${indent}}`;
           lines.push(`    constructor(${ps.join(', ')}) : super(${c.params.map((_, k) => `p${k}`).join(', ')})`);
         }
       }
+      const accessors = new Map<string, { get?: ts.GetAccessorDeclaration; set?: ts.SetAccessorDeclaration }>();
       for (const m of cls.members) {
-        if (ts.isGetAccessorDeclaration(m) || ts.isSetAccessorDeclaration(m)) throw t.error(m, `an accessor in a class extending ${javaTypeName(`L${base.name};`)}`);
+        if (!ts.isGetAccessorDeclaration(m) && !ts.isSetAccessorDeclaration(m)) continue;
+        if (hasStatic(m) || !ts.isIdentifier(m.name)) throw t.error(m, `a static or computed accessor in a class extending ${javaTypeName(`L${base.name};`)}`);
+        const a = accessors.get(m.name.text) ?? {};
+        if (ts.isGetAccessorDeclaration(m)) a.get = m; else a.set = m;
+        accessors.set(m.name.text, a);
+      }
+      for (const [n, a] of accessors) {
+        // A Kotlin property whose JVM accessors (`getView()`) the Java class has would override them, which NativeScript's would not.
+        const jvm = `${n[0].toUpperCase()}${n.slice(1)}`;
+        if (this.methods(classes, `get${jvm}`, false).length || this.methods(classes, `set${jvm}`, false).length) throw t.error((a.get ?? a.set)!, `an accessor named like a method of ${javaTypeName(`L${base.name};`)}`);
+        const type = a.get ? t.returnTypeOf(a.get) : optionalType(t.typeOf(a.set!.parameters[0].name));
+        lines.push(`    ${a.set ? 'var' : 'val'} ${ident(n)}: ${type}`);
+        lines.push(a.get ? `        get() ${t.functionBody(a.get, type, '        ')}` : '        get() = null');
+        if (a.set) lines.push(`        set(${ident((a.set.parameters[0].name as ts.Identifier).text)}) ${t.functionBody(a.set, 'Unit', '        ')}`);
+      }
+      for (const m of cls.members) {
         if (!ts.isMethodDeclaration(m) || !m.body) continue;
         const n = m.name.getText();
+        // A method named like a final Java method is script's alone, as NativeScript's runtime cannot override it: one script never calls is left out.
+        if (!hasStatic(m) && !this.overridable(classes, n).length && this.methods(classes, n, false).length && !this.calledByName(n)) continue;
         if (hasStatic(m)) {
           t.indent = '        ';
           statics.push('        ' + t.func(m, ident(n)));
@@ -1462,7 +1578,7 @@ ${indent}}`;
           continue;
         }
         const targets = this.overrideTargets(m, classes, n);
-        lines.push(targets.length ? targets.map((target) => this.overrideMethod(m, n, target, '    ', target.m.owner === base.name ? baseTypeVar : 'Any?')).join('\n') : '    ' + t.func(m, ident(n)));
+        lines.push(targets.length ? targets.map((target) => this.overrideMethod(m, n, target, '    ', target.m.owner === base.name ? baseTypeVar : baseChosen.length ? this.supertypeVars(base, baseChosen, target.m.owner) : 'Any?')).join('\n') : '    ' + t.func(m, ident(n)));
       }
     } finally {
       t.indent = '';
@@ -1846,5 +1962,28 @@ function splitArgs(text: string): string[] {
     else if (ch === ',' && depth === 0) { out.push(text.slice(start, i).trim()); start = i + 1; }
   }
   out.push(text.slice(start).trim());
+  return out;
+}
+
+/** The index of the `>` closing the `<` at `start`. */
+function matchingAngle(sig: string, start: number): number {
+  let depth = 0;
+  for (let i = start; i < sig.length; i++) {
+    if (sig[i] === '<') depth++;
+    else if (sig[i] === '>' && --depth === 0) return i;
+  }
+  return sig.length - 1;
+}
+
+/** A class signature's supertypes, one type signature each (`Ljava/lang/Object;Lpkg/Binder<TX;>;`). */
+function topLevelTypes(sig: string): string[] {
+  const out: string[] = [];
+  let depth = 0, start = 0;
+  for (let i = 0; i < sig.length; i++) {
+    const c = sig[i];
+    if (c === '<') depth++;
+    else if (c === '>') depth--;
+    else if (c === ';' && depth === 0) { out.push(sig.slice(start, i + 1)); start = i + 1; }
+  }
   return out;
 }

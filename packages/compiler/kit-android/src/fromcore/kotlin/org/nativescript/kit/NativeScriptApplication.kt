@@ -31,6 +31,18 @@ object AppModules {
         register(moduleNames, loader)
     }
 
+    private val imports = HashMap<String, () -> Unit>()
+
+    /** A module `await import(…)` reaches: what runs it (and what only it imports) when it is first imported. */
+    fun registerImport(file: String, run: () -> Unit) {
+        imports[file] = run
+    }
+
+    /** `await import(…)` of a module registered so: it runs, once. */
+    fun runImport(file: String) {
+        imports.remove(file)?.invoke()
+    }
+
     internal fun load(name: String): Any? {
         if (loaded.containsKey(name)) return loaded[name]
         val loader = loaders[name] ?: return null

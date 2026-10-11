@@ -605,3 +605,11 @@ fun JSDate.toLocaleTimeString(locales: Any? = null, options: Any? = null): Strin
     if (option(options, "dateStyle") != null) throw JSException(JSTypeError("Invalid option : dateStyle"))
     return JSDateTimeFormat(locales, options, "time", "time").formatTime(time)
 }
+
+/** The `Intl` object read as a value (`typeof Intl`, `Intl.DateTimeFormat` tested before use). */
+val jsIntl: JSObject by lazy {
+    JSObject(
+        "DateTimeFormat" to jsFunction { args -> JSDateTimeFormat(args.getOrNull(0), args.getOrNull(1)) },
+        "NumberFormat" to jsFunction { args -> JSNumberFormat(args.getOrNull(0), args.getOrNull(1)) },
+    )
+}

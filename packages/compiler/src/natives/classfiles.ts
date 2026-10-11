@@ -299,6 +299,15 @@ export class ClassPath {
         if (found) break;
       }
     }
+    // A group named apart from its packages (JitPack's `com.github.<user>`): every pinned one.
+    if (!found) {
+      for (const key of this.pinned.keys()) {
+        const group = key.split(':')[0];
+        if (group.startsWith('androidx.')) continue;
+        found = search(this.group(group));
+        if (found) break;
+      }
+    }
     this.classes.set(name, found);
     return found;
   }

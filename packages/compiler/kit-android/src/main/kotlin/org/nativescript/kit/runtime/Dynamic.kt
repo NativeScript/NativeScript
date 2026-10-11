@@ -282,6 +282,8 @@ private fun javaScore(value: Any?, type: Class<*>): Int? {
         is Double -> rank[type] ?: when {
             type == java.lang.Double::class.java || type == java.lang.Number::class.java -> 9
             type == Any::class.java -> 30
+            // A Java enum core's code types as a number (`getNativeRenderingMode(): number`): the kit holds it by its ordinal.
+            type.isEnum && value >= 0 && value.toInt() < type.enumConstants!!.size -> 20
             else -> null
         }
         is String -> when {
@@ -319,6 +321,7 @@ fun toJavaValue(value: Any?, type: Class<*>): Any? = when {
         Char::class.javaPrimitiveType -> value.toLong().toInt().toChar()
         else -> value
     }
+    value is Double && type.isEnum -> type.enumConstants!![value.toInt()]
     value is String && type == Char::class.javaPrimitiveType -> value[0]
     value is JSArray<*> && type.isArray -> {
         val element = type.componentType!!
@@ -403,4 +406,15 @@ fun jsNativePropertySet(native: Any?, setter: String, value: Any?) {
     val methods = javaMethods(native.javaClass, setter, false).filter { it.parameterCount == 1 }
     if (methods.isEmpty()) return
     JavaMethodRef(native, native.javaClass, setter, methods).call(listOf(value))
+}
+
+/** An untyped value read as a type parameter a call instantiates with an object class: the class's object for it (its `fromJS`). */
+inline fun <reified T> jsCastTo(value: Any?): T = if (value is T) value else jsConvertTo(value, T::class.java) as T
+
+fun jsConvertTo(value: Any?, cls: Class<*>): Any? {
+    if (value == null || cls.isInstance(value)) return value
+    if (cls == JSDate::class.java) return jsDateFrom(value)
+    val companion = try { cls.getField("Companion").get(null) } catch (_: Exception) { null } ?: return value
+    val fromJS = companion.javaClass.methods.firstOrNull { it.name == "fromJS" && it.parameterCount == 1 } ?: return value
+    return fromJS.invoke(companion, value)
 }
