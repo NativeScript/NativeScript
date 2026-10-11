@@ -36,7 +36,7 @@ if (!existsSync(join(compiler, 'src/kit-gen.ts'))) throw new Error(`${compiler}:
 if (!existsSync(join(declarations, 'index.d.ts'))) throw new Error(`${declarations}: no core declarations (build core, or --declarations)`);
 
 const { generateKit } = await import(join(compiler, 'src/kit-gen.ts'));
-const result = generateKit({ core, declarations, typesIos, modules: ios.compile, counterparts: ios.counterparts, moot: ios.moot, identities: ios.identities, packages: ios.packages, report: report || partial });
+const result = generateKit({ core, declarations, typesIos, modules: ios.compile, counterparts: ios.counterparts, moot: ios.moot, identities: ios.identities, packages: ios.packages, weak: ios.weak, report: report || partial });
 if (partial && result.errors.length) console.error(result.errors.join('\n'));
 if (report) {
 	console.log(result.errors.join('\n') || 'every listed module translates');

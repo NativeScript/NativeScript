@@ -59,6 +59,13 @@ const kotlinApp = (file: string) => readFileSync(file, 'utf8').startsWith('// @k
 /** A case starting `// @swift` covers what only the Swift runtime has yet (typed arrays): it is not run as Kotlin. */
 const swiftOnly = (file: string) => (lenient(file) && !kotlinOnly(file)) || readFileSync(file, 'utf8').startsWith('// @swift');
 
+/** `// @weak-fields A.b C.d` and `// @weak-captures A.e` lines: what the kit's configuration holds weakly (tools/native-kit/modules.mts). */
+function weakOf(file: string) {
+  const text = readFileSync(file, 'utf8');
+  const list = (tag: string) => [...text.matchAll(new RegExp(`^// @${tag} (.+)$`, 'gm'))].flatMap((m) => m[1].trim().split(/\s+/));
+  return { fields: list('weak-fields'), captures: list('weak-captures') };
+}
+
 function translate(file: string, out: string): void {
   const loose = lenient(file);
   const { checker, program, files: roots } = createProgram([file], new Map(), 'ios', modulesDir, undefined, [], {}, loose ? { strict: false, useDefineForClassFields: false } : {});
@@ -68,7 +75,7 @@ function translate(file: string, out: string): void {
   const library = loose ? { moduleName: (f: string) => (f.endsWith('.d.ts') ? null : 'Module_' + basename(f).replace(/\W/g, '_')) } : null;
   // Every module of the case, as an app's are: names its modules share are told apart across them.
   const all = [...files, ...importsOf(program, file).map((f) => program.getSourceFile(f)!).filter((f) => f && !files.includes(f))];
-  const translator = new Translator(checker, new Map(), all, { lenient: loose, library, ...(loose ? { pluginFiles: all.map((f) => f.fileName), properties: collectProperties(checker, all) } : {}) });
+  const translator = new Translator(checker, new Map(), all, { lenient: loose, library, weak: weakOf(file), ...(loose ? { pluginFiles: all.map((f) => f.fileName), properties: collectProperties(checker, all) } : {}) });
   translator.appModule = 'Main';
   // With source lines, as an app is built: the directives must compile wherever a statement can be.
   const lines = translator.lines = new SourceLines(new Map());

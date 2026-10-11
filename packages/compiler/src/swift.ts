@@ -514,7 +514,15 @@ export class Translator implements AsyncTranslator {
   /** Library mode: generated classes whose names the hand-ported kit also declares. */
   readonly kitClashes: string[] = [];
 
-  constructor(checker: ts.TypeChecker, components: Map<string, ComponentInfo>, files: readonly ts.SourceFile[], options: { pluginFiles?: Iterable<string>; reach?: Reach; properties?: Properties; library?: Translator['library']; lenient?: boolean } = {}) {
+  /**
+   * References held weakly, as `Class.field`: `fields`, back references up an ownership tree (a view's `parent`);
+   * `captures`, fields assigned a closure over `this` that only the object itself runs or registers. Script's
+   * garbage collector frees such cycles; reference counting frees them only when one side is weak.
+   */
+  weak: { fields: Set<string>; captures: Set<string> } = { fields: new Set(), captures: new Set() };
+
+  constructor(checker: ts.TypeChecker, components: Map<string, ComponentInfo>, files: readonly ts.SourceFile[], options: { pluginFiles?: Iterable<string>; reach?: Reach; properties?: Properties; library?: Translator['library']; lenient?: boolean; weak?: { fields?: Iterable<string>; captures?: Iterable<string> } } = {}) {
+    this.weak = { fields: new Set(options.weak?.fields ?? []), captures: new Set(options.weak?.captures ?? []) };
     this.library = options.library ?? null;
     this.lenientAll = options.lenient ?? false;
     this.pluginFiles = new Set(options.pluginFiles ?? []);
@@ -3197,7 +3205,18 @@ ${members.join('\n')}
       return `{ (__rest: JSArray<Any?>) ${throws}-> ${ret} in${binds.join('')}${this.functionBody(fn, ret, this.indent).slice(1)}`;
     }
     const extra = this.unusedParameters(fn).map((t, k) => `_ __unused${k}: ${t}`);
-    return `{ (${[this.params(fn, true), ...extra, ...pad].filter(Boolean).join(', ')}) ${throws}-> ${ret} in${this.functionBody(fn, ret, this.indent).slice(1)}`;
+    const weak = ret === 'Void' && this.weakCapture(fn);
+    return `{ ${weak ? '[weak self] ' : ''}(${[this.params(fn, true), ...extra, ...pad].filter(Boolean).join(', ')}) ${throws}-> ${ret} in${weak ? ' guard let self else { return }' : ''}${this.functionBody(fn, ret, this.indent).slice(1)}`;
+  }
+
+  /** A closure assigned to a field of `this` that `weak.captures` names: it holds `this` weakly, and does nothing once it is gone. */
+  private weakCapture(fn: ts.ArrowFunction | ts.FunctionExpression): boolean {
+    if (!this.weak.captures.size || !ts.isArrowFunction(fn)) return false;
+    const at = fn.parent;
+    const name = ts.isBinaryExpression(at) && at.operatorToken.kind === ts.SyntaxKind.EqualsToken && at.right === fn && ts.isPropertyAccessExpression(at.left) && at.left.expression.kind === ts.SyntaxKind.ThisKeyword ? at.left.name.text
+      : ts.isPropertyDeclaration(at) && at.initializer === fn ? at.name.getText() : null;
+    const cls = name && ts.findAncestor(fn, ts.isClassLike);
+    return !!cls && this.weak.captures.has(`${cls.name?.text}.${name}`);
   }
 
   /**
@@ -3667,7 +3686,8 @@ ${members.join('\n')}
       // `field: string = null` in code checked without strictNullChecks: unset, read as the type's zero or an unwrapped nil.
       if (m.initializer && (m.initializer.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(m.initializer) && m.initializer.text === 'undefined')) && !isOptional(t)) { lines.push(`    var ${ident(n)}: ${this.fieldType(t)}`); continue; }
       if (m.initializer && this.pure(m.initializer) && !refersToThis(m.initializer)) { lines.push(`    var ${ident(n)}: ${this.lenientRef(t)} = ${this.coerce(m.initializer, t)}`); continue; }
-      lines.push(`    var ${ident(n)}: ${this.fieldType(t)}`);
+      const held = this.fieldType(t);
+      lines.push(`    ${this.weak.fields.has(`${cls.name?.text}.${n}`) && /^[A-Z][\w.]*[!?]$/.test(held) ? 'weak ' : ''}var ${ident(n)}: ${held}`);
       if (m.initializer) {
         this.indent = '        ';
         fieldInits.push(`        self.${ident(n)} = ${this.tryPrefix(m.initializer)}${this.coerce(m.initializer, t)}`);

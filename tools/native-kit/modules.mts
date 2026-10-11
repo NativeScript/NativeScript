@@ -100,6 +100,7 @@ export const ios = {
 	 */
 	counterparts: {
 		'color/color-utils.ts': { argbFromColorMix: 'ColorMix.argbFromColorMix' },
+		'ui/styling/style-scope.ts': { 'CssState.onUnloaded': 'CoreLifetimes.cssStateUnloaded' },
 		'application/application.ios.ts': {
 			installSceneDelegateDefaults: 'ApplicationDelegateClass.installSceneDelegateDefaults',
 			warnAboutDelegateClass: 'ApplicationDelegateClass.warnAboutDelegateClass',
@@ -124,6 +125,15 @@ export const ios = {
 	moot: ['debugger/', 'wgc/', 'inspector_modules'],
 	/** Functions that give back what they are given and, as decorators, leave what they decorate as it is. */
 	identities: ['profile', 'zonedCallback'],
+	/**
+	 * References the kit holds weakly, which JavaScript's collector frees as cycles and reference counting cannot:
+	 * back references up the view tree, and closures over `this` an object keeps on itself and registers only on
+	 * views it is owned by (a view's CSS state, its gesture observers).
+	 */
+	weak: {
+		fields: ['ViewBase.parent', 'ViewBase._templateParent', 'ViewCommon._modalParent', 'GesturesObserverBase._target'],
+		captures: ['CssState._onDynamicStateChangeHandler', 'GesturesObserver._onTargetLoaded', 'GesturesObserver._onTargetUnloaded'],
+	},
 	/** npm packages compiled with core from the TypeScript they publish (relative to the package; the first is its entry). */
 	packages: {
 		'css-what': ['src/index.ts', 'src/parse.ts', 'src/types.ts', 'src/stringify.ts'],
@@ -143,6 +153,7 @@ export const android = {
 	/** As `ios.counterparts`, to the kit's Kotlin. */
 	counterparts: {
 		'color/color-utils.ts': { argbFromColorMix: 'ColorMix.argbFromColorMix' },
+		'ui/styling/style-scope.ts': { 'CssState.onUnloaded': 'CoreLifetimes.cssStateUnloaded' },
 		'ui/core/bindable/bindable-expressions.ts': { parseExpression: 'Core_ui_core_bindable_expression_parser.parseExpressionNode' },
 		'npm:@csstools/css-calc': { calc: 'CorePackages.calc' },
 		'npm:emoji-regex': { '*': 'CorePackages.emojiRegex' },

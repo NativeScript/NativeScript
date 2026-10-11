@@ -41,6 +41,8 @@ export interface KitOptions {
   identities?: string[];
   /** A source's text; a patch of core is applied here. Defaults to the file on disk. */
   read?: (file: string) => string;
+  /** References the kit holds weakly, as `Class.field` (the translator's `weak`): back references and self-held closures that would otherwise form cycles. */
+  weak?: { fields?: string[]; captures?: string[] };
   /** Report every construct that does not translate instead of stopping at the first of each file. */
   report?: boolean;
   /** Kit files (relative to its sources) the modules replace: left out of what the generated code may name. */
@@ -222,7 +224,7 @@ export function generateKit(o: KitOptions): KitResult {
   let translator: Translator;
   try {
     translator = new Translator(checker, new Map(), files, {
-      pluginFiles: files.map((f) => f.fileName), properties: collectProperties(checker, files), lenient: true,
+      pluginFiles: files.map((f) => f.fileName), properties: collectProperties(checker, files), lenient: true, weak: o.weak,
       library: {
         moduleName: (file) => (compiled.has(file) ? enumName(relOf(file), barrels) : null),
         isMoot: (file) => file.startsWith(MOOT),
