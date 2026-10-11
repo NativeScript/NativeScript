@@ -25,6 +25,8 @@ public typealias JSRest<Element> = JSArray<Element>
 open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, ExpressibleByArrayLiteral, CustomStringConvertible {
     public final var storage: [Element]
     public final var jsTracker: JSTracker?
+    /// Values written under keys that are no array index (`a[-1] = v`, `a[1.5] = v`).
+    final var jsNonIndexed: [Double: Element]?
 
     public init() { storage = [] }
     public init(_ elements: [Element]) { storage = elements }
@@ -94,7 +96,7 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
 
     /// `a[i]` as JavaScript reads it: nil (undefined) unless `i` is an integer index in range.
     public final func element(_ i: Double) -> Element? {
-        guard let k = Int(exactly: i), k >= 0, k < count else { return nil }
+        guard let k = Int(exactly: i), k >= 0, k < count else { return jsNonIndexed?[i + 0] }
         return self[k]
     }
 
@@ -120,14 +122,25 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
     }
 
     public final subscript(i: Double) -> Element {
-        get { self[index(i)] }
-        set { self[index(i)] = newValue }
+        get {
+            guard let k = index(i) else {
+                if let value = jsNonIndexed?[i + 0] ?? JSArray.hole { return value }
+                fatalError("JSArray<\(Element.self)> has no element \(jsNumberToString(i))")
+            }
+            return self[k]
+        }
+        set {
+            guard let k = index(i) else {
+                if jsNonIndexed == nil { jsNonIndexed = [:] }
+                jsNonIndexed![i + 0] = newValue
+                return
+            }
+            self[k] = newValue
+        }
     }
 
-    private func index(_ d: Double) -> Int {
-        guard d >= 0, d < 4_294_967_295, d == d.rounded(.towardZero) else {
-            fatalError("JSArray<\(Element.self)> index \(jsNumberToString(d)) is not an array index (length \(storage.count))")
-        }
+    private func index(_ d: Double) -> Int? {
+        guard d >= 0, d < 4_294_967_295, d == d.rounded(.towardZero) else { return nil }
         return Int(d)
     }
 
@@ -417,7 +430,7 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
         guard length > 0 else { return -1 }
         let n = fromIndex.map(jsToIntegerOrInfinity) ?? Double(length - 1)
         if n == -.infinity { return -1 }
-        var k = n >= 0 ? Int(Swift.min(n, Double(length - 1))) : Int(Double(length) + n)
+        var k = n >= 0 ? Int(Swift.min(n, Double(length - 1))) : jsClampedInt(Double(length) + n)
         while k >= 0 {
             if JSArray.strictEquals(storage[k], value) { return Double(k) }
             k -= 1
@@ -789,7 +802,7 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
 
     /// `Array.from({ length }, (_, index) => …)`.
     public static func from(length: Double, _ transform: (Double) throws -> Element) rethrows -> JSArray<Element> {
-        let n = Int(Swift.max(0, jsToIntegerOrInfinity(length)))
+        let n = jsClampedInt(Swift.max(0, jsToIntegerOrInfinity(length)))
         var out: [Element] = []
         out.reserveCapacity(n)
         for i in 0..<n { out.append(try transform(Double(i))) }
@@ -828,6 +841,12 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
             throw JSException(JSRangeError("Index \(index) is past the end of an array of \(Element.self) (length \(storage.count))"))
         }
         self[index] = element
+    }
+
+    /// `array.length = n`: a RangeError where n is no valid length.
+    public final func jsSetLength(checked length: Double) throws {
+        guard length >= 0, length <= 4_294_967_295, length == length.rounded(.towardZero) else { throw JSException(JSRangeError("Invalid array length")) }
+        try jsSetLength(Int(length))
     }
 
     public final func jsSetLength(_ length: Int) throws {
@@ -1025,7 +1044,7 @@ func jsArrayMethod(_ array: JSArrayProtocol, _ key: String) -> JSMethod? {
         }
     case "at":
         return { _, args in
-            let i = Int(jsToIntegerOrInfinity(number(args, 0) ?? 0))
+            let i = jsClampedInt(number(args, 0) ?? 0)
             return array.jsElement(at: i < 0 ? array.jsLength + i : i)
         }
     case "join", "toString":
@@ -1118,11 +1137,16 @@ func jsArrayMethod(_ array: JSArrayProtocol, _ key: String) -> JSMethod? {
     }
 }
 
+/// `new Array(n)`'s length as a count: a RangeError where n is not an integer in 0…2³²−1.
+public func jsArrayLength(_ length: Double) throws -> Int {
+    guard length >= 0, length <= 4_294_967_295, length == length.rounded(.towardZero) else { throw JSException(JSRangeError("Invalid array length")) }
+    return Int(length)
+}
+
 /// `Array(...items)`: one number is a length, anything else the elements.
 public func jsArrayConstruct(_ items: [Any?]) throws -> JSArray<Any?> {
     guard items.count == 1, let length = jsFlat(items[0]) as? Double else { return JSArray(items) }
-    guard length >= 0, length <= 4_294_967_295, length == length.rounded(.towardZero) else { throw JSException(JSRangeError("Invalid array length")) }
-    return JSArray(Array(repeating: nil, count: Int(length)))
+    return JSArray(Array(repeating: nil, count: try jsArrayLength(length)))
 }
 
 /// An array made with empty slots (`new Array(n)`) and filled by index, as the
@@ -1138,6 +1162,5 @@ public func jsFilled<T>(_ array: JSArray<T?>) -> JSArray<T> {
 /// RangeError when it is no valid length), otherwise an array holding `x`.
 public func jsNewArray(_ value: Any?) throws -> JSArray<Any?> {
     guard let length = jsFlat(value) as? Double else { return JSArray<Any?>([value]) }
-    guard length >= 0, length <= 4_294_967_295, length == length.rounded(.towardZero) else { throw JSException(JSRangeError("Invalid array length")) }
-    return JSArray<Any?>(Array(repeating: nil, count: Int(length)))
+    return JSArray<Any?>(Array(repeating: nil, count: try jsArrayLength(length)))
 }

@@ -43,11 +43,14 @@ public func jsSlice(_ s: String, _ start: Double = 0, _ end: Double? = nil) -> S
 }
 
 private func jsRange(_ count: Int, _ start: Double, _ end: Double?) -> (Int, Int) {
-    func clamp(_ v: Double) -> Int { v < 0 ? max(0, count + Int(v)) : min(count, Int(v)) }
-    return (clamp(start), clamp(end ?? Double(count)))
+    (jsRelativeIndex(start, count), end.map { jsRelativeIndex($0, count) } ?? count)
 }
 
-public func jsCharAt(_ s: String, _ index: Double) -> String { jsSlice(s, index, index + 1) }
+public func jsCharAt(_ s: String, _ index: Double) -> String {
+    let i = jsToIntegerOrInfinity(index), u = s.utf16
+    guard i >= 0, i < Double(u.count) else { return "" }
+    return String(decoding: CollectionOfOne(u[u.index(u.startIndex, offsetBy: Int(i))]), as: UTF16.self)
+}
 
 /// `s.replace(a, b)` with a string pattern replaces the first match only.
 public func jsReplace(_ s: String, _ pattern: String, _ replacement: String) -> String {
@@ -55,10 +58,8 @@ public func jsReplace(_ s: String, _ pattern: String, _ replacement: String) -> 
     return s.replacingCharacters(in: r, with: replacement)
 }
 
-public func jsPadStart(_ s: String, _ length: Double, _ fill: String = " ") -> String {
-    let missing = Int(length) - s.utf16.count
-    guard missing > 0, !fill.isEmpty else { return s }
-    return String(String(repeating: fill, count: missing / fill.count + 1).prefix(missing)) + s
+public func jsPadStart(_ s: String, _ length: Double, _ fill: String = " ") throws -> String {
+    try jsPadding(s, length, fill) + s
 }
 
 /// The key of an unkeyed `for` (Solid's `<For>`): the item itself, by reference for objects.

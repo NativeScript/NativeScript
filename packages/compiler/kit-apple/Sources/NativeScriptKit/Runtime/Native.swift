@@ -524,7 +524,7 @@ private func jsCollectionMember(_ object: NSObject, _ key: String) -> Any?? {
         case "lastObject": return jsFromNative(array.lastObject)
         case "objectAtIndex":
             return { (args: [Any?]) throws -> Any? in
-                let i = Int(jsToNumber(jsArg(args, 0)))
+                let i = jsNativeInteger(jsToNumber(jsArg(args, 0)), Int.self)
                 guard i >= 0, i < array.count else { throw JSException(JSRangeError("index \(i) beyond bounds")) }
                 return jsFromNative(array.object(at: i))
             } as JSFunction

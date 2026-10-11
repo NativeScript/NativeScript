@@ -12,6 +12,11 @@ const BUFFER_SOURCE = /^(JSArrayBuffer|JSDataView|JSArrayBufferView|JS(Int8|Uint
 
 const NUMBERS = new Set(['CGFloat', 'Double', 'Float', 'Float32', 'Float64', 'Int', 'UInt', 'Int8', 'Int16', 'Int32', 'Int64', 'UInt8', 'UInt16', 'UInt32', 'UInt64', 'TimeInterval', 'NSInteger', 'NSUInteger']);
 const INTEGERS = new Set(['Int', 'UInt', 'Int8', 'Int16', 'Int32', 'Int64', 'UInt8', 'UInt16', 'UInt32', 'UInt64', 'NSInteger', 'NSUInteger']);
+
+/** A number as a native numeric type, as the runtime marshals it: an integer type takes NaN and the infinities as 0 and clamps the rest. */
+function integral(code: string, type: string): string {
+  return INTEGERS.has(type) ? `jsNativeInteger(${code}, ${type}.self)` : `${type}(${code})`;
+}
 const base = (t: SwiftType) => t.replace(/[?!]$/, '').replace(/^\((.*)\)$/, '$1');
 const optional = (t: SwiftType) => /[?!]$/.test(t);
 /** Foundation's classes Swift imports as its value types where an API takes or returns one (`NSURL` as `URL`). */
@@ -969,14 +974,14 @@ export class NativeAPI {
     }
     if (this.isNumericConstants(b) && ['Double', 'Double?', 'Any?'].includes(source)) {
       const raw = this.typedConstantsRaw(b)!;
-      if (source === 'Double') return `${b}(rawValue: ${raw}(${t.expr(e)}))`;
-      if (source === 'Any?') return `${b}(rawValue: ${raw}(jsToNumber(${t.expr(e)})))`;
-      return `(${t.expr(e)}).map { ${b}(rawValue: ${raw}($0)) }${optional(target) ? '' : '!'}`;
+      if (source === 'Double') return `${b}(rawValue: ${integral(t.expr(e), raw)})`;
+      if (source === 'Any?') return `${b}(rawValue: ${integral(`jsToNumber(${t.expr(e)})`, raw)})`;
+      return `(${t.expr(e)}).map { ${b}(rawValue: ${integral('$0', raw)}) }${optional(target) ? '' : '!'}`;
     }
     if (source === 'Double' && this.isEnumType(b)) {
       // A number where Swift takes an enum or option set: its raw value.
       const raw = this.rawTypeOf(b);
-      return `${b}(rawValue: ${raw}(${t.expr(e)}))${this.isOptionSet(b) ? '' : '!'}`;
+      return `${b}(rawValue: ${integral(t.expr(e), raw)})${this.isOptionSet(b) ? '' : '!'}`;
     }
     // An untyped value where Swift takes a native enum or option set: the number the runtime marshals.
     if (source === 'Any?' && this.isEnumType(b)) return this.enumFromNumber(`jsToNumber(${t.expr(e)})`, b);
@@ -1047,7 +1052,7 @@ export class NativeAPI {
     if (source.endsWith('?') && !optional(target) && b.startsWith('[') && source.slice(0, -1) === b) return `(${t.expr(e)} ?? ${b.includes(':') ? '[:]' : '[]'})`;
     if (source === 'Double' && b === 'NSNumber') return `NSNumber(value: ${t.expr(e)})`;
     const raw = source === 'Double' ? this.constantsRaw(b) : null;
-    if (raw && NUMBERS.has(raw)) return `${b}(rawValue: ${raw}(${t.expr(e)}))`;
+    if (raw && NUMBERS.has(raw)) return `${b}(rawValue: ${integral(t.expr(e), raw)})`;
     // A string where Foundation takes a copyable key (`setObject(_:forKey:)`).
     if (/^String\??$/.test(source) && /^(any )?NSCopying$/.test(b)) return `(${t.expr(e)} as NSString)`;
     // A string or a number where a generic class takes any object (`NSCache<AnyObject, AnyObject>`): its Foundation object.
@@ -1478,19 +1483,19 @@ export class NativeAPI {
     // An untyped result marshals as the runtime converts a JavaScript value: a BOOL by truthiness, a number by ToNumber.
     if (tsType === 'Any?' && swiftType !== 'Any?' && swiftType !== 'Any') {
       if (b === 'Bool' || b === 'ObjCBool') return `jsTruthy(${code})`;
-      if (NUMBERS.has(b)) return b === 'Double' ? `jsToNumber(${code})` : `${b}(jsToNumber(${code}))`;
+      if (NUMBERS.has(b)) return b === 'Double' ? `jsToNumber(${code})` : integral(`jsToNumber(${code})`, b);
       // A BOOL the runtime marshals from any value: its truthiness.
       if (b === 'Bool' && !optional(swiftType)) return `jsTruthy(${code})`;
       return optional(swiftType) ? `(jsToNative(${code}) as? ${b})` : `(jsToNative(${code}) as! ${b})`;
     }
-    if (NUMBERS.has(b) && tsType === 'Double' && b !== 'Double') return `${b}(${code})`;
+    if (NUMBERS.has(b) && tsType === 'Double' && b !== 'Double') return integral(code, b);
     const bridged = bridge(code, tsType, swiftType);
     if (bridged) return bridged;
     if (b === 'Date' && base(tsType) === 'JSDate') return tsType.endsWith('?') ? `${code}.map { jsNativeDate($0) }` : `jsNativeDate(${code})`;
     // A Foundation array of objects where Swift has its element type (`NSArray<UIViewController>` as `[UIViewController]`).
     const elements = /^\[([\w.]+)\]$/.exec(b)?.[1];
     if (/^\[Any\][?!]?$/.test(tsType) && elements && elements !== 'Any') return optional(swiftType) ? `(${code} as? [${elements}])` : `(${code} as! [${elements}])`;
-    if (tsType === 'Double' && this.isEnumType(b)) return `${b}(rawValue: ${this.rawTypeOf(b)}(${code}))${this.isOptionSet(b) ? '' : '!'}`;
+    if (tsType === 'Double' && this.isEnumType(b)) return `${b}(rawValue: ${integral(code, this.rawTypeOf(b))})${this.isOptionSet(b) ? '' : '!'}`;
     return code;
   }
 
@@ -1511,7 +1516,7 @@ export class NativeAPI {
   /** A JavaScript number where Swift has a native enum or option set: the value of that raw value. */
   enumFromNumber(code: string, swiftType: string): string {
     const b = swiftType.replace(/[?!]$/, '');
-    return `${b}(rawValue: ${this.rawTypeOf(b)}(${code}))${this.isOptionSet(b) ? '' : '!'}`;
+    return `${b}(rawValue: ${integral(code, this.rawTypeOf(b))})${this.isOptionSet(b) ? '' : '!'}`;
   }
 
   /** A type of named constants of any raw type (`CFRunLoopMode`, `NSNotification.Name`). */

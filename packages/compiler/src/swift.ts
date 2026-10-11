@@ -1,6 +1,6 @@
 import type { SourceLines } from './source-lines.ts';
 import ts from 'typescript';
-import { Throws, isAsync, isStatic } from './throws.ts';
+import { Throws, digitsLiteral, isArrayLengthLiteral, isArrayLengthWrite, isAsync, isStatic } from './throws.ts';
 import { intlConstructor, isObjectToStringCall, isStringRaw, leadingNeverRead, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces } from './lang.ts';
 import { AsyncLowering, type AsyncCtx, type AsyncSyntax, type AsyncTranslator } from './async.ts';
 import { CoreAPI, isCoreDeclaration, packageOf } from './core.ts';
@@ -4675,7 +4675,7 @@ ${members.join('\n')}
         return `${i}var ${name}: ${this.deferred(t)}\n${i}${name} = ${this.tryPrefix(d.initializer)}${this.coerce(d.initializer, t)}`;
       }
       const holes = this.holeyArray(d, t);
-      if (holes) return `${i}let ${name}: ${holes.type} = ${holes.type}(Array(repeating: nil, count: Int(${this.toNumber(holes.length)})))`;
+      if (holes) return `${i}let ${name}: ${holes.type} = ${holes.type}(Array(repeating: nil, count: ${this.arrayLength(holes.length)}))`;
       // Lenient code: a string, number or boolean read from an optional member (`entry.backstackVisible`) may be undefined, which the code may test for.
       const member = this.lenient && !lowered && ['Bool', 'Double', 'String'].includes(t) ? this.optionalMember(d.initializer) : null;
       if (member && this.isAny(member.expression)) {
@@ -6474,7 +6474,8 @@ ${members.join('\n')}
     const q = e.questionDotToken ? '?' : '';
     if (t === 'String') return `jsCharAt(${target}, ${this.expr(key)})`;
     if (t.startsWith('JSArray<')) {
-      if (isWriteTarget(e)) return `${target}${q}[Int(${this.expr(key)})]`;
+      // A key that is no array index (`a[-1] = v`) is a property of the array, as JavaScript keeps it.
+      if (isWriteTarget(e)) return `${target}${q}[${ts.isNumericLiteral(key) ? key.text : `(${this.toNumber(key)} as Double)`}]`;
       // An untyped element the checker narrows (`Array.isArray(xs[0])`): read as the narrowed type.
       const rt = this.typeOf(e);
       if (t === 'JSArray<Any?>' && rt !== 'Any?') return this.fromAny(`(${this.maybeUndefined(e)!} ?? nil)`, rt);
@@ -7047,7 +7048,7 @@ ${members.join('\n')}
         const context = this.checker.getContextualType(e);
         const declared = context ? this.type(context, e) : null;
         const at = t === 'JSArray<Any?>' && declared?.startsWith('JSArray<') ? declared : t;
-        return `${at}(Array(repeating: ${this.coerce(e.arguments[0], at.replace(/^JSArray<(.*)>$/, '$1'))}, count: Int(${this.expr(target.arguments[0])})))`;
+        return `${at}(Array(repeating: ${this.coerce(e.arguments[0], at.replace(/^JSArray<(.*)>$/, '$1'))}, count: ${this.arrayLength(target.arguments[0])}))`;
       }
       if (t.startsWith('JSArray<')) {
         // `observers?.find(…)` on an array TypeScript types as present, which lenient code may hold as undefined: cast to optional, valid either way.
@@ -7878,10 +7879,10 @@ ${members.join('\n')}
     const t = this.expr(target);
     const a = this.args(e);
     switch (name) {
-      case 'toFixed': return `jsToFixed(${t}, ${a[0] ?? '0'})`;
+      case 'toFixed': { const n = digitsLiteral(e.arguments[0], 0, 100, 0); return n !== null ? `jsToFixed(${t}, digits: ${n})` : `jsToFixed(${t}, ${a[0]})`; }
       case 'toLocaleString': return `jsNumberToLocaleString(${[t, ...e.arguments.map((x) => this.coerce(x, 'Any?'))].join(', ')})`;
-      case 'toPrecision': return a[0] ? `jsToPrecision(${t}, ${a[0]})` : `js(${t})`;
-      case 'toString': return a[0] ? `jsNumberToString(${t}, radix: ${a[0]})` : `js(${t})`;
+      case 'toPrecision': { const n = digitsLiteral(e.arguments[0], 1, 100, null); return !a[0] ? `js(${t})` : n !== null ? `jsToPrecision(${t}, digits: ${n})` : `jsToPrecision(${t}, ${a[0]})`; }
+      case 'toString': { const n = digitsLiteral(e.arguments[0], 2, 36, null); return !a[0] ? `js(${t})` : n !== null ? `jsNumberToString(${t}, base: ${n})` : `jsNumberToString(${t}, radix: ${a[0]})`; }
       case 'valueOf': return t;
     }
     throw this.error(e, `Number.${name}`);
@@ -8037,6 +8038,11 @@ ${members.join('\n')}
     return `${t}.from(${this.coerce(a, 'Any?')})`;
   }
 
+  /** `new Array(n)`'s length as a Swift count: a RangeError where n is no array length. */
+  private arrayLength(n: ts.Expression): string {
+    return isArrayLengthLiteral(n) ? String(Number((n as ts.NumericLiteral).text)) : `(try jsArrayLength(${this.toNumber(n)}))`;
+  }
+
   /** `new Array(…)`, or `Array(…)` called, which JavaScript treats the same. */
   private isArrayConstruction(e: ts.Expression): e is ts.NewExpression | ts.CallExpression {
     if (!(ts.isNewExpression(e) || ts.isCallExpression(e)) || !ts.isIdentifier(e.expression) || e.expression.text !== 'Array') return false;
@@ -8046,7 +8052,7 @@ ${members.join('\n')}
   /** An array constructed by the global `Array`, with or without `new`; null when `Array` is the program's own. */
   private newArray(e: ts.NewExpression | ts.CallExpression, t: string, args: readonly ts.Expression[]): string | null {
     // `new Array(n)` of a type holding undefined: n holes, each read as undefined.
-    if (args.length === 1 && this.typeOf(args[0]) === 'Double' && /^JSArray<(Any\?|.*\?)>$/.test(t)) return `${t}(Array(repeating: nil, count: Int(${this.toNumber(args[0])})))`;
+    if (args.length === 1 && this.typeOf(args[0]) === 'Double' && /^JSArray<(Any\?|.*\?)>$/.test(t)) return `${t}(Array(repeating: nil, count: ${this.arrayLength(args[0])}))`;
     if (!this.isLibGlobal(e.expression as ts.Identifier)) return null;
     const el = t.replace(/^JSArray<(.*)>$/, '$1');
     if (args.length !== 1) return `${t}([${args.map((a) => this.coerce(a, el)).join(', ')}])`;
@@ -8056,7 +8062,7 @@ ${members.join('\n')}
       return `${t}([${this.coerce(args[0], el)}])`;
     }
     // n empty slots: a number, string or boolean cannot hold undefined, so its zero stands in until written.
-    if (['Double', 'String', 'Bool'].includes(el)) return `${t}(Array(repeating: ${this.zero(el)}, count: Int(${this.expr(args[0])})))`;
+    if (['Double', 'String', 'Bool'].includes(el)) return `${t}(Array(repeating: ${this.zero(el)}, count: ${this.arrayLength(args[0])}))`;
     throw this.error(e, `new Array of a length, of ${el} (empty slots need an optional element type)`);
   }
 
@@ -8406,6 +8412,7 @@ ${members.join('\n')}
     if (ts.isElementAccessExpression(left) && this.typeOf(left.expression).replace(/[?!]$/, '').startsWith('JSArray<') && this.typeOf(left.argumentExpression) !== 'Double') return `try jsSet(${this.expr(left.expression)}, ${this.propertyKey(left.argumentExpression)}, ${this.coerce(right, 'Any?')})`;
     if (ts.isElementAccessExpression(left) && this.isAny(left.expression)) return `jsSet(${this.expr(left.expression)}, ${this.propertyKey(left.argumentExpression)}, ${this.coerce(right, 'Any?')})`;
     if (this.library && this.holdsMethods(left) && this.carriesMethod(right)) return `${this.lvalue(left)} = ${this.expr(right)}`;
+    if (isArrayLengthWrite(left, right, this.checker)) return `try ${this.expr(left.expression)}.jsSetLength(checked: ${this.toNumber(right)})`;
     return `${this.lvalue(left)} = ${this.coerce(right, this.declaredTypeOf(left) ?? this.typeOf(left))}`;
   }
 

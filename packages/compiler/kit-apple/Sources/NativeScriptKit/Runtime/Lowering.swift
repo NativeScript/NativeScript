@@ -232,16 +232,28 @@ public func jsReplaceAll(_ s: String, _ pattern: String, _ replacement: String) 
     return jsSplit(s, pattern).join(replacement)
 }
 
-public func jsPadEnd(_ s: String, _ length: Double, _ fill: String = " ") -> String {
-    let missing = Int(length) - s.utf16.count
-    guard missing > 0, !fill.isEmpty else { return s }
-    let pad = Array(String(repeating: fill, count: missing / fill.utf16.count + 1).utf16.prefix(missing))
-    return s + string(pad[...])
+public func jsPadEnd(_ s: String, _ length: Double, _ fill: String = " ") throws -> String {
+    s + (try jsPadding(s, length, fill))
+}
+
+/// V8's longest string, in UTF-16 units: a longer result is a RangeError.
+let jsMaxStringLength = 536_870_888.0
+
+/// What `padStart`/`padEnd` add to reach `length` UTF-16 units: `fill` repeated and cut.
+func jsPadding(_ s: String, _ length: Double, _ fill: String) throws -> String {
+    let target = jsToIntegerOrInfinity(length), have = Double(s.utf16.count)
+    guard target > have, !fill.isEmpty else { return "" }
+    if target > jsMaxStringLength { throw JSException(value: JSRangeError("Invalid string length")) }
+    let missing = Int(target - have), f = fill.utf16.count
+    return string(Array(String(repeating: fill, count: missing / f + 1).utf16.prefix(missing))[...])
 }
 
 public func jsRepeat(_ s: String, _ count: Double) throws -> String {
-    guard count >= 0, count.isFinite else { throw JSException(value: JSRangeError("Invalid count value: \(jsNumberToString(count))")) }
-    return String(repeating: s, count: Int(count))
+    let n = jsToIntegerOrInfinity(count)
+    guard n >= 0, n.isFinite else { throw JSException(value: JSRangeError("Invalid count value: \(jsNumberToString(count))")) }
+    if s.isEmpty || n == 0 { return "" }
+    if Double(s.utf16.count) * n > jsMaxStringLength { throw JSException(value: JSRangeError("Invalid string length")) }
+    return String(repeating: s, count: Int(n))
 }
 
 public func jsCharCodeAt(_ s: String, _ index: Double) -> Double {
@@ -252,8 +264,9 @@ public func jsCharCodeAt(_ s: String, _ index: Double) -> Double {
 
 public func jsCodePointAt(_ s: String, _ index: Double) -> Double? {
     let u = units(s)
-    let i = Int(index.isNaN ? 0 : index.rounded(.towardZero))
-    guard i >= 0, i < u.count else { return nil }
+    let k = jsToIntegerOrInfinity(index)
+    guard k >= 0, k < Double(u.count) else { return nil }
+    let i = Int(k)
     let first = u[i]
     if UTF16.isLeadSurrogate(first), i + 1 < u.count, UTF16.isTrailSurrogate(u[i + 1]) {
         return Double((UInt32(first) - 0xD800) * 0x400 + (UInt32(u[i + 1]) - 0xDC00) + 0x10000)
@@ -263,9 +276,9 @@ public func jsCodePointAt(_ s: String, _ index: Double) -> Double? {
 
 public func jsStringAt(_ s: String, _ index: Double) -> String? {
     let u = units(s)
-    var i = Int(index.isNaN ? 0 : index.rounded(.towardZero))
-    if i < 0 { i += u.count }
-    return i >= 0 && i < u.count ? string([u[i]][...]) : nil
+    var k = jsToIntegerOrInfinity(index)
+    if k < 0 { k += Double(u.count) }
+    return k >= 0 && k < Double(u.count) ? string([u[Int(k)]][...]) : nil
 }
 
 public func jsFromCharCode(_ codes: Double...) -> String {
@@ -379,7 +392,7 @@ public func jsIsInteger(_ x: Double) -> Bool { x.isFinite && x.rounded(.towardZe
 public func jsIsSafeInteger(_ x: Double) -> Bool { jsIsInteger(x) && abs(x) <= 9007199254740991 }
 
 /// `n.toString(radix)`.
-public func jsNumberToString(_ x: Double, radix: Double) -> String { jsNumberToRadixString(x, radix) }
+public func jsNumberToString(_ x: Double, radix: Double) throws -> String { try jsNumberToRadixString(x, radix) }
 
 /// An untyped value read as a dictionary-typed object: a record already, or a record of an object's keys.
 public func jsRecordOf<T>(_ value: Any?, _ element: (Any?) -> T) -> JSRecord<T> {
@@ -398,12 +411,12 @@ private func regExp(_ pattern: Any?, _ flags: String) throws -> JSRegExp {
 func jsNumberMethod(_ x: Double, _ key: String) -> JSMethod? {
     let optional = { (args: [Any?], i: Int) -> Double? in jsIsNullish(jsArg(args, i)) ? nil : jsToNumber(jsArg(args, i)) }
     switch key {
-    case "toString": return { _, a in optional(a, 0).map { jsNumberToString(x, radix: $0) } ?? jsNumberToString(x) }
+    case "toString": return { _, a in try optional(a, 0).map { try jsNumberToString(x, radix: $0) } ?? jsNumberToString(x) }
     case "toLocaleString": return { _, _ in jsNumberToString(x) }
     case "valueOf": return { _, _ in x }
-    case "toFixed": return { _, a in jsToFixed(x, optional(a, 0) ?? 0) }
-    case "toPrecision": return { _, a in jsToPrecision(x, optional(a, 0)) }
-    case "toExponential": return { _, a in jsToExponential(x, optional(a, 0)) }
+    case "toFixed": return { _, a in try jsToFixed(x, optional(a, 0) ?? 0) }
+    case "toPrecision": return { _, a in try jsToPrecision(x, optional(a, 0)) }
+    case "toExponential": return { _, a in try jsToExponential(x, optional(a, 0)) }
     default: return nil
     }
 }
@@ -454,18 +467,13 @@ func jsStringMethod(_ s: String, _ key: String) -> JSMethod? {
         }
     case "matchAll": return { _, args in try jsMatchAll(s, regExp(jsArg(args, 0), "g")) }
     case "search": return { _, args in try jsSearch(s, regExp(jsArg(args, 0), "")) }
-    case "charAt": return { _, args in jsStringAt(s, number(args, 0) ?? 0).flatMap { (number(args, 0) ?? 0) < 0 ? nil : $0 } ?? "" }
+    case "charAt": return { _, args in jsCharAt(s, number(args, 0) ?? 0) }
     case "charCodeAt": return { _, args in jsCharCodeAt(s, number(args, 0) ?? 0) }
     case "codePointAt": return { _, args in jsCodePointAt(s, number(args, 0) ?? 0) }
     case "at": return { _, args in jsStringAt(s, number(args, 0) ?? 0) }
     case "lastIndexOf": return { _, args in jsLastIndexOf(s, jsToString(jsArg(args, 0))) }
-    case "padEnd": return { _, args in jsPadEnd(s, number(args, 0) ?? 0, jsIsNullish(jsArg(args, 1)) ? " " : jsToString(jsArg(args, 1))) }
-    case "padStart":
-        return { _, args in
-            let fill = jsIsNullish(jsArg(args, 1)) ? " " : jsToString(jsArg(args, 1))
-            let padded = jsPadEnd("", max(0, (number(args, 0) ?? 0) - Double(s.utf16.count)), fill)
-            return padded + s
-        }
+    case "padEnd": return { _, args in try jsPadEnd(s, number(args, 0) ?? 0, jsIsNullish(jsArg(args, 1)) ? " " : jsToString(jsArg(args, 1))) }
+    case "padStart": return { _, args in try jsPadStart(s, number(args, 0) ?? 0, jsIsNullish(jsArg(args, 1)) ? " " : jsToString(jsArg(args, 1))) }
     case "repeat": return { _, args in try jsRepeat(s, number(args, 0) ?? 0) }
     case "substr": return { _, args in jsSubstr(s, number(args, 0) ?? 0, number(args, 1)) }
     case "concat": return { _, args in s + args.map { jsToString($0) }.joined() }

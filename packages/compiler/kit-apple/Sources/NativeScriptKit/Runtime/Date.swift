@@ -137,7 +137,7 @@ public final class JSDate: JSDynamic, JSStringConvertible {
 
     private static let days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
     private static let months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
-    private static func pad(_ v: Double, _ n: Int = 2) -> String { jsPadStart(jsNumberToString(abs(v)), Double(n), "0") }
+    private static func pad(_ v: Double, _ n: Int = 2) -> String { let digits = jsNumberToString(abs(v)); return ((try? jsPadding(digits, Double(n), "0")) ?? "") + digits }
     private static func year(_ y: Double) -> String { y >= 0 ? pad(y, 4) : "-" + pad(-y, 6) }
 
     /// `toISOString()`: throws a RangeError for an invalid date.
