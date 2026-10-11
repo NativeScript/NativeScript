@@ -1678,7 +1678,9 @@ export class Translator implements AsyncTranslator {
     const constant = !!(st.declarationList.flags & ts.NodeFlags.Const);
     for (const d of st.declarationList.declarations) {
       if (!ts.isIdentifier(d.name)) {
-        for (const n of boundNames(d.name)) emit(`${modifiers}var ${ident(n.text)}: ${this.deferred(this.typeOf(n))}`);
+        // An object rest (`const { tag, ...rest } = p`) has the shape of its fields, as bindTo declares it.
+        const typeOfBound = (n: ts.Identifier) => (ts.isBindingElement(n.parent) && n.parent.dotDotDotToken && ts.isObjectBindingPattern(n.parent.parent) ? this.shape(this.checker.getTypeAtLocation(n), n.parent) : this.typeOf(n));
+        for (const n of boundNames(d.name)) emit(`${modifiers}var ${ident(n.text)}: ${this.deferred(typeOfBound(n))}`);
         const tmp = this.fresh('__d');
         later(() => `    let ${tmp}${this.destructured(d.name, d.initializer!)}\n${this.bindTo(d.name, tmp, '', 'assign')}`);
         continue;
