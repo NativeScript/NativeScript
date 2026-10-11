@@ -225,6 +225,8 @@ export class Translator implements AsyncTranslator {
   private protocols = new Set<string>();
   /** Interfaces an app class meets without naming them, where its objects are given for one (`measure(box)`): implemented as if named. */
   private structural = new Map<ts.ClassLikeDeclaration, Set<ts.InterfaceDeclaration>>();
+  /** App classes whose objects are given where an object type is taken, which reads them by name: their methods and getters readable by name. */
+  private readByName = new Set<ts.ClassLikeDeclaration>();
   indent = '';
   private tmp = 0;
   /** Expressions already evaluated into a Kotlin name (awaited values, operands read before an await). */
@@ -334,7 +336,12 @@ export class Translator implements AsyncTranslator {
   }
 
   private noteStructural(x: ts.Expression): void {
-    const iface = this.checker.getContextualType(x)?.getSymbol()?.declarations?.find(ts.isInterfaceDeclaration);
+    const wanted = this.checker.getContextualType(x)?.getSymbol();
+    const given = this.checker.getTypeAtLocation(x).getSymbol()?.valueDeclaration;
+    if (wanted && wanted.flags & (ts.SymbolFlags.TypeLiteral | ts.SymbolFlags.Interface) && !(wanted.flags & ts.SymbolFlags.Class) && given && ts.isClassLike(given)) {
+      for (let b: ts.ClassLikeDeclaration | undefined = given; b && !b.getSourceFile().isDeclarationFile; b = this.baseClassOf(b)) this.readByName.add(b);
+    }
+    const iface = wanted?.declarations?.find(ts.isInterfaceDeclaration);
     if (!iface || iface.getSourceFile().isDeclarationFile || iface.typeParameters?.length || iface.heritageClauses?.length) return;
     const cls = this.checker.getTypeAtLocation(x).getSymbol()?.valueDeclaration;
     if (!cls || !ts.isClassLike(cls) || cls.getSourceFile().isDeclarationFile || cls.typeParameters?.length || implementedInterfaces(this.checker, cls).some((i) => i.expression.getText() === iface.name.text)) return;
@@ -2677,7 +2684,7 @@ export class Translator implements AsyncTranslator {
       // Library mode: read and set by name as well (`node.cssType` of an untyped node), as the prototype's accessor is.
       // A setter taking more than the getter gives (`string | Color`) is left to the prototype's.
       const own = (a.get ?? a.set)!;
-      if ((this.library || byName) && !isStatic(own) && !this.symbolMember(own.name)) dynAccessors.push({ name: n, type: t, readable: !!a.get, settable: !!a.set && optionalType(this.typeOf(a.set.parameters[0].name)) === optionalType(t) });
+      if ((this.library || byName || this.readByName.has(cls)) && !isStatic(own) && !this.symbolMember(own.name)) dynAccessors.push({ name: n, type: t, readable: !!a.get, settable: !!a.set && optionalType(this.typeOf(a.set.parameters[0].name)) === optionalType(t) });
     }
     // A view class's type selector: its `@CSSType` name, else its class name, as core's `cssType` falls back to `typeName`.
     // The generated kit is core: without a `@CSSType` of its own, a class takes the nearest one above it, which core's decorator
@@ -2812,7 +2819,7 @@ export class Translator implements AsyncTranslator {
     lines.push(...witnesses);
     if (expando) lines.push('    override var jsExpando: JSObject? = null');
     // Library mode: every method of the class is read by name as well (`font.getAndroidTypeface()` on an untyped font), overrides included.
-    if (this.library || byName) {
+    if (this.library || byName || this.readByName.has(cls)) {
       for (const m of cls.members) {
         if (!ts.isMethodDeclaration(m) || !m.body || isStatic(m) || ts.isComputedPropertyName(m.name) || m.parameters.some((p) => p.dotDotDotToken) || this.readsArguments(m)) continue;
         const n = m.name.getText();
