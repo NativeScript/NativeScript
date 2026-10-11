@@ -126,6 +126,7 @@ object NativeScriptApplication {
     /** What every app's entry sets up before its first module runs, whether the kit runs the app or the app's own `Application.run` does. */
     fun prepare(cssAST: String? = null) {
         jsTraceErrors = AndroidLog.isLoggable("NSNative", AndroidLog.DEBUG)
+        UncaughtErrors.install()
         installEventLoop()
         if (cssAST != null) this.cssAST = cssAST
     }

@@ -35,6 +35,20 @@ export function readConfig(app: string): Record<string, unknown> {
 const isObject = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
 
 /**
+ * The app's entry statements for nativescript.config's handling of uncaught errors: `uncaughtErrorPolicy`
+ * (read at the top level only, as NativeScript's runtime reads it) and the deprecated `discardUncaughtJsExceptions`.
+ */
+export function uncaughtErrorSwitches(app: string, platform: 'ios' | 'android'): string {
+  const config = readConfig(app);
+  const own = isObject(config[platform]) ? (config[platform] as Record<string, unknown>) : {};
+  const lines: string[] = [];
+  if (typeof config.uncaughtErrorPolicy === 'string' && config.uncaughtErrorPolicy !== 'report') lines.push(`UncaughtErrors.policy = ${JSON.stringify(config.uncaughtErrorPolicy)}`);
+  if (config.discardUncaughtJsExceptions === true || own.discardUncaughtJsExceptions === true) lines.push('UncaughtErrors.discard = true');
+  return lines.map((l) => `        ${l}
+`).join('');
+}
+
+/**
  * The config's `release` (`compiled` and the compiler's options) with `<platform>.release` merged over it;
  * object values such as `pluginReplacements` merge by key.
  */

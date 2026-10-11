@@ -177,6 +177,7 @@ public enum NativeScriptApplication {
     public static func prepare(cssAST: String? = nil) {
         // Console output reaches a pipe (`simctl launch --console`, Xcode) line by line, as the JS runtime's does.
         setvbuf(stdout, nil, _IOLBF, 0)
+        UncaughtErrors.install()
         // Promise callbacks and reactive updates run after each batch of UIKit work (an event handler, a layout pass), as the JS runtime drains microtasks after native calls into script.
         JSEventLoop.installRunLoopObserver()
         if let cssAST { self.cssAST = cssAST }

@@ -25,6 +25,7 @@ abstract class NativeScriptActivity : AppCompatActivity() {
         super.onCreate(null)
         current = this
         jsTraceErrors = android.util.Log.isLoggable("NSNative", android.util.Log.DEBUG)
+        UncaughtErrors.install()
         setThemeOnLaunch()
         Utils.enableEdgeToEdge(this, 0, 0, LIGHT_SCRIM, DARK_SCRIM)
         installEventLoop()

@@ -20,7 +20,7 @@ import type { PluginSource } from './plugins/source.ts';
 import type { Reach } from './reach.ts';
 import type { Properties } from './properties.ts';
 import { SourceLines } from './source-lines.ts';
-import { androidManifest, appResourcesDir, copyAndroidAppFiles, copyAndroidFonts, pluginManifests } from './app-resources.ts';
+import { androidManifest, appResourcesDir, copyAndroidAppFiles, copyAndroidFonts, pluginManifests, uncaughtErrorSwitches } from './app-resources.ts';
 import { KIT_ANDROID } from './paths.ts';
 
 export interface AndroidBuild {
@@ -233,7 +233,7 @@ export async function writeAndroid(b: AndroidBuild): Promise<void> {
     ? `        Router.shared.routes = listOf(${b.routes.routes.map((r) => `Route(${kotlinString(r.path)}) { ${r.component}().render() }`).join(', ')})\n        Router.shared.initial = ${kotlinString(b.routes.initial)}\n`
     : '';
   // Set before the module initializers run: they may make views.
-  const switches = (b.corePatches ?? []).map((p) => `        CorePatches.${p} = true\n`).join('');
+  const switches = (b.corePatches ?? []).map((p) => `        CorePatches.${p} = true\n`).join('') + uncaughtErrorSwitches(b.app, 'android');
   // The entry's own statements run the app (`Application.run`), after every module it imports.
   const start = `${switches}        Reactivity.schedule = Reactivity.Schedule.${SCHEDULE[b.framework as Framework].toUpperCase()}\n` + (b.mounted ? `${inits}        return Application.rootView()\n` : `${inits}${routes}        return ${b.root}().render()\n`);
   // A binding's objects are in place before any module runs, as the plugin's engine module is installed at startup.
