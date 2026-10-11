@@ -2027,7 +2027,7 @@ export class Translator implements AsyncTranslator {
           const last = fn.body.statements.at(-1);
           // JavaScript returns undefined at the end; Kotlin needs a return where the checker proved one is never reached.
           if (!['Unit', 'Nothing'].includes(ret) && !(last && (ts.isReturnStatement(last) || ts.isThrowStatement(last)))) {
-            lines.push(ret.endsWith('?') ? `${this.indent}return null` : `${this.indent}throw IllegalStateException("unreachable: every path returns")`);
+            lines.push(ret.endsWith('?') ? `${this.indent}return null` : `${this.indent}jsThrow(JSTypeError("no value returned where the declared type needs one"))`);
           }
         } else {
           const e = fn.body as ts.Expression;
