@@ -1968,7 +1968,11 @@ export class Translator implements AsyncTranslator {
       try {
         let lines: string[];
         if (fn.asteriskToken) lines = this.lowering.generatorBody(fn, ret.replace(/^JS\w+<(.*)>\??$/, '$1'), isAsync(fn));
-        else if (isAsync(fn)) lines = this.lowering.body(fn, ret.replace(/^JSPromise<(.*)>\??$/, '$1'));
+        else if (isAsync(fn) && ret === 'Unit') {
+          // Where nothing is returned (an async Promise executor): run for its effects, its promise left alone.
+          lines = this.lowering.body(fn, this.returnTypeOf(fn).replace(/^JSPromise<(.*)>\??$/, '$1'));
+          lines.pop();
+        } else if (isAsync(fn)) lines = this.lowering.body(fn, ret.replace(/^JSPromise<(.*)>\??$/, '$1'));
         else if (fn.body && ts.isBlock(fn.body)) {
           lines = [...this.paramPrelude(fn), ...this.statements([...fn.body.statements])];
           const last = fn.body.statements.at(-1);
