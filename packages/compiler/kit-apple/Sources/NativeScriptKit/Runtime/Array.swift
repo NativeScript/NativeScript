@@ -13,6 +13,11 @@ public protocol JSArrayProtocol: AnyObject {
     func jsSetElements(_ values: [Any?]) throws
 }
 
+/// An empty slot of a `JSArray<Double>`: a signaling NaN, which arithmetic never produces (it gives a quiet NaN).
+@inline(__always) public var jsHoleNumber: Double { Double(bitPattern: 0x7FF4_0000_0000_4E53) }
+/// An empty slot of a `JSArray<String>`: noncharacters no text carries.
+public let jsHoleString = String(String.UnicodeScalarView([Unicode.Scalar(0xFDD0)!, "\u{0}", Unicode.Scalar(0xFDD1)!]))
+
 /// A function type's rest parameter (`(...args) => void`): an array to Swift, marked so that a script
 /// function called as that type takes the array's elements as its arguments.
 public typealias JSRest<Element> = JSArray<Element>
@@ -21,7 +26,7 @@ public typealias JSRest<Element> = JSArray<Element>
 ///
 /// Limits: a subscript read past the end traps (JavaScript gives `undefined`, which a non-optional
 /// `Element` cannot hold; `at(_:)` returns nil instead), and growing the array past its end with
-/// `length` or an index needs an optional `Element` to hold the empty slots.
+/// `length` or an index needs an optional `Element`, a number or a string to hold the empty slots.
 open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, ExpressibleByArrayLiteral, CustomStringConvertible {
     public final var storage: [Element]
     public final var jsTracker: JSTracker?
@@ -38,11 +43,26 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
         return storage[index]
     }
 
-    /// What an empty slot holds: undefined in an array of optionals, and in an array of numbers
-    /// NaN, as an undefined number reads where code holds numbers as Double.
+    /// What an empty slot holds: undefined in an array of optionals; in an array of numbers or strings,
+    /// a sentinel that reads undefined where the read may be (`element(_:)`, join, untyped reads).
     static var hole: Element? {
-        if Element.self == Double.self { return (Double.nan as! Element) }
+        if Element.self == Double.self { return unsafeBitCast(jsHoleNumber, to: Element.self) }
+        if Element.self == String.self { return unsafeBitCast(jsHoleString, to: Element.self) }
         return (Element.self as? JSOptionalProtocol.Type).map { $0.jsNone as! Element }
+    }
+
+    /// `JSArray<Double>` and `JSArray<String>` only: whether `e` is an empty slot's sentinel.
+    @inline(__always) static func isHole(_ e: Element) -> Bool {
+        if Element.self == Double.self { return unsafeBitCast(e, to: Double.self).bitPattern == jsHoleNumber.bitPattern }
+        if Element.self == String.self { return unsafeBitCast(e, to: String.self) == jsHoleString }
+        return false
+    }
+
+    /// `new Array(n)`: n empty slots, where the element type has a way to hold them.
+    public static func holes(_ n: Double) -> JSArray<Element> {
+        let array = JSArray<Element>()
+        array.length = n
+        return array
     }
 
     private func outOfRange(_ index: Int) -> Never {
@@ -95,7 +115,8 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
     /// `a[i]` as JavaScript reads it: nil (undefined) unless `i` is an integer index in range.
     public final func element(_ i: Double) -> Element? {
         guard let k = Int(exactly: i), k >= 0, k < count else { return nil }
-        return self[k]
+        let e = self[k]
+        return JSArray.isHole(e) ? nil : e
     }
 
     public final subscript(i: Int) -> Element {
@@ -136,7 +157,7 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
         track()
         let relative = jsToIntegerOrInfinity(i)
         let k = relative >= 0 ? relative : Double(storage.count) + relative
-        guard k >= 0 && k < Double(storage.count) else { return nil }
+        guard k >= 0 && k < Double(storage.count), !JSArray.isHole(storage[Int(k)]) else { return nil }
         return read(Int(k))
     }
 
@@ -764,8 +785,8 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
     /// `array.join(separator)`: elements in their string form, undefined and null as "".
     public final func join(_ separator: String = ",") -> String {
         track()
-        if Element.self == String.self { return (storage as! [String]).joined(separator: separator) }
-        if Element.self == Double.self { return (storage as! [Double]).map(jsNumberToString).joined(separator: separator) }
+        if Element.self == String.self { return (storage as! [String]).map { $0 == jsHoleString ? "" : $0 }.joined(separator: separator) }
+        if Element.self == Double.self { return (storage as! [Double]).map { $0.bitPattern == jsHoleNumber.bitPattern ? "" : jsNumberToString($0) }.joined(separator: separator) }
         return jsJoin(separator)
     }
 
@@ -812,12 +833,12 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
 
     public final var jsAnyElements: [Any?] {
         track()
-        return storage.indices.map { jsFlat(read($0)) }
+        return storage.indices.map { JSArray.isHole(storage[$0]) ? nil : jsFlat(read($0)) }
     }
 
     public final func jsElement(at index: Int) -> Any? {
         track()
-        return index >= 0 && index < storage.count ? jsFlat(read(index)) : nil
+        return index >= 0 && index < storage.count && !JSArray.isHole(storage[index]) ? jsFlat(read(index)) : nil
     }
 
     public final func jsSetElement(_ value: Any?, at index: Int) throws {

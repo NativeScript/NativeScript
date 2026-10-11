@@ -8219,8 +8219,9 @@ ${members.join('\n')}
       if (this.typeOf(args[0]) === 'Any?') return t === 'JSArray<Any?>' ? `jsNewArray(${this.expr(args[0])})` : `jsArrayOf(jsNewArray(${this.expr(args[0])})) { ${this.fromAny('$0', el)} }`;
       return `${t}([${this.coerce(args[0], el)}])`;
     }
-    // n empty slots: a number, string or boolean cannot hold undefined, so its zero stands in until written.
-    if (['Double', 'String', 'Bool'].includes(el)) return `${t}(Array(repeating: ${this.zero(el)}, count: Int(${this.expr(args[0])})))`;
+    if (el === 'Double' || el === 'String') return `${t}.holes(${this.expr(args[0])})`;
+    // n empty slots: a boolean cannot hold undefined, so false stands in until written.
+    if (el === 'Bool') return `${t}(Array(repeating: false, count: Int(${this.expr(args[0])})))`;
     throw this.error(e, `new Array of a length, of ${el} (empty slots need an optional element type)`);
   }
 
