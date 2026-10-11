@@ -130,6 +130,7 @@ const isOptional = (t: string) => t.endsWith('?') && !hasTopLevelArrow(t);
 const isFunctionLiteral = (e: ts.Expression): boolean => (ts.isParenthesizedExpression(e) ? isFunctionLiteral(e.expression) : ts.isArrowFunction(e) || ts.isFunctionExpression(e));
 
 const isFunctionType = (t: string) => hasTopLevelArrow(t) && !t.startsWith('[') && !/^\w+</.test(t);
+const isStringType = (t: string) => /^String[?!]?$/.test(t);
 
 export interface ComponentInfo {
   name: string;
@@ -4995,7 +4996,7 @@ ${members.join('\n')}
         } else if (labels.every((l) => ts.isLiteralExpression(l) || (ts.isPrefixUnaryExpression(l) && ts.isNumericLiteral(l.operand)))) {
           lines.push(`${i}case ${labels.map((l) => this.expr(l)).join(', ')}:`);
         } else {
-          lines.push(`${i}case _ where ${labels.map((l) => `${subject} == ${this.coerce(l, subjectType)}`).join(' || ')}:`);
+          lines.push(`${i}case _ where ${labels.map((l) => this.sameAs(subject, this.coerce(l, subjectType), subjectType)).join(' || ')}:`);
         }
         labels = [];
         const body = [...c.statements];
@@ -5012,6 +5013,11 @@ ${members.join('\n')}
     return lines.join('\n');
   }
 
+  /** `a === b` of two values of Swift type `t`: strings by their code units, as Swift's `==` equates canonically equivalent ones. */
+  private sameAs(a: string, b: string, t: string): string {
+    return isStringType(t) ? `jsStringEquals(${a}, ${b})` : `${a} == ${b}`;
+  }
+
   /**
    * A switch whose default clause precedes cases, which Swift's switch cannot
    * say: the clause execution starts at is found first, then each clause runs
@@ -5026,7 +5032,7 @@ ${members.join('\n')}
     const tests = clauses.flatMap((c, k) => {
       if (!ts.isCaseClause(c)) return [];
       const l = c.expression;
-      const test = subjectType === 'Any?' || this.typeOf(l) === 'Any?' ? `jsStrictEquals(${subject}, ${this.coerce(l, 'Any?')})` : `${subject} == ${this.coerce(l, subjectType)}`;
+      const test = subjectType === 'Any?' || this.typeOf(l) === 'Any?' ? `jsStrictEquals(${subject}, ${this.coerce(l, 'Any?')})` : this.sameAs(subject, this.coerce(l, subjectType), subjectType);
       return [`if ${this.tryPrefix(l)}${test} { ${start} = ${k} }`];
     });
     lines.push(`${i}    ${tests.join(' else ')}`);
@@ -8817,6 +8823,7 @@ ${members.join('\n')}
     // Swift's comparisons do not associate: an operand that is one is parenthesized (`flag !== n > 0`).
     const K2 = ts.SyntaxKind;
     const compared = (x: ts.Expression) => (ts.isBinaryExpression(x) && x.operatorToken.kind >= K2.LessThanToken && x.operatorToken.kind <= K2.ExclamationEqualsEqualsToken ? `(${this.expr(x)})` : this.expr(x));
+    if (isStringType(lt)) return `${negate ? '!' : ''}jsStringEquals(${this.expr(a)}, ${this.expr(b)})`;
     return `${compared(a)} ${negate ? '!=' : '=='} ${compared(b)}`;
   }
 

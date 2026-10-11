@@ -193,13 +193,21 @@ func jsNumeric(_ value: Any) -> Double? {
 // MARK: - Strings compared as JavaScript compares them
 
 /// `a === b` for strings: equal code units (Swift's `==` also equates canonically equivalent strings).
-public func jsStringEquals(_ a: String, _ b: String) -> Bool {
+@inlinable public func jsStringEquals(_ a: String, _ b: String) -> Bool {
     let x = a.utf8, y = b.utf8
     let count = x.count
     guard count == y.count else { return false }
     if let same = x.withContiguousStorageIfAvailable({ p in y.withContiguousStorageIfAvailable { q in count == 0 || memcmp(p.baseAddress!, q.baseAddress!, count) == 0 } }), let same { return same }
     return x.elementsEqual(y)
 }
+
+public func jsStringEquals(_ a: String?, _ b: String?) -> Bool {
+    guard let a, let b else { return a == nil && b == nil }
+    return jsStringEquals(a, b)
+}
+
+/// A `case "literal":` of a string `switch` matches as `===` does.
+@inlinable public func ~= (pattern: String, value: String) -> Bool { jsStringEquals(pattern, value) }
 
 /// `a < b` for strings: UTF-16 code unit order.
 public func jsStringLess(_ a: String, _ b: String) -> Bool {
