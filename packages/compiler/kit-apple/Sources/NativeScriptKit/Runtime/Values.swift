@@ -28,6 +28,26 @@ public protocol JSDynamic: AnyObject {
     var jsClassName: String? { get }
 }
 
+/// An optional field read untyped: null where the object holds the key as set to null (`jsNulls`), else its value.
+@inline(__always)
+public func jsNullable(_ value: Any?, _ nulls: Set<String>?, _ key: String) -> Any? {
+    if value == nil, let nulls, nulls.contains(key) { return jsNull }
+    return value
+}
+
+/// An optional field written untyped: whether it now holds null rather than undefined.
+@inline(__always)
+public func jsNoteNull(_ nulls: inout Set<String>?, _ key: String, _ value: Any?) {
+    if value is JSNull { nulls = (nulls ?? []).union([key]) } else if nulls != nil { nulls!.remove(key) }
+}
+
+/// The keys of `object` among `keys` that hold null, for a typed object read from it.
+public func jsNullKeys(_ object: Any?, _ keys: [String]) -> Set<String>? {
+    guard let dynamic = jsFlat(object) as? JSDynamic else { return nil }
+    let nulls = keys.filter { dynamic[jsKey: $0] is JSNull }
+    return nulls.isEmpty ? nil : Set(nulls)
+}
+
 /// A class with its own `toString()`, which JavaScript's string conversion calls.
 public protocol JSStringConvertible {
     func toString() throws -> String

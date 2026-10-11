@@ -2175,18 +2175,23 @@ ${members.join('\n')}
     for (const x of this.shapeProtocols(allFields)) lines.push(...x.lines);
     // Keys in the order the literal that made this object wrote them, when not the declared order.
     lines.push('    private let jsOrder: [String]?');
-    lines.push(`    init(${[...[...fields, ...symbolic].map((f) => `${ident(f.name)}: ${isFunctionType(held(f)) ? '@escaping ' : ''}${held(f)}${isOptional(f.type) ? ' = nil' : ''}`), 'jsOrder: [String]? = nil'].join(', ')}) {`);
+    // The optional fields set to null rather than left undefined, which Swift holds as one nil.
+    const nullable = symbolic.length ? [] : fields.filter((f) => isOptional(f.type) && f.type !== 'Any?');
+    if (nullable.length) lines.push('    private var jsNulls: Set<String>?');
+    lines.push(`    init(${[...[...fields, ...symbolic].map((f) => `${ident(f.name)}: ${isFunctionType(held(f)) ? '@escaping ' : ''}${held(f)}${isOptional(f.type) ? ' = nil' : ''}`), 'jsOrder: [String]? = nil', ...(nullable.length ? ['jsNulls: Set<String>? = nil'] : [])].join(', ')}) {`);
     for (const f of [...fields, ...symbolic]) lines.push(`        self.${ident(f.name)} = ${ident(f.name)}`);
-    lines.push('        self.jsOrder = jsOrder', '    }');
+    lines.push('        self.jsOrder = jsOrder', ...(nullable.length ? ['        self.jsNulls = jsNulls'] : []), '    }');
     // Keys beyond the type's: those of the untyped object it was read from (a cast of JSON.parse), in its order, and those set on it later (`o[key] = v`).
     lines.push('    private var jsExtra: JSDynamic?');
     if (symbolic.length) { lines.push(...this.dynamicMembers(fields, className, false), '}'); return lines.join('\n'); }
     lines.push('    convenience init(jsObject: Any?) {');
-    lines.push(`        self.init(${[...fields.map((f) => `${ident(f.name)}: ${this.fromAny(`jsField(jsObject, ${swiftString(f.name)})`, f.type)}`), 'jsOrder: (jsObject as? JSDynamic)?.jsKeys'].join(', ')})`);
+    const nulls = nullable.length ? [`jsNulls: jsNullKeys(jsObject, [${nullable.map((f) => swiftString(f.name)).join(', ')}])`] : [];
+    lines.push(`        self.init(${[...fields.map((f) => `${ident(f.name)}: ${this.fromAny(`jsField(jsObject, ${swiftString(f.name)})`, f.type)}`), 'jsOrder: (jsObject as? JSDynamic)?.jsKeys', ...nulls].join(', ')})`);
     lines.push('        jsExtra = jsObject as? JSDynamic', '    }');
-    const members = this.dynamicMembers(fields, className, false, [], [], false, new Set(), [], false, true);
+    const members = this.dynamicMembers(fields, className, false, [], [], false, new Set(), [], false, true, new Set(nullable.map((f) => f.name)));
     const optional = fields.filter((f) => f.type.endsWith('?'));
-    members[0] = `    var jsKeys: [String] {\n        let order = jsOrder ?? [${fields.map((f) => swiftString(f.name)).join(', ')}]\n        let keys = order + (jsExtra?.jsKeys ?? []).filter { !order.contains($0) }\n        return keys.filter { key in ${optional.length ? `switch key { ${optional.map((f) => `case ${swiftString(f.name)}: return ${ident(f.name)} != nil`).join('; ')}; default: return true }` : 'true'} }\n    }`;
+    const present = (f: ShapeField) => `${ident(f.name)} != nil${nullable.includes(f) ? ` || jsNulls?.contains(${swiftString(f.name)}) == true` : ''}`;
+    members[0] = `    var jsKeys: [String] {\n        let order = jsOrder ?? [${fields.map((f) => swiftString(f.name)).join(', ')}]\n        let keys = order + (jsExtra?.jsKeys ?? []).filter { !order.contains($0) }\n        return keys.filter { key in ${optional.length ? `switch key { ${optional.map((f) => `case ${swiftString(f.name)}: return ${present(f)}`).join('; ')}; default: return true }` : 'true'} }\n    }`;
     lines.push(...members);
     lines.push('}');
     return lines.join('\n');
@@ -2269,7 +2274,7 @@ ${members.join('\n')}
   }
 
   /** `JSDynamic`: the object's keys and members by name, for printing, JSON and untyped access. */
-  private dynamicMembers(fields: { name: string; type: string }[], className: string | null, override: boolean, methods: { name: string; type: string; available?: number; length?: number }[] = [], symbols: { key: string; member: string; type: string }[] = [], expando = false, raw = new Set<string>(), accessors: { name: string; get: string | null; set: string | null }[] = [], symbolKeyedBase = false, extra = false): string[] {
+  private dynamicMembers(fields: { name: string; type: string }[], className: string | null, override: boolean, methods: { name: string; type: string; available?: number; length?: number }[] = [], symbols: { key: string; member: string; type: string }[] = [], expando = false, raw = new Set<string>(), accessors: { name: string; get: string | null; set: string | null }[] = [], symbolKeyedBase = false, extra = false, nulls = new Set<string>()): string[] {
     const o = override ? 'override ' : '';
     const keys = fields.map((f) => (f.type.endsWith('?') ? `(self.${ident(f.name)} == nil ? [] : [${swiftString(f.name)}])` : `[${swiftString(f.name)}]`));
     const lines = [
@@ -2279,7 +2284,7 @@ ${members.join('\n')}
       `    ${o}subscript(jsKey key: String) -> Any? {`,
       '        get {',
       ...this.keySwitch([
-        ...fields.map((f) => ({ name: f.name, code: `return ${raw.has(f.name) ? `jsExpandoGet(self, ${swiftString(f.name)})` : isFunctionType(f.type.replace(/^\((.*)\)[?!]$/, '$1')) ? this.boxedField(`self.${ident(f.name)}`, f.type) : this.untypedEnum(`self.${ident(f.name)}`, f.type)}` })),
+        ...fields.map((f) => ({ name: f.name, code: `return ${raw.has(f.name) ? `jsExpandoGet(self, ${swiftString(f.name)})` : isFunctionType(f.type.replace(/^\((.*)\)[?!]$/, '$1')) ? this.boxedField(`self.${ident(f.name)}`, f.type) : nulls.has(f.name) ? `jsNullable(${this.untypedEnum(`self.${ident(f.name)}`, f.type)}, jsNulls, ${swiftString(f.name)})` : this.untypedEnum(`self.${ident(f.name)}`, f.type)}` })),
         ...accessors.map((a) => ({ name: a.name, code: `return ${a.get ?? 'nil'}` })),
         ...methods.filter((m) => !fields.some((f) => f.name === m.name)).map((m) => ({ name: m.name, code: m.available
           ? `if #available(iOS ${m.available}, *) { return ${this.boxFunction(`self.${ident(m.name)}`, m.type, -1, m.name, m.length)} } else { return nil }`
@@ -2288,7 +2293,7 @@ ${members.join('\n')}
       '        }',
       '        set {',
       ...this.keySwitch([
-        ...fields.map((f) => ({ name: f.name, code: `${raw.has(f.name) ? `jsExpandoSet(self, ${swiftString(f.name)}, newValue)` : `self.${ident(f.name)} = ${this.fromAny('newValue', f.type)}`}; return` })),
+        ...fields.map((f) => ({ name: f.name, code: `${raw.has(f.name) ? `jsExpandoSet(self, ${swiftString(f.name)}, newValue)` : `self.${ident(f.name)} = ${this.fromAny('newValue', f.type)}`}${nulls.has(f.name) ? `; jsNoteNull(&jsNulls, ${swiftString(f.name)}, newValue)` : ''}; return` })),
         ...accessors.filter((a) => a.set).map((a) => ({ name: a.name, code: `${a.set}; return` })),
       ], symbols.map((f) => `            case ${f.key}: ${f.member} = ${this.fromAny('newValue', f.type)}`), override ? 'super[jsKey: key] = newValue' : expando ? 'jsExpandoSet(self, key, newValue)' : extra ? 'if jsExtra == nil { jsExtra = JSObject() }; jsExtra?[jsKey: key] = newValue' : 'break'),
       '        }',
@@ -2636,9 +2641,12 @@ ${members.join('\n')}
     })].join(', ');
   }
 
-  /** A parameter Swift gives its default value itself: a constant, unless the method it overrides takes the parameter as optional. */
+  /**
+   * A parameter Swift gives its default value itself: a constant, unless the method it overrides takes the parameter as optional.
+   * An untyped one is given its default in the body, where an explicit undefined (nil) takes it too and null does not.
+   */
   private constantDefault(p: ts.ParameterDeclaration): boolean {
-    return !!p.initializer && this.isConstant(p.initializer) && !this.optionalDefaults.has(p);
+    return !!p.initializer && this.isConstant(p.initializer) && !this.optionalDefaults.has(p) && this.typeOf(p.name) !== 'Any?';
   }
   private optionalDefaults = new Set<ts.ParameterDeclaration>();
 
@@ -9050,7 +9058,11 @@ ${members.join('\n')}
       if (a) return [...(a.get ? [`__get_${f.name}: ${given.get(`__get_${f.name}`)}`] : []), ...(a.set ? [`__set_${f.name}: ${given.get(`__set_${f.name}`)}`] : [])];
       return given.has(f.name) ? [`${ident((f as { label?: string }).label ?? f.name)}: ${given.get(f.name)}`] : [];
     }).join(', ');
-    const made = `${target}(${args}${args && reorder ? reorder : reorder.slice(2)})`;
+    // A field the literal sets to null, which the shape holds as nil, is kept as null (JSON, keys, untyped reads).
+    const nullKeys = !order.some((f) => (f as ShapeField).accessor || (f as ShapeField).symbol) ? e.properties.filter((p): p is ts.PropertyAssignment => ts.isPropertyAssignment(p) && ts.skipOuterExpressions(p.initializer).kind === ts.SyntaxKind.NullKeyword)
+      .map((p) => literalKey(p.name, this.checker) ?? p.name.getText()).filter((k) => order.some((f) => f.name === k && isOptional(f.type) && f.type !== 'Any?')) : [];
+    const nulled = nullKeys.length ? `, jsNulls: [${nullKeys.map(swiftString).join(', ')}]` : '';
+    const made = `${target}(${args}${args && reorder ? reorder : reorder.slice(2)}${args || reorder ? nulled : nulled.slice(2)})`;
     if (!spreadTemps.length && !self) return made;
     const throws = [...spreadTemps, made].some((x) => /\btry\b/.test(outsideClosures(x)));
     const made2 = `${throws && !/^try /.test(made) ? 'try ' : ''}${made}`;
