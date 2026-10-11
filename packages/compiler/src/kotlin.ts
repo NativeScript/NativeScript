@@ -223,6 +223,8 @@ export class Translator implements AsyncTranslator {
   private extended = new Set<string>();
   /** Interfaces an app class implements: Kotlin interfaces, with a class for their object literals. */
   private protocols = new Set<string>();
+  /** Interfaces an app class meets without naming them, where its objects are given for one (`measure(box)`): implemented as if named. */
+  private structural = new Map<ts.ClassLikeDeclaration, Set<ts.InterfaceDeclaration>>();
   indent = '';
   private tmp = 0;
   /** Expressions already evaluated into a Kotlin name (awaited values, operands read before an await). */
@@ -320,10 +322,44 @@ export class Translator implements AsyncTranslator {
           // `implements TKUnit.TestInfoEntry`: the interface by its own name, as its module declares it.
           for (const i of implementedInterfaces(this.checker, n)) this.protocols.add(ts.isPropertyAccessExpression(i.expression) ? i.expression.name.text : i.expression.getText());
         }
+        if (!this.library) {
+          const given = ts.isCallExpression(n) || ts.isNewExpression(n) ? n.arguments ?? [] : ts.isVariableDeclaration(n) && n.type && n.initializer ? [n.initializer]
+            : ts.isReturnStatement(n) && n.expression ? [n.expression] : ts.isBinaryExpression(n) && n.operatorToken.kind === ts.SyntaxKind.EqualsToken ? [n.right] : [];
+          for (const x of given) this.noteStructural(x);
+        }
         ts.forEachChild(n, visit);
       };
       visit(f);
     }
+  }
+
+  private noteStructural(x: ts.Expression): void {
+    const iface = this.checker.getContextualType(x)?.getSymbol()?.declarations?.find(ts.isInterfaceDeclaration);
+    if (!iface || iface.getSourceFile().isDeclarationFile || iface.typeParameters?.length || iface.heritageClauses?.length) return;
+    const cls = this.checker.getTypeAtLocation(x).getSymbol()?.valueDeclaration;
+    if (!cls || !ts.isClassLike(cls) || cls.getSourceFile().isDeclarationFile || cls.typeParameters?.length || implementedInterfaces(this.checker, cls).some((i) => i.expression.getText() === iface.name.text)) return;
+    if (!this.meetsFields(cls, iface)) return;
+    (this.structural.get(cls) ?? this.structural.set(cls, new Set()).get(cls)!).add(iface);
+    this.protocols.add(iface.name.text);
+  }
+
+  /** Whether a class's own members hold every property of an interface as Kotlin can override it: the same type, writable where the interface's is. */
+  private meetsFields(cls: ts.ClassLikeDeclaration, iface: ts.InterfaceDeclaration): boolean {
+    const ctor = cls.members.find(ts.isConstructorDeclaration);
+    for (const req of iface.members) {
+      const name = req.name?.getText();
+      if (!name || (!ts.isPropertySignature(req) && !ts.isMethodSignature(req)) || req.questionToken) return false;
+      const own = cls.members.filter((m) => m.name?.getText() === name && !isStatic(m));
+      const param = ctor?.parameters.find((p) => ts.isIdentifier(p.name) && p.name.text === name && ts.canHaveModifiers(p) && !!ts.getModifiers(p)?.length);
+      if (ts.isMethodSignature(req)) { if (!own.some(ts.isMethodDeclaration)) return false; continue; }
+      const field = own.find(ts.isPropertyDeclaration) ?? param;
+      const getter = own.find(ts.isGetAccessor);
+      if (!field && !getter) return false;
+      const writable = field ? !hasModifier(field, ts.SyntaxKind.ReadonlyKeyword) : own.some(ts.isSetAccessor);
+      if (!hasModifier(req, ts.SyntaxKind.ReadonlyKeyword) && !writable) return false;
+      if (this.typeOf(req) !== (field ? this.typeOf(field.name) : this.returnTypeOf(getter!))) return false;
+    }
+    return true;
   }
 
   fresh(prefix: string): string {
@@ -2241,6 +2277,7 @@ export class Translator implements AsyncTranslator {
     for (let b: ts.ClassLikeDeclaration | undefined = cls; b; ) {
       if (b !== cls) for (const m of b.members) if (m.name) out.add(m.name.getText());
       for (const i of b.heritageClauses?.find((h) => h.token === ts.SyntaxKind.ImplementsKeyword)?.types ?? []) addInterface(i);
+      for (const d of this.structural.get(b) ?? []) if (b !== cls || !implemented || implemented.includes(d.name.text)) for (const m of d.members) if (m.name) out.add(m.name.getText());
       const h = b.heritageClauses?.find((x) => x.token === ts.SyntaxKind.ExtendsKeyword)?.types[0];
       const d = h && c.getTypeAtLocation(h.expression).getSymbol()?.valueDeclaration;
       b = d && ts.isClassLike(d) && !d.getSourceFile().isDeclarationFile ? d : undefined;
@@ -2254,9 +2291,8 @@ export class Translator implements AsyncTranslator {
    * implements it through a witness of the interface's signature that calls
    * it; any other difference leaves the interface out.
    */
-  private protocolWitnesses(cls: ts.ClassLikeDeclaration, i: ts.ExpressionWithTypeArguments, out: string[], notOverrides: Set<string>): boolean {
-    const decl = this.checker.getTypeAtLocation(i).getSymbol()?.declarations?.find(ts.isInterfaceDeclaration);
-    if (!decl || !this.protocols.has(i.expression.getText())) return true;
+  private protocolWitnesses(cls: ts.ClassLikeDeclaration, decl: ts.InterfaceDeclaration | undefined, name: string, out: string[], notOverrides: Set<string>): boolean {
+    if (!decl || !this.protocols.has(name)) return true;
     const own = (name: string) => cls.members.find((x) => x.name?.getText() === name);
     const added: string[] = [];
     const skipped: string[] = [];
@@ -2337,8 +2373,11 @@ export class Translator implements AsyncTranslator {
       // The generated kit: an interface core declares that the kit has no type for (`TraceWriter`, which core holds untyped).
       .filter((i) => !this.generatedKit || !isCoreDeclaration(this.checker.getTypeAtLocation(i).getSymbol()?.declarations?.[0]) || !!this.core?.has(ts.isPropertyAccessExpression(i.expression) ? i.expression.name.text : i.expression.getText()))
       // An interface the class's signatures cannot meet is left out; untyped parameters meet it through a witness.
-      .filter((i) => this.protocolWitnesses(cls, i, witnesses, notOverrides))
+      .filter((i) => this.protocolWitnesses(cls, this.checker.getTypeAtLocation(i).getSymbol()?.declarations?.find(ts.isInterfaceDeclaration), i.expression.getText(), witnesses, notOverrides))
       .map((i) => (ts.isPropertyAccessExpression(i.expression) ? i.expression.name.text : i.expression.getText()));
+    for (const d of this.structural.get(cls) ?? []) {
+      if (!implemented.includes(d.name.text) && this.protocolWitnesses(cls, d, d.name.text, witnesses, notOverrides)) implemented.push(d.name.text);
+    }
     for (const i of implemented) this.used.add(i);
     const ownToString = cls.members.some((m) => ts.isMethodDeclaration(m) && m.name.getText() === 'toString' && !m.parameters.length) && !this.inheritsToString(cls);
     const supertypes = [...implemented, ...(ownToString ? ['JSStringConvertible'] : [])];
@@ -3356,6 +3395,7 @@ export class Translator implements AsyncTranslator {
   private declaresInterface(type: ts.Type, name: string): boolean {
     const decl = this.checker.getNonNullableType(type).getSymbol()?.valueDeclaration;
     if (!decl || !ts.isClassLike(decl)) return false;
+    if ([...this.structural.get(decl) ?? []].some((d) => d.name.text === name && this.protocolWitnesses(decl, d, name, [], new Set()))) return true;
     for (const h of decl.heritageClauses ?? []) {
       for (const x of h.types) {
         if (x.expression.getText() === name) return true;
