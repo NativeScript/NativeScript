@@ -3,7 +3,8 @@
 // as a native program: Swift as a macOS command-line program linking the
 // kit's JavaScript runtime (Foundation only), and Kotlin on the host JVM
 // with kit-android's runtime (plain JVM). Output and exit status must match.
-//   node tests/diff/run.ts [case-name…] [--swift | --kotlin] [--keep]
+//   node tests/diff/run.ts [case-name…] [--swift | --kotlin] [--keep] [--osize]
+// --osize builds the Swift runtime and cases with -Osize, the optimizer release builds use (into <build>-osize).
 // Build products go to $NS_DIFF_BUILD (default: <tmp>/ns-native-diff).
 // Kotlin compiles with $KOTLINC, `kotlinc` on PATH, or the compiler Gradle cached for kit-android.
 import { execFileSync, spawnSync } from 'node:child_process';
@@ -25,7 +26,8 @@ const here = dirname(fileURLToPath(import.meta.url));
 const root = resolve(here, '../..');
 const kit = join(root, 'kit-apple/Sources/NativeScriptKit');
 const kitAndroid = join(root, 'kit-android/src/main/kotlin/org/nativescript/kit');
-const build = process.env.NS_DIFF_BUILD ?? join(tmpdir(), 'ns-native-diff');
+const optimize = process.argv.includes('--osize') ? '-Osize' : '-Onone';
+const build = (process.env.NS_DIFF_BUILD ?? join(tmpdir(), 'ns-native-diff')) + (optimize === '-Osize' ? '-osize' : '');
 // The cases are typed by core and the ES library as an app's are (tests/package.json).
 const modulesDir = process.env.NS_DIFF_MODULES ?? join(root, 'tests/node_modules');
 const args = process.argv.slice(2).filter((a) => !a.startsWith('--'));
@@ -42,7 +44,7 @@ function buildRuntime() {
   const newest = Math.max(...runtimeSources.map((f) => statSync(f).mtimeMs));
   if (existsSync(lib) && statSync(lib).mtimeMs > newest) return;
   execFileSync('xcrun', ['swiftc', '-parse-as-library', '-emit-library', '-static', '-module-name', 'NativeScriptKit', '-emit-module', '-emit-module-path', join(build, 'NativeScriptKit.swiftmodule'),
-    '-Onone', '-o', lib, ...runtimeSources], { stdio: 'inherit', cwd: build });
+    optimize, '-o', lib, ...runtimeSources], { stdio: 'inherit', cwd: build });
 }
 
 /**
@@ -202,7 +204,7 @@ if (targets.includes('swift')) {
     try {
       translate(file, join(dir, 'Sources'));
       const swiftFiles = readdirSync(join(dir, 'Sources')).map((f) => join(dir, 'Sources', f));
-      const compiled = spawnSync('xcrun', ['swiftc', '-Onone', '-module-name', 'Main', '-I', build, '-L', build, '-lNativeScriptKit', '-o', join(dir, name), ...swiftFiles], { encoding: 'utf8' });
+      const compiled = spawnSync('xcrun', ['swiftc', optimize, '-module-name', 'Main', '-I', build, '-L', build, '-lNativeScriptKit', '-o', join(dir, name), ...swiftFiles], { encoding: 'utf8' });
       if (compiled.status !== 0) throw new Error(`swiftc:\n${compiled.stderr.split('\n').filter((l) => /error:/.test(l)).slice(0, 15).join('\n')}`);
       report(name, 'swift', expected.get(c)!, spawnSync(join(dir, name), { encoding: 'utf8', timeout: 20000 }));
     } catch (err) {

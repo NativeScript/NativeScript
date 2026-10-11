@@ -243,6 +243,11 @@ jobs:
         working-directory: packages/compiler
         run: node tests/diff/run.ts --swift
 
+      # Again with the optimizer release builds use.
+      - name: Differential tests (Swift, -Osize)
+        working-directory: packages/compiler
+        run: node tests/diff/run.ts --swift --osize
+
       # The kit builds only inside an app's project, beside core's native code (TNSWidgets, NativeScriptUtils…): a fixture app,
       # with every file of the kit compiled. The generated kit uses the newest iOS APIs behind availability checks, so this needs the newest Xcode.
       - name: Build the kit
