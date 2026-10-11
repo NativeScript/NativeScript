@@ -37,8 +37,32 @@ private object AnimationFrames {
     }
 }
 
-fun requestAnimationFrame(callback: (Double) -> Unit): Double = AnimationFrames.request(callback)
+/**
+ * A worker's frame callbacks: frames come from the main thread's Choreographer (a worker's thread has no
+ * looper), each callback runs as a task in the worker's realm with that frame's time.
+ */
+private object WorkerFrames {
+    private val nextId = java.util.concurrent.atomic.AtomicLong(1)
+    val live = java.util.concurrent.ConcurrentHashMap<Double, (Double) -> Unit>()
+
+    fun request(realm: JSRealm, callback: (Double) -> Unit): Double {
+        val id = nextId.getAndIncrement().toDouble()
+        live[id] = callback
+        JSRealm.main.later {
+            Choreographer.getInstance().postFrameCallback { frameTimeNanos ->
+                live.remove(id)?.let { realm.later { it(frameTimeNanos / 1e6) } }
+            }
+        }
+        return id
+    }
+}
+
+fun requestAnimationFrame(callback: (Double) -> Unit): Double {
+    val realm = JSRealm.current()
+    return if (realm === JSRealm.main) AnimationFrames.request(callback) else WorkerFrames.request(realm, callback)
+}
 
 fun cancelAnimationFrame(id: Double?) {
-    if (id != null) AnimationFrames.pending.remove(id)
+    if (id == null) return
+    if (JSRealm.current() === JSRealm.main) AnimationFrames.pending.remove(id) else WorkerFrames.live.remove(id)
 }
