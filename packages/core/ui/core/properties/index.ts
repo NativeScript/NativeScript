@@ -41,8 +41,8 @@ const cssValueSourceKeys: Record<string, symbol> = Object.create(null);
 /**
  * Whether the style still carries what the cascade last wrote for the property.
  * A `CssProperty` keeps one value: a local value both suppresses the css write and
- * takes the slot, so clearing it leaves the property at its default with the css
- * value gone. The cascade has to write it again rather than skip it as unchanged.
+ * takes the slot, so the style can stop carrying what the cascade recorded. The
+ * cascade has to write it again rather than skip it as unchanged.
  */
 export function _isCssValueStillApplied(style: unknown, cssLocalName: string, value: unknown): boolean {
 	const sourceKey = cssValueSourceKeys[cssLocalName];
@@ -53,6 +53,16 @@ export function _isCssValueStillApplied(style: unknown, cssLocalName: string, va
 
 	// A reset leaves no source behind, so it is in effect precisely when nothing else claimed the property.
 	return style[sourceKey] === (isResetValue(value) ? undefined : ValueSource.Css);
+}
+
+/**
+ * What a released local value falls back to: the value the cascade last resolved for
+ * the property, or `undefined` when it resolved none.
+ */
+function cascadedCssValue(view: ViewBase, cssLocalName: string): unknown {
+	const value = view._cssState?._getAppliedPropertyValue(cssLocalName);
+
+	return value === '' || isResetValue(value) ? undefined : value;
 }
 
 function print(map) {
@@ -780,14 +790,24 @@ export class CssProperty<T extends Style, U> {
 
 			this._localValueVersion++;
 
-			const reset = isResetValue(newValue) || newValue === '';
+			let reset = isResetValue(newValue) || newValue === '';
+			let valueSource = ValueSource.Local;
 			let value: U;
+
+			if (reset) {
+				const cssValue = cascadedCssValue(view, property.cssLocalName);
+				if (cssValue !== undefined) {
+					newValue = <U | string>cssValue;
+					valueSource = ValueSource.Css;
+					reset = false;
+				}
+			}
 
 			if (reset) {
 				value = defaultValue;
 				delete this[sourceKey];
 			} else {
-				this[sourceKey] = ValueSource.Local;
+				this[sourceKey] = valueSource;
 				value = valueConverter && typeof newValue === 'string' ? (overrideConverter ? valueConverter.call(this, newValue) : valueConverter(newValue)) : <U>newValue;
 			}
 
@@ -1210,6 +1230,7 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
 		const getDefault = this.getDefault;
 		const setNative = this.setNative;
 		const defaultValueKey = this.defaultValueKey;
+		const cssLocalName = this.cssLocalName;
 		const eventName = propertyName + 'Change';
 		const defaultValue: U = options.defaultValue;
 
@@ -1253,7 +1274,17 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
 					this._localValueVersion++;
 				}
 
-				const reset = isResetValue(boxedValue) || boxedValue === '';
+				let reset = isResetValue(boxedValue) || boxedValue === '';
+				let newValueSource = valueSource;
+				if (reset && isLocalWrite) {
+					const cssValue = cascadedCssValue(view, cssLocalName);
+					if (cssValue !== undefined) {
+						boxedValue = cssValue;
+						newValueSource = ValueSource.Css;
+						reset = false;
+					}
+				}
+
 				const currentValueSource: number = this[sourceKey] || ValueSource.Default;
 
 				if (reset) {
@@ -1286,7 +1317,7 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
 						unsetNativeValue = true;
 					}
 				} else {
-					this[sourceKey] = valueSource;
+					this[sourceKey] = newValueSource;
 					if (valueConverter && typeof boxedValue === 'string') {
 						value = overrideConverter ? valueConverter.call(this, boxedValue) : valueConverter(boxedValue);
 					} else {
