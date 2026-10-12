@@ -918,6 +918,8 @@ export class RuleSet {
 	public mediaQueryString: string | string[];
 	public tag?: string | number;
 	public scopedTag?: string;
+	/** Cascade-layer rank per nesting depth; undefined/shortest path sorts after every layer (unlayered styles win). */
+	public layerPath?: number[];
 
 	constructor(selectors: SelectorCore[], declarations: Declaration[]) {
 		this.selectors = selectors;
@@ -1364,9 +1366,28 @@ export class StyleSheetSelectorScope<T extends Node> extends SelectorScope<T> {
 	}
 }
 
-/** Cascade order: specificity, then source order - (tier, position) across stylesheets. */
+/**
+ * Cascade layers order before specificity: rules in an earlier-declared layer lose
+ * to rules in a later-declared layer regardless of specificity, and unlayered
+ * rules (absent rank at a depth) beat every layered rule.
+ */
+function compareLayerPaths(a: number[] | undefined, b: number[] | undefined): number {
+	const aLength = a?.length ?? 0;
+	const bLength = b?.length ?? 0;
+	const length = Math.max(aLength, bLength);
+	for (let i = 0; i < length; i++) {
+		const rankA = i < aLength ? a[i] : Number.POSITIVE_INFINITY;
+		const rankB = i < bLength ? b[i] : Number.POSITIVE_INFINITY;
+		if (rankA !== rankB) {
+			return rankA - rankB;
+		}
+	}
+	return 0;
+}
+
+/** Cascade order: cascade layer, then specificity, then source order - (tier, position) across stylesheets. */
 function compareSelectors(a: SelectorCore, b: SelectorCore): number {
-	return a.specificity - b.specificity || a.tier - b.tier || a.pos - b.pos;
+	return compareLayerPaths(a.ruleset?.layerPath, b.ruleset?.layerPath) || a.specificity - b.specificity || a.tier - b.tier || a.pos - b.pos;
 }
 
 /**
