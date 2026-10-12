@@ -6,6 +6,7 @@ import { packagePlatformResolverPlugin } from './package-platform-aliases.js';
 import { nativescriptPackageResolver } from './nativescript-package-resolver.js';
 import { findMonorepoWorkspaceRoot, getProjectRootPath } from './project.js';
 import { normalizeModuleId } from './normalize-id.js';
+import { sbgClassNamesPlugin } from './sbg-class-names.js';
 
 export interface WorkerPluginsOptions {
 	platform: string;
@@ -161,6 +162,9 @@ export function getWorkerPlugins(platformOrOpts: string | WorkerPluginsOptions) 
 	plugins.push(packagePlatformResolverPlugin({ tsConfig, platform, verbose }));
 	plugins.push(nativescriptPackageResolver(platform));
 	plugins.push(nativescriptWorkerLoaderStubPlugin());
+	if (platform === 'android') {
+		plugins.push(sbgClassNamesPlugin());
+	}
 
 	return plugins;
 }
