@@ -137,6 +137,17 @@ import { vendorManifest as __nsBrowserRuntimeVendorManifest, __nsVendorModuleMap
 import { installNsHotRegistry as __nsBrowserRuntimeInstallHotRegistry } from ${JSON.stringify(resolvedHotContextImport)};
 import { installLaunchNotificationBridge as __nsBrowserRuntimeInstallLaunchBridge } from ${JSON.stringify(launchBridgeUrl)};
 import * as __nsBrowserRuntimeCoreBridge from ${JSON.stringify(coreBridgeUrl)};
+import { installHttpCoreCssSupport as __nsBrowserRuntimeInstallHttpCoreCssSupport } from ${JSON.stringify(entryRuntimeUrl)};
+
+// Seeded app.css must land in the /ns/core realm before the app entry
+// evaluates, as it does in non-HMR builds. Views mounted unstyled are
+// restyled later, but anything that caches measurements on first layout
+// (iOS ListView row heights) keeps the unstyled sizes.
+try {
+	__nsBrowserRuntimeInstallHttpCoreCssSupport(__nsBrowserRuntimeCoreBridge, ${options.verbose ? 'true' : 'false'});
+} catch (cssErr) {
+	console.warn('[ns-browser-runtime-client] pre-entry app.css install failed', cssErr);
+}
 
 // Launch-notification bridge — must precede the app entry (this wrapper is
 // imported by the session bootstrap BEFORE the entry graph). Passing the
