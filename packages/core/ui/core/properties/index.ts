@@ -37,6 +37,8 @@ const enum ValueSource {
 
 /** `sourceKey` of every registered `CssProperty`, by css name. */
 const cssValueSourceKeys: Record<string, symbol> = Object.create(null);
+/** Css names of the registered `InheritedCssProperty`s. */
+const inheritedCssNames: Record<string, true> = Object.create(null);
 
 /**
  * Whether the style still carries what the cascade last wrote for the property.
@@ -51,8 +53,83 @@ export function _isCssValueStillApplied(style: unknown, cssLocalName: string, va
 		return true;
 	}
 
+	const source = style[sourceKey];
+	if (value === 'inherit') {
+		// An inherited property follows its parent from a default source too; any other property only while marked inherited.
+		return source === ValueSource.Inherited || (source === undefined && inheritedCssNames[cssLocalName] === true);
+	}
+
 	// A reset leaves no source behind, so it is in effect precisely when nothing else claimed the property.
-	return style[sourceKey] === (isResetValue(value) ? undefined : ValueSource.Css);
+	return source === (isResetValue(value) ? undefined : ValueSource.Css);
+}
+
+type ParentFollowingProperty = CssProperty<any, any> | CssAnimationProperty<any, any>;
+
+interface ParentValueSubscription {
+	parentStyle: Style | undefined;
+	readonly eventName: string;
+	readonly listener: () => void;
+}
+
+/**
+ * On a `Style`: the non-inherited properties its stylesheet resolves to `inherit`,
+ * with their subscription to the parent's value. Absent until the first such property,
+ * so views that never use the keyword pay nothing for it.
+ */
+const parentValueSubscriptionsKey = Symbol('parentValueSubscriptions');
+
+/**
+ * Subscribes `style` to its parent's value of a non-inherited property, which is never
+ * pushed down the tree like an inherited one, and returns the parent style to resolve
+ * `inherit` against. A change of the parent's value writes `inherit` again.
+ */
+function followParentValue(style: Style, view: ViewBase, property: ParentFollowingProperty): Style | undefined {
+	const parentStyle = view.parent ? view.parent.style : undefined;
+
+	let subscriptions: Map<ParentFollowingProperty, ParentValueSubscription> = style[parentValueSubscriptionsKey];
+	if (!subscriptions) {
+		subscriptions = style[parentValueSubscriptionsKey] = new Map();
+	}
+
+	let subscription = subscriptions.get(property);
+	if (!subscription) {
+		const cssName = property.cssName;
+		subscription = {
+			parentStyle: undefined,
+			eventName: property.name + 'Change',
+			listener: () => {
+				style[cssName] = 'inherit';
+			},
+		};
+		subscriptions.set(property, subscription);
+	}
+
+	if (subscription.parentStyle !== parentStyle) {
+		subscription.parentStyle?.off(subscription.eventName, subscription.listener);
+		parentStyle?.on(subscription.eventName, subscription.listener);
+		subscription.parentStyle = parentStyle;
+	}
+
+	return parentStyle;
+}
+
+function unfollowParentValue(style: Style, property: ParentFollowingProperty): void {
+	const subscriptions: Map<ParentFollowingProperty, ParentValueSubscription> = style[parentValueSubscriptionsKey];
+	const subscription = subscriptions?.get(property);
+	if (subscription) {
+		subscription.parentStyle?.off(subscription.eventName, subscription.listener);
+		subscriptions.delete(property);
+	}
+}
+
+/** Resolves every `inherit` that follows a parent value against the view's current parent. */
+function refollowParentValues(style: Style): void {
+	const subscriptions: Map<ParentFollowingProperty, ParentValueSubscription> = style[parentValueSubscriptionsKey];
+	if (subscriptions) {
+		subscriptions.forEach((_subscription, property) => {
+			style[property.cssName] = 'inherit';
+		});
+	}
 }
 
 function print(map) {
@@ -168,6 +245,13 @@ export function _expandCssShorthand(cssName: string, value: string): [string, an
 
 	if (typeof value === 'string' && (isCssVariableExpression(value) || isCssCalcExpression(value))) {
 		return undefined;
+	}
+
+	// A css-wide keyword applies to every longhand as is; converters only parse values.
+	if (isCssWideKeyword(value)) {
+		const longhands = getCssShorthandLonghands(cssName);
+
+		return longhands?.map((longhand): [string, any] => [longhand, value]);
 	}
 
 	try {
@@ -770,12 +854,20 @@ export class CssProperty<T extends Style, U> {
 
 		const property = this;
 
+		/**
+		 * Any keyword written from code, `inherit` included, releases the local value: a value
+		 * from code is never a sticky declaration that outranks the stylesheet.
+		 */
 		function setLocalValue(this: T, newValue: U | string): void {
 			const view = this.viewRef.get();
 			if (!view) {
 				Trace.write(`${newValue} not set to view because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
 
 				return;
+			}
+
+			if (this[sourceKey] === ValueSource.Inherited) {
+				unfollowParentValue(this, property);
 			}
 
 			this._localValueVersion++;
@@ -865,15 +957,31 @@ export class CssProperty<T extends Style, U> {
 				return;
 			}
 
-			const reset = isResetValue(newValue) || newValue === '';
+			let reset = isResetValue(newValue) || newValue === '';
 			let value: U;
 
-			if (reset) {
-				value = defaultValue;
-				delete this[sourceKey];
+			if (newValue === 'inherit') {
+				// Stays marked inherited at the parent's default too, to keep following the parent.
+				this[sourceKey] = ValueSource.Inherited;
+				const parentStyle = followParentValue(this, view, property);
+				if (parentStyle && key in parentStyle) {
+					value = <U>parentStyle[key];
+					reset = false;
+				} else {
+					value = defaultValue;
+				}
 			} else {
-				value = valueConverter && typeof newValue === 'string' ? (overrideConverter ? valueConverter.call(this, newValue) : valueConverter(newValue)) : <U>newValue;
-				this[sourceKey] = ValueSource.Css;
+				if (currentValueSource === ValueSource.Inherited) {
+					unfollowParentValue(this, property);
+				}
+
+				if (reset) {
+					value = defaultValue;
+					delete this[sourceKey];
+				} else {
+					value = valueConverter && typeof newValue === 'string' ? (overrideConverter ? valueConverter.call(this, newValue) : valueConverter(newValue)) : <U>newValue;
+					this[sourceKey] = ValueSource.Css;
+				}
 			}
 
 			const oldValue = <U>(key in this ? this[key] : defaultValue);
@@ -1046,7 +1154,8 @@ export class CssAnimationProperty<T extends Style, U> implements CssAnimationPro
 		const property = this;
 
 		function descriptor(symbol: symbol, propertySource: ValueSource, enumerable: boolean, configurable: boolean, getsComputed: boolean): PropertyDescriptor {
-			const origin: PropertyChangeOrigin = propertySource === ValueSource.Keyframe ? 'animation' : propertySource === ValueSource.Css ? 'css' : 'script';
+			const isCssSlot = propertySource === ValueSource.Css;
+			const origin: PropertyChangeOrigin = propertySource === ValueSource.Keyframe ? 'animation' : isCssSlot ? 'css' : 'script';
 
 			return {
 				enumerable,
@@ -1069,7 +1178,22 @@ export class CssAnimationProperty<T extends Style, U> implements CssAnimationPro
 					const oldValue = this[computedValue];
 					const oldSource = this[computedSource];
 					const wasSet = oldSource !== ValueSource.Default;
-					const reset = isResetValue(boxedValue) || boxedValue === '';
+
+					let resolvedFromParent = false;
+					if (isCssSlot) {
+						if (boxedValue === 'inherit') {
+							// The css slot keeps following the parent under a local or keyframe value, so it is current once they are released.
+							const parentStyle = followParentValue(this, view, property);
+							if (parentStyle && parentStyle[computedSource] !== ValueSource.Default) {
+								boxedValue = parentStyle[computedValue];
+								resolvedFromParent = true;
+							}
+						} else if (this[parentValueSubscriptionsKey]) {
+							unfollowParentValue(this, property);
+						}
+					}
+
+					const reset = !resolvedFromParent && (isResetValue(boxedValue) || boxedValue === '');
 
 					if (reset) {
 						this[symbol] = boxedValue;
@@ -1087,7 +1211,7 @@ export class CssAnimationProperty<T extends Style, U> implements CssAnimationPro
 							}
 						}
 					} else {
-						if (options.valueConverter && typeof boxedValue === 'string') {
+						if (!resolvedFromParent && options.valueConverter && typeof boxedValue === 'string') {
 							boxedValue = options.valueConverter.call(this, boxedValue);
 						}
 						this[symbol] = boxedValue;
@@ -1366,6 +1490,11 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
 
 		inheritableCssProperties.push(this);
 	}
+
+	public register(cls: { prototype: T }): void {
+		super.register(cls);
+		inheritedCssNames[this.cssLocalName] = true;
+	}
 }
 
 export class ShorthandProperty<T extends Style, P> implements ShorthandProperty<T, P> {
@@ -1637,6 +1766,8 @@ export function clearInheritedProperties(view: ViewBase): void {
 			prop.setInheritedValue.call(style, unsetValue);
 		}
 	}
+
+	refollowParentValues(style);
 }
 
 export function resetCSSProperties(style: Style): void {
@@ -1674,6 +1805,8 @@ export function propagateInheritableCssProperties(parentStyle: Style, childStyle
 			prop.setInheritedValue.call(childStyle, pair.value, ValueSource.Inherited);
 		}
 	}
+
+	refollowParentValues(childStyle);
 }
 
 export function getSetProperties(view: ViewBase): [string, any][] {
