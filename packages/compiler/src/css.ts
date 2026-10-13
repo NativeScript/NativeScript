@@ -46,7 +46,12 @@ export function appStylesheets(app: string, platform: 'ios' | 'android', importe
   const virtual = join(dir, 'components.json');
   writeFileSync(virtual, JSON.stringify(Object.fromEntries(components.map((c) => [resolve(c.file), c.css]))));
   try {
-    execFileSync(process.execPath, [...stripTypes(), worker, out, cliLibrary(app), platform, ...imported.map((f) => resolve(f))], { cwd: resolve(app), stdio: ['ignore', 'ignore', 'inherit'], env: { ...process.env, NS_NATIVE_COMPONENT_CSS: virtual } });
+    try {
+      execFileSync(process.execPath, [...stripTypes(), worker, out, cliLibrary(app), platform, ...imported.map((f) => resolve(f))], { cwd: resolve(app), stdio: ['ignore', 'ignore', 'inherit'], env: { ...process.env, NS_NATIVE_COMPONENT_CSS: virtual } });
+    } catch (e) {
+      const reported = existsSync(out) ? JSON.parse(readFileSync(out, 'utf8')).error : undefined;
+      throw reported ? new Error(reported) : e;
+    }
     const result = JSON.parse(readFileSync(out, 'utf8'));
     setDefines(result.defines);
     return result.sheets;

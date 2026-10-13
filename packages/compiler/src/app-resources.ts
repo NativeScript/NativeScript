@@ -2,12 +2,14 @@
 // way the NativeScript CLI applies them to platforms/ios and platforms/android
 // (ios-project-service, ios-entitlements-service, xcconfig-service,
 // android-project-service and the runtime's app/build.gradle).
-import { copyFileSync, cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { copyFileSync, cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { dirname, join, relative, resolve } from 'node:path';
 import ts from 'typescript';
 import { mergePlist, readPlist, writePlist, type PlistDict } from './plist.ts';
 import { productLines, type SwiftPackage } from './ios-dependencies.ts';
 import { KIT_PLUGINS } from './core.ts';
+import { mirror, writeIfChanged } from './mirror.ts';
 
 /** The literal values of nativescript.config.ts's exported object; anything computed is left out. */
 export function readConfig(app: string): Record<string, unknown> {
@@ -165,11 +167,11 @@ export function iosProjectResources(o: { app: string; appDir: string; out: strin
       o.say(`${relative(o.app, appPlist)} declares no UIApplicationSceneManifest: the template's is added, as an app built with the current SDK must adopt scenes`);
       plist.UIApplicationSceneManifest = SCENE_MANIFEST;
     }
-    writeFileSync(join(o.out, 'Info.plist'), writePlist(plist));
+    writeIfChanged(join(o.out, 'Info.plist'), writePlist(plist));
     settings.INFOPLIST_FILE = 'Info.plist';
   } else {
     // No App_Resources Info.plist: Xcode writes one from the build settings, into this one, which adopts scenes.
-    writeFileSync(join(o.out, 'Info.plist'), writePlist({ UIApplicationSceneManifest: SCENE_MANIFEST }));
+    writeIfChanged(join(o.out, 'Info.plist'), writePlist({ UIApplicationSceneManifest: SCENE_MANIFEST }));
     Object.assign(settings, {
       INFOPLIST_FILE: 'Info.plist',
       GENERATE_INFOPLIST_FILE: 'YES',
@@ -184,15 +186,14 @@ export function iosProjectResources(o: { app: string; appDir: string; out: strin
 
   // app.entitlements: the plugins', then the app's.
   const entitlementFiles = [...plugins.map((p) => join(p, 'app.entitlements')), join(res, 'app.entitlements')].filter(existsSync);
-  rmSync(join(o.out, `${o.name}.entitlements`), { force: true });
   if (entitlementFiles.length) {
     let entitlements: PlistDict = {};
     for (const file of entitlementFiles) entitlements = mergePlist(entitlements, readPlist(file));
-    writeFileSync(join(o.out, `${o.name}.entitlements`), writePlist(entitlements));
+    writeIfChanged(join(o.out, `${o.name}.entitlements`), writePlist(entitlements));
     if (!configured('CODE_SIGN_ENTITLEMENTS')) settings.CODE_SIGN_ENTITLEMENTS = `${o.name}.entitlements`;
-  }
+  } else rmSync(join(o.out, `${o.name}.entitlements`), { force: true });
 
-  if (merged.length) writeFileSync(join(o.out, 'build.xcconfig'), writeXcconfig(merged));
+  if (merged.length) writeIfChanged(join(o.out, 'build.xcconfig'), writeXcconfig(merged));
   else rmSync(join(o.out, 'build.xcconfig'), { force: true });
   // With pods, the app target's configuration is the pods' merged with build.xcconfig (`mergePodsXcconfig`) once `pod install` has written theirs.
   for (const c of ['debug', 'release']) {
@@ -208,8 +209,9 @@ export function iosProjectResources(o: { app: string; appDir: string; out: strin
   }
 
   // Everything else in App_Resources/iOS is copied into the bundle, as the CLI copies it to platforms/ios/<name>/Resources.
-  const staged = join(o.out, 'Resources');
-  rmSync(staged, { recursive: true, force: true });
+  // Both folders are assembled in a scratch folder and mirrored, so Xcode copies only what changed.
+  const staging = mkdtempSync(join(tmpdir(), 'ns-native-resources-'));
+  const staged = join(staging, 'Resources');
   const entries = existsSync(res) ? readdirSync(res).filter((f) => !NOT_RESOURCES.has(f) && !f.startsWith('.')) : [];
   if (entries.length) {
     mkdirSync(staged, { recursive: true });
@@ -223,14 +225,18 @@ export function iosProjectResources(o: { app: string; appDir: string; out: strin
   }
   // What the app's own build copies beside its bundle, at `app/` where `~/assets/logo.png` resolves, and
   // its fonts, at `app/fonts/` where core registers them at launch.
-  const appFiles = join(o.out, 'AppFiles');
-  rmSync(appFiles, { recursive: true, force: true });
+  const appFiles = join(staging, 'AppFiles');
   const files = copiedAppFiles(o.appDir, readConfig(o.app).bundler === 'vite');
   for (const f of files) {
     mkdirSync(dirname(join(appFiles, 'app', f)), { recursive: true });
     copyFileSync(join(o.appDir, f), join(appFiles, 'app', f));
   }
   if (files.length) sources.push(`      - path: AppFiles/app\n        type: folder\n        buildPhase: resources\n`);
+  for (const dir of ['Resources', 'AppFiles']) {
+    if (existsSync(join(staging, dir))) mirror(join(staging, dir), join(o.out, dir));
+    else rmSync(join(o.out, dir), { recursive: true, force: true });
+  }
+  rmSync(staging, { recursive: true, force: true });
 
   const team = configured('DEVELOPMENT_TEAM');
   return {
@@ -249,7 +255,7 @@ export function mergePodsXcconfig(out: string, name: string) {
   const own = existsSync(join(out, 'build.xcconfig')) ? parseXcconfig(join(out, 'build.xcconfig')) : [];
   for (const c of ['debug', 'release']) {
     const pods = join(out, 'Pods', 'Target Support Files', `Pods-${name}`, `Pods-${name}.${c}.xcconfig`);
-    writeFileSync(join(out, `build.${c}.xcconfig`), writeXcconfig(mergeXcconfig(existsSync(pods) ? parseXcconfig(pods) : [], own)));
+    writeIfChanged(join(out, `build.${c}.xcconfig`), writeXcconfig(mergeXcconfig(existsSync(pods) ? parseXcconfig(pods) : [], own)));
   }
 }
 

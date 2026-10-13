@@ -11,7 +11,7 @@
 // rewrite, Vite's preprocessCSS, rework-css's parse).
 import fs, { readFileSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
-import { dirname, join } from 'node:path';
+import { dirname, join, relative } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 const [outFile, cliLib, platform, ...stylesheets] = process.argv.slice(2);
@@ -171,6 +171,13 @@ async function viteSheets(configPath: string): Promise<Sheet[]> {
 
 /** The bundler's compile-time replacements (vite's `define`), as source text by the expression they replace. */
 let defines: Record<string, string> = {};
+// The parent reports `error` as the compile's one-line failure.
+if (!fs.existsSync(project.bundlerConfigPath)) {
+  const name = relative(app, project.bundlerConfigPath);
+  const bundler = project.bundler === 'vite' ? 'vite' : 'webpack';
+  writeFileSync(outFile, JSON.stringify({ error: `${name} is missing; the compiled build reads the app's CSS through it. Restore it with 'npx @nativescript/${bundler} init', or point bundlerConfigPath in nativescript.config.ts at the app's ${bundler} config.` }));
+  process.exit(1);
+}
 const sheets = project.bundler === 'vite' ? await viteSheets(project.bundlerConfigPath) : await webpackSheets(project.bundlerConfigPath);
 writeFileSync(outFile, JSON.stringify({ sheets, defines }));
 process.exit(0);

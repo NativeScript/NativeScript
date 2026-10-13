@@ -1,4 +1,4 @@
-import { copyFileSync, lstatSync, mkdirSync, readFileSync, readdirSync, readlinkSync, rmSync, symlinkSync, type Stats } from 'node:fs';
+import { copyFileSync, lstatSync, mkdirSync, readFileSync, readdirSync, readlinkSync, renameSync, rmSync, symlinkSync, writeFileSync, type Stats } from 'node:fs';
 import { join } from 'node:path';
 
 /**
@@ -34,5 +34,28 @@ function lstatOrNull(path: string): Stats | null {
     return lstatSync(path);
   } catch {
     return null;
+  }
+}
+
+/** Writes `content` to `file` unless the file already holds exactly that, for the reason `mirror` keeps files. */
+export function writeIfChanged(file: string, content: string): void {
+  const dst = lstatOrNull(file);
+  if (dst?.isFile() && readFileSync(file, 'utf8') === content) return;
+  writeFileSync(file, content);
+}
+
+/**
+ * After a tool wrote `next` afresh where `previous` was: each file of `next` whose content is
+ * unchanged becomes `previous`'s file again, inode and mtime included, and each folder named in
+ * `carried` that `previous` had and `next` lacks moves across.
+ */
+export function restoreUnchanged(previous: string, next: string, carried: readonly string[] = []): void {
+  for (const name of readdirSync(previous)) {
+    const from = join(previous, name), to = join(next, name);
+    const old = lstatSync(from), now = lstatOrNull(to);
+    if (!now) {
+      if (carried.includes(name)) renameSync(from, to);
+    } else if (old.isDirectory() && now.isDirectory()) restoreUnchanged(from, to, carried);
+    else if (old.isFile() && now.isFile() && old.size === now.size && readFileSync(from).equals(readFileSync(to))) renameSync(from, to);
   }
 }

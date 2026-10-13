@@ -18,6 +18,49 @@ interface IConfigPlatform {
 	 * For example, "@nativescript/ios-hermes"
 	 */
 	runtimePackageName?: string;
+	/**
+	 * Release options for this platform, merged over the top-level `release`; object options merge by key.
+	 */
+	release?: IConfigRelease;
+}
+
+/**
+ * Release builds compiled to native code (Swift or Kotlin) by `@nativescript/compiler`.
+ */
+interface IConfigRelease {
+	/**
+	 * Release builds compile the app to native code instead of bundling it for the JavaScript runtime.
+	 * The CLI's `--compiled` / `--no-compiled` override it per command.
+	 */
+	compiled?: boolean;
+	/**
+	 * Packages the compiled build replaces with a module of the app's, as `'package': 'path'`.
+	 */
+	pluginReplacements?: Record<string, string>;
+	/**
+	 * Local checkouts of plugins' TypeScript source, as `'package': 'path'`, used instead of fetching the published revision.
+	 */
+	pluginSources?: Record<string, string>;
+	/**
+	 * Build despite properties core declares that the compiled build does not apply, with a warning for each.
+	 */
+	allowUnimplementedProperties?: boolean;
+	/**
+	 * Build with a `@nativescript/core` version other than the one the compiler was made for, with a warning.
+	 */
+	allowCoreMismatch?: boolean;
+	/**
+	 * Build with a framework version outside the compiler's tested range, with a warning.
+	 */
+	allowUntestedFrameworks?: boolean;
+	/**
+	 * Android: build on the kit generated from core (the default when the compiler ships it); `false` uses the hand-written kit.
+	 */
+	generatedKit?: boolean;
+	/**
+	 * Android: R8 keeps only what the kit's reflection needs, instead of every kit class.
+	 */
+	narrowKitKeeps?: boolean;
 }
 
 interface IOSSPMPackageBase {
@@ -308,6 +351,10 @@ export interface NativeScriptConfig {
 	 * Default is 'webpack'.
 	 */
 	bundler?: BundlerType;
+	/**
+	 * Release builds compiled to native code by `@nativescript/compiler`; `ios.release` and `android.release` override it per platform.
+	 */
+	release?: IConfigRelease;
 	/**
 	 * Enable runtime logging of script loading.
 	 */
