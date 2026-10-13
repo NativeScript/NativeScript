@@ -4,7 +4,7 @@ import { setAppMainEntry, setToggleApplicationEventListenersCallback, setApplica
 import type { View } from '../ui/core/view';
 import { setRootView } from './helpers-common';
 import { CoreTypes } from 'index';
-import { activateCurrentWindow, getCurrentWindowContent, setCurrentWindowContent, getCurrentWindowBounds, setCurrentWindowTitle } from './window-helper.windows';
+import { activateCurrentWindow, getCurrentWindowContent, setCurrentWindowContent, getCurrentWindowBounds, setCurrentWindowTitle, setCurrentWindowTitleBarAppearance } from './window-helper.windows';
 import { windows } from '../ui/styling/font';
 import { resolveModuleName, ModuleNameResolver } from '../module-name-resolver';
 import { _setResolver } from '../module-name-resolver/helpers';
@@ -94,6 +94,10 @@ export class WindowsApplication extends ApplicationCommon {
 		activateCurrentWindow();
 		this.setupOrientationTracking(rootView.nativeViewProtected);
 		this._applyWindowTitle();
+		const appearance = this.systemAppearance();
+		if (appearance) {
+			setCurrentWindowTitleBarAppearance(appearance);
+		}
 
 		this.initRootView(rootView);
 		rootView.callLoaded();
@@ -115,6 +119,13 @@ export class WindowsApplication extends ApplicationCommon {
 
 	getNativeApplication() {
 		return Microsoft.UI.Xaml.Application.Current;
+	}
+
+	systemAppearanceChanged(rootView: View, newSystemAppearance: 'dark' | 'light'): void {
+		super.systemAppearanceChanged(rootView, newSystemAppearance);
+		if (rootView && this.autoSystemAppearanceChanged) {
+			setCurrentWindowTitleBarAppearance(newSystemAppearance);
+		}
 	}
 
 	protected getOrientation(): 'portrait' | 'landscape' | 'unknown' {
