@@ -312,6 +312,9 @@ export class GesturesObserver extends GesturesObserverBase {
 			if (wantsMoves) _assignPointerHandler(native, 'PointerMoved', this._pointerMovedDelegate);
 			_assignPointerHandler(native, 'PointerReleased', this._pointerReleasedDelegate);
 		}
+		if (native.Background === null) {
+			native.Background = new Microsoft.UI.Xaml.Media.SolidColorBrush({ A: 0, R: 0, G: 0, B: 0 } as any);
+		}
 
 		// RightTapped (mouse right-click) fires longPress for mouse/touchpad users.
 		if (type === GestureTypes.longPress) {
