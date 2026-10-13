@@ -223,7 +223,7 @@ export async function writeAndroid(b: AndroidBuild): Promise<void> {
   }
   writeFileSync(join(b.out, 'source-lines.json'), JSON.stringify({ package: pkg, files: table }) + '\n');
   const shapes = SourceLines.strip(translator.shapesCode());
-  if (shapes) writeFileSync(join(sources, '__Objects.kt'), `// Compiled by ns-native: the app's object literals without a declared type.\n${suppress}\npackage ${pkg}\n\nimport org.nativescript.kit.*\n\n${shapes}\n`);
+  if (shapes) writeFileSync(join(sources, '__Objects.kt'), `// Compiled by ns-native: the app's object literals without a declared type.\npackage ${pkg}\n\nimport org.nativescript.kit.*\n\n${shapes}\n`);
   // A worker script's top level runs on its worker's thread, not with the app's modules.
   const workers = modules.filter((m) => translator.workerScripts!.has(m.file)).map((m) => `        JSWorker.register(${kotlinString(translator.workerScripts!.get(m.file)!)}) { ${m.init ? `${m.init}()` : ''} }\n`).join('');
   const lazyFiles = new Set(lazy.keys());
