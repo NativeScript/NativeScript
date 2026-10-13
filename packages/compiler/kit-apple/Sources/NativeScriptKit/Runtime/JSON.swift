@@ -285,16 +285,17 @@ private struct JSJSONParser {
 /// `JSON.stringify(value, null, indent)`; nil is JavaScript's `undefined` result. `indent` is a
 /// number of spaces (at most 10) or a string (its first 10 characters). A cycle traps;
 /// `jsJSONStringifyChecked` throws the TypeError instead.
-public func jsJSONStringify(_ value: Any?, _ indent: Any? = nil) -> String? {
+public func jsJSONStringify(_ value: Any?, _ indent: Any? = nil, replacer: Any? = nil) -> String? {
     do {
-        return try jsJSONStringifyChecked(value, indent)
+        return try jsJSONStringifyChecked(value, indent, replacer: replacer)
     } catch {
         fatalError("\(jsToString(jsCaught(error)))")
     }
 }
 
-/// `JSON.stringify(value, null, indent)`, throwing a TypeError for circular structures.
-public func jsJSONStringifyChecked(_ value: Any?, _ indent: Any? = nil) throws -> String? {
+/// `JSON.stringify(value, replacer, indent)`, throwing a TypeError for circular structures. A function replacer is
+/// called on each value's holder with its key; an array replacer lists the object keys kept.
+public func jsJSONStringifyChecked(_ value: Any?, _ indent: Any? = nil, replacer: Any? = nil) throws -> String? {
     var gap = ""
     switch jsFlat(indent) {
     case let s as String:
@@ -308,12 +309,44 @@ public func jsJSONStringifyChecked(_ value: Any?, _ indent: Any? = nil) throws -
         break
     }
     var writer = JSJSONWriter(gap: gap)
-    return try writer.serialize(value, indent: "")
+    switch jsFlat(replacer) {
+    case let list as JSArrayProtocol:
+        var keys: [String] = []
+        for item in list.jsAnyElements {
+            let key: String? = switch jsFlat(item) { case let s as String: s; case let d as Double: jsNumberToString(d); default: nil }
+            if let key, !keys.contains(key) { keys.append(key) }
+        }
+        writer.allowed = keys
+    case let f? where jsIsFunction(f): writer.replacer = f
+    default: break
+    }
+    let holder = JSObject()
+    holder[""] = value
+    return try writer.property(holder, "", value, indent: "")
+}
+
+/// A value with its own `toJSON()`, which JSON.stringify serializes in its place.
+public protocol JSToJSONConvertible: AnyObject {
+    func jsToJSON(_ key: String) throws -> Any?
 }
 
 private struct JSJSONWriter {
     let gap: String
     var stack: [ObjectIdentifier] = []
+    var replacer: Any?
+    var allowed: [String]?
+
+    /// SerializeJSONProperty: the value's `toJSON`, then the replacer, then the value serialized.
+    mutating func property(_ holder: Any?, _ key: String, _ value: Any?, indent: String) throws -> String? {
+        var v = jsFlat(value)
+        if let own = v as? JSToJSONConvertible {
+            v = try own.jsToJSON(key)
+        } else if let object = v as? JSDynamic, !(object is JSError), !(object is JSArrayProtocol), let f = jsFlat(object[jsKey: "toJSON"]), jsIsFunction(f) {
+            v = try jsInvoke(f, object, [key])
+        }
+        if let replacer { v = try jsInvoke(replacer, holder, [key, v]) }
+        return try serialize(v, indent: indent)
+    }
 
     mutating func serialize(_ value: Any?, indent: String) throws -> String? {
         guard let v = jsFlat(value) else { return nil }
@@ -359,7 +392,7 @@ private struct JSJSONWriter {
         if elements.isEmpty { return "[]" }
         let inner = indent + gap
         var parts: [String] = []
-        for element in elements { parts.append(try serialize(element, indent: inner) ?? "null") }
+        for (i, element) in elements.enumerated() { parts.append(try property(object, String(i), element, indent: inner) ?? "null") }
         if gap.isEmpty { return "[" + parts.joined(separator: ",") + "]" }
         return "[\n" + inner + parts.joined(separator: ",\n" + inner) + "\n" + indent + "]"
     }
@@ -369,8 +402,9 @@ private struct JSJSONWriter {
         defer { leave(object) }
         let inner = indent + gap
         var parts: [String] = []
-        for (key, value) in entries {
-            guard let text = try serialize(value, indent: inner) else { continue }
+        let kept = allowed.map { keys in keys.compactMap { key in entries.first { $0.0 == key } } } ?? entries
+        for (key, value) in kept {
+            guard let text = try property(object, key, value, indent: inner) else { continue }
             parts.append(jsJSONQuote(key) + (gap.isEmpty ? ":" : ": ") + text)
         }
         if parts.isEmpty { return "{}" }

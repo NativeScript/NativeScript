@@ -266,7 +266,7 @@ private class JSONParser(val source: String) {
  * `JSON.stringify(value, null, indent)`; null is JavaScript's `undefined` result. `indent` is
  * a number of spaces (at most 10) or a string (its first 10 code units). A cycle throws V8's TypeError.
  */
-fun jsJSONStringify(value: Any?, indent: Any? = null): String? {
+fun jsJSONStringify(value: Any?, indent: Any? = null, replacer: Any? = null): String? {
     var gap: String? = null
     val i = jsBox(indent)
     if (i is String) {
@@ -276,18 +276,37 @@ fun jsJSONStringify(value: Any?, indent: Any? = null): String? {
         // V8 keeps an empty gap for 0 < n < 1: line breaks without indentation.
         if (n != null && n > 0) gap = " ".repeat(minOf(10.0, n).toInt())
     }
-    return JSONWriter(gap).serialize("", value, "")
+    val writer = JSONWriter(gap)
+    when (val r = jsBox(replacer)) {
+        is JSArray<*> -> writer.allowed = r.storage.mapNotNull { k -> when (val b = jsBox(k)) { is String -> b; is Number -> jsNumberToString(b.toDouble()); else -> null } }.distinct()
+        else -> if (jsIsFunction(r)) writer.replacer = r
+    }
+    val holder = JSObject()
+    holder[""] = value
+    return writer.serialize(holder, "", value, "")
+}
+
+/** A value with its own `toJSON()`, which JSON.stringify serializes in its place. */
+interface JSToJSON {
+    fun jsToJSON(key: String): Any?
 }
 
 private class JSONWriter(val gap: String?) {
     private val stack = ArrayList<Pair<String, Any>>()
+    /** A function replacer, called on each value's holder with its key. */
+    var replacer: Any? = null
+    /** An array replacer: the object keys kept, in its order. */
+    var allowed: List<String>? = null
 
-    fun serialize(key: String, value0: Any?, indent: String): String? {
-        var v = jsBox(value0) ?: return null
-        if (v is JSDynamic && v !is JSError) {
+    fun serialize(holder: Any, key: String, value0: Any?, indent: String): String? {
+        var v = jsBox(value0)
+        if (v is JSToJSON) v = jsBox(v.jsToJSON(key))
+        else if (v is JSDynamic && v !is JSError) {
             val toJSON = v.jsGet("toJSON")
-            if (toJSON is Function<*>) v = jsBox(jsCall(toJSON, key)) ?: return null
+            if (toJSON is Function<*>) v = jsBox(jsCall(toJSON, key))
         }
+        replacer?.let { r -> v = if (r is JSMethod) jsBox(r.call(holder, arrayOf(key, v))) else jsBox(jsCall(r, key, v)) }
+        if (v == null) return null
         when (v) {
             JSNull -> return "null"
             is Boolean -> return if (v) "true" else "false"
@@ -351,7 +370,7 @@ private class JSONWriter(val gap: String?) {
         try {
             if (elements.isEmpty()) return "[]"
             val inner = indent + (gap ?: "")
-            val parts = elements.mapIndexed { i, e -> serialize(i.toString(), e, inner) ?: "null" }
+            val parts = elements.mapIndexed { i, e -> serialize(owner, i.toString(), e, inner) ?: "null" }
             if (gap == null) return "[" + parts.joinToString(",") + "]"
             return "[\n" + inner + parts.joinToString(",\n$inner") + "\n" + indent + "]"
         } finally {
@@ -364,8 +383,9 @@ private class JSONWriter(val gap: String?) {
         try {
             val inner = indent + (gap ?: "")
             val parts = ArrayList<String>()
-            for ((k, v) in entries) {
-                val text = serialize(k, v, inner) ?: continue
+            val kept = allowed?.let { keys -> keys.mapNotNull { k -> entries.firstOrNull { it.first == k } } } ?: entries
+            for ((k, v) in kept) {
+                val text = serialize(owner, k, v, inner) ?: continue
                 parts.add(jsJSONQuote(k) + (if (gap == null) ":" else ": ") + text)
             }
             if (parts.isEmpty()) return "{}"

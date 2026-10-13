@@ -3805,9 +3805,13 @@ ${members.join('\n')}
     if (cls.members.some((m) => ts.isMethodDeclaration(m) && m.name.getText() === 'toString' && !m.parameters.length) && !this.inheritsToString(cls)) conformances.push('JSStringConvertible');
     const valueOf = cls.members.some((m) => ts.isMethodDeclaration(m) && m.name.getText() === 'valueOf' && !!m.body && !m.parameters.length && !isStatic(m)) && !this.inheritsMethod(cls, 'valueOf');
     if (valueOf) conformances.push('JSValueOfConvertible');
+    // A class's own toJSON is what JSON.stringify serializes in its instances' place.
+    const toJSON = cls.members.find((m): m is ts.MethodDeclaration => ts.isMethodDeclaration(m) && m.name.getText() === 'toJSON' && !!m.body && m.parameters.length <= 1 && !isStatic(m));
+    if (toJSON && !this.inheritsMethod(cls, 'toJSON')) conformances.push('JSToJSONConvertible');
     const header = () => `${this.extended.has(name) || this.extendedDecls.has(cls) || this.library ? '' : 'final '}class ${ident(name)}${this.generics(cls)}: ${[...(base || implemented.length ? [] : ['JSDynamic']), ...conformances].join(', ')} {`;
     const lines = [''];
     if (valueOf) lines.push('    func jsValueOf() throws -> Any? { try self.valueOf() }');
+    if (toJSON && !this.inheritsMethod(cls, 'toJSON')) lines.push(`    func jsToJSON(_ key: String) throws -> Any? { try self.toJSON(${toJSON.parameters.length ? 'key' : ''}) }`);
     const ctor = cls.members.find((m): m is ts.ConstructorDeclaration => ts.isConstructorDeclaration(m) && !!m.body);
     const paramProps = (ctor?.parameters ?? []).filter((p) => ts.canHaveModifiers(p) && ts.getModifiers(p)?.some((m) => [ts.SyntaxKind.PublicKeyword, ts.SyntaxKind.PrivateKeyword, ts.SyntaxKind.ProtectedKeyword, ts.SyntaxKind.ReadonlyKeyword].includes(m.kind)));
     const fieldInits: string[] = [];
@@ -7983,7 +7987,10 @@ ${members.join('\n')}
       case 'JSON':
         if (method === 'parse') return `jsJSONParse(${this.str(arg(0))}${arg(1) ? `, reviver: ${this.coerce(arg(1), 'Any?')}` : ''})`;
         // Undefined, a function or a symbol stringifies to undefined.
-        if (method === 'stringify') return this.undefinedAs(`jsJSONStringifyChecked(${this.coerce(arg(0), 'Any?')}${arg(2) ? `, ${this.coerce(arg(2), 'Any?')}` : ''})`, T());
+        if (method === 'stringify') {
+          const replacer = arg(1) && arg(1).kind !== ts.SyntaxKind.NullKeyword && !(ts.isIdentifier(arg(1)) && arg(1).getText() === 'undefined') ? `, replacer: ${this.coerce(arg(1), 'Any?')}` : '';
+          return this.undefinedAs(`jsJSONStringifyChecked(${this.coerce(arg(0), 'Any?')}${arg(2) ? `, ${this.coerce(arg(2), 'Any?')}` : replacer ? ', nil' : ''}${replacer})`, T());
+        }
         break;
       case 'Object': {
         // A literal (with spreads) is built as an untyped object whatever record type it has.

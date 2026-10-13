@@ -2402,7 +2402,10 @@ export class Translator implements AsyncTranslator {
     for (const i of implemented) this.used.add(i);
     const ownToString = cls.members.some((m) => ts.isMethodDeclaration(m) && m.name.getText() === 'toString' && !m.parameters.length) && !this.inheritsToString(cls);
     const ownValueOf = cls.members.some((m) => ts.isMethodDeclaration(m) && !isStatic(m) && !!m.body && m.name.getText() === 'valueOf' && !m.parameters.length) && !this.inheritedMethod(cls, 'valueOf');
-    const supertypes = [...implemented, ...(ownToString ? ['JSStringConvertible'] : []), ...(ownValueOf ? ['JSValueOf'] : [])];
+    // A class's own toJSON is what JSON.stringify serializes in its instances' place.
+    const ownToJSON = cls.members.find((m): m is ts.MethodDeclaration => ts.isMethodDeclaration(m) && !isStatic(m) && !!m.body && m.name.getText() === 'toJSON' && m.parameters.length <= 1);
+    const toJSON = ownToJSON && !this.inheritedMethod(cls, 'toJSON') ? ownToJSON : undefined;
+    const supertypes = [...implemented, ...(ownToString ? ['JSStringConvertible'] : []), ...(ownValueOf ? ['JSValueOf'] : []), ...(toJSON ? ['JSToJSON'] : [])];
     // Library mode: a class at the root of its hierarchy keeps what script adds to its instances, and reads its prototype's.
     // An app's class does where script gives its instances members it doesn't declare.
     const expando = (!!this.library || this.givenUndeclared().has(cls)) && !base;
@@ -2843,6 +2846,7 @@ export class Translator implements AsyncTranslator {
     lines.push(...witnesses);
     if (expando) lines.push('    override var jsExpando: JSObject? = null');
     if (ownValueOf) lines.push(`    override fun jsValueOf(): Any? = jsBox(this.${this.methodIdent('valueOf')}())`);
+    if (toJSON) lines.push(`    override fun jsToJSON(key: String): Any? = jsBox(this.${this.methodIdent('toJSON')}(${toJSON.parameters.length ? 'key' : ''}))`);
     // Library mode: every method of the class is read by name as well (`font.getAndroidTypeface()` on an untyped font), overrides included.
     if (this.library || byName || this.readByName.has(cls)) {
       for (const m of cls.members) {
@@ -6356,7 +6360,10 @@ export class Translator implements AsyncTranslator {
       case 'JSON':
         if (method === 'parse') return `jsJSONParse(${this.expr(arg(0))}${arg(1) ? `, ${this.coerce(arg(1), 'Any?')}` : ''})`;
         // Undefined, a function or a symbol stringifies to undefined.
-        if (method === 'stringify') return this.undefinedAs(`jsJSONStringify(${this.coerce(arg(0), 'Any?')}${arg(2) ? `, ${this.coerce(arg(2), 'Any?')}` : ''})`, T());
+        if (method === 'stringify') {
+          const replacer = arg(1) && arg(1).kind !== ts.SyntaxKind.NullKeyword && !(ts.isIdentifier(arg(1)) && arg(1).getText() === 'undefined') ? `, replacer = ${this.coerce(arg(1), 'Any?')}` : '';
+          return this.undefinedAs(`jsJSONStringify(${this.coerce(arg(0), 'Any?')}${arg(2) ? `, ${this.coerce(arg(2), 'Any?')}` : ''}${replacer})`, T());
+        }
         break;
       case 'Object': {
         // A literal there is built untyped (the parameter is `{}`): its keys read by name.
