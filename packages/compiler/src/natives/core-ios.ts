@@ -1,8 +1,9 @@
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs';
+import { cpSync, existsSync, mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { basename, dirname, join } from 'node:path';
+import { mirror } from '../mirror.ts';
 import { iosTarget, nativeTable } from './symbols.ts';
 
 /**
@@ -89,12 +90,13 @@ export interface CoreNativeProject {
  * - the Swift is a static library target of its module's name, compiled with the project's settings.
  */
 export function coreNativeProject(core: string, imported: Set<string>, out: string): CoreNativeProject {
-  const dir = join(out, 'Core');
-  rmSync(dir, { recursive: true, force: true });
   const project: CoreNativeProject = { targets: '', kitDependencies: '', settings: {}, appDependencies: '', appSources: '' };
   const used = coreNativeModules(core).filter((m) => imported.has(m.module));
-  if (!used.length) return project;
-  mkdirSync(dir, { recursive: true });
+  if (!used.length) {
+    rmSync(join(out, 'Core'), { recursive: true, force: true });
+    return project;
+  }
+  const dir = mkdtempSync(join(tmpdir(), 'ns-core-native-'));
   for (const m of used.filter((m) => m.kind === 'framework')) {
     const name = basename(m.path);
     cpSync(m.path, join(dir, name), { recursive: true, verbatimSymlinks: true });
@@ -115,6 +117,8 @@ export function coreNativeProject(core: string, imported: Set<string>, out: stri
     project.kitDependencies += `      - target: ${swift.module}\n`;
     project.appDependencies += `      - target: ${swift.module}\n`;
   }
+  mirror(dir, join(out, 'Core'));
+  rmSync(dir, { recursive: true, force: true });
   return project;
 }
 
