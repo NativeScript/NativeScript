@@ -530,16 +530,49 @@ declare class ARCamera extends NSObject implements NSCopying {
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
+	/**
+	 * @since 11.0
+	 * @deprecated 27.0
+	 */
 	projectPointOrientationViewportSize(point: interop.Reference<number>, orientation: UIInterfaceOrientation, viewportSize: CGSize): CGPoint;
 
+	/**
+	 * @since 27.0
+	 */
+	projectPointViewRotationAngleViewportSize(point: interop.Reference<number>, viewRotationAngle: number, viewportSize: CGSize): CGPoint;
+
+	/**
+	 * @since 11.0
+	 * @deprecated 27.0
+	 */
 	projectionMatrixForOrientationViewportSizeZNearZFar(orientation: UIInterfaceOrientation, viewportSize: CGSize, zNear: number, zFar: number): simd_float4x4;
 
 	/**
+	 * @since 27.0
+	 */
+	projectionMatrixForViewRotationAngleViewportSizeZNearZFar(viewRotationAngle: number, viewportSize: CGSize, zNear: number, zFar: number): simd_float4x4;
+
+	/**
 	 * @since 12.0
+	 * @deprecated 27.0
 	 */
 	unprojectPointOntoPlaneWithTransformOrientationViewportSize(point: CGPoint, planeTransform: simd_float4x4, orientation: UIInterfaceOrientation, viewportSize: CGSize): interop.Reference<number>;
 
+	/**
+	 * @since 27.0
+	 */
+	unprojectPointOntoPlaneWithTransformViewRotationAngleViewportSize(point: CGPoint, planeTransform: simd_float4x4, viewRotationAngle: number, viewportSize: CGSize): interop.Reference<number>;
+
+	/**
+	 * @since 11.0
+	 * @deprecated 27.0
+	 */
 	viewMatrixForOrientation(orientation: UIInterfaceOrientation): simd_float4x4;
+
+	/**
+	 * @since 27.0
+	 */
+	viewMatrixForViewRotationAngle(viewRotationAngle: number): simd_float4x4;
 }
 
 declare const enum ARCoachingGoal {
@@ -943,6 +976,11 @@ declare class ARFaceTrackingConfiguration extends ARConfiguration {
 	static new(): ARFaceTrackingConfiguration; // inherited from NSObject
 
 	/**
+	 * @since 27.0
+	 */
+	environmentTexturingEnabled: boolean;
+
+	/**
 	 * @since 13.0
 	 */
 	maximumNumberOfTrackedFaces: number;
@@ -1014,6 +1052,11 @@ declare class ARFrame extends NSObject implements NSCopying {
 
 	readonly lightEstimate: ARLightEstimate | null;
 
+	/**
+	 * @since 27.0
+	 */
+	readonly metadataObjects: NSArray<AVMetadataObject>;
+
 	readonly rawFeaturePoints: ARPointCloud | null;
 
 	/**
@@ -1040,7 +1083,16 @@ declare class ARFrame extends NSObject implements NSCopying {
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
+	/**
+	 * @since 11.0
+	 * @deprecated 27.0
+	 */
 	displayTransformForOrientationViewportSize(orientation: UIInterfaceOrientation, viewportSize: CGSize): CGAffineTransform;
+
+	/**
+	 * @since 27.0
+	 */
+	displayTransformForViewRotationAngleViewportSize(viewRotationAngle: number, viewportSize: CGSize): CGAffineTransform;
 
 	/**
 	 * @since 11.0
@@ -1177,6 +1229,11 @@ declare class ARGeoTrackingConfiguration extends ARConfiguration {
 	maximumNumberOfTrackedImages: number;
 
 	planeDetection: ARPlaneDetection;
+
+	/**
+	 * @since 27.0
+	 */
+	trackingObjects: NSSet<ARReferenceObject>;
 
 	wantsHDREnvironmentTextures: boolean;
 
@@ -1513,18 +1570,51 @@ declare class ARMeshGeometry extends NSObject implements NSSecureCoding {
 /**
  * @since 12.0
  */
-declare class ARObjectAnchor extends ARAnchor {
+declare class ARObjectAnchor extends ARAnchor implements ARTrackable {
 
 	static alloc(): ARObjectAnchor; // inherited from NSObject
 
 	static new(): ARObjectAnchor; // inherited from NSObject
 
 	readonly referenceObject: ARReferenceObject;
+
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly isTracked: boolean; // inherited from ARTrackable
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly  // inherited from NSObjectProtocol
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
 }
 
-/**
- * @since 12.0
- */
 declare class ARObjectScanningConfiguration extends ARConfiguration {
 
 	static alloc(): ARObjectScanningConfiguration; // inherited from NSObject
@@ -1849,6 +1939,10 @@ declare class ARReferenceObject extends NSObject implements NSSecureCoding {
 
 	static new(): ARReferenceObject; // inherited from NSObject
 
+	/**
+	 * @since 12.0
+	 * @deprecated 27.0
+	 */
 	static referenceObjectsInGroupNamedBundle(name: string, bundle: NSBundle | null): NSSet<ARReferenceObject> | null;
 
 	readonly center: interop.Reference<number>;
@@ -1857,14 +1951,24 @@ declare class ARReferenceObject extends NSObject implements NSSecureCoding {
 
 	name: string | null;
 
+	/**
+	 * @since 12.0
+	 * @deprecated 27.0
+	 */
 	readonly rawFeaturePoints: ARPointCloud;
 
 	/**
 	 * @since 13.0
+	 * @deprecated 27.0
 	 */
 	readonly resourceGroupName: string | null;
 
 	readonly scale: interop.Reference<number>;
+
+	/**
+	 * @since 27.0
+	 */
+	readonly usdzFile: NSURL | null;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
@@ -1874,14 +1978,26 @@ declare class ARReferenceObject extends NSObject implements NSSecureCoding {
 
 	encodeWithCoder(coder: NSCoder): void;
 
+	/**
+	 * @since 12.0
+	 * @deprecated 27.0
+	 */
 	exportObjectToURLPreviewImageError(url: NSURL, previewImage: UIImage | null, error?: interop.Reference<NSError>): boolean;
 
 	initWithArchiveURLError(url: NSURL, error?: interop.Reference<NSError>): this;
 
 	initWithCoder(coder: NSCoder): this;
 
+	/**
+	 * @since 12.0
+	 * @deprecated 27.0
+	 */
 	referenceObjectByApplyingTransform(transform: simd_float4x4): ARReferenceObject;
 
+	/**
+	 * @since 12.0
+	 * @deprecated 27.0
+	 */
 	referenceObjectByMergingObjectError(object: ARReferenceObject, error?: interop.Reference<NSError>): ARReferenceObject | null;
 }
 
@@ -2232,6 +2348,16 @@ declare class ARSession extends NSObject {
 	 */
 	readonly identifier: NSUUID;
 
+	/**
+	 * @since 27.0
+	 */
+	viewLayer: CALayer | null;
+
+	/**
+	 * @since 27.0
+	 */
+	readonly viewRotationAngle: number;
+
 	addAnchor(anchor: ARAnchor): void;
 
 	/**
@@ -2246,6 +2372,7 @@ declare class ARSession extends NSObject {
 
 	/**
 	 * @since 12.0
+	 * @deprecated 27.0
 	 */
 	createReferenceObjectWithTransformCenterExtentCompletionHandler(transform: simd_float4x4, center: interop.Reference<number>, extent: interop.Reference<number>, completionHandler: (p1: ARReferenceObject | null, p2: NSError | null) => void): void;
 
@@ -2317,6 +2444,11 @@ interface ARSessionObserver extends NSObjectProtocol {
 	 * @since 14.0
 	 */
 	sessionDidChangeGeoTrackingStatus?(session: ARSession, geoTrackingStatus: ARGeoTrackingStatus): void;
+
+	/**
+	 * @since 27.0
+	 */
+	sessionDidChangeViewRotationAngle?(session: ARSession, viewRotationAngle: number): void;
 
 	sessionDidFailWithError?(session: ARSession, error: NSError): void;
 
@@ -2683,6 +2815,11 @@ declare class ARWorldTrackingConfiguration extends ARConfiguration {
 	 * @since 13.4
 	 */
 	sceneReconstruction: ARSceneReconstruction;
+
+	/**
+	 * @since 27.0
+	 */
+	trackingObjects: NSSet<ARReferenceObject>;
 
 	/**
 	 * @since 13.0

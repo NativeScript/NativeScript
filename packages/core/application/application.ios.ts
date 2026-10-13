@@ -8,7 +8,7 @@ import { SDK_VERSION } from '../utils/constants';
 import { ios as iosUtils, dataSerialize, dataDeserialize } from '../utils/native-helper';
 import { ApplicationCommon } from './application-common';
 import { ApplicationEventData, SceneContinueUserActivityEventData, SceneEventData, SceneOpenURLContextsEventData, ScenePerformActionForShortcutItemEventData } from './application-interfaces';
-import { deliverShortcutItem, forwardContinueUserActivity, forwardOpenURLContexts, oneShotCompletion } from './scene-delegate-bridge';
+import { deliverShortcutItem, forwardContinueUserActivity, forwardOpenURLContexts, getLaunchUserActivities, oneShotCompletion } from './scene-delegate-bridge';
 import { Observable } from '../data/observable';
 import type { iOSApplication as IiOSApplication } from './application';
 import { Trace } from '../trace';
@@ -255,6 +255,104 @@ function getSceneConnectionData(connectionOptions: UISceneConnectionOptions): Re
 	return activity?.userInfo ? (dataDeserialize(activity.userInfo) as Record<string, any>) : undefined;
 }
 
+/**
+ * The activity type `openWindow()` uses to hand its data to the scene it opens.
+ */
+function getSceneActivityType(): string {
+	return `${NSBundle.mainBundle.bundleIdentifier}.scene`;
+}
+
+function deliverOpenURLContexts(windowScene: UIWindowScene, nativeWindow: IOSNativeWindow | undefined, URLContexts: NSSet<UIOpenURLContext>): void {
+	if (nativeWindow) {
+		nativeWindow.notify({
+			eventName: NativeWindowEvents.sceneOpenURLContexts,
+			object: nativeWindow,
+			window: nativeWindow,
+			scene: windowScene,
+			urlContexts: URLContexts,
+		} as SceneOpenURLContextsEventData);
+	}
+
+	Application.ios.notify({
+		eventName: NativeWindowEvents.sceneOpenURLContexts,
+		object: Application.ios,
+		window: nativeWindow,
+		scene: windowScene,
+		urlContexts: URLContexts,
+	} as SceneOpenURLContextsEventData);
+
+	forwardOpenURLContexts(Application.ios.delegate, UIApplication.sharedApplication, URLContexts);
+}
+
+function deliverUserActivity(windowScene: UIWindowScene, nativeWindow: IOSNativeWindow | undefined, userActivity: NSUserActivity): void {
+	if (nativeWindow) {
+		nativeWindow.notify({
+			eventName: NativeWindowEvents.sceneContinueUserActivity,
+			object: nativeWindow,
+			window: nativeWindow,
+			scene: windowScene,
+			userActivity,
+		} as SceneContinueUserActivityEventData);
+	}
+
+	Application.ios.notify({
+		eventName: NativeWindowEvents.sceneContinueUserActivity,
+		object: Application.ios,
+		window: nativeWindow,
+		scene: windowScene,
+		userActivity,
+	} as SceneContinueUserActivityEventData);
+
+	forwardContinueUserActivity(Application.ios.delegate, UIApplication.sharedApplication, userActivity);
+}
+
+function deliverShortcutAction(windowScene: UIWindowScene, nativeWindow: IOSNativeWindow | undefined, shortcutItem: UIApplicationShortcutItem, completionHandler: ((handled: boolean) => void) | undefined): void {
+	// Shared by the listeners and the legacy handler, so it has to tolerate several callers.
+	const deliver = oneShotCompletion(completionHandler);
+
+	if (nativeWindow) {
+		nativeWindow.notify({
+			eventName: NativeWindowEvents.scenePerformActionForShortcutItem,
+			object: nativeWindow,
+			window: nativeWindow,
+			scene: windowScene,
+			shortcutItem,
+			completionHandler: deliver,
+		} as ScenePerformActionForShortcutItemEventData);
+	}
+
+	Application.ios.notify({
+		eventName: NativeWindowEvents.scenePerformActionForShortcutItem,
+		object: Application.ios,
+		window: nativeWindow,
+		scene: windowScene,
+		shortcutItem,
+		completionHandler: deliver,
+	} as ScenePerformActionForShortcutItemEventData);
+
+	deliverShortcutItem(Application.ios.delegate, UIApplication.sharedApplication, shortcutItem, deliver);
+}
+
+/**
+ * UIKit hands the URLs, continuation activities and quick action that launched a scene only to
+ * `scene:willConnectToSession:options:`; the scene callbacks that carry them later never fire for
+ * the launch itself, so they are delivered here the same way.
+ */
+function deliverLaunchPayloads(windowScene: UIWindowScene, nativeWindow: IOSNativeWindow, connectionOptions: UISceneConnectionOptions): void {
+	if (connectionOptions?.URLContexts?.count) {
+		deliverOpenURLContexts(windowScene, nativeWindow, connectionOptions.URLContexts);
+	}
+
+	for (const userActivity of getLaunchUserActivities(connectionOptions, getSceneActivityType())) {
+		deliverUserActivity(windowScene, nativeWindow, userActivity);
+	}
+
+	if (connectionOptions?.shortcutItem) {
+		// A launch has no completion handler to report back to.
+		deliverShortcutAction(windowScene, nativeWindow, connectionOptions.shortcutItem, undefined);
+	}
+}
+
 @NativeClass
 class SceneDelegate extends UIResponder implements UIWindowSceneDelegate {
 	static ObjCProtocols = [UIWindowSceneDelegate];
@@ -351,6 +449,10 @@ class SceneDelegate extends UIResponder implements UIWindowSceneDelegate {
 				ios: { connectionOptions },
 			});
 		}
+
+		// After the content is resolved, matching the legacy order where `openURL` and friends
+		// arrived once launch had finished and the root view existed.
+		deliverLaunchPayloads(windowScene, nativeWindow, connectionOptions);
 	}
 
 	sceneDidBecomeActive(scene: UIScene): void {
@@ -505,80 +607,18 @@ class SceneDelegate extends UIResponder implements UIWindowSceneDelegate {
 
 	sceneOpenURLContexts(scene: UIScene, URLContexts: NSSet<UIOpenURLContext>): void {
 		const windowScene = scene as UIWindowScene;
-		const nativeWindow = Application.ios._getWindowForScene(windowScene);
 
-		if (nativeWindow) {
-			nativeWindow.notify({
-				eventName: NativeWindowEvents.sceneOpenURLContexts,
-				object: nativeWindow,
-				window: nativeWindow,
-				scene: windowScene,
-				urlContexts: URLContexts,
-			} as SceneOpenURLContextsEventData);
-		}
-
-		Application.ios.notify({
-			eventName: NativeWindowEvents.sceneOpenURLContexts,
-			object: Application.ios,
-			window: nativeWindow,
-			scene: windowScene,
-			urlContexts: URLContexts,
-		} as SceneOpenURLContextsEventData);
-
-		forwardOpenURLContexts(Application.ios.delegate, UIApplication.sharedApplication, URLContexts);
+		deliverOpenURLContexts(windowScene, Application.ios._getWindowForScene(windowScene), URLContexts);
 	}
 
 	sceneContinueUserActivity(scene: UIScene, userActivity: NSUserActivity): void {
 		const windowScene = scene as UIWindowScene;
-		const nativeWindow = Application.ios._getWindowForScene(windowScene);
 
-		if (nativeWindow) {
-			nativeWindow.notify({
-				eventName: NativeWindowEvents.sceneContinueUserActivity,
-				object: nativeWindow,
-				window: nativeWindow,
-				scene: windowScene,
-				userActivity,
-			} as SceneContinueUserActivityEventData);
-		}
-
-		Application.ios.notify({
-			eventName: NativeWindowEvents.sceneContinueUserActivity,
-			object: Application.ios,
-			window: nativeWindow,
-			scene: windowScene,
-			userActivity,
-		} as SceneContinueUserActivityEventData);
-
-		forwardContinueUserActivity(Application.ios.delegate, UIApplication.sharedApplication, userActivity);
+		deliverUserActivity(windowScene, Application.ios._getWindowForScene(windowScene), userActivity);
 	}
 
 	windowScenePerformActionForShortcutItemCompletionHandler(windowScene: UIWindowScene, shortcutItem: UIApplicationShortcutItem, completionHandler: (p1: boolean) => void): void {
-		const nativeWindow = Application.ios._getWindowForScene(windowScene);
-		// Shared by the listeners and the legacy handler, so it has to tolerate several callers.
-		const deliver = oneShotCompletion(completionHandler);
-
-		if (nativeWindow) {
-			nativeWindow.notify({
-				eventName: NativeWindowEvents.scenePerformActionForShortcutItem,
-				object: nativeWindow,
-				window: nativeWindow,
-				scene: windowScene,
-				shortcutItem,
-				completionHandler: deliver,
-			} as ScenePerformActionForShortcutItemEventData);
-		}
-
-		Application.ios.notify({
-			eventName: NativeWindowEvents.scenePerformActionForShortcutItem,
-			object: Application.ios,
-			window: nativeWindow,
-			scene: windowScene,
-			shortcutItem,
-			completionHandler: deliver,
-		} as ScenePerformActionForShortcutItemEventData);
-
-		deliverShortcutItem(Application.ios.delegate, UIApplication.sharedApplication, shortcutItem, deliver);
+		deliverShortcutAction(windowScene, Application.ios._getWindowForScene(windowScene), shortcutItem, completionHandler);
 	}
 }
 // ensure available globally
@@ -1550,7 +1590,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 				try {
 					request = UISceneSessionActivationRequest.requestWithRole(UIWindowSceneSessionRoleApplication);
 
-					const activity = NSUserActivity.alloc().initWithActivityType(`${NSBundle.mainBundle.bundleIdentifier}.scene`);
+					const activity = NSUserActivity.alloc().initWithActivityType(getSceneActivityType());
 					activity.userInfo = dataSerialize(options?.data ?? {});
 					request.userActivity = activity;
 
@@ -1737,7 +1777,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 		}
 
 		// Create user activity for the new scene
-		const userActivity = NSUserActivity.alloc().initWithActivityType(`${NSBundle.mainBundle.bundleIdentifier}.scene`);
+		const userActivity = NSUserActivity.alloc().initWithActivityType(getSceneActivityType());
 		userActivity.userInfo = dataSerialize(data ?? {});
 
 		// Use the legacy API

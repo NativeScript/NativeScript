@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { buildOpenURLOptions, deliverShortcutItem, forwardContinueUserActivity, forwardOpenURLContexts, oneShotCompletion } from './scene-delegate-bridge';
+import { buildOpenURLOptions, deliverShortcutItem, forwardContinueUserActivity, forwardOpenURLContexts, getLaunchUserActivities, oneShotCompletion } from './scene-delegate-bridge';
 
 const SOURCE_APPLICATION_KEY = 'UIApplicationOpenURLOptionsSourceApplicationKey';
 const ANNOTATION_KEY = 'UIApplicationOpenURLOptionsAnnotationKey';
@@ -204,6 +204,41 @@ describe('forwardContinueUserActivity', () => {
 	});
 });
 
+describe('getLaunchUserActivities', () => {
+	const SCENE_ACTIVITY_TYPE = 'com.example.app.scene';
+
+	function createConnectionOptions(activities: any[]) {
+		return {
+			userActivities: {
+				count: activities.length,
+				allObjects: {
+					count: activities.length,
+					objectAtIndex: (index: number) => activities[index],
+				},
+			},
+		} as any;
+	}
+
+	it('returns every activity the scene was launched with', () => {
+		const browsing = { activityType: 'NSUserActivityTypeBrowsingWeb' };
+		const handoff = { activityType: 'com.example.handoff' };
+
+		expect(getLaunchUserActivities(createConnectionOptions([browsing, handoff]), SCENE_ACTIVITY_TYPE)).toEqual([browsing, handoff]);
+	});
+
+	it('leaves out the activity openWindow() uses to carry window data', () => {
+		const browsing = { activityType: 'NSUserActivityTypeBrowsingWeb' };
+
+		expect(getLaunchUserActivities(createConnectionOptions([{ activityType: SCENE_ACTIVITY_TYPE }, browsing]), SCENE_ACTIVITY_TYPE)).toEqual([browsing]);
+	});
+
+	it('returns nothing when the scene was launched without activities', () => {
+		expect(getLaunchUserActivities(createConnectionOptions([]), SCENE_ACTIVITY_TYPE)).toEqual([]);
+		expect(getLaunchUserActivities({} as any, SCENE_ACTIVITY_TYPE)).toEqual([]);
+		expect(getLaunchUserActivities(undefined, SCENE_ACTIVITY_TYPE)).toEqual([]);
+	});
+});
+
 describe('oneShotCompletion', () => {
 	it('delivers only the first result', () => {
 		const completionHandler = vi.fn();
@@ -221,6 +256,13 @@ describe('oneShotCompletion', () => {
 
 		expect(deliver.delivered).toBe(false);
 		deliver(true);
+		expect(deliver.delivered).toBe(true);
+	});
+
+	it('accepts a launch that has no completion handler to report to', () => {
+		const deliver = oneShotCompletion(undefined);
+
+		expect(() => deliver(true)).not.toThrow();
 		expect(deliver.delivered).toBe(true);
 	});
 });

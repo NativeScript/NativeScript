@@ -71,6 +71,11 @@ declare class PKCanvasView extends UIScrollView implements PKToolPickerObserver 
 
 	rulerActive: boolean;
 
+	/**
+	 * @since 27.0
+	 */
+	selectedStrokeIDs: NSSet<NSUUID>;
+
 	tool: PKTool;
 
 	readonly debugDescription: string; // inherited from NSObjectProtocol
@@ -137,6 +142,8 @@ interface PKCanvasViewDelegate extends NSObjectProtocol, UIScrollViewDelegate {
 	canvasViewDidFinishRendering?(canvasView: PKCanvasView): void;
 
 	canvasViewDrawingDidChange?(canvasView: PKCanvasView): void;
+
+	canvasViewSelectionDidChange?(canvasView: PKCanvasView): void;
 }
 declare var PKCanvasViewDelegate: {
 
@@ -162,7 +169,27 @@ declare const enum PKContentVersion {
 
 	Version4 = 4,
 
-	VersionLatest = 4
+	Version5 = 5,
+
+	VersionLatest = 5
+}
+
+/**
+ * @since 27.0
+ */
+declare class PKConvertedBezierPoint extends NSObject {
+
+	static alloc(): PKConvertedBezierPoint; // inherited from NSObject
+
+	static new(): PKConvertedBezierPoint; // inherited from NSObject
+
+	readonly bezierSegmentIndex: number;
+
+	readonly index: number;
+
+	readonly location: CGPoint;
+
+	readonly pointCount: number;
 }
 
 /**
@@ -209,6 +236,11 @@ declare class PKDrawing extends NSObject implements NSCopying, NSSecureCoding {
 	drawingByAppendingStrokes(strokes: NSArray<PKStroke> | PKStroke[]): PKDrawing;
 
 	drawingByApplyingTransform(transform: CGAffineTransform): PKDrawing;
+
+	/**
+	 * @since 27.0
+	 */
+	drawingByErasingStrokePathMaskTransform(eraserPath: PKStrokePath, mask: UIBezierPath | null, transform: CGAffineTransform): PKDrawing;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -480,9 +512,24 @@ declare class PKStroke extends NSObject implements NSCopying {
 	readonly renderBounds: CGRect;
 
 	/**
+	 * @since 27.0
+	 */
+	readonly renderGroupID: NSUUID | null;
+
+	/**
+	 * @since 27.0
+	 */
+	readonly renderState: PKStrokeRenderState | null;
+
+	/**
 	 * @since 17.0
 	 */
 	readonly requiredContentVersion: PKContentVersion;
+
+	/**
+	 * @since 27.0
+	 */
+	readonly strokeID: NSUUID;
 
 	readonly transform: CGAffineTransform;
 
@@ -493,6 +540,11 @@ declare class PKStroke extends NSObject implements NSCopying {
 	 */
 	constructor(o: { ink: PKInk; strokePath: PKStrokePath; transform: CGAffineTransform; mask: UIBezierPath | null; randomSeed: number; });
 
+	/**
+	 * @since 27.0
+	 */
+	constructor(o: { ink: PKInk; strokePath: PKStrokePath; transform: CGAffineTransform; mask: UIBezierPath | null; randomSeed: number; strokeID: NSUUID; renderGroupID: NSUUID | null; renderState: PKStrokeRenderState | null; });
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	initWithInkStrokePathTransformMask(ink: PKInk, strokePath: PKStrokePath, transform: CGAffineTransform, mask: UIBezierPath | null): this;
@@ -501,6 +553,16 @@ declare class PKStroke extends NSObject implements NSCopying {
 	 * @since 16.0
 	 */
 	initWithInkStrokePathTransformMaskRandomSeed(ink: PKInk, strokePath: PKStrokePath, transform: CGAffineTransform, mask: UIBezierPath | null, randomSeed: number): this;
+
+	/**
+	 * @since 27.0
+	 */
+	initWithInkStrokePathTransformMaskRandomSeedStrokeIDRenderGroupIDRenderState(ink: PKInk, strokePath: PKStrokePath, transform: CGAffineTransform, mask: UIBezierPath | null, randomSeed: number, strokeID: NSUUID, renderGroupID: NSUUID | null, renderState: PKStrokeRenderState | null): this;
+
+	/**
+	 * @since 27.0
+	 */
+	substrokeWithRange(range: PKFloatRange): PKStroke;
 }
 
 /**
@@ -512,12 +574,32 @@ declare class PKStrokePath extends NSObject implements NSCopying {
 
 	static new(): PKStrokePath; // inherited from NSObject
 
+	/**
+	 * @since 27.0
+	 */
+	readonly bezierRepresentation: any;
+
 	readonly count: number;
 
 	readonly creationDate: Date;
+
+	/**
+	 * @since 27.0
+	 */
+	readonly strokePathID: NSUUID;
 	[index: number]: PKStrokePoint;
 
+	/**
+	 * @since 27.0
+	 */
+	constructor(o: { bezierPath: any; creationDate: Date; pointProvider: (p1: PKConvertedBezierPoint) => PKStrokePoint; });
+
 	constructor(o: { controlPoints: NSArray<PKStrokePoint> | PKStrokePoint[]; creationDate: Date; });
+
+	/**
+	 * @since 27.0
+	 */
+	constructor(o: { controlPoints: NSArray<PKStrokePoint> | PKStrokePoint[]; creationDate: Date; strokePathID: NSUUID; });
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
@@ -527,7 +609,17 @@ declare class PKStrokePath extends NSObject implements NSCopying {
 
 	enumerateInterpolatedPointsInRangeStrideByTimeUsingBlock(range: PKFloatRange, timeStep: number, block: (p1: PKStrokePoint, p2: interop.Pointer | interop.Reference<boolean> | null) => void): void;
 
+	/**
+	 * @since 27.0
+	 */
+	initWithBezierPathCreationDatePointProvider(bezierPath: any, creationDate: Date, pointProvider: (p1: PKConvertedBezierPoint) => PKStrokePoint): this;
+
 	initWithControlPointsCreationDate(controlPoints: NSArray<PKStrokePoint> | PKStrokePoint[], creationDate: Date): this;
+
+	/**
+	 * @since 27.0
+	 */
+	initWithControlPointsCreationDateStrokePathID(controlPoints: NSArray<PKStrokePoint> | PKStrokePoint[], creationDate: Date, strokePathID: NSUUID): this;
 
 	interpolatedLocationAt(parametricValue: number): CGPoint;
 
@@ -540,6 +632,11 @@ declare class PKStrokePath extends NSObject implements NSCopying {
 	parametricValueOffsetByTime(parametricValue: number, timeStep: number): number;
 
 	pointAtIndex(i: number): PKStrokePoint;
+
+	/**
+	 * @since 27.0
+	 */
+	subpathWithRange(range: PKFloatRange): PKStrokePath;
 }
 
 /**
@@ -556,6 +653,11 @@ declare class PKStrokePoint extends NSObject implements NSCopying {
 	readonly azimuth: number;
 
 	readonly force: number;
+
+	/**
+	 * @since 27.0
+	 */
+	readonly lateralJitter: number;
 
 	readonly location: CGPoint;
 
@@ -577,17 +679,61 @@ declare class PKStrokePoint extends NSObject implements NSCopying {
 
 	constructor(o: { location: CGPoint; timeOffset: number; size: CGSize; opacity: number; force: number; azimuth: number; altitude: number; });
 
+	/**
+	 * @since 17.0
+	 */
 	constructor(o: { location: CGPoint; timeOffset: number; size: CGSize; opacity: number; force: number; azimuth: number; altitude: number; secondaryScale: number; });
 
+	/**
+	 * @since 26.0
+	 */
 	constructor(o: { location: CGPoint; timeOffset: number; size: CGSize; opacity: number; force: number; azimuth: number; altitude: number; secondaryScale: number; threshold: number; });
+
+	/**
+	 * @since 27.0
+	 */
+	constructor(o: { location: CGPoint; timeOffset: number; size: CGSize; opacity: number; force: number; azimuth: number; altitude: number; secondaryScale: number; threshold: number; lateralJitter: number; });
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
 	initWithLocationTimeOffsetSizeOpacityForceAzimuthAltitude(location: CGPoint, timeOffset: number, size: CGSize, opacity: number, force: number, azimuth: number, altitude: number): this;
 
+	/**
+	 * @since 17.0
+	 */
 	initWithLocationTimeOffsetSizeOpacityForceAzimuthAltitudeSecondaryScale(location: CGPoint, timeOffset: number, size: CGSize, opacity: number, force: number, azimuth: number, altitude: number, secondaryScale: number): this;
 
+	/**
+	 * @since 26.0
+	 */
 	initWithLocationTimeOffsetSizeOpacityForceAzimuthAltitudeSecondaryScaleThreshold(location: CGPoint, timeOffset: number, size: CGSize, opacity: number, force: number, azimuth: number, altitude: number, secondaryScale: number, threshold: number): this;
+
+	/**
+	 * @since 27.0
+	 */
+	initWithLocationTimeOffsetSizeOpacityForceAzimuthAltitudeSecondaryScaleThresholdLateralJitter(location: CGPoint, timeOffset: number, size: CGSize, opacity: number, force: number, azimuth: number, altitude: number, secondaryScale: number, threshold: number, lateralJitter: number): this;
+}
+
+/**
+ * @since 27.0
+ */
+declare class PKStrokeRenderState extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): PKStrokeRenderState; // inherited from NSObject
+
+	static new(): PKStrokeRenderState; // inherited from NSObject
+
+	grainOffset: CGPoint;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
 }
 
 /**

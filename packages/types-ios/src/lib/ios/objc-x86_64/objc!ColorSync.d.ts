@@ -53,6 +53,11 @@ interface ColorSyncMD5 {
 declare var ColorSyncMD5: interop.StructType<ColorSyncMD5>;
 
 /**
+ * @since 27.0
+ */
+declare function ColorSyncProfileContainsHeadroomAdaptiveGainCurve(profile: any): boolean;
+
+/**
  * @since 16.0
  */
 declare function ColorSyncProfileContainsTag(prof: any, signature: string): boolean;
@@ -73,6 +78,16 @@ declare function ColorSyncProfileCopyDescriptionString(prof: any): string | null
 declare function ColorSyncProfileCopyHeader(prof: any): NSData;
 
 /**
+ * @since 27.0
+ */
+declare function ColorSyncProfileCopyHeadroomAdaptiveGainCurveInfoDictionary(profile: any): NSDictionary<any, any> | null;
+
+/**
+ * @since 27.0
+ */
+declare function ColorSyncProfileCopyHeadroomAdaptiveGainCurveMetadata(profile: any): NSData | null;
+
+/**
  * @since 16.0
  */
 declare function ColorSyncProfileCopyTag(prof: any, signature: string): NSData | null;
@@ -86,6 +101,16 @@ declare function ColorSyncProfileCopyTagSignatures(prof: any): NSArray<any> | nu
  * @since 16.0
  */
 declare function ColorSyncProfileCreate(data: NSData, error: interop.Pointer | interop.Reference<NSError | null> | ArrayBufferLike | ArrayBufferView | null): any | null;
+
+/**
+ * @since 27.0
+ */
+declare function ColorSyncProfileCreateCopyWithHeadroomAdaptiveGainCurveInfoDictionary(profile: any, info: NSDictionary<any, any>): any | null;
+
+/**
+ * @since 27.0
+ */
+declare function ColorSyncProfileCreateCopyWithHeadroomAdaptiveGainCurveMetadata(profile: any, data: NSData, options: NSDictionary<any, any> | null): any | null;
 
 /**
  * @since 16.0
@@ -220,6 +245,26 @@ declare var kColorSyncAdobeRGB1998Profile: string;
 declare const kColorSyncAlphaInfoMask: number;
 
 /**
+ * @since 27.0
+ */
+declare var kColorSyncAlternateCurveCount: string;
+
+/**
+ * @since 27.0
+ */
+declare var kColorSyncAlternateCurveHeadroomStops: string;
+
+/**
+ * @since 27.0
+ */
+declare var kColorSyncAlternateGainCurveInfo: string;
+
+/**
+ * @since 27.0
+ */
+declare var kColorSyncBaselineHeadroomStops: string;
+
+/**
  * @since 16.0
  */
 declare var kColorSyncBestQuality: string;
@@ -240,6 +285,71 @@ declare const kColorSyncByteOrder32Little: number;
 declare const kColorSyncByteOrderDefault: number;
 
 declare const kColorSyncByteOrderMask: number;
+
+/**
+ * @since 27.0
+ */
+declare var kColorSyncCoefficientBlue: string;
+
+/**
+ * @since 27.0
+ */
+declare var kColorSyncCoefficientComponent: string;
+
+/**
+ * @since 27.0
+ */
+declare var kColorSyncCoefficientGreen: string;
+
+/**
+ * @since 27.0
+ */
+declare var kColorSyncCoefficientMaxRGB: string;
+
+/**
+ * @since 27.0
+ */
+declare var kColorSyncCoefficientMinRGB: string;
+
+/**
+ * @since 27.0
+ */
+declare var kColorSyncCoefficientRed: string;
+
+/**
+ * @since 27.0
+ */
+declare var kColorSyncCommonComponentMixing: string;
+
+/**
+ * @since 27.0
+ */
+declare var kColorSyncCommonCurveParameters: string;
+
+/**
+ * @since 27.0
+ */
+declare var kColorSyncComponentCoefficients: string;
+
+/**
+ * @since 27.0
+ */
+declare var kColorSyncComponentMix: string;
+
+/**
+ * @since 27.0
+ */
+declare var kColorSyncControlPointSlopes: string;
+
+/**
+ * @since 27.0
+ */
+declare var kColorSyncControlPointsX: string;
+
+/**
+ * @since 27.0
+ */
+declare var kColorSyncControlPointsY: string;
 
 /**
  * @since 16.0
@@ -322,6 +432,11 @@ declare var kColorSyncConvertQuality: string;
 declare var kColorSyncConvertUseExtendedRange: string;
 
 /**
+ * @since 27.0
+ */
+declare var kColorSyncCustomHDRReferenceWhite: string;
+
+/**
  * @since 16.0
  */
 declare var kColorSyncDCIP3Profile: string;
@@ -350,6 +465,11 @@ declare var kColorSyncExtendedRange: string;
  * @since 16.0
  */
 declare var kColorSyncFixedPointRange: string;
+
+/**
+ * @since 27.0
+ */
+declare var kColorSyncGainCurveChromaticities: string;
 
 /**
  * @since 16.0
@@ -392,6 +512,26 @@ declare var kColorSyncHDRDerivative: string;
 declare var kColorSyncHLGDerivative: string;
 
 /**
+ * @since 27.0
+ */
+declare var kColorSyncHeadroomAdaptiveGainCurveApplicationVersion: string;
+
+/**
+ * @since 27.0
+ */
+declare var kColorSyncHeadroomAdaptiveGainCurveColorVolumeTransform: string;
+
+/**
+ * @since 27.0
+ */
+declare var kColorSyncHeadroomAdaptiveGainCurveInfo: string;
+
+/**
+ * @since 27.0
+ */
+declare var kColorSyncHeadroomAdaptiveToneMappingInfo: string;
+
+/**
  * @since 16.0
  */
 declare var kColorSyncITUR2020Profile: string;
@@ -400,6 +540,16 @@ declare var kColorSyncITUR2020Profile: string;
  * @since 16.0
  */
 declare var kColorSyncITUR709Profile: string;
+
+/**
+ * @since 27.0
+ */
+declare var kColorSyncInterpolateSlopes: string;
+
+/**
+ * @since 27.0
+ */
+declare var kColorSyncMaxControlPointIndex: string;
 
 /**
  * @since 16.0

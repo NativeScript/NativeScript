@@ -713,6 +713,11 @@ declare var HKCategoryTypeIdentifierAudioExposureEvent: string;
 declare var HKCategoryTypeIdentifierBladderIncontinence: string;
 
 /**
+ * @since 27.0
+ */
+declare var HKCategoryTypeIdentifierBleedingAfterMenopause: string;
+
+/**
  * @since 18.0
  */
 declare var HKCategoryTypeIdentifierBleedingAfterPregnancy: string;
@@ -896,6 +901,11 @@ declare var HKCategoryTypeIdentifierLowerBackPain: string;
  * @since 14.0
  */
 declare var HKCategoryTypeIdentifierMemoryLapse: string;
+
+/**
+ * @since 27.0
+ */
+declare var HKCategoryTypeIdentifierMenopausalState: string;
 
 /**
  * @since 9.0
@@ -1140,6 +1150,18 @@ declare const enum HKCategoryValueHeadphoneAudioExposureEvent {
 declare const enum HKCategoryValueLowCardioFitnessEvent {
 
 	LowFitness = 1
+}
+
+/**
+ * @since 27.0
+ */
+declare const enum HKCategoryValueMenopausalState {
+
+	Menopause = 1,
+
+	Perimenopause = 2,
+
+	None = 3
 }
 
 /**
@@ -2358,6 +2380,11 @@ declare class HKHealthStore extends NSObject {
 	fitzpatrickSkinTypeWithError(error?: interop.Reference<NSError>): HKFitzpatrickSkinTypeObject | null;
 
 	/**
+	 * @since 27.0
+	 */
+	getEarliestAuthorizedSampleDateForTypesCompletion(types: NSSet<HKObjectType>, completion: (p1: NSDictionary<HKObjectType, Date> | null, p2: NSError | null) => void): void;
+
+	/**
 	 * @since 12.0
 	 */
 	getRequestStatusForAuthorizationToShareTypesReadTypesCompletion(typesToShare: NSSet<HKSampleType>, typesToRead: NSSet<HKObjectType>, completion: (p1: HKAuthorizationRequestStatus, p2: NSError | null) => void): void;
@@ -2615,6 +2642,18 @@ declare class HKLiveWorkoutDataSource extends NSObject {
 	enableCollectionForTypePredicate(quantityType: HKQuantityType, predicate: NSPredicate | null): void;
 
 	initWithHealthStoreWorkoutConfiguration(healthStore: HKHealthStore, configuration: HKWorkoutConfiguration | null): this;
+}
+
+/**
+ * @since 27.0
+ */
+declare class HKLiveWorkoutZoneUpdate extends NSObject {
+
+	static alloc(): HKLiveWorkoutZoneUpdate; // inherited from NSObject
+
+	static new(): HKLiveWorkoutZoneUpdate; // inherited from NSObject
+
+	readonly lastSampleProcessedDate: Date | null;
 }
 
 /**
@@ -4230,6 +4269,11 @@ declare var HKQuantityTypeIdentifierHeartRate: string;
  * @since 16.0
  */
 declare var HKQuantityTypeIdentifierHeartRateRecoveryOneMinute: string;
+
+/**
+ * @since 27.0
+ */
+declare var HKQuantityTypeIdentifierHeartRateVariabilityRMSSD: string;
 
 /**
  * @since 11.0
@@ -6384,6 +6428,10 @@ declare const enum HKWorkoutActivityType {
 	Transition = 83,
 
 	UnderwaterDiving = 84,
+
+	Rest = 2998,
+
+	Group = 2999,
 
 	Other = 3000
 }

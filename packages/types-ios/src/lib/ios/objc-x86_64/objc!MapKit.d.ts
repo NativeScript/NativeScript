@@ -3634,6 +3634,11 @@ declare var MKPointOfInterestCategoryATM: string;
 declare var MKPointOfInterestCategoryAirport: string;
 
 /**
+ * @since 27.0
+ */
+declare var MKPointOfInterestCategoryAirportTerminal: string;
+
+/**
  * @since 13.0
  */
 declare var MKPointOfInterestCategoryAmusementPark: string;
@@ -3647,6 +3652,11 @@ declare var MKPointOfInterestCategoryAnimalService: string;
  * @since 13.0
  */
 declare var MKPointOfInterestCategoryAquarium: string;
+
+/**
+ * @since 27.0
+ */
+declare var MKPointOfInterestCategoryAutomotiveDealership: string;
 
 /**
  * @since 18.0
@@ -3712,6 +3722,11 @@ declare var MKPointOfInterestCategoryCarRental: string;
  * @since 18.0
  */
 declare var MKPointOfInterestCategoryCastle: string;
+
+/**
+ * @since 27.0
+ */
+declare var MKPointOfInterestCategoryCommercialVehicleDealership: string;
 
 /**
  * @since 18.0
@@ -3789,6 +3804,11 @@ declare var MKPointOfInterestCategoryHospital: string;
 declare var MKPointOfInterestCategoryHotel: string;
 
 /**
+ * @since 27.0
+ */
+declare var MKPointOfInterestCategoryInformationBooth: string;
+
+/**
  * @since 18.0
  */
 declare var MKPointOfInterestCategoryKayaking: string;
@@ -3822,6 +3842,11 @@ declare var MKPointOfInterestCategoryMarina: string;
  * @since 18.0
  */
 declare var MKPointOfInterestCategoryMiniGolf: string;
+
+/**
+ * @since 27.0
+ */
+declare var MKPointOfInterestCategoryMotorbikeDealership: string;
 
 /**
  * @since 13.0
@@ -3869,6 +3894,11 @@ declare var MKPointOfInterestCategoryParking: string;
 declare var MKPointOfInterestCategoryPharmacy: string;
 
 /**
+ * @since 27.0
+ */
+declare var MKPointOfInterestCategoryPicnicArea: string;
+
+/**
  * @since 18.0
  */
 declare var MKPointOfInterestCategoryPlanetarium: string;
@@ -3894,6 +3924,16 @@ declare var MKPointOfInterestCategoryPublicTransport: string;
 declare var MKPointOfInterestCategoryRVPark: string;
 
 /**
+ * @since 27.0
+ */
+declare var MKPointOfInterestCategoryRangerStation: string;
+
+/**
+ * @since 27.0
+ */
+declare var MKPointOfInterestCategoryRestArea: string;
+
+/**
  * @since 13.0
  */
 declare var MKPointOfInterestCategoryRestaurant: string;
@@ -3907,6 +3947,11 @@ declare var MKPointOfInterestCategoryRestroom: string;
  * @since 18.0
  */
 declare var MKPointOfInterestCategoryRockClimbing: string;
+
+/**
+ * @since 27.0
+ */
+declare var MKPointOfInterestCategoryScenicView: string;
 
 /**
  * @since 13.0
@@ -3969,9 +4014,19 @@ declare var MKPointOfInterestCategoryTennis: string;
 declare var MKPointOfInterestCategoryTheater: string;
 
 /**
+ * @since 27.0
+ */
+declare var MKPointOfInterestCategoryTicketOffice: string;
+
+/**
  * @since 13.0
  */
 declare var MKPointOfInterestCategoryUniversity: string;
+
+/**
+ * @since 27.0
+ */
+declare var MKPointOfInterestCategoryVisitorCenter: string;
 
 /**
  * @since 18.0

@@ -36,9 +36,13 @@ declare const DYLD_CHAINED_PTR_ARM64E_SEGMENTED: number;
 
 declare const DYLD_CHAINED_PTR_ARM64E_SHARED_CACHE: number;
 
+declare const DYLD_CHAINED_PTR_ARM64E_SHARED_CACHE_V3: number;
+
 declare const DYLD_CHAINED_PTR_ARM64E_USERLAND: number;
 
 declare const DYLD_CHAINED_PTR_ARM64E_USERLAND24: number;
+
+declare const DYLD_CHAINED_PTR_SHARED_CACHE_V2: number;
 
 declare const DYLD_CHAINED_PTR_START_LAST: number;
 
@@ -51,13 +55,6 @@ declare const DYLD_CHAINED_PTR_X86_64_KERNEL_CACHE: number;
 declare const DYLD_CHAINED_STARTS_USE_FILE_OFFSET: number;
 
 declare const DYLD_CHAINED_STARTS_USE_VM_OFFSET: number;
-
-interface NSLinkEditErrorHandlers {
-	undefined: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null) => void>;
-	multiple: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null, p2: interop.Pointer | interop.Reference<any> | null, p3: interop.Pointer | interop.Reference<any> | null) => interop.Pointer | interop.Reference<any> | null>;
-	linkEdit: interop.FunctionReference<(p1: NSLinkEditErrors, p2: number, p3: interop.Pointer | interop.Reference<any> | null, p4: interop.Pointer | interop.Reference<any> | null) => void>;
-}
-declare var NSLinkEditErrorHandlers: interop.StructType<NSLinkEditErrorHandlers>;
 
 declare const enum NSLinkEditErrors {
 
@@ -205,7 +202,13 @@ declare const UNWIND_ARM64_MODE_FRAME: number;
 
 declare const UNWIND_ARM64_MODE_FRAMELESS: number;
 
+declare const UNWIND_ARM64_MODE_FRAME_PAUTH_LR: number;
+
 declare const UNWIND_ARM64_MODE_MASK: number;
+
+declare const UNWIND_ARM64_PAUTH_LR_OFFSET_MASK: number;
+
+declare const UNWIND_ARM64_PAUTH_LR_OFFSET_SHIFT: number;
 
 declare const UNWIND_ARM_DWARF_SECTION_OFFSET: number;
 
@@ -323,6 +326,11 @@ declare const UNWIND_X86_REG_NONE: number;
  * @since 2.0
  */
 declare function _NSGetExecutablePath(buf: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, bufsize: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
+
+/**
+ * @since 16.0
+ */
+declare function _dyld_get_dlopen_image_header(handle: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<mach_header> | null;
 
 /**
  * @since 2.0
@@ -649,6 +657,31 @@ interface dyld_chained_ptr_arm64e_shared_cache_rebase {
 	auth: number;
 }
 declare var dyld_chained_ptr_arm64e_shared_cache_rebase: interop.StructType<dyld_chained_ptr_arm64e_shared_cache_rebase>;
+
+interface dyld_chained_ptr_arm64e_shared_cache_v3_auth_rebase {
+	offsetFromSharedCacheBase: number;
+	diversity: number;
+	addrDiv: number;
+	key: number;
+	next: number;
+	unused: number;
+	auth: number;
+}
+declare var dyld_chained_ptr_arm64e_shared_cache_v3_auth_rebase: interop.StructType<dyld_chained_ptr_arm64e_shared_cache_v3_auth_rebase>;
+
+interface dyld_chained_ptr_arm64e_shared_cache_v3_rebase {
+	pointerValue: number;
+	next: number;
+	unused: number;
+}
+declare var dyld_chained_ptr_arm64e_shared_cache_v3_rebase: interop.StructType<dyld_chained_ptr_arm64e_shared_cache_v3_rebase>;
+
+interface dyld_chained_ptr_shared_cache_v2_rebase {
+	runtimeOffset: number;
+	next: number;
+	high8: number;
+}
+declare var dyld_chained_ptr_shared_cache_v2_rebase: interop.StructType<dyld_chained_ptr_shared_cache_v2_rebase>;
 
 interface dyld_chained_starts_in_image {
 	seg_count: number;

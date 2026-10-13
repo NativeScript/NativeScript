@@ -458,6 +458,76 @@ declare class GCControllerElement extends NSObject {
 }
 
 /**
+ * @since 27.0
+ */
+declare const enum GCControllerHomeButtonSettingCustomizationStatus {
+
+	Default = 0,
+
+	User = 1
+}
+
+/**
+ * @since 27.0
+ */
+declare const enum GCControllerHomeButtonSettingInAppAction {
+
+	Unavailable = -1,
+
+	Default = 0,
+
+	Defer = 1,
+
+	Disabled = 9223372036854775807
+}
+
+/**
+ * @since 27.0
+ */
+declare const enum GCControllerHomeButtonSettingSystemAction {
+
+	Unavailable = -1,
+
+	Other = 0,
+
+	OpenCurrentApplication = 1,
+
+	Disabled = 9223372036854775807
+}
+
+/**
+ * @since 27.0
+ */
+declare const enum GCControllerHomeButtonSettingsCustomizationActivity {
+
+	CustomizeSystemActionActivity = 1,
+
+	CustomizeInAppActionActivity = 2
+}
+
+/**
+ * @since 27.0
+ */
+declare class GCControllerHomeButtonSettingsManager extends NSObject {
+
+	static alloc(): GCControllerHomeButtonSettingsManager; // inherited from NSObject
+
+	static new(): GCControllerHomeButtonSettingsManager; // inherited from NSObject
+
+	settingsDidChangeHandler: (p1: GCControllerHomeButtonSettingsManager) => void | null;
+
+	constructor(o: { queue: NSObject & OS_dispatch_queue | null; });
+
+	initWithQueue(queue: NSObject & OS_dispatch_queue | null): this;
+
+	openControllerHomeButtonSettingsForActivityError(activity: GCControllerHomeButtonSettingsCustomizationActivity, error?: interop.Reference<NSError>): boolean;
+
+	readControllerHomeButtonInAppActionWithError(customization: interop.Pointer | interop.Reference<GCControllerHomeButtonSettingCustomizationStatus> | ArrayBufferLike | ArrayBufferView | null, error?: interop.Reference<NSError>): GCControllerHomeButtonSettingInAppAction;
+
+	readControllerHomeButtonSystemActionWithError(customization: interop.Pointer | interop.Reference<GCControllerHomeButtonSettingCustomizationStatus> | ArrayBufferLike | ArrayBufferView | null, error?: interop.Reference<NSError>): GCControllerHomeButtonSettingSystemAction;
+}
+
+/**
  * @since 17.0
  */
 declare class GCControllerInputState extends NSObject implements GCDevicePhysicalInputState {
@@ -3781,9 +3851,9 @@ declare const enum GCSystemGestureState {
 
 	Enabled = 0,
 
-	AlwaysReceive = 1,
+	Disabled = 2,
 
-	Disabled = 2
+	AlwaysReceive = 1
 }
 
 /**

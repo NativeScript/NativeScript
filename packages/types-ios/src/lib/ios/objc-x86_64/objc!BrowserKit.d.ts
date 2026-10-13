@@ -12,6 +12,18 @@ declare class BEAvailability extends NSObject {
 }
 
 /**
+ * @since 27.0
+ */
+declare class BEBrowserContentFilter extends NSObject {
+
+	static alloc(): BEBrowserContentFilter; // inherited from NSObject
+
+	static new(): BEBrowserContentFilter; // inherited from NSObject
+
+	evaluateURLCompletionHandler(url: NSURL, completionHandler: (p1: boolean) => void): void;
+}
+
+/**
  * @since 26.4
  */
 declare class BEBrowserData extends NSObject implements NSSecureCoding {

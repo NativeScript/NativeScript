@@ -769,6 +769,11 @@ declare function dup(p1: number): number;
 
 declare function dup2(p1: number, p2: number): number;
 
+/**
+ * @since 27.0
+ */
+declare function dup3(p1: number, p2: number, p3: number): number;
+
 declare function ecvt(p1: number, p2: number, p3: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, p4: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null;
 
 declare function encrypt(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: number): void;
@@ -1236,6 +1241,11 @@ declare function pathconf(p1: string | interop.Pointer | interop.Reference<any> 
 declare function pause(): number;
 
 declare function pipe(p1: interop.Reference<number>): number;
+
+/**
+ * @since 27.0
+ */
+declare function pipe2(p1: interop.Reference<number>, p2: number): number;
 
 /**
  * @since 3.0
@@ -2127,6 +2137,9 @@ interface rusage_info_v6 {
 	ri_neural_footprint: number;
 	ri_lifetime_max_neural_footprint: number;
 	ri_interval_max_neural_footprint: number;
+	ri_conclave_footprint: number;
+	ri_page_wait_time_mach: number;
+	ri_page_cache_hits: number;
 	ri_reserved: interop.Reference<number>;
 }
 declare var rusage_info_v6: interop.StructType<rusage_info_v6>;

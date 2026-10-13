@@ -177,6 +177,11 @@ declare class SWCollaborationView extends UIView {
 
 	manageButtonTitle: string;
 
+	/**
+	 * @since 27.0
+	 */
+	pendingAccessRequestsCount: number;
+
 	constructor(o: { itemProvider: NSItemProvider; });
 
 	dismissPopover(completion: () => void | null): void;
@@ -203,6 +208,11 @@ declare var SWCollaborationViewDelegate: {
 
 	prototype: SWCollaborationViewDelegate;
 };
+
+/**
+ * @since 27.0
+ */
+declare var SWCopyRepresentationTypeIdentifier: string;
 
 /**
  * @since 16.0

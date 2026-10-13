@@ -208,6 +208,11 @@ declare class PHPickerConfiguration extends NSObject implements NSCopying {
 	filter: PHPickerFilter | null;
 
 	/**
+	 * @since 27
+	 */
+	metadataOptions: PHPickerMetadataOptions;
+
+	/**
 	 * @since 17
 	 */
 	mode: PHPickerMode;
@@ -221,6 +226,11 @@ declare class PHPickerConfiguration extends NSObject implements NSCopying {
 	 * @since 15
 	 */
 	preselectedAssetIdentifiers: NSArray<string>;
+
+	/**
+	 * @since 27
+	 */
+	searchText: PHPickerSearchText | null;
 
 	/**
 	 * @since 15
@@ -364,6 +374,18 @@ declare class PHPickerFilter extends NSObject implements NSCopying {
 }
 
 /**
+ * @since 27
+ */
+declare const enum PHPickerMetadataOptions {
+
+	None = 0,
+
+	RemoveLocation = 1,
+
+	RemoveCaptions = 2
+}
+
+/**
  * @since 17
  */
 declare const enum PHPickerMode {
@@ -394,6 +416,38 @@ declare class PHPickerResult extends NSObject {
 }
 
 /**
+ * @since 27
+ */
+declare class PHPickerSearchText extends NSObject implements NSCopying {
+
+	static alloc(): PHPickerSearchText; // inherited from NSObject
+
+	static new(): PHPickerSearchText; // inherited from NSObject
+
+	/**
+	 * @since 27
+	 */
+	constructor(o: { photoSearchSuggestion: UIPhotoSearchSuggestion; });
+
+	/**
+	 * @since 27
+	 */
+	constructor(o: { string: string; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
+
+	/**
+	 * @since 27
+	 */
+	initWithPhotoSearchSuggestion(suggestion: UIPhotoSearchSuggestion): this;
+
+	/**
+	 * @since 27
+	 */
+	initWithString(string: string): this;
+}
+
+/**
  * @since 17
  */
 declare class PHPickerUpdateConfiguration extends NSObject implements NSCopying {
@@ -406,6 +460,11 @@ declare class PHPickerUpdateConfiguration extends NSObject implements NSCopying 
 	 * @since 17
 	 */
 	edgesWithoutContentMargins: NSDirectionalRectEdge;
+
+	/**
+	 * @since 27
+	 */
+	searchText: PHPickerSearchText | null;
 
 	/**
 	 * @since 17
@@ -488,4 +547,204 @@ interface PHPickerViewControllerDelegate extends NSObjectProtocol {
 declare var PHPickerViewControllerDelegate: {
 
 	prototype: PHPickerViewControllerDelegate;
+};
+
+/**
+ * @since 27
+ */
+declare class PHSharedAlbumCreationConfiguration extends NSObject {
+
+	static alloc(): PHSharedAlbumCreationConfiguration; // inherited from NSObject
+
+	static new(): PHSharedAlbumCreationConfiguration; // inherited from NSObject
+
+	/**
+	 * @since 27
+	 */
+	defaultPolicy: PHSharedAlbumCreationSharingPolicy;
+
+	/**
+	 * @since 27
+	 */
+	defaultTitle: string | null;
+
+	/**
+	 * @since 27
+	 */
+	readonly photoLibrary: PHPhotoLibrary;
+
+	/**
+	 * @since 27
+	 */
+	constructor(o: { photoLibrary: PHPhotoLibrary; });
+
+	/**
+	 * @since 27
+	 */
+	initWithPhotoLibrary(photoLibrary: PHPhotoLibrary): this;
+}
+
+/**
+ * @since 27
+ */
+declare class PHSharedAlbumCreationResult extends NSObject {
+
+	static alloc(): PHSharedAlbumCreationResult; // inherited from NSObject
+
+	static new(): PHSharedAlbumCreationResult; // inherited from NSObject
+
+	/**
+	 * @since 27
+	 */
+	readonly albumIdentifier: string;
+
+	/**
+	 * @since 27
+	 */
+	readonly albumURL: NSURL;
+}
+
+/**
+ * @since 27
+ */
+declare const enum PHSharedAlbumCreationSharingPolicy {
+
+	Private = 0,
+
+	Public = 1
+}
+
+/**
+ * @since 27
+ */
+declare class PHSharedAlbumCreationViewController extends UIViewController {
+
+	static alloc(): PHSharedAlbumCreationViewController; // inherited from NSObject
+
+	static new(): PHSharedAlbumCreationViewController; // inherited from NSObject
+
+	/**
+	 * @since 27
+	 */
+	readonly creationResult: PHSharedAlbumCreationResult | null;
+
+	/**
+	 * @since 27
+	 */
+	delegate: PHSharedAlbumCreationViewControllerDelegate | null;
+
+	/**
+	 * @since 27
+	 */
+	constructor(o: { configuration: PHSharedAlbumCreationConfiguration; });
+
+	/**
+	 * @since 27
+	 */
+	initWithConfiguration(configuration: PHSharedAlbumCreationConfiguration): this;
+}
+
+/**
+ * @since 27
+ */
+interface PHSharedAlbumCreationViewControllerDelegate extends NSObjectProtocol {
+
+	/**
+	 * @since 27
+	 */
+	sharedAlbumCreationViewControllerDidCompleteWithError(creationViewController: PHSharedAlbumCreationViewController, error: NSError | null): void;
+}
+declare var PHSharedAlbumCreationViewControllerDelegate: {
+
+	prototype: PHSharedAlbumCreationViewControllerDelegate;
+};
+
+/**
+ * @since 27
+ */
+declare class PHSharedAlbumCustomizationViewController extends UIViewController {
+
+	static alloc(): PHSharedAlbumCustomizationViewController; // inherited from NSObject
+
+	static new(): PHSharedAlbumCustomizationViewController; // inherited from NSObject
+
+	/**
+	 * @since 27
+	 */
+	readonly albumIdentifier: string;
+
+	/**
+	 * @since 27
+	 */
+	delegate: PHSharedAlbumCustomizationViewControllerDelegate | null;
+
+	/**
+	 * @since 27
+	 */
+	constructor(o: { albumIdentifier: string; photoLibrary: PHPhotoLibrary; });
+
+	/**
+	 * @since 27
+	 */
+	initWithAlbumIdentifierPhotoLibrary(albumIdentifier: string, photoLibrary: PHPhotoLibrary): this;
+}
+
+/**
+ * @since 27
+ */
+interface PHSharedAlbumCustomizationViewControllerDelegate extends NSObjectProtocol {
+
+	/**
+	 * @since 27
+	 */
+	sharedAlbumCustomizationViewControllerDidCompleteWithError(customizationViewController: PHSharedAlbumCustomizationViewController, error: NSError | null): void;
+}
+declare var PHSharedAlbumCustomizationViewControllerDelegate: {
+
+	prototype: PHSharedAlbumCustomizationViewControllerDelegate;
+};
+
+/**
+ * @since 27
+ */
+declare class PHSharedAlbumPostingViewController extends UIViewController {
+
+	static alloc(): PHSharedAlbumPostingViewController; // inherited from NSObject
+
+	static new(): PHSharedAlbumPostingViewController; // inherited from NSObject
+
+	/**
+	 * @since 27
+	 */
+	readonly albumIdentifier: string | null;
+
+	/**
+	 * @since 27
+	 */
+	delegate: PHSharedAlbumPostingViewControllerDelegate | null;
+
+	/**
+	 * @since 27
+	 */
+	constructor(o: { items: NSArray<PHPickerResult> | PHPickerResult[]; defaultAlbumIdentifier: string | null; photoLibrary: PHPhotoLibrary; });
+
+	/**
+	 * @since 27
+	 */
+	initWithItemsDefaultAlbumIdentifierPhotoLibrary(items: NSArray<PHPickerResult> | PHPickerResult[], defaultAlbumIdentifier: string | null, photoLibrary: PHPhotoLibrary): this;
+}
+
+/**
+ * @since 27
+ */
+interface PHSharedAlbumPostingViewControllerDelegate extends NSObjectProtocol {
+
+	/**
+	 * @since 27
+	 */
+	sharedAlbumPostingViewControllerDidCompleteWithError(postingViewController: PHSharedAlbumPostingViewController, error: NSError | null): void;
+}
+declare var PHSharedAlbumPostingViewControllerDelegate: {
+
+	prototype: PHSharedAlbumPostingViewControllerDelegate;
 };

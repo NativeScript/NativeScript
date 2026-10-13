@@ -1,4 +1,24 @@
 
+declare class MFComposeAssistantViewController extends UIViewController {
+
+	static alloc(): MFComposeAssistantViewController; // inherited from NSObject
+
+	static new(): MFComposeAssistantViewController; // inherited from NSObject
+
+	constructor(o: { delegate: MFComposeAssistantViewControllerDelegate; });
+
+	initWithDelegate(delegate: MFComposeAssistantViewControllerDelegate): this;
+}
+
+interface MFComposeAssistantViewControllerDelegate extends NSObjectProtocol {
+
+	composeAssistantViewControllerDidComposeDraft(controller: MFComposeAssistantViewController, draft: MFMailDraft): void;
+}
+declare var MFComposeAssistantViewControllerDelegate: {
+
+	prototype: MFComposeAssistantViewControllerDelegate;
+};
+
 declare const enum MFMailComposeControllerDeferredAction {
 
 	None = 0,
@@ -81,6 +101,27 @@ declare var MFMailComposeViewControllerDelegate: {
 
 	prototype: MFMailComposeViewControllerDelegate;
 };
+
+declare class MFMailDraft extends NSObject {
+
+	static alloc(): MFMailDraft; // inherited from NSObject
+
+	static new(): MFMailDraft; // inherited from NSObject
+
+	readonly body: NSAttributedString;
+
+	readonly cc: NSArray<string>;
+
+	readonly from: string | null;
+
+	readonly subject: string;
+
+	readonly to: NSArray<string>;
+
+	constructor(o: { subject: string; body: NSAttributedString; from: string; to: NSArray<string> | string[]; cc: NSArray<string> | string[]; });
+
+	initWithSubjectBodyFromToCc(subject: string, body: NSAttributedString, from: string, to: NSArray<string> | string[], cc: NSArray<string> | string[]): this;
+}
 
 /**
  * @since 4.0

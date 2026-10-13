@@ -1,11 +1,9 @@
-import { Font, TabView } from '@nativescript/core';
+import { Font, TabView, Utils } from '@nativescript/core';
 
 export function getNativeTabCount(tabView: TabView): number {
-	if (!tabView.ios.viewControllers) {
-		return 0;
-	}
+	const controllers = tabView.ios.viewControllers ?? (Utils.SDK_VERSION >= 27 ? tabView.ios.tabs : null);
 
-	return tabView.ios.viewControllers.count;
+	return controllers ? controllers.count : 0;
 }
 
 export function selectNativeTab(tabView: TabView, index: number): void {
@@ -15,6 +13,14 @@ export function selectNativeTab(tabView: TabView, index: number): void {
 
 export function getNativeSelectedIndex(tabView: TabView): number {
 	return tabView.ios.selectedIndex;
+}
+
+export function getNativeProminentTabIdentifier(tabView: TabView): string | null | undefined {
+	if (Utils.SDK_VERSION < 27) {
+		return undefined;
+	}
+
+	return tabView.ios.prominentTabIdentifier;
 }
 
 export function getNativeFont(tabView: TabView): UIFont {
