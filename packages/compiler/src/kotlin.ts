@@ -1193,6 +1193,11 @@ export class Translator implements AsyncTranslator {
 
   /** Component fields without an initializer are state, not props (Angular). */
   plainFields = false;
+  /**
+   * The app's objects are read by name at run time (an XML app's bindings and `{{ onTap }}` handlers, through core's
+   * Builder): every class's accessors and methods by name, not only those of classes extending the kit's.
+   */
+  appMembersByName = false;
 
   deferredDeclaration(name: string, t: string): string {
     const z = this.zero(t);
@@ -2649,7 +2654,7 @@ export class Translator implements AsyncTranslator {
     if (accessors.has('jsToStringTag')) supertypes.push('JSToStringTag');
     const dynAccessors: { name: string; type: string; readable: boolean; settable: boolean }[] = [];
     // An app class extending the generated kit's (a page's view model, a custom view): read by name as core reads it (bindings, the Builder).
-    const byName = !this.library && this.generatedKit && !!kitRoot;
+    const byName = !this.library && ((this.generatedKit && !!kitRoot) || this.appMembersByName);
     // A getter over a base class's field holds the field's Kotlin type: optional where the field is, unwrapped where it is read.
     const overField = (a: { get?: ts.GetAccessorDeclaration }) => (!this.library && a.get && !isStatic(a.get) ? this.redeclaredField(a.get as unknown as ts.PropertyDeclaration) : null);
     for (const a of accessors.values()) {

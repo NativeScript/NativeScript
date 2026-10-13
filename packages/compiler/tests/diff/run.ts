@@ -68,6 +68,9 @@ function weakOf(file: string) {
   return { fields: list('weak-fields'), captures: list('weak-captures') };
 }
 
+/** A `// @members-by-name` line: the case is translated as an XML app's code is, its classes' accessors and methods readable by name (core's Builder binds to them). */
+const membersByName = (file: string) => /^\/\/ @members-by-name$/m.test(readFileSync(file, 'utf8'));
+
 function translate(file: string, out: string): void {
   const loose = lenient(file);
   const { checker, program, files: roots } = createProgram([file], new Map(), 'ios', modulesDir, undefined, [], {}, loose ? { strict: false, useDefineForClassFields: false } : {});
@@ -79,6 +82,7 @@ function translate(file: string, out: string): void {
   const all = [...files, ...importsOf(program, file).map((f) => program.getSourceFile(f)!).filter((f) => f && !files.includes(f))];
   const translator = new Translator(checker, new Map(), all, { lenient: loose, library, weak: weakOf(file), ...(loose ? { pluginFiles: all.map((f) => f.fileName), properties: collectProperties(checker, all) } : {}) });
   translator.appModule = 'Main';
+  translator.appMembersByName = membersByName(file);
   // With source lines, as an app is built: the directives must compile wherever a statement can be.
   const lines = translator.lines = new SourceLines(new Map());
   const modules = translateModules(translator, program, [file, ...importsOf(program, file)]);
@@ -99,6 +103,7 @@ function translateKotlin(file: string, out: string, pkg: string): void {
   const library = { identities: new Set<string>(), counterpart: () => null, moduleName: (f: string) => (f.endsWith('.d.ts') ? null : 'Module_' + basename(f).replace(/\W/g, '_')) };
   const translator = new KotlinTranslator(checker, new Map(), files, loose ? { lenient: true, library, pluginFiles: files.map((f) => f.fileName), properties: collectProperties(checker, files) } : {});
   translator.appModule = pkg;
+  translator.appMembersByName = membersByName(file);
   const lines = translator.lines = new SourceLines(new Map());
   const modules = translateKotlinModules(translator, program, [file, ...importsOf(program, file)]);
   addKotlinInterfaces(translator, modules);

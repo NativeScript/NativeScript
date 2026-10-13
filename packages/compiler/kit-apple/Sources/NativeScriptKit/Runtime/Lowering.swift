@@ -104,7 +104,11 @@ public func jsHasKey(_ object: Any?, _ key: String) -> Bool {
     // A typed object's `jsKeys` lists every field anew; a symbol key is never a field's.
     if let expando = jsFlat(object) as? JSExpando { return jsExpandoHas(expando, key) || (!jsIsSymbolKey(key) && expando.jsKeys.contains(key)) }
     if jsIsSymbolKey(key) { return (jsFlat(object) as? JSSymbolKeyed)?.jsSymbolKeys.contains(key) ?? false }
-    if let dynamic = object as? JSDynamic { return dynamic.jsKeys.contains(key) }
+    if let dynamic = object as? JSDynamic {
+        if dynamic.jsKeys.contains(key) { return true }
+        // Accessors are the prototype's, as `in` finds them in JavaScript.
+        return (type(of: dynamic) as? AnyClass).map { JSPrototypes.holder($0, key) != nil } ?? false
+    }
     if let array = object as? JSArrayProtocol { return key == "length" || (Int(key).map { $0 >= 0 && $0 < array.jsAnyElements.count } ?? false) }
     return false
 }

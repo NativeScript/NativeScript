@@ -146,6 +146,7 @@ export async function writeAndroid(b: AndroidBuild): Promise<void> {
   if (b.allErrors) translator.errors = [];
   translator.lenientApp = !!b.lenient;
   translator.plainFields = b.framework === 'angular';
+  translator.appMembersByName = b.framework === 'core';
   translator.pluginRoots = (b.plugins ?? []).map((p) => p.root + '/');
   const table: Record<string, [number, string, number][]> = {};
   /** A Kotlin file as written, its markers turned into ranges of the line table: [first Kotlin line, source file, source line]. */
