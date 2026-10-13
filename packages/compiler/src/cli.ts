@@ -12,8 +12,10 @@
 // --allow-unimplemented-properties (or release.allowUnimplementedProperties)
 // builds an app that sets properties core declares and the kit does not apply, warning for each.
 // --generated-kit (or android.release.generatedKit) builds on the Android kit generated from core.
-import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { basename, dirname, join, relative, resolve } from 'node:path';
+import { mirror, writeIfChanged } from './mirror.ts';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import ts from 'typescript';
 import type { ComponentIR } from './ir.ts';
@@ -408,8 +410,9 @@ translator.pluginModules = native.modules;
 translator.allowUnapplied = allowUnapplied;
 if (args.includes('--all-errors')) translator.errors = allowUnapplied ? [] : [...unapplied];
 
-rmSync(join(out, 'Sources'), { recursive: true, force: true });
-mkdirSync(join(out, 'Sources'), { recursive: true });
+// Written to a scratch folder and mirrored into the project: Xcode recompiles a file whose mtime changed.
+const sourcesDir = mkdtempSync(join(tmpdir(), 'ns-native-sources-'));
+process.on('exit', () => rmSync(sourcesDir, { recursive: true, force: true }));
 const header = (from: string) => `// Compiled by ns-native from ${relative(app, from)}; edit that file, not this one.\nimport Foundation\nimport UIKit\nimport NativeScriptKit\n${native.modules.map((m) => `import ${m}\n`).join('')}${SDK_IMPORTS}\n`;
 // A component's file declares more than the component (interfaces, constants): it is a module as well.
 // The SDK frameworks beyond UIKit the program's code names (CoreSpotlight, SafariServices), imported by every file once all are known.
@@ -432,7 +435,7 @@ for (const c of components) {
   const cls = sf.statements.find(ts.isClassDeclaration)!;
   try {
     const lines = [`final class ${c.name} {`, members.get(c.name) ?? '', '', ...render(c, infos, (m) => translator.memberThrows(cls, m), style, { slots: mounted, rowSignals: mounted, zone, itemType: (m) => translator.memberElementType(cls, m) }), '}'];
-    writeFileSync(join(out, 'Sources', c.name + '.swift'), header(c.file.replace(/\.ts$/, '')) + lines.join('\n') + '\n');
+    writeFileSync(join(sourcesDir, c.name + '.swift'), header(c.file.replace(/\.ts$/, '')) + lines.join('\n') + '\n');
   } catch (e) {
     if (!translator.errors) throw e;
     translator.errors.push(`${c.name}: ${(e as Error).message}${process.env.NS_NATIVE_STACKS ? '\n' + (e as Error).stack?.split('\n').slice(1, 30).join('\n') : ''}`);
@@ -451,10 +454,10 @@ for (const m of translated) {
   let file = m.name;
   while (taken.has(file.toLowerCase())) file += '_module';
   taken.add(file.toLowerCase());
-  writeFileSync(join(out, 'Sources', file + '.swift'), header(m.file) + located(m.code));
+  writeFileSync(join(sourcesDir, file + '.swift'), header(m.file) + located(m.code));
 }
 const shapes = SourceLines.strip((translator.interfacesOutside(new Set(translated.map((m) => m.file))) + translator.shapesCode()).trim());
-if (shapes) writeFileSync(join(out, 'Sources', '__Objects.swift'), `// Compiled by ns-native: the app's object literals without a declared type.\nimport Foundation\nimport NativeScriptKit\n${native.modules.length || /\bUI[A-Z]/.test(shapes) ? `import UIKit\n${native.modules.map((m) => `import ${m}\n`).join('')}` : ''}${SDK_IMPORTS}\n${shapes}\n`);
+if (shapes) writeFileSync(join(sourcesDir, '__Objects.swift'), `// Compiled by ns-native: the app's object literals without a declared type.\nimport Foundation\nimport NativeScriptKit\n${native.modules.length || /\bUI[A-Z]/.test(shapes) ? `import UIKit\n${native.modules.map((m) => `import ${m}\n`).join('')}` : ''}${SDK_IMPORTS}\n${shapes}\n`);
 const inits = translated.filter((m) => m.init).map((m) => `        ${m.init}()\n`).join('');
 // The app's CSS as its NativeScript build ships it: the AST core applies.
 const css = kitAst(sheets);
@@ -488,23 +491,23 @@ const start = switches + `        CorePackages.useAppConfig(appPackageJSON)\n   
   ? `${xmlModules}        NativeScriptApplication.prepare(cssAST: appCSS)\n${inits}`
   : `${inits}${prelude}        NativeScriptApplication.run(cssAST: appCSS) { ${root}().render() }\n`);
 const dispatch = nativeDispatch(native.modules, untypedMembers(checker, sourceFiles), deploymentTarget, native.classes);
-if (dispatch) writeFileSync(join(out, 'Sources', '__NativeDispatch.swift'), `// Compiled by ns-native: the plugins' native members untyped TypeScript calls, by name.\nimport Foundation\nimport UIKit\nimport NativeScriptKit\n${native.modules.map((m) => `import ${m}\n`).join('')}\n${dispatch}`);
-if (translator.usedAppNative.size) writeFileSync(join(out, 'Sources', '__AppNative.swift'), `// Compiled by ns-native: the app's own Swift classes, called by name from untyped TypeScript.\nimport Foundation\nimport NativeScriptKit\n\n${appNativeObjects([...translator.usedAppNative].map((c) => appNative[c]))}`);
+if (dispatch) writeFileSync(join(sourcesDir, '__NativeDispatch.swift'), `// Compiled by ns-native: the plugins' native members untyped TypeScript calls, by name.\nimport Foundation\nimport UIKit\nimport NativeScriptKit\n${native.modules.map((m) => `import ${m}\n`).join('')}\n${dispatch}`);
+if (translator.usedAppNative.size) writeFileSync(join(sourcesDir, '__AppNative.swift'), `// Compiled by ns-native: the app's own Swift classes, called by name from untyped TypeScript.\nimport Foundation\nimport NativeScriptKit\n\n${appNativeObjects([...translator.usedAppNative].map((c) => appNative[c]))}`);
 const sdkModules = translator.native.sdkModules().filter((m) => !['Foundation', 'UIKit', ...native.modules].includes(m));
-for (const f of readdirSync(join(out, 'Sources'))) {
-  const p = join(out, 'Sources', f);
+for (const f of readdirSync(sourcesDir)) {
+  const p = join(sourcesDir, f);
   const text = readFileSync(p, 'utf8');
   if (text.includes(SDK_IMPORTS)) writeFileSync(p, text.replace(SDK_IMPORTS, sdkModules.map((m) => `import ${m}\n`).join('')));
 }
 // A kit type an imported SDK module also declares (`Progress`): the app's module resolves the name to the kit's.
 const clashes = translator.native.kitClashes(translator.kitTypes());
-if (clashes.length) writeFileSync(join(out, 'Sources', '__KitNames.swift'), `// Compiled by ns-native: the kit's types whose names the SDK also declares.\nimport NativeScriptKit\n\n${clashes.map((n) => `typealias ${n} = NativeScriptKit.${n}\n`).join('')}`);
+if (clashes.length) writeFileSync(join(sourcesDir, '__KitNames.swift'), `// Compiled by ns-native: the kit's types whose names the SDK also declares.\nimport NativeScriptKit\n\n${clashes.map((n) => `typealias ${n} = NativeScriptKit.${n}\n`).join('')}`);
 // Core's modules the app reaches, listed for the kit to run: nothing else names the others, so the link leaves them out.
-const appSwift = readdirSync(join(out, 'Sources')).filter((f) => f.endsWith('.swift') && f !== '__Entry.swift').map((f) => readFileSync(join(out, 'Sources', f), 'utf8')).join('\n');
+const appSwift = readdirSync(sourcesDir).filter((f) => f.endsWith('.swift') && f !== '__Entry.swift').map((f) => readFileSync(join(sourcesDir, f), 'utf8')).join('\n');
 const closedWorld = coreClosedWorld(join(kit, 'Sources', 'NativeScriptKit'), appSwift + start);
 say(`core in this app: ${closedWorld.initializers.length} module initializers run, ${args.includes('--whole-kit') ? 'every file compiled (--whole-kit)' : `${closedWorld.excluded.length} files left out`}`);
 const entryStart = start.replace('        CoreModules.initialize()\n', `        CoreModules.initializers = [\n${closedWorld.initializers.map((i) => `            ${i},\n`).join('')}        ]\n        CoreModules.initialize()\n`);
-writeFileSync(join(out, 'Sources', '__Entry.swift'), `// Compiled by ns-native: the app's entry and its CSS.\nimport NativeScriptKit\n\n@main\nenum ${name}App {\n    static func main() {\n${dispatch ? '        __NativeDispatch.install()\n' : ''}${native.bindings.map((b) => `        ${b.installer}.install()\n`).join('')}${entryStart}    }\n}\n\nlet appCSS = """\n${css.replace(/\\/g, '\\\\').replace(/"""/g, '\\"""')}"""\n\n// What core reads as \`~/package.json\`.\nlet appPackageJSON = """\n${appPackageJSON(app).replace(/\\/g, '\\\\').replace(/"""/g, '\\"""')}\n"""\n`);
+writeFileSync(join(sourcesDir, '__Entry.swift'), `// Compiled by ns-native: the app's entry and its CSS.\nimport NativeScriptKit\n\n@main\nenum ${name}App {\n    static func main() {\n${dispatch ? '        __NativeDispatch.install()\n' : ''}${native.bindings.map((b) => `        ${b.installer}.install()\n`).join('')}${entryStart}    }\n}\n\nlet appCSS = """\n${css.replace(/\\/g, '\\\\').replace(/"""/g, '\\"""')}"""\n\n// What core reads as \`~/package.json\`.\nlet appPackageJSON = """\n${appPackageJSON(app).replace(/\\/g, '\\\\').replace(/"""/g, '\\"""')}\n"""\n`);
 say(`${components.length} components and ${modules.length} modules from ${framework} compiled to Swift in ${Date.now() - started} ms → ${relative(process.cwd(), join(out, 'Sources'))}`);
 
 // 4. The Xcode project. The kit is a static library target rather than its
@@ -524,7 +527,8 @@ const kitSources = join(kit, 'Sources', 'NativeScriptKit');
 const core = installedCore(app);
 const coreModules = core ? coreNativeModules(core).map((m) => m.module) : [];
 // `--whole-kit` compiles every file of the kit, however little of it the app reaches: a check that all of it builds.
-const excluded = args.includes('--whole-kit') ? [] : [...kitFilesUnreached(kitSources, readdirSync(join(out, 'Sources')).map((f) => readFileSync(join(out, 'Sources', f), 'utf8')).join('\n'), coreModules, new Set(closedWorld.excluded)), ...closedWorld.excluded];
+const excluded = args.includes('--whole-kit') ? [] : [...kitFilesUnreached(kitSources, readdirSync(sourcesDir).map((f) => readFileSync(join(sourcesDir, f), 'utf8')).join('\n'), coreModules, new Set(closedWorld.excluded)), ...closedWorld.excluded];
+mirror(sourcesDir, join(out, 'Sources'));
 const coreNative = coreNativeProject(core ?? '', kitImports(kitSources, excluded, coreModules), out);
 const profile = opt('--provision') ? findProfile(opt('--provision')!) : null;
 const team = !profile && opt('--team-id') ? { id: opt('--team-id')!, method: opt('--export-method', 'debugging') as ExportMethod } : undefined;
@@ -532,7 +536,7 @@ const team = !profile && opt('--team-id') ? { id: opt('--team-id')!, method: opt
 // with the team chosen there, and an archive built here without one passes CODE_SIGNING_ALLOWED=NO.
 const signing: Record<string, string> = profile ? signingSettings(profile) : team ? automaticSigningSettings(team.id) : { '"CODE_SIGNING_ALLOWED[sdk=iphonesimulator*]"': 'NO' };
 const pods = podfile({ app, name, deploymentTarget, nested: native.swift.map((t) => t.name), extensions: iosExtensionNames(app) });
-if (pods) writeFileSync(join(out, 'Podfile'), pods);
+if (pods) writeIfChanged(join(out, 'Podfile'), pods);
 else removePods(out, name);
 const resources = iosProjectResources({ app, appDir, out, name, pods: !!pods, say });
 const extensions = iosExtensions({ app, out, bundle, packages, signing, team: resources.team, say });
@@ -547,7 +551,7 @@ const appSettings = { PRODUCT_BUNDLE_IDENTIFIER: bundle, SWIFT_VERSION: '"5.9"',
 // for them: code from pods and packages, built without, would call methods they removed or thunks they need.
 // The kit's warnings are its generated code's, which no app can act on; printed, they bury the app's own.
 const wholeProgram = !pods && !packages.length && !pluginLines.packages;
-writeFileSync(join(out, 'project.yml'), `name: ${name}
+writeIfChanged(join(out, 'project.yml'), `name: ${name}
 options:
   bundleIdPrefix: org.nativescript
   deploymentTarget:
@@ -585,7 +589,7 @@ ${Object.entries(appSettings).map(([k, v]) => `        ${k}: ${v}\n`).join('')}`
 // The Xcode project is generated here (and integrated with CocoaPods where the app has pods), so a build of it
 // (the NativeScript CLI's) only runs xcodebuild on what the marker names.
 const project = generateProject({ out, name, pods, mergeXcconfig: () => mergePodsXcconfig(out, name), say });
-writeFileSync(join(out, PROJECT_MARKER), JSON.stringify(pods ? { workspace: `${name}.xcworkspace` } : { project: `${name}.xcodeproj` }) + '\n');
+writeIfChanged(join(out, PROJECT_MARKER), JSON.stringify(pods ? { workspace: `${name}.xcworkspace` } : { project: `${name}.xcodeproj` }) + '\n');
 if (args.includes('--build')) {
   const { execFileSync } = await import('node:child_process');
   if (args.includes('--device')) {

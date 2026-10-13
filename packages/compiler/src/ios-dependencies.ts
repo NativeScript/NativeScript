@@ -5,9 +5,10 @@
 // Podfiles; cocoapods-service, cocoapods-platform-manager). Their modules get
 // symbol tables as the SDK's do, so TypeScript calls into them resolve.
 import { xcodegen } from './xcodegen.ts';
+import { restoreUnchanged } from './mirror.ts';
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { basename, join, relative, resolve } from 'node:path';
 import { appResourcesDir, productionPlugins, readConfig } from './app-resources.ts';
@@ -167,12 +168,26 @@ export const PROJECT_MARKER = 'ns-native-project.json';
  * Returns the arguments that name the project to xcodebuild.
  */
 export function generateProject(o: { out: string; name: string; pods: boolean; mergeXcconfig: () => void; say: (m: string) => void }): string[] {
-  execFileSync(xcodegen(o.say), ['generate', '--quiet'], { cwd: o.out, stdio: 'inherit' });
-  if (!o.pods) return ['-project', `${o.name}.xcodeproj`];
-  o.say('pod install');
-  podInstall(o.out);
-  o.mergeXcconfig();
-  return ['-workspace', `${o.name}.xcworkspace`];
+  // Generated beside the previous project, whose unchanged files are then kept, as Xcode replans a build on a rewritten project file.
+  const project = join(o.out, `${o.name}.xcodeproj`);
+  const previous = `${project}.previous`;
+  rmSync(previous, { recursive: true, force: true });
+  if (existsSync(project)) renameSync(project, previous);
+  try {
+    execFileSync(xcodegen(o.say), ['generate', '--quiet'], { cwd: o.out, stdio: 'inherit' });
+    if (o.pods) {
+      o.say('pod install');
+      podInstall(o.out);
+      o.mergeXcconfig();
+    }
+    if (existsSync(previous)) restoreUnchanged(previous, project, ['xcuserdata']);
+  } catch (e) {
+    if (!existsSync(project) && existsSync(previous)) renameSync(previous, project);
+    throw e;
+  } finally {
+    rmSync(previous, { recursive: true, force: true });
+  }
+  return o.pods ? ['-workspace', `${o.name}.xcworkspace`] : ['-project', `${o.name}.xcodeproj`];
 }
 
 /** What a generated project without a Podfile leaves behind from one that had it. */
