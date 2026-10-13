@@ -32,6 +32,9 @@ fun <T> jsUnchecked(value: Any?): T = value as T
  */
 inline fun <reified T> jsAs(value: Any?): T = value as T
 
+/** `value is T` where the value's own type already decides it in Kotlin's eyes: an unset value (null) still fails it. */
+inline fun <reified T> jsIs(value: Any?): Boolean = value is T
+
 /** As jsAs, null where `value` is not of T's class. */
 inline fun <reified T> jsAsOrNull(value: Any?): T? = value as? T
 

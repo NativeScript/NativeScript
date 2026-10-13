@@ -185,8 +185,7 @@ export async function writeAndroid(b: AndroidBuild): Promise<void> {
     if (!sf.isDeclarationFile || !sf.fileName.startsWith(appDir) || sf.fileName.includes('/node_modules/')) continue;
     if (!/^(import|export)\b/m.test(sf.text) && /^declare\s+(module|namespace)\s+(android|androidx|java|javax|com|org|kotlin|io)\b/m.test(sf.text)) (translator.native as AndroidNativeAPI).pluginTypings.add(sf.fileName);
   }
-  const suppress = '@file:Suppress("unused", "UNUSED_VARIABLE", "RedundantExplicitType", "NAME_SHADOWING", "UNCHECKED_CAST", "UNREACHABLE_CODE", "UNUSED_PARAMETER")';
-  const header = (from: string) => `// Compiled by ns-native from ${relative(b.app, from)}; edit that file, not this one.\n${suppress}\npackage ${pkg}\n\nimport org.nativescript.kit.*\n\n`;
+  const header = (from: string) => `// Compiled by ns-native from ${relative(b.app, from)}; edit that file, not this one.\npackage ${pkg}\n\nimport org.nativescript.kit.*\n\n`;
   // A component's file is a module too: what it declares beside the component (its constants and helpers).
   translator.workerScripts = new Map((b.workers ?? []).map((f) => [f, relative(b.app, f)]));
   if (b.workers?.length) {

@@ -6153,7 +6153,7 @@ export class Translator implements AsyncTranslator {
       if (t.startsWith('Pair<') || t.startsWith('Triple<')) {
         const el = splitTopLevel(t.replace(/^(Pair|Triple)<(.*)>$/, '$2'));
         const element = el.every((x) => x === el[0]) ? el[0] : 'Any?';
-        this.subst.set(target, `JSArray<${element}>(jsTupleList(${this.expr(target)}) as List<${element}>)`);
+        this.subst.set(target, `JSArray<${element}>(${cast(`jsTupleList(${this.expr(target)})`, `List<${element}>`)})`);
         try { return this.arrayMethod(method, target, e, ''); } finally { this.subst.delete(target); }
       }
       // Library mode: an untyped member asserted a string (`(ctor[KNOWN_FUNCTIONS] as string).indexOf(name)`, an array): called as script calls it.
@@ -7285,6 +7285,20 @@ export class Translator implements AsyncTranslator {
     return `${ERRORS[name]}(${[...errors, ...(message ? [message] : cause.length ? ['""'] : []), ...cause].join(', ')})`;
   }
 
+  /**
+   * `x instanceof C` where x's class decides it (C itself, or a class outside C's hierarchy): Kotlin calls such an `is`
+   * always true or false, though an unset value (null) still fails it.
+   */
+  private decidedInstanceOf(e: ts.BinaryExpression): boolean {
+    const own = this.typeOf(e.left);
+    if (ERRORS[e.right.getText()] === own) return true;
+    const sym = this.resolve(ts.isPropertyAccessExpression(e.right) ? e.right.name : e.right);
+    const leftSym = this.checker.getTypeAtLocation(e.left).getSymbol();
+    if (own === 'Any?' || own === 'Any' || !sym || !(sym.flags & ts.SymbolFlags.Class) || !leftSym || !(leftSym.flags & ts.SymbolFlags.Class)) return false;
+    const left = this.checker.getTypeAtLocation(e.left), right = this.checker.getDeclaredTypeOfSymbol(sym);
+    return this.checker.isTypeAssignableTo(left, right) || !this.checker.isTypeAssignableTo(right, left);
+  }
+
   /** What `typeof x` gives where x's type decides it (`typeof size` of a number), or null. */
   private typeofConstant(e: ts.TypeOfExpression): string | null {
     if (neverDefined(e.expression, this.checker)) return 'undefined';
@@ -7563,14 +7577,14 @@ export class Translator implements AsyncTranslator {
         if (left.startsWith('jsUnchecked<')) left = ts.isIdentifier(e.left) ? this.refName(e.left) : /^jsUnchecked<[\w.]+>\((.*)\)$/.exec(left)?.[1] ?? left;
         // Library mode: a class the program declares, by its Kotlin name; a class held in a value, tested when the program runs.
         const cls = this.library && !ERRORS[name] ? this.resolve(e.right)?.valueDeclaration : undefined;
-        if (cls && ts.isClassDeclaration(cls) && !cls.getSourceFile().isDeclarationFile) return `(${left} is ${this.className(cls)})`;
+        if (cls && ts.isClassDeclaration(cls) && !cls.getSourceFile().isDeclarationFile) return this.decidedInstanceOf(e) ? `jsIs<${this.className(cls)}>(${left})` : `(${left} is ${this.className(cls)})`;
         const tested = ERRORS[name] ?? this.typeOf(e.right).replace(/^typeof /, '').replace(/\?$/, '');
         const rightSym = this.resolve(ts.isPropertyAccessExpression(e.right) ? e.right.name : e.right);
         if (this.library && (tested === 'Any' || !tested) && !(rightSym && (rightSym.flags & ts.SymbolFlags.Class || isLibDeclaration(rightSym.declarations?.[0])))) {
           const alias = ts.isIdentifier(e.right) ? this.native?.identifier(e.right) : null;
           return `jsInstanceOf(${this.coerce(e.left, 'Any?')}, ${alias ?? this.coerce(e.right, 'Any?')})`;
         }
-        return `(${left} is ${tested ?? name})`;
+        return this.decidedInstanceOf(e) ? `jsIs<${tested ?? name}>(${left})` : `(${left} is ${tested ?? name})`;
       }
       case K.CommaToken: return `run { ${this.exprStatement(e.left)}; ${r()} }`;
       case K.InKeyword: return `jsHasKey(${this.coerce(e.right, 'Any?')}, ${this.propertyKey(e.left)})`;
@@ -8436,6 +8450,8 @@ function erased(type: string): boolean {
 
 /** `code as type`, through the runtime's reified jsAs where only the class can be checked. */
 export function cast(code: string, type: string): string {
+  // A type parameter (`T`) is checked nowhere: the value is taken as one.
+  if (/^[A-Z]\??$/.test(type)) return `jsUnchecked<${type}>(${code})`;
   return erased(type) ? `jsAs<${type}>(${code})` : `(${code} as ${type})`;
 }
 

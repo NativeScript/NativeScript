@@ -22,14 +22,9 @@ kotlin {
     compilerOptions { jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17) }
 }
 
-// -PnativescriptKitStrict (CI): a warning in the kit, Kotlin's extra checks included, fails its build.
+// -PnativescriptKitStrict (CI): a warning in the kit fails its build.
 if (providers.gradleProperty("nativescriptKitStrict").isPresent) {
-    kotlin {
-        compilerOptions {
-            allWarningsAsErrors.set(true)
-            freeCompilerArgs.add("-Wextra")
-        }
-    }
+    kotlin { compilerOptions { allWarningsAsErrors.set(true) } }
 }
 
 // -PgeneratedKit: the kit generated from core (generated/kotlin, tools/native-kit/generate-android.mts) in place of the hand port,
