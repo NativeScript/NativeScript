@@ -198,6 +198,21 @@ declare class PKAddPassesViewController extends UIViewController {
 	constructor(o: { passes: NSArray<PKPass> | PKPass[]; });
 
 	/**
+	 * @since 27.0
+	 */
+	constructor(o: { passesArchiveAtFileURL: NSURL; });
+
+	/**
+	 * @since 27.0
+	 */
+	constructor(o: { passesArchiveData: NSData; });
+
+	/**
+	 * @since 27.0
+	 */
+	constructor(o: { passesData: NSArray<NSData> | NSData[]; });
+
+	/**
 	 * @since 16.4
 	 */
 	initWithIssuerDataSignatureError(issuerData: NSData, signature: NSData, error?: interop.Reference<NSError>): this;
@@ -208,6 +223,21 @@ declare class PKAddPassesViewController extends UIViewController {
 	 * @since 7.0
 	 */
 	initWithPasses(passes: NSArray<PKPass> | PKPass[]): this;
+
+	/**
+	 * @since 27.0
+	 */
+	initWithPassesArchiveAtFileURL(passesArchiveFileURL: NSURL): this;
+
+	/**
+	 * @since 27.0
+	 */
+	initWithPassesArchiveData(passesArchiveData: NSData): this;
+
+	/**
+	 * @since 27.0
+	 */
+	initWithPassesData(passesData: NSArray<NSData> | NSData[]): this;
 }
 
 interface PKAddPassesViewControllerDelegate extends NSObjectProtocol {
@@ -833,6 +863,11 @@ declare class PKDisbursementRequest extends NSObject {
 
 	supportedRegions: NSArray<string> | null;
 
+	/**
+	 * @since 27.0
+	 */
+	unsupportedPrimaryAccountIdentifiers: NSArray<string>;
+
 	constructor(o: { merchantIdentifier: string; currencyCode: string; regionCode: string; supportedNetworks: NSArray<string> | string[]; merchantCapabilities: PKMerchantCapability; summaryItems: NSArray<PKPaymentSummaryItem> | PKPaymentSummaryItem[]; });
 
 	initWithMerchantIdentifierCurrencyCodeRegionCodeSupportedNetworksMerchantCapabilitiesSummaryItems(merchantIdentifier: string, currencyCode: string, regionCode: string, supportedNetworks: NSArray<string> | string[], merchantCapabilities: PKMerchantCapability, summaryItems: NSArray<PKPaymentSummaryItem> | PKPaymentSummaryItem[]): this;
@@ -885,6 +920,11 @@ declare class PKIdentityAnyOfDescriptor extends NSObject implements PKIdentityDo
 	readonly hash: number; // inherited from NSObjectProtocol
 
 	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	/**
+	 * @since 27.0
+	 */
+	issuerIdentifiers: NSArray<NSData>; // inherited from PKIdentityDocumentDescriptor
 
 	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
@@ -1027,6 +1067,11 @@ interface PKIdentityDocumentDescriptor extends NSObjectProtocol {
 
 	elements: NSArray<PKIdentityElement>;
 
+	/**
+	 * @since 27.0
+	 */
+	issuerIdentifiers: NSArray<NSData>;
+
 	addElementsWithIntentToStore(elements: NSArray<PKIdentityElement> | PKIdentityElement[], intentToStore: PKIdentityIntentToStore): void;
 
 	intentToStoreForElement(element: PKIdentityElement): PKIdentityIntentToStore | null;
@@ -1084,6 +1129,11 @@ declare class PKIdentityDriversLicenseDescriptor extends NSObject implements PKI
 	readonly hash: number; // inherited from NSObjectProtocol
 
 	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	/**
+	 * @since 27.0
+	 */
+	issuerIdentifiers: NSArray<NSData>; // inherited from PKIdentityDocumentDescriptor
 
 	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
@@ -1171,6 +1221,11 @@ declare class PKIdentityElement extends NSObject implements NSCopying {
 	static readonly heightElement: PKIdentityElement;
 
 	static readonly issuingAuthorityElement: PKIdentityElement;
+
+	/**
+	 * @since 27.0
+	 */
+	static readonly nameElement: PKIdentityElement;
 
 	/**
 	 * @since 26.4
@@ -1280,6 +1335,11 @@ declare class PKIdentityNationalIDCardDescriptor extends NSObject implements PKI
 
 	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
+	/**
+	 * @since 27.0
+	 */
+	issuerIdentifiers: NSArray<NSData>; // inherited from PKIdentityDocumentDescriptor
+
 	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
 	readonly  // inherited from NSObjectProtocol
@@ -1329,6 +1389,11 @@ declare class PKIdentityPhotoIDDescriptor extends NSObject implements PKIdentity
 	readonly hash: number; // inherited from NSObjectProtocol
 
 	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	/**
+	 * @since 27.0
+	 */
+	issuerIdentifiers: NSArray<NSData>; // inherited from PKIdentityDocumentDescriptor
 
 	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
@@ -1714,9 +1779,24 @@ declare class PKPassLibrary extends NSObject {
 	activateSecureElementPassWithActivationDataCompletion(secureElementPass: PKSecureElementPass, activationData: NSData, completion: (p1: boolean, p2: NSError | null) => void | null): void;
 
 	/**
+	 * @since 27.0
+	 */
+	addPassesFromArchiveAtFileURLCompletionHandler(passesArchiveFileURL: NSURL, completionHandler: (p1: PKPassLibraryAddPassesStatus) => void): void;
+
+	/**
+	 * @since 27.0
+	 */
+	addPassesFromArchiveWithDataCompletionHandler(passesArchiveData: NSData, completionHandler: (p1: PKPassLibraryAddPassesStatus) => void): void;
+
+	/**
 	 * @since 7.0
 	 */
 	addPassesWithCompletionHandler(passes: NSArray<PKPass> | PKPass[], completion: (p1: PKPassLibraryAddPassesStatus) => void | null): void;
+
+	/**
+	 * @since 27.0
+	 */
+	addPassesWithDataCompletionHandler(passesData: NSArray<NSData> | NSData[], completionHandler: (p1: PKPassLibraryAddPassesStatus) => void): void;
 
 	/**
 	 * @since 26.0
@@ -1806,6 +1886,7 @@ declare class PKPassLibrary extends NSObject {
 
 	/**
 	 * @since 13.4
+	 * @deprecated 26.0
 	 */
 	signDataWithSecureElementPassCompletion(signData: NSData, secureElementPass: PKSecureElementPass, completion: (p1: NSData | null, p2: NSData | null, p3: NSError | null) => void): void;
 }
@@ -2603,6 +2684,7 @@ declare var PKPaymentNetworkAmex: string;
 
 /**
  * @since 16.0
+ * @deprecated 17.0
  */
 declare var PKPaymentNetworkBancomat: string;
 
@@ -2669,6 +2751,11 @@ declare var PKPaymentNetworkEftpos: string;
 declare var PKPaymentNetworkElCorteIngles: string;
 
 /**
+ * @since 27.0
+ */
+declare var PKPaymentNetworkElcard: string;
+
+/**
  * @since 12.0
  */
 declare var PKPaymentNetworkElectron: string;
@@ -2689,6 +2776,11 @@ declare var PKPaymentNetworkGirocard: string;
 declare var PKPaymentNetworkHimyan: string;
 
 /**
+ * @since 27.0
+ */
+declare var PKPaymentNetworkHumo: string;
+
+/**
  * @since 10.3
  */
 declare var PKPaymentNetworkIDCredit: string;
@@ -2707,6 +2799,11 @@ declare var PKPaymentNetworkJCB: string;
  * @since 18.4
  */
 declare var PKPaymentNetworkJaywan: string;
+
+/**
+ * @since 27.0
+ */
+declare var PKPaymentNetworkMaal: string;
 
 /**
  * @since 12.1.1
@@ -2750,9 +2847,13 @@ declare var PKPaymentNetworkNanaco: string;
 
 /**
  * @since 17.0
- * @deprecated 26.4
  */
 declare var PKPaymentNetworkPagoBancomat: string;
+
+/**
+ * @since 27.0
+ */
+declare var PKPaymentNetworkPayPak: string;
 
 /**
  * @since 16.4
@@ -2770,6 +2871,11 @@ declare var PKPaymentNetworkPrivateLabel: string;
 declare var PKPaymentNetworkQuicPay: string;
 
 /**
+ * @since 27.0
+ */
+declare var PKPaymentNetworkRuPay: string;
+
+/**
  * @since 10.1
  */
 declare var PKPaymentNetworkSuica: string;
@@ -2780,9 +2886,19 @@ declare var PKPaymentNetworkSuica: string;
 declare var PKPaymentNetworkTmoney: string;
 
 /**
+ * @since 27.0
+ */
+declare var PKPaymentNetworkUzCard: string;
+
+/**
  * @since 12.0
  */
 declare var PKPaymentNetworkVPay: string;
+
+/**
+ * @since 27.0
+ */
+declare var PKPaymentNetworkVerve: string;
 
 /**
  * @since 8.0
@@ -3017,6 +3133,11 @@ declare class PKPaymentRequest extends NSObject {
 	 * @since 15.0
 	 */
 	supportsCouponCode: boolean;
+
+	/**
+	 * @since 27.0
+	 */
+	unsupportedPrimaryAccountIdentifiers: NSArray<string>;
 }
 
 /**
@@ -3314,6 +3435,11 @@ declare class PKSecureElementPass extends PKPass {
 	readonly primaryAccountIdentifier: string;
 
 	readonly primaryAccountNumberSuffix: string;
+
+	/**
+	 * @since 27.0
+	 */
+	readonly provisioningAvailable: boolean;
 }
 
 /**

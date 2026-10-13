@@ -1,3 +1,13 @@
+## 8.0.19 (2026-10-12)
+
+### 🩹 Fixes
+
+- **vite:** Android release bundles keep the class names the binding generator reads ([#11516](https://github.com/NativeScript/NativeScript/pull/11516))
+
+### ❤️ Thank You
+
+- Nathan Walker
+
 ## 8.0.18 (2026-10-05)
 
 ### 🩹 Fixes

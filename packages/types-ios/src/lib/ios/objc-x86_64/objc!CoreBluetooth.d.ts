@@ -213,7 +213,9 @@ declare var CBCentralManagerDelegate: {
 
 declare const enum CBCentralManagerFeature {
 
-	ExtendedScanAndConnect = 1
+	ExtendedScanAndConnect = 1,
+
+	ChannelSounding = 1024
 }
 
 /**
@@ -270,6 +272,42 @@ declare const enum CBCentralManagerState {
 	PoweredOff = 4,
 
 	PoweredOn = 5
+}
+
+/**
+ * @since 27.0
+ */
+declare class CBChannelSoundingProcedureResults extends NSObject {
+
+	static alloc(): CBChannelSoundingProcedureResults; // inherited from NSObject
+
+	static new(): CBChannelSoundingProcedureResults; // inherited from NSObject
+
+	readonly distance: number;
+}
+
+/**
+ * @since 27.0
+ */
+declare class CBChannelSoundingSessionConfiguration extends NSObject {
+
+	static alloc(): CBChannelSoundingSessionConfiguration; // inherited from NSObject
+
+	static new(): CBChannelSoundingSessionConfiguration; // inherited from NSObject
+
+	readonly role: CBChannelSoundingSessionConfigurationRole;
+
+	constructor(o: { role: CBChannelSoundingSessionConfigurationRole; });
+
+	initWithRole(role: CBChannelSoundingSessionConfigurationRole): this;
+}
+
+/**
+ * @since 27.0
+ */
+declare const enum CBChannelSoundingSessionConfigurationRole {
+
+	Initiator = 0
 }
 
 /**
@@ -431,7 +469,11 @@ declare const enum CBError {
 
 	LeGattExceededBackgroundNotificationLimit = 17,
 
-	LeGattNearBackgroundNotificationLimit = 18
+	LeGattNearBackgroundNotificationLimit = 18,
+
+	ChannelSoundingConfigurationFailed = 19,
+
+	ChannelSoundingProcedureFailed = 20
 }
 
 declare var CBErrorDomain: string;
@@ -636,6 +678,11 @@ declare class CBPeripheral extends CBPeer {
 
 	readonly state: CBPeripheralState;
 
+	/**
+	 * @since 27.0
+	 */
+	cancelChannelSoundingSession(): void;
+
 	discoverCharacteristicsForService(characteristicUUIDs: NSArray<CBUUID> | CBUUID[] | null, service: CBService): void;
 
 	discoverDescriptorsForCharacteristic(characteristic: CBCharacteristic): void;
@@ -662,12 +709,22 @@ declare class CBPeripheral extends CBPeer {
 
 	setNotifyValueForCharacteristic(enabled: boolean, characteristic: CBCharacteristic): void;
 
+	/**
+	 * @since 27.0
+	 */
+	startChannelSoundingSession(configuration: CBChannelSoundingSessionConfiguration): void;
+
 	writeValueForCharacteristicType(data: NSData, characteristic: CBCharacteristic, type: CBCharacteristicWriteType): void;
 
 	writeValueForDescriptor(data: NSData, descriptor: CBDescriptor): void;
 }
 
 interface CBPeripheralDelegate extends NSObjectProtocol {
+
+	/**
+	 * @since 27.0
+	 */
+	peripheralDidCompleteChannelSoundingSession?(peripheral: CBPeripheral, error: NSError | null): void;
 
 	peripheralDidDiscoverCharacteristicsForServiceError?(peripheral: CBPeripheral, service: CBService, error: NSError | null): void;
 
@@ -688,6 +745,11 @@ interface CBPeripheralDelegate extends NSObjectProtocol {
 	 * @since 8.0
 	 */
 	peripheralDidReadRSSIError?(peripheral: CBPeripheral, RSSI: number, error: NSError | null): void;
+
+	/**
+	 * @since 27.0
+	 */
+	peripheralDidReceiveChannelSoundingProcedureResultsError?(peripheral: CBPeripheral, results: CBChannelSoundingProcedureResults | null, error: NSError | null): void;
 
 	/**
 	 * @since 6.0

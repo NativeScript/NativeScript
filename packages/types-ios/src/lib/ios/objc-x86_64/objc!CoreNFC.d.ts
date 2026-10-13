@@ -958,7 +958,13 @@ declare const enum NFCReaderError {
 
 	NdefReaderSessionErrorTagSizeTooSmall = 402,
 
-	NdefReaderSessionErrorZeroLengthMessage = 403
+	NdefReaderSessionErrorZeroLengthMessage = 403,
+
+	PaymentTagReaderSessionErrorLocationAuthorizationDenied = 500,
+
+	PaymentTagReaderSessionErrorLocationServiceRestricted = 501,
+
+	PaymentTagReaderSessionErrorOnDeviceLocationUnavailable = 502
 }
 
 /**

@@ -2430,6 +2430,11 @@ declare var MPNowPlayingInfoProperty3x4AnimatedArtwork: string;
 declare var MPNowPlayingInfoPropertyAdTimeRanges: string;
 
 /**
+ * @since 27.0
+ */
+declare var MPNowPlayingInfoPropertyAppEntityIdentifiers: string;
+
+/**
  * @since 10.3
  */
 declare var MPNowPlayingInfoPropertyAssetURL: string;

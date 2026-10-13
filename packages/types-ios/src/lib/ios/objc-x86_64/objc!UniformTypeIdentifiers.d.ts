@@ -54,6 +54,11 @@ declare class UTType extends NSObject implements NSCopying, NSSecureCoding {
 	static typeWithIdentifier(identifier: string): UTType;
 
 	/**
+	 * @since 27.0
+	 */
+	static typeWithIdentifierAllowUndeclared(identifier: string, allowUndeclared: boolean): UTType;
+
+	/**
 	 * @since 14.0
 	 */
 	static typeWithMIMEType(mimeType: string): UTType;
@@ -542,6 +547,11 @@ declare var UTTypeMPEG4Movie: UTType;
  * @since 15.0
  */
 declare var UTTypeMakefile: UTType;
+
+/**
+ * @since 27.0
+ */
+declare var UTTypeMarkdown: UTType;
 
 /**
  * @since 14.0

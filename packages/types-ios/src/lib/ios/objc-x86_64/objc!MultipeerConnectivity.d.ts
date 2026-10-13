@@ -1,6 +1,7 @@
 
 /**
  * @since 7.0
+ * @deprecated 27.0
  */
 declare class MCAdvertiserAssistant extends NSObject {
 
@@ -25,6 +26,10 @@ declare class MCAdvertiserAssistant extends NSObject {
 	stop(): void;
 }
 
+/**
+ * @since 7.0
+ * @deprecated 27.0
+ */
 interface MCAdvertiserAssistantDelegate extends NSObjectProtocol {
 
 	advertiserAssistantDidDismissInvitation?(advertiserAssistant: MCAdvertiserAssistant): void;
@@ -38,6 +43,7 @@ declare var MCAdvertiserAssistantDelegate: {
 
 /**
  * @since 7.0
+ * @deprecated 27.0
  */
 declare class MCBrowserViewController extends UIViewController implements MCNearbyServiceBrowserDelegate {
 
@@ -104,6 +110,10 @@ declare class MCBrowserViewController extends UIViewController implements MCNear
 	self(): this;
 }
 
+/**
+ * @since 7.0
+ * @deprecated 27.0
+ */
 interface MCBrowserViewControllerDelegate extends NSObjectProtocol {
 
 	browserViewControllerDidFinish(browserViewController: MCBrowserViewController): void;
@@ -119,6 +129,7 @@ declare var MCBrowserViewControllerDelegate: {
 
 /**
  * @since 7.0
+ * @deprecated 27.0
  */
 declare const enum MCEncryptionPreference {
 
@@ -131,6 +142,7 @@ declare const enum MCEncryptionPreference {
 
 /**
  * @since 7.0
+ * @deprecated 27.0
  */
 declare const enum MCErrorCode {
 
@@ -149,10 +161,15 @@ declare const enum MCErrorCode {
 	Unavailable = 6
 }
 
+/**
+ * @since 7.0
+ * @deprecated 27.0
+ */
 declare var MCErrorDomain: string;
 
 /**
  * @since 7.0
+ * @deprecated 27.0
  */
 declare class MCNearbyServiceAdvertiser extends NSObject {
 
@@ -177,6 +194,10 @@ declare class MCNearbyServiceAdvertiser extends NSObject {
 	stopAdvertisingPeer(): void;
 }
 
+/**
+ * @since 7.0
+ * @deprecated 27.0
+ */
 interface MCNearbyServiceAdvertiserDelegate extends NSObjectProtocol {
 
 	advertiserDidNotStartAdvertisingPeer?(advertiser: MCNearbyServiceAdvertiser, error: NSError): void;
@@ -190,6 +211,7 @@ declare var MCNearbyServiceAdvertiserDelegate: {
 
 /**
  * @since 7.0
+ * @deprecated 27.0
  */
 declare class MCNearbyServiceBrowser extends NSObject {
 
@@ -214,6 +236,10 @@ declare class MCNearbyServiceBrowser extends NSObject {
 	stopBrowsingForPeers(): void;
 }
 
+/**
+ * @since 7.0
+ * @deprecated 27.0
+ */
 interface MCNearbyServiceBrowserDelegate extends NSObjectProtocol {
 
 	browserDidNotStartBrowsingForPeers?(browser: MCNearbyServiceBrowser, error: NSError): void;
@@ -229,6 +255,7 @@ declare var MCNearbyServiceBrowserDelegate: {
 
 /**
  * @since 7.0
+ * @deprecated 27.0
  */
 declare class MCPeerID extends NSObject implements NSCopying, NSSecureCoding {
 
@@ -255,6 +282,7 @@ declare class MCPeerID extends NSObject implements NSCopying, NSSecureCoding {
 
 /**
  * @since 7.0
+ * @deprecated 27.0
  */
 declare class MCSession extends NSObject {
 
@@ -295,6 +323,10 @@ declare class MCSession extends NSObject {
 	startStreamWithNameToPeerError(streamName: string, peerID: MCPeerID, error?: interop.Reference<NSError>): NSOutputStream | null;
 }
 
+/**
+ * @since 7.0
+ * @deprecated 27.0
+ */
 interface MCSessionDelegate extends NSObjectProtocol {
 
 	sessionDidFinishReceivingResourceWithNameFromPeerAtURLWithError(session: MCSession, resourceName: string, peerID: MCPeerID, localURL: NSURL | null, error: NSError | null): void;
@@ -316,6 +348,7 @@ declare var MCSessionDelegate: {
 
 /**
  * @since 7.0
+ * @deprecated 27.0
  */
 declare const enum MCSessionSendDataMode {
 
@@ -326,6 +359,7 @@ declare const enum MCSessionSendDataMode {
 
 /**
  * @since 7.0
+ * @deprecated 27.0
  */
 declare const enum MCSessionState {
 
@@ -338,10 +372,12 @@ declare const enum MCSessionState {
 
 /**
  * @since 7.0
+ * @deprecated 27.0
  */
 declare var kMCSessionMaximumNumberOfPeers: number;
 
 /**
  * @since 7.0
+ * @deprecated 27.0
  */
 declare var kMCSessionMinimumNumberOfPeers: number;

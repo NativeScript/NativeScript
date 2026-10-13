@@ -14,9 +14,19 @@ declare class AEAssessmentApplication extends NSObject implements NSCopying {
 	readonly bundleIdentifier: string;
 
 	/**
+	 * @since 27.0
+	 */
+	readonly teamIdentifier: string | null;
+
+	/**
 	 * @since 17.5
 	 */
 	constructor(o: { bundleIdentifier: string; });
+
+	/**
+	 * @since 27.0
+	 */
+	constructor(o: { bundleIdentifier: string; teamIdentifier: string | null; });
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
 
@@ -24,6 +34,11 @@ declare class AEAssessmentApplication extends NSObject implements NSCopying {
 	 * @since 17.5
 	 */
 	initWithBundleIdentifier(bundleIdentifier: string): this;
+
+	/**
+	 * @since 27.0
+	 */
+	initWithBundleIdentifierTeamIdentifier(bundleIdentifier: string, teamIdentifier: string | null): this;
 }
 
 /**
@@ -47,13 +62,24 @@ declare class AEAssessmentConfiguration extends NSObject implements NSCopying {
 
 	/**
 	 * @since 14.0
+	 * @deprecated 27.0
 	 */
 	allowsAccessibilitySpeech: boolean;
+
+	/**
+	 * @since 27.0
+	 */
+	allowsAccessibilitySpokenContent: boolean;
 
 	/**
 	 * @since 26.0
 	 */
 	allowsAccessibilityTypingFeedback: boolean;
+
+	/**
+	 * @since 27.0
+	 */
+	allowsAccessibilityVoiceOver: boolean;
 
 	/**
 	 * @since 14.0

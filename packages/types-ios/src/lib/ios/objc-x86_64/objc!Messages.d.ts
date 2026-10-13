@@ -546,3 +546,23 @@ declare class MSStickerView extends UIView {
  * @since 10.0
  */
 declare var MSStickersErrorDomain: string;
+
+/**
+ * @since 27.0
+ */
+declare class MSUPIRequest extends NSObject {
+
+	static alloc(): MSUPIRequest; // inherited from NSObject
+
+	static new(): MSUPIRequest; // inherited from NSObject
+
+	readonly recipients: NSArray<string>;
+
+	readonly validationToken: string;
+
+	constructor(o: { validationToken: string; recipients: NSArray<string> | string[]; });
+
+	initWithValidationTokenRecipients(validationToken: string, recipients: NSArray<string> | string[]): this;
+
+	sendWithCompletionHandler(completionHandler: (p1: boolean) => void): void;
+}

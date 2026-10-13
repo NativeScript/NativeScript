@@ -320,11 +320,60 @@ declare class CTCellularPlanStatus extends NSObject {
 	static checkValidityOfTokenCompletionHandler(token: string, completionHandler: (p1: boolean, p2: NSError | null) => void): void;
 
 	/**
+	 * @since 27.0
+	 */
+	static getAuthorizationStatusForPhoneNumberCompletion(phoneNumber: string, completionHandler: (p1: CTCellularPlanStatusAuthorization, p2: NSError | null) => void): void;
+
+	/**
+	 * @since 27.0
+	 */
+	static getStatusHintForPhoneNumberCompletion(phoneNumber: string, completionHandler: (p1: CTCellularPlanStatusAvailability, p2: CTCellularPlanStatusAvailabilityConfidence, p3: NSError | null) => void): void;
+
+	/**
 	 * @since 26.0
 	 */
 	static getTokenWithCompletion(completionHandler: (p1: string | null, p2: NSError | null) => void): void;
 
 	static new(): CTCellularPlanStatus; // inherited from NSObject
+
+	/**
+	 * @since 27.0
+	 */
+	static requestAuthorizationForPhoneNumberCompletion(phoneNumber: string, completionHandler: (p1: CTCellularPlanStatusAuthorization, p2: NSError | null) => void): void;
+}
+
+/**
+ * @since 27.0
+ */
+declare const enum CTCellularPlanStatusAuthorization {
+
+	NotAuthorized = 0,
+
+	Authorized = 1,
+
+	Restricted = 2,
+
+	NotSupported = 3
+}
+
+/**
+ * @since 27.0
+ */
+declare const enum CTCellularPlanStatusAvailability {
+
+	Unavailable = 0,
+
+	Available = 1
+}
+
+/**
+ * @since 27.0
+ */
+declare const enum CTCellularPlanStatusAvailabilityConfidence {
+
+	Low = 0,
+
+	High = 1
 }
 
 interface CTError {
@@ -332,6 +381,52 @@ interface CTError {
 	error: number;
 }
 declare var CTError: interop.StructType<CTError>;
+
+/**
+ * @since 27.0
+ */
+declare class CTQuickSwitchManager extends NSObject {
+
+	static alloc(): CTQuickSwitchManager; // inherited from NSObject
+
+	static new(): CTQuickSwitchManager; // inherited from NSObject
+
+	static registerForLaunchOnQuickSwitchStateEvents(completionHandler: (p1: NSError | null) => void): void;
+
+	static unregisterForLaunchOnQuickSwitchStateEvents(completionHandler: (p1: NSError | null) => void): void;
+
+	delegate: CTQuickSwitchManagerDelegate | null;
+
+	getDeviceState(completionHandler: (p1: CTQuickSwitchState, p2: NSError | null) => void): void;
+
+	getPhoneNumberStateForSuffixCompletion(phoneNumberSuffix: string, completionHandler: (p1: CTQuickSwitchState, p2: NSError | null) => void): void;
+}
+
+/**
+ * @since 27.0
+ */
+interface CTQuickSwitchManagerDelegate extends NSObjectProtocol {
+
+	quickSwitchManagerDidChangeToState?(quickSwitchManager: CTQuickSwitchManager, state: CTQuickSwitchState): void;
+}
+declare var CTQuickSwitchManagerDelegate: {
+
+	prototype: CTQuickSwitchManagerDelegate;
+};
+
+/**
+ * @since 27.0
+ */
+declare const enum CTQuickSwitchState {
+
+	Failed = 0,
+
+	NotEnrolled = 1,
+
+	Active = 2,
+
+	Passive = 3
+}
 
 /**
  * @since 7.0

@@ -1371,14 +1371,34 @@ declare function CFPlugInGetTypeID(): number;
 
 declare function CFPlugInInstanceCreate(allocator: any, factoryUUID: any, typeUUID: any): interop.Pointer | interop.Reference<any> | null;
 
+/**
+ * @since 2.0
+ * @deprecated 27.0
+ */
 declare function CFPlugInInstanceCreateWithInstanceDataSize(allocator: any, instanceDataSize: number, deallocateInstanceFunction: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any> | null) => void>, factoryName: string, getInterfaceFunction: interop.FunctionReference<(p1: any, p2: string, p3: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | null) => boolean>): any;
 
+/**
+ * @since 2.0
+ * @deprecated 27.0
+ */
 declare function CFPlugInInstanceGetFactoryName(instance: any): string;
 
+/**
+ * @since 2.0
+ * @deprecated 27.0
+ */
 declare function CFPlugInInstanceGetInstanceData(instance: any): interop.Pointer | interop.Reference<any> | null;
 
+/**
+ * @since 2.0
+ * @deprecated 27.0
+ */
 declare function CFPlugInInstanceGetInterfaceFunctionTable(instance: any, interfaceName: string, ftbl: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
+/**
+ * @since 2.0
+ * @deprecated 27.0
+ */
 declare function CFPlugInInstanceGetTypeID(): number;
 
 declare function CFPlugInIsLoadOnDemand(plugIn: any): boolean;

@@ -16,6 +16,11 @@ declare var MTAudioProcessingTapCallbacks: interop.StructType<MTAudioProcessingT
 declare function MTAudioProcessingTapCreate(allocator: any | null, callbacks: interop.Pointer | interop.Reference<MTAudioProcessingTapCallbacks> | ArrayBufferLike | ArrayBufferView, flags: number, tapOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
 
 /**
+ * @since 27.0
+ */
+declare function MTAudioProcessingTapCreateWithPreferredFormat(allocator: any | null, callbacks: interop.Pointer | interop.Reference<MTAudioProcessingTapCallbacks> | ArrayBufferLike | ArrayBufferView, flags: number, preferredFormat: any | null, tapOut: interop.Pointer | interop.Reference<any | null> | ArrayBufferLike | ArrayBufferView): number;
+
+/**
  * @since 6.0
  */
 declare function MTAudioProcessingTapGetSourceAudio(tap: any, numberFrames: number, bufferListInOut: interop.Pointer | interop.Reference<AudioBufferList> | ArrayBufferLike | ArrayBufferView, flagsOut: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, timeRangeOut: interop.Pointer | interop.Reference<CMTimeRange> | ArrayBufferLike | ArrayBufferView | null, numberFramesOut: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;

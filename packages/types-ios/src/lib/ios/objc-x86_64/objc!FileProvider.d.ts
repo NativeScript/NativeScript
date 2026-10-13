@@ -499,6 +499,11 @@ interface NSFileProviderItem extends NSObjectProtocol {
 
 	mostRecentVersionDownloaded?: boolean;
 
+	/**
+	 * @since 27
+	 */
+	namespacePolicy?: NSFileProviderNamespacePolicy;
+
 	ownerNameComponents?: NSPersonNameComponents | null;
 
 	parentItemIdentifier: string;
@@ -786,6 +791,15 @@ declare const enum NSFileProviderModifyItemOptions {
 	FailOnConflict = 2,
 
 	IsImmediateUploadRequestByPresentingApplication = 4
+}
+
+declare const enum NSFileProviderNamespacePolicy {
+
+	Inherited = 0,
+
+	MaterializeLazily = 1,
+
+	MaterializeEagerly = 2
 }
 
 /**

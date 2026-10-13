@@ -37,6 +37,11 @@ declare class BAAssetPack extends NSObject {
 
 	readonly identifier: string;
 
+	/**
+	 * @since 27
+	 */
+	readonly language: string | null;
+
 	readonly userInfo: NSData | null;
 
 	readonly version: number;
@@ -62,7 +67,17 @@ declare class BAAssetPackManager extends NSObject {
 
 	delegate: BAManagedAssetPackDownloadDelegate | null;
 
+	/**
+	 * @since 27
+	 */
+	resolvedLanguage: string | null;
+
 	static readonly sharedManager: BAAssetPackManager;
+
+	/**
+	 * @since 27
+	 */
+	URLForPathAsLocalizedForLanguageError(path: string, languageIdentifier: string, error?: interop.Reference<NSError>): NSURL | null;
 
 	URLForPathError(path: string, error?: interop.Reference<NSError>): NSURL | null;
 
@@ -73,6 +88,11 @@ declare class BAAssetPackManager extends NSObject {
 
 	checkForUpdatesWithCompletionHandler(completionHandler: (p1: NSSet<string> | null, p2: NSSet<string> | null, p3: NSError | null) => void | null): void;
 
+	/**
+	 * @since 27
+	 */
+	contentsAtPathAsLocalizedForLanguageOptionsError(path: string, languageIdentifier: string, options: NSDataReadingOptions, error?: interop.Reference<NSError>): NSData | null;
+
 	contentsAtPathSearchingInAssetPackWithIdentifierOptionsError(path: string, assetPackIdentifier: string | null, options: NSDataReadingOptions, error?: interop.Reference<NSError>): NSData | null;
 
 	ensureLocalAvailabilityOfAssetPackCompletionHandler(assetPack: BAAssetPack, completionHandler: (p1: NSError | null) => void): void;
@@ -82,16 +102,49 @@ declare class BAAssetPackManager extends NSObject {
 	 */
 	ensureLocalAvailabilityOfAssetPackRequireLatestVersionCompletionHandler(assetPack: BAAssetPack, shouldUpdate: boolean, completionHandler: (p1: NSError | null) => void): void;
 
+	/**
+	 * @since 27
+	 */
+	ensureLocalAvailabilityOfAssetPacksCompletionHandler(assetPacks: NSSet<BAAssetPack>, completionHandler: (p1: NSError | null) => void): void;
+
+	/**
+	 * @since 27
+	 */
+	ensureLocalAvailabilityOfAssetPacksRequireLatestVersionsCompletionHandler(assetPacks: NSSet<BAAssetPack>, shouldUpdate: boolean, completionHandler: (p1: NSError | null) => void): void;
+
+	/**
+	 * @since 27
+	 */
+	fileDescriptorForPathAsLocalizedForLanguageError(path: string, languageIdentifier: string, error?: interop.Reference<NSError>): number;
+
 	fileDescriptorForPathSearchingInAssetPackWithIdentifierError(path: string, assetPackIdentifier: string | null, error?: interop.Reference<NSError>): number;
 
+	/**
+	 * @since 26
+	 * @deprecated 27
+	 */
 	getAllAssetPacksWithCompletionHandler(completionHandler: (p1: NSSet<BAAssetPack> | null, p2: NSError | null) => void): void;
 
+	/**
+	 * @since 26
+	 * @deprecated 27
+	 */
 	getAssetPackWithIdentifierCompletionHandler(assetPackIdentifier: string, completionHandler: (p1: BAAssetPack | null, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 26.4
 	 */
 	getLocalStatusOfAssetPackWithIdentifierCompletionHandler(assetPackIdentifier: string, completionHandler: (p1: BAAssetPackStatus) => void): void;
+
+	/**
+	 * @since 27
+	 */
+	getLocallyAvailableLanguagesWithCompletionHandler(completionHandler: (p1: NSArray<string>) => void): void;
+
+	/**
+	 * @since 27
+	 */
+	getManifestWithCompletionHandler(completionHandler: (p1: BAAssetPackManifest | null, p2: NSError | null) => void): void;
 
 	/**
 	 * @since 26
@@ -103,6 +156,11 @@ declare class BAAssetPackManager extends NSObject {
 	 * @since 26.4
 	 */
 	getStatusRelativeToAssetPackCompletionHandler(assetPack: BAAssetPack, completionHandler: (p1: BAAssetPackStatus, p2: NSError | null) => void): void;
+
+	/**
+	 * @since 27
+	 */
+	reconcilePreferredLanguagesWithCompletionHandler(completionHandler: (p1: NSError | null) => void): void;
 
 	removeAssetPackWithIdentifierCompletionHandler(assetPackIdentifier: string, completionHandler: (p1: NSError | null) => void | null): void;
 }
@@ -118,6 +176,26 @@ declare class BAAssetPackManifest extends NSObject {
 
 	readonly assetPacks: NSSet<BAAssetPack>;
 
+	/**
+	 * @since 27
+	 */
+	readonly availableLanguages: NSArray<string>;
+
+	/**
+	 * @since 27
+	 */
+	readonly localizedAssetPacks: NSSet<BAAssetPack>;
+
+	/**
+	 * @since 27
+	 */
+	readonly primaryLanguage: string | null;
+
+	/**
+	 * @since 27
+	 */
+	readonly resolvedLanguage: string | null;
+
 	constructor(o: { fromData: NSData; applicationGroupIdentifier: string; });
 
 	constructor(o: { contentsOfURL: NSURL; applicationGroupIdentifier: string; });
@@ -126,9 +204,19 @@ declare class BAAssetPackManifest extends NSObject {
 
 	allDownloadsForContentRequest(contentRequest: BAContentRequest): NSSet<BADownload>;
 
+	/**
+	 * @since 27
+	 */
+	assetPackWithIdentifier(assetPackIdentifier: string): BAAssetPack | null;
+
 	initFromDataApplicationGroupIdentifierError(data: NSData, applicationGroupIdentifier: string, error?: interop.Reference<NSError>): this;
 
 	initWithContentsOfURLApplicationGroupIdentifierError(URL: NSURL, applicationGroupIdentifier: string, error?: interop.Reference<NSError>): this;
+
+	/**
+	 * @since 27
+	 */
+	localizedAssetPacksForLanguage(languageIdentifier: string): NSSet<BAAssetPack>;
 }
 
 /**
@@ -151,13 +239,18 @@ declare const enum BAAssetPackStatus {
 	Downloaded = 64
 }
 
+/**
+ * @since 16.1
+ */
 declare const enum BAContentRequest {
 
 	Install = 1,
 
 	Update = 2,
 
-	Periodic = 3
+	Periodic = 3,
+
+	LanguageChange = 4
 }
 
 /**
@@ -385,6 +478,11 @@ declare const enum BAErrorCode {
 declare var BAErrorDomain: string;
 
 /**
+ * @since 27
+ */
+declare var BAFailuresErrorKey: string;
+
+/**
  * @since 26
  */
 interface BAManagedAssetPackDownloadDelegate extends NSObjectProtocol {
@@ -423,13 +521,20 @@ declare const enum BAManagedErrorCode {
 
 	AssetPackNotFound = 0,
 
-	FileNotFound = 1
+	FileNotFound = 1,
+
+	LocalAvailabilityFailure = 2
 }
 
 /**
  * @since 26
  */
 declare var BAManagedErrorDomain: string;
+
+/**
+ * @since 27
+ */
+declare var BASuccessesErrorKey: string;
 
 /**
  * @since 16.1

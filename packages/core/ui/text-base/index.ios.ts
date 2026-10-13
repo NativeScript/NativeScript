@@ -327,7 +327,29 @@ export class TextBase extends TextBaseCommon {
 		}
 	}
 
+	private _deferNativeText = false;
+	private _pendingNativeTextReset: boolean | undefined;
+
+	public onResumeNativeUpdates(): void {
+		// Each text setter rebuilds the native text; the initial apply needs it once.
+		this._deferNativeText = true;
+		try {
+			super.onResumeNativeUpdates();
+		} finally {
+			this._deferNativeText = false;
+		}
+		const reset = this._pendingNativeTextReset;
+		if (reset !== undefined) {
+			this._pendingNativeTextReset = undefined;
+			this._setNativeText(reset);
+		}
+	}
+
 	_setNativeText(reset = false): void {
+		if (this._deferNativeText) {
+			this._pendingNativeTextReset = reset;
+			return;
+		}
 		this._animationWrap(() => {
 			if (reset) {
 				const nativeView = this.nativeTextViewProtected;
