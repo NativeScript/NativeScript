@@ -1,7 +1,7 @@
 import ts from 'typescript';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { cast, functionTypeParts, lambda, ident, kotlinString, numberLiteral, optionalType, type KotlinNative, type Translator } from './kotlin.ts';
+import { cast, functionTypeParts, lambda, mentions, ident, kotlinString, numberLiteral, optionalType, type KotlinNative, type Translator } from './kotlin.ts';
 import {
   ACC_ABSTRACT, ACC_BRIDGE, ACC_ENUM, ACC_FINAL, ACC_INTERFACE, ACC_PRIVATE, ACC_PROTECTED, ACC_PUBLIC, ACC_STATIC, ACC_SYNTHETIC, ACC_VARARGS,
   ClassPath, androidJar, javaTypeName, methodTypes, newer, signatureTypes, type JavaClass, type JavaMember,
@@ -1351,17 +1351,23 @@ export class AndroidNativeAPI implements KotlinNative {
     const nullableRet = tsRet.endsWith('?') || tsRet === 'Any?';
     // A parameter of a type variable takes the type argument as given (a Kotlin library's `Binder<CalendarDay, …>` is non-null).
     const typeVarParam = (k: number) => !!sig && sig.params.length === target.params.length && /^T[\w$]+;$/.test(sig.params[k]) && types[k] !== 'Any?';
-    const params = target.params.map((desc, k) => {
+    const paramTypes = target.params.map((desc, k) => {
       const p = fn.parameters[k];
       const tsType = p ? t.typeOf(p.name) : 'Any?';
       const ref = desc.startsWith('L') || desc.startsWith('[');
-      return `__a${k}: ${types[k]}${ref && !types[k].endsWith('?') && !target.m.nonNullParams?.[k] && !typeVarParam(k) && (tsType.endsWith('?') || !p || target.m.nullableParams?.[k]) ? '?' : ''}`;
+      return `${types[k]}${ref && !types[k].endsWith('?') && !target.m.nonNullParams?.[k] && !typeVarParam(k) && (tsType.endsWith('?') || !p || target.m.nullableParams?.[k]) ? '?' : ''}`;
     });
     // `onReceivedError(...args)`, reading `arguments`: what Java passes, as one list.
     const rest = t.library && fn.parameters.length === 1 && !!fn.parameters[0].dotDotDotToken;
     const packed = rest ? `jsArrayOf<Any?>(${target.params.map((d, k) => this.fromJava(`__a${k}`, d)).join(', ')})` : '';
+    // Java's parameters are `__aN`; one script takes as Java gives it is named as script names it.
+    const names = target.params.map((_, k) => `__a${k}`);
     const binds = rest ? [t.readsArguments(fn) ? `${indent}    val __arguments: JSArray<Any?> = ${packed}` : `${indent}    val ${ident((fn.parameters[0].name as ts.Identifier).text)}: JSArray<Any?> = ${packed}`] : fn.parameters.map((p, k) => {
       if (!target.params[k] || !ts.isIdentifier(p.name)) return '';
+      if (t.typeOf(p.name) === paramTypes[k] && this.fromJava(`__a${k}`, target.params[k]) === `__a${k}` && !(target.m.nullableParams?.[k] && !paramTypes[k].endsWith('?'))) {
+        names[k] = ident(p.name.text);
+        return '';
+      }
       const tsType = t.typeOf(p.name);
       const unwrapped = target.m.nullableParams?.[k] && !tsType.endsWith('?') && tsType !== 'Any?' ? `__a${k}!!` : `__a${k}`;
       const desc = target.params[k];
@@ -1377,10 +1383,13 @@ export class AndroidNativeAPI implements KotlinNative {
       const value = text ?? (narrowed ? (desc === 'Ljava/lang/Object;' ? t.fromAnyCode(unwrapped, tsType, true) : cast(unwrapped, tsType)) : this.fromJava(unwrapped, desc));
       return `${indent}    val ${ident(p.name.text)}: ${tsType} = ${value}`;
     }).filter(Boolean);
-    const head = `${this.deprecatedOverride(target.m, indent)}${indent}override fun ${ident(name)}(${params.join(', ')})`;
-    const guard = enteredGuard(name, target, indent);
+    const head = `${this.deprecatedOverride(target.m, indent)}${indent}override fun ${ident(name)}(${paramTypes.map((pt, k) => `${names[k]}: ${pt}`).join(', ')})`;
+    const guard = enteredGuard(name, names, target, indent);
+    // A binding the body never reads is left out.
+    const read = (body: string) => binds.filter((b) => mentions(body, /^\s*val (\S+):/.exec(b)![1]));
     if (target.ret === 'V') {
       const body = t.functionBody(fn, 'Unit', indent);
+      binds.splice(0, binds.length, ...read(body));
       // A parameter the body assigns is a variable of its own there, in a scope apart from its binding.
       if (binds.length && t.paramPrelude(fn).length) return `${head} {\n${guard}\n${binds.join('\n')}\n${indent}    kotlin.run ${body.replace(/\n/g, '\n    ')}\n${indent}}`;
       return `${head} {\n${[guard, ...binds].join('\n')}\n${body.slice(2)}`;
@@ -1388,6 +1397,7 @@ export class AndroidNativeAPI implements KotlinNative {
     const retType = sig ? this.kotlinType(sig.ret, typeVar) : this.kotlinType(target.ret, typeVar);
     const ref = target.ret.startsWith('L') || target.ret.startsWith('[');
     const body = t.functionBody(fn, tsRet, indent + '    ');
+    binds.splice(0, binds.length, ...read(body));
     const result = NUMERIC.has(target.ret) ? `${tsRet === 'Double' ? '__result' : 'jsToNumber(__result)'}${CONVERT[target.ret]}` : target.ret === 'C' ? '__result[0]' : target.ret.startsWith('[') ? this.arrayValue('__result', target.ret) : tsRet === 'Any?' && ref && retType !== 'Any' ? `(__result as ${retType}${target.m.nonNull ? '' : '?'})` : ref && nullableRet && target.m.nonNull ? '__result!!' : '__result';
     return [
       `${head}: ${retType}${ref && nullableRet && !target.m.nonNull ? '?' : ''} {`,
@@ -1421,7 +1431,7 @@ export class AndroidNativeAPI implements KotlinNative {
     });
     const call = `(${t.expr(value)})(${args.join(', ')})`;
     const head = `${this.deprecatedOverride(target.m, indent)}${indent}override fun ${ident(name)}(${params.join(', ')})`;
-    const guard = enteredGuard(name, target, indent);
+    const guard = enteredGuard(name, target.params.map((_, k) => `__a${k}`), target, indent);
     if (target.ret === 'V') return `${head} {
 ${guard}
 ${indent}    ${call}
@@ -2046,8 +2056,8 @@ function topLevelTypes(sig: string): string[] {
  * realm's, the call is made again there, posted for a method returning nothing, awaited for one
  * returning a value.
  */
-function enteredGuard(name: string, target: Callable, indent: string): string {
-  const args = target.params.map((_, k) => `__a${k}`).join(', ');
+function enteredGuard(name: string, params: string[], target: Callable, indent: string): string {
+  const args = params.join(', ');
   return `${indent}    jsElsewhere(__realm)?.let { return it.${target.ret === 'V' ? 'later' : 'await'} { this.${ident(name)}(${args}) } }`;
 }
 
