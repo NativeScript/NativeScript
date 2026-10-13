@@ -109,7 +109,7 @@ function translateKotlin(file: string, out: string, pkg: string): void {
   addKotlinInterfaces(translator, modules);
   rmSync(out, { recursive: true, force: true });
   mkdirSync(out, { recursive: true });
-  const header = `@file:Suppress("UNCHECKED_CAST", "UNUSED_VARIABLE", "NAME_SHADOWING", "UNREACHABLE_CODE", "UNUSED_PARAMETER", "REDUNDANT_CALL_OF_CONVERSION_METHOD")\npackage ${pkg}\n\nimport org.nativescript.kit.*\n\n`;
+  const header = `package ${pkg}\n\nimport org.nativescript.kit.*\n\n`;
   for (const m of modules) writeFileSync(join(out, m.name + '.kt'), header + lines.kotlin(m.code).code);
   writeFileSync(join(out, '__Objects.kt'), header + translator.shapesCode() + '\n');
   const inits = modules.filter((m) => m.init).map((m) => `    ${m.init}()\n`).join('');
