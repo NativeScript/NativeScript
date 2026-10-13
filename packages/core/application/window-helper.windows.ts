@@ -136,6 +136,59 @@ export function setCurrentWindowTitle(title: string): boolean {
 	}
 }
 
+const TITLE_BAR_COLORS = {
+	light: {
+		background: { A: 255, R: 243, G: 243, B: 243 },
+		foreground: { A: 255, R: 0, G: 0, B: 0 },
+		inactiveForeground: { A: 255, R: 145, G: 145, B: 145 },
+		hoverBackground: { A: 255, R: 234, G: 234, B: 234 },
+		pressedBackground: { A: 255, R: 237, G: 237, B: 237 },
+	},
+	dark: {
+		background: { A: 255, R: 32, G: 32, B: 32 },
+		foreground: { A: 255, R: 255, G: 255, B: 255 },
+		inactiveForeground: { A: 255, R: 150, G: 150, B: 150 },
+		hoverBackground: { A: 255, R: 45, G: 45, B: 45 },
+		pressedBackground: { A: 255, R: 41, G: 41, B: 41 },
+	},
+};
+
+/**
+ * The system title bar stays light whatever the app's appearance. Windows App SDK 1.7+ themes it
+ * with PreferredTheme; earlier versions take the system's light or dark caption colors.
+ */
+export function setCurrentWindowTitleBarAppearance(appearance: 'dark' | 'light'): boolean {
+	const bar = (getCurrentWindow() as any)?.AppWindow?.TitleBar;
+	if (!bar) {
+		return false;
+	}
+	try {
+		const TitleBarTheme = (Microsoft.UI.Windowing as any).TitleBarTheme;
+		if (TitleBarTheme?.Dark !== undefined) {
+			bar.PreferredTheme = appearance === 'dark' ? TitleBarTheme.Dark : TitleBarTheme.Light;
+			return true;
+		}
+	} catch (_e) {}
+	try {
+		const colors = TITLE_BAR_COLORS[appearance];
+		bar.BackgroundColor = colors.background;
+		bar.ForegroundColor = colors.foreground;
+		bar.InactiveBackgroundColor = colors.background;
+		bar.InactiveForegroundColor = colors.inactiveForeground;
+		bar.ButtonBackgroundColor = colors.background;
+		bar.ButtonForegroundColor = colors.foreground;
+		bar.ButtonInactiveBackgroundColor = colors.background;
+		bar.ButtonInactiveForegroundColor = colors.inactiveForeground;
+		bar.ButtonHoverBackgroundColor = colors.hoverBackground;
+		bar.ButtonHoverForegroundColor = colors.foreground;
+		bar.ButtonPressedBackgroundColor = colors.pressedBackground;
+		bar.ButtonPressedForegroundColor = colors.foreground;
+		return true;
+	} catch (_e) {
+		return false;
+	}
+}
+
 
 let _cachedScale: number | null = null;
 let _scaleWatchWired = false;
