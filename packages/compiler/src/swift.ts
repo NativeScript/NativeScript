@@ -1,7 +1,7 @@
 import type { SourceLines } from './source-lines.ts';
 import ts from 'typescript';
 import { Throws, digitsLiteral, isArrayLengthLiteral, isArrayLengthWrite, isAsync, isStatic } from './throws.ts';
-import { intlConstructor, isObjectToStringCall, isStringRaw, leadingNeverRead, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces } from './lang.ts';
+import { intlConstructor, isObjectToStringCall, isStringRaw, leadingNeverRead, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers } from './lang.ts';
 import { AsyncLowering, type AsyncCtx, type AsyncSyntax, type AsyncTranslator } from './async.ts';
 import { CoreAPI, isCoreDeclaration, packageOf } from './core.ts';
 import type { KitMember } from './kit-index.ts';
@@ -929,9 +929,15 @@ export class Translator implements AsyncTranslator {
     return sym.name === 'EventData' || (t.isClassOrInterface() && this.isEventData(t));
   }
 
+  private undeclaredRoots: Set<ts.ClassLikeDeclaration> | null = null;
+  private givenUndeclared(): Set<ts.ClassLikeDeclaration> {
+    return (this.undeclaredRoots ??= this.library ? new Set() : classesGivenUndeclaredMembers(this.sourceFiles, this.checker));
+  }
+
   /** A member script adds to a native object (`nativeView.nsView`): declared by the code itself, not by the SDK. */
   private isExpando(e: ts.PropertyAccessExpression): boolean {
     if (this.declaredOnly(e)) return true;
+    if (!this.library && undeclaredMemberOf(e, this.checker)) return true;
     if (!this.library && this.core.eventMember(e)) return true;
     const decl = this.checker.getSymbolAtLocation(e.name)?.declarations?.[0];
     const target = this.checker.getNonNullableType(this.checker.getTypeAtLocation(e.expression));
@@ -3768,7 +3774,7 @@ ${members.join('\n')}
     const isError = !!base && !appBase && !kitRoot && !collection;
     // A class at the root of its hierarchy keeps what script adds to its instances (JSExpando): core's, and a
     // plugin's, written as JavaScript is (`device[adapter_] = adapter`).
-    const expando = (!!this.library || this.pluginFiles.has(cls.getSourceFile().fileName)) && !base;
+    const expando = (!!this.library || this.pluginFiles.has(cls.getSourceFile().fileName) || this.givenUndeclared().has(cls)) && !base;
     const isView = !!kitRoot && this.core.isKitView(kitRoot);
     const registered = (n: string) => isView && !!this.properties?.isRegistered(cls, n);
     // The library's interfaces (`Iterable<T>`, `Iterator<T>`) are protocols of the kit's, conformed to below.

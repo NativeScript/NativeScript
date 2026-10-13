@@ -221,3 +221,36 @@ export function implementedInterfaces(checker: ts.TypeChecker, cls: ts.ClassLike
     return !(s && s.flags & ts.SymbolFlags.Class);
   });
 }
+
+/**
+ * `object.name` where the object is an instance of a program class and the type checker finds no member `name`: an own
+ * property of the instance, read and written by name. Only code checked leniently reaches here: a plugin's component is
+ * typed by the plugin's declarations but compiled against its platform file, whose stub class may declare none of them.
+ */
+export function undeclaredMemberOf(e: ts.PropertyAccessExpression, checker: ts.TypeChecker): ts.ClassLikeDeclaration | null {
+  if (checker.getSymbolAtLocation(e.name)) return null;
+  const t = checker.getNonNullableType(checker.getTypeAtLocation(e.expression));
+  if (t.getConstructSignatures().length) return null;
+  const decl = t.getSymbol()?.valueDeclaration;
+  return decl && ts.isClassLike(decl) && !decl.getSourceFile().isDeclarationFile ? decl : null;
+}
+
+/** The program classes, each the root of its program hierarchy, whose instances are given members their classes don't declare. */
+export function classesGivenUndeclaredMembers(files: readonly ts.SourceFile[], checker: ts.TypeChecker): Set<ts.ClassLikeDeclaration> {
+  const roots = new Set<ts.ClassLikeDeclaration>();
+  const baseOf = (cls: ts.ClassLikeDeclaration) => {
+    const h = cls.heritageClauses?.find((x) => x.token === ts.SyntaxKind.ExtendsKeyword)?.types[0];
+    const d = h && checker.getTypeAtLocation(h.expression).getSymbol()?.valueDeclaration;
+    return d && ts.isClassLike(d) && !d.getSourceFile().isDeclarationFile ? d : undefined;
+  };
+  const visit = (n: ts.Node) => {
+    if (ts.isPropertyAccessExpression(n)) {
+      let cls = undeclaredMemberOf(n, checker);
+      for (let b = cls && baseOf(cls); b; b = baseOf(b)) cls = b;
+      if (cls) roots.add(cls);
+    }
+    ts.forEachChild(n, visit);
+  };
+  for (const sf of files) if (!sf.isDeclarationFile) visit(sf);
+  return roots;
+}

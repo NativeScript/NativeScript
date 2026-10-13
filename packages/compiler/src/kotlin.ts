@@ -3,7 +3,7 @@ import ts from 'typescript';
 import { dirname as pathDirname, resolve as pathResolve } from 'node:path';
 import { AsyncLowering, usedBefore, type AsyncCtx, type AsyncSyntax, type AsyncTranslator } from './async.ts';
 import { isAsync, isStatic } from './throws.ts';
-import { intlConstructor, isObjectToStringCall, isStringRaw, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces } from './lang.ts';
+import { intlConstructor, isObjectToStringCall, isStringRaw, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers } from './lang.ts';
 import { isCoreDeclaration } from './core.ts';
 import type { Properties } from './properties.ts';
 import { recognizePatterns, type Patterns } from './patterns.ts';
@@ -2399,7 +2399,8 @@ export class Translator implements AsyncTranslator {
     const ownValueOf = cls.members.some((m) => ts.isMethodDeclaration(m) && !isStatic(m) && !!m.body && m.name.getText() === 'valueOf' && !m.parameters.length) && !this.inheritedMethod(cls, 'valueOf');
     const supertypes = [...implemented, ...(ownToString ? ['JSStringConvertible'] : []), ...(ownValueOf ? ['JSValueOf'] : [])];
     // Library mode: a class at the root of its hierarchy keeps what script adds to its instances, and reads its prototype's.
-    const expando = !!this.library && !base;
+    // An app's class does where script gives its instances members it doesn't declare.
+    const expando = (!!this.library || this.givenUndeclared().has(cls)) && !base;
     if (expando) supertypes.push('JSExpando');
     else if (!base && !implemented.length) supertypes.push('JSDynamic');
     const overridden = this.overridden(cls, implemented);
@@ -3585,7 +3586,7 @@ export class Translator implements AsyncTranslator {
     while (ts.isParenthesizedExpression(e)) e = e.expression;
     // App mode: a member of an untyped object (`(<any>args.object).returnPress++`).
     if (!this.library) {
-      if (ts.isPropertyAccessExpression(e) && this.isAny(e.expression)) return { obj: this.expr(e.expression), key: kotlinString(e.name.text) };
+      if (ts.isPropertyAccessExpression(e) && (this.isAny(e.expression) || undeclaredMemberOf(e, this.checker))) return { obj: this.expr(e.expression), key: kotlinString(e.name.text) };
       // A key the object's type does not declare (`obj['count']++` of an Observable): the object's by name.
       const undeclared = ts.isElementAccessExpression(e) && ts.isStringLiteral(e.argumentExpression) && !this.checker.getNonNullableType(this.checker.getTypeAtLocation(e.expression)).getProperty(e.argumentExpression.text);
       return ts.isElementAccessExpression(e) && (this.isAny(e.expression) || undeclared) ? { obj: this.expr(e.expression), key: this.propertyKey(e.argumentExpression) } : null;
@@ -3602,7 +3603,13 @@ export class Translator implements AsyncTranslator {
     return !!(sym && sym.flags & ts.SymbolFlags.Class) && !sym.declarations?.every((d) => d.getSourceFile().isDeclarationFile);
   }
 
+  private undeclaredRoots: Set<ts.ClassLikeDeclaration> | null = null;
+  private givenUndeclared(): Set<ts.ClassLikeDeclaration> {
+    return (this.undeclaredRoots ??= this.library ? new Set() : classesGivenUndeclaredMembers(this.sourceFiles, this.checker));
+  }
+
   private isExpando(e: ts.PropertyAccessExpression): boolean {
+    if (!this.library && undeclaredMemberOf(e, this.checker)) return true;
     const decl = this.checker.getSymbolAtLocation(e.name)?.declarations?.[0];
     // A field an interface of the program adds to a native class (`interface ExpandedAnimator extends android.animation.Animator { entry }`).
     if (decl && ts.isPropertySignature(decl) && ts.isInterfaceDeclaration(decl.parent) && !decl.getSourceFile().isDeclarationFile) {
