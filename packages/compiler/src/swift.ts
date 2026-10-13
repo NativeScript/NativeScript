@@ -144,6 +144,7 @@ const BUFFER_TYPES = ['ArrayBuffer', ...TYPED_ARRAYS, 'DataView'];
 const WEB_CLASSES = ['TextEncoder', 'TextDecoder', 'Crypto', 'SubtleCrypto', 'CryptoKey', 'CryptoKeyPair', 'KeyAlgorithm'];
 /** The web's option and algorithm dictionaries, which script writes as object literals and the runtime reads by key. */
 const WEB_DICTIONARIES = ['TextDecoderOptions', 'Algorithm', 'HmacKeyGenParams', 'RsaKeyGenParams', 'RsaHashedKeyGenParams', 'RsaOaepParams'];
+const ARRAY_CALLBACK_METHODS = new Set(['forEach', 'map', 'filter', 'some', 'every', 'find', 'findIndex', 'findLast', 'flatMap']);
 const isTypedArrayType = (t: string) => /^JS(Int8|Uint8|Uint8Clamped|Int16|Uint16|Int32|Uint32|Float32|Float64|BigInt64|BigUint64)Array$/.test(t);
 // No prototype: a name like `toString` is no error class.
 const BUILTIN_CLASSES: Record<string, string> = Object.assign(Object.create(null), { Promise: 'JSThenable', Array: 'JSArrayProtocol', Map: 'JSMapProtocol', Set: 'JSSetProtocol', Date: 'JSDate' }, Object.fromEntries(BUFFER_TYPES.map((n) => [n, `JS${n}`])));
@@ -3501,6 +3502,13 @@ ${members.join('\n')}
     const forced = this.closureSlots.get(fn);
     if (forced) return forced.slice(fn.parameters.length).map((p) => p.replace(/^@escaping /, ''));
     const slot = this.slotOf(fn);
+    // The runtime's array methods take callbacks of one to three parameters, never none.
+    const call = fn.parent;
+    if (!fn.parameters.length && slot && ts.isCallExpression(call) && call.arguments[0] === fn && ts.isPropertyAccessExpression(call.expression)
+      && ARRAY_CALLBACK_METHODS.has(call.expression.name.text) && this.checker.isArrayType(this.checker.getNonNullableType(this.checker.getTypeAtLocation(call.expression.expression)))) {
+      const first = slot.getParameters()[0];
+      if (first) return [this.type(this.checker.getTypeOfSymbolAtLocation(first, fn), fn)];
+    }
     const coreSlot = !!slot?.getDeclaration() && isCoreDeclaration(slot.getDeclaration() as ts.Declaration);
     // The app's own function types are Swift's as declared: every parameter, whatever the closure uses.
     const appSlot = !!slot?.getDeclaration() && !slot.getDeclaration().getSourceFile().isDeclarationFile;

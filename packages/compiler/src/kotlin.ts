@@ -6612,7 +6612,9 @@ export class Translator implements AsyncTranslator {
         // Library mode: map's result is the element type the call gives, so a function value can be adapted to it.
         // So is `map<U>(…)`'s, whose U the callback's results are held as.
         const mapped = name === 'map' && ((this.library && !(ts.isArrowFunction(f) || ts.isFunctionExpression(f))) || !!e.typeArguments?.length) ? this.typeOf(e).replace(/\?$/, '').replace(/^JSArray<(.*)>$/, '$1') : null;
-        const ret = name === 'forEach' ? 'Unit' : ['map', 'flatMap'].includes(name) ? mapped : 'Boolean';
+        // A literal declaring no parameters still takes the element: the runtime's overloads start at one.
+        const bare = (ts.isArrowFunction(f) || ts.isFunctionExpression(f)) && !f.parameters.length ? this.returnTypeOf(f) : null;
+        const ret = name === 'forEach' ? 'Unit' : ['map', 'flatMap'].includes(name) ? mapped ?? bare : 'Boolean';
         const slot = ret ? `(${[element, 'Double', `JSArray<${element}>`].slice(0, Math.min(3, arity)).join(', ')}) -> ${ret}` : undefined;
         const code = this.ignoringThisArg(e, target, `${t}.${name}(${this.fn(f, slot)})`);
         // A type-guard filter or find (`(s): s is Circle => …`): its elements as the guard narrows them.
