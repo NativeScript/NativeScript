@@ -165,11 +165,14 @@ function outsideClosures(code: string): string {
 }
 
 /**
- * The element type passed to `jsArrayOf`, `jsArrayOrNil` or `jsRecordOf` where Swift could infer an optional of it
- * from a write through the result (`jsRecordOf(values) { $0 }[key] = value`).
+ * The container type passed to `jsArrayOf`, `jsArrayOrNil` or `jsRecordOf` where Swift would otherwise infer an optional
+ * element: from a write through the result (`jsRecordOf(values) { $0 }[key] = value`), or from a class element's
+ * implicitly unwrapped conversion. Only an array or record already of that type is the same one, so a push through
+ * it stays. Spelled as a type, where a member named like the class cannot shadow it.
  */
-function typedElement(element: string): string {
-  return /^(Any|String|Double|Bool)\?$/.test(element) ? `, of: (${element}).self` : '';
+function typedElement(container: 'JSArray' | 'JSRecord', element: string): string {
+  const named = /^(Any|String|Double|Bool)\?$/.test(element) || (/^[A-Z][\w.]*(<.+>)?$/.test(element) && !/^(Any|String|Double|Bool|Void)$/.test(element));
+  return named ? `, as: ${container}<${element}>.self` : '';
 }
 
 export class Translator implements AsyncTranslator {
@@ -2389,7 +2392,7 @@ ${members.join('\n')}
     }
     const m = /^JSArray<(.*)>$/.exec(type);
     // Lenient code: undefined where an array is declared stays undefined (`let result: string[] = cache[key]; if (result) …`).
-    if (m) return `${this.lenient ? 'jsArrayOrNil' : 'jsArrayOf'}(${code}${typedElement(m[1])}) { ${this.fromAny('$0', m[1])} }`;
+    if (m) return `${this.lenient ? 'jsArrayOrNil' : 'jsArrayOf'}(${code}${typedElement('JSArray', m[1])}) { ${this.fromAny('$0', m[1])} }`;
     // A promise held untyped (core's `animate()` gives its AnimationPromise as `any`): itself, or one adopting it.
     const pm = /^JSPromise<(.*)>$/.exec(type);
     if (pm) return `jsPromiseOf(${code}) { ${pm[1] === 'Void' ? '_ in ()' : this.fromAny('$0', pm[1])} }`;
@@ -2399,7 +2402,7 @@ ${members.join('\n')}
     if (om) return `{ (__a: Any?) -> ${type} in jsIsNullish(__a) ? nil : jsArrayOf(__a) { ${this.fromAny('$0', om[1])} } }(${code})`;
     const r = /^JSRecord<(.*)>\??$/.exec(type);
     // A record's values are read as its type says where they have it (a gesture's extraData holds arrays beside its numbers).
-    if (r) return type.endsWith('?') ? `{ (__r: Any?) -> ${type} in jsIsNullish(__r) ? nil : jsRecordOf(__r${typedElement(r[1])}) { ${this.fromAnyCode('$0', r[1], true)} } }(${code})` : `jsRecordOf(${code}${typedElement(r[1])}) { ${this.fromAnyCode('$0', r[1], true)} }`;
+    if (r) return type.endsWith('?') ? `{ (__r: Any?) -> ${type} in jsIsNullish(__r) ? nil : jsRecordOf(__r${typedElement('JSRecord', r[1])}) { ${this.fromAnyCode('$0', r[1], true)} } }(${code})` : `jsRecordOf(${code}${typedElement('JSRecord', r[1])}) { ${this.fromAnyCode('$0', r[1], true)} }`;
     const parts = /^\((.*)\)$/.exec(type) && splitTopLevel(type.slice(1, -1));
     if (parts && parts.length > 1 && !type.includes('->')) {
       // A tuple type reads an untyped array's elements.
