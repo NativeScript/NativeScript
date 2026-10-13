@@ -7299,6 +7299,14 @@ export class Translator implements AsyncTranslator {
     return this.checker.isTypeAssignableTo(left, right) || !this.checker.isTypeAssignableTo(right, left);
   }
 
+  /** An expression that only reads: pure, or `typeof` and comparisons of such reads. */
+  private readsOnly(e: ts.Expression): boolean {
+    while (ts.isParenthesizedExpression(e)) e = e.expression;
+    if (ts.isTypeOfExpression(e)) return ts.isIdentifier(e.expression);
+    if (ts.isBinaryExpression(e) && [ts.SyntaxKind.EqualsEqualsEqualsToken, ts.SyntaxKind.ExclamationEqualsEqualsToken, ts.SyntaxKind.AmpersandAmpersandToken, ts.SyntaxKind.BarBarToken].includes(e.operatorToken.kind)) return this.readsOnly(e.left) && this.readsOnly(e.right);
+    return this.pure(e);
+  }
+
   /** What `typeof x` gives where x's type decides it (`typeof size` of a number), or null. */
   private typeofConstant(e: ts.TypeOfExpression): string | null {
     if (neverDefined(e.expression, this.checker)) return 'undefined';
@@ -7335,7 +7343,10 @@ export class Translator implements AsyncTranslator {
     if (op === K.AmpersandAmpersandToken || op === K.BarBarToken) {
       const l = this.staticTruth(e.left);
       if (l === (op === K.BarBarToken)) return l;
-      return l === undefined ? undefined : this.staticTruth(e.right);
+      if (l !== undefined) return this.staticTruth(e.right);
+      // `typeof Reflect === 'object' && typeof Reflect.construct === 'function'` of an API Android lacks: the read alone decides nothing.
+      const r = this.staticTruth(e.right);
+      return r === (op === K.BarBarToken) && this.readsOnly(e.left) ? r : undefined;
     }
     if (![K.EqualsEqualsEqualsToken, K.ExclamationEqualsEqualsToken, K.EqualsEqualsToken, K.ExclamationEqualsToken].includes(op)) return undefined;
     const negate = op === K.ExclamationEqualsEqualsToken || op === K.ExclamationEqualsToken;
