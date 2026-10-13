@@ -1712,7 +1712,10 @@ export class Translator implements AsyncTranslator {
     lines.push('    private var jsExtra: JSDynamic? = null');
     lines.push('    companion object {');
     // Library mode: a class-typed field a caller fills with another class's object (core's application as an event's `object`): none.
-    const field = (f: ShapeField) => (this.library && /^[A-Z]\w*\?$/.test(f.type) && !f.type.startsWith('JS') && this.isObjectType(f.type) ? `(jsField(o, ${kotlinString(f.name)}) as? ${f.type.slice(0, -1)})` : this.fromAny(`jsField(o, ${kotlinString(f.name)})`, f.type));
+    // A string, number or boolean the object lacks (parsed JSON missing a field) reads as its zero, as on iOS.
+    const zero: Record<string, string> = { String: '""', Double: 'Double.NaN', Boolean: 'false' };
+    const field = (f: ShapeField) => (this.library && /^[A-Z]\w*\?$/.test(f.type) && !f.type.startsWith('JS') && this.isObjectType(f.type) ? `(jsField(o, ${kotlinString(f.name)}) as? ${f.type.slice(0, -1)})`
+      : !this.library && zero[f.type] ? this.fromAny(`(jsField(o, ${kotlinString(f.name)}) ?: ${zero[f.type]})`, f.type) : this.fromAny(`jsField(o, ${kotlinString(f.name)})`, f.type));
     lines.push(`        fun fromJS(o: Any?): ${name} = ${name}(${[...fields.map((f) => `${ident(f.name)} = ${field(f)}`), 'jsOrder = (o as? JSDynamic)?.jsKeys'].join(', ')}).also { it.jsExtra = o as? JSDynamic }`);
     lines.push('    }');
     const optional = fields.filter((f) => f.type.endsWith('?') && !isFunctionType(f.type));
