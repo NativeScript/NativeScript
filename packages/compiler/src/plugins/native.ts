@@ -7,6 +7,7 @@ import { basename, dirname, join, relative, sep } from 'node:path';
 import { iosTarget, moduleOfDeclaration, nativeTable, registerDeclarationModule } from '../natives/symbols.ts';
 import { boundToEngine, definedObjCClasses, productLines, type Dependencies, type SwiftPackage } from '../ios-dependencies.ts';
 import type { PluginSource } from './source.ts';
+import { mirror } from '../mirror.ts';
 
 /**
  * The iOS code plugins ship in `platforms/ios`, linked as it is, its files
@@ -71,8 +72,21 @@ interface NativeSources { name: string; version: string; dir: string; ios: strin
  * same native API, which `NSBinding_<package>.install()` puts in `globalThis`.
  */
 export function pluginNative(sources: PluginSource[], outDir: string, o: { deps: Dependencies; packages: SwiftPackage[]; app?: { module: string; src: string; declarations: string[] }; declarations: string[]; bindings: string; say: (m: string) => void }): PluginNative {
+  // Assembled in a scratch folder and mirrored into the project, so a rebuild leaves unchanged files as they were.
   const root = join(outDir, 'Plugins');
-  rmSync(root, { recursive: true, force: true });
+  const stage = mkdtempSync(join(tmpdir(), 'ns-plugins-'));
+  try {
+    const native = assemble(sources, root, stage, o);
+    if (readdirSync(stage).length) mirror(stage, root);
+    else rmSync(root, { recursive: true, force: true });
+    return native;
+  } finally {
+    rmSync(stage, { recursive: true, force: true });
+  }
+}
+
+/** Writes the plugins' files to `stage`, returning paths under `root`, where they are mirrored. */
+function assemble(sources: PluginSource[], root: string, stage: string, o: Parameters<typeof pluginNative>[2]): PluginNative {
   const errors: string[] = [];
   const sets: NativeSources[] = [...sources].sort((a, b) => a.name.localeCompare(b.name)).map((s) => ({ name: s.name, version: s.version, dir: s.dir, ios: join(s.dir, 'platforms', 'ios'), typings: s.typings }));
   if (o.app) sets.push({ name: 'App_Resources', version: 'app', dir: dirname(dirname(o.app.src)), ios: o.app.src, typings: o.app.declarations, appModule: o.app.module });
@@ -88,7 +102,7 @@ export function pluginNative(sources: PluginSource[], outDir: string, o: { deps:
   }
 
   for (const t of all) {
-    const to = join(root, t.path);
+    const to = join(stage, t.path);
     if (t.kind === 'binary') cpSync(t.from, to, { recursive: true, verbatimSymlinks: true });
     else for (const f of t.files) {
       mkdirSync(dirname(join(to, relative(t.from, f))), { recursive: true });
@@ -96,7 +110,7 @@ export function pluginNative(sources: PluginSource[], outDir: string, o: { deps:
     }
   }
   const packaged = all.filter((t) => t.kind !== 'swift' && !t.inApp);
-  if (packaged.length) writeFileSync(join(root, 'Package.swift'), manifest(packaged));
+  if (packaged.length) writeFileSync(join(stage, 'Package.swift'), manifest(packaged));
 
   const left = new Set<Target>();
   for (const { source, targets } of perPackage) {
@@ -109,7 +123,7 @@ export function pluginNative(sources: PluginSource[], outDir: string, o: { deps:
         if (t.inApp && t.kind === 'swift') {
           o.say(`App_Resources/iOS/src is left out: ${(e as Error).message}`);
           left.add(t);
-          rmSync(join(root, t.path), { recursive: true, force: true });
+          rmSync(join(stage, t.path), { recursive: true, force: true });
           return { classes: {} } as ReturnType<typeof nativeTable>;
         }
         throw new Error(`${source.name}: ${(e as Error).message}`);
@@ -128,7 +142,7 @@ export function pluginNative(sources: PluginSource[], outDir: string, o: { deps:
   }
   const bindings = sets.filter((x) => !x.appModule && existsSync(join(o.bindings, x.name, 'ios'))).map((x) => {
     const dir = join(root, 'Bindings', derivedModule(x.name).replace(/^NSPlugin_/, ''));
-    cpSync(join(o.bindings, x.name, 'ios'), dir, { recursive: true });
+    cpSync(join(o.bindings, x.name, 'ios'), join(stage, relative(root, dir)), { recursive: true });
     return { dir, installer: derivedModule(x.name).replace(/^NSPlugin_/, 'NSBinding_'), conditions: bindingConditions(join(o.bindings, x.name, 'ios.conditions.json'), x.ios) };
   });
   // A package's or pod's module is imported where the program declares something of it.
