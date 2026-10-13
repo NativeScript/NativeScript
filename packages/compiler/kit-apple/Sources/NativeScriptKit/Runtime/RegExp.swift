@@ -29,11 +29,12 @@ public final class JSRegExp: JSDynamic, JSStringConvertible {
 
     public convenience init(_ source: String, _ flags: String = "") throws {
         self.init(checked: source, flags)
-        compiled = try JSRegExp.compile(source, flags)
+        compiled = try JSRegExp.compile(self.source, flags)
     }
 
     private init(checked source: String, _ flags: String) {
-        self.source = source
+        // An empty pattern's source is "(?:)", which ICU also accepts where it refuses "".
+        self.source = source.isEmpty ? "(?:)" : source
         self.flags = String(flags.sorted())
     }
 
