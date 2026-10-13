@@ -19,6 +19,10 @@ export function getNativeSelectedIndex(tabView: TabView): number {
 	return viewPager ? viewPager.getCurrentItem() : -1;
 }
 
+export function getNativeProminentTabIdentifier(tabView: TabView): string | null | undefined {
+	return undefined;
+}
+
 export function getNativeFont(tabView: TabView): any {
 	const tv: android.widget.TextView = (<org.nativescript.widgets.TabLayout>(<any>tabView)._tabLayout).getTextViewForItemAt(0);
 	if (tv) {

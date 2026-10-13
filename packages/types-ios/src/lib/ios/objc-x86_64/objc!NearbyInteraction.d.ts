@@ -86,11 +86,26 @@ declare class NIDLTDOAConfiguration extends NIConfiguration {
 
 	static new(): NIDLTDOAConfiguration; // inherited from NSObject
 
+	/**
+	 * @since 27.0
+	 */
+	discoveryMethod: NIDLTDOADiscoveryMethod;
+
 	networkIdentifier: number;
 
 	constructor(o: { networkIdentifier: number; });
 
+	/**
+	 * @since 27.0
+	 */
+	constructor(o: { networkIdentifier: number; discoveryMethod: NIDLTDOADiscoveryMethod; });
+
 	initWithNetworkIdentifier(networkIdentifier: number): this;
+
+	/**
+	 * @since 27.0
+	 */
+	initWithNetworkIdentifierDiscoveryMethod(networkIdentifier: number, discoveryMethod: NIDLTDOADiscoveryMethod): this;
 }
 
 declare const enum NIDLTDOACoordinatesType {
@@ -98,6 +113,13 @@ declare const enum NIDLTDOACoordinatesType {
 	Geodetic = 0,
 
 	Relative = 1
+}
+
+declare const enum NIDLTDOADiscoveryMethod {
+
+	WiFi = 0,
+
+	BluetoothLowEnergy = 1
 }
 
 /**
@@ -113,13 +135,38 @@ declare class NIDLTDOAMeasurement extends NSObject implements NSCopying, NSSecur
 
 	readonly carrierFrequencyOffset: number;
 
+	/**
+	 * @since 27.0
+	 */
+	readonly clusterInitiatorAddress: number;
+
 	readonly coordinates: interop.Reference<number>;
 
 	readonly coordinatesType: NIDLTDOACoordinatesType;
 
+	/**
+	 * @since 27.0
+	 */
+	readonly floorElevation: NIDLTDOAMeasurementFloorElevation | null;
+
 	readonly measurementType: NIDLTDOAMeasurementType;
 
+	/**
+	 * @since 27.0
+	 */
+	readonly rawReceiveTime: number;
+
+	/**
+	 * @since 27.0
+	 */
+	readonly rawTransmitTime: number;
+
 	readonly receiveTime: number;
+
+	/**
+	 * @since 27.0
+	 */
+	readonly responderClockFrequencyOffset: number | null;
 
 	readonly signalStrength: number;
 
@@ -136,6 +183,22 @@ declare class NIDLTDOAMeasurement extends NSObject implements NSCopying, NSSecur
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 27.0
+ */
+declare class NIDLTDOAMeasurementFloorElevation extends NSObject implements NSCopying {
+
+	static alloc(): NIDLTDOAMeasurementFloorElevation; // inherited from NSObject
+
+	static new(): NIDLTDOAMeasurementFloorElevation; // inherited from NSObject
+
+	readonly floorNumber: number;
+
+	readonly height: number;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): any;
+}
+
 declare const enum NIDLTDOAMeasurementType {
 
 	Poll = 0,
@@ -149,6 +212,11 @@ declare const enum NIDLTDOAMeasurementType {
  * @since 16.0
  */
 interface NIDeviceCapability {
+
+	/**
+	 * @since 27.0
+	 */
+	supportsBluetoothChannelSounding: boolean;
 
 	supportsCameraAssistance: boolean;
 
@@ -224,6 +292,15 @@ declare const enum NIErrorCode {
  */
 declare var NIErrorDomain: string;
 
+declare const enum NIMotionActivityState {
+
+	Unknown = 0,
+
+	Stationary = 1,
+
+	Moving = 2
+}
+
 /**
  * @since 15.0
  */
@@ -245,12 +322,22 @@ declare class NINearbyAccessoryConfiguration extends NIConfiguration {
 	 */
 	constructor(o: { accessoryData: NSData; bluetoothPeerIdentifier: NSUUID; });
 
+	/**
+	 * @since 27.0
+	 */
+	constructor(o: { bluetoothChannelSoundingIdentifier: NSUUID; previousBluetoothIdentifier: NSUUID | null; });
+
 	constructor(o: { data: NSData; });
 
 	/**
 	 * @since 16.0
 	 */
 	initWithAccessoryDataBluetoothPeerIdentifierError(accessoryData: NSData, identifier: NSUUID, error?: interop.Reference<NSError>): this;
+
+	/**
+	 * @since 27.0
+	 */
+	initWithBluetoothChannelSoundingIdentifierPreviousBluetoothIdentifier(bluetoothIdentifier: NSUUID, previousBluetoothIdentifier: NSUUID | null): this;
 
 	initWithDataError(data: NSData, error?: interop.Reference<NSError>): this;
 }
@@ -395,6 +482,11 @@ declare class NISession extends NSObject {
 	 * @since 16.0
 	 */
 	setARSession(session: ARSession): void;
+
+	/**
+	 * @since 27.0
+	 */
+	updateMotionStateForObjectWithToken(motionState: NIMotionActivityState, token: NIDiscoveryToken): void;
 
 	/**
 	 * @since 16.0

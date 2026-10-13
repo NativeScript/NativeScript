@@ -16,7 +16,9 @@ declare const enum CLActivityType {
 
 	OtherNavigation = 4,
 
-	Airborne = 5
+	Airborne = 5,
+
+	Maritime = 6
 }
 
 declare const enum CLAuthorizationStatus {
@@ -304,6 +306,16 @@ declare class CLBeaconRegion extends CLRegion {
 }
 
 /**
+ * @since 27.0
+ */
+interface CLBodyIdentifiable extends NSObjectProtocol {
+}
+declare var CLBodyIdentifiable: {
+
+	prototype: CLBodyIdentifiable;
+};
+
+/**
  * @since 17.0
  */
 declare class CLCircularGeographicCondition extends CLCondition implements NSSecureCoding {
@@ -531,7 +543,9 @@ declare const enum CLLiveUpdateConfiguration {
 
 	Fitness = 3,
 
-	Airborne = 4
+	Airborne = 4,
+
+	Maritime = 5
 }
 
 /**
@@ -635,12 +649,18 @@ declare class CLLocationManager extends NSObject {
 	readonly headingAvailable: boolean;
 
 	/**
+	 * @since 27.0
+	 */
+	headingBody: CLBodyIdentifiable | null;
+
+	/**
 	 * @since 3.0
 	 */
 	headingFilter: number;
 
 	/**
 	 * @since 4.0
+	 * @deprecated 27.0
 	 */
 	headingOrientation: CLDeviceOrientation;
 

@@ -1,7 +1,7 @@
 import * as TKUnit from '../../tk-unit';
 import * as helper from '../../ui-helper';
-import { View, isIOS, StackLayout, Page, Color, Span, FormattedString, BindingOptions, Observable, TextField } from '@nativescript/core';
-import { getNativeText, getNativeHint, typeTextNatively, typeTextNativelyWithReturn, getNativeSecure, getNativeFontSize, getNativeColor, getNativeBackgroundColor, getNativeTextAlignment, getNativePlaceholderColor, getNativeFocus } from './text-field-tests-native';
+import { View, isIOS, StackLayout, Page, Color, Span, FormattedString, BindingOptions, Observable, PropertyChangeData, TextField } from '@nativescript/core';
+import { getNativeText, getNativeHint, typeTextNatively, typeCharacterNatively, typeTextNativelyWithReturn, getNativeSecure, getNativeFontSize, getNativeColor, getNativeBackgroundColor, getNativeTextAlignment, getNativePlaceholderColor, getNativeFocus } from './text-field-tests-native';
 
 // ### Binding two TextFields text property to observable view-model property.
 // >> binding-text-property-textfield
@@ -220,6 +220,27 @@ export var testTextIsUpdatedWhenUserTypes = function () {
 
 		var actualValue = textField.text;
 		TKUnit.assert(actualValue === expectedValue, 'Actual: ' + actualValue + '; Expected: ' + expectedValue);
+	});
+};
+
+export var testTextWrittenByTextChangeListenerIsNotRepeatedByTheKeystroke = function () {
+	// Android's TextWatcher reports after the edit is applied, so only the iOS
+	// delegate can apply a keystroke on top of what the listener wrote.
+	if (!isIOS) {
+		return;
+	}
+	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
+		var textField = <TextField>views[0];
+		textField.text = '';
+		textField.on('textChange', (args: PropertyChangeData) => {
+			textField.text = String(args.value).toUpperCase();
+		});
+
+		typeCharacterNatively(textField, 'a');
+		typeCharacterNatively(textField, 'b');
+
+		TKUnit.assertEqual(textField.text, 'AB', 'TextField text');
+		TKUnit.assertEqual(getNativeText(textField), 'AB', 'TextField native text');
 	});
 };
 

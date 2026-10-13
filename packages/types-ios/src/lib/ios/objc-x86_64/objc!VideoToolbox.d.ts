@@ -578,6 +578,11 @@ declare const kVTColorSyncTransformConvertFailedErr: number;
 declare var kVTCompressionPreset_Balanced: string;
 
 /**
+ * @since 27.0
+ */
+declare var kVTCompressionPreset_ConsistentQuality: string;
+
+/**
  * @since 26.0
  */
 declare var kVTCompressionPreset_HighQuality: string;
@@ -728,6 +733,11 @@ declare var kVTCompressionPropertyKey_ColorPrimaries: string;
 declare var kVTCompressionPropertyKey_ConstantBitRate: string;
 
 /**
+ * @since 27.0
+ */
+declare var kVTCompressionPropertyKey_ConstantQualityFactor: string;
+
+/**
  * @since 11.0
  */
 declare var kVTCompressionPropertyKey_ContentLightLevelInfo: string;
@@ -821,6 +831,11 @@ declare var kVTCompressionPropertyKey_HorizontalFieldOfView: string;
  * @since 8.0
  */
 declare var kVTCompressionPropertyKey_ICCProfile: string;
+
+/**
+ * @since 27
+ */
+declare var kVTCompressionPropertyKey_LogTransferFunction: string;
 
 /**
  * @since 17.0
@@ -1372,6 +1387,8 @@ declare const kVTInsufficientSourceColorDataErr: number;
 
 declare const kVTInvalidSessionErr: number;
 
+declare const kVTLogTransferFunctionMismatchErr: number;
+
 /**
  * @since 26.0
  */
@@ -1738,6 +1755,11 @@ declare var kVTProfileLevel_MP4V_Simple_L2: string;
  * @since 8.0
  */
 declare var kVTProfileLevel_MP4V_Simple_L3: string;
+
+/**
+ * @since 27.0
+ */
+declare var kVTProjectionKind_AppleImmersiveVideo: string;
 
 /**
  * @since 26.0

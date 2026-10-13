@@ -394,6 +394,11 @@ declare class NSObject implements NSObjectProtocol {
 	browserAccessibilityCurrentStatus: string | null;
 
 	/**
+	 * @since 27
+	 */
+	browserAccessibilityDetailsElements: NSArray<NSObject>;
+
+	/**
 	 * @since 18.0
 	 */
 	browserAccessibilityHasDOMFocus: boolean;
@@ -402,6 +407,16 @@ declare class NSObject implements NSObjectProtocol {
 	 * @since 18.0
 	 */
 	browserAccessibilityIsRequired: boolean;
+
+	/**
+	 * @since 27
+	 */
+	browserAccessibilityKeyboardShortcuts: string | null;
+
+	/**
+	 * @since 27
+	 */
+	browserAccessibilityOrientation: BEAccessibilityOrientation;
 
 	/**
 	 * @since 18.0
@@ -557,6 +572,16 @@ declare class NSObject implements NSObjectProtocol {
 	browserAccessibilityDeleteTextAtCursor(numberOfCharacters: number): void;
 
 	/**
+	 * @since 27
+	 */
+	browserAccessibilityImageData(attributes: NSDictionary<any, any>): any | null;
+
+	/**
+	 * @since 27
+	 */
+	browserAccessibilityImageDataSize(): NSValue | null;
+
+	/**
 	 * @since 18.0
 	 */
 	browserAccessibilityInsertTextAtCursor(text: string): void;
@@ -700,7 +725,7 @@ declare class NSObject implements NSObjectProtocol {
 	provideImageDataBytesPerRowOriginSizeUserInfo(data: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView, rowbytes: number, originx: number, originy: number, width: number, height: number, info: any | null): void;
 
 	/**
-	 * @since 19.0
+	 * @since 26.0
 	 */
 	provideImageToMTLTextureCommandBufferOriginxOriginyWidthHeightUserInfo(texture: MTLTexture, commandBuffer: MTLCommandBuffer, originx: number, originy: number, width: number, height: number, info: any | null): void;
 
@@ -1101,6 +1126,7 @@ declare function method_getArgumentType(m: interop.Pointer | interop.Reference<a
 
 /**
  * @since 2.0
+ * @deprecated 15.0
  */
 declare function method_getDescription(m: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView): interop.Pointer | interop.Reference<objc_method_description> | null;
 
@@ -1191,6 +1217,11 @@ declare function objc_copyClassList(outCount: interop.Pointer | interop.Referenc
  * @since 2.0
  */
 declare function objc_copyClassNamesForImage(image: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, outCount: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any> | null> | null;
+
+/**
+ * @since 27.0
+ */
+declare function objc_copyImageHeaders(outCount: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<mach_header> | null> | null;
 
 /**
  * @since 2.0

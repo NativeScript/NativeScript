@@ -173,6 +173,11 @@ declare class AVRoutingPlaybackArbiter extends NSObject {
 	 * @since 26.0
 	 */
 	preferredParticipantForExternalPlayback: AVRoutingPlaybackParticipant | null;
+
+	/**
+	 * @since 27.0
+	 */
+	preferredParticipantForNonMixableAudioRoutes: AVRoutingPlaybackParticipant | null;
 }
 
 /**

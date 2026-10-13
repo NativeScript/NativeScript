@@ -2220,6 +2220,8 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterBasicInformationAttributeMaxPathsPerInvokeID = 22,
 
+	AttributeIDTypeClusterBasicInformationAttributeDeviceLocationID = 23,
+
 	AttributeIDTypeClusterBasicInformationAttributeConfigurationVersionID = 24,
 
 	AttributeIDTypeClusterBasicInformationAttributeGeneratedCommandListID = 65528,
@@ -2723,6 +2725,8 @@ declare const enum MTRAttributeIDType {
 	AttributeIDTypeClusterGeneralDiagnosticsAttributeActiveNetworkFaultsID = 7,
 
 	AttributeIDTypeClusterGeneralDiagnosticsAttributeTestEventTriggersEnabledID = 8,
+
+	AttributeIDTypeClusterGeneralDiagnosticsAttributeDeviceLoadStatusID = 10,
 
 	AttributeIDTypeClusterGeneralDiagnosticsAttributeGeneratedCommandListID = 65528,
 
@@ -3322,6 +3326,8 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterBridgedDeviceBasicInformationAttributeProductAppearanceID = 20,
 
+	AttributeIDTypeClusterBridgedDeviceBasicInformationAttributeDeviceLocationID = 23,
+
 	AttributeIDTypeClusterBridgedDeviceBasicInformationAttributeConfigurationVersionID = 24,
 
 	AttributeIDTypeClusterBridgedDeviceBasicInformationAttributeGeneratedCommandListID = 65528,
@@ -3468,6 +3474,8 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterGroupKeyManagementAttributeMaxGroupKeysPerFabricID = 3,
 
+	AttributeIDTypeClusterGroupKeyManagementAttributeGroupcastAdoptionID = 4,
+
 	AttributeIDTypeClusterGroupKeyManagementAttributeGeneratedCommandListID = 65528,
 
 	AttributeIDTypeClusterGroupKeyManagementAttributeAcceptedCommandListID = 65529,
@@ -3580,22 +3588,6 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterICDManagementAttributeClusterRevisionID = 65533,
 
-	AttributeIDTypeClusterTimerAttributeSetTimeID = 0,
-
-	AttributeIDTypeClusterTimerAttributeTimeRemainingID = 1,
-
-	AttributeIDTypeClusterTimerAttributeTimerStateID = 2,
-
-	AttributeIDTypeClusterTimerAttributeGeneratedCommandListID = 65528,
-
-	AttributeIDTypeClusterTimerAttributeAcceptedCommandListID = 65529,
-
-	AttributeIDTypeClusterTimerAttributeAttributeListID = 65531,
-
-	AttributeIDTypeClusterTimerAttributeFeatureMapID = 65532,
-
-	AttributeIDTypeClusterTimerAttributeClusterRevisionID = 65533,
-
 	AttributeIDTypeClusterOvenCavityOperationalStateAttributePhaseListID = 0,
 
 	AttributeIDTypeClusterOvenCavityOperationalStateAttributeCurrentPhaseID = 1,
@@ -3645,6 +3637,20 @@ declare const enum MTRAttributeIDType {
 	AttributeIDTypeClusterLaundryDryerControlsAttributeFeatureMapID = 65532,
 
 	AttributeIDTypeClusterLaundryDryerControlsAttributeClusterRevisionID = 65533,
+
+	AttributeIDTypeClusterTemperatureControlledCabinetTopologyAttributeDisabledCabinetsID = 0,
+
+	AttributeIDTypeClusterTemperatureControlledCabinetTopologyAttributeTopologyID = 1,
+
+	AttributeIDTypeClusterTemperatureControlledCabinetTopologyAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterTemperatureControlledCabinetTopologyAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterTemperatureControlledCabinetTopologyAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterTemperatureControlledCabinetTopologyAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterTemperatureControlledCabinetTopologyAttributeClusterRevisionID = 65533,
 
 	ClusterModeSelectAttributeDescriptionID = 0,
 
@@ -3854,6 +3860,8 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterSmokeCOAlarmAttributeExpiryDateID = 12,
 
+	AttributeIDTypeClusterSmokeCOAlarmAttributeUnmountedID = 13,
+
 	AttributeIDTypeClusterSmokeCOAlarmAttributeGeneratedCommandListID = 65528,
 
 	AttributeIDTypeClusterSmokeCOAlarmAttributeAcceptedCommandListID = 65529,
@@ -3946,6 +3954,10 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterOperationalStateAttributeClusterRevisionID = 65533,
 
+	AttributeIDTypeClusterOperationalStateAttributeAppleOperationCompletedID = 323551232,
+
+	AttributeIDTypeClusterOperationalStateAttributeAppleOperationStartTimeID = 323551233,
+
 	AttributeIDTypeClusterRVCOperationalStateAttributePhaseListID = 0,
 
 	AttributeIDTypeClusterRVCOperationalStateAttributeCurrentPhaseID = 1,
@@ -3985,6 +3997,12 @@ declare const enum MTRAttributeIDType {
 	AttributeIDTypeClusterGroupcastAttributeMembershipID = 0,
 
 	AttributeIDTypeClusterGroupcastAttributeMaxMembershipCountID = 1,
+
+	AttributeIDTypeClusterGroupcastAttributeMaxMcastAddrCountID = 2,
+
+	AttributeIDTypeClusterGroupcastAttributeUsedMcastAddrCountID = 3,
+
+	AttributeIDTypeClusterGroupcastAttributeFabricUnderTestID = 4,
 
 	AttributeIDTypeClusterGroupcastAttributeGeneratedCommandListID = 65528,
 
@@ -4260,6 +4278,8 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterDeviceEnergyManagementAttributeOptOutStateID = 7,
 
+	AttributeIDTypeClusterDeviceEnergyManagementAttributePowerRangeAdjustmentID = 8,
+
 	AttributeIDTypeClusterDeviceEnergyManagementAttributeGeneratedCommandListID = 65528,
 
 	AttributeIDTypeClusterDeviceEnergyManagementAttributeAcceptedCommandListID = 65529,
@@ -4419,6 +4439,94 @@ declare const enum MTRAttributeIDType {
 	AttributeIDTypeClusterElectricalGridConditionsAttributeFeatureMapID = 65532,
 
 	AttributeIDTypeClusterElectricalGridConditionsAttributeClusterRevisionID = 65533,
+
+	AttributeIDTypeClusterElectricalAlarmAttributeMaskID = 0,
+
+	AttributeIDTypeClusterElectricalAlarmAttributeLatchID = 1,
+
+	AttributeIDTypeClusterElectricalAlarmAttributeStateID = 2,
+
+	AttributeIDTypeClusterElectricalAlarmAttributeSupportedID = 3,
+
+	AttributeIDTypeClusterElectricalAlarmAttributeOverVoltageThresholdID = 128,
+
+	AttributeIDTypeClusterElectricalAlarmAttributeUnderVoltageThresholdID = 129,
+
+	AttributeIDTypeClusterElectricalAlarmAttributeOverFrequencyThresholdID = 130,
+
+	AttributeIDTypeClusterElectricalAlarmAttributeUnderFrequencyThresholdID = 131,
+
+	AttributeIDTypeClusterElectricalAlarmAttributeOverPowerThresholdID = 132,
+
+	AttributeIDTypeClusterElectricalAlarmAttributeUnderPowerThresholdID = 133,
+
+	AttributeIDTypeClusterElectricalAlarmAttributeOverCurrentThresholdID = 134,
+
+	AttributeIDTypeClusterElectricalAlarmAttributeUnderCurrentThresholdID = 135,
+
+	AttributeIDTypeClusterElectricalAlarmAttributePowerImportThresholdID = 136,
+
+	AttributeIDTypeClusterElectricalAlarmAttributePowerExportThresholdID = 137,
+
+	AttributeIDTypeClusterElectricalAlarmAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterElectricalAlarmAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterElectricalAlarmAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterElectricalAlarmAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterElectricalAlarmAttributeClusterRevisionID = 65533,
+
+	AttributeIDTypeClusterElectricalDistributionAttributeMaxContinuousCurrentID = 0,
+
+	AttributeIDTypeClusterElectricalDistributionAttributeMaxVoltageID = 1,
+
+	AttributeIDTypeClusterElectricalDistributionAttributeNumberOfPolesID = 2,
+
+	AttributeIDTypeClusterElectricalDistributionAttributeEndOfLifeID = 3,
+
+	AttributeIDTypeClusterElectricalDistributionAttributeServiceEntranceRatedID = 4,
+
+	AttributeIDTypeClusterElectricalDistributionAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterElectricalDistributionAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterElectricalDistributionAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterElectricalDistributionAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterElectricalDistributionAttributeClusterRevisionID = 65533,
+
+	AttributeIDTypeClusterElectricalProtectionAlarmAttributeMaskID = 0,
+
+	AttributeIDTypeClusterElectricalProtectionAlarmAttributeStateID = 2,
+
+	AttributeIDTypeClusterElectricalProtectionAlarmAttributeSupportedID = 3,
+
+	AttributeIDTypeClusterElectricalProtectionAlarmAttributeArcCauseID = 128,
+
+	AttributeIDTypeClusterElectricalProtectionAlarmAttributeOverLoadRatingID = 129,
+
+	AttributeIDTypeClusterElectricalProtectionAlarmAttributeOverVoltageRatingID = 130,
+
+	AttributeIDTypeClusterElectricalProtectionAlarmAttributeSurgeProtectionRatingID = 131,
+
+	AttributeIDTypeClusterElectricalProtectionAlarmAttributeShortCircuitRatingID = 132,
+
+	AttributeIDTypeClusterElectricalProtectionAlarmAttributeResidualCurrentRatingID = 133,
+
+	AttributeIDTypeClusterElectricalProtectionAlarmAttributeArcFaultRatingID = 134,
+
+	AttributeIDTypeClusterElectricalProtectionAlarmAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterElectricalProtectionAlarmAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterElectricalProtectionAlarmAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterElectricalProtectionAlarmAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterElectricalProtectionAlarmAttributeClusterRevisionID = 65533,
 
 	ClusterDoorLockAttributeLockStateID = 0,
 
@@ -5262,6 +5370,38 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterThermostatUserInterfaceConfigurationAttributeClusterRevisionID = 65533,
 
+	AttributeIDTypeClusterHumidistatAttributeModeID = 0,
+
+	AttributeIDTypeClusterHumidistatAttributeSystemStateID = 1,
+
+	AttributeIDTypeClusterHumidistatAttributeUserSetpointID = 2,
+
+	AttributeIDTypeClusterHumidistatAttributeMinSetpointID = 3,
+
+	AttributeIDTypeClusterHumidistatAttributeMaxSetpointID = 4,
+
+	AttributeIDTypeClusterHumidistatAttributeStepID = 5,
+
+	AttributeIDTypeClusterHumidistatAttributeTargetSetpointID = 6,
+
+	AttributeIDTypeClusterHumidistatAttributeMistTypeID = 7,
+
+	AttributeIDTypeClusterHumidistatAttributeContinuousID = 8,
+
+	AttributeIDTypeClusterHumidistatAttributeSleepID = 9,
+
+	AttributeIDTypeClusterHumidistatAttributeOptimalID = 10,
+
+	AttributeIDTypeClusterHumidistatAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterHumidistatAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterHumidistatAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterHumidistatAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterHumidistatAttributeClusterRevisionID = 65533,
+
 	ClusterColorControlAttributeCurrentHueID = 0,
 
 	ClusterColorControlAttributeCurrentSaturationID = 1,
@@ -5566,6 +5706,22 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterBallastConfigurationAttributeClusterRevisionID = 65533,
 
+	AttributeIDTypeClusterDynamicLightingAttributeAvailableEffectsID = 0,
+
+	AttributeIDTypeClusterDynamicLightingAttributeCurrentEffectIDID = 1,
+
+	AttributeIDTypeClusterDynamicLightingAttributeCurrentSpeedID = 2,
+
+	AttributeIDTypeClusterDynamicLightingAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterDynamicLightingAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterDynamicLightingAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterDynamicLightingAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterDynamicLightingAttributeClusterRevisionID = 65533,
+
 	ClusterIlluminanceMeasurementAttributeMeasuredValueID = 0,
 
 	ClusterIlluminanceMeasurementAttributeMinMeasuredValueID = 1,
@@ -5813,6 +5969,8 @@ declare const enum MTRAttributeIDType {
 	AttributeIDTypeClusterOccupancySensingAttributeHoldTimeID = 3,
 
 	AttributeIDTypeClusterOccupancySensingAttributeHoldTimeLimitsID = 4,
+
+	AttributeIDTypeClusterOccupancySensingAttributePredictedOccupancyID = 5,
 
 	AttributeIDTypeClusterOccupancySensingAttributePIROccupiedToUnoccupiedDelayID = 16,
 
@@ -6176,6 +6334,130 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterSoilMeasurementAttributeClusterRevisionID = 65533,
 
+	AttributeIDTypeClusterAmbientContextSensingAttributeHumanActivityDetectedID = 0,
+
+	AttributeIDTypeClusterAmbientContextSensingAttributeObjectIdentifiedID = 1,
+
+	AttributeIDTypeClusterAmbientContextSensingAttributeAudioContextDetectedID = 2,
+
+	AttributeIDTypeClusterAmbientContextSensingAttributeAmbientContextTypeID = 3,
+
+	AttributeIDTypeClusterAmbientContextSensingAttributeAmbientContextTypeSupportedID = 4,
+
+	AttributeIDTypeClusterAmbientContextSensingAttributeObjectCountThresholdReachedID = 5,
+
+	AttributeIDTypeClusterAmbientContextSensingAttributeObjectCountConfigID = 6,
+
+	AttributeIDTypeClusterAmbientContextSensingAttributeObjectCountID = 7,
+
+	AttributeIDTypeClusterAmbientContextSensingAttributeSimultaneousDetectionLimitID = 8,
+
+	AttributeIDTypeClusterAmbientContextSensingAttributeHoldTimeID = 9,
+
+	AttributeIDTypeClusterAmbientContextSensingAttributeHoldTimeLimitsID = 10,
+
+	AttributeIDTypeClusterAmbientContextSensingAttributePredictedActivityID = 11,
+
+	AttributeIDTypeClusterAmbientContextSensingAttributeSensorFusionSupportedID = 12,
+
+	AttributeIDTypeClusterAmbientContextSensingAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterAmbientContextSensingAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterAmbientContextSensingAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterAmbientContextSensingAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterAmbientContextSensingAttributeClusterRevisionID = 65533,
+
+	AttributeIDTypeClusterAmbientSensingUnionAttributeUnionNameID = 0,
+
+	AttributeIDTypeClusterAmbientSensingUnionAttributeUnionHealthID = 1,
+
+	AttributeIDTypeClusterAmbientSensingUnionAttributeUnionContributorListID = 2,
+
+	AttributeIDTypeClusterAmbientSensingUnionAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterAmbientSensingUnionAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterAmbientSensingUnionAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterAmbientSensingUnionAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterAmbientSensingUnionAttributeClusterRevisionID = 65533,
+
+	AttributeIDTypeClusterProximityRangingAttributeRangingCapabilitiesID = 0,
+
+	AttributeIDTypeClusterProximityRangingAttributeWiFiDevIKID = 1,
+
+	AttributeIDTypeClusterProximityRangingAttributeBLEDeviceIDID = 2,
+
+	AttributeIDTypeClusterProximityRangingAttributeBLTDevIKID = 3,
+
+	AttributeIDTypeClusterProximityRangingAttributeBLTCSSecurityLevelID = 4,
+
+	AttributeIDTypeClusterProximityRangingAttributeBLTCSModeCapabilityID = 5,
+
+	AttributeIDTypeClusterProximityRangingAttributeSessionIDListID = 6,
+
+	AttributeIDTypeClusterProximityRangingAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterProximityRangingAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterProximityRangingAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterProximityRangingAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterProximityRangingAttributeClusterRevisionID = 65533,
+
+	AttributeIDTypeClusterSmokeConcentrationMeasurementAttributeMeasuredValueID = 0,
+
+	AttributeIDTypeClusterSmokeConcentrationMeasurementAttributeMinMeasuredValueID = 1,
+
+	AttributeIDTypeClusterSmokeConcentrationMeasurementAttributeMaxMeasuredValueID = 2,
+
+	AttributeIDTypeClusterSmokeConcentrationMeasurementAttributePeakMeasuredValueID = 3,
+
+	AttributeIDTypeClusterSmokeConcentrationMeasurementAttributePeakMeasuredValueWindowID = 4,
+
+	AttributeIDTypeClusterSmokeConcentrationMeasurementAttributeAverageMeasuredValueID = 5,
+
+	AttributeIDTypeClusterSmokeConcentrationMeasurementAttributeAverageMeasuredValueWindowID = 6,
+
+	AttributeIDTypeClusterSmokeConcentrationMeasurementAttributeUncertaintyID = 7,
+
+	AttributeIDTypeClusterSmokeConcentrationMeasurementAttributeMeasurementUnitID = 8,
+
+	AttributeIDTypeClusterSmokeConcentrationMeasurementAttributeMeasurementMediumID = 9,
+
+	AttributeIDTypeClusterSmokeConcentrationMeasurementAttributeLevelValueID = 10,
+
+	AttributeIDTypeClusterSmokeConcentrationMeasurementAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterSmokeConcentrationMeasurementAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterSmokeConcentrationMeasurementAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterSmokeConcentrationMeasurementAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterSmokeConcentrationMeasurementAttributeClusterRevisionID = 65533,
+
+	AttributeIDTypeClusterNetworkIdentityManagementAttributeActiveNetworkIdentitiesID = 0,
+
+	AttributeIDTypeClusterNetworkIdentityManagementAttributeClientsID = 1,
+
+	AttributeIDTypeClusterNetworkIdentityManagementAttributeClientTableSizeID = 2,
+
+	AttributeIDTypeClusterNetworkIdentityManagementAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterNetworkIdentityManagementAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterNetworkIdentityManagementAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterNetworkIdentityManagementAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterNetworkIdentityManagementAttributeClusterRevisionID = 65533,
+
 	AttributeIDTypeClusterWiFiNetworkManagementAttributeSSIDID = 0,
 
 	AttributeIDTypeClusterWiFiNetworkManagementAttributePassphraseSurrogateID = 1,
@@ -6227,6 +6509,32 @@ declare const enum MTRAttributeIDType {
 	AttributeIDTypeClusterThreadNetworkDirectoryAttributeFeatureMapID = 65532,
 
 	AttributeIDTypeClusterThreadNetworkDirectoryAttributeClusterRevisionID = 65533,
+
+	AttributeIDTypeClusterCommissioningProxyAttributeTransportID = 0,
+
+	AttributeIDTypeClusterCommissioningProxyAttributeScanMaxTimeID = 1,
+
+	AttributeIDTypeClusterCommissioningProxyAttributeMaxSessionsID = 2,
+
+	AttributeIDTypeClusterCommissioningProxyAttributeMaxCachedResultsID = 3,
+
+	AttributeIDTypeClusterCommissioningProxyAttributeNumCachedResultsID = 4,
+
+	AttributeIDTypeClusterCommissioningProxyAttributeCacheTimeoutID = 5,
+
+	AttributeIDTypeClusterCommissioningProxyAttributeCachedResultsID = 6,
+
+	AttributeIDTypeClusterCommissioningProxyAttributeWiFiBandID = 7,
+
+	AttributeIDTypeClusterCommissioningProxyAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterCommissioningProxyAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterCommissioningProxyAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterCommissioningProxyAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterCommissioningProxyAttributeClusterRevisionID = 65533,
 
 	ClusterWakeOnLanAttributeMACAddressID = 0,
 
@@ -6360,6 +6668,10 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterMediaPlaybackAttributeAvailableTextTracksID = 10,
 
+	AttributeIDTypeClusterMediaPlaybackAttributeAvailableCommandsID = 11,
+
+	AttributeIDTypeClusterMediaPlaybackAttributeContentInfoID = 12,
+
 	AttributeIDTypeClusterMediaPlaybackAttributeGeneratedCommandListID = 65528,
 
 	AttributeIDTypeClusterMediaPlaybackAttributeAcceptedCommandListID = 65529,
@@ -6455,6 +6767,10 @@ declare const enum MTRAttributeIDType {
 	AttributeIDTypeClusterContentLauncherAttributeAcceptHeaderID = 0,
 
 	AttributeIDTypeClusterContentLauncherAttributeSupportedStreamingProtocolsID = 1,
+
+	AttributeIDTypeClusterContentLauncherAttributeMovableID = 2,
+
+	AttributeIDTypeClusterContentLauncherAttributePresetsID = 3,
 
 	AttributeIDTypeClusterContentLauncherAttributeGeneratedCommandListID = 65528,
 
@@ -6636,6 +6952,72 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterContentAppObserverAttributeClusterRevisionID = 65533,
 
+	AttributeIDTypeClusterMediaFileManagementAttributeTotalStorageID = 0,
+
+	AttributeIDTypeClusterMediaFileManagementAttributeAvailableStorageID = 1,
+
+	AttributeIDTypeClusterMediaFileManagementAttributeAvailableFilesID = 2,
+
+	AttributeIDTypeClusterMediaFileManagementAttributeSupportedMimeTypesID = 3,
+
+	AttributeIDTypeClusterMediaFileManagementAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterMediaFileManagementAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterMediaFileManagementAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterMediaFileManagementAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterMediaFileManagementAttributeClusterRevisionID = 65533,
+
+	AttributeIDTypeClusterAudioControlAttributeSoftMutedID = 0,
+
+	AttributeIDTypeClusterAudioControlAttributePhysicallyMutedID = 1,
+
+	AttributeIDTypeClusterAudioControlAttributeVolumeID = 2,
+
+	AttributeIDTypeClusterAudioControlAttributeMinDeviceVolumeID = 3,
+
+	AttributeIDTypeClusterAudioControlAttributeMaxDeviceVolumeID = 4,
+
+	AttributeIDTypeClusterAudioControlAttributeMaxDeviceVolumeDBID = 5,
+
+	AttributeIDTypeClusterAudioControlAttributeMaxUserVolumeID = 6,
+
+	AttributeIDTypeClusterAudioControlAttributeDefaultStepSizeID = 7,
+
+	AttributeIDTypeClusterAudioControlAttributeSetVolumeUnmutePolicyID = 8,
+
+	AttributeIDTypeClusterAudioControlAttributeIncreaseVolumeUnmutePolicyID = 9,
+
+	AttributeIDTypeClusterAudioControlAttributeIncreaseVolumeUnmuteVolumeID = 10,
+
+	AttributeIDTypeClusterAudioControlAttributeDecreaseVolumeUnmutePolicyID = 11,
+
+	AttributeIDTypeClusterAudioControlAttributeStartUpMutedID = 12,
+
+	AttributeIDTypeClusterAudioControlAttributeStartUpVolumeID = 13,
+
+	AttributeIDTypeClusterAudioControlAttributeBassID = 14,
+
+	AttributeIDTypeClusterAudioControlAttributeMidID = 15,
+
+	AttributeIDTypeClusterAudioControlAttributeTrebleID = 16,
+
+	AttributeIDTypeClusterAudioControlAttributeMinCorrectionID = 17,
+
+	AttributeIDTypeClusterAudioControlAttributeMaxCorrectionID = 18,
+
+	AttributeIDTypeClusterAudioControlAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterAudioControlAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterAudioControlAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterAudioControlAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterAudioControlAttributeClusterRevisionID = 65533,
+
 	AttributeIDTypeClusterZoneManagementAttributeMaxUserDefinedZonesID = 0,
 
 	AttributeIDTypeClusterZoneManagementAttributeMaxZonesID = 1,
@@ -6742,6 +7124,8 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterCameraAVStreamManagementAttributeStatusLightBrightnessID = 40,
 
+	AttributeIDTypeClusterCameraAVStreamManagementAttributeImageRotationDiscreteAnglesID = 41,
+
 	AttributeIDTypeClusterCameraAVStreamManagementAttributeGeneratedCommandListID = 65528,
 
 	AttributeIDTypeClusterCameraAVStreamManagementAttributeAcceptedCommandListID = 65529,
@@ -6835,6 +7219,28 @@ declare const enum MTRAttributeIDType {
 	AttributeIDTypeClusterChimeAttributeFeatureMapID = 65532,
 
 	AttributeIDTypeClusterChimeAttributeClusterRevisionID = 65533,
+
+	AttributeIDTypeClusterAVAnalysisAttributeSupportedAmbientContextsID = 0,
+
+	AttributeIDTypeClusterAVAnalysisAttributeActiveAmbientContextTriggersID = 1,
+
+	AttributeIDTypeClusterAVAnalysisAttributeMaxAnalysisStreamCountID = 2,
+
+	AttributeIDTypeClusterAVAnalysisAttributeCurrentAnalysisStreamCountID = 3,
+
+	AttributeIDTypeClusterAVAnalysisAttributeAnalysisStreamsID = 4,
+
+	AttributeIDTypeClusterAVAnalysisAttributeTrackingEnabledID = 5,
+
+	AttributeIDTypeClusterAVAnalysisAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterAVAnalysisAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterAVAnalysisAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterAVAnalysisAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterAVAnalysisAttributeClusterRevisionID = 65533,
 
 	AttributeIDTypeClusterCommodityTariffAttributeTariffInfoID = 0,
 
@@ -7033,6 +7439,8 @@ declare const enum MTRAttributeIDType {
 	AttributeIDTypeClusterAppleDeviceInformationAttributeSupportsTapToUnlockID = 0,
 
 	AttributeIDTypeClusterAppleDeviceInformationAttributeSupportsWEDID = 1,
+
+	AttributeIDTypeClusterAppleDeviceInformationAttributeNeedsAdditionalConfigurationID = 2,
 
 	AttributeIDTypeClusterAppleDeviceInformationAttributeGeneratedCommandListID = 65528,
 
@@ -7431,6 +7839,18 @@ declare const enum MTRAttributeIDType {
 	AttributeIDTypeClusterSampleMEIAttributeFeatureMapID = 65532,
 
 	AttributeIDTypeClusterSampleMEIAttributeClusterRevisionID = 65533,
+
+	AttributeIDTypeClusterTestHiddenManufacturerSpecificAttributeTestAttributeID = 0,
+
+	AttributeIDTypeClusterTestHiddenManufacturerSpecificAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterTestHiddenManufacturerSpecificAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterTestHiddenManufacturerSpecificAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterTestHiddenManufacturerSpecificAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterTestHiddenManufacturerSpecificAttributeClusterRevisionID = 65533,
 
 	ClusterBarrierControlAttributeBarrierMovingStateID = 1,
 
@@ -65274,7 +65694,9 @@ declare const enum MTRBooleanStateConfigurationFeature {
 
 	AlarmSuppress = 4,
 
-	SensitivityLevel = 8
+	SensitivityLevel = 8,
+
+	FaultEvents = 16
 }
 
 /**
@@ -65596,7 +66018,11 @@ declare const enum MTRCarbonDioxideConcentrationMeasurementMeasurementUnit {
 
 	PM3 = 6,
 
-	BQM3 = 7
+	BQM3 = 7,
+
+	DBPM = 8,
+
+	PCFT = 9
 }
 
 /**
@@ -65664,7 +66090,11 @@ declare const enum MTRCarbonMonoxideConcentrationMeasurementMeasurementUnit {
 
 	PM3 = 6,
 
-	BQM3 = 7
+	BQM3 = 7,
+
+	DBPM = 8,
+
+	PCFT = 9
 }
 
 /**
@@ -74061,13 +74491,13 @@ declare const enum MTRClusterIDType {
 
 	IDTypeICDManagementID = 70,
 
-	IDTypeTimerID = 71,
-
 	IDTypeOvenCavityOperationalStateID = 72,
 
 	IDTypeOvenModeID = 73,
 
 	IDTypeLaundryDryerControlsID = 74,
+
+	IDTypeTemperatureControlledCabinetTopologyID = 75,
 
 	IDTypeModeSelectID = 80,
 
@@ -74141,6 +74571,12 @@ declare const enum MTRClusterIDType {
 
 	IDTypeElectricalGridConditionsID = 160,
 
+	IDTypeElectricalAlarmID = 161,
+
+	IDTypeElectricalDistributionID = 162,
+
+	IDTypeElectricalProtectionAlarmID = 163,
+
 	IDTypeDoorLockID = 257,
 
 	IDTypeWindowCoveringID = 258,
@@ -74159,9 +74595,13 @@ declare const enum MTRClusterIDType {
 
 	IDTypeThermostatUserInterfaceConfigurationID = 516,
 
+	IDTypeHumidistatID = 517,
+
 	IDTypeColorControlID = 768,
 
 	IDTypeBallastConfigurationID = 769,
+
+	IDTypeDynamicLightingID = 773,
 
 	IDTypeIlluminanceMeasurementID = 1024,
 
@@ -74197,11 +74637,23 @@ declare const enum MTRClusterIDType {
 
 	IDTypeSoilMeasurementID = 1072,
 
+	IDTypeAmbientContextSensingID = 1073,
+
+	IDTypeAmbientSensingUnionID = 1074,
+
+	IDTypeProximityRangingID = 1075,
+
+	IDTypeSmokeConcentrationMeasurementID = 1076,
+
+	IDTypeNetworkIdentityManagementID = 1104,
+
 	IDTypeWiFiNetworkManagementID = 1105,
 
 	IDTypeThreadBorderRouterManagementID = 1106,
 
 	IDTypeThreadNetworkDirectoryID = 1107,
+
+	IDTypeCommissioningProxyID = 1109,
 
 	IDTypeWakeOnLANID = 1283,
 
@@ -74231,6 +74683,10 @@ declare const enum MTRClusterIDType {
 
 	IDTypeContentAppObserverID = 1296,
 
+	IDTypeMediaFileManagementID = 1297,
+
+	IDTypeAudioControlID = 1298,
+
 	IDTypeZoneManagementID = 1360,
 
 	IDTypeCameraAVStreamManagementID = 1361,
@@ -74244,6 +74700,8 @@ declare const enum MTRClusterIDType {
 	IDTypePushAVStreamTransportID = 1365,
 
 	IDTypeChimeID = 1366,
+
+	IDTypeAVAnalysisID = 1367,
 
 	IDTypeCommodityTariffID = 1792,
 
@@ -74270,6 +74728,8 @@ declare const enum MTRClusterIDType {
 	IDTypeUnitTestingID = 4294048773,
 
 	IDTypeSampleMEIID = 4294048800,
+
+	IDTypeTestHiddenManufacturerSpecificID = 4294048801,
 
 	BarrierControlID = 259,
 
@@ -85592,14 +86052,6 @@ declare const enum MTRCommandIDType {
 
 	CommandIDTypeClusterICDManagementCommandStayActiveResponseID = 4,
 
-	CommandIDTypeClusterTimerCommandSetTimerID = 0,
-
-	CommandIDTypeClusterTimerCommandResetTimerID = 1,
-
-	CommandIDTypeClusterTimerCommandAddTimeID = 2,
-
-	CommandIDTypeClusterTimerCommandReduceTimeID = 3,
-
 	CommandIDTypeClusterOvenCavityOperationalStateCommandStopID = 1,
 
 	CommandIDTypeClusterOvenCavityOperationalStateCommandStartID = 2,
@@ -85702,9 +86154,9 @@ declare const enum MTRCommandIDType {
 
 	CommandIDTypeClusterGroupcastCommandUpdateGroupKeyID = 3,
 
-	CommandIDTypeClusterGroupcastCommandExpireGracePeriodID = 4,
+	CommandIDTypeClusterGroupcastCommandConfigureAuxiliaryACLID = 4,
 
-	CommandIDTypeClusterGroupcastCommandConfigureAuxiliaryACLID = 5,
+	CommandIDTypeClusterGroupcastCommandGroupcastTestingID = 5,
 
 	CommandIDTypeClusterHEPAFilterMonitoringCommandResetConditionID = 0,
 
@@ -85752,6 +86204,10 @@ declare const enum MTRCommandIDType {
 
 	CommandIDTypeClusterDeviceEnergyManagementCommandCancelRequestID = 7,
 
+	CommandIDTypeClusterDeviceEnergyManagementCommandPowerRangeAdjustRequestID = 8,
+
+	CommandIDTypeClusterDeviceEnergyManagementCommandCancelPowerRangeAdjustRequestID = 9,
+
 	CommandIDTypeClusterEnergyEVSECommandGetTargetsResponseID = 0,
 
 	CommandIDTypeClusterEnergyEVSECommandDisableID = 1,
@@ -85779,6 +86235,14 @@ declare const enum MTRCommandIDType {
 	CommandIDTypeClusterDeviceEnergyManagementModeCommandChangeToModeID = 0,
 
 	CommandIDTypeClusterDeviceEnergyManagementModeCommandChangeToModeResponseID = 1,
+
+	CommandIDTypeClusterElectricalAlarmCommandResetID = 0,
+
+	CommandIDTypeClusterElectricalAlarmCommandModifyEnabledAlarmsID = 1,
+
+	CommandIDTypeClusterElectricalAlarmCommandSetElectricalAlarmThresholdsID = 128,
+
+	CommandIDTypeClusterElectricalProtectionAlarmCommandModifyEnabledAlarmsID = 1,
 
 	ClusterDoorLockCommandLockDoorID = 0,
 
@@ -85926,9 +86390,15 @@ declare const enum MTRCommandIDType {
 
 	CommandIDTypeClusterClosureControlCommandCalibrateID = 2,
 
+	CommandIDTypeClusterClosureControlCommandGroupedMoveToID = 3,
+
 	CommandIDTypeClusterClosureDimensionCommandSetTargetID = 0,
 
 	CommandIDTypeClusterClosureDimensionCommandStepID = 1,
+
+	CommandIDTypeClusterClosureDimensionCommandGroupedSetTargetID = 2,
+
+	CommandIDTypeClusterClosureDimensionCommandGroupedStepID = 3,
 
 	CommandIDTypeClusterServiceAreaCommandSelectAreasID = 0,
 
@@ -85973,6 +86443,8 @@ declare const enum MTRCommandIDType {
 	CommandIDTypeClusterThermostatCommandAtomicRequestID = 254,
 
 	CommandIDTypeClusterFanControlCommandStepID = 0,
+
+	CommandIDTypeClusterHumidistatCommandSetSettingsID = 0,
 
 	ClusterColorControlCommandMoveToHueID = 0,
 
@@ -86050,6 +86522,32 @@ declare const enum MTRCommandIDType {
 
 	CommandIDTypeClusterColorControlCommandStepColorTemperatureID = 76,
 
+	CommandIDTypeClusterDynamicLightingCommandStartEffectID = 0,
+
+	CommandIDTypeClusterDynamicLightingCommandStopEffectID = 1,
+
+	CommandIDTypeClusterProximityRangingCommandStartRangingRequestID = 0,
+
+	CommandIDTypeClusterProximityRangingCommandStartRangingResponseID = 1,
+
+	CommandIDTypeClusterProximityRangingCommandStopRangingRequestID = 2,
+
+	CommandIDTypeClusterNetworkIdentityManagementCommandAddClientID = 0,
+
+	CommandIDTypeClusterNetworkIdentityManagementCommandAddClientResponseID = 1,
+
+	CommandIDTypeClusterNetworkIdentityManagementCommandRemoveClientID = 2,
+
+	CommandIDTypeClusterNetworkIdentityManagementCommandQueryIdentityID = 3,
+
+	CommandIDTypeClusterNetworkIdentityManagementCommandQueryIdentityResponseID = 4,
+
+	CommandIDTypeClusterNetworkIdentityManagementCommandImportAdminSecretID = 64,
+
+	CommandIDTypeClusterNetworkIdentityManagementCommandExportAdminSecretID = 65,
+
+	CommandIDTypeClusterNetworkIdentityManagementCommandExportAdminSecretResponseID = 66,
+
 	CommandIDTypeClusterWiFiNetworkManagementCommandNetworkPassphraseRequestID = 0,
 
 	CommandIDTypeClusterWiFiNetworkManagementCommandNetworkPassphraseResponseID = 1,
@@ -86071,6 +86569,24 @@ declare const enum MTRCommandIDType {
 	CommandIDTypeClusterThreadNetworkDirectoryCommandGetOperationalDatasetID = 2,
 
 	CommandIDTypeClusterThreadNetworkDirectoryCommandOperationalDatasetResponseID = 3,
+
+	CommandIDTypeClusterCommissioningProxyCommandProxyConnectRequestID = 0,
+
+	CommandIDTypeClusterCommissioningProxyCommandProxyConnectResponseID = 1,
+
+	CommandIDTypeClusterCommissioningProxyCommandProxyDisconnectRequestID = 2,
+
+	CommandIDTypeClusterCommissioningProxyCommandProxyScanRequestID = 3,
+
+	CommandIDTypeClusterCommissioningProxyCommandProxyScanResponseID = 4,
+
+	CommandIDTypeClusterCommissioningProxyCommandProxyBackGroundScanStartRequestID = 5,
+
+	CommandIDTypeClusterCommissioningProxyCommandProxyBackGroundScanStopRequestID = 6,
+
+	CommandIDTypeClusterCommissioningProxyCommandProxyMessageRequestID = 7,
+
+	CommandIDTypeClusterCommissioningProxyCommandProxyMessageResponseID = 8,
 
 	ClusterChannelCommandChangeChannelID = 0,
 
@@ -86198,6 +86714,12 @@ declare const enum MTRCommandIDType {
 
 	CommandIDTypeClusterContentLauncherCommandLauncherResponseID = 2,
 
+	CommandIDTypeClusterContentLauncherCommandContentReplicationRequestID = 3,
+
+	CommandIDTypeClusterContentLauncherCommandContentReplicationResponseID = 4,
+
+	CommandIDTypeClusterContentLauncherCommandPlayPresetID = 5,
+
 	ClusterAudioOutputCommandSelectOutputID = 0,
 
 	ClusterAudioOutputCommandRenameOutputID = 1,
@@ -86275,6 +86797,32 @@ declare const enum MTRCommandIDType {
 	CommandIDTypeClusterContentAppObserverCommandContentAppMessageID = 0,
 
 	CommandIDTypeClusterContentAppObserverCommandContentAppMessageResponseID = 1,
+
+	CommandIDTypeClusterMediaFileManagementCommandAddFileID = 0,
+
+	CommandIDTypeClusterMediaFileManagementCommandAddFileResponseID = 1,
+
+	CommandIDTypeClusterMediaFileManagementCommandDeleteFileID = 2,
+
+	CommandIDTypeClusterMediaFileManagementCommandRequestSharedFilesID = 3,
+
+	CommandIDTypeClusterMediaFileManagementCommandGetSharedFileID = 4,
+
+	CommandIDTypeClusterMediaFileManagementCommandGetSharedFileResponseID = 5,
+
+	CommandIDTypeClusterMediaFileManagementCommandOfferFileID = 6,
+
+	CommandIDTypeClusterAudioControlCommandMuteID = 0,
+
+	CommandIDTypeClusterAudioControlCommandUnmuteID = 1,
+
+	CommandIDTypeClusterAudioControlCommandToggleMutedID = 2,
+
+	CommandIDTypeClusterAudioControlCommandSetVolumeID = 3,
+
+	CommandIDTypeClusterAudioControlCommandIncreaseVolumeID = 4,
+
+	CommandIDTypeClusterAudioControlCommandDecreaseVolumeID = 5,
 
 	CommandIDTypeClusterZoneManagementCommandCreateTwoDCartesianZoneID = 0,
 
@@ -86369,6 +86917,20 @@ declare const enum MTRCommandIDType {
 	CommandIDTypeClusterPushAVStreamTransportCommandFindTransportResponseID = 7,
 
 	CommandIDTypeClusterChimeCommandPlayChimeSoundID = 0,
+
+	CommandIDTypeClusterAVAnalysisCommandEnableContextTriggersID = 0,
+
+	CommandIDTypeClusterAVAnalysisCommandDisableContextTriggersID = 1,
+
+	CommandIDTypeClusterAVAnalysisCommandEstablishAnalysisStreamID = 2,
+
+	CommandIDTypeClusterAVAnalysisCommandEstablishAnalysisStreamResponseID = 3,
+
+	CommandIDTypeClusterAVAnalysisCommandActivateAnalysisStreamID = 4,
+
+	CommandIDTypeClusterAVAnalysisCommandDeactivateAnalysisStreamID = 5,
+
+	CommandIDTypeClusterAVAnalysisCommandRemoveAnalysisStreamID = 6,
 
 	CommandIDTypeClusterCommodityTariffCommandGetTariffComponentID = 0,
 
@@ -86961,6 +87523,11 @@ interface MTRCommissioningDelegate extends NSObjectProtocol {
 	commissioningStartingNetworkScan?(commissioning: MTRCommissioningOperation): void;
 
 	commissioningSucceededForNodeIDMetrics?(commissioning: MTRCommissioningOperation, nodeID: number, metrics: MTRMetrics): void;
+
+	/**
+	 * @since 27.0
+	 */
+	commissioningSucceededForNodeIDMetricsContext?(commissioning: MTRCommissioningOperation, nodeID: number, metrics: MTRMetrics, context: NSDictionary<string, any>): void;
 }
 declare var MTRCommissioningDelegate: {
 
@@ -87072,6 +87639,11 @@ declare class MTRCommissioningParameters extends NSObject {
 
 	wifiSSID: NSData | null;
 }
+
+/**
+ * @since 27.0
+ */
+declare var MTRCommissioningSessionTransportType: string;
 
 /**
  * @since 16.4
@@ -87536,7 +88108,13 @@ declare const enum MTRContentLauncherFeature {
 
 	TextTracks = 8,
 
-	AudioTracks = 16
+	AudioTracks = 16,
+
+	ContentReplication = 32,
+
+	ContentQueueing = 64,
+
+	Presets = 128
 }
 
 /**
@@ -87606,7 +88184,19 @@ declare const enum MTRContentLauncherStatus {
 
 	TextTrackNotAvailable = 3,
 
-	AudioTrackNotAvailable = 4
+	AudioTrackNotAvailable = 4,
+
+	InvalidData = 5,
+
+	AccountMismatch = 6,
+
+	ContentAppNotAvailable = 7,
+
+	ReplicationNotAllowed = 8,
+
+	ReplicationNotSupported = 9,
+
+	PresetNotFound = 10
 }
 
 /**
@@ -88522,8 +89112,14 @@ interface MTRDeviceControllerDelegate extends NSObjectProtocol {
 
 	/**
 	 * @since 17.6
+	 * @deprecated 27.0
 	 */
 	controllerCommissioningCompleteNodeIDMetrics?(controller: MTRDeviceController, error: NSError | null, nodeID: number | null, metrics: MTRMetrics): void;
+
+	/**
+	 * @since 27.0
+	 */
+	controllerCommissioningCompleteNodeIDMetricsContext?(controller: MTRDeviceController, error: NSError | null, nodeID: number | null, metrics: MTRMetrics, context: NSDictionary<string, any>): void;
 
 	controllerCommissioningSessionEstablishmentDone?(controller: MTRDeviceController, error: NSError | null): void;
 
@@ -88915,7 +89511,9 @@ declare const enum MTRDeviceEnergyManagementCause {
 
 	UserOptOut = 3,
 
-	Cancelled = 4
+	Cancelled = 4,
+
+	Invalid = 5
 }
 
 /**
@@ -89566,7 +90164,9 @@ declare const enum MTRDeviceEnergyManagementFeature {
 
 	ForecastAdjustment = 32,
 
-	ConstraintBasedAdjustment = 64
+	ConstraintBasedAdjustment = 64,
+
+	PowerRangeAdjustment = 128
 }
 
 /**
@@ -89912,9 +90512,13 @@ declare const enum MTRDeviceTypeIDType {
 
 	LaundryDryerID = 124,
 
+	HumidifierDehumidifierID = 125,
+
 	NetworkInfrastructureManagerID = 144,
 
 	ThreadBorderRouterID = 145,
+
+	CommissioningByProxyID = 146,
 
 	OnOffLightID = 256,
 
@@ -89962,6 +90566,10 @@ declare const enum MTRDeviceTypeIDType {
 
 	DoorbellID = 328,
 
+	AmbientContextSensorID = 336,
+
+	ProximityRangerID = 338,
+
 	WindowCoveringID = 514,
 
 	WindowCoveringControllerID = 515,
@@ -90005,6 +90613,10 @@ declare const enum MTRDeviceTypeIDType {
 	ElectricalEnergyTariffID = 1299,
 
 	ElectricalMeterID = 1300,
+
+	ElectricalCircuitBreakerID = 1302,
+
+	ElectricalDistributionEnclosureID = 1303,
 
 	ControlBridgeID = 2112,
 
@@ -94264,6 +94876,8 @@ declare const enum MTREventIDType {
 
 	EventIDTypeClusterRVCOperationalStateEventOperationCompletionID = 1,
 
+	EventIDTypeClusterGroupcastEventGroupcastTestingID = 0,
+
 	EventIDTypeClusterBooleanStateConfigurationEventAlarmsStateChangedID = 0,
 
 	EventIDTypeClusterBooleanStateConfigurationEventSensorFaultID = 1,
@@ -94298,6 +94912,10 @@ declare const enum MTREventIDType {
 
 	EventIDTypeClusterDeviceEnergyManagementEventResumedID = 3,
 
+	EventIDTypeClusterDeviceEnergyManagementEventPowerRangeAdjustStartID = 4,
+
+	EventIDTypeClusterDeviceEnergyManagementEventPowerRangeAdjustEndID = 5,
+
 	EventIDTypeClusterEnergyEVSEEventEVConnectedID = 0,
 
 	EventIDTypeClusterEnergyEVSEEventEVNotDetectedID = 1,
@@ -94311,6 +94929,10 @@ declare const enum MTREventIDType {
 	EventIDTypeClusterEnergyEVSEEventRFIDID = 5,
 
 	EventIDTypeClusterElectricalGridConditionsEventCurrentConditionsChangedID = 0,
+
+	EventIDTypeClusterElectricalAlarmEventNotifyID = 0,
+
+	EventIDTypeClusterElectricalProtectionAlarmEventNotifyID = 0,
 
 	ClusterDoorLockEventDoorLockAlarmID = 0,
 
@@ -94432,15 +95054,33 @@ declare const enum MTREventIDType {
 
 	EventIDTypeClusterOccupancySensingEventOccupancyChangedID = 0,
 
+	EventIDTypeClusterAmbientContextSensingEventAmbientContextDetectStartedID = 0,
+
+	EventIDTypeClusterAmbientContextSensingEventAmbientContextDetectEndedID = 1,
+
+	EventIDTypeClusterAmbientSensingUnionEventUnionContributorAddedID = 0,
+
+	EventIDTypeClusterAmbientSensingUnionEventUnionContributorRemovedID = 1,
+
+	EventIDTypeClusterAmbientSensingUnionEventUnionContributorStatusChangedID = 2,
+
+	EventIDTypeClusterProximityRangingEventRangingResultID = 0,
+
+	EventIDTypeClusterProximityRangingEventRangingSessionStatusID = 1,
+
 	EventIDTypeClusterTargetNavigatorEventTargetUpdatedID = 0,
 
 	EventIDTypeClusterMediaPlaybackEventStateChangedID = 0,
+
+	EventIDTypeClusterContentLauncherEventContentReplicationID = 0,
 
 	EventIDTypeClusterAccountLoginEventLoggedOutID = 0,
 
 	EventIDTypeClusterContentControlEventRemainingScreenTimeExpiredID = 0,
 
 	EventIDTypeClusterContentControlEventEnteringBlockContentTimeWindowID = 1,
+
+	EventIDTypeClusterMediaFileManagementEventSharedFilesAddedID = 0,
 
 	EventIDTypeClusterZoneManagementEventZoneTriggeredID = 0,
 
@@ -94449,6 +95089,14 @@ declare const enum MTREventIDType {
 	EventIDTypeClusterPushAVStreamTransportEventPushTransportBeginID = 0,
 
 	EventIDTypeClusterPushAVStreamTransportEventPushTransportEndID = 1,
+
+	EventIDTypeClusterChimeEventChimeStartedPlayingID = 0,
+
+	EventIDTypeClusterAVAnalysisEventAnalysisSessionStartID = 0,
+
+	EventIDTypeClusterAVAnalysisEventAnalysisSessionEndID = 1,
+
+	EventIDTypeClusterAVAnalysisEventPerceivedContextID = 2,
 
 	EventIDTypeClusterCommissionerControlEventCommissioningRequestResultID = 0,
 
@@ -94975,7 +95623,11 @@ declare const enum MTRFormaldehydeConcentrationMeasurementMeasurementUnit {
 
 	PM3 = 6,
 
-	BQM3 = 7
+	BQM3 = 7,
+
+	DBPM = 8,
+
+	PCFT = 9
 }
 
 /**
@@ -99729,7 +100381,11 @@ declare const enum MTRNitrogenDioxideConcentrationMeasurementMeasurementUnit {
 
 	PM3 = 6,
 
-	BQM3 = 7
+	BQM3 = 7,
+
+	DBPM = 8,
+
+	PCFT = 9
 }
 
 /**
@@ -100538,7 +101194,11 @@ declare const enum MTROccupancySensingFeature {
 
 	RFSensing = 64,
 
-	Vision = 128
+	Vision = 128,
+
+	Prediction = 256,
+
+	OccupancyEvent = 512
 }
 
 /**
@@ -102258,7 +102918,15 @@ declare const enum MTROvenModeModeTag {
 
 	Warming = 16391,
 
-	Proofing = 16392
+	Proofing = 16392,
+
+	Steam = 16393,
+
+	AirFry = 16394,
+
+	AirSousVide = 16395,
+
+	FrozenFood = 16396
 }
 
 /**
@@ -102326,7 +102994,11 @@ declare const enum MTROzoneConcentrationMeasurementMeasurementUnit {
 
 	PM3 = 6,
 
-	BQM3 = 7
+	BQM3 = 7,
+
+	DBPM = 8,
+
+	PCFT = 9
 }
 
 /**
@@ -102394,7 +103066,11 @@ declare const enum MTRPM10ConcentrationMeasurementMeasurementUnit {
 
 	PM3 = 6,
 
-	BQM3 = 7
+	BQM3 = 7,
+
+	DBPM = 8,
+
+	PCFT = 9
 }
 
 /**
@@ -102462,7 +103138,11 @@ declare const enum MTRPM1ConcentrationMeasurementMeasurementUnit {
 
 	PM3 = 6,
 
-	BQM3 = 7
+	BQM3 = 7,
+
+	DBPM = 8,
+
+	PCFT = 9
 }
 
 /**
@@ -102530,7 +103210,11 @@ declare const enum MTRPM25ConcentrationMeasurementMeasurementUnit {
 
 	PM3 = 6,
 
-	BQM3 = 7
+	BQM3 = 7,
+
+	DBPM = 8,
+
+	PCFT = 9
 }
 
 /**
@@ -104150,7 +104834,11 @@ declare const enum MTRRadonConcentrationMeasurementMeasurementUnit {
 
 	PM3 = 6,
 
-	BQM3 = 7
+	BQM3 = 7,
+
+	DBPM = 8,
+
+	PCFT = 9
 }
 
 /**
@@ -105157,7 +105845,9 @@ declare const enum MTRSmokeCOAlarmExpressedState {
 
 	InterconnectSmoke = 7,
 
-	InterconnectCO = 8
+	InterconnectCO = 8,
+
+	Inoperative = 9
 }
 
 /**
@@ -108555,7 +109245,11 @@ declare const enum MTRTotalVolatileOrganicCompoundsConcentrationMeasurementMeasu
 
 	PM3 = 6,
 
-	BQM3 = 7
+	BQM3 = 7,
+
+	DBPM = 8,
+
+	PCFT = 9
 }
 
 /**
@@ -108569,7 +109263,13 @@ declare const enum MTRTransportType {
 
 	BLE = 2,
 
-	TCP = 3
+	TCP = 3,
+
+	WiFiPAF = 4,
+
+	NFC = 5,
+
+	ThreadMeshcop = 6
 }
 
 /**
@@ -110144,6 +110844,11 @@ declare const enum MTRUnitTestingSimpleBitmap {
 
 	ValueC = 4
 }
+
+/**
+ * @since 27.0
+ */
+declare var MTRUnpoweredInitialPhase: string;
 
 /**
  * @since 16.1

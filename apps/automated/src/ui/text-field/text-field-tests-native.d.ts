@@ -12,4 +12,5 @@ export declare function getNativeBackgroundColor(textField: textFieldModule.Text
 export declare function getNativeTextAlignment(textField: textFieldModule.TextField): string;
 export declare function getNativeFocus(textField: textFieldModule.TextField): boolean;
 export declare function typeTextNatively(textField: textFieldModule.TextField, text: string): void;
+export declare function typeCharacterNatively(textField: textFieldModule.TextField, character: string): void;
 export declare function typeTextNativelyWithReturn(textField: textFieldModule.TextField, text: string): void;

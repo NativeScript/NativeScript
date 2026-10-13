@@ -599,6 +599,22 @@ declare function AUGraphUninitialize(inGraph: interop.Pointer | interop.Referenc
  */
 declare function AUGraphUpdate(inGraph: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView, outIsUpdated: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null | null): number;
 
+/**
+ * @since 27.0
+ */
+declare class AUHeadTrackingBinauralRenderer extends AUAudioUnit {
+
+	static alloc(): AUHeadTrackingBinauralRenderer; // inherited from NSObject
+
+	static new(): AUHeadTrackingBinauralRenderer; // inherited from NSObject
+
+	readonly deviceUID: string | null;
+
+	readonly disabled: boolean;
+
+	readonly headTracking: boolean;
+}
+
 declare const enum AUHostTransportStateFlags {
 
 	Changed = 1,
@@ -925,7 +941,9 @@ declare const enum AUReverbRoomType {
 
 	kReverbRoomType_MediumHall3 = 11,
 
-	kReverbRoomType_LargeHall2 = 12
+	kReverbRoomType_LargeHall2 = 12,
+
+	kReverbRoomType_OutdoorGeneral = 24
 }
 
 interface AUSamplerBankPresetData {
@@ -5071,6 +5089,8 @@ declare const kAudioUnitType_FormatConverter: number;
 
 declare const kAudioUnitType_Generator: number;
 
+declare const kAudioUnitType_HeadTrackingBinauralRenderer: number;
+
 declare const kAudioUnitType_MIDIProcessor: number;
 
 declare const kAudioUnitType_Mixer: number;
@@ -5530,6 +5550,8 @@ declare const kReverb2Param_DecayTimeAtNyquist: number;
 declare const kReverb2Param_DryWetMix: number;
 
 declare const kReverb2Param_Gain: number;
+
+declare const kReverb2Param_LegacyMode: number;
 
 declare const kReverb2Param_MaxDelayTime: number;
 

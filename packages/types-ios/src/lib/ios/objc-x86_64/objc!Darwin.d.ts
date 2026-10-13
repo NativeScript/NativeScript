@@ -39,30 +39,6 @@ interface ENTRY {
 }
 declare var ENTRY: interop.StructType<ENTRY>;
 
-interface FTSENT {
-	fts_cycle: interop.Pointer | interop.Reference<FTSENT> | null;
-	fts_parent: interop.Pointer | interop.Reference<FTSENT> | null;
-	fts_link: interop.Pointer | interop.Reference<FTSENT> | null;
-	fts_number: number;
-	fts_pointer: interop.Pointer | interop.Reference<any> | null;
-	fts_accpath: interop.Pointer | interop.Reference<any> | null;
-	fts_path: interop.Pointer | interop.Reference<any> | null;
-	fts_errno: number;
-	fts_symfd: number;
-	fts_pathlen: number;
-	fts_namelen: number;
-	fts_ino: number;
-	fts_dev: number;
-	fts_nlink: number;
-	fts_level: number;
-	fts_info: number;
-	fts_flags: number;
-	fts_instr: number;
-	fts_statp: interop.Pointer | interop.Reference<statStruct> | null;
-	fts_name: interop.Reference<number>;
-}
-declare var FTSENT: interop.StructType<FTSENT>;
-
 interface FTW {
 	base: number;
 	level: number;
@@ -379,6 +355,52 @@ interface ProcessSerialNumber {
 	lowLongOfPSN: number;
 }
 declare var ProcessSerialNumber: interop.StructType<ProcessSerialNumber>;
+
+declare const REMOVEFILE_ALLOW_LONG_PATHS: number;
+
+declare const REMOVEFILE_CLEAR_PURGEABLE: number;
+
+declare const REMOVEFILE_CROSS_MOUNT: number;
+
+declare const REMOVEFILE_KEEP_PARENT: number;
+
+declare const REMOVEFILE_PROCEED: number;
+
+declare const REMOVEFILE_RECURSIVE: number;
+
+declare const REMOVEFILE_RECURSIVE_SLIM: number;
+
+declare const REMOVEFILE_SECURE_1_PASS: number;
+
+declare const REMOVEFILE_SECURE_1_PASS_ZERO: number;
+
+declare const REMOVEFILE_SECURE_35_PASS: number;
+
+declare const REMOVEFILE_SECURE_3_PASS: number;
+
+declare const REMOVEFILE_SECURE_7_PASS: number;
+
+declare const REMOVEFILE_SKIP: number;
+
+declare const REMOVEFILE_STATE_CONFIRM_CALLBACK: number;
+
+declare const REMOVEFILE_STATE_CONFIRM_CONTEXT: number;
+
+declare const REMOVEFILE_STATE_ERRNO: number;
+
+declare const REMOVEFILE_STATE_ERROR_CALLBACK: number;
+
+declare const REMOVEFILE_STATE_ERROR_CONTEXT: number;
+
+declare const REMOVEFILE_STATE_FTSENT: number;
+
+declare const REMOVEFILE_STATE_STATUS_CALLBACK: number;
+
+declare const REMOVEFILE_STATE_STATUS_CONTEXT: number;
+
+declare const REMOVEFILE_STOP: number;
+
+declare const REMOVEFILE_SYSTEM_DISCARDED: number;
 
 interface Rect {
 	top: number;
@@ -941,6 +963,17 @@ interface __Reply__mach_memory_entry_purgable_control_t {
 	state: number;
 }
 declare var __Reply__mach_memory_entry_purgable_control_t: interop.StructType<__Reply__mach_memory_entry_purgable_control_t>;
+
+interface __Reply__mach_memory_entry_region_info_t {
+	Head: mach_msg_header_t;
+	NDR: NDR_record_t;
+	RetCode: number;
+	offset: number;
+	size: number;
+	infoCnt: number;
+	info: interop.Reference<number>;
+}
+declare var __Reply__mach_memory_entry_region_info_t: interop.StructType<__Reply__mach_memory_entry_region_info_t>;
 
 interface __Reply__mach_memory_info_redacted_t {
 	Head: mach_msg_header_t;
@@ -3002,6 +3035,14 @@ interface __Request__mach_memory_entry_purgable_control_t {
 	state: number;
 }
 declare var __Request__mach_memory_entry_purgable_control_t: interop.StructType<__Request__mach_memory_entry_purgable_control_t>;
+
+interface __Request__mach_memory_entry_region_info_t {
+	Head: mach_msg_header_t;
+	NDR: NDR_record_t;
+	offset: number;
+	infoCnt: number;
+}
+declare var __Request__mach_memory_entry_region_info_t: interop.StructType<__Request__mach_memory_entry_region_info_t>;
 
 interface __Request__mach_memory_info_redacted_t {
 	Head: mach_msg_header_t;
@@ -5310,18 +5351,18 @@ declare var diskextent: interop.StructType<diskextent>;
 
 declare function dladdr(p1: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: interop.Pointer | interop.Reference<Dl_info> | ArrayBufferLike | ArrayBufferView | null): number;
 
-declare function dlclose(__handle: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
+declare function dlclose(p1: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
 declare function dlerror(): interop.Pointer | interop.Reference<any> | null;
 
-declare function dlopen(__path: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, __mode: number): interop.Pointer | interop.Reference<any> | null;
+declare function dlopen(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: number): interop.Pointer | interop.Reference<any> | null;
 
 /**
  * @since 2.0
  */
-declare function dlopen_preflight(__path: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): boolean;
+declare function dlopen_preflight(p1: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): boolean;
 
-declare function dlsym(__handle: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, __symbol: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null;
+declare function dlsym(p1: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p2: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): interop.Pointer | interop.Reference<any> | null;
 
 interface dqblk {
 	dqb_bhardlimit: number;
@@ -5497,6 +5538,11 @@ interface fchecklv_t {
 declare var fchecklv_t: interop.StructType<fchecklv_t>;
 
 declare function fchflags(p1: number, p2: number): number;
+
+/**
+ * @since 27.0
+ */
+declare function fchflagsat(p1: number, p2: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, p3: number, p4: number): number;
 
 declare function fchmod(p1: number, p2: number): number;
 
@@ -5911,6 +5957,11 @@ declare function getsourcefilter(p1: number, p2: number, p3: interop.Pointer | i
 
 declare function gettimeofday(p1: interop.Pointer | interop.Reference<timeval> | ArrayBufferLike | ArrayBufferView | null, p2: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
 
+/**
+ * @since 27.0
+ */
+declare function getumask(): number;
+
 declare function getutxent(): interop.Pointer | interop.Reference<utmpx> | null;
 
 /**
@@ -6013,6 +6064,16 @@ declare var host_can_has_debugger_info: interop.StructType<host_can_has_debugger
 
 declare function host_check_multiuser_mode(host: number, multiuser_mode: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
+interface host_cpu_counters_info {
+	user_time_mach: number;
+	system_time_mach: number;
+	idle_time_mach: number;
+	cycles: number;
+	instructions: number;
+	energy_nj: number;
+}
+declare var host_cpu_counters_info: interop.StructType<host_cpu_counters_info>;
+
 interface host_cpu_load_info {
 	cpu_ticks: interop.Reference<number>;
 }
@@ -6052,7 +6113,7 @@ interface host_load_info {
 }
 declare var host_load_info: interop.StructType<host_load_info>;
 
-declare function host_lockgroup_info(host: number, lockgroup_info: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<lockgroup_info_t> | null> | ArrayBufferLike | ArrayBufferView | null, lockgroup_infoCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
+declare function host_lockgroup_info(host_priv_t: number, lockgroup_info: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<lockgroup_info_t> | null> | ArrayBufferLike | ArrayBufferView | null, lockgroup_infoCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 declare function host_page_size(p1: number, p2: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
@@ -7083,6 +7144,7 @@ interface ipsecstat {
 	out_esphist: interop.Reference<number>;
 	out_ahhist: interop.Reference<number>;
 	out_comphist: interop.Reference<number>;
+	out_notmature: number;
 }
 declare var ipsecstat: interop.StructType<ipsecstat>;
 
@@ -7433,6 +7495,8 @@ declare function mach_memory_entry_ownership(mem_entry: number, owner: number, l
 
 declare function mach_memory_entry_purgable_control(mem_entry: number, control: number, state: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
+declare function mach_memory_entry_region_info(mem_entry: number, offset: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, size: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, info: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, infoCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
+
 declare function mach_memory_info(host: number, names: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<mach_zone_name_t> | null> | ArrayBufferLike | ArrayBufferView | null, namesCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, info: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<mach_zone_info_t> | null> | ArrayBufferLike | ArrayBufferView | null, infoCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, memory_info: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<mach_memory_info_t> | null> | ArrayBufferLike | ArrayBufferView | null, memory_infoCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 declare function mach_memory_info_redacted(host: number, names: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<mach_zone_name_t> | null> | ArrayBufferLike | ArrayBufferView | null, namesCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, info: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<mach_zone_info_t> | null> | ArrayBufferLike | ArrayBufferView | null, infoCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, memory_info: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<mach_memory_info_t> | null> | ArrayBufferLike | ArrayBufferView | null, memory_infoCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
@@ -7750,9 +7814,23 @@ declare const enum mach_port_guard_exception_codes {
 
 	kGUARD_EXC_REQUIRE_REPLY_PORT_SEMANTICS = 10,
 
+	kGUARD_EXC_RESTRICT_VOUCHER_OPERATIONS = 11,
+
+	kGUARD_EXC_MACH_EXC_THREAD_SET_STATE = 12,
+
+	kGUARD_EXC_MOVE_WEAK_REPLY_PORT_FATAL = 13,
+
 	kGUARD_EXC_INCORRECT_GUARD = 16,
 
+	kGUARD_EXC_BOOTSTRAP_PORT_NOTIFICATION = 17,
+
+	kGUARD_EXC_CV_INVALID_EXCEPTION_PORT = 18,
+
 	kGUARD_EXC_IMMOVABLE = 32,
+
+	kGUARD_EXC_RESTRICT_VOUCHER_RECIPE_SIZE = 33,
+
+	kGUARD_EXC_RESTRICT_INLINE_PORT_DESCRIPTORS = 34,
 
 	kGUARD_EXC_STRICT_REPLY = 64,
 
@@ -7792,12 +7870,6 @@ declare const enum mach_port_guard_exception_codes {
 
 	kGUARD_EXC_SERVICE_PORT_VIOLATION_NON_FATAL = 1048577,
 
-	kGUARD_EXC_INVALID_NOTIFICATION_PORT = 1048582,
-
-	kGUARD_EXC_MACH_EXC_THREAD_SET_STATE = 1048583,
-
-	kGUARD_EXC_CV_NOTIFICATION_PORT_REQ = 1048584,
-
 	kGUARD_EXC_WEAK_REPLY_PORT = 1048578,
 
 	kGUARD_EXC_OOL_PORT_ARRAY_CREATION = 1048579,
@@ -7805,6 +7877,10 @@ declare const enum mach_port_guard_exception_codes {
 	kGUARD_EXC_MOVE_WEAK_REPLY_PORT = 1048580,
 
 	kGUARD_EXC_REPLY_PORT_SINGLE_SO_RIGHT = 1048581,
+
+	kGUARD_EXC_INVALID_NOTIFICATION_PORT = 1048582,
+
+	kGUARD_EXC_CV_NOTIFICATION_PORT_REQ = 1048584,
 
 	kGUARD_EXC_MOD_REFS_NON_FATAL = 2097152,
 
@@ -8661,9 +8737,44 @@ declare const enum os_clockid_t {
 }
 
 /**
+ * @since 27.0
+ */
+declare function os_lockdown_mode_enabled(): boolean;
+
+/**
  * @since 13.0
  */
 declare function os_proc_available_memory(): number;
+
+/**
+ * @since 26.0
+ */
+declare function os_security_config_get(): os_security_config_t;
+
+/**
+ * @since 26.0
+ */
+declare function os_security_config_get_for_proc(pid: number, config: interop.Pointer | interop.Reference<os_security_config_t> | ArrayBufferLike | ArrayBufferView | null): number;
+
+/**
+ * @since 26.0
+ */
+declare function os_security_config_get_for_task(task: number, config: interop.Pointer | interop.Reference<os_security_config_t> | ArrayBufferLike | ArrayBufferView | null): number;
+
+declare const enum os_security_config_t {
+
+	OS_SECURITY_CONFIG_NONE = 0,
+
+	OS_SECURITY_CONFIG_HARDENED_HEAP = 1,
+
+	OS_SECURITY_CONFIG_TPRO = 2,
+
+	OS_SECURITY_CONFIG_MTE = 4,
+
+	OS_SECURITY_CONFIG_SCRIPT_RESTRICTIONS = 64,
+
+	OS_SECURITY_CONFIG_GUARD_OBJECTS = 256
+}
 
 interface os_unfair_lock {
 	_os_unfair_lock_opaque: number;
@@ -9023,6 +9134,16 @@ declare function processor_assign(processor: number, new_set: number, wait: numb
 
 declare function processor_control(processor: number, processor_cmd: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, processor_cmdCnt: number): number;
 
+interface processor_cpu_counters_info {
+	user_time_mach: number;
+	system_time_mach: number;
+	idle_time_mach: number;
+	cycles: number;
+	instructions: number;
+	energy_nj: number;
+}
+declare var processor_cpu_counters_info: interop.StructType<processor_cpu_counters_info>;
+
 interface processor_cpu_load_info {
 	cpu_ticks: interop.Reference<number>;
 }
@@ -9102,6 +9223,13 @@ interface radvisory {
 	ra_count: number;
 }
 declare var radvisory: interop.StructType<radvisory>;
+
+interface radvisoryv {
+	rav_flags: number;
+	rav_count: number;
+	rav_ranges: interop.Pointer | interop.Reference<radvisory> | null;
+}
+declare var radvisoryv: interop.StructType<radvisoryv>;
 
 interface rb_node_t {
 	opaque: interop.Reference<interop.Pointer | interop.Reference<any> | null>;
@@ -9226,6 +9354,20 @@ declare function regwncomp(p1: interop.Pointer | interop.Reference<regex_t> | Ar
  * @since 6.0
  */
 declare function regwnexec(p1: interop.Pointer | interop.Reference<regex_t> | ArrayBufferLike | ArrayBufferView | null, p2: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, __len: number, __nmatch: number, __pmatch: interop.Reference<regmatch_t>, p6: number): number;
+
+declare function removefile(path: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, state: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, flags: number): number;
+
+declare function removefile_cancel(state: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
+
+declare function removefile_state_alloc(): interop.Pointer | interop.Reference<any> | null;
+
+declare function removefile_state_free(p1: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
+
+declare function removefile_state_get(state: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, key: number, dst: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
+
+declare function removefile_state_set(state: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, key: number, value: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null): number;
+
+declare function removefileat(fd: number, path: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, state: interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, flags: number): number;
 
 declare function removexattr(path: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, name: string | interop.Pointer | interop.Reference<any> | ArrayBufferLike | ArrayBufferView | null, options: number): number;
 
@@ -10150,8 +10292,15 @@ declare function task_register_dyld_shared_cache_image_info(task: number, dyld_c
 
 declare function task_register_hardened_exception_handler(task: number, signed_pc_key: number, exceptions_allowed: number, behaviors_allowed: number, flavors_allowed: number, new_exception_port: number): number;
 
+/**
+ * @since 2.0
+ * @deprecated 100000
+ */
 declare function task_resume(target_task: number): number;
 
+/**
+ * @since 7.0
+ */
 declare function task_resume2(suspend_token: number): number;
 
 declare const enum task_role_t {
@@ -10214,8 +10363,36 @@ declare function task_set_special_port(task: number, which_port: number, special
 
 declare function task_set_state(task: number, flavor: number, new_state: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, new_stateCnt: number): number;
 
+interface task_shared_region_info {
+	sri_base_address: number;
+	sri_size: number;
+	sri_slide: number;
+	sri_id: number;
+	sri_namespace_id: number;
+	sri_cpu_type: number;
+	sri_cpu_subtype: number;
+	sri_reslid: number;
+	sri_driverkit: number;
+	sri_stubs: task_shared_region_stubs_t;
+}
+declare var task_shared_region_info: interop.StructType<task_shared_region_info>;
+
+declare const enum task_shared_region_stubs_t {
+
+	TASK_SHARED_REGION_STUBS_DEV = 1,
+
+	TASK_SHARED_REGION_STUBS_PROD = 2
+}
+
+/**
+ * @since 2.0
+ * @deprecated 100000
+ */
 declare function task_suspend(target_task: number): number;
 
+/**
+ * @since 7.0
+ */
 declare function task_suspend2(target_task: number, suspend_token: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 declare function task_swap_exception_ports(task: number, exception_mask: number, new_port: number, behavior: number, new_flavor: number, masks: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, masksCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, old_handlers: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, old_behaviors: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, old_flavors: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
@@ -10313,6 +10490,11 @@ interface task_vm_info {
 	ledger_tag_neural_nofootprint_peak: number;
 }
 declare var task_vm_info: interop.StructType<task_vm_info>;
+
+interface task_vm_shared_cache_info {
+	slide: number;
+}
+declare var task_vm_shared_cache_info: interop.StructType<task_vm_shared_cache_info>;
 
 interface task_wait_state_info {
 	total_wait_state_time: number;
@@ -10833,8 +11015,15 @@ interface thread_precedence_policy {
 }
 declare var thread_precedence_policy: interop.StructType<thread_precedence_policy>;
 
+/**
+ * @since 2.0
+ * @deprecated 100000
+ */
 declare function thread_resume(target_act: number): number;
 
+/**
+ * @since 26.4
+ */
 declare function thread_resume2(suspend_token: number): number;
 
 declare function thread_sample(thread: number, reply: number): number;
@@ -10856,8 +11045,15 @@ interface thread_standard_policy {
 }
 declare var thread_standard_policy: interop.StructType<thread_standard_policy>;
 
+/**
+ * @since 2.0
+ * @deprecated 100000
+ */
 declare function thread_suspend(target_act: number): number;
 
+/**
+ * @since 26.4
+ */
 declare function thread_suspend2(target_act: number, suspend_token: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
 
 declare function thread_swap_exception_ports(thread: number, exception_mask: number, new_port: number, behavior: number, new_flavor: number, masks: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, masksCnt: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, old_handlers: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, old_behaviors: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null, old_flavors: interop.Pointer | interop.Reference<number> | ArrayBufferLike | ArrayBufferView | null): number;
@@ -11102,7 +11298,17 @@ declare const enum virtual_memory_guard_exception_code_t {
 
 	kGUARD_EXC_SEC_UPL_WRITE_ON_EXEC_REGION = 12,
 
-	kGUARD_EXC_LARGE_ALLOCATION_TELEMETRY = 13,
+	kGUARD_EXC_COW_DEFEATURED_COPY_DENIED = 13,
+
+	kGUARD_EXC_COW_DEFEATURED_EXTRACT_DENIED = 14,
+
+	kGUARD_EXC_COW_DEFEATURED_SHARE_MAP_AS_COPY_DENIED = 15,
+
+	kGUARD_EXC_COW_DEFEATURED_FIRST = 13,
+
+	kGUARD_EXC_COW_DEFEATURED_LAST = 15,
+
+	kGUARD_EXC_LARGE_ALLOCATION_TELEMETRY = 16,
 
 	kGUARD_EXC_SEC_ACCESS_FAULT = 98,
 
@@ -11237,6 +11443,18 @@ interface vm_page_info_basic {
 }
 declare var vm_page_info_basic: interop.StructType<vm_page_info_basic>;
 
+interface vm_page_info_extended_data_t {
+	disposition: number;
+	ref_count: number;
+	object_id: number;
+	offset: number;
+	depth: number;
+	__pad1: number;
+	disposition_ts: number;
+	__reserved: interop.Reference<number>;
+}
+declare var vm_page_info_extended_data_t: interop.StructType<vm_page_info_extended_data_t>;
+
 declare var vm_page_mask: number;
 
 declare var vm_page_shift: number;
@@ -11369,6 +11587,9 @@ interface vm_region_submap_info_64 {
 	flags: number;
 	pages_reusable: number;
 	object_id_full: number;
+	pages_wired: number;
+	wire_tag: number;
+	__padding0: number;
 }
 declare var vm_region_submap_info_64: interop.StructType<vm_region_submap_info_64>;
 
@@ -11459,6 +11680,27 @@ interface vm_statistics64 {
 	tagged_compressions: number;
 	tagged_decompressions: number;
 	compressed_tag_storage_bytes: number;
+	speculative_pages_created: number;
+	speculative_pages_activated: number;
+	swap_count: number;
+	empty_tag_storing_tag_storage_pages: number;
+	executable_count: number;
+	shared_region_count: number;
+	boot_stolen_count: number;
+	secluded_count: number;
+	active_internal_count: number;
+	inactive_internal_count: number;
+	active_external_count: number;
+	inactive_external_count: number;
+	purgeable_pageable_count: number;
+	purgeable_wired_count: number;
+	background_internal_count: number;
+	background_external_count: number;
+	donated_count: number;
+	realtime_count: number;
+	max_mem_count: number;
+	phantom_ghosts_found: number;
+	phantom_ghosts_added: number;
 }
 declare var vm_statistics64: interop.StructType<vm_statistics64>;
 
