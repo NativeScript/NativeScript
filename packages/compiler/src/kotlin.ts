@@ -4787,7 +4787,9 @@ export class Translator implements AsyncTranslator {
       const after = this.expr(e.left);
       const t = this.typeOf(e);
       const untyped = this.typeOf(e.left) === 'Any?' || after.startsWith('jsGet(');
-      return `run { ${this.binary(e)}; ${untyped && t !== 'Any?' && t !== 'Unit' ? `(${after} as ${optionalType(t)})${isNullable(t) ? '' : '!!'}` : after} }`;
+      // A record's entry reads back nullable, though TypeScript types it as the value.
+      const entry = ts.isElementAccessExpression(e.left) && this.typeOf(e.left.expression).replace(/\?$/, '').startsWith('JSRecord<') && t !== 'Unit' && !isNullable(t);
+      return `run { ${this.binary(e)}; ${untyped && t !== 'Any?' && t !== 'Unit' ? `(${after} as ${optionalType(t)})${isNullable(t) ? '' : '!!'}` : entry ? `${after}!!` : after} }`;
     }
     // `(info.name = v)` as a value: the value assigned, evaluated once (Kotlin's assignment has none).
     if (ts.isBinaryExpression(e) && e.operatorToken.kind === ts.SyntaxKind.EqualsToken && !statementLevel(e) && !ts.isArrayLiteralExpression(e.left) && !this.subst.has(e.right)) {

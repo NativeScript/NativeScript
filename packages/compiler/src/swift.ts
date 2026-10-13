@@ -6063,7 +6063,9 @@ ${members.join('\n')}
       const tp = this.tryPrefix(e);
       // A member by key (`scope[SLOT] ??= new Map()`) reads back untyped: as the target's type.
       const target = this.expr(e.left);
-      const read = /\[jsKey: [^\]]+\]$/.test(target) && t !== 'Any?' ? this.fromAnyCode(target, t, true) : assigned ? `${target}!` : target;
+      // A record's entry reads back optional, though TypeScript types it as the value.
+      const entry = ts.isElementAccessExpression(e.left) && this.typeOf(e.left.expression).replace(/\?$/, '').startsWith('JSRecord<') && t !== 'Any?' && !isOptional(t);
+      const read = /\[jsKey: [^\]]+\]$/.test(target) && t !== 'Any?' ? this.fromAnyCode(target, t, true) : assigned || entry ? `${target}!` : target;
       return `({ () ${tp ? 'throws ' : ''}-> ${t} in ${tp}${this.binary(e)}; return ${read} }())`;
     }
     if (ts.isNumericLiteral(e)) return numberLiteral(e.text);
