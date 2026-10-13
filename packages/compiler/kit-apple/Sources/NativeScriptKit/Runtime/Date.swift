@@ -174,7 +174,7 @@ public final class JSDate: JSDynamic, JSStringConvertible {
     public static func parse(_ text: String) -> Double {
         let s = text.trimmingCharacters(in: .whitespaces)
         let iso = #"^([+-][0-9]{6}|[0-9]{4})(?:-([0-9]{2})(?:-([0-9]{2}))?)?(?:T([0-9]{2}):([0-9]{2})(?::([0-9]{2})(?:\.([0-9]{1,3})[0-9]*)?)?(Z|[+-][0-9]{2}:[0-9]{2})?)?$"#
-        guard let re = try? NSRegularExpression(pattern: iso), let m = re.firstMatch(in: s, range: NSRange(location: 0, length: (s as NSString).length)) else { return .nan }
+        guard let re = try? NSRegularExpression(pattern: iso), let m = re.firstMatch(in: s, range: NSRange(location: 0, length: (s as NSString).length)) else { return parseLegacy(s) }
         func group(_ i: Int) -> String? { let r = m.range(at: i); return r.location == NSNotFound ? nil : (s as NSString).substring(with: r) }
         let y = Double(group(1)!) ?? .nan
         let mo = (Double(group(2) ?? "1") ?? 1) - 1, d = Double(group(3) ?? "1") ?? 1
@@ -192,6 +192,34 @@ public final class JSDate: JSDynamic, JSStringConvertible {
         let parts = zone.dropFirst().split(separator: ":").compactMap { Double($0) }
         guard parts[0] <= 23, parts[1] <= 59 else { return .nan }
         return timeClip(t - sign * (parts[0] * 60 + parts[1]) * 60_000)
+    }
+
+    /// The common non-ISO forms V8 reads: `toUTCString`'s (HTTP dates), `toString`'s, and month-name or slash dates,
+    /// local time unless the text names a zone.
+    nonisolated(unsafe) private static let legacy: [DateFormatter] = [
+        "EEE, d MMM yyyy HH:mm:ss zzz", "EEE, d MMM yyyy HH:mm:ss Z", "EEE MMM d yyyy HH:mm:ss 'GMT'Z", "EEE MMM d yyyy HH:mm:ss zzz",
+        "EEE MMM d yyyy", "MMMM d, yyyy HH:mm:ss", "MMMM d, yyyy HH:mm", "MMMM d, yyyy", "MMM d, yyyy HH:mm:ss", "MMM d, yyyy HH:mm",
+        "MMM d, yyyy", "MMM d yyyy HH:mm:ss", "MMM d yyyy HH:mm", "MMM d yyyy", "d MMMM yyyy", "d MMM yyyy",
+        "yyyy/M/d HH:mm:ss", "yyyy/M/d HH:mm", "yyyy/M/d", "M/d/yyyy HH:mm:ss", "M/d/yyyy HH:mm", "M/d/yyyy",
+    ].map { format in
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "en_US_POSIX")
+        f.dateFormat = format
+        f.isLenient = false
+        return f
+    }
+    private static let legacyLock = NSLock()
+
+    private static func parseLegacy(_ text: String) -> Double {
+        // toString's zone name in parentheses is a comment to V8.
+        let s = text.replacingOccurrences(of: #"\s*\([^)]*\)\s*$"#, with: "", options: .regularExpression)
+        legacyLock.lock()
+        defer { legacyLock.unlock() }
+        for f in legacy {
+            f.timeZone = TimeZone.current
+            if let date = f.date(from: s) { return timeClip((date.timeIntervalSince1970 * 1000).rounded()) }
+        }
+        return .nan
     }
 
     public var jsKeys: [String] { [] }
