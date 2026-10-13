@@ -38,12 +38,15 @@ public final class RouteConfig {
     let full: Bool
     let children: [RouteConfig]
     let make: (() -> View)?
+    /// `NSEmptyOutletComponent`: its children show in a frame of their own, on a page of the outlet's frame.
+    let emptyOutlet: Bool
 
-    public init(_ path: String, outlet: String = Router.primary, redirectTo: String? = nil, full: Bool = false, children: [RouteConfig] = [], _ make: (() -> View)? = nil) {
+    public init(_ path: String, outlet: String = Router.primary, redirectTo: String? = nil, full: Bool = false, emptyOutlet: Bool = false, children: [RouteConfig] = [], _ make: (() -> View)? = nil) {
         segments = path.split(separator: "/").map(String.init)
         self.outlet = outlet
         self.redirectTo = redirectTo
         self.full = full
+        self.emptyOutlet = emptyOutlet
         self.children = children
         self.make = make
     }
@@ -109,6 +112,10 @@ public final class Router {
 
     private final class Outlet {
         weak var frame: Frame?
+        /// The frame of the `NSEmptyOutletComponent` page the outlet shows, where its routes' pages go.
+        weak var inner: Frame?
+        /// The frame the outlet's pages are in.
+        var shown: Frame? { inner ?? frame }
         /// The configuration the outlet's URLs resolve against.
         let routes: [RouteConfig]
         /// The pages navigated to in this outlet and not navigated back from, the shown one last.
@@ -207,12 +214,12 @@ public final class Router {
     /// `back()`: the outlet of the given route, else the one navigated last that can go back, else the topmost frame.
     public func back(_ options: Any? = nil) {
         jsReport {
-            if let route = field(options, "relativeTo") as? ActivatedRoute, let frame = outlets[route.outlet]?.frame, try frame.canGoBack() {
+            if let route = field(options, "relativeTo") as? ActivatedRoute, let frame = outlets[route.outlet]?.shown, try frame.canGoBack() {
                 try frame.goBack()
                 return
             }
             for name in history.reversed() {
-                if let frame = outlets[name]?.frame, try frame.canGoBack() { try frame.goBack(); return }
+                if let frame = outlets[name]?.shown, try frame.canGoBack() { try frame.goBack(); return }
             }
             _ = try Frame.goBack()
         }
@@ -225,7 +232,7 @@ public final class Router {
     public var url: String { "/" + (current(Router.primary) ?? []).joined(separator: "/") }
 
     public func canGoBack() -> Bool {
-        history.contains { name in (try? outlets[name]?.frame?.canGoBack()) ?? false }
+        history.contains { name in (try? outlets[name]?.shown?.canGoBack()) ?? false }
     }
 
     /// The routes of a named outlet, wherever in the configuration they are.
@@ -244,10 +251,14 @@ public final class Router {
     /// Whether the outlet navigated: nil when the URL matches no route, false when the outlet shows it already.
     @discardableResult
     private func show(_ name: String, _ url: [String], extras: Any?) -> Bool? {
-        guard let outlet = outlets[name], let frame = outlet.frame,
+        guard let outlet = outlets[name], var frame = outlet.frame,
               let (chain, params, resolved) = match(outlet.routes, url, outlet: name == Router.primary ? Router.primary : nil),
               let make = chain.last?.make else { return nil }
         if outlet.entries.last?.route.url == resolved { return false }
+        if chain.contains(where: { $0.emptyOutlet }) {
+            if outlet.inner == nil { outlet.inner = emptyOutlet(in: frame) }
+            if let inner = outlet.inner { frame = inner }
+        }
         history.removeAll { $0 == name }
         history.append(name)
         push(make, ActivatedRoute(params: params, outlet: name, url: resolved), into: frame, extras: extras, outlet: outlet)
@@ -295,6 +306,21 @@ public final class Router {
             ]
             if let transition = field(extras, "transition") { navigation.append(("transition", transition)) }
             try frame.navigate(JSObject(navigation))
+        }
+    }
+
+    /// `NSEmptyOutletComponent` in `frame`: a page without an action bar holding a `page-router-outlet` that takes the
+    /// outer outlet's action bar visibility.
+    private func emptyOutlet(in frame: Frame) -> Frame? {
+        jsReported {
+            let page = try Page()
+            page.actionBarHidden = true
+            let inner = try Frame()
+            let visibility = frame.actionBarVisibility
+            if ["auto", "always", "never"].contains(visibility) { inner.actionBarVisibility = visibility }
+            page.content = inner
+            try frame.navigate(JSObject([("create", { (_: [Any?]) throws -> Any? in page } as JSFunction), ("clearHistory", false), ("animated", true)]))
+            return inner
         }
     }
 

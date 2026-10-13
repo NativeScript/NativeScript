@@ -549,14 +549,16 @@ export interface RouteNode {
   redirectTo?: string;
   full?: boolean;
   outlet?: string;
+  /** The route's component is `NSEmptyOutletComponent`. */
+  emptyOutlet?: boolean;
   children?: RouteNode[];
 }
 
 /**
  * The router configuration the entry provides (`provideNativeScriptRouter(routes)`,
  * `NativeScriptRouterModule.forRoot(routes)`), followed through `loadChildren` and
- * `loadComponent` into the files they import. `NSEmptyOutletComponent` is no
- * component: its children render in the outlet the route names.
+ * `loadComponent` into the files they import. A route whose component is `NSEmptyOutletComponent` is marked
+ * `emptyOutlet`: its children render in a frame of their own, on a page of the outlet the route names.
  */
 export function angularRouteTree(entry: string, read: (file: string) => string): { routes: RouteNode[]; files: Set<string> } | null {
   const files = new Set<string>();
@@ -599,7 +601,10 @@ export function angularRouteTree(entry: string, read: (file: string) => string):
       const text = (k: string) => { const v = get(k); return v && ts.isStringLiteralLike(v) ? v.text : undefined; };
       const node: RouteNode = { path: text('path') ?? '' };
       const component = get('component');
-      if (component && ts.isIdentifier(component) && component.text !== 'NSEmptyOutletComponent') node.component = component.text;
+      if (component && ts.isIdentifier(component)) {
+        if (component.text === 'NSEmptyOutletComponent') node.emptyOutlet = true;
+        else node.component = component.text;
+      }
       const loadComponent = get('loadComponent');
       if (loadComponent) node.component = lazy(file, loadComponent).name;
       if (text('redirectTo') !== undefined) node.redirectTo = text('redirectTo');

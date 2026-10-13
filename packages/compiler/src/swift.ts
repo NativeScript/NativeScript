@@ -3636,6 +3636,14 @@ ${members.join('\n')}
           else lines.push(`    var ${ident(name)}: ${t} ${this.functionBody(fn, t, '    ')}`);
           continue;
         }
+        // A field holding a module's `computed()` (`readonly color = ink`) is that computed: its value whenever read.
+        const held = m.initializer && ts.isIdentifier(m.initializer) ? this.moduleComputed(m.initializer) : undefined;
+        if (held) {
+          const read = this.expr(m.initializer!);
+          const t = this.computedType(held);
+          lines.push(this.throwsInfo.fn(held.arguments[0] as ts.ArrowFunction) ? `    var ${ident(name)}: ${t} {\n        get throws { try ${read} }\n    }` : `    var ${ident(name)}: ${t} { ${read} }`);
+          continue;
+        }
         const t = this.signalFields.has(name) ? `Signal<${this.typeOf(m.name)}>` : this.typeOf(m.name);
         if (name === '$passed') {
           // The props the parent gave, for a spread that passes on only those.
@@ -3707,6 +3715,14 @@ ${members.join('\n')}
   memberThrows(cls: ts.ClassDeclaration, name: string): boolean {
     const m = cls.members.find((x) => x.name && ts.isIdentifier(x.name) && x.name.text === name);
     return !!m && !isAsync(m) && this.throwsInfo.fn(m);
+  }
+
+  /** The `computed()` call a module-level variable an identifier names is initialized with. */
+  private moduleComputed(id: ts.Identifier): ts.CallExpression | undefined {
+    const d = this.resolve(id)?.valueDeclaration;
+    if (!d || !ts.isVariableDeclaration(d) || !d.initializer || !ts.isCallExpression(d.initializer) || this.calleeName(d.initializer) !== 'computed') return undefined;
+    const fn = d.initializer.arguments[0];
+    return ts.isSourceFile(d.parent.parent.parent) && fn && (ts.isArrowFunction(fn) || ts.isFunctionExpression(fn)) ? d.initializer : undefined;
   }
 
   /** A `computed()`'s value type: its type argument where given (`computed<MenuAction[]>(…)`), else its function's. */
