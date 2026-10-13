@@ -187,7 +187,10 @@ jobs:
         run: npm ci --no-audit --no-fund
 
       # npm pack as the release publishes, installed into a fresh app, which builds a minified release APK on the generated kit.
+      # A warning in the kit fails the build (kit-android/build.gradle.kts, nativescriptKitStrict).
       - name: Pack and build
+        env:
+          ORG_GRADLE_PROJECT_nativescriptKitStrict: 'true'
         run: packages/compiler/tests/pack-check.sh android dist/packages/core "$RUNNER_TEMP/pack"
 
       - name: Enable KVM
