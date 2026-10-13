@@ -108,7 +108,7 @@ fun jsCodePoints(s: String): List<String> {
 
 /** `s.split(separator, limit)` with a string separator. */
 fun jsSplit(s: String, separator: String?, limit: Double? = null): JSArray<String> {
-    val max = if (limit == null) Long.MAX_VALUE else jsToUint32(limit).toLong() and 0xFFFFFFFFL
+    val max = if (limit == null) Long.MAX_VALUE else jsToUint32(limit)
     if (separator == null) return JSArray(if (max > 0) listOf(s) else emptyList())
     val parts = ArrayList<String>()
     if (max == 0L) return JSArray(parts)

@@ -27,6 +27,10 @@ export interface JavaMember {
   nullable?: boolean;
   /** Annotated `@NonNull`: the method's result, which an override must give as `T`. */
   nonNull?: boolean;
+  /** Annotated `@RecentlyNullable` (android.jar's newer annotations): Kotlin warns on using the result as present. */
+  recentlyNullable?: boolean;
+  /** Deprecated (Java's `@Deprecated`): Kotlin warns where it is used. */
+  deprecated?: boolean;
   /** The method's parameters annotated `@Nullable`. */
   nullableParams?: boolean[];
   /** The method's parameters annotated `@NonNull`, which Kotlin types `T`: an override must take them so. */
@@ -44,6 +48,7 @@ export interface JavaClass {
   methods: JavaMember[];
   /** Compiled from Kotlin (annotated `kotlin.Metadata`): Kotlin reads its getters and setters as properties only. */
   kotlin?: boolean;
+  deprecated?: boolean;
 }
 
 // ---- Zip archives ------------------------------------------------------------------------------
@@ -163,7 +168,7 @@ export function parseClass(b: Buffer): JavaClass {
     return type;
   };
   let kotlin = false;
-  /** Whether the annotations read are `@Nullable` (1), `@NonNull` (2) or neither (0). */
+  /** Whether the annotations read are `@Nullable` (1), `@NonNull` (2), `@RecentlyNullable` (3) or none of them (0). */
   const nullableIn = (): number => {
     let found = 0;
     const n = b.readUInt16BE(q); q += 2;
@@ -171,21 +176,24 @@ export function parseClass(b: Buffer): JavaClass {
       const type = annotation();
       if (type === 'Lkotlin/Metadata;') kotlin = true;
       if (/\/Nullable;$/.test(type)) found = 1;
+      else if (/\/RecentlyNullable;$/.test(type) && !found) found = 3;
       else if (/\/(NonNull|NotNull|RecentlyNonNull);$/.test(type) && !found) found = 2;
     }
     return found;
   };
-  const attributes = (owner: { signature?: string; nullable?: boolean; nonNull?: boolean; nullableParams?: boolean[]; nonNullParams?: boolean[] }) => {
+  const attributes = (owner: { signature?: string; nullable?: boolean; nonNull?: boolean; recentlyNullable?: boolean; deprecated?: boolean; nullableParams?: boolean[]; nonNullParams?: boolean[] }) => {
     const n = b.readUInt16BE(p); p += 2;
     for (let k = 0; k < n; k++) {
       const attr = utf8[b.readUInt16BE(p)];
       const len = b.readUInt32BE(p + 2);
       q = p + 6;
       if (attr === 'Signature') owner.signature = utf8[b.readUInt16BE(p + 6)];
+      else if (attr === 'Deprecated') owner.deprecated = true;
       else if (attr === 'RuntimeVisibleAnnotations' || attr === 'RuntimeInvisibleAnnotations') {
         const kind = nullableIn();
         if (kind === 1) owner.nullable = true;
         else if (kind === 2) owner.nonNull = true;
+        else if (kind === 3) owner.recentlyNullable = true;
       }
       else if (attr === 'RuntimeVisibleParameterAnnotations' || attr === 'RuntimeInvisibleParameterAnnotations') {
         const count = b[q++];

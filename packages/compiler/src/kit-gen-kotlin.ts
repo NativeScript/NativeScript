@@ -8,6 +8,7 @@ import ts from 'typescript';
 import { createHash } from 'node:crypto';
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
+import { allowedDeprecation } from './android-deprecations.ts';
 import { foldPlatform } from './platform.ts';
 import { Translator, splitTopLevel } from './kotlin.ts';
 import { AndroidNativeAPI, androidClassPath } from './native-calls-android.ts';
@@ -59,8 +60,7 @@ export interface KotlinKitResult {
 }
 
 export const KIT_PACKAGE = 'org.nativescript.kit';
-const SUPPRESS = '@file:Suppress("unused", "UNUSED_VARIABLE", "RedundantExplicitType", "NAME_SHADOWING", "UNCHECKED_CAST", "UNREACHABLE_CODE", "UNUSED_PARAMETER", "REDUNDANT_CALL_OF_CONVERSION_METHOD")';
-const header = (pkg = KIT_PACKAGE) => `// Generated from @nativescript/core by tools/native-kit: edit core, not this file.\n${SUPPRESS}\npackage ${pkg}\n\n${pkg === KIT_PACKAGE ? '' : `import ${KIT_PACKAGE}.*\n\n`}`;
+const header = (pkg = KIT_PACKAGE, annotations = '') => `// Generated from @nativescript/core by tools/native-kit: edit core, not this file.\n${annotations}package ${pkg}\n\n${pkg === KIT_PACKAGE ? '' : `import ${KIT_PACKAGE}.*\n\n`}`;
 
 /** The Android files of a module list: a platform's file over the shared one, no tests, no other platform. */
 export function coreFilesAndroid(core: string, modules: string[]): string[] {
@@ -233,7 +233,7 @@ export function generateKotlinKit(o: KotlinKitOptions): KotlinKitResult {
   const lines: Record<string, [number, string, number][]> = {};
   const located = (name: string, code: string, pkg?: string): string => {
     const body = sourceLines.kotlin(code);
-    const written = withImports(body.code, pkg);
+    const written = withImports(body.code, pkg, (internal) => !!native.classpath.get(internal)?.deprecated && allowedDeprecation(internal));
     const offset = written.split('\n').length - 1 - body.code.split('\n').length;
     const ranges: [number, string, number][] = [];
     body.lines.forEach((at, i) => {
@@ -343,7 +343,8 @@ const JAVA_NAME = /(?<![\w.$`])(?:android|androidx|java|javax|dalvik|org\.(?:nat
  * A file's code with the Java classes it names imported under aliases (`android_view_View`): core's classes
  * have members named `android`, which a qualified name inside them would resolve to, and Kotlin has no root qualifier.
  */
-function withImports(code: string, pkg = KIT_PACKAGE): string {
+/** `deprecated`: whether an imported class (`android/widget/TabHost`) is a deprecated one core may use. */
+function withImports(code: string, pkg = KIT_PACKAGE, deprecated: (internal: string) => boolean = () => false): string {
   // Kotlin's `run { … }` by its package: core's classes declare a `run` of their own (`Application.run()`), which would take the block.
   code = code.replace(/(?<=[\s(=,!])run (?=\{|\w+@ \{)/g, 'kotlin.run ');
   const aliases = new Map<string, string>();
@@ -378,6 +379,12 @@ function withImports(code: string, pkg = KIT_PACKAGE): string {
     out += c; i = j + 1;
   }
   const imports = [...aliases].sort().map(([name, a]) => `import ${name} as ${a}\n`).join('');
+  // Kotlin reports a deprecated class at its import, which only the file can suppress: the file then suppresses deprecation.
+  const old = [...aliases.keys()].filter((name) => deprecated(name.replace(/\./g, '/')));
+  if (old.length) {
+    const why = `// Uses ${old.join(', ')}, deprecated in Android, on purpose: Kotlin reports a class at its import, which only the file can suppress.\n@file:Suppress("DEPRECATION")\n\n`;
+    return header(pkg, why) + (imports ? imports + '\n' : '') + out.replaceAll('@Suppress("DEPRECATION") ', '').replaceAll('@Suppress("DEPRECATION", ', '@Suppress(') + '\n';
+  }
   return header(pkg) + (imports ? imports + '\n' : '') + out + '\n';
 }
 

@@ -22,6 +22,16 @@ kotlin {
     compilerOptions { jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17) }
 }
 
+// -PnativescriptKitStrict (CI): a warning in the kit, Kotlin's extra checks included, fails its build.
+if (providers.gradleProperty("nativescriptKitStrict").isPresent) {
+    kotlin {
+        compilerOptions {
+            allWarningsAsErrors.set(true)
+            freeCompilerArgs.add("-Wextra")
+        }
+    }
+}
+
 // -PgeneratedKit: the kit generated from core (generated/kotlin, tools/native-kit/generate-android.mts) in place of the hand port,
 // on the runtime and the hand-written files the generated code calls (modules.mts' counterparts).
 // src/fromcore: what compiled apps call (the code generator's vocabulary) over the generated classes, as kit-apple's CoreBridge.swift.

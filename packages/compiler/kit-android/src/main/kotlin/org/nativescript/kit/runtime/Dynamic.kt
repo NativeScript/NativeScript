@@ -26,6 +26,15 @@ fun jsFunction(length: Int, body: (List<Any?>) -> Any?): JSFunction = JSFunction
 @Suppress("UNCHECKED_CAST")
 fun <T> jsUnchecked(value: Any?): T = value as T
 
+/**
+ * `value as T` where T has type arguments or is a function type: the class is checked, as Kotlin's `as` checks it;
+ * the type arguments, which neither script nor the JVM keeps, are the TypeScript declaration's.
+ */
+inline fun <reified T> jsAs(value: Any?): T = value as T
+
+/** As jsAs, null where `value` is not of T's class. */
+inline fun <reified T> jsAsOrNull(value: Any?): T? = value as? T
+
 /** An untyped value used as a property key: a symbol's own key, anything else as its string. */
 fun jsPropertyKey(value: Any?): String = if (value is JSSymbol) value.key else jsToString(value)
 
@@ -53,31 +62,40 @@ fun <A, B, R> jsAdapt2(original: Any, body: (A, B) -> R): (A, B) -> R = JSAdapte
 fun <A, B, C, R> jsAdapt3(original: Any, body: (A, B, C) -> R): (A, B, C) -> R = JSAdapted3(original, body)
 fun <A, B, C, D, R> jsAdapt4(original: Any, body: (A, B, C, D) -> R): (A, B, C, D) -> R = JSAdapted4(original, body)
 
-// A function value held untyped, as a Kotlin function of its arity (cast to the typed function by the caller).
+// A function value held untyped, as the Kotlin function type its TypeScript declaration gives. A Kotlin function's
+// parameter and result types are erased: the declaration is the contract, as it is in script.
 @Suppress("UNCHECKED_CAST")
-fun jsFunction0(f: Any?): () -> Any? = f as? Function0<Any?> ?: { jsCall(f) }
+fun <R> jsFunction0(f: Any?): () -> R = (f as? Function0<Any?> ?: { jsCall(f) }) as () -> R
 @Suppress("UNCHECKED_CAST")
-fun jsFunction1(f: Any?): (Any?) -> Any? = f as? Function1<Any?, Any?> ?: { a -> jsCall(f, a) }
+fun <A, R> jsFunction1(f: Any?): (A) -> R = (f as? Function1<Any?, Any?> ?: { a: Any? -> jsCall(f, a) }) as (A) -> R
 @Suppress("UNCHECKED_CAST")
-fun jsFunction2(f: Any?): (Any?, Any?) -> Any? = f as? Function2<Any?, Any?, Any?> ?: { a, b -> jsCall(f, a, b) }
+fun <A, B, R> jsFunction2(f: Any?): (A, B) -> R = (f as? Function2<Any?, Any?, Any?> ?: { a: Any?, b: Any? -> jsCall(f, a, b) }) as (A, B) -> R
 @Suppress("UNCHECKED_CAST")
-fun jsFunction3(f: Any?): (Any?, Any?, Any?) -> Any? = f as? Function3<Any?, Any?, Any?, Any?> ?: { a, b, c -> jsCall(f, a, b, c) }
+fun <A, B, C, R> jsFunction3(f: Any?): (A, B, C) -> R =
+    (f as? Function3<Any?, Any?, Any?, Any?> ?: { a: Any?, b: Any?, c: Any? -> jsCall(f, a, b, c) }) as (A, B, C) -> R
 @Suppress("UNCHECKED_CAST")
-fun jsFunction4(f: Any?): (Any?, Any?, Any?, Any?) -> Any? = f as? Function4<Any?, Any?, Any?, Any?, Any?> ?: { a, b, c, d -> jsCall(f, a, b, c, d) }
+fun <A, B, C, D, R> jsFunction4(f: Any?): (A, B, C, D) -> R =
+    (f as? Function4<Any?, Any?, Any?, Any?, Any?> ?: { a: Any?, b: Any?, c: Any?, d: Any? -> jsCall(f, a, b, c, d) }) as (A, B, C, D) -> R
 @Suppress("UNCHECKED_CAST")
-fun jsFunction5(f: Any?): (Any?, Any?, Any?, Any?, Any?) -> Any? = f as? Function5<Any?, Any?, Any?, Any?, Any?, Any?> ?: { a, b, c, d, e -> jsCall(f, a, b, c, d, e) }
+fun <A, B, C, D, E, R> jsFunction5(f: Any?): (A, B, C, D, E) -> R =
+    (f as? Function5<Any?, Any?, Any?, Any?, Any?, Any?> ?: { a: Any?, b: Any?, c: Any?, d: Any?, e: Any? -> jsCall(f, a, b, c, d, e) }) as (A, B, C, D, E) -> R
 @Suppress("UNCHECKED_CAST")
-fun jsFunction6(f: Any?): (Any?, Any?, Any?, Any?, Any?, Any?) -> Any? = f as? Function6<Any?, Any?, Any?, Any?, Any?, Any?, Any?> ?: { a, b, c, d, e, g -> jsCall(f, a, b, c, d, e, g) }
+fun <A, B, C, D, E, F, R> jsFunction6(f: Any?): (A, B, C, D, E, F) -> R =
+    (f as? Function6<Any?, Any?, Any?, Any?, Any?, Any?, Any?> ?: { a: Any?, b: Any?, c: Any?, d: Any?, e: Any?, g: Any? -> jsCall(f, a, b, c, d, e, g) }) as (A, B, C, D, E, F) -> R
 @Suppress("UNCHECKED_CAST")
-fun jsFunction7(f: Any?): (Any?, Any?, Any?, Any?, Any?, Any?, Any?) -> Any? = f as? Function7<Any?, Any?, Any?, Any?, Any?, Any?, Any?, Any?> ?: { a, b, c, d, e, g, h -> jsCall(f, a, b, c, d, e, g, h) }
+fun <A, B, C, D, E, F, G, R> jsFunction7(f: Any?): (A, B, C, D, E, F, G) -> R =
+    (f as? Function7<Any?, Any?, Any?, Any?, Any?, Any?, Any?, Any?> ?: { a: Any?, b: Any?, c: Any?, d: Any?, e: Any?, g: Any?, h: Any? -> jsCall(f, a, b, c, d, e, g, h) }) as (A, B, C, D, E, F, G) -> R
+
+/** `value` read by `read`, or null when it is undefined or null. */
+inline fun <T> jsUnlessNullish(value: Any?, read: (Any?) -> T): T? = if (jsIsNullish(value)) null else read(value)
 
 /** A function value held untyped, as a Kotlin function taking its `this` first: a JSMethod gets it as its receiver. */
 fun jsThisFunction(f: Any?, arity: Int): Any = if (f !is JSMethod) when (arity) {
-    1 -> jsFunction1(f)
-    2 -> jsFunction2(f)
-    3 -> jsFunction3(f)
-    4 -> jsFunction4(f)
-    else -> jsFunction5(f)
+    1 -> jsFunction1<Any?, Any?>(f)
+    2 -> jsFunction2<Any?, Any?, Any?>(f)
+    3 -> jsFunction3<Any?, Any?, Any?, Any?>(f)
+    4 -> jsFunction4<Any?, Any?, Any?, Any?, Any?>(f)
+    else -> jsFunction5<Any?, Any?, Any?, Any?, Any?, Any?>(f)
 } else when (arity) {
     1 -> { a: Any? -> f.call(a, arrayOf()) }
     2 -> { a: Any?, b: Any? -> f.call(a, arrayOf(b)) }
