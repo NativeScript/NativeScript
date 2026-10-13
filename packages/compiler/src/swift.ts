@@ -8332,7 +8332,7 @@ ${members.join('\n')}
       case 'trimEnd': return `jsTrimEnd(${t})`;
       case 'split': return first && this.isAny(first) ? `jsSplit(${t}, untyped: ${this.expr(first)}, ${opt(1)})` : `jsSplit(${t}, ${a[0] ?? 'nil'}, ${opt(1)})`;
       case 'indexOf': return `jsIndexOf(${t}, ${a[0]}, ${opt(1)})`;
-      case 'lastIndexOf': return `jsLastIndexOf(${t}, ${a[0]})`;
+      case 'lastIndexOf': return `jsLastIndexOf(${t}, ${a[0]}${a[1] !== undefined ? `, ${a[1]}` : ''})`;
       case 'slice': return `jsSlice(${t}, ${a.join(', ')})`;
       case 'substring': return `jsSubstring(${t}, ${a[0] ?? '0'}, ${opt(1)})`;
       case 'substr': return `jsSubstr(${t}, ${a[0] ?? '0'}, ${opt(1)})`;

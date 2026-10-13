@@ -6686,7 +6686,7 @@ export class Translator implements AsyncTranslator {
       case 'trimEnd': return `jsTrimEnd(${t})`;
       case 'split': return `jsSplit(${t}, ${first ? s(0) : 'null'}${opt(1)})`;
       case 'indexOf': return `jsIndexOf(${t}, ${s(0)}${opt(1)})`;
-      case 'lastIndexOf': return `jsLastIndexOf(${t}, ${s(0)})`;
+      case 'lastIndexOf': return `jsLastIndexOf(${t}, ${s(0)}${opt(1)})`;
       case 'slice': return `jsSlice(${t}${e.arguments.map((_, k) => `, ${n(k)}`).join('')})`;
       case 'substring': return `jsSubstring(${t}, ${first ? n(0) : '0.0'}${opt(1)})`;
       case 'substr': return `jsSubstr(${t}, ${first ? n(0) : '0.0'}${opt(1)})`;

@@ -26,7 +26,12 @@ fun jsIndexOf(s: String, search: String, position: Double? = null): Double {
     return s.indexOf(search, start).toDouble()
 }
 
-fun jsLastIndexOf(s: String, search: String): Double = s.lastIndexOf(search).toDouble()
+fun jsLastIndexOf(s: String, search: String, fromIndex: Double? = null): Double {
+    var start = s.length - search.length
+    // A NaN or missing position searches from the end.
+    if (fromIndex != null && !fromIndex.isNaN()) start = minOf(start, maxOf(0.0, minOf(s.length.toDouble(), fromIndex)).toInt())
+    return if (start < 0) -1.0 else s.lastIndexOf(search, start).toDouble()
+}
 
 /** `s.slice(start, end)`: negative indexes count from the end; out-of-range clamps. */
 fun jsSlice(s: String, start: Double = 0.0, end: Double? = null): String {
@@ -360,7 +365,7 @@ internal fun jsStringMethod(s: String, key: String): JSMethod? {
         "match" -> JSMethod { _, args -> (arg(args, 0) as? JSRegExp)?.let { jsMatch(s, it) } }
         "charAt" -> JSMethod { _, args -> jsCharAt(s, number(args, 0) ?: 0.0) }
         "charCodeAt" -> JSMethod { _, args -> jsCharCodeAt(s, number(args, 0) ?: 0.0) }
-        "lastIndexOf" -> JSMethod { _, args -> jsLastIndexOf(s, jsToString(arg(args, 0))) }
+        "lastIndexOf" -> JSMethod { _, args -> jsLastIndexOf(s, jsToString(arg(args, 0)), number(args, 1)) }
         "trimStart" -> JSMethod { _, _ -> jsTrimStart(s) }
         "trimEnd" -> JSMethod { _, _ -> jsTrimEnd(s) }
         "padStart" -> JSMethod { _, args -> jsPadStart(s, number(args, 0) ?: 0.0, arg(args, 1)?.let { jsToString(it) } ?: " ") }

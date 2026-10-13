@@ -158,9 +158,11 @@ public func jsIndexOf(_ s: String, _ search: String, _ position: Double?) -> Dou
     return -1
 }
 
-public func jsLastIndexOf(_ s: String, _ search: String) -> Double {
+public func jsLastIndexOf(_ s: String, _ search: String, _ fromIndex: Double? = nil) -> Double {
     let u = units(s), n = Array(search.utf16)
     var i = u.count - n.count
+    // A NaN or missing position searches from the end.
+    if let f = fromIndex, !f.isNaN { i = min(i, Int(max(0, min(Double(u.count), f)))) }
     while i >= 0 {
         if u[i..<(i + n.count)].elementsEqual(n) { return Double(i) }
         i -= 1
@@ -480,7 +482,7 @@ func jsStringMethod(_ s: String, _ key: String) -> JSMethod? {
     case "charCodeAt": return { _, args in jsCharCodeAt(s, number(args, 0) ?? 0) }
     case "codePointAt": return { _, args in jsCodePointAt(s, number(args, 0) ?? 0) }
     case "at": return { _, args in jsStringAt(s, number(args, 0) ?? 0) }
-    case "lastIndexOf": return { _, args in jsLastIndexOf(s, jsToString(jsArg(args, 0))) }
+    case "lastIndexOf": return { _, args in jsLastIndexOf(s, jsToString(jsArg(args, 0)), number(args, 1)) }
     case "padEnd": return { _, args in try jsPadEnd(s, number(args, 0) ?? 0, jsIsNullish(jsArg(args, 1)) ? " " : jsToString(jsArg(args, 1))) }
     case "padStart": return { _, args in try jsPadStart(s, number(args, 0) ?? 0, jsIsNullish(jsArg(args, 1)) ? " " : jsToString(jsArg(args, 1))) }
     case "repeat": return { _, args in try jsRepeat(s, number(args, 0) ?? 0) }
