@@ -1,5 +1,7 @@
 package org.nativescript.kit
 
+import java.text.Collator
+import java.text.Normalizer
 import java.util.Calendar
 import java.util.GregorianCalendar
 import java.util.Locale
@@ -27,6 +29,40 @@ private fun option(options: Any?, key: String): Any? {
     val o = jsBox(options) ?: return null
     if (o === JSNull) return null
     return jsBox(jsField(o, key))
+}
+
+/** `a.localeCompare(b, locales, options)`: the locale's collation, with `sensitivity` and `numeric`. */
+fun jsLocaleCompare(a: String, b: String, locales: Any?, options: Any? = null): Double {
+    val locale = if (jsBox(locales) == null) Locale.ENGLISH else Locale.forLanguageTag(jsRequestedLocale(locales))
+    val sensitivity = option(options, "sensitivity")?.let { jsToString(it) }
+    val collator = Collator.getInstance(locale).apply {
+        decomposition = Collator.CANONICAL_DECOMPOSITION
+        strength = when (sensitivity) { "base", "case" -> Collator.PRIMARY; "accent" -> Collator.SECONDARY; else -> Collator.TERTIARY }
+    }
+    val withCase = Collator.getInstance(locale)
+    fun compare(x: String, y: String): Int {
+        val r = collator.compare(x, y)
+        // "case" tells letters apart by case and not by accent: the texts without their accents, compared with case.
+        return if (r == 0 && sensitivity == "case") withCase.compare(withoutAccents(x), withoutAccents(y)) else r
+    }
+    val r = if (jsTruthy(option(options, "numeric"))) numericCompare(a, b, ::compare) else compare(a, b)
+    return if (r < 0) -1.0 else if (r > 0) 1.0 else 0.0
+}
+
+private fun withoutAccents(s: String): String = Normalizer.normalize(s, Normalizer.Form.NFD).replace(Regex("\\p{Mn}+"), "")
+
+private val digitRuns = Regex("[0-9]+|[^0-9]+")
+
+/** Runs of digits compared by their value, the text between them by the collation. */
+private fun numericCompare(a: String, b: String, compare: (String, String) -> Int): Int {
+    val x = digitRuns.findAll(a).map { it.value }.toList()
+    val y = digitRuns.findAll(b).map { it.value }.toList()
+    for (i in 0 until minOf(x.size, y.size)) {
+        val p = x[i].trimStart('0'); val q = y[i].trimStart('0')
+        val r = if (x[i][0].isDigit() && y[i][0].isDigit()) (if (p.length != q.length) p.length - q.length else p.compareTo(q)) else compare(x[i], y[i])
+        if (r != 0) return r
+    }
+    return x.size - y.size
 }
 
 private fun stringOption(options: Any?, key: String, allowed: List<String>, fallback: String?): String? {

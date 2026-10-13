@@ -1,4 +1,3 @@
-// @swift
 // `localeCompare(that, locales, options)`: `numeric` orders digit runs by value, `sensitivity` decides which differences count.
 const f = ['item10', 'item9', 'Item1'];
 console.log('item10'.localeCompare('item9', undefined, { numeric: true }), 'item10'.localeCompare('item9'));
