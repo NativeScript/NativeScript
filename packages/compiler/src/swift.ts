@@ -3751,6 +3751,17 @@ ${members.join('\n')}
     return (this.written = written);
   }
 
+  /** The type a component's method returns (a template binding's value), null where it has no such method. */
+  memberType(cls: ts.ClassDeclaration, name: string): string | null {
+    const m = cls.members.find((x): x is ts.MethodDeclaration => ts.isMethodDeclaration(x) && ts.isIdentifier(x.name) && x.name.text === name);
+    return m ? this.returnTypeOf(m) : null;
+  }
+
+  /** The type of a settable member a registered property gives a kit class (kit-index `kitTypedMember`). */
+  kitTypedMember(owner: string, name: string): string | null {
+    return this.core.kitTypedMember(owner, name);
+  }
+
   componentMembers(cls: ts.ClassDeclaration, props: string[]): string[] {
     this.props = new Set(props);
     this.computed = new Set(cls.members.filter((m) => ts.isPropertyDeclaration(m) && m.initializer && this.calleeName(m.initializer) === 'computed').map((m) => (m.name as ts.Identifier).text));

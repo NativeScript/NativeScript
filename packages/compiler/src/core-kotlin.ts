@@ -2,7 +2,7 @@ import ts from 'typescript';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { isCoreDeclaration, unappliedProperty } from './core.ts';
-import { kitExtends, kitMember, readNames, type KitMember, type KitType } from './kit-index.ts';
+import { kitExtends, kitMember, kitTypedMember, readNames, typedMember, type KitMember, type KitType } from './kit-index.ts';
 import { KIT_NAMES_ANDROID, functionTypeParts, kotlinString, numberLiteral, splitTopLevel, type KotlinCore, type Translator } from './kotlin.ts';
 import { KIT_ANDROID } from './paths.ts';
 
@@ -144,6 +144,7 @@ export function kotlinKitIndex(sources: string | string[]): Map<string, KitType>
     const body = text.slice(at, text.indexOf('\n}\n', at));
     for (const m of body.matchAll(/^\s*((?:"\w+"(?:,\s*)?)+)\s*->/gm)) for (const n of m[1].matchAll(/"(\w+)"/g)) types.get('View')?.props.add(n[1]);
   }
+  for (const f of files) for (const m of readFileSync(f, 'utf8').matchAll(/JSTypedMember\((\w+)::class\.java, "(\w+)"\)/g)) typedMember(types, m[1], m[2]);
   return types;
 }
 
@@ -251,6 +252,11 @@ export class CoreKotlin implements KotlinCore {
 
   isKitView(name: string): boolean {
     return kitExtends(this.index, name, 'View');
+  }
+
+  /** The type of a settable member a registered property gives a kit class (kit-index `kitTypedMember`). */
+  kitTypedMember(owner: string, name: string): string | null {
+    return kitTypedMember(this.index, owner, name);
   }
 
   kitMember(owner: string, name: string): KitMember | null {

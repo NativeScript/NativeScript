@@ -1,7 +1,7 @@
 import ts from 'typescript';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
-import { kitExtends, kitIndex, kitMember, type KitMember, type KitType } from './kit-index.ts';
+import { kitExtends, kitIndex, kitMember, kitTypedMember, type KitMember, type KitType } from './kit-index.ts';
 import { optionalType, splitTopLevel, type Translator } from './swift.ts';
 import { KIT_APPLE_SOURCES } from './paths.ts';
 
@@ -183,6 +183,11 @@ export class CoreAPI {
   }
 
   /** A member of a kit type or a type it extends, as the kit declares it. */
+  /** The type of a settable member a registered property gives a kit class (kit-index `kitTypedMember`). */
+  kitTypedMember(owner: string, name: string): string | null {
+    return kitTypedMember(this.index, owner, name);
+  }
+
   kitMember(owner: string, name: string): KitMember | null {
     return kitMember(this.index, owner, name);
   }

@@ -25,6 +25,10 @@ export interface RenderOptions {
   rowSignals?: boolean;
   /** Angular with zone.js: every binding is checked on each tick and applied when its value changed. */
   zone?: boolean;
+  /** The declared type of a settable member a registered property gives an element's kit class (`text` of a Label), null for any other attribute. */
+  member?: (tag: string, name: string) => string | null;
+  /** The Kotlin type a binding method returns. */
+  methodType?: (method: string) => string | null;
 }
 
 export function render(c: ComponentIR, components: Map<string, { props: string[]; outputs?: string[]; outputFields?: Record<string, string>; optional?: string[]; passed?: boolean }>, options: RenderOptions = {}): string[] {
@@ -74,22 +78,35 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
     if (insertion === 'mounted' && templates.length) { if (at === 'created') templates.at(-1)!.inserts.push({ depth, text }); return; }
     if ((insertion === 'created') === (at === 'created')) say(depth, text);
   };
-  const attr = (depth: number, v: string, a: Attr, loops: Loop[]) => {
+  /**
+   * An attribute an element's kit class has a typed member for, set as script sets it (`label.text = …`) where the value
+   * is already of the member's type: a literal string for a string or untyped member, a binding of the member's type.
+   * Any other goes by name (`kitSet`), whose conversions read a string as the member's type.
+   */
+  const typedMember = (tag: string | undefined, a: Attr): string | null => {
+    if (!tag || options.slots || a.name === 'class' || !/^[A-Za-z_]\w*$/.test(a.name)) return null;
+    const t = options.member?.(tag, a.name);
+    if (!t) return null;
+    if ('value' in a) return t === 'String' || t === 'String?' || t === 'Any?' ? ident(a.name) : null;
+    return t === 'Any?' || options.methodType?.(a.method) === t ? ident(a.name) : null;
+  };
+  const set = (v: string, a: Attr, member: string | null, value: string) => (a.name === 'class' ? `${v}.className = ${value}` : member ? `${v}.${member} = ${value}` : `${v}.kitSet(${kotlinString(a.name)}, ${value})`);
+  const attr = (depth: number, v: string, a: Attr, loops: Loop[], tag?: string) => {
     if (a.ifPassed) {
       say(depth, `if (this._passed.contains(${kotlinString(a.ifPassed)})) {`);
-      attr(depth + 1, v, { ...a, ifPassed: undefined }, loops);
+      attr(depth + 1, v, { ...a, ifPassed: undefined }, loops, tag);
       say(depth, '}');
       return;
     }
+    const member = typedMember(tag, a);
     if ('value' in a) {
-      if (a.name === 'class') say(depth, `${v}.className = ${kotlinString(a.value)}`);
-      else say(depth, `${v}.kitSet(${kotlinString(a.name)}, ${kotlinString(a.value)})`);
+      say(depth, set(v, a, member, kotlinString(a.value)));
     } else if (options.zone) {
-      binding(depth, `Check({ ${call(a.method, loops)} }) { ${a.name === 'class' ? `${v}.className = it` : `${v}.kitSet(${kotlinString(a.name)}, it)`} }`);
+      binding(depth, `Check({ ${call(a.method, loops)} }) { ${set(v, a, member, 'it')} }`);
     } else if (a.name === 'class') {
       binding(depth, `Effect { jsReport { ${v}.className = ${options.slots ? `octaneClassName(${call(a.method, loops)})` : call(a.method, loops)} } }`);
     } else {
-      binding(depth, `Effect { jsReport { ${v}.kitSet(${kotlinString(a.name)}, ${options.slots ? `octaneValue(${call(a.method, loops)})` : call(a.method, loops)}) } }`);
+      binding(depth, `Effect { jsReport { ${set(v, a, member, options.slots ? `octaneValue(${call(a.method, loops)})` : call(a.method, loops))} } }`);
     }
   };
 
@@ -107,7 +124,7 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
           if (node.ref) say(depth, `${call(node.ref, loops)}.current = ${v}`);
           const isList = TEMPLATE_HOSTS.has(node.tag);
           const props = () => {
-            for (const a of node.attrs) if (!isList || !LIST_BINDINGS.has(a.name)) attr(depth, v, a, loops);
+            for (const a of node.attrs) if (!isList || !LIST_BINDINGS.has(a.name)) attr(depth, v, a, loops, node.tag);
             for (const e of node.events) {
               const listen = `${v}.kitOn(${kotlinString(e.name)}) { event -> ${handler(call(e.method, loops, ['event']))} }`;
               const guarded = e.when ? `if (jsTruthy(${caught(call(e.when, loops))})) ${listen}` : listen;

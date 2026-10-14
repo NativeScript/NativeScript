@@ -2331,6 +2331,12 @@ export class Translator implements AsyncTranslator {
     return found;
   }
 
+  /** The type a component's method returns (a template binding's value), null where it has no such method. */
+  memberType(cls: ts.ClassDeclaration, name: string): string | null {
+    const m = cls.members.find((x): x is ts.MethodDeclaration => ts.isMethodDeclaration(x) && ts.isIdentifier(x.name) && x.name.text === name);
+    return m ? this.returnTypeOf(m) : null;
+  }
+
   /** A component's members; the caller adds `render()`. Returns the constructor parameters and the lines inside the class. */
   componentMembers(cls: ts.ClassDeclaration, props: string[]): { params: string[]; lines: string[]; statics: string[] } {
     this.props = new Set(props);

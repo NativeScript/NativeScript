@@ -218,7 +218,7 @@ export async function writeAndroid(b: AndroidBuild): Promise<void> {
     const cls = sf.statements.find(ts.isClassDeclaration)!;
     try {
       const { params, lines, statics } = translator.componentMembers(cls, c.props);
-      const body = [`${translator.threadAnnotation(cls)}class ${c.name}(${params.join(', ')}) {`, ...lines, ...(statics.length ? ['    companion object {', ...statics, '    }'] : []), SourceLines.end, ...render(c, b.infos, { framework: b.framework, zone: b.zone, slots: b.mounted, rowSignals: b.mounted, ...(b.framework === 'react' ? { screenContent: REACT_SCREEN_CONTENT } : {}) }), '}'];
+      const body = [`${translator.threadAnnotation(cls)}class ${c.name}(${params.join(', ')}) {`, ...lines, ...(statics.length ? ['    companion object {', ...statics, '    }'] : []), SourceLines.end, ...render(c, b.infos, { framework: b.framework, zone: b.zone, slots: b.mounted, rowSignals: b.mounted, member: (tag, name) => translator.core?.kitTypedMember(tag, name) ?? null, methodType: (m) => translator.memberType(cls, m), ...(b.framework === 'react' ? { screenContent: REACT_SCREEN_CONTENT } : {}) }), '}'];
       write(join(sources, c.name + '.kt'), header(c.file.replace(/\.ts$/, '')) + body.join('\n') + '\n');
     } catch (e) {
       if (!translator.errors) throw e;

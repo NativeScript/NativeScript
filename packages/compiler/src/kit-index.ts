@@ -25,6 +25,8 @@ export interface KitType {
   declared?: boolean;
   /** Kotlin: the object or class declaring it, for a nested one (`Trace` of `Trace.categories`). */
   outer?: string;
+  /** Names of its members a registered property gives it (a `JSTypedMember`): settable, set as script sets them. */
+  typed?: Set<string>;
 }
 
 /**
@@ -136,7 +138,20 @@ export function kitIndex(kitSources: string): Map<string, KitType> {
   }
   for (const [type, called] of calls) for (const fn of called) for (const n of functionProps.get(fn) ?? []) type.props.add(n);
   for (const n of shorthands) types.get('View')?.props.add(n);
+  for (const f of files) for (const m of readFileSync(join(kitSources, f), 'utf8').matchAll(/JSTypedMember\((\w+)\.self, "(\w+)"\)/g)) typedMember(types, m[1], m[2]);
   return types;
+}
+
+/** A class's member that a registered property gives it (`JSTypedMember(TextBase.self, "text")`). */
+export function typedMember(types: Map<string, KitType>, owner: string, name: string) {
+  const t = types.get(owner);
+  if (t) (t.typed ??= new Set()).add(name);
+}
+
+/** The declared type of a settable member a registered property gives a kit class or a class it extends, null for any other name. */
+export function kitTypedMember(index: Map<string, KitType>, type: string, name: string): string | null {
+  for (let t = index.get(type); t; t = t.base ? index.get(t.base) : undefined) if (t.typed?.has(name)) return kitMember(index, type, name)?.type ?? null;
+  return null;
 }
 
 /** Property names a kit class reads from its own stored values (`applied["src"]`, `get("dateStyle")`) or tests for (`name == "orientation"`): a value set by name reaches them. */

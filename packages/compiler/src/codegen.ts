@@ -29,6 +29,10 @@ export interface RenderOptions {
   zone?: boolean;
   /** The element type of a binding method returning a loop's items, which spares Swift inferring it through the loop's closures. */
   itemType?: (method: string) => string | null;
+  /** The declared type of a settable member a registered property gives an element's kit class (`text` of a Label), null for any other attribute. */
+  member?: (tag: string, name: string) => string | null;
+  /** The Swift type a binding method returns. */
+  methodType?: (method: string) => string | null;
 }
 
 export function render(c: ComponentIR, components: Map<string, { props: string[]; outputs?: string[]; outputFields?: Record<string, string>; optional?: string[]; passed?: boolean; fragment?: boolean; initThrows?: boolean }>, throws: (method: string) => boolean = () => false, framework: Framework = 'octane', options: RenderOptions = {}): string[] {
@@ -95,25 +99,38 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
     if (insertion === 'mounted' && templates.length) { if (at === 'created') templates.at(-1)!.inserts.push({ depth, text }); return; }
     if ((insertion === 'created') === (at === 'created')) say(depth, text);
   };
-  const attr = (depth: number, v: string, a: Attr, loops: Loop[]) => {
+  /**
+   * An attribute an element's kit class has a typed member for, set as script sets it (`label.text = …`) where the value
+   * is already of the member's type: a literal string for a string or untyped member, a binding of the member's type.
+   * Any other goes by name (`kitSet`), whose conversions read a string as the member's type.
+   */
+  const typedMember = (tag: string | undefined, a: Attr): string | null => {
+    if (!tag || options.slots || a.name === 'class' || !/^[A-Za-z_]\w*$/.test(a.name)) return null;
+    const t = options.member?.(tag, a.name);
+    if (!t) return null;
+    if ('value' in a) return t === 'String' || t === 'Any?' ? `${ident(a.name)}` : null;
+    return t === 'Any?' || options.methodType?.(a.method) === t ? `${ident(a.name)}` : null;
+  };
+  const set = (v: string, a: Attr, member: string | null, value: string) => (a.name === 'class' ? `${v}.className = ${value}` : member ? `${v}.${member} = ${value}` : `${v}.kitSet(${swiftString(a.name)}, ${value})`);
+  const attr = (depth: number, v: string, a: Attr, loops: Loop[], tag?: string) => {
     if (a.ifPassed) {
       say(depth, `if self._passed.contains(${swiftString(a.ifPassed)}) {`);
-      attr(depth + 1, v, { ...a, ifPassed: undefined }, loops);
+      attr(depth + 1, v, { ...a, ifPassed: undefined }, loops, tag);
       say(depth, '}');
       return;
     }
+    const member = typedMember(tag, a);
     if ('value' in a) {
-      if (a.name === 'class') say(depth, `${v}.className = ${swiftString(a.value)}`);
-      else say(depth, `${v}.kitSet(${swiftString(a.name)}, ${swiftString(a.value)})`);
+      say(depth, set(v, a, member, swiftString(a.value)));
     } else if (options.zone) {
-      binding(depth, `Check({ ${checked(a.method, loops)} }) { ${a.name === 'class' ? `${v}.className = $0` : `${v}.kitSet(${swiftString(a.name)}, $0)`} }`);
+      binding(depth, `Check({ ${checked(a.method, loops)} }) { ${set(v, a, member, '$0')} }`);
     } else if (zoneless) {
-      binding(depth, check(a.method, loops, a.name === 'class' ? `${v}.className = $0` : `${v}.kitSet(${swiftString(a.name)}, $0)`));
+      binding(depth, check(a.method, loops, set(v, a, member, '$0')));
     } else if (a.name === 'class') {
       const value = options.slots ? `octaneClassName(${call(a.method, loops)})` : call(a.method, loops);
       binding(depth, `Effect { ${reported(a.method, `${v}.className = ${value}`)} }`);
     } else {
-      binding(depth, `Effect { ${reported(a.method, `${v}.kitSet(${swiftString(a.name)}, ${options.slots ? `octaneValue(${call(a.method, loops)})` : call(a.method, loops)})`)} }`);
+      binding(depth, `Effect { ${reported(a.method, set(v, a, member, options.slots ? `octaneValue(${call(a.method, loops)})` : call(a.method, loops)))} }`);
     }
   };
 
@@ -131,7 +148,7 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
           if (node.ref) say(depth, `${call(node.ref, loops)}.current = ${v}`);
           const isList = TEMPLATE_HOSTS.has(node.tag);
           const props = () => {
-            for (const a of node.attrs) if (!isList || !LIST_BINDINGS.has(a.name)) attr(depth, v, a, loops);
+            for (const a of node.attrs) if (!isList || !LIST_BINDINGS.has(a.name)) attr(depth, v, a, loops, node.tag);
             for (const e of node.events) {
               const listen = `${v}.kitOn(${swiftString(e.name)}) { ${captures}event in ${handler(e.method, call(e.method, loops, ['event']))} }`;
               const guarded = e.when ? `if jsTruthy(${throws(e.when) ? `(try? ${call(e.when, loops).replace(/^try /, '')})` : call(e.when, loops)}) { ${listen} }` : listen;
