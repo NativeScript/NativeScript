@@ -6507,8 +6507,9 @@ ${members.join('\n')}
     if (ts.isIdentifier(e)) return this.moduleValue(e) ?? this.identifier(e);
     if (ts.isTemplateExpression(e)) {
       const pieces = e.templateSpans.map((span) => this.str(span.expression));
-      // A string literal's interpolation is one line in Swift: a multi-line piece (a closure) joins the literal's parts instead.
-      if (pieces.some((p) => p.includes('\n'))) {
+      // A string literal's interpolation is one line in Swift: a piece of statements (a closure), which a formatter may lay
+      // out on lines of their own, joins the literal's parts instead.
+      if (pieces.some((p) => p.includes('\n') || p.includes(';'))) {
         const parts = [`"${this.escapeInterpolated(e.head.text)}"`];
         e.templateSpans.forEach((span, k) => parts.push(`(${pieces[k]})`, `"${this.escapeInterpolated(span.literal.text)}"`));
         return `[${parts.join(', ')}].joined()`;
@@ -10204,15 +10205,17 @@ function inOptionalChain(e: ts.Expression): boolean {
  * or an older version (`availableOnly`'s, one `else` line each) are their blocks alone, as the whole is checked.
  */
 function unnestAvailability(lines: string, version: number): string {
+  // A statement's source-line marker (`/*@ns:12*/`) leads its line, before the indentation.
+  const marker = /^\/\*@ns:(?:\d+|-)\*\//;
   const out = lines.split('\n');
   for (let k = 0; k < out.length; k++) {
-    const m = /^(\s*)if #available\(iOS ([\d.]+), \*\) \{$/.exec(out[k]);
-    if (!m || parseFloat(m[2]) > version) continue;
-    const pad = m[1];
+    const m = /^((?:\/\*@ns:(?:\d+|-)\*\/)?)(\s*)if #available\(iOS ([\d.]+), \*\) \{$/.exec(out[k]);
+    if (!m || parseFloat(m[3]) > version) continue;
+    const pad = m[2];
     const close = out.findIndex((l, j) => j > k && l === `${pad}} else {`);
-    if (close < 0 || out[close + 2] !== `${pad}}` || out.slice(k + 1, close).some((l) => l.length > 0 && !l.startsWith(`${pad} `))) continue;
+    if (close < 0 || out[close + 2] !== `${pad}}` || out.slice(k + 1, close).some((l) => { const t = l.replace(marker, ''); return t.length > 0 && !t.startsWith(`${pad} `); })) continue;
     out.splice(close, 3, `${pad}}`);
-    out[k] = `${pad}do {`;
+    out[k] = `${m[1]}${pad}do {`;
   }
   return out.join('\n');
 }
