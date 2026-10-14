@@ -3,6 +3,7 @@
 // HotSpot's C2 optimizes harder than ART's AOT compiler (escape analysis, profile-guided inlining), so
 // --c1 stops HotSpot at its first tier, which is closer to ART. R8, which shrinks and inlines after
 // kotlinc in a release, has no step here; only an emulator or device run proves a number.
+// --deopts fails a run in which a number[] left number mode (JSArrayDeopts), printing the counts.
 import { readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { buildKotlinRuntime, kotlinc, kotlinHeader, kotlinMain, kotlinStdlib, translateKotlin } from '../native-build.ts';
@@ -19,6 +20,10 @@ const jvmFlags = (args: string[]) => ['-Xss16m', '-Xms1g', '-Xmx1g', ...(args.in
  */
 const CLOCK = 'fun now(): Double = System.nanoTime() / 1e6\n';
 
+const DEOPT_CHECK = `    System.err.println("number[] deopts: storage \${JSArrayDeopts.storage}, method \${JSArrayDeopts.method}, mixed write \${JSArrayDeopts.mixedWrite}")
+    if (JSArrayDeopts.total > 0) kotlin.system.exitProcess(3)
+`;
+
 export const backend: Backend = {
   name: 'kotlin',
   describe: (args) => `JVM ${args.includes('--c1') ? 'C1 (-XX:TieredStopAtLevel=1)' : 'C2'}`,
@@ -27,7 +32,9 @@ export const backend: Backend = {
     const sources = join(out, 'Sources');
     const modules = translateKotlin([join(src, 'bench.ts')], sources, PACKAGE);
     if (modules.some((m) => m.name === 'clock_android')) writeFileSync(join(sources, 'clock_android.kt'), kotlinHeader(PACKAGE) + CLOCK);
-    writeFileSync(join(sources, '__Main.kt'), kotlinMain(modules, PACKAGE));
+    // --deopts: number[] arrays that left number mode (JSArrayDeopts) fail the run, which the driver reports.
+    const main = kotlinMain(modules, PACKAGE);
+    writeFileSync(join(sources, '__Main.kt'), args.includes('--deopts') ? main.replace(/\n}\n$/, `\n${DEOPT_CHECK}}\n`) : main);
     const classes = join(out, 'classes');
     const errors = kotlinc(readdirSync(sources).map((f) => join(sources, f)), classes, [runtime]);
     if (errors) throw new Error(`kotlinc:\n${errors.slice(0, 15).join('\n')}`);

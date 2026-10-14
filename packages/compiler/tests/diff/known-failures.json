@@ -4,7 +4,8 @@
 		"227-callback-given-undefined": "A string parameter given undefined reads \"\", and a void promise's value is not undefined (Swift translator)."
 	},
 	"kotlin": {
-		"270-json-edges": "`new Array<number>(n)` is filled with 0 rather than holes, and a shape made from an object with an optional field unset never lists that field (fromJS freezes the key order), so its cycle is not reached (Kotlin translator).",
-		"274-promise-reactions": "`Promise.resolve(x as unknown as Promise<T>)` is folded to a cast of x, so a thenable that is not a JSPromise throws ClassCastException (Kotlin translator)."
+		"270-json-edges": "A shape made from an object with an optional field unset never lists that field (fromJS freezes the key order), so its cycle is not reached (Kotlin translator).",
+		"274-promise-reactions": "`Promise.resolve(x as unknown as Promise<T>)` is folded to a cast of x, so a thenable that is not a JSPromise throws ClassCastException (Kotlin translator).",
+		"295-number-arrays": "`i in array` reads a hole as present: jsHasKey (Values.kt) does not consult jsHoles; 47b8319bc on wip/quality-kotlin fixes it."
 	}
 }

@@ -4202,7 +4202,7 @@ export class Translator implements AsyncTranslator {
           const label = this.takeLabel();
           const array = this.fresh('__a');
           const k = this.fresh('__k');
-          const read = `${array}[${k}++]`;
+          const read = indexed === 'JSArray<Double>' ? `${array}.num(${k}++)` : `${array}[${k}++]`;
           const body = this.block(s.statement);
           const simple = ts.isIdentifier(decl.name) && !mutable;
           const item = simple ? '' : this.fresh('__item');
@@ -4305,6 +4305,17 @@ export class Translator implements AsyncTranslator {
     this.plainContinue++;
     this.jumps.push({ kind: 'loop' });
     try { return body(); } finally { this.plainBreak--; this.plainContinue--; this.jumps.pop(); }
+  }
+
+  /** `a[i]` of a `number[]` that is no optional chain: read and written unboxed (the runtime's `num`, `setNum`). */
+  private unboxedRead(e: ts.ElementAccessExpression): boolean {
+    return !e.questionDotToken && !(e.flags & ts.NodeFlags.OptionalChain) && this.typeOf(e.expression) === 'JSArray<Double>';
+  }
+
+  /** What evaluating twice cannot tell from once: a name, a literal, \`this\`, or a property of one of them. */
+  private repeatable(e: ts.Expression): boolean {
+    if (ts.isIdentifier(e) || ts.isNumericLiteral(e) || e.kind === ts.SyntaxKind.ThisKeyword) return true;
+    return ts.isPropertyAccessExpression(e) && !e.questionDotToken && (ts.isIdentifier(e.expression) || e.expression.kind === ts.SyntaxKind.ThisKeyword);
   }
 
   /** Strings the loop being written only appends to, each with its StringBuilder (appendLoop). */
@@ -5890,6 +5901,8 @@ export class Translator implements AsyncTranslator {
       if (isWriteTarget(e)) return `${target}${q}[${this.toNumber(key)}]`;
       // An untyped element the checker narrows (`Array.isArray(xs[0])`): read as the narrowed type.
       const rt = this.typeOf(e);
+      // A number[]'s element where a number is read: unboxed, NaN for what reads undefined.
+      if (this.unboxedRead(e) && rt === 'Double') return `${target}.num(${this.toNumber(key)})`;
       if (t === 'JSArray<Any?>' && rt !== 'Any?') return this.fromAny(this.maybeUndefined(e)!, rt);
       return this.undefinedAs(this.maybeUndefined(e)!, rt);
     }
@@ -6358,6 +6371,7 @@ export class Translator implements AsyncTranslator {
       const t = this.typeOf(target).replace(/\?$/, '');
       const q = callee.questionDotToken || (callee.flags & ts.NodeFlags.OptionalChain && this.typeOf(target).endsWith('?')) ? '?' : this.typeOf(target).endsWith('?') ? '!!' : '';
       if (method === 'fill' && (ts.isNewExpression(target) || ts.isCallExpression(target)) && ts.isIdentifier(target.expression) && target.expression.text === 'Array' && target.arguments?.length === 1 && e.arguments.length === 1) {
+        if (t === 'JSArray<Double>') return `jsNumberArrayFilled(${this.toNumber(target.arguments[0])}, ${this.coerce(e.arguments[0], 'Double')})`;
         return `jsArrayFilled<${t.replace(/^JSArray<(.*)>$/, '$1')}>(${this.toNumber(target.arguments[0])}, ${this.coerce(e.arguments[0], t.replace(/^JSArray<(.*)>$/, '$1'))})`;
       }
       if (t.startsWith('JSArray<')) return this.arrayMethod(method, target, e, q);
@@ -7037,6 +7051,7 @@ export class Translator implements AsyncTranslator {
     switch (name) {
       case 'push': case 'unshift':
         if (e.arguments.some(ts.isSpreadElement)) return `${t}.${name}All(${this.packed(e.arguments, `JSArray<${element}>`)})`;
+        if (name === 'push' && element === 'Double' && e.arguments.length === 1 && this.typeOf(e.arguments[0]) === 'Double') return `${t}.pushNum(${this.toNumber(e.arguments[0])})`;
         return `${t}.${name}(${e.arguments.map((x) => this.coerce(x, element)).join(', ')})`;
       case 'pop': case 'shift': case 'reverse': case 'keys': case 'entries': case 'values': return `${t}.${name}()`;
       case 'toLocaleString': if (!e.arguments.length) return `${t}.toLocaleString()`; break;
@@ -7056,6 +7071,12 @@ export class Translator implements AsyncTranslator {
         return `${t}.concat(${e.arguments.map((x) => (this.isArray(x) ? this.coerce(x, `JSArray<${element}>`) : `jsArrayOf<${element}>(${this.coerce(x, element)})`)).join(', ')})`;
       case 'map': case 'filter': case 'find': case 'findIndex': case 'findLast': case 'findLastIndex': case 'some': case 'every': case 'forEach': case 'flatMap': {
         const f = e.arguments[0];
+        // A number[]'s map, filter or forEach with a literal taking one number: primitive throughout.
+        const primitive = element === 'Double' && e.arguments.length === 1 && (ts.isArrowFunction(f) || ts.isFunctionExpression(f)) && f.parameters.length === 1
+          && this.typeOf(f.parameters[0].name) === 'Double' && !f.parameters[0].dotDotDotToken;
+        if (primitive && name === 'map' && this.returnTypeOf(f) === 'Double' && this.typeOf(e) === 'JSArray<Double>') return `${t}.mapNum(JSDoubleUnary(${this.fn(f, '(Double) -> Double')}))`;
+        if (primitive && name === 'filter' && this.returnTypeOf(f) === 'Boolean') return `${t}.filterNum(JSDoublePredicate(${this.fn(f, '(Double) -> Boolean')}))`;
+        if (primitive && name === 'forEach') return `${t}.forEachNum(JSDoubleConsumer(${this.fn(f, '(Double) -> Unit')}))`;
         const arity = ts.isArrowFunction(f) || ts.isFunctionExpression(f) ? Math.max(1, f.parameters.length) : this.functionArity(f);
         // Library mode: map's result is the element type the call gives, so a function value can be adapted to it.
         // So is `map<U>(…)`'s, whose U the callback's results are held as.
@@ -7077,6 +7098,7 @@ export class Translator implements AsyncTranslator {
         const fn = this.fn(compare, `(${element}, ${element}) -> Double`);
         // A function literal is the runtime's primitive comparator: a `(T, T) -> Double` boxes every comparison's result.
         const literal = ts.isArrowFunction(compare) || ts.isFunctionExpression(compare);
+        if (literal && name === 'sort' && element === 'Double') return `${t}.sortNum(JSNumberComparator(${this.fn(compare, '(Double, Double) -> Double')}))`;
         return `${t}.${name}(${literal ? `JSDoubleComparator(${fn})` : fn})`;
       }
       case 'toReversed': return `${t}.toReversed()`;
@@ -7094,6 +7116,9 @@ export class Translator implements AsyncTranslator {
         const types = (acc: string) => [acc, element, 'Double', `JSArray<${element}>`].slice(0, Math.max(2, Math.min(literal ? 3 : 4, arity)));
         if (init) {
           const acc = this.typeOf(e);
+          if (name === 'reduce' && literal && element === 'Double' && acc === 'Double' && f.parameters.length === 2 && !f.parameters.some((p) => p.dotDotDotToken)) {
+            return `${t}.reduceNum(JSDoubleReducer(${this.fn(f, '(Double, Double) -> Double')}), ${this.toNumber(init)})`;
+          }
           return `${t}.${name}(${this.fn(f, `(${types(acc).join(', ')}) -> ${acc}`)}, ${this.coerce(init, acc)})`;
         }
         return `${t}.${name}(${this.fn(f, `(${this.library ? types(element).join(', ') : `${element}, ${element}`}) -> ${element}`)})`;
@@ -7443,6 +7468,7 @@ export class Translator implements AsyncTranslator {
   private arrayConstruct(e: ts.NewExpression | ts.CallExpression, t: string, args: ts.NodeArray<ts.Expression>): string {
     {
       const el = t.replace(/^JSArray<(.*)>$/, '$1');
+      if (el === 'Double' && args.length !== 1) return args.length ? `jsNumberArrayOf(${args.map((a) => this.coerce(a, el)).join(', ')})` : 'JSArray.numbers()';
       if (args.length !== 1) return args.length ? `jsArrayOf<${el}>(${args.map((a) => this.coerce(a, el)).join(', ')})` : `${t}()`;
       if (this.typeOf(args[0]) !== 'Double') {
         // Lenient code: a length or the one element, as the value is when this runs.
@@ -7453,8 +7479,9 @@ export class Translator implements AsyncTranslator {
         if (this.typeOf(args[0]) === 'Any?' && !element && !(this.lenient && el !== 'Any?' && el !== 'Double')) throw this.error(e, 'new Array of one untyped value (a length or an element)');
         return `jsArrayOf<${el}>(${this.coerce(args[0], el)})`;
       }
-      // n empty slots: a number, string or boolean cannot hold undefined, so its zero stands in until written.
-      if (el.endsWith('?') || ['Double', 'String', 'Boolean'].includes(el)) return `jsArrayFilled<${el}>(${this.expr(args[0])}, ${this.zero(el)})`;
+      // n empty slots: a number[] holds holes; a string or boolean cannot hold undefined, so its zero stands in until written.
+      if (el === 'Double') return `jsNumberArrayOfHoles(${this.expr(args[0])})`;
+      if (el.endsWith('?') || ['String', 'Boolean'].includes(el)) return `jsArrayFilled<${el}>(${this.expr(args[0])}, ${this.zero(el)})`;
       throw this.error(e, `new Array of a length, of ${el} (empty slots need an optional element type)`);
     }
   }
@@ -7681,6 +7708,7 @@ export class Translator implements AsyncTranslator {
         && !/^(JSArray|JSRecord|JSMatch|Pair|Triple)\b/.test(this.typeOf(left.expression).replace(/\?$/, ''))))) {
       return `jsSet(${this.expr(left.expression)}, ${this.propertyKey(left.argumentExpression)}, ${this.coerce(right, 'Any?')})`;
     }
+    if (ts.isElementAccessExpression(left) && this.unboxedRead(left) && this.typeOf(right) === 'Double') return `${this.expr(left.expression)}.setNum(${this.toNumber(left.argumentExpression)}, ${this.toNumber(right)})`;
     return `${this.lvalue(left)} = ${this.coerce(right, this.declaredTypeOf(left) ?? this.typeOf(left))}`;
   }
 
@@ -7689,6 +7717,13 @@ export class Translator implements AsyncTranslator {
     const K = ts.SyntaxKind;
     const builder = this.appendBuilderOf(e.left);
     if (builder && op === K.PlusEqualsToken) return `${builder}.append(${this.str(e.right)})`;
+    // \`xs[i] += v\` of a number[]: read and written unboxed, where the array and index read the same twice.
+    const arithmetic = ({ [K.PlusEqualsToken]: '+', [K.MinusEqualsToken]: '-', [K.AsteriskEqualsToken]: '*', [K.SlashEqualsToken]: '/' } as Partial<Record<ts.SyntaxKind, string>>)[op];
+    if (arithmetic && ts.isElementAccessExpression(e.left) && this.unboxedRead(e.left) && this.typeOf(e.right) === 'Double' && this.repeatable(e.left.expression) && this.repeatable(e.left.argumentExpression)) {
+      const array = this.expr(e.left.expression);
+      const index = this.toNumber(e.left.argumentExpression);
+      return `${array}.setNum(${index}, ${array}.num(${index}) ${arithmetic} ${this.toNumber(e.right)})`;
+    }
     if (builder && op === K.EqualsToken) {
       const operands = this.appendedOperands(e.right, this.nameSymbol(e.left as ts.Identifier)!)!;
       return builder + operands.map((x) => `.append(${this.concatOperand(x)})`).join('');
@@ -7930,9 +7965,11 @@ export class Translator implements AsyncTranslator {
       return `${t.replace(/<.*/, '')}(${e.elements.map((x, k) => this.coerce(x, types[k])).join(', ')})`;
     }
     const el = t.replace(/^JSArray<(.*)>$/, '$1');
-    if (!e.elements.length) return `${t}()`;
+    // A number[] holds its numbers unboxed.
+    if (!e.elements.length) return t === 'JSArray<Double>' ? 'JSArray.numbers()' : `${t}()`;
     if (!e.elements.some(ts.isSpreadElement)) {
       if (e.elements.some(ts.isOmittedExpression)) throw this.error(e, 'an array hole');
+      if (t === 'JSArray<Double>') return `jsNumberArrayOf(${e.elements.map((x) => this.coerce(x, el)).join(', ')})`;
       return `jsArrayOf<${el}>(${e.elements.map((x) => this.coerce(x, el)).join(', ')})`;
     }
     const parts: string[] = [];
