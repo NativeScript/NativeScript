@@ -74,9 +74,13 @@ public func jsFlat(_ value: Any?) -> Any? {
     guard let value else { return nil }
     guard jsTypeKind(value) == .optional else { return value }
     // A cast to `Any?` unwraps one level of any optional without looking up its type's conformance to a protocol.
-    if let unwrapped = value as? Any? { return jsFlat(unwrapped) }
+    if let unwrapped = jsDynamicCast(value, to: Any?.self) { return jsFlat(unwrapped) }
     return value
 }
+
+/// `value as? T` decided at run time, where `T` (`Any?`) makes the cast one the compiler would call trivial.
+@inline(__always)
+func jsDynamicCast<T>(_ value: Any, to _: T.Type) -> T? { value as? T }
 
 // MARK: - What a value is, read from its type's metadata
 

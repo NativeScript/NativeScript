@@ -736,6 +736,12 @@ export function conformsTo(module: string, jsClass: string, jsProtocol: string):
   return false;
 }
 
+/** Whether a class, or a class it extends, conforms to a protocol Swift names `swiftProtocol`. */
+export function conformsToSwift(module: string, jsClass: string, swiftProtocol: string): boolean {
+  for (const [, c] of hierarchy(module, jsClass)) if (c.kind === 'protocol' && c.swift === swiftProtocol) return true;
+  return false;
+}
+
 /** A class's entries by JavaScript name, breadth first: itself (with its categories from other modules), then its superclasses and protocols. */
 function* hierarchy(module: string, jsClass: string): Generator<[string, NativeClass]> {
   const seen = new Set<string>();

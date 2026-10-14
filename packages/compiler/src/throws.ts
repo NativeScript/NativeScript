@@ -39,8 +39,28 @@ export class Throws {
   /** Whether converting a value to the type its place declares can fail (an untyped value cast to a class), which throws a TypeError. */
   private castThrows: (n: ts.Node) => boolean;
 
-  constructor(checker: ts.TypeChecker, files: readonly ts.SourceFile[], untyped: (n: ts.Node) => boolean, nativeThrows: (call: ts.CallExpression | ts.NewExpression) => boolean = () => false, implementation: (decl: ts.Declaration) => ts.Declaration | null = () => null, dynamicMember: (e: ts.PropertyAccessExpression) => boolean = () => false, baseInitThrows: (cls: ts.ClassLikeDeclaration) => boolean = () => false, replaced: (fn: ts.Node) => boolean = () => false, castThrows: (n: ts.Node) => boolean = () => false) {
+  /** Whether a call runs a native method by its native signature (an override of one in a native subclass): it throws only as `nativeThrows` says. */
+  private nativeEntry: (call: ts.CallExpression) => boolean;
+
+  /** Whether the translation evaluates an expression where nothing it throws escapes (a `delete` written with `try?`). */
+  private quiet: (n: ts.Node) => boolean;
+
+  /** Whether the kit's Swift a function stands for throws (`ColorMix.argbFromColorMix` for core's): undefined where the function's own body decides. */
+  private kitThrows: (fn: ts.Node) => boolean | undefined;
+
+  /** A getter Swift declares without `throws` (paired with a setter), which reports what its body throws. */
+  private reported: (get: ts.GetAccessorDeclaration, throws: (fn: ts.Node) => boolean) => boolean;
+
+  /** An expression the translation writes as a runtime helper that cannot throw (`jsConstructor(x)`), its operands aside. */
+  private plain: (n: ts.Node) => boolean;
+
+  constructor(checker: ts.TypeChecker, files: readonly ts.SourceFile[], untyped: (n: ts.Node) => boolean, nativeThrows: (call: ts.CallExpression | ts.NewExpression) => boolean = () => false, implementation: (decl: ts.Declaration) => ts.Declaration | null = () => null, dynamicMember: (e: ts.PropertyAccessExpression) => boolean = () => false, baseInitThrows: (cls: ts.ClassLikeDeclaration) => boolean = () => false, replaced: (fn: ts.Node) => boolean = () => false, castThrows: (n: ts.Node) => boolean = () => false, nativeEntry: (call: ts.CallExpression) => boolean = () => false, quiet: (n: ts.Node) => boolean = () => false, kitThrows: (fn: ts.Node) => boolean | undefined = () => undefined, reported: (get: ts.GetAccessorDeclaration, throws: (fn: ts.Node) => boolean) => boolean = () => false, plain: (n: ts.Node) => boolean = () => false) {
+    this.kitThrows = kitThrows;
+    this.reported = reported;
+    this.plain = plain;
     this.castThrows = castThrows;
+    this.nativeEntry = nativeEntry;
+    this.quiet = quiet;
     this.baseInitThrows = baseInitThrows;
     this.implementation = implementation;
     this.dynamicMember = dynamicMember;
@@ -59,6 +79,7 @@ export class Throws {
       for (const fn of fns) {
         if (this.throwing.has(fn) || isAsync(fn) || (fn as ts.FunctionLikeDeclaration).asteriskToken) continue;
         // A member the kit implements instead is a call into its Swift, which throws.
+        if (this.kitThrows(fn) === false) continue;
         if (replaced(fn) || this.bodyThrows(fn)) { this.throwing.add(fn); changed = true; }
       }
     }
@@ -66,6 +87,8 @@ export class Throws {
 
   /** Whether calling `fn` (a declaration with a body) can throw. */
   fn(fn: ts.Node): boolean {
+    const kit = this.kitThrows(fn);
+    if (kit !== undefined) return kit;
     if (this.throwing.has(fn)) return true;
     // Swift initializers override as methods do: a class's constructor throws if one in its hierarchy does.
     if (ts.isConstructorDeclaration(fn) && ts.isClassLike(fn.parent)) {
@@ -89,7 +112,7 @@ export class Throws {
   expr(e: ts.Node): boolean {
     let found = false;
     const visit = (n: ts.Node) => {
-      if (found || ts.isFunctionLike(n) || ts.isClassLike(n)) return;
+      if (found || ts.isFunctionLike(n) || ts.isClassLike(n) || this.quiet(n)) return;
       if (this.nodeThrows(n)) { found = true; return; }
       ts.forEachChild(n, visit);
     };
@@ -100,7 +123,7 @@ export class Throws {
   private bodyThrows(fn: Fn): boolean {
     let found = false;
     const visit = (n: ts.Node) => {
-      if (found || (n !== fn && (ts.isFunctionLike(n) || ts.isClassLike(n)))) return;
+      if (found || (n !== fn && (ts.isFunctionLike(n) || ts.isClassLike(n))) || this.quiet(n)) return;
       if (ts.isTryStatement(n) && n.catchClause) {
         // What the try block throws is caught; the catch and finally blocks can still throw.
         visit(n.catchClause.block);
@@ -124,6 +147,7 @@ export class Throws {
 
   private nodeThrows(n: ts.Node): boolean {
     const c = this.checker;
+    if (this.plain(n)) return false;
     if (this.castThrows(n)) return true;
     // A module's Angular `computed(fn)` read as a value (`readonly color = ink`) runs fn, as its Swift getter does.
     if (ts.isIdentifier(n) && !(ts.isCallExpression(n.parent) && n.parent.expression === n) && !ts.isImportSpecifier(n.parent) && !ts.isExportSpecifier(n.parent) && !ts.isImportClause(n.parent)) {
@@ -141,13 +165,19 @@ export class Throws {
     // Iterating a generator or a script's iterator runs its code.
     if ((ts.isSpreadElement(n) || ts.isForOfStatement(n)) && (iterationThrows(c.getTypeAtLocation(n.expression), c) || this.untyped(n.expression))) return true;
     if (ts.isVariableDeclaration(n) && ts.isArrayBindingPattern(n.name) && n.initializer && iterationThrows(c.getTypeAtLocation(n.initializer), c)) return true;
-    if ((ts.isCallExpression(n) || ts.isNewExpression(n)) && n.arguments?.some((a) => iterationThrows(c.getTypeAtLocation(a), c)) && c.getResolvedSignature(n)?.getDeclaration()?.getSourceFile().isDeclarationFile) return true;
+    // A native collection (`indexPathsForVisibleRows`) is iterated as the runtime gives it, running no script.
+    const scriptIterable = (a: ts.Expression) => iterationThrows(c.getTypeAtLocation(a), c) && !(c.getTypeAtLocation(a).getSymbol()?.declarations ?? []).some((d) => isNativeDeclaration(d.getSourceFile()));
+    if ((ts.isCallExpression(n) || ts.isNewExpression(n)) && n.arguments?.some(scriptIterable)) {
+      // A library function iterates what it is given; native code is given the collection itself.
+      const file = c.getResolvedSignature(n)?.getDeclaration()?.getSourceFile();
+      if (file?.isDeclarationFile && !isNativeDeclaration(file)) return true;
+    }
     if (ts.isCallExpression(n) && ts.isElementAccessExpression(n.expression) && iterationThrows(c.getTypeAtLocation(n.expression.expression), c)) return true;
     if (ts.isVariableDeclaration(n) && (ts.isObjectBindingPattern(n.name) || ts.isArrayBindingPattern(n.name)) && n.initializer && this.untyped(n.initializer)) return true;
     // Destructuring runs the getters of the members it reads.
     if (ts.isVariableDeclaration(n) && ts.isObjectBindingPattern(n.name) && n.initializer) {
       const t = c.getNonNullableType(c.getTypeAtLocation(n.initializer));
-      if (n.name.elements.some((el) => !el.dotDotDotToken && (t.getProperty((el.propertyName ?? el.name).getText())?.declarations ?? []).some((d) => ts.isGetAccessorDeclaration(d) && !!d.body && this.fn(d)))) return true;
+      if (n.name.elements.some((el) => !el.dotDotDotToken && (t.getProperty((el.propertyName ?? el.name).getText())?.declarations ?? []).some((d) => ts.isGetAccessorDeclaration(d) && !!d.body && !this.reported(d, (f) => this.fn(f)) && this.fn(d)))) return true;
     }
     // `new Array(x)` of an untyped x: a length that is no valid one is a RangeError.
     if ((ts.isNewExpression(n) || ts.isCallExpression(n)) && ts.isIdentifier(n.expression) && n.expression.text === 'Array' && n.arguments?.length === 1 && !isArrayLengthLiteral(n.arguments[0])
@@ -161,7 +191,7 @@ export class Throws {
       if (ts.isPropertyAccessExpression(n) && !n.questionDotToken && unsafeReceiver(n.expression, c)) return true;
       if (ts.isPropertyAccessExpression(n) && !n.questionDotToken && c.getTypeAtLocation(n.expression).flags & ts.TypeFlags.Never) return true;
       const decl = c.getSymbolAtLocation(ts.isPropertyAccessExpression(n) ? n.name : n.argumentExpression)?.declarations?.[0];
-      if (decl && ts.isGetAccessorDeclaration(decl) && decl.body && !isAssignmentTarget(n)) return this.fn(decl);
+      if (decl && ts.isGetAccessorDeclaration(decl) && decl.body && !isAssignmentTarget(n)) return !this.reported(decl, (f) => this.fn(f)) && this.fn(decl);
     }
     return false;
   }
@@ -169,8 +199,15 @@ export class Throws {
   private callThrows(call: ts.CallExpression | ts.NewExpression): boolean {
     const c = this.checker;
     if (this.nativeThrows(call)) return true;
+    const resolved = c.getResolvedSignature(call)?.getDeclaration();
+    // Native code runs a Swift closure it is given without `throws`: a native method throws only as its Swift import does.
+    if (ts.isCallExpression(call) && ((resolved && isNativeDeclaration(resolved.getSourceFile())) || this.nativeEntry(call))) return false;
+    // A promise's executor runs inside its constructor, which rejects with what it throws.
+    if (ts.isNewExpression(call) && ts.isIdentifier(call.expression) && call.expression.text === 'Promise' && resolved && isLibFile(resolved.getSourceFile())) return false;
     if (ts.isCallExpression(call) && ts.isPropertyAccessExpression(call.expression) && this.dynamicMember(call.expression)) return true;
     if (c.getTypeAtLocation(call.expression).flags & ts.TypeFlags.Any || (ts.isPropertyAccessExpression(call.expression) && this.untyped(call.expression.expression))) return true;
+    // A class held untyped (not the library's or a framework's, which are made directly) is constructed by name (`jsConstruct`), which throws for what is no constructor.
+    if (ts.isNewExpression(call) && this.untyped(call.expression) && !(c.getSymbolAtLocation(call.expression)?.declarations ?? []).some((d) => isLibFile(d.getSourceFile()) || isNativeDeclaration(d.getSourceFile()))) return true;
     if (call.expression.kind === ts.SyntaxKind.SuperKeyword) {
       const cls = ts.findAncestor(call, ts.isClassLike);
       const base = cls && this.ancestors(cls)[1];
@@ -195,9 +232,19 @@ export class Throws {
     const decl = c.getResolvedSignature(call)?.getDeclaration();
     const args = call.arguments ?? ts.factory.createNodeArray();
     // A callback the callee runs: a closure literal throws if its body does; any other function value is assumed to.
-    const callbackThrows = () => args.some((a) => {
+    const callbackThrows = () => args.some((a, k) => {
+      // Only a parameter of a function type is called: `set.delete(f)` takes a function as a value.
+      const param = decl && !ts.isJSDocSignature(decl) ? decl.parameters[Math.min(k, decl.parameters.length - 1)] : undefined;
+      if (param?.type && !takesFunction(param.type, c)) return false;
       const arg = skipParens(a);
       if (ts.isArrowFunction(arg) || ts.isFunctionExpression(arg)) return !isAsync(arg) && this.fn(arg);
+      // A function declaration an array method is given by name (`list.sort(compare)`) is passed as it is, throwing as its body does.
+      let named = ts.isIdentifier(arg) ? c.getSymbolAtLocation(arg) : undefined;
+      if (named && named.flags & ts.SymbolFlags.Alias) named = c.getAliasedSymbol(named);
+      // A library function passed by name (`parts.map(parseFloat)`) throws only where the library's does.
+      if (named?.declarations?.length && named.declarations.every((d) => isLibFile(d.getSourceFile()))) return THROWING_BUILTINS.has(named.name);
+      const fnDecl = named?.valueDeclaration;
+      if (fnDecl && ts.isFunctionDeclaration(fnDecl) && fnDecl.body && !isAsync(fnDecl) && !fnDecl.asteriskToken && decl && builtinName(decl)?.startsWith('Array.')) return this.fn(fnDecl);
       return c.getTypeAtLocation(arg).getCallSignatures().length > 0;
     });
     if (ts.isNewExpression(call) && ts.isIdentifier(call.expression) && call.expression.text === 'RegExp') return true;
@@ -238,6 +285,8 @@ export class Throws {
       if (owner === 'Number.toPrecision') return !!args[0] && digitsLiteral(args[0], 1, 100, null) === null;
       if (owner === 'Number.toString') return !!args[0] && digitsLiteral(args[0], 2, 36, null) === null;
       if (owner && THROWING_BUILTINS.has(owner)) return /\.reduce(Right)?$/.test(owner) ? args.length < 2 || callbackThrows() : true;
+      // A timer runs its callback later, reporting what it throws.
+      if (owner && TIMERS.has(owner)) return false;
       // The library runs callbacks synchronously (map, forEach, sort, find): it rethrows. A promise's callbacks reject instead.
       if (/[\\/]lib\.[\w.]*\.d\.ts$/.test(file.fileName) && !/^Promise/.test(owner ?? '')) return callbackThrows();
       return false;
@@ -245,6 +294,8 @@ export class Throws {
     // A function value (an arrow stored in a variable or an object) has a Swift function type, which throws.
     if (ts.isArrowFunction(decl) || ts.isFunctionExpression(decl) || (ts.isMethodDeclaration(decl) && ts.isObjectLiteralExpression(decl.parent))) return true;
     if ((decl as Fn).body) return this.fn(decl);
+    // An abstract method throws as an override of it does.
+    if (ts.isMethodDeclaration(decl) && ts.isClassLike(decl.parent) && ts.getModifiers(decl)?.some((m) => m.kind === ts.SyntaxKind.AbstractKeyword)) return this.fn(decl);
     // A signature without a body (an interface method, a function-typed member) is a function type.
     return !ts.isConstructorDeclaration(decl) && !ts.isClassLike(decl);
   }
@@ -331,6 +382,25 @@ export function isArrayLengthLiteral(e: ts.Expression): boolean {
   if (!ts.isNumericLiteral(e)) return false;
   const n = Number(e.text);
   return Number.isInteger(n) && n >= 0 && n <= 4294967295;
+}
+
+/** The library's functions that run a callback later, never inside the call. */
+const TIMERS = new Set(['setTimeout', 'setInterval', 'queueMicrotask', 'requestAnimationFrame', 'setImmediate']);
+
+const isLibFile = (f: ts.SourceFile) => /[\\/]lib\.[\w.]*\.d\.ts$/.test(f.fileName);
+
+/** An Objective-C framework's declarations (`objc!UIKit.d.ts`). */
+export const isNativeDeclaration = (f: ts.SourceFile) => /[\\/]objc![^\\/]*\.d\.ts$/.test(f.fileName);
+
+/** Whether a parameter's declared type can be a function the library calls. */
+function takesFunction(t: ts.TypeNode, c: ts.TypeChecker): boolean {
+  if (ts.isParenthesizedTypeNode(t)) return takesFunction(t.type, c);
+  if (ts.isUnionTypeNode(t)) return t.types.some((u) => takesFunction(u, c));
+  // A value of the collection's element type (`set.delete(value: T)`) is stored or compared, never called.
+  if (ts.isTypeReferenceNode(t) && (c.getSymbolAtLocation(t.typeName)?.flags ?? 0) & ts.SymbolFlags.TypeParameter) return false;
+  if (ts.isFunctionTypeNode(t) || ts.isConstructorTypeNode(t) || ts.isTypeLiteralNode(t)) return true;
+  // A named type may be a function's (`CallableFunction`, a type parameter for one): not a primitive, array or keyword.
+  return ts.isTypeReferenceNode(t) && !/^(ReadonlyArray|Array|Promise|PromiseLike|Map|Set|RegExp|Date|ArrayLike|Iterable)$/.test(t.typeName.getText());
 }
 
 function skipParens(e: ts.Expression): ts.Expression {

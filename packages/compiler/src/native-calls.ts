@@ -3,7 +3,7 @@ import { implementedInterfaces } from './lang.ts';
 import { isStatic } from './throws.ts';
 import { CF_CLASSES, functionParts, isWriteTarget, optionalType, splitTopLevel, type Translator } from './swift.ts';
 import {
-  categoryModule, conformsTo, isSubframework, lookupClass, lookupConstant, lookupConstructor, lookupEnum, lookupFunction, lookupInit, lookupMember, lookupStruct, lookupTypealias, moduleOfDeclaration, nativeTable,
+  categoryModule, conformsTo, conformsToSwift, isSubframework, lookupClass, lookupConstant, lookupConstructor, lookupEnum, lookupFunction, lookupInit, lookupMember, lookupStruct, lookupTypealias, moduleOfDeclaration, nativeTable,
   type NativeClass, type NativeMethod, type NativeProperty, type SwiftType,
 } from './natives/symbols.ts';
 
@@ -217,6 +217,37 @@ export class NativeAPI {
     return null;
   }
 
+  /**
+   * Whether a value of a type conforms to a protocol (`any URLSessionDelegate`) as Swift declares it: its native
+   * class does, or its program class names the protocol (`ObjCProtocols`, `implements`), or extends a class that does.
+   */
+  private declaredConformance(of: ts.Type, protocol: string): boolean {
+    const want = protocol.replace(/^any /, '');
+    const decl = of.getSymbol()?.valueDeclaration;
+    if (decl && ts.isClassLike(decl) && !decl.getSourceFile().isDeclarationFile) {
+      const named: ts.Expression[] = [...(decl.heritageClauses ?? []).filter((h) => h.token === ts.SyntaxKind.ImplementsKeyword).flatMap((h) => h.types.map((x) => x.expression))];
+      for (const m of decl.members) {
+        if (isStatic(m) && ts.isPropertyDeclaration(m) && m.name.getText() === 'ObjCProtocols' && m.initializer && ts.isArrayLiteralExpression(m.initializer)) named.push(...m.initializer.elements);
+      }
+      for (const x of named) {
+        const p = this.symbolModule(this.t.checker.getSymbolAtLocation(x));
+        if (p && conformsToSwift(p.module, p.name, want)) return true;
+      }
+      const base = this.t.checker.getBaseTypes(of as ts.InterfaceType)[0];
+      return !!base && this.declaredConformance(base, protocol);
+    }
+    const n = this.symbolModule(of.getSymbol());
+    return !!n && conformsToSwift(n.module, n.name, want);
+  }
+
+  /** A program value where Swift takes a protocol: as it is where its class declares the conformance, else cast as Objective-C asks the object. */
+  private asProtocol(e: ts.Expression, source: string, target: SwiftType, b: string, otherwise: string): string {
+    const t = this.t;
+    const type = t.checker.getNonNullableType(t.checker.getTypeAtLocation(e));
+    if (!this.declaredConformance(type, b)) return otherwise;
+    return optional(target) || !source.endsWith('?') ? t.expr(e) : `${t.expr(e)}!`;
+  }
+
   /** An API newer than the deployment target: the function using it runs it only where the OS has it. */
   private checkAvailable(m: { introduced?: string; selector?: string }, _e: ts.Node, _what: string) {
     if (m.introduced && parseFloat(m.introduced) > DEPLOYMENT) this.t.requireAvailability(parseFloat(m.introduced));
@@ -277,6 +308,11 @@ export class NativeAPI {
       }
     }
     return null;
+  }
+
+  /** A call of an app class's override of its native base's method: Swift calls it by the native signature. */
+  overrideCall(e: ts.CallExpression): boolean {
+    return ts.isPropertyAccessExpression(e.expression) && this.appMember(e.expression.name) && this.nativeOverride(e.expression.name);
   }
 
   /** An app class's override of its native base's method (`setViewControllersAnimated` in a UINavigationController subclass): called by the native name. */
@@ -661,7 +697,7 @@ export class NativeAPI {
     const list = [this.argList(args, m.labels, m.params), ...(out ? [out] : [])].filter(Boolean).join(', ');
     const receiver = `(${this.t.expr(object)} as! ${cls.kind === 'protocol' ? `any ${this.className(cls)}` : this.className(cls)})`;
     const called = isolated(`${receiver}.${m.swift}(${list})`, m);
-    const code = out ? withErrorOut(called, m.returns) : m.throws ? `(try ${called})` : called;
+    const code = out ? withErrorOut(called, m.returns) : called;
     return this.fromSwift(code, m.returns, e);
   }
 
@@ -712,7 +748,7 @@ export class NativeAPI {
       const out = this.errorOut(m, args.length);
       const list = [this.argList(args, m.labels, m.params), ...(out ? [out] : [])].filter(Boolean).join(', ');
       const called = isolated(`__o.${m.swift}(${list})`, m);
-      const code = out ? withErrorOut(called, m.returns) : m.throws ? `(try ${called})` : called;
+      const code = out ? withErrorOut(called, m.returns) : called;
       const value = this.fromSwift(code, m.returns, e);
       return [`if let __o = __either as? ${this.className(c.cls)} { ${ret === 'Void' ? `${value}; return` : `return ${value}`} }`];
     });
@@ -777,7 +813,7 @@ export class NativeAPI {
       if (arg.kind !== ts.SyntaxKind.NullKeyword && !(ts.isIdentifier(arg) && arg.text === 'undefined')) throw this.t.error(arg, 'an NSError out-parameter');
       return m.returns === 'Void' ? `((try? ${code}) != nil)` : this.fromSwift(`(try? ${code})`, optional(m.returns) ? m.returns : `${m.returns}?`, e);
     }
-    return m.returns === 'Void' ? `({ () throws -> Bool in try ${code}; return true }())` : this.fromSwift(`(try ${code})`, m.returns, e);
+    return m.returns === 'Void' ? `({ () throws -> Bool in try ${code}; return true }())` : this.fromSwift(code, m.returns, e);
   }
 
   /** Whether a call is of a method Swift imports as `throws`, with the error argument left out: the iOS runtime throws the error. */
@@ -942,7 +978,7 @@ export class NativeAPI {
     // An untyped value where Swift takes a string: a missing one reads as empty, as Objective-C reads nil; anything else as its string.
     if (source === 'Any?' && b === 'String') return optional(target) ? `{ (__s: Any?) -> String? in jsIsNullish(__s) ? nil : jsToString(__s) }(${t.expr(e)})` : `{ (__s: Any?) -> String in jsIsNullish(__s) ? "" : jsToString(__s) }(${t.expr(e)})`;
     // An object where a protocol is taken (`recognizer.delegate = navigationController`): Objective-C asks the object whether it conforms.
-    if (/^any [A-Z]\w*$/.test(b) && /^[A-Z][\w.]*[?!]?$/.test(source) && !this.isEnumType(base(source)) && !this.isStructType(base(source)) && !['Double', 'String', 'Bool'].includes(base(source))) return `(${t.expr(e)} as? ${b})${optional(target) ? '' : '!'}`;
+    if (/^any [A-Z]\w*$/.test(b) && /^[A-Z][\w.]*[?!]?$/.test(source) && !this.isEnumType(base(source)) && !this.isStructType(base(source)) && !['Double', 'String', 'Bool'].includes(base(source))) return this.asProtocol(e, source, target, b, `(${t.expr(e)} as? ${b})${optional(target) ? '' : '!'}`);
     // An untyped value where Swift takes a BOOL: its truthiness, as the runtime marshals it.
     if (source === 'Any?' && b === 'Bool') return `jsTruthy(${t.expr(e)})`;
     // A boolean or string held optional (declared `boolean | undefined`) where Swift takes one: a missing one as Objective-C reads nil.
@@ -1019,10 +1055,10 @@ export class NativeAPI {
       if (CF_CLASSES.has(cls)) return optional(target) ? `jsFlat(${t.expr(e)}).map { $0 as! ${cls} }` : `(jsFlat(${t.expr(e)}) as! ${cls})`;
       // A geometry struct the runtime gives script as an object (`window.screen.bounds`): the struct again.
       if (['CGRect', 'CGSize', 'CGPoint', 'UIEdgeInsets'].includes(cls)) return optional(target) ? `jsNativeStruct(${t.expr(e)}, ${cls}.self)` : `jsNativeStruct(${t.expr(e)}, ${cls}.self)!`;
-      return optional(target) ? `(jsFlat(${t.expr(e)}) as? ${b})` : `jsNativeObject(${t.expr(e)}, ${b.startsWith('any ') ? `(${b})` : b}.self)`;
+      return optional(target) ? (b === 'Any' ? `jsFlat(${t.expr(e)})` : `(jsFlat(${t.expr(e)}) as? ${b})`) : `jsNativeObject(${t.expr(e)}, ${b.startsWith('any ') ? `(${b})` : b}.self)`;
     }
     // An object where Swift takes one conforming to a protocol its class may not declare (a delegate the runtime would accept): checked when it runs.
-    if (b.startsWith('any ') && source.replace(/[?!]$/, '') !== b && /^(\w+\.)?[A-Z]\w*$/.test(source.replace(/[?!]$/, ''))) return optional(target) ? `(${t.expr(e)} as? ${b})` : `(${t.expr(e)} as! ${b})`;
+    if (b.startsWith('any ') && source.replace(/[?!]$/, '') !== b && /^(\w+\.)?[A-Z]\w*$/.test(source.replace(/[?!]$/, ''))) return this.asProtocol(e, source, target, b, optional(target) ? `(${t.expr(e)} as? ${b})` : `(${t.expr(e)} as! ${b})`);
     if (/^NSMutable(Array|Dictionary)[?!]?$/.test(source) && b.startsWith('[')) {
       // Held implicitly unwrapped or not, alike; a missing one is nil where Swift takes an optional, else empty.
       const immutable = base(source).replace('Mutable', '');
@@ -1081,6 +1117,8 @@ export class NativeAPI {
     if (!optional(target) && source.endsWith('?') && ['NSDictionary', 'NSArray'].includes(b)) return `(${t.expr(e)} ?? ${b}())`;
     // A value the typings say may be null (`selectedViewController`) where Swift takes one: unwrapped, as the runtime would pass nil to a nonnull parameter.
     if (!optional(target) && optional(source) && base(source) === b && !['Any', 'Double', 'String', 'Bool'].includes(b)) return `${t.expr(e)}!`;
+    // An object that may be missing where Swift takes any value: passed as it is held, nil included, as the runtime passes it.
+    if (b === 'Any' && !optional(target) && (optional(source) || t.lenientRef(source) !== source)) return `(${t.expr(e)} as Any)`;
     return t.expr(e);
   }
 
@@ -1424,12 +1462,13 @@ export class NativeAPI {
         return `        let ${p.name}: ${type} = ${this.fromSwiftValue(`__a${k}`, swift, type)}`;
       }
       // A struct whose fields the body assigns (`size.width = 0`) is a variable of its own.
-      return `        ${this.isStructType(p.type) && writesField(m.body!, this.t.checker.getSymbolAtLocation(m.parameters[k].name), this.t.checker) ? 'var' : 'let'} ${p.name}: ${p.type} = ${this.fromSwiftValue(`__a${k}`, swift, p.type)}`;
+      return `        ${this.isStructType(p.type) && ts.isIdentifier(m.parameters[k].name) && this.t.needsVar(m.parameters[k].name, p.type) ? 'var' : 'let'} ${p.name}: ${p.type} = ${this.fromSwiftValue(`__a${k}`, swift, p.type)}`;
     }).filter(Boolean);
     const ret = target.returns;
     // A result Objective-C declares nullable: the body may give undefined.
     const tsRet = optional(ret) && ownRet !== 'Void' && !ownRet.endsWith('?') && ownRet !== 'Any?' ? optionalType(ownRet) : ownRet;
-    const body = t.functionBody(m, tsRet, '        ');
+    const introduced = target.introduced && parseFloat(target.introduced) > DEPLOYMENT ? parseFloat(target.introduced) : 0;
+    const body = t.availableFrom(introduced, () => t.functionBody(m, tsRet, '        '));
     const throws = t.throwsInfo.fn(m);
     const call = `{ () ${throws ? 'throws ' : ''}-> ${tsRet} in${body.slice(1)}()`;
     // A Void method's body is the method's own (its returns return from it); a value goes through a closure to be converted.
@@ -1437,7 +1476,7 @@ export class NativeAPI {
     const result = ret === 'Void'
       ? (tsRet !== 'Void' ? `        ${throws ? 'jsReport { _ = try ' : '_ = '}${call}${throws ? ' }' : ''}` : throws ? `        jsReport { try ${call} }` : body.slice(2, -2).replace(/^ {8}/, '        '))
       : `        let __result: ${tsRet} = ${throws ? `jsReportedOrZero { () throws -> ${tsRet} in${body.slice(1)}` : call}\n        return ${this.toSwiftValue('__result', tsRet, ret)}`;
-    const available = target.introduced && parseFloat(target.introduced) > DEPLOYMENT ? `@available(iOS ${target.introduced}, *) ` : '';
+    const available = introduced ? `@available(iOS ${target.introduced}, *) ` : '';
     const guard = enteredGuard(target.swift, target.labels, target.params, ret, '        ', target.escaping);
     return [`    ${available}${override ? 'override ' : ''}func ${target.swift}(${swiftParams.join(', ')})${ret === 'Void' ? '' : ` -> ${ret}`} {`, guard, ...binds, result, '    }'].join('\n');
   }
@@ -1503,9 +1542,9 @@ export class NativeAPI {
     if (block && fn && block.params.some((p, k) => p !== fn.params[k])) return this.t.convert(code, block.text, tsType);
     // A parameter TypeScript declares as the app's own subclass (`navigationController: UINavigationControllerImpl`).
     const own = tsType.replace(/[?!]$/, '');
-    if (own !== b && /^(\w+\.)?[A-Z]\w*$/.test(own) && /^[A-Z]\w*$/.test(b) && !this.isEnumType(b) && !this.isStructType(b) && this.t.lenientRef(own) !== own) return `jsImplicit(${code} as? ${own})`;
     const bridged = bridge(code, swiftType, tsType);
     if (bridged) return bridged;
+    if (own !== b && /^(\w+\.)?[A-Z]\w*$/.test(own) && /^[A-Z]\w*$/.test(b) && !this.isEnumType(b) && !this.isStructType(b) && this.t.lenientRef(own) !== own) return `jsImplicit(${code} as? ${own})`;
     if (b === 'Date' && base(tsType) === 'JSDate') return optional(swiftType) ? unwrapAs(`${code}.map { JSDate($0) }`, tsType, this.t.lenient && this.t.lenientRef(tsType) !== tsType) : `JSDate(${code})`;
     // A native enum is a number in JavaScript.
     if (tsType === 'Double' && this.isEnumType(b)) return optional(swiftType) ? `Double(${code}!.rawValue)` : `Double(${code}.rawValue)`;
@@ -1690,19 +1729,6 @@ function matching(t: string, open: number): number {
     else if (t[i] === ')' || t[i] === ']' || (t[i] === '>' && t[i - 1] !== '-')) { depth--; if (depth === 0) return i; }
   }
   return -1;
-}
-
-/** Whether code assigns a field of the variable `sym` names (`size.width = 0`). */
-function writesField(node: ts.Node, sym: ts.Symbol | undefined, checker: ts.TypeChecker): boolean {
-  let found = false;
-  const visit = (n: ts.Node) => {
-    if (found) return;
-    if (ts.isBinaryExpression(n) && n.operatorToken.kind >= ts.SyntaxKind.FirstAssignment && n.operatorToken.kind <= ts.SyntaxKind.LastAssignment && ts.isPropertyAccessExpression(n.left)
-        && ts.isIdentifier(n.left.expression) && checker.getSymbolAtLocation(n.left.expression) === sym) { found = true; return; }
-    ts.forEachChild(n, visit);
-  };
-  visit(node);
-  return found;
 }
 
 /**

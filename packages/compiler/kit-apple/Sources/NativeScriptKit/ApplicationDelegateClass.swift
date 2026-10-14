@@ -65,7 +65,7 @@ enum ApplicationDelegateClass {
     static func delegate(_ app: iOSApplication) throws -> AnyClass? { delegateClass }
 
     static func delegate(_ app: iOSApplication, _ value: Any?) throws {
-        let cls = jsFlat(value) as? AnyClass
+        let cls: AnyClass? = jsFlat(value) as? AnyClass
         if cls.map(ObjectIdentifier.init) == delegateClass.map(ObjectIdentifier.init) && (cls != nil || jsFlat(value) == nil) { return }
         delegateClass = cls
         if jsTruthy(value) {

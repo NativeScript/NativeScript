@@ -83,7 +83,7 @@ enum Probe {
                     line += info
                 }
                 if let segments = native as? UISegmentedControl {
-                    line += " segments=\(segments.numberOfSegments) native=\(segments.selectedSegmentIndex) selectedIndex=\(jsToString((try? jsGet(v, "selectedIndex")) ?? nil)) listening=\((try? v.hasListeners("selectedIndexChange")) ?? false)"
+                    line += " segments=\(segments.numberOfSegments) native=\(segments.selectedSegmentIndex) selectedIndex=\(jsToString((try? jsGet(v, "selectedIndex")) ?? nil)) listening=\(v.hasListeners("selectedIndexChange"))"
                 }
                 if let recognizers = native.gestureRecognizers, !recognizers.isEmpty {
                     line += " gestures=[\(recognizers.map { "\(type(of: $0))\($0.isEnabled ? "" : " disabled")" }.joined(separator: ","))] interactive=\(native.isUserInteractionEnabled)"

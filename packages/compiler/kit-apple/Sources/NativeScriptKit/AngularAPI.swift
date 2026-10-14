@@ -108,26 +108,22 @@ public final class HttpClient {
         let request: () -> JSPromise<Any?> = {
             let failure = { (status: Double, reason: String) in JSError("Http failure response for \(url): \(jsToString(status)) \(reason)") }
             let (promise, resolvers) = JSPromise<Any?>.pending()
-            do {
-                var settings: [(String, Any?)] = [("url", url), ("method", "GET")]
-                if !jsIsNullish(headers) { settings.append(("headers", headers)) }
-                _ = try Core_http_http_request_index.request(JSObject(settings)).then({ (response: Any?) -> Void in
-                    do {
-                        let status = jsToNumber(try jsGet(response, "statusCode"))
-                        if status >= 400 || status == 0 {
-                            let reason = HTTPURLResponse.localizedString(forStatusCode: Int(status)).capitalized
-                            resolvers.reject(failure(status, status == 0 ? "Unknown Error" : reason))
-                            return
-                        }
-                        let body = jsToString(try jsCallMethod(try jsGet(response, "content"), "toString"))
-                        if text { resolvers.resolve(body) } else { resolvers.resolve(body.isEmpty ? nil : try jsJSONParse(body)) }
-                    } catch {
-                        resolvers.reject(jsCaught(error))
+            var settings: [(String, Any?)] = [("url", url), ("method", "GET")]
+            if !jsIsNullish(headers) { settings.append(("headers", headers)) }
+            _ = Core_http_http_request_index.request(JSObject(settings)).then({ (response: Any?) -> Void in
+                do {
+                    let status = jsToNumber(try jsGet(response, "statusCode"))
+                    if status >= 400 || status == 0 {
+                        let reason = HTTPURLResponse.localizedString(forStatusCode: Int(status)).capitalized
+                        resolvers.reject(failure(status, status == 0 ? "Unknown Error" : reason))
+                        return
                     }
-                }, { (_: Any?) -> Void in resolvers.reject(failure(0, "Unknown Error")) })
-            } catch {
-                resolvers.reject(jsCaught(error))
-            }
+                    let body = jsToString(try jsCallMethod(try jsGet(response, "content"), "toString"))
+                    if text { resolvers.resolve(body) } else { resolvers.resolve(body.isEmpty ? nil : try jsJSONParse(body)) }
+                } catch {
+                    resolvers.reject(jsCaught(error))
+                }
+            }, { (_: Any?) -> Void in resolvers.reject(failure(0, "Unknown Error")) })
             return promise
         }
         let observable = RxObservable<Any?> { next in

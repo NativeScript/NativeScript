@@ -196,7 +196,7 @@ public final class JSDate: JSDynamic, JSStringConvertible {
 
     /// The common non-ISO forms V8 reads: `toUTCString`'s (HTTP dates), `toString`'s, and month-name or slash dates,
     /// local time unless the text names a zone.
-    nonisolated(unsafe) private static let legacy: [DateFormatter] = [
+    private static let legacy: [DateFormatter] = [
         "EEE, d MMM yyyy HH:mm:ss zzz", "EEE, d MMM yyyy HH:mm:ss Z", "EEE MMM d yyyy HH:mm:ss 'GMT'Z", "EEE MMM d yyyy HH:mm:ss zzz",
         "EEE MMM d yyyy", "MMMM d, yyyy HH:mm:ss", "MMMM d, yyyy HH:mm", "MMMM d, yyyy", "MMM d, yyyy HH:mm:ss", "MMM d, yyyy HH:mm",
         "MMM d, yyyy", "MMM d yyyy HH:mm:ss", "MMM d yyyy HH:mm", "MMM d yyyy", "d MMMM yyyy", "d MMM yyyy",

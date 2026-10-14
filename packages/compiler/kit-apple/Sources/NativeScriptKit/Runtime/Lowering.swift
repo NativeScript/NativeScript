@@ -107,7 +107,7 @@ public func jsHasKey(_ object: Any?, _ key: String) -> Bool {
     if let dynamic = object as? JSDynamic {
         if dynamic.jsKeys.contains(key) { return true }
         // Accessors are the prototype's, as `in` finds them in JavaScript.
-        return (type(of: dynamic) as? AnyClass).map { JSPrototypes.holder($0, key) != nil } ?? false
+        return JSPrototypes.holder(type(of: dynamic) as AnyClass, key) != nil
     }
     if let array = object as? JSArrayProtocol { return key == "length" || (Int(key).map { $0 >= 0 && $0 < array.jsAnyElements.count } ?? false) }
     return false
