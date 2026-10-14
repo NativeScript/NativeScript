@@ -40,17 +40,17 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
     public init(_ elements: [Element]) { storage = elements }
     public required init(arrayLiteral elements: Element...) { storage = elements }
 
-    @inline(__always) final func track() { jsTracker?.track() }
-    @inline(__always) final func trigger() { jsTracker?.trigger() }
+    @inlinable @inline(__always) final func track() { jsTracker?.track() }
+    @inlinable @inline(__always) final func trigger() { jsTracker?.trigger() }
 
-    @inline(__always) final func read(_ index: Int) -> Element {
+    @inlinable @inline(__always) final func read(_ index: Int) -> Element {
         if jsTracker != nil { return jsReactive(storage[index]) }
         return storage[index]
     }
 
     /// What an empty slot holds: undefined in an array of optionals; in an array of numbers or strings,
     /// a sentinel that reads undefined where the read may be (`element(_:)`, join, untyped reads).
-    static var hole: Element? {
+    @usableFromInline static var hole: Element? {
         if Element.self == Double.self { return unsafeBitCast(jsHoleNumber, to: Element.self) }
         if Element.self == String.self { return unsafeBitCast(jsHoleString, to: Element.self) }
         return (Element.self as? JSOptionalProtocol.Type).map { $0.jsNone as! Element }
@@ -70,18 +70,18 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
         return array
     }
 
-    private func outOfRange(_ index: Int) -> Never {
+    @usableFromInline final func outOfRange(_ index: Int) -> Never {
         fatalError("JSArray<\(Element.self)> index \(index) out of range (length \(storage.count))")
     }
 
     // MARK: Elements
 
-    public final var count: Int {
+    @inlinable public final var count: Int {
         track()
         return storage.count
     }
 
-    public final var isEmpty: Bool { count == 0 }
+    @inlinable public final var isEmpty: Bool { count == 0 }
 
     /// The elements as a Swift array, read through the tracker.
     public final var elements: [Element] {
@@ -91,7 +91,7 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
     }
 
     /// `array.length`. Setting it shorter truncates.
-    public final var length: Double {
+    @inlinable public final var length: Double {
         get {
             track()
             return Double(storage.count)
@@ -104,7 +104,7 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
         }
     }
 
-    private func setLength(_ n: Int) {
+    @usableFromInline final func setLength(_ n: Int) {
         if n < storage.count {
             storage.removeLast(storage.count - n)
             trigger()
@@ -127,7 +127,8 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
         return JSArray.isHole(e) ? nil : e
     }
 
-    public final subscript(i: Int) -> Element {
+    // Inlinable, as the typed reads and writes below: the app's module specializes them for its element types.
+    @inlinable public final subscript(i: Int) -> Element {
         get {
             guard i >= 0 && i < storage.count else { outOfRange(i) }
             track()
@@ -148,7 +149,7 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
         }
     }
 
-    public final subscript(i: Double) -> Element {
+    @inlinable public final subscript(i: Double) -> Element {
         get {
             guard let k = index(i) else {
                 if let value = jsNonIndexed?[i + 0] ?? JSArray.hole { return value }
@@ -166,7 +167,7 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
         }
     }
 
-    private func index(_ d: Double) -> Int? {
+    @inlinable final func index(_ d: Double) -> Int? {
         guard d >= 0, d < 4_294_967_295, d == d.rounded(.towardZero) else { return nil }
         return Int(d)
     }
@@ -199,8 +200,8 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
     public final func makeIterator() -> Iterator { Iterator(array: self) }
 
     /// Visits the indexes below the length at the start; indexes the callback removed are skipped.
-    @inline(__always)
-    private func each(_ body: (Element, Int) throws -> Bool) rethrows {
+    @inlinable @inline(__always)
+    final func each(_ body: (Element, Int) throws -> Bool) rethrows {
         track()
         let length = storage.count
         var k = 0
@@ -255,14 +256,14 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
 
     // MARK: Mutators
 
-    @discardableResult
+    @inlinable @discardableResult
     public final func push(_ items: Element...) -> Double {
         storage.append(contentsOf: items)
         trigger()
         return Double(storage.count)
     }
 
-    public final func pop() -> Element? {
+    @inlinable public final func pop() -> Element? {
         guard !storage.isEmpty else { return nil }
         let value = storage.removeLast()
         trigger()
@@ -336,19 +337,29 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
     }
 
     /// `array.sort(compare)`: in place and stable; undefined elements go last without being compared,
-    /// and a NaN comparison result counts as 0.
-    @discardableResult
+    /// and a NaN comparison result counts as 0. The array is unchanged when `compare` throws.
+    @inlinable @discardableResult
     public final func sort(_ compare: (Element, Element) throws -> Double) rethrows -> JSArray<Element> {
-        var defined: [Element] = []
+        var defined: [Element]
         var undefined: [Element] = []
-        for element in storage {
-            if jsIsUndefined(element) { undefined.append(element) } else { defined.append(element) }
+        if JSArray.canHoldUndefined {
+            defined = []
+            for element in storage {
+                if JSArray.isUndefined(element) { undefined.append(element) } else { defined.append(element) }
+            }
+        } else {
+            defined = storage
         }
         try jsMergeSort(&defined) { try compare($0, $1) < 0 }
-        storage = defined + undefined
+        storage = undefined.isEmpty ? defined : defined + undefined
         trigger()
         return self
     }
+
+    /// Whether an element can be undefined: an optional, or `Any`.
+    @usableFromInline static var canHoldUndefined: Bool { Element.self is JSOptionalProtocol.Type || Element.self == Any.self }
+
+    @usableFromInline static func isUndefined(_ element: Element) -> Bool { jsIsUndefined(element) }
 
     /// `array.fill(value, start, end)`: in place, returns the array.
     @discardableResult
@@ -366,12 +377,13 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
     // MARK: Copies
 
     /// `array.slice(start, end)`.
-    public final func slice(_ start: Double = 0, _ end: Double? = nil) -> JSArray<Element> {
+    @inlinable public final func slice(_ start: Double = 0, _ end: Double? = nil) -> JSArray<Element> {
         track()
         let length = storage.count
         let s = jsRelativeIndex(start, length)
         let e = end.map { jsRelativeIndex($0, length) } ?? length
-        return s < e ? JSArray((s..<e).map(read)) : JSArray()
+        guard s < e else { return JSArray() }
+        return JSArray(jsTracker == nil ? Array(storage[s..<e]) : (s..<e).map(read))
     }
 
     /// `array.concat(other, ...)` with array arguments, spread one level.
@@ -477,7 +489,7 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
         return false
     }
 
-    public final func find(_ predicate: (Element) throws -> Bool) rethrows -> Element? {
+    @inlinable public final func find(_ predicate: (Element) throws -> Bool) rethrows -> Element? {
         var found: Element?
         try each { v, _ in
             if try predicate(v) { found = v; return false }
@@ -499,7 +511,7 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
         try find { v, i in try predicate(v, i, self) }
     }
 
-    public final func findIndex(_ predicate: (Element) throws -> Bool) rethrows -> Double {
+    @inlinable public final func findIndex(_ predicate: (Element) throws -> Bool) rethrows -> Double {
         var found = -1
         try each { v, i in
             if try predicate(v) { found = i; return false }
@@ -565,7 +577,7 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
         try findLastIndex { v, i in try predicate(v, i, self) }
     }
 
-    public final func some(_ predicate: (Element) throws -> Bool) rethrows -> Bool {
+    @inlinable public final func some(_ predicate: (Element) throws -> Bool) rethrows -> Bool {
         var result = false
         try each { v, _ in
             if try predicate(v) { result = true; return false }
@@ -587,7 +599,7 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
         try some { v, i in try predicate(v, i, self) }
     }
 
-    public final func every(_ predicate: (Element) throws -> Bool) rethrows -> Bool {
+    @inlinable public final func every(_ predicate: (Element) throws -> Bool) rethrows -> Bool {
         var result = true
         try each { v, _ in
             if try !predicate(v) { result = false; return false }
@@ -611,28 +623,28 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
 
     // MARK: Transforms
 
-    public final func forEach(_ body: (Element) throws -> Void) rethrows {
+    @inlinable public final func forEach(_ body: (Element) throws -> Void) rethrows {
         try each { v, _ in
             try body(v)
             return true
         }
     }
 
-    public final func forEach(_ body: (Element, Double) throws -> Void) rethrows {
+    @inlinable public final func forEach(_ body: (Element, Double) throws -> Void) rethrows {
         try each { v, i in
             try body(v, Double(i))
             return true
         }
     }
 
-    public final func forEach(_ body: (Element, Double, JSArray<Element>) throws -> Void) rethrows {
+    @inlinable public final func forEach(_ body: (Element, Double, JSArray<Element>) throws -> Void) rethrows {
         try each { v, i in
             try body(v, Double(i), self)
             return true
         }
     }
 
-    public final func map<U>(_ transform: (Element) throws -> U) rethrows -> JSArray<U> {
+    @inlinable public final func map<U>(_ transform: (Element) throws -> U) rethrows -> JSArray<U> {
         var out: [U] = []
         out.reserveCapacity(storage.count)
         try each { v, _ in
@@ -642,7 +654,7 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
         return JSArray<U>(out)
     }
 
-    public final func map<U>(_ transform: (Element, Double) throws -> U) rethrows -> JSArray<U> {
+    @inlinable public final func map<U>(_ transform: (Element, Double) throws -> U) rethrows -> JSArray<U> {
         var out: [U] = []
         out.reserveCapacity(storage.count)
         try each { v, i in
@@ -652,7 +664,7 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
         return JSArray<U>(out)
     }
 
-    public final func map<U>(_ transform: (Element, Double, JSArray<Element>) throws -> U) rethrows -> JSArray<U> {
+    @inlinable public final func map<U>(_ transform: (Element, Double, JSArray<Element>) throws -> U) rethrows -> JSArray<U> {
         var out: [U] = []
         out.reserveCapacity(storage.count)
         try each { v, i in
@@ -662,7 +674,7 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
         return JSArray<U>(out)
     }
 
-    public final func filter(_ predicate: (Element) throws -> Bool) rethrows -> JSArray<Element> {
+    @inlinable public final func filter(_ predicate: (Element) throws -> Bool) rethrows -> JSArray<Element> {
         var out: [Element] = []
         try each { v, _ in
             if try predicate(v) { out.append(v) }
@@ -671,7 +683,7 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
         return JSArray(out)
     }
 
-    public final func filter(_ predicate: (Element, Double) throws -> Bool) rethrows -> JSArray<Element> {
+    @inlinable public final func filter(_ predicate: (Element, Double) throws -> Bool) rethrows -> JSArray<Element> {
         var out: [Element] = []
         try each { v, i in
             if try predicate(v, Double(i)) { out.append(v) }
@@ -680,7 +692,7 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
         return JSArray(out)
     }
 
-    public final func filter(_ predicate: (Element, Double, JSArray<Element>) throws -> Bool) rethrows -> JSArray<Element> {
+    @inlinable public final func filter(_ predicate: (Element, Double, JSArray<Element>) throws -> Bool) rethrows -> JSArray<Element> {
         var out: [Element] = []
         try each { v, i in
             if try predicate(v, Double(i), self) { out.append(v) }
@@ -712,7 +724,7 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
     }
 
     /// `array.reduce(f, initial)`.
-    public final func reduce<U>(_ next: (U, Element) throws -> U, _ initial: U) rethrows -> U {
+    @inlinable public final func reduce<U>(_ next: (U, Element) throws -> U, _ initial: U) rethrows -> U {
         var accumulator = initial
         try each { v, _ in
             accumulator = try next(accumulator, v)
@@ -721,7 +733,7 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
         return accumulator
     }
 
-    public final func reduce<U>(_ next: (U, Element, Double) throws -> U, _ initial: U) rethrows -> U {
+    @inlinable public final func reduce<U>(_ next: (U, Element, Double) throws -> U, _ initial: U) rethrows -> U {
         var accumulator = initial
         try each { v, i in
             accumulator = try next(accumulator, v, Double(i))
@@ -730,7 +742,7 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
         return accumulator
     }
 
-    public final func reduce<U>(_ next: (U, Element, Double, JSArray<Element>) throws -> U, _ initial: U) rethrows -> U {
+    @inlinable public final func reduce<U>(_ next: (U, Element, Double, JSArray<Element>) throws -> U, _ initial: U) rethrows -> U {
         try reduce({ a, v, i in try next(a, v, i, self) }, initial)
     }
 
@@ -932,51 +944,82 @@ extension JSArray where Element == Any? {
 }
 
 /// A relative index (`slice`, `splice`, `fill`, `indexOf`): negative counts from the end, clamped to 0…length.
-func jsRelativeIndex(_ value: Double, _ length: Int) -> Int {
+@usableFromInline func jsRelativeIndex(_ value: Double, _ length: Int) -> Int {
     let relative = jsToIntegerOrInfinity(value)
     if relative < 0 { return Int(max(Double(length) + relative, 0)) }
     return Int(min(relative, Double(length)))
 }
 
 /// A stable merge sort: `less(a, b)` says whether `a` must come before `b`; equal elements keep their order.
+/// Runs of 16 are sorted by insertion first, and two runs already in order are copied without merging.
+/// Inlinable: the app's module specializes it for its element type and comparator.
+@inlinable
 func jsMergeSort<T>(_ values: inout [T], _ less: (T, T) throws -> Bool) rethrows {
     let n = values.count
     guard n > 1 else { return }
-    var source = values
-    var target = values
-    var width = 1
-    while width < n {
+    let run = 16
+    try values.withUnsafeMutableBufferPointer { a in
         var start = 0
         while start < n {
-            let middle = min(start + width, n)
-            let end = min(start + 2 * width, n)
-            var l = start, r = middle, k = start
-            while l < middle && r < end {
-                if try less(source[r], source[l]) {
-                    target[k] = source[r]
-                    r += 1
-                } else {
-                    target[k] = source[l]
-                    l += 1
+            let end = min(start + run, n)
+            var i = start + 1
+            while i < end {
+                let x = a[i]
+                var j = i
+                while j > start, try less(x, a[j - 1]) {
+                    a[j] = a[j - 1]
+                    j -= 1
                 }
-                k += 1
+                a[j] = x
+                i += 1
             }
-            while l < middle {
-                target[k] = source[l]
-                l += 1
-                k += 1
-            }
-            while r < end {
-                target[k] = source[r]
-                r += 1
-                k += 1
-            }
-            start += 2 * width
+            start = end
         }
-        swap(&source, &target)
+    }
+    guard n > run else { return }
+    var target = values
+    var width = run
+    while width < n {
+        try values.withUnsafeBufferPointer { source in
+            try target.withUnsafeMutableBufferPointer { merged in
+                var start = 0
+                while start < n {
+                    let middle = min(start + width, n)
+                    let end = min(start + 2 * width, n)
+                    var ordered = middle >= end
+                    if !ordered { ordered = try !less(source[middle], source[middle - 1]) }
+                    if ordered {
+                        for k in start..<end { merged[k] = source[k] }
+                    } else {
+                        var l = start, r = middle, k = start
+                        while l < middle && r < end {
+                            if try less(source[r], source[l]) {
+                                merged[k] = source[r]
+                                r += 1
+                            } else {
+                                merged[k] = source[l]
+                                l += 1
+                            }
+                            k += 1
+                        }
+                        while l < middle {
+                            merged[k] = source[l]
+                            l += 1
+                            k += 1
+                        }
+                        while r < end {
+                            merged[k] = source[r]
+                            r += 1
+                            k += 1
+                        }
+                    }
+                    start = end
+                }
+            }
+        }
+        swap(&values, &target)
         width *= 2
     }
-    values = source
 }
 
 /// An array's methods read by name from untyped code (`value.map(fn)` where `value` is `any`), over the

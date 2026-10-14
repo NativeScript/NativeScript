@@ -1,12 +1,12 @@
 import ts from 'typescript';
-import { intlConstructor, isStringRaw, iterationThrows, unsafeReceiver } from './lang.ts';
+import { intlConstructor, isStringRaw, iterationThrows, uncheckedMatch, unsafeReceiver } from './lang.ts';
 
 type Fn = ts.SignatureDeclaration & { body?: ts.Node };
 
 /** The constructors of buffers and views, which throw a RangeError for a length or an offset out of bounds. */
 const BUFFER_TYPES = new Set(['ArrayBuffer', 'Int8Array', 'Uint8Array', 'Uint8ClampedArray', 'Int16Array', 'Uint16Array', 'Int32Array', 'Uint32Array', 'Float32Array', 'Float64Array', 'BigInt64Array', 'BigUint64Array', 'DataView']);
 /** Library functions that throw on their own (a TypeError, a SyntaxError, a RangeError). */
-const THROWING_BUILTINS = new Set(['JSON.parse', 'JSON.stringify', 'Array.reduce', 'Array.reduceRight', 'Array.with', 'String.repeat', 'String.padStart', 'String.padEnd', 'String.fromCodePoint', 'String.normalize', 'String.matchAll', 'String.replaceAll', 'Date.toISOString', 'Object.assign', 'Object.fromEntries', 'Object.defineProperty', 'Object.defineProperties', 'WeakMap.set', 'WeakSet.add',
+const THROWING_BUILTINS = new Set(['JSON.parse', 'JSON.stringify', 'Array.reduce', 'Array.reduceRight', 'Array.with', 'Number.toExponential', 'String.repeat', 'String.padStart', 'String.padEnd', 'String.fromCodePoint', 'String.normalize', 'String.matchAll', 'String.replaceAll', 'Date.toISOString', 'Object.assign', 'Object.fromEntries', 'Object.defineProperty', 'Object.defineProperties', 'WeakMap.set', 'WeakSet.add',
   'Iterator.next', 'Iterator.return', 'Iterator.throw', 'Generator.next', 'Generator.return', 'Generator.throw',
   ...['Int8', 'Uint8', 'Uint8Clamped', 'Int16', 'Uint16', 'Int32', 'Uint32', 'Float32', 'Float64', 'BigInt64', 'BigUint64'].flatMap((t) => [`${t}Array.set`, `${t}Array.reduce`, `${t}Array.reduceRight`, `${t}Array.from`]),
   ...['Int8', 'Uint8', 'Int16', 'Uint16', 'Int32', 'Uint32', 'Float32', 'Float64', 'BigInt64', 'BigUint64'].flatMap((t) => [`DataView.get${t}`, `DataView.set${t}`]),
@@ -189,6 +189,7 @@ export class Throws {
       if (this.untyped(n.expression)) return true;
       if (ts.isPropertyAccessExpression(n) && this.dynamicMember(n)) return true;
       if (ts.isPropertyAccessExpression(n) && !n.questionDotToken && unsafeReceiver(n.expression, c)) return true;
+      if ((ts.isPropertyAccessExpression(n) || ts.isElementAccessExpression(n)) && !n.questionDotToken && uncheckedMatch(n.expression, c)) return true;
       if (ts.isPropertyAccessExpression(n) && !n.questionDotToken && c.getTypeAtLocation(n.expression).flags & ts.TypeFlags.Never) return true;
       const decl = c.getSymbolAtLocation(ts.isPropertyAccessExpression(n) ? n.name : n.argumentExpression)?.declarations?.[0];
       if (decl && ts.isGetAccessorDeclaration(decl) && decl.body && !isAssignmentTarget(n)) return !this.reported(decl, (f) => this.fn(f)) && this.fn(decl);
@@ -247,7 +248,7 @@ export class Throws {
       if (fnDecl && ts.isFunctionDeclaration(fnDecl) && fnDecl.body && !isAsync(fnDecl) && !fnDecl.asteriskToken && decl && builtinName(decl)?.startsWith('Array.')) return this.fn(fnDecl);
       return c.getTypeAtLocation(arg).getCallSignatures().length > 0;
     });
-    if (ts.isNewExpression(call) && ts.isIdentifier(call.expression) && call.expression.text === 'RegExp') return true;
+    if (ts.isIdentifier(call.expression) && call.expression.text === 'RegExp') return true;
     // A buffer or a view of an invalid length is a RangeError.
     if (ts.isNewExpression(call) && ts.isIdentifier(call.expression) && BUFFER_TYPES.has(call.expression.text) && c.getSymbolAtLocation(call.expression)?.declarations?.every((d) => d.getSourceFile().isDeclarationFile)) return true;
     // A weak reference to an untyped value refuses a primitive.

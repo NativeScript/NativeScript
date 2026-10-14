@@ -1,4 +1,4 @@
-// @lenient-kotlin
+// @lenient-both
 // RegExp called without new, and a match indexed without a non-null assertion, as a non-strict app writes it.
 const range = RegExp('(\\d+)-(\\d+)');
 const pair = range.exec('pages 10-20');
