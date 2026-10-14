@@ -5,6 +5,14 @@ import java.util.concurrent.CountDownLatch
 /**
  * A realm's per-thread state: its global object, timers and microtask queue. A worker's thread
  * enters its own; every other thread runs in the app's (`main`), as all code did before workers.
+ *
+ * Script runs only on its realm's thread, one task at a time, as JavaScript does: the app's realm
+ * is the main thread, a worker's realm is its own thread, and values pass between realms only as
+ * structured clones. Native code enters script through an override or callback whose first
+ * statement is a guard (`jsElsewhere`): called from another thread, it runs again on its realm's
+ * thread through [later] or [await]. Generated declarations say which thread they run on:
+ * `@UiThread` for the modules only the main thread runs, `@AnyThread` for those a worker may
+ * import, and `@AnyThread` on guarded overrides, whose code past the guard is `@UiThread`.
  */
 class JSRealm internal constructor() {
     val global: JSObject = JSObject().also { it["DOMException"] = JSDOMException::class.java }

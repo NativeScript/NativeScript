@@ -67,3 +67,15 @@ export function allowedDeprecation(api: string): boolean {
     if (!cls.includes('$')) return false;
   }
 }
+
+/**
+ * Android APIs annotated `@WorkerThread` that core calls on its caller's thread, as its JavaScript does (an image
+ * encoded where `toBase64String` is called). A declaration calling one is marked `@Suppress("WrongThread")`; any
+ * other thread mismatch fails the kit's lint.
+ */
+const CALLED_ON_ANY_THREAD = new Set(['android/graphics/Bitmap#compress']);
+
+/** Whether core may call an API lint restricts to worker threads from any thread (`android/graphics/Bitmap#compress`). */
+export function calledOnAnyThread(api: string): boolean {
+  return CALLED_ON_ANY_THREAD.has(api);
+}

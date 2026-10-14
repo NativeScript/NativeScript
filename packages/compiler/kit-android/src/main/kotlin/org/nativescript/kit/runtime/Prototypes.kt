@@ -142,8 +142,9 @@ fun jsHasOwn(target: Any?, key: String): Boolean = when (val v = jsBox(target)) 
     is JSObject -> v.has(key)
     is JSExpando -> v.jsExpando?.has(key) == true || key in v.jsKeys
     is JSDynamic -> key in v.jsKeys
-    is JSArray<*> -> key == "length" || (jsArrayIndex(key)?.let { it < v.storage.size } ?: false)
+    is JSArray<*> -> key == "length" || (jsArrayIndex(key)?.let { it < v.storage.size } ?: (v.jsProperties?.has(key) == true))
     is String -> key == "length" || (jsArrayIndex(key)?.let { it < v.length } ?: false)
+    is Function<*>, is JSFunction -> key == "length" || key == "name" || jsFunctionProperties(v, false)?.has(key) == true
     else -> false
 }
 

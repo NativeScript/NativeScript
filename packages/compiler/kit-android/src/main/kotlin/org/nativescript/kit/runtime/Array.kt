@@ -53,8 +53,8 @@ class JSArray<T>(storage: ArrayList<T>) : Iterable<T>, JSReactiveConvertible {
         }
     }
 
-    /** Properties under keys that are no index (`a[0.5] = x`), as script gives an array. */
-    var jsProperties: LinkedHashMap<String, Any?>? = null
+    /** Properties under keys that are no index (`a[0.5] = x`, `Object.defineProperty(a, …)`), as script gives an array. */
+    var jsProperties: JSObject? = null
 
     /** `a[i]` as JavaScript reads it: undefined unless `i` is an integer index in range, or a key the array was given. */
     @Suppress("UNCHECKED_CAST")
@@ -62,7 +62,7 @@ class JSArray<T>(storage: ArrayList<T>) : Iterable<T>, JSReactiveConvertible {
         track()
         val k = i.toInt()
         if (k >= 0 && k.toDouble() == i) return if (k < storage.size) read(k) else null
-        if (i != Math.floor(i) || i < 0) return jsProperties?.get(jsNumberToString(i)) as T?
+        if (i != Math.floor(i) || i < 0) return jsProperties?.get(jsNumberToString(i), this) as T?
         if (i >= storage.size) return null
         return read(i.toInt())
     }
@@ -99,7 +99,7 @@ class JSArray<T>(storage: ArrayList<T>) : Iterable<T>, JSReactiveConvertible {
             return
         }
         if (i < 0 || i != Math.floor(i) || i >= 4_294_967_295.0) {
-            (jsProperties ?: LinkedHashMap<String, Any?>().also { jsProperties = it })[jsNumberToString(i)] = value
+            (jsProperties ?: JSObject().also { jsProperties = it }).put(jsNumberToString(i), value)
             return
         }
         set(i.toInt(), value)

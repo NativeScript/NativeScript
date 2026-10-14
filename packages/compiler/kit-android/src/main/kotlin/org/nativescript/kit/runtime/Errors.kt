@@ -1,5 +1,8 @@
 package org.nativescript.kit
 
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.contract
+
 /** What JavaScript `throw value` throws: any value, not only errors. Its JVM stack is recorded only when tracing (`jsTraceErrors`). */
 class JSException(val value: Any?) : RuntimeException(null, null, false, jsTraceErrors) {
     override val message: String get() = "Uncaught " + jsToString(value)
@@ -92,6 +95,7 @@ fun jsCaught(error: Throwable): Any? = when (error) {
 
 private fun jsCaughtJvm(error: Throwable): Any? = when (error) {
     is StackOverflowError -> JSRangeError("Maximum call stack size exceeded")
+    is UninitializedPropertyAccessException -> jsLexicalName(error)?.let { JSReferenceError("Cannot access '$it' before initialization").withFrames(error) } ?: JSError(error.message ?: error.toString()).withFrames(error)
     is NullPointerException -> JSTypeError(error.message ?: "Cannot read properties of undefined").withFrames(error)
     is ClassCastException -> JSTypeError(error.message ?: "").withFrames(error)
     else -> JSError(error.message ?: error.toString()).withFrames(error)
@@ -102,6 +106,20 @@ private fun <E : JSError> E.withFrames(error: Throwable): E {
     val frames = error.stackTrace.take(10)
     if (frames.isNotEmpty()) stack = jsErrorString + frames.joinToString("") { "\n    at ${it.className}.${it.methodName} (${it.fileName ?: "Unknown Source"}:${it.lineNumber})" }
     return this
+}
+
+/** The module-level `let` and `const` names Kotlin declares `lateinit`, each as `kotlinName` or `kotlinName:jsName`. */
+private val jsLexicalNames = java.util.concurrent.ConcurrentHashMap<String, String>()
+
+/** Registers a module's `let` and `const` names, so a read before their declaration runs is a ReferenceError. */
+fun jsLexical(vararg names: String) {
+    for (n in names) n.split(':').let { jsLexicalNames[it[0]] = it.getOrElse(1) { _ -> it[0] } }
+}
+
+/** The JavaScript name of the module variable a lateinit failure is of, when it is one. */
+private fun jsLexicalName(error: UninitializedPropertyAccessException): String? {
+    val name = error.message?.removePrefix("lateinit property ")?.removeSuffix(" has not been initialized") ?: return null
+    return jsLexicalNames[name]
 }
 
 /** `throw value`. */
@@ -124,6 +142,40 @@ var jsUncaughtHandler: (Any?) -> Unit = { value -> jsError("Uncaught", value) }
 
 fun jsReportUncaught(value: Any?) = (JSRealm.current().uncaught ?: jsUncaughtHandler)(value)
 
-/** A member read from a receiver its type promised (`x!.name`, `items[i].name`): JavaScript's TypeError when it is missing. */
-fun <T> jsUnwrap(value: T?, key: String, isNull: Boolean = false): T =
-    value ?: throw JSException(JSTypeError("Cannot read properties of ${if (isNull) "null" else "undefined"} (reading '$key')"))
+/** `x.key` where x is undefined: JavaScript's TypeError, as V8 words it. */
+fun jsCannotRead(key: String): Nothing = throw JSException(JSTypeError("Cannot read properties of undefined (reading '$key')"))
+
+/** `x.key` where x is null. */
+fun jsCannotReadNull(key: String): Nothing = throw JSException(JSTypeError("Cannot read properties of null (reading '$key')"))
+
+/** `x.key = v` where x is undefined. */
+fun jsCannotSet(key: String): Nothing = throw JSException(JSTypeError("Cannot set properties of undefined (setting '$key')"))
+
+/** Undefined where code goes on with an object its type promised: V8's TypeError for an object missing. */
+fun jsObjectRequired(): Nothing = throw JSException(JSTypeError("Cannot convert undefined or null to object"))
+
+/**
+ * A destructured parameter's value, `key` its pattern's first property or null for an array pattern: undefined or
+ * null is V8's TypeError. Past it, Kotlin knows the value present.
+ */
+@OptIn(ExperimentalContracts::class)
+fun jsDestructurable(value: Any?, key: String?) {
+    contract { returns() implies (value != null) }
+    if (value != null && value !== JSNull) return
+    val what = if (value == null) "undefined" else "null"
+    throw JSException(JSTypeError(when {
+        key == null -> "$what is not iterable (cannot read property Symbol(Symbol.iterator))"
+        value == null -> "Cannot destructure property '$key' of 'undefined' as it is undefined."
+        else -> "Cannot destructure property '$key' of 'object null' as it is null."
+    }))
+}
+
+/** The result of a script override of a Java method that declares it non-null: undefined or null is a TypeError. */
+fun <T : Any> jsJavaResult(value: T?, method: String): T =
+    value ?: throw JSException(JSTypeError("$method returned undefined, but Java declares its result non-null"))
+
+/** An iterable's `[Symbol.iterator]()` that gave no iterator: V8's TypeError. */
+fun jsNoIterator(): Nothing = throw JSException(JSTypeError("Result of the Symbol.iterator method is not an object"))
+
+/** `f()` where f, as the source writes it, holds no function. */
+fun jsNotAFunction(callee: String): Nothing = throw JSException(JSTypeError("$callee is not a function"))

@@ -388,7 +388,8 @@ function withImports(code: string, pkg = KIT_PACKAGE, deprecated: (internal: str
     if (c === '}') { if (top.kind === 'template' && top.depth === 0) stack.pop(); else top.depth--; out += c; i = j + 1; continue; }
     out += c; i = j + 1;
   }
-  const imports = [...(/@UiThread\b/.test(out) ? [['androidx.annotation.UiThread', '']] as [string, string][] : []), ...[...aliases].sort()].map(([name, a]) => `import ${name}${a ? ` as ${a}` : ''}\n`).join('');
+  const annotations = ['AnyThread', 'UiThread'].filter((a) => new RegExp(`@${a}\\b`).test(out)).map((a): [string, string] => [`androidx.annotation.${a}`, '']);
+  const imports = [...annotations, ...[...aliases].sort()].map(([name, a]) => `import ${name}${a ? ` as ${a}` : ''}\n`).join('');
   // Kotlin reports a deprecated class at its import, which only the file can suppress: the file then suppresses deprecation.
   const old = [...aliases.keys()].filter((name) => deprecated(name.replace(/\./g, '/')));
   if (old.length) {

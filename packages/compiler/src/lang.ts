@@ -249,6 +249,34 @@ export function undeclaredMemberOf(e: ts.PropertyAccessExpression, checker: ts.T
   return decl && ts.isClassLike(decl) && !decl.getSourceFile().isDeclarationFile ? decl : null;
 }
 
+/**
+ * The program classes, each the root of its program hierarchy, whose instances the program holds untyped (`as any`, an
+ * `any` variable or parameter given one), where script may give them members their classes don't declare.
+ */
+export function classesHeldUntyped(files: readonly ts.SourceFile[], checker: ts.TypeChecker): Set<ts.ClassLikeDeclaration> {
+  const roots = new Set<ts.ClassLikeDeclaration>();
+  const classOf = (n: ts.Expression) => {
+    const d = checker.getNonNullableType(checker.getTypeAtLocation(n)).getSymbol()?.valueDeclaration;
+    return d && ts.isClassLike(d) && !d.getSourceFile().isDeclarationFile ? d : undefined;
+  };
+  const untyped = (t: ts.Type | undefined) => !!t && !!(t.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown));
+  const visit = (n: ts.Node) => {
+    let held: ts.Expression | undefined;
+    if ((ts.isAsExpression(n) || ts.isTypeAssertionExpression(n)) && untyped(checker.getTypeFromTypeNode(n.type))) held = n.expression;
+    else if ((ts.isNewExpression(n) || ts.isIdentifier(n) || n.kind === ts.SyntaxKind.ThisKeyword) && ts.isExpression(n) && !ts.isPropertyAccessExpression(n.parent) && untyped(checker.getContextualType(n))) held = n;
+    let cls = held && classOf(held);
+    for (let h = cls?.heritageClauses?.find((x) => x.token === ts.SyntaxKind.ExtendsKeyword)?.types[0]; cls && h; h = cls.heritageClauses?.find((x) => x.token === ts.SyntaxKind.ExtendsKeyword)?.types[0]) {
+      const d = checker.getTypeAtLocation(h.expression).getSymbol()?.valueDeclaration;
+      if (!d || !ts.isClassLike(d) || d.getSourceFile().isDeclarationFile) break;
+      cls = d;
+    }
+    if (cls) roots.add(cls);
+    ts.forEachChild(n, visit);
+  };
+  for (const sf of files) if (!sf.isDeclarationFile) visit(sf);
+  return roots;
+}
+
 /** The program classes, each the root of its program hierarchy, whose instances are given members their classes don't declare. */
 export function classesGivenUndeclaredMembers(files: readonly ts.SourceFile[], checker: ts.TypeChecker): Set<ts.ClassLikeDeclaration> {
   const roots = new Set<ts.ClassLikeDeclaration>();
@@ -260,6 +288,15 @@ export function classesGivenUndeclaredMembers(files: readonly ts.SourceFile[], c
   const visit = (n: ts.Node) => {
     if (ts.isPropertyAccessExpression(n)) {
       let cls = undeclaredMemberOf(n, checker);
+      for (let b = cls && baseOf(cls); b; b = baseOf(b)) cls = b;
+      if (cls) roots.add(cls);
+    }
+    // `Object.defineProperty(instance, key, …)`, `Object.defineProperties(instance, …)`: members its class does not declare.
+    if (ts.isCallExpression(n) && ts.isPropertyAccessExpression(n.expression) && ts.isIdentifier(n.expression.expression) && n.expression.expression.text === 'Object'
+        && ['defineProperty', 'defineProperties'].includes(n.expression.name.text) && n.arguments.length) {
+      let cls: ts.ClassLikeDeclaration | undefined;
+      const d = checker.getTypeAtLocation(n.arguments[0]).getSymbol()?.valueDeclaration;
+      if (d && ts.isClassLike(d) && !d.getSourceFile().isDeclarationFile) cls = d;
       for (let b = cls && baseOf(cls); b; b = baseOf(b)) cls = b;
       if (cls) roots.add(cls);
     }
