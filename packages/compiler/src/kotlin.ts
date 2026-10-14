@@ -6,6 +6,7 @@ import { isAsync, isStatic } from './throws.ts';
 import { intlConstructor, isObjectToStringCall, isStringRaw, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers } from './lang.ts';
 import { isCoreDeclaration } from './core.ts';
 import type { Properties } from './properties.ts';
+import { collectMembers, type Members } from './members.ts';
 import { recognizePatterns, type Patterns } from './patterns.ts';
 import type { Reach } from './reach.ts';
 import { allowedDeprecation } from './android-deprecations.ts';
@@ -275,6 +276,8 @@ export class Translator implements AsyncTranslator {
   readonly reach: Reach | null;
   /** The view properties the program registers with core's `Property`. */
   readonly properties: Properties | null;
+  /** The members registered properties give classes natively (library mode, and a plugin's or app's own registrations). */
+  readonly members: Members | null;
   readonly patterns: Patterns;
   /** Classes some class extends, by declaration (an import may rename them). */
   private extendedDecls = new Set<ts.Node>();
@@ -311,6 +314,7 @@ export class Translator implements AsyncTranslator {
     this.pluginFiles = new Set(options.pluginFiles ?? []);
     this.reach = options.reach ?? null;
     this.properties = options.properties ?? null;
+    this.members = this.properties ? collectMembers(checker, files, this.properties) : null;
     this.patterns = recognizePatterns(checker, files);
     this.lowering = new AsyncLowering(this);
     for (const f of files) {

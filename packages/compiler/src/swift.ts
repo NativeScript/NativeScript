@@ -9,6 +9,7 @@ import { AsyncLowering, type AsyncCtx, type AsyncSyntax, type AsyncTranslator } 
 import { CoreAPI, isCoreDeclaration, packageOf } from './core.ts';
 import type { KitMember } from './kit-index.ts';
 import type { Properties } from './properties.ts';
+import { collectMembers, type Members } from './members.ts';
 import { recognizePatterns, type Patterns } from './patterns.ts';
 import { DEPLOYMENT, NativeAPI, enteredGuard, tested } from './native-calls.ts';
 import { lookupClass, lookupMember, type NativeMethod } from './natives/symbols.ts';
@@ -310,6 +311,8 @@ export class Translator implements AsyncTranslator {
   readonly reach: Reach | null;
   /** The view properties the program registers with core's `Property`. */
   readonly properties: Properties | null;
+  /** The members registered properties give classes natively (library mode, and a plugin's or app's own registrations). */
+  readonly members: Members | null;
   readonly patterns: Patterns;
   /** Marks each statement with its source line (`#sourceLocation` in Swift, a line table for Kotlin). */
   lines: SourceLines | null = null;
@@ -602,6 +605,7 @@ export class Translator implements AsyncTranslator {
     this.pluginFiles = new Set(options.pluginFiles ?? []);
     this.reach = options.reach ?? null;
     this.properties = options.properties ?? null;
+    this.members = this.properties ? collectMembers(checker, files, this.properties) : null;
     this.patterns = recognizePatterns(checker, files);
     this.checker = checker;
     this.components = components;
