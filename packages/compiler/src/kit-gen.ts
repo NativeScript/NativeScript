@@ -321,6 +321,17 @@ export function generateKit(o: KitOptions): KitResult {
  * module enum each is compiled into, with its own Swift signature or type. Names the hand-written kit declares at the
  * top level already are left to it.
  */
+/** A static function's Swift signature in generated code (`public static func name<…>(…) throws -> R {`), its parameter list read with its nested parentheses. */
+function swiftSignature(code: string, name: string): { generics: string; params: string; throws: string; ret?: string } | null {
+  const head = new RegExp(`\\n\\s*public static func ${name}(<[^>]*>)?\\(`).exec(code);
+  if (!head) return null;
+  let depth = 1, k = head.index + head[0].length;
+  for (; k < code.length && depth; k++) depth += code[k] === '(' ? 1 : code[k] === ')' ? -1 : 0;
+  const params = code.slice(head.index + head[0].length, k - 1);
+  const rest = /^( throws)?(?: -> ([^\n]+?))? \{\n/.exec(code.slice(k));
+  return rest ? { generics: head[1] ?? '', params, throws: rest[1] ?? '', ret: rest[2] } : null;
+}
+
 function indexFunctions(program: ts.Program, checker: ts.TypeChecker, index: string, compiled: Set<string>, moduleOf: (file: string) => string, sourceOf: (dts: string) => string | null, out: KitFile[], kit: string, replaces?: RegExp): string {
   const sf = program.getSourceFile(index);
   const sym = sf && checker.getSymbolAtLocation(sf);
@@ -361,9 +372,9 @@ function indexFunctions(program: ts.Program, checker: ts.TypeChecker, index: str
     const module = moduleOf(decl.getSourceFile().fileName);
     const code = out.find((f) => f.code.includes(`enum ${module} {`))?.code;
     // The function's Swift declaration: `public static func name<…>(…) throws -> R {`.
-    const m = code && new RegExp(`\\n\\s*public static func ${target.name}(<[^>]*>)?\\((.*)\\)( throws)?( -> ([^{]+))? \\{\\n`).exec(code);
+    const m = code ? swiftSignature(code, target.name) : null;
     if (!m) continue;
-    const [, generics = '', params, throws = '', , ret] = m;
+    const { generics, params, throws, ret } = m;
     const args = splitTop(params).filter(Boolean).map((p) => {
       const [label, name] = p.trim().split(':')[0].trim().split(/\s+/);
       const inner = name ?? label;
@@ -416,9 +427,9 @@ function indexNamespaces(program: ts.Program, checker: ts.TypeChecker, index: st
       // The barrel's own members are its enum's already.
       if (own && owner === `NativeScriptKit.${own}`) continue;
       if (ts.isFunctionDeclaration(decl) && decl.body) {
-        const m = new RegExp(`\\n\\s*public static func ${target.name}(<[^>]*>)?\\((.*)\\)( throws)?( -> ([^{]+))? \\{\\n`).exec(code);
+        const m = swiftSignature(code, target.name);
         if (!m) continue;
-        const [, generics = '', params, throws = '', , ret] = m;
+        const { generics, params, throws, ret } = m;
         const args = splitTop(params).filter(Boolean).map((p) => {
           const [label, n] = p.trim().split(':')[0].trim().split(/\s+/);
           return label === '_' ? (n ?? label) : `${label}: ${n ?? label}`;
