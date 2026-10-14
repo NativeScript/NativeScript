@@ -1,7 +1,7 @@
 {
 	"$comment": "Cases that do not match Node yet, by target, each with its cause. The diff run reports them without failing, and fails when one matches Node so it is removed here. Owners: the Kotlin translator (src/kotlin.ts) and runtime (kit-android runtime).",
 	"swift": {
-		"226-callback-given-undefined": "A string parameter given undefined reads \"\", and a void promise's value is not undefined (Swift translator)."
+		"227-callback-given-undefined": "A string parameter given undefined reads \"\", and a void promise's value is not undefined (Swift translator)."
 	},
 	"kotlin": {}
 }
