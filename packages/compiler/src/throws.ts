@@ -185,6 +185,7 @@ export class Throws {
     if (ts.isCallExpression(n) || ts.isNewExpression(n)) return this.callThrows(n);
     if (ts.isTaggedTemplateExpression(n)) return !isStringRaw(n.tag, c) && this.tagThrows(n);
     if (ts.isPropertyAccessExpression(n) || ts.isElementAccessExpression(n)) {
+      if (ts.isCallExpression(n.parent) && n.parent.expression === n && objectPrototypeMethod(n, c)) return false;
       // Reading a member of an untyped value throws on undefined and null.
       if (this.untyped(n.expression)) return true;
       if (ts.isPropertyAccessExpression(n) && this.dynamicMember(n)) return true;
@@ -205,6 +206,8 @@ export class Throws {
     if (ts.isCallExpression(call) && ((resolved && isNativeDeclaration(resolved.getSourceFile())) || this.nativeEntry(call))) return false;
     // A promise's executor runs inside its constructor, which rejects with what it throws.
     if (ts.isNewExpression(call) && ts.isIdentifier(call.expression) && call.expression.text === 'Promise' && resolved && isLibFile(resolved.getSourceFile())) return false;
+    // Object's own methods called on another value are the runtime's, which don't throw, however untyped the constant holding one.
+    if (ts.isCallExpression(call) && objectPrototypeMethod(call.expression, c)) return false;
     if (ts.isCallExpression(call) && ts.isPropertyAccessExpression(call.expression) && this.dynamicMember(call.expression)) return true;
     if (c.getTypeAtLocation(call.expression).flags & ts.TypeFlags.Any || (ts.isPropertyAccessExpression(call.expression) && this.untyped(call.expression.expression))) return true;
     // A class held untyped (not the library's or a framework's, which are made directly) is constructed by name (`jsConstruct`), which throws for what is no constructor.
@@ -423,4 +426,21 @@ function builtinName(decl: ts.Declaration): string | null {
   if (!name) return null;
   if (ts.isInterfaceDeclaration(owner)) return `${owner.name.text.replace(/^ReadonlyArray$/, 'Array').replace(/Constructor$/, '')}.${name}`;
   return name;
+}
+
+/**
+ * Whether `callee` is `<m>.call` or `<m>.apply` for `Object.prototype.hasOwnProperty`, `propertyIsEnumerable` or
+ * `toString`, directly or through a constant holding it (`const HAS_OWN = Object.prototype.hasOwnProperty`).
+ */
+function objectPrototypeMethod(callee: ts.Expression, c: ts.TypeChecker): boolean {
+  if (!ts.isPropertyAccessExpression(callee) || !['call', 'apply'].includes(callee.name.text)) return false;
+  let target: ts.Expression = callee.expression;
+  for (let hops = 0; ts.isIdentifier(target) && hops < 4; hops++) {
+    const d = c.getSymbolAtLocation(target)?.valueDeclaration;
+    if (!d || !ts.isVariableDeclaration(d) || !d.initializer || !(d.parent.flags & ts.NodeFlags.Const)) return false;
+    target = d.initializer;
+  }
+  return ts.isPropertyAccessExpression(target) && ['hasOwnProperty', 'propertyIsEnumerable', 'toString'].includes(target.name.text)
+    && ts.isPropertyAccessExpression(target.expression) && target.expression.name.text === 'prototype'
+    && ts.isIdentifier(target.expression.expression) && target.expression.expression.text === 'Object';
 }
