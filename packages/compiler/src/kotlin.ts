@@ -2242,6 +2242,12 @@ export class Translator implements AsyncTranslator {
    */
   private asLambda(fn: ts.ArrowFunction | ts.FunctionExpression | ts.MethodDeclaration, params: string, ret: string): string | null {
     if (isAsync(fn) || fn.asteriskToken || !fn.body || this.readsArguments(fn)) return null;
+    // A lambda checks its non-null parameters, which an anonymous function does not: script may pass undefined (null) to one
+    // it uses, so such a function stays anonymous; an unused one takes the nullable type, which fits the same slot.
+    const declared = splitTopLevel(params).map((p) => p.trim()).filter(Boolean).map((p) => { const [name, type] = p.split(/:\s*(.*)/s); return { name: name.trim(), type: type.trim() }; });
+    const checked = (t: string) => !t.endsWith('?') && !['Double', 'Boolean'].includes(t);
+    const read = (p: ts.ParameterDeclaration) => !ts.isIdentifier(p.name) || refersTo(fn.body!, this.checker.getSymbolAtLocation(p.name), this.checker);
+    if (fn.parameters.some((p) => read(p) && checked(declared.find((d) => ts.isIdentifier(p.name) && d.name === ident(p.name.text))?.type ?? ''))) return null;
     const last = ts.isBlock(fn.body) ? fn.body.statements.at(-1) : undefined;
     if (ret !== 'Unit' && ts.isBlock(fn.body) && !(last && ts.isReturnStatement(last) && last.expression)) return null;
     const label = this.fresh('fn');
@@ -2257,8 +2263,7 @@ export class Translator implements AsyncTranslator {
     } else if (ret !== 'Unit') return null;
     lines = lines.filter((l, k) => !(k === lines.length - 1 && l.trim() === ''));
     const text = lines.join('\n');
-    const names = splitTopLevel(params).map((p) => p.trim()).filter(Boolean);
-    const head = names.length ? ` ${names.map((p) => { const [name, type] = p.split(/:\s*(.*)/s); return mentions(text, name.trim()) ? p : `_: ${type}`; }).join(', ')} ->` : '';
+    const head = declared.length ? ` ${declared.map((p) => (mentions(text, p.name) ? `${p.name}: ${p.type}` : `_: ${checked(p.type) ? optionalType(p.type) : p.type}`)).join(', ')} ->` : '';
     return `${mentions(text, `return@${label}`) || text.includes(`return@${label}`) ? `${label}@` : ''}{${head}\n${text}\n${this.indent}}`;
   }
 
