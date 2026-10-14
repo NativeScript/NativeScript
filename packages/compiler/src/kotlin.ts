@@ -1854,6 +1854,10 @@ export class Translator implements AsyncTranslator {
     const methods = ['next', 'return', 'throw'].map(fn).filter((m): m is NonNullable<typeof m> => !!m);
     const protocol = this.iteratorProtocol(methods);
     if (protocol) out.push(protocol);
+    // Its own `toString()`/`valueOf()`, which string and number conversion call (the field holds the function).
+    const toStr = fn('toString'), valueOf = fn('valueOf');
+    if (toStr && !toStr.params) out.push({ conformance: 'JSStringConvertible', lines: ['    override fun toString(): String = jsToString(this.toString.invoke())'] });
+    if (valueOf && !valueOf.params) out.push({ conformance: 'JSValueOf', lines: ['    override fun jsValueOf(): Any? = this.valueOf.invoke()'] });
     if (fields.some((f) => f.name === 'jsSymbolIterator')) out.push({ conformance: 'JSIterableValue', lines: ['    override fun jsAnyIterator(): JSIteratorProtocol = jsSymbolIterator() as JSIteratorProtocol'] });
     if (fields.some((f) => f.name === 'jsSymbolAsyncIterator')) out.push({ conformance: 'JSAsyncIterableValue', lines: ['    override fun jsAnyAsyncIterator(): JSAsyncIteratorProtocol = jsSymbolAsyncIterator() as JSAsyncIteratorProtocol'] });
     return out;
@@ -1953,7 +1957,7 @@ export class Translator implements AsyncTranslator {
   }
 
   private enumDecl(e: ts.EnumDeclaration, merged: string[] = []): string {
-    const lines = [`object ${ident(e.name.text)} {`];
+    const lines = [`object ${ident(this.topName(e, e.name.text))} {`];
     for (const m of e.members) {
       const v = this.checker.getConstantValue(m);
       if (v === undefined) throw this.error(m, 'an enum member without a constant value');
@@ -2599,6 +2603,19 @@ export class Translator implements AsyncTranslator {
     // Where each field's lines start, for its doc comment.
     const fieldStarts: [number, ts.PropertyDeclaration][] = [];
     for (const m of cls.members) {
+      // `static { … }`: with the static initializers the module runs where the class is defined, in their order, or
+      // where there are none, the companion's own initialization; `this` is the class.
+      if (ts.isClassStaticBlockDeclaration(m)) {
+        for (const t of thisNodes(m.body)) this.subst.set(t, name);
+        const deferred = !!this.staticInits;
+        const saved = this.indent;
+        this.indent = deferred ? '    ' : '            ';
+        let body: string[];
+        try { body = this.statements([...m.body.statements]); } finally { this.indent = saved; for (const t of thisNodes(m.body)) this.subst.delete(t); }
+        if (deferred) this.staticInits!.push(...body);
+        else statics.push(`        init {\n${body.join('\n')}\n        }`);
+        continue;
+      }
       if (!ts.isPropertyDeclaration(m)) continue;
       fieldStarts.push([lines.length, m]);
       // `declare width: number` in an app class: the base's field, typed anew.
@@ -3927,6 +3944,7 @@ export class Translator implements AsyncTranslator {
         // An interface becomes a class of its name too.
         if (this.library && (ts.isInterfaceDeclaration(st) || (ts.isTypeAliasDeclaration(st) && ts.isTypeLiteralNode(st.type)))) add(st.name.text, st);
         if (ts.isModuleDeclaration(st) && ts.isIdentifier(st.name) && !hasModifier(st, ts.SyntaxKind.DeclareKeyword)) add(st.name.text, st);
+        if (ts.isEnumDeclaration(st) && !hasModifier(st, ts.SyntaxKind.DeclareKeyword)) add(st.name.text, st);
         // Library mode: a module's functions and variables are its object's, named by it.
         if (ts.isFunctionDeclaration(st) && st.name && !this.library) add(st.name.text, st);
         if (ts.isVariableStatement(st) && !this.library) for (const d of st.declarationList.declarations) if (ts.isIdentifier(d.name)) add(d.name.text, d);
@@ -3954,6 +3972,20 @@ export class Translator implements AsyncTranslator {
         }
       }
     }
+    // A renamed declaration takes its module's name: the shortest end of its path no other name has taken
+    // (`label__index`, else `label__two_index` for another folder's index.ts).
+    const taken = new Set(byName.keys());
+    const renamed = (name: string, file: ts.SourceFile) => {
+      const segs = file.fileName.replace(/\.[^./]+$/, '').split('/').filter(Boolean);
+      for (let k = 1; k <= segs.length; k++) {
+        const candidate = `${name}__${segs.slice(-k).join('_').replace(/\W/g, '_')}`;
+        if (!taken.has(candidate)) { taken.add(candidate); return candidate; }
+      }
+      let n = 2;
+      while (taken.has(`${name}__${n}`)) n++;
+      taken.add(`${name}__${n}`);
+      return `${name}__${n}`;
+    };
     for (const [name, list] of byName) {
       // A plugin class named as a kit-android class (one extending core's `Observable`) takes its module's name too.
       const kitClash = (list.some((x) => ts.isClassDeclaration(x.decl)) && !!this.core?.has(name)) || (coreFunctions.has(name) && list.some((x) => ts.isFunctionDeclaration(x.decl) || ts.isVariableDeclaration(x.decl)));
@@ -3964,10 +3996,10 @@ export class Translator implements AsyncTranslator {
       const keep = kitClash || internalClash ? undefined : (this.library ? list.find((x) => ts.isClassDeclaration(x.decl)) : undefined) ?? list.find((x) => !this.pluginFiles.has(x.file.fileName)) ?? list[0];
       for (const x of list) {
         if (x === keep) continue;
-        const module = x.file.fileName.split('/').pop()!.replace(/\.[^.]+$/, '').replace(/\W/g, '_');
-        this.renamedTop.set(x.decl, `${name}__${module}`);
+        const to = renamed(name, x.file);
+        this.renamedTop.set(x.decl, to);
         // Every declaration of an overloaded function names the same Kotlin function.
-        if (ts.isFunctionDeclaration(x.decl)) for (const st of x.file.statements) if (ts.isFunctionDeclaration(st) && st.name?.text === name) this.renamedTop.set(st, `${name}__${module}`);
+        if (ts.isFunctionDeclaration(x.decl)) for (const st of x.file.statements) if (ts.isFunctionDeclaration(st) && st.name?.text === name) this.renamedTop.set(st, to);
       }
     }
     // Library mode: names apart only in case (`ios`, `iOS`) are one class file on a case-insensitive disk: all but the first take their module's name.
@@ -3979,8 +4011,7 @@ export class Translator implements AsyncTranslator {
         if (first === name) continue;
         for (const x of list) {
           if (this.renamedTop.has(x.decl)) continue;
-          const module = x.file.fileName.split('/').pop()!.replace(/\.[^.]+$/, '').replace(/\W/g, '_');
-          this.renamedTop.set(x.decl, `${name}__${module}`);
+          this.renamedTop.set(x.decl, renamed(name, x.file));
         }
       }
     }
@@ -7541,7 +7572,10 @@ export class Translator implements AsyncTranslator {
     if (ts.isPropertyAccessExpression(left) && this.symbolName(left.expression) === 'VueRef' && left.name.text === 'value') return `${this.lvalue(left)} = ${this.signalWrite(left.expression, right, this.typeOf(left))}`;
     if (ts.isArrayLiteralExpression(left)) throw this.error(left, 'a destructuring assignment');
     // An object Kotlin holds untyped, or none this platform's code can reach (the iOS half of `__APPLE__ ? x : undefined`, narrowed to never), is set by name.
-    if (ts.isPropertyAccessExpression(left) && !this.library && ['Any?', 'Nothing'].includes(this.typeOf(left.expression)) && !this.isExpando(left)) return `jsSet(${this.expr(left.expression)}, ${kotlinString(left.name.text)}, ${this.untypedCallable(right)})`;
+    // `this.x = …` in a static block or method, of a static field the class declares: the companion's.
+    const staticOwn = ts.isPropertyAccessExpression(left) && left.expression.kind === ts.SyntaxKind.ThisKeyword && !!this.resolve(left.name)?.declarations?.some((d) => ts.isPropertyDeclaration(d) && isStatic(d));
+    if (staticOwn) return `${this.expr(left.expression)}.${ident(left.name.text)} = ${this.coerce(right, this.typeOf(left))}`;
+    if (ts.isPropertyAccessExpression(left) && !this.library && !staticOwn && ['Any?', 'Nothing'].includes(this.typeOf(left.expression)) && !this.isExpando(left)) return `jsSet(${this.expr(left.expression)}, ${kotlinString(left.name.text)}, ${this.untypedCallable(right)})`;
     // A method of a class replaced on an instance (`image.requestLayout = () => …`): set by name, which the class's own calls do not see.
     if (ts.isPropertyAccessExpression(left) && !this.library && (this.checker.getSymbolAtLocation(left.name)?.flags ?? 0) & ts.SymbolFlags.Method && !this.isPrototypeRef(left.expression)) return `jsSet(${this.expr(left.expression)}, ${kotlinString(left.name.text)}, ${this.untypedCallable(right)})`;
     if (ts.isPropertyAccessExpression(left)) {
@@ -7568,7 +7602,7 @@ export class Translator implements AsyncTranslator {
     // A method replaced on an instance (`image.requestLayout = () => …`): kept beside it by name, as Kotlin's methods are fixed.
     const method = ts.isPropertyAccessExpression(left) && !this.library && this.checker.getSymbolAtLocation(left.name)?.declarations?.every((d) => ts.isMethodDeclaration(d) || ts.isMethodSignature(d));
     if (method && ts.isPropertyAccessExpression(left)) return `jsSet(${this.expr(left.expression)}, ${kotlinString(left.name.text)}, ${this.coerce(right, 'Any?')})`;
-    if (ts.isPropertyAccessExpression(left) && (this.isExpando(left) || this.isAny(left.expression) || eventData)) return `jsSet(${this.expr(left.expression)}, ${kotlinString(left.name.text)}, ${this.coerce(right, 'Any?')})`;
+    if (ts.isPropertyAccessExpression(left) && !staticOwn && (this.isExpando(left) || this.isAny(left.expression) || eventData)) return `jsSet(${this.expr(left.expression)}, ${kotlinString(left.name.text)}, ${this.coerce(right, 'Any?')})`;
     const undeclared = ts.isElementAccessExpression(left) && ts.isStringLiteral(left.argumentExpression) && !this.checker.getNonNullableType(this.checker.getTypeAtLocation(left.expression)).getProperty(left.argumentExpression.text);
     // A typed array's element by a numeric index is its own operator, not a dynamic store through the index's string.
     const typedElement = ts.isElementAccessExpression(left) && TYPED_ARRAYS.includes(this.typeOf(left.expression).replace(/\?$/, '').replace(/^JS/, '')) && this.typeOf(left.argumentExpression) === 'Double';

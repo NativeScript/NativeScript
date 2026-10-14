@@ -5,7 +5,9 @@
 		"231-regexp-unset-group": "A capture group that took no part in the match reads \"\", not undefined (Swift translator).",
 		"232-async-object-return": "An object literal an async function returns is not made as its declared Promise's type (Swift translator).",
 		"233-prototype-call": "X.prototype.m.call(r, …) is refused (Swift translator, SEMANTICS #2).",
-		"234-define-property-instance": "Object.defineProperty on a class instance or an array is dropped (Swift translator and runtime, SEMANTICS #3)."
+		"234-define-property-instance": "Object.defineProperty on a class instance or an array is dropped (Swift translator and runtime, SEMANTICS #3).",
+		"235-static-block": "static { } blocks have no effect (Swift translator, SEMANTICS #4).",
+		"237-shared-top-names": "Top-level names (an enum, files of the same name in two folders) that several modules declare clash; swiftc crashes (Swift translator)."
 	},
 	"kotlin": {}
 }
