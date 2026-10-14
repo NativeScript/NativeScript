@@ -9,7 +9,8 @@
 		"235-static-block": "static { } blocks have no effect (Swift translator, SEMANTICS #4).",
 		"237-shared-top-names": "Top-level names (an enum, files of the same name in two folders) that several modules declare clash; swiftc crashes (Swift translator).",
 		"238-builtin-constructors-as-values": "Built-in constructors used as values (map(Number), filter(Boolean), e.constructor === TypeError) do not compile (Swift translator, SEMANTICS #7).",
-		"239-destructuring-assignment": "Destructuring assignment to existing variables is refused (Swift translator, SEMANTICS #8)."
+		"239-destructuring-assignment": "Destructuring assignment to existing variables is refused (Swift translator, SEMANTICS #8).",
+		"242-var-redeclared": "A var declared again, or declared in a loop head or branch and used after it, does not compile (Swift translator, SEMANTICS #14)."
 	},
 	"kotlin": {}
 }

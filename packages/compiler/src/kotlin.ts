@@ -1372,6 +1372,10 @@ export class Translator implements AsyncTranslator {
             const name = ident(this.topName(d, d.name.text));
             // A variable only ever undefined (this platform's half of `isIOS ? x : undefined`) holds nothing: any value.
             const t = this.typeOf(d.name) === 'Unit' ? 'Any?' : this.typeOf(d.name);
+            if (redeclaredVar(d, this.checker)) {
+              if (d.initializer) later(() => `    ${name} = ${this.coerce(d.initializer!, t)}`);
+              continue;
+            }
             // A plugin's unset object variable (`let vibrator: Vibrator`, tested before it is assigned): nullable, unwrapped where it is read.
             // So is an app's one its code tests (`let instance: Sdk;` … `if (!instance)`).
             if (!d.initializer && (this.pluginFiles.has(sf.fileName) || this.truthTested(d.name)) && !t.endsWith('?') && this.isObjectType(t) && !isFunctionType(t)) {
@@ -4076,13 +4080,55 @@ export class Translator implements AsyncTranslator {
 
   /** Variables a function declared before them reads: declared first, assigned where they are declared. */
   private forwardDeclared = new Set<ts.VariableDeclaration>();
+  /** A function's `var`s declared at the top of its body (see `scopedVars`). */
+  private scopedDeclared = new Set<ts.VariableDeclaration>();
 
   statements(list: ts.Statement[]): string[] {
     const hoisted = list.filter((s, k) => ts.isFunctionDeclaration(s) && usedBefore(list, k));
     // What follows a statement that never completes never runs: left out, as Kotlin would flag it.
     const end = list.findIndex((s) => this.exits(s));
     const live = end < 0 ? list : list.slice(0, end + 1);
-    return [...this.forwardDeclarations(list), ...[...hoisted, ...live.filter((s) => !hoisted.includes(s))].map((s) => this.stmt(s)).filter(Boolean)];
+    return [...this.scopedVars(list), ...this.forwardDeclarations(list), ...[...hoisted, ...live.filter((s) => !hoisted.includes(s))].map((s) => this.stmt(s)).filter(Boolean)];
+  }
+
+  /**
+   * A function's `var`s declared in an inner block (a loop's head, a branch) and used or declared again outside it:
+   * declared at the top of the function body, as JavaScript hoists them, and assigned where they are declared.
+   */
+  private scopedVars(list: ts.Statement[]): string[] {
+    const body = list[0]?.parent;
+    if (!body || !ts.isBlock(body) || !ts.isFunctionLike(body.parent)) return [];
+    const scope = (n: ts.Node) => ts.findAncestor(n.parent, (a) => ts.isBlock(a) || ts.isIterationStatement(a, false) || ts.isCaseBlock(a) || ts.isCatchClause(a) || ts.isFunctionLike(a))!;
+    const decls = new Map<ts.Symbol, ts.VariableDeclaration[]>();
+    const refs = new Map<ts.Symbol, ts.Identifier[]>();
+    const collect = (n: ts.Node): void => {
+      if (ts.isVariableDeclarationList(n) && !(n.flags & ts.NodeFlags.BlockScoped) && !ts.isForInStatement(n.parent) && !ts.isForOfStatement(n.parent)) {
+        for (const d of n.declarations) {
+          const sym = ts.isIdentifier(d.name) ? this.checker.getSymbolAtLocation(d.name) : undefined;
+          if (sym && !ts.isFunctionLike(scope(d))) decls.set(sym, [...(decls.get(sym) ?? []), d]);
+        }
+      }
+      if (!ts.isFunctionLike(n)) ts.forEachChild(n, collect);
+    };
+    const collectRefs = (n: ts.Node): void => {
+      const sym = ts.isIdentifier(n) ? this.checker.getSymbolAtLocation(n) : undefined;
+      if (sym && decls.has(sym)) refs.set(sym, [...(refs.get(sym) ?? []), n as ts.Identifier]);
+      ts.forEachChild(n, collectRefs);
+    };
+    list.forEach(collect);
+    if (!decls.size) return [];
+    list.forEach(collectRefs);
+    const out: string[] = [];
+    for (const [sym, ds] of decls) {
+      // Declared in a for-in or for-of head too: Kotlin's loop declares its own.
+      if (sym.declarations?.some((d) => ts.isVariableDeclaration(d) && (ts.isForInStatement(d.parent.parent) || ts.isForOfStatement(d.parent.parent)))) continue;
+      const inner = ds.filter((d) => scope(d) !== body);
+      const escapes = inner.some((d) => (refs.get(sym) ?? []).some((r) => !ts.findAncestor(r, (a) => a === scope(d))));
+      if (!escapes) continue;
+      for (const d of sym.declarations ?? []) if (ts.isVariableDeclaration(d)) this.scopedDeclared.add(d);
+      out.push(`${this.indent}${this.deferredDeclaration(ident((ds[0].name as ts.Identifier).text), this.typeOf(ds[0].name))}`);
+    }
+    return out;
   }
 
   /** Whether a statement never completes normally (it returns, throws or calls what never returns), as Kotlin's flow analysis finds. */
@@ -4114,7 +4160,7 @@ export class Translator implements AsyncTranslator {
       // A `var` is its function's from the start (hoisted), undefined until its declaration runs.
       const isVar = !(st.declarationList.flags & ts.NodeFlags.BlockScoped);
       for (const d of st.declarationList.declarations) {
-        if (!ts.isIdentifier(d.name) || !d.initializer) continue;
+        if (!ts.isIdentifier(d.name) || !d.initializer || this.scopedDeclared.has(d)) continue;
         const sym = this.checker.getSymbolAtLocation(d.name);
         const hoistedVar = isVar && (sym?.declarations?.length ?? 0) < 2;
         let early = false, read = false;
@@ -4368,7 +4414,7 @@ export class Translator implements AsyncTranslator {
       const parts = this.literalFunctionLocal(d) ? functionTypeParts(t) : null;
       if (parts) t = `(${parts.params.map((p) => (this.isObjectType(p) ? optionalType(p) : p)).join(', ')}) -> ${parts.ret}`;
       const name = ident(d.name.text);
-      if (this.forwardDeclared.has(d)) return `${i}${name} = ${this.coerce(d.initializer!, t)}`;
+      if (this.forwardDeclared.has(d) || this.scopedDeclared.has(d)) return d.initializer ? `${i}${name} = ${this.coerce(d.initializer, t)}` : '';
       // `var m` again in the same block: the same variable, assigned.
       if (redeclaredVar(d, this.checker)) return d.initializer ? `${i}${name} = ${this.coerce(d.initializer, t)}` : '';
       const nullInit = !!d.initializer && (d.initializer.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(d.initializer) && d.initializer.text === 'undefined'));
@@ -5837,8 +5883,22 @@ export class Translator implements AsyncTranslator {
     });
   }
 
+  /** A key as its message names it. */
+  private keyText(key: ts.Expression): string {
+    return ts.isNumericLiteral(key) || ts.isStringLiteral(key) ? kotlinString(key.text) : this.str(key);
+  }
+
+  /** `re.exec(s)` or `s.match(re)` where a non-strict program's types leave out the null of no match. */
+  private uncheckedMatch(e: ts.Expression): boolean {
+    while (ts.isParenthesizedExpression(e)) e = e.expression;
+    if (this.typeOf(e) !== 'JSMatch' || !ts.isCallExpression(e) || !ts.isPropertyAccessExpression(e.expression)) return false;
+    const { name, expression } = e.expression;
+    return name.text === 'exec' ? this.isRegExp(expression) : name.text === 'match' && this.typeOf(expression).replace(/\?$/, '') === 'String';
+  }
+
   /** A receiver that can be missing though its type says not (`x!`, `items[i]`): JavaScript's TypeError when it is. */
   private receiver(target: ts.Expression, key: string): string | null {
+    if (this.uncheckedMatch(target)) return `jsUnwrap(${this.expr(target)}, ${kotlinString(key)}, true)`;
     const kind = unsafeReceiver(target, this.checker);
     if (!kind) return null;
     let x = target;
@@ -5878,7 +5938,7 @@ export class Translator implements AsyncTranslator {
       return this.undefinedAs(this.maybeUndefined(e)!, rt);
     }
     if (t === 'JSMatch') {
-      const read = `${target}${q}.get(${this.toNumber(key)})`;
+      const read = `${this.uncheckedMatch(e.expression) ? `jsUnwrap(${target}, ${this.keyText(key)}, true)` : target}${q}.get(${this.toNumber(key)})`;
       return this.typeOf(e).endsWith('?') ? read : this.undefinedAs(read, this.typeOf(e));
     }
     if ((t.startsWith('Pair<') || t.startsWith('Triple<')) && ts.isNumericLiteral(key)) return `${target}.${['first', 'second', 'third'][Number(key.text)]}`;
@@ -5953,7 +6013,8 @@ export class Translator implements AsyncTranslator {
     // A match's group that took no part in it: undefined, though TypeScript types every element a string.
     if (ts.isElementAccessExpression(e) && !isWriteTarget(e) && this.typeOf(e.expression).replace(/\?$/, '') === 'JSMatch' && !this.typeOf(e).endsWith('?')) {
       const q = e.questionDotToken || this.typeOf(e.expression).endsWith('?') ? '?' : '';
-      return `${this.expr(e.expression)}${q}.get(${this.toNumber(e.argumentExpression)})`;
+      const match = this.uncheckedMatch(e.expression) ? `jsUnwrap(${this.expr(e.expression)}, ${this.keyText(e.argumentExpression)}, true)` : this.expr(e.expression);
+      return `${match}${q}.get(${this.toNumber(e.argumentExpression)})`;
     }
     if (ts.isElementAccessExpression(e) && !isWriteTarget(e) && this.typeOf(e.expression).replace(/\?$/, '').startsWith('JSArray<')) {
       const q = e.questionDotToken || this.typeOf(e.expression).endsWith('?') || (e.flags & ts.NodeFlags.OptionalChain && ts.isPropertyAccessExpression(e.expression) && e.expression.questionDotToken) ? '?' : '';
@@ -6681,6 +6742,8 @@ export class Translator implements AsyncTranslator {
       // `Error('x')` constructs as `new Error('x')` does; so does `Array(n)`.
       if (ERRORS[name]) return this.errorValue(name, e.arguments);
       if (name === 'Array' && this.isLibGlobal(callee as ts.Identifier)) return this.arrayConstruct(e, this.typeOf(e), e.arguments);
+      // `RegExp(re)` without flags is `re` itself; otherwise it constructs as `new RegExp` does.
+      if (name === 'RegExp' && decl && isLibDeclaration(decl)) return e.arguments.length === 1 && this.isRegExp(e.arguments[0]) ? this.expr(e.arguments[0]) : this.regExpConstruct(e.arguments);
       if (decl && /[\\/]lib\.[\w.]*\.d\.ts$/.test(decl.getSourceFile().fileName)) throw this.error(e, `${name}()`);
     }
     const resolvers = this.resolvers.get(this.resolve(callee)!);
@@ -7364,6 +7427,16 @@ export class Translator implements AsyncTranslator {
     return !refers(init);
   }
 
+  private isRegExp(e: ts.Expression): boolean {
+    return this.typeOf(e).replace(/\?$/, '') === 'JSRegExp';
+  }
+
+  /** `new RegExp(…)`: from a pattern, or a copy of an expression with its flags unless others are given. */
+  private regExpConstruct(args: readonly ts.Expression[]): string {
+    if (args[0] && this.isRegExp(args[0])) return `${this.expr(args[0])}.let { __re -> JSRegExp(__re.source, ${args[1] ? this.str(args[1]) : '__re.flags'}) }`;
+    return `JSRegExp(${args[0] ? this.str(args[0]) : '"(?:)"'}${args[1] ? `, ${this.str(args[1])}` : ''})`;
+  }
+
   private newExpr(e: ts.NewExpression): string {
     const t = this.typeOf(e);
     let callee = e.expression;
@@ -7416,12 +7489,7 @@ export class Translator implements AsyncTranslator {
     }
     // `new String(x)`, `new Number(x)`, `new Boolean(x)`: script's wrapper objects, held as the value they wrap.
     if (this.library && ['String', 'Number', 'Boolean'].includes(name) && this.isLibGlobal(callee as ts.Identifier) && args.length === 1) return name === 'String' ? this.str(args[0]) : name === 'Number' ? this.toNumber(args[0]) : this.cond(args[0]);
-    // `new RegExp(/…/g)`: a copy of the expression, with its flags unless others are given.
-    if (name === 'RegExp' && args[0] && this.typeOf(args[0]).replace(/\?$/, '') === 'JSRegExp') {
-      const re = this.expr(args[0]);
-      return `${re}.let { __re -> JSRegExp(__re.source, ${args[1] ? this.str(args[1]) : '__re.flags'}) }`;
-    }
-    if (name === 'RegExp') return `JSRegExp(${this.str(args[0])}${args[1] ? `, ${this.str(args[1])}` : ''})`;
+    if (name === 'RegExp') return this.regExpConstruct(args);
     const intl = intlConstructor(callee, this.checker);
     if (intl) return `JS${intl}(${args.map((a) => this.coerce(a, 'Any?')).join(', ')})`;
     // `new Object()`: an empty object.
