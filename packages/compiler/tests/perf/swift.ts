@@ -2,7 +2,7 @@
 // a compiled release builds them (src/cli.ts project.yml): the kit as a separate module, whole-module,
 // -Osize with full LTO and no exclusivity checks at run time. --O builds both at -O instead, a candidate
 // for the release default; --no-lto leaves LTO out.
-import { cpSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { buildSwiftRuntime, swiftc, swiftMain, translateSwift, type Optimize } from '../native-build.ts';
 import type { Backend } from './backend.ts';
@@ -15,16 +15,10 @@ export const backend: Backend = {
   name: 'swift',
   describe: (args) => [optimize(args), ...extraFlags(args)].join(' '),
   build(src, out, args) {
-    // The iOS files in place of the shared ones, as the app's bundler resolves `./clock` to clock.ios.ts.
-    const staged = join(out, 'src');
-    rmSync(staged, { recursive: true, force: true });
-    cpSync(src, staged, { recursive: true });
-    for (const f of readdirSync(staged).filter((f) => f.endsWith('.ios.ts'))) cpSync(join(staged, f), join(staged, f.replace(/\.ios\.ts$/, '.ts')));
-    for (const f of readdirSync(staged).filter((f) => /\.(ios|android)\.ts$/.test(f))) rmSync(join(staged, f));
     const runtime = join(out, '..', 'swift-runtime');
     buildSwiftRuntime(runtime, optimize(args), extraFlags(args));
     const sources = join(out, 'Sources');
-    const modules = translateSwift([join(staged, 'bench.ts')], sources);
+    const modules = translateSwift([join(src, 'bench.ts')], sources);
     writeFileSync(join(sources, 'main.swift'), swiftMain(modules));
     // QuartzCore for the clock (clock.ios.ts calls CACurrentMediaTime).
     const files = readdirSync(sources).map((f) => join(sources, f));
