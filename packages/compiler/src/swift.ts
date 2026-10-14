@@ -5216,7 +5216,7 @@ ${members.join('\n')}
     if (ts.isForOfStatement(s)) {
       if (s.awaitModifier) throw this.error(s, 'for await');
       const list = s.initializer;
-      if (!ts.isVariableDeclarationList(list)) throw this.error(s, 'for…of over an existing variable');
+      if (!ts.isVariableDeclarationList(list)) return this.forOfAssigning(s, list);
       const decl = list.declarations[0];
       const mutable = !(list.flags & ts.NodeFlags.Const);
       const js = this.jsIteration(s.expression);
@@ -5505,6 +5505,19 @@ ${members.join('\n')}
     return ` = try JSArray(${js}.${rest ? 'jsCollect()' : `jsTake(${(name as ts.ArrayBindingPattern).elements.length})`})`;
   }
 
+  /** The Swift type of what a pattern's element reads (an array's element, a tuple's, an object's member), present. */
+  private partType(name: ts.BindingPattern, el: ts.BindingElement, k: number, source: ts.Type, type: string): string | null {
+    if (ts.isObjectBindingPattern(name)) {
+      const prop = source.getProperty((el.propertyName ?? el.name).getText());
+      return prop ? this.type(this.checker.getNonNullableType(this.checker.getTypeOfSymbolAtLocation(prop, el)), el) : null;
+    }
+    if (this.checker.isTupleType(source)) {
+      const part = this.checker.getTypeArguments(source as ts.TypeReference)[k];
+      return part ? this.type(this.checker.getNonNullableType(part), el) : null;
+    }
+    return /^JSArray<(.*)>\??$/.exec(type || this.typeOf(name))?.[1] ?? null;
+  }
+
   /** Declarations binding `name` (an identifier or a destructuring pattern) to the Swift value `value`. */
   bindTo(name: ts.BindingName, value: string, _type: string, mutable: boolean | 'assign'): string {
     const i = this.indent;
@@ -5544,8 +5557,8 @@ ${members.join('\n')}
       else if (this.checker.isTupleType(source) && !arrayValue) read = `${value}.${k}`;
       // Past the end is undefined.
       else if (this.isAny(name)) read = `(try jsGet(${value}, "${k}"))`;
-      else read = arrayValue && ts.isIdentifier(el.name) ? this.undefinedAs(`${value}.element(${k})`, this.typeOf(el.name)) : `${value}[${k}]`;
-      if (el.initializer) read = `(${read} ?? ${this.coerce(el.initializer, this.typeOf(el.name))})`;
+      else read = arrayValue && ts.isIdentifier(el.name) ? this.undefinedAs(`${value}.element(${k})`, this.typeOf(el.name)) : arrayValue && el.initializer ? `${value}.element(${k})` : `${value}[${k}]`;
+      if (el.initializer) read = `(${read} ?? ${this.coerce(el.initializer, ts.isIdentifier(el.name) ? this.typeOf(el.name) : this.partType(name, el, k, source, _type) ?? this.typeOf(el.name))})`;
       if (ts.isIdentifier(el.name)) {
         const t = this.typeOf(el.name);
         // An array's element past its end is undefined, which a number, string or boolean cannot hold: `if (second)` tests it.
@@ -5873,7 +5886,124 @@ ${members.join('\n')}
     return `if ${this.tryPrefix(x.left)}${x.operatorToken.kind === ts.SyntaxKind.BarBarToken ? `!(${test})` : test} { ${this.tryPrefix(x.right)}${this.exprStatement(x.right)} }`;
   }
 
+  /** `for (x of list)`, `for ([key, value] of entries)`: each value assigned to existing targets, as `x = value` would. */
+  private forOfAssigning(s: ts.ForOfStatement, target: ts.Expression): string {
+    const i = this.indent;
+    if (this.jsIteration(s.expression)) throw this.error(s, 'for…of over an existing variable, of a script iterator');
+    const item = this.fresh('__item');
+    const part = iteratedType(this.checker.getTypeAtLocation(s.expression), this.checker, s.expression) ?? this.checker.getTypeAtLocation(target);
+    const itemType = this.isAny(s.expression) ? 'Any?' : this.type(part, s.expression);
+    const iterable = this.iterable(s.expression);
+    const seq = (this.tryPrefix(s.expression) || (this.isAny(s.expression) ? 'try ' : '')) + (/^\{/.test(iterable) ? `(${iterable})` : iterable);
+    let bare = target;
+    while (ts.isParenthesizedExpression(bare)) bare = bare.expression;
+    const lines: string[] = [];
+    if (ts.isArrayLiteralExpression(bare) || ts.isObjectLiteralExpression(bare)) this.assignParts(bare, item, itemType, part, lines);
+    else {
+      const want = this.declaredTypeOf(bare) ?? this.typeOf(bare);
+      lines.push(`${this.lvalue(bare)} = ${itemType === 'Any?' && want !== 'Any?' ? this.fromAnyCode(item, want, true) : this.convert(item, itemType, want)}`);
+    }
+    return this.loopBody(() => {
+      const label = this.takeLabel();
+      const body = this.block(s.statement);
+      return `${i}${label}for ${item} in ${seq} {\n${lines.map((l) => `${i}    ${l}`).join('\n')}\n${body.slice(2)}`;
+    });
+  }
+
+  /**
+   * `[a, b] = [b, a]`, `({ x, y = 1 } = o)`, `[first, ...rest] = list`: the value read once, then each target written in order from
+   * what it names, a default where that is undefined, nested patterns each from their part.
+   */
+  private patternAssignment(pattern: ts.ArrayLiteralExpression | ts.ObjectLiteralExpression, right: ts.Expression, asValue = false): string {
+    const value = this.fresh('__v');
+    let bare = right;
+    while (ts.isParenthesizedExpression(bare)) bare = bare.expression;
+    // An object literal is its own shape's object, whatever shape the pattern gives the assignment's type.
+    const literal = ts.isObjectLiteralExpression(bare);
+    const type = literal ? this.typeOf(bare) : this.typeOf(right);
+    const lines = [literal ? `let ${value} = ${this.tryPrefix(right)}${this.expr(bare)}` : `let ${value}: ${type} = ${this.tryPrefix(right)}${this.coerce(right, type)}`];
+    this.assignParts(pattern, value, type, this.checker.getTypeAtLocation(right), lines);
+    return asValue ? `{ () -> ${type} in ${lines.join('; ')}; return ${value} }()` : `do { ${lines.join('; ')} }`;
+  }
+
+  private assignParts(pattern: ts.ArrayLiteralExpression | ts.ObjectLiteralExpression, value: string, type: string, source: ts.Type, lines: string[]): void {
+    const untyped = type === 'Any?';
+    const write = (target: ts.Expression, read: string, readType: string, part: ts.Type | undefined) => {
+      let dflt: ts.Expression | undefined;
+      if (ts.isBinaryExpression(target) && target.operatorToken.kind === ts.SyntaxKind.EqualsToken) { dflt = target.right; target = target.left; }
+      while (ts.isParenthesizedExpression(target)) target = target.expression;
+      if (dflt) {
+        const base = readType === 'Any?' ? 'Any?' : readType.replace(/\?$/, '');
+        read = readType === base && base !== 'Any?' ? read : `(${read} ?? ${this.coerce(dflt, base)})`;
+        readType = base;
+      }
+      if (ts.isArrayLiteralExpression(target) || ts.isObjectLiteralExpression(target)) {
+        const tmp = this.fresh('__d');
+        lines.push(`let ${tmp}: ${readType} = ${read}`);
+        this.assignParts(target, tmp, readType, part ?? this.checker.getTypeAtLocation(target), lines);
+        return;
+      }
+      const member = this.untypedMember(target);
+      if (member) { lines.push(`try jsSet(${member.object}, ${member.key}, ${this.convert(read, readType, 'Any?')})`); return; }
+      const want = this.declaredTypeOf(target) ?? this.typeOf(target);
+      const code = readType === want ? read : readType === 'Any?' ? this.fromAnyCode(read, want, true) : readType === optionalType(want) && !isOptional(want) ? this.undefinedAs(read, want) : this.convert(read, readType, want);
+      lines.push(`${this.lvalue(target)} = ${code}`);
+    };
+    if (ts.isArrayLiteralExpression(pattern)) {
+      const tuple = this.checker.isTupleType(source) && !type.startsWith('JSArray<') ? splitTopLevel(type.replace(/\?$/, '').slice(1, -1)) : null;
+      const element = /^JSArray<(.*)>\??$/.exec(type)?.[1];
+      if (!untyped && !tuple && element === undefined) throw this.error(pattern, `a destructuring assignment from ${type}`);
+      const parts = tuple ? this.checker.getTypeArguments(source as ts.TypeReference) : undefined;
+      const elementPart = !tuple && this.checker.isArrayType(source) ? this.checker.getTypeArguments(source as ts.TypeReference)[0] : undefined;
+      pattern.elements.forEach((target, k) => {
+        if (ts.isOmittedExpression(target)) return;
+        if (ts.isSpreadElement(target)) {
+          if (tuple) {
+            const restType = (this.declaredTypeOf(target.expression) ?? this.typeOf(target.expression)).replace(/[?!]$/, '');
+            const each = /^JSArray<(.*)>$/.exec(restType)?.[1];
+            if (each === undefined) throw this.error(target, `a rest element assigned to ${restType}`);
+            write(target.expression, `${restType}([${tuple.slice(k).map((t, n) => this.convert(`${value}.${k + n}`, t, each)).join(', ')}])`, restType, undefined);
+            return;
+          }
+          write(target.expression, untyped ? `(try jsCallMethod(${value}, "slice", Double(${k})))` : `${value}.slice(${k})`, untyped ? 'Any?' : type.replace(/\?$/, ''), source);
+          return;
+        }
+        if (untyped) write(target, `(try jsGet(${value}, "${k}"))`, 'Any?', undefined);
+        else if (tuple) write(target, `${value}.${k}`, tuple[k], parts?.[k]);
+        else write(target, element === 'Any?' ? `(${value}.element(${k}) ?? nil)` : `${value}.element(${k})`, element === 'Any?' ? 'Any?' : optionalType(element!), elementPart);
+      });
+      return;
+    }
+    const named: string[] = [];
+    for (const p of pattern.properties) {
+      if (ts.isSpreadAssignment(p)) {
+        const restType = this.typeOf(p.expression);
+        write(p.expression, this.fromAny(`jsObjectRest(${value}, [${named.join(', ')}])`, restType), restType, undefined);
+        continue;
+      }
+      if (!ts.isShorthandPropertyAssignment(p) && !ts.isPropertyAssignment(p)) throw this.error(p, 'this member of a destructuring assignment');
+      const key = ts.isComputedPropertyName(p.name) ? null : literalKey(p.name, this.checker) ?? p.name.getText();
+      if (key === null) throw this.error(p, 'a computed key in a destructuring assignment');
+      named.push(swiftString(key));
+      const target: ts.Expression = ts.isShorthandPropertyAssignment(p)
+        ? (p.objectAssignmentInitializer ? ts.factory.createBinaryExpression(p.name, ts.SyntaxKind.EqualsToken, p.objectAssignmentInitializer) : p.name)
+        : p.initializer;
+      const part = source.getProperty(key) && this.checker.getTypeOfSymbolAtLocation(source.getProperty(key)!, pattern);
+      const record = /^JSRecord<(.*)>\??$/.exec(type)?.[1];
+      if (untyped || !part) write(target, `(try jsGet(${value}, ${swiftString(key)}))`, 'Any?', part);
+      else if (record) write(target, `${value}[${swiftString(key)}]`, optionalType(record), part);
+      else write(target, `${this.getterThrows(source, key) ? 'try ' : ''}${value}.${ident(key)}`, this.type(part, pattern), part);
+    }
+  }
+
   exprStatement(e: ts.Expression): string {
+    {
+      let x = e;
+      while (ts.isParenthesizedExpression(x)) x = x.expression;
+      if (ts.isBinaryExpression(x) && x.operatorToken.kind === ts.SyntaxKind.EqualsToken && (ts.isObjectLiteralExpression(x.left) || (ts.isArrayLiteralExpression(x.left) && x.left.elements.some((t) => !ts.isIdentifier(t) && !ts.isPropertyAccessExpression(t) && !ts.isElementAccessExpression(t) && !ts.isOmittedExpression(t))))) {
+        return this.patternAssignment(x.left, x.right);
+      }
+    }
     if (ts.isBinaryExpression(e) && e.operatorToken.kind === ts.SyntaxKind.EqualsToken && ts.isArrayLiteralExpression(e.left)) {
       // `[a, b] = [b, a]`: the right side is evaluated before any target is written.
       const tmp = this.fresh('__swap');
@@ -9600,7 +9730,15 @@ ${members.join('\n')}
       }
     }
     if (ts.isPropertyAccessExpression(left) && this.symbolName(left.expression) === 'VueRef' && left.name.text === 'value') return `${this.lvalue(left)} = ${this.signalWrite(left.expression, right, this.typeOf(left))}`;
-    if (ts.isArrayLiteralExpression(left)) throw this.error(left, 'a destructuring assignment');
+    if (ts.isArrayLiteralExpression(left) || ts.isObjectLiteralExpression(left)) {
+      // Its value is the value assigned from (`result = [a, b] = list`).
+      let bare = right;
+      while (ts.isParenthesizedExpression(bare)) bare = bare.expression;
+      if (ts.isObjectLiteralExpression(bare)) throw this.error(left, 'a destructuring assignment of an object literal used as a value');
+      const code = this.patternAssignment(left, right, true);
+      if (/\btry\b/.test(code)) throw this.error(left, 'a destructuring assignment used as a value, reading what may throw');
+      return code;
+    }
     // Lenient code: null assigned to a local of a native struct declared without a value, which Swift holds implicitly unwrapped, is no struct.
     if (this.lenient && isNullish(right) && ts.isIdentifier(left) && this.native.isStructType(this.typeOf(left))) {
       const d = this.resolve(left)?.valueDeclaration;
@@ -9961,7 +10099,10 @@ ${members.join('\n')}
     if (t === 'Any?' || t === 'JSArray<Never>') t = 'JSArray<Any?>';
     if (t.startsWith('(')) {
       const types = want ? splitTopLevel(t.slice(1, -1)) : [];
-      return `(${e.elements.map((x, k) => (types[k] ? this.coerce(x, types[k]) : this.expr(x))).join(', ')})`;
+      // An optional element left out (`['a']` for `[string, string?]`) is undefined.
+      const missing = splitTopLevel(t.slice(1, -1)).slice(e.elements.length).map((x) => (isOptional(x) || x === 'Any?' ? 'nil' : null));
+      if (missing.some((x) => x === null)) throw this.error(e, `an array literal shorter than its tuple type ${t}`);
+      return `(${[...e.elements.map((x, k) => (types[k] ? this.coerce(x, types[k]) : this.expr(x))), ...missing].join(', ')})`;
     }
     const el = t.replace(/^JSArray<(.*)>$/, '$1');
     if (!e.elements.length) return `${t}()`;
@@ -9982,7 +10123,7 @@ ${members.join('\n')}
 
   private object(e: ts.ObjectLiteralExpression, want?: string): string {
     // A destructuring pattern's contextual type is the pattern's (`{ m: any }`), not the value's.
-    const destructured = ts.isVariableDeclaration(e.parent) && e.parent.initializer === e && !ts.isIdentifier(e.parent.name);
+    const destructured = (ts.isVariableDeclaration(e.parent) || ts.isParameter(e.parent) || ts.isBindingElement(e.parent)) && e.parent.initializer === e && !ts.isIdentifier(e.parent.name);
     // `{ … } satisfies T` keeps its own type, and so do the literals in it: the satisfied type only checks them.
     let up: ts.Node = e;
     while (ts.isObjectLiteralExpression(up) && ts.isPropertyAssignment(up.parent) && ts.isObjectLiteralExpression(up.parent.parent)) up = up.parent.parent;
@@ -10464,7 +10605,25 @@ export function isWriteTarget(e: ts.Node): boolean {
   const p = e.parent;
   if (ts.isBinaryExpression(p) && p.left === e && p.operatorToken.kind >= ts.SyntaxKind.FirstAssignment && p.operatorToken.kind <= ts.SyntaxKind.LastAssignment) return true;
   if ((ts.isPrefixUnaryExpression(p) || ts.isPostfixUnaryExpression(p)) && (p.operator === ts.SyntaxKind.PlusPlusToken || p.operator === ts.SyntaxKind.MinusMinusToken)) return true;
-  return false;
+  return inAssignmentPattern(e);
+}
+
+/** A target inside a destructuring assignment's pattern (`[a, o.b] = …`, `({ x: arr[0] } = …)`, `for ([k, v] of …)`). */
+function inAssignmentPattern(e: ts.Node): boolean {
+  let n = e;
+  for (;;) {
+    const p = n.parent;
+    if (!p) return false;
+    if (ts.isParenthesizedExpression(p) || ts.isSpreadElement(p) || ts.isSpreadAssignment(p) || (ts.isPropertyAssignment(p) && p.initializer === n) || (ts.isShorthandPropertyAssignment(p) && p.name === n)) { n = p; continue; }
+    if (ts.isBinaryExpression(p) && p.left === n && p.operatorToken.kind === ts.SyntaxKind.EqualsToken && (ts.isArrayLiteralExpression(p.parent) || ts.isPropertyAssignment(p.parent))) { n = p; continue; }
+    if (ts.isArrayLiteralExpression(p) || ts.isObjectLiteralExpression(p)) {
+      const q = p.parent;
+      if ((ts.isBinaryExpression(q) && q.left === p && q.operatorToken.kind === ts.SyntaxKind.EqualsToken) || ((ts.isForOfStatement(q) || ts.isForInStatement(q)) && q.initializer === p)) return true;
+      n = p;
+      continue;
+    }
+    return false;
+  }
 }
 
 function refersToThis(e: ts.Node): boolean {
