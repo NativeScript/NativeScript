@@ -293,10 +293,14 @@ export function generateKit(o: KitOptions): KitResult {
     out.push({ name: `__Namespace.${name}.swift`, code: header(new Set(sdk)) + code + '\n', sources: {} });
   }
   const shapes = publicize(translator.shapesCode().trim());
+  const shapeFiles = new Set<string>();
   for (const shape of shapes ? shapes.split(/\n(?=public final class )/) : []) {
     const name = /^public final class (\w+)/.exec(shape.trim())?.[1];
     if (!name) throw new Error(`an object shape that is no class: ${shape.slice(0, 80)}`);
-    out.push({ name: `__Object.${hash(name)}.swift`, code: header(new Set([...sdk, ...importsOf(shape)])) + shape.trim() + '\n', sources: {} });
+    // Named as its class; file systems that ignore case (APFS by default) take two names differing only in case as one.
+    const file = shapeFiles.has(name.toLowerCase()) ? `${name}_${hash(name).slice(0, 6)}` : name;
+    shapeFiles.add(file.toLowerCase());
+    out.push({ name: `${file}.swift`, code: header(new Set([...sdk, ...importsOf(shape)])) + shape.trim() + '\n', sources: {} });
   }
   // Core's modules run their top level once, before the app's: those the app reaches, in the order JavaScript evaluates them,
   // which its build lists (the manifest's graph), so that nothing in the kit keeps the others in its binary.

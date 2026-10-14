@@ -27,7 +27,7 @@ deprecated whiteLarge
 deprecated windows
 
 # Generated-code warnings not fixed yet: remove each line once the emitter no longer causes it.
-pending __Object.e2dd561f3eee.swift | comparing non-optional value of type 'String' to 'nil' always returns true
+pending Object_key_createView.swift | comparing non-optional value of type 'String' to 'nil' always returns true
 pending abortcontroller.abortsignal.swift | comparing non-optional value of type 'AbortSignal' to 'nil' always returns false
 pending application.application-common.swift | comparing non-optional value of type 'String' to 'nil' always returns false
 pending application.application-common.swift | left side of nil coalescing operator '??' has non-optional type '(Any?) throws -> Any?', so the right side is never used
@@ -57,7 +57,7 @@ pending ui.animation.index.ios.swift | using '_' to ignore the result of a Void-
 pending ui.core.control-state-change.index.ios.swift | conditional cast from 'ObserverClass' to 'ObserverClass' always succeeds
 pending ui.core.properties.index.swift | comparing non-optional value of type 'String' to 'nil' always returns true
 pending ui.core.view.index.ios.swift | conditional cast from 'View' to 'View' always succeeds
-pending ui.core.view.view-common.swift | cast from 'String' to unrelated type 'Object_toString_charAt_charCodeAt_concat_indexOf_lastIndexOf_localeCompare_match_replace_search_slice_split_substring_toLowerCase_toLocaleLowerCase_toUpperCase_toLocaleUpperCase_trim_length_substr_valueOf_codePointAt_includes_endsWith_normalize_repeat_startsWith_anchor_big_blink_bold_fixed_fontcolor_fontsize_italics_link_small_strike_sub_sup_padStart_padEnd_trimEnd_trimStart_trimLeft_trimRight_matchAll_replaceAll_at_jsSymbolIterator' always fails
+pending ui.core.view.view-common.swift | cast from 'String' to unrelated type 'Object_toString_charAt_charCodeAt_concat_indexOf_lastIndexOf_and_44_more_fc25df' always fails
 pending ui.frame.frame-common.swift | comparing non-optional value of type 'Bool' to 'nil' always returns true
 pending ui.frame.frame-common.swift | conditional downcast from 'Page?' to 'ViewCommon' is equivalent to an implicit conversion to an optional 'ViewCommon'
 pending ui.frame.index.ios.swift | comparing non-optional value of type 'Bool' to 'nil' always returns true
@@ -78,10 +78,10 @@ pending ui.search-bar.index.ios.swift | comparing non-optional value of type 'St
 pending ui.search-bar.index.ios.swift | variable 'size' was never mutated; consider changing to 'let' constant
 pending ui.segmented-bar.index.ios.swift | comparing non-optional value of type 'String' to 'nil' always returns false
 pending ui.split-view.index.ios.swift | left side of nil coalescing operator '??' has non-optional type 'UISplitViewController.SplitBehavior', so the right side is never used
-pending ui.styling.background.ios.swift | immutable value '__assigned430' was never used; consider replacing with '_' or removing it
-pending ui.styling.background.ios.swift | immutable value '__assigned431' was never used; consider replacing with '_' or removing it
-pending ui.styling.background.ios.swift | immutable value '__assigned432' was never used; consider replacing with '_' or removing it
-pending ui.styling.background.ios.swift | immutable value '__assigned433' was never used; consider replacing with '_' or removing it
+pending ui.styling.background.ios.swift | immutable value '__assigned1' was never used; consider replacing with '_' or removing it
+pending ui.styling.background.ios.swift | immutable value '__assigned2' was never used; consider replacing with '_' or removing it
+pending ui.styling.background.ios.swift | immutable value '__assigned3' was never used; consider replacing with '_' or removing it
+pending ui.styling.background.ios.swift | immutable value '__assigned4' was never used; consider replacing with '_' or removing it
 pending ui.styling.css-animation-parser.swift | conditional cast from 'KeyframeInfo' to 'KeyframeInfo' always succeeds
 pending ui.styling.css-animation-parser.swift | forced cast from 'JSRecord<KeyframeInfo>?' to 'JSRecord<KeyframeInfo>' only unwraps optionals; did you mean to use '!'?
 pending ui.styling.css-selector.swift | left side of nil coalescing operator '??' has non-optional type 'String', so the right side is never used
