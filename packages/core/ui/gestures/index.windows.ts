@@ -394,6 +394,9 @@ export class GesturesObserver extends GesturesObserverBase {
 
 	private _onPointerMoved(e: any) {
 		try {
+			if (!e?.Pointer?.IsInContact) {
+				return;
+			}
 			const relativeTo = (this.target as any)?.nativeViewProtected ?? null;
 			const id = extractPointerId(e);
 			const pt = extractPoint(e, relativeTo);
