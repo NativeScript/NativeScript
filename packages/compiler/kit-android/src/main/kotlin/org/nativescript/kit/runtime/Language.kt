@@ -333,6 +333,10 @@ fun jsDefineProperty(target: Any?, key: String, descriptor: Any?): Any? {
             if (d.get != null || d.set != null) throw JSException(JSTypeError("Cannot define an accessor on a typed object: $key"))
             if (d.hasValue) v.jsSet(key, d.value)
         }
+        is JSArray<*> -> {
+            if (d.get != null || d.set != null) throw JSException(JSTypeError("Cannot define an accessor on an array: $key"))
+            if (d.hasValue) jsSet(v, key, d.value)
+        }
         else -> throw JSException(JSTypeError("Object.defineProperty called on non-object"))
     }
     return target

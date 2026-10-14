@@ -274,7 +274,9 @@ fun jsGet(target: Any?, key: String): Any? = if (key == "constructor" && target 
     is JSDynamic -> target.jsGet(key)
     is JSArray<*> -> when {
         key == "length" -> target.size.toDouble()
-        else -> jsArrayIndex(key)?.let { if (it < target.size) target.storage[it.toInt()] else null } ?: jsArrayMethod(target, key)
+        // A named property set on the array (`arr.label = …`, Object.defineProperty) before the method of that name.
+        else -> jsArrayIndex(key)?.let { if (it < target.size) target.storage[it.toInt()] else null }
+            ?: target.jsProperties?.takeIf { key in it }?.get(key) ?: jsArrayMethod(target, key)
     }
     is String -> when {
         key == "length" -> target.length.toDouble()
@@ -313,6 +315,7 @@ fun jsSet(target: Any?, key: String, value: Any?) {
                 if (length < 0 || length > 4_294_967_295.0 || length != Math.floor(length)) throw JSException(JSRangeError("Invalid array length"))
                 array.setLength(length.toInt())
             } else jsArrayIndex(key)?.let { array.setAt(it.toInt(), value) }
+                ?: run { (array.jsProperties ?: LinkedHashMap<String, Any?>().also { array.jsProperties = it })[key] = value }
         }
         is String, is Double, is Boolean, is Function<*>, is JSFunction, is JSSymbol, is JSBigInt, Unit -> {}
         else -> jsJavaSet(target, key, value)
