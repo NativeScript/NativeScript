@@ -415,15 +415,24 @@ export class Translator implements AsyncTranslator {
   /** A constructor's `return`, inside the labeled block its `init` runs: Kotlin's `init` takes no `return`. */
   private returnLabel: string | null = null;
 
-  private inFunction<T>(returnType: string, body: () => T): T {
-    const saved = [this.asyncCtx, this.plainBreak, this.plainContinue, this.returnType, this.jumps, this.returnLabel] as const;
+  /** `return`, or in a lambda `return@` its label. */
+  private returnKeyword(): string {
+    return this.lambdaReturn ? `return@${this.lambdaReturn}` : 'return';
+  }
+
+  /** The label a lambda being translated returns to (`return@fn1`), as a lambda's `return` would leave its caller. */
+  private lambdaReturn: string | null = null;
+
+  private inFunction<T>(returnType: string, body: () => T, lambdaLabel: string | null = null): T {
+    const saved = [this.asyncCtx, this.plainBreak, this.plainContinue, this.returnType, this.jumps, this.returnLabel, this.lambdaReturn] as const;
     this.returnLabel = null;
+    this.lambdaReturn = lambdaLabel;
     this.asyncCtx = null;
     this.plainBreak = 0;
     this.plainContinue = 0;
     this.returnType = returnType;
     this.jumps = [];
-    try { return body(); } finally { [this.asyncCtx, this.plainBreak, this.plainContinue, this.returnType, this.jumps, this.returnLabel] = saved; }
+    try { return body(); } finally { [this.asyncCtx, this.plainBreak, this.plainContinue, this.returnType, this.jumps, this.returnLabel, this.lambdaReturn] = saved; }
   }
 
   // ---- Types -----------------------------------------------------------------------------
@@ -2100,10 +2109,10 @@ export class Translator implements AsyncTranslator {
   }
 
   /** A function's body block (`{ … }`), lowered when the function is async. */
-  functionBody(fn: ts.FunctionLikeDeclaration, ret: string, base: string): string {
+  functionBody(fn: ts.FunctionLikeDeclaration, ret: string, base: string, lambdaLabel: string | null = null): string {
     const self = fn.parameters.find((p) => isThisParameter(p) && !this.voidThis(p));
-    if (self && !thisNodes(fn).every((n) => this.subst.has(n))) return this.withThis(fn, '__this', false, () => this.functionBody(fn, ret, base));
-    if (this.implicitThis(fn) && !thisNodes(fn).every((n) => this.subst.has(n))) return this.withThis(fn, '__this', true, () => this.functionBody(fn, ret, base));
+    if (self && !thisNodes(fn).every((n) => this.subst.has(n))) return this.withThis(fn, '__this', false, () => this.functionBody(fn, ret, base, lambdaLabel));
+    if (this.implicitThis(fn) && !thisNodes(fn).every((n) => this.subst.has(n))) return this.withThis(fn, '__this', true, () => this.functionBody(fn, ret, base, lambdaLabel));
     return this.inFunction(ret, () => {
       const saved = this.indent;
       this.indent = base + '    ';
@@ -2119,17 +2128,18 @@ export class Translator implements AsyncTranslator {
           lines = [...this.paramPrelude(fn), ...this.statements([...fn.body.statements])];
           // JavaScript returns undefined at the end; Kotlin needs a return where the checker proved one is never reached.
           if (!['Unit', 'Nothing'].includes(ret) && !this.exits(fn.body)) {
-            lines.push(ret.endsWith('?') ? `${this.indent}return null` : `${this.indent}jsThrow(JSTypeError("no value returned where the declared type needs one"))`);
+            lines.push(ret.endsWith('?') ? `${this.indent}${this.returnKeyword()} null` : `${this.indent}jsThrow(JSTypeError("no value returned where the declared type needs one"))`);
           }
         } else {
           const e = fn.body as ts.Expression;
           // A void expression (`(err) => sig.set(x)`) where a value is wanted (`then`'s onRejected): undefined.
           const voidValue = ret !== 'Unit' && isNullable(ret) && this.typeOf(e) === 'Unit';
-          lines = [...this.paramPrelude(fn), ret === 'Unit' ? this.indent + this.exprStatement(e) : voidValue ? `${this.indent}${this.exprStatement(e)}\n${this.indent}return null` : `${this.indent}return ${this.coerce(e, ret)}`];
+          const back = this.returnKeyword();
+          lines = [...this.paramPrelude(fn), ret === 'Unit' ? this.indent + this.exprStatement(e) : voidValue ? `${this.indent}${this.exprStatement(e)}\n${this.indent}${back} null` : `${this.indent}${back} ${this.coerce(e, ret)}`];
         }
         return `{\n${lines.filter(Boolean).join('\n')}\n${base}}`;
       } catch (e) { throw this.located(e, fn); } finally { this.indent = saved; }
-    });
+    }, lambdaLabel);
   }
 
   func(fn: ts.FunctionDeclaration | ts.MethodDeclaration, name: string, modifiers = ''): string {
@@ -2205,7 +2215,34 @@ export class Translator implements AsyncTranslator {
     // A slot's function type may take more parameters than the literal declares (JavaScript ignores extras).
     const slotParams = slot ? functionTypeParts(slot)?.params ?? [] : [];
     for (let k = fn.parameters.length; k < slotParams.length; k++) params += `${params ? ', ' : ''}__u${k}: ${slotParams[k]}`;
-    return `fun(${params})${ret === 'Unit' ? '' : `: ${ret}`} ${this.functionBody(fn, ret, this.indent)}`;
+    return this.asLambda(fn, params, ret) ?? `fun(${params})${ret === 'Unit' ? '' : `: ${ret}`} ${this.functionBody(fn, ret, this.indent)}`;
+  }
+
+  /**
+   * A function literal as a Kotlin lambda: its last `return` is the lambda's value, an earlier one returns to its label
+   * (`return@fn1`). Null where only an anonymous function will do: an async function or a generator, which suspend through
+   * `return`s of their own, or one with a result whose body does not end in a `return`, which Kotlin would type by it.
+   */
+  private asLambda(fn: ts.ArrowFunction | ts.FunctionExpression | ts.MethodDeclaration, params: string, ret: string): string | null {
+    if (isAsync(fn) || fn.asteriskToken || !fn.body || this.readsArguments(fn)) return null;
+    const last = ts.isBlock(fn.body) ? fn.body.statements.at(-1) : undefined;
+    if (ret !== 'Unit' && ts.isBlock(fn.body) && !(last && ts.isReturnStatement(last) && last.expression)) return null;
+    const label = this.fresh('fn');
+    const body = this.functionBody(fn, ret, this.indent, label);
+    const inner = this.indent + '    ';
+    let lines = body.slice(2, body.lastIndexOf('\n')).split('\n');
+    // The last statement's `return` is the lambda's value; a `return` alone there is its end.
+    const end = lines.map((l, k) => [l, k] as const).filter(([l]) => l.replace(/^(\/\*@ns:[^*]*\*\/)/, '').startsWith(`${inner}return@${label}`)).at(-1);
+    if (end && !lines.slice(end[1] + 1).some((l) => l.startsWith(inner) && !l.startsWith(inner + ' ') && !/^\s*[})\]]/.test(l))) {
+      const [l, k] = end;
+      lines[k] = l.replace(`return@${label} `, '').replace(new RegExp(`return@${label}$`), '');
+      if (!lines[k].trim() || /^\/\*@ns:[^*]*\*\/\s*$/.test(lines[k].trim())) lines.splice(k, 1);
+    } else if (ret !== 'Unit') return null;
+    lines = lines.filter((l, k) => !(k === lines.length - 1 && l.trim() === ''));
+    const text = lines.join('\n');
+    const names = splitTopLevel(params).map((p) => p.trim()).filter(Boolean);
+    const head = names.length ? ` ${names.map((p) => { const [name, type] = p.split(/:\s*(.*)/s); return mentions(text, name.trim()) ? p : `_: ${type}`; }).join(', ')} ->` : '';
+    return `${mentions(text, `return@${label}`) || text.includes(`return@${label}`) ? `${label}@` : ''}{${head}\n${text}\n${this.indent}}`;
   }
 
   /** A callback for a timer or microtask: a closure, a function value called with nothing, or a Promise's resolve. */
@@ -3629,10 +3666,16 @@ export class Translator implements AsyncTranslator {
       const value = k < baseTypes.length ? this.convert(sig[k], baseTypes[k], own) : (this.zero(own) ?? 'null');
       return value === ident(p.name.text) && own === baseTypes[k] ? '' : `        val ${ident(p.name.text)}: ${own} = ${value}`;
     }).filter(Boolean);
+    const head = `    override fun ${name}(${baseTypes.map((t, k) => `${sig[k] ?? `__o${k}`}: ${t}`).join(', ')})${baseRet === 'Unit' ? '' : `: ${baseRet}`} {`;
+    // A result the base's signature takes as it is: the body is the override's own.
+    if ((ret === baseRet || (ret !== 'Unit' && baseRet !== 'Unit' && this.convert('__r', ret, baseRet) === '__r')) && !(binds.length && this.paramPrelude(m).length)) {
+      const body = this.functionBody(m, ret, '    ');
+      return [head, ...binds, body.slice(2)].join('\n');
+    }
     const body = this.inFunction(ret, () => this.functionBody(m, ret, '        '));
     const call = `(fun()${ret === 'Unit' ? '' : `: ${ret}`} ${body})()`;
     const result = baseRet === 'Unit' ? `        ${call}` : `        return ${this.convert(call, ret, baseRet)}`;
-    return [`    override fun ${name}(${baseTypes.map((t, k) => `${sig[k] ?? `__o${k}`}: ${t}`).join(', ')})${baseRet === 'Unit' ? '' : `: ${baseRet}`} {`, ...binds, result, '    }'].join('\n');
+    return [head, ...binds, result, '    }'].join('\n');
   }
 
   /** Whether a class (or a class it extends) names the interface in its `implements` or `extends`, which its Kotlin class then implements. */
@@ -4028,6 +4071,7 @@ export class Translator implements AsyncTranslator {
       this.errors.push((located as Error).message ?? String(located));
       return '';
     }
+    if (this.lambdaReturn && ts.isReturnStatement(s)) code = code.replace(/(^|\n)(\s*)return\b(?!@)/g, `$1$2return@${this.lambdaReturn}`);
     return code && this.lines ? this.lines.mark(s) + code : code;
   }
 
@@ -7187,11 +7231,15 @@ export class Translator implements AsyncTranslator {
       const binds: string[] = [];
       if (res) { this.resolvers.set(this.resolve(res)!, { name: r, type: v }); binds.push(v === 'Unit' ? `val ${ident(res.text)}: (${v}) -> Unit = { _: Unit? -> ${r}.resolve(Unit) }` : `val ${ident(res.text)}: (${v}) -> Unit = { ${r}.resolve(it) }`); }
       if (rej) binds.push(`val ${ident(rej.text)}: (Any?) -> Unit = { ${r}.reject(it) }`);
-      const body = this.functionBody(ex, 'Unit', this.indent);
+      const label = this.fresh('executor');
+      const body = this.functionBody(ex, 'Unit', this.indent, label);
       const inner = this.indent + '    ';
       // `resolve(x)` calls the resolvers directly: a binding only where the body takes the function itself.
       const used = binds.filter((b) => mentions(body, /^val (\S+):/.exec(b)![1]));
-      return `JSPromise<${v}>(fun(${r}: JSResolvers<${v}>) {\n${used.map((b) => inner + b + '\n').join('')}${body.slice(2)})`;
+      const lines = body.slice(2, body.lastIndexOf('\n')).split('\n');
+      if (lines.at(-1)?.replace(/^\/\*@ns:[^*]*\*\//, '') === `${inner}return@${label}`) lines.pop();
+      const text = [...used.map((b) => inner + b), ...lines].join('\n');
+      return `JSPromise<${v}> ${text.includes(`return@${label}`) ? `${label}@` : ''}{ ${r}: JSResolvers<${v}> ->\n${text}\n${this.indent}}`;
     }
     if (ERRORS[name]) {
       const appError = ts.isIdentifier(callee) && !this.isLibGlobal(callee) && !(this.resolve(callee)?.declarations ?? []).every((d) => isLibDeclaration(d));
@@ -7586,6 +7634,9 @@ export class Translator implements AsyncTranslator {
         if (nullableLeft && leftValue === v && t !== 'Any?') leftValue = op === K.BarBarToken ? `${v}!!` : this.undefinedAs(v, t);
         // A truthy left operand is present, whatever Kotlin types its read (`a?.b`, a record's value).
         if (op === K.BarBarToken && leftValue === v && !isNullable(t) && t !== 'Any?') leftValue = `${v}!!`;
+        if (leftValue === v) return `${op === K.BarBarToken ? 'jsOr' : 'jsAnd'}(${left}) { ${right} }`;
+        // A boolean of a value's truth: the truth itself, as the operator gives it.
+        if (leftValue === `jsTruthy(${v})` && t === 'Boolean') return `(jsTruthy(${left}) ${sym} ${right})`;
         return op === K.BarBarToken
           ? `run { val ${v} = ${left}; if (jsTruthy(${v})) ${leftValue} else ${right} }`
           : `run { val ${v} = ${left}; if (jsTruthy(${v})) ${right} else ${leftValue} }`;

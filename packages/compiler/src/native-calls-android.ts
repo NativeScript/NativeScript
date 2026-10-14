@@ -1397,11 +1397,18 @@ export class AndroidNativeAPI implements KotlinNative {
     }
     const retType = sig ? this.kotlinType(sig.ret, typeVar) : this.kotlinType(target.ret, typeVar);
     const ref = target.ret.startsWith('L') || target.ret.startsWith('[');
+    const result = NUMERIC.has(target.ret) ? `${tsRet === 'Double' ? '__result' : 'jsToNumber(__result)'}${CONVERT[target.ret]}` : target.ret === 'C' ? '__result[0]' : target.ret.startsWith('[') ? this.arrayValue('__result', target.ret) : tsRet === 'Any?' && ref && retType !== 'Any' ? `(__result as ${retType}${target.m.nonNull ? '' : '?'})` : ref && nullableRet && target.m.nonNull ? '__result!!' : '__result';
+    const declared = `${retType}${ref && nullableRet && !target.m.nonNull ? '?' : ''}`;
+    // A result Java takes as script gives it: the body is the override's own.
+    if (result === '__result' && declared === tsRet && !(binds.length && t.paramPrelude(fn).length)) {
+      const body = t.functionBody(fn, tsRet, indent);
+      binds.splice(0, binds.length, ...read(body));
+      return `${head}: ${declared} {\n${[guard, ...binds].join('\n')}\n${body.slice(2)}`;
+    }
     const body = t.functionBody(fn, tsRet, indent + '    ');
     binds.splice(0, binds.length, ...read(body));
-    const result = NUMERIC.has(target.ret) ? `${tsRet === 'Double' ? '__result' : 'jsToNumber(__result)'}${CONVERT[target.ret]}` : target.ret === 'C' ? '__result[0]' : target.ret.startsWith('[') ? this.arrayValue('__result', target.ret) : tsRet === 'Any?' && ref && retType !== 'Any' ? `(__result as ${retType}${target.m.nonNull ? '' : '?'})` : ref && nullableRet && target.m.nonNull ? '__result!!' : '__result';
     return [
-      `${head}: ${retType}${ref && nullableRet && !target.m.nonNull ? '?' : ''} {`,
+      `${head}: ${declared} {`,
       guard,
       ...binds,
       `${indent}    val __result: ${tsRet} = (fun(): ${tsRet} ${body})()`,

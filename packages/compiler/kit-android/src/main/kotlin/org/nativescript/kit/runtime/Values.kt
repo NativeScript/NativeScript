@@ -412,6 +412,12 @@ fun jsTypeof(value: Any?): String = when (value) {
 /** `value === undefined || value === null`. */
 fun jsIsNullish(value: Any?): Boolean = value == null || value === JSNull || value === Unit
 
+/** `value || otherwise`: the value where it is truthy, else what `otherwise` gives, run only then. */
+inline fun <T> jsOr(value: T, otherwise: () -> T): T = if (jsTruthy(value)) value else otherwise()
+
+/** `value && then`: what `then` gives where the value is truthy, run only then, else the value. */
+inline fun <T> jsAnd(value: T, then: () -> T): T = if (jsTruthy(value)) then() else value
+
 /** JavaScript truthiness: false for undefined, null, false, 0, -0, NaN and "". */
 fun jsTruthy(value: Any?): Boolean = when (value) {
     null, Unit, JSNull -> false
