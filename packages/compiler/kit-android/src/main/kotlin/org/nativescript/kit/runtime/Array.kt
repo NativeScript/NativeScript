@@ -211,45 +211,46 @@ class JSArray<T>(storage: ArrayList<T>) : Iterable<T>, JSReactiveConvertible {
     /** `array.sort()`: in place and stable, by string form in UTF-16 order, undefined last. */
     @Suppress("UNCHECKED_CAST")
     fun sort(): JSArray<T> {
-        val n = storage.size
-        val values = arrayOfNulls<Any?>(n)
-        val texts = arrayOfNulls<String>(n)
+        val values = arrayOfNulls<Any?>(storage.size)
+        val texts = arrayOfNulls<String>(storage.size)
+        var undefineds: ArrayList<T>? = null
         var defined = 0
-        for (e in storage) if (e != null && e !== Unit) {
-            values[defined] = e
-            texts[defined] = if (e is String) e else jsToString(e)
-            defined++
+        for (e in storage) {
+            if (e == null || e === Unit) (undefineds ?: ArrayList<T>().also { undefineds = it }).add(e)
+            else {
+                values[defined] = e
+                texts[defined] = if (e is String) e else jsToString(e)
+                defined++
+            }
         }
         // The positions sorted by their texts, which are made once.
         val order = arrayOfNulls<Any?>(defined)
         for (k in 0 until defined) order[k] = k
         stableSort(order, defined) { a, b -> texts[a as Int]!! < texts[b as Int]!! }
-        refill(n, defined) { k -> values[order[k] as Int] as T }
+        replaceSorted(defined, undefineds) { k -> values[order[k] as Int] as T }
         return this
     }
 
     /** `array.sort(compare)`: in place and stable; undefined last without being compared, NaN counts as 0. */
     @Suppress("UNCHECKED_CAST")
     fun sort(compare: (T, T) -> Double): JSArray<T> {
-        val n = storage.size
-        val values = arrayOfNulls<Any?>(n)
+        val values = arrayOfNulls<Any?>(storage.size)
+        var undefineds: ArrayList<T>? = null
         var defined = 0
-        for (e in storage) if (e != null && e !== Unit) values[defined++] = e
+        for (e in storage) {
+            if (e == null || e === Unit) (undefineds ?: ArrayList<T>().also { undefineds = it }).add(e)
+            else values[defined++] = e
+        }
         stableSort(values, defined) { a, b -> compare(a as T, b as T) < 0 }
-        refill(n, defined) { k -> values[k] as T }
+        replaceSorted(defined, undefineds) { k -> values[k] as T }
         return this
     }
 
-    /** The storage as `defined` sorted elements, then the undefined ones it held. */
-    @Suppress("UNCHECKED_CAST")
-    private inline fun refill(n: Int, defined: Int, sorted: (Int) -> T) {
-        var undefinedCount = 0
-        for (e in storage) if (e == null || e === Unit) undefinedCount++
-        val undefineds = ArrayList<T>(undefinedCount)
-        for (e in storage) if (e == null || e === Unit) undefineds.add(e)
-        val out = ArrayList<T>(n)
+    /** The storage as the `defined` sorted elements, then the undefined ones. */
+    private inline fun replaceSorted(defined: Int, undefineds: List<T>?, sorted: (Int) -> T) {
+        val out = ArrayList<T>(defined + (undefineds?.size ?: 0))
         for (k in 0 until defined) out.add(sorted(k))
-        out.addAll(undefineds)
+        if (undefineds != null) out.addAll(undefineds)
         storage = out
         trigger()
     }
