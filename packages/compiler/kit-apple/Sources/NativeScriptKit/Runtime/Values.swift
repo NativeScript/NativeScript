@@ -250,12 +250,14 @@ struct JSPropertyKey: Hashable {
 
     /// The bytes folded into one word first (FNV-1a), which the seeded Hasher then mixes once: hashing every
     /// byte through Hasher made each property lookup on a JavaScript object about twice as slow.
-    func hash(into hasher: inout Hasher) {
+    func hash(into hasher: inout Hasher) { hasher.combine(JSPropertyKey.fold(string)) }
+
+    static func fold(_ string: String) -> UInt64 {
         var folded: UInt64 = 0xcbf2_9ce4_8422_2325
         let utf8 = string.utf8
         let hashed: Void? = utf8.withContiguousStorageIfAvailable { for byte in $0 { folded = (folded ^ UInt64(byte)) &* 0x100_0000_01b3 } }
         if hashed == nil { for byte in utf8 { folded = (folded ^ UInt64(byte)) &* 0x100_0000_01b3 } }
-        hasher.combine(folded)
+        return folded
     }
 }
 
@@ -276,7 +278,19 @@ func jsArrayIndex(_ key: String) -> UInt32? {
 
 /// A plain JavaScript object. Own keys enumerate in JavaScript order: array-index keys
 /// ascending, then the other keys in insertion order.
+///
+/// A small object (up to `smallLimit` string keys, none an array index or a symbol) keeps its keys and values
+/// in arrays in insertion order, a key found by comparing its folded bytes with each one's: most objects
+/// script makes are that (JSON records, options, expandos), and for them a dictionary's table and seeded hash
+/// cost more than the comparisons. The first key beyond those moves the object to the dictionary for good.
 public final class JSObject: JSDynamic, JSSymbolKeyed, JSAccessorKeyed, JSReactiveConvertible, ExpressibleByDictionaryLiteral, CustomStringConvertible {
+    private static let smallLimit = 16
+    private var isSmall = true
+    private var smallKeys: [String] = []
+    /// Each small key's bytes folded to a word (`JSPropertyKey.fold`): a search compares the words, and the
+    /// strings only where they agree.
+    private var smallFolds: [UInt64] = []
+    private var smallValues: [Any?] = []
     private var storage: [JSPropertyKey: Any?] = [:]
     private var indexKeys: [UInt32] = []
     private var namedKeys: [String] = []
@@ -288,31 +302,150 @@ public final class JSObject: JSDynamic, JSSymbolKeyed, JSAccessorKeyed, JSReacti
     public init() {}
 
     public init(dictionaryLiteral elements: (String, Any?)...) {
+        reserve(elements.count)
         for (key, value) in elements { define(key, value) }
     }
 
     public init(_ entries: [(String, Any?)]) {
-        storage.reserveCapacity(entries.count)
-        namedKeys.reserveCapacity(entries.count)
+        reserve(entries.count)
         for (key, value) in entries { define(key, value) }
     }
 
-    /// `values` under `keys`, pairwise, with the storage sized once (JSON.parse's objects): a repeated key keeps
-    /// its first position and takes its last value, as CreateDataProperty does.
-    init<Keys: Collection<String>, Values: Collection<Any?>>(keys: Keys, values: Values) {
-        storage.reserveCapacity(keys.count)
-        namedKeys.reserveCapacity(keys.count)
+    /// `values` under `keys`, pairwise (JSON.parse's objects): a repeated key keeps its first position and takes its
+    /// last value, as CreateDataProperty does. Keys that make a small object take the two arrays as they are.
+    init(keys: [String], values: [Any?]) {
+        if keys.count <= JSObject.smallLimit {
+            let folds = keys.map(JSPropertyKey.fold)
+            if JSObject.smallForm(keys, folds) {
+                smallKeys = keys
+                smallFolds = folds
+                smallValues = values
+                return
+            }
+        }
+        reserve(keys.count)
         for (key, value) in zip(keys, values) { define(key, value) }
     }
+
+    /// Whether `keys` can be a small object as they are: none an array index or a symbol, and none repeated.
+    private static func smallForm(_ keys: [String], _ folds: [UInt64]) -> Bool {
+        for i in keys.indices {
+            if jsArrayIndex(keys[i]) != nil || jsIsSymbolKey(keys[i]) { return false }
+            for j in 0..<i where folds[j] == folds[i] && jsStringEquals(keys[j], keys[i]) { return false }
+        }
+        return true
+    }
+
+    private func reserve(_ count: Int) {
+        if count <= JSObject.smallLimit {
+            smallKeys.reserveCapacity(count)
+            smallFolds.reserveCapacity(count)
+            smallValues.reserveCapacity(count)
+        } else {
+            isSmall = false
+            storage.reserveCapacity(count)
+            namedKeys.reserveCapacity(count)
+        }
+    }
+
+    // MARK: Own properties, in either form
+
+    @inline(__always) private func smallIndex(_ key: String) -> Int? { smallIndex(key, JSPropertyKey.fold(key)) }
+
+    @inline(__always) private func smallIndex(_ key: String, _ fold: UInt64) -> Int? {
+        for i in smallFolds.indices where smallFolds[i] == fold && jsStringEquals(smallKeys[i], key) { return i }
+        return nil
+    }
+
+    /// The own value of `key`: nil when there is no such property, `.some(nil)` for one holding undefined.
+    @inline(__always) private func own(_ key: String) -> Any?? {
+        if isSmall { return smallIndex(key).map { smallValues[$0] } }
+        return storage[JSPropertyKey(key)]
+    }
+
+    @inline(__always) private func hasOwn(_ key: String) -> Bool { own(key) != nil }
+
+    /// Every own key, in property order, symbols last.
+    private var ownKeys: [String] {
+        isSmall ? smallKeys : indexKeys.map { String($0) } + namedKeys
+    }
+
+    private func define(_ key: String, _ value: Any?) {
+        if isSmall {
+            let fold = JSPropertyKey.fold(key)
+            if let i = smallIndex(key, fold) {
+                smallValues[i] = value
+                return
+            }
+            if smallKeys.count < JSObject.smallLimit, jsArrayIndex(key) == nil, !jsIsSymbolKey(key) {
+                // Room for four at first, then twice as much each time, the three arrays together.
+                if smallKeys.count == smallKeys.capacity {
+                    let room = smallKeys.isEmpty ? 4 : min(smallKeys.count * 2, JSObject.smallLimit)
+                    smallKeys.reserveCapacity(room)
+                    smallFolds.reserveCapacity(room)
+                    smallValues.reserveCapacity(room)
+                }
+                smallKeys.append(key)
+                smallFolds.append(fold)
+                smallValues.append(value)
+                return
+            }
+            promote()
+        }
+        if storage.updateValue(value, forKey: JSPropertyKey(key)) == nil {
+            if let index = jsArrayIndex(key) {
+                var low = 0, high = indexKeys.count
+                while low < high {
+                    let mid = (low + high) / 2
+                    if indexKeys[mid] < index { low = mid + 1 } else { high = mid }
+                }
+                indexKeys.insert(index, at: low)
+            } else {
+                namedKeys.append(key)
+            }
+        }
+    }
+
+    /// Removes the own property `key`; false when there is none.
+    private func removeOwn(_ key: String) -> Bool {
+        if isSmall {
+            guard let i = smallIndex(key) else { return false }
+            smallKeys.remove(at: i)
+            smallFolds.remove(at: i)
+            smallValues.remove(at: i)
+            return true
+        }
+        guard storage.removeValue(forKey: JSPropertyKey(key)) != nil else { return false }
+        if let index = jsArrayIndex(key) {
+            indexKeys.removeAll { $0 == index }
+        } else if let position = namedKeys.firstIndex(where: { jsStringEquals($0, key) }) {
+            namedKeys.remove(at: position)
+        }
+        return true
+    }
+
+    /// The small form's keys and values moved to the dictionary; small keys are all named keys, in order.
+    private func promote() {
+        isSmall = false
+        storage.reserveCapacity(smallKeys.count + 1)
+        namedKeys.reserveCapacity(smallKeys.count + 1)
+        for (key, value) in zip(smallKeys, smallValues) { storage[JSPropertyKey(key)] = value }
+        namedKeys = smallKeys
+        smallKeys = []
+        smallFolds = []
+        smallValues = []
+    }
+
+    // MARK: Access
 
     public subscript(key: String) -> Any? {
         get {
             if !slots.isEmpty, let getter = slots[JSPropertyKey(key)]?.get {
                 do { return try getter(self) } catch { jsReportUncaught(jsCaught(error)); return nil }
             }
-            guard let tracker = jsTracker else { return storage[JSPropertyKey(key)] ?? nil }
+            guard let tracker = jsTracker else { return own(key) ?? nil }
             tracker.track()
-            return jsReactiveAny(storage[JSPropertyKey(key)] ?? nil)
+            return jsReactiveAny(own(key) ?? nil)
         }
         set {
             if !slots.isEmpty || !extensible {
@@ -320,7 +453,7 @@ public final class JSObject: JSDynamic, JSSymbolKeyed, JSAccessorKeyed, JSReacti
                 return
             }
             guard let tracker = jsTracker else { define(key, newValue); return }
-            let old = storage[JSPropertyKey(key)]
+            let old = own(key)
             define(key, newValue)
             if let old, jsSameValue(old, newValue) { return }
             tracker.trigger()
@@ -331,7 +464,7 @@ public final class JSObject: JSDynamic, JSSymbolKeyed, JSAccessorKeyed, JSReacti
     func get(_ key: String, receiver: Any?) throws -> Any? {
         if let getter = slots[JSPropertyKey(key)]?.get { return try getter(receiver) }
         if slots[JSPropertyKey(key)]?.isAccessor == true { return nil }
-        return storage[JSPropertyKey(key)] ?? nil
+        return own(key) ?? nil
     }
 
     /// A prototype's setter for a key, nil when the key holds a value; an accessor without one throws as strict code does.
@@ -349,18 +482,17 @@ public final class JSObject: JSDynamic, JSSymbolKeyed, JSAccessorKeyed, JSReacti
     /// `object[key] = value` in strict code: a read-only property, a getter without a setter
     /// or a new key on an object that is not extensible throws a TypeError.
     public func put(_ key: String, _ value: Any?) throws {
-        let k = JSPropertyKey(key)
-        if let slot = slots[k] {
+        if let slot = slots[JSPropertyKey(key)] {
             if slot.isAccessor {
                 guard let setter = slot.set else { throw JSException(JSTypeError("Cannot set property \(key) of #<Object> which has only a getter")) }
                 return try setter(self, value)
             }
             if !slot.writable { throw JSException(JSTypeError("Cannot assign to read only property '\(key)' of object '#<Object>'")) }
-        } else if !extensible && storage[k] == nil {
+        } else if !extensible && !hasOwn(key) {
             throw JSException(JSTypeError("Cannot add property \(key), object is not extensible"))
         }
         guard let tracker = jsTracker else { define(key, value); return }
-        let old = storage[k]
+        let old = own(key)
         define(key, value)
         if let old, jsSameValue(old, value) { return }
         tracker.trigger()
@@ -369,12 +501,13 @@ public final class JSObject: JSDynamic, JSSymbolKeyed, JSAccessorKeyed, JSReacti
     /// `Object.defineProperty(object, key, descriptor)`; attributes the descriptor leaves out are false for a new property.
     public func defineProperty(_ key: String, _ d: JSPropertyDescriptor) throws {
         let k = JSPropertyKey(key)
-        let exists = storage[k] != nil
+        let current = own(key)
+        let exists = current != nil
         var slot = slots[k] ?? JSPropertySlot(enumerable: exists, writable: exists, configurable: exists)
         if !exists && !extensible { throw JSException(JSTypeError("Cannot define property \(key), object is not extensible")) }
         if exists && !slot.configurable {
             let changes = d.get != nil || d.set != nil || d.configurable == true || (d.enumerable.map { $0 != slot.enumerable } ?? false)
-                || (!slot.writable && (d.writable == true || (d.value.map { !jsSameValue($0, storage[k] ?? nil) } ?? false)))
+                || (!slot.writable && (d.writable == true || (d.value.map { !jsSameValue($0, current ?? nil) } ?? false)))
             if changes { throw JSException(JSTypeError("Cannot redefine property: \(key)")) }
         }
         if d.get != nil || d.set != nil {
@@ -388,28 +521,27 @@ public final class JSObject: JSDynamic, JSSymbolKeyed, JSAccessorKeyed, JSReacti
         if let v = d.enumerable { slot.enumerable = v }
         if let v = d.writable { slot.writable = v }
         if let v = d.configurable { slot.configurable = v }
-        define(key, slot.isAccessor ? nil as Any? : (d.value ?? (storage[k] ?? nil)))
+        define(key, slot.isAccessor ? nil as Any? : (d.value ?? (current ?? nil)))
         slots[k] = slot.isPlain ? nil : slot
         jsTracker?.trigger()
     }
 
     /// `Object.getOwnPropertyDescriptor(object, key)`.
     public func descriptor(_ key: String) -> JSObject? {
-        let k = JSPropertyKey(key)
-        guard storage[k] != nil else { return nil }
-        let slot = slots[k] ?? JSPropertySlot()
+        guard let value = own(key) else { return nil }
+        let slot = slots[JSPropertyKey(key)] ?? JSPropertySlot()
         if slot.isAccessor {
             return JSObject([("get", slot.get.map { g in { (_: [Any?]) throws -> Any? in try g(self) } as JSFunction } as Any?), ("set", slot.set.map { s in { (a: [Any?]) throws -> Any? in try s(self, jsArg(a, 0)); return nil } as JSFunction } as Any?),
                              ("enumerable", slot.enumerable), ("configurable", slot.configurable)])
         }
-        return JSObject([("value", storage[k] ?? nil), ("writable", slot.writable), ("enumerable", slot.enumerable), ("configurable", slot.configurable)])
+        return JSObject([("value", value), ("writable", slot.writable), ("enumerable", slot.enumerable), ("configurable", slot.configurable)])
     }
 
     /// `Object.freeze`, `Object.seal`, `Object.preventExtensions`.
     public func restrict(sealed: Bool, frozen: Bool) {
         extensible = false
         guard sealed || frozen else { return }
-        for key in indexKeys.map({ String($0) }) + namedKeys {
+        for key in ownKeys {
             var slot = slots[JSPropertyKey(key)] ?? JSPropertySlot()
             slot.configurable = false
             if frozen && !slot.isAccessor { slot.writable = false }
@@ -417,8 +549,8 @@ public final class JSObject: JSDynamic, JSSymbolKeyed, JSAccessorKeyed, JSReacti
         }
     }
 
-    public var isSealed: Bool { !extensible && storage.keys.allSatisfy { !(slots[$0] ?? JSPropertySlot()).configurable } }
-    public var isFrozen: Bool { !extensible && storage.keys.allSatisfy { let s = slots[$0] ?? JSPropertySlot(); return !s.configurable && (s.isAccessor || !s.writable) } }
+    public var isSealed: Bool { !extensible && ownKeys.allSatisfy { !(slots[JSPropertyKey($0)] ?? JSPropertySlot()).configurable } }
+    public var isFrozen: Bool { !extensible && ownKeys.allSatisfy { let s = slots[JSPropertyKey($0)] ?? JSPropertySlot(); return !s.configurable && (s.isAccessor || !s.writable) } }
 
     public func jsAccessorKind(_ key: String) -> String? {
         guard let slot = slots[JSPropertyKey(key)], slot.isAccessor else { return nil }
@@ -427,28 +559,13 @@ public final class JSObject: JSDynamic, JSSymbolKeyed, JSAccessorKeyed, JSReacti
 
     /// `Object.getOwnPropertyNames(object)`: string keys, enumerable or not.
     public var ownPropertyNames: [String] {
-        indexKeys.map { String($0) } + namedKeys.filter { !jsIsSymbolKey($0) }
-    }
-
-    private func define(_ key: String, _ value: Any?) {
-        if storage.updateValue(value, forKey: JSPropertyKey(key)) == nil {
-            if let index = jsArrayIndex(key) {
-                var low = 0, high = indexKeys.count
-                while low < high {
-                    let mid = (low + high) / 2
-                    if indexKeys[mid] < index { low = mid + 1 } else { high = mid }
-                }
-                indexKeys.insert(index, at: low)
-            } else {
-                namedKeys.append(key)
-            }
-        }
+        isSmall ? smallKeys : indexKeys.map { String($0) } + namedKeys.filter { !jsIsSymbolKey($0) }
     }
 
     /// `key in object` for own keys.
     public func has(_ key: String) -> Bool {
         jsTracker?.track()
-        return storage[JSPropertyKey(key)] != nil
+        return hasOwn(key)
     }
 
     /// `delete object[key]`.
@@ -456,12 +573,7 @@ public final class JSObject: JSDynamic, JSSymbolKeyed, JSAccessorKeyed, JSReacti
     public func delete(_ key: String) -> Bool {
         if let slot = slots[JSPropertyKey(key)], !slot.configurable { return false }
         slots[JSPropertyKey(key)] = nil
-        guard storage.removeValue(forKey: JSPropertyKey(key)) != nil else { return true }
-        if let index = jsArrayIndex(key) {
-            indexKeys.removeAll { $0 == index }
-        } else if let position = namedKeys.firstIndex(where: { jsStringEquals($0, key) }) {
-            namedKeys.remove(at: position)
-        }
+        guard removeOwn(key) else { return true }
         jsTracker?.trigger()
         return true
     }
@@ -469,13 +581,13 @@ public final class JSObject: JSDynamic, JSSymbolKeyed, JSAccessorKeyed, JSReacti
     /// `Object.keys(object)` as a Swift array.
     public var keys: [String] {
         jsTracker?.track()
-        let all = indexKeys.map { String($0) } + namedKeys.filter { !jsIsSymbolKey($0) }
+        let all = ownPropertyNames
         return slots.isEmpty ? all : all.filter { slots[JSPropertyKey($0)]?.enumerable ?? true }
     }
 
     public var jsSymbolKeys: [String] {
         jsTracker?.track()
-        return namedKeys.filter(jsIsSymbolKey)
+        return isSmall ? [] : namedKeys.filter(jsIsSymbolKey)
     }
 
     public subscript(jsKey key: String) -> Any? {

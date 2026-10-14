@@ -40,13 +40,14 @@ private func jsJSONInternalize(_ holder: Any, _ key: String, _ reviver: Any?) th
     return try jsInvoke(reviver, holder, [key, value])
 }
 
-/// A single pass over the text's UTF-8 bytes, without recursion: the values of the containers still open
-/// wait on one stack, and each container is built once, when it closes.
+/// A single pass over the text's UTF-8 bytes, without recursion: the keys and values of the containers still open
+/// wait on two stacks, and a container that closes takes its own off them, moved into arrays of its exact size
+/// that become its storage.
 private struct JSJSONParser {
     private let bytes: UnsafeBufferPointer<UInt8>
     private var position = 0
-    private var values: [Any?] = []
-    private var keys: [String] = []
+    private let values = JSMoveStack<Any?>()
+    private let keys = JSMoveStack<String>()
     private var open: [(isObject: Bool, values: Int, keys: Int)] = []
     /// A string's bytes once an escape means they are no longer a slice of the input.
     private var unescaped: [UInt8] = []
@@ -80,7 +81,7 @@ private struct JSJSONParser {
                     value = JSObject()
                 } else {
                     open.append((true, values.count, keys.count))
-                    keys.append(try scanPropertyKey(message: "Expected property name or '}'"))
+                    keys.push(try scanPropertyKey(message: "Expected property name or '}'"))
                     continue parseValue
                 }
             case 0x5B:
@@ -97,19 +98,18 @@ private struct JSJSONParser {
                 throw unexpected()
             }
             while let container = open.last {
-                values.append(value)
+                values.push(value)
                 skipWhitespace()
                 if container.isObject {
                     if peek() == 0x2C {
                         position += 1
                         skipWhitespace()
-                        keys.append(try scanPropertyKey(message: "Expected double-quoted property name"))
+                        keys.push(try scanPropertyKey(message: "Expected double-quoted property name"))
                         continue parseValue
                     }
                     guard peek() == 0x7D else { throw unexpected(message: "Expected ',' or '}' after property value") }
                     position += 1
-                    value = JSObject(keys: keys[container.keys...], values: values[container.values...])
-                    keys.removeSubrange(container.keys...)
+                    value = JSObject(keys: keys.pop(from: container.keys), values: values.pop(from: container.values))
                 } else {
                     if peek() == 0x2C {
                         position += 1
@@ -117,9 +117,8 @@ private struct JSJSONParser {
                     }
                     guard peek() == 0x5D else { throw unexpected(message: "Expected ',' or ']' after array element") }
                     position += 1
-                    value = JSArray<Any?>(Array(values[container.values...]))
+                    value = JSArray<Any?>(values.pop(from: container.values))
                 }
-                values.removeSubrange(container.values...)
                 open.removeLast()
             }
             skipWhitespace()
@@ -334,6 +333,43 @@ private struct JSJSONParser {
 
     private func unexpected(message: String? = nil) -> JSException {
         JSJSONSyntax(bytes, position).unexpected(message: message)
+    }
+}
+
+/// A stack whose top elements leave as an array, moved rather than copied and destroyed.
+private final class JSMoveStack<Element> {
+    private var base: UnsafeMutablePointer<Element>
+    private var capacity = 64
+    private(set) var count = 0
+
+    init() { base = .allocate(capacity: capacity) }
+
+    deinit {
+        base.deinitialize(count: count)
+        base.deallocate()
+    }
+
+    func push(_ element: Element) {
+        if count == capacity {
+            let larger = UnsafeMutablePointer<Element>.allocate(capacity: capacity * 2)
+            larger.moveInitialize(from: base, count: count)
+            base.deallocate()
+            base = larger
+            capacity *= 2
+        }
+        (base + count).initialize(to: element)
+        count += 1
+    }
+
+    /// The elements from `start` up, moved off the stack into an array of their own.
+    func pop(from start: Int) -> [Element] {
+        let n = count - start
+        count = start
+        guard n > 0 else { return [] }
+        return [Element](unsafeUninitializedCapacity: n) { array, initialized in
+            array.baseAddress!.moveInitialize(from: base + start, count: n)
+            initialized = n
+        }
     }
 }
 
