@@ -10,7 +10,9 @@
 		"237-shared-top-names": "Top-level names (an enum, files of the same name in two folders) that several modules declare clash; swiftc crashes (Swift translator).",
 		"238-builtin-constructors-as-values": "Built-in constructors used as values (map(Number), filter(Boolean), e.constructor === TypeError) do not compile (Swift translator, SEMANTICS #7).",
 		"239-destructuring-assignment": "Destructuring assignment to existing variables is refused (Swift translator, SEMANTICS #8).",
-		"242-var-redeclared": "A var declared again, or declared in a loop head or branch and used after it, does not compile (Swift translator, SEMANTICS #14)."
+		"242-var-redeclared": "A var declared again, or declared in a loop head or branch and used after it, does not compile (Swift translator, SEMANTICS #14).",
+		"243-array-holes": "Object.keys lists the holes of new Array(n) (Swift runtime).",
+		"244-optional-member-later": "An optional member set after the object is made is listed in declaration order, not as the last key (Swift translator)."
 	},
 	"kotlin": {}
 }

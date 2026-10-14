@@ -1806,12 +1806,25 @@ export class Translator implements AsyncTranslator {
     const firsts = new Map<string, number>();
     for (const f of fields) { const k = f.name[0].toLowerCase() + f.name.slice(1); firsts.set(k, (firsts.get(k) ?? 0) + 1); }
     const jvmField = (f: ShapeField) => !overrides?.has(f.name) && (firsts.get(f.name[0].toLowerCase() + f.name.slice(1)) ?? 0) > 1;
-    const params = [...fields, ...allFields.filter((f) => f.symbol)].map((f) => `${overrides?.has(f.name) ? 'override ' : jvmField(f) ? '@JvmField ' : ''}var ${ident(f.name)}: ${f.type}${isNullable(f.type) ? ' = null' : ''}`);
-    const lines = [`class ${name}(${[...params, 'private val jsOrder: List<String>? = null'].join(', ')}) : ${[implementing ?? 'JSDynamic', ...protocols.map((x) => x.conformance)].join(', ')} {`];
+    const optional = fields.filter((f) => f.type.endsWith('?') && !isFunctionType(f.type));
+    // An optional member set after the object is made becomes its last key, as a property JavaScript adds does.
+    const symbolic = allFields.some((f) => f.symbol);
+    const tracked = new Set(symbolic ? [] : optional.filter((f) => !overrides?.has(f.name) && !jvmField(f)).map((f) => f.name));
+    const params = [...fields, ...allFields.filter((f) => f.symbol)].map((f) => `${tracked.has(f.name) ? '' : `${overrides?.has(f.name) ? 'override ' : jvmField(f) ? '@JvmField ' : ''}var `}${ident(f.name)}: ${f.type}${isNullable(f.type) ? ' = null' : ''}`);
+    const lines = [`class ${name}(${[...params, `${tracked.size ? '' : 'private val '}jsOrder: List<String>? = null`].join(', ')}) : ${[implementing ?? 'JSDynamic', ...protocols.map((x) => x.conformance)].join(', ')} {`];
     for (const x of protocols) lines.push(...x.lines);
-    if (allFields.some((f) => f.symbol)) {
+    if (symbolic) {
       lines.push(...this.dynamicMembers(fields, className, false), '}');
       return lines.join('\n');
+    }
+    const declared = `listOf(${fields.map((f) => kotlinString(f.name)).join(', ')})`;
+    if (tracked.size) {
+      lines.push('    private var jsOrder: List<String>? = jsOrder');
+      for (const f of fields) {
+        if (!tracked.has(f.name)) continue;
+        lines.push(`    var ${ident(f.name)}: ${f.type} = ${ident(f.name)}`, `        set(value) {`, `            if (field == null && value != null) jsKeyAdded(${kotlinString(f.name)})`, '            field = value', '        }');
+      }
+      lines.push('    private fun jsKeyAdded(key: String) {', `        val order = jsOrder ?: ${declared}.filter(::jsHas)`, '        if (key !in order) jsOrder = order + key', '    }');
     }
     // Read from an untyped object (a cast of JSON.parse): the keys it has beyond the type's stay readable, in its order.
     lines.push('    private var jsExtra: JSDynamic? = null');
@@ -1823,10 +1836,9 @@ export class Translator implements AsyncTranslator {
       : !this.library && zero[f.type] ? this.fromAny(`(jsField(o, ${kotlinString(f.name)}) ?: ${zero[f.type]})`, f.type) : this.fromAny(`jsField(o, ${kotlinString(f.name)})`, f.type));
     lines.push(`        fun fromJS(o: Any?): ${name} = ${name}(${[...fields.map((f) => `${ident(f.name)} = ${field(f)}`), 'jsOrder = (o as? JSDynamic)?.jsKeys'].join(', ')}).also { it.jsExtra = o as? JSDynamic }`);
     lines.push('    }');
-    const optional = fields.filter((f) => f.type.endsWith('?') && !isFunctionType(f.type));
+    if (optional.length) lines.push(`    private fun jsHas(key: String): Boolean = when (key) { ${optional.map((f) => `${kotlinString(f.name)} -> this.${ident(f.name)} != null`).join('; ')}; else -> true }`);
     lines.push(`    override val jsKeys: List<String>`);
-    const present = optional.length ? `.filter { when (it) { ${optional.map((f) => `${kotlinString(f.name)} -> this.${ident(f.name)} != null`).join('; ')}; else -> true } }` : '';
-    lines.push(`        get() = (jsOrder ?: listOf(${fields.map((f) => kotlinString(f.name)).join(', ')})).let { order -> order + (jsExtra?.jsKeys ?: listOf()).filter { it !in order } }${present}`);
+    lines.push(`        get() = (jsOrder ?: ${declared}).let { order -> order + (jsExtra?.jsKeys ?: listOf()).filter { it !in order } }${optional.length ? '.filter(::jsHas)' : ''}`);
     // Keys set beyond the type's (`Object.assign(shape, more)`) are kept with the extra ones.
     lines.push(...this.dynamicMembers(fields, className, false, 'jsExtra?.jsGet(key)', '(jsExtra ?: JSObject().also { jsExtra = it }).jsSet(key, value)').slice(1));
     lines.push('}');
@@ -1963,6 +1975,9 @@ export class Translator implements AsyncTranslator {
       const typed = `jsFunction${fn.params.length}<${[...fn.params, fn.ret].join(', ')}>`;
       return /\)\?$/.test(type) ? `jsUnlessNullish(${code}) { ${typed}(it) }` : `${typed}(${code})`;
     }
+    // A promise its type promises may be any thenable: adopted, as awaiting it or `Promise.resolve` would.
+    const promised = /^JSPromise<(.*)>$/.exec(base);
+    if (promised) return type.endsWith('?') ? `jsUnlessNullish(${code}) { jsPromiseOf<${promised[1]}>(it) }` : `jsPromiseOf<${promised[1]}>(${code})`;
     // Library mode: JavaScript's null where an object goes (`cond ? entry.fragment : null`) is Kotlin's.
     // A string, number or boolean slot given another kind of value (core's `unsetValue` for a css variable) holds none.
     if (this.library && /^(String|Double|Boolean)\?$/.test(type)) return `(jsJavaArgument(${code}) as? ${type.slice(0, -1)})`;
@@ -7516,8 +7531,7 @@ export class Translator implements AsyncTranslator {
         if (this.typeOf(args[0]) === 'Any?' && !element && !(this.lenient && el !== 'Any?' && el !== 'Double')) throw this.error(e, 'new Array of one untyped value (a length or an element)');
         return `jsArrayOf<${el}>(${this.coerce(args[0], el)})`;
       }
-      // n empty slots: a number, string or boolean cannot hold undefined, so its zero stands in until written.
-      if (el.endsWith('?') || ['Double', 'String', 'Boolean'].includes(el)) return `jsArrayFilled<${el}>(${this.expr(args[0])}, ${this.zero(el)})`;
+      if (el.endsWith('?') || ['Double', 'String', 'Boolean'].includes(el)) return `jsArrayOfHoles<${el}>(${this.toNumber(args[0])})`;
       throw this.error(e, `new Array of a length, of ${el} (empty slots need an optional element type)`);
     }
   }
