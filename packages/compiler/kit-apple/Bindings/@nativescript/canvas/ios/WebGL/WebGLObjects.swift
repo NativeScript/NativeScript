@@ -4,27 +4,32 @@ import CanvasNative
 
 /// An object a WebGL context hands out that names a GL object by its id.
 class WebGLNameHost: CanvasHost {
+    nonisolated deinit {}
     let name: UInt32
     init(_ name: UInt32) { self.name = name }
 }
 
 /// `WebGLBuffer`.
 final class WebGLBufferHost: WebGLNameHost {
+    nonisolated deinit {}
     override class var className: String? { "WebGLBuffer" }
 }
 
 /// `WebGLFramebuffer`.
 final class WebGLFramebufferHost: WebGLNameHost {
+    nonisolated deinit {}
     override class var className: String? { "WebGLFramebuffer" }
 }
 
 /// `WebGLProgram`.
 final class WebGLProgramHost: WebGLNameHost {
+    nonisolated deinit {}
     override class var className: String? { "WebGLProgram" }
 }
 
 /// `WebGLRenderbuffer`.
 final class WebGLRenderbufferHost: WebGLNameHost {
+    nonisolated deinit {}
     /// The `isRenderbuffer` property `getFramebufferAttachmentParameter` gives the renderbuffers it returns.
     var marksRenderbuffer = false
 
@@ -37,36 +42,43 @@ final class WebGLRenderbufferHost: WebGLNameHost {
 
 /// `WebGLShader`.
 final class WebGLShaderHost: WebGLNameHost {
+    nonisolated deinit {}
     override class var className: String? { "WebGLShader" }
 }
 
 /// `WebGLTexture`.
 final class WebGLTextureHost: WebGLNameHost {
+    nonisolated deinit {}
     override class var className: String? { "WebGLTexture" }
 }
 
 /// `WebGLQuery`.
 final class WebGLQueryHost: WebGLNameHost {
+    nonisolated deinit {}
     override class var className: String? { "WebGLQuery" }
 }
 
 /// `WebGLSampler`.
 final class WebGLSamplerHost: WebGLNameHost {
+    nonisolated deinit {}
     override class var className: String? { "WebGLSampler" }
 }
 
 /// `WebGLTransformFeedback`.
 final class WebGLTransformFeedbackHost: WebGLNameHost {
+    nonisolated deinit {}
     override class var className: String? { "WebGLTransformFeedback" }
 }
 
 /// `WebGLVertexArrayObject`.
 final class WebGLVertexArrayObjectHost: WebGLNameHost {
+    nonisolated deinit {}
     override class var className: String? { "WebGLVertexArrayObject" }
 }
 
 /// `WebGLUniformLocation`.
 final class WebGLUniformLocationHost: CanvasHost {
+    nonisolated deinit {}
     let location: Int32
     init(_ location: Int32) { self.location = location }
     override class var className: String? { "WebGLUniformLocation" }
@@ -74,6 +86,7 @@ final class WebGLUniformLocationHost: CanvasHost {
 
 /// `WebGLSync`.
 final class WebGLSyncHost: CanvasHost {
+    nonisolated deinit {}
     let sync: OpaquePointer
     init(_ sync: OpaquePointer) { self.sync = sync }
     override class var className: String? { "WebGLSync" }

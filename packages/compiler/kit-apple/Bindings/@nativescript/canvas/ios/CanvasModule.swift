@@ -21,6 +21,7 @@ protocol CanvasModulePart {
 /// `global.CanvasModule`, as @nativescript/canvas's `CanvasJSIModule::install` makes it for the
 /// engine: the same functions and classes, over the same C API (`canvas_native_*`).
 final class CanvasModule: CanvasHost, JSConstructible {
+    nonisolated deinit {}
     /// `new CanvasModule().install()`, which the plugin runs to install the engine's module: already installed.
     func jsConstruct(_ arguments: [Any?]) throws -> Any? { self }
 

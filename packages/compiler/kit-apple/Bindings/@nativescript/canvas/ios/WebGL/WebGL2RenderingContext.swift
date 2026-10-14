@@ -26,6 +26,7 @@ enum WebGL2Method: String, CaseIterable {
 
 /// `WebGL2RenderingContext`.
 final class WebGL2RenderingContextHost: WebGLRenderingContextHost {
+    nonisolated deinit {}
     init(state: OpaquePointer) { super.init(state: state, webgl2: true) }
 
     override class var className: String? { "WebGL2RenderingContext" }

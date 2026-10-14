@@ -545,7 +545,10 @@ const extensions = iosExtensions({ app, out, bundle, packages, signing, team: re
 const swiftMode = { SWIFT_VERSION: '"6"', SWIFT_DEFAULT_ACTOR_ISOLATION: 'MainActor' };
 // Release only: Debug keeps Swift 6's run-time isolation checks, so an isolation mistake traps during development.
 const swiftModeRelease = `      configs:\n        Release:\n          OTHER_SWIFT_FLAGS: "$(inherited) -Xfrontend -disable-dynamic-actor-isolation"\n`;
-const appSettings = { PRODUCT_BUNDLE_IDENTIFIER: bundle, ...swiftMode, ...resources.settings, ...coreNative.settings, ...pluginLines.settings, ...signing };
+// The app's own Swift (App_Resources/iOS/src), compiled in the app's target, was written for Swift 5: the target keeps that mode,
+// with the Swift 6 features the generated code relies on (a default argument evaluated in its function's isolation).
+const appMode = native.appSwift ? { ...swiftMode, SWIFT_VERSION: '"5"', SWIFT_UPCOMING_FEATURE_ISOLATED_DEFAULT_VALUES: 'YES', SWIFT_UPCOMING_FEATURE_REGION_BASED_ISOLATION: 'YES', SWIFT_UPCOMING_FEATURE_INFER_SENDABLE_FROM_CAPTURES: 'YES', SWIFT_UPCOMING_FEATURE_GLOBAL_ACTOR_ISOLATED_TYPES_USABILITY: 'YES' } : swiftMode;
+const appSettings = { PRODUCT_BUNDLE_IDENTIFIER: bundle, ...appMode, ...resources.settings, ...coreNative.settings, ...pluginLines.settings, ...signing };
 // Reflection metadata keeps every type's descriptor, and through it the type and all it calls, in the
 // binary; the kit reflects only on tuples (Mirror of a tuple needs none), so a Release build has none.
 // A framework the kit imports for code the app never reaches (WebKit for WebView, Photos for saving

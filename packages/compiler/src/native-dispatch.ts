@@ -143,7 +143,8 @@ function toNative(code: string, type: SwiftType): string | null {
   const t = type.replace(/[?!]$/, '').replace(/^\((.*)\)$/, (whole, inner) => (functionParts(inner) ? inner : whole));
   if (/->/.test(t)) {
     const block = blockOf(code, t);
-    return block && optional ? `(jsIsNullish(${code}) ? nil : ${block})` : block;
+    // The block typed as the property's: Swift's type checker gives up on the conditional's sendable closure otherwise.
+    return block && optional ? `(jsIsNullish(${code}) ? nil : (${block} as ${t}))` : block;
   }
   let value: string;
   if (t === 'String') value = `jsToString(${code})`;

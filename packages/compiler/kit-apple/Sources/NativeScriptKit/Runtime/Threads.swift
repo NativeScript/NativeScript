@@ -159,6 +159,35 @@ import Foundation
     }
 }
 
+@inlinable nonisolated public func jsEnter<A, B, C, D, E, F, G>(_ body: @escaping @MainActor (A, B, C, D, E, F, G) -> Void) -> @Sendable (A, B, C, D, E, F, G) -> Void {
+    let body = JSCarried(body)
+    return { a, b, c, d, e, f, g in
+        let carried = JSCarried((a, b, c, d, e, f, g))
+        jsEnterPosting { body.value(carried.value.0, carried.value.1, carried.value.2, carried.value.3, carried.value.4, carried.value.5, carried.value.6) }
+    }
+}
+@inlinable nonisolated public func jsEnterAwaiting<A, B, C, D, E, F, G, R>(_ body: @escaping @MainActor (A, B, C, D, E, F, G) -> R) -> @Sendable (A, B, C, D, E, F, G) -> R {
+    let body = JSCarried(body)
+    return { a, b, c, d, e, f, g in
+        let carried = JSCarried((a, b, c, d, e, f, g))
+        return jsEnterWaiting { body.value(carried.value.0, carried.value.1, carried.value.2, carried.value.3, carried.value.4, carried.value.5, carried.value.6) }
+    }
+}
+@inlinable nonisolated public func jsEnter<A, B, C, D, E, F, G, H>(_ body: @escaping @MainActor (A, B, C, D, E, F, G, H) -> Void) -> @Sendable (A, B, C, D, E, F, G, H) -> Void {
+    let body = JSCarried(body)
+    return { a, b, c, d, e, f, g, h in
+        let carried = JSCarried((a, b, c, d, e, f, g, h))
+        jsEnterPosting { body.value(carried.value.0, carried.value.1, carried.value.2, carried.value.3, carried.value.4, carried.value.5, carried.value.6, carried.value.7) }
+    }
+}
+@inlinable nonisolated public func jsEnterAwaiting<A, B, C, D, E, F, G, H, R>(_ body: @escaping @MainActor (A, B, C, D, E, F, G, H) -> R) -> @Sendable (A, B, C, D, E, F, G, H) -> R {
+    let body = JSCarried(body)
+    return { a, b, c, d, e, f, g, h in
+        let carried = JSCarried((a, b, c, d, e, f, g, h))
+        return jsEnterWaiting { body.value(carried.value.0, carried.value.1, carried.value.2, carried.value.3, carried.value.4, carried.value.5, carried.value.6, carried.value.7) }
+    }
+}
+
 /// Script's code of a block returning nothing: run here on the main thread, else posted to it.
 @usableFromInline nonisolated func jsEnterPosting(_ body: @escaping @MainActor () -> Void) {
     if pthread_main_np() != 0 { jsOnMainThread(body) } else { JSPosted.post { body(); jsTaskRan() } }

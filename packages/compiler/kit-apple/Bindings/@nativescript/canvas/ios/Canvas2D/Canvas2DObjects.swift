@@ -290,6 +290,7 @@ final class CanvasPatternHost: CanvasHost {
 
 /// `TextMetrics`, as `measureText` gives it: its twelve values, read when it was made.
 final class TextMetricsHost: CanvasHost {
+    nonisolated deinit {}
     /// In the order `canvas_native_context_measure_text_to` writes them.
     static let keys = ["width", "actualBoundingBoxLeft", "actualBoundingBoxRight", "actualBoundingBoxAscent", "actualBoundingBoxDescent",
                        "fontBoundingBoxAscent", "fontBoundingBoxDescent", "emHeightAscent", "emHeightDescent",
