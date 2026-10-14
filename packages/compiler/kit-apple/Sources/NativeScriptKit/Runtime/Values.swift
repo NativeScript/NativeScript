@@ -239,9 +239,7 @@ public func jsStringEquals(_ a: String?, _ b: String?) -> Bool {
 @inlinable public func ~= (pattern: String, value: String) -> Bool { jsStringEquals(pattern, value) }
 
 /// `a < b` for strings: UTF-16 code unit order.
-public func jsStringLess(_ a: String, _ b: String) -> Bool {
-    a.utf16.lexicographicallyPrecedes(b.utf16)
-}
+public func jsStringLess(_ a: String, _ b: String) -> Bool { jsCompareUnits(a, b) < 0 }
 
 /// A property or collection key hashed and compared by code units.
 struct JSPropertyKey: Hashable {

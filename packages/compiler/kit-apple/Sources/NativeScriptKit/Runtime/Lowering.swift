@@ -123,17 +123,7 @@ private func clampIndex(_ v: Double, _ count: Int) -> Int {
 }
 
 /// Compares strings by UTF-16 code units, as JavaScript's `<` does: -1, 0 or 1.
-public func jsCompare(_ a: String, _ b: String) -> Int {
-    var x = a.utf16.makeIterator(), y = b.utf16.makeIterator()
-    while true {
-        switch (x.next(), y.next()) {
-        case (nil, nil): return 0
-        case (nil, _): return -1
-        case (_, nil): return 1
-        case let (p?, q?): if p != q { return p < q ? -1 : 1 }
-        }
-    }
-}
+public func jsCompare(_ a: String, _ b: String) -> Int { jsCompareUnits(a, b) }
 
 public func jsStartsWith(_ s: String, _ search: String, _ position: Double? = nil) -> Bool {
     let u = units(s)
