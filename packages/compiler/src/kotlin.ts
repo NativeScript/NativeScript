@@ -958,7 +958,7 @@ export class Translator implements AsyncTranslator {
 
   /** A variable, parameter or field the program declares, in lenient code. */
   private isLenientDecl(d: ts.Node | undefined): boolean {
-    return this.lenient && !!d && (ts.isVariableDeclaration(d) || ts.isParameter(d) || ts.isPropertyDeclaration(d) || ts.isPropertySignature(d)) && !d.getSourceFile().isDeclarationFile && !(ts.isParameter(d) && d.dotDotDotToken);
+    return this.lenient && !!d && (ts.isVariableDeclaration(d) || ts.isParameter(d) || ts.isPropertyDeclaration(d) || ts.isPropertySignature(d)) && !d.getSourceFile().isDeclarationFile && !(ts.isParameter(d) && d.dotDotDotToken) && !presentConst(d);
   }
 
   /** A call of a lenient function declared to give an object: unwrapped unless the value is only tested or passed on. */
@@ -1354,6 +1354,7 @@ export class Translator implements AsyncTranslator {
     // Library mode: the module's functions and variables are its object's members; its init runs in that object.
     const moduleObject = this.library?.moduleName?.(sf.fileName) ?? null;
     const members: string[] = moduleObject ? [] : out;
+    const lexical: string[] = [];
     let current: ts.Statement | null = null;
     const later = (code: () => string) => { this.indent = '    '; try { init.push((current && this.lines ? this.lines.mark(current) : '') + code()); } finally { this.indent = ''; } };
     for (const st of sf.statements) {
@@ -1463,7 +1464,13 @@ export class Translator implements AsyncTranslator {
               later(() => `    ${name} = ${this.expr(d.initializer!)}`);
               continue;
             }
-            members.push(moduleProperty(this.deferredDeclaration(name, t)));
+            const deferred = this.deferredDeclaration(name, t);
+            // A `let` or `const` read before its declaration runs is JavaScript's ReferenceError: the runtime knows its name.
+            if (deferred.startsWith('lateinit ') && st.declarationList.flags & ts.NodeFlags.BlockScoped) {
+              const kotlinName = name.replace(/`/g, '');
+              lexical.push(kotlinName === d.name.text ? kotlinName : `${kotlinName}:${d.name.text}`);
+            }
+            members.push(moduleProperty(deferred));
             later(() => `    ${name} = ${this.coerce(d.initializer!, t)}`);
           }
           continue;
@@ -1475,8 +1482,10 @@ export class Translator implements AsyncTranslator {
         this.errors.push((located as Error).message ?? String(located));
       } finally { out.push(...this.hoisted.splice(0)); }
     }
+    const names = lexical.map(kotlinString).join(', ');
+    if (lexical.length && !moduleObject) out.push(`private val __lexical_${ident(sf.fileName.replace(/^.*[\\/]/, '').replace(/\W+/g, '_'))} = jsLexical(${names})`);
     if (moduleObject) {
-      const body = [...members, ...(init.length ? [`fun __init() {\n${init.join('\n')}\n}`] : [])];
+      const body = [...(lexical.length ? [`init {\n    jsLexical(${names})\n}`] : []), ...members, ...(init.length ? [`fun __init() {\n${init.join('\n')}\n}`] : [])];
       out.push([`${this.threadAnnotation(sf)}object ${moduleObject} {`, ...body.map((m) => m.split('\n').map((x) => (x ? '    ' + x : x)).join('\n')), '}'].join('\n'));
     }
     return { code: out.join('\n\n') + '\n', init };
@@ -6684,7 +6693,7 @@ export class Translator implements AsyncTranslator {
     }
     if (ts.isParenthesizedExpression(callee)) return this.call(ts.factory.updateCallExpression(e, callee.expression, e.typeArguments, e.arguments));
     // A function read from a record may be missing: calling it then throws, as calling undefined does.
-    if (ts.isElementAccessExpression(callee) && /^JSRecord</.test(this.typeOf(callee.expression))) return `jsCallable(${this.expr(callee)})(${this.args(e).join(', ')})`;
+    if (ts.isElementAccessExpression(callee) && /^JSRecord</.test(this.typeOf(callee.expression))) return `(${this.expr(callee)} ?: jsNotAFunction(${kotlinString(callee.getText().replace(/\s+/g, ''))}))(${this.args(e).join(', ')})`;
     // A call's untyped result called (`closeModalGetter(args)(result)`, a `Function`): as script calls it.
     if (ts.isCallExpression(callee) && this.typeOf(callee) === 'Any?') {
       const code = `jsCall(${this.expr(callee)}${this.untypedArgs(e.arguments)})`;
@@ -6693,7 +6702,7 @@ export class Translator implements AsyncTranslator {
     }
     if (ts.isElementAccessExpression(callee) || ts.isCallExpression(callee)) return `${this.expr(callee)}(${this.args(e).join(', ')})`;
     // `handler!(…)`: the function, where undefined is not a function.
-    if (ts.isNonNullExpression(callee) && /\?$/.test(this.typeOf(callee.expression))) return `jsCallable(${this.expr(callee.expression)})(${this.args(e).join(', ')})`;
+    if (ts.isNonNullExpression(callee) && /\?$/.test(this.typeOf(callee.expression))) return `(${this.expr(callee.expression)} ?: jsNotAFunction(${kotlinString(callee.expression.getText().replace(/\s+/g, ''))}))(${this.args(e).join(', ')})`;
     throw this.error(e, 'call');
   }
 
@@ -9034,6 +9043,13 @@ function chainedThrough(cls: ts.ClassDeclaration, name: string): boolean {
   };
   visit(cls);
   return found;
+}
+
+/** A `const` made an object where it is declared (`new`, a literal, a function): never missing, whatever lenient code may hold elsewhere. */
+function presentConst(d: ts.Node): boolean {
+  if (!ts.isVariableDeclaration(d) || !ts.isIdentifier(d.name) || !d.initializer || !(ts.getCombinedNodeFlags(d) & ts.NodeFlags.Const)) return false;
+  const init = ts.skipOuterExpressions(d.initializer);
+  return ts.isNewExpression(init) || ts.isObjectLiteralExpression(init) || ts.isArrayLiteralExpression(init) || ts.isArrowFunction(init) || ts.isFunctionExpression(init) || ts.isClassExpression(init);
 }
 
 /** A `var` declaring a variable an earlier `var` of the same block declared. */

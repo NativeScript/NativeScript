@@ -92,6 +92,7 @@ fun jsCaught(error: Throwable): Any? = when (error) {
 
 private fun jsCaughtJvm(error: Throwable): Any? = when (error) {
     is StackOverflowError -> JSRangeError("Maximum call stack size exceeded")
+    is UninitializedPropertyAccessException -> jsLexicalName(error)?.let { JSReferenceError("Cannot access '$it' before initialization").withFrames(error) } ?: JSError(error.message ?: error.toString()).withFrames(error)
     is NullPointerException -> JSTypeError(error.message ?: "Cannot read properties of undefined").withFrames(error)
     is ClassCastException -> JSTypeError(error.message ?: "").withFrames(error)
     else -> JSError(error.message ?: error.toString()).withFrames(error)
@@ -102,6 +103,20 @@ private fun <E : JSError> E.withFrames(error: Throwable): E {
     val frames = error.stackTrace.take(10)
     if (frames.isNotEmpty()) stack = jsErrorString + frames.joinToString("") { "\n    at ${it.className}.${it.methodName} (${it.fileName ?: "Unknown Source"}:${it.lineNumber})" }
     return this
+}
+
+/** The module-level `let` and `const` names Kotlin declares `lateinit`, each as `kotlinName` or `kotlinName:jsName`. */
+private val jsLexicalNames = java.util.concurrent.ConcurrentHashMap<String, String>()
+
+/** Registers a module's `let` and `const` names, so a read before their declaration runs is a ReferenceError. */
+fun jsLexical(vararg names: String) {
+    for (n in names) n.split(':').let { jsLexicalNames[it[0]] = it.getOrElse(1) { _ -> it[0] } }
+}
+
+/** The JavaScript name of the module variable a lateinit failure is of, when it is one. */
+private fun jsLexicalName(error: UninitializedPropertyAccessException): String? {
+    val name = error.message?.removePrefix("lateinit property ")?.removeSuffix(" has not been initialized") ?: return null
+    return jsLexicalNames[name]
 }
 
 /** `throw value`. */
