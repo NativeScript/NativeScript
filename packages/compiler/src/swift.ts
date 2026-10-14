@@ -1779,7 +1779,7 @@ export class Translator implements AsyncTranslator {
       if (ts.isModuleDeclaration(st)) { const ns = this.namespaceDecl(st, this.topName(st, st.name.text), later); if (ns) out.push(ns); continue; }
       // A function the kit implements in its place (core calling an npm package): references call the kit's.
       if (ts.isFunctionDeclaration(st) && st.name && this.library?.counterpart?.(sf.fileName, st.name.text) && !this.functionCounterpart(st)) continue;
-      if (ts.isFunctionDeclaration(st)) { if (st.name && st.body) member(this.func(st, ident(library ? st.name.text : this.topName(st, st.name.text)), library ? 'static ' : '')); continue; }
+      if (ts.isFunctionDeclaration(st)) { if (st.name && st.body) member([...this.docLines(st, ''), this.func(st, ident(library ? st.name.text : this.topName(st, st.name.text)), library ? 'static ' : '')].join('\n')); continue; }
       if (ts.isClassDeclaration(st)) {
         const target = this.patterns.mixinTarget(st);
         if (target) { out.push(this.mixinDecl(st, target)); continue; }
@@ -4366,7 +4366,8 @@ ${members.join('\n')}
     this.indent = '';
     lines.push('}');
     lines[0] = header();
-    return lines.join('\n');
+    this.documentMembers(cls, lines);
+    return [...this.docLines(cls, ''), ...lines].join('\n');
   }
 
   /**
@@ -4503,6 +4504,30 @@ ${members.join('\n')}
     let inherited = !this.library;
     for (let b = this.sourceBase(cls); b && !inherited; b = this.sourceBase(b)) inherited = b.members.some((x) => ts.isMethodDeclaration(x) && key(x.name) === own);
     return inherited && cls.name ? `${name}_${cls.name.text}` : name;
+  }
+
+  /** A declaration's JSDoc comment, as Swift's `///` lines at `indent`. */
+  docLines(node: ts.Node, indent: string): string[] {
+    const sf = node.getSourceFile();
+    const ranges = ts.getLeadingCommentRanges(sf.text, node.getFullStart()) ?? [];
+    const doc = ranges.filter((r) => r.kind === ts.SyntaxKind.MultiLineCommentTrivia && sf.text.startsWith('/**', r.pos) && !sf.text.startsWith('/**/', r.pos)).at(-1);
+    if (!doc) return [];
+    const body = sf.text.slice(doc.pos + 3, doc.end - 2).split('\n').map((l) => l.replace(/^\s*\* ?/, '').trimEnd());
+    while (body.length && !body[0].trim()) body.shift();
+    while (body.length && !body.at(-1)!.trim()) body.pop();
+    return body.map((l) => `${indent}///${l ? ` ${l}` : ''}`);
+  }
+
+  /** Each member's JSDoc put before the line declaring it, found by its name among a class's lines. */
+  private documentMembers(cls: ts.ClassLikeDeclaration, lines: string[]): void {
+    for (const m of cls.members) {
+      const doc = this.docLines(m, '    ');
+      if (!doc.length) continue;
+      const name = m.name && !ts.isComputedPropertyName(m.name) ? ident(m.name.getText().replace(/^['"]|['"]$/g, '')).replace(/[$^*+?.()|[\]{}\\]/g, '\\$&') : null;
+      const decl = ts.isConstructorDeclaration(m) ? /^ {4}(?:@\S+ )*(?:\w+ )*init\(/ : name && (ts.isMethodDeclaration(m) ? new RegExp(`^ {4}(?:@\\S+ )*(?:\\w+ )*func ${name}[(<]`) : new RegExp(`^ {4}(?:@\\S+ )*(?:\\w+ )*var ${name}\\b`));
+      const at = decl ? lines.findIndex((l) => decl.test(l)) : -1;
+      if (at > 0) lines.splice(at, 0, ...doc);
+    }
   }
 
   /** The class `X.new()` makes (`super.new()` in a native subclass's static method, its own class), whatever TypeScript types it. */
