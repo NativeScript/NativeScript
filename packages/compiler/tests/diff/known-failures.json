@@ -6,6 +6,9 @@
 	"kotlin": {
 		"238-builtin-constructors-as-values": "Fixed on wip/quality-kotlin (ff45852f3): remove this once both are on feat.",
 		"241-regexp-call": "Fixed on wip/quality-kotlin (82ce38739): remove this once both are on feat.",
-		"341-error-classes-as-values": "An error constructor held as a value typed ErrorConstructor (instanceof C, C.name, an array of them) does not compile (Kotlin translator, SEMANTICS #7)."
+		"341-error-classes-as-values": "An error constructor held as a value typed ErrorConstructor (instanceof C, C.name, an array of them) does not compile (Kotlin translator, SEMANTICS #7).",
+		"235-static-block": "Fixed on wip/quality-kotlin (033903a0d): remove this once both are on feat.",
+		"242-var-redeclared": "Fixed on wip/quality-kotlin (82ce38739): remove this once both are on feat.",
+		"345-static-block-var-scope": "Static blocks and a var read outside the block declaring it: wip/quality-kotlin has both (033903a0d, 82ce38739); check this case there once both are on feat."
 	}
 }

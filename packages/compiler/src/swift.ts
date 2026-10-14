@@ -1812,6 +1812,11 @@ export class Translator implements AsyncTranslator {
       const name = declName(d);
       const target = ref(d);
       const t = this.typeOf(d.name);
+      // `var total = 1; var total = total + 2`: the module's one variable, assigned again.
+      if (this.redeclaredVar(d)) {
+        if (d.initializer) later(() => `    ${target} = ${this.tryPrefix(d.initializer!)}${this.coerce(d.initializer!, t)}`);
+        continue;
+      }
       if (!d.initializer) { emit(`${modifiers}var ${name}: ${this.fieldType(t)}`); continue; }
       // A module's Angular `computed(fn)`: read through `x()`, its value is fn's whenever it is read.
       const fn = ts.isCallExpression(d.initializer) && this.calleeName(d.initializer) === 'computed' ? d.initializer.arguments[0] : undefined;
@@ -3956,6 +3961,7 @@ ${members.join('\n')}
     }
     const symbolFields: { key: string; member: string; type: string }[] = [];
     for (const m of cls.members) {
+      if (ts.isClassStaticBlockDeclaration(m)) { this.staticBlock(m, name); continue; }
       if (!ts.isPropertyDeclaration(m)) continue;
       const keyed = this.symbolMember(m.name);
       if (keyed?.key && !isStatic(m)) {
@@ -4900,7 +4906,8 @@ ${members.join('\n')}
 
   statements(list: ts.Statement[]): string[] {
     const fns = list.filter(ts.isFunctionDeclaration);
-    const forward = this.forwardDeclarations(list);
+    const scoped = this.scopedVars(list);
+    const forward = [...scoped, ...this.forwardDeclarations(list)];
     // What follows a read of a null receiver never runs.
     const throwsAt = list.findIndex((s) => !ts.isFunctionDeclaration(s) && leadingNeverRead(s, this.checker));
     const rest = list.filter((s, k) => !ts.isFunctionDeclaration(s) && (throwsAt < 0 || k < throwsAt));
@@ -4914,6 +4921,45 @@ ${members.join('\n')}
     if (throwsAt >= 0) {
       const read = leadingNeverRead(list[throwsAt], this.checker)!;
       out.push(`${this.indent}throw JSException(JSTypeError(${swiftString(`Cannot read properties of undefined (reading '${read.name.text}')`)}))`);
+    }
+    return out;
+  }
+
+  /**
+   * A function's `var`s declared in an inner block (a loop's head, a branch) and read or declared again outside it:
+   * declared once at the top of the function body, as JavaScript hoists them, and assigned where they are declared.
+   */
+  private scopedVars(list: ts.Statement[]): string[] {
+    const body = list[0]?.parent;
+    if (!body || !ts.isBlock(body) || !ts.isFunctionLike(body.parent)) return [];
+    const scope = (n: ts.Node) => ts.findAncestor(n.parent, (a) => ts.isBlock(a) || ts.isIterationStatement(a, false) || ts.isCaseBlock(a) || ts.isCatchClause(a) || ts.isFunctionLike(a))!;
+    const decls = new Map<ts.Symbol, ts.VariableDeclaration[]>();
+    const collect = (n: ts.Node): void => {
+      if (ts.isVariableDeclarationList(n) && !(n.flags & ts.NodeFlags.BlockScoped) && !ts.isForInStatement(n.parent) && !ts.isForOfStatement(n.parent)) {
+        for (const d of n.declarations) {
+          const sym = ts.isIdentifier(d.name) ? this.checker.getSymbolAtLocation(d.name) : undefined;
+          if (sym && !this.forwardDeclared.has(d)) decls.set(sym, [...(decls.get(sym) ?? []), d]);
+        }
+      }
+      if (!ts.isFunctionLike(n) && !ts.isClassLike(n)) ts.forEachChild(n, collect);
+    };
+    list.forEach(collect);
+    const refs = new Map<ts.Symbol, ts.Identifier[]>();
+    const collectRefs = (n: ts.Node): void => {
+      const sym = ts.isIdentifier(n) ? this.checker.getSymbolAtLocation(n) : undefined;
+      if (sym && decls.has(sym)) refs.set(sym, [...(refs.get(sym) ?? []), n as ts.Identifier]);
+      ts.forEachChild(n, collectRefs);
+    };
+    if (decls.size) list.forEach(collectRefs);
+    const out: string[] = [];
+    for (const [sym, ds] of decls) {
+      // Declared in a for-in or for-of head too, which Swift's loop declares for itself.
+      if (sym.declarations?.some((d) => ts.isVariableDeclaration(d) && (ts.isForInStatement(d.parent.parent) || ts.isForOfStatement(d.parent.parent)))) continue;
+      const inner = ds.filter((d) => scope(d) !== body);
+      const escapes = inner.some((d) => (refs.get(sym) ?? []).some((r) => !ts.findAncestor(r, (a) => a === scope(d))));
+      if (!escapes || !ts.isIdentifier(ds[0].name)) continue;
+      for (const d of ds) this.forwardDeclared.add(d);
+      out.push(`${this.indent}var ${ident(ds[0].name.text)}: ${this.deferred(this.typeOf(ds[0].name))}`);
     }
     return out;
   }
@@ -5272,7 +5318,7 @@ ${members.join('\n')}
     if (ts.isIdentifier(d.name)) {
       const t = this.typeOf(d.name);
       const name = ident(d.name.text);
-      if (this.forwardDeclared.has(d)) return `${i}${this.topNames().has(d) ? identPath(this.topNames().get(d)!) : name} = ${this.tryPrefix(d.initializer!)}${this.coerce(d.initializer!, t)}`;
+      if (this.forwardDeclared.has(d)) return d.initializer ? `${i}${this.topNames().has(d) ? identPath(this.topNames().get(d)!) : name} = ${this.tryPrefix(d.initializer)}${this.coerce(d.initializer, t)}` : '';
       // `var m` again in the same block: the same variable, assigned.
       if (this.redeclaredVar(d)) return d.initializer ? `${i}${name} = ${this.tryPrefix(d.initializer)}${this.coerce(d.initializer, t)}` : '';
       // Lenient code may read it before any assignment (`let result: string; if (!result) …`): undefined until assigned.
@@ -7710,6 +7756,27 @@ ${members.join('\n')}
 
   /** The assignments of a module-level class's static fields whose initializers throw, run in the module's order. */
   private staticInits: string[] | null = null;
+
+  /** `static { … }`: its statements run with the module's where the class is defined, in order with the static fields', `this` the class. */
+  private staticBlock(m: ts.ClassStaticBlockDeclaration, cls: string): void {
+    if (!this.staticInits) throw this.error(m, 'a static block in a class not at the top of a module');
+    const selves: ts.Node[] = [];
+    const visit = (n: ts.Node): void => {
+      if (n.kind === ts.SyntaxKind.ThisKeyword) selves.push(n);
+      // A function or class of its own has a `this` of its own; an arrow function's is the block's.
+      if (!ts.isFunctionDeclaration(n) && !ts.isFunctionExpression(n) && !ts.isClassLike(n) && !ts.isMethodDeclaration(n) && !ts.isAccessor(n)) ts.forEachChild(n, visit);
+    };
+    visit(m.body);
+    for (const n of selves) this.subst.set(n, ident(cls));
+    const saved = this.indent;
+    this.indent = '        ';
+    try {
+      this.staticInits.push(`    do {\n${m.body.statements.map((st) => this.stmt(st)).join('\n')}\n    }`);
+    } finally {
+      this.indent = saved;
+      for (const n of selves) this.subst.delete(n);
+    }
+  }
 
   /** Whether a class extends one of the library's error classes, directly or through the program's. */
   private errorBased(cls: ts.ClassLikeDeclaration): boolean {
