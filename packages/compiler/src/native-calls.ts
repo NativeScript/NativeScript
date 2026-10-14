@@ -323,6 +323,19 @@ export class NativeAPI {
     return !!base && !!lookupMember(base.module, base.name, decl.name.getText(), false);
   }
 
+  /** The Swift type of a native property or struct field a read reaches (null for anything else, or a property newer than the deployment target). */
+  propertyType(e: ts.PropertyAccessExpression): SwiftType | null {
+    try {
+      if (this.appMember(e.name) || (ts.isIdentifier(e.expression) && this.t.untypedLetReceiver(e.expression))) return null;
+      const r = this.receiver(e.expression);
+      if (!r) return null;
+      const struct = !r.isStatic && lookupStruct(r.module, r.name);
+      if (struct) return struct.fields[e.name.text] ?? null;
+      const m = lookupMember(r.module, r.name, e.name.text, r.isStatic);
+      return m && m.kind === 'property' && !(m.introduced && parseFloat(m.introduced) > DEPLOYMENT) ? m.type : null;
+    } catch { return null; }
+  }
+
   property(e: ts.PropertyAccessExpression): string | null {
     const enumCase = this.enumMember(e);
     if (enumCase) return enumCase;

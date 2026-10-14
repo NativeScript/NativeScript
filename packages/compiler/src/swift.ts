@@ -4401,7 +4401,7 @@ ${members.join('\n')}
     // Read narrowed to the class itself (`value as? C`, after an earlier test): whether the cast found one.
     if (declared && declared !== held) return sameClass(held, swiftType) && this.isObjectRef(e.left) ? 'present' : null;
     if (!/^[A-Z][\w.]*[?!]?$/.test(held) || !(sameClass(held, swiftType) || this.extendsNamed(this.checker.getTypeAtLocation(e.left), swiftType))) return null;
-    return /[?!]$/.test(held) ? 'present' : 'always';
+    return /[?!]$/.test(held) || !this.definitelyPresent(e.left) ? 'present' : 'always';
   }
 
   /** An expression the translation does not evaluate as code that may throw: a test it decides, a `delete` it writes with `try?`. */
@@ -4420,7 +4420,8 @@ ${members.join('\n')}
   private spreadKeys(e: ts.Expression): string {
     const t = this.typeOf(e);
     const base = t.replace(/[?!]$/, '');
-    if ((this.classNamed(base) || this.isObjectShape(base)) && !t.endsWith('!')) return t.endsWith('?') ? `((${this.expr(e)})?.jsKeys ?? [])` : `(${this.expr(e)}).jsKeys`;
+    // Held implicitly unwrapped, or maybe missing: through an optional.
+    if (this.classNamed(base) || this.isObjectShape(base)) return this.definitelyPresent(e) && !/[?!]$/.test(t) ? `(${this.expr(e)}).jsKeys` : `((${this.expr(e)} as ${base}?)?.jsKeys ?? [])`;
     return `((${this.expr(e)}) as? JSDynamic)?.jsKeys ?? []`;
   }
 
@@ -5301,9 +5302,14 @@ ${members.join('\n')}
   }
 
   private writes = new Map<ts.SourceFile, { vars: Set<ts.Symbol>; members: Set<ts.Symbol> }>();
-  /** The variables a file assigns after declaring them, and those whose members it assigns (`size.width = w`). */
-  private writtenIn(sf: ts.SourceFile): { vars: Set<ts.Symbol>; members: Set<ts.Symbol> } {
-    let w = this.writes.get(sf);
+  private allWrites = new Map<ts.SourceFile, { vars: Set<ts.Symbol>; members: Set<ts.Symbol> }>();
+  /**
+   * The variables a file assigns after declaring them, and those whose members it assigns (`size.width = w`); with
+   * `live`, only in the branches the translation keeps (deciding which reads this, without it).
+   */
+  private writtenIn(sf: ts.SourceFile, live = true): { vars: Set<ts.Symbol>; members: Set<ts.Symbol> } {
+    const cache = live ? this.writes : this.allWrites;
+    let w = cache.get(sf);
     if (w) return w;
     const found = w = { vars: new Set<ts.Symbol>(), members: new Set<ts.Symbol>() };
     const add = (to: Set<ts.Symbol>, id: ts.Node, shorthand = false) => {
@@ -5329,7 +5335,7 @@ ${members.join('\n')}
     };
     const visit = (n: ts.Node): void => {
       // A branch the translation drops (`typeof name !== 'string'` of a string) writes nothing.
-      if (ts.isIfStatement(n) || ts.isConditionalExpression(n)) {
+      if (live && (ts.isIfStatement(n) || ts.isConditionalExpression(n))) {
         const cond = ts.isIfStatement(n) ? n.expression : n.condition;
         const fixed = this.reach?.constant(cond) ?? this.staticTypeof(cond);
         if (fixed !== undefined) {
@@ -5345,7 +5351,7 @@ ${members.join('\n')}
       ts.forEachChild(n, visit);
     };
     visit(sf);
-    this.writes.set(sf, found);
+    cache.set(sf, found);
     return found;
   }
 
@@ -9143,6 +9149,34 @@ ${members.join('\n')}
   }
 
   /**
+   * Whether Swift holds a value that cannot be missing where it is read: a parameter it takes as no optional, a local
+   * made with a value (an object made, a literal, or a string, number, boolean or native struct) and never assigned
+   * again, or a field of such a value initialized so. A variable declared without a value is held implicitly unwrapped.
+   */
+  private definitelyPresent(x: ts.Expression): boolean {
+    x = ts.skipOuterExpressions(x, ts.OuterExpressionKinds.Parentheses);
+    const t = this.typeOf(x);
+    const value = ['String', 'Bool', 'Double'].includes(t) || this.native.isStructType(t) || this.native.isEnumType(t);
+    if (ts.isIdentifier(x)) {
+      const sym = this.resolve(x);
+      const d = sym?.valueDeclaration;
+      if (!sym || !d || this.undefinedVars.has(sym)) return false;
+      if (ts.isParameter(d)) return !d.dotDotDotToken && !/[?!]$/.test(this.paramType(d)) && !this.mayBeNull(d) && (value || !this.lenient);
+      if (!ts.isVariableDeclaration(d) || !d.initializer || isNullish(d.initializer) || this.writtenIn(d.getSourceFile(), false).vars.has(sym)) return false;
+      const init = ts.skipOuterExpressions(d.initializer, ts.OuterExpressionKinds.Parentheses);
+      return ts.isNewExpression(init) || ts.isLiteralExpression(init) || ts.isObjectLiteralExpression(init) || ts.isArrayLiteralExpression(init) || (value && !this.maybeUndefined(d.initializer));
+    }
+    if (ts.isPropertyAccessExpression(x) && !x.questionDotToken) {
+      // A native property Swift declares as no optional.
+      const native = !inOptionalChain(x) ? this.native.propertyType(x) : null;
+      if (native) return !/[?!]$/.test(native);
+      const d = this.resolve(x.name)?.valueDeclaration;
+      return !!d && ts.isPropertyDeclaration(d) && !d.questionToken && !!d.initializer && !isNullish(d.initializer) && value && this.pure(d.initializer);
+    }
+    return false;
+  }
+
+  /**
    * `x == null` (and `!=`, `===`, `!==`) of a value Swift holds as a string, a boolean, a native struct or enum, which cannot be
    * missing: what the test always gives. Undefined where the value may be missing.
    */
@@ -9152,10 +9186,7 @@ ${members.join('\n')}
     const x = nullish(e.right) ? e.left : nullish(e.left) ? e.right : null;
     if (!x || nullish(x)) return undefined;
     const negate = e.operatorToken.kind === K.ExclamationEqualsEqualsToken || e.operatorToken.kind === K.ExclamationEqualsToken;
-    // `this.field` reads nothing that runs, as an identifier does.
-    const plain = (y: ts.Expression): boolean => y.kind === K.ThisKeyword || (ts.isPropertyAccessExpression(y) && !y.questionDotToken && plain(y.expression)) || this.pure(y);
-    if (!plain(x) || inOptionalChain(x) || this.maybeUndefined(x)) return undefined;
-    if (ts.isIdentifier(x) && this.undefinedVars.has(this.resolve(x)!)) return undefined;
+    if (!this.definitelyPresent(x) || inOptionalChain(x) || this.maybeUndefined(x)) return undefined;
     const t = this.typeOf(x);
     const declared = this.declaredTypeOf(x);
     if (declared && declared !== t) return undefined;
@@ -9471,7 +9502,7 @@ ${members.join('\n')}
         }
         // A call Swift declares to give a value it never lacks: the fallback never applies.
         const called = ts.isCallExpression(left) && !ts.isOptionalChain(left) ? this.calledType(left) : undefined;
-        if (called && called === t && !isOptional(called) && !called.endsWith('!') && called !== 'Any?') return l();
+        if (called && called === t && !isOptional(called) && !called.endsWith('!') && called !== 'Any?' && this.lenientRef(called) === called && !this.native.isStructType(called)) return l();
         // A chain that gives a default where it stops (`(contexts?.count ?? .nan)`): the optional, so this fallback applies.
         if (inOptionalChain(left) && ['Double', 'String', 'Bool'].includes(lt)) {
           const read = /^\((.*) \?\? (?:\.nan|"undefined"|false)\)$/.exec(l());
@@ -9484,7 +9515,7 @@ ${members.join('\n')}
         if (maybe) return `((${maybe}) ?? ${t === 'String' && this.typeOf(e.right) !== 'String' ? this.str(e.right) : this.coerce(e.right, t)})`;
         if (this.isAny(e.left)) return `jsNullishCoalesce(${l()}, ${this.coerce(e.right, 'Any?')})`;
         // A left side Swift holds as no optional is never missing.
-        if (!isOptional(lt) && !lt.endsWith('!') && lt !== 'Any?' && lt === t && !inOptionalChain(e.left)) return l();
+        if (!isOptional(lt) && !lt.endsWith('!') && lt !== 'Any?' && lt === t && !inOptionalChain(e.left) && this.definitelyPresent(e.left)) return l();
         return `(${l()} ?? ${this.coerce(e.right, t)})`;
       }
       case K.AmpersandAmpersandToken: case K.BarBarToken: {
