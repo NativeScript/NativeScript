@@ -100,6 +100,9 @@ fun jsObjectToString(value: Any?): String = when (val v = jsBox(value)) {
     else -> if (jsNumeric(v) != null) "[object Number]" else "[object Object]"
 }
 
+/** `new WeakRef(target)`'s target: undefined or null is V8's TypeError. */
+fun <T : Any> jsWeakRefTarget(target: T?): T = target ?: throw JSException(JSTypeError("WeakRef: invalid target"))
+
 /**
  * NativeScript's `WeakRef`: `get()` (and the standard `deref()`) is the object while it lives. Soft, as V8 clears a
  * WeakRef only in a full collection: core holds objects this alone keeps (an Animation its AnimatorListener reaches

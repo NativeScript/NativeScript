@@ -1,5 +1,8 @@
 package org.nativescript.kit
 
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.contract
+
 /** What JavaScript `throw value` throws: any value, not only errors. Its JVM stack is recorded only when tracing (`jsTraceErrors`). */
 class JSException(val value: Any?) : RuntimeException(null, null, false, jsTraceErrors) {
     override val message: String get() = "Uncaught " + jsToString(value)
@@ -150,6 +153,29 @@ fun jsCannotSet(key: String): Nothing = throw JSException(JSTypeError("Cannot se
 
 /** Undefined where code goes on with an object its type promised: V8's TypeError for an object missing. */
 fun jsObjectRequired(): Nothing = throw JSException(JSTypeError("Cannot convert undefined or null to object"))
+
+/**
+ * A destructured parameter's value, `key` its pattern's first property or null for an array pattern: undefined or
+ * null is V8's TypeError. Past it, Kotlin knows the value present.
+ */
+@OptIn(ExperimentalContracts::class)
+fun jsDestructurable(value: Any?, key: String?) {
+    contract { returns() implies (value != null) }
+    if (value != null && value !== JSNull) return
+    val what = if (value == null) "undefined" else "null"
+    throw JSException(JSTypeError(when {
+        key == null -> "$what is not iterable (cannot read property Symbol(Symbol.iterator))"
+        value == null -> "Cannot destructure property '$key' of 'undefined' as it is undefined."
+        else -> "Cannot destructure property '$key' of 'object null' as it is null."
+    }))
+}
+
+/** The result of a script override of a Java method that declares it non-null: undefined or null is a TypeError. */
+fun <T : Any> jsJavaResult(value: T?, method: String): T =
+    value ?: throw JSException(JSTypeError("$method returned undefined, but Java declares its result non-null"))
+
+/** An iterable's `[Symbol.iterator]()` that gave no iterator: V8's TypeError. */
+fun jsNoIterator(): Nothing = throw JSException(JSTypeError("Result of the Symbol.iterator method is not an object"))
 
 /** `f()` where f, as the source writes it, holds no function. */
 fun jsNotAFunction(callee: String): Nothing = throw JSException(JSTypeError("$callee is not a function"))

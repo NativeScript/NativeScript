@@ -45,6 +45,51 @@ inline fun <reified T> jsIs(value: Any?): Boolean = value is T
 /** As jsAs, null where `value` is not of T's class. */
 inline fun <reified T> jsAsOrNull(value: Any?): T? = value as? T
 
+// An untyped value where code declares a string, number, boolean or class: the value when it is one, else a
+// TypeError. A wrong value is never converted (`jsToNumber`), which would hide the bug that put it there; JavaScript
+// stores it as it is, so this is a documented difference. `name` is the field or variable it goes to.
+// Not inline: each cast stays one call in the dex.
+
+fun jsAsString(value: Any?): String = value as? String ?: throw jsNotA(value, "string")
+
+fun jsAsString(value: Any?, name: String): String = value as? String ?: throw jsCannotAssign(value, name, "string")
+
+fun jsAsNumber(value: Any?): Double = value as? Double ?: jsNumeric(value) ?: throw jsNotA(value, "number")
+
+fun jsAsNumber(value: Any?, name: String): Double = value as? Double ?: jsNumeric(value) ?: throw jsCannotAssign(value, name, "number")
+
+fun jsAsBoolean(value: Any?): Boolean = value as? Boolean ?: throw jsNotA(value, "boolean")
+
+fun jsAsBoolean(value: Any?, name: String): Boolean = value as? Boolean ?: throw jsCannotAssign(value, name, "boolean")
+
+/** `value` as an instance of `type`, JavaScript's null and undefined as null. */
+fun <T : Any> jsCast(value: Any?, type: Class<T>): T? {
+    if (value == null || value === JSNull || value === Unit) return null
+    @Suppress("UNCHECKED_CAST")
+    if (type.isInstance(value)) return value as T
+    throw jsNotA(value, jsTypeName(type))
+}
+
+/** As jsCast, where the declared type has no null either: undefined and null are refused too. */
+fun <T : Any> jsCastPresent(value: Any?, type: Class<T>): T = jsCast(value, type) ?: throw jsNotA(value, jsTypeName(type))
+
+/** A class as script names it: a class core declares twice is `Font__font_android` to Kotlin. */
+private fun jsTypeName(type: Class<*>): String = type.simpleName.substringBefore("__")
+
+private fun jsValueDescription(value: Any?): String = when {
+    value == null || jsIsNullish(value) -> jsToString(value)
+    jsTypeof(value) != "object" -> jsTypeof(value)
+    value is JSArray<*> -> "an array"
+    value is JSDynamic -> value.jsClassName?.let { "an instance of $it" } ?: "an object"
+    else -> "an instance of " + jsTypeName(value.javaClass)
+}
+
+private fun jsArticle(type: String) = if (type.first() in "AEIOUaeiou") "an $type" else "a $type"
+
+private fun jsNotA(value: Any?, type: String) = JSException(JSTypeError("${jsValueDescription(value)} is not ${jsArticle(type)}"))
+
+private fun jsCannotAssign(value: Any?, name: String, type: String) = JSException(JSTypeError("Cannot assign ${jsValueDescription(value)} to '$name', ${jsArticle(type)}"))
+
 /** An untyped value used as a property key: a symbol's own key, anything else as its string. */
 fun jsPropertyKey(value: Any?): String = if (value is JSSymbol) value.key else jsToString(value)
 
