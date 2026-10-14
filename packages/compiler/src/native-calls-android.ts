@@ -1400,7 +1400,7 @@ export class AndroidNativeAPI implements KotlinNative {
     }
     const retType = sig ? this.kotlinType(sig.ret, typeVar) : this.kotlinType(target.ret, typeVar);
     const ref = target.ret.startsWith('L') || target.ret.startsWith('[');
-    const result = NUMERIC.has(target.ret) ? `${tsRet === 'Double' ? '__result' : 'jsToNumber(__result)'}${CONVERT[target.ret]}` : target.ret === 'C' ? '__result[0]' : target.ret.startsWith('[') ? this.arrayValue('__result', target.ret) : tsRet === 'Any?' && ref && retType !== 'Any' ? `(__result as ${retType}${target.m.nonNull ? '' : '?'})` : ref && nullableRet && target.m.nonNull ? '__result!!' : '__result';
+    const result = NUMERIC.has(target.ret) ? `${tsRet === 'Double' ? '__result' : 'jsToNumber(__result)'}${CONVERT[target.ret]}` : target.ret === 'C' ? '__result[0]' : target.ret.startsWith('[') ? this.arrayValue('__result', target.ret) : tsRet === 'Any?' && ref && retType !== 'Any' ? t.checkedCast('__result', `${retType}${target.m.nonNull ? '' : '?'}`) : ref && nullableRet && target.m.nonNull ? `jsJavaResult(__result, ${kotlinString(target.m.name)})` : '__result';
     const declared = `${retType}${ref && nullableRet && !target.m.nonNull ? '?' : ''}`;
     // A result Java takes as script gives it: the body is the override's own.
     if (result === '__result' && declared === tsRet && !(binds.length && t.paramPrelude(fn).length)) {
