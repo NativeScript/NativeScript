@@ -127,11 +127,11 @@ test262 `d53ebc8b19`, compiler at `feat/native-kit` `91fe5d94c` with the ES2023 
 | String | kotlin | 916 | 226 | 211 | 190 | 269 | 19 | 0 | 1 | 25% | 52% |
 | Template literals | swift | 84 | 22 | 19 | 16 | 0 | 25 | 0 | 2 | 39% | 54% |
 | Template literals | kotlin | 84 | 19 | 21 | 16 | 1 | 25 | 0 | 2 | 33% | 48% |
-| Array | swift | 2687 | 220 | 446 | 464 | 1378 | 86 | 78 | 15 | 9% | 33% |
+| Array | swift | 2687 | 225 | 441 | 464 | 1378 | 86 | 78 | 15 | 9% | 34% |
 | Array | kotlin | 2687 | 192 | 514 | 464 | 1338 | 86 | 78 | 15 | 8% | 27% |
 | Number | swift | 294 | 147 | 43 | 21 | 81 | 2 | 0 | 0 | 50% | 77% |
 | Number | kotlin | 294 | 150 | 34 | 21 | 87 | 2 | 0 | 0 | 51% | 82% |
-| Math | swift | 169 | 124 | 27 | 0 | 11 | 0 | 1 | 6 | 77% | 82% |
+| Math | swift | 169 | 125 | 26 | 0 | 11 | 0 | 1 | 6 | 77% | 83% |
 | Math | kotlin | 169 | 131 | 20 | 0 | 11 | 0 | 1 | 6 | 81% | 87% |
 | JSON | swift | 136 | 65 | 24 | 17 | 7 | 22 | 0 | 1 | 58% | 73% |
 | JSON | kotlin | 136 | 68 | 21 | 17 | 7 | 22 | 0 | 1 | 60% | 76% |
@@ -145,11 +145,11 @@ test262 `d53ebc8b19`, compiler at `feat/native-kit` `91fe5d94c` with the ES2023 
 | Promise | kotlin | 675 | 106 | 87 | 190 | 173 | 59 | 0 | 60 | 19% | 55% |
 | Date | swift | 327 | 126 | 72 | 35 | 85 | 6 | 0 | 3 | 40% | 64% |
 | Date | kotlin | 327 | 128 | 67 | 35 | 88 | 6 | 0 | 3 | 40% | 66% |
-| RegExp | swift | 830 | 230 | 184 | 354 | 41 | 16 | 2 | 3 | 28% | 56% |
+| RegExp | swift | 830 | 232 | 182 | 354 | 41 | 16 | 2 | 3 | 29% | 56% |
 | RegExp | kotlin | 830 | 176 | 142 | 354 | 137 | 16 | 2 | 3 | 22% | 55% |
 | Destructuring | swift | 651 | 42 | 140 | 247 | 55 | 165 | 0 | 2 | 9% | 23% |
 | Destructuring | kotlin | 651 | 63 | 117 | 247 | 57 | 165 | 0 | 2 | 13% | 35% |
-| Classes | swift | 666 | 27 | 148 | 235 | 108 | 140 | 2 | 6 | 5% | 15% |
+| Classes | swift | 666 | 34 | 140 | 235 | 109 | 140 | 2 | 6 | 7% | 20% |
 | Classes | kotlin | 666 | 35 | 154 | 235 | 94 | 140 | 2 | 6 | 7% | 19% |
 | Getters and setters | swift | 64 | 2 | 43 | 6 | 3 | 10 | 0 | 0 | 4% | 4% |
 | Getters and setters | kotlin | 64 | 1 | 45 | 6 | 2 | 10 | 0 | 0 | 2% | 2% |
@@ -159,9 +159,9 @@ test262 `d53ebc8b19`, compiler at `feat/native-kit` `91fe5d94c` with the ES2023 
 | Optional chaining and nullish | kotlin | 140 | 22 | 8 | 75 | 3 | 30 | 0 | 2 | 20% | 73% |
 | typeof and equality | swift | 161 | 15 | 17 | 108 | 3 | 16 | 0 | 2 | 10% | 47% |
 | typeof and equality | kotlin | 161 | 21 | 10 | 108 | 4 | 16 | 0 | 2 | 15% | 68% |
-| Exceptions | swift | 295 | 63 | 80 | 42 | 15 | 66 | 18 | 11 | 32% | 44% |
+| Exceptions | swift | 295 | 65 | 78 | 42 | 15 | 66 | 18 | 11 | 33% | 45% |
 | Exceptions | kotlin | 295 | 55 | 93 | 42 | 10 | 66 | 18 | 11 | 28% | 37% |
-| **Total** | swift | 9342 | 1753 | 1804 | 2179 | 2455 | 922 | 102 | 127 | 21% | 49% |
+| **Total** | swift | 9342 | 1770 | 1786 | 2179 | 2456 | 922 | 102 | 127 | 22% | 50% |
 | **Total** | kotlin | 9342 | 1724 | 1751 | 2179 | 2537 | 922 | 102 | 127 | 21% | 50% |
 
 What stands out:
@@ -173,7 +173,7 @@ What stands out:
 - **The largest translator refusal is a method called on another receiver.** That means `X.prototype.m.call(…)` and
   `X.prototype` used as a value: about 1250 tests on Swift and 1060 on Kotlin, plus around 500 more that read
   `String/Array/Number/Date/Map/Set.prototype`. test262's built-in tests depend heavily on this.
-- **Of what compiles, about half behaves as JavaScript does** (49% Swift, 50% Kotlin). Math, Number, JSON,
+- **Of what compiles, about half behaves as JavaScript does** (50% Swift, 50% Kotlin). Math, Number, JSON,
   Map and Set do best. Classes, destructuring, getters and setters, and Promise on Swift do worst.
 - **On Swift, almost every async test is masked by one bug.** A `then` callback that returns nothing resolves
   to `()` rather than `undefined`, and `()` is truthy, so `.then($DONE, $DONE)` reports a failure
