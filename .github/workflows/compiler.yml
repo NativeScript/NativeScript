@@ -62,6 +62,13 @@ jobs:
         run: npx nx run compiler:kit
 
       # The same core into Kotlin (packages/compiler/kit-android/generated), the kit Android builds use.
+      # ktfmt formats the generated Android kit.
+      - name: Setup Java
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: '21'
+
       - name: Generate the Android kit
         run: npx nx run compiler:kit-android
 
