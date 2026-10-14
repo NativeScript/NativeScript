@@ -188,14 +188,34 @@ private fun javaExpando(target: Any): JSObject? {
 private fun javaExpandoForWrite(target: Any): JSObject =
     jsJavaExpandoHost?.invoke(target, true) ?: javaExpandos.getOrPut(target) { JSObject() }
 
+/** A method and its parameter types, which `getParameterTypes()` would copy at every call. */
+class JavaOverload internal constructor(val method: Method) {
+    val parameters: Array<Class<*>> = method.parameterTypes
+}
+
 /**
- * A class's public members by name, looked up once: `getMethods()` copies and sorts every public
- * method, and a missed `getField` throws, both too slow for script setting a view's text per frame.
+ * A class's members by name, looked up once: `getMethods()` copies and sorts every public method,
+ * `getDeclaredFields()` makes every field anew, and a missed `getField` throws, all too slow for
+ * script reading a view's property per row per frame.
  */
 private class JavaMembers(private val cls: Class<*>) {
-    val methods: Map<String, List<Method>> = cls.methods.filter { !Modifier.isStatic(it.modifiers) }.groupBy { it.name }
-    val staticMethods: Map<String, List<Method>> = cls.methods.filter { Modifier.isStatic(it.modifiers) }.groupBy { it.name }
+    val methods: Map<String, List<JavaOverload>> = cls.methods.filter { !Modifier.isStatic(it.modifiers) }.map(::JavaOverload).groupBy { it.method.name }
+    val staticMethods: Map<String, List<JavaOverload>> = cls.methods.filter { Modifier.isStatic(it.modifiers) }.map(::JavaOverload).groupBy { it.method.name }
     private val fields = ConcurrentHashMap<String, Any>()
+
+    /**
+     * Static fields the class and its superclasses declare, public or not, the nearest class's first: a Kotlin
+     * companion's property is its backing field on the declaring class.
+     */
+    val declaredStatics: Map<String, Field> by lazy {
+        val out = HashMap<String, Field>()
+        var c: Class<*>? = cls
+        while (c != null) {
+            for (f in c.declaredFields) if (Modifier.isStatic(f.modifiers)) out.putIfAbsent(f.name, f)
+            c = c.superclass
+        }
+        out
+    }
 
     fun field(name: String): Field? = fields.getOrPut(name) {
         try { cls.getField(name) } catch (_: NoSuchFieldException) { Unit }
@@ -212,7 +232,7 @@ private fun javaField(target: Any, name: String, static: Boolean): Field? {
     return membersOf(cls).field(name)?.takeIf { Modifier.isStatic(it.modifiers) == static }
 }
 
-private fun javaMethods(cls: Class<*>, name: String, static: Boolean): List<Method> =
+private fun javaMethods(cls: Class<*>, name: String, static: Boolean): List<JavaOverload> =
     membersOf(cls).let { if (static) it.staticMethods else it.methods }[name] ?: emptyList()
 
 /** `key in javaObject`: a public method or field of its class, or a property script added to it. */
@@ -221,33 +241,34 @@ fun jsJavaHas(target: Any, key: String): Boolean {
     val cls = if (static) target as Class<*> else target.javaClass
     if (javaExpando(target)?.has(key) == true || javaField(target, key, static) != null || javaMethods(cls, key, static).isNotEmpty()) return true
     // A class's static member script declared (`static tapEvent`): a Kotlin companion's property, its field on the class.
-    if (static) {
-        var c: Class<*>? = cls
-        while (c != null) {
-            if (c.declaredFields.any { it.name == key && Modifier.isStatic(it.modifiers) }) return true
-            c = c.superclass
-        }
-    }
-    return false
+    return static && membersOf(cls).declaredStatics.containsKey(key)
 }
 
 /** A Java method read as a value: called later with script arguments, the overload chosen then. */
-class JavaMethodRef(private val target: Any?, private val cls: Class<*>, private val name: String, private val methods: List<Method>) {
-    fun call(args: List<Any?>): Any? {
-        val candidates = methods.filter { it.parameterCount == args.size }
-        val scored = candidates.mapNotNull { m ->
-            var total = 0
-            for ((i, type) in m.parameterTypes.withIndex()) total += javaScore(args[i], type) ?: return@mapNotNull null
-            m to total
+class JavaMethodRef(private val target: Any?, private val cls: Class<*>, private val name: String, private val overloads: List<JavaOverload>) {
+    fun call(args: List<Any?>): Any? = javaInvoke(target, cls, name, overloads, args)
+}
+
+/** The overload the arguments fit best (the first of equally good ones) called with them converted. */
+private fun javaInvoke(target: Any?, cls: Class<*>, name: String, overloads: List<JavaOverload>, args: List<Any?>): Any? {
+    var chosen: JavaOverload? = null
+    var best = Int.MAX_VALUE
+    candidates@ for (o in overloads) {
+        if (o.parameters.size != args.size) continue
+        var total = 0
+        for (i in o.parameters.indices) total += javaScore(args[i], o.parameters[i]) ?: continue@candidates
+        if (total < best) {
+            chosen = o
+            best = total
         }
-        val chosen = scored.minByOrNull { it.second }?.first
-            ?: throw JSException(JSTypeError("${cls.name}.$name: no overload takes these ${args.size} arguments"))
-        val converted = chosen.parameterTypes.mapIndexed { i, type -> toJavaValue(args[i], type) }
-        return try {
-            fromJavaValue(chosen.invoke(target, *converted.toTypedArray()))
-        } catch (e: java.lang.reflect.InvocationTargetException) {
-            throw e.targetException
-        }
+    }
+    val overload = chosen ?: throw JSException(JSTypeError("${cls.name}.$name: no overload takes these ${args.size} arguments"))
+    val converted = arrayOfNulls<Any?>(args.size)
+    for (i in converted.indices) converted[i] = toJavaValue(args[i], overload.parameters[i])
+    return try {
+        fromJavaValue(overload.method.invoke(target, *converted))
+    } catch (e: java.lang.reflect.InvocationTargetException) {
+        throw e.targetException
     }
 }
 
@@ -308,13 +329,23 @@ fun jsNew(cls: Any?, vararg args: Any?): Any? {
     }
 }
 
+/** How well a number fits a primitive numeric parameter: lower is closer, null for any other type. */
+private fun numericRank(type: Class<*>): Int? = when (type) {
+    java.lang.Integer.TYPE -> 0
+    java.lang.Long.TYPE -> 1
+    java.lang.Float.TYPE -> 2
+    java.lang.Double.TYPE -> 3
+    java.lang.Short.TYPE -> 4
+    java.lang.Byte.TYPE -> 5
+    else -> null
+}
+
 /** How well a script value fits a Java parameter type: lower is closer, null is not at all. */
 private fun javaScore(value: Any?, type: Class<*>): Int? {
-    val rank: Map<Class<*>?, Int> = mapOf(Int::class.javaPrimitiveType to 0, Long::class.javaPrimitiveType to 1, Float::class.javaPrimitiveType to 2, Double::class.javaPrimitiveType to 3, Short::class.javaPrimitiveType to 4, Byte::class.javaPrimitiveType to 5)
     return when (value) {
         // NativeScript passes null to a primitive parameter as its zero, after any overload taking an object.
         null, JSNull, Unit -> if (type.isPrimitive) 60 else 1
-        is Double -> rank[type] ?: when {
+        is Double -> numericRank(type) ?: when {
             type == java.lang.Double::class.java || type == java.lang.Number::class.java -> 9
             type == Any::class.java -> 30
             // A Java enum core's code types as a number (`getNativeRenderingMode(): number`): the kit holds it by its ordinal.
@@ -395,15 +426,9 @@ fun jsJavaGet(target: Any, key: String): Any? {
     if (methods.isNotEmpty()) return JavaMethodRef(if (static) null else target, cls, key, methods)
     // A static member script declared on a base class (`ListViewBase.knownFunctions` read through ListView): a Kotlin
     // companion's property, its backing field on the declaring class, as jsJavaHas finds it.
-    if (static) {
-        var c: Class<*>? = cls
-        while (c != null) {
-            c.declaredFields.firstOrNull { it.name == key && Modifier.isStatic(it.modifiers) }?.let { f ->
-                f.isAccessible = true
-                return fromJavaValue(f.get(null))
-            }
-            c = c.superclass
-        }
+    if (static) membersOf(cls).declaredStatics[key]?.let { f ->
+        f.isAccessible = true
+        return fromJavaValue(f.get(null))
     }
     // A class held as a value is also a `java.lang.Class` (`Class.forName(name).getField(f)`), after its own static members.
     if (static) javaMethods(Class::class.java, key, false).takeIf { it.isNotEmpty() }?.let { return JavaMethodRef(target, Class::class.java, key, it) }
@@ -430,17 +455,17 @@ fun jsJavaSet(target: Any, key: String, value: Any?) {
 /** A native-property decorator's getter: the native object's getter method if it has one, else the fallback. */
 fun jsNativePropertyGet(native: Any?, getter: String, fallback: Any?): Any? {
     if (native == null || native === JSNull) return fallback
-    val methods = javaMethods(native.javaClass, getter, false).filter { it.parameterCount == 0 }
-    if (methods.isEmpty()) return fallback
-    return JavaMethodRef(native, native.javaClass, getter, methods).call(emptyList())
+    val methods = javaMethods(native.javaClass, getter, false)
+    if (methods.none { it.parameters.isEmpty() }) return fallback
+    return javaInvoke(native, native.javaClass, getter, methods, emptyList())
 }
 
 /** A native-property decorator's setter: the native setter called with the value. */
 fun jsNativePropertySet(native: Any?, setter: String, value: Any?) {
     if (native == null || native === JSNull) return
-    val methods = javaMethods(native.javaClass, setter, false).filter { it.parameterCount == 1 }
-    if (methods.isEmpty()) return
-    JavaMethodRef(native, native.javaClass, setter, methods).call(listOf(value))
+    val methods = javaMethods(native.javaClass, setter, false)
+    if (methods.none { it.parameters.size == 1 }) return
+    javaInvoke(native, native.javaClass, setter, methods, listOf(value))
 }
 
 /** An untyped value read as a type parameter a call instantiates with an object class: the class's object for it (its `fromJS`). */
