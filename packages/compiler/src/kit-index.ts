@@ -37,6 +37,25 @@ export interface KitType {
 /** Kit sources the index leaves out: while the kit is generated from core, the code generated before. */
 export const kitIndexOptions: { exclude: RegExp | null } = { exclude: null };
 
+/**
+ * Swift with each parenthesized or bracketed list on one line, as the kit's line-based readers expect: a declaration
+ * a formatter wrapped (`func f(\n    _ a: T\n) -> R {`) reads as written on one. The kit has no multi-line strings.
+ */
+export function unwrapped(text: string): string {
+  let out = '', depth = 0, quoted = false;
+  for (let k = 0; k < text.length; k++) {
+    const ch = text[k];
+    if (quoted && ch !== '\n') { if (ch === '\\') { out += ch + text[++k]; continue; } if (ch === '"') quoted = false; out += ch; continue; }
+    quoted = false;
+    if (ch === '"') quoted = true;
+    else if (ch === '(' || ch === '[') depth++;
+    else if ((ch === ')' || ch === ']') && depth > 0) depth--;
+    else if (ch === '\n' && depth > 0) { out += ' '; while (text[k + 1] === ' ') k++; continue; }
+    out += ch;
+  }
+  return out;
+}
+
 export function kitIndex(kitSources: string): Map<string, KitType> {
   const types = new Map<string, KitType>();
   const files = (readdirSync(kitSources, { recursive: true }) as string[]).filter((f) => f.endsWith('.swift') && !kitIndexOptions.exclude?.test(f));
@@ -54,7 +73,8 @@ export function kitIndex(kitSources: string): Map<string, KitType> {
   const functionProps = new Map<string, Set<string>>();
   const calls = new Map<KitType, Set<string>>();
   for (const f of files) {
-    const text = readFileSync(join(kitSources, f), 'utf8').replace(/\/\/.*$/gm, '');
+    // Comments, not a string's `//` (`"file://"`).
+    const text = unwrapped(readFileSync(join(kitSources, f), 'utf8').replace(/("(?:\\.|[^"\\\n])*")|\/\/.*$/gm, (_, s) => s ?? ''));
     const stack: { type: KitType | null; depth: number }[] = [];
     let depth = 0;
     let caseContinues = false;

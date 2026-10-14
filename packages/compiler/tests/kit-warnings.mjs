@@ -17,17 +17,22 @@ const pending = new Map(allowed.filter((l) => l.startsWith('pending ')).map((l) 
 const seen = new Set();
 const unexpected = [];
 for (const line of log.split('\n')) {
-  const m = /^(\/[^:]+\.(?:swift|ts|vue|xml)):(\d+):\d+: warning: (.*?)(?: \(in target .*\))?$/.exec(line);
-  if (!m || seen.has(line)) continue;
-  seen.add(line);
-  const [, file, , message] = m;
+  const m = /^((?:\/|@nativescript\/)[^:]+\.(?:swift|ts|vue|xml)):(\d+):\d+: warning: (.*?)(?: \(in target .*\))?$/.exec(line);
+  if (!m) continue;
+  const [, file, at, message] = m;
+  // Kit code reports the line of core it was made from, at a path Xcode may resolve against the project
+  // (`<project>/@nativescript/core/ui.label.index.ios.ts`): keyed from `@nativescript/core/`.
+  const core = /(?:^|\/)(@nativescript\/core\/[^/]+)$/.exec(file)?.[1];
   // Only the kit's and the app's own code: not an SDK's or a pod's headers.
-  if (!/\/NativeScriptKit\/|\/Sources\/|\/app\//.test(file)) continue;
+  if (!core && !/\/NativeScriptKit\/|\/Sources\/|\/app\//.test(file)) continue;
+  const name = core ?? basename(file);
+  if (seen.has(`${name}:${at}: ${message}`)) continue;
+  seen.add(`${name}:${at}: ${message}`);
   const api = /^'([^']+)' was deprecated in iOS/.exec(message)?.[1];
   if (api && deprecated.has(api)) continue;
-  const key = `${basename(file)} | ${message.replace(/\s*\[#\w+\]$/, '')}`;
+  const key = `${name} | ${message.replace(/\s*\[#\w+\]$/, '')}`;
   if (pending.has(key)) { pending.set(key, pending.get(key) + 1); continue; }
-  unexpected.push(`${basename(file)}:${m[2]}: ${message}`);
+  unexpected.push(`${name}:${at}: ${message}`);
 }
 const stale = [...pending].filter(([, n]) => !n).map(([k]) => k);
 for (const w of unexpected) console.error(`warning not allowed: ${w}`);
