@@ -1,9 +1,10 @@
 {
 	"$comment": "Cases that do not match Node yet, by target, each with its cause. The diff run reports them without failing, and fails when one matches Node so it is removed here. Owners: the Kotlin translator (src/kotlin.ts) and runtime (kit-android runtime).",
 	"swift": {
-		"227-callback-given-undefined": "A string parameter given undefined reads \"\", and a void promise's value is not undefined (Swift translator)."
+		"227-callback-given-undefined": "A string parameter given undefined reads \"\": Swift holds a typed string non-optional (Swift translator)."
 	},
 	"kotlin": {
+		"250-void-promise-values": "A function value with a rest parameter passed to then (`then(log)`) matches no overload (Kotlin translator).",
 		"280-callback-function-values": "Array.from of a Set is an array of Any? and a function declaration passed by name to reduce matches no overload (Kotlin translator)."
 	}
 }

@@ -2765,6 +2765,7 @@ ${members.join('\n')}
     // Library mode: an object literal of an event type (`{ eventName, object, value }`) is core's EventData over it, its other keys read by name.
     if (this.library && from === 'JSObject' && to.replace(/[?!]$/, '') === 'EventData') return `EventData(jsObject: ${code})`;
     if (to === 'Any?') {
+      if (from === 'Void') return `jsUndefined(${code})`;
       // Lenient code holds a function implicitly unwrapped (`_itemTemplateSelector` before it is set): nil as an optional one is.
       const opt = isOptional(from) || /^\(.*\)!$/.test(from);
       const fn = functionParts(opt ? from.replace(/^\((.*)\)[?!]$/, '$1') : from);
@@ -3329,7 +3330,7 @@ ${members.join('\n')}
           const e = fn.body as ts.Expression;
           const none = this.typeOf(e) === 'Void' && ret !== 'Void' && ts.isCallExpression(e) ? (isOptional(ret) || ret === 'Any?' ? 'nil' : this.zero(ret)) : null;
           const logical = ret === 'Void' ? this.voidLogical(e) : null;
-          lines = [...this.paramPrelude(fn), logical ? this.indent + logical : ret === 'Void' || none ? this.indent + this.tryPrefix(e) + this.exprStatement(e) : `${this.indent}return ${this.tryPrefix(e)}${this.coerce(e, ret)}`];
+          lines = [...this.paramPrelude(fn), ret === 'Void' && isNullish(e) ? '' : logical ? this.indent + logical : ret === 'Void' || none ? this.indent + this.tryPrefix(e) + this.exprStatement(e) : `${this.indent}return ${this.tryPrefix(e)}${this.coerce(e, ret)}`];
           if (none) lines.push(`${this.indent}return ${none}`);
         }
         return `{\n${lines.filter(Boolean).join('\n')}\n${base}}`;
@@ -6087,6 +6088,7 @@ ${members.join('\n')}
     if (target === 'Any?') {
       // Null kept as untyped values hold it, apart from undefined.
       if (bare.kind === ts.SyntaxKind.NullKeyword) return 'jsNull';
+      if (source === 'Void' && !isNullish(bare)) return `jsUndefined(${this.expr(e)})`;
       // A function with a rest parameter (`function count(...args)`) held untyped: called by script, it takes the rest of the arguments.
       const fnType = !source.endsWith('?') && hasTopLevelArrow(source) ? functionParts(source.replace(/^\((.*)\)!?$/, '$1')) : null;
       if (fnType && (ts.isIdentifier(bare) || ts.isPropertyAccessExpression(bare))) {
@@ -7083,6 +7085,7 @@ ${members.join('\n')}
     const t = this.typeOf(e);
     if (t === 'String') return this.expr(e);
     if (t === 'Double' || t === 'Bool') return `js(${this.expr(e)})`;
+    if (t === 'Void' && !isNullish(e)) return this.pure(e) ? '"undefined"' : `jsToString(jsUndefined(${this.expr(e)}))`;
     // Typed `T | null` (`headers.get(name)`), held as an optional: missing is null, not undefined.
     const declared = this.checker.getTypeAtLocation(e);
     if (/\?$/.test(t) && t !== 'Any?' && declared.isUnion() && declared.types.some((x) => x.flags & ts.TypeFlags.Null) && !declared.types.some((x) => x.flags & ts.TypeFlags.Undefined)) {
@@ -8934,6 +8937,14 @@ ${members.join('\n')}
         // A handler that ignores the value still takes it.
         const ignores = f && (ts.isArrowFunction(f) || ts.isFunctionExpression(f)) && !f.parameters.length && value !== 'Void';
         let onFulfilled = ignores ? this.closure(f as ts.ArrowFunction, [`_ __unused: ${value}`]) : f && this.fn(f);
+        // A function value taking its arguments as a rest (`then(log)` of a `log(...values)`), or any value where the promise's is
+        // undefined (`then($DONE)`, which Swift would pass `()`): called with the one value, as it holds it.
+        const own = f && !adopt && !ts.isArrowFunction(f) && !ts.isFunctionExpression(f) ? functionParts(this.typeOf(f).replace(/^\((.*)\)!$/, '$1')) : null;
+        if (own && (own.rest >= 0 || (value === 'Void' && own.params.length && own.params[0] !== 'Void'))) onFulfilled = this.coerce(f, `(${value}) throws -> ${own.result}`);
+        // A handler giving nothing where the chain is of any value (`const p: Promise<unknown> = q.then(() => {})`): undefined.
+        if (f && !adopt && (ts.isArrowFunction(f) || ts.isFunctionExpression(f)) && this.closureReturn(f) === 'Void' && /^JSPromise<Any\?>[?!]?$/.test(this.typeOf(e))) {
+          onFulfilled = `{ (__v: ${value}) throws -> Any? in try (${onFulfilled})(${ignores || f.parameters.length ? '__v' : ''}); return nil }`;
+        }
         // A handler giving a promise on one path and nothing on another (`if (video) return load()`): undefined where it gives none.
         const maybe = f && adopt && (ts.isArrowFunction(f) || ts.isFunctionExpression(f)) ? /^JSPromise<(.*)>\?$/.exec(this.closureReturn(f))?.[1] : undefined;
         if (maybe !== undefined) {
@@ -9757,6 +9768,13 @@ ${members.join('\n')}
     const rt = this.typeOf(b);
     const decided = this.neverNullish(e);
     if (decided !== undefined) return String(decided);
+    // A `void` value is undefined, which Swift holds as `()`.
+    const nothing = isNullish(b) && lt === 'Void' ? a : isNullish(a) && rt === 'Void' ? b : null;
+    if (nothing) {
+      const equal = !strict || (isNullish(b) ? b : a).kind !== K.NullKeyword;
+      const result = negate !== equal;
+      return this.pure(nothing) ? String(result) : `jsUndefined(${this.expr(nothing)}) ${result ? '==' : '!='} nil`;
+    }
     // Comparing a typed optional with null or undefined.
     const maybe = isNullish(b) ? this.maybeUndefined(a) : isNullish(a) ? this.maybeUndefined(b) : null;
     if (maybe) return `${maybe} ${negate ? '!=' : '=='} nil`;

@@ -752,6 +752,9 @@ public func jsTypeof(_ value: Any?) -> String {
 }
 
 /// `value === undefined || value === null`.
+/// A `void` value as script holds it: undefined. Boxing `()` itself would give a value that isn't nil.
+@inline(__always) public func jsUndefined(_: Void) -> Any? { nil }
+
 public func jsIsNullish(_ value: Any?) -> Bool {
     let v = jsFlat(value)
     return v == nil || v is JSNull
