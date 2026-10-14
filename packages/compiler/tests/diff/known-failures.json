@@ -13,7 +13,8 @@
 		"242-var-redeclared": "A var declared again, or declared in a loop head or branch and used after it, does not compile (Swift translator, SEMANTICS #14).",
 		"243-array-holes": "Object.keys lists the holes of new Array(n) (Swift runtime).",
 		"244-optional-member-later": "An optional member set after the object is made is listed in declaration order, not as the last key (Swift translator).",
-		"246-nullable-string-concat": "`null as string | null` in a template or a concatenation does not compile: nil has no contextual type (Swift translator)."
+		"246-nullable-string-concat": "`null as string | null` in a template or a concatenation does not compile: nil has no contextual type (Swift translator).",
+		"247-missing-values-throw": "A module const read before its declaration runs, and a member of undefined or null read, set or called, trap instead of throwing ReferenceError or TypeError (Swift translator, quality step 4)."
 	},
 	"kotlin": {}
 }
