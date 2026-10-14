@@ -76,3 +76,32 @@ private func jsCompareUnits(_ x: UnsafeBufferPointer<UInt8>, _ y: UnsafeBufferPo
     }
     return x.count == y.count ? 0 : x.count < y.count ? -1 : 1
 }
+
+/// `s`'s UTF-16 code units: an ASCII string's are its bytes, widened.
+func jsUnits(_ s: String) -> [UInt16] {
+    let widened: [UInt16]?? = s.utf8.withContiguousStorageIfAvailable { bytes in
+        guard bytes.count == s.utf16.count else { return nil }
+        return [UInt16](unsafeUninitializedCapacity: bytes.count) { units, count in
+            for i in 0..<bytes.count { units[i] = UInt16(bytes[i]) }
+            count = bytes.count
+        }
+    }
+    if let widened, let widened { return widened }
+    return Array(s.utf16)
+}
+
+/// The string of `s`'s UTF-16 units in the range `bounds` gives for their count: an ASCII string's, whose units
+/// are its bytes, sliced in place; any other's through its units.
+func jsUnitSlice(_ s: String, _ bounds: (Int) -> Range<Int>) -> String {
+    let utf8 = s.utf8
+    let count = utf8.count
+    if count == s.utf16.count {
+        let range = bounds(count)
+        guard !range.isEmpty else { return "" }
+        let lower = utf8.index(utf8.startIndex, offsetBy: range.lowerBound)
+        return String(Substring(utf8[lower..<utf8.index(lower, offsetBy: range.count)]))
+    }
+    let units = Array(s.utf16)
+    let range = bounds(units.count)
+    return range.isEmpty ? "" : jsString(utf16: units[range])
+}
