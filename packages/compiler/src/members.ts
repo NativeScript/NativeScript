@@ -48,14 +48,19 @@ export function collectMembers(checker: ts.TypeChecker, files: readonly ts.Sourc
   };
   const declared = (cls: ts.ClassLikeDeclaration, name: string) =>
     cls.members.find((m) => !!m.name && !ts.isComputedPropertyName(m.name) && m.name.getText() === name && !(ts.isPropertyDeclaration(m) && isStatic(m)));
-  /** The field a registration's member is typed by, or null where the name is no field. */
+  /**
+   * The field a registration's member is typed by: the root-most declaration, which the native member overrides
+   * unless it is the class's own. Null where the class or a base declares the name as anything but a field.
+   */
   const fieldFor = (cls: ts.ClassLikeDeclaration, name: string): { field: ts.PropertyDeclaration; overrides: boolean } | null => {
+    let found: { field: ts.PropertyDeclaration; overrides: boolean } | null = null;
     for (let c: ts.ClassLikeDeclaration | undefined = cls; c; c = base(c)) {
       const m = declared(c, name);
       if (!m) continue;
-      return ts.isPropertyDeclaration(m) && ts.isIdentifier(m.name) ? { field: m, overrides: c !== cls } : null;
+      if (!ts.isPropertyDeclaration(m) || !ts.isIdentifier(m.name)) return null;
+      found = { field: m, overrides: c !== cls };
     }
-    return null;
+    return found;
   };
   for (const sf of files) {
     if (sf.isDeclarationFile) continue;

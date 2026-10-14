@@ -3931,6 +3931,7 @@ ${members.join('\n')}
       fields.push({ name: n, type: t });
     }
     const symbolFields: { key: string; member: string; type: string }[] = [];
+    const typedEmitted = new Set<string>();
     for (const m of cls.members) {
       if (!ts.isPropertyDeclaration(m)) continue;
       const keyed = this.symbolMember(m.name);
@@ -3996,6 +3997,16 @@ ${members.join('\n')}
       // A field its base declares already (`nativeViewProtected: UIView` over `any`): the base's, read as this field's type.
       const root = this.redeclaredField(m);
       const kitOver = this.kitRedeclared(m);
+      if (root && ts.isPropertyDeclaration(root) && this.library && this.members?.get(cls, n)) {
+        typedEmitted.add(n);
+        lines.push(...this.prototypeAccessor(cls, root, 'override '));
+        if (m.initializer) {
+          this.indent = '        ';
+          fieldInits.push(`        self.${ident(n)} = ${this.tryPrefix(m.initializer)}${this.coerce(m.initializer, this.typeOf(m.name))}`);
+          this.indent = '    ';
+        }
+        continue;
+      }
       if (root || kitOver?.same) {
         if (m.initializer) {
           this.indent = '        ';
@@ -4022,10 +4033,9 @@ ${members.join('\n')}
       if (keys?.accessors.has(n) && this.baseDeclares(appBase, n)) continue;
       if (this.library && (registeredName || keys?.accessors.has(n))) {
         // A field under a registered property's name is the accessor `register` defines on the prototype.
-        // Undefined until set, an array included (`if (!this.items)`): only a string, number or boolean reads as its zero.
-        const unset = !t.endsWith('?') && !t.endsWith('!') && (this.zero(t) === null || /^JS(Array|Map|Set)</.test(t)) && !isFunctionType(t);
-        const vt = unset ? optionalType(t) : t;
-        lines.push(`    var ${ident(n)}: ${unset && this.lenient ? this.lenientRef(t) : vt} {`, `        get { ${this.fromAnyCode(`jsExpandoGet(self, ${swiftString(n)})`, vt, true)} }`, `        set { jsExpandoSet(self, ${swiftString(n)}, ${this.convert('newValue', vt, 'Any?')}) }`, '    }');
+        const typed = this.members?.get(cls, n);
+        if (typed) typedEmitted.add(n);
+        lines.push(...this.prototypeAccessor(cls, m, typed ? '' : null));
         if (m.initializer) {
           this.indent = '        ';
           fieldInits.push(`        self.${ident(n)} = ${this.tryPrefix(m.initializer)}${this.coerce(m.initializer, t)}`);
@@ -4066,6 +4076,10 @@ ${members.join('\n')}
         fieldInits.push(`        self.${ident(n)} = ${this.tryPrefix(m.initializer)}${this.coerce(m.initializer, t)}`);
         this.indent = '    ';
       }
+    }
+    // A property registered on the class under a name a base declares the field of: the class's accessor overrides the base's.
+    for (const typed of this.library ? this.members?.of(cls) ?? [] : []) {
+      if (!typedEmitted.has(typed.name)) lines.push(...this.prototypeAccessor(cls, typed.field, 'override '));
     }
     // Members whose names a base class declares too.
     const inherited = new Set<string>();
@@ -4607,6 +4621,38 @@ ${members.join('\n')}
     return base.kind === ts.SyntaxKind.ThisKeyword ? e.left : null;
   }
 
+  /**
+   * Library mode: the accessor of a field under a name core's property system defines on a prototype, which reads and
+   * writes through the prototype chain by name. Given `typed` (the modifiers of a member of the class's own), through
+   * the class's `JSTypedMember`, which calls the accessor its registration defined. Undefined until set, an array
+   * included (`if (!this.items)`): only a string, number or boolean reads as its zero.
+   */
+  private prototypeAccessor(cls: ts.ClassLikeDeclaration, field: ts.PropertyDeclaration, typed: string | null): string[] {
+    const n = field.name.getText();
+    const t = this.typeOf(field.name);
+    const unset = !t.endsWith('?') && !t.endsWith('!') && (this.zero(t) === null || /^JS(Array|Map|Set)</.test(t)) && !isFunctionType(t);
+    const vt = unset ? optionalType(t) : t;
+    const member = `${this.className(cls)}.${typedMemberName(cls, n)}`;
+    const read = typed === null ? `jsExpandoGet(self, ${swiftString(n)})` : `${member}.read(self)`;
+    const write = (v: string) => (typed === null ? `jsExpandoSet(self, ${swiftString(n)}, ${v})` : `${member}.write(self, ${v})`);
+    return [
+      `    ${typed ?? ''}var ${ident(n)}: ${unset && this.lenient ? this.lenientRef(t) : vt} {`,
+      `        get { ${this.fromAnyCode(read, vt, true)} }`,
+      `        set { ${write(this.convert('newValue', vt, 'Any?'))} }`,
+      '    }',
+      ...(typed === null ? [] : [`    internal static let ${typedMemberName(cls, n)} = JSTypedMember(${this.className(cls)}.self, ${swiftString(n)})`]),
+    ];
+  }
+
+  /** A statement registering properties on classes that hold them natively (`textProperty.register(TextBase)`): run as their registration. */
+  private typedRegistration(s: ts.Statement, code: string): string {
+    const members = this.library ? this.members?.registeredBy(s) ?? [] : [];
+    if (!members.length || !code.trim()) return code;
+    // The statement's source mark (`/*@ns:12*/`) stays first.
+    const [, mark, indent, body] = /^(\s*(?:\/\*@ns:\d+\*\/)?)(\s*)([\s\S]*?)\s*$/.exec(code)!;
+    return `${mark}${indent}${/\btry\b/.test(body) ? 'try ' : ''}JSTypedMembers.registering(${members.map((m) => `${this.className(m.cls)}.${typedMemberName(m.cls, m.name)}`).join(', ')}) { ${body} }`;
+  }
+
   /** What defining a class does beyond declaring it (library mode): its accessors on its prototype, then its decorators, the last first. */
   private classDefinition(cls: ts.ClassDeclaration): string {
     const i = this.indent;
@@ -4985,7 +5031,7 @@ ${members.join('\n')}
 
   stmt(s: ts.Statement): string {
     if (this.errors) {
-      try { return this.stmtChecked(s); } catch (e) {
+      try { return this.typedRegistration(s, this.stmtChecked(s)); } catch (e) {
         const at = s.getSourceFile().getLineAndCharacterOfPosition(s.getStart());
         const message = (e as Error).message;
         // The translator's own errors name their place; a failure of its own code (a TypeError) gets the statement's.
@@ -4995,7 +5041,7 @@ ${members.join('\n')}
         return '';
       }
     }
-    return this.stmtChecked(s);
+    return this.typedRegistration(s, this.stmtChecked(s));
   }
 
   private stmtChecked(s: ts.Statement): string {
@@ -10483,6 +10529,11 @@ function injected(token: string): string {
  * A function's type parameter its parameters do not name (`loadCache<T>(key: string): Cached<T>`): Swift infers type
  * parameters from arguments only, so the function holds any value there and its callers read the value as they type it.
  */
+/** The static holding a class's `JSTypedMember` for a name; Swift's statics are inherited, so a subclass's of the same name is one of its own. */
+function typedMemberName(cls: ts.ClassLikeDeclaration, name: string): string {
+  return `__member_${cls.name?.text ?? ''}_${name.replace(/\W/g, '_')}`;
+}
+
 function erasedTypeParameter(p: ts.TypeParameterDeclaration): boolean {
   const fn = p.parent;
   // An interface is a class of fields: one class for every instantiation.

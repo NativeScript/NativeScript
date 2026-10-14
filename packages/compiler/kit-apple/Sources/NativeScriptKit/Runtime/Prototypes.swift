@@ -84,6 +84,9 @@ public enum JSPrototypes {
         return objectPrototype
     }
 
+    /// The class whose prototype an object is, nil for any other object.
+    static func owner(of o: JSObject) -> AnyClass? { owners.isEmpty ? nil : owners[ObjectIdentifier(o)] }
+
     /// The class Swift's own root classes extend, which no script class corresponds to.
     private static func isRoot(_ cls: AnyClass) -> Bool { NSStringFromClass(cls) == "_TtCs12_SwiftObject" }
 
@@ -177,6 +180,7 @@ public func jsExpandoSet(_ object: JSExpando, _ key: String, _ value: Any?) {
         if let setter = JSPrototypes.holder(type(of: object), key)?.setter(key) { return try setter(object, value) }
     } catch { jsReportUncaught(jsCaught(error)); return }
     if object.jsExpando == nil { object.jsExpando = JSObject() }
+    if !jsIsSymbolKey(key) { JSTypedMembers.shadow(object, key) }
     object.jsExpando![key] = value
 }
 

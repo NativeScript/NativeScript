@@ -2585,6 +2585,7 @@ export class Translator implements AsyncTranslator {
     const ctor = cls.members.find((m): m is ts.ConstructorDeclaration => ts.isConstructorDeclaration(m) && !!m.body);
     const paramProps = (ctor?.parameters ?? []).filter((p) => ts.canHaveModifiers(p) && ts.getModifiers(p)?.some((m) => [ts.SyntaxKind.PublicKeyword, ts.SyntaxKind.PrivateKeyword, ts.SyntaxKind.ProtectedKeyword, ts.SyntaxKind.ReadonlyKeyword].includes(m.kind)));
     const fields: { name: string; type: string; expando?: boolean }[] = [];
+    const typedEmitted = new Set<string>();
     const lines: string[] = [];
     const statics: string[] = [];
     this.indent = '    ';
@@ -2676,6 +2677,10 @@ export class Translator implements AsyncTranslator {
       const root = this.library ? this.redeclaredField(m) : null;
       if (root) {
         if (sym) this.nullableDecls.add(sym);
+        if (ts.isPropertyDeclaration(root) && this.members?.get(cls, n)) {
+          typedEmitted.add(n);
+          lines.push(...this.prototypeAccessor(cls, root, 'override ', true, statics));
+        }
         if (m.initializer) {
           this.indent = '        ';
           lines.push('    init {', `        this.${ident(n)} = ${this.coerce(m.initializer, t)}`, '    }');
@@ -2687,12 +2692,12 @@ export class Translator implements AsyncTranslator {
       // `Object.defineProperty(X.prototype, …)` defines, is the accessor on the prototype chain. Undefined until set: only a
       // string, number or boolean reads as its zero.
       if (this.library && (this.properties?.isRegistered(cls, n) || this.properties?.isRegisteredAnywhere(n) || this.prototypeKeys().accessors.has(n))) {
-        const kt = t === 'Any?' || isNullable(t) || (this.zero(t) && !/^JS(Array|Map|Set|Record)</.test(t)) ? t : optionalType(t);
+        const typed = this.members?.get(cls, n);
+        if (typed) typedEmitted.add(n);
+        const kt = this.prototypeAccessorType(m);
         if (sym && kt !== t) this.nullableDecls.add(sym);
         fields.push({ name: n, type: kt, expando: true });
-        // A string property a template or script set to a number (`[text]="index + 1"`) reads as that number's string, as core's `text + ''` does.
-        const read = kt === 'String' ? `jsStringOrEmpty(jsExpandoGet(this, ${kotlinString(n)}))` : this.fromAnyCode(`jsExpandoGet(this, ${kotlinString(n)})`, kt, true);
-        lines.push(`    ${mods(n)}var ${ident(n)}: ${kt}`, `        get() = ${read}`, `        set(value) { jsExpandoSet(this, ${kotlinString(n)}, value) }`);
+        lines.push(...this.prototypeAccessor(cls, m, mods(n), !!typed, statics));
         if (m.initializer) {
           this.indent = '        ';
           lines.push('    init {', `        this.${ident(n)} = ${this.coerce(m.initializer, t)}`, '    }');
@@ -2743,6 +2748,10 @@ export class Translator implements AsyncTranslator {
         const d = this.deferredDeclaration(ident(n), t);
         lines.push(`    ${d.startsWith('lateinit') && fieldMods === '@JvmField ' ? '' : fieldMods}${d}`);
       }
+    }
+    // A property registered on the class under a name a base declares the field of: the class's accessor overrides the base's.
+    for (const typed of this.library ? this.members?.of(cls) ?? [] : []) {
+      if (!typedEmitted.has(typed.name)) lines.push(...this.prototypeAccessor(cls, typed.field, 'override ', true, statics));
     }
     fieldStarts.forEach(([at, m], k) => { if ((fieldStarts[k + 1]?.[0] ?? lines.length) > at) fieldStarts[k][0] = -1 - at; });
     for (const [at, m] of fieldStarts.reverse()) { const doc = at < 0 ? this.docOf(m, '    ') : ''; if (doc) lines.splice(-1 - at, 0, `    ${doc.trimEnd()}`); }
@@ -3781,6 +3790,37 @@ export class Translator implements AsyncTranslator {
   }
 
   /** Library mode: the field or accessor a source base class declares under a field's name, which the field redeclares. */
+  /** Library mode: the type of a field's accessor over the prototype chain. Undefined until set: only a string, number or boolean reads as its zero. */
+  private prototypeAccessorType(field: ts.PropertyDeclaration): string {
+    const t = this.typeOf(field.name);
+    return t === 'Any?' || isNullable(t) || (this.zero(t) && !/^JS(Array|Map|Set|Record)</.test(t)) ? t : optionalType(t);
+  }
+
+  /**
+   * Library mode: the accessor of a field under a name core's property system defines on a prototype, which reads and
+   * writes through the prototype chain by name; `typed`, through the class's `JSTypedMember` (a static of `statics`),
+   * which calls the accessor its registration defined.
+   */
+  private prototypeAccessor(cls: ts.ClassLikeDeclaration, field: ts.PropertyDeclaration, mods: string, typed: boolean, statics: string[]): string[] {
+    const n = field.name.getText();
+    const kt = this.prototypeAccessorType(field);
+    const member = `${this.className(cls)}.${typedMemberName(n)}`;
+    const get = typed ? `${member}.read(this)` : `jsExpandoGet(this, ${kotlinString(n)})`;
+    // A string property a template or script set to a number (`[text]="index + 1"`) reads as that number's string, as core's `text + ''` does.
+    const read = kt === 'String' ? `jsStringOrEmpty(${get})` : this.fromAnyCode(get, kt, true);
+    const write = typed ? `${member}.write(this, value)` : `jsExpandoSet(this, ${kotlinString(n)}, value)`;
+    if (typed) statics.push(`        @JvmField internal val ${typedMemberName(n)} = JSTypedMember(${this.className(cls)}::class.java, ${kotlinString(n)})`);
+    return [`    ${mods}var ${ident(n)}: ${kt}`, `        get() = ${read}`, `        set(value) { ${write} }`];
+  }
+
+  /** A statement registering properties on classes that hold them natively (`textProperty.register(TextBase)`): run as their registration. */
+  private typedRegistration(s: ts.Statement, code: string): string {
+    const members = this.library ? this.members?.registeredBy(s) ?? [] : [];
+    if (!members.length || !code.trim()) return code;
+    const indent = /^\s*/.exec(code)![0];
+    return `${indent}JSTypedMembers.registering(${members.map((m) => `${this.className(m.cls)}.${typedMemberName(m.name)}`).join(', ')}) { ${code.trim()} }`;
+  }
+
   private redeclaredField(m: ts.PropertyDeclaration): ts.PropertyDeclaration | ts.AccessorDeclaration | null {
     if (isStatic(m) || !ts.isClassLike(m.parent)) return null;
     const name = m.name.getText();
@@ -4107,7 +4147,7 @@ export class Translator implements AsyncTranslator {
 
   stmt(s: ts.Statement): string {
     let code: string;
-    try { code = this.statementCode(s); } catch (e) {
+    try { code = this.typedRegistration(s, this.statementCode(s)); } catch (e) {
       const located = this.located(e, s);
       if (!this.errors) throw located;
       this.errors.push((located as Error).message ?? String(located));
@@ -8754,6 +8794,11 @@ function isAngularComponent(decl: ts.ClassDeclaration): boolean {
  * A function's type parameter its parameters do not name (`loadCache<T>(key: string): Cached<T>`): Kotlin infers type
  * parameters from arguments and the expected type only, so the function holds any value there and its callers read the value as they type it.
  */
+/** The companion's `JSTypedMember` of a class for a name. */
+function typedMemberName(name: string): string {
+  return `__member_${name.replace(/\W/g, '_')}`;
+}
+
 function erasedTypeParameter(p: ts.TypeParameterDeclaration): boolean {
   const fn = p.parent;
   // An interface is a class of fields: one class for every instantiation.

@@ -77,6 +77,9 @@ object JSPrototypes {
         table[cls]?.let { try { it.defineProperty(key, d) } catch (_: JSException) {} }
     }
 
+    /** The class whose prototype an object is, null for any other object. */
+    internal fun ownerOf(o: JSObject): Class<*>? = if (owners.isEmpty()) null else owners[o]
+
     /** The prototype a built-in kind of value has (`Array.prototype`), its own object. */
     fun builtin(name: String): JSObject = builtins[name] ?: builtins.computeIfAbsent(name) { JSObject() }
 
@@ -186,6 +189,7 @@ fun jsExpandoSet(obj: JSExpando, key: String, value: Any?) {
         return
     }
     JSPrototypes.holder(obj.javaClass, key)?.setter(key)?.let { return it(obj, value) }
+    if (!jsIsSymbolKey(key)) JSTypedMembers.shadow(obj, key)
     (obj.jsExpando ?: JSObject().also { obj.jsExpando = it })[key] = value
 }
 

@@ -16,6 +16,7 @@ public func jsDelete(_ object: Any?, _ key: String) throws -> Bool {
     switch jsFlat(object) {
     case let o as JSObject:
         if !o.delete(key) { throw JSException(JSTypeError("Cannot delete property '\(key)' of #<Object>")) }
+        if let cls = JSPrototypes.owner(of: o) { JSTypedMembers.prototypeChanged(cls, key, nil) }
         return true
     case let d as JSDynamic where jsRestriction(d) >= 2 && d.jsKeys.contains(key):
         throw JSException(JSTypeError("Cannot delete property '\(key)' of #<Object>"))
@@ -176,10 +177,13 @@ public protocol JSAccessorKeyed: AnyObject {
 public func jsDefineProperty(_ object: Any?, _ key: String, _ descriptor: Any?) throws -> Any? {
     let d = try JSPropertyDescriptor(descriptor)
     switch jsFlat(object) {
-    case let o as JSObject: try o.defineProperty(key, d)
+    case let o as JSObject:
+        try o.defineProperty(key, d)
+        if let cls = JSPrototypes.owner(of: o) { JSTypedMembers.prototypeChanged(cls, key, d) }
     case let expando as JSExpando:
         if expando.jsExpando == nil { expando.jsExpando = JSObject() }
         try expando.jsExpando!.defineProperty(key, d)
+        JSTypedMembers.shadow(expando, key)
     case let dynamic as JSDynamic:
         if d.get != nil || d.set != nil { throw JSException(JSTypeError("Cannot define an accessor on a typed object: \(key)")) }
         if case .some(let v) = d.value { dynamic[jsKey: key] = v }
