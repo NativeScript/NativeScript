@@ -4,6 +4,12 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { clearCjsNamedExportsCache, getCjsNamedExports, getCjsNamedExportsCacheSize, normalizeAbsolutePathForRequire } from './cjs-named-exports.js';
 
+// Vite spells an absolute path as `/@fs/<path>` with forward slashes, so a
+// Windows `C:\x` becomes `/@fs/C:/x`.
+function toViteFsUrl(absolutePath: string): string {
+	return `/@fs/${absolutePath.replace(/\\/g, '/').replace(/^\//, '')}`;
+}
+
 let fixtureRoot: string | null = null;
 
 function makeFixture(): string {
@@ -55,8 +61,8 @@ describe('normalizeAbsolutePathForRequire', () => {
 		const target = join(root, 'node_modules/foo/index.js');
 		writeFileSync(target, 'module.exports = {};\n');
 
-		expect(normalizeAbsolutePathForRequire(`/@fs${target}`)).toBe(target);
-		expect(normalizeAbsolutePathForRequire(`/@fs${target}?import`)).toBe(target);
+		expect(normalizeAbsolutePathForRequire(toViteFsUrl(target))).toBe(target);
+		expect(normalizeAbsolutePathForRequire(`${toViteFsUrl(target)}?import`)).toBe(target);
 	});
 });
 
@@ -183,7 +189,7 @@ describe('getCjsNamedExports', () => {
 		const target = join(root, 'node_modules/with-prefix/index.js');
 		writeFileSync(target, 'exports.named = 1;\n');
 
-		const keys = getCjsNamedExports(`/@fs${target}?import`);
+		const keys = getCjsNamedExports(`${toViteFsUrl(target)}?import`);
 		expect(keys).toEqual(['named']);
 	});
 });

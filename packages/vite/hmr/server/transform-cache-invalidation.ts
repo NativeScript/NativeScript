@@ -1,4 +1,5 @@
 import { isRuntimeGraphExcludedPath, normalizeRuntimeGraphPath } from './runtime-graph-filter.js';
+import { stripViteFsPrefix } from '../../helpers/normalize-id.js';
 
 // Framework-agnostic transform-cache-invalidation primitives shared by the
 // per-flavor `handleHotUpdate` tails (Angular + Solid today). They live in this
@@ -13,7 +14,7 @@ export function canonicalizeTransformRequestCacheKey(url: string, projectRoot: s
 	const root = projectRoot ? projectRoot.replace(/\\/g, '/') : '';
 
 	if (normalizedPath.startsWith('/@fs/')) {
-		const fsPath = normalizedPath.slice('/@fs'.length).replace(/\\/g, '/');
+		const fsPath = stripViteFsPrefix(normalizedPath).replace(/\\/g, '/');
 		if (root && fsPath.startsWith(root)) {
 			const rel = fsPath.slice(root.length);
 			normalizedPath = rel.startsWith('/') ? rel : `/${rel}`;

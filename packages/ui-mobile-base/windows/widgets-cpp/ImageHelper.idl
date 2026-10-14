@@ -1,0 +1,26 @@
+namespace NativeScript.Widgets
+{
+    // Result of an image load/resize: a WinUI3 BitmapImage (UI-thread object) plus the raw encoded
+    // bytes and pixel dimensions. Created internally by ImageHelper (no public constructor).
+    runtimeclass ImageResult
+    {
+        Microsoft.UI.Xaml.Media.Imaging.BitmapImage Bitmap{ get; };
+        Windows.Storage.Streams.IBuffer RawBuffer{ get; };
+        Int32 Width{ get; };
+        Int32 Height{ get; };
+    }
+
+    // Static image utilities. Bitmaps are created on the UI thread (BitmapImage has thread affinity);
+    // decode/encode/IO run on a background thread. Replaces the C# ImageHelper, which returned the
+    // UWP Windows.UI.Xaml BitmapImage (incompatible with the WinUI3 Image control).
+    static runtimeclass ImageHelper
+    {
+        static Windows.Foundation.IAsyncOperation<ImageResult> LoadFromBufferAsync(Windows.Storage.Streams.IBuffer buffer);
+        static Windows.Foundation.IAsyncOperation<ImageResult> LoadFromUrlAsync(String url);
+        static Windows.Foundation.IAsyncOperation<ImageResult> LoadFromFileAsync(String path);
+        static Windows.Foundation.IAsyncOperation<ImageResult> ResizeAsync(Windows.Storage.Streams.IBuffer buffer, Int32 maxSize);
+        static Windows.Foundation.IAsyncOperation<Boolean> SaveToFileAsync(Windows.Storage.Streams.IBuffer buffer, String path);
+        static Windows.Foundation.IAsyncOperation<Windows.Storage.Streams.IBuffer> ReadFileAsync(String path);
+        static String BufferToBase64(Windows.Storage.Streams.IBuffer buffer);
+    }
+}

@@ -59,7 +59,7 @@ export const SERVER_MANIFEST_PATH = '/@nativescript/vendor-manifest.json';
 export const DEFAULT_VENDOR_FILENAME = 'ns-vendor.mjs';
 export const DEFAULT_MANIFEST_FILENAME = 'ns-vendor-manifest.json';
 
-const INDEX_ALIAS_SUFFIXES = ['/index', '/index.js', '/index.android.js', '/index.ios.js', '/index.visionos.js'];
+const INDEX_ALIAS_SUFFIXES = ['/index', '/index.js', '/index.android.js', '/index.ios.js', '/index.visionos.js', '/index.windows.js'];
 
 export function vendorManifestPlugin(options: VendorManifestPluginOptions): Plugin {
 	let cachedResult: VendorBundleResult | null = null;
@@ -263,7 +263,7 @@ export function vendorManifestPlugin(options: VendorManifestPluginOptions): Plug
 async function generateVendorBundle(options: GenerateVendorOptions): Promise<VendorBundleResult> {
 	const { projectRoot, platform, mode, flavor } = options;
 	const collected = collectVendorModules(projectRoot, platform, flavor);
-	const entryCode = createVendorEntry(collected.entries);
+	let entries = collected.entries;
 
 	// Externalize @nativescript/core and its subpaths in the vendor bundle so
 	// vendored packages (e.g. @nativescript-community/ui-material-bottomsheet)
@@ -362,7 +362,8 @@ async function generateVendorBundle(options: GenerateVendorOptions): Promise<Ven
 	// otherwise abort the entire vendor.mjs compile. See the plugin for details.
 	plugins.push(createUnicodeRegexEsbuildPlugin(projectRoot));
 
-	const buildResult = await esbuild.build({
+	const runBuild = (entryCode: string) =>
+		esbuild.build({
 		stdin: {
 			contents: entryCode,
 			resolveDir: projectRoot,
@@ -535,6 +536,23 @@ async function generateVendorBundle(options: GenerateVendorOptions): Promise<Ven
 		],
 	});
 
+	// A dependency that cannot resolve for this platform (a plugin shipping only
+	// .ios/.android sources: common on Windows) would otherwise fail the whole
+	// vendor bundle and with it every HMR session. Drop the offending packages
+	// with a warning and rebuild; app code importing them fails at that import.
+	let buildResult: esbuild.BuildResult;
+	for (let attempt = 0; ; attempt++) {
+		try {
+			buildResult = await runBuild(createVendorEntry(entries));
+			break;
+		} catch (error) {
+			const unresolved = unresolvableVendorPackages(error, entries);
+			if (!unresolved.length || attempt >= 5) throw error;
+			console.warn(`[vendor] ${unresolved.join(', ')} cannot be resolved for ${platform}; excluded from the vendor bundle`);
+			entries = entries.filter((e) => !unresolved.includes(vendorPackageName(e)));
+		}
+	}
+
 	if (!buildResult.outputFiles?.length) {
 		throw new Error('Vendor bundle generation produced no output');
 	}
@@ -548,13 +566,39 @@ async function generateVendorBundle(options: GenerateVendorOptions): Promise<Ven
 	const vendorCode = polyfillPrelude + rawVendorCode;
 
 	const hash = createHash('sha1').update(vendorCode).digest('hex');
-	const manifest = buildManifest(collected.entries, hash);
+	const manifest = buildManifest(entries, hash);
 
 	return {
 		code: vendorCode,
 		manifest,
-		entries: collected.entries,
+		entries,
 	};
+}
+
+/** Package name of a bare specifier or subpath (`@scope/name/sub` → `@scope/name`). */
+export function vendorPackageName(specifier: string): string {
+	const parts = specifier.split('/');
+	return specifier.startsWith('@') ? parts.slice(0, 2).join('/') : parts[0];
+}
+
+/**
+ * The vendor entries behind esbuild "Could not resolve" errors: the entry itself
+ * when the vendor entry file imports it, else the node_modules package the
+ * failing importer lives in. Empty when any error is something else.
+ */
+export function unresolvableVendorPackages(error: unknown, entries: readonly string[]): string[] {
+	const messages: Array<{ text?: string; location?: { file?: string } | null }> = (error as any)?.errors ?? [];
+	const packages = new Set(entries.map(vendorPackageName));
+	const out = new Set<string>();
+	for (const message of messages) {
+		const spec = /^Could not resolve "([^"]+)"/.exec(message.text ?? '')?.[1];
+		if (!spec) return [];
+		const file = (message.location?.file ?? '').replace(/\\/g, '/');
+		const name = !file || file === 'ns-vendor-entry.ts' ? vendorPackageName(spec) : /.*node_modules\/((?:@[^/]+\/)?[^/]+)/.exec(file)?.[1];
+		if (!name || !packages.has(name)) return [];
+		out.add(name);
+	}
+	return Array.from(out);
 }
 
 function createVendorEntry(entries: string[]): string {
@@ -634,6 +678,8 @@ function resolveExtensionsForPlatform(platform: string): string[] {
 
 	if (platform === 'android') {
 		['.android.tsx', '.android.jsx', '.android.ts', '.android.js'].forEach((ext) => extensions.add(ext));
+	} else if (platform === 'windows') {
+		['.windows.tsx', '.windows.jsx', '.windows.ts', '.windows.js'].forEach((ext) => extensions.add(ext));
 	} else {
 		['.ios.tsx', '.ios.jsx', '.ios.ts', '.ios.js', '.visionos.tsx', '.visionos.jsx', '.visionos.ts', '.visionos.js'].forEach((ext) => extensions.add(ext));
 	}

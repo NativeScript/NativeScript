@@ -57,6 +57,6 @@ describe('resolveNativeScriptPlatformModule', () => {
 
 	it('falls back to the directory barrel', () => {
 		const index = write('b/application/index.ios.js');
-		expect(resolveNativeScriptPlatformModule(path.join(root, 'b/application'), ['.ts', '.js'], 'ios')).toBe(index);
+		expect(path.normalize(resolveNativeScriptPlatformModule(path.join(root, 'b/application'), ['.ts', '.js'], 'ios')!)).toBe(index);
 	});
 });

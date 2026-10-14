@@ -14,7 +14,7 @@ describe('resolveRelativeToImportMeta', () => {
 	});
 
 	it('resolves relative segments from the module URL', () => {
-		const result = resolveRelativeToImportMeta('file:///Users/test/NativeScript/packages/vite/configuration/base.js', '../shims/set-value.js');
+		const result = resolveRelativeToImportMeta('file:///Users/test/NativeScript/packages/vite/configuration/base.js', '../shims/set-value.js', { windows: false });
 
 		expect(result).toBe(path.posix.join('/Users', 'test', 'NativeScript', 'packages', 'vite', 'shims', 'set-value.js'));
 	});

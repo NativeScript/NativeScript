@@ -17,6 +17,7 @@ import { getMonorepoWorkspaceRoot } from '../helpers/project.js';
 import { resolveRelativeToImportMeta } from '../helpers/import-meta-path.js';
 import { resolveVerboseFlag } from '../helpers/logging.js';
 import { NS_OPTIMIZE_DEPS_EXCLUDE } from '../helpers/optimize-deps.js';
+import { stripViteFsPrefix } from '../helpers/normalize-id.js';
 
 function hasNgDeclarePartial(code: string): boolean {
 	return code.indexOf('\u0275\u0275ngDeclare') !== -1 || code.indexOf('ɵɵngDeclare') !== -1 || code.indexOf('ngDeclare') !== -1;
@@ -107,7 +108,7 @@ function normalizeAngularWatchPath(filePath: string): string {
 
 function normalizeAngularWatchKey(filePath: string): string {
 	const normalizedPath = normalizeAngularWatchPath(filePath);
-	const fileSystemPath = normalizedPath.startsWith('/@fs/') ? normalizedPath.slice('/@fs'.length) : normalizedPath;
+	const fileSystemPath = stripViteFsPrefix(normalizedPath);
 	const normalizedProjectRoot = projectRoot.replace(/\\/g, '/').replace(/\/$/, '');
 
 	if (normalizedProjectRoot && fileSystemPath.startsWith(normalizedProjectRoot)) {
@@ -128,7 +129,7 @@ function getAngularWatchKeys(filePath: string): string[] {
 
 function resolveAngularWatchFilePath(filePath: string): string {
 	const normalizedPath = normalizeAngularWatchPath(filePath);
-	const fileSystemPath = normalizedPath.startsWith('/@fs/') ? normalizedPath.slice('/@fs'.length) : normalizedPath;
+	const fileSystemPath = stripViteFsPrefix(normalizedPath);
 
 	if (path.isAbsolute(fileSystemPath) && fs.existsSync(fileSystemPath)) {
 		return fileSystemPath;

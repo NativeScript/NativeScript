@@ -117,6 +117,57 @@ function evaluateCssExpressions(view: ViewBase, property: string, value: string)
 	return value;
 }
 
+// Custom properties may refer to ones declared after them, so re-evaluate until they settle.
+function settleCssVariables(view: ViewBase, cssExpsProperties: Record<string, string>) {
+	let names: string[];
+	for (const property in cssExpsProperties) {
+		if (isCssVariable(property)) {
+			if (!names) {
+				names = [];
+			}
+			names.push(property);
+			view.style.setScopedCssVariable(property, evaluateCssExpressions(view, property, cssExpsProperties[property]));
+		}
+	}
+	if (!names || names.length < 2 || !hasForwardCssVariableReference(names, cssExpsProperties)) {
+		return;
+	}
+
+	for (let pass = 1; pass < names.length; pass++) {
+		let changed = false;
+		for (const name of names) {
+			const value = evaluateCssExpressions(view, name, cssExpsProperties[name]);
+			if (value !== view.style.getCssVariable(name)) {
+				view.style.setScopedCssVariable(name, value);
+				changed = true;
+			}
+		}
+		if (!changed) {
+			return;
+		}
+	}
+}
+
+function hasForwardCssVariableReference(names: string[], values: Record<string, string>): boolean {
+	for (let i = 0; i < names.length; i++) {
+		const value = values[names[i]];
+		for (let j = i + 1; j < names.length; j++) {
+			const ref = `var(${names[j]}`;
+			let at = value.indexOf(ref);
+			while (at !== -1) {
+				// `var(--a` must not match `var(--ab`.
+				const next = value[at + ref.length];
+				if (next === ')' || next === ',' || next === ' ' || next === undefined) {
+					return true;
+				}
+				at = value.indexOf(ref, at + 1);
+			}
+		}
+	}
+
+	return false;
+}
+
 /**
  * Only marks the merged list dirty - it is rebuilt on next read, since frameworks
  * register stylesheets one call at a time.
@@ -313,6 +364,14 @@ class CSSSource {
 
 	@profile
 	private load(): void {
+		// The resolved CSS path may not exist on disk, e.g. on Windows app.css is bundled into the
+		// JS (applied via addTaggedAdditionalCSS) and never deployed as a standalone file, so
+		// resolveFileNameFromUrl falls back to a non-existent candidate path. Calling readTextSync()
+		// on a missing file aborts the runtime (a native panic that bypasses JS try/catch) rather than
+		// throwing a catchable error, so guard with File.exists() before reading.
+		if (!this._file || !File.exists(this._file)) {
+			return;
+		}
 		const file = File.fromPath(this._file);
 		this._source = file.readTextSync();
 	}
@@ -926,6 +985,9 @@ export class CssState {
 			valuesToApply[property] = value;
 		}
 		//we need to parse CSS vars first before evaluating css expressions
+		if (cssExpsProperties) {
+			settleCssVariables(view, cssExpsProperties);
+		}
 		for (const property in cssExpsProperties) {
 			const hadOldValue = property in oldProperties;
 			const oldValue = hadOldValue ? oldProperties[property] : undefined;
@@ -933,13 +995,12 @@ export class CssState {
 				delete oldProperties[property];
 			}
 
-			const value = evaluateCssExpressions(view, property, cssExpsProperties[property]);
-
 			if (isCssVariable(property)) {
-				view.style.setScopedCssVariable(property, value);
 				delete newPropertyValues[property];
 				continue;
 			}
+
+			const value = evaluateCssExpressions(view, property, cssExpsProperties[property]);
 
 			if (value === unsetValue) {
 				delete newPropertyValues[property];
@@ -1009,15 +1070,28 @@ export class CssState {
 		// Set new values to the style
 		for (const property in valuesToApply) {
 			const value = valuesToApply[property];
+			const inStyle = property in view.style;
+			const camelCasedProperty = inStyle ? undefined : property.replace(kebabCasePattern, kebabCaseReplacementFunc);
 			try {
-				if (property in view.style) {
+				if (inStyle) {
 					view.style[`css:${property}`] = value;
 				} else {
-					const camelCasedProperty = property.replace(kebabCasePattern, kebabCaseReplacementFunc);
 					view[camelCasedProperty] = value;
 				}
 			} catch (e) {
 				Trace.write(`Failed to apply property [${property}] with value [${value}] to ${view}. ${e.stack}`, Trace.categories.Error, Trace.messageType.error);
+				// A declaration invalid at computed-value time computes as `unset`, so the previous value must not stay applied.
+				// https://drafts.csswg.org/css-values-5/#invalid-substitution
+				delete newPropertyValues[property];
+				try {
+					if (inStyle) {
+						view.style[`css:${property}`] = unsetValue;
+					} else {
+						view[camelCasedProperty] = unsetValue;
+					}
+				} catch (e) {
+					Trace.write(`Failed to unset property [${property}] on ${view}. ${e.stack}`, Trace.categories.Error, Trace.messageType.error);
+				}
 			}
 		}
 

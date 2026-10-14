@@ -3,8 +3,8 @@ import { loadTypeScript, warnNativeClassSkipped } from './typescript.js';
 // This is the active NativeClass transform: a localized textual + AST-assisted
 // downlevel that avoids edge corruption of computed property names (e.g.
 // ['frame-in']). It is the single production implementation in this package.
-import { getCliFlags } from './cli-flags.js';
-import type { Platform } from './platform-types.js';
+import { getCliFlags, resolvePlatform } from './cli-flags.js';
+import { isOtherPlatformTagged, type Platform } from './platform-types.js';
 
 /**
  * Opt-in: skip the NativeClass ES5 downlevel entirely and let the iOS runtime handle plain
@@ -14,11 +14,11 @@ import type { Platform } from './platform-types.js';
  *
  * Enabled via `--env.nativeESClasses` or the NS_NATIVE_ES_CLASSES environment variable
  * (set NS_NATIVE_ES_CLASSES=0/false to force-disable). Android continues to require the
- * ES5 downlevel (the Static Binding Generator relies on it), so this never applies to
- * Android targets.
+ * ES5 downlevel (the Static Binding Generator relies on it), and the Windows runtime has
+ * no native ES-class registration, so this never applies to Android or Windows targets.
  */
 export function isNativeESClassesEnabled(platform?: Platform): boolean {
-	if (platform === 'android') return false;
+	if (platform === 'android' || platform === 'windows') return false;
 	const envValue = process.env.NS_NATIVE_ES_CLASSES;
 	if (envValue !== undefined) {
 		return envValue !== '0' && envValue.toLowerCase() !== 'false';
@@ -40,9 +40,8 @@ export function transformNativeClassSource(code: string, fileName: string) {
 	let platform: Platform | undefined;
 	try {
 		const flags = getCliFlags();
-		platform = flags.android ? 'android' : 'ios';
-		if (fileName.includes('.android.') && platform !== 'android') return null;
-		if ((fileName.includes('.ios.') || fileName.includes('.visionos.')) && platform === 'android') return null;
+		platform = resolvePlatform(flags) ?? 'ios';
+		if (isOtherPlatformTagged(fileName, platform)) return null;
 	} catch (e) {
 		// If cli flags cannot be read for any reason, fall back to original behavior.
 	}

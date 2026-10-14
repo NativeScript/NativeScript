@@ -1,0 +1,16 @@
+namespace NativeScript.Widgets
+{
+    static runtimeclass ScrollHelper
+    {
+        // All methods locate the target ScrollViewer as: the element itself if it is one,
+        // else the first ScrollViewer descendant in the visual tree (BFS).
+        static Boolean ScrollToVerticalOffset(Microsoft.UI.Xaml.UIElement element, Double offset, Boolean disableAnimation);
+        static Boolean ScrollToHorizontalOffset(Microsoft.UI.Xaml.UIElement element, Double offset, Boolean disableAnimation);
+        static Double GetVerticalOffset(Microsoft.UI.Xaml.UIElement element);
+        static Double GetHorizontalOffset(Microsoft.UI.Xaml.UIElement element);
+        static Double GetExtentHeight(Microsoft.UI.Xaml.UIElement element);
+        static Double GetExtentWidth(Microsoft.UI.Xaml.UIElement element);
+        static Double GetViewportHeight(Microsoft.UI.Xaml.UIElement element);
+        static Double GetViewportWidth(Microsoft.UI.Xaml.UIElement element);
+    }
+}

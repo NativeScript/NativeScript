@@ -21,7 +21,10 @@
  * effects, and crashing with `Cannot redefine property`.
  */
 
+import { PLATFORM_SUFFIX_ALT } from './platform-types.js';
+
 const CORE_SCOPE_PREFIX = '@nativescript/core';
+const PLATFORM_SUFFIX_RE = new RegExp(`\\.(?:${PLATFORM_SUFFIX_ALT})$`);
 
 /**
  * Normalize a user-provided subpath into the canonical form used by the
@@ -41,7 +44,7 @@ export function normalizeCoreSub(sub?: string | null): string {
 	let s = String(sub).split('?')[0].split('#')[0].trim();
 	s = s.replace(/^\/+/, '').replace(/\/+$/, '');
 	s = s.replace(/\.(?:mjs|cjs|js)$/, '');
-	// Strip a trailing platform suffix (`.ios` / `.android` / `.visionos`)
+	// Strip a trailing platform suffix (`.ios` / `.android` / `.visionos` / `.windows`)
 	// so Vite-resolved platform-specific file paths canonicalize to the
 	// same form the runtime import map uses for the bare subpath.
 	//
@@ -63,7 +66,7 @@ export function normalizeCoreSub(sub?: string | null): string {
 	// trailing `/index` handler below then collapses
 	// `ui/text-base/index` → `ui/text-base`, and the final `index`
 	// guard collapses the package-main case to ''.
-	s = s.replace(/\.(?:ios|android|visionos)$/, '');
+	s = s.replace(PLATFORM_SUFFIX_RE, '');
 	// Strip trailing `/index` so that `globals/index` → `globals`, matching
 	// the bare import form that consumers spell as `@nativescript/core/globals`.
 	// The main module case (`index` alone) is handled below.

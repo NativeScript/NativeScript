@@ -36,7 +36,7 @@ export class CssPlaygroundModel extends Observable {
 
 	applyCSS(args) {
 		this.resetCSS();
-		addTaggedAdditionalCSS(`#play { ${this.currentCSS}`, CSSTag);
+		addTaggedAdditionalCSS(`#play { ${this.currentCSS} }`, CSSTag);
 		playLabel._onCssStateChange();
 		playLabel.requestLayout();
 	}
