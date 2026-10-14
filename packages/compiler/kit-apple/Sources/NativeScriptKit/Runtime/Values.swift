@@ -219,6 +219,52 @@ func jsNumeric(_ value: Any) -> Double? {
     }
 }
 
+// MARK: - Primitives read without casts
+
+/// The JavaScript primitive a value holds as exactly a Swift `String`, `Double` or `Bool`, told apart by opening
+/// the existential and comparing type metadata: a cast from `Any` is a call into the runtime, and one to a type
+/// the value is not costs as much, or more where it tries bridging. An NSString, an NSNumber or another numeric
+/// width is none of these, and its callers' casts bridge it as before.
+enum JSPrimitive {
+    case string(String)
+    case number(Double)
+    case boolean(Bool)
+
+    /// ToString of the primitive.
+    var string: String {
+        switch self {
+        case .string(let s): return s
+        case .number(let d): return jsNumberToString(d)
+        case .boolean(let b): return b ? "true" : "false"
+        }
+    }
+
+    /// ToNumber of the primitive.
+    var number: Double {
+        switch self {
+        case .string(let s): return jsNumberFromString(s)
+        case .number(let d): return d
+        case .boolean(let b): return b ? 1 : 0
+        }
+    }
+}
+
+/// The plain object a value holds, by the same opening: `JSObject` is final, so its metadata alone says so.
+@inline(__always) func jsPlainObject(_ value: Any) -> JSObject? {
+    func open<T>(_ value: T) -> JSObject? { T.self == JSObject.self ? unsafeBitCast(value, to: JSObject.self) : nil }
+    return _openExistential(value, do: open)
+}
+
+@inline(__always) func jsPrimitive(_ value: Any) -> JSPrimitive? {
+    func open<T>(_ value: T) -> JSPrimitive? {
+        if T.self == String.self { return .string(unsafeBitCast(value, to: String.self)) }
+        if T.self == Double.self { return .number(unsafeBitCast(value, to: Double.self)) }
+        if T.self == Bool.self { return .boolean(unsafeBitCast(value, to: Bool.self)) }
+        return nil
+    }
+    return _openExistential(value, do: open)
+}
+
 // MARK: - Strings compared as JavaScript compares them
 
 /// `a === b` for strings: equal code units (Swift's `==` also equates canonically equivalent strings).
@@ -627,6 +673,14 @@ public func jsGetIfPresent(_ object: Any?, _ key: String) throws -> Any? {
 
 public func jsGet(_ object: Any?, _ key: String) throws -> Any? {
     let object = jsFlat(object)
+    if let value = object, let plain = jsPlainObject(value) { return try plain.get(key) }
+    if let value = object, let primitive = jsPrimitive(value) {
+        switch primitive {
+        case .string(let string): return jsStringMember(string, key)
+        case .number(let number): return jsNumberMethod(number, key)
+        case .boolean(let bool): return jsBooleanMethod(bool, key)
+        }
+    }
     if let value = object, jsIsOpaqueObject(value) {
         if let native = jsAsNSObject(value) {
             if jsIsNativeOnly(native) { return jsNativeGet(native, key) }
@@ -652,14 +706,7 @@ public func jsGet(_ object: Any?, _ key: String) throws -> Any? {
         if let index = jsArrayIndex(key) { return Int(index) < array.jsLength ? array.jsElement(at: Int(index)) : nil }
         return jsArrayMethod(array, key)
     case let string as String:
-        if key == "length" { return Double(string.utf16.count) }
-        if let index = jsArrayIndex(key) {
-            let units = string.utf16
-            guard Int(index) < units.count else { return nil }
-            let unit = units[units.index(units.startIndex, offsetBy: Int(index))]
-            return String(decoding: [unit], as: UTF16.self)
-        }
-        return jsStringMethod(string, key)
+        return jsStringMember(string, key)
     case let match as JSMatch:
         if key == "length" { return match.length }
         if key == "index" { return match.index }
@@ -691,6 +738,13 @@ public func jsGet(_ object: Any?, _ key: String) throws -> Any? {
     default:
         return nil
     }
+}
+
+/// A string's `length`, a character by index, or a method.
+private func jsStringMember(_ string: String, _ key: String) -> Any? {
+    if key == "length" { return Double(string.utf16.count) }
+    if let index = jsArrayIndex(key) { return jsCharAtOrUndefined(string, Double(index)) }
+    return jsStringMethod(string, key)
 }
 
 func jsIsStruct(_ value: Any) -> Bool {
@@ -750,7 +804,9 @@ public func jsPostUpdate(_ object: Any?, _ key: String, _ step: Double) throws -
 /// `object[key] = value` on a dynamic value. Writing to undefined or null throws a TypeError;
 /// writes to other primitives are ignored.
 public func jsSet(_ object: Any?, _ key: String, _ value: Any?) throws {
-    switch jsFlat(object) {
+    let object = jsFlat(object)
+    if let target = object, let plain = jsPlainObject(target) { return try plain.put(key, value) }
+    switch object {
     case nil:
         throw JSException(JSTypeError("Cannot set properties of undefined (setting '\(key)')"))
     case is JSNull:
@@ -880,6 +936,13 @@ public func jsIsNullish(_ value: Any?) -> Bool {
 /// JavaScript truthiness: false for undefined, null, false, 0, -0, NaN and "".
 public func jsIsTruthy(_ value: Any?) -> Bool {
     let value = jsFlat(value)
+    if let v = value, let primitive = jsPrimitive(v) {
+        switch primitive {
+        case .string(let s): return !s.isEmpty
+        case .number(let d): return d != 0 && !d.isNaN
+        case .boolean(let b): return b
+        }
+    }
     if let object = value, jsIsOpaqueObject(object) { return !(object is JSNull) }
     switch value {
     case nil: return false
@@ -1013,7 +1076,9 @@ public func jsToStringDefault(_ value: Any?) -> String { jsToString(jsToPrimitiv
 
 /// `Number(value)` / unary `+`.
 public func jsToNumber(_ value: Any?) -> Double {
-    switch jsFlat(value) {
+    let value = jsFlat(value)
+    if let v = value, let primitive = jsPrimitive(v) { return primitive.number }
+    switch value {
     case nil: return .nan
     case let d as Double: return d
     case let s as String: return jsNumberFromString(s)
@@ -1035,6 +1100,7 @@ enum JSJoinGuard {
 /// `String(value)`: arrays join with ",", plain objects are "[object Object]", errors "Name: message".
 public func jsToString(_ value: Any?) -> String {
     let value = jsFlat(value)
+    if let v = value, let primitive = jsPrimitive(v) { return primitive.string }
     if let object = value, jsIsOpaqueObject(object) { return jsObjectToString(object) }
     switch value {
     case nil: return "undefined"
@@ -1072,6 +1138,12 @@ private func jsObjectToString(_ value: Any) -> String {
 
 /// `a + b`: string concatenation when either side is (or converts to) a string, else numeric addition.
 public func jsAdd(_ a: Any?, _ b: Any?) -> Any? {
+    if let p = jsFlat(a).flatMap(jsPrimitive), let q = jsFlat(b).flatMap(jsPrimitive) {
+        if case .number(let m) = p, case .number(let n) = q { return m + n }
+        if case .string = p { return p.string + q.string }
+        if case .string = q { return p.string + q.string }
+        return p.number + q.number
+    }
     let x = jsToPrimitive(a), y = jsToPrimitive(b)
     if x is String || y is String { return jsToString(x) + jsToString(y) }
     return jsToNumber(x) + jsToNumber(y)
