@@ -2,7 +2,7 @@
 // test262 conformance of the JavaScript the compiler emits: a curated subset of tc39/test262
 // (tests.txt) translated as an app's modules are and run on the host, Swift as macOS executables
 // linking the kit's runtime and Kotlin on the JVM with kit-android's runtime (tests/native-build.ts).
-//   node tests/test262/run.ts [--swift | --kotlin] [--only <text>…] [--batch <n>] [--jobs <n>] [--update-baseline] [--keep] [--list | --report]
+//   node tests/test262/run.ts [--swift | --kotlin] [--only <text>…] [--area <name>…] [--batch <n>] [--jobs <n>] [--update-baseline] [--keep] [--list | --report]
 // test262 is fetched at COMMIT into $NS_TEST262_CACHE (default ~/.cache/ns-test262); build products go to
 // $NS_TEST262_BUILD (default <tmp>/ns-test262), with results-<backend>.json and summary.md.
 // The run fails only on a regression against baseline.json: a test not listed there that does not pass.
@@ -25,6 +25,7 @@ const flag = (name: string) => argv.includes(name);
 const values = (name: string) => argv.flatMap((a, i) => (a === name && argv[i + 1] ? [argv[i + 1]] : []));
 const backends = (flag('--swift') ? ['swift'] : flag('--kotlin') ? ['kotlin'] : ['swift', 'kotlin']) as Backend[];
 const only = values('--only');
+const areas = values('--area');
 const batchSize = Number(values('--batch')[0] ?? 250);
 const jobs = Number(values('--jobs')[0] ?? Math.max(2, availableParallelism() - 2));
 const keep = flag('--keep');
@@ -586,6 +587,7 @@ for (const { path, area } of included) {
   for (const id of testFiles(dir, path)) {
     if (seen.has(id) || exclusions.some((x) => x(id))) continue;
     if (only.length && !only.some((o) => id.includes(o))) continue;
+    if (areas.length && !areas.includes(area)) continue;
     seen.add(id);
     const source = readFileSync(join(baseOf(dir, id), id), 'utf8');
     tests.push({ id, area, module: 't' + String(tests.length).padStart(5, '0'), source, meta: metaOf(source) });
@@ -651,4 +653,4 @@ const table = summary(tests, all);
 writeFileSync(join(build, 'summary.md'), `test262 ${COMMIT}\n\n${table}`);
 console.log('\n' + table);
 
-process.exit(checkBaseline(tests, all, only.length > 0) ? 1 : 0);
+process.exit(checkBaseline(tests, all, only.length > 0 || areas.length > 0) ? 1 : 0);

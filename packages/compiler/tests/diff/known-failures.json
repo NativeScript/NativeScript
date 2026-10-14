@@ -4,11 +4,20 @@
 		"227-callback-given-undefined": "A string parameter given undefined reads \"\": Swift holds a typed string non-optional (Swift translator)."
 	},
 	"kotlin": {
+		"235-static-block": "Fixed on wip/quality-kotlin (033903a0d): remove this once both are on feat.",
+		"238-builtin-constructors-as-values": "Fixed on wip/quality-kotlin (ff45852f3): remove this once both are on feat.",
+		"241-regexp-call": "Fixed on wip/quality-kotlin (82ce38739): remove this once both are on feat.",
+		"242-var-redeclared": "Fixed on wip/quality-kotlin (82ce38739): remove this once both are on feat.",
 		"250-void-promise-values": "A function value with a rest parameter passed to then (`then(log)`) matches no overload (Kotlin translator).",
 		"251-define-property-targets": "A function declaration used as a value (`Object.defineProperty(greet, …)`) and `error.constructor.name` do not compile; defineProperty on a class's object, an array or a function is dropped, test262 cluster 3 (Kotlin translator and runtime).",
 		"252-prototype-method-calls": "A built-in's prototype method called with call or apply (`Array.prototype.slice.call(list, 1)`) is refused, test262 cluster 2 (Kotlin translator).",
 		"253-literal-to-string-value-of": "An object literal's own toString and valueOf are not what string and number conversions call: \"[object Object]\" and NaN, test262 cluster 5 (Kotlin translator and runtime).",
 		"254-destructuring-assignment": "A rest element in a destructuring assignment (`[first, ...others] = list`) is refused, test262 cluster 8 (Kotlin translator).",
-		"280-callback-function-values": "Array.from of a Set is an array of Any? and a function declaration passed by name to reduce matches no overload (Kotlin translator)."
+		"270-json-edges": "JSON.parse and JSON.stringify edges the Swift perf round covers: number forms, escapes, toJSON and replacer order, syntax error messages (Kotlin runtime, being fixed in the Kotlin perf work).",
+		"272-collections-edges": "Map and Set edges: SameValueZero keys, iteration while the collection changes, a held iterator across deletes (Kotlin runtime, being fixed in the Kotlin perf work).",
+		"274-promise-reactions": "The order of several reactions on one promise, finally, and resolution with thenables (Kotlin runtime, being fixed in the Kotlin perf work).",
+		"280-callback-function-values": "Array.from of a Set is an array of Any? and a function declaration passed by name to reduce matches no overload (Kotlin translator).",
+		"341-error-classes-as-values": "An error constructor held as a value typed ErrorConstructor (instanceof C, C.name, an array of them) does not compile (Kotlin translator, SEMANTICS #7).",
+		"345-static-block-var-scope": "Static blocks and a var read outside the block declaring it: wip/quality-kotlin has both (033903a0d, 82ce38739); check this case there once both are on feat."
 	}
 }

@@ -117,25 +117,15 @@ public func jsHasKey(_ object: Any?, _ key: String) -> Bool {
 
 // MARK: Strings, in UTF-16 code units as JavaScript indexes them
 
-private func units(_ s: String) -> [UInt16] { Array(s.utf16) }
-private func string(_ u: ArraySlice<UInt16>) -> String { String(decoding: u, as: UTF16.self) }
+private func units(_ s: String) -> [UInt16] { jsUnits(s) }
+private func string(_ u: ArraySlice<UInt16>) -> String { jsString(utf16: u) }
 private func clampIndex(_ v: Double, _ count: Int) -> Int {
     if v.isNaN { return 0 }
     return Int(max(0, min(Double(count), v.rounded(.towardZero))))
 }
 
 /// Compares strings by UTF-16 code units, as JavaScript's `<` does: -1, 0 or 1.
-public func jsCompare(_ a: String, _ b: String) -> Int {
-    var x = a.utf16.makeIterator(), y = b.utf16.makeIterator()
-    while true {
-        switch (x.next(), y.next()) {
-        case (nil, nil): return 0
-        case (nil, _): return -1
-        case (_, nil): return 1
-        case let (p?, q?): if p != q { return p < q ? -1 : 1 }
-        }
-    }
-}
+public func jsCompare(_ a: String, _ b: String) -> Int { jsCompareUnits(a, b) }
 
 public func jsStartsWith(_ s: String, _ search: String, _ position: Double? = nil) -> Bool {
     let u = units(s)
@@ -174,10 +164,11 @@ public func jsLastIndexOf(_ s: String, _ search: String, _ fromIndex: Double? = 
 
 /// `s.substring(a, b)`: negative and NaN are 0, and the bounds swap if reversed.
 public func jsSubstring(_ s: String, _ start: Double, _ end: Double? = nil) -> String {
-    let u = units(s)
-    var a = clampIndex(start, u.count), b = clampIndex(end ?? Double(u.count), u.count)
-    if a > b { swap(&a, &b) }
-    return string(u[a..<b])
+    jsUnitSlice(s) { count in
+        var a = clampIndex(start, count), b = clampIndex(end ?? Double(count), count)
+        if a > b { swap(&a, &b) }
+        return a..<b
+    }
 }
 
 /// `s.substr(start, length)`: a negative start counts from the end.
@@ -203,24 +194,30 @@ public func jsJoinSeparator(_ separator: Any?) -> String {
 }
 
 /// `s.split(separator, limit)` with a string separator.
+/// A separator, valid UTF-16 as every Swift string is, matches the same text at the same places among UTF-8
+/// bytes as among UTF-16 units: the search runs over the bytes, in place.
 public func jsSplit(_ s: String, _ separator: String?, _ limit: Double? = nil) -> JSArray<String> {
     let max = limit.map { Int(jsToUint32Bits($0)) } ?? Int.max
     guard let separator else { return JSArray(max > 0 ? [s] : []) }
-    let u = units(s), sep = Array(separator.utf16)
     var parts: [String] = []
-    if sep.isEmpty {
-        for c in u.prefix(max) { parts.append(string([c][...])) }
+    if separator.isEmpty {
+        for c in units(s).prefix(max) { parts.append(string([c][...])) }
         return JSArray(parts)
     }
-    var start = 0, i = 0
-    while i + sep.count <= u.count && parts.count < max {
-        if u[i..<(i + sep.count)].elementsEqual(sep) {
-            parts.append(string(u[start..<i]))
-            i += sep.count
-            start = i
-        } else { i += 1 }
+    var text = s, needle = separator
+    text.withUTF8 { bytes in
+        needle.withUTF8 { sep in
+            func piece(_ range: Range<Int>) -> String { String(decoding: UnsafeBufferPointer(rebasing: bytes[range]), as: UTF8.self) }
+            var start = 0
+            while parts.count < max, start + sep.count <= bytes.count,
+                  let found = memmem(bytes.baseAddress! + start, bytes.count - start, sep.baseAddress!, sep.count) {
+                let at = bytes.baseAddress!.distance(to: found.assumingMemoryBound(to: UInt8.self))
+                parts.append(piece(start..<at))
+                start = at + sep.count
+            }
+            if parts.count < max { parts.append(piece(start..<bytes.count)) }
+        }
     }
-    if parts.count < max { parts.append(string(u[start...])) }
     return JSArray(parts)
 }
 
