@@ -13,10 +13,12 @@
 		"246-nullable-string-concat": "`null as string | null` in a template or a concatenation does not compile: nil has no contextual type (Swift translator).",
 		"247-missing-values-throw": "A module const read before its declaration runs, and a member of undefined or null read, set or called, trap instead of throwing ReferenceError or TypeError (Swift translator, quality step 4).",
 		"248-function-properties": "Properties given to a function value (`fn.tag = …`, Object.defineProperty) and Object.prototype.hasOwnProperty.call on one are refused or dropped (Swift translator and runtime, SEMANTICS #3).",
-		"249-literal-to-primitive": "An object literal's own [Symbol.toPrimitive] is ignored, and a literal's valueOf is not called by < or Math.max (Swift translator, SEMANTICS #5)."
+		"249-literal-to-primitive": "An object literal's own [Symbol.toPrimitive] is ignored, and a literal's valueOf is not called by < or Math.max (Swift translator, SEMANTICS #5).",
+		"290-regexp-backtracking": "A capture inside a quantified group keeps its value from an earlier iteration instead of resetting to undefined (NSRegularExpression semantics, Swift runtime).",
+		"291-json-edges": "A lone surrogate becomes U+FFFD because Swift strings hold only valid Unicode, and the circular-structure TypeError has an empty message (Swift runtime).",
+		"293-array-sort-callbacks": "A comparator declared with fewer parameters than sort passes does not compile (Swift translator)."
 	},
 	"kotlin": {
-		"270-json-edges": "JSON.parse and JSON.stringify edges the Swift perf round covers: number forms, escapes, toJSON and replacer order, syntax error messages (Kotlin runtime, being fixed in the Kotlin perf work).",
-		"272-collections-edges": "Map and Set edges: SameValueZero keys, iteration while the collection changes, a held iterator across deletes (Kotlin runtime, being fixed in the Kotlin perf work)."
+		"270-json-edges": "JSON.parse and JSON.stringify edges the Swift perf round covers: number forms, escapes, toJSON and replacer order, syntax error messages (Kotlin runtime, being fixed in the Kotlin perf work)."
 	}
 }
