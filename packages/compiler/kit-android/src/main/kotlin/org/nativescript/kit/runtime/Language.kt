@@ -410,3 +410,14 @@ fun <T> jsUncheckedNull(): T = null as T
 
 /** A field declared without a value (Kotlin's `lateinit`) read by name before it is set: undefined, as script reads it. */
 inline fun jsUnsetIsUndefined(read: () -> Any?): Any? = try { read() } catch (_: UninitializedPropertyAccessException) { null }
+
+/** A class's name as JavaScript gives a constructor's: the library's error classes by their JavaScript names. */
+fun jsConstructorName(c: Class<*>): String = when (c) {
+    JSError::class.java -> "Error"
+    JSTypeError::class.java -> "TypeError"
+    JSRangeError::class.java -> "RangeError"
+    JSSyntaxError::class.java -> "SyntaxError"
+    JSReferenceError::class.java -> "ReferenceError"
+    JSAggregateError::class.java -> "AggregateError"
+    else -> c.simpleName
+}

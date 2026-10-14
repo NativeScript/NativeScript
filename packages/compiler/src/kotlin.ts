@@ -619,6 +619,13 @@ export class Translator implements AsyncTranslator {
       case 'Set': case 'ReadonlySet': return `JSSet<${arg(0)}>`;
       case 'Date': return 'JSDate';
       case 'RegExp': return 'JSRegExp';
+      // The library's constructors held as values: an error class is its Java class; Number, String and Boolean convert.
+      case 'ErrorConstructor': case 'TypeErrorConstructor': case 'RangeErrorConstructor': case 'SyntaxErrorConstructor': case 'ReferenceErrorConstructor': case 'AggregateErrorConstructor':
+        if (isLibDeclaration(sym?.declarations?.[0])) return 'Class<out JSError>';
+        break;
+      case 'NumberConstructor': if (isLibDeclaration(sym?.declarations?.[0])) return '(Any?) -> Double'; break;
+      case 'StringConstructor': if (isLibDeclaration(sym?.declarations?.[0])) return '(Any?) -> String'; break;
+      case 'BooleanConstructor': if (isLibDeclaration(sym?.declarations?.[0])) return '(Any?) -> Boolean'; break;
       case 'RegExpMatchArray': case 'RegExpExecArray': return 'JSMatch';
       case 'RegExpStringIterator': return 'JSArray<JSMatch>';
       case 'TemplateStringsArray': return 'JSArray<String>';
@@ -5813,7 +5820,13 @@ export class Translator implements AsyncTranslator {
       return typeof constant === 'string' ? kotlinString(constant) : numberLiteral(String(constant));
     }
     // `object.constructor`, the class of the instance.
-    if (name === 'constructor' && this.typeOf(target) !== 'Any?' && this.checker.getSymbolAtLocation(e.name)?.declarations?.every((d) => d.getSourceFile().isDeclarationFile)) return `${this.expr(target)}${this.typeOf(target).endsWith('?') ? '!!' : ''}.javaClass`;
+    if (name === 'constructor' && this.typeOf(target) !== 'Any?' && this.checker.getSymbolAtLocation(e.name)?.declarations?.every((d) => d.getSourceFile().isDeclarationFile)) return `${this.typeOf(target).endsWith('?') ? this.present(this.expr(target), name, target) : this.expr(target)}.javaClass`;
+    // A constructor's name: the library's error classes by their JavaScript names, a class held as a value by its own.
+    if (name === 'name' && !isWriteTarget(e)) {
+      if (ts.isIdentifier(target) && ERRORS[target.text] && isLibDeclaration(this.resolve(target)?.declarations?.[0])) return kotlinString(target.text);
+      const ctor = ts.isPropertyAccessExpression(target) && target.name.text === 'constructor' && this.typeOf(target.expression) !== 'Any?' && !!this.checker.getSymbolAtLocation(target.name)?.declarations?.every((d) => d.getSourceFile().isDeclarationFile);
+      if (ctor || this.typeOf(target).replace(/\?$/, '').startsWith('Class<')) return `jsConstructorName(${this.expr(target)})`;
+    }
     const maybeChain = e.questionDotToken ? this.maybeUndefined(e) : null;
     // An array the chain reads an element of (`group?.items[i]`): the element read goes on with the chain.
     const intoElement = ts.isElementAccessExpression(e.parent) && e.parent.expression === e && !!(e.parent.flags & ts.NodeFlags.OptionalChain) && !isWriteTarget(e.parent) && this.typeOf(e).startsWith('JSArray<');
@@ -7994,6 +8007,9 @@ export class Translator implements AsyncTranslator {
           : `run { val ${v} = ${left}; if (jsTruthy(${v})) ${right} else ${leftValue} }`;
       }
       case K.InstanceOfKeyword: {
+        // A class held as a value (`C: ErrorConstructor`): tested by the class it holds.
+        const libraryClass = ts.isIdentifier(e.right) && isLibDeclaration(this.resolve(e.right)?.declarations?.[0]);
+        if (!libraryClass && this.typeOf(e.right).replace(/\?$/, '').startsWith('Class<')) return `${this.expr(e.right)}.isInstance(${this.coerce(e.left, 'Any?')})`;
         const name = e.right.getText();
         // A compiled program makes no String, Number or Boolean wrapper objects.
         if (['String', 'Number', 'Boolean'].includes(name) && isLibDeclaration(this.resolve(e.right)?.declarations?.[0])) {
