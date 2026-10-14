@@ -14,9 +14,10 @@
 		"243-array-holes": "Object.keys lists the holes of new Array(n) (Swift runtime).",
 		"244-optional-member-later": "An optional member set after the object is made is listed in declaration order, not as the last key (Swift translator).",
 		"246-nullable-string-concat": "`null as string | null` in a template or a concatenation does not compile: nil has no contextual type (Swift translator).",
-		"247-missing-values-throw": "A module const read before its declaration runs, and a member of undefined or null read, set or called, trap instead of throwing ReferenceError or TypeError (Swift translator, quality step 4)."
+		"247-missing-values-throw": "A module const read before its declaration runs, and a member of undefined or null read, set or called, trap instead of throwing ReferenceError or TypeError (Swift translator, quality step 4).",
+		"248-function-properties": "Properties given to a function value (`fn.tag = …`, Object.defineProperty) and Object.prototype.hasOwnProperty.call on one are refused or dropped (Swift translator and runtime, SEMANTICS #3).",
+		"249-literal-to-primitive": "An object literal's own [Symbol.toPrimitive] is ignored, and a literal's valueOf is not called by < or Math.max (Swift translator, SEMANTICS #5).",
+		"341-error-classes-as-values": "A value typed ErrorConstructor does not compile: fixed on wip/builtin-values (edff2a359), drop this entry when it merges (Swift translator, SEMANTICS #7)."
 	},
-	"kotlin": {
-		"280-callback-function-values": "Array.from of a Set is an array of Any? and a function declaration passed by name to reduce matches no overload (Kotlin translator)."
-	}
+	"kotlin": {}
 }

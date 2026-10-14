@@ -11,16 +11,23 @@ import java.lang.reflect.Modifier
 // payloads and the views they decorate, and with Java objects they hold as
 // `any`, whose fields and methods NativeScript's runtime reaches by name.
 
-/** A function script holds untyped: called with whatever arguments it is given. */
+/**
+ * A function script holds untyped: called with whatever arguments it is given. `original` is the function it wraps
+ * (`::fn`), where there is one: a wrapper is made wherever the function is read untyped, and they all are that function.
+ */
 class JSFunction(val body: (List<Any?>) -> Any?) {
     /** `fn.length`: the parameters before the first optional one, as script declares them. */
     var length = 0
+    var original: Any? = null
+        internal set
     operator fun invoke(vararg args: Any?): Any? = body(args.toList())
 }
 
 fun jsFunction(body: (List<Any?>) -> Any?): JSFunction = JSFunction(body)
 
 fun jsFunction(length: Int, body: (List<Any?>) -> Any?): JSFunction = JSFunction(body).also { it.length = length }
+
+fun jsFunction(length: Int, original: Any, body: (List<Any?>) -> Any?): JSFunction = JSFunction(body).also { it.length = length; it.original = original }
 
 /** A value where a collection's element type goes, null included, as script stores it (the element type is erased). */
 @Suppress("UNCHECKED_CAST")

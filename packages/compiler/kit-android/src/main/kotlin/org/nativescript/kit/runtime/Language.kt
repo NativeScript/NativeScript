@@ -329,14 +329,15 @@ fun jsDefineProperty(target: Any?, key: String, descriptor: Any?): Any? {
     when (val v = jsBox(target)) {
         is JSObject -> v.defineProperty(key, d)
         is JSExpando -> (v.jsExpando ?: JSObject().also { v.jsExpando = it }).defineProperty(key, d)
+        is Function<*>, is JSFunction -> jsFunctionProperties(v, true)!!.defineProperty(key, d)
         is JSDynamic -> {
             if (d.get != null || d.set != null) throw JSException(JSTypeError("Cannot define an accessor on a typed object: $key"))
             if (d.hasValue) v.jsSet(key, d.value)
         }
-        is JSArray<*> -> {
-            if (d.get != null || d.set != null) throw JSException(JSTypeError("Cannot define an accessor on an array: $key"))
+        is JSArray<*> -> if (key == "length" || jsArrayIndex(key) != null) {
+            if (d.get != null || d.set != null) throw JSException(JSTypeError("Cannot define an accessor on an array's index or length: $key"))
             if (d.hasValue) jsSet(v, key, d.value)
-        }
+        } else (v.jsProperties ?: JSObject().also { v.jsProperties = it }).defineProperty(key, d)
         else -> throw JSException(JSTypeError("Object.defineProperty called on non-object"))
     }
     return target
@@ -351,11 +352,17 @@ fun jsDefineProperties(target: Any?, descriptors: Any?): Any? {
 /** `Object.getOwnPropertyDescriptor(object, key)`. */
 fun jsOwnPropertyDescriptor(target: Any?, key: String): Any? = when (val v = jsBox(target)) {
     is JSObject -> v.descriptor(key)
-    is JSDynamic -> if (key !in v.jsKeys) null else {
-        val level = jsRestriction(v)
-        JSObject(listOf(Pair("value", v.jsGet(key)), Pair("writable", level < 3), Pair("enumerable", true), Pair("configurable", level < 2)))
-    }
+    is JSExpando -> v.jsExpando?.descriptor(key) ?: jsDeclaredDescriptor(v, key)
+    is JSArray<*> -> v.jsProperties?.descriptor(key)
+    is Function<*>, is JSFunction -> jsFunctionProperties(v, false)?.descriptor(key)
+    is JSDynamic -> jsDeclaredDescriptor(v, key)
     else -> null
+}
+
+/** The descriptor of a key a typed object declares: a writable, enumerable data property, as far as freezing left it. */
+private fun jsDeclaredDescriptor(v: JSDynamic, key: String): JSObject? = if (key !in v.jsKeys) null else {
+    val level = jsRestriction(v)
+    JSObject(listOf(Pair("value", v.jsGet(key)), Pair("writable", level < 3), Pair("enumerable", true), Pair("configurable", level < 2)))
 }
 
 /** `Object.getOwnPropertyNames(value)`. */

@@ -279,7 +279,7 @@ fun jsGet(target: Any?, key: String): Any? = if (key == "constructor" && target 
         key == "length" -> target.size.toDouble()
         // A named property set on the array (`arr.label = …`, Object.defineProperty) before the method of that name.
         else -> jsArrayIndex(key)?.let { if (it < target.size) target.storage[it.toInt()] else null }
-            ?: target.jsProperties?.takeIf { key in it }?.get(key) ?: jsArrayMethod(target, key)
+            ?: target.jsProperties?.takeIf { it.has(key) }?.get(key, target) ?: jsArrayMethod(target, key)
     }
     is String -> when {
         key == "length" -> target.length.toDouble()
@@ -289,9 +289,7 @@ fun jsGet(target: Any?, key: String): Any? = if (key == "constructor" && target 
     is Triple<*, *, *> -> when (key) { "0" -> target.first; "1" -> target.second; "2" -> target.third; "length" -> 3.0; else -> null }
     is JSMap<*, *> -> if (key == "size") target.size else jsMapMethod(target, key)
     is JSSet<*> -> if (key == "size") target.size else jsSetMethod(target, key)
-    is JSFunction -> if (key == "length") target.length.toDouble() else null
-    is JSMethod -> if (key == "length") target.length.toDouble() else null
-    is Function<*> -> if (key == "length") jsFunctionArity(target)?.toDouble() else null
+    is JSFunction, is Function<*> -> jsFunctionGet(target, key)
     is Double, is Boolean, is JSSymbol, is JSBigInt, Unit -> null
     is Class<*> -> jsClassGet(target, key)
     else -> jsJavaGet(target, key)
@@ -318,9 +316,10 @@ fun jsSet(target: Any?, key: String, value: Any?) {
                 if (length < 0 || length > 4_294_967_295.0 || length != Math.floor(length)) throw JSException(JSRangeError("Invalid array length"))
                 array.setLength(length.toInt())
             } else jsArrayIndex(key)?.let { array.setAt(it.toInt(), value) }
-                ?: run { (array.jsProperties ?: LinkedHashMap<String, Any?>().also { array.jsProperties = it })[key] = value }
+                ?: run { (array.jsProperties ?: JSObject().also { array.jsProperties = it }).put(key, value) }
         }
-        is String, is Double, is Boolean, is Function<*>, is JSFunction, is JSSymbol, is JSBigInt, Unit -> {}
+        is Function<*>, is JSFunction -> jsFunctionProperties(target, true)!!.put(key, value)
+        is String, is Double, is Boolean, is JSSymbol, is JSBigInt, Unit -> {}
         else -> jsJavaSet(target, key, value)
     }
 }
@@ -353,7 +352,8 @@ fun jsCallOptional(function: Any?, vararg args: Any?): Any? = if (jsIsNullish(fu
 fun jsKeysOf(value: Any?): List<String> = when (value) {
     is String -> value.indices.map { it.toString() }
     is JSDynamic -> value.jsKeys
-    is JSArray<*> -> (0 until value.size).filter { value.jsHoles?.get(it) != true }.map { it.toString() } + (value.jsProperties?.keys ?: emptySet())
+    is Function<*>, is JSFunction -> jsFunctionProperties(value, false)?.jsKeys ?: emptyList()
+    is JSArray<*> -> (0 until value.size).filter { value.jsHoles?.get(it) != true }.map { it.toString() } + (value.jsProperties?.jsKeys ?: emptyList())
     else -> emptyList()
 }
 
@@ -389,7 +389,7 @@ fun jsHasKey(target: Any?, key: String): Boolean = when (target) {
     // A symbol is no key a class declares: only its own symbol-keyed members (methods its `jsGet` gives) and what was set on it have one (reading `jsKeys` runs accessors).
     is JSExpando -> if (jsIsSymbolKey(key)) ((target as? JSSymbolKeyed)?.jsSymbolKeys?.contains(key) ?: false) || jsExpandoHas(target, key) || target.jsGet(key) != null else jsExpandoHas(target, key) || key in target.jsKeys || target.jsHasMember(key)
     is JSDynamic -> if (jsIsSymbolKey(key)) ((target as? JSSymbolKeyed)?.jsSymbolKeys?.contains(key) ?: false) || target.jsGet(key) != null else key in target.jsKeys || target.jsHasMember(key)
-    is JSArray<*> -> key == "length" || (jsArrayIndex(key)?.let { it < target.size && target.jsHoles?.get(it.toInt()) != true } ?: (target.jsProperties?.containsKey(key) == true))
+    is JSArray<*> -> key == "length" || (jsArrayIndex(key)?.let { it < target.size && target.jsHoles?.get(it.toInt()) != true } ?: (target.jsProperties?.has(key) == true))
     null, JSNull, is String, is Number, is Boolean, is Function<*>, is JSFunction -> false
     // A Java object (a native view): its methods and fields, as NativeScript's runtime exposes them.
     else -> !jsIsSymbolKey(key) && !target.javaClass.name.startsWith("org.nativescript.kit.") && jsJavaHas(target, key)
@@ -447,7 +447,15 @@ fun jsStrictEquals(a: Any?, b: Any?): Boolean {
     val n = jsNumeric(y)
     if (m != null || n != null) return m != null && n != null && m == n
     if (x is JSAdapted || y is JSAdapted) return x == y
+    if (x is JSFunction || y is JSFunction || x is kotlin.reflect.KCallable<*>) return jsSameFunction(x, y)
     return x === y
+}
+
+/** Whether two function values are one function: a wrapper is its original's, and references to one function are equal. */
+internal fun jsSameFunction(a: Any, b: Any): Boolean {
+    val f = (a as? JSFunction)?.original ?: a
+    val g = (b as? JSFunction)?.original ?: b
+    return f === g || (f is kotlin.reflect.KCallable<*> && f == g)
 }
 
 /** SameValueZero (`includes`, `Map` and `Set` keys): `===` except NaN equals NaN. */
@@ -705,6 +713,34 @@ private fun jsSetMethod(target: JSSet<*>, key: String): Any? {
 }
 
 /** A Kotlin function's parameter count (script's `fn.length`), where its class says. */
+/**
+ * The properties script gives a function value (`fn.tag = …`, `Object.defineProperty(fn, …)`), which Kotlin's function
+ * objects cannot hold. A function reference (`::fn`) is made anew where it is read, equal to every other of the same
+ * function: those are keyed by equality and held strongly, one per declaration. Any other function is keyed by identity
+ * and held weakly.
+ */
+private val referenceProperties = java.util.concurrent.ConcurrentHashMap<Any, JSObject>()
+private val functionProperties = JSWeakIdentityTable<JSObject>()
+
+internal fun jsFunctionProperties(function: Any, create: Boolean): JSObject? {
+    val f = (function as? JSFunction)?.original ?: function
+    if (f is kotlin.reflect.KCallable<*>) return if (create) referenceProperties.getOrPut(f) { JSObject() } else referenceProperties[f]
+    if (!create) return if (functionProperties.isEmpty) null else functionProperties.get(f)
+    synchronized(functionProperties) { return functionProperties.get(f) ?: JSObject().also { functionProperties.set(f, it) } }
+}
+
+/** `fn.key` of a function value: what script set on it, else its `length`. */
+internal fun jsFunctionGet(f: Any, key: String): Any? {
+    jsFunctionProperties(f, false)?.let { if (it.has(key)) return it.get(key, f) }
+    if (key != "length") return null
+    return when (f) {
+        is JSFunction -> f.length.toDouble()
+        is JSMethod -> f.length.toDouble()
+        is Function<*> -> jsFunctionArity(f)?.toDouble()
+        else -> null
+    }
+}
+
 fun jsFunctionArity(f: Function<*>): Int? = when (f) {
     is Function0<*> -> 0
     is Function1<*, *> -> 1
