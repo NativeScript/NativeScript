@@ -3845,6 +3845,23 @@ export class Translator implements AsyncTranslator {
     return found;
   }
 
+  /**
+   * Library mode: what a key is on an object typed as a class of the program, whose instances keep what script gives
+   * them (JSExpando), when it is a symbol core's property system makes (members.ts `propertySymbol`).
+   */
+  private propertySymbolOn(object: ts.Expression, key: ts.Expression): 'storage' | 'method' | null {
+    if (!this.library || object.kind === ts.SyntaxKind.SuperKeyword) return null;
+    const kind = this.members?.propertySymbol(key) ?? null;
+    if (!kind || !/^[A-Z][\w.]*\??$/.test(this.typeOf(object))) return null;
+    const typed = this.checker.getNonNullableType(this.checker.getTypeAtLocation(object));
+    // `this` narrowed by `key in this` is `T & Record<symbol, unknown>`.
+    const t = typed.isIntersection() ? typed.types.find((u) => u.isTypeParameter() || u.isClass()) : typed;
+    let cls = t && (t.isTypeParameter() ? this.checker.getBaseConstraintOfType(t) : t)?.getSymbol()?.valueDeclaration;
+    if (!cls || !ts.isClassLike(cls) || cls.getSourceFile().isDeclarationFile) return null;
+    for (let b = this.baseClassOf(cls); b; b = this.baseClassOf(b)) cls = b;
+    return cls.heritageClauses?.some((h) => h.token === ts.SyntaxKind.ExtendsKeyword) ? null : kind;
+  }
+
   private baseClassOf(cls: ts.ClassLikeDeclaration): ts.ClassLikeDeclaration | undefined {
     const h = cls.heritageClauses?.find((x) => x.token === ts.SyntaxKind.ExtendsKeyword)?.types[0];
     const d = h && this.checker.getTypeAtLocation(h.expression).getSymbol()?.valueDeclaration;
@@ -5293,6 +5310,7 @@ export class Translator implements AsyncTranslator {
     if (ts.isDeleteExpression(e)) {
       const target = e.expression;
       if (ts.isElementAccessExpression(target) && this.typeOf(target.expression).startsWith('JSRecord<')) return `${this.expr(target.expression)}.delete(${this.str(target.argumentExpression)})`;
+      if (ts.isElementAccessExpression(target) && this.propertySymbolOn(target.expression, target.argumentExpression) === 'storage') return `jsDeletePropertyStorage(${this.coerce(target.expression, 'Any?')}, ${this.propertyKey(target.argumentExpression)})`;
       if (ts.isElementAccessExpression(target) && (this.isAny(target.expression) || this.isObjectRef(target.expression))) return `jsDelete(${this.expr(target.expression)}, ${this.propertyKey(target.argumentExpression)})`;
       if (ts.isPropertyAccessExpression(target) && this.isAny(target.expression)) return `jsDelete(${this.expr(target.expression)}, ${kotlinString(target.name.text)})`;
       if (ts.isPropertyAccessExpression(target) && this.typeOf(target.expression).startsWith('JSRecord<')) return `${this.expr(target.expression)}.delete(${kotlinString(target.name.text)})`;
@@ -5876,6 +5894,13 @@ export class Translator implements AsyncTranslator {
     // `x[Symbol.toStringTag]` on a class declaring it (a field or a getter).
     const tag = ts.isPropertyAccessExpression(key) && key.name.text === 'toStringTag' && ts.isIdentifier(key.expression) && key.expression.text === 'Symbol' && this.isLibGlobal(key.expression);
     if (tag && !isWriteTarget(e) && this.checker.getNonNullableType(this.checker.getTypeAtLocation(e.expression)).getProperties().some((p) => wellKnownMember(p.escapedName.toString()) === 'jsToStringTag')) return `${target}${q}.jsToStringTag`;
+    // A symbol core's property system keeps values under (`this[key]`) or names methods by (`this[setNative]`).
+    const propertySymbol = isWriteTarget(e) ? null : this.propertySymbolOn(e.expression, key);
+    if (propertySymbol) {
+      const code = propertySymbol === 'storage' ? `jsPropertyStorage(${this.coerce(e.expression, 'Any?')}, ${this.propertyKey(key)})` : `jsSymbolMethod(${this.coerce(e.expression, 'Any?')}, ${this.propertyKey(key)})`;
+      const rt = this.typeOf(e);
+      return rt === 'Any?' ? code : this.fromAnyCode(code, rt, true);
+    }
     // A computed key on an object (`this[side + 'Drawer']`): its members by name.
     if (this.isObjectRef(e.expression)) {
       // Library mode: the object as it is, whatever shape its type gives it (a generic `owner: T`).
@@ -6404,6 +6429,9 @@ export class Translator implements AsyncTranslator {
       return this.fromPluginCall(e, call);
     }
     if (ts.isElementAccessExpression(callee) && isSymbolIterator(callee.argumentExpression, this.checker) && !e.arguments.length) return this.iteratorCode(callee.expression);
+    if (ts.isElementAccessExpression(callee) && this.propertySymbolOn(callee.expression, callee.argumentExpression) === 'method') {
+      return `jsCallSymbolMethod(${[this.coerce(callee.expression, 'Any?'), this.propertyKey(callee.argumentExpression), ...e.arguments.map((a) => this.coerce(a, 'Any?'))].join(', ')})`;
+    }
     if (ts.isElementAccessExpression(callee) && this.library && this.typeOf(callee.argumentExpression) === 'JSSymbol') {
       // `view[prop.setNative](value)`, `super[prop.setNative](value)`: the method under the symbol, found when the program runs.
       const key = this.propertyKey(callee.argumentExpression);
@@ -7619,6 +7647,9 @@ export class Translator implements AsyncTranslator {
     const undeclared = ts.isElementAccessExpression(left) && ts.isStringLiteral(left.argumentExpression) && !this.checker.getNonNullableType(this.checker.getTypeAtLocation(left.expression)).getProperty(left.argumentExpression.text);
     // A typed array's element by a numeric index is its own operator, not a dynamic store through the index's string.
     const typedElement = ts.isElementAccessExpression(left) && TYPED_ARRAYS.includes(this.typeOf(left.expression).replace(/\?$/, '').replace(/^JS/, '')) && this.typeOf(left.argumentExpression) === 'Double';
+    if (ts.isElementAccessExpression(left) && this.propertySymbolOn(left.expression, left.argumentExpression) === 'storage') {
+      return `jsSetPropertyStorage(${this.coerce(left.expression, 'Any?')}, ${this.propertyKey(left.argumentExpression)}, ${this.coerce(right, 'Any?')})`;
+    }
     if (ts.isElementAccessExpression(left) && !typedElement && (this.isAny(left.expression) || undeclared || (!ts.isStringLiteral(left.argumentExpression) && this.isObjectRef(left.expression)
         && !/^(JSArray|JSRecord|JSMatch|Pair|Triple)\b/.test(this.typeOf(left.expression).replace(/\?$/, ''))))) {
       return `jsSet(${this.expr(left.expression)}, ${this.propertyKey(left.argumentExpression)}, ${this.coerce(right, 'Any?')})`;
@@ -7778,7 +7809,9 @@ export class Translator implements AsyncTranslator {
         return this.decidedInstanceOf(e) ? `jsIs<${tested ?? name}>(${left})` : `(${left} is ${tested ?? name})`;
       }
       case K.CommaToken: return `run { ${this.exprStatement(e.left)}; ${r()} }`;
-      case K.InKeyword: return `jsHasKey(${this.coerce(e.right, 'Any?')}, ${this.propertyKey(e.left)})`;
+      case K.InKeyword:
+        if (this.propertySymbolOn(e.right, e.left) === 'storage') return `jsHoldsPropertyStorage(${this.coerce(e.right, 'Any?')}, ${this.propertyKey(e.left)})`;
+        return `jsHasKey(${this.coerce(e.right, 'Any?')}, ${this.propertyKey(e.left)})`;
     }
     throw this.error(e, `operator ${ts.tokenToString(op)}`);
   }

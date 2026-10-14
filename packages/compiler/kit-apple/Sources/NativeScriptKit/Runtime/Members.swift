@@ -118,3 +118,26 @@ public enum JSTypedMembers {
         return false
     }
 }
+
+/// What core's property system keeps on an instance under its symbols (`this[key]`, `defaultValueKey in this`): the
+/// instance's own properties, read and written without the by-name lookups, as no class or prototype holds them.
+extension JSExpando {
+    public subscript(propertyStorage key: String) -> Any? {
+        get { jsExpando?[key] ?? nil }
+        set {
+            if jsExpando == nil { jsExpando = JSObject() }
+            jsExpando![key] = newValue
+        }
+    }
+
+    public func jsHoldsPropertyStorage(_ key: String) -> Bool { jsExpando?.has(key) == true }
+
+    @discardableResult
+    public func jsDeletePropertyStorage(_ key: String) -> Bool { jsExpando?.delete(key) ?? true }
+}
+
+/// `object[key](…)` for a symbol classes declare methods under (`this[setNative](value)`).
+@discardableResult
+public func jsCallSymbolMethod(_ object: JSExpando, _ key: String, _ arguments: Any?...) throws -> Any? {
+    try jsCallValue(jsExpandoGet(object, key), this: object, optional: false, arguments)
+}

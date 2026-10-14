@@ -102,3 +102,24 @@ object JSTypedMembers {
         if (shadowed.getOrPut(key) { HashSet() }.add(cls)) for (m in byName[key].orEmpty()) if (m.owner.isAssignableFrom(cls)) m.shadowable = true
     }
 }
+
+/*
+ * What core's property system keeps on an instance under its symbols (`this[key]`, `defaultValueKey in this`): the
+ * instance's own properties, read and written without the by-name lookups, as no class or prototype holds them.
+ * An object of another kind (a function's `this` script may give any value) goes by name as before.
+ */
+fun jsPropertyStorage(obj: Any?, key: String): Any? = if (obj is JSExpando) obj.jsExpando?.get(key) else jsGet(obj, key)
+
+fun jsSetPropertyStorage(obj: Any?, key: String, value: Any?) {
+    if (obj is JSExpando) (obj.jsExpando ?: JSObject().also { obj.jsExpando = it })[key] = value else jsSet(obj, key, value)
+}
+
+fun jsHoldsPropertyStorage(obj: Any?, key: String): Boolean = if (obj is JSExpando) obj.jsExpando?.has(key) == true else jsHasKey(obj, key)
+
+fun jsDeletePropertyStorage(obj: Any?, key: String): Boolean = if (obj is JSExpando) obj.jsExpando?.delete(key) ?: true else jsDelete(obj, key)
+
+/** `object[key]` for a symbol classes declare methods under (`this[setNative]`), which their `jsGet` gives. */
+fun jsSymbolMethod(obj: Any?, key: String): Any? = if (obj is JSDynamic) obj.jsGet(key) else jsGet(obj, key)
+
+/** `object[key](…)` for a symbol classes declare methods under (`this[setNative](value)`). */
+fun jsCallSymbolMethod(obj: Any?, key: String, vararg args: Any?): Any? = jsCallValue(jsSymbolMethod(obj, key), obj, false, *args)

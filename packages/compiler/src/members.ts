@@ -1,5 +1,5 @@
 import ts from 'typescript';
-import type { Properties } from './properties.ts';
+import { PROPERTY_CLASSES, type Properties } from './properties.ts';
 
 /**
  * A member a class reads and writes natively for a property core's property system
@@ -25,6 +25,12 @@ export interface Members {
   get(cls: ts.ClassLikeDeclaration, name: string): TypedMember | undefined;
   /** The members a statement's registration defines (`textProperty.register(TextBase);`), none for any other statement. */
   registeredBy(statement: ts.Statement): readonly TypedMember[];
+  /**
+   * What a key names when it is one of the symbols a property class makes (`key`, `defaultValueKey`, `setNative`…):
+   * `storage`, a value the property keeps on each instance it is set on; `method`, the name classes declare a method
+   * under (`[textProperty.setNative](value)`). Null for any other key.
+   */
+  propertySymbol(key: ts.Expression): 'storage' | 'method' | null;
 }
 
 /**
@@ -82,7 +88,68 @@ export function collectMembers(checker: ts.TypeChecker, files: readonly ts.Sourc
     };
     visit(sf);
   }
+  // The symbols each property class makes: its constructor's `const key = Symbol(…)` and the field it is kept in (`this.key = key`).
+  const made = new Map<ts.Symbol, ts.Symbol | null>();
+  const methodNamed = new Set<ts.Symbol>();
+  const later: (() => void)[] = [];
+  const isSymbolCall = (e: ts.Expression | undefined) => !!e && ts.isCallExpression(e) && ts.isIdentifier(e.expression) && e.expression.text === 'Symbol';
+  for (const sf of files) {
+    if (sf.isDeclarationFile) continue;
+    const visit = (n: ts.Node) => {
+      if (ts.isClassDeclaration(n) && n.name && PROPERTY_CLASSES.has(n.name.text)) {
+        const locals = new Map<ts.Symbol, ts.Symbol | null>();
+        const inClass = (x: ts.Node) => {
+          if (ts.isVariableDeclaration(x) && ts.isIdentifier(x.name) && isSymbolCall(x.initializer)) {
+            const s = checker.getSymbolAtLocation(x.name);
+            if (s) locals.set(s, null);
+          }
+          ts.forEachChild(x, inClass);
+        };
+        inClass(n);
+        const fields = (x: ts.Node) => {
+          // `this.key = key`: the field holding the local's symbol.
+          if (ts.isBinaryExpression(x) && x.operatorToken.kind === ts.SyntaxKind.EqualsToken && ts.isPropertyAccessExpression(x.left) && x.left.expression.kind === ts.SyntaxKind.ThisKeyword && ts.isIdentifier(x.right)) {
+            const local = checker.getSymbolAtLocation(x.right);
+            const field = checker.getSymbolAtLocation(x.left.name);
+            if (local && field && locals.has(local)) {
+              locals.set(local, field);
+              made.set(field, field);
+            }
+          }
+          ts.forEachChild(x, fields);
+        };
+        fields(n);
+        for (const [local, field] of locals) made.set(local, field);
+        // `const key = this.key`, as a subclass's constructor reads its base's.
+        const copies = (x: ts.Node) => {
+          if (ts.isVariableDeclaration(x) && ts.isIdentifier(x.name) && x.initializer && ts.isPropertyAccessExpression(x.initializer) && x.initializer.expression.kind === ts.SyntaxKind.ThisKeyword) {
+            const field = checker.getSymbolAtLocation(x.initializer.name);
+            const local = checker.getSymbolAtLocation(x.name);
+            if (field && local && made.get(field) === field) made.set(local, field);
+          }
+          ts.forEachChild(x, copies);
+        };
+        later.push(() => copies(n));
+      }
+      // `[textProperty.setNative](value) {…}`: the symbol names methods.
+      if (ts.isMethodDeclaration(n) && ts.isComputedPropertyName(n.name) && ts.isPropertyAccessExpression(n.name.expression)) {
+        const s = checker.getSymbolAtLocation(n.name.expression.name);
+        if (s) methodNamed.add(s);
+      }
+      ts.forEachChild(n, visit);
+    };
+    visit(sf);
+  }
+  for (const run of later) run();
+  const propertySymbol = (key: ts.Expression): 'storage' | 'method' | null => {
+    const name = ts.isPropertyAccessExpression(key) ? key.name : ts.isIdentifier(key) ? key : null;
+    const s = name && checker.getSymbolAtLocation(name);
+    if (!s || !made.has(s)) return null;
+    const field = made.get(s);
+    return field && methodNamed.has(field) ? 'method' : 'storage';
+  };
   return {
+    propertySymbol,
     of: (cls) => byClass.get(cls) ?? [],
     get: (cls, name) => byClass.get(cls)?.find((m) => m.name === name),
     registeredBy: (s) => byStatement.get(s) ?? [],

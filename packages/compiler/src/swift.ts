@@ -1495,6 +1495,23 @@ export class Translator implements AsyncTranslator {
     return `({ (__this: Any?, __a: [Any?]) throws -> Any? in ${binds.join('; ')}${binds.length ? '; ' : ''}${result} } as JSMethod)`;
   }
 
+  /**
+   * Library mode: what a key is on an object typed as a class of the program, whose instances keep what script gives
+   * them (JSExpando), when it is a symbol core's property system makes (members.ts `propertySymbol`).
+   */
+  private propertySymbolOn(object: ts.Expression, key: ts.Expression): 'storage' | 'method' | null {
+    if (!this.library || object.kind === ts.SyntaxKind.SuperKeyword) return null;
+    const kind = this.members?.propertySymbol(key) ?? null;
+    if (!kind || !/^[A-Z][\w.]*!?$/.test(this.typeOf(object))) return null;
+    const typed = this.checker.getNonNullableType(this.checker.getTypeAtLocation(object));
+    // `this` narrowed by `key in this` is `T & Record<symbol, unknown>`.
+    const t = typed.isIntersection() ? typed.types.find((u) => u.isTypeParameter() || u.isClass()) : typed;
+    let cls = t && (t.isTypeParameter() ? this.checker.getBaseConstraintOfType(t) : t)?.getSymbol()?.valueDeclaration;
+    if (!cls || !ts.isClassLike(cls) || cls.getSourceFile().isDeclarationFile) return null;
+    for (let b = this.sourceBase(cls); b; b = this.sourceBase(b)) cls = b;
+    return cls.heritageClauses?.some((h) => h.token === ts.SyntaxKind.ExtendsKeyword) ? null : kind;
+  }
+
   /** The class a function's `this` parameter names (`this: View`, or `this: T` of a class bound), null where it has none or it is untyped. */
   private typedThis(fn: ts.FunctionLikeDeclaration): string | null {
     const p = fn.parameters.find((q) => ts.isIdentifier(q.name) && q.name.text === 'this');
@@ -6628,6 +6645,7 @@ ${members.join('\n')}
         const field = decl && ts.isPropertyDeclaration(decl) && ts.isClassLike(decl.parent) && !decl.getSourceFile().isDeclarationFile && !isStatic(decl) ? this.declaredTypeOf(target) : null;
         if (field?.endsWith('?')) return `{ () -> Bool in ${this.lvalue(target)} = nil; return true }()`;
       }
+      if (ts.isElementAccessExpression(target) && this.propertySymbolOn(target.expression, target.argumentExpression) === 'storage') return `${this.expr(target.expression)}.jsDeletePropertyStorage(${this.propertyKey(target.argumentExpression)})`;
       // Library mode: what script added to an instance of a compiled class, or to an object used as a map.
       if (this.quietDelete(e) && ts.isElementAccessExpression(target)) return `((try? jsDelete(${this.expr(target.expression)}, ${this.propertyKey(target.argumentExpression)})) ?? false)`;
       if (this.quietDelete(e) && ts.isPropertyAccessExpression(target)) return `((try? jsDelete(${this.expr(target.expression)}, ${swiftString(target.name.text)})) ?? false)`;
@@ -7478,6 +7496,18 @@ ${members.join('\n')}
       const rt = this.typeOf(e);
       return rt === 'Any?' || isWriteTarget(e) ? code : this.fromAnyCode(code, rt, true);
     }
+    // A symbol core's property system keeps values under (`this[key]`) or names methods by (`this[setNative]`).
+    const propertySymbol = this.propertySymbolOn(e.expression, key);
+    if (propertySymbol === 'storage') {
+      const code = `${target}[propertyStorage: ${this.propertyKey(key)}]`;
+      const rt = this.typeOf(e);
+      return rt === 'Any?' || isWriteTarget(e) ? code : this.fromAnyCode(code, rt, true);
+    }
+    if (propertySymbol === 'method' && !isWriteTarget(e)) {
+      const code = `jsExpandoGet(${target}, ${this.propertyKey(key)})`;
+      const rt = this.typeOf(e);
+      return rt === 'Any?' ? code : this.fromAnyCode(code, rt, true);
+    }
     // A computed key on an object (`this[side + 'Drawer']`): its members by name.
     if (this.isObjectRef(e.expression)) {
       const code = `${target}${q}[jsKey: ${this.propertyKey(key)}]`;
@@ -8094,6 +8124,9 @@ ${members.join('\n')}
       return plain;
     }
     if (ts.isElementAccessExpression(callee) && isSymbolIterator(callee.argumentExpression, this.checker) && !e.arguments.length) return this.iteratorCode(callee.expression);
+    if (ts.isElementAccessExpression(callee) && callee.expression.kind !== ts.SyntaxKind.SuperKeyword && this.propertySymbolOn(callee.expression, callee.argumentExpression) === 'method') {
+      return `jsCallSymbolMethod(${[this.expr(callee.expression), this.propertyKey(callee.argumentExpression), ...e.arguments.map((a) => this.coerce(a, 'Any?'))].join(', ')})`;
+    }
     if (ts.isElementAccessExpression(callee) && this.setNativeOf(callee.argumentExpression) && this.keyedSetNative(callee.expression)) {
       // `super[prop.setNative](value)`: the base class's method under the symbol, with this object as `this`.
       const args = `[${e.arguments.map((a) => this.coerce(a, 'Any?')).join(', ')}]`;
@@ -9677,7 +9710,9 @@ ${members.join('\n')}
         return `(${l()} is ${swiftType ?? name})`;
       }
       case K.CommaToken: return `({ ${this.exprStatement(e.left)}; return ${r()} }())`;
-      case K.InKeyword: return `jsHasKey(${this.coerce(e.right, 'Any?')}, ${this.propertyKey(e.left)})`;
+      case K.InKeyword:
+        if (this.propertySymbolOn(e.right, e.left) === 'storage') return `${this.expr(e.right)}.jsHoldsPropertyStorage(${this.propertyKey(e.left)})`;
+        return `jsHasKey(${this.coerce(e.right, 'Any?')}, ${this.propertyKey(e.left)})`;
     }
     throw this.error(e, `operator ${ts.tokenToString(op)}`);
   }
