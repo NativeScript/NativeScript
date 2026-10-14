@@ -65,7 +65,7 @@ export interface SwiftOptions {
 export function translateSwift(roots: string[], out: string, o: SwiftOptions = {}): TranslatedModule[] {
   const loose = !!o.lenient;
   const { checker, program, files: rootFiles, lenient: lenientApp } = createProgram(roots, new Map(), 'ios', modulesDir, undefined, [], {}, loose ? { strict: false, useDefineForClassFields: false } : {});
-  const imported = roots.flatMap((r) => importsOf(program, r));
+  const imported = roots.flatMap((r) => importsOf(program, r, 'ios'));
   // The helper modules the roots import are the program's too, as an app's every module is.
   const all = [...rootFiles, ...imported.map((f) => program.getSourceFile(f)!).filter((sf) => sf && !rootFiles.includes(sf))];
   // In library mode, as the kit generated from core is: each module's functions and variables in an enum.
@@ -114,14 +114,18 @@ export interface KotlinOptions {
 /** `roots` and the app modules they import as Kotlin in package `pkg`, in `out`. */
 export function translateKotlin(roots: string[], out: string, pkg: string, o: KotlinOptions = {}): KotlinModule[] {
   const loose = !!o.lenient;
-  const { checker, program, files, lenient: lenientApp } = createProgram(roots, new Map(), 'android', modulesDir, undefined, [], {}, loose ? { strict: false, useDefineForClassFields: false } : {});
+  const { checker, program, files: rootFiles, lenient: lenientApp } = createProgram(roots, new Map(), 'android', modulesDir, undefined, [], {}, loose ? { strict: false, useDefineForClassFields: false } : {});
+  const imported = roots.flatMap((r) => importsOf(program, r, 'android'));
+  // Every module, as an app's are: a class another module extends stays open.
+  const files = [...rootFiles, ...imported.map((f) => program.getSourceFile(f)!).filter((sf) => sf && !rootFiles.includes(sf))];
   const library = { identities: new Set<string>(), counterpart: () => null, moduleName: (f: string) => (f.endsWith('.d.ts') ? null : 'Module_' + basename(f).replace(/\W/g, '_')) };
   const translator = new KotlinTranslator(checker, new Map(), files, loose ? { lenient: true, library, pluginFiles: files.map((f) => f.fileName), properties: collectProperties(checker, files) } : {});
   translator.appModule = pkg;
   translator.appMembersByName = !!o.membersByName;
-  if (o.appStrictness) translator.lenientApp = lenientApp;
+  // As android.ts sets it: the Kotlin translator reads the field without declaring it.
+  if (o.appStrictness) (translator as { lenientApp?: boolean }).lenientApp = lenientApp;
   const lines = translator.lines = new SourceLines(new Map());
-  const all = [...new Set([...roots, ...roots.flatMap((r) => importsOf(program, r))])];
+  const all = [...new Set([...roots, ...imported])];
   const modules = o.refused ? eachModule(program, all, (f) => translateKotlinModules(translator, program, [f]), o.refused) : translateKotlinModules(translator, program, all);
   addKotlinInterfaces(translator, modules);
   rmSync(out, { recursive: true, force: true });
@@ -149,8 +153,11 @@ function eachModule<M>(program: ts.Program, files: string[], one: (file: string)
   return out;
 }
 
-/** The app modules a file imports (relative imports, transitively). */
-export function importsOf(program: ts.Program, file: string): string[] {
+/**
+ * The app modules a file imports (relative imports, transitively), each as the program loaded it: for `platform`,
+ * `./x` is `x.<platform>.ts` where there is one, as the bundler resolves it.
+ */
+export function importsOf(program: ts.Program, file: string, platform?: 'ios' | 'android'): string[] {
   const out = new Set<string>();
   const visit = (f: string) => {
     const sf = program.getSourceFile(f);
@@ -158,8 +165,11 @@ export function importsOf(program: ts.Program, file: string): string[] {
     for (const st of sf.statements) {
       const spec = (st as any).moduleSpecifier?.text as string | undefined;
       if (!spec?.startsWith('.')) continue;
-      const target = resolve(dirname(f), spec.replace(/\.ts$/, '') + '.ts');
-      if (!out.has(target)) { out.add(target); visit(target); }
+      const base = resolve(dirname(f), spec);
+      // A specifier naming its file (`./x.ts`) is that file.
+      const candidates = spec.endsWith('.ts') ? [base] : [...(platform ? [`${base}.${platform}.ts`] : []), `${base}.ts`, ...(platform ? [`${base}/index.${platform}.ts`] : []), `${base}/index.ts`];
+      const target = candidates.find((c) => program.getSourceFile(c));
+      if (target && !out.has(target)) { out.add(target); visit(target); }
     }
   };
   visit(file);
