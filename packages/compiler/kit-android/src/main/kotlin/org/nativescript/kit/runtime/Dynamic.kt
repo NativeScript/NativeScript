@@ -217,6 +217,13 @@ private class JavaMembers(private val cls: Class<*>) {
         out
     }
 
+    /** Public member classes by simple name, the first `getClasses()` gives of each (it makes the array anew). */
+    val nested: Map<String, Class<*>> by lazy {
+        val out = HashMap<String, Class<*>>()
+        for (c in cls.classes) out.putIfAbsent(c.simpleName, c)
+        out
+    }
+
     fun field(name: String): Field? = fields.getOrPut(name) {
         try { cls.getField(name) } catch (_: NoSuchFieldException) { Unit }
     } as? Field
@@ -225,6 +232,9 @@ private class JavaMembers(private val cls: Class<*>) {
 private val javaMembers = ConcurrentHashMap<Class<*>, JavaMembers>()
 
 private fun membersOf(cls: Class<*>): JavaMembers = javaMembers.getOrPut(cls) { JavaMembers(cls) }
+
+/** A public class `cls` declares as a member, by its simple name (`android.view.View.OnClickListener`). */
+internal fun javaNestedClass(cls: Class<*>, name: String): Class<*>? = membersOf(cls).nested[name]
 
 /** A public field of the object's class, or null. */
 private fun javaField(target: Any, name: String, static: Boolean): Field? {

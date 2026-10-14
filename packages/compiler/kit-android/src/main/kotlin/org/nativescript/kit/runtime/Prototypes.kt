@@ -113,7 +113,7 @@ internal fun jsClassGet(cls: Class<*>, key: String): Any? {
     // Function.prototype.toString: a class of the runtime's (`JSWeakRef`) is built in, as the platform's are.
     if (key == "toString") return JSMethod { _, _ -> if (cls.name.startsWith("org.nativescript.kit.JS")) "function ${cls.simpleName.removePrefix("JS")}() { [native code] }" else "class ${cls.simpleName} {}" }
     // A nested class (`android.view.View.OnClickListener`).
-    cls.classes.firstOrNull { it.simpleName == key }?.let { return it }
+    javaNestedClass(cls, key)?.let { return it }
     return jsJavaGet(cls, key)
 }
 
