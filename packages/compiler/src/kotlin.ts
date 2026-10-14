@@ -374,8 +374,21 @@ export class Translator implements AsyncTranslator {
     return true;
   }
 
+  /** The temporaries each prefix has numbered in the function being translated, and outside any function in the module. */
+  private temporaries = new Map<string, number>();
+  private moduleTemporaries = new Map<string, number>();
+  /** Declarations being translated, outermost first: a temporary's number starts again in each top-level one. */
+  private declarationDepth = 0;
+
+  /**
+   * A temporary's name, numbered within its declaration (`__switch1`). A one-letter prefix takes a `_` before its number,
+   * apart from the `__a0` parameters and arguments the translator writes itself.
+   */
   fresh(prefix: string): string {
-    return `${prefix}${this.tmp++}`;
+    const taken = this.declarationDepth > 0 ? this.temporaries : this.moduleTemporaries;
+    const n = (taken.get(prefix) ?? 0) + 1;
+    taken.set(prefix, n);
+    return /^__[a-z]$/.test(prefix) ? `${prefix}_${n}` : `${prefix}${n}`;
   }
 
   nested<T>(body: () => T): T {
@@ -1274,6 +1287,7 @@ export class Translator implements AsyncTranslator {
   /** A module's declarations, and the statements that run when it is first imported. */
   module(sf: ts.SourceFile): { code: string; init: string[] } {
     this.props = new Set();
+    this.moduleTemporaries.clear();
     const out: string[] = [];
     const init: string[] = [];
     // Library mode: the module's functions and variables are its object's members; its init runs in that object.
@@ -2412,7 +2426,7 @@ export class Translator implements AsyncTranslator {
   }
 
   private classDecl(cls: ts.ClassDeclaration): string {
-    return this.suppressingDeprecations(() => this.classDeclCode(cls));
+    return this.suppressingDeprecations(() => this.classDeclCode(cls), false);
   }
 
   private classDeclCode(cls: ts.ClassDeclaration): string {
@@ -3140,12 +3154,17 @@ export class Translator implements AsyncTranslator {
     if (allowedDeprecation(api)) this.deprecationScopes.at(-1)?.add(api);
   }
 
-  /** A declaration's code, marked `@Suppress("DEPRECATION")` where it uses an allowed deprecated API. */
-  suppressingDeprecations(make: () => string): string {
+  /**
+   * A declaration's code, marked `@Suppress("DEPRECATION")` where it uses an allowed deprecated API. `numbering`: a
+   * function, whose temporaries are numbered apart from any other top-level one's.
+   */
+  suppressingDeprecations(make: () => string, numbering = true): string {
     const scope = new Set<string>();
     this.deprecationScopes.push(scope);
+    if (numbering && this.declarationDepth === 0) this.temporaries.clear();
+    if (numbering) this.declarationDepth++;
     let code: string;
-    try { code = make(); } finally { this.deprecationScopes.pop(); }
+    try { code = make(); } finally { this.deprecationScopes.pop(); if (numbering) this.declarationDepth--; }
     if (!scope.size) return code;
     // One @Suppress per declaration: joined with one the code starts with.
     return /^\s*@Suppress\(/.test(code) ? code.replace(/^(\s*)@Suppress\(/, '$1@Suppress("DEPRECATION", ') : code.replace(/^(\s*)/, '$1@Suppress("DEPRECATION") ');

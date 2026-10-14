@@ -1360,23 +1360,24 @@ export class AndroidNativeAPI implements KotlinNative {
     // `onReceivedError(...args)`, reading `arguments`: what Java passes, as one list.
     const rest = t.library && fn.parameters.length === 1 && !!fn.parameters[0].dotDotDotToken;
     const packed = rest ? `jsArrayOf<Any?>(${target.params.map((d, k) => this.fromJava(`__a${k}`, d)).join(', ')})` : '';
-    // Java's parameters are `__aN`; one script takes as Java gives it is named as script names it.
-    const names = target.params.map((_, k) => `__a${k}`);
+    // Java's parameters take the script's names (`__aN` past them); one script types otherwise is bound, as it types it, under its name.
+    const names = target.params.map((_, k) => {
+      const p = fn.parameters[k];
+      return !rest && p && ts.isIdentifier(p.name) ? ident(p.name.text) : `__a${k}`;
+    });
     const binds = rest ? [t.readsArguments(fn) ? `${indent}    val __arguments: JSArray<Any?> = ${packed}` : `${indent}    val ${ident((fn.parameters[0].name as ts.Identifier).text)}: JSArray<Any?> = ${packed}`] : fn.parameters.map((p, k) => {
       if (!target.params[k] || !ts.isIdentifier(p.name)) return '';
-      if (t.typeOf(p.name) === paramTypes[k] && this.fromJava(`__a${k}`, target.params[k]) === `__a${k}` && !(target.m.nullableParams?.[k] && !paramTypes[k].endsWith('?'))) {
-        names[k] = ident(p.name.text);
-        return '';
-      }
+      const own = names[k];
+      if (t.typeOf(p.name) === paramTypes[k] && this.fromJava(own, target.params[k]) === own && !(target.m.nullableParams?.[k] && !paramTypes[k].endsWith('?'))) return '';
       const tsType = t.typeOf(p.name);
-      const unwrapped = target.m.nullableParams?.[k] && !tsType.endsWith('?') && tsType !== 'Any?' ? `__a${k}!!` : `__a${k}`;
+      const unwrapped = target.m.nullableParams?.[k] && !tsType.endsWith('?') && tsType !== 'Any?' ? `${own}!!` : own;
       const desc = target.params[k];
       // Script types a parameter more narrowly than Java (`activity: AppCompatActivity` for an Activity, `result: string` for an Object): cast, as script trusts it.
       const narrowed = t.library && desc.startsWith('L') && tsType !== 'Any?' && types[k].replace(/\?$/, '') !== tsType.replace(/\?$/, '');
       // A Java class narrower than Java's (`host: ViewGroup` for any View): held as Java's, its methods cast to as script trusts.
       if (narrowed && desc !== 'Ljava/lang/Object;' && /^[a-z]\w*[._]/.test(tsType)) {
         t.widenedAccessors.set(p, types[k]);
-        return `${indent}    val ${ident(p.name.text)}: ${types[k]} = __a${k}`;
+        return types[k] === paramTypes[k] ? '' : `${indent}    val ${own}: ${types[k]} = ${own}`;
       }
       // A CharSequence script reads as a string (an EditText's Editable): its text.
       const text = narrowed && desc === 'Ljava/lang/CharSequence;' && tsType.replace(/\?$/, '') === 'String' ? `${unwrapped}${tsType.endsWith('?') ? '?' : ''}.toString()` : null;
@@ -1811,7 +1812,7 @@ ${indent}}`;
   /** A Java class's name a class takes: its own package's, declared in a file of that package; '' where the class is declared so. */
   private declared(name: string, code: (simple: string) => string): string {
     if (!name.includes('.')) return code(name);
-    this.t.foreign.push({ name, code: this.t.suppressingDeprecations(() => code(name.slice(name.lastIndexOf('.') + 1))) });
+    this.t.foreign.push({ name, code: this.t.suppressingDeprecations(() => code(name.slice(name.lastIndexOf('.') + 1)), false) });
     return '';
   }
 
