@@ -264,7 +264,7 @@ public final class JSSubtleCrypto: JSDynamic, @unchecked Sendable {
         settle {
             let hash = try normalizedName(algorithm, among: hashNames)
             let input = try bufferData(data, "digest", 2)
-            return try cryptoJob { JSArrayBuffer(data: try digestOf(input, hash)) }
+            return try cryptoJob({ try digestOf(input, hash) }, { JSArrayBuffer(data: $0) })
         }
     }
 
@@ -301,16 +301,18 @@ public final class JSSubtleCrypto: JSDynamic, @unchecked Sendable {
             let publicUsages = usages.filter { $0 == "encrypt" || $0 == "wrapKey" }
             let publicExponent = JSUint8Array([1, 0, 1] as [Double])
             let described = { JSKeyAlgorithm([("name", name), ("modulusLength", Double(modulus)), ("publicExponent", publicExponent), ("hash", JSObject([("name", hash)]))]) }
-            return try cryptoJob { () throws -> JSCryptoKeyPair in
+            return try cryptoJob({ () throws -> (SecKey, SecKey) in
                 let attributes: [CFString: Any] = [kSecAttrKeyType: kSecAttrKeyTypeRSA, kSecAttrKeySizeInBits: modulus]
                 var error: Unmanaged<CFError>?
                 guard let privateKey = SecKeyCreateRandomKey(attributes as CFDictionary, &error), let publicKey = SecKeyCopyPublicKey(privateKey) else {
-                    throw domException("OperationError", "RSA key generation failed")
+                    throw CryptoFailure(message: "RSA key generation failed")
                 }
-                return JSCryptoKeyPair(
-                    publicKey: JSCryptoKey(type: "public", extractable: true, algorithm: described(), usages: publicUsages, material: .rsa(publicKey), hash: hash),
-                    privateKey: JSCryptoKey(type: "private", extractable: extractable, algorithm: described(), usages: privateUsages, material: .rsa(privateKey), hash: hash))
-            }
+                return (publicKey, privateKey)
+            }, { keys in
+                JSCryptoKeyPair(
+                    publicKey: JSCryptoKey(type: "public", extractable: true, algorithm: described(), usages: publicUsages, material: .rsa(keys.0), hash: hash),
+                    privateKey: JSCryptoKey(type: "private", extractable: extractable, algorithm: described(), usages: privateUsages, material: .rsa(keys.1), hash: hash))
+            })
         }
     }
 
@@ -362,12 +364,12 @@ public final class JSSubtleCrypto: JSDynamic, @unchecked Sendable {
             case "SHA-512": oaep = .rsaEncryptionOAEPSHA512
             default: oaep = .rsaEncryptionOAEPSHA256
             }
-            return try cryptoJob {
+            return try cryptoJob({ () throws -> Data in
                 guard let out = transform(secKey, oaep, input as CFData, nil) else {
-                    throw domException("OperationError", "The operation failed for an operation-specific reason")
+                    throw CryptoFailure(message: "The operation failed for an operation-specific reason")
                 }
-                return JSArrayBuffer(data: out as Data)
-            }
+                return out as Data
+            }, { JSArrayBuffer(data: $0) })
         }
     }
 
@@ -387,16 +389,28 @@ private func settle<T>(_ body: () throws -> JSPromise<T>) -> JSPromise<T> {
     do { return try body() } catch { return JSPromise.reject(jsCaught(error)) }
 }
 
-/// Runs a slow operation (RSA) on a background queue while the main run loop runs to deliver its
-/// result, and in place otherwise: a command-line program's event loop waits on timers alone.
-private func cryptoJob<T>(_ work: @escaping () throws -> T) throws -> JSPromise<T> {
-    guard Thread.isMainThread, RunLoop.current.currentMode != nil else { return JSPromise.resolve(try work()) }
+/// A crypto operation's failure off the main thread, where no script value can be made: an OperationError on it.
+private struct CryptoFailure: Error {
+    let message: String
+}
+
+/**
+ * Runs a slow operation (RSA) on a background queue while the main run loop runs, then `made` on the main
+ * thread with its result; both in place otherwise: a command-line program's event loop waits on timers alone.
+ * `work` reads only the native values (keys, bytes) it captured and makes no script value.
+ */
+private func cryptoJob<Native, T>(_ work: @escaping () throws -> Native, _ made: @escaping (Native) -> T) throws -> JSPromise<T> {
+    guard Thread.isMainThread, RunLoop.current.currentMode != nil else {
+        do { return JSPromise.resolve(made(try work())) } catch let failure as CryptoFailure { throw domException("OperationError", failure.message) }
+    }
     let (promise, resolvers) = JSPromise<T>.pending()
+    let job = JSCarried(work), made = JSCarried(made)
     DispatchQueue.global(qos: .userInitiated).async {
-        let result = Result { try work() }
+        let outcome = JSCarried(Result { try job.value() })
         DispatchQueue.main.async {
-            switch result {
-            case .success(let value): resolvers.resolve(value)
+            switch outcome.value {
+            case .success(let value): resolvers.resolve(made.value(value))
+            case .failure(let failure as CryptoFailure): resolvers.reject(JSDOMException(failure.message, name: "OperationError"))
             case .failure(let error): resolvers.reject(jsCaught(error))
             }
             Microtasks.taskRan()

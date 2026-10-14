@@ -13,9 +13,9 @@ public final class JSSymbol: Hashable, CustomStringConvertible {
         JSSymbol.byKey[key] = self
     }
 
-    nonisolated(unsafe) private static var count = 0
-    nonisolated(unsafe) private static var byKey: [String: JSSymbol] = [:]
-    nonisolated(unsafe) private static var registry: [String: JSSymbol] = [:]
+    private static var count = 0
+    private static var byKey: [String: JSSymbol] = [:]
+    private static var registry: [String: JSSymbol] = [:]
 
     /// `Symbol.for(key)`: one symbol per key, program-wide.
     public static func `for`(_ key: String) -> JSSymbol {

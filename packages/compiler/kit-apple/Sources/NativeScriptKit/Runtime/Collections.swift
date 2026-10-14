@@ -37,7 +37,7 @@ enum JSCollectionKey: Equatable {
     case object(ObjectIdentifier)
     case unique(Int)
 
-    nonisolated(unsafe) private static var uniqueCounter = 0
+    private static var uniqueCounter = 0
 
     @inlinable static func number(_ d: Double) -> JSCollectionKey {
         .number(d.isNaN ? Double.nan.bitPattern : (d == 0 ? 0 : d.bitPattern))

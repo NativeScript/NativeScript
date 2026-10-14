@@ -26,6 +26,9 @@ export const kotlinRuntimeSources = [...readdirSync(join(kitAndroid, 'runtime'))
 
 export type Optimize = '-Onone' | '-O' | '-Osize';
 
+/** The language mode and isolation the kit and an app's code compile with (the CLI's project settings). */
+export const SWIFT_MODE = ['-swift-version', '6', '-default-isolation', 'MainActor'];
+
 /**
  * The Swift runtime as a static library and module in `build`, rebuilt when a source is newer or it was built with
  * other flags. `extraFlags` go to swiftc as given (`-wmo`, as release builds compile the kit whole-module).
@@ -33,12 +36,12 @@ export type Optimize = '-Onone' | '-O' | '-Osize';
 export function buildSwiftRuntime(build: string, optimize: Optimize, extraFlags: string[] = []) {
   mkdirSync(build, { recursive: true });
   const lib = join(build, 'libNativeScriptKit.a');
-  const flags = [optimize, ...extraFlags].join(' ');
+  const flags = [optimize, ...SWIFT_MODE, ...extraFlags].join(' ');
   const stamp = join(build, 'libNativeScriptKit.flags');
   const newest = Math.max(...runtimeSources.map((f) => statSync(f).mtimeMs));
   if (existsSync(lib) && statSync(lib).mtimeMs > newest && existsSync(stamp) && readFileSync(stamp, 'utf8') === flags) return;
   execFileSync('xcrun', ['swiftc', '-parse-as-library', '-emit-library', '-static', '-module-name', 'NativeScriptKit', '-emit-module', '-emit-module-path', join(build, 'NativeScriptKit.swiftmodule'),
-    optimize, ...extraFlags, '-o', lib, ...runtimeSources], { stdio: 'inherit', cwd: build });
+    optimize, ...SWIFT_MODE, ...extraFlags, '-o', lib, ...runtimeSources], { stdio: 'inherit', cwd: build });
   writeFileSync(stamp, flags);
 }
 
@@ -95,9 +98,13 @@ export function swiftMain(modules: TranslatedModule[]): string {
   return `${SWIFT_HEADER}${inits}JSEventLoop.runUntilIdle()\n`;
 }
 
-/** An executable from Swift sources linking the runtime in `build`; the compiler's error lines when it does not compile. */
-export function swiftc(sources: string[], exe: string, build: string, optimize: Optimize, extraFlags: string[] = []): string[] | null {
-  const r = spawnSync('xcrun', ['swiftc', optimize, ...extraFlags, '-module-name', 'Main', '-I', build, '-L', build, '-lNativeScriptKit', '-o', exe, ...sources], { encoding: 'utf8', maxBuffer: 256 << 20 });
+/**
+ * An executable from Swift sources linking the runtime in `build`; the compiler's error lines when it does not compile.
+ * Its warning lines go into `warnings` when given.
+ */
+export function swiftc(sources: string[], exe: string, build: string, optimize: Optimize, extraFlags: string[] = [], warnings?: string[]): string[] | null {
+  const r = spawnSync('xcrun', ['swiftc', optimize, ...SWIFT_MODE, ...extraFlags, '-module-name', 'Main', '-I', build, '-L', build, '-lNativeScriptKit', '-o', exe, ...sources], { encoding: 'utf8', maxBuffer: 256 << 20 });
+  warnings?.push(...new Set(r.stderr.split('\n').filter((l) => /^\S.*: warning:/.test(l))));
   if (r.status === 0) return null;
   const errors = r.stderr.split('\n').filter((l) => /error:/.test(l));
   return errors.length ? errors : [r.stderr.slice(0, 2000) || `swiftc exited ${r.status ?? r.signal}`];

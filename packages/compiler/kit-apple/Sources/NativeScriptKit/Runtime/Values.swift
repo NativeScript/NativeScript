@@ -153,7 +153,7 @@ func jsIsNativeOnly(_ object: NSObject) -> Bool {
     return only
 }
 
-nonisolated(unsafe) private var jsNativeOnlyClasses: [ObjectIdentifier: Bool] = [:]
+private var jsNativeOnlyClasses: [ObjectIdentifier: Bool] = [:]
 private let jsNativeOnlyLock = NSLock()
 
 /// `value` as `T`: undefined becomes nil for an optional `T`, and any value is `()` for `Void`.
@@ -933,7 +933,7 @@ public func jsToNumber(_ value: Any?) -> Double {
 }
 
 enum JSJoinGuard {
-    nonisolated(unsafe) static var active: [ObjectIdentifier] = []
+    static var active: [ObjectIdentifier] = []
 }
 
 /// `String(value)`: arrays join with ",", plain objects are "[object Object]", errors "Name: message".

@@ -107,12 +107,11 @@ ${cases.join('')}        default: break
         return ${miss}
     }
 `;
-  // Script runs on the main thread: plugins' Swift classes isolated to it (explicitly, or as UIView subclasses) are reached directly.
-  return `@MainActor enum __NativeDispatch {
-    nonisolated static func install() {
-        JSNativeDispatch.get = { o, k in MainActor.assumeIsolated { get(o, k) } }
-        JSNativeDispatch.set = { o, k, v in MainActor.assumeIsolated { set(o, k, v) } }
-        JSNativeDispatch.call = { o, k, a in try MainActor.assumeIsolated { try call(o, k, a) } }
+  return `enum __NativeDispatch {
+    static func install() {
+        JSNativeDispatch.get = { o, k in get(o, k) }
+        JSNativeDispatch.set = { o, k, v in set(o, k, v) }
+        JSNativeDispatch.call = { o, k, a in try call(o, k, a) }
     }
 
 ${fn('get(_ object: AnyObject, _ key: String) -> Any??', gets, 'nil')}
@@ -174,7 +173,7 @@ function blockOf(code: string, type: SwiftType): string | null {
   const params = fn.params.map((p, k) => `__b${k}: ${p}`);
   const args = fn.params.map((p, k) => fromNative(`__b${k}`, p));
   const report = `jsReport { _ = try jsCall(__f${args.map((a) => `, ${a}`).join('')}) }`;
-  return `{ [__f = jsFlat(${code})] (${params.join(', ')}) -> Void in ${posted('Void', fn.params) ? `jsEnter { ${report} }` : `jsEnterAwaiting { ${report} }`} }`;
+  return `${posted('Void', fn.params) ? 'jsEnter' : 'jsEnterAwaiting'} { [__f = jsFlat(${code})] (${params.join(', ')}) -> Void in ${report} }`;
 }
 
 /** A native result as script reads it. */

@@ -199,7 +199,7 @@ public func jsDefineProperty(_ object: Any?, _ key: String, _ descriptor: Any?) 
 
 /// What script gives an object that has no room for it (an array's `Object.defineProperty(list, 'total', …)`, `list.tag = …`):
 /// held beside the object while it lives. Weak keys compared by identity, so an object's entry goes with it.
-nonisolated(unsafe) private let jsSideTable = NSMapTable<AnyObject, JSObject>(keyOptions: [.weakMemory, .objectPointerPersonality], valueOptions: .strongMemory)
+private let jsSideTable = NSMapTable<AnyObject, JSObject>(keyOptions: [.weakMemory, .objectPointerPersonality], valueOptions: .strongMemory)
 
 func jsSideProperties(_ object: AnyObject, create: Bool) -> JSObject? {
     if let existing = jsSideTable.object(forKey: object) { return existing }
@@ -234,7 +234,7 @@ public func jsOwnPropertyNames(_ value: Any?) -> JSArray<String> {
     }
 }
 
-nonisolated(unsafe) private var jsRestricted: [ObjectIdentifier: JSRestriction] = [:]
+private var jsRestricted: [ObjectIdentifier: JSRestriction] = [:]
 
 /// How far `Object.preventExtensions`, `seal` or `freeze` closed an object other than a plain one.
 private final class JSRestriction {
@@ -353,7 +353,7 @@ public func jsSymbol(_ description: String) -> String {
     jsSymbolCount += 1
     return "@@\(description)#\(jsSymbolCount)"
 }
-nonisolated(unsafe) private var jsSymbolCount = 0
+private var jsSymbolCount = 0
 
 /// `key in object`, for any dynamic value.
 public func jsIn(_ key: String, _ object: Any?) -> Bool {
@@ -375,7 +375,7 @@ public func jsTemplateObject(_ cooked: [String], raw: [String]) -> JSArray<Strin
 public func jsTemplateRaw(_ strings: JSArray<String>) -> JSArray<String> {
     jsTemplateRaws[ObjectIdentifier(strings)] ?? strings
 }
-nonisolated(unsafe) private var jsTemplateRaws: [ObjectIdentifier: JSArray<String>] = [:]
+private var jsTemplateRaws: [ObjectIdentifier: JSArray<String>] = [:]
 
 /// The key order of an object literal with spreads (`{ ...a, b: 1 }`): each spread source's keys as it holds
 /// them, then the literal's own, a key keeping its first position; integer keys first; only the `fields` it has.

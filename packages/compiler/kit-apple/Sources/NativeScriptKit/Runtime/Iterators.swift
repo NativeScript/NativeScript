@@ -333,7 +333,7 @@ public final class JSGenerator<Element>: JSIterator<Element> {
         super.init(tag: "Generator")
     }
 
-    deinit { context.reset() }
+    isolated deinit { context.reset() }
 
     private func run(_ resume: () -> Void) throws -> JSStep {
         state = .running

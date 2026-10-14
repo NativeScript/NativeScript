@@ -286,7 +286,7 @@ final class JSRegExpProgram {
         let flags: String
     }
 
-    nonisolated(unsafe) private static var cache: [Key: JSRegExpProgram] = [:]
+    private static var cache: [Key: JSRegExpProgram] = [:]
     private static let lock = NSLock()
     /// Patterns made at run time (`new RegExp(text)`) are unbounded: past this many, the cache starts over.
     private static let limit = 512
@@ -330,7 +330,7 @@ final class JSRegExpSubject {
         hasSurrogates = units.contains(where: UTF16.isSurrogate)
     }
 
-    nonisolated(unsafe) private static var last: JSRegExpSubject?
+    private static var last: JSRegExpSubject?
     private static let lock = NSLock()
 
     static func of(_ s: String) -> JSRegExpSubject {

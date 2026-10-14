@@ -11,7 +11,7 @@ import { CoreAPI, isCoreDeclaration, packageOf } from './core.ts';
 import type { KitMember } from './kit-index.ts';
 import type { Properties } from './properties.ts';
 import { recognizePatterns, type Patterns } from './patterns.ts';
-import { DEPLOYMENT, NativeAPI, enteredGuard, tested } from './native-calls.ts';
+import { DEPLOYMENT, NativeAPI, enteredGuard, onMainThread, tested } from './native-calls.ts';
 import { lookupClass, lookupMember, type NativeMethod } from './natives/symbols.ts';
 import type { Reach } from './reach.ts';
 
@@ -719,7 +719,15 @@ export class Translator implements AsyncTranslator {
     try { return body(); } finally { this.refinedVersion = saved; }
   }
 
+  /** How many function bodies enclose the code being translated: none in a stored property's or global's initializer. */
+  private functionDepth = 0;
+
   private inFunctionScope<T>(returnType: string, body: () => T): T {
+    this.functionDepth++;
+    try { return this.inOwnFunctionScope(returnType, body); } finally { this.functionDepth--; }
+  }
+
+  private inOwnFunctionScope<T>(returnType: string, body: () => T): T {
     const saved = [this.asyncCtx, this.plainBreak, this.plainContinue, this.returnType, this.breakTargets, this.pendingReturn] as const;
     this.pendingReturn = null;
     this.asyncCtx = null;
@@ -1780,13 +1788,15 @@ export class Translator implements AsyncTranslator {
       }
     }
     let current: ts.Statement | null = null;
+    // The module's statements, run by its initializer: a function body.
     const later = (code: () => string) => {
       this.indent = '    ';
       this.moduleAvailability = 0;
+      this.functionDepth++;
       try {
         const line = (current && this.lines ? this.lines.mark(current) : '') + code();
         init.push(this.moduleAvailability ? this.availableOnly(this.moduleAvailability, line.replace(/^ {4}/gm, ''), '    ', `jsReportUncaught(jsUnavailable(${this.moduleAvailability}).value)`) : line);
-      } finally { this.indent = ''; this.moduleAvailability = 0; }
+      } finally { this.indent = ''; this.moduleAvailability = 0; this.functionDepth--; }
     };
     for (const st of sf.statements) {
       current = st;
@@ -1874,7 +1884,7 @@ export class Translator implements AsyncTranslator {
       }
       // An object variable starting undefined or null holds one later.
       if (isNullish(d.initializer) && !t.endsWith('?') && t !== 'Any?' && this.zero(t) === null) { emit(`${modifiers}var ${name}: ${this.deferred(t)}`); continue; }
-      if (this.pure(d.initializer) && this.constantInit(d.initializer)) { emit(`${modifiers}${constant ? 'let' : 'var'} ${name}: ${constant ? t : this.lenientRef(t)} = ${this.coerce(d.initializer, t)}`); continue; }
+      if (this.pure(d.initializer) && this.constantInit(d.initializer)) { emit(`${modifiers}${constant ? 'let' : 'var'} ${name}: ${constant ? t : this.lenientRef(t)} = ${this.storedInit(d.initializer, t)}`); continue; }
       emit(`${modifiers}var ${name}: ${this.fieldType(t)}`);
       later(() => `    ${target} = ${this.tryPrefix(d.initializer!)}${this.coerce(d.initializer!, t)}`);
     }
@@ -1990,7 +2000,10 @@ export class Translator implements AsyncTranslator {
       const ref = ts.isModuleDeclaration(decl) ? `${named}.self` : named;
       // A declared function as Swift has it, its optional parameters as emitted.
       const t = this.boxedGeneric(decl, ts.isFunctionDeclaration(decl) && decl.body ? escapingFunction(functionParts(this.functionValueType(decl))!) : this.type(this.checker.getTypeOfSymbolAtLocation(sym, decl), decl));
-      entries.push(`(${swiftString(exported.name)}, ${ts.isFunctionDeclaration(decl) && decl.body && !takesThis(decl) ? this.boxDeclared(ref, decl) : this.convert(ref, t, 'Any?')})`);
+      // A declared function as a value outside a function body: the initializer holding it runs isolated (`storedInit`).
+      const fn = ts.isFunctionDeclaration(decl) && decl.body && !takesThis(decl) ? decl : null;
+      if (fn && !this.functionDepth) this.isolatedInit = true;
+      entries.push(`(${swiftString(exported.name)}, ${fn ? this.boxDeclared(ref, fn) : this.convert(ref, t, 'Any?')})`);
     }
     return `JSObject([${entries.join(', ')}])`;
   }
@@ -2257,9 +2270,9 @@ export class Translator implements AsyncTranslator {
       const params = found.params.map((t, k) => `${found.labels[k] ?? '_'} __a${k}: ${t}`).join(', ');
       const call = `try jsCallExtended(self, jsMethods, ${swiftString(m)}, [${found.params.map((_, k) => `jsFromNative(__a${k})`).join(', ')}])`;
       const result = found.returns === 'Void' ? `jsReport { _ = ${call} }` : `return jsReported { ${nativeResult(call, found.returns)} } ?? ${nativeZero(found.returns)}`;
-      members.push(`    @objc func ${found.swift}(${params})${found.returns === 'Void' ? '' : ` -> ${found.returns}`} { ${enteredGuard(found.swift, found.labels, found.params, found.returns, '', found.escaping)}; ${result} }`);
+      members.push(`    @objc nonisolated func ${found.swift}(${params})${found.returns === 'Void' ? '' : ` -> ${found.returns}`} { ${enteredGuard(found.swift, found.labels, found.params, found.returns, '', found.escaping)}; ${onMainThread(result, found.returns, '', found.params.map((_, k) => `__a${k}`), found.params.map((p, k) => (found.escaping?.includes(k) ? `@escaping ${p}` : p)))} }`);
     }
-    this.extendedClasses.push(`final class ${name}: ${[baseClass.swift, ...protocols.map((p) => p!.swift)].join(', ')} {
+    this.extendedClasses.push(`@MainActor final class ${name}: ${[baseClass.swift, ...protocols.map((p) => p!.swift)].join(', ')} {
     var jsMethods: Any?
 ${members.join('\n')}
 }`);
@@ -2916,7 +2929,7 @@ ${members.join('\n')}
       if (this.mayBeNull(p) || (closure && nullableTypeNode(p.type) && !isOptional(t) && t !== 'Any?' && this.lenientRef(t) !== t)) t = `${t}!`;
       let given = '';
       if (p.questionToken || (p.initializer && !this.templateParams)) {
-        if (!closure && this.constantDefault(p)) given = ` = ${this.coerce(p.initializer!, t)}`;
+        if (!closure && this.constantDefault(p)) given = ` = ${this.storedInit(p.initializer!, t)}`;
         else { t = optionalType(t); if (!closure) given = ' = nil'; }
       }
       if (isFunctionType(t)) t = '@escaping ' + t;
@@ -3798,7 +3811,7 @@ ${members.join('\n')}
         // A static field of a component or service (`static readonly PILL_HEIGHT = 44`): the class's.
         const name = (m.name as ts.Identifier).text;
         const t = this.typeOf(m.name);
-        lines.push(m.initializer ? `    static ${hasModifier(m, ts.SyntaxKind.ReadonlyKeyword) ? 'let' : 'var'} ${ident(name)}: ${t} = ${this.coerce(m.initializer, t)}` : `    static var ${ident(name)}: ${this.deferred(t)}`);
+        lines.push(m.initializer ? `    static ${hasModifier(m, ts.SyntaxKind.ReadonlyKeyword) ? 'let' : 'var'} ${ident(name)}: ${t} = ${this.storedInit(m.initializer, t)}` : `    static var ${ident(name)}: ${this.deferred(t)}`);
         continue;
       }
       if (ts.isPropertyDeclaration(m)) {
@@ -4063,7 +4076,7 @@ ${members.join('\n')}
           this.staticInits.push(`    ${ident(name)}.${ident(n)} = ${this.tryPrefix(m.initializer)}${this.coerce(m.initializer, t)}`);
           continue;
         }
-        lines.push(`    static var ${ident(n)}: ${t}${m.initializer ? ` = ${this.coerce(m.initializer, t)}` : isOptional(t) ? '' : ` = ${this.zero(t) ?? 'nil'}`}`);
+        lines.push(`    static var ${ident(n)}: ${t}${m.initializer ? ` = ${this.storedInit(m.initializer, t)}` : isOptional(t) ? '' : ` = ${this.zero(t) ?? 'nil'}`}`);
         continue;
       }
       // A view class narrowing its native view's type (`nativeViewProtected: CHIBasePageControl`) reads the kit's `nativeView`.
@@ -4146,7 +4159,7 @@ ${members.join('\n')}
       if (!this.kitRedeclared(m)) fields.push({ name: n, type: t });
       // `field: string = null` in code checked without strictNullChecks: unset, read as the type's zero or an unwrapped nil.
       if (m.initializer && (m.initializer.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(m.initializer) && m.initializer.text === 'undefined')) && !isOptional(t)) { lines.push(`    var ${ident(n)}: ${this.fieldType(t)}`); continue; }
-      if (m.initializer && this.pure(m.initializer) && !refersToThis(m.initializer)) { lines.push(`    var ${ident(n)}: ${this.lenientRef(t)} = ${this.coerce(m.initializer, t)}`); continue; }
+      if (m.initializer && this.pure(m.initializer) && !refersToThis(m.initializer)) { lines.push(`    var ${ident(n)}: ${this.lenientRef(t)} = ${this.storedInit(m.initializer, t)}`); continue; }
       const held = this.fieldType(t);
       lines.push(`    ${this.weak.fields.has(`${cls.name?.text}.${n}`) && /^[A-Z][\w.]*[!?]$/.test(held) ? 'weak ' : ''}var ${ident(n)}: ${held}`);
       if (m.initializer) {
@@ -4197,8 +4210,9 @@ ${members.join('\n')}
       const baseThrows = appBase ? this.throwsInfo.initThrows(appBase) : !!kitRoot && this.core.initThrows(kitRoot);
       if (baseCtor) lines.push(`    override init(${this.params(baseCtor, false)})${baseThrows || this.throwsInfo.initThrows(cls) ? ' throws' : ''} {`, `        ${baseThrows ? 'try ' : ''}super.init(${this.readsArguments(baseCtor) ? '__arguments' : baseCtor.parameters.map((p) => ident((p.name as ts.Identifier).text)).join(', ')})`, ...fieldInits, '    }');
       else lines.push(`    ${appBase || kitRoot ? 'override ' : ''}init()${this.throwsInfo.initThrows(cls) ? ' throws' : ''} {`, ...(appBase || kitRoot ? [`        ${baseThrows ? 'try ' : ''}super.init()`] : []), ...fieldInits, '    }');
-    } else if (this.library && !base && !cls.members.some((m) => ts.isConstructorDeclaration(m)) && !this.literalClasses().has(cls)) {
+    } else if ((this.library || this.extended.has(name) || this.extendedDecls.has(cls)) && !base && !cls.members.some((m) => ts.isConstructorDeclaration(m)) && !this.literalClasses().has(cls)) {
       // Library mode: Swift's implicit initializer is internal; an app makes the class (`new StyleScope()`) from another module.
+      // A class subclassed: Swift would leave its implicit initializer nonisolated, and a subclass's, isolated to the main actor, could not override it.
       lines.push('    init() {}');
     }
     // A class object literals are typed as (`const info = <Info>{}`): an instance made without its constructor or field initializers, as such a literal has none.
@@ -5285,7 +5299,12 @@ ${members.join('\n')}
     if (ts.isVariableStatement(s)) return this.declarationList(s.declarationList, false);
     if (ts.isFunctionDeclaration(s)) {
       if (!s.name || !s.body) return '';
-      return i + this.func(s, ident(s.name.text));
+      // Swift leaves a function declared inside a closure nonisolated, whatever the closure's isolation; an async
+      // function's or a generator's body is closures too.
+      const outer = ts.findAncestor(s.parent, ts.isFunctionLike);
+      const inClosure = outer && (ts.isArrowFunction(outer) || ts.isFunctionExpression(outer) || isAsync(outer) || ('asteriskToken' in outer && !!outer.asteriskToken));
+      const isolation = inClosure ? '@MainActor ' : '';
+      return i + isolation + this.func(s, ident(s.name.text));
     }
     if (ts.isForOfStatement(s)) {
       if (s.awaitModifier) throw this.error(s, 'for await');
@@ -6686,6 +6705,35 @@ ${members.join('\n')}
   // ---- Expressions -----------------------------------------------------------------------------
 
   expr(e: ts.Expression): string {
+    const code = this.exprOf(e);
+    if (this.functionDepth === 0 && /^[\w.`]+$/.test(code) && this.isDeclaredFunctionValue(e)) this.isolatedInit = true;
+    return code;
+  }
+
+  /** Whether a stored initializer being translated holds a declared function as a value (see `storedInit`). */
+  private isolatedInit = false;
+
+  private isDeclaredFunctionValue(e: ts.Expression): boolean {
+    if (!ts.isIdentifier(e) && !ts.isPropertyAccessExpression(e)) return false;
+    if (ts.isCallExpression(e.parent) && e.parent.expression === e) return false;
+    return !!this.resolve(ts.isPropertyAccessExpression(e) ? e.name : e)?.declarations?.some((d) => ts.isFunctionDeclaration(d) || (ts.isMethodDeclaration(d) && isStatic(d)));
+  }
+
+  /**
+   * A stored property's or global's initializer. One holding a declared function as a value (`static let f = g`)
+   * runs in a closure isolated to the main actor: Swift lets only isolated code drop the function's isolation from
+   * its type, and an initializer is not that, though it may call one.
+   */
+  private storedInit(e: ts.Expression, t: string): string {
+    const saved = this.isolatedInit;
+    this.isolatedInit = false;
+    try {
+      const code = this.coerce(e, t);
+      return this.isolatedInit ? `{ @MainActor () -> ${t.replace(/!$/, '?')} in ${code} }()` : code;
+    } finally { this.isolatedInit = saved; }
+  }
+
+  private exprOf(e: ts.Expression): string {
     const s = this.subst.get(e);
     if (s) return s;
     if (ts.isParenthesizedExpression(e) && ts.isBinaryExpression(e.expression) && e.expression.operatorToken.kind === ts.SyntaxKind.EqualsToken && ts.isIdentifier(e.expression.left)) {

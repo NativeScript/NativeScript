@@ -36,7 +36,7 @@ public func jsReport(_ body: () throws -> Void) {
     do { try body() } catch { jsReportUncaught(jsCaught(error)) }
 }
 
-nonisolated(unsafe) public var jsUncaughtHandler: (Any?) -> Void = { value in
+public var jsUncaughtHandler: (Any?) -> Void = { value in
     jsError("Uncaught", value)
 }
 

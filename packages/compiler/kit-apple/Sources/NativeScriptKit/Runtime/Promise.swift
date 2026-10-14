@@ -5,15 +5,15 @@ import Foundation
 
 /// The microtask queue (HTML "perform a microtask checkpoint", Node's `runMicrotasks`).
 public enum Microtasks {
-    nonisolated(unsafe) private static var queue: [(() -> Void)?] = []
-    nonisolated(unsafe) private static var head = 0
-    nonisolated(unsafe) private static var draining = false
-    nonisolated(unsafe) static var pendingRejections: [JSRejection] = []
+    private static var queue: [(() -> Void)?] = []
+    private static var head = 0
+    private static var draining = false
+    static var pendingRejections: [JSRejection] = []
 
     /// Receives the reason of every promise still rejected without a handler when a checkpoint
     /// ends, as Node's `unhandledRejection` event does. The default prints
     /// `Uncaught (in promise) <reason>` to standard error and carries on (Node would exit).
-    nonisolated(unsafe) public static var onUnhandledRejection: (Any?) -> Void = { reason in
+    public static var onUnhandledRejection: (Any?) -> Void = { reason in
         jsWriteStandardError("Uncaught (in promise) \(jsToString(reason))\n")
     }
 
@@ -21,11 +21,11 @@ public enum Microtasks {
 
     /// The targets of WeakRefs made in the current job, held until the checkpoint after it ends (ECMA-262 KeepDuringJob):
     /// under ARC a target nothing else holds would otherwise be gone before the next statement.
-    nonisolated(unsafe) static var kept: [AnyObject] = []
+    static var kept: [AnyObject] = []
 
     /// Called when a checkpoint ends after a task (`taskRan`) or a job ran: Angular's zone turning stable.
-    nonisolated(unsafe) public static var onStable: (() -> Void)?
-    nonisolated(unsafe) private static var turned = false
+    public static var onStable: (() -> Void)?
+    private static var turned = false
 
     /// A JavaScript task (an event handler, a timer callback) ran.
     public static func taskRan() { turned = true }

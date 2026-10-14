@@ -6,14 +6,14 @@ import Foundation
 /// extending it read and write, and the class's own accessors. Each class's prototype
 /// is one object, chained to its superclass's and, at the root, to `Object.prototype`.
 public enum JSPrototypes {
-    nonisolated(unsafe) private static var table: [ObjectIdentifier: JSObject] = [:]
+    private static var table: [ObjectIdentifier: JSObject] = [:]
     /// The class of each prototype object, by the object's identity.
-    nonisolated(unsafe) private static var owners: [ObjectIdentifier: AnyClass] = [:]
+    private static var owners: [ObjectIdentifier: AnyClass] = [:]
     /// Accessors a class declares, put on its prototype when the prototype is first made.
-    nonisolated(unsafe) private static var declared: [ObjectIdentifier: [(String, JSPropertyDescriptor)]] = [:]
-    nonisolated(unsafe) private static var builtins: [String: JSObject] = [:]
+    private static var declared: [ObjectIdentifier: [(String, JSPropertyDescriptor)]] = [:]
+    private static var builtins: [String: JSObject] = [:]
     /// A class's static members by name, each read when script reads it (`Handler.initWithOwner`).
-    nonisolated(unsafe) private static var statics: [ObjectIdentifier: [String: () -> Any?]] = [:]
+    private static var statics: [ObjectIdentifier: [String: () -> Any?]] = [:]
 
     /// The static methods and properties a class declares, for script that holds the class as a value.
     public static func declareStatics(_ cls: AnyClass, _ members: [(String, () -> Any?)]) {
@@ -211,7 +211,7 @@ struct JSClassKey: Hashable {
     let key: String
 }
 
-nonisolated(unsafe) private var jsSymbolMethods: [JSClassKey: JSMethod?] = [:]
+private var jsSymbolMethods: [JSClassKey: JSMethod?] = [:]
 private let jsSymbolMethodsLock = NSLock()
 
 /// `key in object` for what the object does not declare as a field.

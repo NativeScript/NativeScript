@@ -329,7 +329,7 @@ public final class Signal<T>: Source, Holding {
 
     public init(_ value: T) where T: Equatable {
         stored = value
-        same = (==)
+        same = { $0 == $1 }
     }
 
     /// A signal whose writes compare with `equals` (JavaScript's `Object.is` for objects).

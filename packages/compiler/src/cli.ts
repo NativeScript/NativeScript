@@ -540,7 +540,10 @@ if (pods) writeIfChanged(join(out, 'Podfile'), pods);
 else removePods(out, name);
 const resources = iosProjectResources({ app, appDir, out, name, pods: !!pods, say });
 const extensions = iosExtensions({ app, out, bundle, packages, signing, team: resources.team, say });
-const appSettings = { PRODUCT_BUNDLE_IDENTIFIER: bundle, SWIFT_VERSION: '"5.9"', ...resources.settings, ...coreNative.settings, ...pluginLines.settings, ...signing };
+// Script is single-threaded: the kit and the app's code are isolated to the main actor, checked in Swift 6 mode. Plugins'
+// own Swift targets keep their language mode.
+const swiftMode = { SWIFT_VERSION: '"6"', SWIFT_DEFAULT_ACTOR_ISOLATION: 'MainActor' };
+const appSettings = { PRODUCT_BUNDLE_IDENTIFIER: bundle, ...swiftMode, ...resources.settings, ...coreNative.settings, ...pluginLines.settings, ...signing };
 // Reflection metadata keeps every type's descriptor, and through it the type and all it calls, in the
 // binary; the kit reflects only on tuples (Mirror of a tuple needs none), so a Release build has none.
 // A framework the kit imports for code the app never reaches (WebKit for WebView, Photos for saving
@@ -572,8 +575,7 @@ ${pluginLines.packages || packages.length ? `packages:\n${pluginLines.packages}$
       - path: ${relative(out, kitSources)}
 ${excluded.length ? `        excludes: [${excluded.join(', ')}]\n` : ''}${coreNative.kitDependencies ? `    dependencies:\n${coreNative.kitDependencies}` : ''}    settings:
       base:
-        SWIFT_VERSION: "5.9"
-${Object.entries(coreNative.settings).map(([k, v]) => `        ${k}: ${v}\n`).join('')}${coreNative.targets}${pluginLines.targets}${extensions.targets}  ${name}:
+${Object.entries(swiftMode).map(([k, v]) => `        ${k}: ${v}\n`).join('')}${Object.entries(coreNative.settings).map(([k, v]) => `        ${k}: ${v}\n`).join('')}${coreNative.targets}${pluginLines.targets}${extensions.targets}  ${name}:
     type: application
     platform: iOS
     sources:
@@ -617,7 +619,7 @@ function kitFilesUnreached(dir: string, appSwift: string, linked: string[], left
     const text = readFileSync(join(dir, f), 'utf8');
     // Core's modules are one program: each one's initializer runs at launch, as core's index imports them all.
     if (f.startsWith('Core/') || [...text.matchAll(/^import (\w+)/gm)].every((m) => ['Foundation', 'UIKit', 'ObjectiveC', ...linked].includes(m[1]))) { read(text); continue; }
-    pending.push({ path: f, text, types: [...text.matchAll(/^(?:(?:open|public|final)\s+)*(?:class|struct|enum|protocol)\s+(\w+)/gm)].map((m) => m[1]) });
+    pending.push({ path: f, text, types: [...text.matchAll(/^(?:@\w+(?:\([^)]*\))?\s+)*(?:(?:open|public|final)\s+)*(?:class|struct|enum|protocol)\s+(\w+)/gm)].map((m) => m[1]) });
   }
   for (let more = true; more; ) {
     more = false;

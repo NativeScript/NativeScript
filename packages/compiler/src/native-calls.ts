@@ -39,12 +39,6 @@ function bridge(code: string, from: SwiftType, to: SwiftType): string | null {
   if (optional(to)) return `(${code} as${typedSet ? '?' : ''} ${want}${typedSet ? '' : '?'})`;
   return `(${code}${optional(from) ? '!' : ''} as${typedSet ? '!' : ''} ${want})`;
 }
-/**
- * A member a Swift module isolates to the main actor, reached from the
- * translated code's nonisolated functions: the app's code runs on the main
- * thread, as NativeScript's does.
- */
-const isolated = (code: string, m: { mainActor?: boolean }) => (m.mainActor ? `${/\btry\b/.test(code) ? 'try ' : ''}MainActor.assumeIsolated { ${code} }` : code);
 /** Classes NativeScript's typings rename where TypeScript's DOM library declares the name. */
 const RENAMED: Record<string, string> = { _UIEvent: 'UIEvent' };
 /** The iOS version the app targets: newer APIs need `if #available` the translation cannot add. */
@@ -360,14 +354,14 @@ export class NativeAPI {
     const newer = m.kind === 'property' && m.introduced && parseFloat(m.introduced) > DEPLOYMENT && !this.t.availabilityChecked(parseFloat(m.introduced)) ? parseFloat(m.introduced) : 0;
     const absent = newer && !e.questionDotToken && !ts.isOptionalChain(e) && !isWriteTarget(e) ? this.t.undefinedValue(this.t.typeOf(e)) : null;
     if (!absent) this.checkAvailable(m, e, `${r.name}.${e.name.text}`);
-    if ((e.questionDotToken || ts.isOptionalChain(e)) && !r.isStatic && m.kind === 'property') return this.chainEnd(e, isolated(`${this.chainHead(e.expression)}${m.swift}`, m), m.type);
+    if ((e.questionDotToken || ts.isOptionalChain(e)) && !r.isStatic && m.kind === 'property') return this.chainEnd(e, `${this.chainHead(e.expression)}${m.swift}`, m.type);
     const target = r.isStatic ? this.className(lookupClass(r.module, r.name)!) : this.unwrapped(e.expression);
     if (absent) {
-      const read = this.fromSwift(isolated(`${target}.${m.swift}`, m), m.type, e);
+      const read = this.fromSwift(`${target}.${m.swift}`, m.type, e);
       const throws = /\btry\b/.test(read);
       return `${throws ? '(try ' : ''}{ () ${throws ? 'throws ' : ''}-> ${this.t.typeOf(e)} in if #available(iOS ${newer}, *) { return ${read} } else { return ${absent} } }()${throws ? ')' : ''}`;
     }
-    if (m.kind === 'property') return this.fromSwift(isolated(`${target}.${m.swift}`, m), m.type, e);
+    if (m.kind === 'property') return this.fromSwift(`${target}.${m.swift}`, m.type, e);
     // A no-argument method read as a property in the d.ts (`UIColor.redColor` is a class property there).
     if (m.kind === 'method' && !m.params.length) return this.fromSwift(`${target}.${m.swift}()`, m.returns, e);
     if (m.kind === 'init' && !m.params.length) return this.fromSwift(`${target}()`, m.returns, e);
@@ -574,9 +568,9 @@ export class NativeAPI {
     const erased = !r.isStatic && !cast && held === 'Any?' ? this.erasedReceiver(left.expression, this.t.expr(left.expression)) : null;
     const target = r.isStatic ? this.className(lookupClass(r.module, r.name)!) : cast ? `(${this.t.expr(left.expression)} as! ${cast})` : erased ?? `${this.t.expr(left.expression)}${unwrap}`;
     if (m.optional && !r.isStatic && !cast && lookupClass(r.module, r.name)?.kind === 'protocol') {
-      return isolated(`jsSetOptionalNativeProperty(${target}, ${JSON.stringify(left.name.text)}, ${this.toSwift(value, m.type)})`, m);
+      return `jsSetOptionalNativeProperty(${target}, ${JSON.stringify(left.name.text)}, ${this.toSwift(value, m.type)})`;
     }
-    return isolated(`${target}.${m.swift} = ${this.toSwift(value, m.type)}`, m);
+    return `${target}.${m.swift} = ${this.toSwift(value, m.type)}`;
   }
 
   /** A call of a native method, class method, `alloc().initWith…()`, `new()`, or global function. */
@@ -677,7 +671,7 @@ export class NativeAPI {
     const bridged = !r.isStatic && !chained && ((r.name === 'NSDictionary' && /^\[.*:.*\][?!]?$/.test(st)) || (r.name === 'NSArray' && /^\[[^:]*\][?!]?$/.test(st)));
     const recv = r.isStatic ? '' : bridged ? `(${this.unwrapped(callee.expression)} as ${r.name})` : !chained ? this.unwrapped(callee.expression)
       : this.t.typeOf(callee.expression).endsWith('?') ? `${this.t.expr(callee.expression)}?` : this.chainHead(callee.expression).slice(0, -1);
-    if (m.kind === 'property') return this.fromSwift(isolated(`${r.isStatic ? this.className(lookupClass(r.module, r.name)!) : recv}.${m.swift}`, m), m.type, e);
+    if (m.kind === 'property') return this.fromSwift(`${r.isStatic ? this.className(lookupClass(r.module, r.name)!) : recv}.${m.swift}`, m.type, e);
     const args = [...e.arguments];
     if (m.errorParam !== undefined) args.splice(m.errorParam, 1);
     const defaults = (m as NativeMethod & { defaults?: string[] }).defaults ?? [];
@@ -686,7 +680,7 @@ export class NativeAPI {
     const target = r.isStatic ? this.className(cls!) : recv;
     // An optional requirement called through its protocol: the method where the object has one, a TypeError where not.
     const optionalCall = m.kind === 'method' && (m as NativeMethod).optional && !r.isStatic && lookupClass(r.module, r.name)?.kind === 'protocol' ? '!' : '';
-    const called = isolated(m.kind === 'init' ? `${target}(${list})` : `${target}.${m.swift}${optionalCall}(${list})`, m);
+    const called = m.kind === 'init' ? `${target}(${list})` : `${target}.${m.swift}${optionalCall}(${list})`;
     const code = out ? withErrorOut(called, m.returns) : called;
     const result = this.errorCall(code, m, e);
     // A chain that stops before the call gives undefined, as a number, string or boolean reads it.
@@ -709,7 +703,7 @@ export class NativeAPI {
     const out = this.errorOut(m, args.length);
     const list = [this.argList(args, m.labels, m.params), ...(out ? [out] : [])].filter(Boolean).join(', ');
     const receiver = `(${this.t.expr(object)} as! ${cls.kind === 'protocol' ? `any ${this.className(cls)}` : this.className(cls)})`;
-    const called = isolated(`${receiver}.${m.swift}(${list})`, m);
+    const called = `${receiver}.${m.swift}(${list})`;
     const code = out ? withErrorOut(called, m.returns) : called;
     return this.fromSwift(code, m.returns, e);
   }
@@ -760,7 +754,7 @@ export class NativeAPI {
       }
       const out = this.errorOut(m, args.length);
       const list = [this.argList(args, m.labels, m.params), ...(out ? [out] : [])].filter(Boolean).join(', ');
-      const called = isolated(`__o.${m.swift}(${list})`, m);
+      const called = `__o.${m.swift}(${list})`;
       const code = out ? withErrorOut(called, m.returns) : called;
       const value = this.fromSwift(code, m.returns, e);
       return [`if let __o = __either as? ${this.className(c.cls)} { ${ret === 'Void' ? `${value}; return` : `return ${value}`} }`];
@@ -781,7 +775,7 @@ export class NativeAPI {
       const m = this.found(lookupMember(c.module, c.name, name, false));
       if (!m) return [];
       const read = m.kind === 'property' ? `__o.${m.swift}` : m.kind === 'method' && !m.params.length ? `__o.${m.swift}()` : null;
-      return read ? [`if let __o = __either as? ${this.className(c.cls)} { return ${this.fromSwift(isolated(read, m), m.kind === 'property' ? m.type : m.returns, e)} }`] : [];
+      return read ? [`if let __o = __either as? ${this.className(c.cls)} { return ${this.fromSwift(read, m.kind === 'property' ? m.type : m.returns, e)} }`] : [];
     });
     if (!cases.length) return null;
     const none = optional(ret) ? 'return nil' : `throw JSException(JSTypeError(${JSON.stringify(`no ${name} on this object`)}))`;
@@ -1199,7 +1193,7 @@ export class NativeAPI {
     const ret = sig[2].trim();
     const inner = ret === 'Void' ? (throws ? `jsReport { try ${call} }` : `${call}`) : throws ? `jsReportedOrZero { try ${call} }` : call;
     const run = `${binds.join('; ')}${binds.length ? '; ' : ''}${ret === 'Void' ? inner : `return ${inner}`}`;
-    return `{ (${swiftParams.join(', ')}) -> ${ret} in ${posted(ret, params) ? `jsEnter { ${run} }` : `jsEnterAwaiting { () -> ${ret} in ${run} }`} }`;
+    return `${posted(ret, params) ? 'jsEnter' : 'jsEnterAwaiting'} { (${swiftParams.join(', ')}) -> ${ret} in ${run} }`;
   }
 
   /** A function value (Swift's are `throws`) where Swift takes a block returning nothing: called through one, what it throws reported. */
@@ -1210,9 +1204,11 @@ export class NativeAPI {
     if (!fn || !want || want.result !== 'Void' || fn.params.length > want.params.length) return null;
     const args = fn.params.map((p, k) => this.blockParam(`__b${k}`, want.params[k], p.replace(/^@escaping /, '')));
     const report = `jsReport { try __f(${args.join(', ')}) }`;
-    const wrap = `{ (__f: @escaping ${unwrapped}) -> ${want.text} in { (${want.params.map((p, k) => `__b${k}: ${p}`).join(', ')}) in ${posted('Void', want.params) ? `jsEnter { ${report} }` : `jsEnterAwaiting { ${report} }`} } }`;
+    // Sendable, as the SDK may declare the block (its table's types leave that out): it enters script on the main thread.
+    const block = /^@Sendable\b/.test(want.text) ? want.text : `@Sendable ${want.text}`;
+    const wrap = `{ (__f: @escaping ${unwrapped}) -> ${block} in ${posted('Void', want.params) ? 'jsEnter' : 'jsEnterAwaiting'} { (${want.params.map((p, k) => `__b${k}: ${p}`).join(', ')}) in ${report} } }`;
     // An optional block parameter takes the function through an optional: lenient code holds a missing one (`fn || null`) as nil though its type says present.
-    if (unwrapped === source) return optional(target) ? `{ (__o: (${unwrapped})?) -> (${want.text})? in __o.map(${wrap}) }(${code})` : `${wrap}(${code})`;
+    if (unwrapped === source) return optional(target) ? `{ (__o: (${unwrapped})?) -> (${block})? in __o.map(${wrap}) }(${code})` : `${wrap}(${code})`;
     return `(${code}).map(${wrap})${optional(target) ? '' : '!'}`;
   }
 
@@ -1274,7 +1270,7 @@ export class NativeAPI {
     const body = ret ? `jsReportedOrZero { ${call} }` : `jsReport { ${call} }`;
     const types = params.map((p) => p.slice(p.indexOf(':') + 1).trim());
     const guard = enteredGuard(`__objc_${jsName}`, types.map(() => null), types, ret ?? 'Void', '');
-    return `    @objc(${jsName}${':'.repeat(params.length)}) public func __objc_${jsName}(${params.join(', ')})${ret ? ` -> ${ret}` : ''} { ${guard}; ${body} }`;
+    return `    @objc(${jsName}${':'.repeat(params.length)}) public nonisolated func __objc_${jsName}(${params.join(', ')})${ret ? ` -> ${ret}` : ''} { ${guard}; ${onMainThread(body, ret ?? 'Void', '', params.map((_, k) => `__a${k}`), types)} }`;
   }
 
   /** Exposed method name → its parameter count, from every `static ObjCExposedMethods` in the program. */
@@ -1336,7 +1332,7 @@ export class NativeAPI {
     const exposed = new Set(exposedSpec && ts.isObjectLiteralExpression(exposedSpec.initializer!) ? exposedSpec.initializer.properties.map((p) => p.name!.getText()) : []);
 
     // A protocol the native base conforms to already is its conformance.
-    const lines = [`final class ${name}: ${[this.className(baseCls), ...protocols.filter((p) => !conformsTo(base.module, base.name, p.name)).map((p) => p.swift)].join(', ')} {`];
+    const lines = [`@MainActor final class ${name}: ${[this.className(baseCls), ...protocols.filter((p) => !conformsTo(base.module, base.name, p.name)).map((p) => p.swift)].join(', ')} {`];
     t.indent = '    ';
     t.inNativeClassBody = true;
     for (const m of cls.members) {
@@ -1405,7 +1401,8 @@ export class NativeAPI {
       }
       // Swift has no `dealloc` to override: the object's deinit, which runs the base's teardown after it.
       if (jsName === 'dealloc' && !m.parameters.length) {
-        lines.push(t.throwsInfo.fn(m) ? `    deinit {\n        jsReport ${t.functionBody(m, 'Void', '        ').trimStart()}\n    }` : `    deinit ${t.functionBody(m, 'Void', '    ').trimStart()}`);
+        // Isolated: the last release can come from another thread, and the body is script code.
+        lines.push(t.throwsInfo.fn(m) ? `    isolated deinit {\n        jsReport ${t.functionBody(m, 'Void', '        ').trimStart()}\n    }` : `    isolated deinit ${t.functionBody(m, 'Void', '    ').trimStart()}`);
         continue;
       }
       const init = /^init/.test(jsName) ? lookupInit(base.module, base.name, jsName) : null;
@@ -1502,7 +1499,8 @@ export class NativeAPI {
       : `        let __result: ${tsRet} = ${throws ? `jsReportedOrZero { () throws -> ${tsRet} in${body.slice(1)}` : call}\n        return ${this.toSwiftValue('__result', tsRet, ret)}`;
     const available = introduced ? `@available(iOS ${target.introduced}, *) ` : '';
     const guard = enteredGuard(target.swift, target.labels, target.params, ret, '        ', target.escaping, names);
-    return [`    ${available}${override ? 'override ' : ''}func ${target.swift}(${swiftParams.join(', ')})${ret === 'Void' ? '' : ` -> ${ret}`} {`, guard, ...binds, result, '    }'].join('\n');
+    const isolated = onMainThread([...binds, result].join('\n'), ret, '        ', names, target.params.map((p, k) => (target.escaping?.includes(k) ? `@escaping ${p}` : p)));
+    return [`    ${available}nonisolated ${override ? 'override ' : ''}func ${target.swift}(${swiftParams.join(', ')})${ret === 'Void' ? '' : ` -> ${ret}`} {`, guard, isolated, '    }'].join('\n');
   }
 
   /**
@@ -1782,6 +1780,24 @@ export function posted(ret: string, params: string[], escaping?: number[]): bool
 
 /** A parameter's label and name, the name alone where it is the label. */
 const labeled = (label: string | null, name: string) => (label === name ? name : `${label ?? '_'} ${name}`);
+
+/**
+ * The code of a method native code may call from any thread, past its guard (`enteredGuard`): script code, isolated to
+ * the main actor. The method itself is `nonisolated`, as Swift would otherwise check the thread before the guard runs.
+ * Its parameters (`names`, of `types`) are handed to the code rather than captured, which Swift would see as values of
+ * the calling thread shared with the main actor; a non-escaping block cannot be handed on, and stays captured.
+ */
+export function onMainThread(code: string, ret: string, indent = '', names: string[] = [], types: string[] = []): string {
+  const passed = names.filter((_, k) => !(/->/.test(types[k] ?? '') && !/[?!]\s*$/.test(types[k]) && !/@escaping/.test(types[k])));
+  if (passed.length > 8) throw new Error(`a native method of ${passed.length} parameters (jsOnMainThread takes at most 8)`);
+  const call = `jsOnMainThread${passed.length ? `(${passed.join(', ')})` : ''}`;
+  const head = ret === 'Void' ? (passed.length ? ` ${passed.join(', ')} in` : '') : ` (${passed.join(', ')}) -> ${ret} in`;
+  const lead = ret === 'Void' ? call : `return ${call}`;
+  if (!indent) return `${lead} {${head} ${code} }`;
+  // Re-indented as the closure's body, unless that would change a multi-line string literal.
+  const body = code.includes('"""') ? code : code.split('\n').map((l) => (l ? `    ${l}` : l)).join('\n');
+  return `${indent}${lead} {${head}\n${body}\n${indent}}`;
+}
 
 /** The first statement of a method native code may call from any thread: from another, the call is made again on the main thread. */
 export function enteredGuard(name: string, labels: (string | null)[], params: string[], ret: string, indent: string, escaping?: number[], names = params.map((_, k) => `__a${k}`)): string {

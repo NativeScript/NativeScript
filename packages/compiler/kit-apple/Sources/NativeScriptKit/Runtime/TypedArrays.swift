@@ -102,7 +102,7 @@ public final class JSArrayBuffer: JSDynamic, JSToStringTag, JSBufferSource, JSHo
         owned = false
     }
 
-    deinit {
+    isolated deinit {
         if owned { bytes.deallocate() } else { deallocator?() }
     }
 
@@ -491,8 +491,8 @@ public final class JSTypedArray<Kind: JSTypedArrayElement>: JSTypedArrayProtocol
     /// `array.sort()`: in place, numerically (-0 before +0, NaN last).
     @discardableResult
     public func sort() -> JSTypedArray {
-        var values = (0..<count).map(value)
-        values.sort(by: Kind.less)
+        var values = (0..<count).map { value($0) }
+        values.sort { Kind.less($0, $1) }
         for (k, v) in values.enumerated() { put(v, k) }
         return self
     }
@@ -500,7 +500,7 @@ public final class JSTypedArray<Kind: JSTypedArrayElement>: JSTypedArrayProtocol
     /// `array.sort(compare)`: in place and stable; a NaN comparison result counts as 0.
     @discardableResult
     public func sort(_ compare: (Kind.Value, Kind.Value) throws -> Double) rethrows -> JSTypedArray {
-        var values = (0..<count).map(value)
+        var values = (0..<count).map { value($0) }
         try jsMergeSort(&values) { try compare($0, $1) < 0 }
         for (k, v) in values.enumerated() { put(v, k) }
         return self
@@ -779,7 +779,7 @@ public final class JSTypedArray<Kind: JSTypedArrayElement>: JSTypedArrayProtocol
     }
 }
 
-nonisolated(unsafe) private var jsTypedArrayPrototypes: [ObjectIdentifier: AnyObject] = [:]
+private var jsTypedArrayPrototypes: [ObjectIdentifier: AnyObject] = [:]
 
 @inline(__always)
 private func jsTruth<R>(_ result: R) -> Bool {

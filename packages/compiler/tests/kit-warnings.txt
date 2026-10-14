@@ -39,7 +39,7 @@ pending @nativescript/core/application.application.ios.ts | conditional cast fro
 pending @nativescript/core/application.application.ios.ts | immutable value 'value' was never used; consider replacing with '_' or removing it
 pending @nativescript/core/application.scene-delegate-bridge.ts | forced cast from 'String' to 'any NSCopying' always succeeds; did you mean to use 'as'?
 pending @nativescript/core/color.color-common.ts | left side of nil coalescing operator '??' has non-optional type 'Double', so the right side is never used
-pending @nativescript/core/connectivity.index.ios.ts | comparing non-optional value of type '() -> Unmanaged<CFDictionary>?' to 'nil' always returns false
+pending @nativescript/core/connectivity.index.ios.ts | comparing non-optional value of type '@Sendable () -> Unmanaged<CFDictionary>?' to 'nil' always returns false
 pending @nativescript/core/css-mediaquery.index.ts | no calls to throwing functions occur within 'try' expression
 pending @nativescript/core/css-mediaquery.index.ts | will never be executed
 pending @nativescript/core/css.parser.ts | will never be executed

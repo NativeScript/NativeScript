@@ -91,9 +91,9 @@ public func jsNativeResult<T: RawRepresentable>(_ value: T?) -> Any? where T.Raw
 /// The plugins' native members untyped script reaches, by name: the app's `__NativeDispatch`, generated from the
 /// plugins' metadata. Each answers nil (or false) for an object or name it has nothing for.
 public enum JSNativeDispatch {
-    nonisolated(unsafe) public static var get: ((AnyObject, String) -> Any??)?
-    nonisolated(unsafe) public static var set: ((AnyObject, String, Any?) -> Bool)?
-    nonisolated(unsafe) public static var call: ((AnyObject, String, [Any?]) throws -> Any??)?
+    public static var get: ((AnyObject, String) -> Any??)?
+    public static var set: ((AnyObject, String, Any?) -> Bool)?
+    public static var call: ((AnyObject, String, [Any?]) throws -> Any??)?
 }
 
 /// A native class script made with `Cls.extend(methods, { protocols })`: `new()` makes an instance answering from the methods.
@@ -164,7 +164,7 @@ private struct JSNativeMemberKey: Hashable {
     let key: String
 }
 
-nonisolated(unsafe) private var jsNativeAbsentKeys = Set<JSNativeMemberKey>()
+private var jsNativeAbsentKeys = Set<JSNativeMemberKey>()
 private let jsNativeAbsentLock = NSLock()
 
 private func jsNativeAbsent(_ cls: AnyClass, _ key: String) -> Bool {
@@ -275,7 +275,7 @@ private func jsNativeMethod(_ object: NSObject, _ key: String) -> JSFunction? {
     #endif
 }
 
-nonisolated(unsafe) private var jsSelectors: [ObjectIdentifier: [String: ObjectiveC.Selector]] = [:]
+private var jsSelectors: [ObjectIdentifier: [String: ObjectiveC.Selector]] = [:]
 
 /// The selector of the class or one it extends that script names `key`.
 private func jsSelector(_ cls: AnyClass, _ key: String) -> ObjectiveC.Selector? {
@@ -324,7 +324,7 @@ private func jsExpandos(_ object: NSObject, create: Bool = false) -> JSObject? {
     objc_setAssociatedObject(object, &jsExpandoKey, made, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
     return made
 }
-nonisolated(unsafe) private var jsExpandoKey: UInt8 = 0
+private var jsExpandoKey: UInt8 = 0
 
 /// Whether the class or one it extends declares an Objective-C property of that name.
 /// The accessor an Objective-C property declares under a custom name (`G` getter or `S` setter attribute), if any.
@@ -355,7 +355,7 @@ func jsObjCPropertyAttributes(_ cls: AnyClass, _ name: String) -> String? {
     return found
 }
 
-nonisolated(unsafe) private var jsPropertyAttributes: [JSClassKey: String?] = [:]
+private var jsPropertyAttributes: [JSClassKey: String?] = [:]
 private let jsPropertyAttributesLock = NSLock()
 
 /// The object whose class implements `selector`, following `forwardingTarget(for:)` as a
@@ -649,7 +649,7 @@ public func jsStructPointer<T>(_ value: Any?, _: T.Type) -> UnsafePointer<T>? {
     return UnsafePointer(held.pointer)
 }
 
-private final class JSStructCopy<T>: NSObject {
+private nonisolated final class JSStructCopy<T>: NSObject {
     let pointer: UnsafeMutablePointer<T>
     init(_ value: T) {
         pointer = .allocate(capacity: 1)

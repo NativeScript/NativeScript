@@ -20,7 +20,7 @@ public final class JSFunctionObject: JSDynamic, CustomStringConvertible {
         self.body = body
     }
 
-    deinit {
+    isolated deinit {
         if let identityKey { JSFunctionIdentity.forget(identityKey) }
     }
 
@@ -152,7 +152,7 @@ public final class JSFunctionAlias {
 
     init(method: AnyObject) { target = .object(method) }
 
-    deinit {
+    isolated deinit {
         if let key { JSFunctionIdentity.forget(key) }
     }
 }
@@ -180,7 +180,7 @@ enum JSFunctionIdentity {
         }
     }
 
-    nonisolated(unsafe) static var table: [JSFunctionKey: Slot] = [:]
+    static var table: [JSFunctionKey: Slot] = [:]
 
     static func forget(_ key: JSFunctionKey) {
         if let slot = table[key], slot.alias == nil, slot.box == nil { table[key] = nil }
@@ -270,8 +270,8 @@ enum JSMethodValues {
         weak var receiver: AnyObject?
         let cell: Any
     }
-    nonisolated(unsafe) static var table: [Key: Entry] = [:]
-    nonisolated(unsafe) private static var pruneAt = 64
+    static var table: [Key: Entry] = [:]
+    private static var pruneAt = 64
 
     /// The function a class's method is, one object per class and name, kept for good as a prototype's methods are.
     final class Identity {}
@@ -279,7 +279,7 @@ enum JSMethodValues {
         let type: ObjectIdentifier
         let name: String
     }
-    nonisolated(unsafe) private static var identities: [IdentityKey: Identity] = [:]
+    private static var identities: [IdentityKey: Identity] = [:]
 
     static func identity(_ type: AnyClass, _ name: String) -> Identity {
         let key = IdentityKey(type: ObjectIdentifier(type), name: name)

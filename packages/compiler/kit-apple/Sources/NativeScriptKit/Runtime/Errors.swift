@@ -5,7 +5,7 @@ public struct JSException: Error, @unchecked Sendable, CustomStringConvertible {
     public let value: Any?
     public init(_ value: Any?) { self.value = value }
     public init(value: Any?) { self.value = value }
-    public var description: String { "Uncaught " + jsToString(value) }
+    public var description: String { MainActor.assumeIsolated { "Uncaught " + jsToString(value) } }
 }
 
 /// JavaScript `Error`. TypeScript classes extending `Error` subclass it and set `name` in their initializer.
@@ -200,7 +200,7 @@ public final class JSThrownValue: JSError {
 }
 
 /// A dynamic write (`obj[key] = v`, a binding's set) a typed field refused: the TypeError `jsSet` throws after the write.
-nonisolated(unsafe) var jsRefusedWrite: JSTypeError?
+var jsRefusedWrite: JSTypeError?
 
 public func jsRefuseSet(_ value: Any?, _ key: String, _ type: String) {
     jsRefusedWrite = JSTypeError("Cannot assign \(jsIsNullish(value) ? jsToString(value) : jsTypeof(value)) to '\(key)', a \(type)")
