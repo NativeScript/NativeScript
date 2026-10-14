@@ -125,39 +125,50 @@ private func clampIndex(_ v: Double, _ count: Int) -> Int {
 /// Compares strings by UTF-16 code units, as JavaScript's `<` does: -1, 0 or 1.
 public func jsCompare(_ a: String, _ b: String) -> Int { jsCompareUnits(a, b) }
 
+// The searches below run over the strings' UTF-8 bytes in place. A string is valid UTF-16, so a search string
+// matches the same text at the same places among either's units; only positions convert, and a position
+// inside a surrogate pair is where no search string can start or end.
+
 public func jsStartsWith(_ s: String, _ search: String, _ position: Double? = nil) -> Bool {
-    let u = units(s)
-    let start = clampIndex(position ?? 0, u.count)
-    return u[start...].starts(with: search.utf16)
+    jsWithUTF8(s, search) { text, needle in
+        guard let position, position > 0 else { return text.matches(needle, at: 0) }
+        let (start, exact) = text.byte(atUnit: clampIndex(position, text.unitCount))
+        return exact ? text.matches(needle, at: start) : needle.isEmpty
+    }
 }
 
 public func jsEndsWith(_ s: String, _ search: String, _ endPosition: Double? = nil) -> Bool {
-    let u = units(s)
-    let end = clampIndex(endPosition ?? Double(u.count), u.count)
-    let n = search.utf16.count
-    return n <= end && u[(end - n)..<end].elementsEqual(search.utf16)
+    jsWithUTF8(s, search) { text, needle in
+        guard let endPosition else { return text.matches(needle, at: text.bytes.count - needle.count) }
+        let (end, exact) = text.byte(atUnit: clampIndex(endPosition, text.unitCount))
+        return exact ? text.matches(needle, at: end - needle.count) : needle.isEmpty
+    }
 }
 
 public func jsIndexOf(_ s: String, _ search: String, _ position: Double?) -> Double {
-    let u = units(s), n = Array(search.utf16)
-    var i = clampIndex(position ?? 0, u.count)
-    while i + n.count <= u.count {
-        if u[i..<(i + n.count)].elementsEqual(n) { return Double(i) }
-        i += 1
+    jsWithUTF8(s, search) { text, needle in
+        let from = position.map { clampIndex($0, text.unitCount) } ?? 0
+        if needle.isEmpty { return Double(from) }
+        let start = from == 0 ? 0 : text.byte(atUnit: from).offset
+        return text.first(needle, from: start).map { Double(text.units(before: $0)) } ?? -1
     }
-    return -1
 }
 
 public func jsLastIndexOf(_ s: String, _ search: String, _ fromIndex: Double? = nil) -> Double {
-    let u = units(s), n = Array(search.utf16)
-    var i = u.count - n.count
-    // A NaN or missing position searches from the end.
-    if let f = fromIndex, !f.isNaN { i = min(i, Int(max(0, min(Double(u.count), f)))) }
-    while i >= 0 {
-        if u[i..<(i + n.count)].elementsEqual(n) { return Double(i) }
-        i -= 1
+    jsWithUTF8(s, search) { text, needle in
+        let count = text.unitCount
+        // A NaN or missing position searches from the end.
+        var limit = count
+        if let f = fromIndex, !f.isNaN { limit = Int(max(0, min(Double(count), f))) }
+        if needle.isEmpty { return Double(limit) }
+        let (from, exact) = text.byte(atUnit: limit)
+        return text.last(needle, from: exact ? from : from - 4).map { Double(text.units(before: $0)) } ?? -1
     }
-    return -1
+}
+
+/// `s.includes(search, position)`.
+public func jsIncludes(_ s: String, _ search: String, _ position: Double?) -> Bool {
+    jsIndexOf(s, search, position) >= 0
 }
 
 /// `s.substring(a, b)`: negative and NaN are 0, and the bounds swap if reversed.
@@ -265,21 +276,24 @@ public func jsRepeat(_ s: String, _ count: Double) throws -> String {
 }
 
 public func jsCharCodeAt(_ s: String, _ index: Double) -> Double {
-    let u = units(s)
     let i = index.isNaN ? 0 : index.rounded(.towardZero)
-    return i >= 0 && i < Double(u.count) ? Double(u[Int(i)]) : .nan
+    // A string has no more UTF-16 units than UTF-8 bytes.
+    guard i >= 0, i < Double(s.utf8.count) else { return .nan }
+    var s = s
+    return s.withUTF8 { JSUTF8Text(bytes: $0).codeUnit(at: Int(i)).map(Double.init) ?? .nan }
 }
 
 public func jsCodePointAt(_ s: String, _ index: Double) -> Double? {
-    let u = units(s)
     let k = jsToIntegerOrInfinity(index)
-    guard k >= 0, k < Double(u.count) else { return nil }
-    let i = Int(k)
-    let first = u[i]
-    if UTF16.isLeadSurrogate(first), i + 1 < u.count, UTF16.isTrailSurrogate(u[i + 1]) {
-        return Double((UInt32(first) - 0xD800) * 0x400 + (UInt32(u[i + 1]) - 0xDC00) + 0x10000)
+    guard k >= 0, k < Double(s.utf8.count) else { return nil }
+    var s = s
+    return s.withUTF8 { bytes in
+        let text = JSUTF8Text(bytes: bytes)
+        let (start, exact) = text.byte(atUnit: Int(k))
+        // The second unit of a pair, alone, is that surrogate.
+        if !exact { return text.codeUnit(at: Int(k)).map(Double.init) }
+        return start < bytes.count ? Double(text.scalar(at: start)) : nil
     }
-    return Double(first)
 }
 
 public func jsStringAt(_ s: String, _ index: Double) -> String? {
@@ -308,16 +322,34 @@ public func jsCodePoints(_ s: String) -> [String] {
     s.unicodeScalars.map { String($0) }
 }
 
-private let jsWhitespace: Set<UInt16> = [0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x20, 0xA0, 0x1680, 0x2000, 0x2001, 0x2002, 0x2003, 0x2004, 0x2005, 0x2006, 0x2007, 0x2008, 0x2009, 0x200A, 0x2028, 0x2029, 0x202F, 0x205F, 0x3000, 0xFEFF]
-
-public func jsTrimStart(_ s: String) -> String { let u = units(s); return string(u.drop(while: jsWhitespace.contains)) }
-public func jsTrimEnd(_ s: String) -> String {
-    let u = units(s)
-    var end = u.count
-    while end > 0 && jsWhitespace.contains(u[end - 1]) { end -= 1 }
-    return string(u[..<end])
+/// WhiteSpace and LineTerminator, which `trim` removes: every one a single scalar of the Basic Multilingual Plane.
+private func jsIsWhitespace(_ c: Unicode.Scalar) -> Bool {
+    switch c.value {
+    case 0x09...0x0D, 0x20: return true
+    case ..<0xA0: return false
+    case 0xA0, 0x1680, 0x2000...0x200A, 0x2028, 0x2029, 0x202F, 0x205F, 0x3000, 0xFEFF: return true
+    default: return false
+    }
 }
-public func jsTrim(_ s: String) -> String { jsTrimEnd(jsTrimStart(s)) }
+
+public func jsTrimStart(_ s: String) -> String { jsTrimmed(s, start: true, end: false) }
+public func jsTrimEnd(_ s: String) -> String { jsTrimmed(s, start: false, end: true) }
+public func jsTrim(_ s: String) -> String { jsTrimmed(s, start: true, end: true) }
+
+/// `s` without its leading or trailing whitespace, found by scalars; `s` itself when there is none.
+private func jsTrimmed(_ s: String, start: Bool, end: Bool) -> String {
+    let scalars = s.unicodeScalars
+    var lower = scalars.startIndex, upper = scalars.endIndex
+    if start { while lower < upper, jsIsWhitespace(scalars[lower]) { scalars.formIndex(after: &lower) } }
+    if end {
+        while upper > lower {
+            let before = scalars.index(before: upper)
+            guard jsIsWhitespace(scalars[before]) else { break }
+            upper = before
+        }
+    }
+    return lower == scalars.startIndex && upper == scalars.endIndex ? s : String(scalars[lower..<upper])
+}
 
 public func jsLocaleCompare(_ a: String, _ b: String) -> Double {
     switch a.compare(b, options: [], range: nil, locale: Locale.current) {

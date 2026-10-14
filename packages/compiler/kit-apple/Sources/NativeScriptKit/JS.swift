@@ -17,14 +17,11 @@ public func jsRound(_ value: Double) -> Double {
     return r == 0 && value.sign == .minus ? -0.0 : r
 }
 
-/// `s.includes(sub)`: true for an empty `sub`, as JavaScript has it.
-public func jsIncludes(_ s: String, _ sub: String) -> Bool { sub.isEmpty || s.contains(sub) }
+/// `s.includes(sub)`: by code units, as JavaScript compares (Swift's `contains` compares characters).
+public func jsIncludes(_ s: String, _ sub: String) -> Bool { jsIncludes(s, sub, nil) }
 
 /// `s.indexOf(sub)` in UTF-16 units, or -1.
-public func jsIndexOf(_ s: String, _ sub: String) -> Double {
-    guard let r = s.range(of: sub) else { return sub.isEmpty ? 0 : -1 }
-    return Double(s.utf16.distance(from: s.startIndex, to: r.lowerBound))
-}
+public func jsIndexOf(_ s: String, _ sub: String) -> Double { jsIndexOf(s, sub, nil) }
 
 /// JavaScript truthiness for the values translated code tests.
 public func jsTruthy(_ value: Any?) -> Bool { jsIsTruthy(value) }

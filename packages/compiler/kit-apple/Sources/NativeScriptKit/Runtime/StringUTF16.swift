@@ -105,3 +105,99 @@ func jsUnitSlice(_ s: String, _ bounds: (Int) -> Range<Int>) -> String {
     let range = bounds(units.count)
     return range.isEmpty ? "" : jsString(utf16: units[range])
 }
+
+/// A string's UTF-8 bytes, read in place, with JavaScript's UTF-16 offsets converted to and from byte offsets:
+/// what the string methods search rather than the string's units copied out. Eight ASCII bytes, eight units,
+/// are counted at a time.
+struct JSUTF8Text {
+    let bytes: UnsafeBufferPointer<UInt8>
+
+    /// The UTF-16 units in the bytes before `end`, a scalar boundary.
+    func units(before end: Int) -> Int {
+        var units = 0
+        var i = 0
+        if let base = bytes.baseAddress {
+            while i + 8 <= end, UnsafeRawPointer(base + i).loadUnaligned(as: UInt64.self) & 0x8080_8080_8080_8080 == 0 {
+                i += 8
+                units += 8
+            }
+        }
+        while i < end {
+            let b = bytes[i]
+            if b & 0xC0 != 0x80 { units += b >= 0xF0 ? 2 : 1 }
+            i += 1
+        }
+        return units
+    }
+
+    var unitCount: Int { units(before: bytes.count) }
+
+    /// The byte offset where UTF-16 unit `unit` starts, or, for the second unit of a surrogate pair, where the next
+    /// character does, with `exact` false; the end for any unit at or past it.
+    func byte(atUnit unit: Int) -> (offset: Int, exact: Bool) {
+        var units = 0
+        var i = 0
+        if let base = bytes.baseAddress {
+            while units + 8 <= unit, i + 8 <= bytes.count, UnsafeRawPointer(base + i).loadUnaligned(as: UInt64.self) & 0x8080_8080_8080_8080 == 0 {
+                i += 8
+                units += 8
+            }
+        }
+        while i < bytes.count, units < unit {
+            let b = bytes[i]
+            units += b >= 0xF0 ? 2 : 1
+            i += b < 0x80 ? 1 : b < 0xE0 ? 2 : b < 0xF0 ? 3 : 4
+        }
+        return (i, units <= unit)
+    }
+
+    /// The UTF-16 unit at `unit`, nil past the end: an astral character's surrogates are its two.
+    func codeUnit(at unit: Int) -> UInt16? {
+        guard unit < bytes.count else { return nil }
+        let (start, exact) = byte(atUnit: unit)
+        if !exact { return 0xDC00 | UInt16(truncatingIfNeeded: scalar(at: start - 4) - 0x10000) & 0x3FF }
+        guard start < bytes.count else { return nil }
+        let value = scalar(at: start)
+        return value < 0x10000 ? UInt16(value) : 0xD800 | UInt16(truncatingIfNeeded: (value - 0x10000) >> 10)
+    }
+
+    /// The scalar whose UTF-8 sequence starts at `i`.
+    func scalar(at i: Int) -> UInt32 {
+        let b = UInt32(bytes[i])
+        switch b {
+        case ..<0x80: return b
+        case ..<0xE0: return (b & 0x1F) << 6 | UInt32(bytes[i + 1] & 0x3F)
+        case ..<0xF0: return (b & 0x0F) << 12 | UInt32(bytes[i + 1] & 0x3F) << 6 | UInt32(bytes[i + 2] & 0x3F)
+        default: return (b & 0x07) << 18 | UInt32(bytes[i + 1] & 0x3F) << 12 | UInt32(bytes[i + 2] & 0x3F) << 6 | UInt32(bytes[i + 3] & 0x3F)
+        }
+    }
+
+    /// Where `needle` first occurs at or after byte `from`.
+    func first(_ needle: UnsafeBufferPointer<UInt8>, from: Int) -> Int? {
+        guard let base = bytes.baseAddress, let pattern = needle.baseAddress, from + needle.count <= bytes.count else { return nil }
+        guard let found = memmem(base + from, bytes.count - from, pattern, needle.count) else { return nil }
+        return base.distance(to: found.assumingMemoryBound(to: UInt8.self))
+    }
+
+    /// Where `needle` last occurs starting at or before byte `from`.
+    func last(_ needle: UnsafeBufferPointer<UInt8>, from: Int) -> Int? {
+        guard let base = bytes.baseAddress, let pattern = needle.baseAddress else { return nil }
+        var i = min(from, bytes.count - needle.count)
+        while i >= 0 {
+            if base[i] == pattern[0], memcmp(base + i, pattern, needle.count) == 0 { return i }
+            i -= 1
+        }
+        return nil
+    }
+
+    func matches(_ needle: UnsafeBufferPointer<UInt8>, at i: Int) -> Bool {
+        guard let base = bytes.baseAddress, let pattern = needle.baseAddress else { return needle.isEmpty }
+        return i >= 0 && i + needle.count <= bytes.count && memcmp(base + i, pattern, needle.count) == 0
+    }
+}
+
+/// `body` over the UTF-8 bytes of `s` and of `t`, made contiguous where a bridged string has them elsewhere.
+func jsWithUTF8<R>(_ s: String, _ t: String, _ body: (JSUTF8Text, UnsafeBufferPointer<UInt8>) -> R) -> R {
+    var s = s, t = t
+    return s.withUTF8 { a in t.withUTF8 { b in body(JSUTF8Text(bytes: a), b) } }
+}
