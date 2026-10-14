@@ -260,6 +260,7 @@ class JSArray<T>(storage: ArrayList<T>) : Iterable<T>, JSReactiveConvertible {
         val s = jsRelativeIndex(start, n)
         val e = if (end == null) n else jsRelativeIndex(end, n)
         for (i in s until e) storage[i] = value
+        if (s < e) jsHoles?.clear(s, e)
         trigger()
         return this
     }

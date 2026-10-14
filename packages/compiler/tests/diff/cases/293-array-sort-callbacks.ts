@@ -53,3 +53,8 @@ const filled = new Array<number>(4).fill(0);
 filled[2] += 5;
 filled[0] -= 1;
 console.log(filled.join(','), filled.push(9), filled.push(10, 11), filled.length);
+// fill writes elements where there were holes; the holes it leaves out stay.
+const gappy: number[] = [];
+gappy[4] = 1;
+gappy.fill(7, 0, 2);
+console.log(Object.keys(gappy).join(','), JSON.stringify(gappy), Object.keys(new Array<number>(3).fill(0)).join(','));
