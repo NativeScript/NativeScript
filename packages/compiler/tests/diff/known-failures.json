@@ -1,7 +1,10 @@
 {
 	"$comment": "Cases that do not match Node yet, by target, each with its cause. The diff run reports them without failing, and fails when one matches Node so it is removed here. Owners: the Kotlin translator (src/kotlin.ts) and runtime (kit-android runtime).",
 	"swift": {
-		"227-callback-given-undefined": "A string parameter given undefined reads \"\", and a void promise's value is not undefined (Swift translator)."
+		"227-callback-given-undefined": "A string parameter given undefined reads \"\", and a void promise's value is not undefined (Swift translator).",
+		"290-regexp-backtracking": "A capture inside a quantified group keeps its value from an earlier iteration instead of resetting to undefined (NSRegularExpression semantics, Swift runtime).",
+		"291-json-edges": "A lone surrogate becomes U+FFFD because Swift strings hold only valid Unicode, and the circular-structure TypeError has an empty message (Swift runtime).",
+		"293-array-sort-callbacks": "A comparator declared with fewer parameters than sort passes does not compile (Swift translator)."
 	},
 	"kotlin": {
 		"235-static-block": "Fixed on wip/quality-kotlin (033903a0d): remove this once both are on feat.",
@@ -9,7 +12,6 @@
 		"241-regexp-call": "Fixed on wip/quality-kotlin (82ce38739): remove this once both are on feat.",
 		"242-var-redeclared": "Fixed on wip/quality-kotlin (82ce38739): remove this once both are on feat.",
 		"270-json-edges": "JSON.parse and JSON.stringify edges the Swift perf round covers: number forms, escapes, toJSON and replacer order, syntax error messages (Kotlin runtime, being fixed in the Kotlin perf work).",
-		"272-collections-edges": "Map and Set edges: SameValueZero keys, iteration while the collection changes, a held iterator across deletes (Kotlin runtime, being fixed in the Kotlin perf work).",
 		"274-promise-reactions": "The order of several reactions on one promise, finally, and resolution with thenables (Kotlin runtime, being fixed in the Kotlin perf work).",
 		"280-callback-function-values": "Array.from of a Set is an array of Any? and a function declaration passed by name to reduce matches no overload (Kotlin translator).",
 		"341-error-classes-as-values": "An error constructor held as a value typed ErrorConstructor (instanceof C, C.name, an array of them) does not compile (Kotlin translator, SEMANTICS #7).",
