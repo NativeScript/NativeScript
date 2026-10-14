@@ -1,7 +1,7 @@
 import ts from 'typescript';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
-import { kitExtends, kitIndex, kitMember, type KitMember, type KitType } from './kit-index.ts';
+import { kitExtends, kitIndex, kitMember, unwrapped, type KitMember, type KitType } from './kit-index.ts';
 import { optionalType, splitTopLevel, type Translator } from './swift.ts';
 import { KIT_APPLE_SOURCES } from './paths.ts';
 
@@ -497,7 +497,7 @@ export class CoreAPI {
       const dir = join(KIT, 'Core');
       for (const f of existsSync(dir) ? readdirSync(dir) : []) {
         if (!f.startsWith('__Export.')) continue;
-        for (const m of readFileSync(join(dir, f), 'utf8').matchAll(/^public func (\w+)(?:<[^>]*>)?(\(.*)$/gm)) {
+        for (const m of unwrapped(readFileSync(join(dir, f), 'utf8')).matchAll(/^public func (\w+)(?:<[^>]*>)?(\(.*)$/gm)) {
           // `throws` right after the parameter list, not inside a function type it returns.
           let depth = 0, end = 0;
           for (; end < m[2].length; end++) { if (m[2][end] === '(') depth++; else if (m[2][end] === ')' && --depth === 0) break; }
@@ -523,7 +523,7 @@ export class CoreAPI {
   private exportSignature(name: string): { params: string[]; result: string } | null {
     if (!this.exportParams.has(name)) {
       const file = join(KIT, 'Core', `__Export.${name}.swift`);
-      const text = existsSync(file) ? readFileSync(file, 'utf8') : '';
+      const text = existsSync(file) ? unwrapped(readFileSync(file, 'utf8')) : '';
       const at = text.indexOf(`\npublic func ${name}(`);
       let params: string[] | null = null;
       if (at >= 0) {

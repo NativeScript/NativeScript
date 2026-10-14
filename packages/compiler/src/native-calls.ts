@@ -1,7 +1,7 @@
 import ts from 'typescript';
 import { implementedInterfaces } from './lang.ts';
 import { isStatic } from './throws.ts';
-import { CF_CLASSES, functionParts, isWriteTarget, optionalType, splitTopLevel, type Translator } from './swift.ts';
+import { CF_CLASSES, functionParts, ident, isWriteTarget, optionalType, splitTopLevel, type Translator } from './swift.ts';
 import {
   categoryModule, conformsTo, conformsToSwift, isSubframework, lookupClass, lookupConstant, lookupConstructor, lookupEnum, lookupFunction, lookupInit, lookupMember, lookupStruct, lookupTypealias, moduleOfDeclaration, nativeTable,
   type NativeClass, type NativeMethod, type NativeProperty, type SwiftType,
@@ -1446,15 +1446,24 @@ export class NativeAPI {
     return lines.join('\n');
   }
 
+  /**
+   * The Swift parameter names of a native method or initializer `m` implements: the script's names, so that the body
+   * reads them as they are where their types agree; `__aN` where the script declares none, or names one by a pattern
+   * or a Swift keyword.
+   */
+  private nativeParamNames(m: ts.MethodDeclaration, count: number): string[] {
+    return Array.from({ length: count }, (_, k) => {
+      const p = m.parameters[k];
+      return p && ts.isIdentifier(p.name) && !p.dotDotDotToken && ident(p.name.text) === p.name.text ? p.name.text : `__a${k}`;
+    });
+  }
+
   /** A method with the Swift signature it overrides or implements; its body sees TypeScript's types. */
   private nativeMethod(m: ts.MethodDeclaration, target: NativeMethod, override: boolean): string {
     const t = this.t;
     const tsParams = m.parameters.map((p, k) => ({ name: ts.isIdentifier(p.name) ? p.name.text : `__p${k}`, type: t.typeOf(p.name) }));
-    const swiftParams = target.params.map((type, k) => {
-      const label = target.labels[k];
-      const inner = `__a${k}`;
-      return `${label ?? '_'} ${inner}: ${target.escaping?.includes(k) ? '@escaping ' : ''}${type}`;
-    });
+    const names = this.nativeParamNames(m, target.params.length);
+    const swiftParams = target.params.map((type, k) => `${labeled(target.labels[k], names[k])}: ${target.escaping?.includes(k) ? '@escaping ' : ''}${type}`);
     const ownRet = t.returnTypeOf(m);
     // A parameter the body never reads is not bound: a non-escaping block could not be.
     const read = (k: number) => {
@@ -1472,10 +1481,12 @@ export class NativeAPI {
       // A nullable native parameter TypeScript declares present (`launchOptions`) may be nil: the body reads it as undefined.
       if (optional(swift) && !p.type.endsWith('?') && !['Double', 'String', 'Bool'].includes(p.type) && !bridge('', swift, p.type)) {
         const type = t.bindsOptional(m.parameters[k].name, p.type);
-        return `        let ${p.name}: ${type} = ${this.fromSwiftValue(`__a${k}`, swift, type)}`;
+        return `        let ${p.name}: ${type} = ${this.fromSwiftValue(names[k], swift, type)}`;
       }
       // A struct whose fields the body assigns (`size.width = 0`) is a variable of its own.
-      return `        ${this.isStructType(p.type) && ts.isIdentifier(m.parameters[k].name) && this.t.needsVar(m.parameters[k].name, p.type) ? 'var' : 'let'} ${p.name}: ${p.type} = ${this.fromSwiftValue(`__a${k}`, swift, p.type)}`;
+      const mutable = this.isStructType(p.type) && ts.isIdentifier(m.parameters[k].name) && this.t.needsVar(m.parameters[k].name, p.type);
+      const value = this.fromSwiftValue(names[k], swift, p.type);
+      return !mutable && value === p.name && p.type === swift ? '' : `        ${mutable ? 'var' : 'let'} ${p.name}: ${p.type} = ${value}`;
     }).filter(Boolean);
     const ret = target.returns;
     // A result Objective-C declares nullable: the body may give undefined.
@@ -1490,7 +1501,7 @@ export class NativeAPI {
       ? (tsRet !== 'Void' ? `        ${throws ? 'jsReport { _ = try ' : '_ = '}${call}${throws ? ' }' : ''}` : throws ? `        jsReport { try ${call} }` : body.slice(2, -2).replace(/^ {8}/, '        '))
       : `        let __result: ${tsRet} = ${throws ? `jsReportedOrZero { () throws -> ${tsRet} in${body.slice(1)}` : call}\n        return ${this.toSwiftValue('__result', tsRet, ret)}`;
     const available = introduced ? `@available(iOS ${target.introduced}, *) ` : '';
-    const guard = enteredGuard(target.swift, target.labels, target.params, ret, '        ', target.escaping);
+    const guard = enteredGuard(target.swift, target.labels, target.params, ret, '        ', target.escaping, names);
     return [`    ${available}${override ? 'override ' : ''}func ${target.swift}(${swiftParams.join(', ')})${ret === 'Void' ? '' : ` -> ${ret}`} {`, guard, ...binds, result, '    }'].join('\n');
   }
 
@@ -1511,7 +1522,9 @@ export class NativeAPI {
     if (!superCall || !sym || !last || !ts.isReturnStatement(last) || !last.expression || !ts.isIdentifier(last.expression) || t.checker.getSymbolAtLocation(last.expression) !== sym) {
       throw t.error(m, `an initializer override not of the form \`const x = super.${m.name.getText()}(…); …; return x\``);
     }
-    const swiftParams = init.params.map((type, k) => `${init.labels[k] ?? '_'} __a${k}: ${init.escaping?.includes(k) ? '@escaping ' : ''}${type}`);
+    // One the body reads as another type keeps `__aN`: super is passed the native value.
+    const names = this.nativeParamNames(m, init.params.length).map((n, k) => (m.parameters[k] && t.typeOf(m.parameters[k].name) !== init.params[k] ? `__a${k}` : n));
+    const swiftParams = init.params.map((type, k) => `${labeled(init.labels[k], names[k])}: ${init.escaping?.includes(k) ? '@escaping ' : ''}${type}`);
     const middle = stmts.slice(1, -1);
     // Parameters the body reads, bound as TypeScript types them; ones passed straight on to super, as Swift has them.
     const readIn = (sym: ts.Symbol | undefined, nodes: ts.Node[]) => {
@@ -1521,10 +1534,14 @@ export class NativeAPI {
       return found;
     };
     const params = m.parameters.map((p) => (ts.isIdentifier(p.name) ? t.checker.getSymbolAtLocation(p.name) : undefined));
-    const binds = m.parameters.map((p, k) => (ts.isIdentifier(p.name) && init.params[k] && readIn(params[k], middle) ? `        let ${p.name.text}: ${t.typeOf(p.name)} = ${this.fromSwiftValue(`__a${k}`, init.params[k], t.typeOf(p.name))}` : '')).filter(Boolean);
+    const binds = m.parameters.map((p, k) => {
+      if (!ts.isIdentifier(p.name) || !init.params[k] || !readIn(params[k], middle)) return '';
+      const type = t.typeOf(p.name), value = this.fromSwiftValue(names[k], init.params[k], type);
+      return value === p.name.text && type === init.params[k] ? '' : `        let ${p.name.text}: ${type} = ${value}`;
+    }).filter(Boolean);
     const passed = superCall.arguments.map((a, k) => {
       const at = ts.isIdentifier(a) ? params.indexOf(t.checker.getSymbolAtLocation(a)) : -1;
-      return at >= 0 && init.params[k] === init.params[at] ? `__a${at}` : this.toSwift(a, init.params[k]);
+      return at >= 0 && init.params[k] === init.params[at] ? names[at] : this.toSwift(a, init.params[k]);
     });
     const refs: ts.Node[] = [];
     const visit = (n: ts.Node) => { if (ts.isIdentifier(n) && t.checker.getSymbolAtLocation(n) === sym) refs.push(n); ts.forEachChild(n, visit); };
@@ -1763,8 +1780,11 @@ export function posted(ret: string, params: string[], escaping?: number[]): bool
   return ret === 'Void' && !params.some((p, k) => /\bUnsafe/.test(p) || (/->/.test(p) && !/[?!]\s*$/.test(p) && !/@escaping/.test(p) && !escaping?.includes(k)));
 }
 
+/** A parameter's label and name, the name alone where it is the label. */
+const labeled = (label: string | null, name: string) => (label === name ? name : `${label ?? '_'} ${name}`);
+
 /** The first statement of a method native code may call from any thread: from another, the call is made again on the main thread. */
-export function enteredGuard(name: string, labels: (string | null)[], params: string[], ret: string, indent: string, escaping?: number[]): string {
-  const call = `self.${name}(${params.map((_, k) => (labels[k] && labels[k] !== '_' ? `${labels[k]}: __a${k}` : `__a${k}`)).join(', ')})`;
+export function enteredGuard(name: string, labels: (string | null)[], params: string[], ret: string, indent: string, escaping?: number[], names = params.map((_, k) => `__a${k}`)): string {
+  const call = `self.${name}(${params.map((_, k) => (labels[k] && labels[k] !== '_' ? `${labels[k]}: ${names[k]}` : names[k])).join(', ')})`;
   return `${indent}if jsOffScriptThread() { ${posted(ret, params, escaping) ? `jsLater { ${call} }; return` : `return jsAwait { ${call} }`} }`;
 }

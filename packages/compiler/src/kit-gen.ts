@@ -8,6 +8,7 @@ import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 import { foldPlatform } from './platform.ts';
 import { Translator } from './swift.ts';
+import { SourceLines } from './source-lines.ts';
 import { collectProperties } from './properties.ts';
 import { evaluatedImports, evaluationOrder } from './modules.ts';
 import { kitIndexOptions } from './kit-index.ts';
@@ -80,7 +81,7 @@ export interface KitResult {
 }
 
 const KIT = KIT_APPLE_SOURCES;
-const header = (imports: Iterable<string> = []) => `// Generated from @nativescript/core by tools/native-kit: edit core, not this file.\nimport Foundation\nimport UIKit\n${[...imports].sort().map((m) => `import ${m}\n`).join('')}\n`;
+const header = (imports: Iterable<string> = []) => `// Generated from @nativescript/core by tools/native-kit: edit core, not this file.\n\nimport Foundation\nimport UIKit\n${[...imports].sort().map((m) => `import ${m}\n`).join('')}\n`;
 
 /** The iOS files of a module list: a platform's file over the shared one, no tests, no other platform. */
 export function coreFiles(core: string, modules: string[]): string[] {
@@ -237,6 +238,14 @@ export function generateKit(o: KitOptions): KitResult {
     });
   } finally { kitIndexOptions.exclude = null; }
   translator.appModule = 'NativeScriptKit';
+  // Kit code names the line of core it was made from (`#sourceLocation`), as a debugger, a crash report and a warning show it.
+  // Its folders are joined by dots, as the kit's file names are: Swift warns where two paths of a module give one #fileID
+  // (`NativeScriptKit/index.ios.ts`).
+  const lines = translator.lines = new SourceLines(new Map());
+  const withLocations = (code: string) => lines.swift(code).replace(/#sourceLocation\(file: "([^"]*)"/g, (_, file: string) => {
+    const rel = file.startsWith(core + '/') ? relative(core, file) : file.replace(/^.*\/node_modules\//, '');
+    return `#sourceLocation(file: "@nativescript/core/${rel.replace(/\//g, '.')}"`;
+  });
   translator.native.internalTypes = kitInternal;
   const errors: string[] = [];
   if (o.report) translator.errors = [];
@@ -275,7 +284,7 @@ export function generateKit(o: KitOptions): KitResult {
   // The SDK frameworks beyond Foundation and UIKit the generated code names (Photos, QuartzCore), in every file; core's own modules where used.
   const sdk = translator.native.sdkModules().filter((m) => !['Foundation', 'UIKit'].includes(m) && !coreNative.has(m));
   for (const f of out) {
-    const code = (translator.interfacesOf(paths.get(f)!) + f.code).trim();
+    const code = withLocations((translator.interfacesOf(paths.get(f)!) + f.code).trim());
     f.code = header(new Set([...sdk, ...importsOf(code, imports.get(f))])) + publicize(code) + '\n';
   }
   // Each function core's index exports and each object shape is a file of its own: an app's build compiles
@@ -292,11 +301,15 @@ export function generateKit(o: KitOptions): KitResult {
   for (const [name, code] of indexNamespaces(program, checker, join(core, 'index.ts'), compiled, (f) => enumName(relOf(f), barrels), sourceOf, codeOf)) {
     out.push({ name: `__Namespace.${name}.swift`, code: header(new Set(sdk)) + code + '\n', sources: {} });
   }
-  const shapes = publicize(translator.shapesCode().trim());
+  const shapes = publicize(withLocations(translator.shapesCode().trim()));
+  const shapeFiles = new Set<string>();
   for (const shape of shapes ? shapes.split(/\n(?=public final class )/) : []) {
     const name = /^public final class (\w+)/.exec(shape.trim())?.[1];
     if (!name) throw new Error(`an object shape that is no class: ${shape.slice(0, 80)}`);
-    out.push({ name: `__Object.${hash(name)}.swift`, code: header(new Set([...sdk, ...importsOf(shape)])) + shape.trim() + '\n', sources: {} });
+    // Named as its class; file systems that ignore case (APFS by default) take two names differing only in case as one.
+    const file = shapeFiles.has(name.toLowerCase()) ? `${name}_${hash(name).slice(0, 6)}` : name;
+    shapeFiles.add(file.toLowerCase());
+    out.push({ name: `${file}.swift`, code: header(new Set([...sdk, ...importsOf(shape)])) + shape.trim() + '\n', sources: {} });
   }
   // Core's modules run their top level once, before the app's: those the app reaches, in the order JavaScript evaluates them,
   // which its build lists (the manifest's graph), so that nothing in the kit keeps the others in its binary.

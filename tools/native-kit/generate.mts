@@ -13,7 +13,8 @@
  * declarations are core as built (dist/packages/core) unless given.
  */
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { ios } from './modules.mts';
 
@@ -48,7 +49,21 @@ const commit = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding:
 // `graph`: each file's initializer and the files it imports, from which an app's build keeps only the modules it reaches.
 const manifest = { core: version, commit, modules: ios.compile, files: Object.fromEntries(result.files.map((f) => [f.name, f.sources])), graph: result.graph };
 const files = new Map<string, string>(result.files.map((f) => [f.name, f.code]));
+formatSwift(files);
 files.set('manifest.json', JSON.stringify(manifest, null, '\t') + '\n');
+
+/** The generated Swift laid out by the toolchain's swift-format (`swift format`), configured by kit-apple/.swift-format. */
+function formatSwift(code: Map<string, string>) {
+	const dir = mkdtempSync(join(tmpdir(), 'kit-format-'));
+	try {
+		const names = [...code.keys()].filter((n) => n.endsWith('.swift'));
+		for (const n of names) writeFileSync(join(dir, n), code.get(n)!);
+		execFileSync('swift', ['format', 'format', '--in-place', '--parallel', '--configuration', join(compiler, 'kit-apple', '.swift-format'), ...names], { cwd: dir, stdio: ['ignore', 'ignore', 'inherit'] });
+		for (const n of names) code.set(n, readFileSync(join(dir, n), 'utf8'));
+	} finally {
+		rmSync(dir, { recursive: true, force: true });
+	}
+}
 
 if (check) {
 	// The commit a kit was generated at differs from the one checking it: compare what the sources make.

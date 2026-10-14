@@ -1,5 +1,6 @@
 import type { SourceLines } from './source-lines.ts';
 import ts from 'typescript';
+import { createHash } from 'node:crypto';
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { KIT_APPLE_SOURCES } from './paths.ts';
@@ -230,6 +231,17 @@ function typedElement(container: 'JSArray' | 'JSRecord', element: string): strin
   return named ? `, as: ${container}<${element}>.self` : '';
 }
 
+/**
+ * An object shape's class name, from its keys (`Object_x_y`; a unique symbol's key `__@name@12` as `symbol_name`). Past
+ * 120 characters, its first keys and a hash of the whole name, so that a type and its file stay a readable length.
+ */
+function shapeName(keys: string[]): string {
+  const parts = keys.map((k) => { const symbol = /^__@([\w$]+)@\d+$/.exec(k)?.[1]; return (symbol ? `symbol_${symbol}` : k).replace(/\W/g, ''); });
+  const full = 'Object_' + (parts.join('_') || 'empty');
+  if (full.length <= 120) return full;
+  return `Object_${parts.slice(0, 6).join('_')}_and_${parts.length - 6}_more_${createHash('sha1').update(full).digest('hex').slice(0, 6)}`;
+}
+
 export class Translator implements AsyncTranslator {
   readonly syntax = SWIFT_SYNTAX;
   /** The component class being translated: its props read as `self.<prop>.value`. */
@@ -270,7 +282,6 @@ export class Translator implements AsyncTranslator {
   /** Interfaces an app class meets without naming them, where its objects are given for one (`assertMeasure(button)`): conformed to as if implemented. */
   private structural = new Map<ts.ClassLikeDeclaration, Set<ts.InterfaceDeclaration>>();
   indent = '';
-  private tmp = 0;
   /** Expressions already evaluated into a Swift name (awaited values, operands read before an await). */
   readonly subst = new Map<ts.Node, string>();
   /** A literal an assignment expression stores, made once and held by the temporary named here. */
@@ -657,9 +668,19 @@ export class Translator implements AsyncTranslator {
     this.protocols.add(this.topName(iface, iface.name.text));
   }
 
+  /**
+   * A temporary's name (`__switch1`), numbered within its module, or across the program outside one (shapes, code
+   * shared by files). Always numbered: the translator writes unnumbered ones of its own (`__v`, `__r`, `__value`) as
+   * closure parameters. A one-letter prefix takes a `_` before its number, apart from the positional `__a0` and `__p0`.
+   */
   fresh(prefix: string): string {
-    return `${prefix}${this.tmp++}`;
+    const counts = this.freshCounts ?? this.programFreshCounts;
+    const n = (counts.get(prefix) ?? 0) + 1;
+    counts.set(prefix, n);
+    return /^__[a-z]$/.test(prefix) ? `${prefix}_${n}` : `${prefix}${n}`;
   }
+  private freshCounts: Map<string, number> | null = null;
+  private programFreshCounts = new Map<string, number>();
 
   nested<T>(body: () => T): T {
     const saved = this.indent;
@@ -1621,7 +1642,7 @@ export class Translator implements AsyncTranslator {
       const key = fields.map((f) => `${f.name}:${f.type}${f.accessor ? `:${f.accessor.get ? 'get' : ''}${f.accessor.set ? 'set' : ''}` : ''}`).sort().join(',');
       let s = this.shapes.get(key);
       if (!s) {
-        let name = 'Object_' + (fields.map((f) => f.name.replace(/\W/g, '')).join('_') || 'empty');
+        let name = shapeName(fields.map((f) => f.name));
         while ([...this.shapes.values()].some((x) => x.name === name)) name += '_';
         s = { name, fields };
         this.shapes.set(key, s);
@@ -1707,7 +1728,9 @@ export class Translator implements AsyncTranslator {
   module(sf: ts.SourceFile): { code: string; init: string[] } {
     const outer = this.currentFile;
     this.currentFile = sf.fileName;
-    try { return this.moduleOf(sf); } finally { this.currentFile = outer; }
+    const counts = this.freshCounts;
+    this.freshCounts = new Map();
+    try { return this.moduleOf(sf); } finally { this.currentFile = outer; this.freshCounts = counts; }
   }
 
   private moduleOf(sf: ts.SourceFile): { code: string; init: string[] } {
@@ -1764,7 +1787,7 @@ export class Translator implements AsyncTranslator {
       if (ts.isModuleDeclaration(st)) { const ns = this.namespaceDecl(st, this.topName(st, st.name.text), later); if (ns) out.push(ns); continue; }
       // A function the kit implements in its place (core calling an npm package): references call the kit's.
       if (ts.isFunctionDeclaration(st) && st.name && this.library?.counterpart?.(sf.fileName, st.name.text) && !this.functionCounterpart(st)) continue;
-      if (ts.isFunctionDeclaration(st)) { if (st.name && st.body) member(this.func(st, ident(library ? st.name.text : this.topName(st, st.name.text)), library ? 'static ' : '')); continue; }
+      if (ts.isFunctionDeclaration(st)) { if (st.name && st.body) member([...this.docLines(st, ''), this.func(st, ident(library ? st.name.text : this.topName(st, st.name.text)), library ? 'static ' : '')].join('\n')); continue; }
       if (ts.isClassDeclaration(st)) {
         const target = this.patterns.mixinTarget(st);
         if (target) { out.push(this.mixinDecl(st, target)); continue; }
@@ -2257,7 +2280,16 @@ ${members.join('\n')}
     const t = type.trim().replace(/\bJSRest</g, 'JSArray<');
     if (!functionParts(t) || [...this.genericNames].some((g) => new RegExp(`\\b${g}\\b`).test(t))) return null;
     let name = this.functionCells.get(t);
-    if (!name) this.functionCells.set(t, name = `__JSFunctionCell${this.functionCells.size}`);
+    if (!name) {
+      // Named after the function type it holds (`FunctionCell_ViewBaseOpt_to_Void` for `(ViewBase?) throws -> Void`).
+      const fn = functionParts(t);
+      const part = (x: string) => x.replace(/@escaping\s+/g, '').replace(/\bthrows\b/g, '').replace(/\?/g, 'Opt').replace(/!/g, '').replace(/->/g, ' to ').replace(/[^A-Za-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+      const base = fn ? `FunctionCell_${fn.params.map(part).join('_') || 'none'}_to_${part(fn.result)}` : `FunctionCell_${part(t)}`;
+      const taken = new Set(this.functionCells.values());
+      name = base;
+      for (let k = 2; taken.has(name); k++) name = `${base}_${k}`;
+      this.functionCells.set(t, name);
+    }
     return name;
   }
 
@@ -4273,7 +4305,9 @@ ${members.join('\n')}
       // On a class of a core view (`[isUserInteractionEnabledProperty.setNative]`): core's property system finds it by its symbol.
       if (this.library || kitRoot) {
         // `[prop.setNative](value)`: a method under a symbol known when the program runs, found by its key.
-        const method = this.fresh('__symbol_');
+        const named = this.symbolMethodName(cls, m);
+        let method = named;
+        for (let k = 2; symbolMethods.some((x) => x.method === method); k++) method = `${named}_${k}`;
         symbolMethods.push({ key: this.propertyKey(m.name.expression), method, params: m.parameters.map((p) => this.paramType(p)), ret: this.returnTypeOf(m), throws: this.throwsInfo.fn(m) });
         lines.push('    ' + this.func(m, method));
         continue;
@@ -4374,7 +4408,8 @@ ${members.join('\n')}
     this.indent = '';
     lines.push('}');
     lines[0] = header();
-    return lines.join('\n');
+    this.documentMembers(cls, lines);
+    return [...this.docLines(cls, ''), ...lines].join('\n');
   }
 
   /**
@@ -4495,6 +4530,46 @@ ${members.join('\n')}
       if (field?.endsWith('?')) return false;
     }
     return true;
+  }
+
+  /**
+   * The Swift name of a method keyed by a symbol known when the program runs (`[directionProperty.setNative]`): after
+   * the symbol (`setNative_direction`), with the class's own name where a base class of the program, or the kit's
+   * classes for an app's, could declare one of that name too.
+   */
+  private symbolMethodName(cls: ts.ClassLikeDeclaration, m: ts.MethodDeclaration): string {
+    const key = (n: ts.PropertyName) => (ts.isComputedPropertyName(n) ? n.expression.getText() : null);
+    const own = key(m.name)!;
+    const parts = own.split('.').map((p) => p.replace(/[^A-Za-z0-9_]/g, '_'));
+    const base = parts.length > 1 ? `${parts.at(-1)}_${parts.slice(0, -1).join('_').replace(/(Css)?Property$/, '')}` : parts[0];
+    const name = `symbol_${base}`;
+    let inherited = !this.library;
+    for (let b = this.sourceBase(cls); b && !inherited; b = this.sourceBase(b)) inherited = b.members.some((x) => ts.isMethodDeclaration(x) && key(x.name) === own);
+    return inherited && cls.name ? `${name}_${cls.name.text}` : name;
+  }
+
+  /** A declaration's JSDoc comment, as Swift's `///` lines at `indent`. */
+  docLines(node: ts.Node, indent: string): string[] {
+    const sf = node.getSourceFile();
+    const ranges = ts.getLeadingCommentRanges(sf.text, node.getFullStart()) ?? [];
+    const doc = ranges.filter((r) => r.kind === ts.SyntaxKind.MultiLineCommentTrivia && sf.text.startsWith('/**', r.pos) && !sf.text.startsWith('/**/', r.pos)).at(-1);
+    if (!doc) return [];
+    const body = sf.text.slice(doc.pos + 3, doc.end - 2).split('\n').map((l) => l.replace(/^\s*\* ?/, '').trimEnd());
+    while (body.length && !body[0].trim()) body.shift();
+    while (body.length && !body.at(-1)!.trim()) body.pop();
+    return body.map((l) => `${indent}///${l ? ` ${l}` : ''}`);
+  }
+
+  /** Each member's JSDoc put before the line declaring it, found by its name among a class's lines. */
+  private documentMembers(cls: ts.ClassLikeDeclaration, lines: string[]): void {
+    for (const m of cls.members) {
+      const doc = this.docLines(m, '    ');
+      if (!doc.length) continue;
+      const name = m.name && !ts.isComputedPropertyName(m.name) ? ident(m.name.getText().replace(/^['"]|['"]$/g, '')).replace(/[$^*+?.()|[\]{}\\]/g, '\\$&') : null;
+      const decl = ts.isConstructorDeclaration(m) ? /^ {4}(?:@\S+ )*(?:\w+ )*init\(/ : name && (ts.isMethodDeclaration(m) ? new RegExp(`^ {4}(?:@\\S+ )*(?:\\w+ )*func ${name}[(<]`) : new RegExp(`^ {4}(?:@\\S+ )*(?:\\w+ )*var ${name}\\b`));
+      const at = decl ? lines.findIndex((l) => decl.test(l)) : -1;
+      if (at > 0) lines.splice(at, 0, ...doc);
+    }
   }
 
   /** The class `X.new()` makes (`super.new()` in a native subclass's static method, its own class), whatever TypeScript types it. */
@@ -6514,8 +6589,9 @@ ${members.join('\n')}
     if (ts.isIdentifier(e)) return this.moduleValue(e) ?? this.identifier(e);
     if (ts.isTemplateExpression(e)) {
       const pieces = e.templateSpans.map((span) => this.str(span.expression));
-      // A string literal's interpolation is one line in Swift: a multi-line piece (a closure) joins the literal's parts instead.
-      if (pieces.some((p) => p.includes('\n'))) {
+      // A string literal's interpolation is one line in Swift: a piece of statements (a closure), which a formatter may lay
+      // out on lines of their own, joins the literal's parts instead.
+      if (pieces.some((p) => p.includes('\n') || p.includes(';'))) {
         const parts = [`"${this.escapeInterpolated(e.head.text)}"`];
         e.templateSpans.forEach((span, k) => parts.push(`(${pieces[k]})`, `"${this.escapeInterpolated(span.literal.text)}"`));
         return `[${parts.join(', ')}].joined()`;
@@ -10284,15 +10360,17 @@ function inOptionalChain(e: ts.Expression): boolean {
  * or an older version (`availableOnly`'s, one `else` line each) are their blocks alone, as the whole is checked.
  */
 function unnestAvailability(lines: string, version: number): string {
+  // A statement's source-line marker (`/*@ns:12*/`) leads its line, before the indentation.
+  const marker = /^\/\*@ns:(?:\d+|-)\*\//;
   const out = lines.split('\n');
   for (let k = 0; k < out.length; k++) {
-    const m = /^(\s*)if #available\(iOS ([\d.]+), \*\) \{$/.exec(out[k]);
-    if (!m || parseFloat(m[2]) > version) continue;
-    const pad = m[1];
+    const m = /^((?:\/\*@ns:(?:\d+|-)\*\/)?)(\s*)if #available\(iOS ([\d.]+), \*\) \{$/.exec(out[k]);
+    if (!m || parseFloat(m[3]) > version) continue;
+    const pad = m[2];
     const close = out.findIndex((l, j) => j > k && l === `${pad}} else {`);
-    if (close < 0 || out[close + 2] !== `${pad}}` || out.slice(k + 1, close).some((l) => l.length > 0 && !l.startsWith(`${pad} `))) continue;
+    if (close < 0 || out[close + 2] !== `${pad}}` || out.slice(k + 1, close).some((l) => { const t = l.replace(marker, ''); return t.length > 0 && !t.startsWith(`${pad} `); })) continue;
     out.splice(close, 3, `${pad}}`);
-    out[k] = `${pad}do {`;
+    out[k] = `${m[1]}${pad}do {`;
   }
   return out.join('\n');
 }
