@@ -7,7 +7,9 @@
 		"233-prototype-call": "X.prototype.m.call(r, …) is refused (Swift translator, SEMANTICS #2).",
 		"234-define-property-instance": "Object.defineProperty on a class instance or an array is dropped (Swift translator and runtime, SEMANTICS #3).",
 		"235-static-block": "static { } blocks have no effect (Swift translator, SEMANTICS #4).",
-		"237-shared-top-names": "Top-level names (an enum, files of the same name in two folders) that several modules declare clash; swiftc crashes (Swift translator)."
+		"237-shared-top-names": "Top-level names (an enum, files of the same name in two folders) that several modules declare clash; swiftc crashes (Swift translator).",
+		"238-builtin-constructors-as-values": "Built-in constructors used as values (map(Number), filter(Boolean), e.constructor === TypeError) do not compile (Swift translator, SEMANTICS #7).",
+		"239-destructuring-assignment": "Destructuring assignment to existing variables is refused (Swift translator, SEMANTICS #8)."
 	},
 	"kotlin": {}
 }
