@@ -5850,6 +5850,11 @@ export class Translator implements AsyncTranslator {
     if (ts.isElementAccessExpression(e) && !isWriteTarget(e) && this.typeOf(e.expression) === 'String' && !ts.isStringLiteral(e.argumentExpression) && this.typeOf(e.argumentExpression) === 'Double') {
       return `jsCharAtOrNull(${this.expr(e.expression)}, ${this.toNumber(e.argumentExpression)})`;
     }
+    // A match's group that took no part in it: undefined, though TypeScript types every element a string.
+    if (ts.isElementAccessExpression(e) && !isWriteTarget(e) && this.typeOf(e.expression).replace(/\?$/, '') === 'JSMatch' && !this.typeOf(e).endsWith('?')) {
+      const q = e.questionDotToken || this.typeOf(e.expression).endsWith('?') ? '?' : '';
+      return `${this.expr(e.expression)}${q}.get(${this.toNumber(e.argumentExpression)})`;
+    }
     if (ts.isElementAccessExpression(e) && !isWriteTarget(e) && this.typeOf(e.expression).replace(/\?$/, '').startsWith('JSArray<')) {
       const q = e.questionDotToken || this.typeOf(e.expression).endsWith('?') || (e.flags & ts.NodeFlags.OptionalChain && ts.isPropertyAccessExpression(e.expression) && e.expression.questionDotToken) ? '?' : '';
       return `${this.expr(e.expression)}${q}.element(${this.toNumber(e.argumentExpression)})`;
