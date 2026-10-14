@@ -166,7 +166,8 @@ export async function writeAndroid(b: AndroidBuild): Promise<void> {
     const used = [...new Set(code.match(/\b(?:android|androidx|java|javax|com|org|kotlin|io)_\w+/g) ?? [])].filter((a) => kitAliases!.has(a));
     return used.length ? code.replace('import org.nativescript.kit.*\n', `import org.nativescript.kit.*\n${used.map((a) => `import ${kitAliases!.get(a)} as ${a}\n`).join('')}`) : code;
   };
-  // Written once formatted, all in one ktfmt run; the source-line markers stay through formatting.
+  // Written once formatted, in one ktfmt run where a ktfmt jar is already present (a build never fetches one); the
+  // source-line markers stay through formatting.
   const pending: { file: string; code: string }[] = [];
   const write = (file: string, text: string) => { pending.push({ file, code: withKitAliases(text) }); };
   const flush = () => {

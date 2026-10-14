@@ -9,9 +9,10 @@ const VERSION = '0.64';
 const SHA256 = '5b3d5286fd2defcc7dc8e28c21ddf156cc6b2d8682bdcd929ce4333e7a6201f2';
 const JAR = join(dirname(import.meta.dirname), 'node_modules/.cache/ktfmt', `ktfmt-${VERSION}-with-dependencies.jar`);
 
-/** The pinned ktfmt jar, fetched from Maven Central into the compiler's node_modules/.cache the first time; null where it cannot be. */
-function ktfmtJar(): string | null {
+/** The pinned ktfmt jar; with `fetch`, fetched from Maven Central into the compiler's node_modules/.cache the first time. Null where there is none. */
+function ktfmtJar(fetch: boolean): string | null {
   if (!existsSync(JAR)) {
+    if (!fetch) return null;
     mkdirSync(dirname(JAR), { recursive: true });
     const part = `${JAR}.part`;
     try {
@@ -25,11 +26,11 @@ function ktfmtJar(): string | null {
 
 /**
  * Kotlin sources formatted by ktfmt in Kotlin's coding conventions (`--kotlinlang-style`), in one run. A file ktfmt
- * cannot format is left as written. `required`: a missing ktfmt (no network on the first run) throws; otherwise the
- * sources are left as written.
+ * cannot format is left as written. `required` (the kit's generation): ktfmt is fetched if missing, and throws if it
+ * cannot be. Otherwise (an app's build, which never downloads): formatted only where the jar is already there.
  */
 export function formatKotlin(codes: string[], required = false): string[] {
-  const jar = ktfmtJar();
+  const jar = ktfmtJar(required);
   if (!jar) {
     if (required) throw new Error(`ktfmt ${VERSION} could not be fetched from Maven Central into ${dirname(JAR)}`);
     return codes;
