@@ -200,6 +200,12 @@ jobs:
           ORG_GRADLE_PROJECT_nativescriptKitStrict: 'true'
         run: packages/compiler/tests/pack-check.sh android dist/packages/core "$RUNNER_TEMP/pack"
 
+      # The kit's thread annotations against the Android APIs it calls (lint's WrongThread).
+      - name: Lint the kit's threads
+        env:
+          ORG_GRADLE_PROJECT_nativescriptKitStrict: 'true'
+        run: packages/compiler/kit-android/gradlew -p "$RUNNER_TEMP/pack/app/platforms/compiled/android" :kit:lintRelease --console=plain
+
       - name: Enable KVM
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
