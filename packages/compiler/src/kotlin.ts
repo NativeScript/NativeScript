@@ -8671,7 +8671,9 @@ function refersTo(node: ts.Node, sym: ts.Symbol | undefined, checker: ts.TypeChe
   let found = false;
   const visit = (n: ts.Node) => {
     if (found) return;
-    if (ts.isIdentifier(n) && checker.getSymbolAtLocation(n) === sym) { found = true; return; }
+    // `{ name }` reads the variable `name`, though the checker gives the property's symbol there.
+    const read = ts.isIdentifier(n) && (ts.isShorthandPropertyAssignment(n.parent) && n.parent.name === n ? checker.getShorthandAssignmentValueSymbol(n.parent) : checker.getSymbolAtLocation(n));
+    if (read === sym) { found = true; return; }
     ts.forEachChild(n, visit);
   };
   visit(node);
