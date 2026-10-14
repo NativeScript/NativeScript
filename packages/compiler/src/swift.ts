@@ -6460,6 +6460,22 @@ ${members.join('\n')}
     return this.classesByName.get(name);
   }
 
+  /**
+   * Truthiness its Swift type decides with no look at the value's dynamic type: a function, collection or program
+   * class instance is there or not, an optional boolean true or not, a number neither zero nor NaN. Null for any other.
+   */
+  private typedTruthy(e: ts.Expression): string | null {
+    const t = this.typeOf(e);
+    if (t === 'Double') return `jsTruthy(number: ${this.expr(e)})`;
+    if (t === 'Bool?') return `(${this.expr(e)} == true)`;
+    const base = t.replace(/[?!]$/, '');
+    // A function parameter may be non-escaping, which no generic parameter takes.
+    const parameter = ts.isIdentifier(e) && !!this.resolve(e)?.valueDeclaration && ts.isParameter(this.resolve(e)!.valueDeclaration!);
+    const fn = !parameter && (isFunctionType(base) || (/^\(.*\)$/.test(base) && isFunctionType(base.slice(1, -1))));
+    if (fn || /^JS(Record|Array|Map|Set)<.*>$/.test(base) || (/^[A-Z]\w*$/.test(base) && !!this.classNamed(base))) return `jsTruthy(present: ${this.expr(e)})`;
+    return null;
+  }
+
   /** A condition: Swift needs a Bool where JavaScript tests truthiness. */
   cond(e: ts.Expression): string {
     // An operand the translation decides (`a && x instanceof C` of a C): the test is the other's.
@@ -6475,6 +6491,9 @@ ${members.join('\n')}
     const maybe = this.maybeUndefined(e);
     if (maybe) return `jsTruthy(${maybe} as Any?)`;
     if (this.isBool(e)) return this.expr(e);
+    const typed = this.typedTruthy(e);
+    if (typed) return typed;
+    if (ts.isElementAccessExpression(e) && this.propertySymbolOn(e.expression, e.argumentExpression) === 'method') return `jsTruthy(method: ${this.expr(e)})`;
     // A member of an untyped value is tested as read, before any conversion to its declared type (`!!descriptor.set`).
     if ((ts.isPropertyAccessExpression(e) || ts.isElementAccessExpression(e)) && !e.questionDotToken && this.isAny(e.expression) && !this.isAny(e) && !this.plainHelper(e)) {
       return `jsTruthy(jsGet(${this.expr(e.expression)}, ${ts.isPropertyAccessExpression(e) ? swiftString(e.name.text) : this.propertyKey(e.argumentExpression)}))`;

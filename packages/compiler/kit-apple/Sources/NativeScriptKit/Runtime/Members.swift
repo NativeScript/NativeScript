@@ -141,3 +141,21 @@ extension JSExpando {
 public func jsCallSymbolMethod(_ object: JSExpando, _ key: String, _ arguments: Any?...) throws -> Any? {
     try jsCallValue(jsExpandoGet(object, key), this: object, optional: false, arguments)
 }
+
+/// `if (n)` of a number, or of an optional chain ending in one (`info?.keyframes?.length`).
+@inline(__always)
+public func jsTruthy(number: Double?) -> Bool {
+    guard let number else { return false }
+    return number != 0 && !number.isNaN
+}
+
+/// `if (x)` of a value typed as a function or an object, which is truthy wherever it is there.
+@inline(__always)
+public func jsTruthy<T>(present value: T?) -> Bool { value != nil }
+
+/// `if (this[setNative])`: a method is truthy with no look at what else the value might be.
+@inline(__always)
+public func jsTruthy(method value: Any?) -> Bool {
+    guard let value else { return false }
+    return jsTypeKind(value) == .function || jsIsTruthy(value)
+}
