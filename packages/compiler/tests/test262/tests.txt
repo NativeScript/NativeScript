@@ -105,6 +105,7 @@ built-ins/JSON/stringify
 built-ins/Object/assign
 built-ins/Object/entries
 built-ins/Object/fromEntries
+built-ins/Object/groupBy
 built-ins/Object/hasOwn
 built-ins/Object/is
 built-ins/Object/keys

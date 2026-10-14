@@ -851,6 +851,7 @@ export class Translator implements AsyncTranslator {
         if (sym?.declarations?.[0]?.getSourceFile().fileName.startsWith('/__shims__/')) return name;
         break;
       case 'Promise': case 'PromiseLike': return `JSPromise<${arg(0)}>`;
+      case 'PromiseWithResolvers': if (isLibDeclaration(sym?.declarations?.[0])) return `JSPromiseWithResolvers<${arg(0)}>`; break;
       case 'AnimationPromise': if (isCoreDeclaration(sym?.declarations?.[0])) return 'JSPromise<Void>'; break;
       // Script writes animation definitions as object literals; the kit's Animation reads them by key.
       case 'AnimationDefinition': if (isCoreDeclaration(sym?.declarations?.[0])) return 'Any?'; break;
@@ -8397,6 +8398,8 @@ ${members.join('\n')}
         if (method === 'getPrototypeOf') return `jsGetPrototypeOf(${this.coerce(arg(0), 'Any?')})`;
         if (method === 'defineProperties' && ts.isObjectLiteralExpression(arg(1))) return this.defineProperties(arg(0), arg(1) as ts.ObjectLiteralExpression);
         if (method === 'fromEntries') return `jsObjectFromEntries(${this.iterable(arg(0))})`;
+        // The overload by result: `Partial<Record<K, T[]>>` holds optional groups.
+        if (method === 'groupBy') return /^JSRecord<.*>$/.test(T()) ? `(jsObjectGroupBy(${this.iterable(arg(0))}, ${this.fn(arg(1))}) as ${T()})` : this.fromAnyCode(`jsObjectGroupBy(${this.iterable(arg(0))}, ${this.fn(arg(1))}) as JSRecord<Any?>`, T(), true);
         // `Object.create(null)`: the runtime's objects inherit no keys, so an empty one.
         if (method === 'create' && arg(0)?.kind === ts.SyntaxKind.NullKeyword && e.arguments.length === 1) return 'JSObject()';
         if (method === 'defineProperty') {
@@ -8461,7 +8464,9 @@ ${members.join('\n')}
         if (method === 'parse') return `JSDate.parse(${this.str(arg(0))})`;
         if (method === 'UTC') return `JSDate.UTC(${e.arguments.map((x) => this.toNumber(x)).join(', ')})`;
         break;
+      case 'Map': if (method === 'groupBy') return `jsMapGroupBy(${this.iterable(arg(0))}, ${this.fn(arg(1))})`; break;
       case 'Promise': {
+        if (method === 'withResolvers') return `${T()}()`;
         // `return Promise.resolve(x)` where the function declares the promise's type: that type, the value converted to it.
         const wanted = method === 'resolve' && this.checker.getContextualType(e) ? this.type(this.checker.getContextualType(e)!, e) : null;
         const t = wanted && /^JSPromise<.*>$/.test(wanted) && this.lenient ? wanted : T();
@@ -8674,6 +8679,13 @@ ${members.join('\n')}
         return this.ignoringThisArg(e, target, call());
       }
       case 'sort': return e.arguments[0] ? `${t}.sort(${this.fn(e.arguments[0])})` : `${t}.sort()`;
+      case 'toSorted': return e.arguments[0] ? `${t}.toSorted(${this.fn(e.arguments[0])})` : `${t}.toSorted()`;
+      case 'toReversed': return `${t}.toReversed()`;
+      case 'toSpliced':
+        if (!e.arguments.length) return `${t}.toSpliced(0, 0)`;
+        if (e.arguments.slice(2).some(ts.isSpreadElement)) return `${t}.toSpliced(${e.arguments.slice(0, 2).map((x) => this.coerce(x, 'Double')).join(', ')}, contentsOf: ${this.packed(e.arguments.slice(2), `JSArray<${el}>`)}.storage)`;
+        return `${t}.toSpliced(${[...a().slice(0, 2), ...e.arguments.slice(2).map((x) => this.coerce(x, el))].join(', ')})`;
+      case 'with': return `${t}.with(${this.coerce(e.arguments[0], 'Double')}, ${this.coerce(e.arguments[1], el)})`;
       case 'reduce': case 'reduceRight': {
         const init = e.arguments[1];
         const callback = e.arguments[0];

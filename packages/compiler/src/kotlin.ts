@@ -593,6 +593,7 @@ export class Translator implements AsyncTranslator {
       case 'RegExpMatchArray': case 'RegExpExecArray': return 'JSMatch';
       case 'RegExpStringIterator': return 'JSArray<JSMatch>';
       case 'TemplateStringsArray': return 'JSArray<String>';
+      case 'PromiseWithResolvers': if (isLibDeclaration(sym?.declarations?.[0])) return `JSPromiseWithResolvers<${arg(0)}>`; break;
       case 'PropertyDescriptor': case 'PropertyDescriptorMap': case 'TypedPropertyDescriptor': if (sym?.declarations?.[0] && /[\\/]typescript[\\/]lib[\\/]/.test(sym.declarations[0].getSourceFile().fileName)) return 'Any?'; break;
 
       case 'Generator': if (isLibDeclaration(sym?.declarations?.[0])) return `JSGenerator<${arg(0)}>`; break;
@@ -4536,6 +4537,12 @@ export class Translator implements AsyncTranslator {
     return this.expr(e);
   }
 
+  /** A groupBy callback's function type: the item and its index, as many as a literal declares (at least the item, as the runtime's overloads take). */
+  private groupKeySlot(items: ts.Expression, f: ts.Expression, key: string): string {
+    const arity = ts.isArrowFunction(f) || ts.isFunctionExpression(f) ? Math.max(1, f.parameters.length) : this.functionArity(f);
+    return `(${[this.elementTypeOf(items), 'Double'].slice(0, Math.min(2, arity)).join(', ')}) -> ${key}`;
+  }
+
   elementTypeOf(e: ts.Expression): string {
     const t = this.typeOf(e);
     if (/^JS(Array|Set|Iterator|Generator|Iterable|AsyncIterator|AsyncGenerator|AsyncIterable)<.*>\??$/.test(t)) return t.replace(/^JS\w+<(.*)>\??$/, '$1');
@@ -6704,6 +6711,7 @@ export class Translator implements AsyncTranslator {
         if (untyped[method]) return `${untyped[method]}(${this.coerce(arg(0), 'Any?')})`;
         if (method === 'getOwnPropertyDescriptor') return `jsOwnPropertyDescriptor(${this.coerce(arg(0), 'Any?')}, ${this.propertyKey(arg(1))})`;
         if (method === 'fromEntries') return `jsObjectFromEntries(${this.iterable(arg(0))})`;
+        if (method === 'groupBy') return `jsObjectGroupBy<${this.elementTypeOf(arg(0))}, ${T().replace(/^JSRecord<(.*)>\??$/, '$1')}>(${this.iterable(arg(0))}, ${this.fn(arg(1), this.groupKeySlot(arg(0), arg(1), 'Any?'))})`;
         // `Object.create(null)`: the runtime's objects inherit no keys, so an empty one.
         if (method === 'create' && arg(0)?.kind === ts.SyntaxKind.NullKeyword && e.arguments.length === 1) return 'JSObject()';
         if (method === 'defineProperty') {
@@ -6778,8 +6786,10 @@ export class Translator implements AsyncTranslator {
         if (method === 'parse') return `JSDate.parse(${this.str(arg(0))})`;
         if (method === 'UTC') return `JSDate.UTC(${e.arguments.map((x) => this.toNumber(x)).join(', ')})`;
         break;
+      case 'Map': if (method === 'groupBy') return `jsMapGroupBy(${this.iterable(arg(0))}, ${this.fn(arg(1), this.groupKeySlot(arg(0), arg(1), T().replace(/^JSMap<(.*), JSArray<.*>>\??$/, '$1')))})`; break;
       case 'Promise': {
         const t = T();
+        if (method === 'withResolvers') return `${t}()`;
         const v = t.replace(/^JSPromise<(.*)>$/, '$1');
         if (method === 'resolve') return arg(0) ? (this.isPromiseType(this.typeOf(arg(0))) ? this.expr(arg(0)) : `JSPromise.resolve<${v}>(${this.coerce(arg(0), v)})`) : `JSPromise.resolve<Unit>(Unit)`;
         if (method === 'reject') return `JSPromise.reject<${v}>(${arg(0) ? this.coerce(arg(0), 'Any?') : 'null'})`;
@@ -6955,6 +6965,12 @@ export class Translator implements AsyncTranslator {
       case 'sort': return e.arguments[0] ? `${t}.sort(${this.fn(e.arguments[0], `(${element}, ${element}) -> Double`)})` : `${t}.sort()`;
       case 'toSorted': return e.arguments[0] ? `${t}.toSorted(${this.fn(e.arguments[0], `(${element}, ${element}) -> Double`)})` : `${t}.toSorted()`;
       case 'toReversed': return `${t}.toReversed()`;
+      case 'toSpliced': {
+        if (!e.arguments.length) return `${t}.toSpliced(0.0, 0.0)`;
+        if (e.arguments.slice(2).some(ts.isSpreadElement)) return `${t}.toSplicedAll(${e.arguments.slice(0, 2).map((x) => this.toNumber(x)).join(', ')}, ${this.packed(e.arguments.slice(2), `JSArray<${element}>`)}.storage)`;
+        return `${t}.toSpliced(${[...e.arguments.slice(0, 2).map((x) => this.toNumber(x)), ...e.arguments.slice(2).map((x) => this.coerce(x, element))].join(', ')})`;
+      }
+      case 'with': return `${t}.with(${this.toNumber(e.arguments[0])}, ${this.coerce(e.arguments[1], element)})`;
       case 'reduce': case 'reduceRight': {
         const init = e.arguments[1];
         const f = e.arguments[0];

@@ -288,7 +288,8 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
 
   const options: ts.CompilerOptions = {
     target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext, moduleResolution: ts.ModuleResolutionKind.Bundler,
-    strict: true, lib: ['lib.es2022.d.ts'], types: [], skipLibCheck: true, experimentalDecorators: true, noEmit: true, allowImportingTsExtensions: true, jsx: ts.JsxEmit.Preserve,
+    // Of ES2024, only what both runtimes implement (groupBy, withResolvers): the rest would type-check and then not translate.
+    strict: true, lib: ['lib.es2023.d.ts', 'lib.es2024.object.d.ts', 'lib.es2024.collection.d.ts', 'lib.es2024.promise.d.ts'], types: [], skipLibCheck: true, experimentalDecorators: true, noEmit: true, allowImportingTsExtensions: true, jsx: ts.JsxEmit.Preserve,
     // A lenient app's caught values are `any`, as its own build types them.
     ...(appStrictness(roots[0] ?? [...virtual.keys()][0]) ? { useUnknownInCatchVariables: false } : {}),
     ...overrides,
