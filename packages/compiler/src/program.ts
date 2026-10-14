@@ -289,6 +289,8 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
   const options: ts.CompilerOptions = {
     target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext, moduleResolution: ts.ModuleResolutionKind.Bundler,
     strict: true, lib: ['lib.es2022.d.ts'], types: [], skipLibCheck: true, experimentalDecorators: true, noEmit: true, allowImportingTsExtensions: true, jsx: ts.JsxEmit.Preserve,
+    // Each file is a module, as the bundler makes it: a file without imports does not merge into the platform's globals (`double`, `long`).
+    moduleDetection: ts.ModuleDetectionKind.Force,
     // A lenient app's caught values are `any`, as its own build types them.
     ...(appStrictness(roots[0] ?? [...virtual.keys()][0]) ? { useUnknownInCatchVariables: false } : {}),
     ...overrides,
