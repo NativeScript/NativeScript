@@ -27,7 +27,7 @@ const KEYWORDS = new Set([
   'in', 'default', 'repeat', 'where', 'func', 'var', 'let', 'struct', 'enum', 'protocol', 'extension', 'internal', 'operator', 'self', 'Self',
   'Type', 'is', 'as', 'guard', 'defer', 'subscript', 'init', 'deinit', 'inout', 'associatedtype', 'fallthrough', 'super', 'true', 'false',
   'nil', 'class', 'import', 'static', 'Any', 'Protocol', 'rethrows', 'throws', 'precedencegroup', 'fileprivate', 'open', 'some', 'any',
-  'return', 'throw', 'try', 'catch', 'if', 'else', 'for', 'while', 'switch', 'case', 'break', 'continue', 'do', 'typealias', 'private', 'public',
+  'return', 'throw', 'try', 'await', 'catch', 'if', 'else', 'for', 'while', 'switch', 'case', 'break', 'continue', 'do', 'typealias', 'private', 'public',
 ]);
 
 export function ident(name: string): string {
