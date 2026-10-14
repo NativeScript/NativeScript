@@ -42,6 +42,8 @@ export const kitIndexOptions: { exclude: RegExp | null } = { exclude: null };
  * a formatter wrapped (`func f(\n    _ a: T\n) -> R {`) reads as written on one. The kit has no multi-line strings.
  */
 export function unwrapped(text: string): string {
+  // A declaration swift-format wrapped before its brace: the brace back on the declaration's line.
+  text = text.replace(/\n[ \t]*\{[ \t]*(?=\n)/g, ' {');
   let out = '', depth = 0, quoted = false;
   for (let k = 0; k < text.length; k++) {
     const ch = text[k];

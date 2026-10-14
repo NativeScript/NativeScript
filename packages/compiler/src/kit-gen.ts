@@ -368,7 +368,7 @@ function indexFunctions(program: ts.Program, checker: ts.TypeChecker, index: str
   };
   // A type of the kit's (`Application`) keeps its name: a constant of the same name is reached as the type is.
   const types = new Set<string>();
-  for (const f of out) for (const m of f.code.matchAll(/^(?:(?:open|public|final)\s+)*(?:class|struct|enum|protocol|typealias)\s+(\w+)/gm)) types.add(m[1]);
+  for (const f of out) for (const m of f.code.matchAll(/^(?:@\w+(?:\([^)]*\))?\s+)*(?:(?:open|public|final)\s+)*(?:class|struct|enum|protocol|typealias)\s+(\w+)/gm)) types.add(m[1]);
   for (const e of checker.getExportsOfModule(sym)) {
     const target = implementation(resolveAlias(e));
     // A constant (`widthProperty`): a global reading the module's static.
@@ -543,7 +543,7 @@ function dropAt(e: unknown, sf: ts.SourceFile): boolean {
 export function publicize(code: string): string {
   type Scope = { kind: 'type' | 'code'; type?: string; open?: boolean };
   const stack: Scope[] = [];
-  const decl = /^(\s*)((?:@[\w.]+(?:\([^)]*\))?\s+)*)((?:(?:final|override|static|class|convenience|required|lazy|indirect|weak|unowned|private|fileprivate|internal|public|open)\s+)*)(class|struct|enum|protocol|extension|func|var|let|init[?!]?|subscript|typealias)\b/;
+  const decl = /^(\s*)((?:@[\w.]+(?:\([^)]*\))?\s+)*)((?:(?:final|override|static|class|convenience|required|lazy|indirect|weak|unowned|nonisolated|private|fileprivate|internal|public|open)\s+)*)(class|struct|enum|protocol|extension|func|var|let|init[?!]?|subscript|typealias)\b/;
   const out: string[] = [];
   for (const line of code.split('\n')) {
     const scope = stack.at(-1);
