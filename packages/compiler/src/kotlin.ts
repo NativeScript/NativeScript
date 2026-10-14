@@ -8842,15 +8842,15 @@ function isAngularComponent(decl: ts.ClassDeclaration): boolean {
   return (ts.getDecorators(decl) ?? []).some((d) => /^Component\(/.test(d.expression.getText()));
 }
 
-/**
- * A function's type parameter its parameters do not name (`loadCache<T>(key: string): Cached<T>`): Kotlin infers type
- * parameters from arguments and the expected type only, so the function holds any value there and its callers read the value as they type it.
- */
 /** The companion's `JSTypedMember` of a class for a name. */
 function typedMemberName(name: string): string {
   return `__member_${name.replace(/\W/g, '_')}`;
 }
 
+/**
+ * A function's type parameter its parameters do not name (`loadCache<T>(key: string): Cached<T>`): Kotlin infers type
+ * parameters from arguments and the expected type only, so the function holds any value there and its callers read the value as they type it.
+ */
 function erasedTypeParameter(p: ts.TypeParameterDeclaration): boolean {
   const fn = p.parent;
   // An interface is a class of fields: one class for every instantiation.

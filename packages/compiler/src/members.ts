@@ -92,6 +92,12 @@ export function collectMembers(checker: ts.TypeChecker, files: readonly ts.Sourc
   const made = new Map<ts.Symbol, ts.Symbol | null>();
   const methodNamed = new Set<ts.Symbol>();
   const later: (() => void)[] = [];
+  const onPrototype = new Set<ts.Symbol>();
+  const keySymbol = (key: ts.Expression) => {
+    const name = ts.isPropertyAccessExpression(key) ? key.name : ts.isIdentifier(key) ? key : null;
+    return name && checker.getSymbolAtLocation(name);
+  };
+  const isPrototype = (e: ts.Expression) => ts.isPropertyAccessExpression(e) && e.name.text === 'prototype';
   const isSymbolCall = (e: ts.Expression | undefined) => !!e && ts.isCallExpression(e) && ts.isIdentifier(e.expression) && e.expression.text === 'Symbol';
   for (const sf of files) {
     if (sf.isDeclarationFile) continue;
@@ -136,17 +142,31 @@ export function collectMembers(checker: ts.TypeChecker, files: readonly ts.Sourc
         const s = checker.getSymbolAtLocation(n.name.expression.name);
         if (s) methodNamed.add(s);
       }
+      // `cls.prototype[computedValue] = …`, `Object.defineProperty(View.prototype, key, …)`.
+      if (ts.isBinaryExpression(n) && n.operatorToken.kind === ts.SyntaxKind.EqualsToken && ts.isElementAccessExpression(n.left) && isPrototype(n.left.expression)) {
+        const s = keySymbol(n.left.argumentExpression);
+        if (s) onPrototype.add(s);
+      }
+      if (ts.isCallExpression(n) && n.arguments.length >= 2 && isPrototype(n.arguments[0]) && ts.isPropertyAccessExpression(n.expression) && n.expression.name.text === 'defineProperty') {
+        const s = keySymbol(n.arguments[1]);
+        if (s) onPrototype.add(s);
+      }
       ts.forEachChild(n, visit);
     };
     visit(sf);
   }
   for (const run of later) run();
+  // A symbol a prototype holds a value under is read through the prototype until the instance has its own.
+  for (const s of [...onPrototype]) {
+    const field = made.get(s);
+    if (field) onPrototype.add(field);
+  }
   const propertySymbol = (key: ts.Expression): 'storage' | 'method' | null => {
-    const name = ts.isPropertyAccessExpression(key) ? key.name : ts.isIdentifier(key) ? key : null;
-    const s = name && checker.getSymbolAtLocation(name);
+    const s = keySymbol(key);
     if (!s || !made.has(s)) return null;
     const field = made.get(s);
-    return field && methodNamed.has(field) ? 'method' : 'storage';
+    if (field && methodNamed.has(field)) return 'method';
+    return onPrototype.has(s) || (field && onPrototype.has(field)) ? null : 'storage';
   };
   return {
     propertySymbol,

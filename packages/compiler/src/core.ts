@@ -182,12 +182,12 @@ export class CoreAPI {
     return kitExtends(this.index, name, 'View');
   }
 
-  /** A member of a kit type or a type it extends, as the kit declares it. */
   /** The type of a settable member a registered property gives a kit class (kit-index `kitTypedMember`). */
   kitTypedMember(owner: string, name: string): string | null {
     return kitTypedMember(this.index, owner, name);
   }
 
+  /** A member of a kit type or a type it extends, as the kit declares it. */
   kitMember(owner: string, name: string): KitMember | null {
     return kitMember(this.index, owner, name);
   }

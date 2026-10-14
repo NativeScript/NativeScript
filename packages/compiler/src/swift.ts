@@ -10599,15 +10599,15 @@ function injected(token: string): string {
   }
 }
 
-/**
- * A function's type parameter its parameters do not name (`loadCache<T>(key: string): Cached<T>`): Swift infers type
- * parameters from arguments only, so the function holds any value there and its callers read the value as they type it.
- */
 /** The static holding a class's `JSTypedMember` for a name; Swift's statics are inherited, so a subclass's of the same name is one of its own. */
 function typedMemberName(cls: ts.ClassLikeDeclaration, name: string): string {
   return `__member_${cls.name?.text ?? ''}_${name.replace(/\W/g, '_')}`;
 }
 
+/**
+ * A function's type parameter its parameters do not name (`loadCache<T>(key: string): Cached<T>`): Swift infers type
+ * parameters from arguments only, so the function holds any value there and its callers read the value as they type it.
+ */
 function erasedTypeParameter(p: ts.TypeParameterDeclaration): boolean {
   const fn = p.parent;
   // An interface is a class of fields: one class for every instantiation.
