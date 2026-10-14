@@ -12,7 +12,8 @@
 		"239-destructuring-assignment": "Destructuring assignment to existing variables is refused (Swift translator, SEMANTICS #8).",
 		"242-var-redeclared": "A var declared again, or declared in a loop head or branch and used after it, does not compile (Swift translator, SEMANTICS #14).",
 		"243-array-holes": "Object.keys lists the holes of new Array(n) (Swift runtime).",
-		"244-optional-member-later": "An optional member set after the object is made is listed in declaration order, not as the last key (Swift translator)."
+		"244-optional-member-later": "An optional member set after the object is made is listed in declaration order, not as the last key (Swift translator).",
+		"246-nullable-string-concat": "`null as string | null` in a template or a concatenation does not compile: nil has no contextual type (Swift translator)."
 	},
 	"kotlin": {}
 }

@@ -5712,7 +5712,16 @@ export class Translator implements AsyncTranslator {
     if (t === 'Double' || t === 'Boolean') return `js(${this.expr(e)})`;
     // A value read as present (`${savedInstanceState}` of a Bundle that may be null): converted as it is.
     const code = this.expr(e);
+    // A string only null may be missing from (`string | null`): null, as Kotlin holds both as one.
+    if (t === 'String?' && this.onlyNull(e)) return `(${code} ?: "null")`;
     return `jsToString(${code.endsWith('!!') && /^[\w.`]+!!$/.test(code) ? code.slice(0, -2) : code})`;
+  }
+
+  /** Whether a value's type admits null but not undefined. */
+  private onlyNull(e: ts.Expression): boolean {
+    const t = this.checker.getTypeAtLocation(e);
+    const parts = t.isUnion() ? t.types : [t];
+    return parts.some((p) => p.flags & ts.TypeFlags.Null) && !parts.some((p) => p.flags & (ts.TypeFlags.Undefined | ts.TypeFlags.Void));
   }
 
   private property(e: ts.PropertyAccessExpression): string {
@@ -7810,6 +7819,8 @@ export class Translator implements AsyncTranslator {
         if (this.untypedPlace(e.left)) { const p = this.untypedPlace(e.left)!; return `jsSet(${p.obj}, ${p.key}, jsAdd(jsGet(${p.obj}, ${p.key}), ${this.coerce(e.right, 'Any?')}))`; }
         if (this.lenient && this.typeOf(e.left) === 'Double' && this.declaredTypeOf(e.left) === 'Double?') return `${target()} = ${this.undefinedAs(this.expr(e.left), 'Double')} + ${this.toNumber(e.right)}`;
         if (this.isAny(e.left)) return `${target()} = jsAdd(${l()}, ${this.coerce(e.right, 'Any?')})`;
+        // A string that may be missing converts first: Kotlin's `+` on a null string writes "null" for undefined too.
+        if (this.isString(e.left) && isNullable(this.declaredTypeOf(e.left) ?? this.typeOf(e.left))) return `${target()} = ${this.str(e.left)} + ${this.str(e.right)}`;
         return this.isString(e.left) ? `${target()} += ${this.str(e.right)}` : `${target()} += ${this.toNumber(e.right)}`;
       case K.MinusEqualsToken: case K.AsteriskEqualsToken: case K.SlashEqualsToken: if (this.lenient && this.typeOf(e.left) === 'Double' && this.declaredTypeOf(e.left) === 'Double?') {
         return `${target()} = ${this.undefinedAs(this.expr(e.left), 'Double')} ${({ [K.MinusEqualsToken]: '-', [K.AsteriskEqualsToken]: '*', [K.SlashEqualsToken]: '/' } as Record<number, string>)[op]} ${this.toNumber(e.right)}`;
