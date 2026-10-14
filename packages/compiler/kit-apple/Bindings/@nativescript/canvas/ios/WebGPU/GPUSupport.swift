@@ -117,6 +117,7 @@ func gpuStrings(_ buffer: OpaquePointer?) -> [String] {
 
 /// A Swift closure carried through a C callback's `void *` user data.
 final class GPUCallbackBox<T> {
+    nonisolated deinit {}
     let value: T
     init(_ value: T) { self.value = value }
 
@@ -441,6 +442,7 @@ func gpuSetIndexBuffer(_ args: Args, _ set: (OpaquePointer?, CanvasIndexFormat, 
 /// A WebGPU object. V8 defines some of its properties lazily: read from the native object the
 /// first time, then held as plain data that script may overwrite.
 class GPUObjectHost: CanvasHost {
+    nonisolated deinit {}
     private var cached: [String: GPUCachedValue] = [:]
 
     class var lazyProperties: Set<String> { GPUObjectHost.labelOnly }

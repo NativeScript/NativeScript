@@ -4,6 +4,7 @@ import CanvasNative
 
 /// An extension object `getExtension` returns that is only constants and its `ext_name`.
 final class WebGLConstantsExtensionHost: CanvasHost {
+    nonisolated deinit {}
     let extensionClass: String
     let properties: [String: Any]
 
@@ -131,6 +132,7 @@ extension WebGLConstantsExtensionHost {
 
 /// `ANGLE_instanced_arrays`.
 final class ANGLEInstancedArraysHost: CanvasHost {
+    nonisolated deinit {}
     let arrays: OpaquePointer
     init(_ arrays: OpaquePointer) { self.arrays = arrays }
 

@@ -161,8 +161,8 @@ private enum ColorCache {
         var rgba: UInt32?
     }
 
-    private static let slotCount = 64
-    private static let keyMax = 48
+    nonisolated private static let slotCount = 64
+    nonisolated private static let keyMax = 48
     nonisolated(unsafe) private static var slots = [Slot?](repeating: nil, count: slotCount)
 
     private static func hash(_ key: UnsafePointer<CChar>, _ length: Int) -> Int {

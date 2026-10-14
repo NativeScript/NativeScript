@@ -5,6 +5,10 @@ import NativeScriptKit
 /// answered by `invoke`, its properties by `get` and `set`; a method read as a value is a
 /// function that calls it.
 class CanvasHost: JSHostObject {
+    // Declared, not implied, so the subclasses' initializers and deinitializers override them with the same isolation in either language mode.
+    init() {}
+    nonisolated deinit {}
+
     /// The methods `invoke` answers, which reading a property of that name gives as a function.
     class var methods: Set<String> { [] }
     class var className: String? { nil }

@@ -33,6 +33,7 @@ enum WebGLMethod: String, CaseIterable {
 
 /// Holds the context weakly for the frame callback, which the C API calls with this object's address.
 private final class WebGLFrameTarget {
+    nonisolated deinit {}
     weak var context: WebGLRenderingContextHost?
 }
 

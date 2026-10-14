@@ -627,6 +627,7 @@ final class CanvasRenderingContext2DHost: CanvasHost {
 
 /// What the C API's frame callback reaches: the context, while it lives.
 private final class RafTarget {
+    nonisolated deinit {}
     weak var host: CanvasRenderingContext2DHost?
 }
 
