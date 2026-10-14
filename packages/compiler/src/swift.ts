@@ -7998,6 +7998,8 @@ ${members.join('\n')}
       }
       const prototypeCall = method === 'call' ? this.native.prototypeCall(e) : null;
       if (prototypeCall) return prototypeCall;
+      const builtin = method === 'call' || method === 'apply' ? this.builtinPrototypeCall(method, target, e) : null;
+      if (builtin) return builtin;
       if (['call', 'apply', 'bind'].includes(method) && isLibDeclaration(this.checker.getResolvedSignature(e)?.getDeclaration()) && functionParts(this.typeOf(target).replace(/^\((.*)\)[?!]$/, '$1'))) return this.functionMethod(method, target, e);
       const required = this.library ? null : this.core.requiredModuleCall(e);
       if (required) return required;
@@ -8165,6 +8167,84 @@ ${members.join('\n')}
     throw this.error(e, 'call');
   }
 
+  /** `X.prototype.m`, directly or through a constant holding it (`const has = Object.prototype.hasOwnProperty`): X and m. */
+  private prototypeMethod(target: ts.Expression): { owner: ts.Expression; name: string } | null {
+    let held = target;
+    while (ts.isParenthesizedExpression(held) || ts.isNonNullExpression(held) || ts.isAsExpression(held)) held = held.expression;
+    if (ts.isIdentifier(held)) {
+      const d = this.resolve(held)?.valueDeclaration;
+      if (d && ts.isVariableDeclaration(d) && d.parent.flags & ts.NodeFlags.Const && d.initializer) held = d.initializer;
+    }
+    if (!ts.isPropertyAccessExpression(held) || !ts.isPropertyAccessExpression(held.expression) || held.expression.name.text !== 'prototype') return null;
+    return { owner: held.expression.expression, name: held.name.text };
+  }
+
+  /**
+   * `Base.prototype.m.call(obj, …)` of the program's class: the receiver that calls Base's `m` in Swift. That is the object
+   * itself where no subclass overrides `m`, and `super` for `this` in a subclass whose superclasses below Base don't.
+   */
+  private classPrototypeReceiver(held: ts.Expression, thisArg: ts.Expression | undefined, e: ts.CallExpression, method: string): string | null {
+    if (!ts.isPropertyAccessExpression(held)) return null;
+    const found = this.prototypeMethod(held);
+    const cls = found && this.resolve(found.owner)?.valueDeclaration;
+    if (!found || !cls || !ts.isClassDeclaration(cls) || cls.getSourceFile().isDeclarationFile) return null;
+    const name = found.name;
+    const declares = (c: ts.ClassLikeDeclaration) => c.members.some((m) => !isStatic(m) && m.name?.getText() === name);
+    const below = (c: ts.ClassLikeDeclaration) => { for (let b = this.sourceBase(c); b; b = this.sourceBase(b)) if (b === cls) return true; return false; };
+    const overridden = [...this.allClasses()].some((c) => c !== cls && below(c) && declares(c));
+    const plain = (x: ts.Expression): boolean => x.kind === ts.SyntaxKind.ThisKeyword || (ts.isPropertyAccessExpression(x) ? plain(x.expression) : this.pure(x));
+    const typed = thisArg && this.classNamed(this.typeOf(thisArg).replace(/[?!]$/, ''));
+    if (thisArg && plain(thisArg) && typed && (typed === cls || below(typed))) {
+      if (!overridden) return this.expr(thisArg).replace(/!$/, '');
+      const host = thisArg.kind === ts.SyntaxKind.ThisKeyword ? ts.findAncestor(e, (n) => ts.isClassLike(n) || (ts.isFunctionLike(n) && !ts.isArrowFunction(n) && !ts.isMethodDeclaration(n) && !ts.isConstructorDeclaration(n) && !ts.isAccessor(n))) : undefined;
+      if (host && ts.isClassLike(host) && below(host)) {
+        let between = false;
+        for (let b = this.sourceBase(host); b && b !== cls; b = this.sourceBase(b)) if (declares(b)) between = true;
+        if (!between) return 'super';
+      }
+    }
+    throw this.error(e, `${method} of ${found.owner.getText()}.prototype.${name} on an object whose class may override it`);
+  }
+
+  private classList: ts.ClassLikeDeclaration[] | null = null;
+  private allClasses(): ts.ClassLikeDeclaration[] {
+    if (this.classList) return this.classList;
+    const list: ts.ClassLikeDeclaration[] = [];
+    const visit = (n: ts.Node) => { if (ts.isClassLike(n)) list.push(n); ts.forEachChild(n, visit); };
+    for (const sf of this.sourceFiles) if (!sf.isDeclarationFile) visit(sf);
+    return (this.classList = list);
+  }
+
+  /**
+   * `Object.prototype.hasOwnProperty.call(o, k)`, `Array.prototype.slice.call(list, 1)`: a built-in's method called on another
+   * value, as that value's own method of the name; Object's methods, which every object has, as the runtime's.
+   */
+  private builtinPrototypeCall(method: 'call' | 'apply', target: ts.Expression, e: ts.CallExpression): string | null {
+    const found = this.prototypeMethod(target);
+    const owner = found && ts.isIdentifier(found.owner) && this.isLibGlobal(found.owner) ? found.owner.text : null;
+    if (!found || !owner || !['Object', 'Array', 'String', 'Number', 'Boolean'].includes(owner)) return null;
+    const [thisArg, ...rest] = e.arguments;
+    const receiver = thisArg ? this.coerce(thisArg, 'Any?') : 'nil';
+    let args: string[] | null;
+    if (method === 'call') args = rest.some(ts.isSpreadElement) ? null : rest.map((x) => this.coerce(x, 'Any?'));
+    else args = !rest.length ? [] : ts.isArrayLiteralExpression(rest[0]) && !rest[0].elements.some(ts.isSpreadElement) ? rest[0].elements.map((x) => this.coerce(x, 'Any?')) : null;
+    const t = this.typeOf(e);
+    const result = (code: string, type: string) => (type === t || t === 'Void' ? code : this.convert(code, type, t));
+    if (owner === 'Object') {
+      const first = method === 'call' ? rest[0] : rest[0] && ts.isArrayLiteralExpression(rest[0]) ? rest[0].elements[0] : undefined;
+      const key = first ? this.propertyKey(first) : '"undefined"';
+      switch (found.name) {
+        case 'hasOwnProperty': return result(`jsHasOwn(${receiver}, ${key})`, 'Bool');
+        case 'propertyIsEnumerable': return result(`jsPropertyIsEnumerable(${receiver}, ${key})`, 'Bool');
+        case 'toString': return result(`jsObjectToString(${receiver})`, 'String');
+        default: return null;
+      }
+    }
+    const list = args ? args.map((a) => `, ${a}`).join('') : `, spread: ${method === 'call' ? this.packed(rest, 'JSArray<Any?>') : this.coerce(rest[0], 'JSArray<Any?>')}.storage`;
+    const code = `jsCallMethod(${receiver}, ${swiftString(found.name)}${list})`;
+    return t === 'Any?' || t === 'Void' ? code : this.fromAnyCode(code, t, true);
+  }
+
   /**
    * `f.call(thisArg, …)`, `f.apply(thisArg, [ … ])` and `f.bind(thisArg, …)` on a typed function value.
    * A Swift closure has no `this` of its own, and a method reference is bound to its object already:
@@ -8186,7 +8266,10 @@ ${members.join('\n')}
     while (ts.isParenthesizedExpression(held) || ts.isNonNullExpression(held) || ts.isAsExpression(held)) held = held.expression;
     const decl = ts.isPropertyAccessExpression(held) || ts.isIdentifier(held) ? this.resolve(ts.isPropertyAccessExpression(held) ? held.name : held)?.valueDeclaration : undefined;
     const bound = !!decl && (ts.isMethodDeclaration(decl) || ts.isMethodSignature(decl) || (ts.isFunctionDeclaration(decl) && thisNodes(decl).length > 0));
-    if (bound) {
+    const viaPrototype = this.classPrototypeReceiver(held, thisArg, e, method);
+    if (viaPrototype) {
+      if (method === 'bind') throw this.error(e, 'bind of a method read off a prototype');
+    } else if (bound) {
       const receiver = ts.isPropertyAccessExpression(held) ? held.expression : null;
       if (!receiver || !thisArg || receiver.getText() !== thisArg.getText() || !plain(thisArg)) throw this.error(e, `${method} with a receiver other than the method's object`);
     } else if (ts.isFunctionExpression(held) && thisNodes(held).length) throw this.error(e, `${method} of a function that reads this`);
@@ -8218,7 +8301,7 @@ ${members.join('\n')}
     const given = restAt >= 0 && restAt < fn.params.length && method !== 'bind'
       ? fn.params.map((_, k) => (k === restAt ? `${param(k).replace(/[?!]$/, '')}([${items.slice(k).map((x) => this.coerce(x, param(k).replace(/^JSArray<(.*)>[?!]?$/, '$1'))).join(', ')}])` : items[k] ? this.coerce(items[k], param(k)) : 'nil'))
       : items.slice(0, fn.params.length).map((x, k) => this.coerce(x, param(k)));
-    const f = `${this.expr(target)}${optional && !e.questionDotToken && !ts.isOptionalChain(e) ? '!' : ''}`;
+    const f = viaPrototype ? `${viaPrototype}.${ident((held as ts.PropertyAccessExpression).name.text)}` : `${this.expr(target)}${optional && !e.questionDotToken && !ts.isOptionalChain(e) ? '!' : ''}`;
     if (method !== 'bind') {
       // A parameter left out is undefined: NaN where lenient code holds a number, the type's zero where it holds another value.
       const missing = fn.params.slice(given.length).map((p) => (p === 'Void' ? '()' : isOptional(p) || p === 'Any?' ? 'nil' : p === 'Double' ? '.nan' : this.zero(p.replace(/^@escaping /, '')) ?? 'nil'));

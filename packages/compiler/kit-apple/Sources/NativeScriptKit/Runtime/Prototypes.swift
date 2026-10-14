@@ -138,6 +138,16 @@ public func jsHasOwn(_ object: Any?, _ key: String) -> Bool {
     }
 }
 
+/// `Object.prototype.propertyIsEnumerable.call(object, key)`: an own property that `Object.keys` lists.
+public func jsPropertyIsEnumerable(_ object: Any?, _ key: String) -> Bool {
+    guard jsHasOwn(object, key) else { return false }
+    switch jsFlat(object) {
+    case let a as JSArrayProtocol: return key != "length" && (jsArrayIndex(key) != nil || jsSideProperties(a, create: false)?.keys.contains(key) == true)
+    case is String: return key != "length"
+    default: return (jsOwnPropertyDescriptor(object, key) as? JSObject)?["enumerable"] as? Bool ?? true
+    }
+}
+
 /// `@decorator class Cls {}`: each decorator, the last first, is called with what the ones before it gave.
 public func jsDecorate(_ cls: AnyClass, _ decorators: [Any?]) throws {
     var target: Any? = cls
