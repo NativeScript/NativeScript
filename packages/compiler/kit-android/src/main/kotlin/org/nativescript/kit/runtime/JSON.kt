@@ -383,6 +383,8 @@ private class JSONWriter(val gap: String?) {
     private fun property(holder: Any?, key: String?, index: Int, value: Any?, depth: Int): Boolean {
         var v = jsBox(value)
         if (v is JSToJSON) v = jsBox(v.jsToJSON(key ?: index.toString()))
+        // Date.prototype.toJSON: before the replacer, which sees the string (null for an invalid date).
+        else if (v is JSDate) v = v.toJSON() ?: JSNull
         else if (v is JSDynamic && v !is JSError) {
             val toJSON = v.jsGet("toJSON")
             if (toJSON is Function<*>) v = jsBox(jsCall(toJSON, key ?: index.toString()))
@@ -398,10 +400,6 @@ private class JSONWriter(val gap: String?) {
             is Boolean -> out.append(if (v) "true" else "false")
             is String -> appendJSONQuoted(out, v)
             is Double -> number(v)
-            is JSDate -> {
-                val iso = v.toJSON()
-                if (iso == null) out.append("null") else appendJSONQuoted(out, iso)
-            }
             is Function<*> -> return false
             is JSBigInt -> throw JSException(JSTypeError("Do not know how to serialize a BigInt"))
             else -> {
