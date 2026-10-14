@@ -4,6 +4,9 @@
 		"227-callback-given-undefined": "A string parameter given undefined reads \"\", and a void promise's value is not undefined (Swift translator)."
 	},
 	"kotlin": {
+		"270-json-edges": "JSON.parse and JSON.stringify edges the Swift perf round covers: number forms, escapes, toJSON and replacer order, syntax error messages (Kotlin runtime, being fixed in the Kotlin perf work).",
+		"272-collections-edges": "Map and Set edges: SameValueZero keys, iteration while the collection changes, a held iterator across deletes (Kotlin runtime, being fixed in the Kotlin perf work).",
+		"274-promise-reactions": "The order of several reactions on one promise, finally, and resolution with thenables (Kotlin runtime, being fixed in the Kotlin perf work).",
 		"280-callback-function-values": "Array.from of a Set is an array of Any? and a function declaration passed by name to reduce matches no overload (Kotlin translator)."
 	}
 }

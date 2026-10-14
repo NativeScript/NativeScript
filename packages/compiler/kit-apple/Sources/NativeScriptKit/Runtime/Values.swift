@@ -239,9 +239,7 @@ public func jsStringEquals(_ a: String?, _ b: String?) -> Bool {
 @inlinable public func ~= (pattern: String, value: String) -> Bool { jsStringEquals(pattern, value) }
 
 /// `a < b` for strings: UTF-16 code unit order.
-public func jsStringLess(_ a: String, _ b: String) -> Bool {
-    a.utf16.lexicographicallyPrecedes(b.utf16)
-}
+public func jsStringLess(_ a: String, _ b: String) -> Bool { jsCompareUnits(a, b) < 0 }
 
 /// A property or collection key hashed and compared by code units.
 struct JSPropertyKey: Hashable {
@@ -294,7 +292,17 @@ public final class JSObject: JSDynamic, JSSymbolKeyed, JSAccessorKeyed, JSReacti
     }
 
     public init(_ entries: [(String, Any?)]) {
+        storage.reserveCapacity(entries.count)
+        namedKeys.reserveCapacity(entries.count)
         for (key, value) in entries { define(key, value) }
+    }
+
+    /// `values` under `keys`, pairwise, with the storage sized once (JSON.parse's objects): a repeated key keeps
+    /// its first position and takes its last value, as CreateDataProperty does.
+    init<Keys: Collection<String>, Values: Collection<Any?>>(keys: Keys, values: Values) {
+        storage.reserveCapacity(keys.count)
+        namedKeys.reserveCapacity(keys.count)
+        for (key, value) in zip(keys, values) { define(key, value) }
     }
 
     public subscript(key: String) -> Any? {

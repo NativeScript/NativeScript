@@ -29,6 +29,11 @@ public func jsIndexOf(_ s: String, _ sub: String) -> Double {
 /// JavaScript truthiness for the values translated code tests.
 public func jsTruthy(_ value: Any?) -> Bool { jsIsTruthy(value) }
 
+// A typed value's truthiness, chosen over `Any?`'s by overload resolution: no box, and no casts to find its type.
+@inlinable public func jsTruthy(_ value: Double) -> Bool { value != 0 && !value.isNaN }
+@inlinable public func jsTruthy(_ value: String) -> Bool { !value.isEmpty }
+@inlinable public func jsTruthy(_ value: Bool) -> Bool { value }
+
 /// `a.slice(start, end)`: negative indexes count from the end; out-of-range clamps.
 public func jsSlice<T>(_ a: [T], _ start: Double = 0, _ end: Double? = nil) -> [T] {
     let (lo, hi) = jsRange(a.count, start, end)
@@ -37,9 +42,10 @@ public func jsSlice<T>(_ a: [T], _ start: Double = 0, _ end: Double? = nil) -> [
 
 /// `s.slice(start, end)` in UTF-16 units, as JavaScript indexes strings.
 public func jsSlice(_ s: String, _ start: Double = 0, _ end: Double? = nil) -> String {
-    let units = Array(s.utf16)
-    let (lo, hi) = jsRange(units.count, start, end)
-    return lo < hi ? String(decoding: units[lo..<hi], as: UTF16.self) : ""
+    jsUnitSlice(s) { count in
+        let (lo, hi) = jsRange(count, start, end)
+        return lo < hi ? lo..<hi : 0..<0
+    }
 }
 
 private func jsRange(_ count: Int, _ start: Double, _ end: Double?) -> (Int, Int) {
@@ -47,9 +53,8 @@ private func jsRange(_ count: Int, _ start: Double, _ end: Double?) -> (Int, Int
 }
 
 public func jsCharAt(_ s: String, _ index: Double) -> String {
-    let i = jsToIntegerOrInfinity(index), u = s.utf16
-    guard i >= 0, i < Double(u.count) else { return "" }
-    return String(decoding: CollectionOfOne(u[u.index(u.startIndex, offsetBy: Int(i))]), as: UTF16.self)
+    let i = jsToIntegerOrInfinity(index)
+    return jsUnitSlice(s) { count in i >= 0 && i < Double(count) ? Int(i)..<(Int(i) + 1) : 0..<0 }
 }
 
 /// `s[index]`: undefined unless the index is one of the string's.
@@ -59,12 +64,12 @@ public func jsCharAtOrUndefined(_ s: String, _ index: Double) -> String? {
 
 /// `s.replace(a, b)` with a string pattern replaces the first match only, found by UTF-16 units.
 public func jsReplace(_ s: String, _ pattern: String, _ replacement: String) -> String {
-    let u = Array(s.utf16), p = Array(pattern.utf16)
+    let u = jsUnits(s), p = jsUnits(pattern)
     guard let at = jsUnitsIndex(u, p, from: 0) else { return s }
     var out = Array(u[..<at])
     out += jsSubstitution(replacement, matched: pattern, at: at, in: s, captures: [pattern], groups: nil).utf16
     out += u[(at + p.count)...]
-    return String(decoding: out, as: UTF16.self)
+    return jsString(utf16: out)
 }
 
 /// Where `p` first occurs in `u` at or after `from`.
