@@ -1,5 +1,6 @@
 package org.nativescript.kit
 
+import androidx.annotation.MainThread
 import android.os.Handler as AndroidHandler
 import android.os.Looper as AndroidLooper
 import android.util.Log as AndroidLog
@@ -85,6 +86,7 @@ fun __nsClass(make: () -> Any?): Any? = object : JSConstructible {
  * `Application.run({ create })` starts it. Run from the app's `android.app.Application`, before core's
  * activity (`com.tns.NativeScriptActivity`) is created, as NativeScript's runtime runs the app's bundle.
  */
+@MainThread
 object NativeScriptApplication {
     /** The app's stylesheet as its build parsed it (rework-css's AST, as `css2json-loader` ships it), which `app.css` loads as. */
     var cssAST: String? = null

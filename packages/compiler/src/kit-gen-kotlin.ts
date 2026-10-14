@@ -9,6 +9,7 @@ import { createHash } from 'node:crypto';
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 import { allowedDeprecation } from './android-deprecations.ts';
+import { moduleThreads } from './threading.ts';
 import { foldPlatform } from './platform.ts';
 import { Translator, splitTopLevel } from './kotlin.ts';
 import { AndroidNativeAPI, androidClassPath } from './native-calls-android.ts';
@@ -173,6 +174,9 @@ export function generateKotlinKit(o: KotlinKitOptions): KotlinKitResult {
       internalTypes: handWrittenTypes(),
     },
   });
+  // Which of core's modules run on the main thread only; an `any` module importing a `ui` one stops the generation.
+  const threads = moduleThreads({ program, modules: rels.map((r) => join(core, r)), coreModuleOf: (f) => (f.startsWith(core + '/') ? relative(core, f) : null) });
+  translator.moduleThread = (file) => threads.get(file);
   translator.appModule = KIT_PACKAGE;
   const sourceLines = translator.lines = new SourceLines(new Map());
   const native = new AndroidNativeAPI(translator, androidClassPath(widgets));
@@ -257,7 +261,7 @@ export function generateKotlinKit(o: KotlinKitOptions): KotlinKitResult {
   }
   for (const f of out) f.code = lineTable(f.name, f.code);
   // Core's modules run their top level once, in the order core's index evaluates them.
-  out.push({ name: '__Modules.kt', sources: {}, code: `${header()}object CoreModules {\n    private var initialized = false\n\n    fun initialize() {\n        if (initialized) return\n        initialized = true\n${inits.map((i) => `        ${i}()\n`).join('')}    }\n}\n` });
+  out.push({ name: '__Modules.kt', sources: {}, code: `${header()}import androidx.annotation.MainThread\n\nobject CoreModules {\n    private var initialized = false\n\n    @MainThread\n    fun initialize() {\n        if (initialized) return\n        initialized = true\n${inits.map((i) => `        ${i}()\n`).join('')}    }\n}\n` });
   if (errors.length && !o.report) throw new Error(errors.join('\n'));
   return { files: out, errors: [...new Set(errors)], attempted: order.length, translated, lines };
 }
@@ -384,7 +388,7 @@ function withImports(code: string, pkg = KIT_PACKAGE, deprecated: (internal: str
     if (c === '}') { if (top.kind === 'template' && top.depth === 0) stack.pop(); else top.depth--; out += c; i = j + 1; continue; }
     out += c; i = j + 1;
   }
-  const imports = [...aliases].sort().map(([name, a]) => `import ${name} as ${a}\n`).join('');
+  const imports = [...(/@UiThread\b/.test(out) ? [['androidx.annotation.UiThread', '']] as [string, string][] : []), ...[...aliases].sort()].map(([name, a]) => `import ${name}${a ? ` as ${a}` : ''}\n`).join('');
   // Kotlin reports a deprecated class at its import, which only the file can suppress: the file then suppresses deprecation.
   const old = [...aliases.keys()].filter((name) => deprecated(name.replace(/\./g, '/')));
   if (old.length) {

@@ -21,6 +21,7 @@ import type { Reach } from './reach.ts';
 import type { Properties } from './properties.ts';
 import { SourceLines } from './source-lines.ts';
 import { formatKotlin } from './ktfmt.ts';
+import { moduleThreads } from './threading.ts';
 import { androidManifest, appResourcesDir, copyAndroidAppFiles, copyAndroidFonts, pluginManifests, uncaughtErrorSwitches } from './app-resources.ts';
 import { KIT_ANDROID } from './paths.ts';
 
@@ -169,7 +170,10 @@ export async function writeAndroid(b: AndroidBuild): Promise<void> {
   // Written once formatted, in one ktfmt run where a ktfmt jar is already present (a build never fetches one); the
   // source-line markers stay through formatting.
   const pending: { file: string; code: string }[] = [];
-  const write = (file: string, text: string) => { pending.push({ file, code: withKitAliases(text) }); };
+  const write = (file: string, text: string) => {
+    const code = /@UiThread\b/.test(text) ? text.replace('import org.nativescript.kit.*\n', 'import org.nativescript.kit.*\nimport androidx.annotation.UiThread\n') : text;
+    pending.push({ file, code: withKitAliases(code) });
+  };
   const flush = () => {
     const formatted = formatKotlin(pending.map((p) => p.code));
     pending.forEach((p, k) => written(p.file, formatted[k]));
@@ -201,6 +205,9 @@ export async function writeAndroid(b: AndroidBuild): Promise<void> {
     if (writes.length) throw sharedWorkerStateError(writes, b.app);
   }
   const moduleFiles = [...b.modules, ...b.components.map((c) => c.file), ...(b.compiledPlugins ?? [])];
+  // Which modules run on the main thread only; a worker's script reaching one stops the build with the import chain.
+  const threads = moduleThreads({ program: b.program, modules: moduleFiles, workers: b.workers, resolved: b.resolved, coreModuleOf: (f) => /[\\/]@nativescript[\\/]core[\\/](.+)$/.exec(f)?.[1] ?? null });
+  translator.moduleThread = (file) => threads.get(file);
   // The generated kit: a module only `await import(…)` reaches (and what only it imports) runs when it is imported, as the
   // bundle evaluates it then, not at launch: its top level may read what the app has only once it runs (the start activity).
   const lazy = b.generatedKit ? importedLazily(b.program, moduleFiles, b.resolved) : new Map<string, string[]>();
@@ -211,7 +218,7 @@ export async function writeAndroid(b: AndroidBuild): Promise<void> {
     const cls = sf.statements.find(ts.isClassDeclaration)!;
     try {
       const { params, lines, statics } = translator.componentMembers(cls, c.props);
-      const body = [`class ${c.name}(${params.join(', ')}) {`, ...lines, ...(statics.length ? ['    companion object {', ...statics, '    }'] : []), SourceLines.end, ...render(c, b.infos, { framework: b.framework, zone: b.zone, slots: b.mounted, rowSignals: b.mounted, ...(b.framework === 'react' ? { screenContent: REACT_SCREEN_CONTENT } : {}) }), '}'];
+      const body = [`${translator.threadAnnotation(cls)}class ${c.name}(${params.join(', ')}) {`, ...lines, ...(statics.length ? ['    companion object {', ...statics, '    }'] : []), SourceLines.end, ...render(c, b.infos, { framework: b.framework, zone: b.zone, slots: b.mounted, rowSignals: b.mounted, ...(b.framework === 'react' ? { screenContent: REACT_SCREEN_CONTENT } : {}) }), '}'];
       write(join(sources, c.name + '.kt'), header(c.file.replace(/\.ts$/, '')) + body.join('\n') + '\n');
     } catch (e) {
       if (!translator.errors) throw e;

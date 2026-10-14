@@ -1655,7 +1655,7 @@ ${indent}}`;
       t.indent = '';
     }
     if (statics.length) lines.push('    companion object {', ...statics, '    }');
-    return this.declared(name, (simple) => [`class ${ident(simple)}${supers.length ? ` : ${supers.join(', ')}` : ''} {`, ...withRealm(lines, '    '), '}'].join('\n'));
+    return this.declared(name, cls, (simple) => [`class ${ident(simple)}${supers.length ? ` : ${supers.join(', ')}` : ''} {`, ...withRealm(lines, '    '), '}'].join('\n'));
   }
 
   // ---- `Base.extend({ … })` and `Array.create(type, length)` -----------------------------------
@@ -1817,9 +1817,9 @@ ${indent}}`;
   }
 
   /** A Java class's name a class takes: its own package's, declared in a file of that package; '' where the class is declared so. */
-  private declared(name: string, code: (simple: string) => string): string {
-    if (!name.includes('.')) return code(name);
-    this.t.foreign.push({ name, code: this.t.suppressingDeprecations(() => code(name.slice(name.lastIndexOf('.') + 1)), false) });
+  private declared(name: string, at: ts.Node, code: (simple: string) => string): string {
+    if (!name.includes('.')) return (ts.isClassDeclaration(at) ? '' : this.t.threadAnnotation(at)) + code(name);
+    this.t.foreign.push({ name, code: this.t.threadAnnotation(at) + this.t.suppressingDeprecations(() => code(name.slice(name.lastIndexOf('.') + 1)), false) });
     return '';
   }
 
@@ -1882,7 +1882,7 @@ ${indent}}`;
       if (missing.length) throw t.error(literal, `an extend class implementing ${interfaces.map((i) => javaTypeName(`L${i.name};`)).join(', ')} without ${[...new Set(missing)].join(', ')}`);
     }
     const body = withRealm([...fields, ...ctors, ...(init ? [`${inner}init { init() }`] : []), ...methods], inner);
-    return this.declared(x.name, (simple) => [`${x.javaName ? '' : outer}class ${simple}${supers.length ? ` : ${supers.join(', ')}` : ''} {`, ...body, `${x.javaName ? '' : outer}}`].join('\n'));
+    return this.declared(x.name, x.call, (simple) => [`${x.javaName ? '' : outer}class ${simple}${supers.length ? ` : ${supers.join(', ')}` : ''} {`, ...body, `${x.javaName ? '' : outer}}`].join('\n'));
   }
 
   /** `Array.create(java.lang.String, n)`, `Array.create('int', n)`: a Java array of n default elements. */

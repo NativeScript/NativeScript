@@ -9,6 +9,7 @@ import type { Properties } from './properties.ts';
 import { recognizePatterns, type Patterns } from './patterns.ts';
 import type { Reach } from './reach.ts';
 import { allowedDeprecation } from './android-deprecations.ts';
+import type { ModuleThread } from './threading.ts';
 
 /**
  * TypeScript to Kotlin, typed by the checker, with JavaScript's semantics
@@ -1421,7 +1422,7 @@ export class Translator implements AsyncTranslator {
     }
     if (moduleObject) {
       const body = [...members, ...(init.length ? [`fun __init() {\n${init.join('\n')}\n}`] : [])];
-      out.push([`object ${moduleObject} {`, ...body.map((m) => m.split('\n').map((x) => (x ? '    ' + x : x)).join('\n')), '}'].join('\n'));
+      out.push([`${this.threadAnnotation(sf)}object ${moduleObject} {`, ...body.map((m) => m.split('\n').map((x) => (x ? '    ' + x : x)).join('\n')), '}'].join('\n'));
     }
     return { code: out.join('\n\n') + '\n', init };
   }
@@ -2486,7 +2487,7 @@ export class Translator implements AsyncTranslator {
 
   private classDecl(cls: ts.ClassDeclaration): string {
     const code = this.suppressingDeprecations(() => this.classDeclCode(cls), false);
-    return code ? this.docOf(cls) + code : code;
+    return code ? this.docOf(cls) + this.threadAnnotation(cls) + code : code;
   }
 
   private classDeclCode(cls: ts.ClassDeclaration): string {
@@ -3211,6 +3212,14 @@ export class Translator implements AsyncTranslator {
   /** Library mode: getters typed as the Java class every override's value has, wider than script declares them. */
   widenedAccessors = new Map<ts.Node, string>();
   private widenedParams = new Map<ts.Node, { base: ts.Type; own: string }>();
+  /** The thread each module's code runs on (threading.ts): a `ui` module's classes and functions are main-thread only. */
+  moduleThread: ((file: string) => ModuleThread | undefined) | null = null;
+
+  /** `@UiThread ` before a declaration of a `ui` module, as Android lint checks callers against it, or ''. */
+  threadAnnotation(n: ts.Node): string {
+    return this.moduleThread?.(n.getSourceFile().fileName) === 'ui' ? '@UiThread ' : '';
+  }
+
   /** The allowed deprecated Android APIs each declaration being translated uses, innermost last. */
   private deprecationScopes: Set<string>[] = [];
 

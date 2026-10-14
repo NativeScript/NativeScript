@@ -22,9 +22,14 @@ kotlin {
     compilerOptions { jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17) }
 }
 
-// -PnativescriptKitStrict (CI): a warning in the kit fails its build.
+// -PnativescriptKitStrict (CI): a warning in the kit fails its build, and lint checks its thread annotations
+// (@UiThread on the main-thread-only modules, threading.ts) against the Android APIs' own.
 if (providers.gradleProperty("nativescriptKitStrict").isPresent) {
     kotlin { compilerOptions { allWarningsAsErrors.set(true) } }
+    android.lint {
+        checkOnly += setOf("WrongThread", "WrongThreadInterprocedural")
+        abortOnError = true
+    }
 }
 
 // -PgeneratedKit: the kit generated from core (generated/kotlin, tools/native-kit/generate-android.mts) in place of the hand port,
