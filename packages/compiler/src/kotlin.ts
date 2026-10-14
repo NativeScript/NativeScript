@@ -7822,7 +7822,12 @@ export class Translator implements AsyncTranslator {
     // `{ … } satisfies T` is of the literal's own type, and so are the literals in it: T only checks them.
     let outer: ts.Node = e;
     while (ts.isPropertyAssignment(outer.parent) && ts.isObjectLiteralExpression(outer.parent.parent)) outer = outer.parent.parent;
-    const contextual = ts.isSatisfiesExpression(outer.parent) ? undefined : this.checker.getContextualType(e);
+    let contextual = ts.isSatisfiesExpression(outer.parent) ? undefined : this.checker.getContextualType(e);
+    // An async function's result (`T | PromiseLike<T>` where it returns): the T a literal can be.
+    if (contextual?.isUnion()) {
+      const plain = contextual.types.filter((t) => !t.getProperty('then'));
+      if (plain.length === 1 && plain.length < contextual.types.length) contextual = plain[0];
+    }
     // An object held untyped is extensible, as every script object is.
     if (contextual && contextual.flags & ts.TypeFlags.Any) return this.dynamicObject(e);
     // `{ … } as unknown as T`: an object script reads and extends untyped.
