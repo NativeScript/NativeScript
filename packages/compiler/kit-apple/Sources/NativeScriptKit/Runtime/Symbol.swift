@@ -3,6 +3,7 @@ import Foundation
 /// A JavaScript symbol: equal only to itself. As a property key it is `key`,
 /// a string no JavaScript code spells, which `Object.keys`, `for…in` and JSON skip.
 public final class JSSymbol: Hashable, CustomStringConvertible {
+    nonisolated deinit {}
     public let jsDescription: String?
     public let key: String
 

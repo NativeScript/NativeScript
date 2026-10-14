@@ -133,6 +133,13 @@ function hasTopLevelArrow(t: string): boolean {
   return false;
 }
 
+/**
+ * Every generated class declares this unless it or a base has an isolated deinit. Under main-actor default isolation an
+ * implicit deinit is isolated, and each hop to the main actor costs code (about 400 KB in an app); this one runs no
+ * script code, so it can run on whichever thread drops the last reference.
+ */
+export const NONISOLATED_DEINIT = '    nonisolated deinit {}';
+
 export const CF_CLASSES = new Set(['CGPath', 'CGMutablePath', 'CGColor', 'CGImage', 'CGContext', 'CGColorSpace', 'CGGradient', 'CGFont', 'CTFont', 'CTLine', 'CTFrame', 'CFString', 'CFData', 'CFRunLoop', 'CFRunLoopTimer', 'CFRunLoopSource', 'CFRunLoopObserver']);
 
 /** An optional value type: `T?`, `(…)?`, but not a function returning an optional. */
@@ -2273,6 +2280,7 @@ export class Translator implements AsyncTranslator {
       members.push(`    @objc nonisolated func ${found.swift}(${params})${found.returns === 'Void' ? '' : ` -> ${found.returns}`} { ${enteredGuard(found.swift, found.labels, found.params, found.returns, '', found.escaping)}; ${onMainThread(result, found.returns, '', found.params.map((_, k) => `__a${k}`), found.params.map((p, k) => (found.escaping?.includes(k) ? `@escaping ${p}` : p)))} }`);
     }
     this.extendedClasses.push(`@MainActor final class ${name}: ${[baseClass.swift, ...protocols.map((p) => p!.swift)].join(', ')} {
+${NONISOLATED_DEINIT}
     var jsMethods: Any?
 ${members.join('\n')}
 }`);
@@ -2327,7 +2335,7 @@ ${members.join('\n')}
     if (allFields.some((f) => f.accessor)) return this.accessorClass(name, allFields);
     const fields = allFields.filter((f) => !f.symbol);
     const symbolic = allFields.filter((f) => f.symbol);
-    const lines = [`final class ${name}: ${['JSDynamic', ...this.shapeProtocols(allFields).map((x) => x.conformance), ...(symbolic.length ? [] : ['JSObjectConvertible'])].join(', ')} {`];
+    const lines = [`final class ${name}: ${['JSDynamic', ...this.shapeProtocols(allFields).map((x) => x.conformance), ...(symbolic.length ? [] : ['JSObjectConvertible'])].join(', ')} {`, NONISOLATED_DEINIT];
     // Lenient code: a field of an object or function type holds null too (`{ completion: null, ...options }`).
     const held = (f: ShapeField) => (!this.lenient || f.symbol ? f.type : isFunctionType(f.type) ? `(${f.type})!` : this.lenientRef(f.type));
     for (const f of fields) lines.push(`    var ${ident(f.name)}: ${held(f)}`);
@@ -2365,7 +2373,7 @@ ${members.join('\n')}
    * closure the literal gives, with the object as `this`.
    */
   private accessorClass(name: string, fields: ShapeField[]): string {
-    const lines = [`final class ${name}: JSDynamic, JSAccessorKeyed {`];
+    const lines = [`final class ${name}: JSDynamic, JSAccessorKeyed {`, NONISOLATED_DEINIT];
     const params: string[] = [];
     const inits: string[] = [];
     for (const f of fields) {
@@ -3948,7 +3956,7 @@ ${members.join('\n')}
       const members = this.componentMembers(cls, []);
       // Angular's injector reports a throwing constructor as a fatal error.
       const make = members.some((m) => /^\s*init\(\) throws/m.test(m)) ? `try! ${name}()` : `${name}()`;
-      return [`final class ${name} {`, `    static let shared = Injector.root { ${make} }`, '', ...members, '}'].join('\n');
+      return [`final class ${name} {`, NONISOLATED_DEINIT, `    static let shared = Injector.root { ${make} }`, '', ...members, '}'].join('\n');
     }
     const c = this.checker;
     const heritage = cls.heritageClauses?.find((h) => h.token === ts.SyntaxKind.ExtendsKeyword)?.types[0];
@@ -4439,6 +4447,7 @@ ${members.join('\n')}
     this.indent = '';
     lines.push('}');
     lines[0] = header();
+    lines.splice(1, 0, NONISOLATED_DEINIT);
     this.documentMembers(cls, lines);
     return [...this.docLines(cls, ''), ...lines].join('\n');
   }

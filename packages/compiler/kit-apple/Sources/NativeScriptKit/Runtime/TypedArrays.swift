@@ -272,6 +272,7 @@ public typealias JSBigUint64Array = JSTypedArray<JSBigUint64Element>
 /// type. An index out of range reads undefined and is ignored on write; a written value is converted
 /// as the element type says.
 public final class JSTypedArray<Kind: JSTypedArrayElement>: JSTypedArrayProtocol, JSToStringTag, JSStringConvertible, JSHostObject, JSIterableValue, Sequence {
+    nonisolated deinit {}
     public let buffer: JSArrayBuffer
     @usableFromInline let base: UnsafeMutableRawPointer
     @usableFromInline let count: Int
@@ -821,6 +822,7 @@ private func jsArrayLikeValues(_ value: Any) -> [Any?] {
 
 /// `DataView`: a buffer's bytes read and written as numbers of any type, at any offset, in either byte order.
 public final class JSDataView: JSArrayBufferView, JSToStringTag, JSHostObject {
+    nonisolated deinit {}
     public let buffer: JSArrayBuffer
     let offset: Int
     let count: Int

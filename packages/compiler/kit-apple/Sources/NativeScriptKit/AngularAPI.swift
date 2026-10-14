@@ -6,6 +6,7 @@ import Foundation
 
 /// An event a component raises (Angular `output()`): the parent subscribes, the component emits.
 public final class Emitter<T> {
+    nonisolated deinit {}
     private var handlers: [(T) -> Void] = []
     public init() {}
     public func on(_ handler: @escaping (T) -> Void) { handlers.append(handler) }
@@ -18,6 +19,7 @@ extension Emitter where T == Void {
 
 /// `inject(DestroyRef)`: callbacks run when the injecting component's scope ends.
 public final class DestroyRef {
+    nonisolated deinit {}
     private weak var owner: Owner?
     init(_ owner: Owner?) { self.owner = owner }
     public static func current() -> DestroyRef { DestroyRef(Owner.current) }
@@ -37,6 +39,7 @@ public final class DestroyRef {
 
 /// `inject(Injector)`; `injector.get(Service)` is compiled to the service's shared instance.
 public final class Injector {
+    nonisolated deinit {}
     public static let shared = Injector()
 
     /// A root service, made as the root injector makes it: whatever component first injects it, its effects
@@ -48,6 +51,7 @@ public final class Injector {
 
 /// `NgZone` without zone.js: both run their function at once.
 public final class NgZone {
+    nonisolated deinit {}
     public static let shared = NgZone()
     public func run<T>(_ fn: () throws -> T) rethrows -> T { try fn() }
     public func runOutsideAngular<T>(_ fn: () throws -> T) rethrows -> T { try fn() }
@@ -55,12 +59,14 @@ public final class NgZone {
 
 /// A component class used as a value (`dialog.open(SheetComponent)`): what creating and rendering it gives.
 public final class ComponentFactory {
+    nonisolated deinit {}
     let make: () -> View
     public init(_ make: @escaping () -> View) { self.make = make }
 }
 
 /// `NativeDialogRef`: the open dialog a component was created in.
 public final class NativeDialogRef {
+    nonisolated deinit {}
     public static var current: NativeDialogRef!
     /// `NATIVE_DIALOG_DATA`: the `data` the dialog was opened with.
     public internal(set) var data: Any? = nil
@@ -73,6 +79,7 @@ public final class NativeDialogRef {
 
 /// `NativeDialog` (`NativeDialogService`): a component shown as a native modal, with `nativeOptions` as `showModal` takes them.
 public final class NativeDialogService {
+    nonisolated deinit {}
     public static let shared = NativeDialogService()
 
     @discardableResult
@@ -100,6 +107,7 @@ public final class NativeDialogService {
 /// `HttpClient.get` through core's `Http.request`, the request @nativescript/angular's backend sends through
 /// core's XMLHttpRequest: the body parsed as JSON unless `responseType` is `'text'`, a status of 400 or more an error.
 public final class HttpClient {
+    nonisolated deinit {}
     public static let shared = HttpClient()
 
     public func get(_ url: String, _ options: Any? = nil) -> RxObservable<Any?> {

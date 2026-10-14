@@ -253,6 +253,7 @@ private enum JSExtrasType {
 }
 
 private final class JSInspectContext {
+    nonisolated deinit {}
     var depth = 2
     let breakLength = 80
     let compact = 3

@@ -4,6 +4,7 @@ import Foundation
 // ordered by expiry and then by list id, every timer callback followed by a microtask checkpoint.
 
 final class JSTimer {
+    nonisolated deinit {}
     let id: Double
     let callback: () -> Void
     let repeatInterval: Double?
@@ -20,6 +21,7 @@ final class JSTimer {
 }
 
 final class JSTimerList {
+    nonisolated deinit {}
     let duration: Double
     var expiry: Double
     var id: Int

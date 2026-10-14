@@ -5,6 +5,7 @@ import Foundation
 /// fails on iOS), else from the application's root view, and closes the topmost.
 public enum Modal {
     private final class Shown {
+        nonisolated deinit {}
         let view: View
         let owner: Owner
         var resolved = false

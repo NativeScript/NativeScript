@@ -274,7 +274,7 @@ enum JSMethodValues {
     private static var pruneAt = 64
 
     /// The function a class's method is, one object per class and name, kept for good as a prototype's methods are.
-    final class Identity {}
+    final class Identity { nonisolated deinit {} }
     struct IdentityKey: Hashable {
         let type: ObjectIdentifier
         let name: String

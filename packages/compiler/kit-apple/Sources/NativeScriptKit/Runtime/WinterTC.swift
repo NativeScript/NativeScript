@@ -7,6 +7,7 @@ import Security
 
 /// `DOMException`: an error the web's APIs throw, told apart by its name.
 public final class JSDOMException: JSError {
+    nonisolated deinit {}
     public init(_ message: String, name: String) {
         super.init(message)
         self.name = name
@@ -73,6 +74,7 @@ public func jsAtob(_ data: String) throws -> String {
 
 /// `TextEncoder`: strings to UTF-8.
 public final class JSTextEncoder: JSDynamic {
+    nonisolated deinit {}
     public init() {}
 
     public var encoding: String { "utf-8" }
@@ -92,6 +94,7 @@ public final class JSTextEncoder: JSDynamic {
 
 /// `TextDecoder`: UTF-8 to strings, the only encoding NativeScript's runtime decodes.
 public final class JSTextDecoder: JSDynamic {
+    nonisolated deinit {}
     public let fatal: Bool
     public let ignoreBOM: Bool
 
@@ -138,6 +141,7 @@ public let crypto = JSCrypto()
 
 /// `Crypto`: random values and the subtle API.
 public final class JSCrypto: JSDynamic, @unchecked Sendable {
+    nonisolated deinit {}
     public let subtle = JSSubtleCrypto()
 
     public func randomUUID() -> String { UUID().uuidString.lowercased() }
@@ -170,6 +174,7 @@ public final class JSCrypto: JSDynamic, @unchecked Sendable {
 
 /// `KeyAlgorithm`: the parameters a key was made with, a plain object to script.
 public final class JSKeyAlgorithm: JSDynamic {
+    nonisolated deinit {}
     private let fields: JSObject
 
     init(_ fields: [(String, Any?)]) { self.fields = JSObject(fields) }
@@ -186,6 +191,7 @@ public final class JSKeyAlgorithm: JSDynamic {
 
 /// `CryptoKey`: a secret, public or private key, which script holds without reading its bytes.
 public final class JSCryptoKey: JSDynamic {
+    nonisolated deinit {}
     enum Material {
         case secret(SymmetricKey)
         case rsa(SecKey)
@@ -230,6 +236,7 @@ public final class JSCryptoKey: JSDynamic {
 
 /// `CryptoKeyPair`: what generating an asymmetric key gives, a plain object to script.
 public final class JSCryptoKeyPair: JSDynamic {
+    nonisolated deinit {}
     public var publicKey: JSCryptoKey
     public var privateKey: JSCryptoKey
 
@@ -260,6 +267,7 @@ public final class JSCryptoKeyPair: JSDynamic {
 
 /// `SubtleCrypto`: SHA digests, HMAC and RSA-OAEP, each settling a promise.
 public final class JSSubtleCrypto: JSDynamic, @unchecked Sendable {
+    nonisolated deinit {}
     public func digest(_ algorithm: Any?, _ data: Any?) -> JSPromise<JSArrayBuffer> {
         settle {
             let hash = try normalizedName(algorithm, among: hashNames)

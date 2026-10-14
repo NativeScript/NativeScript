@@ -7,6 +7,7 @@ import UIKit
 
 /// The template children of a container: its static views and its regions, in template order.
 final class TemplateChildren: RegionHost {
+    nonisolated deinit {}
     private weak var owner: ViewBase?
     private var parts: [RegionPart] = []
     /// The views this template put in the container, in order.
@@ -202,6 +203,7 @@ public enum NativeScriptApplication {
 /// A row's item and index as its template's bindings read them. A recycled
 /// cell keeps its views; writing the next item re-runs only its bindings.
 public final class ListRow<Item> {
+    nonisolated deinit {}
     public let item: Signal<Item>
     public let index: Signal<Double>
 

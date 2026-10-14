@@ -70,6 +70,7 @@ public enum Microtasks {
 
 /// A rejection HostPromiseRejectionTracker saw without a handler.
 final class JSRejection {
+    nonisolated deinit {}
     let reason: Any?
     var handled = false
     init(_ reason: Any?) { self.reason = reason }
@@ -97,6 +98,7 @@ private func jsTypeMismatch<T>(_ value: Any?, _ type: T.Type) -> JSTypeError {
 
 /// The resolving functions of a promise (CreateResolvingFunctions): whichever is called first wins.
 public final class JSResolvers<T> {
+    nonisolated deinit {}
     public let promise: JSPromise<T>
     private var alreadyResolved = false
 
@@ -130,6 +132,7 @@ extension JSResolvers where T == Void {
 /// The reactions of `then` beyond a promise's first, the fulfilled ones as `Any`: a field of a generic type
 /// (an array of `(T) -> Void`) looks up its metadata each time the promise copies or destroys it.
 final class JSPromiseReactions {
+    nonisolated deinit {}
     var fulfilled: [Any] = []
     var rejected: [(Any?) -> Void] = []
 }
@@ -144,6 +147,7 @@ func jsIsObjectValue<T>(_ value: T) -> Bool {
 
 /// A JavaScript `Promise` (ECMA-262 §27.2). Rejection reasons are any JavaScript value.
 public final class JSPromise<T>: JSThenable, CustomStringConvertible {
+    nonisolated deinit {}
     @usableFromInline var state = JSPromiseState.pending
     @usableFromInline var result: T?
     private var reason: Any?
@@ -652,6 +656,7 @@ public func jsAwait<T>(value: T, _ onFulfilled: @escaping (T) -> Void, _ onRejec
 /// Inlinable where an async function starts and returns: the app's module, which knows the result type, makes
 /// the promise without a run-time lookup of its generic class.
 public final class JSAsync<T> {
+    nonisolated deinit {}
     public let promise = JSPromise<T>()
     /// The promise's resolving functions' already-resolved flag, which `JSResolvers` would hold.
     @usableFromInline var resolved = false

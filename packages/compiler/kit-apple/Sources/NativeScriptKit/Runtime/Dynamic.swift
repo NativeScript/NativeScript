@@ -238,6 +238,7 @@ private var jsRestricted: [ObjectIdentifier: JSRestriction] = [:]
 
 /// How far `Object.preventExtensions`, `seal` or `freeze` closed an object other than a plain one.
 private final class JSRestriction {
+    nonisolated deinit {}
     weak var object: AnyObject?
     var level: Int
     init(_ object: AnyObject, _ level: Int) { self.object = object; self.level = level }

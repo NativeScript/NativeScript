@@ -2,6 +2,7 @@ import Foundation
 
 /// NativeScript's `WeakRef`: `get()` (and the standard `deref()`) is the object while it lives.
 public final class JSWeakRef<T: AnyObject>: JSHostObject, JSToStringTag {
+    nonisolated deinit {}
     private weak var target: T?
 
     public init(_ target: T) {
@@ -46,6 +47,7 @@ private func jsWeakKey(_ key: Any?) -> AnyObject? {
 
 /// A JavaScript `WeakMap`: keys by identity, held weakly; an entry goes with its key.
 public final class JSWeakMap<Key, Value>: JSDynamic, JSWeakCollection {
+    nonisolated deinit {}
     private var table: [ObjectIdentifier: JSWeakEntry<Value>] = [:]
 
     public init() {}
@@ -90,6 +92,7 @@ public final class JSWeakMap<Key, Value>: JSDynamic, JSWeakCollection {
 
 /// A JavaScript `WeakSet`: members by identity, held weakly.
 public final class JSWeakSet<Element>: JSDynamic, JSWeakCollection {
+    nonisolated deinit {}
     private let map = JSWeakMap<Element, Bool>()
 
     public init() {}

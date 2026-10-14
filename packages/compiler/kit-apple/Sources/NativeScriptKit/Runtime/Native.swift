@@ -98,6 +98,7 @@ public enum JSNativeDispatch {
 
 /// A native class script made with `Cls.extend(methods, { protocols })`: `new()` makes an instance answering from the methods.
 public final class JSExtendedClass {
+    nonisolated deinit {}
     let make: () -> NSObject
     public init(_ make: @escaping () -> NSObject) { self.make = make }
 }
@@ -114,6 +115,7 @@ public func jsCallExtended(_ object: AnyObject, _ methods: Any?, _ key: String, 
 
 /// `Cls.alloc()` on a class script holds untyped: the class, until an initializer (`initWithFrame`) makes the object.
 public final class JSNativeAllocation {
+    nonisolated deinit {}
     public let cls: AnyClass
     init(_ cls: AnyClass) { self.cls = cls }
 }

@@ -4,6 +4,7 @@ import Foundation
 /// inspector, runtime module resolution): reading its members gives more of the same,
 /// and calling or constructing one throws a TypeError naming it.
 public final class JSMootValue: JSDynamic {
+    nonisolated deinit {}
     let path: String
     /// An app's own use of Android's globals (`android.os.Build`), which on iOS are not defined: reading a member
     /// throws the ReferenceError JavaScript does, and `typeof` is "undefined".
@@ -51,6 +52,7 @@ public protocol JSConstructible: AnyObject {
 
 /// A class held as a value that script constructs (`new bag.PropertyBag()`).
 public final class JSConstructor {
+    nonisolated deinit {}
     let make: ([Any?]) throws -> Any?
     public init(_ make: @escaping ([Any?]) throws -> Any?) { self.make = make }
 }

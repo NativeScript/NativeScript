@@ -32,7 +32,7 @@ import { androidBindings } from './bindings-android.ts';
 import { KIT, KIT_PLUGINS, useKitPlugins } from './core.ts';
 import { kitIndex } from './kit-index.ts';
 import { describe, PropertyGuard } from './unimplemented.ts';
-import { swiftString, Translator, type ComponentInfo } from './swift.ts';
+import { NONISOLATED_DEINIT, swiftString, Translator, type ComponentInfo } from './swift.ts';
 import { xmlApp, type XmlApp } from './xml-app.ts';
 import { isFragment, render, SCHEDULE, type Framework } from './codegen.ts';
 import { createRequire } from 'node:module';
@@ -434,7 +434,7 @@ for (const c of components) {
   const sf = program.getSourceFile(c.file)!;
   const cls = sf.statements.find(ts.isClassDeclaration)!;
   try {
-    const lines = [`final class ${c.name} {`, members.get(c.name) ?? '', '', ...render(c, infos, (m) => translator.memberThrows(cls, m), style, { slots: mounted, rowSignals: mounted, zone, itemType: (m) => translator.memberElementType(cls, m) }), '}'];
+    const lines = [`final class ${c.name} {`, NONISOLATED_DEINIT, members.get(c.name) ?? '', '', ...render(c, infos, (m) => translator.memberThrows(cls, m), style, { slots: mounted, rowSignals: mounted, zone, itemType: (m) => translator.memberElementType(cls, m) }), '}'];
     writeFileSync(join(sourcesDir, c.name + '.swift'), header(c.file.replace(/\.ts$/, '')) + lines.join('\n') + '\n');
   } catch (e) {
     if (!translator.errors) throw e;
@@ -543,6 +543,8 @@ const extensions = iosExtensions({ app, out, bundle, packages, signing, team: re
 // Script is single-threaded: the kit and the app's code are isolated to the main actor, checked in Swift 6 mode. Plugins'
 // own Swift targets keep their language mode.
 const swiftMode = { SWIFT_VERSION: '"6"', SWIFT_DEFAULT_ACTOR_ISOLATION: 'MainActor' };
+// Release only: Debug keeps Swift 6's run-time isolation checks, so an isolation mistake traps during development.
+const swiftModeRelease = `      configs:\n        Release:\n          OTHER_SWIFT_FLAGS: "$(inherited) -Xfrontend -disable-dynamic-actor-isolation"\n`;
 const appSettings = { PRODUCT_BUNDLE_IDENTIFIER: bundle, ...swiftMode, ...resources.settings, ...coreNative.settings, ...pluginLines.settings, ...signing };
 // Reflection metadata keeps every type's descriptor, and through it the type and all it calls, in the
 // binary; the kit reflects only on tuples (Mirror of a tuple needs none), so a Release build has none.
@@ -575,7 +577,7 @@ ${pluginLines.packages || packages.length ? `packages:\n${pluginLines.packages}$
       - path: ${relative(out, kitSources)}
 ${excluded.length ? `        excludes: [${excluded.join(', ')}]\n` : ''}${coreNative.kitDependencies ? `    dependencies:\n${coreNative.kitDependencies}` : ''}    settings:
       base:
-${Object.entries(swiftMode).map(([k, v]) => `        ${k}: ${v}\n`).join('')}${Object.entries(coreNative.settings).map(([k, v]) => `        ${k}: ${v}\n`).join('')}${coreNative.targets}${pluginLines.targets}${extensions.targets}  ${name}:
+${Object.entries(swiftMode).map(([k, v]) => `        ${k}: ${v}\n`).join('')}${Object.entries(coreNative.settings).map(([k, v]) => `        ${k}: ${v}\n`).join('')}${swiftModeRelease}${coreNative.targets}${pluginLines.targets}${extensions.targets}  ${name}:
     type: application
     platform: iOS
     sources:
@@ -584,7 +586,7 @@ ${coreNative.appSources}${pluginLines.sources}${resources.sources}    dependenci
       - target: NativeScriptKit
 ${coreNative.appDependencies}${pluginLines.dependencies}${productLines(packages)}${extensions.dependencies}${resources.configFiles ? `    configFiles:\n      Debug: ${resources.configFiles.Debug}\n      Release: ${resources.configFiles.Release}\n` : ''}    settings:
       base:
-${Object.entries(appSettings).map(([k, v]) => `        ${k}: ${v}\n`).join('')}`);
+${Object.entries(appSettings).map(([k, v]) => `        ${k}: ${v}\n`).join('')}${swiftModeRelease}`);
 
 // The Xcode project is generated here (and integrated with CocoaPods where the app has pods), so a build of it
 // (the NativeScript CLI's) only runs xcodebuild on what the marker names.
@@ -891,6 +893,7 @@ function appNativeObjects(classes: NativeClass[]): string {
       return `        case ${JSON.stringify(js)}: return { (__a: [Any?]) throws -> Any? in ${m.returns === 'Void' ? `${call}; return nil` : `return ${call}`} }`;
     });
     return `final class __AppNative_${c.swift}: JSDynamic {
+${NONISOLATED_DEINIT}
     static let shared = __AppNative_${c.swift}()
     var jsKeys: [String] { [] }
     var jsClassName: String? { ${JSON.stringify(c.swift)} }

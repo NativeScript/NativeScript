@@ -1,7 +1,7 @@
 import ts from 'typescript';
 import { implementedInterfaces } from './lang.ts';
 import { isStatic } from './throws.ts';
-import { CF_CLASSES, functionParts, ident, isWriteTarget, optionalType, splitTopLevel, type Translator } from './swift.ts';
+import { CF_CLASSES, functionParts, ident, isWriteTarget, NONISOLATED_DEINIT, optionalType, splitTopLevel, type Translator } from './swift.ts';
 import {
   categoryModule, conformsTo, conformsToSwift, isSubframework, lookupClass, lookupConstant, lookupConstructor, lookupEnum, lookupFunction, lookupInit, lookupMember, lookupStruct, lookupTypealias, moduleOfDeclaration, nativeTable,
   type NativeClass, type NativeMethod, type NativeProperty, type SwiftType,
@@ -1437,6 +1437,7 @@ export class NativeAPI {
       lines.push('        default: return nil', '        }', '    }');
       lines[0] = lines[0].replace(/ \{$/, ', JSNativeMembers {');
     }
+    if (!lines.some((l) => /^    isolated deinit /.test(l))) lines.splice(1, 0, NONISOLATED_DEINIT);
     t.indent = '';
     t.inNativeClassBody = false;
     lines.push('}');

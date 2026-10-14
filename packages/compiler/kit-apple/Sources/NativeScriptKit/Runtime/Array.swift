@@ -31,6 +31,7 @@ public typealias JSRest<Element> = JSArray<Element>
 /// `Element` cannot hold; `at(_:)` returns nil instead), and growing the array past its end with
 /// `length` or an index needs an optional `Element`, a number or a string to hold the empty slots.
 open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, ExpressibleByArrayLiteral, CustomStringConvertible {
+    nonisolated deinit {}
     public final var storage: [Element]
     public final var jsTracker: JSTracker?
     /// Values written under keys that are no array index (`a[-1] = v`, `a[1.5] = v`).

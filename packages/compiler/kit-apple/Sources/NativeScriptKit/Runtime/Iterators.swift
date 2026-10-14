@@ -40,6 +40,7 @@ public protocol JSIterableValue: AnyObject {
 
 /// `Iterable<T>`: something that makes a fresh iterator each time it is iterated.
 open class JSIterable<Element>: JSIterableValue {
+    nonisolated deinit {}
     private let make: (() throws -> JSIterator<Element>)?
 
     public init(_ make: @escaping () throws -> JSIterator<Element>) { self.make = make }
@@ -54,6 +55,7 @@ open class JSIterable<Element>: JSIterableValue {
 /// closure; generators and script iterators subclass it. Single-pass: iterating it again
 /// continues where it stopped.
 open class JSIterator<Element>: JSIterable<Element>, JSIteratorProtocol, Sequence, IteratorProtocol, JSDynamic, JSToStringTag {
+    nonisolated deinit {}
     private let step: (() -> Element?)?
     /// Done, or closed by a loop that left early.
     public private(set) var finished = false
@@ -163,6 +165,7 @@ open class JSIterator<Element>: JSIterable<Element>, JSIteratorProtocol, Sequenc
 
 /// An iterator script wrote: an object literal's `next` (and `return`, `throw`), or a class with `next()`.
 public final class JSScriptIterator<Element>: JSIterator<Element> {
+    nonisolated deinit {}
     private let nextResult: (Any?) throws -> Any?
     private let returnResult: ((Any?) throws -> Any?)?
     private let throwResult: ((Any?) throws -> Any?)?
@@ -189,6 +192,7 @@ public final class JSScriptIterator<Element>: JSIterator<Element> {
 
 /// An iterator held as another value's type: `[Symbol.iterator]()` returned a class with `next`.
 public final class JSIteratorAdapter<Element>: JSIterator<Element> {
+    nonisolated deinit {}
     private let inner: JSIteratorProtocol
 
     public init(_ inner: JSIteratorProtocol) {
@@ -265,6 +269,7 @@ enum JSCompletion {
 
 /// The body side of a generator: the lowered body calls it at each `yield` and at its end.
 public final class JSGeneratorContext {
+    nonisolated deinit {}
     enum Outcome { case yielded(Any?), returned(Any?), threw(Any?) }
     var outcome: Outcome?
     var resumption: JSResumption?
@@ -416,6 +421,7 @@ public protocol JSAsyncIterableValue: AnyObject {
 
 /// `AsyncIterable<T>`.
 open class JSAsyncIterable<Element>: JSAsyncIterableValue {
+    nonisolated deinit {}
     private let make: (() throws -> JSAsyncIterator<Element>)?
 
     public init(_ make: @escaping () throws -> JSAsyncIterator<Element>) { self.make = make }
@@ -427,6 +433,7 @@ open class JSAsyncIterable<Element>: JSAsyncIterableValue {
 
 /// An async iterator: an async generator, a script's, or a sync iterator `for await` adapts.
 open class JSAsyncIterator<Element>: JSAsyncIterable<Element>, JSAsyncIteratorProtocol, JSDynamic, JSToStringTag {
+    nonisolated deinit {}
     let tag: String
 
     init(tag: String) {
@@ -455,6 +462,7 @@ open class JSAsyncIterator<Element>: JSAsyncIterable<Element>, JSAsyncIteratorPr
 
 /// An async iterator script wrote: `next` (and `return`, `throw`) returning promises of result objects.
 public final class JSScriptAsyncIterator<Element>: JSAsyncIterator<Element> {
+    nonisolated deinit {}
     private let nextResult: (Any?) throws -> JSPromise<Any?>
     private let returnResult: ((Any?) throws -> JSPromise<Any?>)?
     private let throwResult: ((Any?) throws -> JSPromise<Any?>)?
@@ -477,6 +485,7 @@ public final class JSScriptAsyncIterator<Element>: JSAsyncIterator<Element> {
 
 /// An async iterator held as another value's type (a class with an async `next`).
 public final class JSAsyncIteratorAdapter<Element>: JSAsyncIterator<Element> {
+    nonisolated deinit {}
     private let inner: JSAsyncIteratorProtocol
 
     public init(_ inner: JSAsyncIteratorProtocol) {
@@ -491,6 +500,7 @@ public final class JSAsyncIteratorAdapter<Element>: JSAsyncIterator<Element> {
 
 /// CreateAsyncFromSyncIterator (§27.1.6): `for await` over a sync iterable awaits each value.
 public final class JSAsyncFromSyncIterator<Element>: JSAsyncIterator<Element> {
+    nonisolated deinit {}
     private let sync: JSIteratorProtocol
 
     public init(_ sync: JSIteratorProtocol) {
@@ -551,6 +561,7 @@ public func jsAsyncCloseThrowing(_ iterator: JSAsyncIteratorProtocol, _ error: A
 
 /// The body side of an async generator.
 public final class JSAsyncGeneratorContext {
+    nonisolated deinit {}
     weak var generator: JSAsyncGeneratorCore?
     /// The generator while its body runs or awaits: pending jobs keep it alive, as in JavaScript.
     var running: JSAsyncGeneratorCore?
@@ -581,6 +592,7 @@ public final class JSAsyncGeneratorContext {
 
 /// The queue and states of an async generator (§27.6.3).
 class JSAsyncGeneratorCore {
+    nonisolated deinit {}
     enum State { case suspendedStart, suspendedYield, executing, awaitingReturn, completed }
     private struct Request { let completion: JSCompletion; let resolvers: JSResolvers<Any?> }
 
@@ -755,6 +767,7 @@ class JSAsyncGeneratorCore {
 
 /// An async generator object (`async function*`).
 public final class JSAsyncGenerator<Element>: JSAsyncIterator<Element> {
+    nonisolated deinit {}
     private let core: JSAsyncGeneratorCore
 
     public init(_ body: @escaping (JSAsyncGeneratorContext) throws -> Void) {

@@ -10,6 +10,7 @@ public struct JSException: Error, @unchecked Sendable, CustomStringConvertible {
 
 /// JavaScript `Error`. TypeScript classes extending `Error` subclass it and set `name` in their initializer.
 open class JSError: JSDynamic, CustomStringConvertible {
+    nonisolated deinit {}
     open var name: String = "Error"
     open var message: String
     open var cause: Any?
@@ -74,6 +75,7 @@ open class JSError: JSDynamic, CustomStringConvertible {
 
 /// JavaScript `TypeError`.
 open class JSTypeError: JSError {
+    nonisolated deinit {}
     public override init(_ message: String = "", cause: Any? = nil) {
         super.init(message, cause: cause)
         name = "TypeError"
@@ -82,6 +84,7 @@ open class JSTypeError: JSError {
 
 /// JavaScript `RangeError`.
 open class JSRangeError: JSError {
+    nonisolated deinit {}
     public override init(_ message: String = "", cause: Any? = nil) {
         super.init(message, cause: cause)
         name = "RangeError"
@@ -90,6 +93,7 @@ open class JSRangeError: JSError {
 
 /// JavaScript `SyntaxError`.
 open class JSSyntaxError: JSError {
+    nonisolated deinit {}
     public override init(_ message: String = "", cause: Any? = nil) {
         super.init(message, cause: cause)
         name = "SyntaxError"
@@ -98,6 +102,7 @@ open class JSSyntaxError: JSError {
 
 /// JavaScript `ReferenceError`.
 open class JSReferenceError: JSError {
+    nonisolated deinit {}
     public override init(_ message: String = "", cause: Any? = nil) {
         super.init(message, cause: cause)
         name = "ReferenceError"
@@ -106,6 +111,7 @@ open class JSReferenceError: JSError {
 
 /// JavaScript `AggregateError`.
 open class JSAggregateError: JSError {
+    nonisolated deinit {}
     public var errors: JSArray<Any?>
 
     public init(errors: JSArray<Any?>, _ message: String = "", cause: Any? = nil) {
@@ -170,6 +176,7 @@ public func jsErrorOf(_ value: Any?) -> JSError {
 /// What was thrown or rejected that is no `Error`, seen as one: its members read as the value's own,
 /// undefined where it has none.
 public final class JSThrownValue: JSError {
+    nonisolated deinit {}
     public let value: Any?
 
     init(_ value: Any?) {

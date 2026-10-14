@@ -5,6 +5,7 @@ import Foundation
 /// lookaround, and the `g i m s y` flags. Indexes are UTF-16 offsets, as in
 /// JavaScript. `lastIndex` advances for global and sticky expressions.
 public final class JSRegExp: JSDynamic, JSStringConvertible {
+    nonisolated deinit {}
     public let source: String
     public let flags: String
     public var lastIndex: Double = 0
@@ -224,6 +225,7 @@ public final class JSRegExp: JSDynamic, JSStringConvertible {
 /// The array `exec` and `match` return: the matched text, then each group
 /// (undefined when it did not take part), with `index` and `groups`.
 public final class JSMatch {
+    nonisolated deinit {}
     /// The match as the array of strings script holds it (`s.match(/x/g)` typed `string[]`); an unmatched group reads as "".
     public var jsStrings: JSArray<String> { JSArray<String>(values.storage.map { $0 ?? "" }) }
 
@@ -273,6 +275,7 @@ public final class JSMatch {
 /// A pattern compiled for ICU with the names of its groups: one for every RegExp of the same source and flags,
 /// since a literal makes a new RegExp each time it is evaluated (`/x/.test(line)` in a loop).
 final class JSRegExpProgram {
+    nonisolated deinit {}
     let regex: NSRegularExpression
     let groupNames: [String]
 
@@ -318,6 +321,7 @@ final class JSRegExpProgram {
 /// ICU searches, made once. The last one is kept for the next search of the same string, as an exec loop makes,
 /// or a literal evaluated again over the same text (`text.match(/x/g)` in a function).
 final class JSRegExpSubject {
+    nonisolated deinit {}
     let string: String
     let units: [UInt16]
     private let hasSurrogates: Bool

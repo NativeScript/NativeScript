@@ -9,6 +9,7 @@ import UIKit
 
 /// JavaScript `null`.
 public final class JSNull: Sendable, CustomStringConvertible {
+    nonisolated deinit {}
     fileprivate init() {}
     public var description: String { "null" }
 }
@@ -277,6 +278,7 @@ func jsArrayIndex(_ key: String) -> UInt32? {
 /// A plain JavaScript object. Own keys enumerate in JavaScript order: array-index keys
 /// ascending, then the other keys in insertion order.
 public final class JSObject: JSDynamic, JSSymbolKeyed, JSAccessorKeyed, JSReactiveConvertible, ExpressibleByDictionaryLiteral, CustomStringConvertible {
+    nonisolated deinit {}
     private var storage: [JSPropertyKey: Any?] = [:]
     private var indexKeys: [UInt32] = []
     private var namedKeys: [String] = []

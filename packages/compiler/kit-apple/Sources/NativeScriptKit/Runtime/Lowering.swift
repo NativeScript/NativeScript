@@ -8,6 +8,7 @@ import Foundation
 /// that continues synchronously is run by the iteration already running,
 /// one that continues from a promise job starts a new run.
 public final class JSAsyncLoop {
+    nonisolated deinit {}
     private var running = false
     private var pending = false
     private var iteration: ((@escaping () -> Void) -> Void)?
