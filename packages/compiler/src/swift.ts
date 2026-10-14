@@ -8850,6 +8850,7 @@ ${members.join('\n')}
     switch (name) {
       case 'toFixed': { const n = digitsLiteral(e.arguments[0], 0, 100, 0); return n !== null ? `jsToFixed(${t}, digits: ${n})` : `jsToFixed(${t}, ${a[0]})`; }
       case 'toLocaleString': return `jsNumberToLocaleString(${[t, ...e.arguments.map((x) => this.coerce(x, 'Any?'))].join(', ')})`;
+      case 'toExponential': return `jsToExponential(${t}${a[0] !== undefined ? `, ${a[0]}` : ''})`;
       case 'toPrecision': { const n = digitsLiteral(e.arguments[0], 1, 100, null); return !a[0] ? `js(${t})` : n !== null ? `jsToPrecision(${t}, digits: ${n})` : `jsToPrecision(${t}, ${a[0]})`; }
       case 'toString': { const n = digitsLiteral(e.arguments[0], 2, 36, null); return !a[0] ? `js(${t})` : n !== null ? `jsNumberToString(${t}, base: ${n})` : `jsNumberToString(${t}, radix: ${a[0]})`; }
       case 'valueOf': return t;

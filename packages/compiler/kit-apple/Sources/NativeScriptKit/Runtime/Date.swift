@@ -113,25 +113,33 @@ public final class JSDate: JSDynamic, JSStringConvertible {
     public func getUTCMilliseconds() -> Double { field(true) { jsModPositive($0, 1000) } }
     public func getTimezoneOffset() -> Double { time.isFinite ? -JSDate.offset(atUTC: time) / 60_000 : .nan }
 
-    // MARK: Setters (local time; each returns the new time value)
+    // MARK: Setters (each returns the new time value)
 
-    private func setLocal(year: Double? = nil, month: Double? = nil, date: Double? = nil, hours: Double? = nil, minutes: Double? = nil, seconds: Double? = nil, ms: Double? = nil) -> Double {
-        let t = time.isFinite ? JSDate.local(time) : (year != nil ? 0 : .nan)
+    /// Sets the given fields in local time or UTC, the others kept; an invalid date stays invalid unless the year is set, from +0.
+    private func setFields(utc: Bool, year: Double? = nil, month: Double? = nil, date: Double? = nil, hours: Double? = nil, minutes: Double? = nil, seconds: Double? = nil, ms: Double? = nil) -> Double {
+        let t = time.isFinite ? (utc ? time : JSDate.local(time)) : (year != nil ? 0 : .nan)
         guard t.isFinite else { return .nan }
         let d = JSDate.makeDate(year ?? JSDate.yearFromTime(t), month ?? JSDate.monthFromTime(t), date ?? JSDate.dateFromTime(t),
                                 hours ?? (JSDate.timeWithinDay(t) / 3_600_000).rounded(.down), minutes ?? jsModPositive((t / 60_000).rounded(.down), 60),
                                 seconds ?? jsModPositive((t / 1000).rounded(.down), 60), ms ?? jsModPositive(t, 1000))
-        time = JSDate.timeClip(JSDate.utc(fromLocal: d))
+        time = JSDate.timeClip(utc ? d : JSDate.utc(fromLocal: d))
         return time
     }
     @discardableResult public func setTime(_ t: Double) -> Double { time = JSDate.timeClip(t); return time }
-    @discardableResult public func setFullYear(_ y: Double, _ m: Double? = nil, _ d: Double? = nil) -> Double { setLocal(year: y, month: m, date: d) }
-    @discardableResult public func setMonth(_ m: Double, _ d: Double? = nil) -> Double { setLocal(month: m, date: d) }
-    @discardableResult public func setDate(_ d: Double) -> Double { setLocal(date: d) }
-    @discardableResult public func setHours(_ h: Double, _ m: Double? = nil, _ s: Double? = nil, _ ms: Double? = nil) -> Double { setLocal(hours: h, minutes: m, seconds: s, ms: ms) }
-    @discardableResult public func setMinutes(_ m: Double, _ s: Double? = nil, _ ms: Double? = nil) -> Double { setLocal(minutes: m, seconds: s, ms: ms) }
-    @discardableResult public func setSeconds(_ s: Double, _ ms: Double? = nil) -> Double { setLocal(seconds: s, ms: ms) }
-    @discardableResult public func setMilliseconds(_ ms: Double) -> Double { setLocal(ms: ms) }
+    @discardableResult public func setFullYear(_ y: Double, _ m: Double? = nil, _ d: Double? = nil) -> Double { setFields(utc: false, year: y, month: m, date: d) }
+    @discardableResult public func setMonth(_ m: Double, _ d: Double? = nil) -> Double { setFields(utc: false, month: m, date: d) }
+    @discardableResult public func setDate(_ d: Double) -> Double { setFields(utc: false, date: d) }
+    @discardableResult public func setHours(_ h: Double, _ m: Double? = nil, _ s: Double? = nil, _ ms: Double? = nil) -> Double { setFields(utc: false, hours: h, minutes: m, seconds: s, ms: ms) }
+    @discardableResult public func setMinutes(_ m: Double, _ s: Double? = nil, _ ms: Double? = nil) -> Double { setFields(utc: false, minutes: m, seconds: s, ms: ms) }
+    @discardableResult public func setSeconds(_ s: Double, _ ms: Double? = nil) -> Double { setFields(utc: false, seconds: s, ms: ms) }
+    @discardableResult public func setMilliseconds(_ ms: Double) -> Double { setFields(utc: false, ms: ms) }
+    @discardableResult public func setUTCFullYear(_ y: Double, _ m: Double? = nil, _ d: Double? = nil) -> Double { setFields(utc: true, year: y, month: m, date: d) }
+    @discardableResult public func setUTCMonth(_ m: Double, _ d: Double? = nil) -> Double { setFields(utc: true, month: m, date: d) }
+    @discardableResult public func setUTCDate(_ d: Double) -> Double { setFields(utc: true, date: d) }
+    @discardableResult public func setUTCHours(_ h: Double, _ m: Double? = nil, _ s: Double? = nil, _ ms: Double? = nil) -> Double { setFields(utc: true, hours: h, minutes: m, seconds: s, ms: ms) }
+    @discardableResult public func setUTCMinutes(_ m: Double, _ s: Double? = nil, _ ms: Double? = nil) -> Double { setFields(utc: true, minutes: m, seconds: s, ms: ms) }
+    @discardableResult public func setUTCSeconds(_ s: Double, _ ms: Double? = nil) -> Double { setFields(utc: true, seconds: s, ms: ms) }
+    @discardableResult public func setUTCMilliseconds(_ ms: Double) -> Double { setFields(utc: true, ms: ms) }
 
     // MARK: Strings
 
