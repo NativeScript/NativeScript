@@ -117,7 +117,7 @@ Within a batch, each failure is kept to the test that caused it:
 
 ## Results
 
-test262 `d53ebc8b19`, compiler at `feat/native-kit` `91fe5d94c` with the ES2023 library (`wip/es2023`), 2026-10-14. Swift on macOS, Kotlin on the host JVM.
+test262 `d53ebc8b19`, compiler at `feat/native-kit` `91fe5d94c` with the ES2023 library and Swift's built-in values (`wip/builtin-values`), 2026-10-14. Swift on macOS, Kotlin on the host JVM.
 
 | Area | Backend | Tests | pass | fail | refused: type check | refused: translator | out-of-scope | unported | invalid | Pass rate | Compiled pass rate |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
@@ -145,7 +145,7 @@ test262 `d53ebc8b19`, compiler at `feat/native-kit` `91fe5d94c` with the ES2023 
 | Promise | kotlin | 675 | 106 | 87 | 190 | 173 | 59 | 0 | 60 | 19% | 55% |
 | Date | swift | 327 | 116 | 82 | 35 | 85 | 6 | 0 | 3 | 36% | 59% |
 | Date | kotlin | 327 | 128 | 67 | 35 | 88 | 6 | 0 | 3 | 40% | 66% |
-| RegExp | swift | 830 | 163 | 157 | 354 | 135 | 16 | 2 | 3 | 20% | 51% |
+| RegExp | swift | 830 | 221 | 193 | 354 | 41 | 16 | 2 | 3 | 27% | 53% |
 | RegExp | kotlin | 830 | 176 | 142 | 354 | 137 | 16 | 2 | 3 | 22% | 55% |
 | Destructuring | swift | 651 | 42 | 140 | 247 | 55 | 165 | 0 | 2 | 9% | 23% |
 | Destructuring | kotlin | 651 | 63 | 117 | 247 | 57 | 165 | 0 | 2 | 13% | 35% |
@@ -157,11 +157,11 @@ test262 `d53ebc8b19`, compiler at `feat/native-kit` `91fe5d94c` with the ES2023 
 | Closures and scope | kotlin | 366 | 45 | 61 | 66 | 7 | 177 | 0 | 10 | 25% | 42% |
 | Optional chaining and nullish | swift | 140 | 16 | 15 | 75 | 2 | 30 | 0 | 2 | 15% | 52% |
 | Optional chaining and nullish | kotlin | 140 | 22 | 8 | 75 | 3 | 30 | 0 | 2 | 20% | 73% |
-| typeof and equality | swift | 161 | 9 | 22 | 108 | 4 | 16 | 0 | 2 | 6% | 29% |
+| typeof and equality | swift | 161 | 9 | 23 | 108 | 3 | 16 | 0 | 2 | 6% | 28% |
 | typeof and equality | kotlin | 161 | 21 | 10 | 108 | 4 | 16 | 0 | 2 | 15% | 68% |
 | Exceptions | swift | 295 | 48 | 95 | 42 | 15 | 66 | 18 | 11 | 24% | 34% |
 | Exceptions | kotlin | 295 | 55 | 93 | 42 | 10 | 66 | 18 | 11 | 28% | 37% |
-| **Total** | swift | 9342 | 1543 | 1910 | 2179 | 2559 | 922 | 102 | 127 | 19% | 45% |
+| **Total** | swift | 9342 | 1601 | 1947 | 2179 | 2464 | 922 | 102 | 127 | 20% | 45% |
 | **Total** | kotlin | 9342 | 1724 | 1751 | 2179 | 2537 | 922 | 102 | 127 | 21% | 50% |
 
 What stands out:

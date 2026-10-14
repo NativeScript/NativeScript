@@ -1,5 +1,5 @@
 import ts from 'typescript';
-import { intlConstructor, isStringRaw, iterationThrows, unsafeReceiver } from './lang.ts';
+import { intlConstructor, isStringRaw, iterationThrows, uncheckedMatch, unsafeReceiver } from './lang.ts';
 
 type Fn = ts.SignatureDeclaration & { body?: ts.Node };
 
@@ -189,6 +189,7 @@ export class Throws {
       if (this.untyped(n.expression)) return true;
       if (ts.isPropertyAccessExpression(n) && this.dynamicMember(n)) return true;
       if (ts.isPropertyAccessExpression(n) && !n.questionDotToken && unsafeReceiver(n.expression, c)) return true;
+      if ((ts.isPropertyAccessExpression(n) || ts.isElementAccessExpression(n)) && !n.questionDotToken && uncheckedMatch(n.expression, c)) return true;
       if (ts.isPropertyAccessExpression(n) && !n.questionDotToken && c.getTypeAtLocation(n.expression).flags & ts.TypeFlags.Never) return true;
       const decl = c.getSymbolAtLocation(ts.isPropertyAccessExpression(n) ? n.name : n.argumentExpression)?.declarations?.[0];
       if (decl && ts.isGetAccessorDeclaration(decl) && decl.body && !isAssignmentTarget(n)) return !this.reported(decl, (f) => this.fn(f)) && this.fn(decl);
@@ -247,7 +248,7 @@ export class Throws {
       if (fnDecl && ts.isFunctionDeclaration(fnDecl) && fnDecl.body && !isAsync(fnDecl) && !fnDecl.asteriskToken && decl && builtinName(decl)?.startsWith('Array.')) return this.fn(fnDecl);
       return c.getTypeAtLocation(arg).getCallSignatures().length > 0;
     });
-    if (ts.isNewExpression(call) && ts.isIdentifier(call.expression) && call.expression.text === 'RegExp') return true;
+    if (ts.isIdentifier(call.expression) && call.expression.text === 'RegExp') return true;
     // A buffer or a view of an invalid length is a RangeError.
     if (ts.isNewExpression(call) && ts.isIdentifier(call.expression) && BUFFER_TYPES.has(call.expression.text) && c.getSymbolAtLocation(call.expression)?.declarations?.every((d) => d.getSourceFile().isDeclarationFile)) return true;
     // A weak reference to an untyped value refuses a primitive.

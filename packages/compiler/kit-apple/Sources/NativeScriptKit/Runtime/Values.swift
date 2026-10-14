@@ -517,7 +517,7 @@ public func jsGet(_ object: Any?, _ key: String) throws -> Any? {
         }
     }
     // A class itself (`cls.prototype`), before any cast a class object could wrongly pass as an instance.
-    if let cls = object as? AnyClass { return key == "prototype" ? JSPrototypes.of(cls) : JSPrototypes.staticMember(cls, key) ?? nil }
+    if let cls = object as? AnyClass { return key == "prototype" ? JSPrototypes.of(cls) : JSPrototypes.staticMember(cls, key) ?? (key == "name" ? jsClassValueName(cls) : nil) }
     switch object {
     case nil:
         throw JSException(JSTypeError("Cannot read properties of undefined (reading '\(key)')"))
@@ -784,6 +784,7 @@ public func jsStrictEquals(_ a: Any?, _ b: Any?) -> Bool {
     switch (a, b) {
     case (nil, nil): return true
     case (nil, _), (_, nil): return false
+    case let (x as Any.Type, y as Any.Type): return x == y
     case let (x as Double, y as Double): return x == y
     case let (x as String, y as String): return jsStringEquals(x, y)
     case let (x as Bool, y as Bool): return x == y
@@ -1018,6 +1019,8 @@ public func jsInstanceOfNamed(_ value: Any?, _ name: String) -> Bool {
 /// `value.constructor.name`: the name of the class that made the value.
 public func jsConstructorName(_ value: Any?) -> String {
     let v = jsFlat(value)
+    // An error's class, not its `name` (which a subclass leaves as its base's unless it sets it).
+    if let error = v as? JSError { return jsClassValueName(type(of: error)) }
     if let dynamic = v as? JSDynamic, let name = dynamic.jsClassName { return name }
     switch v {
     case is String: return "String"

@@ -4,7 +4,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { KIT_APPLE_SOURCES } from './paths.ts';
 import { Throws, digitsLiteral, isArrayLengthLiteral, isArrayLengthWrite, isAsync, isStatic } from './throws.ts';
-import { intlConstructor, isObjectToStringCall, isStringRaw, leadingNeverRead, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers } from './lang.ts';
+import { intlConstructor, isObjectToStringCall, isStringRaw, leadingNeverRead, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, uncheckedMatch, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers } from './lang.ts';
 import { AsyncLowering, type AsyncCtx, type AsyncSyntax, type AsyncTranslator } from './async.ts';
 import { CoreAPI, isCoreDeclaration, packageOf } from './core.ts';
 import type { KitMember } from './kit-index.ts';
@@ -871,6 +871,10 @@ export class Translator implements AsyncTranslator {
       case 'NumberFormatOptions': case 'DateTimeFormatOptions': case 'CollatorOptions': case 'ResolvedNumberFormatOptions': case 'ResolvedDateTimeFormatOptions': case 'LocalesArgument':
         if (isLibDeclaration(sym?.declarations?.[0])) return 'Any?';
         break;
+      // `Number`, `String`, `Boolean` held as values (`const toNumber = Number`): the conversion each calls, which never throws.
+      case 'NumberConstructor': if (isLibDeclaration(sym?.declarations?.[0])) return '(Any?) -> Double'; break;
+      case 'StringConstructor': if (isLibDeclaration(sym?.declarations?.[0])) return '(Any?) -> String'; break;
+      case 'BooleanConstructor': if (isLibDeclaration(sym?.declarations?.[0])) return '(Any?) -> Bool'; break;
       case 'Generator': if (isLibDeclaration(sym?.declarations?.[0])) return `JSGenerator<${arg(0)}>`; break;
       case 'Iterator': case 'IterableIterator': case 'IteratorObject': case 'MapIterator': case 'SetIterator': case 'ArrayIterator': case 'StringIterator':
         if (isLibDeclaration(sym?.declarations?.[0])) return `JSIterator<${arg(0)}>`;
@@ -892,6 +896,10 @@ export class Translator implements AsyncTranslator {
       case 'Symbol': if (isLibDeclaration(sym?.declarations?.[0])) return 'JSSymbol'; break;
       // Any function, called with whatever arguments it is given.
       case 'Function': if (isLibDeclaration(sym?.declarations?.[0])) return 'Any?'; break;
+      // An error constructor held as a value: its class, read and tested dynamically.
+      case 'ErrorConstructor': case 'TypeErrorConstructor': case 'RangeErrorConstructor': case 'SyntaxErrorConstructor': case 'ReferenceErrorConstructor': case 'AggregateErrorConstructor':
+        if (isLibDeclaration(sym?.declarations?.[0])) return 'Any?';
+        break;
     }
     if (name && ERRORS[name] && sym?.declarations?.some((d) => d.getSourceFile().isDeclarationFile)) return ERRORS[name];
     if (name === 'NonNullable' && t.aliasSymbol && args().length === 1) {
@@ -3445,6 +3453,26 @@ ${members.join('\n')}
     const dense: { decl: string; type: string }[] = [];
     for (const e of extras) { if (!e) break; dense.push(e); }
     return dense;
+  }
+
+  /**
+   * A built-in constructor as a value: an error constructor its class, as an instance's `constructor` reads
+   * (`e.constructor === TypeError`); `Number`, `String` (`map(Number)`) a function of the value its slot gives first,
+   * the conversion calling them does. `Boolean` is the array methods' own (`filter(Boolean)`).
+   */
+  private builtinConstructorValue(e: ts.Identifier, decl: ts.Declaration | undefined): string | null {
+    const p = e.parent;
+    const asValue = !((ts.isCallExpression(p) || ts.isNewExpression(p)) && p.expression === e) && !(ts.isBinaryExpression(p) && p.operatorToken.kind === ts.SyntaxKind.InstanceOfKeyword && p.right === e)
+      && !(ts.isPropertyAccessExpression(p) && p.expression === e) && !ts.isTypeOfExpression(p);
+    if (!asValue || !isLibDeclaration(decl)) return null;
+    if (ERRORS[e.text]) return `${ERRORS[e.text]}.self`;
+    const conversion = ({ Number: ['jsToNumber', 'Double'], String: ['jsToString', 'String'], Boolean: ['jsTruthy', 'Bool'] } as Record<string, [string, string]>)[e.text];
+    if (!conversion) return null;
+    const context = this.checker.getContextualType(e);
+    const slot = context && this.checker.getNonNullableType(context).getCallSignatures()[0];
+    const param = slot?.getParameters()[0];
+    const t = param ? this.type(this.checker.getTypeOfSymbolAtLocation(param, e), e) : 'Any?';
+    return `{ (__p0: ${t}) -> ${conversion[1]} in ${conversion[0]}(__p0) }`;
   }
 
   /** `parseInt`, `parseFloat` as values (`valueConverter: parseInt`): functions of the string they are given, and their Swift type. */
@@ -6651,6 +6679,8 @@ ${members.join('\n')}
     // `Object` as a value, not the receiver of a call the translation knows (`(<any>Object).entries(o)`): its functions as script has them.
     if (name === 'Object' && isLibDeclaration(libDecl) && !(ts.isPropertyAccessExpression(e.parent) && e.parent.expression === e)) return 'jsObjectBuiltin';
     if (name === 'parseFloat' && isLibDeclaration(libDecl) && !(ts.isCallExpression(e.parent) && e.parent.expression === e)) return 'jsParseFloat';
+    const builtinValue = this.builtinConstructorValue(e, libDecl);
+    if (builtinValue) return builtinValue;
     // A timer or microtask function held as a value (`const clear = clearTimeout`).
     const held = !!libDecl && libDecl.getSourceFile().isDeclarationFile && Object.hasOwn(LIB_FUNCTION_VALUES, name) && !(ts.isCallExpression(e.parent) && e.parent.expression === e) ? LIB_FUNCTION_VALUES[name] : undefined;
     if (held) return this.convert(held.code, held.type, this.typeOf(e));
@@ -7157,7 +7187,9 @@ ${members.join('\n')}
     if (name === 'prototype' && this.library && this.resolve(target)?.flags! & ts.SymbolFlags.Class) return `JSPrototypes.of(${this.expr(target).replace(/(\.self)?$/, '.self')})`;
     if (name === 'prototype' && this.library && this.typeOf(target).endsWith('.Type')) return `JSPrototypes.of(${this.expr(target)})`;
     // `value.constructor`: its class, which script tests for static members.
-    if (name === 'constructor' && this.library && !isWriteTarget(e) && !(ts.isPropertyAccessExpression(e.parent) && e.parent.expression === e && e.parent.name.text === 'name')) return `jsConstructor(${this.coerce(target, 'Any?')})`;
+    if (name === 'constructor' && (this.library || this.checker.getSymbolAtLocation(e.name)?.declarations?.every((d) => isLibDeclaration(d))) && !isWriteTarget(e) && !(ts.isPropertyAccessExpression(e.parent) && e.parent.expression === e && e.parent.name.text === 'name')) return `jsConstructor(${this.coerce(target, 'Any?')})`;
+    // `TypeError.name`, `Number.name`: the built-in's own name.
+    if (name === 'name' && ts.isIdentifier(target) && (ERRORS[target.text] || ['Number', 'String', 'Boolean'].includes(target.text)) && isLibDeclaration(this.resolve(target)?.declarations?.[0])) return swiftString(target.text);
     // `value.constructor.name`: its class's name.
     if (name === 'name' && ts.isPropertyAccessExpression(target) && target.name.text === 'constructor' && !isWriteTarget(e)) return `jsConstructorName(${this.coerce(target.expression, 'Any?')})`;
     // `Function.prototype`: a function that does nothing.
@@ -7269,6 +7301,11 @@ ${members.join('\n')}
       if (this.optionalReads.has(e) && !rt.endsWith('?') && rt !== 'Any?') { this.optionalReads.set(e, true); return code; }
       return rt.endsWith('?') || rt === 'Any?' ? code : this.undefinedAs(`(${code})`, rt, code === read ? this.declaredTypeOf(e) ?? undefined : own);
     }
+    // A read continuing an optional chain after a call (`xs?.filter(f).length`): part of the chain, as a call continuing one is.
+    if (ts.isCallExpression(target) && ts.isOptionalChain(target) && !e.questionDotToken && this.typeOf(target).endsWith('?')) {
+      const code = this.expr(target);
+      return this.narrowed(e, `${code}${openSwiftChain(code) ? '.' : '?.'}${this.memberName(e)}`);
+    }
     const unwrap = (this.continuesOptional(target) || (ts.isCallExpression(target) && this.maybeUndefined(target))) && !e.questionDotToken;
     if (!unwrap) {
       const value = this.methodValueRead(e);
@@ -7310,6 +7347,7 @@ ${members.join('\n')}
     const access = target.parent;
     const chained = (ts.isPropertyAccessExpression(access) || ts.isElementAccessExpression(access)) && !!access.questionDotToken;
     if (!chained && this.definiteReceiver(x)) return `jsUnwrap(${this.expr(x)}, ${swiftString(key)})`;
+    if (!chained && uncheckedMatch(x, this.checker)) return `jsUnwrap(${this.expr(x)}, ${swiftString(key)}, null: true)`;
     const kind = unsafeReceiver(target, this.checker);
     if (!kind) return null;
     const value = ts.isNonNullExpression(x) ? (this.maybeUndefined(x.expression) ?? this.expr(x.expression)) : this.maybeUndefined(x);
@@ -7330,7 +7368,10 @@ ${members.join('\n')}
       if (t === 'JSArray<Any?>' && rt !== 'Any?') return this.fromAny(`(${this.maybeUndefined(e)!} ?? nil)`, rt);
       return this.undefinedAs(this.maybeUndefined(e)!, rt, /^JSArray<(.*)>$/.exec(t)![1]);
     }
-    if (t === 'JSMatch') return `${target}${q}[Int(${this.expr(key)})]`;
+    if (t === 'JSMatch') {
+      if (!q && uncheckedMatch(e.expression, this.checker)) return `jsUnwrap(${target}, ${ts.isNumericLiteral(key) || ts.isStringLiteral(key) ? swiftString(key.text) : `jsToString(${this.coerce(key, 'Any?')})`}, null: true)[Int(${this.expr(key)})]`;
+      return `${target}${q}[Int(${this.expr(key)})]`;
+    }
     if (isTypedArrayType(t)) {
       const assigned = ts.isBinaryExpression(e.parent) && e.parent.operatorToken.kind === ts.SyntaxKind.EqualsToken;
       const code = `${target}${q}[${isWriteTarget(e) && !assigned ? 'jsElement' : 'jsIndex'}: ${this.toNumber(key)}]`;
@@ -7519,8 +7560,11 @@ ${members.join('\n')}
       return `${this.expr(e.expression)}${e.questionDotToken || this.continuesOptional(e.expression) ? '?' : ''}[jsIndex: ${this.toNumber(e.argumentExpression)}]`;
     }
     if (ts.isElementAccessExpression(e) && !isWriteTarget(e) && this.typeOf(e.expression).replace(/\?$/, '').startsWith('JSArray<')) {
-      const q = e.questionDotToken || this.continuesOptional(e.expression) ? '?' : '';
-      const code = `${this.expr(e.expression)}${q}.element(${this.toNumber(e.argumentExpression)})`;
+      const target = this.expr(e.expression);
+      // An element of a call continuing an optional chain (`xs?.map(f)[0]`) is part of the chain.
+      const inChain = !e.questionDotToken && ts.isCallExpression(e.expression) && ts.isOptionalChain(e.expression) && openSwiftChain(target);
+      const q = !inChain && (e.questionDotToken || this.continuesOptional(e.expression)) ? '?' : '';
+      const code = `${target}${q}.element(${this.toNumber(e.argumentExpression)})`;
       // An untyped element narrowed (`args[0] instanceof Path2D`, `typeof arguments[0] === 'number'`): the element as that type.
       const narrowed = this.typeOf(e).replace(/[?!]$/, '');
       if (/^JSArray<Any\?>[?!]?$/.test(this.typeOf(e.expression)) && narrowed !== 'Any' && (this.isObjectRef(e) || ['Double', 'String', 'Bool'].includes(narrowed))) return `((${code} ?? nil) as? ${narrowed})`;
@@ -7926,7 +7970,10 @@ ${members.join('\n')}
       const t = this.typeOf(target).replace(/\?$/, '');
       // `xs?.find(…)` on a value Swift holds as present (a lenient array that starts empty): a plain call.
       const receiverType = this.typeOf(target);
-      const q = callee.questionDotToken ? (receiverType.endsWith('?') || receiverType.endsWith('!') || ts.isOptionalChain(target) ? '?' : '') : receiverType.endsWith('?') || (ts.isCallExpression(target) && this.maybeUndefined(target)) ? '!' : '';
+      // A call continuing an optional chain (`xs?.map(f).join(',')`) is part of the chain: within Swift's own chain it
+      // continues it, and after a chain the translation wrapped (`jsSplit(s?.…)`) it chains on the optional made.
+      const continued = !callee.questionDotToken && ts.isOptionalChain(target) && receiverType.endsWith('?') ? (openSwiftChain(this.expr(target)) ? '' : '?') : null;
+      const q = continued ?? (callee.questionDotToken ? (receiverType.endsWith('?') || receiverType.endsWith('!') || ts.isOptionalChain(target) ? '?' : '') : receiverType.endsWith('?') || (ts.isCallExpression(target) && this.maybeUndefined(target)) ? '!' : '');
       if (method === 'fill' && this.isArrayConstruction(target) && target.arguments?.length === 1 && e.arguments.length === 1) {
         // `new Array(n).fill(v)` or `Array(n).fill(v)`: n copies of v, typed as the array is declared (`const widths: number[] = …`).
         const context = this.checker.getContextualType(e);
@@ -7958,8 +8005,8 @@ ${members.join('\n')}
           return `{ () ${tr ? 'throws ' : ''}-> ${this.typeOf(e)} in let ${tmp} = ${value}; return ${tr}${this.arrayMethod(method, target, e, '')} }()`;
         } finally { this.subst.delete(target); }
       }
-      // `n?.toString()`: the method on the value when there is one.
-      if ((t === 'String' || t === 'Double') && callee.questionDotToken && this.typeOf(target).endsWith('?')) {
+      // `n?.toString()`, `s?.trim().split(',')`: the method on the value when there is one.
+      if ((t === 'String' || t === 'Double') && (callee.questionDotToken || continued !== null) && this.typeOf(target).endsWith('?')) {
         const recv = this.expr(target);
         const v = this.fresh('__v');
         this.subst.set(target, v);
@@ -8179,6 +8226,12 @@ ${members.join('\n')}
     const name = decl && isCoreDeclaration(decl) && ts.isFunctionDeclaration(decl) && decl.name ? decl.name.text : callee.text;
     const arg = (k: number) => e.arguments[k];
     const lib = !decl || decl.getSourceFile().isDeclarationFile;
+    // `RegExp(re)` without flags is `re` itself; otherwise it constructs as `new RegExp` does.
+    if (name === 'RegExp' && isLibDeclaration(decl)) {
+      if (e.arguments.length === 1 && this.typeOf(arg(0)).replace(/[?!]$/, '') === 'JSRegExp') return this.expr(arg(0));
+      if (arg(0) && !this.isString(arg(0))) return `JSRegExp.construct(${this.coerce(arg(0), 'Any?')}${arg(1) ? `, ${this.coerce(arg(1), 'Any?')}` : ''})`;
+      return `JSRegExp(${arg(0) ? this.str(arg(0)) : '"(?:)"'}${arg(1) ? `, ${this.str(arg(1))}` : ''})`;
+    }
     if (this.isArrayConstruction(e)) {
       const made = this.newArray(e, this.typeOf(e), e.arguments);
       if (made) return made;
@@ -8661,7 +8714,8 @@ ${members.join('\n')}
             return `${t}.${name}({ (${params.map((p, k) => `${p}: ${types[k]}`).join(', ')}) ${throwing ? 'throws ' : ''}-> Bool in jsTruthy(${throwing ? 'try ' : ''}(${this.fn(callback)})(${params.join(', ')})) })`;
           }
           // A function value taking elements of another Swift type (an untyped array's): each element converted.
-          const held = !ts.isArrowFunction(callback) && !ts.isFunctionExpression(callback) ? functionParts(this.functionValueOf(callback)) : null;
+          // A built-in conversion (`map(Number)`) is written as a closure of the element already.
+          const held = !ts.isArrowFunction(callback) && !ts.isFunctionExpression(callback) && !(ts.isIdentifier(callback) && this.builtinConstructorValue(callback, this.resolve(callback)?.declarations?.[0])) ? functionParts(this.functionValueOf(callback)) : null;
           const want = held && name === 'map' ? this.typeOf(e).replace(/^JSArray<(.*)>$/, '$1') : held?.result;
           if (held?.params.length === 1 && (held.params[0] !== el || held.result !== want)) {
             return `${t}.${name}({ (__e: ${el}) throws -> ${want} in ${held.result === 'Void' ? '' : 'return '}${this.convert(`${this.valueThrows(callback) ? 'try ' : ''}(${this.expr(callback)})(${this.convert('__e', el, held.params[0])})`, held.result, want!)} })`;
@@ -9590,6 +9644,10 @@ ${members.join('\n')}
         // The library's classes: the runtime's type of any of their instances (a promise of any result).
         const builtin = BUILTIN_CLASSES[name];
         if (builtin && isLibDeclaration(this.resolve(e.right)?.declarations?.[0])) return `(${l()} is ${builtin})`;
+        // A class held as a value (`e instanceof C`, C a parameter): tested against the class it holds.
+        if (!(ts.isIdentifier(e.right) && ((this.resolve(e.right)?.flags ?? 0) & ts.SymbolFlags.Class || ERRORS[name])) && this.typeOf(e.right) === 'Any?' && !isLibDeclaration(this.resolve(e.right)?.declarations?.[0])) {
+          return `jsInstanceOf(${this.coerce(e.left, 'Any?')}, ${this.expr(e.right)})`;
+        }
         const swiftType = ERRORS[name] ?? this.typeOf(e.right).replace(/^typeof /, '').replace(/\.Type$/, '');
         // A class the library declares that has no Swift type (the DOM's `FormData`): the kit's class of that name, as the runtime's globals are core's.
         if (swiftType === 'Any?' && ts.isIdentifier(e.right) && isLibDeclaration(this.resolve(e.right)?.declarations?.[0])) return `jsInstanceOfNamed(${this.coerce(e.left, 'Any?')}, ${swiftString(name)})`;
@@ -10052,6 +10110,24 @@ const SWIFT_SYNTAX: AsyncSyntax = {
   closeAsyncIteratorThrowing: (iterator, error, onError) => `jsAsyncCloseThrowing(${iterator}, ${error}, ${onError})`,
   tryStatement: (statement) => statement.replace(/^(let \w+(?:: [^=]+)? = )/, '$1try '),
 };
+
+/** Whether Swift code is a postfix chain still open at its top level (`a?.b(c)`): what follows it is part of the chain. */
+function openSwiftChain(code: string): boolean {
+  let depth = 0;
+  for (let k = 0; k < code.length; k++) {
+    const c = code[k];
+    if (c === '"') {
+      for (k++; k < code.length && code[k] !== '"'; k++) if (code[k] === '\\') k++;
+      continue;
+    }
+    if (c === '(' || c === '[' || c === '{') depth++;
+    else if (c === ')' || c === ']' || c === '}') depth--;
+    else if (depth === 0 && c === '?' && (code[k + 1] === '.' || code[k + 1] === '[')) return true;
+    // A space at the top level ends the postfix chain (an operator follows), unless a trailing closure opens there.
+    else if (depth === 0 && c === ' ' && code[k + 1] !== '{') return false;
+  }
+  return false;
+}
 
 /** Library functions read as values, with their Swift function types. */
 const LIB_FUNCTION_VALUES: Record<string, { code: string; type: string }> = {
