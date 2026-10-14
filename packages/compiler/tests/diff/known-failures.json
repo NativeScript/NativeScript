@@ -3,5 +3,7 @@
 	"swift": {
 		"227-callback-given-undefined": "A string parameter given undefined reads \"\", and a void promise's value is not undefined (Swift translator)."
 	},
-	"kotlin": {}
+	"kotlin": {
+		"280-callback-function-values": "Array.from of a Set is an array of Any? and a function declaration passed by name to reduce matches no overload (Kotlin translator)."
+	}
 }
