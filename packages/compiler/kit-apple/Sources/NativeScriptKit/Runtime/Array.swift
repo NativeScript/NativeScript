@@ -816,8 +816,18 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
     /// `array.join(separator)`: elements in their string form, undefined and null as "".
     public final func join(_ separator: String = ",") -> String {
         track()
-        if Element.self == String.self { return (storage as! [String]).map { jsIsHoleString($0) ? "" : $0 }.joined(separator: separator) }
-        if Element.self == Double.self { return (storage as! [Double]).map { $0.bitPattern == jsHoleNumber.bitPattern ? "" : jsNumberToString($0) }.joined(separator: separator) }
+        // Into one string sized up front: the strings mapped and joined made an array and grew the result.
+        if Element.self == String.self {
+            let strings = unsafeBitCast(storage, to: [String].self)
+            var out = ""
+            out.reserveCapacity(strings.reduce(separator.utf8.count * Swift.max(0, strings.count - 1)) { $0 + $1.utf8.count })
+            for (i, s) in strings.enumerated() {
+                if i > 0 { out += separator }
+                if !jsIsHoleString(s) { out += s }
+            }
+            return out
+        }
+        if Element.self == Double.self { return unsafeBitCast(storage, to: [Double].self).map { $0.bitPattern == jsHoleNumber.bitPattern ? "" : jsNumberToString($0) }.joined(separator: separator) }
         return jsJoin(separator)
     }
 
