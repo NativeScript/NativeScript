@@ -399,6 +399,7 @@ fun toJavaValue(value: Any?, type: Class<*>): Any? = when {
     }
     value is Double && type.isEnum -> type.enumConstants!![value.toInt()]
     value is String && type == Char::class.javaPrimitiveType -> value[0]
+    value is JSArray<*> && type == DoubleArray::class.java && value.isNumberMode -> value.toDoubles()
     value is JSArray<*> && type.isArray -> {
         val element = type.componentType!!
         val array = JavaArray.newInstance(element, value.storage.size)
@@ -419,6 +420,7 @@ fun fromJavaValue(value: Any?): Any? = when (value) {
     is Char -> value.toString()
     is CharSequence -> if (value is String) value else value.toString()
     is Unit -> null
+    is DoubleArray -> jsNumberArrayOf(*value)
     else -> if (value.javaClass.isArray) JSArray((0 until JavaArray.getLength(value)).map { fromJavaValue(JavaArray.get(value, it)) }) else value
 }
 

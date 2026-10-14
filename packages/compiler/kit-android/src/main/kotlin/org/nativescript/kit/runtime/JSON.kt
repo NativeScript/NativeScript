@@ -406,7 +406,7 @@ private class JSONWriter(val gap: String?) {
                 val n = jsNumeric(v)
                 if (n != null) number(n)
                 else when (v) {
-                    is JSArray<*> -> array(v, key ?: index.toString(), v.storage, depth)
+                    is JSArray<*> -> array(v, key ?: index.toString(), v.elements, depth)
                     is JSMatch -> array(v, key ?: index.toString(), v.values.storage, depth)
                     is JSMatchIndices -> array(v, key ?: index.toString(), v.values.storage, depth)
                     is Pair<*, *> -> array(v, key ?: index.toString(), listOf(v.first, v.second), depth)
