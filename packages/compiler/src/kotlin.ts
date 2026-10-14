@@ -1797,6 +1797,22 @@ export class Translator implements AsyncTranslator {
     return [...[...this.shapes.values()].map((s) => this.objectClass(s.name, s.fields, null)), ...this.globalAliases.values(), ...this.templateObjects].join('\n\n');
   }
 
+  private setLater: Set<string> | null = null;
+  /** Names of members the program assigns on objects that are not class instances (`options.width = 2`). */
+  private membersSetLater(): Set<string> {
+    if (this.setLater) return this.setLater;
+    const names = new Set<string>();
+    const visit = (n: ts.Node): void => {
+      if (ts.isBinaryExpression(n) && n.operatorToken.kind >= ts.SyntaxKind.FirstAssignment && n.operatorToken.kind <= ts.SyntaxKind.LastAssignment && ts.isPropertyAccessExpression(n.left)) {
+        const owner = this.checker.getSymbolAtLocation(n.left.name)?.declarations?.[0]?.parent;
+        if (!owner || !ts.isClassLike(owner)) names.add(n.left.name.text);
+      }
+      ts.forEachChild(n, visit);
+    };
+    for (const sf of this.sourceFiles) if (!sf.isDeclarationFile) visit(sf);
+    return (this.setLater = names);
+  }
+
   /** A plain JavaScript object of a known shape: a class with named fields, readable as a dynamic object. */
   private objectClass(name: string, allFields: ShapeField[], className: string | null, implementing?: string, overrides?: Set<string>): string {
     if (allFields.some((f) => f.accessor)) return this.accessorClass(name, allFields);
@@ -1809,7 +1825,7 @@ export class Translator implements AsyncTranslator {
     const optional = fields.filter((f) => f.type.endsWith('?') && !isFunctionType(f.type));
     // An optional member set after the object is made becomes its last key, as a property JavaScript adds does.
     const symbolic = allFields.some((f) => f.symbol);
-    const tracked = new Set(symbolic ? [] : optional.filter((f) => !overrides?.has(f.name) && !jvmField(f)).map((f) => f.name));
+    const tracked = new Set(symbolic ? [] : optional.filter((f) => !overrides?.has(f.name) && !jvmField(f) && this.membersSetLater().has(f.name)).map((f) => f.name));
     const params = [...fields, ...allFields.filter((f) => f.symbol)].map((f) => `${tracked.has(f.name) ? '' : `${overrides?.has(f.name) ? 'override ' : jvmField(f) ? '@JvmField ' : ''}var `}${ident(f.name)}: ${f.type}${isNullable(f.type) ? ' = null' : ''}`);
     const lines = [`class ${name}(${[...params, `${tracked.size ? '' : 'private val '}jsOrder: List<String>? = null`].join(', ')}) : ${[implementing ?? 'JSDynamic', ...protocols.map((x) => x.conformance)].join(', ')} {`];
     for (const x of protocols) lines.push(...x.lines);
@@ -1822,9 +1838,9 @@ export class Translator implements AsyncTranslator {
       lines.push('    private var jsOrder: List<String>? = jsOrder');
       for (const f of fields) {
         if (!tracked.has(f.name)) continue;
-        lines.push(`    var ${ident(f.name)}: ${f.type} = ${ident(f.name)}`, `        set(value) {`, `            if (field == null && value != null) jsKeyAdded(${kotlinString(f.name)})`, '            field = value', '        }');
+        lines.push(`    var ${ident(f.name)}: ${f.type} = ${ident(f.name)}`, `        set(value) { field = jsKeySet(field, value, ${kotlinString(f.name)}) }`);
       }
-      lines.push('    private fun jsKeyAdded(key: String) {', `        val order = jsOrder ?: ${declared}.filter(::jsHas)`, '        if (key !in order) jsOrder = order + key', '    }');
+      lines.push(`    private fun <T> jsKeySet(old: T?, value: T?, key: String): T? = value.also { if (old == null && it != null) jsOrder = jsKeyAppended(jsOrder ?: ${declared}.filter(::jsHas), key) }`);
     }
     // Read from an untyped object (a cast of JSON.parse): the keys it has beyond the type's stay readable, in its order.
     lines.push('    private var jsExtra: JSDynamic? = null');

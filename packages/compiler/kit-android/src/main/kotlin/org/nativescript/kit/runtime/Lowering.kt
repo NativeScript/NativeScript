@@ -62,3 +62,6 @@ fun <T> jsArrayOfHoles(length: Double): JSArray<T> {
 /** An untyped value where a promise goes (`x as unknown as Promise<T>`): the promise it is, else one that adopts it as `Promise.resolve` does. */
 @Suppress("UNCHECKED_CAST")
 fun <T> jsPromiseOf(value: Any?): JSPromise<T> = value as? JSPromise<T> ?: JSPromise.resolve<Any?>(value) as JSPromise<T>
+
+/** An object's keys after `key` is set: last, unless it already is one. */
+fun jsKeyAppended(order: List<String>, key: String): List<String> = if (key in order) order else order + key
