@@ -8,7 +8,13 @@ val Microtasks: JSMicrotasks get() = JSRealm.current().microtasks
 
 /** A microtask queue (HTML "perform a microtask checkpoint", Node's `runMicrotasks`). */
 class JSMicrotasks internal constructor() {
-    private val queue = ArrayDeque<() -> Unit>()
+    /**
+     * Jobs FIFO in a ring of pairs: a callback and its argument, NO_ARGUMENT for a `() -> Unit` job. A reaction
+     * to a settled promise is queued as its callback and the value, without a closure around them.
+     */
+    private var ring = arrayOfNulls<Any?>(INITIAL_RING)
+    private var head = 0
+    private var jobs = 0
     private var draining = false
     internal val pendingRejections = ArrayList<JSRejection>()
 
@@ -21,9 +27,35 @@ class JSMicrotasks internal constructor() {
     /** Called when a job is queued outside a checkpoint: the host arranges one once the current task returns. */
     var onEnqueue: (() -> Unit)? = null
 
-    fun enqueue(job: () -> Unit) {
-        queue.addLast(job)
+    fun enqueue(job: () -> Unit) = push(job, NO_ARGUMENT)
+
+    /** Queues `callback(argument)`. */
+    internal fun <T> enqueue(callback: (T) -> Unit, argument: T) = push(callback, argument)
+
+    private fun push(callback: Any, argument: Any?) {
+        if (2 * jobs == ring.size) {
+            val grown = arrayOfNulls<Any?>(ring.size * 2)
+            for (k in 0 until 2 * jobs) grown[k] = ring[(head + k) and (ring.size - 1)]
+            ring = grown
+            head = 0
+        }
+        val tail = (head + 2 * jobs) and (ring.size - 1)
+        ring[tail] = callback
+        ring[tail + 1] = argument
+        jobs++
         if (!draining) onEnqueue?.invoke()
+    }
+
+    /** Takes the oldest job off the ring and runs it. */
+    @Suppress("UNCHECKED_CAST")
+    private fun runNext() {
+        val callback = ring[head]
+        val argument = ring[head + 1]
+        ring[head] = null
+        ring[head + 1] = null
+        head = (head + 2) and (ring.size - 1)
+        jobs--
+        if (argument === NO_ARGUMENT) (callback as () -> Unit)() else (callback as (Any?) -> Unit)(argument)
     }
 
     /** Called when a checkpoint ends after a task (`taskRan`) or a job ran: Angular's zone turning stable. */
@@ -39,8 +71,8 @@ class JSMicrotasks internal constructor() {
         draining = true
         try {
             while (true) {
-                while (queue.isNotEmpty()) {
-                    queue.removeFirst()()
+                while (jobs > 0) {
+                    runNext()
                     turned = true
                 }
                 if (pendingRejections.isEmpty()) {
@@ -57,6 +89,11 @@ class JSMicrotasks internal constructor() {
         } finally {
             draining = false
         }
+    }
+
+    private companion object {
+        const val INITIAL_RING = 64
+        val NO_ARGUMENT = Any()
     }
 }
 
@@ -110,7 +147,10 @@ class JSPromise<T> internal constructor() : JSThenable, JSDynamic {
     private var state = JSPromiseState.PENDING
     private var result: Any? = null
     private var reason: Any? = null
-    private val reactions = ArrayList<Pair<(T) -> Unit, (Any?) -> Unit>>()
+    /** The first reaction in fields, as most promises have one; the others in pairs after it. */
+    private var firstFulfilled: ((T) -> Unit)? = null
+    private var firstRejected: ((Any?) -> Unit)? = null
+    private var laterReactions: ArrayList<Any>? = null
     private var isHandled = false
     private var rejection: JSRejection? = null
     /** What `cancel()` does on a promise a library made cancelable (core's `AnimationPromise`). */
@@ -136,7 +176,8 @@ class JSPromise<T> internal constructor() : JSThenable, JSDynamic {
 
     /** The built-in `then`, over script's functions of any kind. */
     private fun thenUntyped(onFulfilled: Any?, onRejected: Any?): JSPromise<Any?> {
-        val (derived, resolvers) = pending<Any?>()
+        val derived = JSPromise<Any?>()
+        val resolvers = JSResolvers(derived)
         val settle = { f: Any?, v: Any?, rejected: Boolean ->
             if (!jsIsFunction(f)) { if (rejected) resolvers.reject(v) else resolvers.resolve(v) }
             else try { resolvers.resolve(jsBox(jsCall(f, v))) } catch (e: Throwable) { resolvers.reject(jsCaught(e)) }
@@ -222,39 +263,59 @@ class JSPromise<T> internal constructor() : JSThenable, JSDynamic {
         }
     }
 
+    @Suppress("UNCHECKED_CAST")
     internal fun settleFulfilled(value: T) {
         if (state != JSPromiseState.PENDING) return
         state = JSPromiseState.FULFILLED
         result = value
-        val pending = ArrayList(reactions)
-        reactions.clear()
-        for (r in pending) Microtasks.enqueue { r.first(value) }
+        val first = firstFulfilled ?: return
+        val later = laterReactions
+        clearReactions()
+        val queue = Microtasks
+        queue.enqueue(first, value)
+        if (later != null) for (k in 0 until later.size step 2) queue.enqueue(later[k] as (T) -> Unit, value)
     }
 
+    @Suppress("UNCHECKED_CAST")
     internal fun settleRejected(reason: Any?) {
         if (state != JSPromiseState.PENDING) return
         state = JSPromiseState.REJECTED
         this.reason = reason
-        val pending = ArrayList(reactions)
-        reactions.clear()
+        val first = firstRejected
+        val later = laterReactions
+        clearReactions()
+        val queue = Microtasks
         if (!isHandled) {
             val record = JSRejection(reason)
             rejection = record
-            Microtasks.pendingRejections.add(record)
+            queue.pendingRejections.add(record)
         }
-        for (r in pending) Microtasks.enqueue { r.second(reason) }
+        if (first == null) return
+        queue.enqueue(first, reason)
+        if (later != null) for (k in 1 until later.size step 2) queue.enqueue(later[k] as (Any?) -> Unit, reason)
+    }
+
+    private fun clearReactions() {
+        firstFulfilled = null
+        firstRejected = null
+        laterReactions = null
     }
 
     /** PerformPromiseThen. The callbacks are the whole reaction jobs: each runs as its own microtask. */
     @Suppress("UNCHECKED_CAST")
     fun performThen(onFulfilled: (T) -> Unit, onRejected: (Any?) -> Unit) {
         when (state) {
-            JSPromiseState.PENDING -> reactions.add(Pair(onFulfilled, onRejected))
-            JSPromiseState.FULFILLED -> { val v = result as T; Microtasks.enqueue { onFulfilled(v) } }
+            JSPromiseState.PENDING -> if (firstFulfilled == null) {
+                firstFulfilled = onFulfilled
+                firstRejected = onRejected
+            } else (laterReactions ?: ArrayList<Any>(4).also { laterReactions = it }).run {
+                add(onFulfilled)
+                add(onRejected)
+            }
+            JSPromiseState.FULFILLED -> Microtasks.enqueue(onFulfilled, result as T)
             JSPromiseState.REJECTED -> {
                 if (!isHandled) rejection?.handled = true
-                val r = reason
-                Microtasks.enqueue { onRejected(r) }
+                Microtasks.enqueue(onRejected, reason)
             }
         }
         isHandled = true
@@ -264,7 +325,8 @@ class JSPromise<T> internal constructor() : JSThenable, JSDynamic {
 
     fun <U> then(onFulfilled: (T) -> U): JSPromise<U> {
         viaScript<U>(scriptThen, onFulfilled)?.let { return it }
-        val (derived, resolvers) = pending<U>()
+        val derived = JSPromise<U>()
+        val resolvers = JSResolvers(derived)
         performThen({ v ->
             try { resolvers.resolve(onFulfilled(v)) } catch (e: Throwable) { resolvers.reject(jsCaught(e)) }
         }, { resolvers.reject(it) })
@@ -273,7 +335,8 @@ class JSPromise<T> internal constructor() : JSThenable, JSDynamic {
 
     fun <U> then(onFulfilled: (T) -> U, onRejected: (Any?) -> U): JSPromise<U> {
         viaScript<U>(scriptThen, onFulfilled, onRejected)?.let { return it }
-        val (derived, resolvers) = pending<U>()
+        val derived = JSPromise<U>()
+        val resolvers = JSResolvers(derived)
         performThen({ v ->
             try { resolvers.resolve(onFulfilled(v)) } catch (e: Throwable) { resolvers.reject(jsCaught(e)) }
         }, { r ->
@@ -285,7 +348,8 @@ class JSPromise<T> internal constructor() : JSThenable, JSDynamic {
     /** `then` whose callback returns a promise, which the derived promise adopts (two extra ticks). */
     fun <U> thenAdopt(onFulfilled: (T) -> JSPromise<U>?): JSPromise<U> {
         viaScript<U>(scriptThen, onFulfilled)?.let { return it }
-        val (derived, resolvers) = pending<U>()
+        val derived = JSPromise<U>()
+        val resolvers = JSResolvers(derived)
         performThen({ v ->
             try { resolvers.resolvePromiseOrUndefined(onFulfilled(v)) } catch (e: Throwable) { resolvers.reject(jsCaught(e)) }
         }, { resolvers.reject(it) })
@@ -294,7 +358,8 @@ class JSPromise<T> internal constructor() : JSThenable, JSDynamic {
 
     fun <U> thenAdopt(onFulfilled: (T) -> JSPromise<U>?, onRejected: (Any?) -> JSPromise<U>?): JSPromise<U> {
         viaScript<U>(scriptThen, onFulfilled, onRejected)?.let { return it }
-        val (derived, resolvers) = pending<U>()
+        val derived = JSPromise<U>()
+        val resolvers = JSResolvers(derived)
         performThen({ v ->
             try { resolvers.resolvePromiseOrUndefined(onFulfilled(v)) } catch (e: Throwable) { resolvers.reject(jsCaught(e)) }
         }, { r ->
@@ -306,7 +371,8 @@ class JSPromise<T> internal constructor() : JSThenable, JSDynamic {
     /** `catch` recovering with a value of the promise's own type. */
     fun catch(onRejected: (Any?) -> T): JSPromise<T> {
         (viaScript<T>(scriptCatch, onRejected) ?: viaScript<T>(scriptThen, null, onRejected))?.let { return it }
-        val (derived, resolvers) = pending<T>()
+        val derived = JSPromise<T>()
+        val resolvers = JSResolvers(derived)
         performThen({ resolvers.resolve(it) }, { r ->
             try { resolvers.resolve(onRejected(r)) } catch (e: Throwable) { resolvers.reject(jsCaught(e)) }
         })
@@ -316,7 +382,8 @@ class JSPromise<T> internal constructor() : JSThenable, JSDynamic {
     /** `catch` whose callback returns a promise to adopt. */
     fun catchAdopt(onRejected: (Any?) -> JSPromise<T>?): JSPromise<T> {
         (viaScript<T>(scriptCatch, onRejected) ?: viaScript<T>(scriptThen, null, onRejected))?.let { return it }
-        val (derived, resolvers) = pending<T>()
+        val derived = JSPromise<T>()
+        val resolvers = JSResolvers(derived)
         performThen({ resolvers.resolve(it) }, { r ->
             try { resolvers.resolvePromiseOrUndefined(onRejected(r)) } catch (e: Throwable) { resolvers.reject(jsCaught(e)) }
         })
@@ -326,7 +393,8 @@ class JSPromise<T> internal constructor() : JSThenable, JSDynamic {
     /** `catch` recovering with another type (`p.catch(e => console.error(e))`): the result is dynamic. */
     fun catchAny(onRejected: (Any?) -> Any?): JSPromise<Any?> {
         (viaScript<Any?>(scriptCatch, onRejected) ?: viaScript<Any?>(scriptThen, null, onRejected))?.let { return it }
-        val (derived, resolvers) = pending<Any?>()
+        val derived = JSPromise<Any?>()
+        val resolvers = JSResolvers(derived)
         performThen({ resolvers.resolve(jsBox(it)) }, { r ->
             try { resolvers.resolve(jsBox(onRejected(r))) } catch (e: Throwable) { resolvers.reject(jsCaught(e)) }
         })
@@ -377,8 +445,8 @@ class JSPromise<T> internal constructor() : JSThenable, JSDynamic {
 
         /** `Promise.resolve(value)`. */
         fun <T> resolve(value: T): JSPromise<T> {
-            val (p, r) = pending<T>()
-            r.resolve(value)
+            val p = JSPromise<T>()
+            JSResolvers(p).resolve(value)
             return p
         }
 
@@ -531,21 +599,28 @@ fun <T> jsAwaitValue(value: T, onFulfilled: (T) -> Unit, onRejected: (Any?) -> U
  * `body`, splits it at each `await` with `jsAwait`, and ends it with a `return…`/`throwValue`.
  */
 class JSAsync<T> {
-    val promise: JSPromise<T>
-    private val resolvers: JSResolvers<T>
+    val promise = JSPromise<T>()
+    /** The promise's resolving functions' "already resolved", kept here rather than in a JSResolvers per call. */
+    private var settled = false
 
-    init {
-        val (p, r) = JSPromise.pending<T>()
-        promise = p
-        resolvers = r
+    fun returnValue(value: T) {
+        if (settled) return
+        settled = true
+        promise.resolveWith(value)
     }
 
-    fun returnValue(value: T) = resolvers.resolve(value)
-
     /** `return promise`: adopted through a NewPromiseResolveThenableJob, two ticks later than `return await`. */
-    fun returnPromise(other: JSPromise<T>) = resolvers.resolvePromise(other)
+    fun returnPromise(other: JSPromise<T>) {
+        if (settled) return
+        settled = true
+        promise.adopt(other)
+    }
 
-    fun throwValue(error: Any?) = resolvers.reject(error)
+    fun throwValue(error: Any?) {
+        if (settled) return
+        settled = true
+        promise.settleRejected(error)
+    }
 
     /** Runs a segment of the body synchronously; a thrown error rejects the promise. */
     fun body(segment: () -> Unit) {
@@ -566,6 +641,8 @@ class JSAsyncLoop {
     private var running = false
     private var pending = false
     private var iteration: ((() -> Unit) -> Unit)? = null
+    /** What an iteration calls to continue: one for the loop, not one per iteration. */
+    private val next: () -> Unit = { step() }
 
     fun run(body: (() -> Unit) -> Unit) {
         iteration = body
@@ -577,7 +654,7 @@ class JSAsyncLoop {
         running = true
         do {
             pending = false
-            iteration?.invoke { step() }
+            iteration?.invoke(next)
         } while (pending)
         running = false
     }
