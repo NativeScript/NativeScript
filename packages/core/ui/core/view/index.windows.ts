@@ -4,6 +4,7 @@ export * from '../properties';
 
 import { ViewCommon, originXProperty, originYProperty } from './view-common';
 import type { CoreTypes } from '../../../core-types';
+import type { Point } from './view-interfaces';
 import { visibilityProperty, opacityProperty, backgroundInternalProperty, translateXProperty, translateYProperty, scaleXProperty, scaleYProperty, rotateProperty, rotateXProperty, rotateYProperty, perspectiveProperty, horizontalAlignmentProperty, verticalAlignmentProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty } from '../../styling/style-properties';
 import { LinearGradient } from '../../styling/linear-gradient';
 import { widthProperty, heightProperty, minWidthProperty, minHeightProperty, marginLeftProperty, marginTopProperty, marginRightProperty, marginBottomProperty } from '../../styling/style-properties';
@@ -13,7 +14,7 @@ import { Background } from '../../styling/background';
 import { BoxShadow } from '../../styling/box-shadow';
 import { Color } from '../../../color';
 import { hiddenProperty } from '../view-base';
-import { getCurrentWindowBounds, getCurrentWindowContent } from '../../../application/window-helper.windows';
+import { getClientOriginOnScreen, getCurrentWindowBounds, getCurrentWindowContent } from '../../../application/window-helper.windows';
 import { ImageSource } from '../../../image-source';
 import { ClipPathFunction } from '../../styling/clip-path-function';
 import { nativeChildIndex, removeNativeChild } from './native-children.windows';
@@ -630,6 +631,11 @@ class CompositionBorderHandler {
 	}
 }
 
+let _zeroPoint: Windows.Foundation.Point | undefined;
+function zeroPoint(): Windows.Foundation.Point {
+	return (_zeroPoint ??= Microsoft.UI.Xaml.PointHelper.FromCoordinates(0, 0));
+}
+
 export class View extends ViewCommon {
 	nativeViewProtected: Microsoft.UI.Xaml.FrameworkElement;
 
@@ -1176,6 +1182,32 @@ export class View extends ViewCommon {
 		if (this._setCurrentLayoutBounds(bounds.left, bounds.top, bounds.right, bounds.bottom).boundsChanged) {
 			this._raiseLayoutChangedEvent();
 		}
+	}
+
+	private _originIn(target: Microsoft.UI.Xaml.UIElement | null): Point {
+		try {
+			const p = (this.nativeViewProtected as any).TransformToVisual(target).TransformPoint(zeroPoint());
+			return { x: p.X, y: p.Y };
+		} catch (_e) {
+			return undefined;
+		}
+	}
+
+	public getLocationInWindow(): Point {
+		return (this.nativeViewProtected as any)?.XamlRoot ? this._originIn(null) : undefined;
+	}
+
+	public getLocationOnScreen(): Point {
+		const root = (this.nativeViewProtected as any)?.XamlRoot;
+		const inWindow = root ? this._originIn(null) : undefined;
+		const client = inWindow ? getClientOriginOnScreen(root) : null;
+		return client ? { x: client.x + inWindow.x, y: client.y + inWindow.y } : undefined;
+	}
+
+	public getLocationRelativeTo(otherView: ViewCommon): Point {
+		const other = otherView?.nativeViewProtected as any;
+		const root = (this.nativeViewProtected as any)?.XamlRoot;
+		return root && other?.XamlRoot === root ? this._originIn(other) : undefined;
 	}
 
 	// Button-family controls override their template's brush resources. Probed on first need: most
