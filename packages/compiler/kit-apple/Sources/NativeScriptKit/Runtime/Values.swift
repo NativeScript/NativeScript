@@ -530,7 +530,9 @@ public func jsGet(_ object: Any?, _ key: String) throws -> Any? {
     case let array as JSArrayProtocol:
         if key == "length" { return Double(array.jsLength) }
         if let index = jsArrayIndex(key) { return Int(index) < array.jsLength ? array.jsElement(at: Int(index)) : nil }
-        return jsArrayMethod(array, key)
+        if let method = jsArrayMethod(array, key) { return method }
+        guard let side = jsSideProperties(array, create: false), side.has(key) else { return nil }
+        return try side.get(key, receiver: array)
     case let string as String:
         if key == "length" { return Double(string.utf16.count) }
         if let index = jsArrayIndex(key) {
@@ -637,6 +639,10 @@ public func jsSet(_ object: Any?, _ key: String, _ value: Any?) throws {
         throw JSException(JSTypeError("Cannot set properties of null (setting '\(key)')"))
     case let plain as JSObject:
         try plain.put(key, value)
+    // A property the object was given (`Object.defineProperty(obj, key, …)`): its setter, or its value where writable, throwing as strict code does.
+    case let expando as JSExpando where expando.jsExpando?.has(key) == true:
+        let own = expando.jsExpando!
+        if let setter = own.setter(key) { try setter(expando, value) } else { try own.put(key, value) }
     case let dynamic as JSDynamic:
         let level = jsRestriction(dynamic)
         if level > 0 {
@@ -664,6 +670,8 @@ public func jsSet(_ object: Any?, _ key: String, _ value: Any?) throws {
             try array.jsSetLength(Int(length))
         } else if let index = jsArrayIndex(key) {
             try array.jsSetElement(value, at: Int(index))
+        } else if let side = jsSideProperties(array, create: true) {
+            if let setter = side.setter(key) { try setter(array, value) } else { try side.put(key, value) }
         }
     default:
         break
@@ -690,7 +698,7 @@ public func jsCall(_ function: Any?, spread arguments: [Any?]) throws -> Any? {
 public func jsObjectKeys(_ value: Any?) -> JSArray<String> {
     switch jsFlat(value) {
     case let dynamic as JSDynamic: return JSArray(dynamic.jsKeys)
-    case let array as JSArrayProtocol: return JSArray((0..<array.jsLength).map { String($0) })
+    case let array as JSArrayProtocol: return JSArray((0..<array.jsLength).map { String($0) } + (jsSideProperties(array, create: false)?.keys ?? []))
     case let string as String: return JSArray((0..<string.utf16.count).map { String($0) })
     default: return JSArray()
     }

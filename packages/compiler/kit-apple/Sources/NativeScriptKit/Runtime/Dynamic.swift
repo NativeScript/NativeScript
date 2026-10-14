@@ -177,21 +177,45 @@ public func jsDefineProperty(_ object: Any?, _ key: String, _ descriptor: Any?) 
     let d = try JSPropertyDescriptor(descriptor)
     switch jsFlat(object) {
     case let o as JSObject: try o.defineProperty(key, d)
-    case let expando as JSExpando:
+    case let expando as JSExpando where expando.jsExpando?.has(key) == true || jsIsSymbolKey(key) || !expando.jsKeys.contains(key):
         if expando.jsExpando == nil { expando.jsExpando = JSObject() }
         try expando.jsExpando!.defineProperty(key, d)
+    case let function as JSFunctionObject: try function.defineOwn(key, d)
     case let dynamic as JSDynamic:
+        // A field the class declares is a Swift stored property: it can take a value, not become an accessor.
         if d.get != nil || d.set != nil { throw JSException(JSTypeError("Cannot define an accessor on a typed object: \(key)")) }
         if case .some(let v) = d.value { dynamic[jsKey: key] = v }
+    case let array as JSArrayProtocol:
+        if key == "length" || jsArrayIndex(key) != nil {
+            if d.get != nil || d.set != nil { throw JSException(JSTypeError("Cannot define an accessor on an array element: \(key)")) }
+            if case .some(let v) = d.value { try jsSet(array, key, v) }
+        } else {
+            try jsSideProperties(array, create: true)!.defineProperty(key, d)
+        }
     default: throw JSException(JSTypeError("Object.defineProperty called on non-object"))
     }
     return object
+}
+
+/// What script gives an object that has no room for it (an array's `Object.defineProperty(list, 'total', …)`, `list.tag = …`):
+/// held beside the object while it lives. Weak keys compared by identity, so an object's entry goes with it.
+nonisolated(unsafe) private let jsSideTable = NSMapTable<AnyObject, JSObject>(keyOptions: [.weakMemory, .objectPointerPersonality], valueOptions: .strongMemory)
+
+func jsSideProperties(_ object: AnyObject, create: Bool) -> JSObject? {
+    if let existing = jsSideTable.object(forKey: object) { return existing }
+    guard create else { return nil }
+    let made = JSObject()
+    jsSideTable.setObject(made, forKey: object)
+    return made
 }
 
 /// `Object.getOwnPropertyDescriptor(object, key)`.
 public func jsOwnPropertyDescriptor(_ object: Any?, _ key: String) -> Any? {
     switch jsFlat(object) {
     case let o as JSObject: return o.descriptor(key)
+    case let expando as JSExpando where expando.jsExpando?.has(key) == true: return expando.jsExpando!.descriptor(key)
+    case let function as JSFunctionObject: return function.ownDescriptor(key)
+    case let array as JSArrayProtocol where key != "length" && jsArrayIndex(key) == nil: return jsSideProperties(array, create: false)?.descriptor(key)
     case let dynamic as JSDynamic:
         guard dynamic.jsKeys.contains(key) else { return nil }
         let level = jsRestriction(dynamic)

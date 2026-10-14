@@ -1029,7 +1029,23 @@ export class Translator implements AsyncTranslator {
 
   private undeclaredRoots: Set<ts.ClassLikeDeclaration> | null = null;
   private givenUndeclared(): Set<ts.ClassLikeDeclaration> {
-    return (this.undeclaredRoots ??= this.library ? new Set() : classesGivenUndeclaredMembers(this.sourceFiles, this.checker));
+    if (this.undeclaredRoots) return this.undeclaredRoots;
+    if (this.library) return (this.undeclaredRoots = new Set());
+    const roots = classesGivenUndeclaredMembers(this.sourceFiles, this.checker);
+    // A class whose objects `Object.defineProperty`/`defineProperties` is given: its hierarchy's root keeps what they define.
+    const visit = (n: ts.Node) => {
+      if (ts.isCallExpression(n) && ts.isPropertyAccessExpression(n.expression) && ['defineProperty', 'defineProperties'].includes(n.expression.name.text)
+        && ts.isIdentifier(n.expression.expression) && n.expression.expression.text === 'Object' && this.isLibGlobal(n.expression.expression) && n.arguments[0]) {
+        let cls = this.checker.getNonNullableType(this.checker.getTypeAtLocation(n.arguments[0])).getSymbol()?.valueDeclaration as ts.Node | undefined;
+        if (cls && ts.isClassLike(cls) && !cls.getSourceFile().isDeclarationFile) {
+          for (let b = this.sourceBase(cls); b; b = this.sourceBase(b)) cls = b;
+          roots.add(cls as ts.ClassLikeDeclaration);
+        }
+      }
+      ts.forEachChild(n, visit);
+    };
+    for (const sf of this.sourceFiles) if (!sf.isDeclarationFile) visit(sf);
+    return (this.undeclaredRoots = roots);
   }
 
   /** A member script adds to a native object (`nativeView.nsView`): declared by the code itself, not by the SDK. */

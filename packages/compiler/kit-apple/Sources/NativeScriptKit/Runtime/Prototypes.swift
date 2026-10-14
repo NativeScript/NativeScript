@@ -132,7 +132,7 @@ public func jsHasOwn(_ object: Any?, _ key: String) -> Bool {
     case let o as JSObject: return o.has(key)
     case let e as JSExpando: return e.jsExpando?.has(key) == true || e.jsKeys.contains(key)
     case let d as JSDynamic: return d.jsKeys.contains(key)
-    case let a as JSArrayProtocol: return key == "length" || jsArrayIndex(key).map { Int($0) < a.jsLength } ?? false
+    case let a as JSArrayProtocol: return key == "length" || jsArrayIndex(key).map { Int($0) < a.jsLength } ?? jsSideProperties(a, create: false)?.has(key) == true
     case let s as String: return key == "length" || jsArrayIndex(key).map { Int($0) < s.utf16.count } ?? false
     default: return false
     }

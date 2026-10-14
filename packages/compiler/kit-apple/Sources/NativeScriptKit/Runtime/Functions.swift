@@ -27,9 +27,25 @@ public final class JSFunctionObject: JSDynamic, CustomStringConvertible {
     @discardableResult
     public func call(_ this: Any?, _ arguments: [Any?]) throws -> Any? { try body(this, arguments) }
 
+    private func ownProperties() -> JSObject {
+        if let own { return own }
+        let made = JSObject()
+        own = made
+        if let identityKey { JSFunctionIdentity.table[identityKey]?.kept = self }
+        return made
+    }
+
+    /// `Object.defineProperty(fn, key, descriptor)`: an own property, an accessor's getter reading the function as `this`.
+    func defineOwn(_ key: String, _ d: JSPropertyDescriptor) throws {
+        if key == "name" || key == "length" { throw JSException(JSTypeError("Cannot redefine property: \(key)")) }
+        try ownProperties().defineProperty(key, d)
+    }
+
     public subscript(jsKey key: String) -> Any? {
         get {
-            if let own, own.has(key) { return own[key] }
+            if let own, own.has(key) {
+                do { return try own.get(key, receiver: self) } catch { jsReportUncaught(jsCaught(error)); return nil }
+            }
             switch key {
             case "name": return name
             case "length": return Double(length)
@@ -39,12 +55,17 @@ public final class JSFunctionObject: JSDynamic, CustomStringConvertible {
         set {
             // `name` and `length` are read-only: a write in sloppy code changes nothing.
             if key == "name" || key == "length" { return }
-            if own == nil { own = JSObject() }
-            own![key] = newValue
+            let own = ownProperties()
+            if let setter = own.setter(key) {
+                do { try setter(self, newValue) } catch { jsReportUncaught(jsCaught(error)) }
+                return
+            }
+            own[key] = newValue
         }
     }
 
     public var jsKeys: [String] { own?.keys ?? [] }
+    func ownDescriptor(_ key: String) -> JSObject? { own?.descriptor(key) }
     public var jsClassName: String? { nil }
     public var description: String { name.isEmpty ? "[Function (anonymous)]" : "[Function: \(name)]" }
 }
@@ -143,6 +164,8 @@ enum JSFunctionIdentity {
     struct Slot {
         weak var alias: JSFunctionAlias?
         weak var box: JSFunctionObject?
+        /// A box given its own properties: kept while the closure lives, which is as long as the box is, so boxing the function again finds them.
+        var kept: JSFunctionObject?
     }
     enum Root {
         case key(JSFunctionKey)
