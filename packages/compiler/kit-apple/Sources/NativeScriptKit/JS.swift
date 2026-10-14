@@ -29,6 +29,11 @@ public func jsIndexOf(_ s: String, _ sub: String) -> Double {
 /// JavaScript truthiness for the values translated code tests.
 public func jsTruthy(_ value: Any?) -> Bool { jsIsTruthy(value) }
 
+// A typed value's truthiness, chosen over `Any?`'s by overload resolution: no box, and no casts to find its type.
+@inlinable public func jsTruthy(_ value: Double) -> Bool { value != 0 && !value.isNaN }
+@inlinable public func jsTruthy(_ value: String) -> Bool { !value.isEmpty }
+@inlinable public func jsTruthy(_ value: Bool) -> Bool { value }
+
 /// `a.slice(start, end)`: negative indexes count from the end; out-of-range clamps.
 public func jsSlice<T>(_ a: [T], _ start: Double = 0, _ end: Double? = nil) -> [T] {
     let (lo, hi) = jsRange(a.count, start, end)
