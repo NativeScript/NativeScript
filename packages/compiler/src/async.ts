@@ -52,7 +52,8 @@ export interface AsyncSyntax {
   /** `x!`: a value known not to be undefined. */
   unwrap(code: string): string;
   /** `var name` holding the iterator over a sequence, and the statements taking its next item or else running `otherwise`. */
-  makeIterator(name: string, seq: string): string;
+  /** `iterates`: the sequence is its own iterator (an object), which `next()` advances without being reassigned. */
+  makeIterator(name: string, seq: string, iterates?: boolean): string;
   nextItem(item: string, iterator: string, otherwise: string, indent: string): string[];
   awaitCall(operand: string, isPromise: boolean, continuation: string, onError: string): string;
   asyncStart(cap: string, result: string): string;
@@ -252,7 +253,8 @@ export class AsyncLowering {
     const i = t.indent;
     const next = then ?? (() => [t.indent + (ctx.next ?? ctx.ret(null, false))]);
     if (ts.isBlock(s)) return [`${i}${x.scopeOpen}`, ...t.nested(() => this.list([...s.statements], ctx)), `${i}}`];
-    if (ts.isExpressionStatement(s)) return this.linearize([s.expression], ctx, () => [i + t.tryPrefix(s.expression) + t.exprStatement(s.expression), ...next()]);
+    // `await p;` leaves its continuation nothing to do with the value.
+    if (ts.isExpressionStatement(s)) return this.linearize([s.expression], ctx, () => [...(ts.isAwaitExpression(ts.skipOuterExpressions(s.expression, ts.OuterExpressionKinds.Parentheses)) ? [] : [i + t.tryPrefix(s.expression) + t.exprStatement(s.expression)]), ...next()]);
     if (ts.isReturnStatement(s)) return this.linearize(s.expression ? [s.expression] : [], ctx, () => [i + this.retStatement(ctx, s.expression)]);
     if (ts.isThrowStatement(s)) return this.linearize([s.expression], ctx, () => [i + t.withAsync(ctx, () => t.stmt(s)).trim()]);
     if (ts.isVariableStatement(s)) return this.declarations([...s.declarationList.declarations], s, ctx, next);
@@ -281,7 +283,7 @@ export class AsyncLowering {
       }
       const js = t.jsIteration(s.expression);
       if (js) return this.linearize([s.expression], ctx, () => [`${i}${x.tryStatement(x.constant(it, null, js))}`, ...this.loop(ctx, { body: s.statement, iterator: it, binding: s.initializer as ts.VariableDeclarationList, of: s.expression, kind: 'js' })]);
-      return this.linearize([s.expression], ctx, () => [`${i}${x.makeIterator(it, `${t.tryPrefix(s.expression) || (t.isAny(s.expression) ? 'try ' : '')}${t.iterable(s.expression)}`)}`, ...this.loop(ctx, { body: s.statement, iterator: it, binding: s.initializer as ts.VariableDeclarationList, of: s.expression })]);
+      return this.linearize([s.expression], ctx, () => [`${i}${x.makeIterator(it, `${t.tryPrefix(s.expression) || (t.isAny(s.expression) ? 'try ' : '')}${t.iterable(s.expression)}`, /^JSIterator</.test(t.typeOf(s.expression)))}`, ...this.loop(ctx, { body: s.statement, iterator: it, binding: s.initializer as ts.VariableDeclarationList, of: s.expression })]);
     }
     if (ts.isTryStatement(s)) return this.tryStatement(s, ctx);
     if (ts.isLabeledStatement(s)) throw t.error(s, 'a labeled statement that awaits');
