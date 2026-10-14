@@ -44,6 +44,8 @@ export const kitIndexOptions: { exclude: RegExp | null } = { exclude: null };
 export function unwrapped(text: string): string {
   // A declaration swift-format wrapped before its brace: the brace back on the declaration's line.
   text = text.replace(/\n[ \t]*\{[ \t]*(?=\n)/g, ' {');
+  // A type swift-format wrapped onto the next line, after a property's colon or a function's arrow.
+  text = text.replace(/(\b(?:var|let)\s+`?\w+`?\s*:|->)[ \t]*\n[ \t]*/g, '$1 ');
   let out = '', depth = 0, quoted = false;
   for (let k = 0; k < text.length; k++) {
     const ch = text[k];
