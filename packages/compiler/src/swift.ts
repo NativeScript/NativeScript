@@ -8660,14 +8660,16 @@ ${members.join('\n')}
             const arity = ts.isArrowFunction(callback) || ts.isFunctionExpression(callback) ? Math.min(3, callback.parameters.length) : 1;
             const params = ['__e', '__i', '__a'].slice(0, Math.max(1, arity));
             const types = [el, 'Double', `JSArray<${el}>`];
-            const throwing = !(ts.isArrowFunction(callback) || ts.isFunctionExpression(callback)) || this.throwsInfo.fn(callback);
+            const throwing = ts.isArrowFunction(callback) || ts.isFunctionExpression(callback) ? this.throwsInfo.fn(callback) : this.valueThrows(callback);
             return `${t}.${name}({ (${params.map((p, k) => `${p}: ${types[k]}`).join(', ')}) ${throwing ? 'throws ' : ''}-> Bool in jsTruthy(${throwing ? 'try ' : ''}(${this.fn(callback)})(${params.join(', ')})) })`;
           }
           // A function value taking elements of another Swift type (an untyped array's): each element converted.
           const held = !ts.isArrowFunction(callback) && !ts.isFunctionExpression(callback) ? functionParts(this.functionValueOf(callback)) : null;
           const want = held && name === 'map' ? this.typeOf(e).replace(/^JSArray<(.*)>$/, '$1') : held?.result;
           if (held?.params.length === 1 && (held.params[0] !== el || held.result !== want)) {
-            return `${t}.${name}({ (__e: ${el}) throws -> ${want} in ${held.result === 'Void' ? '' : 'return '}${this.convert(`${this.valueThrows(callback) ? 'try ' : ''}(${this.expr(callback)})(${this.convert('__e', el, held.params[0])})`, held.result, want!)} })`;
+            // Throwing only as the function it calls does: a call given a throwing closure throws, and is tried.
+            const throwing = this.valueThrows(callback);
+            return `${t}.${name}({ (__e: ${el}) ${throwing ? 'throws ' : ''}-> ${want} in ${held.result === 'Void' ? '' : 'return '}${this.convert(`${throwing ? 'try ' : ''}(${this.expr(callback)})(${this.convert('__e', el, held.params[0])})`, held.result, want!)} })`;
           }
           return `${t}.${name}(${this.fn(callback)})`;
         };
@@ -8690,7 +8692,8 @@ ${members.join('\n')}
         const held = !ts.isArrowFunction(callback) && !ts.isFunctionExpression(callback) ? functionParts(this.functionValueOf(callback)) : null;
         const acc = init ? this.typeOf(e) : el;
         if (held?.params.length === 2 && (held.params[0] !== acc || held.params[1] !== el || held.result !== acc)) {
-          f = `{ (__a: ${acc}, __e: ${el}) throws -> ${acc} in ${this.convert(`${this.valueThrows(callback) ? 'try ' : ''}(${this.expr(callback)})(${this.convert('__a', acc, held.params[0])}, ${this.convert('__e', el, held.params[1])})`, held.result, acc)} }`;
+          const throwing = this.valueThrows(callback);
+          f = `{ (__a: ${acc}, __e: ${el}) ${throwing ? 'throws ' : ''}-> ${acc} in ${this.convert(`${throwing ? 'try ' : ''}(${this.expr(callback)})(${this.convert('__a', acc, held.params[0])}, ${this.convert('__e', el, held.params[1])})`, held.result, acc)} }`;
         }
         return init ? `${t}.${name}(${f}, ${this.coerce(init, this.typeOf(e))})` : `${t}.${name}(${f})`;
       }
