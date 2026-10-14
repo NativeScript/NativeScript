@@ -3895,13 +3895,22 @@ ${members.join('\n')}
     // What a protocol requires the class reads without throwing: a getter that throws reports instead.
     const required = new Set([...named, ...met].filter((i) => implemented.includes(i.name)).flatMap((i) => i.type.getProperties().map((p) => p.name)));
     const conformances = [...(base ? [base] : []), ...implemented];
+    // The methods JavaScript calls without the program naming them, each through the conformance that calls it:
+    // a plugin's class keeps them, where its other methods the app never names are left out.
+    const implicitlyCalled = new Set(['toString']);
     // A class's own toString is what JavaScript's string conversion calls.
     if (cls.members.some((m) => ts.isMethodDeclaration(m) && m.name.getText() === 'toString' && !m.parameters.length) && !this.inheritsToString(cls)) conformances.push('JSStringConvertible');
     const valueOf = cls.members.some((m) => ts.isMethodDeclaration(m) && m.name.getText() === 'valueOf' && !!m.body && !m.parameters.length && !isStatic(m)) && !this.inheritsMethod(cls, 'valueOf');
-    if (valueOf) conformances.push('JSValueOfConvertible');
+    if (valueOf) {
+      conformances.push('JSValueOfConvertible');
+      implicitlyCalled.add('valueOf');
+    }
     // A class's own toJSON is what JSON.stringify serializes in its instances' place.
     const toJSON = cls.members.find((m): m is ts.MethodDeclaration => ts.isMethodDeclaration(m) && m.name.getText() === 'toJSON' && !!m.body && m.parameters.length <= 1 && !isStatic(m));
-    if (toJSON && !this.inheritsMethod(cls, 'toJSON')) conformances.push('JSToJSONConvertible');
+    if (toJSON && !this.inheritsMethod(cls, 'toJSON')) {
+      conformances.push('JSToJSONConvertible');
+      implicitlyCalled.add('toJSON');
+    }
     const header = () => `${this.extended.has(name) || this.extendedDecls.has(cls) || this.library ? '' : 'final '}class ${ident(name)}${this.generics(cls)}: ${[...(base || implemented.length ? [] : ['JSDynamic']), ...conformances].join(', ')} {`;
     const lines = [''];
     const valueOfMethod = valueOf ? cls.members.find((m): m is ts.MethodDeclaration => ts.isMethodDeclaration(m) && m.name.getText() === 'valueOf' && !!m.body) : undefined;
@@ -4280,8 +4289,7 @@ ${members.join('\n')}
       }
       if (!ts.isMethodDeclaration(m) || !m.body) continue;
       const n = m.name.getText();
-      // A class's toString is what JavaScript's string conversion calls, named or not.
-      if (!this.library && this.pluginFiles.has(cls.getSourceFile().fileName) && !inherited.has(n) && !(kitRoot && this.core.kitMember(kitRoot, n)) && !this.isNamed(n) && n !== 'toString') continue;
+      if (!this.library && this.pluginFiles.has(cls.getSourceFile().fileName) && !inherited.has(n) && !(kitRoot && this.core.kitMember(kitRoot, n)) && !this.isNamed(n) && !implicitlyCalled.has(n)) continue;
       // Over a kit method, directly or through a program base that overrides it: the kit's signature.
       const kit = kitRoot && !isStatic(m) ? this.core.kitMember(kitRoot, n) : null;
       if (kit && kit.kind === 'func') { lines.push(this.kitOverride(m, kit, inherited.has(n))); continue; }
