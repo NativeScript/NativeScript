@@ -661,7 +661,8 @@ export class AndroidNativeAPI implements KotlinNative {
     const own = this.ownMember(e);
     const nullable = (own ? this.t.typeOf(own.p.name!) : this.t.typeOf(e)).endsWith('?');
     if (access.questionDotToken || (access.flags & ts.NodeFlags.OptionalChain && nullable)) return `${code}?`;
-    return nullable ? `${code}!!` : code;
+    const write = ts.isBinaryExpression(access.parent) && access.parent.left === access && access.parent.operatorToken.kind >= ts.SyntaxKind.FirstAssignment && access.parent.operatorToken.kind <= ts.SyntaxKind.LastAssignment;
+    return nullable || code.endsWith('!!') ? this.t.present(code, access.name.text, e, write) : code;
   }
 
   assign(left: ts.PropertyAccessExpression, value: ts.Expression): string | null {

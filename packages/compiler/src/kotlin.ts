@@ -5689,7 +5689,8 @@ export class Translator implements AsyncTranslator {
       if (member) return member;
       const core = this.core?.lvalue(e);
       if (core) return core;
-      const target = this.typeOf(e.expression).endsWith('?') ? `${this.expr(e.expression)}!!` : this.expr(e.expression);
+      const code = this.expr(e.expression);
+      const target = this.typeOf(e.expression).endsWith('?') || code.endsWith('!!') ? this.present(code, e.name.text, e.expression, true) : code;
       return `${target}.${ident(e.name.text)}`;
     }
     if (ts.isElementAccessExpression(e)) return this.elementAccess(e);
@@ -5802,7 +5803,7 @@ export class Translator implements AsyncTranslator {
     if (!isWriteTarget(e) && this.kitRedeclared(retyped)) {
       const kitType = this.core!.kitMember(this.kitRootOf(retyped.parent as ts.ClassLikeDeclaration)!, name)!.type;
       const own = this.typeOf(e);
-      const read = `${this.expr(target)}${this.typeOf(target).endsWith('?') ? (e.questionDotToken ? '?' : '!!') : ''}.${ident(name)}`;
+      const read = `${this.typeOf(target).endsWith('?') ? (e.questionDotToken ? `${this.expr(target)}?` : this.present(this.expr(target), name, target)) : this.expr(target)}.${ident(name)}`;
       return kitType === own ? read : kitType.replace(/\?$/, '') === own.replace(/\?$/, '') ? this.convert(read, kitType, own) : `jsUnchecked<${own}>(${read})`;
     }
     if (this.structuralTypeParam(target)) {
@@ -5834,7 +5835,12 @@ export class Translator implements AsyncTranslator {
     // Inside an optional chain (`a?.b.c`) an undefined link ends the chain.
     const inChain = !!(e.flags & ts.NodeFlags.OptionalChain) && base.endsWith('?');
     const dot = e.questionDotToken || inChain ? '?.' : '.';
-    const recv = () => this.receiver(target, name) ?? (base.endsWith('?') && !e.questionDotToken && !inChain && !this.isSelf(target) ? `${this.expr(target)}!!` : this.expr(target));
+    const recv = () => {
+      const checked = this.receiver(target, name);
+      if (checked) return checked;
+      const code = this.expr(target);
+      return (base.endsWith('?') && !e.questionDotToken && !inChain && !this.isSelf(target)) || code.endsWith('!!') ? this.present(code, name, target, isWriteTarget(e)) : code;
+    };
     if (name === 'length' && this.isString(target)) {
       return e.questionDotToken || inChain ? `${this.expr(target)}?.length?.toDouble()` : `${recv()}.length.toDouble()`;
     }
@@ -5938,13 +5944,23 @@ export class Translator implements AsyncTranslator {
 
   /** A receiver that can be missing though its type says not (`x!`, `items[i]`): JavaScript's TypeError when it is. */
   private receiver(target: ts.Expression, key: string): string | null {
-    if (this.uncheckedMatch(target)) return `jsUnwrap(${this.expr(target)}, ${kotlinString(key)}, true)`;
+    if (this.uncheckedMatch(target)) return `(${this.expr(target)} ?: jsCannotReadNull(${kotlinString(key)}))`;
     const kind = unsafeReceiver(target, this.checker);
     if (!kind) return null;
     let x = target;
     while (ts.isParenthesizedExpression(x)) x = x.expression;
     const value = ts.isNonNullExpression(x) ? (this.maybeUndefined(x.expression) ?? this.expr(x.expression)) : this.maybeUndefined(x);
-    return value ? `jsUnwrap(${value}, ${kotlinString(key)}${kind === 'null' ? ', true' : ''})` : null;
+    return value ? `(${value} ?: ${kind === 'null' ? 'jsCannotReadNull' : 'jsCannotRead'}(${kotlinString(key)}))` : null;
+  }
+
+  /**
+   * A receiver Kotlin holds nullable, where JavaScript reads `key` of it: the value, or V8's TypeError when it is
+   * missing. An assertion the code carries (`x!!`) is taken over.
+   */
+  present(code: string, key: string | ts.Expression, target?: ts.Expression, write = false): string {
+    const value = code.endsWith('!!') ? code.slice(0, -2) : code;
+    const missing = write ? 'jsCannotSet' : target && this.onlyNull(target) ? 'jsCannotReadNull' : 'jsCannotRead';
+    return `(${value} ?: ${missing}(${typeof key === 'string' ? kotlinString(key) : this.keyText(key)}))`;
   }
 
   private elementAccess(e: ts.ElementAccessExpression): string {
@@ -5958,7 +5974,8 @@ export class Translator implements AsyncTranslator {
     }
     // Library mode: an untyped variable narrowed by `key in owner` to a shape, read by key as it is.
     const raw = this.library && ts.isIdentifier(e.expression) && this.declaredTypeOf(e.expression) === 'Any?' && this.isObjectRef(e.expression) && !this.typeOf(e.expression).startsWith('JS');
-    const target = raw ? ident((e.expression as ts.Identifier).text) : this.expr(e.expression);
+    const read = raw ? ident((e.expression as ts.Identifier).text) : this.expr(e.expression);
+    const target = read.endsWith('!!') ? this.present(read, key, e.expression, isWriteTarget(e)) : read;
     const t = raw ? 'Any?' : this.typeOf(e.expression).replace(/\?$/, '');
     const q = e.questionDotToken ? '?' : '';
     if (raw) {
@@ -5978,7 +5995,7 @@ export class Translator implements AsyncTranslator {
       return this.undefinedAs(this.maybeUndefined(e)!, rt);
     }
     if (t === 'JSMatch') {
-      const read = `${this.uncheckedMatch(e.expression) ? `jsUnwrap(${target}, ${this.keyText(key)}, true)` : target}${q}.get(${this.toNumber(key)})`;
+      const read = `${this.uncheckedMatch(e.expression) ? `(${target} ?: jsCannotReadNull(${this.keyText(key)}))` : target}${q}.get(${this.toNumber(key)})`;
       return this.typeOf(e).endsWith('?') ? read : this.undefinedAs(read, this.typeOf(e));
     }
     if ((t.startsWith('Pair<') || t.startsWith('Triple<')) && ts.isNumericLiteral(key)) return `${target}.${['first', 'second', 'third'][Number(key.text)]}`;
@@ -6053,7 +6070,7 @@ export class Translator implements AsyncTranslator {
     // A match's group that took no part in it: undefined, though TypeScript types every element a string.
     if (ts.isElementAccessExpression(e) && !isWriteTarget(e) && this.typeOf(e.expression).replace(/\?$/, '') === 'JSMatch' && !this.typeOf(e).endsWith('?')) {
       const q = e.questionDotToken || this.typeOf(e.expression).endsWith('?') ? '?' : '';
-      const match = this.uncheckedMatch(e.expression) ? `jsUnwrap(${this.expr(e.expression)}, ${this.keyText(e.argumentExpression)}, true)` : this.expr(e.expression);
+      const match = this.uncheckedMatch(e.expression) ? `(${this.expr(e.expression)} ?: jsCannotReadNull(${this.keyText(e.argumentExpression)}))` : this.expr(e.expression);
       return `${match}${q}.get(${this.toNumber(e.argumentExpression)})`;
     }
     if (ts.isElementAccessExpression(e) && !isWriteTarget(e) && this.typeOf(e.expression).replace(/\?$/, '').startsWith('JSArray<')) {
@@ -6279,7 +6296,19 @@ export class Translator implements AsyncTranslator {
     return sym && sym.flags & ts.SymbolFlags.Alias ? this.checker.getAliasedSymbol(sym) : sym;
   }
 
+  /** Receivers a call reads its method of, held as their checked form while the call is emitted. */
+  private checkedReceivers: ts.Expression[] = [];
+
   private call(e: ts.CallExpression): string {
+    const mark = this.checkedReceivers.length;
+    try {
+      return this.callExpr(e);
+    } finally {
+      while (this.checkedReceivers.length > mark) this.subst.delete(this.checkedReceivers.pop()!);
+    }
+  }
+
+  private callExpr(e: ts.CallExpression): string {
     const callee = e.expression;
     const onPrototype = this.prototypeMethodCall(e);
     if (onPrototype) return onPrototype;
@@ -6448,14 +6477,20 @@ export class Translator implements AsyncTranslator {
         return rt === 'Any?' || rt === 'Unit' ? code : this.fromAnyCode(code, rt, true);
       }
       const t = this.typeOf(target).replace(/\?$/, '');
-      const q = callee.questionDotToken || (callee.flags & ts.NodeFlags.OptionalChain && this.typeOf(target).endsWith('?')) ? '?' : this.typeOf(target).endsWith('?') ? '!!' : '';
+      let q = callee.questionDotToken || (callee.flags & ts.NodeFlags.OptionalChain && this.typeOf(target).endsWith('?')) ? '?' : this.typeOf(target).endsWith('?') ? '!!' : '';
+      if (!this.subst.has(target) && !t.startsWith('JSMatch') && (q === '!!' || (q === '' && (ts.isIdentifier(target) || ts.isPropertyAccessExpression(target))))) {
+        const code = this.expr(target);
+        this.subst.set(target, q === '!!' || code.endsWith('!!') ? this.present(code, method, target) : code);
+        this.checkedReceivers.push(target);
+        q = '';
+      }
       if (method === 'fill' && (ts.isNewExpression(target) || ts.isCallExpression(target)) && ts.isIdentifier(target.expression) && target.expression.text === 'Array' && target.arguments?.length === 1 && e.arguments.length === 1) {
         return `jsArrayFilled<${t.replace(/^JSArray<(.*)>$/, '$1')}>(${this.toNumber(target.arguments[0])}, ${this.coerce(e.arguments[0], t.replace(/^JSArray<(.*)>$/, '$1'))})`;
       }
       if (t.startsWith('JSArray<')) return this.arrayMethod(method, target, e, q);
       if (t === 'JSMatch' && method !== 'toString') {
         const chain = q === '?' || (q === '' && this.typeOf(target).endsWith('?'));
-        this.subst.set(target, `${this.expr(target)}${q === '!!' ? '!!' : chain ? '?' : ''}.values`);
+        this.subst.set(target, `${q === '!!' ? this.present(this.expr(target), method, target) : `${this.expr(target)}${chain ? '?' : ''}`}.values`);
         try { return this.arrayMethod(method, target, e, chain ? '?' : ''); } finally { this.subst.delete(target); }
       }
       if (t.startsWith('Pair<') || t.startsWith('Triple<')) {
@@ -6534,9 +6569,11 @@ export class Translator implements AsyncTranslator {
       // `subtle.generateKey(…)` giving a key pair: the runtime's method of its own name, as Kotlin overloads by parameters alone.
       const named = method === 'generateKey' && this.typeOf(target).replace(/\?$/, '') === 'JSSubtleCrypto' && this.typeOf(e) === 'JSPromise<JSCryptoKeyPair>' ? 'generateKeyPair' : method;
       const member = this.checker.getSymbolAtLocation(callee.name);
-      let call = `${checked ?? `${this.expr(target)}${q === '!!' ? '!!' : q ? '?' : ''}`}.${member && this.isCompiledMethod(member) ? this.methodIdent(named) : ident(named)}${optionalFn ? '!!' : ''}(${args.join(', ')})`;
+      const receiverCode = checked ?? (q === '!!' ? this.present(this.expr(target), method, target) : `${this.expr(target)}${q ? '?' : ''}`);
+      const memberCode = `${receiverCode}.${member && this.isCompiledMethod(member) ? this.methodIdent(named) : ident(named)}`;
+      let call = `${optionalFn ? `(${memberCode} ?: jsNotAFunction(${kotlinString(callee.getText().replace(/\s+/g, ''))}))` : memberCode}(${args.join(', ')})`;
       // Library mode: `ref.get()` read on, as if the object were there (script throws reading a member of undefined).
-      if (/^JSWeakRef</.test(this.typeOf(target)) && ['get', 'deref'].includes(method) && !q && ts.isPropertyAccessExpression(e.parent) && e.parent.expression === e && !e.parent.questionDotToken) call += '!!';
+      if (/^JSWeakRef</.test(this.typeOf(target)) && ['get', 'deref'].includes(method) && !q && ts.isPropertyAccessExpression(e.parent) && e.parent.expression === e && !e.parent.questionDotToken) call = this.present(call, e.parent.name.text);
       // An override taking its base's signature gives what the base's result type holds.
       const decl = this.checker.getResolvedSignature(e)?.getDeclaration();
       if (decl && ts.isMethodDeclaration(decl) && decl.body && ts.isClassLike(decl.parent) && !q) {
@@ -6808,7 +6845,7 @@ export class Translator implements AsyncTranslator {
     // A function value of a rest parameter (`(...args) => void`, Kotlin's of one list): the arguments packed.
     const parts = functionTypeParts(fnType.replace(/^\((.*)\)\?$/, '$1'));
     const restValue = !this.library && isFunctionValue && !!declared && !ts.isJSDocSignature(declared) && declared.parameters.length === 1 && !!declared.parameters[0].dotDotDotToken && parts?.params.length === 1 && /^JSArray</.test(parts.params[0]);
-    const call = `${nullable && !fn.endsWith('!!') ? `${fn}!!` : fn}(${restValue ? this.packed(e.arguments, parts!.params[0]) : this.args(e, isFunctionValue ? undefined : this.arity(e)).join(', ')})`;
+    const call = `${nullable || fn.endsWith('!!') ? `(${fn.replace(/!!$/, '')} ?: jsNotAFunction(${kotlinString(callee.getText().replace(/\s+/g, ''))}))` : fn}(${restValue ? this.packed(e.arguments, parts!.params[0]) : this.args(e, isFunctionValue ? undefined : this.arity(e)).join(', ')})`;
     return this.library ? this.fromPluginCall(e, call) : this.lenientResult(e, call);
   }
 

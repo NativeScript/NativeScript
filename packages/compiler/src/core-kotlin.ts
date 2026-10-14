@@ -489,12 +489,15 @@ export class CoreKotlin implements KotlinCore {
   /** A core-typed receiver's code: unwrapped where it is nullable and the access is not an optional one (code checked without strictNullChecks). */
   private receiver(target: ts.Expression, access: ts.PropertyAccessExpression): string {
     const code = this.t.expr(target);
-    if (code === 'super' || code === 'this' || code.endsWith('!!')) return code;
+    if (code === 'super' || code === 'this') return code;
+    const key = access.name.text;
+    const write = ts.isBinaryExpression(access.parent) && access.parent.left === access && access.parent.operatorToken.kind >= ts.SyntaxKind.FirstAssignment && access.parent.operatorToken.kind <= ts.SyntaxKind.LastAssignment;
+    if (code.endsWith('!!')) return this.t.present(code, key, target, write);
     // A core variable the kit holds nullable until core sets it (`Application`).
-    if (ts.isIdentifier(target) && code === target.text && isCoreDeclaration(this.t.resolve(target)?.declarations?.[0]) && kitMember(this.index, TOP_LEVEL, code)?.type.endsWith('?')) return access.questionDotToken ? `${code}?` : `${code}!!`;
+    if (ts.isIdentifier(target) && code === target.text && isCoreDeclaration(this.t.resolve(target)?.declarations?.[0]) && kitMember(this.index, TOP_LEVEL, code)?.type.endsWith('?')) return access.questionDotToken ? `${code}?` : this.t.present(code, key, target, write);
     const nullable = this.t.typeOf(target).endsWith('?');
     if (access.questionDotToken || (access.flags & ts.NodeFlags.OptionalChain && nullable)) return `${code}?`;
-    return nullable ? `${code}!!` : code;
+    return nullable ? this.t.present(code, key, target, write) : code;
   }
 
   /** A constant core declares with a literal type (`CoreTypes.AnimationCurve.easeIn` is "easeIn"), as that literal. */
@@ -572,7 +575,7 @@ export class CoreKotlin implements KotlinCore {
       for (let k = args.length; k < params.length; k++) args.push(/=\s*(.+)$/.exec(params[k])?.[1].trim() ?? 'null');
     }
     // A function held in a field the kit declares nullable (`CssAnimationProperty.register`): present where it is called.
-    const callee = held && /\)\?$/.test(m.type.trim()) ? `${recv}.${name}!!` : `${recv}.${name}`;
+    const callee = held && /\)\?$/.test(m.type.trim()) ? `(${recv}.${name} ?: jsNotAFunction(${kotlinString(e.expression.getText().replace(/\s+/g, ''))}))` : `${recv}.${name}`;
     return this.fromKit(`${callee}(${args.join(', ')})`, m.type, t.typeOf(e), keepsNullable(e));
   }
 

@@ -124,6 +124,14 @@ var jsUncaughtHandler: (Any?) -> Unit = { value -> jsError("Uncaught", value) }
 
 fun jsReportUncaught(value: Any?) = (JSRealm.current().uncaught ?: jsUncaughtHandler)(value)
 
-/** A member read from a receiver its type promised (`x!.name`, `items[i].name`): JavaScript's TypeError when it is missing. */
-fun <T> jsUnwrap(value: T?, key: String, isNull: Boolean = false): T =
-    value ?: throw JSException(JSTypeError("Cannot read properties of ${if (isNull) "null" else "undefined"} (reading '$key')"))
+/** `x.key` where x is undefined: JavaScript's TypeError, as V8 words it. */
+fun jsCannotRead(key: String): Nothing = throw JSException(JSTypeError("Cannot read properties of undefined (reading '$key')"))
+
+/** `x.key` where x is null. */
+fun jsCannotReadNull(key: String): Nothing = throw JSException(JSTypeError("Cannot read properties of null (reading '$key')"))
+
+/** `x.key = v` where x is undefined. */
+fun jsCannotSet(key: String): Nothing = throw JSException(JSTypeError("Cannot set properties of undefined (setting '$key')"))
+
+/** `f()` where f, as the source writes it, holds no function. */
+fun jsNotAFunction(callee: String): Nothing = throw JSException(JSTypeError("$callee is not a function"))
