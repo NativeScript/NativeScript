@@ -249,6 +249,15 @@ export function classesGivenUndeclaredMembers(files: readonly ts.SourceFile[], c
       for (let b = cls && baseOf(cls); b; b = baseOf(b)) cls = b;
       if (cls) roots.add(cls);
     }
+    // `Object.defineProperty(instance, key, …)`, `Object.defineProperties(instance, …)`: members its class does not declare.
+    if (ts.isCallExpression(n) && ts.isPropertyAccessExpression(n.expression) && ts.isIdentifier(n.expression.expression) && n.expression.expression.text === 'Object'
+        && ['defineProperty', 'defineProperties'].includes(n.expression.name.text) && n.arguments.length) {
+      let cls: ts.ClassLikeDeclaration | undefined;
+      const d = checker.getTypeAtLocation(n.arguments[0]).getSymbol()?.valueDeclaration;
+      if (d && ts.isClassLike(d) && !d.getSourceFile().isDeclarationFile) cls = d;
+      for (let b = cls && baseOf(cls); b; b = baseOf(b)) cls = b;
+      if (cls) roots.add(cls);
+    }
     ts.forEachChild(n, visit);
   };
   for (const sf of files) if (!sf.isDeclarationFile) visit(sf);
