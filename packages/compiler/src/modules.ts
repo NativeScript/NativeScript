@@ -29,7 +29,8 @@ export function translateModules(translator: Translator, program: ts.Program, fi
     let code = '', init: string[] = [];
     try { ({ code, init } = translator.module(sf)); } catch (e) { if (!translator.errors) throw e; translator.errors.push((e as Error).message); }
     const initName = init.length ? `__init_${name}` : null;
-    const throws = init.some((l) => /\btry\b/.test(l));
+    // A `throw` statement needs the throwing context `jsReport` gives, as a `try` does.
+    const throws = init.some((l) => /\b(try|throw)\b/.test(l));
     const initCode = initName ? `\n\nfunc ${initName}() {\n${throws ? `    jsReport {\n${init.map((l) => '    ' + l).join('\n')}\n    }` : init.join('\n')}\n}\n` : '';
     out.push({ file, name, code: code + initCode, init: initName });
   }

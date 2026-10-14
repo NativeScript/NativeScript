@@ -151,6 +151,20 @@ export function unsafeReceiver(target: ts.Expression, checker: ts.TypeChecker): 
 }
 
 /**
+ * `re.exec(s)` or `s.match(re)` typed without the null of no match, as a program checked without strictNullChecks
+ * types it: a member read of it is JavaScript's TypeError where there is no match.
+ */
+export function uncheckedMatch(target: ts.Expression, checker: ts.TypeChecker): boolean {
+  while (ts.isParenthesizedExpression(target)) target = target.expression;
+  if (!ts.isCallExpression(target) || !ts.isPropertyAccessExpression(target.expression) || !['exec', 'match'].includes(target.expression.name.text)) return false;
+  const decl = checker.getResolvedSignature(target)?.declaration;
+  const owner = decl && ts.isMethodSignature(decl) && ts.isInterfaceDeclaration(decl.parent) ? decl.parent.name.text : null;
+  if (!decl || !/[\\/]lib\.[\w.]*\.d\.ts$/.test(decl.getSourceFile().fileName) || owner !== (target.expression.name.text === 'exec' ? 'RegExp' : 'String')) return false;
+  const t = checker.getTypeAtLocation(target);
+  return !(t.isUnion() && t.types.some((p) => p.flags & ts.TypeFlags.Null));
+}
+
+/**
  * The member read a statement starts with when its receiver is narrowed to
  * `never` (`x.android` in the else of `if (x)`, x an object, as folding
  * `if (__APPLE__ && x)` leaves it): that code runs only when x is null or

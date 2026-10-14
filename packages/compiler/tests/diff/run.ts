@@ -28,14 +28,15 @@ mkdirSync(build, { recursive: true });
  * A case starting `// @lenient` is checked as core is, without strictNullChecks, and translated
  * as the kit generated from core is, lenient and in library mode (Swift only, as the kit is
  * generated for iOS first). One starting `// @lenient-kotlin` is translated so as Kotlin only,
- * as kit-gen-kotlin.ts generates kit-android.
+ * as kit-gen-kotlin.ts generates kit-android; one starting `// @lenient-both` so as both.
  */
 const lenient = (file: string) => readFileSync(file, 'utf8').startsWith('// @lenient');
+const lenientBoth = (file: string) => readFileSync(file, 'utf8').startsWith('// @lenient-both');
 const kotlinOnly = (file: string) => readFileSync(file, 'utf8').startsWith('// @lenient-kotlin');
 /** A case starting `// @kotlin` covers what only the Kotlin translator does yet: it is not run as Swift. */
 const kotlinApp = (file: string) => readFileSync(file, 'utf8').startsWith('// @kotlin');
 /** A case starting `// @swift` covers what only the Swift runtime has yet (typed arrays): it is not run as Kotlin. */
-const swiftOnly = (file: string) => (lenient(file) && !kotlinOnly(file)) || readFileSync(file, 'utf8').startsWith('// @swift');
+const swiftOnly = (file: string) => (lenient(file) && !kotlinOnly(file) && !lenientBoth(file)) || readFileSync(file, 'utf8').startsWith('// @swift');
 
 /** `// @weak-fields A.b C.d` and `// @weak-captures A.e` lines: what the kit's configuration holds weakly (tools/native-kit/modules.mts). */
 function weakOf(file: string) {
