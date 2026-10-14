@@ -54,7 +54,7 @@ private struct JSJSONParser {
 
     init(_ bytes: UnsafeBufferPointer<UInt8>) { self.bytes = bytes }
 
-    mutating func parse() throws -> Any? {
+    @_optimize(speed) mutating func parse() throws -> Any? {
         var value: Any?
         parseValue: while true {
             skipWhitespace()
@@ -127,15 +127,15 @@ private struct JSJSONParser {
         }
     }
 
-    @inline(__always) private func peek() -> UInt8? { position < bytes.count ? bytes[position] : nil }
+    @_optimize(speed) @inline(__always) private func peek() -> UInt8? { position < bytes.count ? bytes[position] : nil }
 
-    @inline(__always) private func digit(at index: Int) -> UInt8? {
+    @_optimize(speed) @inline(__always) private func digit(at index: Int) -> UInt8? {
         guard index < bytes.count else { return nil }
         let d = bytes[index] &- 0x30
         return d < 10 ? d : nil
     }
 
-    private mutating func skipWhitespace() {
+    @_optimize(speed) private mutating func skipWhitespace() {
         while position < bytes.count {
             switch bytes[position] {
             case 0x20, 0x09, 0x0A, 0x0D: position += 1
@@ -144,7 +144,7 @@ private struct JSJSONParser {
         }
     }
 
-    private mutating func scanPropertyKey(message: String) throws -> String {
+    @_optimize(speed) private mutating func scanPropertyKey(message: String) throws -> String {
         guard peek() == 0x22 else { throw unexpected(message: message) }
         let key = try scanString()
         skipWhitespace()
@@ -153,7 +153,7 @@ private struct JSJSONParser {
         return key
     }
 
-    private mutating func scanLiteral(_ literal: StaticString) throws {
+    @_optimize(speed) private mutating func scanLiteral(_ literal: StaticString) throws {
         for unit in UnsafeBufferPointer(start: literal.utf8Start, count: literal.utf8CodeUnitCount) {
             guard position < bytes.count, bytes[position] == unit else { throw unexpected() }
             position += 1
@@ -162,7 +162,7 @@ private struct JSJSONParser {
 
     /// Up to 19 significant digits accumulate exactly; with a power of ten within ±22 the result is then one
     /// correctly rounded multiplication or division (Clinger's fast path). Any other number is read by `Double(_:)`.
-    private mutating func scanNumber() throws -> Double {
+    @_optimize(speed) private mutating func scanNumber() throws -> Double {
         let start = position
         let negative = bytes[position] == 0x2D
         if negative {
@@ -216,7 +216,7 @@ private struct JSJSONParser {
         return Double(String(decoding: UnsafeBufferPointer(rebasing: bytes[start..<position]), as: UTF8.self)) ?? .nan
     }
 
-    private mutating func scanString() throws -> String {
+    @_optimize(speed) private mutating func scanString() throws -> String {
         position += 1
         let start = position
         while position < bytes.count {
@@ -233,7 +233,7 @@ private struct JSJSONParser {
     }
 
     /// The rest of a string from its first escape, at `position`; its text so far starts at `start`.
-    private mutating func scanEscapedString(from start: Int) throws -> String {
+    @_optimize(speed) private mutating func scanEscapedString(from start: Int) throws -> String {
         unescaped.removeAll(keepingCapacity: true)
         var segmentStart = start
         /// A `\u` escape of a high surrogate, waiting for the low surrogate that completes it.
@@ -314,7 +314,7 @@ private struct JSJSONParser {
         }
     }
 
-    private mutating func appendScalar(_ v: UInt32) {
+    @_optimize(speed) private mutating func appendScalar(_ v: UInt32) {
         switch v {
         case ..<0x80:
             unescaped.append(UInt8(v))
@@ -349,7 +349,7 @@ private final class JSMoveStack<Element> {
         base.deallocate()
     }
 
-    func push(_ element: Element) {
+    @_optimize(speed) func push(_ element: Element) {
         if count == capacity {
             let larger = UnsafeMutablePointer<Element>.allocate(capacity: capacity * 2)
             larger.moveInitialize(from: base, count: count)
@@ -362,7 +362,7 @@ private final class JSMoveStack<Element> {
     }
 
     /// The elements from `start` up, moved off the stack into an array of their own.
-    func pop(from start: Int) -> [Element] {
+    @_optimize(speed) func pop(from start: Int) -> [Element] {
         let n = count - start
         count = start
         guard n > 0 else { return [] }
@@ -511,7 +511,7 @@ private struct JSJSONWriter {
 
     /// `value`, the property `key` of `holder`, after its `toJSON` and the replacer; false, writing nothing, when
     /// it serializes to undefined.
-    mutating func property(_ holder: AnyObject?, _ key: @autoclosure () -> String, _ value: Any?) throws -> Bool {
+    @_optimize(speed) mutating func property(_ holder: AnyObject?, _ key: @autoclosure () -> String, _ value: Any?) throws -> Bool {
         var v = jsFlat(value)
         if let value = v, jsIsClassInstance(value) {
             let object = jsObjectReference(value)
@@ -543,7 +543,7 @@ private struct JSJSONWriter {
         return try write(v)
     }
 
-    private mutating func kind(of object: AnyObject) -> JSJSONClassKind {
+    @_optimize(speed) private mutating func kind(of object: AnyObject) -> JSJSONClassKind {
         let type = ObjectIdentifier(Swift.type(of: object))
         if let known = kinds[type] { return known }
         let kind: JSJSONClassKind = switch object {
@@ -566,7 +566,7 @@ private struct JSJSONWriter {
     }
 
     /// A value after `toJSON` and the replacer; false, writing nothing, when it serializes to undefined.
-    private mutating func write(_ value: Any) throws -> Bool {
+    @_optimize(speed) private mutating func write(_ value: Any) throws -> Bool {
         if jsIsClassInstance(value) {
             let object = jsObjectReference(value)
             return try write(object: object, kind(of: object))
@@ -595,7 +595,7 @@ private struct JSJSONWriter {
         return true
     }
 
-    private mutating func write(object: AnyObject, _ kind: JSJSONClassKind) throws -> Bool {
+    @_optimize(speed) private mutating func write(object: AnyObject, _ kind: JSJSONClassKind) throws -> Bool {
         switch kind {
         case .null:
             output.append("null")
@@ -636,7 +636,7 @@ private struct JSJSONWriter {
 
     /// A value of a type outside the runtime's own: a Swift number of another width, an Objective-C string
     /// or number, a struct (an empty object).
-    private mutating func writeBridged(_ value: Any) throws -> Bool {
+    @_optimize(speed) private mutating func writeBridged(_ value: Any) throws -> Bool {
         switch value {
         case let s as String: output.appendJSONString(s)
         case let b as Bool: output.append(b ? "true" : "false")
@@ -668,7 +668,7 @@ private struct JSJSONWriter {
     }
 
     /// SerializeJSONArray: an element that serializes to undefined is `null`.
-    private mutating func elements(_ object: AnyObject?, _ count: Int, _ element: (Int) -> Any?) throws {
+    @_optimize(speed) private mutating func elements(_ object: AnyObject?, _ count: Int, _ element: (Int) -> Any?) throws {
         try enter(object)
         defer { leave(object) }
         guard count > 0 else { return output.append("[]") }
@@ -685,7 +685,7 @@ private struct JSJSONWriter {
     }
 
     /// SerializeJSONObject: each key's value read as it is serialized; one that serializes to undefined is left out.
-    private mutating func members(_ object: AnyObject, _ keys: [String], _ member: (String) -> Any?) throws {
+    @_optimize(speed) private mutating func members(_ object: AnyObject, _ keys: [String], _ member: (String) -> Any?) throws {
         try enter(object)
         defer { leave(object) }
         output.append(0x7B)
@@ -727,7 +727,7 @@ private struct JSJSONWriter {
 
 /// QuoteJSONString's escapes of `bytes`, UTF-8, appended to `output`: runs that need none are copied whole,
 /// found eight bytes at a time.
-private func jsJSONEscape(_ bytes: UnsafeBufferPointer<UInt8>, into output: JSUTF8Buffer) {
+@_optimize(speed) private func jsJSONEscape(_ bytes: UnsafeBufferPointer<UInt8>, into output: JSUTF8Buffer) {
     guard let base = bytes.baseAddress else { return }
     var run = 0
     var index = 0
@@ -779,7 +779,7 @@ extension JSUTF8Buffer {
     /// is found as the integer of its hundredths (say) whose quotient is the same double: what parsing those digits
     /// would give, so that they are its shortest round-trip form. Other fractions take Swift's shortest digits,
     /// which JavaScript prints the same wherever neither uses an exponent.
-    func appendJSONNumber(_ d: Double) {
+    @_optimize(speed) func appendJSONNumber(_ d: Double) {
         guard d.isFinite else { return append("null") }
         if d.rounded(.towardZero) == d {
             guard d.magnitude < 9_007_199_254_740_992 else { return append(jsNumberToString(d)) }
@@ -802,7 +802,7 @@ extension JSUTF8Buffer {
     }
 
     /// QuoteJSONString.
-    func appendJSONString(_ s: String) {
+    @_optimize(speed) func appendJSONString(_ s: String) {
         append(0x22)
         if s.utf8.withContiguousStorageIfAvailable({ jsJSONEscape($0, into: self) }) == nil {
             Array(s.utf8).withUnsafeBufferPointer { jsJSONEscape($0, into: self) }
@@ -827,20 +827,20 @@ private final class JSUTF8Buffer {
 
     var string: String { String(decoding: UnsafeBufferPointer(start: base, count: count), as: UTF8.self) }
 
-    @inline(__always) func append(_ byte: UInt8) {
+    @_optimize(speed) @inline(__always) func append(_ byte: UInt8) {
         if count == capacity { grow(to: count + 1) }
         base[count] = byte
         count += 1
     }
 
-    @inline(__always) func append(_ bytes: UnsafeBufferPointer<UInt8>) {
+    @_optimize(speed) @inline(__always) func append(_ bytes: UnsafeBufferPointer<UInt8>) {
         guard let source = bytes.baseAddress else { return }
         if count + bytes.count > capacity { grow(to: count + bytes.count) }
         (base + count).update(from: source, count: bytes.count)
         count += bytes.count
     }
 
-    @inline(__always) func append(_ text: StaticString) {
+    @_optimize(speed) @inline(__always) func append(_ text: StaticString) {
         append(UnsafeBufferPointer(start: text.utf8Start, count: text.utf8CodeUnitCount))
     }
 
@@ -850,12 +850,12 @@ private final class JSUTF8Buffer {
     }
 
     /// `n`'s decimal digits.
-    func append(integer n: Int64) {
+    @_optimize(speed) func append(integer n: Int64) {
         append(decimal: n, decimals: 0)
     }
 
     /// `n` divided by 10^`decimals`, in JavaScript's form: no trailing zeros after the point, and a zero before it.
-    func append(decimal n: Int64, decimals: Int) {
+    @_optimize(speed) func append(decimal n: Int64, decimals: Int) {
         if n < 0 { append(0x2D) }
         var magnitude = n.magnitude
         var digits = 0

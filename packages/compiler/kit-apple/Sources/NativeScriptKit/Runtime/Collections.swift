@@ -39,18 +39,18 @@ enum JSCollectionKey: Equatable {
 
     nonisolated(unsafe) private static var uniqueCounter = 0
 
-    @inlinable static func number(_ d: Double) -> JSCollectionKey {
+    @_optimize(speed) @inlinable static func number(_ d: Double) -> JSCollectionKey {
         .number(d.isNaN ? Double.nan.bitPattern : (d == 0 ? 0 : d.bitPattern))
     }
 
     /// The key of a typed `String` or `Double` is made inline, without testing the value's type at run time.
-    @inlinable static func of<K>(_ key: K) -> JSCollectionKey {
+    @_optimize(speed) @inlinable static func of<K>(_ key: K) -> JSCollectionKey {
         if K.self == String.self { return .string(unsafeBitCast(key, to: String.self)) }
         if K.self == Double.self { return number(unsafeBitCast(key, to: Double.self)) }
         return of(any: key)
     }
 
-    @usableFromInline static func of(any key: Any?) -> JSCollectionKey {
+    @_optimize(speed) @usableFromInline static func of(any key: Any?) -> JSCollectionKey {
         let key = jsFlat(key)
         if let object = key, jsIsOpaqueObject(object) { return object is JSNull ? .null : .object(ObjectIdentifier(object as AnyObject)) }
         switch key {
@@ -70,7 +70,7 @@ enum JSCollectionKey: Equatable {
 
     /// Folded to a word and mixed (the MurmurHash3 finalizer), for `JSOrderedSlots`' table: strings by their
     /// UTF-8 bytes (FNV-1a), as property keys are.
-    @inlinable var hash: Int {
+    @_optimize(speed) @inlinable var hash: Int {
         switch self {
         case .undefined: return 0x5BD1_E995
         case .null: return 0x1B87_3593
@@ -83,7 +83,7 @@ enum JSCollectionKey: Equatable {
         }
     }
 
-    @inlinable static func mix(_ word: UInt64) -> Int {
+    @_optimize(speed) @inlinable static func mix(_ word: UInt64) -> Int {
         var x = word
         x ^= x >> 33
         x &*= 0xFF51_AFD7_ED55_8CCD
@@ -93,7 +93,7 @@ enum JSCollectionKey: Equatable {
         return Int(truncatingIfNeeded: x)
     }
 
-    @inlinable static func fold(_ s: String) -> UInt64 {
+    @_optimize(speed) @inlinable static func fold(_ s: String) -> UInt64 {
         var folded: UInt64 = 0xCBF2_9CE4_8422_2325
         let utf8 = s.utf8
         let done: Void? = utf8.withContiguousStorageIfAvailable { for byte in $0 { folded = (folded ^ UInt64(byte)) &* 0x100_0000_01B3 } }
@@ -102,7 +102,7 @@ enum JSCollectionKey: Equatable {
     }
 
     /// Case by case, without the pair of keys a tuple pattern would copy.
-    @inlinable static func == (a: JSCollectionKey, b: JSCollectionKey) -> Bool {
+    @_optimize(speed) @inlinable static func == (a: JSCollectionKey, b: JSCollectionKey) -> Bool {
         switch a {
         case .number(let x): if case .number(let y) = b { return x == y }
         case .string(let x): if case .string(let y) = b { return jsStringEquals(x, y) }
@@ -179,7 +179,7 @@ final class JSOrderedSlots<Key, Value> {
     @usableFromInline init() {}
 
     /// The table index holding `key`'s position, or nil.
-    @inlinable func bucket(_ key: JSCollectionKey, _ hash: Int) -> Int? {
+    @_optimize(speed) @inlinable func bucket(_ key: JSCollectionKey, _ hash: Int) -> Int? {
         guard !table.isEmpty else { return nil }
         let mask = table.count - 1
         var i = hash & mask
@@ -191,15 +191,15 @@ final class JSOrderedSlots<Key, Value> {
         }
     }
 
-    @inlinable func find(_ key: JSCollectionKey) -> Int? { find(key, key.hash) }
+    @_optimize(speed) @inlinable func find(_ key: JSCollectionKey) -> Int? { find(key, key.hash) }
 
-    @inlinable func find(_ key: JSCollectionKey, _ hash: Int) -> Int? { bucket(key, hash).map { table[$0] } }
+    @_optimize(speed) @inlinable func find(_ key: JSCollectionKey, _ hash: Int) -> Int? { bucket(key, hash).map { table[$0] } }
 
-    @inlinable func entry(at position: Int) -> Entry { slots[position]! }
+    @_optimize(speed) @inlinable func entry(at position: Int) -> Entry { slots[position]! }
 
-    @inlinable func update(at position: Int, _ value: Value) { slots[position]!.value = value }
+    @_optimize(speed) @inlinable func update(at position: Int, _ value: Value) { slots[position]!.value = value }
 
-    @inlinable func append(_ hashKey: JSCollectionKey, _ hash: Int, _ key: Key, _ value: Value) {
+    @_optimize(speed) @inlinable func append(_ hashKey: JSCollectionKey, _ hash: Int, _ key: Key, _ value: Value) {
         compactIfNeeded()
         if (slots.count + 1) * 4 > table.count * 3 { rebuild(capacity: max(8, (live + 1) * 2)) }
         let mask = table.count - 1
@@ -212,7 +212,7 @@ final class JSOrderedSlots<Key, Value> {
         live += 1
     }
 
-    @inlinable func remove(_ key: JSCollectionKey) -> Bool {
+    @_optimize(speed) @inlinable func remove(_ key: JSCollectionKey) -> Bool {
         guard let i = bucket(key, key.hash) else { return false }
         slots[table[i]] = nil
         table[i] = Self.removed
@@ -236,7 +236,7 @@ final class JSOrderedSlots<Key, Value> {
         return cursor
     }
 
-    @inlinable func next(_ cursor: JSCollectionCursor) -> Entry? {
+    @_optimize(speed) @inlinable func next(_ cursor: JSCollectionCursor) -> Entry? {
         guard !cursor.done else { return nil }
         while cursor.position < slots.count {
             let slot = slots[cursor.position]
@@ -248,7 +248,7 @@ final class JSOrderedSlots<Key, Value> {
     }
 
     /// The table made anew for `capacity` entries, from the slots in place.
-    @inlinable func rebuild(capacity: Int) {
+    @_optimize(speed) @inlinable func rebuild(capacity: Int) {
         var size = 8
         while size * 3 < capacity * 4 { size *= 2 }
         table = Array(repeating: Self.empty, count: size)
@@ -261,7 +261,7 @@ final class JSOrderedSlots<Key, Value> {
     }
 
     /// Once most slots are tombstones, the live ones move down, and open cursors with them.
-    @inlinable func compactIfNeeded() {
+    @_optimize(speed) @inlinable func compactIfNeeded() {
         guard slots.count >= 16, slots.count - live > live else { return }
         compact()
     }
@@ -309,17 +309,17 @@ open class JSMap<Key, Value>: Sequence, JSMapProtocol, JSReactiveConvertible, Cu
         for (key, value) in entries { set(key, value) }
     }
 
-    @inlinable @inline(__always) final func read(_ value: Value) -> Value {
+    @_optimize(speed) @inlinable @inline(__always) final func read(_ value: Value) -> Value {
         jsTracker != nil ? jsReactive(value) : value
     }
 
-    @inlinable public final func get(_ key: Key) -> Value? {
+    @_optimize(speed) @inlinable public final func get(_ key: Key) -> Value? {
         jsTracker?.track()
         guard let position = table.find(JSCollectionKey.of(key)) else { return nil }
         return read(table.entry(at: position).value)
     }
 
-    @inlinable @discardableResult
+    @_optimize(speed) @inlinable @discardableResult
     public final func set(_ key: Key, _ value: Value) -> JSMap<Key, Value> {
         let hashKey = JSCollectionKey.of(key)
         let hash = hashKey.hash
@@ -332,12 +332,12 @@ open class JSMap<Key, Value>: Sequence, JSMapProtocol, JSReactiveConvertible, Cu
         return self
     }
 
-    @inlinable public final func has(_ key: Key) -> Bool {
+    @_optimize(speed) @inlinable public final func has(_ key: Key) -> Bool {
         jsTracker?.track()
         return table.find(JSCollectionKey.of(key)) != nil
     }
 
-    @inlinable @discardableResult
+    @_optimize(speed) @inlinable @discardableResult
     public final func delete(_ key: Key) -> Bool {
         guard table.remove(JSCollectionKey.of(key)) else { return false }
         jsTracker?.trigger()
@@ -355,13 +355,13 @@ open class JSMap<Key, Value>: Sequence, JSMapProtocol, JSReactiveConvertible, Cu
         return Double(table.live)
     }
 
-    @inlinable public final func forEach(_ body: (Value, Key) throws -> Void) rethrows {
+    @_optimize(speed) @inlinable public final func forEach(_ body: (Value, Key) throws -> Void) rethrows {
         jsTracker?.track()
         let cursor = table.makeCursor()
         while let entry = table.next(cursor) { try body(read(entry.value), entry.key) }
     }
 
-    @inlinable public final func forEach(_ body: (Value, Key, JSMap<Key, Value>) throws -> Void) rethrows {
+    @_optimize(speed) @inlinable public final func forEach(_ body: (Value, Key, JSMap<Key, Value>) throws -> Void) rethrows {
         try forEach { value, key in try body(value, key, self) }
     }
 
@@ -463,11 +463,11 @@ open class JSSet<Element>: Sequence, JSSetProtocol, JSReactiveConvertible, Custo
         for value in values { add(value) }
     }
 
-    @inlinable @inline(__always) final func read(_ value: Element) -> Element {
+    @_optimize(speed) @inlinable @inline(__always) final func read(_ value: Element) -> Element {
         jsTracker != nil ? jsReactive(value) : value
     }
 
-    @inlinable @discardableResult
+    @_optimize(speed) @inlinable @discardableResult
     public final func add(_ value: Element) -> JSSet<Element> {
         let hashKey = JSCollectionKey.of(value)
         let hash = hashKey.hash
@@ -478,12 +478,12 @@ open class JSSet<Element>: Sequence, JSSetProtocol, JSReactiveConvertible, Custo
         return self
     }
 
-    @inlinable public final func has(_ value: Element) -> Bool {
+    @_optimize(speed) @inlinable public final func has(_ value: Element) -> Bool {
         jsTracker?.track()
         return table.find(JSCollectionKey.of(value)) != nil
     }
 
-    @inlinable @discardableResult
+    @_optimize(speed) @inlinable @discardableResult
     public final func delete(_ value: Element) -> Bool {
         guard table.remove(JSCollectionKey.of(value)) else { return false }
         jsTracker?.trigger()
@@ -501,13 +501,13 @@ open class JSSet<Element>: Sequence, JSSetProtocol, JSReactiveConvertible, Custo
         return Double(table.live)
     }
 
-    @inlinable public final func forEach(_ body: (Element) throws -> Void) rethrows {
+    @_optimize(speed) @inlinable public final func forEach(_ body: (Element) throws -> Void) rethrows {
         jsTracker?.track()
         let cursor = table.makeCursor()
         while let entry = table.next(cursor) { try body(read(entry.key)) }
     }
 
-    public final func forEach(_ body: (Element, Element) throws -> Void) rethrows {
+    @_optimize(speed) public final func forEach(_ body: (Element, Element) throws -> Void) rethrows {
         try forEach { value in try body(value, value) }
     }
 

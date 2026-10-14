@@ -76,7 +76,7 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
 
     // MARK: Elements
 
-    @inlinable public final var count: Int {
+    @_optimize(speed) @inlinable public final var count: Int {
         track()
         return storage.count
     }
@@ -91,7 +91,7 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
     }
 
     /// `array.length`. Setting it shorter truncates.
-    @inlinable public final var length: Double {
+    @_optimize(speed) @inlinable public final var length: Double {
         get {
             track()
             return Double(storage.count)
@@ -120,7 +120,7 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
     /// `a[i]` as JavaScript reads it: nil (undefined) unless `i` is an integer index in range of a slot that is not empty,
     /// or a key set outside the indexes (`a[-1] = v`).
     /// Inlinable: every typed element read goes through it, which the app's module then specializes.
-    @inlinable public final func element(_ i: Double) -> Element? {
+    @_optimize(speed) @inlinable public final func element(_ i: Double) -> Element? {
         jsTracker?.track()
         guard let k = Int(exactly: i), k >= 0, k < storage.count else { return jsNonIndexed?[i + 0] }
         let e = jsTracker == nil ? storage[k] : jsReactive(storage[k])
@@ -128,7 +128,7 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
     }
 
     // Inlinable, as the typed reads and writes below: the app's module specializes them for its element types.
-    @inlinable public final subscript(i: Int) -> Element {
+    @_optimize(speed) @inlinable public final subscript(i: Int) -> Element {
         get {
             guard i >= 0 && i < storage.count else { outOfRange(i) }
             track()
@@ -149,7 +149,7 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
         }
     }
 
-    @inlinable public final subscript(i: Double) -> Element {
+    @_optimize(speed) @inlinable public final subscript(i: Double) -> Element {
         get {
             guard let k = index(i) else {
                 if let value = jsNonIndexed?[i + 0] ?? JSArray.hole { return value }
@@ -167,7 +167,7 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
         }
     }
 
-    @inlinable final func index(_ d: Double) -> Int? {
+    @_optimize(speed) @inlinable final func index(_ d: Double) -> Int? {
         guard d >= 0, d < 4_294_967_295, d == d.rounded(.towardZero) else { return nil }
         return Int(d)
     }
@@ -200,7 +200,7 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
     public final func makeIterator() -> Iterator { Iterator(array: self) }
 
     /// Visits the indexes below the length at the start; indexes the callback removed are skipped.
-    @inlinable @inline(__always)
+    @_optimize(speed) @inlinable @inline(__always)
     final func each(_ body: (Element, Int) throws -> Bool) rethrows {
         track()
         let length = storage.count
@@ -256,14 +256,14 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
 
     // MARK: Mutators
 
-    @inlinable @discardableResult
+    @_optimize(speed) @inlinable @discardableResult
     public final func push(_ items: Element...) -> Double {
         storage.append(contentsOf: items)
         trigger()
         return Double(storage.count)
     }
 
-    @inlinable public final func pop() -> Element? {
+    @_optimize(speed) @inlinable public final func pop() -> Element? {
         guard !storage.isEmpty else { return nil }
         let value = storage.removeLast()
         trigger()
@@ -318,7 +318,7 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
 
     /// `array.sort()`: in place and stable, by the string form of each element in UTF-16 code
     /// unit order, undefined elements last.
-    @discardableResult
+    @_optimize(speed) @discardableResult
     public final func sort() -> JSArray<Element> {
         var keyed: [(String, Element)] = []
         var undefined: [Element] = []
@@ -338,7 +338,7 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
 
     /// `array.sort(compare)`: in place and stable; undefined elements go last without being compared,
     /// and a NaN comparison result counts as 0. The array is unchanged when `compare` throws.
-    @inlinable @discardableResult
+    @_optimize(speed) @inlinable @discardableResult
     public final func sort(_ compare: (Element, Element) throws -> Double) rethrows -> JSArray<Element> {
         var defined: [Element]
         var undefined: [Element] = []
@@ -377,7 +377,7 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
     // MARK: Copies
 
     /// `array.slice(start, end)`.
-    @inlinable public final func slice(_ start: Double = 0, _ end: Double? = nil) -> JSArray<Element> {
+    @_optimize(speed) @inlinable public final func slice(_ start: Double = 0, _ end: Double? = nil) -> JSArray<Element> {
         track()
         let length = storage.count
         let s = jsRelativeIndex(start, length)
@@ -489,7 +489,7 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
         return false
     }
 
-    @inlinable public final func find(_ predicate: (Element) throws -> Bool) rethrows -> Element? {
+    @_optimize(speed) @inlinable public final func find(_ predicate: (Element) throws -> Bool) rethrows -> Element? {
         var found: Element?
         try each { v, _ in
             if try predicate(v) { found = v; return false }
@@ -498,7 +498,7 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
         return found
     }
 
-    public final func find(_ predicate: (Element, Double) throws -> Bool) rethrows -> Element? {
+    @_optimize(speed) public final func find(_ predicate: (Element, Double) throws -> Bool) rethrows -> Element? {
         var found: Element?
         try each { v, i in
             if try predicate(v, Double(i)) { found = v; return false }
@@ -507,11 +507,11 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
         return found
     }
 
-    public final func find(_ predicate: (Element, Double, JSArray<Element>) throws -> Bool) rethrows -> Element? {
+    @_optimize(speed) public final func find(_ predicate: (Element, Double, JSArray<Element>) throws -> Bool) rethrows -> Element? {
         try find { v, i in try predicate(v, i, self) }
     }
 
-    @inlinable public final func findIndex(_ predicate: (Element) throws -> Bool) rethrows -> Double {
+    @_optimize(speed) @inlinable public final func findIndex(_ predicate: (Element) throws -> Bool) rethrows -> Double {
         var found = -1
         try each { v, i in
             if try predicate(v) { found = i; return false }
@@ -520,7 +520,7 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
         return Double(found)
     }
 
-    public final func findIndex(_ predicate: (Element, Double) throws -> Bool) rethrows -> Double {
+    @_optimize(speed) public final func findIndex(_ predicate: (Element, Double) throws -> Bool) rethrows -> Double {
         var found = -1
         try each { v, i in
             if try predicate(v, Double(i)) { found = i; return false }
@@ -529,7 +529,7 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
         return Double(found)
     }
 
-    public final func findIndex(_ predicate: (Element, Double, JSArray<Element>) throws -> Bool) rethrows -> Double {
+    @_optimize(speed) public final func findIndex(_ predicate: (Element, Double, JSArray<Element>) throws -> Bool) rethrows -> Double {
         try findIndex { v, i in try predicate(v, i, self) }
     }
 
@@ -577,7 +577,7 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
         try findLastIndex { v, i in try predicate(v, i, self) }
     }
 
-    @inlinable public final func some(_ predicate: (Element) throws -> Bool) rethrows -> Bool {
+    @_optimize(speed) @inlinable public final func some(_ predicate: (Element) throws -> Bool) rethrows -> Bool {
         var result = false
         try each { v, _ in
             if try predicate(v) { result = true; return false }
@@ -586,7 +586,7 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
         return result
     }
 
-    public final func some(_ predicate: (Element, Double) throws -> Bool) rethrows -> Bool {
+    @_optimize(speed) public final func some(_ predicate: (Element, Double) throws -> Bool) rethrows -> Bool {
         var result = false
         try each { v, i in
             if try predicate(v, Double(i)) { result = true; return false }
@@ -595,11 +595,11 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
         return result
     }
 
-    public final func some(_ predicate: (Element, Double, JSArray<Element>) throws -> Bool) rethrows -> Bool {
+    @_optimize(speed) public final func some(_ predicate: (Element, Double, JSArray<Element>) throws -> Bool) rethrows -> Bool {
         try some { v, i in try predicate(v, i, self) }
     }
 
-    @inlinable public final func every(_ predicate: (Element) throws -> Bool) rethrows -> Bool {
+    @_optimize(speed) @inlinable public final func every(_ predicate: (Element) throws -> Bool) rethrows -> Bool {
         var result = true
         try each { v, _ in
             if try !predicate(v) { result = false; return false }
@@ -608,7 +608,7 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
         return result
     }
 
-    public final func every(_ predicate: (Element, Double) throws -> Bool) rethrows -> Bool {
+    @_optimize(speed) public final func every(_ predicate: (Element, Double) throws -> Bool) rethrows -> Bool {
         var result = true
         try each { v, i in
             if try !predicate(v, Double(i)) { result = false; return false }
@@ -617,34 +617,34 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
         return result
     }
 
-    public final func every(_ predicate: (Element, Double, JSArray<Element>) throws -> Bool) rethrows -> Bool {
+    @_optimize(speed) public final func every(_ predicate: (Element, Double, JSArray<Element>) throws -> Bool) rethrows -> Bool {
         try every { v, i in try predicate(v, i, self) }
     }
 
     // MARK: Transforms
 
-    @inlinable public final func forEach(_ body: (Element) throws -> Void) rethrows {
+    @_optimize(speed) @inlinable public final func forEach(_ body: (Element) throws -> Void) rethrows {
         try each { v, _ in
             try body(v)
             return true
         }
     }
 
-    @inlinable public final func forEach(_ body: (Element, Double) throws -> Void) rethrows {
+    @_optimize(speed) @inlinable public final func forEach(_ body: (Element, Double) throws -> Void) rethrows {
         try each { v, i in
             try body(v, Double(i))
             return true
         }
     }
 
-    @inlinable public final func forEach(_ body: (Element, Double, JSArray<Element>) throws -> Void) rethrows {
+    @_optimize(speed) @inlinable public final func forEach(_ body: (Element, Double, JSArray<Element>) throws -> Void) rethrows {
         try each { v, i in
             try body(v, Double(i), self)
             return true
         }
     }
 
-    @inlinable public final func map<U>(_ transform: (Element) throws -> U) rethrows -> JSArray<U> {
+    @_optimize(speed) @inlinable public final func map<U>(_ transform: (Element) throws -> U) rethrows -> JSArray<U> {
         var out: [U] = []
         out.reserveCapacity(storage.count)
         try each { v, _ in
@@ -654,7 +654,7 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
         return JSArray<U>(out)
     }
 
-    @inlinable public final func map<U>(_ transform: (Element, Double) throws -> U) rethrows -> JSArray<U> {
+    @_optimize(speed) @inlinable public final func map<U>(_ transform: (Element, Double) throws -> U) rethrows -> JSArray<U> {
         var out: [U] = []
         out.reserveCapacity(storage.count)
         try each { v, i in
@@ -664,7 +664,7 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
         return JSArray<U>(out)
     }
 
-    @inlinable public final func map<U>(_ transform: (Element, Double, JSArray<Element>) throws -> U) rethrows -> JSArray<U> {
+    @_optimize(speed) @inlinable public final func map<U>(_ transform: (Element, Double, JSArray<Element>) throws -> U) rethrows -> JSArray<U> {
         var out: [U] = []
         out.reserveCapacity(storage.count)
         try each { v, i in
@@ -674,7 +674,7 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
         return JSArray<U>(out)
     }
 
-    @inlinable public final func filter(_ predicate: (Element) throws -> Bool) rethrows -> JSArray<Element> {
+    @_optimize(speed) @inlinable public final func filter(_ predicate: (Element) throws -> Bool) rethrows -> JSArray<Element> {
         var out: [Element] = []
         try each { v, _ in
             if try predicate(v) { out.append(v) }
@@ -683,7 +683,7 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
         return JSArray(out)
     }
 
-    @inlinable public final func filter(_ predicate: (Element, Double) throws -> Bool) rethrows -> JSArray<Element> {
+    @_optimize(speed) @inlinable public final func filter(_ predicate: (Element, Double) throws -> Bool) rethrows -> JSArray<Element> {
         var out: [Element] = []
         try each { v, i in
             if try predicate(v, Double(i)) { out.append(v) }
@@ -692,7 +692,7 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
         return JSArray(out)
     }
 
-    @inlinable public final func filter(_ predicate: (Element, Double, JSArray<Element>) throws -> Bool) rethrows -> JSArray<Element> {
+    @_optimize(speed) @inlinable public final func filter(_ predicate: (Element, Double, JSArray<Element>) throws -> Bool) rethrows -> JSArray<Element> {
         var out: [Element] = []
         try each { v, i in
             if try predicate(v, Double(i), self) { out.append(v) }
@@ -724,7 +724,7 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
     }
 
     /// `array.reduce(f, initial)`.
-    @inlinable public final func reduce<U>(_ next: (U, Element) throws -> U, _ initial: U) rethrows -> U {
+    @_optimize(speed) @inlinable public final func reduce<U>(_ next: (U, Element) throws -> U, _ initial: U) rethrows -> U {
         var accumulator = initial
         try each { v, _ in
             accumulator = try next(accumulator, v)
@@ -733,7 +733,7 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
         return accumulator
     }
 
-    @inlinable public final func reduce<U>(_ next: (U, Element, Double) throws -> U, _ initial: U) rethrows -> U {
+    @_optimize(speed) @inlinable public final func reduce<U>(_ next: (U, Element, Double) throws -> U, _ initial: U) rethrows -> U {
         var accumulator = initial
         try each { v, i in
             accumulator = try next(accumulator, v, Double(i))
@@ -742,16 +742,16 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
         return accumulator
     }
 
-    @inlinable public final func reduce<U>(_ next: (U, Element, Double, JSArray<Element>) throws -> U, _ initial: U) rethrows -> U {
+    @_optimize(speed) @inlinable public final func reduce<U>(_ next: (U, Element, Double, JSArray<Element>) throws -> U, _ initial: U) rethrows -> U {
         try reduce({ a, v, i in try next(a, v, i, self) }, initial)
     }
 
     /// `array.reduce(f)`: the first element is the initial value; an empty array throws a TypeError.
-    public final func reduce(_ next: (Element, Element) throws -> Element) throws -> Element {
+    @_optimize(speed) public final func reduce(_ next: (Element, Element) throws -> Element) throws -> Element {
         try reduce { a, v, _ in try next(a, v) }
     }
 
-    public final func reduce(_ next: (Element, Element, Double) throws -> Element) throws -> Element {
+    @_optimize(speed) public final func reduce(_ next: (Element, Element, Double) throws -> Element) throws -> Element {
         track()
         let length = storage.count
         guard length > 0 else { throw JSException(JSTypeError("Reduce of empty array with no initial value")) }
@@ -764,7 +764,7 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
         return accumulator
     }
 
-    public final func reduce(_ next: (Element, Element, Double, JSArray<Element>) throws -> Element) throws -> Element {
+    @_optimize(speed) public final func reduce(_ next: (Element, Element, Double, JSArray<Element>) throws -> Element) throws -> Element {
         try reduce { a, v, i in try next(a, v, i, self) }
     }
 
@@ -963,7 +963,7 @@ extension JSArray where Element == Any? {
 /// A stable merge sort: `less(a, b)` says whether `a` must come before `b`; equal elements keep their order.
 /// Runs of 16 are sorted by insertion first, and two runs already in order are copied without merging.
 /// Inlinable: the app's module specializes it for its element type and comparator.
-@inlinable
+@_optimize(speed) @inlinable
 func jsMergeSort<T>(_ values: inout [T], _ less: (T, T) throws -> Bool) rethrows {
     let n = values.count
     guard n > 1 else { return }
