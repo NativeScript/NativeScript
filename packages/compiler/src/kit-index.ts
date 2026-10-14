@@ -46,6 +46,8 @@ export function unwrapped(text: string): string {
   text = text.replace(/\n[ \t]*\{[ \t]*(?=\n)/g, ' {');
   // A type swift-format wrapped onto the next line, after a property's colon or a function's arrow.
   text = text.replace(/(\b(?:var|let)\s+`?\w+`?\s*:|->)[ \t]*\n[ \t]*/g, '$1 ');
+  // A function's effects or arrow swift-format wrapped onto the line after its parameters.
+  text = text.replace(/\)[ \t]*\n[ \t]*(?=(?:throws|rethrows|async)\b|->)/g, ') ');
   let out = '', depth = 0, quoted = false;
   for (let k = 0; k < text.length; k++) {
     const ch = text[k];
