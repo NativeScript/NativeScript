@@ -10,6 +10,9 @@ rm -rf "$here/app/node_modules/@nativescript/core"
 cp -R "$core" "$here/app/node_modules/@nativescript/core"
 node "$here/../src/cli.ts" "$here/app" --out "$out" --name KitBuildCheck --whole-kit
 cd "$out"
-build() { xcodebuild -project KitBuildCheck.xcodeproj -scheme KitBuildCheck -configuration Release -destination 'generic/platform=iOS Simulator' -derivedDataPath "$out/dd" -quiet build; }
+rm -f "$out/build.log"
+build() { xcodebuild -project KitBuildCheck.xcodeproj -scheme KitBuildCheck -configuration Release -destination 'generic/platform=iOS Simulator' -derivedDataPath "$out/dd" -quiet build 2>&1 | tee -a "$out/build.log"; }
 # A fresh project copies TNSWidgets.xcframework while the build starts, and can read its headers mid-copy; a second build finds them in place.
 build || { echo "the first build failed: building again"; build; }
+# Every warning is one tests/kit-warnings.txt allows.
+node "$here/kit-warnings.mjs" "$out/build.log"

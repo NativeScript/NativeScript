@@ -549,7 +549,6 @@ const appSettings = { PRODUCT_BUNDLE_IDENTIFIER: bundle, SWIFT_VERSION: '"5.9"',
 // static accesses would each call into the runtime (about 2% of launch, and 130 KB of code).
 // Virtual function and witness elimination hold only when every Swift module in the link is compiled
 // for them: code from pods and packages, built without, would call methods they removed or thunks they need.
-// The kit's warnings are its generated code's, which no app can act on; printed, they bury the app's own.
 const wholeProgram = !pods && !packages.length && !pluginLines.packages;
 writeIfChanged(join(out, 'project.yml'), `name: ${name}
 options:
@@ -574,7 +573,6 @@ ${pluginLines.packages || packages.length ? `packages:\n${pluginLines.packages}$
 ${excluded.length ? `        excludes: [${excluded.join(', ')}]\n` : ''}${coreNative.kitDependencies ? `    dependencies:\n${coreNative.kitDependencies}` : ''}    settings:
       base:
         SWIFT_VERSION: "5.9"
-        SWIFT_SUPPRESS_WARNINGS: YES
 ${Object.entries(coreNative.settings).map(([k, v]) => `        ${k}: ${v}\n`).join('')}${coreNative.targets}${pluginLines.targets}${extensions.targets}  ${name}:
     type: application
     platform: iOS
