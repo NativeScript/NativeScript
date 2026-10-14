@@ -851,6 +851,7 @@ export class Translator implements AsyncTranslator {
         if (sym?.declarations?.[0]?.getSourceFile().fileName.startsWith('/__shims__/')) return name;
         break;
       case 'Promise': case 'PromiseLike': return `JSPromise<${arg(0)}>`;
+      case 'PromiseWithResolvers': if (isLibDeclaration(sym?.declarations?.[0])) return `JSPromiseWithResolvers<${arg(0)}>`; break;
       case 'AnimationPromise': if (isCoreDeclaration(sym?.declarations?.[0])) return 'JSPromise<Void>'; break;
       // Script writes animation definitions as object literals; the kit's Animation reads them by key.
       case 'AnimationDefinition': if (isCoreDeclaration(sym?.declarations?.[0])) return 'Any?'; break;
@@ -3895,13 +3896,22 @@ ${members.join('\n')}
     // What a protocol requires the class reads without throwing: a getter that throws reports instead.
     const required = new Set([...named, ...met].filter((i) => implemented.includes(i.name)).flatMap((i) => i.type.getProperties().map((p) => p.name)));
     const conformances = [...(base ? [base] : []), ...implemented];
+    // The methods JavaScript calls without the program naming them, each through the conformance that calls it:
+    // a plugin's class keeps them, where its other methods the app never names are left out.
+    const implicitlyCalled = new Set(['toString']);
     // A class's own toString is what JavaScript's string conversion calls.
     if (cls.members.some((m) => ts.isMethodDeclaration(m) && m.name.getText() === 'toString' && !m.parameters.length) && !this.inheritsToString(cls)) conformances.push('JSStringConvertible');
     const valueOf = cls.members.some((m) => ts.isMethodDeclaration(m) && m.name.getText() === 'valueOf' && !!m.body && !m.parameters.length && !isStatic(m)) && !this.inheritsMethod(cls, 'valueOf');
-    if (valueOf) conformances.push('JSValueOfConvertible');
+    if (valueOf) {
+      conformances.push('JSValueOfConvertible');
+      implicitlyCalled.add('valueOf');
+    }
     // A class's own toJSON is what JSON.stringify serializes in its instances' place.
     const toJSON = cls.members.find((m): m is ts.MethodDeclaration => ts.isMethodDeclaration(m) && m.name.getText() === 'toJSON' && !!m.body && m.parameters.length <= 1 && !isStatic(m));
-    if (toJSON && !this.inheritsMethod(cls, 'toJSON')) conformances.push('JSToJSONConvertible');
+    if (toJSON && !this.inheritsMethod(cls, 'toJSON')) {
+      conformances.push('JSToJSONConvertible');
+      implicitlyCalled.add('toJSON');
+    }
     const header = () => `${this.extended.has(name) || this.extendedDecls.has(cls) || this.library ? '' : 'final '}class ${ident(name)}${this.generics(cls)}: ${[...(base || implemented.length ? [] : ['JSDynamic']), ...conformances].join(', ')} {`;
     const lines = [''];
     const valueOfMethod = valueOf ? cls.members.find((m): m is ts.MethodDeclaration => ts.isMethodDeclaration(m) && m.name.getText() === 'valueOf' && !!m.body) : undefined;
@@ -4280,8 +4290,7 @@ ${members.join('\n')}
       }
       if (!ts.isMethodDeclaration(m) || !m.body) continue;
       const n = m.name.getText();
-      // A class's toString is what JavaScript's string conversion calls, named or not.
-      if (!this.library && this.pluginFiles.has(cls.getSourceFile().fileName) && !inherited.has(n) && !(kitRoot && this.core.kitMember(kitRoot, n)) && !this.isNamed(n) && n !== 'toString') continue;
+      if (!this.library && this.pluginFiles.has(cls.getSourceFile().fileName) && !inherited.has(n) && !(kitRoot && this.core.kitMember(kitRoot, n)) && !this.isNamed(n) && !implicitlyCalled.has(n)) continue;
       // Over a kit method, directly or through a program base that overrides it: the kit's signature.
       const kit = kitRoot && !isStatic(m) ? this.core.kitMember(kitRoot, n) : null;
       if (kit && kit.kind === 'func') { lines.push(this.kitOverride(m, kit, inherited.has(n))); continue; }
@@ -8397,6 +8406,8 @@ ${members.join('\n')}
         if (method === 'getPrototypeOf') return `jsGetPrototypeOf(${this.coerce(arg(0), 'Any?')})`;
         if (method === 'defineProperties' && ts.isObjectLiteralExpression(arg(1))) return this.defineProperties(arg(0), arg(1) as ts.ObjectLiteralExpression);
         if (method === 'fromEntries') return `jsObjectFromEntries(${this.iterable(arg(0))})`;
+        // The overload by result: `Partial<Record<K, T[]>>` holds optional groups.
+        if (method === 'groupBy') return /^JSRecord<.*>$/.test(T()) ? `(jsObjectGroupBy(${this.iterable(arg(0))}, ${this.fn(arg(1))}) as ${T()})` : this.fromAnyCode(`jsObjectGroupBy(${this.iterable(arg(0))}, ${this.fn(arg(1))}) as JSRecord<Any?>`, T(), true);
         // `Object.create(null)`: the runtime's objects inherit no keys, so an empty one.
         if (method === 'create' && arg(0)?.kind === ts.SyntaxKind.NullKeyword && e.arguments.length === 1) return 'JSObject()';
         if (method === 'defineProperty') {
@@ -8461,7 +8472,9 @@ ${members.join('\n')}
         if (method === 'parse') return `JSDate.parse(${this.str(arg(0))})`;
         if (method === 'UTC') return `JSDate.UTC(${e.arguments.map((x) => this.toNumber(x)).join(', ')})`;
         break;
+      case 'Map': if (method === 'groupBy') return `jsMapGroupBy(${this.iterable(arg(0))}, ${this.fn(arg(1))})`; break;
       case 'Promise': {
+        if (method === 'withResolvers') return `${T()}()`;
         // `return Promise.resolve(x)` where the function declares the promise's type: that type, the value converted to it.
         const wanted = method === 'resolve' && this.checker.getContextualType(e) ? this.type(this.checker.getContextualType(e)!, e) : null;
         const t = wanted && /^JSPromise<.*>$/.test(wanted) && this.lenient ? wanted : T();
@@ -8652,14 +8665,16 @@ ${members.join('\n')}
             const arity = ts.isArrowFunction(callback) || ts.isFunctionExpression(callback) ? Math.min(3, callback.parameters.length) : 1;
             const params = ['__e', '__i', '__a'].slice(0, Math.max(1, arity));
             const types = [el, 'Double', `JSArray<${el}>`];
-            const throwing = !(ts.isArrowFunction(callback) || ts.isFunctionExpression(callback)) || this.throwsInfo.fn(callback);
+            const throwing = ts.isArrowFunction(callback) || ts.isFunctionExpression(callback) ? this.throwsInfo.fn(callback) : this.valueThrows(callback);
             return `${t}.${name}({ (${params.map((p, k) => `${p}: ${types[k]}`).join(', ')}) ${throwing ? 'throws ' : ''}-> Bool in jsTruthy(${throwing ? 'try ' : ''}(${this.fn(callback)})(${params.join(', ')})) })`;
           }
           // A function value taking elements of another Swift type (an untyped array's): each element converted.
           const held = !ts.isArrowFunction(callback) && !ts.isFunctionExpression(callback) ? functionParts(this.functionValueOf(callback)) : null;
           const want = held && name === 'map' ? this.typeOf(e).replace(/^JSArray<(.*)>$/, '$1') : held?.result;
           if (held?.params.length === 1 && (held.params[0] !== el || held.result !== want)) {
-            return `${t}.${name}({ (__e: ${el}) throws -> ${want} in ${held.result === 'Void' ? '' : 'return '}${this.convert(`${this.valueThrows(callback) ? 'try ' : ''}(${this.expr(callback)})(${this.convert('__e', el, held.params[0])})`, held.result, want!)} })`;
+            // Throwing only as the function it calls does: a call given a throwing closure throws, and is tried.
+            const throwing = this.valueThrows(callback);
+            return `${t}.${name}({ (__e: ${el}) ${throwing ? 'throws ' : ''}-> ${want} in ${held.result === 'Void' ? '' : 'return '}${this.convert(`${throwing ? 'try ' : ''}(${this.expr(callback)})(${this.convert('__e', el, held.params[0])})`, held.result, want!)} })`;
           }
           return `${t}.${name}(${this.fn(callback)})`;
         };
@@ -8674,6 +8689,13 @@ ${members.join('\n')}
         return this.ignoringThisArg(e, target, call());
       }
       case 'sort': return e.arguments[0] ? `${t}.sort(${this.fn(e.arguments[0])})` : `${t}.sort()`;
+      case 'toSorted': return e.arguments[0] ? `${t}.toSorted(${this.fn(e.arguments[0])})` : `${t}.toSorted()`;
+      case 'toReversed': return `${t}.toReversed()`;
+      case 'toSpliced':
+        if (!e.arguments.length) return `${t}.toSpliced(0, 0)`;
+        if (e.arguments.slice(2).some(ts.isSpreadElement)) return `${t}.toSpliced(${e.arguments.slice(0, 2).map((x) => this.coerce(x, 'Double')).join(', ')}, contentsOf: ${this.packed(e.arguments.slice(2), `JSArray<${el}>`)}.storage)`;
+        return `${t}.toSpliced(${[...a().slice(0, 2), ...e.arguments.slice(2).map((x) => this.coerce(x, el))].join(', ')})`;
+      case 'with': return `${t}.with(${this.coerce(e.arguments[0], 'Double')}, ${this.coerce(e.arguments[1], el)})`;
       case 'reduce': case 'reduceRight': {
         const init = e.arguments[1];
         const callback = e.arguments[0];
@@ -8682,7 +8704,8 @@ ${members.join('\n')}
         const held = !ts.isArrowFunction(callback) && !ts.isFunctionExpression(callback) ? functionParts(this.functionValueOf(callback)) : null;
         const acc = init ? this.typeOf(e) : el;
         if (held?.params.length === 2 && (held.params[0] !== acc || held.params[1] !== el || held.result !== acc)) {
-          f = `{ (__a: ${acc}, __e: ${el}) throws -> ${acc} in ${this.convert(`${this.valueThrows(callback) ? 'try ' : ''}(${this.expr(callback)})(${this.convert('__a', acc, held.params[0])}, ${this.convert('__e', el, held.params[1])})`, held.result, acc)} }`;
+          const throwing = this.valueThrows(callback);
+          f = `{ (__a: ${acc}, __e: ${el}) ${throwing ? 'throws ' : ''}-> ${acc} in ${this.convert(`${throwing ? 'try ' : ''}(${this.expr(callback)})(${this.convert('__a', acc, held.params[0])}, ${this.convert('__e', el, held.params[1])})`, held.result, acc)} }`;
         }
         return init ? `${t}.${name}(${f}, ${this.coerce(init, this.typeOf(e))})` : `${t}.${name}(${f})`;
       }

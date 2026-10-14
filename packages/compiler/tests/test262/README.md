@@ -37,7 +37,7 @@ with `--only` updates only the entries for the tests it ran.
 
 `tests.txt` lists the selection by area. test262 is pinned to one commit (`COMMIT` in `run.ts`) and is never vendored.
 The covered areas are String, template literals, Array, Number, Math, JSON, Object (keys, entries, values, assign,
-fromEntries, object literals and spread), Map, Set, Promise, Date basics, RegExp basics (with String's
+fromEntries, groupBy, object literals and spread), Map, Set, Promise, Date basics, RegExp basics (with String's
 match/matchAll/search), destructuring, classes (with private members and static blocks), getters and setters,
 closures and scope, optional chaining and nullish coalescing (with logical assignment), typeof and equality, and
 exceptions. `self/` holds the harness's own checks. They must pass on a backend for that backend's numbers to mean
@@ -117,7 +117,7 @@ Within a batch, each failure is kept to the test that caused it:
 
 ## Results
 
-test262 `d53ebc8b19`, compiler at `feat/native-kit` `4a26d6b97` (2026-10-14). Swift on macOS, Kotlin on the host JVM.
+test262 `d53ebc8b19`, compiler at `feat/native-kit` `91fe5d94c` with the ES2023 library (`wip/es2023`), 2026-10-14. Swift on macOS, Kotlin on the host JVM.
 
 | Area | Backend | Tests | pass | fail | refused: type check | refused: translator | out-of-scope | unported | invalid | Pass rate | Compiled pass rate |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
@@ -127,22 +127,22 @@ test262 `d53ebc8b19`, compiler at `feat/native-kit` `4a26d6b97` (2026-10-14). Sw
 | String | kotlin | 916 | 226 | 211 | 190 | 269 | 19 | 0 | 1 | 25% | 52% |
 | Template literals | swift | 84 | 22 | 19 | 16 | 0 | 25 | 0 | 2 | 39% | 54% |
 | Template literals | kotlin | 84 | 19 | 21 | 16 | 1 | 25 | 0 | 2 | 33% | 48% |
-| Array | swift | 2687 | 191 | 435 | 555 | 1327 | 86 | 78 | 15 | 8% | 31% |
-| Array | kotlin | 2687 | 168 | 494 | 555 | 1291 | 86 | 78 | 15 | 7% | 25% |
+| Array | swift | 2687 | 212 | 454 | 464 | 1378 | 86 | 78 | 15 | 8% | 32% |
+| Array | kotlin | 2687 | 192 | 514 | 464 | 1338 | 86 | 78 | 15 | 8% | 27% |
 | Number | swift | 294 | 143 | 38 | 21 | 90 | 2 | 0 | 0 | 49% | 79% |
 | Number | kotlin | 294 | 150 | 34 | 21 | 87 | 2 | 0 | 0 | 51% | 82% |
 | Math | swift | 169 | 124 | 27 | 0 | 11 | 0 | 1 | 6 | 77% | 82% |
 | Math | kotlin | 169 | 131 | 20 | 0 | 11 | 0 | 1 | 6 | 81% | 87% |
 | JSON | swift | 136 | 65 | 24 | 17 | 7 | 22 | 0 | 1 | 58% | 73% |
 | JSON | kotlin | 136 | 68 | 21 | 17 | 7 | 22 | 0 | 1 | 60% | 76% |
-| Object | swift | 537 | 249 | 92 | 66 | 53 | 76 | 0 | 1 | 54% | 73% |
-| Object | kotlin | 537 | 189 | 123 | 66 | 82 | 76 | 0 | 1 | 41% | 61% |
-| Map | swift | 165 | 28 | 8 | 55 | 68 | 4 | 1 | 1 | 18% | 78% |
-| Map | kotlin | 165 | 28 | 9 | 55 | 67 | 4 | 1 | 1 | 18% | 76% |
+| Object | swift | 549 | 256 | 94 | 66 | 56 | 76 | 0 | 1 | 54% | 73% |
+| Object | kotlin | 549 | 195 | 126 | 66 | 85 | 76 | 0 | 1 | 41% | 61% |
+| Map | swift | 165 | 37 | 8 | 43 | 71 | 4 | 1 | 1 | 23% | 82% |
+| Map | kotlin | 165 | 36 | 10 | 43 | 70 | 4 | 1 | 1 | 23% | 78% |
 | Set | swift | 162 | 38 | 22 | 4 | 94 | 3 | 0 | 1 | 24% | 63% |
 | Set | kotlin | 162 | 50 | 10 | 4 | 94 | 3 | 0 | 1 | 32% | 83% |
-| Promise | swift | 675 | 39 | 164 | 194 | 159 | 59 | 0 | 60 | 7% | 19% |
-| Promise | kotlin | 675 | 106 | 84 | 194 | 172 | 59 | 0 | 60 | 19% | 56% |
+| Promise | swift | 675 | 39 | 167 | 190 | 160 | 59 | 0 | 60 | 7% | 19% |
+| Promise | kotlin | 675 | 106 | 87 | 190 | 173 | 59 | 0 | 60 | 19% | 55% |
 | Date | swift | 327 | 116 | 82 | 35 | 85 | 6 | 0 | 3 | 36% | 59% |
 | Date | kotlin | 327 | 128 | 67 | 35 | 88 | 6 | 0 | 3 | 40% | 66% |
 | RegExp | swift | 830 | 163 | 157 | 354 | 135 | 16 | 2 | 3 | 20% | 51% |
@@ -150,7 +150,7 @@ test262 `d53ebc8b19`, compiler at `feat/native-kit` `4a26d6b97` (2026-10-14). Sw
 | Destructuring | swift | 651 | 42 | 140 | 247 | 55 | 165 | 0 | 2 | 9% | 23% |
 | Destructuring | kotlin | 651 | 63 | 117 | 247 | 57 | 165 | 0 | 2 | 13% | 35% |
 | Classes | swift | 666 | 27 | 148 | 235 | 108 | 140 | 2 | 6 | 5% | 15% |
-| Classes | kotlin | 666 | 34 | 155 | 235 | 94 | 140 | 2 | 6 | 7% | 18% |
+| Classes | kotlin | 666 | 35 | 154 | 235 | 94 | 140 | 2 | 6 | 7% | 19% |
 | Getters and setters | swift | 64 | 2 | 43 | 6 | 3 | 10 | 0 | 0 | 4% | 4% |
 | Getters and setters | kotlin | 64 | 1 | 45 | 6 | 2 | 10 | 0 | 0 | 2% | 2% |
 | Closures and scope | swift | 366 | 28 | 76 | 66 | 9 | 177 | 0 | 10 | 16% | 27% |
@@ -161,19 +161,19 @@ test262 `d53ebc8b19`, compiler at `feat/native-kit` `4a26d6b97` (2026-10-14). Sw
 | typeof and equality | kotlin | 161 | 21 | 10 | 108 | 4 | 16 | 0 | 2 | 15% | 68% |
 | Exceptions | swift | 295 | 48 | 95 | 42 | 15 | 66 | 18 | 11 | 24% | 34% |
 | Exceptions | kotlin | 295 | 55 | 93 | 42 | 10 | 66 | 18 | 11 | 28% | 37% |
-| **Total** | swift | 9330 | 1506 | 1886 | 2286 | 2501 | 922 | 102 | 127 | 18% | 44% |
-| **Total** | kotlin | 9330 | 1685 | 1725 | 2286 | 2483 | 922 | 102 | 127 | 21% | 49% |
+| **Total** | swift | 9342 | 1543 | 1910 | 2179 | 2559 | 922 | 102 | 127 | 19% | 45% |
+| **Total** | kotlin | 9342 | 1724 | 1751 | 2179 | 2537 | 922 | 102 | 127 | 21% | 50% |
 
 What stands out:
 
-- **Most refusals happen before translation.** A quarter of the selection (2286 tests) fails the type check, and the
-  same tests fail it on both backends. This is untyped test262 code that a typed app can't contain. The exception
-  is `TS2550`: the build's `lib` is ES2022, so typed apps also can't use `findLast`, `findLastIndex`, `toSorted`,
-  `toReversed`, `toSpliced`, `with`, `Object.groupBy`/`Map.groupBy` or `Promise.withResolvers`.
+- **Most refusals happen before translation.** About a quarter of the selection (2179 tests) fails the type check,
+  and the same tests fail it on both backends. This is untyped test262 code that a typed app can't contain. The
+  build's `lib` is ES2023 plus ES2024's `groupBy` and `withResolvers`, so nothing in this selection is refused for
+  missing library declarations.
 - **The largest translator refusal is a method called on another receiver.** That means `X.prototype.m.call(…)` and
   `X.prototype` used as a value: about 1250 tests on Swift and 1060 on Kotlin, plus around 500 more that read
   `String/Array/Number/Date/Map/Set.prototype`. test262's built-in tests depend heavily on this.
-- **Of what compiles, a little under half behaves as JavaScript does** (44% Swift, 49% Kotlin). Math, Number, JSON,
+- **Of what compiles, about half behaves as JavaScript does** (45% Swift, 50% Kotlin). Math, Number, JSON,
   Map and Set do best. Classes, destructuring, getters and setters, and Promise on Swift do worst.
 - **On Swift, almost every async test is masked by one bug.** A `then` callback that returns nothing resolves
   to `()` rather than `undefined`, and `()` is truthy, so `.then($DONE, $DONE)` reports a failure
