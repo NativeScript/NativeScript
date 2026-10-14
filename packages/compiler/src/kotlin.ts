@@ -8,7 +8,7 @@ import { isCoreDeclaration } from './core.ts';
 import type { Properties } from './properties.ts';
 import { recognizePatterns, type Patterns } from './patterns.ts';
 import type { Reach } from './reach.ts';
-import { allowedDeprecation } from './android-deprecations.ts';
+import { allowedDeprecation, calledOnAnyThread } from './android-deprecations.ts';
 import type { ModuleThread } from './threading.ts';
 
 /**
@@ -3327,33 +3327,41 @@ export class Translator implements AsyncTranslator {
   /** The thread each module's code runs on (threading.ts): a `ui` module's classes and functions are main-thread only. */
   moduleThread: ((file: string) => ModuleThread | undefined) | null = null;
 
-  /** `@UiThread ` before a declaration of a `ui` module, as Android lint checks callers against it, or ''. */
+  /** The thread annotation before a declaration of a classified module (`@UiThread `, `@AnyThread `), which Android lint checks callers against, or ''. */
   threadAnnotation(n: ts.Node): string {
-    return this.moduleThread?.(n.getSourceFile().fileName) === 'ui' ? '@UiThread ' : '';
+    const thread = this.moduleThread?.(n.getSourceFile().fileName);
+    return thread === 'ui' ? '@UiThread ' : thread === 'any' ? '@AnyThread ' : '';
   }
 
-  /** The allowed deprecated Android APIs each declaration being translated uses, innermost last. */
-  private deprecationScopes: Set<string>[] = [];
+  /** The `@Suppress` keys each declaration being translated needs for the Android APIs it uses, innermost last. */
+  private suppressionScopes: Set<string>[] = [];
 
   /** A use of a deprecated Android API (`android/view/View#setSystemUiVisibility`, or a class), suppressed where core may use it. */
   noteDeprecated(api: string): void {
-    if (allowedDeprecation(api)) this.deprecationScopes.at(-1)?.add(api);
+    if (allowedDeprecation(api)) this.suppressionScopes.at(-1)?.add('DEPRECATION');
+  }
+
+  /** A call of an Android API (`class#member`): one lint restricts to worker threads is suppressed where core may call it. */
+  noteThreadRestricted(api: string): void {
+    if (calledOnAnyThread(api)) this.suppressionScopes.at(-1)?.add('WrongThread');
   }
 
   /**
-   * A declaration's code, marked `@Suppress("DEPRECATION")` where it uses an allowed deprecated API. `numbering`: a
-   * function, whose temporaries are numbered apart from any other top-level one's.
+   * A declaration's code, marked `@Suppress("DEPRECATION")` where it uses an allowed deprecated API, and
+   * `@Suppress("WrongThread")` where it calls an allowed worker-thread API. `numbering`: a function, whose temporaries
+   * are numbered apart from any other top-level one's.
    */
   suppressingDeprecations(make: () => string, numbering = true): string {
     const scope = new Set<string>();
-    this.deprecationScopes.push(scope);
+    this.suppressionScopes.push(scope);
     if (numbering && this.declarationDepth === 0) this.temporaries.clear();
     if (numbering) this.declarationDepth++;
     let code: string;
-    try { code = make(); } finally { this.deprecationScopes.pop(); if (numbering) this.declarationDepth--; }
+    try { code = make(); } finally { this.suppressionScopes.pop(); if (numbering) this.declarationDepth--; }
     if (!scope.size) return code;
+    const keys = [...scope].sort().map((k) => `"${k}"`).join(', ');
     // One @Suppress per declaration: joined with one the code starts with.
-    return /^\s*@Suppress\(/.test(code) ? code.replace(/^(\s*)@Suppress\(/, '$1@Suppress("DEPRECATION", ') : code.replace(/^(\s*)/, '$1@Suppress("DEPRECATION") ');
+    return /^\s*@Suppress\(/.test(code) ? code.replace(/^(\s*)@Suppress\(/, `$1@Suppress(${keys}, `) : code.replace(/^(\s*)/, `$1@Suppress(${keys}) `);
   }
 
   /** Parameters an override takes under the overridden method's names (Kotlin's, for named arguments), each to that name. */

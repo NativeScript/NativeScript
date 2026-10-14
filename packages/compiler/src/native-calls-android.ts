@@ -1046,6 +1046,7 @@ export class AndroidNativeAPI implements KotlinNative {
   /** A member translated code uses: its deprecation noted, for the declaration using it. */
   private used<M extends JavaMember>(m: M): M {
     if (m.deprecated) this.t.noteDeprecated(`${m.owner}#${m.name}`);
+    this.t.noteThreadRestricted(`${m.owner}#${m.name}`);
     return m;
   }
 
@@ -1338,7 +1339,8 @@ export class AndroidNativeAPI implements KotlinNative {
     return this.t.suppressingDeprecations(() => {
       // The guard calls the method itself again: a deprecated one is a use of it.
       if (target.m.deprecated) this.t.noteDeprecated(`${target.m.owner}#${target.m.name}`);
-      return this.overrideMethodCode(fn, name, target, indent, typeVar);
+      const code = this.overrideMethodCode(fn, name, target, indent, typeVar);
+      return this.t.threadAnnotation(fn) === '@UiThread ' ? mainThreadOverride(code) : code;
     });
   }
 
@@ -1423,7 +1425,8 @@ export class AndroidNativeAPI implements KotlinNative {
     return this.t.suppressingDeprecations(() => {
       // The guard calls the method itself again: a deprecated one is a use of it.
       if (target.m.deprecated) this.t.noteDeprecated(`${target.m.owner}#${target.m.name}`);
-      return this.overrideWithValueCode(value, decl, name, target, indent, typeVar);
+      const code = this.overrideWithValueCode(value, decl, name, target, indent, typeVar);
+      return this.t.threadAnnotation(value) === '@UiThread ' ? mainThreadOverride(code) : code;
     });
   }
 
@@ -2068,6 +2071,23 @@ function topLevelTypes(sig: string): string[] {
 function enteredGuard(name: string, params: string[], target: Callable, indent: string): string {
   const args = params.join(', ');
   return `${indent}    jsElsewhere(__realm)?.let { return it.${target.ret === 'V' ? 'later' : 'await'} { this.${ident(name)}(${args}) } }`;
+}
+
+/**
+ * A guarded override in a main-thread class: `@AnyThread`, as Java may call it from any thread, and the code past
+ * its guard in `jsOnMainThread { }`, so lint checks that code as running on the main thread, where the guard puts it.
+ */
+function mainThreadOverride(code: string): string {
+  const lines = code.split('\n');
+  const head = lines.findIndex((l) => /^\s*override fun /.test(l));
+  const guard = lines.findIndex((l) => l.includes('jsElsewhere(__realm)?.let {'));
+  const close = lines.length - 1;
+  if (head < 0 || guard < head || !/^\s*}$/.test(lines[close])) return code;
+  const indent = /^\s*/.exec(lines[close])![0];
+  lines[head] = lines[head].replace(/^(\s*)override fun /, '$1@AnyThread override fun ');
+  const body = lines.slice(guard + 1, close).map((l) => (l ? '    ' + l : l));
+  if (!body.some((l) => l.trim())) return lines.join('\n');
+  return [...lines.slice(0, guard + 1), `${indent}    jsOnMainThread {`, ...body, `${indent}    }`, lines[close]].join('\n');
 }
 
 /** A class's members, with the realm its overrides' guards read when any has one: the realm that made the object. */

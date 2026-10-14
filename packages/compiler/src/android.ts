@@ -171,7 +171,8 @@ export async function writeAndroid(b: AndroidBuild): Promise<void> {
   // source-line markers stay through formatting.
   const pending: { file: string; code: string }[] = [];
   const write = (file: string, text: string) => {
-    const code = /@UiThread\b/.test(text) ? text.replace('import org.nativescript.kit.*\n', 'import org.nativescript.kit.*\nimport androidx.annotation.UiThread\n') : text;
+    const annotations = ['AnyThread', 'UiThread'].filter((a) => new RegExp(`@${a}\\b`).test(text)).map((a) => `import androidx.annotation.${a}\n`).join('');
+    const code = annotations ? text.replace('import org.nativescript.kit.*\n', `import org.nativescript.kit.*\n${annotations}`) : text;
     pending.push({ file, code: withKitAliases(code) });
   };
   const flush = () => {

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- -PgeneratedKit: lint still reads the hand port's files that the build leaves out, and resolves their
+     classes to the generated kit's, so their thread findings are about code that is not compiled. -->
+<lint>
+    <issue id="WrongThread">
+        <ignore regexp="src/main/kotlin/org/nativescript/kit/(?!(Signals|ColorMix|JS|ChangeDetection|Rx|UncaughtErrors|MainThread)\.kt)[^/]+\.kt" />
+    </issue>
+    <issue id="WrongThreadInterprocedural">
+        <ignore regexp="src/main/kotlin/org/nativescript/kit/(?!(Signals|ColorMix|JS|ChangeDetection|Rx|UncaughtErrors|MainThread)\.kt)[^/]+\.kt" />
+    </issue>
+</lint>

@@ -39,7 +39,9 @@ if (providers.gradleProperty("generatedKit").isPresent) {
     android.sourceSets["main"].java.srcDir("generated/kotlin")
     android.sourceSets["main"].java.srcDir("src/fromcore/kotlin")
     val handPort = file("src/main/kotlin/org/nativescript/kit")
-    val kept = setOf("Signals.kt", "ColorMix.kt", "JS.kt", "ChangeDetection.kt", "Rx.kt", "UncaughtErrors.kt")
+    // lint-generated-kit.xml names these too.
+    val kept = setOf("Signals.kt", "ColorMix.kt", "JS.kt", "ChangeDetection.kt", "Rx.kt", "UncaughtErrors.kt", "MainThread.kt")
+    android.lint { lintConfig = file("lint-generated-kit.xml") }
     tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
         exclude { !it.isDirectory && it.file.parentFile == handPort && it.file.name !in kept }
     }
