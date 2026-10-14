@@ -6218,6 +6218,10 @@ ${members.join('\n')}
     if (/^JSArray<\w+>[?!]?$/.test(source) && /^JSArray<\w+>[?!]?$/.test(target) && source.replace(/[?!]$/, '') !== target.replace(/[?!]$/, '')) return this.convert(this.expr(e), source, target);
     // A non-strict app's value that may be missing (a native read typed `T | null`) where one is declared: unwrapped where used.
     if (this.lenientApp && target !== 'Any?' && !isOptional(target) && !target.endsWith('!') && source === optionalType(target) && !isFunctionType(target)) return `${this.expr(e)}!`;
+    // An object where a number or string is taken (`indexOf(x, { valueOf() { return 1 } })`): converted as script converts it, by its own valueOf or toString.
+    const object = source.replace(/[?!]$/, '');
+    const primitive = target.replace(/\?$/, '');
+    if ((primitive === 'Double' || primitive === 'String') && (this.isObjectShape(object) || this.classNamed(object))) return `${primitive === 'Double' ? 'jsToNumber' : 'jsToString'}(${this.expr(e)})`;
     return this.expr(e);
   }
 
@@ -8005,6 +8009,9 @@ ${members.join('\n')}
       if (required) return required;
       // `handler.toString()` of a typed function value: the text script gives a function the runtime holds.
       if (method === 'toString' && !e.arguments.length && functionParts(this.typeOf(target).replace(/^\((.*)\)[?!]$/, '$1'))) return `jsToString(${this.coerce(target, 'Any?')})`;
+      // `error.toString()` of an error the program doesn't declare a toString for: Error.prototype.toString, "name: message".
+      if (method === 'toString' && !e.arguments.length && !e.questionDotToken && this.isErrorObject(target)) return `jsToString(${this.coerce(target, 'Any?')})`;
+      if (method === 'toString' && !e.arguments.length && !e.questionDotToken && this.typeOf(target) === 'String') return this.expr(target);
       const core = this.core.call(e) ?? this.native.call(e);
       if (core) return core;
       // A member holding an untyped value (`closedCallback: Function`), called: with the object as `this`.
@@ -8165,6 +8172,17 @@ ${members.join('\n')}
     // `handler!(…)`: the function, where undefined is not a function.
     if (ts.isNonNullExpression(callee) && /[?!]$/.test(this.typeOf(callee.expression))) return `jsCallee(${this.expr(callee.expression)})(${this.args(e).join(', ')})`;
     throw this.error(e, 'call');
+  }
+
+  /** An Error (or a subclass the program declares without its own toString), which Swift holds as a JSError. */
+  private isErrorObject(e: ts.Expression): boolean {
+    const t = this.checker.getNonNullableType(this.checker.getTypeAtLocation(e));
+    const own = t.getProperty('toString')?.valueDeclaration;
+    if (own && !isLibDeclaration(own)) return false;
+    const message = t.getProperty('message')?.valueDeclaration;
+    if (!message || !isLibDeclaration(message) || !ts.isInterfaceDeclaration(message.parent) || message.parent.name.text !== 'Error') return false;
+    const swift = this.typeOf(e).replace(/[?!]$/, '');
+    return /^JS\w*Error$/.test(swift) || !!this.classNamed(swift);
   }
 
   /** `X.prototype.m`, directly or through a constant holding it (`const has = Object.prototype.hasOwnProperty`): X and m. */

@@ -7,6 +7,7 @@
 		"250-void-promise-values": "A function value with a rest parameter passed to then (`then(log)`) matches no overload (Kotlin translator).",
 		"251-define-property-targets": "A function declaration used as a value (`Object.defineProperty(greet, …)`) and `error.constructor.name` do not compile; defineProperty on a class's object, an array or a function is dropped, test262 cluster 3 (Kotlin translator and runtime).",
 		"252-prototype-method-calls": "A built-in's prototype method called with call or apply (`Array.prototype.slice.call(list, 1)`) is refused, test262 cluster 2 (Kotlin translator).",
+		"253-literal-to-string-value-of": "An object literal's own toString and valueOf are not what string and number conversions call: \"[object Object]\" and NaN, test262 cluster 5 (Kotlin translator and runtime).",
 		"280-callback-function-values": "Array.from of a Set is an array of Any? and a function declaration passed by name to reduce matches no overload (Kotlin translator)."
 	}
 }
