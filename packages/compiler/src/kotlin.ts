@@ -472,7 +472,7 @@ export class Translator implements AsyncTranslator {
         if (cls?.name) return this.className(cls);
       }
       const decl = t.symbol?.declarations?.[0];
-      if (decl && this.pluginFiles.has(decl.getSourceFile().fileName)) return 'Any?';
+      if (decl && this.pluginFiles.has(decl.getSourceFile().fileName)) return this.classBound(decl, where) ?? 'Any?';
       // A parameter of a lambda (Kotlin's take none) or of an interface the translation erases: its constraint.
       if (decl && !this.library && (ts.isArrowFunction(decl.parent) || ts.isFunctionExpression(decl.parent) || ts.isInterfaceDeclaration(decl.parent) || ts.isTypeAliasDeclaration(decl.parent))) {
         const base = this.checker.getBaseConstraintOfType(t);
@@ -2097,6 +2097,19 @@ export class Translator implements AsyncTranslator {
     const bound = (p: ts.TypeParameterDeclaration) => (!this.library && p.constraint && (ts.isClassLike(fn) || this.classConstraint(p)) ? this.type(this.checker.getTypeFromTypeNode(p.constraint), p).replace(/\?$/, '') : '');
     const kept = (fn.typeParameters ?? []).filter((p) => !erasedTypeParameter(p));
     return kept.length ? `<${kept.map((p) => (bound(p) && bound(p) !== 'Any' ? `${p.name.text} : ${bound(p)}` : p.name.text)).join(', ')}>` : '';
+  }
+
+  /**
+   * A class's type parameter bound by a class (`T extends ViewBase`), erased: its bound, nullable as an erased one is.
+   * Not where a class's `prototype` is typed as its instances are (`cls: { prototype: T }`): a prototype is no instance.
+   */
+  private classBound(decl: ts.Declaration, where?: ts.Node): string | null {
+    if (!ts.isTypeParameterDeclaration(decl) || !decl.constraint || !ts.isClassDeclaration(decl.parent)) return null;
+    if (where && ts.isPropertyAccessExpression(where) && where.name.text === 'prototype') return null;
+    const bound = this.checker.getTypeFromTypeNode(decl.constraint);
+    const cls = !bound.isUnionOrIntersection() ? bound.getSymbol()?.valueDeclaration : undefined;
+    if (!cls || !ts.isClassDeclaration(cls) || cls.typeParameters?.length || cls.getSourceFile().isDeclarationFile) return null;
+    return optionalType(this.type(bound, where));
   }
 
   private classConstraint(p: ts.TypeParameterDeclaration): boolean {

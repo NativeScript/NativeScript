@@ -769,7 +769,7 @@ export class Translator implements AsyncTranslator {
       const constraint = (t as ts.TypeParameter & { isThisType?: boolean }).isThisType ? t.getConstraint() : undefined;
       if (constraint) return this.type(constraint, where);
       const decl = t.symbol?.declarations?.[0];
-      if (decl && this.pluginFiles.has(decl.getSourceFile().fileName) && !(ts.isTypeParameterDeclaration(decl) && this.keepsGenerics(decl.parent))) return 'Any?';
+      if (decl && this.pluginFiles.has(decl.getSourceFile().fileName) && !(ts.isTypeParameterDeclaration(decl) && this.keepsGenerics(decl.parent))) return this.classBound(decl, where) ?? 'Any?';
       // A library's generic signature (`ClassDecorator`'s `TFunction`) in library mode: erased as the program's own are.
       if (decl && this.library && decl.getSourceFile().isDeclarationFile) return 'Any?';
       if (decl && ts.isTypeParameterDeclaration(decl) && erasedTypeParameter(decl)) return 'Any?';
@@ -1481,13 +1481,28 @@ export class Translator implements AsyncTranslator {
     if (forwarding) return forwarding;
     const params = fn.parameters.filter((p) => !(ts.isIdentifier(p.name) && p.name.text === 'this'));
     const ret = this.returnTypeOf(fn);
+    // `function (this: T, …)` with `T` a class: `this` is that class's, as it is in the class's methods.
+    const self = this.typedThis(fn);
     // A function reading `arguments` binds its parameters from them itself.
-    const binds = this.readsArguments(fn) ? ['let __arguments = JSArray<Any?>(__a)']
-      : params.map((p, k) => `let ${ident((p.name as ts.Identifier).text)}: ${this.paramType(p)} = ${this.fromAnyCode(`jsArg(__a, ${k})`, this.paramType(p), true)}`);
-    const body = this.withThis(fn, '__this', true, () => this.functionBody(fn, ret, this.indent + '    '));
+    const binds = [
+      ...(self ? [`guard let __self = __this as? ${self} else { throw JSException(JSTypeError("Illegal invocation")) }`] : []),
+      ...(this.readsArguments(fn) ? ['let __arguments = JSArray<Any?>(__a)']
+        : params.map((p, k) => `let ${ident((p.name as ts.Identifier).text)}: ${this.paramType(p)} = ${this.fromAnyCode(`jsArg(__a, ${k})`, this.paramType(p), true)}`)),
+    ];
+    const body = self ? this.withThis(fn, '__self', false, () => this.functionBody(fn, ret, this.indent + '    ')) : this.withThis(fn, '__this', true, () => this.functionBody(fn, ret, this.indent + '    '));
     const call = `try { () throws -> ${ret} in${body.slice(1)}()`;
     const result = ret === 'Void' ? `${call}; return nil` : `return ${this.convert(call, ret, 'Any?')}`;
     return `({ (__this: Any?, __a: [Any?]) throws -> Any? in ${binds.join('; ')}${binds.length ? '; ' : ''}${result} } as JSMethod)`;
+  }
+
+  /** The class a function's `this` parameter names (`this: View`, or `this: T` of a class bound), null where it has none or it is untyped. */
+  private typedThis(fn: ts.FunctionLikeDeclaration): string | null {
+    const p = fn.parameters.find((q) => ts.isIdentifier(q.name) && q.name.text === 'this');
+    if (!p?.type) return null;
+    const t = this.typeOf(p.name).replace(/[?!]$/, '');
+    const declared = this.checker.getTypeAtLocation(p.name);
+    const cls = (declared.isTypeParameter() ? this.checker.getBaseConstraintOfType(declared) : declared)?.getSymbol();
+    return /^[A-Z][\w.]*$/.test(t) && cls && cls.flags & ts.SymbolFlags.Class ? t : null;
   }
 
   /** `this` nodes that read an untyped object (a method of an object literal typed `any`). */
@@ -3103,6 +3118,19 @@ ${members.join('\n')}
    * Library mode: a function whose type parameters its parameters use is generic in Swift too, so the
    * arrays and objects it takes stay the caller's; a plugin's other generics are erased.
    */
+  /**
+   * A class's type parameter bound by a class (`T extends ViewBase`), erased: its bound. Not where a class's
+   * `prototype` is typed as its instances are (`cls: { prototype: T }`): a prototype is no instance.
+   */
+  private classBound(decl: ts.Declaration, where?: ts.Node): string | null {
+    if (!ts.isTypeParameterDeclaration(decl) || !decl.constraint || !ts.isClassDeclaration(decl.parent)) return null;
+    if (where && ts.isPropertyAccessExpression(where) && where.name.text === 'prototype') return null;
+    const bound = this.checker.getTypeFromTypeNode(decl.constraint);
+    const cls = !bound.isUnionOrIntersection() ? bound.getSymbol()?.valueDeclaration : undefined;
+    if (!cls || !ts.isClassDeclaration(cls) || cls.typeParameters?.length || cls.getSourceFile().isDeclarationFile) return null;
+    return this.type(bound, where);
+  }
+
   private keepsGenerics(fn: ts.Node): boolean {
     if (!this.library || !ts.isFunctionDeclaration(fn) || !fn.body || !fn.typeParameters?.length) return false;
     let found = this.genericFunctions.get(fn);
