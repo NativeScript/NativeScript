@@ -233,7 +233,14 @@ class JSArray<T>(storage: ArrayList<T>) : Iterable<T>, JSReactiveConvertible {
 
     /** `array.sort(compare)`: in place and stable; undefined last without being compared, NaN counts as 0. */
     @Suppress("UNCHECKED_CAST")
-    fun sort(compare: (T, T) -> Double): JSArray<T> {
+    fun sort(compare: (T, T) -> Double): JSArray<T> = sortBy { a, b -> compare(a as T, b as T) < 0 }
+
+    /** `array.sort(compare)` with a comparator whose result is a primitive: no comparison boxes a Double. */
+    @Suppress("UNCHECKED_CAST")
+    fun sort(compare: JSDoubleComparator<T>): JSArray<T> = sortBy { a, b -> compare.compare(a as T, b as T) < 0 }
+
+    @Suppress("UNCHECKED_CAST")
+    private inline fun sortBy(less: (Any?, Any?) -> Boolean): JSArray<T> {
         val values = arrayOfNulls<Any?>(storage.size)
         var undefineds: ArrayList<T>? = null
         var defined = 0
@@ -241,7 +248,7 @@ class JSArray<T>(storage: ArrayList<T>) : Iterable<T>, JSReactiveConvertible {
             if (e == null || e === Unit) (undefineds ?: ArrayList<T>().also { undefineds = it }).add(e)
             else values[defined++] = e
         }
-        stableSort(values, defined) { a, b -> compare(a as T, b as T) < 0 }
+        stableSort(values, defined, less)
         replaceSorted(defined, undefineds) { k -> values[k] as T }
         return this
     }
@@ -292,6 +299,7 @@ class JSArray<T>(storage: ArrayList<T>) : Iterable<T>, JSReactiveConvertible {
     fun toReversed(): JSArray<T> = JSArray(ArrayList(elements.reversed()))
     fun toSorted(): JSArray<T> = JSArray(ArrayList(elements)).sort()
     fun toSorted(compare: (T, T) -> Double): JSArray<T> = JSArray(ArrayList(elements)).sort(compare)
+    fun toSorted(compare: JSDoubleComparator<T>): JSArray<T> = JSArray(ArrayList(elements)).sort(compare)
 
     fun indexOf(value: Any?, fromIndex: Double = 0.0): Double {
         val n = size
@@ -594,6 +602,11 @@ class JSArray<T>(storage: ArrayList<T>) : Iterable<T>, JSReactiveConvertible {
         fun <T> fromLength(length: Double, f: (Double) -> T): JSArray<T> = JSArray(ArrayList((0 until jsToIntegerOrInfinity(length).clampToInt()).map { f(it.toDouble()) }))
         fun isArray(value: Any?): Boolean = value is JSArray<*>
     }
+}
+
+/** A sort comparator returning a primitive, which the translator gives a function literal typed `(a: T, b: T) => number`. */
+fun interface JSDoubleComparator<T> {
+    fun compare(a: T, b: T): Double
 }
 
 /** `[a, b, c]`. */

@@ -7071,8 +7071,14 @@ export class Translator implements AsyncTranslator {
         if (name === 'find' && /^\w+\??$/.test(own) && own.replace(/\?$/, '') !== element.replace(/\?$/, '') && own !== 'Any?') return `(${code} as ${own.endsWith('?') ? own : own + '?'})`;
         return code;
       }
-      case 'sort': return e.arguments[0] ? `${t}.sort(${this.fn(e.arguments[0], `(${element}, ${element}) -> Double`)})` : `${t}.sort()`;
-      case 'toSorted': return e.arguments[0] ? `${t}.toSorted(${this.fn(e.arguments[0], `(${element}, ${element}) -> Double`)})` : `${t}.toSorted()`;
+      case 'sort': case 'toSorted': {
+        const compare = e.arguments[0];
+        if (!compare) return `${t}.${name}()`;
+        const fn = this.fn(compare, `(${element}, ${element}) -> Double`);
+        // A function literal is the runtime's primitive comparator: a `(T, T) -> Double` boxes every comparison's result.
+        const literal = ts.isArrowFunction(compare) || ts.isFunctionExpression(compare);
+        return `${t}.${name}(${literal ? `JSDoubleComparator(${fn})` : fn})`;
+      }
       case 'toReversed': return `${t}.toReversed()`;
       case 'toSpliced': {
         if (!e.arguments.length) return `${t}.toSpliced(0.0, 0.0)`;
