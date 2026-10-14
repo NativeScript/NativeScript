@@ -127,18 +127,37 @@ extension JSResolvers where T == Void {
     public func resolve() { resolve(()) }
 }
 
+/// The reactions of `then` beyond a promise's first, the fulfilled ones as `Any`: a field of a generic type
+/// (an array of `(T) -> Void`) looks up its metadata each time the promise copies or destroys it.
+final class JSPromiseReactions {
+    var fulfilled: [Any] = []
+    var rejected: [(Any?) -> Void] = []
+}
+
+/// Whether a value is an object (a Swift or Objective-C class instance), read from its type's metadata.
+func jsIsObjectValue<T>(_ value: T) -> Bool {
+    if T.self == Double.self || T.self == String.self || T.self == Bool.self || T.self == Void.self { return false }
+    guard let object = jsFlat(value) else { return false }
+    let kind = jsTypeKind(object)
+    return kind == .swiftClass || kind == .objCClass
+}
+
 /// A JavaScript `Promise` (ECMA-262 §27.2). Rejection reasons are any JavaScript value.
 public final class JSPromise<T>: JSThenable, CustomStringConvertible {
-    private var state = JSPromiseState.pending
-    private var result: T?
+    @usableFromInline var state = JSPromiseState.pending
+    @usableFromInline var result: T?
     private var reason: Any?
-    private var reactions: [(fulfilled: (T) -> Void, rejected: (Any?) -> Void)] = []
-    private var isHandled = false
+    /// The first reaction apart from the others: most promises have one, or none (an awaited promise that is
+    /// already settled).
+    private var fulfilledReaction: ((T) -> Void)?
+    private var rejectedReaction: ((Any?) -> Void)?
+    private var moreReactions: JSPromiseReactions?
+    @usableFromInline var isHandled = false
     private var rejection: JSRejection?
     /// What `cancel()` does on a promise a library made cancelable (core's `AnimationPromise`).
     public var canceler: (() -> Void)?
 
-    init() {}
+    @usableFromInline init() {}
 
     public func cancel() { canceler?() }
 
@@ -177,8 +196,10 @@ public final class JSPromise<T>: JSThenable, CustomStringConvertible {
 
     // MARK: Settling
 
-    /// A promise resolve function after its already-resolved check (§27.2.1.3.2 steps 7–16).
-    func resolveWith(_ resolution: T) {
+    /// A promise resolve function after its already-resolved check (§27.2.1.3.2 steps 7–16). Only an object can be a
+    /// thenable: a number or a string is not cast to the protocols, a cast that would bridge it to Objective-C first.
+    @usableFromInline func resolveWith(_ resolution: T) {
+        guard jsIsObjectValue(resolution) else { return settleFulfilled(resolution) }
         if let thenable = resolution as? JSThenable {
             if thenable === self {
                 settleRejected(JSTypeError("Chaining cycle detected for promise #<Promise>"))
@@ -216,7 +237,7 @@ public final class JSPromise<T>: JSThenable, CustomStringConvertible {
     }
 
     /// Resolving with a native promise: NewPromiseResolveThenableJob, then that promise's `then`.
-    func adopt(_ other: JSPromise<T>) {
+    @usableFromInline func adopt(_ other: JSPromise<T>) {
         if other === self {
             settleRejected(JSTypeError("Chaining cycle detected for promise #<Promise>"))
             return
@@ -232,31 +253,63 @@ public final class JSPromise<T>: JSThenable, CustomStringConvertible {
         guard state == .pending else { return }
         state = .fulfilled
         result = value
-        let pending = reactions
-        reactions = []
-        for reaction in pending { Microtasks.enqueue { reaction.fulfilled(value) } }
+        guard let first = fulfilledReaction else { return }
+        let more = moreReactions
+        clearReactions()
+        Microtasks.enqueue { first(value) }
+        for reaction in more?.fulfilled ?? [] {
+            let fulfilled = reaction as! (T) -> Void
+            Microtasks.enqueue { fulfilled(value) }
+        }
+    }
+
+    private func clearReactions() {
+        fulfilledReaction = nil
+        rejectedReaction = nil
+        moreReactions = nil
     }
 
     /// RejectPromise, reporting the rejection to the tracker when nothing handles it yet.
-    func settleRejected(_ reason: Any?) {
+    @usableFromInline func settleRejected(_ reason: Any?) {
         guard state == .pending else { return }
         state = .rejected
         self.reason = reason
-        let pending = reactions
-        reactions = []
+        let first = rejectedReaction
+        let more = moreReactions
+        clearReactions()
         if !isHandled {
             let record = JSRejection(reason)
             rejection = record
             Microtasks.pendingRejections.append(record)
         }
-        for reaction in pending { Microtasks.enqueue { reaction.rejected(reason) } }
+        if let first { Microtasks.enqueue { first(reason) } }
+        for rejected in more?.rejected ?? [] { Microtasks.enqueue { rejected(reason) } }
     }
 
     /// PerformPromiseThen. The callbacks are the whole reaction jobs: each runs as its own microtask.
-    func performThen(_ onFulfilled: @escaping (T) -> Void, _ onRejected: @escaping (Any?) -> Void) {
+    /// Inlinable for an awaited promise already fulfilled, the usual case in a chain of awaits: the app's module
+    /// then makes the job for its own result type.
+    @inlinable func performThen(_ onFulfilled: @escaping (T) -> Void, _ onRejected: @escaping (Any?) -> Void) {
+        if state == .fulfilled, let value = result {
+            isHandled = true
+            Microtasks.enqueue { onFulfilled(value) }
+            return
+        }
+        performThenSettling(onFulfilled, onRejected)
+    }
+
+    @usableFromInline func performThenSettling(_ onFulfilled: @escaping (T) -> Void, _ onRejected: @escaping (Any?) -> Void) {
         switch state {
         case .pending:
-            reactions.append((onFulfilled, onRejected))
+            if fulfilledReaction == nil {
+                fulfilledReaction = onFulfilled
+                rejectedReaction = onRejected
+            } else {
+                let more = moreReactions ?? JSPromiseReactions()
+                more.fulfilled.append(onFulfilled)
+                more.rejected.append(onRejected)
+                moreReactions = more
+            }
         case .fulfilled:
             let value = result!
             Microtasks.enqueue { onFulfilled(value) }
@@ -567,7 +620,7 @@ public func jsPromiseAll<A, B, C, D>(_ a: JSPromise<A>, _ b: JSPromise<B>, _ c: 
 
 /// `await promise` (Await, §27.7.5.3): PerformPromiseThen with no derived promise, so the
 /// continuation runs exactly one tick after the promise settles. Marks the promise handled.
-public func jsAwait<T>(_ promise: JSPromise<T>, _ onFulfilled: @escaping (T) -> Void, _ onRejected: @escaping (Any?) -> Void) {
+@inlinable public func jsAwait<T>(_ promise: JSPromise<T>, _ onFulfilled: @escaping (T) -> Void, _ onRejected: @escaping (Any?) -> Void) {
     promise.performThen(onFulfilled, onRejected)
 }
 
@@ -595,26 +648,40 @@ public func jsAwait<T>(value: T, _ onFulfilled: @escaping (T) -> Void, _ onRejec
 
 /// The promise capability of a running async function: the translator runs the body through
 /// `body`, splits it at each `await` with `jsAwait`/`awaiting`, and ends it with a `return…`/`throwValue`.
+///
+/// Inlinable where an async function starts and returns: the app's module, which knows the result type, makes
+/// the promise without a run-time lookup of its generic class.
 public final class JSAsync<T> {
-    public let promise: JSPromise<T>
-    private let resolvers: JSResolvers<T>
+    public let promise = JSPromise<T>()
+    /// The promise's resolving functions' already-resolved flag, which `JSResolvers` would hold.
+    @usableFromInline var resolved = false
 
-    public init() {
-        (promise, resolvers) = JSPromise<T>.pending()
-    }
+    @inlinable public init() {}
 
     /// `return value`.
-    public func returnValue(_ value: T) { resolvers.resolve(value) }
+    @inlinable public func returnValue(_ value: T) {
+        guard !resolved else { return }
+        resolved = true
+        promise.resolveWith(value)
+    }
 
     /// `return promise`: the async function's promise adopts it through a NewPromiseResolveThenableJob,
     /// two ticks later than `return await promise` would settle it.
-    public func returnPromise(_ other: JSPromise<T>) { resolvers.resolve(promise: other) }
+    public func returnPromise(_ other: JSPromise<T>) {
+        guard !resolved else { return }
+        resolved = true
+        promise.adopt(other)
+    }
 
     /// An exception escaping the body.
-    public func throwValue(_ error: Any?) { resolvers.reject(error) }
+    public func throwValue(_ error: Any?) {
+        guard !resolved else { return }
+        resolved = true
+        promise.settleRejected(error)
+    }
 
     /// Runs a segment of the body synchronously; a thrown error rejects the promise.
-    public func body(_ segment: () throws -> Void) {
+    @inlinable public func body(_ segment: () throws -> Void) {
         do { try segment() } catch { throwValue(jsCaught(error)) }
     }
 
