@@ -100,6 +100,9 @@ fun jsObjectToString(value: Any?): String = when (val v = jsBox(value)) {
     else -> if (jsNumeric(v) != null) "[object Number]" else "[object Object]"
 }
 
+/** `new WeakRef(target)`'s target: undefined or null is V8's TypeError. */
+fun <T : Any> jsWeakRefTarget(target: T?): T = target ?: throw JSException(JSTypeError("WeakRef: invalid target"))
+
 /**
  * NativeScript's `WeakRef`: `get()` (and the standard `deref()`) is the object while it lives. Soft, as V8 clears a
  * WeakRef only in a full collection: core holds objects this alone keeps (an Animation its AnimatorListener reaches
@@ -297,11 +300,13 @@ fun jsCallMethod(target: Any?, key: String, vararg args: Any?): Any? {
     if (key == "bind" && jsIsFunction(target)) {
         val self = args.getOrNull(0)
         val given = args.drop(1)
-        return JSMethod { _, a -> if (target is JSMethod) jsBox(target.call(self, (given + a).toTypedArray())) else jsCall(target, *(given + a).toTypedArray()) }
+        val method = target as? JSMethod ?: (target as? JSMethodHolder)?.method
+        return JSMethod { _, a -> if (method != null) jsBox(method.call(self, (given + a).toTypedArray())) else jsCall(target, *(given + a).toTypedArray()) }
     }
     if ((key == "call" || key == "apply") && jsIsFunction(target)) {
         val rest = if (key == "call") args.drop(1) else (jsBox(args.getOrNull(1)) as? JSArray<*>)?.storage?.toList() ?: listOf()
-        return if (target is JSMethod) jsBox(target.call(args.getOrNull(0), rest.toTypedArray())) else jsCall(target, *rest.toTypedArray())
+        val method = target as? JSMethod ?: (target as? JSMethodHolder)?.method
+        return if (method != null) jsBox(method.call(args.getOrNull(0), rest.toTypedArray())) else jsCall(target, *rest.toTypedArray())
     }
     var f = jsGet(target, key)
     // What every object inherits (`hasOwnProperty`), where the object has nothing of that name.
@@ -327,10 +332,15 @@ fun jsDefineProperty(target: Any?, key: String, descriptor: Any?): Any? {
     when (val v = jsBox(target)) {
         is JSObject -> v.defineProperty(key, d)
         is JSExpando -> (v.jsExpando ?: JSObject().also { v.jsExpando = it }).defineProperty(key, d)
+        is Function<*>, is JSFunction -> jsFunctionProperties(v, true)!!.defineProperty(key, d)
         is JSDynamic -> {
             if (d.get != null || d.set != null) throw JSException(JSTypeError("Cannot define an accessor on a typed object: $key"))
             if (d.hasValue) v.jsSet(key, d.value)
         }
+        is JSArray<*> -> if (key == "length" || jsArrayIndex(key) != null) {
+            if (d.get != null || d.set != null) throw JSException(JSTypeError("Cannot define an accessor on an array's index or length: $key"))
+            if (d.hasValue) jsSet(v, key, d.value)
+        } else (v.jsProperties ?: JSObject().also { v.jsProperties = it }).defineProperty(key, d)
         else -> throw JSException(JSTypeError("Object.defineProperty called on non-object"))
     }
     return target
@@ -345,11 +355,17 @@ fun jsDefineProperties(target: Any?, descriptors: Any?): Any? {
 /** `Object.getOwnPropertyDescriptor(object, key)`. */
 fun jsOwnPropertyDescriptor(target: Any?, key: String): Any? = when (val v = jsBox(target)) {
     is JSObject -> v.descriptor(key)
-    is JSDynamic -> if (key !in v.jsKeys) null else {
-        val level = jsRestriction(v)
-        JSObject(listOf(Pair("value", v.jsGet(key)), Pair("writable", level < 3), Pair("enumerable", true), Pair("configurable", level < 2)))
-    }
+    is JSExpando -> v.jsExpando?.descriptor(key) ?: jsDeclaredDescriptor(v, key)
+    is JSArray<*> -> v.jsProperties?.descriptor(key)
+    is Function<*>, is JSFunction -> jsFunctionProperties(v, false)?.descriptor(key)
+    is JSDynamic -> jsDeclaredDescriptor(v, key)
     else -> null
+}
+
+/** The descriptor of a key a typed object declares: a writable, enumerable data property, as far as freezing left it. */
+private fun jsDeclaredDescriptor(v: JSDynamic, key: String): JSObject? = if (key !in v.jsKeys) null else {
+    val level = jsRestriction(v)
+    JSObject(listOf(Pair("value", v.jsGet(key)), Pair("writable", level < 3), Pair("enumerable", true), Pair("configurable", level < 2)))
 }
 
 /** `Object.getOwnPropertyNames(value)`. */
@@ -404,3 +420,14 @@ fun <T> jsUncheckedNull(): T = null as T
 
 /** A field declared without a value (Kotlin's `lateinit`) read by name before it is set: undefined, as script reads it. */
 inline fun jsUnsetIsUndefined(read: () -> Any?): Any? = try { read() } catch (_: UninitializedPropertyAccessException) { null }
+
+/** A class's name as JavaScript gives a constructor's: the library's error classes by their JavaScript names. */
+fun jsConstructorName(c: Class<*>): String = when (c) {
+    JSError::class.java -> "Error"
+    JSTypeError::class.java -> "TypeError"
+    JSRangeError::class.java -> "RangeError"
+    JSSyntaxError::class.java -> "SyntaxError"
+    JSReferenceError::class.java -> "ReferenceError"
+    JSAggregateError::class.java -> "AggregateError"
+    else -> c.simpleName
+}

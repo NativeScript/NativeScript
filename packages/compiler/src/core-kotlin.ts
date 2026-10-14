@@ -3,7 +3,7 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { isCoreDeclaration, unappliedProperty } from './core.ts';
 import { kitExtends, kitMember, readNames, type KitMember, type KitType } from './kit-index.ts';
-import { KIT_NAMES_ANDROID, functionTypeParts, kotlinString, numberLiteral, splitTopLevel, type KotlinCore, type Translator } from './kotlin.ts';
+import { KIT_NAMES_ANDROID, asserted, functionTypeParts, isAsserted, kotlinString, numberLiteral, splitTopLevel, type KotlinCore, type Translator } from './kotlin.ts';
 import { KIT_ANDROID } from './paths.ts';
 
 /** The pseudo-type whose members are kit-android's public top-level functions (`getRootLayout`). */
@@ -489,12 +489,15 @@ export class CoreKotlin implements KotlinCore {
   /** A core-typed receiver's code: unwrapped where it is nullable and the access is not an optional one (code checked without strictNullChecks). */
   private receiver(target: ts.Expression, access: ts.PropertyAccessExpression): string {
     const code = this.t.expr(target);
-    if (code === 'super' || code === 'this' || code.endsWith('!!')) return code;
+    if (code === 'super' || code === 'this') return code;
+    const key = access.name.text;
+    const write = ts.isBinaryExpression(access.parent) && access.parent.left === access && access.parent.operatorToken.kind >= ts.SyntaxKind.FirstAssignment && access.parent.operatorToken.kind <= ts.SyntaxKind.LastAssignment;
+    if (isAsserted(code)) return this.t.present(code, key, target, write);
     // A core variable the kit holds nullable until core sets it (`Application`).
-    if (ts.isIdentifier(target) && code === target.text && isCoreDeclaration(this.t.resolve(target)?.declarations?.[0]) && kitMember(this.index, TOP_LEVEL, code)?.type.endsWith('?')) return access.questionDotToken ? `${code}?` : `${code}!!`;
+    if (ts.isIdentifier(target) && code === target.text && isCoreDeclaration(this.t.resolve(target)?.declarations?.[0]) && kitMember(this.index, TOP_LEVEL, code)?.type.endsWith('?')) return access.questionDotToken ? `${code}?` : this.t.present(code, key, target, write);
     const nullable = this.t.typeOf(target).endsWith('?');
     if (access.questionDotToken || (access.flags & ts.NodeFlags.OptionalChain && nullable)) return `${code}?`;
-    return nullable ? `${code}!!` : code;
+    return nullable ? this.t.present(code, key, target, write) : code;
   }
 
   /** A constant core declares with a literal type (`CoreTypes.AnimationCurve.easeIn` is "easeIn"), as that literal. */
@@ -572,7 +575,7 @@ export class CoreKotlin implements KotlinCore {
       for (let k = args.length; k < params.length; k++) args.push(/=\s*(.+)$/.exec(params[k])?.[1].trim() ?? 'null');
     }
     // A function held in a field the kit declares nullable (`CssAnimationProperty.register`): present where it is called.
-    const callee = held && /\)\?$/.test(m.type.trim()) ? `${recv}.${name}!!` : `${recv}.${name}`;
+    const callee = held && /\)\?$/.test(m.type.trim()) ? `(${recv}.${name} ?: jsNotAFunction(${kotlinString(e.expression.getText().replace(/\s+/g, ''))}))` : `${recv}.${name}`;
     return this.fromKit(`${callee}(${args.join(', ')})`, m.type, t.typeOf(e), keepsNullable(e));
   }
 
@@ -752,7 +755,7 @@ export class CoreKotlin implements KotlinCore {
     if (this.generated && kb !== tb && this.index.has(tb) && (kb === 'Any' || kitExtends(this.index, tb, kb))) return `(${code} as ${tb}${k.endsWith('?') && (tsType.endsWith('?') || keepNull) ? '?' : ''})`;
     if (k.endsWith('?') && !tsType.endsWith('?') && tsType !== 'Any?') {
       const zero = tsType === 'String' ? '""' : tsType === 'Double' ? '0.0' : tsType === 'Boolean' ? 'false' : null;
-      return zero ? `(${code} ?: ${zero})` : keepNull ? code : `${code}!!`;
+      return zero ? `(${code} ?: ${zero})` : keepNull ? code : asserted(code);
     }
     return code;
   }

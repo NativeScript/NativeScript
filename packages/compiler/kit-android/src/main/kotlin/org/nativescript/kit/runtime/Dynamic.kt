@@ -11,16 +11,23 @@ import java.lang.reflect.Modifier
 // payloads and the views they decorate, and with Java objects they hold as
 // `any`, whose fields and methods NativeScript's runtime reaches by name.
 
-/** A function script holds untyped: called with whatever arguments it is given. */
+/**
+ * A function script holds untyped: called with whatever arguments it is given. `original` is the function it wraps
+ * (`::fn`), where there is one: a wrapper is made wherever the function is read untyped, and they all are that function.
+ */
 class JSFunction(val body: (List<Any?>) -> Any?) {
     /** `fn.length`: the parameters before the first optional one, as script declares them. */
     var length = 0
+    var original: Any? = null
+        internal set
     operator fun invoke(vararg args: Any?): Any? = body(args.toList())
 }
 
 fun jsFunction(body: (List<Any?>) -> Any?): JSFunction = JSFunction(body)
 
 fun jsFunction(length: Int, body: (List<Any?>) -> Any?): JSFunction = JSFunction(body).also { it.length = length }
+
+fun jsFunction(length: Int, original: Any, body: (List<Any?>) -> Any?): JSFunction = JSFunction(body).also { it.length = length; it.original = original }
 
 /** A value where a collection's element type goes, null included, as script stores it (the element type is erased). */
 @Suppress("UNCHECKED_CAST")
@@ -37,6 +44,51 @@ inline fun <reified T> jsIs(value: Any?): Boolean = value is T
 
 /** As jsAs, null where `value` is not of T's class. */
 inline fun <reified T> jsAsOrNull(value: Any?): T? = value as? T
+
+// An untyped value where code declares a string, number, boolean or class: the value when it is one, else a
+// TypeError. A wrong value is never converted (`jsToNumber`), which would hide the bug that put it there; JavaScript
+// stores it as it is, so this is a documented difference. `name` is the field or variable it goes to.
+// Not inline: each cast stays one call in the dex.
+
+fun jsAsString(value: Any?): String = value as? String ?: throw jsNotA(value, "string")
+
+fun jsAsString(value: Any?, name: String): String = value as? String ?: throw jsCannotAssign(value, name, "string")
+
+fun jsAsNumber(value: Any?): Double = value as? Double ?: jsNumeric(value) ?: throw jsNotA(value, "number")
+
+fun jsAsNumber(value: Any?, name: String): Double = value as? Double ?: jsNumeric(value) ?: throw jsCannotAssign(value, name, "number")
+
+fun jsAsBoolean(value: Any?): Boolean = value as? Boolean ?: throw jsNotA(value, "boolean")
+
+fun jsAsBoolean(value: Any?, name: String): Boolean = value as? Boolean ?: throw jsCannotAssign(value, name, "boolean")
+
+/** `value` as an instance of `type`, JavaScript's null and undefined as null. */
+fun <T : Any> jsCast(value: Any?, type: Class<T>): T? {
+    if (value == null || value === JSNull || value === Unit) return null
+    @Suppress("UNCHECKED_CAST")
+    if (type.isInstance(value)) return value as T
+    throw jsNotA(value, jsTypeName(type))
+}
+
+/** As jsCast, where the declared type has no null either: undefined and null are refused too. */
+fun <T : Any> jsCastPresent(value: Any?, type: Class<T>): T = jsCast(value, type) ?: throw jsNotA(value, jsTypeName(type))
+
+/** A class as script names it: a class core declares twice is `Font__font_android` to Kotlin. */
+private fun jsTypeName(type: Class<*>): String = type.simpleName.substringBefore("__")
+
+private fun jsValueDescription(value: Any?): String = when {
+    value == null || jsIsNullish(value) -> jsToString(value)
+    jsTypeof(value) != "object" -> jsTypeof(value)
+    value is JSArray<*> -> "an array"
+    value is JSDynamic -> value.jsClassName?.let { "an instance of $it" } ?: "an object"
+    else -> "an instance of " + jsTypeName(value.javaClass)
+}
+
+private fun jsArticle(type: String) = if (type.first() in "AEIOUaeiou") "an $type" else "a $type"
+
+private fun jsNotA(value: Any?, type: String) = JSException(JSTypeError("${jsValueDescription(value)} is not ${jsArticle(type)}"))
+
+private fun jsCannotAssign(value: Any?, name: String, type: String) = JSException(JSTypeError("Cannot assign ${jsValueDescription(value)} to '$name', ${jsArticle(type)}"))
 
 /** An untyped value used as a property key: a symbol's own key, anything else as its string. */
 fun jsPropertyKey(value: Any?): String = if (value is JSSymbol) value.key else jsToString(value)
@@ -68,11 +120,11 @@ fun <A, B, C, D, R> jsAdapt4(original: Any, body: (A, B, C, D) -> R): (A, B, C, 
 // A function value held untyped, as the Kotlin function type its TypeScript declaration gives. A Kotlin function's
 // parameter and result types are erased: the declaration is the contract, as it is in script.
 @Suppress("UNCHECKED_CAST")
-fun <R> jsFunction0(f: Any?): () -> R = (f as? Function0<Any?> ?: { jsCall(f) }) as () -> R
+fun <R> jsFunction0(f: Any?): () -> R = (if (f is JSMethod) JSMethodAs0(f) else f as? Function0<Any?> ?: { jsCall(f) }) as () -> R
 @Suppress("UNCHECKED_CAST")
-fun <A, R> jsFunction1(f: Any?): (A) -> R = (f as? Function1<Any?, Any?> ?: { a: Any? -> jsCall(f, a) }) as (A) -> R
+fun <A, R> jsFunction1(f: Any?): (A) -> R = (if (f is JSMethod) JSMethodAs1(f) else f as? Function1<Any?, Any?> ?: { a: Any? -> jsCall(f, a) }) as (A) -> R
 @Suppress("UNCHECKED_CAST")
-fun <A, B, R> jsFunction2(f: Any?): (A, B) -> R = (f as? Function2<Any?, Any?, Any?> ?: { a: Any?, b: Any? -> jsCall(f, a, b) }) as (A, B) -> R
+fun <A, B, R> jsFunction2(f: Any?): (A, B) -> R = (if (f is JSMethod) JSMethodAs2(f) else f as? Function2<Any?, Any?, Any?> ?: { a: Any?, b: Any? -> jsCall(f, a, b) }) as (A, B) -> R
 @Suppress("UNCHECKED_CAST")
 fun <A, B, C, R> jsFunction3(f: Any?): (A, B, C) -> R =
     (f as? Function3<Any?, Any?, Any?, Any?> ?: { a: Any?, b: Any?, c: Any? -> jsCall(f, a, b, c) }) as (A, B, C) -> R
@@ -88,6 +140,26 @@ fun <A, B, C, D, E, F, R> jsFunction6(f: Any?): (A, B, C, D, E, F) -> R =
 @Suppress("UNCHECKED_CAST")
 fun <A, B, C, D, E, F, G, R> jsFunction7(f: Any?): (A, B, C, D, E, F, G) -> R =
     (f as? Function7<Any?, Any?, Any?, Any?, Any?, Any?, Any?, Any?> ?: { a: Any?, b: Any?, c: Any?, d: Any?, e: Any?, g: Any?, h: Any? -> jsCall(f, a, b, c, d, e, g, h) }) as (A, B, C, D, E, F, G) -> R
+
+/**
+ * A method (`Object.prototype.hasOwnProperty`) held as a typed function: called as one, its `this` is undefined, and
+ * `call`, `apply` and `bind` (jsCallMethod) still give it the receiver they name.
+ */
+interface JSMethodHolder {
+    val method: JSMethod
+}
+
+private class JSMethodAs0(override val method: JSMethod) : JSMethodHolder, () -> Any? {
+    override fun invoke(): Any? = method.call(null, arrayOf())
+}
+
+private class JSMethodAs1(override val method: JSMethod) : JSMethodHolder, (Any?) -> Any? {
+    override fun invoke(a: Any?): Any? = method.call(null, arrayOf(a))
+}
+
+private class JSMethodAs2(override val method: JSMethod) : JSMethodHolder, (Any?, Any?) -> Any? {
+    override fun invoke(a: Any?, b: Any?): Any? = method.call(null, arrayOf(a, b))
+}
 
 /** `value` read by `read`, or null when it is undefined or null. */
 inline fun <T> jsUnlessNullish(value: Any?, read: (Any?) -> T): T? = if (jsIsNullish(value)) null else read(value)

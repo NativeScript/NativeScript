@@ -53,14 +53,16 @@ class JSArray<T>(storage: ArrayList<T>) : Iterable<T>, JSReactiveConvertible {
         }
     }
 
-    /** Properties under keys that are no index (`a[0.5] = x`), as script gives an array. */
-    var jsProperties: LinkedHashMap<String, Any?>? = null
+    /** Properties under keys that are no index (`a[0.5] = x`, `Object.defineProperty(a, …)`), as script gives an array. */
+    var jsProperties: JSObject? = null
 
     /** `a[i]` as JavaScript reads it: undefined unless `i` is an integer index in range, or a key the array was given. */
     @Suppress("UNCHECKED_CAST")
     fun element(i: Double): T? {
         track()
-        if (i != Math.floor(i) || i < 0) return jsProperties?.get(jsNumberToString(i)) as T?
+        val k = i.toInt()
+        if (k >= 0 && k.toDouble() == i) return if (k < storage.size) read(k) else null
+        if (i != Math.floor(i) || i < 0) return jsProperties?.get(jsNumberToString(i), this) as T?
         if (i >= storage.size) return null
         return read(i.toInt())
     }
@@ -89,8 +91,15 @@ class JSArray<T>(storage: ArrayList<T>) : Iterable<T>, JSReactiveConvertible {
     }
 
     operator fun set(i: Double, value: T) {
+        val k = i.toInt()
+        if (k >= 0 && k.toDouble() == i && k < storage.size) {
+            storage[k] = value
+            jsHoles?.clear(k)
+            trigger()
+            return
+        }
         if (i < 0 || i != Math.floor(i) || i >= 4_294_967_295.0) {
-            (jsProperties ?: LinkedHashMap<String, Any?>().also { jsProperties = it })[jsNumberToString(i)] = value
+            (jsProperties ?: JSObject().also { jsProperties = it }).put(jsNumberToString(i), value)
             return
         }
         set(i.toInt(), value)
@@ -131,8 +140,15 @@ class JSArray<T>(storage: ArrayList<T>) : Iterable<T>, JSReactiveConvertible {
 
     // Mutation
 
+    fun push(item: T): Double {
+        storage.add(item)
+        trigger()
+        return storage.size.toDouble()
+    }
+
     fun push(vararg items: T): Double {
-        storage.addAll(items)
+        storage.ensureCapacity(storage.size + items.size)
+        for (item in items) storage.add(item)
         trigger()
         return storage.size.toDouble()
     }
@@ -193,25 +209,50 @@ class JSArray<T>(storage: ArrayList<T>) : Iterable<T>, JSReactiveConvertible {
     }
 
     /** `array.sort()`: in place and stable, by string form in UTF-16 order, undefined last. */
+    @Suppress("UNCHECKED_CAST")
     fun sort(): JSArray<T> {
-        val defined = ArrayList<Pair<String, T>>()
-        val undefined = ArrayList<T>()
-        for (e in storage) if (e == null || e === Unit) undefined.add(e) else defined.add(Pair(if (e is String) e else jsToString(e), e))
-        jsMergeSort(defined) { a, b -> a.first < b.first }
-        storage = ArrayList(defined.map { it.second } + undefined)
-        trigger()
+        val values = arrayOfNulls<Any?>(storage.size)
+        val texts = arrayOfNulls<String>(storage.size)
+        var undefineds: ArrayList<T>? = null
+        var defined = 0
+        for (e in storage) {
+            if (e == null || e === Unit) (undefineds ?: ArrayList<T>().also { undefineds = it }).add(e)
+            else {
+                values[defined] = e
+                texts[defined] = if (e is String) e else jsToString(e)
+                defined++
+            }
+        }
+        // The positions sorted by their texts, which are made once.
+        val order = arrayOfNulls<Any?>(defined)
+        for (k in 0 until defined) order[k] = k
+        stableSort(order, defined) { a, b -> texts[a as Int]!! < texts[b as Int]!! }
+        replaceSorted(defined, undefineds) { k -> values[order[k] as Int] as T }
         return this
     }
 
     /** `array.sort(compare)`: in place and stable; undefined last without being compared, NaN counts as 0. */
+    @Suppress("UNCHECKED_CAST")
     fun sort(compare: (T, T) -> Double): JSArray<T> {
-        val defined = ArrayList<T>()
-        val undefined = ArrayList<T>()
-        for (e in storage) if (e == null || e === Unit) undefined.add(e) else defined.add(e)
-        jsMergeSort(defined) { a, b -> compare(a, b) < 0 }
-        storage = ArrayList(defined + undefined)
-        trigger()
+        val values = arrayOfNulls<Any?>(storage.size)
+        var undefineds: ArrayList<T>? = null
+        var defined = 0
+        for (e in storage) {
+            if (e == null || e === Unit) (undefineds ?: ArrayList<T>().also { undefineds = it }).add(e)
+            else values[defined++] = e
+        }
+        stableSort(values, defined) { a, b -> compare(a as T, b as T) < 0 }
+        replaceSorted(defined, undefineds) { k -> values[k] as T }
         return this
+    }
+
+    /** The storage as the `defined` sorted elements, then the undefined ones. */
+    private inline fun replaceSorted(defined: Int, undefineds: List<T>?, sorted: (Int) -> T) {
+        val out = ArrayList<T>(defined + (undefineds?.size ?: 0))
+        for (k in 0 until defined) out.add(sorted(k))
+        if (undefineds != null) out.addAll(undefineds)
+        storage = out
+        trigger()
     }
 
     fun fill(value: T, start: Double = 0.0, end: Double? = null): JSArray<T> {
@@ -270,60 +311,129 @@ class JSArray<T>(storage: ArrayList<T>) : Iterable<T>, JSReactiveConvertible {
         return false
     }
 
-    // Callbacks see the length the array had when the call started, and current elements.
+    // Callbacks see the length the array had when the call started, and current elements. Each arity has its own
+    // loop: a wrapper around a shorter callback would box every index.
 
-    fun find(f: (T) -> Boolean): T? = find { v, _, _ -> f(v) }
-    fun find(f: (T, Double) -> Boolean): T? = find { v, i, _ -> f(v, i) }
+    fun find(f: (T) -> Boolean): T? {
+        for (i in 0 until size) { val v = read(i); if (f(v)) return v }
+        return null
+    }
+
+    fun find(f: (T, Double) -> Boolean): T? {
+        for (i in 0 until size) { val v = read(i); if (f(v, i.toDouble())) return v }
+        return null
+    }
+
     fun find(f: (T, Double, JSArray<T>) -> Boolean): T? {
         for (i in 0 until size) { val v = read(i); if (f(v, i.toDouble(), this)) return v }
         return null
     }
 
-    fun findIndex(f: (T) -> Boolean): Double = findIndex { v, _, _ -> f(v) }
-    fun findIndex(f: (T, Double) -> Boolean): Double = findIndex { v, i, _ -> f(v, i) }
+    fun findIndex(f: (T) -> Boolean): Double {
+        for (i in 0 until size) if (f(read(i))) return i.toDouble()
+        return -1.0
+    }
+
+    fun findIndex(f: (T, Double) -> Boolean): Double {
+        for (i in 0 until size) if (f(read(i), i.toDouble())) return i.toDouble()
+        return -1.0
+    }
+
     fun findIndex(f: (T, Double, JSArray<T>) -> Boolean): Double {
         for (i in 0 until size) if (f(read(i), i.toDouble(), this)) return i.toDouble()
         return -1.0
     }
 
-    fun findLast(f: (T) -> Boolean): T? = findLast { v, _ -> f(v) }
+    fun findLast(f: (T) -> Boolean): T? {
+        for (i in size - 1 downTo 0) { val v = read(i); if (f(v)) return v }
+        return null
+    }
+
     fun findLast(f: (T, Double) -> Boolean): T? {
         for (i in size - 1 downTo 0) { val v = read(i); if (f(v, i.toDouble())) return v }
         return null
     }
 
-    fun findLastIndex(f: (T) -> Boolean): Double = findLastIndex { v, _ -> f(v) }
+    fun findLastIndex(f: (T) -> Boolean): Double {
+        for (i in size - 1 downTo 0) if (f(read(i))) return i.toDouble()
+        return -1.0
+    }
+
     fun findLastIndex(f: (T, Double) -> Boolean): Double {
         for (i in size - 1 downTo 0) if (f(read(i), i.toDouble())) return i.toDouble()
         return -1.0
     }
 
-    fun some(f: (T) -> Boolean): Boolean = some { v, _, _ -> f(v) }
-    fun some(f: (T, Double) -> Boolean): Boolean = some { v, i, _ -> f(v, i) }
+    fun some(f: (T) -> Boolean): Boolean {
+        val n = size
+        for (i in 0 until minOf(n, storage.size)) if (f(read(i))) return true
+        return false
+    }
+
+    fun some(f: (T, Double) -> Boolean): Boolean {
+        val n = size
+        for (i in 0 until minOf(n, storage.size)) if (f(read(i), i.toDouble())) return true
+        return false
+    }
+
     fun some(f: (T, Double, JSArray<T>) -> Boolean): Boolean {
         val n = size
         for (i in 0 until minOf(n, storage.size)) if (f(read(i), i.toDouble(), this)) return true
         return false
     }
 
-    fun every(f: (T) -> Boolean): Boolean = every { v, _, _ -> f(v) }
-    fun every(f: (T, Double) -> Boolean): Boolean = every { v, i, _ -> f(v, i) }
+    fun every(f: (T) -> Boolean): Boolean {
+        val n = size
+        for (i in 0 until minOf(n, storage.size)) if (!f(read(i))) return false
+        return true
+    }
+
+    fun every(f: (T, Double) -> Boolean): Boolean {
+        val n = size
+        for (i in 0 until minOf(n, storage.size)) if (!f(read(i), i.toDouble())) return false
+        return true
+    }
+
     fun every(f: (T, Double, JSArray<T>) -> Boolean): Boolean {
         val n = size
         for (i in 0 until minOf(n, storage.size)) if (!f(read(i), i.toDouble(), this)) return false
         return true
     }
 
-    fun forEach(f: (T) -> Unit) = forEach { v, _, _ -> f(v) }
-    fun forEach(f: (T, Double) -> Unit) = forEach { v, i, _ -> f(v, i) }
+    fun forEach(f: (T) -> Unit) {
+        val n = size
+        var i = 0
+        while (i < n && i < storage.size) { f(read(i)); i++ }
+    }
+
+    fun forEach(f: (T, Double) -> Unit) {
+        val n = size
+        var i = 0
+        while (i < n && i < storage.size) { f(read(i), i.toDouble()); i++ }
+    }
+
     fun forEach(f: (T, Double, JSArray<T>) -> Unit) {
         val n = size
         var i = 0
         while (i < n && i < storage.size) { f(read(i), i.toDouble(), this); i++ }
     }
 
-    fun <U> map(f: (T) -> U): JSArray<U> = map { v, _, _ -> f(v) }
-    fun <U> map(f: (T, Double) -> U): JSArray<U> = map { v, i, _ -> f(v, i) }
+    fun <U> map(f: (T) -> U): JSArray<U> {
+        val n = size
+        val out = ArrayList<U>(n)
+        var i = 0
+        while (i < n && i < storage.size) { out.add(f(read(i))); i++ }
+        return JSArray(out)
+    }
+
+    fun <U> map(f: (T, Double) -> U): JSArray<U> {
+        val n = size
+        val out = ArrayList<U>(n)
+        var i = 0
+        while (i < n && i < storage.size) { out.add(f(read(i), i.toDouble())); i++ }
+        return JSArray(out)
+    }
+
     fun <U> map(f: (T, Double, JSArray<T>) -> U): JSArray<U> {
         val n = size
         val out = ArrayList<U>(n)
@@ -332,8 +442,22 @@ class JSArray<T>(storage: ArrayList<T>) : Iterable<T>, JSReactiveConvertible {
         return JSArray(out)
     }
 
-    fun filter(f: (T) -> Boolean): JSArray<T> = filter { v, _, _ -> f(v) }
-    fun filter(f: (T, Double) -> Boolean): JSArray<T> = filter { v, i, _ -> f(v, i) }
+    fun filter(f: (T) -> Boolean): JSArray<T> {
+        val n = size
+        val out = ArrayList<T>()
+        var i = 0
+        while (i < n && i < storage.size) { val v = read(i); if (f(v)) out.add(v); i++ }
+        return JSArray(out)
+    }
+
+    fun filter(f: (T, Double) -> Boolean): JSArray<T> {
+        val n = size
+        val out = ArrayList<T>()
+        var i = 0
+        while (i < n && i < storage.size) { val v = read(i); if (f(v, i.toDouble())) out.add(v); i++ }
+        return JSArray(out)
+    }
+
     fun filter(f: (T, Double, JSArray<T>) -> Boolean): JSArray<T> {
         val n = size
         val out = ArrayList<T>()
@@ -342,7 +466,14 @@ class JSArray<T>(storage: ArrayList<T>) : Iterable<T>, JSReactiveConvertible {
         return JSArray(out)
     }
 
-    fun <U> flatMap(f: (T) -> JSArray<U>): JSArray<U> = flatMap { v, _ -> f(v) }
+    fun <U> flatMap(f: (T) -> JSArray<U>): JSArray<U> {
+        val out = ArrayList<U>()
+        val n = size
+        var i = 0
+        while (i < n && i < storage.size) { out.addAll(f(read(i)).storage); i++ }
+        return JSArray(out)
+    }
+
     fun <U> flatMap(f: (T, Double) -> JSArray<U>): JSArray<U> {
         val out = ArrayList<U>()
         val n = size
@@ -351,7 +482,14 @@ class JSArray<T>(storage: ArrayList<T>) : Iterable<T>, JSReactiveConvertible {
         return JSArray(out)
     }
 
-    fun <U> reduce(f: (U, T) -> U, initial: U): U = reduce({ a, v, _ -> f(a, v) }, initial)
+    fun <U> reduce(f: (U, T) -> U, initial: U): U {
+        var acc = initial
+        val n = size
+        var i = 0
+        while (i < n && i < storage.size) { acc = f(acc, read(i)); i++ }
+        return acc
+    }
+
     fun <U> reduce(f: (U, T, Double) -> U, initial: U): U {
         var acc = initial
         val n = size
@@ -360,30 +498,71 @@ class JSArray<T>(storage: ArrayList<T>) : Iterable<T>, JSReactiveConvertible {
         return acc
     }
 
-    fun <U> reduce(f: (U, T, Double, JSArray<T>) -> U, initial: U): U = reduce({ a, v, i -> f(a, v, i, this) }, initial)
+    fun <U> reduce(f: (U, T, Double, JSArray<T>) -> U, initial: U): U {
+        var acc = initial
+        val n = size
+        var i = 0
+        while (i < n && i < storage.size) { acc = f(acc, read(i), i.toDouble(), this); i++ }
+        return acc
+    }
 
-    fun reduce(f: (T, T) -> T): T = reduce { a, v, _ -> f(a, v) }
-    fun reduce(f: (T, T, Double, JSArray<T>) -> T): T = reduce { a, v, i -> f(a, v, i, this) }
+    private fun emptyReduce(): Nothing = throw JSException(JSTypeError("Reduce of empty array with no initial value"))
+
+    fun reduce(f: (T, T) -> T): T {
+        if (size == 0) emptyReduce()
+        var acc = read(0)
+        for (i in 1 until size) acc = f(acc, read(i))
+        return acc
+    }
+
+    fun reduce(f: (T, T, Double, JSArray<T>) -> T): T {
+        if (size == 0) emptyReduce()
+        var acc = read(0)
+        for (i in 1 until size) acc = f(acc, read(i), i.toDouble(), this)
+        return acc
+    }
+
     fun reduce(f: (T, T, Double) -> T): T {
-        if (size == 0) throw JSException(JSTypeError("Reduce of empty array with no initial value"))
+        if (size == 0) emptyReduce()
         var acc = read(0)
         for (i in 1 until size) acc = f(acc, read(i), i.toDouble())
         return acc
     }
 
-    fun <U> reduceRight(f: (U, T) -> U, initial: U): U = reduceRight({ a, v, _ -> f(a, v) }, initial)
+    fun <U> reduceRight(f: (U, T) -> U, initial: U): U {
+        var acc = initial
+        for (i in size - 1 downTo 0) acc = f(acc, read(i))
+        return acc
+    }
+
     fun <U> reduceRight(f: (U, T, Double) -> U, initial: U): U {
         var acc = initial
         for (i in size - 1 downTo 0) acc = f(acc, read(i), i.toDouble())
         return acc
     }
 
-    fun <U> reduceRight(f: (U, T, Double, JSArray<T>) -> U, initial: U): U = reduceRight({ a, v, i -> f(a, v, i, this) }, initial)
+    fun <U> reduceRight(f: (U, T, Double, JSArray<T>) -> U, initial: U): U {
+        var acc = initial
+        for (i in size - 1 downTo 0) acc = f(acc, read(i), i.toDouble(), this)
+        return acc
+    }
 
-    fun reduceRight(f: (T, T) -> T): T = reduceRight { a, v, _ -> f(a, v) }
-    fun reduceRight(f: (T, T, Double, JSArray<T>) -> T): T = reduceRight { a, v, i -> f(a, v, i, this) }
+    fun reduceRight(f: (T, T) -> T): T {
+        if (size == 0) emptyReduce()
+        var acc = read(size - 1)
+        for (i in size - 2 downTo 0) acc = f(acc, read(i))
+        return acc
+    }
+
+    fun reduceRight(f: (T, T, Double, JSArray<T>) -> T): T {
+        if (size == 0) emptyReduce()
+        var acc = read(size - 1)
+        for (i in size - 2 downTo 0) acc = f(acc, read(i), i.toDouble(), this)
+        return acc
+    }
+
     fun reduceRight(f: (T, T, Double) -> T): T {
-        if (size == 0) throw JSException(JSTypeError("Reduce of empty array with no initial value"))
+        if (size == 0) emptyReduce()
         var acc = read(size - 1)
         for (i in size - 2 downTo 0) acc = f(acc, read(i), i.toDouble())
         return acc
@@ -427,7 +606,12 @@ fun <U> JSArray<JSArray<U>>.flat(): JSArray<U> {
 }
 
 /** `new Array<T>(n).fill(v)`. */
-fun <T> jsArrayFilled(length: Double, value: T): JSArray<T> = JSArray(ArrayList(List(length.toInt()) { value }))
+fun <T> jsArrayFilled(length: Double, value: T): JSArray<T> {
+    val n = length.toInt()
+    val storage = ArrayList<T>(n)
+    for (k in 0 until n) storage.add(value)
+    return JSArray(storage)
+}
 
 /** An untyped value read as an array whose elements convert with `element`. */
 @Suppress("UNCHECKED_CAST")
@@ -462,33 +646,50 @@ internal fun jsRelativeIndex(value: Double, length: Int): Int {
 }
 
 /** A stable merge sort tolerating inconsistent comparators, as Array.prototype.sort must. */
+@Suppress("UNCHECKED_CAST")
 internal fun <E> jsMergeSort(items: MutableList<E>, less: (E, E) -> Boolean) {
-    if (items.size < 2) return
-    val a = ArrayList(items)
-    val b = ArrayList(items)
-    var width = 1
-    var src = a
-    var dst = b
     val n = items.size
+    if (n < 2) return
+    val values = arrayOfNulls<Any?>(n)
+    for (i in 0 until n) values[i] = items[i]
+    stableSort(values, n) { a, b -> less(a as E, b as E) }
+    for (i in 0 until n) items[i] = values[i] as E
+}
+
+/**
+ * Sorts `items[0, n)` stably with `less`, tolerating inconsistent comparators: bottom-up merges between two
+ * arrays. Two runs already in order are copied after one comparison, so sorted input takes about n of them.
+ */
+internal inline fun stableSort(items: Array<Any?>, n: Int, less: (Any?, Any?) -> Boolean) {
+    if (n < 2) return
+    var src = items
+    var dst = arrayOfNulls<Any?>(n)
+    var width = 1
     while (width < n) {
         var lo = 0
         while (lo < n) {
             val mid = minOf(lo + width, n)
             val hi = minOf(lo + 2 * width, n)
-            var i = lo
-            var j = mid
-            var k = lo
-            while (i < mid && j < hi) {
-                if (less(src[j], src[i])) dst[k++] = src[j++] else dst[k++] = src[i++]
+            if (mid >= hi || !less(src[mid], src[mid - 1])) {
+                System.arraycopy(src, lo, dst, lo, hi - lo)
+            } else {
+                var i = lo
+                var j = mid
+                var k = lo
+                while (i < mid && j < hi) {
+                    if (less(src[j], src[i])) dst[k++] = src[j++] else dst[k++] = src[i++]
+                }
+                while (i < mid) dst[k++] = src[i++]
+                while (j < hi) dst[k++] = src[j++]
             }
-            while (i < mid) dst[k++] = src[i++]
-            while (j < hi) dst[k++] = src[j++]
             lo += 2 * width
         }
-        val t = src; src = dst; dst = t
+        val t = src
+        src = dst
+        dst = t
         width *= 2
     }
-    for (i in 0 until n) items[i] = src[i]
+    if (src !== items) System.arraycopy(src, 0, items, 0, n)
 }
 
 /** `Array(...items)`: one number is a length, anything else the elements. */

@@ -50,3 +50,18 @@ fun jsPromiseAllSettled(a: Any?, b: Any?): JSPromise<Pair<JSObject, JSObject>> =
 @Suppress("UNCHECKED_CAST")
 fun jsPromiseAllSettled(a: Any?, b: Any?, c: Any?): JSPromise<Triple<JSObject, JSObject, JSObject>> =
     jsSettledCore(listOf(jsPromiseResolveAny(a), jsPromiseResolveAny(b), jsPromiseResolveAny(c))) { Triple(it[0], it[1], it[2]) }.first as JSPromise<Triple<JSObject, JSObject, JSObject>>
+
+/** `new Array(n)`: `n` holes, which reads give as undefined and `Object.keys`, `for…in` and JSON leave out or write as null. */
+@Suppress("UNCHECKED_CAST")
+fun <T> jsArrayOfHoles(length: Double): JSArray<T> {
+    if (length < 0 || length > 4_294_967_295.0 || length != Math.floor(length)) throw JSException(JSRangeError("Invalid array length"))
+    val n = length.toInt()
+    return JSArray(ArrayList<T>(List(n) { null as T })).also { if (n > 0) it.jsHoles = java.util.BitSet().apply { set(0, n) } }
+}
+
+/** An untyped value where a promise goes (`x as unknown as Promise<T>`): the promise it is, else one that adopts it as `Promise.resolve` does. */
+@Suppress("UNCHECKED_CAST")
+fun <T> jsPromiseOf(value: Any?): JSPromise<T> = value as? JSPromise<T> ?: JSPromise.resolve<Any?>(value) as JSPromise<T>
+
+/** An object's keys after `key` is set: last, unless it already is one. */
+fun jsKeyAppended(order: List<String>, key: String): List<String> = if (key in order) order else order + key
