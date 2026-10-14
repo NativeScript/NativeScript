@@ -177,21 +177,45 @@ public func jsDefineProperty(_ object: Any?, _ key: String, _ descriptor: Any?) 
     let d = try JSPropertyDescriptor(descriptor)
     switch jsFlat(object) {
     case let o as JSObject: try o.defineProperty(key, d)
-    case let expando as JSExpando:
+    case let expando as JSExpando where expando.jsExpando?.has(key) == true || jsIsSymbolKey(key) || !expando.jsKeys.contains(key):
         if expando.jsExpando == nil { expando.jsExpando = JSObject() }
         try expando.jsExpando!.defineProperty(key, d)
+    case let function as JSFunctionObject: try function.defineOwn(key, d)
     case let dynamic as JSDynamic:
+        // A field the class declares is a Swift stored property: it can take a value, not become an accessor.
         if d.get != nil || d.set != nil { throw JSException(JSTypeError("Cannot define an accessor on a typed object: \(key)")) }
         if case .some(let v) = d.value { dynamic[jsKey: key] = v }
+    case let array as JSArrayProtocol:
+        if key == "length" || jsArrayIndex(key) != nil {
+            if d.get != nil || d.set != nil { throw JSException(JSTypeError("Cannot define an accessor on an array element: \(key)")) }
+            if case .some(let v) = d.value { try jsSet(array, key, v) }
+        } else {
+            try jsSideProperties(array, create: true)!.defineProperty(key, d)
+        }
     default: throw JSException(JSTypeError("Object.defineProperty called on non-object"))
     }
     return object
+}
+
+/// What script gives an object that has no room for it (an array's `Object.defineProperty(list, 'total', …)`, `list.tag = …`):
+/// held beside the object while it lives. Weak keys compared by identity, so an object's entry goes with it.
+private let jsSideTable = NSMapTable<AnyObject, JSObject>(keyOptions: [.weakMemory, .objectPointerPersonality], valueOptions: .strongMemory)
+
+func jsSideProperties(_ object: AnyObject, create: Bool) -> JSObject? {
+    if let existing = jsSideTable.object(forKey: object) { return existing }
+    guard create else { return nil }
+    let made = JSObject()
+    jsSideTable.setObject(made, forKey: object)
+    return made
 }
 
 /// `Object.getOwnPropertyDescriptor(object, key)`.
 public func jsOwnPropertyDescriptor(_ object: Any?, _ key: String) -> Any? {
     switch jsFlat(object) {
     case let o as JSObject: return o.descriptor(key)
+    case let expando as JSExpando where expando.jsExpando?.has(key) == true: return expando.jsExpando!.descriptor(key)
+    case let function as JSFunctionObject: return function.ownDescriptor(key)
+    case let array as JSArrayProtocol where key != "length" && jsArrayIndex(key) == nil: return jsSideProperties(array, create: false)?.descriptor(key)
     case let dynamic as JSDynamic:
         guard dynamic.jsKeys.contains(key) else { return nil }
         let level = jsRestriction(dynamic)
@@ -210,10 +234,11 @@ public func jsOwnPropertyNames(_ value: Any?) -> JSArray<String> {
     }
 }
 
-nonisolated(unsafe) private var jsRestricted: [ObjectIdentifier: JSRestriction] = [:]
+private var jsRestricted: [ObjectIdentifier: JSRestriction] = [:]
 
 /// How far `Object.preventExtensions`, `seal` or `freeze` closed an object other than a plain one.
 private final class JSRestriction {
+    nonisolated deinit {}
     weak var object: AnyObject?
     var level: Int
     init(_ object: AnyObject, _ level: Int) { self.object = object; self.level = level }
@@ -329,7 +354,7 @@ public func jsSymbol(_ description: String) -> String {
     jsSymbolCount += 1
     return "@@\(description)#\(jsSymbolCount)"
 }
-nonisolated(unsafe) private var jsSymbolCount = 0
+private var jsSymbolCount = 0
 
 /// `key in object`, for any dynamic value.
 public func jsIn(_ key: String, _ object: Any?) -> Bool {
@@ -351,7 +376,7 @@ public func jsTemplateObject(_ cooked: [String], raw: [String]) -> JSArray<Strin
 public func jsTemplateRaw(_ strings: JSArray<String>) -> JSArray<String> {
     jsTemplateRaws[ObjectIdentifier(strings)] ?? strings
 }
-nonisolated(unsafe) private var jsTemplateRaws: [ObjectIdentifier: JSArray<String>] = [:]
+private var jsTemplateRaws: [ObjectIdentifier: JSArray<String>] = [:]
 
 /// The key order of an object literal with spreads (`{ ...a, b: 1 }`): each spread source's keys as it holds
 /// them, then the literal's own, a key keeping its first position; integer keys first; only the `fields` it has.

@@ -3,6 +3,7 @@ import Foundation
 /// The route a component was created for (Angular `ActivatedRoute`): set by the
 /// router before it constructs the routed component.
 public final class ActivatedRoute {
+    nonisolated deinit {}
     public struct Snapshot { public let params: JSRecord<String> }
     public let snapshot: Snapshot
     /// `route.params`: the route's parameters, replayed to each subscriber.
@@ -32,6 +33,7 @@ public struct Route {
 
 /// A route of the app's configuration (Angular's `Route`), lazy children and components resolved at compile time.
 public final class RouteConfig {
+    nonisolated deinit {}
     let segments: [String]
     let outlet: String
     let redirectTo: String?
@@ -54,6 +56,7 @@ public final class RouteConfig {
 
 /// `NavigationEnd`, the router event each completed navigation emits.
 public final class NavigationEnd {
+    nonisolated deinit {}
     public let id: Double
     public let url: String
     public let urlAfterRedirects: String
@@ -94,6 +97,7 @@ extension Page {
 /// does. Going back is the frame's: when a page is navigated from going back, its component is destroyed and
 /// the outlet shows the URL of the page under it, as `PageRouterOutlet` and `NSLocationStrategy` handle it.
 public final class Router {
+    nonisolated deinit {}
     public static let primary = "primary"
     public static let shared = Router()
     /// The flat table of apps configured without a route tree.
@@ -105,12 +109,14 @@ public final class Router {
     private var navigationId = 0.0
 
     private final class Entry {
+        nonisolated deinit {}
         let owner: Owner
         let route: ActivatedRoute
         init(owner: Owner, route: ActivatedRoute) { self.owner = owner; self.route = route }
     }
 
     private final class Outlet {
+        nonisolated deinit {}
         weak var frame: Frame?
         /// The frame of the `NSEmptyOutletComponent` page the outlet shows, where its routes' pages go.
         weak var inner: Frame?

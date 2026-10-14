@@ -146,6 +146,7 @@ private let jsCurrencies: [String: JSCurrency] = [
 
 /// `Intl.NumberFormat`.
 public final class JSNumberFormat: JSDynamic {
+    nonisolated deinit {}
     let locale: String
     let style: String
     let currency: String?
@@ -403,6 +404,7 @@ private let jsTimeSkeletons: [String: String] = [
 
 /// `Intl.DateTimeFormat`.
 public final class JSDateTimeFormat: JSDynamic {
+    nonisolated deinit {}
     let locale: String
     let timeZone: TimeZone
     let timeZoneId: String

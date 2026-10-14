@@ -37,8 +37,8 @@ public func jsError(spread arguments: [Any?]) {
 
 /// `console.time`, `timeLog`, `timeEnd`, `count`, `countReset`, `assert`, `dir` and `trace`, as Node prints them.
 public enum JSConsole {
-    nonisolated(unsafe) private static var timers: [String: Double] = [:]
-    nonisolated(unsafe) private static var counts: [String: Int] = [:]
+    private static var timers: [String: Double] = [:]
+    private static var counts: [String: Int] = [:]
 
     private static func label(_ value: Any?) -> String { jsIsNullish(value) ? "default" : jsToString(value) }
     private static func elapsed(_ start: Double) -> String {
@@ -253,6 +253,7 @@ private enum JSExtrasType {
 }
 
 private final class JSInspectContext {
+    nonisolated deinit {}
     var depth = 2
     let breakLength = 80
     let compact = 3

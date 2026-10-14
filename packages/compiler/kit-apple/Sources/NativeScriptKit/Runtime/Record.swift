@@ -4,6 +4,7 @@ import Foundation
 /// JavaScript's key order (integer-like keys ascending, then insertion order)
 /// and reference semantics, which a Swift Dictionary has neither of.
 public final class JSRecord<Value>: JSDynamic, JSReactiveConvertible, ExpressibleByDictionaryLiteral {
+    nonisolated deinit {}
     public let object = JSObject()
 
     public init() {}

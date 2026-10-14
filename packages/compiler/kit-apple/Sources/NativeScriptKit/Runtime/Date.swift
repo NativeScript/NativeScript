@@ -3,6 +3,7 @@ import Foundation
 /// `Date`: a time value in milliseconds since the epoch (NaN when invalid),
 /// read in the device's time zone or in UTC as ECMA-262 §21.4 defines.
 public final class JSDate: JSDynamic, JSStringConvertible {
+    nonisolated deinit {}
     public var time: Double
 
     public init() { time = (Date().timeIntervalSince1970 * 1000).rounded(.down) }

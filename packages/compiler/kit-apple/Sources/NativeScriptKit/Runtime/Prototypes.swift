@@ -6,14 +6,14 @@ import Foundation
 /// extending it read and write, and the class's own accessors. Each class's prototype
 /// is one object, chained to its superclass's and, at the root, to `Object.prototype`.
 public enum JSPrototypes {
-    nonisolated(unsafe) private static var table: [ObjectIdentifier: JSObject] = [:]
+    private static var table: [ObjectIdentifier: JSObject] = [:]
     /// The class of each prototype object, by the object's identity.
-    nonisolated(unsafe) private static var owners: [ObjectIdentifier: AnyClass] = [:]
+    private static var owners: [ObjectIdentifier: AnyClass] = [:]
     /// Accessors a class declares, put on its prototype when the prototype is first made.
-    nonisolated(unsafe) private static var declared: [ObjectIdentifier: [(String, JSPropertyDescriptor)]] = [:]
-    nonisolated(unsafe) private static var builtins: [String: JSObject] = [:]
+    private static var declared: [ObjectIdentifier: [(String, JSPropertyDescriptor)]] = [:]
+    private static var builtins: [String: JSObject] = [:]
     /// A class's static members by name, each read when script reads it (`Handler.initWithOwner`).
-    nonisolated(unsafe) private static var statics: [ObjectIdentifier: [String: () -> Any?]] = [:]
+    private static var statics: [ObjectIdentifier: [String: () -> Any?]] = [:]
 
     /// The static methods and properties a class declares, for script that holds the class as a value.
     public static func declareStatics(_ cls: AnyClass, _ members: [(String, () -> Any?)]) {
@@ -132,9 +132,19 @@ public func jsHasOwn(_ object: Any?, _ key: String) -> Bool {
     case let o as JSObject: return o.has(key)
     case let e as JSExpando: return e.jsExpando?.has(key) == true || e.jsKeys.contains(key)
     case let d as JSDynamic: return d.jsKeys.contains(key)
-    case let a as JSArrayProtocol: return key == "length" || jsArrayIndex(key).map { Int($0) < a.jsLength } ?? false
+    case let a as JSArrayProtocol: return key == "length" || jsArrayIndex(key).map { Int($0) < a.jsLength } ?? jsSideProperties(a, create: false)?.has(key) == true
     case let s as String: return key == "length" || jsArrayIndex(key).map { Int($0) < s.utf16.count } ?? false
     default: return false
+    }
+}
+
+/// `Object.prototype.propertyIsEnumerable.call(object, key)`: an own property that `Object.keys` lists.
+public func jsPropertyIsEnumerable(_ object: Any?, _ key: String) -> Bool {
+    guard jsHasOwn(object, key) else { return false }
+    switch jsFlat(object) {
+    case let a as JSArrayProtocol: return key != "length" && (jsArrayIndex(key) != nil || jsSideProperties(a, create: false)?.keys.contains(key) == true)
+    case is String: return key != "length"
+    default: return (jsOwnPropertyDescriptor(object, key) as? JSObject)?["enumerable"] as? Bool ?? true
     }
 }
 
@@ -201,7 +211,7 @@ struct JSClassKey: Hashable {
     let key: String
 }
 
-nonisolated(unsafe) private var jsSymbolMethods: [JSClassKey: JSMethod?] = [:]
+private var jsSymbolMethods: [JSClassKey: JSMethod?] = [:]
 private let jsSymbolMethodsLock = NSLock()
 
 /// `key in object` for what the object does not declare as a field.

@@ -3,6 +3,7 @@ import CoreGraphics
 
 /// `interop.Reference`: a cell a native out-parameter writes; `value` reads it as a number.
 public final class InteropReference {
+    nonisolated deinit {}
     public var value: Any?
 
     public init(_ value: Any? = nil) { self.value = value }
@@ -33,6 +34,7 @@ public final class InteropReference {
 
 /// `new interop.Pointer()`: the null pointer, which a native out-parameter (`NSError **`) takes as no place to write.
 public final class InteropPointer: JSDynamic {
+    nonisolated deinit {}
     public init() {}
     public subscript(jsKey key: String) -> Any? { get { nil } set {} }
     public var jsKeys: [String] { [] }

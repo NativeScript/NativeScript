@@ -777,7 +777,7 @@ extension JSUTF8Buffer {
 
 /// UTF-8 text written a byte or a run at a time, into storage that doubles as it fills: an array would check
 /// that its storage is unshared on every append.
-private final class JSUTF8Buffer {
+private nonisolated final class JSUTF8Buffer {
     private var base: UnsafeMutablePointer<UInt8>
     private var capacity: Int
     private(set) var count = 0

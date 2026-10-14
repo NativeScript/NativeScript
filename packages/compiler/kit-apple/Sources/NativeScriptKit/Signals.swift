@@ -9,6 +9,7 @@ import Foundation
 /// A scope that owns effects and cleanups: a component instance, a branch of
 /// an `if`, a row of a `for`. Disposing it disposes everything created in it.
 public final class Owner {
+    nonisolated deinit {}
     fileprivate var effects: [Effect] = []
     private var children: [Owner] = []
     private var cleanups: [() -> Void] = []
@@ -150,6 +151,7 @@ public enum Reactivity {
 /// template and of its embedded views, applying what is no longer `Object.is` the value last applied.
 /// Child components are refreshed only through their own inputs, which are signals here.
 public final class AngularView {
+    nonisolated deinit {}
     private weak var parent: AngularView?
     private var checks: [Weak] = []
 
@@ -235,6 +237,7 @@ private func flush() {
 /// every shallower one.
 public enum EffectOrder {
     public final class Scope {
+        nonisolated deinit {}
         let prefix: [Int]
         /// Next key for: the scope's own effects, embedded views, child views.
         var counters = [0, 0, 0]
@@ -315,6 +318,7 @@ public func untrack<T>(_ body: () -> T) -> T {
 
 /// A value that notifies the effects that read it.
 public final class Signal<T>: Source, Holding {
+    nonisolated deinit {}
     private var stored: T
     private var subscribers: [ObjectIdentifier: Subscriber] = [:]
     private let same: (T, T) -> Bool
@@ -329,7 +333,7 @@ public final class Signal<T>: Source, Holding {
 
     public init(_ value: T) where T: Equatable {
         stored = value
-        same = (==)
+        same = { $0 == $1 }
     }
 
     /// A signal whose writes compare with `equals` (JavaScript's `Object.is` for objects).
@@ -377,6 +381,7 @@ public func stateSignal<T>(_ signal: Signal<T>) -> Signal<T> {
 
 /// Runs `body` now and again whenever a signal it read changes.
 public final class Effect: Subscriber {
+    nonisolated deinit {}
     private var body: (() -> Void)?
     private var sources: [ObjectIdentifier: Source] = [:]
     private var stale = false

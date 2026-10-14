@@ -3,6 +3,7 @@ import UIKit
 /// `requestAnimationFrame(callback)`: called on the next display frame with the frame's time in
 /// milliseconds, as core's iOS implementation calls it from a CADisplayLink.
 private final class FrameCallbacks: NSObject {
+    nonisolated deinit {}
     static let shared = FrameCallbacks()
     private var link: CADisplayLink?
     private var callbacks: [(id: Double, fn: (Double) -> Void)] = []

@@ -79,6 +79,7 @@ public func jsMapGroupBy<S: Sequence, K>(_ items: S, _ key: () throws -> K) reth
 /// `Promise.withResolvers()`'s object. `resolve` takes what TypeScript types it to (`T | PromiseLike<T>`): a value, or
 /// a promise or thenable whose state the promise then follows.
 public final class JSPromiseWithResolvers<T> {
+    nonisolated deinit {}
     public let promise: JSPromise<T>
     public let resolve: (Any?) throws -> Void
     public let reject: (Any?) throws -> Void

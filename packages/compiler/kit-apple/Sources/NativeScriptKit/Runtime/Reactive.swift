@@ -3,6 +3,7 @@ import Foundation
 /// The dependency a deeply reactive collection reports (Vue's `ref`/`reactive`): reads
 /// subscribe the running `Effect`, mutations re-run the effects that read it.
 public final class JSTracker {
+    nonisolated deinit {}
     private let version = Signal<Int>(0)
 
     public init() {}

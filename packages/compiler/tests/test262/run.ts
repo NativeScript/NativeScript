@@ -515,9 +515,7 @@ accepted, how many ran as JavaScript does. Out-of-scope, unported and invalid te
 }
 
 /** Causes already tracked elsewhere, noted on the baseline's entries. */
-const KNOWN_CAUSES: Record<string, string> = {
-  'swift:self/async-done.js': "a void callback's promise value is not undefined, so $DONE takes it as an error: tests/diff case 227-callback-given-undefined",
-};
+const KNOWN_CAUSES: Record<string, string> = {};
 
 /** A result's detail as the baseline keeps it: enough to tell its cause, without paths. */
 const brief = (detail: string) => detail.replace(/\/\S*\/(?=[\w.-]+\.(?:ts|swift|kt)\b)/g, '').replace(/ is not supported in a release build yet: .*/, ' is not supported').slice(0, 120);

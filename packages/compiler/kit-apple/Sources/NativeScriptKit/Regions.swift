@@ -5,6 +5,7 @@ import Foundation
 /// rebuilds its child list when a region changes (`RegionHost`). A row or
 /// branch with an `if` or `for` of its own holds regions nested in this one.
 public final class Region: RegionHost {
+    nonisolated deinit {}
     weak var host: RegionHost?
     private var parts: [RegionPart] = []
 
@@ -54,6 +55,7 @@ public enum RegionPart {
 
 /// The views of a row or branch that has an `if` or `for` of its own: its static views and nested regions, in template order.
 public final class RegionFragment {
+    nonisolated deinit {}
     let owner: Region
     public var parts: [RegionPart] = []
 
@@ -174,6 +176,7 @@ public func ForFragment<Item>(_ region: Region, _ items: @escaping () -> [Item],
 /// A keyed row whose item and index follow the list: a row kept by its key
 /// renders the item now at that key, as a component re-rendered with new props does.
 public final class ForRow<Item> {
+    nonisolated deinit {}
     public let item: Signal<Item>
     public let index: Signal<Double>
 

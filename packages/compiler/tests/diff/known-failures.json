@@ -19,6 +19,10 @@
 		"293-array-sort-callbacks": "A comparator declared with fewer parameters than sort passes does not compile (Swift translator)."
 	},
 	"kotlin": {
+		"250-void-promise-values": "A function value with a rest parameter passed to then (`then(log)`) matches no overload (Kotlin translator).",
+		"251-define-property-targets": "A function declaration used as a value (`Object.defineProperty(greet, …)`) and `error.constructor.name` do not compile; defineProperty on a class's object, an array or a function is dropped, test262 cluster 3 (Kotlin translator and runtime).",
+		"252-prototype-method-calls": "A built-in's prototype method called with call or apply (`Array.prototype.slice.call(list, 1)`) is refused, test262 cluster 2 (Kotlin translator).",
+		"254-destructuring-assignment": "A rest element in a destructuring assignment (`[first, ...others] = list`) is refused, test262 cluster 8 (Kotlin translator).",
 		"270-json-edges": "JSON.parse and JSON.stringify edges the Swift perf round covers: number forms, escapes, toJSON and replacer order, syntax error messages (Kotlin runtime, being fixed in the Kotlin perf work)."
 	}
 }

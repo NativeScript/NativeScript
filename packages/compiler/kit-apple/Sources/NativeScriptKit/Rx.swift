@@ -6,6 +6,7 @@ import Foundation
 // once per subscriber.
 
 public final class RxSubscription {
+    nonisolated deinit {}
     private var teardown: (() -> Void)?
     public private(set) var closed = false
 
@@ -21,6 +22,7 @@ public final class RxSubscription {
 }
 
 public class RxObservable<T> {
+    nonisolated deinit {}
     private let producer: (@escaping (T) -> Void) -> RxSubscription
     /// A source that settles once (an HTTP request): its value or its error, for `firstValueFrom`.
     var first: (() -> JSPromise<T>)?
@@ -132,7 +134,9 @@ public func rxFirstValueFrom<T>(_ source: RxObservable<T>) -> JSPromise<T> {
 }
 
 public class RxSubject<T>: RxObservable<T> {
+    nonisolated deinit {}
     private final class Observer {
+        nonisolated deinit {}
         let next: (T) -> Void
         init(_ next: @escaping (T) -> Void) { self.next = next }
     }
@@ -163,6 +167,7 @@ extension RxSubject where T == Void {
 }
 
 public final class RxBehaviorSubject<T>: RxSubject<T> {
+    nonisolated deinit {}
     private var current: T
 
     public init(_ value: T) {
@@ -189,6 +194,7 @@ public final class RxBehaviorSubject<T>: RxSubject<T> {
 /// Angular's `async` pipe at one binding site: subscribes to the observable
 /// it is given (again when given another), and returns its latest value.
 public final class AsyncPipe {
+    nonisolated deinit {}
     private var source: AnyObject?
     private var subscription: RxSubscription?
     private var latest: Any?
@@ -216,6 +222,7 @@ public final class AsyncPipe {
 
 /// `new ReplaySubject(bufferSize)`: replays the last `bufferSize` values to each new subscriber.
 public final class RxReplaySubject<T>: RxSubject<T> {
+    nonisolated deinit {}
     private var buffer: [T] = []
     private let size: Int
 

@@ -4,6 +4,7 @@ import Foundation
 // ordered by expiry and then by list id, every timer callback followed by a microtask checkpoint.
 
 final class JSTimer {
+    nonisolated deinit {}
     let id: Double
     let callback: () -> Void
     let repeatInterval: Double?
@@ -20,6 +21,7 @@ final class JSTimer {
 }
 
 final class JSTimerList {
+    nonisolated deinit {}
     let duration: Double
     var expiry: Double
     var id: Int
@@ -52,13 +54,13 @@ final class JSTimerList {
 /// The event loop for timers: drives them from the main run loop in an app, or from
 /// `runUntilIdle()` in a command-line program.
 public enum JSEventLoop {
-    nonisolated(unsafe) static var lists: [Double: JSTimerList] = [:]
-    nonisolated(unsafe) static var timers: [Double: JSTimer] = [:]
-    nonisolated(unsafe) static var nextTimerId = 1.0
-    nonisolated(unsafe) static var nextListId = 0
-    nonisolated(unsafe) static var processing = false
-    nonisolated(unsafe) static var runLoopTimer: CFRunLoopTimer?
-    nonisolated(unsafe) static var observer: CFRunLoopObserver?
+    static var lists: [Double: JSTimerList] = [:]
+    static var timers: [Double: JSTimer] = [:]
+    static var nextTimerId = 1.0
+    static var nextListId = 0
+    static var processing = false
+    static var runLoopTimer: CFRunLoopTimer?
+    static var observer: CFRunLoopObserver?
     static let origin = DispatchTime.now().uptimeNanoseconds
 
     /// libuv's clock: whole milliseconds since the loop started.

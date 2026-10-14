@@ -37,7 +37,7 @@ enum JSCollectionKey: Equatable {
     case object(ObjectIdentifier)
     case unique(Int)
 
-    nonisolated(unsafe) private static var uniqueCounter = 0
+    private static var uniqueCounter = 0
 
     @inlinable static func number(_ d: Double) -> JSCollectionKey {
         .number(d.isNaN ? Double.nan.bitPattern : (d == 0 ? 0 : d.bitPattern))
@@ -131,6 +131,7 @@ enum JSCollectionKey: Equatable {
 
 @usableFromInline
 final class JSCollectionCursor {
+    nonisolated deinit {}
     @usableFromInline var position = 0
     @usableFromInline var done = false
     @usableFromInline init() {}
@@ -152,6 +153,7 @@ struct JSWeakCursor {
 /// collection reaches its arrays in place rather than through a copy of the struct holding them.
 @usableFromInline
 final class JSOrderedSlots<Key, Value> {
+    nonisolated deinit {}
     @usableFromInline
     struct Entry {
         @usableFromInline let key: Key
@@ -298,6 +300,7 @@ final class JSOrderedSlots<Key, Value> {
 
 /// A JavaScript `Map`: insertion-ordered, reference semantics, SameValueZero keys.
 open class JSMap<Key, Value>: Sequence, JSMapProtocol, JSReactiveConvertible, CustomStringConvertible {
+    nonisolated deinit {}
     @usableFromInline final let table = JSOrderedSlots<Key, Value>()
     public final var jsTracker: JSTracker?
 
@@ -452,6 +455,7 @@ extension JSMap where Key == Any?, Value == Any? {
 
 /// A JavaScript `Set`: insertion-ordered, reference semantics, SameValueZero values.
 open class JSSet<Element>: Sequence, JSSetProtocol, JSReactiveConvertible, CustomStringConvertible {
+    nonisolated deinit {}
     @usableFromInline final let table = JSOrderedSlots<Element, Void>()
     public final var jsTracker: JSTracker?
 
