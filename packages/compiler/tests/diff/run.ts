@@ -118,8 +118,12 @@ if (targets.includes('swift')) {
     try {
       translate(file, join(dir, 'Sources'));
       const swiftFiles = readdirSync(join(dir, 'Sources')).map((f) => join(dir, 'Sources', f));
-      const errors = swiftc(swiftFiles, join(dir, name), build, optimize);
+      const warnings: string[] = [];
+      const errors = swiftc(swiftFiles, join(dir, name), build, optimize, [], warnings);
       if (errors) throw new Error(`swiftc:\n${errors.slice(0, 15).join('\n')}`);
+      // Isolation and sendability are checked as an app's code is: a warning there fails the case.
+      const concurrency = warnings.filter((w) => /Sendable|actor|isolat|data race|concurrently/i.test(w));
+      if (concurrency.length) throw new Error(`swiftc concurrency warnings:\n${concurrency.slice(0, 15).join('\n')}`);
       report(name, 'swift', expected.get(c)!, spawnSync(join(dir, name), { encoding: 'utf8', timeout: 20000 }));
     } catch (err) {
       ran.add(`swift:${name}`);
