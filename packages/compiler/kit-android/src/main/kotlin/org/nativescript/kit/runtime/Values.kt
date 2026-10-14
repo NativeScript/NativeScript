@@ -389,7 +389,7 @@ fun jsHasKey(target: Any?, key: String): Boolean = when (target) {
     // A symbol is no key a class declares: only its own symbol-keyed members (methods its `jsGet` gives) and what was set on it have one (reading `jsKeys` runs accessors).
     is JSExpando -> if (jsIsSymbolKey(key)) ((target as? JSSymbolKeyed)?.jsSymbolKeys?.contains(key) ?: false) || jsExpandoHas(target, key) || target.jsGet(key) != null else jsExpandoHas(target, key) || key in target.jsKeys || target.jsHasMember(key)
     is JSDynamic -> if (jsIsSymbolKey(key)) ((target as? JSSymbolKeyed)?.jsSymbolKeys?.contains(key) ?: false) || target.jsGet(key) != null else key in target.jsKeys || target.jsHasMember(key)
-    is JSArray<*> -> key == "length" || (jsArrayIndex(key)?.let { it < target.size } ?: false)
+    is JSArray<*> -> key == "length" || (jsArrayIndex(key)?.let { it < target.size && target.jsHoles?.get(it.toInt()) != true } ?: (target.jsProperties?.containsKey(key) == true))
     null, JSNull, is String, is Number, is Boolean, is Function<*>, is JSFunction -> false
     // A Java object (a native view): its methods and fields, as NativeScript's runtime exposes them.
     else -> !jsIsSymbolKey(key) && !target.javaClass.name.startsWith("org.nativescript.kit.") && jsJavaHas(target, key)

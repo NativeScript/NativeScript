@@ -1,7 +1,7 @@
 // new Array(n): n holes, which JSON writes as null and Object.keys leaves out, until they are set.
 const holes: number[] = new Array<number>(3);
 holes[1] = 5;
-console.log(JSON.stringify(holes), holes.length, Object.keys(holes).join(','), holes[0] === undefined);
+console.log(JSON.stringify(holes), holes.length, Object.keys(holes).join(','), holes[0] === undefined, 0 in holes, 1 in holes);
 const names = new Array<string>(2);
 names[0] = 'a';
 console.log(JSON.stringify(names), Object.keys(names).join(','));
