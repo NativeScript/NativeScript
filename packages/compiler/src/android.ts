@@ -20,6 +20,7 @@ import type { PluginSource } from './plugins/source.ts';
 import type { Reach } from './reach.ts';
 import type { Properties } from './properties.ts';
 import { SourceLines } from './source-lines.ts';
+import { formatKotlin } from './ktfmt.ts';
 import { androidManifest, appResourcesDir, copyAndroidAppFiles, copyAndroidFonts, pluginManifests, uncaughtErrorSwitches } from './app-resources.ts';
 import { KIT_ANDROID } from './paths.ts';
 
@@ -165,9 +166,15 @@ export async function writeAndroid(b: AndroidBuild): Promise<void> {
     const used = [...new Set(code.match(/\b(?:android|androidx|java|javax|com|org|kotlin|io)_\w+/g) ?? [])].filter((a) => kitAliases!.has(a));
     return used.length ? code.replace('import org.nativescript.kit.*\n', `import org.nativescript.kit.*\n${used.map((a) => `import ${kitAliases!.get(a)} as ${a}\n`).join('')}`) : code;
   };
-  const write = (file: string, text: string) => {
-    const code = withKitAliases(text);
-    if (!b.lines) { writeFileSync(file, code); return; }
+  // Written once formatted, all in one ktfmt run; the source-line markers stay through formatting.
+  const pending: { file: string; code: string }[] = [];
+  const write = (file: string, text: string) => { pending.push({ file, code: withKitAliases(text) }); };
+  const flush = () => {
+    const formatted = formatKotlin(pending.map((p) => p.code));
+    pending.forEach((p, k) => written(p.file, formatted[k]));
+  };
+  const written = (file: string, code: string) => {
+    if (!b.lines) { writeFileSync(file, SourceLines.strip(code)); return; }
     const located = b.lines.kotlin(code);
     writeFileSync(file, located.code);
     const ranges: [number, string, number][] = [];
@@ -221,6 +228,7 @@ export async function writeAndroid(b: AndroidBuild): Promise<void> {
     taken.add(file.toLowerCase());
     write(join(sources, file + '.kt'), header(m.file) + m.code);
   }
+  flush();
   writeFileSync(join(b.out, 'source-lines.json'), JSON.stringify({ package: pkg, files: table }) + '\n');
   const shapes = SourceLines.strip(translator.shapesCode());
   if (shapes) writeFileSync(join(sources, '__Objects.kt'), `// Compiled by ns-native: the app's object literals without a declared type.\npackage ${pkg}\n\nimport org.nativescript.kit.*\n\n${shapes}\n`);

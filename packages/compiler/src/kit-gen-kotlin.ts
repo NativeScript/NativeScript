@@ -231,17 +231,17 @@ export function generateKotlinKit(o: KotlinKitOptions): KotlinKitResult {
   // The statement markers, taken out before the imports are written, become the line table a stack trace's kit
   // frames are read with (retrace.ts): `[first Kotlin line, core file, its line]` ranges.
   const lines: Record<string, [number, string, number][]> = {};
-  const located = (name: string, code: string, pkg?: string): string => {
+  // The markers stay through imports and formatting, so the table names the lines as written.
+  const located = (_name: string, code: string, pkg?: string): string => withImports(code, pkg, (internal) => !!native.classpath.get(internal)?.deprecated && allowedDeprecation(internal));
+  const lineTable = (name: string, code: string): string => {
     const body = sourceLines.kotlin(code);
-    const written = withImports(body.code, pkg, (internal) => !!native.classpath.get(internal)?.deprecated && allowedDeprecation(internal));
-    const offset = written.split('\n').length - 1 - body.code.split('\n').length;
     const ranges: [number, string, number][] = [];
     body.lines.forEach((at, i) => {
       const last = ranges.at(-1);
-      if (at ? !last || last[1] !== relative(core, at.file) || last[2] !== at.line : last && last[2] !== 0) ranges.push([i + 1 + offset, at ? relative(core, at.file) : '', at?.line ?? 0]);
+      if (at ? !last || last[1] !== relative(core, at.file) || last[2] !== at.line : last && last[2] !== 0) ranges.push([i + 1, at ? relative(core, at.file) : '', at?.line ?? 0]);
     });
     if (ranges.length) lines[name] = ranges;
-    return written;
+    return body.code;
   };
   for (const f of out) f.code = located(f.name, (translator.interfacesOf(paths.get(f)!) + f.code).trim());
   if (exported) out.push({ name: '__Exports.kt', code: located('__Exports.kt', exported.trim()), sources: {} });
@@ -251,6 +251,11 @@ export function generateKotlinKit(o: KotlinKitOptions): KotlinKitResult {
   }
   const shapes = translator.shapesCode().trim();
   if (shapes) out.push({ name: '__Objects.kt', code: located('__Objects.kt', shapes), sources: {} });
+  if (o.format) {
+    const formatted = o.format(out.map((f) => f.code));
+    out.forEach((f, k) => { f.code = formatted[k]; });
+  }
+  for (const f of out) f.code = lineTable(f.name, f.code);
   // Core's modules run their top level once, in the order core's index evaluates them.
   out.push({ name: '__Modules.kt', sources: {}, code: `${header()}object CoreModules {\n    private var initialized = false\n\n    fun initialize() {\n        if (initialized) return\n        initialized = true\n${inits.map((i) => `        ${i}()\n`).join('')}    }\n}\n` });
   if (errors.length && !o.report) throw new Error(errors.join('\n'));
@@ -346,7 +351,7 @@ const JAVA_NAME = /(?<![\w.$`])(?:android|androidx|java|javax|dalvik|org\.(?:nat
 /** `deprecated`: whether an imported class (`android/widget/TabHost`) is a deprecated one core may use. */
 function withImports(code: string, pkg = KIT_PACKAGE, deprecated: (internal: string) => boolean = () => false): string {
   // Kotlin's `run { … }` by its package: core's classes declare a `run` of their own (`Application.run()`), which would take the block.
-  code = code.replace(/(?<=[\s(=,!])run (?=\{|\w+@ \{)/g, 'kotlin.run ');
+  code = code.replace(/(?<=[\s(=,!/])run (?=\{|\w+@ \{)/g, 'kotlin.run ');
   const aliases = new Map<string, string>();
   const alias = (name: string) => {
     const a = name.replace(/\./g, '_');

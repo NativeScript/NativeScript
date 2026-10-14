@@ -19,17 +19,50 @@ const SCRIPT_OBJECTS = new Set(['animate', 'createAnimation', 'open', 'close', '
  * members (a companion's or an object's are static), and the NativeScript
  * property names its `setProperty` handles (`"text" ->`).
  */
+/**
+ * Kotlin with each declaration on one line, as the index reads it: a line break inside parentheses (a signature or call
+ * a formatter wrapped), or after a trailing `:` or `,` (a supertype list, a type on the next line), is a space.
+ */
+function joinContinuations(text: string): string {
+  const out: string[] = [];
+  let depth = 0;
+  // The last character written that is not a space: a `:` there continues the line.
+  let last = '';
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (c === '"' || c === "'") {
+      let j = i + 1;
+      while (j < text.length && text[j] !== c && text[j] !== '\n') j += text[j] === '\\' ? 2 : 1;
+      out.push(text.slice(i, j + 1));
+      last = c;
+      i = j;
+      continue;
+    }
+    if (c === '(') depth++;
+    else if (c === ')') depth = Math.max(0, depth - 1);
+    if (c === '\n' && (depth > 0 || last === ':' || last === ',')) {
+      while (text[i + 1] === ' ' || text[i + 1] === '\t') i++;
+      if (out.at(-1) !== '(') out.push(' ');
+      continue;
+    }
+    out.push(c);
+    if (c !== ' ' && c !== '\t') last = c === '\n' ? '' : c;
+  }
+  return out.join('').replace(/,?\s+\)/g, ')');
+}
+
 export function kotlinKitIndex(sources: string | string[]): Map<string, KitType> {
   const types = new Map<string, KitType>();
   const files = (Array.isArray(sources) ? sources : [sources]).flatMap((d) => (d.endsWith('.kt') ? [d] : existsSync(d) ? (readdirSync(d, { recursive: true }) as string[]).filter((f) => f.endsWith('.kt')).map((f) => join(d, f)) : []));
   for (const f of files) {
     // Comments, not a string's `//` (`"file://"`), whose brace after it would be lost with it.
-    const text = readFileSync(f, 'utf8').replace(/("(?:\\.|[^"\\\n])*")|\/\/.*$/gm, (_, s) => s ?? '').replace(/("(?:\\.|[^"\\\n])*")|\/\*[\s\S]*?\*\//g, (_, s) => s ?? '');
+    // Block comments first: a doc comment may hold a `//` (a URL).
+    const text = joinContinuations(readFileSync(f, 'utf8').replace(/("(?:\\.|[^"\\\n])*")|\/\*[\s\S]*?\*\//g, (_, s) => s ?? '').replace(/("(?:\\.|[^"\\\n])*")|\/\/.*$/gm, (_, s) => s ?? ''));
     const imports = new Map([...text.matchAll(/^import\s+([\w.]+)\.(\w+)(?:\s+as\s+(\w+))?\s*$/gm)].map((m) => [m[3] ?? m[2], `${m[1]}.${m[2]}`]));
     const stack: { type: KitType | null; depth: number; companion: boolean }[] = [];
     let depth = 0;
     for (const line of text.split('\n')) {
-      const decl = /^\s*((?:(?:open|abstract|final|data|sealed|enum|inner|private|internal|protected|public)\s+)*)(class|object|interface)\s+(\w+)(?:<[^>]*>)?(?:\s*(?:internal\s+|private\s+)?(?:constructor\s*)?\([^)]*\))?(?:\s*:\s*([\w.]+))?/.exec(line);
+      const decl = /^\s*(?:@\w+(?:\([^)]*\))?\s+)*((?:(?:open|abstract|final|data|sealed|enum|inner|private|internal|protected|public)\s+)*)(class|object|interface)\s+(\w+)(?:<[^>]*>)?(?:\s*(?:internal\s+|private\s+)?(?:constructor\s*)?\([^)]*\))?(?:\s*:\s*([\w.]+))?/.exec(line);
       const companion = /^\s*companion\s+object\b/.test(line);
       if ((decl || companion) && line.includes('{')) {
         if (companion) {
@@ -87,8 +120,8 @@ export function kotlinKitIndex(sources: string | string[]): Map<string, KitType>
           const ctor = /^\s*(?:(?:public|protected)\s+)?constructor\(/.exec(line);
           if (ctor) add(owner.type, '<ctor>', { kind: 'func', static: false, type: owner.type.name, params: parenthesized(line, ctor.index + ctor[0].length)[0] });
           if (made) owner.type.native = imports.get(made[1]) ?? made[1];
-          if ((m = /^\s*(?:@\w+\s+)*(?:(?:override|open|final|lateinit|const|abstract|protected|public)\s+)*(?:val|var)\s+`?(\w+)`?\s*:\s*([^={]+)/.exec(line))) add(owner.type, m[1], { kind: 'var', static: isStatic, type: m[2].trim().replace(/\s+get\(\).*$/, '') });
-          else if ((m = /^\s*(?:(?:override|open|final|abstract|inline|operator|protected|public)\s+)*fun\s+(?:<[^>]*>\s*)?`?(\w+)`?\s*\(/.exec(line))) {
+          if ((m = /^\s*(?:@\w+(?:\([^)]*\))?\s+)*(?:(?:override|open|final|lateinit|const|abstract|protected|public)\s+)*(?:val|var)\s+`?(\w+)`?\s*:\s*([^={]+)/.exec(line))) add(owner.type, m[1], { kind: 'var', static: isStatic, type: m[2].trim().replace(/\s+get\(\).*$/, '') });
+          else if ((m = /^\s*(?:@\w+(?:\([^)]*\))?\s+)*(?:(?:override|open|final|abstract|inline|operator|protected|public)\s+)*fun\s+(?:<[^>]*>\s*)?`?(\w+)`?\s*\(/.exec(line))) {
             const [params, rest] = parenthesized(line, m.index + m[0].length);
             add(owner.type, m[1], { kind: 'func', static: isStatic, type: (/^\s*:\s*([^={]+)/.exec(rest)?.[1] ?? 'Unit').trim(), params });
           }

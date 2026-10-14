@@ -36,8 +36,9 @@ if (!existsSync(join(compiler, 'src/kit-gen-kotlin.ts'))) throw new Error(`${com
 if (!existsSync(join(declarations, 'index.d.ts'))) throw new Error(`${declarations}: no core declarations (build core, or --declarations)`);
 
 const { generateKotlinKit, groupByCause } = await import(join(compiler, 'src/kit-gen-kotlin.ts'));
+const { formatKotlin } = await import(join(compiler, 'src/ktfmt.ts'));
 const started = Date.now();
-const result = generateKotlinKit({ core, declarations, typesAndroid, modules: android.compile, counterparts: android.counterparts, moot: android.moot, identities: android.identities, packages: android.packages, report: report || partial });
+const result = generateKotlinKit({ format: report ? undefined : (codes: string[]) => formatKotlin(codes, true), core, declarations, typesAndroid, modules: android.compile, counterparts: android.counterparts, moot: android.moot, identities: android.identities, packages: android.packages, report: report || partial });
 const groups = groupByCause(result.errors) as { cause: string; count: number; examples: string[] }[];
 const summary = [
 	`${result.attempted} modules attempted, ${result.translated} translated whole, ${result.files.length} Kotlin files; ${result.errors.length} constructs left out, ${groups.length} causes (${((Date.now() - started) / 1000).toFixed(1)} s)`,
