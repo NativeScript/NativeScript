@@ -373,6 +373,7 @@ function withImports(code: string, pkg = KIT_PACKAGE, deprecated: (internal: str
     const c = code[j];
     if (c === '"') { stack.push({ kind: 'string', depth: 0 }); out += c; i = j + 1; continue; }
     if (c === "'") { const end = code.indexOf("'", j + (code[j + 1] === '\\' ? 3 : 2)); out += code.slice(j, end + 1); i = end + 1; continue; }
+    if (c === '/' && code[j + 1] === '*') { const end = code.indexOf('*/', j + 2); out += code.slice(j, end < 0 ? code.length : end + 2); i = end < 0 ? code.length : end + 2; continue; }
     if (c === '/' && code[j + 1] === '/') { const end = code.indexOf('\n', j); out += code.slice(j, end < 0 ? code.length : end); i = end < 0 ? code.length : end; continue; }
     if (c === '{') { top.depth++; out += c; i = j + 1; continue; }
     if (c === '}') { if (top.kind === 'template' && top.depth === 0) stack.pop(); else top.depth--; out += c; i = j + 1; continue; }

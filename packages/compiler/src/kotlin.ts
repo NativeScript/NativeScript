@@ -2143,7 +2143,24 @@ export class Translator implements AsyncTranslator {
   }
 
   func(fn: ts.FunctionDeclaration | ts.MethodDeclaration, name: string, modifiers = ''): string {
-    return this.suppressingDeprecations(() => this.funcCode(fn, name, modifiers));
+    return this.docOf(fn) + this.suppressingDeprecations(() => this.funcCode(fn, name, modifiers));
+  }
+
+  /**
+   * A declaration's doc comment, as KDoc before its Kotlin declaration (`indent` before each line but the first), or ''.
+   * A `/*` inside it would open a nested comment in Kotlin: it is spaced apart.
+   */
+  docOf(n: ts.Node, indent = ''): string {
+    const sf = n.getSourceFile();
+    const at = ts.isVariableDeclaration(n) && ts.isVariableDeclarationList(n.parent) && n.parent.declarations[0] === n ? n.parent.parent : n;
+    const doc = (ts.getLeadingCommentRanges(sf.text, at.getFullStart()) ?? []).filter((r) => r.kind === ts.SyntaxKind.MultiLineCommentTrivia && sf.text.startsWith('/**', r.pos) && !sf.text.startsWith('/**/', r.pos)).at(-1);
+    if (!doc) return '';
+    const text = sf.text.slice(doc.pos + 3, doc.end - 2).replace(/\/\*/g, '/ *');
+    const lines = text.split('\n').map((l) => l.trim().replace(/^\* ?/, ''));
+    while (lines.length && !lines[0]) lines.shift();
+    while (lines.length && !lines.at(-1)) lines.pop();
+    if (!lines.length) return '';
+    return lines.length === 1 ? `/** ${lines[0]} */\n${indent}` : `/**\n${lines.map((l) => `${indent} *${l ? ' ' + l : ''}`).join('\n')}\n${indent} */\n${indent}`;
   }
 
   private funcCode(fn: ts.FunctionDeclaration | ts.MethodDeclaration, name: string, modifiers: string): string {
@@ -2463,7 +2480,8 @@ export class Translator implements AsyncTranslator {
   }
 
   private classDecl(cls: ts.ClassDeclaration): string {
-    return this.suppressingDeprecations(() => this.classDeclCode(cls), false);
+    const code = this.suppressingDeprecations(() => this.classDeclCode(cls), false);
+    return code ? this.docOf(cls) + code : code;
   }
 
   private classDeclCode(cls: ts.ClassDeclaration): string {
@@ -2572,8 +2590,11 @@ export class Translator implements AsyncTranslator {
       fields.push({ name: n, type: t });
     }
     const symbolFields: { key: string; member: string; type: string }[] = [];
+    // Where each field's lines start, for its doc comment.
+    const fieldStarts: [number, ts.PropertyDeclaration][] = [];
     for (const m of cls.members) {
       if (!ts.isPropertyDeclaration(m)) continue;
+      fieldStarts.push([lines.length, m]);
       // `declare width: number` in an app class: the base's field, typed anew.
       if (!this.library && hasModifier(m, ts.SyntaxKind.DeclareKeyword)) continue;
       const keyed = this.symbolMember(m.name);
@@ -2712,6 +2733,8 @@ export class Translator implements AsyncTranslator {
         lines.push(`    ${d.startsWith('lateinit') && fieldMods === '@JvmField ' ? '' : fieldMods}${d}`);
       }
     }
+    fieldStarts.forEach(([at, m], k) => { if ((fieldStarts[k + 1]?.[0] ?? lines.length) > at) fieldStarts[k][0] = -1 - at; });
+    for (const [at, m] of fieldStarts.reverse()) { const doc = at < 0 ? this.docOf(m, '    ') : ''; if (doc) lines.splice(-1 - at, 0, `    ${doc.trimEnd()}`); }
     const defaults = this.prototypeDefaults().get(cls) ?? [];
     if (defaults.length) {
       this.indent = '        ';
