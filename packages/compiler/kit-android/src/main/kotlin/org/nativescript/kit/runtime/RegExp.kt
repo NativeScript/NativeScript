@@ -3,95 +3,67 @@ package org.nativescript.kit
 // Regular expressions with ECMA-262 §22.2 semantics: a parser for the pattern grammar (with
 // Annex B's web-compatible forms outside `u`/`v` mode) and a backtracking matcher over UTF-16
 // code units, or code points in `u`/`v` mode. Errors carry V8's messages.
+//
+// The matcher is this engine's, not java.util.regex: on Android that is ICU, whose `\d`, `\w`,
+// `$`, `.` and case folding differ from JavaScript's, and which the host tests do not run.
 
 /** A JavaScript `RegExp`. Constructing an invalid pattern or flags throws a SyntaxError. */
 class JSRegExp(source: String, flags: String = "") : JSDynamic, JSStringConvertible {
+    private val compiled: CompiledRegExp = compile(source, flags)
+
     /** `re.source`: the pattern as a literal would spell it. */
-    val source: String = escapePattern(source)
+    val source: String get() = compiled.source
 
     /** `re.flags`, in the canonical order `dgimsuvy`. */
-    val flags: String
-    val hasIndices: Boolean
-    val global: Boolean
-    val ignoreCase: Boolean
-    val multiline: Boolean
-    val dotAll: Boolean
-    val unicode: Boolean
-    val unicodeSets: Boolean
-    val sticky: Boolean
+    val flags: String get() = compiled.flags
+    val hasIndices: Boolean get() = compiled.hasIndices
+    val global: Boolean get() = compiled.global
+    val ignoreCase: Boolean get() = compiled.ignoreCase
+    val multiline: Boolean get() = compiled.multiline
+    val dotAll: Boolean get() = compiled.dotAll
+    val unicode: Boolean get() = compiled.unicode
+    val unicodeSets: Boolean get() = compiled.unicodeSets
+    val sticky: Boolean get() = compiled.sticky
     var lastIndex: Double = 0.0
-
-    private val program: RegexProgram
-
-    init {
-        var seen = 0
-        for (c in flags) {
-            val bit = "dgimsuvy".indexOf(c)
-            if (bit < 0 || seen and (1 shl bit) != 0) throw JSException(JSSyntaxError("Invalid flags supplied to RegExp constructor '$flags'"))
-            seen = seen or (1 shl bit)
-        }
-        this.flags = "dgimsuvy".filter { it in flags }
-        hasIndices = 'd' in flags
-        global = 'g' in flags
-        ignoreCase = 'i' in flags
-        multiline = 'm' in flags
-        dotAll = 's' in flags
-        unicode = 'u' in flags
-        unicodeSets = 'v' in flags
-        sticky = 'y' in flags
-        if (unicode && unicodeSets) throw JSException(JSSyntaxError("Invalid flags supplied to RegExp constructor '$flags'"))
-        program = try {
-            RegexParser(source, ignoreCase, multiline, dotAll, unicode || unicodeSets, unicodeSets).parse()
-        } catch (e: RegexSyntaxError) {
-            throw JSException(JSSyntaxError("Invalid regular expression: /$source/${this.flags}: ${e.message}"))
-        }
-    }
 
     private val fullUnicode: Boolean get() = unicode || unicodeSets
 
-    /** RegExpBuiltinExec: a match at or after `lastIndex` (exactly there when sticky), updating `lastIndex` for global and sticky expressions. */
-    fun exec(s: String): JSMatch? {
+    /**
+     * RegExpBuiltinExec without the result array: the capture slots (start and end per group, -1 when unset) of a match
+     * at or after `lastIndex` (exactly there when sticky), updating `lastIndex` for global and sticky expressions.
+     */
+    internal fun execCaptures(s: String): IntArray? {
         val useLastIndex = global || sticky
-        var start = if (useLastIndex) toLength(lastIndex) else 0L
-        while (true) {
-            if (start > s.length) {
-                if (useLastIndex) lastIndex = 0.0
-                return null
-            }
-            if (!sticky && program.firstUnit >= 0) {
-                val next = s.indexOf(program.firstUnit.toChar(), start.toInt())
-                if (next < 0) {
-                    if (useLastIndex) lastIndex = 0.0
-                    return null
-                }
-                start = next.toLong()
-            }
-            val captures = program.matchAt(s, start.toInt())
-            if (captures != null) {
-                if (useLastIndex) lastIndex = captures[1].toDouble()
-                return makeMatch(s, captures)
-            }
-            if (sticky) {
-                lastIndex = 0.0
-                return null
-            }
-            start = advance(s, start, fullUnicode)
+        val start = if (useLastIndex) toLength(lastIndex) else 0L
+        if (start > s.length) {
+            if (useLastIndex) lastIndex = 0.0
+            return null
         }
+        var from = start.toInt()
+        // As V8 does: a search that lastIndex puts inside a surrogate pair starts at the pair.
+        if (useLastIndex && fullUnicode && from > 0 && from < s.length && Character.isLowSurrogate(s[from]) && Character.isHighSurrogate(s[from - 1])) from--
+        val captures = compiled.program.search(s, from, sticky)
+        if (useLastIndex) lastIndex = if (captures == null) 0.0 else captures[1].toDouble()
+        return captures
     }
 
-    /** `re.test(s)`. */
-    fun test(s: String): Boolean = exec(s) != null
+    /** RegExpBuiltinExec: a match at or after `lastIndex` (exactly there when sticky), updating `lastIndex` for global and sticky expressions. */
+    fun exec(s: String): JSMatch? = execCaptures(s)?.let { makeMatch(s, it) }
 
-    private fun makeMatch(s: String, captures: IntArray): JSMatch {
+    /** `re.test(s)`. */
+    fun test(s: String): Boolean = execCaptures(s) != null
+
+    internal fun makeMatch(s: String, captures: IntArray): JSMatch {
         val n = captures.size / 2
         val values = ArrayList<String?>(n)
         for (g in 0 until n) values.add(if (captures[2 * g] < 0) null else s.substring(captures[2 * g], captures[2 * g + 1]))
-        val groups = namedObject(program.groupNames) { g -> values[g] }
+        val names = compiled.program.groupNames
+        val groups = namedObject(names) { g -> values[g] }
         var indices: JSMatchIndices? = null
         if (hasIndices) {
             val pairs = ArrayList<Any?>(n)
             for (g in 0 until n) pairs.add(if (captures[2 * g] < 0) null else JSArray(arrayListOf(captures[2 * g].toDouble(), captures[2 * g + 1].toDouble())))
-            indices = JSMatchIndices(JSArray(pairs), namedObject(program.groupNames) { g -> pairs[g] })
+            indices = JSMatchIndices(JSArray(pairs), namedObject(names) { g -> pairs[g] })
         }
         return JSMatch(JSArray(values), captures[0].toDouble(), s, groups, true, indices)
     }
@@ -131,7 +103,57 @@ class JSRegExp(source: String, flags: String = "") : JSDynamic, JSStringConverti
 
     override fun toString(): String = "/$source/$flags"
 
+    /**
+     * A pattern parsed and compiled, with its source escaped and its flags in canonical order; `next` is the same
+     * pattern's entry for other flags in the cache.
+     */
+    private class CompiledRegExp(val source: String, val flags: String, val program: RegexProgram, val givenFlags: String, val next: CompiledRegExp?) {
+        val hasIndices = 'd' in flags
+        val global = 'g' in flags
+        val ignoreCase = 'i' in flags
+        val multiline = 'm' in flags
+        val dotAll = 's' in flags
+        val unicode = 'u' in flags
+        val unicodeSets = 'v' in flags
+        val sticky = 'y' in flags
+    }
+
     internal companion object {
+        /**
+         * Compiled patterns by source, then flags: a literal evaluated in a loop makes a new RegExp each time, as
+         * JavaScript's does, without parsing it again. Bounded by emptying it when full.
+         */
+        private val cache = java.util.concurrent.ConcurrentHashMap<String, CompiledRegExp>()
+        private const val CACHE_LIMIT = 256
+
+        private fun compile(source: String, flags: String): CompiledRegExp {
+            val known = cache[source]
+            var entry = known
+            while (entry != null) {
+                if (entry.givenFlags == flags) return entry
+                entry = entry.next
+            }
+            var seen = 0
+            for (c in flags) {
+                val bit = "dgimsuvy".indexOf(c)
+                if (bit < 0 || seen and (1 shl bit) != 0) throw JSException(JSSyntaxError("Invalid flags supplied to RegExp constructor '$flags'"))
+                seen = seen or (1 shl bit)
+            }
+            val canonical = "dgimsuvy".filter { it in flags }
+            val unicode = 'u' in flags
+            val unicodeSets = 'v' in flags
+            if (unicode && unicodeSets) throw JSException(JSSyntaxError("Invalid flags supplied to RegExp constructor '$flags'"))
+            val program = try {
+                RegexParser(source, 'i' in flags, 'm' in flags, 's' in flags, unicode || unicodeSets, unicodeSets).parse()
+            } catch (e: RegexSyntaxError) {
+                throw JSException(JSSyntaxError("Invalid regular expression: /$source/$canonical: ${e.message}"))
+            }
+            val compiled = CompiledRegExp(escapePattern(source), canonical, program, flags, known)
+            if (cache.size >= CACHE_LIMIT) cache.clear()
+            cache[source] = compiled
+            return compiled
+        }
+
         fun toLength(v: Double): Long {
             if (v.isNaN() || v <= 0) return 0
             return minOf(Math.floor(v), 9007199254740991.0).toLong()
@@ -254,10 +276,9 @@ fun jsMatch(s: String, re: JSRegExp): JSMatch? {
     re.lastIndex = 0.0
     val out = ArrayList<String?>()
     while (true) {
-        val m = re.exec(s) ?: break
-        val text = m[0] ?: ""
-        out.add(text)
-        if (text.isEmpty()) re.lastIndex = JSRegExp.advance(s, JSRegExp.toLength(re.lastIndex), re.unicode || re.unicodeSets).toDouble()
+        val c = re.execCaptures(s) ?: break
+        out.add(s.substring(c[0], c[1]))
+        if (c[0] == c[1]) re.lastIndex = JSRegExp.advance(s, JSRegExp.toLength(re.lastIndex), re.unicode || re.unicodeSets).toDouble()
     }
     return if (out.isEmpty()) null else JSMatch(JSArray(out), Double.NaN, s, null, false)
 }
@@ -280,17 +301,18 @@ fun jsMatchAll(s: String, re: JSRegExp): JSArray<JSMatch> {
 fun jsSearch(s: String, re: JSRegExp): Double {
     val previous = re.lastIndex
     re.lastIndex = 0.0
-    val m = re.exec(s)
+    val c = re.execCaptures(s)
     re.lastIndex = previous
-    return m?.index ?: -1.0
+    return if (c == null) -1.0 else c[0].toDouble()
 }
 
 /** `s.replace(re, replacement)` with GetSubstitution's `$$ $& $` $' $n $nn $<name>`. */
 fun jsReplace(s: String, re: JSRegExp, replacement: String): String =
-    replaceMatches(s, re) { m -> substitute(replacement, m, s) }
+    if (replacement.indexOf('$') < 0) replaceMatches(s, re) { replacement }
+    else replaceMatches(s, re) { c -> substitute(replacement, re.makeMatch(s, c), s) }
 
 /** `s.replace(re, (match, ...groups) => …)`. */
-fun jsReplace(s: String, re: JSRegExp, replacer: (JSMatch) -> String): String = replaceMatches(s, re, replacer)
+fun jsReplace(s: String, re: JSRegExp, replacer: (JSMatch) -> String): String = replaceMatches(s, re) { c -> replacer(re.makeMatch(s, c)) }
 
 /** `s.replaceAll(re, replacement)`: the expression must be global. */
 fun jsReplaceAll(s: String, re: JSRegExp, replacement: String): String {
@@ -305,24 +327,24 @@ fun jsReplaceAll(s: String, re: JSRegExp, replacer: (JSMatch) -> String): String
 }
 
 /** RegExp.prototype[@@replace]: every match is found before the first replacement is computed. */
-private fun replaceMatches(s: String, re: JSRegExp, replacer: (JSMatch) -> String): String {
-    val results = ArrayList<JSMatch>()
+private inline fun replaceMatches(s: String, re: JSRegExp, replacement: (IntArray) -> String): String {
+    val results = ArrayList<IntArray>()
     if (re.global) re.lastIndex = 0.0
     while (true) {
-        val m = re.exec(s) ?: break
-        results.add(m)
+        val c = re.execCaptures(s) ?: break
+        results.add(c)
         if (!re.global) break
-        if ((m[0] ?: "").isEmpty()) re.lastIndex = JSRegExp.advance(s, JSRegExp.toLength(re.lastIndex), re.unicode || re.unicodeSets).toDouble()
+        if (c[0] == c[1]) re.lastIndex = JSRegExp.advance(s, JSRegExp.toLength(re.lastIndex), re.unicode || re.unicodeSets).toDouble()
     }
-    val out = StringBuilder()
+    if (results.isEmpty()) return s
+    val out = StringBuilder(s.length)
     var next = 0
-    for (m in results) {
-        val matched = m[0] ?: ""
-        val position = maxOf(0, minOf(m.index.toInt(), s.length))
-        val text = replacer(m)
+    for (c in results) {
+        val position = maxOf(0, minOf(c[0], s.length))
+        val text = replacement(c)
         if (position >= next) {
             out.append(s, next, position).append(text)
-            next = position + matched.length
+            next = position + (c[1] - c[0])
         }
     }
     if (next < s.length) out.append(s, next, s.length)
@@ -378,22 +400,22 @@ fun jsSplit(s: String, re: JSRegExp, limit: Double? = null): JSArray<String> {
     val splitter = JSRegExp(re.source, if (re.sticky) re.flags else re.flags + "y")
     val unicode = re.unicode || re.unicodeSets
     if (s.isEmpty()) {
-        if (splitter.exec(s) == null) out.add(s)
+        if (splitter.execCaptures(s) == null) out.add(s)
         return JSArray(out as ArrayList<String>)
     }
     var p = 0
     var q = 0L
     while (q < s.length) {
         splitter.lastIndex = q.toDouble()
-        val z = splitter.exec(s)
+        val z = splitter.execCaptures(s)
         if (z == null) { q = JSRegExp.advance(s, q, unicode); continue }
         val e = minOf(JSRegExp.toLength(splitter.lastIndex), s.length.toLong()).toInt()
         if (e == p) { q = JSRegExp.advance(s, q, unicode); continue }
         out.add(s.substring(p, q.toInt()))
         if (out.size.toLong() == lim) return JSArray(out as ArrayList<String>)
         p = e
-        for (g in 1 until z.values.storage.size) {
-            out.add(z.values.storage[g])
+        for (g in 1 until z.size / 2) {
+            out.add(if (z[2 * g] < 0) null else s.substring(z[2 * g], z[2 * g + 1]))
             if (out.size.toLong() == lim) return JSArray(out as ArrayList<String>)
         }
         q = p.toLong()
@@ -1301,247 +1323,269 @@ private object UnicodeProperties {
 }
 
 // Matching
+//
+// A pattern compiles to a bytecode program run by a backtracking VM. Choice points, and the undo records that put
+// captures and loop registers back, live on one IntArray stack: a step allocates nothing, and a match's depth is
+// bounded by memory, not by the thread's stack. The semantics are §22.2.2's: RepeatMatcher's capture resets and
+// empty-iteration check, a group set when its body completes, atomic lookarounds, lookbehind read right to left.
 
-private fun interface Continuation {
-    fun run(x: Int): Boolean
+/** The VM's instructions; each is its opcode and the operands listed. */
+private object Op {
+    /** code point, forward */
+    const val CHAR = 0
+    /** class, forward */
+    const val CLASS = 1
+    /** literal (a run of BMP code units compared case-sensitively, forward) */
+    const val LITERAL = 2
+    /** kind (^ $ \b \B), multiline, word extras */
+    const val ASSERT = 3
+    /** preferred, other: goes on at `preferred`, backtracking to `other` */
+    const val SPLIT = 4
+    /** target */
+    const val JUMP = 5
+    /** group: notes where its text starts */
+    const val GROUP_OPEN = 6
+    /** group, forward: sets its capture */
+    const val GROUP_CLOSE = 7
+    /** register */
+    const val LOOP_INIT = 8
+    /** register, min, max, greedy, exit; LOOP_BODY follows */
+    const val LOOP_HEAD = 9
+    /** register, first capture slot reset, end of them */
+    const val LOOP_BODY = 10
+    /** register, head, min */
+    const val LOOP_TAIL = 11
+    /** class, min, max, greedy, forward: a quantified single character, without a loop */
+    const val REPEAT = 12
+    /** groups, ignore case, forward */
+    const val BACKREF = 13
+    /** negative, continuation; the body follows, ending in SUCCEED */
+    const val LOOK = 14
+    const val SUCCEED = 15
 }
 
-/** One match attempt: the input, the capture slots (start and end per group, -1 when unset). */
-private class RegexRun(val input: String, val captures: IntArray, val unicode: Boolean)
+private const val ASSERT_START = 0
+private const val ASSERT_END = 1
+private const val ASSERT_BOUNDARY = 2
+private const val ASSERT_NOT_BOUNDARY = 3
 
-private abstract class Matcher {
-    abstract fun match(r: RegexRun, x: Int, k: Continuation): Boolean
-}
+// Backtrack stack entries: their values, then the tag on top.
+/** pc, position: where to go on when what follows fails */
+private const val T_CHOICE = 0
+/** slot, old value */
+private const val T_UNDO = 1
+/** REPEAT op, least position, position: a greedy run giving back one character at a time */
+private const val T_GREEDY = 2
+/** REPEAT op, position, count: a lazy run taking one more character at a time */
+private const val T_LAZY = 3
 
-/** One character satisfying `test`, read forward or (in a lookbehind) backward. */
-private class CharMatcher(val test: (Int) -> Boolean, val forward: Boolean) : Matcher() {
-    override fun match(r: RegexRun, x: Int, k: Continuation): Boolean {
-        val next = step(r, x)
-        return next >= 0 && k.run(next)
+private val ANY_CHARACTER: (Int) -> Boolean = { true }
+
+/** How many of a match's first code units the search checks before an attempt. */
+private const val LEAD_LIMIT = 8
+
+/** A greedy REPEAT whose run is never given back (RegexCompiler.followers). */
+private const val POSSESSIVE = -2
+
+/** A character test with the answers for ASCII in a bitmap; `rest` answers for the others, none when null. */
+private class CharClass(private val low: Long, private val high: Long, private val rest: ((Int) -> Boolean)?) {
+    fun has(c: Int): Boolean = if (c < 128) ((if (c < 64) low ushr c else high ushr (c - 64)) and 1L) != 0L else hasBeyondAscii(c)
+
+    private fun hasBeyondAscii(c: Int): Boolean {
+        val test = rest ?: return false
+        return test(c)
     }
 
-    /** Where the character at `x` ends if it passes, else -1. */
-    fun step(r: RegexRun, x: Int): Int {
-        val s = r.input
-        if (forward) {
-            if (x >= s.length) return -1
-            val c = s[x]
-            if (r.unicode && Character.isHighSurrogate(c) && x + 1 < s.length && Character.isLowSurrogate(s[x + 1])) {
-                return if (test(Character.toCodePoint(c, s[x + 1]))) x + 2 else -1
-            }
-            return if (test(c.code)) x + 1 else -1
-        }
-        if (x <= 0) return -1
-        val c = s[x - 1]
-        if (r.unicode && Character.isLowSurrogate(c) && x >= 2 && Character.isHighSurrogate(s[x - 2])) {
-            return if (test(Character.toCodePoint(s[x - 2], c))) x - 2 else -1
-        }
-        return if (test(c.code)) x - 1 else -1
-    }
-}
-
-/** A run of literal characters compared case-sensitively, forward. */
-private class LiteralMatcher(val text: String) : Matcher() {
-    override fun match(r: RegexRun, x: Int, k: Continuation): Boolean =
-        r.input.startsWith(text, x) && k.run(x + text.length)
-}
-
-private class SequenceMatcher(val items: Array<Matcher>) : Matcher() {
-    override fun match(r: RegexRun, x: Int, k: Continuation): Boolean = step(r, 0, x, k)
-
-    private fun step(r: RegexRun, i: Int, x: Int, k: Continuation): Boolean {
-        if (i == items.size) return k.run(x)
-        if (i == items.size - 1) return items[i].match(r, x, k)
-        return items[i].match(r, x) { y -> step(r, i + 1, y, k) }
-    }
-}
-
-private class AlternationMatcher(val alternatives: Array<Matcher>) : Matcher() {
-    override fun match(r: RegexRun, x: Int, k: Continuation): Boolean {
-        for (a in alternatives) if (a.match(r, x, k)) return true
-        return false
-    }
-}
-
-private class AssertionMatcher(val kind: Char, val multiline: Boolean, val wordExtras: Boolean) : Matcher() {
-    private fun isWord(s: String, i: Int): Boolean {
-        if (i < 0 || i >= s.length) return false
-        val c = s[i].code
-        return isBasicWordChar(c) || (wordExtras && (c == 0x17F || c == 0x212A))
+    fun union(other: CharClass): CharClass {
+        val a = rest
+        val b = other.rest
+        return CharClass(low or other.low, high or other.high, if (a == null) b else if (b == null) a else { c -> a(c) || b(c) })
     }
 
-    override fun match(r: RegexRun, x: Int, k: Continuation): Boolean {
-        val s = r.input
-        val ok = when (kind) {
-            '^' -> x == 0 || (multiline && isLineTerminator(s[x - 1].code))
-            '$' -> x == s.length || (multiline && isLineTerminator(s[x].code))
-            'b' -> isWord(s, x - 1) != isWord(s, x)
-            else -> isWord(s, x - 1) == isWord(s, x)
-        }
-        return ok && k.run(x)
-    }
-}
-
-private class GroupMatcher(val index: Int, val body: Matcher, val forward: Boolean) : Matcher() {
-    override fun match(r: RegexRun, x: Int, k: Continuation): Boolean = body.match(r, x) { y ->
-        val caps = r.captures
-        val oldStart = caps[2 * index]
-        val oldEnd = caps[2 * index + 1]
-        if (forward) { caps[2 * index] = x; caps[2 * index + 1] = y } else { caps[2 * index] = y; caps[2 * index + 1] = x }
-        if (k.run(y)) true else {
-            caps[2 * index] = oldStart
-            caps[2 * index + 1] = oldEnd
-            false
+    companion object {
+        /** `test` as a class; `rest` must answer as `test` does from 128 on. */
+        fun of(test: (Int) -> Boolean, rest: ((Int) -> Boolean)?): CharClass {
+            var low = 0L
+            var high = 0L
+            for (c in 0 until 64) if (test(c)) low = low or (1L shl c)
+            for (c in 64 until 128) if (test(c)) high = high or (1L shl (c - 64))
+            return CharClass(low, high, rest)
         }
     }
 }
 
-/** Lookahead and lookbehind: atomic; a negative one leaves its groups unset. */
-private class LookMatcher(val body: Matcher, val negative: Boolean) : Matcher() {
-    override fun match(r: RegexRun, x: Int, k: Continuation): Boolean {
-        val saved = r.captures.copyOf()
-        val found = body.match(r, x) { true }
-        if (negative) {
-            System.arraycopy(saved, 0, r.captures, 0, saved.size)
-            return !found && k.run(x)
-        }
-        if (!found) return false
-        if (k.run(x)) return true
-        System.arraycopy(saved, 0, r.captures, 0, saved.size)
-        return false
-    }
+/** Where the character read forward at `x` (before the end) ends: past a surrogate pair in unicode mode. */
+@Suppress("NOTHING_TO_INLINE")
+private inline fun endAfter(s: String, x: Int, unicode: Boolean): Int =
+    if (unicode && Character.isHighSurrogate(s[x]) && x + 1 < s.length && Character.isLowSurrogate(s[x + 1])) x + 2 else x + 1
+
+/** Where the character read backward from `x` (after the start) starts. */
+@Suppress("NOTHING_TO_INLINE")
+private inline fun startBefore(s: String, x: Int, unicode: Boolean): Int =
+    if (unicode && Character.isLowSurrogate(s[x - 1]) && x >= 2 && Character.isHighSurrogate(s[x - 2])) x - 2 else x - 1
+
+/**
+ * Whether `x` falls between the halves of a surrogate pair. As V8 reads `u`-mode patterns, a character read there
+ * fails (it desugars a lone surrogate to one not paired), so only what reads no character matches at such a position.
+ */
+@Suppress("NOTHING_TO_INLINE")
+private inline fun splitsPair(s: String, x: Int): Boolean = x > 0 && x < s.length && Character.isLowSurrogate(s[x]) && Character.isHighSurrogate(s[x - 1])
+
+/** The character from `a` to `b`: one code unit or a surrogate pair. */
+@Suppress("NOTHING_TO_INLINE")
+private inline fun pointIn(s: String, a: Int, b: Int): Int = if (b - a == 2) Character.toCodePoint(s[a], s[a + 1]) else s[a].code
+
+@Suppress("NOTHING_TO_INLINE")
+private inline fun isWordAt(s: String, i: Int, extras: Boolean): Boolean {
+    if (i < 0 || i >= s.length) return false
+    val c = s[i].code
+    return isBasicWordChar(c) || (extras && (c == 0x17F || c == 0x212A))
 }
 
-/** A backreference: the text its group captured, or nothing when the group did not take part. */
-private class BackReferenceMatcher(val node: RBackReference, val forward: Boolean) : Matcher() {
-    override fun match(r: RegexRun, x: Int, k: Continuation): Boolean {
-        val caps = r.captures
-        var start = -1
-        var end = -1
-        for (g in node.groups) if (caps[2 * g] >= 0) { start = caps[2 * g]; end = caps[2 * g + 1]; break }
-        if (start < 0) return k.run(x)
-        val s = r.input
-        val length = end - start
-        val from = if (forward) x else x - length
-        if (from < 0 || from + length > s.length) return false
-        if (!node.ignoreCase) {
-            if (!s.regionMatches(start, s, from, length)) return false
-        } else {
-            var i = 0
-            while (i < length) {
-                val a = if (r.unicode) s.codePointAt(start + i) else s[start + i].code
-                val b = if (r.unicode) s.codePointAt(from + i) else s[from + i].code
-                if (CaseFolding.canonicalize(a, r.unicode) != CaseFolding.canonicalize(b, r.unicode)) return false
-                if (Character.charCount(a) != Character.charCount(b)) return false
-                i += Character.charCount(a)
-            }
-        }
-        return k.run(if (forward) x + length else from)
-    }
-}
-
-/** RepeatMatcher (§22.2.2.3.1): groups inside are reset on every iteration; an empty iteration past the minimum fails. */
-private class RepeatMatcher(val body: Matcher, val min: Int, val max: Int, val greedy: Boolean, val firstGroup: Int, val groupCount: Int) : Matcher() {
-    override fun match(r: RegexRun, x: Int, k: Continuation): Boolean = repeat(r, x, k, min, max)
-
-    private fun repeat(r: RegexRun, x: Int, k: Continuation, min: Int, max: Int): Boolean {
-        if (max == 0) return k.run(x)
-        val d = Continuation { y ->
-            if (min == 0 && y == x) false
-            else repeat(r, y, k, if (min == 0) 0 else min - 1, if (max == INFINITE) INFINITE else max - 1)
-        }
-        if (min == 0 && !greedy && k.run(x)) return true
-        val caps = r.captures
-        val from = 2 * (firstGroup + 1)
-        val to = 2 * (firstGroup + groupCount + 1)
-        val saved = if (groupCount > 0) caps.copyOfRange(from, to) else null
-        if (saved != null) java.util.Arrays.fill(caps, from, to, -1)
-        if (body.match(r, x, d)) return true
-        if (saved != null) System.arraycopy(saved, 0, caps, from, saved.size)
-        if (min == 0 && greedy) return k.run(x)
-        return false
-    }
-}
-
-/** A quantified single character: iterates instead of recursing, so long runs do not deepen the stack. */
-private class CharRepeatMatcher(val char: CharMatcher, val min: Int, val max: Int, val greedy: Boolean) : Matcher() {
-    override fun match(r: RegexRun, x: Int, k: Continuation): Boolean {
-        if (greedy) {
-            var positions = IntArray(16)
-            positions[0] = x
-            var count = 0
-            var at = x
-            while (count < max) {
-                val next = char.step(r, at)
-                if (next < 0) break
-                count++
-                if (count >= positions.size) positions = positions.copyOf(positions.size * 2)
-                positions[count] = next
-                at = next
-            }
-            if (count < min) return false
-            for (n in count downTo min) if (k.run(positions[n])) return true
-            return false
-        }
-        var at = x
-        var count = 0
-        while (true) {
-            if (count >= min && k.run(at)) return true
-            if (count >= max) return false
-            val next = char.step(r, at)
-            if (next < 0) return false
-            at = next
-            count++
-        }
-    }
-}
-
-/** A compiled pattern. */
+/** A compiled pattern: immutable, so expressions with the same source and flags share it, across threads too. */
 private class RegexProgram(root: RNode, val groupCount: Int, val groupNames: List<Pair<String, Int>>, val unicode: Boolean) {
-    private val matcher: Matcher = compile(root, true)
+    val code: IntArray
+    val classes: Array<CharClass>
+    val literals: Array<String>
+    val references: Array<IntArray>
+    /** Per REPEAT instruction, the code unit what follows it reads first (see RegexCompiler.followers). */
+    val followers: IntArray
+    /** Captures (start and end per group), then where each open group started, then two registers per loop. */
+    val slotCount: Int
 
-    /** A code unit every match starts with, when the pattern begins with a case-sensitive literal; else -1. */
-    val firstUnit: Int = firstUnitOf(root)
+    /** Text every match starts with, else "". */
+    private val prefix: String
+    /** What the first character of every match satisfies, when the pattern cannot match empty. */
+    private val first: CharClass?
 
-    private fun firstUnitOf(n: RNode): Int = when (n) {
-        is RChar -> if (!n.ignoreCase && n.cp <= 0xFFFF && !Character.isSurrogate(n.cp.toChar())) n.cp else -1
-        is RSeq -> if (n.items.isEmpty()) -1 else firstUnitOf(n.items[0])
-        is RGroup -> firstUnitOf(n.body)
-        is RRepeat -> if (n.min > 0) firstUnitOf(n.body) else -1
-        else -> -1
-    }
-
-    /** The capture slots of a match starting exactly at `start`, or null. */
-    fun matchAt(s: String, start: Int): IntArray? = try {
-        attempt(s, start)
-    } catch (e: StackOverflowError) {
-        onLargeStack { attempt(s, start) }
-    }
-
-    private fun attempt(s: String, start: Int): IntArray? {
-        val captures = IntArray(2 * (groupCount + 1)) { -1 }
-        val run = RegexRun(s, captures, unicode)
-        val ok = matcher.match(run, start) { end -> captures[0] = start; captures[1] = end; true }
-        return if (ok) captures else null
-    }
+    /** Outside unicode mode, what each of the first code units of every match satisfies, when more than one is known. */
+    private val lead: Array<CharClass>?
 
     /**
-     * Backtracking recurses once per iteration of a quantified group, so a long input can
-     * exhaust a thread's stack; the match is then retried on a thread with a large one.
+     * The class of an unbounded greedy run every match starts with (`\w+@…`), where no backreference reads where a
+     * match started. An attempt from inside the run of a failed one explores a subset of its continuations, so the
+     * search goes on where that run ends.
      */
-    private fun onLargeStack(body: () -> IntArray?): IntArray? {
-        var result: Result<IntArray?>? = null
-        try {
-            val thread = Thread(null, { result = runCatching(body) }, "RegExp", 512L shl 20)
-            thread.start()
-            thread.join()
-        } catch (e: OutOfMemoryError) {
-            throw JSException(JSRangeError("Maximum call stack size exceeded"))
-        }
-        return result!!.getOrElse { if (it is StackOverflowError) throw JSException(JSRangeError("Maximum call stack size exceeded")) else throw it }
+    private val leadingRun: CharClass?
+
+    init {
+        val c = RegexCompiler(groupCount, unicode)
+        c.compile(root, true)
+        c.emit(Op.SUCCEED)
+        code = c.code.copyOf(c.size)
+        classes = c.classes.toTypedArray()
+        literals = c.literals.toTypedArray()
+        references = c.references.toTypedArray()
+        followers = c.followers()
+        slotCount = c.slotCount
+        prefix = prefixOf(root)
+        first = if (prefix.isEmpty()) c.firstOf(root) else null
+        lead = if (prefix.isEmpty() && !unicode) c.leadOf(root).first.takeIf { it.size > 1 }?.toTypedArray() else null
+        leadingRun = if (c.references.isEmpty()) leadingRunOf(root)?.let { c.firstOf(it.body) } else null
     }
 
-    private fun charTest(n: RNode): ((Int) -> Boolean)? = when (n) {
+    private fun leadingRunOf(n: RNode): RRepeat? = when (n) {
+        is RRepeat -> n.takeIf { (it.body is RChar || it.body is RClass) && it.groupCount == 0 && it.greedy && it.min >= 1 && it.max == INFINITE }
+        is RGroup -> leadingRunOf(n.body)
+        is RSeq -> n.items.firstOrNull()?.let { leadingRunOf(it) }
+        else -> null
+    }
+
+    /** Where to try after a failed attempt at `start`. */
+    fun nextStart(s: String, start: Int): Int {
+        val run = leadingRun ?: return start + 1
+        var x = start
+        while (x < s.length && !(unicode && splitsPair(s, x))) {
+            val e = endAfter(s, x, unicode)
+            if (!run.has(pointIn(s, x, e))) break
+            x = e
+        }
+        return if (x > start) x else start + 1
+    }
+
+    private fun literal(n: RNode): Char? =
+        if (n is RChar && !n.ignoreCase && n.cp <= 0xFFFF && !Character.isSurrogate(n.cp.toChar())) n.cp.toChar() else null
+
+    private fun prefixOf(n: RNode): String = when (n) {
+        is RChar -> literal(n)?.toString() ?: ""
+        is RGroup -> prefixOf(n.body)
+        is RRepeat -> if (n.min > 0) prefixOf(n.body) else ""
+        is RSeq -> {
+            val out = StringBuilder()
+            for (item in n.items) {
+                val c = literal(item)
+                if (c != null) out.append(c) else {
+                    if (out.isEmpty()) out.append(prefixOf(item))
+                    break
+                }
+            }
+            out.toString()
+        }
+        else -> ""
+    }
+
+    /** The first position at or after `from` where a match may start, among those the search visits; -1 when none. */
+    fun candidate(s: String, from: Int): Int {
+        if (prefix.length == 1) return s.indexOf(prefix[0], from)
+        if (prefix.isNotEmpty()) return s.indexOf(prefix, from)
+        val lead = lead
+        if (lead != null) {
+            val f = lead[0]
+            var x = from
+            while (x < s.length) {
+                if (f.has(s[x].code)) {
+                    var j = 1
+                    while (j < lead.size && x + j < s.length && lead[j].has(s[x + j].code)) j++
+                    if (j == lead.size) return x
+                    // No later position leaves room for the lead either.
+                    if (x + j >= s.length) return -1
+                }
+                x++
+            }
+            return -1
+        }
+        val f = first ?: return from
+        var x = from
+        if (!unicode) {
+            while (x < s.length) {
+                if (f.has(s[x].code)) return x
+                x++
+            }
+            return -1
+        }
+        while (x < s.length) {
+            val e = endAfter(s, x, true)
+            if (f.has(pointIn(s, x, e))) return x
+            x = e
+        }
+        return -1
+    }
+
+    /** The capture slots of the first match at or after `from` (exactly there when `sticky`), or null. */
+    fun search(s: String, from: Int, sticky: Boolean): IntArray? = regexMachines.get()!!.search(this, s, from, sticky)
+}
+
+private val regexMachines = object : ThreadLocal<RegexVM>() {
+    override fun initialValue() = RegexVM()
+}
+
+private class RegexCompiler(groupCount: Int, val unicode: Boolean) {
+    var code = IntArray(64)
+    var size = 0
+    val classes = ArrayList<CharClass>()
+    val literals = ArrayList<String>()
+    val references = ArrayList<IntArray>()
+    private val groupStarts = 2 * (groupCount + 1)
+    var slotCount = 3 * (groupCount + 1)
+
+    fun emit(vararg words: Int): Int {
+        val at = size
+        if (size + words.size > code.size) code = code.copyOf(maxOf(code.size * 2, size + words.size))
+        for (w in words) code[size++] = w
+        return at
+    }
+
+    private fun charTest(n: RNode): (Int) -> Boolean = when (n) {
         is RChar -> {
             val cp = n.cp
             if (!n.ignoreCase) { c -> c == cp }
@@ -1560,44 +1604,565 @@ private class RegexProgram(root: RNode, val groupCount: Int, val groupNames: Lis
                 ({ c -> caseClosedContains(set, c, u) != negated })
             }
         }
+        else -> throw IllegalArgumentException()
+    }
+
+    /** `n` (a character or class) as a class, deciding characters past ASCII without `test` where the set allows. */
+    private fun classOf(n: RNode): CharClass {
+        val test = charTest(n)
+        val rest = when {
+            n is RChar && !n.ignoreCase -> if (n.cp < 128) null else test
+            n is RClass && !n.ignoreCase && n.set.predicates.isEmpty() && n.set.ranges.all { it[1] < 128 } -> if (n.negated) ANY_CHARACTER else null
+            else -> test
+        }
+        return CharClass.of(test, rest)
+    }
+
+    private fun classIndex(n: RNode): Int {
+        classes.add(classOf(n))
+        return classes.size - 1
+    }
+
+    /** What the first character of any match of `n` satisfies; null when `n` can match empty or that is not known. */
+    fun firstOf(n: RNode): CharClass? = when (n) {
+        is RChar, is RClass -> classOf(n)
+        is RGroup -> firstOf(n.body)
+        is RRepeat -> if (n.min > 0) firstOf(n.body) else null
+        is RAlt -> n.alternatives.fold<RNode, CharClass?>(null) { acc, a -> val f = firstOf(a) ?: return null; acc?.union(f) ?: f }
+        // Assertions and lookarounds consume nothing: the first character is the next item's.
+        is RSeq -> n.items.firstOrNull { it !is RAssertion && it !is RLook }?.let { firstOf(it) }
         else -> null
     }
 
-    private fun compile(n: RNode, forward: Boolean): Matcher = when (n) {
-        is RChar, is RClass -> CharMatcher(charTest(n)!!, forward)
+    /**
+     * For each forward greedy REPEAT, the BMP code unit the instruction after it must read first, else -1: giving
+     * characters back stops only where that unit is, since anywhere else that instruction fails at once (a group's
+     * opening or closing between them only writes what that failure undoes). Where the
+     * repeated class excludes that unit, no character given back can be it, and the value is POSSESSIVE.
+     */
+    fun followers(): IntArray {
+        val out = IntArray(size) { -1 }
+        var pc = 0
+        while (pc < size) {
+            val op = code[pc]
+            if (op == Op.REPEAT && code[pc + 4] != 0 && code[pc + 5] != 0) {
+                var next = pc + 6
+                while (next < size && (code[next] == Op.GROUP_CLOSE || code[next] == Op.GROUP_OPEN)) next += width(code[next])
+                val unit = if (next >= size) -1 else when (code[next]) {
+                    Op.CHAR -> if (code[next + 2] != 0 && code[next + 1] <= 0xFFFF && !Character.isSurrogate(code[next + 1].toChar())) code[next + 1] else -1
+                    Op.LITERAL -> literals[code[next + 1]][0].code
+                    else -> -1
+                }
+                out[pc] = if (unit >= 0 && !classes[code[pc + 1]].has(unit)) POSSESSIVE else unit
+            }
+            pc += width(op)
+        }
+        return out
+    }
+
+    private fun width(op: Int): Int = when (op) {
+        Op.SUCCEED -> 1
+        Op.LITERAL, Op.JUMP, Op.GROUP_OPEN, Op.LOOP_INIT -> 2
+        Op.CHAR, Op.CLASS, Op.SPLIT, Op.GROUP_CLOSE, Op.LOOK -> 3
+        Op.ASSERT, Op.LOOP_BODY, Op.LOOP_TAIL, Op.BACKREF -> 4
+        else -> 6
+    }
+
+    /**
+     * Outside unicode mode, the classes of the first code units of every match of `n` (at most LEAD_LIMIT), and
+     * whether they are all of it: then what follows `n` goes on after them.
+     */
+    fun leadOf(n: RNode): Pair<List<CharClass>, Boolean> = when (n) {
+        is RChar, is RClass -> Pair(listOf(classOf(n)), true)
+        is RGroup -> leadOf(n.body)
+        is RAssertion, is RLook -> Pair(emptyList(), true)
+        is RRepeat -> {
+            val body = n.body
+            if ((body is RChar || body is RClass) && n.min > 0) {
+                val cls = classOf(body)
+                Pair(List(minOf(n.min, LEAD_LIMIT)) { cls }, n.min == n.max && n.min <= LEAD_LIMIT)
+            } else if (n.min > 0) Pair(leadOf(body).first, false) else Pair(emptyList(), false)
+        }
         is RSeq -> {
-            val parts = ArrayList<Matcher>()
-            if (forward) {
+            val out = ArrayList<CharClass>()
+            var whole = true
+            for (item in n.items) {
+                val (classes, complete) = leadOf(item)
+                out.addAll(classes)
+                if (!complete || out.size >= LEAD_LIMIT) {
+                    whole = complete
+                    break
+                }
+            }
+            Pair(out.take(LEAD_LIMIT), whole && out.size <= LEAD_LIMIT)
+        }
+        else -> Pair(emptyList(), false)
+    }
+
+    private fun isLiteral(n: RNode) = n is RChar && !n.ignoreCase && n.cp <= 0xFFFF && !Character.isSurrogate(n.cp.toChar())
+
+    fun compile(n: RNode, forward: Boolean) {
+        val f = if (forward) 1 else 0
+        when (n) {
+            is RChar -> if (n.ignoreCase) emit(Op.CLASS, classIndex(n), f) else emit(Op.CHAR, n.cp, f)
+            is RClass -> emit(Op.CLASS, classIndex(n), f)
+            is RSeq -> {
+                if (!forward) {
+                    for (item in n.items.asReversed()) compile(item, false)
+                    return
+                }
                 var i = 0
                 while (i < n.items.size) {
-                    val literal = StringBuilder()
                     var j = i
-                    while (j < n.items.size) {
-                        val item = n.items[j]
-                        if (item !is RChar || item.ignoreCase || item.cp > 0xFFFF || Character.isSurrogate(item.cp.toChar())) break
-                        literal.append(item.cp.toChar())
-                        j++
-                    }
+                    while (j < n.items.size && isLiteral(n.items[j])) j++
                     if (j - i >= 2) {
-                        parts.add(LiteralMatcher(literal.toString()))
+                        val text = StringBuilder(j - i)
+                        for (k in i until j) text.append((n.items[k] as RChar).cp.toChar())
+                        literals.add(text.toString())
+                        emit(Op.LITERAL, literals.size - 1)
                         i = j
                     } else {
-                        parts.add(compile(n.items[i], true))
+                        compile(n.items[i], true)
                         i++
                     }
                 }
-            } else for (item in n.items.asReversed()) parts.add(compile(item, false))
-            if (parts.size == 1) parts[0] else SequenceMatcher(parts.toTypedArray())
+            }
+            is RAlt -> {
+                val ends = ArrayList<Int>()
+                for (k in 0 until n.alternatives.size - 1) {
+                    val split = emit(Op.SPLIT, 0, 0)
+                    code[split + 1] = size
+                    compile(n.alternatives[k], forward)
+                    ends.add(emit(Op.JUMP, 0))
+                    code[split + 2] = size
+                }
+                compile(n.alternatives.last(), forward)
+                for (e in ends) code[e + 1] = size
+            }
+            is RAssertion -> {
+                val kind = when (n.kind) { '^' -> ASSERT_START; '$' -> ASSERT_END; 'b' -> ASSERT_BOUNDARY; else -> ASSERT_NOT_BOUNDARY }
+                emit(Op.ASSERT, kind, if (n.multiline) 1 else 0, if (n.wordExtras) 1 else 0)
+            }
+            is RGroup -> {
+                emit(Op.GROUP_OPEN, groupStarts + n.index)
+                compile(n.body, forward)
+                emit(Op.GROUP_CLOSE, n.index, f)
+            }
+            is RLook -> {
+                val look = emit(Op.LOOK, if (n.negative) 1 else 0, 0)
+                compile(n.body, n.ahead)
+                emit(Op.SUCCEED)
+                code[look + 2] = size
+            }
+            is RBackReference -> {
+                references.add(n.groups)
+                emit(Op.BACKREF, references.size - 1, if (n.ignoreCase) 1 else 0, f)
+            }
+            is RRepeat -> {
+                if (n.max == 0) return
+                val body = n.body
+                if ((body is RChar || body is RClass) && n.groupCount == 0) {
+                    emit(Op.REPEAT, classIndex(body), n.min, n.max, if (n.greedy) 1 else 0, f)
+                    return
+                }
+                val register = slotCount
+                slotCount += 2
+                emit(Op.LOOP_INIT, register)
+                val head = emit(Op.LOOP_HEAD, register, n.min, n.max, if (n.greedy) 1 else 0, 0)
+                emit(Op.LOOP_BODY, register, 2 * (n.firstGroup + 1), 2 * (n.firstGroup + n.groupCount + 1))
+                compile(body, forward)
+                emit(Op.LOOP_TAIL, register, head, n.min)
+                code[head + 5] = size
+            }
         }
-        is RAlt -> AlternationMatcher(n.alternatives.map { compile(it, forward) }.toTypedArray())
-        is RAssertion -> AssertionMatcher(n.kind, n.multiline, n.wordExtras)
-        is RGroup -> GroupMatcher(n.index, compile(n.body, forward), forward)
-        is RLook -> LookMatcher(compile(n.body, n.ahead), n.negative)
-        is RBackReference -> BackReferenceMatcher(n, forward)
-        is RRepeat -> {
-            val body = n.body
-            if ((body is RChar || body is RClass) && n.groupCount == 0) CharRepeatMatcher(CharMatcher(charTest(body)!!, forward), n.min, n.max, n.greedy)
-            else RepeatMatcher(compile(body, forward), n.min, n.max, n.greedy, n.firstGroup, n.groupCount)
+    }
+}
+
+/** The VM's state, one per thread: it runs no script, so a match never re-enters it from outside. */
+private class RegexVM {
+    private var slots = IntArray(16)
+    private var stack = IntArray(INITIAL_STACK)
+    private var top = 0
+    private var kept = IntArray(32)
+    private var program: RegexProgram? = null
+    private var input = ""
+
+    fun search(p: RegexProgram, s: String, from: Int, sticky: Boolean): IntArray? {
+        if (slots.size < p.slotCount) slots = IntArray(p.slotCount)
+        java.util.Arrays.fill(slots, 0, p.slotCount, -1)
+        program = p
+        input = s
+        top = 0
+        try {
+            var start = from
+            while (start <= s.length) {
+                if (!sticky) {
+                    start = p.candidate(s, start)
+                    if (start < 0) return null
+                }
+                // A failed attempt unwinds every write it made, so the slots are all unset again for the next.
+                val end = run(0, start, 0)
+                if (end >= 0) {
+                    val captures = slots.copyOf(2 * (p.groupCount + 1))
+                    captures[0] = start
+                    captures[1] = end
+                    return captures
+                }
+                if (sticky) return null
+                // Past a leading run, else one code unit on: in `u` mode too, as V8 tries the positions inside a pair (see splitsPair).
+                start = p.nextStart(s, start)
+            }
+            return null
+        } catch (e: OutOfMemoryError) {
+            stack = IntArray(INITIAL_STACK)
+            throw JSException(JSRangeError("Maximum call stack size exceeded"))
+        } finally {
+            if (stack.size > RETAINED_STACK) stack = IntArray(INITIAL_STACK)
+            program = null
+            input = ""
         }
+    }
+
+    private fun push(a: Int, b: Int, tag: Int) {
+        if (top + 3 > stack.size) stack = stack.copyOf(stack.size * 2)
+        stack[top] = a
+        stack[top + 1] = b
+        stack[top + 2] = tag
+        top += 3
+    }
+
+    private fun push(a: Int, b: Int, c: Int, tag: Int) {
+        if (top + 4 > stack.size) stack = stack.copyOf(stack.size * 2)
+        stack[top] = a
+        stack[top + 1] = b
+        stack[top + 2] = c
+        stack[top + 3] = tag
+        top += 4
+    }
+
+    /** Writes a slot, recording the old value for backtracking; a write that changes nothing records nothing. */
+    private fun set(slot: Int, value: Int) {
+        val old = slots[slot]
+        if (old == value) return
+        push(slot, old, T_UNDO)
+        slots[slot] = value
+    }
+
+    private fun entrySize(tag: Int) = if (tag >= T_GREEDY) 4 else 3
+
+    /** Drops the entries above `floor`, undoing their writes. */
+    private fun unwind(floor: Int) {
+        while (top > floor) {
+            val tag = stack[top - 1]
+            if (tag == T_UNDO) slots[stack[top - 3]] = stack[top - 2]
+            top -= entrySize(tag)
+        }
+    }
+
+    /** Drops the choice points above `floor` and keeps the undo records, in order: a lookaround's body is atomic. */
+    private fun keepUndos(floor: Int) {
+        var k = 0
+        var t = top
+        while (t > floor) {
+            val tag = stack[t - 1]
+            if (tag == T_UNDO) {
+                if (k + 2 > kept.size) kept = kept.copyOf(kept.size * 2)
+                kept[k] = stack[t - 3]
+                kept[k + 1] = stack[t - 2]
+                k += 2
+            }
+            t -= entrySize(tag)
+        }
+        top = floor
+        var i = k - 2
+        while (i >= 0) {
+            push(kept[i], kept[i + 1], T_UNDO)
+            i -= 2
+        }
+    }
+
+    /** Runs from `startPc` at `startPos`: the position at SUCCEED, or -1 once backtracking has emptied the stack to `floor`. */
+    private fun run(startPc: Int, startPos: Int, floor: Int): Int {
+        val p = program!!
+        val code = p.code
+        val s = input
+        val n = s.length
+        val unicode = p.unicode
+        var pc = startPc
+        var pos = startPos
+        while (true) {
+            val ok = when (code[pc]) {
+                Op.CHAR -> {
+                    val c = code[pc + 1]
+                    if (code[pc + 2] != 0) {
+                        if (pos < n && s[pos].code == c && (!unicode || c < 0xD800 || c > 0xDFFF)) {
+                            pos++
+                            pc += 3
+                            true
+                        } else if (pos < n && unicode && !splitsPair(s, pos)) {
+                            val e = endAfter(s, pos, true)
+                            if (pointIn(s, pos, e) == c) { pos = e; pc += 3; true } else false
+                        } else false
+                    } else if (pos > 0 && !(unicode && splitsPair(s, pos))) {
+                        val b = startBefore(s, pos, unicode)
+                        if (pointIn(s, b, pos) == c) { pos = b; pc += 3; true } else false
+                    } else false
+                }
+                Op.CLASS -> {
+                    val cls = p.classes[code[pc + 1]]
+                    if (unicode && splitsPair(s, pos)) false
+                    else if (code[pc + 2] != 0) {
+                        if (pos < n) {
+                            val e = endAfter(s, pos, unicode)
+                            if (cls.has(pointIn(s, pos, e))) { pos = e; pc += 3; true } else false
+                        } else false
+                    } else if (pos > 0) {
+                        val b = startBefore(s, pos, unicode)
+                        if (cls.has(pointIn(s, b, pos))) { pos = b; pc += 3; true } else false
+                    } else false
+                }
+                Op.LITERAL -> {
+                    val text = p.literals[code[pc + 1]]
+                    if (s.startsWith(text, pos)) { pos += text.length; pc += 2; true } else false
+                }
+                Op.ASSERT -> {
+                    val multiline = code[pc + 2] != 0
+                    val holds = when (code[pc + 1]) {
+                        ASSERT_START -> pos == 0 || (multiline && isLineTerminator(s[pos - 1].code))
+                        ASSERT_END -> pos == n || (multiline && isLineTerminator(s[pos].code))
+                        ASSERT_BOUNDARY -> isWordAt(s, pos - 1, code[pc + 3] != 0) != isWordAt(s, pos, code[pc + 3] != 0)
+                        else -> isWordAt(s, pos - 1, code[pc + 3] != 0) == isWordAt(s, pos, code[pc + 3] != 0)
+                    }
+                    if (holds) pc += 4
+                    holds
+                }
+                Op.SPLIT -> {
+                    push(code[pc + 2], pos, T_CHOICE)
+                    pc = code[pc + 1]
+                    true
+                }
+                Op.JUMP -> {
+                    pc = code[pc + 1]
+                    true
+                }
+                Op.GROUP_OPEN -> {
+                    set(code[pc + 1], pos)
+                    pc += 2
+                    true
+                }
+                Op.GROUP_CLOSE -> {
+                    val g = code[pc + 1]
+                    val opened = slots[2 * (p.groupCount + 1) + g]
+                    if (code[pc + 2] != 0) { set(2 * g, opened); set(2 * g + 1, pos) } else { set(2 * g, pos); set(2 * g + 1, opened) }
+                    pc += 3
+                    true
+                }
+                Op.LOOP_INIT -> {
+                    set(code[pc + 1], 0)
+                    pc += 2
+                    true
+                }
+                Op.LOOP_HEAD -> {
+                    // RepeatMatcher with min and max less the iterations done: past max, only the continuation;
+                    // past min, the body and the continuation in the quantifier's order.
+                    val count = slots[code[pc + 1]]
+                    if (count >= code[pc + 3]) pc = code[pc + 5]
+                    else if (count >= code[pc + 2]) {
+                        if (code[pc + 4] != 0) {
+                            push(code[pc + 5], pos, T_CHOICE)
+                            pc += 6
+                        } else {
+                            push(pc + 6, pos, T_CHOICE)
+                            pc = code[pc + 5]
+                        }
+                    } else pc += 6
+                    true
+                }
+                Op.LOOP_BODY -> {
+                    set(code[pc + 1] + 1, pos)
+                    for (slot in code[pc + 2] until code[pc + 3]) set(slot, -1)
+                    pc += 4
+                    true
+                }
+                Op.LOOP_TAIL -> {
+                    val register = code[pc + 1]
+                    val count = slots[register]
+                    // An iteration past the minimum that matched empty fails.
+                    if (count >= code[pc + 3] && pos == slots[register + 1]) false
+                    else {
+                        set(register, count + 1)
+                        pc = code[pc + 2]
+                        true
+                    }
+                }
+                Op.REPEAT -> {
+                    val cls = p.classes[code[pc + 1]]
+                    val min = code[pc + 2]
+                    val max = code[pc + 3]
+                    val forward = code[pc + 5] != 0
+                    if (unicode && splitsPair(s, pos)) {
+                        if (min > 0) false else { pc += 6; true }
+                    } else if (code[pc + 4] != 0) {
+                        var at = pos
+                        var count = 0
+                        var least = if (min == 0) pos else -1
+                        while (count < max) {
+                            val next = if (forward) {
+                                if (at >= n) break
+                                val e = endAfter(s, at, unicode)
+                                if (!cls.has(pointIn(s, at, e))) break
+                                e
+                            } else {
+                                if (at <= 0) break
+                                val b = startBefore(s, at, unicode)
+                                if (!cls.has(pointIn(s, b, at))) break
+                                b
+                            }
+                            at = next
+                            count++
+                            if (count == min) least = at
+                        }
+                        if (count < min) false
+                        else {
+                            if (count > min && p.followers[pc] != POSSESSIVE) push(pc, least, at, T_GREEDY)
+                            pos = at
+                            pc += 6
+                            true
+                        }
+                    } else {
+                        var at = pos
+                        var count = 0
+                        while (count < min) {
+                            at = step(cls, s, at, forward, unicode)
+                            if (at < 0) break
+                            count++
+                        }
+                        if (at < 0) false
+                        else {
+                            if (max > min) push(pc, at, min, T_LAZY)
+                            pos = at
+                            pc += 6
+                            true
+                        }
+                    }
+                }
+                Op.BACKREF -> {
+                    val next = backReference(p.references[code[pc + 1]], code[pc + 2] != 0, code[pc + 3] != 0, s, pos, unicode)
+                    if (next >= 0) { pos = next; pc += 4; true } else false
+                }
+                Op.LOOK -> {
+                    val mark = top
+                    val found = run(pc + 3, pos, mark) >= 0
+                    if (code[pc + 1] != 0) {
+                        if (found) { unwind(mark); false } else { pc = code[pc + 2]; true }
+                    } else if (found) {
+                        keepUndos(mark)
+                        pc = code[pc + 2]
+                        true
+                    } else false
+                }
+                else -> return pos
+            }
+            if (ok) continue
+            backtrack@ while (true) {
+                if (top <= floor) return -1
+                when (stack[top - 1]) {
+                    T_CHOICE -> {
+                        pc = stack[top - 3]
+                        pos = stack[top - 2]
+                        top -= 3
+                        break@backtrack
+                    }
+                    T_UNDO -> {
+                        slots[stack[top - 3]] = stack[top - 2]
+                        top -= 3
+                    }
+                    T_GREEDY -> {
+                        val op = stack[top - 4]
+                        val least = stack[top - 3]
+                        val at = stack[top - 2]
+                        // One character back, as the run read it: a pair straddling where it started is not one.
+                        val follower = p.followers[op]
+                        val next = if (follower >= 0) {
+                            val unit = follower.toChar()
+                            var found = at - 1
+                            while (found >= least && s[found] != unit) found--
+                            if (found < least) {
+                                top -= 4
+                                continue@backtrack
+                            }
+                            found
+                        } else if (code[op + 5] != 0) {
+                            if (unicode && at - 2 >= least && Character.isLowSurrogate(s[at - 1]) && Character.isHighSurrogate(s[at - 2])) at - 2 else at - 1
+                        } else {
+                            if (unicode && at + 2 <= least && Character.isHighSurrogate(s[at]) && Character.isLowSurrogate(s[at + 1])) at + 2 else at + 1
+                        }
+                        if (next == least) top -= 4 else stack[top - 2] = next
+                        pc = op + 6
+                        pos = next
+                        break@backtrack
+                    }
+                    else -> {
+                        val op = stack[top - 4]
+                        val count = stack[top - 2]
+                        val next = step(p.classes[code[op + 1]], s, stack[top - 3], code[op + 5] != 0, unicode)
+                        if (next < 0) {
+                            top -= 4
+                            continue@backtrack
+                        }
+                        if (count + 1 >= code[op + 3]) top -= 4 else {
+                            stack[top - 3] = next
+                            stack[top - 2] = count + 1
+                        }
+                        pc = op + 6
+                        pos = next
+                        break@backtrack
+                    }
+                }
+            }
+        }
+    }
+
+    /** One character of `cls` at `x`, read forward or backward: where it ends, or -1. */
+    private fun step(cls: CharClass, s: String, x: Int, forward: Boolean, unicode: Boolean): Int {
+        if (unicode && splitsPair(s, x)) return -1
+        if (forward) {
+            if (x >= s.length) return -1
+            val e = endAfter(s, x, unicode)
+            return if (cls.has(pointIn(s, x, e))) e else -1
+        }
+        if (x <= 0) return -1
+        val b = startBefore(s, x, unicode)
+        return if (cls.has(pointIn(s, b, x))) b else -1
+    }
+
+    /** The text the first of `groups` that took part captured, matched at `x`: where it ends, or -1; an unset group matches empty. */
+    private fun backReference(groups: IntArray, ignoreCase: Boolean, forward: Boolean, s: String, x: Int, unicode: Boolean): Int {
+        var start = -1
+        var end = -1
+        for (g in groups) if (slots[2 * g] >= 0) { start = slots[2 * g]; end = slots[2 * g + 1]; break }
+        if (start < 0) return x
+        val length = end - start
+        val from = if (forward) x else x - length
+        if (from < 0 || from + length > s.length) return -1
+        if (!ignoreCase) {
+            if (!s.regionMatches(start, s, from, length)) return -1
+        } else {
+            var i = 0
+            while (i < length) {
+                val a = if (unicode) s.codePointAt(start + i) else s[start + i].code
+                val b = if (unicode) s.codePointAt(from + i) else s[from + i].code
+                if (CaseFolding.canonicalize(a, unicode) != CaseFolding.canonicalize(b, unicode)) return -1
+                if (Character.charCount(a) != Character.charCount(b)) return -1
+                i += Character.charCount(a)
+            }
+        }
+        return if (forward) x + length else from
+    }
+
+    private companion object {
+        const val INITIAL_STACK = 256
+        /** A stack grown past this by one long match is let go after it rather than kept for the thread. */
+        const val RETAINED_STACK = 1 shl 16
     }
 }
