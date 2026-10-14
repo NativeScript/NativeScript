@@ -8,45 +8,21 @@
 // Build products go to $NS_DIFF_BUILD (default: <tmp>/ns-native-diff).
 // Node runs with --expose-gc: a case checking object lifetimes calls `globalThis.gc?.()`, which ARC needs no call for.
 // Kotlin compiles with $KOTLINC, `kotlinc` on PATH, or the compiler Gradle cached for kit-android.
-import { execFileSync, spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
-import { basename, dirname, join, resolve } from 'node:path';
+import { spawnSync } from 'node:child_process';
+import { mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { basename, dirname, join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
-import { createProgram } from '../../src/program.ts';
-import { Translator } from '../../src/swift.ts';
-import { Translator as KotlinTranslator } from '../../src/kotlin.ts';
-import { SourceLines } from '../../src/source-lines.ts';
-import { collectProperties } from '../../src/properties.ts';
-import { addInterfaces, translateModules } from '../../src/modules.ts';
-import { addKotlinInterfaces, translateKotlinModules } from '../../src/kotlin-modules.ts';
 import ts from 'typescript';
-import { kotlinToolchain } from '../kotlin-toolchain.ts';
+import { buildKotlinRuntime, buildSwiftRuntime, kotlinc, kotlinMain, kotlinStdlib, swiftc, swiftMain, translateKotlin as translateKotlinProgram, translateSwift } from '../native-build.ts';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const root = resolve(here, '../..');
-const kit = join(root, 'kit-apple/Sources/NativeScriptKit');
-const kitAndroid = join(root, 'kit-android/src/main/kotlin/org/nativescript/kit');
 const optimize = process.argv.includes('--osize') ? '-Osize' : '-Onone';
 const build = (process.env.NS_DIFF_BUILD ?? join(tmpdir(), 'ns-native-diff')) + (optimize === '-Osize' ? '-osize' : '');
-// The cases are typed by core and the ES library as an app's are (tests/package.json).
-const modulesDir = process.env.NS_DIFF_MODULES ?? join(root, 'tests/node_modules');
 const args = process.argv.slice(2).filter((a) => !a.startsWith('--'));
 const keep = process.argv.includes('--keep');
 const targets = process.argv.includes('--swift') ? ['swift'] : process.argv.includes('--kotlin') ? ['kotlin'] : ['swift', 'kotlin'];
-
-const runtimeSources = [...readdirSync(join(kit, 'Runtime')).filter((f) => f.endsWith('.swift')).map((f) => join(kit, 'Runtime', f)), join(kit, 'JS.swift'), join(kit, 'Signals.swift')];
-const kotlinRuntimeSources = [...readdirSync(join(kitAndroid, 'runtime')).filter((f) => f.endsWith('.kt')).map((f) => join(kitAndroid, 'runtime', f)), join(kitAndroid, 'Signals.kt')];
 mkdirSync(build, { recursive: true });
-
-/** The runtime as a static library, rebuilt when a source is newer. */
-function buildRuntime() {
-  const lib = join(build, 'libNativeScriptKit.a');
-  const newest = Math.max(...runtimeSources.map((f) => statSync(f).mtimeMs));
-  if (existsSync(lib) && statSync(lib).mtimeMs > newest) return;
-  execFileSync('xcrun', ['swiftc', '-parse-as-library', '-emit-library', '-static', '-module-name', 'NativeScriptKit', '-emit-module', '-emit-module-path', join(build, 'NativeScriptKit.swiftmodule'),
-    optimize, '-o', lib, ...runtimeSources], { stdio: 'inherit', cwd: build });
-}
 
 /**
  * A case starting `// @lenient` is checked as core is, without strictNullChecks, and translated
@@ -72,66 +48,14 @@ function weakOf(file: string) {
 const membersByName = (file: string) => /^\/\/ @members-by-name$/m.test(readFileSync(file, 'utf8'));
 
 function translate(file: string, out: string): void {
-  const loose = lenient(file);
-  const { checker, program, files: roots } = createProgram([file], new Map(), 'ios', modulesDir, undefined, [], {}, loose ? { strict: false, useDefineForClassFields: false } : {});
-  // The helper modules a case imports are the program's too, as an app's every module is.
-  const files = [...roots, ...importsOf(program, file).map((f) => program.getSourceFile(f)!).filter((sf) => sf && !roots.includes(sf))];
-  // In library mode, as the kit generated from core is: each module's functions and variables in an enum.
-  const library = loose ? { moduleName: (f: string) => (f.endsWith('.d.ts') ? null : 'Module_' + basename(f).replace(/\W/g, '_')) } : null;
-  // Every module of the case, as an app's are: names its modules share are told apart across them.
-  const all = [...files, ...importsOf(program, file).map((f) => program.getSourceFile(f)!).filter((f) => f && !files.includes(f))];
-  const translator = new Translator(checker, new Map(), all, { lenient: loose, library, weak: weakOf(file), ...(loose ? { pluginFiles: all.map((f) => f.fileName), properties: collectProperties(checker, all) } : {}) });
-  translator.appModule = 'Main';
-  translator.appMembersByName = membersByName(file);
-  // With source lines, as an app is built: the directives must compile wherever a statement can be.
-  const lines = translator.lines = new SourceLines(new Map());
-  const modules = translateModules(translator, program, [file, ...importsOf(program, file)]);
-  addInterfaces(translator, modules);
-  rmSync(out, { recursive: true, force: true });
-  mkdirSync(out, { recursive: true });
-  const header = 'import Foundation\nimport NativeScriptKit\n\n';
-  for (const m of modules) writeFileSync(join(out, m.name + '.swift'), header + lines.swift(m.code));
-  writeFileSync(join(out, '__Objects.swift'), header + translator.shapesCode() + '\n');
-  const inits = modules.filter((m) => m.init).map((m) => `${m.init}()\n`).join('');
-  writeFileSync(join(out, 'main.swift'), `${header}${inits}JSEventLoop.runUntilIdle()\n`);
+  const modules = translateSwift([file], out, { lenient: lenient(file), weak: weakOf(file), membersByName: membersByName(file) });
+  writeFileSync(join(out, 'main.swift'), swiftMain(modules));
 }
 
 /** The case as Kotlin in package `pkg`, with a `main` running its modules' top level and then the event loop. */
 function translateKotlin(file: string, out: string, pkg: string): void {
-  const loose = lenient(file);
-  const { checker, program, files } = createProgram([file], new Map(), 'android', modulesDir, undefined, [], {}, loose ? { strict: false, useDefineForClassFields: false } : {});
-  const library = { identities: new Set<string>(), counterpart: () => null, moduleName: (f: string) => (f.endsWith('.d.ts') ? null : 'Module_' + basename(f).replace(/\W/g, '_')) };
-  const translator = new KotlinTranslator(checker, new Map(), files, loose ? { lenient: true, library, pluginFiles: files.map((f) => f.fileName), properties: collectProperties(checker, files) } : {});
-  translator.appModule = pkg;
-  translator.appMembersByName = membersByName(file);
-  const lines = translator.lines = new SourceLines(new Map());
-  const modules = translateKotlinModules(translator, program, [file, ...importsOf(program, file)]);
-  addKotlinInterfaces(translator, modules);
-  rmSync(out, { recursive: true, force: true });
-  mkdirSync(out, { recursive: true });
-  const header = `package ${pkg}\n\nimport org.nativescript.kit.*\n\n`;
-  for (const m of modules) writeFileSync(join(out, m.name + '.kt'), header + lines.kotlin(m.code).code);
-  writeFileSync(join(out, '__Objects.kt'), header + translator.shapesCode() + '\n');
-  const inits = modules.filter((m) => m.init).map((m) => `    ${m.init}()\n`).join('');
-  // In a package of its own: a case may declare a `main` of its own.
-  writeFileSync(join(out, '__Main.kt'), `package ${pkg}.entry\n\nimport org.nativescript.kit.*\nimport ${pkg}.*\n\nfun main() {\n${inits}    JSEventLoop.runUntilIdle()\n    System.out.flush()\n}\n`);
-}
-
-/** The app modules a case imports (relative imports, transitively). */
-function importsOf(program: import('typescript').Program, file: string): string[] {
-  const out = new Set<string>();
-  const visit = (f: string) => {
-    const sf = program.getSourceFile(f);
-    if (!sf) return;
-    for (const st of sf.statements) {
-      const spec = (st as any).moduleSpecifier?.text as string | undefined;
-      if (!spec?.startsWith('.')) continue;
-      const target = resolve(dirname(f), spec.replace(/\.ts$/, '') + '.ts');
-      if (!out.has(target)) { out.add(target); visit(target); }
-    }
-  };
-  visit(file);
-  return [...out];
+  const modules = translateKotlinProgram([file], out, pkg, { lenient: lenient(file), membersByName: membersByName(file) });
+  writeFileSync(join(out, '__Main.kt'), kotlinMain(modules, pkg));
 }
 
 /** The case as JavaScript for Node, the way an app's bundler compiles TypeScript (Node strips types but cannot transform parameter properties or enums). */
@@ -148,34 +72,10 @@ function toJavaScript(dir: string, out: string) {
   }
 }
 
-// ---- Kotlin toolchain -------------------------------------------------------------------------
-
-let toolchain: ReturnType<typeof kotlinToolchain> | null = null;
-
-function kotlinc(sources: string[], out: string, classpath: string[]): string | null {
-  toolchain ??= kotlinToolchain();
-  rmSync(out, { recursive: true, force: true });
-  const r = toolchain.compile([...sources, '-d', out, '-no-stdlib', '-nowarn', '-jvm-target', '17', '-cp', [toolchain.stdlib, ...classpath].join(':')]);
-  if (r.status === 0) return null;
-  return (r.stderr + r.stdout).split('\n').filter((l) => /error:/.test(l)).slice(0, 15).join('\n') || r.stderr.slice(0, 2000);
-}
-
-/** kit-android's runtime as classes, rebuilt when a source is newer. */
-function buildKotlinRuntime(): string {
-  const out = join(build, 'kotlin-runtime');
-  const stamp = join(out, '.built');
-  const newest = Math.max(...kotlinRuntimeSources.map((f) => statSync(f).mtimeMs));
-  if (existsSync(stamp) && statSync(stamp).mtimeMs > newest) return out;
-  const error = kotlinc(kotlinRuntimeSources, out, []);
-  if (error) throw new Error(`the Kotlin runtime does not compile:\n${error}`);
-  writeFileSync(stamp, '');
-  return out;
-}
-
 // ---- Run ---------------------------------------------------------------------------------------
 
 const cases = readdirSync(join(here, 'cases')).filter((f) => f.endsWith('.ts') && (!args.length || args.some((a) => f.startsWith(a)))).sort();
-if (targets.includes('swift')) buildRuntime();
+if (targets.includes('swift')) buildSwiftRuntime(build, optimize);
 const js = join(build, 'js');
 rmSync(js, { recursive: true, force: true });
 toJavaScript(join(here, 'cases'), js);
@@ -217,8 +117,8 @@ if (targets.includes('swift')) {
     try {
       translate(file, join(dir, 'Sources'));
       const swiftFiles = readdirSync(join(dir, 'Sources')).map((f) => join(dir, 'Sources', f));
-      const compiled = spawnSync('xcrun', ['swiftc', optimize, '-module-name', 'Main', '-I', build, '-L', build, '-lNativeScriptKit', '-o', join(dir, name), ...swiftFiles], { encoding: 'utf8' });
-      if (compiled.status !== 0) throw new Error(`swiftc:\n${compiled.stderr.split('\n').filter((l) => /error:/.test(l)).slice(0, 15).join('\n')}`);
+      const errors = swiftc(swiftFiles, join(dir, name), build, optimize);
+      if (errors) throw new Error(`swiftc:\n${errors.slice(0, 15).join('\n')}`);
       report(name, 'swift', expected.get(c)!, spawnSync(join(dir, name), { encoding: 'utf8', timeout: 20000 }));
     } catch (err) {
       ran.add(`swift:${name}`);
@@ -245,7 +145,7 @@ if (targets.includes('kotlin')) {
       console.log(`✗ ${name} (kotlin)${known.kotlin?.[name] ? ' [known]' : ''}: ${(err as Error).message}`);
     }
   }
-  const runtime = buildKotlinRuntime();
+  const runtime = buildKotlinRuntime(build);
   const sourcesOf = (name: string) => readdirSync(join(build, 'kotlin', name)).map((f) => join(build, 'kotlin', name, f));
   const classes = join(build, 'kotlin-classes');
   // One compile for every case; a case that breaks it is then compiled alone to say which.
@@ -255,15 +155,15 @@ if (targets.includes('kotlin')) {
   else {
     for (const name of translated) {
       const out = join(build, 'kotlin-classes-' + name);
-      const error = kotlinc(sourcesOf(name), out, [runtime]);
-      if (error) { ran.add(`kotlin:${name}`); fail(name, 'kotlin'); console.log(`✗ ${name} (kotlin)${known.kotlin?.[name] ? ' [known]' : ''}: kotlinc:\n${error}`); } else runnable.set(name, out);
+      const errors = kotlinc(sourcesOf(name), out, [runtime]);
+      if (errors) { ran.add(`kotlin:${name}`); fail(name, 'kotlin'); console.log(`✗ ${name} (kotlin)${known.kotlin?.[name] ? ' [known]' : ''}: kotlinc:\n${errors.slice(0, 15).join('\n')}`); } else runnable.set(name, out);
     }
   }
   for (const c of cases) {
     const name = basename(c, '.ts');
     const out = runnable.get(name);
     if (!out) continue;
-    const run = spawnSync('java', ['-Xss16m', '-cp', [out, runtime, toolchain!.stdlib].join(':'), `${pkg(name)}.entry.__MainKt`], { encoding: 'utf8', timeout: 30000 });
+    const run = spawnSync('java', ['-Xss16m', '-cp', [out, runtime, kotlinStdlib()].join(':'), `${pkg(name)}.entry.__MainKt`], { encoding: 'utf8', timeout: 30000 });
     report(name, 'kotlin', expected.get(c)!, run);
   }
   if (!keep) for (const d of readdirSync(build)) if (d.startsWith('kotlin-classes') || d === 'kotlin') rmSync(join(build, d), { recursive: true, force: true });
