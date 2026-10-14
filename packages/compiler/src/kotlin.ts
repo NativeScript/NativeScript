@@ -4114,6 +4114,10 @@ export class Translator implements AsyncTranslator {
   }
 
   private statementCode(s: ts.Statement): string {
+    if (ts.isIterationStatement(s, false)) {
+      const built = this.appendLoop(s);
+      if (built !== null) return built;
+    }
     const i = this.indent;
     const a = this.asyncCtx;
     if (ts.isExpressionStatement(s)) {
@@ -4301,6 +4305,109 @@ export class Translator implements AsyncTranslator {
     this.plainContinue++;
     this.jumps.push({ kind: 'loop' });
     try { return body(); } finally { this.plainBreak--; this.plainContinue--; this.jumps.pop(); }
+  }
+
+  /** Strings the loop being written only appends to, each with its StringBuilder (appendLoop). */
+  private appendBuilders = new Map<ts.Symbol, string>();
+
+  /** What a name reads: a shorthand property (`{ s }`) reads the variable, not the property it makes. */
+  private nameSymbol(id: ts.Identifier): ts.Symbol | undefined {
+    return ts.isShorthandPropertyAssignment(id.parent) && id.parent.name === id ? this.checker.getShorthandAssignmentValueSymbol(id.parent) : this.checker.getSymbolAtLocation(id);
+  }
+
+  private appendBuilderOf(e: ts.Expression): string | undefined {
+    if (!this.appendBuilders.size || !ts.isIdentifier(e)) return undefined;
+    const sym = this.nameSymbol(e);
+    return sym && this.appendBuilders.get(sym);
+  }
+
+  /** `v = v + a + b`: the operands after `v`, when the right side is a chain of `+` that starts with `v`. */
+  private appendedOperands(right: ts.Expression, sym: ts.Symbol): ts.Expression[] | null {
+    const parts: ts.Expression[] = [];
+    let x = right;
+    while (ts.isBinaryExpression(x) && x.operatorToken.kind === ts.SyntaxKind.PlusToken) {
+      parts.unshift(x.right);
+      x = x.left;
+    }
+    return parts.length && ts.isIdentifier(x) && this.nameSymbol(x) === sym ? parts : null;
+  }
+
+  /**
+   * A loop that only appends to a local string (\`s += x\`, \`s = s + x\`, reading at most \`s.length\`) builds it in a
+   * StringBuilder, as Kotlin's \`+\` copies the whole string at every append: the variable is set from the builder in
+   * a \`finally\`, so it is right however the loop is left. Nothing else may read it meanwhile: it is the function's
+   * own, which no closure sees, and the function does not suspend.
+   */
+  private appendLoop(loop: ts.IterationStatement): string | null {
+    if (this.asyncCtx) return null;
+    const fn = ts.findAncestor(loop.parent, ts.isFunctionLike);
+    if (!fn || ('asteriskToken' in fn && fn.asteriskToken) || ts.getCombinedModifierFlags(fn as ts.Declaration) & ts.ModifierFlags.Async) return null;
+    const uses = new Map<ts.Symbol, { appends: number; bad: boolean; target?: ts.Identifier }>();
+    const visit = (n: ts.Node): void => {
+      if (ts.isIdentifier(n)) {
+        const sym = this.nameSymbol(n);
+        if (sym && !this.appendBuilders.has(sym) && this.appendable(sym, fn, loop)) {
+          const u = uses.get(sym) ?? { appends: 0, bad: false };
+          uses.set(sym, u);
+          const p = n.parent;
+          const statement = ts.isBinaryExpression(p) && p.left === n && ts.isExpressionStatement(p.parent);
+          if (statement && p.operatorToken.kind === ts.SyntaxKind.PlusEqualsToken) { u.appends++; u.target = n; }
+          else if (statement && p.operatorToken.kind === ts.SyntaxKind.EqualsToken && this.appendedOperands(p.right, sym)) { u.appends++; u.target = n; }
+          else if (!(ts.isBinaryExpression(p) && p.operatorToken.kind === ts.SyntaxKind.PlusToken && this.appendLeftmost(p) === n)
+            && !(ts.isPropertyAccessExpression(p) && p.expression === n && p.name.text === 'length' && !isWriteTarget(p))) u.bad = true;
+        }
+      }
+      ts.forEachChild(n, visit);
+    };
+    visit(loop);
+    const appended = [...uses].filter(([, u]) => !u.bad && u.appends > 0 && u.target);
+    if (!appended.length) return null;
+    const builders = appended.map(([sym, u]) => ({ sym, builder: this.fresh('__sb'), name: this.lvalue(u.target!) }));
+    for (const b of builders) this.appendBuilders.set(b.sym, b.builder);
+    try {
+      const i = this.indent;
+      const body = this.nested(() => this.statementCode(loop));
+      return [...builders.map((b) => `${i}val ${b.builder} = StringBuilder(${b.name})`), `${i}try {`, body, `${i}} finally {`,
+        ...builders.map((b) => `${i}    ${b.name} = ${b.builder}.toString()`), `${i}}`].join('\n');
+    } finally {
+      for (const b of builders) this.appendBuilders.delete(b.sym);
+    }
+  }
+
+  /** The \`v = …\` statement a \`+\` chain is the right side of, if it is one. */
+  private appendStatementOf(plus: ts.BinaryExpression): ts.BinaryExpression | undefined {
+    let x: ts.Node = plus;
+    while (ts.isBinaryExpression(x.parent) && x.parent.operatorToken.kind === ts.SyntaxKind.PlusToken && x.parent.left === x) x = x.parent;
+    const p = x.parent;
+    return ts.isBinaryExpression(p) && p.operatorToken.kind === ts.SyntaxKind.EqualsToken && p.right === x && ts.isExpressionStatement(p.parent) ? p : undefined;
+  }
+
+  /** The leftmost operand of the \`+\` chain \`plus\` is part of, when that chain is a whole \`v = v + …\` right side. */
+  private appendLeftmost(plus: ts.BinaryExpression): ts.Expression | undefined {
+    const statement = this.appendStatementOf(plus);
+    if (!statement || !ts.isIdentifier(statement.left)) return undefined;
+    const sym = this.nameSymbol(statement.left);
+    if (!sym || !this.appendedOperands(statement.right, sym)) return undefined;
+    let x: ts.Expression = statement.right;
+    while (ts.isBinaryExpression(x) && x.operatorToken.kind === ts.SyntaxKind.PlusToken) x = x.left;
+    return x;
+  }
+
+  /** A string variable \`fn\` declares outside \`loop\`, which no function inside \`fn\` mentions. */
+  private appendable(sym: ts.Symbol, fn: ts.SignatureDeclaration, loop: ts.Node): boolean {
+    const decl = sym.valueDeclaration;
+    if (!decl || !(ts.isVariableDeclaration(decl) || ts.isParameter(decl)) || !ts.isIdentifier(decl.name)) return false;
+    if (ts.findAncestor(decl.parent, ts.isFunctionLike) !== fn || (decl.pos >= loop.pos && decl.end <= loop.end)) return false;
+    if (this.typeOf(decl.name) !== 'String' || this.declaredTypeOf(decl.name)?.endsWith('?')) return false;
+    if (!(this.checker.getTypeAtLocation(decl.name).flags & ts.TypeFlags.String)) return false;
+    let captured = false;
+    const visit = (n: ts.Node, inner: boolean): void => {
+      if (captured) return;
+      if (inner && ts.isIdentifier(n) && this.nameSymbol(n) === sym) { captured = true; return; }
+      ts.forEachChild(n, (c) => visit(c, inner || (ts.isFunctionLike(c) && c !== fn) || ts.isClassLike(c)));
+    };
+    visit(fn, false);
+    return !captured;
   }
 
   declarationList(list: ts.VariableDeclarationList, lowered: boolean): string {
@@ -5657,6 +5764,8 @@ export class Translator implements AsyncTranslator {
     const dot = e.questionDotToken || inChain ? '?.' : '.';
     const recv = () => this.receiver(target, name) ?? (base.endsWith('?') && !e.questionDotToken && !inChain && !this.isSelf(target) ? `${this.expr(target)}!!` : this.expr(target));
     if (name === 'length' && this.isString(target)) {
+      const builder = this.appendBuilderOf(target);
+      if (builder) return `${builder}.length.toDouble()`;
       return e.questionDotToken || inChain ? `${this.expr(target)}?.length?.toDouble()` : `${recv()}.length.toDouble()`;
     }
     if (name === 'length' && (base.startsWith('Pair<') || base.startsWith('Triple<'))) return base.startsWith('Pair<') ? '2.0' : '3.0';
@@ -7572,6 +7681,12 @@ export class Translator implements AsyncTranslator {
   private binary(e: ts.BinaryExpression): string {
     const op = e.operatorToken.kind;
     const K = ts.SyntaxKind;
+    const builder = this.appendBuilderOf(e.left);
+    if (builder && op === K.PlusEqualsToken) return `${builder}.append(${this.str(e.right)})`;
+    if (builder && op === K.EqualsToken) {
+      const operands = this.appendedOperands(e.right, this.nameSymbol(e.left as ts.Identifier)!)!;
+      return builder + operands.map((x) => `.append(${this.concatOperand(x)})`).join('');
+    }
     const l = () => this.expr(e.left);
     const r = () => this.expr(e.right);
     const target = () => this.lvalue(e.left);
