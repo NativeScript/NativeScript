@@ -6080,6 +6080,8 @@ export class Translator implements AsyncTranslator {
 
   private call(e: ts.CallExpression): string {
     const callee = e.expression;
+    const onPrototype = this.prototypeMethodCall(e);
+    if (onPrototype) return onPrototype;
     // A static method of a class whose instances are the kit's collection: its object's.
     const aliasClass = ts.isPropertyAccessExpression(callee) && ts.isIdentifier(callee.expression) ? this.resolve(callee.expression)?.valueDeclaration : undefined;
     if (!this.library && aliasClass && ts.isClassDeclaration(aliasClass) && this.collectionAlias(aliasClass)) return `${this.className(aliasClass)}.${ident((callee as ts.PropertyAccessExpression).name.text)}(${this.args(e).join(', ')})`;
@@ -6410,6 +6412,25 @@ export class Translator implements AsyncTranslator {
    * `f.call(thisArg, …)`, `f.bind(thisArg)` of a typed function: one declaring `this` takes it as its first
    * parameter; any other ignores it, as an arrow function does.
    */
+  /**
+   * `X.prototype.m.call(r, …)` and `X.prototype.m.apply(r, [ … ])` of a class the program declares: `m` called on `r`
+   * as an `X`. A compiled class keeps its methods on the class, not on its prototype object.
+   */
+  private prototypeMethodCall(e: ts.CallExpression): string | null {
+    const callee = e.expression;
+    if (!ts.isPropertyAccessExpression(callee) || !['call', 'apply'].includes(callee.name.text) || !e.arguments.length) return null;
+    const method = callee.expression;
+    if (!ts.isPropertyAccessExpression(method) || !ts.isPropertyAccessExpression(method.expression) || method.expression.name.text !== 'prototype') return null;
+    const cls = this.resolve(method.expression.expression)?.valueDeclaration;
+    if (!cls || !ts.isClassDeclaration(cls) || cls.getSourceFile().isDeclarationFile) return null;
+    const decl = cls.members.find((m): m is ts.MethodDeclaration => ts.isMethodDeclaration(m) && !isStatic(m) && !!m.body && m.name.getText() === method.name.text) ?? this.inheritedMethod(cls, method.name.text);
+    const rest = callee.name.text === 'call' ? e.arguments.slice(1) : e.arguments[1] && ts.isArrayLiteralExpression(e.arguments[1]) && !e.arguments[1].elements.some(ts.isSpreadElement) ? [...e.arguments[1].elements] : e.arguments.length === 1 ? [] : null;
+    if (!decl || !rest || decl.parameters.some((p) => p.dotDotDotToken) || rest.length > decl.parameters.length) return null;
+    const receiver = this.coerce(e.arguments[0], 'Any?');
+    const args = rest.map((a, k) => this.coerce(a, this.paramType(decl.parameters[k])));
+    return `${cast(receiver, this.className(cls))}.${this.methodIdent(method.name.text)}(${args.join(', ')})`;
+  }
+
   private boundCall(method: string, target: ts.Expression, e: ts.CallExpression): string | null {
     const member = this.checker.getSymbolAtLocation((e.expression as ts.PropertyAccessExpression).name);
     if (!member?.declarations?.every(isLibDeclaration)) return null;

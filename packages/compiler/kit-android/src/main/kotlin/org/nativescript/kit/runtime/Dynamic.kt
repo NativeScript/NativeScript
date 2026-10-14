@@ -68,11 +68,11 @@ fun <A, B, C, D, R> jsAdapt4(original: Any, body: (A, B, C, D) -> R): (A, B, C, 
 // A function value held untyped, as the Kotlin function type its TypeScript declaration gives. A Kotlin function's
 // parameter and result types are erased: the declaration is the contract, as it is in script.
 @Suppress("UNCHECKED_CAST")
-fun <R> jsFunction0(f: Any?): () -> R = (f as? Function0<Any?> ?: { jsCall(f) }) as () -> R
+fun <R> jsFunction0(f: Any?): () -> R = (if (f is JSMethod) JSMethodAs0(f) else f as? Function0<Any?> ?: { jsCall(f) }) as () -> R
 @Suppress("UNCHECKED_CAST")
-fun <A, R> jsFunction1(f: Any?): (A) -> R = (f as? Function1<Any?, Any?> ?: { a: Any? -> jsCall(f, a) }) as (A) -> R
+fun <A, R> jsFunction1(f: Any?): (A) -> R = (if (f is JSMethod) JSMethodAs1(f) else f as? Function1<Any?, Any?> ?: { a: Any? -> jsCall(f, a) }) as (A) -> R
 @Suppress("UNCHECKED_CAST")
-fun <A, B, R> jsFunction2(f: Any?): (A, B) -> R = (f as? Function2<Any?, Any?, Any?> ?: { a: Any?, b: Any? -> jsCall(f, a, b) }) as (A, B) -> R
+fun <A, B, R> jsFunction2(f: Any?): (A, B) -> R = (if (f is JSMethod) JSMethodAs2(f) else f as? Function2<Any?, Any?, Any?> ?: { a: Any?, b: Any? -> jsCall(f, a, b) }) as (A, B) -> R
 @Suppress("UNCHECKED_CAST")
 fun <A, B, C, R> jsFunction3(f: Any?): (A, B, C) -> R =
     (f as? Function3<Any?, Any?, Any?, Any?> ?: { a: Any?, b: Any?, c: Any? -> jsCall(f, a, b, c) }) as (A, B, C) -> R
@@ -88,6 +88,26 @@ fun <A, B, C, D, E, F, R> jsFunction6(f: Any?): (A, B, C, D, E, F) -> R =
 @Suppress("UNCHECKED_CAST")
 fun <A, B, C, D, E, F, G, R> jsFunction7(f: Any?): (A, B, C, D, E, F, G) -> R =
     (f as? Function7<Any?, Any?, Any?, Any?, Any?, Any?, Any?, Any?> ?: { a: Any?, b: Any?, c: Any?, d: Any?, e: Any?, g: Any?, h: Any? -> jsCall(f, a, b, c, d, e, g, h) }) as (A, B, C, D, E, F, G) -> R
+
+/**
+ * A method (`Object.prototype.hasOwnProperty`) held as a typed function: called as one, its `this` is undefined, and
+ * `call`, `apply` and `bind` (jsCallMethod) still give it the receiver they name.
+ */
+interface JSMethodHolder {
+    val method: JSMethod
+}
+
+private class JSMethodAs0(override val method: JSMethod) : JSMethodHolder, () -> Any? {
+    override fun invoke(): Any? = method.call(null, arrayOf())
+}
+
+private class JSMethodAs1(override val method: JSMethod) : JSMethodHolder, (Any?) -> Any? {
+    override fun invoke(a: Any?): Any? = method.call(null, arrayOf(a))
+}
+
+private class JSMethodAs2(override val method: JSMethod) : JSMethodHolder, (Any?, Any?) -> Any? {
+    override fun invoke(a: Any?, b: Any?): Any? = method.call(null, arrayOf(a, b))
+}
 
 /** `value` read by `read`, or null when it is undefined or null. */
 inline fun <T> jsUnlessNullish(value: Any?, read: (Any?) -> T): T? = if (jsIsNullish(value)) null else read(value)
