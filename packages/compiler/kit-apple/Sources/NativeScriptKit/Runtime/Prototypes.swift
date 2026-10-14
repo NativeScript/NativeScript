@@ -1,4 +1,5 @@
 import Foundation
+import os
 
 /// `Cls.prototype` as script reaches it, for classes compiled in the kit generated from
 /// core: the accessors and values `Object.defineProperty(Cls.prototype, …)` and
@@ -62,11 +63,18 @@ public enum JSPrototypes {
         return p
     }
 
+    /// `Cls.prototype.key = value` in an app's code.
+    public static func setValue(_ cls: AnyClass, _ key: String, _ value: Any?) {
+        of(cls)[key] = value
+        keysChanged()
+    }
+
     /// The accessors a class declares (`get text()`, `set text(v)`): its prototype's own properties.
     public static func declare(_ cls: AnyClass, _ key: String, get: ((Any?) throws -> Any?)?, set: ((Any?, Any?) throws -> Void)?) {
         let d = JSPropertyDescriptor(get: get, set: set, enumerable: false, configurable: true)
         declared[ObjectIdentifier(cls), default: []].append((key, d))
         if let p = table[ObjectIdentifier(cls)] { try? p.defineProperty(key, d) }
+        keysChanged()
     }
 
     /// The prototype a built-in kind of value has (`Array.prototype`), its own object.
@@ -90,9 +98,32 @@ public enum JSPrototypes {
     /// The class Swift's own root classes extend, which no script class corresponds to.
     private static func isRoot(_ cls: AnyClass) -> Bool { NSStringFromClass(cls) == "_TtCs12_SwiftObject" }
 
+    /// What `holder` found for each class and key, kept until a class prototype's keys change. An instance's
+    /// lookup by name (`view[name]`, `name in view.style`) would otherwise test each prototype of its class chain.
+    private static let holders = OSAllocatedUnfairLock(initialState: (found: [JSClassKey: JSObject?](), generation: 0))
+
+    /// Script added, deleted or redefined a key on a class prototype (or a class declared an accessor).
+    static func keysChanged() {
+        holders.withLock { $0 = (found: [:], generation: $0.generation &+ 1) }
+    }
+
     /// The nearest prototype in a class's chain that has the key.
     static func holder(_ cls: AnyClass, _ key: String) -> JSObject? {
         if table.isEmpty && declared.isEmpty { return nil }
+        let id = JSClassKey(cls: ObjectIdentifier(cls), key: key)
+        let (known, generation) = holders.withLock { ($0.found[id], $0.generation) }
+        if let known { return known }
+        let found = walk(cls, key)
+        holders.withLock {
+            guard $0.generation == generation else { return }
+            // Bounded: an instance script uses as a map looks up each new key it sets.
+            if $0.found.count >= 4096 { $0.found.removeAll(keepingCapacity: true) }
+            $0.found[id] = .some(found)
+        }
+        return found
+    }
+
+    private static func walk(_ cls: AnyClass, _ key: String) -> JSObject? {
         var c: AnyClass? = cls
         while let k = c {
             let id = ObjectIdentifier(k)

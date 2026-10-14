@@ -75,6 +75,7 @@ object JSPrototypes {
         val d = JSPropertyDescriptor(get = get, set = set, enumerable = false, configurable = true)
         declared.computeIfAbsent(cls) { CopyOnWriteArrayList() }.add(Pair(key, d))
         table[cls]?.let { try { it.defineProperty(key, d) } catch (_: JSException) {} }
+        keysChanged()
     }
 
     /** The class whose prototype an object is, null for any other object. */
@@ -91,9 +92,34 @@ object JSPrototypes {
         return objectPrototype
     }
 
+    /**
+     * What `holder` found for each class and key, kept until a class prototype's keys change. An instance's lookup by
+     * name (`view[name]`, `name in view.style`) would otherwise test each prototype of its class chain. Replaced, not
+     * cleared, on a change: a lookup racing it stores into the map it read.
+     */
+    @Volatile private var holders = ConcurrentHashMap<Class<*>, ConcurrentHashMap<String, Any>>()
+    private val NONE = Any()
+
+    /** Script added, deleted or redefined a key on a class prototype (or a class declared an accessor). */
+    internal fun keysChanged() {
+        holders = ConcurrentHashMap()
+    }
+
     /** The nearest prototype in a class's chain that has the key. */
     fun holder(cls: Class<*>, key: String): JSObject? {
         if (table.isEmpty() && declared.isEmpty()) return null
+        val known = holders
+        val byKey = known[cls] ?: known.computeIfAbsent(cls) { ConcurrentHashMap() }
+        val found = byKey[key]
+        if (found != null) return if (found === NONE) null else found as JSObject
+        val p = walk(cls, key)
+        // Bounded: an instance script uses as a map looks up each new key it sets.
+        if (byKey.size >= 4096) byKey.clear()
+        byKey[key] = p ?: NONE
+        return p
+    }
+
+    private fun walk(cls: Class<*>, key: String): JSObject? {
         var c: Class<*>? = cls
         while (c != null) {
             val p = table[c] ?: if (declared.containsKey(c)) of(c) else null

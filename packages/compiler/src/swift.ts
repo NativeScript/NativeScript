@@ -4389,6 +4389,11 @@ ${members.join('\n')}
     // Library mode: a registered property's value reaches its accessor as it is, which converts it (`col = "1"`).
     const raw = new Set(this.library ? fields.filter((f) => this.properties?.isRegistered(cls, f.name) || this.properties?.isRegisteredAnywhere(f.name)).map((f) => f.name) : []);
     const symbolKeyedBase = !!kitRoot || this.inheritsSymbolKeyed(cls);
+    // A registered property's name read or written by name (`view[name]`, Observable.set) stops at the class registering it.
+    for (const typed of this.library ? this.members?.of(cls) ?? [] : []) {
+      const member = `${this.className(cls)}.${typedMemberName(cls, typed.name)}`;
+      dynAccessors.push({ name: typed.name, get: `${member}.read(self)`, set: `${member}.write(self, newValue)` });
+    }
     // Script knows the class by its own name, not the one Swift's module gives it apart from another of that name.
     // An Error subclass keeps JSError's class name, which is the error's `name`.
     if (isError) lines.push(...this.dynamicMembers(fields, null, true, dynMethods, symbolFields, false, raw, dynAccessors, false).filter((l) => !l.includes(' var jsClassName: ')));
@@ -9503,7 +9508,7 @@ ${members.join('\n')}
       const sym = this.resolve(left.expression.expression);
       if (sym && sym.flags & ts.SymbolFlags.Class) {
         const cls = this.type(this.checker.getDeclaredTypeOfSymbol(sym), e).replace(/<.*$/, '');
-        return `JSPrototypes.of(${cls}.self)[${swiftString(left.name.text)}] = ${this.coerce(right, 'Any?')}`;
+        return `JSPrototypes.setValue(${cls}.self, ${swiftString(left.name.text)}, ${this.coerce(right, 'Any?')})`;
       }
     }
     if (ts.isPropertyAccessExpression(left) && this.symbolName(left.expression) === 'VueRef' && left.name.text === 'value') return `${this.lvalue(left)} = ${this.signalWrite(left.expression, right, this.typeOf(left))}`;

@@ -637,6 +637,7 @@ public func jsSet(_ object: Any?, _ key: String, _ value: Any?) throws {
         throw JSException(JSTypeError("Cannot set properties of null (setting '\(key)')"))
     case let plain as JSObject:
         try plain.put(key, value)
+        if JSPrototypes.owner(of: plain) != nil { JSPrototypes.keysChanged() }
     case let dynamic as JSDynamic:
         let level = jsRestriction(dynamic)
         if level > 0 {
@@ -727,6 +728,7 @@ public func jsObjectAssign<T: JSDynamic>(_ target: T, _ sources: Any?...) -> T {
             break
         }
     }
+    if let o = target as? JSObject, JSPrototypes.owner(of: o) != nil { JSPrototypes.keysChanged() }
     return target
 }
 

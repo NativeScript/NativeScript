@@ -212,7 +212,13 @@ class JSWeakSet<T>() : JSWeakCollection {
 
 /** `delete object[key]`. */
 fun jsDelete(target: Any?, key: String): Boolean = when (val v = jsBox(target)) {
-    is JSObject -> if (v.delete(key)) { JSPrototypes.ownerOf(v)?.let { JSTypedMembers.prototypeChanged(it, key, null) }; true } else throw JSException(JSTypeError("Cannot delete property '$key' of #<Object>"))
+    is JSObject -> if (v.delete(key)) {
+        JSPrototypes.ownerOf(v)?.let {
+            JSTypedMembers.prototypeChanged(it, key, null)
+            JSPrototypes.keysChanged()
+        }
+        true
+    } else throw JSException(JSTypeError("Cannot delete property '$key' of #<Object>"))
     is JSDeletable -> v.jsDelete(key)
     is JSDynamic -> if (jsRestriction(v) >= 2 && key in v.jsKeys) throw JSException(JSTypeError("Cannot delete property '$key' of #<Object>")) else true
     else -> true
@@ -327,7 +333,10 @@ fun jsDefineProperty(target: Any?, key: String, descriptor: Any?): Any? {
     when (val v = jsBox(target)) {
         is JSObject -> {
             v.defineProperty(key, d)
-            JSPrototypes.ownerOf(v)?.let { JSTypedMembers.prototypeChanged(it, key, d) }
+            JSPrototypes.ownerOf(v)?.let {
+                JSTypedMembers.prototypeChanged(it, key, d)
+                JSPrototypes.keysChanged()
+            }
         }
         is JSExpando -> {
             (v.jsExpando ?: JSObject().also { v.jsExpando = it }).defineProperty(key, d)

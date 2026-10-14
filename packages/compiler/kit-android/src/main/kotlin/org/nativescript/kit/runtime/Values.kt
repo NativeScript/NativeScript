@@ -297,7 +297,10 @@ fun jsSet(target: Any?, key: String, value: Any?) {
     when (target) {
         null -> throw JSException(JSTypeError("Cannot set properties of undefined (setting '$key')"))
         JSNull -> throw JSException(JSTypeError("Cannot set properties of null (setting '$key')"))
-        is JSObject -> target.put(key, value)
+        is JSObject -> {
+            target.put(key, value)
+            if (JSPrototypes.ownerOf(target) != null) JSPrototypes.keysChanged()
+        }
         is JSDynamic -> {
             val level = jsRestriction(target)
             if (level > 0) {

@@ -16,7 +16,10 @@ public func jsDelete(_ object: Any?, _ key: String) throws -> Bool {
     switch jsFlat(object) {
     case let o as JSObject:
         if !o.delete(key) { throw JSException(JSTypeError("Cannot delete property '\(key)' of #<Object>")) }
-        if let cls = JSPrototypes.owner(of: o) { JSTypedMembers.prototypeChanged(cls, key, nil) }
+        if let cls = JSPrototypes.owner(of: o) {
+            JSTypedMembers.prototypeChanged(cls, key, nil)
+            JSPrototypes.keysChanged()
+        }
         return true
     case let d as JSDynamic where jsRestriction(d) >= 2 && d.jsKeys.contains(key):
         throw JSException(JSTypeError("Cannot delete property '\(key)' of #<Object>"))
@@ -179,7 +182,10 @@ public func jsDefineProperty(_ object: Any?, _ key: String, _ descriptor: Any?) 
     switch jsFlat(object) {
     case let o as JSObject:
         try o.defineProperty(key, d)
-        if let cls = JSPrototypes.owner(of: o) { JSTypedMembers.prototypeChanged(cls, key, d) }
+        if let cls = JSPrototypes.owner(of: o) {
+            JSTypedMembers.prototypeChanged(cls, key, d)
+            JSPrototypes.keysChanged()
+        }
     case let expando as JSExpando:
         if expando.jsExpando == nil { expando.jsExpando = JSObject() }
         try expando.jsExpando!.defineProperty(key, d)

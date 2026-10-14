@@ -1865,8 +1865,10 @@ export class Translator implements AsyncTranslator {
   }
 
   /** `JSDynamic`: the object's keys and members by name, for printing, JSON and untyped access. */
-  private dynamicMembers(fields: { name: string; type: string }[], className: string | null, inherits: boolean, fallbackGet = 'null', fallbackSet = '', symbols: { key: string; member: string; type: string }[] = [], methods: { name: string; key?: string; params: string[]; ret: string }[] = [], expando = false, accessors: { name: string; type: string; readable: boolean; settable: boolean }[] = [], superclass?: string): string[] {
-    accessors = accessors.filter((a) => !fields.some((f) => f.name === a.name) && !methods.some((m) => m.name === a.name));
+  private dynamicMembers(fields: { name: string; type: string }[], className: string | null, inherits: boolean, fallbackGet = 'null', fallbackSet = '', symbols: { key: string; member: string; type: string }[] = [], methods: { name: string; key?: string; params: string[]; ret: string }[] = [], expando = false, accessors: { name: string; type: string; readable: boolean; settable: boolean }[] = [], superclass?: string, typed: { name: string; member: string }[] = []): string[] {
+    accessors = accessors.filter((a) => !fields.some((f) => f.name === a.name) && !methods.some((m) => m.name === a.name) && !typed.some((t) => t.name === a.name));
+    // A registered property's name read or written by name (`view[name]`, Observable.set) stops at the class registering it, with the value as it is.
+    const untyped = fields.filter((f) => !typed.some((t) => t.name === f.name));
     const members = [...new Set([...accessors.map((a) => accessorKey(a.name)), ...methods.filter((m) => !m.key).map((m) => m.name)])];
     const keys = [...fields.map((f) => (isNullable(f.type) ? `(if (${ident(f.name)} == null) listOf() else listOf(${kotlinString(f.name)}))` : `listOf(${kotlinString(f.name)})`)), ...(expando ? ['(jsExpando?.jsKeys ?: listOf())'] : [])];
     // A method read by name is a script function calling it with the arguments it is given.
@@ -1880,8 +1882,9 @@ export class Translator implements AsyncTranslator {
       ...(symbols.length ? [`    override val jsSymbolKeys: List<String> get() = listOf(${symbols.map((f) => f.key).join(', ')})`] : []),
       `    override val jsClassName: String? get() = ${className ? kotlinString(className) : 'null'}`,
       `    override fun jsGet(key: String): Any? = when (key) {`,
+      ...typed.map((t) => `        ${kotlinString(t.name)} -> ${t.member}.read(this)`),
       // A field Kotlin declares `lateinit` (an object type, unset): undefined until set.
-      ...fields.map((f) => (!this.library && !isNullable(f.type) && this.zero(f.type) === null && f.type !== 'Unit' && !/^[A-Z]$/.test(f.type) ? `        ${kotlinString(f.name)} -> jsUnsetIsUndefined { this.${ident(f.name)} }` : `        ${kotlinString(f.name)} -> this.${ident(f.name)}`)),
+      ...untyped.map((f) => (!this.library && !isNullable(f.type) && this.zero(f.type) === null && f.type !== 'Unit' && !/^[A-Z]$/.test(f.type) ? `        ${kotlinString(f.name)} -> jsUnsetIsUndefined { this.${ident(f.name)} }` : `        ${kotlinString(f.name)} -> this.${ident(f.name)}`)),
       ...accessors.filter((a) => a.readable).map((a) => `        ${kotlinString(accessorKey(a.name))} -> this.${ident(a.name)}`),
       ...symbols.map((f) => `        ${f.key} -> this.${f.member}`),
       ...methods.filter((m) => !fields.some((f) => f.name === m.name)).map(method),
@@ -1889,8 +1892,9 @@ export class Translator implements AsyncTranslator {
       '    }',
       `    override fun jsSet(key: String, value: Any?) {`,
       '        when (key) {',
+      ...typed.map((t) => `            ${kotlinString(t.name)} -> ${t.member}.write(this, value)`),
       // A registered property's accessor is the prototype's, which converts what script sets (`col = "1"`): the value as it is.
-      ...fields.map((f) => `            ${kotlinString(f.name)} -> ${(f as { expando?: boolean }).expando ? `jsExpandoSet(this, ${kotlinString(f.name)}, value)` : `this.${ident(f.name)} = ${this.fromAny('value', f.type)}`}`),
+      ...untyped.map((f) => `            ${kotlinString(f.name)} -> ${(f as { expando?: boolean }).expando ? `jsExpandoSet(this, ${kotlinString(f.name)}, value)` : `this.${ident(f.name)} = ${this.fromAny('value', f.type)}`}`),
       // A setter takes what script gives it (`textWrap = "true"`): as JavaScript reads it as the setter's type.
       ...accessors.filter((a) => a.settable).map((a) => `            ${kotlinString(accessorKey(a.name))} -> this.${ident(a.name)} = ${a.type === 'Boolean' ? 'jsTruthy(value)' : a.type === 'Double' ? 'jsToNumber(value)' : this.fromAnyCode('value', a.type, true)}`),
       ...symbols.map((f) => `            ${f.key} -> this.${f.member} = ${this.fromAny('value', f.type)}`),
@@ -3059,7 +3063,8 @@ export class Translator implements AsyncTranslator {
         dynMethods.push({ name: n, params: root.parameters.map((p) => this.paramType(p)), ret: this.returnTypeOf(root) });
       }
     }
-    if (!isError) lines.push(...this.dynamicMembers(fields, name, !!appBase || !!kitRoot, expando ? 'jsExpandoGet(this, key)' : 'null', expando ? 'jsExpandoSet(this, key, value)' : '', symbolFields, dynMethods, expando, dynAccessors, base?.replace(/<.*$/, '')));
+    const typedByName = (this.library ? this.members?.of(cls) ?? [] : []).map((t) => ({ name: t.name, member: `${this.className(cls)}.${typedMemberName(t.name)}` }));
+    if (!isError) lines.push(...this.dynamicMembers(fields, name, !!appBase || !!kitRoot, expando ? 'jsExpandoGet(this, key)' : 'null', expando ? 'jsExpandoSet(this, key, value)' : '', symbolFields, dynMethods, expando, dynAccessors, base?.replace(/<.*$/, ''), typedByName));
     // An error's own fields by name, after JSError's `name`/`message`/`stack`; what script adds to it comes after the fields, and it prints as an error, not as `Name { … }`.
     else lines.push(...this.dynamicMembers(fields, name, true, 'null', '', symbolFields, dynMethods, false, dynAccessors, base!.replace(/<.*$/, ''))
       .filter((l) => !l.startsWith('    override val jsClassName'))
