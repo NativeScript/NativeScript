@@ -3,7 +3,7 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { isCoreDeclaration, unappliedProperty } from './core.ts';
 import { kitExtends, kitMember, readNames, type KitMember, type KitType } from './kit-index.ts';
-import { KIT_NAMES_ANDROID, functionTypeParts, kotlinString, numberLiteral, splitTopLevel, type KotlinCore, type Translator } from './kotlin.ts';
+import { KIT_NAMES_ANDROID, asserted, functionTypeParts, isAsserted, kotlinString, numberLiteral, splitTopLevel, type KotlinCore, type Translator } from './kotlin.ts';
 import { KIT_ANDROID } from './paths.ts';
 
 /** The pseudo-type whose members are kit-android's public top-level functions (`getRootLayout`). */
@@ -492,7 +492,7 @@ export class CoreKotlin implements KotlinCore {
     if (code === 'super' || code === 'this') return code;
     const key = access.name.text;
     const write = ts.isBinaryExpression(access.parent) && access.parent.left === access && access.parent.operatorToken.kind >= ts.SyntaxKind.FirstAssignment && access.parent.operatorToken.kind <= ts.SyntaxKind.LastAssignment;
-    if (code.endsWith('!!')) return this.t.present(code, key, target, write);
+    if (isAsserted(code)) return this.t.present(code, key, target, write);
     // A core variable the kit holds nullable until core sets it (`Application`).
     if (ts.isIdentifier(target) && code === target.text && isCoreDeclaration(this.t.resolve(target)?.declarations?.[0]) && kitMember(this.index, TOP_LEVEL, code)?.type.endsWith('?')) return access.questionDotToken ? `${code}?` : this.t.present(code, key, target, write);
     const nullable = this.t.typeOf(target).endsWith('?');
@@ -755,7 +755,7 @@ export class CoreKotlin implements KotlinCore {
     if (this.generated && kb !== tb && this.index.has(tb) && (kb === 'Any' || kitExtends(this.index, tb, kb))) return `(${code} as ${tb}${k.endsWith('?') && (tsType.endsWith('?') || keepNull) ? '?' : ''})`;
     if (k.endsWith('?') && !tsType.endsWith('?') && tsType !== 'Any?') {
       const zero = tsType === 'String' ? '""' : tsType === 'Double' ? '0.0' : tsType === 'Boolean' ? 'false' : null;
-      return zero ? `(${code} ?: ${zero})` : keepNull ? code : `${code}!!`;
+      return zero ? `(${code} ?: ${zero})` : keepNull ? code : asserted(code);
     }
     return code;
   }

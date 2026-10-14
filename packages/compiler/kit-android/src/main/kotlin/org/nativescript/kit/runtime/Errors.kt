@@ -133,5 +133,8 @@ fun jsCannotReadNull(key: String): Nothing = throw JSException(JSTypeError("Cann
 /** `x.key = v` where x is undefined. */
 fun jsCannotSet(key: String): Nothing = throw JSException(JSTypeError("Cannot set properties of undefined (setting '$key')"))
 
+/** Undefined where code goes on with an object its type promised: V8's TypeError for an object missing. */
+fun jsObjectRequired(): Nothing = throw JSException(JSTypeError("Cannot convert undefined or null to object"))
+
 /** `f()` where f, as the source writes it, holds no function. */
 fun jsNotAFunction(callee: String): Nothing = throw JSException(JSTypeError("$callee is not a function"))

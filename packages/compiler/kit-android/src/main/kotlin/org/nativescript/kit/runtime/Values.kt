@@ -1,5 +1,8 @@
 package org.nativescript.kit
 
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.contract
+
 // Values as translated TypeScript holds them: `any`/`unknown` is `Any?`, Kotlin's
 // `null` is `undefined`, `jsNull` is `null`, numbers are `Double`, `void` is `Unit`,
 // objects are classes compared by identity, functions are Kotlin function values.
@@ -421,14 +424,18 @@ inline fun <T> jsOr(value: T, otherwise: () -> T): T = if (jsTruthy(value)) valu
 /** `value && then`: what `then` gives where the value is truthy, run only then, else the value. */
 inline fun <T> jsAnd(value: T, then: () -> T): T = if (jsTruthy(value)) then() else value
 
-/** JavaScript truthiness: false for undefined, null, false, 0, -0, NaN and "". */
-fun jsTruthy(value: Any?): Boolean = when (value) {
-    null, Unit, JSNull -> false
-    is Boolean -> value
-    is Double -> value != 0.0 && !value.isNaN()
-    is String -> value.isNotEmpty()
-    is JSBigInt -> !value.isZero
-    else -> jsNumeric(value)?.let { it != 0.0 && !it.isNaN() } ?: true
+/** JavaScript truthiness: false for undefined, null, false, 0, -0, NaN and "". Where it holds, the value is not null, so Kotlin smart-casts a tested local. */
+@OptIn(ExperimentalContracts::class)
+fun jsTruthy(value: Any?): Boolean {
+    contract { returns(true) implies (value != null) }
+    return when (value) {
+        null, Unit, JSNull -> false
+        is Boolean -> value
+        is Double -> value != 0.0 && !value.isNaN()
+        is String -> value.isNotEmpty()
+        is JSBigInt -> !value.isZero
+        else -> jsNumeric(value)?.let { it != 0.0 && !it.isNaN() } ?: true
+    }
 }
 
 /** `a === b`: numbers by value (NaN unequal to itself, -0 equal to +0), strings by code units, objects by identity. */
