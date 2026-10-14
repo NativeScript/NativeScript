@@ -767,9 +767,13 @@ public func jsTypeof(_ value: Any?) -> String {
     }
 }
 
-/// `value === undefined || value === null`.
 /// A `void` value as script holds it: undefined. Boxing `()` itself would give a value that isn't nil.
 @inline(__always) public func jsUndefined(_: Void) -> Any? { nil }
+
+/// What a function TypeScript types `void` returned through a dynamic call: kept, as JavaScript keeps it (a promise core checks for).
+@inline(__always) public func jsUndefined(_ value: Any?) -> Any? { value }
+
+/// `value === undefined || value === null`.
 
 public func jsIsNullish(_ value: Any?) -> Bool {
     let v = jsFlat(value)
