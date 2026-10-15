@@ -381,7 +381,7 @@ export class AttributeSelector extends SimpleSelector {
 		let attr = node[this.attribute];
 
 		if (this.test === 'exists') {
-			return !isNullOrUndefined(attr);
+			return !isNullOrUndefined(attr) && attr !== false;
 		}
 
 		if (!this.value) {
@@ -983,7 +983,7 @@ function appendDeclaration(declarations: Declaration[], decl: ReworkCSS.Declarat
 
 function createSimpleSelectorFromAst(ast: CSSWhatSelector): SimpleSelector {
 	if (ast.type === 'attribute') {
-		if (ast.name === 'class') {
+		if (ast.name === 'class' && ast.action === 'element' && ast.ignoreCase !== true) {
 			return new ClassSelector(ast.value);
 		}
 
