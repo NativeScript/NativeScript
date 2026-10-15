@@ -7065,7 +7065,12 @@ ${members.join('\n')}
     if (ts.isSpreadAssignment(p) || (ts.isPropertyDeclaration(p) && p.initializer === x)) return true;
     if (ts.isReturnStatement(p)) {
       const fn = ts.findAncestor(p, ts.isFunctionLike);
-      return !!fn && (ts.isFunctionDeclaration(fn) || ((ts.isMethodDeclaration(fn) || ts.isGetAccessorDeclaration(fn)) && !ts.isObjectLiteralExpression(fn.parent))) && !this.inNativeClass(fn);
+      if (!fn || !(ts.isFunctionDeclaration(fn) || ((ts.isMethodDeclaration(fn) || ts.isGetAccessorDeclaration(fn)) && !ts.isObjectLiteralExpression(fn.parent)))) return false;
+      if (!this.inNativeClass(fn)) return true;
+      // A native class's own getter is optional as lenient code's are; a native member's or own method's result is as declared.
+      if (ts.isGetAccessorDeclaration(fn) && !this.native.nativeGetter(fn)) return true;
+      const result = this.returnTypeOf(fn);
+      return isOptional(result) || result === 'Any?';
     }
     if ((ts.isCallExpression(p) || ts.isNewExpression(p)) && p.expression !== x) {
       const k = p.arguments?.indexOf(x as ts.Expression) ?? -1;

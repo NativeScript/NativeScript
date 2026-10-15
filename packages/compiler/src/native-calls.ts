@@ -322,6 +322,38 @@ export class NativeAPI {
     return null;
   }
 
+  /** The Objective-C protocols a class adopts: `implements`, `@ObjCClass(…)` and `ObjCProtocols`. */
+  private adoptedProtocols(cls: ts.ClassLikeDeclaration): { module: string; name: string; swift: string }[] {
+    const t = this.t;
+    const protocols: { module: string; name: string; swift: string }[] = [];
+    const addProtocol = (e: ts.Expression) => {
+      const p = this.symbolModule(t.resolve(e));
+      const pc = p && lookupClass(p.module, p.name);
+      if (!p || !pc || pc.kind !== 'protocol') throw t.error(e, `${e.getText()} (not an Objective-C protocol)`);
+      if (!protocols.some((x) => x.name === p.name)) protocols.push({ ...p, swift: pc.swift });
+    };
+    for (const i of cls.heritageClauses?.find((h) => h.token === ts.SyntaxKind.ImplementsKeyword)?.types ?? []) addProtocol(i.expression);
+    for (const d of ts.getDecorators(cls) ?? []) if (ts.isCallExpression(d.expression) && d.expression.expression.getText() === 'ObjCClass') d.expression.arguments.forEach(addProtocol);
+    const listed = cls.members.find((m): m is ts.PropertyDeclaration => ts.isPropertyDeclaration(m) && m.name.getText() === 'ObjCProtocols' && ts.getModifiers(m)?.some((x) => x.kind === ts.SyntaxKind.StaticKeyword) === true);
+    if (listed?.initializer && ts.isArrayLiteralExpression(listed.initializer)) for (const e of listed.initializer.elements) addProtocol(e);
+    return protocols;
+  }
+
+  /** The property named `n` that a native base or an adopted protocol declares (`UIApplicationDelegate.window`), if any. */
+  private nativeProperty(base: { module: string; name: string }, protocols: { module: string; name: string }[], n: string) {
+    const fromBase = this.found(lookupMember(base.module, base.name, n, false));
+    const native = fromBase?.kind === 'property' ? fromBase : protocols.map((p) => lookupMember(p.module, p.name, n, false)).find((m) => m?.kind === 'property') ?? fromBase;
+    return { native: native?.kind === 'property' ? native : null, viaProtocol: native !== fromBase };
+  }
+
+  /** Whether a getter of a class extending a native one is a native property's, which Swift types as the SDK does. */
+  nativeGetter(get: ts.GetAccessorDeclaration): boolean {
+    const cls = get.parent;
+    const heritage = ts.isClassLike(cls) ? cls.heritageClauses?.find((h) => h.token === ts.SyntaxKind.ExtendsKeyword)?.types[0] : undefined;
+    const base = heritage && this.symbolModule(this.t.resolve(heritage.expression));
+    return !!base && !!this.nativeProperty(base, this.adoptedProtocols(cls as ts.ClassLikeDeclaration), get.name.getText()).native;
+  }
+
   /** A call of an app class's override of its native base's method: Swift calls it by the native signature. */
   overrideCall(e: ts.CallExpression): boolean {
     return ts.isPropertyAccessExpression(e.expression) && this.appMember(e.expression.name) && this.nativeOverride(e.expression.name);
@@ -1388,19 +1420,9 @@ export class NativeAPI {
     if (!baseCls) throw t.error(heritage, `extending ${base.name} (no Swift class)`);
     // A namespace's class is declared inside the namespace's enum, by its own name.
     const name = ts.isModuleBlock(cls.parent) ? cls.name!.text : t.topName(cls, cls.name!.text);
-    const protocols: { module: string; name: string; swift: string }[] = [];
-    const addProtocol = (e: ts.Expression) => {
-      const p = this.symbolModule(t.resolve(e));
-      const pc = p && lookupClass(p.module, p.name);
-      if (!p || !pc || pc.kind !== 'protocol') throw t.error(e, `${e.getText()} (not an Objective-C protocol)`);
-      if (!protocols.some((x) => x.name === p.name)) protocols.push({ ...p, swift: pc.swift });
-    };
-    for (const i of cls.heritageClauses?.find((h) => h.token === ts.SyntaxKind.ImplementsKeyword)?.types ?? []) addProtocol(i.expression);
+    const protocols = this.adoptedProtocols(cls);
     const statics = cls.members.filter((m): m is ts.PropertyDeclaration => ts.isPropertyDeclaration(m) && !!m.initializer && ts.getModifiers(m)?.some((x) => x.kind === ts.SyntaxKind.StaticKeyword) === true);
-    // `@ObjCClass(UIScrollViewDelegate)`: protocols the class adopts, as ObjCProtocols lists them.
-    for (const d of ts.getDecorators(cls) ?? []) if (ts.isCallExpression(d.expression) && d.expression.expression.getText() === 'ObjCClass') d.expression.arguments.forEach(addProtocol);
     const listed = statics.find((m) => m.name.getText() === 'ObjCProtocols');
-    if (listed && ts.isArrayLiteralExpression(listed.initializer!)) for (const e of listed.initializer.elements) addProtocol(e);
     const exposedSpec = statics.find((m) => m.name.getText() === 'ObjCExposedMethods');
     const exposed = new Set(exposedSpec && ts.isObjectLiteralExpression(exposedSpec.initializer!) ? exposedSpec.initializer.properties.map((p) => p.name!.getText()) : []);
 
@@ -1430,10 +1452,7 @@ export class NativeAPI {
     }
     for (const [n, a] of accessors) {
       // A property the native base declares (`preferredStatusBarStyle`): its Swift override, the body's value converted, what it throws reported.
-      const fromBase = this.found(lookupMember(base.module, base.name, n, false));
-      // A property the native base or an adopted protocol declares (`UIApplicationDelegate.window`).
-      const native = fromBase?.kind === 'property' ? fromBase : protocols.map((p) => lookupMember(p.module, p.name, n, false)).find((m) => m?.kind === 'property') ?? fromBase;
-      const viaProtocol = native !== fromBase;
+      const { native, viaProtocol } = this.nativeProperty(base, protocols, n);
       if (native && native.kind === 'property' && a.get) {
         // Lenient code: an object the getter gives may be undefined, which an optional native property takes as nil.
         const declared = t.returnTypeOf(a.get);
@@ -1456,7 +1475,7 @@ export class NativeAPI {
         continue;
       }
       const type = a.get ? t.returnTypeOf(a.get) : optionalType(t.typeOf(a.set!.parameters[0].name));
-      const parts = [a.get ? `        get${t.throwsInfo.fn(a.get) ? ' throws' : ''} ${t.functionBody(a.get, type, '        ')}` : '        get { nil }'];
+      const parts = [a.get ? `        get${t.throwsInfo.fn(a.get) ? ' throws' : ''} ${t.functionBody(a.get, t.lenientRef(type), '        ')}` : '        get { nil }'];
       if (a.set) {
         const p = a.set.parameters[0].name as ts.Identifier;
         const body = t.functionBody(a.set, 'Void', '        ');
