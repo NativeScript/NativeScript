@@ -112,7 +112,7 @@ open class JSIterator<Element>: JSIterable<Element>, JSIteratorProtocol, Sequenc
         }
     }
 
-    public var jsCurrent: Element { jsCast(current, to: Element.self) ?? (current as! Element) }
+    public var jsCurrent: Element { jsConverted(current, to: Element.self) ?? (current as! Element) }
 
     /// IteratorClose for a loop leaving early (`break`, `return`, a throw): `return()` if it has one.
     public func jsClose() {

@@ -59,25 +59,25 @@ public func jsNullishCoalesce(_ a: Any?, _ b: @autoclosure () throws -> Any?) re
 }
 
 /// An untyped value read as an array whose elements convert with `element`.
-public func jsArrayOf<T>(_ value: Any?, _ element: (Any?) -> T) -> JSArray<T> {
+public func jsArrayOf<T>(_ value: Any?, _ element: (Any?) throws -> T) rethrows -> JSArray<T> {
     // An array of the type already is the same array: what is written through either is in both.
     if let same = jsFlat(value) as? JSArray<T> { return same }
     guard let array = value as? JSArrayProtocol else { return JSArray<T>() }
-    return JSArray(array.jsAnyElements.map(element))
+    return JSArray(try array.jsAnyElements.map(element))
 }
 
 /// `jsArrayOf` for code that may hold undefined where it declares an array (a cache miss,
 /// `cache[key]`): undefined and null stay nil, as script's value stays undefined.
-public func jsArrayOrNil<T>(_ value: Any?, _ element: (Any?) -> T) -> JSArray<T>! {
-    jsIsNullish(value) ? nil : jsArrayOf(value, element)
+public func jsArrayOrNil<T>(_ value: Any?, _ element: (Any?) throws -> T) rethrows -> JSArray<T>? {
+    jsIsNullish(value) ? nil : try jsArrayOf(value, element)
 }
 
 /// `jsArrayOf`, `jsArrayOrNil` and `jsRecordOf` with the result's type named. Left to inference, the element type
 /// would be an optional of the right one (from a write through the result, `jsRecordOf(values) { $0 }[key] = value`,
 /// or an implicitly unwrapped element conversion), and the result a converted copy instead of the array itself.
-public func jsArrayOf<T>(_ value: Any?, as type: JSArray<T>.Type, _ element: (Any?) -> T) -> JSArray<T> { jsArrayOf(value, element) }
-public func jsArrayOrNil<T>(_ value: Any?, as type: JSArray<T>.Type, _ element: (Any?) -> T) -> JSArray<T>! { jsArrayOrNil(value, element) }
-public func jsRecordOf<T>(_ value: Any?, as type: JSRecord<T>.Type, _ element: (Any?) -> T) -> JSRecord<T> { jsRecordOf(value, element) }
+public func jsArrayOf<T>(_ value: Any?, as type: JSArray<T>.Type, _ element: (Any?) throws -> T) rethrows -> JSArray<T> { try jsArrayOf(value, element) }
+public func jsArrayOrNil<T>(_ value: Any?, as type: JSArray<T>.Type, _ element: (Any?) throws -> T) rethrows -> JSArray<T>? { try jsArrayOrNil(value, element) }
+public func jsRecordOf<T>(_ value: Any?, as type: JSRecord<T>.Type, _ element: (Any?) throws -> T) rethrows -> JSRecord<T> { try jsRecordOf(value, element) }
 
 /// A member of an untyped object, or undefined; reading a typed object from JSON never throws.
 public func jsField(_ object: Any?, _ key: String) -> Any? {
@@ -406,10 +406,10 @@ public func jsIsSafeInteger(_ x: Double) -> Bool { jsIsInteger(x) && abs(x) <= 9
 public func jsNumberToString(_ x: Double, radix: Double) throws -> String { try jsNumberToRadixString(x, radix) }
 
 /// An untyped value read as a dictionary-typed object: a record already, or a record of an object's keys.
-public func jsRecordOf<T>(_ value: Any?, _ element: (Any?) -> T) -> JSRecord<T> {
+public func jsRecordOf<T>(_ value: Any?, _ element: (Any?) throws -> T) rethrows -> JSRecord<T> {
     if let record = jsFlat(value) as? JSRecord<T> { return record }
     guard let object = jsFlat(value) as? JSDynamic else { return JSRecord<T>() }
-    return JSRecord(object.jsKeys.map { ($0, element(object[jsKey: $0])) })
+    return JSRecord(try object.jsKeys.map { ($0, try element(object[jsKey: $0])) })
 }
 
 /// The RegExp match, matchAll and search make of a pattern that is not one.

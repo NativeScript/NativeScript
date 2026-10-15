@@ -2,6 +2,7 @@ import Foundation
 #if canImport(UIKit)
 import UIKit
 #endif
+import CoreText
 
 // Native objects read untyped: what NativeScript's runtime marshals for a
 // property of an Objective-C object script holds as `any`. Objects are
@@ -63,6 +64,67 @@ public func jsNativeArgument<T>(_ value: Any?, _: T.Type) -> T {
 public func jsNativeObject<T>(_ value: Any?, _: T.Type) -> T {
     if let object = jsFlat(value) as? T { return object }
     return jsNativeRefused(value, T.self)
+}
+
+/// A Foundation array where Swift takes `[T]`: its elements of type `T`. Objective-C's element types are not
+/// checked, so script may have put another object in; that one is left out, where Swift's cast would trap.
+public func jsElements<T>(_ value: Any?, _: T.Type) -> [T] {
+    guard let flat = jsFlat(value) else { return [] }
+    if let same = flat as? [T] { return same }
+    return ((flat as? NSArray) ?? []).compactMap { $0 as? T }
+}
+
+/// A Foundation set where Swift takes `Set<T>`: its members of type `T` (see `jsElements`).
+public func jsMembers<T: Hashable>(_ value: Any?, _: T.Type) -> Set<T> {
+    guard let flat = jsFlat(value) else { return [] }
+    if let same = flat as? Set<T> { return same }
+    return Set(((flat as? NSSet) ?? []).compactMap { $0 as? T })
+}
+
+/// A Foundation dictionary where Swift takes `[K: V]`: its entries with keys and values of those types (see `jsElements`).
+public func jsEntries<K: Hashable, V>(_ value: Any?, _: K.Type, _: V.Type) -> [K: V] {
+    guard let flat = jsFlat(value) else { return [:] }
+    if let same = flat as? [K: V] { return same }
+    var entries: [K: V] = [:]
+    for (key, value) in (flat as? NSDictionary) ?? [:] {
+        if let key = key as? K, let value = value as? V { entries[key] = value }
+    }
+    return entries
+}
+
+/// A Core Foundation type, told apart by its type ID: Swift's casts to one (`as?`, `as!`) never check.
+public protocol JSForeignType: AnyObject {
+    static var jsTypeID: CFTypeID { get }
+}
+
+extension CGPath: JSForeignType { public static var jsTypeID: CFTypeID { typeID } }
+extension CGColor: JSForeignType { public static var jsTypeID: CFTypeID { typeID } }
+extension CGImage: JSForeignType { public static var jsTypeID: CFTypeID { typeID } }
+extension CGContext: JSForeignType { public static var jsTypeID: CFTypeID { typeID } }
+extension CGColorSpace: JSForeignType { public static var jsTypeID: CFTypeID { typeID } }
+extension CGGradient: JSForeignType { public static var jsTypeID: CFTypeID { typeID } }
+extension CGFont: JSForeignType { public static var jsTypeID: CFTypeID { typeID } }
+extension CTFont: JSForeignType { public static var jsTypeID: CFTypeID { CTFontGetTypeID() } }
+extension CTLine: JSForeignType { public static var jsTypeID: CFTypeID { CTLineGetTypeID() } }
+extension CTFrame: JSForeignType { public static var jsTypeID: CFTypeID { CTFrameGetTypeID() } }
+extension CFString: JSForeignType { public static var jsTypeID: CFTypeID { CFStringGetTypeID() } }
+extension CFData: JSForeignType { public static var jsTypeID: CFTypeID { CFDataGetTypeID() } }
+extension CFRunLoop: JSForeignType { public static var jsTypeID: CFTypeID { CFRunLoopGetTypeID() } }
+extension CFRunLoopTimer: JSForeignType { public static var jsTypeID: CFTypeID { CFRunLoopTimerGetTypeID() } }
+extension CFRunLoopSource: JSForeignType { public static var jsTypeID: CFTypeID { CFRunLoopSourceGetTypeID() } }
+extension CFRunLoopObserver: JSForeignType { public static var jsTypeID: CFTypeID { CFRunLoopObserverGetTypeID() } }
+
+/// An untyped value as a Core Foundation object of type `T`: nil where it is missing or of another type.
+public func jsForeign<T: JSForeignType>(_ value: Any?, _: T.Type) -> T? {
+    guard let flat = jsFlat(value) else { return nil }
+    let object = flat as AnyObject
+    return CFGetTypeID(object) == T.jsTypeID ? unsafeDowncast(object, to: T.self) : nil
+}
+
+/// As `jsForeign`, where native code needs the object: the TypeError the runtime throws for any other value.
+public func jsForeignPresent<T: JSForeignType>(_ value: Any?, _: T.Type) throws -> T {
+    if let object = jsForeign(value, T.self) { return object }
+    throw jsNotA(value, String(describing: T.self))
 }
 
 @inline(never)
@@ -481,6 +543,12 @@ public func jsFromNative(_ value: Any?) -> Any? {
 }
 
 #if canImport(UIKit)
+/// As `jsNativeStruct`, where native code takes the struct: a value that is none is the TypeError the runtime
+/// throws, reported, and the zero struct goes to the native code instead (see `jsNativeArgument`).
+public func jsNativeStructPresent<T>(_ value: Any?, _: T.Type) -> T {
+    jsNativeStruct(value, T.self) ?? jsNativeRefused(value, T.self)
+}
+
 /// A geometry struct from what script holds for one: the struct itself, an NSValue, or the object `jsFromNative` makes of it.
 public func jsNativeStruct<T>(_ value: Any?, _: T.Type) -> T? {
     guard let v = jsFlat(value) else { return nil }

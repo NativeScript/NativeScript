@@ -158,7 +158,7 @@ private var jsNativeOnlyClasses: [ObjectIdentifier: Bool] = [:]
 private let jsNativeOnlyLock = NSLock()
 
 /// `value` as `T`: undefined becomes nil for an optional `T`, and any value is `()` for `Void`.
-public func jsCast<T>(_ value: Any?, to type: T.Type = T.self) -> T? {
+public func jsConverted<T>(_ value: Any?, to type: T.Type = T.self) -> T? {
     if T.self == Void.self { return (() as Any) as? T }
     guard let value = jsFlat(value) else {
         return (T.self as? JSOptionalProtocol.Type)?.jsNone as? T
@@ -611,10 +611,56 @@ func jsStructMember(_ value: Any?, _ key: String) -> Any? {
 
 /// Undefined or null given where a function needs a value of its type (`addWeakEventListener(source, name, undefined, target)`):
 /// the TypeError of the first use of it.
+@inline(__always)
 public func jsRequired<T>(_ value: T?, _ name: String) throws -> T {
-    guard let value else { throw JSException(JSTypeError("\(name) is undefined")) }
+    guard let value else { throw jsUndefinedValue(name) }
     return value
 }
+
+@inline(never)
+public func jsUndefinedValue(_ name: String) -> JSException { JSException(JSTypeError("\(name) is undefined")) }
+
+/// Lenient code: a value undefined where Swift needs the object (an array's element, a native method's argument).
+@inline(__always)
+public func jsObjectRequired<T>(_ value: T?) throws -> T {
+    guard let value else { throw jsNoObject() }
+    return value
+}
+
+/// Lenient code: a destructuring pattern's source, `key` its first property, nil for an array pattern: V8's TypeError where it is missing.
+@inline(__always)
+public func jsDestructured<T>(_ value: T?, _ key: String?) throws -> T {
+    guard let value else { throw jsNotDestructurable(key) }
+    return value
+}
+
+@inline(never)
+public func jsNotDestructurable(_ key: String?) -> JSException {
+    JSException(JSTypeError(key.map { "Cannot destructure property '\($0)' of 'undefined' as it is undefined." } ?? "undefined is not iterable (cannot read property Symbol(Symbol.iterator))"))
+}
+
+/// Lenient code: what `for…of` or a spread iterates, undefined where its type says a collection.
+@inline(__always)
+public func jsIterated<T>(_ value: T?, _ message: String) throws -> T {
+    guard let value else { throw jsNotIterable(message) }
+    return value
+}
+
+@inline(never)
+public func jsNotIterable(_ message: String) -> JSException { JSException(JSTypeError(message)) }
+
+@inline(never)
+public func jsNoObject() -> JSException { JSException(JSTypeError("Cannot convert undefined or null to object")) }
+
+/// Lenient code: a function value that may be missing, called as `name(…)`: V8's TypeError where it is.
+@inline(__always)
+public func jsCallable<F>(_ function: F?, _ name: String) throws -> F {
+    guard let function else { throw jsNotCallable(name) }
+    return function
+}
+
+@inline(never)
+public func jsNotCallable(_ name: String) -> JSException { JSException(JSTypeError("\(name) is not a function")) }
 
 /// A function value that may be missing, about to be called: undefined is not a function.
 public func jsCallee<F>(_ function: F?) throws -> F {
@@ -734,13 +780,13 @@ public func jsObjectEntries(_ value: Any?) -> JSArray<(String, Any?)> {
 
 /// `Object.assign(target, ...sources)`.
 @discardableResult
-public func jsObjectAssign<T: JSDynamic>(_ target: T, _ sources: Any?...) -> T {
+public func jsObjectAssign<T: JSDynamic>(_ target: T, _ sources: Any?...) throws -> T {
     for source in sources {
         switch jsFlat(source) {
         case let dynamic as JSDynamic:
-            for key in dynamic.jsKeys { target[jsKey: key] = dynamic[jsKey: key] }
+            for key in dynamic.jsKeys { try jsSet(target, key, dynamic[jsKey: key]) }
         case let array as JSArrayProtocol:
-            for (i, v) in array.jsAnyElements.enumerated() { target[jsKey: String(i)] = v }
+            for (i, v) in array.jsAnyElements.enumerated() { try jsSet(target, String(i), v) }
         default:
             break
         }
@@ -1023,10 +1069,10 @@ public let jsObjectBuiltin = JSObject([
     ("assign", jsFunction("assign", 2) { a in try jsObjectAssign(jsArg(a, 0), spread: Array(a.dropFirst())) }),
 ])
 
-/// Lenient code: a value that may be undefined where its type says an object, read as
-/// an optional where one is taken and unwrapped (JavaScript's TypeError if missing) elsewhere.
+/// Lenient code: a value that may be undefined where its type says an object. It stays optional; a member read
+/// of it goes through `jsUnwrap`, JavaScript's TypeError where it is missing.
 @inline(__always)
-public func jsImplicit<T>(_ value: T?) -> T! { value }
+public func jsImplicit<T>(_ value: T?) -> T? { value }
 
 /// `value instanceof Name` for a class the kit knows only by that name (`FormData`, which the runtime's globals
 /// take from core): an object of a kit class of the name, or of a subclass of one. A class whose name another

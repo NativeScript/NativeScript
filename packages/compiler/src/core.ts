@@ -303,8 +303,10 @@ export class CoreAPI {
    * A kit object's code as a receiver: a weak reference's target (`weakRef.get()`, typed present), or what a call Swift has
    * as optional gives (`getColor().hex` of a helper returning null), is a TypeError's where it is gone.
    */
-  private receiver(e: ts.Expression): string {
+  private receiver(e: ts.Expression, key?: string): string {
     const code = this.t.expr(e);
+    // A value the kit holds optional that the read leaves so: JavaScript's TypeError for the member read of it where it is missing.
+    if (key !== undefined && this.optionalKitValue(e) && !code.startsWith('jsUnwrap(')) return this.t.chainingLoose ? `${code}?` : `jsUnwrap(${code}, ${JSON.stringify(key)})`;
     const weak = ts.isCallExpression(e) && ts.isPropertyAccessExpression(e.expression) && ['get', 'deref'].includes(e.expression.name.text) && this.t.typeOf(e.expression.expression).replace(/[?!]$/, '').startsWith('JSWeakRef<');
     return (weak && !this.t.typeOf(e).endsWith('?')) || this.t.givesUndefined(e) ? `${code}!` : code;
   }
@@ -350,7 +352,7 @@ export class CoreAPI {
     // `a?.b`: Swift chains only on an optional, and lenient code types none; as optional, valid for an implicitly unwrapped one too.
     const tt = t.typeOf(e.expression);
     const chained = !owner.isStatic && !!e.questionDotToken;
-    const recv = owner.isStatic ? owner.name : chained ? (tt.endsWith('?') ? `${t.expr(e.expression)}?` : `(${t.expr(e.expression)} as ${tt.replace(/!$/, '')}?)?`) : this.receiver(e.expression);
+    const recv = owner.isStatic ? owner.name : chained ? (tt.endsWith('?') ? `${t.expr(e.expression)}?` : `(${t.expr(e.expression)} as ${tt.replace(/!$/, '')}?)?`) : this.receiver(e.expression, name);
     // Swift's chain, as script's, goes on to what follows (`a?.b.c`), reading the optional.
     const continued = ts.isOptionalChain(e.parent) && (e.parent as ts.PropertyAccessExpression).expression === e;
     const inChain = chained || (ts.isOptionalChain(e) && !owner.isStatic);
@@ -402,7 +404,7 @@ export class CoreAPI {
     if (!owner) return null;
     const t = this.t;
     const name = left.name.text;
-    const recv = owner.isStatic ? owner.name : this.receiver(left.expression);
+    const recv = owner.isStatic ? owner.name : this.receiver(left.expression, left.name.text);
     // A member a kit-implemented plugin declares itself (a Canvas's `width`, its surface in pixels) is not the view property of that name.
     const pluginOwn = (t.resolve(left.name)?.declarations ?? []).some((d) => KIT_PLUGINS.some((p) => d.getSourceFile().fileName.includes(`/node_modules/${p}/`)));
     if (!owner.isStatic && this.isView(owner.name) && (!kitMember(this.index, owner.name, name) || (this.isViewProperty(owner.name, name) && !pluginOwn))) {
@@ -484,9 +486,44 @@ export class CoreAPI {
   /** `signal.aborted`: a property of core's whose getter the kit compiled as throwing. */
   throwingAccess(e: ts.PropertyAccessExpression): boolean {
     if (this.mixinOwn(e.name)) return false;
-    const owner = this.owner(e.expression)?.name;
+    const owner = (this.owner(e.expression) ?? this.inheritedOwner(e.expression, e.name))?.name;
     const m = owner ? kitMember(this.index, owner, e.name.text) : null;
+    if (m && !e.questionDotToken && this.optionalKitValue(e.expression)) return true;
+    // A function held optional, called: checked (see `call`).
+    if (m?.kind === 'var' && !m.params && ts.isCallExpression(e.parent) && e.parent.expression === e && /[?!]$/.test(m.type.trim()) && this.t.functionTypeParts(m.type.replace(/[?!]$/, '').replace(/^\((.*)\)$/, '$1'))) return true;
     return m?.kind === 'var' && !!m.throws;
+  }
+
+  /**
+   * A read of a core value the kit holds optional that gives it as it is: a module constant (`Application`), a static or
+   * member core's typings declare as an interface the kit has no type for (`Screen.mainScreen`, read as any value).
+   */
+  optionalKitValue(x: ts.Expression): boolean {
+    while (ts.isParenthesizedExpression(x)) x = x.expression;
+    if (ts.isIdentifier(x)) {
+      const sym = this.t.resolve(x);
+      const decl = sym?.declarations?.[0];
+      if (!sym || !decl || !ts.isVariableDeclaration(decl) || !isCoreDeclaration(decl) || this.t.compiledCounterpart(sym)) return false;
+      return /\?$/.test(this.exportVarType(sym.name) ?? '');
+    }
+    if (!ts.isPropertyAccessExpression(x) || x.questionDotToken || ts.isOptionalChain(x)) return false;
+    const owner = this.mixinOwn(x.name) ? null : this.owner(x.expression) ?? this.inheritedOwner(x.expression, x.name);
+    const m = owner ? kitMember(this.index, owner.name, x.name.text) : null;
+    if (m?.kind !== 'var' || !/\?$/.test(m.type.trim()) || this.t.functionTypeParts(m.type.trim().replace(/\?$/, '').replace(/^\((.*)\)$/, '$1'))) return false;
+    // `fromKit` unwraps it where the read is of a type it converts to; what is read as any value, or optional, stays as the kit holds it.
+    const read = this.t.typeOf(x);
+    return read === 'Any?' || read.endsWith('?');
+  }
+
+  private exportVars = new Map<string, string | null>();
+  /** The type of a variable core's index exports, as the kit's top-level accessor gives it. */
+  private exportVarType(name: string): string | null {
+    if (!this.exportVars.has(name)) {
+      const file = join(KIT, 'Core', `__Export.${name}.swift`);
+      const text = existsSync(file) ? readFileSync(file, 'utf8') : '';
+      this.exportVars.set(name, new RegExp(`^public var ${name}: (.+?) \\{`, 'm').exec(text)?.[1] ?? null);
+    }
+    return this.exportVars.get(name)!;
   }
 
   private exportsThrowing: Set<string> | null = null;
@@ -586,7 +623,7 @@ export class CoreAPI {
     // `this.hud?.animate(…)`: nothing runs where the object is missing.
     const chained = !owner.isStatic && !!e.expression.questionDotToken && t.typeOf(e.expression.expression).endsWith('?');
     // A namespace of core's by its module (`path.join`), which a local of the name (`path: string`) would shadow.
-    const recv = owner.isStatic ? (/^[a-z]/.test(owner.name) ? `NativeScriptKit.${owner.name}` : owner.name) : chained ? `${t.expr(e.expression.expression)}?` : this.receiver(e.expression.expression);
+    const recv = owner.isStatic ? (/^[a-z]/.test(owner.name) ? `NativeScriptKit.${owner.name}` : owner.name) : chained ? `${t.expr(e.expression.expression)}?` : this.receiver(e.expression.expression, name);
     if (name === 'navigate' && kitExtends(this.index, owner.name, 'Frame')) return this.navigate(recv, e);
     const listener = this.listenerArgs(e, m);
     // A kit method takes the arguments given; its own defaults stand for the rest.
@@ -614,7 +651,9 @@ export class CoreAPI {
     if (!held && !listener && !packed && !e.arguments.some(ts.isSpreadElement)) while (args.length < kitParams.length && !kitParams[args.length].includes('=') && /[?!]\s*$/.test(kitParams[args.length])) args.push('nil');
     if (held) {
       while (args.length < held.params.length && /[?!]$/.test(held.params[args.length])) args.push('nil');
-      return this.fromKit(`${recv}.${name}(${args.join(', ')})`, held.result, t.typeOf(e));
+      // Held optional (core assigns it later): V8's "is not a function" where it is missing.
+      const fn = /[?!]$/.test(m.type.trim()) ? `jsCallable(${recv}.${name}, ${JSON.stringify(e.expression.getText().replace(/\s+/g, ' '))})` : `${recv}.${name}`;
+      return this.fromKit(`${fn}(${args.join(', ')})`, held.result, t.typeOf(e));
     }
     return this.fromKit(`${recv}.${name}(${args.join(', ')})`, chained && m.type !== 'Void' ? m.type.replace(/\??$/, '?') : m.type, t.typeOf(e));
   }
@@ -645,7 +684,7 @@ export class CoreAPI {
       const a = e.arguments[k];
       // A typed array where the kit erased its element type (`VirtualArray<number>.load(index, items)`): its elements as any value.
       if (a && !ts.isSpreadElement(a) && /^JSArray<Any\?>[?!]?$/.test(type) && /^JSArray<.+>$/.test(t.typeOf(a)) && t.typeOf(a) !== 'JSArray<Any?>') {
-        args[k] = `JSArray<Any?>(${t.expr(a)}.storage.map { $0 as Any? })`;
+        args[k] = t.loose(a) && t.looseTolerated(a) ? `(${t.expr(a)} as ${t.typeOf(a)}?).map { JSArray<Any?>($0.storage.map { $0 as Any? }) }` : `JSArray<Any?>(${t.expr(a)}.storage.map { $0 as Any? })`;
         return;
       }
       // Code without null checks: undefined or null where the kit takes a value (`addWeakEventListener(source, name, undefined, target)`),
@@ -852,10 +891,14 @@ export class CoreAPI {
     const k = kitType.trim();
     // What the kit generated from core gives untyped (`animate()`'s promise), read as the type the declarations give it.
     if (k === 'Any?' && tsType !== 'Any?' && tsType !== 'Void') return this.t.fromAnyCode(code, tsType, true);
-    if (k === 'JSArray<Any?>' && /^JSArray<.+>$/.test(tsType) && tsType !== k) return `jsArrayOf(${code}) { ${this.t.fromAny('$0', tsType.slice(8, -1))} }`;
+    if (k === 'JSArray<Any?>' && /^JSArray<.+>$/.test(tsType) && tsType !== k) return this.t.arrayOf(code, tsType.slice(8, -1));
     // An array of a base class (`Frame._stack()` of FrameBase) that TypeScript types as of a subclass.
     const ke = /^JSArray<([A-Z]\w*)>[?!]?$/.exec(k)?.[1], te = /^JSArray<([A-Z]\w*)>$/.exec(tsType)?.[1];
-    if (ke && te && ke !== te && !['Any', 'Double', 'String', 'Bool'].includes(te)) return `JSArray<${te}>((${code})${/[?!]$/.test(k) ? '!' : ''}.storage.map { $0 as! ${te} })`;
+    if (ke && te && ke !== te && !['Any', 'Double', 'String', 'Bool'].includes(te)) {
+      // Lenient code's array may be missing, which stays undefined; an element of another class is a TypeError.
+      if (this.t.lenient) return `try (${code} as JSArray<${ke}>?).map { JSArray<${te}>(try $0.storage.map { try (jsCastPresent($0) as ${te}) }) }`;
+      return `JSArray<${te}>((${code})${/[?!]$/.test(k) ? '!' : ''}.storage.map { $0 as! ${te} })`;
+    }
     const numeric = /^(Int|UInt|Int32|UInt32|Int64|UInt64|CGFloat|Float)\??$/.exec(k);
     if (numeric && tsType.startsWith('Double')) return k.endsWith('?') ? `${code}.map { Double($0) }` : `Double(${code})`;
     // A member the kit types as a base class (`EventData.object` is an Observable) that TypeScript types as a subclass.

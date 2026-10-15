@@ -7,7 +7,7 @@ import { createHash } from 'node:crypto';
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 import { foldPlatform } from './platform.ts';
-import { Translator } from './swift.ts';
+import { THROWING_CODE, Translator } from './swift.ts';
 import { SourceLines } from './source-lines.ts';
 import { collectProperties } from './properties.ts';
 import { evaluatedImports, evaluationOrder } from './modules.ts';
@@ -272,7 +272,7 @@ export function generateKit(o: KitOptions): KitResult {
       }
     }
     if (!result) continue;
-    const code = result.code + (result.init.length ? `\nfunc ${init}() {\n${result.init.some((l) => /\btry\b/.test(l)) ? `    jsReport {\n${result.init.map((l) => '    ' + l).join('\n')}\n    }` : result.init.join('\n')}\n}\n` : '');
+    const code = result.code + (result.init.length ? `\nfunc ${init}() {\n${result.init.some((l) => THROWING_CODE.test(l)) ? `    jsReport {\n${result.init.map((l) => '    ' + l).join('\n')}\n    }` : result.init.join('\n')}\n}\n` : '');
     initOf.set(file, result.init.length ? init : undefined);
     const kitFile = { name: rel.replace(/\.ts$/, '').replace(/\//g, '.') + '.swift', code, sources: { [rel]: hash(sources.get(file) ?? '') } };
     paths.set(kitFile, file);

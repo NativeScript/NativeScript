@@ -80,7 +80,7 @@ if (targets.includes('swift')) buildSwiftRuntime(build, optimize);
 const js = join(build, 'js');
 rmSync(js, { recursive: true, force: true });
 toJavaScript(join(here, 'cases'), js);
-const expected = new Map(cases.map((c) => [c, spawnSync('node', ['--expose-gc', join(js, basename(c, '.ts') + '.js')], { encoding: 'utf8' })]));
+const expected = new Map(cases.map((c) => [c, spawnSync('node', ['--expose-gc', '--import', join(here, 'native-shim.js'), join(js, basename(c, '.ts') + '.js')], { encoding: 'utf8' })]));
 let failed = 0;
 /**
  * Cases known to fail on a target, each with its cause (tests/diff/known-failures.json). A known failure is reported

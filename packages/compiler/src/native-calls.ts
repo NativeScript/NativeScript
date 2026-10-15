@@ -1,7 +1,7 @@
 import ts from 'typescript';
 import { implementedInterfaces } from './lang.ts';
 import { isStatic } from './throws.ts';
-import { CF_CLASSES, functionParts, ident, isWriteTarget, NONISOLATED_DEINIT, optionalType, splitTopLevel, type Translator } from './swift.ts';
+import { CF_CLASSES, functionParts, ident, isWriteTarget, NONISOLATED_DEINIT, optionalType, splitTopLevel, THROWING_CODE, type Translator } from './swift.ts';
 import {
   categoryModule, conformsTo, conformsToSwift, isSubframework, lookupClass, lookupConstant, lookupConstructor, lookupEnum, lookupFunction, lookupInit, lookupMember, lookupStruct, lookupTypealias, moduleOfDeclaration, nativeTable,
   type NativeClass, type NativeMethod, type NativeProperty, type SwiftType,
@@ -25,11 +25,28 @@ const BRIDGED: Record<string, string> = {
   NSTimeZone: 'TimeZone', NSCalendar: 'Calendar', NSURLRequest: 'URLRequest', NSDateComponents: 'DateComponents', NSCharacterSet: 'CharacterSet',
   NSURLComponents: 'URLComponents', NSIndexSet: 'IndexSet', NSPersonNameComponents: 'PersonNameComponents', UTTypeReference: 'UTType', NSError: 'any Error', CFString: 'String',
 };
+/** A Foundation collection (an `NSArray`, `[Any]`, an untyped value) as Swift's typed array, dictionary or set `type`; null for any other type. */
+export function typedCollection(code: string, type: SwiftType): string | null {
+  const meta = (t: string) => `${t.startsWith('any ') ? `(${t})` : t}.self`;
+  const member = /^Set<(.+)>$/.exec(type)?.[1];
+  if (member) return `jsMembers(${code}, ${meta(member)})`;
+  const parts = /^\[(.*)\]$/.exec(type)?.[1];
+  if (parts === undefined) return null;
+  let depth = 0, colon = -1;
+  for (let k = 0; k < parts.length && colon < 0; k++) {
+    if ('[(<'.includes(parts[k])) depth++;
+    else if ('])>'.includes(parts[k])) depth--;
+    else if (parts[k] === ':' && !depth) colon = k;
+  }
+  if (colon < 0) return `jsElements(${code}, ${meta(parts.trim())})`;
+  return `jsEntries(${code}, ${meta(parts.slice(0, colon).trim())}, ${meta(parts.slice(colon + 1).trim())})`;
+}
+
 /** `code` of Objective-C class or Swift value type `from` as `to`, the other one of a bridged pair; null when they are not one. */
 function bridge(code: string, from: SwiftType, to: SwiftType): string | null {
   const f = base(from), b = base(to);
   // A Core Foundation array is an NSArray, which Swift reads as an array of its elements.
-  if (f === 'CFArray' && /^\[[^:]*\]$/.test(b)) return optional(to) ? `(${code}).map { $0 as NSArray as! ${b} }` : `(${code}${optional(from) ? '!' : ''} as NSArray as! ${b})`;
+  if (f === 'CFArray' && /^\[[^:]*\]$/.test(b)) return optional(to) ? `(${code}).map { ${typedCollection('$0', b)} }` : typedCollection(code, b);
   // `NSSet` and Swift's `Set<T>`: toward the typed set the cast checks the elements.
   const typedSet = /^NS(Mutable)?Set$/.test(f) && /^Set<.+>$/.test(b);
   // A mutable request where a request is taken: Swift bridges it as its immutable base.
@@ -37,7 +54,8 @@ function bridge(code: string, from: SwiftType, to: SwiftType): string | null {
   if (BRIDGED[f] !== b && BRIDGED[b] !== f && !typedSet && !(/^Set<.+>$/.test(f) && b === 'NSSet')) return null;
   const want = b === 'any Error' ? '(any Error)' : b;
   if (optional(to)) return `(${code} as${typedSet ? '?' : ''} ${want}${typedSet ? '' : '?'})`;
-  return `(${code}${optional(from) ? '!' : ''} as${typedSet ? '!' : ''} ${want})`;
+  if (typedSet) return typedCollection(code, b)!;
+  return `(${code}${optional(from) ? '!' : ''} as ${want})`;
 }
 /** Classes NativeScript's typings rename where TypeScript's DOM library declares the name. */
 const RENAMED: Record<string, string> = { _UIEvent: 'UIEvent' };
@@ -304,6 +322,38 @@ export class NativeAPI {
     return null;
   }
 
+  /** The Objective-C protocols a class adopts: `implements`, `@ObjCClass(…)` and `ObjCProtocols`. */
+  private adoptedProtocols(cls: ts.ClassLikeDeclaration): { module: string; name: string; swift: string }[] {
+    const t = this.t;
+    const protocols: { module: string; name: string; swift: string }[] = [];
+    const addProtocol = (e: ts.Expression) => {
+      const p = this.symbolModule(t.resolve(e));
+      const pc = p && lookupClass(p.module, p.name);
+      if (!p || !pc || pc.kind !== 'protocol') throw t.error(e, `${e.getText()} (not an Objective-C protocol)`);
+      if (!protocols.some((x) => x.name === p.name)) protocols.push({ ...p, swift: pc.swift });
+    };
+    for (const i of cls.heritageClauses?.find((h) => h.token === ts.SyntaxKind.ImplementsKeyword)?.types ?? []) addProtocol(i.expression);
+    for (const d of ts.getDecorators(cls) ?? []) if (ts.isCallExpression(d.expression) && d.expression.expression.getText() === 'ObjCClass') d.expression.arguments.forEach(addProtocol);
+    const listed = cls.members.find((m): m is ts.PropertyDeclaration => ts.isPropertyDeclaration(m) && m.name.getText() === 'ObjCProtocols' && ts.getModifiers(m)?.some((x) => x.kind === ts.SyntaxKind.StaticKeyword) === true);
+    if (listed?.initializer && ts.isArrayLiteralExpression(listed.initializer)) for (const e of listed.initializer.elements) addProtocol(e);
+    return protocols;
+  }
+
+  /** The property named `n` that a native base or an adopted protocol declares (`UIApplicationDelegate.window`), if any. */
+  private nativeProperty(base: { module: string; name: string }, protocols: { module: string; name: string }[], n: string) {
+    const fromBase = this.found(lookupMember(base.module, base.name, n, false));
+    const native = fromBase?.kind === 'property' ? fromBase : protocols.map((p) => lookupMember(p.module, p.name, n, false)).find((m) => m?.kind === 'property') ?? fromBase;
+    return { native: native?.kind === 'property' ? native : null, viaProtocol: native !== fromBase };
+  }
+
+  /** Whether a getter of a class extending a native one is a native property's, which Swift types as the SDK does. */
+  nativeGetter(get: ts.GetAccessorDeclaration): boolean {
+    const cls = get.parent;
+    const heritage = ts.isClassLike(cls) ? cls.heritageClauses?.find((h) => h.token === ts.SyntaxKind.ExtendsKeyword)?.types[0] : undefined;
+    const base = heritage && this.symbolModule(this.t.resolve(heritage.expression));
+    return !!base && !!this.nativeProperty(base, this.adoptedProtocols(cls as ts.ClassLikeDeclaration), get.name.getText()).native;
+  }
+
   /** A call of an app class's override of its native base's method: Swift calls it by the native signature. */
   overrideCall(e: ts.CallExpression): boolean {
     return ts.isPropertyAccessExpression(e.expression) && this.appMember(e.expression.name) && this.nativeOverride(e.expression.name);
@@ -358,7 +408,7 @@ export class NativeAPI {
     const target = r.isStatic ? this.className(lookupClass(r.module, r.name)!) : this.unwrapped(e.expression);
     if (absent) {
       const read = this.fromSwift(`${target}.${m.swift}`, m.type, e);
-      const throws = /\btry\b/.test(read);
+      const throws = THROWING_CODE.test(read);
       return `${throws ? '(try ' : ''}{ () ${throws ? 'throws ' : ''}-> ${this.t.typeOf(e)} in if #available(iOS ${newer}, *) { return ${read} } else { return ${absent} } }()${throws ? ')' : ''}`;
     }
     if (m.kind === 'property') return this.fromSwift(`${target}.${m.swift}`, m.type, e);
@@ -844,6 +894,49 @@ export class NativeAPI {
     return `${m.labels[last] ? `${m.labels[last]}: ` : ''}&__nsError`;
   }
 
+  /**
+   * Whether `e` is an untyped argument where a native function or method takes a Core Foundation object present
+   * (`CGPathAddLineToPoint(path, …)` of a path held as `any`): its conversion throws where it is another value.
+   */
+  foreignArgument(e: ts.Expression): boolean {
+    const call = e.parent;
+    if (!ts.isCallExpression(call) || call.expression === e) return false;
+    try {
+      if (this.t.typeOf(e) !== 'Any?') return false;
+      let k = call.arguments.indexOf(e);
+      let type: SwiftType | undefined;
+      if (ts.isIdentifier(call.expression)) {
+        const native = this.symbolModule(this.t.resolve(call.expression));
+        const f = native && lookupFunction(native.module, native.name);
+        if (!f) return false;
+        // The function's object argument (`CGContextSaveGState(ctx)` as `ctx.saveGState()`) converts to its owner.
+        if (f.self !== undefined && k === f.self) type = f.owner ?? undefined;
+        else if (f.kind !== 'property' && f.kind !== 'staticProperty') type = f.params.filter((p) => p !== '()')[f.self !== undefined && k > f.self ? k - 1 : k];
+      } else type = this.calledMethod(call)?.params.filter((p) => p !== '()')[k];
+      return !!type && !optional(type) && CF_CLASSES.has(base(type));
+    } catch { return false; }
+  }
+
+  /** Whether the native property an assignment writes takes nil (`view.backgroundColor = color`); undefined where it is no native property. */
+  propertyOptional(left: ts.PropertyAccessExpression): boolean | undefined {
+    try {
+      const r = this.receiver(left.expression);
+      const m = r ? lookupMember(r.module, r.name, left.name.text, r.isStatic) : null;
+      if (!m || m.kind !== 'property') return undefined;
+      // An object of a class as it is: a value Swift bridges or converts (`Date?` from a JSDate) is converted present.
+      const b = base(m.type);
+      return optional(m.type) && /^[A-Z]\w*$/.test(b) && !this.isStructType(b) && !this.isEnumType(b) && !Object.values(BRIDGED).includes(b) && !['String', 'Double', 'Bool', 'Date', 'URL', 'Data'].includes(b);
+    } catch { return undefined; }
+  }
+
+  /** Whether the native method a call runs takes its `k`th argument optional (nil passing as undefined); undefined where it is no native call. */
+  argumentOptional(e: ts.CallExpression, k: number): boolean | undefined {
+    try {
+      const m = this.calledMethod(e);
+      return m && m.params[k] !== undefined ? optional(m.params[k]) : undefined;
+    } catch { return undefined; }
+  }
+
   /** The native method or initializer a call runs, as `call` finds it; null for anything else. */
   private calledMethod(e: ts.CallExpression): NativeMethod | null {
     const callee = e.expression;
@@ -1059,17 +1152,17 @@ export class NativeAPI {
     // An untyped value where Swift takes a native object (or one conforming to a protocol: `any UIInteraction`).
     const cls = b.replace(/^any /, '');
     if (source === 'Any?' && /^[A-Z]\w*$/.test(cls) && !this.isEnumType(cls) && !NUMBERS.has(cls) && cls !== 'String' && cls !== 'Bool') {
-      if (CF_CLASSES.has(cls)) return optional(target) ? `jsFlat(${t.expr(e)}).map { $0 as! ${cls} }` : `(jsFlat(${t.expr(e)}) as! ${cls})`;
+      if (CF_CLASSES.has(cls)) return optional(target) ? `jsForeign(${t.expr(e)}, ${cls}.self)` : `jsForeignPresent(${t.expr(e)}, ${cls}.self)`;
       // A geometry struct the runtime gives script as an object (`window.screen.bounds`): the struct again.
-      if (['CGRect', 'CGSize', 'CGPoint', 'UIEdgeInsets'].includes(cls)) return optional(target) ? `jsNativeStruct(${t.expr(e)}, ${cls}.self)` : `jsNativeStruct(${t.expr(e)}, ${cls}.self)!`;
+      if (['CGRect', 'CGSize', 'CGPoint', 'UIEdgeInsets'].includes(cls)) return optional(target) ? `jsNativeStruct(${t.expr(e)}, ${cls}.self)` : `jsNativeStructPresent(${t.expr(e)}, ${cls}.self)`;
       return optional(target) ? (b === 'Any' ? `jsFlat(${t.expr(e)})` : `(jsFlat(${t.expr(e)}) as? ${b})`) : `jsNativeObject(${t.expr(e)}, ${b.startsWith('any ') ? `(${b})` : b}.self)`;
     }
     // An object where Swift takes one conforming to a protocol its class may not declare (a delegate the runtime would accept): checked when it runs.
-    if (b.startsWith('any ') && source.replace(/[?!]$/, '') !== b && /^(\w+\.)?[A-Z]\w*$/.test(source.replace(/[?!]$/, ''))) return this.asProtocol(e, source, target, b, optional(target) ? `(${t.expr(e)} as? ${b})` : `(${t.expr(e)} as! ${b})`);
+    if (b.startsWith('any ') && source.replace(/[?!]$/, '') !== b && /^(\w+\.)?[A-Z]\w*$/.test(source.replace(/[?!]$/, '')) && base(source) !== 'String') return this.asProtocol(e, source, target, b, optional(target) ? `(${t.expr(e)} as? ${b})` : `(${t.expr(e)} as! ${b})`);
     if (/^NSMutable(Array|Dictionary)[?!]?$/.test(source) && b.startsWith('[')) {
       // Held implicitly unwrapped or not, alike; a missing one is nil where Swift takes an optional, else empty.
       const immutable = base(source).replace('Mutable', '');
-      const cast = `(${t.expr(e)} as ${base(source)}?).map { $0 as ${immutable} as! ${b} }`;
+      const cast = `(${t.expr(e)} as ${base(source)}?).map { ${typedCollection(`$0 as ${immutable}`, b) ?? `$0 as ${immutable} as! ${b}`} }`;
       return optional(target) ? cast : `(${cast} ?? ${b.includes(':') ? '[:]' : '[]'})`;
     }
     if (source.startsWith('JSArray<') && b.startsWith('[') && !b.includes(':')) {
@@ -1080,15 +1173,15 @@ export class NativeAPI {
       if (from === to) return `${array}.storage`;
       if (from === 'Double' && NUMBERS.has(to)) return `${array}.storage.map { ${to}($0) }`;
       if (from === 'Double' && this.isEnumType(to)) return `${array}.storage.map { ${this.enumFromNumber('$0', to)} }`;
-      return `(${array}.storage as! ${b})`;
+      return typedCollection(`${array}.storage`, b)!;
     }
     // An array typed loosely in TypeScript where Swift takes typed elements (`[UIBarButtonItemGroup]`).
-    if (source === '[Any]' && b.startsWith('[') && b !== '[Any]') return `(${t.expr(e)} as! ${b})`;
+    if (source === '[Any]' && b.startsWith('[') && b !== '[Any]') return typedCollection(t.expr(e), b) ?? `(${t.expr(e)} as! ${b})`;
     // An untyped object where Swift takes a dictionary: its keys and values as the runtime marshals them.
     if (source === 'Any?' && /^\[\w+\s*:\s*Any\]$/.test(b)) return `jsToNativeDictionary(${t.expr(e)})`;
     // An untyped value where Swift takes an array (`initWithActivityItems(items, null)`): its elements as the runtime marshals them.
     if (source === 'Any?' && /^\[[^:]*\]$/.test(b)) {
-      const array = b === '[Any]' ? `jsToNativeArray(__a)` : `(jsToNativeArray(__a) as! ${b})`;
+      const array = b === '[Any]' ? `jsToNativeArray(__a)` : typedCollection('jsToNativeArray(__a)', b)!;
       return `{ (__a: Any?) -> ${b}${optional(target) ? '?' : ''} in ${optional(target) ? `jsIsNullish(__a) ? nil : ` : ''}${array} }(${t.expr(e)})`;
     }
     // An object of a literal's shape likewise.
@@ -1144,7 +1237,11 @@ export class NativeAPI {
     const declared = ts.isPropertyAccessExpression(e) ? this.t.checker.getSymbolAtLocation(e.name) : undefined;
     const narrowedTo = base(tsType);
     if (declared && /^[A-Z]\w*$/.test(narrowedTo) && narrowedTo !== b && /^[A-Z]\w*$/.test(b) && !this.isEnumType(narrowedTo) && !this.isStructType(narrowedTo)
-        && base(this.t.type(this.t.checker.getTypeOfSymbol(declared), e)) === b) return `(${code} as${optional(tsType) ? '?' : '!'} ${narrowedTo})`;
+        && base(this.t.type(this.t.checker.getTypeOfSymbol(declared), e)) === b) {
+      // Lenient code holds the member optional, checked where it is needed present.
+      if (!optional(tsType) && this.t.lenient && this.t.lenientRef(narrowedTo) !== narrowedTo && this.t.loose(e)) return `jsImplicit(${code} as? ${narrowedTo})`;
+      return `(${code} as${optional(tsType) ? '?' : '!'} ${narrowedTo})`;
+    }
     if (b === 'Date' && base(tsType) === 'JSDate') return optional(swiftType) ? unwrapAs(`${code}.map { JSDate($0) }`, tsType, this.t.lenient && this.t.lenientRef(tsType) !== tsType) : `JSDate(${code})`;
     if (NUMBERS.has(b) && tsType.replace(/\?$/, '') === 'Double') {
       if (b === 'Double' || b === 'TimeInterval') return optional(swiftType) && !tsType.endsWith('?') ? `(${code} ?? .nan)` : code;
@@ -1161,7 +1258,11 @@ export class NativeAPI {
     // Lenient code tests a missing one (`textField.textContentType !== undefined`): held as script holds undefined.
     if (/^String\??$/.test(tsType) && this.isStringConstants(b)) return optional(swiftType) ? (tsType.endsWith('?') ? `${code}?.rawValue` : this.t.lenient ? `jsImplicit(${code}?.rawValue)` : `${code}!.rawValue`) : `${code}.rawValue`;
     // A Foundation collection (`NSDictionary(dictionary:)`) where TypeScript reads the bridged Swift collection.
-    if (/^NS(Mutable)?(Dictionary|Array|Set)$/.test(b) && tsType.startsWith('[')) return `(${code} as${optional(swiftType) ? '?' : '!'} ${tsType.replace(/\?$/, '')})`;
+    if (/^NS(Mutable)?(Dictionary|Array|Set)$/.test(b) && tsType.startsWith('[')) {
+      const to = tsType.replace(/\?$/, '');
+      if (optional(swiftType)) return `(${code} as? ${to})`;
+      return typedCollection(code, to) ?? `(${code} as! ${to})`;
+    }
     if (b.startsWith('[') && tsType.startsWith('JSArray<')) return `JSArray(${code}${optional(swiftType) ? ' ?? []' : ''})`;
     // Lenient code: a native object that may be nil is held as script holds null, unwrapped only where used.
     if (swiftType.endsWith('?') && !tsType.endsWith('?') && tsType !== 'Any?') return this.absentAs(code, tsType);
@@ -1237,7 +1338,11 @@ export class NativeAPI {
     if (b === 'Date' && base(tsType) === 'JSDate') return optional(swiftType) ? unwrapAs(`${code}.map { JSDate($0) }`, tsType, this.t.lenient && this.t.lenientRef(tsType) !== tsType) : `JSDate(${code})`;
     // A block parameter the handler declares as a subclass (`(urlAsset: AVURLAsset)` for an `AVAsset`): the object as it.
     const tb = tsType.replace(/[?!]$/, '');
-    if (b !== tb && /^[A-Z]\w*$/.test(b) && /^[A-Z]\w*$/.test(tb) && this.isSubclass(tb, b)) return tsType.endsWith('?') ? `(${code} as? ${tb})` : `(${code} as! ${tb})`;
+    if (b !== tb && /^[A-Z]\w*$/.test(b) && /^[A-Z]\w*$/.test(tb) && this.isSubclass(tb, b)) {
+      if (tsType.endsWith('?')) return `(${code} as? ${tb})`;
+      // Lenient code holds the parameter optional.
+      return this.t.lenient && this.t.lenientRef(tb) !== tb ? `jsImplicit(${code} as? ${tb})` : `(${code} as! ${tb})`;
+    }
     if (optional(swiftType) && !tsType.endsWith('?') && tsType !== 'Any?') return this.absentAs(code, tsType);
     return code;
   }
@@ -1315,19 +1420,9 @@ export class NativeAPI {
     if (!baseCls) throw t.error(heritage, `extending ${base.name} (no Swift class)`);
     // A namespace's class is declared inside the namespace's enum, by its own name.
     const name = ts.isModuleBlock(cls.parent) ? cls.name!.text : t.topName(cls, cls.name!.text);
-    const protocols: { module: string; name: string; swift: string }[] = [];
-    const addProtocol = (e: ts.Expression) => {
-      const p = this.symbolModule(t.resolve(e));
-      const pc = p && lookupClass(p.module, p.name);
-      if (!p || !pc || pc.kind !== 'protocol') throw t.error(e, `${e.getText()} (not an Objective-C protocol)`);
-      if (!protocols.some((x) => x.name === p.name)) protocols.push({ ...p, swift: pc.swift });
-    };
-    for (const i of cls.heritageClauses?.find((h) => h.token === ts.SyntaxKind.ImplementsKeyword)?.types ?? []) addProtocol(i.expression);
+    const protocols = this.adoptedProtocols(cls);
     const statics = cls.members.filter((m): m is ts.PropertyDeclaration => ts.isPropertyDeclaration(m) && !!m.initializer && ts.getModifiers(m)?.some((x) => x.kind === ts.SyntaxKind.StaticKeyword) === true);
-    // `@ObjCClass(UIScrollViewDelegate)`: protocols the class adopts, as ObjCProtocols lists them.
-    for (const d of ts.getDecorators(cls) ?? []) if (ts.isCallExpression(d.expression) && d.expression.expression.getText() === 'ObjCClass') d.expression.arguments.forEach(addProtocol);
     const listed = statics.find((m) => m.name.getText() === 'ObjCProtocols');
-    if (listed && ts.isArrayLiteralExpression(listed.initializer!)) for (const e of listed.initializer.elements) addProtocol(e);
     const exposedSpec = statics.find((m) => m.name.getText() === 'ObjCExposedMethods');
     const exposed = new Set(exposedSpec && ts.isObjectLiteralExpression(exposedSpec.initializer!) ? exposedSpec.initializer.properties.map((p) => p.name!.getText()) : []);
 
@@ -1357,10 +1452,7 @@ export class NativeAPI {
     }
     for (const [n, a] of accessors) {
       // A property the native base declares (`preferredStatusBarStyle`): its Swift override, the body's value converted, what it throws reported.
-      const fromBase = this.found(lookupMember(base.module, base.name, n, false));
-      // A property the native base or an adopted protocol declares (`UIApplicationDelegate.window`).
-      const native = fromBase?.kind === 'property' ? fromBase : protocols.map((p) => lookupMember(p.module, p.name, n, false)).find((m) => m?.kind === 'property') ?? fromBase;
-      const viaProtocol = native !== fromBase;
+      const { native, viaProtocol } = this.nativeProperty(base, protocols, n);
       if (native && native.kind === 'property' && a.get) {
         // Lenient code: an object the getter gives may be undefined, which an optional native property takes as nil.
         const declared = t.returnTypeOf(a.get);
@@ -1383,7 +1475,7 @@ export class NativeAPI {
         continue;
       }
       const type = a.get ? t.returnTypeOf(a.get) : optionalType(t.typeOf(a.set!.parameters[0].name));
-      const parts = [a.get ? `        get${t.throwsInfo.fn(a.get) ? ' throws' : ''} ${t.functionBody(a.get, type, '        ')}` : '        get { nil }'];
+      const parts = [a.get ? `        get${t.throwsInfo.fn(a.get) ? ' throws' : ''} ${t.functionBody(a.get, t.lenientRef(type), '        ')}` : '        get { nil }'];
       if (a.set) {
         const p = a.set.parameters[0].name as ts.Identifier;
         const body = t.functionBody(a.set, 'Void', '        ');
@@ -1484,7 +1576,9 @@ export class NativeAPI {
       // A struct whose fields the body assigns (`size.width = 0`) is a variable of its own.
       const mutable = this.isStructType(p.type) && ts.isIdentifier(m.parameters[k].name) && this.t.needsVar(m.parameters[k].name, p.type);
       const value = this.fromSwiftValue(names[k], swift, p.type);
-      return !mutable && value === p.name && p.type === swift ? '' : `        ${mutable ? 'var' : 'let'} ${p.name}: ${p.type} = ${value}`;
+      // Lenient code's subclass of the native parameter's class: nil where the argument is not one.
+      const held = value.startsWith('jsImplicit(') ? t.bindsOptional(m.parameters[k].name, p.type) : p.type;
+      return !mutable && value === p.name && p.type === swift ? '' : `        ${mutable ? 'var' : 'let'} ${p.name}: ${held} = ${value}`;
     }).filter(Boolean);
     const ret = target.returns;
     // A result Objective-C declares nullable: the body may give undefined.
@@ -1536,7 +1630,8 @@ export class NativeAPI {
     const binds = m.parameters.map((p, k) => {
       if (!ts.isIdentifier(p.name) || !init.params[k] || !readIn(params[k], middle)) return '';
       const type = t.typeOf(p.name), value = this.fromSwiftValue(names[k], init.params[k], type);
-      return value === p.name.text && type === init.params[k] ? '' : `        let ${p.name.text}: ${type} = ${value}`;
+      const held = value.startsWith('jsImplicit(') ? t.bindsOptional(p.name, type) : type;
+      return value === p.name.text && type === init.params[k] ? '' : `        let ${p.name.text}: ${held} = ${value}`;
     }).filter(Boolean);
     const passed = superCall.arguments.map((a, k) => {
       const at = ts.isIdentifier(a) ? params.indexOf(t.checker.getSymbolAtLocation(a)) : -1;
@@ -1598,7 +1693,7 @@ export class NativeAPI {
     if (b === 'Date' && base(tsType) === 'JSDate') return tsType.endsWith('?') ? `${code}.map { jsNativeDate($0) }` : `jsNativeDate(${code})`;
     // A Foundation array of objects where Swift has its element type (`NSArray<UIViewController>` as `[UIViewController]`).
     const elements = /^\[([\w.]+)\]$/.exec(b)?.[1];
-    if (/^\[Any\][?!]?$/.test(tsType) && elements && elements !== 'Any') return optional(swiftType) ? `(${code} as? [${elements}])` : `(${code} as! [${elements}])`;
+    if (/^\[Any\][?!]?$/.test(tsType) && elements && elements !== 'Any') return optional(swiftType) ? `(${code} as? [${elements}])` : typedCollection(code, `[${elements}]`)!;
     if (tsType === 'Double' && this.isEnumType(b)) return `${b}(rawValue: ${integral(code, this.rawTypeOf(b))})${this.isOptionSet(b) ? '' : '!'}`;
     return code;
   }

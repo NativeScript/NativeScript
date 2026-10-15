@@ -118,7 +118,12 @@ public final class HttpClient {
             let (promise, resolvers) = JSPromise<Any?>.pending()
             var settings: [(String, Any?)] = [("url", url), ("method", "GET")]
             if !jsIsNullish(headers) { settings.append(("headers", headers)) }
-            _ = Core_http_http_request_index.request(JSObject(settings)).then({ (response: Any?) -> Void in
+            let sent: JSPromise<Any?>
+            do { sent = try jsUnwrap(Core_http_http_request_index.request(JSObject(settings)), "then") } catch {
+                resolvers.reject(jsCaught(error))
+                return promise
+            }
+            _ = sent.then({ (response: Any?) -> Void in
                 do {
                     let status = jsToNumber(try jsGet(response, "statusCode"))
                     if status >= 400 || status == 0 {

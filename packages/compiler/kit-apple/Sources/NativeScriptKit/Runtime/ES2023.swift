@@ -92,9 +92,9 @@ public final class JSPromiseWithResolvers<T> {
                 resolvers.resolve(promise: other)
             } else if let thenable = jsFlat(value) as? JSThenable {
                 thenable.jsSubscribe({ result in
-                    if let typed: T = jsCast(result) { resolvers.resolve(typed) } else { resolvers.reject(JSTypeError("A promise of \(T.self) was resolved with \(jsTypeof(result)) \(jsToString(result))")) }
+                    if let typed: T = jsConverted(result) { resolvers.resolve(typed) } else { resolvers.reject(JSTypeError("A promise of \(T.self) was resolved with \(jsTypeof(result)) \(jsToString(result))")) }
                 }, { resolvers.reject($0) })
-            } else if let typed: T = jsCast(value) {
+            } else if let typed: T = jsConverted(value) {
                 resolvers.resolve(typed)
             } else {
                 resolvers.reject(JSTypeError("A promise of \(T.self) was resolved with \(jsTypeof(value)) \(jsToString(value))"))
