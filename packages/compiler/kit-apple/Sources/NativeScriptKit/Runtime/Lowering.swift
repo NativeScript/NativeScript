@@ -78,6 +78,9 @@ public func jsArrayOrNil<T>(_ value: Any?, _ element: (Any?) throws -> T) rethro
 public func jsArrayOf<T>(_ value: Any?, as type: JSArray<T>.Type, _ element: (Any?) throws -> T) rethrows -> JSArray<T> { try jsArrayOf(value, element) }
 public func jsArrayOrNil<T>(_ value: Any?, as type: JSArray<T>.Type, _ element: (Any?) throws -> T) rethrows -> JSArray<T>? { try jsArrayOrNil(value, element) }
 public func jsRecordOf<T>(_ value: Any?, as type: JSRecord<T>.Type, _ element: (Any?) throws -> T) rethrows -> JSRecord<T> { try jsRecordOf(value, element) }
+public func jsRecordOrNil<T>(_ value: Any?, as type: JSRecord<T>.Type, _ element: (Any?) throws -> T) rethrows -> JSRecord<T>? {
+    jsIsNullish(value) ? nil : try jsRecordOf(value, element)
+}
 
 /// A member of an untyped object, or undefined; reading a typed object from JSON never throws.
 public func jsField(_ object: Any?, _ key: String) -> Any? {

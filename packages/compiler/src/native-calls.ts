@@ -1076,7 +1076,7 @@ export class NativeAPI {
     const held = this.heldBlock(t.expr(e), source, target);
     if (held) return held;
     // An untyped value where Swift takes a string: a missing one reads as empty, as Objective-C reads nil; anything else as its string.
-    if (source === 'Any?' && b === 'String') return optional(target) ? `{ (__s: Any?) -> String? in jsIsNullish(__s) ? nil : jsToString(__s) }(${t.expr(e)})` : `{ (__s: Any?) -> String in jsIsNullish(__s) ? "" : jsToString(__s) }(${t.expr(e)})`;
+    if (source === 'Any?' && b === 'String') return optional(target) ? `jsNativeString(${t.expr(e)})` : `jsStringOrEmpty(${t.expr(e)})`;
     // An object where a protocol is taken (`recognizer.delegate = navigationController`): Objective-C asks the object whether it conforms.
     if (/^any [A-Z]\w*$/.test(b) && /^[A-Z][\w.]*[?!]?$/.test(source) && !this.isEnumType(base(source)) && !this.isStructType(base(source)) && !['Double', 'String', 'Bool'].includes(base(source))) return this.asProtocol(e, source, target, b, `(${t.expr(e)} as? ${b})${optional(target) ? '' : '!'}`);
     // An untyped value where Swift takes a BOOL: its truthiness, as the runtime marshals it.
@@ -1152,7 +1152,7 @@ export class NativeAPI {
     // A dictionary where Swift keys one by a string-backed type (`[NSAttributedString.Key: Any]`).
     const keyed = /^\[([\w.]+): Any\]$/.exec(b)?.[1];
     if (keyed && keyed !== 'String' && keyed !== 'AnyHashable' && source.replace(/[?!]$/, '') !== b && this.isStringConstants(keyed)) {
-      return optional(target) ? `{ (__d: Any?) -> ${b}? in jsIsNullish(__d) ? nil : jsNativeKeyed(__d, ${keyed}.self) }(${t.expr(e)})` : `jsNativeKeyed(${t.expr(e)}, ${keyed}.self)`;
+      return optional(target) ? `jsNativeKeyedOrNil(${t.expr(e)}, ${keyed}.self)` : `jsNativeKeyed(${t.expr(e)}, ${keyed}.self)`;
     }
     // An untyped value where Swift takes a native object (or one conforming to a protocol: `any UIInteraction`).
     const cls = b.replace(/^any /, '');
@@ -1186,12 +1186,12 @@ export class NativeAPI {
     if (source === 'Any?' && /^\[\w+\s*:\s*Any\]$/.test(b)) return `jsToNativeDictionary(${t.expr(e)})`;
     // An untyped value where Swift takes an array (`initWithActivityItems(items, null)`): its elements as the runtime marshals them.
     if (source === 'Any?' && /^\[[^:]*\]$/.test(b)) {
-      const array = b === '[Any]' ? `jsToNativeArray(__a)` : typedCollection('jsToNativeArray(__a)', b)!;
-      return `{ (__a: Any?) -> ${b}${optional(target) ? '?' : ''} in ${optional(target) ? `jsIsNullish(__a) ? nil : ` : ''}${array} }(${t.expr(e)})`;
+      const array = (value: string) => (b === '[Any]' ? `jsToNativeArray(${value})` : typedCollection(`jsToNativeArray(${value})`, b)!);
+      return optional(target) ? `jsUnlessNullish(${t.expr(e)}, { ${array('$0')} })` : array(t.expr(e));
     }
     // An object of a literal's shape likewise.
     if (/^(Object_\w+|JSObject|JSRecord<.*>)[?!]?$/.test(source) && b === '[AnyHashable: Any]') {
-      return optional(target) && /[?!]$/.test(source) ? `{ (__o: Any?) -> ${b}? in jsIsNullish(__o) ? nil : jsToNativeDictionary(__o) }(${t.expr(e)})` : `jsToNativeDictionary(${t.expr(e)})`;
+      return optional(target) && /[?!]$/.test(source) ? `jsUnlessNullish(${t.expr(e)}, jsToNativeDictionary)` : `jsToNativeDictionary(${t.expr(e)})`;
     }
     // A possibly missing option set where Swift takes one: none of the options.
     if (!optional(target) && source.endsWith('?') && this.isOptionSet(b)) return `(${t.expr(e)} ?? [])`;

@@ -7,7 +7,7 @@ import { createHash } from 'node:crypto';
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 import { foldPlatform } from './platform.ts';
-import { THROWING_CODE, Translator, withoutRedundantImplicit } from './swift.ts';
+import { staticsHeldOptional, THROWING_CODE, Translator, withoutRedundantImplicit } from './swift.ts';
 import { SourceLines } from './source-lines.ts';
 import { collectProperties } from './properties.ts';
 import { evaluatedImports, evaluationOrder } from './modules.ts';
@@ -242,7 +242,8 @@ export function generateKit(o: KitOptions): KitResult {
   // Its folders are joined by dots, as the kit's file names are: Swift warns where two paths of a module give one #fileID
   // (`NativeScriptKit/index.ios.ts`).
   const lines = translator.lines = new SourceLines(new Map());
-  const withLocations = (code: string) => lines.swift(withoutRedundantImplicit(code)).replace(/#sourceLocation\(file: "([^"]*)"/g, (_, file: string) => {
+  let optionalStatics = new Set<string>();
+  const withLocations = (code: string) => lines.swift(withoutRedundantImplicit(code, optionalStatics)).replace(/#sourceLocation\(file: "([^"]*)"/g, (_, file: string) => {
     const rel = file.startsWith(core + '/') ? relative(core, file) : file.replace(/^.*\/node_modules\//, '');
     return `#sourceLocation(file: "@nativescript/core/${rel.replace(/\//g, '.')}"`;
   });
@@ -283,6 +284,7 @@ export function generateKit(o: KitOptions): KitResult {
   if (translator.errors?.length) errors.push(...translator.errors.map((e) => e.replaceAll(core + '/', '')));
   // The SDK frameworks beyond Foundation and UIKit the generated code names (Photos, QuartzCore), in every file; core's own modules where used.
   const sdk = translator.native.sdkModules().filter((m) => !['Foundation', 'UIKit'].includes(m) && !coreNative.has(m));
+  optionalStatics = staticsHeldOptional(out.map((f) => f.code));
   for (const f of out) {
     const code = withLocations((translator.interfacesOf(paths.get(f)!) + f.code).trim());
     f.code = header(new Set([...sdk, ...importsOf(code, imports.get(f))])) + publicize(code) + '\n';
@@ -301,7 +303,7 @@ export function generateKit(o: KitOptions): KitResult {
   for (const [name, code] of indexNamespaces(program, checker, join(core, 'index.ts'), compiled, (f) => enumName(relOf(f), barrels), sourceOf, codeOf)) {
     out.push({ name: `__Namespace.${name}.swift`, code: header(new Set(sdk)) + code + '\n', sources: {} });
   }
-  const shapes = publicize(withLocations(translator.shapesCode().trim()));
+  const shapes = publicize(withLocations(translator.shapesCode(false).trim()));
   const shapeFiles = new Set<string>();
   for (const shape of shapes ? shapes.split(/\n(?=public final class )/) : []) {
     const name = /^public final class (\w+)/.exec(shape.trim())?.[1];
@@ -310,6 +312,16 @@ export function generateKit(o: KitOptions): KitResult {
     const file = shapeFiles.has(name.toLowerCase()) ? `${name}_${hash(name).slice(0, 6)}` : name;
     shapeFiles.add(file.toLowerCase());
     out.push({ name: `${file}.swift`, code: header(new Set([...sdk, ...importsOf(shape)])) + shape.trim() + '\n', sources: {} });
+  }
+  // The function types' cells, apart from the shapes and grouped by how many parameters the function takes.
+  const cellFiles = new Map<string, string[]>();
+  for (const cell of translator.cellsCode()) {
+    const file = `FunctionCells.${cell.params < 3 ? `Arity${cell.params}` : 'Arity3Plus'}`;
+    cellFiles.set(file, [...(cellFiles.get(file) ?? []), publicize(withLocations(cell.code.trim()))]);
+  }
+  for (const [file, cells] of [...cellFiles].sort(([a], [b]) => a.localeCompare(b))) {
+    const code = cells.join('\n\n');
+    out.push({ name: `${file}.swift`, code: header(new Set([...sdk, ...importsOf(code)])) + code + '\n', sources: {} });
   }
   // Core's modules run their top level once, before the app's: those the app reaches, in the order JavaScript evaluates them,
   // which its build lists (the manifest's graph), so that nothing in the kit keeps the others in its binary.

@@ -254,6 +254,9 @@ public func jsNewDate(_ value: Any?) -> JSDate {
     }
 }
 
+/// `jsDateOf` where the declared type is optional: undefined and null stay nil.
+public func jsDateOrNil(_ value: Any?) -> JSDate? { jsIsNullish(value) ? nil : jsDateOf(value) }
+
 /// A value read untyped into a `Date`-typed field (an object from `JSON.parse`, where the date is still its
 /// string): the date it holds, or the date `new Date(value)` makes of it.
 public func jsDateOf(_ value: Any?) -> JSDate {

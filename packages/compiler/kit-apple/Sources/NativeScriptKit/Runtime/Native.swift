@@ -689,6 +689,11 @@ private func jsToNativeMember(_ value: Any?) -> Any? {
     }
 }
 
+/// `jsNativeKeyed` where Swift takes an optional dictionary: undefined and null stay nil.
+public func jsNativeKeyedOrNil<K: RawRepresentable & Hashable>(_ value: Any?, _ type: K.Type) -> [K: Any]? where K.RawValue == String {
+    jsIsNullish(value) ? nil : jsNativeKeyed(value, type)
+}
+
 /// A dictionary Swift keys by a string-backed type (`[NSAttributedString.Key: Any]`): script's
 /// object or a Foundation dictionary, its string keys as that type.
 public func jsNativeKeyed<K: RawRepresentable & Hashable>(_ value: Any?, _: K.Type) -> [K: Any] where K.RawValue == String {
