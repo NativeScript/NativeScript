@@ -885,6 +885,18 @@ export class NativeAPI {
     } catch { return false; }
   }
 
+  /** Whether the native property an assignment writes takes nil (`view.backgroundColor = color`); undefined where it is no native property. */
+  propertyOptional(left: ts.PropertyAccessExpression): boolean | undefined {
+    try {
+      const r = this.receiver(left.expression);
+      const m = r ? lookupMember(r.module, r.name, left.name.text, r.isStatic) : null;
+      if (!m || m.kind !== 'property') return undefined;
+      // An object of a class as it is: a value Swift bridges or converts (`Date?` from a JSDate) is converted present.
+      const b = base(m.type);
+      return optional(m.type) && /^[A-Z]\w*$/.test(b) && !this.isStructType(b) && !this.isEnumType(b) && !Object.values(BRIDGED).includes(b) && !['String', 'Double', 'Bool', 'Date', 'URL', 'Data'].includes(b);
+    } catch { return undefined; }
+  }
+
   /** Whether the native method a call runs takes its `k`th argument optional (nil passing as undefined); undefined where it is no native call. */
   argumentOptional(e: ts.CallExpression, k: number): boolean | undefined {
     try {

@@ -42,6 +42,11 @@ class Node {
 function parentName(node: Node): string {
   return node.parent ? node.parent.name : 'none';
 }
+function countKeys(record: Record<string, number>): number {
+  let n = 0;
+  for (const key in record) n += key.length;
+  return n;
+}
 function load(): Promise<string> {
   return Promise.resolve('loaded');
 }
@@ -52,6 +57,7 @@ attempt('call', () => node.tap());
 attempt('iterate', () => node.count());
 attempt('pass undefined', () => parentName(undefined));
 attempt('parent missing', () => parentName(node));
+attempt('keys of undefined', () => countKeys(undefined));
 node.style = new Style();
 node.parent = new Node('root');
 node.onTap = (n) => 'tapped ' + n;

@@ -392,10 +392,11 @@ const native = pluginNative(plugins.all(), out, {
   app: { module: name, src: join(appResourcesDir(app), 'iOS', 'src'), declarations: nativeTypings },
 });
 dependencies.dispose();
-const translator = new Translator(checker, infos, sourceFiles, { pluginFiles, reach, properties });
-translator.compiledFiles = new Set(compiledPlugins);
 const writtenStrictness = new Map<string, boolean>();
-for (const f of pluginFiles) if (!writtenStrict(f)) translator.lenientFiles.add(f);
+// Before the translator analyzes what throws: lenient code's checks throw.
+const lenientFiles = [...pluginFiles].filter((f) => !writtenStrict(f));
+const translator = new Translator(checker, infos, sourceFiles, { pluginFiles, lenientFiles, reach, properties });
+translator.compiledFiles = new Set(compiledPlugins);
 translator.lines = sourceLines;
 const located = (code: string) => (sourceLines ? sourceLines.swift(code) : code);
 translator.appModule = name;
