@@ -23,6 +23,7 @@
 		"251-define-property-targets": "A function declaration used as a value (`Object.defineProperty(greet, …)`) and `error.constructor.name` do not compile; defineProperty on a class's object, an array or a function is dropped, test262 cluster 3 (Kotlin translator and runtime).",
 		"252-prototype-method-calls": "A built-in's prototype method called with call or apply (`Array.prototype.slice.call(list, 1)`) is refused, test262 cluster 2 (Kotlin translator).",
 		"254-destructuring-assignment": "A rest element in a destructuring assignment (`[first, ...others] = list`) is refused, test262 cluster 8 (Kotlin translator).",
+		"257-typeof-lenient-optional": "Lenient code: a module or local `let x: boolean;` declared without a value holds false, not undefined (`isA11yEnabled()`); `typeof` of a function variable read from an optional member folds to \"function\"; `typeof val === 'string'` of a narrowed `string | string[]` parameter folds to true, so `enforceArray(undefined)` throws (Kotlin translator).",
 		"270-json-edges": "JSON.parse and JSON.stringify edges the Swift perf round covers: number forms, escapes, toJSON and replacer order, syntax error messages (Kotlin runtime, being fixed in the Kotlin perf work)."
 	}
 }
