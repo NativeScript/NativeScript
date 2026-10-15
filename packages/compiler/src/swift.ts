@@ -7235,6 +7235,8 @@ ${members.join('\n')}
     if (ts.isPropertyAccessExpression(left)) {
       const native = this.native.propertyOptional(left);
       if (native !== undefined) return native && ts.isExpressionStatement(left.parent.parent);
+      // A member of an object Swift holds untyped, or one script adds to a native object, is written by `jsSet`, which stores undefined.
+      if (this.isAny(left.expression) || this.isExpando(left)) return true;
     }
     // A keyed place of any value (`rule[animationsSymbol] = …`).
     if (ts.isElementAccessExpression(left)) { try { if (this.typeOf(left) === 'Any?') return true; } catch { return false; } }
