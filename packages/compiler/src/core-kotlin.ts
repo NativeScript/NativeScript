@@ -51,14 +51,26 @@ function joinContinuations(text: string): string {
   return out.join('').replace(/,?\s+\)/g, ')');
 }
 
+/** A Java class's name: its package is the SDK's, AndroidX's, Java's or core's widgets'. */
+const JAVA_PACKAGE = /^(?:android|androidx|java|javax|dalvik|org\.(?:nativescript\.widgets|json|w3c|xml)|com\.google)\.(?:[a-z_]\w*\.)*[A-Z]\w*$/;
+
 export function kotlinKitIndex(sources: string | string[]): Map<string, KitType> {
   const types = new Map<string, KitType>();
   const files = (Array.isArray(sources) ? sources : [sources]).flatMap((d) => (d.endsWith('.kt') ? [d] : existsSync(d) ? (readdirSync(d, { recursive: true }) as string[]).filter((f) => f.endsWith('.kt')).map((f) => join(d, f)) : []));
   for (const f of files) {
     // Comments, not a string's `//` (`"file://"`), whose brace after it would be lost with it.
     // Block comments first: a doc comment may hold a `//` (a URL).
-    const text = joinContinuations(readFileSync(f, 'utf8').replace(/("(?:\\.|[^"\\\n])*")|\/\*[\s\S]*?\*\//g, (_, s) => s ?? '').replace(/("(?:\\.|[^"\\\n])*")|\/\/.*$/gm, (_, s) => s ?? ''));
+    let text = joinContinuations(readFileSync(f, 'utf8').replace(/("(?:\\.|[^"\\\n])*")|\/\*[\s\S]*?\*\//g, (_, s) => s ?? '').replace(/("(?:\\.|[^"\\\n])*")|\/\/.*$/gm, (_, s) => s ?? ''));
     const imports = new Map([...text.matchAll(/^import\s+([\w.]+)\.(\w+)(?:\s+as\s+(\w+))?\s*$/gm)].map((m) => [m[3] ?? m[2], `${m[1]}.${m[2]}`]));
+    // A Java class a generated file imports by its simple name is read as its alias (`android_view_View`), the name app
+    // code imports it by (android.ts), which no kit class shares.
+    const java = new Map<string, string>();
+    if (f.includes('/generated/kotlin/')) for (const [n, q] of imports) if (q.endsWith(`.${n}`) && JAVA_PACKAGE.test(q)) java.set(n, q.replace(/\./g, '_'));
+    if (java.size) {
+      const names = new RegExp(`("(?:\\\\.|[^"\\\\\\n])*")|(?<![\\w$.])(${[...java.keys()].join('|')})(?![\\w$])`, 'g');
+      text = text.replace(names, (_, str, n) => str ?? java.get(n)!);
+      for (const [n, alias] of java) imports.set(alias, imports.get(n)!);
+    }
     const stack: { type: KitType | null; depth: number; companion: boolean }[] = [];
     let depth = 0;
     for (const line of text.split('\n')) {

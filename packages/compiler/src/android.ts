@@ -152,7 +152,8 @@ export async function writeAndroid(b: AndroidBuild): Promise<void> {
   translator.pluginRoots = (b.plugins ?? []).map((p) => p.root + '/');
   const table: Record<string, [number, string, number][]> = {};
   /** A Kotlin file as written, its markers turned into ranges of the line table: [first Kotlin line, source file, source line]. */
-  // The generated kit names Java classes by import aliases (`android_animation_Animator`) in the signatures app code meets: the same aliases.
+  // App code names the Java classes of the kit's signatures by aliases (`android_animation_Animator`), as the kit index
+  // reads them, whether the kit imports them under that alias or by their simple names.
   let kitAliases: Map<string, string> | null = null;
   const withKitAliases = (code: string): string => {
     if (!b.generatedKit || !/\b(android|androidx|java|javax|com|org|kotlin|io)_\w+/.test(code)) return code;
@@ -161,7 +162,7 @@ export async function writeAndroid(b: AndroidBuild): Promise<void> {
       const dir = join(KIT_ANDROID, 'generated/kotlin/org/nativescript/kit');
       for (const f of existsSync(dir) ? readdirSync(dir) : []) {
         if (!f.endsWith('.kt')) continue;
-        for (const m of readFileSync(join(dir, f), 'utf8').matchAll(/^import ([\w.]+) as (\w+)$/gm)) kitAliases.set(m[2], m[1]);
+        for (const m of readFileSync(join(dir, f), 'utf8').matchAll(/^import ([\w.]+?\.[A-Z]\w*)(?: as (\w+))?$/gm)) kitAliases.set(m[2] ?? m[1].replace(/\./g, '_'), m[1]);
       }
     }
     const used = [...new Set(code.match(/\b(?:android|androidx|java|javax|com|org|kotlin|io)_\w+/g) ?? [])].filter((a) => kitAliases!.has(a));
