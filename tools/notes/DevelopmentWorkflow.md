@@ -54,6 +54,15 @@ Run a single test by it's describe name, for example to run just the `xml/index.
 npx nx run core:test --watch -t 'XmlParser' 
 ```
 
+## Strict null checks
+
+`packages/core` is not yet clean under `strictNullChecks`. CI type-checks it in strict mode and compares the error count of each file with `packages/core/strict-baseline.json`: a file may not gain errors, and a file that loses some must lower its baseline in the same change.
+
+```bash
+npx nx run core:typecheck-strict           # check against the baseline
+npx nx run core:typecheck-strict --update  # record lowered counts
+```
+
 ## Running the `e2e` Test Apps
 
 There are a couple of application used for development and testing.
