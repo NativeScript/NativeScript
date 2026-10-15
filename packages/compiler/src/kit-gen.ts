@@ -7,7 +7,7 @@ import { createHash } from 'node:crypto';
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 import { foldPlatform } from './platform.ts';
-import { THROWING_CODE, Translator, withoutRedundantImplicit } from './swift.ts';
+import { staticsHeldOptional, THROWING_CODE, Translator, withoutRedundantImplicit } from './swift.ts';
 import { SourceLines } from './source-lines.ts';
 import { collectProperties } from './properties.ts';
 import { evaluatedImports, evaluationOrder } from './modules.ts';
@@ -242,7 +242,8 @@ export function generateKit(o: KitOptions): KitResult {
   // Its folders are joined by dots, as the kit's file names are: Swift warns where two paths of a module give one #fileID
   // (`NativeScriptKit/index.ios.ts`).
   const lines = translator.lines = new SourceLines(new Map());
-  const withLocations = (code: string) => lines.swift(withoutRedundantImplicit(code)).replace(/#sourceLocation\(file: "([^"]*)"/g, (_, file: string) => {
+  let optionalStatics = new Set<string>();
+  const withLocations = (code: string) => lines.swift(withoutRedundantImplicit(code, optionalStatics)).replace(/#sourceLocation\(file: "([^"]*)"/g, (_, file: string) => {
     const rel = file.startsWith(core + '/') ? relative(core, file) : file.replace(/^.*\/node_modules\//, '');
     return `#sourceLocation(file: "@nativescript/core/${rel.replace(/\//g, '.')}"`;
   });
@@ -283,6 +284,7 @@ export function generateKit(o: KitOptions): KitResult {
   if (translator.errors?.length) errors.push(...translator.errors.map((e) => e.replaceAll(core + '/', '')));
   // The SDK frameworks beyond Foundation and UIKit the generated code names (Photos, QuartzCore), in every file; core's own modules where used.
   const sdk = translator.native.sdkModules().filter((m) => !['Foundation', 'UIKit'].includes(m) && !coreNative.has(m));
+  optionalStatics = staticsHeldOptional(out.map((f) => f.code));
   for (const f of out) {
     const code = withLocations((translator.interfacesOf(paths.get(f)!) + f.code).trim());
     f.code = header(new Set([...sdk, ...importsOf(code, imports.get(f))])) + publicize(code) + '\n';

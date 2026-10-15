@@ -11709,10 +11709,11 @@ function exitsStatement(st: ts.Statement): boolean {
 }
 
 /**
- * `jsImplicit(x)` of a value Swift already holds optional (a conditional cast, an optional chain's member): the value.
- * Applied to a finished file, after the translator's own rewrites have read the marker.
+ * `jsImplicit(x)` where it changes nothing: of a value Swift already holds optional (a conditional cast, an optional
+ * chain's member, a name the file declares only as optional), or where an optional is taken anyway (`jsUnwrap`'s value,
+ * a declaration of an optional type). Applied to a finished file, after the translator's own rewrites have read the marker.
  */
-export function withoutRedundantImplicit(code: string): string {
+export function withoutRedundantImplicit(code: string, optionalStatics: ReadonlySet<string> = new Set(), optionalNames = namesHeldOptional(code)): string {
   const out: string[] = [];
   let at = 0;
   for (const m of code.matchAll(/\bjsImplicit\(/g)) {
@@ -11729,16 +11730,55 @@ export function withoutRedundantImplicit(code: string): string {
     if (depth) break;
     let arg = code.slice(start, i - 1);
     while (arg.startsWith('(') && arg.endsWith(')') && balanced(arg.slice(1, -1))) arg = arg.slice(1, -1);
+    if (!balanced(arg)) continue;
     // Outside its parentheses the value is one operand: a cast at its end, or a chain with no spaces.
     let top = arg.replace(/"(?:[^"\\]|\\.)*"/g, '_');
     for (let prev = ''; prev !== top;) { prev = top; top = top.replace(/\([^()]*\)/g, '_'); }
-    const optional = /^[^\s]+ as\? [\w.]+(<[\w.<>, ?]*>)?$/.test(top) || /^[^\s]*\?\.\w+$/.test(top);
-    if (!optional || !balanced(arg)) continue;
-    out.push(code.slice(at, m.index!), `(${withoutRedundantImplicit(arg)})`);
+    const before = code.slice(Math.max(0, m.index! - 200), m.index!);
+    // Where the value stands alone (an argument, a declaration's value), it needs no parentheses.
+    const after = code.slice(i, i + 1);
+    const alone = (/(?:\bjsUnwrap\(|\bjsImplicit\()\s*$/.test(before) && /^[,)]$/.test(after)) || (/\b(?:let|var) `?\w+`? *: *[^=\n]+\? *= *(?:try )?$/.test(before) && /^[\n;}]?$/.test(after));
+    const name = /^`?(\w+)`?$/.exec(arg.trim())?.[1] ?? (optionalStatics.has(arg.trim()) ? arg.trim() : undefined);
+    const optional = alone || /^[^\s]+ as\? [\w.]+(<[\w.<>, ?]*>)?$/.test(top) || /^[^\s]*\?\.\w+$/.test(top) || (!!name && (optionalNames.has(name) || optionalStatics.has(name)));
+    if (!optional) continue;
+    const inner = withoutRedundantImplicit(arg, optionalStatics, optionalNames);
+    out.push(code.slice(at, m.index!), alone || name ? inner : `(${inner})`);
     at = i;
   }
   out.push(code.slice(at));
   return out.join('');
+}
+
+const isOptionalType = (t: string) => /^[\w([]/.test(t) && balanced(t) && t.split('<').length === t.split('>').length && (/^\(.*\)\?$/.test(t) || (t.endsWith('?') && !t.includes('->')));
+
+/** The static members the files declare optional, as code names them (`Core_ui_styling_style_properties.colorProperty`). */
+export function staticsHeldOptional(files: Iterable<string>): Set<string> {
+  const optional = new Set<string>();
+  for (const code of files) {
+    let type: string | undefined;
+    for (const line of code.split('\n')) {
+      const top = /^(?:(?:public|open|final|internal|@\w+(?:\([^)]*\))?)\s+)*(?:enum|class|struct|extension)\s+(\w+)/.exec(line);
+      if (top) { type = top[1]; continue; }
+      const m = /^ {4}(?:(?:public|open|internal|nonisolated(?:\(unsafe\))?)\s+)*static\s+(?:var|let)\s+`?(\w+)`?\s*:\s*([^={]+?)\s*(?:[={].*)?$/.exec(line);
+      if (type && m && isOptionalType(m[2])) optional.add(`${type}.${m[1]}`);
+    }
+  }
+  return optional;
+}
+
+/**
+ * The names `code` declares only as optional (`let x: T?`, a parameter `_ x: T?`), and never otherwise: not as another
+ * type, nor without one (`let x = …`, `if let x`, a closure's `x in`), which could shadow an optional one.
+ */
+function namesHeldOptional(source: string): Set<string> {
+  const optional = new Set<string>(), other = new Set<string>();
+  // Comments (the source-line markers among them) and strings hold no declarations.
+  const code = source.replace(/\/\*[\s\S]*?\*\/|\/\/[^\n]*|"(?:[^"\\\n]|\\.)*"/g, '""');
+  for (const m of code.matchAll(/\b(\w+)`? *: *([^=,{\n]+?) *(?=[=,){\n])/g)) (isOptionalType(m[2]) ? optional : other).add(m[1]);
+  for (const m of code.matchAll(/\b(?:let|var|for|case let|case var) +`?(\w+)`? *(?!`?\w|`? *:)/g)) other.add(m[1]);
+  for (const m of code.matchAll(/\b(\w+)`?\)? +in\b/g)) other.add(m[1]);
+  for (const m of code.matchAll(/\b(?:weak|unowned) +(?:var +)?`?(\w+)/g)) other.add(m[1]);
+  return new Set([...optional].filter((n) => !other.has(n)));
 }
 
 /** `try` before an assignment to a name or a member path, which cannot throw: on its value instead (`x = try f()`). */
