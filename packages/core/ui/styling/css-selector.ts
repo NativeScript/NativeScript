@@ -239,13 +239,7 @@ export abstract class SelectorBase {
 	 * Selector contains a general sibling ('~') combinator, so its match depends on all previous siblings.
 	 */
 	public hasSiblingCombinator: boolean;
-	/**
-	 * Selector's match depends on whether the node has a next sibling (`:last-child`).
-	 */
 	public dependsOnNextSibling: boolean;
-	/**
-	 * Selector's match depends on all next siblings (`:nth-last-child()`, `:last-of-type`).
-	 */
 	public dependsOnFollowingSiblings: boolean;
 	public abstract match(node: Node): boolean;
 	public abstract mayMatch(node: Node): boolean;
@@ -454,11 +448,6 @@ export class AttributeSelector extends SimpleSelector {
 	}
 }
 
-/**
- * The structural pseudo-classes, by how they count a node's position among its siblings:
- * from the start or the end, among all siblings or only those of its type, and whether the
- * position comes from an `an+b` argument or is fixed (`only` is first and last).
- */
 const STRUCTURAL_PSEUDO_CLASSES: Record<string, { fromEnd: boolean; ofType: boolean; nth?: boolean; only?: boolean }> = {
 	'first-child': { fromEnd: false, ofType: false },
 	'last-child': { fromEnd: true, ofType: false },
@@ -474,9 +463,6 @@ const STRUCTURAL_PSEUDO_CLASSES: Record<string, { fromEnd: boolean; ofType: bool
 
 const NTH_FORMULA = /^(?:([+-]?)(\d*)n(?:\s*([+-])\s*(\d+))?|([+-]?\d+))$/;
 
-/**
- * Parse an `an+b` formula (`odd`, `even`, `3`, `2n+1`, `-n+3`) into [a, b], or null.
- */
 function parseNthFormula(formula: string): [number, number] | null {
 	const value = formula?.trim().toLowerCase();
 	if (value === 'odd') {
@@ -500,10 +486,6 @@ function parseNthFormula(formula: string): [number, number] | null {
 	return [a, b];
 }
 
-/**
- * `:first-child`, `:last-child`, `:only-child`, `:nth-child()` and their `-of-type` and `nth-last-` forms,
- * matched from the node's position among its parent's children. `:nth-child(an+b of S)` is not supported.
- */
 @SelectorProperties(Specificity.PseudoClass, Rarity.PseudoClass, Match.Static)
 export class StructuralPseudoClassSelector extends SimpleSelector {
 	private readonly fromEnd: boolean;
@@ -533,7 +515,6 @@ export class StructuralPseudoClassSelector extends SimpleSelector {
 		this.ofType = kind.ofType;
 		this.only = !!kind.only;
 
-		// Which siblings the position depends on, for re-matching when they change.
 		const fromStart = this.only || !this.fromEnd;
 		const fromEnd = this.only || this.fromEnd;
 		const anySibling = this.ofType || a !== 0 || b !== 1;
@@ -574,13 +555,8 @@ export class StructuralPseudoClassSelector extends SimpleSelector {
 	public mayMatch(node: Node): boolean {
 		return this.match(node);
 	}
-	public trackChanges(node: Node, map: ChangeAccumulator): void {
-		// Depends on the tree, not on state; tree changes re-match the siblings.
-	}
+	public trackChanges(node: Node, map: ChangeAccumulator): void {}
 
-	/**
-	 * The node's 1-based position among its siblings (of its type), counted from the start or the end.
-	 */
 	private position(node: Node, parent: Node, index: number, fromEnd: boolean): number {
 		if (!this.ofType) {
 			return fromEnd ? parent.getChildrenCount() - index : index + 1;
@@ -606,10 +582,6 @@ export class StructuralPseudoClassSelector extends SimpleSelector {
 	}
 }
 
-/**
- * `:root` matches the application's root view and the root view of each modal, which core marks
- * with the `ns-root` and `ns-modal` classes.
- */
 @SelectorProperties(Specificity.PseudoClass, Rarity.PseudoClass, Match.Static)
 export class RootPseudoClassSelector extends SimpleSelector {
 	public toString(): string {
@@ -623,9 +595,7 @@ export class RootPseudoClassSelector extends SimpleSelector {
 	public mayMatch(node: Node): boolean {
 		return this.match(node);
 	}
-	public trackChanges(node: Node, map: ChangeAccumulator): void {
-		// Root classes are set before the root view is styled.
-	}
+	public trackChanges(node: Node, map: ChangeAccumulator): void {}
 }
 
 @SelectorProperties(Specificity.PseudoClass, Rarity.PseudoClass, Match.Dynamic)
@@ -1392,13 +1362,7 @@ export abstract class SelectorScope<T extends Node> implements LookupSorter {
 	 * True when any selector in the scope contains a general sibling ('~') combinator.
 	 */
 	public hasSiblingCombinatorSelectors = false;
-	/**
-	 * True when any selector in the scope depends on whether a node has a next sibling.
-	 */
 	public hasNextSiblingSelectors = false;
-	/**
-	 * True when any selector in the scope depends on all of a node's next siblings.
-	 */
 	public hasFollowingSiblingSelectors = false;
 
 	getSelectorCandidates(node: T, candidates: SelectorCore[] = []): SelectorCore[] {

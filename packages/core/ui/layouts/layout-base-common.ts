@@ -97,8 +97,6 @@ export class LayoutBaseCommon extends CustomLayoutView implements LayoutBaseDefi
 		}
 	}
 
-	// Views before `index` gained or lost a next sibling: re-match the ones whose
-	// selectors look forward (`:last-child`, `:nth-last-child()`).
 	private _invalidatePrecedingSiblingCssState(index: number): void {
 		const scope = this._styleScope;
 		if (!scope || index <= 0) {
@@ -110,7 +108,6 @@ export class LayoutBaseCommon extends CustomLayoutView implements LayoutBaseDefi
 			return;
 		}
 
-		// `:last-child` only changes for the view right before
 		for (let i = following ? 0 : index - 1; i < index; i++) {
 			this._subViews[i]._onCssStateChange();
 		}
