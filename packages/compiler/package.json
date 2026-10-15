@@ -1,7 +1,17 @@
 {
   "name": "@nativescript/compiler",
-  "version": "0.1.0",
+  "version": "9.2.0-alpha.0",
   "description": "Compiles a NativeScript app written with Vue, Angular, Svelte, React, Solid or Octane into a native iOS or Android app with no JavaScript runtime.",
+  "license": "Apache-2.0",
+  "homepage": "https://docs.nativescript.org/guide/publishing/compiled",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/NativeScript/NativeScript.git",
+    "directory": "packages/compiler"
+  },
+  "bugs": {
+    "url": "https://github.com/NativeScript/NativeScript/issues"
+  },
   "type": "module",
   "bin": {
     "ns-native": "bin/ns-native.js",
@@ -37,7 +47,7 @@
     "typescript": "~5.9.0"
   },
   "peerDependencies": {
-    "@nativescript/core": "*"
+    "@nativescript/core": "9.2.0-alpha.0"
   },
   "peerDependenciesMeta": {
     "@nativescript/core": {
@@ -69,12 +79,6 @@
         "@nativescript-community/octane": ">=0.2.4 <0.3.0"
       }
     }
-  },
-  "license": "Apache-2.0",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/NativeScript/NativeScript.git",
-    "directory": "packages/compiler"
   },
   "scripts": {
     "prepack": "node tests/kits-present.mjs && node bin/build-dist.mjs",
