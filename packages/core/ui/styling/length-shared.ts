@@ -5,12 +5,8 @@ import { CoreTypes } from '../../core-types';
 import { layout } from '../../utils/layout-helper';
 import { isCssWideKeyword } from '../core/properties/property-shared';
 
-// The size of 1rem, in device-independent pixels.
 let rootFontSize = 16;
 
-/**
- * A `rem` length in device-independent pixels, or undefined if the value is not in rem.
- */
 function parseRem(value: string): CoreTypes.dip | undefined {
 	if (!value.endsWith('rem')) {
 		return undefined;
@@ -220,15 +216,9 @@ export namespace Length {
 	export const convertToString: {
 		(length: CoreTypes.LengthType): string;
 	} = convertToStringCommon;
-	/**
-	 * The size of 1rem in device-independent pixels: 16 unless set.
-	 */
 	export function getRootFontSize(): number {
 		return rootFontSize;
 	}
-	/**
-	 * Set the size of 1rem in device-independent pixels. Lengths parsed earlier keep their value.
-	 */
 	export function setRootFontSize(size: number): void {
 		if (size > 0 && isFinite(size)) {
 			rootFontSize = size;

@@ -1195,7 +1195,6 @@ export const fontScaleInternalProperty = new InheritedCssProperty<Style, number>
 });
 fontScaleInternalProperty.register(Style);
 
-// Font sizes are device-independent pixels, or a multiple of the root font size in rem.
 function parseFontSize(value: string): number {
 	return typeof value === 'string' && value.trim().endsWith('rem') ? <number>Length.parse(value) : parseFloat(value);
 }
