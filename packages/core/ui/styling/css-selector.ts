@@ -3,6 +3,7 @@ import '../../globals';
 import { _expandCssShorthand, _pendingCssShorthandSubstitution, isCssVariable } from '../core/properties';
 import { isNullOrUndefined } from '../../utils/types';
 import { cleanupImportantFlags } from './css-utils';
+import { CSSUtils } from '../../css/system-classes';
 
 import * as ReworkCSS from '../../css';
 import { checkIfMediaQueryMatches } from '../../media-query-list';
@@ -605,6 +606,28 @@ export class StructuralPseudoClassSelector extends SimpleSelector {
 	}
 }
 
+/**
+ * `:root` matches the application's root view and the root view of each modal, which core marks
+ * with the `ns-root` and `ns-modal` classes.
+ */
+@SelectorProperties(Specificity.PseudoClass, Rarity.PseudoClass, Match.Static)
+export class RootPseudoClassSelector extends SimpleSelector {
+	public toString(): string {
+		return `:root${wrap(this.combinator)}`;
+	}
+	public match(node: Node): boolean {
+		const cssClasses = node.cssClasses;
+
+		return !!cssClasses && (cssClasses.has(CSSUtils.ROOT_VIEW_CSS_CLASS) || cssClasses.has(CSSUtils.MODAL_ROOT_VIEW_CSS_CLASS));
+	}
+	public mayMatch(node: Node): boolean {
+		return this.match(node);
+	}
+	public trackChanges(node: Node, map: ChangeAccumulator): void {
+		// Root classes are set before the root view is styled.
+	}
+}
+
 @SelectorProperties(Specificity.PseudoClass, Rarity.PseudoClass, Match.Dynamic)
 export class PseudoClassSelector extends SimpleSelector {
 	constructor(public cssPseudoClass: string) {
@@ -1191,6 +1214,10 @@ function createSimpleSelectorFromAst(ast: CSSWhatSelector): SimpleSelector {
 
 		if (ast.name in STRUCTURAL_PSEUDO_CLASSES) {
 			return StructuralPseudoClassSelector.create(ast.name, ast.data as string);
+		}
+
+		if (ast.name === 'root') {
+			return new RootPseudoClassSelector();
 		}
 
 		return new PseudoClassSelector(ast.name);
