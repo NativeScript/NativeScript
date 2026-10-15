@@ -128,3 +128,28 @@ export function test_automation_text_set_to_native() {
 	TKUnit.assertEqual((<UIView>newButton.ios).accessibilityIdentifier, 'Button1', 'accessibilityIdentifier not set to native view.');
 	TKUnit.assertEqual((<UIView>newButton.ios).accessibilityLabel, 'Button1', 'accessibilityLabel not set to native view.');
 }
+
+export function test_swapping_touch_listener_keeps_native_recognizer() {
+	const layout = new GridLayout();
+	helper.buildUIAndRunTest(layout, function () {
+		const nativeView = <UIView>layout.ios;
+		const count = () => nativeView.gestureRecognizers?.count ?? 0;
+		const initial = count();
+		const first = () => {};
+		const second = () => {};
+
+		layout.on('touch', first);
+		const recognizer = nativeView.gestureRecognizers.lastObject;
+
+		// Renderers swap handlers like this on every render, often mid-gesture.
+		layout.off('touch', first);
+		layout.on('touch', second);
+		TKUnit.waitUntilReady(() => false, 0.1, false);
+
+		TKUnit.assertEqual(count(), initial + 1, 'Swapping the listener should not add a recognizer.');
+		TKUnit.assertEqual(nativeView.gestureRecognizers.lastObject, recognizer, 'Swapping the listener should keep the recognizer that is tracking the touch.');
+
+		layout.off('touch', second);
+		TKUnit.waitUntilReady(() => count() === initial);
+	});
+}

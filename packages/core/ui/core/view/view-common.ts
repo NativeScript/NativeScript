@@ -180,6 +180,15 @@ export abstract class ViewCommon extends ViewBase {
 
 	public readonly _gestureObservers = {} as Record<GestureTypes, Array<GesturesObserver>>;
 
+	/**
+	 * Observers whose listener was removed in this turn. They keep their native
+	 * recognizer until the next turn, so a listener added in the meantime can
+	 * take one over instead of attaching a recognizer that has not seen the
+	 * gesture in progress.
+	 */
+	private _releasedGestureObservers: Partial<Record<GestureTypes, Array<GesturesObserver>>>;
+	private _releaseGestureObserversTimer: any;
+
 	_androidContentDescriptionUpdated?: boolean;
 
 	get css(): string {
@@ -376,6 +385,17 @@ export abstract class ViewCommon extends ViewBase {
 
 		if (!this._gestureObservers[type]) {
 			this._gestureObservers[type] = [];
+		}
+
+		// Renderers swap handlers by removing the old one and adding the new one.
+		// Re-use a recognizer released in this turn so the new handler receives
+		// the rest of a gesture that is in progress.
+		const released = this._releasedGestureObservers?.[type];
+		if (released?.length) {
+			const observer = released.shift();
+			observer._setCallback(callback, thisArg);
+			this._gestureObservers[type].push(observer);
+			return;
 		}
 
 		this._gestureObservers[type].push(gestureObserve(this, type, callback, thisArg));
@@ -646,13 +666,38 @@ export abstract class ViewCommon extends ViewBase {
 				continue;
 			}
 
-			observer.disconnect();
 			observers.splice(i, 1);
 			i--;
+			this._releaseGestureObserver(type, observer);
 		}
 
 		if (!observers.length) {
 			delete this._gestureObservers[type];
+		}
+	}
+
+	/**
+	 * Stops calling the observer's listener right away, but disconnects its
+	 * native recognizer only in the next turn, unless `_observe` takes it over
+	 * first.
+	 */
+	private _releaseGestureObserver(type: GestureTypes, observer: GesturesObserver): void {
+		observer._setCallback(null, null);
+
+		const released = this._releasedGestureObservers || (this._releasedGestureObservers = {});
+		(released[type] || (released[type] = [])).push(observer);
+
+		if (!this._releaseGestureObserversTimer) {
+			this._releaseGestureObserversTimer = setTimeout(() => {
+				this._releaseGestureObserversTimer = null;
+				const pending = this._releasedGestureObservers;
+				this._releasedGestureObservers = null;
+				for (const key in pending) {
+					for (const observer of pending[key]) {
+						observer.disconnect();
+					}
+				}
+			});
 		}
 	}
 

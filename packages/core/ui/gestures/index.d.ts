@@ -46,6 +46,12 @@ export class GesturesObserver {
 	context: any;
 
 	/**
+	 * Points the observer at another listener while keeping its native
+	 * recognizer, so the new listener receives a gesture already in progress.
+	 */
+	_setCallback(callback: (args: GestureEventData) => void, context?: any): void;
+
+	/**
 	 * An internal Android specific method used to pass the motion event to the correct gesture observer.
 	 */
 	androidOnTouchEvent: (motionEvent: any /* android.view.MotionEvent */) => void;
