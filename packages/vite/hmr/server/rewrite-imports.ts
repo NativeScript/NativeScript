@@ -143,7 +143,6 @@ export function rewriteImports(code: string, importerPath: string, sfcFileMap: M
 	// Inline JSON imports (package.json, config.json, etc.)
 	// This must happen BEFORE other rewrites because JSON imports get a ?import query added by Vite
 	result = result.replace(/import\s+(\w+)\s+from\s+["']([^"']+\.json(?:\?[^"']*)?)["'];?/g, (match, varName, jsonPath) => {
-		// `?raw` wants the file's text, not the parsed object; it's served below.
 		if (PAT.RAW_QUERY_PATTERN.test(jsonPath)) {
 			return match;
 		}
@@ -538,10 +537,6 @@ export function rewriteImports(code: string, importerPath: string, sfcFileMap: M
 		return `${prefix}${spec}${suffix}`;
 	};
 
-	// A `?raw` import (`import svg from './icon.svg?raw'`, which Vite emits as
-	// `?import&raw`) is routed like the plain file, then keeps `?raw` on its
-	// /ns/m URL so the route serves the file's text (see websocket-ns-m.ts).
-	// The routing above drops queries, which served the asset module instead.
 	const replaceImport = (match: string, prefix: string, spec: string, suffix: string): string => {
 		if (typeof spec !== 'string' || !PAT.RAW_QUERY_PATTERN.test(spec)) {
 			return replaceVueImport(match, prefix, spec, suffix);

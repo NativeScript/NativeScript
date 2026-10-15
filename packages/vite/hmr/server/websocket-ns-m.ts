@@ -169,9 +169,6 @@ export function registerNsModuleServerRoute(server: ViteDevServer, options: Regi
 				} catch {}
 			}
 
-			// `?raw` imports keep the query on their /ns/m URL (rewriteImports).
-			// Vite's raw load is the file's text as `export default "..."`,
-			// which needs none of the device passes below.
 			if (RAW_QUERY_PATTERN.test(urlObj.search)) {
 				const rawSpec = resolveFsAnchoredSpec(spec, serverRoot, monorepoWorkspaceRoot) || spec;
 				const rawRes = await sharedTransformRequest(`${rawSpec}?raw`);

@@ -4,8 +4,6 @@
 // Generic query suffix
 export const QUERY_PATTERN = /\?.*$/;
 
-// Vite's `?raw` import query (its own `rawRE`), which loads a file's text as
-// `export default "..."`. Doesn't match the `raw=1` diagnostics flag.
 export const RAW_QUERY_PATTERN = /[?&]raw(?:&|$)/;
 
 // Detect whether Vite's variable dynamic import helper is already inlined

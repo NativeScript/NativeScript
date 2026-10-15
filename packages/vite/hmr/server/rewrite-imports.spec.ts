@@ -56,7 +56,6 @@ describe('rewriteImports — ?raw imports', () => {
 	const rewrite = (code: string) => rewriteImports(code, '/src/icons.ts', new Map(), new Map(), root, false, undefined, ORIGIN, true);
 
 	it('keeps ?raw on an app file import', () => {
-		// Vite adds `import` to the query of non-JS imports.
 		const out = rewrite(`import svg from "/src/icon.svg?import&raw";\n`);
 		expect(out).toContain(`from "/ns/m/src/icon.svg?raw"`);
 	});
