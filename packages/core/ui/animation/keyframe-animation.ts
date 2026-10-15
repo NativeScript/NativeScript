@@ -61,9 +61,6 @@ interface Keyframe {
 
 const KEYFRAME_PROPERTIES = ['backgroundColor', 'scale', 'translate', 'rotate', 'opacity', 'width', 'height'];
 
-/**
- * The view's own value for a keyframe property, or undefined for one that cannot be animated from (an `auto` size).
- */
 function getKeyframeValue(view: View, property: string): any {
 	switch (property) {
 		case 'backgroundColor':
@@ -94,7 +91,6 @@ export class KeyframeAnimation {
 	private _isForwards: boolean;
 	private _nativeAnimations: Array<Animation>;
 	private _target: View;
-	// Keyframes added for a missing 0% or 100%, filled with the view's own values when it plays.
 	private _implicitKeyframes: Array<Keyframe>;
 
 	public static keyframeAnimationFromInfo(info: KeyframeAnimationInfo): KeyframeAnimation {
@@ -103,7 +99,6 @@ export class KeyframeAnimation {
 			return null;
 		}
 
-		// As in CSS, a missing 0% or 100% keyframe takes the element's own values.
 		const keyframes = info.keyframes.slice();
 		const implicitInfos = new Array<KeyframeInfo>();
 		if (keyframes[0].duration > 0) {
