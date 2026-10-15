@@ -4,6 +4,8 @@
 // Generic query suffix
 export const QUERY_PATTERN = /\?.*$/;
 
+export const RAW_QUERY_PATTERN = /[?&]raw(?:&|$)/;
+
 // Detect whether Vite's variable dynamic import helper is already inlined
 export const VARIABLE_DYNAMIC_IMPORT_HELPER_PATTERN = /__variableDynamicImportRuntimeHelper\s*=/;
 

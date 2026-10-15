@@ -1,4 +1,7 @@
-import { describe, expect, it } from 'vitest';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'fs';
+import { tmpdir } from 'os';
+import { join } from 'path';
+import { afterAll, describe, expect, it } from 'vitest';
 
 import { rewriteImports } from './rewrite-imports.js';
 
@@ -41,5 +44,31 @@ describe('rewriteImports — glued re-export normalization', () => {
 		const out = rewrite(input, '/src/x.ts');
 		expect(out).toContain(`const x = 1;export default x;`);
 		expect(out).toContain(`export const banner = 'hi';`);
+	});
+});
+
+describe('rewriteImports — ?raw imports', () => {
+	const ORIGIN = 'http://localhost:5173';
+	const root = mkdtempSync(join(tmpdir(), 'ns-rewrite-raw-'));
+	mkdirSync(join(root, 'node_modules', 'icons', 'font'), { recursive: true });
+	writeFileSync(join(root, 'node_modules', 'icons', 'font', 'icons.json'), '{ "house": 61713 }');
+	afterAll(() => rmSync(root, { recursive: true, force: true }));
+	const rewrite = (code: string) => rewriteImports(code, '/src/icons.ts', new Map(), new Map(), root, false, undefined, ORIGIN, true);
+
+	it('keeps ?raw on an app file import', () => {
+		const out = rewrite(`import svg from "/src/icon.svg?import&raw";\n`);
+		expect(out).toContain(`from "/ns/m/src/icon.svg?raw"`);
+	});
+
+	it('keeps ?raw on a node_modules JSON import instead of inlining the parsed object', () => {
+		const out = rewrite(`import icons from "/node_modules/icons/font/icons.json?import&raw";\n`);
+		expect(out).toContain(`from "${ORIGIN}/ns/m/node_modules/icons/font/icons.json?raw"`);
+		expect(out).not.toContain('const icons =');
+	});
+
+	it('leaves imports without ?raw as they were', () => {
+		const out = rewrite(`import svg from "/src/icon.svg?import";\nimport icons from "/node_modules/icons/font/icons.json?import";\n`);
+		expect(out).toContain(`from "/ns/m/src/icon.svg"`);
+		expect(out).toContain('const icons = { "house": 61713 };');
 	});
 });
