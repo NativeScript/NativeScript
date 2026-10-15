@@ -43,7 +43,6 @@ pending @nativescript/core/http.http-request.index.ios.ts | left side of nil coa
 pending @nativescript/core/native-window.native-window-common.ts | comparing non-optional value of type 'String' to 'nil' always returns false
 pending @nativescript/core/text.text-common.ts | conditional cast from 'JSArrayBuffer' to 'JSArrayBuffer' always succeeds
 pending @nativescript/core/text.text-common.ts | no calls to throwing functions occur within 'try' expression
-pending @nativescript/core/ui.animation.index.ios.ts | using '_' to ignore the result of a Void-returning function is redundant
 pending @nativescript/core/ui.core.control-state-change.index.ios.ts | conditional cast from 'ObserverClass' to 'ObserverClass' always succeeds
 pending @nativescript/core/ui.core.properties.index.ts | comparing non-optional value of type 'String' to 'nil' always returns true
 pending @nativescript/core/ui.core.view.index.ios.ts | conditional cast from 'View' to 'View' always succeeds

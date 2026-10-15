@@ -10797,9 +10797,9 @@ ${members.join('\n')}
         // `a || b` of objects of one class: an object is truthy exactly when it is there.
         const sameObject = op === K.BarBarToken && this.isObjectRef(left) && this.isObjectRef(e.right) && !isFunctionType(t.replace(/^\((.*)\)[?!]$/, '$1'))
           && leftType.replace(/[?!]$/, '') === t.replace(/[?!]$/, '') && !leftCode.startsWith('try ');
-        if (sameObject && (leftValue === `${v}!` || (leftValue === v && t.endsWith('?')))) return `(${lt || rt}${leftCode} ?? ${right})`;
+        if (sameObject && (leftValue === `${v}!` || (leftValue === v && t.endsWith('?')))) return `(${leftCode} ?? ${right})`;
         // Lenient code: `a || b` of objects is undefined when both are (`span.style.backgroundColor || parent.backgroundColor`).
-        if (sameObject && this.lenient && t !== 'Any?' && this.lenientRef(t) !== t && !t.endsWith('!')) return `((${lt || rt}${leftCode} ?? ${right}) as ${optionalType(t)})`;
+        if (sameObject && /[?!]$/.test(leftType) && this.lenient && t !== 'Any?' && this.lenientRef(t) !== t && !t.endsWith('!')) return `((${leftCode} ?? ${right}) as ${optionalType(t)})`;
         if (this.lenient && op === K.BarBarToken && t !== 'Any?' && this.lenientRef(t) !== t && !t.endsWith('!')) {
           return `jsImplicit(({ () ${throws}-> ${optionalType(t)} in let ${v} = ${lt}${leftCode}; return jsTruthy(${v}) ? ${leftValue} : ${rt}${right} }()))`;
         }
@@ -11685,8 +11685,9 @@ export function withoutRedundantImplicit(code: string): string {
     let arg = code.slice(start, i - 1);
     while (arg.startsWith('(') && arg.endsWith(')') && balanced(arg.slice(1, -1))) arg = arg.slice(1, -1);
     // Outside its parentheses the value is one operand: a cast at its end, or a chain with no spaces.
-    const top = arg.replace(/\((?:[^()"]|"(?:[^"\\]|\\.)*")*\)/g, '()');
-    const optional = (/^[^\s]+ as\? [\w.]+(<[\w.<>, ?]*>)?$/.test(top) && !/[()]/.test(top.replace(/\(\)/g, ''))) || /^[^\s]*\?\.\w+$/.test(top);
+    let top = arg.replace(/"(?:[^"\\]|\\.)*"/g, '_');
+    for (let prev = ''; prev !== top;) { prev = top; top = top.replace(/\([^()]*\)/g, '_'); }
+    const optional = /^[^\s]+ as\? [\w.]+(<[\w.<>, ?]*>)?$/.test(top) || /^[^\s]*\?\.\w+$/.test(top);
     if (!optional || !balanced(arg)) continue;
     out.push(code.slice(at, m.index!), `(${withoutRedundantImplicit(arg)})`);
     at = i;
