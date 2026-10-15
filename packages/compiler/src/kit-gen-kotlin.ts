@@ -235,8 +235,13 @@ export function generateKotlinKit(o: KotlinKitOptions): KotlinKitResult {
   // The statement markers, taken out before the imports are written, become the line table a stack trace's kit
   // frames are read with (retrace.ts): `[first Kotlin line, core file, its line]` ranges.
   const lines: Record<string, [number, string, number][]> = {};
+  const kitCodes = out.map((f) => (translator.interfacesOf(paths.get(f)!) + f.code).trim());
+  const foreign = [...new Map(translator.foreign.map((x) => [x.name, x])).values()];
+  const shapes = translator.shapesCode().trim();
+  // What the kit's package declares at its top level: a Java class of the same simple name is imported under an alias.
+  const taken = topLevelNames([...kitCodes, exported ?? '', shapes, ...handWrittenFiles().map((f) => readFileSync(f, 'utf8'))]);
   // The markers stay through imports and formatting, so the table names the lines as written.
-  const located = (_name: string, code: string, pkg?: string): string => withImports(code, pkg, (internal) => !!native.classpath.get(internal)?.deprecated && allowedDeprecation(internal));
+  const located = (_name: string, code: string, pkg?: string): string => withImports(code, taken, pkg, (internal) => !!native.classpath.get(internal)?.deprecated && allowedDeprecation(internal));
   const lineTable = (name: string, code: string): string => {
     const body = sourceLines.kotlin(code);
     const ranges: [number, string, number][] = [];
@@ -247,13 +252,12 @@ export function generateKotlinKit(o: KotlinKitOptions): KotlinKitResult {
     if (ranges.length) lines[name] = ranges;
     return body.code;
   };
-  for (const f of out) f.code = located(f.name, (translator.interfacesOf(paths.get(f)!) + f.code).trim());
+  out.forEach((f, k) => { f.code = located(f.name, kitCodes[k]); });
   if (exported) out.push({ name: '__Exports.kt', code: located('__Exports.kt', exported.trim()), sources: {} });
   // Classes under Java names of other packages (`com.tns.NativeScriptActivity`), as an app's manifest names them.
-  for (const f of new Map(translator.foreign.map((x) => [x.name, x])).values()) {
+  for (const f of foreign) {
     out.push({ name: `${f.name}.kt`, code: located(`${f.name}.kt`, f.code.trim(), f.name.slice(0, f.name.lastIndexOf('.'))), sources: {} });
   }
-  const shapes = translator.shapesCode().trim();
   if (shapes) out.push({ name: '__Objects.kt', code: located('__Objects.kt', shapes), sources: {} });
   if (o.format) {
     const formatted = o.format(out.map((f) => f.code));
@@ -349,21 +353,44 @@ export function groupByCause(errors: string[]): { cause: string; count: number; 
 const JAVA_NAME = /(?<![\w.$`])(?:android|androidx|java|javax|dalvik|org\.(?:nativescript\.widgets|json|w3c|xml)|com\.google)(?:\.[a-z_]\w*)*\.[A-Z]\w*/g;
 
 /**
- * A file's code with the Java classes it names imported under aliases (`android_view_View`): core's classes
- * have members named `android`, which a qualified name inside them would resolve to, and Kotlin has no root qualifier.
+ * A file's code with the Java classes it names imported. A class is imported by its simple name unless the file also
+ * spells that name for something else (core's `View`, Kotlin's `Double`) or names two classes by it: then under an
+ * alias (`android_view_View`), since core's classes have members named `android`, which a qualified name inside
+ * them would resolve to, and Kotlin has no root qualifier.
  */
 /** `deprecated`: whether an imported class (`android/widget/TabHost`) is a deprecated one core may use. */
-function withImports(code: string, pkg = KIT_PACKAGE, deprecated: (internal: string) => boolean = () => false): string {
+function withImports(code: string, taken: Set<string>, pkg = KIT_PACKAGE, deprecated: (internal: string) => boolean = () => false): string {
   // Kotlin's `run { … }` by its package: core's classes declare a `run` of their own (`Application.run()`), which would take the block.
   code = code.replace(/(?<=[\s(=,!/])run (?=\{|\w+@ \{)/g, 'kotlin.run ');
+  const named = new Set<string>();
+  let rest = '';
+  outsideLiterals(code, (part) => {
+    for (const m of part.matchAll(JAVA_NAME)) named.add(m[0]);
+    rest += part.replace(JAVA_NAME, ' ') + '\n';
+    return part;
+  });
+  const simple = (name: string) => name.slice(name.lastIndexOf('.') + 1);
+  const bySimple = new Map<string, number>();
+  for (const name of named) bySimple.set(simple(name), (bySimple.get(simple(name)) ?? 0) + 1);
+  const spelled = new Set(rest.match(/(?<![\w$.])[A-Z]\w*(?![\w$])/g) ?? []);
+  // The name each class is written by: its own, or its alias where that one is taken.
   const aliases = new Map<string, string>();
-  const alias = (name: string) => {
-    const a = name.replace(/\./g, '_');
-    aliases.set(name, a);
-    return a;
-  };
+  for (const name of named) aliases.set(name, bySimple.get(simple(name)) === 1 && !spelled.has(simple(name)) && !taken.has(simple(name)) ? '' : name.replace(/\./g, '_'));
+  const out = outsideLiterals(code, (part) => part.replace(JAVA_NAME, (name) => aliases.get(name) || simple(name)));
+  const annotations = ['AnyThread', 'UiThread'].filter((a) => new RegExp(`@${a}\\b`).test(out)).map((a): [string, string] => [`androidx.annotation.${a}`, '']);
+  const imports = [...annotations, ...[...aliases].sort()].map(([name, a]) => `import ${name}${a ? ` as ${a}` : ''}\n`).join('');
+  // Kotlin reports a deprecated class at its import, which only the file can suppress: the file then suppresses deprecation.
+  const old = [...aliases.keys()].filter((name) => deprecated(name.replace(/\./g, '/')));
+  if (old.length) {
+    const why = `// Uses ${old.join(', ')}, deprecated in Android, on purpose: Kotlin reports a class at its import, which only the file can suppress.\n@file:Suppress("DEPRECATION")\n\n`;
+    return header(pkg, why) + (imports ? imports + '\n' : '') + out.replaceAll('@Suppress("DEPRECATION") ', '').replaceAll('@Suppress("DEPRECATION", ', '@Suppress(') + '\n';
+  }
+  return header(pkg) + (imports ? imports + '\n' : '') + out + '\n';
+}
+
+/** `code` with `f` applied to each run of it outside string literals and comments; a string template's `${…}` is code. */
+function outsideLiterals(code: string, f: (part: string) => string): string {
   let out = '';
-  // Code outside string literals and comments; a string template's `${…}` is code.
   // A template's braces open inside it count, so its own `}` is the one that closes it.
   const stack: { kind: 'code' | 'string' | 'template'; depth: number }[] = [{ kind: 'code', depth: 0 }];
   for (let i = 0; i < code.length; ) {
@@ -377,7 +404,7 @@ function withImports(code: string, pkg = KIT_PACKAGE, deprecated: (internal: str
     }
     let j = i;
     while (j < code.length && !'"\'/{}'.includes(code[j])) j++;
-    out += code.slice(i, j).replace(JAVA_NAME, alias);
+    out += f(code.slice(i, j));
     if (j >= code.length) break;
     const c = code[j];
     if (c === '"') { stack.push({ kind: 'string', depth: 0 }); out += c; i = j + 1; continue; }
@@ -388,15 +415,7 @@ function withImports(code: string, pkg = KIT_PACKAGE, deprecated: (internal: str
     if (c === '}') { if (top.kind === 'template' && top.depth === 0) stack.pop(); else top.depth--; out += c; i = j + 1; continue; }
     out += c; i = j + 1;
   }
-  const annotations = ['AnyThread', 'UiThread'].filter((a) => new RegExp(`@${a}\\b`).test(out)).map((a): [string, string] => [`androidx.annotation.${a}`, '']);
-  const imports = [...annotations, ...[...aliases].sort()].map(([name, a]) => `import ${name}${a ? ` as ${a}` : ''}\n`).join('');
-  // Kotlin reports a deprecated class at its import, which only the file can suppress: the file then suppresses deprecation.
-  const old = [...aliases.keys()].filter((name) => deprecated(name.replace(/\./g, '/')));
-  if (old.length) {
-    const why = `// Uses ${old.join(', ')}, deprecated in Android, on purpose: Kotlin reports a class at its import, which only the file can suppress.\n@file:Suppress("DEPRECATION")\n\n`;
-    return header(pkg, why) + (imports ? imports + '\n' : '') + out.replaceAll('@Suppress("DEPRECATION") ', '').replaceAll('@Suppress("DEPRECATION", ', '@Suppress(') + '\n';
-  }
-  return header(pkg) + (imports ? imports + '\n' : '') + out + '\n';
+  return out;
 }
 
 function located(e: unknown, sf: ts.SourceFile, core: string): string {
@@ -432,6 +451,24 @@ function dropAt(e: unknown, sf: ts.SourceFile): boolean {
   return false;
 }
 
+/** The hand-written Kotlin a `-PgeneratedKit` build compiles beside the generated code (see `handWrittenTypes`). */
+function handWrittenFiles(): string[] {
+  const android = resolve(import.meta.dirname, '../kit-android');
+  const kit = join(android, 'src/main/kotlin/org/nativescript/kit');
+  const fromCore = join(android, 'src/fromcore/kotlin/org/nativescript/kit');
+  const kept = /val kept = setOf\(([^)]*)\)/.exec(readFileSync(join(android, 'build.gradle.kts'), 'utf8'))?.[1].match(/[\w.]+\.kt/g) ?? [];
+  const dir = (d: string) => (existsSync(d) ? readdirSync(d).filter((f) => f.endsWith('.kt')).map((f) => join(d, f)) : []);
+  return [...kept.map((f) => join(kit, f)), ...dir(join(kit, 'runtime')), ...dir(fromCore)].filter(existsSync);
+}
+
+/** The capitalized names Kotlin sources declare at their top level: types, objects, properties and functions. */
+function topLevelNames(codes: string[]): Set<string> {
+  const decl = /^(?:@[\w:.]+(?:\([^)]*\))?\s+)*(?:(?:public|internal|private|open|abstract|sealed|data|enum|value|annotation|inline|const|lateinit|inner|final)\s+)*(?:class|interface|object|typealias|val|var|fun)\s+(?:<[^>]*>\s*)?([A-Z]\w*)(?![\w.])/gm;
+  const names = new Set<string>();
+  for (const code of codes) for (const m of code.matchAll(decl)) names.add(m[1]);
+  return names;
+}
+
 /** What the bundler defines for core, as a release build's (kit-gen.ts). */
 const CORE_DEFINES: Record<string, string> = { __UI_USE_EXTERNAL_RENDERER__: 'false', __UI_USE_XML_PARSER__: 'true', __CSS_PARSER__: "'nativescript'" };
 
@@ -445,14 +482,8 @@ function withCoreDefines(text: string): string {
  * code: the runtime, src/fromcore, and the hand port's files kit-android's build.gradle.kts keeps.
  */
 function handWrittenTypes(): Set<string> {
-  const android = resolve(import.meta.dirname, '../kit-android');
-  const kit = join(android, 'src/main/kotlin/org/nativescript/kit');
-  const fromCore = join(android, 'src/fromcore/kotlin/org/nativescript/kit');
-  const kept = /val kept = setOf\(([^)]*)\)/.exec(readFileSync(join(android, 'build.gradle.kts'), 'utf8'))?.[1].match(/[\w.]+\.kt/g) ?? [];
-  const dir = (d: string) => (existsSync(d) ? readdirSync(d).filter((f) => f.endsWith('.kt')).map((f) => join(d, f)) : []);
-  const files = [...kept.map((f) => join(kit, f)), ...dir(join(kit, 'runtime')), ...dir(fromCore)];
   const names = new Set<string>();
-  for (const f of files.filter(existsSync)) {
+  for (const f of handWrittenFiles()) {
     for (const m of readFileSync(f, 'utf8').matchAll(/^(?:(?:public|internal|open|abstract|sealed|data|enum|fun|value|annotation)\s+)*(?:class|interface|object|typealias)\s+(\w+)/gm)) names.add(m[1]);
   }
   return names;

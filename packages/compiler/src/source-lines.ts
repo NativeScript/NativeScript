@@ -15,6 +15,8 @@ export interface SourceLocation { file: string; line: number }
 
 const MARKER = /\/\*@ns:(\d+|-)\*\//g;
 const LEADING = /^(\s*)\/\*@ns:(\d+|-)\*\//;
+/** A marker with the space a formatter puts after it, which would otherwise indent the statement by one. */
+const SPACED_MARKER = /\/\*@ns:(\d+|-)\*\/ ?/g;
 
 export class SourceLines {
   private locations: SourceLocation[] = [];
@@ -76,7 +78,7 @@ export class SourceLines {
     for (const line of code.split('\n')) {
       const m = LEADING.exec(line);
       if (m) current = m[2] === '-' ? null : this.locations[+m[2]];
-      const text = line.replace(MARKER, '');
+      const text = line.replace(SPACED_MARKER, '');
       // A marker a formatter left on a line of its own stands for the line after it.
       if (m && !text.trim()) continue;
       out.push(text.replace(/[ \t]+$/, ''));

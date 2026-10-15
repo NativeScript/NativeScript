@@ -591,6 +591,24 @@ fun jsStringOrNull(value: Any?): String? = when (value) {
     else -> null
 }
 
+/** A string, number or boolean where code declares a number, converted as `Number(value)`; null for anything else. */
+fun jsNumberOrNull(value: Any?): Double? = when (value) {
+    is Double -> value
+    is String -> jsNumberFromString(value)
+    is Boolean -> if (value) 1.0 else 0.0
+    else -> jsNumeric(value)
+}
+
+/** A string, number or boolean where code declares a boolean, converted as `Boolean(value)`; null for anything else. */
+fun jsBooleanOrNull(value: Any?): Boolean? = when (value) {
+    is Boolean -> value
+    is String, is Double -> jsTruthy(value)
+    else -> null
+}
+
+/** As `jsBooleanOrNull`, false for anything else. */
+fun jsBooleanOrFalse(value: Any?): Boolean = jsBooleanOrNull(value) ?: false
+
 private val joinGuards = object : ThreadLocal<ArrayList<Any>>() {
     override fun initialValue() = ArrayList<Any>()
 }

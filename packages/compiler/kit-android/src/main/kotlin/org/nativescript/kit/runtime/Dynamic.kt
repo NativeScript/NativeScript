@@ -62,6 +62,28 @@ fun jsAsBoolean(value: Any?): Boolean = value as? Boolean ?: throw jsNotA(value,
 
 fun jsAsBoolean(value: Any?, name: String): Boolean = value as? Boolean ?: throw jsCannotAssign(value, name, "boolean")
 
+// Core's own code (the kit) given another primitive where it declares a string, number or boolean (a binding's number
+// for a string field) converts it as String(), Number() and Boolean() do, as JavaScript reads it where it is used.
+// Anything else is still a TypeError.
+
+fun jsConvertedString(value: Any?): String = jsPrimitiveString(value) ?: throw jsNotA(value, "string")
+
+fun jsConvertedString(value: Any?, name: String): String = jsPrimitiveString(value) ?: throw jsCannotAssign(value, name, "string")
+
+fun jsConvertedNumber(value: Any?): Double = jsNumberOrNull(value) ?: throw jsNotA(value, "number")
+
+fun jsConvertedNumber(value: Any?, name: String): Double = jsNumberOrNull(value) ?: throw jsCannotAssign(value, name, "number")
+
+fun jsConvertedBoolean(value: Any?): Boolean = jsBooleanOrNull(value) ?: throw jsNotA(value, "boolean")
+
+fun jsConvertedBoolean(value: Any?, name: String): Boolean = jsBooleanOrNull(value) ?: throw jsCannotAssign(value, name, "boolean")
+
+private fun jsPrimitiveString(value: Any?): String? = when (value) {
+    is String -> value
+    is Double, is Boolean -> jsToString(value)
+    else -> null
+}
+
 /** `value` as an instance of `type`, JavaScript's null and undefined as null. */
 fun <T : Any> jsCast(value: Any?, type: Class<T>): T? {
     if (value == null || value === JSNull || value === Unit) return null
