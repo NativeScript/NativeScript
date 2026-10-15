@@ -1917,6 +1917,13 @@ export class Translator implements AsyncTranslator {
         if (d.initializer) later(() => `    ${target} = ${this.tryPrefix(d.initializer!)}${this.coerce(d.initializer!, t)}`);
         continue;
       }
+      // Lenient code: a string or boolean declared without a value reads undefined until assigned (`let enabled: boolean;`).
+      if (!d.initializer && this.lenient && (t === 'Bool' || t === 'String')) {
+        const sym = this.resolve(d.name);
+        if (sym) this.undefinedVars.set(sym, optionalType(t));
+        emit(`${modifiers}var ${name}: ${optionalType(t)} = nil`);
+        continue;
+      }
       if (!d.initializer) { emit(`${modifiers}var ${name}: ${this.fieldType(t)}`); continue; }
       // A module's Angular `computed(fn)`: read through `x()`, its value is fn's whenever it is read.
       const fn = ts.isCallExpression(d.initializer) && this.calleeName(d.initializer) === 'computed' ? d.initializer.arguments[0] : undefined;
@@ -10458,6 +10465,9 @@ ${members.join('\n')}
     // One of the app's own Swift classes: a class, as NativeScript's runtime exposes it.
     if (this.appNativeOf(e.expression)) return '"function"';
     if (neverDefined(e.expression, this.checker)) return '"undefined"';
+    // A member of an untyped object is whatever script put there, whatever its declared type says.
+    const read = ts.skipOuterExpressions(e.expression, ts.OuterExpressionKinds.Parentheses);
+    if (ts.isPropertyAccessExpression(read) && !ts.isOptionalChain(read) && this.isAny(read.expression) && !this.isAny(read)) return `jsTypeof(jsGet(${this.expr(read.expression)}, ${swiftString(read.name.text)}))`;
     const newer = this.native.introducedAfterDeployment(e.expression);
     if (newer) return `(jsOSAtLeast(${newer}) ? "function" : "undefined")`;
     // A constructor or function of the language's library (`Symbol`, `Map`, `Promise`), which the kit always has.
@@ -10465,6 +10475,8 @@ ${members.join('\n')}
     const callable = this.checker.getTypeAtLocation(e.expression);
     if (lib?.length && lib.every((d) => /[\\/]lib\.[\w.]*\.d\.ts$/.test(d.getSourceFile().fileName)) && (callable.getConstructSignatures().length || callable.getCallSignatures().length)) return '"function"';
     const t = this.typeOf(e.expression);
+    // A variable held untyped and narrowed (`val: string | string[]` past `Array.isArray(val)`): the narrowing does not exclude undefined.
+    if (ts.isIdentifier(read) && t !== 'Any?' && !this.subst.has(read) && this.declaredTypeOf(read) === 'Any?') return `jsTypeof(${this.refName(read)})`;
     // A class, held by its name or typed as one (`typeof View`): a constructor, which is a function.
     if (!(callable.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown)) && callable.getConstructSignatures().length && t !== 'Any?' && !t.endsWith('?')) return '"function"';
     const base = t.replace(/\?$/, '');
@@ -10482,6 +10494,11 @@ ${members.join('\n')}
     if (this.lenient && known === 'number' && ts.isIdentifier(e.expression)) return `(${this.expr(e.expression)}.isNaN ? "undefined" : "number")`;
     // Lenient code holds an object implicitly unwrapped: undefined until assigned.
     if (this.lenient && known === 'object') return `((${this.expr(e.expression)} as Any?) == nil ? "undefined" : ${swiftString(known)})`;
+    // Lenient code holds a function variable, parameter or field optional too; a function or method declared is always there.
+    const d = this.resolve(ts.isPropertyAccessExpression(read) ? read.name : read)?.valueDeclaration;
+    if (this.lenient && known === 'function' && d && (ts.isVariableDeclaration(d) || ts.isParameter(d) || ts.isPropertyDeclaration(d) || ts.isPropertySignature(d)) && this.lenientRef(t) !== t) {
+      return `((${this.expr(e.expression)} as Any?) == nil ? "undefined" : "function")`;
+    }
     return swiftString(known);
   }
 
