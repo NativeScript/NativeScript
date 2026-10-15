@@ -113,6 +113,8 @@ fun ViewBase.kitSet(name: String, value: Any?) {
     if (name.startsWith("ios:") || name.startsWith("ios.")) return
     val key = if (name.startsWith("android:")) name.removePrefix("android:") else name
     jsReport {
+        // `style="color: red"`: core's `style` setter takes a string as inline CSS, which its Kotlin accessor, typed `Style`, cannot.
+        if (key == "style" && value is String) { setInlineStyle(value); return@jsReport }
         val path = key.split(".")
         if (path.size == 1) {
             // A style property the view's accessor passes to its style (`backgroundColor`), which converts what the template gives;

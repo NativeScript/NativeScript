@@ -8461,7 +8461,8 @@ ${members.join('\n')}
     const native = this.native.property(e);
     if (native) return native;
     // `a?.b?.c` where Swift holds `b` present: the chain `a?.b` already carries the optional, and `?.` on `b` does not compile.
-    const linked = ts.isPropertyAccessExpression(target) && ts.isOptionalChain(target) && !/[?!]$/.test(this.typeOf(target)) && this.typeOf(target) !== 'Any?';
+    const held = (x: ts.Expression) => this.declaredTypeOf(x) ?? this.typeOf(x);
+    const linked = !this.library && ts.isPropertyAccessExpression(target) && ts.isOptionalChain(target) && ![this.typeOf(target), held(target)].some((t) => /[?!]$/.test(t));
     const dot = e.questionDotToken && !linked ? '?.' : '.';
     if (name === 'length' && this.isString(target)) {
       if (!this.typeOf(target).endsWith('?')) return `Double(${this.expr(target)}.utf16.count)`;
