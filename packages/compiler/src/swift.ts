@@ -7614,7 +7614,7 @@ ${members.join('\n')}
       if (this.quietDelete(e) && ts.isPropertyAccessExpression(target)) return `((try? jsDelete(${this.expr(target.expression)}, ${swiftString(target.name.text)})) ?? false)`;
       throw this.error(e, 'delete of this member');
     }
-    if (ts.isVoidExpression(e)) return `{ _ = ${this.expr(e.expression)}; return nil as Any? }()`;
+    if (ts.isVoidExpression(e)) return this.throwsInfo.expr(e.expression) ? `{ () throws -> Any? in _ = try ${this.expr(e.expression)}; return nil }()` : `{ _ = ${this.expr(e.expression)}; return nil as Any? }()`;
     // `import.meta` of the bundled app's module, in the app bundle.
     if (ts.isMetaProperty(e) && e.keywordToken === ts.SyntaxKind.ImportKeyword) return 'jsImportMeta';
     if (ts.isRegularExpressionLiteral(e)) {
@@ -7785,7 +7785,7 @@ ${members.join('\n')}
    * several modules declare is the module's own (`topName`).
    */
   private declaredName(e: ts.Identifier): string {
-    const local = this.checker.getSymbolAtLocation(e);
+    const local = ts.isShorthandPropertyAssignment(e.parent) && e.parent.name === e ? this.checker.getShorthandAssignmentValueSymbol(e.parent) : this.checker.getSymbolAtLocation(e);
     if (!local) return e.text;
     const alias = !!(local.flags & ts.SymbolFlags.Alias);
     const target = alias ? this.checker.getAliasedSymbol(local) : local;
