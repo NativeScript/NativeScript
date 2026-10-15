@@ -50,4 +50,4 @@ releases. React, Solid and Octane compile through the same pipeline but are not 
 
 ## License
 
-Apache-2.0. Working on the compiler itself: [docs/CONTRIBUTING.md](https://github.com/NativeScript/NativeScript/blob/main/packages/compiler/docs/CONTRIBUTING.md).
+Apache-2.0.
