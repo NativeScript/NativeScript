@@ -35,8 +35,10 @@ const lenientBoth = (file: string) => readFileSync(file, 'utf8').startsWith('// 
 const kotlinOnly = (file: string) => readFileSync(file, 'utf8').startsWith('// @lenient-kotlin');
 /** A case starting `// @kotlin` covers what only the Kotlin translator does yet: it is not run as Swift. */
 const kotlinApp = (file: string) => readFileSync(file, 'utf8').startsWith('// @kotlin');
+/** A case starting `// @plugin` is a non-strict app whose imports from `helpers/plugin/` are a plugin's, compiled from its source (Swift only). */
+const pluginCase = (file: string) => readFileSync(file, 'utf8').startsWith('// @plugin');
 /** A case starting `// @swift` covers what only the Swift runtime has yet (typed arrays): it is not run as Kotlin. */
-const swiftOnly = (file: string) => (lenient(file) && !kotlinOnly(file) && !lenientBoth(file)) || readFileSync(file, 'utf8').startsWith('// @swift');
+const swiftOnly = (file: string) => (lenient(file) && !kotlinOnly(file) && !lenientBoth(file)) || pluginCase(file) || readFileSync(file, 'utf8').startsWith('// @swift');
 
 /** `// @weak-fields A.b C.d` and `// @weak-captures A.e` lines: what the kit's configuration holds weakly (tools/native-kit/modules.mts). */
 function weakOf(file: string) {
@@ -49,7 +51,7 @@ function weakOf(file: string) {
 const membersByName = (file: string) => /^\/\/ @members-by-name$/m.test(readFileSync(file, 'utf8'));
 
 function translate(file: string, out: string): void {
-  const modules = translateSwift([file], out, { lenient: lenient(file), weak: weakOf(file), membersByName: membersByName(file) });
+  const modules = translateSwift([file], out, { lenient: lenient(file), weak: weakOf(file), membersByName: membersByName(file), plugin: pluginCase(file) });
   writeFileSync(join(out, 'main.swift'), swiftMain(modules));
 }
 
