@@ -335,7 +335,7 @@ const sourceLines = args.includes('--no-source-lines') ? null : new SourceLines(
 const unsupported = preflight(checker, [...sourceFiles, ...compiledPlugins.map((f) => program.getSourceFile(f)!)], sourceLines ? (n) => sourceLines.locate(n) : undefined, (st) => !compiledPlugins.includes(st.getSourceFile().fileName) || reach.keeps(st));
 if (unsupported.length) {
   console.error(formatPreflight(unsupported));
-  if (!args.includes('--keep-going')) throw new Error(`${unsupported.length} construct${unsupported.length > 1 ? 's' : ''} a compiled release does not support (docs: Supported subset and known differences)`);
+  if (!args.includes('--keep-going')) throw new Error(`${unsupported.length} construct${unsupported.length > 1 ? 's' : ''} a compiled release does not support (see What works: https://docs.nativescript.org/guide/publishing/compiled-differences)`);
 }
 /** The file a component was written in: beside its virtual file, or the .tsx declaring its function. */
 function componentSource(c: ComponentIR): string | null {
