@@ -45,6 +45,7 @@ import { normalizeModuleId } from '../helpers/normalize-id.js';
 import { getHmrWatchIgnoreGlobs } from '../helpers/hmr-scope.js';
 import { NS_OPTIMIZE_DEPS_EXCLUDE } from '../helpers/optimize-deps.js';
 import { sbgClassNamesPlugin } from '../helpers/sbg-class-names.js';
+import { chunkFileNames } from '../helpers/chunk-file-names.js';
 const require = createRequire(import.meta.url);
 // Optional PostCSS import plugin (only used if available)
 // Try to load postcss-import to control CSS @import resolution simply
@@ -610,14 +611,7 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 					// Chrome DevTools can fetch them even though the running code comes
 					// from file:///app on the simulator/device.
 					sourcemapBaseUrl: pathToFileURL(path.resolve(projectRoot, distOutputFolder)).toString() + '/',
-					chunkFileNames: (chunk) => {
-						if (chunk.name === 'vendor') return 'vendor.mjs';
-						// Place worker files at root level, not in assets/
-						if (chunk.name && chunk.name.includes('worker')) {
-							return '[name]-[hash].js';
-						}
-						return '[name]-[hash].mjs';
-					},
+					chunkFileNames,
 					assetFileNames: 'assets/[name][extname]',
 					// Create single vendor chunk for most third-party modules.
 					// Keep critical NativeScript core bootstrap/lifecycle modules in the main bundle
