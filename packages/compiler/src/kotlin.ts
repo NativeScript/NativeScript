@@ -7022,7 +7022,9 @@ export class Translator implements AsyncTranslator {
   }
 
   private signalWrite(target: ts.Expression, value: ts.Expression, t: string): string {
-    const code = this.coerce(value, t);
+    let code = this.coerce(value, t);
+    // A non-strict app's signal of an object takes undefined (`items.find(…)`) as it holds its initial null: unchecked.
+    if (this.lenientApp && !this.library && isAsserted(code) && this.isObjectType(t) && !isNullable(t)) code = `(${unasserted(code)} ?: jsUncheckedNull<${t}>())`;
     return this.symbolName(target) === 'VueRef' && this.isObjectRef(value) ? `jsReactive(${code})` : code;
   }
 
