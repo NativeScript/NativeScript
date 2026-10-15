@@ -2410,6 +2410,8 @@ ${members.join('\n')}
           `    static func ${name}(_ name: String, _ length: Int, _ __f: @escaping ${type}) -> JSFunctionObject { ${body} }`,
           `    static func ${name}OrNil(_ name: String, _ length: Int, _ __f: (${type})?) -> JSFunctionObject? { if let __f { return ${name}(name, length, __f) } else { return nil } }`,
         ];
+        case 'declared': return [`    static func ${name}(_ id: String, _ __h: @escaping ${type}) -> ${type} { ${body} }`];
+        case 'local': return [`    static func ${name}(_ __d: JSFunctionDeclaration, _ __h: @escaping ${type}) -> ${type} { ${body} }`];
       }
     });
   }
@@ -2928,7 +2930,9 @@ ${members.join('\n')}
     const t = this.boxedGeneric(decl, escapingFunction(functionParts(this.functionValueType(decl))!));
     const from = decl.parameters.findIndex((p) => p.initializer);
     const byName = from >= 0 && !decl.typeParameters?.length && decl.parameters.slice(from).every((p) => p.initializer && !p.dotDotDotToken) && splitTopLevel(this.params(decl, false)).every((p) => p.trim().startsWith('_ '));
-    return this.boxFunction(ref, t, -1, decl.name?.text ?? '', scriptLength(decl), byName ? { ref, from } : undefined, false);
+    // Called by name with fewer arguments: the function itself, not its value (`declaredValue`).
+    const named = /^FunctionCell_\w+\.(?:declared\w*\("[^"]*"|local\w*\(\w+), (.*)\)$/s.exec(ref)?.[1] ?? ref;
+    return this.boxFunction(ref, t, -1, decl.name?.text ?? '', scriptLength(decl), byName ? { ref: named, from } : undefined, false);
   }
 
   /** An untyped function value called as the typed function `fn`. */
@@ -2945,6 +2949,67 @@ ${members.join('\n')}
     if (!cell) return `{ (__f: Any?) -> ${fn.text} in (jsFlat(__f) as? ${fn.text}) ?? ${made} }(${code})`;
     const name = this.cellStatic(cell, 'fromScript', `if let __t = jsFlat(__f) as? ${fn.text} { return __t }; let __i = JSFunctionAlias(of: __f); return jsIdentified(Self(f: ${made}), __i).f`);
     return `${cell}.${name}${orNil ? 'OrNil' : ''}(${code})`;
+  }
+
+  /** The function declaration `e` reads as a value (not called, not a receiver), when the read is one value (see `declaredValue`). */
+  private declaredFunctionRead(e: ts.Identifier): ts.FunctionDeclaration | null {
+    if (this.namedCall) return null;
+    const p = e.parent;
+    if ((ts.isCallExpression(p) || ts.isNewExpression(p) || ts.isPropertyAccessExpression(p) || ts.isElementAccessExpression(p)) && p.expression === e) return null;
+    if (ts.isTypeOfExpression(p) || (ts.isTaggedTemplateExpression(p) && p.tag === e) || ts.isDecorator(p)) return null;
+    const decl = this.resolve(e)?.declarations?.find((d): d is ts.FunctionDeclaration => ts.isFunctionDeclaration(d) && !!d.body);
+    if (!decl?.name || decl.getSourceFile().isDeclarationFile || decl.typeParameters?.length || decl.asteriskToken || takesThis(decl)) return null;
+    // Given to the language's or a platform's API (`list.map(f)`, which rethrows what `f` may throw), which never compares it: as it is.
+    if ((ts.isCallExpression(p) || ts.isNewExpression(p)) && p.arguments?.includes(e)) {
+      const callee = this.checker.getResolvedSignature(p)?.getDeclaration();
+      if (callee && callee.getSourceFile().isDeclarationFile && !isCoreDeclaration(callee)) return null;
+    }
+    return decl;
+  }
+
+  /** Nested function declarations read as values, each with the local its reads stand for (`JSFunctionDeclaration`). */
+  private localDeclarations = new Map<ts.FunctionDeclaration, string>();
+
+  /** The locals `statements` declares before `fns`, for those read as values: one function per run of their scope, as JavaScript's. */
+  private localDeclarationsOf(fns: ts.FunctionDeclaration[]): string[] {
+    return fns.flatMap((fn) => {
+      if (!fn.name || !fn.body || ts.isSourceFile(fn.parent) || ts.isModuleBlock(fn.parent)) return [];
+      let read = false;
+      const visit = (n: ts.Node): void => {
+        if (read) return;
+        if (ts.isIdentifier(n) && n.text === fn.name!.text && n !== fn.name && this.declaredFunctionRead(n) === fn) { read = true; return; }
+        ts.forEachChild(n, visit);
+      };
+      visit(fn.parent);
+      if (!read || !this.functionCell(escapingFunction(functionParts(this.functionValueType(fn))!))) return [];
+      const name = ident(`__${fn.name.text}Declaration`);
+      this.localDeclarations.set(fn, name);
+      return [`${this.indent}let ${name} = JSFunctionDeclaration()`];
+    });
+  }
+
+  /**
+   * A function declaration read as a value: the same function at every read. Swift makes a new closure at each
+   * read of a function, so a module's function is its first closure, kept by name, and a nested one stands for the
+   * declaration's local of the current run of its scope.
+   */
+  private declaredValue(ref: string, decl: ts.FunctionDeclaration): string {
+    const type = escapingFunction(functionParts(this.functionValueType(decl))!);
+    const cell = this.functionCell(type);
+    if (!cell) return ref;
+    const local = this.localDeclarations.get(decl);
+    if (local) {
+      const fn = functionParts(type)!;
+      const params = fn.params.map((p, k) => `__p${k}: ${escapingParam(p)}`);
+      const call = `try __h(${fn.params.map((_, k) => `__p${k}`).join(', ')})`;
+      const closure = `{ (${params.join(', ')}) throws -> ${fn.result} in ${this.keeping('__i', fn.result === 'Void' ? call : `return ${call}`, fn.result)} }`;
+      return `${cell}.${this.cellStatic(cell, 'local', `let __i = JSFunctionAlias(declaration: __d); return jsIdentified(Self(f: ${closure}), __i).f`)}(${local}, ${ref})`;
+    }
+    if (!ts.isSourceFile(decl.parent) && !ts.isModuleBlock(decl.parent)) return ref;
+    // Named by its Swift path, which is the program's one function of that name.
+    const id = (this.appModule && ref.startsWith(`${this.appModule}.`) ? ref.slice(this.appModule.length + 1) : ref).replace(/`/g, '');
+    if (!this.functionDepth) this.isolatedInit = true;
+    return `${cell}.${this.cellStatic(cell, 'declared', 'jsDeclaredFunction(id, Self(f: __h)).f')}(${swiftString(id)}, ${ref})`;
   }
 
   /** A closure body that keeps `alias` alive with the closure: what makes the closure's key the alias's. */
@@ -5250,7 +5315,7 @@ ${members.join('\n')}
     // What follows a read of a null receiver never runs.
     const throwsAt = list.findIndex((s) => !ts.isFunctionDeclaration(s) && leadingNeverRead(s, this.checker));
     const rest = list.filter((s, k) => !ts.isFunctionDeclaration(s) && (throwsAt < 0 || k < throwsAt));
-    const out = [...forward, ...fns.map((s) => this.stmt(s)).filter(Boolean)];
+    const out = [...forward, ...this.localDeclarationsOf(fns), ...fns.map((s) => this.stmt(s)).filter(Boolean)];
     for (const s of rest) {
       const code = this.stmt(s);
       if (code) out.push(code);
@@ -6837,9 +6902,10 @@ ${members.join('\n')}
     const callee = this.byName(() => this.expr(e));
     const call = `try ${callee}(${want.params.map((t, k) => this.convert(`__q${k}`, p(t), p(have.params[k]))).join(', ')})`;
     const body = want.result === 'Void' ? `_ = ${call}` : `return ${this.convert(call, have.result, want.result)}`;
-    // A method's value (one per receiver and method) is the identity the adapter takes on; a declared function's own type is not this one's.
-    const value = ts.isPropertyAccessExpression(e) ? this.methodValueRead(e) : null;
-    const hc = value ? this.functionCell(have.text) : null, gc = this.functionCell(want.text);
+    // A method's value (one per receiver and method), or a declared function's (`declaredValue`), is the identity the adapter takes on.
+    const declared = ts.isIdentifier(e) && this.declaredFunctionRead(e) ? this.expr(e) : null;
+    const value = ts.isPropertyAccessExpression(e) ? this.methodValueRead(e) : declared?.startsWith('FunctionCell_') ? declared : null;
+    const hc = value ? this.functionCell(declared && ts.isFunctionDeclaration(decl) ? escapingFunction(functionParts(this.functionValueType(decl))!) : have.text) : null, gc = this.functionCell(want.text);
     if (!value || !hc || !gc) return `{ (${params.join(', ')}) throws -> ${want.result} in ${body} }`;
     return `{ (__i: JSFunctionAlias) -> ${want.text} in jsIdentified(${gc}(f: { (${params.join(', ')}) throws -> ${want.result} in ${this.keeping('__i', body, want.result)} }), __i).f }(JSFunctionAlias(cell: ${hc}(f: ${value})))`;
   }
@@ -7748,8 +7814,9 @@ ${members.join('\n')}
     const top = sym?.valueDeclaration;
     const topLevel = !!top && (ts.isFunctionDeclaration(top) ? ts.isSourceFile(top.parent) : ts.isVariableDeclaration(top) && ts.isVariableStatement(top.parent.parent) && ts.isSourceFile(top.parent.parent.parent));
     const cls = ts.findAncestor(e, ts.isClassLike);
-    if (this.appModule && topLevel && cls?.members.some((m) => m.name && ts.isIdentifier(m.name) && ident(m.name.text) === ref)) return this.narrowed(e, `${this.appModule}.${ref}`);
-    return this.narrowed(e, ref);
+    const qualified = this.appModule && topLevel && cls?.members.some((m) => m.name && ts.isIdentifier(m.name) && ident(m.name.text) === ref) ? `${this.appModule}.${ref}` : ref;
+    const declared = this.declaredFunctionRead(e);
+    return this.narrowed(e, declared ? this.declaredValue(qualified, declared) : qualified);
   }
 
   /** A name imported from a module a compiled app has no use for (library mode): a value whose use throws. */
@@ -11805,8 +11872,11 @@ function tryAssigned(t: string, code: string): string {
 
 /** `rest`: the parameter a `JSRest` type marks as a rest parameter (spelled `JSArray` in `params`), else -1. */
 interface FunctionParts { text: string; params: string[]; result: string; rest: number }
-/** What a function cell's static member does: box a typed closure as a script function (`script`), or call a script function as a typed closure (`fromScript`). */
-type CellStatic = 'script' | 'fromScript' | 'adapting';
+/**
+ * What a function cell's static member does: box a typed closure as a script function (`script`), call a script function as a
+ * typed closure (`fromScript`), adapt one function type to another (`adapting`), or read a function declaration as a value (`declared`, `local`).
+ */
+type CellStatic = 'script' | 'fromScript' | 'adapting' | 'declared' | 'local';
 
 /** `(A, B) throws -> R` split into its parameter and result types; null for any other type. */
 export function functionParts(type: string): FunctionParts | null {
