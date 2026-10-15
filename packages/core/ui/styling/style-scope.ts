@@ -117,17 +117,12 @@ function evaluateCssExpressions(view: ViewBase, property: string, value: string)
 	return value;
 }
 
-/**
- * Evaluate a custom property's value. One that cannot be resolved is null, the
- * guaranteed-invalid value: var() takes its fallback and the parent's value does not show through.
- */
 function evaluateCssVariable(view: ViewBase, name: string, value: string): string | null {
 	const evaluated = evaluateCssExpressions(view, name, value);
 
 	return evaluated === unsetValue ? null : evaluated;
 }
 
-// Custom properties may refer to ones declared after them, so re-evaluate until they settle.
 function settleCssVariables(view: ViewBase, cssExpsProperties: Record<string, string>) {
 	let names: string[];
 	for (const property in cssExpsProperties) {
@@ -165,7 +160,6 @@ function hasForwardCssVariableReference(names: string[], values: Record<string, 
 			const ref = `var(${names[j]}`;
 			let at = value.indexOf(ref);
 			while (at !== -1) {
-				// `var(--a` must not match `var(--ab`.
 				const next = value[at + ref.length];
 				if (next === ')' || next === ',' || next === ' ' || next === undefined) {
 					return true;
@@ -1082,8 +1076,6 @@ export class CssState {
 				}
 			} catch (e) {
 				Trace.write(`Failed to apply property [${property}] with value [${value}] to ${view}. ${e.stack}`, Trace.categories.Error, Trace.messageType.error);
-				// A declaration invalid at computed-value time computes as `unset`, so the previous value must not stay applied.
-				// https://drafts.csswg.org/css-values-5/#invalid-substitution
 				delete newPropertyValues[property];
 				try {
 					if (inStyle) {

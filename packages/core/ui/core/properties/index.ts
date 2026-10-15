@@ -224,7 +224,6 @@ export function _evaluateCssVariableExpression(view: ViewBase, cssName: string, 
 			continue;
 		}
 
-		// The fallback is everything after the first comma, commas included.
 		const body = output.substring(idx + 4, endIdx);
 		const commaIdx = body.indexOf(',');
 		const cssVariableName = (commaIdx === -1 ? body : body.substring(0, commaIdx)).trim();
