@@ -59,6 +59,31 @@ interface Keyframe {
 	forceLayer?: boolean;
 }
 
+const KEYFRAME_PROPERTIES = ['backgroundColor', 'scale', 'translate', 'rotate', 'opacity', 'width', 'height'];
+
+/**
+ * The view's own value for a keyframe property, or undefined for one that cannot be animated from (an `auto` size).
+ */
+function getKeyframeValue(view: View, property: string): any {
+	switch (property) {
+		case 'backgroundColor':
+			return view.backgroundColor instanceof Color ? view.backgroundColor : new Color(0, 0, 0, 0);
+		case 'scale':
+			return { x: view.scaleX ?? 1, y: view.scaleY ?? 1 };
+		case 'translate':
+			return { x: view.translateX ?? 0, y: view.translateY ?? 0 };
+		case 'rotate':
+			return { x: view.rotateX ?? 0, y: view.rotateY ?? 0, z: view.rotate ?? 0 };
+		case 'opacity':
+			return view.opacity ?? 1;
+		case 'width':
+		case 'height': {
+			const value = view[property];
+			return value == null || value === 'auto' ? undefined : value;
+		}
+	}
+}
+
 export class KeyframeAnimation {
 	public animations: Array<Keyframe>;
 	public delay = 0;
@@ -69,6 +94,8 @@ export class KeyframeAnimation {
 	private _isForwards: boolean;
 	private _nativeAnimations: Array<Animation>;
 	private _target: View;
+	// Keyframes added for a missing 0% or 100%, filled with the view's own values when it plays.
+	private _implicitKeyframes: Array<Keyframe>;
 
 	public static keyframeAnimationFromInfo(info: KeyframeAnimationInfo): KeyframeAnimation {
 		if (!info?.keyframes?.length) {
@@ -76,19 +103,40 @@ export class KeyframeAnimation {
 			return null;
 		}
 
-		const length = info.keyframes.length;
+		// As in CSS, a missing 0% or 100% keyframe takes the element's own values.
+		const keyframes = info.keyframes.slice();
+		const implicitInfos = new Array<KeyframeInfo>();
+		if (keyframes[0].duration > 0) {
+			const from = { duration: 0, declarations: [] };
+			implicitInfos.push(from);
+			keyframes.unshift(from);
+		}
+		if (keyframes[keyframes.length - 1].duration < 1) {
+			const to = { duration: 1, declarations: [] };
+			implicitInfos.push(to);
+			keyframes.push(to);
+		}
+
+		const length = keyframes.length;
 		const animations = new Array<Keyframe>();
+		const implicitKeyframes = new Array<Keyframe>();
 		let startDuration = 0;
 
 		if (info.isReverse) {
 			for (let index = length - 1; index >= 0; index--) {
-				const keyframe = info.keyframes[index];
+				const keyframe = keyframes[index];
 				startDuration = KeyframeAnimation.parseKeyframe(info, keyframe, animations, startDuration);
+				if (implicitInfos.includes(keyframe)) {
+					implicitKeyframes.push(animations[animations.length - 1]);
+				}
 			}
 		} else {
 			for (let index = 0; index < length; index++) {
-				const keyframe = info.keyframes[index];
+				const keyframe = keyframes[index];
 				startDuration = KeyframeAnimation.parseKeyframe(info, keyframe, animations, startDuration);
+				if (implicitInfos.includes(keyframe)) {
+					implicitKeyframes.push(animations[animations.length - 1]);
+				}
 			}
 			for (let index = length - 1; index > 0; index--) {
 				const a1 = animations[index];
@@ -107,6 +155,9 @@ export class KeyframeAnimation {
 		animation.iterations = info.iterations;
 		animation.animations = animations;
 		animation._isForwards = info.isForwards;
+		if (implicitKeyframes.length) {
+			animation._implicitKeyframes = implicitKeyframes;
+		}
 
 		return animation;
 	}
@@ -174,6 +225,7 @@ export class KeyframeAnimation {
 		this._isPlaying = true;
 		this._nativeAnimations = new Array<Animation>();
 		this._target = view;
+		this._fillImplicitKeyframes(view);
 
 		if (this.delay !== 0) {
 			setTimeout(() => this.animate(view, 0, this.iterations), this.delay);
@@ -257,6 +309,33 @@ export class KeyframeAnimation {
 				.catch((error: any) => {
 					Trace.write(typeof error === 'string' ? error : error.message, Trace.categories.Animation, Trace.messageType.warn);
 				}); // tslint:disable-line
+		}
+	}
+
+	private _fillImplicitKeyframes(view: View) {
+		const implicitKeyframes = this._implicitKeyframes;
+		if (!implicitKeyframes) {
+			return;
+		}
+
+		const animated = new Set<string>();
+		for (const animation of this.animations) {
+			for (const property of KEYFRAME_PROPERTIES) {
+				if (property in animation && !implicitKeyframes.includes(animation)) {
+					animated.add(property);
+				}
+			}
+		}
+
+		for (const keyframe of implicitKeyframes) {
+			for (const property of animated) {
+				const value = getKeyframeValue(view, property);
+				if (value === undefined) {
+					delete keyframe[property];
+				} else {
+					keyframe[property] = value;
+				}
+			}
 		}
 	}
 
