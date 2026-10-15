@@ -152,6 +152,8 @@ public final class JSFunctionAlias {
 
     init(method: AnyObject) { target = .object(method) }
 
+    public init(declaration: JSFunctionDeclaration) { target = .object(declaration) }
+
     isolated deinit {
         if let key { JSFunctionIdentity.forget(key) }
     }
@@ -211,13 +213,16 @@ public func jsBoxedFunction<Cell>(_ cell: Cell, _ make: () -> JSFunctionObject) 
     let key = jsFunctionKey(cell)
     if let box = JSFunctionIdentity.table[key]?.box { return box }
     let root = JSFunctionIdentity.root(key)
-    if case .object(let o) = root, let box = o as? JSFunctionObject { return box }
+    if case .object(let o) = root {
+        if let box = o as? JSFunctionObject { return box }
+        if let box = (o as? JSFunctionDeclaration)?.box { return box }
+    }
     let box = make()
     // Kept under the key the closure stands for (an adapter's, the function it adapts), which the box keeps alive through it.
     let at: JSFunctionKey
     switch root {
     case .key(let k): at = k
-    case .object(let o): at = key; box.identity = o
+    case .object(let o): at = key; box.identity = o; (o as? JSFunctionDeclaration)?.box = box
     }
     box.identityKey = at
     JSFunctionIdentity.table[at, default: .init()].box = box
@@ -232,6 +237,28 @@ public func jsIdentified<Cell>(_ cell: Cell, _ alias: JSFunctionAlias) -> Cell {
     alias.key = key
     JSFunctionIdentity.table[key] = .init(alias: alias)
     return cell
+}
+
+/// A nested function declaration as JavaScript evaluates it: one function each time its scope runs.
+/// Swift makes a new closure at each read of a local function, so each read (`FunctionCell_X.local`)
+/// stands for this object instead. It holds its box weakly: the function's own closure may capture
+/// it, and a strong box would keep that closure alive.
+public final class JSFunctionDeclaration {
+    weak var box: JSFunctionObject?
+    public init() {}
+    nonisolated deinit {}
+}
+
+/// A module's or namespace's function declaration as a value: the first closure read of it, kept for
+/// good as the function itself is, so that every read is the same closure. `id` names the declaration.
+public func jsDeclaredFunction<Cell>(_ id: String, _ cell: Cell) -> Cell {
+    if let found = JSDeclaredFunctions.table[id] as? Cell { return found }
+    JSDeclaredFunctions.table[id] = cell
+    return cell
+}
+
+enum JSDeclaredFunctions {
+    static var table: [String: Any] = [:]
 }
 
 /// `f === g` on typed function values, each in its cell (nil for undefined).
