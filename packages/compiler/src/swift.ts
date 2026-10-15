@@ -2063,7 +2063,7 @@ export class Translator implements AsyncTranslator {
       const t = this.boxedGeneric(decl, ts.isFunctionDeclaration(decl) && decl.body ? escapingFunction(functionParts(this.functionValueType(decl))!) : this.type(this.checker.getTypeOfSymbolAtLocation(sym, decl), decl));
       // A declared function as a value outside a function body: the initializer holding it runs isolated (`storedInit`).
       const fn = ts.isFunctionDeclaration(decl) && decl.body && !takesThis(decl) ? decl : null;
-      if (fn && !this.functionDepth) this.isolatedInit = true;
+      if (fn && (!this.functionDepth || this.inStoredInit)) this.isolatedInit = true;
       entries.push(`(${swiftString(exported.name)}, ${fn ? this.boxDeclared(ref, fn) : this.convert(ref, t, 'Any?')})`);
     }
     return `JSObject([${entries.join(', ')}])`;
@@ -7027,7 +7027,7 @@ ${members.join('\n')}
 
   expr(e: ts.Expression): string {
     const code = this.exprOf(e);
-    if (this.functionDepth === 0 && /^[\w.`]+$/.test(code) && this.isDeclaredFunctionValue(e)) this.isolatedInit = true;
+    if ((this.functionDepth === 0 || this.inStoredInit) && /^[\w.`]+$/.test(code) && this.isDeclaredFunctionValue(e)) this.isolatedInit = true;
     const key = this.looseReceiverKey(e);
     if (key !== null) return this.chainingLoose ? `jsImplicit(${code})?` : this.assigned(e.parent as ts.Expression) ? `jsUnwrap(${code}, setting: ${swiftString(key)})` : `jsUnwrap(${code}, ${swiftString(key)})`;
     if (this.chainingLoose || (assignmentValue(e) && this.lenient) || !this.loose(e) || this.looseTolerated(e)) return code;
@@ -7471,6 +7471,8 @@ ${members.join('\n')}
 
   /** Whether a stored initializer being translated holds a declared function as a value (see `storedInit`). */
   private isolatedInit = false;
+  /** Set while a stored initializer is translated, its closures included: a declared function as a value in one of them needs it isolated too. */
+  private inStoredInit = false;
 
   private isDeclaredFunctionValue(e: ts.Expression): boolean {
     if (!ts.isIdentifier(e) && !ts.isPropertyAccessExpression(e)) return false;
@@ -7484,14 +7486,15 @@ ${members.join('\n')}
    * its type, and an initializer is not that, though it may call one.
    */
   private storedInit(e: ts.Expression, t: string, present = false): string {
-    const saved = this.isolatedInit, savedPresent = this.presentSlot;
+    const saved = this.isolatedInit, savedPresent = this.presentSlot, savedInit = this.inStoredInit;
     this.isolatedInit = false;
+    this.inStoredInit = true;
     this.presentSlot = present;
     try {
       const code = this.coerce(e, t);
       const held = this.lenient && !present ? this.lenientRef(t) : t;
       return this.isolatedInit ? `{ @MainActor () -> ${held.replace(/!$/, '?')} in ${code} }()` : code;
-    } finally { this.isolatedInit = saved; this.presentSlot = savedPresent; }
+    } finally { this.isolatedInit = saved; this.presentSlot = savedPresent; this.inStoredInit = savedInit; }
   }
 
   private exprOf(e: ts.Expression): string {
@@ -7765,6 +7768,9 @@ ${members.join('\n')}
       if (sdk) return sdk;
       return this.fromAnyCode(`jsGlobalThis[jsKey: ${swiftString(name)}]`, this.typeOf(e));
     }
+    // A timer or microtask function held as a value (`const clear = clearTimeout`), core's declaration of it too.
+    const held = !!libDecl && libDecl.getSourceFile().isDeclarationFile && Object.hasOwn(LIB_FUNCTION_VALUES, name) && !(ts.isCallExpression(e.parent) && e.parent.expression === e) ? LIB_FUNCTION_VALUES[name] : undefined;
+    if (held) return this.convert(held.code, held.type, this.typeOf(e));
     // A global function core or the app only declares (`zonedCallback`, which core's globals set), as a value: the global object's.
     if (!this.library && libDecl && ts.isFunctionDeclaration(libDecl) && !libDecl.body && (appAmbient || isCoreDeclaration(libDecl)) && ts.isSourceFile(libDecl.parent) && !hasModifier(libDecl, ts.SyntaxKind.ExportKeyword)) return 'jsGlobalThis[jsKey: ' + swiftString(name) + ']';
     // `Object` as a value, not the receiver of a call the translation knows (`(<any>Object).entries(o)`): its functions as script has them.
@@ -7772,9 +7778,6 @@ ${members.join('\n')}
     if (name === 'parseFloat' && isLibDeclaration(libDecl) && !(ts.isCallExpression(e.parent) && e.parent.expression === e)) return 'jsParseFloat';
     const builtinValue = this.builtinConstructorValue(e, libDecl);
     if (builtinValue) return builtinValue;
-    // A timer or microtask function held as a value (`const clear = clearTimeout`).
-    const held = !!libDecl && libDecl.getSourceFile().isDeclarationFile && Object.hasOwn(LIB_FUNCTION_VALUES, name) && !(ts.isCallExpression(e.parent) && e.parent.expression === e) ? LIB_FUNCTION_VALUES[name] : undefined;
-    if (held) return this.convert(held.code, held.type, this.typeOf(e));
     // `if (!console)`: a compiled program always has its console.
     if (name === 'console' && this.isLibGlobal(e)) return '(true as Any?)';
     const native = this.native.identifier(e);
