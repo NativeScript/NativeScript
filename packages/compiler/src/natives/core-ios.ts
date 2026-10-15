@@ -87,9 +87,9 @@ export interface CoreNativeProject {
  * - a framework is linked by the kit and embedded in the app;
  * - the Objective-C is compiled into the app target, the kit seeing it through
  *   its module map: a static library would lose its category-only objects at the link;
- * - the Swift is a static library target of its module's name, compiled with the project's settings.
+ * - the Swift is a static library target of its module's name, compiled with the project's settings and `swiftSettings`.
  */
-export function coreNativeProject(core: string, imported: Set<string>, out: string): CoreNativeProject {
+export function coreNativeProject(core: string, imported: Set<string>, out: string, swiftSettings: Record<string, string> = {}): CoreNativeProject {
   const project: CoreNativeProject = { targets: '', kitDependencies: '', settings: {}, appDependencies: '', appSources: '' };
   const used = coreNativeModules(core).filter((m) => imported.has(m.module));
   if (!used.length) {
@@ -113,7 +113,7 @@ export function coreNativeProject(core: string, imported: Set<string>, out: stri
   }
   if (swift) {
     for (const f of readdirSync(swift.path)) if (f.endsWith('.swift')) cpSync(join(swift.path, f), join(dir, swift.module, f));
-    project.targets += `  ${swift.module}:\n    type: library.static\n    platform: iOS\n    sources: [Core/${swift.module}]\n    settings:\n      base:\n        SWIFT_VERSION: "5"\n        SWIFT_INCLUDE_PATHS: $(SRCROOT)/Core/src\n`;
+    project.targets += `  ${swift.module}:\n    type: library.static\n    platform: iOS\n    sources: [Core/${swift.module}]\n    settings:\n      base:\n        SWIFT_VERSION: "5"\n        SWIFT_INCLUDE_PATHS: $(SRCROOT)/Core/src\n${Object.entries(swiftSettings).map(([k, v]) => `        ${k}: ${v}\n`).join('')}`;
     project.kitDependencies += `      - target: ${swift.module}\n`;
     project.appDependencies += `      - target: ${swift.module}\n`;
   }

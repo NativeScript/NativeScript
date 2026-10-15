@@ -530,7 +530,9 @@ const coreModules = core ? coreNativeModules(core).map((m) => m.module) : [];
 // `--whole-kit` compiles every file of the kit, however little of it the app reaches: a check that all of it builds.
 const excluded = args.includes('--whole-kit') ? [] : [...kitFilesUnreached(kitSources, readdirSync(sourcesDir).map((f) => readFileSync(join(sourcesDir, f), 'utf8')).join('\n'), coreModules, new Set(closedWorld.excluded)), ...closedWorld.excluded];
 mirror(sourcesDir, join(out, 'Sources'));
-const coreNative = coreNativeProject(core ?? '', kitImports(kitSources, excluded, coreModules), out);
+// The kit's warnings are core's, checked by the kit's own build (tests/kit-build.sh, --whole-kit); in an app's build they are noise.
+const kitWarnings: Record<string, string> = args.includes('--whole-kit') ? {} : { SWIFT_SUPPRESS_WARNINGS: 'YES', GCC_WARN_INHIBIT_ALL_WARNINGS: 'YES' };
+const coreNative = coreNativeProject(core ?? '', kitImports(kitSources, excluded, coreModules), out, kitWarnings);
 const profile = opt('--provision') ? findProfile(opt('--provision')!) : null;
 const team = !profile && opt('--team-id') ? { id: opt('--team-id')!, method: opt('--export-method', 'debugging') as ExportMethod } : undefined;
 // Unsigned only for the simulator: a device archive made from the generated project in Xcode signs
@@ -581,7 +583,7 @@ ${pluginLines.packages || packages.length ? `packages:\n${pluginLines.packages}$
       - path: ${relative(out, kitSources)}
 ${excluded.length ? `        excludes: [${excluded.join(', ')}]\n` : ''}${coreNative.kitDependencies ? `    dependencies:\n${coreNative.kitDependencies}` : ''}    settings:
       base:
-${Object.entries(swiftMode).map(([k, v]) => `        ${k}: ${v}\n`).join('')}${Object.entries(coreNative.settings).map(([k, v]) => `        ${k}: ${v}\n`).join('')}${swiftModeRelease}${coreNative.targets}${pluginLines.targets}${extensions.targets}  ${name}:
+${Object.entries({ ...swiftMode, ...kitWarnings }).map(([k, v]) => `        ${k}: ${v}\n`).join('')}${Object.entries(coreNative.settings).map(([k, v]) => `        ${k}: ${v}\n`).join('')}${swiftModeRelease}${coreNative.targets}${pluginLines.targets}${extensions.targets}  ${name}:
     type: application
     platform: iOS
     sources:
