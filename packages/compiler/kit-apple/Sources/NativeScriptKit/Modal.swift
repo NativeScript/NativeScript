@@ -32,7 +32,7 @@ public enum Modal {
 
     private static func show(_ settings: [(String, Any?)], closeCallback: ((Any) -> Void)?, _ create: () -> View) {
         jsReport {
-            guard let target = try stack.last?.view ?? Core_application_application.Application.getRootView() else { return }
+            guard let target = try stack.last?.view ?? jsUnwrap(Core_application_application.Application, "getRootView").getRootView() else { return }
             let owner = Owner(parent: nil)
             let view = owner.run(create)
             let shown = Shown(view: view, owner: owner)

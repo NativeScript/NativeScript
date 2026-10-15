@@ -8,8 +8,10 @@ enum Probe {
     /// `NS_KIT_TRACE=Style,Layout` (or `All`): core's own trace of those categories, from launch.
     static func traceIfRequested() {
         guard let categories = ProcessInfo.processInfo.environment["NS_KIT_TRACE"] else { return }
-        Trace.setCategories(categories == "All" ? Trace.categories.All : categories)
-        Trace.enable()
+        jsReport {
+            try Trace.setCategories(categories == "All" ? Trace.categories.All : categories)
+            Trace.enable()
+        }
     }
 
     static func scheduleIfRequested() {
@@ -20,10 +22,10 @@ enum Probe {
     static func dump() {
         let app = Core_ui_styling_style_scope.self
         print("PROBE css: app selectors \(app.applicationCssSelectors?.length ?? -1), merged \(app.mergedApplicationCssSelectors?.length ?? -1)")
-        guard let root = (try? Core_application_application.Application.getRootView()) ?? nil else { print("PROBE no root view"); return }
+        guard let root = (try? jsUnwrap(Core_application_application.Application, "getRootView").getRootView()) ?? nil else { print("PROBE no root view"); return }
         if let frame = root as? Frame, let nav = frame.viewController as? UINavigationController {
             let top = nav.topViewController
-            print("PROBE navigation: \(nav.viewControllers.count) controllers, backstack \(frame.backStack?.length ?? -1), bar hidden \(nav.isNavigationBarHidden), top hidesBackButton \(top?.navigationItem.hidesBackButton ?? false), left items \(top?.navigationItem.leftBarButtonItems?.count ?? 0), backItem \(nav.navigationBar.backItem?.title ?? "nil"), leftItemsSupplementBackButton \(top?.navigationItem.leftItemsSupplementBackButton ?? false)")
+            print("PROBE navigation: \(nav.viewControllers.count) controllers, backstack \(((try? frame.backStack) ?? nil)?.length ?? -1), bar hidden \(nav.isNavigationBarHidden), top hidesBackButton \(top?.navigationItem.hidesBackButton ?? false), left items \(top?.navigationItem.leftBarButtonItems?.count ?? 0), backItem \(nav.navigationBar.backItem?.title ?? "nil"), leftItemsSupplementBackButton \(top?.navigationItem.leftItemsSupplementBackButton ?? false)")
         }
         visit(root, 0)
         if let view = firstMatched(root) { cascade(view) }
@@ -83,7 +85,7 @@ enum Probe {
                     line += info
                 }
                 if let segments = native as? UISegmentedControl {
-                    line += " segments=\(segments.numberOfSegments) native=\(segments.selectedSegmentIndex) selectedIndex=\(jsToString((try? jsGet(v, "selectedIndex")) ?? nil)) listening=\(v.hasListeners("selectedIndexChange"))"
+                    line += " segments=\(segments.numberOfSegments) native=\(segments.selectedSegmentIndex) selectedIndex=\(jsToString((try? jsGet(v, "selectedIndex")) ?? nil)) listening=\((try? v.hasListeners("selectedIndexChange")) ?? false)"
                 }
                 if let recognizers = native.gestureRecognizers, !recognizers.isEmpty {
                     line += " gestures=[\(recognizers.map { "\(type(of: $0))\($0.isEnabled ? "" : " disabled")" }.joined(separator: ","))] interactive=\(native.isUserInteractionEnabled)"

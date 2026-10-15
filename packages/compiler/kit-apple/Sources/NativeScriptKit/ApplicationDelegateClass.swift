@@ -12,12 +12,12 @@ enum ApplicationDelegateClass {
     /// (or a superclass) has none, so a delegate's own implementation is kept.
     static func installSceneDelegateDefaults(_ delegateClass: Any?) throws {
         guard let cls = jsFlat(delegateClass) as? AnyClass else { return }
-        if Core_application_application.supportsScenes() {
+        if try Core_application_application.supportsScenes() {
             let configure = #selector(UIApplicationDelegate.application(_:configurationForConnecting:options:))
             if !class_respondsToSelector(cls, configure) {
                 let body: @convention(block) (AnyObject, UIApplication, UISceneSession, UIScene.ConnectionOptions) -> UISceneConfiguration = { _, application, session, options in
                     // UIKit requires a configuration: where core's throws (reported), the session's default.
-                    jsReported { try Core_application_application.Application.ios.defaultSceneConfiguration(application, session, options) }
+                    (jsReported { try jsUnwrap(Core_application_application.Application, "ios").defaultSceneConfiguration(application, session, options) } ?? nil)
                         ?? UISceneConfiguration(name: nil, sessionRole: session.role)
                 }
                 add(cls, configure, body)
@@ -25,7 +25,7 @@ enum ApplicationDelegateClass {
             let discard = #selector(UIApplicationDelegate.application(_:didDiscardSceneSessions:))
             if !class_respondsToSelector(cls, discard) {
                 let body: @convention(block) (AnyObject, UIApplication, Set<UISceneSession>) -> Void = { _, application, sessions in
-                    jsReport { try Core_application_application.Application.ios.defaultDiscardSceneSessions(application, sessions as NSSet) }
+                    jsReport { try jsUnwrap(Core_application_application.Application, "ios").defaultDiscardSceneSessions(application, sessions as NSSet) }
                 }
                 add(cls, discard, body)
             }
@@ -34,7 +34,7 @@ enum ApplicationDelegateClass {
         if !class_respondsToSelector(cls, getter) {
             // UIKit assigns `window` on apps without scenes and a delegate may assign it itself: the value is kept.
             let get: @convention(block) (AnyObject) -> UIWindow? = { this in
-                objc_getAssociatedObject(this, &windowKey) as? UIWindow ?? jsReported { try Core_application_application.Application.ios.window }
+                objc_getAssociatedObject(this, &windowKey) as? UIWindow ?? jsReported { try jsUnwrap(Core_application_application.Application, "ios").window } ?? nil
             }
             let set: @convention(block) (AnyObject, UIWindow?) -> Void = { this, value in
                 objc_setAssociatedObject(this, &windowKey, value, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
@@ -83,12 +83,13 @@ enum ApplicationDelegateClass {
         // Responder carries the defaults already: kept without the setter's warnings, as core does.
         if delegateClass == nil { delegateClass = Responder.self }
         let name = jsToString(methodName)
-        let handlers = app._delegateHandlers.get(name) ?? JSArray<Any?>()
-        if !app._delegateHandlers.has(name) {
+        let registered = try jsUnwrap(app._delegateHandlers, "get")
+        let handlers = registered.get(name) ?? JSArray<Any?>()
+        if !registered.has(name) {
             if !chain(delegateClass!, name, handlers) {
                 try Core_application_application.warnAboutDelegate("Application.ios.addDelegateHandler('\(name)'): not a UIApplicationDelegate method the compiled app can add handlers to, so the handler never runs.")
             }
-            _ = app._delegateHandlers.set(name, handlers)
+            _ = registered.set(name, handlers)
         }
         _ = handlers.push(handler)
     }

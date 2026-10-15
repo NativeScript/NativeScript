@@ -40,12 +40,12 @@ final class TemplateChildren: RegionHost {
                     if let view = old as? View { try layout.removeChild(view) }
                 }
                 for (index, view) in next.compactMap({ $0 as? View }).enumerated() {
-                    let at = layout.getChildIndex(view)
+                    let at = try layout.getChildIndex(view)
                     if at == Double(index) { continue }
                     if at >= 0 { try layout.removeChild(view) }
                     // At the end, added as nativescript-vue adds it: core then appends the native view, where an index
                     // would place it below the native view at that position (a border's, which is no child).
-                    if Double(index) == layout.getChildrenCount() { try layout.addChild(view) } else { _ = try layout.insertChild(view, Double(index)) }
+                    if try Double(index) == layout.getChildrenCount() { try layout.addChild(view) } else { _ = try layout.insertChild(view, Double(index)) }
                 }
             } else if let page = owner as? Page {
                 if let bar = next.last(where: { $0 is ActionBar }) as? ActionBar, bar !== page.actionBar { page.actionBar = bar }
@@ -150,7 +150,7 @@ extension EventData {
 /// `$navigateTo(Component)`: the topmost frame shows the view the template makes.
 public func kitNavigate(animated: Bool = true, _ create: @escaping () -> View) {
     jsReport {
-        guard let frame = Frame.topmost() else { return }
+        guard let frame = try Frame.topmost() else { return }
         try frame.navigate(JSObject([("create", { (_: [Any?]) throws -> Any? in create() } as JSFunction), ("animated", animated)]))
     }
 }
@@ -191,9 +191,8 @@ public enum NativeScriptApplication {
         CorePackages.appCSS = css
         CorePackages.installModuleLoader()
         CoreModules.initialize()
-        let app: iOSApplication = Core_application_application.Application
         jsReport {
-            try app.run(JSObject([("create", { (_: [Any?]) throws -> Any? in root() } as JSFunction)]))
+            try jsUnwrap(Core_application_application.Application, "run").run(JSObject([("create", { (_: [Any?]) throws -> Any? in root() } as JSFunction)]))
         }
     }
 }

@@ -54,7 +54,11 @@ export class Throws {
   /** An expression the translation writes as a runtime helper that cannot throw (`jsConstructor(x)`), its operands aside. */
   private plain: (n: ts.Node) => boolean;
 
-  constructor(checker: ts.TypeChecker, files: readonly ts.SourceFile[], untyped: (n: ts.Node) => boolean, nativeThrows: (call: ts.CallExpression | ts.NewExpression) => boolean = () => false, implementation: (decl: ts.Declaration) => ts.Declaration | null = () => null, dynamicMember: (e: ts.PropertyAccessExpression) => boolean = () => false, baseInitThrows: (cls: ts.ClassLikeDeclaration) => boolean = () => false, replaced: (fn: ts.Node) => boolean = () => false, castThrows: (n: ts.Node) => boolean = () => false, nativeEntry: (call: ts.CallExpression) => boolean = () => false, quiet: (n: ts.Node) => boolean = () => false, kitThrows: (fn: ts.Node) => boolean | undefined = () => undefined, reported: (get: ts.GetAccessorDeclaration, throws: (fn: ts.Node) => boolean) => boolean = () => false, plain: (n: ts.Node) => boolean = () => false) {
+  /** Whether the translation checks a value there that may be missing (`jsUnwrap`), which throws JavaScript's TypeError. */
+  private checked: (n: ts.Node) => boolean;
+
+  constructor(checker: ts.TypeChecker, files: readonly ts.SourceFile[], untyped: (n: ts.Node) => boolean, nativeThrows: (call: ts.CallExpression | ts.NewExpression) => boolean = () => false, implementation: (decl: ts.Declaration) => ts.Declaration | null = () => null, dynamicMember: (e: ts.PropertyAccessExpression) => boolean = () => false, baseInitThrows: (cls: ts.ClassLikeDeclaration) => boolean = () => false, replaced: (fn: ts.Node) => boolean = () => false, castThrows: (n: ts.Node) => boolean = () => false, nativeEntry: (call: ts.CallExpression) => boolean = () => false, quiet: (n: ts.Node) => boolean = () => false, kitThrows: (fn: ts.Node) => boolean | undefined = () => undefined, reported: (get: ts.GetAccessorDeclaration, throws: (fn: ts.Node) => boolean) => boolean = () => false, plain: (n: ts.Node) => boolean = () => false, checked: (n: ts.Node) => boolean = () => false) {
+    this.checked = checked;
     this.kitThrows = kitThrows;
     this.reported = reported;
     this.plain = plain;
@@ -147,6 +151,7 @@ export class Throws {
 
   private nodeThrows(n: ts.Node): boolean {
     const c = this.checker;
+    if (this.checked(n)) return true;
     if (this.plain(n)) return false;
     if (this.castThrows(n)) return true;
     // A module's Angular `computed(fn)` read as a value (`readonly color = ink`) runs fn, as its Swift getter does.

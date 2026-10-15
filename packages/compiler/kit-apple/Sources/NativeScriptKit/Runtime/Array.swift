@@ -874,7 +874,7 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
     }
 
     public final func jsSetElement(_ value: Any?, at index: Int) throws {
-        guard let element: Element = jsCast(value) else {
+        guard let element: Element = jsConverted(value) else {
             throw JSException(JSTypeError("Cannot store \(jsTypeof(value)) in an array of \(Element.self)"))
         }
         if index > storage.count && JSArray.hole == nil {
@@ -900,7 +900,7 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
         var elements: [Element] = []
         elements.reserveCapacity(values.count)
         for value in values {
-            guard let element: Element = jsCast(value) else {
+            guard let element: Element = jsConverted(value) else {
                 throw JSException(JSTypeError("Cannot store \(jsTypeof(value)) in an array of \(Element.self)"))
             }
             elements.append(element)

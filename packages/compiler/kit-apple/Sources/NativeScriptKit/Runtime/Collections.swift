@@ -418,7 +418,7 @@ open class JSMap<Key, Value>: Sequence, JSMapProtocol, JSReactiveConvertible, Cu
     }
 
     public final func jsAnySet(_ key: Any?, _ value: Any?) throws {
-        guard let k = jsCast(key, to: Key.self), let v = jsCast(value, to: Value.self) else {
+        guard let k = jsConverted(key, to: Key.self), let v = jsConverted(value, to: Value.self) else {
             throw JSException(JSTypeError("A Map of \(Key.self) to \(Value.self) cannot hold \(jsInspect(key)) → \(jsInspect(value))"))
         }
         set(k, v)
@@ -550,7 +550,7 @@ open class JSSet<Element>: Sequence, JSSetProtocol, JSReactiveConvertible, Custo
     }
 
     public final func jsAnyAdd(_ value: Any?) throws {
-        guard let v = jsCast(value, to: Element.self) else {
+        guard let v = jsConverted(value, to: Element.self) else {
             throw JSException(JSTypeError("A Set of \(Element.self) cannot hold \(jsInspect(value))"))
         }
         add(v)

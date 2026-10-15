@@ -154,7 +154,7 @@ public final class Router {
     public func navigate(_ commands: [Any], _ extras: Any? = nil) -> JSPromise<Bool> {
         if config.isEmpty {
             let path = commands.map { jsToString($0) }.joined(separator: "/")
-            guard let (route, params) = resolveFlatRoute(path), let frame = Frame.topmost() as? Frame else { return JSPromise.resolve(false) }
+            guard let (route, params) = resolveFlatRoute(path), let frame = (try? Frame.topmost()) as? Frame else { return JSPromise.resolve(false) }
             push(route.make, ActivatedRoute(params: params), into: frame, extras: extras)
             ended(url: "/" + path.split(separator: "/").joined(separator: "/"))
             return JSPromise.resolve(true)

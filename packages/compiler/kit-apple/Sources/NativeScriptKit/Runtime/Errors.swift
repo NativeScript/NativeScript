@@ -143,8 +143,26 @@ public func jsCaught(_ error: Error) -> Any? {
 /// A member read from a receiver its type promised (`x!.name`, `items[i].name`): JavaScript's TypeError when it is missing.
 @inline(__always)
 public func jsUnwrap<T>(_ value: T?, _ key: String, null: Bool = false) throws -> T {
-    guard let value else { throw JSException(JSTypeError("Cannot read properties of \(null ? "null" : "undefined") (reading '\(key)')")) }
+    guard let value else { throw jsCannotRead(key, null) }
     return value
+}
+
+/// A member written on a receiver its type promised: JavaScript's TypeError when it is missing.
+@inline(__always)
+public func jsUnwrap<T>(_ value: T?, setting key: String) throws -> T {
+    guard let value else { throw jsCannotSet(key) }
+    return value
+}
+
+@inline(never)
+public func jsCannotSet(_ key: String) -> JSException {
+    JSException(JSTypeError("Cannot set properties of undefined (setting '\(key)')"))
+}
+
+/// Kept out of line: each unwrap inlines only its test, not the message.
+@inline(never)
+public func jsCannotRead(_ key: String, _ null: Bool) -> JSException {
+    JSException(JSTypeError("Cannot read properties of \(null ? "null" : "undefined") (reading '\(key)')"))
 }
 
 /// What script meets on an OS older than an API it uses: the API's class is undefined there, and using it a TypeError.
@@ -152,12 +170,49 @@ public func jsUnavailable(_ version: Double) -> JSException {
     JSException(JSTypeError("This needs iOS \(jsNumberToString(version)) or newer"))
 }
 
+/// `value` as an instance of `type`, JavaScript's undefined and null as nil: a TypeError where it is another value.
+/// A cast TypeScript asserts (`view as Button`) lets any object through in JavaScript; the compiled code checks it.
+@inline(__always)
+public func jsCast<T>(_ value: Any?, _ type: T.Type = T.self) throws -> T? {
+    if let same = value as? T { return same }
+    if jsIsNullish(value) { return nil }
+    if let same = jsFlat(value) as? T { return same }
+    throw jsNotA(value, String(describing: T.self))
+}
+
+/// As `jsCast`, where the place has no undefined either: undefined and null are refused too.
+@inline(__always)
+public func jsCastPresent<T>(_ value: Any?, _ type: T.Type = T.self) throws -> T {
+    if let same = value as? T { return same }
+    if let same = jsFlat(value) as? T { return same }
+    throw jsNotA(value, String(describing: T.self))
+}
+
+/// "an instance of Label is not a Button", as the Kotlin runtime words it.
+@inline(never)
+public func jsNotA(_ value: Any?, _ type: String) -> JSException {
+    let name = type.components(separatedBy: "__")[0]
+    let article = "AEIOUaeiou".contains(name.first ?? "x") ? "an" : "a"
+    return JSException(JSTypeError("\(jsValueDescription(value)) is not \(article) \(name)"))
+}
+
+/// A value as a TypeError names it: undefined, null, its typeof, "an array", or the instance of its class.
+func jsValueDescription(_ value: Any?) -> String {
+    let flat = jsFlat(value)
+    if flat == nil || flat is JSNull { return jsToString(flat) }
+    let kind = jsTypeof(flat)
+    if kind != "object" { return kind }
+    if flat is JSArrayProtocol { return "an array" }
+    if let dynamic = flat as? JSDynamic { return dynamic.jsClassName.map { "an instance of \($0)" } ?? "an object" }
+    return "an instance of \(String(describing: type(of: flat!)).components(separatedBy: "__")[0])"
+}
+
 /// An untyped value where code declares `T` (`const p: Point = JSON.parse(s)`): the value as `T`,
 /// or a TypeError where it is none, which JavaScript would let through until a member is missing.
 @inline(__always)
 public func jsChecked<T>(_ value: Any?, _ type: T.Type) throws -> T {
     if let same = value as? T { return same }
-    if let cast: T = jsCast(value) { return cast }
+    if let cast: T = jsConverted(value) { return cast }
     throw jsCastFailure(value, String(describing: T.self))
 }
 
@@ -208,6 +263,14 @@ public final class JSThrownValue: JSError {
 
 /// A dynamic write (`obj[key] = v`, a binding's set) a typed field refused: the TypeError `jsSet` throws after the write.
 var jsRefusedWrite: JSTypeError?
+
+/// A dynamic write whose value converting throws (an array holding undefined where its elements are objects): refused, the TypeError `jsSet` throws.
+public func jsStoring(_ body: () throws -> Void) {
+    do { try body() } catch {
+        let value = jsCaught(error)
+        jsRefusedWrite = value as? JSTypeError ?? JSTypeError(jsToString(value))
+    }
+}
 
 public func jsRefuseSet(_ value: Any?, _ key: String, _ type: String) {
     jsRefusedWrite = JSTypeError("Cannot assign \(jsIsNullish(value) ? jsToString(value) : jsTypeof(value)) to '\(key)', a \(type)")

@@ -645,7 +645,7 @@ export class CoreAPI {
       const a = e.arguments[k];
       // A typed array where the kit erased its element type (`VirtualArray<number>.load(index, items)`): its elements as any value.
       if (a && !ts.isSpreadElement(a) && /^JSArray<Any\?>[?!]?$/.test(type) && /^JSArray<.+>$/.test(t.typeOf(a)) && t.typeOf(a) !== 'JSArray<Any?>') {
-        args[k] = `JSArray<Any?>(${t.expr(a)}.storage.map { $0 as Any? })`;
+        args[k] = t.loose(a) && t.looseTolerated(a) ? `(${t.expr(a)} as ${t.typeOf(a)}?).map { JSArray<Any?>($0.storage.map { $0 as Any? }) }` : `JSArray<Any?>(${t.expr(a)}.storage.map { $0 as Any? })`;
         return;
       }
       // Code without null checks: undefined or null where the kit takes a value (`addWeakEventListener(source, name, undefined, target)`),
@@ -852,10 +852,14 @@ export class CoreAPI {
     const k = kitType.trim();
     // What the kit generated from core gives untyped (`animate()`'s promise), read as the type the declarations give it.
     if (k === 'Any?' && tsType !== 'Any?' && tsType !== 'Void') return this.t.fromAnyCode(code, tsType, true);
-    if (k === 'JSArray<Any?>' && /^JSArray<.+>$/.test(tsType) && tsType !== k) return `jsArrayOf(${code}) { ${this.t.fromAny('$0', tsType.slice(8, -1))} }`;
+    if (k === 'JSArray<Any?>' && /^JSArray<.+>$/.test(tsType) && tsType !== k) return this.t.arrayOf(code, tsType.slice(8, -1));
     // An array of a base class (`Frame._stack()` of FrameBase) that TypeScript types as of a subclass.
     const ke = /^JSArray<([A-Z]\w*)>[?!]?$/.exec(k)?.[1], te = /^JSArray<([A-Z]\w*)>$/.exec(tsType)?.[1];
-    if (ke && te && ke !== te && !['Any', 'Double', 'String', 'Bool'].includes(te)) return `JSArray<${te}>((${code})${/[?!]$/.test(k) ? '!' : ''}.storage.map { $0 as! ${te} })`;
+    if (ke && te && ke !== te && !['Any', 'Double', 'String', 'Bool'].includes(te)) {
+      // Lenient code's array may be missing, which stays undefined; an element of another class is a TypeError.
+      if (this.t.lenient) return `try (${code} as JSArray<${ke}>?).map { JSArray<${te}>(try $0.storage.map { try (jsCastPresent($0) as ${te}) }) }`;
+      return `JSArray<${te}>((${code})${/[?!]$/.test(k) ? '!' : ''}.storage.map { $0 as! ${te} })`;
+    }
     const numeric = /^(Int|UInt|Int32|UInt32|Int64|UInt64|CGFloat|Float)\??$/.exec(k);
     if (numeric && tsType.startsWith('Double')) return k.endsWith('?') ? `${code}.map { Double($0) }` : `Double(${code})`;
     // A member the kit types as a base class (`EventData.object` is an Observable) that TypeScript types as a subclass.

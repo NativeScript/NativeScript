@@ -212,7 +212,7 @@ public final class JSPromise<T>: JSThenable, CustomStringConvertible {
             Microtasks.enqueue { [self] in
                 let resolvers = JSResolvers(self)
                 thenable.jsSubscribe({ value in
-                    if let typed: T = jsCast(value) { resolvers.resolve(typed) } else { resolvers.reject(jsTypeMismatch(value, T.self)) }
+                    if let typed: T = jsConverted(value) { resolvers.resolve(typed) } else { resolvers.reject(jsTypeMismatch(value, T.self)) }
                 }, { resolvers.reject($0) })
             }
             return
@@ -222,7 +222,7 @@ public final class JSPromise<T>: JSThenable, CustomStringConvertible {
                 let resolvers = JSResolvers(self)
                 let resolve: JSFunction = { arguments in
                     let value = arguments.first ?? nil
-                    if let typed: T = jsCast(value) { resolvers.resolve(typed) } else { resolvers.reject(jsTypeMismatch(value, T.self)) }
+                    if let typed: T = jsConverted(value) { resolvers.resolve(typed) } else { resolvers.reject(jsTypeMismatch(value, T.self)) }
                     return nil
                 }
                 let reject: JSFunction = { arguments in
@@ -460,7 +460,7 @@ public final class JSPromise<T>: JSThenable, CustomStringConvertible {
 
     /// `Promise.all(promises)`.
     public static func all<S: Sequence>(_ promises: S) -> JSPromise<JSArray<T>> where S.Element == JSPromise<T> {
-        jsPromiseAllCore(promises.map { $0 }) { values in JSArray(values.map { jsCast($0, to: T.self)! }) }
+        jsPromiseAllCore(promises.map { $0 }) { values in JSArray(values.map { jsConverted($0, to: T.self)! }) }
     }
 
     /// `Promise.allSettled(promises)`: `{ status: 'fulfilled', value }` / `{ status: 'rejected', reason }` objects.
@@ -605,18 +605,18 @@ func jsPromiseAllSettledCore(_ thenables: [JSThenable]) -> JSPromise<JSArray<JSO
 
 /// `Promise.all([a, b])` over promises of different types.
 public func jsPromiseAll<A, B>(_ a: JSPromise<A>, _ b: JSPromise<B>) -> JSPromise<(A, B)> {
-    jsPromiseAllCore([a, b]) { v in (jsCast(v[0], to: A.self)!, jsCast(v[1], to: B.self)!) }
+    jsPromiseAllCore([a, b]) { v in (jsConverted(v[0], to: A.self)!, jsConverted(v[1], to: B.self)!) }
 }
 
 /// `Promise.all([a, b, c])` over promises of different types.
 public func jsPromiseAll<A, B, C>(_ a: JSPromise<A>, _ b: JSPromise<B>, _ c: JSPromise<C>) -> JSPromise<(A, B, C)> {
-    jsPromiseAllCore([a, b, c]) { v in (jsCast(v[0], to: A.self)!, jsCast(v[1], to: B.self)!, jsCast(v[2], to: C.self)!) }
+    jsPromiseAllCore([a, b, c]) { v in (jsConverted(v[0], to: A.self)!, jsConverted(v[1], to: B.self)!, jsConverted(v[2], to: C.self)!) }
 }
 
 /// `Promise.all([a, b, c, d])` over promises of different types.
 public func jsPromiseAll<A, B, C, D>(_ a: JSPromise<A>, _ b: JSPromise<B>, _ c: JSPromise<C>, _ d: JSPromise<D>) -> JSPromise<(A, B, C, D)> {
     jsPromiseAllCore([a, b, c, d]) { v in
-        (jsCast(v[0], to: A.self)!, jsCast(v[1], to: B.self)!, jsCast(v[2], to: C.self)!, jsCast(v[3], to: D.self)!)
+        (jsConverted(v[0], to: A.self)!, jsConverted(v[1], to: B.self)!, jsConverted(v[2], to: C.self)!, jsConverted(v[3], to: D.self)!)
     }
 }
 
@@ -639,7 +639,7 @@ public func jsAwait<T>(_ promise: JSPromise<T>?, _ onFulfilled: @escaping (T?) -
 public func jsAwait<T>(value: T, _ onFulfilled: @escaping (T) -> Void, _ onRejected: @escaping (Any?) -> Void) {
     if let thenable = jsFlat(value) as? JSThenable {
         thenable.jsSubscribe({ result in
-            if let typed: T = jsCast(result) { onFulfilled(typed) } else { onRejected(jsTypeMismatch(result, T.self)) }
+            if let typed: T = jsConverted(result) { onFulfilled(typed) } else { onRejected(jsTypeMismatch(result, T.self)) }
         }, onRejected)
         return
     }
@@ -753,10 +753,11 @@ func jsPromiseMember(_ thenable: JSThenable, _ key: String) -> Any? {
 /// An untyped value read as a promise of a type: the promise itself where it is one of
 /// that type, else one adopting it as `Promise.resolve` adopts a thenable, a plain value
 /// resolving it, its result read as the type.
-public func jsPromiseOf<T>(_ value: Any?, _ element: @escaping (Any?) -> T) -> JSPromise<T> {
+public func jsPromiseOf<T>(_ value: Any?, _ element: @escaping (Any?) throws -> T) -> JSPromise<T> {
     if let same = jsFlat(value) as? JSPromise<T> { return same }
     let (promise, resolve, reject) = JSPromise<T>.withResolvers()
-    jsPromiseResolveAny(value).jsSubscribe({ resolve(element($0)) }, reject)
+    // A value its type cannot hold (undefined where an object is promised) rejects with the TypeError.
+    jsPromiseResolveAny(value).jsSubscribe({ v in do { resolve(try element(v)) } catch { reject(jsCaught(error)) } }, reject)
     if let from = jsFlat(value) as? JSCancelable { promise.canceler = { from.canceler?() } }
     return promise
 }
