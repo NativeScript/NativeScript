@@ -136,7 +136,7 @@ function notIterable(e: ts.Expression): string {
 }
 
 /** Whether code's brackets close as they open, outside string literals: a part of an expression that stands alone. */
-function balanced(code: string): boolean {
+export function balanced(code: string): boolean {
   let depth = 0, quoted = false;
   for (let i = 0; i < code.length; i++) {
     const c = code[i];
@@ -2452,7 +2452,7 @@ ${members.join('\n')}
     // Only a field Swift holds as optional can be missing.
     const optional = fields.filter((f) => f.type.endsWith('?') && /[?!]$/.test(held(f)) && !hasTopLevelArrow(held(f)));
     const present = (f: ShapeField) => `${ident(f.name)} != nil${nullable.includes(f) ? ` || jsNulls?.contains(${swiftString(f.name)}) == true` : ''}`;
-    members[0] = `    var jsKeys: [String] {\n        let order = jsOrder ?? [${fields.map((f) => swiftString(f.name)).join(', ')}]\n        let keys = order + (jsExtra?.jsKeys ?? []).filter { !order.contains($0) }\n        return keys.filter { key in ${optional.length ? `switch key { ${optional.map((f) => `case ${swiftString(f.name)}: return ${present(f)}`).join('; ')}; default: return true }` : 'true'} }\n    }`;
+    members[0] = `    var jsKeys: [String] {\n        let order = jsOrder ?? [${fields.map((f) => swiftString(f.name)).join(', ')}]\n        let keys = order + (jsExtra?.jsKeys ?? []).filter { !order.contains($0) }\n        return ${optional.length ? `keys.filter { key in switch key { ${optional.map((f) => `case ${swiftString(f.name)}: return ${present(f)}`).join('; ')}; default: return true } }` : 'keys'}\n    }`;
     lines.push(...members);
     lines.push('}');
     return lines.join('\n');
@@ -4635,7 +4635,7 @@ ${members.join('\n')}
       const statics = cls.members.filter((m) => m.name && isStatic(m) && !ts.isComputedPropertyName(m.name)).map((m) => m.name!.getText().replace(/^['"]|['"]$/g, ''));
       const own = `[${[...new Set(statics)].map(swiftString).join(', ')}]`;
       if (!appBase) { conformances.push('JSStaticKeyed'); lines.push(`    open class var jsStaticKeys: [String] { ${own} }`); }
-      else lines.push(`    open override class var jsStaticKeys: [String] { super.jsStaticKeys + ${own} }`);
+      else if (own !== '[]') lines.push(`    open override class var jsStaticKeys: [String] { super.jsStaticKeys + ${own} }`);
     }
     this.indent = '';
     lines.push('}');
@@ -5431,11 +5431,12 @@ ${members.join('\n')}
       if (logical) return i + logical;
       // An awaited value already settled (`await p;`, its continuation given the value) has nothing left to do.
       if (ts.isAwaitExpression(s.expression) && this.subst.has(s.expression)) return '';
-      const code = this.exprStatement(s.expression);
+      // A discarded value needs no stand-in for undefined (`_ = (xs.pop() ?? nil)`).
+      const code = this.exprStatement(s.expression).replace(/^_ = \((.*) \?\? (?:nil|\.nan)\)$/s, (all, value: string) => (balanced(value) ? `_ = ${value}` : all));
       // `s = String(s)` of a string: the same value, which Swift refuses to assign to itself.
       const self = /^([\w.]+) = (.+)$/.exec(code);
       if (self && self[1] === self[2]) return '';
-      return i + (code.startsWith('do {') || code.startsWith('if ') ? '' : this.tryPrefix(s.expression)) + code;
+      return i + (code.startsWith('do {') || code.startsWith('if ') ? code : tryAssigned(this.tryPrefix(s.expression), code));
     }
     if (ts.isReturnStatement(s)) {
       if (a) {
@@ -5450,7 +5451,7 @@ ${members.join('\n')}
       }
       if (s.expression && ts.isIdentifier(s.expression) && this.holeyArrays.has(this.resolve(s.expression)!)) return `${i}return jsFilled(${this.refName(s.expression)})`;
       // A value returned where nothing is (a Promise executor's `return p.then(…)`): evaluated, then dropped.
-      if (s.expression && this.returnType === 'Void' && this.typeOf(s.expression) !== 'Void' && !isNullish(s.expression)) return `${i}${this.tryPrefix(s.expression)}_ = ${this.expr(s.expression)}\n${i}return`;
+      if (s.expression && this.returnType === 'Void' && this.typeOf(s.expression) !== 'Void' && !isNullish(s.expression)) return `${i}${tryAssigned(this.tryPrefix(s.expression), `_ = ${this.expr(s.expression)}`)}\n${i}return`;
       // `return log(x)` of a function returning nothing: the call, then undefined.
       if (s.expression && this.returnType && this.returnType !== 'Void' && this.typeOf(s.expression) === 'Void' && ts.isCallExpression(s.expression)) {
         const none = isOptional(this.returnType) || this.returnType === 'Any?' ? 'nil' : this.zero(this.returnType);
@@ -5462,7 +5463,7 @@ ${members.join('\n')}
         if (maybe) return `${i}return ${this.tryPrefix(s.expression)}${maybe}`;
       }
       // A value returned where nothing is (a Promise executor's `return promise.then(…)`): evaluated, then nothing returned.
-      if (s.expression && this.returnType === 'Void' && this.typeOf(s.expression) !== 'Void' && !isNullish(s.expression)) return `${i}${this.tryPrefix(s.expression)}_ = ${this.expr(s.expression)}\n${i}return`;
+      if (s.expression && this.returnType === 'Void' && this.typeOf(s.expression) !== 'Void' && !isNullish(s.expression)) return `${i}${tryAssigned(this.tryPrefix(s.expression), `_ = ${this.expr(s.expression)}`)}\n${i}return`;
       const missing = !s.expression || ((this.lenient || this.lenientApp) && isNullish(s.expression) && !this.returnType.endsWith('?') && this.returnType !== 'Any?');
       // Declared `T[] | undefined` (held `JSArray<…>!`): callers test the result (`if (expanded)`), which a zero value would pass.
       if (missing && this.lenient && /^JS(Array|Map|Set|Object)\b/.test(this.returnType) && declaresUndefined(ts.findAncestor(s, ts.isFunctionLike))) return `${i}return nil`;
@@ -6012,7 +6013,10 @@ ${members.join('\n')}
     const clauses = s.caseBlock.clauses;
     const fallback = clauses.findIndex(ts.isDefaultClause);
     if (fallback >= 0 && fallback < clauses.length - 1) return this.switchBlock(s, subject, subjectType);
-    const lines = [`${i}let ${subject}: ${subjectType} = ${this.tryPrefix(s.expression)}${this.expr(s.expression)}`, `${i}switch ${subject} {`];
+    const literal = (l: ts.Expression) => ts.isLiteralExpression(l) || (ts.isPrefixUnaryExpression(l) && ts.isNumericLiteral(l.operand));
+    // Cases of literals match by pattern, which names no subject: Swift's switch evaluates its own once.
+    const direct = subjectType !== 'Any?' && clauses.every((c) => !ts.isCaseClause(c) || literal(c.expression));
+    const lines = direct ? [`${i}switch ${this.tryPrefix(s.expression)}${this.expr(s.expression)} {`] : [`${i}let ${subject}: ${subjectType} = ${this.tryPrefix(s.expression)}${this.expr(s.expression)}`, `${i}switch ${subject} {`];
     let labels: ts.Expression[] = [];
     this.plainBreak++;
     this.breakTargets.push(null);
@@ -6026,7 +6030,7 @@ ${members.join('\n')}
         } else if (subjectType === 'Any?') {
           // An untyped subject matches as `===` does.
           lines.push(`${i}case _ where ${labels.some((l) => this.tryPrefix(l)) ? 'try ' : ''}${labels.map((l) => `jsStrictEquals(${subject}, ${this.coerce(l, 'Any?')})`).join(' || ')}:`);
-        } else if (labels.every((l) => ts.isLiteralExpression(l) || (ts.isPrefixUnaryExpression(l) && ts.isNumericLiteral(l.operand)))) {
+        } else if (labels.every(literal)) {
           lines.push(`${i}case ${labels.map((l) => this.expr(l)).join(', ')}:`);
         } else {
           lines.push(`${i}case _ where ${labels.some((l) => this.tryPrefix(l)) ? 'try ' : ''}${labels.map((l) => this.sameAs(subject, this.coerce(l, subjectType), subjectType)).join(' || ')}:`);
@@ -10790,7 +10794,12 @@ ${members.join('\n')}
           if (z) return `({ () ${throws}-> ${t} in let ${v} = ${lt}${leftCode}; return jsTruthy(${v}) ? ${rt}${right} : ${z} }())`;
           if (this.lenientRef(t) !== t || (this.lenientApp && !isFunctionType(t))) return `jsImplicit(({ () ${throws}-> ${optionalType(t)} in let ${v} = ${lt}${leftCode}; return jsTruthy(${v}) ? ${rt}${right} : nil }()))`;
         }
+        // `a || b` of objects of one class: an object is truthy exactly when it is there.
+        const sameObject = op === K.BarBarToken && this.isObjectRef(left) && this.isObjectRef(e.right) && !isFunctionType(t.replace(/^\((.*)\)[?!]$/, '$1'))
+          && leftType.replace(/[?!]$/, '') === t.replace(/[?!]$/, '') && !leftCode.startsWith('try ');
+        if (sameObject && (leftValue === `${v}!` || (leftValue === v && t.endsWith('?')))) return `(${lt || rt}${leftCode} ?? ${right})`;
         // Lenient code: `a || b` of objects is undefined when both are (`span.style.backgroundColor || parent.backgroundColor`).
+        if (sameObject && this.lenient && t !== 'Any?' && this.lenientRef(t) !== t && !t.endsWith('!')) return `((${lt || rt}${leftCode} ?? ${right}) as ${optionalType(t)})`;
         if (this.lenient && op === K.BarBarToken && t !== 'Any?' && this.lenientRef(t) !== t && !t.endsWith('!')) {
           return `jsImplicit(({ () ${throws}-> ${optionalType(t)} in let ${v} = ${lt}${leftCode}; return jsTruthy(${v}) ? ${leftValue} : ${rt}${right} }()))`;
         }
@@ -11652,6 +11661,44 @@ function exitsStatement(st: ts.Statement): boolean {
   if (ts.isReturnStatement(st) || ts.isThrowStatement(st)) return true;
   if (ts.isBlock(st)) return st.statements.length > 0 && exitsStatement(st.statements[st.statements.length - 1]);
   return false;
+}
+
+/**
+ * `jsImplicit(x)` of a value Swift already holds optional (a conditional cast, an optional chain's member): the value.
+ * Applied to a finished file, after the translator's own rewrites have read the marker.
+ */
+export function withoutRedundantImplicit(code: string): string {
+  const out: string[] = [];
+  let at = 0;
+  for (const m of code.matchAll(/\bjsImplicit\(/g)) {
+    if (m.index! < at) continue;
+    const start = m.index! + m[0].length;
+    let depth = 1, i = start, quoted = false;
+    for (; i < code.length && depth; i++) {
+      const c = code[i];
+      if (quoted) { if (c === '\\') i++; else if (c === '"') quoted = false; }
+      else if (c === '"') quoted = true;
+      else if ('([{'.includes(c)) depth++;
+      else if (')]}'.includes(c)) depth--;
+    }
+    if (depth) break;
+    let arg = code.slice(start, i - 1);
+    while (arg.startsWith('(') && arg.endsWith(')') && balanced(arg.slice(1, -1))) arg = arg.slice(1, -1);
+    // Outside its parentheses the value is one operand: a cast at its end, or a chain with no spaces.
+    const top = arg.replace(/\((?:[^()"]|"(?:[^"\\]|\\.)*")*\)/g, '()');
+    const optional = (/^[^\s]+ as\? [\w.]+(<[\w.<>, ?]*>)?$/.test(top) && !/[()]/.test(top.replace(/\(\)/g, ''))) || /^[^\s]*\?\.\w+$/.test(top);
+    if (!optional || !balanced(arg)) continue;
+    out.push(code.slice(at, m.index!), `(${withoutRedundantImplicit(arg)})`);
+    at = i;
+  }
+  out.push(code.slice(at));
+  return out.join('');
+}
+
+/** `try` before an assignment to a name or a member path, which cannot throw: on its value instead (`x = try f()`). */
+function tryAssigned(t: string, code: string): string {
+  const m = t ? /^(_|[A-Za-z_]\w*(?:\.[A-Za-z_]\w*)*) = (?!=)/s.exec(code) : null;
+  return m ? `${m[0]}${t}${code.slice(m[0].length)}` : t + code;
 }
 
 /** `rest`: the parameter a `JSRest` type marks as a rest parameter (spelled `JSArray` in `params`), else -1. */
