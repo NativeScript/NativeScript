@@ -360,6 +360,41 @@ describe('css-selector', () => {
 			}
 		}
 
+		it('matches a boolean property only while it is true, like an HTML boolean attribute', () => {
+			const rule = createOne(`[hidden] { display: none; }`);
+
+			expect(rule.selectors[0].match(<any>{ cssType: 'label', hidden: false })).toBe(false);
+			expect(rule.selectors[0].match(<any>{ cssType: 'label', hidden: true })).toBe(true);
+		});
+
+		it('still compares a false boolean property by value', () => {
+			const rule = createOne(`[hidden=false] { color: red; }`);
+
+			expect(rule.selectors[0].match(<any>{ cssType: 'label', hidden: false })).toBe(true);
+			expect(rule.selectors[0].match(<any>{ cssType: 'label', hidden: true })).toBe(false);
+		});
+
+		it('matches substring operators against the class attribute', () => {
+			const contains = createOne(`[class*='btn-'] { color: red; }`).selectors[0];
+			const prefix = createOne(`[class^='col'] { color: red; }`).selectors[0];
+			const node = (className: string) => <any>{ cssType: 'label', class: className, cssClasses: new Set(className.split(' ')) };
+
+			expect(contains.match(node('btn btn-primary'))).toBe(true);
+			expect(contains.match(node('btn'))).toBe(false);
+			expect(contains.match(node('btn-'))).toBe(true);
+			expect(prefix.match(node('col-6 row'))).toBe(true);
+			expect(prefix.match(node('row col-6'))).toBe(false);
+		});
+
+		it('keeps class selectors and [class~=x] as class matches', () => {
+			const node = <any>{ cssType: 'label', class: 'a b', cssClasses: new Set(['a', 'b']) };
+
+			expect(createOne(`.b { color: red; }`).selectors[0].match(node)).toBe(true);
+			expect(createOne(`[class~=b] { color: red; }`).selectors[0].match(node)).toBe(true);
+			expect(createOne(`[class=b] { color: red; }`).selectors[0].match(node)).toBe(false);
+			expect(createOne(`[class='a b'] { color: red; }`).selectors[0].match(node)).toBe(true);
+		});
+
 		it('does not match a node that does not know the attribute', () => {
 			const rule = createOne(`.title[_ngcontent-c7] { color: red; }`);
 			const node = { cssType: 'label', cssClasses: new Set(['title']), '_ngcontent-c3': '' };
