@@ -7095,7 +7095,7 @@ ${members.join('\n')}
    */
   loose(x: ts.Expression): boolean {
     if (this.checkedNodes.has(x)) return false;
-    if (!this.lenient) return this.lenientValue(x);
+    if (!this.lenient) return this.lenientValue(x) || this.nullObjectSignalRead(x);
     // A name that is no value read: a member's name after its dot, a declaration's own name, a label.
     if (ts.isIdentifier(x)) {
       const p = x.parent;
@@ -7221,6 +7221,24 @@ ${members.join('\n')}
       return this.mayBeNull(param);
     }
     return false;
+  }
+
+  /**
+   * A signal holding a null its type does not admit (`signal<Person>(null)` in a non-strict app), read as the type,
+   * as script reads it: Swift holds it optional, checked where the object is needed (see `loose`).
+   */
+  private nullObjectSignalRead(x: ts.Expression): boolean {
+    while (ts.isParenthesizedExpression(x)) x = x.expression;
+    if (!this.nullSignalRead(x)) return false;
+    const t = this.typeOf(x);
+    return !isFunctionType(t) && this.nullableRef(t) !== t;
+  }
+
+  private nullSignalRead(e: ts.Expression): boolean {
+    if (!ts.isCallExpression(e) || e.arguments.length || !['WritableSignal', 'InputSignal'].includes(this.symbolName(e.expression))) return false;
+    const callee = e.expression;
+    if (ts.isPropertyAccessExpression(callee) && this.isSelf(callee.expression) && (this.computed.has(callee.name.text) || this.props.has(callee.name.text) || this.signalFields.has(callee.name.text))) return false;
+    try { return /\?>$/.test(this.typeOf(callee)) && !/\?$/.test(this.typeOf(e)); } catch { return false; }
   }
 
   /**
@@ -8988,8 +9006,7 @@ ${members.join('\n')}
       if (ts.isPropertyAccessExpression(callee) && this.isSelf(callee.expression) && this.props.has(callee.name.text)) return `self.${ident(callee.name.text)}.value`;
       if (ts.isPropertyAccessExpression(callee) && this.isSelf(callee.expression) && this.signalFields.has(callee.name.text)) return `self.${ident(callee.name.text)}.value`;
       if (this.symbolName(callee) === 'Signal') return this.expr(callee);
-      // A signal holding a null its type does not admit is read as the type, as script reads it.
-      return /\?>$/.test(this.typeOf(callee)) && !/\?$/.test(this.typeOf(e)) ? `jsImplicit(${this.expr(callee)}.value)` : `${this.expr(callee)}.value`;
+      return this.nullSignalRead(e) ? `jsImplicit(${this.expr(callee)}.value)` : `${this.expr(callee)}.value`;
     }
     if (callee.kind === ts.SyntaxKind.SuperKeyword) throw this.error(e, 'super() outside the start of a constructor');
     // `getWindow<UIWindow>?.()`: the type arguments are only TypeScript's, and a function declaration is always there.
