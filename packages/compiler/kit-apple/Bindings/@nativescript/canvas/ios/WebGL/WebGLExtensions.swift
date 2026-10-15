@@ -165,7 +165,7 @@ final class ANGLEInstancedArraysHost: CanvasHost {
 /// `EXT_disjoint_timer_query`. Each method answers to its spec name (`createQueryEXT`) and to the
 /// `…Ext` name the C++ binding gave it.
 final class EXTDisjointTimerQueryHost: CanvasHost {
-    let query: OpaquePointer
+    nonisolated(unsafe) let query: OpaquePointer
     init(_ query: OpaquePointer) { self.query = query }
     deinit { canvas_native_webgl_EXT_disjoint_timer_query_destroy(query) }
 
@@ -224,7 +224,7 @@ final class EXTDisjointTimerQueryHost: CanvasHost {
 
 /// `OES_vertex_array_object`.
 final class OESVertexArrayObjectHost: CanvasHost {
-    let object: OpaquePointer
+    nonisolated(unsafe) let object: OpaquePointer
     init(_ object: OpaquePointer) { self.object = object }
     deinit { canvas_native_webgl_OES_vertex_array_object_destroy(object) }
 
@@ -263,7 +263,7 @@ final class OESVertexArrayObjectHost: CanvasHost {
 
 /// `WEBGL_draw_buffers`.
 final class WEBGLDrawBuffersHost: CanvasHost {
-    let buffers: OpaquePointer
+    nonisolated(unsafe) let buffers: OpaquePointer
     init(_ buffers: OpaquePointer) { self.buffers = buffers }
     deinit { canvas_native_webgl_WEBGL_draw_buffers_destroy(buffers) }
 
@@ -298,7 +298,7 @@ final class WEBGLDrawBuffersHost: CanvasHost {
 
 /// `WEBGL_lose_context`.
 final class WEBGLLoseContextHost: CanvasHost {
-    let context: OpaquePointer
+    nonisolated(unsafe) let context: OpaquePointer
     init(_ context: OpaquePointer) { self.context = context }
     deinit { canvas_native_webgl_WEBGL_lose_context_destroy(context) }
 

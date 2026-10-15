@@ -39,11 +39,11 @@ private final class WebGLFrameTarget {
 
 /// `WebGLRenderingContext`, over a `WebGLState`; `WebGL2RenderingContextHost` extends it.
 class WebGLRenderingContextHost: CanvasHost {
-    let state: OpaquePointer
+    nonisolated(unsafe) let state: OpaquePointer
     let isWebGL2: Bool
     private var invalidateState = 0
     private var continuousRender = true
-    private var raf: OpaquePointer?
+    private nonisolated(unsafe) var raf: OpaquePointer?
     private let frameTarget = WebGLFrameTarget()
 
     init(state: OpaquePointer, webgl2: Bool) {

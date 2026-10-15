@@ -5,8 +5,8 @@ import CanvasNative
 /// `GPUCanvasContext`, over the context a canvas view made for WebGPU. While its frame callback
 /// runs, a texture taken this frame and not presented is presented at the next frame.
 final class GPUCanvasContextHost: CanvasHost {
-    let context: OpaquePointer?
-    private var raf: OpaquePointer?
+    nonisolated(unsafe) let context: OpaquePointer?
+    private nonisolated(unsafe) var raf: OpaquePointer?
     private var continuousRender = true
 
     override class var className: String? { "GPUCanvasContext" }

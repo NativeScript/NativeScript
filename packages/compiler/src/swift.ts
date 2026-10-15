@@ -2063,7 +2063,7 @@ export class Translator implements AsyncTranslator {
       const t = this.boxedGeneric(decl, ts.isFunctionDeclaration(decl) && decl.body ? escapingFunction(functionParts(this.functionValueType(decl))!) : this.type(this.checker.getTypeOfSymbolAtLocation(sym, decl), decl));
       // A declared function as a value outside a function body: the initializer holding it runs isolated (`storedInit`).
       const fn = ts.isFunctionDeclaration(decl) && decl.body && !takesThis(decl) ? decl : null;
-      if (fn && !this.functionDepth) this.isolatedInit = true;
+      if (fn && (!this.functionDepth || this.inStoredInit)) this.isolatedInit = true;
       entries.push(`(${swiftString(exported.name)}, ${fn ? this.boxDeclared(ref, fn) : this.convert(ref, t, 'Any?')})`);
     }
     return `JSObject([${entries.join(', ')}])`;
@@ -2438,14 +2438,22 @@ ${members.join('\n')}
     return name;
   }
 
+  /**
+   * A shape's field as its class holds it. The classes are written after every module, as no file's code: lenient
+   * only in the kit, where a field of an object or function type holds null too (`{ completion: null, ...options }`).
+   */
+  private shapeHeld(f: { type: string; symbol?: boolean }): string {
+    if (!this.lenientAll || f.symbol) return f.type;
+    return isFunctionType(f.type) ? `(${f.type})?` : this.nullableRef(f.type);
+  }
+
   /** A plain JavaScript object of a known shape: a final class with a memberwise init, readable as a dynamic object. */
   private objectClass(name: string, allFields: ShapeField[], className: string | null): string {
     if (allFields.some((f) => f.accessor)) return this.accessorClass(name, allFields);
     const fields = allFields.filter((f) => !f.symbol);
     const symbolic = allFields.filter((f) => f.symbol);
     const lines = [`final class ${name}: ${['JSDynamic', ...this.shapeProtocols(allFields).map((x) => x.conformance), ...(symbolic.length ? [] : ['JSObjectConvertible'])].join(', ')} {`, NONISOLATED_DEINIT];
-    // Lenient code: a field of an object or function type holds null too (`{ completion: null, ...options }`).
-    const held = (f: ShapeField) => (!this.lenient || f.symbol ? f.type : isFunctionType(f.type) ? `(${f.type})?` : this.lenientRef(f.type));
+    const held = (f: ShapeField) => this.shapeHeld(f);
     for (const f of fields) lines.push(`    var ${ident(f.name)}: ${held(f)}`);
     for (const f of symbolic) lines.push(`    var ${f.name}: ${f.type}`);
     for (const x of this.shapeProtocols(allFields)) lines.push(...x.lines);
@@ -2575,7 +2583,7 @@ ${members.join('\n')}
       ...this.keySwitch([
         ...fields.map((f) => ({ name: f.name, code: `${raw.has(f.name) ? `jsExpandoSet(self, ${swiftString(f.name)}, newValue)` : this.storeFromAny(`self.${ident(f.name)}`, f.type, f.name)}${nulls.has(f.name) ? `; jsNoteNull(&jsNulls, ${swiftString(f.name)}, newValue)` : ''}; return` })),
         ...accessors.filter((a) => a.set).map((a) => ({ name: a.name, code: `${a.set}; return` })),
-      ], symbols.map((f) => `            case ${f.key}: ${this.storeFromAny(f.member, f.type, f.member)}`), override ? 'super[jsKey: key] = newValue' : expando ? 'jsExpandoSet(self, key, newValue)' : extra ? 'if jsExtra == nil { jsExtra = JSObject() }; jsExtra?[jsKey: key] = newValue' : 'break'),
+      ], symbols.map((f) => `            case ${f.key}: ${this.storeFromAny(f.member, f.type, f.member, true)}`), override ? 'super[jsKey: key] = newValue' : expando ? 'jsExpandoSet(self, key, newValue)' : extra ? 'if jsExtra == nil { jsExtra = JSObject() }; jsExtra?[jsKey: key] = newValue' : 'break'),
       '        }',
       '    }',
     ];
@@ -2616,8 +2624,9 @@ ${members.join('\n')}
    * `lhs = newValue` in a dynamic setter (`obj[key] = v`, a binding's write): a value the field's type cannot
    * hold is refused, and `jsSet` throws the TypeError, where a cast would trap.
    */
-  private storeFromAny(lhs: string, type: string, key: string): string {
-    const code = this.fromAny('newValue', this.lenient ? this.lenientRef(type) : type);
+  private storeFromAny(lhs: string, type: string, key: string, symbol = false): string {
+    // A symbol-keyed field is held as `deferred` declares it: an array or a string present, its zero for undefined.
+    const code = symbol && this.lenient && this.zero(type) !== null && !isOptional(type) ? this.fromAnyOrZero('newValue', type) : this.fromAny('newValue', this.lenient ? this.lenientRef(type) : type);
     // A conversion that can throw (an array holding undefined where its elements are objects): `jsSet` throws it.
     if (code.startsWith('try ')) return `jsStoring { ${lhs} = ${code} }`;
     if (!code.startsWith('(newValue as! ') || CF_CLASSES.has(type)) return `${lhs} = ${code}`;
@@ -2635,6 +2644,14 @@ ${members.join('\n')}
     const saved = this.throwingCast;
     this.throwingCast = checked && this.lenient;
     try { return this.fromAnyChecked(code, type, checked && !this.lenient); } finally { this.throwingCast = saved; }
+  }
+
+  /** An untyped value read where Swift holds `type` present, undefined as its zero: lenient code's array too, which it otherwise reads as undefined. */
+  private fromAnyOrZero(code: string, type: string): string {
+    const array = /^JSArray<(.*)>$/.exec(type);
+    if (!array || !this.lenient) return this.fromAnyCode(code, type, true);
+    const el = this.arrayElementFromAny(array[1]);
+    return `${el.throws ? 'try ' : ''}jsArrayOf(${code}${typedElement('JSArray', array[1])}, { ${el.code} })`;
   }
 
   /** Set where `fromAnyCode` was asked to check: the outermost cast to a type with no lenient conversion throws (see `checkedCast`). */
@@ -7076,7 +7093,7 @@ ${members.join('\n')}
 
   expr(e: ts.Expression): string {
     const code = this.exprOf(e);
-    if (this.functionDepth === 0 && /^[\w.`]+$/.test(code) && this.isDeclaredFunctionValue(e)) this.isolatedInit = true;
+    if ((this.functionDepth === 0 || this.inStoredInit) && /^[\w.`]+$/.test(code) && this.isDeclaredFunctionValue(e)) this.isolatedInit = true;
     const key = this.looseReceiverKey(e);
     if (key !== null) return this.chainingLoose ? `jsImplicit(${code})?` : this.assigned(e.parent as ts.Expression) ? `jsUnwrap(${code}, setting: ${swiftString(key)})` : `jsUnwrap(${code}, ${swiftString(key)})`;
     if (this.chainingLoose || (assignmentValue(e) && this.lenient) || !this.loose(e) || this.looseTolerated(e)) return code;
@@ -7144,7 +7161,7 @@ ${members.join('\n')}
    */
   loose(x: ts.Expression): boolean {
     if (this.checkedNodes.has(x)) return false;
-    if (!this.lenient) return this.lenientValue(x);
+    if (!this.lenient) return this.lenientValue(x) || this.nullObjectSignalRead(x);
     // A name that is no value read: a member's name after its dot, a declaration's own name, a label.
     if (ts.isIdentifier(x)) {
       const p = x.parent;
@@ -7273,6 +7290,24 @@ ${members.join('\n')}
   }
 
   /**
+   * A signal holding a null its type does not admit (`signal<Person>(null)` in a non-strict app), read as the type,
+   * as script reads it: Swift holds it optional, checked where the object is needed (see `loose`).
+   */
+  private nullObjectSignalRead(x: ts.Expression): boolean {
+    while (ts.isParenthesizedExpression(x)) x = x.expression;
+    if (!this.nullSignalRead(x)) return false;
+    const t = this.typeOf(x);
+    return !isFunctionType(t) && this.nullableRef(t) !== t;
+  }
+
+  private nullSignalRead(e: ts.Expression): boolean {
+    if (!ts.isCallExpression(e) || e.arguments.length || !['WritableSignal', 'InputSignal'].includes(this.symbolName(e.expression))) return false;
+    const callee = e.expression;
+    if (ts.isPropertyAccessExpression(callee) && this.isSelf(callee.expression) && (this.computed.has(callee.name.text) || this.props.has(callee.name.text) || this.signalFields.has(callee.name.text))) return false;
+    try { return /\?>$/.test(this.typeOf(callee)) && !/\?$/.test(this.typeOf(e)); } catch { return false; }
+  }
+
+  /**
    * Strict code: a value lenient code declares (a function's result, a field), which Swift holds optional though
    * TypeScript types it present. Strict code checks it where it needs the object, as lenient code checks its own.
    */
@@ -7286,8 +7321,10 @@ ${members.join('\n')}
       decl = d;
     } else if (ts.isPropertyAccessExpression(x) || ts.isIdentifier(x)) {
       if (ts.isIdentifier(x) && ts.isPropertyAccessExpression(x.parent) && x.parent.name === x) return false;
-      const d = this.resolve(ts.isPropertyAccessExpression(x) ? x.name : x)?.valueDeclaration;
-      if (!d || !(ts.isPropertyDeclaration(d) || (ts.isVariableDeclaration(d) && ts.isSourceFile(d.parent.parent.parent))) || (ts.isPropertyDeclaration(d) && this.inNativeClass(d))) return false;
+      const sym = this.resolve(ts.isPropertyAccessExpression(x) ? x.name : x);
+      // A getter lenient code declares gives what its type does, held optional as its fields are.
+      const d = (ts.isPropertyAccessExpression(x) && !isWriteTarget(x) ? sym?.declarations?.find(ts.isGetAccessorDeclaration) : undefined) ?? sym?.valueDeclaration;
+      if (!d || !(ts.isPropertyDeclaration(d) || ts.isGetAccessorDeclaration(d) || (ts.isVariableDeclaration(d) && ts.isSourceFile(d.parent.parent.parent))) || ((ts.isPropertyDeclaration(d) || ts.isGetAccessorDeclaration(d)) && this.inNativeClass(d))) return false;
       decl = d;
     } else return false;
     const file = decl.getSourceFile();
@@ -7371,8 +7408,51 @@ ${members.join('\n')}
     }
   }
 
+  /** A field of a type with no zero that a shape holds present, which an untyped spread's value is checked for (see `object`). */
+  private spreadChecked(type: string): boolean {
+    const held = this.shapeHeld({ type });
+    return !isOptional(held) && held !== 'Any?' && this.zero(held) === null && this.nullableRef(held) !== held;
+  }
+
+  /** Lenient code: an object literal spreading an untyped value into a type with a field `spreadChecked` checks. */
+  private spreadThrows(n: ts.Node): boolean {
+    if (!this.lenient || !ts.isObjectLiteralExpression(n) || !n.properties.some((p) => ts.isSpreadAssignment(p) && this.isAny(p.expression))) return false;
+    const type = this.checker.getContextualType(n) ?? this.checker.getTypeAtLocation(n);
+    if (type.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown)) return false;
+    try {
+      return this.checker.getNonNullableType(type).getProperties().some((p) => !(p.flags & ts.SymbolFlags.Optional) && !(p.flags & ts.SymbolFlags.Method)
+        && this.spreadChecked(this.type(this.checker.getTypeOfSymbolAtLocation(p, n), n)));
+    } catch { return false; }
+  }
+
+  /**
+   * Lenient code: a value Swift holds optional resolving a promise of an object (`resolve(ret as never)` in an executor,
+   * `Promise.resolve(info)`), which the promise holds present: checked as `coerce` writes it.
+   */
+  private promiseValueThrows(n: ts.Node): boolean {
+    if (!this.lenient || !ts.isCallExpression(n) || n.arguments.length !== 1) return false;
+    const callee = n.expression;
+    let promise: ts.Type | undefined;
+    if (ts.isIdentifier(callee)) {
+      const d = this.resolve(callee)?.valueDeclaration;
+      const executor = d && ts.isParameter(d) && d.parent.parameters[0] === d ? d.parent : undefined;
+      const made = executor && (ts.isArrowFunction(executor) || ts.isFunctionExpression(executor)) && ts.isNewExpression(executor.parent) && executor.parent.arguments?.[0] === executor ? executor.parent : undefined;
+      if (!made || !ts.isIdentifier(made.expression) || made.expression.text !== 'Promise' || !this.isLibGlobal(made.expression)) return false;
+      promise = this.checker.getTypeAtLocation(made);
+    } else if (ts.isPropertyAccessExpression(callee) && callee.name.text === 'resolve' && ts.isIdentifier(callee.expression) && callee.expression.text === 'Promise' && this.isLibGlobal(callee.expression)) {
+      promise = this.checker.getContextualType(n);
+    }
+    if (!promise) return false;
+    let value: ts.Expression = n.arguments[0];
+    while (ts.isParenthesizedExpression(value) || ts.isAsExpression(value)) value = value.expression;
+    try {
+      const v = /^JSPromise<(.*)>$/.exec(this.type(promise, n))?.[1], held = this.typeOf(value);
+      return !!v && !isOptional(v) && v !== 'Any?' && this.nullableRef(v) !== v && isOptional(held) && held !== 'Any?' && !held.startsWith('JSPromise<');
+    } catch { return false; }
+  }
+
   private checkedHere(n: ts.Node): boolean {
-    return ((ts.isPropertyAccessExpression(n) || ts.isElementAccessExpression(n)) && this.looseReceiverKey(n.expression) !== null)
+    return this.spreadThrows(n) || this.promiseValueThrows(n) || ((ts.isPropertyAccessExpression(n) || ts.isElementAccessExpression(n)) && this.looseReceiverKey(n.expression) !== null)
       || (ts.isExpression(n) && !(assignmentValue(n) && this.lenient) && this.loose(n) && !this.looseTolerated(n)) || (ts.isCallExpression(n) && this.heldFunctionCall(n)) || (ts.isExpression(n) && (this.untypedPresentThrows(n) || this.native.foreignArgument(n)));
   }
 
@@ -7475,6 +7555,8 @@ ${members.join('\n')}
 
   /** Whether a stored initializer being translated holds a declared function as a value (see `storedInit`). */
   private isolatedInit = false;
+  /** Set while a stored initializer is translated, its closures included: a declared function as a value in one of them needs it isolated too. */
+  private inStoredInit = false;
 
   private isDeclaredFunctionValue(e: ts.Expression): boolean {
     if (!ts.isIdentifier(e) && !ts.isPropertyAccessExpression(e)) return false;
@@ -7488,14 +7570,15 @@ ${members.join('\n')}
    * its type, and an initializer is not that, though it may call one.
    */
   private storedInit(e: ts.Expression, t: string, present = false): string {
-    const saved = this.isolatedInit, savedPresent = this.presentSlot;
+    const saved = this.isolatedInit, savedPresent = this.presentSlot, savedInit = this.inStoredInit;
     this.isolatedInit = false;
+    this.inStoredInit = true;
     this.presentSlot = present;
     try {
       const code = this.coerce(e, t);
       const held = this.lenient && !present ? this.lenientRef(t) : t;
       return this.isolatedInit ? `{ @MainActor () -> ${held.replace(/!$/, '?')} in ${code} }()` : code;
-    } finally { this.isolatedInit = saved; this.presentSlot = savedPresent; }
+    } finally { this.isolatedInit = saved; this.presentSlot = savedPresent; this.inStoredInit = savedInit; }
   }
 
   private exprOf(e: ts.Expression): string {
@@ -7678,7 +7761,7 @@ ${members.join('\n')}
       if (this.quietDelete(e) && ts.isPropertyAccessExpression(target)) return `((try? jsDelete(${this.expr(target.expression)}, ${swiftString(target.name.text)})) ?? false)`;
       throw this.error(e, 'delete of this member');
     }
-    if (ts.isVoidExpression(e)) return `{ _ = ${this.expr(e.expression)}; return nil as Any? }()`;
+    if (ts.isVoidExpression(e)) return this.throwsInfo.expr(e.expression) ? `{ () throws -> Any? in _ = try ${this.expr(e.expression)}; return nil }()` : `{ _ = ${this.expr(e.expression)}; return nil as Any? }()`;
     // `import.meta` of the bundled app's module, in the app bundle.
     if (ts.isMetaProperty(e) && e.keywordToken === ts.SyntaxKind.ImportKeyword) return 'jsImportMeta';
     if (ts.isRegularExpressionLiteral(e)) {
@@ -7769,6 +7852,9 @@ ${members.join('\n')}
       if (sdk) return sdk;
       return this.fromAnyCode(`jsGlobalThis[jsKey: ${swiftString(name)}]`, this.typeOf(e));
     }
+    // A timer or microtask function held as a value (`const clear = clearTimeout`), core's declaration of it too.
+    const held = !!libDecl && libDecl.getSourceFile().isDeclarationFile && Object.hasOwn(LIB_FUNCTION_VALUES, name) && !(ts.isCallExpression(e.parent) && e.parent.expression === e) ? LIB_FUNCTION_VALUES[name] : undefined;
+    if (held) return this.convert(held.code, held.type, this.typeOf(e));
     // A global function core or the app only declares (`zonedCallback`, which core's globals set), as a value: the global object's.
     if (!this.library && libDecl && ts.isFunctionDeclaration(libDecl) && !libDecl.body && (appAmbient || isCoreDeclaration(libDecl)) && ts.isSourceFile(libDecl.parent) && !hasModifier(libDecl, ts.SyntaxKind.ExportKeyword)) return 'jsGlobalThis[jsKey: ' + swiftString(name) + ']';
     // `Object` as a value, not the receiver of a call the translation knows (`(<any>Object).entries(o)`): its functions as script has them.
@@ -7776,9 +7862,6 @@ ${members.join('\n')}
     if (name === 'parseFloat' && isLibDeclaration(libDecl) && !(ts.isCallExpression(e.parent) && e.parent.expression === e)) return 'jsParseFloat';
     const builtinValue = this.builtinConstructorValue(e, libDecl);
     if (builtinValue) return builtinValue;
-    // A timer or microtask function held as a value (`const clear = clearTimeout`).
-    const held = !!libDecl && libDecl.getSourceFile().isDeclarationFile && Object.hasOwn(LIB_FUNCTION_VALUES, name) && !(ts.isCallExpression(e.parent) && e.parent.expression === e) ? LIB_FUNCTION_VALUES[name] : undefined;
-    if (held) return this.convert(held.code, held.type, this.typeOf(e));
     // `if (!console)`: a compiled program always has its console.
     if (name === 'console' && this.isLibGlobal(e)) return '(true as Any?)';
     const native = this.native.identifier(e);
@@ -7850,7 +7933,7 @@ ${members.join('\n')}
    * several modules declare is the module's own (`topName`).
    */
   private declaredName(e: ts.Identifier): string {
-    const local = this.checker.getSymbolAtLocation(e);
+    const local = ts.isShorthandPropertyAssignment(e.parent) && e.parent.name === e ? this.checker.getShorthandAssignmentValueSymbol(e.parent) : this.checker.getSymbolAtLocation(e);
     if (!local) return e.text;
     const alias = !!(local.flags & ts.SymbolFlags.Alias);
     const target = alias ? this.checker.getAliasedSymbol(local) : local;
@@ -8990,8 +9073,7 @@ ${members.join('\n')}
       if (ts.isPropertyAccessExpression(callee) && this.isSelf(callee.expression) && this.props.has(callee.name.text)) return `self.${ident(callee.name.text)}.value`;
       if (ts.isPropertyAccessExpression(callee) && this.isSelf(callee.expression) && this.signalFields.has(callee.name.text)) return `self.${ident(callee.name.text)}.value`;
       if (this.symbolName(callee) === 'Signal') return this.expr(callee);
-      // A signal holding a null its type does not admit is read as the type, as script reads it.
-      return /\?>$/.test(this.typeOf(callee)) && !/\?$/.test(this.typeOf(e)) ? `jsImplicit(${this.expr(callee)}.value)` : `${this.expr(callee)}.value`;
+      return this.nullSignalRead(e) ? `jsImplicit(${this.expr(callee)}.value)` : `${this.expr(callee)}.value`;
     }
     if (callee.kind === ts.SyntaxKind.SuperKeyword) throw this.error(e, 'super() outside the start of a constructor');
     // `getWindow<UIWindow>?.()`: the type arguments are only TypeScript's, and a function declaration is always there.
@@ -11218,7 +11300,11 @@ ${members.join('\n')}
           const tmp = this.fresh('__spread');
           spreadTemps.push(`let ${tmp}: Any? = ${this.tryPrefix(p.expression)}${src}`);
           for (const f of order) {
-            const read = this.fromAnyCode(`jsField(${tmp}, ${swiftString(f.name)})`, f.type, true);
+            const field = `jsField(${tmp}, ${swiftString(f.name)})`;
+            // A field the class holds present takes lenient code's value as its zero, or checked where it has none: JavaScript's TypeError where it is missing.
+            const strict = this.lenient && this.shapeHeld(f) === f.type && !isOptional(f.type) && f.type !== 'Any?';
+            const present = strict && this.spreadChecked(f.type) ? this.presentFromAny(field, f.type, true) : null;
+            const read = present?.startsWith('try ') ? `(${present})` : present ?? (strict ? this.fromAnyOrZero(field, f.type) : this.fromAnyCode(field, f.type, true));
             const prev = given.get(f.name) ?? (f.type.endsWith('?') ? 'nil' : this.zero(f.type));
             // A field no other key gives and no zero fills (`device: GPUDevice`): only the spread can.
             given.set(f.name, prev === null ? read : `(jsHasKey(${tmp}, ${swiftString(f.name)}) ? ${read} : ${prev})`);

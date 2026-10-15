@@ -4,7 +4,7 @@ import CanvasNative
 
 /// `GPUDevice`.
 final class GPUDeviceHost: GPUObjectHost {
-    let device: OpaquePointer
+    nonisolated(unsafe) let device: OpaquePointer
 
     override class var className: String? { "GPUDevice" }
     override class var methods: Set<String> { Self.names }

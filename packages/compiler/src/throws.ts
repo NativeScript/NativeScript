@@ -186,7 +186,7 @@ export class Throws {
     }
     // `new Array(x)` of an untyped x: a length that is no valid one is a RangeError.
     if ((ts.isNewExpression(n) || ts.isCallExpression(n)) && ts.isIdentifier(n.expression) && n.expression.text === 'Array' && n.arguments?.length === 1 && !isArrayLengthLiteral(n.arguments[0])
-      && (this.untyped(n.arguments[0]) || !!(c.getTypeAtLocation(n.arguments[0]).flags & ts.TypeFlags.NumberLike))) return true;
+      && (this.untyped(n.arguments[0]) || numberLike(c.getTypeAtLocation(n.arguments[0])))) return true;
     if (ts.isCallExpression(n) || ts.isNewExpression(n)) return this.callThrows(n);
     if (ts.isTaggedTemplateExpression(n)) return !isStringRaw(n.tag, c) && this.tagThrows(n);
     if (ts.isPropertyAccessExpression(n) || ts.isElementAccessExpression(n)) {
@@ -386,6 +386,11 @@ export function isArrayLengthWrite(left: ts.Expression, right: ts.Expression, c:
   if (!ts.isPropertyAccessExpression(left) || left.name.text !== 'length' || isArrayLengthLiteral(right)) return false;
   const t = c.getNonNullableType(c.getTypeAtLocation(left.expression));
   return c.isArrayType(t);
+}
+
+/** A number, or a union of numbers (`2 | 3` from `cond ? 2 : 3`). */
+function numberLike(t: ts.Type): boolean {
+  return t.isUnion() ? t.types.every(numberLike) : !!(t.flags & ts.TypeFlags.NumberLike);
 }
 
 /** A literal that is a valid array length (`new Array(3)`), which cannot throw. */

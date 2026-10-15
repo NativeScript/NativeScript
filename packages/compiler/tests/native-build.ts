@@ -55,6 +55,11 @@ export interface SwiftOptions {
   /** Translated as the CLI translates an app, with the strictness its own tsconfig.json gives (lenient where that is not strict). */
   appStrictness?: boolean;
   /**
+   * A non-strict app whose modules under a `plugin` folder are a plugin's: translated as the CLI translates a plugin
+   * compiled from its source (lenient, not in library mode), the rest as the app's code.
+   */
+  plugin?: boolean;
+  /**
    * Each module translated on its own, what one cannot translate given here rather than thrown: the others still translate.
    * Without it, the first module that cannot translate throws.
    */
@@ -67,17 +72,19 @@ export interface SwiftOptions {
  */
 export function translateSwift(roots: string[], out: string, o: SwiftOptions = {}): TranslatedModule[] {
   const loose = !!o.lenient;
-  const { checker, program, files: rootFiles, lenient: lenientApp } = createProgram(roots, new Map(), 'ios', modulesDir, undefined, [], {}, loose ? { strict: false, useDefineForClassFields: false } : {});
+  const { checker, program, files: rootFiles, lenient: lenientApp } = createProgram(roots, new Map(), 'ios', modulesDir, undefined, [], {}, loose ? { strict: false, useDefineForClassFields: false } : o.plugin ? { strict: false, useUnknownInCatchVariables: false } : {});
   const imported = roots.flatMap((r) => importsOf(program, r, 'ios'));
   // The helper modules the roots import are the program's too, as an app's every module is.
   const all = [...rootFiles, ...imported.map((f) => program.getSourceFile(f)!).filter((sf) => sf && !rootFiles.includes(sf))];
   // In library mode, as the kit generated from core is: each module's functions and variables in an enum.
   const library = loose ? { moduleName: (f: string) => (f.endsWith('.d.ts') ? null : 'Module_' + basename(f).replace(/\W/g, '_')) } : null;
+  const plugin = o.plugin ? all.map((f) => f.fileName).filter((f) => /[\\/]plugin[\\/]/.test(f)) : [];
   // Every module, as an app's are: names its modules share are told apart across them.
-  const translator = new Translator(checker, new Map(), all, { lenient: loose, library, weak: o.weak, ...(loose ? { pluginFiles: all.map((f) => f.fileName), properties: collectProperties(checker, all) } : {}) });
+  const translator = new Translator(checker, new Map(), all, { lenient: loose, library, weak: o.weak, ...(loose ? { pluginFiles: all.map((f) => f.fileName), properties: collectProperties(checker, all) } : o.plugin ? { pluginFiles: plugin, lenientFiles: plugin, properties: collectProperties(checker, all) } : {}) });
   translator.appModule = 'Main';
   translator.appMembersByName = !!o.membersByName;
   if (o.appStrictness) translator.lenientApp = lenientApp;
+  if (o.plugin) translator.lenientApp = true;
   // With source lines, as an app is built: the directives must compile wherever a statement can be.
   const lines = translator.lines = new SourceLines(new Map());
   const files = [...new Set([...roots, ...imported])];

@@ -4,7 +4,7 @@ import CanvasNative
 
 /// `GPUBuffer`.
 final class GPUBufferHost: GPUObjectHost {
-    let buffer: OpaquePointer
+    nonisolated(unsafe) let buffer: OpaquePointer
 
     override class var className: String? { "GPUBuffer" }
     override class var methods: Set<String> { Self.names }
@@ -74,7 +74,7 @@ final class GPUBufferHost: GPUObjectHost {
 
 /// `GPUTexture`.
 final class GPUTextureHost: GPUObjectHost {
-    private(set) var texture: OpaquePointer?
+    private(set) nonisolated(unsafe) var texture: OpaquePointer?
 
     override class var className: String? { "GPUTexture" }
     override class var methods: Set<String> { Self.names }
@@ -176,7 +176,7 @@ final class GPUTextureHost: GPUObjectHost {
 
 /// `GPUTextureView`.
 final class GPUTextureViewHost: GPUObjectHost {
-    private(set) var view: OpaquePointer?
+    private(set) nonisolated(unsafe) var view: OpaquePointer?
 
     override class var className: String? { "GPUTextureView" }
     override class var methods: Set<String> { Self.names }
@@ -199,7 +199,7 @@ final class GPUTextureViewHost: GPUObjectHost {
 
 /// `GPUSampler`.
 final class GPUSamplerHost: GPUObjectHost {
-    let sampler: OpaquePointer
+    nonisolated(unsafe) let sampler: OpaquePointer
     override class var className: String? { "GPUSampler" }
     init(_ sampler: OpaquePointer) { self.sampler = sampler }
     deinit { canvas_native_webgpu_sampler_release(sampler) }
@@ -211,7 +211,7 @@ final class GPUSamplerHost: GPUObjectHost {
 #if CANVAS_EXTERNAL_TEXTURE
 /// `GPUExternalTexture`.
 final class GPUExternalTextureHost: GPUObjectHost {
-    let texture: OpaquePointer
+    nonisolated(unsafe) let texture: OpaquePointer
     override class var className: String? { "GPUExternalTexture" }
     init(_ texture: OpaquePointer) { self.texture = texture }
     deinit { canvas_native_webgpu_external_texture_release(texture) }
@@ -223,7 +223,7 @@ final class GPUExternalTextureHost: GPUObjectHost {
 
 /// `GPUShaderModule`.
 final class GPUShaderModuleHost: GPUObjectHost {
-    let module: OpaquePointer
+    nonisolated(unsafe) let module: OpaquePointer
 
     override class var className: String? { "GPUShaderModule" }
     override class var methods: Set<String> { Self.names }
@@ -247,7 +247,7 @@ final class GPUShaderModuleHost: GPUObjectHost {
 
 /// `GPUCompilationInfo`.
 final class GPUCompilationInfoHost: GPUObjectHost {
-    let info: OpaquePointer?
+    nonisolated(unsafe) let info: OpaquePointer?
 
     override class var className: String? { "GPUCompilationInfo" }
     override class var lazyProperties: Set<String> { Self.lazy }
@@ -267,7 +267,7 @@ final class GPUCompilationInfoHost: GPUObjectHost {
 
 /// `GPUCompilationMessage`.
 final class GPUCompilationMessageHost: GPUObjectHost {
-    let message: OpaquePointer
+    nonisolated(unsafe) let message: OpaquePointer
 
     override class var className: String? { "GPUCompilationMessage" }
     override class var lazyProperties: Set<String> { Self.lazy }
@@ -297,7 +297,7 @@ final class GPUCompilationMessageHost: GPUObjectHost {
 
 /// `GPUBindGroup`.
 final class GPUBindGroupHost: GPUObjectHost {
-    let group: OpaquePointer
+    nonisolated(unsafe) let group: OpaquePointer
     override class var className: String? { "GPUBindGroup" }
     init(_ group: OpaquePointer) { self.group = group }
     deinit { canvas_native_webgpu_bind_group_release(group) }
@@ -308,7 +308,7 @@ final class GPUBindGroupHost: GPUObjectHost {
 
 /// `GPUBindGroupLayout`.
 final class GPUBindGroupLayoutHost: GPUObjectHost {
-    let layout: OpaquePointer
+    nonisolated(unsafe) let layout: OpaquePointer
     override class var className: String? { "GPUBindGroupLayout" }
     init(_ layout: OpaquePointer) { self.layout = layout }
     deinit { canvas_native_webgpu_bind_group_layout_release(layout) }
@@ -319,7 +319,7 @@ final class GPUBindGroupLayoutHost: GPUObjectHost {
 
 /// `GPUPipelineLayout`.
 final class GPUPipelineLayoutHost: GPUObjectHost {
-    let layout: OpaquePointer
+    nonisolated(unsafe) let layout: OpaquePointer
     override class var className: String? { "GPUPipelineLayout" }
     init(_ layout: OpaquePointer) { self.layout = layout }
     deinit { canvas_native_webgpu_pipeline_layout_release(layout) }
@@ -330,7 +330,7 @@ final class GPUPipelineLayoutHost: GPUObjectHost {
 
 /// `GPURenderPipeline`.
 final class GPURenderPipelineHost: GPUObjectHost {
-    let pipeline: OpaquePointer
+    nonisolated(unsafe) let pipeline: OpaquePointer
 
     override class var className: String? { "GPURenderPipeline" }
     override class var methods: Set<String> { Self.names }
@@ -351,7 +351,7 @@ final class GPURenderPipelineHost: GPUObjectHost {
 
 /// `GPUComputePipeline`.
 final class GPUComputePipelineHost: GPUObjectHost {
-    let pipeline: OpaquePointer
+    nonisolated(unsafe) let pipeline: OpaquePointer
 
     override class var className: String? { "GPUComputePipeline" }
     override class var methods: Set<String> { Self.names }
@@ -372,7 +372,7 @@ final class GPUComputePipelineHost: GPUObjectHost {
 
 /// `GPUQuerySet`.
 final class GPUQuerySetHost: GPUObjectHost {
-    let querySet: OpaquePointer
+    nonisolated(unsafe) let querySet: OpaquePointer
 
     override class var className: String? { "GPUQuerySet" }
     override class var methods: Set<String> { Self.names }
@@ -406,7 +406,7 @@ final class GPUQuerySetHost: GPUObjectHost {
 
 /// `GPURenderBundle`.
 final class GPURenderBundleHost: GPUObjectHost {
-    let bundle: OpaquePointer
+    nonisolated(unsafe) let bundle: OpaquePointer
     override class var className: String? { "GPURenderBundle" }
     init(_ bundle: OpaquePointer) { self.bundle = bundle }
     deinit { canvas_native_webgpu_render_bundle_release(bundle) }
@@ -417,7 +417,7 @@ final class GPURenderBundleHost: GPUObjectHost {
 
 /// `GPUCommandBuffer`.
 final class GPUCommandBufferHost: GPUObjectHost {
-    private(set) var commandBuffer: OpaquePointer?
+    private(set) nonisolated(unsafe) var commandBuffer: OpaquePointer?
 
     override class var className: String? { "GPUCommandBuffer" }
     override class var methods: Set<String> { Self.names }

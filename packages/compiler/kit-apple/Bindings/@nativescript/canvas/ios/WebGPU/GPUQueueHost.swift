@@ -28,7 +28,7 @@ enum GPUImageSource {
 
 /// `GPUQueue`.
 final class GPUQueueHost: GPUObjectHost {
-    let queue: OpaquePointer
+    nonisolated(unsafe) let queue: OpaquePointer
 
     override class var className: String? { "GPUQueue" }
     override class var methods: Set<String> { Self.names }

@@ -94,7 +94,7 @@ final class WebGLSyncHost: CanvasHost {
 
 /// `WebGLActiveInfo`: `name`, `size` and `type`.
 final class WebGLActiveInfoHost: CanvasHost {
-    let info: OpaquePointer
+    nonisolated(unsafe) let info: OpaquePointer
     init(_ info: OpaquePointer) { self.info = info }
     deinit { canvas_native_webgl_active_info_destroy(info) }
 
@@ -114,7 +114,7 @@ final class WebGLActiveInfoHost: CanvasHost {
 
 /// `WebGLShaderPrecisionFormat`: `rangeMin`, `rangeMax` and `precision`.
 final class WebGLShaderPrecisionFormatHost: CanvasHost {
-    let format: OpaquePointer
+    nonisolated(unsafe) let format: OpaquePointer
     init(_ format: OpaquePointer) { self.format = format }
     deinit { canvas_native_webgl_shader_precision_format_destroy(format) }
 

@@ -9,9 +9,9 @@ import CanvasNative
 /// and `wordSpacing` are kept here and reach the C API only before text is drawn, measured or
 /// the state is saved.
 final class CanvasRenderingContext2DHost: CanvasHost {
-    let context: OpaquePointer
+    nonisolated(unsafe) let context: OpaquePointer
     private let ownsContext: Bool
-    private var raf: OpaquePointer?
+    private nonisolated(unsafe) var raf: OpaquePointer?
     private let rafTarget: Unmanaged<RafTarget>
 
     /// `InvalidateState` bits: pending (1), invalidating (2).

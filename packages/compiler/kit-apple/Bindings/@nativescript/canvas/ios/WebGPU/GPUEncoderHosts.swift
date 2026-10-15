@@ -4,7 +4,7 @@ import CanvasNative
 
 /// `GPUCommandEncoder`.
 final class GPUCommandEncoderHost: GPUObjectHost {
-    private(set) var encoder: OpaquePointer?
+    private(set) nonisolated(unsafe) var encoder: OpaquePointer?
 
     override class var className: String? { "GPUCommandEncoder" }
     override class var methods: Set<String> { Self.names }
@@ -224,7 +224,7 @@ private func gpuOptionalStoreOp(_ value: Any?) -> CanvasOptionalStoreOp {
 
 /// `GPURenderPassEncoder`.
 final class GPURenderPassEncoderHost: GPUObjectHost {
-    private(set) var pass: OpaquePointer?
+    private(set) nonisolated(unsafe) var pass: OpaquePointer?
 
     override class var className: String? { "GPURenderPassEncoder" }
     override class var methods: Set<String> { Self.names }
@@ -333,7 +333,7 @@ final class GPURenderPassEncoderHost: GPUObjectHost {
 
 /// `GPUComputePassEncoder`.
 final class GPUComputePassEncoderHost: GPUObjectHost {
-    private(set) var pass: OpaquePointer?
+    private(set) nonisolated(unsafe) var pass: OpaquePointer?
 
     override class var className: String? { "GPUComputePassEncoder" }
     override class var methods: Set<String> { Self.names }
@@ -385,7 +385,7 @@ final class GPUComputePassEncoderHost: GPUObjectHost {
 
 /// `GPURenderBundleEncoder`.
 final class GPURenderBundleEncoderHost: GPUObjectHost {
-    let encoder: OpaquePointer
+    nonisolated(unsafe) let encoder: OpaquePointer
 
     override class var className: String? { "GPURenderBundleEncoder" }
     override class var methods: Set<String> { Self.names }

@@ -4,7 +4,7 @@ import CanvasNative
 
 /// `GPU`, which `navigator.gpu` wraps: the WebGPU instance.
 final class GPUHost: CanvasHost {
-    let instance: OpaquePointer?
+    nonisolated(unsafe) let instance: OpaquePointer?
 
     override class var className: String? { "GPU" }
     override class var methods: Set<String> { Self.names }
@@ -68,7 +68,7 @@ final class GPUHost: CanvasHost {
 
 /// `GPUAdapter`.
 final class GPUAdapterHost: GPUObjectHost {
-    let adapter: OpaquePointer
+    nonisolated(unsafe) let adapter: OpaquePointer
 
     override class var className: String? { "GPUAdapter" }
     override class var methods: Set<String> { Self.names }
@@ -112,7 +112,7 @@ final class GPUAdapterHost: GPUObjectHost {
         let callback = args[1]
         var label: String?
         var features: [String] = []
-        var limits: GPUSupportedLimitsHost?
+        nonisolated(unsafe) var limits: GPUSupportedLimitsHost?
         if gpuIsObject(optionsValue) {
             label = gpuLabel(gpuMember(optionsValue, "label"))
             if let required = gpuMember(optionsValue, "requiredFeatures") as? JSArrayProtocol {
@@ -150,7 +150,7 @@ final class GPUAdapterHost: GPUObjectHost {
 
 /// `GPUAdapterInfo`.
 final class GPUAdapterInfoHost: GPUObjectHost {
-    let info: OpaquePointer
+    nonisolated(unsafe) let info: OpaquePointer
 
     override class var className: String? { "GPUAdapterInfo" }
     override class var lazyProperties: Set<String> { Self.lazy }
@@ -173,7 +173,7 @@ final class GPUAdapterInfoHost: GPUObjectHost {
 /// `GPUSupportedLimits`: constructible (`new CanvasModule.GPUSupportedLimits()` gives the
 /// defaults), and what adapters and devices report.
 final class GPUSupportedLimitsHost: CanvasHost {
-    let limits: UnsafeMutablePointer<CanvasGPUSupportedLimits>?
+    nonisolated(unsafe) let limits: UnsafeMutablePointer<CanvasGPUSupportedLimits>?
 
     override class var className: String? { "GPUSupportedLimits" }
 

@@ -170,8 +170,8 @@ func gpuErrorArguments(_ type: CanvasGPUErrorType, _ message: UnsafeMutablePoint
 
 /// Memory the C structs of a descriptor point into, freed with the arena.
 final class GPUArena {
-    private var blocks: [UnsafeMutableRawPointer] = []
-    private var constants: [OpaquePointer] = []
+    private nonisolated(unsafe) var blocks: [UnsafeMutableRawPointer] = []
+    private nonisolated(unsafe) var constants: [OpaquePointer] = []
 
     func string(_ string: String?) -> UnsafePointer<CChar>? {
         guard let string, let copy = strdup(string) else { return nil }

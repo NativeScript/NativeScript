@@ -111,6 +111,8 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
     methods.push(`  ${m}(${params(loops)}) { return ${rewrite(clean(code), local(loops))}; }`);
     return m;
   };
+  // A condition is tested, not held: a value its type says is there (a non-strict app's `signal<Person>(null)`) is read only for its truth.
+  const test = (code: string, loops: Loop[]) => expr(`!!(${code})`, loops);
   // A component's output gives its handler the emitted value as `$event`; a view's event gives the event data.
   const handler = (code: string, loops: Loop[], payload = false) => {
     const m = `$e${next++}`;
@@ -175,7 +177,7 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
           // `@if (x; as y)`: y is the condition's value in the branch.
           const alias = (b as ng.TmplAstIfBlockBranch & { expressionAlias?: ng.TmplAstVariable | null }).expressionAlias;
           // The condition is read before its alias exists: `@if (person(); as person)` names the value of the `person` it reads.
-          const cond = b.expression ? expr(sourceOf(b.expression), loops) : null;
+          const cond = b.expression ? test(sourceOf(b.expression), loops) : null;
           if (alias && b.expression) aliases.set(alias.name, rewrite(clean(sourceOf(b.expression)), local(loops)));
           const branch = { cond, body: nodes(b.children, loops) };
           if (alias) aliases.delete(alias.name);
@@ -352,7 +354,7 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
         if (v.value !== 'ngIf') throw new Error(`${path}: *ngIf's ${v.value} is not supported in a release build yet`);
         return v.name;
       });
-      const cond = expr(condition, loops);
+      const cond = test(condition, loops);
       for (const v of renamed) aliases.set(v, rewrite(clean(condition), local(loops)));
       const body = nodes(t.children, loops);
       for (const v of renamed) aliases.delete(v);

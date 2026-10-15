@@ -5,7 +5,7 @@ import CanvasNative
 /// `Path2D`. Made of anything but no argument, a string or a Path2D, it has no path and its
 /// methods do nothing.
 final class Path2DHost: CanvasHost {
-    let path: OpaquePointer?
+    nonisolated(unsafe) let path: OpaquePointer?
 
     override class var className: String? { "Path2D" }
     override class var methods: Set<String> {
@@ -68,7 +68,7 @@ final class Path2DHost: CanvasHost {
             }
         case "addPath":
             guard let other = args.host(0, Path2DHost.self), let source = other.path else { break }
-            var matrix: OpaquePointer?
+            nonisolated(unsafe) var matrix: OpaquePointer?
             if args.count > 1, let m = args.host(1, DOMMatrixHost.self) { matrix = m.matrix }
             canvas_native_path_add_path_with_matrix(path, source, matrix)
         case "trim":
@@ -85,7 +85,7 @@ final class Path2DHost: CanvasHost {
 /// `DOMMatrix`. Made of anything but no argument or an array of 6 or 16 numbers, it has no
 /// matrix: its properties are undefined and its methods do nothing.
 final class DOMMatrixHost: CanvasHost {
-    let matrix: OpaquePointer?
+    nonisolated(unsafe) let matrix: OpaquePointer?
 
     override class var className: String? { "DOMMatrix" }
     override class var methods: Set<String> {
@@ -210,7 +210,7 @@ final class DOMMatrixHost: CanvasHost {
 /// `ImageData`. Its `data` is made once and kept, as the engine's lazy data property is: a
 /// Uint8ClampedArray over the native pixels, which holds its own reference to them.
 final class ImageDataHost: CanvasHost {
-    let imageData: OpaquePointer?
+    nonisolated(unsafe) let imageData: OpaquePointer?
     private var dataArray: JSUint8ClampedArray?
 
     override class var className: String? { "ImageData" }
@@ -251,7 +251,7 @@ final class ImageDataHost: CanvasHost {
 
 /// `CanvasGradient`, which the 2D context makes.
 final class CanvasGradientHost: CanvasHost {
-    let style: OpaquePointer?
+    nonisolated(unsafe) let style: OpaquePointer?
 
     override class var className: String? { "CanvasGradient" }
     override class var methods: Set<String> { ["addColorStop"] }
@@ -271,7 +271,7 @@ final class CanvasGradientHost: CanvasHost {
 
 /// `CanvasPattern`, which the 2D context makes.
 final class CanvasPatternHost: CanvasHost {
-    let style: OpaquePointer?
+    nonisolated(unsafe) let style: OpaquePointer?
 
     override class var className: String? { "CanvasPattern" }
     override class var methods: Set<String> { ["setTransform"] }
