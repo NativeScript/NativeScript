@@ -45,7 +45,6 @@ export interface MediaQueryExpression {
 }
 
 export interface MediaQueryFeature {
-	/** `min` (>=), `max` (<=), `gt` (>), `lt` (<), or none for equality. */
 	modifier: string;
 	property: MediaQueryProperties | string;
 	value: string;
@@ -190,15 +189,9 @@ export function parseQuery(mediaQuery: string): MediaQueryExpression[] {
 	});
 }
 
-// The modifier for `<name> <operator> <value>`.
 const RANGE_MODIFIERS = { '>=': 'min', '>': 'gt', '<=': 'max', '<': 'lt', '=': undefined };
-// The same comparison written `<value> <operator> <name>`.
 const FLIPPED_RANGE_OPERATORS = { '>=': '<=', '>': '<', '<=': '>=', '<': '>', '=': '=' };
 
-/**
- * Parse a range feature - `(width >= 600px)`, `(600px < width)` or `(400px <= width < 700px)` - into
- * one feature per comparison, or null if it is not one.
- */
 function parseRangeFeature(feature: string): MediaQueryFeature[] | null {
 	const parts = feature.slice(1, -1).trim().split(RE_MQ_RANGE_OPERATOR);
 	const features: MediaQueryFeature[] = [];
@@ -217,7 +210,6 @@ function parseRangeFeature(feature: string): MediaQueryFeature[] | null {
 		}
 	} else if (parts.length === 5) {
 		const [first, firstOperator, name, lastOperator, last] = parts;
-		// Both comparisons must point the same way: `a < name < b` or `a > name > b`.
 		if (!RE_MQ_NAME.test(name) || !first || !last || firstOperator === '=' || firstOperator[0] !== lastOperator[0]) {
 			return null;
 		}
@@ -230,10 +222,6 @@ function parseRangeFeature(feature: string): MediaQueryFeature[] | null {
 	return features;
 }
 
-/**
- * A media query length in device pixels. As in CSS, `em` and `rem` here are the initial font size,
- * 16, whatever the root font size: the query does not depend on the styles it controls.
- */
 function lengthToDevicePixels(value: string): number {
 	const fontRelative = RE_FONT_RELATIVE_LENGTH.exec(value.trim());
 	if (fontRelative) {

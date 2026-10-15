@@ -77,7 +77,6 @@ describe('css-mediaquery', () => {
 
 	describe('rem and em lengths', () => {
 		it('are the initial font size, 16', () => {
-			// Tailwind's `md` breakpoint.
 			expect(matchQuery('(width >= 48rem)', { width: 768 })).toBe(true);
 			expect(matchQuery('(width >= 48rem)', { width: 767 })).toBe(false);
 			expect(matchQuery('(max-width: 2em)', { width: 32 })).toBe(true);
