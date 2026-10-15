@@ -69,10 +69,11 @@ export namespace layout {
 			height: heightMode === 0 /* layout.UNSPECIFIED */ ? Number.POSITIVE_INFINITY : toDeviceIndependentPixels(height),
 		});
 
-		nativeSize.width = round(toDevicePixels(nativeSize.width));
-		nativeSize.height = round(toDevicePixels(nativeSize.height));
-
-		return nativeSize;
+		// A plain object: writing to the CGSize would go through native struct setters.
+		return {
+			width: round(toDevicePixels(nativeSize.width)),
+			height: round(toDevicePixels(nativeSize.height)),
+		};
 	}
 
 	export function measureSpecToString(measureSpec: number) {
