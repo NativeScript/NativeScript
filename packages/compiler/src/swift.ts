@@ -2365,34 +2365,43 @@ ${members.join('\n')}
     const needs = (type: string) => Math.max(0, ...[...this.gatedTypes].filter(([n]) => new RegExp(`\\b${n.replace(/\./g, '\\.')}\\b`).test(type)).map(([, v]) => v));
     return [...this.functionCells].map(([type, name]) => ({
       params: functionParts(type)?.params.length ?? 0,
-      code: singleTry(`${needs(type) ? `@available(iOS ${needs(type)}, *)\n` : ''}struct ${name} {\n    let f: ${type}\n    static func implicit(_ value: (${type})?) -> (${type})? { value }\n    static func present(_ value: (${type})?) throws -> ${type} { guard let value else { throw jsNoObject() }; return value }\n${this.cellStaticCode(name, type).map((l) => l + '\n').join('')}}`),
+      code: singleTry(`${needs(type) ? `@available(iOS ${needs(type)}, *)\n` : ''}struct ${name} {\n    let f: ${type}\n    static func implicit(_ value: (${type})?) -> (${type})? { value }\n    static func present(_ value: (${type})?) throws -> ${type} { guard let value else { throw jsNoObject() }; return value }\n${this.cellStaticCode(name, type, needs).map((l) => l + '\n').join('')}}`),
     }));
   }
 
   private functionCells = new Map<string, string>();
   /** The static members of each function cell (`script`, `fromScript`): their bodies, each under the name it is written as. */
-  private cellStatics = new Map<string, { kind: CellStatic; name: string; body: string }[]>();
+  private cellStatics = new Map<string, { kind: CellStatic; name: string; body: string; from?: string; orNil?: boolean }[]>();
 
   /**
    * The name of a static member of `cell` doing `kind` with `body`: the conversions it writes depend on the
    * translated code's mode (lenient or not), so each distinct body is a member of its own, the first by the plain name.
+   * An adapter takes a function of type `from`: adapters from different types overload one name.
    */
-  private cellStatic(cell: string, kind: CellStatic, body: string): string {
+  private cellStatic(cell: string, kind: CellStatic, body: string, from?: string, orNil = false): string {
     const statics = this.cellStatics.get(cell) ?? [];
     this.cellStatics.set(cell, statics);
-    const same = statics.find((x) => x.kind === kind && x.body === body);
-    if (same) return same.name;
-    const base = statics.some((x) => x.kind === kind) ? `${this.lenient ? 'lenient' : 'strict'}${kind[0].toUpperCase()}${kind.slice(1)}` : kind;
+    const same = statics.find((x) => x.kind === kind && x.body === body && x.from === from);
+    if (same) { same.orNil ||= orNil; return same.name; }
+    const rivals = statics.filter((x) => x.from === from);
+    const base = rivals.some((x) => x.kind === kind) ? `${this.lenient ? 'lenient' : 'strict'}${kind[0].toUpperCase()}${kind.slice(1)}` : kind;
     let name = base;
-    for (let k = 2; statics.some((x) => x.name === name); k++) name = `${base}${k}`;
-    statics.push({ kind, name, body });
+    for (let k = 2; rivals.some((x) => x.name === name); k++) name = `${base}${k}`;
+    statics.push({ kind, name, body, from, orNil });
     return name;
   }
 
   /** A function cell's static members, as `shapesCode` writes them into its struct. */
-  private cellStaticCode(cell: string, type: string): string[] {
-    return (this.cellStatics.get(cell) ?? []).flatMap(({ kind, name, body }) => {
+  private cellStaticCode(cell: string, type: string, needs: (type: string) => number): string[] {
+    return (this.cellStatics.get(cell) ?? []).flatMap(({ kind, name, body, from, orNil }) => {
       switch (kind) {
+        case 'adapting': {
+          const gate = from && needs(from) > needs(type) ? `    @available(iOS ${needs(from)}, *)\n` : '';
+          return [
+            `${gate}    static func ${name}(_ __h: @escaping ${from}) -> ${type} { ${body} }`,
+            ...(orNil ? [`${gate}    static func ${name}OrNil(_ __h: (${from})?) -> (${type})? { if let __h { return ${name}(__h) } else { return nil } }`] : []),
+          ];
+        }
         case 'fromScript': return [
           `    static func ${name}(_ __f: Any?) -> ${type} { ${body} }`,
           `    static func ${name}OrNil(_ __f: Any?) -> (${type})? { jsIsNullish(__f) ? nil : ${name}(__f) }`,
@@ -2945,14 +2954,19 @@ ${members.join('\n')}
   }
 
   /**
-   * `{ (__h: F) -> G in … }`, a function adapting `__h` of type `from` to `to` (`params` and `body`
-   * of its closure): the closure made stands for `__h`, to `===`.
+   * `code`, a function of type `from`, adapted to `to` (`params` and `body` of the closure made, calling it as `__h`):
+   * the closure stands for `code`, to `===`. `orNil`: `code` may be missing, and the adapted function is then too.
    */
-  private adapter(from: string, to: FunctionParts, params: string[], body: string): string {
+  private adapter(code: string, from: string, to: FunctionParts, params: string[], body: string, orNil: boolean): string {
     const hc = this.functionCell(from), gc = this.functionCell(to.text);
-    if (!hc || !gc) return `{ (__h: @escaping ${from}) -> ${to.text} in { (${params.join(', ')}) throws -> ${to.result} in ${body} } }`;
+    if (!hc || !gc) {
+      const wrap = `{ (__h: @escaping ${from}) -> ${to.text} in { (${params.join(', ')}) throws -> ${to.result} in ${body} } }`;
+      // `if let`, not `Optional.map`: a closure passed through a generic is a new thunk, another function to `===`.
+      return orNil ? `{ (__g: (${from})?) -> (${to.text})? in if let __g { return ${wrap}(__g) } else { return nil } }(${code})` : `${wrap}(${code})`;
+    }
     const closure = `{ (${params.join(', ')}) throws -> ${to.result} in ${this.keeping('__i', body, to.result)} }`;
-    return `{ (__h: @escaping ${from}) -> ${to.text} in { (__i: JSFunctionAlias) -> ${to.text} in jsIdentified(${gc}(f: ${closure}), __i).f }(JSFunctionAlias(cell: ${hc}(f: __h))) }`;
+    const name = this.cellStatic(gc, 'adapting', `let __i = JSFunctionAlias(cell: ${hc}(f: __h)); return jsIdentified(Self(f: ${closure}), __i).f`, from, orNil);
+    return `${gc}.${name}${orNil ? 'OrNil' : ''}(${code})`;
   }
 
   /** Swift code of type `from` where Swift needs `to`: functions are adapted parameter by parameter. */
@@ -3026,10 +3040,13 @@ ${members.join('\n')}
       try {
         body = g.result === 'Void' ? `_ = ${call}` : f.result === 'Void' && isOptional(g.result) ? `${call}; return nil` : `return ${this.convert(call, f.result, g.result)}`;
       } finally { [this.optionalSlot, this.underTry] = outer; }
-      const wrap = this.adapter(escapingFunction(f), g, params, body);
-      if (!isOptional(from) && (!this.lenient || (!isOptional(to) && !this.optionalSlot))) return `${wrap}(${code})`;
+      // Lenient code's function held implicitly (`FunctionCell_X.implicit(callback)`) may be missing whatever its type says.
+      const implicit = /^(?:\w+\.implicit|jsImplicit)\((.*)\)$/s.exec(code)?.[1];
+      const held = implicit !== undefined && balanced(implicit) ? implicit : null;
+      const adapt = (orNil: boolean) => this.adapter(held ?? code, escapingFunction(f), g, params, body, orNil || held !== null);
+      if (held === null && (this.isPresentFunction(code) || (!isOptional(from) && (!this.lenient || (!from.endsWith('!') && !isOptional(to) && !this.optionalSlot))))) return adapt(false);
       // A missing function passed where one must be is a TypeError when called, as JavaScript's.
-      const mapped = `{ (__g: (${escapingFunction(f)})?) -> (${g.text})? in if let __g { return ${wrap}(__g) } else { return nil } }(${code})`;
+      const mapped = adapt(true);
       if (isOptional(to) || to.endsWith('!') || (this.lenient && this.optionalSlot)) return mapped;
       // Lenient code's missing function given where one must be, under a `try`: V8's TypeError.
       return this.lenient && this.underTry ? `jsCallable(${mapped}, "callback")` : `${mapped}!`;
@@ -6412,11 +6429,12 @@ ${members.join('\n')}
         return this.nullableRef(target) !== target && !this.looseTolerated(e) ? this.presentCode(read, target) : read;
       }
     }
-    const saved = this.optionalSlot;
+    const saved = [this.optionalSlot, this.presentFunction];
     this.optionalSlot = this.lenient && this.looseTolerated(e) && !this.presentSlot;
     this.presentSlot = false;
+    this.presentFunction = this.declaredFunction(e) ? e : null;
     let code: string;
-    try { code = this.keptOptional(this.coerced(e, target), target); } finally { this.optionalSlot = saved; }
+    try { code = this.keptOptional(this.coerced(e, target), target); } finally { [this.optionalSlot, this.presentFunction] = saved; }
     return this.lenient && this.nullableRef(target) !== target && !this.looseTolerated(e) ? this.presentCode(code, target) : code;
   }
 
@@ -6803,10 +6821,8 @@ ${members.join('\n')}
       `JSArray<${element}>([${want.params.slice(fixed).map((t, k) => this.convert(`__q${fixed + k}`, p(t), element)).join(', ')}])`];
     const call = `try __h(${args.join(', ')})`;
     const body = want.result === 'Void' ? `_ = ${call}` : `return ${this.convert(call, have.result, want.result)}`;
-    const adapt = this.adapter(escapingFunction(have), want, params, body);
     // Lenient code's function value may be missing where an optional one is held: it stays missing.
-    if (this.loose(e) && this.optionalSlot) return `{ (__g: (${escapingFunction(have)})?) -> (${want.text})? in if let __g { return ${adapt}(__g) } else { return nil } }(${this.expr(e)})`;
-    return `${adapt}(${this.expr(e)})`;
+    return this.adapter(this.expr(e), escapingFunction(have), want, params, body, this.loose(e) && this.optionalSlot);
   }
 
   /** A declared function where a function of fewer parameters is wanted: called by name, so the rest take their defaults. */
@@ -7025,6 +7041,26 @@ ${members.join('\n')}
 
   /** Lenient code: whether the value `coerce` is converting goes where Swift holds it optional, so a missing function stays missing. */
   private optionalSlot = false;
+  /** The value `coerce` converts, where it is a function literal or a declared function: Swift holds it present whatever lenient code's types say. */
+  private presentFunction: ts.Expression | null = null;
+
+  /** Whether `code` is the function `presentFunction` is, as written: a closure, a method's value or a declared function's name. */
+  private isPresentFunction(code: string): boolean {
+    const e = this.presentFunction && ts.skipOuterExpressions(this.presentFunction, ts.OuterExpressionKinds.Parentheses);
+    if (!e) return false;
+    if (ts.isArrowFunction(e) || ts.isFunctionExpression(e)) return /^\{[\s\S]*\}$/.test(code) && balanced(code);
+    if (ts.isPropertyAccessExpression(e)) return /^jsMethodValue\(/.test(code) && balanced(code);
+    return ts.isIdentifier(e) && code === this.refName(e);
+  }
+
+  private declaredFunction(e: ts.Expression): boolean {
+    const x = ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses);
+    if (ts.isArrowFunction(x) || ts.isFunctionExpression(x)) return true;
+    if (!ts.isIdentifier(x) && !(ts.isPropertyAccessExpression(x) && !ts.isOptionalChain(x))) return false;
+    const d = this.resolve(ts.isPropertyAccessExpression(x) ? x.name : x)?.valueDeclaration;
+    return !!d && (ts.isFunctionDeclaration(d) || ts.isMethodDeclaration(d));
+  }
+
   /** Set for the one value a module constant Swift holds present is initialized with (see `storedInit`). */
   private presentSlot = false;
 
@@ -11714,7 +11750,7 @@ function tryAssigned(t: string, code: string): string {
 /** `rest`: the parameter a `JSRest` type marks as a rest parameter (spelled `JSArray` in `params`), else -1. */
 interface FunctionParts { text: string; params: string[]; result: string; rest: number }
 /** What a function cell's static member does: box a typed closure as a script function (`script`), or call a script function as a typed closure (`fromScript`). */
-type CellStatic = 'script' | 'fromScript';
+type CellStatic = 'script' | 'fromScript' | 'adapting';
 
 /** `(A, B) throws -> R` split into its parameter and result types; null for any other type. */
 export function functionParts(type: string): FunctionParts | null {
