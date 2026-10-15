@@ -603,11 +603,11 @@ describe('createDepsBundleService', () => {
 	});
 
 	it('serves a shim for bundled opaque CJS (no static export names), with the names it has when loaded', async () => {
-		// pkg-b is `module.exports = { b: 1 }` — statically opaque. Falling
-		// through to the per-module transform here would evaluate the package a
-		// SECOND time (the moment-timezone realm split from the §4.4 flag-on
-		// qualification). esbuild's `import *` gives its bundled namespace
-		// `default` plus a copy of each `module.exports` property.
+		// pkg-b is `module.exports = { b: 1 }` — statically opaque. Its bundled
+		// namespace is `{ default: { b: 1 } }`, so the shim re-exports exactly
+		// that. Falling through to the per-module transform here would evaluate
+		// the package a SECOND time (the moment-timezone realm split from the
+		// §4.4 flag-on qualification).
 		const service = makeService();
 		await service.ensureBuilt();
 		const shim = service.getShimForSpec('/node_modules/pkg-b/index.js');

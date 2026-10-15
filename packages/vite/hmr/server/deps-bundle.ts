@@ -843,11 +843,11 @@ export interface DepsModuleExportInfo {
 	/**
 	 * True for CJS files with `names: null` — UMD factories and
 	 * `module.exports = require('./x')` re-export chains (moment-timezone's
-	 * index.js, react's index.js). They are still served as a shim, which
-	 * preserves single-evaluation identity — load-bearing for patch-style
-	 * packages that mutate another package at evaluation time
-	 * (`moment.tz.load(...)`) — with the names their `module.exports` has
-	 * when loaded (see getShimForSpec). ESM files with
+	 * index.js). esbuild's CJS→ESM interop gives their bundled namespace
+	 * exactly ONE property, `default`, so a default-only shim IS the complete
+	 * export surface — and serving it preserves single-evaluation identity,
+	 * which is load-bearing for patch-style packages that mutate another
+	 * package at evaluation time (`moment.tz.load(...)`). ESM files with
 	 * `names: null` (bare `export * from 'pkg'`) must NOT get this flag:
 	 * their bundled namespace has real named exports the server cannot
 	 * enumerate, so they keep per-module serving.
@@ -929,8 +929,6 @@ export function collectDepsModuleExportInfo(absPath: string, platform: string, s
 	} catch {
 		return { names: null, hasDefault: false };
 	}
-	// `.mjs` is ESM by definition; minified ones (clsx's `dist/clsx.mjs`) keep
-	// their `export`s mid-line, where ESM_SYNTAX_RE doesn't look.
 	if (!/\.mjs$/i.test(absPath) && !ESM_SYNTAX_RE.test(code)) return collectCjsExportInfo(code);
 	const names = new Set<string>(extractDirectExportedNames(code));
 	let match: RegExpExecArray | null;
@@ -1111,16 +1109,12 @@ export function createDepsBundleService(options: CreateDepsBundleServiceOptions)
 				if (info.names !== null) {
 					shim = buildDepsShimCode(key, info.names, info.hasDefault);
 				} else if (info.opaqueCjs && file) {
-					// Statically opaque CJS/UMD (e.g. moment-timezone, react's
-					// `module.exports = require('./cjs/react.development.js')`).
-					// Serving the shim (not the per-module transform) keeps the
-					// single bundle evaluation — patch-style packages that mutate
-					// another package at eval time break if evaluated a second time.
-					// esbuild's `import *` copies every property of `module.exports`
-					// onto the bundled namespace, so the names it has when loaded
-					// here are exported too: `import { Fragment } from 'react'` failed
-					// with "does not provide an export named 'Fragment'" when the
-					// shim exported only the default.
+					// Statically opaque CJS/UMD (e.g. moment-timezone): the bundled
+					// namespace is `{ default: module.exports }` and nothing else, so
+					// a default-only shim is the COMPLETE surface. Serving the shim
+					// (not the per-module transform) keeps the single bundle
+					// evaluation — patch-style packages that mutate another package
+					// at eval time break if evaluated a second time.
 					shim = buildDepsShimCode(key, getCjsNamedExports(file), true);
 				}
 			}
