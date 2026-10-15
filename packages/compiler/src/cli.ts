@@ -331,6 +331,7 @@ const sourceLines = args.includes('--no-source-lines') ? null : new SourceLines(
   ...components.map((c) => [c.file, componentSource(c)] as const),
   ...[...overrides.keys()].map((f) => [f, f] as const),
 ]));
+for (const c of components) if (c.templateLines) sourceLines?.pin(c.file, c.templateLines.file, c.templateLines.lines);
 // Constructs no compiled release runs, all of them with their TypeScript lines, before anything is translated.
 const unsupported = preflight(checker, [...sourceFiles, ...compiledPlugins.map((f) => program.getSourceFile(f)!)], sourceLines ? (n) => sourceLines.locate(n) : undefined, (st) => !compiledPlugins.includes(st.getSourceFile().fileName) || reach.keeps(st));
 if (unsupported.length) {

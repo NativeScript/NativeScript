@@ -5192,7 +5192,7 @@ export class Translator implements AsyncTranslator {
       return isNullable(target) ? values : asserted(values);
     }
     // Lenient code: `a?.b` ends undefined where `a` is, whatever the type says.
-    if (this.lenient && ['String', 'Double', 'Boolean'].includes(target) && source === target && (ts.isPropertyAccessExpression(e) || ts.isCallExpression(e) || ts.isElementAccessExpression(e)) && e.flags & ts.NodeFlags.OptionalChain) return this.undefinedAs(this.expr(e), target);
+    if ((this.lenient || !this.library) && ['String', 'Double', 'Boolean'].includes(target) && source === target && this.optionalChainEnd(e)) return this.undefinedAs(this.expr(e), target);
     // Library mode: `a && b`, `a || b` of operands Kotlin types apart (a nullable field, a string): the value, read as the type says.
     if (this.library && ['String', 'Double', 'Boolean'].includes(target) && ts.isBinaryExpression(e) && [ts.SyntaxKind.AmpersandAmpersandToken, ts.SyntaxKind.BarBarToken].includes(e.operatorToken.kind) && source === target
         && [e.left, e.right].some((x) => (this.declaredTypeOf(x) ?? this.typeOf(x)) !== target)) return this.fromAnyCode(this.expr(e), target, true);
@@ -5979,6 +5979,8 @@ export class Translator implements AsyncTranslator {
   str(e: ts.Expression): string {
     const maybe = this.maybeUndefined(e);
     if (maybe) return `jsToString(${maybe})`;
+    // An app's `a?.b` typed present: Kotlin's chain gives a nullable, undefined where it stops.
+    if (!this.library && ['String', 'Double', 'Boolean'].includes(this.typeOf(e)) && this.optionalChainEnd(e)) return `jsToString(${this.expr(e)})`;
     const t = this.typeOf(e);
     // A string declared nullable converts as JavaScript converts undefined.
     if (t === 'String') {
@@ -6445,6 +6447,12 @@ export class Translator implements AsyncTranslator {
       if (target) return `${target}?.${ident(e.name.text)}`;
     }
     return null;
+  }
+
+  /** `a?.b`, `a?.b()`, `a?.[k]` (in parentheses or not): Kotlin's chain gives a nullable whatever TypeScript's type says. */
+  private optionalChainEnd(e: ts.Expression): boolean {
+    while (ts.isParenthesizedExpression(e)) e = e.expression;
+    return (ts.isPropertyAccessExpression(e) || ts.isCallExpression(e) || ts.isElementAccessExpression(e)) && !!(e.flags & ts.NodeFlags.OptionalChain);
   }
 
   /** An undefined-or-value as the TypeScript type reads it: NaN, "undefined" and false are what undefined converts to. */

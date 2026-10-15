@@ -59,6 +59,8 @@ export interface SwiftOptions {
    * compiled from its source (lenient, not in library mode), the rest as the app's code.
    */
   plugin?: boolean;
+  /** Translated as a non-strict app's own code is (`strict: false` in its tsconfig.json). */
+  lenientApp?: boolean;
   /**
    * Each module translated on its own, what one cannot translate given here rather than thrown: the others still translate.
    * Without it, the first module that cannot translate throws.
@@ -72,7 +74,7 @@ export interface SwiftOptions {
  */
 export function translateSwift(roots: string[], out: string, o: SwiftOptions = {}): TranslatedModule[] {
   const loose = !!o.lenient;
-  const { checker, program, files: rootFiles, lenient: lenientApp } = createProgram(roots, new Map(), 'ios', modulesDir, undefined, [], {}, loose ? { strict: false, useDefineForClassFields: false } : o.plugin ? { strict: false, useUnknownInCatchVariables: false } : {});
+  const { checker, program, files: rootFiles, lenient: lenientApp } = createProgram(roots, new Map(), 'ios', modulesDir, undefined, [], {}, loose ? { strict: false, useDefineForClassFields: false } : o.plugin || o.lenientApp ? { strict: false, useUnknownInCatchVariables: false } : {});
   const imported = roots.flatMap((r) => importsOf(program, r, 'ios'));
   // The helper modules the roots import are the program's too, as an app's every module is.
   const all = [...rootFiles, ...imported.map((f) => program.getSourceFile(f)!).filter((sf) => sf && !rootFiles.includes(sf))];
@@ -84,7 +86,7 @@ export function translateSwift(roots: string[], out: string, o: SwiftOptions = {
   translator.appModule = 'Main';
   translator.appMembersByName = !!o.membersByName;
   if (o.appStrictness) translator.lenientApp = lenientApp;
-  if (o.plugin) translator.lenientApp = true;
+  if (o.plugin || o.lenientApp) translator.lenientApp = true;
   // With source lines, as an app is built: the directives must compile wherever a statement can be.
   const lines = translator.lines = new SourceLines(new Map());
   const files = [...new Set([...roots, ...imported])];
@@ -122,13 +124,14 @@ export interface KotlinOptions {
   lenient?: boolean;
   membersByName?: boolean;
   appStrictness?: boolean;
+  lenientApp?: boolean;
   refused?: (file: string, error: Error) => void;
 }
 
 /** `roots` and the app modules they import as Kotlin in package `pkg`, in `out`. */
 export function translateKotlin(roots: string[], out: string, pkg: string, o: KotlinOptions = {}): KotlinModule[] {
   const loose = !!o.lenient;
-  const { checker, program, files: rootFiles, lenient: lenientApp } = createProgram(roots, new Map(), 'android', modulesDir, undefined, [], {}, loose ? { strict: false, useDefineForClassFields: false } : {});
+  const { checker, program, files: rootFiles, lenient: lenientApp } = createProgram(roots, new Map(), 'android', modulesDir, undefined, [], {}, loose ? { strict: false, useDefineForClassFields: false } : o.lenientApp ? { strict: false, useUnknownInCatchVariables: false } : {});
   const imported = roots.flatMap((r) => importsOf(program, r, 'android'));
   // Every module, as an app's are: a class another module extends stays open.
   const files = [...rootFiles, ...imported.map((f) => program.getSourceFile(f)!).filter((sf) => sf && !rootFiles.includes(sf))];
@@ -138,6 +141,7 @@ export function translateKotlin(roots: string[], out: string, pkg: string, o: Ko
   translator.appMembersByName = !!o.membersByName;
   // As android.ts sets it: the Kotlin translator reads the field without declaring it.
   if (o.appStrictness) (translator as { lenientApp?: boolean }).lenientApp = lenientApp;
+  if (o.lenientApp) (translator as { lenientApp?: boolean }).lenientApp = true;
   const lines = translator.lines = new SourceLines(new Map());
   const all = [...new Set([...roots, ...imported])];
   const modules = o.refused ? eachModule(program, all, (f) => translateKotlinModules(translator, program, [f]), o.refused) : translateKotlinModules(translator, program, all);
