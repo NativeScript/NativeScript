@@ -87,7 +87,6 @@ export function parseCssColor(text: string, start = 0): Parsed<Color> {
 		return null;
 	}
 
-	// The arguments may hold functions of their own: `color-mix(in srgb, rgb(0 0 0), red)`.
 	let end = cssColorRegEx.lastIndex;
 	for (let depth = 1; depth > 0; end++) {
 		if (end >= text.length) {
