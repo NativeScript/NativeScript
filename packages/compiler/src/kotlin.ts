@@ -2005,6 +2005,9 @@ export class Translator implements AsyncTranslator {
   fromAnyCode(code: string, type: string, orZero = false): string {
     const zero = this.zero(type);
     if (orZero && type === 'Double') return `jsNumberOrZero(${code})`;
+    // Library mode: another primitive converts, as JavaScript reads it where it is used.
+    if (orZero && this.library && type === 'String') return `jsStringOrEmpty(${code})`;
+    if (orZero && this.library && type === 'Boolean') return `jsBooleanOrFalse(${code})`;
     if (orZero && zero && zero !== 'null' && !type.endsWith('?')) return `(${safeCast(code, type)} ?: ${zero})`;
     return this.fromAny(code, type);
   }
@@ -2049,14 +2052,17 @@ export class Translator implements AsyncTranslator {
     const promised = /^JSPromise<(.*)>$/.exec(base);
     if (promised) return type.endsWith('?') ? `jsUnlessNullish(${code}) { jsPromiseOf<${promised[1]}>(it) }` : `jsPromiseOf<${promised[1]}>(${code})`;
     // Library mode: JavaScript's null where an object goes (`cond ? entry.fragment : null`) is Kotlin's.
-    // A string, number or boolean slot given another kind of value (core's `unsetValue` for a css variable) holds none.
-    if (this.library && /^(String|Double|Boolean)\?$/.test(type)) return `(jsJavaArgument(${code}) as? ${type.slice(0, -1)})`;
+    // A string, number or boolean slot given another primitive converts it (a binding's 5 for a string is "5"); given an
+    // object (core's `unsetValue` for a css variable), it holds none.
+    if (this.library && /^(String|Double|Boolean)\?$/.test(type)) return `${({ 'String?': 'jsStringOrNull', 'Double?': 'jsNumberOrNull', 'Boolean?': 'jsBooleanOrNull' } as Record<string, string>)[type]}(${code})`;
     // JavaScript's null (JSNull in an untyped object) where a nullable slot goes is Kotlin's.
     if (isNullable(type)) return this.checkedCast(code, type);
     // A Date its type promises that JSON gave as text (`createdAt: Date` of a parsed payload): the date the text names, as `new Date(text)` reads it.
     if (!this.library && type === 'JSDate') return `jsDateFrom(${code})`;
     // An object slot its declarations call non-null may still get null (`getAncestor` finding none), which JavaScript passes on.
     if (this.isObjectType(type) && !/^(String|Double|Boolean)$/.test(type)) return `jsUnchecked<${type}>(jsJavaArgument(${code}))`;
+    const converted = this.library ? ({ String: 'jsConvertedString', Double: 'jsConvertedNumber', Boolean: 'jsConvertedBoolean' } as Record<string, string>)[type] : undefined;
+    if (converted) return `${converted}(${code}${name ? `, ${kotlinString(name)}` : ''})`;
     return this.checkedCast(code, type, name);
   }
 
