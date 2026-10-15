@@ -32,6 +32,59 @@ describe('css-mediaquery', () => {
 		});
 	});
 
+	describe('range syntax', () => {
+		it('parses a comparison with the feature on either side', () => {
+			expect(parseQuery('(width >= 600px)')[0].features).toEqual([{ modifier: 'min', property: 'width', value: '600px' }]);
+			expect(parseQuery('(width < 600px)')[0].features).toEqual([{ modifier: 'lt', property: 'width', value: '600px' }]);
+			expect(parseQuery('(600px < width)')[0].features).toEqual([{ modifier: 'gt', property: 'width', value: '600px' }]);
+			expect(parseQuery('(600px >= height)')[0].features).toEqual([{ modifier: 'max', property: 'height', value: '600px' }]);
+			expect(parseQuery('(width = 600px)')[0].features).toEqual([{ modifier: undefined, property: 'width', value: '600px' }]);
+		});
+
+		it('parses a range with both bounds', () => {
+			expect(parseQuery('(400px <= width < 700px)')[0].features).toEqual([
+				{ modifier: 'min', property: 'width', value: '400px' },
+				{ modifier: 'lt', property: 'width', value: '700px' },
+			]);
+			expect(parseQuery('(700px > width >= 400px)')[0].features).toEqual([
+				{ modifier: 'lt', property: 'width', value: '700px' },
+				{ modifier: 'min', property: 'width', value: '400px' },
+			]);
+		});
+
+		it('rejects malformed ranges', () => {
+			expect(() => parseQuery('(400px < width > 700px)')).toThrow(SyntaxError);
+			expect(() => parseQuery('(400px = width = 700px)')).toThrow(SyntaxError);
+			expect(() => parseQuery('(400px < 700px)')).toThrow(SyntaxError);
+			expect(() => parseQuery('(width >= )')).toThrow(SyntaxError);
+		});
+
+		it('matches inclusive and exclusive bounds', () => {
+			expect(matchQuery('(width >= 600px)', { width: 600 })).toBe(true);
+			expect(matchQuery('(width > 600px)', { width: 600 })).toBe(false);
+			expect(matchQuery('(width < 600px)', { width: 599 })).toBe(true);
+			expect(matchQuery('(width < 600px)', { width: 600 })).toBe(false);
+			expect(matchQuery('(400px <= width < 700px)', { width: 400 })).toBe(true);
+			expect(matchQuery('(400px <= width < 700px)', { width: 700 })).toBe(false);
+		});
+
+		it('combines with media types, and, not and lists', () => {
+			expect(matchQuery('screen and (width >= 600px) and (orientation: portrait)', { type: MediaQueryType.screen, width: 800, orientation: 'portrait' })).toBe(true);
+			expect(matchQuery('not all and (width >= 600px)', { width: 800 })).toBe(false);
+			expect(matchQuery('(width < 100px), (height >= 600px)', { width: 800, height: 600 })).toBe(true);
+		});
+	});
+
+	describe('rem and em lengths', () => {
+		it('are the initial font size, 16', () => {
+			// Tailwind's `md` breakpoint.
+			expect(matchQuery('(width >= 48rem)', { width: 768 })).toBe(true);
+			expect(matchQuery('(width >= 48rem)', { width: 767 })).toBe(false);
+			expect(matchQuery('(max-width: 2em)', { width: 32 })).toBe(true);
+			expect(matchQuery('(max-width: 2em)', { width: 33 })).toBe(false);
+		});
+	});
+
 	describe('matchQuery', () => {
 		describe('Equality check', () => {
 			it('orientation: should return true for a correct match (===)', () => {
