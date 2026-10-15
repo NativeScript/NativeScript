@@ -1030,7 +1030,11 @@ export class ApplicationCommon {
 			return;
 		}
 		this._systemAppearance = value;
-		this.systemAppearanceChanged(this.getRootView(), value);
+		// `autoSystemAppearanceChanged` opts out of the CSS classes only: the event
+		// still fires so apps driving their own theming can react to it.
+		if (this.autoSystemAppearanceChanged) {
+			this.systemAppearanceChanged(this.getRootView(), value);
+		}
 		this.notify(<SystemAppearanceChangedEventData>{
 			eventName: this.systemAppearanceChangedEvent,
 			android: this.android,
@@ -1055,12 +1059,15 @@ export class ApplicationCommon {
 	}
 
 	/**
-	 * Updates root view classes including those of modals
+	 * Updates root view classes including those of modals.
+	 * Applies them even when automatic updates are disabled with
+	 * `setAutoSystemAppearanceChanged(false)`, so an app can set its own
+	 * appearance.
 	 * @param rootView the root view
 	 * @param newSystemAppearance the new appearance change
 	 */
 	systemAppearanceChanged(rootView: View, newSystemAppearance: 'dark' | 'light'): void {
-		if (!rootView || !this.autoSystemAppearanceChanged) {
+		if (!rootView) {
 			return;
 		}
 
