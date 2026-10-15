@@ -47,6 +47,7 @@ export class LayoutBaseCommon extends CustomLayoutView implements LayoutBaseDefi
 		this._subViews.push(child);
 		this._addView(child);
 		this._registerLayoutChild(child);
+		this._invalidatePrecedingSiblingCssState(this._subViews.length - 1);
 	}
 
 	public insertChild(child: View, atIndex: number): boolean {
@@ -57,6 +58,7 @@ export class LayoutBaseCommon extends CustomLayoutView implements LayoutBaseDefi
 			this._addView(child, atIndex);
 			this._registerLayoutChild(child);
 			this._invalidateSiblingCssState(isReattached ? atIndex : atIndex + 1, atIndex + 2);
+			this._invalidatePrecedingSiblingCssState(atIndex);
 			return true;
 		}
 		return false;
@@ -71,6 +73,7 @@ export class LayoutBaseCommon extends CustomLayoutView implements LayoutBaseDefi
 			this._subViews.splice(index, 1);
 			this._unregisterLayoutChild(child);
 			this._invalidateSiblingCssState(index, index + 1);
+			this._invalidatePrecedingSiblingCssState(index);
 		}
 	}
 
@@ -90,6 +93,25 @@ export class LayoutBaseCommon extends CustomLayoutView implements LayoutBaseDefi
 		// '+' only affects views whose direct predecessor changed
 		const end = Math.min(general ? this._subViews.length : adjacentEndIndex, this._subViews.length);
 		for (let i = fromIndex; i < end; i++) {
+			this._subViews[i]._onCssStateChange();
+		}
+	}
+
+	// Views before `index` gained or lost a next sibling: re-match the ones whose
+	// selectors look forward (`:last-child`, `:nth-last-child()`).
+	private _invalidatePrecedingSiblingCssState(index: number): void {
+		const scope = this._styleScope;
+		if (!scope || index <= 0) {
+			return;
+		}
+
+		const following = scope.hasFollowingSiblingSelectors;
+		if (!following && !scope.hasNextSiblingSelectors) {
+			return;
+		}
+
+		// `:last-child` only changes for the view right before
+		for (let i = following ? 0 : index - 1; i < index; i++) {
 			this._subViews[i]._onCssStateChange();
 		}
 	}

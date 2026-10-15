@@ -1200,6 +1200,24 @@ export class StyleScope {
 	}
 
 	/**
+	 * True when any selector in the scope depends on whether a view has a next sibling (`:last-child`).
+	 */
+	get hasNextSiblingSelectors(): boolean {
+		this.ensureSelectors();
+
+		return !!applicationSelectorScope?.hasNextSiblingSelectors || !!this._localSelectorScope?.hasNextSiblingSelectors;
+	}
+
+	/**
+	 * True when any selector in the scope depends on all of a view's next siblings (`:nth-last-child()`).
+	 */
+	get hasFollowingSiblingSelectors(): boolean {
+		this.ensureSelectors();
+
+		return !!applicationSelectorScope?.hasFollowingSiblingSelectors || !!this._localSelectorScope?.hasFollowingSiblingSelectors;
+	}
+
+	/**
 	 * Increase the application CSS selector version.
 	 */
 	public _increaseApplicationCssSelectorVersion(): void {
