@@ -128,10 +128,6 @@ function collectTopLevelReExportSources(code: string): Array<{ start: number; en
 	}
 }
 
-/**
- * Value re-exports and string-literal `import('x')` calls (anywhere in the
- * module), as the positions of their source literals.
- */
 function collectReExportAndDynamicImportSources(code: string): Array<{ start: number; end: number; source: string }> {
 	let ast: any;
 	try {
@@ -175,17 +171,6 @@ function collectReExportAndDynamicImportSources(code: string): Array<{ start: nu
 	return sources;
 }
 
-/**
- * Gives value re-exports and string-literal dynamic imports the specifier a
- * static import of the same module gets (`getPreservedImportSpecifier`).
- *
- * The main realm serves a runtime plugin's modules under the authored
- * spelling of their imports (`./framework-registry` reaches the device as
- * `/ns/m/node_modules/<pkg>/framework-registry`), but re-exports and dynamic
- * imports kept Vite's resolved `/node_modules/<pkg>/framework-registry.js`.
- * The device keys modules by URL, so a module imported in one file and
- * re-exported from another was evaluated twice, with two copies of its state.
- */
 function rewritePreservedReExportAndDynamicImportSpecifiers(code: string, options: EnsureNativeScriptModuleBindingsOptions): string {
 	const records = collectReExportAndDynamicImportSources(code);
 	for (const record of records.sort((left, right) => right.start - left.start)) {
@@ -651,9 +636,6 @@ function buildResolvedRuntimePluginSpecifierOverrides(source: string, projectRoo
 	const mixedRuntimePluginRootPackages = collectMixedRuntimePluginRootPackages(source, projectRoot, sourceFilePath);
 	const importSpecifiers = extracted.imports.map((importCode) => importCode.match(/from\s+["']([^"']+)["']/)?.[1] || importCode.match(/^\s*import\s+["']([^"']+)["']/)?.[1] || null);
 
-	// Re-exports and dynamic imports get the same overrides as imports, so the
-	// served module names each dependency by one URL (see
-	// rewritePreservedReExportAndDynamicImportSpecifiers).
 	for (const sourceSpecifier of [...importSpecifiers, ...collectReExportAndDynamicImportSources(source).map((record) => record.source)]) {
 		const normalizedSpecifier = sourceSpecifier ? normalizeRuntimePluginSourceSpecifier(sourceSpecifier, sourceFilePath, projectRoot) : null;
 		if (normalizedSpecifier) {
