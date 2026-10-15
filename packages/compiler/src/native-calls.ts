@@ -1,7 +1,7 @@
 import ts from 'typescript';
 import { implementedInterfaces } from './lang.ts';
 import { isStatic } from './throws.ts';
-import { CF_CLASSES, functionParts, ident, isWriteTarget, NONISOLATED_DEINIT, optionalType, splitTopLevel, THROWING_CODE, type Translator } from './swift.ts';
+import { balanced, CF_CLASSES, functionParts, ident, isWriteTarget, NONISOLATED_DEINIT, optionalType, splitTopLevel, THROWING_CODE, type Translator } from './swift.ts';
 import {
   categoryModule, conformsTo, conformsToSwift, isSubframework, lookupClass, lookupConstant, lookupConstructor, lookupEnum, lookupFunction, lookupInit, lookupMember, lookupStruct, lookupTypealias, moduleOfDeclaration, nativeTable,
   type NativeClass, type NativeMethod, type NativeProperty, type SwiftType,
@@ -1122,7 +1122,12 @@ export class NativeAPI {
       // An integer from a number as the runtime marshals one: NaN (an unset `maxLines`) is 0, the rest truncated and clamped.
       if (source === 'Double' && INTEGERS.has(b)) return ts.isNumericLiteral(e) ? t.expr(e) : `jsNativeInteger(${t.expr(e)}, ${b}.self)`;
       // A floating-point number as the runtime marshals one: undefined, which Swift holds as NaN, is 0 (an unset duration or line height).
-      if (source === 'Double' && b !== 'Double' && b !== 'TimeInterval') return ts.isNumericLiteral(e) ? t.expr(e) : `${b}(jsNativeNumber(${t.expr(e)}))`;
+      if (source === 'Double' && b !== 'Double' && b !== 'TimeInterval') {
+        if (ts.isNumericLiteral(e)) return t.expr(e);
+        // A native property of the same type, read as a number only to be passed back: the value itself, which is never undefined.
+        const own = ts.isPropertyAccessExpression(e) && !e.questionDotToken && this.propertyType(e) === b ? /^Double\((.*)\)$/s.exec(t.expr(e))?.[1] : undefined;
+        return own && balanced(own) ? own : `${b}(jsNativeNumber(${t.expr(e)}))`;
+      }
       // An untyped value: the number the runtime marshals it as.
       if (source === 'Any?') return b === 'Double' || b === 'TimeInterval' ? `jsNativeNumber(jsToNumber(${t.expr(e)}))` : INTEGERS.has(b) ? `jsNativeInteger(jsToNumber(${t.expr(e)}), ${b}.self)` : `${b}(jsNativeNumber(jsToNumber(${t.expr(e)})))`;
       return ts.isNumericLiteral(e) ? t.expr(e) : `jsNativeNumber(${t.expr(e)})`;
