@@ -2353,13 +2353,20 @@ ${members.join('\n')}
     return null;
   }
 
-  /** Classes for object types without a name. */
-  shapesCode(): string {
+  /** Classes for object types without a name, and with `cells` the function cells (`cellsCode`). */
+  shapesCode(cells = true): string {
     const shapes = [...this.shapes.values()].map((s) => this.objectClass(s.name, s.fields, null));
+    return singleTry([...shapes, ...this.globalAliases.values(), ...this.templateObjects, ...this.extendedClasses, ...(cells ? this.cellsCode().map((c) => c.code) : [])].join('\n\n'));
+  }
+
+  /** The struct of each function type's cell, with the number of parameters the type takes. After `shapesCode`, whose classes can add cells. */
+  cellsCode(): { params: number; code: string }[] {
     // `implicit`: `jsImplicit` of the cell's function type, not the generic one, which would hand back a new thunk.
     const needs = (type: string) => Math.max(0, ...[...this.gatedTypes].filter(([n]) => new RegExp(`\\b${n.replace(/\./g, '\\.')}\\b`).test(type)).map(([, v]) => v));
-    const cells = [...this.functionCells].map(([type, name]) => `${needs(type) ? `@available(iOS ${needs(type)}, *)\n` : ''}struct ${name} {\n    let f: ${type}\n    static func implicit(_ value: (${type})?) -> (${type})? { value }\n    static func present(_ value: (${type})?) throws -> ${type} { guard let value else { throw jsNoObject() }; return value }\n${this.cellStaticCode(name, type).map((l) => l + '\n').join('')}}`);
-    return singleTry([...shapes, ...this.globalAliases.values(), ...this.templateObjects, ...this.extendedClasses, ...cells].join('\n\n'));
+    return [...this.functionCells].map(([type, name]) => ({
+      params: functionParts(type)?.params.length ?? 0,
+      code: singleTry(`${needs(type) ? `@available(iOS ${needs(type)}, *)\n` : ''}struct ${name} {\n    let f: ${type}\n    static func implicit(_ value: (${type})?) -> (${type})? { value }\n    static func present(_ value: (${type})?) throws -> ${type} { guard let value else { throw jsNoObject() }; return value }\n${this.cellStaticCode(name, type).map((l) => l + '\n').join('')}}`),
+    }));
   }
 
   private functionCells = new Map<string, string>();

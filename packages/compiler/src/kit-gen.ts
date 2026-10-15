@@ -301,7 +301,7 @@ export function generateKit(o: KitOptions): KitResult {
   for (const [name, code] of indexNamespaces(program, checker, join(core, 'index.ts'), compiled, (f) => enumName(relOf(f), barrels), sourceOf, codeOf)) {
     out.push({ name: `__Namespace.${name}.swift`, code: header(new Set(sdk)) + code + '\n', sources: {} });
   }
-  const shapes = publicize(withLocations(translator.shapesCode().trim()));
+  const shapes = publicize(withLocations(translator.shapesCode(false).trim()));
   const shapeFiles = new Set<string>();
   for (const shape of shapes ? shapes.split(/\n(?=public final class )/) : []) {
     const name = /^public final class (\w+)/.exec(shape.trim())?.[1];
@@ -310,6 +310,16 @@ export function generateKit(o: KitOptions): KitResult {
     const file = shapeFiles.has(name.toLowerCase()) ? `${name}_${hash(name).slice(0, 6)}` : name;
     shapeFiles.add(file.toLowerCase());
     out.push({ name: `${file}.swift`, code: header(new Set([...sdk, ...importsOf(shape)])) + shape.trim() + '\n', sources: {} });
+  }
+  // The function types' cells, apart from the shapes and grouped by how many parameters the function takes.
+  const cellFiles = new Map<string, string[]>();
+  for (const cell of translator.cellsCode()) {
+    const file = `FunctionCells.${cell.params < 3 ? `Arity${cell.params}` : 'Arity3Plus'}`;
+    cellFiles.set(file, [...(cellFiles.get(file) ?? []), publicize(withLocations(cell.code.trim()))]);
+  }
+  for (const [file, cells] of [...cellFiles].sort(([a], [b]) => a.localeCompare(b))) {
+    const code = cells.join('\n\n');
+    out.push({ name: `${file}.swift`, code: header(new Set([...sdk, ...importsOf(code)])) + code + '\n', sources: {} });
   }
   // Core's modules run their top level once, before the app's: those the app reaches, in the order JavaScript evaluates them,
   // which its build lists (the manifest's graph), so that nothing in the kit keeps the others in its binary.
