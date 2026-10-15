@@ -8,12 +8,6 @@ export interface AstProcessResult {
 	diagnostics: string[];
 }
 
-/**
- * Removes type annotations from function parameters left in the AST (when an
- * earlier TypeScript strip failed). This used to be a regex over the printed
- * code, which also matched object properties: `{ a: 1, value: undefined }`
- * lost its `: undefined` and became `{ a: 1, value }`.
- */
 function stripParamAnnotations(statements: Statement[]): boolean {
 	let stripped = false;
 	const strip = (param: any) => {
