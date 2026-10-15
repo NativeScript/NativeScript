@@ -129,6 +129,76 @@ function collectTopLevelReExportSources(code: string): Array<{ start: number; en
 }
 
 /**
+ * Value re-exports and string-literal `import('x')` calls (anywhere in the
+ * module), as the positions of their source literals.
+ */
+function collectReExportAndDynamicImportSources(code: string): Array<{ start: number; end: number; source: string }> {
+	let ast: any;
+	try {
+		ast = babelParse(code, {
+			sourceType: 'module',
+			plugins: [...MODULE_IMPORT_ANALYSIS_PLUGINS],
+		});
+	} catch {
+		return [];
+	}
+	const sources: Array<{ start: number; end: number; source: string }> = [];
+	const add = (literal: any) => {
+		if (literal?.type === 'StringLiteral' && typeof literal.start === 'number' && typeof literal.end === 'number') {
+			sources.push({ start: literal.start, end: literal.end, source: literal.value });
+		}
+	};
+	const visit = (node: any) => {
+		if (!node || typeof node.type !== 'string') {
+			return;
+		}
+		if ((node.type === 'ExportAllDeclaration' || node.type === 'ExportNamedDeclaration') && node.exportKind !== 'type') {
+			add(node.source);
+		} else if (node.type === 'ImportExpression') {
+			add(node.source);
+		} else if (node.type === 'CallExpression' && node.callee?.type === 'Import') {
+			add(node.arguments?.[0]);
+		}
+		for (const key of Object.keys(node)) {
+			if (key === 'loc' || key === 'leadingComments' || key === 'trailingComments' || key === 'innerComments') {
+				continue;
+			}
+			const value = node[key];
+			if (Array.isArray(value)) {
+				value.forEach(visit);
+			} else if (value && typeof value === 'object') {
+				visit(value);
+			}
+		}
+	};
+	visit(ast?.program);
+	return sources;
+}
+
+/**
+ * Gives value re-exports and string-literal dynamic imports the specifier a
+ * static import of the same module gets (`getPreservedImportSpecifier`).
+ *
+ * The main realm serves a runtime plugin's modules under the authored
+ * spelling of their imports (`./framework-registry` reaches the device as
+ * `/ns/m/node_modules/<pkg>/framework-registry`), but re-exports and dynamic
+ * imports kept Vite's resolved `/node_modules/<pkg>/framework-registry.js`.
+ * The device keys modules by URL, so a module imported in one file and
+ * re-exported from another was evaluated twice, with two copies of its state.
+ */
+function rewritePreservedReExportAndDynamicImportSpecifiers(code: string, options: EnsureNativeScriptModuleBindingsOptions): string {
+	const records = collectReExportAndDynamicImportSources(code);
+	for (const record of records.sort((left, right) => right.start - left.start)) {
+		const specifier = record.source.replace(PAT.QUERY_PATTERN, '');
+		const preserved = getPreservedImportSpecifier(specifier, options);
+		if (preserved && preserved !== specifier) {
+			code = code.slice(0, record.start) + JSON.stringify(preserved) + code.slice(record.end);
+		}
+	}
+	return code;
+}
+
+/**
  * The worker serve's URL for a node_modules module Vite already resolved
  * (`/node_modules/<pkg>/<file>`, `/@fs/.../node_modules/<pkg>/<file>`), or
  * null when the specifier is not one. A worker realm has no vendor registry
@@ -174,6 +244,8 @@ function stripTopLevelImportRecords(code: string, records: TopLevelImportRecord[
 export function ensureNativeScriptModuleBindings(code: string, options?: EnsureNativeScriptModuleBindingsOptions): string {
 	if (options?.vendorImportsAsHttp) {
 		code = rewriteWorkerReExportSpecifiers(code);
+	} else if (options?.resolvedSpecifierOverrides?.size) {
+		code = rewritePreservedReExportAndDynamicImportSpecifiers(code, options);
 	}
 	const importRecords = collectTopLevelImportRecords(code);
 	if (!importRecords.length) {
@@ -577,9 +649,12 @@ function buildResolvedRuntimePluginSpecifierOverrides(source: string, projectRoo
 	const overrides = new Map<string, string>();
 	const extracted = astExtractImportsAndStripTypes(source);
 	const mixedRuntimePluginRootPackages = collectMixedRuntimePluginRootPackages(source, projectRoot, sourceFilePath);
+	const importSpecifiers = extracted.imports.map((importCode) => importCode.match(/from\s+["']([^"']+)["']/)?.[1] || importCode.match(/^\s*import\s+["']([^"']+)["']/)?.[1] || null);
 
-	for (const importCode of extracted.imports) {
-		const sourceSpecifier = importCode.match(/from\s+["']([^"']+)["']/)?.[1] || importCode.match(/^\s*import\s+["']([^"']+)["']/)?.[1] || null;
+	// Re-exports and dynamic imports get the same overrides as imports, so the
+	// served module names each dependency by one URL (see
+	// rewritePreservedReExportAndDynamicImportSpecifiers).
+	for (const sourceSpecifier of [...importSpecifiers, ...collectReExportAndDynamicImportSources(source).map((record) => record.source)]) {
 		const normalizedSpecifier = sourceSpecifier ? normalizeRuntimePluginSourceSpecifier(sourceSpecifier, sourceFilePath, projectRoot) : null;
 		if (normalizedSpecifier) {
 			const { packageName } = resolveNodeModulesPackageBoundary(normalizedSpecifier, projectRoot);
