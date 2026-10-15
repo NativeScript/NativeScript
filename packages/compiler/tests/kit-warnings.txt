@@ -34,7 +34,6 @@ pending @nativescript/core/application.application-common.ts | left side of nil 
 pending @nativescript/core/application.application-common.ts | left side of nil coalescing operator '??' has non-optional type 'String', so the right side is never used
 pending @nativescript/core/application.application.ios.ts | conditional cast from 'Responder.Type' to 'AnyClass' (aka 'any AnyObject.Type') always succeeds
 pending @nativescript/core/application.application.ios.ts | conditional cast from 'SceneDelegate' to 'any UIWindowSceneDelegate' always succeeds
-pending @nativescript/core/application.application.ios.ts | immutable value 'value' was never used; consider replacing with '_' or removing it
 pending @nativescript/core/color.color-common.ts | left side of nil coalescing operator '??' has non-optional type 'Double', so the right side is never used
 pending @nativescript/core/connectivity.index.ios.ts | comparing non-optional value of type '@Sendable () -> Unmanaged<CFDictionary>?' to 'nil' always returns false
 pending @nativescript/core/css-mediaquery.index.ts | will never be executed
@@ -42,7 +41,6 @@ pending @nativescript/core/css.parser.ts | will never be executed
 pending @nativescript/core/file-system.file-system-access.ios.ts | no calls to throwing functions occur within 'try' expression
 pending @nativescript/core/http.http-request.index.ios.ts | left side of nil coalescing operator '??' has non-optional type 'String', so the right side is never used
 pending @nativescript/core/native-window.native-window-common.ts | comparing non-optional value of type 'String' to 'nil' always returns false
-pending @nativescript/core/profiling.index.ts | immutable value 'type' was never used; consider replacing with '_' or removing it
 pending @nativescript/core/text.text-common.ts | conditional cast from 'JSArrayBuffer' to 'JSArrayBuffer' always succeeds
 pending @nativescript/core/text.text-common.ts | no calls to throwing functions occur within 'try' expression
 pending @nativescript/core/ui.animation.index.ios.ts | using '_' to ignore the result of a Void-returning function is redundant
@@ -63,7 +61,6 @@ pending @nativescript/core/ui.list-view.index.ios.ts | conditional cast from 'Li
 pending @nativescript/core/ui.list-view.index.ios.ts | immutable value 'usingNavItem' was never used; consider replacing with '_' or removing it
 pending @nativescript/core/ui.search-bar.index.ios.ts | cast from 'UISearchBar?' to unrelated type 'UIControl' always fails
 pending @nativescript/core/ui.search-bar.index.ios.ts | comparing non-optional value of type 'String' to 'nil' always returns false
-pending @nativescript/core/ui.search-bar.index.ios.ts | variable 'size' was never mutated; consider changing to 'let' constant
 pending @nativescript/core/ui.segmented-bar.index.ios.ts | comparing non-optional value of type 'String' to 'nil' always returns false
 pending @nativescript/core/ui.split-view.index.ios.ts | left side of nil coalescing operator '??' has non-optional type 'UISplitViewController.SplitBehavior', so the right side is never used
 pending @nativescript/core/ui.styling.background.ios.ts | immutable value '__assigned1' was never used; consider replacing with '_' or removing it
@@ -85,3 +82,6 @@ pending @nativescript/core/ui.transition.shared-transition-helper.ios.ts | no ca
 pending @nativescript/core/xhr.index.ts | conditional cast from 'JSArrayBuffer' to 'JSArrayBuffer' always succeeds
 pending Object_key_createView.swift | comparing non-optional value of type 'String' to 'nil' always returns true
 pending data.observable-array.index.swift | immutable value '_args' was never used; consider replacing with '_' or removing it
+pending application.application.ios.swift | immutable value 'value' was never used; consider replacing with '_' or removing it
+pending profiling.index.swift | immutable value 'type' was never used; consider replacing with '_' or removing it
+pending ui.search-bar.index.ios.swift | variable 'size' was never mutated; consider changing to 'let' constant

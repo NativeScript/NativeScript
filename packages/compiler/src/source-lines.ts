@@ -15,6 +15,8 @@ export interface SourceLocation { file: string; line: number }
 
 const MARKER = /\/\*@ns:(\d+|-)\*\//g;
 const LEADING = /^(\s*)\/\*@ns:(\d+|-)\*\//;
+/** A line starting a Swift declaration or its attributes or doc comment. */
+const DECLARATION = /^\s*(?:\/\/|@|#if\b|(?:(?:open|public|internal|fileprivate|private|override|final|class|static|nonisolated|required|convenience|lazy|weak|unowned|mutating|dynamic)\s+)*(?:func|var|let|init|deinit|subscript|enum|struct|class|extension|typealias|protocol)\b)/;
 
 export class SourceLines {
   private locations: SourceLocation[] = [];
@@ -54,17 +56,24 @@ export class SourceLines {
     return matched == null ? null : { file: origin, line: matched + 1 };
   }
 
-  /** Swift: each leading marker becomes a `#sourceLocation` line before the statement; a region's end resets it. */
+  /**
+   * Swift: each leading marker becomes a `#sourceLocation` line before the statement; a region's end resets it, as
+   * does a declaration outside the marked statement's block (a member the translator wrote after a translated one),
+   * which would otherwise count on from the statement's line, past the end of its file.
+   */
   swift(code: string): string {
-    let open = false;
+    let open: number | null = null;
     const out: string[] = [];
     for (const line of code.split('\n')) {
       const m = LEADING.exec(line);
-      if (m && m[2] === '-') { if (open) out.push('#sourceLocation()'); open = false; }
-      else if (m) { const at = this.locations[+m[2]]; out.push(`#sourceLocation(file: ${JSON.stringify(at.file)}, line: ${at.line})`); open = true; }
-      out.push(line.replace(MARKER, ''));
+      const text = line.replace(MARKER, '');
+      const indent = /^\s*/.exec(text)![0].length;
+      if (m && m[2] === '-') { if (open !== null) out.push('#sourceLocation()'); open = null; }
+      else if (m) { const at = this.locations[+m[2]]; out.push(`#sourceLocation(file: ${JSON.stringify(at.file)}, line: ${at.line})`); open = indent; }
+      else if (open !== null && indent < open && DECLARATION.test(text)) { out.push('#sourceLocation()'); open = null; }
+      out.push(text);
     }
-    if (open) out.push('#sourceLocation()');
+    if (open !== null) out.push('#sourceLocation()');
     return out.join('\n');
   }
 
