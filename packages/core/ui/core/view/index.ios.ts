@@ -56,9 +56,7 @@ export class View extends ViewCommon {
 	private _isTransformed = false;
 	private _privateFlags: number = PFLAG_LAYOUT_REQUIRED | PFLAG_FORCE_LAYOUT;
 	private _cachedFrame: CGRect;
-	// The position last passed to layoutNativeView, with the frame it produced: an identical layout skips the native calls.
 	private _lastLayoutPosition: { frame: CGRect; left: number; top: number; right: number; bottom: number };
-	// The frame's position, in device pixels, when layoutNativeView set it without adjusting it: layout() reads it instead of the native frame.
 	private _framePosition: Position;
 	private _pendingFramePosition: Position;
 	private _suspendCATransaction = false;
@@ -157,9 +155,7 @@ export class View extends ViewCommon {
 
 			if (this.nativeViewProtected && SDK_VERSION > 10) {
 				// on iOS 11+ it is possible to have a changed layout frame due to safe area insets
-				// get the frame and adjust the position, so that onLayout works correctly.
-				// A frame set here without adjustment is known without reading it back
-				// (a transformed view's frame is its transformed bounding box, so that one is read).
+				// get the frame and adjust the position, so that onLayout works correctly
 				position = (setFrame && !this._isTransformed && this._framePosition) || IOSHelper.getPositionFromFrame(this.nativeViewProtected.frame);
 			} else {
 				position = { left, top, right, bottom };
@@ -308,7 +304,6 @@ export class View extends ViewCommon {
 			return;
 		}
 
-		// The same position gives the same frame, which _setNativeViewFrame would leave alone.
 		const last = this._lastLayoutPosition;
 		if (last && this._isLaidOut && last.frame === this._cachedFrame && last.left === left && last.top === top && last.right === right && last.bottom === bottom) {
 			return;

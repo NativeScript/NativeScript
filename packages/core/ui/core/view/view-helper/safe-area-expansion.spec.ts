@@ -31,7 +31,6 @@ class FakeControllerView {
 	}
 }
 
-// The computation expandBeyondSafeArea made before it read positions directly.
 function expandBeyondSafeAreaBefore(view: any, frame: Rect): Rect {
 	const availableSpace = IOSHelper.getAvailableSpaceFromParent(view, frame);
 	if (!availableSpace || !availableSpace.safeArea || !availableSpace.fullscreen) {
@@ -97,7 +96,6 @@ describe('IOSHelper.expandBeyondSafeArea', () => {
 				expanded++;
 			}
 		}
-		// The cases must include frames that are expanded, not only ones left alone.
 		expect(expanded).toBeGreaterThan(200);
 	});
 

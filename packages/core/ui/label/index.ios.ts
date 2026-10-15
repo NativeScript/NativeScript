@@ -113,7 +113,6 @@ export class Label extends TextBase implements LabelDefinition {
 
 		const nativeSize = view.textRectForBoundsLimitedToNumberOfLines(CGRectMake(0, 0, widthMode === 0 /* layout.UNSPECIFIED */ ? Number.POSITIVE_INFINITY : layout.toDeviceIndependentPixels(width), heightMode === 0 /* layout.UNSPECIFIED */ ? Number.POSITIVE_INFINITY : layout.toDeviceIndependentPixels(height)), view.numberOfLines).size;
 
-		// A plain object: writing to the CGSize would go through native struct setters.
 		return {
 			width: layout.round(layout.toDevicePixels(nativeSize.width)),
 			height: layout.round(layout.toDevicePixels(nativeSize.height)),

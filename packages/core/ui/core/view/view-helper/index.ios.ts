@@ -506,10 +506,6 @@ export class IOSHelper {
 		return { left, right, top, bottom };
 	}
 
-	/**
-	 * The position `getPositionFromFrame` reads back from the frame `getFrameFromPosition` makes
-	 * for this position, computed without creating the frame.
-	 */
 	static getPositionFromFramePosition(left: number, top: number, right: number, bottom: number): Position {
 		const x = layout.toDeviceIndependentPixels(left);
 		const y = layout.toDeviceIndependentPixels(top);
@@ -617,7 +613,6 @@ export class IOSHelper {
 		const adjustedY = layout.toDeviceIndependentPixels(adjustedPosition.top);
 		const adjustedWidth = layout.toDeviceIndependentPixels(adjustedPosition.right - adjustedPosition.left);
 		const adjustedHeight = layout.toDeviceIndependentPixels(adjustedPosition.bottom - adjustedPosition.top);
-		// Nothing to expand, and the frame is already on device pixels: it is its own result.
 		if (adjustedX === x && adjustedY === y && adjustedWidth === width && adjustedHeight === height) {
 			return frame;
 		}
@@ -631,9 +626,6 @@ export class IOSHelper {
 		return adjustedFrame;
 	}
 
-	/**
-	 * `getPositionFromFrame` of a rect given by its components, without creating it.
-	 */
 	static getPositionFromRect(x: number, y: number, width: number, height: number): Position {
 		return {
 			left: layout.round(layout.toDevicePixels(x)),
@@ -643,10 +635,6 @@ export class IOSHelper {
 		};
 	}
 
-	/**
-	 * The positions of the rects `getAvailableSpaceFromParent` returns, read with as few
-	 * native calls as possible: this runs for every container whose frame changes.
-	 */
 	static getAvailablePositionsFromParent(view: View, width: number, height: number): { safeArea: Position; fullscreen: Position; inWindow: Position } {
 		if (!view) {
 			return;
@@ -696,8 +684,6 @@ export class IOSHelper {
 			return;
 		}
 
-		// We take into account the controller position inside the window.
-		// for example with a bottomsheet the controller will be "offset"
 		const locationInWindow = view.getLocationInWindow();
 		let inWindowLeft = locationInWindow.x - controllerX;
 		let inWindowTop = locationInWindow.y - controllerY;
