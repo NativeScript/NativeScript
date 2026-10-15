@@ -381,8 +381,6 @@ export class AttributeSelector extends SimpleSelector {
 		let attr = node[this.attribute];
 
 		if (this.test === 'exists') {
-			// A boolean property is present only while true, like an HTML boolean attribute:
-			// every view has `hidden`, and `[hidden]` must not match the default `false`.
 			return !isNullOrUndefined(attr) && attr !== false;
 		}
 
@@ -985,7 +983,6 @@ function appendDeclaration(declarations: Declaration[], decl: ReworkCSS.Declarat
 
 function createSimpleSelectorFromAst(ast: CSSWhatSelector): SimpleSelector {
 	if (ast.type === 'attribute') {
-		// `.x` parses as `[class~=x]`; other operators on class match the class attribute's text.
 		if (ast.name === 'class' && ast.action === 'element' && ast.ignoreCase !== true) {
 			return new ClassSelector(ast.value);
 		}
