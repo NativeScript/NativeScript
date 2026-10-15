@@ -35,26 +35,17 @@ function repairRules(rules: any[] | undefined): void {
 	}
 }
 
-// The at-rules `css` knows how to parse (its lib/parse `atrule()`).
 const PARSEABLE_AT_RULE = /^(?:(?:-[\w]+-)?(?:keyframes|document)|media|custom-media|supports|import|charset|namespace|page|host|font-face)$/i;
-// Top-level statements that have to stay ahead of every rule.
 const LEADING_AT_RULE = /^(?:charset|import|namespace|layer)$/i;
 
 interface CssItem {
 	start: number;
 	end: number;
-	/** `{` and its matching `}` (or the end of the input), for a block. */
 	open?: number;
 	close?: number;
 	children?: CssItem[];
 }
 
-/**
- * Splits `css[from..]` into statements (`…;`) and blocks (`… { … }`) up to the
- * first unmatched `}`, skipping comments, strings and escapes, and `;` inside
- * parentheses (`url(data:…;base64,…)`). Every character lands in exactly one
- * item, so the items rejoin to the original text.
- */
 function splitCssItems(css: string, from: number, nested: boolean): { items: CssItem[]; end: number } {
 	const items: CssItem[] = [];
 	let start = from;
@@ -105,7 +96,6 @@ function splitCssItems(css: string, from: number, nested: boolean): { items: Css
 	return { items, end: i };
 }
 
-/** The at-rule an item starts with, past any whitespace and comments. */
 function cssItemAtRule(css: string, item: CssItem): { name: string; prelude: string } | null {
 	const prelude = css
 		.slice(item.start, item.open ?? item.end)
@@ -115,26 +105,6 @@ function cssItemAtRule(css: string, item: CssItem): { name: string; prelude: str
 	return match ? { name: match[1].toLowerCase(), prelude: prelude.slice(match[0].length).replace(/;$/, '').trim() } : null;
 }
 
-/**
- * Rewrites the at-rules `css` can't parse into CSS it can.
- *
- * `css` reads an at-rule it doesn't know (`@layer`, `@container`,
- * `@starting-style`, `@property`, ...) as the start of a selector, and the
- * first one ends the parse: every rule after it is lost. Bootstrap 6 wraps its
- * whole stylesheet in `@layer`s, and Tailwind 4 emits `@layer` and `@property`.
- * Core's styling only reads rules, `@media` and `@keyframes` (plus `@import`),
- * so nothing it uses is in these at-rules except the rules inside `@layer`:
- *
- * - `@layer` blocks are replaced with their rules. Top-level layers are moved
- *   ahead of the unlayered rules in layer order (first mention, including
- *   `@layer a, b;`), which is how the cascade orders them: unlayered rules
- *   beat every layer, and a later layer beats an earlier one. A layer nested
- *   in another at-rule is unwrapped where it is. `@layer a, b;` is removed.
- * - Every other at-rule `css` doesn't know is removed, with its block.
- *
- * Text outside those at-rules is kept as written, and a stylesheet without
- * them is returned unchanged.
- */
 export function normalizeCssAtRules(css: string): string {
 	let foreign = false;
 	for (const match of css.matchAll(/@([-\w]+)/g)) {
@@ -147,7 +117,6 @@ export function normalizeCssAtRules(css: string): string {
 
 	const { items } = splitCssItems(css, 0, false);
 
-	// Layer order is the order of first mention, in `@layer a, b;` or a block.
 	const layerOrder: (string | symbol)[] = [];
 	const layers = new Map<string | symbol, string[]>();
 	const blockLayer = new Map<CssItem, string | symbol>();
@@ -165,7 +134,6 @@ export function normalizeCssAtRules(css: string): string {
 			.map((name) => name.trim())
 			.filter(Boolean);
 		if (item.children) {
-			// A nameless block is a layer of its own.
 			const name = names[0] ?? Symbol('anonymous layer');
 			blockLayer.set(item, name);
 			declareLayer(name);
@@ -193,7 +161,6 @@ export function normalizeCssAtRules(css: string): string {
 		return out;
 	};
 
-	// `@charset`/`@import`/`@namespace` stay first; layered rules follow.
 	let head = 0;
 	while (head < items.length && !items[head].children && LEADING_AT_RULE.test(cssItemAtRule(css, items[head])?.name ?? '')) {
 		head++;
@@ -205,11 +172,7 @@ export function normalizeCssAtRules(css: string): string {
 	return leading + '\n' + layered.join('\n') + '\n' + rest;
 }
 
-/**
- * `css`'s parse, with at-rules it can't read rewritten first (see
- * normalizeCssAtRules) and selector lists repaired (see
- * joinEscapedSelectorCommas).
- */
+/** `css`'s parse, with selector lists repaired (see joinEscapedSelectorCommas). */
 export function parseCssAst(code: string, options?: { silent?: boolean; source?: string }): any {
 	const ast: any = parse(normalizeCssAtRules(code), options);
 	repairRules(ast?.stylesheet?.rules);
