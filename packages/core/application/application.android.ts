@@ -853,11 +853,6 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 		return this.getSystemAppearanceValue(this.getConfiguration());
 	}
 
-	/**
-	 * The application's configuration. The native application exists before
-	 * run() initializes this module (the app's code runs from its onCreate), so
-	 * the traits read from it are available before the app has started.
-	 */
 	private getConfiguration(): android.content.res.Configuration {
 		return (this.context ?? this.getNativeApplication()).getResources().getConfiguration();
 	}

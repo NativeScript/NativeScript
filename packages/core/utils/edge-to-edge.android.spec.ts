@@ -23,7 +23,6 @@ describe('Android edge-to-edge setters', () => {
 		Object.assign(global, globals);
 	});
 
-	/** The dark mode handler last passed to the native enableEdgeToEdge, as a JS function. */
 	function lastHandler(): (bar: number) => boolean {
 		const args = enableEdgeToEdge.mock.calls.at(-1);
 		const handler = args.at(-1);

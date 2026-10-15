@@ -1,8 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
-// `application.android.ts` registers deferred event wiring while it loads, through a hook the
-// `NativeScriptGlobals` stub in `vitest.setup.ts` does not carry. Hoisted so it lands before
-// the imports below.
 vi.hoisted(() => {
 	(globalThis as any).NativeScriptGlobals.addEventWiring = () => {};
 });
@@ -14,7 +11,6 @@ import { ApplicationCommon } from './application-common';
 import { AndroidApplication } from './application.android';
 import { setNativeApp } from './helpers-common';
 
-/** See application-registry.spec.ts: makes the application's events observable. */
 function installApplicationEventBus(): Observable {
 	const events = new Observable();
 	const bus = (global.NativeScriptGlobals as any).events;

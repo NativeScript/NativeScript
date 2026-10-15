@@ -1030,8 +1030,6 @@ export class ApplicationCommon {
 			return;
 		}
 		this._systemAppearance = value;
-		// `autoSystemAppearanceChanged` opts out of the CSS classes only: the event
-		// still fires so apps driving their own theming can react to it.
 		if (this.autoSystemAppearanceChanged) {
 			this.systemAppearanceChanged(this.getRootView(), value);
 		}
@@ -1059,10 +1057,7 @@ export class ApplicationCommon {
 	}
 
 	/**
-	 * Updates root view classes including those of modals.
-	 * Applies them even when automatic updates are disabled with
-	 * `setAutoSystemAppearanceChanged(false)`, so an app can set its own
-	 * appearance.
+	 * Updates root view classes including those of modals
 	 * @param rootView the root view
 	 * @param newSystemAppearance the new appearance change
 	 */
