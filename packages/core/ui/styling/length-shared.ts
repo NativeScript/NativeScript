@@ -5,6 +5,25 @@ import { CoreTypes } from '../../core-types';
 import { layout } from '../../utils/layout-helper';
 import { isCssWideKeyword } from '../core/properties/property-shared';
 
+// The size of 1rem, in device-independent pixels.
+let rootFontSize = 16;
+
+/**
+ * A `rem` length in device-independent pixels, or undefined if the value is not in rem.
+ */
+function parseRem(value: string): CoreTypes.dip | undefined {
+	if (!value.endsWith('rem')) {
+		return undefined;
+	}
+
+	const rem = parseFloat(value.substring(0, value.length - 3));
+	if (isNaN(rem) || !isFinite(rem)) {
+		throw new Error(`Invalid value: ${value}`);
+	}
+
+	return rem * rootFontSize;
+}
+
 function equalsCommon(a: CoreTypes.LengthType, b: CoreTypes.LengthType): boolean;
 function equalsCommon(a: CoreTypes.PercentLengthType, b: CoreTypes.PercentLengthType): boolean;
 function equalsCommon(a: CoreTypes.PercentLengthType, b: CoreTypes.PercentLengthType): boolean {
@@ -101,6 +120,8 @@ export namespace PercentLength {
 				}
 
 				return { unit: '%', value };
+			} else if (stringValue.endsWith('rem')) {
+				return parseRem(stringValue);
 			} else if (stringValue.indexOf('px') !== -1) {
 				stringValue = stringValue.replace('px', '').trim();
 				const value: CoreTypes.px = parseFloat(stringValue);
@@ -143,6 +164,9 @@ export namespace FixedLength {
 	export function parse(fromValue: string | CoreTypes.FixedLengthType): CoreTypes.FixedLengthType {
 		if (typeof fromValue === 'string') {
 			let stringValue = fromValue.trim();
+			if (stringValue.endsWith('rem')) {
+				return parseRem(stringValue);
+			}
 			if (stringValue.indexOf('px') !== -1) {
 				stringValue = stringValue.replace('px', '').trim();
 				const value: CoreTypes.px = parseFloat(stringValue);
@@ -196,4 +220,18 @@ export namespace Length {
 	export const convertToString: {
 		(length: CoreTypes.LengthType): string;
 	} = convertToStringCommon;
+	/**
+	 * The size of 1rem in device-independent pixels: 16 unless set.
+	 */
+	export function getRootFontSize(): number {
+		return rootFontSize;
+	}
+	/**
+	 * Set the size of 1rem in device-independent pixels. Lengths parsed earlier keep their value.
+	 */
+	export function setRootFontSize(size: number): void {
+		if (size > 0 && isFinite(size)) {
+			rootFontSize = size;
+		}
+	}
 }
