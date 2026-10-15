@@ -10931,6 +10931,21 @@ ${members.join('\n')}
     return fn === type && !this.loose(x) ? `${cell}(f: ${this.expr(x)}) as ${cell}?` : `{ (__c: (${fn})?) -> ${cell}? in if let __c { return ${cell}(f: __c) } else { return nil } }(${this.expr(x)})`;
   }
 
+  /**
+   * `typeof x === 'T'` (or `'undefined'`) of a value whose Swift type allows only T or undefined (`Bool?`): whether it is
+   * there, a nil check. Null where the test is not one of presence.
+   */
+  private typeofPresence(e: ts.BinaryExpression): string | null {
+    const strip = (x: ts.Expression) => ts.skipOuterExpressions(x, ts.OuterExpressionKinds.Parentheses);
+    const [l, r] = [strip(e.left), strip(e.right)];
+    const [t, lit] = ts.isTypeOfExpression(l) && ts.isStringLiteralLike(r) ? [l, r] : ts.isTypeOfExpression(r) && ts.isStringLiteralLike(l) ? [r, l] : [null, null];
+    if (!t || !lit) return null;
+    const m = /^\((.+) == nil \? "undefined" : "(\w+)"\)$/s.exec(this.typeofExpr(t));
+    if (!m || !balanced(m[1]) || (lit.text !== 'undefined' && lit.text !== m[2])) return null;
+    const negate = e.operatorToken.kind === ts.SyntaxKind.ExclamationEqualsEqualsToken || e.operatorToken.kind === ts.SyntaxKind.ExclamationEqualsToken;
+    return `${m[1]} ${(lit.text === 'undefined') !== negate ? '==' : '!='} nil`;
+  }
+
   private equality(e: ts.BinaryExpression): string {
     const K = ts.SyntaxKind;
     const op = e.operatorToken.kind;
@@ -10942,6 +10957,8 @@ ${members.join('\n')}
     const rt = this.typeOf(b);
     const decided = this.neverNullish(e);
     if (decided !== undefined) return String(decided);
+    const presence = this.typeofPresence(e);
+    if (presence) return presence;
     // A `void` value is undefined, which Swift holds as `()`.
     const nothing = isNullish(b) && lt === 'Void' ? a : isNullish(a) && rt === 'Void' ? b : null;
     if (nothing) {
