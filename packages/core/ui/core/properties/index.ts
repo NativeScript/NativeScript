@@ -230,7 +230,7 @@ export function _evaluateCssVariableExpression(view: ViewBase, cssName: string, 
 		const cssVariableName = (commaIdx === -1 ? body : body.substring(0, commaIdx)).trim();
 		const fallback = commaIdx === -1 ? '' : body.substring(commaIdx + 1).trim();
 		let cssVariableValue = view.style.getCssVariable(cssVariableName);
-		if (cssVariableValue?.trim() === 'initial') {
+		if (typeof cssVariableValue === 'string' && cssVariableValue.trim() === 'initial') {
 			cssVariableValue = null;
 		}
 		if (cssVariableValue === null && fallback) {

@@ -117,6 +117,16 @@ function evaluateCssExpressions(view: ViewBase, property: string, value: string)
 	return value;
 }
 
+/**
+ * Evaluate a custom property's value. One that cannot be resolved is null, the
+ * guaranteed-invalid value: var() takes its fallback and the parent's value does not show through.
+ */
+function evaluateCssVariable(view: ViewBase, name: string, value: string): string | null {
+	const evaluated = evaluateCssExpressions(view, name, value);
+
+	return evaluated === unsetValue ? null : evaluated;
+}
+
 // Custom properties may refer to ones declared after them, so re-evaluate until they settle.
 function settleCssVariables(view: ViewBase, cssExpsProperties: Record<string, string>) {
 	let names: string[];
@@ -126,7 +136,7 @@ function settleCssVariables(view: ViewBase, cssExpsProperties: Record<string, st
 				names = [];
 			}
 			names.push(property);
-			view.style.setScopedCssVariable(property, evaluateCssExpressions(view, property, cssExpsProperties[property]));
+			view.style.setScopedCssVariable(property, evaluateCssVariable(view, property, cssExpsProperties[property]));
 		}
 	}
 	if (!names || names.length < 2 || !hasForwardCssVariableReference(names, cssExpsProperties)) {
@@ -136,7 +146,7 @@ function settleCssVariables(view: ViewBase, cssExpsProperties: Record<string, st
 	for (let pass = 1; pass < names.length; pass++) {
 		let changed = false;
 		for (const name of names) {
-			const value = evaluateCssExpressions(view, name, cssExpsProperties[name]);
+			const value = evaluateCssVariable(view, name, cssExpsProperties[name]);
 			if (value !== view.style.getCssVariable(name)) {
 				view.style.setScopedCssVariable(name, value);
 				changed = true;
