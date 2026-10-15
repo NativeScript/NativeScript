@@ -1201,13 +1201,14 @@ export class Translator implements AsyncTranslator {
     return !!sym && visit(d.parent.parent.parent);
   }
 
-  /** Whether code compares the variable with undefined or null (`density === undefined`). */
+  /** Whether code compares the variable with undefined or null (`density === undefined`), or tests its `typeof`. */
   private testedForUndefined(d: ts.VariableDeclaration): boolean {
     const sym = this.checker.getSymbolAtLocation(d.name);
     const nullish = (x: ts.Expression) => x.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(x) && x.text === 'undefined');
     const refers = (x: ts.Expression) => ts.isIdentifier(x) && this.checker.getSymbolAtLocation(x) === sym;
+    const typeofOf = (x: ts.Expression, other: ts.Expression) => ts.isTypeOfExpression(x) && refers(x.expression) && ts.isStringLiteralLike(other);
     const visit = (n: ts.Node): boolean => (ts.isBinaryExpression(n) && [ts.SyntaxKind.EqualsEqualsEqualsToken, ts.SyntaxKind.EqualsEqualsToken, ts.SyntaxKind.ExclamationEqualsEqualsToken, ts.SyntaxKind.ExclamationEqualsToken].includes(n.operatorToken.kind)
-      && ((refers(n.left) && nullish(n.right)) || (refers(n.right) && nullish(n.left)))) || !!ts.forEachChild(n, visit);
+      && ((refers(n.left) && nullish(n.right)) || (refers(n.right) && nullish(n.left)) || typeofOf(n.left, n.right) || typeofOf(n.right, n.left))) || !!ts.forEachChild(n, visit);
     return !!sym && visit(d.getSourceFile());
   }
 
@@ -7969,10 +7970,25 @@ export class Translator implements AsyncTranslator {
     const base = t.replace(/\?$/, '');
     if (base === 'Unit') return 'undefined';
     const known = typeofName(base);
-    if (t === 'Any?' || !known || t.endsWith('?')) return null;
-    const param = this.library && ts.isIdentifier(e.expression) ? this.resolve(e.expression)?.valueDeclaration : undefined;
-    if (param && ts.isParameter(param) && this.declaredTypeOf(e.expression as ts.Identifier) === `${t}?`) return null;
+    if (t === 'Any?' || !known || t.endsWith('?') || this.heldNullable(e.expression, t)) return null;
     return this.maybeUndefined(e.expression) ? null : known;
+  }
+
+  /**
+   * Library mode: a read the checker's types call present that Kotlin holds nullable, as unchecked code may leave it
+   * undefined (an optional parameter, an unset `let enabled: boolean`, a boolean function that returns undefined).
+   */
+  private heldNullable(e: ts.Expression, t: string): boolean {
+    if (!this.library) return false;
+    if (ts.isIdentifier(e)) {
+      if (this.declaredTypeOf(e) === `${t}?`) return true;
+      // A copy of such a call's result, which flow analysis may ask about before its declaration is translated.
+      const d = this.resolve(e)?.valueDeclaration;
+      return !!d && ts.isVariableDeclaration(d) && !!d.initializer && ts.isCallExpression(ts.skipOuterExpressions(d.initializer)) && this.heldNullable(ts.skipOuterExpressions(d.initializer), t);
+    }
+    if (!ts.isCallExpression(e)) return false;
+    const d = this.checker.getResolvedSignature(e)?.getDeclaration();
+    return !!d && !ts.isJSDocSignature(d) && this.nullablePrimitiveReturn(implementationOf(d) ?? d);
   }
 
   /**
@@ -8028,14 +8044,18 @@ export class Translator implements AsyncTranslator {
     if (t === 'Any?' || !known) return `jsTypeof(${this.expr(e.expression)})`;
     // Library mode: an optional parameter (`atIndex?: number`), which unchecked code reads as its type: undefined when left out.
     const param = this.library && ts.isIdentifier(e.expression) ? this.resolve(e.expression)?.valueDeclaration : undefined;
-    if (param && ts.isParameter(param) && !t.endsWith('?') && this.declaredTypeOf(e.expression as ts.Identifier) === `${t}?`) {
-      this.nullOk.add(e.expression);
-      try { return `jsTypeof(${this.expr(e.expression)})`; } finally { this.nullOk.delete(e.expression); }
-    }
+    if (param && ts.isParameter(param) && !t.endsWith('?') && this.declaredTypeOf(e.expression as ts.Identifier) === `${t}?`) return this.rawTypeof(e.expression);
     const maybe = this.maybeUndefined(e.expression);
     // A value that may be missing: the runtime's typeof, as a test before it may already prove it present.
     if (maybe) return `jsTypeof(${maybe})`;
+    if (!t.endsWith('?') && this.heldNullable(e.expression, t)) return this.rawTypeof(e.expression);
     return t.endsWith('?') ? `jsTypeof(${this.expr(e.expression)})` : kotlinString(known);
+  }
+
+  /** `typeof x` of a value Kotlin holds nullable, read as it is held. */
+  private rawTypeof(e: ts.Expression): string {
+    this.nullOk.add(e);
+    try { return `jsTypeof(${this.expr(e)})`; } finally { this.nullOk.delete(e); }
   }
 
   /** The 1 that `++` and `--` step a number or a BigInt by. */
@@ -8681,6 +8701,9 @@ export class Translator implements AsyncTranslator {
       if (optional.size) ts.forEachChild(fn.body, visit);
       return found;
     }
+    // `isA11yEnabled(): boolean` that says `return undefined` while it knows nothing yet. Not a method, whose
+    // overrides and supers must keep one return type.
+    if (fn.type.kind === ts.SyntaxKind.BooleanKeyword) return ts.isFunctionDeclaration(fn) && returnsNull(fn.body);
     if (!ts.isUnionTypeNode(fn.type)) return false;
     const missing = (x: ts.TypeNode) => (ts.isLiteralTypeNode(x) && x.literal.kind === ts.SyntaxKind.NullKeyword) || x.kind === ts.SyntaxKind.UndefinedKeyword;
     const rest = fn.type.types.filter((x) => !missing(x));
