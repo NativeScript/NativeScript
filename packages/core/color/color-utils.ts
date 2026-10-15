@@ -5,8 +5,33 @@ import { tokenize } from '@csstools/css-tokenizer';
 
 export const HEX_REGEX = /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)|(^#[0-9A-F]{8}$)|(^#[0-9A-F]{4}$)/i;
 
+// Color functions only @csstools/css-color-parser reads.
+const CSS_COLOR_FUNCTION_REGEX = /^(?:oklch|oklab|lab|lch|hwb|color)\(/;
+
 export function isCssColorMixExpression(value: string) {
 	return value.includes('color-mix(');
+}
+
+/**
+ * True for CSS Color 4/5 functions core's own parsers do not read: `oklch()`, `oklab()`, `lab()`, `lch()`, `hwb()` and `color()`.
+ */
+export function isCssColorFunction(value: string) {
+	return CSS_COLOR_FUNCTION_REGEX.test(value);
+}
+
+/**
+ * True for an `rgb()` or `hsl()` the fast path cannot read: a `/` alpha (which may be a percentage),
+ * `none`, a relative color (`rgb(from ...)`), or rgb percentages.
+ */
+export function isModernRgbOrHsl(value: string) {
+	return value.includes('/') || value.includes('none') || value.includes('from ') || (value.startsWith('rgb') && value.includes('%'));
+}
+
+/**
+ * Parse any CSS color with @csstools/css-color-parser, or -1 if it is not one.
+ */
+export function argbFromCssColor(value: string): number {
+	return argbFromColorMix(value);
 }
 
 export function argbFromColorMix(value: string): number {
