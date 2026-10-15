@@ -2708,18 +2708,18 @@ ${members.join('\n')}
     const pm = /^JSPromise<(.*)>$/.exec(type);
     if (pm) return `jsPromiseOf(${code}) { ${pm[1] === 'Void' ? '_ in ()' : this.presentFromAny('$0', pm[1])} }`;
     if (type === 'JSDate') return `jsDateOf(${code})`;
-    if (type === 'JSDate?') return `{ (__d: Any?) -> JSDate? in jsIsNullish(__d) ? nil : jsDateOf(__d) }(${code})`;
+    if (type === 'JSDate?') return `jsDateOrNil(${code})`;
     const om = /^JSArray<(.*)>\?$/.exec(type);
     if (om) {
       const el = this.arrayElementFromAny(om[1]);
-      return el.throws ? `try { (__a: Any?) throws -> ${type} in jsIsNullish(__a) ? nil : try jsArrayOf(__a) { ${el.code} } }(${code})` : `{ (__a: Any?) -> ${type} in jsIsNullish(__a) ? nil : jsArrayOf(__a) { ${el.code} } }(${code})`;
+      return `${el.throws ? 'try ' : ''}jsArrayOrNil(${code}${typedElement('JSArray', om[1])}, { ${el.code} })`;
     }
     const r = /^JSRecord<(.*)>\??$/.exec(type);
     // A record's values are read as its type says where they have it (a gesture's extraData holds arrays beside its numbers).
     if (r) {
       const el = this.presentFromAny('$0', r[1], true);
       const t = el.startsWith('try ') ? 'try ' : '';
-      return type.endsWith('?') ? `${t}{ (__r: Any?) ${t ? 'throws ' : ''}-> ${type} in jsIsNullish(__r) ? nil : ${t}jsRecordOf(__r${typedElement('JSRecord', r[1])}) { ${el} } }(${code})` : `${t}jsRecordOf(${code}${typedElement('JSRecord', r[1])}) { ${el} }`;
+      return type.endsWith('?') ? `${t}jsRecordOrNil(${code}, as: JSRecord<${r[1]}>.self, { ${el} })` : `${t}jsRecordOf(${code}${typedElement('JSRecord', r[1])}) { ${el} }`;
     }
     const parts = /^\((.*)\)$/.exec(type) && splitTopLevel(type.slice(1, -1));
     if (parts && parts.length > 1 && !type.includes('->')) {
@@ -2735,13 +2735,12 @@ ${members.join('\n')}
     if (this.protocols.has(base) && this.interfaces.has(base)) {
       this.used.add(base);
       // An interface classes implement: an object conforming to it as it is, any other read by its keys.
-      const make = `{ (__o: Any?) -> ${base}${type.endsWith('?') ? '?' : ''} in ${type.endsWith('?') ? 'jsIsNullish(__o) ? nil : ' : ''}(jsFlat(__o) as? ${base}) ?? ${base}Object(jsObject: __o) }`;
-      return `${make}(${code})`;
+      return type.endsWith('?') ? `jsUnlessNullish(${code}, { (jsFlat($0) as? ${base}) ?? ${base}Object(jsObject: $0) })` : `{ (__o: Any?) -> ${base} in (jsFlat(__o) as? ${base}) ?? ${base}Object(jsObject: __o) }(${code})`;
     }
     if (this.interfaces.has(base) || [...this.shapes.values()].some((s) => s.name === base)) {
       this.used.add(base);
       // The value once (it may be a call), in parentheses: a conditional binds looser than what follows it.
-      return type.endsWith('?') ? `{ (__o: Any?) -> ${base}? in jsIsNullish(__o) ? nil : ${base}(jsObject: __o) }(${code})` : `${base}(jsObject: ${code})`;
+      return type.endsWith('?') ? `jsUnlessNullish(${code}, ${base}.init(jsObject:))` : `${base}(jsObject: ${code})`;
     }
     const fn = functionParts(/^\(.*\)$/.test(base) && hasTopLevelArrow(base.slice(1, -1)) ? base.slice(1, -1) : base);
     if (fn && (type.endsWith('?') || type.endsWith(')?')) && this.functionCell(fn.text)) return this.unboxFunction(code, fn, true);
@@ -2754,10 +2753,10 @@ ${members.join('\n')}
     // A type parameter may stand for an interface: an object read untyped becomes one (`JSON.parse` of a cached `T[]`).
     if (this.genericNames.has(base)) return type.endsWith('?') ? `jsConverted(${code}, to: ${base}.self)` : checked ? `(try jsChecked(${code}, ${base}.self))` : `jsConverted(${code}, to: ${base}.self)!`;
     // A native enum or option set read untyped (`textView.returnKeyType`): the number script holds, as that type's raw value.
-    if (this.native.isEnumType(base)) return type.endsWith('?') ? `{ (__n: Any?) -> ${base}? in jsIsNullish(__n) ? nil : ${this.native.enumFromNumber('jsToNumber(__n)', base)} }(${code})` : this.native.enumFromNumber(`jsToNumber(${code})`, base);
+    if (this.native.isEnumType(base)) return type.endsWith('?') ? `jsUnlessNullish(${code}, { ${this.native.enumFromNumber('jsToNumber($0)', base)} })` : this.native.enumFromNumber(`jsToNumber(${code})`, base);
     // A geometry struct the runtime gives script as an object (`{ origin, size }`): the struct again.
     if (['CGRect', 'CGSize', 'CGPoint', 'UIEdgeInsets'].includes(base)) return type.endsWith('?') ? `jsNativeStruct(${code}, ${base}.self)` : `jsNativeStructPresent(${code}, ${base}.self)`;
-    if (this.lenient && ['String?', 'Double?', 'Bool?'].includes(type)) return `{ (__v: Any?) -> ${type} in jsIsNullish(__v) ? nil : jsLenient${base === 'Double' ? 'Number' : base}(__v) }(${code})`;
+    if (this.lenient && ['String?', 'Double?', 'Bool?'].includes(type)) return `jsLenient${base === 'Double' ? 'Number' : base}OrNil(${code})`;
     if (type.endsWith('?')) return `(${code} as? ${base})`;
     // Lenient code: an untyped value read as a string, number or boolean is converted as JavaScript would where it is used
     // (`textWrap = "true"` tests true); undefined is the type's zero.
@@ -10286,7 +10285,7 @@ ${members.join('\n')}
     const errorClass = ts.isIdentifier(callee) ? this.resolve(callee)?.valueDeclaration : undefined;
     if (errorClass && ts.isClassDeclaration(errorClass) && !errorClass.getSourceFile().isDeclarationFile && this.extendsLibError(errorClass)) {
       // An undefined message is none, as Error's constructor reads it.
-      const message = !args[0] ? '""' : this.typeOf(args[0]) === 'String' ? this.expr(args[0]) : `{ (__m: Any?) -> String in jsIsNullish(__m) ? "" : jsToString(__m) }(${this.coerce(args[0], 'Any?')})`;
+      const message = !args[0] ? '""' : this.typeOf(args[0]) === 'String' ? this.expr(args[0]) : `jsStringOrEmpty(${this.coerce(args[0], 'Any?')})`;
       return `${t}(${message})`;
     }
     if (name === 'Date' && this.isLibGlobal(callee as ts.Identifier)) {
@@ -11669,7 +11668,7 @@ function nativeResult(code: string, type: string): string {
   if (t === 'Bool' || t === 'ObjCBool') return `jsTruthy(${code})`;
   if (['Double', 'Float', 'CGFloat'].includes(t)) return `${t}(jsToNumber(${code}))`;
   if (/^U?Int(8|16|32|64)?$/.test(t)) return `jsNativeIntegerArgument(${code}, ${t}.self)`;
-  if (t === 'String') return /[?!]$/.test(type) ? `{ (__s: Any?) -> String? in jsIsNullish(__s) ? nil : jsToString(__s) }(${code})` : `jsToString(${code})`;
+  if (t === 'String') return /[?!]$/.test(type) ? `jsNativeString(${code})` : `jsToString(${code})`;
   return /[?!]$/.test(type) ? `(jsToNative(${code}) as? ${t})` : `jsNativeArgument(${code}, ${t.startsWith('any ') ? `(${t})` : t}.self)`;
 }
 

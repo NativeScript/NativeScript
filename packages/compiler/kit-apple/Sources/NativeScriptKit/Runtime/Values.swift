@@ -960,6 +960,19 @@ public func jsLenientString(_ value: Any?) -> String {
     return jsIsNullish(value) ? "" : jsToString(value)
 }
 
+/// `jsLenientBool`, `jsLenientNumber` and `jsLenientString` where the declared type is optional: undefined and null stay nil.
+public func jsLenientBoolOrNil(_ value: Any?) -> Bool? { jsIsNullish(value) ? nil : jsLenientBool(value) }
+public func jsLenientNumberOrNil(_ value: Any?) -> Double? { jsIsNullish(value) ? nil : jsLenientNumber(value) }
+public func jsLenientStringOrNil(_ value: Any?) -> String? { jsIsNullish(value) ? nil : jsLenientString(value) }
+
+/// A value's string where one must be given: undefined and null are "".
+public func jsStringOrEmpty(_ value: Any?) -> String { jsIsNullish(value) ? "" : jsToString(value) }
+
+/// An untyped value converted by `convert`, where the type it is read as is optional: undefined and null stay nil.
+public func jsUnlessNullish<T>(_ value: Any?, _ convert: (Any?) throws -> T) rethrows -> T? {
+    jsIsNullish(value) ? nil : try convert(value)
+}
+
 /// A `+` operand beside a string: ToString(ToPrimitive(value, default)).
 public func jsToStringDefault(_ value: Any?) -> String { jsToString(jsToPrimitive(value)) }
 
