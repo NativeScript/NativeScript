@@ -2363,7 +2363,7 @@ ${members.join('\n')}
   }
 
   private functionCells = new Map<string, string>();
-  /** The static members of each function cell (`script`): their bodies, each under the name it is written as. */
+  /** The static members of each function cell (`script`, `fromScript`): their bodies, each under the name it is written as. */
   private cellStatics = new Map<string, { kind: CellStatic; name: string; body: string }[]>();
 
   /**
@@ -2386,6 +2386,10 @@ ${members.join('\n')}
   private cellStaticCode(cell: string, type: string): string[] {
     return (this.cellStatics.get(cell) ?? []).flatMap(({ kind, name, body }) => {
       switch (kind) {
+        case 'fromScript': return [
+          `    static func ${name}(_ __f: Any?) -> ${type} { ${body} }`,
+          `    static func ${name}OrNil(_ __f: Any?) -> (${type})? { jsIsNullish(__f) ? nil : ${name}(__f) }`,
+        ];
         case 'script': return [
           `    static func ${name}(_ name: String, _ length: Int, _ __f: @escaping ${type}) -> JSFunctionObject { ${body} }`,
           `    static func ${name}OrNil(_ name: String, _ length: Int, _ __f: (${type})?) -> JSFunctionObject? { if let __f { return ${name}(name, length, __f) } else { return nil } }`,
@@ -2708,6 +2712,7 @@ ${members.join('\n')}
     }
     const whole = hasTopLevelArrow(type) ? functionParts(type) : null;
     // Lenient code: undefined where a function is declared stays undefined (`if (valueConverter) …`).
+    if (whole && this.lenient && this.functionCell(whole.text)) return this.unboxFunction(code, whole, true);
     if (whole && this.lenient) return this.implicit(`{ (__f: Any?) -> (${type})? in jsIsNullish(__f) ? nil : ${this.unboxFunction('__f', whole)} }(${code})`, type);
     if (whole) return this.unboxFunction(code, whole);
     const base = type.replace(/\?$/, '');
@@ -2723,6 +2728,7 @@ ${members.join('\n')}
       return type.endsWith('?') ? `{ (__o: Any?) -> ${base}? in jsIsNullish(__o) ? nil : ${base}(jsObject: __o) }(${code})` : `${base}(jsObject: ${code})`;
     }
     const fn = functionParts(/^\(.*\)$/.test(base) && hasTopLevelArrow(base.slice(1, -1)) ? base.slice(1, -1) : base);
+    if (fn && (type.endsWith('?') || type.endsWith(')?')) && this.functionCell(fn.text)) return this.unboxFunction(code, fn, true);
     if (fn) return type.endsWith('?') || type.endsWith(')?') ? `{ (__f: Any?) -> ${type} in jsIsNullish(__f) ? nil : ${this.unboxFunction('__f', fn)} }(${code})` : this.unboxFunction(code, fn);
     // A Core Foundation class casts unconditionally: `as?` to one is not a test Swift allows.
     if (/^(CG|CT|CF)[A-Z]\w*$/.test(base) && CF_CLASSES.has(base)) {
@@ -2911,7 +2917,7 @@ ${members.join('\n')}
   }
 
   /** An untyped function value called as the typed function `fn`. */
-  private unboxFunction(code: string, fn: FunctionParts): string {
+  private unboxFunction(code: string, fn: FunctionParts, orNil = false): string {
     const params = fn.params.map((p, k) => `__p${k}: ${p}`);
     const arg = (p: string, k: number) => this.convert(`__p${k}`, p.replace(/^@escaping /, ''), 'Any?');
     const call = fn.rest >= 0
@@ -2922,7 +2928,8 @@ ${members.join('\n')}
     const made = `{ (${params.join(', ')}) throws -> ${fn.result} in ${cell ? this.keeping('__i', body, fn.result) : body} }`;
     // A closure of exactly this type passes through as it is.
     if (!cell) return `{ (__f: Any?) -> ${fn.text} in (jsFlat(__f) as? ${fn.text}) ?? ${made} }(${code})`;
-    return `{ (__f: Any?) -> ${fn.text} in if let __t = jsFlat(__f) as? ${fn.text} { return __t }; let __i = JSFunctionAlias(of: __f); return jsIdentified(${cell}(f: ${made}), __i).f }(${code})`;
+    const name = this.cellStatic(cell, 'fromScript', `if let __t = jsFlat(__f) as? ${fn.text} { return __t }; let __i = JSFunctionAlias(of: __f); return jsIdentified(Self(f: ${made}), __i).f`);
+    return `${cell}.${name}${orNil ? 'OrNil' : ''}(${code})`;
   }
 
   /** A closure body that keeps `alias` alive with the closure: what makes the closure's key the alias's. */
@@ -6420,7 +6427,7 @@ ${members.join('\n')}
       if (up && balanced(up[1])) return `jsObjectRequired(${up[1]} as ${up[2]}?)`;
       return `jsObjectRequired(${inner})`;
     }
-    const cell = /^(FunctionCell_\w+)\.implicit\(/.exec(code)?.[1];
+    const cell = /^(FunctionCell_\w+)\.(?:implicit|\w*[fF]romScriptOrNil)\(/.exec(code)?.[1];
     if (cell) return `${cell}.present(${code})`;
     if (/^jsForeign\(.*\)$/s.test(code) && balanced(code.slice('jsForeign('.length, -1))) return `jsForeignPresent(${code.slice('jsForeign('.length)}`;
     if (/^jsArrayOrNil\(/.test(code)) return `jsObjectRequired(${code})`;
@@ -11649,8 +11656,8 @@ function exitsStatement(st: ts.Statement): boolean {
 
 /** `rest`: the parameter a `JSRest` type marks as a rest parameter (spelled `JSArray` in `params`), else -1. */
 interface FunctionParts { text: string; params: string[]; result: string; rest: number }
-/** What a function cell's static member does: box a typed closure as a script function (`script`). */
-type CellStatic = 'script';
+/** What a function cell's static member does: box a typed closure as a script function (`script`), or call a script function as a typed closure (`fromScript`). */
+type CellStatic = 'script' | 'fromScript';
 
 /** `(A, B) throws -> R` split into its parameter and result types; null for any other type. */
 export function functionParts(type: string): FunctionParts | null {
