@@ -1,50 +1,53 @@
-# @nativescript/compiler
+# @nativescript/compiler (alpha)
 
-Compiles a NativeScript app (Angular, Vue, React, Svelte, Solid or Octane on `@nativescript/core`) to Swift for iOS and
-Kotlin for Android, with no JavaScript runtime in the release. The NativeScript CLI runs it for
-`ns build ios --compiled` and `ns build android --compiled`; app developers never call it directly.
+Compiles a NativeScript app and `@nativescript/core` to Swift (iOS) and Kotlin (Android) for release builds, with no
+JavaScript runtime in the shipped app. The NativeScript CLI runs it; you don't call it directly.
 
-User documentation: [Compiled releases](https://docs.nativescript.org/guide/publishing/compiled).
-
-## What is in this package
-
-| Folder | What it is |
-| --- | --- |
-| `src/` | The compiler: framework front ends, the TypeScript-to-Swift and TypeScript-to-Kotlin translators, plugin handling, project generation |
-| `kit-apple/` | NativeScriptKit for Apple platforms, a Swift package every compiled iOS app links: the JavaScript-semantics runtime, signals, the bridges, and `Core/`, which is `@nativescript/core` compiled to Swift |
-| `kit-android/` | NativeScriptKit for Android, a Gradle project (core's platform layer ported to Kotlin; generation from core comes next) |
-| `bin/` | `ns-native` (what the CLI runs) and `ns-native-retrace` (Android stack traces in source lines) |
-| `tests/` | The differential tests: each case runs under Node and as compiled Swift and Kotlin, and the output must match |
-| `docs/` | `REFERENCE.md` (how the compiler works and what it supports), `CLI.md` (the CLI integration), `KIT-FROM-CORE.md` (generating the kit from core) |
-
-## The kit is generated from core
-
-`kit-apple/Sources/NativeScriptKit/Core` is never committed. It is generated from this repository's `packages/core`
-and `packages/types-ios` by `tools/native-kit`, which runs this package's compiler over core's TypeScript:
+## Install
 
 ```bash
-npx nx run compiler:kit      # builds core, then generates the kit's Core
+npm install -g nativescript@alpha
+
+# in your project
+npm install @nativescript/core@alpha
+npm install --save-dev @nativescript/compiler@alpha
 ```
 
-A published `@nativescript/compiler` carries the kit generated from one core release, and has that release's
-version: every core release tag (`{version}-core`) publishes it (`.github/workflows/npm_release_compiler.yml`).
+The CLI, `@nativescript/core` and `@nativescript/compiler` must be the same version: the build stops if your core is
+not the one this compiler was made from. You need Node.js 20+, Xcode 26+ for iOS, and JDK 17+ with the Android SDK
+for Android.
 
-## Develop
-
-Node.js 23.6 or newer (the compiler runs its TypeScript sources directly), Xcode for iOS.
+## Use
 
 ```bash
-npx nx run compiler:deps     # the compiler's and the tests' dependencies
-npx nx run compiler:kit      # generate the kit from core
-npx nx run compiler:test     # differential tests; add -- --swift or -- --kotlin for one platform
-npx nx run compiler:pack     # the npm tarball, kit included, in dist/packages
+ns run ios --compiled                                # build, install and launch on a simulator
+ns build ios --compiled --for-device --team-id <id>  # signed archive and .ipa
+ns run android --compiled --key-store-path <file> --key-store-password <pw> \
+  --key-store-alias <alias> --key-store-alias-password <pw>
 ```
 
-Compile an app with this checkout:
+`--compiled` implies `--release`, and an Android release must be signed, so Android needs all four `--key-store-*`
+options. To compile every release, set `release: { compiled: true }` in `nativescript.config.ts`. The generated
+projects are in `platforms/compiled/ios` and `platforms/compiled/android`; the build prints where the `.app`, `.ipa`,
+`.apk` or `.aab` is.
 
-```bash
-node packages/compiler/src/cli.ts <app folder> --out <folder>     # then xcodegen generate and xcodebuild, or Gradle
-```
+Plain TypeScript with XML, Angular, Vue and Svelte apps are compared screen by screen against their JavaScript
+releases. React, Solid and Octane compile through the same pipeline but are not in those comparisons yet.
 
-Real apps, compared pixel by pixel against their NativeScript Release builds, live outside this repository in
-NativeScript/swiftui-live (`native-release/`), which runs this package from a checkout (`NS_COMPILER`).
+## When something fails
+
+- `ns compiled report ios` (or `android`) turns a failed build or a runtime error into a NativeScript issue; it shows
+  you the report and asks before sending anything.
+- `--no-compiled` builds that release on the JavaScript runtime, so you can still ship.
+
+## Links
+
+- [Getting started](https://docs.nativescript.org/guide/publishing/compiled-getting-started)
+- [What works](https://docs.nativescript.org/guide/publishing/compiled-differences): frameworks, plugins,
+  [JavaScript coverage](https://docs.nativescript.org/guide/publishing/compiled-differences#javascript-coverage) and
+  known differences
+- [Issues](https://github.com/NativeScript/NativeScript/issues?q=label%3Acompiled)
+
+## License
+
+Apache-2.0. Working on the compiler itself: [docs/CONTRIBUTING.md](https://github.com/NativeScript/NativeScript/blob/main/packages/compiler/docs/CONTRIBUTING.md).
