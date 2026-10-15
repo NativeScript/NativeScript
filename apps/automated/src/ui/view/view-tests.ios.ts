@@ -141,7 +141,6 @@ export function test_swapping_touch_listener_keeps_native_recognizer() {
 		layout.on('touch', first);
 		const recognizer = nativeView.gestureRecognizers.lastObject;
 
-		// Renderers swap handlers like this on every render, often mid-gesture.
 		layout.off('touch', first);
 		layout.on('touch', second);
 		TKUnit.waitUntilReady(() => false, 0.1, false);

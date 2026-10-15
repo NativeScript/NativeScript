@@ -1086,7 +1086,6 @@ export function test_swapping_gesture_listener_reuses_observer() {
 		layout.on('pan', first);
 		const observer = layout.getGestureObservers(GestureTypes.pan)[0];
 
-		// Renderers swap handlers like this on every render, often mid-gesture.
 		layout.off('pan', first);
 		layout.on('pan', second);
 

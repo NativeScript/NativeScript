@@ -14,7 +14,6 @@ class FakeRecognizer {
 	}
 }
 
-// A loaded view whose native view records the recognizers core adds and removes.
 function loadedView() {
 	const view = new StackLayout();
 	const added: FakeRecognizer[] = [];
@@ -33,7 +32,6 @@ describe('gesture listeners', () => {
 
 	beforeAll(() => {
 		(global as any).UITapGestureRecognizer = { alloc: () => new FakeRecognizer() };
-		// Let recognizer targets (NSObject subclasses) be created as themselves.
 		NSObject.new = function () {
 			return new this();
 		};
@@ -106,7 +104,6 @@ describe('gesture listeners', () => {
 		expect(disconnect).toHaveBeenCalledTimes(1);
 		expect(removed).toEqual(added);
 
-		// A later listener gets a fresh recognizer.
 		view.on('tap', listener);
 		expect(added).toHaveLength(2);
 	});

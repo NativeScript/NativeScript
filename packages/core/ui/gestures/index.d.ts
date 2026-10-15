@@ -45,10 +45,7 @@ export class GesturesObserver {
 	 */
 	context: any;
 
-	/**
-	 * Points the observer at another listener while keeping its native
-	 * recognizer, so the new listener receives a gesture already in progress.
-	 */
+	/** Points the observer at another listener while keeping its native recognizer. */
 	_setCallback(callback: (args: GestureEventData) => void, context?: any): void;
 
 	/**
