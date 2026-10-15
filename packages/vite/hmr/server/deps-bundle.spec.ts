@@ -199,6 +199,13 @@ describe('collectDepsModuleExportInfo', () => {
 		expect(info.hasDefault).toBe(false);
 	});
 
+	it('reads a minified one-line .mjs as ESM (clsx shape)', () => {
+		const abs = write('min/clsx.mjs', `function r(e){return e}export function clsx(){return r(arguments[0])}export default clsx;`);
+		const info = collectDepsModuleExportInfo(abs, 'ios');
+		expect(info.names).toEqual(['clsx']);
+		expect(info.hasDefault).toBe(true);
+	});
+
 	it('flags UMD factories with no static export names as opaque CJS', () => {
 		const abs = write('umd.js', `!function(e,t){"object"==typeof exports?module.exports=t():e.lib=t()}(this,function(){return {}});\n`);
 		const info = collectDepsModuleExportInfo(abs, 'ios');
@@ -595,18 +602,53 @@ describe('createDepsBundleService', () => {
 		expect(cjsShim).toContain('export const eTwo = ');
 	});
 
-	it('serves a default-only shim for bundled opaque CJS (no static export names)', async () => {
-		// pkg-b is `module.exports = { b: 1 }` — statically opaque. Its bundled
-		// namespace is `{ default: { b: 1 } }`, so the shim re-exports exactly
-		// that. Falling through to the per-module transform here would evaluate
-		// the package a SECOND time (the moment-timezone realm split from the
-		// §4.4 flag-on qualification).
+	it('serves a shim for bundled opaque CJS (no static export names), with the names it has when loaded', async () => {
+		// pkg-b is `module.exports = { b: 1 }` — statically opaque. Falling
+		// through to the per-module transform here would evaluate the package a
+		// SECOND time (the moment-timezone realm split from the §4.4 flag-on
+		// qualification). esbuild's `import *` gives its bundled namespace
+		// `default` plus a copy of each `module.exports` property.
 		const service = makeService();
 		await service.ensureBuilt();
 		const shim = service.getShimForSpec('/node_modules/pkg-b/index.js');
 		expect(shim).toContain(`import "${DEPS_BUNDLE_PATH}";`);
 		expect(shim).toContain('export default __ns_dep_ns__.default;');
-		expect(shim).not.toContain('export const ');
+		expect(shim).toContain('export const b = __ns_dep_ns__.b;');
+	});
+
+	it('exports the names of CJS and minified ESM entries a line scan cannot see (react, clsx)', async () => {
+		const root = mkdtempSync(path.join(realpathSync(tmpdir()), 'ns-deps-named-'));
+		try {
+			const write = (rel: string, contents: string) => {
+				mkdirSync(path.dirname(path.join(root, rel)), { recursive: true });
+				writeFileSync(path.join(root, rel), contents);
+			};
+			write('package.json', JSON.stringify({ name: 'fixture-app', version: '1.0.0' }));
+			write('node_modules/react-like/package.json', JSON.stringify({ name: 'react-like', version: '1.0.0', main: 'index.js' }));
+			write('node_modules/react-like/index.js', `if (process.env.NODE_ENV === 'production') {\n  module.exports = require('./cjs/react.production.js');\n} else {\n  module.exports = require('./cjs/react.development.js');\n}\n`);
+			write('node_modules/react-like/cjs/react.production.js', `exports.Fragment = Symbol.for('react.fragment');\nexports.createElement = () => null;\n`);
+			write('node_modules/react-like/cjs/react.development.js', `exports.Fragment = Symbol.for('react.fragment');\nexports.createElement = () => null;\n`);
+			write('node_modules/clsx-like/package.json', JSON.stringify({ name: 'clsx-like', version: '1.0.0', exports: { '.': { import: './dist/clsx.mjs', default: './dist/clsx.js' } } }));
+			write('node_modules/clsx-like/dist/clsx.mjs', `function r(e){return e}export function clsx(){return r(arguments[0])}export default clsx;`);
+			write('node_modules/clsx-like/dist/clsx.js', `function clsx(){}module.exports = clsx;module.exports.clsx = clsx;`);
+			const service = createDepsBundleService({
+				projectRoot: root,
+				platform: 'ios',
+				mode: 'development',
+				flavor: 'typescript',
+				getRecordedPaths: () => ['/ns/m/node_modules/react-like/index.js', '/ns/m/node_modules/clsx-like/dist/clsx.mjs'],
+			});
+			await service.ensureBuilt();
+			const reactShim = service.getShimForSpec('/node_modules/react-like/index.js');
+			expect(reactShim).toContain('export const Fragment = __ns_dep_ns__.Fragment;');
+			expect(reactShim).toContain('export const createElement = __ns_dep_ns__.createElement;');
+			expect(reactShim).toContain('export default __ns_dep_ns__.default;');
+			const clsxShim = service.getShimForSpec('/node_modules/clsx-like/dist/clsx.mjs');
+			expect(clsxShim).toContain('export const clsx = __ns_dep_ns__.clsx;');
+			expect(clsxShim).toContain('export default __ns_dep_ns__.default;');
+		} finally {
+			rmSync(root, { recursive: true, force: true });
+		}
 	});
 
 	it('falls through to per-module serving for unbundled and non-node_modules specs', async () => {
