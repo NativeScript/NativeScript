@@ -7220,8 +7220,10 @@ ${members.join('\n')}
       decl = d;
     } else if (ts.isPropertyAccessExpression(x) || ts.isIdentifier(x)) {
       if (ts.isIdentifier(x) && ts.isPropertyAccessExpression(x.parent) && x.parent.name === x) return false;
-      const d = this.resolve(ts.isPropertyAccessExpression(x) ? x.name : x)?.valueDeclaration;
-      if (!d || !(ts.isPropertyDeclaration(d) || (ts.isVariableDeclaration(d) && ts.isSourceFile(d.parent.parent.parent))) || (ts.isPropertyDeclaration(d) && this.inNativeClass(d))) return false;
+      const sym = this.resolve(ts.isPropertyAccessExpression(x) ? x.name : x);
+      // A getter lenient code declares gives what its type does, held optional as its fields are.
+      const d = (ts.isPropertyAccessExpression(x) && !isWriteTarget(x) ? sym?.declarations?.find(ts.isGetAccessorDeclaration) : undefined) ?? sym?.valueDeclaration;
+      if (!d || !(ts.isPropertyDeclaration(d) || ts.isGetAccessorDeclaration(d) || (ts.isVariableDeclaration(d) && ts.isSourceFile(d.parent.parent.parent))) || ((ts.isPropertyDeclaration(d) || ts.isGetAccessorDeclaration(d)) && this.inNativeClass(d))) return false;
       decl = d;
     } else return false;
     const file = decl.getSourceFile();
