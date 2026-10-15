@@ -33,6 +33,17 @@ function wrapsWhole(code: string): boolean {
   return depth === 0 && !/ \?: /.test(code.replace(/\([^()]*\)/g, ''));
 }
 
+/** Whether code is one expression: its brackets balance with none closing before its end, and no `;` between them. */
+function oneExpression(code: string): boolean {
+  let depth = 0;
+  for (const ch of code) {
+    if ('({['.includes(ch)) depth++;
+    else if (')}]'.includes(ch) && --depth < 0) return false;
+    else if (ch === ';' && depth === 0) return false;
+  }
+  return depth === 0;
+}
+
 /** A Kotlin type with type parameters replaced (`JSArray<T>` with T as Label). */
 function substituteTypes(type: string, args: Map<string, string>): string {
   let out = type;
@@ -1976,7 +1987,8 @@ export class Translator implements AsyncTranslator {
       return `        ${m.key ?? kotlinString(m.name)} -> jsFunction ${lambda(['__a'], m.ret === 'Unit' ? `${call}; null` : call)}`;
     };
     return [
-      `    override val jsKeys: List<String> get() = ${[inherits ? 'super.jsKeys' : '', ...keys].filter(Boolean).join(' + ') || 'listOf()'}`,
+      // A subclass adding no keys has its superclass's.
+      ...(inherits && !keys.length ? [] : [`    override val jsKeys: List<String> get() = ${[inherits ? 'super.jsKeys' : '', ...keys].filter(Boolean).join(' + ') || 'listOf()'}`]),
       ...(symbols.length ? [`    override val jsSymbolKeys: List<String> get() = listOf(${symbols.map((f) => f.key).join(', ')})`] : []),
       `    override val jsClassName: String? get() = ${className ? kotlinString(className) : 'null'}`,
       `    override fun jsGet(key: String): Any? = when (key) {`,
@@ -2182,7 +2194,7 @@ export class Translator implements AsyncTranslator {
       const given = this.baseParamNames.get(p) ?? name;
       const closure = ts.isArrowFunction(fn) || ts.isFunctionExpression(fn) || (ts.isMethodDeclaration(fn) && ts.isObjectLiteralExpression(fn.parent));
       // A parameter the body assigns is a variable of its own (Kotlin parameters are constants).
-      const assigned = ts.isIdentifier(p.name) && !!(fn as ts.FunctionLikeDeclaration).body && assignsTo((fn as ts.FunctionLikeDeclaration).body!, this.checker.getSymbolAtLocation(p.name), this.checker);
+      const assigned = ts.isIdentifier(p.name) && !!(fn as ts.FunctionLikeDeclaration).body && assignsTo((fn as ts.FunctionLikeDeclaration).body!, this.checker.getSymbolAtLocation(p.name), this.checker, (e) => this.staticTruth(e));
       if (p.initializer && !this.templateParams && (closure || !this.isConstant(p.initializer))) {
         const t = this.typeOf(p.name);
         // Library mode: NaN is how a number slot carries undefined (`return index` of an unset `index?: number`), which the default fills in for.
@@ -4326,7 +4338,8 @@ export class Translator implements AsyncTranslator {
       return '';
     }
     if (this.lambdaReturn && ts.isReturnStatement(s)) code = code.replace(/(^|\n)(\s*)return\b(?!@)/g, `$1$2return@${this.lambdaReturn}`);
-    return code && this.lines ? this.lines.mark(s) + code : code;
+    // A block's statements in place carry their own lines.
+    return code && this.lines && !code.startsWith('/*@ns:') ? this.lines.mark(s) + code : code;
   }
 
   private statementCode(s: ts.Statement): string {
@@ -4471,6 +4484,8 @@ export class Translator implements AsyncTranslator {
       }
       return i + (isBreak ? 'break' : 'continue');
     }
+    // A block declaring nothing needs no scope of its own: its statements, in place.
+    if (ts.isBlock(s) && !s.statements.some((x) => ts.isVariableStatement(x) || ts.isFunctionDeclaration(x) || ts.isClassDeclaration(x))) return this.statements([...s.statements]).join('\n');
     if (ts.isBlock(s)) return `${i}run ${this.block(s)}`;
     if (ts.isEmptyStatement(s)) return '';
     if (ts.isSwitchStatement(s)) return this.switchStatement(s);
@@ -5001,7 +5016,10 @@ export class Translator implements AsyncTranslator {
     if (ts.isBinaryExpression(e) && e.operatorToken.kind === ts.SyntaxKind.CommaToken) return `${this.exprStatement(e.left)}; ${this.exprStatement(e.right)}`;
     if (ts.isVoidExpression(e)) return this.exprStatement(e.expression);
     if (ts.isBinaryExpression(e) && e.operatorToken.kind === ts.SyntaxKind.EqualsToken && !this.subst.has(e)) return this.binary(e);
-    return this.expr(e);
+    const code = this.expr(e);
+    // A value converted to nothing (`run { call(); Unit }`) where nothing reads it: what gives the value, alone.
+    const inner = ts.isCallExpression(e) && code.startsWith('run { ') && code.endsWith('; Unit }') ? code.slice(6, -8) : null;
+    return inner && oneExpression(inner) ? inner : code;
   }
 
   /** Whether a destructuring assignment's source is read by key, as script holds it. */
@@ -9266,8 +9284,11 @@ function withoutDefault(text: string): string {
   return text;
 }
 
-/** Whether code assigns to a symbol (`x = …`, `x += …`, `x++`). */
-function assignsTo(node: ts.Node, sym: ts.Symbol | undefined, checker: ts.TypeChecker): boolean {
+/**
+ * Whether code assigns to a symbol (`x = …`, `x += …`, `x++`). `truth`: what a condition always is, where the
+ * translation leaves out the branch that never runs.
+ */
+function assignsTo(node: ts.Node, sym: ts.Symbol | undefined, checker: ts.TypeChecker, truth?: (e: ts.Expression) => boolean | undefined): boolean {
   if (!sym) return false;
   let found = false;
   // A name, or a destructuring pattern (`[a, b] = …`, `({ a } = …)`) naming it.
@@ -9284,6 +9305,13 @@ function assignsTo(node: ts.Node, sym: ts.Symbol | undefined, checker: ts.TypeCh
     if (ts.isBinaryExpression(n) && n.operatorToken.kind >= ts.SyntaxKind.FirstAssignment && n.operatorToken.kind <= ts.SyntaxKind.LastAssignment && target(n.left)) { found = true; return; }
     if ((ts.isForOfStatement(n) || ts.isForInStatement(n)) && !ts.isVariableDeclarationList(n.initializer) && target(n.initializer)) { found = true; return; }
     if ((ts.isPrefixUnaryExpression(n) || ts.isPostfixUnaryExpression(n)) && [ts.SyntaxKind.PlusPlusToken, ts.SyntaxKind.MinusMinusToken].includes(n.operator) && target(n.operand)) { found = true; return; }
+    const fixed = truth && ts.isIfStatement(n) ? truth(n.expression) : undefined;
+    if (fixed !== undefined) {
+      const live = fixed ? (n as ts.IfStatement).thenStatement : (n as ts.IfStatement).elseStatement;
+      visit((n as ts.IfStatement).expression);
+      if (live) visit(live);
+      return;
+    }
     ts.forEachChild(n, visit);
   };
   visit(node);
