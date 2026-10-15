@@ -66,9 +66,7 @@ const tagToScopeTag: Map<string | number, string> = new Map();
 let currentScopeTag: string = null;
 
 const animationsSymbol = Symbol('animations');
-// Set on a ruleset whose animation declarations use var(): its animations are resolved per view.
 const animationVariablesSymbol = Symbol('animationVariables');
-// Set on an animation whose keyframes use var(): the raw keyframes, resolved per view.
 const keyframeVariablesSymbol = Symbol('keyframeVariables');
 
 function isAnimationDeclaration(declaration: { property: string }): boolean {
@@ -79,9 +77,6 @@ function keyframesUseVariables(keyframes: Keyframes): boolean {
 	return keyframes.keyframes.some((keyframe) => keyframe.declarations.some((declaration) => typeof declaration.value === 'string' && isCssVariableExpression(declaration.value)));
 }
 
-/**
- * Convert keyframes, or null if a value cannot be: one bad keyframe must not stop the stylesheet.
- */
 function keyframesArrayFromCSS(keyframes: Keyframes, view?: ViewBase): KeyframeInfo[] | null {
 	let unparsed = keyframes.keyframes;
 	if (view) {
@@ -866,9 +861,6 @@ export class CssState {
 		}
 	}
 
-	/**
-	 * The ruleset's animations, with the variables in their declarations resolved for this view.
-	 */
 	private resolveAnimationVariables(ruleset: RuleSet): KeyframeAnimationInfo[] {
 		const view = this.viewRef.get();
 		const scope = view?._styleScope;
@@ -887,9 +879,6 @@ export class CssState {
 		return animations;
 	}
 
-	/**
-	 * A copy of the animation with its keyframes' variables resolved for this view.
-	 */
 	private resolveKeyframeVariables(animation: KeyframeAnimationInfo): KeyframeAnimationInfo {
 		const view = this.viewRef.get();
 		const resolved = Object.assign(new KeyframeAnimationInfo(), animation);
@@ -1373,10 +1362,6 @@ export class StyleScope {
 		}
 	}
 
-	/**
-	 * Give the animation the keyframes of its name. Keyframes that use variables are kept
-	 * unparsed, for each view to resolve.
-	 */
 	public _applyKeyframes(animation: KeyframeAnimationInfo): void {
 		const keyframeRule = this.findKeyframeRule(animation.name);
 		if (keyframeRule && keyframesUseVariables(keyframeRule)) {
