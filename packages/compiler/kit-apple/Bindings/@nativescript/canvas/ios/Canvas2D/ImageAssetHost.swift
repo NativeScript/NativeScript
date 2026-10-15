@@ -5,7 +5,7 @@ import CanvasNative
 /// `ImageAsset`: an image the 2D context draws, loaded from a URL, a file or bytes. The
 /// callback forms load off the main thread and call back on it with whether they loaded.
 final class ImageAssetHost: CanvasHost {
-    let asset: OpaquePointer?
+    nonisolated(unsafe) let asset: OpaquePointer?
 
     override class var className: String? { "ImageAsset" }
     override class var methods: Set<String> {
@@ -102,7 +102,7 @@ final class ImageAssetHost: CanvasHost {
 
 /// `ImageBitmap`, which `createImageBitmap` makes. Constructed by script, it has no image.
 final class ImageBitmapHost: CanvasHost {
-    let asset: OpaquePointer?
+    nonisolated(unsafe) let asset: OpaquePointer?
     private var closed = false
 
     override class var className: String? { "ImageBitmap" }

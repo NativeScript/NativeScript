@@ -6,6 +6,7 @@ import NativeScriptKit
 /// function that calls it.
 class CanvasHost: JSHostObject {
     // Declared, not implied, so the subclasses' initializers and deinitializers override them with the same isolation in either language mode.
+    // A nonisolated deinit may read only what is not main-actor state: the native handles subclasses release there are `nonisolated(unsafe)`.
     init() {}
     nonisolated deinit {}
 

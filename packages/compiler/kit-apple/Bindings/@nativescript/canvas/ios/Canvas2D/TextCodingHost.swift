@@ -13,7 +13,7 @@ private func encodingLabel(_ args: Args, _ className: String) throws -> String {
 
 /// `TextEncoder`.
 final class TextEncoderHost: CanvasHost {
-    let encoder: OpaquePointer?
+    nonisolated(unsafe) let encoder: OpaquePointer?
 
     override class var className: String? { "TextEncoder" }
     override class var methods: Set<String> { ["encode"] }
@@ -42,7 +42,7 @@ final class TextEncoderHost: CanvasHost {
 
 /// `TextDecoder`. The C API decodes by the label it was made with and gives the text as UTF-8.
 final class TextDecoderHost: CanvasHost {
-    let decoder: OpaquePointer?
+    nonisolated(unsafe) let decoder: OpaquePointer?
 
     override class var className: String? { "TextDecoder" }
     override class var methods: Set<String> { ["decode", "decodeAsync"] }
