@@ -492,7 +492,8 @@ export class CoreKotlin implements KotlinCore {
         const ps = Array.from({ length: arity }, (_, k) => `__s${k}`);
         return `{ ${ps.map((p) => `${p}: Any?`).join(', ')} -> ${recv}.${name}(${ps.join(', ')}) }`;
       }
-      if (owner.isStatic) return `${recv}.Companion::${name}`;
+      // A Kotlin object's own function is referenced on the object; a class's static, on its companion.
+      if (owner.isStatic) return (this.index.get(owner.name) as KitType & { object?: boolean } | undefined)?.object ? `${recv}::${name}` : `${recv}.Companion::${name}`;
       return recv.endsWith('?') ? `${recv.slice(0, -1)}?.let { __r -> __r::${name} }` : `${recv}::${name}`;
     }
     return this.fromKit(`${recv}.${name}`, m.type, t.typeOf(e), t.nullTolerant(e));

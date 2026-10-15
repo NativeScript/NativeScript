@@ -5797,7 +5797,9 @@ export class Translator implements AsyncTranslator {
     if (timerValue && !(ts.isCallExpression(e.parent) && e.parent.expression === e) && !ts.isTypeOfExpression(e.parent)) {
       const decls = this.resolve(e)?.declarations ?? [];
       const global = (d: ts.Node) => d.getSourceFile().isDeclarationFile && (!ts.isExternalModule(d.getSourceFile()) || !!ts.findAncestor(d, (n) => ts.isModuleDeclaration(n) && n.name.text === 'global'));
-      if (decls.every(global)) return timerValue;
+      // Where a typed function is wanted (`pending.forEach(clearTimeout)`), the runtime's function itself.
+      const typed = (e.text === 'clearTimeout' || e.text === 'clearInterval') && !!this.checker.getContextualType(e)?.getCallSignatures().length;
+      if (decls.every(global)) return typed ? `::js${e.text[0].toUpperCase()}${e.text.slice(1)}` : timerValue;
     }
     const name = e.text;
     if (this.isArguments(e)) {
