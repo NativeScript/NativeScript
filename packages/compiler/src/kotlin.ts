@@ -5608,6 +5608,8 @@ export class Translator implements AsyncTranslator {
       const to = this.typeOf(e);
       const shared = this.uncheckedCast(e);
       if (shared) return cast(this.expr(e.expression), shared);
+      const wider = from === 'Any?' ? this.widenedAssertion(e) : null;
+      if (wider) return this.fromAny(this.expr(e.expression), isNullable(to) ? optionalType(wider) : wider);
       // The assertion is erased in JavaScript: where Kotlin needs the type, the value is converted as script converts it there.
       if (!this.library && from === 'Any?' && ['String', 'Double', 'Boolean'].includes(to)) return `jsAsserted${to === 'Double' ? 'Number' : to}(${this.expr(e.expression)})`;
       if (from === 'Any?' && to !== 'Any?') return this.fromAny(this.expr(e.expression), to);
@@ -6379,7 +6381,18 @@ export class Translator implements AsyncTranslator {
   private assertedOptional(e: ts.AsExpression | ts.TypeAssertion): string {
     const t = this.typeOf(e), code = this.expr(e.expression);
     if (['String', 'Double', 'Boolean'].includes(t)) return `jsAsserted${t === 'Double' ? 'Number' : t}OrNull(${code})`;
-    return this.fromAny(code, optionalType(t));
+    return this.fromAny(code, optionalType(this.widenedAssertion(e) ?? t));
+  }
+
+  /**
+   * The class above the asserted one that the variable `e` initializes is held as (`view.android as
+   * android.widget.ScrollView` kept as a View, a NestedScrollView at run time): what the value is checked as, since
+   * script never checks the assertion.
+   */
+  private widenedAssertion(e: ts.AsExpression | ts.TypeAssertion | ts.SatisfiesExpression): string | null {
+    if (this.library) return null;
+    const holder = ts.findAncestor(e.parent, (p) => !ts.isParenthesizedExpression(p));
+    return holder && ts.isVariableDeclaration(holder) ? this.widerAsserted(holder) : null;
   }
 
   private maybeUndefined(e: ts.Expression): string | null {
