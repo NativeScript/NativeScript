@@ -1886,8 +1886,13 @@ export class Translator implements AsyncTranslator {
     // An optional member set after the object is made becomes its last key, as a property JavaScript adds does.
     const symbolic = allFields.some((f) => f.symbol);
     const tracked = new Set(symbolic ? [] : optional.filter((f) => !overrides?.has(f.name) && !jvmField(f) && this.membersSetLater().has(f.name)).map((f) => f.name));
-    const params = [...fields, ...allFields.filter((f) => f.symbol)].map((f) => `${tracked.has(f.name) ? '' : `${overrides?.has(f.name) ? 'override ' : jvmField(f) ? '@JvmField ' : ''}var `}${ident(f.name)}: ${f.type}${isNullable(f.type) ? ' = null' : ''}`);
+    const modifiers = (f: ShapeField) => (overrides?.has(f.name) ? 'override ' : jvmField(f) ? '@JvmField ' : '');
+    // A literal stores what it is given, undefined included (`{ …, view } as ItemEventData` before the view exists). Kotlin
+    // checks a non-null constructor parameter at the call, so such a field is set from a nullable one inside the class.
+    const loose = (f: ShapeField) => !this.library && !tracked.has(f.name) && !isNullable(f.type) && this.zero(f.type) === null && f.type !== 'Unit' && !this.isTypeParameterName(f.type);
+    const params = [...fields, ...allFields.filter((f) => f.symbol)].map((f) => (loose(f) ? `${ident(f.name)}: ${optionalType(f.type)}` : `${tracked.has(f.name) ? '' : `${modifiers(f)}var `}${ident(f.name)}: ${f.type}${isNullable(f.type) ? ' = null' : ''}`));
     const lines = [`class ${name}(${[...params, `${tracked.size ? '' : 'private val '}jsOrder: List<String>? = null`].join(', ')}) : ${[implementing ?? 'JSDynamic', ...protocols.map((x) => x.conformance)].join(', ')} {`];
+    for (const f of [...fields, ...allFields.filter((f) => f.symbol)]) if (loose(f)) lines.push(`    ${modifiers(f)}var ${ident(f.name)}: ${f.type} = jsUnchecked(${ident(f.name)})`);
     for (const x of protocols) lines.push(...x.lines);
     if (symbolic) {
       lines.push(...this.dynamicMembers(fields, className, false), '}');
