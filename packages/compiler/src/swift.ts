@@ -2881,7 +2881,7 @@ ${members.join('\n')}
     if (this.interfaces.has(base) || [...this.shapes.values()].some((s) => s.name === base)) {
       this.used.add(base);
       // The value once (it may be a call), in parentheses: a conditional binds looser than what follows it.
-      return type.endsWith('?') ? `jsUnlessNullish(${code}, ${base}.init(jsObject:))` : `${base}(jsObject: ${code})`;
+      return type.endsWith('?') ? `jsUnlessNullish(${code}, { ${base}(jsObject: $0) })` : `${base}(jsObject: ${code})`;
     }
     const fn = functionParts(/^\(.*\)$/.test(base) && hasTopLevelArrow(base.slice(1, -1)) ? base.slice(1, -1) : base);
     if (fn && (type.endsWith('?') || type.endsWith(')?')) && this.functionCell(fn.text)) return this.unboxFunction(code, fn, true);
@@ -7952,7 +7952,7 @@ ${members.join('\n')}
       // A record's entry reads back optional, though TypeScript types it as the value.
       const entry = ts.isElementAccessExpression(e.left) && this.typeOf(e.left.expression).replace(/\?$/, '').startsWith('JSRecord<') && t !== 'Any?' && !isOptional(t);
       const read = /\[jsKey: [^\]]+\]$/.test(target) && t !== 'Any?' ? this.fromAnyCode(target, t, true) : assigned || entry ? `${target}!` : target;
-      return `({ () ${tp ? 'throws ' : ''}-> ${t} in ${tp}${this.binary(e)}; return ${read} }())`;
+      return `({ () ${tp ? 'throws ' : ''}-> ${t} in ${tp}${this.binary(e)}; return ${this.tryPrefix(e.left)}${read} }())`;
     }
     if (ts.isNumericLiteral(e)) return numberLiteral(e.text);
     if (ts.isBigIntLiteral(e)) return `JSBigInt(literal: ${swiftString(e.text.replace(/n$/, ''))})`;
@@ -10216,6 +10216,11 @@ ${members.join('\n')}
         }
         break;
       case 'Number':
+        // A number that may be undefined (one an untrusted value was placed in) is none of these.
+        if (['isInteger', 'isSafeInteger', 'isFinite', 'isNaN'].includes(method) && this.typeOf(arg(0)) === 'Double?') {
+          const test = method === 'isInteger' ? 'jsIsInteger($0)' : method === 'isSafeInteger' ? 'jsIsSafeInteger($0)' : `$0.${method}`;
+          return `(${this.expr(arg(0))}.map { ${test} } ?? false)`;
+        }
         if (method === 'isInteger') return `jsIsInteger(${this.expr(arg(0))})`;
         if (method === 'isSafeInteger') return `jsIsSafeInteger(${this.expr(arg(0))})`;
         if (method === 'isFinite') return `${this.expr(arg(0))}.isFinite`;
