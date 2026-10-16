@@ -1,6 +1,8 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 
-import { StyleScope, applyInlineStyle, addTaggedAdditionalCSS, removeTaggedAdditionalCSS } from './style-scope';
+import { StyleScope, _populateRules, applyInlineStyle, addTaggedAdditionalCSS, removeTaggedAdditionalCSS } from './style-scope';
+import { parse } from '../../css/reworkcss.js';
+import type { RuleSet } from './css-selector';
 import { StackLayout } from '../layouts/stack-layout';
 import { Label } from '../label';
 
@@ -391,5 +393,36 @@ describe('CssState.onChange subscriptions', () => {
 
 		expect(calls.added).toEqual([]);
 		expect(view.style.color.toString()).toBe('#0000FF');
+	});
+});
+
+describe('_populateRules media scopes', () => {
+	function rulesetsOf(css: string): RuleSet[] {
+		const rulesets: RuleSet[] = [];
+		_populateRules(parse(css, { source: 'style-scope.spec.ts' }).stylesheet.rules, rulesets, []);
+
+		return rulesets;
+	}
+
+	it('drops media blocks the runtime cannot evaluate and keeps the rest', () => {
+		const rulesets = rulesetsOf(`
+			label { color: red; }
+			@media (color-gamut: p3) { label { color: blue; } }
+			@media (orientation: landscape) { label { color: green; } }
+		`);
+
+		expect(rulesets.map((ruleset) => ruleset.mediaQueryString)).toEqual([undefined, '(orientation: landscape)']);
+	});
+
+	it('drops an unevaluable block nested inside an evaluable one', () => {
+		const rulesets = rulesetsOf(`
+			@media (orientation: landscape) {
+				label { color: red; }
+				@media (hover: hover) { label { color: blue; } }
+			}
+		`);
+
+		expect(rulesets).toHaveLength(1);
+		expect(rulesets[0].mediaQueryString).toBe('(orientation: landscape)');
 	});
 });
