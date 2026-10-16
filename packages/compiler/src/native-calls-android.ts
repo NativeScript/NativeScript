@@ -481,8 +481,11 @@ export class AndroidNativeAPI implements KotlinNative {
     const decl = root?.valueDeclaration;
     const nativeRoot = cast && !!root?.declarations?.length && root.declarations.every((d) => this.isNativeDeclaration(d));
     const ambient = nativeRoot || (decl && ts.isVariableDeclaration(decl) && !decl.initializer && !!(ts.getCombinedModifierFlags(decl) & ts.ModifierFlags.Ambient));
-    // Library mode: a Java class the typings lack under a package they have (`org.nativescript.widgets.Async.File`), found on the classpath.
-    const missing = this.t.library && !!root && !!(root.flags & ts.SymbolFlags.Namespace) && !!root.declarations?.every((d) => this.isNativeDeclaration(d)) && !this.t.resolve(e) && !(ts.isPropertyAccessExpression(e) && this.t.resolve(e.name));
+    // Library mode and plugins: a Java class the typings lack (`org.nativescript.widgets.Async.File`), found on the classpath, as
+    // NativeScript's runtime finds it. A plugin's own typings are a type-check aid its package may not carry (an ignored `typings/`).
+    const lenient = this.t.library || this.t.pluginFiles.has(e.getSourceFile().fileName);
+    const nativePackage = !root || (!!(root.flags & ts.SymbolFlags.Namespace) && !!root.declarations?.every((d) => this.isNativeDeclaration(d)));
+    const missing = lenient && nativePackage && !this.t.resolve(e) && !(ts.isPropertyAccessExpression(e) && this.t.resolve(e.name));
     if (!missing && !nativeRoot && (!ambient || !(this.t.checker.getTypeAtLocation(x).flags & ts.TypeFlags.Any))) return null;
     segs.unshift(x.text);
     for (let k = segs.length - 1; k >= 1; k--) {

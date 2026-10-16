@@ -4,7 +4,8 @@
 //   node tests/release-checks/run.ts
 // - preflight: every line of cases/*.ts ending in `// expect: <text>` is reported with <text>, and no other line;
 // - satisfies: version ranges as the contract reads package.json's peerDependencies;
-// - Kotlin diagnostics: a Gradle error in a generated file maps to its TypeScript line through source-lines.json.
+// - Kotlin diagnostics: a Gradle error in a generated file maps to its TypeScript line through source-lines.json;
+// - a plugin's own Java classes (plugin-java/, compiled with javac) translate as native calls without typings declaring them.
 import { mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
@@ -14,6 +15,10 @@ import { preflight } from '../../src/preflight.ts';
 import { satisfies } from '../../src/contract.ts';
 import { mapKotlinDiagnostics } from '../../src/kotlin-diagnostics.ts';
 import { angularComponent, type AngularComponent } from '../../src/angular.ts';
+import { Translator } from '../../src/kotlin.ts';
+import { translateKotlinModules } from '../../src/kotlin-modules.ts';
+import { AndroidNativeAPI, androidClassPath } from '../../src/native-calls-android.ts';
+import { spawnSync } from 'node:child_process';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const modulesDir = process.env.NS_DIFF_MODULES ?? resolve(here, '../node_modules');
@@ -106,6 +111,29 @@ export class People { items = [{ id: 1, name: 'Alan Turing' }]; }
   let refused = '';
   try { component(`<Label nsRouterLink="/a" [queryParams]="{ q: 1 }"></Label>`); } catch (e) { refused = String(e); }
   check(refused.includes("nsRouterLink's queryParams is not supported"), 'a link input the compiled router has no use for stops the build');
+}
+
+// ---- A plugin's own Java classes ----
+{
+  const dir = join(here, 'plugin-java');
+  const out = mkdtempSync(join(tmpdir(), 'ns-release-checks-java-'));
+  try {
+    const javac = spawnSync('javac', ['-d', join(out, 'classes'), join(dir, 'com/example/peek/Peeker.java')], { encoding: 'utf8' });
+    const jar = spawnSync('jar', ['cf', join(out, 'plugin.jar'), '-C', join(out, 'classes'), '.'], { encoding: 'utf8' });
+    if (javac.status !== 0 || jar.status !== 0) throw new Error(`javac: ${javac.stderr}${jar.stderr}`);
+    const file = join(dir, 'index.android.ts');
+    // Type-checked as a plugin's source is: not as strictly as the app's.
+    const plugin = { all: () => [{ root: dir }] } as unknown as Parameters<typeof createProgram>[4];
+    const { checker, program, files } = createProgram([file], new Map(), 'android', modulesDir, plugin);
+    const translator = new Translator(checker, new Map(), files, { pluginFiles: [file] });
+    translator.appModule = 'org.example.app';
+    translator.native = new AndroidNativeAPI(translator, androidClassPath(null, { archives: [join(out, 'plugin.jar')], dependencies: [] }));
+    const code = translateKotlinModules(translator, program, [file]).map((m) => m.code).join('\n');
+    check(/= com\.example\.peek\.Peeker\(\)/.test(code) && !/jsGet\(com\b/.test(code), "a plugin's Java class its typings lack is made with its constructor, found on the classpath");
+    check(/com\.example\.peek\.Peeker\.twice\(/.test(code), "a plugin's Java class its typings lack has its static methods called directly");
+  } finally {
+    rmSync(out, { recursive: true, force: true });
+  }
 }
 
 console.log(failed ? `${failed} release checks failed` : 'release checks pass');
