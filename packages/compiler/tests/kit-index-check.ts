@@ -1,23 +1,30 @@
 #!/usr/bin/env node
-// Every public top-level type the generated iOS kit declares is one the kit index knows, however swift-format wrapped
-// its declaration: the translator reaches a type the index lacks only by name, so its members fail at run time.
+// Every public type the kit's Swift declares, generated or hand-written, is one the kit manifest has, however
+// swift-format laid its declaration out: the translator reaches a type the manifest lacks only by name, so its
+// members fail at run time. A quick check before a build; kit-manifest-check.ts checks against the built module.
 //   node tests/kit-index-check.ts [kit sources, default kit-apple/Sources/NativeScriptKit]
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { kitIndex } from '../src/kit-index.ts';
+import { readKitManifest } from '../src/kit-manifest.ts';
+import { readSwift } from '../src/swift-declarations.ts';
 
 const kit = process.argv[2] ?? join(import.meta.dirname, '..', 'kit-apple', 'Sources', 'NativeScriptKit');
-const index = kitIndex(kit);
+const manifest = readKitManifest(kit);
+if (!manifest) {
+  console.error(`${kit}/Core has no kit manifest: generate the kit (nx run compiler:kit)`);
+  process.exit(1);
+}
 const missing: string[] = [];
-for (const f of readdirSync(kit, { recursive: true }) as string[]) {
-  if (!f.endsWith('.swift')) continue;
-  const text = readFileSync(join(kit, f), 'utf8').replace(/("(?:\\.|[^"\\\n])*")|\/\/.*$/gm, (_, s) => s ?? '');
-  for (const m of text.matchAll(/^(?:@\w+\s+)*(?:(?:final|indirect)\s+)*(?:public|open)\s+(?:(?:final|indirect)\s+)*(?:class|struct|enum|protocol)\s+(\w+)/gm)) {
-    if (!index.has(m[1])) missing.push(`${f}: ${m[1]}`);
+let declared = 0;
+for (const f of (readdirSync(kit, { recursive: true }) as string[]).filter((f) => f.endsWith('.swift')).sort()) {
+  for (const t of readSwift(readFileSync(join(kit, f), 'utf8')).types) {
+    if (t.kind === 'extension' || t.access !== 'public') continue;
+    declared++;
+    if (!Object.hasOwn(manifest.types, t.name)) missing.push(`${f}: ${t.name}`);
   }
 }
 if (missing.length) {
-  console.error(`the kit index lacks ${missing.length} type(s) the kit declares:\n  ${missing.slice(0, 20).join('\n  ')}`);
+  console.error(`the kit manifest lacks ${missing.length} type(s) the kit declares:\n  ${missing.slice(0, 20).join('\n  ')}`);
   process.exit(1);
 }
-console.log(`kit index: all ${index.size} types`);
+console.log(`kit manifest: all ${declared} public types the kit declares`);
