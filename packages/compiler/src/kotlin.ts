@@ -5128,6 +5128,16 @@ export class Translator implements AsyncTranslator {
 
   /** An expression where Kotlin needs a value of `target`. */
   coerce(e: ts.Expression, target: string): string {
+    // An erased assertion where the place takes undefined: the value as it is, or the nullable it may be.
+    const asserted = this.assertedUntyped(e);
+    if (asserted && target === 'Any?' && this.typeOf(asserted.expression) === 'Any?') return this.expr(asserted.expression);
+    if (asserted && isNullable(target) && target === optionalType(this.typeOf(asserted))) return this.assertedOptional(asserted);
+    // `view && view.describe()` where the place takes undefined and the object may be missing: undefined then.
+    const bare = ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses);
+    if (!this.library && (target === 'Any?' || isNullable(target)) && ts.isBinaryExpression(bare) && bare.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken && this.isObjectRef(bare.left) && !isNullable(this.typeOf(bare.left))) {
+      const left = this.maybeUndefined(bare.left);
+      if (left) return `(if (jsTruthy(${left})) ${this.coerce(bare.right, target)} else null)`;
+    }
     // A plugin's string, number or boolean where the kit's slot types an array (`valueConverter` returning what it was given):
     // as script passes it, unchecked.
     if (!this.library && this.inPluginFile(e) && /^JSArray<.*>\??$/.test(target) && ['String', 'String?', 'Double', 'Boolean', 'Nothing'].includes(this.typeOf(e))) return `jsUnchecked<${target}>(${this.expr(e)})`;
@@ -5598,6 +5608,8 @@ export class Translator implements AsyncTranslator {
       const to = this.typeOf(e);
       const shared = this.uncheckedCast(e);
       if (shared) return cast(this.expr(e.expression), shared);
+      // The assertion is erased in JavaScript: where Kotlin needs the type, the value is converted as script converts it there.
+      if (!this.library && from === 'Any?' && ['String', 'Double', 'Boolean'].includes(to)) return `jsAsserted${to === 'Double' ? 'Number' : to}(${this.expr(e.expression)})`;
       if (from === 'Any?' && to !== 'Any?') return this.fromAny(this.expr(e.expression), to);
       // `<androidx.fragment.app.Fragment>object` of a `java.lang.Object`.
       if (from === 'Any' && to !== 'Any' && to !== 'Any?') return this.fromAny(this.expr(e.expression), to);
@@ -6346,8 +6358,34 @@ export class Translator implements AsyncTranslator {
    * (`xs[i]` past the end, or a variable holding one), as a Kotlin nullable; null otherwise.
    */
   private optionalReads = new Set<ts.Node>();
+
+  /**
+   * `x as T` of an untyped value: JavaScript erases the assertion, so the value may be missing, though Kotlin holds the
+   * result as `T`. App code only; library code reads those itself.
+   */
+  private assertedUntyped(e: ts.Expression): ts.AsExpression | ts.TypeAssertion | null {
+    e = ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses);
+    if (!(ts.isAsExpression(e) || ts.isTypeAssertionExpression(e)) || isWriteTarget(e)) return null;
+    try {
+      const t = this.typeOf(e), from = this.typeOf(e.expression);
+      if (t === 'Any?' || t === 'Nothing' || t === 'Unit' || isNullable(t) || isFunctionType(t)) return null;
+      if (['String', 'Double', 'Boolean'].includes(t)) return from === 'Any?' && !this.library ? e : null;
+      if (this.library || !this.isObjectType(t)) return null;
+      return from === 'Any?' && !/^JS(Array|Record|Promise|Date|Error)\b/.test(t) ? e : null;
+    } catch { return null; }
+  }
+
+  /** An `assertedUntyped` assertion read as the nullable it may be: null where the value is undefined or null. */
+  private assertedOptional(e: ts.AsExpression | ts.TypeAssertion): string {
+    const t = this.typeOf(e), code = this.expr(e.expression);
+    if (['String', 'Double', 'Boolean'].includes(t)) return `jsAsserted${t === 'Double' ? 'Number' : t}OrNull(${code})`;
+    return this.fromAny(code, optionalType(t));
+  }
+
   private maybeUndefined(e: ts.Expression): string | null {
     while (ts.isParenthesizedExpression(e)) e = e.expression;
+    const asserted = this.assertedUntyped(e);
+    if (asserted) return this.assertedOptional(asserted);
     // Library mode: `<T[]>record[key]`, an assertion of the type the read has: the read.
     if (this.library && (ts.isAsExpression(e) || ts.isTypeAssertionExpression(e)) && !this.subst.has(e) && this.typeOf(e) === this.typeOf(e.expression)) return this.maybeUndefined(e.expression);
     if (this.subst.has(e)) return null;
@@ -8262,7 +8300,8 @@ export class Translator implements AsyncTranslator {
       }
       case K.AmpersandAmpersandToken: case K.BarBarToken: {
         const sym = op === K.AmpersandAmpersandToken ? '&&' : '||';
-        if (this.isBool(e.left) && this.isBool(e.right)) {
+        const assertedLeft = this.assertedUntyped(e.left);
+        if (this.isBool(e.left) && this.isBool(e.right) && !assertedLeft) {
           const fixed = this.staticTruth(e);
           if (fixed !== undefined) return String(fixed);
           if (this.staticTruth(e.left) === (sym === '&&')) return r();
@@ -8279,7 +8318,7 @@ export class Translator implements AsyncTranslator {
         const right = this.library && ['String', 'Double', 'Boolean'].includes(t) && this.declaredTypeOf(e.right) === optionalType(t) ? this.undefinedAs(this.expr(e.right), t) : this.coerce(e.right, t);
         const leftType = this.typeOf(e.left);
         // A nullable declaration read as its non-null type: present when truthy, else the type's undefined.
-        const nullableLeft = (ts.isIdentifier(e.left) || ts.isPropertyAccessExpression(e.left)) && this.declaredTypeOf(e.left) === optionalType(leftType) && leftType !== optionalType(leftType);
+        const nullableLeft = (!!assertedLeft || ((ts.isIdentifier(e.left) || ts.isPropertyAccessExpression(e.left)) && this.declaredTypeOf(e.left) === optionalType(leftType))) && leftType !== optionalType(leftType);
         let leftValue = leftType === t || t === 'Any?' ? v : leftType === optionalType(t) ? `${v}!!` : leftType === 'Any?' ? (this.library ? this.fromAnyCode(v, t, true) : this.fromAny(v, t)) : t === 'Boolean' ? `jsTruthy(${v})` : v;
         const left = this.maybeUndefined(e.left) ?? l();
         // `a && a.get()` with an object `a`: undefined when it is missing.

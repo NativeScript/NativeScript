@@ -609,6 +609,21 @@ fun jsBooleanOrNull(value: Any?): Boolean? = when (value) {
 /** As `jsBooleanOrNull`, false for anything else. */
 fun jsBooleanOrFalse(value: Any?): Boolean = jsBooleanOrNull(value) ?: false
 
+// A value asserted to a string, number or boolean (`x as boolean`), an assertion script erases: converted as JavaScript
+// converts it where the type is needed (undefined and null are "" as a string), never refused.
+fun jsAssertedString(value: Any?): String = value as? String ?: if (jsIsNullish(value)) "" else jsToString(value)
+
+fun jsAssertedNumber(value: Any?): Double = value as? Double ?: jsToNumber(value)
+
+fun jsAssertedBoolean(value: Any?): Boolean = value as? Boolean ?: jsTruthy(value)
+
+// As the three above, where the place takes undefined: undefined and null stay null.
+fun jsAssertedStringOrNull(value: Any?): String? = if (jsIsNullish(value)) null else jsAssertedString(value)
+
+fun jsAssertedNumberOrNull(value: Any?): Double? = if (jsIsNullish(value)) null else jsAssertedNumber(value)
+
+fun jsAssertedBooleanOrNull(value: Any?): Boolean? = if (jsIsNullish(value)) null else jsAssertedBoolean(value)
+
 private val joinGuards = object : ThreadLocal<ArrayList<Any>>() {
     override fun initialValue() = ArrayList<Any>()
 }

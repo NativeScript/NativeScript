@@ -2960,7 +2960,10 @@ ${members.join('\n')}
     const p = outer.parent;
     let target: string | null = null;
     try {
-      if ((ts.isAsExpression(p) || ts.isTypeAssertionExpression(p) || ts.isSatisfiesExpression(p)) && p.expression === outer) target = this.typeOf(p);
+      if ((ts.isAsExpression(p) || ts.isTypeAssertionExpression(p) || ts.isSatisfiesExpression(p)) && p.expression === outer) {
+        target = this.typeOf(p);
+        if (['String', 'Double', 'Bool'].includes(target)) return false;
+      }
       else {
         const context = this.checker.getContextualType(outer as ts.Expression);
         target = context ? this.type(context, outer) : null;
@@ -6701,9 +6704,13 @@ ${members.join('\n')}
     if (target === 'Any?') {
       const chain = this.chainRead(e);
       if (chain) return `(${chain} as Any?)`;
+      const asserted = this.assertedUntyped(e);
+      if (asserted && this.typeOf(asserted.expression) === 'Any?') return this.expr(asserted.expression);
     } else if (target.endsWith('?') && optionalType(this.typeOf(e)) === target) {
       const chain = this.chainRead(e, true);
       if (chain) return chain;
+      const asserted = this.assertedUntyped(e);
+      if (asserted) return this.assertedOptional(asserted);
     }
     // `x as never` (a value the checker is told to take anywhere): the value, as the slot takes it;
     // a number where the slot is a string (`ret.format = parseVertexFormat(ret.format) as never`) converted as script reads it there.
@@ -7863,6 +7870,8 @@ ${members.join('\n')}
       const to = this.typeOf(e);
       if (from === 'Double' && this.native.isEnumType(to)) return this.native.toSwift(e.expression, to);
       if (to === 'Never') return this.expr(e.expression);
+      // The assertion is erased in JavaScript: where Swift needs the type, the value is converted as script converts it there.
+      if (!this.library && from === 'Any?' && ['String', 'Double', 'Bool'].includes(to)) return `jsLenient${to === 'Double' ? 'Number' : to}(${this.expr(e.expression)})`;
       if (from === 'Any?' && to !== 'Any?') return this.fromAnyChecked(this.expr(e.expression), to, this.castThrows(e.expression));
       // `x as string` of a string that may be undefined: the value as JavaScript then reads it as one.
       if (['String', 'Double', 'Bool'].includes(to) && from === `${to}?`) return this.undefinedAs(this.expr(e.expression), to);
@@ -8723,7 +8732,8 @@ ${members.join('\n')}
     const tt = this.typeOf(target);
     if (e.questionDotToken && tt !== 'Any?' && !tt.endsWith('?') && !tt.endsWith('!') && !hasTopLevelArrow(tt) && !ts.isOptionalChain(target) && !isWriteTarget(e)
         && !(ts.isCallExpression(target) && this.maybeUndefined(target))) {
-      const read = `(${this.expr(target)} as ${optionalType(tt)})?.${ident(name)}`;
+      const asserted = this.assertedUntyped(target);
+      const read = `${asserted ? this.assertedOptional(asserted) : `(${this.expr(target)} as ${optionalType(tt)})`}?.${ident(name)}`;
       // A field redeclared over its base's untyped one (`viewController: UIViewController`): read as the redeclaration types it.
       const own = this.typeOf(e);
       const code = this.declaredTypeOf(e) === 'Any?' && own !== 'Any?' && !isWriteTarget(e) ? `(${this.fromAny(read, optionalType(own))})` : read;
@@ -8908,8 +8918,34 @@ ${members.join('\n')}
     return this.returnTypeOf(decl);
   }
 
+  /**
+   * `x as T` of an untyped value: JavaScript erases the assertion, so the value may be missing, though Swift holds the
+   * result as `T`. App code's objects only, of the types whose read is checked; lenient code holds those loose already.
+   */
+  private assertedUntyped(e: ts.Expression): ts.AsExpression | ts.TypeAssertion | null {
+    e = ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses);
+    if (!(ts.isAsExpression(e) || ts.isTypeAssertionExpression(e)) || isWriteTarget(e)) return null;
+    try {
+      const t = this.typeOf(e), from = this.typeOf(e.expression);
+      if (t === 'Any?' || t === 'Never' || t === 'Void' || isOptional(t) || t.endsWith('!') || hasTopLevelArrow(t)) return null;
+      if (this.library) return null;
+      if (['String', 'Double', 'Bool'].includes(t)) return from === 'Any?' ? e : null;
+      return from === 'Any?' && !this.lenient && this.isObjectRef(e) && this.castChecks(t) ? e : null;
+    } catch { return null; }
+  }
+
+  /** An `assertedUntyped` assertion read as the optional it may be: missing where the value is undefined or null. */
+  private assertedOptional(e: ts.AsExpression | ts.TypeAssertion): string {
+    const t = this.typeOf(e), code = this.expr(e.expression);
+    if (['String', 'Double', 'Bool'].includes(t)) return `jsLenient${t === 'Double' ? 'Number' : t}OrNil(${code})`;
+    return this.fromAny(code, optionalType(t));
+  }
+
   maybeUndefined(e: ts.Expression): string | null {
     while (ts.isParenthesizedExpression(e)) e = e.expression;
+    const asserted = this.assertedUntyped(e);
+    // An object variable (`const v = x as View`) is held as Swift's type says, the value checked there; one declared optional takes it unchecked.
+    if (asserted && (['String', 'Double', 'Bool'].includes(this.typeOf(asserted)) || !ts.isVariableDeclaration(ts.walkUpParenthesizedExpressions(asserted.parent)))) return this.assertedOptional(asserted);
     if (ts.isCallExpression(e) && !this.typeOf(e).endsWith('?')) {
       const decl = this.checker.getResolvedSignature(e)?.getDeclaration();
       if (decl && !ts.isJSDocSignature(decl) && this.mayReturnUndefined(decl) && this.returnTypeOf(decl).endsWith('?')) {
@@ -9058,7 +9094,8 @@ ${members.join('\n')}
         const member = ts.isPropertyAccessExpression(left) || ts.isElementAccessExpression(left);
         if (member) this.optionalReads.set(left, false);
         let leftCode: string;
-        try { leftCode = this.expr(e.left); } finally { if (member) this.optionalReads.delete(left); }
+        const loose = ts.isIdentifier(left) || this.assertedUntyped(left) ? this.maybeUndefined(left) : null;
+        try { leftCode = loose ?? this.expr(e.left); } finally { if (member) this.optionalReads.delete(left); }
         return `({ () ${lt0 || rt0 ? 'throws ' : ''}-> ${optionalType(t)} in let ${v} = ${lt0}${leftCode}; return jsTruthy(${v}) ? ${rt0}${this.maybeUndefined(e.right) ?? this.coerce(e.right, optionalType(t))} : nil }())`;
       }
     }
@@ -9523,7 +9560,8 @@ ${members.join('\n')}
       // `x?.method()` on a value Swift has as non-optional: cast to optional, valid for an implicitly unwrapped one too.
       const tt = this.typeOf(target);
       if (callee.questionDotToken && !tt.endsWith('?') && !tt.endsWith('!') && !hasTopLevelArrow(tt) && !ts.isOptionalChain(target) && !(ts.isCallExpression(target) && this.maybeUndefined(target))) {
-        const code = `(${this.expr(target)} as ${optionalType(tt)})?.${ident(method)}${optionalFn ? '!' : ''}(${this.args(e, this.arity(e)).join(', ')})`;
+        const asserted = this.assertedUntyped(target);
+        const code = `${asserted ? this.assertedOptional(asserted) : `(${this.expr(target)} as ${optionalType(tt)})`}?.${ident(method)}${optionalFn ? '!' : ''}(${this.args(e, this.arity(e)).join(', ')})`;
         const rt = this.typeOf(e);
         return rt.endsWith('?') || rt === 'Any?' || rt === 'Void' || ts.isExpressionStatement(e.parent) || this.rawOptional.has(e) ? code : this.undefinedAs(`(${code})`, rt);
       }
@@ -11190,7 +11228,8 @@ ${members.join('\n')}
         const sym = op === K.AmpersandAmpersandToken ? '&&' : '||';
         const orUndefined = isNullish(e.right) ? this.maybeUndefined(e) : null;
         if (orUndefined) return this.undefinedAs(orUndefined, this.typeOf(e), this.typeOf(e));
-        if (this.isBool(e.left) && this.isBool(e.right)) return `${l()} ${sym} ${r()}`;
+        const assertedLeft = this.assertedUntyped(e.left);
+        if (this.isBool(e.left) && this.isBool(e.right) && !assertedLeft) return `${l()} ${sym} ${r()}`;
         // `a && a.m && …`: a method read only to test it is there whenever `a` is, so the test is `a`'s.
         let left = e.left;
         while (ts.isParenthesizedExpression(left)) left = left.expression;
@@ -11210,14 +11249,14 @@ ${members.join('\n')}
         const chain = op === K.BarBarToken && ts.isPropertyAccessExpression(inner) && !!inner.questionDotToken;
         if (chain) this.optionalReads.set(inner, false);
         // A call that may give undefined (lenient code): the operand is the optional itself, falsy when missing.
-        const missing = (ts.isCallExpression(inner) || ts.isElementAccessExpression(inner) || ts.isIdentifier(inner)) && !isOptional(this.typeOf(left)) ? this.maybeUndefined(inner) : null;
+        const missing = (ts.isCallExpression(inner) || ts.isElementAccessExpression(inner) || ts.isIdentifier(inner) || assertedLeft) && !isOptional(this.typeOf(left)) ? this.maybeUndefined(inner) : null;
         const leftCode = missing ?? this.expr(left);
         const leftType = missing || this.optionalReads.get(inner) ? optionalType(this.typeOf(left)) : this.typeOf(left);
         this.optionalReads.delete(inner);
         // The left operand is evaluated once; the result is it, unwrapped or boxed as the result's type needs.
         // A falsy left operand of another type is undefined or null where the result is optional.
         // A function operand where the result is untyped is boxed as a function value, as the other operand is.
-        const leftValue = leftType === t && !t.endsWith('?') && t !== 'Void' ? `jsPresent(${v})` : t === 'Any?' && leftType !== t && isFunctionType(leftType.replace(/^\((.*)\)[?!]$/, '$1')) ? this.convert(v, leftType, t) : leftType === t || t === 'Any?' ? v : leftType === optionalType(t) ? `${v}!` : leftType === 'Any?' ? this.fromAny(v, t) : t === 'Bool' ? `jsTruthy(${v})`
+        const leftValue = leftType === t && !t.endsWith('?') && t !== 'Void' ? `jsPresent(${v})` : t === 'Any?' && leftType !== t && isFunctionType(leftType.replace(/^\((.*)\)[?!]$/, '$1')) ? this.convert(v, leftType, t) : leftType === t || t === 'Any?' ? v : leftType === optionalType(t) ? (op === K.AmpersandAmpersandToken && ['String', 'Double', 'Bool'].includes(t) ? this.undefinedAs(v, t) : `${v}!`) : leftType === 'Any?' ? this.fromAny(v, t) : t === 'Bool' ? `jsTruthy(${v})`
           : t.endsWith('?') && leftType.endsWith('?') && op === K.AmpersandAmpersandToken ? 'nil'
           // A falsy object of another type than the result (`child && hosts.get(child)`) is a missing one.
           : t.endsWith('?') && op === K.AmpersandAmpersandToken && this.isObjectRef(left) && leftType.replace(/[?!]$/, '') !== t.replace(/[?!]$/, '') ? 'nil' : v;
