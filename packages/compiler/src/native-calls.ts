@@ -1380,6 +1380,7 @@ export class NativeAPI {
     const body = ret ? `jsReportedOrZero { ${call} }` : `jsReport { ${call} }`;
     const types = params.map((p) => p.slice(p.indexOf(':') + 1).trim());
     const guard = enteredGuard(`__objc_${jsName}`, types.map(() => null), types, ret ?? 'Void', '');
+    this.t.declare(`__objc_${jsName}`, { kind: 'func', params: params.join(', '), type: ret ?? 'Void' });
     return `    @objc(${jsName}${':'.repeat(params.length)}) public nonisolated func __objc_${jsName}(${params.join(', ')})${ret ? ` -> ${ret}` : ''} { ${guard}; ${onMainThread(body, ret ?? 'Void', '', params.map((_, k) => `__a${k}`), types)} }`;
   }
 
@@ -1425,6 +1426,11 @@ export class NativeAPI {
     if (!baseCls) throw t.error(heritage, `extending ${base.name} (no Swift class)`);
     // A namespace's class is declared inside the namespace's enum, by its own name.
     const name = ts.isModuleBlock(cls.parent) ? cls.name!.text : t.topName(cls, cls.name!.text);
+    return t.declaring(t.nestedName(cls, name), 'class', this.className(baseCls), () => this.subclassCode(cls, name, base, baseCls));
+  }
+
+  private subclassCode(cls: ts.ClassDeclaration, name: string, base: { module: string; name: string }, baseCls: NonNullable<ReturnType<typeof lookupClass>>): string {
+    const t = this.t;
     const protocols = this.adoptedProtocols(cls);
     const statics = cls.members.filter((m): m is ts.PropertyDeclaration => ts.isPropertyDeclaration(m) && !!m.initializer && ts.getModifiers(m)?.some((x) => x.kind === ts.SyntaxKind.StaticKeyword) === true);
     const listed = statics.find((m) => m.name.getText() === 'ObjCProtocols');
@@ -1440,8 +1446,9 @@ export class NativeAPI {
       const n = m.name.getText();
       const type = t.typeOf(m.name);
       const isStatic = ts.getModifiers(m)?.some((x) => x.kind === ts.SyntaxKind.StaticKeyword);
-      if (isStatic) { lines.push(`    static var ${n}: ${type} = ${m.initializer ? t.coerce(m.initializer, type) : t.zero(type) ?? 'nil'}`); continue; }
-      if (!m.initializer) { lines.push(`    var ${n}: ${t.deferredType(type)}`); continue; }
+      if (isStatic) { lines.push(`    static var ${n}: ${type} = ${m.initializer ? t.coerce(m.initializer, type) : t.zero(type) ?? 'nil'}`); t.declare(n, { kind: 'var', mods: 'static ', type }); continue; }
+      if (!m.initializer) { lines.push(`    var ${n}: ${t.deferredType(type)}`); t.declare(n, { kind: 'var', type: t.deferredType(type) }); continue; }
+      t.declare(n, { kind: 'var', type });
       // UIKit decides which initializer runs (init(frame:), init(coder:)…): fields initialize on first use instead.
       lines.push(`    ${t.pure(m.initializer) ? '' : 'lazy '}var ${n}: ${type} = ${t.tryPrefix(m.initializer) ? 'try! ' : ''}${t.coerce(m.initializer, type)}`);
     }
@@ -1477,6 +1484,7 @@ export class NativeAPI {
           parts.push(t.throwsInfo.fn(a.set) ? `        set {\n${bind}\n            jsReport ${body.trimStart()}\n        }` : `        set {\n${bind}${body.slice(1)}`);
         }
         lines.push(`    ${viaProtocol ? '' : 'override '}var ${native.swift}: ${native.type} {`, ...parts, '    }');
+        t.declare(native.swift, { kind: 'var', mods: viaProtocol ? '' : 'override ', type: native.type });
         continue;
       }
       const type = a.get ? t.returnTypeOf(a.get) : optionalType(t.typeOf(a.set!.parameters[0].name));
@@ -1487,13 +1495,14 @@ export class NativeAPI {
         parts.push(t.throwsInfo.fn(a.set) ? `        set {\n            let ${p.text}: ${type} = newValue\n            jsReport ${body.trimStart()}\n        }` : `        set {\n            let ${p.text}: ${type} = newValue${body.slice(1)}`);
       }
       lines.push(`    var ${n}: ${t.lenientRef(type)} {`, ...parts, '    }');
+      t.declare(n, { kind: 'var', type: t.lenientRef(type), throws: !!a.get && t.throwsInfo.fn(a.get) });
     }
     for (const m of cls.members) {
       if (!ts.isMethodDeclaration(m) || !m.body) continue;
       const jsName = m.name.getText();
       if (ts.getModifiers(m)?.some((x) => x.kind === ts.SyntaxKind.StaticKeyword)) {
         if (jsName === 'new' || jsName === 'alloc') continue;
-        lines.push('    ' + t.func(m, jsName, 'static '));
+        lines.push('    ' + t.memberFunc(m, jsName, 'static '));
         continue;
       }
       // Swift has no `dealloc` to override: the object's deinit, which runs the base's teardown after it.
@@ -1505,7 +1514,10 @@ export class NativeAPI {
       const init = /^init/.test(jsName) ? lookupInit(base.module, base.name, jsName) : null;
       if (init) {
         lines.push(this.nativeInit(m, init));
-        if (!lines.some((l) => /init\?\(coder/.test(l))) lines.push('    required init?(coder: NSCoder) { super.init(coder: coder) }');
+        if (!lines.some((l) => /init\?\(coder/.test(l))) {
+          lines.push('    required init?(coder: NSCoder) { super.init(coder: coder) }');
+          t.declare('init', { kind: 'init', params: 'coder: NSCoder', type: `${t.nestedName(cls, name)}?` });
+        }
         continue;
       }
       const fromProtocol = protocols.map((p) => lookupMember(p.module, p.name, jsName, false)).find(Boolean);
@@ -1516,10 +1528,10 @@ export class NativeAPI {
         continue;
       }
       if (exposed.has(jsName) && t.throwsInfo.fn(m)) {
-        lines.push('    ' + t.func(m, jsName), this.exposedEntry(t.func(m, jsName), jsName));
+        lines.push('    ' + t.memberFunc(m, jsName), this.exposedEntry(t.func(m, jsName), jsName));
         continue;
       }
-      lines.push('    ' + t.func(m, jsName, exposed.has(jsName) ? '@objc ' : ''));
+      lines.push('    ' + t.memberFunc(m, jsName, exposed.has(jsName) ? '@objc ' : ''));
     }
     // The class's own fields and getters, which Objective-C cannot see, read by name from untyped code (`(<any>controller).owner`).
     const native = (n: string) => !!lookupMember(base.module, base.name, n, false) || protocols.some((p) => lookupMember(p.module, p.name, n, false));
@@ -1527,6 +1539,8 @@ export class NativeAPI {
       && m !== listed && m !== exposedSpec && !ts.getModifiers(m)?.some((x) => x.kind === ts.SyntaxKind.StaticKeyword) && !native(m.name.text) && !t.typeOf(m.name).includes('->'));
     if (own.length) {
       lines.push('    func jsMember(_ key: String) -> Any?? {', '        switch key {');
+      t.declare('jsMember', { kind: 'func', params: '_ key: String', type: 'Any??' });
+      if (t.declOwnerName) t.declarations?.names(t.declOwnerName, own.map((m) => (m.name as ts.Identifier).text));
       for (const m of own) {
         const n = (m.name as ts.Identifier).text;
         lines.push(`        case ${JSON.stringify(n)}: return .some(${ts.isGetAccessorDeclaration(m) && t.throwsInfo.fn(m) ? `jsReported { try self.${n} } ?? nil` : `self.${n} as Any?`})`);
@@ -1600,6 +1614,7 @@ export class NativeAPI {
     const available = introduced ? `@available(iOS ${target.introduced}, *) ` : '';
     const guard = enteredGuard(target.swift, target.labels, target.params, ret, '        ', target.escaping, names);
     const isolated = onMainThread([...binds, result].join('\n'), ret, '        ', names, target.params.map((p, k) => (target.escaping?.includes(k) ? `@escaping ${p}` : p)));
+    t.declare(target.swift, { kind: 'func', mods: `${available}${override ? 'override ' : ''}`, params: swiftParams.join(', '), type: ret });
     return [`    ${available}nonisolated ${override ? 'override ' : ''}func ${target.swift}(${swiftParams.join(', ')})${ret === 'Void' ? '' : ` -> ${ret}`} {`, guard, isolated, '    }'].join('\n');
   }
 
@@ -1650,6 +1665,7 @@ export class NativeAPI {
     let body: string[];
     try { body = t.statements(middle); } finally { for (const r of refs) t.subst.delete(r); t.indent = '    '; }
     const throws = middle.some((x) => t.throwsInfo.expr(x));
+    if (t.declOwnerName) t.declare('init', { kind: 'init', params: swiftParams.join(', '), type: `${t.declOwnerName}${init.failable ? '?' : ''}` });
     return [`    override init${init.failable ? '?' : ''}(${swiftParams.join(', ')}) {`, ...binds,
       `        super.init(${passed.map((a, k) => (init.labels[k] ? `${init.labels[k]}: ${a}` : a)).join(', ')})`,
       ...(throws ? ['        jsReport {', ...body.map((l) => '    ' + l), '        }'] : body), '    }'].join('\n');

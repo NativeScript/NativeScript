@@ -17,3 +17,5 @@ build() { xcodebuild -project KitBuildCheck.xcodeproj -scheme KitBuildCheck -con
 build || { echo "the first build failed: building again"; build; }
 # Every warning is one tests/kit-warnings.txt allows.
 node "$here/kit-warnings.mjs" "$out/build.log"
+# The manifest the translator reads names what the built module declares, no more and no less.
+node "$here/kit-manifest-check.ts" "$out/dd/Build/Products/Release-iphonesimulator"
