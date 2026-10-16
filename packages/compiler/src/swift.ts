@@ -7440,7 +7440,7 @@ ${members.join('\n')}
     if (ts.isConditionalExpression(p)) return p.condition === x || this.looseTolerated(p);
     if (ts.isTemplateSpan(p)) return true;
     if (ts.isVariableDeclaration(p)) return p.initializer === x && ts.isIdentifier(p.name);
-    if (ts.isPropertyAssignment(p) || ts.isShorthandPropertyAssignment(p)) return this.shapeFieldTakesUndefined(p);
+    if (ts.isPropertyAssignment(p) || ts.isShorthandPropertyAssignment(p)) return this.dynamicLiterals.has(p.parent) || this.shapeFieldTakesUndefined(p);
     if (ts.isSpreadAssignment(p) || (ts.isPropertyDeclaration(p) && p.initializer === x)) return true;
     if (ts.isReturnStatement(p)) {
       const fn = ts.findAncestor(p, ts.isFunctionLike);
@@ -11629,8 +11629,16 @@ ${members.join('\n')}
     return `${async ? 'JSScriptAsyncIterator' : 'JSScriptIterator'}<${element}>(${args.join(', ')})`;
   }
 
+  /** The object literals being written as plain JavaScript objects, whose values are stored as they are, undefined included. */
+  private dynamicLiterals = new Set<ts.Node>();
+
   /** An object literal typed `any`: a plain JavaScript object. */
   private dynamicObject(e: ts.ObjectLiteralExpression): string {
+    this.dynamicLiterals.add(e);
+    try { return this.dynamicObjectCode(e); } finally { this.dynamicLiterals.delete(e); }
+  }
+
+  private dynamicObjectCode(e: ts.ObjectLiteralExpression): string {
     // A function expression reading `this` (`isVisible: function () { return this.get(…) }`) is a method of the object.
     const thisFunction = (p: ts.ObjectLiteralElementLike): p is ts.PropertyAssignment => ts.isPropertyAssignment(p) && ts.isFunctionExpression(p.initializer) && !p.initializer.name && thisNodes(p.initializer).length > 0;
     const simple = e.properties.every((p) => (ts.isPropertyAssignment(p) && !ts.isComputedPropertyName(p.name) && !thisFunction(p)) || ts.isShorthandPropertyAssignment(p));
