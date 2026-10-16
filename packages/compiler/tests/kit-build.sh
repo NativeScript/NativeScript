@@ -5,6 +5,7 @@ set -euo pipefail
 here=$(cd "$(dirname "$0")" && pwd)
 core=$(cd "${1:?the built core (dist/packages/core)}" && pwd)
 out=${2:-$here/app/platforms/native}
+node "$here/kit-index-check.ts"
 (cd "$here/app" && npm ci --no-audit --no-fund)
 rm -rf "$here/app/node_modules/@nativescript/core"
 cp -R "$core" "$here/app/node_modules/@nativescript/core"
