@@ -300,6 +300,12 @@ export class Translator implements AsyncTranslator {
   private undefinedVars = new Map<ts.Symbol, string>();
   /** Optional chain reads whose undefined the context tests rather than converts (`a?.b || x`). */
   private optionalReads = new Map<ts.Node, boolean>();
+  /** Whether `e` is read as the optional it may be (an operand only tested); records that it was. */
+  readOptional(e: ts.Node): boolean {
+    if (!this.optionalReads.has(e)) return false;
+    this.optionalReads.set(e, true);
+    return true;
+  }
   /** The names of the type parameters the translated code declares. */
   private genericNames = new Set<string>();
 
@@ -2534,8 +2540,11 @@ ${members.join('\n')}
    * only in the kit, where a field of an object or function type holds null too (`{ completion: null, ...options }`).
    */
   private shapeHeld(f: { type: string; symbol?: boolean }): string {
-    if (!this.lenientAll || f.symbol) return f.type;
-    return isFunctionType(f.type) ? `(${f.type})?` : this.nullableRef(f.type);
+    if (f.symbol) return f.type;
+    if (this.lenientAll) return isFunctionType(f.type) ? `(${f.type})?` : this.nullableRef(f.type);
+    // An app's object field holds undefined too, as a literal asserted to the type may give it (`{ …, view } as
+    // ItemEventData` before the view exists); a read that uses it unwraps it there.
+    return !this.library && !isOptional(f.type) && !f.type.endsWith('!') && !isFunctionType(f.type) && this.nullableRef(f.type) !== f.type ? `${f.type}!` : f.type;
   }
 
   /** A plain JavaScript object of a known shape: a final class with a memberwise init, readable as a dynamic object. */
@@ -2568,7 +2577,7 @@ ${members.join('\n')}
     lines.push('    convenience init(jsObject: Any?) {');
     this.declareInit('jsObject: Any?', false);
     // A field the object lacks, or holds of another type (JSON without an optional field), reads as JavaScript converts it where used.
-    const field = (f: ShapeField) => ['String', 'Double', 'Bool'].includes(f.type) ? `jsLenient${f.type === 'Double' ? 'Number' : f.type}(jsField(jsObject, ${swiftString(f.name)}))` : this.reportedRead(this.fromAny(`jsField(jsObject, ${swiftString(f.name)})`, this.lenient ? held(f).replace(/^\((.*)\)!$/, '($1)?') : f.type));
+    const field = (f: ShapeField) => ['String', 'Double', 'Bool'].includes(f.type) ? `jsLenient${f.type === 'Double' ? 'Number' : f.type}(jsField(jsObject, ${swiftString(f.name)}))` : this.reportedRead(this.fromAny(`jsField(jsObject, ${swiftString(f.name)})`, this.lenient ? held(f).replace(/^\((.*)\)!$/, '($1)?') : held(f).endsWith('!') ? optionalType(f.type) : f.type));
     const nulls = nullable.length ? [`jsNulls: jsNullKeys(jsObject, [${nullable.map((f) => swiftString(f.name)).join(', ')}])`] : [];
     lines.push(`        self.init(${[...fields.map((f) => `${label(f.name)}: ${field(f)}`), 'jsOrder: (jsObject as? JSDynamic)?.jsKeys', ...nulls].join(', ')})`);
     lines.push('        jsExtra = jsObject as? JSDynamic', '    }');
@@ -7440,7 +7449,7 @@ ${members.join('\n')}
     if (ts.isConditionalExpression(p)) return p.condition === x || this.looseTolerated(p);
     if (ts.isTemplateSpan(p)) return true;
     if (ts.isVariableDeclaration(p)) return p.initializer === x && ts.isIdentifier(p.name);
-    if (ts.isPropertyAssignment(p) || ts.isShorthandPropertyAssignment(p)) return this.shapeFieldTakesUndefined(p);
+    if (ts.isPropertyAssignment(p) || ts.isShorthandPropertyAssignment(p)) return this.dynamicLiterals.has(p.parent) || this.shapeFieldTakesUndefined(p);
     if (ts.isSpreadAssignment(p) || (ts.isPropertyDeclaration(p) && p.initializer === x)) return true;
     if (ts.isReturnStatement(p)) {
       const fn = ts.findAncestor(p, ts.isFunctionLike);
@@ -9044,7 +9053,13 @@ ${members.join('\n')}
       if (!t.endsWith('?') && t !== 'Bool' && lt !== t && lt !== optionalType(t) && lt !== 'Any?' && (lt.endsWith('?') || this.isObjectRef(e.left))) {
         const v = this.fresh('__v');
         const lt0 = this.tryPrefix(e.left), rt0 = this.tryPrefix(e.right);
-        return `({ () ${lt0 || rt0 ? 'throws ' : ''}-> ${optionalType(t)} in let ${v} = ${lt0}${this.expr(e.left)}; return jsTruthy(${v}) ? ${rt0}${this.maybeUndefined(e.right) ?? this.coerce(e.right, t)} : nil }())`;
+        // Both operands may be missing (`this.page && this.page.frame` of a view in no page): each is read as the optional it is.
+        const left = ts.skipOuterExpressions(e.left, ts.OuterExpressionKinds.Parentheses);
+        const member = ts.isPropertyAccessExpression(left) || ts.isElementAccessExpression(left);
+        if (member) this.optionalReads.set(left, false);
+        let leftCode: string;
+        try { leftCode = this.expr(e.left); } finally { if (member) this.optionalReads.delete(left); }
+        return `({ () ${lt0 || rt0 ? 'throws ' : ''}-> ${optionalType(t)} in let ${v} = ${lt0}${leftCode}; return jsTruthy(${v}) ? ${rt0}${this.maybeUndefined(e.right) ?? this.coerce(e.right, optionalType(t))} : nil }())`;
       }
     }
     return null;
@@ -11486,6 +11501,8 @@ ${members.join('\n')}
     else throw this.error(e, `an object literal of type ${name}`);
     const given = new Map<string, string>();
     const spreadTemps: string[] = [];
+    // A field the class holds implicitly unwrapped (`shapeHeld`) takes what the literal gives as optional, undefined included.
+    const loose = (want: string | undefined) => !!want && target === name && this.shapeHeld({ type: want }) === `${want}!`;
     // Methods that read `this` see the object through a weak reference the literal sets once it exists.
     // A function expression as a member (`onViewLoaded: function () { this.loadedCount++ }`) reads the object as `this` too.
     const thisFunction = (p: ts.ObjectLiteralElementLike): p is ts.PropertyAssignment => ts.isPropertyAssignment(p) && ts.isFunctionExpression(p.initializer) && thisNodes(p.initializer).length > 0;
@@ -11493,7 +11510,8 @@ ${members.join('\n')}
     for (const p of e.properties) {
       if (ts.isPropertyAssignment(p)) {
         const key = literalKey(p.name, this.checker) ?? p.name.getText();
-        const want = order.find((f) => f.name === key)?.type ?? 'Any?';
+        const field = order.find((f) => f.name === key)?.type ?? 'Any?';
+        const want = loose(field) ? optionalType(field) : field;
         given.set(key, self && thisFunction(p) ? this.withThis(p.initializer as ts.FunctionExpression, `${self}!`, false, () => this.coerce(p.initializer, want)) : this.coerce(p.initializer, want));
       } else if (ts.isGetAccessorDeclaration(p) || ts.isSetAccessorDeclaration(p)) {
         const key = literalKey(p.name, this.checker) ?? p.name.getText();
@@ -11521,6 +11539,10 @@ ${members.join('\n')}
         // A variable held optional while it may be undefined (`const y = ys[i]`): undefined as the field's type reads it.
         const valueSym = this.checker.getShorthandAssignmentValueSymbol(p);
         const undefinedVar = !!valueSym && this.undefinedVars.has(valueSym) && !!want && !isOptional(want) && want !== 'Any?';
+        if (loose(want) && !actual) {
+          given.set(p.name.text, variable === 'Any?' || this.typeOf(p.name) === 'Any?' ? this.fromAny(code, optionalType(want!)) : code);
+          continue;
+        }
         given.set(p.name.text, actual && want && functionParts(want) && actual !== want ? this.convert(code, actual, want) : undefinedVar ? this.undefinedAs(code, want!) : unwrap && !code.endsWith('!') ? `${code}!` : code);
       }
       else if (ts.isSpreadAssignment(p)) {
@@ -11629,8 +11651,16 @@ ${members.join('\n')}
     return `${async ? 'JSScriptAsyncIterator' : 'JSScriptIterator'}<${element}>(${args.join(', ')})`;
   }
 
+  /** The object literals being written as plain JavaScript objects, whose values are stored as they are, undefined included. */
+  private dynamicLiterals = new Set<ts.Node>();
+
   /** An object literal typed `any`: a plain JavaScript object. */
   private dynamicObject(e: ts.ObjectLiteralExpression): string {
+    this.dynamicLiterals.add(e);
+    try { return this.dynamicObjectCode(e); } finally { this.dynamicLiterals.delete(e); }
+  }
+
+  private dynamicObjectCode(e: ts.ObjectLiteralExpression): string {
     // A function expression reading `this` (`isVisible: function () { return this.get(…) }`) is a method of the object.
     const thisFunction = (p: ts.ObjectLiteralElementLike): p is ts.PropertyAssignment => ts.isPropertyAssignment(p) && ts.isFunctionExpression(p.initializer) && !p.initializer.name && thisNodes(p.initializer).length > 0;
     const simple = e.properties.every((p) => (ts.isPropertyAssignment(p) && !ts.isComputedPropertyName(p.name) && !thisFunction(p)) || ts.isShorthandPropertyAssignment(p));

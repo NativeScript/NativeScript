@@ -390,7 +390,8 @@ export class CoreAPI {
     while (ts.isParenthesizedExpression(outer)) outer = outer.parent;
     const untyped = (ts.isAsExpression(outer) || ts.isTypeAssertionExpression(outer)) && outer.type.kind === ts.SyntaxKind.AnyKeyword;
     const read = m.type.trim() === 'Any?' && untyped && ['String', 'Double', 'Bool'].includes(t.typeOf(e)) ? 'Any?' : t.typeOf(e);
-    return this.fromKit(`${recv}.${name}`, inChain ? m.type.replace(/[?!]?$/, '?') : m.type, read);
+    const optional = !inChain && /[?!]$/.test(m.type.trim()) && read !== 'Any?' && !read.endsWith('?') && t.readOptional(e);
+    return this.fromKit(`${recv}.${name}`, inChain ? m.type.replace(/[?!]?$/, '?') : m.type, optional ? optionalType(read) : read);
   }
 
   /** A constant core declares with a literal type (`CoreTypes.AnimationCurve.easeIn` is "easeIn"), as that literal. */
