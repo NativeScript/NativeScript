@@ -13,6 +13,7 @@ import { createProgram } from '../../src/program.ts';
 import { preflight } from '../../src/preflight.ts';
 import { satisfies } from '../../src/contract.ts';
 import { mapKotlinDiagnostics } from '../../src/kotlin-diagnostics.ts';
+import { angularComponent, type AngularComponent } from '../../src/angular.ts';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const modulesDir = process.env.NS_DIFF_MODULES ?? resolve(here, '../node_modules');
@@ -67,6 +68,44 @@ try {
   check(mapped[2] === log.split('\n')[2] && mapped[3] === log.split('\n')[3], 'other lines are left as they are');
 } finally {
   rmSync(project, { recursive: true, force: true });
+}
+
+// ---- Angular templates ----
+{
+  const component = (template: string) => angularComponent('/app/people.component.ts', `import { Component, inject } from '@angular/core';
+@Component({ selector: 'People', template: \`${template}\` })
+export class People { items = [{ id: 1, name: 'Alan Turing' }]; }
+`, new Map())!;
+  type Node = { kind: string; tag?: string; attrs?: { name: string }[]; events?: { name: string; method: string }[]; children?: Node[]; body?: Node[] };
+  const all = (nodes: Node[]): Node[] => nodes.flatMap((n) => [n, ...all(n.children ?? []), ...all(n.body ?? [])]);
+  const linked = (c: AngularComponent, tag: string) => all(c.template as Node[]).find((n) => n.tag === tag)!;
+  const method = (c: AngularComponent, name: string) => c.source.split('\n').find((l) => l.trimStart().startsWith(`${name}(`)) ?? '';
+
+  const rows = component(`<ListView [items]="items"><ng-template let-item="item"><StackLayout [nsRouterLink]="['/item', item.id]"><Label [text]="item.name"></Label></StackLayout></ng-template></ListView>`);
+  const row = linked(rows, 'StackLayout');
+  const tap = row.events?.find((e) => e.name === 'tap');
+  check(!!tap && !row.attrs?.some((a) => a.name === 'nsRouterLink'), '[nsRouterLink] on a ListView row template is a tap handler, not a view property');
+  check(!!tap && /^\s*\$e\d+\(item = .*\$event.*this\.\$router\.navigate\(\['\/item', item\.id\], \{ relativeTo: this\.\$route \}\)/.test(method(rows, tap.method)), "a row's link navigates with the row's item");
+  check(/readonly \$route = inject\(\$ActivatedRoute\)/.test(rows.source), "a link resolves against the component's own route, read when it is made");
+
+  const plain = component(`<Label text="About" nsRouterLink="about" pageTransition="none" clearHistory="true"></Label><Button [nsRouterLink]="target" text="Go"></Button>`);
+  const label = linked(plain, 'Label');
+  check(!label.attrs?.some((a) => ['nsRouterLink', 'pageTransition', 'clearHistory'].includes(a.name)), "nsRouterLink's inputs are the directive's, not the view's");
+  check(method(plain, label.events?.[0]?.method ?? '-').includes(`navigate(["about"], { relativeTo: this.$route, animated: false, clearHistory: true })`), 'a fixed link is one command, with its transition and clearHistory');
+  check(/Array\.isArray\(\$commands\) \? \$commands : \[\$commands\]/.test(method(plain, linked(plain, 'Button').events?.[0]?.method ?? '-')), 'a bound link is its commands, or one command');
+
+  const lineOf = (c: AngularComponent, name: string) => c.source.split('\n').findIndex((l) => l.trimStart().startsWith(`${name}(`));
+  const pinned = (c: AngularComponent, name: string) => c.templateLines?.lines.find(([v]) => v === lineOf(c, name))?.[1];
+  const multi = component(`<StackLayout>
+  <Label [text]="items[0]?.name"></Label>
+</StackLayout>`);
+  const label2 = linked(multi, 'Label');
+  check(multi.templateLines?.file === '/app/people.component.ts' && pinned(multi, (label2.attrs as { name: string; method?: string }[]).find((a) => a.name === 'text')!.method!) === 3, "a binding's method is located at its line in the template, not by matching the component's code");
+  check(/\$b\d+\(\): any \{ return \(this\.items\[0\]\?\.name\); \}/.test(multi.source), 'a view property bound to an optional chain takes undefined where the chain stops, whatever its type says');
+
+  let refused = '';
+  try { component(`<Label nsRouterLink="/a" [queryParams]="{ q: 1 }"></Label>`); } catch (e) { refused = String(e); }
+  check(refused.includes("nsRouterLink's queryParams is not supported"), 'a link input the compiled router has no use for stops the build');
 }
 
 console.log(failed ? `${failed} release checks failed` : 'release checks pass');

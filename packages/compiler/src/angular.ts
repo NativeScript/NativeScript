@@ -21,6 +21,7 @@ export interface AngularComponent extends ComponentIR {
  * knows what `signal()`, `computed()`, `input()`, `output()` and `inject()` mean.
  */
 export function angularComponent(path: string, text: string, selectors: Map<string, string>, options: { zone?: boolean; elements?: Map<string, string> } = {}): AngularComponent | null {
+  const written = text;
   let sf = ts.createSourceFile(path, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
   let cls = sf.statements.find((s): s is ts.ClassDeclaration => ts.isClassDeclaration(s) && !!decorator(s, 'Component'));
   if (!cls || !cls.name) return null;
@@ -106,9 +107,17 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
   // `$any(x)` is Angular's escape from template type checking; the release build is typed by the component's code,
   // except `$any($event)`, whose event data the handler reads as the type it declares.
   const clean = (code: string) => code.replace(/\$any\(\s*\$event\s*\)/g, '($event as any)').replace(/\$any\(/g, '(');
-  const expr = (code: string, loops: Loop[]) => {
+  /** The template line (0-based) of the binding being compiled, and each template method's (by its index in `methods`). */
+  let here: number | null = null;
+  const located = new Map<number, number>();
+  const at = (span: ng.ParseSourceSpan | null | undefined) => { if (span) here = span.start.line; };
+  const add = (method: string) => {
+    methods.push(method);
+    if (here !== null) located.set(methods.length - 1, here);
+  };
+  const expr = (code: string, loops: Loop[], untyped = false) => {
     const m = `$b${next++}`;
-    methods.push(`  ${m}(${params(loops)}) { return ${rewrite(clean(code), local(loops))}; }`);
+    add(`  ${m}(${params(loops)})${untyped ? ': any' : ''} { return ${rewrite(clean(code), local(loops))}; }`);
     return m;
   };
   // A condition is tested, not held: a value its type says is there (a non-strict app's `signal<Person>(null)`) is read only for its truth.
@@ -116,7 +125,7 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
   // A component's output gives its handler the emitted value as `$event`; a view's event gives the event data.
   const handler = (code: string, loops: Loop[], payload = false) => {
     const m = `$e${next++}`;
-    methods.push(`  ${m}(${[params(loops), `$event: ${payload ? 'any' : '$EventData'}`].filter(Boolean).join(', ')}) { ${rewrite(clean(code), local(loops), 'statements')}; }`);
+    add(`  ${m}(${[params(loops), `$event: ${payload ? 'any' : '$EventData'}`].filter(Boolean).join(', ')}) { ${rewrite(clean(code), local(loops), 'statements')}; }`);
     return m;
   };
 
@@ -126,19 +135,24 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
     const declared: string[] = [];
     for (const n of list) {
       if (n instanceof ng.TmplAstLetDeclaration) {
+        at(n.sourceSpan);
         aliases.set(n.name, rewrite(clean(sourceOf(n.value)), local(loops)));
         declared.push(n.name);
         continue;
       }
       if (n instanceof ng.TmplAstElement) {
+        at(n.startSourceSpan);
         const attrs: Attr[] = [];
         const events: Event[] = [];
         // A ListView, or a plugin view taking item templates (`<Pager>` with `<ng-template let-item>`), renders rows from templates.
         const isList = canonical(n.name) === 'ListView' || n.children.some((c) => c instanceof ng.TmplAstTemplate && c.tagName === 'ng-template' && c.variables.length > 0);
-        for (const a of n.attributes) attrs.push({ name: a.name, value: a.value });
+        const link = routerLink(n, loops);
+        if (link) events.push(link);
+        for (const a of n.attributes) if (!link || !ROUTER_LINK_INPUTS.has(a.name)) attrs.push({ name: a.name, value: a.value });
         for (const c of n.children) {
           if (c instanceof ng.TmplAstText && c.value.trim()) attrs.push({ name: 'text', value: c.value });
           if (c instanceof ng.TmplAstBoundText) {
+            at(c.sourceSpan);
             const interpolation = (c.value instanceof ng.ASTWithSource ? c.value.ast : c.value) as ng.Interpolation;
             const parts = interpolation.strings.map((s, i) => s.replace(/[`\\$]/g, (x) => '\\' + x) + (i < interpolation.expressions.length ? `\${(${template.slice(interpolation.expressions[i].sourceSpan.start, interpolation.expressions[i].sourceSpan.end)}) ?? ''}` : ''));
             attrs.push({ name: 'text', method: expr('`' + parts.join('') + '`', loops) });
@@ -147,17 +161,25 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
         // `[class.on]="cond"` toggles a class beside the static ones: one bound `class` naming them all.
         const toggles = n.inputs.filter((i) => i.type === ng.BindingType.Class);
         if (toggles.length) {
+          at(toggles[0].sourceSpan);
           const fixed = attrs.findIndex((a) => a.name === 'class');
           const base = fixed >= 0 ? attrs.splice(fixed, 1)[0].value ?? '' : '';
           const parts = [JSON.stringify(base), ...toggles.map((t) => `(${code(t.value, loops)}) ? ${JSON.stringify(t.name)} : ''`)];
           attrs.push({ name: 'class', method: expr(`[${parts.join(', ')}].filter((c) => !!c).join(' ')`, loops) });
         }
         for (const i of n.inputs) {
-          if (i.type === ng.BindingType.Class || (isList && i.name === 'itemTemplateSelector')) continue;
+          if (i.type === ng.BindingType.Class || (isList && i.name === 'itemTemplateSelector') || (link && ROUTER_LINK_INPUTS.has(i.name))) continue;
+          at(i.sourceSpan);
           if (i.type !== ng.BindingType.Property && i.type !== ng.BindingType.TwoWay) throw new Error(`${path}: the [${ng.BindingType[i.type].toLowerCase()}.${i.name}] binding is not supported in a release build yet`);
-          attrs.push({ name: i.name, method: expr(code(i.value, loops), loops) });
+          // `[text]="person()?.name"`: the view takes undefined where the chain stops, as the renderer passes it, whatever the type says.
+          const root = i.value instanceof ng.ASTWithSource ? i.value.ast : i.value;
+          const chained = i.type === ng.BindingType.Property && !selectors.has(n.name) && (root instanceof ng.SafePropertyRead || root instanceof ng.SafeKeyedRead || root instanceof ng.SafeCall);
+          attrs.push({ name: i.name, method: expr(code(i.value, loops), loops, chained) });
         }
-        for (const o of n.outputs) events.push({ name: o.name, method: handler(code(o.handler, loops), loops, selectors.has(n.name)), ...(selectors.has(n.name) ? { payload: true } : {}) });
+        for (const o of n.outputs) {
+          at(o.sourceSpan);
+          events.push({ name: o.name, method: handler(code(o.handler, loops), loops, selectors.has(n.name)), ...(selectors.has(n.name) ? { payload: true } : {}) });
+        }
         if (n.name === 'ng-container') {
           if (attrs.length || events.length) throw new Error(`${path}: <ng-container> takes no bindings`);
           out.push(...nodes(n.children, loops));
@@ -174,6 +196,7 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
       }
       if (n instanceof ng.TmplAstIfBlock) {
         out.push({ kind: 'if', branches: n.branches.map((b) => {
+          at(b.startSourceSpan);
           // `@if (x; as y)`: y is the condition's value in the branch.
           const alias = (b as ng.TmplAstIfBlockBranch & { expressionAlias?: ng.TmplAstVariable | null }).expressionAlias;
           // The condition is read before its alias exists: `@if (person(); as person)` names the value of the `person` it reads.
@@ -186,6 +209,7 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
         continue;
       }
       if (n instanceof ng.TmplAstForLoopBlock) {
+        at(n.startSourceSpan);
         const item = n.item.name;
         // The index is a parameter of its own: nested loops each have a `$index`.
         const index = `$i${loops.length}`;
@@ -209,6 +233,7 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
       }
       if (n instanceof ng.TmplAstSwitchBlock) {
         const subject = sourceOf(n.expression);
+        at(n.startSourceSpan);
         const branches = n.groups.map((g) => {
           const tests = g.cases.filter((c) => c.expression).map((c) => `(${subject}) === (${sourceOf(c.expression!)})`);
           return { cond: tests.length ? expr(tests.join(' || '), loops) : null, body: nodes(g.children, loops) };
@@ -250,7 +275,8 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
       // A method, or a property holding an arrow (`rowTemplate = (row) => …`): the parameters it declares.
       const fn = member && ts.isMethodDeclaration(member) ? member : member && ts.isPropertyDeclaration(member) && member.initializer && (ts.isArrowFunction(member.initializer) || ts.isFunctionExpression(member.initializer)) ? member.initializer : undefined;
       const given = ['$item', '$index', list].slice(0, fn ? fn.parameters.length : 3);
-      methods.push(`  ${m}(${p}): string { return ${rewrite(clean(sourceOf(selector.value)), local(loops))}(${given.join(', ')}); }`);
+      at(selector.sourceSpan);
+      add(`  ${m}(${p}): string { return ${rewrite(clean(sourceOf(selector.value)), local(loops))}(${given.join(', ')}); }`);
       attrs.push({ name: 'itemTemplateSelector', method: m });
     }
     const out: TNode[] = [];
@@ -316,15 +342,21 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
     const closed = bound.replace(/<([A-Za-z][\w.-]*)((?:\s+[^<>]*?)?)\s*\/>/g, '<$1$2></$1>');
     if (bound.includes('{{')) throw new Error(`${path}: a stickyHeaderTemplate binds attributes only in a release build`);
     const parsed = ng.parseTemplate(closed, path + '.stickyHeader.html', { preserveWhitespaces: false });
+    // Its spans are the header string's, not the template's: its methods keep the template line of the list.
+    const saved = here;
+    const first = methods.length;
     if (parsed.errors?.length) throw new Error(`${path}: stickyHeaderTemplate: ${parsed.errors[0]}`);
     const loop: Loop = { item: section, index: `$s${loops.length}`, param: `${section} = ${list}[0], $s${loops.length} = 0` };
     const body = nodes(parsed.nodes, [...loops, loop]);
+    for (let k = first; k < methods.length; k++) if (saved === null) located.delete(k); else located.set(k, saved);
+    here = saved;
     if (body.length !== 1 || body[0].kind !== 'element') throw new Error(`${path}: a stickyHeaderTemplate needs exactly one root element`);
     return { kind: 'template', key: '$header', item: section, index: loop.index, body, header: true, xml };
   };
 
   /** `*tabItem="{ title, iconSource, … }"` (TabViewItemDirective): a TabViewItem with those properties around the element. */
   const tabItem = (t: ng.TmplAstTemplate, loops: Loop[]): TNode => {
+    at(t.startSourceSpan);
     const bound = t.templateAttrs.find((a): a is ng.TmplAstBoundAttribute => a instanceof ng.TmplAstBoundAttribute && a.name === 'tabItem');
     const root = bound && (bound.value instanceof ng.ASTWithSource ? bound.value.ast : bound.value);
     if (!(root instanceof ng.LiteralMap)) throw new Error(`${path}: *tabItem takes an object literal in a release build`);
@@ -332,8 +364,71 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
     return { kind: 'element', tag: 'TabViewItem', attrs, events: [], children: nodes(t.children, loops) };
   };
 
+  /**
+   * `nsRouterLink` (@nativescript/angular's NSRouterLink) on any element: a tap handler navigating with its commands,
+   * a single command as a one-command array, relative to the component's route unless `relativeTo` is given. The
+   * route is the component's own, read when it is constructed: the router's current route changes as pages are made.
+   */
+  let routed = false;
+  const routerLink = (n: ng.TmplAstElement, loops: Loop[]): Event | null => {
+    const bound = new Map(n.inputs.map((i) => [i.name, i] as const));
+    const fixed = new Map(n.attributes.map((a) => [a.name, a.value] as const));
+    if (bound.has('nsRouterLinkActive') || fixed.has('nsRouterLinkActive')) throw new Error(`${path}: nsRouterLinkActive is not supported in a release build yet`);
+    if (!bound.has('nsRouterLink') && !fixed.has('nsRouterLink')) return null;
+    at(bound.get('nsRouterLink')?.sourceSpan ?? n.attributes.find((a) => a.name === 'nsRouterLink')?.sourceSpan);
+    for (const name of ROUTER_LINK_INPUTS) {
+      if (!ROUTER_LINK_SUPPORTED.has(name) && (bound.has(name) || fixed.has(name))) throw new Error(`${path}: nsRouterLink's ${name} is not supported in a release build yet`);
+    }
+    const value = (name: string) => (bound.has(name) ? `(${code(bound.get(name)!.value, loops)})` : fixed.has(name) ? JSON.stringify(fixed.get(name)) : null);
+    routed = true;
+    const body: string[] = [];
+    const given = bound.get('nsRouterLink');
+    const root = given && (given.value instanceof ng.ASTWithSource ? given.value.ast : given.value);
+    let commands: string;
+    if (root instanceof ng.LiteralArray) commands = code(given!.value, loops);
+    else if (!given) commands = `[${value('nsRouterLink')}]`;
+    else {
+      body.push(`const $commands: any = ${value('nsRouterLink')}`, 'if ($commands == null) return');
+      commands = 'Array.isArray($commands) ? $commands : [$commands]';
+    }
+    const extras = [`relativeTo: ${value('relativeTo') ?? 'this.$route'}`];
+    const transition = value('pageTransition');
+    const duration = value('pageTransitionDuration');
+    const constant = (name: string): unknown => {
+      if (fixed.has(name)) return fixed.get(name);
+      const v = bound.get(name)?.value;
+      const ast = v instanceof ng.ASTWithSource ? v.ast : v;
+      return ast instanceof ng.LiteralPrimitive && ast.value !== undefined ? ast.value : undefined;
+    };
+    // NSRouterLink.getTransition: a boolean is `animated`; 'none' and 'false' turn animation off; another string names the transition.
+    const known = constant('pageTransition');
+    if (!duration && (typeof known === 'boolean' || typeof known === 'string')) {
+      if (known === false || known === 'none' || known === 'false') extras.push('animated: false');
+      else if (typeof known === 'string') extras.push(`transition: { name: ${JSON.stringify(known)} }`);
+    } else if (transition || duration) {
+      body.push(
+        `const $given: any = ${transition ?? 'true'}`,
+        'let $animated = true',
+        'let $transition: any = undefined',
+        `if (typeof $given === 'boolean') { $animated = $given; } else if (typeof $given === 'string') { if ($given === 'none' || $given === 'false') { $animated = false; } else { $transition = { name: $given }; } } else { $transition = $given; }`,
+      );
+      if (duration) body.push(`const $duration = +${duration}`, 'if (!isNaN($duration)) { $transition = $transition ?? {}; $transition.duration = $duration; }');
+      extras.push('animated: $animated', 'transition: $transition');
+    }
+    const clear = value('clearHistory');
+    const clearing = constant('clearHistory');
+    if (clearing !== undefined) extras.push(`clearHistory: ${clearing === true || clearing === 'true'}`);
+    else if (clear) {
+      body.push(`const $clear: any = ${clear}`);
+      extras.push(`clearHistory: $clear === true || $clear === 'true'`);
+    }
+    body.push(`this.$router.navigate(${commands}, { ${extras.join(', ')} })`);
+    return { name: 'tap', method: handler(body.join('; '), loops) };
+  };
+
   /** `*ngIf` (with `else` and `as`) and `*ngFor` (with `trackBy`, `index`, `even`, `odd`) on an element, `<ng-container>` or `<ng-template>`. */
   const structural = (t: ng.TmplAstTemplate, loops: Loop[]): TNode[] => {
+    at(t.startSourceSpan);
     // `*ngIf` binds the directive through templateAttrs (the template's inputs are its element's); `<ng-template [ngIf]>` through inputs.
     const directive = t.tagName === 'ng-template' ? [...t.templateAttrs, ...t.inputs] : t.templateAttrs;
     const bound = (name: string) => directive.find((a): a is ng.TmplAstBoundAttribute => a instanceof ng.TmplAstBoundAttribute && a.name === name);
@@ -396,10 +491,33 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
   // The component's source, with the template's methods added to its class and the event type imported.
   const end = cls.members.end;
   for (const p of pipes) methods.push(`  readonly ${p} = new AsyncPipe();`);
-  const source = `import { ${pipes.length ? 'AsyncPipe, ' : ''}type EventData as $EventData } from '@nativescript/release';\n` + text.slice(0, end) + '\n' + methods.join('\n') + '\n' + text.slice(end);
+  let imports = `import { ${pipes.length ? 'AsyncPipe, ' : ''}type EventData as $EventData } from '@nativescript/release';\n`;
+  if (routed) {
+    // The translator knows `inject` by its name, and a framework token through any alias.
+    if (!importsAs(sf, 'inject', '@angular/core')) {
+      if (declares(sf, 'inject')) throw new Error(`${path}: nsRouterLink needs Angular's inject, which this file's own "inject" hides`);
+      imports += `import { inject } from '@angular/core';\n`;
+    }
+    imports += `import { ActivatedRoute as $ActivatedRoute } from '@angular/router';\nimport { RouterExtensions as $RouterExtensions } from '@nativescript/angular';\n`;
+    methods.push('  readonly $router = inject($RouterExtensions);', '  readonly $route = inject($ActivatedRoute);');
+  }
+  const head = imports + text.slice(0, end) + '\n';
+  const source = head + methods.join('\n') + '\n' + text.slice(end);
+  // Each template method's lines in the virtual file, at its binding's line in the template it was written in.
+  const inlineAt = templateUrl ? 0 : written.indexOf(template);
+  const templateFile = templateUrl ? join(dirname(path), templateUrl) : path;
+  const firstLine = inlineAt > 0 ? written.slice(0, inlineAt).split('\n').length - 1 : 0;
+  const lines: [number, number][] = [];
+  let line = head.split('\n').length - 1;
+  methods.forEach((m, k) => {
+    const span = m.split('\n').length;
+    const at = located.get(k);
+    if (at !== undefined && inlineAt >= 0) for (let j = 0; j < span; j++) lines.push([line + j, firstLine + at + 1]);
+    line += span;
+  });
   const { styles, scope: styleScope } = angularStyles(path, prop);
   const scoped = styleScope ? scopeTemplate(tree, styleScope.content).map((n) => (n.kind === 'element' ? { ...n, attrs: [...n.attrs, { name: styleScope.host, value: '' }] } : n)) : tree;
-  return { name: cls.name.text, file: path.replace(/\.ts$/, '.release.ts'), source, props, optional, outputs, template: scoped, selector, styles, ...(init ? { init: 'ngOnInit' } : {}) } as AngularComponent;
+  return { name: cls.name.text, file: path.replace(/\.ts$/, '.release.ts'), source, props, optional, outputs, template: scoped, selector, styles, ...(init ? { init: 'ngOnInit' } : {}), ...(lines.length ? { templateLines: { file: templateFile, lines } } : {}) } as AngularComponent;
 }
 
 /**
@@ -536,6 +654,29 @@ function decorator(node: ts.ClassDeclaration, name: string): ts.CallExpression |
     if (ts.isCallExpression(d.expression) && ts.isIdentifier(d.expression.expression) && d.expression.expression.text === name) return d.expression;
   }
   return undefined;
+}
+
+/** NSRouterLink's inputs: on an element with `nsRouterLink` they are the directive's, not the view's. */
+const ROUTER_LINK_INPUTS = new Set(['nsRouterLink', 'relativeTo', 'clearHistory', 'pageTransition', 'pageTransitionDuration', 'queryParams', 'fragment', 'queryParamsHandling', 'state', 'info', 'preserveFragment', 'skipLocationChange', 'replaceUrl']);
+const ROUTER_LINK_SUPPORTED = new Set(['nsRouterLink', 'relativeTo', 'clearHistory', 'pageTransition', 'pageTransitionDuration']);
+
+/** Whether the file imports `name` from `module` under its own name. */
+function importsAs(sf: ts.SourceFile, name: string, module: string): boolean {
+  return sf.statements.some((s) => ts.isImportDeclaration(s) && ts.isStringLiteral(s.moduleSpecifier) && s.moduleSpecifier.text === module && !s.importClause?.isTypeOnly
+    && !!s.importClause?.namedBindings && ts.isNamedImports(s.importClause.namedBindings)
+    && s.importClause.namedBindings.elements.some((e) => e.name.text === name && (e.propertyName?.text ?? name) === name && !e.isTypeOnly));
+}
+
+/** Whether a top-level import or declaration of the file binds `name`. */
+function declares(sf: ts.SourceFile, name: string): boolean {
+  return sf.statements.some((s) => {
+    if (ts.isImportDeclaration(s)) {
+      const c = s.importClause;
+      return c?.name?.text === name || (!!c?.namedBindings && (ts.isNamespaceImport(c.namedBindings) ? c.namedBindings.name.text === name : c.namedBindings.elements.some((e) => e.name.text === name)));
+    }
+    if (ts.isVariableStatement(s)) return s.declarationList.declarations.some((d) => ts.isIdentifier(d.name) && d.name.text === name);
+    return (ts.isFunctionDeclaration(s) || ts.isClassDeclaration(s)) && s.name?.text === name;
+  });
 }
 
 function sourceOf(ast: ng.AST): string {

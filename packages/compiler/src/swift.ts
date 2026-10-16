@@ -6495,6 +6495,13 @@ ${members.join('\n')}
   coerce(e: ts.Expression, target: string): string {
     const stored = this.storedLiterals.get(e);
     if (stored && (target === 'Any?' || target.replace(/[?!]$/, '') === stored.type)) return stored.code;
+    if (target === 'Any?') {
+      const chain = this.chainRead(e);
+      if (chain) return `(${chain} as Any?)`;
+    } else if (target.endsWith('?') && optionalType(this.typeOf(e)) === target) {
+      const chain = this.chainRead(e, true);
+      if (chain) return chain;
+    }
     // `x as never` (a value the checker is told to take anywhere): the value, as the slot takes it;
     // a number where the slot is a string (`ret.format = parseVertexFormat(ret.format) as never`) converted as script reads it there.
     if (ts.isAsExpression(e) && e.type.kind === ts.SyntaxKind.NeverKeyword) {
@@ -8154,6 +8161,7 @@ ${members.join('\n')}
       // Inside an optional chain (`group?.items[i]`): the chain goes on through the optional.
       const p = e.parent;
       if (ts.isOptionalChain(e) && (ts.isPropertyAccessExpression(p) || ts.isElementAccessExpression(p) || ts.isCallExpression(p)) && p.expression === e && ts.isOptionalChain(p)) return code;
+      if (this.optionalReads.has(e)) { this.optionalReads.set(e, true); return code; }
       // `Error.stack`, optional in the ES library, is always a string in the runtime (`JSError.stack`).
       if (ts.isPropertyAccessExpression(e) && e.name.text === 'stack' && isLibDeclaration(this.checker.getSymbolAtLocation(e.name)?.declarations?.[0])) return code;
       return ts.isOptionalChain(e) ? `(${code})!` : `${code}!`;
@@ -8212,6 +8220,25 @@ ${members.join('\n')}
     return this.lenient && (this.loose(e) || code.startsWith('jsImplicit(')) ? `(jsImplicit(${code})?.key ?? "undefined")` : `${code}.key`;
   }
 
+  /**
+   * An app's `a?.b` that TypeScript types present, where the value is taken as it is (converted to a string, held
+   * untyped, passed where undefined is allowed): Swift's optional, undefined where the chain stops; null for any other
+   * expression. `objects`: of any type, else only of a string, number or boolean.
+   */
+  private chainRead(e: ts.Expression, objects = false): string | null {
+    if (this.library) return null;
+    while (ts.isParenthesizedExpression(e)) e = e.expression;
+    if (!(ts.isPropertyAccessExpression(e) || ts.isElementAccessExpression(e)) || !ts.isOptionalChain(e) || isWriteTarget(e) || this.optionalReads.has(e)) return null;
+    const t = this.typeOf(e);
+    if (objects ? t === 'Any?' || isOptional(t) : !['String', 'Double', 'Bool'].includes(t)) return null;
+    this.optionalReads.set(e, false);
+    try {
+      const code = this.expr(e);
+      // The read gave the chain's optional, or is one whatever it was asked (`(a as A?)?.items.length`).
+      return this.optionalReads.get(e) || (/\?\.[\w`]+(\.length)?$/.test(code) && !code.includes('??')) ? code : null;
+    } finally { this.optionalReads.delete(e); }
+  }
+
   /** A value as JavaScript converts it to a string (`String(x)`, `${x}`, `'' + x`). */
   str(e: ts.Expression): string {
     // `x as string` only types x: the value converted is x's, which may be undefined.
@@ -8220,6 +8247,8 @@ ${members.join('\n')}
     if (inner !== e && /\?$/.test(this.typeOf(inner)) && this.typeOf(e) === 'String') return `jsToString(${this.expr(inner)} as Any?)`;
     const maybe = this.maybeUndefined(e);
     if (maybe) return `jsToString(${maybe} as Any?)`;
+    const chain = this.chainRead(e);
+    if (chain) return `jsToString(${chain} as Any?)`;
     const t = this.typeOf(e);
     if (t === 'String') return this.expr(e);
     if (t === 'Double' || t === 'Bool') return `js(${this.expr(e)})`;
@@ -8431,7 +8460,10 @@ ${members.join('\n')}
     }
     const native = this.native.property(e);
     if (native) return native;
-    const dot = e.questionDotToken ? '?.' : '.';
+    // `a?.b?.c` where Swift holds `b` present: the chain `a?.b` already carries the optional, and `?.` on `b` does not compile.
+    const held = (x: ts.Expression) => this.declaredTypeOf(x) ?? this.typeOf(x);
+    const linked = !this.library && ts.isPropertyAccessExpression(target) && ts.isOptionalChain(target) && ![this.typeOf(target), held(target)].some((t) => /[?!]$/.test(t));
+    const dot = e.questionDotToken && !linked ? '?.' : '.';
     if (name === 'length' && this.isString(target)) {
       if (!this.typeOf(target).endsWith('?')) return `Double(${this.expr(target)}.utf16.count)`;
       // Only a chain (`s?.length`) reads undefined; `s.length` of null or undefined throws, as unwrapping traps.

@@ -44,6 +44,10 @@ export const kitIndexOptions: { exclude: RegExp | null } = { exclude: null };
 export function unwrapped(text: string): string {
   // A declaration swift-format wrapped before its brace: the brace back on the declaration's line.
   text = text.replace(/\n[ \t]*\{[ \t]*(?=\n)/g, ' {');
+  // A type declaration swift-format wrapped up to its brace (a long generated name on the line after its keyword, an
+  // inheritance list after its colon or a comma): the declaration on one line.
+  const typeHead = /^([ \t]*(?:@\w+[ \t]+)*(?:(?:public|open|final|internal|indirect)[ \t]+)*(?:class|struct|enum|extension|protocol|actor))(?=\s+(?!(?:func|var|let|subscript|init)\b)\w)([^{]*?)(?=\{)/gm;
+  text = text.replace(typeHead, (_, head: string, rest: string) => head + rest.replace(/[ \t]*\n[ \t]*/g, ' '));
   // A type swift-format wrapped onto the next line, after a property's colon or a function's arrow.
   text = text.replace(/(\b(?:var|let)\s+`?\w+`?\s*:|->)[ \t]*\n[ \t]*/g, '$1 ');
   // A function's effects or arrow swift-format wrapped onto the line after its parameters.
@@ -146,7 +150,7 @@ export function kitIndex(kitSources: string): Map<string, KitType> {
           }
         }
       }
-      for (const ch of line) {
+      for (const ch of line.replace(/"(?:\\.|[^"\\])*"/g, '""')) {
         if (ch === '{') depth++;
         else if (ch === '}') {
           depth--;

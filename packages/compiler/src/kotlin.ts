@@ -5192,7 +5192,7 @@ export class Translator implements AsyncTranslator {
       return isNullable(target) ? values : asserted(values);
     }
     // Lenient code: `a?.b` ends undefined where `a` is, whatever the type says.
-    if (this.lenient && ['String', 'Double', 'Boolean'].includes(target) && source === target && (ts.isPropertyAccessExpression(e) || ts.isCallExpression(e) || ts.isElementAccessExpression(e)) && e.flags & ts.NodeFlags.OptionalChain) return this.undefinedAs(this.expr(e), target);
+    if ((this.lenient || !this.library) && ['String', 'Double', 'Boolean'].includes(target) && source === target && this.optionalChainEnd(e)) return this.undefinedAs(this.expr(e), target);
     // Library mode: `a && b`, `a || b` of operands Kotlin types apart (a nullable field, a string): the value, read as the type says.
     if (this.library && ['String', 'Double', 'Boolean'].includes(target) && ts.isBinaryExpression(e) && [ts.SyntaxKind.AmpersandAmpersandToken, ts.SyntaxKind.BarBarToken].includes(e.operatorToken.kind) && source === target
         && [e.left, e.right].some((x) => (this.declaredTypeOf(x) ?? this.typeOf(x)) !== target)) return this.fromAnyCode(this.expr(e), target, true);
@@ -5300,13 +5300,16 @@ export class Translator implements AsyncTranslator {
       if (this.library && want && this.readsArguments(e)) {
         const names = want.params.map((_, k) => `__a${k}`);
         const call = `__f(jsArrayOf<Any?>(${names.join(', ')}))`;
-        return `run { val __f = ${this.closure(e, `(JSArray<Any?>) -> ${want.ret}`)}; { ${want.params.map((p, k) => `${names[k]}: ${p}`).join(', ')} -> ${call} } }`;
+        return `run<(${want.params.join(', ')}) -> ${want.ret}> { val __f = ${this.closure(e, `(JSArray<Any?>) -> ${want.ret}`)}; { ${want.params.map((p, k) => `${names[k]}: ${p}`).join(', ')} -> ${call} } }`;
       }
       if (own && want && own.params.length <= want.params.length && ((kitSlot && own.params.length < want.params.length) || own.params.some((p, k) => p !== want.params[k] && this.convert('x', want.params[k], p) !== 'x'))) {
         const names = want.params.map((_, k) => `__a${k}`);
         const call = `__f(${own.params.map((p, k) => this.convert(names[k], want.params[k], p)).join(', ')})`;
         // A parameter the function ignores takes any value: Kotlin's function types take a supertype there.
-        return `run { val __f = ${this.closure(e, `(${own.params.join(', ')}) -> ${want.ret}`)}; { ${want.params.map((p, k) => `${names[k]}: ${k < own.params.length ? p : 'Any?'}`).join(', ')} -> ${call} } }`;
+        const params = want.params.map((p, k) => (k < own.params.length ? p : 'Any?'));
+        // `run` typed explicitly: an inferred one leaves the argument's type open, and overloads of the callee that
+        // differ only in their function parameter's arity (rxjs `filter`, `map`) are then ambiguous.
+        return `run<(${params.join(', ')}) -> ${want.ret}> { val __f = ${this.closure(e, `(${own.params.join(', ')}) -> ${want.ret}`)}; { ${params.map((p, k) => `${names[k]}: ${p}`).join(', ')} -> ${call} } }`;
       }
       return this.closure(e, slot);
     }
@@ -5373,6 +5376,7 @@ export class Translator implements AsyncTranslator {
     if (this.generatedKit && sb !== tb && this.core?.has(sb) && this.core.has(tb) && this.core.kitExtends?.(tb, sb)) return cast(this.functionValue(e), target);
     const head = (t: string) => /^(JS(?:Promise|Array|Map|Set|Generator|Iterator|WeakRef))</.exec(t)?.[1];
     if (head(sb) && head(sb) === head(tb) && sb !== tb) return cast(this.functionValue(e), target);
+    if (sb !== tb && anyArguments(sb, tb)) return `jsUnchecked<${target}>(${this.functionValue(e)})`;
     // An object given where an object type of the program's is declared, which it meets without naming it (`btn` as a `MeasuredView`): read through it by name.
     const wanted = this.checker.getContextualType(e)?.getSymbol();
     const programInterface = !!wanted && !!(wanted.flags & ts.SymbolFlags.Interface) && !(wanted.flags & ts.SymbolFlags.Class) && !!wanted.declarations?.every((d) => !d.getSourceFile().isDeclarationFile) && wanted.name === tb;
@@ -5979,6 +5983,8 @@ export class Translator implements AsyncTranslator {
   str(e: ts.Expression): string {
     const maybe = this.maybeUndefined(e);
     if (maybe) return `jsToString(${maybe})`;
+    // An app's `a?.b` typed present: Kotlin's chain gives a nullable, undefined where it stops.
+    if (!this.library && ['String', 'Double', 'Boolean'].includes(this.typeOf(e)) && this.optionalChainEnd(e)) return `jsToString(${this.expr(e)})`;
     const t = this.typeOf(e);
     // A string declared nullable converts as JavaScript converts undefined.
     if (t === 'String') {
@@ -6447,6 +6453,12 @@ export class Translator implements AsyncTranslator {
     return null;
   }
 
+  /** `a?.b`, `a?.b()`, `a?.[k]` (in parentheses or not): Kotlin's chain gives a nullable whatever TypeScript's type says. */
+  private optionalChainEnd(e: ts.Expression): boolean {
+    while (ts.isParenthesizedExpression(e)) e = e.expression;
+    return (ts.isPropertyAccessExpression(e) || ts.isCallExpression(e) || ts.isElementAccessExpression(e)) && !!(e.flags & ts.NodeFlags.OptionalChain);
+  }
+
   /** An undefined-or-value as the TypeScript type reads it: NaN, "undefined" and false are what undefined converts to. */
   private undefinedAs(code: string, type: string): string {
     if (isNullable(type) || type === 'Any?') return code;
@@ -6490,6 +6502,10 @@ export class Translator implements AsyncTranslator {
         continue;
       }
       let pt = this.type(this.checker.getTypeOfSymbolAtLocation(p, e), e);
+      // A generic implementation's parameter is not instantiated by an overload's call: the overload's, as this call instantiates it.
+      const implTypes = impl && impl !== sig?.getDeclaration() ? impl.typeParameters?.map((t) => t.name.text) ?? [] : [];
+      const resolved = sig?.getParameters()[k];
+      if (resolved && implTypes.some((t) => new RegExp(`\\b${t}\\b`).test(pt))) pt = this.type(this.checker.getTypeOfSymbolAtLocation(resolved, e), e);
       // Library mode: a generic function's parameter is its declaration's Kotlin type, the type parameters erased.
       // So is any parameter whose type reads otherwise here (an alias of a union resolving apart at the call).
       const generic = this.library && appDeclared && decl && ts.isParameter(decl) && (!!(decl.parent as ts.SignatureDeclaration).typeParameters?.length || (ts.isClassLike(decl.parent.parent) && !!decl.parent.parent.typeParameters?.length) || pt === 'Any?');
@@ -6989,21 +7005,26 @@ export class Translator implements AsyncTranslator {
   private fromPluginCall(e: ts.CallExpression, code: string): string {
     const decl = this.checker.getResolvedSignature(e)?.getDeclaration();
     code = this.lenientResult(e, code);
-    if (!decl || ts.isJSDocSignature(decl) || !this.pluginFiles.has(decl.getSourceFile().fileName)) return code;
-    const declared = this.returnTypeOf(decl as ts.SignatureDeclaration);
+    if (!decl || ts.isJSDocSignature(decl)) return code;
     const site = this.typeOf(e);
-    if (declared === 'Any?' && site !== 'Any?' && site !== 'Unit') return this.fromAnyCode(code, site, true);
-    // Library mode: an overload's call, where Kotlin's one function gives what the implementation returns (`getWindows`'s `WindowBase[]` for `NativeWindow[]`).
-    const impl = this.library ? implementationOf(decl as ts.SignatureDeclaration) : null;
+    // An overload's call, where Kotlin's one function gives what the implementation returns (`getWindows`'s `WindowBase[]` for `NativeWindow[]`).
+    const impl = implementationOf(decl as ts.SignatureDeclaration);
     const made = impl && impl !== decl ? this.returnTypeOf(impl) : null;
-    if (made && made.replace(/\?$/, '') !== site.replace(/\?$/, '') && site !== 'Unit' && site !== 'Any?' && made !== 'Unit') return made === 'Any?' ? this.fromAnyCode(code, site, true) : cast(code, isAsserted(code) ? site : optionalType(site));
+    const overloaded = !!made && made.replace(/\?$/, '') !== site.replace(/\?$/, '') && site !== 'Unit' && site !== 'Any?' && made !== 'Unit';
+    const fromOverload = () => (made === 'Any?' ? this.fromAnyCode(code, site, true) : cast(code, isAsserted(code) || (!this.library && !isNullable(made!)) ? site : optionalType(site)));
+    if (!this.pluginFiles.has(decl.getSourceFile().fileName)) return overloaded && !this.library ? fromOverload() : code;
+    const declared = this.returnTypeOf(decl as ts.SignatureDeclaration);
+    if (declared === 'Any?' && site !== 'Any?' && site !== 'Unit') return this.fromAnyCode(code, site, true);
+    if (overloaded) return fromOverload();
     // A generic function's result, its type parameters erased (`makeParser<T>` gives `(Any?) -> Any?`): what this call instantiates.
     const generic = !!(decl as ts.SignatureDeclaration).typeParameters?.length && declared !== site && site !== 'Unit' && site !== 'Any?' && declared.includes('Any?');
     return generic && (isFunctionType(declared.replace(/^\((.*)\)\?$/, '$1')) || /^JS\w+</.test(declared)) ? cast(code, site) : code;
   }
 
   private signalWrite(target: ts.Expression, value: ts.Expression, t: string): string {
-    const code = this.coerce(value, t);
+    let code = this.coerce(value, t);
+    // A non-strict app's signal of an object takes undefined (`items.find(…)`) as it holds its initial null: unchecked.
+    if (this.lenientApp && !this.library && isAsserted(code) && this.isObjectType(t) && !isNullable(t)) code = `(${unasserted(code)} ?: jsUncheckedNull<${t}>())`;
     return this.symbolName(target) === 'VueRef' && this.isObjectRef(value) ? `jsReactive(${code})` : code;
   }
 
@@ -9209,6 +9230,25 @@ export function lambda(params: string[], body: string): string {
 /** A type whose arguments Kotlin cannot check a cast against (`JSArray<View>`, `(String) -> Unit`): the JVM erases them. */
 function erased(type: string): boolean {
   return /<|->/.test(type.replace(/<\*(, \*)*>/g, ''));
+}
+
+/**
+ * Whether `target` is `source` with some of its generic types' arguments `Any?` (`Stream<any>` for `Stream<Event>`):
+ * TypeScript's `any` takes any instantiation, Kotlin's invariant generics only by an unchecked cast.
+ */
+function anyArguments(source: string, target: string): boolean {
+  let pattern = '', depth = 0;
+  for (let i = 0; i < target.length; i++) {
+    if (depth > 0 && target.startsWith('Any?', i) && /[<(,]\s*$/.test(target.slice(0, i)) && /^\s*[>),]/.test(target.slice(i + 4))) {
+      pattern += '(.+?)';
+      i += 3;
+      continue;
+    }
+    if (target[i] === '<') depth++;
+    else if (target[i] === '>' && target[i - 1] !== '-') depth--;
+    pattern += target[i].replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+  return pattern !== target.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') && new RegExp(`^${pattern}$`).test(source);
 }
 
 /** `code as type`, through the runtime's reified jsAs where only the class can be checked. */
