@@ -6,7 +6,7 @@ const WorkerDependency = (() => {
 		return require('webpack/lib/dependencies/WorkerDependency');
 	}
 })();
-const RuntimeGlobals = require('webpack/lib/RuntimeGlobals');
+const { RuntimeGlobals } = require('webpack');
 
 /**
  * Patch WorkerDependency to change:
