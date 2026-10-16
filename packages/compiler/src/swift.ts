@@ -5,7 +5,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { KIT_APPLE_SOURCES } from './paths.ts';
 import { Throws, digitsLiteral, isArrayLengthLiteral, isArrayLengthWrite, isAsync, isStatic } from './throws.ts';
-import { intlConstructor, isObjectToStringCall, isStringRaw, leadingNeverRead, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, uncheckedMatch, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers } from './lang.ts';
+import { intlConstructor, isObjectToStringCall, isStringRaw, leadingNeverRead, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, uncheckedMatch, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, LooseSlots, originOf, ownSlot, implementedInterfaceDeclarations, slotType, type TrustScope } from './lang.ts';
 import { AsyncLowering, type AsyncCtx, type AsyncSyntax, type AsyncTranslator } from './async.ts';
 import { CoreAPI, isCoreDeclaration, packageOf } from './core.ts';
 import type { KitMember } from './kit-index.ts';
@@ -1282,7 +1282,7 @@ export class Translator implements AsyncTranslator {
       const declared = ts.isElementAccessExpression(n) && /^JSArray<Any\?>[?!]?$/.test(this.typeOf(n.expression)) ? 'Any?' : this.declaredTypeOf(n as ts.Expression);
       if (declared === 'Any?') return 'Any?';
     }
-    if (this.lenient && (t === 'Bool' || t === 'String' || t === 'Double') && this.declaredUndefined(n)) return `${t}?`;
+    if ((t === 'Bool' || t === 'String' || t === 'Double') && this.holdsUndefined(n)) return `${t}?`;
     // An element of an array literal typed `never[]` (`callbacks = []` under strict checks), which Swift holds as any value.
     if (t === 'Never' && (ts.isIdentifier(n) || ts.isVariableDeclaration(n)) && this.resolve(n)?.valueDeclaration && ts.isVariableDeclaration(this.resolve(n)!.valueDeclaration!)) return 'Any?';
     return this.holdingNull(t, n);
@@ -1674,7 +1674,7 @@ export class Translator implements AsyncTranslator {
     }
     if (!(ts.isVariableDeclaration(decl) || ts.isParameter(decl) || ts.isPropertyDeclaration(decl) || ts.isPropertySignature(decl) || ts.isBindingElement(decl) || ts.isGetAccessorDeclaration(decl))) return null;
     const t = this.holdingNull(this.type(this.checker.getTypeOfSymbolAtLocation(sym, decl), decl), e);
-    return this.lenient && (t === 'Bool' || t === 'String' || t === 'Double') && this.declaredUndefined(e) ? `${t}?` : t;
+    return (t === 'Bool' || t === 'String' || t === 'Double') && this.holdsUndefined(e) ? `${t}?` : t;
   }
 
   /**
@@ -2758,7 +2758,8 @@ ${members.join('\n')}
     const zero = this.zero(type);
     // An array of another element type (`[CssProperty, unknown][]` read as `[any, any][]`) is no Swift cast: its elements are read, undefined giving none.
     if (orZero && /^JSArray<.*>$/.test(type)) return this.fromAny(code, type);
-    if (orZero && this.lenient && ['String', 'Double', 'Bool'].includes(type)) return this.fromAny(code, type);
+    // An untyped string, number or boolean is converted as JavaScript converts it where it is used, never refused.
+    if (orZero && ['String', 'Double', 'Bool'].includes(type)) return this.fromAny(code, type);
     if (orZero && zero && zero !== 'nil' && !type.endsWith('?')) return `((${code} as? ${type}) ?? ${zero})`;
     // Lenient code converts a string, number or boolean as JavaScript would; a cast to any other type still throws where it fails.
     const saved = this.throwingCast;
@@ -2895,11 +2896,11 @@ ${members.join('\n')}
     if (this.native.isEnumType(base)) return type.endsWith('?') ? `jsUnlessNullish(${code}, { ${this.native.enumFromNumber('jsToNumber($0)', base)} })` : this.native.enumFromNumber(`jsToNumber(${code})`, base);
     // A geometry struct the runtime gives script as an object (`{ origin, size }`): the struct again.
     if (['CGRect', 'CGSize', 'CGPoint', 'UIEdgeInsets'].includes(base)) return type.endsWith('?') ? `jsNativeStruct(${code}, ${base}.self)` : `jsNativeStructPresent(${code}, ${base}.self)`;
-    if (this.lenient && ['String?', 'Double?', 'Bool?'].includes(type)) return `jsLenient${base === 'Double' ? 'Number' : base}OrNil(${code})`;
+    if (['String?', 'Double?', 'Bool?'].includes(type)) return `jsLenient${base === 'Double' ? 'Number' : base}OrNil(${code})`;
     if (type.endsWith('?')) return `(${code} as? ${base})`;
-    // Lenient code: an untyped value read as a string, number or boolean is converted as JavaScript would where it is used
+    // An untyped value read as a string, number or boolean is converted as JavaScript would where it is used
     // (`textWrap = "true"` tests true); undefined is the type's zero.
-    if (this.lenient && ['String', 'Double', 'Bool'].includes(type)) return `jsLenient${type === 'Double' ? 'Number' : type}(${code})`;
+    if (['String', 'Double', 'Bool'].includes(type)) return `jsLenient${type === 'Double' ? 'Number' : type}(${code})`;
     // Lenient code: an object of another type passed for a class made without arguments, as JavaScript lets structurally.
     const plain = this.lenient ? this.plainClass(type) : null;
     // Module-qualified: inside an object of the program's that holds the class under its name (`{ Declaration }`), the bare name is that field.
@@ -3000,6 +3001,8 @@ ${members.join('\n')}
   /** Whether `fromAny` writes a cast to `type` that `checkedCast` makes throw (or may, an over-approximation). */
   private castChecks(type: string): boolean {
     if (type === 'Any?' || type === 'Void' || type === 'JSError' || /[?!]$/.test(type)) return false;
+    // A string, number or boolean is converted, never refused.
+    if (['String', 'Double', 'Bool'].includes(type)) return false;
     if (/^(JSArray|JSPromise|JSRecord)</.test(type) || type === 'JSDate' || hasTopLevelArrow(type)) return false;
     const base = type.replace(/^\((.*)\)$/, '$1');
     if (['CGRect', 'CGSize', 'CGPoint', 'UIEdgeInsets'].includes(base) || this.native.isEnumType(base)) return false;
@@ -3468,7 +3471,7 @@ ${members.join('\n')}
   private mayReturnUndefined(fn: ts.SignatureDeclaration): boolean {
     if (fn.getSourceFile().isDeclarationFile) return false;
     // A non-strict app's function returning null (`return null` from a `Color` helper): optional too.
-    if (!this.lenient) return this.lenientApp && ts.isFunctionDeclaration(fn) && !!fn.body && this.returnsUndefined(fn);
+    if (!this.lenient) return (this.lenientApp && ts.isFunctionDeclaration(fn) && !!fn.body && this.returnsUndefined(fn)) || (!this.library && this.looseSlots.has(fn));
     if (ts.isMethodDeclaration(fn) && !isStatic(fn) && this.declaresNullableReturn(fn)) return true;
     // A function or getter declared `string | null`: a string, number or boolean it gives may be undefined.
     if ((ts.isGetAccessorDeclaration(fn) || ts.isFunctionDeclaration(fn) || (ts.isMethodDeclaration(fn) && isStatic(fn))) && fn.type && ts.isUnionTypeNode(fn.type) && fn.type.types.some((x) => x.kind === ts.SyntaxKind.UndefinedKeyword || (ts.isLiteralTypeNode(x) && x.literal.kind === ts.SyntaxKind.NullKeyword))) {
@@ -5677,6 +5680,61 @@ ${members.join('\n')}
   readonly lenientFiles = new Set<string>();
   private currentFile: string | null = null;
 
+  /** The trust rule's view of this program (lang.ts): which files are strict, which declarations are the platform's. */
+  private trustScope: TrustScope | null = null;
+  get trust(): TrustScope {
+    return this.trustScope ??= {
+      checker: this.checker,
+      strictFile: (f) => !this.lenientAll && !this.lenientFiles.has(f.fileName) && !(this.lenientApp && !this.pluginFiles.has(f.fileName)),
+      nativeDeclaration: (d) => /[\\/]objc![^\\/]+\.d\.ts$/.test(d.getSourceFile().fileName),
+      looseSlot: (d) => this.looseSlots.has(d),
+    };
+  }
+
+  /**
+   * Strict code's strings, numbers and booleans an untrusted value is placed in (`const name: string = json.name`):
+   * held optional, as they may hold undefined, and read as JavaScript reads undefined where a value is needed.
+   */
+  private looseSlotSet: LooseSlots | null = null;
+  private get looseSlots(): LooseSlots {
+    return this.looseSlotSet ??= new LooseSlots(this.sourceFiles, this.checker, (e) => this.untrustedPrimitive(e), (d) => this.holdsPrimitive(d));
+  }
+
+  /** A value that may be undefined, null or another kind though Swift types it a string, number or boolean. */
+  private untrustedPrimitive(e: ts.Expression): boolean {
+    try {
+      if (this.typeOf(e) === 'Any?') return true;
+      const x = ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses);
+      if ((ts.isAsExpression(x) || ts.isTypeAssertionExpression(x)) && this.typeOf(x.expression) === 'Any?') return true;
+      return originOf(e, this.trust) === 'loose';
+    } catch { return false; }
+  }
+
+  /** A declaration of strict code (not the kit's) that holds a string, number or boolean, in a form Swift may choose alone. */
+  private holdsPrimitive(d: ts.Declaration): boolean {
+    if (this.library || !this.trust.strictFile(d.getSourceFile()) || !ownSlot(d, this.checker, this.implementedInterfaceSet ??= implementedInterfaceDeclarations(this.sourceFiles, this.checker))) return false;
+    try {
+      const st = slotType(d, this.checker);
+      return !!st && ['String', 'Double', 'Bool'].includes(this.type(st, d));
+    } catch { return false; }
+  }
+
+  /** Strict code's declaration holding a string, number or boolean an untrusted value is placed in (see `looseSlots`). */
+  private looseDeclaration(n: ts.Node): boolean {
+    if (this.library) return false;
+    const named = ts.isPropertyAccessExpression(n) ? n.name : ts.isPropertyDeclaration(n) || ts.isVariableDeclaration(n) || ts.isParameter(n) || ts.isPropertySignature(n) ? n.name : n;
+    if (!ts.isIdentifier(named) && !ts.isPrivateIdentifier(named)) return false;
+    const d = this.checker.getSymbolAtLocation(named)?.valueDeclaration;
+    return !!d && this.looseSlots.has(d);
+  }
+
+  /** A string, number or boolean declaration that holds undefined apart from its type's values. */
+  private holdsUndefined(n: ts.Node): boolean {
+    return (this.lenient && this.declaredUndefined(n)) || this.looseDeclaration(n);
+  }
+
+  private implementedInterfaceSet: Set<ts.Declaration> | null = null;
+
   /** With `--all-errors`: what each statement could not translate, collected so one run reports them all. */
   errors: string[] | null = null;
 
@@ -6820,7 +6878,7 @@ ${members.join('\n')}
       return target === 'Any?' ? this.boxFunction(fn, own) : this.convert(fn, own, target);
     }
     // A value declared `T | undefined` where a `T` goes (`scrollEnabled = this._scrollWasEnabled`): undefined reads as it converts.
-    if ((target === 'Bool' || target === 'String' || target === 'Double') && this.lenient && this.typeOf(e) === `${target}?` && this.declaredUndefined(e)) return this.undefinedAs(this.expr(e), target);
+    if ((target === 'Bool' || target === 'String' || target === 'Double') && this.typeOf(e) === `${target}?` && this.holdsUndefined(e)) return this.undefinedAs(this.expr(e), target);
     // An iterable where the type names only its iteration: the kit's iterable of it.
     const iterableSlot = /^JS(Async)?Iterable<.*>\??$/.exec(target);
     if (iterableSlot && !/^JS(Async)?(Iterable|Iterator|Generator)</.test(this.typeOf(e))) return `${iterableSlot[1] ? 'jsAsyncIterable' : 'jsIterable'}(${this.expr(e)})`;
@@ -9163,7 +9221,7 @@ ${members.join('\n')}
       const method = this.library && decl && ts.isParameter(decl) && ts.isMethodDeclaration(decl.parent) && !isStatic(decl.parent) && !decl.getSourceFile().isDeclarationFile ? decl.parent : null;
       const emitted = method && this.baseMethod(method) ? this.emittedSignature(method).params[k]?.type.replace(/!$/, '?') : undefined;
       // An optional parameter of the program's (`cssFileName?: string`, `namespace: string | undefined`) takes undefined as it is.
-      const omissible = !emitted && !erased && decl && ts.isParameter(decl) && (!!decl.questionToken || this.declaredUndefined(decl)) && !decl.getSourceFile().isDeclarationFile && ['String', 'Double', 'Bool'].includes(at);
+      const omissible = !emitted && !erased && decl && ts.isParameter(decl) && (!!decl.questionToken || this.declaredUndefined(decl) || this.looseDeclaration(decl)) && !decl.getSourceFile().isDeclarationFile && ['String', 'Double', 'Bool'].includes(at);
       out.push(this.coerce(a, emitted ?? (omissible ? optionalType(at) : erased ? this.paramType(decl as ts.ParameterDeclaration) : at === 'Never' ? this.type(this.checker.getTypeOfSymbol(p), e) : at)));
     }
     if (restAt >= 0 && appDeclared && list.length <= restAt) out.push(`${this.restType(params[restAt])}()`);
