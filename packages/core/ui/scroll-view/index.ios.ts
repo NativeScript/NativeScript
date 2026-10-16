@@ -134,12 +134,15 @@ export class ScrollView extends ScrollViewBase {
 		return this.nativeViewProtected ? this.nativeViewProtected.contentOffset.y : 0;
 	}
 
+	// Each is the largest offset a scroll reaches, end inset included, so scrolling to it shows the end of the
+	// content above a keyboard or docked bar that sets contentInset.bottom.
 	get scrollableWidth(): number {
 		if (!this.nativeViewProtected || this.orientation !== 'horizontal') {
 			return 0;
 		}
 
-		return Math.max(0, this.nativeViewProtected.contentSize.width - this.nativeViewProtected.bounds.size.width);
+		const nativeView = this.nativeViewProtected;
+		return Math.max(0, nativeView.contentSize.width + nativeView.adjustedContentInset.right - nativeView.bounds.size.width);
 	}
 
 	get scrollableHeight(): number {
@@ -147,7 +150,8 @@ export class ScrollView extends ScrollViewBase {
 			return 0;
 		}
 
-		return Math.max(0, this.nativeViewProtected.contentSize.height - this.nativeViewProtected.bounds.size.height);
+		const nativeView = this.nativeViewProtected;
+		return Math.max(0, nativeView.contentSize.height + nativeView.adjustedContentInset.bottom - nativeView.bounds.size.height);
 	}
 
 	[isScrollEnabledProperty.getDefault](): boolean {
