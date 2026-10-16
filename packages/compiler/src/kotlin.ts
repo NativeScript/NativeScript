@@ -5129,9 +5129,9 @@ export class Translator implements AsyncTranslator {
   /** An expression where Kotlin needs a value of `target`. */
   coerce(e: ts.Expression, target: string): string {
     // An erased assertion where the place takes undefined: the value as it is, or the nullable it may be.
-    const asserted = this.assertedUntyped(e);
-    if (asserted && target === 'Any?' && this.typeOf(asserted.expression) === 'Any?') return this.expr(asserted.expression);
-    if (asserted && isNullable(target) && target === optionalType(this.typeOf(asserted))) return this.assertedOptional(asserted);
+    const assertion = this.assertedUntyped(e);
+    if (assertion && target === 'Any?' && this.typeOf(assertion.expression) === 'Any?') return this.expr(assertion.expression);
+    if (assertion && isNullable(target) && target === optionalType(this.typeOf(assertion))) return this.assertedOptional(assertion);
     // `view && view.describe()` where the place takes undefined and the object may be missing: undefined then.
     const bare = ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses);
     if (!this.library && (target === 'Any?' || isNullable(target)) && ts.isBinaryExpression(bare) && bare.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken && this.isObjectRef(bare.left) && !isNullable(this.typeOf(bare.left))) {
@@ -6384,8 +6384,8 @@ export class Translator implements AsyncTranslator {
 
   private maybeUndefined(e: ts.Expression): string | null {
     while (ts.isParenthesizedExpression(e)) e = e.expression;
-    const asserted = this.assertedUntyped(e);
-    if (asserted) return this.assertedOptional(asserted);
+    const assertion = this.assertedUntyped(e);
+    if (assertion) return this.assertedOptional(assertion);
     // Library mode: `<T[]>record[key]`, an assertion of the type the read has: the read.
     if (this.library && (ts.isAsExpression(e) || ts.isTypeAssertionExpression(e)) && !this.subst.has(e) && this.typeOf(e) === this.typeOf(e.expression)) return this.maybeUndefined(e.expression);
     if (this.subst.has(e)) return null;
