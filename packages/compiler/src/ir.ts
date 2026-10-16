@@ -82,6 +82,8 @@ export interface ComponentIR {
   init?: string;
   /** The component's own stylesheets, scoped by its framework, which the app's build adds after app.css. */
   styles?: ComponentStyle[];
+  /** Lines of the virtual file (0-based) its template's bindings were made from, with their line (1-based) in `file`, the template's own. */
+  templateLines?: { file: string; lines: [number, number][] };
 }
 
 /** A component's stylesheet as plain CSS for the app's CSS chain, under a path of its own that names its component. */

@@ -37,6 +37,8 @@ const kotlinOnly = (file: string) => readFileSync(file, 'utf8').startsWith('// @
 const kotlinApp = (file: string) => readFileSync(file, 'utf8').startsWith('// @kotlin');
 /** A case starting `// @plugin` is a non-strict app whose imports from `helpers/plugin/` are a plugin's, compiled from its source (Swift only). */
 const pluginCase = (file: string) => readFileSync(file, 'utf8').startsWith('// @plugin');
+/** A case starting `// @app-lenient` is a non-strict app's own code (`strict: false` in its tsconfig.json), on both targets. */
+const appLenient = (file: string) => readFileSync(file, 'utf8').startsWith('// @app-lenient');
 /** A case starting `// @swift` covers what only the Swift runtime has yet (typed arrays): it is not run as Kotlin. */
 const swiftOnly = (file: string) => (lenient(file) && !kotlinOnly(file) && !lenientBoth(file)) || pluginCase(file) || readFileSync(file, 'utf8').startsWith('// @swift');
 
@@ -51,13 +53,13 @@ function weakOf(file: string) {
 const membersByName = (file: string) => /^\/\/ @members-by-name$/m.test(readFileSync(file, 'utf8'));
 
 function translate(file: string, out: string): void {
-  const modules = translateSwift([file], out, { lenient: lenient(file), weak: weakOf(file), membersByName: membersByName(file), plugin: pluginCase(file) });
+  const modules = translateSwift([file], out, { lenient: lenient(file), weak: weakOf(file), membersByName: membersByName(file), plugin: pluginCase(file), lenientApp: appLenient(file) });
   writeFileSync(join(out, 'main.swift'), swiftMain(modules));
 }
 
 /** The case as Kotlin in package `pkg`, with a `main` running its modules' top level and then the event loop. */
 function translateKotlin(file: string, out: string, pkg: string): void {
-  const modules = translateKotlinProgram([file], out, pkg, { lenient: lenient(file), membersByName: membersByName(file) });
+  const modules = translateKotlinProgram([file], out, pkg, { lenient: lenient(file), membersByName: membersByName(file), lenientApp: appLenient(file) });
   writeFileSync(join(out, '__Main.kt'), kotlinMain(modules, pkg));
 }
 
