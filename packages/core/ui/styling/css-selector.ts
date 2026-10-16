@@ -3,6 +3,7 @@ import '../../globals';
 import { _expandCssShorthand, _pendingCssShorthandSubstitution, isCssVariable } from '../core/properties';
 import { isNullOrUndefined } from '../../utils/types';
 import { cleanupImportantFlags } from './css-utils';
+import { CSSUtils } from '../../css/system-classes';
 
 import * as ReworkCSS from '../../css';
 import { checkIfMediaQueryMatches } from '../../media-query-list';
@@ -201,6 +202,8 @@ function SelectorProperties(specificity: Specificity, rarity: Rarity, dynamic = 
 		cls.prototype.dynamic = dynamic;
 		cls.prototype.hasAdjacentCombinator = false;
 		cls.prototype.hasSiblingCombinator = false;
+		cls.prototype.dependsOnNextSibling = false;
+		cls.prototype.dependsOnFollowingSiblings = false;
 		cls.prototype.tier = SelectorTier.Application;
 
 		return cls;
@@ -215,6 +218,8 @@ function FunctionalPseudoClassProperties(specificity: Specificity, rarity: Rarit
 		cls.prototype.dynamic = false;
 		cls.prototype.hasAdjacentCombinator = false;
 		cls.prototype.hasSiblingCombinator = false;
+		cls.prototype.dependsOnNextSibling = false;
+		cls.prototype.dependsOnFollowingSiblings = false;
 		cls.prototype.pseudoSelectorListType = pseudoSelectorListType;
 
 		return cls;
@@ -234,6 +239,8 @@ export abstract class SelectorBase {
 	 * Selector contains a general sibling ('~') combinator, so its match depends on all previous siblings.
 	 */
 	public hasSiblingCombinator: boolean;
+	public dependsOnNextSibling: boolean;
+	public dependsOnFollowingSiblings: boolean;
 	public abstract match(node: Node): boolean;
 	public abstract mayMatch(node: Node): boolean;
 	public abstract trackChanges(node: Node, map: ChangeAccumulator): void;
@@ -441,6 +448,156 @@ export class AttributeSelector extends SimpleSelector {
 	}
 }
 
+const STRUCTURAL_PSEUDO_CLASSES: Record<string, { fromEnd: boolean; ofType: boolean; nth?: boolean; only?: boolean }> = {
+	'first-child': { fromEnd: false, ofType: false },
+	'last-child': { fromEnd: true, ofType: false },
+	'only-child': { fromEnd: false, ofType: false, only: true },
+	'first-of-type': { fromEnd: false, ofType: true },
+	'last-of-type': { fromEnd: true, ofType: true },
+	'only-of-type': { fromEnd: false, ofType: true, only: true },
+	'nth-child': { fromEnd: false, ofType: false, nth: true },
+	'nth-last-child': { fromEnd: true, ofType: false, nth: true },
+	'nth-of-type': { fromEnd: false, ofType: true, nth: true },
+	'nth-last-of-type': { fromEnd: true, ofType: true, nth: true },
+};
+
+const NTH_FORMULA = /^(?:([+-]?)(\d*)n(?:\s*([+-])\s*(\d+))?|([+-]?\d+))$/;
+
+function parseNthFormula(formula: string): [number, number] | null {
+	const value = formula?.trim().toLowerCase();
+	if (value === 'odd') {
+		return [2, 1];
+	}
+	if (value === 'even') {
+		return [2, 0];
+	}
+
+	const match = value && NTH_FORMULA.exec(value);
+	if (!match) {
+		return null;
+	}
+	if (match[5] !== undefined) {
+		return [0, parseInt(match[5], 10)];
+	}
+
+	const a = (match[1] === '-' ? -1 : 1) * (match[2] ? parseInt(match[2], 10) : 1);
+	const b = match[4] ? (match[3] === '-' ? -1 : 1) * parseInt(match[4], 10) : 0;
+
+	return [a, b];
+}
+
+@SelectorProperties(Specificity.PseudoClass, Rarity.PseudoClass, Match.Static)
+export class StructuralPseudoClassSelector extends SimpleSelector {
+	private readonly fromEnd: boolean;
+	private readonly ofType: boolean;
+	private readonly only: boolean;
+
+	static create(name: string, formula: string): SimpleSelector {
+		const kind = STRUCTURAL_PSEUDO_CLASSES[name];
+		const nth = kind.nth ? parseNthFormula(formula) : [0, 1];
+		if (!nth) {
+			return new InvalidSelector(new Error(`Unsupported :${name}(${formula})`));
+		}
+
+		return new StructuralPseudoClassSelector(name, formula, nth[0], nth[1]);
+	}
+
+	private constructor(
+		public cssPseudoClass: string,
+		public formula: string,
+		private a: number,
+		private b: number,
+	) {
+		super();
+
+		const kind = STRUCTURAL_PSEUDO_CLASSES[cssPseudoClass];
+		this.fromEnd = kind.fromEnd;
+		this.ofType = kind.ofType;
+		this.only = !!kind.only;
+
+		const fromStart = this.only || !this.fromEnd;
+		const fromEnd = this.only || this.fromEnd;
+		const anySibling = this.ofType || a !== 0 || b !== 1;
+		this.hasAdjacentCombinator = fromStart && !anySibling;
+		this.hasSiblingCombinator = fromStart && anySibling;
+		this.dependsOnNextSibling = fromEnd && !anySibling;
+		this.dependsOnFollowingSiblings = fromEnd && anySibling;
+	}
+	public toString(): string {
+		return `:${this.cssPseudoClass}${this.formula ? `(${this.formula})` : ''}${wrap(this.combinator)}`;
+	}
+	public match(node: Node): boolean {
+		const parent = node.parent;
+		if (!parent || !parent.getChildIndex || !parent.getChildAt || !parent.getChildrenCount) {
+			return false;
+		}
+
+		const index = parent.getChildIndex(node);
+		if (index < 0) {
+			return false;
+		}
+
+		if (this.only) {
+			return this.position(node, parent, index, false) === 1 && this.position(node, parent, index, true) === 1;
+		}
+
+		const position = this.position(node, parent, index, this.fromEnd);
+		const a = this.a;
+		const b = this.b;
+		if (a === 0) {
+			return position === b;
+		}
+
+		const n = (position - b) / a;
+
+		return n >= 0 && Number.isInteger(n);
+	}
+	public mayMatch(node: Node): boolean {
+		return this.match(node);
+	}
+	public trackChanges(node: Node, map: ChangeAccumulator): void {}
+
+	private position(node: Node, parent: Node, index: number, fromEnd: boolean): number {
+		if (!this.ofType) {
+			return fromEnd ? parent.getChildrenCount() - index : index + 1;
+		}
+
+		const cssType = node.cssType;
+		let position = 1;
+		if (fromEnd) {
+			for (let i = index + 1, count = parent.getChildrenCount(); i < count; i++) {
+				if (parent.getChildAt(i)?.cssType === cssType) {
+					position++;
+				}
+			}
+		} else {
+			for (let i = 0; i < index; i++) {
+				if (parent.getChildAt(i)?.cssType === cssType) {
+					position++;
+				}
+			}
+		}
+
+		return position;
+	}
+}
+
+@SelectorProperties(Specificity.PseudoClass, Rarity.PseudoClass, Match.Static)
+export class RootPseudoClassSelector extends SimpleSelector {
+	public toString(): string {
+		return `:root${wrap(this.combinator)}`;
+	}
+	public match(node: Node): boolean {
+		const cssClasses = node.cssClasses;
+
+		return !!cssClasses && (cssClasses.has(CSSUtils.ROOT_VIEW_CSS_CLASS) || cssClasses.has(CSSUtils.MODAL_ROOT_VIEW_CSS_CLASS));
+	}
+	public mayMatch(node: Node): boolean {
+		return this.match(node);
+	}
+	public trackChanges(node: Node, map: ChangeAccumulator): void {}
+}
+
 @SelectorProperties(Specificity.PseudoClass, Rarity.PseudoClass, Match.Dynamic)
 export class PseudoClassSelector extends SimpleSelector {
 	constructor(public cssPseudoClass: string) {
@@ -502,6 +659,8 @@ export abstract class FunctionalPseudoClassSelector extends PseudoClassSelector 
 		this.dynamic = this.selectors.some((sel) => sel.dynamic);
 		this.hasAdjacentCombinator = this.selectors.some((sel) => sel.hasAdjacentCombinator);
 		this.hasSiblingCombinator = this.selectors.some((sel) => sel.hasSiblingCombinator);
+		this.dependsOnNextSibling = this.selectors.some((sel) => sel.dependsOnNextSibling);
+		this.dependsOnFollowingSiblings = this.selectors.some((sel) => sel.dependsOnFollowingSiblings);
 	}
 	public toString(): string {
 		return `:${this.cssPseudoClass}(${this.selectors.join(', ')})${wrap(this.combinator)}`;
@@ -566,6 +725,8 @@ export class SimpleSelectorSequence extends SimpleSelector {
 		this.dynamic = selectors.some((sel) => sel.dynamic);
 		this.hasAdjacentCombinator = selectors.some((sel) => sel.hasAdjacentCombinator);
 		this.hasSiblingCombinator = selectors.some((sel) => sel.hasSiblingCombinator);
+		this.dependsOnNextSibling = selectors.some((sel) => sel.dependsOnNextSibling);
+		this.dependsOnFollowingSiblings = selectors.some((sel) => sel.dependsOnFollowingSiblings);
 	}
 	public toString(): string {
 		return `${this.selectors.join('')}${wrap(this.combinator)}`;
@@ -617,6 +778,8 @@ export class ComplexSelector extends SelectorCore {
 		this.dynamic = false;
 		this.hasAdjacentCombinator = false;
 		this.hasSiblingCombinator = false;
+		this.dependsOnNextSibling = false;
+		this.dependsOnFollowingSiblings = false;
 
 		for (let i = selectors.length - 1; i >= 0; i--) {
 			const sel = selectors[i];
@@ -656,6 +819,14 @@ export class ComplexSelector extends SelectorCore {
 
 			if (sel.hasSiblingCombinator) {
 				this.hasSiblingCombinator = true;
+			}
+
+			if (sel.dependsOnNextSibling) {
+				this.dependsOnNextSibling = true;
+			}
+
+			if (sel.dependsOnFollowingSiblings) {
+				this.dependsOnFollowingSiblings = true;
 			}
 
 			siblingsToGroup.push(sel);
@@ -1011,6 +1182,14 @@ function createSimpleSelectorFromAst(ast: CSSWhatSelector): SimpleSelector {
 			return new NotFunctionalPseudoClassSelector(ast.name, ast.data);
 		}
 
+		if (ast.name in STRUCTURAL_PSEUDO_CLASSES) {
+			return StructuralPseudoClassSelector.create(ast.name, ast.data as string);
+		}
+
+		if (ast.name === 'root') {
+			return new RootPseudoClassSelector();
+		}
+
 		return new PseudoClassSelector(ast.name);
 	}
 
@@ -1183,6 +1362,8 @@ export abstract class SelectorScope<T extends Node> implements LookupSorter {
 	 * True when any selector in the scope contains a general sibling ('~') combinator.
 	 */
 	public hasSiblingCombinatorSelectors = false;
+	public hasNextSiblingSelectors = false;
+	public hasFollowingSiblingSelectors = false;
 
 	getSelectorCandidates(node: T, candidates: SelectorCore[] = []): SelectorCore[] {
 		const { cssClasses, id, cssType } = node;
@@ -1235,6 +1416,14 @@ export abstract class SelectorScope<T extends Node> implements LookupSorter {
 
 		if (sel.hasSiblingCombinator) {
 			this.hasSiblingCombinatorSelectors = true;
+		}
+
+		if (sel.dependsOnNextSibling) {
+			this.hasNextSiblingSelectors = true;
+		}
+
+		if (sel.dependsOnFollowingSiblings) {
+			this.hasFollowingSiblingSelectors = true;
 		}
 
 		sel.pos = this.position++;
@@ -1329,6 +1518,14 @@ export class StyleSheetSelectorScope<T extends Node> extends SelectorScope<T> {
 
 				if (selectorScope.hasSiblingCombinatorSelectors) {
 					this.hasSiblingCombinatorSelectors = true;
+				}
+
+				if (selectorScope.hasNextSiblingSelectors) {
+					this.hasNextSiblingSelectors = true;
+				}
+
+				if (selectorScope.hasFollowingSiblingSelectors) {
+					this.hasFollowingSiblingSelectors = true;
 				}
 			}
 		}
