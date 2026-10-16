@@ -3,7 +3,7 @@ import ts from 'typescript';
 import { dirname as pathDirname, resolve as pathResolve } from 'node:path';
 import { AsyncLowering, usedBefore, type AsyncCtx, type AsyncSyntax, type AsyncTranslator } from './async.ts';
 import { isAsync, isStatic } from './throws.ts';
-import { intlConstructor, isObjectToStringCall, isStringRaw, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, classesHeldUntyped, LooseSlots, originOf, ownSlot, implementedInterfaceDeclarations, slotType, type TrustScope } from './lang.ts';
+import { intlConstructor, isObjectToStringCall, isStringRaw, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, classesHeldUntyped, LooseSlots, originOf, ownSlot, implementedInterfaceDeclarations, slotOf, slotType, type TrustScope } from './lang.ts';
 import { isCoreDeclaration } from './core.ts';
 import type { Properties } from './properties.ts';
 import { recognizePatterns, type Patterns } from './patterns.ts';
@@ -354,7 +354,13 @@ export class Translator implements AsyncTranslator {
   /** Code checked without strictNullChecks, as core is: any declaration may hold null or undefined. */
   readonly lenient: boolean;
   /** The app's own configuration is not strict. */
-  lenientApp = false;
+  get lenientApp(): boolean { return this.appNotStrict; }
+  set lenientApp(v: boolean) {
+    this.appNotStrict = v;
+    // Which files are strict decides the loose slots: any found before this was known are found again.
+    this.looseSlotSet = null;
+  }
+  private appNotStrict = false;
 
   private trustScope: TrustScope | null = null;
   /** The trust rule's view of this program (lang.ts): which files are strict, which declarations are the platform's. */
@@ -373,27 +379,39 @@ export class Translator implements AsyncTranslator {
    */
   private looseSlotSet: LooseSlots | null = null;
   private get looseSlots(): LooseSlots {
-    return this.looseSlotSet ??= new LooseSlots(this.sourceFiles, this.checker, (e) => this.untrustedPrimitive(e), (d) => this.holdsPrimitive(d));
+    return this.looseSlotSet ??= new LooseSlots(this.sourceFiles, this.checker, (e) => this.untrustedValue(e), (d) => this.holdsLoose(d));
   }
 
-  /** A value that may be undefined, null or another kind though Kotlin types it a string, number or boolean. */
-  private untrustedPrimitive(e: ts.Expression): boolean {
+  /** A value that may be undefined, null or another kind than Kotlin's type for it says. */
+  private untrustedValue(e: ts.Expression): boolean {
     try {
-      if (this.typeOf(e) === 'Any?') return true;
-      const x = ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses);
-      if ((ts.isAsExpression(x) || ts.isTypeAssertionExpression(x)) && this.typeOf(x.expression) === 'Any?') return true;
-      return originOf(e, this.trust) === 'loose';
+      const origin = originOf(e, this.trust);
+      // An untyped read by key or an assertion counts only where what it reads is untyped: a typed array's element is the type's.
+      if (origin === 'dynamic' || origin === 'asserted') {
+        const x = ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses);
+        return this.typeOf(ts.isElementAccessExpression(x) ? x : (x as ts.AsExpression | ts.TypeAssertion | ts.NonNullExpression).expression) === 'Any?';
+      }
+      return origin === 'any' || origin === 'loose';
     } catch { return false; }
   }
 
   private implementedInterfaceSet: Set<ts.Declaration> | null = null;
-  /** A declaration of strict code (not the kit's) that holds a string, number or boolean, in a form Kotlin may choose alone. */
-  private holdsPrimitive(d: ts.Declaration): boolean {
+  /** A declaration of strict code (not the kit's) holding a string, number, boolean or object, in a form Kotlin may choose alone. */
+  private holdsLoose(d: ts.Declaration): boolean {
     if (this.library || !this.trust.strictFile(d.getSourceFile()) || !ownSlot(d, this.checker, this.implementedInterfaceSet ??= implementedInterfaceDeclarations(this.sourceFiles, this.checker))) return false;
     try {
       const st = slotType(d, this.checker);
-      return !!st && ['String', 'Double', 'Boolean'].includes(this.type(st, d));
+      if (!st) return false;
+      const t = this.type(st, d);
+      return ['String', 'Double', 'Boolean'].includes(t) || (!isNullable(t) && !isFunctionType(t) && !['Any', 'Unit', 'Nothing'].includes(t) && this.isObjectType(t));
     } catch { return false; }
+  }
+
+  /** A slot that holds undefined as it is: one an untrusted value is placed in. */
+  private takesUndefined(x: ts.Expression): boolean {
+    if (this.library) return false;
+    const slot = slotOf(x, this.checker);
+    return !!slot && this.looseSlots.has(slot);
   }
 
   /** Strict code's declaration holding a string, number or boolean an untrusted value is placed in (see `looseSlots`). */
@@ -1035,14 +1053,19 @@ export class Translator implements AsyncTranslator {
 
   /** A call of a lenient function declared to give an object: unwrapped unless the value is only tested or passed on. */
   private lenientResult(e: ts.CallExpression, code: string): string {
-    if (!this.lenient) return code;
+    return this.unwrapsResult(e) ? asserted(code) : code;
+  }
+
+  /** Whether a call's result Kotlin holds nullable, though its type says present, is unwrapped where it is read (see `lenientResult`). */
+  private unwrapsResult(e: ts.CallExpression): boolean {
     const decl = this.checker.getResolvedSignature(e)?.getDeclaration();
-    if (!decl || ts.isJSDocSignature(decl) || decl.getSourceFile().isDeclarationFile || !(ts.isFunctionDeclaration(decl) || ts.isMethodDeclaration(decl))) return code;
+    if (!this.lenient && !(decl && !ts.isJSDocSignature(decl) && this.looseDeclaration(decl))) return false;
+    if (!decl || ts.isJSDocSignature(decl) || decl.getSourceFile().isDeclarationFile || !(ts.isFunctionDeclaration(decl) || ts.isMethodDeclaration(decl) || ts.isArrowFunction(decl) || ts.isFunctionExpression(decl))) return false;
     // A result nothing reads, or an optional chain's (undefined where it stops), is not unwrapped.
     const chainGoesOn = (ts.isPropertyAccessExpression(e.parent) || ts.isElementAccessExpression(e.parent) || ts.isCallExpression(e.parent)) && e.parent.expression === e && !!(e.parent.flags & ts.NodeFlags.OptionalChain);
-    if (ts.isExpressionStatement(e.parent) || (e.flags & ts.NodeFlags.OptionalChain && !chainGoesOn)) return code;
+    if (ts.isExpressionStatement(e.parent) || (e.flags & ts.NodeFlags.OptionalChain && !chainGoesOn)) return false;
     const site = this.typeOf(e);
-    return this.returnTypeOf(decl) === optionalType(site) && site !== optionalType(site) && !this.nullTolerant(e) ? asserted(code) : code;
+    return this.returnTypeOf(decl) === optionalType(site) && site !== optionalType(site) && !this.nullTolerant(e);
   }
 
   /** `this` as the class being translated, not a value a function rebinds it to. */
@@ -6040,7 +6063,7 @@ export class Translator implements AsyncTranslator {
     const actual = this.typeOf(e);
     if (declared === actual || actual === 'Any?') return code;
     // A string, number or boolean that may be undefined reads as JavaScript reads undefined there; never refused.
-    if (declared === optionalType(actual)) return this.nullTolerant(e) || this.nullableArgument(e) ? code : this.lenient || ['String', 'Double', 'Boolean'].includes(actual) ? this.undefinedAs(code, actual) : asserted(code);
+    if (declared === optionalType(actual)) return this.nullTolerant(e) || this.nullableArgument(e) || this.takesUndefined(e) ? code : this.lenient || ['String', 'Double', 'Boolean'].includes(actual) ? this.undefinedAs(code, actual) : asserted(code);
     if (declared === 'Any?') return this.fromAny(code, actual);
     if (declared.replace(/\?$/, '') !== actual.replace(/\?$/, '') && (this.isObjectRef(e) || ['Double', 'String', 'Boolean'].includes(actual))) return `(${code} as ${actual})`;
     return code;
@@ -6914,7 +6937,9 @@ export class Translator implements AsyncTranslator {
       }
       const t = this.typeOf(target).replace(/\?$/, '');
       let q = callee.questionDotToken || (callee.flags & ts.NodeFlags.OptionalChain && this.typeOf(target).endsWith('?')) ? '?' : this.typeOf(target).endsWith('?') ? '!!' : '';
-      if (!this.subst.has(target) && !t.startsWith('JSMatch') && (q === '!!' || (q === '' && (ts.isIdentifier(target) || ts.isPropertyAccessExpression(target))))) {
+      // A call of a function an untrusted value may be returned from, too: its member read is JavaScript's TypeError where it gives undefined.
+      const looseCall = ts.isCallExpression(target) && !this.library && this.unwrapsResult(target);
+      if (!this.subst.has(target) && !t.startsWith('JSMatch') && (q === '!!' || (q === '' && (ts.isIdentifier(target) || ts.isPropertyAccessExpression(target) || looseCall)))) {
         const code = this.expr(target);
         this.subst.set(target, q === '!!' || isAsserted(code) ? this.present(code, method, target) : code);
         this.checkedReceivers.push(target);

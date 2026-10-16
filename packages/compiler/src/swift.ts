@@ -5,7 +5,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { KIT_APPLE_SOURCES } from './paths.ts';
 import { Throws, digitsLiteral, isArrayLengthLiteral, isArrayLengthWrite, isAsync, isStatic } from './throws.ts';
-import { intlConstructor, isObjectToStringCall, isStringRaw, leadingNeverRead, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, uncheckedMatch, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, LooseSlots, originOf, ownSlot, implementedInterfaceDeclarations, slotType, type TrustScope } from './lang.ts';
+import { intlConstructor, isObjectToStringCall, isStringRaw, leadingNeverRead, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, uncheckedMatch, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, LooseSlots, originOf, ownSlot, implementedInterfaceDeclarations, slotOf, slotType, type TrustScope } from './lang.ts';
 import { AsyncLowering, type AsyncCtx, type AsyncSyntax, type AsyncTranslator } from './async.ts';
 import { CoreAPI, isCoreDeclaration, packageOf } from './core.ts';
 import type { KitMember } from './kit-index.ts';
@@ -1283,6 +1283,7 @@ export class Translator implements AsyncTranslator {
       if (declared === 'Any?') return 'Any?';
     }
     if ((t === 'Bool' || t === 'String' || t === 'Double') && this.holdsUndefined(n)) return `${t}?`;
+    if (this.looseObjectDeclaration(n, t)) return optionalType(t);
     // An element of an array literal typed `never[]` (`callbacks = []` under strict checks), which Swift holds as any value.
     if (t === 'Never' && (ts.isIdentifier(n) || ts.isVariableDeclaration(n)) && this.resolve(n)?.valueDeclaration && ts.isVariableDeclaration(this.resolve(n)!.valueDeclaration!)) return 'Any?';
     return this.holdingNull(t, n);
@@ -2958,6 +2959,7 @@ ${members.join('\n')}
     if (typeOfN !== 'Any?') return false;
     let outer: ts.Node = n;
     while (ts.isParenthesizedExpression(outer.parent)) outer = outer.parent;
+    if (this.takesUndefined(outer as ts.Expression)) return false;
     const p = outer.parent;
     let target: string | null = null;
     try {
@@ -5675,7 +5677,13 @@ ${members.join('\n')}
   get lenient(): boolean { return this.lenientAll || (!!this.currentFile && this.lenientFiles.has(this.currentFile)); }
   private lenientAll = false;
   /** The app's configuration is not strict: a variable declared without a value may be read before one is assigned. */
-  lenientApp = false;
+  get lenientApp(): boolean { return this.appNotStrict; }
+  set lenientApp(v: boolean) {
+    this.appNotStrict = v;
+    // Which files are strict decides the loose slots: any found before this was known are found again.
+    this.looseSlotSet = null;
+  }
+  private appNotStrict = false;
   /** Files of plugins written without strictNullChecks, translated as core is. */
   readonly lenientFiles = new Set<string>();
   private currentFile: string | null = null;
@@ -5697,26 +5705,75 @@ ${members.join('\n')}
    */
   private looseSlotSet: LooseSlots | null = null;
   private get looseSlots(): LooseSlots {
-    return this.looseSlotSet ??= new LooseSlots(this.sourceFiles, this.checker, (e) => this.untrustedPrimitive(e), (d) => this.holdsPrimitive(d));
+    return this.looseSlotSet ??= new LooseSlots(this.sourceFiles, this.checker, (e) => this.unshaped(() => this.untrustedValue(e)), (d) => this.unshaped(() => this.holdsLoose(d)));
   }
 
-  /** A value that may be undefined, null or another kind though Swift types it a string, number or boolean. */
-  private untrustedPrimitive(e: ts.Expression): boolean {
+  /** What `f` decides from types it reads, keeping none of the shapes reading them makes: they are emitted only where code uses them. */
+  private unshaped<T>(f: () => T): T {
+    const made = this.shapes.size;
+    try { return f(); } finally {
+      if (this.shapes.size > made) for (const key of [...this.shapes.keys()].slice(made)) this.shapes.delete(key);
+    }
+  }
+
+  /** A value that may be undefined, null or another kind than Swift's type for it says. */
+  private untrustedValue(e: ts.Expression): boolean {
     try {
-      if (this.typeOf(e) === 'Any?') return true;
-      const x = ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses);
-      if ((ts.isAsExpression(x) || ts.isTypeAssertionExpression(x)) && this.typeOf(x.expression) === 'Any?') return true;
-      return originOf(e, this.trust) === 'loose';
+      const origin = originOf(e, this.trust);
+      // An untyped read by key or an assertion counts only where what it reads is untyped: a typed array's element is the type's.
+      if (origin === 'dynamic' || origin === 'asserted') {
+        const x = ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses);
+        return this.typeOf(ts.isElementAccessExpression(x) ? x : (x as ts.AsExpression | ts.TypeAssertion | ts.NonNullExpression).expression) === 'Any?';
+      }
+      return origin === 'any' || origin === 'loose';
     } catch { return false; }
   }
 
-  /** A declaration of strict code (not the kit's) that holds a string, number or boolean, in a form Swift may choose alone. */
-  private holdsPrimitive(d: ts.Declaration): boolean {
+  /** A declaration of strict code (not the kit's) holding a string, number, boolean or object, in a form Swift may choose alone. */
+  private holdsLoose(d: ts.Declaration): boolean {
     if (this.library || !this.trust.strictFile(d.getSourceFile()) || !ownSlot(d, this.checker, this.implementedInterfaceSet ??= implementedInterfaceDeclarations(this.sourceFiles, this.checker))) return false;
     try {
       const st = slotType(d, this.checker);
-      return !!st && ['String', 'Double', 'Bool'].includes(this.type(st, d));
+      if (!st) return false;
+      const t = this.type(st, d);
+      return ['String', 'Double', 'Bool'].includes(t) || this.looseObjectType(t);
     } catch { return false; }
+  }
+
+  /** An object type Swift holds as `T?` where it may be missing: a class, an interface or a native class. */
+  private looseObjectType(t: string): boolean {
+    return !isFunctionType(t) && !t.startsWith('any ') && /^[A-Z][\w.]*(<.*>)?$/.test(t) && this.nullableRef(t) !== t;
+  }
+
+  /** The declaration a name, member read or call reads, where it is one of strict code's loose objects. */
+  private looseObjectRead(x: ts.Expression): boolean {
+    if (this.library || isWriteTarget(x)) return false;
+    x = ts.skipOuterExpressions(x, ts.OuterExpressionKinds.Parentheses);
+    let d: ts.Declaration | undefined;
+    if (ts.isCallExpression(x)) {
+      const s = this.checker.getResolvedSignature(x)?.getDeclaration();
+      d = s && !ts.isJSDocSignature(s) ? s : undefined;
+    } else if (ts.isIdentifier(x) || ts.isPropertyAccessExpression(x)) {
+      if (ts.isIdentifier(x) && ts.isPropertyAccessExpression(x.parent) && x.parent.name === x) return false;
+      d = this.resolve(ts.isPropertyAccessExpression(x) ? x.name : x)?.valueDeclaration;
+    }
+    if (!d || !this.looseSlots.has(d)) return false;
+    try { return this.looseObjectType(this.typeOf(x)); } catch { return false; }
+  }
+
+  /** A declaration's own name (or the declaration) of one of strict code's loose objects: held `T?`. */
+  private looseObjectDeclaration(n: ts.Node, t: string): boolean {
+    if (this.library || !this.looseObjectType(t)) return false;
+    const d = ts.isVariableDeclaration(n) || ts.isParameter(n) || ts.isPropertyDeclaration(n) || ts.isPropertySignature(n) ? n
+      : ts.isIdentifier(n) && n.parent && (ts.isVariableDeclaration(n.parent) || ts.isParameter(n.parent) || ts.isPropertyDeclaration(n.parent) || ts.isPropertySignature(n.parent)) && n.parent.name === n ? n.parent : undefined;
+    return !!d && this.looseSlots.has(d);
+  }
+
+  /** A slot that holds undefined as it is: one an untrusted value is placed in, or an optional parameter. */
+  private takesUndefined(x: ts.Expression): boolean {
+    if (this.library) return false;
+    const slot = slotOf(x, this.checker);
+    return !!slot && !slot.getSourceFile().isDeclarationFile && (this.looseSlots.has(slot) || (ts.isParameter(slot) && !!slot.questionToken));
   }
 
   /** Strict code's declaration holding a string, number or boolean an untrusted value is placed in (see `looseSlots`). */
@@ -7436,7 +7493,7 @@ ${members.join('\n')}
    */
   loose(x: ts.Expression): boolean {
     if (this.checkedNodes.has(x)) return false;
-    if (!this.lenient) return this.lenientValue(x) || this.nullObjectSignalRead(x);
+    if (!this.lenient) return this.lenientValue(x) || this.nullObjectSignalRead(x) || this.looseObjectRead(x);
     // A name that is no value read: a member's name after its dot, a declaration's own name, a label.
     if (ts.isIdentifier(x)) {
       const p = x.parent;
@@ -7623,6 +7680,7 @@ ${members.join('\n')}
     while (ts.isParenthesizedExpression(x.parent) || ts.isNonNullExpression(x.parent)) x = x.parent;
     const p = x.parent;
     if (!p) return true;
+    if (this.takesUndefined(x as ts.Expression)) return true;
     if ((ts.isPropertyAccessExpression(p) || ts.isElementAccessExpression(p)) && p.expression === x) return true;
     if (ts.isBinaryExpression(p)) {
       const op = p.operatorToken.kind;
@@ -9221,7 +9279,7 @@ ${members.join('\n')}
       const method = this.library && decl && ts.isParameter(decl) && ts.isMethodDeclaration(decl.parent) && !isStatic(decl.parent) && !decl.getSourceFile().isDeclarationFile ? decl.parent : null;
       const emitted = method && this.baseMethod(method) ? this.emittedSignature(method).params[k]?.type.replace(/!$/, '?') : undefined;
       // An optional parameter of the program's (`cssFileName?: string`, `namespace: string | undefined`) takes undefined as it is.
-      const omissible = !emitted && !erased && decl && ts.isParameter(decl) && (!!decl.questionToken || this.declaredUndefined(decl) || this.looseDeclaration(decl)) && !decl.getSourceFile().isDeclarationFile && ['String', 'Double', 'Bool'].includes(at);
+      const omissible = !emitted && !erased && decl && ts.isParameter(decl) && (!!decl.questionToken || this.declaredUndefined(decl) || this.looseDeclaration(decl)) && !decl.getSourceFile().isDeclarationFile && (['String', 'Double', 'Bool'].includes(at) || (this.looseDeclaration(decl) && this.looseObjectType(at)));
       out.push(this.coerce(a, emitted ?? (omissible ? optionalType(at) : erased ? this.paramType(decl as ts.ParameterDeclaration) : at === 'Never' ? this.type(this.checker.getTypeOfSymbol(p), e) : at)));
     }
     if (restAt >= 0 && appDeclared && list.length <= restAt) out.push(`${this.restType(params[restAt])}()`);
@@ -9542,7 +9600,7 @@ ${members.join('\n')}
       // A call continuing an optional chain (`xs?.map(f).join(',')`) is part of the chain: within Swift's own chain it
       // continues it, and after a chain the translation wrapped (`jsSplit(s?.…)`) it chains on the optional made.
       const continued = !callee.questionDotToken && ts.isOptionalChain(target) && receiverType.endsWith('?') ? (openSwiftChain(this.expr(target)) ? '' : '?') : null;
-      const q = continued ?? (callee.questionDotToken ? (receiverType.endsWith('?') || receiverType.endsWith('!') || ts.isOptionalChain(target) ? '?' : '') : receiverType.endsWith('?') || (ts.isCallExpression(target) && this.maybeUndefined(target)) ? '!' : '');
+      const q = continued ?? (callee.questionDotToken ? (receiverType.endsWith('?') || receiverType.endsWith('!') || ts.isOptionalChain(target) ? '?' : '') : receiverType.endsWith('?') || (ts.isCallExpression(target) && !this.looseObjectRead(target) && this.maybeUndefined(target)) ? '!' : '');
       if (method === 'fill' && this.isArrayConstruction(target) && target.arguments?.length === 1 && e.arguments.length === 1) {
         // `new Array(n).fill(v)` or `Array(n).fill(v)`: n copies of v, typed as the array is declared (`const widths: number[] = …`).
         const context = this.checker.getContextualType(e);
