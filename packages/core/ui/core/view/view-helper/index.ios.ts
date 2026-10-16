@@ -506,6 +506,20 @@ export class IOSHelper {
 		return { left, right, top, bottom };
 	}
 
+	static getPositionFromFramePosition(left: number, top: number, right: number, bottom: number): Position {
+		const x = layout.toDeviceIndependentPixels(left);
+		const y = layout.toDeviceIndependentPixels(top);
+		const width = Math.max(layout.toDeviceIndependentPixels(right - left), 0);
+		const height = Math.max(layout.toDeviceIndependentPixels(bottom - top), 0);
+
+		return {
+			left: layout.round(layout.toDevicePixels(x)),
+			top: layout.round(layout.toDevicePixels(y)),
+			right: layout.round(layout.toDevicePixels(x + width)),
+			bottom: layout.round(layout.toDevicePixels(y + height)),
+		};
+	}
+
 	static getFrameFromPosition(position: Position, insets?: Position): CGRect {
 		insets = insets || { left: 0, top: 0, right: 0, bottom: 0 };
 
@@ -559,21 +573,24 @@ export class IOSHelper {
 	}
 
 	static expandBeyondSafeArea(view: View, frame: CGRect): CGRect {
-		const availableSpace = IOSHelper.getAvailableSpaceFromParent(view, frame);
+		const origin = frame.origin;
+		const size = frame.size;
+		const x = origin.x;
+		const y = origin.y;
+		const width = size.width;
+		const height = size.height;
+
+		const availableSpace = IOSHelper.getAvailablePositionsFromParent(view, width, height);
 		// Detached NS subtrees (e.g. TabView's `iosBottomAccessory`) have no safe-area
 		// reference rects to expand against; leave the frame as-is.
-		if (!availableSpace || !availableSpace.safeArea || !availableSpace.fullscreen) {
+		if (!availableSpace) {
 			return frame;
 		}
-		const safeArea = availableSpace.safeArea;
-		const fullscreen = availableSpace.fullscreen;
-		const inWindow = availableSpace.inWindow;
+		const safeAreaPosition = availableSpace.safeArea;
+		const fullscreenPosition = availableSpace.fullscreen;
+		const inWindowPosition = availableSpace.inWindow;
 
-		const position = IOSHelper.getPositionFromFrame(frame);
-		const safeAreaPosition = IOSHelper.getPositionFromFrame(safeArea);
-		const fullscreenPosition = IOSHelper.getPositionFromFrame(fullscreen);
-		const inWindowPosition = IOSHelper.getPositionFromFrame(inWindow);
-
+		const position = IOSHelper.getPositionFromRect(x, y, width, height);
 		const adjustedPosition = position;
 
 		if (position.left && inWindowPosition.left <= safeAreaPosition.left) {
@@ -592,13 +609,96 @@ export class IOSHelper {
 			adjustedPosition.bottom += fullscreenPosition.bottom - inWindowPosition.bottom;
 		}
 
-		const adjustedFrame = CGRectMake(layout.toDeviceIndependentPixels(adjustedPosition.left), layout.toDeviceIndependentPixels(adjustedPosition.top), layout.toDeviceIndependentPixels(adjustedPosition.right - adjustedPosition.left), layout.toDeviceIndependentPixels(adjustedPosition.bottom - adjustedPosition.top));
+		const adjustedX = layout.toDeviceIndependentPixels(adjustedPosition.left);
+		const adjustedY = layout.toDeviceIndependentPixels(adjustedPosition.top);
+		const adjustedWidth = layout.toDeviceIndependentPixels(adjustedPosition.right - adjustedPosition.left);
+		const adjustedHeight = layout.toDeviceIndependentPixels(adjustedPosition.bottom - adjustedPosition.top);
+		if (adjustedX === x && adjustedY === y && adjustedWidth === width && adjustedHeight === height) {
+			return frame;
+		}
+
+		const adjustedFrame = CGRectMake(adjustedX, adjustedY, adjustedWidth, adjustedHeight);
 
 		if (Trace.isEnabled()) {
 			Trace.write(view + ' :expandBeyondSafeArea: ' + JSON.stringify(IOSHelper.getPositionFromFrame(adjustedFrame)), Trace.categories.Layout);
 		}
 
 		return adjustedFrame;
+	}
+
+	static getPositionFromRect(x: number, y: number, width: number, height: number): Position {
+		return {
+			left: layout.round(layout.toDevicePixels(x)),
+			top: layout.round(layout.toDevicePixels(y)),
+			right: layout.round(layout.toDevicePixels(x + width)),
+			bottom: layout.round(layout.toDevicePixels(y + height)),
+		};
+	}
+
+	static getAvailablePositionsFromParent(view: View, width: number, height: number): { safeArea: Position; fullscreen: Position; inWindow: Position } {
+		if (!view) {
+			return;
+		}
+
+		let scrollView: UIScrollView = null;
+		let viewControllerView: UIView = null;
+
+		if (view.viewController) {
+			viewControllerView = view.viewController.view;
+		} else {
+			let parent = view.parent as View;
+			while (parent && !parent.viewController && !(parent.nativeViewProtected instanceof UIScrollView)) {
+				parent = parent.parent as View;
+			}
+
+			if (parent) {
+				if (parent.nativeViewProtected instanceof UIScrollView) {
+					scrollView = parent.nativeViewProtected;
+				} else if (parent.viewController) {
+					viewControllerView = parent.viewController.view;
+				}
+			}
+		}
+
+		let fullscreen: Position;
+		let safeArea: Position;
+		let controllerX = 0;
+		let controllerY = 0;
+
+		if (viewControllerView) {
+			safeArea = IOSHelper.getPositionFromFrame(viewControllerView.safeAreaLayoutGuide.layoutFrame);
+			fullscreen = IOSHelper.getPositionFromFrame(viewControllerView.frame);
+			const controllerInWindow = viewControllerView.convertPointToView(viewControllerView.bounds.origin, null);
+			controllerX = controllerInWindow.x;
+			controllerY = controllerInWindow.y;
+		} else if (scrollView) {
+			const insets = scrollView.safeAreaInsets;
+			const insetLeft = insets.left;
+			const insetTop = insets.top;
+			const contentSize = scrollView.contentSize;
+			const contentWidth = contentSize.width;
+			const contentHeight = contentSize.height;
+			safeArea = IOSHelper.getPositionFromRect(insetLeft, insetTop, contentWidth - insetLeft - insets.right, contentHeight - insetTop - insets.bottom);
+			fullscreen = IOSHelper.getPositionFromRect(0, 0, contentWidth, contentHeight);
+		} else {
+			return;
+		}
+
+		const locationInWindow = view.getLocationInWindow();
+		let inWindowLeft = locationInWindow.x - controllerX;
+		let inWindowTop = locationInWindow.y - controllerY;
+
+		if (scrollView) {
+			const contentOffset = scrollView.contentOffset;
+			inWindowLeft += contentOffset.x;
+			inWindowTop += contentOffset.y;
+		}
+
+		return {
+			safeArea,
+			fullscreen,
+			inWindow: IOSHelper.getPositionFromRect(inWindowLeft, inWindowTop, width, height),
+		};
 	}
 
 	static getAvailableSpaceFromParent(view: View, frame: CGRect): { safeArea: CGRect; fullscreen: CGRect; inWindow: CGRect } {
