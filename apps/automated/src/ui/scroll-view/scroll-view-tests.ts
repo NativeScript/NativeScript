@@ -126,6 +126,37 @@ class ScrollLayoutTest extends UITest<ScrollView> {
 		TKUnit.assertAreClose(layoutHelper.dip(this.testView.scrollableWidth), 300, 0.4, 'this.testView.scrollableWidth');
 	}
 
+	public test_scrollableHeight_includes_bottom_content_inset() {
+		if (!__APPLE__) {
+			return;
+		}
+		this.waitUntilTestElementLayoutIsValid();
+		const native = this.testView.ios as UIScrollView;
+		const before = this.testView.scrollableHeight;
+		native.contentInset = new UIEdgeInsets({ top: 0, left: 0, bottom: 50, right: 0 });
+
+		TKUnit.assertAreClose(this.testView.scrollableHeight, before + 50, 0.1, 'scrollableHeight with a bottom inset');
+		this.testView.scrollToVerticalOffset(this.testView.scrollableHeight, false);
+		const end = native.contentSize.height + native.adjustedContentInset.bottom - native.bounds.size.height;
+		TKUnit.assertAreClose(native.contentOffset.y, end, 0.1, 'scrollToVerticalOffset(scrollableHeight) reaches the end above the inset');
+	}
+
+	public test_scrollableWidth_includes_right_content_inset() {
+		if (!__APPLE__) {
+			return;
+		}
+		this.testView.orientation = 'horizontal';
+		this.waitUntilTestElementLayoutIsValid();
+		const native = this.testView.ios as UIScrollView;
+		const before = this.testView.scrollableWidth;
+		native.contentInset = new UIEdgeInsets({ top: 0, left: 0, bottom: 0, right: 40 });
+
+		TKUnit.assertAreClose(this.testView.scrollableWidth, before + 40, 0.1, 'scrollableWidth with a right inset');
+		this.testView.scrollToHorizontalOffset(this.testView.scrollableWidth, false);
+		const end = native.contentSize.width + native.adjustedContentInset.right - native.bounds.size.width;
+		TKUnit.assertAreClose(native.contentOffset.x, end, 0.1, 'scrollToHorizontalOffset(scrollableWidth) reaches the end beside the inset');
+	}
+
 	public test_scrollToVerticalOffset_no_animation() {
 		TKUnit.assertEqual(this.testView.verticalOffset, 0, 'this.testView.verticalOffset');
 		this.waitUntilTestElementLayoutIsValid();
