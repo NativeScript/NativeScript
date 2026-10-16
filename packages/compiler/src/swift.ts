@@ -9,6 +9,7 @@ import { intlConstructor, isObjectToStringCall, isStringRaw, leadingNeverRead, r
 import { AsyncLowering, type AsyncCtx, type AsyncSyntax, type AsyncTranslator } from './async.ts';
 import { CoreAPI, isCoreDeclaration, packageOf } from './core.ts';
 import type { KitMember } from './kit-index.ts';
+import type { KitDeclarations, RecordedMember } from './kit-manifest.ts';
 import type { Properties } from './properties.ts';
 import { recognizePatterns, type Patterns } from './patterns.ts';
 import { DEPLOYMENT, NativeAPI, enteredGuard, onMainThread, tested, typedCollection } from './native-calls.ts';
@@ -313,6 +314,10 @@ export class Translator implements AsyncTranslator {
   private templateObjects: string[] = [];
   /** Accessors for module-level variables a class member of the same name hides from Swift (`__global_fruits`). */
   private globalAliases = new Map<string, string>();
+  /** The type of each of `globalAliases`. */
+  private globalAliasTypes = new Map<string, string>();
+  /** The globals `templateObjects` declares. */
+  private templateSites: string[] = [];
   /** App classes another app class extends: they stay open. */
   private extended = new Set<string>();
   /** Classes some class extends, by declaration (an import may rename them). */
@@ -638,6 +643,44 @@ export class Translator implements AsyncTranslator {
   }
   /** Library mode: generated classes whose names the hand-ported kit also declares. */
   readonly kitClashes: string[] = [];
+
+  /** Kit generation: the declarations the generated code makes public, recorded as they are written (kit-manifest.ts). */
+  declarations: KitDeclarations | null = null;
+  /** The type whose members are being written, by its qualified Swift name (`Utils.layout`), while declarations are recorded. */
+  private declOwner: string | null = null;
+  /** The signature of the function `func` wrote last, which a member's site records once the function is written. */
+  private lastSignature: RecordedMember | null = null;
+
+  get declOwnerName(): string | null { return this.declOwner; }
+
+  /** Records a member of the type being written. */
+  declare(name: string, m: RecordedMember, owner = this.declOwner) {
+    if (!owner || !this.declarations) return;
+    // By its Swift name (`['class']` is `__class__`), without the backquotes a keyword takes.
+    const plain = name.replace(/^`(.*)`$/, '$1');
+    this.declarations.member(owner, /^[A-Za-z_]\w*$/.test(plain) ? plain : ident(plain).replace(/^`(.*)`$/, '$1'), m);
+  }
+
+  /** Writes a type's members with `owner` as the type they are recorded under. */
+  declaring<T>(owner: string, kind: 'class' | 'struct' | 'enum' | 'protocol' | 'extension', base: string | null, write: () => T, available?: number): T {
+    if (!this.declarations) return write();
+    const name = owner.replace(/^NativeScriptKit\./, '');
+    this.declarations.type(name, kind, base, available);
+    const saved = this.declOwner;
+    this.declOwner = name;
+    try { return write(); } finally { this.declOwner = saved; }
+  }
+
+  private declareInit(params: string, throws: boolean, failable = false) {
+    if (this.declOwner) this.declare('init', { kind: 'init', params, throws, type: `${this.declOwner}${failable ? '?' : ''}` });
+  }
+
+  /** A member function as `func` writes it, recorded under the type being written. */
+  memberFunc(fn: ts.FunctionDeclaration | ts.MethodDeclaration, name: string, modifiers = '', extraParams: string[] = []): string {
+    const code = this.func(fn, name, modifiers, extraParams);
+    if (this.lastSignature) this.declare(name, this.lastSignature);
+    return code;
+  }
 
   /**
    * References held weakly, as `Class.field`: `fields`, back references up an ownership tree (a view's `parent`);
@@ -1802,10 +1845,11 @@ export class Translator implements AsyncTranslator {
     this.currentFile = sf.fileName;
     const counts = this.freshCounts;
     this.freshCounts = new Map();
+    const owner = this.declOwner;
     try {
       const { code, init } = this.moduleOf(sf);
       return { code: singleTry(code), init: init.map(singleTry) };
-    } finally { this.currentFile = outer; this.freshCounts = counts; }
+    } finally { this.currentFile = outer; this.freshCounts = counts; this.declOwner = owner; }
   }
 
   private moduleOf(sf: ts.SourceFile): { code: string; init: string[] } {
@@ -1817,6 +1861,8 @@ export class Translator implements AsyncTranslator {
     const library = this.library?.moduleName(sf.fileName) ?? null;
     const members: string[] = [];
     const member = (code: string) => (library ? members : out).push(code);
+    // Library mode: the module's functions and variables are recorded as its enum's.
+    this.declOwner = library;
     // App mode: a `var` in a block of the module's statements (`if (…) { var observer = … }`) is the module's, as JavaScript
     // hoists it: a global of the module's own name, which another module's of the name does not clash with.
     if (!library) {
@@ -1864,7 +1910,7 @@ export class Translator implements AsyncTranslator {
       if (ts.isModuleDeclaration(st)) { const ns = this.namespaceDecl(st, this.topName(st, st.name.text), later); if (ns) out.push(ns); continue; }
       // A function the kit implements in its place (core calling an npm package): references call the kit's.
       if (ts.isFunctionDeclaration(st) && st.name && this.library?.counterpart?.(sf.fileName, st.name.text) && !this.functionCounterpart(st)) continue;
-      if (ts.isFunctionDeclaration(st)) { if (st.name && st.body) member([...this.docLines(st, ''), this.func(st, ident(library ? st.name.text : this.topName(st, st.name.text)), library ? 'static ' : '')].join('\n')); continue; }
+      if (ts.isFunctionDeclaration(st)) { if (st.name && st.body) member([...this.docLines(st, ''), this.memberFunc(st, ident(library ? st.name.text : this.topName(st, st.name.text)), library ? 'static ' : '')].join('\n')); continue; }
       if (ts.isClassDeclaration(st)) {
         const target = this.patterns.mixinTarget(st);
         if (target) { out.push(this.mixinDecl(st, target)); continue; }
@@ -1889,7 +1935,11 @@ export class Translator implements AsyncTranslator {
       }
       later(() => this.stmt(st));
     }
-    if (library && members.length) out.push([`enum ${library} {`, ...members.map((m) => indented(m)), '}'].join('\n'));
+    this.declOwner = null;
+    if (library && members.length) {
+      this.declarations?.type(library, 'enum');
+      out.push([`enum ${library} {`, ...members.map((m) => indented(m)), '}'].join('\n'));
+    }
     out.push(...this.hoisted.splice(0));
     return { code: out.join('\n\n') + '\n', init };
   }
@@ -1900,11 +1950,12 @@ export class Translator implements AsyncTranslator {
    */
   private variables(st: ts.VariableStatement, emit: (code: string) => void, ref: (d: ts.VariableDeclaration) => string, declName: (d: ts.VariableDeclaration) => string, modifiers: string, later: (code: () => string) => void) {
     const constant = !!(st.declarationList.flags & ts.NodeFlags.Const);
+    const field = (code: string, name: string, type: string, throws = false, readonly = false) => { emit(code); this.declare(name, { kind: 'var', type, mods: modifiers, throws, readonly }); };
     for (const d of st.declarationList.declarations) {
       if (!ts.isIdentifier(d.name)) {
         // An object rest (`const { tag, ...rest } = p`) has the shape of its fields, as bindTo declares it.
         const typeOfBound = (n: ts.Identifier) => (ts.isBindingElement(n.parent) && n.parent.dotDotDotToken && ts.isObjectBindingPattern(n.parent.parent) ? this.shape(this.checker.getTypeAtLocation(n), n.parent) : this.typeOf(n));
-        for (const n of boundNames(d.name)) emit(`${modifiers}var ${ident(n.text)}: ${this.deferred(typeOfBound(n))}`);
+        for (const n of boundNames(d.name)) { const t = this.deferred(typeOfBound(n)); field(`${modifiers}var ${ident(n.text)}: ${t}`, n.text, t); }
         const tmp = this.fresh('__d');
         later(() => `    let ${tmp}${this.destructured(d.name, d.initializer!)}\n${this.bindTo(d.name, tmp, '', 'assign')}`);
         continue;
@@ -1921,32 +1972,33 @@ export class Translator implements AsyncTranslator {
       if (!d.initializer && this.lenient && (t === 'Bool' || t === 'String')) {
         const sym = this.resolve(d.name);
         if (sym) this.undefinedVars.set(sym, optionalType(t));
-        emit(`${modifiers}var ${name}: ${optionalType(t)} = nil`);
+        field(`${modifiers}var ${name}: ${optionalType(t)} = nil`, name, optionalType(t));
         continue;
       }
-      if (!d.initializer) { emit(`${modifiers}var ${name}: ${this.fieldType(t)}`); continue; }
+      if (!d.initializer) { field(`${modifiers}var ${name}: ${this.fieldType(t)}`, name, this.fieldType(t)); continue; }
       // A module's Angular `computed(fn)`: read through `x()`, its value is fn's whenever it is read.
       const fn = ts.isCallExpression(d.initializer) && this.calleeName(d.initializer) === 'computed' ? d.initializer.arguments[0] : undefined;
       if (fn && (ts.isArrowFunction(fn) || ts.isFunctionExpression(fn))) {
         const rt = this.computedType(d.initializer as ts.CallExpression);
-        emit(this.throwsInfo.fn(fn) ? `${modifiers}var ${name}: ${rt} {\n    get throws ${this.functionBody(fn, rt, '    ')}\n}` : `${modifiers}var ${name}: ${rt} ${this.functionBody(fn, rt, '')}`);
+        const throws = this.throwsInfo.fn(fn);
+        field(throws ? `${modifiers}var ${name}: ${rt} {\n    get throws ${this.functionBody(fn, rt, '    ')}\n}` : `${modifiers}var ${name}: ${rt} ${this.functionBody(fn, rt, '')}`, name, rt, throws);
         continue;
       }
       const maybe = !t.endsWith('?') ? this.maybeUndefined(d.initializer) : null;
       if (maybe) {
         const sym = this.resolve(d.name);
         if (sym) this.undefinedVars.set(sym, optionalType(t));
-        emit(`${modifiers}var ${name}: ${optionalType(t)} = nil`);
+        field(`${modifiers}var ${name}: ${optionalType(t)} = nil`, name, optionalType(t));
         later(() => `    ${this.tryPrefix(d.initializer!)}${target} = ${maybe}`);
         continue;
       }
       // An object variable starting undefined or null holds one later.
-      if (isNullish(d.initializer) && !t.endsWith('?') && t !== 'Any?' && this.zero(t) === null) { emit(`${modifiers}var ${name}: ${this.deferred(t)}`); continue; }
+      if (isNullish(d.initializer) && !t.endsWith('?') && t !== 'Any?' && this.zero(t) === null) { field(`${modifiers}var ${name}: ${this.deferred(t)}`, name, this.deferred(t)); continue; }
       if (this.pure(d.initializer) && this.constantInit(d.initializer) && !(constant && this.loose(d.initializer))) {
-        emit(`${modifiers}${constant ? 'let' : 'var'} ${name}: ${constant ? t : this.lenientRef(t)} = ${this.storedInit(d.initializer, t, constant)}`);
+        field(`${modifiers}${constant ? 'let' : 'var'} ${name}: ${constant ? t : this.lenientRef(t)} = ${this.storedInit(d.initializer, t, constant)}`, name, constant ? t : this.lenientRef(t), false, constant);
         continue;
       }
-      emit(`${modifiers}var ${name}: ${this.fieldType(t)}`);
+      field(`${modifiers}var ${name}: ${this.fieldType(t)}`, name, this.fieldType(t));
       later(() => `    ${target} = ${this.tryPrefix(d.initializer!)}${this.coerce(d.initializer!, t)}`);
     }
   }
@@ -1961,6 +2013,9 @@ export class Translator implements AsyncTranslator {
     const path = this.namespacePath(md)!;
     const lines: string[] = [];
     let values = false;
+    // What throws here leaves the module, whose `module` restores the owner.
+    const owner = this.declOwner;
+    this.declOwner = path.replace(/^NativeScriptKit\./, '');
     for (const st of md.body.statements) {
       if (hasModifier(st, ts.SyntaxKind.DeclareKeyword)) continue;
       // A namespace's interfaces are the module's: a class of the interface's name.
@@ -1968,7 +2023,7 @@ export class Translator implements AsyncTranslator {
       if (ts.isTypeAliasDeclaration(st) && ts.isTypeLiteralNode(st.type)) { this.registerInterface(st.name.text, md.getSourceFile().fileName, st.type.members); continue; }
       if (ts.isTypeAliasDeclaration(st)) continue;
       values = true;
-      if (ts.isFunctionDeclaration(st)) { if (st.name && st.body) lines.push(this.func(st, ident(st.name.text), 'static ')); continue; }
+      if (ts.isFunctionDeclaration(st)) { if (st.name && st.body) lines.push(this.memberFunc(st, ident(st.name.text), 'static ')); continue; }
       if (ts.isModuleDeclaration(st)) {
         const inner = this.namespaceDecl(st, st.name.text, later);
         // A nested namespace merged into a class (`xml2ui.TemplateParser`): Swift extends a type only at file scope.
@@ -1989,15 +2044,22 @@ export class Translator implements AsyncTranslator {
       }
       later(() => this.stmt(st));
     }
+    this.declOwner = owner;
     if (!values) return '';
     // A namespace merged into a class or enum of its name: the type's static members.
     const merged = (this.checker.getSymbolAtLocation(md.name)?.flags ?? 0) & (ts.SymbolFlags.Class | ts.SymbolFlags.Enum);
+    this.declarations?.type(path.replace(/^NativeScriptKit\./, ''), merged ? 'extension' : 'enum');
     const code = [`${merged ? 'extension' : 'enum'} ${ident(name)} {`, ...lines.map((l) => indented(l)), '}'].join('\n');
     if (ts.isModuleBlock(md.parent)) return code;
     const hoisted = this.hoistedExtensions.splice(0);
     return [code, ...hoisted].join('\n');
   }
   private hoistedExtensions: string[] = [];
+
+  /** The type a namespace's members are recorded under (`CoreTypes.AnimationCurve`). */
+  namespaceOwner(md: ts.ModuleDeclaration): string | null {
+    return this.namespacePath(md)?.replace(/^NativeScriptKit\./, '') ?? null;
+  }
 
   /** The Swift path of a namespace declaration (`CoreTypes.AnimationCurve`). */
   private namespacePath(md: ts.ModuleDeclaration): string | null {
@@ -2260,12 +2322,19 @@ export class Translator implements AsyncTranslator {
     const signature = (m: (typeof methods)[0]) => `func ${m.name}(${m.params.map((p) => `_ ${p.name}: ${isFunctionType(p.type) ? `@escaping ${p.type}` : p.type}`).join(', ')}) throws${m.ret === 'Void' ? '' : ` -> ${m.ret}`}`;
     const fnType = (m: (typeof methods)[0]) => `(${m.params.map((p) => p.type).join(', ')}) throws -> ${m.ret.replace(/!$/, '?')}`;
     const lines = [`protocol ${name}: JSDynamic {`];
+    const params = (m: (typeof methods)[0]) => m.params.map((p) => `_ ${p.name}: ${isFunctionType(p.type) ? `@escaping ${p.type}` : p.type}`).join(', ');
+    const requirements = (owner: string) => {
+      for (const f of fields) this.declare(f.name, { kind: 'var', type: f.type }, owner);
+      for (const m of methods) this.declare(m.name, { kind: 'func', params: params(m), throws: true, type: m.ret }, owner);
+    };
+    this.declaring(name, 'protocol', null, () => requirements(name));
     for (const f of fields) lines.push(`    var ${ident(f.name)}: ${f.type} { get${f.readonly ? '' : ' set'} }`);
     for (const m of methods) lines.push(`    ${signature(m)}`);
     lines.push('}', '');
     const literal = this.objectClass(`${name}Object`, [...fields, ...methods.map((m) => ({ name: `_${m.name}`, type: fnType(m) }))], null)
       .replace(/^final class (\w+): JSDynamic(, JSObjectConvertible)? \{/, `final class $1: ${name}$2 {`)
       .replace(/\n}$/, '\n' + methods.map((m) => `    ${signature(m)} { try ${this.lenient ? `jsCallable(_${m.name}, ${swiftString(m.name)})` : `_${m.name}`}(${m.params.map((p) => p.name).join(', ')}) }`).join('\n') + '\n}');
+    this.declaring(`${name}Object`, 'class', null, () => { for (const m of methods) this.declare(m.name, { kind: 'func', params: params(m), throws: true, type: m.ret }); });
     return lines.join('\n') + literal;
   }
 
@@ -2305,6 +2374,8 @@ export class Translator implements AsyncTranslator {
   /** The plugins' native modules, whose protocols `Cls.extend(…, { protocols })` names. */
   pluginModules: string[] = [];
   private extendedClasses: string[] = [];
+  /** What each of `extendedClasses` declares, recorded when the shapes are written. */
+  private extendedRecords: { name: string; base: string; members: [string, RecordedMember][] }[] = [];
 
   /**
    * `NativeClass.extend({ method() {…} }, { protocols: [P] })`, as NativeScript's runtime makes a native
@@ -2326,15 +2397,18 @@ export class Translator implements AsyncTranslator {
     const methods = e.arguments[0].properties.flatMap((p) => (ts.isMethodDeclaration(p) || (ts.isPropertyAssignment(p) && (ts.isFunctionExpression(p.initializer) || ts.isArrowFunction(p.initializer)))) && p.name ? [p.name.getText()] : []);
     const name = `__Extended_${this.extendedClasses.length}`;
     const members: string[] = [];
+    const declared: [string, RecordedMember][] = [['jsMethods', { kind: 'var', type: 'Any?' }]];
     for (const m of methods) {
       const found = [...protocols.map((p) => ({ module: p!.module, js: p!.js })), { module: baseClass.module, js: baseClass.js }]
         .map((owner) => lookupMember(owner.module, owner.js, m, false)).find((x): x is NativeMethod => !!x && x.kind === 'method');
       if (!found) continue;
       const params = found.params.map((t, k) => `${found.labels[k] ?? '_'} __a${k}: ${t}`).join(', ');
+      declared.push([found.swift, { kind: 'func', params, type: found.returns }]);
       const call = `try jsCallExtended(self, jsMethods, ${swiftString(m)}, [${found.params.map((_, k) => `jsFromNative(__a${k})`).join(', ')}])`;
       const result = found.returns === 'Void' ? `jsReport { _ = ${call} }` : `return jsReported { ${nativeResult(call, found.returns)} } ?? ${nativeZero(found.returns)}`;
       members.push(`    @objc nonisolated func ${found.swift}(${params})${found.returns === 'Void' ? '' : ` -> ${found.returns}`} { ${enteredGuard(found.swift, found.labels, found.params, found.returns, '', found.escaping)}; ${onMainThread(result, found.returns, '', found.params.map((_, k) => `__a${k}`), found.params.map((p, k) => (found.escaping?.includes(k) ? `@escaping ${p}` : p)))} }`);
     }
+    this.extendedRecords.push({ name, base: baseClass.swift, members: declared });
     this.extendedClasses.push(`@MainActor final class ${name}: ${[baseClass.swift, ...protocols.map((p) => p!.swift)].join(', ')} {
 ${NONISOLATED_DEINIT}
     var jsMethods: Any?
@@ -2356,6 +2430,9 @@ ${members.join('\n')}
   /** Classes for object types without a name, and with `cells` the function cells (`cellsCode`). */
   shapesCode(cells = true): string {
     const shapes = [...this.shapes.values()].map((s) => this.objectClass(s.name, s.fields, null));
+    for (const x of this.extendedRecords) this.declaring(x.name, 'class', x.base, () => { for (const [n, m] of x.members) this.declare(n, m); });
+    for (const [alias, type] of this.globalAliasTypes) this.declarations?.global(alias, { kind: 'var', type });
+    for (const site of this.templateSites) this.declarations?.global(site, { kind: 'var', type: 'JSArray<String>' });
     return singleTry([...shapes, ...this.globalAliases.values(), ...this.templateObjects, ...this.extendedClasses, ...(cells ? this.cellsCode().map((c) => c.code) : [])].join('\n\n'));
   }
 
@@ -2364,7 +2441,12 @@ ${members.join('\n')}
     // `implicit`: `jsImplicit` of the cell's function type, not the generic one, which would hand back a new thunk.
     const needs = (type: string) => Math.max(0, ...[...this.gatedTypes].filter(([n]) => new RegExp(`\\b${n.replace(/\./g, '\\.')}\\b`).test(type)).map(([, v]) => v));
     return [...this.functionCells].map(([type, name]) => ({
-      params: functionParts(type)?.params.length ?? 0,
+      params: this.declaring(name, 'struct', null, () => {
+        this.declare('f', { kind: 'var', type });
+        this.declare('implicit', { kind: 'func', mods: 'static ', params: `_ value: (${type})?`, type: `(${type})?` });
+        this.declare('present', { kind: 'func', mods: 'static ', params: `_ value: (${type})?`, throws: true, type });
+        return functionParts(type)?.params.length ?? 0;
+      }, needs(type) || undefined),
       code: singleTry(`${needs(type) ? `@available(iOS ${needs(type)}, *)\n` : ''}struct ${name} {\n    let f: ${type}\n    static func implicit(_ value: (${type})?) -> (${type})? { value }\n    static func present(_ value: (${type})?) throws -> ${type} { guard let value else { throw jsNoObject() }; return value }\n${this.cellStaticCode(name, type, needs).map((l) => l + '\n').join('')}}`),
     }));
   }
@@ -2393,6 +2475,15 @@ ${members.join('\n')}
 
   /** A function cell's static members, as `shapesCode` writes them into its struct. */
   private cellStaticCode(cell: string, type: string, needs: (type: string) => number): string[] {
+    const declare = (name: string, params: string, result: string, available = 0) => this.declare(name, { kind: 'func', mods: 'static ', params, type: result, available: available || undefined }, cell);
+    for (const { kind, name, from, orNil } of this.cellStatics.get(cell) ?? []) {
+      const gate = from && needs(from) > needs(type) ? needs(from) : 0;
+      if (kind === 'adapting') { declare(name, `_ __h: @escaping ${from}`, type, gate); if (orNil) declare(`${name}OrNil`, `_ __h: (${from})?`, `(${type})?`, gate); }
+      if (kind === 'fromScript') { declare(name, '_ __f: Any?', type); declare(`${name}OrNil`, '_ __f: Any?', `(${type})?`); }
+      if (kind === 'script') { declare(name, `_ name: String, _ length: Int, _ __f: @escaping ${type}`, 'JSFunctionObject'); declare(`${name}OrNil`, `_ name: String, _ length: Int, _ __f: (${type})?`, 'JSFunctionObject?'); }
+      if (kind === 'declared') declare(name, `_ id: String, _ __h: @escaping ${type}`, type);
+      if (kind === 'local') declare(name, `_ __d: JSFunctionDeclaration, _ __h: @escaping ${type}`, type);
+    }
     return (this.cellStatics.get(cell) ?? []).flatMap(({ kind, name, body, from, orNil }) => {
       switch (kind) {
         case 'adapting': {
@@ -2449,26 +2540,33 @@ ${members.join('\n')}
 
   /** A plain JavaScript object of a known shape: a final class with a memberwise init, readable as a dynamic object. */
   private objectClass(name: string, allFields: ShapeField[], className: string | null): string {
+    return this.declaring(name, 'class', null, () => this.objectClassCode(name, allFields, className));
+  }
+
+  private objectClassCode(name: string, allFields: ShapeField[], className: string | null): string {
     if (allFields.some((f) => f.accessor)) return this.accessorClass(name, allFields);
     const fields = allFields.filter((f) => !f.symbol);
     const symbolic = allFields.filter((f) => f.symbol);
     const lines = [`final class ${name}: ${['JSDynamic', ...this.shapeProtocols(allFields).map((x) => x.conformance), ...(symbolic.length ? [] : ['JSObjectConvertible'])].join(', ')} {`, NONISOLATED_DEINIT];
     const held = (f: ShapeField) => this.shapeHeld(f);
-    for (const f of fields) lines.push(`    var ${ident(f.name)}: ${held(f)}`);
-    for (const f of symbolic) lines.push(`    var ${f.name}: ${f.type}`);
-    for (const x of this.shapeProtocols(allFields)) lines.push(...x.lines);
+    for (const f of fields) { lines.push(`    var ${ident(f.name)}: ${held(f)}`); this.declare(f.name, { kind: 'var', type: held(f) }); }
+    for (const f of symbolic) { lines.push(`    var ${f.name}: ${f.type}`); this.declare(f.name, { kind: 'var', type: f.type }); }
+    for (const x of this.shapeProtocols(allFields)) { lines.push(...x.lines); for (const [n, m] of x.members) this.declare(n, m); }
     // Keys in the order the literal that made this object wrote them, when not the declared order.
     lines.push('    private let jsOrder: [String]?');
     // The optional fields set to null rather than left undefined, which Swift holds as one nil.
     const nullable = symbolic.length ? [] : fields.filter((f) => isOptional(f.type) && f.type !== 'Any?');
     if (nullable.length) lines.push('    private var jsNulls: Set<String>?');
-    lines.push(`    init(${[...[...fields, ...symbolic].map((f) => `${ident(f.name)}: ${isFunctionType(held(f)) ? '@escaping ' : ''}${held(f)}${isOptional(f.type) ? ' = nil' : ''}`), 'jsOrder: [String]? = nil', ...(nullable.length ? ['jsNulls: Set<String>? = nil'] : [])].join(', ')}) {`);
+    const memberwise = [...[...fields, ...symbolic].map((f) => `${ident(f.name)}: ${isFunctionType(held(f)) ? '@escaping ' : ''}${held(f)}${isOptional(f.type) ? ' = nil' : ''}`), 'jsOrder: [String]? = nil', ...(nullable.length ? ['jsNulls: Set<String>? = nil'] : [])].join(', ');
+    lines.push(`    init(${memberwise}) {`);
+    this.declareInit(memberwise, false);
     for (const f of [...fields, ...symbolic]) lines.push(`        self.${ident(f.name)} = ${ident(f.name)}`);
     lines.push('        self.jsOrder = jsOrder', ...(nullable.length ? ['        self.jsNulls = jsNulls'] : []), '    }');
     // Keys beyond the type's: those of the untyped object it was read from (a cast of JSON.parse), in its order, and those set on it later (`o[key] = v`).
     lines.push('    private var jsExtra: JSDynamic?');
     if (symbolic.length) { lines.push(...this.dynamicMembers(fields, className, false), '}'); return lines.join('\n'); }
     lines.push('    convenience init(jsObject: Any?) {');
+    this.declareInit('jsObject: Any?', false);
     // A field the object lacks, or holds of another type (JSON without an optional field), reads as JavaScript converts it where used.
     const field = (f: ShapeField) => ['String', 'Double', 'Bool'].includes(f.type) ? `jsLenient${f.type === 'Double' ? 'Number' : f.type}(jsField(jsObject, ${swiftString(f.name)}))` : this.reportedRead(this.fromAny(`jsField(jsObject, ${swiftString(f.name)})`, this.lenient ? held(f).replace(/^\((.*)\)!$/, '($1)?') : f.type));
     const nulls = nullable.length ? [`jsNulls: jsNullKeys(jsObject, [${nullable.map((f) => swiftString(f.name)).join(', ')}])`] : [];
@@ -2496,6 +2594,7 @@ ${members.join('\n')}
       const n = ident(f.name);
       if (!f.accessor) {
         lines.push(`    var ${n}: ${f.type}`);
+        this.declare(f.name, { kind: 'var', type: f.type });
         params.push(`${n}: ${isFunctionType(f.type) ? '@escaping ' : ''}${f.type}${isOptional(f.type) ? ' = nil' : ''}`);
         inits.push(`        self.${n} = ${n}`);
         continue;
@@ -2508,12 +2607,19 @@ ${members.join('\n')}
       const get = a.get ? `${a.throws ? 'try ' : ''}__get_${f.name}(self)` : 'nil';
       if (a.set) lines.push(`    var ${n}: ${f.type} {`, `        get { ${get} }`, `        set { __set_${f.name}(self, newValue${a.get ? '' : '!'}) }`, '    }');
       else lines.push(`    var ${n}: ${f.type} {`, `        get${a.throws ? ' throws' : ''} { ${get} }`, '    }');
+      this.declare(f.name, { kind: 'var', type: f.type, throws: !a.set && !!a.throws });
     }
     lines.push('    private let jsOrder: [String]?');
     lines.push(`    init(${[...params, 'jsOrder: [String]? = nil'].join(', ')}) {`, ...inits, '        self.jsOrder = jsOrder', '    }');
     lines.push(`    var jsKeys: [String] { jsOrder ?? [${fields.map((f) => swiftString(f.name)).join(', ')}] }`);
     lines.push('    var jsClassName: String? { nil }');
     lines.push('    subscript(jsKey key: String) -> Any? {', '        get {', '            switch key {');
+    this.declareInit([...params, 'jsOrder: [String]? = nil'].join(', '), false);
+    this.declare('jsKeys', { kind: 'var', type: '[String]' });
+    this.declare('jsClassName', { kind: 'var', type: 'String?' });
+    this.declare('subscript', { kind: 'subscript', params: 'jsKey key: String', type: 'Any?' });
+    this.declare('jsAccessorKind', { kind: 'func', params: '_ key: String', type: 'String?' });
+    if (this.declOwner) this.declarations?.names(this.declOwner, fields.map((f) => f.name));
     for (const f of fields) lines.push(`            case ${swiftString(f.name)}: return ${f.accessor?.throws ? `(try? self.${ident(f.name)}) ?? nil` : this.boxedField(`self.${ident(f.name)}`, f.type)}`);
     lines.push('            default: return nil', '            }', '        }', '        set {', '            switch key {');
     for (const f of fields) if (!f.accessor || f.accessor.set) lines.push(`            case ${swiftString(f.name)}: ${this.storeFromAny(`self.${ident(f.name)}`, f.type, f.name)}`);
@@ -2525,8 +2631,8 @@ ${members.join('\n')}
   }
 
   /** What an object literal's class conforms to by its members: an iterator (`next`), an iterable (`[Symbol.iterator]`). */
-  private shapeProtocols(fields: ShapeField[]): { conformance: string; lines: string[] }[] {
-    const out: { conformance: string; lines: string[] }[] = [];
+  private shapeProtocols(fields: ShapeField[]): { conformance: string; lines: string[]; members: [string, RecordedMember][] }[] {
+    const out: { conformance: string; lines: string[]; members: [string, RecordedMember][] }[] = [];
     const fn = (n: string) => {
       const f = fields.find((x) => x.name === n && !x.accessor);
       const parts = f && functionParts(f.type.replace(/^\((.*)\)\?$/, '$1'));
@@ -2540,10 +2646,10 @@ ${members.join('\n')}
     if (own('valueOf') || own('toString')) {
       const call = (n: string) => (this.lenient ? `try jsCallable(${n}, ${swiftString(n)})()` : `try ${n}()`);
       const body = !own('valueOf') ? call('toString') : `hint == "string" ? ${own('toString') ? call('toString') : '"[object Object]"'} : ${call('valueOf')}`;
-      out.push({ conformance: 'JSToPrimitive', lines: [`    func jsToPrimitive(_ hint: String) throws -> Any? { ${body} }`] });
+      out.push({ conformance: 'JSToPrimitive', lines: [`    func jsToPrimitive(_ hint: String) throws -> Any? { ${body} }`], members: [['jsToPrimitive', { kind: 'func', params: '_ hint: String', throws: true, type: 'Any?' }]] });
     }
-    if (fields.some((f) => f.name === 'jsSymbolIterator')) out.push({ conformance: 'JSIterableValue', lines: [`    func jsAnyIterator() throws -> JSIteratorProtocol { ${this.lenient ? 'try jsIterated(jsSymbolIterator(), "Result of the Symbol.iterator method is not an object")' : 'try jsSymbolIterator()'} }`] });
-    if (fields.some((f) => f.name === 'jsSymbolAsyncIterator')) out.push({ conformance: 'JSAsyncIterableValue', lines: ['    func jsAnyAsyncIterator() throws -> JSAsyncIteratorProtocol { try jsSymbolAsyncIterator() }'] });
+    if (fields.some((f) => f.name === 'jsSymbolIterator')) out.push({ conformance: 'JSIterableValue', lines: [`    func jsAnyIterator() throws -> JSIteratorProtocol { ${this.lenient ? 'try jsIterated(jsSymbolIterator(), "Result of the Symbol.iterator method is not an object")' : 'try jsSymbolIterator()'} }`], members: [['jsAnyIterator', { kind: 'func', params: '', throws: true, type: 'JSIteratorProtocol' }]] });
+    if (fields.some((f) => f.name === 'jsSymbolAsyncIterator')) out.push({ conformance: 'JSAsyncIterableValue', lines: ['    func jsAnyAsyncIterator() throws -> JSAsyncIteratorProtocol { try jsSymbolAsyncIterator() }'], members: [['jsAnyAsyncIterator', { kind: 'func', params: '', throws: true, type: 'JSAsyncIteratorProtocol' }]] });
     return out;
   }
 
@@ -2562,8 +2668,13 @@ ${members.join('\n')}
   }
 
   /** `JSDynamic`: the object's keys and members by name, for printing, JSON and untyped access. */
-  private dynamicMembers(fields: { name: string; type: string }[], className: string | null, override: boolean, methods: { name: string; type: string; available?: number; length?: number }[] = [], symbols: { key: string; member: string; type: string }[] = [], expando = false, raw = new Set<string>(), accessors: { name: string; get: string | null; set: string | null }[] = [], symbolKeyedBase = false, extra = false, nulls = new Set<string>()): string[] {
+  private dynamicMembers(fields: { name: string; type: string }[], className: string | null, override: boolean, methods: { name: string; type: string; available?: number; length?: number }[] = [], symbols: { key: string; member: string; type: string }[] = [], expando = false, raw = new Set<string>(), accessors: { name: string; get: string | null; set: string | null }[] = [], symbolKeyedBase = false, extra = false, nulls = new Set<string>(), classNameMember = true): string[] {
     const o = override ? 'override ' : '';
+    this.declare('jsKeys', { kind: 'var', mods: o, type: '[String]' });
+    if (symbols.length) this.declare('jsSymbolKeys', { kind: 'var', mods: symbolKeyedBase ? 'override ' : '', type: '[String]' });
+    if (classNameMember) this.declare('jsClassName', { kind: 'var', mods: o, type: 'String?' });
+    this.declare('subscript', { kind: 'subscript', mods: o, params: 'jsKey key: String', type: 'Any?' });
+    if (this.declOwner) this.declarations?.names(this.declOwner, [...fields.map((f) => f.name), ...accessors.map((a) => a.name), ...methods.map((m) => m.name)]);
     const keys = fields.map((f) => (f.type.endsWith('?') ? `(self.${ident(f.name)} == nil ? [] : [${swiftString(f.name)}])` : `[${swiftString(f.name)}]`));
     const lines = [
       `    ${o}var jsKeys: [String] { ${[override ? 'super.jsKeys' : '', ...keys, expando ? '(jsExpando?.jsKeys ?? [])' : ''].filter(Boolean).join(' + ') || '[]'} }`,
@@ -3168,11 +3279,22 @@ ${members.join('\n')}
   }
 
   private enumDecl(e: ts.EnumDeclaration): string {
-    const lines = [`enum ${ident(this.topName(e, e.name.text))} {`];
+    const name = this.topName(e, e.name.text);
+    return this.declaring(this.nestedName(e, name), 'enum', null, () => this.enumBody(e, name));
+  }
+
+  /** A declaration's Swift name as the manifest records it: inside the namespace being written, qualified by its path. */
+  nestedName(decl: ts.Node, name: string): string {
+    return ts.isModuleBlock(decl.parent) && this.declOwner ? `${this.declOwner}.${name}` : name;
+  }
+
+  private enumBody(e: ts.EnumDeclaration, name: string): string {
+    const lines = [`enum ${ident(name)} {`];
     for (const m of e.members) {
       const v = this.checker.getConstantValue(m);
       if (v === undefined) throw this.error(m, 'an enum member without a constant value');
       lines.push(`    static let ${ident(m.name.getText())}: ${typeof v === 'string' ? 'String' : 'Double'} = ${typeof v === 'string' ? swiftString(v) : String(v)}`);
+      this.declare(m.name.getText(), { kind: 'var', mods: 'static ', type: typeof v === 'string' ? 'String' : 'Double', readonly: true });
     }
     // The object JavaScript makes of the enum, for its use as a value: a numeric member maps back to its name too.
     if (!hasModifier(e, ts.SyntaxKind.ConstKeyword)) {
@@ -3182,6 +3304,7 @@ ${members.join('\n')}
         return typeof v === 'string' ? [`(${key}, ${swiftString(v)} as Any?)`] : [`(${key}, Double(${v}) as Any?)`, `(${swiftString(String(v))}, ${key} as Any?)`];
       });
       lines.push(`    static let jsEnumObject = JSObject([${entries.join(', ')}])`);
+      this.declare('jsEnumObject', { kind: 'var', mods: 'static ', type: 'JSObject', readonly: true });
     }
     lines.push('}');
     return lines.join('\n');
@@ -3706,6 +3829,7 @@ ${members.join('\n')}
     const body = this.availableFrom(needs, () => ts.isFunctionDeclaration(fn) && takesThis(fn)
       ? this.withThis(fn, ident('this'), !declaresThis(fn) || this.paramType(first) === 'Any?', () => this.functionBody(fn, ret, this.indent))
       : this.functionBody(fn, ret, this.indent));
+    this.lastSignature = { kind: 'func', mods: modifiers, params, throws: !!throws, type: ret === 'Void' ? 'Void' : declared, generics: this.generics(fn) };
     return `${modifiers}func ${name}${this.generics(fn)}(${params})${throws}${ret === 'Void' ? '' : ` -> ${declared}`} ${body}`;
   }
 
@@ -3917,6 +4041,7 @@ ${members.join('\n')}
     const body = this.functionBody(fn, ret, pad);
     const call = `${throws ? 'try ' : ''}{ () ${throws ? 'throws ' : ''}-> ${ret} in${body.slice(1)}()`;
     const result = base.ret === 'Void' ? `${pad}_ = ${call}` : `${pad}let __result: ${ret} = ${call}\n${pad}return ${this.convert('__result', plain(ret), plain(base.ret))}`;
+    this.lastSignature = { kind: 'func', mods: modifiers, params, throws, type: base.ret };
     return `${modifiers}func ${name}(${params})${throws ? ' throws' : ''}${base.ret === 'Void' ? '' : ` -> ${base.ret}`} {\n${[...binds, result].join('\n')}\n${this.indent}}`;
   }
 
@@ -4240,6 +4365,12 @@ ${members.join('\n')}
   }
 
   private classDecl(cls: ts.ClassDeclaration): string {
+    const owner = this.declOwner;
+    this.declOwner = this.nestedName(cls, ts.isModuleBlock(cls.parent) ? cls.name!.text : this.topName(cls, cls.name!.text));
+    try { return this.classDeclaration(cls); } finally { this.declOwner = owner; }
+  }
+
+  private classDeclaration(cls: ts.ClassDeclaration): string {
     const nativeSubclass = this.native.classDecl(cls);
     if (nativeSubclass) return nativeSubclass;
     const name = ts.isModuleBlock(cls.parent) ? cls.name!.text : this.topName(cls, cls.name!.text);
@@ -4310,8 +4441,14 @@ ${members.join('\n')}
     const header = () => `${this.extended.has(name) || this.extendedDecls.has(cls) || this.library ? '' : 'final '}class ${ident(name)}${this.generics(cls)}: ${[...(base || implemented.length ? [] : ['JSDynamic']), ...conformances].join(', ')} {`;
     const lines = [''];
     const valueOfMethod = valueOf ? cls.members.find((m): m is ts.MethodDeclaration => ts.isMethodDeclaration(m) && m.name.getText() === 'valueOf' && !!m.body) : undefined;
-    if (valueOfMethod) lines.push(`    func jsValueOf() throws -> Any? { ${this.throwsInfo.fn(valueOfMethod) ? 'try ' : ''}self.valueOf() }`);
-    if (toJSON && !this.inheritsMethod(cls, 'toJSON')) lines.push(`    func jsToJSON(_ key: String) throws -> Any? { ${this.throwsInfo.fn(toJSON) ? 'try ' : ''}self.toJSON(${toJSON.parameters.length ? 'key' : ''}) }`);
+    if (valueOfMethod) {
+      lines.push(`    func jsValueOf() throws -> Any? { ${this.throwsInfo.fn(valueOfMethod) ? 'try ' : ''}self.valueOf() }`);
+      this.declare('jsValueOf', { kind: 'func', params: '', throws: true, type: 'Any?' });
+    }
+    if (toJSON && !this.inheritsMethod(cls, 'toJSON')) {
+      lines.push(`    func jsToJSON(_ key: String) throws -> Any? { ${this.throwsInfo.fn(toJSON) ? 'try ' : ''}self.toJSON(${toJSON.parameters.length ? 'key' : ''}) }`);
+      this.declare('jsToJSON', { kind: 'func', params: '_ key: String', throws: true, type: 'Any?' });
+    }
     const ctor = cls.members.find((m): m is ts.ConstructorDeclaration => ts.isConstructorDeclaration(m) && !!m.body);
     const paramProps = (ctor?.parameters ?? []).filter((p) => ts.canHaveModifiers(p) && ts.getModifiers(p)?.some((m) => [ts.SyntaxKind.PublicKeyword, ts.SyntaxKind.PrivateKeyword, ts.SyntaxKind.ProtectedKeyword, ts.SyntaxKind.ReadonlyKeyword].includes(m.kind)));
     const fieldInits: string[] = [];
@@ -4325,6 +4462,7 @@ ${members.join('\n')}
       const omitted = !!p.questionToken && !isOptional(t) && t !== 'Any?';
       const decl = omitted || this.lenient ? (this.lenient ? this.fieldType(t) : optionalType(t)) : this.deferred(t);
       lines.push(`    var ${ident(n)}: ${decl}`);
+      this.declare(n, { kind: 'var', type: decl });
       const held = omitted && !p.initializer ? /^(.*?) = (.*)$/.exec(decl) : null;
       const unset = held && !/[?!]$/.test(held[1]) ? held[2] : undefined;
       paramPropValues.set(p, unset ? `(${ident(n)} ?? ${unset})` : ident(n));
@@ -4339,6 +4477,7 @@ ${members.join('\n')}
         const t = this.typeOf(m.name);
         symbolFields.push({ key: keyed.key, member: keyed.member, type: t });
         lines.push(`    var ${keyed.member}: ${this.deferred(t)}`);
+        this.declare(keyed.member, { kind: 'var', type: this.deferred(t) });
         if (m.initializer) {
           this.indent = '        ';
           fieldInits.push(`        self.${keyed.member} = ${this.tryPrefix(m.initializer)}${this.coerce(m.initializer, t)}`);
@@ -4355,11 +4494,13 @@ ${members.join('\n')}
         }
         conformances.push('JSToStringTag');
         lines.push(`    var jsToStringTag: String = ${this.coerce(m.initializer, 'String')}`);
+        this.declare('jsToStringTag', { kind: 'var', type: 'String' });
         continue;
       }
       // `static [native_];`: the class's own property under a symbol, undefined until set.
       if (keyed?.key && isStatic(m) && !m.initializer) {
         lines.push(`    static var ${keyed.member}: ${optionalType(this.typeOf(m.name))} = nil`);
+        this.declare(keyed.member, { kind: 'var', mods: 'static ', type: optionalType(this.typeOf(m.name)) });
         continue;
       }
       if (keyed) throw this.error(m.name, 'a field named by this symbol');
@@ -4367,23 +4508,27 @@ ${members.join('\n')}
       const t = this.typeOf(m.name);
       if (isStatic(m)) {
         const nullInit = !!m.initializer && (m.initializer.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(m.initializer) && m.initializer.text === 'undefined'));
-        if (nullInit && !isOptional(t) && this.zero(t) === null) { lines.push(`    static var ${ident(n)}: ${this.deferred(t)} = nil`); continue; }
-        if (!m.initializer && !isOptional(t) && this.zero(t) === null) { lines.push(`    static var ${ident(n)}: ${this.deferred(t)}`); continue; }
+        const staticVar = (type: string) => this.declare(n, { kind: 'var', mods: 'static ', type });
+        if (nullInit && !isOptional(t) && this.zero(t) === null) { lines.push(`    static var ${ident(n)}: ${this.deferred(t)} = nil`); staticVar(this.deferred(t)); continue; }
+        if (!m.initializer && !isOptional(t) && this.zero(t) === null) { lines.push(`    static var ${ident(n)}: ${this.deferred(t)}`); staticVar(this.deferred(t)); continue; }
         // A static initializer that throws or reads changing state runs with the module's statements, where the class is defined; Swift's run lazily and cannot throw.
         if (m.initializer && this.staticInits && !nullInit && (this.throwsInfo.expr(m.initializer) || !this.constantInit(m.initializer))) {
           lines.push(`    static var ${ident(n)}: ${this.deferred(t)}`);
+          staticVar(this.deferred(t));
           this.indent = '    ';
           this.staticInits.push(`    ${ident(name)}.${ident(n)} = ${this.tryPrefix(m.initializer)}${this.coerce(m.initializer, t)}`);
           continue;
         }
         const st = this.lenient ? this.lenientRef(t) : t;
         lines.push(`    static var ${ident(n)}: ${st}${m.initializer ? ` = ${this.storedInit(m.initializer, st)}` : isOptional(st) ? '' : ` = ${this.zero(t) ?? 'nil'}`}`);
+        staticVar(st);
         continue;
       }
       // A view class narrowing its native view's type (`nativeViewProtected: CHIBasePageControl`) reads the kit's `nativeView`.
       if (isView && !m.initializer && ['nativeViewProtected', 'ios'].includes(m.name.getText())) {
         const native = t.replace(/[?!]$/, '');
         lines.push(`    var ${ident(n)}: ${native}! { nativeView as? ${native} }`);
+        this.declare(n, { kind: 'var', type: `${native}!` });
         continue;
       }
       // A plugin's field with no value over a kit property (`borderRadius: number` on its view): only a type, as its
@@ -4391,10 +4536,11 @@ ${members.join('\n')}
       const typeOnly = !m.initializer && this.pluginFiles.has(cls.getSourceFile().fileName) ? this.kitRedeclared(m) : null;
       if (typeOnly && !typeOnly.same) {
         lines.push(`    var ${ident(n)}: ${t} {`, `        get { ${this.convert(`self.${ident(m.name.getText())}`, typeOnly.type, t)} }`, `        set { self.${ident(m.name.getText())} = ${this.convert('newValue', t, typeOnly.type)} }`, '    }');
+        this.declare(n, { kind: 'var', type: t });
         continue;
       }
       const nativeProperty = this.nativePropertyOf(m);
-      if (nativeProperty) { lines.push(nativeProperty); continue; }
+      if (nativeProperty) { lines.push(nativeProperty); this.declare(n, { kind: 'var', type: optionalType(t) }); continue; }
       // A field its base declares already (`nativeViewProtected: UIView` over `any`): the base's, read as this field's type.
       const root = this.redeclaredField(m);
       const kitOver = this.kitRedeclared(m);
@@ -4418,6 +4564,8 @@ ${members.join('\n')}
         const read = `JSPrototypes.value(type(of: self), ${swiftString(n)}, self)`;
         const own = `__own_${n.replace(/\W/g, '_')}`;
         const inherited = this.reportedRead(z ? this.fromAnyCode(read, t, true) : this.fromAny(read, stored));
+        this.declare(own, { kind: 'var', type: `Optional<${stored}>` });
+        this.declare(n, { kind: 'var', type: vt });
         lines.push(`    var ${own}: Optional<${stored}> = nil`, `    var ${ident(n)}: ${vt} {`, `        get { if let v = ${own} { return v }; return ${z && inherited.startsWith('(jsReported') ? `${inherited} ?? ${z}` : inherited} }`, `        set { ${own} = .some(newValue) }`, '    }');
         fields.push({ name: n, type: t });
         continue;
@@ -4428,6 +4576,7 @@ ${members.join('\n')}
         // Undefined until set, an array included (`if (!this.items)`): only a string, number or boolean reads as its zero.
         const unset = !t.endsWith('?') && !t.endsWith('!') && (this.zero(t) === null || /^JS(Array|Map|Set)</.test(t)) && !isFunctionType(t);
         const vt = unset ? optionalType(t) : t;
+        this.declare(n, { kind: 'var', type: unset && this.lenient ? this.lenientRef(t) : vt });
         lines.push(`    var ${ident(n)}: ${unset && this.lenient ? this.lenientRef(t) : vt} {`, `        get { ${this.reportedRead(this.fromAnyCode(`jsExpandoGet(self, ${swiftString(n)})`, vt, true))} }`, `        set { jsExpandoSet(self, ${swiftString(n)}, ${this.convert('newValue', vt, 'Any?')}) }`, '    }');
         if (m.initializer) {
           this.indent = '        ';
@@ -4441,6 +4590,8 @@ ${members.join('\n')}
         // A property registered without a default is undefined until set: an object-typed one, an array included, reads as nil.
         const unset = !t.endsWith('?') && !t.endsWith('!') && (this.zero(t) === null || /^JS(Array|Map|Set)</.test(t)) && !isFunctionType(t);
         // Core's `set` runs the property's change handlers, whose errors are reported as core reports them.
+        if (this.declOwner) this.declarations?.names(this.declOwner, [n]);
+        this.declare(n, { kind: 'var', type: unset ? (this.lenient ? optionalType(t) : `${t}!`) : t });
         lines.push(`    var ${ident(n)}: ${unset ? (this.lenient ? optionalType(t) : `${t}!`) : t} {`, `        get { ${this.fromAnyCode(this.library ? `get(${swiftString(n)})` : `(jsReported { try get(${swiftString(n)}) } ?? nil)`, unset ? optionalType(t) : t, true)} }`, `        set { jsReport { try set(${swiftString(n)}, ${this.convert('newValue', unset ? optionalType(t) : t, 'Any?')}) } }`, '    }');
         if (m.initializer) {
           this.indent = '        ';
@@ -4455,14 +4606,16 @@ ${members.join('\n')}
         this.gatedFields.set(m, needs);
         const held = t.replace(/[?!]$/, '');
         lines.push(`    private var __gated_${n}: AnyObject?`, `    @available(iOS ${needs}, *) var ${ident(n)}: ${held}? { get { __gated_${n} as? ${held} } set { __gated_${n} = newValue } }`);
+        this.declare(n, { kind: 'var', type: `${held}?`, available: needs });
         continue;
       }
       // A field of its own beside the kit's property of its name: script reads the property by that name, the kit's.
       if (!this.kitRedeclared(m)) fields.push({ name: n, type: t });
       // `field: string = null` in code checked without strictNullChecks: unset, read as the type's zero or an unwrapped nil.
-      if (m.initializer && (m.initializer.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(m.initializer) && m.initializer.text === 'undefined')) && !isOptional(t)) { lines.push(`    var ${ident(n)}: ${this.fieldType(t)}`); continue; }
-      if (m.initializer && this.pure(m.initializer) && !refersToThis(m.initializer)) { lines.push(`    var ${ident(n)}: ${this.lenientRef(t)} = ${this.storedInit(m.initializer, t)}`); continue; }
+      if (m.initializer && (m.initializer.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(m.initializer) && m.initializer.text === 'undefined')) && !isOptional(t)) { lines.push(`    var ${ident(n)}: ${this.fieldType(t)}`); this.declare(n, { kind: 'var', type: this.fieldType(t) }); continue; }
+      if (m.initializer && this.pure(m.initializer) && !refersToThis(m.initializer)) { lines.push(`    var ${ident(n)}: ${this.lenientRef(t)} = ${this.storedInit(m.initializer, t)}`); this.declare(n, { kind: 'var', type: this.lenientRef(t) }); continue; }
       const held = this.fieldType(t);
+      this.declare(n, { kind: 'var', type: held });
       lines.push(`    ${this.weak.fields.has(`${cls.name?.text}.${n}`) && /^[A-Z][\w.]*[!?]$/.test(held) ? 'weak ' : ''}var ${ident(n)}: ${held}`);
       if (m.initializer) {
         this.indent = '        ';
@@ -4508,22 +4661,27 @@ ${members.join('\n')}
       });
       this.indent = '    ';
       lines.push(`    ${sameAsBase ? 'override ' : ''}init(${this.params(ctor, false)})${throws} {`, ...body, '    }');
+      this.declareInit(this.params(ctor, false), !!throws);
     } else if (fieldInits.length || this.throwsInfo.initThrows(cls)) {
       const baseThrows = appBase ? this.throwsInfo.initThrows(appBase) : !!kitRoot && this.core.initThrows(kitRoot);
+      if (baseCtor) this.declareInit(this.params(baseCtor, false), baseThrows || this.throwsInfo.initThrows(cls));
+      else this.declareInit('', this.throwsInfo.initThrows(cls));
       if (baseCtor) lines.push(`    override init(${this.params(baseCtor, false)})${baseThrows || this.throwsInfo.initThrows(cls) ? ' throws' : ''} {`, `        ${baseThrows ? 'try ' : ''}super.init(${this.readsArguments(baseCtor) ? '__arguments' : baseCtor.parameters.map((p) => ident((p.name as ts.Identifier).text)).join(', ')})`, ...fieldInits, '    }');
       else lines.push(`    ${appBase || kitRoot ? 'override ' : ''}init()${this.throwsInfo.initThrows(cls) ? ' throws' : ''} {`, ...(appBase || kitRoot ? [`        ${baseThrows ? 'try ' : ''}super.init()`] : []), ...fieldInits, '    }');
     } else if ((this.library || this.extended.has(name) || this.extendedDecls.has(cls)) && !base && !cls.members.some((m) => ts.isConstructorDeclaration(m)) && !this.literalClasses().has(cls)) {
       // Library mode: Swift's implicit initializer is internal; an app makes the class (`new StyleScope()`) from another module.
       // A class subclassed: Swift would leave its implicit initializer nonisolated, and a subclass's, isolated to the main actor, could not override it.
       lines.push('    init() {}');
+      this.declareInit('', false);
     }
     // A class object literals are typed as (`const info = <Info>{}`): an instance made without its constructor or field initializers, as such a literal has none.
     if (this.library && !base && this.literalClasses().has(cls)) {
       const resets = cls.members.filter((m): m is ts.PropertyDeclaration => ts.isPropertyDeclaration(m) && !isStatic(m) && !!m.initializer && this.pure(m.initializer) && !refersToThis(m.initializer) && fields.some((f) => f.name === m.name.getText()))
         .flatMap((m) => { const z = this.zero(this.typeOf(m.name)); return z ? [`        self.${ident(m.name.getText())} = ${z}`] : []; });
       lines.push('    init(jsLiteral: Void) {', ...resets, '    }');
+      this.declareInit('jsLiteral: Void', false);
       // A class Swift gave `init()` only while it declared no other.
-      if (!ctor && !fieldInits.length) lines.push('    init() {}');
+      if (!ctor && !fieldInits.length) { lines.push('    init() {}'); this.declareInit('', false); }
     }
     const dynAccessors: { name: string; get: string | null; set: string | null }[] = [];
     // Accessors pair into one property.
@@ -4556,6 +4714,7 @@ ${members.join('\n')}
       const declared = a.get && this.inNativeClass(a.get) ? t : this.lenientRef(t);
       if (!(a.get ?? a.set)!.body) {
         lines.push(`    ${mods}var ${ident(n)}: ${declared} { get { fatalError("abstract getter ${name}.${n}") }${a.set ? ` set { fatalError("abstract setter ${name}.${n}") }` : ''} }`);
+        this.declare(n, { kind: 'var', mods, type: declared });
         continue;
       }
       const parts: string[] = [];
@@ -4576,6 +4735,7 @@ ${members.join('\n')}
       if (a.set && anySetter) {
         const p = a.set.parameters[0].name as ts.Identifier;
         const body = this.functionBody(a.set, 'Void', '    ');
+        this.declare(`__set_${n.replace(/\W/g, '_')}`, { kind: 'func', mods: mods.replace(/\b(static|class) /, ''), params: `_ ${ident(p.text)}: Any?`, type: 'Void' });
         lines.push(`    ${mods.replace(/\b(static|class) /, '')}func __set_${n.replace(/\W/g, '_')}(_ ${ident(p.text)}: Any?) {\n        ${this.throwsInfo.fn(a.set) ? 'jsReport' : 'do'} ${body.trimStart().replace(/\n/g, '\n    ')}\n    }`);
         parts.push(`        set { __set_${n.replace(/\W/g, '_')}(newValue) }`);
       } else if (a.set) {
@@ -4592,6 +4752,7 @@ ${members.join('\n')}
           : `        set {\n${bound}            do ${body.trimStart()}\n        }`);
       }
       lines.push(`    ${mods}var ${ident(n)}: ${declared} {`, ...parts, '    }');
+      this.declare(n, { kind: 'var', mods, type: declared, throws: !!a.get && !reported && this.throwsInfo.fn(a.get) });
       // A plugin's objects are read untyped too (`navigator.gpu.native`): their accessors by name.
       const own = (a.get ?? a.set)!;
       if (!this.library && (this.pluginFiles.has(cls.getSourceFile().fileName) || this.appMembersByName) && !isStatic(own) && !this.symbolMember(own.name)) {
@@ -4605,6 +4766,7 @@ ${members.join('\n')}
       const cssType = (ts.getDecorators(cls) ?? []).map((d) => d.expression).find((e): e is ts.CallExpression => ts.isCallExpression(e) && e.expression.getText() === 'CSSType');
       const typeName = cssType && ts.isStringLiteralLike(cssType.arguments[0]) ? cssType.arguments[0].text : name;
       lines.push(`    override var cssType: String { get { ${swiftString(typeName)} } set {} }`);
+      this.declare('cssType', { kind: 'var', mods: 'override ', type: 'String' });
     }
     for (const d of ts.getDecorators(cls) ?? []) {
       if (ts.isIdentifier(d.expression) && this.library?.identities?.has(d.expression.text)) continue;
@@ -4620,20 +4782,22 @@ ${members.join('\n')}
       if (keyed?.member === 'jsToPrimitive') {
         const ret = this.returnTypeOf(m);
         const throws = this.throwsInfo.fn(m);
-        lines.push('    ' + this.func(m, '__symbol_toPrimitive'));
+        lines.push('    ' + this.memberFunc(m, '__symbol_toPrimitive'));
         const call = `${throws ? 'try ' : ''}__symbol_toPrimitive(${m.parameters.length ? 'hint' : ''})`;
         lines.push(`    func jsToPrimitive(_ hint: String) throws -> Any? { ${ret === 'Void' ? `${call}; return nil` : `return ${this.convert(call, ret, 'Any?')}`} }`);
+        this.declare('jsToPrimitive', { kind: 'func', params: '_ hint: String', throws: true, type: 'Any?' });
         conformances.push('JSToPrimitive');
         continue;
       }
       if (keyed?.member === 'jsSymbolIterator' || keyed?.member === 'jsSymbolAsyncIterator') {
-        lines.push('    ' + this.func(m, keyed.member));
+        lines.push('    ' + this.memberFunc(m, keyed.member));
         const async = keyed.member === 'jsSymbolAsyncIterator';
+        this.declare(async ? 'jsAnyAsyncIterator' : 'jsAnyIterator', { kind: 'func', params: '', throws: true, type: async ? 'JSAsyncIteratorProtocol' : 'JSIteratorProtocol' });
         conformances.push(async ? 'JSAsyncIterableValue' : 'JSIterableValue');
         lines.push(async ? `    func jsAnyAsyncIterator() throws -> JSAsyncIteratorProtocol { ${this.throwsInfo.fn(m) ? 'try ' : ''}jsSymbolAsyncIterator() }` : `    func jsAnyIterator() throws -> JSIteratorProtocol { ${this.lenient ? `try jsIterated(${this.throwsInfo.fn(m) ? 'try ' : ''}jsSymbolIterator(), "Result of the Symbol.iterator method is not an object")` : `${this.throwsInfo.fn(m) ? 'try ' : ''}jsSymbolIterator()`} }`);
         continue;
       }
-      if (keyed?.key) { lines.push('    ' + this.func(m, keyed.member)); continue; }
+      if (keyed?.key) { lines.push('    ' + this.memberFunc(m, keyed.member)); continue; }
       if (keyed) throw this.error(m.name, 'a method named by this symbol');
       // On a class of a core view (`[isUserInteractionEnabledProperty.setNative]`): core's property system finds it by its symbol.
       if (this.library || kitRoot) {
@@ -4646,17 +4810,18 @@ ${members.join('\n')}
         const key = this.propertyKey(m.name.expression);
         this.chainingLoose = saved;
         symbolMethods.push({ key, method, params: m.parameters.map((p) => this.paramType(p)), ret: this.returnTypeOf(m), throws: this.throwsInfo.fn(m) });
-        lines.push('    ' + this.func(m, method));
+        lines.push('    ' + this.memberFunc(m, method));
         continue;
       }
       const property = this.setNativeOf(m.name.expression);
       if (!property) throw this.error(m.name, 'a computed method name');
       const method = `__setNative_${property}`;
       setters.push({ property, method, param: m.parameters[0] ? this.typeOf(m.parameters[0].name) : 'Void', throws: this.throwsInfo.fn(m) });
-      lines.push('    ' + this.func(m, method));
+      lines.push('    ' + this.memberFunc(m, method));
     }
     if (symbolMethods.length || expando) {
       lines.push(`    ${expando ? '' : 'override '}func jsSymbolMethod(_ key: String) -> JSMethod? {`);
+      this.declare('jsSymbolMethod', { kind: 'func', mods: expando ? '' : 'override ', params: '_ key: String', type: 'JSMethod?' });
       for (const sm of symbolMethods) {
         const args = sm.params.map((p, k) => this.presentFromAny(`jsArg(__a, ${k})`, p, true, true));
         const call = `try (jsCastPresent(__this) as ${ident(name)}).${sm.method}(${args.join(', ')})`;
@@ -4667,10 +4832,15 @@ ${members.join('\n')}
     if (expando) {
       conformances.push('JSExpando');
       lines.push('    var jsExpando: JSObject?', ...(symbolFields.length ? [] : ['    var jsSymbolKeys: [String] { jsExpando?.jsSymbolKeys ?? [] }']), '    func jsDeleteOwn(_ key: String) -> Bool { jsExpando?.delete(key) ?? true }');
+      this.declare('jsExpando', { kind: 'var', type: 'JSObject?' });
+      if (!symbolFields.length) this.declare('jsSymbolKeys', { kind: 'var', type: '[String]' });
+      this.declare('jsDeleteOwn', { kind: 'func', params: '_ key: String', type: 'Bool' });
     }
     if (setters.length) {
       if (!isView) throw this.error(cls, 'native setters on a class that is not a view');
       lines.push('    override func setProperty(_ name: String, _ value: Any?) {', '        switch name {');
+      this.declare('setProperty', { kind: 'func', mods: 'override ', params: '_ name: String, _ value: Any?', type: 'Void' });
+      if (this.declOwner) this.declarations?.names(this.declOwner, setters.map((st) => st.property));
       for (const st of setters) {
         const call = st.param === 'Void' ? `${st.method}()` : `${st.method}(${this.convert('value', 'Any?', st.param)})`;
         // What a native setter throws is reported, as core reports an error applying a property.
@@ -4691,6 +4861,7 @@ ${members.join('\n')}
         // Without a declared type (implicitly any) it returns nothing, as overrides declared for effect do: Swift overrides match exactly.
         const ret = this.signatureOf(m).ret;
         lines.push(`    func ${ident(m.name.getText())}(${this.params(m, false)})${this.throwsInfo.fn(m) ? ' throws' : ''}${ret === 'Void' ? '' : ` -> ${ret}`} { fatalError("abstract method ${name}.${m.name.getText()}") }`);
+        this.declare(m.name.getText(), { kind: 'func', params: this.params(m, false), throws: this.throwsInfo.fn(m), type: ret });
         continue;
       }
       if (!ts.isMethodDeclaration(m) || !m.body) continue;
@@ -4708,7 +4879,7 @@ ${members.join('\n')}
       const overriddenStatic = isStatic(m) ? inheritedStatics.get(n) : undefined;
       const sameParams = (a: ts.MethodDeclaration, b: ts.MethodDeclaration) => { const x = this.signatureOf(a).params, y = this.signatureOf(b).params; return x.length === y.length && x.every((p, k) => p.type === y[k].type); };
       const modifiers = isStatic(m) ? (overriddenStatic && sameParams(m, overriddenStatic) ? 'override class ' : 'class ') : inherited.has(n) ? 'override ' : '';
-      lines.push('    ' + this.func(m, ident(n), modifiers, extra));
+      lines.push('    ' + this.memberFunc(m, ident(n), modifiers, extra));
       // A plugin's objects are read untyped too (`handler.attachToView(view)` on an `any`): their methods by name.
       const restAt = m.parameters.findIndex((p) => p.dotDotDotToken);
       if ((this.pluginFiles.has(cls.getSourceFile().fileName) || this.appMembersByName) && !isStatic(m) && (restAt < 0 || restAt === m.parameters.length - 1) && !extra.length && !generic) {
@@ -4723,17 +4894,20 @@ ${members.join('\n')}
     const protocol = this.iteratorProtocol(cls.members.filter((m): m is ts.MethodDeclaration => ts.isMethodDeclaration(m) && !!m.body && !isStatic(m) && ['next', 'return', 'throw'].includes(m.name.getText())).map((m) => ({
       name: m.name.getText(), params: m.parameters.length, param: m.parameters[0]?.dotDotDotToken ? undefined : this.signatureOf(m).params[0]?.type, ret: this.returnTypeOf(m), throws: this.throwsInfo.fn(m),
     })));
-    if (protocol && !appBase && !kitRoot) { conformances.push(protocol.conformance); lines.push(...protocol.lines); }
+    if (protocol && !appBase && !kitRoot) { conformances.push(protocol.conformance); lines.push(...protocol.lines); for (const [n, x] of protocol.members) this.declare(n, x); }
     lines.push(...witnesses);
     // Library mode: a registered property's value reaches its accessor as it is, which converts it (`col = "1"`).
     const raw = new Set(this.library ? fields.filter((f) => this.properties?.isRegistered(cls, f.name) || this.properties?.isRegisteredAnywhere(f.name)).map((f) => f.name) : []);
     const symbolKeyedBase = !!kitRoot || this.inheritsSymbolKeyed(cls);
     // Script knows the class by its own name, not the one Swift's module gives it apart from another of that name.
     // An Error subclass keeps JSError's class name, which is the error's `name`.
-    if (isError) lines.push(...this.dynamicMembers(fields, null, true, dynMethods, symbolFields, false, raw, dynAccessors, false).filter((l) => !l.includes(' var jsClassName: ')));
+    if (isError) lines.push(...this.dynamicMembers(fields, null, true, dynMethods, symbolFields, false, raw, dynAccessors, false, false, new Set(), false).filter((l) => !l.includes(' var jsClassName: ')));
     else lines.push(...this.dynamicMembers(fields, cls.name?.text ?? name, !!appBase || !!kitRoot, dynMethods, symbolFields, expando, raw, dynAccessors, symbolKeyedBase));
     // Library mode: the class's `name`, which a static method reads of the class it is called on.
-    if (this.library && !this.errorBased(cls)) lines.push(`    ${appBase ? 'override ' : ''}class var jsName: String { ${swiftString(cls.name!.text)} }`);
+    if (this.library && !this.errorBased(cls)) {
+      lines.push(`    ${appBase ? 'override ' : ''}class var jsName: String { ${swiftString(cls.name!.text)} }`);
+      this.declare('jsName', { kind: 'var', mods: `${appBase ? 'override ' : ''}class `, type: 'String' });
+    }
     if (symbolFields.length && !symbolKeyedBase) conformances.push('JSSymbolKeyed');
     // Library mode: the static members script can test for by name (`'tapEvent' in view.constructor`).
     if (this.library && !this.inNativeClass(cls.members[0] ?? cls)) {
@@ -4741,10 +4915,12 @@ ${members.join('\n')}
       const own = `[${[...new Set(statics)].map(swiftString).join(', ')}]`;
       if (!appBase) { conformances.push('JSStaticKeyed'); lines.push(`    open class var jsStaticKeys: [String] { ${own} }`); }
       else if (own !== '[]') lines.push(`    open override class var jsStaticKeys: [String] { super.jsStaticKeys + ${own} }`);
+      if (!appBase || own !== '[]') this.declare('jsStaticKeys', { kind: 'var', mods: 'class ', type: '[String]' });
     }
     this.indent = '';
     lines.push('}');
     lines[0] = header();
+    if (this.declOwner) this.declarations?.type(this.declOwner, 'class', base?.replace(/<.*$/, '') ?? null);
     lines.splice(1, 0, NONISOLATED_DEINIT);
     this.documentMembers(cls, lines);
     return [...this.docLines(cls, ''), ...lines].join('\n');
@@ -4754,7 +4930,7 @@ ${members.join('\n')}
    * A class or object with `next` (and `return`, `throw`) is an iterator
    * script wrote: the kit steps it through these, async when `next` returns a promise.
    */
-  private iteratorProtocol(methods: IteratorMethod[]): { conformance: string; lines: string[] } | null {
+  private iteratorProtocol(methods: IteratorMethod[]): { conformance: string; lines: string[]; members: [string, RecordedMember][] } | null {
     const next = methods.find((m) => m.name === 'next');
     if (!next || next.params > 1) return null;
     // A method declaring its parameter's type takes the protocol's untyped value as that type.
@@ -4766,14 +4942,24 @@ ${members.join('\n')}
         const body = m.ret === 'JSPromise<Any?>' ? c : `${c}.then { (__v: ${m.ret.replace(/^JSPromise<(.*)>$/, '$1')}) -> Any? in ${this.convert('__v', m.ret.replace(/^JSPromise<(.*)>$/, '$1'), 'Any?')} }`;
         return m.throws ? `{ do { return try { () throws -> JSPromise<Any?> in ${body} }() } catch { return JSPromise<Any?>.reject(jsCaught(error)) } }()` : body;
       };
-      return { conformance: 'JSAsyncIteratorProtocol', lines: [
+      return { conformance: 'JSAsyncIteratorProtocol', members: [
+        ['jsNextPromise', { kind: 'func', params: '_ value: Any?', type: 'JSPromise<Any?>' }],
+        ['jsReturnPromise', { kind: 'func', params: '_ value: Any?', type: 'JSPromise<Any?>?' }],
+        ['jsThrowPromise', { kind: 'func', params: '_ error: Any?', type: 'JSPromise<Any?>?' }],
+      ], lines: [
         `    func jsNextPromise(_ value: Any?) -> JSPromise<Any?> { ${promise(next, 'value')} }`,
         `    func jsReturnPromise(_ value: Any?) -> JSPromise<Any?>? { ${ret ? promise(ret, 'value') : 'nil'} }`,
         `    func jsThrowPromise(_ error: Any?) -> JSPromise<Any?>? { ${thr ? promise(thr, 'error') : 'nil'} }`,
       ] };
     }
     const step = (m: IteratorMethod, arg: string) => `try jsStepOf(${this.convert(call(m, arg), m.ret, 'Any?')})`;
-    return { conformance: 'JSIteratorProtocol', lines: [
+    return { conformance: 'JSIteratorProtocol', members: [
+      ['jsNext', { kind: 'func', params: '_ value: Any?', throws: true, type: 'JSStep' }],
+      ['jsReturn', { kind: 'func', params: '_ value: Any?', throws: true, type: 'JSStep' }],
+      ['jsThrow', { kind: 'func', params: '_ error: Any?', throws: true, type: 'JSStep' }],
+      ['jsHasReturn', { kind: 'var', type: 'Bool' }],
+      ['jsHasThrow', { kind: 'var', type: 'Bool' }],
+    ], lines: [
       `    func jsNext(_ value: Any?) throws -> JSStep { ${step(next, 'value')} }`,
       `    func jsReturn(_ value: Any?) throws -> JSStep { ${ret ? step(ret, 'value') : 'JSStep(value, true)'} }`,
       `    func jsThrow(_ error: Any?) throws -> JSStep { ${thr ? step(thr, 'error') : 'throw JSException(error)'} }`,
@@ -5009,6 +5195,11 @@ ${members.join('\n')}
    * are not copied by the mixin: the methods keep them on the view by name.
    */
   private mixinDecl(cls: ts.ClassDeclaration, target: string): string {
+    this.declarations?.global(`__install_${cls.name!.text}`, { kind: 'func', params: '', type: 'Void' });
+    return this.declaring(target, 'extension', null, () => this.mixinCode(cls, target));
+  }
+
+  private mixinCode(cls: ts.ClassDeclaration, target: string): string {
     const name = cls.name!.text;
     const lines = [`extension ${target} {`];
     const hooks: string[] = [];
@@ -5019,6 +5210,7 @@ ${members.join('\n')}
         const n = m.name.getText();
         const t = optionalType(this.typeOf(m.name));
         lines.push(`    var ${ident(n)}: ${t} {`, `        get { ${this.fromAnyCode(`self[jsKey: ${swiftString(n)}]`, t)} }`, `        set { self[jsKey: ${swiftString(n)}] = ${this.convert('newValue', t, 'Any?')} }`, '    }');
+        this.declare(n, { kind: 'var', type: t });
         continue;
       }
       if (!ts.isMethodDeclaration(m) || !m.body) continue;
@@ -5026,17 +5218,17 @@ ${members.join('\n')}
         const property = this.setNativeOf(m.name.expression);
         if (!property) throw this.error(m.name, 'a computed method name');
         const param = m.parameters[0] ? this.typeOf(m.parameters[0].name) : 'Void';
-        lines.push('    ' + this.func(m, `__setNative_${property}`));
+        lines.push('    ' + this.memberFunc(m, `__setNative_${property}`));
         setters.push(`    View.nativeSetterHooks[${swiftString(property)}] = { view, value in (view as? ${target})?.__setNative_${property}(${param === 'Void' ? '' : this.convert('value', 'Any?', param)}) }`);
         continue;
       }
       const n = m.name.getText();
       if (n === 'initNativeView' || n === 'disposeNativeView') {
-        lines.push('    ' + this.func(m, `__${name}_${n}`));
+        lines.push('    ' + this.memberFunc(m, `__${name}_${n}`));
         hooks.push(`${n}: { view in jsReport { try (view as? ${target})?.__${name}_${n}() } }`);
         continue;
       }
-      lines.push('    ' + this.func(m, ident(n)));
+      lines.push('    ' + this.memberFunc(m, ident(n)));
     }
     this.indent = '';
     lines.push('}', '', `func __install_${name}() {`);
@@ -5216,11 +5408,13 @@ ${members.join('\n')}
       return !!x && !!y && x.params.length === y.params.length && x.result === y.result && /\bthrows\b/.test(a) === /\bthrows\b/.test(b) && x.params.every((p, k) => narrower(p, y.params[k]));
     };
     if (!sameParams && own.params.length === parsed.length && own.params.every((p, k) => overriding(plain(p.type), parsed[k].type)) && (!throws || kit.throws) && tsRet === ret) {
-      return `    ${this.func(m, ident(m.name.getText()), 'override ')}`;
+      return `    ${this.memberFunc(m, ident(m.name.getText()), 'override ')}`;
     }
+    const overrideParams = parsed.map((p) => p.decl).join(', ');
+    this.declare(m.name.getText(), { kind: 'func', mods: 'override ', params: overrideParams, throws: !!kit.throws, type: ret });
     if (!sameParams && (!throws || kit.throws) && !m.parameters.some((p) => p.dotDotDotToken)) {
       const name = ident(m.name.getText());
-      const declared = this.func(m, name, overridesProgram ? 'override ' : '');
+      const declared = this.memberFunc(m, name, overridesProgram ? 'override ' : '');
       const args = m.parameters.map((p, k) => parsed[k] ? this.convert(`__k${k}`, parsed[k].type, this.typeOf(p.name)) : (this.zero(this.typeOf(p.name)) ?? 'nil'));
       const call = `${throws ? 'try ' : ''}self.${name}(${args.join(', ')})`;
       const forward = ret === 'Void' ? `        ${tsRet === 'Void' ? call : `_ = ${call}`}` : `        return ${this.convert(call, tsRet, ret)}`;
@@ -7784,6 +7978,7 @@ ${members.join('\n')}
     const { cooked, raw, values } = templateParts(e.template);
     if (isStringRaw(e.tag, this.checker)) return `(${raw.map((r, k) => swiftString(r) + (k < values.length ? ` + ${this.str(values[k])}` : '')).join(' + ')})`;
     const site = `__template${this.templateObjects.length}`;
+    this.templateSites.push(site);
     this.templateObjects.push(`let ${site} = jsTemplateObject([${cooked.map(swiftString).join(', ')}], raw: [${raw.map(swiftString).join(', ')}])`);
     const params = this.checker.getResolvedSignature(e)?.getParameters() ?? [];
     const restAt = params.findIndex((p) => p.valueDeclaration && ts.isParameter(p.valueDeclaration) && !!p.valueDeclaration.dotDotDotToken);
@@ -8091,6 +8286,7 @@ ${members.join('\n')}
     if (!this.globalAliases.has(alias)) {
       const t = this.typeOf(decl.name);
       const constant = (decl.parent.flags & ts.NodeFlags.Const) !== 0;
+      this.globalAliasTypes.set(alias, t);
       this.globalAliases.set(alias, `var ${alias}: ${t} {${constant ? ` ${ident(e.text)} ` : ` get { ${ident(e.text)} } set { ${ident(e.text)} = newValue } `}}`);
     }
     return alias;
@@ -8344,6 +8540,7 @@ ${members.join('\n')}
       const call = `try self.${ident(name)}(${args.map((a, k) => (have[k] === want[k] ? a : `${a} as Any?`)).join(', ')})`;
       const body = ret === 'Void' ? call : ownRet === 'Void' ? `${call}; return nil` : `return ${call}`;
       added.push(`    func ${ident(name)}(${want.map((t, k) => `_ ${args[k]}: ${t}`).join(', ')}) throws${ret === 'Void' ? '' : ` -> ${ret}`} { ${body} }`);
+      this.declare(name, { kind: 'func', params: want.map((t, k) => `_ ${args[k]}: ${t}`).join(', '), throws: true, type: ret });
     }
     out.push(...added);
     return true;

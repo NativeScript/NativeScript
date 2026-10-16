@@ -1,16 +1,19 @@
-import { readdirSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { mergedManifest, paramsText, readKitManifest, runtimeFiles, runtimeSurface, type KitManifest, type ManifestMember } from './kit-manifest.ts';
 
-/** A public member of a kit type, as its Swift source declares it. */
+/** A public member of a kit type, as the kit declares it. */
 export interface KitMember {
-  kind: 'var' | 'func' | 'init';
+  kind: 'var' | 'func' | 'init' | 'subscript' | 'case';
   static: boolean;
   /** The declared Swift type of a property, or the result of a function. */
   type: string;
-  /** A function's parameter list as written (labels and types). */
+  /** A function's parameter list as Swift writes it (labels and types). */
   params?: string;
   /** A function or initializer declared `throws`, or a property whose getter is. */
   throws?: boolean;
+  /** The iOS version the member needs. */
+  available?: string;
+  /** A top-level function or variable core's index exports, which the kit forwards to its module. */
+  exported?: boolean;
 }
 
 export interface KitType {
@@ -27,167 +30,43 @@ export interface KitType {
   outer?: string;
 }
 
-/**
- * What NativeScriptKit offers translated code, read from its Swift sources:
- * each public type, the type it extends, and its public members. The
- * translator checks @nativescript/core members against it, so an app using
- * something the kit lacks stops with the file and line instead of failing
- * in the Swift compiler.
- */
-/** Kit sources the index leaves out: while the kit is generated from core, the code generated before. */
+/** While the kit is generated from core: the hand-written files the generated code replaces, left out of what it may name. */
 export const kitIndexOptions: { exclude: RegExp | null } = { exclude: null };
 
+/** The top-level functions and variables of the kit, as the pseudo-type of this name. */
+export const KIT_GLOBALS = '';
+
 /**
- * Swift with each parenthesized or bracketed list on one line, as the kit's line-based readers expect: a declaration
- * a formatter wrapped (`func f(\n    _ a: T\n) -> R {`) reads as written on one. The kit has no multi-line strings.
+ * What NativeScriptKit offers translated code: each public type, the type it extends, and its public members. The
+ * translator checks @nativescript/core members against it, so an app using something the kit lacks stops with the
+ * file and line instead of failing in the Swift compiler. Read from the kit's manifest; while the kit is generated
+ * (or before it ever was), from the hand-written runtime's Swift alone.
  */
-export function unwrapped(text: string): string {
-  // A declaration swift-format wrapped before its brace: the brace back on the declaration's line.
-  text = text.replace(/\n[ \t]*\{[ \t]*(?=\n)/g, ' {');
-  // A type declaration swift-format wrapped up to its brace (a long generated name on the line after its keyword, an
-  // inheritance list after its colon or a comma): the declaration on one line.
-  const typeHead = /^([ \t]*(?:@\w+[ \t]+)*(?:(?:public|open|final|internal|indirect)[ \t]+)*(?:class|struct|enum|extension|protocol|actor))(?=\s+(?!(?:func|var|let|subscript|init)\b)\w)([^{]*?)(?=\{)/gm;
-  text = text.replace(typeHead, (_, head: string, rest: string) => head + rest.replace(/[ \t]*\n[ \t]*/g, ' '));
-  // A type swift-format wrapped onto the next line, after a property's colon or a function's arrow.
-  text = text.replace(/(\b(?:var|let)\s+`?\w+`?\s*:|->)[ \t]*\n[ \t]*/g, '$1 ');
-  // A function's effects or arrow swift-format wrapped onto the line after its parameters.
-  text = text.replace(/\)[ \t]*\n[ \t]*(?=(?:throws|rethrows|async)\b|->)/g, ') ');
-  let out = '', depth = 0, quoted = false;
-  for (let k = 0; k < text.length; k++) {
-    const ch = text[k];
-    if (quoted && ch !== '\n') { if (ch === '\\') { out += ch + text[++k]; continue; } if (ch === '"') quoted = false; out += ch; continue; }
-    quoted = false;
-    if (ch === '"') quoted = true;
-    else if (ch === '(' || ch === '[') depth++;
-    else if ((ch === ')' || ch === ']') && depth > 0) depth--;
-    else if (ch === '\n' && depth > 0) { out += ' '; while (text[k + 1] === ' ') k++; continue; }
-    out += ch;
-  }
-  return out;
+export function kitIndex(kitSources: string): Map<string, KitType> {
+  const manifest = (!kitIndexOptions.exclude && readKitManifest(kitSources)) || mergedManifest({ types: {}, globals: {} }, runtimeSurface(kitSources, runtimeFiles(kitSources, kitIndexOptions.exclude)));
+  return manifestIndex(manifest);
 }
 
-export function kitIndex(kitSources: string): Map<string, KitType> {
+const indexes = new WeakMap<KitManifest, Map<string, KitType>>();
+
+export function manifestIndex(manifest: KitManifest): Map<string, KitType> {
+  const cached = indexes.get(manifest);
+  if (cached) return cached;
   const types = new Map<string, KitType>();
-  const files = (readdirSync(kitSources, { recursive: true }) as string[]).filter((f) => f.endsWith('.swift') && !kitIndexOptions.exclude?.test(f));
-  // Shorthands (`borderRadius`, `margin`) any view takes, expanded by a top-level function.
-  const shorthands = new Set<string>();
-  for (const f of files) {
-    const text = readFileSync(join(kitSources, f), 'utf8');
-    const at = text.indexOf('\nfunc expandShorthand(');
-    if (at < 0) continue;
-    const body = text.slice(at, text.indexOf('\n}\n', at));
-    for (const m of body.matchAll(/^\s*case\s+((?:"\w+"(?:,\s*)?)+):/gm)) for (const n of m[1].matchAll(/"(\w+)"/g)) shorthands.add(n[1]);
+  const member = (m: ManifestMember): KitMember => ({ kind: m.kind, static: !!m.static, type: m.type, ...(m.params ? { params: paramsText(m.params) } : {}), ...(m.throws ? { throws: true } : {}), ...(m.available ? { available: m.available } : {}), ...(m.exported ? { exported: true } : {}) });
+  for (const [name, t] of Object.entries(manifest.types)) {
+    if (t.alias) continue;
+    types.set(name, { name, base: t.base ?? null, members: new Map(Object.entries(t.members).map(([k, v]) => [k, v.map(member)])), props: new Set(t.names ?? []), ...(t.kind !== 'extension' ? { declared: true } : {}) });
   }
-  const aliases: [string, string][] = [];
-  // A top-level function handling names for the classes that call it (`applyTextInputTrait`).
-  const functionProps = new Map<string, Set<string>>();
-  const calls = new Map<KitType, Set<string>>();
-  for (const f of files) {
-    // Comments, not a string's `//` (`"file://"`).
-    const text = unwrapped(readFileSync(join(kitSources, f), 'utf8').replace(/("(?:\\.|[^"\\\n])*")|\/\/.*$/gm, (_, s) => s ?? ''));
-    const stack: { type: KitType | null; depth: number }[] = [];
-    let depth = 0;
-    let caseContinues = false;
-    let pendingGetter: { member: KitMember; depth: number } | null = null;
-    let free: Set<string> | null = null;
-    for (const line of text.split('\n')) {
-      const decl = /^\s*(?:@\w+\s+)*(?:(?:public|open|final|internal)\s+)*(class|struct|enum|extension|protocol)\s+(?!(?:func|var|let|subscript)\b)(\w+)(?:<[^>]*>)?(?:\s*:\s*([\w.]+))?/.exec(line);
-      const isPublic = /\b(public|open)\b/.test(line) || decl?.[1] === 'extension';
-      if (decl && line.includes('{')) {
-        // A nested type is known by its qualified name (`Utils.layout`).
-        const outer = decl[1] === 'extension' ? undefined : [...stack].reverse().find((x) => x.type)?.type;
-        const name = outer ? `${outer.name}.${decl[2]}` : decl[2];
-        let type = types.get(name) ?? null;
-        const base = decl[1] === 'class' && decl[3] && !/Protocol$|Convertible$|Equatable|Hashable/.test(decl[3]) ? decl[3] : null;
-        if (!type && isPublic) {
-          type = { name, base, members: new Map(), props: new Set() };
-          types.set(name, type);
-        }
-        // An extension can come before its class in file order: the class declaration names the base.
-        if (type && base) type.base = base;
-        if (type && isPublic && decl[1] !== 'extension') type.declared = true;
-        stack.push({ type: isPublic ? type : null, depth });
-      } else if (/^\s*(?:public\s+)?typealias\s+(\w+)\s*=\s*([\w.]+)/.test(line) && stack.at(-1)?.type) {
-        // A type's alias of another type (`Utils.layout` for the generated `layout`): the other type under this name too.
-        const m = /typealias\s+(\w+)\s*=\s*([\w.]+)/.exec(line)!;
-        aliases.push([`${stack.at(-1)!.type!.name}.${m[1]}`, m[2].replace(/^NativeScriptKit\./, '')]);
-      } else {
-        const owner = stack.at(-1);
-        const enclosing = [...stack].reverse().find((x) => x.type)?.type;
-        const fn = depth === 0 ? /^\s*(?:(?:public|internal|fileprivate|private)\s+)?func\s+(\w+)/.exec(line) : null;
-        if (fn) functionProps.set(fn[1], (free = new Set()));
-        const isCase: boolean = /^\s*case\s+"/.test(line) || (caseContinues && /^\s*"/.test(line));
-        caseContinues = isCase && /,\s*$/.test(line);
-        const names = [...(isCase ? [...line.matchAll(/"(\w+)"/g)].map((m) => m[1]) : []), ...readNames(line)];
-        const into = enclosing?.props ?? (depth > 0 ? free : null);
-        if (into) for (const n of names) into.add(n);
-        if (enclosing) {
-          const called = calls.get(enclosing) ?? new Set();
-          for (const m of line.matchAll(/(?<![\w.])([a-z]\w*)\(/g)) called.add(m[1]);
-          calls.set(enclosing, called);
-        }
-        // A computed property's getter declared on its own line: whether reading the property throws.
-        if (pendingGetter && depth === pendingGetter.depth + 1 && /^\s*get\s+throws\b/.test(line)) pendingGetter.member.throws = true;
-        if (pendingGetter && depth <= pendingGetter.depth) pendingGetter = null;
-        if (owner?.type && depth === owner.depth + 1 && /\b(public|open)\b/.test(line)) {
-          const isStatic = /\b(static|class)\s+(func|var|let)\b/.test(line);
-          let m: RegExpExecArray | null;
-          // A name Swift reserves is written in backquotes (`` var `extension`: String ``).
-          if ((m = /\b(?:var|let)\s+`?(\w+)`?\s*:\s*([^={]+)/.exec(line))) {
-            const member: KitMember = { kind: 'var', static: isStatic, type: m[2].trim() };
-            add(owner.type, m[1], member);
-            if (/\{\s*$/.test(line)) pendingGetter = { member, depth };
-          }
-          // An untyped stored property takes its literal's type.
-          else if ((m = /\b(?:var|let)\s+`?(\w+)`?\s*=\s*(true|false|"[^"]*"|-?\d+(\.\d+)?)\s*$/.exec(line))) add(owner.type, m[1], { kind: 'var', static: isStatic, type: /^(true|false)$/.test(m[2]) ? 'Bool' : m[2].startsWith('"') ? 'String' : m[3] ? 'Double' : 'Int' });
-          else if ((m = /\bfunc\s+`?(\w+)`?\s*(?:<[^>]*>)?\(/.exec(line))) {
-            const [params, rest] = parenthesized(line, m.index + m[0].length);
-            const ret = /^\s*(?:throws\s*)?(?:->\s*([^{]+))?/.exec(rest)![1];
-            add(owner.type, m[1], { kind: 'func', static: isStatic, type: (ret ?? 'Void').trim(), params, throws: /^\s*throws\b/.test(rest) });
-          } else if ((m = /\binit(\??)\s*\(/.exec(line))) {
-            const [params, rest] = parenthesized(line, m.index + m[0].length);
-            add(owner.type, 'init', { kind: 'init', static: true, type: m[1] ? `${owner.type.name}?` : owner.type.name, params, throws: /^\s*throws\b/.test(rest) });
-          }
-        }
-      }
-      for (const ch of line.replace(/"(?:\\.|[^"\\])*"/g, '""')) {
-        if (ch === '{') depth++;
-        else if (ch === '}') {
-          depth--;
-          if (stack.length && stack.at(-1)!.depth === depth) stack.pop();
-          if (depth === 0) free = null;
-        }
-      }
-    }
-  }
-  for (const [alias, target] of aliases) {
-    const type = types.get(target);
-    if (type) types.set(alias, type);
-  }
-  for (const [type, called] of calls) for (const fn of called) for (const n of functionProps.get(fn) ?? []) type.props.add(n);
-  for (const n of shorthands) types.get('View')?.props.add(n);
+  for (const [name, t] of Object.entries(manifest.types)) if (t.alias && types.has(t.alias)) types.set(name, types.get(t.alias)!);
+  types.set(KIT_GLOBALS, { name: KIT_GLOBALS, base: null, members: new Map(Object.entries(manifest.globals).map(([k, v]) => [k, v.map(member)])), props: new Set() });
+  indexes.set(manifest, types);
   return types;
 }
 
 /** Property names a kit class reads from its own stored values (`applied["src"]`, `get("dateStyle")`) or tests for (`name == "orientation"`): a value set by name reaches them. */
 export function readNames(line: string): string[] {
   return [...line.matchAll(/(?<![\w.?])(?:self\.|this\.)?(?:(?:applied|locals)\["(\w+)"\]|get\("(\w+)"\))|\bname\s*==\s*"(\w+)"/g)].map((m) => m[1] ?? m[2] ?? m[3]);
-}
-
-/** The text up to the parenthesis closing the one before `start`, and the text after it. */
-function parenthesized(line: string, start: number): [string, string] {
-  let depth = 1;
-  for (let i = start; i < line.length; i++) {
-    if (line[i] === '(') depth++;
-    else if (line[i] === ')' && --depth === 0) return [line.slice(start, i), line.slice(i + 1)];
-  }
-  return [line.slice(start), ''];
-}
-
-function add(type: KitType, name: string, member: KitMember) {
-  const list = type.members.get(name) ?? [];
-  list.push(member);
-  type.members.set(name, list);
 }
 
 /** A member of `type` or of a type it extends. */

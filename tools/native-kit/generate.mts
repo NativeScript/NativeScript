@@ -37,6 +37,7 @@ if (!existsSync(join(compiler, 'src/kit-gen.ts'))) throw new Error(`${compiler}:
 if (!existsSync(join(declarations, 'index.d.ts'))) throw new Error(`${declarations}: no core declarations (build core, or --declarations)`);
 
 const { generateKit } = await import(join(compiler, 'src/kit-gen.ts'));
+const { KIT_MANIFEST_FILE, manifestJSON, mergedManifest, runtimeFiles, runtimeSurface } = await import(join(compiler, 'src/kit-manifest.ts'));
 const result = generateKit({ core, declarations, typesIos, modules: ios.compile, counterparts: ios.counterparts, moot: ios.moot, identities: ios.identities, packages: ios.packages, weak: ios.weak, report: report || partial });
 if (partial && result.errors.length) console.error(result.errors.join('\n'));
 if (report) {
@@ -51,6 +52,10 @@ const manifest = { core: version, commit, modules: ios.compile, files: Object.fr
 const files = new Map<string, string>(result.files.map((f) => [f.name, f.code]));
 formatSwift(files);
 files.set('manifest.json', JSON.stringify(manifest, null, '\t') + '\n');
+// What the kit offers translated code, which app builds read instead of the Swift: the generated part as the compiler
+// wrote it, the hand-written runtime's as its Swift declares it.
+const kitSources = join(compiler, 'kit-apple/Sources/NativeScriptKit');
+files.set(KIT_MANIFEST_FILE, manifestJSON(mergedManifest(result.declarations, runtimeSurface(kitSources, runtimeFiles(kitSources)))) + '\n');
 
 /** The generated Swift laid out by the toolchain's swift-format (`swift format`), configured by kit-apple/.swift-format. */
 function formatSwift(code: Map<string, string>) {
