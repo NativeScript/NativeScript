@@ -84,9 +84,7 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
     return call(m, loops);
   };
   // A condition that throws is reported and counts as false; mounted templates take any value as a condition (`{detail && <Label/>}`), as JSX does.
-  const cond = (m: string, loops: Loop[]) => options.slots
-    ? `jsTruthy(${throws(m) ? `(try? ${call(m, loops).replace(/^try /, '')})` : call(m, loops)})`
-    : throws(m) ? `jsTruthy(try? ${call(m, loops).replace(/^try /, '')})` : `jsTruthy(${call(m, loops)})`;
+  const cond = (m: string, loops: Loop[]) => (throws(m) ? `jsReportedTruthy({ ${call(m, loops)} })` : `jsTruthy(${call(m, loops)})`);
   const binding = (depth: number, text: string) => (deferBindings && templates.length ? templates.at(-1)!.bindings.push({ depth, text }) : say(depth, text));
   /** Puts a view into its container or region at the point its framework inserts it. */
   const attach = (depth: number, v: string, parent: string | null, region: string | null, at: 'created' | 'built') => {
@@ -134,7 +132,7 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
             for (const a of node.attrs) if (!isList || !LIST_BINDINGS.has(a.name)) attr(depth, v, a, loops);
             for (const e of node.events) {
               const listen = `${v}.kitOn(${swiftString(e.name)}) { ${captures}event in ${handler(e.method, call(e.method, loops, ['event']))} }`;
-              const guarded = e.when ? `if jsTruthy(${throws(e.when) ? `(try? ${call(e.when, loops).replace(/^try /, '')})` : call(e.when, loops)}) { ${listen} }` : listen;
+              const guarded = e.when ? `if ${cond(e.when, loops)} { ${listen} }` : listen;
               listener(depth, e.ifPassed ? `if self._passed.contains(${swiftString(e.ifPassed)}) { ${guarded} }` : guarded);
             }
           };
@@ -152,8 +150,12 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
             const a = given.get(p);
             if (!a && info.optional?.includes(p)) return [];
             if (!a) throw new Error(`${c.name}: <${node.name}> needs the prop "${p}"`);
-            // A prop's first value must exist: what its binding throws stops the app, as an error rendering a component does.
-            return [`${ident(p)}: ${'value' in a ? swiftString(a.value) : `untrack { ${throws(a.method) ? call(a.method, loops).replace(/^try /, 'try! ') : call(a.method, loops)} }`}`];
+            if ('value' in a) return [`${ident(p)}: ${swiftString(a.value)}`];
+            if (!throws(a.method)) return [`${ident(p)}: untrack { ${call(a.method, loops)} }`];
+            // A binding that may throw: the prop starts at its default and the binding's own effect, created right after,
+            // sets it or reports what it throws, as Angular's error handler does. One with no default starts at its type's zero.
+            if (info.optional?.includes(p)) return [];
+            return [`${ident(p)}: untrack { jsReportedOrZero { ${call(a.method, loops)} } }`];
           });
           if (info.passed) args.push(`_passed: [${node.props.map((a) => swiftString(a.name)).concat(node.events.map((e) => swiftString('on' + e.name[0].toUpperCase() + e.name.slice(1)))).join(', ')}]`);
           // A constructor whose field initializers can throw (as the translator's analysis sees them) stops the app if one does.
