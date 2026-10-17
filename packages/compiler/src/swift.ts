@@ -9072,6 +9072,14 @@ ${members.join('\n')}
         try { return this.expr(e); } finally { this.rawOptional.delete(e); }
       }
     }
+    // `x ??= v` of a slot held optional, where `v` may be undefined: what it assigns, which may be.
+    if (ts.isBinaryExpression(e) && e.operatorToken.kind === ts.SyntaxKind.QuestionQuestionEqualsToken && ['String', 'Double', 'Bool'].includes(this.typeOf(e))) {
+      const declared = this.declaredTypeOf(e.left) ?? this.typeOf(e.left);
+      if (isOptional(declared) && this.maybeUndefined(e.right)) {
+        const tp = this.tryPrefix(e);
+        return `({ () ${tp ? 'throws ' : ''}-> ${declared} in ${tp}${this.binary(e)}; return ${this.tryPrefix(e.left)}${this.expr(e.left)} }())`;
+      }
+    }
     // A string, number or boolean read by key from an untyped object (`map[symbol] ?? fallback`): undefined where it has no such key.
     if (ts.isElementAccessExpression(e) && !isWriteTarget(e) && ['String', 'Double', 'Bool'].includes(this.typeOf(e))) {
       const holder = this.typeOf(e.expression).replace(/[?!]$/, '');
@@ -11291,7 +11299,8 @@ ${members.join('\n')}
         if (this.isAny(e.left)) return `if ${this.tryPrefix(e.left)}jsIsNullish(${l()}) { ${this.tryPrefix(e)}${this.assignment(e)} }`;
         // A variable held optional while undefined: assigned only while it is.
         if (ts.isIdentifier(e.left) && this.undefinedVars.has(this.resolve(e.left)!)) return `if ${target()} == nil { ${this.tryPrefix(e.right)}${target()} = ${this.coerce(e.right, this.typeOf(e.left).replace(/\?$/, ''))} }`;
-        return `${target()} = ${l()} ?? ${this.coerce(e.right, this.typeOf(e.left).replace(/\?$/, ''))}`;
+        // A slot held optional takes a fallback that may be undefined as it is (`this._appearance ??= lookup()` of null).
+        return `${target()} = ${l()} ?? ${(isOptional(this.declaredTypeOf(e.left) ?? this.typeOf(e.left)) ? this.maybeUndefined(e.right) : null) ?? this.coerce(e.right, this.typeOf(e.left).replace(/\?$/, ''))}`;
       case K.BarBarEqualsToken: return `if !jsTruthy(${this.tryPrefix(e.left)}${l()}) { ${this.tryPrefix(e)}${target()} = ${this.coerce(e.right, this.typeOf(e.left))} }`;
       case K.AmpersandAmpersandEqualsToken: return `if jsTruthy(${this.tryPrefix(e.left)}${l()}) { ${this.tryPrefix(e)}${target()} = ${this.coerce(e.right, this.typeOf(e.left))} }`;
       case K.PlusToken: {
@@ -11340,8 +11349,10 @@ ${members.join('\n')}
         if (called && called === t && !isOptional(called) && !called.endsWith('!') && called !== 'Any?' && this.lenientRef(called) === called && !this.native.isStructType(called)) return l();
         // A chain that gives a default where it stops (`(contexts?.count ?? .nan)`): the optional, so this fallback applies.
         if (inOptionalChain(left) && ['Double', 'String', 'Bool'].includes(lt)) {
-          const read = /^\((.*) \?\? (?:\.nan|"undefined"|false)\)$/.exec(l());
-          if (read) return `(${read[1]} ?? ${this.coerce(e.right, t)})`;
+          const code = l();
+          let read = code;
+          for (let m; (m = /^\((.*) \?\? (?:\.nan|"undefined"|false)\)$/.exec(read)) && balanced(m[1]);) read = m[1];
+          if (read !== code) return `(${read} ?? ${this.coerce(e.right, t)})`;
         }
         const maybe = this.maybeUndefined(e.left);
         if (maybe && t === 'Any?') return `jsNullishCoalesce(${maybe} as Any?, ${this.coerce(e.right, 'Any?')})`;
