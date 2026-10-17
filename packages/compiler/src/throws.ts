@@ -231,11 +231,12 @@ export class Throws {
     const init = holder && (ts.isPropertyDeclaration(holder) || ts.isVariableDeclaration(holder)) ? holder.initializer : undefined;
     if (init && ts.isCallExpression(init) && init.expression.getText() === 'computed' && init.arguments[0] && ts.isFunctionLike(init.arguments[0])) return this.fn(init.arguments[0]);
     const signature = c.getResolvedSignature(call)?.getDeclaration();
-    // A library function held (`export const parse = parseFloat`, `readonly round = Math.round`): Swift holds it as a function value, which throws.
-    if (ts.isCallExpression(call) && init && (ts.isIdentifier(init) || ts.isPropertyAccessExpression(init)) && !holder!.getSourceFile().isDeclarationFile
-      && (['parseInt', 'parseFloat'].includes(init.getText()) || !!signature?.getSourceFile().isDeclarationFile)) return true;
-    if (ts.isCallExpression(call) && holder && !holder.getSourceFile().isDeclarationFile && !signature?.getSourceFile().isDeclarationFile
-      && (ts.isVariableDeclaration(holder) || ts.isParameter(holder) || ts.isPropertyDeclaration(holder) || ts.isPropertySignature(holder) || ts.isPropertyAssignment(holder) || ts.isGetAccessorDeclaration(holder) || ts.isShorthandPropertyAssignment(holder))) return true;
+    // A library function held (`export const parse = parseFloat`, `const { isArray } = Array`): Swift holds it as a function value, which throws.
+    if (ts.isCallExpression(call) && holder && !holder.getSourceFile().isDeclarationFile
+      && ((init && (ts.isIdentifier(init) || ts.isPropertyAccessExpression(init)) && (['parseInt', 'parseFloat'].includes(init.getText()) || !!signature?.getSourceFile().isDeclarationFile))
+        || (ts.isBindingElement(holder) && !!signature?.getSourceFile().isDeclarationFile))) return true;
+    if ((ts.isCallExpression(call) || ts.isNewExpression(call)) && holder && !holder.getSourceFile().isDeclarationFile && !signature?.getSourceFile().isDeclarationFile
+      && (ts.isVariableDeclaration(holder) || ts.isBindingElement(holder) || ts.isParameter(holder) || ts.isPropertyDeclaration(holder) || ts.isPropertySignature(holder) || ts.isPropertyAssignment(holder) || ts.isGetAccessorDeclaration(holder) || ts.isShorthandPropertyAssignment(holder))) return true;
     // A local holding a library function (`const dip = Utils.layout.toDeviceIndependentPixels`), or one a call made (`view.dispose.bind(view)`): a Swift function value, which throws.
     if (ts.isCallExpression(call) && holder && ts.isVariableDeclaration(holder) && !holder.getSourceFile().isDeclarationFile && holder.initializer && (ts.isPropertyAccessExpression(skipParens(holder.initializer)) || ts.isCallExpression(skipParens(holder.initializer)))) return true;
     const decl = c.getResolvedSignature(call)?.getDeclaration();
@@ -304,7 +305,8 @@ export class Throws {
       return false;
     }
     // A function value (an arrow stored in a variable or an object) has a Swift function type, which throws.
-    if (ts.isArrowFunction(decl) || ts.isFunctionExpression(decl) || (ts.isMethodDeclaration(decl) && ts.isObjectLiteralExpression(decl.parent))) return true;
+    if ((ts.isArrowFunction(decl) || ts.isFunctionExpression(decl)) && skipParens(call.expression) !== decl) return true;
+    if (ts.isMethodDeclaration(decl) && ts.isObjectLiteralExpression(decl.parent)) return true;
     if ((decl as Fn).body) return this.fn(decl);
     // An abstract method throws as an override of it does.
     if (ts.isMethodDeclaration(decl) && ts.isClassLike(decl.parent) && ts.getModifiers(decl)?.some((m) => m.kind === ts.SyntaxKind.AbstractKeyword)) return this.fn(decl);

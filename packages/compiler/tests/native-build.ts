@@ -178,20 +178,27 @@ export interface KotlinOptions {
 /** `roots` and the app modules they import as Kotlin in package `pkg`, in `out`. */
 export function translateKotlin(roots: string[], out: string, pkg: string, o: KotlinOptions = {}): KotlinModule[] {
   const loose = !!o.lenient;
-  const { checker, program, files: rootFiles, lenient: lenientApp } = createProgram(roots, new Map(), 'android', modulesDir, undefined, [], {}, loose ? { strict: false, useDefineForClassFields: false } : o.lenientApp ? { strict: false, useUnknownInCatchVariables: false } : {});
+  const packages = new PluginSources({ app: join(root, 'tests'), platform: 'android' });
+  const { checker, program, files: programFiles, pluginFiles: packageFiles, resolved, lenient: lenientApp } = createProgram(roots, new Map(), 'android', modulesDir, packages, [], {}, loose ? { strict: false, useDefineForClassFields: false } : o.lenientApp ? { strict: false, useUnknownInCatchVariables: false } : {});
+  const rootFiles = programFiles.filter((sf) => !packageFiles.includes(sf.fileName));
   const imported = roots.flatMap((r) => importsOf(program, r, 'android'));
+  const appFiles = [...new Set([...roots, ...imported])];
+  const reach = packageFiles.length ? reachability(program, resolved, appFiles, new Set(packageFiles), 'android') : undefined;
+  const compiled = reach ? packageFiles.filter((f) => reach.modules.has(f) && program.getSourceFile(f)!.statements.some((st) => reach.keeps(st) && !ts.isImportDeclaration(st) && !ts.isExportDeclaration(st))) : [];
+  packages.verify(compiled);
   // Every module, as an app's are: a class another module extends stays open.
-  const files = [...rootFiles, ...imported.map((f) => program.getSourceFile(f)!).filter((sf) => sf && !rootFiles.includes(sf))];
+  const all = [...rootFiles, ...imported.map((f) => program.getSourceFile(f)!).filter((sf) => sf && !rootFiles.includes(sf)), ...packageFiles.map((f) => program.getSourceFile(f)!)];
   const library = { identities: new Set<string>(), counterpart: () => null, moduleName: (f: string) => (f.endsWith('.d.ts') ? null : 'Module_' + basename(f).replace(/\W/g, '_')) };
-  const translator = new KotlinTranslator(checker, new Map(), files, loose ? { lenient: true, library, pluginFiles: files.map((f) => f.fileName), properties: collectProperties(checker, files) } : {});
+  const lenientPlugins = packageFiles.filter((f) => !writtenStrict(f));
+  const translator = new KotlinTranslator(checker, new Map(), all, loose ? { lenient: true, library, pluginFiles: all.map((f) => f.fileName), properties: collectProperties(checker, all) } : packageFiles.length ? { pluginFiles: packageFiles, lenientFiles: lenientPlugins, properties: collectProperties(checker, all), reach } : {});
   translator.appModule = pkg;
   translator.appMembersByName = !!o.membersByName;
   // As android.ts sets it: the Kotlin translator reads the field without declaring it.
   if (o.appStrictness) (translator as { lenientApp?: boolean }).lenientApp = lenientApp;
   if (o.lenientApp) (translator as { lenientApp?: boolean }).lenientApp = true;
   const lines = translator.lines = new SourceLines(new Map());
-  const all = [...new Set([...roots, ...imported])];
-  const modules = o.refused ? eachModule(program, all, (f) => translateKotlinModules(translator, program, [f]), o.refused) : translateKotlinModules(translator, program, all);
+  const files = [...appFiles, ...compiled];
+  const modules = o.refused ? eachModule(program, files, (f) => translateKotlinModules(translator, program, [f], resolved), o.refused) : translateKotlinModules(translator, program, files, resolved);
   addKotlinInterfaces(translator, modules);
   rmSync(out, { recursive: true, force: true });
   mkdirSync(out, { recursive: true });

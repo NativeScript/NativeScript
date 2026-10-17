@@ -1,3 +1,4 @@
+// @swift
 // RxJS from its source: synchronous emission order, subscription and teardown, and the observer-object form.
 import { Observable, of, Subscription } from 'rxjs';
 import { map, filter } from 'rxjs/operators';

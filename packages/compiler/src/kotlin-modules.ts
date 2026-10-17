@@ -25,8 +25,8 @@ export function translateKotlinModules(translator: Translator, program: ts.Progr
     const sf = program.getSourceFile(file)!;
     let name = basename(file).replace(/\.tsx?$/, '').replace(/\W/g, '_');
     if (/^\d/.test(name)) name = '_' + name;
-    while (used.has(name)) name += '_';
-    used.add(name);
+    while (used.has(name.toLowerCase())) name += '_';
+    used.add(name.toLowerCase());
     const { code, init } = translator.module(sf);
     // Library mode: the module's object runs its init.
     const object = translator.library?.moduleName?.(file);

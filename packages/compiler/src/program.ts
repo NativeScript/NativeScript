@@ -250,13 +250,32 @@ export interface Program {
   lenient: boolean;
 }
 
+const RXJS_SHIM = `
+  export declare class Subscription { readonly closed: boolean; unsubscribe(): void }
+  export interface OperatorFunction<T, R> { readonly __operator: [T, R] }
+  export declare class Observable<T> {
+    subscribe(next: (value: T) => void): Subscription;
+    pipe<A>(a: OperatorFunction<T, A>): Observable<A>;
+    pipe<A, B>(a: OperatorFunction<T, A>, b: OperatorFunction<A, B>): Observable<B>;
+    pipe<A, B, C>(a: OperatorFunction<T, A>, b: OperatorFunction<A, B>, c: OperatorFunction<B, C>): Observable<C>;
+  }
+  export declare class Subject<T> extends Observable<T> { next(value: T): void; asObservable(): Observable<T> }
+  export declare class BehaviorSubject<T> extends Subject<T> { constructor(value: T); readonly value: T; getValue(): T }
+  export declare class ReplaySubject<T> extends Subject<T> { constructor(bufferSize?: number) }
+  export declare function map<T, R>(project: (value: T, index: number) => R): OperatorFunction<T, R>;
+  export declare function filter<T, S extends T>(predicate: (value: T, index: number) => value is S): OperatorFunction<T, S>;
+  export declare function filter<T>(predicate: (value: T, index: number) => boolean): OperatorFunction<T, T>;
+  export declare function take<T>(count: number): OperatorFunction<T, T>;
+  export declare function firstValueFrom<T>(source: Observable<T>): Promise<T>;
+`;
+
 /**
  * Packages whose imports stay on their declarations: core and the plugins in
  * KIT_PLUGINS are NativeScriptKit, the frameworks are the front ends, and the
  * rest are typings or tooling.
  */
 const NOT_PLUGINS = /^(@nativescript\/(core|types|types-ios|types-android|types-minimal|webpack|vite|tailwind|angular|android|ios)|octane|@nativescript-community\/(octane|solid-js|svelte-native|vite-octane)|nativescript-vue|react|react-nativescript|solid-js|svelte|@angular\/.*|tslib|typescript|vite)$/;
-const notPlugin = (pkg: string) => NOT_PLUGINS.test(pkg) || KIT_PLUGINS.includes(pkg);
+const notPlugin = (pkg: string, platform: Platform = 'ios') => NOT_PLUGINS.test(pkg) || KIT_PLUGINS.includes(pkg) || (platform === 'android' && pkg === 'rxjs');
 
 /**
  * A program over the app's modules and the components' virtual classes,
@@ -265,8 +284,9 @@ const notPlugin = (pkg: string) => NOT_PLUGINS.test(pkg) || KIT_PLUGINS.includes
  */
 export function createProgram(roots: string[], virtual: Map<string, string>, platform: Platform = 'ios', modulesDir?: string, plugins?: PluginSources, declarations: string[] = [], replacements: Record<string, string> = {}, overrides: ts.CompilerOptions = {}, aliased: (specifier: string) => string | undefined = () => undefined): Program {
   const shimPath = (m: string) => `/__shims__/${m.replace(/[@/]/g, '_')}.d.ts`;
+  const shims: Record<string, string> = platform === 'android' || !plugins ? { ...SHIMS, rxjs: RXJS_SHIM } : SHIMS;
   const files = new Map<string, string>(virtual);
-  for (const [m, text] of Object.entries(SHIMS)) files.set(shimPath(m), text);
+  for (const [m, text] of Object.entries(shims)) files.set(shimPath(m), text);
   files.set('/__shims__/globals.d.ts', platform === 'android' ? GLOBALS + ANDROID_GLOBALS : GLOBALS);
   const modules = modulesDir ?? nodeModules(dirname([...roots, ...virtual.keys()][0]));
   const platformTypes = resolve(modules, PLATFORM_TYPES[platform]);
@@ -295,7 +315,7 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
   const nativeReferences = (text: string, file: string) => text.replace(/^\/\/\/\s*<reference\s+(path|types)="([^"]*)"\s*\/>.*$/gm, (line, kind: string, ref: string) => {
     const target = resolve(dirname(file), ref);
     const pkg = /[\\/]node_modules[\\/]((?:@[^\\/]+[\\/])?[^\\/]+)/.exec(target)?.[1].replace(/\\/g, '/');
-    return kind === 'path' && (!pkg || pkg.startsWith('@nativescript/types') || !notPlugin(pkg)) ? line : '';
+    return kind === 'path' && (!pkg || pkg.startsWith('@nativescript/types') || !notPlugin(pkg, platform)) ? line : '';
   });
   host.getSourceFile = (name, version, onError) => {
     const text = files.get(name) ?? (isSource(name) && existsSync(name) ? readFileSync(name, 'utf8') : appTypings.has(name) ? nativeReferences(readFileSync(name, 'utf8'), name) : undefined);
@@ -332,7 +352,7 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
     {
       // The app's own tsconfig `paths` (`~/app/x`), as its bundler resolves them: plugins' sources have their own.
       const m = (isApp(containing) ? aliased(lit.text) : undefined) ?? lit.text;
-      if (SHIMS[m]) return { resolvedModule: { resolvedFileName: shimPath(m), extension: ts.Extension.Dts } };
+      if (shims[m]) return { resolvedModule: { resolvedFileName: shimPath(m), extension: ts.Extension.Dts } };
       // The build's own glue imports app modules by absolute path (`__elements.release.ts`).
       if (m.startsWith('.') || (isAbsolute(m) && !m.startsWith('/__shims__/'))) {
         const base = resolve(dirname(containing), m);
@@ -360,7 +380,7 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
       const typeOnly = ts.isImportDeclaration(lit.parent) && !!lit.parent.importClause?.isTypeOnly && !(lit.parent.parent && ts.isSourceFile(lit.parent.parent) && lit.parent.parent.statements.some(valueImport));
       // A plugin's augmentation of another's module augments the module the program compiles: that package's source.
       const augments = ts.isModuleDeclaration(lit.parent) && lit.parent.name === lit && !!plugins?.all().some((p) => containing.startsWith(p.root + '/'));
-      if (plugins && (isSource(containing) || augments || containing.startsWith('/__shims__/')) && !m.startsWith('.') && !m.startsWith('/') && !notPlugin(packageOf(m)) && !typeOnly) {
+      if (plugins && (isSource(containing) || augments || containing.startsWith('/__shims__/')) && !m.startsWith('.') && !m.startsWith('/') && !notPlugin(packageOf(m), platform) && !typeOnly) {
         const js = runtimeFile(m, modules, platform);
         if (js) {
           plugins.get(js.packageDir);

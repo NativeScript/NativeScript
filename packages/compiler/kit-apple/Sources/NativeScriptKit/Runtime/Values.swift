@@ -1083,9 +1083,17 @@ public func jsCallOptional(_ function: Any?, spread arguments: [Any?]) throws ->
     return try jsCall(function, spread: arguments)
 }
 
+public let jsDateBuiltin = JSObject([
+    ("now", jsFunction("now", 0) { _ in JSDate.now() }),
+])
+
+public let jsArrayBuiltin = JSObject([
+    ("isArray", jsFunction("isArray", 1) { a in JSArray<Any?>.isArray(jsArg(a, 0)) }),
+])
+
 /// `globalThis` read as an object: the runtime's globals (`NativeScriptRuntime`, `com.tns`) are not
 /// in a native app, so reading one gives undefined. `DOMException`, which core's fetch reads from it, is there.
-public let jsGlobalThis = JSObject([("DOMException", jsDOMExceptionConstructor)])
+public let jsGlobalThis = JSObject([("DOMException", jsDOMExceptionConstructor), ("performance", jsDateBuiltin)])
 
 /// `Object` held as a value (`(<any>Object).entries(o)`): its functions over objects, called as script calls them.
 public let jsObjectBuiltin = JSObject([
@@ -1093,6 +1101,8 @@ public let jsObjectBuiltin = JSObject([
     ("values", jsFunction("values", 1) { a in jsObjectValues(jsArg(a, 0)) }),
     ("entries", jsFunction("entries", 1) { a in JSArray<Any?>(jsObjectEntries(jsArg(a, 0)).storage.map { JSArray<Any?>([$0.0, $0.1]) as Any? }) }),
     ("assign", jsFunction("assign", 2) { a in try jsObjectAssign(jsArg(a, 0), spread: Array(a.dropFirst())) }),
+    ("getPrototypeOf", jsFunction("getPrototypeOf", 1) { a in try jsGetPrototypeOf(jsArg(a, 0)) }),
+    ("prototype", JSPrototypes.objectPrototype),
 ])
 
 /// Lenient code: a value that may be undefined where its type says an object. It stays optional; a member read

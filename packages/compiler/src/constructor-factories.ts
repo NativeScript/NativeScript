@@ -38,7 +38,10 @@ export function desugarConstructorFactories(text: string, fileName: string): str
     if (!factory) continue;
     if (factory.specifier) used.set(factory.specifier, (used.get(factory.specifier) ?? 0) + 1);
     const exported = st.modifiers?.some((m) => m.kind === ts.SyntaxKind.ExportKeyword) ? 'export ' : '';
-    keepLines(st.getStart(), fn.getStart(), `${exported}class ${decl.name.text} extends ${factory.base} {`);
+    const iface = sf.statements.find((s): s is ts.InterfaceDeclaration => ts.isInterfaceDeclaration(s) && s.name.text === decl.name.text);
+    const tparams = iface?.typeParameters?.length ? `<${iface.typeParameters.map((p) => p.getText()).join(', ')}>` : '';
+    const fields = (iface?.members ?? []).filter(ts.isPropertySignature).map((m) => m.getText().replace(/\s+/g, ' ')).join(' ');
+    keepLines(st.getStart(), fn.getStart(), `${exported}class ${decl.name.text}${tparams} extends ${factory.base} { ${fields}`);
     const params = fn.parameters.slice(1).map((p) => p.getText()).join(', ');
     keepLines(fn.getStart(), fn.body.getStart(), `constructor(${params}) `);
     keepLines(superCall.getStart(), superCall.end, 'super();');
