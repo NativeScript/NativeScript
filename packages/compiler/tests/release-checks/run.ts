@@ -178,6 +178,11 @@ export class G {}
 export class H {}
 `, new Map(), { directives: [directive] })!;
   check(!(all(outOfScope.template as Node[])[0] as { directives?: unknown[] }).directives, "a directive the component does not import does not apply");
+  const keyworded = angularComponent('/app/k.component.ts', `import { Component } from '@angular/core';
+@Component({ selector: 'K', template: '<Button (tap)="continue()" text="go"></Button>' })
+export class K { continue() {} }
+`, new Map())!;
+  check(/\$e\d+\(\$event: \$EventData\) \{ this\.continue\(\); \}/.test(keyworded.source), 'a member named like a keyword (continue) is read on the component');
   const decl = declarableSource('/app/glyph.pipe.ts', `import { Pipe, Inject, Optional, ChangeDetectorRef } from '@angular/core';
 @Pipe({ name: 'glyph', pure: false })
 export class GlyphPipe { constructor(@Inject(TOKEN) private config: any, @Optional() private ref: ChangeDetectorRef) {} transform(v: string) { return v; } }

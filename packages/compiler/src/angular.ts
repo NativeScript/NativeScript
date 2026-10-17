@@ -179,12 +179,27 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
     }
     return { loops: inner, wrap: (body) => made.reduceRight((b, l): TNode[] => [{ kind: 'local', name: l.name, make: l.make, ...(l.destroy ? { destroy: l.destroy } : {}), body: b }], body) };
   };
+  const keywordRead = (n: unknown): boolean => n instanceof ng.PropertyRead && n.receiver instanceof ng.ImplicitReceiver && !(n.receiver instanceof ng.ThisReceiver) && KEYWORDS.has(n.name) && members.has(n.name);
+  /** The pipes and keyword-named member reads in an expression, outermost first (not those inside a pipe). */
+  const specialsIn = (node: ng.AST): ng.AST[] => {
+    const found: ng.AST[] = [];
+    const visit = (n: unknown) => {
+      if (n instanceof ng.BindingPipe || keywordRead(n)) { found.push(n as ng.AST); return; }
+      if (!(n instanceof ng.AST)) return;
+      for (const v of Object.values(n)) Array.isArray(v) ? v.forEach(visit) : visit(v);
+    };
+    if (node instanceof ng.BindingPipe || keywordRead(node)) return [node];
+    for (const v of Object.values(node)) Array.isArray(v) ? v.forEach(visit) : visit(v);
+    return found;
+  };
   const code = (value: ng.AST, _loops: Loop[]): string => {
     const root = value instanceof ng.ASTWithSource ? value.ast : value;
     // `text="How {{ x }}"`: Angular renders the literal text with each expression's value, undefined and null as ''.
     const interpolation = root instanceof ng.Interpolation ? root : null;
-    if (!pipesIn(root).length && !interpolation) return value instanceof ng.ASTWithSource ? sourceOf(value) : template.slice(value.sourceSpan.start, value.sourceSpan.end);
+    if (!specialsIn(root).length && !interpolation) return value instanceof ng.ASTWithSource ? sourceOf(value) : template.slice(value.sourceSpan.start, value.sourceSpan.end);
     const textOf = (node: ng.AST): string => {
+      // A member named like a keyword (`continue()`): read on the component, which the expression's text cannot say.
+      if (keywordRead(node)) return `this.${(node as ng.PropertyRead).name}`;
       if (node instanceof ng.BindingPipe) {
         const site = sites.get(node);
         if (!site) throw new Error(`${path}: the ${node.name} pipe where the release build gives it no view (in ${template.slice(node.sourceSpan.start, node.sourceSpan.end)})`);
@@ -196,7 +211,7 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
       }
       const at = node.sourceSpan.start;
       let out = template.slice(at, node.sourceSpan.end);
-      for (const p of pipesIn(node).sort((a, b) => b.sourceSpan.start - a.sourceSpan.start)) {
+      for (const p of specialsIn(node).sort((a, b) => b.sourceSpan.start - a.sourceSpan.start)) {
         out = out.slice(0, p.sourceSpan.start - at) + textOf(p) + out.slice(p.sourceSpan.end - at);
       }
       return out;
@@ -1165,18 +1180,6 @@ export function declarableSource(path: string, text: string): string | null {
   return out;
 }
 
-/** The `BindingPipe`s in an expression, outermost first (not those inside another pipe). */
-function pipesIn(node: ng.AST): ng.BindingPipe[] {
-  if (node instanceof ng.BindingPipe) return [node];
-  const found: ng.BindingPipe[] = [];
-  const visit = (n: unknown) => {
-    if (n instanceof ng.BindingPipe) { found.push(n); return; }
-    if (!(n instanceof ng.AST)) return;
-    for (const v of Object.values(n)) Array.isArray(v) ? v.forEach(visit) : visit(v);
-  };
-  for (const v of Object.values(node)) Array.isArray(v) ? v.forEach(visit) : visit(v);
-  return found;
-}
 
 /** What `classicClass` read from a decorated class beside its rewritten source. */
 interface Classic {
@@ -1458,6 +1461,9 @@ function decorator(node: ts.ClassDeclaration, name: string): ts.CallExpression |
 
 /** @nativescript/angular's platform filters (`<android>`, `<ios>`, `<apple>`) and the platforms each renders its content on. */
 const PLATFORM_FILTERS: Record<string, string[]> = { android: ['android'], ios: ['ios'], apple: ['ios'] };
+
+/** Words a template's expression can name as a member that TypeScript reads as a keyword. */
+const KEYWORDS = new Set(['break', 'case', 'catch', 'class', 'const', 'continue', 'debugger', 'default', 'delete', 'do', 'else', 'enum', 'export', 'extends', 'finally', 'for', 'function', 'if', 'import', 'in', 'instanceof', 'new', 'return', 'super', 'switch', 'throw', 'try', 'var', 'void', 'while', 'with', 'yield', 'let', 'static', 'await']);
 
 /** NSRouterLink's inputs: on an element with `nsRouterLink` they are the directive's, not the view's. */
 const ROUTER_LINK_INPUTS = new Set(['nsRouterLink', 'relativeTo', 'clearHistory', 'pageTransition', 'pageTransitionDuration', 'queryParams', 'fragment', 'queryParamsHandling', 'state', 'info', 'preserveFragment', 'skipLocationChange', 'replaceUrl']);
