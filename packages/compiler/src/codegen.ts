@@ -1,4 +1,5 @@
 import type { Attr, ComponentIR, TNode } from './ir.ts';
+import { basename } from 'node:path';
 import { ident, swiftString } from './swift.ts';
 
 export type Framework = 'vue' | 'angular' | 'svelte' | 'svelte5' | 'react' | 'solid' | 'octane' | 'core';
@@ -58,12 +59,14 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
   const listener = (depth: number, text: string) => (framework === 'svelte5' && templates.length ? templates.at(-1)!.listeners.push({ depth, text }) : say(depth, text));
   /** A closure that renders content in the scope its framework orders it in. */
   const scoped = (kind: 'template' | 'region', result: string) => {
-    if (framework === 'vue' || framework === 'svelte') return kind === 'template' ? `EffectOrder.component { () -> ${result} in` : null;
-    if (framework === 'angular') return kind === 'template' ? `EffectOrder.view { () -> ${result} in` : `EffectOrder.embedded(in: __view) { () -> ${result} in`;
-    if (framework === 'solid') return kind === 'template' ? `EffectOrder.solid { () -> ${result} in` : `EffectOrder.deeper { () -> ${result} in`;
+    if (framework === 'vue' || framework === 'svelte') return kind === 'template' ? `try EffectOrder.component { () throws -> ${result} in` : null;
+    if (framework === 'angular') return kind === 'template' ? `try EffectOrder.view { () throws -> ${result} in` : `try EffectOrder.embedded(in: __view) { () throws -> ${result} in`;
+    if (framework === 'solid') return kind === 'template' ? `try EffectOrder.solid { () throws -> ${result} in` : `try EffectOrder.deeper { () throws -> ${result} in`;
     return null;
   };
   let n = 0;
+  /** Where a region is, for the error a failed render reports: the component and its source file. */
+  const site = (what: string) => swiftString(`${c.name} (${basename(c.file).replace(/\.ts$/, '')}): ${what}`);
   const say = (depth: number, text: string) => lines.push('    '.repeat(depth) + text);
   // Loop variables in scope, passed to every binding method in order.
   // An item template's row reads its item and index through the row's signals.
@@ -122,10 +125,10 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
         const v = `v${n++}`;
         if (node.kind === 'element' && node.tag === 'Frame' && node.attrs.some((a) => a.name === 'router')) {
           const name = node.attrs.find((a) => a.name === 'router');
-          say(depth, `let ${v} = Router.shared.outlet(${name && 'value' in name && name.value !== 'true' ? swiftString(name.value) : ''})`);
+          say(depth, `let ${v} = try Router.shared.outlet(${name && 'value' in name && name.value !== 'true' ? swiftString(name.value) : ''})`);
           attach(depth, v, parent, region, 'created');
         } else if (node.kind === 'element') {
-          say(depth, `let ${v} = try! ${node.tag}()`);
+          say(depth, `let ${v} = try ${node.tag}()`);
           if (node.ref) say(depth, `${call(node.ref, loops)}.current = ${v}`);
           const isList = TEMPLATE_HOSTS.has(node.tag);
           const props = () => {
@@ -158,8 +161,7 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
             return [`${ident(p)}: untrack { jsReportedOrZero { ${call(a.method, loops)} } }`];
           });
           if (info.passed) args.push(`_passed: [${node.props.map((a) => swiftString(a.name)).concat(node.events.map((e) => swiftString('on' + e.name[0].toUpperCase() + e.name.slice(1)))).join(', ')}]`);
-          // A constructor whose field initializers can throw (as the translator's analysis sees them) stops the app if one does.
-          say(depth, `let ${c0} = ${info.initThrows ? 'try! ' : ''}${node.name}(${args.join(', ')})`);
+          say(depth, `let ${c0} = ${info.initThrows ? 'try ' : ''}${node.name}(${args.join(', ')})`);
           if (info.fragment) {
             // A component whose template is not one element: its views join the parent where its host is, as a ProxyViewContainer's do.
             if (!parent) throw new Error(`${c.name}: <${node.name}>, whose template has no single root element, at the root of a template`);
@@ -171,14 +173,14 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
               if (!info.outputs?.includes(e.name)) throw new Error(`${c.name}: <${node.name}> takes no ${e.name} event: its template has no single root view`);
               say(depth, `${c0}.${ident(info.outputFields?.[e.name] ?? e.name)}.on { ${captures}value in ${handler(e.method, call(e.method, loops, [e.payload ? 'value' : `EventData(eventName: ${swiftString(e.name)}, object: nil, value: value)`]))} }`);
             }
-            say(depth, `${c0}.render(into: ${parent}.kitAddRegion())`);
+            say(depth, `try ${c0}.render(into: ${parent}.kitAddRegion())`);
             continue;
           }
           for (const p of info.props) {
             const a = given.get(p);
             if (a && 'method' in a) say(depth, options.zone ? `Check({ ${checked(a.method, loops)} }) { ${c0}.${ident(p)}.value = $0 }` : zoneless ? check(a.method, loops, `${c0}.${ident(p)}.value = $0`) : `Effect { ${reported(a.method, `${c0}.${ident(p)}.value = ${call(a.method, loops)}`)} }`);
           }
-          say(depth, `let ${v} = ${c0}.render()`);
+          say(depth, `let ${v} = try ${c0}.render()`);
           // Attributes that are not props fall through to the component's root view, as in Vue.
           for (const a of node.props) if (!info.props.includes(a.name)) attr(depth, v, a, loops);
           for (const e of node.events) {
@@ -219,7 +221,7 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
       };
       if (node.kind === 'if' && fragmented) {
         const which = node.branches.map((b, i) => (b.cond ? `${cond(b.cond, loops)} ? ${i} : ` : `${i}`)).join('') + (node.branches.at(-1)!.cond ? `${node.branches.length}` : '');
-        say(depth, `ChooseFragment(${host}, { ${which} }) { branch in`);
+        say(depth, `ChooseFragment(${host}, { ${which} }, site: ${site('if')}) { branch in`);
         say(depth + 1, 'switch branch {');
         node.branches.forEach((b, i) => {
           say(depth + 1, `case ${i}:`);
@@ -232,7 +234,7 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
       }
       if (node.kind === 'if') {
         const which = node.branches.map((b, i) => (b.cond ? `${cond(b.cond, loops)} ? ${i} : ` : `${i}`)).join('') + (node.branches.at(-1)!.cond ? `${node.branches.length}` : '');
-        say(depth, `Choose(${host}, { ${which} }) { branch in`);
+        say(depth, `Choose(${host}, { ${which} }, site: ${site('if')}) { branch in`);
         const wrap = scoped('region', '[View]');
         const d = wrap ? depth + 1 : depth;
         if (wrap) say(depth + 1, wrap);
@@ -258,7 +260,7 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
         const key = node.key ? `{ ${ident(node.item)}, ${ident(node.index)} in jsKey(${throws(node.key) ? `(try? ${call(node.key, keyLoops).replace(/^try /, '')}) as Any?` : call(node.key, keyLoops)}) }` : `{ item, _ in jsKey(item) }`;
         // `{list?.map(…)}`: an absent list renders no rows.
         const items = throws(node.items) ? `{ (try? ${call(node.items, loops).replace(/^try /, '')}).map { octaneItems($0) } ?? [] }` : `{ octaneItems(${call(node.items, loops)}) }`;
-        say(depth, `${fragmented ? 'ForEachFragment' : 'ForEach'}(${host}, ${items}, key: ${key}) { ${row} in`);
+        say(depth, `${fragmented ? 'ForEachFragment' : 'ForEach'}(${host}, ${items}, key: ${key}, site: ${site('for')}) { ${row} in`);
         if (fragmented) fragment(node.body, depth + 1, rowLoops);
         else {
           const made: string[] = [];
@@ -279,7 +281,7 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
       // Angular's @for keeps a row by its key and gives it the item now at that key: the row reads item and index as signals.
       const row = framework === 'angular' ? `row${n++}` : null;
       const rowLoops = row ? [...loops, { item: node.item, index: node.index, itemExpr: `${row}.item.value`, indexExpr: `${row}.index.value` }] : inner;
-      const opening = (kind: string) => row ? `${kind === 'For' ? 'ForEach' : 'ForEachFragment'}(${host}, { ${items} }, key: ${key}) { ${row} in` : `${kind}(${host}, { ${items} }, key: ${key}) { ${ident(node.item)}, ${ident(node.index)} in`;
+      const opening = (kind: string) => row ? `${kind === 'For' ? 'ForEach' : 'ForEachFragment'}(${host}, { ${items} }, key: ${key}, site: ${site('for')}) { ${row} in` : `${kind}(${host}, { ${items} }, key: ${key}, site: ${site('for')}) { ${ident(node.item)}, ${ident(node.index)} in`;
       // Iterating reads the array through its tracker: a Vue ref's array re-renders on push.
       if (fragmented) {
         say(depth, opening('ForFragment'));
@@ -344,7 +346,7 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
   };
 
   const fragment = framework === 'angular' && !c.page && isFragment(c.template);
-  say(1, fragment ? 'func render(into region: Region) {' : 'func render() -> View {');
+  say(1, fragment ? 'func render(into region: Region) throws {' : 'func render() throws -> View {');
   const wrap = scoped('template', fragment ? 'Void' : 'View');
   const d = wrap ? 3 : 2;
   if (wrap) say(2, `return ${wrap}`);
@@ -362,7 +364,7 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
   const userEffects = () => { for (const w of c.watchers ?? []) if (!w.source) say(d, `EffectOrder.user { Effect { ${reported(w.handler, member(w.handler))} } }`); };
   if (c.page) {
     // A routed component's template is its page's content: the action bar and the view.
-    say(d, 'let page = Page.routed()');
+    say(d, 'let page = try Page.routed()');
     template(d, () => emit(c.template, d, [], 'page', null));
     userEffects();
     say(d, 'return page');

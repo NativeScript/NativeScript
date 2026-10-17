@@ -98,8 +98,9 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
             return Double(storage.count)
         }
         set {
+            // JavaScript throws here; a Swift setter cannot, so the error is reported and the length kept.
             guard newValue >= 0, newValue <= 4_294_967_295, newValue == newValue.rounded(.towardZero) else {
-                fatalError("RangeError: Invalid array length")
+                return jsReportUncaught(JSRangeError("Invalid array length"))
             }
             setLength(Int(newValue))
         }
@@ -161,7 +162,7 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
         set {
             guard let k = index(i) else {
                 if jsNonIndexed == nil { jsNonIndexed = [:] }
-                jsNonIndexed![i + 0] = newValue
+                jsNonIndexed?[i + 0] = newValue
                 return
             }
             self[k] = newValue

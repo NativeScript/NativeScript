@@ -37,8 +37,17 @@ public func jsReport(_ body: () throws -> Void) {
     do { try body() } catch { jsReportUncaught(jsCaught(error)) }
 }
 
+/// Without NativeScript's `Application` (a plain program, the differential tests), an uncaught error goes to
+/// `globalThis.__onUncaughtError` when script sets one, where core's handler is; else to standard error.
 public var jsUncaughtHandler: (Any?) -> Void = { value in
-    jsError("Uncaught", value)
+    if !jsReportedToScript(value) { jsError("Uncaught", value) }
+}
+
+func jsReportedToScript(_ value: Any?) -> Bool {
+    let handler = jsField(jsGlobalThis, "__onUncaughtError")
+    if jsIsNullish(handler) { return false }
+    do { _ = try jsCall(handler, value) } catch { jsError("Error in the uncaught error handler:", jsCaught(error)) }
+    return true
 }
 
 public func jsReportUncaught(_ value: Any?) { jsUncaughtHandler(value) }

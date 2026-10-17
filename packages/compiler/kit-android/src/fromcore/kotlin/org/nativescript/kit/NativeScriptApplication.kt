@@ -142,7 +142,7 @@ object NativeScriptApplication {
     /** `Application.run({ create })`, once core's modules and the app's have run. */
     fun start(root: () -> View) {
         jsReport {
-            val application = Core_application_application.Application!!
+            val application = Core_application_application.Application ?: jsCannotRead("run")
             // Core fires exit when the last activity finishes (Back, a task removal), not when one is recreated:
             // the app is destroyed as Angular's platform does then, and the next launch's `create` builds it anew.
             application.on("exit", { _ -> destroyApp() }, null)

@@ -127,7 +127,7 @@ public func jsFormatLogLine(_ arguments: [Any?]) -> String {
                         }
                     case 0x6A:
                         index += 1
-                        replacement = jsJSONStringify(args[index]) ?? "undefined"
+                        do { replacement = try jsJSONStringifyChecked(args[index]) ?? "undefined" } catch { replacement = "[Circular]" }
                     case 0x64:
                         index += 1
                         let argument = args[index]

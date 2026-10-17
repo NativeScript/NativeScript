@@ -1499,7 +1499,7 @@ export class Translator implements AsyncTranslator {
     const names = lexical.map(kotlinString).join(', ');
     if (lexical.length && !moduleObject) out.push(`private val __lexical_${ident(sf.fileName.replace(/^.*[\\/]/, '').replace(/\W+/g, '_'))} = jsLexical(${names})`);
     if (moduleObject) {
-      const body = [...(lexical.length ? [`init {\n    jsLexical(${names})\n}`] : []), ...members, ...(init.length ? [`fun __init() {\n${init.join('\n')}\n}`] : [])];
+      const body = [...(lexical.length ? [`init {\n    jsLexical(${names})\n}`] : []), ...members, ...(init.length ? [`fun __init() {\n${reportedInit(init)}\n}`] : [])];
       out.push([`${this.threadAnnotation(sf)}object ${moduleObject} {`, ...body.map((m) => m.split('\n').map((x) => (x ? '    ' + x : x)).join('\n')), '}'].join('\n'));
     }
     return { code: out.join('\n\n') + '\n', init };
@@ -5608,6 +5608,8 @@ export class Translator implements AsyncTranslator {
       const to = this.typeOf(e);
       const shared = this.uncheckedCast(e);
       if (shared) return cast(this.expr(e.expression), shared);
+      const wider = from === 'Any?' ? this.widenedAssertion(e) : null;
+      if (wider) return this.fromAny(this.expr(e.expression), isNullable(to) ? optionalType(wider) : wider);
       // The assertion is erased in JavaScript: where Kotlin needs the type, the value is converted as script converts it there.
       if (!this.library && from === 'Any?' && ['String', 'Double', 'Boolean'].includes(to)) return `jsAsserted${to === 'Double' ? 'Number' : to}(${this.expr(e.expression)})`;
       if (from === 'Any?' && to !== 'Any?') return this.fromAny(this.expr(e.expression), to);
@@ -6379,7 +6381,18 @@ export class Translator implements AsyncTranslator {
   private assertedOptional(e: ts.AsExpression | ts.TypeAssertion): string {
     const t = this.typeOf(e), code = this.expr(e.expression);
     if (['String', 'Double', 'Boolean'].includes(t)) return `jsAsserted${t === 'Double' ? 'Number' : t}OrNull(${code})`;
-    return this.fromAny(code, optionalType(t));
+    return this.fromAny(code, optionalType(this.widenedAssertion(e) ?? t));
+  }
+
+  /**
+   * The class above the asserted one that the variable `e` initializes is held as (`view.android as
+   * android.widget.ScrollView` kept as a View, a NestedScrollView at run time): what the value is checked as, since
+   * script never checks the assertion.
+   */
+  private widenedAssertion(e: ts.AsExpression | ts.TypeAssertion | ts.SatisfiesExpression): string | null {
+    if (this.library) return null;
+    const holder = ts.findAncestor(e.parent, (p) => !ts.isParenthesizedExpression(p));
+    return holder && ts.isVariableDeclaration(holder) ? this.widerAsserted(holder) : null;
   }
 
   private maybeUndefined(e: ts.Expression): string | null {
@@ -9499,4 +9512,12 @@ function ownReturns(body: ts.Node): boolean {
   };
   ts.forEachChild(body, visit);
   return found;
+}
+
+/**
+ * A module's top-level statements, run once at startup: what they throw is reported as uncaught and the app goes on,
+ * as the Swift kit's module initializers do; an exception escaping the app's start would end it.
+ */
+export function reportedInit(init: string[]): string {
+  return ['    jsReport {', ...init.map((l) => (l ? '    ' + l : l)), '    }'].join('\n');
 }

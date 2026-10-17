@@ -10,6 +10,8 @@ node "$here/kit-index-check.ts"
 rm -rf "$here/app/node_modules/@nativescript/core"
 cp -R "$core" "$here/app/node_modules/@nativescript/core"
 node "$here/../src/cli.ts" "$here/app" --out "$out" --name KitBuildCheck --whole-kit
+# The kit's and the fixture app's Swift traps only where tests/no-trap-allow.txt says why.
+node "$here/no-trap-check.ts" --swift "$out/Sources"
 cd "$out"
 rm -f "$out/build.log"
 build() { xcodebuild -project KitBuildCheck.xcodeproj -scheme KitBuildCheck -configuration Release -destination 'generic/platform=iOS Simulator' -derivedDataPath "$out/dd" -quiet build 2>&1 | tee -a "$out/build.log"; }

@@ -59,7 +59,7 @@ enum Probe {
                 } catch { print("PROBE       css: write threw \(jsToString(jsCaught(error)))") }
             }
         }
-        let color = Core_ui_styling_style_properties.colorProperty!
+        guard let color = Core_ui_styling_style_properties.colorProperty else { return }
         print("PROBE   colorProperty key \(color.key.key): stored \(jsToString((try? jsGet(style, color.key.key)) ?? nil)), source \(jsToString((try? jsGet(style, color.sourceKey.key)) ?? nil)), suspended \(jsToString((view as? View)?._suspendNativeUpdatesCount))")
     }
 
@@ -69,8 +69,7 @@ enum Probe {
         let matched = view._cssState?._match?.selectors?.length ?? -1
         var line = "PROBE \(pad)\((try? view.typeName) ?? "?")\(classes.isEmpty ? "" : "." + classes) matched=\(matched)"
         if let state = view._cssState { line += " applied=[\(jsKeysOf(state._appliedPropertyValues).joined(separator: ","))] version=\(state._appliedSelectorsVersion)" }
-        if let v = view as? View {
-            let style = v.style!
+        if let v = view as? View, let style = v.style {
             line += " bg=\(jsToString(style.backgroundColor)) color=\(jsToString(style.color)) font=\(jsToString(style.fontSize)) pad=\(jsToString(style.paddingTop))"
             if let native = v.nativeViewProtected as? UIView {
                 line += " frame=\(native.frame)"

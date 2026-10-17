@@ -101,10 +101,37 @@ export function translateSwift(roots: string[], out: string, o: SwiftOptions = {
 
 export const SWIFT_HEADER = 'import Foundation\nimport NativeScriptKit\n\n';
 
+/**
+ * Node's handling of an error nothing catches, where script sets no handler (`globalThis.__onUncaughtError`): the
+ * error on standard error and exit status 1. The kit's own default reports it and goes on, as an app's runtime does.
+ */
+const NODE_UNCAUGHT_SWIFT = `let __reported = jsUncaughtHandler
+jsUncaughtHandler = { value in
+    if jsIsNullish(jsField(jsGlobalThis, "__onUncaughtError")) { jsError("Uncaught", value); exit(1) }
+    __reported(value)
+}
+let __rejected = Microtasks.onUnhandledRejection
+Microtasks.onUnhandledRejection = { reason in
+    if jsIsNullish(jsField(jsGlobalThis, "__onUncaughtError")) { jsError("Uncaught (in promise)", reason); exit(1) }
+    __rejected(reason)
+}
+`;
+const NODE_UNCAUGHT_KOTLIN = `    val reported = jsUncaughtHandler
+    jsUncaughtHandler = { value ->
+        if (jsIsNullish(jsField(jsGlobalThis, "__onUncaughtError"))) { jsError("Uncaught", value); System.out.flush(); kotlin.system.exitProcess(1) }
+        reported(value)
+    }
+    val rejected = Microtasks.onUnhandledRejection
+    Microtasks.onUnhandledRejection = { reason ->
+        if (jsIsNullish(jsField(jsGlobalThis, "__onUncaughtError"))) { jsError("Uncaught (in promise)", reason); System.out.flush(); kotlin.system.exitProcess(1) }
+        rejected(reason)
+    }
+`;
+
 /** The entry point an app's modules run from: each module's top level in order, then the event loop. */
 export function swiftMain(modules: TranslatedModule[]): string {
   const inits = modules.filter((m) => m.init).map((m) => `${m.init}()\n`).join('');
-  return `${SWIFT_HEADER}${inits}JSEventLoop.runUntilIdle()\n`;
+  return `${SWIFT_HEADER}${NODE_UNCAUGHT_SWIFT}${inits}JSEventLoop.runUntilIdle()\n`;
 }
 
 /**
@@ -159,7 +186,7 @@ export const kotlinHeader = (pkg: string) => `package ${pkg}\n\nimport org.nativ
 /** The entry point, in a package of its own (a program may declare a `main` of its own): each module's top level in order, then the event loop. */
 export function kotlinMain(modules: KotlinModule[], pkg: string): string {
   const inits = modules.filter((m) => m.init).map((m) => `    ${m.init}()\n`).join('');
-  return `package ${pkg}.entry\n\nimport org.nativescript.kit.*\nimport ${pkg}.*\n\nfun main() {\n${inits}    JSEventLoop.runUntilIdle()\n    System.out.flush()\n}\n`;
+  return `package ${pkg}.entry\n\nimport org.nativescript.kit.*\nimport ${pkg}.*\n\nfun main() {\n${NODE_UNCAUGHT_KOTLIN}${inits}    JSEventLoop.runUntilIdle()\n    System.out.flush()\n}\n`;
 }
 
 /** Modules in evaluation order, each translated alone so that one that cannot be does not stop the rest. */
