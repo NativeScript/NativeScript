@@ -348,10 +348,15 @@ export class NativeAPI {
 
   /** Whether a getter of a class extending a native one is a native property's, which Swift types as the SDK does. */
   nativeGetter(get: ts.GetAccessorDeclaration): boolean {
+    return this.nativeGetterType(get) !== null;
+  }
+
+  /** The Swift type of the native property a getter of a class extending a native one is (`UIWindow?` of `window`), or null. */
+  nativeGetterType(get: ts.GetAccessorDeclaration): SwiftType | null {
     const cls = get.parent;
     const heritage = ts.isClassLike(cls) ? cls.heritageClauses?.find((h) => h.token === ts.SyntaxKind.ExtendsKeyword)?.types[0] : undefined;
     const base = heritage && this.symbolModule(this.t.resolve(heritage.expression));
-    return !!base && !!this.nativeProperty(base, this.adoptedProtocols(cls as ts.ClassLikeDeclaration), get.name.getText()).native;
+    return (base && this.nativeProperty(base, this.adoptedProtocols(cls as ts.ClassLikeDeclaration), get.name.getText()).native?.type) || null;
   }
 
   /** A call of an app class's override of its native base's method: Swift calls it by the native signature. */

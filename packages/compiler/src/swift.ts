@@ -7585,7 +7585,11 @@ ${members.join('\n')}
       if (!fn || !(ts.isFunctionDeclaration(fn) || ((ts.isMethodDeclaration(fn) || ts.isGetAccessorDeclaration(fn)) && !ts.isObjectLiteralExpression(fn.parent)))) return false;
       if (!this.inNativeClass(fn)) return true;
       // A native class's own getter is optional as lenient code's are; a native member's or own method's result is as declared.
-      if (ts.isGetAccessorDeclaration(fn) && !this.native.nativeGetter(fn)) return true;
+      if (ts.isGetAccessorDeclaration(fn)) {
+        // A native property's getter returns what Swift declares it to: missing, where that is optional (`window` of a scene delegate).
+        const native = this.native.nativeGetterType(fn);
+        if (native === null || /[?!]$/.test(native)) return true;
+      }
       const result = this.returnTypeOf(fn);
       return isOptional(result) || result === 'Any?';
     }
