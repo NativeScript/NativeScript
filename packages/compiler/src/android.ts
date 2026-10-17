@@ -38,7 +38,7 @@ export interface AndroidBuild {
   checker: ts.TypeChecker;
   /** The app's files and the components' virtual files, in translation order. */
   files: readonly ts.SourceFile[];
-  infos: Map<string, { name: string; props: string[]; outputs?: string[]; outputFields?: Record<string, string> }>;
+  infos: Map<string, { name: string; props: string[]; outputs?: string[]; outputFields?: Record<string, string>; setters?: string[]; propAliases?: Record<string, string>; changes?: boolean }>;
   css: string;
   root: string;
   routes: { routes: { path: string; component: string }[]; initial: string } | null;

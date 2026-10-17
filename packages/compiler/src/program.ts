@@ -33,6 +33,14 @@ const SHIMS: Record<string, string> = {
     import type { Observable } from 'rxjs';
     /** Angular's async pipe at one binding site. */
     export declare class AsyncPipe { transform<T>(observable: Observable<T> | null | undefined): T | null }
+    /** A pure Angular pipe at one binding site: \`transform\` runs when an argument is no longer \`Object.is\` the last one. */
+    export declare class PurePipeCache {
+      pure1<A, R>(a: A, transform: (a: A) => R): R;
+      pure2<A, B, R>(a: A, b: B, transform: (a: A, b: B) => R): R;
+      pure3<A, B, C, R>(a: A, b: B, c: C, transform: (a: A, b: B, c: C) => R): R;
+      pure4<A, B, C, D, R>(a: A, b: B, c: C, d: D, transform: (a: A, b: B, c: C, d: D) => R): R;
+      pure5<A, B, C, D, E, R>(a: A, b: B, c: C, d: D, e: E, transform: (a: A, b: B, c: C, d: D, e: E) => R): R;
+    }
   `,
   '@angular/common/http': `
     import type { Observable } from 'rxjs';
@@ -46,7 +54,8 @@ const SHIMS: Record<string, string> = {
   '@angular/core': `
     export interface WritableSignal<T> { (): T; set(value: T): void; update(fn: (value: T) => T): void }
     export interface Signal<T> { (): T }
-    export interface InputSignal<T> { (): T }
+    /** \`$assign\`: a decorated input the component writes itself (\`this.x = v\`), until its parent's binding changes. */
+    export interface InputSignal<T> { (): T; $assign(value: T): void }
     export interface OutputEmitterRef<T> { emit(value: T): void }
     export declare function signal<T>(value: T): WritableSignal<T>;
     export declare function computed<T>(fn: () => T): Signal<T>;
@@ -71,8 +80,24 @@ const SHIMS: Record<string, string> = {
     export declare function effect(fn: (onCleanup: (cleanup: () => void) => void) => void, options?: any): EffectRef;
     export declare function untracked<T>(fn: () => T): T;
     export declare class Injector { get<T>(token: abstract new (...args: any[]) => T): T }
-    export declare function ViewChild(selector: string, options?: any): any;
-    export declare class ElementRef<T = any> { readonly nativeElement: T }
+    export declare function ViewChild(selector: any, options?: any): any;
+    export declare function Pipe(meta: { name: string; pure?: boolean; standalone?: boolean }): <C>(c: C) => C;
+    export interface PipeTransform { transform(value: any, ...args: any[]): any }
+    export declare function Directive(meta?: any): <C>(c: C) => C;
+    export declare function HostListener(event: string, args?: string[]): any;
+    export declare function HostBinding(property?: string): any;
+    export declare function Inject(token: any): any;
+    export declare function Optional(): any;
+    export declare function Self(): any;
+    export declare function Host(): any;
+    export declare abstract class ChangeDetectorRef { markForCheck(): void; detectChanges(): void; detach(): void; reattach(): void; checkNoChanges(): void }
+    /** A template's view: what a native element is to Angular, read untyped (its type argument is the app's claim). */
+    export declare class ElementRef<T = any> { constructor(nativeElement: any); readonly nativeElement: any }
+    export declare function ViewChildren(selector: any, options?: any): any;
+    export declare class SimpleChange { constructor(previousValue: any, currentValue: any, firstChange: boolean); previousValue: any; currentValue: any; firstChange: boolean; isFirstChange(): boolean }
+    export type SimpleChanges<T = any> = { [propName: string]: SimpleChange };
+    export interface OnChanges { ngOnChanges(changes: SimpleChanges): void }
+    export declare class QueryList<T> { readonly length: number; readonly first: T; readonly last: T; toArray(): T[]; get(index: number): T | undefined; forEach(fn: (item: T, index: number, array: T[]) => void): void; map<U>(fn: (item: T, index: number, array: T[]) => U): U[]; filter(fn: (item: T, index: number, array: T[]) => boolean): T[]; find(fn: (item: T, index: number, array: T[]) => boolean): T | undefined; readonly changes: { subscribe(next: (value: QueryList<T>) => void): { unsubscribe(): void } } }
     export declare class DestroyRef { onDestroy(callback: () => void): () => void }
     export declare class NgZone { run<T>(fn: () => T): T; runOutsideAngular<T>(fn: () => T): T }
     export interface OnDestroy { ngOnDestroy(): void }

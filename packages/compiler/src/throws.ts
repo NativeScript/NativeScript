@@ -283,6 +283,8 @@ export class Throws {
     }
     // A value the program holds, of a function type a declaration file names (`callback: ControlStateChangeListenerCallback`): a Swift function type, which throws.
     if (file.isDeclarationFile && ts.isFunctionTypeNode(decl) && holder && !holder.getSourceFile().isDeclarationFile && !/[\\/]lib\.[\w.]*\.d\.ts$/.test(file.fileName)) return true;
+    // A pure pipe's cache runs the transform it is given at once: it rethrows.
+    if (file.fileName.startsWith('/__shims__/') && ts.isMethodDeclaration(decl) && ts.isClassDeclaration(decl.parent) && decl.parent.name?.text === 'PurePipeCache') return callbackThrows();
     const compiled = file.isDeclarationFile ? this.implementation(decl) : null;
     if (compiled) return (compiled as Fn).body ? this.fn(compiled) : false;
     if (file.isDeclarationFile) {
