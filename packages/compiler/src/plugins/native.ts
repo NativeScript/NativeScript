@@ -37,6 +37,8 @@ export interface PluginNative {
   appSwift: string | null;
   /** Plugins' Objective-C and C that import a pod (absolute directories, each with its module map), compiled into the app target as the CLI compiles them, where the pods' headers are. */
   appClang: string[];
+  /** The prefix header Objective-C plugin code is compiled with, where there is any (absolute). */
+  prefixHeader: string | null;
   /** The Objective-C classes each module's binary defines, for the modules whose binary is known. */
   classes: Record<string, string[]>;
   /** The kit's Swift bindings of plugins' engine-bound code (absolute), compiled into the app target, each with the type whose `install()` the app calls first. */
@@ -63,6 +65,17 @@ interface Target {
 
 const PACKAGE = 'NSPlugins';
 
+/**
+ * What a NativeScript app's own prefix header gives every plugin's Objective-C it compiles: UIKit and Foundation, before
+ * the plugin's first line (ui-canvas's headers test `TARGET_OS_IPHONE` before importing anything).
+ */
+const PREFIX_HEADER = `#ifdef __OBJC__
+#import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
+#endif
+`;
+const PREFIX_FILE = 'NSPluginsPrefix.h';
+
 /** A set of native sources: a plugin's `platforms/ios`, or the app's `App_Resources/iOS/src` (whose Swift module is the app's). */
 interface NativeSources { name: string; version: string; dir: string; ios: string; typings: string[]; appModule?: string }
 
@@ -88,7 +101,7 @@ export function pluginNative(sources: PluginSource[], outDir: string, o: { deps:
 /** Writes the plugins' files to `stage`, returning paths under `root`, where they are mirrored. */
 function assemble(sources: PluginSource[], root: string, stage: string, o: Parameters<typeof pluginNative>[2]): PluginNative {
   const errors: string[] = [];
-  const sets: NativeSources[] = [...sources].sort((a, b) => a.name.localeCompare(b.name)).map((s) => ({ name: s.name, version: s.version, dir: s.dir, ios: join(s.dir, 'platforms', 'ios'), typings: s.typings }));
+  const sets: NativeSources[] = [...sources].sort((a, b) => a.name.localeCompare(b.name)).map((s) => ({ name: s.name, version: s.version, dir: s.dir, ios: join(s.dir, 'platforms', 'ios'), typings: [...new Set([...s.typings, ...ownTypings(s, o.declarations)])] }));
   if (o.app) sets.push({ name: 'App_Resources', version: 'app', dir: dirname(dirname(o.app.src)), ios: o.app.src, typings: o.app.declarations, appModule: o.app.module });
   const perPackage = sets.map((source) => ({ source, targets: targetsOf(source, errors, o.deps) }));
   if (errors.length) throw new Error(`plugins' iOS code that cannot be built yet:\n  ${errors.join('\n  ')}`);
@@ -110,7 +123,9 @@ function assemble(sources: PluginSource[], root: string, stage: string, o: Param
     }
   }
   const packaged = all.filter((t) => t.kind !== 'swift' && !t.inApp);
-  if (packaged.length) writeFileSync(join(stage, 'Package.swift'), manifest(packaged));
+  const clangTargets = all.some((t) => t.kind === 'clang');
+  if (clangTargets) writeFileSync(join(stage, PREFIX_FILE), PREFIX_HEADER);
+  if (packaged.length) writeFileSync(join(stage, 'Package.swift'), manifest(packaged, join(root, PREFIX_FILE)));
 
   const left = new Set<Target>();
   for (const { source, targets } of perPackage) {
@@ -154,6 +169,7 @@ function assemble(sources: PluginSource[], root: string, stage: string, o: Param
     swift: all.filter((t) => t.kind === 'swift' && !t.inApp).map((t) => ({ name: t.name, dir: join(root, t.path), packages: o.packages.filter((p) => p.plugin === perPackage.find((x) => x.targets.includes(t))!.source.name) })),
     appSwift: app ? join(root, app.path) : null,
     appClang: all.filter((t) => t.kind === 'clang' && t.inApp).map((t) => join(root, t.path)),
+    prefixHeader: clangTargets ? join(root, PREFIX_FILE) : null,
     bindings,
     classes: { ...o.deps.classes, ...Object.fromEntries(all.filter((t) => t.binary).map((t) => [t.module, definedObjCClasses([t.binary!])])) },
   };
@@ -175,6 +191,7 @@ export function xcodegenLines(native: PluginNative, projectDir: string): { packa
     settings: {
       // The app's Swift imports their modules by the module maps beside them.
       ...(native.appClang.length ? Object.fromEntries(['SWIFT_INCLUDE_PATHS', 'HEADER_SEARCH_PATHS'].map((k) => [k, JSON.stringify(['$(inherited)', ...native.appClang.map((d) => `$(SRCROOT)/${relative(projectDir, d)}`)].join(' '))])) : {}),
+      ...(native.appClang.length && native.prefixHeader ? { GCC_PREFIX_HEADER: JSON.stringify(`$(SRCROOT)/${relative(projectDir, native.prefixHeader)}`) } : {}),
       ...(conditions.length ? { SWIFT_ACTIVE_COMPILATION_CONDITIONS: JSON.stringify(['$(inherited)', ...conditions].join(' ')) } : {}),
     },
   };
@@ -252,10 +269,12 @@ function targetsOf(source: NativeSources, errors: string[], deps: Dependencies):
       targets.push({
         kind: 'clang', name: module, module, from, path, files: [...clang, ...maps], publicHeaders, inApp: importsPod,
         extract: (scratch) => {
-          if (map) return ['-I', dirname(map)];
+          writeFileSync(join(scratch, PREFIX_FILE), PREFIX_HEADER);
+          const prefix = ['-Xcc', '-include', '-Xcc', join(scratch, PREFIX_FILE)];
+          if (map) return ['-I', dirname(map), ...prefix];
           // What SwiftPM generates for a target without a module map: every header under its public headers directory.
           writeFileSync(join(scratch, 'module.modulemap'), `module ${module} {\n  umbrella ${JSON.stringify(from)}\n  export *\n  module * { export * }\n}\n`);
-          return ['-I', scratch];
+          return ['-I', scratch, ...prefix];
         },
       });
     }
@@ -293,11 +312,12 @@ function targetsOf(source: NativeSources, errors: string[], deps: Dependencies):
   return targets;
 }
 
-function manifest(targets: Target[]): string {
+export function manifest(targets: Target[], prefix: string): string {
   const q = JSON.stringify;
+  // A local package may pass flags of its own: the app's project depends on it by path.
   const decl = (t: Target) =>
     t.kind === 'binary' ? `.binaryTarget(name: ${q(t.name)}, path: ${q(t.path)})`
-    : t.kind === 'clang' ? `.target(name: ${q(t.name)}, path: ${q(t.path)}, publicHeadersPath: ${q(t.publicHeaders)})`
+    : t.kind === 'clang' ? `.target(name: ${q(t.name)}, path: ${q(t.path)}, publicHeadersPath: ${q(t.publicHeaders)}, cSettings: [.unsafeFlags(["-include", ${q(prefix)}])])`
     : `.target(name: ${q(t.name)}, path: ${q(t.path)})`;
   return `// swift-tools-version:5.9
 // Generated by ns-native: the iOS code the app's NativeScript plugins ship, unchanged.
@@ -317,9 +337,18 @@ ${targets.map((t) => `        ${decl(t)},`).join('\n')}
 }
 
 function hash(t: Target): string {
-  const h = createHash('sha256').update(`tables-2\0${t.kind}\0${t.module}\0${t.inApp ? 'app' : ''}\0`);
+  const h = createHash('sha256').update(`tables-2\0${t.kind}\0${t.module}\0${t.inApp ? 'app' : ''}\0${t.kind === 'clang' ? PREFIX_HEADER : ''}`);
   for (const f of [...t.files].sort()) h.update(relative(t.from, f)).update('\0').update(readFileSync(f)).update('\0');
   return h.digest('hex').slice(0, 16);
+}
+
+/**
+ * The typings the program reads from beside a plugin's source (`types/objc!NSCAppStore.d.ts`, named after a class of
+ * the plugin's own Swift rather than a module), wherever the source keeps them.
+ */
+export function ownTypings(source: PluginSource, declarations: string[]): string[] {
+  const top = [...source.files.values()].filter((f): f is string => !!f).map(dirname).sort((a, b) => a.length - b.length)[0];
+  return top ? declarations.filter((d) => d.startsWith(top + sep)) : [];
 }
 
 /** The classes and interfaces (protocols) a typings file declares at its top level. */
@@ -336,4 +365,36 @@ function commonDir(files: string[]): string {
 
 function filesUnder(dir: string): string[] {
   return readdirSync(dir, { recursive: true, withFileTypes: true }).filter((e) => e.isFile()).map((e) => join(e.parentPath, e.name));
+}
+
+/**
+ * The names a plugin's or pod's module gives generated code to spell: the module's own, its types', functions', constants'
+ * and global enum cases', and the members its categories add to other modules' classes.
+ */
+export function moduleNames(module: string): Set<string> | null {
+  let t: ReturnType<typeof nativeTable>;
+  // A module without a table is imported wherever it was: nothing tells which files use it.
+  try { t = nativeTable(module); } catch { return null; }
+  const names = new Set([module]);
+  const add = (swift: string) => { const n = /^[A-Za-z_]\w*/.exec(swift)?.[0]; if (n) names.add(n); };
+  for (const c of Object.values(t.classes)) {
+    if (!c.extension) add(c.swift);
+    else for (const m of [...Object.values(c.instance), ...Object.values(c.static)]) add(m.swift);
+  }
+  for (const e of Object.values(t.enums)) if (e.swift) add(e.swift); else for (const c of Object.values(e.cases)) add(c.swift);
+  for (const f of Object.values(t.functions)) add(f.owner ?? f.swift);
+  for (const c of [...Object.values(t.constants), ...Object.values(t.structs)]) add(c.swift);
+  for (const a of Object.keys(t.typealiases ?? {})) add(a);
+  return names;
+}
+
+/** A Swift file without its imports of the modules in `modules` whose names nothing else in it uses. */
+export function usedImports(text: string, modules: Map<string, Set<string> | null>): string {
+  const body = text.replace(/^import \w+$/gm, '');
+  const words = new Set(body.match(/\b[A-Za-z_]\w*\b/g) ?? []);
+  return text.replace(/^import (\w+)\n/gm, (line, m: string) => {
+    if (!modules.has(m)) return line;
+    const names = modules.get(m);
+    return !names || [...names].some((n) => words.has(n)) ? line : '';
+  });
 }

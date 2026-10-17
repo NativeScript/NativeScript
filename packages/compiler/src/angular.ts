@@ -86,8 +86,10 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
   const pipes: string[] = [];
   const code = (value: ng.AST, loops: Loop[]): string => {
     const root = value instanceof ng.ASTWithSource ? value.ast : value;
-    if (!pipesIn(root).length) return sourceOf(value);
-    if (loops.length) throw new Error(`${path}: a pipe inside *ngFor or @for is not supported in a release build yet`);
+    // `text="How {{ x }}"`: Angular renders the literal text with each expression's value, undefined and null as ''.
+    const interpolation = root instanceof ng.Interpolation ? root : null;
+    if (!pipesIn(root).length && !interpolation) return sourceOf(value);
+    if (pipesIn(root).length && loops.length) throw new Error(`${path}: a pipe inside *ngFor or @for is not supported in a release build yet`);
     const textOf = (node: ng.AST): string => {
       if (node instanceof ng.BindingPipe) {
         if (node.name !== 'async' || node.args.length) throw new Error(`${path}: the ${node.name} pipe is not supported in a release build yet`);
@@ -102,6 +104,7 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
       }
       return out;
     };
+    if (interpolation) return '`' + interpolation.strings.map((s, i) => s.replace(/[`\\$]/g, (x) => '\\' + x) + (i < interpolation.expressions.length ? `\${(${textOf(interpolation.expressions[i])}) ?? ''}` : '')).join('') + '`';
     return textOf(root);
   };
   // `$any(x)` is Angular's escape from template type checking; the release build is typed by the component's code,
@@ -649,6 +652,19 @@ function literalKey(code: string, path: string): string {
   return m[2];
 }
 
+/** A file's `@Component` class and the selector it declares. */
+export function componentOf(path: string, text: string): { name: string; selector?: string } | null {
+  if (!text.includes('@Component')) return null;
+  const sf = ts.createSourceFile(path, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+  for (const st of sf.statements) {
+    const meta = ts.isClassDeclaration(st) && st.name ? decorator(st, 'Component')?.arguments[0] : undefined;
+    if (!meta) continue;
+    const selector = ts.isObjectLiteralExpression(meta) ? meta.properties.find((p): p is ts.PropertyAssignment => ts.isPropertyAssignment(p) && p.name.getText() === 'selector')?.initializer : undefined;
+    return { name: (st as ts.ClassDeclaration).name!.text, selector: selector && ts.isStringLiteralLike(selector) ? selector.text : undefined };
+  }
+  return null;
+}
+
 function decorator(node: ts.ClassDeclaration, name: string): ts.CallExpression | undefined {
   for (const d of ts.getDecorators(node) ?? []) {
     if (ts.isCallExpression(d.expression) && ts.isIdentifier(d.expression.expression) && d.expression.expression.text === name) return d.expression;
@@ -703,10 +719,14 @@ export interface RouteNode {
  * `loadComponent` into the files they import. A route whose component is `NSEmptyOutletComponent` is marked
  * `emptyOutlet`: its children render in a frame of their own, on a page of the outlet the route names.
  */
-export function angularRouteTree(entry: string, read: (file: string) => string): { routes: RouteNode[]; files: Set<string> } | null {
+export function angularRouteTree(entry: string, read: (file: string) => string, aliased: (specifier: string) => string | undefined = () => undefined): { routes: RouteNode[]; files: Set<string> } | null {
   const files = new Set<string>();
   const parse = (f: string) => ts.createSourceFile(f, read(f), ts.ScriptTarget.Latest, true);
-  const fileOf = (from: string, spec: string) => [spec + '.ts', join(spec, 'index.ts')].map((s) => join(dirname(from), s)).find((p) => existsSync(p));
+  /** A relative specifier, or one of the app's path aliases (`~/app/x`), as the file it names. */
+  const fileOf = (from: string, spec: string) => {
+    const base = spec.startsWith('.') ? join(dirname(from), spec) : aliased(spec);
+    return base === undefined ? undefined : [base + '.ts', join(base, 'index.ts')].find((p) => existsSync(p));
+  };
   /** The array a name declares in a file, or imports into it. */
   const arrayNamed = (file: string, name: string): { file: string; array: ts.ArrayLiteralExpression } | null => {
     const sf = parse(file);
@@ -718,7 +738,7 @@ export function angularRouteTree(entry: string, read: (file: string) => string):
       }
       if (ts.isImportDeclaration(st) && st.importClause?.namedBindings && ts.isNamedImports(st.importClause.namedBindings) && ts.isStringLiteral(st.moduleSpecifier)) {
         const el = st.importClause.namedBindings.elements.find((e) => e.name.text === name);
-        const target = el && st.moduleSpecifier.text.startsWith('.') ? fileOf(file, st.moduleSpecifier.text) : undefined;
+        const target = el ? fileOf(file, st.moduleSpecifier.text) : undefined;
         if (target) return arrayNamed(target, (el!.propertyName ?? el!.name).text);
       }
     }

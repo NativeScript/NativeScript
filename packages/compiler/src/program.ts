@@ -177,6 +177,11 @@ const GLOBALS = `
     count(label?: string): void; countReset(label?: string): void; assert(condition?: boolean, ...data: any[]): void; dir(item?: any, options?: any): void; trace(...data: any[]): void;
   };
   declare function queueMicrotask(callback: () => void): void;
+  // Core declares the delay required; JavaScript defaults it to 0.
+  declare function setTimeout(callback: (...args: any[]) => void): number;
+  declare function setInterval(callback: (...args: any[]) => void): number;
+  /** What \`types: ["node"]\` gives an app for the timers' results. */
+  declare namespace NodeJS { type Timeout = number; type Timer = number; type Immediate = number }
   declare var global: typeof globalThis;
   declare function requestAnimationFrame(callback: (frameTime: number) => void): number;
   declare function cancelAnimationFrame(id: number): void;
@@ -236,8 +241,6 @@ const ANDROID_GLOBALS = `
   declare var URL: { prototype: URL; new (url: string | URL, base?: string | URL): URL };
   declare function postMessage(message: any, transfer?: any[]): void;
   declare function close(): void;
-  declare function setTimeout(callback: (...args: any[]) => void): number;
-  declare function setInterval(callback: (...args: any[]) => void): number;
 `;
 
 /** The platform's native API typings, as an app's `references.d.ts` includes them. */
@@ -277,7 +280,7 @@ const notPlugin = (pkg: string) => NOT_PLUGINS.test(pkg) || KIT_PLUGINS.includes
  * typed by the real ES2022 library, @nativescript/core's own declarations
  * and the platform's native API typings.
  */
-export function createProgram(roots: string[], virtual: Map<string, string>, platform: Platform = 'ios', modulesDir?: string, plugins?: PluginSources, declarations: string[] = [], replacements: Record<string, string> = {}, overrides: ts.CompilerOptions = {}): Program {
+export function createProgram(roots: string[], virtual: Map<string, string>, platform: Platform = 'ios', modulesDir?: string, plugins?: PluginSources, declarations: string[] = [], replacements: Record<string, string> = {}, overrides: ts.CompilerOptions = {}, aliased: (specifier: string) => string | undefined = () => undefined): Program {
   const shimPath = (m: string) => `/__shims__/${m.replace(/[@/]/g, '_')}.d.ts`;
   const files = new Map<string, string>(virtual);
   for (const [m, text] of Object.entries(SHIMS)) files.set(shimPath(m), text);
@@ -321,6 +324,16 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
   const readFile = host.readFile.bind(host);
   host.readFile = (name) => files.get(name) ?? readFile(name);
   const resolutions = new Map<string, string>();
+  // A plugin's augmentations of other packages (`declare module '@nativescript/firebase-core'`), which its source keeps in
+  // the declarations beside it (`index.d.ts`), apply as its published typings apply them.
+  const augmenting = new Map<string, string | null>();
+  const augmentations = (source: string) => {
+    if (!augmenting.has(source)) {
+      const beside = source.replace(/(\.(ios|android))?\.tsx?$/, '.d.ts');
+      augmenting.set(source, beside !== source && existsSync(beside) && /^\s*declare module ['"]/m.test(readFileSync(beside, 'utf8')) ? beside : null);
+    }
+    return augmenting.get(source);
+  };
   host.resolveModuleNameLiterals = (literals, containing) =>
     literals.map((lit) => {
       const r = resolveLiteral(lit, containing);
@@ -329,7 +342,8 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
     });
   const resolveLiteral = (lit: ts.StringLiteralLike, containing: string): ts.ResolvedModuleWithFailedLookupLocations => {
     {
-      const m = lit.text;
+      // The app's own tsconfig `paths` (`~/app/x`), as its bundler resolves them: plugins' sources have their own.
+      const m = (isApp(containing) ? aliased(lit.text) : undefined) ?? lit.text;
       if (SHIMS[m]) return { resolvedModule: { resolvedFileName: shimPath(m), extension: ts.Extension.Dts } };
       // The build's own glue imports app modules by absolute path (`__elements.release.ts`).
       if (m.startsWith('.') || (isAbsolute(m) && !m.startsWith('/__shims__/'))) {
@@ -356,7 +370,9 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
       // A type-only import still resolves to the source where the file also imports values from the package: TypeScript resolves a specifier once per file.
       const valueImport = (st: ts.Statement) => ts.isImportDeclaration(st) && !st.importClause?.isTypeOnly && ts.isStringLiteral(st.moduleSpecifier) && st.moduleSpecifier.text === m;
       const typeOnly = ts.isImportDeclaration(lit.parent) && !!lit.parent.importClause?.isTypeOnly && !(lit.parent.parent && ts.isSourceFile(lit.parent.parent) && lit.parent.parent.statements.some(valueImport));
-      if (plugins && isSource(containing) && !m.startsWith('.') && !m.startsWith('/') && !notPlugin(packageOf(m)) && !typeOnly) {
+      // A plugin's augmentation of another's module augments the module the program compiles: that package's source.
+      const augments = ts.isModuleDeclaration(lit.parent) && lit.parent.name === lit && !!plugins?.all().some((p) => containing.startsWith(p.root + '/'));
+      if (plugins && (isSource(containing) || augments) && !m.startsWith('.') && !m.startsWith('/') && !notPlugin(packageOf(m)) && !typeOnly) {
         const js = runtimeFile(m, modules, platform);
         if (js) {
           plugins.get(js.packageDir);
@@ -364,6 +380,8 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
           if (source) {
             pluginFiles.add(source);
             for (const t of plugins.get(js.packageDir).typings) extraRoots.add(t);
+            const beside = augmentations(source);
+            if (beside) extraRoots.add(beside);
             return { resolvedModule: { resolvedFileName: source, extension: source.endsWith('.tsx') ? ts.Extension.Tsx : ts.Extension.Ts } };
           }
         }
@@ -528,6 +546,8 @@ function coreNamespaceMembers(program: ts.Program, isApp: (name: string) => bool
  * (`type`): what the NativeScript runtime runs for `fetch` or `new XMLHttpRequest()` is core's module.
  */
 const CORE_GLOBALS: [module: string, names: string[]][] = [
+  // core's ui index sets them on `global`.
+  ['@nativescript/core/ui/dialogs', ['alert', 'confirm', 'prompt', 'login', 'action']],
   ['@nativescript/core/fetch', ['fetch', 'Headers', 'Request', 'Response', 'type BodyInit', 'type HeadersInit', 'type RequestInfo', 'type RequestInit', 'type ResponseInit']],
   ['@nativescript/core/xhr', ['XMLHttpRequest', 'FormData', 'Blob', 'File', 'FileReader']],
   ['@nativescript/core/abortcontroller', ['AbortController', 'AbortSignal']],

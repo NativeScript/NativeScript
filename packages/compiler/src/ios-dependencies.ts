@@ -266,6 +266,15 @@ interface Built { dir: string; args: string[]; modules: string[]; classes: Recor
 
 function buildDependencies(packages: SwiftPackage[], pods: string | null, deploymentTarget: string, say: (m: string) => void): Built {
   const dir = mkdtempSync(join(tmpdir(), 'ns-dependencies-'));
+  try {
+    return buildIn(dir, packages, pods, deploymentTarget, say);
+  } catch (e) {
+    rmSync(dir, { recursive: true, force: true });
+    throw e;
+  }
+}
+
+function buildIn(dir: string, packages: SwiftPackage[], pods: string | null, deploymentTarget: string, say: (m: string) => void): Built {
   say(`building the Swift packages and pods once for their symbol tables (${[...packages.map((p) => p.name), ...(pods ? ['CocoaPods'] : [])].join(', ')})`);
   mkdirSync(join(dir, 'Empty'));
   writeFileSync(join(dir, 'Empty', 'Empty.swift'), '');

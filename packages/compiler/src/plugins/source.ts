@@ -32,12 +32,21 @@ export interface PluginSource {
   rev: string | null;
   /** Installed JavaScript file → the TypeScript file it was compiled from (null: none found). */
   files: Map<string, string | null>;
+  /** An installed file bundling several sources (an ES module package's `fesm2022/x.mjs`) → the sources its map lists. */
+  bundles: Map<string, BundleSources>;
   /** The installed files whose source has been checked, as the build reaches them. */
   checked: Set<string>;
   /** Declarations of the package's native API next to its source (`typings/ios.d.ts`). */
   typings: string[];
   /** How the source was checked: against the published files, or not at all (an override). */
   verified: 'published' | 'override';
+}
+
+/** What a bundle's source map lists: each source as the checkout has it (null: not there) and as the bundle was built from it. */
+export interface BundleSources {
+  listed: string[];
+  files: (string | null)[];
+  contents: (string | null)[];
 }
 
 export interface SourceOptions {
@@ -83,7 +92,7 @@ export class PluginSources {
     if (!owner) return null;
     const source = this.packages.get(owner)!;
     const src = source.files.get(js);
-    if (!src) throw new Error(`${source.name}: ${relative(source.dir, js)} has no TypeScript source in ${source.root}`);
+    if (!src) throw new Error(`${source.name}: ${relative(source.dir, js)} ${noSource(source, js)}`);
     return src;
   }
 
@@ -96,7 +105,11 @@ export class PluginSources {
       for (const source of this.packages.values()) {
         const js = [...source.files].find(([, s]) => s === src)?.[0];
         if (!js) continue;
-        if (!source.checked.has(js) && source.verified === 'published') verify(source.name, js, src);
+        if (!source.checked.has(js) && source.verified === 'published') {
+          const bundle = source.bundles.get(js);
+          if (bundle) verifyBundle(source.name, js, bundle);
+          else verify(source.name, js, src);
+        }
         source.checked.add(js);
       }
     }
@@ -107,6 +120,14 @@ export class PluginSources {
     for (const source of this.packages.values()) if ([...source.files.values()].includes(src)) return source;
     return null;
   }
+}
+
+/** Why an installed file has no source to compile; for a bundle, which of its sources the checkout lacks. */
+function noSource(source: PluginSource, js: string): string {
+  const bundle = source.bundles.get(js);
+  if (!bundle) return `has no TypeScript source in ${source.root}`;
+  const found = bundle.files.filter(Boolean).length;
+  return `bundles ${bundle.listed.length} sources, ${found ? `${found} of them in ${source.root} but not its entry` : `none of them in ${source.root}`}; point release.pluginSources['${source.name}'] at a checkout of its source`;
 }
 
 /** `release.pluginSources` for `platform` from the project's nativescript.config.ts, paths resolved against the project. */
@@ -142,7 +163,8 @@ function acquire(dir: string, options: SourceOptions): PluginSource {
 
   const repoFiles = listFiles(root);
   const packageDir = sourcePackageDir(root, repoFiles, name);
-  let files = mapFiles(dir, root, repoFiles, packageDir);
+  const bundles = new Map<string, BundleSources>();
+  let files = mapFiles(dir, root, repoFiles, packageDir, bundles);
 
   // Source-level patches apply to a copy of the package's directory.
   const patch = join(options.app, 'native-release', 'patches', `${name.replace(/\//g, '+')}+${version}.patch`);
@@ -167,7 +189,7 @@ function acquire(dir: string, options: SourceOptions): PluginSource {
 
   const typings = typingsNear([...files.values()].filter((f): f is string => !!f), options.platform, root);
   say(`${name}@${version}: source from ${override ? `${override} (not verified: a configured source)` : `${repo} @ ${rev!.slice(0, 7)}`}`);
-  return { name, version, dir, root, repo, rev, files, typings, checked: new Set(), verified: override ? 'override' : 'published' };
+  return { name, version, dir, root, repo, rev, files, bundles, typings, checked: new Set(), verified: override ? 'override' : 'published' };
 }
 
 /** The repository URL a package.json names: `repository`, else its issue tracker's or homepage's repository. */
@@ -267,11 +289,14 @@ function sourcePackageDir(root: string, files: string[], name: string): string |
   return null;
 }
 
-/** Each runtime JavaScript file of the installed package → the TypeScript file it was compiled from. */
-function mapFiles(dir: string, root: string, repoFiles: string[], packageDir: string | null): Map<string, string | null> {
+/**
+ * Each runtime JavaScript file of the installed package → the TypeScript file it was compiled from. A file whose source
+ * map lists several sources is a bundle of them, compiled from its entry.
+ */
+function mapFiles(dir: string, root: string, repoFiles: string[], packageDir: string | null, bundles: Map<string, BundleSources>): Map<string, string | null> {
   const sources = repoFiles.filter((f) => /\.tsx?$/.test(f) && !f.endsWith('.d.ts'));
   const out = new Map<string, string | null>();
-  const installed = listFiles(dir).filter((f) => f.endsWith('.js') && !f.includes(`${sep}platforms${sep}`) && !/\.(config|webpack)\.js$/.test(f));
+  const installed = listFiles(dir).filter((f) => /\.m?js$/.test(f) && !f.includes(`${sep}platforms${sep}`) && !/\.(config|webpack)\.js$/.test(f));
   const bySuffix = (suffix: string) => {
     const hits = sources.filter((f) => f === join(root, suffix) || f.endsWith(sep + suffix));
     if (hits.length <= 1) return hits[0] ?? null;
@@ -282,20 +307,48 @@ function mapFiles(dir: string, root: string, repoFiles: string[], packageDir: st
     let src: string | null = null;
     const map = js + '.map';
     if (existsSync(map)) {
-      const listed: string[] = JSON.parse(readFileSync(map, 'utf8')).sources ?? [];
-      if (listed.length === 1) {
-        const parts = listed[0].replace(/\\/g, '/').split('/').filter((p) => p && p !== '..' && p !== '.');
-        // The longest tail of the listed path that names a file in the source.
-        for (let k = 0; k < parts.length && !src; k++) src = bySuffix(parts.slice(k).join(sep));
+      const parsed = JSON.parse(readFileSync(map, 'utf8'));
+      const listed: string[] = parsed.sources ?? [];
+      // The longest tail of the listed path that names a file in the source.
+      const inSource = (path: string) => {
+        const parts = path.replace(/\\/g, '/').split('/').filter((p) => p && p !== '..' && p !== '.');
+        for (let k = 0; k < parts.length; k++) { const f = bySuffix(parts.slice(k).join(sep)); if (f) return f; }
+        return null;
+      };
+      if (listed.length === 1) src = inSource(listed[0]);
+      else if (listed.length > 1) {
+        const bundle = { listed, files: listed.map(inSource), contents: (parsed.sourcesContent ?? []).map((c: unknown) => (typeof c === 'string' ? c : null)) };
+        bundles.set(js, bundle);
+        src = bundleEntry(bundle, js, inSource);
       }
     }
     if (!src) {
-      const rel = relative(dir, js).replace(/\.js$/, '');
+      const rel = relative(dir, js).replace(/\.m?js$/, '');
       for (const ext of ['.ts', '.tsx']) src ??= bySuffix(rel + ext);
     }
     out.set(js, src);
   }
   return out;
+}
+
+/**
+ * The source a bundle is compiled from: its entry, the source its map lists under the bundle's own name (else last). A
+ * bundler's generated index (ng-packagr's `ngrx-store.ts`), which the checkout lacks, re-exports the entry.
+ */
+function bundleEntry(b: BundleSources, bundle: string, inSource: (path: string) => string | null): string | null {
+  const own = b.listed.findIndex((l) => basename(l).replace(/\.tsx?$/, '') === basename(bundle).replace(/\.m?js$/, ''));
+  let k = own >= 0 ? own : b.listed.length - 1;
+  for (const seen = new Set<number>(); !seen.has(k); ) {
+    seen.add(k);
+    if (b.files[k]) return b.files[k];
+    const reexported = /^(?:\s|\/\*[\s\S]*?\*\/|\/\/[^\n]*)*export\s*\*\s*from\s*['"](\.[^'"]+)['"];?\s*$/.exec(b.contents[k] ?? '')?.[1];
+    if (!reexported) return null;
+    const target = join(dirname(b.listed[k]), reexported);
+    const listed = b.listed.findIndex((l) => [target + '.ts', target + '.tsx', join(target, 'index.ts')].includes(join(l)));
+    if (listed < 0) return inSource(target + '.ts') ?? inSource(join(target, 'index.ts'));
+    k = listed;
+  }
+  return null;
 }
 
 /**
@@ -338,6 +391,17 @@ function verify(name: string, js: string, src: string) {
   const bad = unexplained(normalize(lowered, src), normalize(readFileSync(js, 'utf8'), js));
   if (process.env.NS_NATIVE_DEBUG_VERIFY) console.log(JSON.stringify(bad));
   if (bad.length) throw new Error(`${name}: ${src} does not match the published ${js}:\n${bad.slice(0, 12).map((l) => '    ' + l).join('\n')}${bad.length > 12 ? `\n    … ${bad.length - 12} more lines` : ''}`);
+}
+
+/**
+ * A bundle checked against the sources its map embeds: each must be the checkout's file as it is. A source the checkout
+ * lacks may be the bundler's own index, re-exporting only.
+ */
+export function verifyBundle(name: string, js: string, b: BundleSources) {
+  if (b.contents.length !== b.listed.length) throw new Error(`${name}: ${js} has no sources in its source map to check its source against (sourcesContent)`);
+  const bad = b.listed.filter((listed, k) => b.files[k] ? readFileSync(b.files[k]!, 'utf8') !== b.contents[k]
+    : !/^(\s|\/\*[\s\S]*?\*\/|\/\/[^\n]*|export\s*(\*|\{[^}]*\})\s*from\s*['"][^'"]+['"];?)*$/.test(b.contents[k] ?? ''));
+  if (bad.length) throw new Error(`${name}: ${js} was not built from its source at this revision: ${bad.slice(0, 6).join(', ')}${bad.length > 6 ? ` and ${bad.length - 6} more` : ''} differ`);
 }
 
 // Both sides are lowered to one target, so the published file's own target does not show.
