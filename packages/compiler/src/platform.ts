@@ -28,8 +28,8 @@ export function foldPlatform(text: string, fileName: string, platform: Platform)
     const edit = findFold(sf, (n) => {
       // A release build has no hot module replacement: `import.meta.hot` is undefined.
       if (isHot(n)) return false;
-      if (ts.isIdentifier(n) && n.text in flags && isReference(n) && !declaredAround(n)) return flags[n.text];
-      if (ts.isPropertyAccessExpression(n) && ts.isIdentifier(n.expression) && ['global', 'globalThis'].includes(n.expression.text) && n.name.text in flags) return flags[n.name.text];
+      if (ts.isIdentifier(n) && Object.hasOwn(flags, n.text) && isReference(n) && !declaredAround(n)) return flags[n.text];
+      if (ts.isPropertyAccessExpression(n) && ts.isIdentifier(n.expression) && ['global', 'globalThis'].includes(n.expression.text) && Object.hasOwn(flags, n.name.text)) return flags[n.name.text];
       if (application && ts.isPropertyAccessExpression(n) && ts.isIdentifier(n.expression) && n.expression.text === 'Application' && ['android', 'ios'].includes(n.name.text) && !declaredAround(n.expression) && isTested(n)) return n.name.text === platform;
       return undefined;
     });

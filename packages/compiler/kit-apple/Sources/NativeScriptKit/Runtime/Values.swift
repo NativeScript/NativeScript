@@ -818,6 +818,9 @@ public func jsTypeof(_ value: Any?) -> String {
 /// A `void` value as script holds it: undefined. Boxing `()` itself would give a value that isn't nil.
 @inline(__always) public func jsUndefined(_: Void) -> Any? { nil }
 
+/// A `void` variable, held `Void!`: without this overload it would take the `Any?` one and box `()`.
+@inline(__always) public func jsUndefined(_: Void?) -> Any? { nil }
+
 /// What a function TypeScript types `void` returned through a dynamic call: kept, as JavaScript keeps it (a promise core checks for).
 @inline(__always) public func jsUndefined(_ value: Any?) -> Any? { value }
 

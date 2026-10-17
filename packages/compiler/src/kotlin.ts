@@ -3,7 +3,7 @@ import ts from 'typescript';
 import { dirname as pathDirname, resolve as pathResolve } from 'node:path';
 import { AsyncLowering, usedBefore, type AsyncCtx, type AsyncSyntax, type AsyncTranslator } from './async.ts';
 import { isAsync, isStatic } from './throws.ts';
-import { definitelyAssignedFields, intlConstructor, isObjectToStringCall, isStringRaw, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, classesHeldUntyped, LooseSlots, originOf, ownSlot, implementedInterfaceDeclarations, slotOf, slotType, type TrustScope } from './lang.ts';
+import { definitelyAssignedFields, isRegExpProtocol, intlConstructor, isObjectToStringCall, isStringRaw, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, classesHeldUntyped, LooseSlots, originOf, ownSlot, implementedInterfaceDeclarations, slotOf, slotType, type TrustScope } from './lang.ts';
 import { isCoreDeclaration } from './core.ts';
 import type { Properties } from './properties.ts';
 import { recognizePatterns, type Patterns } from './patterns.ts';
@@ -645,6 +645,7 @@ export class Translator implements AsyncTranslator {
       // Lenient code types `[]` as `undefined[]`: an array of anything.
       return el.flags & F.Never || (this.lenient && el.flags & (F.Undefined | F.Null)) ? 'JSArray<Any?>' : `JSArray<${this.type(el, where)}>`;
     }
+    if (isRegExpProtocol(t)) return 'JSRegExp';
     const sym = t.aliasSymbol ?? t.getSymbol();
     if (sym?.declarations?.some((d) => IOS_TYPINGS.test(d.getSourceFile().fileName))) return 'Any?';
     // An Angular component class as a value (`typeof SheetComponent`) is what creating and rendering it gives.
@@ -1484,7 +1485,7 @@ export class Translator implements AsyncTranslator {
         if (this.reach && !this.reach.keeps(st)) continue;
         if (ts.isInterfaceDeclaration(st) && this.library && this.checker.getSymbolAtLocation(st.name)?.declarations?.some(ts.isClassDeclaration)) continue;
         if (ts.isInterfaceDeclaration(st)) { this.registerInterface(this.topName(st, st.name.text), sf.fileName, st.members, st); continue; }
-        if (ts.isTypeAliasDeclaration(st) && ts.isTypeLiteralNode(st.type)) { this.registerInterface(this.topName(st, st.name.text), sf.fileName, st.type.members, st); continue; }
+        if (ts.isTypeAliasDeclaration(st) && ts.isTypeLiteralNode(st.type) && !isRegExpProtocol(this.checker.getTypeAtLocation(st.type))) { this.registerInterface(this.topName(st, st.name.text), sf.fileName, st.type.members, st); continue; }
         if (ts.isTypeAliasDeclaration(st)) continue;
         if (ts.isEnumDeclaration(st)) {
           // A namespace merged into the enum: members of its object.
@@ -1630,7 +1631,7 @@ export class Translator implements AsyncTranslator {
       if (hasModifier(st, ts.SyntaxKind.DeclareKeyword)) continue;
       // A namespace's interfaces are the module's: a class of the interface's name.
       if (ts.isInterfaceDeclaration(st)) { this.registerInterface(this.topName(st, st.name.text), md.getSourceFile().fileName, st.members, st); continue; }
-      if (ts.isTypeAliasDeclaration(st) && ts.isTypeLiteralNode(st.type)) { this.registerInterface(this.topName(st, st.name.text), md.getSourceFile().fileName, st.type.members, st); continue; }
+      if (ts.isTypeAliasDeclaration(st) && ts.isTypeLiteralNode(st.type) && !isRegExpProtocol(this.checker.getTypeAtLocation(st.type))) { this.registerInterface(this.topName(st, st.name.text), md.getSourceFile().fileName, st.type.members, st); continue; }
       if (ts.isTypeAliasDeclaration(st)) continue;
       values = true;
       if (ts.isFunctionDeclaration(st)) { if (st.name && st.body) lines.push(this.func(st, ident(st.name.text))); continue; }
