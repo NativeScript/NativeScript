@@ -5,7 +5,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { KIT_APPLE_SOURCES } from './paths.ts';
 import { Throws, digitsLiteral, isArrayLengthLiteral, isArrayLengthWrite, isAsync, isStatic } from './throws.ts';
-import { intlConstructor, isObjectToStringCall, isStringRaw, leadingNeverRead, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, uncheckedMatch, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, LooseSlots, originOf, ownSlot, implementedInterfaceDeclarations, slotOf, slotType, type TrustScope } from './lang.ts';
+import { intlConstructor, isObjectToStringCall, isStringRaw, leadingNeverRead, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, uncheckedMatch, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, LooseSlots, originOf, ownSlot, implementedInterfaceDeclarations, slotOf, slotType, definitelyAssignedFields, type TrustScope } from './lang.ts';
 import { AsyncLowering, type AsyncCtx, type AsyncSyntax, type AsyncTranslator } from './async.ts';
 import { CoreAPI, isCoreDeclaration, packageOf } from './core.ts';
 import type { KitMember } from './kit-index.ts';
@@ -4633,7 +4633,9 @@ ${members.join('\n')}
       // `field: string = null` in code checked without strictNullChecks: unset, read as the type's zero or an unwrapped nil.
       if (m.initializer && (m.initializer.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(m.initializer) && m.initializer.text === 'undefined')) && !isOptional(t)) { lines.push(`    var ${ident(n)}: ${this.fieldType(t)}`); this.declare(n, { kind: 'var', type: this.fieldType(t) }); continue; }
       if (m.initializer && this.pure(m.initializer) && !refersToThis(m.initializer)) { lines.push(`    var ${ident(n)}: ${this.lenientRef(t)} = ${this.storedInit(m.initializer, t)}`); this.declare(n, { kind: 'var', type: this.lenientRef(t) }); continue; }
-      const held = this.fieldType(t);
+      // A field the constructor assigns before anything can read it holds its type, not an implicitly unwrapped one.
+      const deferred = this.fieldType(t);
+      const held = deferred.endsWith('!') && !m.initializer && this.definiteFields(cls).has(m) ? t : deferred;
       this.declare(n, { kind: 'var', type: held });
       lines.push(`    ${this.weak.fields.has(`${cls.name?.text}.${n}`) && /^[A-Z][\w.]*[!?]$/.test(held) ? 'weak ' : ''}var ${ident(n)}: ${held}`);
       if (m.initializer) {
@@ -5712,6 +5714,13 @@ ${members.join('\n')}
   private looseSlotSet: LooseSlots | null = null;
   private get looseSlots(): LooseSlots {
     return this.looseSlotSet ??= new LooseSlots(this.sourceFiles, this.checker, (e) => this.unshaped(() => this.untrustedValue(e)), (d) => this.unshaped(() => this.holdsLoose(d)));
+  }
+
+  private definiteFieldSets = new Map<ts.ClassLikeDeclaration, Set<ts.PropertyDeclaration>>();
+  private definiteFields(cls: ts.ClassLikeDeclaration): Set<ts.PropertyDeclaration> {
+    let set = this.definiteFieldSets.get(cls);
+    if (!set) this.definiteFieldSets.set(cls, set = definitelyAssignedFields(cls));
+    return set;
   }
 
   /** What `f` decides from types it reads, keeping none of the shapes reading them makes: they are emitted only where code uses them. */
