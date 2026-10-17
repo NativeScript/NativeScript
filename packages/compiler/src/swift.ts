@@ -7797,7 +7797,7 @@ ${members.join('\n')}
   }
 
   private checkedHere(n: ts.Node): boolean {
-    return this.spreadThrows(n) || this.promiseValueThrows(n) || ((ts.isPropertyAccessExpression(n) || ts.isElementAccessExpression(n)) && this.looseReceiverKey(n.expression) !== null)
+    return this.spreadThrows(n) || this.promiseValueThrows(n) || ((ts.isPropertyAccessExpression(n) || ts.isElementAccessExpression(n)) && (this.looseReceiverKey(n.expression) !== null || this.assertedReceiverKey(n.expression) !== null))
       || (ts.isExpression(n) && !(assignmentValue(n) && this.lenient) && this.loose(n) && !this.looseTolerated(n)) || (ts.isCallExpression(n) && this.heldFunctionCall(n)) || (ts.isExpression(n) && (this.untypedPresentThrows(n) || this.native.foreignArgument(n)));
   }
 
@@ -7888,6 +7888,16 @@ ${members.join('\n')}
   }
 
   /** The member a loose value is the receiver of (`x.key`, `x[0]`), which is read through `jsUnwrap`; null where it is no such receiver. */
+  /** `x!.member` of an optional `x`: the member, whose read or write of a missing `x` is JavaScript's TypeError, not a trap. */
+  assertedReceiverKey(e: ts.Expression): string | null {
+    const p = e.parent;
+    if (!ts.isNonNullExpression(e) || !p || !(ts.isPropertyAccessExpression(p) || ts.isElementAccessExpression(p)) || p.expression !== e || ts.isOptionalChain(p)) return null;
+    if (!this.typeOf(e.expression).endsWith('?')) return null;
+    if (ts.isPropertyAccessExpression(p)) return p.name.text;
+    const k = p.argumentExpression;
+    return ts.isStringLiteralLike(k) || ts.isNumericLiteral(k) ? k.text : k.getText();
+  }
+
   looseReceiverKey(e: ts.Expression): string | null {
     const p = e.parent;
     if (!p || !(ts.isPropertyAccessExpression(p) || ts.isElementAccessExpression(p)) || p.expression !== e || !this.loose(e) || uncheckedMatch(e, this.checker)) return null;
@@ -8039,6 +8049,8 @@ ${members.join('\n')}
     if (ts.isExpressionWithTypeArguments(e)) return this.expr(e.expression);
     if (ts.isNonNullExpression(e)) {
       const inner = this.expr(e.expression);
+      const key = this.assertedReceiverKey(e);
+      if (key !== null) return this.assigned(e.parent as ts.Expression) ? `jsUnwrap(${inner}, setting: ${swiftString(key)})` : `jsUnwrap(${inner}, ${swiftString(key)})`;
       return this.typeOf(e.expression).endsWith('?') ? `${inner}!` : inner;
     }
     if (ts.isPropertyAccessExpression(e)) {

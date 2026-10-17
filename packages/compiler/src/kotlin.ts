@@ -6963,7 +6963,7 @@ export class Translator implements AsyncTranslator {
       let q = callee.questionDotToken || (callee.flags & ts.NodeFlags.OptionalChain && this.typeOf(target).endsWith('?')) ? '?' : this.typeOf(target).endsWith('?') ? '!!' : '';
       // A call of a function an untrusted value may be returned from, too: its member read is JavaScript's TypeError where it gives undefined.
       const looseCall = ts.isCallExpression(target) && !this.library && this.unwrapsResult(target);
-      if (!this.subst.has(target) && !t.startsWith('JSMatch') && (q === '!!' || (q === '' && (ts.isIdentifier(target) || ts.isPropertyAccessExpression(target) || looseCall)))) {
+      if (!this.subst.has(target) && !t.startsWith('JSMatch') && (q === '!!' || (q === '' && (ts.isIdentifier(target) || ts.isPropertyAccessExpression(target) || ts.isNonNullExpression(target) || looseCall)))) {
         const code = this.expr(target);
         this.subst.set(target, q === '!!' || isAsserted(code) ? this.present(code, method, target) : code);
         this.checkedReceivers.push(target);
