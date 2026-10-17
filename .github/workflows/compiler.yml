@@ -141,6 +141,14 @@ jobs:
         working-directory: packages/compiler
         run: node tests/diff/run.ts --kotlin
 
+      # The cases again with one typed value replaced by a wrong one, Node the referee: the per-merge subset. Known failures
+      # are in tests/fuzz/known-fuzz-failures.json; the full set runs in compiler-nightly.yml.
+      - name: Type-violation fuzzing (Kotlin)
+        working-directory: packages/compiler
+        env:
+          NS_FUZZ_BUILD: ${{ runner.temp }}/fuzz
+        run: node tests/fuzz/run.ts --kotlin
+
       - name: Worker tests (Kotlin)
         working-directory: packages/compiler
         run: |
@@ -268,6 +276,14 @@ jobs:
       - name: Differential tests (Swift, -Osize)
         working-directory: packages/compiler
         run: node tests/diff/run.ts --swift --osize
+
+      # The cases again with one typed value replaced by a wrong one, Node the referee: the per-merge subset. Known failures
+      # are in tests/fuzz/known-fuzz-failures.json; the full set runs in compiler-nightly.yml.
+      - name: Type-violation fuzzing (Swift)
+        working-directory: packages/compiler
+        env:
+          NS_FUZZ_BUILD: ${{ runner.temp }}/fuzz
+        run: node tests/fuzz/run.ts --swift
 
       # The kit builds only inside an app's project, beside core's native code (TNSWidgets, NativeScriptUtils…): a fixture app,
       # with every file of the kit compiled. The generated kit uses the newest iOS APIs behind availability checks, so this needs the newest Xcode.
