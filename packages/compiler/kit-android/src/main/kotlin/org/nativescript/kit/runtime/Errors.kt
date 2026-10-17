@@ -133,9 +133,14 @@ inline fun jsReport(body: () -> Unit) {
     try {
         body()
     } catch (e: Throwable) {
-        if (jsTraceErrors) e.printStackTrace()
-        jsReportUncaught(jsCaught(e))
+        jsReportThrown(e)
     }
+}
+
+/** Reports `e`, which escaped the code a host called, as uncaught. */
+fun jsReportThrown(e: Throwable) {
+    if (jsTraceErrors) e.printStackTrace()
+    jsReportUncaught(jsCaught(e))
 }
 
 /** Runs `body`, a method Java calls; what it throws is reported as uncaught, and Java gets `fallback`. */
@@ -143,8 +148,7 @@ inline fun <T> jsReportedOr(fallback: T, body: () -> T): T =
     try {
         body()
     } catch (e: Throwable) {
-        if (jsTraceErrors) e.printStackTrace()
-        jsReportUncaught(jsCaught(e))
+        jsReportThrown(e)
         fallback
     }
 
