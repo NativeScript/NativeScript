@@ -29,9 +29,9 @@ object Modal {
 
     private fun show(settings: List<Pair<String, Any?>>, closeCallback: ((Any?) -> Unit)?, create: () -> View) {
         jsReport {
-            val target = stack.lastOrNull()?.view ?: Core_application_application.Application!!.getRootView_() ?: return@jsReport
+            val target = stack.lastOrNull()?.view ?: (Core_application_application.Application ?: jsCannotRead("getRootView")).getRootView_() ?: return@jsReport
             val owner = Owner(null)
-            val view = owner.run(create)
+            val view = try { owner.run(create) } catch (e: Throwable) { owner.dispose(); throw e }
             val shown = Shown(view, owner)
             val close = jsFunction { args ->
                 if (!shown.resolved) {

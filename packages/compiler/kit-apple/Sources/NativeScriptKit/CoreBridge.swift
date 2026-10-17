@@ -112,7 +112,7 @@ extension ViewBase {
                 if jsIsNullish(next) { next = JSObject(); try jsSet(target, member, next) }
                 target = next
             }
-            try jsSet(target, path.last!, value)
+            if let last = path.last { try jsSet(target, last, value) }
         }
     }
 
@@ -148,10 +148,10 @@ extension EventData {
 }
 
 /// `$navigateTo(Component)`: the topmost frame shows the view the template makes.
-public func kitNavigate(animated: Bool = true, _ create: @escaping () -> View) {
+public func kitNavigate(animated: Bool = true, _ create: @escaping () throws -> View) {
     jsReport {
         guard let frame = try Frame.topmost() else { return }
-        try frame.navigate(JSObject([("create", { (_: [Any?]) throws -> Any? in create() } as JSFunction), ("animated", animated)]))
+        try frame.navigate(JSObject([("create", { (_: [Any?]) throws -> Any? in try create() } as JSFunction), ("animated", animated)]))
     }
 }
 
@@ -169,7 +169,7 @@ public enum NativeScriptApplication {
     }
 
     /// The app, its stylesheet given as the AST its NativeScript build ships (`css2json-loader`'s).
-    public static func run(cssAST: String, _ root: @escaping () -> View) {
+    public static func run(cssAST: String, _ root: @escaping () throws -> View) {
         CorePackages.appCSSAST = cssAST
         run(css: "", root)
     }
@@ -186,18 +186,32 @@ public enum NativeScriptApplication {
         Probe.scheduleIfRequested()
     }
 
-    public static func run(css: String, _ root: @escaping () -> View) {
+    public static func run(css: String, _ root: @escaping () throws -> View) {
         prepare()
         CorePackages.appCSS = css
         CorePackages.installModuleLoader()
         CoreModules.initialize()
         jsReport {
-            try jsUnwrap(Core_application_application.Application, "run").run(JSObject([("create", { (_: [Any?]) throws -> Any? in root() } as JSFunction)]))
+            try jsUnwrap(Core_application_application.Application, "run").run(JSObject([("create", { (_: [Any?]) throws -> Any? in try root() } as JSFunction)]))
         }
     }
 }
 
 // MARK: List templates
+
+/// A row's view from its template; one whose template throws is reported and shows an empty view, and the list goes on.
+private func rowView(_ listOwner: Owner?, _ reports: RenderReports, _ render: () throws -> View) -> View? {
+    let owner = Owner(parent: listOwner)
+    do {
+        let view = try owner.run(render)
+        reports.succeeded()
+        return view
+    } catch {
+        owner.dispose()
+        reports.failed(error)
+        return try? ContentView()
+    }
+}
 
 /// A row's item and index as its template's bindings read them. A recycled
 /// cell keeps its views; writing the next item re-runs only its bindings.
@@ -240,9 +254,10 @@ extension View {
     /// `default` template comes before any template a list names, so a list's
     /// templates make no views of their own.
     public func bind<Item>(items: @escaping () -> [Item], templates: [String] = ["default"], selector: ((Item, Double) -> String)? = nil,
-                           render: ((String, ListRow<Item>) -> View)? = nil) {
+                           render: ((String, ListRow<Item>) throws -> View)? = nil) {
         var current: [Item] = []
         let listOwner = Owner.current
+        let reports = RenderReports("\(jsConstructorName(self)) item template")
         if render != nil {
             kitSet("itemTemplates", JSArray<Any?>(templates.map { key in
                 JSObject([("key", key), ("createView", { (_: [Any?]) throws -> Any? in nil } as JSFunction)]) as Any?
@@ -269,7 +284,7 @@ extension View {
             guard let render else { return }
             let row = ListRow(item, index)
             // Each cell's bindings live as long as the list's.
-            let view = Owner(parent: listOwner).run { render(key, row) }
+            guard let view = rowView(listOwner, reports, { try render(key, row) }) else { return }
             view[jsKey: listRowKey.key] = row
             view[jsKey: listTemplateKey.key] = key
             data[jsKey: "view"] = view
@@ -286,11 +301,12 @@ extension View {
     /// A `header` renders the sticky header core makes for each section, from its `stickyHeaderTemplate` as a function, and
     /// binds it to the section core gives it as its binding context.
     public func bind<Section, Item>(sections: @escaping () -> [Section], rows: @escaping (Section) -> [Item], templates: [String] = ["default"],
-                                    selector: ((Item, Double) -> String)? = nil, render: ((String, ListRow<Item>) -> View)? = nil,
-                                    header: ((ListRow<Section>) -> View)? = nil) {
+                                    selector: ((Item, Double) -> String)? = nil, render: ((String, ListRow<Item>) throws -> View)? = nil,
+                                    header: ((ListRow<Section>) throws -> View)? = nil) {
         var current: [[Item]] = []
         var sectionValues: [Section] = []
         let listOwner = Owner.current
+        let reports = RenderReports("\(jsConstructorName(self)) item template")
         let itemAt = { (section: Double, index: Double) -> Item? in
             guard section >= 0, Int(section) < current.count, index >= 0, Int(index) < current[Int(section)].count else { return nil }
             return current[Int(section)][Int(index)]
@@ -311,7 +327,7 @@ extension View {
             kitSet("stickyHeaderTemplate", { (_: [Any?]) throws -> Any? in
                 guard let first = sectionValues.first else { return nil }
                 let row = ListRow(first, 0)
-                let view = Owner(parent: listOwner).run { header(row) }
+                let view = try Owner(parent: listOwner).run { try header(row) }
                 view.kitOn("bindingContextChange") { [weak view] _ in
                     guard let section = view?.bindingContext as? Section else { return }
                     row.item.value = section
@@ -332,7 +348,7 @@ extension View {
             }
             guard let render else { return }
             let row = ListRow(item, index)
-            let view = Owner(parent: listOwner).run { render(key, row) }
+            guard let view = rowView(listOwner, reports, { try render(key, row) }) else { return }
             view[jsKey: listRowKey.key] = row
             view[jsKey: listTemplateKey.key] = key
             data[jsKey: "view"] = view

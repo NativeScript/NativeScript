@@ -118,15 +118,14 @@ private func callMethod(_ object: Any?, _ key: String, _ arguments: [Any?]) thro
         let this = arguments.first ?? nil
         let rest = key == "call" ? Array(arguments.dropFirst()) : (jsFlat(arguments.count > 1 ? arguments[1] : nil) as? JSArrayProtocol)?.jsAnyElements ?? []
         if let method = f as? JSMethod { return try method(this, rest) }
-        return try (f as! JSFunction)(rest)
+        if let function = f as? JSFunction { return try function(rest) }
     }
     // `f.bind(thisArg, …)`: a function of the rest of the arguments.
     if key == "bind", let f = jsFlat(object), f is JSMethod || f is JSFunction {
         let this = arguments.first ?? nil
         let bound = Array(arguments.dropFirst())
         if let method = f as? JSMethod { return { (rest: [Any?]) throws -> Any? in try method(this, bound + rest) } as JSFunction }
-        let function = f as! JSFunction
-        return { (rest: [Any?]) throws -> Any? in try function(bound + rest) } as JSFunction
+        if let function = f as? JSFunction { return { (rest: [Any?]) throws -> Any? in try function(bound + rest) } as JSFunction }
     }
     // `cls.new()` of a native class object: an instance of its plain initializer, as `[cls new]`.
     if key == "new", arguments.isEmpty, let cls = jsFlat(object) as? NSObject.Type { return cls.init() }

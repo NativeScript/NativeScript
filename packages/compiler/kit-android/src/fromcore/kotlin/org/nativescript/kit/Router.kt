@@ -99,32 +99,42 @@ class Router {
         history.clear()
     }
 
-    /** A `page-router-outlet`: a frame showing its outlet's URL. */
+    /** A `page-router-outlet`: a frame showing its outlet's URL. A route that fails to render is reported and the frame stays empty. */
     fun outlet(name: String = PRIMARY): View {
         val frame = Frame()
         if (config.isEmpty()) {
-            resolveFlatRoute(initial)?.let { (route, params) -> push(route.make, ActivatedRoute(params), frame, null) }
+            resolveFlatRoute(initial)?.let { (route, params) -> jsReport { push(route.make, ActivatedRoute(params), frame, null) } }
             return frame
         }
         outlets[name] = Outlet(frame, if (name == PRIMARY) config else routesIn(config, name))
-        if (name == PRIMARY) {
-            if (show(name, emptyList(), null) == true) ended("/")
-        } else {
-            pending.remove(name)?.let { show(name, it, null) }
+        jsReport {
+            if (name == PRIMARY) {
+                if (show(name, emptyList(), null) == true) ended("/")
+            } else {
+                pending.remove(name)?.let { show(name, it, null) }
+            }
         }
         return frame
     }
 
     fun navigate(commands: JSArray<*>, extras: Any? = null): JSPromise<Boolean> = navigate(commands.storage.toList(), extras)
 
-    fun navigate(commands: List<Any?>, extras: Any? = null): JSPromise<Boolean> {
+    /** A navigation whose component throws shows nothing new, and its promise rejects with the error, as Angular's router's does. */
+    fun navigate(commands: List<Any?>, extras: Any? = null): JSPromise<Boolean> =
+        try {
+            JSPromise.resolve(navigation(commands, extras))
+        } catch (e: Throwable) {
+            JSPromise.reject(jsCaught(e))
+        }
+
+    private fun navigation(commands: List<Any?>, extras: Any?): Boolean {
         if (config.isEmpty()) {
             val path = commands.joinToString("/") { jsToString(it) }
-            val (route, params) = resolveFlatRoute(path) ?: return JSPromise.resolve(false)
-            val frame = FrameBase.topmost() as? Frame ?: return JSPromise.resolve(false)
+            val (route, params) = resolveFlatRoute(path) ?: return false
+            val frame = FrameBase.topmost() as? Frame ?: return false
             push(route.make, ActivatedRoute(params), frame, extras)
             ended("/" + path.split("/").filter { it.isNotEmpty() }.joinToString("/"))
-            return JSPromise.resolve(true)
+            return true
         }
         val relativeTo = field(extras, "relativeTo") as? ActivatedRoute
         val targets = ArrayList<Pair<String, List<String>>>()
@@ -170,7 +180,7 @@ class Router {
             navigated = navigated || shown == true
         }
         if (navigated) ended(if (absolute || relativeTo == null) "/" + segments.joinToString("/") else this.url)
-        return JSPromise.resolve(ok)
+        return ok
     }
 
     fun navigateByUrl(url: String, extras: Any? = null): JSPromise<Boolean> = navigate(listOf(if (url.startsWith("/")) url else "/$url"), extras)
@@ -223,46 +233,57 @@ class Router {
         return true
     }
 
-    /** PageRouterOutlet's `activateOnGoForward`: a new page, the component rendered into it in a scope of its own, and the frame navigated to it. */
+    /**
+     * PageRouterOutlet's `activateOnGoForward`: a new page, the component rendered into it in a scope of its own, and the frame navigated to it.
+     * A component that throws leaves the outlet as it was.
+     */
     private fun push(make: () -> View, route: ActivatedRoute, frame: Frame, extras: Any?, outlet: Outlet? = null) {
-        jsReport {
-            val page = Page()
-            page.route = route
-            val owner = Owner(null)
-            // Shown before the component renders, as Angular's URL is current by activation: a navigation the
-            // component makes while rendering (a tab view filling its outlets) finds this route already there.
-            val entry = Entry(owner, route)
-            outlet?.entries?.add(entry)
-            ActivatedRoute.current = route
-            building.add(page)
-            val view = try { owner.run(make) } finally { building.removeAt(building.size - 1) }
-            if (view !== page) page.content = view
-            val outletRef = outlet?.let { java.lang.ref.WeakReference(it) }
-            page.on(PageBase.navigatedFromEvent, { data ->
-                if (jsTruthy(jsGet(data, "isBackNavigation"))) {
-                    owner.dispose()
-                    val o = outletRef?.get()
-                    if (o != null && o.entries.remove(entry)) ended(url)
-                }
-            })
-            val clearHistory = jsTruthy(field(extras, "clearHistory"))
-            if (clearHistory && outletRef != null) {
-                page.once(PageBase.navigatedToEvent, { _ ->
-                    val o = outletRef.get() ?: return@once
-                    val cleared = o.entries.filter { it !== entry }
-                    o.entries.retainAll { it === entry }
-                    for (old in cleared) old.owner.dispose()
-                })
-            }
-            val animated = field(extras, "animated")
-            val navigation = mutableListOf<Pair<String, Any?>>(
-                "create" to jsFunction { page },
-                "clearHistory" to clearHistory,
-                "animated" to (if (animated == null) true else jsTruthy(animated)),
-            )
-            field(extras, "transition")?.let { navigation.add("transition" to it) }
-            frame.navigate(JSObject(navigation))
+        val page = Page()
+        page.route = route
+        val owner = Owner(null)
+        // Shown before the component renders, as Angular's URL is current by activation: a navigation the
+        // component makes while rendering (a tab view filling its outlets) finds this route already there.
+        val entry = Entry(owner, route)
+        outlet?.entries?.add(entry)
+        val previousRoute = ActivatedRoute.current
+        ActivatedRoute.current = route
+        building.add(page)
+        val view = try {
+            owner.run(make)
+        } catch (e: Throwable) {
+            owner.dispose()
+            outlet?.entries?.remove(entry)
+            ActivatedRoute.current = previousRoute
+            throw e
+        } finally {
+            building.removeAt(building.size - 1)
         }
+        if (view !== page) page.content = view
+        val outletRef = outlet?.let { java.lang.ref.WeakReference(it) }
+        page.on(PageBase.navigatedFromEvent, { data ->
+            if (jsTruthy(jsGet(data, "isBackNavigation"))) {
+                owner.dispose()
+                val o = outletRef?.get()
+                if (o != null && o.entries.remove(entry)) ended(url)
+            }
+        })
+        val clearHistory = jsTruthy(field(extras, "clearHistory"))
+        if (clearHistory && outletRef != null) {
+            page.once(PageBase.navigatedToEvent, { _ ->
+                val o = outletRef.get() ?: return@once
+                val cleared = o.entries.filter { it !== entry }
+                o.entries.retainAll { it === entry }
+                for (old in cleared) old.owner.dispose()
+            })
+        }
+        val animated = field(extras, "animated")
+        val navigation = mutableListOf<Pair<String, Any?>>(
+            "create" to jsFunction { page },
+            "clearHistory" to clearHistory,
+            "animated" to (if (animated == null) true else jsTruthy(animated)),
+        )
+        field(extras, "transition")?.let { navigation.add("transition" to it) }
+        frame.navigate(JSObject(navigation))
     }
 
     /** The routes a URL resolves through, its parameters and the URL once redirects applied. */

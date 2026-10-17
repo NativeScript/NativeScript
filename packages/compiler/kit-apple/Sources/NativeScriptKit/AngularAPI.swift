@@ -44,8 +44,24 @@ public final class Injector {
 
     /// A root service, made as the root injector makes it: whatever component first injects it, its effects
     /// and its `DestroyRef` belong to the application, and what its constructor reads subscribes no binding.
-    public static func root<T>(_ make: () -> T) -> T {
-        untrack { Owner(parent: nil).run(make) }
+    public static func root<T>(_ make: () throws -> T) rethrows -> T {
+        try untrack { try Owner(parent: nil).run(make) }
+    }
+
+    private static var made: [ObjectIdentifier: AnyObject] = [:]
+    private static var making: Set<ObjectIdentifier> = []
+
+    /// A root service whose constructor can throw, kept once one is made: an inject() throws what the constructor
+    /// throws, and the next inject() makes it again. A service whose construction injects itself is Angular's
+    /// circular-dependency error.
+    public static func root<T: AnyObject>(_ type: T.Type, _ make: () throws -> T) throws -> T {
+        let key = ObjectIdentifier(type)
+        if let service = made[key] as? T { return service }
+        guard making.insert(key).inserted else { throw JSException(JSError("NG0200: Circular dependency in DI detected for \(type)")) }
+        defer { making.remove(key) }
+        let service = try root(make)
+        made[key] = service
+        return service
     }
 }
 
@@ -60,19 +76,23 @@ public final class NgZone {
 /// A component class used as a value (`dialog.open(SheetComponent)`): what creating and rendering it gives.
 public final class ComponentFactory {
     nonisolated deinit {}
-    let make: () -> View
-    public init(_ make: @escaping () -> View) { self.make = make }
+    let make: () throws -> View
+    public init(_ make: @escaping () throws -> View) { self.make = make }
 }
 
 /// `NativeDialogRef`: the open dialog a component was created in.
 public final class NativeDialogRef {
     nonisolated deinit {}
-    public static var current: NativeDialogRef!
+    /// `inject(NativeDialogRef)`: the dialog being created; outside one, a ref to no dialog, whose `close` does nothing.
+    public static var current: NativeDialogRef { open ?? NativeDialogRef(detached: true) }
+    static var open: NativeDialogRef?
+    private let detached: Bool
+    init(detached: Bool = false) { self.detached = detached }
     /// `NATIVE_DIALOG_DATA`: the `data` the dialog was opened with.
     public internal(set) var data: Any? = nil
     private let closed = RxReplaySubject<Any?>(1)
 
-    public func close(_ result: Any? = nil) { Modal.close(result) }
+    public func close(_ result: Any? = nil) { if !detached { Modal.close(result) } }
     public func afterClosed() -> RxObservable<Any?> { closed.asObservable() }
     func didClose(_ result: Any?) { closed.next(result) }
 }
@@ -89,14 +109,14 @@ public final class NativeDialogService {
         guard let factory = jsFlat(component) as? ComponentFactory else { return ref }
         let options = (try? jsGet(config, "nativeOptions")) ?? nil
         Modal.show(options: options, closeCallback: { result in ref.didClose(jsFlat(result)) }) {
-            let previous = NativeDialogRef.current
-            NativeDialogRef.current = ref
-            defer { NativeDialogRef.current = previous }
+            let previous = NativeDialogRef.open
+            NativeDialogRef.open = ref
+            defer { NativeDialogRef.open = previous }
             // The component in a ContentView of its own, the modal's root, as @nativescript/angular presents it:
             // the root takes the safe area its content then lays out within.
             let pending = Reactivity.pending()
-            let host = try! ContentView()
-            host.content = factory.make()
+            let host = try ContentView()
+            host.content = try factory.make()
             Reactivity.detectChanges(after: pending)
             return host
         }

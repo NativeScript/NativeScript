@@ -285,7 +285,7 @@ if (framework === 'vue') {
   routeTree = tree?.routes ?? null;
   prelude = tree
     ? ''
-    : `        Router.shared.routes = [${routes.map((r) => `Route(${JSON.stringify(r.path)}) { ${r.component}().render() }`).join(', ')}]\n        Router.shared.initial = ${JSON.stringify(initial)}\n`;
+    : `        Router.shared.routes = [${routes.map((r) => `Route(${JSON.stringify(r.path)}) { try ${r.component}().render() }`).join(', ')}]\n        Router.shared.initial = ${JSON.stringify(initial)}\n`;
 }
 
 // The app's CSS through its own build's pipeline, which also gives the bundler's defines the sources are read with.
@@ -465,7 +465,7 @@ const inits = translated.filter((m) => m.init).map((m) => `        ${m.init}()\n
 const css = kitAst(sheets);
 const patched = corePatches(app, nodeModules(app));
 if (patched?.patches.length) say(`${relative(app, patched.file)}: ${patched.patches.join(', ')}`);
-if (routeTree) prelude = `        Router.shared.config = ${routeConfig(routeTree, '        ', translator.throwingInits)}\n`;
+if (routeTree) prelude = `        Router.shared.config = ${routeConfig(routeTree, '        ')}\n`;
 // A plain XML app's pages, page stylesheets and the core classes its XML names, registered before its modules run.
 let xmlModules = '';
 if (xml) {
@@ -491,7 +491,7 @@ const switches = (zone ? '        Zone.enabled = true\n' : '') + (patched?.patch
 const start = switches + `        CorePackages.useAppConfig(appPackageJSON)\n        CoreModules.initialize()\n        Reactivity.schedule = .${SCHEDULE[framework]}\n` + (mounted
   // The entry's own statements run the app (`Application.run`), after every module it imports.
   ? `${xmlModules}        NativeScriptApplication.prepare(cssAST: appCSS)\n${inits}`
-  : `${inits}${prelude}        NativeScriptApplication.run(cssAST: appCSS) { ${root}().render() }\n`);
+  : `${inits}${prelude}        NativeScriptApplication.run(cssAST: appCSS) { try ${root}().render() }\n`);
 const dispatch = nativeDispatch(native.modules, untypedMembers(checker, sourceFiles), deploymentTarget, native.classes);
 if (dispatch) writeFileSync(join(sourcesDir, '__NativeDispatch.swift'), `// Compiled by ns-native: the plugins' native members untyped TypeScript calls, by name.\nimport Foundation\nimport UIKit\nimport NativeScriptKit\n${native.modules.map((m) => `import ${m}\n`).join('')}\n${dispatch}`);
 if (translator.usedAppNative.size) writeFileSync(join(sourcesDir, '__AppNative.swift'), `// Compiled by ns-native: the app's own Swift classes, called by name from untyped TypeScript.\nimport Foundation\nimport NativeScriptKit\n\n${appNativeObjects([...translator.usedAppNative].map((c) => appNative[c]))}`);
@@ -742,16 +742,16 @@ function kitImports(dir: string, excluded: string[], modules: string[]): Set<str
 }
 
 /** A route tree as the kit's `RouteConfig`s. */
-function routeConfig(routes: RouteNode[], indent: string, throwing: Set<string> = new Set()): string {
+function routeConfig(routes: RouteNode[], indent: string): string {
   const one = (r: RouteNode): string => {
     const named = [
       r.outlet ? `outlet: ${JSON.stringify(r.outlet)}` : '',
       r.redirectTo !== undefined ? `redirectTo: ${JSON.stringify(r.redirectTo)}` : '',
       r.full ? 'full: true' : '',
       r.emptyOutlet ? 'emptyOutlet: true' : '',
-      r.children?.length ? `children: ${routeConfig(r.children, indent + '    ', throwing)}` : '',
+      r.children?.length ? `children: ${routeConfig(r.children, indent + '    ')}` : '',
     ].filter(Boolean);
-    return `RouteConfig(${[JSON.stringify(r.path), ...named].join(', ')})${r.component ? ` { ${throwing.has(r.component) ? 'try! ' : ''}${r.component}().render() }` : ''}`;
+    return `RouteConfig(${[JSON.stringify(r.path), ...named].join(', ')})${r.component ? ` { try ${r.component}().render() }` : ''}`;
   };
   return `[\n${routes.map((r) => `${indent}    ${one(r)}`).join(',\n')}\n${indent}]`;
 }
