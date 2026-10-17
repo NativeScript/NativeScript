@@ -9,9 +9,13 @@
 //                          [--json <file>] [--update-baseline] [--variant <line:col:kind>/<value>]
 // --set merge (the default) is the per-merge subset: the cases and sites `--seed` draws, sized for about three minutes per backend.
 // --set nightly runs every reached site of every case with four values each.
-// Failures listed in known-fuzz-failures.json are reported and don't fail the run; anything else does.
+// Failures listed in known-fuzz-failures.json are reported and don't fail the run; anything else does. The per-merge set
+// draws only from the cases listed there, so a new case is gated once the nightly set has listed it.
+// --update-baseline rewrites the entries of the variants that ran: those now matching Node leave, new failures join, and
+// entries of an edited or deleted case's sites go. After a fix, run it with `--set nightly` (whole, or a case prefix).
 // Build products go to $NS_FUZZ_BUILD (default: <tmp>/ns-native-fuzz), one case at a time, deleted after it unless --keep.
 import { spawn } from 'node:child_process';
+import { Worker } from 'node:worker_threads';
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join } from 'node:path';
 import { cpus, tmpdir } from 'node:os';
@@ -32,12 +36,14 @@ const valued = new Set(['--set', '--seed', '--jobs', '--json', '--variant']);
 const prefixes = argv.filter((a, k) => !a.startsWith('--') && !valued.has(argv[k - 1]));
 const targets = argv.includes('--swift') ? ['swift'] : argv.includes('--kotlin') ? ['kotlin'] : ['swift', 'kotlin'];
 const set = flag('--set') ?? 'merge';
-const seed = Number(flag('--seed') ?? 1);
 const jobs = Number(flag('--jobs') ?? Math.max(2, Math.min(8, cpus().length >> 1)));
 const keep = argv.includes('--keep');
 const only = flag('--variant');
 const build = process.env.NS_FUZZ_BUILD ?? join(tmpdir(), 'ns-native-fuzz');
 const baselineFile = join(here, 'known-fuzz-failures.json');
+const baseline = existsSync(baselineFile) ? JSON.parse(readFileSync(baselineFile, 'utf8')) : {};
+// The wrong values each site gets are drawn from the seed: the baseline's, unless another is asked for.
+const seed = Number(flag('--seed') ?? baseline.seed ?? 1);
 if (set !== 'merge' && set !== 'nightly') throw new Error(`--set is merge or nightly, not ${set}`);
 process.env.NS_NATIVE_DIAGNOSTICS = '1000';
 
@@ -62,9 +68,9 @@ function random(key: string): () => number {
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
 }
-function sample<T>(list: T[], n: number, key: string): T[] {
-  const r = random(key);
-  return list.map((x) => [r(), x] as const).sort((a, b) => a[0] - b[0]).slice(0, n).map((p) => p[1]);
+/** `n` of `list`, each ranked by a draw of its own: adding or removing an item changes at most one pick. */
+function sample<T>(list: T[], n: number, key: string, id: (x: T) => string): T[] {
+  return list.map((x) => [random(`${key}/${id(x)}`)(), x] as const).sort((a, b) => a[0] - b[0]).slice(0, n).map((p) => p[1]);
 }
 
 // ---- Processes ---------------------------------------------------------------------------------------
@@ -490,12 +496,12 @@ function snippet(p: Prepared, s: Site, v: number): string {
   return text.slice(lineStart, lineEnd).trim().slice(0, 220);
 }
 
-const caseFiles = [
+const everyCase = [
   ...readdirSync(diffCases).filter((f) => f.endsWith('.ts')).map((f) => join(diffCases, f)),
   ...(existsSync(ownCases) ? readdirSync(ownCases).filter((f) => f.endsWith('.ts')).map((f) => join(ownCases, f)) : []),
-].filter((f) => !prefixes.length || prefixes.some((a) => basename(f).startsWith(a))).sort((a, b) => basename(a).localeCompare(basename(b)));
+];
+const caseFiles = everyCase.filter((f) => !prefixes.length || prefixes.some((a) => basename(f).startsWith(a))).sort((a, b) => basename(a).localeCompare(basename(b)));
 const knownDiff = JSON.parse(readFileSync(join(diffCases, '../known-failures.json'), 'utf8'));
-const baseline = existsSync(baselineFile) ? JSON.parse(readFileSync(baselineFile, 'utf8')) : {};
 
 mkdirSync(build, { recursive: true });
 const started = Date.now();
@@ -506,7 +512,11 @@ const nowPassing: string[] = [];
 const ranKeys: Record<string, Set<string>> = {};
 
 // The merge subset's cases: a seeded draw, the same for both backends.
-const chosenCases = set === 'merge' && !prefixes.length ? new Set(sample(caseFiles, MERGE.cases, 'cases').map((f) => basename(f, '.ts'))) : null;
+// Only cases the baseline was made with: a new case's failures are found by the nightly set, not by an unrelated merge.
+const baselineCases = new Set<string>(baseline.cases ?? []);
+const fuzzed = (f: string) => !baseline.cases || baselineCases.has(basename(f, '.ts'));
+const chosenCases = set === 'merge' && !prefixes.length ? new Set(sample(caseFiles.filter(fuzzed), MERGE.cases, 'cases', (f) => basename(f, '.ts')).map((f) => basename(f, '.ts'))) : null;
+if (chosenCases && caseFiles.some((f) => !fuzzed(f))) console.log(`fuzz: ${caseFiles.filter((f) => !fuzzed(f)).length} cases not in known-fuzz-failures.json yet (the nightly set, or --set nightly --update-baseline, adds them)`);
 
 const prepared: Prepared[] = [];
 const skipped: Record<string, string> = {};
@@ -536,11 +546,11 @@ await pool(prepared, jobs, async (p) => {
   nodeBaseline.set(p.name, base);
   const reached = new Set((JSON.parse(readFileSync(census, 'utf8')) as [number, number][]).map(([id]) => id));
   let sites = p.sites.filter((s) => reached.has(s.id));
-  if (chosenCases) sites = sample(sites, MERGE.sites, `sites/${p.name}`);
+  if (chosenCases) sites = sample(sites, MERGE.sites, `sites/${p.name}`, (s) => s.key);
   const list: Variant[] = [];
   for (const s of sites) {
     let values = [...new Set(valuesFor(s, random(`${p.name}/${s.key}`)))];
-    if (chosenCases) values = sample(values, MERGE.values, `values/${p.name}/${s.key}`);
+    if (chosenCases) values = sample(values, MERGE.values, `values/${p.name}/${s.key}`, String);
     for (const v of values) {
       const key = variantKey(p, s, v);
       if (only && `${s.key}/${v}` !== only && `${s.key}/${BAD_VALUES[v]}` !== only) continue;
@@ -662,9 +672,14 @@ for (const n of nowPassing.slice(0, 20)) console.log(`✓ ${n} now matches Node:
 if (nowPassing.length > 20) console.log(`… ${nowPassing.length - 20} more now match Node`);
 
 if (argv.includes('--update-baseline')) {
-  const next: Record<string, unknown> = { $comment: baseline.$comment ?? 'Fuzz variants known not to match Node, by backend: `<case>|<line:col:site kind>|<wrong value>` and the failure cluster. tests/fuzz/run.ts fails on a failure not listed here.', seed };
+  const next: Record<string, unknown> = { $comment: baseline.$comment ?? 'Fuzz variants known not to match Node, by backend: `<case>|<line:col:site kind>|<wrong value>` and the failure cluster. `cases` are the cases the per-merge set draws from. tests/fuzz/run.ts fails on a failure not listed here.', seed };
+  const existing = new Set(everyCase.map((f) => basename(f, '.ts')));
+  next.cases = [...new Set([...(baseline.cases ?? []), ...variants.keys()])].filter((c) => existing.has(c)).sort();
+  // An entry is stale when its case is gone, or when this run found the case's sites and its site is not one of them (the case was edited).
+  const siteKeys = new Map(prepared.map((p) => [p.name, new Set(p.sites.map((x) => x.key))]));
+  const stale = (k: string) => { const [c, site] = k.split('|'); return !existing.has(c) || (siteKeys.has(c) && !siteKeys.get(c)!.has(site)); };
   for (const t of ['swift', 'kotlin']) {
-    const entries: Record<string, string> = { ...(baseline[t] ?? {}) };
+    const entries: Record<string, string> = Object.fromEntries(Object.entries(baseline[t] ?? {}).filter(([k]) => !stale(k)) as [string, string][]);
     for (const k of ranKeys[t] ?? []) delete entries[k];
     for (const f of allFailures.filter((x) => x.target === t)) entries[f.key] = `${f.cause}${f.detail ? ': ' + f.detail : ''}`;
     next[t] = Object.fromEntries(Object.entries(entries).sort(([a], [b]) => a.localeCompare(b)));
