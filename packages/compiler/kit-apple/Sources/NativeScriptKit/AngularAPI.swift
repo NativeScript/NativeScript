@@ -60,19 +60,23 @@ public final class NgZone {
 /// A component class used as a value (`dialog.open(SheetComponent)`): what creating and rendering it gives.
 public final class ComponentFactory {
     nonisolated deinit {}
-    let make: () -> View
-    public init(_ make: @escaping () -> View) { self.make = make }
+    let make: () throws -> View
+    public init(_ make: @escaping () throws -> View) { self.make = make }
 }
 
 /// `NativeDialogRef`: the open dialog a component was created in.
 public final class NativeDialogRef {
     nonisolated deinit {}
-    public static var current: NativeDialogRef!
+    /// `inject(NativeDialogRef)`: the dialog being created; outside one, a ref to no dialog, whose `close` does nothing.
+    public static var current: NativeDialogRef { open ?? NativeDialogRef(detached: true) }
+    static var open: NativeDialogRef?
+    private let detached: Bool
+    init(detached: Bool = false) { self.detached = detached }
     /// `NATIVE_DIALOG_DATA`: the `data` the dialog was opened with.
     public internal(set) var data: Any? = nil
     private let closed = RxReplaySubject<Any?>(1)
 
-    public func close(_ result: Any? = nil) { Modal.close(result) }
+    public func close(_ result: Any? = nil) { if !detached { Modal.close(result) } }
     public func afterClosed() -> RxObservable<Any?> { closed.asObservable() }
     func didClose(_ result: Any?) { closed.next(result) }
 }
@@ -89,14 +93,14 @@ public final class NativeDialogService {
         guard let factory = jsFlat(component) as? ComponentFactory else { return ref }
         let options = (try? jsGet(config, "nativeOptions")) ?? nil
         Modal.show(options: options, closeCallback: { result in ref.didClose(jsFlat(result)) }) {
-            let previous = NativeDialogRef.current
-            NativeDialogRef.current = ref
-            defer { NativeDialogRef.current = previous }
+            let previous = NativeDialogRef.open
+            NativeDialogRef.open = ref
+            defer { NativeDialogRef.open = previous }
             // The component in a ContentView of its own, the modal's root, as @nativescript/angular presents it:
             // the root takes the safe area its content then lays out within.
             let pending = Reactivity.pending()
-            let host = try! ContentView()
-            host.content = factory.make()
+            let host = try ContentView()
+            host.content = try factory.make()
             Reactivity.detectChanges(after: pending)
             return host
         }

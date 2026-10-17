@@ -25,11 +25,11 @@ public final class Owner {
 
     /// Runs `body` with this owner current: effects it creates belong here.
     @discardableResult
-    public func run<T>(_ body: () -> T) -> T {
+    public func run<T>(_ body: () throws -> T) rethrows -> T {
         let previous = Owner.current
         Owner.current = self
         defer { Owner.current = previous }
-        return body()
+        return try body()
     }
 
     public func onCleanup(_ cleanup: @escaping () -> Void) { cleanups.append(cleanup) }
@@ -95,8 +95,9 @@ public enum Reactivity {
     /// Vue's `nextTick()`: settles once the scheduled update has run, or now.
     public static func nextTick() -> JSPromise<Void> {
         guard flushScheduled else { return .resolve() }
-        if flushedPromise == nil { flushedPromise = JSPromise<Void>.pending().1 }
-        return flushedPromise!.promise
+        let flushed = flushedPromise ?? JSPromise<Void>.pending().1
+        flushedPromise = flushed
+        return flushed.promise
     }
 
     /// Angular's `detectChanges()` on a view just created (a routed page, a dialog): what building it made pending runs
@@ -274,46 +275,46 @@ public enum EffectOrder {
 
     static func precedes(_ a: [Int], _ b: [Int]) -> Bool { a.lexicographicallyPrecedes(b) }
 
-    static func run<T>(_ scope: Scope, _ body: () -> T) -> T {
+    static func run<T>(_ scope: Scope, _ body: () throws -> T) rethrows -> T {
         let previous = current
         current = scope
         defer { current = previous }
-        return body()
+        return try body()
     }
 
     /// Vue's and Svelte's component: ordered after every component created before it.
-    public static func component<T>(_ body: () -> T) -> T {
+    public static func component<T>(_ body: () throws -> T) rethrows -> T {
         components += 1
-        return run(Scope(prefix: [components]), body)
+        return try run(Scope(prefix: [components]), body)
     }
 
     /// Angular's component view: after its parent view's bindings and embedded views.
-    public static func view<T>(_ body: () -> T) -> T {
-        run(Scope(prefix: current.next(2), view: AngularView(parent: current.view)), body)
+    public static func view<T>(_ body: () throws -> T) rethrows -> T {
+        try run(Scope(prefix: current.next(2), view: AngularView(parent: current.view)), body)
     }
 
     /// Angular's embedded view (`@if`, `@for` content): after its declaring view's own bindings.
-    public static func embedded<T>(in view: Scope, _ body: () -> T) -> T {
-        run(Scope(prefix: view.next(1), view: view.view), body)
+    public static func embedded<T>(in view: Scope, _ body: () throws -> T) rethrows -> T {
+        try run(Scope(prefix: view.next(1), view: view.view), body)
     }
 
     /// Solid's control-flow content: one level deeper than the template that holds it.
-    public static func deeper<T>(_ body: () -> T) -> T {
-        run(Scope(prefix: [], height: (current.height ?? 0) + 1), body)
+    public static func deeper<T>(_ body: () throws -> T) rethrows -> T {
+        try run(Scope(prefix: [], height: (current.height ?? 0) + 1), body)
     }
 
     /// Solid's root template.
-    public static func solid<T>(_ body: () -> T) -> T {
-        current.height != nil ? body() : run(Scope(prefix: [], height: 0), body)
+    public static func solid<T>(_ body: () throws -> T) rethrows -> T {
+        current.height != nil ? try body() : try run(Scope(prefix: [], height: 0), body)
     }
 }
 
 /// Reads without subscribing the running effect.
-public func untrack<T>(_ body: () -> T) -> T {
+public func untrack<T>(_ body: () throws -> T) rethrows -> T {
     let previous = currentEffect
     currentEffect = nil
     defer { currentEffect = previous }
-    return body()
+    return try body()
 }
 
 /// A value that notifies the effects that read it.
@@ -473,7 +474,7 @@ public func derive(_ body: @escaping () -> Void) -> Effect {
 
 /// A top-level owner for an app or a navigation entry.
 @discardableResult
-public func createRoot<T>(_ body: (Owner) -> T) -> T {
+public func createRoot<T>(_ body: (Owner) throws -> T) rethrows -> T {
     let owner = Owner(parent: nil)
-    return owner.run { body(owner) }
+    return try owner.run { try body(owner) }
 }

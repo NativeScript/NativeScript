@@ -8101,9 +8101,7 @@ ${members.join('\n')}
       // An Angular component as a value (`dialog.open(Sheet)`): what creating and rendering it gives.
       const decl = sym.valueDeclaration;
       if (decl && ts.isClassDeclaration(decl) && (ts.getDecorators(decl) ?? []).some((d) => /^Component\(/.test(d.expression.getText()))) {
-        // Its class may be translated after this reference: whether creating it throws is the analysis's as well.
-        const throws = this.initThrows(ident(this.declaredName(e))) || this.throwsInfo.initThrows(decl);
-        return `ComponentFactory { ${throws ? 'try! ' : ''}${ident(this.declaredName(e))}().render() }`;
+        return `ComponentFactory { try ${ident(this.declaredName(e))}().render() }`;
       }
       const name = identPath(this.declaredName(e));
       // A class read inside a class with a member of its name (`static UILayoutViewController = UILayoutViewController`): the module's.
@@ -9986,7 +9984,7 @@ ${members.join('\n')}
       }
     }
     const args = info.props.map((p) => `${ident(p)}: ${given.get(p) ?? 'nil'}`).join(', ');
-    return `kitNavigate { ${component}(${args}).render() }`;
+    return `kitNavigate { try ${component}(${args}).render() }`;
   }
 
   private toNumber(e: ts.Expression): string {
@@ -10253,7 +10251,7 @@ ${members.join('\n')}
       settings.push(`closeCallback: ${call}`);
     }
     const args = info.props.map((p) => `${ident(p)}: ${given.get(p) ?? 'nil'}`).join(', ');
-    return `Modal.show(${settings.join(', ')}) { ${component}(${args}).render() }`;
+    return `Modal.show(${settings.join(', ')}) { try ${component}(${args}).render() }`;
   }
 
   private math(name: string, e: ts.CallExpression): string {

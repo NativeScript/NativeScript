@@ -76,19 +76,61 @@ public protocol RegionHost: AnyObject {
     func regionChanged(_ region: Region)
 }
 
+/// A template site whose content failed to render: the error is reported as uncaught, as the frameworks' error
+/// handlers report it, and the site shows nothing while the rest of the page renders. A failure that repeats (an
+/// effect re-running, every row of a list) is reported once, until the site renders again.
+public final class RenderReports {
+    nonisolated deinit {}
+    /// Where the template is (`Home (home.vue): v-if`), named in the reported error's stack.
+    let site: String
+    private var last: String?
+
+    public init(_ site: String) { self.site = site }
+
+    public func succeeded() { last = nil }
+
+    public func failed(_ error: Error) {
+        let value = jsCaught(error)
+        let key = "\(type(of: value as Any)) \(jsToString(value))"
+        if key == last { return }
+        last = key
+        if !site.isEmpty, let object = jsFlat(value) as? JSError {
+            let frame = "    at \(site)"
+            let stack = object.stack
+            if !stack.contains(frame) {
+                let lines = stack.split(separator: "\n", maxSplits: 1, omittingEmptySubsequences: false)
+                object.stack = lines.count > 1 ? "\(lines[0])\n\(frame)\n\(lines[1])" : "\(stack)\n\(frame)"
+            }
+        }
+        jsReportUncaught(value)
+    }
+
+    /// The content `render` makes in `owner`, or none when it throws; what it made before throwing goes with `owner`.
+    func parts(_ owner: Owner, _ render: () throws -> [RegionPart]) -> [RegionPart]? {
+        do {
+            return try owner.run(render)
+        } catch {
+            owner.dispose()
+            failed(error)
+            return nil
+        }
+    }
+}
+
 /// `v-if`/`v-else-if`/`v-else`, `@if`/`@else`, `{#if}`, `<Show>`, `cond && <X/>`:
 /// the views of the branch `which` selects, rebuilt only when the selection changes.
-public func Choose(_ region: Region, _ which: @escaping () -> Int, render: @escaping (Int) -> [ViewBase]) {
-    ChooseParts(region, which) { branch in render(branch).map { .view($0) } }
+public func Choose(_ region: Region, _ which: @escaping () -> Int, site: String = "", render: @escaping (Int) throws -> [ViewBase]) {
+    ChooseParts(region, which, site: site) { branch in try render(branch).map { .view($0) } }
 }
 
-public func ChooseFragment(_ region: Region, _ which: @escaping () -> Int, render: @escaping (Int) -> RegionFragment) {
-    ChooseParts(region, which) { branch in render(branch).parts }
+public func ChooseFragment(_ region: Region, _ which: @escaping () -> Int, site: String = "", render: @escaping (Int) throws -> RegionFragment) {
+    ChooseParts(region, which, site: site) { branch in try render(branch).parts }
 }
 
-private func ChooseParts(_ region: Region, _ which: @escaping () -> Int, render: @escaping (Int) -> [RegionPart]) {
+private func ChooseParts(_ region: Region, _ which: @escaping () -> Int, site: String, render: @escaping (Int) throws -> [RegionPart]) {
     var current: Int?
     var branch: Owner?
+    let reports = RenderReports(site)
     Owner.current?.onCleanup { branch?.dispose() }
     Effect {
         let value = which()
@@ -99,53 +141,33 @@ private func ChooseParts(_ region: Region, _ which: @escaping () -> Int, render:
             let owner = Owner(parent: nil)
             branch = owner
             region.replacing = true
-            region.set(parts: owner.run { render(value) })
+            // A branch that throws stays empty until the selection changes: the effect is not run again for it.
+            let parts = reports.parts(owner) { try render(value) }
+            if parts != nil { reports.succeeded() }
+            region.set(parts: parts ?? [])
         }
     }
 }
 
-public func If(_ region: Region, _ condition: @escaping () -> Bool, then: @escaping () -> [ViewBase], else otherwise: (() -> [ViewBase])? = nil) {
-    Choose(region, { condition() ? 0 : 1 }) { $0 == 0 ? then() : (otherwise?() ?? []) }
+public func If(_ region: Region, _ condition: @escaping () -> Bool, then: @escaping () throws -> [ViewBase], else otherwise: (() throws -> [ViewBase])? = nil) {
+    Choose(region, { condition() ? 0 : 1 }) { $0 == 0 ? try then() : (try otherwise?() ?? []) }
 }
 
 /// `v-for`, `@for`, `{#each}`, `<For>`, `.map()`: one set of views per item,
 /// kept by key across changes, so a row that stays keeps its views and state.
-public func For<Item>(_ region: Region, _ items: @escaping () -> [Item], key: @escaping (Item, Double) -> String, render: @escaping (Item, Double) -> [ViewBase]) {
-    var rows: [String: (views: [ViewBase], owner: Owner)] = [:]
-    var order: [String]?
-    Owner.current?.onCleanup { for row in rows.values { row.owner.dispose() } }
-    Effect {
-        let list = items()
-        untrack {
-            var next: [String: (views: [ViewBase], owner: Owner)] = [:]
-            var views: [ViewBase] = []
-            var keys: [String] = []
-            for (index, item) in list.enumerated() {
-                var k = key(item, Double(index))
-                // Duplicate keys still render, as the frameworks do in development.
-                while next[k] != nil { k += "\u{0}" }
-                let row = rows.removeValue(forKey: k) ?? {
-                    let owner = Owner(parent: nil)
-                    return (owner.run { render(item, Double(index)) }, owner)
-                }()
-                next[k] = row
-                keys.append(k)
-                views.append(contentsOf: row.views)
-            }
-            for removed in rows.values { removed.owner.dispose() }
-            rows = next
-            // A check that finds the same rows changes nothing (NgForOf's differ).
-            if Zone.enabled && keys == order { return }
-            order = keys
-            region.set(views)
-        }
-    }
+public func For<Item>(_ region: Region, _ items: @escaping () -> [Item], key: @escaping (Item, Double) -> String, site: String = "", render: @escaping (Item, Double) throws -> [ViewBase]) {
+    ForParts(region, items, key: key, site: site) { item, index in try render(item, index).map { .view($0) } }
 }
 
 /// `For` whose rows have an `if` or `for` of their own.
-public func ForFragment<Item>(_ region: Region, _ items: @escaping () -> [Item], key: @escaping (Item, Double) -> String, render: @escaping (Item, Double) -> RegionFragment) {
+public func ForFragment<Item>(_ region: Region, _ items: @escaping () -> [Item], key: @escaping (Item, Double) -> String, site: String = "", render: @escaping (Item, Double) throws -> RegionFragment) {
+    ForParts(region, items, key: key, site: site) { item, index in try render(item, index).parts }
+}
+
+private func ForParts<Item>(_ region: Region, _ items: @escaping () -> [Item], key: @escaping (Item, Double) -> String, site: String, render: @escaping (Item, Double) throws -> [RegionPart]) {
     var rows: [String: (parts: [RegionPart], owner: Owner)] = [:]
     var order: [String]?
+    let reports = RenderReports(site)
     Owner.current?.onCleanup { for row in rows.values { row.owner.dispose() } }
     Effect {
         let list = items()
@@ -153,19 +175,26 @@ public func ForFragment<Item>(_ region: Region, _ items: @escaping () -> [Item],
             var next: [String: (parts: [RegionPart], owner: Owner)] = [:]
             var parts: [RegionPart] = []
             var keys: [String] = []
+            var failed = false
             for (index, item) in list.enumerated() {
                 var k = key(item, Double(index))
+                // Duplicate keys still render, as the frameworks do in development.
                 while next[k] != nil { k += "\u{0}" }
+                // A row that throws is kept empty under its key, so later updates do not render it again.
                 let row = rows.removeValue(forKey: k) ?? {
                     let owner = Owner(parent: nil)
-                    return (owner.run { render(item, Double(index)).parts }, owner)
+                    let made = reports.parts(owner) { try render(item, Double(index)) }
+                    if made == nil { failed = true }
+                    return (made ?? [], owner)
                 }()
                 next[k] = row
                 keys.append(k)
                 parts.append(contentsOf: row.parts)
             }
+            if !failed { reports.succeeded() }
             for removed in rows.values { removed.owner.dispose() }
             rows = next
+            // A check that finds the same rows changes nothing (NgForOf's differ).
             if Zone.enabled && keys == order { return }
             order = keys
             region.set(parts: parts)
@@ -186,22 +215,24 @@ public final class ForRow<Item> {
     }
 }
 
-public func ForEach<Item>(_ region: Region, _ items: @escaping () -> [Item], key: @escaping (Item, Double) -> String, render: @escaping (ForRow<Item>) -> [ViewBase]) {
-    ForEachParts(region, items, key: key) { row in render(row).map { .view($0) } }
+public func ForEach<Item>(_ region: Region, _ items: @escaping () -> [Item], key: @escaping (Item, Double) -> String, site: String = "", render: @escaping (ForRow<Item>) throws -> [ViewBase]) {
+    ForEachParts(region, items, key: key, site: site) { row in try render(row).map { .view($0) } }
 }
 
-public func ForEachFragment<Item>(_ region: Region, _ items: @escaping () -> [Item], key: @escaping (Item, Double) -> String, render: @escaping (ForRow<Item>) -> RegionFragment) {
-    ForEachParts(region, items, key: key) { row in render(row).parts }
+public func ForEachFragment<Item>(_ region: Region, _ items: @escaping () -> [Item], key: @escaping (Item, Double) -> String, site: String = "", render: @escaping (ForRow<Item>) throws -> RegionFragment) {
+    ForEachParts(region, items, key: key, site: site) { row in try render(row).parts }
 }
 
-private func ForEachParts<Item>(_ region: Region, _ items: @escaping () -> [Item], key: @escaping (Item, Double) -> String, render: @escaping (ForRow<Item>) -> [RegionPart]) {
+private func ForEachParts<Item>(_ region: Region, _ items: @escaping () -> [Item], key: @escaping (Item, Double) -> String, site: String, render: @escaping (ForRow<Item>) throws -> [RegionPart]) {
     var rows: [String: (row: ForRow<Item>, parts: [RegionPart], owner: Owner)] = [:]
+    let reports = RenderReports(site)
     Owner.current?.onCleanup { for row in rows.values { row.owner.dispose() } }
     Effect {
         let list = items()
         untrack {
             var next: [String: (row: ForRow<Item>, parts: [RegionPart], owner: Owner)] = [:]
             var parts: [RegionPart] = []
+            var failed = false
             for (index, item) in list.enumerated() {
                 var k = key(item, Double(index))
                 while next[k] != nil { k += "\u{0}" }
@@ -213,11 +244,14 @@ private func ForEachParts<Item>(_ region: Region, _ items: @escaping () -> [Item
                 } else {
                     let owner = Owner(parent: nil)
                     let row = ForRow(item, Double(index))
-                    entry = (row, owner.run { render(row) }, owner)
+                    let made = reports.parts(owner) { try render(row) }
+                    if made == nil { failed = true }
+                    entry = (row, made ?? [], owner)
                 }
                 next[k] = entry
                 parts.append(contentsOf: entry.parts)
             }
+            if !failed { reports.succeeded() }
             for removed in rows.values { removed.owner.dispose() }
             rows = next
             region.set(parts: parts)

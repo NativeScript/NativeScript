@@ -73,7 +73,7 @@ class HttpClient private constructor() {
             try {
                 val settings = JSObject("url" to url, "method" to "GET")
                 if (!jsIsNullish(headers)) settings["headers"] = headers
-                Core_http_http_request_index.request(settings)!!.then({ response: Any? ->
+                (Core_http_http_request_index.request(settings) ?: jsCannotRead("then")).then({ response: Any? ->
                     try {
                         val status = jsToNumber(jsGet(response, "statusCode"))
                         if (status >= 400 || status == 0.0) {
