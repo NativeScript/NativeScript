@@ -8861,9 +8861,12 @@ ${members.join('\n')}
       return rt.endsWith('?') || rt === 'Any?' ? code : this.undefinedAs(`(${code})`, rt, code === read ? this.declaredTypeOf(e) ?? undefined : own);
     }
     // A read continuing an optional chain after a call (`xs?.filter(f).length`): part of the chain, as a call continuing one is.
-    if (ts.isCallExpression(target) && ts.isOptionalChain(target) && !e.questionDotToken && this.typeOf(target).endsWith('?')) {
+    if (ts.isCallExpression(target) && ts.isOptionalChain(target) && !e.questionDotToken && (this.typeOf(target).endsWith('?') || this.implicitChain(target))) {
       const code = this.expr(target);
-      return this.narrowed(e, `${code}${openSwiftChain(code) ? '.' : '?.'}${this.memberName(e)}`);
+      const read = this.narrowed(e, `${code}${openSwiftChain(code) ? '.' : '?.'}${this.memberName(e)}`);
+      const rt = this.typeOf(e);
+      const chained = ts.isOptionalChain(e.parent) && (e.parent as ts.PropertyAccessExpression | ts.CallExpression).expression === e;
+      return chained || isWriteTarget(e) || isOptional(rt) || rt === 'Any?' || this.optionalReads.has(e) ? read : this.undefinedAs(`(${read})`, rt);
     }
     const unwrap = (this.continuesOptional(target) || (ts.isCallExpression(target) && this.maybeUndefined(target))) && !e.questionDotToken;
     if (!unwrap) {
@@ -9216,6 +9219,11 @@ ${members.join('\n')}
       }
     }
     return null;
+  }
+
+  /** An optional chain's end Swift holds optional though TypeScript types it present (`items?.getItems()` of lenient code). */
+  private implicitChain(target: ts.Expression): boolean {
+    return this.lenient && /^jsImplicit\(/.test(this.expr(target));
   }
 
   /** An undefined-or-value as the TypeScript type reads it: NaN, "undefined" and false are what undefined converts to. */
@@ -9599,7 +9607,7 @@ ${members.join('\n')}
       const receiverType = this.typeOf(target);
       // A call continuing an optional chain (`xs?.map(f).join(',')`) is part of the chain: within Swift's own chain it
       // continues it, and after a chain the translation wrapped (`jsSplit(s?.…)`) it chains on the optional made.
-      const continued = !callee.questionDotToken && ts.isOptionalChain(target) && receiverType.endsWith('?') ? (openSwiftChain(this.expr(target)) ? '' : '?') : null;
+      const continued = !callee.questionDotToken && ts.isOptionalChain(target) && (receiverType.endsWith('?') || this.implicitChain(target)) ? (openSwiftChain(this.expr(target)) ? '' : '?') : null;
       const q = continued ?? (callee.questionDotToken ? (receiverType.endsWith('?') || receiverType.endsWith('!') || ts.isOptionalChain(target) ? '?' : '') : receiverType.endsWith('?') || (ts.isCallExpression(target) && !this.looseObjectRead(target) && this.maybeUndefined(target)) ? '!' : '');
       if (method === 'fill' && this.isArrayConstruction(target) && target.arguments?.length === 1 && e.arguments.length === 1) {
         // `new Array(n).fill(v)` or `Array(n).fill(v)`: n copies of v, typed as the array is declared (`const widths: number[] = …`).

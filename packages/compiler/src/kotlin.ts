@@ -6130,6 +6130,10 @@ export class Translator implements AsyncTranslator {
   private property(e: ts.PropertyAccessExpression): string {
     const name = e.name.text;
     const target = e.expression;
+    if (!e.questionDotToken && !isWriteTarget(e)) {
+      const continued = this.continuedChain(e, target, () => this.property(e));
+      if (continued) return continued;
+    }
     // A field of an erased type parameter (`Cached<T>.data`) holds any value: read as this instantiation types it.
     const fieldDecl = !this.library ? this.checker.getSymbolAtLocation(e.name)?.valueDeclaration : undefined;
     const fieldParam = fieldDecl && (ts.isPropertySignature(fieldDecl) || ts.isPropertyDeclaration(fieldDecl)) && fieldDecl.type && ts.isTypeReferenceNode(fieldDecl.type)
@@ -6610,6 +6614,22 @@ export class Translator implements AsyncTranslator {
     return (ts.isPropertyAccessExpression(e) || ts.isCallExpression(e) || ts.isElementAccessExpression(e)) && !!(e.flags & ts.NodeFlags.OptionalChain);
   }
 
+  /**
+   * A member read or call that continues an optional chain (`items?.getItems().forEach(…)`) past a link Kotlin holds
+   * nullable though TypeScript types it present: where the chain stopped nothing more of it runs, as in JavaScript.
+   */
+  private continuedChain(e: ts.Expression, target: ts.Expression, translate: () => string): string | null {
+    if (this.subst.has(target) || !ts.isOptionalChain(target) || !(e.flags & ts.NodeFlags.OptionalChain)) return null;
+    const code = this.expr(target);
+    if (!isAsserted(code)) return null;
+    const v = this.fresh('__c');
+    this.subst.set(target, v);
+    let inner: string;
+    try { inner = translate(); } finally { this.subst.delete(target); }
+    // Nullable, as the end of any optional chain is (`optionalChainEnd`).
+    return `${unasserted(code)}?.let { ${v} -> ${inner} }`;
+  }
+
   /** An undefined-or-value as the TypeScript type reads it: NaN, "undefined" and false are what undefined converts to. */
   private undefinedAs(code: string, type: string): string {
     if (isNullable(type) || type === 'Any?') return code;
@@ -6769,6 +6789,10 @@ export class Translator implements AsyncTranslator {
 
   private callExpr(e: ts.CallExpression): string {
     const callee = e.expression;
+    if (ts.isPropertyAccessExpression(callee) && !callee.questionDotToken && !e.questionDotToken) {
+      const continued = this.continuedChain(e, callee.expression, () => this.callExpr(e));
+      if (continued) return continued;
+    }
     const onPrototype = this.prototypeMethodCall(e);
     if (onPrototype) return onPrototype;
     // A static method of a class whose instances are the kit's collection: its object's.
