@@ -33,6 +33,10 @@ are deleted once its results are recorded.
 in the baseline starts passing, the run reports it and still succeeds. `--update-baseline` then removes it. A run
 with `--only` updates only the entries for the tests it ran.
 
+In GitHub Actions it runs in `.github/workflows/compiler-nightly.yml`, not on every push: nightly (from the default
+branch, as GitHub schedules only there), from "Run workflow" on any branch, and on a pull request labelled `test262`.
+Kotlin runs on Linux and Swift on macOS, each in its own job; the job summary holds the table.
+
 ## What runs
 
 `tests.txt` lists the selection by area. test262 is pinned to one commit (`COMMIT` in `run.ts`) and is never vendored.

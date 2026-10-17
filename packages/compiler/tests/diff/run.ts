@@ -14,6 +14,7 @@ import { basename, dirname, join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import ts from 'typescript';
+import { kotlinApp, kotlinOnly, kotlinOptions, swiftOnly, swiftOptions } from './case-options.ts';
 import { buildKotlinRuntime, buildSwiftRuntime, kotlinc, kotlinMain, kotlinStdlib, swiftc, swiftMain, translateKotlin as translateKotlinProgram, translateSwift } from '../native-build.ts';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -24,42 +25,14 @@ const keep = process.argv.includes('--keep');
 const targets = process.argv.includes('--swift') ? ['swift'] : process.argv.includes('--kotlin') ? ['kotlin'] : ['swift', 'kotlin'];
 mkdirSync(build, { recursive: true });
 
-/**
- * A case starting `// @lenient` is checked as core is, without strictNullChecks, and translated
- * as the kit generated from core is, lenient and in library mode (Swift only, as the kit is
- * generated for iOS first). One starting `// @lenient-kotlin` is translated so as Kotlin only,
- * as kit-gen-kotlin.ts generates kit-android; one starting `// @lenient-both` so as both.
- */
-const lenient = (file: string) => readFileSync(file, 'utf8').startsWith('// @lenient');
-const lenientBoth = (file: string) => readFileSync(file, 'utf8').startsWith('// @lenient-both');
-const kotlinOnly = (file: string) => readFileSync(file, 'utf8').startsWith('// @lenient-kotlin');
-/** A case starting `// @kotlin` covers what only the Kotlin translator does yet: it is not run as Swift. */
-const kotlinApp = (file: string) => readFileSync(file, 'utf8').startsWith('// @kotlin');
-/** A case starting `// @plugin` is a non-strict app whose imports from `helpers/plugin/` are a plugin's, compiled from its source (Swift only). */
-const pluginCase = (file: string) => readFileSync(file, 'utf8').startsWith('// @plugin');
-/** A case starting `// @app-lenient` is a non-strict app's own code (`strict: false` in its tsconfig.json), on both targets. */
-const appLenient = (file: string) => readFileSync(file, 'utf8').startsWith('// @app-lenient');
-/** A case starting `// @swift` covers what only the Swift runtime has yet (typed arrays): it is not run as Kotlin. */
-const swiftOnly = (file: string) => (lenient(file) && !kotlinOnly(file) && !lenientBoth(file)) || pluginCase(file) || readFileSync(file, 'utf8').startsWith('// @swift');
-
-/** `// @weak-fields A.b C.d` and `// @weak-captures A.e` lines: what the kit's configuration holds weakly (tools/native-kit/modules.mts). */
-function weakOf(file: string) {
-  const text = readFileSync(file, 'utf8');
-  const list = (tag: string) => [...text.matchAll(new RegExp(`^// @${tag} (.+)$`, 'gm'))].flatMap((m) => m[1].trim().split(/\s+/));
-  return { fields: list('weak-fields'), captures: list('weak-captures') };
-}
-
-/** A `// @members-by-name` line: the case is translated as an XML app's code is, its classes' accessors and methods readable by name (core's Builder binds to them). */
-const membersByName = (file: string) => /^\/\/ @members-by-name$/m.test(readFileSync(file, 'utf8'));
-
 function translate(file: string, out: string): void {
-  const modules = translateSwift([file], out, { lenient: lenient(file), weak: weakOf(file), membersByName: membersByName(file), plugin: pluginCase(file), lenientApp: appLenient(file) });
+  const modules = translateSwift([file], out, swiftOptions(file));
   writeFileSync(join(out, 'main.swift'), swiftMain(modules));
 }
 
 /** The case as Kotlin in package `pkg`, with a `main` running its modules' top level and then the event loop. */
 function translateKotlin(file: string, out: string, pkg: string): void {
-  const modules = translateKotlinProgram([file], out, pkg, { lenient: lenient(file), membersByName: membersByName(file), lenientApp: appLenient(file) });
+  const modules = translateKotlinProgram([file], out, pkg, kotlinOptions(file));
   writeFileSync(join(out, '__Main.kt'), kotlinMain(modules, pkg));
 }
 

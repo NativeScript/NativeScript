@@ -1,0 +1,153 @@
+name: Compiler (nightly)
+
+# The compiler's long checks: test262 (about 20 minutes per backend on a 16-core Mac, longer on CI runners) and the
+# full type-violation fuzz set. They take too long for every push, so they run nightly, on demand, and on a pull
+# request labelled `test262` or `fuzz`. GitHub runs scheduled workflows from the default branch only: until this file
+# is on main, start it on feat/native-kit with "Run workflow".
+# Each fails only on a regression: a test262 test not in tests/test262/baseline.json that does not pass, or a fuzz
+# variant not in tests/fuzz/known-fuzz-failures.json that differs from Node.
+
+permissions:
+  contents: read
+
+on:
+  schedule:
+    - cron: '17 6 * * *'
+  workflow_dispatch:
+  pull_request:
+    types: [labeled, synchronize]
+    paths:
+      - 'packages/compiler/**'
+      - '.github/workflows/compiler-nightly.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  KOTLIN_VERSION: '2.2.20'
+  KOTLIN_SHA256: '81f0264c9073b5cbbdb3ff8418cf2c5dac076879fc156fa1a6462f5a5acc4420'
+
+jobs:
+  kotlin:
+    name: test262 and the full fuzz set (Kotlin, host JVM)
+    if: github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'test262') || contains(github.event.pull_request.labels.*.name, 'fuzz')
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+        with:
+          egress-policy: audit
+
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Setup Java
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Install kotlinc
+        run: |
+          curl -fsSL -o "$RUNNER_TEMP/kotlinc.zip" "https://github.com/JetBrains/kotlin/releases/download/v${KOTLIN_VERSION}/kotlin-compiler-${KOTLIN_VERSION}.zip"
+          echo "${KOTLIN_SHA256}  $RUNNER_TEMP/kotlinc.zip" | sha256sum -c -
+          unzip -q "$RUNNER_TEMP/kotlinc.zip" -d "$RUNNER_TEMP"
+          echo "KOTLINC=$RUNNER_TEMP/kotlinc/bin/kotlinc" >> "$GITHUB_ENV"
+
+      - name: Install the compiler's dependencies
+        working-directory: packages/compiler
+        run: |
+          npm ci --no-audit --no-fund
+          npm install --prefix tests --no-audit --no-fund
+
+      # test262 at the commit run.ts pins, fetched once and cached.
+      - name: Cache test262
+        if: github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'test262')
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: ~/.cache/ns-test262
+          key: test262-${{ hashFiles('packages/compiler/tests/test262/run.ts', 'packages/compiler/tests/test262/tests.txt') }}
+
+      - name: test262 (Kotlin)
+        if: github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'test262')
+        working-directory: packages/compiler
+        env:
+          NS_TEST262_BUILD: ${{ runner.temp }}/test262
+        run: |
+          node tests/test262/run.ts --kotlin
+          cat "$NS_TEST262_BUILD/summary.md" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Type-violation fuzzing, full set (Kotlin)
+        if: github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'fuzz')
+        working-directory: packages/compiler
+        env:
+          NS_FUZZ_BUILD: ${{ runner.temp }}/fuzz
+        run: node tests/fuzz/run.ts --kotlin --set nightly --json "$RUNNER_TEMP/fuzz-kotlin.json"
+
+      - name: Upload the fuzz report
+        if: always() && (github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'fuzz'))
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        with:
+          name: fuzz-kotlin
+          path: ${{ runner.temp }}/fuzz-kotlin.json
+          if-no-files-found: ignore
+
+  swift:
+    name: test262 and the full fuzz set (Swift, macOS)
+    if: github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'test262') || contains(github.event.pull_request.labels.*.name, 'fuzz')
+    runs-on: warp-macos-15-arm64-6x
+    timeout-minutes: 150
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Install the compiler's dependencies
+        working-directory: packages/compiler
+        run: |
+          npm ci --no-audit --no-fund
+          npm install --prefix tests --no-audit --no-fund
+
+      - name: Cache test262
+        if: github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'test262')
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: ~/.cache/ns-test262
+          key: test262-${{ hashFiles('packages/compiler/tests/test262/run.ts', 'packages/compiler/tests/test262/tests.txt') }}
+
+      - name: test262 (Swift)
+        if: github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'test262')
+        working-directory: packages/compiler
+        env:
+          NS_TEST262_BUILD: ${{ runner.temp }}/test262
+        run: |
+          node tests/test262/run.ts --swift
+          cat "$NS_TEST262_BUILD/summary.md" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Type-violation fuzzing, full set (Swift)
+        if: github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'fuzz')
+        working-directory: packages/compiler
+        env:
+          NS_FUZZ_BUILD: ${{ runner.temp }}/fuzz
+        run: node tests/fuzz/run.ts --swift --set nightly --json "$RUNNER_TEMP/fuzz-swift.json"
+
+      - name: Upload the fuzz report
+        if: always() && (github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'fuzz'))
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        with:
+          name: fuzz-swift
+          path: ${{ runner.temp }}/fuzz-swift.json
+          if-no-files-found: ignore
