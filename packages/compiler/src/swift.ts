@@ -359,6 +359,29 @@ export class Translator implements AsyncTranslator {
   private core: CoreAPI;
   readonly native: NativeAPI;
   isKitType(name: string): boolean { return this.core.declares(name); }
+  /** App mode: whether the program declares a top-level Swift type of this name, which hides an imported module's from every file. */
+  programDeclares(name: string): boolean {
+    if (this.library) return false;
+    if (!this.programTypeNames) {
+      const names = new Set<string>();
+      const top = this.topNames();
+      const add = (st: ts.Node, own: string) => names.add(top.get(st) ?? own);
+      const visit = (statements: readonly ts.Statement[], nested: boolean) => {
+        for (const st of statements) {
+          if (hasModifier(st, ts.SyntaxKind.DeclareKeyword)) continue;
+          if ((ts.isInterfaceDeclaration(st) || (ts.isTypeAliasDeclaration(st) && ts.isTypeLiteralNode(st.type))) && !(this.checker.getSymbolAtLocation(st.name)!.flags & ts.SymbolFlags.Class)) add(st, st.name.text);
+          if (nested) continue;
+          if ((ts.isClassDeclaration(st) || ts.isEnumDeclaration(st)) && st.name) add(st, st.name.text);
+          if (ts.isModuleDeclaration(st) && ts.isIdentifier(st.name)) add(st, st.name.text);
+        }
+        for (const st of statements) if (ts.isModuleDeclaration(st) && st.body && ts.isModuleBlock(st.body) && !hasModifier(st, ts.SyntaxKind.DeclareKeyword)) visit(st.body.statements, true);
+      };
+      for (const sf of this.sourceFiles) if (!sf.isDeclarationFile) visit(sf.statements, false);
+      this.programTypeNames = names;
+    }
+    return this.programTypeNames.has(name);
+  }
+  private programTypeNames: Set<string> | null = null;
   kitTypes(): string[] { return this.core.typeNames(); }
   /** The kit's classes an XML element can name: core's views and the other objects its builder makes (`Span`, `TabViewItem`). */
   kitElements(): string[] { return this.core.typeNames().filter((n) => this.core.extendsKit(n, 'ViewBase')); }
@@ -1706,7 +1729,7 @@ export class Translator implements AsyncTranslator {
   private conformingInterface(t: ts.Type): string | null {
     const c = this.checker;
     this.appInterfaces ??= this.sourceFiles.filter((f) => !this.pluginFiles.has(f.fileName)).flatMap((f) => f.statements.filter(ts.isInterfaceDeclaration))
-      .filter((d) => !d.typeParameters?.length).map((d) => ({ name: d.name.text, type: c.getDeclaredTypeOfSymbol(c.getSymbolAtLocation(d.name)!) }));
+      .filter((d) => !d.typeParameters?.length).map((d) => ({ name: this.topName(d, d.name.text), type: c.getDeclaredTypeOfSymbol(c.getSymbolAtLocation(d.name)!) }));
     const own = t.getProperties();
     if (!own.length) return null;
     const matches = this.appInterfaces.filter(({ type }) => {
@@ -2028,8 +2051,8 @@ export class Translator implements AsyncTranslator {
     for (const st of md.body.statements) {
       if (hasModifier(st, ts.SyntaxKind.DeclareKeyword)) continue;
       // A namespace's interfaces are the module's: a class of the interface's name.
-      if (ts.isInterfaceDeclaration(st)) { this.registerInterface(st.name.text, md.getSourceFile().fileName, this.interfaceMembers(st)); continue; }
-      if (ts.isTypeAliasDeclaration(st) && ts.isTypeLiteralNode(st.type)) { this.registerInterface(st.name.text, md.getSourceFile().fileName, st.type.members); continue; }
+      if (ts.isInterfaceDeclaration(st)) { this.registerInterface(this.topName(st, st.name.text), md.getSourceFile().fileName, this.interfaceMembers(st)); continue; }
+      if (ts.isTypeAliasDeclaration(st) && ts.isTypeLiteralNode(st.type)) { this.registerInterface(this.topName(st, st.name.text), md.getSourceFile().fileName, st.type.members); continue; }
       if (ts.isTypeAliasDeclaration(st)) continue;
       values = true;
       if (ts.isFunctionDeclaration(st)) { if (st.name && st.body) lines.push(this.memberFunc(st, ident(st.name.text), 'static ')); continue; }
@@ -8453,7 +8476,7 @@ ${members.join('\n')}
         // An interface is a Swift type of its name (a class in library mode, else a protocol or object class), so it shares the
         // namespace with the classes (sqlite's `SQLiteDatabase` interface in its common file, the class in its iOS one).
         if (library ? ts.isInterfaceDeclaration(st) || (ts.isTypeAliasDeclaration(st) && ts.isTypeLiteralNode(st.type))
-          : ts.isInterfaceDeclaration(st) && !(this.checker.getSymbolAtLocation(st.name)!.flags & ts.SymbolFlags.Class)) add(st.name.text, st);
+          : (ts.isInterfaceDeclaration(st) && !(this.checker.getSymbolAtLocation(st.name)!.flags & ts.SymbolFlags.Class)) || (ts.isTypeAliasDeclaration(st) && ts.isTypeLiteralNode(st.type) && this.core.has(st.name.text))) add(st.name.text, st);
         if (library) continue;
         if (ts.isFunctionDeclaration(st) && st.name) add(st.name.text, st);
         if (ts.isVariableStatement(st) && !hasModifier(st, ts.SyntaxKind.DeclareKeyword)) for (const d of st.declarationList.declarations) if (ts.isIdentifier(d.name)) add(d.name.text, d);
@@ -8461,9 +8484,12 @@ ${members.join('\n')}
     }
     this.renamedTop = new Map();
     for (const [name, list] of byName) {
-      // A plugin class named as a NativeScriptKit class (one extending core's `Observable`) takes its module's name too.
+      // A plugin's or the app's type named as a NativeScriptKit type takes its module's name too: a class (one extending core's
+      // `Observable`), and outside the kit a namespace, enum, interface or object type (ui-chart's `Utils`), since a declaration
+      // of the app's module hides the kit's of its name from every file of the app.
       // A function or variable named as the kit's top-level one (a plugin's own `booleanConverter`) takes its module's name, which the app's imports of core's leave to the kit's.
-      const kitClash = (list.some((x) => ts.isClassDeclaration(x.decl)) && (this.library ? this.core.declares(name) : this.core.has(name)))
+      const typeLike = (d: ts.Node) => ts.isClassDeclaration(d) || (!this.library && (ts.isModuleDeclaration(d) || ts.isEnumDeclaration(d) || ts.isInterfaceDeclaration(d) || ts.isTypeAliasDeclaration(d)));
+      const kitClash = (list.some((x) => typeLike(x.decl)) && (this.library ? this.core.declares(name) : this.core.has(name)))
         || (!this.library && list.some((x) => ts.isFunctionDeclaration(x.decl) || ts.isVariableDeclaration(x.decl)) && this.core.exportsTopLevel(name));
       // A generated class and a hand-ported one of the same name: the hand port of that module has to go first.
       if (kitClash && list.some((x) => this.library?.moduleName(x.file.fileName))) this.kitClashes.push(name);
@@ -8490,6 +8516,23 @@ ${members.join('\n')}
       }
     };
     for (const sf of this.sourceFiles) if (!sf.isDeclarationFile) for (const st of sf.statements) if (ts.isModuleDeclaration(st)) nested(st);
+    // A namespace's interface is a class of the module's (see `namespaceDecl`): where another declaration of the module, another
+    // namespace's interface or the kit has its name, it takes its namespace's.
+    if (!this.library) {
+      const hoisted = new Map<string, { decl: ts.Node; ns: ts.ModuleDeclaration }[]>();
+      const collect = (md: ts.ModuleDeclaration) => {
+        if (!md.body || !ts.isModuleBlock(md.body) || hasModifier(md, ts.SyntaxKind.DeclareKeyword)) return;
+        for (const st of md.body.statements) {
+          if (ts.isInterfaceDeclaration(st) || (ts.isTypeAliasDeclaration(st) && ts.isTypeLiteralNode(st.type))) hoisted.set(st.name.text, [...(hoisted.get(st.name.text) ?? []), { decl: st, ns: md }]);
+          if (ts.isModuleDeclaration(st)) collect(st);
+        }
+      };
+      for (const sf of this.sourceFiles) if (!sf.isDeclarationFile) for (const st of sf.statements) if (ts.isModuleDeclaration(st)) collect(st);
+      for (const [name, list] of hoisted) {
+        if (!byName.has(name) && list.length < 2 && !this.core.has(name)) continue;
+        for (const x of list) this.renamedTop.set(x.decl, `${name}__${(this.namespacePath(x.ns) ?? '').replace(/\./g, '_')}`);
+      }
+    }
     return this.renamedTop;
   }
 
