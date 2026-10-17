@@ -1,3 +1,4 @@
+import { basename } from 'node:path';
 import type { Attr, ComponentIR, TNode } from './ir.ts';
 import { EVENT_SCOPED, TEMPLATE_HOSTS, isFragment, type Framework } from './codegen.ts';
 import { ident, kotlinString } from './kotlin.ts';
@@ -53,6 +54,8 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
     return null;
   };
   let n = 0;
+  /** Where a region is, for the error a failed render reports: the component and its source file. */
+  const site = (what: string) => kotlinString(`${c.name} (${basename(c.file).replace(/\.ts$/, '')}): ${what}`);
   const say = (depth: number, text: string) => lines.push('    '.repeat(depth) + text);
   // Loop variables in scope, passed to every binding method in order.
   // A ListView row reads its item and index through the row's signals.
@@ -191,7 +194,7 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
       };
       const which = node.kind === 'if' ? node.branches.map((b, i) => (b.cond ? `if (${cond(b.cond, loops)}) ${i} else ` : `${i}`)).join('') + (node.branches.at(-1)!.cond ? `${node.branches.length}` : '') : '';
       if (node.kind === 'if' && fragmented) {
-        say(depth, `ChooseFragment(${host}, { ${which} }) { branch ->`);
+        say(depth, `ChooseFragment(${host}, { ${which} }, site = ${site('if')}) { branch ->`);
         say(depth + 1, 'when (branch) {');
         node.branches.forEach((b, i) => {
           say(depth + 2, `${i} -> {`);
@@ -204,7 +207,7 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
         continue;
       }
       if (node.kind === 'if') {
-        say(depth, `Choose(${host}, { ${which} }) { branch ->`);
+        say(depth, `Choose(${host}, { ${which} }, site = ${site('if')}) { branch ->`);
         const wrap = scoped('region');
         const d = wrap ? depth + 1 : depth;
         if (wrap) say(depth + 1, wrap);
@@ -231,7 +234,7 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
         const key = node.key ? `{ ${ident(node.item)}, ${ident(node.index)} -> jsKey(${caught(call(node.key, keyLoops))}) }` : `{ item, _ -> jsKey(item) }`;
         // `{list?.map(…)}`: an absent list renders no rows.
         const items = `{ octaneItems(try { ${call(node.items, loops)} } catch (__e: Throwable) { jsReportUncaught(jsCaught(__e)); null }) }`;
-        say(depth, `${fragmented ? 'ForEachFragment' : 'ForEach'}(${host}, ${items}, ${key}) { ${row} ->`);
+        say(depth, `${fragmented ? 'ForEachFragment' : 'ForEach'}(${host}, ${items}, ${key}, site = ${site('for')}) { ${row} ->`);
         if (fragmented) fragment(node.body, depth + 1, rowLoops);
         else {
           const made: string[] = [];
@@ -247,7 +250,7 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
       // Angular's @for keeps a row by its key and gives it the item now at that key: the row reads item and index as signals.
       const row = framework === 'angular' ? `row${n++}` : null;
       const rowLoops = row ? [...loops, { item: node.item, index: node.index, itemExpr: `${row}.item.value`, indexExpr: `${row}.index.value` }] : inner;
-      const opening = (kind: string) => `${row ? kind.replace(/^For/, 'ForEach') : kind}(${host}, { ${call(node.items, loops)}.forItems }, ${key}) { ${row ?? `${ident(node.item)}, ${ident(node.index)}`} ->`;
+      const opening = (kind: string) => `${row ? kind.replace(/^For/, 'ForEach') : kind}(${host}, { ${call(node.items, loops)}.forItems }, ${key}, site = ${site('for')}) { ${row ?? `${ident(node.item)}, ${ident(node.index)}`} ->`;
       // Iterating reads the array through its tracker: a Vue ref's array re-renders on push.
       if (fragmented) {
         say(depth, opening('ForFragment'));

@@ -1581,7 +1581,7 @@ export class Translator implements AsyncTranslator {
     const names = lexical.map(kotlinString).join(', ');
     if (lexical.length && !moduleObject) out.push(`private val __lexical_${ident(sf.fileName.replace(/^.*[\\/]/, '').replace(/\W+/g, '_'))} = jsLexical(${names})`);
     if (moduleObject) {
-      const body = [...(lexical.length ? [`init {\n    jsLexical(${names})\n}`] : []), ...members, ...(init.length ? [`fun __init() {\n${init.join('\n')}\n}`] : [])];
+      const body = [...(lexical.length ? [`init {\n    jsLexical(${names})\n}`] : []), ...members, ...(init.length ? [`fun __init() {\n${reportedInit(init)}\n}`] : [])];
       out.push([`${this.threadAnnotation(sf)}object ${moduleObject} {`, ...body.map((m) => m.split('\n').map((x) => (x ? '    ' + x : x)).join('\n')), '}'].join('\n'));
     }
     return { code: out.join('\n\n') + '\n', init };
@@ -9642,4 +9642,12 @@ function ownReturns(body: ts.Node): boolean {
   };
   ts.forEachChild(body, visit);
   return found;
+}
+
+/**
+ * A module's top-level statements, run once at startup: what they throw is reported as uncaught and the app goes on,
+ * as the Swift kit's module initializers do; an exception escaping the app's start would end it.
+ */
+export function reportedInit(init: string[]): string {
+  return ['    jsReport {', ...init.map((l) => (l ? '    ' + l : l)), '    }'].join('\n');
 }

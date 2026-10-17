@@ -402,17 +402,6 @@ private struct JSJSONSyntax {
 
 // MARK: - JSON.stringify
 
-/// `JSON.stringify(value, null, indent)`; nil is JavaScript's `undefined` result. `indent` is a
-/// number of spaces (at most 10) or a string (its first 10 characters). A cycle traps;
-/// `jsJSONStringifyChecked` throws the TypeError instead.
-public func jsJSONStringify(_ value: Any?, _ indent: Any? = nil, replacer: Any? = nil) -> String? {
-    do {
-        return try jsJSONStringifyChecked(value, indent, replacer: replacer)
-    } catch {
-        fatalError("\(jsToString(jsCaught(error)))")
-    }
-}
-
 /// `JSON.stringify(value, replacer, indent)`, throwing a TypeError for circular structures. A function replacer is
 /// called on each value's holder with its key; an array replacer lists the object keys kept.
 public func jsJSONStringifyChecked(_ value: Any?, _ indent: Any? = nil, replacer: Any? = nil) throws -> String? {

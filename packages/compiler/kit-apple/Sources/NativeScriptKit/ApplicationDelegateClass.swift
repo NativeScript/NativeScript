@@ -81,12 +81,13 @@ enum ApplicationDelegateClass {
     static func addDelegateHandler(_ app: iOSApplication, _ methodName: Any?, _ handler: Any?) throws {
         guard jsTypeof(handler) == "function" else { return }
         // Responder carries the defaults already: kept without the setter's warnings, as core does.
-        if delegateClass == nil { delegateClass = Responder.self }
+        let delegateClass: AnyClass = delegateClass ?? Responder.self
+        Self.delegateClass = delegateClass
         let name = jsToString(methodName)
         let registered = try jsUnwrap(app._delegateHandlers, "get")
         let handlers = registered.get(name) ?? JSArray<Any?>()
         if !registered.has(name) {
-            if !chain(delegateClass!, name, handlers) {
+            if !chain(delegateClass, name, handlers) {
                 try Core_application_application.warnAboutDelegate("Application.ios.addDelegateHandler('\(name)'): not a UIApplicationDelegate method the compiled app can add handlers to, so the handler never runs.")
             }
             _ = registered.set(name, handlers)

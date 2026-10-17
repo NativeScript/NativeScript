@@ -1,7 +1,7 @@
 import ts from 'typescript';
 import { basename } from 'node:path';
 import { evaluationOrder } from './modules.ts';
-import type { Translator } from './kotlin.ts';
+import { reportedInit, type Translator } from './kotlin.ts';
 
 export interface KotlinModule {
   file: string;
@@ -31,7 +31,7 @@ export function translateKotlinModules(translator: Translator, program: ts.Progr
     // Library mode: the module's object runs its init.
     const object = translator.library?.moduleName?.(file);
     const initName = init.length ? (object ? `${object}.__init` : `__init_${name}`) : null;
-    const initCode = initName && !object ? `\n\nfun ${initName}() {\n${init.join('\n')}\n}\n` : '';
+    const initCode = initName && !object ? `\n\nfun ${initName}() {\n${reportedInit(init)}\n}\n` : '';
     out.push({ file, name, code: code + initCode, init: initName });
   }
   return out;

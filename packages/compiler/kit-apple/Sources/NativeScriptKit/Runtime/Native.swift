@@ -760,3 +760,9 @@ public func jsDispatchCurrentQueue() -> DispatchQueue {
     let current = unsafeBitCast(dlsym(UnsafeMutableRawPointer(bitPattern: -2), "dispatch_get_current_queue"), to: Current.self)
     return Unmanaged<DispatchQueue>.fromOpaque(UnsafeRawPointer(current())).takeUnretainedValue()
 }
+
+/// A native enum from a JavaScript number, as the runtime marshals one: an Objective-C enum takes any raw value;
+/// a closed enum without that case is its zero case.
+@inlinable public func jsNativeEnum<T: RawRepresentable>(_ type: T.Type, _ raw: T.RawValue) -> T {
+    T(rawValue: raw) ?? jsNativeZero(T.self)
+}

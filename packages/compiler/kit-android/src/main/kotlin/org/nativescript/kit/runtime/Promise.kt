@@ -22,7 +22,7 @@ class JSMicrotasks internal constructor() {
      * Receives the reason of every promise still rejected without a handler when a checkpoint
      * ends, as Node's `unhandledRejection` event does.
      */
-    var onUnhandledRejection: (Any?) -> Unit = { reason -> jsWriteStandardError("Uncaught (in promise) ${jsToString(reason)}\n") }
+    var onUnhandledRejection: (Any?) -> Unit = { reason -> if (!jsReportedToScript(reason)) jsWriteStandardError("Uncaught (in promise) ${jsToString(reason)}\n") }
 
     /** Called when a job is queued outside a checkpoint: the host arranges one once the current task returns. */
     var onEnqueue: (() -> Unit)? = null

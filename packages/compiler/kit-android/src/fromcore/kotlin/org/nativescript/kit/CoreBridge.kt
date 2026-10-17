@@ -248,6 +248,7 @@ fun <Section, Row> ListView.kitBindSections(sections: () -> List<Section>, rows:
 /** The templates, selector and `itemLoading` of a view taking item templates; `selected` and `loading` find a row and its index. */
 private fun <Row> ViewBase.bindRows(templates: List<String>, selector: ((Row, Double) -> String)?, render: ((String, ListRow<Row>) -> View)?, selected: (List<Any?>) -> Pair<Row, Double>?, loading: (EventData) -> Pair<Row, Double>?) {
     val listOwner = Owner.current
+    val reports = RenderReports("${jsConstructorName(javaClass)} item template")
     if (render != null) {
         kitSet("itemTemplates", JSArray<Any?>(templates.map { key -> JSObject("key" to key, "createView" to jsFunction { null }) }))
     }
@@ -270,8 +271,15 @@ private fun <Row> ViewBase.bindRows(templates: List<String>, selector: ((Row, Do
         }
         if (render == null) return@kitOn
         val made = ListRow(item, index)
-        // Each cell's bindings live as long as the list's.
-        val view = Owner(listOwner).run { render(key, made) }
+        // Each cell's bindings live as long as the list's. A template that throws is reported, and its row shows an empty view.
+        val owner = Owner(listOwner)
+        val view = try {
+            owner.run { render(key, made) }.also { reports.succeeded() }
+        } catch (e: Throwable) {
+            owner.dispose()
+            reports.failed(e)
+            runCatching { ContentView() }.getOrNull() ?: return@kitOn
+        }
         jsSet(view, listRowKey.key, made)
         jsSet(view, listTemplateKey.key, key)
         jsSet(data, "view", view)

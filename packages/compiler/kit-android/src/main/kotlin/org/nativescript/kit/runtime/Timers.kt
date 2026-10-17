@@ -174,4 +174,4 @@ val jsSetIntervalValue = jsFunction(2) { jsScheduleValue(it, true) }
 val jsClearTimeoutValue = jsFunction(1) { JSEventLoop.cancel(jsNumeric(it.getOrNull(0))); null }
 val jsClearIntervalValue = jsFunction(1) { JSEventLoop.cancel(jsNumeric(it.getOrNull(0))); null }
 
-fun jsQueueMicrotask(callback: () -> Unit) = Microtasks.enqueue(callback)
+fun jsQueueMicrotask(callback: () -> Unit) = Microtasks.enqueue { jsReport(callback) }

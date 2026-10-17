@@ -72,6 +72,11 @@ jobs:
       - name: Generate the Android kit
         run: npx nx run compiler:kit-android
 
+      # A trap (`!!`, `error()`) ends the app where JS reports the error and goes on; tests/no-trap-allow.txt lists each one kept, with why.
+      # The iOS kit's are checked by tests/kit-build.sh, with the fixture app's.
+      - name: Check the Android kit for traps
+        run: node packages/compiler/tests/no-trap-check.ts --kotlin
+
       - name: Upload the generated iOS kit
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:

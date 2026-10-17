@@ -4394,9 +4394,11 @@ ${members.join('\n')}
     const service = (ts.getDecorators(cls) ?? []).some((d) => d.expression.getText().startsWith('Injectable'));
     if (service) {
       const members = this.componentMembers(cls, []);
-      // Angular's injector reports a throwing constructor as a fatal error.
-      const make = members.some((m) => /^\s*init\(\) throws/m.test(m)) ? `try! ${name}()` : `${name}()`;
-      return [`final class ${name} {`, NONISOLATED_DEINIT, `    static let shared = Injector.root { ${make} }`, '', ...members, '}'].join('\n');
+      // A constructor that throws throws from the inject() that made it, and the next inject() makes the service again.
+      const shared = members.some((m) => /^\s*init\(\) throws/m.test(m))
+        ? [`    static var shared: ${name} { get throws { try Injector.root(${name}.self) { try ${name}() } } }`]
+        : [`    static let shared = Injector.root { ${name}() }`];
+      return [`final class ${name} {`, NONISOLATED_DEINIT, ...shared, '', ...members, '}'].join('\n');
     }
     const c = this.checker;
     const heritage = cls.heritageClauses?.find((h) => h.token === ts.SyntaxKind.ExtendsKeyword)?.types[0];
@@ -4730,7 +4732,8 @@ ${members.join('\n')}
       const mods = `${a.get && isStatic(a.get) ? (this.library ? 'class ' : 'static ') : ''}${inherited.has(n) || overKit ? 'override ' : ''}`;
       const declared = a.get && this.inNativeClass(a.get) ? t : this.lenientRef(t);
       if (!(a.get ?? a.set)!.body) {
-        lines.push(`    ${mods}var ${ident(n)}: ${declared} { get { fatalError("abstract getter ${name}.${n}") }${a.set ? ` set { fatalError("abstract setter ${name}.${n}") }` : ''} }`);
+        // An abstract accessor is no property in JavaScript: it reads undefined, and a write sets nothing a subclass reads.
+        lines.push(`    ${mods}var ${ident(n)}: ${declared} { get { ${this.undefinedValue(declared) ?? `jsNativeZero(${declared}.self)`} }${a.set ? ' set {}' : ''} }`);
         this.declare(n, { kind: 'var', mods, type: declared });
         continue;
       }
@@ -4877,7 +4880,10 @@ ${members.join('\n')}
         // An abstract method: subclasses override it.
         // Without a declared type (implicitly any) it returns nothing, as overrides declared for effect do: Swift overrides match exactly.
         const ret = this.signatureOf(m).ret;
-        lines.push(`    func ${ident(m.name.getText())}(${this.params(m, false)})${this.throwsInfo.fn(m) ? ' throws' : ''}${ret === 'Void' ? '' : ` -> ${ret}`} { fatalError("abstract method ${name}.${m.name.getText()}") }`);
+        // Called without an override, it is a method JavaScript does not have: a TypeError, thrown or (where Swift's signature cannot throw) reported.
+        const missing = `JSTypeError("${m.name.getText()} is not a function")`;
+        const body = this.throwsInfo.fn(m) ? `throw JSException(${missing})` : `jsReportUncaught(${missing})${ret === 'Void' ? '' : `; return ${this.undefinedValue(ret) ?? `jsNativeZero(${ret}.self)`}`}`;
+        lines.push(`    func ${ident(m.name.getText())}(${this.params(m, false)})${this.throwsInfo.fn(m) ? ' throws' : ''}${ret === 'Void' ? '' : ` -> ${ret}`} { ${body} }`);
         this.declare(m.name.getText(), { kind: 'func', params: this.params(m, false), throws: this.throwsInfo.fn(m), type: ret });
         continue;
       }
@@ -8219,9 +8225,7 @@ ${members.join('\n')}
       // An Angular component as a value (`dialog.open(Sheet)`): what creating and rendering it gives.
       const decl = sym.valueDeclaration;
       if (decl && ts.isClassDeclaration(decl) && (ts.getDecorators(decl) ?? []).some((d) => /^Component\(/.test(d.expression.getText()))) {
-        // Its class may be translated after this reference: whether creating it throws is the analysis's as well.
-        const throws = this.initThrows(ident(this.declaredName(e))) || this.throwsInfo.initThrows(decl);
-        return `ComponentFactory { ${throws ? 'try! ' : ''}${ident(this.declaredName(e))}().render() }`;
+        return `ComponentFactory { try ${ident(this.declaredName(e))}().render() }`;
       }
       const name = identPath(this.declaredName(e));
       // A class read inside a class with a member of its name (`static UILayoutViewController = UILayoutViewController`): the module's.
@@ -9952,11 +9956,7 @@ ${members.join('\n')}
       // A function declaration or literal that does not throw reads without `try`; a variable holding a function has Swift's throwing function type.
       const declared = this.resolve(bare)?.declarations?.find((d) => ts.isFunctionDeclaration(d) && !!d.body);
       const read = ts.isArrowFunction(bare) || ts.isFunctionExpression(bare) ? bare : declared;
-      // A constant holding a closure that does not throw: Swift's function type says `throws`, the closure cannot.
-      const held = this.resolve(bare)?.valueDeclaration;
-      const heldFn = held && ts.isVariableDeclaration(held) && held.parent.flags & ts.NodeFlags.Const && held.initializer && (ts.isArrowFunction(held.initializer) || ts.isFunctionExpression(held.initializer)) ? held.initializer : undefined;
       const snap = read && !this.throwsInfo.fn(read) ? `{ () -> ${t} in ${this.expr(snapshot)}() }`
-        : heldFn && !this.throwsInfo.fn(heldFn) ? `{ () -> ${t} in try! ${this.expr(snapshot)}() }`
         : `{ () throws -> ${t} in try ${this.expr(snapshot)}() }`;
       return `jsExternalStore(${swiftString(site)}, subscribe: ${this.convert(this.coerce(subscribe, subscribeType), subscribeType, 'Any?')}, snapshot: ${snap})`;
     }
@@ -10122,7 +10122,7 @@ ${members.join('\n')}
       }
     }
     const args = info.props.map((p) => `${ident(p)}: ${given.get(p) ?? 'nil'}`).join(', ');
-    return `kitNavigate { ${component}(${args}).render() }`;
+    return `kitNavigate { try ${component}(${args}).render() }`;
   }
 
   private toNumber(e: ts.Expression): string {
@@ -10394,7 +10394,7 @@ ${members.join('\n')}
       settings.push(`closeCallback: ${call}`);
     }
     const args = info.props.map((p) => `${ident(p)}: ${given.get(p) ?? 'nil'}`).join(', ');
-    return `Modal.show(${settings.join(', ')}) { ${component}(${args}).render() }`;
+    return `Modal.show(${settings.join(', ')}) { try ${component}(${args}).render() }`;
   }
 
   private math(name: string, e: ts.CallExpression): string {
@@ -11418,7 +11418,7 @@ ${members.join('\n')}
         // The left operand is evaluated once; the result is it, unwrapped or boxed as the result's type needs.
         // A falsy left operand of another type is undefined or null where the result is optional.
         // A function operand where the result is untyped is boxed as a function value, as the other operand is.
-        const leftValue = leftType === t && !t.endsWith('?') && t !== 'Void' ? `jsPresent(${v})` : t === 'Any?' && leftType !== t && isFunctionType(leftType.replace(/^\((.*)\)[?!]$/, '$1')) ? this.convert(v, leftType, t) : leftType === t || t === 'Any?' ? v : leftType === optionalType(t) ? (op === K.AmpersandAmpersandToken && ['String', 'Double', 'Bool'].includes(t) ? this.undefinedAs(v, t) : `${v}!`) : leftType === 'Any?' ? this.fromAny(v, t) : t === 'Bool' ? `jsTruthy(${v})`
+        const leftValue = leftType === t && !t.endsWith('?') && t !== 'Void' ? `jsPresent(${v})` : t === 'Any?' && leftType !== t && isFunctionType(leftType.replace(/^\((.*)\)[?!]$/, '$1')) ? this.convert(v, leftType, t) : leftType === t || t === 'Any?' ? v : leftType === optionalType(t) ? (op === K.AmpersandAmpersandToken && ['String', 'Double', 'Bool'].includes(t) ? this.undefinedAs(v, t) : `jsPresent(${v})`) : leftType === 'Any?' ? this.fromAny(v, t) : t === 'Bool' ? `jsTruthy(${v})`
           : t.endsWith('?') && leftType.endsWith('?') && op === K.AmpersandAmpersandToken ? 'nil'
           // A falsy object of another type than the result (`child && hosts.get(child)`) is a missing one.
           : t.endsWith('?') && op === K.AmpersandAmpersandToken && this.isObjectRef(left) && leftType.replace(/[?!]$/, '') !== t.replace(/[?!]$/, '') ? 'nil' : v;
@@ -11435,7 +11435,7 @@ ${members.join('\n')}
         // `a || b` of objects of one class: an object is truthy exactly when it is there.
         const sameObject = op === K.BarBarToken && this.isObjectRef(left) && this.isObjectRef(e.right) && !isFunctionType(t.replace(/^\((.*)\)[?!]$/, '$1'))
           && leftType.replace(/[?!]$/, '') === t.replace(/[?!]$/, '') && !leftCode.startsWith('try ');
-        if (sameObject && (leftValue === `${v}!` || (leftValue === v && t.endsWith('?')))) return `(${leftCode} ?? ${right})`;
+        if (sameObject && ((leftValue === `jsPresent(${v})` && leftType === optionalType(t)) || (leftValue === v && t.endsWith('?')))) return `(${leftCode} ?? ${right})`;
         // Lenient code: `a || b` of objects is undefined when both are (`span.style.backgroundColor || parent.backgroundColor`).
         if (sameObject && /[?!]$/.test(leftType) && this.lenient && t !== 'Any?' && this.lenientRef(t) !== t && !t.endsWith('!')) return `((${leftCode} ?? ${right}) as ${optionalType(t)})`;
         if (this.lenient && op === K.BarBarToken && t !== 'Any?' && this.lenientRef(t) !== t && !t.endsWith('!')) {
@@ -11893,8 +11893,8 @@ ${members.join('\n')}
         const get = g ? `get: { (__this: Any?) throws -> Any? in${this.withThis(g, '__this', true, () => this.functionBody(g, 'Any?', this.indent)).slice(1)}` : '';
         const v = st && (st.parameters[0].name as ts.Identifier);
         const set = st && v ? `set: { (__this: Any?, ${ident(v.text)}: Any?) throws -> Void in${this.withThis(st, '__this', true, () => this.functionBody(st, 'Void', this.indent)).slice(1)}` : '';
-        // A configurable property of an object being made: defining it cannot throw.
-        return [`try! ${o}.defineProperty(${key(p.name)}, JSPropertyDescriptor(${[get, set, 'enumerable: true', 'configurable: true'].filter(Boolean).join(', ')}))`];
+        // A configurable property of an object being made: defining it cannot fail.
+        return [`_ = try? ${o}.defineProperty(${key(p.name)}, JSPropertyDescriptor(${[get, set, 'enumerable: true', 'configurable: true'].filter(Boolean).join(', ')}))`];
       }
       throw this.error(p, 'this member in an untyped object literal');
     });

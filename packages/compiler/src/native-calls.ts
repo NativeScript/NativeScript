@@ -1179,12 +1179,12 @@ export class NativeAPI {
       const raw = this.typedConstantsRaw(b)!;
       if (source === 'Double') return `${b}(rawValue: ${integral(t.expr(e), raw)})`;
       if (source === 'Any?') return `${b}(rawValue: ${integral(`jsToNumber(${t.expr(e)})`, raw)})`;
-      return `(${t.expr(e)}).map { ${b}(rawValue: ${integral('$0', raw)}) }${optional(target) ? '' : '!'}`;
+      return `(${t.expr(e)}).map { ${b}(rawValue: ${integral('$0', raw)}) }${optional(target) ? '' : ` ?? ${b}(rawValue: 0)`}`;
     }
     if (source === 'Double' && this.isEnumType(b)) {
       // A number where Swift takes an enum or option set: its raw value.
       const raw = this.rawTypeOf(b);
-      return `${b}(rawValue: ${integral(t.expr(e), raw)})${this.isOptionSet(b) ? '' : '!'}`;
+      return this.isOptionSet(b) ? `${b}(rawValue: ${integral(t.expr(e), raw)})` : `jsNativeEnum(${b}.self, ${integral(t.expr(e), raw)})`;
     }
     // An untyped value where Swift takes a native enum or option set: the number the runtime marshals.
     if (source === 'Any?' && this.isEnumType(b)) return this.enumFromNumber(`jsToNumber(${t.expr(e)})`, b);
@@ -1498,7 +1498,9 @@ export class NativeAPI {
       if (!m.initializer) { lines.push(`    var ${n}: ${t.deferredType(type)}`); t.declare(n, { kind: 'var', type: t.deferredType(type) }); continue; }
       t.declare(n, { kind: 'var', type });
       // UIKit decides which initializer runs (init(frame:), init(coder:)…): fields initialize on first use instead.
-      lines.push(`    ${t.pure(m.initializer) ? '' : 'lazy '}var ${n}: ${type} = ${t.tryPrefix(m.initializer) ? 'try! ' : ''}${t.coerce(m.initializer, type)}`);
+      // One that throws is reported, the field then holding its type's zero, as no constructor call is there to throw to.
+      const init = t.coerce(m.initializer, type);
+      lines.push(`    ${t.pure(m.initializer) ? '' : 'lazy '}var ${n}: ${type} = ${t.tryPrefix(m.initializer) ? `jsReportedOrZero { () throws -> ${type} in try ${init} }` : init}`);
     }
     if (cls.members.some((m) => ts.isConstructorDeclaration(m))) throw t.error(cls, `a constructor in a class extending ${base.name} (NativeScript creates these with new() or alloc().init())`);
     // Accessors of the app's own: Swift properties.
@@ -1763,7 +1765,7 @@ export class NativeAPI {
     // A Foundation array of objects where Swift has its element type (`NSArray<UIViewController>` as `[UIViewController]`).
     const elements = /^\[([\w.]+)\]$/.exec(b)?.[1];
     if (/^\[Any\][?!]?$/.test(tsType) && elements && elements !== 'Any') return optional(swiftType) ? `(${code} as? [${elements}])` : typedCollection(code, `[${elements}]`)!;
-    if (tsType === 'Double' && this.isEnumType(b)) return `${b}(rawValue: ${integral(code, this.rawTypeOf(b))})${this.isOptionSet(b) ? '' : '!'}`;
+    if (tsType === 'Double' && this.isEnumType(b)) return this.enumFromNumber(code, b);
     return code;
   }
 
@@ -1784,7 +1786,7 @@ export class NativeAPI {
   /** A JavaScript number where Swift has a native enum or option set: the value of that raw value. */
   enumFromNumber(code: string, swiftType: string): string {
     const b = swiftType.replace(/[?!]$/, '');
-    return `${b}(rawValue: ${integral(code, this.rawTypeOf(b))})${this.isOptionSet(b) ? '' : '!'}`;
+    return this.isOptionSet(b) ? `${b}(rawValue: ${integral(code, this.rawTypeOf(b))})` : `jsNativeEnum(${b}.self, ${integral(code, this.rawTypeOf(b))})`;
   }
 
   /** A type of named constants of any raw type (`CFRunLoopMode`, `NSNotification.Name`). */

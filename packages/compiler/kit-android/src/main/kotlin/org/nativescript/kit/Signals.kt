@@ -375,8 +375,11 @@ class Effect internal constructor(internal val key: List<Int>, private val deriv
         owner = next
         val previous = currentEffect
         currentEffect = this
+        // What an effect throws is reported, as a framework's scheduler reports a failed job: the update goes on.
         try {
             EffectOrder.run(EffectOrder.Scope(key, height)) { next.run(body) }
+        } catch (e: Throwable) {
+            jsReportUncaught(jsCaught(e))
         } finally {
             currentEffect = previous
         }
