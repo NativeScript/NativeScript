@@ -2,6 +2,7 @@ import ts from 'typescript';
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, isAbsolute, resolve } from 'node:path';
 import { foldPlatform, type Platform } from './platform.ts';
+import { desugarConstructorFactories } from './constructor-factories.ts';
 import { KIT_PLUGINS, NATIVE_CONTROLLERS, NATIVE_VIEWS, nativeViewOf } from './core.ts';
 import type { PluginSources } from './plugins/source.ts';
 import { packageOf, runtimeFile } from './plugins/resolve.ts';
@@ -298,8 +299,13 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
   });
   host.getSourceFile = (name, version, onError) => {
     const text = files.get(name) ?? (isSource(name) && existsSync(name) ? readFileSync(name, 'utf8') : appTypings.has(name) ? nativeReferences(readFileSync(name, 'utf8'), name) : undefined);
-    if (text === undefined) return readLib(name, version, onError);
-    return ts.createSourceFile(name, isSource(name) ? foldPlatform(text, name, platform) : text, version, true);
+    if (text === undefined) {
+      // A package's own TypeScript source.
+      if (!/\.tsx?$/.test(name) || name.endsWith('.d.ts') || !existsSync(name)) return readLib(name, version, onError);
+      return ts.createSourceFile(name, desugarConstructorFactories(readFileSync(name, 'utf8'), name), version, true);
+    }
+    const code = /\.tsx?$/.test(name) && !name.endsWith('.d.ts') ? desugarConstructorFactories(text, name) : text;
+    return ts.createSourceFile(name, isSource(name) ? foldPlatform(code, name, platform) : code, version, true);
   };
   const fileExists = host.fileExists.bind(host);
   host.fileExists = (name) => files.has(name) || fileExists(name);

@@ -1262,7 +1262,7 @@ export class Translator implements AsyncTranslator {
     if (this.isPrototypeRef(n) || this.isPrototypeMember(n) || (ts.isMetaProperty(n) && n.keywordToken === ts.SyntaxKind.ImportKeyword) || this.declaredNullable(n)) return 'Any?';
     // `value.constructor` (library mode) is read as its class, whatever the receiver.
     if (this.library && ts.isPropertyAccessExpression(n) && n.name.text === 'constructor' && !isWriteTarget(n) && !(ts.isPropertyAccessExpression(n.parent) && n.parent.expression === n && n.parent.name.text === 'name')) return 'Any?';
-    if (this.untypedThis.has(n) || (ts.isIdentifier(n) && n.text === 'globalThis' && this.isGlobalThis(n)) || this.isAmbientGlobal(n) || this.holdsFunctionObject(n)) return 'Any?';
+    if (this.untypedThis.has(n) || (ts.isIdentifier(n) && n.text === 'globalThis' && this.isGlobalThis(n)) || this.isAmbientGlobal(n) || this.holdsFunctionObject(n) || this.isAugmentedLibMember(n)) return 'Any?';
     // A function reading the `this` it is called with, as a value: the function object calling it so.
     if (!this.library && ts.isIdentifier(n) && this.thisFunction(n)) return 'Any?';
     if (this.library && (this.holdsMethods(n) || ((ts.isIdentifier(n) || ts.isVariableDeclaration(n) || ts.isCallExpression(n) || ts.isFunctionExpression(n)) && this.carriesMethod(n)))) return 'Any?';
@@ -4893,7 +4893,7 @@ ${members.join('\n')}
       if (keyed?.key) { lines.push('    ' + this.memberFunc(m, keyed.member)); continue; }
       if (keyed) throw this.error(m.name, 'a method named by this symbol');
       // On a class of a core view (`[isUserInteractionEnabledProperty.setNative]`): core's property system finds it by its symbol.
-      if (this.library || kitRoot) {
+      if (this.library || kitRoot || expando) {
         // `[prop.setNative](value)`: a method under a symbol known when the program runs, found by its key.
         const named = this.symbolMethodName(cls, m);
         let method = named;
@@ -8900,6 +8900,7 @@ ${members.join('\n')}
       if (target.text === 'Math' && MATH_ONE[name]) return this.convert(`{ (__x: Double) -> Double in ${MATH_ONE[name]}(__x) }`, '(Double) throws -> Double', this.typeOf(e));
       // `console && console.log && console.log(x)`: a method the console has is there, as `console` itself is.
       if (target.text === 'console' && tested(e) && this.checker.getSymbolAtLocation(e.name)?.flags! & ts.SymbolFlags.Method) return '(true as Any?)';
+      if (this.isAugmentedLibMember(e)) return '(nil as Any?)';
       throw this.error(e, `${target.text}.${name}`);
     }
     // A tuple's `length` (`LEVELS.length` of an `as const` list): its element count.
@@ -9420,7 +9421,19 @@ ${members.join('\n')}
         out.push(this.packed(list.slice(k), rest));
         break;
       }
-      if (ts.isSpreadElement(a)) throw this.error(a, 'a spread argument');
+      if (ts.isSpreadElement(a)) {
+        // The last argument spreading a tuple of fixed length (`fn(...args)` with `args: Parameters<typeof fn>`): its elements, in order.
+        const st = this.checker.getTypeAtLocation(a.expression);
+        const tuple = k === list.length - 1 && ts.isIdentifier(a.expression) && this.checker.isTupleType(st) && !((st as ts.TypeReference).target as ts.TupleType).hasRestElement ? this.checker.getTypeArguments(st as ts.TypeReference) : null;
+        if (!tuple || k + tuple.length > params.length || restAt >= 0) throw this.error(a, 'a spread argument');
+        const held = this.typeOf(a.expression);
+        const code = this.expr(a.expression);
+        tuple.forEach((el, i) => {
+          const at = this.type(this.checker.getTypeOfSymbolAtLocation(params[k + i], e), e);
+          out.push(held.startsWith('(') && !functionParts(held) ? this.convert(`${code}.${i}`, this.type(el, e), at) : this.presentFromAny(`jsArg(${this.coerce(a.expression, 'JSArray<Any?>')}.storage, ${i})`, at, true));
+        });
+        break;
+      }
       const p = params[Math.min(k, params.length - 1)];
       const decl = p?.valueDeclaration;
       if (!p || (decl && ts.isParameter(decl) && decl.dotDotDotToken)) {
@@ -9576,6 +9589,16 @@ ${members.join('\n')}
     if (!ts.isIdentifier(e) || e.text !== 'global') return this.isDomGlobal(e);
     const decl = this.resolve(e)?.declarations?.[0];
     return !!decl && decl.getSourceFile().isDeclarationFile;
+  }
+
+  /**
+   * A member a program's `declare global` adds to a built-in (`interface SymbolConstructor { readonly observable: symbol }`)
+   * that the runtime doesn't have: undefined, as in an engine without a polyfill.
+   */
+  private isAugmentedLibMember(e: ts.Node): boolean {
+    if (!ts.isPropertyAccessExpression(e) || !ts.isIdentifier(e.expression) || isWriteTarget(e) || !this.isLibGlobal(e.expression) || LIB_CONSTANTS[`${e.expression.text}.${e.name.text}`]) return false;
+    const decls = this.checker.getSymbolAtLocation(e.name)?.declarations ?? [];
+    return decls.length > 0 && decls.every((d) => !isLibDeclaration(d) && d.getSourceFile().isDeclarationFile === false && ts.isInterfaceDeclaration(d.parent));
   }
 
   /** A browser global only TypeScript's DOM library declares, or nothing does (`window`, `navigator`, `Blob`): the global object's property of that name, untyped. */
@@ -10003,6 +10026,11 @@ ${members.join('\n')}
     if (method === 'call' && source && ts.isPropertyAccessExpression(source) && source.name.text === 'toString' && ((ts.isObjectLiteralExpression(source.expression) && !source.expression.properties.length) || source.expression.getText() === 'Object.prototype')) {
       return `jsObjectToString(${thisArg ? this.coerce(thisArg, 'Any?') : 'nil'})`;
     }
+    // `const bind = Function.prototype.bind; bind.call(f, thisArg, …)` is `f.bind(thisArg, …)`.
+    if (method === 'call' && thisArg && source && ts.isPropertyAccessExpression(source) && ['call', 'apply', 'bind'].includes(source.name.text) && source.expression.getText() === 'Function.prototype') {
+      if (functionParts(this.typeOf(thisArg).replace(/^\((.*)\)[?!]$/, '$1'))) return this.functionMethod(source.name.text, thisArg, Object.create(e, { arguments: { value: ts.factory.createNodeArray(rest) } }));
+      return this.convert(`try jsCallMethod(${[this.coerce(thisArg, 'Any?'), JSON.stringify(source.name.text), ...rest.map((x) => this.coerce(x, 'Any?'))].join(', ')})`, 'Any?', this.typeOf(e));
+    }
     // A method taken from its object (`const f = obj.method`) stays bound to it in Swift: called with that object, it is the same call.
     if (source && ts.isPropertyAccessExpression(source) && !(thisArg && source.expression.getText() === thisArg.getText())) throw this.error(e, `${method} of a method taken from its object, with another receiver`);
     const plain = (x: ts.Expression): boolean => x.kind === ts.SyntaxKind.ThisKeyword || ts.isIdentifier(x) || (ts.isPropertyAccessExpression(x) ? plain(x.expression) : this.pure(x));
@@ -10336,6 +10364,7 @@ ${members.join('\n')}
         if (method === 'groupBy') return /^JSRecord<.*>$/.test(T()) ? `(jsObjectGroupBy(${this.iterable(arg(0))}, ${this.fn(arg(1))}) as ${T()})` : this.fromAnyCode(`jsObjectGroupBy(${this.iterable(arg(0))}, ${this.fn(arg(1))}) as JSRecord<Any?>`, T(), true);
         // `Object.create(null)`: the runtime's objects inherit no keys, so an empty one.
         if (method === 'create' && arg(0)?.kind === ts.SyntaxKind.NullKeyword && e.arguments.length === 1) return 'JSObject()';
+        if (method === 'create' && e.arguments.length === 1) return `jsObjectCreate(${this.coerce(e.arguments[0], 'Any?')})`;
         if (method === 'defineProperty') {
           const d = arg(2);
           const code = `jsDefineProperty(${this.coerce(arg(0), 'Any?')}, ${this.propertyKey(arg(1))}, ${ts.isObjectLiteralExpression(d) ? this.dynamicObject(d) : this.coerce(d, 'Any?')})`;

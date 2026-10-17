@@ -175,7 +175,10 @@ public func jsExpandoGet(_ object: JSExpando, _ key: String) -> Any? {
     if let own = object.jsExpando, own.has(key) {
         do { return try own.get(key, receiver: object) } catch { jsReportUncaught(jsCaught(error)); return nil }
     }
-    return JSPrototypes.value(type(of: object), key, object)
+    let inherited = JSPrototypes.value(type(of: object), key, object)
+    // A method named by a computed key that holds a string (`[observableKey]()`).
+    if inherited == nil, !jsIsSymbolKey(key), let method = jsClassSymbolMethod(object, key) { return method }
+    return inherited
 }
 
 public func jsExpandoSet(_ object: JSExpando, _ key: String, _ value: Any?) {
