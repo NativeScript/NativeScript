@@ -22,7 +22,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import ts from 'typescript';
 import type { ComponentIR } from './ir.ts';
 import { vueComponent } from './vue.ts';
-import { angularComponent, angularRoutes, angularRouteTree, componentOf, routedComponents, type RouteNode } from './angular.ts';
+import { angularComponent, angularDirectives, angularPipes, angularRoutes, angularRouteTree, componentOf, declarableSource, declarablesIn, selectorElements, routedComponents, type RouteNode } from './angular.ts';
 import { svelteComponent } from './svelte.ts';
 import { svelte5Component, svelteModule } from './svelte5.ts';
 import { reactComponent, reactScreens, zustandStore } from './react.ts';
@@ -53,7 +53,7 @@ import { appResourcesDir, iosDeploymentTarget, iosExtensionNames, iosExtensions,
 import { generateProject, iosDependencies, packageLines, podfile, productLines, PROJECT_MARKER, removePods, swiftPackages } from './ios-dependencies.ts';
 import { SourceLines } from './source-lines.ts';
 import { archive, automaticSigningSettings, findProfile, signingSettings, type ExportMethod } from './ios-signing.ts';
-import { KIT_ANDROID, KIT_APPLE } from './paths.ts';
+import { KIT_ANDROID, KIT_APPLE, PACKAGE } from './paths.ts';
 import { checkContract } from './contract.ts';
 import { checkToolchain } from './toolchain.ts';
 import { formatPreflight, preflight } from './preflight.ts';
@@ -239,7 +239,7 @@ if (framework === 'vue') {
   const selectors = new Map<string, string>();
   for (const f of sources) {
     const c = componentOf(f, readFileSync(f, 'utf8'));
-    if (c?.selector) selectors.set(c.selector, c.name);
+    for (const tag of c?.selector ? selectorElements(c.selector) : []) selectors.set(tag, c!.name);
   }
   // The configuration the entry provides, lazy routes followed into their files; else one routes file read flat.
   const tree = angularRouteTree(entry, (f) => readFileSync(f, 'utf8'), aliased);
@@ -250,7 +250,14 @@ if (framework === 'vue') {
   const elements = registeredElements([...(entry && !sources.includes(entry) ? [entry] : []), ...sources], nodeModules(app));
   // zone.js change detection, which Angular 22 runs only where the app provides it.
   zone = [entryText, ...sources.map((f) => readFileSync(f, 'utf8'))].some((t) => /\bprovideZoneChangeDetection\(/.test(t));
-  components = sources.map((f) => angularComponent(f, readFileSync(f, 'utf8'), selectors, { zone, elements: new Map([...elements].map(([tag, e]) => [tag, e.name])) })).filter((c): c is NonNullable<typeof c> => !!c);
+  // The pipes templates name: the app's and its libraries' `@Pipe` classes, and @angular/common's, in the build's Angular runtime module.
+  const pipes = angularPipes(sources, (f) => readFileSync(f, 'utf8'));
+  // The app's own directives: a library's are written against the view internals a compiled template replaces.
+  const directives = angularDirectives(sources.filter((f) => !libraries.includes(f)), (f) => readFileSync(f, 'utf8'));
+  // What each NgModule declares, imports and exports: a component's directives are those in its scope.
+  const ngModuleNames = new Map(sources.flatMap((f) => [...declarablesIn(f, readFileSync(f, 'utf8')).modules]));
+  const runtimeModule = join(appDir, '__angular.release.ts');
+  components = sources.map((f) => angularComponent(f, readFileSync(f, 'utf8'), selectors, { zone, platform, pipes, runtimeModule, directives, ngModules: ngModuleNames, elements: new Map([...elements].map(([tag, e]) => [tag, e.name])) })).filter((c): c is NonNullable<typeof c> => !!c);
   const routed = new Set(tree ? routedComponents(tree.routes) : routes.map((r) => r.component));
   for (const c of components) c.page = routed.has(c.name);
   // The classes of registered tags, imported where the build can reach them: route files, which only configure, are not compiled.
@@ -266,6 +273,16 @@ if (framework === 'vue') {
       && sf.statements.every((st) => ts.isImportDeclaration(st) || (ts.isClassDeclaration(st) && ts.getDecorators(st)?.some((d) => /^NgModule\(/.test(d.expression.getText()))));
   });
   modules = [...sources.filter((f) => !routeFiles.has(f) && !ngModules.includes(f) && !components.some((c) => c.file === f.replace(/\.ts$/, '.release.ts'))), ...(elements.size ? [join(appDir, '__elements.release.ts')] : [])];
+  if (components.some((c) => c.usesRuntime)) {
+    overrides.set(runtimeModule, readFileSync(join(PACKAGE, 'runtime', 'angular.ts'), 'utf8'));
+    modules.push(runtimeModule);
+  }
+  // `@Pipe` and `@Directive` classes without their decorators, made through the `$create` that injects their constructor's parameters.
+  for (const f of modules) {
+    if (overrides.has(f)) continue;
+    const declarable = declarableSource(f, readFileSync(f, 'utf8'));
+    if (declarable) overrides.set(f, declarable);
+  }
   routing = { routes, initial };
   // The entry's own statements (an app delegate, a keyboard setup) run after the modules it imports, the bootstrap call aside.
   const entryModule = angularEntryModule(entry, entryText);
@@ -317,7 +334,7 @@ const declarations = [
 const replacements = { ...kitReplacements, ...pluginReplacements(app, platform) };
 modules.push(...Object.values(replacements).filter((f) => !modules.includes(f)));
 const { checker, program, files: sourceFiles, pluginFiles, resolved, lenient: lenientApp } = createProgram(modules, virtual, platform, undefined, plugins, declarations, replacements, {}, aliased);
-const infos = new Map<string, ComponentInfo & { outputs?: string[]; outputFields?: Record<string, string>; optional?: string[]; passed?: boolean; fragment?: boolean; initThrows?: boolean }>(components.map((c) => [c.name, { name: c.name, props: c.props, outputs: c.outputs, outputFields: c.outputFields, optional: c.optional, passed: c.passed, fragment: framework === 'angular' && !c.page && isFragment(c.template) }]));
+const infos = new Map<string, ComponentInfo & { outputs?: string[]; outputFields?: Record<string, string>; optional?: string[]; passed?: boolean; fragment?: boolean; initThrows?: boolean; setters?: string[]; throwingSetters?: string[]; propAliases?: Record<string, string>; changes?: boolean }>(components.map((c) => [c.name, { name: c.name, props: c.props, outputs: c.outputs, outputFields: c.outputFields, optional: c.optional, passed: c.passed, fragment: framework === 'angular' && !c.page && isFragment(c.template), setters: c.setters, propAliases: c.propAliases, changes: c.changes }]));
 // A closed world: the plugin code the app reaches, checked against what npm installed before it is compiled.
 const appFiles = [...modules, ...components.map((c) => c.file)];
 const reach = reachability(program, resolved, appFiles, new Set(pluginFiles), platform);
@@ -434,6 +451,7 @@ for (const c of components) {
     translator.errors.push(`${c.name}: ${(e as Error).message}`);
   }
   infos.get(c.name)!.initThrows = translator.initThrows(c.name);
+  infos.get(c.name)!.throwingSetters = (c.setters ?? []).filter((p) => translator.memberThrows(cls, '$set_' + p));
 }
 for (const c of components) {
   const sf = program.getSourceFile(c.file)!;

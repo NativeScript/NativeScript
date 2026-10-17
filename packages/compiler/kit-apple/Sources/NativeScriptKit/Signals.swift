@@ -145,6 +145,13 @@ public enum Reactivity {
         view?.markDirty()
         event(handler)
     }
+
+    /// `ChangeDetectorRef.markForCheck()` on a zoneless view: an update re-checks it and the views above it, scheduled
+    /// as a write schedules one, or run at once.
+    static func markForCheck(_ view: AngularView?, now: Bool = false) {
+        view?.markDirty()
+        if now { flush() } else { scheduleFlush() }
+    }
 }
 
 /// An Angular component view as zoneless change detection refreshes it: a listener marks its view

@@ -12,6 +12,7 @@
     "bin/",
     "dist/",
     "src/",
+    "runtime/",
     "verify/",
     "kit-apple/Package.swift",
     "kit-apple/Sources/",

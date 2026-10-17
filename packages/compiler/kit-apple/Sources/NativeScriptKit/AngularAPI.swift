@@ -199,3 +199,41 @@ public func takeUntilDestroyed<T>(_ destroyRef: DestroyRef? = nil) -> RxOperator
         }
     }
 }
+
+/// `ElementRef`: a view of a template, as a view query (`@ViewChild('ref', { read: ElementRef })`) gives it.
+public final class ElementRef {
+    nonisolated deinit {}
+    public private(set) var nativeElement: Any?
+    public init(_ nativeElement: Any?) { self.nativeElement = nativeElement }
+
+    /// A component's own ElementRef, made with the component: its template's root view, once made.
+    public func attach(_ host: Any?) { nativeElement = host }
+}
+
+/// `SimpleChange`: one input's change, as `ngOnChanges` receives it.
+public final class SimpleChange {
+    nonisolated deinit {}
+    public var previousValue: Any?
+    public var currentValue: Any?
+    public var firstChange: Bool
+    public init(_ previousValue: Any?, _ currentValue: Any?, _ firstChange: Bool) {
+        self.previousValue = previousValue
+        self.currentValue = currentValue
+        self.firstChange = firstChange
+    }
+    public func isFirstChange() -> Bool { firstChange }
+}
+
+extension ElementRef {
+    private static var hosts: [Any?] = []
+
+    /// Makes a directive of an element: its `inject(ElementRef)` is the element.
+    public static func hosting<T>(_ host: Any?, _ make: () throws -> T) rethrows -> T {
+        hosts.append(host)
+        defer { hosts.removeLast() }
+        return try make()
+    }
+
+    /// `inject(ElementRef)`: the element whose directive is being made; elsewhere, a ref to no view.
+    public static func current() -> ElementRef { ElementRef(hosts.last ?? nil) }
+}
