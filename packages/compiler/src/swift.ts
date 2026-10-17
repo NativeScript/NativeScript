@@ -125,9 +125,9 @@ function assignmentValue(e: ts.Node): boolean {
   return ts.isBinaryExpression(e) && e.operatorToken.kind === ts.SyntaxKind.EqualsToken;
 }
 
-/** A statement's `try` before a check that carries its own: one `try`, as Swift warns of the outer one. */
-function singleTry(code: string): string {
-  return code.replace(/\btry(\s+\(*)try\b/g, 'try$1').replace(/\btry ((?:_ |self\.[\w.]+ |[\w.]+ )= )try /g, 'try $1');
+/** A statement's `try` before a check that carries its own: one `try`, as Swift warns of the outer one; a `try!` or `try?` inside stays. */
+export function singleTry(code: string): string {
+  return code.replace(/\btry(\s+\(*)try\b(?![!?])/g, 'try$1').replace(/\btry ((?:_ |self\.[\w.]+ |[\w.]+ )= )try /g, 'try $1');
 }
 
 /** V8's TypeError for iterating `e` where it is undefined. */
@@ -5879,7 +5879,8 @@ ${members.join('\n')}
         // A promise of another type than the function's (`Promise<[Status, boolean]>` returned where `Promise<any>` is): its value converted.
         const own = this.typeOf(e).replace(/[?!]$/, '');
         const adopted = isPromise && own !== `JSPromise<${a.result}>` ? this.convert(this.expr(e), own, `JSPromise<${a.result}>`) : this.expr(e);
-        return `${i}${this.tryPrefix(e)}${a.ret(isPromise ? adopted : this.coerce(e, a.result), isPromise)}\n${i}return`;
+        // The `try` marks the value: a return through a finally holds it in a block, which a `try` cannot mark.
+        return `${i}${a.ret(this.tryPrefix(e) + (isPromise ? adopted : this.coerce(e, a.result)), isPromise)}\n${i}return`;
       }
       if (s.expression && ts.isIdentifier(s.expression) && this.holeyArrays.has(this.resolve(s.expression)!)) return `${i}return jsFilled(${this.refName(s.expression)})`;
       // A value returned where nothing is (a Promise executor's `return p.then(…)`): evaluated, then dropped.
@@ -7404,6 +7405,12 @@ ${members.join('\n')}
 
   /** A condition: Swift needs a Bool where JavaScript tests truthiness. */
   cond(e: ts.Expression): string {
+    const code = this.condition(e);
+    // A closure called in place (`{ () -> Bool in … }()`) would be read as an `if`'s or `while`'s body.
+    return code.startsWith('{') ? `(${code})` : code;
+  }
+
+  private condition(e: ts.Expression): string {
     // An operand the translation decides (`a && x instanceof C` of a C): the test is the other's.
     if (ts.isBinaryExpression(e) && [ts.SyntaxKind.AmpersandAmpersandToken, ts.SyntaxKind.BarBarToken].includes(e.operatorToken.kind)) {
       const and = e.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken;
