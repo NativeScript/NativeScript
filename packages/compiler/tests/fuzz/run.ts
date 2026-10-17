@@ -7,7 +7,7 @@
 // same error text when an error is uncaught.
 //   node tests/fuzz/run.ts [case-prefix…] [--swift | --kotlin] [--set merge|nightly] [--seed n] [--jobs n] [--keep]
 //                          [--json <file>] [--update-baseline] [--variant <line:col:kind>/<value>]
-// --set merge (the default) is the per-merge subset: the cases and sites `--seed` draws, sized for about three minutes per backend.
+// --set merge (the default) is the per-merge subset: the cases and sites `--seed` draws, about two minutes per backend on a 16-core Mac.
 // --set nightly runs every reached site of every case with four values each.
 // Failures listed in known-fuzz-failures.json are reported and don't fail the run; anything else does. The per-merge set
 // draws only from the cases listed there, so a new case is gated once the nightly set has listed it.
@@ -47,8 +47,11 @@ const seed = Number(flag('--seed') ?? baseline.seed ?? 1);
 if (set !== 'merge' && set !== 'nightly') throw new Error(`--set is merge or nightly, not ${set}`);
 process.env.NS_NATIVE_DIAGNOSTICS = '1000';
 
-/** The per-merge subset: this many cases (less those slower than slowMs under Node), and per case this many sites with two of their values. */
-const MERGE = { cases: 70, sites: 6, values: 2, slowMs: 1500 };
+/**
+ * The per-merge subset: this many cases (less those slower than slowMs under Node), and per case one of the builds the
+ * nightly set makes, with this many of its sites and two values of each.
+ */
+const MERGE = { cases: 110, sites: 6, values: 2, slowMs: 1500 };
 const TIMEOUT = { node: 10_000, swift: 10_000, kotlin: 30_000, translate: 30_000 };
 
 // ---- Seeded choice ---------------------------------------------------------------------------------
@@ -510,6 +513,7 @@ const allFailures: Failure[] = [];
 let regressions = 0;
 const nowPassing: string[] = [];
 const ranKeys: Record<string, Set<string>> = {};
+const flakyKeys: Record<string, Set<string>> = {};
 
 // The merge subset's cases: a seeded draw, the same for both backends.
 // Only cases the baseline was made with: a new case's failures are found by the nightly set, not by an unrelated merge.
@@ -545,8 +549,11 @@ await pool(prepared, jobs, async (p) => {
   if (chosenCases && Date.now() - t0 > MERGE.slowMs) { skipped[p.name] = `slow under Node (${Date.now() - t0} ms)`; return; }
   nodeBaseline.set(p.name, base);
   const reached = new Set((JSON.parse(readFileSync(census, 'utf8')) as [number, number][]).map(([id]) => id));
-  let sites = p.sites.filter((s) => reached.has(s.id));
-  if (chosenCases) sites = sample(sites, MERGE.sites, `sites/${p.name}`, (s) => s.key);
+  // Every set builds the same groups, as the nightly set does: a site's guard builds and runs as it does there, so the
+  // per-merge set's verdicts are the baseline's.
+  const builds = groups(p.sites.filter((s) => reached.has(s.id)));
+  let sites = builds.flat();
+  if (chosenCases) sites = sample(sample(builds, 1, `build/${p.name}`, (g) => g[0].key).flat(), MERGE.sites, `sites/${p.name}`, (s) => s.key);
   const list: Variant[] = [];
   for (const s of sites) {
     let values = [...new Set(valuesFor(s, random(`${p.name}/${s.key}`)))];
@@ -559,7 +566,8 @@ await pool(prepared, jobs, async (p) => {
   }
   variants.set(p.name, list);
   nodeEntry.set(p.name, entry);
-  units.push(...groups([...new Set(list.map((x) => x.site))]).map((g, k) => unitOf(p, k, g)));
+  const used = new Set(list.map((x) => x.site));
+  builds.forEach((g, k) => { if (g.some((s) => used.has(s))) units.push(unitOf(p, k, g)); });
 });
 await pool([...variants.values()].flat(), jobs * 3, async (x) => { x.want = await runNode(nodeEntry.get(x.p.name)!, { NS_FUZZ: `${x.site.id}:${x.value}` }); });
 for (const [name, list] of variants) variants.set(name, list.filter((x) => !x.want!.timedOut));
@@ -573,6 +581,7 @@ for (const target of targets) {
   const ran = (ranKeys[target] = new Set());
   let passed = 0, counted = 0, untyped = 0, unrun = 0;
   const flaky: string[] = [];
+  flakyKeys[target] = new Set();
   const cases = units.filter((u) => runsOn(u.file, target as 'swift' | 'kotlin') && !knownDiff[target]?.[u.caseName]).sort((a, b) => a.name.localeCompare(b.name));
   const record = (x: Variant, o: Outcome) => {
     ran.add(x.key);
@@ -609,7 +618,7 @@ for (const target of targets) {
       if (!o.pass && !knownHere[x.key]) {
         // A new failure counts only if both sides repeat it: timing-dependent output is flaky, not a finding.
         const again = compare(target, await runNode(nodeEntry.get(x.p.name)!, { NS_FUZZ: arg }), await built.native!.run(arg));
-        if (again.pass || again.cause !== o.cause || again.detail !== o.detail) { flaky.push(`${x.key} (${target})`); return; }
+        if (again.pass || again.cause !== o.cause || again.detail !== o.detail) { flaky.push(`${x.key} (${target})`); flakyKeys[target].add(x.key); return; }
       }
       record(x, o);
     });
@@ -674,7 +683,7 @@ if (nowPassing.length > 20) console.log(`… ${nowPassing.length - 20} more now 
 if (argv.includes('--update-baseline')) {
   const next: Record<string, unknown> = { $comment: baseline.$comment ?? 'Fuzz variants known not to match Node, by backend: `<case>|<line:col:site kind>|<wrong value>` and the failure cluster. `cases` are the cases the per-merge set draws from. tests/fuzz/run.ts fails on a failure not listed here.', seed };
   const existing = new Set(everyCase.map((f) => basename(f, '.ts')));
-  next.cases = [...new Set([...(baseline.cases ?? []), ...variants.keys()])].filter((c) => existing.has(c)).sort();
+  next.cases = [...new Set([...(baseline.cases ?? []), ...prepared.map((p) => p.name)])].filter((c) => existing.has(c)).sort();
   // An entry is stale when its case is gone, or when this run found the case's sites and its site is not one of them (the case was edited).
   const siteKeys = new Map(prepared.map((p) => [p.name, new Set(p.sites.map((x) => x.key))]));
   const stale = (k: string) => { const [c, site] = k.split('|'); return !existing.has(c) || (siteKeys.has(c) && !siteKeys.get(c)!.has(site)); };
@@ -682,6 +691,7 @@ if (argv.includes('--update-baseline')) {
     const entries: Record<string, string> = Object.fromEntries(Object.entries(baseline[t] ?? {}).filter(([k]) => !stale(k)) as [string, string][]);
     for (const k of ranKeys[t] ?? []) delete entries[k];
     for (const f of allFailures.filter((x) => x.target === t)) entries[f.key] = `${f.cause}${f.detail ? ': ' + f.detail : ''}`;
+    for (const k of flakyKeys[t] ?? []) entries[k] ??= 'flaky: differed from Node once, then not';
     next[t] = Object.fromEntries(Object.entries(entries).sort(([a], [b]) => a.localeCompare(b)));
   }
   writeFileSync(baselineFile, JSON.stringify(next, null, '\t') + '\n');
