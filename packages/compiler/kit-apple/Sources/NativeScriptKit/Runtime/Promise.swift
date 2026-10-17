@@ -12,9 +12,10 @@ public enum Microtasks {
 
     /// Receives the reason of every promise still rejected without a handler when a checkpoint
     /// ends, as Node's `unhandledRejection` event does. The default prints
-    /// `Uncaught (in promise) <reason>` to standard error and carries on (Node would exit).
+    /// `Uncaught (in promise) <reason>` to standard error, or gives it to `globalThis.__onUncaughtError` as
+    /// `jsUncaughtHandler` does, and carries on (Node would exit).
     public static var onUnhandledRejection: (Any?) -> Void = { reason in
-        jsWriteStandardError("Uncaught (in promise) \(jsToString(reason))\n")
+        if !jsReportedToScript(reason) { jsWriteStandardError("Uncaught (in promise) \(jsToString(reason))\n") }
     }
 
     public static func enqueue(_ job: @escaping () -> Void) { queue.append(job) }
