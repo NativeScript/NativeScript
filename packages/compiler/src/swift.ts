@@ -8870,7 +8870,7 @@ ${members.join('\n')}
       const chained = ts.isOptionalChain(e.parent) && (e.parent as ts.PropertyAccessExpression | ts.CallExpression).expression === e;
       return chained || isWriteTarget(e) || isOptional(rt) || rt === 'Any?' || this.optionalReads.has(e) ? read : this.undefinedAs(`(${read})`, rt);
     }
-    const unwrap = (this.continuesOptional(target) || (ts.isCallExpression(target) && this.maybeUndefined(target))) && !e.questionDotToken;
+    const unwrap = (this.continuesOptional(target) || (ts.isCallExpression(target) && this.maybeUndefined(target))) && !e.questionDotToken && this.looseReceiverKey(target) === null;
     if (!unwrap) {
       const value = this.methodValueRead(e);
       if (value) return value;
@@ -9618,7 +9618,9 @@ ${members.join('\n')}
       // A call continuing an optional chain (`xs?.map(f).join(',')`) is part of the chain: within Swift's own chain it
       // continues it, and after a chain the translation wrapped (`jsSplit(s?.…)`) it chains on the optional made.
       const continued = !callee.questionDotToken && ts.isOptionalChain(target) && (receiverType.endsWith('?') || this.implicitChain(target)) ? (openSwiftChain(this.expr(target)) ? '' : '?') : null;
-      const q = continued ?? (callee.questionDotToken ? (receiverType.endsWith('?') || receiverType.endsWith('!') || ts.isOptionalChain(target) ? '?' : '') : receiverType.endsWith('?') || (ts.isCallExpression(target) && !this.looseObjectRead(target) && this.maybeUndefined(target)) ? '!' : '');
+      // A receiver the translation already unwrapped where it reads the member (`jsUnwrap(m.get(k), "bind")`) needs no other.
+      const unwrapped = this.looseReceiverKey(target) !== null;
+      const q = continued ?? (callee.questionDotToken ? (receiverType.endsWith('?') || receiverType.endsWith('!') || ts.isOptionalChain(target) ? '?' : '') : !unwrapped && (receiverType.endsWith('?') || (ts.isCallExpression(target) && !this.looseObjectRead(target) && this.maybeUndefined(target))) ? '!' : '');
       if (method === 'fill' && this.isArrayConstruction(target) && target.arguments?.length === 1 && e.arguments.length === 1) {
         // `new Array(n).fill(v)` or `Array(n).fill(v)`: n copies of v, typed as the array is declared (`const widths: number[] = …`).
         const context = this.checker.getContextualType(e);
