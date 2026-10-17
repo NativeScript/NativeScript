@@ -1,4 +1,4 @@
-// @lenient
+// @lenient-both
 // `a ?? b` where `a` is a call that gives null or an optional chain that stops: the fallback applies, as nothing has
 // converted the missing value to a string, number or boolean first.
 class Window {
