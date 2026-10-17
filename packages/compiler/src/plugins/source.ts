@@ -38,8 +38,8 @@ export interface PluginSource {
   checked: Set<string>;
   /** Declarations of the package's native API next to its source (`typings/ios.d.ts`). */
   typings: string[];
-  /** How the source was checked: against the published files, or not at all (an override). */
-  verified: 'published' | 'override';
+  /** How the source was checked: against the published files, not at all (an override), or not needed (npm installed it with the files built from it). */
+  verified: 'published' | 'override' | 'shipped';
 }
 
 /** What a bundle's source map lists: each source as the checkout has it (null: not there) and as the bundle was built from it. */
@@ -139,6 +139,22 @@ export function configuredOverrides(app: string, platform: 'ios' | 'android'): R
   }));
 }
 
+const writtenStrictness = new Map<string, boolean>();
+
+/** Whether a source's own tsconfig (its `extends` followed) checks null: code written without it is translated as core is. */
+export function writtenStrict(file: string, strictness = writtenStrictness): boolean {
+  for (let dir = dirname(file); dirname(dir) !== dir; dir = dirname(dir)) {
+    const config = join(dir, 'tsconfig.json');
+    if (!existsSync(config)) continue;
+    if (!strictness.has(config)) {
+      const o = ts.getParsedCommandLineOfConfigFile(config, {}, { ...ts.sys, onUnRecoverableConfigFileDiagnostic: () => {} })?.options ?? {};
+      strictness.set(config, !!(o.strictNullChecks ?? o.strict));
+    }
+    return strictness.get(config)!;
+  }
+  return true;
+}
+
 // ---------------------------------------------------------------- acquisition
 
 function acquire(dir: string, options: SourceOptions): PluginSource {
@@ -150,9 +166,12 @@ function acquire(dir: string, options: SourceOptions): PluginSource {
   let root: string;
   let repo: string | null = null;
   let rev: string | null = null;
+  const shipped = !override && shipsSource(dir, pkg);
   if (override) {
     if (!existsSync(override)) throw new Error(`${name}: the source configured in release.pluginSources (${override}) does not exist`);
     root = override;
+  } else if (shipped) {
+    root = dir;
   } else {
     repo = repositoryOf(pkg);
     if (!repo) throw new Error(`${name}@${version}: package.json names no repository; point release.pluginSources['${name}'] at a checkout of its source`);
@@ -188,8 +207,23 @@ function acquire(dir: string, options: SourceOptions): PluginSource {
   }
 
   const typings = typingsNear([...files.values()].filter((f): f is string => !!f), options.platform, root);
-  say(`${name}@${version}: source from ${override ? `${override} (not verified: a configured source)` : `${repo} @ ${rev!.slice(0, 7)}`}`);
-  return { name, version, dir, root, repo, rev, files, bundles, typings, checked: new Set(), verified: override ? 'override' : 'published' };
+  say(`${name}@${version}: source from ${override ? `${override} (not verified: a configured source)` : shipped ? 'the package (it ships its TypeScript)' : `${repo} @ ${rev!.slice(0, 7)}`}`);
+  return { name, version, dir, root, repo, rev, files, bundles, typings, checked: new Set(), verified: override ? 'override' : shipped ? 'shipped' : 'published' };
+}
+
+/** Whether the package's own TypeScript is installed with it (rxjs's `src/`): its main file's map names a source inside the package. */
+function shipsSource(dir: string, pkg: any): boolean {
+  const main = resolve(dir, typeof pkg.main === 'string' ? pkg.main : 'index.js');
+  const map = (main.endsWith('.js') ? main : main + '.js') + '.map';
+  if (!existsSync(map)) return false;
+  try {
+    const first = JSON.parse(readFileSync(map, 'utf8')).sources?.[0];
+    if (typeof first !== 'string' || !/\.tsx?$/.test(first)) return false;
+    const src = resolve(dirname(map), first);
+    return src.startsWith(dir + sep) && existsSync(src);
+  } catch {
+    return false;
+  }
 }
 
 /** The repository URL a package.json names: `repository`, else its issue tracker's or homepage's repository. */

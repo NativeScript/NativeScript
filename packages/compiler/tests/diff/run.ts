@@ -13,8 +13,8 @@
 // Kotlin compiles with $KOTLINC, `kotlinc` on PATH, or the compiler Gradle cached for kit-android.
 import { spawnSync } from 'node:child_process';
 import { BuildCache, cacheRoot, failedBuild, hash, hashDir, hashFiles, host, kotlinCompiler, javaRuntime, nodeRuntime, outcomeOf, swiftToolchain, type Outcome } from '../build-cache.ts';
-import { kotlinRuntimeSources, root, runtimeSources, SWIFT_MODE } from '../native-build.ts';
-import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { kotlinRuntimeSources, modulesDir, root, runtimeSources, SWIFT_MODE } from '../native-build.ts';
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, relative, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
@@ -49,6 +49,8 @@ function translateKotlin(file: string, out: string, pkg: string): void {
 function toJavaScript(dir: string, out: string) {
   mkdirSync(out, { recursive: true });
   writeFileSync(join(out, 'package.json'), '{ "type": "module" }');
+  // A case importing a package (rxjs) loads the one the translator compiles from source.
+  symlinkSync(modulesDir, join(out, 'node_modules'), 'dir');
   for (const f of readdirSync(dir, { recursive: true }) as string[]) {
     if (!f.endsWith('.ts')) continue;
     const text = readFileSync(join(dir, f), 'utf8');

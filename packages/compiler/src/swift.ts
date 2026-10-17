@@ -993,6 +993,7 @@ export class Translator implements AsyncTranslator {
         if (sym?.declarations?.[0]?.getSourceFile().fileName.startsWith('/__shims__/')) return name;
         break;
       case 'Promise': case 'PromiseLike': return `JSPromise<${arg(0)}>`;
+      case 'PromiseConstructorLike': case 'PromiseConstructor': if (isLibDeclaration(sym?.declarations?.[0])) return 'JSPromiseConstructor'; break;
       case 'PromiseWithResolvers': if (isLibDeclaration(sym?.declarations?.[0])) return `JSPromiseWithResolvers<${arg(0)}>`; break;
       case 'AnimationPromise': if (isCoreDeclaration(sym?.declarations?.[0])) return 'JSPromise<Void>'; break;
       // Script writes animation definitions as object literals; the kit's Animation reads them by key.
@@ -4042,6 +4043,7 @@ ${members.join('\n')}
       && !(ts.isPropertyAccessExpression(p) && p.expression === e) && !ts.isTypeOfExpression(p);
     if (!asValue || !isLibDeclaration(decl)) return null;
     if (ERRORS[e.text]) return `${ERRORS[e.text]}.self`;
+    if (e.text === 'Promise') return 'JSPromiseConstructor.promise';
     const conversion = ({ Number: ['jsToNumber', 'Double'], String: ['jsToString', 'String'], Boolean: ['jsTruthy', 'Bool'] } as Record<string, [string, string]>)[e.text];
     if (!conversion) return null;
     const context = this.checker.getContextualType(e);

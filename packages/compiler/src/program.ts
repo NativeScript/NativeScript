@@ -33,24 +33,6 @@ const SHIMS: Record<string, string> = {
     /** Angular's async pipe at one binding site. */
     export declare class AsyncPipe { transform<T>(observable: Observable<T> | null | undefined): T | null }
   `,
-  rxjs: `
-    export declare class Subscription { readonly closed: boolean; unsubscribe(): void }
-    export interface OperatorFunction<T, R> { readonly __operator: [T, R] }
-    export declare class Observable<T> {
-      subscribe(next: (value: T) => void): Subscription;
-      pipe<A>(a: OperatorFunction<T, A>): Observable<A>;
-      pipe<A, B>(a: OperatorFunction<T, A>, b: OperatorFunction<A, B>): Observable<B>;
-      pipe<A, B, C>(a: OperatorFunction<T, A>, b: OperatorFunction<A, B>, c: OperatorFunction<B, C>): Observable<C>;
-    }
-    export declare class Subject<T> extends Observable<T> { next(value: T): void; asObservable(): Observable<T> }
-    export declare class BehaviorSubject<T> extends Subject<T> { constructor(value: T); readonly value: T; getValue(): T }
-    export declare class ReplaySubject<T> extends Subject<T> { constructor(bufferSize?: number) }
-    export declare function map<T, R>(project: (value: T, index: number) => R): OperatorFunction<T, R>;
-    export declare function filter<T, S extends T>(predicate: (value: T, index: number) => value is S): OperatorFunction<T, S>;
-    export declare function filter<T>(predicate: (value: T, index: number) => boolean): OperatorFunction<T, T>;
-    export declare function take<T>(count: number): OperatorFunction<T, T>;
-    export declare function firstValueFrom<T>(source: Observable<T>): Promise<T>;
-  `,
   '@angular/common/http': `
     import type { Observable } from 'rxjs';
     export declare class HttpHeaders { constructor(headers?: Record<string, string>) }
@@ -272,7 +254,7 @@ export interface Program {
  * KIT_PLUGINS are NativeScriptKit, the frameworks are the front ends, and the
  * rest are typings or tooling.
  */
-const NOT_PLUGINS = /^(@nativescript\/(core|types|types-ios|types-android|types-minimal|webpack|vite|tailwind|angular|android|ios)|octane|@nativescript-community\/(octane|solid-js|svelte-native|vite-octane)|nativescript-vue|react|react-nativescript|solid-js|svelte|@angular\/.*|rxjs|tslib|typescript|vite)$/;
+const NOT_PLUGINS = /^(@nativescript\/(core|types|types-ios|types-android|types-minimal|webpack|vite|tailwind|angular|android|ios)|octane|@nativescript-community\/(octane|solid-js|svelte-native|vite-octane)|nativescript-vue|react|react-nativescript|solid-js|svelte|@angular\/.*|tslib|typescript|vite)$/;
 const notPlugin = (pkg: string) => NOT_PLUGINS.test(pkg) || KIT_PLUGINS.includes(pkg);
 
 /**
@@ -372,7 +354,7 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
       const typeOnly = ts.isImportDeclaration(lit.parent) && !!lit.parent.importClause?.isTypeOnly && !(lit.parent.parent && ts.isSourceFile(lit.parent.parent) && lit.parent.parent.statements.some(valueImport));
       // A plugin's augmentation of another's module augments the module the program compiles: that package's source.
       const augments = ts.isModuleDeclaration(lit.parent) && lit.parent.name === lit && !!plugins?.all().some((p) => containing.startsWith(p.root + '/'));
-      if (plugins && (isSource(containing) || augments) && !m.startsWith('.') && !m.startsWith('/') && !notPlugin(packageOf(m)) && !typeOnly) {
+      if (plugins && (isSource(containing) || augments || containing.startsWith('/__shims__/')) && !m.startsWith('.') && !m.startsWith('/') && !notPlugin(packageOf(m)) && !typeOnly) {
         const js = runtimeFile(m, modules, platform);
         if (js) {
           plugins.get(js.packageDir);

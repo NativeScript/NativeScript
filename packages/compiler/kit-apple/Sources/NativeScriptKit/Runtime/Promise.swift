@@ -771,3 +771,10 @@ private func jsThenFunction(_ object: JSDynamic) -> JSMethod? {
     default: return nil
     }
 }
+
+/// `Promise` held as a value (a `PromiseConstructorLike` passed around): `new` through it makes a JSPromise, as the
+/// global Promise is the only promise constructor a compiled program has.
+public final class JSPromiseConstructor: @unchecked Sendable {
+    public static let promise = JSPromiseConstructor()
+    private init() {}
+}
