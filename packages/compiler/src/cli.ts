@@ -388,11 +388,16 @@ const nativeTypings = typings.filter((f) => !f.startsWith('/__shims__/') && (!f.
 // Core's own native code (TNSWidgets, NativeScriptUtils), which app code may call as core's does (`TNSLabel.font`):
 // its tables before anything reads a module of that name, as the first read of a table is the one kept.
 if (platform === 'ios') { const c = installedCore(app); if (c) loadCoreNativeTables(c); }
-const native = pluginNative(plugins.all(), out, {
-  deps: dependencies, packages, declarations: typings, say, bindings: join(kit, 'Bindings'),
-  app: { module: name, src: join(appResourcesDir(app), 'iOS', 'src'), declarations: nativeTypings },
-});
-dependencies.dispose();
+// The dependencies' scratch build is gigabytes: removed whether or not the plugins' native code assembles.
+let native: ReturnType<typeof pluginNative>;
+try {
+  native = pluginNative(plugins.all(), out, {
+    deps: dependencies, packages, declarations: typings, say, bindings: join(kit, 'Bindings'),
+    app: { module: name, src: join(appResourcesDir(app), 'iOS', 'src'), declarations: nativeTypings },
+  });
+} finally {
+  dependencies.dispose();
+}
 const writtenStrictness = new Map<string, boolean>();
 // Before the translator analyzes what throws: lenient code's checks throw.
 const lenientFiles = [...pluginFiles].filter((f) => !writtenStrict(f));
