@@ -16,11 +16,13 @@ import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, w
 import { tmpdir } from 'node:os';
 import { basename, dirname, join, relative, resolve } from 'node:path';
 import { mirror, writeIfChanged } from './mirror.ts';
+import { pathAliases } from './app-paths.ts';
+import { appImports, reachedFrom, tsconfigIncluded } from './app-modules.ts';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import ts from 'typescript';
 import type { ComponentIR } from './ir.ts';
 import { vueComponent } from './vue.ts';
-import { angularComponent, angularRoutes, angularRouteTree, routedComponents, type RouteNode } from './angular.ts';
+import { angularComponent, angularRoutes, angularRouteTree, componentOf, routedComponents, type RouteNode } from './angular.ts';
 import { svelteComponent } from './svelte.ts';
 import { svelte5Component, svelteModule } from './svelte5.ts';
 import { reactComponent, reactScreens, zustandStore } from './react.ts';
@@ -29,7 +31,7 @@ import { octaneApp } from './octane.ts';
 import { appDeclarations, createProgram, nodeModules } from './program.ts';
 import { corePatches, corePatchesAndroid } from './core-patches.ts';
 import { androidBindings } from './bindings-android.ts';
-import { KIT, KIT_PLUGINS, useKitPlugins } from './core.ts';
+import { KIT, useKitPlugins } from './core.ts';
 import { kitIndex } from './kit-index.ts';
 import { describe, PropertyGuard } from './unimplemented.ts';
 import { NONISOLATED_DEINIT, swiftString, Translator, withoutRedundantImplicit, type ComponentInfo } from './swift.ts';
@@ -40,6 +42,7 @@ import { addInterfaces, translateModules } from './modules.ts';
 import { appStylesheets, importedStylesheets, kitAst, kitCss } from './css.ts';
 import { PluginSources, configuredOverrides } from './plugins/source.ts';
 import { pluginNative, xcodegenLines } from './plugins/native.ts';
+import { angularLibraries } from './angular-libraries.ts';
 import { nativeDispatch, untypedMembers } from './native-dispatch.ts';
 import { reachability } from './reach.ts';
 import { nativeTable, type NativeClass, type NativeMethod } from './natives/symbols.ts';
@@ -94,24 +97,19 @@ const otherPlatform = opt('--platform') === 'android' ? /\.ios\.tsx?$/ : /\.andr
 // `x.ts` beside `x.ios.ts` is the other platforms' module: the platform's own file is the one `./x` resolves to.
 const thisPlatform = platform === 'android' ? '.android.ts' : '.ios.ts';
 const platformSources = files.filter((f) => f.endsWith('.ts') && !f.endsWith('.d.ts') && f !== entry && !/polyfills\.ts$/.test(f) && !otherPlatform.test(f) && !(!/\.(ios|android)\.ts$/.test(f) && files.includes(f.replace(/\.ts$/, thisPlatform))));
+// The app's own specifiers: relative ones and its tsconfig's path aliases (`~/app/x`).
+const aliased = pathAliases(app);
+const appSpecifier = (spec: string) => spec.startsWith('.') || aliased(spec) !== undefined;
+const { importsOf, usedBy, workerScripts } = appImports(files, aliased, thisPlatform);
+// The modules of the build: what the bundler reaches. An Angular app's bundle is what its entry imports, lazy routes
+// included; another framework's, every file its tsconfig.json does not exclude (specs, mocks), and what those import.
+const included = framework === 'angular' ? null : tsconfigIncluded(app, appDir);
+const reached = reachedFrom(framework === 'angular' ? [entry] : files.filter((f) => !included || !/\.tsx?$/.test(f) || included.has(f)), importsOf);
 // A file only the other platform's files use (an Android audio worker) is no module of this build.
-const usedBy = new Map<string, Set<string>>();
 // A worker's script runs in a worker, not as a module of the app; compiled apps start no workers yet (the kit's Worker throws).
-const workerScripts = new Set<string>();
-for (const f of files.filter((x) => /\.tsx?$/.test(x) && !x.endsWith('.d.ts'))) {
-  const text = readFileSync(f, 'utf8');
-  for (const m of text.matchAll(/(?:from\s*|import\s*\(\s*|(new\s+Worker\s*\(\s*(?:new\s+URL\s*\(\s*)?)|require\s*\(\s*)['"](\.{1,2}\/[^'"]+)['"]/g)) {
-    const base = resolve(dirname(f), m[2]).replace(/\.(ts|js)$/, '');
-    for (const c of [base + '.ts', base + thisPlatform, base + '/index.ts']) {
-      if (!files.includes(c)) continue;
-      if (m[1]) workerScripts.add(c);
-      else usedBy.set(c, (usedBy.get(c) ?? new Set()).add(f));
-    }
-  }
-}
 // Transitively: a file only such files use is out too (an Android track engine its worker imports).
 // Android compiles worker scripts: the kit runs each on a worker thread.
-const leftOut = new Set<string>(platform === 'android' ? [] : [...workerScripts].filter((w) => !usedBy.has(w)));
+const leftOut = new Set<string>([...(platform === 'android' ? [] : [...workerScripts].filter((w) => !usedBy.has(w))), ...platformSources.filter((f) => !reached.has(f))]);
 for (let changed = true; changed; ) {
   changed = false;
   for (const f of platformSources) {
@@ -235,16 +233,15 @@ if (framework === 'vue') {
   root = '';
 } else {
   // The Angular components of plugins the app imports (`<package>/angular`), compiled from their source with the app's.
-  const libraries = angularLibraries(sources, nodeModules(app), plugins);
+  const libraries = angularLibraries(sources, nodeModules(app), plugins, new Set(Object.keys(pluginReplacements(app, platform))));
   sources.push(...libraries);
   const selectors = new Map<string, string>();
   for (const f of sources) {
-    const text = readFileSync(f, 'utf8');
-    const m = /@Component\(\{[\s\S]*?selector:\s*['"]([^'"]+)['"][\s\S]*?\}\)\s*export class (\w+)/.exec(text);
-    if (m) selectors.set(m[1], m[2]);
+    const c = componentOf(f, readFileSync(f, 'utf8'));
+    if (c?.selector) selectors.set(c.selector, c.name);
   }
   // The configuration the entry provides, lazy routes followed into their files; else one routes file read flat.
-  const tree = angularRouteTree(entry, (f) => readFileSync(f, 'utf8'));
+  const tree = angularRouteTree(entry, (f) => readFileSync(f, 'utf8'), aliased);
   const routesFile = tree ? undefined : sources.find((f) => /Routes\b/.test(readFileSync(f, 'utf8')) && /component:/.test(readFileSync(f, 'utf8')));
   const { routes, initial } = routesFile ? angularRoutes(readFileSync(routesFile, 'utf8')) : { routes: [], initial: '/' };
   const routeFiles = new Set([...(tree?.files ?? []), ...(routesFile ? [routesFile] : [])]);
@@ -297,10 +294,10 @@ const sheets = allSheets.filter((sh) => !pageSheets.includes(sh));
 
 // 3. Type-check everything as one program, then translate.
 // `const { X } = await import('./x')` reads an app module the build links statically: the module evaluates at startup.
-for (const c of components) c.source = staticImports(c.source);
+for (const c of components) c.source = staticImports(c.source, appSpecifier);
 for (const f of modules) {
   const text = overrides.get(f) ?? (existsSync(f) ? readFileSync(f, 'utf8') : undefined);
-  const rewritten = text === undefined ? undefined : staticImports(text);
+  const rewritten = text === undefined ? undefined : staticImports(text, appSpecifier);
   if (rewritten !== undefined && rewritten !== text) overrides.set(f, rewritten);
 }
 const virtual = new Map([...components.map((c) => [c.file, c.source] as [string, string]), ...overrides]);
@@ -318,7 +315,7 @@ const declarations = [
 ];
 const replacements = { ...kitReplacements, ...pluginReplacements(app, platform) };
 modules.push(...Object.values(replacements).filter((f) => !modules.includes(f)));
-const { checker, program, files: sourceFiles, pluginFiles, resolved, lenient: lenientApp } = createProgram(modules, virtual, platform, undefined, plugins, declarations, replacements);
+const { checker, program, files: sourceFiles, pluginFiles, resolved, lenient: lenientApp } = createProgram(modules, virtual, platform, undefined, plugins, declarations, replacements, {}, aliased);
 const infos = new Map<string, ComponentInfo & { outputs?: string[]; outputFields?: Record<string, string>; optional?: string[]; passed?: boolean; fragment?: boolean; initThrows?: boolean }>(components.map((c) => [c.name, { name: c.name, props: c.props, outputs: c.outputs, outputFields: c.outputFields, optional: c.optional, passed: c.passed, fragment: framework === 'angular' && !c.page && isFragment(c.template) }]));
 // A closed world: the plugin code the app reaches, checked against what npm installed before it is compiled.
 const appFiles = [...modules, ...components.map((c) => c.file)];
@@ -796,61 +793,6 @@ function registeredElements(sources: string[], modulesDir: string): Map<string, 
   return found;
 }
 
-/** The TypeScript of each `<package>/angular` entry the app imports, from the plugin's source beside its main module. */
-function angularLibraries(sources: string[], modulesDir: string, plugins: PluginSources): string[] {
-  const out: string[] = [];
-  const seen = new Set<string>();
-  for (const f of sources) {
-    for (const m of readFileSync(f, 'utf8').matchAll(/import\s*\{([^}]*)\}\s*from\s*['"]((?:@[\w.-]+\/)?[\w.-]+)\/angular['"]/g)) {
-      const wanted = m[1].split(',').map((x) => x.trim().split(/\s+as\s+/)[0]).filter(Boolean);
-      // A plugin the kit implements renders its elements itself: its Angular wrapper's components are not compiled.
-      if (seen.has(m[2]) || KIT_PLUGINS.includes(m[2])) continue;
-      seen.add(m[2]);
-      const dir = join(modulesDir, m[2]);
-      const main = ['index.ios.js', 'index.js'].map((x) => join(dir, x)).find(existsSync);
-      if (!main) continue;
-      plugins.get(dir);
-      const mainSource = plugins.sourceOf(main);
-      const angular = mainSource && join(dirname(mainSource), 'angular');
-      // A wrapper written against Angular's view internals (ElementRef, ViewContainerRef) has no components of its own the build reads.
-      if (!angular || !existsSync(angular)) continue;
-      const components = new Map<string, string>();
-      const walk = (d: string) => {
-        for (const x of readdirSync(d)) {
-          const p = join(d, x);
-          if (statSync(p).isDirectory()) walk(p);
-          else if (x.endsWith('.ts') && !x.endsWith('.d.ts') && !x.endsWith('.spec.ts')) {
-            const name = /@Component\([\s\S]*?\}\)\s*export class (\w+)/.exec(readFileSync(p, 'utf8'))?.[1];
-            if (name) components.set(name, p);
-          }
-        }
-      };
-      walk(angular);
-      // The components the app imports and those their `imports` name, transitively, with the modules of their own they import.
-      const queue = wanted.filter((w) => components.has(w));
-      const taken = new Set<string>();
-      const files = [...components.values()];
-      while (queue.length) {
-        const name = queue.pop()!;
-        if (taken.has(name)) continue;
-        taken.add(name);
-        const file = components.get(name)!;
-        out.push(file);
-        const text = readFileSync(file, 'utf8');
-        const imports = /imports:\s*\[([^\]]*)\]/.exec(text)?.[1] ?? '';
-        for (const i of imports.split(',').map((x) => x.trim())) if (components.has(i)) queue.push(i);
-        for (const m of text.matchAll(/from\s*['"](\.[^'"]+)['"]/g)) {
-          const support = [resolve(dirname(file), m[1]) + '.ts', join(resolve(dirname(file), m[1]), 'index.ts')].find(existsSync);
-          if (support && !files.includes(support) && !out.includes(support)) out.push(support);
-          // A component the code itself uses (a dialog it opens).
-          for (const [other, f] of components) if (f === support) queue.push(other);
-        }
-      }
-    }
-  }
-  return out;
-}
-
 /** The Angular entry without the call that bootstraps the app, or null when that is all it does. */
 function angularEntryModule(file: string, text: string): string | null {
   const sf = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true);
@@ -864,10 +806,11 @@ function angularEntryModule(file: string, text: string): string | null {
 }
 
 /** `const { A, B } = await import('./x')` as a destructuring of names imported from './x' (appended: imports hoist), positions kept where the text fits. */
-function staticImports(text: string): string {
+function staticImports(text: string, appSpecifier: (spec: string) => boolean): string {
   let n = 0;
   const added: string[] = [];
-  const out = text.replace(/\{([\w\s,]+)\}(\s*=\s*)await\s+import\((\s*['"](\.[^'"]+)['"]\s*)\)/g, (whole, names: string, eq: string, arg: string, spec: string) => {
+  const out = text.replace(/\{([\w\s,]+)\}(\s*=\s*)await\s+import\((\s*['"]([^'"]+)['"]\s*)\)/g, (whole, names: string, eq: string, arg: string, spec: string) => {
+    if (!appSpecifier(spec)) return whole;
     const list = names.split(',').map((x) => x.trim()).filter(Boolean);
     const prefix = `__import${n++}_`;
     added.push(`import { ${list.map((x) => `${x} as ${prefix}${x}`).join(', ')} } from '${spec}';`);
@@ -875,7 +818,8 @@ function staticImports(text: string): string {
     return `{${names}}${eq}${value}`.padEnd(whole.length, ' ');
   });
   // `const tests = await import('./x')`, read only as `tests.member`: an object of the members read, each imported by name.
-  const whole = out.replace(/\b(const|let|var)(\s+)(\w+)(\s*=\s*)await\s+import\((\s*['"](\.[^'"]+)['"]\s*)\)/g, (match, kw: string, sp: string, name: string, eq: string, arg: string, spec: string) => {
+  const whole = out.replace(/\b(const|let|var)(\s+)(\w+)(\s*=\s*)await\s+import\((\s*['"]([^'"]+)['"]\s*)\)/g, (match, kw: string, sp: string, name: string, eq: string, arg: string, spec: string) => {
+    if (!appSpecifier(spec)) return match;
     const reads = [...out.matchAll(new RegExp(`\\b${name}\\.(\\w+)`, 'g'))].map((m) => m[1]);
     if (!reads.length || new RegExp(`\\b${name}\\b(?!\\s*[.=])`, 'g').exec(out.replace(match, ''))) return match;
     const list = [...new Set(reads)];
