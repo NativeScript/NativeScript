@@ -490,6 +490,20 @@ export class NativeAPI {
     return NUMBERS.has(b) && b !== 'Double' && b !== 'TimeInterval' && this.t.typeOf(e).replace(/\?$/, '') === 'Double' ? `(${chained}).map { Double($0) }` : chained;
   }
 
+  /**
+   * Lenient code: a native property or method result Swift has optional where TypeScript declares it present, of a
+   * type lenient code otherwise holds present (an array, a dictionary, a struct, an enum), whose member is read: a
+   * missing one throws JavaScript's TypeError there.
+   */
+  optionalRead(e: ts.Expression): boolean {
+    if (!this.t.lenient || ts.isOptionalChain(e)) return false;
+    const p = ts.walkUpParenthesizedExpressions(e.parent);
+    const receiver = (ts.isPropertyAccessExpression(p) || ts.isElementAccessExpression(p)) && ts.skipOuterExpressions(p.expression, ts.OuterExpressionKinds.Parentheses) === e && !p.questionDotToken;
+    if (!receiver && !this.t.looseTolerated(e)) return false;
+    const swift = ts.isPropertyAccessExpression(e) ? this.memberType(e) : ts.isCallExpression(e) ? this.methodReturns(e) : null;
+    return !!swift && optional(swift);
+  }
+
   /** The Swift type of a native property or struct field `x.name`, or null for anything else. */
   private memberType(e: ts.PropertyAccessExpression): SwiftType | null {
     if (this.appMember(e.name)) return null;
@@ -520,9 +534,27 @@ export class NativeAPI {
     // A link the chain continues past stays Swift's; the chain's value is a number as script reads it, still optional.
     if (this.keepOptional.has(e)) return ts.isPropertyAccessExpression(e.parent) && e.parent.expression === e ? chained : code;
     const coalesced = ts.isBinaryExpression(e.parent) && e.parent.operatorToken.kind === ts.SyntaxKind.QuestionQuestionToken && e.parent.left === e;
-    if (coalesced || this.t.typeOf(e).endsWith('?') || this.t.typeOf(e) === 'Any?') return code;
-    // Lenient code: an object the chain does not reach is undefined, which an object declaration holds.
-    return this.t.lenient && this.t.lenientRef(this.t.typeOf(e)) !== this.t.typeOf(e) ? `jsImplicit(${code})` : `(${code})!`;
+    const tsType = this.t.typeOf(e);
+    if (coalesced || tsType.endsWith('?') || tsType === 'Any?' || onlyTested(e)) return code;
+    if (this.t.lenient) {
+      // Lenient code: where the chain stops, a string, number or boolean is what undefined converts to, and an object is
+      // undefined, which an object declaration holds.
+      if (['String', 'Double', 'Bool'].includes(tsType)) return this.t.undefinedAs(code, tsType);
+      if (this.t.lenientRef(tsType) !== tsType) return `jsImplicit(${code})`;
+      // An enum compared (`traits?.horizontalSizeClass === Compact`): Swift compares the optional, which nil equals no case of.
+      if (this.isEnumType(b) && this.enumCompared(e)) return code;
+    }
+    return `(${code})!`;
+  }
+
+  /** Whether `e` is compared for equality with a case of a native enum (`traits?.horizontalSizeClass === Compact`), not with a number. */
+  private enumCompared(e: ts.Expression): boolean {
+    let x: ts.Node = e;
+    while (ts.isParenthesizedExpression(x.parent)) x = x.parent;
+    const p = x.parent;
+    if (!ts.isBinaryExpression(p) || ![ts.SyntaxKind.EqualsEqualsEqualsToken, ts.SyntaxKind.ExclamationEqualsEqualsToken, ts.SyntaxKind.EqualsEqualsToken, ts.SyntaxKind.ExclamationEqualsToken].includes(p.operatorToken.kind)) return false;
+    const other = ts.skipOuterExpressions(p.left === x ? p.right : p.left, ts.OuterExpressionKinds.Parentheses);
+    return ts.isPropertyAccessExpression(other) && !!this.enumMember(other);
   }
 
   /** Native calls whose optional Swift result an optional chain reads. */
@@ -1228,13 +1260,18 @@ export class NativeAPI {
   }
 
   /** A Swift API's value as TypeScript reads it: numbers are Double, an implicitly unwrapped or optional object is the object. */
-  fromSwift(code: string, swiftType: SwiftType, e: ts.Expression): string {
+  fromSwift(code: string, swiftType: SwiftType, e: ts.Expression, as?: string): string {
     swiftType = this.numericAlias(swiftType);
     // A result nothing reads: a nil one is no error.
     if (this.keepOptional.has(e) || ts.isExpressionStatement(e.parent)) return code;
     // A value only tested (`if (controller.viewControllers)`): nil is falsy, not an error.
     if (optional(swiftType) && onlyTested(e)) return code;
-    const tsType = this.t.typeOf(e);
+    const tsType = as ?? this.t.typeOf(e);
+    // Lenient code holds a missing one as the optional it is; where it is used, JavaScript's TypeError if that throws.
+    if (!as && optional(swiftType) && !optional(tsType) && !['Double', 'String', 'Bool', 'Void'].includes(tsType) && this.t.lenient && this.t.loose(e)) {
+      const held = this.fromSwift(code, swiftType, e, optionalType(tsType));
+      return held.startsWith('jsImplicit(') ? held : `jsImplicit(${held})`;
+    }
     const b = base(swiftType);
     const bridged = bridge(code, swiftType, tsType);
     if (bridged) return bridged;

@@ -7523,6 +7523,7 @@ ${members.join('\n')}
     try { t = this.typeOf(x); } catch { return false; }
     if (this.nullableRef(t) !== t) return true;
     if (['Double', 'String', 'Bool', 'Any?', 'Void', 'Never'].includes(t) || isOptional(t)) return false;
+    if (this.native.optionalRead(x)) return true;
     // A value of another type Swift holds optional: a variable that may be undefined, an element read past the end, a native collection maybe nil.
     if (ts.isElementAccessExpression(x)) return /^JSArray</.test(this.typeOf(x.expression).replace(/[?!]$/, ''));
     const sym = ts.isIdentifier(x) ? this.resolve(x) : undefined;
