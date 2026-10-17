@@ -127,7 +127,6 @@ Core/utils.debug-source.swift | IUO | public static var _source: JSSymbol! | R1 
 Core/utils.native-helper.ios.swift | ! | (jsUnwrap(Core_utils_native_helper.getWindow(), "") as UIWindow?)!.rootViewController) | R1 (scheduled): a native or optional value placed where Swift wants it present; the trust rule makes it a checked read
 CoreConnectivity.swift | as! | guard SCNetworkReachabilityGetFlags(reachability as! SCNetworkReachability, &flags) else { return .n | the CoreFoundation type SCNetworkReachabilityCreate returns
 CoreConnectivity.swift | as! | guard monitored == nil, let reachability = createReachability(nil) as! SCNetworkReachability? else { | the CoreFoundation type SCNetworkReachabilityCreate returns
-Router.swift | try! | return try! Page() | scheduled: inject(Page) outside a routed page makes a page; needs throwing inject() (Angular's NullInjectorError)
 Runtime/Array.swift | as! | return (Element.self as? JSOptionalProtocol.Type).map { $0.jsNone as! Element } | Element is the optional type whose jsNone this is
 Runtime/Array.swift | fatalError | fatalError(""Element.selfindexstorage.count) | R1 (scheduled): an element past the end of an array whose element type has no undefined; held optional once untrusted
 Runtime/Array.swift | fatalError | fatalError(""Element.selfnstorage.count) | R1 (scheduled): an element past the end of an array whose element type has no undefined; held optional once untrusted
@@ -248,4 +247,3 @@ app:* | ! | ! | R1 (scheduled): a native or optional value placed where Swift wa
 app:* | IUO | ! | R1 (scheduled): a field the constructor sets, typed T! so Swift lets it start unset; the trust rule holds it optional
 app:* | as! | as! | R1 (scheduled): a callback's argument read as the type its declaration names; the trust rule holds it as given
 app:* | try! | Color(JSArray<Any?>([ | core's Color constructor does not throw for numbers, the only arguments this form passes
-app:* | try! | Injector.root | scheduled: an Angular service whose constructor throws; needs inject() to throw, as Angular's injector does

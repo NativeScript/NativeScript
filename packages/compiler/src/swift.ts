@@ -4389,9 +4389,11 @@ ${members.join('\n')}
     const service = (ts.getDecorators(cls) ?? []).some((d) => d.expression.getText().startsWith('Injectable'));
     if (service) {
       const members = this.componentMembers(cls, []);
-      // Angular's injector reports a throwing constructor as a fatal error.
-      const make = members.some((m) => /^\s*init\(\) throws/m.test(m)) ? `try! ${name}()` : `${name}()`;
-      return [`final class ${name} {`, NONISOLATED_DEINIT, `    static let shared = Injector.root { ${make} }`, '', ...members, '}'].join('\n');
+      // A constructor that throws throws from the inject() that made it, and the next inject() makes the service again.
+      const shared = members.some((m) => /^\s*init\(\) throws/m.test(m))
+        ? [`    static var shared: ${name} { get throws { try Injector.root(${name}.self) { try ${name}() } } }`]
+        : [`    static let shared = Injector.root { ${name}() }`];
+      return [`final class ${name} {`, NONISOLATED_DEINIT, ...shared, '', ...members, '}'].join('\n');
     }
     const c = this.checker;
     const heritage = cls.heritageClauses?.find((h) => h.token === ts.SyntaxKind.ExtendsKeyword)?.types[0];

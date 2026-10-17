@@ -80,10 +80,10 @@ extension Page {
     }
 
     /// `inject(Page)`: the routed page being built, else the page shown.
-    public static func injected() -> Page {
+    public static func injected() throws -> Page {
         if let page = building.last { return page }
         if let page = (try? Frame.topmost()?.currentPage) ?? nil { return page }
-        return try! Page()
+        return try Page()
     }
 
     /// The route the router created the page for.

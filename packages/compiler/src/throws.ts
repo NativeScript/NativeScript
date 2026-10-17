@@ -273,6 +273,7 @@ export class Throws {
       return true;
     }
     const file = decl.getSourceFile();
+    if (file.fileName.startsWith('/__shims__/') && args[0] && ((ts.isFunctionDeclaration(decl) && decl.name?.text === 'inject') || (ts.isMethodDeclaration(decl) && decl.name.getText() === 'get' && ts.isClassDeclaration(decl.parent) && decl.parent.name?.text === 'Injector'))) return this.injectThrows(args[0]);
     // An overload signature: the implementation runs.
     if (!file.isDeclarationFile && !(decl as Fn).body && (ts.isConstructorDeclaration(decl) || ts.isMethodDeclaration(decl) || ts.isFunctionDeclaration(decl))) {
       const impl = ts.isConstructorDeclaration(decl) ? decl.parent.members.find((m) => ts.isConstructorDeclaration(m) && !!m.body)
@@ -309,6 +310,24 @@ export class Throws {
     if (ts.isMethodDeclaration(decl) && ts.isClassLike(decl.parent) && ts.getModifiers(decl)?.some((m) => m.kind === ts.SyntaxKind.AbstractKeyword)) return this.fn(decl);
     // A signature without a body (an interface method, a function-typed member) is a function type.
     return !ts.isConstructorDeclaration(decl) && !ts.isClassLike(decl);
+  }
+
+  /** The services `injectThrows` is working out, so that services injecting each other end. */
+  private injecting = new Set<ts.Node>();
+
+  /**
+   * Angular's `inject(token)` makes a root service the first time, throwing what its constructor throws; core's Page
+   * is the kit's `Page.injected()`, which can make one.
+   */
+  private injectThrows(token: ts.Expression): boolean {
+    let s = this.checker.getSymbolAtLocation(token);
+    if (s && s.flags & ts.SymbolFlags.Alias) s = this.checker.getAliasedSymbol(s);
+    const decl = s?.valueDeclaration;
+    if (!decl || !ts.isClassLike(decl)) return false;
+    if (/[\\/]@nativescript[\\/]core[\\/]/.test(decl.getSourceFile().fileName)) return decl.name?.text === 'Page';
+    if (decl.getSourceFile().isDeclarationFile || this.injecting.has(decl)) return false;
+    this.injecting.add(decl);
+    try { return this.initThrows(decl); } finally { this.injecting.delete(decl); }
   }
 
   /** A tag is called as a function: through a function value it throws, else as its declaration does. */

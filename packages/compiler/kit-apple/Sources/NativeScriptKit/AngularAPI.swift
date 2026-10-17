@@ -44,8 +44,24 @@ public final class Injector {
 
     /// A root service, made as the root injector makes it: whatever component first injects it, its effects
     /// and its `DestroyRef` belong to the application, and what its constructor reads subscribes no binding.
-    public static func root<T>(_ make: () -> T) -> T {
-        untrack { Owner(parent: nil).run(make) }
+    public static func root<T>(_ make: () throws -> T) rethrows -> T {
+        try untrack { try Owner(parent: nil).run(make) }
+    }
+
+    private static var made: [ObjectIdentifier: AnyObject] = [:]
+    private static var making: Set<ObjectIdentifier> = []
+
+    /// A root service whose constructor can throw, kept once one is made: an inject() throws what the constructor
+    /// throws, and the next inject() makes it again. A service whose construction injects itself is Angular's
+    /// circular-dependency error.
+    public static func root<T: AnyObject>(_ type: T.Type, _ make: () throws -> T) throws -> T {
+        let key = ObjectIdentifier(type)
+        if let service = made[key] as? T { return service }
+        guard making.insert(key).inserted else { throw JSException(JSError("NG0200: Circular dependency in DI detected for \(type)")) }
+        defer { making.remove(key) }
+        let service = try root(make)
+        made[key] = service
+        return service
     }
 }
 
