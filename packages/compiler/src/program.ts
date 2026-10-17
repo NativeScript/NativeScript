@@ -177,6 +177,11 @@ const GLOBALS = `
     count(label?: string): void; countReset(label?: string): void; assert(condition?: boolean, ...data: any[]): void; dir(item?: any, options?: any): void; trace(...data: any[]): void;
   };
   declare function queueMicrotask(callback: () => void): void;
+  // Core declares the delay required; JavaScript defaults it to 0.
+  declare function setTimeout(callback: (...args: any[]) => void): number;
+  declare function setInterval(callback: (...args: any[]) => void): number;
+  /** What \`types: ["node"]\` gives an app for the timers' results. */
+  declare namespace NodeJS { type Timeout = number; type Timer = number; type Immediate = number }
   declare var global: typeof globalThis;
   declare function requestAnimationFrame(callback: (frameTime: number) => void): number;
   declare function cancelAnimationFrame(id: number): void;
@@ -236,8 +241,6 @@ const ANDROID_GLOBALS = `
   declare var URL: { prototype: URL; new (url: string | URL, base?: string | URL): URL };
   declare function postMessage(message: any, transfer?: any[]): void;
   declare function close(): void;
-  declare function setTimeout(callback: (...args: any[]) => void): number;
-  declare function setInterval(callback: (...args: any[]) => void): number;
 `;
 
 /** The platform's native API typings, as an app's `references.d.ts` includes them. */
@@ -528,6 +531,8 @@ function coreNamespaceMembers(program: ts.Program, isApp: (name: string) => bool
  * (`type`): what the NativeScript runtime runs for `fetch` or `new XMLHttpRequest()` is core's module.
  */
 const CORE_GLOBALS: [module: string, names: string[]][] = [
+  // core's ui index sets them on `global`.
+  ['@nativescript/core/ui/dialogs', ['alert', 'confirm', 'prompt', 'login', 'action']],
   ['@nativescript/core/fetch', ['fetch', 'Headers', 'Request', 'Response', 'type BodyInit', 'type HeadersInit', 'type RequestInfo', 'type RequestInit', 'type ResponseInit']],
   ['@nativescript/core/xhr', ['XMLHttpRequest', 'FormData', 'Blob', 'File', 'FileReader']],
   ['@nativescript/core/abortcontroller', ['AbortController', 'AbortSignal']],
