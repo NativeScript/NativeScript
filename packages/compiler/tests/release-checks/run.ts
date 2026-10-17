@@ -22,7 +22,7 @@ import { pathAliases } from '../../src/app-paths.ts';
 import { appImports, reachedFrom, tsconfigIncluded } from '../../src/app-modules.ts';
 import { runtimeFile } from '../../src/plugins/resolve.ts';
 import { PluginSources, verifyBundle } from '../../src/plugins/source.ts';
-import { manifest, ownTypings, usedImports } from '../../src/plugins/native.ts';
+import { manifest, ownTypings, scopedImports, usedImports } from '../../src/plugins/native.ts';
 import { singleTry, Translator as SwiftTranslator } from '../../src/swift.ts';
 import { translateModules } from '../../src/modules.ts';
 import { setEmptyTable } from '../../src/natives/symbols.ts';
@@ -272,6 +272,16 @@ export class GlyphPipe { constructor(@Inject(TOKEN) private config: any, @Option
     const names = new Map<string, Set<string> | null>([['PlugA', new Set(['PlugA', 'PAView'])], ['PlugB', new Set(['PlugB', 'PBThing'])], ['Empty', new Set(['Empty'])], ['Untabled', null]]);
     const imported = usedImports('import Foundation\nimport PlugA\nimport PlugB\nimport Empty\nimport Untabled\n\nlet v = PAView()\n', names);
     check(imported === 'import Foundation\nimport PlugA\nimport Untabled\n\nlet v = PAView()\n', "a generated file imports the plugin modules it names, and those no table describes");
+    const types = new Map([
+      ['NativeScriptKit', { types: { ImageAsset: 'class' as const, Utils: 'enum' as const }, named: new Set(['ImageAsset', 'Utils']) }],
+      ['Lottie', { types: { ImageAsset: 'class' as const }, named: new Set<string>() }],
+      ['RevenueCat', { types: { SubscriptionInfo: 'class' as const }, named: new Set(['SubscriptionInfo']) }],
+      ['StoreKit', { types: { SubscriptionInfo: 'struct' as const, Product: 'struct' as const }, named: new Set<string>() }],
+    ]);
+    const scoped = scopedImports('import NativeScriptKit\nimport Lottie\nimport RevenueCat\nimport StoreKit\n\nvar a: ImageAsset? = nil\nvar s: SubscriptionInfo? = nil\nvar u = Utils.self\n', types, 'NativeScriptKit', () => false);
+    check(scoped.includes('import StoreKit\nimport class NativeScriptKit.ImageAsset\nimport class RevenueCat.SubscriptionInfo\n\n') && !scoped.includes('Utils\n'), "a type name two imported modules declare is the kit's, else the one its typings name, by a scoped import");
+    const reexported = scopedImports('import NativeScriptKit\nimport RevenueCat\n\n// SubscriptionInfo\nvar s: SubscriptionInfo? = nil\nlet t = s.toString()\n', types, 'NativeScriptKit', () => false);
+    check(reexported.includes('import RevenueCat\nimport class RevenueCat.SubscriptionInfo\n\n'), "a type name a module the file does not import declares too (StoreKit, which RevenueCat re-exports) is named by a scoped import");
     const own = { files: new Map([[join(pkg, 'index.ios.js'), join(dir, 'checkout/packages/review/index.ios.ts')]]) } as unknown as Parameters<typeof ownTypings>[0];
     check(ownTypings(own, [join(dir, 'checkout/packages/review/types/objc!NSCReview.d.ts'), join(dir, 'checkout/packages/other/types/objc!X.d.ts')]).join() === join(dir, 'checkout/packages/review/types/objc!NSCReview.d.ts'), "a plugin's typings beside its source are its own native code's");
     const clang = { kind: 'clang', name: 'Canvas', module: 'Canvas', path: 'Sources/Canvas', publicHeaders: 'include' } as unknown as Parameters<typeof manifest>[0][0];
@@ -303,6 +313,12 @@ export class GlyphPipe { constructor(@Inject(TOKEN) private config: any, @Option
     setters.errors = [];
     translateModules(setters, typed.program, [setter]);
     check(setters.errors.length === 1 && setters.errors[0].includes('a setter whose parameter is a destructuring pattern'), 'a setter destructuring its value is reported, not a crash');
+    const named = join(dir, 'named.ios.ts');
+    writeFileSync(named, "export class ProcessInfo {\n  name = 'mine';\n}\nexport const processName = NSProcessInfo.processInfo.processName;\nexport const own = new ProcessInfo().name;\n");
+    const clash = createProgram([named], new Map(), 'ios', modulesDir);
+    const clashes = new SwiftTranslator(clash.checker, new Map(), clash.files);
+    const clashCode = translateModules(clashes, clash.program, [named]).map((m) => m.code).join('\n');
+    check(/= Foundation\.ProcessInfo\.processInfo\.processName/.test(clashCode) && /= ProcessInfo\(\)\.name/.test(clashCode), "a native class named as one of the program's is named by its module (Foundation.ProcessInfo)");
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
@@ -323,9 +339,32 @@ export class GlyphPipe { constructor(@Inject(TOKEN) private config: any, @Option
   check(!!made && !/content:|isIncomplete:/.test(made[2]), "a component prop whose binding may throw starts at its default, not at a value read with try!");
   check(!!made && /token: untrack \{ jsReportedOrZero \{ try self\._b5\(\) \} \}/.test(made[2]), 'a required prop whose binding may throw starts at its zero, the error reported');
   check(!!made && new RegExp(`Check\\(\\{ try self\\._b2\\(\\) \\}\\) \\{ ${made[1]}\\.isIncomplete\\.value = \\$0 \\}`).test(swift), "the binding's own check sets the prop, reporting what it throws");
-  check(/Choose\(r\d+, \{ jsReportedTruthy\(\{ try self\._b0\(\) \}\) \? 0 : 1 \}\)/.test(swift), 'a condition that throws is reported and counts as false');
+  check(/Choose\(r\d+, \{ jsReportedTruthy\(\{ try self\._b0\(\) \}\) \? 0 : 1 \}[,)]/.test(swift), 'a condition that throws is reported and counts as false');
   check(/if jsReportedTruthy\(\{ try self\._b4\(\) \}\) \{/.test(swift), "a listener's guard that throws is reported and counts as false");
   check(!/try!|try\?/.test(swift.replace(/let v\d+ = try! StackLayout\(\)/g, '')), 'no binding, condition or prop is read with try! or try?');
+}
+
+// ---- Top-level names the kit declares too ----
+{
+  // ui-chart's `Utils` namespace in the app's one package would hide kit-android's `Utils` from every file.
+  const dir = mkdtempSync(join(tmpdir(), 'ns-release-checks-names-'));
+  try {
+    writeFileSync(join(dir, 'charting.ts'), 'export namespace Utils {\n  export function scaled(n: number): number {\n    return n * 2;\n  }\n}\nexport enum Trace {\n  Off,\n  On,\n}\n');
+    writeFileSync(join(dir, 'theme.ts'), 'export interface Page {\n  title: string;\n}\n');
+    const app = join(dir, 'app.ts');
+    writeFileSync(app, "import { Trace, Utils } from './charting';\nimport { Page } from './theme';\nconst page: Page = { title: 'home' };\nconsole.log(Utils.scaled(2), Trace.On, page.title);\n");
+    const { checker, program } = createProgram([app], new Map(), 'android', modulesDir);
+    const all = program.getSourceFiles().filter((f) => !f.isDeclarationFile);
+    const translator = new Translator(checker, new Map(), all, { pluginFiles: [join(dir, 'charting.ts')] });
+    translator.appModule = 'org.example.app';
+    const kit = new Set(['Utils', 'Trace', 'Page']);
+    translator.core = { has: (n) => kit.has(n), isKitView: () => false, kitMember: () => null, isKitMethod: () => false, nativeClassOf: () => null, type: () => null, property: () => null, lvalue: () => null, call: () => null, construct: () => null, assign: () => null };
+    const code = translateKotlinModules(translator, program, all.map((f) => f.fileName)).map((m) => m.code).join('\n') + translator.interfacesOf(join(dir, 'theme.ts'));
+    check(/^object Utils__charting \{/m.test(code) && /^object Trace__charting \{/m.test(code) && /Utils__charting\.scaled\(2\.0\), Trace__charting\.On/.test(code) && !/^object (Utils|Trace) /m.test(code), "a plugin's namespace and enum named as kit-android's take their module's name (Kotlin)");
+    check(/^class Page__theme\(/m.test(code) && /val page: Page__theme = Page__theme\(title = "home"\)/.test(code), "an app's interface named as a kit-android class takes its module's name, its literals too (Kotlin)");
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 }
 
 // ---- A plugin's own Java classes ----

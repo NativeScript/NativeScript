@@ -41,7 +41,8 @@ import { createRequire } from 'node:module';
 import { addInterfaces, translateModules } from './modules.ts';
 import { appStylesheets, importedStylesheets, kitAst, kitCss } from './css.ts';
 import { PluginSources, configuredOverrides } from './plugins/source.ts';
-import { moduleNames, pluginNative, usedImports, xcodegenLines } from './plugins/native.ts';
+import { moduleNames, pluginNative, scopedImports, usedImports, xcodegenLines, type ModuleTypes } from './plugins/native.ts';
+import { readKitManifest } from './kit-manifest.ts';
 import { angularLibraries } from './angular-libraries.ts';
 import { nativeDispatch, untypedMembers } from './native-dispatch.ts';
 import { reachability } from './reach.ts';
@@ -518,10 +519,25 @@ if (translator.usedAppNative.size) writeFileSync(join(sourcesDir, '__AppNative.s
 const sdkModules = translator.native.sdkModules().filter((m) => !['Foundation', 'UIKit', ...native.modules].includes(m));
 // A file imports only the plugin and pod modules it names: one module that fails to build stops only the files using it.
 const pluginNames = new Map(native.modules.map((m) => [m, moduleNames(m)]));
+// A type name two imported modules declare (the kit's `ImageAsset` and Lottie's) is the one the code means, by a scoped import.
+const moduleTypes = new Map<string, ModuleTypes>();
+for (const m of new Set(['Foundation', 'UIKit', ...native.modules, ...sdkModules])) {
+  try {
+    const t = nativeTable(m);
+    const named = new Set<string>([...Object.values(t.classes).filter((c) => !c.extension).map((c) => c.swift), ...Object.values(t.enums).flatMap((e) => (e.swift ? [e.swift] : [])), ...Object.values(t.structs).map((x) => x.swift), ...Object.keys(t.typealiases ?? {})]);
+    moduleTypes.set(m, { types: t.swiftTypes ?? {}, named });
+  } catch {}
+}
+const kitManifest = readKitManifest(join(kit, 'Sources', 'NativeScriptKit'));
+if (kitManifest) {
+  const kinds: Record<string, 'class' | 'struct' | 'enum' | 'protocol' | 'typealias'> = {};
+  for (const [n, t] of Object.entries(kitManifest.types)) if (!n.includes('.') && (t.alias || ['class', 'struct', 'enum', 'protocol'].includes(t.kind))) kinds[n] = t.alias ? 'typealias' : (t.kind as 'class');
+  moduleTypes.set('NativeScriptKit', { types: kinds, named: new Set(Object.keys(kinds)) });
+}
 for (const f of readdirSync(sourcesDir)) {
   const p = join(sourcesDir, f);
   const text = readFileSync(p, 'utf8');
-  const out = usedImports(text.replace(SDK_IMPORTS, sdkModules.map((m) => `import ${m}\n`).join('')), pluginNames);
+  const out = scopedImports(usedImports(text.replace(SDK_IMPORTS, sdkModules.map((m) => `import ${m}\n`).join('')), pluginNames), moduleTypes, 'NativeScriptKit', (n) => translator.programDeclares(n));
   if (out !== text) writeFileSync(p, out);
 }
 // A kit type an imported SDK module also declares (`Progress`): the app's module resolves the name to the kit's.

@@ -4,7 +4,7 @@ import { createHash } from 'node:crypto';
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { basename, dirname, join, relative, sep } from 'node:path';
-import { iosTarget, moduleOfDeclaration, nativeTable, registerDeclarationModule } from '../natives/symbols.ts';
+import { iosTarget, moduleOfDeclaration, nativeTable, registerDeclarationModule, type ScopedKind } from '../natives/symbols.ts';
 import { boundToEngine, definedObjCClasses, productLines, type Dependencies, type SwiftPackage } from '../ios-dependencies.ts';
 import type { PluginSource } from './source.ts';
 import { mirror } from '../mirror.ts';
@@ -386,6 +386,32 @@ export function moduleNames(module: string): Set<string> | null {
   for (const c of [...Object.values(t.constants), ...Object.values(t.structs)]) add(c.swift);
   for (const a of Object.keys(t.typealiases ?? {})) add(a);
   return names;
+}
+
+/** The types a module declares to Swift (each one's kind), and those of them TypeScript's typings name. */
+export interface ModuleTypes { types: Record<string, ScopedKind>; named: Set<string> }
+
+/**
+ * A Swift file with a scoped import (`import class NativeScriptKit.ImageAsset`) for each type name it uses that more than
+ * one module declares, naming the one its code means: the kit's, else the one module it imports whose name TypeScript's
+ * typings have (RevenueCat's `SubscriptionInfo`, not StoreKit's Swift-only one). A scoped import wins over plain ones,
+ * also over a module another re-exports (RevenueCat's StoreKit), which is why every module of `modules` counts.
+ */
+export function scopedImports(text: string, modules: Map<string, ModuleTypes>, kit: string, programDeclares: (name: string) => boolean): string {
+  const imported = [...text.matchAll(/^import (\w+)$/gm)].map((m) => m[1]).filter((m) => modules.has(m));
+  if (!imported.length) return text;
+  const words = new Set(text.replace(/^import .*$/gm, '').replace(/^\s*\/\/.*$/gm, '').match(/\b[A-Za-z_]\w*\b/g) ?? []);
+  const scoped: string[] = [];
+  for (const w of words) {
+    if ([...modules.values()].filter((m) => Object.hasOwn(m.types, w)).length < 2 || programDeclares(w)) continue;
+    const owners = imported.filter((m) => Object.hasOwn(modules.get(m)!.types, w));
+    const named = owners.includes(kit) ? [kit] : owners.filter((m) => modules.get(m)!.named.has(w));
+    if (named.length === 1) scoped.push(`import ${modules.get(named[0])!.types[w]} ${named[0]}.${w}`);
+  }
+  if (!scoped.length) return text;
+  const last = [...text.matchAll(/^import .*\n/gm)].pop()!;
+  const at = last.index! + last[0].length;
+  return text.slice(0, at) + scoped.sort().map((l) => l + '\n').join('') + text.slice(at);
 }
 
 /** A Swift file without its imports of the modules in `modules` whose names nothing else in it uses. */

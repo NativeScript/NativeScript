@@ -797,7 +797,7 @@ export class Translator implements AsyncTranslator {
     if (name && Object.hasOwn(KIT_NAMES_ANDROID, name) && isCoreDeclaration(sym?.declarations?.[0])) return KIT_NAMES_ANDROID[name];
     const renamed = sym?.valueDeclaration && this.topNames().get(sym.valueDeclaration);
     if (renamed) return renamed;
-    const renamedType = this.library && sym && !sym.valueDeclaration && sym.declarations?.[0] ? this.topNames().get(sym.declarations[0]) : undefined;
+    const renamedType = sym && !sym.valueDeclaration && sym.declarations?.[0] ? this.topNames().get(sym.declarations[0]) : undefined;
     if (renamedType) { this.used.add(renamedType); return renamedType; }
     // A mixin's class is the core class it is applied to.
     const mixin = this.mixinOf(sym);
@@ -1183,7 +1183,7 @@ export class Translator implements AsyncTranslator {
   private conformingInterface(t: ts.Type): string | null {
     const c = this.checker;
     this.appInterfaces ??= this.sourceFiles.filter((f) => !this.pluginFiles.has(f.fileName)).flatMap((f) => f.statements.filter(ts.isInterfaceDeclaration))
-      .filter((d) => !d.typeParameters?.length).map((d) => ({ name: d.name.text, type: c.getDeclaredTypeOfSymbol(c.getSymbolAtLocation(d.name)!) }));
+      .filter((d) => !d.typeParameters?.length).map((d) => ({ name: this.topName(d, d.name.text), type: c.getDeclaredTypeOfSymbol(c.getSymbolAtLocation(d.name)!) }));
     const own = t.getProperties();
     if (!own.length) return null;
     const matches = this.appInterfaces.filter(({ type }) => {
@@ -1629,8 +1629,8 @@ export class Translator implements AsyncTranslator {
     for (const st of md.body.statements) {
       if (hasModifier(st, ts.SyntaxKind.DeclareKeyword)) continue;
       // A namespace's interfaces are the module's: a class of the interface's name.
-      if (ts.isInterfaceDeclaration(st)) { this.registerInterface(st.name.text, md.getSourceFile().fileName, st.members, st); continue; }
-      if (ts.isTypeAliasDeclaration(st) && ts.isTypeLiteralNode(st.type)) { this.registerInterface(st.name.text, md.getSourceFile().fileName, st.type.members, st); continue; }
+      if (ts.isInterfaceDeclaration(st)) { this.registerInterface(this.topName(st, st.name.text), md.getSourceFile().fileName, st.members, st); continue; }
+      if (ts.isTypeAliasDeclaration(st) && ts.isTypeLiteralNode(st.type)) { this.registerInterface(this.topName(st, st.name.text), md.getSourceFile().fileName, st.type.members, st); continue; }
       if (ts.isTypeAliasDeclaration(st)) continue;
       values = true;
       if (ts.isFunctionDeclaration(st)) { if (st.name && st.body) lines.push(this.func(st, ident(st.name.text))); continue; }
@@ -4236,8 +4236,9 @@ export class Translator implements AsyncTranslator {
       };
       for (const st of sf.statements) {
         if (ts.isClassDeclaration(st) && st.name) add(st.name.text, st);
-        // An interface becomes a class of its name too.
-        if (this.library && (ts.isInterfaceDeclaration(st) || (ts.isTypeAliasDeclaration(st) && ts.isTypeLiteralNode(st.type)))) add(st.name.text, st);
+        // An interface becomes a class of its name too; outside the kit, one named as a kit class takes its module's name (below).
+        const shape = ts.isInterfaceDeclaration(st) || (ts.isTypeAliasDeclaration(st) && ts.isTypeLiteralNode(st.type)) ? st : null;
+        if (shape && (this.library || (this.core?.has(shape.name.text) && !(this.checker.getSymbolAtLocation(shape.name)!.flags & ts.SymbolFlags.Class)))) add(shape.name.text, shape);
         if (ts.isModuleDeclaration(st) && ts.isIdentifier(st.name) && !hasModifier(st, ts.SyntaxKind.DeclareKeyword)) add(st.name.text, st);
         if (ts.isEnumDeclaration(st) && !hasModifier(st, ts.SyntaxKind.DeclareKeyword)) add(st.name.text, st);
         // Library mode: a module's functions and variables are its object's, named by it.
@@ -4285,8 +4286,11 @@ export class Translator implements AsyncTranslator {
       return `${name}__${n}`;
     };
     for (const [name, list] of byName) {
-      // A plugin class named as a kit-android class (one extending core's `Observable`) takes its module's name too.
-      const kitClash = (list.some((x) => ts.isClassDeclaration(x.decl)) && !!this.core?.has(name)) || (coreFunctions.has(name) && list.some((x) => ts.isFunctionDeclaration(x.decl) || ts.isVariableDeclaration(x.decl)));
+      // A plugin's or the app's type named as a kit-android type takes its module's name too: a class (one extending core's
+      // `Observable`), and outside the kit a namespace, enum, interface or object type (ui-chart's `Utils`), since a declaration
+      // of the app's package hides the kit's of its name, imported with `org.nativescript.kit.*`, from every file of the app.
+      const typeLike = (d: ts.Node) => ts.isClassDeclaration(d) || (!this.library && (ts.isModuleDeclaration(d) || ts.isEnumDeclaration(d) || ts.isInterfaceDeclaration(d) || ts.isTypeAliasDeclaration(d)));
+      const kitClash = (list.some((x) => typeLike(x.decl)) && !!this.core?.has(name)) || (coreFunctions.has(name) && list.some((x) => ts.isFunctionDeclaration(x.decl) || ts.isVariableDeclaration(x.decl)));
       // A type the hand-written kit declares for itself: the generated one takes its module's name.
       const internalClash = !!this.library?.internalTypes?.has(name);
       if (list.length < 2 && !kitClash && !internalClash) continue;
@@ -4334,6 +4338,23 @@ export class Translator implements AsyncTranslator {
       }
     };
     for (const sf of this.sourceFiles) if (!sf.isDeclarationFile) for (const st of sf.statements) if (ts.isModuleDeclaration(st)) nested(st);
+    // A namespace's interface is a class of the app's package (see `namespaceDecl`): where another declaration of the package,
+    // another namespace's interface or the kit has its name, it takes its namespace's.
+    if (!this.library) {
+      const hoisted = new Map<string, { decl: ts.Node; ns: ts.ModuleDeclaration }[]>();
+      const collect = (md: ts.ModuleDeclaration) => {
+        if (!md.body || !ts.isModuleBlock(md.body) || hasModifier(md, ts.SyntaxKind.DeclareKeyword)) return;
+        for (const st of md.body.statements) {
+          if (ts.isInterfaceDeclaration(st) || (ts.isTypeAliasDeclaration(st) && ts.isTypeLiteralNode(st.type))) hoisted.set(st.name.text, [...(hoisted.get(st.name.text) ?? []), { decl: st, ns: md }]);
+          if (ts.isModuleDeclaration(st)) collect(st);
+        }
+      };
+      for (const sf of this.sourceFiles) if (!sf.isDeclarationFile) for (const st of sf.statements) if (ts.isModuleDeclaration(st)) collect(st);
+      for (const [name, list] of hoisted) {
+        if (!byName.has(name) && list.length < 2 && !this.core?.has(name)) continue;
+        for (const x of list) this.renamedTop.set(x.decl, `${name}__${(this.namespacePath(x.ns) ?? '').replace(/\./g, '_')}`);
+      }
+    }
     return this.renamedTop;
   }
 

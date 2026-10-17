@@ -166,10 +166,14 @@ export class NativeAPI {
     if (t?.introduced && parseFloat(t.introduced) > DEPLOYMENT) this.t.requireTypeAvailability(parseFloat(t.introduced), t.swift);
   }
 
-  /** A native class's Swift name, qualified by its module where the kit declares a type of that name (`Foundation.Progress`). */
+  /**
+   * A native class's Swift name, qualified by its module where the kit or the program declares a type of that name
+   * (`Foundation.Progress`; `FirebaseRemoteConfig.RemoteConfig` beside a plugin's own `RemoteConfig` class).
+   */
   private className(cls: { swift: string; module?: string; introduced?: string; generics?: string[] }): string {
     this.typeAvailable(cls);
-    const name = cls.module && (this.t.isKitType(cls.swift) || this.internalTypes.has(cls.swift)) ? `${cls.module}.${cls.swift}` : cls.swift;
+    // Not where the program has a type of the module's name (a plugin's `RevenueCat` class), which the qualifier would name.
+    const name = cls.module && (this.t.isKitType(cls.swift) || this.internalTypes.has(cls.swift) || (this.t.programDeclares(cls.swift) && !this.t.programDeclares(cls.module))) ? `${cls.module}.${cls.swift}` : cls.swift;
     return cls.generics?.length ? `${name}<${cls.generics.map(() => 'AnyObject').join(', ')}>` : name;
   }
 
