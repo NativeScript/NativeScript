@@ -9649,5 +9649,7 @@ function ownReturns(body: ts.Node): boolean {
  * as the Swift kit's module initializers do; an exception escaping the app's start would end it.
  */
 export function reportedInit(init: string[]): string {
-  return ['    jsReport {', ...init.map((l) => (l ? '    ' + l : l)), '    }'].join('\n');
+  // try, not jsReport { }: a lambda would capture every module field it sets, and lint's WrongThreadInterprocedural
+  // fails on a lambda capturing a few dozen of them (it builds the product of each capture's possible values).
+  return ['    try {', ...init.map((l) => (l ? '    ' + l : l)), '    } catch (__e: Throwable) {', '        jsReportThrown(__e)', '    }'].join('\n');
 }
