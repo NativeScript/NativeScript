@@ -2185,6 +2185,7 @@ export class Translator implements AsyncTranslator {
     if (isNullable(type)) return this.checkedCast(code, type);
     // A Date its type promises that JSON gave as text (`createdAt: Date` of a parsed payload): the date the text names, as `new Date(text)` reads it.
     if (!this.library && type === 'JSDate') return `jsDateFrom(${code})`;
+    if (!this.library && type === 'JSRegExp') return `jsRegExpFrom(${code})`;
     // An object slot its declarations call non-null may still get null (`getAncestor` finding none), which JavaScript passes on.
     if (this.isObjectType(type) && !/^(String|Double|Boolean)$/.test(type)) return `jsUnchecked<${type}>(jsJavaArgument(${code}))`;
     const converted = this.library ? ({ String: 'jsConvertedString', Double: 'jsConvertedNumber', Boolean: 'jsConvertedBoolean' } as Record<string, string>)[type] : undefined;

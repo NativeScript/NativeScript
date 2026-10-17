@@ -32,7 +32,7 @@ export function angularLibraries(sources: string[], modulesDir: string, plugins:
           if (statSync(p).isDirectory()) walk(p);
           else if (x.endsWith('.ts') && !x.endsWith('.d.ts') && !x.endsWith('.spec.ts')) {
             const text = readFileSync(p, 'utf8');
-            const name = componentOf(p, text)?.name;
+            const name = /\b(ViewContainerRef|DetachedContainer)\b/.test(text) ? undefined : componentOf(p, text)?.name;
             if (name) components.set(name, p);
             const found = declarablesIn(p, text);
             for (const d of found.classes) components.set(d, p);
