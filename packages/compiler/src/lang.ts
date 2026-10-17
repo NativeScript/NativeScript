@@ -78,6 +78,13 @@ export function wellKnownMember(name: string): string | null {
   return m ? WELL_KNOWN_MEMBERS[m[1]] ?? null : null;
 }
 
+/** An object type of only RegExp's protocol methods (the string methods' `{ [Symbol.replace](…) }` overloads): a RegExp, the one object the kits give them. */
+export function isRegExpProtocol(t: ts.Type): boolean {
+  if (!(t.flags & ts.TypeFlags.Object) || !((t as ts.ObjectType).objectFlags & ts.ObjectFlags.Anonymous)) return false;
+  const own = t.getProperties();
+  return own.length > 0 && own.every((p) => /^__@(replace|split|match|matchAll|search)@\d+$/.test(p.name));
+}
+
 /** A type's `[Symbol.iterator]` (or `[Symbol.asyncIterator]`) member. */
 function iteratorMember(t: ts.Type, async: boolean): ts.Symbol | undefined {
   return t.getProperties().find((p) => p.escapedName.toString().startsWith(async ? '__@asyncIterator@' : '__@iterator@'));
