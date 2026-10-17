@@ -324,6 +324,16 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
   const readFile = host.readFile.bind(host);
   host.readFile = (name) => files.get(name) ?? readFile(name);
   const resolutions = new Map<string, string>();
+  // A plugin's augmentations of other packages (`declare module '@nativescript/firebase-core'`), which its source keeps in
+  // the declarations beside it (`index.d.ts`), apply as its published typings apply them.
+  const augmenting = new Map<string, string | null>();
+  const augmentations = (source: string) => {
+    if (!augmenting.has(source)) {
+      const beside = source.replace(/(\.(ios|android))?\.tsx?$/, '.d.ts');
+      augmenting.set(source, beside !== source && existsSync(beside) && /^\s*declare module ['"]/m.test(readFileSync(beside, 'utf8')) ? beside : null);
+    }
+    return augmenting.get(source);
+  };
   host.resolveModuleNameLiterals = (literals, containing) =>
     literals.map((lit) => {
       const r = resolveLiteral(lit, containing);
@@ -360,7 +370,9 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
       // A type-only import still resolves to the source where the file also imports values from the package: TypeScript resolves a specifier once per file.
       const valueImport = (st: ts.Statement) => ts.isImportDeclaration(st) && !st.importClause?.isTypeOnly && ts.isStringLiteral(st.moduleSpecifier) && st.moduleSpecifier.text === m;
       const typeOnly = ts.isImportDeclaration(lit.parent) && !!lit.parent.importClause?.isTypeOnly && !(lit.parent.parent && ts.isSourceFile(lit.parent.parent) && lit.parent.parent.statements.some(valueImport));
-      if (plugins && isSource(containing) && !m.startsWith('.') && !m.startsWith('/') && !notPlugin(packageOf(m)) && !typeOnly) {
+      // A plugin's augmentation of another's module augments the module the program compiles: that package's source.
+      const augments = ts.isModuleDeclaration(lit.parent) && lit.parent.name === lit && !!plugins?.all().some((p) => containing.startsWith(p.root + '/'));
+      if (plugins && (isSource(containing) || augments) && !m.startsWith('.') && !m.startsWith('/') && !notPlugin(packageOf(m)) && !typeOnly) {
         const js = runtimeFile(m, modules, platform);
         if (js) {
           plugins.get(js.packageDir);
@@ -368,6 +380,8 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
           if (source) {
             pluginFiles.add(source);
             for (const t of plugins.get(js.packageDir).typings) extraRoots.add(t);
+            const beside = augmentations(source);
+            if (beside) extraRoots.add(beside);
             return { resolvedModule: { resolvedFileName: source, extension: source.endsWith('.tsx') ? ts.Extension.Tsx : ts.Extension.Ts } };
           }
         }

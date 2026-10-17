@@ -41,7 +41,7 @@ import { createRequire } from 'node:module';
 import { addInterfaces, translateModules } from './modules.ts';
 import { appStylesheets, importedStylesheets, kitAst, kitCss } from './css.ts';
 import { PluginSources, configuredOverrides } from './plugins/source.ts';
-import { pluginNative, xcodegenLines } from './plugins/native.ts';
+import { moduleNames, pluginNative, usedImports, xcodegenLines } from './plugins/native.ts';
 import { angularLibraries } from './angular-libraries.ts';
 import { nativeDispatch, untypedMembers } from './native-dispatch.ts';
 import { reachability } from './reach.ts';
@@ -498,10 +498,13 @@ const dispatch = nativeDispatch(native.modules, untypedMembers(checker, sourceFi
 if (dispatch) writeFileSync(join(sourcesDir, '__NativeDispatch.swift'), `// Compiled by ns-native: the plugins' native members untyped TypeScript calls, by name.\nimport Foundation\nimport UIKit\nimport NativeScriptKit\n${native.modules.map((m) => `import ${m}\n`).join('')}\n${dispatch}`);
 if (translator.usedAppNative.size) writeFileSync(join(sourcesDir, '__AppNative.swift'), `// Compiled by ns-native: the app's own Swift classes, called by name from untyped TypeScript.\nimport Foundation\nimport NativeScriptKit\n\n${appNativeObjects([...translator.usedAppNative].map((c) => appNative[c]))}`);
 const sdkModules = translator.native.sdkModules().filter((m) => !['Foundation', 'UIKit', ...native.modules].includes(m));
+// A file imports only the plugin and pod modules it names: one module that fails to build stops only the files using it.
+const pluginNames = new Map(native.modules.map((m) => [m, moduleNames(m)]));
 for (const f of readdirSync(sourcesDir)) {
   const p = join(sourcesDir, f);
   const text = readFileSync(p, 'utf8');
-  if (text.includes(SDK_IMPORTS)) writeFileSync(p, text.replace(SDK_IMPORTS, sdkModules.map((m) => `import ${m}\n`).join('')));
+  const out = usedImports(text.replace(SDK_IMPORTS, sdkModules.map((m) => `import ${m}\n`).join('')), pluginNames);
+  if (out !== text) writeFileSync(p, out);
 }
 // A kit type an imported SDK module also declares (`Progress`): the app's module resolves the name to the kit's.
 const clashes = translator.native.kitClashes(translator.kitTypes());
