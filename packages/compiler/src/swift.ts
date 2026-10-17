@@ -7506,7 +7506,7 @@ ${members.join('\n')}
     // What `new` constructs is a class.
     if (ts.isNewExpression(x.parent) && x.parent.expression === x) return false;
     if ((x.kind === ts.SyntaxKind.ThisKeyword && !this.thisParameter(x)) || x.kind === ts.SyntaxKind.SuperKeyword || ts.isNewExpression(x) || ts.isObjectLiteralExpression(x) || ts.isArrayLiteralExpression(x)
-      || ts.isFunctionLike(x) || ts.isClassExpression(x) || ts.isLiteralExpression(x) || ts.isTemplateExpression(x) || this.nativeConstruction(x)) return false;
+      || ts.isFunctionLike(x) || ts.isClassExpression(x) || ts.isLiteralExpression(x) || ts.isTemplateExpression(x) || this.nativeConstruction(x) || this.native.presentResult(x)) return false;
     if (ts.isIdentifier(x) || ts.isPropertyAccessExpression(x)) {
       const sym = this.resolve(ts.isPropertyAccessExpression(x) ? x.name : x);
       if (sym && sym.flags & (ts.SymbolFlags.Class | ts.SymbolFlags.Enum | ts.SymbolFlags.Module | ts.SymbolFlags.Function | ts.SymbolFlags.Method)) return false;
@@ -7583,6 +7583,7 @@ ${members.join('\n')}
       const result = this.returnTypeOf(fn);
       return isOptional(result) || result === 'Any?';
     }
+    if (ts.isCallExpression(p) && p.arguments[0] === x && this.missingKeyLookup(p)) return true;
     if ((ts.isCallExpression(p) || ts.isNewExpression(p)) && p.expression !== x) {
       const k = p.arguments?.indexOf(x as ts.Expression) ?? -1;
       const signature = this.checker.getResolvedSignature(p);
@@ -10703,6 +10704,15 @@ ${members.join('\n')}
     throw this.error(e, `Promise.${name}`);
   }
 
+  /** Lenient code's `map.get(key)`, `has` or `delete` of a Map or Set keyed by objects, which a missing key is looked up in as itself. */
+  private missingKeyLookup(e: ts.CallExpression): boolean {
+    const callee = e.expression;
+    if (!this.lenient || !ts.isPropertyAccessExpression(callee) || !['get', 'has', 'delete'].includes(callee.name.text) || e.arguments.length !== 1) return false;
+    const type = this.typeOf(callee.expression).replace(/[?!]$/, '');
+    const k = /^JSMap<.*>$/.test(type) ? splitTopLevel(type.slice(6, -1))[0] : /^JSSet<(.*)>$/.exec(type)?.[1];
+    return !!k && !isOptional(k) && k !== 'Any?' && this.nullableRef(k) !== k;
+  }
+
   private collectionMethod(name: string, target: ts.Expression, e: ts.CallExpression, q: string, receiver?: string): string {
     const t = receiver ?? `${this.expr(target)}${q}`;
     // `(m ??= new Map()).set(…)`: the checker types the untyped `new Map()` into it; the collection is the target's.
@@ -10711,6 +10721,15 @@ ${members.join('\n')}
     const type = (assigned ?? this.typeOf(target)).replace(/\?$/, '');
     const [k, v] = /^JSMap<(.*), (.*)>$/.exec(type)?.slice(1) ?? [/^JSSet<(.*)>$/.exec(type)?.[1] ?? 'Any?', ''];
     const arg = (n: number, as: string) => this.coerce(e.arguments[n], as);
+    // Lenient code: a key that may be missing finds nothing, as undefined finds nothing a program stored by object.
+    if (this.missingKeyLookup(e)) {
+      const k = /^JSMap<.*>$/.test(type) ? splitTopLevel(type.slice(6, -1))[0] : /^JSSet<(.*)>$/.exec(type)![1];
+      const call = `${THROWING_CODE.test(t) ? 'try ' : ''}${t}.${name}($0)`;
+      const held = `(${arg(0, optionalType(k))} as ${optionalType(k)})`;
+      // An untyped value's entry reads back doubly optional, which one optional holds as undefined.
+      if (name === 'get') return v === 'Any?' ? `(${held}.map { ${call} ?? nil } ?? nil)` : `${held}.flatMap { ${call} }`;
+      return `(${held}.${q ? 'flatMap' : 'map'} { ${call} } ?? false)`;
+    }
     switch (name) {
       case 'get': return v === 'Any?' && !q ? `(${t}.get(${arg(0, k)}) ?? nil)` : `${t}.get(${arg(0, k)})`;
       case 'has': case 'delete': return `${t}.${name}(${arg(0, k)})`;

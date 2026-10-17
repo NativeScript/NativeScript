@@ -504,6 +504,17 @@ export class NativeAPI {
     return !!swift && optional(swift);
   }
 
+  /** A native call Swift declares to give a value it never lacks (`NSIndexPath.indexPathForRowInSection(…)`, an initializer that cannot fail). */
+  presentResult(call: ts.Expression): boolean {
+    if (!ts.isCallExpression(call) || ts.isOptionalChain(call)) return false;
+    const callee = call.expression;
+    if (!ts.isPropertyAccessExpression(callee) || this.appMember(callee.name)) return false;
+    const r = this.receiver(callee.expression);
+    if (!r) return false;
+    const m = lookupMember(r.module, r.name, callee.name.text, r.isStatic);
+    return !!m && (m.kind === 'method' || m.kind === 'init') && !!m.returns && m.returns !== 'Void' && !optional(m.returns);
+  }
+
   /** The Swift type of a native property or struct field `x.name`, or null for anything else. */
   private memberType(e: ts.PropertyAccessExpression): SwiftType | null {
     if (this.appMember(e.name)) return null;
