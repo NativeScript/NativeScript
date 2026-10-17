@@ -359,6 +359,29 @@ export class Translator implements AsyncTranslator {
   private core: CoreAPI;
   readonly native: NativeAPI;
   isKitType(name: string): boolean { return this.core.declares(name); }
+  /** App mode: whether the program declares a top-level Swift type of this name, which hides an imported module's from every file. */
+  programDeclares(name: string): boolean {
+    if (this.library) return false;
+    if (!this.programTypeNames) {
+      const names = new Set<string>();
+      const top = this.topNames();
+      const add = (st: ts.Node, own: string) => names.add(top.get(st) ?? own);
+      const visit = (statements: readonly ts.Statement[], nested: boolean) => {
+        for (const st of statements) {
+          if (hasModifier(st, ts.SyntaxKind.DeclareKeyword)) continue;
+          if ((ts.isInterfaceDeclaration(st) || (ts.isTypeAliasDeclaration(st) && ts.isTypeLiteralNode(st.type))) && !(this.checker.getSymbolAtLocation(st.name)!.flags & ts.SymbolFlags.Class)) add(st, st.name.text);
+          if (nested) continue;
+          if ((ts.isClassDeclaration(st) || ts.isEnumDeclaration(st)) && st.name) add(st, st.name.text);
+          if (ts.isModuleDeclaration(st) && ts.isIdentifier(st.name)) add(st, st.name.text);
+        }
+        for (const st of statements) if (ts.isModuleDeclaration(st) && st.body && ts.isModuleBlock(st.body) && !hasModifier(st, ts.SyntaxKind.DeclareKeyword)) visit(st.body.statements, true);
+      };
+      for (const sf of this.sourceFiles) if (!sf.isDeclarationFile) visit(sf.statements, false);
+      this.programTypeNames = names;
+    }
+    return this.programTypeNames.has(name);
+  }
+  private programTypeNames: Set<string> | null = null;
   kitTypes(): string[] { return this.core.typeNames(); }
   /** The kit's classes an XML element can name: core's views and the other objects its builder makes (`Span`, `TabViewItem`). */
   kitElements(): string[] { return this.core.typeNames().filter((n) => this.core.extendsKit(n, 'ViewBase')); }
@@ -1101,8 +1124,8 @@ export class Translator implements AsyncTranslator {
         const kit = this.core.platformClass(name);
         return this.core.has(kit) ? kit : 'Any?';
       }
-      // App mode: a generic class of the app's keeps its arguments (`UITest<View>`).
-      const generic = !this.library && classDecl && ts.isClassDeclaration(classDecl) && !classDecl.getSourceFile().isDeclarationFile ? classDecl.typeParameters ?? [] : [];
+      // A generic class of the app's keeps its arguments (`UITest<View>`); one Swift has erased is named without them.
+      const generic = classDecl && ts.isClassDeclaration(classDecl) && !classDecl.getSourceFile().isDeclarationFile && !this.erasesGenerics(classDecl) ? classDecl.typeParameters ?? [] : [];
       const args = generic.length && t.flags & F.Object && (t as ts.ObjectType).objectFlags & ts.ObjectFlags.Reference ? c.getTypeArguments(t as ts.TypeReference).slice(0, generic.length) : [];
       if (args.length === generic.length && args.length) return `${name}<${args.map((a, k) => this.typeArgumentOf(generic[k], a, where)).join(', ')}>`;
       return name;
@@ -1664,6 +1687,8 @@ export class Translator implements AsyncTranslator {
     if (!sym || !decl) return null;
     const maybe = this.undefinedVars.get(sym);
     if (maybe) return maybe;
+    const erased = this.erasedMemberType(decl);
+    if (erased) return erased;
     const root = ts.isPropertyDeclaration(decl) ? this.redeclaredField(decl) : null;
     if (root) return this.redeclaredType(root);
     const kitOver = ts.isPropertyDeclaration(decl) ? this.kitRedeclared(decl) : null;
@@ -1705,7 +1730,7 @@ export class Translator implements AsyncTranslator {
   private conformingInterface(t: ts.Type): string | null {
     const c = this.checker;
     this.appInterfaces ??= this.sourceFiles.filter((f) => !this.pluginFiles.has(f.fileName)).flatMap((f) => f.statements.filter(ts.isInterfaceDeclaration))
-      .filter((d) => !d.typeParameters?.length).map((d) => ({ name: d.name.text, type: c.getDeclaredTypeOfSymbol(c.getSymbolAtLocation(d.name)!) }));
+      .filter((d) => !d.typeParameters?.length).map((d) => ({ name: this.topName(d, d.name.text), type: c.getDeclaredTypeOfSymbol(c.getSymbolAtLocation(d.name)!) }));
     const own = t.getProperties();
     if (!own.length) return null;
     const matches = this.appInterfaces.filter(({ type }) => {
@@ -2027,8 +2052,8 @@ export class Translator implements AsyncTranslator {
     for (const st of md.body.statements) {
       if (hasModifier(st, ts.SyntaxKind.DeclareKeyword)) continue;
       // A namespace's interfaces are the module's: a class of the interface's name.
-      if (ts.isInterfaceDeclaration(st)) { this.registerInterface(st.name.text, md.getSourceFile().fileName, this.interfaceMembers(st)); continue; }
-      if (ts.isTypeAliasDeclaration(st) && ts.isTypeLiteralNode(st.type)) { this.registerInterface(st.name.text, md.getSourceFile().fileName, st.type.members); continue; }
+      if (ts.isInterfaceDeclaration(st)) { this.registerInterface(this.topName(st, st.name.text), md.getSourceFile().fileName, this.interfaceMembers(st)); continue; }
+      if (ts.isTypeAliasDeclaration(st) && ts.isTypeLiteralNode(st.type)) { this.registerInterface(this.topName(st, st.name.text), md.getSourceFile().fileName, st.type.members); continue; }
       if (ts.isTypeAliasDeclaration(st)) continue;
       values = true;
       if (ts.isFunctionDeclaration(st)) { if (st.name && st.body) lines.push(this.memberFunc(st, ident(st.name.text), 'static ')); continue; }
@@ -3275,6 +3300,10 @@ ${members.join('\n')}
     if (!this.library && fe && te && fe !== te && this.classNamed(fe) && (this.protocols.has(te) || this.classNamed(te)) && this.sourceExtends(fe, te)) {
       return isOptional(from) || from.endsWith('!') ? `(${code}).map { JSArray<${te}>($0.storage.map { $0 as ${te} }) }${isOptional(to) || to.endsWith('!') ? '' : '!'}` : `JSArray<${te}>(${code}.storage.map { $0 as ${te} })`;
     }
+    // A typed array where an untyped one is wanted (an erased generic's `T[]`): a new array of its elements.
+    if (!this.library && /^JSArray<.+>[?!]?$/.test(from) && /^JSArray<Any\?>[?!]?$/.test(to) && from.replace(/[?!]$/, '') !== 'JSArray<Any?>') {
+      return isOptional(from) || from.endsWith('!') ? `(${code}).map { JSArray<Any?>($0.storage.map { $0 as Any? }) }${isOptional(to) || to.endsWith('!') ? '' : '!'}` : `JSArray<Any?>(${code}.storage.map { $0 as Any? })`;
+    }
     if (to === optionalType(from)) return code;
     if (from === optionalType(to)) {
       // Inside a call's `try` (an adapter's arguments and result): V8's TypeError where it is missing.
@@ -3557,9 +3586,9 @@ ${members.join('\n')}
       const declared = this.returnTypeOf(impl), actual = this.typeOf(e);
       if (declared !== actual && actual !== 'Void' && this.classCast('', declared, actual) !== null) return this.classCast(code, declared, actual)!;
     }
-    // A method of a generic class, which library mode erases: what it gives is untyped.
-    if (this.library && decl && !ts.isJSDocSignature(decl) && ts.isMethodDeclaration(decl) && ts.isClassLike(decl.parent) && decl.parent.typeParameters?.length && !decl.getSourceFile().isDeclarationFile) {
-      const declared = this.returnTypeOf(decl), actual = this.typeOf(e);
+    // A method of a generic class Swift has erased: what it gives is untyped.
+    if (decl && !ts.isJSDocSignature(decl) && ts.isMethodDeclaration(decl) && ts.isClassLike(decl.parent) && decl.parent.typeParameters?.length && this.erasesGenerics(decl.parent)) {
+      const declared = this.library ? this.returnTypeOf(decl) : this.emittedReturnType(decl), actual = this.typeOf(e);
       return declared === actual || actual === 'Void' ? code : this.convert(code, declared, actual);
     }
     const erased = this.erasedGeneric(e);
@@ -3574,7 +3603,18 @@ ${members.join('\n')}
     const decl = this.checker.getResolvedSignature(e)?.getDeclaration();
     if (!decl || ts.isJSDocSignature(decl) || !decl.typeParameters?.length || decl.getSourceFile().isDeclarationFile) return null;
     if ((!this.pluginFiles.has(decl.getSourceFile().fileName) || this.keepsGenerics(decl)) && !decl.typeParameters.some(erasedTypeParameter)) return null;
-    return { declared: this.returnTypeOf(decl), actual: this.typeOf(e) };
+    return { declared: this.library ? this.returnTypeOf(decl) : this.emittedReturnType(decl), actual: this.typeOf(e) };
+  }
+
+  /**
+   * An erased function's result type, as its own file's translation declares it. A function its lenient code may give
+   * as undefined is optional there, which the conversion to the call's type unwraps; an object or array converts as it is.
+   */
+  private emittedReturnType(fn: ts.SignatureDeclaration): string {
+    return this.inFile(fn.getSourceFile().fileName, () => {
+      const ret = this.returnTypeOf(fn);
+      return this.inNativeClass(fn) || !isFunctionType(ret) ? ret : this.lenientRef(ret);
+    });
   }
 
   private untypedLinks = new Set<ts.Node>();
@@ -3638,8 +3678,36 @@ ${members.join('\n')}
   }
   private genericFunctions = new Map<ts.Node, boolean>();
 
+  /**
+   * Whether Swift has a generic class or function of a plugin's (or of the kit's, in library mode) without its type
+   * parameters: TypeScript's generic classes are structurally variant, Swift's invariant, so plugin code assigning
+   * `Plot<Point>` where `Plot<any>` is taken compiles only erased. Each parameter is then any value.
+   */
+  private erasesGenerics(decl: ts.Node): boolean {
+    return !decl.getSourceFile().isDeclarationFile && this.pluginFiles.has(decl.getSourceFile().fileName) && !this.keepsGenerics(decl);
+  }
+
+  /** The Swift type of a member whose declared type names a type parameter of its erased generic class (`data: T` as `Any?`); null for any other. */
+  private erasedMemberType(decl: ts.Declaration): string | null {
+    if (this.library) return null;
+    const owner = ts.isParameter(decl) && ts.isConstructorDeclaration(decl.parent) ? decl.parent.parent : decl.parent;
+    const type = (ts.isPropertyDeclaration(decl) || ts.isPropertySignature(decl) || ts.isParameter(decl) || ts.isGetAccessor(decl)) ? decl.type : undefined;
+    if (!type || !owner || !ts.isClassLike(owner) || !owner.typeParameters?.length || !this.erasesGenerics(owner)) return null;
+    const params = new Set(owner.typeParameters.map((p) => this.checker.getSymbolAtLocation(p.name)));
+    let named = false;
+    const visit = (n: ts.Node) => {
+      if (ts.isTypeReferenceNode(n) && ts.isIdentifier(n.typeName) && params.has(this.checker.getSymbolAtLocation(n.typeName))) named = true;
+      if (!named) ts.forEachChild(n, visit);
+    };
+    visit(type);
+    if (!named || !decl.name) return null;
+    // As the plugin's own file declares it, whatever file reads it.
+    const t = this.inFile(decl.getSourceFile().fileName, () => (ts.isParameter(decl) ? this.paramType(decl) : this.typeOf(decl.name!)));
+    return t.replace(/!$/, '?');
+  }
+
   private generics(fn: ts.SignatureDeclaration | ts.ClassLikeDeclaration): string {
-    if (this.pluginFiles.has(fn.getSourceFile().fileName) && !this.keepsGenerics(fn)) return '';
+    if (this.erasesGenerics(fn)) return '';
     const kept = (fn.typeParameters ?? []).filter((p) => !erasedTypeParameter(p));
     for (const p of kept) this.genericNames.add(p.name.text);
     // A constraint naming a class: what the body may read of the parameter.
@@ -3884,7 +3952,7 @@ ${members.join('\n')}
   /** `<DatePicker>` of `extends UITest<DatePicker>`: the arguments a generic program class is extended with. */
   private typeArguments(heritage: ts.ExpressionWithTypeArguments, base: ts.ClassLikeDeclaration): string {
     const params = (base.typeParameters ?? []).filter((p) => !erasedTypeParameter(p));
-    if (!params.length || (this.pluginFiles.has(base.getSourceFile().fileName) && !this.keepsGenerics(base))) return '';
+    if (!params.length || this.erasesGenerics(base)) return '';
     const args = (base.typeParameters ?? []).map((p, k) => (erasedTypeParameter(p) ? null : this.typeArgument(p, heritage.typeArguments?.[k]))).filter((a): a is string => a !== null);
     return `<${args.join(', ')}>`;
   }
@@ -7123,6 +7191,11 @@ ${members.join('\n')}
       const cast = this.classCast(this.expr(e), source, target);
       if (cast) return cast;
     }
+    // A typed array where an untyped one is wanted (an erased generic's `T[]`): a literal built untyped, else a new array of its elements.
+    if (!this.library && /^JSArray<Any\?>[?!]?$/.test(target) && /^JSArray<.+>[?!]?$/.test(source) && source.replace(/[?!]$/, '') !== 'JSArray<Any?>') {
+      if (ts.isArrayLiteralExpression(bare) && !bare.elements.some(ts.isSpreadElement)) return this.array(bare, 'JSArray<Any?>');
+      return this.convert(this.expr(e), source, target);
+    }
     if (/^JSPromise<(Any\?|JSArray<Any\?>)>$/.test(source) && /^JSPromise<.*>[?!]?$/.test(target) && source !== target.replace(/[?!]$/, '')) {
       const all = ts.isCallExpression(bare) && ts.isPropertyAccessExpression(bare.expression) && bare.expression.name.text === 'all' && ts.isIdentifier(bare.expression.expression) && bare.expression.expression.text === 'Promise' && this.isLibGlobal(bare.expression.expression) && bare.arguments.length === 1 && !ts.isArrayLiteralExpression(bare.arguments[0]) ? bare : null;
       return all ? this.untypedAll(all.arguments[0], target) : this.promiseAs(this.expr(e), source, target);
@@ -8404,7 +8477,7 @@ ${members.join('\n')}
         // An interface is a Swift type of its name (a class in library mode, else a protocol or object class), so it shares the
         // namespace with the classes (sqlite's `SQLiteDatabase` interface in its common file, the class in its iOS one).
         if (library ? ts.isInterfaceDeclaration(st) || (ts.isTypeAliasDeclaration(st) && ts.isTypeLiteralNode(st.type))
-          : ts.isInterfaceDeclaration(st) && !(this.checker.getSymbolAtLocation(st.name)!.flags & ts.SymbolFlags.Class)) add(st.name.text, st);
+          : (ts.isInterfaceDeclaration(st) && !(this.checker.getSymbolAtLocation(st.name)!.flags & ts.SymbolFlags.Class)) || (ts.isTypeAliasDeclaration(st) && ts.isTypeLiteralNode(st.type) && this.core.has(st.name.text))) add(st.name.text, st);
         if (library) continue;
         if (ts.isFunctionDeclaration(st) && st.name) add(st.name.text, st);
         if (ts.isVariableStatement(st) && !hasModifier(st, ts.SyntaxKind.DeclareKeyword)) for (const d of st.declarationList.declarations) if (ts.isIdentifier(d.name)) add(d.name.text, d);
@@ -8412,9 +8485,12 @@ ${members.join('\n')}
     }
     this.renamedTop = new Map();
     for (const [name, list] of byName) {
-      // A plugin class named as a NativeScriptKit class (one extending core's `Observable`) takes its module's name too.
+      // A plugin's or the app's type named as a NativeScriptKit type takes its module's name too: a class (one extending core's
+      // `Observable`), and outside the kit a namespace, enum, interface or object type (ui-chart's `Utils`), since a declaration
+      // of the app's module hides the kit's of its name from every file of the app.
       // A function or variable named as the kit's top-level one (a plugin's own `booleanConverter`) takes its module's name, which the app's imports of core's leave to the kit's.
-      const kitClash = (list.some((x) => ts.isClassDeclaration(x.decl)) && (this.library ? this.core.declares(name) : this.core.has(name)))
+      const typeLike = (d: ts.Node) => ts.isClassDeclaration(d) || (!this.library && (ts.isModuleDeclaration(d) || ts.isEnumDeclaration(d) || ts.isInterfaceDeclaration(d) || ts.isTypeAliasDeclaration(d)));
+      const kitClash = (list.some((x) => typeLike(x.decl)) && (this.library ? this.core.declares(name) : this.core.has(name)))
         || (!this.library && list.some((x) => ts.isFunctionDeclaration(x.decl) || ts.isVariableDeclaration(x.decl)) && this.core.exportsTopLevel(name));
       // A generated class and a hand-ported one of the same name: the hand port of that module has to go first.
       if (kitClash && list.some((x) => this.library?.moduleName(x.file.fileName))) this.kitClashes.push(name);
@@ -8441,6 +8517,23 @@ ${members.join('\n')}
       }
     };
     for (const sf of this.sourceFiles) if (!sf.isDeclarationFile) for (const st of sf.statements) if (ts.isModuleDeclaration(st)) nested(st);
+    // A namespace's interface is a class of the module's (see `namespaceDecl`): where another declaration of the module, another
+    // namespace's interface or the kit has its name, it takes its namespace's.
+    if (!this.library) {
+      const hoisted = new Map<string, { decl: ts.Node; ns: ts.ModuleDeclaration }[]>();
+      const collect = (md: ts.ModuleDeclaration) => {
+        if (!md.body || !ts.isModuleBlock(md.body) || hasModifier(md, ts.SyntaxKind.DeclareKeyword)) return;
+        for (const st of md.body.statements) {
+          if (ts.isInterfaceDeclaration(st) || (ts.isTypeAliasDeclaration(st) && ts.isTypeLiteralNode(st.type))) hoisted.set(st.name.text, [...(hoisted.get(st.name.text) ?? []), { decl: st, ns: md }]);
+          if (ts.isModuleDeclaration(st)) collect(st);
+        }
+      };
+      for (const sf of this.sourceFiles) if (!sf.isDeclarationFile) for (const st of sf.statements) if (ts.isModuleDeclaration(st)) collect(st);
+      for (const [name, list] of hoisted) {
+        if (!byName.has(name) && list.length < 2 && !this.core.has(name)) continue;
+        for (const x of list) this.renamedTop.set(x.decl, `${name}__${(this.namespacePath(x.ns) ?? '').replace(/\./g, '_')}`);
+      }
+    }
     return this.renamedTop;
   }
 
@@ -8642,6 +8735,15 @@ ${members.join('\n')}
       // An untyped object's member is read as `want` already; a signal's value (`Signal<T>`, a Vue ref) is held as its type.
       const signal = /^Signal<(.*)>[?!]?$/.exec(this.typeOf(e.expression))?.[1];
       return want === 'Any?' || this.isAny(e.expression) || signal === want ? read : this.fromAny(read, want);
+    }
+    // A field of an erased generic class typed by its parameters (`data: T`, `points: T[]`): read as this instantiation types it.
+    const held = decl && !isWriteTarget(e) && !this.isAny(e.expression) ? this.erasedMemberType(decl) : null;
+    if (held) {
+      const want = this.typeOf(e);
+      const read = this.propertyRead(e);
+      if (held === want || want === 'Any?' || want === 'Void') return read;
+      if (held === 'Any?') return this.fromAny(read, want);
+      return isOptional(held) && !isOptional(want) ? this.fromAny(`(${read} as Any?)`, want) : this.convert(read, held, want);
     }
     const root = decl && !isWriteTarget(e) ? this.narrowedFrom(decl) : null;
     if (root) {
@@ -9325,10 +9427,10 @@ ${members.join('\n')}
         out.push(this.coerce(a, pt));
         continue;
       }
-      // A method of a generic class, which library mode erases: the parameter's type as the method declares it.
-      const erased = (this.library && decl && ts.isParameter(decl) && ts.isClassLike(decl.parent.parent) && !!decl.parent.parent.typeParameters?.length && !decl.getSourceFile().isDeclarationFile)
-        // A program function's type parameter Swift erases (`U extends { root: View }`): the parameter as declared, the argument's type erased with it.
-        || (!!decl && ts.isParameter(decl) && !!decl.type && !decl.getSourceFile().isDeclarationFile && !!(decl.parent as ts.SignatureDeclaration).typeParameters?.some((tp) => erasedTypeParameter(tp) && new RegExp(`\\b${tp.name.text}\\b`).test(decl.type!.getText())));
+      // A method or constructor of a generic class Swift has erased: the parameter's type as the method declares it.
+      const erased = (!!decl && ts.isParameter(decl) && ts.isClassLike(decl.parent.parent) && !!decl.parent.parent.typeParameters?.length && this.erasesGenerics(decl.parent.parent))
+        // A program function's type parameter Swift erases (`U extends { root: View }`, any of a plugin's): the parameter as declared, the argument's type erased with it.
+        || (!!decl && ts.isParameter(decl) && !!decl.type && !decl.getSourceFile().isDeclarationFile && !!(decl.parent as ts.SignatureDeclaration).typeParameters?.some((tp) => (erasedTypeParameter(tp) || (!this.library && this.erasesGenerics(decl.parent))) && new RegExp(`\\b${tp.name.text}\\b`).test(decl.type!.getText())));
       // In code the checker finds unreachable a parameter's type is never: its declared type.
       const at = this.type(this.checker.getTypeOfSymbolAtLocation(p, e), e);
       // An override emitted with its root's signature (library mode): the parameter as Swift has it.
@@ -9336,7 +9438,7 @@ ${members.join('\n')}
       const emitted = method && this.baseMethod(method) ? this.emittedSignature(method).params[k]?.type.replace(/!$/, '?') : undefined;
       // An optional parameter of the program's (`cssFileName?: string`, `namespace: string | undefined`) takes undefined as it is.
       const omissible = !emitted && !erased && decl && ts.isParameter(decl) && (!!decl.questionToken || this.declaredUndefined(decl) || this.looseDeclaration(decl)) && !decl.getSourceFile().isDeclarationFile && (['String', 'Double', 'Bool'].includes(at) || (this.looseDeclaration(decl) && this.looseObjectType(at)));
-      out.push(this.coerce(a, emitted ?? (omissible ? optionalType(at) : erased ? this.paramType(decl as ts.ParameterDeclaration) : at === 'Never' ? this.type(this.checker.getTypeOfSymbol(p), e) : at)));
+      out.push(this.coerce(a, emitted ?? (omissible ? optionalType(at) : erased ? this.inFile(decl!.getSourceFile().fileName, () => this.paramType(decl as ts.ParameterDeclaration)) : at === 'Never' ? this.type(this.checker.getTypeOfSymbol(p), e) : at)));
     }
     if (restAt >= 0 && appDeclared && list.length <= restAt) out.push(`${this.restType(params[restAt])}()`);
     // A function declaring `this`, called plainly: its `this` is undefined.
@@ -9739,7 +9841,9 @@ ${members.join('\n')}
         const rt = this.typeOf(e);
         return rt.endsWith('?') || rt === 'Any?' || rt === 'Void' || ts.isExpressionStatement(e.parent) || this.rawOptional.has(e) ? code : this.undefinedAs(`(${code})`, rt);
       }
-      const member = `${checked ?? `${this.expr(target)}${q}`}.${ident(method)}`;
+      // A method Optional also declares (`series.map(f)`), on a value held implicitly unwrapped: the class's, not Optional's.
+      const own = !this.library && !checked && !q && ['map', 'flatMap'].includes(method) && /^[\w.]+(<.*>)?$/.test(tt) ? `(${this.expr(target)} as ${tt})` : null;
+      const member = `${checked ?? own ?? `${this.expr(target)}${q}`}.${ident(method)}`;
       const plain = `${this.heldFunctionCall(e) ? `jsCallable(${member}, ${swiftString(callee.getText().replace(/\s+/g, ' '))})` : member}(${this.args(e, this.arity(e)).join(', ')})`;
       // An override emitted with its base's signature gives what the base's result type holds.
       const decl = this.checker.getResolvedSignature(e)?.getDeclaration();

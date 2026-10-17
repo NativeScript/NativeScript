@@ -95,7 +95,16 @@ export interface NativeTable {
   types?: Record<string, string>;
   /** What the module's C typedefs stand for, by Swift name (`TimeInterval` → `Double`). */
   typealiases?: Record<string, SwiftType>;
+  /**
+   * Every public top-level type the module declares to Swift, Swift-only ones too (StoreKit's `SubscriptionInfo`), by
+   * name: what a file importing it and another module declaring the name has to tell apart.
+   */
+  swiftTypes?: Record<string, ScopedKind>;
 }
+
+/** A declaration's kind as a scoped import names it (`import class Module.Name`). */
+export type ScopedKind = 'class' | 'struct' | 'enum' | 'protocol' | 'typealias';
+const SCOPED_KINDS: Record<string, ScopedKind> = { 'swift.class': 'class', 'swift.struct': 'struct', 'swift.enum': 'enum', 'swift.protocol': 'protocol', 'swift.typealias': 'typealias' };
 
 const COMPILER = fileURLToPath(new URL('../..', import.meta.url));
 const TARGET = 'arm64-apple-ios17.0-simulator';
@@ -116,7 +125,7 @@ export function isSubframework(module: string): boolean {
 // By the SDK's build too: a beta and its release candidate share a version and differ in API.
 const cacheDir = () => join(process.env.NS_NATIVE_TABLE_CACHE ?? join(COMPILER, '.cache'), `ios-${sdk().version}-${sdk().build}`);
 /** The layout tables are written in: availability of enums, escaping block parameters, optional protocol properties. */
-const TABLE_FORMAT = 5;
+const TABLE_FORMAT = 6;
 
 const tables = new Map<string, NativeTable>();
 
@@ -218,6 +227,7 @@ function generate(module: string, extraArgs: string[], plugin = false, internal 
   const dir = mkdtempSync(join(tmpdir(), `symbols-${module}-`));
   const symbols = new Map<string, Sym>();
   const rels: Rel[] = [];
+  const swiftTypes: Record<string, ScopedKind> = {};
   // A Swift module's `@objc` declarations (`c:@M@Module@objc(cs)…`; in extensions `c:@CM@Module@…`, `c:@CM@Module@@…`) under the USRs Objective-C's would have.
   const objcUSR = plugin ? (usr: string) => usr.replace(/^c:@C?M@\w+@@?/, 'c:') : (usr: string) => usr;
   try {
@@ -235,6 +245,12 @@ function generate(module: string, extraArgs: string[], plugin = false, internal 
       const graph = JSON.parse(readFileSync(join(dir, f), 'utf8'));
       rmSync(join(dir, f));
       const initOwners = new Set<string>(plugin ? graph.symbols.filter((s: any) => s.kind.identifier === 'swift.init').map((s: any) => s.pathComponents.slice(0, -1).join('.')) : []);
+      if (f === `${module}.symbols.json`) {
+        for (const s of graph.symbols) {
+          const kind = SCOPED_KINDS[s.kind.identifier];
+          if (kind && s.pathComponents.length === 1 && (s.accessLevel === 'public' || s.accessLevel === 'open') && !s.pathComponents[0].startsWith('_')) swiftTypes[s.pathComponents[0]] = kind;
+        }
+      }
       for (const s of graph.symbols) {
         const swiftClass = plugin && s.kind.identifier === 'swift.class' && /^c:@M@/.test(s.identifier.precise);
         s.identifier.precise = objcUSR(s.identifier.precise);
@@ -251,7 +267,7 @@ function generate(module: string, extraArgs: string[], plugin = false, internal 
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
-  return build(module, symbols, rels);
+  return { ...build(module, symbols, rels), swiftTypes };
 }
 
 function emptyTable(module: string): NativeTable {
