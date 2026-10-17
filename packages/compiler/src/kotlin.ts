@@ -696,7 +696,7 @@ export class Translator implements AsyncTranslator {
       case 'RouterExtensions': return 'Router';
       // `Promise.allSettled`'s results are the plain objects it makes (either of them, a union, is untyped).
       case 'PromiseFulfilledResult': case 'PromiseRejectedResult': return 'JSObject';
-      case 'NativeDialogRef': case 'NativeDialogService': case 'DestroyRef': case 'Injector': case 'NgZone': case 'HttpClient':
+      case 'NativeDialogRef': case 'NativeDialogService': case 'DestroyRef': case 'Injector': case 'NgZone': case 'HttpClient': case 'ChangeDetectorRef': case 'PurePipeCache': case 'ElementRef': case 'SimpleChange':
         if (sym?.declarations?.[0]?.getSourceFile().fileName.startsWith('/__shims__/')) return name;
         break;
       case 'Promise': case 'PromiseLike': return `JSPromise<${arg(0)}>`;
@@ -3163,7 +3163,8 @@ export class Translator implements AsyncTranslator {
       if (this.library?.identities.has(d.expression.getText().replace(/\(.*$/s, ''))) continue;
       // Library mode: a module-level class's decorators run with the module's statements, on its prototype (`@CSSType`, `@SelectorProperties`).
       if (this.library && this.staticInits && !/^(NativeClass|Injectable)\b/.test(d.expression.getText())) { decorators.push(d); continue; }
-      if (!/^(CSSType|NativeClass|Injectable)\b/.test(d.expression.getText())) throw this.error(d, `the class decorator ${d.expression.getText()}`);
+      // An NgModule's metadata is Angular's compiler's: a compiled build reads what it declares from the components.
+      if (!/^(CSSType|NativeClass|Injectable|NgModule)\b/.test(d.expression.getText())) throw this.error(d, `the class decorator ${d.expression.getText()}`);
     }
     if (decorators.length) {
       this.indent = '    ';
@@ -6941,6 +6942,8 @@ export class Translator implements AsyncTranslator {
       const owner = this.symbolName(target);
       const signalValue = () => this.typeOf(target).replace(/^Signal<(.*)>$/, '$1');
       if ((owner === 'Writable' || owner === 'WritableSignal') && method === 'set') return `${this.expr(target)}.value = ${this.signalWrite(target, e.arguments[0], signalValue())}`;
+      // A prop (`this.x`) reads as its value: the signal itself is the field.
+      if (owner === 'InputSignal' && method === '$assign') return `${ts.isPropertyAccessExpression(target) && this.isSelf(target.expression) && this.props.has(target.name.text) ? `this.${ident(target.name.text)}` : this.expr(target)}.value = ${this.signalWrite(target, e.arguments[0], signalValue())}`;
       if ((owner === 'Writable' || owner === 'WritableSignal') && method === 'update') return `${this.expr(target)}.update(${this.closure(e.arguments[0] as ts.ArrowFunction, `(${signalValue()}) -> ${signalValue()}`)})`;
       if (owner === 'WritableSignal' && method === '$write') {
         const a = e.arguments[0];
@@ -9680,6 +9683,8 @@ function injected(token: string): string {
     case 'ActivatedRoute': return 'ActivatedRoute.current';
     case 'Page': return 'injectedPage()';
     case 'DestroyRef': return 'DestroyRef.current()';
+    case 'ChangeDetectorRef': return 'ChangeDetectorRef.current()';
+    case 'ElementRef': return 'ElementRef.current()';
     case 'NativeDialogRef': return 'NativeDialogRef.current';
     default: return `${token}.shared`;
   }

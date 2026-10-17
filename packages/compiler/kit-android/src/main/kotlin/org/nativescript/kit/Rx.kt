@@ -261,3 +261,30 @@ fun <T> takeUntilDestroyed(destroyRef: DestroyRef? = null): RxOperatorFunction<T
         }
     }
 }
+
+/** `ElementRef`: a view of a template, as a view query (`@ViewChild('ref', { read: ElementRef })`) gives it. */
+class ElementRef(nativeElement: Any?) {
+    var nativeElement: Any? = nativeElement
+        private set
+
+    /** A component's own ElementRef, made with the component: its template's root view, once made. */
+    fun attach(host: Any?) { nativeElement = host }
+
+    companion object {
+        private val hosts = mutableListOf<Any?>()
+
+        /** Makes a directive of an element: its `inject(ElementRef)` is the element. */
+        fun <T> hosting(host: Any?, make: () -> T): T {
+            hosts.add(host)
+            try { return make() } finally { hosts.removeAt(hosts.size - 1) }
+        }
+
+        /** `inject(ElementRef)`: the element whose directive is being made; elsewhere, a ref to no view. */
+        fun current(): ElementRef = ElementRef(hosts.lastOrNull())
+    }
+}
+
+/** `SimpleChange`: one input's change, as `ngOnChanges` receives it. */
+class SimpleChange(var previousValue: Any?, var currentValue: Any?, var firstChange: Boolean) {
+    fun isFirstChange(): Boolean = firstChange
+}

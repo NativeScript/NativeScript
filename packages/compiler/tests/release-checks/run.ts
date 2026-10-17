@@ -16,7 +16,7 @@ import { createProgram } from '../../src/program.ts';
 import { preflight } from '../../src/preflight.ts';
 import { satisfies } from '../../src/contract.ts';
 import { mapKotlinDiagnostics } from '../../src/kotlin-diagnostics.ts';
-import { angularComponent, angularRouteTree, componentOf, routedComponents, type AngularComponent } from '../../src/angular.ts';
+import { angularComponent, angularRouteTree, componentOf, declarableSource, routedComponents, type AngularComponent } from '../../src/angular.ts';
 import { angularLibraries } from '../../src/angular-libraries.ts';
 import { pathAliases } from '../../src/app-paths.ts';
 import { appImports, reachedFrom, tsconfigIncluded } from '../../src/app-modules.ts';
@@ -128,6 +128,61 @@ export class People { items = [{ id: 1, name: 'Alan Turing' }]; }
   check(method(mixed, (linked(mixed, 'Label').attrs as { name: string; method?: string }[]).find((a) => a.name === 'text')?.method ?? '-').includes("return (`Hi ${(this.items.length > 1 ? 'all' : 'one') ?? ''}!`);"), 'a text attribute mixing literal text and {{ }} is a template literal of both');
   const documented = componentOf('/app/pill.component.ts', `@Component({ selector: 'primary-pill', template: '' })\n/** A doc comment between the decorator and the class. */\nexport class PrimaryPill {}\n`);
   check(documented?.selector === 'primary-pill' && documented.name === 'PrimaryPill', "a component's selector is read whatever comes between its decorator and its class");
+
+  // Angular's template features beyond bindings: platform filters, ng-container, NgSwitch, NgTemplateOutlet, pipes.
+  const source = (template: string, members = 'items = [{ id: 1, name: "Alan Turing" }]; mode = "a"; when = new Date(0); first = { name: "Ada" };') => `import { Component } from '@angular/core';
+@Component({ selector: 'People', template: \`${template}\` })
+export class People { ${members} }
+`;
+  const shaped = (template: string, options: Parameters<typeof angularComponent>[3] = {}) => angularComponent('/app/people.component.ts', source(template), new Map(), options)!;
+  const tags = (c: AngularComponent) => all(c.template as Node[]).map((n) => n.tag ?? n.kind);
+  const filtered = shaped(`<StackLayout><android><Label text="a"></Label></android><ios><Button text="i"></Button></ios></StackLayout>`, { platform: 'ios' });
+  check(tags(filtered).includes('Button') && !tags(filtered).includes('Label'), '<ios> renders its content on iOS and <android> nothing, as the platform filter components do');
+  const contained = shaped(`<StackLayout><ng-container row="1"><Label text="x"></Label></ng-container></StackLayout>`);
+  check(tags(contained).join() === 'StackLayout,Label', "<ng-container>'s attributes select directives only: its children join its parent");
+  const switched = shaped(`<StackLayout [ngSwitch]="mode"><Label *ngSwitchCase="'a'" text="a"></Label><Label *ngSwitchDefault text="d"></Label></StackLayout>`);
+  check(/=== \('a'\)/.test(switched.source) && /!\(\(this\.\$b\d+\(\)\) === \('a'\)\)/.test(switched.source), "ngSwitchDefault renders when no ngSwitchCase is === the switch's value");
+  const outlet = shaped(`<StackLayout><ng-template #row let-person let-n="index"><Label [text]="n + person.name"></Label></ng-template><ng-container *ngTemplateOutlet="row; context: { $implicit: first, index: 1 }"></ng-container></StackLayout>`);
+  check(/return \(\(\(1\)\) \+ \(\(this\.first\)\)\.name\)/.test(outlet.source), "ngTemplateOutlet renders the referenced template, its let- variables read from the context's properties");
+  const piped = shaped(`<StackLayout><Label *ngFor="let item of items" [text]="item.name | uppercase"></Label><Label [text]="when | date: 'y'"></Label><Label [text]="items | json"></Label></StackLayout>`, { runtimeModule: '/app/__angular.release.ts' });
+  const loop = all(piped.template as Node[]).find((n) => n.kind === 'for') as Node | undefined;
+  check(!!loop && (loop.body ?? []).some((n) => n.kind === 'local'), 'a pipe in an *ngFor row is one per row, a local of the row');
+  check(/\$c\d+\.pure1\(/.test(piped.source) && /\$c\d+\.pure2\(\(this\.when\), \('y'\)/.test(piped.source) && /\$p\d+\.transform\(this\.items\)/.test(piped.source), 'a pure pipe transforms through its site\'s cache, an impure one on every check');
+  check(!!piped.usesRuntime && piped.source.includes("from './__angular.release'"), "@angular/common's pipes come from the build's Angular runtime module");
+  let unknown = '';
+  try { shaped(`<Label [text]="items | currency"></Label>`); } catch (e) { unknown = String(e); }
+  check(unknown.includes("@angular/common's currency pipe is not supported"), 'a pipe the build has no class for stops the build, naming it');
+  const classic = angularComponent('/app/badge.component.ts', `import { Component, Input } from '@angular/core';
+@Component({ selector: 'Badge', template: '<Label [text]="tone"></Label>' })
+export class Badge { @Input('total') count = 0; @Input() set tone(v: string) { this.shown = v; } shown = ''; bump() { this.count += 1; this.tone = 'x'; } }
+`, new Map())!;
+  check(classic.setters?.join() === 'tone' && classic.propAliases?.count === 'total', "an @Input setter is a setter prop, an aliased input bound by its alias");
+  check(/this\.count\.\$assign\(this\.count\(\) \+ \(1\)\)/.test(classic.source) && /this\.\$set_tone\('x'\)/.test(classic.source), 'a component writing its own inputs writes their signal, or calls the setter');
+  const queried = angularComponent('/app/q.component.ts', `import { Component, ElementRef, ViewChild } from '@angular/core';
+@Component({ selector: 'Q', template: '<StackLayout #box><Label #title></Label></StackLayout>' })
+export class Q { @ViewChild('box', { static: true }) box: ElementRef; @ViewChild('title') title: ElementRef; ngOnInit() {} ngAfterViewInit() {} ngOnDestroy() {} }
+`, new Map())!;
+  const box = all(queried.template as Node[]).find((n) => n.tag === 'StackLayout') as Node & { init?: boolean; queries?: unknown[] };
+  check(!!queried.lateInit && !!box?.init && box.queries?.length === 1, 'a static view query is set when its element is made, and ngOnInit runs once it is');
+  check(queried.afterViewInit === 'ngAfterViewInit' && queried.destroy === 'ngOnDestroy' && /this\.box = new \$ElementRef\(\$q\)/.test(queried.source), "ngAfterViewInit and ngOnDestroy are the component's hooks, a #ref query an ElementRef");
+  const directive = { className: 'Glow', file: '/app/glow.directive.ts', selector: '[glow]', inputs: new Map([['glow', 'level']]), listeners: [{ event: 'tap', code: 'flash($event)' }], bindings: [{ prop: 'opacity', code: 'level' }], attributes: [], create: false, hooks: new Set(['ngOnInit']), structural: false, members: ['level', 'flash'] };
+  const glowing = angularComponent('/app/g.component.ts', `import { Component } from '@angular/core';
+import { Glow } from './glow.directive';
+@Component({ selector: 'G', imports: [Glow], template: '<StackLayout><Label [glow]="2"></Label><Label text="no glow"></Label></StackLayout>' })
+export class G {}
+`, new Map(), { directives: [directive] })!;
+  const lit = all(glowing.template as Node[]).filter((n) => n.tag === 'Label') as (Node & { directives?: { inputs: unknown[]; listeners: unknown[]; bindings: unknown[] }[] })[];
+  check(lit[0]?.directives?.length === 1 && lit[0].directives[0].inputs.length === 1 && !lit[0].attrs?.some((a) => a.name === 'glow') && !lit[1]?.directives, "a directive in the component's scope applies where its selector matches, and its inputs' bindings are its own");
+  const outOfScope = angularComponent('/app/h.component.ts', `import { Component } from '@angular/core';
+@Component({ selector: 'H', template: '<Label [glow]="2"></Label>' })
+export class H {}
+`, new Map(), { directives: [directive] })!;
+  check(!(all(outOfScope.template as Node[])[0] as { directives?: unknown[] }).directives, "a directive the component does not import does not apply");
+  const decl = declarableSource('/app/glyph.pipe.ts', `import { Pipe, Inject, Optional, ChangeDetectorRef } from '@angular/core';
+@Pipe({ name: 'glyph', pure: false })
+export class GlyphPipe { constructor(@Inject(TOKEN) private config: any, @Optional() private ref: ChangeDetectorRef) {} transform(v: string) { return v; } }
+`) ?? '';
+  check(!decl.includes('@Pipe') && !decl.includes('@Inject') && /static \$create\(\): GlyphPipe \{ return new GlyphPipe\(inject\(TOKEN\), inject\(ChangeDetectorRef, \{ optional: true \}\)\); \}/.test(decl) && decl.startsWith("import { inject } from '@angular/core';"), "a pipe's constructor is injected through $create, as Angular's factory injects it");
 }
 
 // ---- An app's own module graph ----

@@ -67,3 +67,44 @@ private var users = 0
 
 /** Svelte's `$effect`: after every template effect a write invalidates, in creation order. */
 fun <T> EffectOrder.user(body: () -> T): T = EffectOrder.run(EffectOrder.Scope(listOf(Int.MAX_VALUE, ++users)), body)
+
+/**
+ * A pure Angular pipe at one binding site (`ɵɵpipeBind1`…): `transform` runs when an argument is no longer
+ * `Object.is` the one it last ran with, and otherwise the result it gave is returned. What it throws is not kept.
+ */
+class PurePipeCache {
+    private var arguments: List<Any?>? = null
+    private var result: Any? = null
+
+    @Suppress("UNCHECKED_CAST")
+    private inline fun <R> run(given: List<Any?>, transform: () -> R): R {
+        val last = arguments
+        if (last != null && last.size == given.size && last.indices.all { jsSameValue(last[it], given[it]) }) return result as R
+        val value = transform()
+        arguments = given
+        result = value
+        return value
+    }
+
+    fun <A, R> pure1(a: A, transform: (A) -> R): R = run(listOf(a)) { transform(a) }
+    fun <A, B, R> pure2(a: A, b: B, transform: (A, B) -> R): R = run(listOf(a, b)) { transform(a, b) }
+    fun <A, B, C, R> pure3(a: A, b: B, c: C, transform: (A, B, C) -> R): R = run(listOf(a, b, c)) { transform(a, b, c) }
+    fun <A, B, C, D, R> pure4(a: A, b: B, c: C, d: D, transform: (A, B, C, D) -> R): R = run(listOf(a, b, c, d)) { transform(a, b, c, d) }
+    fun <A, B, C, D, E, R> pure5(a: A, b: B, c: C, d: D, e: E, transform: (A, B, C, D, E) -> R): R = run(listOf(a, b, c, d, e)) { transform(a, b, c, d, e) }
+}
+
+/**
+ * `inject(ChangeDetectorRef)`. With zone.js the tick after every task checks every view, so `markForCheck` has nothing
+ * to add, and `detectChanges` ticks now; a zoneless template's bindings re-run when the signals they read change.
+ */
+class ChangeDetectorRef internal constructor() {
+    fun markForCheck() {}
+    fun detectChanges() { if (Zone.enabled) Zone.tick() }
+    fun detach() {}
+    fun reattach() {}
+    fun checkNoChanges() {}
+
+    companion object {
+        fun current(): ChangeDetectorRef = ChangeDetectorRef()
+    }
+}

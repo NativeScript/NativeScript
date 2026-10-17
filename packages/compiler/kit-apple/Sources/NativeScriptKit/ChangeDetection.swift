@@ -66,3 +66,61 @@ extension EffectOrder {
         return run(Scope(prefix: [Int.max, users]), body)
     }
 }
+
+/// A pure Angular pipe at one binding site (`ɵɵpipeBind1`…): `transform` runs when an argument is no longer
+/// `Object.is` the one it last ran with, and otherwise the result it gave is returned. What it throws is not kept.
+public final class PurePipeCache {
+    nonisolated deinit {}
+    private var arguments: [Any?]?
+    private var result: AnyObject?
+
+    private final class Kept<R> {
+        let value: R
+        init(_ value: R) { self.value = value }
+    }
+
+    public init() {}
+
+    private func run<R>(_ given: [Any?], _ transform: () throws -> R) rethrows -> R {
+        if let arguments, arguments.count == given.count, zip(arguments, given).allSatisfy({ jsSameValue($0, $1) }), let kept = result as? Kept<R> {
+            return kept.value
+        }
+        let value = try transform()
+        arguments = given
+        result = Kept(value)
+        return value
+    }
+
+    public func pure1<A, R>(_ a: A, _ transform: (A) throws -> R) rethrows -> R { try run([a]) { try transform(a) } }
+    public func pure2<A, B, R>(_ a: A, _ b: B, _ transform: (A, B) throws -> R) rethrows -> R { try run([a, b]) { try transform(a, b) } }
+    public func pure3<A, B, C, R>(_ a: A, _ b: B, _ c: C, _ transform: (A, B, C) throws -> R) rethrows -> R { try run([a, b, c]) { try transform(a, b, c) } }
+    public func pure4<A, B, C, D, R>(_ a: A, _ b: B, _ c: C, _ d: D, _ transform: (A, B, C, D) throws -> R) rethrows -> R { try run([a, b, c, d]) { try transform(a, b, c, d) } }
+    public func pure5<A, B, C, D, E, R>(_ a: A, _ b: B, _ c: C, _ d: D, _ e: E, _ transform: (A, B, C, D, E) throws -> R) rethrows -> R { try run([a, b, c, d, e]) { try transform(a, b, c, d, e) } }
+}
+
+/// `inject(ChangeDetectorRef)`: the view being created when it is injected (a component's, or the embedded view a
+/// pipe is in). `markForCheck` marks it and the views above it dirty and schedules the update that re-checks them;
+/// with zone.js the tick after every task checks every view, so it has nothing to add.
+public final class ChangeDetectorRef {
+    nonisolated deinit {}
+    private weak var view: AngularView?
+
+    init(_ view: AngularView?) { self.view = view }
+
+    public static func current() -> ChangeDetectorRef { ChangeDetectorRef(EffectOrder.current.view) }
+
+    public func markForCheck() {
+        if Zone.enabled { return }
+        Reactivity.markForCheck(view)
+    }
+
+    /// Checks the view now: its bindings and the views above it, which is more than Angular checks and gives the same values.
+    public func detectChanges() {
+        if Zone.enabled { Zone.tick(); return }
+        Reactivity.markForCheck(view, now: true)
+    }
+
+    public func detach() {}
+    public func reattach() {}
+    public func checkNoChanges() {}
+}

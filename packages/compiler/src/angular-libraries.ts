@@ -1,6 +1,6 @@
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
-import { componentOf } from './angular.ts';
+import { componentOf, declarablesIn } from './angular.ts';
 import { KIT_PLUGINS } from './core.ts';
 import type { PluginSources } from './plugins/source.ts';
 
@@ -24,19 +24,27 @@ export function angularLibraries(sources: string[], modulesDir: string, plugins:
       // A wrapper written against Angular's view internals (ElementRef, ViewContainerRef) has no components of its own the build reads.
       if (!angular || !existsSync(angular)) continue;
       const components = new Map<string, string>();
+      /** The names an NgModule's `declarations`, `imports` and `exports` list: an app importing the module imports those. */
+      const modules = new Map<string, string[]>();
       const walk = (d: string) => {
         for (const x of readdirSync(d)) {
           const p = join(d, x);
           if (statSync(p).isDirectory()) walk(p);
           else if (x.endsWith('.ts') && !x.endsWith('.d.ts') && !x.endsWith('.spec.ts')) {
-            const name = componentOf(p, readFileSync(p, 'utf8'))?.name;
+            const text = readFileSync(p, 'utf8');
+            const name = componentOf(p, text)?.name;
             if (name) components.set(name, p);
+            const found = declarablesIn(p, text);
+            for (const d of found.classes) components.set(d, p);
+            for (const [m, names] of found.modules) modules.set(m, names);
           }
         }
       };
       walk(angular);
-      // The components the app imports and those their `imports` name, transitively, with the modules of their own they import.
-      const queue = wanted.filter((w) => components.has(w));
+      const listed = (names: string[]): string[] => names.flatMap((n) => (modules.has(n) ? listed(modules.get(n)!.filter((x) => x !== n)) : [n]));
+      // The components and pipes the app imports, directly or through an NgModule, and those their `imports` name,
+      // transitively, with the modules of their own they import.
+      const queue = listed(wanted).filter((w) => components.has(w));
       const taken = new Set<string>();
       const files = [...components.values()];
       while (queue.length) {
@@ -59,3 +67,4 @@ export function angularLibraries(sources: string[], modulesDir: string, plugins:
   }
   return out;
 }
+

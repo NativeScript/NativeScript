@@ -966,7 +966,7 @@ export class Translator implements AsyncTranslator {
       case 'RouterExtensions': return 'Router';
       // `Promise.allSettled`'s results are the plain objects it makes.
       case 'PromiseSettledResult': case 'PromiseFulfilledResult': case 'PromiseRejectedResult': return 'JSObject';
-      case 'NativeDialogRef': case 'NativeDialogService': case 'DestroyRef': case 'Injector': case 'NgZone': case 'HttpClient':
+      case 'NativeDialogRef': case 'NativeDialogService': case 'DestroyRef': case 'Injector': case 'NgZone': case 'HttpClient': case 'ChangeDetectorRef': case 'PurePipeCache': case 'ElementRef': case 'SimpleChange':
         if (sym?.declarations?.[0]?.getSourceFile().fileName.startsWith('/__shims__/')) return name;
         break;
       case 'Promise': case 'PromiseLike': return `JSPromise<${arg(0)}>`;
@@ -4794,7 +4794,8 @@ ${members.join('\n')}
     for (const d of ts.getDecorators(cls) ?? []) {
       if (ts.isIdentifier(d.expression) && this.library?.identities?.has(d.expression.text)) continue;
       if (this.library && ts.isSourceFile(cls.parent)) continue;
-      if (!/^(CSSType|NativeClass|ObjCClass)\b/.test(d.expression.getText())) throw this.error(d, `the class decorator ${d.expression.getText()}`);
+      // An NgModule's metadata is Angular's compiler's: a compiled build reads what it declares from the components.
+      if (!/^(CSSType|NativeClass|ObjCClass|NgModule)\b/.test(d.expression.getText())) throw this.error(d, `the class decorator ${d.expression.getText()}`);
     }
     const symbolMethods: { key: string; method: string; params: string[]; ret: string; throws: boolean }[] = [];
     // `[fooProperty.setNative](value)`: the class's native setter for that registered property.
@@ -9588,6 +9589,8 @@ ${members.join('\n')}
       const owner = this.symbolName(target);
       const signalValue = () => this.typeOf(target).replace(/^Signal<(.*)>$/, '$1');
       if ((owner === 'Writable' || owner === 'WritableSignal') && method === 'set') return `${this.expr(target)}.value = ${this.signalWrite(target, e.arguments[0], signalValue())}`;
+      // A prop (`this.x`) reads as its value: the signal itself is the field.
+      if (owner === 'InputSignal' && method === '$assign') return `${ts.isPropertyAccessExpression(target) && this.isSelf(target.expression) && this.props.has(target.name.text) ? `self.${ident(target.name.text)}` : this.expr(target)}.value = ${this.signalWrite(target, e.arguments[0], signalValue())}`;
       if ((owner === 'Writable' || owner === 'WritableSignal') && method === 'update') return `${this.expr(target)}.update(${this.closure(e.arguments[0] as ts.ArrowFunction)})`;
       if (owner === 'WritableSignal' && method === '$write') {
         // Solid's setter: a function updates, anything else is the new value.
@@ -12543,6 +12546,8 @@ function injected(token: string): string {
     case 'ActivatedRoute': return 'ActivatedRoute.current';
     case 'Page': return 'Page.injected()';
     case 'DestroyRef': return 'DestroyRef.current()';
+    case 'ChangeDetectorRef': return 'ChangeDetectorRef.current()';
+    case 'ElementRef': return 'ElementRef.current()';
     case 'NativeDialogRef': return 'NativeDialogRef.current';
     default: return `${token}.shared`;
   }
