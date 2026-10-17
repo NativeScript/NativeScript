@@ -515,7 +515,16 @@ accepted, how many ran as JavaScript does. Out-of-scope, unported and invalid te
 }
 
 /** Causes already tracked elsewhere, noted on the baseline's entries. */
-const KNOWN_CAUSES: Record<string, string> = {};
+const KNOWN_CAUSES: Record<string, string> = {
+  'swift:built-ins/Map/prototype/forEach/return-undefined.js': "a void method's result used as a value is Swift's (), not undefined",
+  'swift:built-ins/Set/prototype/clear/clears-all-contents-from-iterable.js': "a void method's result used as a value is Swift's (), not undefined",
+  'swift:built-ins/Set/prototype/clear/clears-all-contents.js': "a void method's result used as a value is Swift's (), not undefined",
+  'swift:built-ins/Set/prototype/clear/clears-an-empty-set.js': "a void method's result used as a value is Swift's (), not undefined",
+  'swift:language/statements/try/completion-values-fn-finally-normal.js': 'Swift 6: the finally flag is written from a nonisolated closure',
+  'kotlin:built-ins/Array/prototype/indexOf/length-zero-returns-minus-one.js': 'an untyped argument to a number parameter is converted at the call, before the method checks the length',
+  'kotlin:built-ins/Array/prototype/lastIndexOf/15.4.4.15-8-a-6.js': 'an untyped argument to a number parameter is converted at the call, before the method checks the length',
+  'kotlin:built-ins/Array/prototype/lastIndexOf/length-zero-returns-minus-one.js': 'an untyped argument to a number parameter is converted at the call, before the method checks the length',
+};
 
 /** A result's detail as the baseline keeps it: enough to tell its cause, without paths. */
 const brief = (detail: string) => detail.replace(/\/\S*\/(?=[\w.-]+\.(?:ts|swift|kt)\b)/g, '').replace(/ is not supported in a release build yet: .*/, ' is not supported').slice(0, 120);
