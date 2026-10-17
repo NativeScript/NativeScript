@@ -18,8 +18,9 @@ import { cpus, tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import ts from 'typescript';
 import { createProgram } from '../../src/program.ts';
-import { buildKotlinRuntime, buildSwiftRuntime, kotlinc, kotlinStdlib, modulesDir, SWIFT_HEADER, translateKotlin, translateSwift } from '../native-build.ts';
-import { appLenient, kotlinOptions, lenient, pluginCase, runsOn, swiftOptions } from '../diff/case-options.ts';
+import { buildKotlinRuntime, buildSwiftRuntime, kotlinc, kotlinMain, kotlinStdlib, modulesDir, SWIFT_HEADER, swiftMain } from '../native-build.ts';
+import { appLenient, lenient, pluginCase, runsOn } from '../diff/case-options.ts';
+import type { TranslateJob, TranslateResult } from './translate-worker.ts';
 import { BAD_VALUES, findSites, groups, hookSource, HOOK, instrument, nodeHookSource, standalone, valueKind, valuesFor, type Site } from './instrument.ts';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -42,7 +43,7 @@ process.env.NS_NATIVE_DIAGNOSTICS = '1000';
 
 /** The per-merge subset: this many cases (less those slower than slowMs under Node), and per case this many sites with two of their values. */
 const MERGE = { cases: 70, sites: 6, values: 2, slowMs: 1500 };
-const TIMEOUT = { node: 10_000, swift: 10_000, kotlin: 30_000 };
+const TIMEOUT = { node: 10_000, swift: 10_000, kotlin: 30_000, translate: 30_000 };
 
 // ---- Seeded choice ---------------------------------------------------------------------------------
 
@@ -88,6 +89,49 @@ async function pool<T, R>(items: T[], n: number, f: (item: T) => Promise<R>): Pr
     while (next < items.length) { const k = next++; out[k] = await f(items[k]); }
   }));
   return out;
+}
+
+/**
+ * Translations run in workers, each building its own program; a worker holds a few hundred MB, so there are fewer of
+ * them than jobs. One that takes longer than TIMEOUT.translate is a translator hang: its worker is replaced.
+ */
+const translators: { worker: Worker | null; busy: boolean }[] = [];
+const translateQueue: (() => void)[] = [];
+const replies = new Map<number, (r: TranslateResult) => void>();
+let nextJob = 0;
+function translatorWorker(): Worker {
+  const worker = new Worker(new URL('./translate-worker.ts', import.meta.url));
+  worker.on('message', ({ id, result }: { id: number; result: TranslateResult }) => { replies.get(id)?.(result); replies.delete(id); });
+  return worker;
+}
+async function translateIn(job: TranslateJob): Promise<TranslateResult> {
+  if (!translators.length) for (let k = 0; k < Math.max(1, Math.min(jobs, 6)); k++) translators.push({ worker: null, busy: false });
+  let t = translators.find((x) => !x.busy);
+  while (!t) { await new Promise<void>((r) => translateQueue.push(r)); t = translators.find((x) => !x.busy); }
+  t.busy = true;
+  const worker = (t.worker ??= translatorWorker());
+  const id = nextJob++;
+  try {
+    return await new Promise<TranslateResult>((r) => {
+      const timer = setTimeout(() => {
+        replies.delete(id);
+        void worker.terminate();
+        t!.worker = null;
+        r({ error: `the translator did not finish in ${TIMEOUT.translate / 1000} s` });
+      }, TIMEOUT.translate);
+      replies.set(id, (x) => { clearTimeout(timer); r(x); });
+      worker.postMessage({ id, job });
+    });
+  } finally {
+    t.busy = false;
+    translateQueue.shift()?.();
+  }
+}
+
+/** The diff run's entry point (its handling of uncaught errors is Node's), reading the variant to run from its argument first. */
+function withSelection(main: string, at: string, replacement: string): string {
+  if (!main.includes(at)) throw new Error(`the entry point no longer contains ${JSON.stringify(at)}: tests/native-build.ts changed it`);
+  return main.replace(at, replacement);
 }
 
 // ---- Comparing -----------------------------------------------------------------------------------------
@@ -140,7 +184,7 @@ function valueChange(node: string | undefined, native: string | undefined): stri
 }
 
 /** V8 names the callee as written in its "is not a function" messages; the guards around a site change how it is written. */
-const calleeFree = (s: string) => s.replace(/\(intermediate value\)/g, 'IV').replace(/\S+ is not (a function|iterable|a constructor)/g, '… is not $1');
+const calleeFree = (s: string) => s.replace(/\(intermediate value\)/g, 'IV').replace(/(TypeError: )[^\n]*? is not (a function|iterable|a constructor)/g, '$1… is not $2').replace(/\S+ is not (a function|iterable|a constructor)/g, '… is not $1');
 
 function compare(target: string, wantRaw: Run, gotRaw: Run): Outcome {
   const want = { ...wantRaw, stdout: calleeFree(wantRaw.stdout), stderr: calleeFree(wantRaw.stderr) };
@@ -306,12 +350,9 @@ type Built = { native: Native | null; failed: Map<number, string>; error?: strin
 /** The case translated and compiled with guards at `sites`: null when it builds, else what stopped it. */
 async function swiftOnce(p: Prepared, sites: Site[], dir: string): Promise<{ refused?: string; errors?: string[] } | null> {
   writeFileSync(p.instrumented, instrument(p.text, sites).text);
-  try {
-    const modules = translateSwift([p.instrumented], join(dir, 'Sources'), swiftOptions(p.file));
-    writeFileSync(join(dir, 'Sources', 'main.swift'), `${SWIFT_HEADER}try! jsSet(jsGlobalThis, "__fuzz", CommandLine.arguments.count > 1 ? CommandLine.arguments[1] : "")\n${modules.filter((m) => m.init).map((m) => `${m.init}()\n`).join('')}JSEventLoop.runUntilIdle()\n`);
-  } catch (e) {
-    return { refused: (e as Error).message };
-  }
+  const t = await translateIn({ target: 'swift', root: p.instrumented, file: p.file, out: join(dir, 'Sources'), pkg: '' });
+  if ('error' in t) return { refused: t.error };
+  writeFileSync(join(dir, 'Sources', 'main.swift'), withSelection(swiftMain(t.inits.map((init) => ({ init }) as Parameters<typeof swiftMain>[0][number])), SWIFT_HEADER, `${SWIFT_HEADER}try! jsSet(jsGlobalThis, "__fuzz", CommandLine.arguments.count > 1 ? CommandLine.arguments[1] : "")\n`));
   // Without the case's line directives, swiftc's errors name generated lines, where the guards' ids are.
   for (const f of readdirSync(join(dir, 'Sources'))) writeFileSync(join(dir, 'Sources', f), readFileSync(join(dir, 'Sources', f), 'utf8').replace(/^[ \t]*#sourceLocation\(.*\)[ \t]*$/gm, ''));
   const errors = await swiftcAsync(readdirSync(join(dir, 'Sources')).map((f) => join(dir, 'Sources', f)), join(dir, p.name));
@@ -321,7 +362,8 @@ async function swiftOnce(p: Prepared, sites: Site[], dir: string): Promise<{ ref
 async function buildSwift(p: Prepared, sites: Site[]): Promise<Built> {
   const failed = new Map<number, string>();
   const dir = join(build, 'swift', p.name);
-  for (let round = 0; round < 10; round++) {
+  // swiftc stops at about one error per statement: a round per failing statement. Each round drops a site or returns.
+  for (;;) {
     const kept = sites.filter((s) => !failed.has(s.id) && !p.dropped.has(s.id));
     const r = await swiftOnce(p, kept, dir);
     if (!r) {
@@ -336,7 +378,6 @@ async function buildSwift(p: Prepared, sites: Site[]): Promise<Built> {
     if (!bad.length) return { native: null, failed, error: why };
     for (const s of bad) failed.set(s.id, why);
   }
-  return { native: null, failed, error: 'swiftc: still failing after dropping sites' };
 }
 
 function swiftcAsync(sources: string[], exe: string): Promise<string[] | null> {
@@ -366,36 +407,36 @@ async function buildKotlin(ps: { p: Prepared; sites: Site[] }[]): Promise<Map<st
   const runtime = buildKotlinRuntime(build);
   const pkg = (name: string) => 'fz_' + name.replace(/\W/g, '_');
   const sourcesDir = (name: string) => join(build, 'kotlin', name);
-  const translate = (p: Prepared, all: Site[]): string | null => {
-    for (let round = 0; round < 10; round++) {
+  const translate = async (p: Prepared, all: Site[]): Promise<string | null> => {
+    // Each round drops a site or returns.
+    for (;;) {
       const kept = all.filter((s) => !p.dropped.has(s.id));
-      const error = translateOnce(p, kept);
+      const error = await translateOnce(p, kept);
       if (!error || !untypable(p, kept, error).length) return error && error.split('\n')[0];
     }
-    return 'the instrumented case does not type-check after dropping sites';
   };
-  const translateOnce = (p: Prepared, kept: Site[]): string | null => {
+  const translateOnce = async (p: Prepared, kept: Site[]): Promise<string | null> => {
     writeFileSync(p.instrumented, instrument(p.text, kept).text);
-    try {
-      const modules = translateKotlin([p.instrumented], sourcesDir(p.name), pkg(p.name), kotlinOptions(p.file));
-      const inits = modules.filter((m) => m.init).map((m) => `    ${m.init}()\n`).join('');
-      writeFileSync(join(sourcesDir(p.name), '__Main.kt'), `package ${pkg(p.name)}.entry\n\nimport org.nativescript.kit.*\nimport ${pkg(p.name)}.*\n\nfun main(args: Array<String>) {\n    jsGlobalThis.jsSet("__fuzz", args.firstOrNull() ?: "")\n${inits}    JSEventLoop.runUntilIdle()\n    System.out.flush()\n}\n`);
-      return null;
-    } catch (e) { return (e as Error).message; }
+    const t = await translateIn({ target: 'kotlin', root: p.instrumented, file: p.file, out: sourcesDir(p.name), pkg: pkg(p.name) });
+    if ('error' in t) return t.error;
+    const main = kotlinMain(t.inits.map((init) => ({ init }) as Parameters<typeof kotlinMain>[0][number]), pkg(p.name));
+    writeFileSync(join(sourcesDir(p.name), '__Main.kt'), withSelection(main, 'fun main() {\n', 'fun main(args: Array<String>) {\n    jsGlobalThis.jsSet("__fuzz", args.firstOrNull() ?: "")\n'));
+    return null;
   };
   const ready: { p: Prepared; kept: Site[]; failed: Map<number, string> }[] = [];
-  for (const { p, sites } of ps) {
+  await pool(ps, jobs, async ({ p, sites }) => {
     const failed = new Map<number, string>();
-    let error = translate(p, sites);
+    let error = await translate(p, sites);
     if (error) {
-      const refused = await bisect(sites, (subset) => translate(p, subset) === null);
-      if (refused === null) { out.set(p.name, { native: null, failed, error: `translator: ${error}` }); continue; }
+      const refused = await bisect(sites, async (subset) => (await translate(p, subset)) === null);
+      if (refused === null) { out.set(p.name, { native: null, failed, error: `translator: ${error}` }); return; }
       for (const s of refused) failed.set(s.id, `refused: ${error.slice(0, 160)}`);
-      error = translate(p, sites.filter((s) => !failed.has(s.id)));
-      if (error) { out.set(p.name, { native: null, failed, error: `translator: ${error}` }); continue; }
+      error = await translate(p, sites.filter((s) => !failed.has(s.id)));
+      if (error) { out.set(p.name, { native: null, failed, error: `translator: ${error}` }); return; }
     }
     ready.push({ p, kept: sites.filter((s) => !failed.has(s.id)), failed });
-  }
+  });
+  ready.sort((a, b) => a.p.name.localeCompare(b.p.name));
   const sourcesOf = (name: string) => readdirSync(sourcesDir(name)).map((f) => join(sourcesDir(name), f));
   const classes = join(build, 'kotlin-classes');
   const runner = (name: string): Native => ({
@@ -404,7 +445,8 @@ async function buildKotlin(ps: { p: Prepared; sites: Site[] }[]): Promise<Map<st
   });
   // One kotlinc run for every case; the cases its errors are in lose the sites the errors are at, and it runs again.
   let compiled = false;
-  for (let round = 0; round < 6 && ready.length; round++) {
+  // Each round drops a site of, or gives up on, every case its errors are in.
+  while (ready.length) {
     const errors = kotlinc(ready.flatMap((r) => sourcesOf(r.p.name)), classes, [runtime]);
     if (!errors) { compiled = true; break; }
     const byCase = new Map<string, string[]>();
@@ -417,16 +459,16 @@ async function buildKotlin(ps: { p: Prepared; sites: Site[] }[]): Promise<Map<st
       ready.length = 0;
       break;
     }
-    for (const [name, errs] of byCase) {
+    await pool([...byCase], jobs, async ([name, errs]) => {
       const r = ready.find((x) => x.p.name === name)!;
       const blamed = blame(r.p, errs, r.kept.filter((s) => !r.failed.has(s.id)));
-      const error = blamed.length ? (blamed.forEach((s) => r.failed.set(s.id, `kotlinc: ${errs[0].replace(/^.*?error: /, '')}`)), translate(r.p, r.kept.filter((s) => !r.failed.has(s.id)))) : `kotlinc: ${errs[0]}`;
+      const error = blamed.length ? (blamed.forEach((s) => r.failed.set(s.id, `kotlinc: ${errs[0].replace(/^.*?error: /, '')}`)), await translate(r.p, r.kept.filter((s) => !r.failed.has(s.id)))) : `kotlinc: ${errs[0]}`;
       if (error) {
         out.set(name, { native: null, failed: r.failed, error: error.startsWith('kotlinc') ? error : `translator: ${error}` });
         rmSync(sourcesDir(name), { recursive: true, force: true });
         ready.splice(ready.indexOf(r), 1);
       }
-    }
+    });
   }
   for (const r of ready) out.set(r.p.name, compiled ? { native: runner(r.p.name), failed: r.failed } : { native: null, failed: r.failed, error: 'kotlinc: still failing after dropping sites' });
   return out;
