@@ -4751,6 +4751,7 @@ ${members.join('\n')}
       } else if (a.get) parts.push(`        get${this.throwsInfo.fn(a.get) ? ' throws' : ''} ${this.functionBody(a.get, t, '        ')}`);
       else parts.push('        get { nil }');
       if (ignoredSet) parts.push('        set {}');
+      if (a.set && !ts.isIdentifier(a.set.parameters[0]?.name)) throw this.error(a.set, 'a setter whose parameter is a destructuring pattern');
       const anySetter = !!a.set && this.typeofTestedSetter(a.set);
       if (a.set && anySetter) {
         const p = a.set.parameters[0].name as ts.Identifier;

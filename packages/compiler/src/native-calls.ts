@@ -709,7 +709,8 @@ export class NativeAPI {
       const ownBase = own && ts.isClassDeclaration(own) && own.name && !own.getSourceFile().isDeclarationFile ? this.nativeBase(this.t.checker.getDeclaredTypeOfSymbol(this.t.resolve(allocated)!)) : null;
       const r = ownBase ? { ...ownBase, isStatic: true } : this.receiver(allocated);
       if (!r) return null;
-      const cls = lookupClass(r.module, r.name)!;
+      const cls = lookupClass(r.module, r.name);
+      if (!cls) throw this.t.error(e, `${r.name}.alloc().${name}() (${this.noCounterpart(r.module)})`);
       // A class held as a value (`typeof UIGestureRecognizer`): its own initializer, which Objective-C dispatches.
       const classRef = !!((this.t.resolve(allocated)?.flags ?? 0) & ts.SymbolFlags.Class);
       const made = ownBase ? this.t.topName(own!, (own as ts.ClassDeclaration).name!.text) : r.isStatic || classRef ? this.className(cls) : `${this.t.expr(allocated)}.init`;
