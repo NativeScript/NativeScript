@@ -3,7 +3,7 @@ import ts from 'typescript';
 import { dirname as pathDirname, resolve as pathResolve } from 'node:path';
 import { AsyncLowering, usedBefore, type AsyncCtx, type AsyncSyntax, type AsyncTranslator } from './async.ts';
 import { isAsync, isStatic } from './throws.ts';
-import { intlConstructor, isObjectToStringCall, isStringRaw, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, classesHeldUntyped, LooseSlots, originOf, ownSlot, implementedInterfaceDeclarations, slotOf, slotType, type TrustScope } from './lang.ts';
+import { definitelyAssignedFields, intlConstructor, isObjectToStringCall, isStringRaw, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, classesHeldUntyped, LooseSlots, originOf, ownSlot, implementedInterfaceDeclarations, slotOf, slotType, type TrustScope } from './lang.ts';
 import { isCoreDeclaration } from './core.ts';
 import type { Properties } from './properties.ts';
 import { recognizePatterns, type Patterns } from './patterns.ts';
@@ -1429,6 +1429,13 @@ export class Translator implements AsyncTranslator {
       for (const sf of this.sourceFiles) if (!sf.isDeclarationFile) visit(sf);
     }
     return !this.letterTypes.has(t);
+  }
+
+  private definiteFieldSets = new Map<ts.ClassLikeDeclaration, Set<ts.PropertyDeclaration>>();
+  private definiteFields(cls: ts.ClassLikeDeclaration): Set<ts.PropertyDeclaration> {
+    let set = this.definiteFieldSets.get(cls);
+    if (!set) this.definiteFieldSets.set(cls, set = definitelyAssignedFields(cls));
+    return set;
   }
 
   deferredDeclaration(name: string, t: string): string {
@@ -2972,7 +2979,9 @@ export class Translator implements AsyncTranslator {
       // A field no subclass redeclares is a JVM field: its accessors would clash with methods of the same JVM names (`tag` and `getTag()`).
       const fieldMods = overridden.has(n) ? 'override ' : this.subclassFields(cls).has(n) ? 'open ' : plugin ? '@JvmField ' : mods(n);
       const nullInit = !!m.initializer && (m.initializer.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(m.initializer) && m.initializer.text === 'undefined'));
-      if ((plugin || (!m.initializer && chainedThrough(cls, n))) && (nullInit || !m.initializer) && !isNullable(t) && t !== 'Any?' && t !== 'Unit') {
+      // A field of a class with no base that something may read before the constructor assigns it (see `definitelyAssignedFields`).
+      const readEarly = !m.initializer && !this.library && !cls.heritageClauses?.some((h) => h.token === ts.SyntaxKind.ExtendsKeyword) && !this.definiteFields(cls).has(m) && this.deferredDeclaration('x', t).startsWith('lateinit ');
+      if ((plugin || readEarly || (!m.initializer && chainedThrough(cls, n))) && (nullInit || !m.initializer) && !isNullable(t) && t !== 'Any?' && t !== 'Unit') {
         // Unset (or `null`) in code checked without strictNullChecks: nullable, unwrapped where it is read.
         if (sym) this.nullableDecls.add(sym);
         fields.push({ name: n, type: optionalType(t) });
