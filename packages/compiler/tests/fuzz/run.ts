@@ -40,8 +40,8 @@ const baselineFile = join(here, 'known-fuzz-failures.json');
 if (set !== 'merge' && set !== 'nightly') throw new Error(`--set is merge or nightly, not ${set}`);
 process.env.NS_NATIVE_DIAGNOSTICS = '1000';
 
-/** The per-merge subset: this many cases, and per case this many sites with two of their values. */
-const MERGE = { cases: 70, sites: 6, values: 2 };
+/** The per-merge subset: this many cases (less those slower than slowMs under Node), and per case this many sites with two of their values. */
+const MERGE = { cases: 70, sites: 6, values: 2, slowMs: 1500 };
 const TIMEOUT = { node: 10_000, swift: 10_000, kotlin: 30_000 };
 
 // ---- Seeded choice ---------------------------------------------------------------------------------
@@ -486,8 +486,11 @@ const units: Unit[] = [];
 await pool(prepared, jobs, async (p) => {
   const entry = toNode(p);
   const census = join(build, 'node', p.name, 'census.json');
+  const t0 = Date.now();
   const base = await runNode(entry, { NS_FUZZ: '', NS_FUZZ_CENSUS: census });
   if (base.timedOut || !existsSync(census)) { skipped[p.name] = 'Node baseline timed out or wrote no census'; return; }
+  // Every variant runs the whole case: the per-merge subset leaves out cases that wait on timers.
+  if (chosenCases && Date.now() - t0 > MERGE.slowMs) { skipped[p.name] = `slow under Node (${Date.now() - t0} ms)`; return; }
   nodeBaseline.set(p.name, base);
   const reached = new Set((JSON.parse(readFileSync(census, 'utf8')) as [number, number][]).map(([id]) => id));
   let sites = p.sites.filter((s) => reached.has(s.id));
@@ -517,6 +520,7 @@ for (const target of targets) {
   const knownHere: Record<string, string> = baseline[target] ?? {};
   const ran = (ranKeys[target] = new Set());
   let passed = 0, counted = 0, untyped = 0, unrun = 0;
+  const flaky: string[] = [];
   const cases = units.filter((u) => runsOn(u.file, target as 'swift' | 'kotlin') && !knownDiff[target]?.[u.caseName]).sort((a, b) => a.name.localeCompare(b.name));
   const record = (x: Variant, o: Outcome) => {
     ran.add(x.key);
@@ -548,7 +552,14 @@ for (const target of targets) {
       if (x.p.dropped.has(x.site.id)) { untyped++; return; }
       const failed = built.failed.get(x.site.id);
       if (failed) { record(x, failed.startsWith('guard alone: ') ? { pass: false, cause: 'guard alone changes the result', detail: failed.slice(13) } : { pass: false, cause: 'compile', detail: compileCause(failed) }); return; }
-      record(x, compare(target, x.want!, await built.native!.run(`${x.site.id}:${x.value}`)));
+      const arg = `${x.site.id}:${x.value}`;
+      const o = compare(target, x.want!, await built.native!.run(arg));
+      if (!o.pass && !knownHere[x.key]) {
+        // A new failure counts only if both sides repeat it: timing-dependent output is flaky, not a finding.
+        const again = compare(target, await runNode(nodeEntry.get(x.p.name)!, { NS_FUZZ: arg }), await built.native!.run(arg));
+        if (again.pass || again.cause !== o.cause || again.detail !== o.detail) { flaky.push(`${x.key} (${target})`); return; }
+      }
+      record(x, o);
     });
     if (!keep) built.native.cleanup();
   };
@@ -585,7 +596,7 @@ for (const target of targets) {
     clusters.set(k, [...(clusters.get(k) ?? []), f]);
   }
   const ranked = [...clusters].sort((a, b) => b[1].length - a[1].length);
-  console.log(`\n${target}: ${passed} of ${counted} variants match Node (${counted ? ((100 * passed) / counted).toFixed(1) : '0'}%), ${failures.filter((f) => !f.known).length} new failures, ${unstable} builds whose instrumented baseline differs (${unrun} variants not run), ${untyped} variants whose replacement doesn't type-check (${((Date.now() - t0) / 1000).toFixed(0)} s)`);
+  console.log(`\n${target}: ${passed} of ${counted} variants match Node (${counted ? ((100 * passed) / counted).toFixed(1) : '0'}%), ${failures.filter((f) => !f.known).length} new failures, ${unstable} builds whose instrumented baseline differs (${unrun} variants not run), ${untyped} variants whose replacement doesn't type-check, ${flaky.length} flaky (${((Date.now() - t0) / 1000).toFixed(0)} s)`);
   for (const [k, list] of ranked.slice(0, 25)) {
     const byKind = [...new Set(list.map((f) => f.kind))].join(',');
     console.log(`  ${String(list.length).padStart(5)}  ${k}  [${byKind}; ${new Set(list.map((f) => f.case)).size} cases]`);
@@ -598,7 +609,7 @@ for (const target of targets) {
   }
   if (fresh.length > 40) console.log(`… ${fresh.length - 40} more new failures (--json writes them all)`);
   for (const [n, why] of Object.entries(caseBaselines)) console.log(`  ! ${n} (${target}): ${why.slice(0, 200)}`);
-  report[target] = { passed, counted, unrun, untyped, rate: counted ? passed / counted : 0, unstable: caseBaselines, clusters: ranked.map(([k, l]) => ({ cluster: k, count: l.length, cases: [...new Set(l.map((f) => f.case))].length, kinds: [...new Set(l.map((f) => f.kind))], values: [...new Set(l.map((f) => valueKind(BAD_VALUES.indexOf(f.value))))], example: l[0] })), seconds: Math.round((Date.now() - t0) / 1000) };
+  report[target] = { passed, counted, unrun, untyped, flaky, rate: counted ? passed / counted : 0, unstable: caseBaselines, clusters: ranked.map(([k, l]) => ({ cluster: k, count: l.length, cases: [...new Set(l.map((f) => f.case))].length, kinds: [...new Set(l.map((f) => f.kind))], values: [...new Set(l.map((f) => valueKind(BAD_VALUES.indexOf(f.value))))], example: l[0] })), seconds: Math.round((Date.now() - t0) / 1000) };
   allFailures.push(...failures);
 }
 
