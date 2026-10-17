@@ -3,7 +3,7 @@ import ts from 'typescript';
 import { dirname as pathDirname, resolve as pathResolve } from 'node:path';
 import { AsyncLowering, usedBefore, type AsyncCtx, type AsyncSyntax, type AsyncTranslator } from './async.ts';
 import { isAsync, isStatic } from './throws.ts';
-import { intlConstructor, isObjectToStringCall, isStringRaw, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, classesHeldUntyped, LooseSlots, originOf, ownSlot, implementedInterfaceDeclarations, slotOf, slotType, type TrustScope } from './lang.ts';
+import { definitelyAssignedFields, intlConstructor, isObjectToStringCall, isStringRaw, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, classesHeldUntyped, LooseSlots, originOf, ownSlot, implementedInterfaceDeclarations, slotOf, slotType, type TrustScope } from './lang.ts';
 import { isCoreDeclaration } from './core.ts';
 import type { Properties } from './properties.ts';
 import { recognizePatterns, type Patterns } from './patterns.ts';
@@ -1053,8 +1053,14 @@ export class Translator implements AsyncTranslator {
 
   /** A call of a lenient function declared to give an object: unwrapped unless the value is only tested or passed on. */
   private lenientResult(e: ts.CallExpression, code: string): string {
-    return this.unwrapsResult(e) ? asserted(code) : code;
+    if (this.rawResults.has(e) || !this.unwrapsResult(e)) return code;
+    // A string, number or boolean that may be missing reads as what undefined converts to; an object is required present.
+    const site = this.typeOf(e);
+    return ['String', 'Double', 'Boolean'].includes(site) ? this.undefinedAs(code, site) : asserted(code);
   }
+
+  /** Calls whose nullable result is wanted as it is (see `maybeUndefined`). */
+  private rawResults = new Set<ts.Node>();
 
   /** Whether a call's result Kotlin holds nullable, though its type says present, is unwrapped where it is read (see `lenientResult`). */
   private unwrapsResult(e: ts.CallExpression): boolean {
@@ -1138,6 +1144,15 @@ export class Translator implements AsyncTranslator {
     const K = ts.SyntaxKind;
     if ((ts.isIfStatement(p) || ts.isWhileStatement(p) || ts.isDoStatement(p)) && p.expression === n) return true;
     if (ts.isConditionalExpression(p) && p.condition === n) return true;
+    // A branch of a conditional that itself goes where missing is taken, or a result a function gives as nullable.
+    if (ts.isConditionalExpression(p) && (p.whenTrue === n || p.whenFalse === n)) return this.nullTolerant(p);
+    if (ts.isReturnStatement(p) || (ts.isArrowFunction(p) && p.body === n)) {
+      const fn = ts.isArrowFunction(p) ? p : ts.findAncestor(p, ts.isFunctionLike);
+      if (fn && (ts.isMethodDeclaration(fn) || ts.isFunctionDeclaration(fn) || ts.isGetAccessorDeclaration(fn))) {
+        const rt = this.returnTypeOf(fn);
+        if (isNullable(rt) || rt === 'Any?') return true;
+      }
+    }
     if (ts.isPrefixUnaryExpression(p) && p.operator === K.ExclamationToken) return true;
     if (ts.isTypeOfExpression(p)) return true;
     // `for (k in x)` of nothing runs no iteration.
@@ -1429,6 +1444,13 @@ export class Translator implements AsyncTranslator {
       for (const sf of this.sourceFiles) if (!sf.isDeclarationFile) visit(sf);
     }
     return !this.letterTypes.has(t);
+  }
+
+  private definiteFieldSets = new Map<ts.ClassLikeDeclaration, Set<ts.PropertyDeclaration>>();
+  private definiteFields(cls: ts.ClassLikeDeclaration): Set<ts.PropertyDeclaration> {
+    let set = this.definiteFieldSets.get(cls);
+    if (!set) this.definiteFieldSets.set(cls, set = definitelyAssignedFields(cls));
+    return set;
   }
 
   deferredDeclaration(name: string, t: string): string {
@@ -2972,7 +2994,9 @@ export class Translator implements AsyncTranslator {
       // A field no subclass redeclares is a JVM field: its accessors would clash with methods of the same JVM names (`tag` and `getTag()`).
       const fieldMods = overridden.has(n) ? 'override ' : this.subclassFields(cls).has(n) ? 'open ' : plugin ? '@JvmField ' : mods(n);
       const nullInit = !!m.initializer && (m.initializer.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(m.initializer) && m.initializer.text === 'undefined'));
-      if ((plugin || (!m.initializer && chainedThrough(cls, n))) && (nullInit || !m.initializer) && !isNullable(t) && t !== 'Any?' && t !== 'Unit') {
+      // A field of a class with no base that something may read before the constructor assigns it (see `definitelyAssignedFields`).
+      const readEarly = !m.initializer && !this.library && !cls.heritageClauses?.some((h) => h.token === ts.SyntaxKind.ExtendsKeyword) && !this.definiteFields(cls).has(m) && this.deferredDeclaration('x', t).startsWith('lateinit ');
+      if ((plugin || readEarly || (!m.initializer && chainedThrough(cls, n))) && (nullInit || !m.initializer) && !isNullable(t) && t !== 'Any?' && t !== 'Unit') {
         // Unset (or `null`) in code checked without strictNullChecks: nullable, unwrapped where it is read.
         if (sym) this.nullableDecls.add(sym);
         fields.push({ name: n, type: optionalType(t) });
@@ -3389,6 +3413,29 @@ export class Translator implements AsyncTranslator {
   }
 
   /** The fields some subclass of `cls` (in the program) declares again. */
+  /** A method no base or subclass declares a member of its name for, so its return type is its own to choose. */
+  private onlyMethodOfName(fn: ts.Node): boolean {
+    if (!ts.isMethodDeclaration(fn) || !ts.isIdentifier(fn.name) || !ts.isClassLike(fn.parent)) return false;
+    const name = fn.name.text, cls = fn.parent;
+    const declares = (c: ts.ClassLikeDeclaration) => c.members.some((m) => m !== fn && m.name?.getText() === name);
+    for (let b = this.baseClassOf(cls); b; b = this.baseClassOf(b)) if (declares(b)) return false;
+    if (cls.heritageClauses?.some((h) => h.token === ts.SyntaxKind.ExtendsKeyword) && !this.baseClassOf(cls)) return false;
+    if (!this.subclassMethodNames) {
+      const map = new Map<ts.Node, Set<string>>();
+      const visit = (n: ts.Node) => {
+        if (ts.isClassLike(n)) {
+          const names = n.members.map((m) => m.name?.getText()).filter((x): x is string => !!x);
+          for (let b = this.baseClassOf(n); b; b = this.baseClassOf(b)) map.set(b, new Set([...(map.get(b) ?? []), ...names]));
+        }
+        ts.forEachChild(n, visit);
+      };
+      for (const sf of this.sourceFiles) visit(sf);
+      this.subclassMethodNames = map;
+    }
+    return !this.subclassMethodNames.get(cls)?.has(name);
+  }
+  private subclassMethodNames: Map<ts.Node, Set<string>> | null = null;
+
   private subclassFields(cls: ts.ClassLikeDeclaration): Set<string> {
     if (!this.subclassFieldNames) {
       const map = new Map<ts.Node, Set<string>>();
@@ -5276,8 +5323,9 @@ export class Translator implements AsyncTranslator {
       const parts = source.startsWith('Triple') ? ['first', 'second', 'third'] : ['first', 'second'];
       return `(${this.expr(e)})${isNullable(source) ? '?' : ''}.let { __t -> jsArrayOf<${array[1]}>(${parts.map((p) => `__t.${p}`).join(', ')}) }`;
     }
-    // Library mode: each branch where the slot goes, as Kotlin types the `if` by its branches.
-    if (this.library && ts.isConditionalExpression(e) && isFunctionType(target.replace(/^\((.*)\)\?$/, '$1'))) {
+    // Library mode: each branch where the slot goes, as Kotlin types the `if` by its branches; a nullable string, number
+    // or boolean slot (`scale(): number` returning `c ? 2 : null`) takes a missing branch as it is.
+    if (this.library && ts.isConditionalExpression(e) && (isFunctionType(target.replace(/^\((.*)\)\?$/, '$1')) || ['String?', 'Double?', 'Boolean?'].includes(target))) {
       return `(if (${this.cond(e.condition)}) ${this.coerce(e.whenTrue, target)} else ${this.coerce(e.whenFalse, target)})`;
     }
     // Lenient code: `a ?? b` where `b` may be unset itself, read as the type says.
@@ -5309,7 +5357,11 @@ export class Translator implements AsyncTranslator {
     // Library mode: a call of a function declared `number` that returns undefined (as NaN), where a nullable number goes: null for it.
     if (this.library && target === 'Double?' && source === 'Double' && ts.isCallExpression(e)) {
       const fn = this.checker.getResolvedSignature(e)?.declaration;
-      if (fn && (ts.isFunctionDeclaration(fn) || ts.isMethodDeclaration(fn)) && fn.body && fn.type?.kind === ts.SyntaxKind.NumberKeyword && returnsNull(fn.body)) return `(${this.expr(e)}).takeUnless { it.isNaN() }`;
+      if (fn && (ts.isFunctionDeclaration(fn) || ts.isMethodDeclaration(fn)) && fn.body && fn.type?.kind === ts.SyntaxKind.NumberKeyword && returnsNull(fn.body)) {
+        // One Kotlin declares nullable gives null itself.
+        if (isNullable(this.returnTypeOf(fn))) return this.maybeUndefined(e) ?? this.expr(e);
+        return `(${this.expr(e)}).takeUnless { it.isNaN() }`;
+      }
     }
     // Library mode: a value Kotlin holds nullable where a string, number or boolean goes: as script reads it, undefined.
     if (this.library && ['String', 'Double', 'Boolean'].includes(target) && source === optionalType(target)) return this.undefinedAs(this.expr(e), target);
@@ -6501,6 +6553,11 @@ export class Translator implements AsyncTranslator {
     // Library mode: `<T[]>record[key]`, an assertion of the type the read has: the read.
     if (this.library && (ts.isAsExpression(e) || ts.isTypeAssertionExpression(e)) && !this.subst.has(e) && this.typeOf(e) === this.typeOf(e.expression)) return this.maybeUndefined(e.expression);
     if (this.subst.has(e)) return null;
+    // A call of a function Kotlin declares to give a nullable string, number or boolean (`'dark' | 'light' | null`): as it gives it.
+    if (ts.isCallExpression(e) && ['String', 'Double', 'Boolean'].includes(this.typeOf(e)) && this.unwrapsResult(e)) {
+      this.rawResults.add(e);
+      try { return this.expr(e); } finally { this.rawResults.delete(e); }
+    }
     if (this.library && this.untypedAssertion(e)) return this.fromAny(this.expr((e as ts.AsExpression).expression), optionalType(this.typeOf(e)));
     // `a?.b as T` from an untyped value: undefined where the chain stops, whatever the assertion says.
     if (ts.isAsExpression(e) && ts.isOptionalChain(e.expression) && this.typeOf(e.expression) === 'Any?' && !isNullable(this.typeOf(e))) {
@@ -8922,7 +8979,9 @@ export class Translator implements AsyncTranslator {
    */
   /** Library mode: a function declared to return `string | null` (or a number or boolean): null kept, as callers test for it. */
   private nullablePrimitiveReturn(fn: ts.Node | undefined): boolean {
-    if (!fn || !(ts.isMethodDeclaration(fn) || ts.isFunctionDeclaration(fn) || ts.isGetAccessorDeclaration(fn)) || !fn.body || fn.getSourceFile().isDeclarationFile || !fn.type) return false;
+    if (!fn || !(ts.isMethodDeclaration(fn) || ts.isFunctionDeclaration(fn) || ts.isGetAccessorDeclaration(fn)) || fn.getSourceFile().isDeclarationFile || !fn.type) return false;
+    // An abstract method's declared union says what its overrides give.
+    if (!fn.body && !ts.isUnionTypeNode(fn.type)) return false;
     // `getString(key, defaultValue?: string): string` returning the default it may not be given: undefined then.
     if (fn.type.kind === ts.SyntaxKind.StringKeyword) {
       const optional = new Set(fn.parameters.filter((p) => p.questionToken && !p.initializer && ts.isIdentifier(p.name)).map((p) => this.checker.getSymbolAtLocation(p.name)));
@@ -8937,11 +8996,15 @@ export class Translator implements AsyncTranslator {
     }
     // `isA11yEnabled(): boolean` that says `return undefined` while it knows nothing yet. Not a method, whose
     // overrides and supers must keep one return type.
-    if (fn.type.kind === ts.SyntaxKind.BooleanKeyword) return ts.isFunctionDeclaration(fn) && returnsNull(fn.body);
+    if (fn.type.kind === ts.SyntaxKind.BooleanKeyword || fn.type.kind === ts.SyntaxKind.NumberKeyword) return (ts.isFunctionDeclaration(fn) || this.onlyMethodOfName(fn)) && returnsNull(fn.body);
     if (!ts.isUnionTypeNode(fn.type)) return false;
     const missing = (x: ts.TypeNode) => (ts.isLiteralTypeNode(x) && x.literal.kind === ts.SyntaxKind.NullKeyword) || x.kind === ts.SyntaxKind.UndefinedKeyword;
     const rest = fn.type.types.filter((x) => !missing(x));
-    return rest.length < fn.type.types.length && rest.length === 1 && [ts.SyntaxKind.StringKeyword, ts.SyntaxKind.NumberKeyword, ts.SyntaxKind.BooleanKeyword].includes(rest[0].kind);
+    // `'dark' | 'light' | null`: the literals' primitive, as one keyword would be.
+    const kind = (x: ts.TypeNode) => !ts.isLiteralTypeNode(x) ? x.kind : ts.isStringLiteral(x.literal) ? ts.SyntaxKind.StringKeyword : ts.isNumericLiteral(x.literal) ? ts.SyntaxKind.NumberKeyword
+      : x.literal.kind === ts.SyntaxKind.TrueKeyword || x.literal.kind === ts.SyntaxKind.FalseKeyword ? ts.SyntaxKind.BooleanKeyword : x.kind;
+    const kinds = new Set(rest.map(kind));
+    return rest.length < fn.type.types.length && kinds.size === 1 && [ts.SyntaxKind.StringKeyword, ts.SyntaxKind.NumberKeyword, ts.SyntaxKind.BooleanKeyword].includes([...kinds][0]);
   }
 
   private returnsNullApart(fn: ts.SignatureDeclaration): boolean {
@@ -9218,10 +9281,17 @@ function declOf(sym: ts.Symbol | undefined): ts.Node | undefined {
 }
 
 /** Whether a function body returns `null` or `undefined` itself, outside the functions it declares. */
+/** `null`, `undefined`, or a conditional with either as a branch. */
+function givesNull(e: ts.Expression): boolean {
+  e = ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses);
+  if (e.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(e) && e.text === 'undefined')) return true;
+  return ts.isConditionalExpression(e) && (givesNull(e.whenTrue) || givesNull(e.whenFalse));
+}
+
 function returnsNull(body: ts.Node): boolean {
   const visit = (n: ts.Node): boolean => {
     if (ts.isFunctionLike(n)) return false;
-    if (ts.isReturnStatement(n) && n.expression && (n.expression.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(n.expression) && n.expression.text === 'undefined'))) return true;
+    if (ts.isReturnStatement(n) && n.expression && givesNull(n.expression)) return true;
     return !!ts.forEachChild(n, visit);
   };
   return !!ts.forEachChild(body, visit);
