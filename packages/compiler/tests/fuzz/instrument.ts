@@ -75,6 +75,8 @@ export function findSites(checker: ts.TypeChecker, sf: ts.SourceFile): Site[] {
     if (ts.isSpreadElement(e) || ts.isOmittedExpression(e)) return;
     // An assertion's own operand is the site: guarding the assertion as well would type its result by the guard, not by `as`.
     if (kind !== 'as' && ts.isAsExpression(ts.skipPartiallyEmittedExpressions(skipParens(e)))) return;
+    // A guarded method reference is called without its receiver: `(c ? v : (o.m))()` runs `m` with no `this`.
+    if (isCallee(e)) return;
     const start = e.getStart(sf), end = e.end;
     if (seen.has(`${start}:${end}`)) return;
     let t: ts.Type | undefined;
@@ -124,6 +126,14 @@ export function findSites(checker: ts.TypeChecker, sf: ts.SourceFile): Site[] {
   };
   visit(sf);
   return sites.sort((a, b) => a.start - b.start || b.end - a.end).map((s, id) => ({ ...s, id }));
+}
+
+/** A property read the enclosing call (through parentheses, `as` and `!`) calls as a method. */
+function isCallee(e: ts.Expression): boolean {
+  if (!ts.isPropertyAccessExpression(skipParens(e)) && !ts.isElementAccessExpression(skipParens(e))) return false;
+  let n: ts.Node = e;
+  while (ts.isParenthesizedExpression(n.parent) || ts.isAsExpression(n.parent) || ts.isNonNullExpression(n.parent)) n = n.parent;
+  return (ts.isCallExpression(n.parent) || ts.isTaggedTemplateExpression(n.parent)) && (ts.isCallExpression(n.parent) ? n.parent.expression : n.parent.tag) === n;
 }
 
 function skipParens(e: ts.Expression): ts.Expression {
