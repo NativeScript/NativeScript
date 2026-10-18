@@ -225,3 +225,12 @@ public func jsClearInterval(_ id: Double?) { JSEventLoop.cancel(id) }
 
 /// `queueMicrotask(callback)`.
 public func jsQueueMicrotask(_ callback: @escaping () -> Void) { Microtasks.enqueue(callback) }
+
+#if !canImport(UIKit)
+@discardableResult
+public func jsRequestAnimationFrame(_ callback: @escaping (Double) -> Void) -> Double {
+    JSEventLoop.schedule({ callback(JSDate.now()) }, 16, repeats: false)
+}
+
+public func jsCancelAnimationFrame(_ id: Double) { JSEventLoop.cancel(id) }
+#endif

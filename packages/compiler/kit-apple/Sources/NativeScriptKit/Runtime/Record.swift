@@ -5,19 +5,24 @@ import Foundation
 /// and reference semantics, which a Swift Dictionary has neither of.
 public final class JSRecord<Value>: JSDynamic, JSReactiveConvertible, ExpressibleByDictionaryLiteral {
     nonisolated deinit {}
-    public let object = JSObject()
+    public let object: JSObject
 
-    public init() {}
+    public init(object: JSObject = JSObject()) {
+        self.object = object
+    }
 
     public init(dictionaryLiteral elements: (String, Value)...) {
+        self.object = JSObject()
         for (key, value) in elements { object[key] = value }
     }
 
     public init(_ entries: [(String, Value)]) {
+        self.object = JSObject()
         for (key, value) in entries { object[key] = value }
     }
 
     public init(_ dictionary: [String: Value]) {
+        self.object = JSObject()
         for key in dictionary.keys.sorted() { object[key] = dictionary[key] }
     }
 

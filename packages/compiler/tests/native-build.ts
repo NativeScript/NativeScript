@@ -5,7 +5,9 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, wri
 import { basename, dirname, join, resolve } from 'node:path';
 import { execFileSync, spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import type ts from 'typescript';
+import ts from 'typescript';
+import { PluginSources, writtenStrict } from '../src/plugins/source.ts';
+import { reachability } from '../src/reach.ts';
 import { createProgram } from '../src/program.ts';
 import { Translator } from '../src/swift.ts';
 import { Translator as KotlinTranslator } from '../src/kotlin.ts';
@@ -74,27 +76,45 @@ export interface SwiftOptions {
  */
 export function translateSwift(roots: string[], out: string, o: SwiftOptions = {}): TranslatedModule[] {
   const loose = !!o.lenient;
-  const { checker, program, files: rootFiles, lenient: lenientApp } = createProgram(roots, new Map(), 'ios', modulesDir, undefined, [], {}, loose ? { strict: false, useDefineForClassFields: false } : o.plugin || o.lenientApp ? { strict: false, useUnknownInCatchVariables: false } : {});
+  const packages = new PluginSources({ app: join(root, 'tests'), platform: 'ios' });
+  const { checker, program, files: programFiles, pluginFiles: packageFiles, resolved, lenient: lenientApp } = createProgram(roots, new Map(), 'ios', modulesDir, packages, [], {}, loose ? { strict: false, useDefineForClassFields: false } : o.plugin || o.lenientApp ? { strict: false, useUnknownInCatchVariables: false } : {});
+  const rootFiles = programFiles.filter((sf) => !packageFiles.includes(sf.fileName));
   const imported = roots.flatMap((r) => importsOf(program, r, 'ios'));
+  const appFiles = [...new Set([...roots, ...imported])];
+  // The packages' sources the case reaches, compiled as an app's plugins are: only what it reaches, checked against npm's files.
+  const reach = packageFiles.length ? reachability(program, resolved, appFiles, new Set(packageFiles), 'ios') : undefined;
+  const compiled = reach ? packageFiles.filter((f) => reach.modules.has(f) && program.getSourceFile(f)!.statements.some((st) => reach.keeps(st) && !ts.isImportDeclaration(st) && !ts.isExportDeclaration(st))) : [];
+  packages.verify(compiled);
   // The helper modules the roots import are the program's too, as an app's every module is.
-  const all = [...rootFiles, ...imported.map((f) => program.getSourceFile(f)!).filter((sf) => sf && !rootFiles.includes(sf))];
+  const all = [...rootFiles, ...imported.map((f) => program.getSourceFile(f)!).filter((sf) => sf && !rootFiles.includes(sf)), ...packageFiles.map((f) => program.getSourceFile(f)!)];
   // In library mode, as the kit generated from core is: each module's functions and variables in an enum.
   const library = loose ? { moduleName: (f: string) => (f.endsWith('.d.ts') ? null : 'Module_' + basename(f).replace(/\W/g, '_')) } : null;
-  const plugin = o.plugin ? all.map((f) => f.fileName).filter((f) => /[\\/]plugin[\\/]/.test(f)) : [];
+  const plugin = [...(o.plugin ? all.map((f) => f.fileName).filter((f) => /[\\/]plugin[\\/]/.test(f)) : []), ...packageFiles];
+  const lenientPlugins = [...(o.plugin ? plugin.filter((f) => !packageFiles.includes(f)) : []), ...packageFiles.filter((f) => !writtenStrict(f))];
   // Every module, as an app's are: names its modules share are told apart across them.
-  const translator = new Translator(checker, new Map(), all, { lenient: loose, library, weak: o.weak, ...(loose ? { pluginFiles: all.map((f) => f.fileName), properties: collectProperties(checker, all) } : o.plugin ? { pluginFiles: plugin, lenientFiles: plugin, properties: collectProperties(checker, all) } : {}) });
+  const translator = new Translator(checker, new Map(), all, { lenient: loose, library, weak: o.weak, ...(loose ? { pluginFiles: all.map((f) => f.fileName), properties: collectProperties(checker, all) } : plugin.length ? { pluginFiles: plugin, lenientFiles: lenientPlugins, properties: collectProperties(checker, all), reach } : {}) });
+  if (reach) translator.compiledFiles = new Set(compiled);
+  if (process.env.NS_DIFF_ALL_ERRORS) translator.errors = [];
   translator.appModule = 'Main';
   translator.appMembersByName = !!o.membersByName;
   if (o.appStrictness) translator.lenientApp = lenientApp;
   if (o.plugin || o.lenientApp) translator.lenientApp = true;
   // With source lines, as an app is built: the directives must compile wherever a statement can be.
   const lines = translator.lines = new SourceLines(new Map());
-  const files = [...new Set([...roots, ...imported])];
-  const modules = o.refused ? eachModule(program, files, (f) => translateModules(translator, program, [f]), o.refused) : translateModules(translator, program, files);
+  const files = [...appFiles, ...compiled];
+  const modules = o.refused ? eachModule(program, files, (f) => translateModules(translator, program, [f], resolved), o.refused) : translateModules(translator, program, files, resolved);
+  if (translator.errors?.length) throw new Error([...new Set(translator.errors)].join('\n'));
   addInterfaces(translator, modules);
   rmSync(out, { recursive: true, force: true });
   mkdirSync(out, { recursive: true });
-  for (const m of modules) writeFileSync(join(out, m.name + '.swift'), SWIFT_HEADER + lines.swift(m.code));
+  // Module names that differ only in case (rxjs's `observable` and `Observable`) are separate files on a case-insensitive disk.
+  const taken = new Set<string>();
+  for (const m of modules) {
+    let file = m.name;
+    while (taken.has(file.toLowerCase())) file += '_module';
+    taken.add(file.toLowerCase());
+    writeFileSync(join(out, file + '.swift'), SWIFT_HEADER + lines.swift(m.code));
+  }
   writeFileSync(join(out, '__Objects.swift'), SWIFT_HEADER + translator.shapesCode() + '\n');
   return modules;
 }
@@ -158,20 +178,27 @@ export interface KotlinOptions {
 /** `roots` and the app modules they import as Kotlin in package `pkg`, in `out`. */
 export function translateKotlin(roots: string[], out: string, pkg: string, o: KotlinOptions = {}): KotlinModule[] {
   const loose = !!o.lenient;
-  const { checker, program, files: rootFiles, lenient: lenientApp } = createProgram(roots, new Map(), 'android', modulesDir, undefined, [], {}, loose ? { strict: false, useDefineForClassFields: false } : o.lenientApp ? { strict: false, useUnknownInCatchVariables: false } : {});
+  const packages = new PluginSources({ app: join(root, 'tests'), platform: 'android' });
+  const { checker, program, files: programFiles, pluginFiles: packageFiles, resolved, lenient: lenientApp } = createProgram(roots, new Map(), 'android', modulesDir, packages, [], {}, loose ? { strict: false, useDefineForClassFields: false } : o.lenientApp ? { strict: false, useUnknownInCatchVariables: false } : {});
+  const rootFiles = programFiles.filter((sf) => !packageFiles.includes(sf.fileName));
   const imported = roots.flatMap((r) => importsOf(program, r, 'android'));
+  const appFiles = [...new Set([...roots, ...imported])];
+  const reach = packageFiles.length ? reachability(program, resolved, appFiles, new Set(packageFiles), 'android') : undefined;
+  const compiled = reach ? packageFiles.filter((f) => reach.modules.has(f) && program.getSourceFile(f)!.statements.some((st) => reach.keeps(st) && !ts.isImportDeclaration(st) && !ts.isExportDeclaration(st))) : [];
+  packages.verify(compiled);
   // Every module, as an app's are: a class another module extends stays open.
-  const files = [...rootFiles, ...imported.map((f) => program.getSourceFile(f)!).filter((sf) => sf && !rootFiles.includes(sf))];
+  const all = [...rootFiles, ...imported.map((f) => program.getSourceFile(f)!).filter((sf) => sf && !rootFiles.includes(sf)), ...packageFiles.map((f) => program.getSourceFile(f)!)];
   const library = { identities: new Set<string>(), counterpart: () => null, moduleName: (f: string) => (f.endsWith('.d.ts') ? null : 'Module_' + basename(f).replace(/\W/g, '_')) };
-  const translator = new KotlinTranslator(checker, new Map(), files, loose ? { lenient: true, library, pluginFiles: files.map((f) => f.fileName), properties: collectProperties(checker, files) } : {});
+  const lenientPlugins = packageFiles.filter((f) => !writtenStrict(f));
+  const translator = new KotlinTranslator(checker, new Map(), all, loose ? { lenient: true, library, pluginFiles: all.map((f) => f.fileName), properties: collectProperties(checker, all) } : packageFiles.length ? { pluginFiles: packageFiles, lenientFiles: lenientPlugins, properties: collectProperties(checker, all), reach } : {});
   translator.appModule = pkg;
   translator.appMembersByName = !!o.membersByName;
   // As android.ts sets it: the Kotlin translator reads the field without declaring it.
   if (o.appStrictness) (translator as { lenientApp?: boolean }).lenientApp = lenientApp;
   if (o.lenientApp) (translator as { lenientApp?: boolean }).lenientApp = true;
   const lines = translator.lines = new SourceLines(new Map());
-  const all = [...new Set([...roots, ...imported])];
-  const modules = o.refused ? eachModule(program, all, (f) => translateKotlinModules(translator, program, [f]), o.refused) : translateKotlinModules(translator, program, all);
+  const files = [...appFiles, ...compiled];
+  const modules = o.refused ? eachModule(program, files, (f) => translateKotlinModules(translator, program, [f], resolved), o.refused) : translateKotlinModules(translator, program, files, resolved);
   addKotlinInterfaces(translator, modules);
   rmSync(out, { recursive: true, force: true });
   mkdirSync(out, { recursive: true });

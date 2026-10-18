@@ -30,7 +30,7 @@ export interface PipeDecl {
 export const RUNTIME = '@angular#runtime';
 
 const COMMON_PIPES: Record<string, PipeDecl> = {
-  async: { className: 'AsyncPipe', file: '@nativescript/release', pure: false },
+  async: { className: 'AsyncPipe', file: '@angular#rx', pure: false },
   date: { className: 'DatePipe', file: RUNTIME, pure: true },
   number: { className: 'DecimalPipe', file: RUNTIME, pure: true },
   percent: { className: 'PercentPipe', file: RUNTIME, pure: true },

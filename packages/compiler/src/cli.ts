@@ -40,7 +40,7 @@ import { isFragment, render, SCHEDULE, type Framework } from './codegen.ts';
 import { createRequire } from 'node:module';
 import { addInterfaces, translateModules } from './modules.ts';
 import { appStylesheets, importedStylesheets, kitAst, kitCss } from './css.ts';
-import { PluginSources, configuredOverrides } from './plugins/source.ts';
+import { PluginSources, configuredOverrides, writtenStrict } from './plugins/source.ts';
 import { moduleNames, pluginNative, scopedImports, usedImports, xcodegenLines, type ModuleTypes } from './plugins/native.ts';
 import { readKitManifest } from './kit-manifest.ts';
 import { angularLibraries } from './angular-libraries.ts';
@@ -413,7 +413,6 @@ try {
 } finally {
   dependencies.dispose();
 }
-const writtenStrictness = new Map<string, boolean>();
 // Before the translator analyzes what throws: lenient code's checks throw.
 const lenientFiles = [...pluginFiles].filter((f) => !writtenStrict(f));
 const translator = new Translator(checker, infos, sourceFiles, { pluginFiles, lenientFiles, reach, properties });
@@ -748,20 +747,6 @@ async function svelteCss(app: string, fallback: 'injected' | 'external'): Promis
   const config = await import(pathToFileURL(file).href);
   const css = (config.default ?? config)?.compilerOptions?.css;
   return css === true ? 'injected' : css === false ? 'external' : typeof css === 'string' ? css : fallback;
-}
-
-/** Whether a source's own tsconfig (its `extends` followed) checks null: code written without it is translated as core is. */
-function writtenStrict(file: string, strictness = writtenStrictness): boolean {
-  for (let dir = dirname(file); dirname(dir) !== dir; dir = dirname(dir)) {
-    const config = join(dir, 'tsconfig.json');
-    if (!existsSync(config)) continue;
-    if (!strictness.has(config)) {
-      const o = ts.getParsedCommandLineOfConfigFile(config, {}, { ...ts.sys, onUnRecoverableConfigFileDiagnostic: () => {} })?.options ?? {};
-      strictness.set(config, !!(o.strictNullChecks ?? o.strict));
-    }
-    return strictness.get(config)!;
-  }
-  return true;
 }
 
 /** The app's package.json as its bundle has it, or an empty object. */

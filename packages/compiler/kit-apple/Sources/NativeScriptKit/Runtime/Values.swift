@@ -286,6 +286,8 @@ public final class JSObject: JSDynamic, JSSymbolKeyed, JSAccessorKeyed, JSReacti
     private var slots: [JSPropertyKey: JSPropertySlot] = [:]
     public private(set) var extensible = true
     public var jsTracker: JSTracker?
+    /// The object `Object.create(proto)` made it from: a key it doesn't have is read there.
+    public var jsPrototype: Any?
 
     public init() {}
 
@@ -312,7 +314,11 @@ public final class JSObject: JSDynamic, JSSymbolKeyed, JSAccessorKeyed, JSReacti
             if !slots.isEmpty, let getter = slots[JSPropertyKey(key)]?.get {
                 do { return try getter(self) } catch { jsReportUncaught(jsCaught(error)); return nil }
             }
-            guard let tracker = jsTracker else { return storage[JSPropertyKey(key)] ?? nil }
+            guard let tracker = jsTracker else {
+                if let value = storage[JSPropertyKey(key)] { return value }
+                guard let proto = jsPrototype else { return nil }
+                do { return try jsGet(proto, key) } catch { jsReportUncaught(jsCaught(error)); return nil }
+            }
             tracker.track()
             return jsReactiveAny(storage[JSPropertyKey(key)] ?? nil)
         }
@@ -513,6 +519,13 @@ extension JSObject: JSToPrimitive {
 /// `o?.key`, or a member read further along an optional chain, of an untyped value: undefined once the chain reaches undefined or null.
 public func jsGetIfPresent(_ object: Any?, _ key: String) throws -> Any? {
     jsIsNullish(object) ? nil : try jsGet(object, key)
+}
+
+/// `Object.create(proto)`: an object whose missing keys read from `proto` (nil: none).
+public func jsObjectCreate(_ proto: Any?) -> JSObject {
+    let object = JSObject()
+    object.jsPrototype = jsFlat(proto)
+    return object
 }
 
 public func jsGet(_ object: Any?, _ key: String) throws -> Any? {
@@ -1073,9 +1086,17 @@ public func jsCallOptional(_ function: Any?, spread arguments: [Any?]) throws ->
     return try jsCall(function, spread: arguments)
 }
 
+public let jsDateBuiltin = JSObject([
+    ("now", jsFunction("now", 0) { _ in JSDate.now() }),
+])
+
+public let jsArrayBuiltin = JSObject([
+    ("isArray", jsFunction("isArray", 1) { a in JSArray<Any?>.isArray(jsArg(a, 0)) }),
+])
+
 /// `globalThis` read as an object: the runtime's globals (`NativeScriptRuntime`, `com.tns`) are not
 /// in a native app, so reading one gives undefined. `DOMException`, which core's fetch reads from it, is there.
-public let jsGlobalThis = JSObject([("DOMException", jsDOMExceptionConstructor)])
+public let jsGlobalThis = JSObject([("DOMException", jsDOMExceptionConstructor), ("performance", jsDateBuiltin)])
 
 /// `Object` held as a value (`(<any>Object).entries(o)`): its functions over objects, called as script calls them.
 public let jsObjectBuiltin = JSObject([
@@ -1083,6 +1104,8 @@ public let jsObjectBuiltin = JSObject([
     ("values", jsFunction("values", 1) { a in jsObjectValues(jsArg(a, 0)) }),
     ("entries", jsFunction("entries", 1) { a in JSArray<Any?>(jsObjectEntries(jsArg(a, 0)).storage.map { JSArray<Any?>([$0.0, $0.1]) as Any? }) }),
     ("assign", jsFunction("assign", 2) { a in try jsObjectAssign(jsArg(a, 0), spread: Array(a.dropFirst())) }),
+    ("getPrototypeOf", jsFunction("getPrototypeOf", 1) { a in try jsGetPrototypeOf(jsArg(a, 0)) }),
+    ("prototype", JSPrototypes.objectPrototype),
 ])
 
 /// Lenient code: a value that may be undefined where its type says an object. It stays optional; a member read

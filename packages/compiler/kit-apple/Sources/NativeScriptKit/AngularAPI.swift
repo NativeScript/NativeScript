@@ -17,62 +17,6 @@ extension Emitter where T == Void {
     public func emit() { emit(()) }
 }
 
-/// `inject(DestroyRef)`: callbacks run when the injecting component's scope ends.
-public final class DestroyRef {
-    nonisolated deinit {}
-    private weak var owner: Owner?
-    init(_ owner: Owner?) { self.owner = owner }
-    public static func current() -> DestroyRef { DestroyRef(Owner.current) }
-
-    @discardableResult
-    public func onDestroy(_ callback: @escaping () -> Void) -> () -> Void {
-        var active = true
-        owner?.onCleanup { if active { callback() } }
-        return { active = false }
-    }
-
-    @discardableResult
-    public func onDestroy(_ callback: @escaping () throws -> Void) -> () -> Void {
-        onDestroy { () -> Void in jsReport(callback) }
-    }
-}
-
-/// `inject(Injector)`; `injector.get(Service)` is compiled to the service's shared instance.
-public final class Injector {
-    nonisolated deinit {}
-    public static let shared = Injector()
-
-    /// A root service, made as the root injector makes it: whatever component first injects it, its effects
-    /// and its `DestroyRef` belong to the application, and what its constructor reads subscribes no binding.
-    public static func root<T>(_ make: () throws -> T) rethrows -> T {
-        try untrack { try Owner(parent: nil).run(make) }
-    }
-
-    private static var made: [ObjectIdentifier: AnyObject] = [:]
-    private static var making: Set<ObjectIdentifier> = []
-
-    /// A root service whose constructor can throw, kept once one is made: an inject() throws what the constructor
-    /// throws, and the next inject() makes it again. A service whose construction injects itself is Angular's
-    /// circular-dependency error.
-    public static func root<T: AnyObject>(_ type: T.Type, _ make: () throws -> T) throws -> T {
-        let key = ObjectIdentifier(type)
-        if let service = made[key] as? T { return service }
-        guard making.insert(key).inserted else { throw JSException(JSError("NG0200: Circular dependency in DI detected for \(type)")) }
-        defer { making.remove(key) }
-        let service = try root(make)
-        made[key] = service
-        return service
-    }
-}
-
-/// `NgZone` without zone.js: both run their function at once.
-public final class NgZone {
-    nonisolated deinit {}
-    public static let shared = NgZone()
-    public func run<T>(_ fn: () throws -> T) rethrows -> T { try fn() }
-    public func runOutsideAngular<T>(_ fn: () throws -> T) rethrows -> T { try fn() }
-}
-
 /// A component class used as a value (`dialog.open(SheetComponent)`): what creating and rendering it gives.
 public final class ComponentFactory {
     nonisolated deinit {}
@@ -159,15 +103,26 @@ public final class HttpClient {
             }, { (_: Any?) -> Void in resolvers.reject(failure(0, "Unknown Error")) })
             return promise
         }
-        let observable = RxObservable<Any?> { next in
+        let observable = RxObservable<Any?>(full: { next, error, complete in
             let subscription = RxSubscription()
-            _ = request().then { value in if !subscription.closed { next(value) } }
+            _ = request().then({ value in
+                if !subscription.closed {
+                    next(value)
+                    complete()
+                }
+            }, { err in
+                if !subscription.closed { error(err) }
+            })
             return subscription
-        }
+        })
         observable.first = request
         return observable
     }
 }
+
+public typealias KitHttpClient = HttpClient
+public typealias KitNativeDialogRef = NativeDialogRef
+public typealias KitNativeDialogService = NativeDialogService
 
 // MARK: @angular/core/rxjs-interop
 

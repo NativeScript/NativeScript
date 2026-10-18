@@ -231,11 +231,12 @@ export class Throws {
     const init = holder && (ts.isPropertyDeclaration(holder) || ts.isVariableDeclaration(holder)) ? holder.initializer : undefined;
     if (init && ts.isCallExpression(init) && init.expression.getText() === 'computed' && init.arguments[0] && ts.isFunctionLike(init.arguments[0])) return this.fn(init.arguments[0]);
     const signature = c.getResolvedSignature(call)?.getDeclaration();
-    // A library function held (`export const parse = parseFloat`, `readonly round = Math.round`): Swift holds it as a function value, which throws.
-    if (ts.isCallExpression(call) && init && (ts.isIdentifier(init) || ts.isPropertyAccessExpression(init)) && !holder!.getSourceFile().isDeclarationFile
-      && (['parseInt', 'parseFloat'].includes(init.getText()) || !!signature?.getSourceFile().isDeclarationFile)) return true;
-    if (ts.isCallExpression(call) && holder && !holder.getSourceFile().isDeclarationFile && !signature?.getSourceFile().isDeclarationFile
-      && (ts.isVariableDeclaration(holder) || ts.isParameter(holder) || ts.isPropertyDeclaration(holder) || ts.isPropertySignature(holder) || ts.isPropertyAssignment(holder) || ts.isGetAccessorDeclaration(holder) || ts.isShorthandPropertyAssignment(holder))) return true;
+    // A library function held (`export const parse = parseFloat`, `const { isArray } = Array`): Swift holds it as a function value, which throws.
+    if (ts.isCallExpression(call) && holder && !holder.getSourceFile().isDeclarationFile
+      && ((init && (ts.isIdentifier(init) || ts.isPropertyAccessExpression(init)) && (['parseInt', 'parseFloat'].includes(init.getText()) || !!signature?.getSourceFile().isDeclarationFile))
+        || (ts.isBindingElement(holder) && !!signature?.getSourceFile().isDeclarationFile))) return true;
+    if ((ts.isCallExpression(call) || ts.isNewExpression(call)) && holder && !holder.getSourceFile().isDeclarationFile && !signature?.getSourceFile().isDeclarationFile
+      && (ts.isVariableDeclaration(holder) || ts.isBindingElement(holder) || ts.isParameter(holder) || ts.isPropertyDeclaration(holder) || ts.isPropertySignature(holder) || ts.isPropertyAssignment(holder) || ts.isGetAccessorDeclaration(holder) || ts.isShorthandPropertyAssignment(holder))) return true;
     // A local holding a library function (`const dip = Utils.layout.toDeviceIndependentPixels`), or one a call made (`view.dispose.bind(view)`): a Swift function value, which throws.
     if (ts.isCallExpression(call) && holder && ts.isVariableDeclaration(holder) && !holder.getSourceFile().isDeclarationFile && holder.initializer && (ts.isPropertyAccessExpression(skipParens(holder.initializer)) || ts.isCallExpression(skipParens(holder.initializer)))) return true;
     const decl = c.getResolvedSignature(call)?.getDeclaration();
@@ -254,7 +255,7 @@ export class Throws {
       if (named?.declarations?.length && named.declarations.every((d) => isLibFile(d.getSourceFile()))) return THROWING_BUILTINS.has(named.name);
       const fnDecl = named?.valueDeclaration;
       if (fnDecl && ts.isFunctionDeclaration(fnDecl) && fnDecl.body && !isAsync(fnDecl) && !fnDecl.asteriskToken && decl && builtinName(decl)?.startsWith('Array.')) return this.fn(fnDecl);
-      return c.getTypeAtLocation(arg).getCallSignatures().length > 0;
+      return c.getTypeAtLocation(arg).getCallSignatures().length > 0 || (!!param?.type && takesFunction(param.type, c) && this.untyped(arg));
     });
     if (ts.isIdentifier(call.expression) && call.expression.text === 'RegExp') return true;
     // A buffer or a view of an invalid length is a RangeError.
@@ -282,8 +283,8 @@ export class Throws {
     }
     // A value the program holds, of a function type a declaration file names (`callback: ControlStateChangeListenerCallback`): a Swift function type, which throws.
     if (file.isDeclarationFile && ts.isFunctionTypeNode(decl) && holder && !holder.getSourceFile().isDeclarationFile && !/[\\/]lib\.[\w.]*\.d\.ts$/.test(file.fileName)) return true;
-    // A pure pipe's cache runs the transform it is given at once: it rethrows.
-    if (file.fileName.startsWith('/__shims__/') && ts.isMethodDeclaration(decl) && ts.isClassDeclaration(decl.parent) && decl.parent.name?.text === 'PurePipeCache') return callbackThrows();
+    // A pure pipe's cache or untracked(fn) runs the callback it is given at once: it rethrows.
+    if (file.fileName.startsWith('/__shims__/') && ((ts.isFunctionDeclaration(decl) && decl.name?.text === 'untracked') || (ts.isMethodDeclaration(decl) && ts.isClassDeclaration(decl.parent) && decl.parent.name?.text === 'PurePipeCache'))) return callbackThrows();
     const compiled = file.isDeclarationFile ? this.implementation(decl) : null;
     if (compiled) return (compiled as Fn).body ? this.fn(compiled) : false;
     if (file.isDeclarationFile) {
@@ -306,7 +307,8 @@ export class Throws {
       return false;
     }
     // A function value (an arrow stored in a variable or an object) has a Swift function type, which throws.
-    if (ts.isArrowFunction(decl) || ts.isFunctionExpression(decl) || (ts.isMethodDeclaration(decl) && ts.isObjectLiteralExpression(decl.parent))) return true;
+    if ((ts.isArrowFunction(decl) || ts.isFunctionExpression(decl)) && skipParens(call.expression) !== decl) return true;
+    if (ts.isMethodDeclaration(decl) && ts.isObjectLiteralExpression(decl.parent)) return true;
     if ((decl as Fn).body) return this.fn(decl);
     // An abstract method throws as an override of it does.
     if (ts.isMethodDeclaration(decl) && ts.isClassLike(decl.parent) && ts.getModifiers(decl)?.some((m) => m.kind === ts.SyntaxKind.AbstractKeyword)) return this.fn(decl);
@@ -327,7 +329,8 @@ export class Throws {
     const decl = s?.valueDeclaration;
     if (!decl || !ts.isClassLike(decl)) return false;
     if (/[\\/]@nativescript[\\/]core[\\/]/.test(decl.getSourceFile().fileName)) return decl.name?.text === 'Page';
-    if (decl.getSourceFile().isDeclarationFile || this.injecting.has(decl)) return false;
+    if (decl.getSourceFile().fileName.endsWith('/runtime/angular-rx.ts')) return decl.name?.text === 'ActivatedRoute';
+    if (decl.getSourceFile().isDeclarationFile || /[\\/]node_modules[\\/]/.test(decl.getSourceFile().fileName) || this.injecting.has(decl)) return false;
     this.injecting.add(decl);
     try { return this.initThrows(decl); } finally { this.injecting.delete(decl); }
   }

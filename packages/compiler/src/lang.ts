@@ -90,7 +90,7 @@ function iteratorMember(t: ts.Type, async: boolean): ts.Symbol | undefined {
   return t.getProperties().find((p) => p.escapedName.toString().startsWith(async ? '__@asyncIterator@' : '__@iterator@'));
 }
 
-const ITERATING_SCRIPT = new Set(['Generator', 'Iterator', 'IterableIterator', 'IteratorObject', 'Iterable']);
+const ITERATING_SCRIPT = new Set(['Generator', 'Iterator', 'IterableIterator', 'IteratorObject', 'Iterable', 'AsyncGenerator', 'AsyncIterator', 'AsyncIterableIterator', 'AsyncIteratorObject', 'AsyncIterable']);
 const ITERATING_BUILTIN = new Set(['Array', 'ReadonlyArray', 'Map', 'ReadonlyMap', 'Set', 'ReadonlySet', 'String', 'ArrayIterator', 'MapIterator', 'SetIterator', 'StringIterator', 'RegExpStringIterator', 'TemplateStringsArray',
   'Int8Array', 'Uint8Array', 'Uint8ClampedArray', 'Int16Array', 'Uint16Array', 'Int32Array', 'Uint32Array', 'Float32Array', 'Float64Array', 'BigInt64Array', 'BigUint64Array']);
 
@@ -107,7 +107,7 @@ export function iterationThrows(t: ts.Type, checker: ts.TypeChecker): boolean {
   const name = (t.aliasSymbol ?? t.getSymbol())?.getName() ?? '';
   if (ITERATING_BUILTIN.has(name)) return false;
   if (ITERATING_SCRIPT.has(name)) return true;
-  return !!iteratorMember(t, false);
+  return !!iteratorMember(t, false) || !!iteratorMember(t, true);
 }
 
 /** The type of the values an iterable yields (`T` of its `[Symbol.iterator]().next()`'s `IteratorYieldResult<T>`). */
@@ -473,10 +473,17 @@ export class LooseSlots {
   private build() {
     this.built = true;
     const placements: [ts.Expression, ts.Declaration][] = [];
+    const destructured: [ts.Declaration, ts.Declaration][] = [];
     const visit = (n: ts.Node) => {
       if (ts.isExpression(n) && !ts.isParenthesizedExpression(n)) {
         const slot = slotOf(n, this.checker);
-        if (slot && !slot.getSourceFile().isDeclarationFile) placements.push([n, slot]);
+        let value = n;
+        while (ts.isBinaryExpression(value) && value.operatorToken.kind === ts.SyntaxKind.EqualsToken) value = ts.skipOuterExpressions(value.right, ts.OuterExpressionKinds.Parentheses);
+        if (slot && !slot.getSourceFile().isDeclarationFile) placements.push([value, slot]);
+      } else if (ts.isBindingElement(n) && ts.isIdentifier(n.name) && ts.isObjectBindingPattern(n.parent)) {
+        if (n.initializer) placements.push([n.initializer, n]);
+        const prop = this.checker.getTypeAtLocation(n.parent).getProperty((n.propertyName ?? n.name).getText())?.valueDeclaration;
+        if (prop && !prop.getSourceFile().isDeclarationFile) destructured.push([prop, n]);
       }
       ts.forEachChild(n, visit);
     };
@@ -496,6 +503,12 @@ export class LooseSlots {
         }
         changed = true;
       }
+      for (const [prop, binding] of destructured) {
+        if (!this.loose.has(binding) && this.holds(binding) && this.loose.has(prop)) {
+          this.loose.add(binding);
+          changed = true;
+        }
+      }
     }
   }
 
@@ -509,7 +522,7 @@ export class LooseSlots {
  */
 export function ownSlot(d: ts.Declaration, checker: ts.TypeChecker, implemented: Set<ts.Declaration>): boolean {
   if (d.getSourceFile().isDeclarationFile) return false;
-  if (ts.isFunctionDeclaration(d) || ts.isArrowFunction(d) || ts.isFunctionExpression(d) || ts.isMethodDeclaration(d)) {
+  if (ts.isFunctionDeclaration(d) || ts.isMethodDeclaration(d)) {
     if (ts.isMethodDeclaration(d) && !hasStatic(d)) return false;
     return !d.asteriskToken && !ts.getModifiers(d)?.some((m) => m.kind === ts.SyntaxKind.AsyncKeyword);
   }
@@ -518,9 +531,9 @@ export function ownSlot(d: ts.Declaration, checker: ts.TypeChecker, implemented:
     const fn = d.parent;
     if (d.dotDotDotToken || !ts.isIdentifier(d.name) || (ts.isMethodDeclaration(fn) && !hasStatic(fn))) return false;
     if (ts.isConstructorDeclaration(fn) && ts.getModifiers(d)?.length) return false;
-    return ts.isFunctionDeclaration(fn) || ts.isArrowFunction(fn) || ts.isFunctionExpression(fn) || ts.isMethodDeclaration(fn) || ts.isConstructorDeclaration(fn);
+    return ts.isFunctionDeclaration(fn) || ts.isMethodDeclaration(fn) || ts.isConstructorDeclaration(fn);
   }
-  return (ts.isVariableDeclaration(d) || ts.isPropertyDeclaration(d)) && ts.isIdentifier(d.name);
+  return (ts.isVariableDeclaration(d) || ts.isPropertyDeclaration(d) || ts.isBindingElement(d)) && ts.isIdentifier(d.name);
 }
 
 function hasStatic(d: ts.Declaration): boolean {
