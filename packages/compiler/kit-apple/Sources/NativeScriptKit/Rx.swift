@@ -24,10 +24,16 @@ public final class RxSubscription {
 public class RxObservable<T> {
     nonisolated deinit {}
     private let producer: (@escaping (T) -> Void) -> RxSubscription
+    private var fullProducer: ((@escaping (T) -> Void, @escaping (Any?) -> Void, @escaping () -> Void) -> RxSubscription)?
     /// A source that settles once (an HTTP request): its value or its error, for `firstValueFrom`.
     var first: (() -> JSPromise<T>)?
 
     public init(_ producer: @escaping (@escaping (T) -> Void) -> RxSubscription) { self.producer = producer }
+
+    public init(full producer: @escaping (@escaping (T) -> Void, @escaping (Any?) -> Void, @escaping () -> Void) -> RxSubscription) {
+        self.producer = { next in producer(next, { _ in }, {}) }
+        self.fullProducer = producer
+    }
 
     /// Each value converted: how a typed `get<T>()` reads the parsed body.
     public func mapValues<R>(_ transform: @escaping (T) -> R) -> RxObservable<R> {
@@ -38,6 +44,17 @@ public class RxObservable<T> {
 
     @discardableResult
     public func subscribe(_ next: @escaping (T) -> Void) -> RxSubscription { producer(next) }
+
+    @discardableResult
+    public func subscribe(_ next: @escaping (T) -> Void, _ error: @escaping (Any?) -> Void, _ complete: @escaping () -> Void) -> RxSubscription {
+        if let fullProducer { return fullProducer(next, error, complete) }
+        return subscribe(next)
+    }
+
+    @discardableResult
+    public func subscribe(_ next: @escaping (T) throws -> Void, _ error: @escaping (Any?) throws -> Void, _ complete: @escaping () throws -> Void) -> RxSubscription {
+        subscribe({ value in jsReport { try next(value) } }, { err in jsReport { try error(err) } }, { jsReport { try complete() } })
+    }
 
     /// `subscribe(() => …)`: a handler that ignores the value.
     @discardableResult

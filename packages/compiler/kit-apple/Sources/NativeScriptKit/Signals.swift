@@ -327,7 +327,8 @@ public func untrack<T>(_ body: () throws -> T) rethrows -> T {
 /// A value that notifies the effects that read it.
 public final class Signal<T>: Source, Holding {
     nonisolated deinit {}
-    private var stored: T
+    private var stored: T!
+    private var compute: (() -> T)?
     private var subscribers: [ObjectIdentifier: Subscriber] = [:]
     private let same: (T, T) -> Bool
     /// Framework state (`stateSignal`): read outside an owner, the value before the writes not yet committed.
@@ -350,8 +351,14 @@ public final class Signal<T>: Source, Holding {
         same = equals
     }
 
+    public init(computing compute: @escaping () throws -> T) {
+        self.compute = { jsReportedOrZero(compute) }
+        same = { _, _ in false }
+    }
+
     public var value: T {
         get {
+            if let compute { return compute() }
             if let effect = currentEffect {
                 subscribers[ObjectIdentifier(effect)] = effect
                 effect.track(self)
@@ -485,3 +492,210 @@ public func createRoot<T>(_ body: (Owner) throws -> T) rethrows -> T {
     let owner = Owner(parent: nil)
     return try owner.run { try body(owner) }
 }
+
+public typealias EffectRef = Effect
+
+/// `inject(DestroyRef)`: callbacks run when the injecting component's scope ends.
+public final class DestroyRef {
+    nonisolated deinit {}
+    private weak var owner: Owner?
+    init(_ owner: Owner?) { self.owner = owner }
+    public static func current() -> DestroyRef { DestroyRef(Owner.current) }
+
+    @discardableResult
+    public func onDestroy(_ callback: @escaping () -> Void) -> () -> Void {
+        var active = true
+        owner?.onCleanup { if active { callback() } }
+        return { active = false }
+    }
+
+    @discardableResult
+    public func onDestroy(_ callback: @escaping () throws -> Void) -> () -> Void {
+        onDestroy { () -> Void in jsReport(callback) }
+    }
+}
+
+/// `inject(Injector)`; `injector.get(Service)` is compiled to the service's shared instance.
+public final class Injector {
+    nonisolated deinit {}
+    public static let shared = Injector()
+
+    /// A root service, made as the root injector makes it: whatever component first injects it, its effects
+    /// and its `DestroyRef` belong to the application, and what its constructor reads subscribes no binding.
+    public static func root<T>(_ make: () throws -> T) rethrows -> T {
+        try untrack { try Owner(parent: nil).run(make) }
+    }
+
+    private static var made: [ObjectIdentifier: AnyObject] = [:]
+    private static var making: Set<ObjectIdentifier> = []
+
+    /// A root service whose constructor can throw, kept once one is made: an inject() throws what the constructor
+    /// throws, and the next inject() makes it again. A service whose construction injects itself is Angular's
+    /// circular-dependency error.
+    public static func root<T: AnyObject>(_ type: T.Type, _ make: () throws -> T) throws -> T {
+        let key = ObjectIdentifier(type)
+        if let service = made[key] as? T { return service }
+        guard making.insert(key).inserted else { throw JSException(JSError("NG0200: Circular dependency in DI detected for \(type)")) }
+        defer { making.remove(key) }
+        let service = try root(make)
+        made[key] = service
+        return service
+    }
+    private static var tokenValues: [ObjectIdentifier: Any?] = [:]
+    private static var tokenFactories: [ObjectIdentifier: () throws -> Any?] = [:]
+    private static var multiFactories: [ObjectIdentifier: [() throws -> Any?]] = [:]
+
+    private static func tokenKey(_ token: Any?) -> ObjectIdentifier? {
+        guard let token = jsFlat(token) else { return nil }
+        if let type = token as? Any.Type { return ObjectIdentifier(type) }
+        return ObjectIdentifier(token as AnyObject)
+    }
+
+    public static func reset() {
+        made.removeAll()
+        making.removeAll()
+        tokenValues.removeAll()
+        tokenFactories.removeAll()
+        multiFactories.removeAll()
+    }
+
+    public static func provide(_ token: Any?, useValue: Any? = nil, useFactory: (() throws -> Any?)? = nil) {
+        guard let key = tokenKey(token) else { return }
+        if let useFactory {
+            tokenFactories[key] = useFactory
+            tokenValues.removeValue(forKey: key)
+        } else {
+            tokenValues[key] = useValue
+            tokenFactories.removeValue(forKey: key)
+        }
+    }
+
+    public static func register(_ providers: Any?) {
+        var initializers: [() throws -> Any?] = []
+        func walk(_ item: Any?) {
+            guard let flat = jsFlat(item) else { return }
+            if let arr = flat as? JSArrayProtocol {
+                for el in arr.jsAnyElements { walk(el) }
+                return
+            }
+            if let fn = flat as? () throws -> Any? {
+                initializers.append(fn)
+                return
+            }
+            if let fn = flat as? () -> Void {
+                initializers.append({ fn(); return nil })
+                return
+            }
+            if let dyn = flat as? JSDynamic, jsHasKey(dyn, "provide") || (dyn as? JSObject)?.has("provide") == true {
+                let token = dyn[jsKey: "provide"]
+                guard let key = tokenKey(token) else { return }
+                let isMulti = (jsFlat(dyn[jsKey: "multi"]) as? Bool) == true
+                let hasValue = (dyn as? JSObject)?.has("useValue") == true || jsHasKey(dyn, "useValue")
+                let val = dyn[jsKey: "useValue"]
+                let factory = jsFlat(dyn[jsKey: "useFactory"])
+                let existing = jsFlat(dyn[jsKey: "useExisting"])
+                let useClass = jsFlat(dyn[jsKey: "useClass"])
+                let deps = (jsFlat(dyn[jsKey: "deps"]) as? JSArrayProtocol)?.jsAnyElements ?? []
+                let make: () throws -> Any? = {
+                    if hasValue { return val }
+                    if let factory {
+                        let resolved: [Any?] = deps.map { dep in
+                            if let arr = jsFlat(dep) as? JSArrayProtocol, let last = arr.jsAnyElements.last {
+                                return Injector.inject(last)
+                            }
+                            return Injector.inject(dep)
+                        }
+                        if let zero = factory as? () throws -> Any? { return try zero() }
+                        return try jsCall(factory, spread: resolved)
+                    }
+                    if let existing { return Injector.inject(existing) }
+                    if let fn = useClass { return try jsCall(fn, spread: []) }
+                    return nil
+                }
+                if isMulti {
+                    multiFactories[key, default: []].append(make)
+                    tokenValues.removeValue(forKey: key)
+                } else {
+                    tokenFactories[key] = make
+                    tokenValues.removeValue(forKey: key)
+                }
+            }
+        }
+        walk(providers)
+        for initFn in initializers {
+            _ = jsReported { try initFn() }
+        }
+    }
+
+    public static func inject(_ token: Any?, _ options: Any? = nil) -> Any? {
+        guard let key = tokenKey(token) else { return nil }
+        if let entry = tokenValues[key] { return entry }
+        if let multis = multiFactories[key], !multis.isEmpty {
+            let values = multis.map { fn in jsReported { try fn() } ?? nil }
+            let arr = JSArray<Any?>(values)
+            tokenValues[key] = arr
+            return arr
+        }
+        if let factory = tokenFactories[key] {
+            let val = jsReported { try factory() } ?? nil
+            tokenValues[key] = val
+            return val
+        }
+        if let tok = jsFlat(token) as? InjectionToken, let factory = tok.factory {
+            let val = jsReported { try factory() } ?? nil
+            tokenValues[key] = val
+            return val
+        }
+        let flat = jsFlat(token)
+        if flat is ErrorHandler.Type { return ErrorHandler.shared }
+        if flat is Injector.Type { return Injector.shared }
+        if flat is NgZone.Type { return NgZone.shared }
+        if flat is DestroyRef.Type { return DestroyRef.current() }
+        return nil
+    }
+}
+
+/// `new InjectionToken<T>(desc, options)`: an Angular DI token, optionally carrying a root factory.
+public final class InjectionToken {
+    nonisolated deinit {}
+    public let desc: String
+    public let factory: (() throws -> Any?)?
+    public init(_ desc: String = "", _ options: Any? = nil) {
+        self.desc = desc
+        if let fn = jsFlat(try? jsGet(options, "factory")) {
+            if let zero = fn as? () throws -> Any? {
+                self.factory = zero
+            } else {
+                self.factory = { try jsCall(fn, spread: []) }
+            }
+        } else {
+            self.factory = nil
+        }
+    }
+}
+
+public class ErrorHandler {
+    nonisolated deinit {}
+    public static let shared = ErrorHandler()
+    public init() {}
+    open func handleError(_ error: Any?) {}
+}
+
+public func makeEnvironmentProviders(_ providers: Any?) -> Any? {
+    Injector.register(providers)
+    return providers
+}
+
+public func provideEnvironmentInitializer(_ fn: @escaping () throws -> Any?) -> Any? {
+    return fn
+}
+
+/// `NgZone` without zone.js: both run their function at once.
+public final class NgZone {
+    nonisolated deinit {}
+    public static let shared = NgZone()
+    public static func isInAngularZone() -> Bool { true }
+    public func run<T>(_ fn: () throws -> T) rethrows -> T { try fn() }
+    public func runOutsideAngular<T>(_ fn: () throws -> T) rethrows -> T { try fn() }
+}
+

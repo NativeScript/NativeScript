@@ -1,12 +1,16 @@
 import ts from 'typescript';
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, isAbsolute, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { foldPlatform, type Platform } from './platform.ts';
 import { desugarConstructorFactories } from './constructor-factories.ts';
 import { KIT_PLUGINS, NATIVE_CONTROLLERS, NATIVE_VIEWS, nativeViewOf } from './core.ts';
 import type { PluginSources } from './plugins/source.ts';
 import { packageOf, runtimeFile } from './plugins/resolve.ts';
 import { NATIVE_VIEWS_ANDROID } from './core-kotlin.ts';
+
+const ANGULAR_RX_FILE = resolve(dirname(fileURLToPath(import.meta.url)), '../runtime/angular-rx.ts');
+const ANGULAR_RX_MODULES = new Set(['@angular/common/http', '@angular/core/rxjs-interop', '@angular/router', '@nativescript/angular', '@angular#rx']);
 
 /**
  * The release build's view of the framework APIs an app imports. Only their
@@ -33,6 +37,19 @@ const SHIMS: Record<string, string> = {
     import type { Observable } from 'rxjs';
     /** Angular's async pipe at one binding site. */
     export declare class AsyncPipe { transform<T>(observable: Observable<T> | null | undefined): T | null }
+    export declare class RxSubscription { readonly closed: boolean; unsubscribe(): void }
+    export declare class RxObservable<T> {
+      subscribe(next: (value: T) => void, error?: (err: any) => void, complete?: () => void): RxSubscription;
+      mapValues<R>(transform: (value: T) => R): RxObservable<R>;
+    }
+    export declare class RxSubject<T> extends RxObservable<T> { next(value: T): void; asObservable(): RxObservable<T> }
+    export declare class RxBehaviorSubject<T> extends RxSubject<T> { readonly value: T; getValue(): T }
+    export declare class NavigationEnd { readonly id: number; readonly url: string; readonly urlAfterRedirects: string }
+    export declare class KitHttpClient { static readonly shared: KitHttpClient; get(url: string, options?: any): RxObservable<any> }
+    export declare class KitActivatedRoute { static current: KitActivatedRoute; readonly snapshot: { readonly params: Record<string, string> }; readonly params: RxBehaviorSubject<Record<string, string>> }
+    export declare class KitRouter { static readonly shared: KitRouter; readonly url: string; readonly events: RxSubject<NavigationEnd>; navigate(commands: any[], extras?: any): Promise<boolean>; navigateByUrl(url: string, extras?: any): Promise<boolean>; back(options?: any): void; canGoBack(): boolean }
+    export declare class KitNativeDialogRef { static readonly current: KitNativeDialogRef; readonly data: any; close(result?: any): void; afterClosed(): RxObservable<any> }
+    export declare class KitNativeDialogService { static readonly shared: KitNativeDialogService; open(component: any, config?: any): KitNativeDialogRef }
     /** A pure Angular pipe at one binding site: \`transform\` runs when an argument is no longer \`Object.is\` the last one. */
     export declare class PurePipeCache {
       pure1<A, R>(a: A, transform: (a: A) => R): R;
@@ -52,18 +69,31 @@ const SHIMS: Record<string, string> = {
     export declare function withInterceptorsFromDi(): any;
   `,
   '@angular/core': `
+    export type ValueEqualityFn<T> = (a: T, b: T) => boolean;
+    export interface CreateComputedOptions<T> { equal?: ValueEqualityFn<T> }
     export interface WritableSignal<T> { (): T; set(value: T): void; update(fn: (value: T) => T): void }
     export interface Signal<T> { (): T }
     /** \`$assign\`: a decorated input the component writes itself (\`this.x = v\`), until its parent's binding changes. */
     export interface InputSignal<T> { (): T; $assign(value: T): void }
     export interface OutputEmitterRef<T> { emit(value: T): void }
-    export declare function signal<T>(value: T): WritableSignal<T>;
-    export declare function computed<T>(fn: () => T): Signal<T>;
+    export declare function signal<T>(value: T, options?: CreateComputedOptions<T>): WritableSignal<T>;
+    export declare function computed<T>(fn: () => T, options?: CreateComputedOptions<T>): Signal<T>;
+    export declare function isSignal(value: unknown): value is Signal<unknown>;
+    export declare function isDevMode(): boolean;
+    export type Provider = any;
+    export type EnvironmentProviders = any;
+    export interface ModuleWithProviders<T = any> { ngModule: any; providers?: any[] }
+    export type Type<T = any> = any;
+    export declare function makeEnvironmentProviders(providers: any[]): EnvironmentProviders;
+    export declare function provideEnvironmentInitializer(fn: () => void): EnvironmentProviders;
+    export declare class ErrorHandler { handleError(error: any): void }
     export declare function input<T>(value: T): InputSignal<T>;
     export declare namespace input { function required<T>(): InputSignal<T>; }
     export declare function output<T = void>(): OutputEmitterRef<T>;
-    export declare function inject<T>(token: (abstract new (...args: any[]) => T) | InjectionToken<T>, options?: { optional?: boolean }): T;
-    export declare class InjectionToken<T> { constructor(description: string) }
+    export declare class InjectionToken<T = any> { readonly _desc: string; readonly _type?: T; constructor(description: string, options?: { providedIn?: 'root' | 'platform' | 'any' | null; factory: () => T }) }
+    export declare function inject<T>(token: abstract new (...args: any[]) => T, options?: any): T;
+    export declare function inject<T>(token: InjectionToken<T>, options?: any): T;
+    export declare function inject<T = any>(token: any, options?: any): T;
     export declare function Component(meta: any): <C>(c: C) => C;
     export declare function Injectable(meta?: any): <C>(c: C) => C;
     export declare const NO_ERRORS_SCHEMA: any;
@@ -79,14 +109,18 @@ const SHIMS: Record<string, string> = {
     export interface EffectRef { destroy(): void }
     export declare function effect(fn: (onCleanup: (cleanup: () => void) => void) => void, options?: any): EffectRef;
     export declare function untracked<T>(fn: () => T): T;
-    export declare class Injector { get<T>(token: abstract new (...args: any[]) => T): T }
+    export declare class Injector {
+      get<T>(token: abstract new (...args: any[]) => T, notFoundValue?: T, options?: any): T;
+      get<T>(token: InjectionToken<T>, notFoundValue?: T, options?: any): T;
+      get<T = any>(token: any, notFoundValue?: T, options?: any): T;
+    }
     export declare function ViewChild(selector: any, options?: any): any;
     export declare function Pipe(meta: { name: string; pure?: boolean; standalone?: boolean }): <C>(c: C) => C;
     export interface PipeTransform { transform(value: any, ...args: any[]): any }
     export declare function Directive(meta?: any): <C>(c: C) => C;
     export declare function HostListener(event: string, args?: string[]): any;
     export declare function HostBinding(property?: string): any;
-    export declare function Inject(token: any): any;
+    export declare const Inject: { (token: any): any; new (token: any): any };
     export declare function Optional(): any;
     export declare function Self(): any;
     export declare function Host(): any;
@@ -99,7 +133,7 @@ const SHIMS: Record<string, string> = {
     export interface OnChanges { ngOnChanges(changes: SimpleChanges): void }
     export declare class QueryList<T> { readonly length: number; readonly first: T; readonly last: T; toArray(): T[]; get(index: number): T | undefined; forEach(fn: (item: T, index: number, array: T[]) => void): void; map<U>(fn: (item: T, index: number, array: T[]) => U): U[]; filter(fn: (item: T, index: number, array: T[]) => boolean): T[]; find(fn: (item: T, index: number, array: T[]) => boolean): T | undefined; readonly changes: { subscribe(next: (value: QueryList<T>) => void): { unsubscribe(): void } } }
     export declare class DestroyRef { onDestroy(callback: () => void): () => void }
-    export declare class NgZone { run<T>(fn: () => T): T; runOutsideAngular<T>(fn: () => T): T }
+    export declare class NgZone { static isInAngularZone(): boolean; run<T>(fn: () => T): T; runOutsideAngular<T>(fn: () => T): T }
     export interface OnDestroy { ngOnDestroy(): void }
     export interface OnInit { ngOnInit(): void }
     export interface AfterViewInit { ngAfterViewInit(): void }
@@ -377,6 +411,11 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
     {
       // The app's own tsconfig `paths` (`~/app/x`), as its bundler resolves them: plugins' sources have their own.
       const m = (isApp(containing) ? aliased(lit.text) : undefined) ?? lit.text;
+      if (platform === 'ios' && plugins && ANGULAR_RX_MODULES.has(m)) {
+        pluginFiles.add(ANGULAR_RX_FILE);
+        return { resolvedModule: { resolvedFileName: ANGULAR_RX_FILE, extension: ts.Extension.Ts } };
+      }
+      if (m === '@angular#rx') return { resolvedModule: { resolvedFileName: shimPath('@nativescript/release'), extension: ts.Extension.Dts } };
       if (shims[m]) return { resolvedModule: { resolvedFileName: shimPath(m), extension: ts.Extension.Dts } };
       // The build's own glue imports app modules by absolute path (`__elements.release.ts`).
       if (m.startsWith('.') || (isAbsolute(m) && !m.startsWith('/__shims__/'))) {
@@ -402,7 +441,7 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
       // A plugin is compiled from its source: an import that reaches its code resolves to the file it was built from.
       // A type-only import still resolves to the source where the file also imports values from the package: TypeScript resolves a specifier once per file.
       const valueImport = (st: ts.Statement) => ts.isImportDeclaration(st) && !st.importClause?.isTypeOnly && ts.isStringLiteral(st.moduleSpecifier) && st.moduleSpecifier.text === m;
-      const typeOnly = ts.isImportDeclaration(lit.parent) && !!lit.parent.importClause?.isTypeOnly && !(lit.parent.parent && ts.isSourceFile(lit.parent.parent) && lit.parent.parent.statements.some(valueImport));
+      const typeOnly = !containing.startsWith('/__shims__/') && ts.isImportDeclaration(lit.parent) && !!lit.parent.importClause?.isTypeOnly && !(lit.parent.parent && ts.isSourceFile(lit.parent.parent) && lit.parent.parent.statements.some(valueImport));
       // A plugin's augmentation of another's module augments the module the program compiles: that package's source.
       const augments = ts.isModuleDeclaration(lit.parent) && lit.parent.name === lit && !!plugins?.all().some((p) => containing.startsWith(p.root + '/'));
       if (plugins && (isSource(containing) || augments || containing.startsWith('/__shims__/')) && !m.startsWith('.') && !m.startsWith('/') && !notPlugin(packageOf(m), platform) && !typeOnly) {

@@ -255,7 +255,7 @@ export class Throws {
       if (named?.declarations?.length && named.declarations.every((d) => isLibFile(d.getSourceFile()))) return THROWING_BUILTINS.has(named.name);
       const fnDecl = named?.valueDeclaration;
       if (fnDecl && ts.isFunctionDeclaration(fnDecl) && fnDecl.body && !isAsync(fnDecl) && !fnDecl.asteriskToken && decl && builtinName(decl)?.startsWith('Array.')) return this.fn(fnDecl);
-      return c.getTypeAtLocation(arg).getCallSignatures().length > 0;
+      return c.getTypeAtLocation(arg).getCallSignatures().length > 0 || (!!param?.type && takesFunction(param.type, c) && this.untyped(arg));
     });
     if (ts.isIdentifier(call.expression) && call.expression.text === 'RegExp') return true;
     // A buffer or a view of an invalid length is a RangeError.
@@ -283,8 +283,8 @@ export class Throws {
     }
     // A value the program holds, of a function type a declaration file names (`callback: ControlStateChangeListenerCallback`): a Swift function type, which throws.
     if (file.isDeclarationFile && ts.isFunctionTypeNode(decl) && holder && !holder.getSourceFile().isDeclarationFile && !/[\\/]lib\.[\w.]*\.d\.ts$/.test(file.fileName)) return true;
-    // A pure pipe's cache runs the transform it is given at once: it rethrows.
-    if (file.fileName.startsWith('/__shims__/') && ts.isMethodDeclaration(decl) && ts.isClassDeclaration(decl.parent) && decl.parent.name?.text === 'PurePipeCache') return callbackThrows();
+    // A pure pipe's cache or untracked(fn) runs the callback it is given at once: it rethrows.
+    if (file.fileName.startsWith('/__shims__/') && ((ts.isFunctionDeclaration(decl) && decl.name?.text === 'untracked') || (ts.isMethodDeclaration(decl) && ts.isClassDeclaration(decl.parent) && decl.parent.name?.text === 'PurePipeCache'))) return callbackThrows();
     const compiled = file.isDeclarationFile ? this.implementation(decl) : null;
     if (compiled) return (compiled as Fn).body ? this.fn(compiled) : false;
     if (file.isDeclarationFile) {
@@ -329,7 +329,8 @@ export class Throws {
     const decl = s?.valueDeclaration;
     if (!decl || !ts.isClassLike(decl)) return false;
     if (/[\\/]@nativescript[\\/]core[\\/]/.test(decl.getSourceFile().fileName)) return decl.name?.text === 'Page';
-    if (decl.getSourceFile().isDeclarationFile || this.injecting.has(decl)) return false;
+    if (decl.getSourceFile().fileName.endsWith('/runtime/angular-rx.ts')) return decl.name?.text === 'ActivatedRoute';
+    if (decl.getSourceFile().isDeclarationFile || /[\\/]node_modules[\\/]/.test(decl.getSourceFile().fileName) || this.injecting.has(decl)) return false;
     this.injecting.add(decl);
     try { return this.initThrows(decl); } finally { this.injecting.delete(decl); }
   }

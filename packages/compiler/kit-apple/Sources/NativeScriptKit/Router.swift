@@ -169,7 +169,7 @@ public final class Router {
             ended(url: "/" + path.split(separator: "/").joined(separator: "/"))
             return true
         }
-        let relativeTo = field(extras, "relativeTo") as? ActivatedRoute
+        let relativeTo = (field(extras, "relativeTo") as? ActivatedRoute) ?? (field(field(extras, "relativeTo"), "_kit") as? ActivatedRoute)
         var targets: [(outlet: String, url: [String])] = []
         var segments: [String] = []
         var absolute = false
@@ -230,7 +230,7 @@ public final class Router {
     /// `back()`: the outlet of the given route, else the one navigated last that can go back, else the topmost frame.
     public func back(_ options: Any? = nil) {
         jsReport {
-            if let route = field(options, "relativeTo") as? ActivatedRoute, let frame = outlets[route.outlet]?.shown, try frame.canGoBack() {
+            if let route = (field(options, "relativeTo") as? ActivatedRoute) ?? (field(field(options, "relativeTo"), "_kit") as? ActivatedRoute), let frame = outlets[route.outlet]?.shown, try frame.canGoBack() {
                 try frame.goBack()
                 return
             }
@@ -393,3 +393,5 @@ public final class Router {
 /// A key of an options object script passes, nil when absent.
 private func field(_ object: Any?, _ key: String) -> Any? { object == nil ? nil : (try? jsGet(object, key)) ?? nil }
 
+public typealias KitRouter = Router
+public typealias KitActivatedRoute = ActivatedRoute
