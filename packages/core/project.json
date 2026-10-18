@@ -63,6 +63,12 @@
 			"options": {
 				"reportsDirectory": "../../coverage/packages/core"
 			}
+		},
+		"typecheck-strict": {
+			"executor": "nx:run-commands",
+			"options": {
+				"command": "node tools/scripts/strict-baseline.mjs"
+			}
 		}
 	}
 }
