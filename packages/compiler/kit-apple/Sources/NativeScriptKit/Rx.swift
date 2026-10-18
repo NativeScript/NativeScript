@@ -5,22 +5,6 @@ import Foundation
 // its value to each new subscriber, and an operator subscribes to its source
 // once per subscriber.
 
-public final class RxSubscription {
-    nonisolated deinit {}
-    private var teardown: (() -> Void)?
-    public private(set) var closed = false
-
-    init(_ teardown: (() -> Void)? = nil) { self.teardown = teardown }
-
-    public func unsubscribe() {
-        guard !closed else { return }
-        closed = true
-        let finalize = teardown
-        teardown = nil
-        finalize?()
-    }
-}
-
 public class RxObservable<T> {
     nonisolated deinit {}
     private let producer: (@escaping (T) -> Void) -> RxSubscription

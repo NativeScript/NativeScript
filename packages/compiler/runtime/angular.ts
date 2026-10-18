@@ -541,13 +541,20 @@ export class KeyValuePipe {
 
 /** A QueryList's `changes`: what `subscribe` of an Observable gives, without rxjs, which this module does not depend on. */
 export class QueryListChanges {
-  private observers: ((list: QueryList) => void)[] = [];
-  subscribe(next: (list: QueryList) => void): { unsubscribe(): void } {
-    this.observers.push(next);
-    return { unsubscribe: () => { this.observers = this.observers.filter((o) => o !== next); } };
+  private nextId = 0;
+  private observers: { id: number; fn: (list: QueryList) => void }[] = [];
+  subscribe(observerOrNext?: ((list: QueryList) => void) | { next?: (list: QueryList) => void; error?: (e: any) => void; complete?: () => void } | null): { unsubscribe(): void } {
+    const id = ++this.nextId;
+    const fn: (list: QueryList) => void = typeof observerOrNext === 'function'
+      ? observerOrNext
+      : observerOrNext && typeof observerOrNext === 'object' && typeof observerOrNext.next === 'function'
+        ? (list: QueryList) => observerOrNext.next!(list)
+        : () => {};
+    this.observers.push({ id, fn });
+    return { unsubscribe: () => { this.observers = this.observers.filter((o) => o.id !== id); } };
   }
   next(list: QueryList): void {
-    for (const o of this.observers.slice()) o(list);
+    for (const o of this.observers.slice()) o.fn(list);
   }
 }
 

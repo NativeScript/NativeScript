@@ -2,27 +2,40 @@ package org.nativescript.kit
 
 import java.net.URLDecoder
 
-/** An event a component raises (Angular `output()`): the parent subscribes, the component emits. */
-class Emitter<T> {
-    private val handlers = mutableListOf<(T) -> Unit>()
-    fun on(handler: (T) -> Unit) {
-        handlers.add(handler)
-    }
-    fun emit(value: T) {
-        for (h in handlers.toList()) h(value)
-    }
-}
-
-fun Emitter<Unit>.emit() = emit(Unit)
-
 /**
  * The route a component was created for (Angular `ActivatedRoute`): set by the
  * router before it constructs the routed component.
  */
-class ActivatedRoute(params: Map<String, String>) {
-    class Snapshot(val params: Map<String, String>)
+class ActivatedRoute(
+    params: Map<String, String>,
+    val outlet: String = "primary",
+    internal val url: List<String> = emptyList(),
+    queryParams: Map<String, String> = emptyMap(),
+    data: Map<String, Any?> = emptyMap(),
+) {
+    val snapshot = ActivatedRouteSnapshot(
+        params = JSRecord(params.toList()),
+        queryParams = JSRecord(queryParams.toList()),
+        data = JSRecord(data.toList()),
+        url = JSArray(url.map { UrlSegment(it) }.toMutableList()),
+        fragment = null,
+        outlet = outlet,
+    )
 
-    val snapshot = Snapshot(params)
+    val params = RxBehaviorSubject(snapshot.params)
+    val queryParams = RxBehaviorSubject(snapshot.queryParams)
+    val data = RxBehaviorSubject(snapshot.data)
+    val paramMap = RxBehaviorSubject(ParamMap(snapshot.params))
+    val queryParamMap = RxBehaviorSubject(ParamMap(snapshot.queryParams))
+    val fragment = RxBehaviorSubject<String?>(null)
+    val title = RxBehaviorSubject<String?>(null)
+    var routeConfig: JSObject? = null
+
+    val root: ActivatedRoute get() = this
+    val parent: ActivatedRoute? get() = null
+    val firstChild: ActivatedRoute? get() = null
+    val children: JSArray<ActivatedRoute> get() = JSArray()
+    val pathFromRoot: JSArray<ActivatedRoute> get() = JSArray(mutableListOf(this))
 
     companion object {
         var current = ActivatedRoute(emptyMap())
@@ -41,6 +54,17 @@ class Route(path: String, internal val make: () -> View) {
 class Router {
     var routes: List<Route> = emptyList()
     var initial = "/"
+    val events = RxSubject<NavigationEnd>()
+    private var navigationId = 0.0
+    var url = "/"
+        private set
+
+    val router: Router get() = this
+    val routerState: JSObject
+        get() = JSObject(
+            "snapshot" to JSObject("url" to url, "root" to ActivatedRoute.current.snapshot),
+            "root" to ActivatedRoute.current,
+        )
 
     /** A named outlet: this flat table has one. */
     fun outlet(@Suppress("UNUSED_PARAMETER") name: String): View = outlet()
@@ -52,17 +76,50 @@ class Router {
         return frame
     }
 
-    fun navigate(commands: JSArray<*>, extras: Any? = null) = navigate(commands.elements, extras)
+    fun navigate(commands: JSArray<*>, extras: Any? = null): JSPromise<Boolean> = navigate(commands.elements, extras)
 
-    fun navigate(commands: List<Any?>, extras: Any? = null) {
+    fun navigate(commands: List<Any?>, @Suppress("UNUSED_PARAMETER") extras: Any? = null): JSPromise<Boolean> {
         val path = commands.joinToString("/") { jsToString(it) }
-        if (resolveRoute(path) == null) return
+        if (resolveRoute(path) == null) return JSPromise.resolve(false)
         Frame.topmost()?.navigate { resolve(path)!! }
+        url = "/" + path.split("/").filter { it.isNotEmpty() }.joinToString("/")
+        navigationId += 1
+        events.next(NavigationEnd(navigationId, url, url))
+        return JSPromise.resolve(true)
     }
 
-    fun back() {
+    fun navigateByUrl(urlTarget: Any?, extras: Any? = null): JSPromise<Boolean> {
+        val str = (jsBox(urlTarget) as? UrlTree)?.toString() ?: jsToString(urlTarget)
+        return navigate(listOf(if (str.startsWith("/")) str else "/$str"), extras)
+    }
+
+    fun createUrlTree(commands: Any?, extras: Any? = null): UrlTree {
+        val items = (jsBox(commands) as? JSArray<*>)?.storage ?: emptyList<Any?>()
+        val joined = items.joinToString("/") { jsToString(it) }.trim('/')
+        val q = jsGetOptional(extras, "queryParams")
+        val f = jsGetOptional(extras, "fragment") as? String
+        return UrlTree("/$joined", q, f)
+    }
+
+    fun serializeUrl(tree: Any?): String = (jsBox(tree) as? UrlTree)?.toString() ?: jsToString(tree)
+
+    fun parseUrl(raw: String): UrlTree = DefaultUrlSerializer().parse(raw)
+
+    fun isActive(targetUrl: Any?, exact: Any? = false): Boolean {
+        val target = (jsBox(targetUrl) as? UrlTree)?.toString() ?: jsToString(targetUrl)
+        val isExact = (jsBox(exact) as? Boolean) ?: (jsGetOptional(exact, "paths") == "exact")
+        return if (isExact) url == target else url.startsWith(target)
+    }
+
+    fun back(@Suppress("UNUSED_PARAMETER") options: Any? = null) {
         Frame.topmost()?.goBack()
     }
+
+    fun backToPreviousPage() = back()
+
+    fun canGoBack(@Suppress("UNUSED_PARAMETER") options: Any? = null): Boolean = false
+
+    fun canGoBackToPreviousPage(): Boolean = canGoBack()
 
     internal fun resolve(path: String): View? {
         val (route, params) = resolveRoute(path) ?: return null

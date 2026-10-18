@@ -145,6 +145,9 @@ export class Throws {
     }
     if (ts.isConstructorDeclaration(fn)) {
       for (const m of fn.parent.members) if (ts.isPropertyDeclaration(m) && m.initializer && !isStatic(m)) visit(m.initializer);
+      if (ts.isClassDeclaration(fn.parent) && ts.getDecorators(fn.parent)?.some((d) => /^Injectable\b/.test(d.expression.getText()))) {
+        for (const p of fn.parameters) if (this.parameterInjectThrows(p)) found = true;
+      }
     }
     return found;
   }
@@ -283,8 +286,8 @@ export class Throws {
     }
     // A value the program holds, of a function type a declaration file names (`callback: ControlStateChangeListenerCallback`): a Swift function type, which throws.
     if (file.isDeclarationFile && ts.isFunctionTypeNode(decl) && holder && !holder.getSourceFile().isDeclarationFile && !/[\\/]lib\.[\w.]*\.d\.ts$/.test(file.fileName)) return true;
-    // A pure pipe's cache or untracked(fn) runs the callback it is given at once: it rethrows.
-    if (file.fileName.startsWith('/__shims__/') && ((ts.isFunctionDeclaration(decl) && decl.name?.text === 'untracked') || (ts.isMethodDeclaration(decl) && ts.isClassDeclaration(decl.parent) && decl.parent.name?.text === 'PurePipeCache'))) return callbackThrows();
+    // A pure pipe's cache, untracked(fn), or runInInjectionContext(inj, fn) runs the callback it is given at once: it rethrows.
+    if (file.fileName.startsWith('/__shims__/') && ((ts.isFunctionDeclaration(decl) && (decl.name?.text === 'untracked' || decl.name?.text === 'runInInjectionContext')) || (ts.isMethodDeclaration(decl) && ts.isClassDeclaration(decl.parent) && decl.parent.name?.text === 'PurePipeCache'))) return callbackThrows();
     const compiled = file.isDeclarationFile ? this.implementation(decl) : null;
     if (compiled) return (compiled as Fn).body ? this.fn(compiled) : false;
     if (file.isDeclarationFile) {
@@ -319,11 +322,35 @@ export class Throws {
   /** The services `injectThrows` is working out, so that services injecting each other end. */
   private injecting = new Set<ts.Node>();
 
+  private parameterInjectThrows(p: ts.ParameterDeclaration): boolean {
+    let injectArg: ts.Expression | undefined;
+    let optional = false;
+    let skipSelf = false;
+    for (const d of ts.getDecorators(p) ?? []) {
+      const e = d.expression;
+      const which = ts.isCallExpression(e) ? e.expression.getText() : e.getText();
+      if (which === 'Inject' && ts.isCallExpression(e) && e.arguments[0]) injectArg = e.arguments[0];
+      else if (which === 'Optional') optional = true;
+      else if (which === 'SkipSelf') skipSelf = true;
+    }
+    if (optional && skipSelf) return false;
+    if (injectArg) return this.injectThrows(injectArg);
+    const ref = p.type && ts.isTypeReferenceNode(p.type)
+      ? p.type
+      : p.type && ts.isUnionTypeNode(p.type)
+        ? p.type.types.find(ts.isTypeReferenceNode)
+        : undefined;
+    return ref ? this.injectThrows(ref.typeName) : false;
+  }
+
   /**
    * Angular's `inject(token)` makes a root service the first time, throwing what its constructor throws; core's Page
    * is the kit's `Page.injected()`, which can make one.
    */
-  private injectThrows(token: ts.Expression): boolean {
+  private injectThrows(token: ts.Node): boolean {
+    if (ts.isCallExpression(token) && token.expression.getText() === 'forwardRef' && token.arguments[0] && (ts.isArrowFunction(token.arguments[0]) || ts.isFunctionExpression(token.arguments[0])) && !ts.isBlock(token.arguments[0].body)) {
+      token = token.arguments[0].body;
+    }
     let s = this.checker.getSymbolAtLocation(token);
     if (s && s.flags & ts.SymbolFlags.Alias) s = this.checker.getAliasedSymbol(s);
     const decl = s?.valueDeclaration;
@@ -331,6 +358,7 @@ export class Throws {
     if (/[\\/]@nativescript[\\/]core[\\/]/.test(decl.getSourceFile().fileName)) return decl.name?.text === 'Page';
     if (decl.getSourceFile().fileName.endsWith('/runtime/angular-rx.ts')) return decl.name?.text === 'ActivatedRoute';
     if (decl.getSourceFile().isDeclarationFile || /[\\/]node_modules[\\/]/.test(decl.getSourceFile().fileName) || this.injecting.has(decl)) return false;
+    if (ts.isClassDeclaration(decl) && !decl.getSourceFile().fileName.endsWith('/runtime/angular.ts') && !ts.getDecorators(decl)?.some((d) => /^Injectable\b/.test(d.expression.getText()))) return false;
     this.injecting.add(decl);
     try { return this.initThrows(decl); } finally { this.injecting.delete(decl); }
   }

@@ -1002,7 +1002,7 @@ export class Translator implements AsyncTranslator {
     // A default-exported class is known by its declared name.
     const name = sym?.getName() === 'default' ? declName ?? 'default' : sym?.getName();
     const args = () => t.aliasTypeArguments ?? c.getTypeArguments(t as ts.TypeReference);
-    const arg = (k: number) => this.type(args()[k], where);
+    const arg = (k: number) => { const a = args()[k]; return a ? this.type(a, where) : 'Any?'; };
     if (name && BUFFER_TYPES.includes(name) && isLibDeclaration(sym?.declarations?.[0])) return `JS${name}`;
     // Core's own code (library mode) is typed by the DOM's library, whose web classes are the runtime's too.
     if (name && (sym?.declarations?.[0]?.getSourceFile().fileName === '/__shims__/globals.d.ts' || (this.library && isLibDeclaration(sym?.declarations?.[0])))) {
@@ -1010,18 +1010,28 @@ export class Translator implements AsyncTranslator {
       if (WEB_DICTIONARIES.includes(name)) return 'Any?';
     }
     switch (name) {
-      case 'Sig': case 'Ref': case 'VueRef': case 'WritableSignal': case 'InputSignal': case 'Writable': return `Signal<${arg(0)}>`;
+      case 'Sig': case 'Ref': case 'VueRef': case 'WritableSignal': case 'InputSignal': case 'ModelSignal': case 'Writable': return `Signal<${arg(0)}>`;
       case 'Signal': return where && this.isComputedProperty(where) ? arg(0) : `Signal<${arg(0)}>`;
       case 'RxObservable': case 'RxSubject': case 'RxBehaviorSubject': case 'RxReplaySubject':
         if (sym?.declarations?.[0]?.getSourceFile().fileName.startsWith('/__shims__/')) return `${name}<${arg(0)}>`;
         break;
       case 'EventData': return 'EventData';
-      case 'OutputEmitterRef': return `Emitter<${arg(0)}>`;
+      case 'OutputEmitterRef': case 'EventEmitter': return `Emitter<${arg(0)}>`;
       case 'RouterExtensions': if (sym?.declarations?.[0]?.getSourceFile().fileName.startsWith('/__shims__/')) return 'Router'; break;
+      case 'EnvironmentInjector': if (sym?.declarations?.[0]?.getSourceFile().fileName.startsWith('/__shims__/')) return 'Injector'; break;
+      case 'UntypedFormControl': if (sym?.declarations?.[0]?.getSourceFile().fileName.startsWith('/__shims__/')) return 'FormControl'; break;
+      case 'UntypedFormGroup': if (sym?.declarations?.[0]?.getSourceFile().fileName.startsWith('/__shims__/')) return 'FormGroup'; break;
+      case 'UntypedFormArray': if (sym?.declarations?.[0]?.getSourceFile().fileName.startsWith('/__shims__/')) return 'FormArray'; break;
+      case 'UntypedFormBuilder': case 'NonNullableFormBuilder': if (sym?.declarations?.[0]?.getSourceFile().fileName.startsWith('/__shims__/')) return 'FormBuilder'; break;
       // `Promise.allSettled`'s results are the plain objects it makes.
       case 'PromiseSettledResult': case 'PromiseFulfilledResult': case 'PromiseRejectedResult': return 'JSObject';
       case 'NativeDialogRef': case 'NativeDialogService': case 'DestroyRef': case 'Injector': case 'InjectionToken': case 'ErrorHandler': case 'NgZone': case 'HttpClient': case 'ChangeDetectorRef': case 'PurePipeCache': case 'ElementRef': case 'SimpleChange':
-      case 'RxSubscription': case 'NavigationEnd': case 'KitHttpClient': case 'KitActivatedRoute': case 'KitRouter': case 'KitNativeDialogRef': case 'KitNativeDialogService':
+      case 'RxSubscription': case 'NavigationEnd': case 'NavigationStart': case 'NavigationCancel': case 'NavigationError': case 'RoutesRecognized': case 'ResolveStart': case 'ResolveEnd':
+      case 'KitHttpClient': case 'KitActivatedRoute': case 'KitRouter': case 'KitNativeDialogRef': case 'KitNativeDialogService':
+      case 'HttpParams': case 'HttpHeaders': case 'HttpResponse': case 'HttpErrorResponse': case 'HttpRequest': case 'HttpContext': case 'HttpContextToken':
+      case 'ParamMap': case 'UrlSegment': case 'UrlTree': case 'DefaultUrlSerializer': case 'ActivatedRouteSnapshot':
+      case 'FormControl': case 'FormGroup': case 'FormArray': case 'FormBuilder': case 'Validators': case 'AbstractControl':
+      case 'ViewContainerRef': case 'TemplateRef': case 'ComponentRef': case 'EmbeddedViewRef': case 'ApplicationRef': case 'Location':
         if (sym?.declarations?.[0]?.getSourceFile().fileName.startsWith('/__shims__/')) return name;
         break;
       case 'Promise': case 'PromiseLike': return `JSPromise<${arg(0)}>`;
@@ -4374,7 +4384,8 @@ ${members.join('\n')}
     for (const m of cls.members) if (!ts.isPropertyDeclaration(m) || m.initializer) ts.forEachChild(m, visit);
     if (found) return true;
     const member = cls.members.find((m) => ts.isPropertyDeclaration(m) && ts.isIdentifier(m.name) && m.name.text === name);
-    return !!member && this.writtenProperties().has(member);
+    const param = cls.members.find(ts.isConstructorDeclaration)?.parameters.find((p) => ts.isIdentifier(p.name) && p.name.text === name);
+    return (!!member && this.writtenProperties().has(member)) || (!!param && this.writtenProperties().has(param));
   }
 
   private written: Set<ts.Declaration> | null = null;
@@ -4395,6 +4406,64 @@ ${members.join('\n')}
     return (this.written = written);
   }
 
+  private isInjectableClass(decl: ts.Declaration | undefined): boolean {
+    if (!decl || !ts.isClassDeclaration(decl) || decl.getSourceFile().isDeclarationFile) return false;
+    const fn = decl.getSourceFile().fileName;
+    if (fn.endsWith('/runtime/angular-rx.ts') || fn.endsWith('/runtime/angular.ts')) return true;
+    if (this.pluginFiles.has(fn)) return false;
+    return (ts.getDecorators(decl) ?? []).some((d) => /^Injectable\b/.test(d.expression.getText()));
+  }
+
+  private parameterInject(p: ts.ParameterDeclaration): string {
+    const pt = this.typeOf(p.name);
+    let injectArg: ts.Expression | undefined;
+    let optional = !!(p.questionToken || p.initializer);
+    let skipSelf = false;
+    for (const d of ts.getDecorators(p) ?? []) {
+      const e = d.expression;
+      const which = ts.isCallExpression(e) ? e.expression.getText() : e.getText();
+      if (which === 'Inject' && ts.isCallExpression(e) && e.arguments[0]) injectArg = e.arguments[0];
+      else if (which === 'Optional') optional = true;
+      else if (which === 'SkipSelf') skipSelf = true;
+    }
+    if (optional && skipSelf) return isOptional(pt) || pt.endsWith('!') || pt === 'Any?' ? 'nil' : this.fromAny('nil', pt);
+    if (injectArg && ts.isCallExpression(injectArg) && injectArg.expression.getText() === 'forwardRef' && injectArg.arguments[0] && (ts.isArrowFunction(injectArg.arguments[0]) || ts.isFunctionExpression(injectArg.arguments[0])) && !ts.isBlock(injectArg.arguments[0].body)) {
+      injectArg = injectArg.arguments[0].body;
+    }
+    const builtins = ['RouterExtensions', 'ActivatedRoute', 'Page', 'DestroyRef', 'ChangeDetectorRef', 'ElementRef', 'NativeDialogRef', 'NativeDialogService', 'Router', 'HttpClient', 'Injector', 'EnvironmentInjector', 'NgZone', 'ErrorHandler', 'FormBuilder', 'UntypedFormBuilder', 'NonNullableFormBuilder', 'Location', 'ViewContainerRef', 'ApplicationRef'];
+    if (injectArg) {
+      const target = ts.isExpressionWithTypeArguments(injectArg) ? injectArg.expression : injectArg;
+      const token = this.tokenName(target);
+      if (token === 'NATIVE_DIALOG_DATA') return this.fromAny('NativeDialogRef.current.data', pt);
+      const tokenDecl = this.resolve(target)?.declarations?.[0];
+      if (builtins.includes(token) || this.isInjectableClass(tokenDecl)) {
+        const throws = token === 'Page' || (token === 'ActivatedRoute' && tokenDecl?.getSourceFile().fileName.endsWith('/runtime/angular-rx.ts')) || (tokenDecl && ts.isClassDeclaration(tokenDecl) && !tokenDecl.getSourceFile().fileName.endsWith('/runtime/angular-rx.ts') && this.throwsInfo.initThrows(tokenDecl));
+        return `${throws ? 'try ' : ''}${injected(token)}`;
+      }
+      const raw = `Injector.inject(${this.coerce(injectArg, 'Any?')}${optional ? ', JSObject(["optional": true])' : ''})`;
+      return pt === 'Any?' ? raw : this.fromAny(raw, pt);
+    }
+    const ref = p.type && ts.isTypeReferenceNode(p.type)
+      ? p.type
+      : p.type && ts.isUnionTypeNode(p.type)
+        ? p.type.types.find(ts.isTypeReferenceNode)
+        : undefined;
+    if (ref) {
+      const token = this.tokenName(ref.typeName);
+      const tokenDecl = this.resolve(ref.typeName)?.declarations?.[0];
+      if (builtins.includes(token) || this.isInjectableClass(tokenDecl)) {
+        const throws = token === 'Page' || (token === 'ActivatedRoute' && tokenDecl?.getSourceFile().fileName.endsWith('/runtime/angular-rx.ts')) || (tokenDecl && ts.isClassDeclaration(tokenDecl) && !tokenDecl.getSourceFile().fileName.endsWith('/runtime/angular-rx.ts') && this.throwsInfo.initThrows(tokenDecl));
+        return `${throws ? 'try ' : ''}${injected(token)}`;
+      }
+      if (tokenDecl && ts.isClassDeclaration(tokenDecl)) {
+        const raw = `Injector.inject(${token}.self${optional ? ', JSObject(["optional": true])' : ''})`;
+        return pt === 'Any?' ? raw : this.fromAny(raw, pt);
+      }
+    }
+    if (p.initializer) return `${this.tryPrefix(p.initializer)}${this.coerce(p.initializer, pt)}`;
+    return isOptional(pt) || pt.endsWith('!') || pt === 'Any?' ? 'nil' : this.fromAny('nil', pt);
+  }
+
   componentMembers(cls: ts.ClassDeclaration, props: string[]): string[] {
     this.props = new Set(props);
     this.computed = new Set(cls.members.filter((m) => ts.isPropertyDeclaration(m) && m.initializer && this.calleeName(m.initializer) === 'computed').map((m) => (m.name as ts.Identifier).text));
@@ -4404,6 +4473,34 @@ ${members.join('\n')}
     const propParams: string[] = [];
     let late = false;
     this.indent = '    ';
+    const ctor = cls.members.find((m): m is ts.ConstructorDeclaration => ts.isConstructorDeclaration(m) && !!m.body);
+    const ctorInjectVals: string[] = [];
+    let convenienceZeroArg = false;
+    if (ctor?.parameters.length && !props.length) {
+      const vals = ctor.parameters.map((p) => this.parameterInject(p));
+      const anyThrows = vals.some((v) => THROWING_CODE.test(v));
+      convenienceZeroArg = anyThrows;
+      ctor.parameters.forEach((p, idx) => {
+        const pName = (p.name as ts.Identifier).text;
+        const pt = this.typeOf(p.name);
+        const paramType = isFunctionType(pt) ? `@escaping ${pt}` : pt;
+        const val = vals[idx];
+        ctorInjectVals.push(val);
+        propParams.push(`_ ${ident(pName)}: ${paramType}${anyThrows ? '' : ` = ${val}`}`);
+        const isParamProp = (ts.getModifiers(p) ?? []).some((mod) =>
+          mod.kind === ts.SyntaxKind.PrivateKeyword ||
+          mod.kind === ts.SyntaxKind.ProtectedKeyword ||
+          mod.kind === ts.SyntaxKind.PublicKeyword ||
+          mod.kind === ts.SyntaxKind.ReadonlyKeyword
+        );
+        if (isParamProp) {
+          const reassigned = !hasModifier(p, ts.SyntaxKind.ReadonlyKeyword) && this.isAssigned(cls, pName);
+          lines.push(`    ${reassigned ? 'var' : 'let'} ${ident(pName)}: ${pt}`);
+          inits.push(`        self.${ident(pName)} = ${ident(pName)}`);
+        }
+      });
+    }
+    const seenAccessors = new Set<string>();
     for (const m of cls.members) {
       if (ts.isPropertyDeclaration(m) && isStatic(m)) {
         // A static field of a component or service (`static readonly PILL_HEIGHT = 44`): the class's.
@@ -4415,12 +4512,13 @@ ${members.join('\n')}
       if (ts.isPropertyDeclaration(m)) {
         const name = (m.name as ts.Identifier).text;
         const callee = m.initializer ? this.calleeName(m.initializer) : '';
-        if (callee === 'input' || callee === 'input.required') {
+        if (callee === 'input' || callee === 'input.required' || callee === 'model' || callee === 'model.required') {
           // An Angular input is a prop: a signal the parent writes.
           const t = this.typeOf(m.name).replace(/^Signal<(.*)>$/, '$1');
           const given = (m.initializer as ts.CallExpression).arguments[0];
+          const def = given ? ` = ${this.expr(given)}` : callee === 'input' || callee === 'model' ? ' = nil' : '';
           lines.push(`    let ${ident(name)}: Signal<${t}>`);
-          propParams.push(`${ident(name)}: ${t}${given ? ` = ${this.expr(given)}` : ''}`);
+          propParams.push(`${ident(name)}: ${t}${def}`);
           inits.push(`        self.${ident(name)} = ${this.newSignal(t, ident(name), 'identity')}`);
           continue;
         }
@@ -4479,11 +4577,36 @@ ${members.join('\n')}
         this.indent = '    ';
         continue;
       }
-      if (ts.isGetAccessorDeclaration(m)) {
-        const t = this.returnTypeOf(m);
-        const throws = this.throwsInfo.fn(m);
-        const body = this.functionBody(m, t, '        ');
-        lines.push(throws ? `    var ${ident((m.name as ts.Identifier).text)}: ${t} {\n        get throws ${body}\n    }` : `    var ${ident((m.name as ts.Identifier).text)}: ${t} ${this.functionBody(m, t, '    ')}`);
+      if (ts.isGetAccessorDeclaration(m) || ts.isSetAccessorDeclaration(m)) {
+        const aName = (m.name as ts.Identifier).text;
+        const key = `${isStatic(m) ? 'static:' : ''}${aName}`;
+        if (seenAccessors.has(key)) continue;
+        seenAccessors.add(key);
+        const get = cls.members.find((x): x is ts.GetAccessorDeclaration => ts.isGetAccessorDeclaration(x) && x.name.getText() === aName && isStatic(x) === isStatic(m));
+        const set = cls.members.find((x): x is ts.SetAccessorDeclaration => ts.isSetAccessorDeclaration(x) && x.name.getText() === aName && isStatic(x) === isStatic(m));
+        const sMod = isStatic(m) ? 'static ' : '';
+        if (get && !set) {
+          const t = this.returnTypeOf(get);
+          const throws = this.throwsInfo.fn(get);
+          const body = this.functionBody(get, t, '        ');
+          lines.push(throws ? `    ${sMod}var ${ident(aName)}: ${t} {\n        get throws ${body}\n    }` : `    ${sMod}var ${ident(aName)}: ${t} ${this.functionBody(get, t, '    ')}`);
+        } else if (set) {
+          const t = get ? this.returnTypeOf(get) : this.typeOf(set.parameters[0].name);
+          const fallback = isOptional(t) || t.endsWith('!') || t === 'Any?' ? 'nil' : this.zero(t) ?? `jsNativeZero(${t}.self)`;
+          const getPart = get
+            ? (this.throwsInfo.fn(get) ? `        get { jsReported { () throws -> ${t} in${this.functionBody(get, t, '        ').slice(1)} ?? ${fallback} }` : `        get ${this.functionBody(get, t, '        ')}`)
+            : `        get { ${fallback} }`;
+          const p = set.parameters[0].name as ts.Identifier;
+          const body = this.functionBody(set, 'Void', '        ');
+          const own = this.typeOf(p);
+          const bound = !this.isRead(p) ? '' : get && own !== t && own.replace(/[?!]$/, '') !== t.replace(/[?!]$/, '')
+            ? `            let ${ident(p.text)}: ${own} = ${this.convert('newValue', t.replace(/!$/, '?'), own)}\n`
+            : `            let ${ident(p.text)} = newValue\n`;
+          const setPart = this.throwsInfo.fn(set)
+            ? `        set {\n${bound}            jsReport ${body.trimStart()}\n        }`
+            : `        set {\n${bound}            do ${body.trimStart()}\n        }`;
+          lines.push(`    ${sMod}var ${ident(aName)}: ${t} {`, getPart, setPart, '    }');
+        }
         continue;
       }
       if (ts.isMethodDeclaration(m)) {
@@ -4493,16 +4616,18 @@ ${members.join('\n')}
       }
     }
     // The constructor's body runs once every field is set; what it throws is reported, as a failed creation is.
-    const ctor = cls.members.find((m): m is ts.ConstructorDeclaration => ts.isConstructorDeclaration(m) && !!m.body?.statements.length);
-    if (ctor) {
+    if (ctor?.body?.statements.length) {
       this.indent = '            ';
-      const body = this.statements([...ctor.body!.statements]);
+      const body = this.statements([...ctor.body.statements]);
       inits.push(`        ${body.some((l) => THROWING_CODE.test(l)) ? 'jsReport' : 'do'} {\n${body.join('\n')}\n        }`);
     }
     this.indent = '';
-    const throws = inits.some((l) => THROWING_CODE.test(l) && !l.startsWith('        jsReport {')) ? ' throws' : '';
+    const throws = (convenienceZeroArg || inits.some((l) => THROWING_CODE.test(l) && !l.startsWith('        jsReport {'))) ? ' throws' : '';
     if (throws && cls.name) this.throwingInits.add(cls.name.text);
     lines.push(`    init(${propParams.join(', ')})${throws} {`, ...inits, '    }');
+    if (convenienceZeroArg) {
+      lines.push(`    convenience init() throws {\n        try self.init(${ctorInjectVals.join(', ')})\n    }`);
+    }
     return lines;
   }
 
@@ -4565,10 +4690,19 @@ ${members.join('\n')}
     if (service) {
       const members = this.componentMembers(cls, []);
       // A constructor that throws throws from the inject() that made it, and the next inject() makes the service again.
-      const shared = members.some((m) => /^\s*init\(\) throws/m.test(m))
-        ? [`    static var shared: ${name} { get throws { try Injector.root(${name}.self) { try ${name}() } } }`]
-        : [`    static let shared = Injector.root { ${name}() }`];
-      return [`final class ${name} {`, NONISOLATED_DEINIT, ...shared, '', ...members, '}'].join('\n');
+      const throwsInit = members.some((m) => /^\s*(?:convenience )?init\(.*\) throws/m.test(m));
+      const shared = throwsInit
+        ? [
+            `    static var shared: ${name} { get throws { try Injector.root(${name}.self) { try ${name}() } } }`,
+            `    static var jsSharedInstance: Any? { get throws { try shared } }`,
+            `    static func jsConstruct(_ __a: [Any?]) throws -> Any? { try ${name}() }`,
+          ]
+        : [
+            `    static var shared: ${name} { Injector.root(${name}.self) { ${name}() } }`,
+            `    static var jsSharedInstance: Any? { shared }`,
+            `    static func jsConstruct(_ __a: [Any?]) throws -> Any? { ${name}() }`,
+          ];
+      return [`final class ${name}: JSInjectableType {`, NONISOLATED_DEINIT, ...shared, '', ...members, '}'].join('\n');
     }
     const c = this.checker;
     const heritage = cls.heritageClauses?.find((h) => h.token === ts.SyntaxKind.ExtendsKeyword)?.types[0];
@@ -9895,12 +10029,30 @@ ${members.join('\n')}
         if (ts.isArrowFunction(a) || ts.isFunctionExpression(a)) return `${this.expr(target)}.update(${this.closure(a)})`;
         return `${this.expr(target)}.value = ${this.coerce(a, signalValue())}`;
       }
-      if (owner === 'OutputEmitterRef' && method === 'emit') return `${this.expr(target)}.emit(${e.arguments[0] ? this.expr(e.arguments[0]) : ''})`;
-      if (owner === 'Injector' && method === 'get' && e.arguments[0] && ts.isIdentifier(e.arguments[0])) return injected(this.tokenName(e.arguments[0]));
-      // `http.get<T>(url, options)`: the parsed body read as T.
-      if (owner === 'HttpClient' && method === 'get' && this.typeOf(e).startsWith('RxObservable<')) {
+      if ((owner === 'OutputEmitterRef' || owner === 'EventEmitter') && (method === 'emit' || method === 'next')) return `${this.expr(target)}.emit(${e.arguments[0] ? this.expr(e.arguments[0]) : ''})`;
+      if (owner === 'Injector' && method === 'get' && e.arguments[0]) {
+        let rawArg0 = e.arguments[0];
+        if (ts.isCallExpression(rawArg0) && rawArg0.expression.getText() === 'forwardRef' && rawArg0.arguments[0] && (ts.isArrowFunction(rawArg0.arguments[0]) || ts.isFunctionExpression(rawArg0.arguments[0])) && !ts.isBlock(rawArg0.arguments[0].body)) {
+          rawArg0 = rawArg0.arguments[0].body;
+        }
+        const tokTarget = ts.isExpressionWithTypeArguments(rawArg0) ? rawArg0.expression : rawArg0;
+        const token = this.tokenName(tokTarget);
+        const tokenDecl = this.resolve(tokTarget)?.declarations?.[0];
+        const builtin = ['RouterExtensions', 'ActivatedRoute', 'Page', 'DestroyRef', 'ChangeDetectorRef', 'ElementRef', 'NativeDialogRef', 'NativeDialogService', 'Router', 'HttpClient', 'Injector', 'EnvironmentInjector', 'NgZone', 'ErrorHandler', 'FormBuilder', 'UntypedFormBuilder', 'NonNullableFormBuilder', 'Location', 'ViewContainerRef', 'ApplicationRef'].includes(token);
+        const appService = this.isInjectableClass(tokenDecl);
+        if ((builtin || appService) && e.arguments.length === 1 && this.throwsInfo.expr(e)) return injected(token);
+        const raw = `${this.expr(target)}.get(${this.coerce(rawArg0, 'Any?')}${e.arguments[1] ? `, ${this.coerce(e.arguments[1], 'Any?')}` : ''}${e.arguments[2] ? `, ${this.coerce(e.arguments[2], 'Any?')}` : ''})`;
+        const t = this.typeOf(e);
+        return t === 'Any?' ? raw : this.fromAny(raw, t);
+      }
+      // `http.get<T>(url, options)` / `http.post<T>(url, body, options)`: the parsed body read as T.
+      if (owner === 'HttpClient' && ['get', 'delete', 'head', 'options', 'post', 'put', 'patch', 'request'].includes(method) && this.typeOf(e).startsWith('RxObservable<')) {
         const value = /^RxObservable<(.*)>$/.exec(this.typeOf(e))?.[1] ?? 'Any?';
-        const call = `${this.expr(target)}.get(${this.str(e.arguments[0])}${e.arguments[1] ? `, ${this.coerce(e.arguments[1], 'Any?')}` : ''})`;
+        const call = method === 'request'
+          ? `${this.expr(target)}.request(${this.str(e.arguments[0])}, ${e.arguments[1] ? this.str(e.arguments[1]) : '""'}${e.arguments[2] ? `, ${this.coerce(e.arguments[2], 'Any?')}` : ''})`
+          : ['post', 'put', 'patch'].includes(method)
+            ? `${this.expr(target)}.${method}(${this.str(e.arguments[0])}${e.arguments[1] ? `, ${this.coerce(e.arguments[1], 'Any?')}` : ', nil'}${e.arguments[2] ? `, ${this.coerce(e.arguments[2], 'Any?')}` : ''})`
+            : `${this.expr(target)}.${method}(${this.str(e.arguments[0])}${e.arguments[1] ? `, ${this.coerce(e.arguments[1], 'Any?')}` : ''})`;
         return value === 'Any?' ? call : `${call}.mapValues { (__v: Any?) -> ${value} in ${this.fromAny('__v', value)} }`;
       }
       if ((owner === 'WritableSignal' || owner === 'Signal') && method === 'asReadonly') return this.expr(target);
@@ -10321,26 +10473,48 @@ ${members.join('\n')}
     }
     if (name === 'get' && e.arguments.length === 1 && this.symbolName(arg(0)) === 'Writable') return `${this.expr(arg(0))}.value`;
     if (name === 'navigate' && arg(0) && ts.isObjectLiteralExpression(arg(0))) return this.navigate(e);
-    if (['$signal', 'ref', '$ref', 'signal', 'writable', '$writable'].includes(name) && lib) {
+    if (['$signal', 'ref', '$ref', 'signal', 'model', 'writable', '$writable'].includes(name) && lib) {
       const t = this.typeOf(e).replace(/^Signal<(.*)>$/, '$1');
       const kind = name === 'ref' || name === '$ref' ? 'vue' : name === '$signal' || name === 'writable' ? 'svelte' : 'identity';
       return this.newSignal(t, arg(0) ? this.coerce(arg(0), t) : 'nil', kind);
     }
+    if (name === 'linkedSignal' && lib) {
+      const t = this.typeOf(e).replace(/^Signal<(.*)>$/, '$1');
+      const reference = !['Double', 'String', 'Bool'].includes(t.replace(/\?$/, '')) && !isFunctionType(t);
+      return `Signal<${t}>(linked: ${this.expr(arg(0))}${reference ? ', equals: jsSame' : ''})`;
+    }
     if (name === '$state' && lib) return `stateSignal(${this.expr(arg(0))})`;
     if (name === 'computed' && lib && this.typeOf(e).startsWith('Signal<')) return `Signal(computing: ${this.expr(arg(0))})`;
     if (name === 'untracked' && lib) return `${this.expr(arg(0))}()`;
+    if (name === 'runInInjectionContext' && lib) {
+      const fn = arg(1);
+      if (fn && (ts.isArrowFunction(fn) || ts.isFunctionExpression(fn))) {
+        const t = this.typeOf(e);
+        const throws = this.throwsInfo.fn(fn);
+        return `Injector.runInContext(${this.coerce(arg(0), 'Any?')}) { ()${throws ? ' throws' : ''} -> ${t} in${this.functionBody(fn, t, this.indent).slice(1)}`;
+      }
+      return `Injector.runInContext(${this.coerce(arg(0), 'Any?')}, ${this.expr(arg(1))})`;
+    }
+    if ((name === 'forwardRef' || name === 'resolveForwardRef') && lib) {
+      if (arg(0) && (ts.isArrowFunction(arg(0)) || ts.isFunctionExpression(arg(0))) && !ts.isBlock(arg(0).body)) return this.expr(arg(0).body);
+      return `resolveForwardRef(${arg(0) ? this.coerce(arg(0), 'Any?') : 'nil'})`;
+    }
     if (name === 'isDevMode' && lib) return 'false';
     if ((name === 'nextTick' || name === 'tick') && !e.arguments.length && lib) return `Reactivity.${name}()`;
     if (name === 'output' && lib) return `${this.typeOf(e)}()`;
     if (name === 'inject' && lib) {
-      const target = ts.isExpressionWithTypeArguments(arg(0)) ? arg(0).expression : arg(0);
+      let rawArg0 = arg(0);
+      if (rawArg0 && ts.isCallExpression(rawArg0) && rawArg0.expression.getText() === 'forwardRef' && rawArg0.arguments[0] && (ts.isArrowFunction(rawArg0.arguments[0]) || ts.isFunctionExpression(rawArg0.arguments[0])) && !ts.isBlock(rawArg0.arguments[0].body)) {
+        rawArg0 = rawArg0.arguments[0].body;
+      }
+      const target = ts.isExpressionWithTypeArguments(rawArg0) ? rawArg0.expression : rawArg0;
       const token = this.tokenName(target);
       if (token === 'NATIVE_DIALOG_DATA') return this.fromAny('NativeDialogRef.current.data', this.typeOf(e));
       const tokenDecl = this.resolve(target)?.declarations?.[0];
-      const builtin = ['RouterExtensions', 'ActivatedRoute', 'Page', 'DestroyRef', 'ChangeDetectorRef', 'ElementRef', 'NativeDialogRef', 'NativeDialogService', 'Router', 'HttpClient', 'Injector', 'NgZone'].includes(token);
-      const appService = tokenDecl && ts.isClassDeclaration(tokenDecl) && !tokenDecl.getSourceFile().isDeclarationFile && (!this.pluginFiles.has(tokenDecl.getSourceFile().fileName) || tokenDecl.getSourceFile().fileName.endsWith('/runtime/angular-rx.ts'));
+      const builtin = ['RouterExtensions', 'ActivatedRoute', 'Page', 'DestroyRef', 'ChangeDetectorRef', 'ElementRef', 'NativeDialogRef', 'NativeDialogService', 'Router', 'HttpClient', 'Injector', 'EnvironmentInjector', 'NgZone', 'ErrorHandler', 'FormBuilder', 'UntypedFormBuilder', 'NonNullableFormBuilder', 'Location', 'ViewContainerRef', 'ApplicationRef'].includes(token);
+      const appService = this.isInjectableClass(tokenDecl);
       if (builtin || appService) return injected(token);
-      const raw = `Injector.inject(${this.coerce(arg(0), 'Any?')}${arg(1) ? `, ${this.coerce(arg(1), 'Any?')}` : ''})`;
+      const raw = `Injector.inject(${this.coerce(rawArg0, 'Any?')}${arg(1) ? `, ${this.coerce(arg(1), 'Any?')}` : ''})`;
       const t = this.typeOf(e);
       return t === 'Any?' ? raw : this.fromAny(raw, t);
     }
@@ -12910,6 +13084,8 @@ function shadowedByMember(at: ts.Node, decl: ts.Declaration | undefined, fn: str
 function injected(token: string): string {
   switch (token) {
     case 'RouterExtensions': return 'Router.shared';
+    case 'EnvironmentInjector': return 'Injector.shared';
+    case 'UntypedFormBuilder': case 'NonNullableFormBuilder': return 'FormBuilder.shared';
     case 'ActivatedRoute': return 'ActivatedRoute.current';
     case 'Page': return 'Page.injected()';
     case 'DestroyRef': return 'DestroyRef.current()';

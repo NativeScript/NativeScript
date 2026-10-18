@@ -5,27 +5,38 @@ import java.net.URLDecoder
 // Angular's router with @nativescript/angular's page-router-outlets and RouterExtensions, over the
 // Frame and Page compiled from core (kit-apple's Router.swift).
 
-/** An event a component raises (Angular `output()`): the parent subscribes, the component emits. */
-class Emitter<T> {
-    private val handlers = mutableListOf<(T) -> Unit>()
-    fun on(handler: (T) -> Unit) {
-        handlers.add(handler)
-    }
-    fun emit(value: T) {
-        for (h in handlers.toList()) h(value)
-    }
-}
-
-fun Emitter<Unit>.emit() = emit(Unit)
-
 /** The route a component was created for (Angular `ActivatedRoute`): set by the router before it constructs the routed component. */
-class ActivatedRoute(params: Map<String, String>, internal val outlet: String = Router.PRIMARY, internal val url: List<String> = emptyList()) {
-    class Snapshot(val params: JSRecord<String>)
-
-    val snapshot = Snapshot(JSRecord(params.toList()))
+class ActivatedRoute(
+    params: Map<String, String>,
+    val outlet: String = Router.PRIMARY,
+    internal val url: List<String> = emptyList(),
+    queryParams: Map<String, String> = emptyMap(),
+    data: Map<String, Any?> = emptyMap(),
+) {
+    val snapshot = ActivatedRouteSnapshot(
+        params = JSRecord(params.toList()),
+        queryParams = JSRecord(queryParams.toList()),
+        data = JSRecord(data.toList()),
+        url = JSArray(url.map { UrlSegment(it) }.toMutableList()),
+        fragment = null,
+        outlet = outlet,
+    )
 
     /** `route.params`: the route's parameters, replayed to each subscriber. */
     val params = RxBehaviorSubject(snapshot.params)
+    val queryParams = RxBehaviorSubject(snapshot.queryParams)
+    val data = RxBehaviorSubject(snapshot.data)
+    val paramMap = RxBehaviorSubject(ParamMap(snapshot.params))
+    val queryParamMap = RxBehaviorSubject(ParamMap(snapshot.queryParams))
+    val fragment = RxBehaviorSubject<String?>(null)
+    val title = RxBehaviorSubject<String?>(null)
+    var routeConfig: JSObject? = null
+
+    val root: ActivatedRoute get() = this
+    val parent: ActivatedRoute? get() = null
+    val firstChild: ActivatedRoute? get() = null
+    val children: JSArray<ActivatedRoute> get() = JSArray()
+    val pathFromRoot: JSArray<ActivatedRoute> get() = JSArray(mutableListOf(this))
 
     companion object {
         var current = ActivatedRoute(emptyMap())
@@ -41,9 +52,6 @@ class Route(path: String, internal val make: () -> View) {
 class RouteConfig(path: String, internal val outlet: String = Router.PRIMARY, internal val redirectTo: String? = null, internal val full: Boolean = false, internal val children: List<RouteConfig> = emptyList(), internal val make: (() -> View)? = null) {
     internal val segments = path.split("/").filter { it.isNotEmpty() }
 }
-
-/** `NavigationEnd`, the router event each completed navigation emits. */
-class NavigationEnd(val id: Double, val url: String, val urlAfterRedirects: String)
 
 private val routeKey = jsSymbol("NativeScriptKit:route")
 
@@ -183,7 +191,10 @@ class Router {
         return ok
     }
 
-    fun navigateByUrl(url: String, extras: Any? = null): JSPromise<Boolean> = navigate(listOf(if (url.startsWith("/")) url else "/$url"), extras)
+    fun navigateByUrl(urlTarget: Any?, extras: Any? = null): JSPromise<Boolean> {
+        val str = (jsBox(urlTarget) as? UrlTree)?.toString() ?: jsToString(urlTarget)
+        return navigate(listOf(if (str.startsWith("/")) str else "/$str"), extras)
+    }
 
     /** `back()`: the outlet of the given route, else the one navigated last that can go back, else the topmost frame. */
     fun back(options: Any? = null) {
@@ -202,13 +213,41 @@ class Router {
         }
     }
 
+    fun backToPreviousPage() = back()
+
     /** `RouterExtensions.router`: the router itself. */
     val router: Router get() = this
 
     /** `router.url`: the primary outlet's URL. */
     val url: String get() = "/" + (current(PRIMARY) ?: emptyList()).joinToString("/")
 
-    fun canGoBack(): Boolean = history.any { outlets[it]?.frame?.canGoBack() == true }
+    val routerState: JSObject
+        get() = JSObject(
+            "snapshot" to JSObject("url" to url, "root" to ActivatedRoute.current.snapshot),
+            "root" to ActivatedRoute.current,
+        )
+
+    fun createUrlTree(commands: Any?, extras: Any? = null): UrlTree {
+        val items = (jsBox(commands) as? JSArray<*>)?.storage ?: emptyList<Any?>()
+        val joined = items.joinToString("/") { jsToString(it) }.trim('/')
+        val q = field(extras, "queryParams")
+        val f = field(extras, "fragment") as? String
+        return UrlTree("/$joined", q, f)
+    }
+
+    fun serializeUrl(tree: Any?): String = (jsBox(tree) as? UrlTree)?.toString() ?: jsToString(tree)
+
+    fun parseUrl(raw: String): UrlTree = DefaultUrlSerializer().parse(raw)
+
+    fun isActive(targetUrl: Any?, exact: Any? = false): Boolean {
+        val target = (jsBox(targetUrl) as? UrlTree)?.toString() ?: jsToString(targetUrl)
+        val isExact = (jsBox(exact) as? Boolean) ?: (field(exact, "paths") == "exact")
+        return if (isExact) url == target else url.startsWith(target)
+    }
+
+    fun canGoBack(@Suppress("UNUSED_PARAMETER") options: Any? = null): Boolean = history.any { outlets[it]?.frame?.canGoBack() == true }
+
+    fun canGoBackToPreviousPage(): Boolean = canGoBack()
 
     private fun routesIn(routes: List<RouteConfig>, outlet: String): List<RouteConfig> =
         routes.filter { it.outlet == outlet } + routes.flatMap { routesIn(it.children, outlet) }

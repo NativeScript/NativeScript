@@ -57,6 +57,7 @@ import { KIT_ANDROID, KIT_APPLE, PACKAGE } from './paths.ts';
 import { checkContract } from './contract.ts';
 import { checkToolchain } from './toolchain.ts';
 import { formatPreflight, preflight } from './preflight.ts';
+import { detectFramework, excludedFrameworkKitFiles } from './framework.ts';
 
 const args = process.argv.slice(2);
 const opt = (name: string, fallback?: string) => { const i = args.indexOf(name); return i >= 0 ? args[i + 1] : fallback; };
@@ -86,10 +87,7 @@ const files: string[] = [];
 const walk = (d: string) => { for (const f of readdirSync(d)) { const p = join(d, f); if (statSync(p).isDirectory()) walk(p); else files.push(p); } };
 walk(appDir);
 const entry = join(app, pkg.main ?? 'app/app.ts');
-const deps = { ...pkg.dependencies };
-const framework = deps['nativescript-vue'] ? 'vue' : deps['@nativescript/angular'] ? 'angular' : deps['@nativescript-community/svelte-native'] ? 'svelte' : deps['react-nativescript'] ? 'react' : deps['@nativescript-community/solid-js'] ? 'solid' : deps['@nativescript-community/octane'] ? 'octane'
-  // No framework, XML pages: core's own Builder makes the views, as in the app's JavaScript build.
-  : files.some((f) => f.endsWith('.xml') && f.startsWith(appDir)) ? 'core' : null;
+const framework = detectFramework(app, entry, files, appDir);
 if (!framework) throw new Error('no supported framework in package.json');
 stopOn(checkContract({ app, platform, generatedKit, framework, allowCoreMismatch: args.includes('--allow-core-mismatch') || releaseOptions(app, platform).allowCoreMismatch === true, allowUntestedFrameworks: args.includes('--allow-untested-frameworks') || releaseOptions(app, platform).allowUntestedFrameworks === true }), 'version');
 const entryText = readFileSync(entry, 'utf8');
@@ -285,7 +283,7 @@ if (framework === 'vue') {
   }
   routing = { routes, initial };
   // The entry's own statements (an app delegate, a keyboard setup) run after the modules it imports, the bootstrap call aside.
-  const entryModule = angularEntryModule(entry, entryText);
+  const entryModule = angularEntryModule(entry, entryText, routeFiles, components, aliased);
   if (entryModule) {
     overrides.set(entry, entryModule);
     modules.push(entry);
@@ -567,7 +565,8 @@ const kitSources = join(kit, 'Sources', 'NativeScriptKit');
 const core = installedCore(app);
 const coreModules = core ? coreNativeModules(core).map((m) => m.module) : [];
 // `--whole-kit` compiles every file of the kit, however little of it the app reaches: a check that all of it builds.
-const excluded = args.includes('--whole-kit') ? [] : [...kitFilesUnreached(kitSources, readdirSync(sourcesDir).map((f) => readFileSync(join(sourcesDir, f), 'utf8')).join('\n'), coreModules, new Set(closedWorld.excluded)), ...closedWorld.excluded];
+const otherFrameworkFiles = excludedFrameworkKitFiles(framework, 'apple');
+const excluded = args.includes('--whole-kit') ? [] : [...new Set([...kitFilesUnreached(kitSources, readdirSync(sourcesDir).map((f) => readFileSync(join(sourcesDir, f), 'utf8')).join('\n'), coreModules, new Set([...closedWorld.excluded, ...otherFrameworkFiles])), ...closedWorld.excluded, ...otherFrameworkFiles])];
 mirror(sourcesDir, join(out, 'Sources'));
 // The kit's warnings are core's, checked by the kit's own build (tests/kit-build.sh, --whole-kit); in an app's build they are noise.
 const kitWarnings: Record<string, string> = args.includes('--whole-kit') ? {} : { SWIFT_SUPPRESS_WARNINGS: 'YES', GCC_WARN_INHIBIT_ALL_WARNINGS: 'YES' };
@@ -816,14 +815,82 @@ function registeredElements(sources: string[], modulesDir: string): Map<string, 
 }
 
 /** The Angular entry without the call that bootstraps the app, or null when that is all it does. */
-function angularEntryModule(file: string, text: string): string | null {
+function angularEntryModule(
+  file: string,
+  text: string,
+  routeFiles: ReadonlySet<string>,
+  components: ComponentIR[],
+  aliased: (spec: string) => string | undefined,
+): string | null {
   const sf = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true);
   const isBootstrap = (st: ts.Statement) => ts.isExpressionStatement(st) && ts.isCallExpression(st.expression)
     && /^(runNativeScriptAngularApp|platformNativeScript|platformNativeScriptDynamic|bootstrapApplication)\b/.test(st.expression.expression.getText());
+  const isBuiltinProviderCall = (e: ts.Expression): boolean => {
+    if (!ts.isCallExpression(e)) return false;
+    const fn = e.expression.getText();
+    if (/^(provideNativeScriptRouter|provideRouter|provideZoneChangeDetection|provideZonelessChangeDetection|provideExperimentalZonelessChangeDetection|provideNativeScriptNgZone)$/.test(fn)) return true;
+    if (/^(provideNativeScriptHttpClient|provideHttpClient)$/.test(fn) && e.arguments.every((a) => ts.isCallExpression(a) && /^(withInterceptorsFromDi|withFetch|withJsonpSupport|withNoXsrfProtection)$/.test(a.expression.getText()))) return true;
+    return false;
+  };
+  let hasCustomProviders = false;
+  const blankRanges: [number, number][] = [];
+  const nullFirstArgRanges: [number, number][] = [];
+  const visit = (n: ts.Node) => {
+    if (ts.isCallExpression(n)) {
+      const fn = n.expression.getText();
+      if (fn === 'bootstrapApplication') {
+        if (n.arguments[0]) {
+          nullFirstArgRanges.push([n.arguments[0].getStart(), n.arguments[0].getEnd()]);
+        }
+        const cfg = n.arguments[1];
+        if (cfg) {
+          if (ts.isObjectLiteralExpression(cfg)) {
+            for (const prop of cfg.properties) {
+              if (ts.isPropertyAssignment(prop) && prop.name.getText() === 'providers' && ts.isArrayLiteralExpression(prop.initializer)) {
+                if (prop.initializer.elements.some((el) => !isBuiltinProviderCall(el))) {
+                  hasCustomProviders = true;
+                }
+              }
+            }
+          } else {
+            hasCustomProviders = true;
+          }
+        }
+      } else if (fn === 'provideNativeScriptRouter' || fn === 'provideRouter') {
+        if (n.arguments.length) {
+          blankRanges.push([n.arguments[0].getStart(), n.arguments[n.arguments.length - 1].getEnd()]);
+        }
+      }
+    }
+    ts.forEachChild(n, visit);
+  };
+  visit(sf);
   const rest = sf.statements.filter((st) => !ts.isImportDeclaration(st) && !isBootstrap(st));
-  if (!rest.length) return null;
+  if (!rest.length && !hasCustomProviders) return null;
+  const componentFiles = new Set(components.map((c) => c.file.replace(/\.release\.ts$/, '.ts')));
+  for (const st of sf.statements) {
+    if (ts.isImportDeclaration(st) && ts.isStringLiteral(st.moduleSpecifier)) {
+      const spec = st.moduleSpecifier.text;
+      const base = aliased(spec) ?? (spec.startsWith('.') ? resolve(dirname(file), spec) : undefined);
+      if (base) {
+        const candidates = [base, base + '.ts', join(base, 'index.ts')];
+        if (candidates.some((c) => routeFiles.has(c) || componentFiles.has(c))) {
+          blankRanges.push([st.getStart(), st.getEnd()]);
+        }
+      }
+    } else if (isBootstrap(st) && !hasCustomProviders) {
+      blankRanges.push([st.getStart(), st.getEnd()]);
+    }
+  }
   let out = text;
-  for (const st of [...sf.statements].filter(isBootstrap).reverse()) out = out.slice(0, st.getStart()) + out.slice(st.getStart(), st.getEnd()).replace(/[^\n]/g, ' ') + out.slice(st.getEnd());
+  for (const [s, e] of nullFirstArgRanges) {
+    const len = e - s;
+    const rep = (len >= 4 ? 'null' : '0').padEnd(len, ' ');
+    out = out.slice(0, s) + rep + out.slice(e);
+  }
+  for (const [s, e] of blankRanges) {
+    out = out.slice(0, s) + out.slice(s, e).replace(/[^\n]/g, ' ') + out.slice(e);
+  }
   return out;
 }
 
