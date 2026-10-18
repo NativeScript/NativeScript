@@ -30,7 +30,9 @@ import { render } from '../../src/codegen.ts';
 import { Translator } from '../../src/kotlin.ts';
 import { translateKotlinModules } from '../../src/kotlin-modules.ts';
 import { AndroidNativeAPI, androidClassPath } from '../../src/native-calls-android.ts';
+import { detectFramework, excludedFrameworkKitFiles, getFrameworkKitInfo } from '../../src/framework.ts';
 import { spawnSync } from 'node:child_process';
+import ts from 'typescript';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const modulesDir = process.env.NS_DIFF_MODULES ?? resolve(here, '../node_modules');
@@ -387,6 +389,95 @@ export class GlyphPipe { constructor(@Inject(TOKEN) private config: any, @Option
     check(/com\.example\.peek\.Peeker\.twice\(/.test(code), "a plugin's Java class its typings lack has its static methods called directly");
   } finally {
     rmSync(out, { recursive: true, force: true });
+  }
+}
+
+// ---- Framework kit auto-detection & layering + Angular C2/E5/F6/F7/F12 ----
+{
+  const dir = mkdtempSync(join(tmpdir(), 'ns-release-checks-ng-kit-'));
+  try {
+    writeFileSync(join(dir, 'package.json'), JSON.stringify({ dependencies: { '@angular/core': '~19.0.0' } }));
+    mkdirSync(join(dir, 'nested-xml', 'app'), { recursive: true });
+    writeFileSync(join(dir, 'nested-xml', 'package.json'), JSON.stringify({ dependencies: { '@nativescript/core': '~9.1.0' } }));
+    writeFileSync(join(dir, 'nested-xml', 'app', 'main-page.xml'), '<Page></Page>');
+    check(detectFramework(dir) === 'angular' && detectFramework(join(dir, 'nested-xml')) === 'core', 'detectFramework auto-detects angular from package.json dependencies without leaking ancestor packages');
+    check(getFrameworkKitInfo('angular').kitName === 'NativeScriptAngularKit', 'getFrameworkKitInfo maps angular to NativeScriptAngularKit layered on NativeScriptKit');
+    check(excludedFrameworkKitFiles('vue', 'apple').has('AngularAPI.swift') && !excludedFrameworkKitFiles('angular', 'apple').has('AngularAPI.swift'), 'excludedFrameworkKitFiles excludes non-active framework kit sources');
+
+    const compFile = join(dir, 'kiddo-card.component.ts');
+    writeFileSync(compFile, `
+import { Component, Injectable, Input, Optional, SkipSelf, input, model } from '@angular/core';
+
+@Injectable({ providedIn: 'root' })
+export class CardService {
+  prefix = 'card:';
+}
+
+@Injectable({ providedIn: 'root' })
+export class CoreSingletonModule {
+  constructor(@Optional() @SkipSelf() parentModule?: CoreSingletonModule) {
+    if (parentModule) throw new Error('already loaded');
+  }
+}
+
+@Component({
+  selector: 'KiddoCard',
+  template: '<Label [text]="displayTitle"></Label>',
+})
+export class KiddoCardComponent {
+  subtitle = input<string>();
+  active = model<boolean>();
+  private _title = '';
+  private _badge = '';
+
+  constructor(private cardService: CardService) {}
+
+  @Input()
+  get title(): string {
+    return this._title;
+  }
+  set title(v: string) {
+    this._title = v.trim();
+  }
+
+  @Input()
+  set badge(v: string) {
+    this._badge = '[' + v + ']';
+  }
+
+  get displayTitle(): string {
+    return this.cardService.prefix + this._title + this._badge + (this.subtitle() ?? '');
+  }
+}
+`);
+    const ir = angularComponent(compFile, readFileSync(compFile, 'utf8'), new Map())!;
+    check(ir.props.includes('subtitle') && ir.props.includes('active') && ir.props.includes('title') && ir.props.includes('badge'), 'angularComponent extracts 0-arg input<T>()/model<T>() and getter/setter @Input props');
+
+    const overrides = new Map([[compFile, ir.source]]);
+    const { checker: swChecker, program: swProg, files: swFiles } = createProgram([compFile], overrides, 'ios', modulesDir);
+    const sw = new SwiftTranslator(swChecker, new Map([['KiddoCardComponent', { props: ir.props, optional: ir.optional }]]), swFiles);
+    sw.plainFields = true;
+    const swMod = translateModules(sw, swProg, [compFile]).map((m) => m.code).join('\n');
+    const swCls = swProg.getSourceFile(compFile)!.statements.filter(ts.isClassDeclaration).find((c) => c.name?.text === 'KiddoCardComponent')!;
+    const swCode = sw.componentMembers(swCls, ir.props).join('\n') + '\n' + swMod;
+    check(/let subtitle: Signal<String\?>/.test(swCode) && /let active: Signal<Bool\?>/.test(swCode) && /init\(subtitle: String\? = nil, active: Bool\? = nil\)/.test(swCode), '0-arg input<T>() and model<T>() emit optional Signal initialized to nil (Swift)');
+    check(/let cardService: CardService/.test(swCode) && /self\.cardService = CardService\.shared/.test(swCode), '@Component constructor parameter property is DI-resolved to shared instance (Swift)');
+    check(/var title: String \{/.test(swCode) && /func _set_title\(/.test(swCode) && /func _set_badge\(/.test(swCode), 'getter+setter and setter-only @Input accessors rewrite cleanly to getter + _set_ methods (Swift)');
+    check(/init\(_ parentModule: CoreSingletonModule\? = nil\)/.test(swCode), '@Optional() @SkipSelf() singleton guard parameter defaults to nil (Swift)');
+
+    const { checker: ktChecker, program: ktProg, files: ktFiles } = createProgram([compFile], overrides, 'android', modulesDir);
+    const kt = new Translator(ktChecker, new Map([['KiddoCardComponent', { props: ir.props, optional: ir.optional }]]), ktFiles);
+    kt.appModule = 'org.example.app';
+    kt.plainFields = true;
+    const ktMod = translateKotlinModules(kt, ktProg, [compFile]).map((m) => m.code).join('\n');
+    const ktCls = ktProg.getSourceFile(compFile)!.statements.filter(ts.isClassDeclaration).find((c) => c.name?.text === 'KiddoCardComponent')!;
+    const ktMembers = kt.componentMembers(ktCls, ir.props);
+    const ktCode = [...ktMembers.params, ...ktMembers.lines, ktMod].join('\n');
+    check(/subtitle: String\? = null/.test(ktCode) && /active: Boolean\? = null/.test(ktCode) && /val subtitle: Signal<String\?> = Signal<String\?>\(subtitle\)/.test(ktCode) && /val active: Signal<Boolean\?> = Signal<Boolean\?>\(active\)/.test(ktCode), '0-arg input<T>() and model<T>() emit nullable Signal initialized to null (Kotlin)');
+    check(/val cardService: CardService = CardService\.shared/.test(ktCode), '@Component constructor parameter property is DI-resolved to shared instance (Kotlin)');
+    check(/val title: String\s+get\(\)/.test(ktCode) && /fun _set_title\(/.test(ktCode) && /fun _set_badge\(/.test(ktCode), 'getter+setter and setter-only @Input accessors rewrite cleanly to getter + _set_ methods (Kotlin)');
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
   }
 }
 

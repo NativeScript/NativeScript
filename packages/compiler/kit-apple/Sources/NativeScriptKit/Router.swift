@@ -4,22 +4,44 @@ import Foundation
 /// router before it constructs the routed component.
 public final class ActivatedRoute {
     nonisolated deinit {}
-    public struct Snapshot { public let params: JSRecord<String> }
-    public let snapshot: Snapshot
+    public typealias Snapshot = ActivatedRouteSnapshot
+    public let snapshot: ActivatedRouteSnapshot
     /// `route.params`: the route's parameters, replayed to each subscriber.
     public let params: RxBehaviorSubject<JSRecord<String>>
+    public let queryParams: RxBehaviorSubject<JSRecord<String>>
+    public let data: RxBehaviorSubject<JSRecord<Any?>>
+    public let paramMap: RxBehaviorSubject<ParamMap>
+    public let queryParamMap: RxBehaviorSubject<ParamMap>
+    public let fragment: RxBehaviorSubject<String?>
+    public let title: RxBehaviorSubject<String?>
     /// The outlet the route renders in, and the URL segments within that outlet up to and including the route's own.
-    let outlet: String
+    public let outlet: String
+    public var routeConfig: JSObject? = nil
     let url: [String]
     public static var current = ActivatedRoute(params: [:])
 
-    public init(params: [String: String], outlet: String = Router.primary, url: [String] = []) {
+    public init(params: [String: String], outlet: String = Router.primary, url: [String] = [], queryParams: [String: String] = [:], data: [String: Any?] = [:]) {
         let record = JSRecord(params)
-        snapshot = Snapshot(params: record)
+        let queryRecord = JSRecord(queryParams)
+        let dataRecord = JSRecord(data)
+        let segs = JSArray(url.map { UrlSegment($0) })
+        snapshot = ActivatedRouteSnapshot(params: record, queryParams: queryRecord, data: dataRecord, url: segs, fragment: nil, outlet: outlet)
         self.params = RxBehaviorSubject(record)
+        self.queryParams = RxBehaviorSubject(queryRecord)
+        self.data = RxBehaviorSubject(dataRecord)
+        self.paramMap = RxBehaviorSubject(ParamMap(record))
+        self.queryParamMap = RxBehaviorSubject(ParamMap(queryRecord))
+        self.fragment = RxBehaviorSubject(nil)
+        self.title = RxBehaviorSubject(nil)
         self.outlet = outlet
         self.url = url
     }
+
+    public var root: ActivatedRoute { self }
+    public var parent: ActivatedRoute? { nil }
+    public var firstChild: ActivatedRoute? { nil }
+    public var children: JSArray<ActivatedRoute> { JSArray() }
+    public var pathFromRoot: JSArray<ActivatedRoute> { JSArray([self]) }
 }
 
 public struct Route {
@@ -51,19 +73,6 @@ public final class RouteConfig {
         self.emptyOutlet = emptyOutlet
         self.children = children
         self.make = make
-    }
-}
-
-/// `NavigationEnd`, the router event each completed navigation emits.
-public final class NavigationEnd {
-    nonisolated deinit {}
-    public let id: Double
-    public let url: String
-    public let urlAfterRedirects: String
-    init(id: Double, url: String, urlAfterRedirects: String) {
-        self.id = id
-        self.url = url
-        self.urlAfterRedirects = urlAfterRedirects
     }
 }
 
@@ -223,8 +232,9 @@ public final class Router {
 
     /// `navigateByUrl(url, extras)`.
     @discardableResult
-    public func navigateByUrl(_ url: String, _ extras: Any? = nil) -> JSPromise<Bool> {
-        navigate([url.hasPrefix("/") ? url : "/" + url], extras)
+    public func navigateByUrl(_ url: Any?, _ extras: Any? = nil) -> JSPromise<Bool> {
+        let str = (jsFlat(url) as? UrlTree)?.toString() ?? jsToString(url)
+        return navigate([str.hasPrefix("/") ? str : "/" + str], extras)
     }
 
     /// `back()`: the outlet of the given route, else the one navigated last that can go back, else the topmost frame.
@@ -241,14 +251,55 @@ public final class Router {
         }
     }
 
+    public func backToPreviousPage() {
+        back()
+    }
+
     /// `RouterExtensions.router`: the router itself.
     public var router: Router { self }
 
     /// `router.url`: the primary outlet's URL.
     public var url: String { "/" + (current(Router.primary) ?? []).joined(separator: "/") }
 
-    public func canGoBack() -> Bool {
+    public var routerState: JSObject {
+        JSObject([
+            ("snapshot", JSObject([("url", url), ("root", ActivatedRoute.current.snapshot)])),
+            ("root", ActivatedRoute.current),
+        ])
+    }
+
+    public func createUrlTree(_ commands: Any?, _ extras: Any? = nil) -> UrlTree {
+        let items = (jsFlat(commands) as? JSArrayProtocol)?.jsAnyElements ?? []
+        let joined = items.map { jsToString($0) }.joined(separator: "/").trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+        let path = "/" + joined
+        let q = field(extras, "queryParams")
+        let f = field(extras, "fragment") as? String
+        return UrlTree(path, q, f)
+    }
+
+    public func serializeUrl(_ tree: Any?) -> String {
+        (jsFlat(tree) as? UrlTree)?.toString() ?? jsToString(tree)
+    }
+
+    public func parseUrl(_ url: String) -> UrlTree {
+        DefaultUrlSerializer().parse(url)
+    }
+
+    public func isActive(_ url: Any?, _ exact: Any? = false) -> Bool {
+        let target = (jsFlat(url) as? UrlTree)?.toString() ?? jsToString(url)
+        let isExact: Bool = {
+            if let b = jsFlat(exact) as? Bool { return b }
+            return (field(exact, "paths") as? String) == "exact"
+        }()
+        return isExact ? self.url == target : self.url.hasPrefix(target)
+    }
+
+    public func canGoBack(_ options: Any? = nil) -> Bool {
         history.contains { name in (try? outlets[name]?.shown?.canGoBack()) ?? false }
+    }
+
+    public func canGoBackToPreviousPage() -> Bool {
+        canGoBack()
     }
 
     /// The routes of a named outlet, wherever in the configuration they are.

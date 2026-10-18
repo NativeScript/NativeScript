@@ -680,7 +680,7 @@ export class Translator implements AsyncTranslator {
     // A default-exported class is known by its declared name.
     const name = sym?.getName() === 'default' ? declName ?? 'default' : sym?.getName();
     const args = () => t.aliasTypeArguments ?? c.getTypeArguments(t as ts.TypeReference);
-    const arg = (k: number) => this.type(args()[k], where);
+    const arg = (k: number) => { const a = args()[k]; return a ? this.type(a, where) : 'Any?'; };
     if (name && sym?.declarations?.[0]?.getSourceFile().fileName === '/__shims__/globals.d.ts') {
       if (WEB_CLASSES.includes(name)) return `JS${name}`;
       if (WEB_DICTIONARIES.includes(name)) return 'Any?';
@@ -689,15 +689,25 @@ export class Translator implements AsyncTranslator {
     const javaClass = this.library && !!sym?.declarations?.length && sym.declarations.every((d) => this.native?.isNativeDeclaration(d)) ? this.native?.type(t) : null;
     if (javaClass) return javaClass;
     switch (name) {
-      case 'Sig': case 'Ref': case 'VueRef': case 'WritableSignal': case 'InputSignal': case 'Writable': return `Signal<${arg(0)}>`;
+      case 'Sig': case 'Ref': case 'VueRef': case 'WritableSignal': case 'InputSignal': case 'ModelSignal': case 'Writable': return `Signal<${arg(0)}>`;
       case 'Signal': return arg(0);
       case 'EventData': return 'EventData';
       case 'Function': if (isLibDeclaration(sym?.declarations?.[0])) return 'Any?'; break;
-      case 'OutputEmitterRef': return `Emitter<${arg(0)}>`;
+      case 'OutputEmitterRef': case 'EventEmitter': return `Emitter<${arg(0)}>`;
       case 'RouterExtensions': return 'Router';
+      case 'EnvironmentInjector': if (sym?.declarations?.[0]?.getSourceFile().fileName.startsWith('/__shims__/')) return 'Injector'; break;
+      case 'UntypedFormControl': if (sym?.declarations?.[0]?.getSourceFile().fileName.startsWith('/__shims__/')) return 'FormControl'; break;
+      case 'UntypedFormGroup': if (sym?.declarations?.[0]?.getSourceFile().fileName.startsWith('/__shims__/')) return 'FormGroup'; break;
+      case 'UntypedFormArray': if (sym?.declarations?.[0]?.getSourceFile().fileName.startsWith('/__shims__/')) return 'FormArray'; break;
+      case 'UntypedFormBuilder': case 'NonNullableFormBuilder': if (sym?.declarations?.[0]?.getSourceFile().fileName.startsWith('/__shims__/')) return 'FormBuilder'; break;
       // `Promise.allSettled`'s results are the plain objects it makes (either of them, a union, is untyped).
       case 'PromiseFulfilledResult': case 'PromiseRejectedResult': return 'JSObject';
-      case 'NativeDialogRef': case 'NativeDialogService': case 'DestroyRef': case 'Injector': case 'NgZone': case 'HttpClient': case 'ChangeDetectorRef': case 'PurePipeCache': case 'ElementRef': case 'SimpleChange':
+      case 'NativeDialogRef': case 'NativeDialogService': case 'DestroyRef': case 'Injector': case 'InjectionToken': case 'ErrorHandler': case 'NgZone': case 'HttpClient': case 'ChangeDetectorRef': case 'PurePipeCache': case 'ElementRef': case 'SimpleChange':
+      case 'RxSubscription': case 'NavigationEnd': case 'NavigationStart': case 'NavigationCancel': case 'NavigationError': case 'RoutesRecognized': case 'ResolveStart': case 'ResolveEnd':
+      case 'HttpParams': case 'HttpHeaders': case 'HttpResponse': case 'HttpErrorResponse': case 'HttpRequest': case 'HttpContext': case 'HttpContextToken':
+      case 'ParamMap': case 'UrlSegment': case 'UrlTree': case 'DefaultUrlSerializer': case 'ActivatedRouteSnapshot':
+      case 'FormControl': case 'FormGroup': case 'FormArray': case 'FormBuilder': case 'Validators': case 'AbstractControl':
+      case 'ViewContainerRef': case 'TemplateRef': case 'ComponentRef': case 'EmbeddedViewRef': case 'ApplicationRef': case 'Location':
         if (sym?.declarations?.[0]?.getSourceFile().fileName.startsWith('/__shims__/')) return name;
         break;
       case 'Promise': case 'PromiseLike': return `JSPromise<${arg(0)}>`;
@@ -2065,8 +2075,8 @@ export class Translator implements AsyncTranslator {
     const out: { conformance: string; lines: string[] }[] = [];
     const fn = (n: string) => {
       const f = fields.find((x) => x.name === n && !x.accessor);
-      const parts = f && /^\((.*)\) -> (.+)$/.exec(f.type);
-      return f && parts ? { name: n, params: parts[1].trim() ? splitTopLevel(parts[1]).length : 0, ret: parts[2] } : undefined;
+      const parts = f && functionTypeParts(f.type);
+      return f && parts ? { name: n, params: parts.params.length, ret: parts.ret, param: parts.params[0] } : undefined;
     };
     const methods = ['next', 'return', 'throw'].map(fn).filter((m): m is NonNullable<typeof m> => !!m);
     const protocol = this.iteratorProtocol(methods);
@@ -2577,6 +2587,58 @@ export class Translator implements AsyncTranslator {
     return found;
   }
 
+  private isInjectableClass(decl: ts.Declaration | undefined): boolean {
+    if (!decl || !ts.isClassDeclaration(decl) || decl.getSourceFile().isDeclarationFile) return false;
+    const fn = decl.getSourceFile().fileName;
+    if (fn.endsWith('/runtime/angular-rx.ts') || fn.endsWith('/runtime/angular.ts')) return true;
+    if (this.pluginFiles.has(fn)) return false;
+    return (ts.getDecorators(decl) ?? []).some((d) => /^Injectable\b/.test(d.expression.getText()));
+  }
+
+  private parameterInject(p: ts.ParameterDeclaration): string {
+    const pt = this.typeOf(p.name);
+    let injectArg: ts.Expression | undefined;
+    let optional = !!(p.questionToken || p.initializer);
+    let skipSelf = false;
+    for (const d of ts.getDecorators(p) ?? []) {
+      const e = d.expression;
+      const which = ts.isCallExpression(e) ? e.expression.getText() : e.getText();
+      if (which === 'Inject' && ts.isCallExpression(e) && e.arguments[0]) injectArg = e.arguments[0];
+      else if (which === 'Optional') optional = true;
+      else if (which === 'SkipSelf') skipSelf = true;
+    }
+    if (optional && skipSelf) return isNullable(pt) || pt === 'Any?' ? 'null' : this.fromAny('null', pt);
+    if (injectArg && ts.isCallExpression(injectArg) && injectArg.expression.getText() === 'forwardRef' && injectArg.arguments[0] && (ts.isArrowFunction(injectArg.arguments[0]) || ts.isFunctionExpression(injectArg.arguments[0])) && !ts.isBlock(injectArg.arguments[0].body)) {
+      injectArg = injectArg.arguments[0].body;
+    }
+    const builtins = ['RouterExtensions', 'ActivatedRoute', 'Page', 'DestroyRef', 'ChangeDetectorRef', 'ElementRef', 'NativeDialogRef', 'NativeDialogService', 'Router', 'HttpClient', 'Injector', 'EnvironmentInjector', 'NgZone', 'ErrorHandler', 'FormBuilder', 'UntypedFormBuilder', 'NonNullableFormBuilder', 'Location', 'ViewContainerRef', 'ApplicationRef'];
+    if (injectArg) {
+      const target = ts.isExpressionWithTypeArguments(injectArg) ? injectArg.expression : injectArg;
+      const token = this.tokenName(target);
+      if (token === 'NATIVE_DIALOG_DATA') return this.fromAny('NativeDialogRef.current.data', pt);
+      const tokenDecl = this.resolve(target)?.declarations?.[0];
+      if (builtins.includes(token) || this.isInjectableClass(tokenDecl)) return injected(token);
+      const raw = `Injector.inject(${this.coerce(injectArg, 'Any?')}${optional ? ', JSObject(mapOf("optional" to true))' : ''})`;
+      return pt === 'Any?' ? raw : this.fromAny(raw, pt);
+    }
+    const ref = p.type && ts.isTypeReferenceNode(p.type)
+      ? p.type
+      : p.type && ts.isUnionTypeNode(p.type)
+        ? p.type.types.find(ts.isTypeReferenceNode)
+        : undefined;
+    if (ref) {
+      const token = this.tokenName(ref.typeName);
+      const tokenDecl = this.resolve(ref.typeName)?.declarations?.[0];
+      if (builtins.includes(token) || this.isInjectableClass(tokenDecl)) return injected(token);
+      if (tokenDecl && ts.isClassDeclaration(tokenDecl)) {
+        const raw = `Injector.inject(${token}::class.java${optional ? ', JSObject(mapOf("optional" to true))' : ''})`;
+        return pt === 'Any?' ? raw : this.fromAny(raw, pt);
+      }
+    }
+    if (p.initializer) return this.coerce(p.initializer, pt);
+    return isNullable(pt) || pt === 'Any?' ? 'null' : this.fromAny('null', pt);
+  }
+
   /** A component's members; the caller adds `render()`. Returns the constructor parameters and the lines inside the class. */
   componentMembers(cls: ts.ClassDeclaration, props: string[]): { params: string[]; lines: string[]; statics: string[] } {
     this.props = new Set(props);
@@ -2596,15 +2658,37 @@ export class Translator implements AsyncTranslator {
       else if (m.kind !== ts.SyntaxKind.ClassStaticBlockDeclaration || (m as ts.ClassStaticBlockDeclaration).body.statements.length) throw this.error(m, 'a static member of this kind in a component or service');
     }
     this.indent = '    ';
+    const ctor = cls.members.find((m): m is ts.ConstructorDeclaration => ts.isConstructorDeclaration(m) && !!m.body);
+    if (ctor?.parameters.length && !props.length) {
+      for (const p of ctor.parameters) {
+        const pName = (p.name as ts.Identifier).text;
+        const pt = this.typeOf(p.name);
+        const val = this.parameterInject(p);
+        const isParamProp = (ts.getModifiers(p) ?? []).some((mod) =>
+          mod.kind === ts.SyntaxKind.PrivateKeyword ||
+          mod.kind === ts.SyntaxKind.ProtectedKeyword ||
+          mod.kind === ts.SyntaxKind.PublicKeyword ||
+          mod.kind === ts.SyntaxKind.ReadonlyKeyword
+        );
+        if (isParamProp) {
+          const reassigned = !hasModifier(p, ts.SyntaxKind.ReadonlyKeyword) && (this.isAssigned(cls, pName) || this.assignedProperties().has(p));
+          params.push(`${reassigned ? 'var' : 'val'} ${ident(pName)}: ${pt} = ${val}`);
+        } else {
+          params.push(`${ident(pName)}: ${pt} = ${val}`);
+        }
+      }
+    }
+    const seenAccessors = new Set<string>();
     for (const m of cls.members) {
       if (isStatic(m)) continue;
       if (ts.isPropertyDeclaration(m)) {
         const name = (m.name as ts.Identifier).text;
         const callee = m.initializer ? this.calleeName(m.initializer) : '';
-        if (callee === 'input' || callee === 'input.required') {
+        if (callee === 'input' || callee === 'input.required' || callee === 'model' || callee === 'model.required') {
           const t = this.typeOf(m.name).replace(/^Signal<(.*)>$/, '$1');
           const given = (m.initializer as ts.CallExpression).arguments[0];
-          params.push(`${ident(name)}: ${t}${given ? ` = ${this.coerce(given, t)}` : ''}`);
+          const def = given ? ` = ${this.coerce(given, t)}` : callee === 'input' || callee === 'model' ? ' = null' : '';
+          params.push(`${ident(name)}: ${t}${def}`);
           lines.push(`    val ${ident(name)}: Signal<${t}> = ${this.newSignal(t, ident(name), 'identity')}`);
           continue;
         }
@@ -2667,9 +2751,22 @@ export class Translator implements AsyncTranslator {
         this.indent = '    ';
         continue;
       }
-      if (ts.isGetAccessorDeclaration(m)) {
-        const t = this.returnTypeOf(m);
-        lines.push(`    val ${ident((m.name as ts.Identifier).text)}: ${t}`, `        get() ${this.functionBody(m, t, '        ')}`);
+      if (ts.isGetAccessorDeclaration(m) || ts.isSetAccessorDeclaration(m)) {
+        const aName = (m.name as ts.Identifier).text;
+        if (seenAccessors.has(aName)) continue;
+        seenAccessors.add(aName);
+        const get = cls.members.find((x): x is ts.GetAccessorDeclaration => ts.isGetAccessorDeclaration(x) && x.name.getText() === aName && !isStatic(x));
+        const set = cls.members.find((x): x is ts.SetAccessorDeclaration => ts.isSetAccessorDeclaration(x) && x.name.getText() === aName && !isStatic(x));
+        if (get && !set) {
+          const t = this.returnTypeOf(get);
+          lines.push(`    val ${ident(aName)}: ${t}`, `        get() ${this.functionBody(get, t, '        ')}`);
+        } else if (set) {
+          const t = get ? this.returnTypeOf(get) : this.typeOf(set.parameters[0].name);
+          const p = set.parameters[0].name as ts.Identifier;
+          const getLine = get ? `        get() ${this.functionBody(get, t, '        ')}` : `        get() = ${isNullable(t) || t === 'Any?' ? 'null' : this.zero(t) ?? 'null'}`;
+          const setLine = `        set(${ident(p.text)}) ${this.functionBody(set, 'Unit', '        ')}`;
+          lines.push(`    var ${ident(aName)}: ${t}`, getLine, setLine);
+        }
         continue;
       }
       if (ts.isMethodDeclaration(m)) {
@@ -2679,12 +2776,11 @@ export class Translator implements AsyncTranslator {
       }
     }
     // The constructor's body runs once every field has its value, as TypeScript's class fields come first.
-    const ctor = cls.members.find((m): m is ts.ConstructorDeclaration => ts.isConstructorDeclaration(m) && !!m.body?.statements.length);
-    if (ctor && ownReturns(ctor.body!)) {
+    if (ctor?.body?.statements.length && ownReturns(ctor.body)) {
       this.returnLabel = '__ctor';
       this.indent = '        ';
-      try { lines.push(`    init {\n        run __ctor@${this.block(ctor.body!, '        ')}\n    }`); } finally { this.returnLabel = null; }
-    } else if (ctor) lines.push(`    init ${this.block(ctor.body!, '    ')}`);
+      try { lines.push(`    init {\n        run __ctor@${this.block(ctor.body, '        ')}\n    }`); } finally { this.returnLabel = null; }
+    } else if (ctor?.body?.statements.length) lines.push(`    init ${this.block(ctor.body, '    ')}`);
     this.indent = '';
     return { params, lines, statics };
   }
@@ -6973,12 +7069,24 @@ export class Translator implements AsyncTranslator {
         if (ts.isArrowFunction(a) || ts.isFunctionExpression(a)) return `${this.expr(target)}.update(${this.closure(a)})`;
         return `${this.expr(target)}.value = ${this.coerce(a, signalValue())}`;
       }
-      if (owner === 'OutputEmitterRef' && method === 'emit') return `${this.expr(target)}.emit(${e.arguments[0] ? this.expr(e.arguments[0]) : ''})`;
-      if (owner === 'Injector' && method === 'get' && e.arguments[0] && ts.isIdentifier(e.arguments[0])) return injected(this.tokenName(e.arguments[0]));
-      // `http.get<T>(url, options)`: the parsed body read as T.
-      if (owner === 'HttpClient' && method === 'get') {
+      if ((owner === 'OutputEmitterRef' || owner === 'EventEmitter') && (method === 'emit' || method === 'next')) return `${this.expr(target)}.emit(${e.arguments[0] ? this.expr(e.arguments[0]) : ''})`;
+      if (owner === 'Injector' && method === 'get' && e.arguments[0]) {
+        let rawArg0 = e.arguments[0];
+        if (ts.isCallExpression(rawArg0) && rawArg0.expression.getText() === 'forwardRef' && rawArg0.arguments[0] && (ts.isArrowFunction(rawArg0.arguments[0]) || ts.isFunctionExpression(rawArg0.arguments[0])) && !ts.isBlock(rawArg0.arguments[0].body)) {
+          rawArg0 = rawArg0.arguments[0].body;
+        }
+        const raw = `${this.expr(target)}.get(${this.coerce(rawArg0, 'Any?')}${e.arguments[1] ? `, ${this.coerce(e.arguments[1], 'Any?')}` : ''}${e.arguments[2] ? `, ${this.coerce(e.arguments[2], 'Any?')}` : ''})`;
+        const t = this.typeOf(e);
+        return t === 'Any?' ? raw : this.fromAny(raw, t);
+      }
+      // `http.get<T>(url, options)` / `http.post<T>(url, body, options)`: the parsed body read as T.
+      if (owner === 'HttpClient' && ['get', 'delete', 'head', 'options', 'post', 'put', 'patch', 'request'].includes(method) && this.typeOf(e).startsWith('RxObservable<')) {
         const value = /^RxObservable<(.*)>$/.exec(this.typeOf(e))?.[1] ?? 'Any?';
-        const call = `${this.expr(target)}.get(${this.str(e.arguments[0])}${e.arguments[1] ? `, ${this.coerce(e.arguments[1], 'Any?')}` : ''})`;
+        const call = method === 'request'
+          ? `${this.expr(target)}.request(${this.str(e.arguments[0])}, ${e.arguments[1] ? this.str(e.arguments[1]) : '""'}${e.arguments[2] ? `, ${this.coerce(e.arguments[2], 'Any?')}` : ''})`
+          : ['post', 'put', 'patch'].includes(method)
+            ? `${this.expr(target)}.${method}(${this.str(e.arguments[0])}${e.arguments[1] ? `, ${this.coerce(e.arguments[1], 'Any?')}` : ', null'}${e.arguments[2] ? `, ${this.coerce(e.arguments[2], 'Any?')}` : ''})`
+            : `${this.expr(target)}.${method}(${this.str(e.arguments[0])}${e.arguments[1] ? `, ${this.coerce(e.arguments[1], 'Any?')}` : ''})`;
         return value === 'Any?' ? call : `${call}.mapValues { __v: Any? -> ${this.fromAny('__v', value)} }`;
       }
       if ((owner === 'WritableSignal' || owner === 'Signal') && method === 'asReadonly') return this.expr(target);
@@ -7341,20 +7449,52 @@ export class Translator implements AsyncTranslator {
     const lib = !decl || decl.getSourceFile().isDeclarationFile;
     if (name === 'get' && e.arguments.length === 1 && this.symbolName(arg(0)) === 'Writable') return `${this.expr(arg(0))}.value`;
     if (name === 'navigate' && arg(0) && ts.isObjectLiteralExpression(arg(0))) return this.navigate(e);
-    if (['$signal', 'ref', '$ref', 'signal', 'writable', '$writable'].includes(name) && lib) {
+    if (['$signal', 'ref', '$ref', 'signal', 'model', 'writable', '$writable'].includes(name) && lib) {
       const t = this.typeOf(e).replace(/^Signal<(.*)>$/, '$1');
       const kind = name === 'ref' || name === '$ref' ? 'vue' : name === '$signal' || name === 'writable' ? 'svelte' : 'identity';
       return this.newSignal(t, arg(0) ? this.coerce(arg(0), t) : 'null', kind);
     }
+    if (name === 'linkedSignal' && lib) {
+      const t = this.typeOf(e).replace(/^Signal<(.*)>$/, '$1');
+      const reference = !['Double', 'String', 'Boolean'].includes(t.replace(/\?$/, '')) && !isFunctionType(t);
+      return `Signal.linked<${t}>(${this.expr(arg(0))}${reference ? ', ::jsSame' : ''})`;
+    }
     if (name === '$state' && lib) return `stateSignal(${this.expr(arg(0))})`;
+    if (name === 'untracked' && lib) return `(${this.expr(arg(0))})()`;
+    if (name === 'runInInjectionContext' && lib) {
+      const fn = arg(1);
+      if (fn && (ts.isArrowFunction(fn) || ts.isFunctionExpression(fn))) {
+        const t = this.typeOf(e);
+        return `Injector.runInContext(${this.coerce(arg(0), 'Any?')}, ${this.closure(fn, `() -> ${t}`)})`;
+      }
+      const raw = `Injector.runInContext(${this.coerce(arg(0), 'Any?')}) { jsCall(${this.coerce(arg(1), 'Any?')}) }`;
+      const t = this.typeOf(e);
+      return t === 'Any?' || t === 'Unit' ? raw : this.fromAny(raw, t);
+    }
+    if ((name === 'forwardRef' || name === 'resolveForwardRef') && lib) {
+      if (arg(0) && (ts.isArrowFunction(arg(0)) || ts.isFunctionExpression(arg(0))) && !ts.isBlock(arg(0).body)) return this.expr(arg(0).body);
+      return `resolveForwardRef(${arg(0) ? this.coerce(arg(0), 'Any?') : 'null'})`;
+    }
+    if (name === 'isDevMode' && lib) return 'false';
     // Angular's `effect()`.
     if (name === 'effect' && lib && arg(0)) return `Effect.deferred(${this.callback(arg(0))})`;
     if ((name === 'nextTick' || name === 'tick') && !e.arguments.length && lib) return `Reactivity.${name}()`;
     if (name === 'output' && lib) return `${this.typeOf(e)}()`;
     if (name === 'inject' && lib) {
-      const token = this.tokenName(ts.isExpressionWithTypeArguments(arg(0)) ? arg(0).expression : arg(0));
+      let rawArg0 = arg(0);
+      if (rawArg0 && ts.isCallExpression(rawArg0) && rawArg0.expression.getText() === 'forwardRef' && rawArg0.arguments[0] && (ts.isArrowFunction(rawArg0.arguments[0]) || ts.isFunctionExpression(rawArg0.arguments[0])) && !ts.isBlock(rawArg0.arguments[0].body)) {
+        rawArg0 = rawArg0.arguments[0].body;
+      }
+      const target = ts.isExpressionWithTypeArguments(rawArg0) ? rawArg0.expression : rawArg0;
+      const token = this.tokenName(target);
       if (token === 'NATIVE_DIALOG_DATA') return this.fromAny('NativeDialogRef.current.data', this.typeOf(e));
-      return injected(token);
+      const tokenDecl = this.resolve(target)?.declarations?.[0];
+      const builtin = ['RouterExtensions', 'ActivatedRoute', 'Page', 'DestroyRef', 'ChangeDetectorRef', 'ElementRef', 'NativeDialogRef', 'NativeDialogService', 'Router', 'HttpClient', 'Injector', 'EnvironmentInjector', 'NgZone', 'ErrorHandler', 'FormBuilder', 'UntypedFormBuilder', 'NonNullableFormBuilder', 'Location', 'ViewContainerRef', 'ApplicationRef'].includes(token);
+      const appService = this.isInjectableClass(tokenDecl);
+      if (builtin || appService) return injected(token);
+      const raw = `Injector.inject(${this.coerce(rawArg0, 'Any?')}${arg(1) ? `, ${this.coerce(arg(1), 'Any?')}` : ''})`;
+      const t = this.typeOf(e);
+      return t === 'Any?' ? raw : this.fromAny(raw, t);
     }
     if (name === 'firstValueFrom' && lib) return `rxFirstValueFrom(${this.expr(arg(0))})`;
     if (name === '$navigateTo' && lib) return this.navigate(e);
@@ -9703,6 +9843,8 @@ function isAppDeclarationFile(d: ts.Node | undefined): boolean {
 function injected(token: string): string {
   switch (token) {
     case 'RouterExtensions': return 'Router.shared';
+    case 'EnvironmentInjector': return 'Injector.shared';
+    case 'UntypedFormBuilder': case 'NonNullableFormBuilder': return 'FormBuilder.shared';
     case 'ActivatedRoute': return 'ActivatedRoute.current';
     case 'Page': return 'injectedPage()';
     case 'DestroyRef': return 'DestroyRef.current()';

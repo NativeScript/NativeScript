@@ -90,16 +90,16 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
     members.add(m.name.text);
     if (ts.isPropertyDeclaration(m) && m.initializer && ts.isCallExpression(m.initializer)) {
       const callee = m.initializer.expression.getText();
-      if (callee === 'input' || callee === 'input.required') {
+      if (callee === 'input' || callee === 'input.required' || callee === 'model' || callee === 'model.required') {
         props.push(m.name.text);
         // `input(init, { alias })`, `input.required({ alias })`: the name the parent binds.
-        const options = m.initializer.arguments[callee === 'input' ? 1 : 0];
+        const options = m.initializer.arguments[callee === 'input' || callee === 'model' ? 1 : 0];
         const alias = options && ts.isObjectLiteralExpression(options) ? options.properties.find((p): p is ts.PropertyAssignment => ts.isPropertyAssignment(p) && p.name.getText() === 'alias')?.initializer : undefined;
         if (alias && ts.isStringLiteralLike(alias)) inputAliases[m.name.text] = alias.text;
       }
-      // An input with a default value is one a parent may leave out.
-      if (callee === 'input' && (m.initializer as ts.CallExpression).arguments.length) optional.push(m.name.text);
-      if (callee === 'output') outputs.push(m.name.text);
+      // An input with a default value (or `input<T>()` with implicit undefined) is one a parent may leave out.
+      if (callee === 'input' || callee === 'model') optional.push(m.name.text);
+      if (callee === 'output' || callee === 'model' || callee === 'model.required') outputs.push(m.name.text);
     }
   }
   for (const [field, alias] of classic?.aliases ?? []) inputAliases[field] = alias;
@@ -1149,20 +1149,28 @@ export function declarableSource(path: string, text: string): string | null {
     const ctor = st.members.find(ts.isConstructorDeclaration);
     if (!ctor?.parameters.length) continue;
     const given = ctor.parameters.map((p) => {
-      let token = p.type && ts.isTypeReferenceNode(p.type) ? p.type.typeName.getText() : undefined;
-      let optional = false;
+      const ref = p.type && ts.isTypeReferenceNode(p.type)
+        ? p.type
+        : p.type && ts.isUnionTypeNode(p.type)
+          ? p.type.types.find(ts.isTypeReferenceNode)
+          : undefined;
+      let token = ref ? ref.typeName.getText() : undefined;
+      let optional = !!(p.questionToken || p.initializer);
+      let skipSelf = false;
       for (const d of ts.getDecorators(p) ?? []) {
         const e = d.expression;
         const which = ts.isCallExpression(e) ? e.expression.getText() : e.getText();
         if (which === 'Inject' && ts.isCallExpression(e) && e.arguments[0]) token = e.arguments[0].getText();
         else if (which === 'Optional') optional = true;
+        else if (which === 'SkipSelf') skipSelf = true;
         else if (!['Self', 'Host'].includes(which)) throw new Error(`${path}: @${which} on ${st.name!.text}'s constructor parameter ${p.name.getText()} is not supported in a release build yet`);
         edits.push({ start: d.getStart(), end: d.getEnd(), text: '' });
       }
+      if (optional && skipSelf) return 'undefined as any';
       if (!token) throw new Error(`${path}: ${st.name!.text}'s constructor parameter ${p.name.getText()} needs a class type or @Inject(token) in a release build`);
+      injects = true;
       return `inject(${token}${optional ? ', { optional: true }' : ''})`;
     });
-    injects = true;
     const close = st.members.end;
     edits.push({ start: close, end: close, text: `\n  static $create(): ${st.name.text} { return new ${st.name.text}(${given.join(', ')}); }\n` });
   }
@@ -1323,24 +1331,34 @@ function classicClass(path: string, text: string, cls: ts.ClassDeclaration): Cla
       for (const p of m.parameters) {
         const modifiers = (ts.getModifiers(p) ?? []).map((x) => x.getText());
         // Angular's factory injects each parameter: its class, or the token `@Inject` names, optionally with `@Optional()`.
-        let token = p.type && ts.isTypeReferenceNode(p.type) ? p.type.typeName.getText() : undefined;
-        let optional = false;
+        const ref = p.type && ts.isTypeReferenceNode(p.type)
+          ? p.type
+          : p.type && ts.isUnionTypeNode(p.type)
+            ? p.type.types.find(ts.isTypeReferenceNode)
+            : undefined;
+        let token = ref ? ref.typeName.getText() : undefined;
+        let optional = !!(p.questionToken || p.initializer);
+        let skipSelf = false;
         for (const d of decoratorsOf(p)) {
           const which = ts.isCallExpression(d) ? d.expression.getText() : d.getText();
           if (which === 'Inject' && ts.isCallExpression(d) && d.arguments[0]) token = d.arguments[0].getText();
           else if (which === 'Optional') optional = true;
+          else if (which === 'SkipSelf') skipSelf = true;
           else if (!['Self', 'Host'].includes(which)) throw new Error(`${path}: @${which} on the constructor parameter ${p.name.getText()} is not supported in a release build yet`);
         }
-        if (!token) throw new Error(`${path}: constructor parameter ${p.getText()} needs a class type or @Inject(token)`);
+        if (!token && !(optional && skipSelf)) throw new Error(`${path}: constructor parameter ${p.getText()} needs a class type or @Inject(token)`);
         // The component's own ElementRef is its host: the template's root view, set once it is made.
         if (token === 'ElementRef') host = true;
-        const value = token === 'ElementRef' ? 'this.$host' : `inject(${token}${optional ? ', { optional: true }' : ''})`;
+        const value = optional && skipSelf
+          ? 'undefined as any'
+          : token === 'ElementRef'
+            ? 'this.$host'
+            : (used.add('inject'), `inject(${token}${optional ? ', { optional: true }' : ''})`);
         const typed = p.type ? `: ${p.type.getText()}` : '';
         // A parameter property is a field; a plain parameter is a local of the constructor's body.
         if (modifiers.length) injected.push(`  ${modifiers.join(' ')} ${p.name.getText()}${typed} = ${value};\n`);
         else locals.push(`const ${p.name.getText()}${typed} = ${value};`);
       }
-      used.add('inject');
       ctor = m;
     }
   }
@@ -1390,7 +1408,7 @@ function classicClass(path: string, text: string, cls: ts.ClassDeclaration): Cla
     ts.forEachChild(n, (c) => collect(c, into));
   };
   for (const m of cls.members) if (m !== ctor && !(ts.isPropertyDeclaration(m) && inputs.has(m.name.getText()))) collect(m, edits);
-  if (ctor) edits.push({ start: ctor.getFullStart(), end: ctor.getEnd(), text: ctor.body?.statements.length ? `\n  constructor() {${locals.length ? ' ' + locals.join(' ') : ''}${rewritten(ctor.body).slice(1)}` : '' });
+  if (ctor) edits.push({ start: ctor.getFullStart(), end: ctor.getEnd(), text: ctor.body?.statements.length ? `\n  constructor() {${locals.length ? ' ' + locals.join(' ') : ''}${rewritten(ctor.body).slice(1)}` : locals.length ? `\n  constructor() { ${locals.join(' ')} }` : '' });
   let out = text;
   for (const e of edits.sort((a, b) => b.start - a.start || b.end - a.end)) out = out.slice(0, e.start) + e.text + out.slice(e.end);
   const imported = new Set(cls.getSourceFile().statements.flatMap((st) => ts.isImportDeclaration(st) && st.importClause?.namedBindings && ts.isNamedImports(st.importClause.namedBindings) ? st.importClause.namedBindings.elements.map((e) => e.name.text) : []));

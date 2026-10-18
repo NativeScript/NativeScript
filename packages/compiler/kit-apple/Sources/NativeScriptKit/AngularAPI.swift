@@ -4,19 +4,6 @@ import Foundation
 // injects, for components and services compiled to classes with a `shared`
 // instance (`providedIn: 'root'`).
 
-/// An event a component raises (Angular `output()`): the parent subscribes, the component emits.
-public final class Emitter<T> {
-    nonisolated deinit {}
-    private var handlers: [(T) -> Void] = []
-    public init() {}
-    public func on(_ handler: @escaping (T) -> Void) { handlers.append(handler) }
-    public func emit(_ value: T) { for h in handlers { h(value) } }
-}
-
-extension Emitter where T == Void {
-    public func emit() { emit(()) }
-}
-
 /// A component class used as a value (`dialog.open(SheetComponent)`): what creating and rendering it gives.
 public final class ComponentFactory {
     nonisolated deinit {}
@@ -68,20 +55,46 @@ public final class NativeDialogService {
     }
 }
 
-/// `HttpClient.get` through core's `Http.request`, the request @nativescript/angular's backend sends through
+/// `HttpClient` through core's `Http.request`, the request @nativescript/angular's backend sends through
 /// core's XMLHttpRequest: the body parsed as JSON unless `responseType` is `'text'`, a status of 400 or more an error.
 public final class HttpClient {
     nonisolated deinit {}
     public static let shared = HttpClient()
 
-    public func get(_ url: String, _ options: Any? = nil) -> RxObservable<Any?> {
-        let text = jsToString((try? jsGet(options, "responseType")) ?? nil) == "text"
-        let headers = (try? jsGet(options, "headers")) ?? nil
+    private func send(_ method: String, _ url: String, _ body: Any? = nil, _ options: Any? = nil) -> RxObservable<Any?> {
+        let flatOpts = jsFlat(options)
+        let text = jsToString((try? jsGet(flatOpts, "responseType")) ?? nil) == "text"
+        let observe = jsToString((try? jsGet(flatOpts, "observe")) ?? "body")
+        let rawHeaders = (try? jsGet(flatOpts, "headers")) ?? nil
+        let rawParams = (try? jsGet(flatOpts, "params")) ?? nil
+
+        var fullUrl = url
+        if !jsIsNullish(rawParams) {
+            let q = (jsFlat(rawParams) as? HttpParams)?.toString() ?? HttpParams(rawParams).toString()
+            if !q.isEmpty {
+                fullUrl = fullUrl.contains("?") ? "\(fullUrl)&\(q)" : "\(fullUrl)?\(q)"
+            }
+        }
+
+        var headersObj: Any? = (jsFlat(rawHeaders) as? HttpHeaders)?.toJSObject() ?? rawHeaders
+        let payloadBody = body ?? ((try? jsGet(flatOpts, "body")) ?? nil)
+        let upperMethod = method.uppercased()
+
         let request: () -> JSPromise<Any?> = {
-            let failure = { (status: Double, reason: String) in JSError("Http failure response for \(url): \(jsToString(status)) \(reason)") }
+            let failure = { (status: Double, reason: String) in JSError("Http failure response for \(fullUrl): \(jsToString(status)) \(reason)") }
             let (promise, resolvers) = JSPromise<Any?>.pending()
-            var settings: [(String, Any?)] = [("url", url), ("method", "GET")]
-            if !jsIsNullish(headers) { settings.append(("headers", headers)) }
+            var settings: [(String, Any?)] = [("url", fullUrl), ("method", upperMethod)]
+            if !jsIsNullish(payloadBody) && upperMethod != "GET" && upperMethod != "HEAD" {
+                if let s = payloadBody as? String {
+                    settings.append(("content", s))
+                } else if let json = try? jsJSONStringifyChecked(payloadBody) {
+                    settings.append(("content", json))
+                    if jsIsNullish(headersObj) {
+                        headersObj = JSObject([("Content-Type", "application/json")])
+                    }
+                }
+            }
+            if !jsIsNullish(headersObj) { settings.append(("headers", headersObj)) }
             let sent: JSPromise<Any?>
             do { sent = try jsUnwrap(Core_http_http_request_index.request(JSObject(settings)), "then") } catch {
                 resolvers.reject(jsCaught(error))
@@ -90,13 +103,23 @@ public final class HttpClient {
             _ = sent.then({ (response: Any?) -> Void in
                 do {
                     let status = jsToNumber(try jsGet(response, "statusCode"))
+                    let reason = status == 0 ? "Unknown Error" : HTTPURLResponse.localizedString(forStatusCode: Int(status)).capitalized
                     if status >= 400 || status == 0 {
-                        let reason = HTTPURLResponse.localizedString(forStatusCode: Int(status)).capitalized
-                        resolvers.reject(failure(status, status == 0 ? "Unknown Error" : reason))
+                        resolvers.reject(failure(status, reason))
                         return
                     }
-                    let body = jsToString(try jsCallMethod(try jsGet(response, "content"), "toString"))
-                    if text { resolvers.resolve(body) } else { resolvers.resolve(body.isEmpty ? nil : try jsJSONParse(body)) }
+                    let rawContent = jsToString(try jsCallMethod(try jsGet(response, "content"), "toString"))
+                    let parsed: Any? = text ? rawContent : (rawContent.isEmpty ? nil : try jsJSONParse(rawContent))
+                    if observe == "response" {
+                        resolvers.resolve(HttpResponse(JSObject([
+                            ("body", parsed),
+                            ("status", status),
+                            ("statusText", reason),
+                            ("url", fullUrl),
+                        ])))
+                    } else {
+                        resolvers.resolve(parsed)
+                    }
                 } catch {
                     resolvers.reject(jsCaught(error))
                 }
@@ -117,6 +140,51 @@ public final class HttpClient {
         })
         observable.first = request
         return observable
+    }
+
+    public func request(_ first: Any?, _ url: String? = nil, _ options: Any? = nil) -> RxObservable<Any?> {
+        if let req = jsFlat(first) as? HttpRequest {
+            return send(req.method, req.url, req.body, JSObject([
+                ("headers", req.headers),
+                ("params", req.params),
+                ("responseType", req.responseType),
+                ("observe", "response"),
+            ]))
+        }
+        return send(jsToString(first), url ?? "", nil, options)
+    }
+
+    public func get(_ url: String, _ options: Any? = nil) -> RxObservable<Any?> {
+        send("GET", url, nil, options)
+    }
+
+    public func delete(_ url: String, _ options: Any? = nil) -> RxObservable<Any?> {
+        send("DELETE", url, nil, options)
+    }
+
+    public func head(_ url: String, _ options: Any? = nil) -> RxObservable<Any?> {
+        send("HEAD", url, nil, options)
+    }
+
+    public func options(_ url: String, _ options: Any? = nil) -> RxObservable<Any?> {
+        send("OPTIONS", url, nil, options)
+    }
+
+    public func post(_ url: String, _ body: Any? = nil, _ options: Any? = nil) -> RxObservable<Any?> {
+        send("POST", url, body, options)
+    }
+
+    public func put(_ url: String, _ body: Any? = nil, _ options: Any? = nil) -> RxObservable<Any?> {
+        send("PUT", url, body, options)
+    }
+
+    public func patch(_ url: String, _ body: Any? = nil, _ options: Any? = nil) -> RxObservable<Any?> {
+        send("PATCH", url, body, options)
+    }
+
+    public func jsonp(_ url: String, _ callbackParam: String) -> RxObservable<Any?> {
+        let sep = url.contains("?") ? "&" : "?"
+        return get("\(url)\(sep)\(jsEncodeURIComponent(callbackParam))=JSONP_CALLBACK")
     }
 }
 
@@ -153,42 +221,4 @@ public func takeUntilDestroyed<T>(_ destroyRef: DestroyRef? = nil) -> RxOperator
             }
         }
     }
-}
-
-/// `ElementRef`: a view of a template, as a view query (`@ViewChild('ref', { read: ElementRef })`) gives it.
-public final class ElementRef {
-    nonisolated deinit {}
-    public private(set) var nativeElement: Any?
-    public init(_ nativeElement: Any?) { self.nativeElement = nativeElement }
-
-    /// A component's own ElementRef, made with the component: its template's root view, once made.
-    public func attach(_ host: Any?) { nativeElement = host }
-}
-
-/// `SimpleChange`: one input's change, as `ngOnChanges` receives it.
-public final class SimpleChange {
-    nonisolated deinit {}
-    public var previousValue: Any?
-    public var currentValue: Any?
-    public var firstChange: Bool
-    public init(_ previousValue: Any?, _ currentValue: Any?, _ firstChange: Bool) {
-        self.previousValue = previousValue
-        self.currentValue = currentValue
-        self.firstChange = firstChange
-    }
-    public func isFirstChange() -> Bool { firstChange }
-}
-
-extension ElementRef {
-    private static var hosts: [Any?] = []
-
-    /// Makes a directive of an element: its `inject(ElementRef)` is the element.
-    public static func hosting<T>(_ host: Any?, _ make: () throws -> T) rethrows -> T {
-        hosts.append(host)
-        defer { hosts.removeLast() }
-        return try make()
-    }
-
-    /// `inject(ElementRef)`: the element whose directive is being made; elsewhere, a ref to no view.
-    public static func current() -> ElementRef { ElementRef(hosts.last ?? nil) }
 }
