@@ -202,14 +202,15 @@ class CSSSource {
 		private _url: string,
 		private _file: string,
 		private _source: string,
+		private _layer?: CascadeLayer,
 	) {
 		this.parse();
 	}
 
-	public static fromDetect(cssOrAst: any, fileName?: string): CSSSource {
+	public static fromDetect(cssOrAst: any, fileName?: string, layer?: CascadeLayer): CSSSource {
 		if (typeof cssOrAst === 'string') {
 			// raw-loader
-			return CSSSource.fromSource(cssOrAst, fileName);
+			return CSSSource.fromSource(cssOrAst, fileName, layer);
 		} else if (typeof cssOrAst === 'object') {
 			if (cssOrAst.default) {
 				cssOrAst = cssOrAst.default;
@@ -217,15 +218,15 @@ class CSSSource {
 
 			if (cssOrAst.type === 'stylesheet' && cssOrAst.stylesheet && cssOrAst.stylesheet.rules) {
 				// css-loader
-				return CSSSource.fromAST(cssOrAst, fileName);
+				return CSSSource.fromAST(cssOrAst, fileName, layer);
 			}
 		}
 
 		// css2json-loader
-		return CSSSource.fromSource(cssOrAst.toString(), fileName);
+		return CSSSource.fromSource(cssOrAst.toString(), fileName, layer);
 	}
 
-	public static fromURI(uri: string): CSSSource {
+	public static fromURI(uri: string, layer?: CascadeLayer): CSSSource {
 		// webpack modules require all file paths to be relative to /app folder
 		const appRelativeUri = CSSSource.pathRelativeToApp(uri);
 		const sanitizedModuleName = sanitizeModuleName(appRelativeUri);
@@ -234,7 +235,7 @@ class CSSSource {
 		try {
 			const cssOrAst = global.loadModule(resolvedModuleName, true);
 			if (cssOrAst) {
-				return CSSSource.fromDetect(cssOrAst, resolvedModuleName);
+				return CSSSource.fromDetect(cssOrAst, resolvedModuleName, layer);
 			}
 		} catch (e) {
 			if (Trace.isEnabled()) {
@@ -242,7 +243,7 @@ class CSSSource {
 			}
 		}
 
-		return CSSSource.fromFile(appRelativeUri);
+		return CSSSource.fromFile(appRelativeUri, layer);
 	}
 
 	private static pathRelativeToApp(uri: string): string {
@@ -262,25 +263,25 @@ class CSSSource {
 		return relativeUri;
 	}
 
-	public static fromFile(url: string): CSSSource {
+	public static fromFile(url: string, layer?: CascadeLayer): CSSSource {
 		// .scss, .sass, etc. css files in vanilla app are usually compiled to .css so we will try to load a compiled file first.
 		const cssFileUrl = url.replace(/\..\w+$/, '.css');
 		if (cssFileUrl !== url) {
 			const cssFile = CSSSource.resolveCSSPathFromURL(cssFileUrl);
 			if (cssFile) {
-				return new CSSSource(undefined, url, cssFile, undefined);
+				return new CSSSource(undefined, url, cssFile, undefined, layer);
 			}
 		}
 
 		const file = CSSSource.resolveCSSPathFromURL(url);
 
-		return new CSSSource(undefined, url, file, undefined);
+		return new CSSSource(undefined, url, file, undefined, layer);
 	}
 
-	public static fromFileImport(url: string, importSource: string): CSSSource {
+	public static fromFileImport(url: string, importSource: string, layer?: CascadeLayer): CSSSource {
 		const file = CSSSource.resolveCSSPathFromURL(url, importSource);
 
-		return new CSSSource(undefined, url, file, undefined);
+		return new CSSSource(undefined, url, file, undefined, layer);
 	}
 
 	@profile
@@ -291,12 +292,12 @@ class CSSSource {
 		return file;
 	}
 
-	public static fromSource(source: string, url?: string): CSSSource {
-		return new CSSSource(undefined, url, undefined, source);
+	public static fromSource(source: string, url?: string, layer?: CascadeLayer): CSSSource {
+		return new CSSSource(undefined, url, undefined, source, layer);
 	}
 
-	public static fromAST(ast: ReworkCSS.SyntaxTree, url?: string): CSSSource {
-		return new CSSSource(ast, url, undefined, undefined);
+	public static fromAST(ast: ReworkCSS.SyntaxTree, url?: string, layer?: CascadeLayer): CSSSource {
+		return new CSSSource(ast, url, undefined, undefined, layer);
 	}
 
 	get selectors(): RuleSet[] {
@@ -367,8 +368,8 @@ class CSSSource {
 			const keyframes: Keyframes[] = [];
 
 			// When css2json-loader is enabled, imports are handled there and removed from AST rules
-			populateRulesFromImports(nodes, rulesets, keyframes);
-			_populateRules(nodes, rulesets, keyframes);
+			populateRulesFromImports(nodes, rulesets, keyframes, this._layer);
+			_populateRules(nodes, rulesets, keyframes, undefined, this._layer?.path, this._layer?.name);
 
 			if (rulesets && rulesets.length) {
 				rulesets.forEach((rule) => {
@@ -386,7 +387,43 @@ class CSSSource {
 	}
 }
 
-function populateRulesFromImports(nodes: ReworkCSS.Node[], rulesets: RuleSet[], keyframes: Keyframes[]): void {
+// Cascade-layer registry: qualified name -> first-seen ordinal, shared across
+// every stylesheet feeding the cascade (layer order is document-wide per spec).
+// '~' synthesizes names for anonymous layers, which authors cannot reference —
+// the char is illegal in a CSS ident, so they never collide with named layers.
+const cascadeLayerOrdinals = new Map<string, number>();
+let cascadeLayerCount = 0;
+let anonymousLayerCount = 0;
+
+function layerOrdinal(name: string): number {
+	let ordinal = cascadeLayerOrdinals.get(name);
+	if (ordinal === undefined) {
+		ordinal = cascadeLayerCount++;
+		cascadeLayerOrdinals.set(name, ordinal);
+	}
+	return ordinal;
+}
+
+// Rank path for `name` nested under the layer at prefixPath/prefixName. Dotted
+// names register each ancestor on the way down, so a top-level `@layer a.b`
+// refers to the same layer as `@layer a { @layer b }`.
+function layerPathFor(name: string, prefixPath: number[], prefixName: string): number[] {
+	const path = [...prefixPath];
+	let qualified = prefixName;
+	for (const segment of name.split('.')) {
+		qualified = qualified ? `${qualified}.${segment}` : segment;
+		path.push(layerOrdinal(qualified));
+	}
+	return path;
+}
+
+// The cascade layer a stylesheet's rules are parsed into: its rank path and qualified name.
+interface CascadeLayer {
+	path: number[];
+	name: string;
+}
+
+function populateRulesFromImports(nodes: ReworkCSS.Node[], rulesets: RuleSet[], keyframes: Keyframes[], parentLayer?: CascadeLayer): void {
 	const imports = nodes.filter((r) => r.type === 'import');
 	if (!imports.length) {
 		return;
@@ -399,6 +436,13 @@ function populateRulesFromImports(nodes: ReworkCSS.Node[], rulesets: RuleSet[], 
 		return urlMatch && urlMatch[2];
 	};
 
+	const layerFromImportObject = (importObject) => {
+		const importItem = importObject['import'] as string;
+		const layerMatch = importItem && importItem.match(/\blayer(?:\(\s*([^)]*?)\s*\))?/);
+
+		return layerMatch ? (layerMatch[1] ?? '') : null;
+	};
+
 	const sourceFromImportObject = (importObject) => importObject['position'] && importObject['position']['source'];
 
 	const toUrlSourcePair = (importObject) => ({
@@ -406,12 +450,32 @@ function populateRulesFromImports(nodes: ReworkCSS.Node[], rulesets: RuleSet[], 
 		source: sourceFromImportObject(importObject),
 	});
 
-	const getCssFile = ({ url, source }) => (source ? CSSSource.fromFileImport(url, source) : CSSSource.fromURI(url));
+	// `@import "x.css" layer(name)` parses the sheet inside that layer, so its own
+	// layers become sublayers of it; a plain import stays in the importer's layer.
+	// The layer must be registered before the sheet is parsed to keep document order.
+	const importLayer = (layer: string | null): CascadeLayer | undefined => {
+		if (layer === null) {
+			return parentLayer;
+		}
+
+		const parentPath = parentLayer?.path ?? [];
+		const parentName = parentLayer?.name ?? '';
+		const name = layer.trim();
+		if (!name) {
+			const anonymous = `${parentName}~import-${anonymousLayerCount++}`;
+
+			return { path: [...parentPath, layerOrdinal(anonymous)], name: anonymous };
+		}
+
+		return { path: layerPathFor(name, parentPath, parentName), name: parentName ? `${parentName}.${name}` : name };
+	};
+
+	const getCssFile = ({ url, source, layer }) => (source ? CSSSource.fromFileImport(url, source, layer) : CSSSource.fromURI(url, layer));
 
 	const cssFiles = imports
-		.map(toUrlSourcePair)
+		.map((importObject) => ({ ...toUrlSourcePair(importObject), layer: layerFromImportObject(importObject) }))
 		.filter(({ url }) => !!url)
-		.map(getCssFile);
+		.map(({ url, source, layer }) => getCssFile({ url, source, layer: importLayer(layer) }));
 
 	for (const cssFile of cssFiles) {
 		if (cssFile) {
@@ -421,7 +485,7 @@ function populateRulesFromImports(nodes: ReworkCSS.Node[], rulesets: RuleSet[], 
 	}
 }
 
-export function _populateRules(nodes: ReworkCSS.Node[], rulesets: RuleSet[], keyframes: Keyframes[], mediaQueryString?: string | string[]): void {
+export function _populateRules(nodes: ReworkCSS.Node[], rulesets: RuleSet[], keyframes: Keyframes[], mediaQueryString?: string | string[], layerPath?: number[], layerPrefix?: string): void {
 	for (const node of nodes) {
 		if (isKeyframe(node)) {
 			const keyframeRule: Keyframes = {
@@ -446,10 +510,29 @@ export function _populateRules(nodes: ReworkCSS.Node[], rulesets: RuleSet[], key
 				compositeMediaQuery = node.media;
 			}
 
-			_populateRules(node.rules, rulesets, keyframes, compositeMediaQuery);
+			_populateRules(node.rules, rulesets, keyframes, compositeMediaQuery, layerPath, layerPrefix);
+		} else if (isLayer(node)) {
+			const name = (node.layer ?? '').trim();
+			if (node.rules) {
+				// Block at-rule: a single name, or anonymous when the prelude is empty.
+				const qualified = name ? (layerPrefix ? `${layerPrefix}.${name}` : name) : `${layerPrefix ?? ''}~${anonymousLayerCount++}`;
+				const childPath = name ? layerPathFor(name, layerPath ?? [], layerPrefix ?? '') : [...(layerPath ?? []), layerOrdinal(qualified)];
+				_populateRules(node.rules, rulesets, keyframes, mediaQueryString, childPath, qualified);
+			} else {
+				// Statement at-rule: `@layer a, b;` pre-declares order only.
+				for (const declared of name.split(',')) {
+					const declaredName = declared.trim();
+					if (declaredName) {
+						layerPathFor(declaredName, layerPath ?? [], layerPrefix ?? '');
+					}
+				}
+			}
 		} else if (isRule(node)) {
 			const ruleset = fromAstNode(node);
 			ruleset.mediaQueryString = mediaQueryString;
+			if (layerPath?.length) {
+				ruleset.layerPath = layerPath;
+			}
 
 			rulesets.push(ruleset);
 		}
@@ -1457,6 +1540,10 @@ function isMedia(node: ReworkCSS.Node): node is ReworkCSS.Media {
 
 function isKeyframe(node: ReworkCSS.Node): node is ReworkCSS.Keyframes {
 	return node.type === 'keyframes';
+}
+
+function isLayer(node: ReworkCSS.Node): node is ReworkCSS.Layer {
+	return node.type === 'layer';
 }
 
 function isRule(node: ReworkCSS.Node): node is ReworkCSS.Rule {
