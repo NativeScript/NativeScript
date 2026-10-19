@@ -5,7 +5,7 @@ import { isNullOrUndefined } from '../../utils/types';
 import { cleanupImportantFlags } from './css-utils';
 
 import * as ReworkCSS from '../../css';
-import { checkIfMediaQueryMatches } from '../../media-query-list';
+import { checkIfMediaQueryMatches, type MediaQueryContext } from '../../media-query-list';
 
 /**
  * An interface describing the shape of a type on which the selectors may apply.
@@ -23,6 +23,7 @@ export interface Node {
 	getChildIndex?(node: Node): number;
 	getChildAt?(index: number): Node;
 	getChildrenCount?(): number;
+	getNativeWindow?(): { _getMediaQueryContext?(): MediaQueryContext | undefined } | undefined;
 }
 
 export interface Declaration {
@@ -1116,7 +1117,10 @@ function isDeclaration(node: ReworkCSS.Node): node is ReworkCSS.Declaration {
 	return node.type === 'declaration';
 }
 
-export function matchMediaQueryString(mediaQueryString: string | string[], cachedQueries: string[]): boolean {
+/**
+ * @param context Window to measure; the main screen when absent.
+ */
+export function matchMediaQueryString(mediaQueryString: string | string[], cachedQueries: string[], context?: MediaQueryContext): boolean {
 	if (!mediaQueryString) {
 		return false;
 	}
@@ -1127,7 +1131,7 @@ export function matchMediaQueryString(mediaQueryString: string | string[], cache
 			return true;
 		}
 
-		const result = checkIfMediaQueryMatches(mediaQueryString);
+		const result = checkIfMediaQueryMatches(mediaQueryString, context);
 		if (result) {
 			cachedQueries.push(mediaQueryString);
 			return result;
@@ -1144,7 +1148,7 @@ export function matchMediaQueryString(mediaQueryString: string | string[], cache
 			continue;
 		}
 
-		if (!checkIfMediaQueryMatches(mq)) {
+		if (!checkIfMediaQueryMatches(mq, context)) {
 			return false;
 		}
 
@@ -1345,10 +1349,12 @@ export class StyleSheetSelectorScope<T extends Node> extends SelectorScope<T> {
 		if (this.mediaQuerySelectorScopes) {
 			// Cache media query results to avoid validations of other identical queries
 			const validatedMediaQueries: string[] = [];
+			// Measure queries against the node's own window.
+			const context = node.getNativeWindow?.()?._getMediaQueryContext?.();
 
 			for (let i = 0, length = this.mediaQuerySelectorScopes.length; i < length; i++) {
 				const selectorScope = this.mediaQuerySelectorScopes[i];
-				const isMatchingAllQueries = matchMediaQueryString(selectorScope.mediaQueryString, validatedMediaQueries);
+				const isMatchingAllQueries = matchMediaQueryString(selectorScope.mediaQueryString, validatedMediaQueries, context);
 
 				if (isMatchingAllQueries) {
 					selectorScope.getSelectorCandidates(node, candidates);

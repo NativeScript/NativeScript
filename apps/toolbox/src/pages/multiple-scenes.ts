@@ -1,4 +1,4 @@
-import { Application, Button, Color, Dialogs, EventData, isAndroid, isIOS, Label, NativeWindowEvents, Observable, Page, StackLayout, WindowEvents } from '@nativescript/core';
+import { Application, Button, Color, Dialogs, EventData, isAndroid, isIOS, isWindows, Label, NativeWindowEvents, Observable, Page, StackLayout, WindowEvents } from '@nativescript/core';
 import type { NativeWindow, NativeWindowEventData, PrimaryWindowChangedEventData, WindowCloseEventData, WindowContentRequest, WindowOpenEventData } from '@nativescript/core';
 
 let viewModel: MultipleScenesModel;
@@ -144,6 +144,10 @@ function describeNativeSurface(window: NativeWindow): string {
 		return `activity: ${activity.getClass().getSimpleName()}@${activity.hashCode()}`;
 	}
 
+	if (window.windows) {
+		return `window: ${window.windows.window.Title || 'untitled'}`;
+	}
+
 	return 'no native surface attached';
 }
 
@@ -197,6 +201,15 @@ function detectMultiWindowCapability(): MultiWindowCapability {
 			canOpenWindows: true,
 			status: 'Windows map to activities launched into their own task.',
 			note: 'Application.openWindow() is experimental on Android. The activity launchMode in AndroidManifest.xml must allow a second instance (singleInstancePerTask or standard; the template default singleTask does not). Each window is its own task: on a phone the new one covers this one and both appear in recents; split screen, desktop windowing or a foldable shows them side by side.',
+			showIosSceneSetup: false,
+		};
+	}
+
+	if (isWindows) {
+		return {
+			canOpenWindows: true,
+			status: 'Windows map to top-level WinUI windows on the UI thread.',
+			note: 'Each new window is its own Microsoft.UI.Xaml.Window. Closing the primary window promotes another open one; the app exits when the last window closes.',
 			showIosSceneSetup: false,
 		};
 	}

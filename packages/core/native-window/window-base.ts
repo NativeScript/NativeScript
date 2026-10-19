@@ -95,6 +95,10 @@ export abstract class WindowBase extends Observable {
 		return undefined;
 	}
 
+	get windows(): { readonly window: Microsoft.UI.Xaml.Window } | undefined {
+		return undefined;
+	}
+
 	/**
 	 * Close this window.
 	 */

@@ -1,7 +1,7 @@
 export * from './dialogs-common';
 
 import { type PromptResult, type LoginResult, type ActionOptions, DialogStrings, isDialogOptions, PromptOptions, inputType, capitalizationType, parseLoginOptions } from './dialogs-common';
-import { getCurrentWindowContent, getCurrentWindowBounds } from '../../application/window-helper.windows';
+import { getActiveWindowBounds, getActiveWindowContent } from '../../application/window-helper.windows';
 import { Color } from '../../color';
 
 function isString(value: any): value is string {
@@ -59,7 +59,7 @@ function showOverlayDialog(opts: OverlayDialogOptions): Promise<any> {
 	return new Promise<any>((resolve, reject) => {
 		try {
 			const M = Microsoft.UI.Xaml;
-			const content = getCurrentWindowContent<Microsoft.UI.Xaml.FrameworkElement>();
+			const content = getActiveWindowContent<Microsoft.UI.Xaml.FrameworkElement>();
 			const xamlRoot = (content as any)?.XamlRoot;
 			const dark = isDarkTheme(content);
 
@@ -70,7 +70,7 @@ function showOverlayDialog(opts: OverlayDialogOptions): Promise<any> {
 			overlay.Background = new M.Media.SolidColorBrush(new Color('#99000000').windows); // dim shade
 
 			try {
-				const bounds = getCurrentWindowBounds(content as any);
+				const bounds = getActiveWindowBounds();
 				if (bounds) {
 					overlay.Width = bounds.Width;
 					overlay.Height = bounds.Height;

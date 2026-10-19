@@ -524,6 +524,22 @@ describe('css-selector', () => {
 			expect(imageSelectors[1].ruleset.declarations).toEqual([{ property: 'color', value: 'blue' }]);
 		});
 
+		it('should measure media queries against the window hosting the node', () => {
+			const { selectorScope } = create(`
+				@media only screen and (max-width: ${widthDIPs}) {
+	        button { color: red; }
+				}
+	    `);
+			const windowOf = (width: number) => () => ({
+				_getMediaQueryContext: () => ({ width, height: 1, orientation: 'landscape' as const, systemAppearance: 'light' as const }),
+			});
+
+			expect(selectorScope.query({ cssType: 'button', getNativeWindow: windowOf(1) }).selectors.length).toBe(1);
+			expect(selectorScope.query({ cssType: 'button', getNativeWindow: windowOf(1_000_000) }).selectors.length).toBe(0);
+			// No window context falls back to the main screen.
+			expect(selectorScope.query({ cssType: 'button', getNativeWindow: () => ({ _getMediaQueryContext: () => undefined }) }).selectors.length).toBe(1);
+		});
+
 		it('should not apply css rules of non-matching media query', () => {
 			const { selectorScope } = create(`
 				@media only screen and (max-width: ${widthDIPs - 1}) {

@@ -7,6 +7,7 @@ import type { View } from '../ui/core/view';
 import type { Frame } from '../ui/frame';
 import type { NavigationEntry } from '../ui/frame/frame-interfaces';
 import type { StyleScope } from '../ui/styling/style-scope';
+import type { MediaQueryContext } from '../media-query-list';
 import { applyAccessibilityCssToRoot, readyInitAccessibilityCssHelper, readyInitFontScale } from '../accessibility/accessibility-common';
 import { SDK_VERSION } from '../utils/constants';
 import type { NativeWindowEventData, NativeWindowEventName, WindowLayoutDirectionChangedEventData, WindowOrientationChangedEventData, WindowSystemAppearanceChangedEventData } from './native-window-interfaces';
@@ -246,6 +247,13 @@ export abstract class NativeWindow extends WindowBase {
 	on(eventName: string, callback: (data: NativeWindowEventData) => void, thisArg?: any): void;
 	on(eventName: string, callback: (data: any) => void, thisArg?: any): void {
 		super.on(eventName, callback, thisArg);
+	}
+
+	/**
+	 * @internal – media query metrics for this window; `undefined` uses the main screen.
+	 */
+	_getMediaQueryContext(): MediaQueryContext | undefined {
+		return undefined;
 	}
 
 	// Platform-specific abstract getters
