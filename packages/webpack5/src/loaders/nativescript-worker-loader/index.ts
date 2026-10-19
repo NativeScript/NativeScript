@@ -1,5 +1,12 @@
-const WorkerDependency = require('webpack/lib/dependencies/WorkerDependency');
-const RuntimeGlobals = require('webpack/lib/RuntimeGlobals');
+// webpack 5.112 moved it into dependencies/worker/.
+const WorkerDependency = (() => {
+	try {
+		return require('webpack/lib/dependencies/worker/WorkerDependency');
+	} catch {
+		return require('webpack/lib/dependencies/WorkerDependency');
+	}
+})();
+const { RuntimeGlobals } = require('webpack');
 
 /**
  * Patch WorkerDependency to change:
