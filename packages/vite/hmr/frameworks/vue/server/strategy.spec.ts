@@ -64,7 +64,7 @@ const __hmrId = "foo";
 export default {};
 `;
 		const rewritten = vueServerStrategy.rewriteFrameworkImports(raw);
-		expect(rewritten).toContain('/@nativescript/vendor.mjs');
+		expect(rewritten).toContain('/ns/rt');
 
 		const post = vueServerStrategy.postClean(rewritten);
 		expect(post).not.toContain('__VUE_HMR_RUNTIME__.reload');

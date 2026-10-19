@@ -19,7 +19,7 @@ import type { VueSfcRegistryEntry, VueSfcRegistryMessage, VueSfcRegistryUpdateMe
 // imports this to inject it as the `processSfcCode` helper for Vue's hooks.
 export const processSfcCode = createProcessSfcCode(processCodeForDevice);
 
-const VENDOR_MJS = '/@nativescript/vendor.mjs';
+const VUE_RUNTIME = '/ns/rt';
 const VUE_HTTP_SFC_DIR = `${getProjectAppPath()}/sfc`;
 const VUE_IMPORTS_TO_VENDOR: RegExp[] = [/(from\s+["'])vue(?:\/[A-Za-z0-9_\-\/]+)?(["'])/g, /(from\s+["'])nativescript-vue(?:\/[A-Za-z0-9_\-\/]+)?(["'])/g];
 
@@ -585,7 +585,7 @@ if (typeof __VUE_HMR_RUNTIME__ === 'undefined') {
 	rewriteFrameworkImports(code: string) {
 		let result = code;
 		for (const pattern of VUE_IMPORTS_TO_VENDOR) {
-			result = result.replace(pattern, `from "${VENDOR_MJS}"`);
+			result = result.replace(pattern, `from "${VUE_RUNTIME}"`);
 		}
 		return result;
 	},
