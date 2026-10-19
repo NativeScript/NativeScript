@@ -1,3 +1,6 @@
+import type { CoreTypes } from '../core-types';
+import { getActiveWindow } from './helpers-common';
+
 type WindowLike = {
 	Content?: Microsoft.UI.Xaml.UIElement | null;
 	Bounds?: { Width?: number; Height?: number } | null;
@@ -26,113 +29,92 @@ function getBoundsFromSize(size: { Width?: number; Height?: number } | null | un
 	return { Width: width, Height: height };
 }
 
-function getFirstWindow(collection: any): WindowLike | null {
-	if (!collection) {
-		return null;
-	}
-
-	try {
-		if (typeof collection.Size === 'number' && typeof collection.GetAt === 'function' && collection.Size > 0) {
-			return collection.GetAt(0) as WindowLike;
-		}
-	} catch (_e) { }
-
-	try {
-		if (typeof collection.Length === 'number' && collection.Length > 0) {
-			return collection[0] as WindowLike;
-		}
-	} catch (_e) { }
-
-	try {
-		if (Array.isArray(collection) && collection.length > 0) {
-			return collection[0] as WindowLike;
-		}
-	} catch (_e) { }
-
-	return null;
-}
-
-function getApplicationWindow(): WindowLike | null {
-	try {
-		const app = Microsoft.UI.Xaml.Application?.Current as any;
-		if (!app) {
-			return null;
-		}
-
-		return (app.MainWindow as WindowLike) || (app.Window as WindowLike) || getFirstWindow(app.Windows);
-	} catch (_e) {
-		return null;
-	}
-}
-
-function getLegacyCurrentWindow(): WindowLike | null {
-	try {
-		return ((Microsoft.UI.Xaml.Window as any)?.Current as WindowLike) ?? null;
-	} catch (_e) {
-		return null;
-	}
-}
-
-
 let _ownedWindow: WindowLike | null = (globalThis as any).__nsOwnedWindow ?? null;
 
+// Follows the primary role when another window takes it over.
+let _primaryWindow: WindowLike | null = null;
+
+// Never adopt the host's Window: closing it ends the runtime.
+function resolveCurrentWindow(): WindowLike | null {
+	return _primaryWindow || _ownedWindow;
+}
+
+/**
+ * The primary window, without creating one.
+ */
+export function findCurrentWindow(): Microsoft.UI.Xaml.Window | null {
+	return resolveCurrentWindow() as unknown as Microsoft.UI.Xaml.Window;
+}
+
 export function getCurrentWindow(): WindowLike | null {
-	const found = getApplicationWindow() || getLegacyCurrentWindow();
+	const found = resolveCurrentWindow();
 	if (found) {
 		return found;
 	}
 
-	if (!_ownedWindow) {
-		try {
-			_ownedWindow = new Microsoft.UI.Xaml.Window() as unknown as WindowLike;
-			(globalThis as any).__nsOwnedWindow = _ownedWindow;
-		} catch (_e) {
-			_ownedWindow = null;
-		}
+	try {
+		_ownedWindow = new Microsoft.UI.Xaml.Window() as unknown as WindowLike;
+		(globalThis as any).__nsOwnedWindow = _ownedWindow;
+	} catch (_e) {
+		_ownedWindow = null;
 	}
 	return _ownedWindow;
 }
 
+/**
+ * Points screen metrics and density at the primary window.
+ */
+export function setPrimaryWindow(window: Microsoft.UI.Xaml.Window | null): void {
+	const target = window as unknown as WindowLike;
+	if (_primaryWindow === target) {
+		return;
+	}
+	_primaryWindow = target;
+	resetScaleWatch();
+}
+
+/**
+ * Forgets a closed window so lookups never return it.
+ */
+export function releaseWindow(window: Microsoft.UI.Xaml.Window): void {
+	const target = window as unknown as WindowLike;
+	if (_primaryWindow === target) {
+		_primaryWindow = null;
+		resetScaleWatch();
+	}
+	if (_ownedWindow === target) {
+		_ownedWindow = null;
+		(globalThis as any).__nsOwnedWindow = null;
+	}
+}
+
 export function getCurrentWindowContent<T = Microsoft.UI.Xaml.UIElement>(): T | null {
-	const window = getApplicationWindow() || getLegacyCurrentWindow() || _ownedWindow;
-	return (window?.Content as T) ?? null;
+	return (resolveCurrentWindow()?.Content as T) ?? null;
 }
 
-export function setCurrentWindowContent(content: Microsoft.UI.Xaml.UIElement): boolean {
-	const window = getCurrentWindow();
-	if (!window) {
-		return false;
-	}
-
-	window.Content = content;
-	_cachedScale = null;
-	_scaleWatchWired = false;
-	return true;
+// The active window, falling back to the primary.
+function resolveActiveWindow(): WindowLike | null {
+	return (getActiveWindow()?.windows?.window as unknown as WindowLike) ?? resolveCurrentWindow();
 }
 
-export function activateCurrentWindow(): boolean {
-	const window = getCurrentWindow();
-	if (!window?.Activate) {
-		return false;
-	}
-
-	window.Activate();
-	return true;
+export function getActiveWindowContent<T = Microsoft.UI.Xaml.UIElement>(): T | null {
+	return (resolveActiveWindow()?.Content as T) ?? null;
 }
 
-export function setCurrentWindowTitle(title: string): boolean {
-	if (!title) {
-		return false;
-	}
-	const window = getCurrentWindow();
-	if (!window) {
-		return false;
-	}
+export function getActiveWindowBounds(): { Width: number; Height: number } | null {
+	return getWindowBounds(resolveActiveWindow() as unknown as Microsoft.UI.Xaml.Window);
+}
+
+/**
+ * Captions a window with the package display name, which WinUI doesn't inherit.
+ */
+export function applyDefaultWindowTitle(window: Microsoft.UI.Xaml.Window): void {
+	let title = '';
 	try {
+		title = Windows.ApplicationModel.Package.Current.DisplayName || '';
+	} catch (_e) { }
+	if (title) {
 		window.Title = title;
-		return true;
-	} catch (_e) {
-		return false;
 	}
 }
 
@@ -157,8 +139,8 @@ const TITLE_BAR_COLORS = {
  * The system title bar stays light whatever the app's appearance. Windows App SDK 1.7+ themes it
  * with PreferredTheme; earlier versions take the system's light or dark caption colors.
  */
-export function setCurrentWindowTitleBarAppearance(appearance: 'dark' | 'light'): boolean {
-	const bar = (getCurrentWindow() as any)?.AppWindow?.TitleBar;
+export function setWindowTitleBarAppearance(window: Microsoft.UI.Xaml.Window, appearance: 'dark' | 'light'): boolean {
+	const bar = (window as any)?.AppWindow?.TitleBar;
 	if (!bar) {
 		return false;
 	}
@@ -189,10 +171,68 @@ export function setCurrentWindowTitleBarAppearance(appearance: 'dark' | 'light')
 	}
 }
 
+/**
+ * The window content's theme, falling back to app and system settings.
+ */
+export function getWindowSystemAppearance(window: Microsoft.UI.Xaml.Window | null): 'dark' | 'light' | null {
+	try {
+		const content: any = (window as unknown as WindowLike)?.Content;
+
+		const actualTheme = content?.ActualTheme;
+		const ElementTheme = Microsoft.UI.Xaml.ElementTheme;
+		if (typeof actualTheme === 'number' && ElementTheme) {
+			if (actualTheme === ElementTheme.Dark) return 'dark';
+			if (actualTheme === ElementTheme.Light) return 'light';
+		}
+
+		const appTheme = Microsoft.UI.Xaml.Application.Current.RequestedTheme;
+		const ApplicationTheme = Microsoft.UI.Xaml.ApplicationTheme;
+		if (appTheme === ApplicationTheme.Dark) return 'dark';
+		if (appTheme === ApplicationTheme.Light) return 'light';
+
+		const UISettings = Windows.UI.ViewManagement.UISettings;
+		const ui = new UISettings();
+		const foreground = ui.GetColorValue(Windows.UI.ViewManagement.UIColorType.Foreground);
+		if (!foreground) {
+			return null;
+		}
+
+		// In dark mode Windows uses a light (near-white) foreground color
+		return foreground.R > 128 ? 'dark' : 'light';
+	} catch (e) { }
+
+	return null;
+}
+
+export function getWindowLayoutDirection(window: Microsoft.UI.Xaml.Window | null): CoreTypes.LayoutDirectionType | null {
+	const content = (window as unknown as WindowLike)?.Content as Microsoft.UI.Xaml.FrameworkElement;
+	if (!content) {
+		return null;
+	}
+
+	return content.FlowDirection === Microsoft.UI.Xaml.FlowDirection.RightToLeft ? 'rtl' : 'ltr';
+}
+
+export function getWindowOrientation(window: Microsoft.UI.Xaml.Window | null): 'portrait' | 'landscape' | 'unknown' {
+	const bounds = getWindowBounds(window);
+	if (!bounds || bounds.Width === bounds.Height) {
+		return 'unknown';
+	}
+
+	return bounds.Width >= bounds.Height ? 'landscape' : 'portrait';
+}
+
 
 let _cachedScale: number | null = null;
 let _scaleWatchWired = false;
+// Stops a previous window's XamlRoot.Changed from writing the cache.
+let _scaleWatchGeneration = 0;
 
+function resetScaleWatch(): void {
+	_cachedScale = null;
+	_scaleWatchWired = false;
+	_scaleWatchGeneration++;
+}
 
 export function invalidateWindowScaleCache(): void {
 	_cachedScale = null;
@@ -202,8 +242,12 @@ function _ensureScaleWatch(xamlRoot: any): boolean {
 	if (_scaleWatchWired) {
 		return true;
 	}
+	const generation = _scaleWatchGeneration;
 	try {
 		const del = NSWinRT.asDelegate('Windows.Foundation.TypedEventHandler`2<Microsoft.UI.Xaml.XamlRoot,Microsoft.UI.Xaml.XamlRootChangedEventArgs>', (sender: { RasterizationScale?: number | null }) => {
+			if (generation !== _scaleWatchGeneration) {
+				return;
+			}
 			const s = sender?.RasterizationScale;
 			_cachedScale = typeof s === 'number' && Number.isFinite(s) && s > 0 ? s : null;
 		});
@@ -215,11 +259,18 @@ function _ensureScaleWatch(xamlRoot: any): boolean {
 	}
 }
 
+/**
+ * @internal - re-reads the scale after the primary content changes.
+ */
+export function onPrimaryWindowContentChanged(): void {
+	resetScaleWatch();
+}
+
 export function getCurrentWindowScale(preferredElement?: FrameworkElementLike | null): number {
 	if (_cachedScale !== null) {
 		return _cachedScale;
 	}
-	const window = getApplicationWindow() || getLegacyCurrentWindow() || _ownedWindow;
+	const window = resolveCurrentWindow();
 	const content = ((window?.Content as FrameworkElementLike | null | undefined) ?? preferredElement) as FrameworkElementLike | null;
 	const xamlRoot = content?.XamlRoot;
 	const scale = xamlRoot?.RasterizationScale;
@@ -273,7 +324,11 @@ export function getClientOriginOnScreen(xamlRoot: any): { x: number; y: number }
 }
 
 export function getCurrentWindowBounds(preferredElement?: FrameworkElementLike | null): { Width: number; Height: number } | null {
-	const window = getApplicationWindow() || getLegacyCurrentWindow() || _ownedWindow;
+	return getWindowBounds(resolveCurrentWindow() as unknown as Microsoft.UI.Xaml.Window, preferredElement);
+}
+
+export function getWindowBounds(xamlWindow: Microsoft.UI.Xaml.Window | null, preferredElement?: FrameworkElementLike | null): { Width: number; Height: number } | null {
+	const window = xamlWindow as unknown as WindowLike;
 	const windowBounds = getBoundsFromSize(window?.Bounds);
 	if (windowBounds) {
 		return windowBounds;

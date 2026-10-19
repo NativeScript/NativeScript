@@ -1,14 +1,17 @@
 import { ApplicationCommon } from './application-common';
 import type { NavigationEntry } from '../ui/frame/frame-interfaces';
-import { setAppMainEntry, setToggleApplicationEventListenersCallback, setApplicationPropertiesCallback, setA11yUpdatePropertiesCallback } from './helpers-common';
+import { isAppInBackground, setAppMainEntry, setToggleApplicationEventListenersCallback, setApplicationPropertiesCallback, setA11yUpdatePropertiesCallback } from './helpers-common';
 import type { View } from '../ui/core/view';
 import { setRootView } from './helpers-common';
-import { CoreTypes } from 'index';
-import { activateCurrentWindow, getCurrentWindowContent, setCurrentWindowContent, getCurrentWindowBounds, setCurrentWindowTitle, setCurrentWindowTitleBarAppearance } from './window-helper.windows';
+import { CoreTypes } from '../core-types';
+import { applyDefaultWindowTitle, findCurrentWindow, getCurrentWindow, getWindowLayoutDirection, getWindowOrientation, getWindowSystemAppearance, setPrimaryWindow } from './window-helper.windows';
 import { windows } from '../ui/styling/font';
 import { resolveModuleName, ModuleNameResolver } from '../module-name-resolver';
 import { _setResolver } from '../module-name-resolver/helpers';
 import { Screen, Device } from '../platform';
+import type { NativeWindow, NativeWindowEventData, WindowOpenOptions } from '../native-window';
+import { NativeWindowEvents } from '../native-window/native-window-interfaces';
+import { WindowsNativeWindow, type WindowsWindowLifecycle } from '../native-window/native-window.windows';
 
 
 enum AppEventKind {
@@ -17,12 +20,28 @@ enum AppEventKind {
 	Shown = 3,
 	Hidden = 4,
 	UncaughtError = 5,
-	Exit = 6
+	Exit = 6,
+	// Host can dispose safely when the app calls Application.Exit().
+	ExitSupported = 7,
 }
 
 export class WindowsApplication extends ApplicationCommon {
 
 	private _rootView: View;
+	private _mirroredWindow: NativeWindow | null = null;
+	// App-level state only changes when a set empties or fills.
+	private _activeWindows = new Set<NativeWindow>();
+	private _visibleWindows = new Set<NativeWindow>();
+	private _backgroundTimer: ReturnType<typeof setTimeout> | null = null;
+	private _exitNotified = false;
+	private _hostCanExit = false;
+
+	private readonly _windowLifecycle: WindowsWindowLifecycle = {
+		activated: (window, active) => this._setWindowActive(window, active),
+		visibilityChanged: (window, visible) => this._setWindowVisible(window, visible),
+		resized: (window) => this._onWindowResized(window),
+		closed: (window) => this._onWindowClosed(window),
+	};
 
 	getRootView(): View {
 		return this._rootView;
@@ -64,148 +83,202 @@ export class WindowsApplication extends ApplicationCommon {
 		windows.triggerFontScan();
 		// `ready` must precede the first window's content (and the legacy `launch`).
 		this.notifyReady();
-		this.setWindowContent();
+
+		const window = getCurrentWindow() as unknown as Microsoft.UI.Xaml.Window;
+		if (!window) {
+			throw new Error('Unable to resolve the current Windows window.');
+		}
+
+		const primaryWindow = this._createWindow(window, true);
+		this._resolveWindowContent(primaryWindow, { window: primaryWindow, isPrimary: true });
 	}
 
+	/**
+	 * Opens a new top-level window.
+	 * @param options `data` is handed to the window content resolver.
+	 */
+	openWindow(options?: WindowOpenOptions): void {
+		const nativeWindow = this._createWindow(new Microsoft.UI.Xaml.Window(), false);
+		this._resolveWindowContent(nativeWindow, { window: nativeWindow, isPrimary: false, data: options?.data });
+	}
 
 	resetRootView(entry?: NavigationEntry | string): void {
 		super.resetRootView(entry);
-		this.setWindowContent(undefined, false);
-	}
 
-	private setWindowContent(view?: View, fireLaunchEvent = true): void {
-		const rootView = this.createRootView(view, fireLaunchEvent);
-		if (!rootView) return;
-
-		const previousRoot = this._rootView;
-		if (previousRoot && previousRoot !== rootView) {
-			previousRoot.callUnloaded();
-			previousRoot._onRootViewReset();
+		const primaryWindow = this.primaryWindow;
+		if (primaryWindow) {
+			primaryWindow.setContent(this.createRootView());
 		}
-
-		this._rootView = rootView;
-		setRootView(rootView);
-
-		rootView._setupAsRootView({});
-
-		if (!setCurrentWindowContent(rootView.nativeViewProtected)) {
-			throw new Error('Unable to resolve the current Windows window.');
-		}
-		activateCurrentWindow();
-		this.setupOrientationTracking(rootView.nativeViewProtected);
-		this._applyWindowTitle();
-		const appearance = this.systemAppearance();
-		if (appearance) {
-			setCurrentWindowTitleBarAppearance(appearance);
-		}
-
-		this.initRootView(rootView);
-		rootView.callLoaded();
-	}
-
-	// A code-created WinUI3 Window starts with an empty Title and
-	// does NOT inherit the package DisplayName, so the caption otherwise shows the host exe name.
-	private _applyWindowTitle(): void {
-		try {
-			let title = '';
-			try {
-				title = Windows.ApplicationModel.Package.Current.DisplayName || '';
-			} catch (_e) { }
-			if (title) {
-				setCurrentWindowTitle(title);
-			}
-		} catch (_e) {  }
 	}
 
 	getNativeApplication() {
 		return Microsoft.UI.Xaml.Application.Current;
 	}
 
-	systemAppearanceChanged(rootView: View, newSystemAppearance: 'dark' | 'light'): void {
-		super.systemAppearanceChanged(rootView, newSystemAppearance);
-		if (rootView && this.autoSystemAppearanceChanged) {
-			setCurrentWindowTitleBarAppearance(newSystemAppearance);
-		}
-	}
-
 	protected getOrientation(): 'portrait' | 'landscape' | 'unknown' {
-		const bounds = getCurrentWindowBounds();
-		if (!bounds) {
-			return 'unknown';
-		}
-
-		const width = bounds.Width;
-		const height = bounds.Height;
-
-		if (width === height) {
-			return 'unknown';
-		}
-
-		return width >= height ? 'landscape' : 'portrait';
+		return getWindowOrientation(findCurrentWindow());
 	}
 
 	protected getSystemAppearance(): 'dark' | 'light' | null {
-		try {
-			const content: any = getCurrentWindowContent();
-
-			const actualTheme = content?.ActualTheme;
-			const ElementTheme = Microsoft.UI.Xaml.ElementTheme;
-			if (typeof actualTheme === 'number' && ElementTheme) {
-				if (actualTheme === ElementTheme.Dark) return 'dark';
-				if (actualTheme === ElementTheme.Light) return 'light';
-			}
-
-			const appTheme = Microsoft.UI.Xaml.Application.Current.RequestedTheme;
-			const ApplicationTheme = Microsoft.UI.Xaml.ApplicationTheme;
-			if (appTheme === ApplicationTheme.Dark) return 'dark';
-			if (appTheme === ApplicationTheme.Light) return 'light';
-
-			const UISettings = Windows.UI.ViewManagement.UISettings;
-			const ui = new UISettings();
-			const foreground = ui.GetColorValue(Windows.UI.ViewManagement.UIColorType.Foreground);
-			if (!foreground) {
-				return null;
-			}
-
-			// In dark mode Windows uses a light (near-white) foreground color
-			return foreground.R > 128 ? 'dark' : 'light';
-		} catch (e) { }
-
-		return null;
+		return getWindowSystemAppearance(findCurrentWindow());
 	}
 
-	protected getLayoutDirection(): CoreTypes.LayoutDirectionType {
-		const content = getCurrentWindowContent<Microsoft.UI.Xaml.FrameworkElement>();
-		if (!content) {
-			return null as never;
+	protected getLayoutDirection(): CoreTypes.LayoutDirectionType | null {
+		return getWindowLayoutDirection(findCurrentWindow());
+	}
+
+	// --- NativeWindow registry ---
+
+	private _createWindow(window: Microsoft.UI.Xaml.Window, isPrimary: boolean): WindowsNativeWindow {
+		applyDefaultWindowTitle(window);
+
+		const nativeWindow = new WindowsNativeWindow(window, undefined, isPrimary);
+		nativeWindow._attachNativeEvents(this._windowLifecycle);
+		this._registerWindow(nativeWindow);
+		nativeWindow._notifyEvent(NativeWindowEvents.attached);
+
+		return nativeWindow;
+	}
+
+	protected _onWindowRegistered(nativeWindow: NativeWindow): void {
+		if (nativeWindow.isPrimary) {
+			this.mirrorPrimaryWindow(nativeWindow);
+		}
+	}
+
+	protected _onPrimaryWindowPromoted(nativeWindow: NativeWindow): void {
+		this.mirrorPrimaryWindow(nativeWindow);
+	}
+
+	// Screen metrics and the app root view follow the primary window.
+	private mirrorPrimaryWindow(nativeWindow: NativeWindow): void {
+		if (this._mirroredWindow === nativeWindow) {
+			return;
 		}
 
+		this._mirroredWindow?.off(NativeWindowEvents.contentLoaded, this.onPrimaryWindowContentLoaded, this);
+		this._mirroredWindow = nativeWindow;
+		setPrimaryWindow(nativeWindow.windows?.window ?? null);
+		nativeWindow.on(NativeWindowEvents.contentLoaded, this.onPrimaryWindowContentLoaded, this);
 
-		const direction = content.FlowDirection;
-
-		if (direction === Microsoft.UI.Xaml.FlowDirection.RightToLeft) {
-			return 'rtl';
+		if (nativeWindow.rootView && nativeWindow.rootView !== this._rootView) {
+			this.adoptRootView(nativeWindow.rootView);
 		}
-		return 'ltr';
+	}
+
+	private onPrimaryWindowContentLoaded(data: NativeWindowEventData): void {
+		this.adoptRootView(data.window.rootView);
+	}
+
+	private adoptRootView(rootView: View): void {
+		if (!rootView) {
+			return;
+		}
+
+		this._rootView = rootView;
+		setRootView(rootView);
+		this.initRootView(rootView, this._mirroredWindow);
+	}
+
+	private _onWindowClosed(nativeWindow: WindowsNativeWindow): void {
+		this._setWindowActive(nativeWindow, false);
+		this._setWindowVisible(nativeWindow, false);
+
+		nativeWindow._notifyEvent(NativeWindowEvents.close);
+		this._unregisterWindow(nativeWindow);
+
+		// No window was promoted to primary.
+		if (this._mirroredWindow === nativeWindow) {
+			this._mirroredWindow = null;
+			this._rootView = null;
+			setRootView(undefined);
+		}
+
+		if (this._getWindows().length === 0) {
+			// No window can take activation now, so background before exit.
+			this.settleBackground();
+			this.notifyExit();
+
+			// The hidden host window keeps WinUI alive; older hosts crash on Exit().
+			if (this._hostCanExit) {
+				Microsoft.UI.Xaml.Application.Current.Exit();
+			}
+		}
+	}
+
+	private notifyExit(): void {
+		if (this._exitNotified) {
+			return;
+		}
+		this._exitNotified = true;
+		this.notify({ eventName: this.exitEvent, object: this });
+	}
+
+	// --- Aggregate application state ---
+
+	private _setWindowActive(nativeWindow: NativeWindow, active: boolean): void {
+		if (active) {
+			this._activeWindows.add(nativeWindow);
+		} else {
+			this._activeWindows.delete(nativeWindow);
+		}
+
+		if (this._activeWindows.size > 0) {
+			if (this._backgroundTimer) {
+				clearTimeout(this._backgroundTimer);
+				this._backgroundTimer = null;
+			}
+			if (isAppInBackground()) {
+				this.setInBackground(false);
+			}
+			return;
+		}
+
+		// Focus moving between our windows briefly leaves none active.
+		if (!this._backgroundTimer && !isAppInBackground()) {
+			this._backgroundTimer = setTimeout(() => this.settleBackground(), 0);
+		}
+	}
+
+	private settleBackground(): void {
+		if (this._backgroundTimer) {
+			clearTimeout(this._backgroundTimer);
+			this._backgroundTimer = null;
+		}
+		if (this._activeWindows.size === 0 && !isAppInBackground()) {
+			this.setInBackground(true);
+		}
+	}
+
+	private _setWindowVisible(nativeWindow: NativeWindow, visible: boolean): void {
+		const wasVisible = this._visibleWindows.size > 0;
+		if (visible) {
+			this._visibleWindows.add(nativeWindow);
+		} else {
+			this._visibleWindows.delete(nativeWindow);
+		}
+
+		const isVisible = this._visibleWindows.size > 0;
+		if (wasVisible === isVisible) {
+			return;
+		}
+
+		if (!isVisible) {
+			this.setSuspended(true);
+		} else if (this.suspended) {
+			this.setSuspended(false);
+		}
 	}
 
 	private setupLifecycleEvents(): void {
+		// Activation and visibility are tracked per window instead.
 		(globalThis as any).__nsOnAppEvent = (kind: number, message: string | undefined) => {
-
 			switch (kind) {
-				case AppEventKind.Shown:
-					this.setInBackground(false);
-					this.setSuspended(false);
-					break;
-				case AppEventKind.Deactivated:
-					this.setInBackground(true);
-					break;
-				case AppEventKind.Hidden:
-					this.setInBackground(true);
-					this.setSuspended(true);
-					break;
 				case AppEventKind.Exit:
-					this.notify({ eventName: this.exitEvent, object: this });
+					this.notifyExit();
+					break;
+				case AppEventKind.ExitSupported:
+					this._hostCanExit = true;
 					break;
 				case AppEventKind.UncaughtError:
 					this.notify({ eventName: this.uncaughtErrorEvent, object: this, error: new Error(message ?? 'Unhandled exception') } as any);
@@ -217,83 +290,36 @@ export class WindowsApplication extends ApplicationCommon {
 			const ui = new Windows.UI.ViewManagement.UISettings();
 			if (ui && ui.ColorValuesChanged !== undefined) {
 				ui.ColorValuesChanged = () => {
-					const newSys = this.getSystemAppearance();
-					if (newSys !== null) {
-						this.setSystemAppearance(newSys);
+					// Reading the appearance raises a change when it moved.
+					for (const nativeWindow of this._getWindows()) {
+						nativeWindow.systemAppearance();
 					}
 				};
 			}
 		} catch (_e) { }
 	}
 
-	private _orientationDelegate: Microsoft.UI.Xaml.SizeChangedEventHandler | null = null;
-	private _resizeDebounceId: any = null;
-	private _lastResizeW = NaN;
-	private _lastResizeH = NaN;
-	private setupOrientationTracking(content: Microsoft.UI.Xaml.UIElement): void {
-		const element = content as Microsoft.UI.Xaml.FrameworkElement;
-		if (!element) return;
-		const bounds = getCurrentWindowBounds();
-		this._lastResizeW = bounds?.Width ?? NaN;
-		this._lastResizeH = bounds?.Height ?? NaN;
-		try {
-			this._orientationDelegate = NSWinRT.asDelegate('Microsoft.UI.Xaml.SizeChangedEventHandler', () => this._onWindowResized());
-			element.SizeChanged = this._orientationDelegate;
-		} catch (_e) { }
-	}
+	// Desktop windows resize continuously, so @media re-evaluates on every resize.
+	private _onWindowResized(nativeWindow: WindowsNativeWindow): void {
+		// Read before orientationChanged resets the module resolver. Primary window only.
+		const displayed = nativeWindow.isPrimary ? this._currentPageVariant() : null;
 
-	
-	private _onWindowResized(): void {
-		if (this._resizeDebounceId) {
-			clearTimeout(this._resizeDebounceId);
-		}
-		this._resizeDebounceId = setTimeout(() => {
-			this._resizeDebounceId = null;
-			this._applyResize();
-		}, 80);
-	}
-
-	// Desktop windows resize continuously, so width-based @media rules and matchMedia listeners must
-	// re-evaluate on resize: not just on portrait/landscape flips. setOrientation() short-circuits
-	// when the orientation value is unchanged, so we additionally force a CSS/media re-evaluation
-	// when only the dimensions changed.
-	private _applyResize(): void {
-		const bounds = getCurrentWindowBounds();
-		const w = bounds?.Width ?? NaN;
-		const h = bounds?.Height ?? NaN;
-		if (!(w > 0) || !(h > 0)) {
-			return;
-		}
-		if (Math.abs(w - this._lastResizeW) < 1 && Math.abs(h - this._lastResizeH) < 1) {
-			return; // size unchanged
-		}
-		this._lastResizeW = w;
-		this._lastResizeH = h;
-
-		// Capture the page variant currently on screen BEFORE the orientation handling below. The
-		// framework resets the module resolver on orientationChanged (application-common), so reading
-		// it afterwards would already reflect the NEW metrics, hiding the change.
-		const displayed = this._currentPageVariant();
-
-		const newOrientation = this.getOrientation();
-		const orientationChanged = newOrientation !== this.orientation();
-		// Real portrait/landscape flip: updates the cached value, re-applies the ns-portrait/
-		// ns-landscape class, re-styles, and fires orientationChangedEvent.
-		this.setOrientation(newOrientation);
-
-		if (!orientationChanged) {
-			// Same orientation but dimensions changed: re-match @media against the (live) Screen
-			// metrics and notify matchMedia listeners (which key off orientationChangedEvent).
-			const rootView = this.getRootView();
+		if (!nativeWindow._updateOrientation()) {
+			const newOrientation = nativeWindow.orientation();
+			const rootView = nativeWindow.rootView;
 			if (rootView) {
 				this.orientationChanged(rootView, newOrientation);
 			}
-			this.notify({
-				eventName: this.orientationChangedEvent,
-				object: this,
-				windows: this.windows,
-				newValue: newOrientation,
-			} as never);
+
+			if (nativeWindow.isPrimary) {
+				// matchMedia listeners key off the application orientationChangedEvent.
+				this.notify({
+					eventName: this.orientationChangedEvent,
+					object: this,
+					windows: this.windows,
+					newValue: newOrientation,
+				} as never);
+			}
 		}
 
 		// File-name screen qualifiers (main-page.minWH360.xml, .land/.port, etc.) are resolved at

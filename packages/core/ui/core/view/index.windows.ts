@@ -14,7 +14,7 @@ import { Background } from '../../styling/background';
 import { BoxShadow } from '../../styling/box-shadow';
 import { Color } from '../../../color';
 import { hiddenProperty } from '../view-base';
-import { getClientOriginOnScreen, getCurrentWindowBounds, getCurrentWindowContent } from '../../../application/window-helper.windows';
+import { getClientOriginOnScreen, getCurrentWindowBounds, getCurrentWindowContent, getWindowBounds } from '../../../application/window-helper.windows';
 import { ImageSource } from '../../../image-source';
 import { ClipPathFunction } from '../../styling/clip-path-function';
 import { nativeChildIndex, removeNativeChild } from './native-children.windows';
@@ -1911,6 +1911,10 @@ export class View extends ViewCommon {
 
 		this._raiseShowingModallyEvent();
 
+		// Cover the parent's window, which may not be the primary.
+		const hostWindow = parent.getNativeWindow()?.windows?.window;
+		const getHostBounds = () => (hostWindow ? getWindowBounds(hostWindow, this.nativeViewProtected) : getCurrentWindowBounds(this.nativeViewProtected));
+
 		try {
 			const popup = new Microsoft.UI.Xaml.Controls.Primitives.Popup();
 			const overlay = new Microsoft.UI.Xaml.Controls.Grid();
@@ -1919,7 +1923,7 @@ export class View extends ViewCommon {
 			overlay.Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(Windows.UI.Colors.Transparent);
 
 			try {
-				const bounds = getCurrentWindowBounds(this.nativeViewProtected);
+				const bounds = getHostBounds();
 				if (bounds) {
 					overlay.Width = bounds.Width;
 					overlay.Height = bounds.Height;
@@ -1952,7 +1956,7 @@ export class View extends ViewCommon {
 						(this.nativeViewProtected as any).HorizontalAlignment = 3; // Stretch
 						(this.nativeViewProtected as any).VerticalAlignment = 3; // Stretch
 						try {
-							const bounds = getCurrentWindowBounds(this.nativeViewProtected);
+							const bounds = getHostBounds();
 							if (bounds) {
 								this.width = bounds.Width;
 								this.height = bounds.Height;
@@ -2017,7 +2021,7 @@ export class View extends ViewCommon {
 			// of an element already in the live tree (the modal element isn't attached yet).
 			try {
 				const xamlRoot = (parent as any)?.nativeViewProtected?.XamlRoot
-					|| (getCurrentWindowContent() as any)?.XamlRoot
+					|| ((hostWindow?.Content ?? getCurrentWindowContent()) as any)?.XamlRoot
 					|| (this.nativeViewProtected as any)?.XamlRoot;
 				if (xamlRoot && typeof (popup as any).XamlRoot !== 'undefined') {
 					(popup as any).XamlRoot = xamlRoot;
