@@ -26,21 +26,39 @@ function onDeviceChange(args: ApplicationEventData) {
 	}
 }
 
-function checkIfMediaQueryMatches(mediaQueryString: string): boolean {
-	const { widthPixels, heightPixels } = Screen.mainScreen;
+/**
+ * A window's own size, in device pixels, and traits for media queries.
+ */
+export interface MediaQueryContext {
+	width: number;
+	height: number;
+	orientation: 'portrait' | 'landscape' | 'unknown';
+	systemAppearance: 'dark' | 'light' | null;
+}
 
+function checkIfMediaQueryMatches(mediaQueryString: string, context?: MediaQueryContext): boolean {
 	let matches: boolean;
 
 	try {
-		const appProperties = getApplicationProperties();
+		let width: number, height: number, orientation: string, systemAppearance: string;
+		if (context) {
+			({ width, height, orientation, systemAppearance } = context);
+		} else {
+			const appProperties = getApplicationProperties();
+			width = Screen.mainScreen.widthPixels;
+			height = Screen.mainScreen.heightPixels;
+			orientation = appProperties.orientation;
+			systemAppearance = appProperties.systemAppearance;
+		}
+
 		matches = matchQuery(mediaQueryString, {
 			type: MediaQueryType.screen,
-			width: widthPixels,
-			height: heightPixels,
-			'device-width': widthPixels,
-			'device-height': heightPixels,
-			orientation: appProperties.orientation,
-			'prefers-color-scheme': appProperties.systemAppearance,
+			width,
+			height,
+			'device-width': width,
+			'device-height': height,
+			orientation,
+			'prefers-color-scheme': systemAppearance,
 		});
 	} catch (err) {
 		matches = false;
