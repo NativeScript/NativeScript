@@ -863,7 +863,14 @@ export class CssState {
 		}
 
 		const newPropertyValues = new view.style.PropertyBag();
-		matchingSelectors.forEach((selector) => selector.ruleset.declarations.forEach((declaration) => (newPropertyValues[declaration.property] = declaration.value)));
+		for (let i = 0, length = matchingSelectors.length; i < length; i++) {
+			const ruleset = matchingSelectors[i].ruleset;
+			ruleset.expandLateShorthands();
+			const declarations = ruleset.declarations;
+			for (let j = 0, count = declarations.length; j < count; j++) {
+				newPropertyValues[declarations[j].property] = declarations[j].value;
+			}
+		}
 
 		const oldProperties = this._appliedPropertyValues;
 		// A local write is the only thing that can drop a value the cascade already
