@@ -1,3 +1,17 @@
+## 5.0.39 (2026-10-16)
+
+### 🩹 Fixes
+
+- **webpack:** find WorkerDependency where webpack 5.112 moved it ([#11547](https://github.com/NativeScript/NativeScript/pull/11547))
+- keep escaped commas inside CSS selectors ([#11463](https://github.com/NativeScript/NativeScript/pull/11463))
+- **webpack:** downlevel NativeClass classes in files updated by earlier transformers ([#11314](https://github.com/NativeScript/NativeScript/pull/11314))
+
+### ❤️ Thank You
+
+- Eduardo Speroni @edusperoni
+- Nathan Walker
+- Osei Fortune @triniwiz
+
 ## 5.0.38 (2026-07-22)
 
 This was a version bump only for webpack5 to align it with other projects, there were no code changes.
