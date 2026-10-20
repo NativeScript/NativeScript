@@ -21,6 +21,9 @@ import { isEmbedded, setEmbeddedView } from '../embedding';
 import { CALLBACKS, FRAMEID, framesCache, setFragmentCallbacks } from './frame-helper-for-android';
 import { SDK_VERSION } from '../../utils';
 
+import { createBackPreview } from './back-preview.android';
+import type { FrameBackPreview, FrameBackPreviewOptions } from '.';
+
 export * from './frame-common';
 export { setFragmentClass } from './fragment';
 
@@ -65,6 +68,30 @@ function getAttachListener(): android.view.View.OnAttachStateChangeListener {
 }
 
 export class Frame extends FrameBase {
+	private _backPreview: FrameBackPreview;
+
+	public beginBackPreview(options: FrameBackPreviewOptions = {}): FrameBackPreview | undefined {
+		this._backPreview?.dispose();
+		if (SDK_VERSION < 34 || !this.isLoaded || !this._attachedToWindow || !this.canGoBack() || !this.navigationQueueIsEmpty() || this._executingContext || this._animationInProgress || _getAnimatedEntries(this._android.frameId)?.size) return;
+		const manager = this._getFragmentManager();
+		if (!manager || manager.isDestroyed() || manager.isStateSaved()) return;
+		const transition = this._getNavigationTransition(this._currentEntry.entry);
+		if (transition?.instance || transition?.name?.toLowerCase().includes('shared')) return;
+		const session = createBackPreview(this, {
+			onDispose: () => {
+				if (this._backPreview === session) this._backPreview = undefined;
+				options.onDispose?.();
+			},
+		});
+		this._backPreview = session;
+		return session;
+	}
+
+	public onUnloaded() {
+		this._backPreview?.dispose();
+		super.onUnloaded();
+	}
+
 	public _originalBackground: any;
 	private _android: AndroidFrame;
 	private _containerViewId = -1;
@@ -148,6 +175,7 @@ export class Frame extends FrameBase {
 	}
 
 	_onDetachedFromWindow(): void {
+		this._backPreview?.dispose();
 		super._onDetachedFromWindow();
 		this._attachedToWindow = false;
 	}
@@ -370,6 +398,7 @@ export class Frame extends FrameBase {
 	// HACK: because the function parameter type is evaluated with 'typeof'
 	@profile
 	public _navigateCore(newEntry: BackstackEntry) {
+		this._backPreview?.dispose();
 		// should be (newEntry: BackstackEntry)
 		super._navigateCore(newEntry);
 
@@ -436,6 +465,7 @@ export class Frame extends FrameBase {
 	}
 
 	public _goBackCore(backstackEntry: BackstackEntry & ExpandedEntry) {
+		this._backPreview?.dispose();
 		super._goBackCore(backstackEntry);
 		navDepth = backstackEntry.navDepth;
 
@@ -509,6 +539,7 @@ export class Frame extends FrameBase {
 	}
 
 	public disposeNativeView() {
+		this._backPreview?.dispose();
 		const nativeView = this.nativeViewProtected as android.view.ViewGroup;
 		const listener = getAttachListener();
 
