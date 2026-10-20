@@ -764,43 +764,62 @@ function compiledJsExtensionsForPlatform(platform: string | undefined): string[]
  *
  * Skip:
  *  - `link:` and `workspace:` refs (always app-side source).
- *  - `file:` refs to a directory whose installed package only ships
- *    TypeScript/JSX source (no compiled `.js`/`.mjs`/`.cjs` entry).
+ *  - Any installed package — whatever its spec — that only ships
+ *    TypeScript/JSX source (no compiled `.js`/`.mjs`/`.cjs` entry). This
+ *    covers semver/git/url deps published as raw source and semver specs
+ *    whose install linked a source checkout (e.g. a pnpm `readPackage`
+ *    hook), not just `file:` directory refs.
  *
  * Keep (return false):
- *  - Regular semver / git / url specs (normal third-party libraries).
- *  - Local `.tgz` file refs (pre-packaged libraries extracted at install).
- *  - `file:` directory refs that resolve to a package with a compiled JS
- *    entry — a common NativeScript monorepo convention where the app's
+ *  - Packages with a compiled JS entry — including `file:` directory refs
+ *    (a common NativeScript monorepo convention where the app's
  *    `package.json` redirects to `../../node_modules/<name>` to avoid
  *    duplicate installs while letting the NativeScript CLI discover
- *    plugins from the app directory.
+ *    plugins from the app directory).
+ *  - Specs whose installed package.json can't be found or parsed, except
+ *    `file:` directory refs which keep their historical skip.
  */
 function isUnvendorableLocalSource(name: string, spec: unknown, projectRequire: ReturnType<typeof createRequire>, platform?: string): boolean {
 	if (typeof spec !== 'string') return false;
 	if (spec.startsWith('link:') || spec.startsWith('workspace:')) return true;
-	if (!spec.startsWith('file:')) return false;
-	// Tarballs are already pre-packaged libraries — install extracts them
-	// into a normal node_modules entry.
-	if (/\.t(?:ar\.)?gz(?:[?#].*)?$/.test(spec)) return false;
-	// Directory file: refs need a deeper check: peek at the installed
-	// package.json and ask "does this ship compiled JS?". If yes, vendor
-	// it. If no (TS source only), defer to the regular Vite pipeline.
-	return !packageHasCompiledJsEntry(name, projectRequire, platform);
+	const entry = classifyPackageEntry(name, projectRequire, platform);
+	if (entry === 'compiled') return false;
+	if (entry === 'source') return true;
+	// Unknown manifests keep today's behavior: `file:` directory refs skip,
+	// everything else (semver/git/url specs, `file:` tarballs) vendors.
+	if (spec.startsWith('file:') && !/\.t(?:ar\.)?gz(?:[?#].*)?$/.test(spec)) return true;
+	return false;
 }
 
-function packageHasCompiledJsEntry(name: string, projectRequire: ReturnType<typeof createRequire>, platform?: string): boolean {
-	let pkgJsonPath: string;
+/**
+ * Classify an installed package's entry point:
+ *  - `'compiled'` — a `.js`/`.mjs`/`.cjs` entry file (or its platform
+ *    variant like `index.ios.js`) exists on disk.
+ *  - `'source'` — the manifest resolves but no compiled entry exists.
+ *  - `'unknown'` — the installed package.json can't be found or parsed.
+ */
+function classifyPackageEntry(name: string, projectRequire: ReturnType<typeof createRequire>, platform?: string): 'compiled' | 'source' | 'unknown' {
+	let pkgJsonPath: string | null = null;
 	try {
 		pkgJsonPath = projectRequire.resolve(`${name}/package.json`);
 	} catch {
-		return false;
+		// `exports` maps that omit `./package.json` refuse the subpath
+		// resolve — fall back to a direct path probe over the require
+		// resolution dirs.
+		for (const dir of projectRequire.resolve.paths(name) ?? []) {
+			const candidate = path.join(dir, name, 'package.json');
+			if (fs.existsSync(candidate)) {
+				pkgJsonPath = candidate;
+				break;
+			}
+		}
 	}
+	if (!pkgJsonPath) return 'unknown';
 	let pkg: any;
 	try {
 		pkg = JSON.parse(readFileSync(pkgJsonPath, 'utf-8'));
 	} catch {
-		return false;
+		return 'unknown';
 	}
 	const pkgDir = path.dirname(pkgJsonPath);
 	const candidates: string[] = [];
@@ -841,19 +860,20 @@ function packageHasCompiledJsEntry(name: string, projectRequire: ReturnType<type
 			// but ships only platform variants like `index.ios.js`), try
 			// the platform-specific variants which esbuild's
 			// `resolveExtensions` will pick up at bundle time.
-			if (fs.existsSync(abs)) return true;
+			if (fs.existsSync(abs)) return 'compiled';
 			const baseAbs = abs.slice(0, -ext.length);
 			for (const e of extensionsToTry) {
-				if (fs.existsSync(baseAbs + e)) return true;
+				if (fs.existsSync(baseAbs + e)) return 'compiled';
 			}
 			continue;
 		}
 		if (!ext) {
 			// Extensionless main — try plain JS variants AND the
 			// platform-specific variants NativeScript plugins commonly use
-			// (`index.ios.js`, `index.android.js`, `index.visionos.js`).
+			// (`index.ios.js`, `index.android.js`, `index.visionos.js`), as
+			// both a file (`<abs>.js`) and a directory (`<abs>/index.js`).
 			for (const e of extensionsToTry) {
-				if (fs.existsSync(abs + e)) return true;
+				if (fs.existsSync(abs + e) || fs.existsSync(path.join(abs, `index${e}`))) return 'compiled';
 			}
 			continue;
 		}
@@ -861,7 +881,7 @@ function packageHasCompiledJsEntry(name: string, projectRequire: ReturnType<type
 		// only ships TS source — esbuild's vendor pipeline can't resolve
 		// any tsconfig-aliased imports inside it.
 	}
-	return false;
+	return 'source';
 }
 
 function canResolveDependencyPackageJson(specifier: string, projectRequire: ReturnType<typeof createRequire>): boolean {

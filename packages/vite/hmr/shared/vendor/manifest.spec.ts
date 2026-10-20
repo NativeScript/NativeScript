@@ -1,4 +1,4 @@
-import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'fs';
+import { mkdtempSync, mkdirSync, rmSync, symlinkSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -133,10 +133,13 @@ describe('collectVendorModules', () => {
 		// `addCandidate`, that pull is suppressed.
 		mkdirSync(join(root, 'node_modules', '@nativescript-community', 'solid-js'), { recursive: true });
 		writeFileSync(join(root, 'node_modules', '@nativescript-community', 'solid-js', 'package.json'), JSON.stringify({ name: '@nativescript-community/solid-js', version: '0.1.2', peerDependencies: { 'solid-js': '^1.8.0' } }, null, 2));
+		writeFileSync(join(root, 'node_modules', '@nativescript-community', 'solid-js', 'index.js'), 'module.exports = {};\n');
 		mkdirSync(join(root, 'node_modules', 'solid-js'), { recursive: true });
 		writeFileSync(join(root, 'node_modules', 'solid-js', 'package.json'), JSON.stringify({ name: 'solid-js', version: '1.9.0' }, null, 2));
+		writeFileSync(join(root, 'node_modules', 'solid-js', 'index.js'), 'module.exports = {};\n');
 		mkdirSync(join(root, 'node_modules', 'solid-navigation'), { recursive: true });
 		writeFileSync(join(root, 'node_modules', 'solid-navigation', 'package.json'), JSON.stringify({ name: 'solid-navigation', version: '1.0.0' }, null, 2));
+		writeFileSync(join(root, 'node_modules', 'solid-navigation', 'index.js'), 'module.exports = {};\n');
 
 		const collected = collectVendorModules(root, 'ios', 'solid');
 
@@ -163,6 +166,7 @@ describe('collectVendorModules', () => {
 		writeFileSync(join(root, 'package.json'), JSON.stringify({ name: 'fixture-app', version: '0.0.0', dependencies: { 'solid-js': '*' } }, null, 2));
 		mkdirSync(join(root, 'node_modules', 'solid-js'), { recursive: true });
 		writeFileSync(join(root, 'node_modules', 'solid-js', 'package.json'), JSON.stringify({ name: 'solid-js', version: '1.9.0' }, null, 2));
+		writeFileSync(join(root, 'node_modules', 'solid-js', 'index.js'), 'module.exports = {};\n');
 
 		const collected = collectVendorModules(root, 'ios', 'vue');
 
@@ -180,8 +184,10 @@ describe('collectVendorModules', () => {
 		writeFileSync(join(root, 'package.json'), JSON.stringify({ name: 'fixture-app', version: '0.0.0', dependencies: { '@acme/octane-ns': '*', octane: '*' } }, null, 2));
 		mkdirSync(join(root, 'node_modules', '@acme', 'octane-ns'), { recursive: true });
 		writeFileSync(join(root, 'node_modules', '@acme', 'octane-ns', 'package.json'), JSON.stringify({ name: '@acme/octane-ns', version: '1.0.0', peerDependencies: { octane: '*' } }, null, 2));
+		writeFileSync(join(root, 'node_modules', '@acme', 'octane-ns', 'index.js'), 'module.exports = {};\n');
 		mkdirSync(join(root, 'node_modules', 'octane'), { recursive: true });
 		writeFileSync(join(root, 'node_modules', 'octane', 'package.json'), JSON.stringify({ name: 'octane', version: '1.0.0' }, null, 2));
+		writeFileSync(join(root, 'node_modules', 'octane', 'index.js'), 'module.exports = {};\n');
 		registerFrameworkFlavor({ flavor: 'acme', server: { ...typescriptServerStrategy, flavor: 'acme' }, client: '@acme/octane-ns/client', vendor: { exclude: ['octane'] } });
 
 		expect(collectVendorModules(root, 'ios', 'acme').entries).toEqual(['@acme/octane-ns']);
@@ -210,5 +216,100 @@ describe('collectVendorModules', () => {
 		expect(code).toContain('export const __nsVendorModuleMap = { "pinia": {} };');
 		expect(code).toContain('export const vendorManifest = {"version":1,"createdAt":"2026-04-18T00:00:00.000Z","hash":"hash-123"');
 		expect(code).toContain('export default vendorManifest;');
+	});
+});
+
+describe('collectVendorModules — source-only dependencies', () => {
+	const tempRoots: string[] = [];
+
+	afterEach(() => {
+		while (tempRoots.length) {
+			const root = tempRoots.pop();
+			if (root) {
+				rmSync(root, { recursive: true, force: true });
+			}
+		}
+	});
+
+	const makeApp = (deps: Record<string, string>): string => {
+		const root = mkdtempSync(join(tmpdir(), 'ns-vendor-source-only-'));
+		tempRoots.push(root);
+		mkdirSync(join(root, 'node_modules'), { recursive: true });
+		writeFileSync(join(root, 'package.json'), JSON.stringify({ name: 'fixture-app', version: '0.0.0', dependencies: deps }));
+		return root;
+	};
+
+	const installPackage = (root: string, name: string, pkg: Record<string, unknown>, files: Record<string, string> = {}) => {
+		const dir = join(root, 'node_modules', ...name.split('/'));
+		mkdirSync(dir, { recursive: true });
+		writeFileSync(join(dir, 'package.json'), JSON.stringify({ name, version: '1.0.0', ...pkg }));
+		for (const [rel, content] of Object.entries(files)) {
+			mkdirSync(join(dir, rel, '..'), { recursive: true });
+			writeFileSync(join(dir, rel), content);
+		}
+	};
+
+	it('excludes a semver dep whose package exports only TS source', () => {
+		const root = makeApp({ 'src-lib': '1.0.0' });
+		installPackage(root, 'src-lib', { exports: { '.': { types: './src/index.d.ts', default: './src/index.ts' }, './package.json': './package.json' } }, { 'src/index.ts': 'export const x = 1;\n', 'src/index.d.ts': 'export declare const x: number;\n' });
+
+		expect(collectVendorModules(root, 'ios', 'typescript').entries).not.toContain('src-lib');
+	});
+
+	it('excludes a semver dep hook-linked to an external source checkout', () => {
+		const root = makeApp({ 'hook-lib': '1.0.0' });
+		const checkout = mkdtempSync(join(tmpdir(), 'ns-vendor-source-checkout-'));
+		tempRoots.push(checkout);
+		const depDir = join(checkout, 'hook-lib');
+		mkdirSync(join(depDir, 'src'), { recursive: true });
+		writeFileSync(join(depDir, 'package.json'), JSON.stringify({ name: 'hook-lib', version: '1.0.0', main: 'src/index.ts' }));
+		writeFileSync(join(depDir, 'src/index.ts'), 'export const y = 1;\n');
+		symlinkSync(depDir, join(root, 'node_modules', 'hook-lib'), 'dir');
+
+		expect(collectVendorModules(root, 'ios', 'typescript').entries).not.toContain('hook-lib');
+	});
+
+	it('vendors a semver dep with a compiled entry when exports omit ./package.json', () => {
+		const root = makeApp({ 'compiled-lib': '1.0.0' });
+		installPackage(root, 'compiled-lib', { exports: { '.': './dist/index.js' } }, { 'dist/index.js': 'module.exports = {};\n' });
+
+		expect(collectVendorModules(root, 'ios', 'typescript').entries).toContain('compiled-lib');
+	});
+
+	it('vendors a semver dep whose extensionless main names a directory with index.js', () => {
+		const root = makeApp({ 'dir-main-lib': '1.0.0' });
+		installPackage(root, 'dir-main-lib', { main: 'lib' }, { 'lib/index.js': 'module.exports = {};\n' });
+
+		expect(collectVendorModules(root, 'ios', 'typescript').entries).toContain('dir-main-lib');
+	});
+
+	it('vendors a semver NativeScript plugin shipping only platform-suffixed entries', () => {
+		const root = makeApp({ 'ns-plugin': '1.0.0' });
+		installPackage(root, 'ns-plugin', { main: 'index' }, { 'index.ios.js': 'module.exports = {};\n', 'index.android.js': 'module.exports = {};\n' });
+
+		expect(collectVendorModules(root, 'ios', 'typescript').entries).toContain('ns-plugin');
+	});
+
+	it('keeps vendoring a file: tarball spec whose installed package has compiled JS', () => {
+		const root = makeApp({ 'tgz-lib': 'file:./pkg.tgz' });
+		installPackage(root, 'tgz-lib', { main: 'index.js' }, { 'index.js': 'module.exports = {};\n' });
+
+		expect(collectVendorModules(root, 'ios', 'typescript').entries).toContain('tgz-lib');
+	});
+
+	it('vendors a compiled file: dir package but not a source-only one', () => {
+		const root = makeApp({ 'file-compiled': 'file:../file-compiled', 'file-source': 'file:../file-source' });
+		installPackage(root, 'file-compiled', { main: 'index.js' }, { 'index.js': 'module.exports = {};\n' });
+		installPackage(root, 'file-source', { main: 'src/index.ts' }, { 'src/index.ts': 'export const z = 1;\n' });
+
+		const entries = collectVendorModules(root, 'ios', 'typescript').entries;
+		expect(entries).toContain('file-compiled');
+		expect(entries).not.toContain('file-source');
+	});
+
+	it('keeps the pristine result for a declared-but-not-installed dep', () => {
+		const root = makeApp({ 'ghost-lib': '1.0.0' });
+
+		expect(collectVendorModules(root, 'ios', 'typescript').entries).toContain('ghost-lib');
 	});
 });
