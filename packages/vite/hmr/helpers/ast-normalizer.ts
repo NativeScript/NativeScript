@@ -79,8 +79,8 @@ export function astNormalizeModuleImportsAndHelpers(code: string, opts?: { under
 		const isRtLike = (src: string | null | undefined) => !!src && /(?:https?:\/\/[^"']+)?\/ns\/rt(?:\/[\d]+)?(?:\?p=[^"']+)?$/.test(src);
 		const isCoreLike = (src: string | null | undefined) => !!src && /(?:https?:\/\/[^"']+)?\/ns\/core(?:\/[\d]+)?(?:\?p=[^"']+)?$/.test(src);
 		const isSfcPath = (src: string | null | undefined) => !!src && /\.vue(?:\?|$)/.test(src);
-		const isVuePrebundle = (src: string | null | undefined) => !!src && /\.vite\/deps\/(?:vue|nativescript-vue)[^/]*\.js/.test(src);
-		const isVuePackage = (src: string | null | undefined) => !!src && (src === 'vue' || src.startsWith('vue/') || src.includes('nativescript-vue'));
+		const isVuePrebundle = (src: string | null | undefined) => !!src && /\.vite\/deps\/(?:vue|nativescript-vue)(?:_[^/]*)?\.js(?:[?#]|$)/.test(src);
+		const isVuePackage = (src: string | null | undefined) => !!src && (src === 'vue' || src.startsWith('vue/') || /(?:^|\/)nativescript-vue(?:\/|[?#]|$)/.test(src));
 		const isVueLike = (src: string | null | undefined) => (isVuePackage(src) || isVuePrebundle(src)) && !isSfcPath(src);
 		// True virtual modules only (`\0`/`__x00__`-marked). A plain `/@id/<id>`
 		// is Vite's URL form for any REAL resolved bare id that isn't a file
