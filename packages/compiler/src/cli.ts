@@ -31,7 +31,7 @@ import { octaneApp } from './octane.ts';
 import { appDeclarations, createProgram, nodeModules } from './program.ts';
 import { corePatches, corePatchesAndroid } from './core-patches.ts';
 import { androidBindings } from './bindings-android.ts';
-import { KIT, useKitPlugins } from './core.ts';
+import { KIT, STUBBED_PLUGINS, useKitPlugins } from './core.ts';
 import { kitIndex } from './kit-index.ts';
 import { describe, PropertyGuard } from './unimplemented.ts';
 import { NONISOLATED_DEINIT, swiftString, Translator, withoutRedundantImplicit, type ComponentInfo } from './swift.ts';
@@ -43,13 +43,14 @@ import { appStylesheets, importedStylesheets, kitAst, kitCss } from './css.ts';
 import { PluginSources, configuredOverrides, writtenStrict } from './plugins/source.ts';
 import { moduleNames, pluginNative, scopedImports, usedImports, xcodegenLines, type ModuleTypes } from './plugins/native.ts';
 import { readKitManifest } from './kit-manifest.ts';
+import { packageOf } from './plugins/resolve.ts';
 import { angularLibraries } from './angular-libraries.ts';
 import { nativeDispatch, untypedMembers } from './native-dispatch.ts';
 import { reachability } from './reach.ts';
 import { nativeTable, type NativeClass, type NativeMethod } from './natives/symbols.ts';
 import { coreNativeModules, coreNativeProject, installedCore, loadCoreNativeTables } from './natives/core-ios.ts';
 import { collectProperties } from './properties.ts';
-import { appResourcesDir, iosDeploymentTarget, iosExtensionNames, iosExtensions, iosProjectResources, mergePodsXcconfig, pluginReplacements, releaseOptions, uncaughtErrorSwitches } from './app-resources.ts';
+import { appResourcesDir, iosDeploymentTarget, iosExtensionNames, iosExtensions, iosProjectResources, mergePodsXcconfig, pluginReplacements, releaseOptions, stubbedPlugins, uncaughtErrorSwitches } from './app-resources.ts';
 import { generateProject, iosDependencies, packageLines, podfile, productLines, PROJECT_MARKER, removePods, swiftPackages } from './ios-dependencies.ts';
 import { SourceLines } from './source-lines.ts';
 import { archive, automaticSigningSettings, findProfile, signingSettings, type ExportMethod } from './ios-signing.ts';
@@ -75,6 +76,9 @@ useKitPlugins(platform);
 const generatedKit = platform === 'android' && !args.includes('--hand-port-kit')
   && (args.includes('--generated-kit') || (releaseOptions(app, platform).generatedKit ?? existsSync(join(KIT_ANDROID, 'generated', 'manifest.json'))) === true);
 stopOn(args.includes('--skip-toolchain-check') ? { errors: [], warnings: [] } : checkToolchain(platform), 'toolchain');
+const stubs = stubbedPlugins(app, platform);
+for (const p of stubs.stubbed) STUBBED_PLUGINS.add(p);
+stopOn({ errors: stubs.errors, warnings: stubs.stubbed.length ? [`release.stubPlugins: ${stubs.stubbed.join(', ')} build as no-op stand-ins: their views render empty and their methods do nothing`] : [] }, 'binary-only plugins');
 /** Prints the warnings, then the errors, and stops on any error. */
 function stopOn(r: { errors: string[]; warnings: string[] }, what: string) {
   for (const w of r.warnings) console.warn(`warning: ${w}`);
@@ -798,7 +802,7 @@ function registeredElements(sources: string[], modulesDir: string): Map<string, 
       if (!imported) continue;
       const [name, from] = JSON.parse(imported) as [string, string];
       // Core's own views are elements already.
-      if (from === '@nativescript/core') continue;
+      if (from === '@nativescript/core' || STUBBED_PLUGINS.has(packageOf(from))) continue;
       found.set(m[1], { name, from: from.startsWith('.') && file ? resolve(dirname(file), from) : from });
     }
   };
@@ -806,6 +810,7 @@ function registeredElements(sources: string[], modulesDir: string): Map<string, 
     const text = readFileSync(f, 'utf8');
     scan(text, f);
     for (const m of text.matchAll(/from\s*['"]((?:@[\w.-]+\/)?[\w.-]+)\/angular['"]/g)) {
+      if (STUBBED_PLUGINS.has(m[1])) continue;
       const dir = join(modulesDir, m[1], 'angular');
       const entry = existsSync(dir) ? readdirSync(dir).flatMap((d) => (/^fesm/.test(d) ? readdirSync(join(dir, d)).filter((x) => x.endsWith('.mjs')).map((x) => join(dir, d, x)) : [])).sort().reverse()[0] : undefined;
       if (entry) scan(readFileSync(entry, 'utf8'), null);

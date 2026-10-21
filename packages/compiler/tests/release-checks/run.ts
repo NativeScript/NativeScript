@@ -30,6 +30,8 @@ import { render } from '../../src/codegen.ts';
 import { Translator } from '../../src/kotlin.ts';
 import { translateKotlinModules } from '../../src/kotlin-modules.ts';
 import { AndroidNativeAPI, androidClassPath } from '../../src/native-calls-android.ts';
+import { stubbedPlugins } from '../../src/app-resources.ts';
+import { STUBBED_PLUGINS } from '../../src/core.ts';
 import { detectFramework, excludedFrameworkKitFiles, getFrameworkKitInfo } from '../../src/framework.ts';
 import { spawnSync } from 'node:child_process';
 import ts from 'typescript';
@@ -302,6 +304,39 @@ export class GlyphPipe { constructor(@Inject(TOKEN) private config: any, @Option
     const clang = { kind: 'clang', name: 'Canvas', module: 'Canvas', path: 'Sources/Canvas', publicHeaders: 'include' } as unknown as Parameters<typeof manifest>[0][0];
     check(manifest([clang], '/out/Plugins/NSPluginsPrefix.h').includes('cSettings: [.unsafeFlags(["-include", "/out/Plugins/NSPluginsPrefix.h"])]'), "a plugin's Objective-C is compiled with the prefix header an app's own build gives it");
   } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
+
+// ---- Binary-only plugins: refused unless stubbed ----
+{
+  const dir = mkdtempSync(join(tmpdir(), 'ns-release-checks-stubs-'));
+  const w = (f: string, text: string) => { mkdirSync(dirname(join(dir, f)), { recursive: true }); writeFileSync(join(dir, f), text); return join(dir, f); };
+  try {
+    w('package.json', JSON.stringify({ name: 'stubs', main: 'src/main.ts', dependencies: { 'nativescript-ui-listview': '15.2.3' } }));
+    const refused = stubbedPlugins(dir, 'ios');
+    check(refused.stubbed.length === 0 && refused.errors.length === 1 && refused.errors[0].startsWith('nativescript-ui-listview is a binary-only plugin') && refused.errors[0].includes("release.pluginReplacements: { 'nativescript-ui-listview'") && refused.errors[0].includes("release.stubPlugins: ['nativescript-ui-listview']"), 'a binary-only plugin stops the build, naming both remedies');
+    w('nativescript.config.ts', "export default { id: 'org.stubs', release: { pluginReplacements: { 'nativescript-ui-listview': './src/list.ts' } } };\n");
+    const replaced = stubbedPlugins(dir, 'ios');
+    check(!replaced.errors.length && !replaced.stubbed.length, 'a binary-only plugin the app replaces builds');
+    w('nativescript.config.ts', "export default { id: 'org.stubs', release: { stubPlugins: ['nativescript-ui-listview'] } };\n");
+    const stubbed = stubbedPlugins(dir, 'ios');
+    check(!stubbed.errors.length && stubbed.stubbed.join() === 'nativescript-ui-listview', 'release.stubPlugins builds a binary-only plugin as its stand-in');
+    w('nativescript.config.ts', "export default { id: 'org.stubs', release: { stubPlugins: ['nativescript-ui-listview', 'some-plugin'] } };\n");
+    let unknown = '';
+    try { stubbedPlugins(dir, 'ios'); } catch (e) { unknown = String(e); }
+    check(unknown.includes('some-plugin has no stand-in'), 'release.stubPlugins refuses a package it has no stand-in for');
+
+    STUBBED_PLUGINS.add('nativescript-ui-listview');
+    const user = w('src/list-user.ts', "import { RadListView, ListViewEventData } from 'nativescript-ui-listview';\nexport const list = new RadListView();\nexport function onTap(e: ListViewEventData): number { list.refresh(); return e.index; }\n");
+    let typed = '';
+    try { createProgram([user], new Map(), 'ios', modulesDir); } catch (e) { typed = String(e); }
+    check(!typed, `a stubbed plugin's imports type-check against its stand-ins${typed ? `: ${typed.split('\n')[1]}` : ''}`);
+    const c = angularComponent(join(dir, 'src/list.component.ts'), "import { Component } from '@angular/core';\n@Component({ selector: 'List', template: `<GridLayout rows=\"*\"><RadListView row=\"0\" [items]=\"items\" (itemTap)=\"tap()\"><ng-template tkListItemTemplate let-item=\"item\"><Label [text]=\"item\"></Label></ng-template></RadListView></GridLayout>` })\nexport class List { items = ['a']; tap() {} }\n", new Map())!;
+    const stand = (c.template[0] as { children: { tag: string; attrs: { name: string }[]; events: unknown[]; children: unknown[] }[] }).children[0];
+    check(stand.tag === 'ContentView' && stand.attrs.map((a) => a.name).join() === 'row' && !stand.events.length && !stand.children.length, "a stubbed plugin's element is an empty ContentView keeping its place in the layout");
+  } finally {
+    STUBBED_PLUGINS.clear();
     rmSync(dir, { recursive: true, force: true });
   }
 }

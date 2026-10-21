@@ -4,12 +4,13 @@ import { dirname, isAbsolute, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { foldPlatform, type Platform } from './platform.ts';
 import { desugarConstructorFactories } from './constructor-factories.ts';
-import { KIT_PLUGINS, NATIVE_CONTROLLERS, NATIVE_VIEWS, nativeViewOf } from './core.ts';
+import { KIT_PLUGINS, NATIVE_CONTROLLERS, NATIVE_VIEWS, STUBBED_PLUGINS, nativeViewOf } from './core.ts';
 import type { PluginSources } from './plugins/source.ts';
 import { packageOf, runtimeFile } from './plugins/resolve.ts';
 import { NATIVE_VIEWS_ANDROID } from './core-kotlin.ts';
 
 const ANGULAR_RX_FILE = resolve(dirname(fileURLToPath(import.meta.url)), '../runtime/angular-rx.ts');
+const PLUGIN_STUBS_FILE = resolve(dirname(fileURLToPath(import.meta.url)), '../runtime/binary-plugin-stubs.ts');
 const ANGULAR_RX_MODULES = new Set(['@angular/common/http', '@angular/core/rxjs-interop', '@angular/router', '@nativescript/angular', '@angular#rx']);
 
 /**
@@ -899,7 +900,7 @@ const RXJS_SHIM = `
  * rest are typings or tooling.
  */
 const NOT_PLUGINS = /^(@nativescript\/(core|types|types-ios|types-android|types-minimal|webpack|vite|tailwind|angular|android|ios)|octane|@nativescript-community\/(octane|solid-js|svelte-native|vite-octane)|nativescript-vue|react|react-nativescript|solid-js|svelte|@angular\/.*|tslib|typescript|vite)$/;
-const notPlugin = (pkg: string, platform: Platform = 'ios') => NOT_PLUGINS.test(pkg) || KIT_PLUGINS.includes(pkg) || (platform === 'android' && pkg === 'rxjs');
+const notPlugin = (pkg: string, platform: Platform = 'ios') => NOT_PLUGINS.test(pkg) || KIT_PLUGINS.includes(pkg) || STUBBED_PLUGINS.has(pkg) || (platform === 'android' && pkg === 'rxjs');
 
 /**
  * A program over the app's modules and the components' virtual classes,
@@ -982,6 +983,10 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
       }
       if (m === '@angular#rx') return { resolvedModule: { resolvedFileName: shimPath('@nativescript/release'), extension: ts.Extension.Dts } };
       if (shims[m]) return { resolvedModule: { resolvedFileName: shimPath(m), extension: ts.Extension.Dts } };
+      if (!m.startsWith('.') && !isAbsolute(m) && STUBBED_PLUGINS.has(packageOf(m))) {
+        pluginFiles.add(PLUGIN_STUBS_FILE);
+        return { resolvedModule: { resolvedFileName: PLUGIN_STUBS_FILE, extension: ts.Extension.Ts } };
+      }
       // The build's own glue imports app modules by absolute path (`__elements.release.ts`).
       if (m.startsWith('.') || (isAbsolute(m) && !m.startsWith('/__shims__/'))) {
         const base = resolve(dirname(containing), m);
