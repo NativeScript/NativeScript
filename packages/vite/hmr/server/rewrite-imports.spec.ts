@@ -66,6 +66,11 @@ describe('rewriteImports — ?raw imports', () => {
 		expect(out).not.toContain('const icons =');
 	});
 
+	it('keeps the full Vite query on a ?raw /@fs URL that stays with Vite', () => {
+		const out = rewrite(`import svg from "/@fs/outside-roots/lib/icon.svg?import&raw";\n`);
+		expect(out).toContain(`from "/@fs/outside-roots/lib/icon.svg?import&raw"`);
+	});
+
 	it('leaves imports without ?raw as they were', () => {
 		const out = rewrite(`import svg from "/src/icon.svg?import";\nimport icons from "/node_modules/icons/font/icons.json?import";\n`);
 		expect(out).toContain(`from "/ns/m/src/icon.svg"`);

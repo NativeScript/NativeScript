@@ -542,7 +542,9 @@ export function rewriteImports(code: string, importerPath: string, sfcFileMap: M
 			return replaceVueImport(match, prefix, spec, suffix);
 		}
 		const routed = replaceVueImport(match, prefix, spec.replace(PAT.QUERY_PATTERN, ''), suffix);
-		return routed.replace(/(\/ns\/m\/[^"'?\s]+)(?=["'])/, '$1?raw');
+		const rawRouted = routed.replace(/(\/ns\/m\/[^"'?\s]+)(?=["'])/, '$1?raw');
+		// Only the /ns/m route serves ?raw; a URL left for Vite to serve (e.g. /@fs outside both roots) needs Vite's own query.
+		return rawRouted !== routed ? rawRouted : replaceVueImport(match, prefix, spec, suffix);
 	};
 
 	// Apply to all import/export patterns (but only .vue files will be rewritten)
