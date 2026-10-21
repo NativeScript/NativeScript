@@ -884,8 +884,7 @@ function resolveBareReExportTarget(spec: string, importerPath: string, platform:
 // `Object.defineProperty(exports, "NAME", ...)` assignments (transpiled-to-CJS
 // packages like downsample). UMD factories (`module.exports = fn()`) expose no
 // static names — those are flagged `opaqueCjs` so the shim path can still
-// serve their (default-only) namespace instead of re-evaluating them
-// per-module.
+// serve them from the bundle instead of re-evaluating them per-module.
 const CJS_EXPORT_ASSIGN_RE = /\bexports\.([$_\p{ID_Start}][$\p{ID_Continue}]*)\s*=/gu;
 const CJS_DEFINE_PROPERTY_RE = /\bObject\.defineProperty\(\s*exports\s*,\s*["']([$_\p{ID_Start}][$\p{ID_Continue}]*)["']/gu;
 
@@ -900,6 +899,17 @@ function collectCjsExportInfo(code: string): DepsModuleExportInfo {
 	return { names: Array.from(names).sort(), hasDefault };
 }
 
+// A file that never references `exports` has no CommonJS export surface, and
+// loading it only runs its side effects in the dev server process (zone.js
+// replaces the server's global Promise and timers).
+function loadedCjsExportNames(absPath: string): string[] {
+	try {
+		return /\bexports\b/.test(readFileSync(absPath, 'utf8')) ? getCjsNamedExports(absPath) : [];
+	} catch {
+		return [];
+	}
+}
+
 /**
  * Static export-name discovery for a node_modules file. ESM: direct exports
  * plus recursion through `export * from` chains — relative targets (the
@@ -909,8 +919,8 @@ function collectCjsExportInfo(code: string): DepsModuleExportInfo {
  * interop exposes those names on the bundled namespace at runtime). Returns
  * `names: null` for files whose export surface is not statically enumerable —
  * with two DIFFERENT consequences downstream: CJS/UMD files additionally carry
- * `opaqueCjs: true` and still get a default-only shim (their bundled
- * namespace has nothing but `default`); ESM files with an `export *` target
+ * `opaqueCjs: true` and still get a shim, with names enumerated by loading
+ * the file on the dev server; ESM files with an `export *` target
  * that resolves nowhere on disk keep per-module serving, where the transform
  * pipeline resolves the star through the import map. A BUNDLED file served
  * per-module evaluates a second time, so any resolvable star must be followed.
@@ -950,7 +960,7 @@ export function collectDepsModuleExportInfo(absPath: string, platform: string, s
 	return { names: Array.from(names).sort(), hasDefault: hasExistingDefaultExport(code) };
 }
 
-const RESERVED_EXPORT_NAMES = new Set(['default', 'break', 'case', 'catch', 'class', 'const', 'continue', 'debugger', 'delete', 'do', 'else', 'enum', 'export', 'extends', 'false', 'finally', 'for', 'function', 'if', 'import', 'in', 'instanceof', 'new', 'null', 'return', 'super', 'switch', 'this', 'throw', 'true', 'try', 'typeof', 'var', 'void', 'while', 'with', 'let', 'static', 'yield', 'await', 'eval', 'arguments', '__ns_dep_ns__']);
+const RESERVED_EXPORT_NAMES = new Set(['default', 'break', 'case', 'catch', 'class', 'const', 'continue', 'debugger', 'delete', 'do', 'else', 'enum', 'export', 'extends', 'false', 'finally', 'for', 'function', 'if', 'import', 'in', 'instanceof', 'new', 'null', 'return', 'super', 'switch', 'this', 'throw', 'true', 'try', 'typeof', 'var', 'void', 'while', 'with', 'let', 'static', 'yield', 'await', 'eval', 'arguments', 'implements', 'interface', 'package', 'private', 'protected', 'public', '__ns_dep_ns__']);
 
 /**
  * Shim served at `/ns/m/node_modules/...` for a bundled module. The static
@@ -1107,7 +1117,7 @@ export function createDepsBundleService(options: CreateDepsBundleServiceOptions)
 					// Serving the shim (not the per-module transform) keeps the single
 					// bundle evaluation — patch-style packages that mutate another
 					// package at eval time break if evaluated a second time.
-					shim = buildDepsShimCode(key, getCjsNamedExports(file), true);
+					shim = buildDepsShimCode(key, loadedCjsExportNames(file), true);
 				}
 			}
 			shimCache.set(spec, shim);

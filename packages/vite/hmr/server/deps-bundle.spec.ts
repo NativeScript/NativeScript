@@ -242,11 +242,12 @@ describe('buildDepsShimCode', () => {
 	});
 
 	it('filters reserved words and non-identifier names but keeps Unicode identifiers', () => {
-		const code = buildDepsShimCode('node_modules/pkg-a/index.js', ['ok', 'default', 'class', 'not-an-ident', '\u0275\u0275defineInjectable'], false);
+		const code = buildDepsShimCode('node_modules/pkg-a/index.js', ['ok', 'default', 'class', 'package', 'not-an-ident', '\u0275\u0275defineInjectable'], false);
 		expect(code).toContain('export const ok = ');
 		expect(code).toContain('export const \u0275\u0275defineInjectable = ');
 		expect(code).not.toContain('export const default');
 		expect(code).not.toContain('export const class');
+		expect(code).not.toContain('export const package');
 		expect(code).not.toContain('not-an-ident');
 	});
 });
@@ -615,7 +616,7 @@ describe('createDepsBundleService', () => {
 		expect(shim).toContain('export const b = __ns_dep_ns__.b;');
 	});
 
-	it('exports the names of CJS and minified ESM entries a line scan cannot see (react, clsx)', async () => {
+	it('exports the names of CJS and minified ESM entries a line scan cannot see (react, clsx), without loading files that never reference exports (zone.js)', async () => {
 		const root = mkdtempSync(path.join(realpathSync(tmpdir()), 'ns-deps-named-'));
 		try {
 			const write = (rel: string, contents: string) => {
@@ -630,12 +631,14 @@ describe('createDepsBundleService', () => {
 			write('node_modules/clsx-like/package.json', JSON.stringify({ name: 'clsx-like', version: '1.0.0', exports: { '.': { import: './dist/clsx.mjs', default: './dist/clsx.js' } } }));
 			write('node_modules/clsx-like/dist/clsx.mjs', `function r(e){return e}export function clsx(){return r(arguments[0])}export default clsx;`);
 			write('node_modules/clsx-like/dist/clsx.js', `function clsx(){}module.exports = clsx;module.exports.clsx = clsx;`);
+			write('node_modules/zone-like/package.json', JSON.stringify({ name: 'zone-like', version: '1.0.0', main: 'zone.js' }));
+			write('node_modules/zone-like/zone.js', `globalThis.__nsZoneLikeLoaded = true;\n`);
 			const service = createDepsBundleService({
 				projectRoot: root,
 				platform: 'ios',
 				mode: 'development',
 				flavor: 'typescript',
-				getRecordedPaths: () => ['/ns/m/node_modules/react-like/index.js', '/ns/m/node_modules/clsx-like/dist/clsx.mjs'],
+				getRecordedPaths: () => ['/ns/m/node_modules/react-like/index.js', '/ns/m/node_modules/clsx-like/dist/clsx.mjs', '/ns/m/node_modules/zone-like/zone.js'],
 			});
 			await service.ensureBuilt();
 			const reactShim = service.getShimForSpec('/node_modules/react-like/index.js');
@@ -645,6 +648,10 @@ describe('createDepsBundleService', () => {
 			const clsxShim = service.getShimForSpec('/node_modules/clsx-like/dist/clsx.mjs');
 			expect(clsxShim).toContain('export const clsx = __ns_dep_ns__.clsx;');
 			expect(clsxShim).toContain('export default __ns_dep_ns__.default;');
+			const zoneShim = service.getShimForSpec('/node_modules/zone-like/zone.js');
+			expect(zoneShim).toContain('export default __ns_dep_ns__.default;');
+			expect(zoneShim).not.toContain('export const ');
+			expect((globalThis as any).__nsZoneLikeLoaded).toBeUndefined();
 		} finally {
 			rmSync(root, { recursive: true, force: true });
 		}
