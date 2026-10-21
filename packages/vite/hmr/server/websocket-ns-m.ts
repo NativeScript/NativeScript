@@ -10,6 +10,7 @@ import { buildPiniaVendorShim, buildVueVendorShim } from './vendor-bare-module-s
 import { collapseLegacyNsMTags } from './websocket-ns-m-paths.js';
 import { createNsMRequestContext, resolveFsAnchoredSpec, resolveNsMTransformedModule } from './websocket-ns-m-request.js';
 import { setDeviceModuleHeaders } from './route-helpers.js';
+import { RAW_QUERY_PATTERN } from './constants.js';
 import { CSS_MODULE_RE, buildCssRegisterSnippetFromVar, normalizeCssForDevice } from './css-device-module.js';
 import { assertNoOptimizedArtifacts, buildBootProgressSnippet, canonicalizeRtImports, dedupeRtNamedImportsAgainstDestructures, deduplicateLinkerImports, ensureDestructureCoreImports, ensureGuardPlainDynamicImports, ensureVariableDynamicImportHelper, expandStarExports, hoistTopLevelStaticImports, MODULE_IMPORT_ANALYSIS_PLUGINS, wrapCommonJsModuleForDevice, ensureWorkerEntryGlobalsImport, classifyServedRequest } from './websocket-served-module-helpers.js';
 import { cleanCode, collectImportDependencies, isWorkerEntryModuleId, processCodeForDevice, rewriteImports } from './websocket-device-transform.js';
@@ -166,6 +167,16 @@ export function registerNsModuleServerRoute(server: ViteDevServer, options: Regi
 						}
 					}
 				} catch {}
+			}
+
+			if (RAW_QUERY_PATTERN.test(urlObj.search)) {
+				const rawSpec = resolveFsAnchoredSpec(spec, serverRoot, monorepoWorkspaceRoot) || spec;
+				const rawRes = await sharedTransformRequest(`${rawSpec}?raw`);
+				if (rawRes?.code) {
+					res.statusCode = 200;
+					res.end(rawRes.code);
+					return;
+				}
 			}
 
 			// Worker-realm serves must NOT take the deps-bundle bridge: the

@@ -98,6 +98,24 @@ describe('registerNsModuleServerRoute', () => {
 		expect(ensureInitialGraphPopulationStarted).toHaveBeenCalledTimes(1);
 	});
 
+	it('serves the text Vite loads for a ?raw import, without the device passes', async () => {
+		const sharedTransformRequest = vi.fn(async (url: string) => (url === '/src/icon.svg?raw' ? ({ code: 'export default "<svg/>"' } as any) : null));
+		const processCodeForDevice = vi.fn((code: string) => code);
+		const { handler } = mount({ sharedTransformRequest, processCodeForDevice });
+		const res = makeRes();
+		await handler({ url: '/ns/m/src/icon.svg?raw' }, res, vi.fn());
+		expect(res.statusCode).toBe(200);
+		expect(res.body).toBe('export default "<svg/>"');
+		expect(processCodeForDevice).not.toHaveBeenCalled();
+	});
+
+	it('does not read the raw=1 diagnostics flag as ?raw', async () => {
+		const sharedTransformRequest = vi.fn(async () => null);
+		const { handler } = mount({ sharedTransformRequest });
+		await handler({ url: '/ns/m/src/app.ts?raw=1' }, makeRes(), vi.fn());
+		expect(sharedTransformRequest.mock.calls.map(([url]) => url)).not.toContain('/src/app.ts?raw');
+	});
+
 	it('serves a deterministic stub for the anomalous "@" import path', async () => {
 		const { handler } = mount();
 		const res = makeRes();
