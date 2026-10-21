@@ -369,7 +369,7 @@ export function render(c: ComponentIR, components: Map<string, ComponentInfo>, o
     say(depth, '}');
   };
 
-  const fragment = framework === 'angular' && !c.page && isFragment(c.template);
+  const fragment = framework === 'angular' && !c.page && isFragment(c.template, components);
   say(1, fragment ? 'fun render(into: Region) {' : 'fun render(): View {');
   const wrap = scoped('template');
   const d = wrap ? 3 : 2;
