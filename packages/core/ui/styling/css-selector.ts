@@ -5,7 +5,7 @@ import { isNullOrUndefined } from '../../utils/types';
 import { cleanupImportantFlags } from './css-utils';
 
 import * as ReworkCSS from '../../css';
-import { checkIfMediaQueryMatches } from '../../media-query-list';
+import { checkIfMediaQueryMatchesCached } from '../../media-query-list';
 
 /**
  * An interface describing the shape of a type on which the selectors may apply.
@@ -1127,7 +1127,7 @@ export function matchMediaQueryString(mediaQueryString: string | string[], cache
 			return true;
 		}
 
-		const result = checkIfMediaQueryMatches(mediaQueryString);
+		const result = checkIfMediaQueryMatchesCached(mediaQueryString);
 		if (result) {
 			cachedQueries.push(mediaQueryString);
 			return result;
@@ -1144,7 +1144,7 @@ export function matchMediaQueryString(mediaQueryString: string | string[], cache
 			continue;
 		}
 
-		if (!checkIfMediaQueryMatches(mq)) {
+		if (!checkIfMediaQueryMatchesCached(mq)) {
 			return false;
 		}
 

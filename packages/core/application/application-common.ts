@@ -15,6 +15,7 @@ import type { ApplicationEventData, CssChangedEventData, DiscardedErrorEventData
 import { applyAccessibilityCssToRoot, readyInitAccessibilityCssHelper, readyInitFontScale } from '../accessibility/accessibility-common';
 import { getActiveWindow, getAppMainEntry, getAutoSystemAppearanceChanged, isAppInBackground, setActiveWindow, setAppInBackground, setAppMainEntry, setAutoSystemAppearanceChanged } from './helpers-common';
 import { getNativeScriptGlobals } from '../globals/global-utils';
+import { invalidateMediaQueryCache } from '../media-query-list';
 import { SDK_VERSION } from '../utils/constants';
 import type { NativeWindow, NativeWindowEventData, PrimaryWindowChangedEventData, WindowBase, WindowCloseEventData, WindowContentRequest, WindowContentResolver, WindowLayoutDirectionChangedEventData, WindowOpenEventData, WindowOpenOptions, WindowOrientationChangedEventData, WindowRole, WindowSystemAppearanceChangedEventData } from '../native-window';
 import { NativeWindowEvents, WindowEvents } from '../native-window/native-window-interfaces';
@@ -670,6 +671,7 @@ export class ApplicationCommon {
 	 * the change events, because app code observed the outgoing window's values.
 	 */
 	private syncTraitsFromWindow(nativeWindow: NativeWindow): void {
+		invalidateMediaQueryCache();
 		const orientation = nativeWindow.orientation();
 		if (orientation) {
 			if (this._orientation === undefined) {
@@ -970,6 +972,7 @@ export class ApplicationCommon {
 		}
 
 		this._orientation = value;
+		invalidateMediaQueryCache();
 
 		// Update metrics early enough regardless of the existence of root view
 		// Also, CSS will use the correct size values during update trigger
@@ -1030,6 +1033,7 @@ export class ApplicationCommon {
 			return;
 		}
 		this._systemAppearance = value;
+		invalidateMediaQueryCache();
 		this.systemAppearanceChanged(this.getRootView(), value);
 		this.notify(<SystemAppearanceChangedEventData>{
 			eventName: this.systemAppearanceChangedEvent,
