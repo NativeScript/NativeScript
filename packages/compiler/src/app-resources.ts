@@ -8,7 +8,7 @@ import { dirname, join, relative, resolve } from 'node:path';
 import ts from 'typescript';
 import { mergePlist, readPlist, writePlist, type PlistDict } from './plist.ts';
 import { productLines, type SwiftPackage } from './ios-dependencies.ts';
-import { KIT_PLUGINS } from './core.ts';
+import { KIT_PLUGINS, STUBBABLE_PLUGINS, STUBBED_PLUGINS } from './core.ts';
 import { mirror, writeIfChanged } from './mirror.ts';
 
 /** The literal values of nativescript.config.ts's exported object; anything computed is left out. */
@@ -71,6 +71,25 @@ export function pluginReplacements(app: string, platform: 'ios' | 'android'): Re
   return Object.fromEntries(Object.entries(replacements ?? {}).map(([name, file]) => [name, resolve(app, file)]));
 }
 
+/**
+ * The binary-only plugins the app uses that `release.stubPlugins` lets the build stub. Any other binary-only plugin it
+ * uses, neither stubbed nor replaced, stops the build.
+ */
+export function stubbedPlugins(app: string, platform: 'ios' | 'android'): { stubbed: string[]; errors: string[] } {
+  const asked = releaseOptions(app, platform).stubPlugins;
+  if (asked !== undefined && (!Array.isArray(asked) || asked.some((x) => typeof x !== 'string'))) throw new Error(`nativescript.config: release.stubPlugins is a list of package names`);
+  const stubs = new Set<string>((asked as string[] | undefined) ?? []);
+  for (const name of stubs) if (!STUBBABLE_PLUGINS.includes(name)) throw new Error(`nativescript.config: release.stubPlugins: ${name} has no stand-in (there are stand-ins for ${STUBBABLE_PLUGINS.join(', ')})`);
+  const replaced = pluginReplacements(app, platform);
+  const direct = Object.keys(JSON.parse(readFileSync(join(app, 'package.json'), 'utf8')).dependencies ?? {});
+  const used = new Set([...direct, ...productionPlugins(app, platform).map((p) => p.name)].filter((name) => STUBBABLE_PLUGINS.includes(name) && !replaced[name]));
+  const refused = [...used].filter((name) => !stubs.has(name));
+  return {
+    stubbed: [...used].filter((name) => stubs.has(name)),
+    errors: refused.map((name) => `${name} is a binary-only plugin: it ships no TypeScript source, so a compiled build cannot compile it. Replace it with a TypeScript module of the app (release.pluginReplacements: { '${name}': './src/…' }), or build it as a no-op stand-in that renders an empty view (release.stubPlugins: ['${name}']).`),
+  };
+}
+
 export function appResourcesDir(app: string): string {
   return resolve(app, (readConfig(app).appResourcesPath as string | undefined) ?? 'App_Resources');
 }
@@ -88,8 +107,8 @@ export function productionPlugins(app: string, platform: 'ios' | 'android'): { n
   while (queue.length) {
     const { from, deps } = queue.shift()!;
     for (const name of Object.keys(deps)) {
-      // A plugin the kit implements, or the app replaces, brings none of its native pieces, nor its own dependencies' (canvas's font manager).
-      if (KIT_PLUGINS.includes(name) || replaced[name]) continue;
+      // A plugin the kit implements, the app replaces or the build stubs brings none of its native pieces, nor its own dependencies' (canvas's font manager).
+      if (KIT_PLUGINS.includes(name) || STUBBED_PLUGINS.has(name) || replaced[name]) continue;
       const dir = locatePackage(from, name);
       if (!dir || seen.has(dir)) continue;
       seen.add(dir);

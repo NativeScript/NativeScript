@@ -42,6 +42,11 @@ interface IConfigRelease {
 	 */
 	pluginSources?: Record<string, string>;
 	/**
+	 * Binary-only plugins (no TypeScript source, such as `nativescript-ui-listview`) to build as no-op stand-ins:
+	 * their views render empty and their methods do nothing. Without it, such a plugin stops the build.
+	 */
+	stubPlugins?: string[];
+	/**
 	 * Build despite properties core declares that the compiled build does not apply, with a warning for each.
 	 */
 	allowUnimplementedProperties?: boolean;

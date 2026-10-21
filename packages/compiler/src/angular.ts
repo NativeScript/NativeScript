@@ -7,6 +7,35 @@ import { dirname, extname, isAbsolute, join, relative } from 'node:path';
 import { scopeTemplate, type Attr, type ComponentIR, type ComponentStyle, type DirectiveUse, type Event, type QueryHook, type TNode } from './ir.ts';
 import { rewrite, type Scope } from './rewrite.ts';
 import { canonical } from './elements.ts';
+import { STUBBED_PLUGINS } from './core.ts';
+
+/** The elements of the binary-only plugins `release.stubPlugins` can stub, by lowercase tag, and their packages. */
+const STUB_ELEMENTS: Record<string, string> = {
+  radradialgauge: 'nativescript-ui-gauge',
+  radlistview: 'nativescript-ui-listview',
+  radsidedrawer: 'nativescript-ui-sidedrawer',
+  radcalendar: 'nativescript-ui-calendar',
+  raddataform: 'nativescript-ui-dataform',
+  radautocompletetextview: 'nativescript-ui-autocomplete',
+  radcartesianchart: 'nativescript-ui-chart',
+  radpiechart: 'nativescript-ui-chart',
+};
+
+/** What a stubbed element keeps: its place in the layout and its box, which its stand-in, an empty ContentView, takes. */
+const STUB_LAYOUT_ATTRS = new Set([
+  'row', 'col', 'rowSpan', 'colSpan', 'width', 'height', 'minWidth', 'minHeight',
+  'class', 'scaleX', 'scaleY', 'translateX', 'translateY', 'rotate', 'opacity', 'visibility',
+  'horizontalAlignment', 'verticalAlignment',
+  'margin', 'marginTop', 'marginRight', 'marginBottom', 'marginLeft',
+  'padding', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft',
+  'left', 'top', 'dock', 'order', 'flexGrow', 'flexShrink', 'alignSelf',
+  'backgroundColor', 'borderRadius', 'borderWidth', 'borderColor',
+]);
+
+const stubbedElement = (tag: string): boolean => {
+  const pkg = STUB_ELEMENTS[tag.replace(/-/g, '').toLowerCase()];
+  return !!pkg && STUBBED_PLUGINS.has(pkg);
+};
 
 /** Angular's standalone component as the release build sees it. */
 export interface AngularComponent extends ComponentIR {
@@ -347,7 +376,10 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
 
   /** The expressions a node evaluates in the view it is in (its children's are theirs): where its pipes are. */
   const ownExpressions = (n: ng.TmplAstNode): ng.AST[] => {
-    if (n instanceof ng.TmplAstElement) return [...n.inputs.map((i) => i.value), ...n.children.flatMap((c) => (c instanceof ng.TmplAstBoundText ? [c.value] : []))];
+    if (n instanceof ng.TmplAstElement) {
+      if (!selectors.has(n.name) && stubbedElement(n.name)) return n.inputs.filter((i) => STUB_LAYOUT_ATTRS.has(i.name) || i.type === ng.BindingType.Class || i.type === ng.BindingType.Style).map((i) => i.value);
+      return [...n.inputs.map((i) => i.value), ...n.children.flatMap((c) => (c instanceof ng.TmplAstBoundText ? [c.value] : []))];
+    }
     // `*ngFor` on an element: the element's own inputs are the template's, evaluated in each view it renders.
     if (n instanceof ng.TmplAstTemplate) return [...n.templateAttrs, ...(n.tagName === 'ng-template' ? n.inputs : [])].flatMap((a) => (a instanceof ng.TmplAstBoundAttribute ? [a.value] : []));
     if (n instanceof ng.TmplAstIfBlock) return n.branches.flatMap((b) => (b.expression ? [b.expression] : []));
@@ -389,6 +421,42 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
       if (n instanceof ng.TmplAstElement && n.name === 'ng-container') {
         at(n.startSourceSpan);
         out.push(...container(n, loops));
+        continue;
+      }
+      if (n instanceof ng.TmplAstElement && !selectors.has(n.name) && stubbedElement(n.name)) {
+        at(n.startSourceSpan);
+        const attrs: Attr[] = [];
+        for (const a of n.attributes) if (STUB_LAYOUT_ATTRS.has(a.name)) attrs.push({ name: a.name, value: a.value });
+        const toggles = n.inputs.filter((i) => i.type === ng.BindingType.Class);
+        if (toggles.length) {
+          at(toggles[0].sourceSpan);
+          const fixed = attrs.findIndex((a) => a.name === 'class');
+          const base = fixed >= 0 ? attrs.splice(fixed, 1)[0].value ?? '' : '';
+          const parts = [JSON.stringify(base), ...toggles.map((t) => `(${code(t.value, loops)}) ? ${JSON.stringify(t.name)} : ''`)];
+          attrs.push({ name: 'class', method: expr(`[${parts.join(', ')}].filter((c) => !!c).join(' ')`, loops) });
+        }
+        for (const i of n.inputs) {
+          if (i.type === ng.BindingType.Class) continue;
+          if (i.type === ng.BindingType.Style && i.name !== 'style') {
+            at(i.sourceSpan);
+            const v = code(i.value, loops);
+            attrs.push({ name: i.name, method: expr(i.unit ? `((${v}) == null ? (${v}) : \`\${${v}}${i.unit}\`)` : v, loops, true) });
+            continue;
+          }
+          if ((i.type === ng.BindingType.Property || i.type === ng.BindingType.Attribute) && STUB_LAYOUT_ATTRS.has(i.name)) {
+            at(i.sourceSpan);
+            const root = i.value instanceof ng.ASTWithSource ? i.value.ast : i.value;
+            const chained = root instanceof ng.SafePropertyRead || root instanceof ng.SafeKeyedRead || root instanceof ng.SafeCall;
+            attrs.push({ name: i.name, method: expr(code(i.value, loops), loops, chained) });
+          }
+        }
+        const refs = n.references.map((r) => r.name);
+        const hooks = queryHooks(refs, null, 'ContentView', loops);
+        const statics = hooks.length ? queries.filter((q) => q.static && q.ref && refs.includes(q.ref) && staticRefs.has(q.ref)) : [];
+        for (const q of statics) staticQueries.delete(q);
+        const late = statics.length > 0 && staticQueries.size === 0;
+        out.push({ kind: 'element', tag: 'ContentView', attrs, events: [], children: [], ...(hooks.length ? { queries: hooks } : {}), ...(late ? { init: true } : {}) });
+        if (late) lateInit = true;
         continue;
       }
       if (n instanceof ng.TmplAstElement) {
