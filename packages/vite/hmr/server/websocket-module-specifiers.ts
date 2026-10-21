@@ -507,8 +507,24 @@ export function resolveCandidateFilePath(candidate: string, projectRoot: string,
 	}
 
 	// Linked source checkouts keep private node_modules outside both roots.
-	const fromLinkedDeps = probeNodeModulesTail(listLinkedDependencyNodeModulesDirs(projectRoot));
-	if (fromLinkedDeps) return fromLinkedDeps;
+	// Only packages the app's own install lacks may come from them: each
+	// extension/index variant is resolved separately, so a variant missing
+	// from the app's copy would otherwise pull in a checkout's other copy.
+	if (cleaned.includes('/node_modules/')) {
+		const tail = cleaned.slice(cleaned.lastIndexOf('/node_modules/') + '/node_modules/'.length);
+		const pkgName = extractRootPackageName(tail);
+		const installedForApp =
+			!!pkgName &&
+			[projectRoot, workspaceRoot].some((root) => {
+				if (!root) return false;
+				const nodeModules = path.join(path.resolve(root), 'node_modules');
+				return existsSync(path.join(nodeModules, pkgName)) || existsSync(path.join(nodeModules, '.pnpm', 'node_modules', pkgName));
+			});
+		if (!installedForApp) {
+			const fromLinkedDeps = probeNodeModulesTail(listLinkedDependencyNodeModulesDirs(projectRoot));
+			if (fromLinkedDeps) return fromLinkedDeps;
+		}
+	}
 
 	return null;
 }

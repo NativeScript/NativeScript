@@ -261,6 +261,16 @@ describe('filterExistingNodeModulesTransformCandidates — anchors to the found 
 		expect(filterExistingNodeModulesTransformCandidates(spec, [spec], app, app)).toEqual([`/@fs${pluginFile.replace(/\\/g, '/')}`]);
 	});
 
+	it('never mixes in a linked checkout copy of a package the app installs', () => {
+		const tree = createLinkedDepSandbox();
+		sandbox = tree.sandbox;
+		writeSandboxFile(tree.checkout, 'packages/auth/node_modules/shared/index.android.js');
+		writeSandboxFile(tree.app, 'node_modules/shared/index.js');
+		const spec = '/node_modules/shared/index';
+
+		expect(filterExistingNodeModulesTransformCandidates(spec, [`${spec}.android.js`, `${spec}.js`], tree.app, tree.app)).toEqual([`${spec}.js`]);
+	});
+
 	it('keeps an app-local candidate unchanged', () => {
 		const tree = createLinkedDepSandbox({});
 		sandbox = tree.sandbox;
