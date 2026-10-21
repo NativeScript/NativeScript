@@ -10,7 +10,7 @@ import { viteStaticCopy } from 'vite-plugin-static-copy';
 import { getCliFlags } from '../helpers/cli-flags.js';
 import NativeScriptPlugin from '../helpers/resolver.js';
 import nsConfigAsJsonPlugin from '../helpers/config-as-json.js';
-import { findMonorepoWorkspaceRoot, getProjectRootPath } from '../helpers/project.js';
+import { getDevServerFsAllow, getProjectRootPath } from '../helpers/project.js';
 import { aliasCssTree } from '../helpers/css-tree.js';
 import { getGlobalDefines } from '../helpers/global-defines.js';
 import { getWorkerPlugins, workerHmrUrlPlugin, workerUrlPlugin, nativescriptWorkerLoaderStubPlugin } from '../helpers/workers.js';
@@ -506,13 +506,14 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 					// though the file is right there on disk.
 					//
 					// Detect the real workspace root once at config time and
-					// add it to `fs.allow`. `mergeConfig` concatenates arrays,
-					// so apps that pass their own `server.fs.allow` keep
-					// their entries on top of this baseline.
+					// add it to `fs.allow`, alongside the workspace roots of any
+					// linked dependency checkouts whose files the dev server must
+					// serve. `mergeConfig` concatenates arrays, so apps that pass
+					// their own `server.fs.allow` keep their entries on top of
+					// this baseline.
 					...(() => {
-						const monorepoRoot = findMonorepoWorkspaceRoot(projectRoot);
-						if (!monorepoRoot || monorepoRoot === projectRoot) return {};
-						return { fs: { allow: [monorepoRoot, projectRoot] } };
+						const allow = getDevServerFsAllow(projectRoot);
+						return allow.length ? { fs: { allow } } : {};
 					})(),
 				}
 			: {},
