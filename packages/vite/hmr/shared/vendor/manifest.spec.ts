@@ -320,6 +320,16 @@ describe('collectVendorModules — source-only dependencies', () => {
 		expect(collectVendorModules(root, 'ios', 'typescript').entries).toContain('stale-main-plugin');
 	});
 
+	it('excludes a semver dependency whose extensionless main resolves only to TS source', () => {
+		const root = makeApp({ 'ts-main-lib': '1.0.0', 'ts-dir-lib': '1.0.0' });
+		installPackage(root, 'ts-main-lib', { main: 'src/index' }, { 'src/index.ts': 'export const x = 1;\n' });
+		installPackage(root, 'ts-dir-lib', { main: 'src' }, { 'src/index.tsx': 'export const y = 1;\n' });
+
+		const entries = collectVendorModules(root, 'ios', 'typescript').entries;
+		expect(entries).not.toContain('ts-main-lib');
+		expect(entries).not.toContain('ts-dir-lib');
+	});
+
 	it('vendors imported subpaths of monorepo root deps that have no root entry', () => {
 		const workspace = makeApp({ 'subpath-lib': '1.0.0', 'wildcard-lib': '1.0.0' });
 		writeFileSync(join(workspace, 'nx.json'), '{}');

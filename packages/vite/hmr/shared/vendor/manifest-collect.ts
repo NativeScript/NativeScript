@@ -880,6 +880,7 @@ function classifyPackageEntry(name: string, projectRequire: ReturnType<typeof cr
 			for (const e of extensionsToTry) {
 				if (fs.existsSync(abs + e) || fs.existsSync(path.join(abs, `index${e}`))) return 'compiled';
 			}
+			if (['.ts', '.tsx', '.mts', '.cts'].some((e) => fs.existsSync(abs + e) || fs.existsSync(path.join(abs, `index${e}`)))) sourceEntryFound = true;
 			continue;
 		}
 		// A non-JS extension (typically `.ts`/`.tsx`) means the package
