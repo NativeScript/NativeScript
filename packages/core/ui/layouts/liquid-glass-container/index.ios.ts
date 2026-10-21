@@ -55,44 +55,6 @@ export class LiquidGlassContainer extends LiquidGlassContainerCommon {
 		return false;
 	}
 
-	// When LiquidGlassContainer is a child of FlexboxLayout (or any layout that passes
-	// a measure spec already reduced by the child's padding), AbsoluteLayout.onMeasure
-	// would subtract our padding a second time. To prevent this double-deduction we
-	// temporarily zero the effective padding/border values before delegating to the
-	// AbsoluteLayout measurement, then restore them immediately after.
-	public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
-		const pl = this.effectivePaddingLeft;
-		const pr = this.effectivePaddingRight;
-		const pt = this.effectivePaddingTop;
-		const pb = this.effectivePaddingBottom;
-		const bl = this.effectiveBorderLeftWidth;
-		const br = this.effectiveBorderRightWidth;
-		const bt = this.effectiveBorderTopWidth;
-		const bb = this.effectiveBorderBottomWidth;
-
-		this.effectivePaddingLeft = 0;
-		this.effectivePaddingRight = 0;
-		this.effectivePaddingTop = 0;
-		this.effectivePaddingBottom = 0;
-		this.effectiveBorderLeftWidth = 0;
-		this.effectiveBorderRightWidth = 0;
-		this.effectiveBorderTopWidth = 0;
-		this.effectiveBorderBottomWidth = 0;
-
-		try {
-			super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-		} finally {
-			this.effectivePaddingLeft = pl;
-			this.effectivePaddingRight = pr;
-			this.effectivePaddingTop = pt;
-			this.effectivePaddingBottom = pb;
-			this.effectiveBorderLeftWidth = bl;
-			this.effectiveBorderRightWidth = br;
-			this.effectiveBorderTopWidth = bt;
-			this.effectiveBorderBottomWidth = bb;
-		}
-	}
-
 	// When children animate with translate (layer transform), UIVisualEffectView-based
 	// container effects may recompute based on the underlying frames (not transforms),
 	// which can cause jumps. Normalize any residual translation into the
