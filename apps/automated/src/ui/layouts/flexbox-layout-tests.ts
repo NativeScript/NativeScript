@@ -1846,9 +1846,7 @@ let getGlassViews = (template: string) => {
 	};
 };
 
-// #11134 assumed the parent removes the child's padding from the measure spec;
-// no layout does that (issue #11561), so padded glass must measure its content
-// inside the padding, not at the full border-box width.
+// Parents subtract only a child's margins from its measure spec, so glass views must deduct their own padding.
 
 let activity_liquidglass_padding = () =>
 	getGlassViews(
