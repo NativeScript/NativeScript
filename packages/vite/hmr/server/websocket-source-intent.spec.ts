@@ -213,4 +213,31 @@ describe('processCodeForDevice source import intent', () => {
 		expect(rewritten).toContain('from "http://localhost:5173/ns/m/node_modules/@nativescript-community/ui-canvas/canvas.ios"');
 		expect(rewritten).toContain('from "http://localhost:5173/ns/m/node_modules/@nativescript-community/ui-canvas/index.common"');
 	});
+
+	it('gives a runtime-plugin module the same URL whether it is imported, re-exported or dynamically imported', () => {
+		const root = mkdtempSync(join(tmpdir(), 'ns-websocket-source-intent-'));
+		tempRoots.push(root);
+
+		const pkgDir = join(root, 'node_modules', '@triniwiz', 'nativescript-masonkit');
+		mkdirSync(pkgDir, { recursive: true });
+		writeFileSync(join(root, 'package.json'), JSON.stringify({ name: 'fixture-app' }, null, 2));
+		writeFileSync(join(pkgDir, 'package.json'), JSON.stringify({ name: '@triniwiz/nativescript-masonkit', main: 'index', nativescript: { platforms: { ios: '8.0.0' } } }, null, 2));
+		writeFileSync(join(pkgDir, 'framework-registry.js'), 'export const frameworkRegistry = new Map();\n');
+		writeFileSync(join(pkgDir, 'common.js'), [`import { frameworkRegistry } from './framework-registry';`, `export const registry = frameworkRegistry;`].join('\n'));
+		writeFileSync(join(pkgDir, 'index.ios.js'), [`export { frameworkRegistry } from './framework-registry';`, `export * from './common';`, `export const load = () => import('./framework-registry');`].join('\n'));
+
+		process.chdir(root);
+
+		const served = (sourceId: string, viteTransformed: string) => rewriteImports(processCodeForDevice(viteTransformed, false, true, true, sourceId), sourceId, new Map(), new Map(), root, false, undefined, 'http://localhost:5173', true);
+		const registryUrl = 'http://localhost:5173/ns/m/node_modules/@triniwiz/nativescript-masonkit/framework-registry';
+
+		const common = served('/node_modules/@triniwiz/nativescript-masonkit/common.js', [`import { frameworkRegistry } from "/node_modules/@triniwiz/nativescript-masonkit/framework-registry.js";`, `export const registry = frameworkRegistry;`].join('\n'));
+		expect(common).toContain(`from "${registryUrl}"`);
+
+		const index = served('/node_modules/@triniwiz/nativescript-masonkit/index.ios.js', [`export { frameworkRegistry } from "/node_modules/@triniwiz/nativescript-masonkit/framework-registry.js";`, `export * from "/node_modules/@triniwiz/nativescript-masonkit/common.js";`, `export const load = () => import("/node_modules/@triniwiz/nativescript-masonkit/framework-registry.js");`].join('\n'));
+		expect(index).toContain(`export { frameworkRegistry } from "${registryUrl}"`);
+		expect(index).toContain(`export * from "http://localhost:5173/ns/m/node_modules/@triniwiz/nativescript-masonkit/common"`);
+		expect(index).toContain(`import("${registryUrl}")`);
+		expect(index).not.toContain('framework-registry.js');
+	});
 });
