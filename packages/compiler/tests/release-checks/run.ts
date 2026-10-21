@@ -21,7 +21,7 @@ import { angularLibraries } from '../../src/angular-libraries.ts';
 import { pathAliases } from '../../src/app-paths.ts';
 import { appImports, reachedFrom, tsconfigIncluded } from '../../src/app-modules.ts';
 import { runtimeFile } from '../../src/plugins/resolve.ts';
-import { PluginSources, verifyBundle } from '../../src/plugins/source.ts';
+import { PluginSources, verify, verifyBundle } from '../../src/plugins/source.ts';
 import { manifest, ownTypings, scopedImports, usedImports } from '../../src/plugins/native.ts';
 import { singleTry, Translator as SwiftTranslator } from '../../src/swift.ts';
 import { translateModules } from '../../src/modules.ts';
@@ -249,6 +249,19 @@ export class GlyphPipe { constructor(@Inject(TOKEN) private config: any, @Option
     let missing = '';
     try { plugins.sourceOf(testing); } catch (e) { missing = String(e); }
     check(missing.includes('has no TypeScript source'), "a bundle file without sources says so");
+
+    // A plugin published as ES5 CommonJS is checked against its source lowered the same way.
+    const cjsSource = 'export class Counter {\n  constructor(private start: number) {}\n  next(step = 1): number { return this.start + step; }\n}\nexport const label = (n: number) => `n${n}`;\n';
+    const cjsSrc = w('cjs/src/index.ios.ts', cjsSource);
+    const cjsOut = (text: string) => ts.transpileModule(text, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES5 } }).outputText;
+    const cjsJs = w('node_modules/@hk/cjs/index.ios.js', cjsOut(cjsSource));
+    let cjs = '';
+    try { verify('@hk/cjs', cjsJs, cjsSrc); } catch (e) { cjs = String(e); }
+    writeFileSync(cjsJs, cjsOut(cjsSource.replace('this.start + step', 'this.start - step')));
+    w('patches/@hk+cjs+1.0.0.patch', '');
+    let cjsChanged = '';
+    try { verify('@hk/cjs', cjsJs, cjsSrc, dir, '1.0.0'); } catch (e) { cjsChanged = String(e); }
+    check(!cjs && cjsChanged.includes('does not match the published') && cjsChanged.includes('patched by patches/@hk+cjs+1.0.0.patch'), `an ES5 CommonJS plugin is verified against its source, and a mismatch names the app's patch of it${cjs ? `: ${cjs.split('\n').slice(0, 4).join(' ')}` : ''}`);
 
     // A plugin augmenting another's module in the declarations beside its source, as firebase-messaging augments firebase-core.
     symlinkSync(join(modulesDir, '@nativescript'), join(modules, '@nativescript'));
