@@ -333,6 +333,16 @@ const replacements = { ...kitReplacements, ...pluginReplacements(app, platform) 
 modules.push(...Object.values(replacements).filter((f) => !modules.includes(f)));
 const { checker, program, files: sourceFiles, pluginFiles, resolved, lenient: lenientApp } = createProgram(modules, virtual, platform, undefined, plugins, declarations, replacements, {}, aliased);
 const infos = new Map<string, ComponentInfo & { outputs?: string[]; outputFields?: Record<string, string>; optional?: string[]; passed?: boolean; fragment?: boolean; initThrows?: boolean; setters?: string[]; throwingSetters?: string[]; propAliases?: Record<string, string>; changes?: boolean }>(components.map((c) => [c.name, { name: c.name, props: c.props, outputs: c.outputs, outputFields: c.outputFields, optional: c.optional, passed: c.passed, fragment: framework === 'angular' && !c.page && isFragment(c.template), setters: c.setters, propAliases: c.propAliases, changes: c.changes }]));
+// A component whose template is one fragment component is a fragment too, however deep the chain.
+if (framework === 'angular') {
+  for (let changed = true; changed; ) {
+    changed = false;
+    for (const c of components) {
+      const info = infos.get(c.name)!;
+      if (!info.fragment && !c.page && isFragment(c.template, infos)) { info.fragment = true; changed = true; }
+    }
+  }
+}
 // A closed world: the plugin code the app reaches, checked against what npm installed before it is compiled.
 const appFiles = [...modules, ...components.map((c) => c.file)];
 const reach = reachability(program, resolved, appFiles, new Set(pluginFiles), platform);
