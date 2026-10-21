@@ -312,4 +312,26 @@ describe('collectVendorModules — source-only dependencies', () => {
 
 		expect(collectVendorModules(root, 'ios', 'typescript').entries).toContain('ghost-lib');
 	});
+
+	it('vendors a semver plugin whose declared main is missing on disk', () => {
+		const root = makeApp({ 'stale-main-plugin': '1.0.0' });
+		installPackage(root, 'stale-main-plugin', { main: 'plugin' }, { 'index.ios.js': 'module.exports = {};\n', 'index.android.js': 'module.exports = {};\n' });
+
+		expect(collectVendorModules(root, 'ios', 'typescript').entries).toContain('stale-main-plugin');
+	});
+
+	it('vendors imported subpaths of monorepo root deps that have no root entry', () => {
+		const workspace = makeApp({ 'subpath-lib': '1.0.0', 'wildcard-lib': '1.0.0' });
+		writeFileSync(join(workspace, 'nx.json'), '{}');
+		installPackage(workspace, 'subpath-lib', {}, { 'a.js': 'export default 1;\n' });
+		installPackage(workspace, 'wildcard-lib', { exports: { './*': './dist/*.js' } }, { 'dist/w.js': 'export default 2;\n' });
+		const app = join(workspace, 'apps', 'app');
+		mkdirSync(join(app, 'src'), { recursive: true });
+		writeFileSync(join(app, 'package.json'), JSON.stringify({ name: 'app', version: '0.0.0', dependencies: {} }));
+		writeFileSync(join(app, 'src', 'app.ts'), "import a from 'subpath-lib/a.js';\nimport w from 'wildcard-lib/w';\nconsole.log(a, w);\n");
+
+		const entries = collectVendorModules(app, 'ios', 'typescript').entries;
+		expect(entries).toContain('subpath-lib/a.js');
+		expect(entries).toContain('wildcard-lib/w');
+	});
 });

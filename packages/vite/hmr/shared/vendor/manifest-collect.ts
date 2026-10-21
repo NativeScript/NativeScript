@@ -776,8 +776,8 @@ function compiledJsExtensionsForPlatform(platform: string | undefined): string[]
  *    `package.json` redirects to `../../node_modules/<name>` to avoid
  *    duplicate installs while letting the NativeScript CLI discover
  *    plugins from the app directory).
- *  - Specs whose installed package.json can't be found or parsed, except
- *    `file:` directory refs which keep their historical skip.
+ *  - Packages whose entry can't be classified, except `file:` directory
+ *    refs.
  */
 function isUnvendorableLocalSource(name: string, spec: unknown, projectRequire: ReturnType<typeof createRequire>, platform?: string): boolean {
 	if (typeof spec !== 'string') return false;
@@ -785,8 +785,8 @@ function isUnvendorableLocalSource(name: string, spec: unknown, projectRequire: 
 	const entry = classifyPackageEntry(name, projectRequire, platform);
 	if (entry === 'compiled') return false;
 	if (entry === 'source') return true;
-	// Unknown manifests keep today's behavior: `file:` directory refs skip,
-	// everything else (semver/git/url specs, `file:` tarballs) vendors.
+	// Unclassifiable entries fall back to the spec: `file:` directory refs
+	// skip, everything else (semver/git/url specs, `file:` tarballs) vendors.
 	if (spec.startsWith('file:') && !/\.t(?:ar\.)?gz(?:[?#].*)?$/.test(spec)) return true;
 	return false;
 }
@@ -795,8 +795,12 @@ function isUnvendorableLocalSource(name: string, spec: unknown, projectRequire: 
  * Classify an installed package's entry point:
  *  - `'compiled'` — a `.js`/`.mjs`/`.cjs` entry file (or its platform
  *    variant like `index.ios.js`) exists on disk.
- *  - `'source'` — the manifest resolves but no compiled entry exists.
- *  - `'unknown'` — the installed package.json can't be found or parsed.
+ *  - `'source'` — a declared entry file exists on disk, but none is
+ *    compiled JS.
+ *  - `'unknown'` — the installed package.json can't be found or parsed, or
+ *    no declared entry exists on disk. A package without a root entry
+ *    (subpath-only or wildcard `exports`) is not evidence of source, and
+ *    its subpaths may still be vendored as monorepo root deps.
  */
 function classifyPackageEntry(name: string, projectRequire: ReturnType<typeof createRequire>, platform?: string): 'compiled' | 'source' | 'unknown' {
 	let pkgJsonPath: string | null = null;
@@ -851,6 +855,7 @@ function classifyPackageEntry(name: string, projectRequire: ReturnType<typeof cr
 		candidates.push('index');
 	}
 	const extensionsToTry = compiledJsExtensionsForPlatform(platform);
+	let sourceEntryFound = false;
 	for (const cand of candidates) {
 		const abs = path.resolve(pkgDir, cand);
 		const ext = path.extname(cand);
@@ -880,8 +885,9 @@ function classifyPackageEntry(name: string, projectRequire: ReturnType<typeof cr
 		// A non-JS extension (typically `.ts`/`.tsx`) means the package
 		// only ships TS source — esbuild's vendor pipeline can't resolve
 		// any tsconfig-aliased imports inside it.
+		if (fs.existsSync(abs)) sourceEntryFound = true;
 	}
-	return 'source';
+	return sourceEntryFound ? 'source' : 'unknown';
 }
 
 function canResolveDependencyPackageJson(specifier: string, projectRequire: ReturnType<typeof createRequire>): boolean {
