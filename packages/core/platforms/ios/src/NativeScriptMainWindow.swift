@@ -175,8 +175,8 @@ struct NativeScriptAppView: UIViewRepresentable {
 
 @available(iOS 13.0, *)
 @objc public class NativeScriptViewFactory: NSObject, NativeScriptEmbedderDelegate {
-    @objc static var shared: NativeScriptViewFactory?
-    @objc static var app: NativeScriptContainerCtrl?
+    @objc public static var shared: NativeScriptViewFactory?
+    @objc public static var app: NativeScriptContainerCtrl?
     
     // holds key/value map of views for lifecycle handling
     @objc public var views: NSMutableDictionary?

@@ -1,6 +1,6 @@
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { cpSync, existsSync, mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { basename, dirname, join } from 'node:path';
 import { mirror } from '../mirror.ts';
@@ -112,14 +112,24 @@ export function coreNativeProject(core: string, imported: Set<string>, out: stri
     project.settings.SWIFT_INCLUDE_PATHS = '"$(inherited) $(SRCROOT)/Core/src"';
   }
   if (swift) {
-    for (const f of readdirSync(swift.path)) if (f.endsWith('.swift')) cpSync(join(swift.path, f), join(dir, swift.module, f));
-    project.targets += `  ${swift.module}:\n    type: library.static\n    platform: iOS\n    sources: [Core/${swift.module}]\n    settings:\n      base:\n        SWIFT_VERSION: "5"\n        SWIFT_INCLUDE_PATHS: $(SRCROOT)/Core/src\n${Object.entries(swiftSettings).map(([k, v]) => `        ${k}: ${v}\n`).join('')}`;
+    mkdirSync(join(dir, swift.module), { recursive: true });
+    for (const f of readdirSync(swift.path)) if (f.endsWith('.swift')) writeFileSync(join(dir, swift.module, f), publicizeCoreSwift(readFileSync(join(swift.path, f), 'utf8')));
+    project.targets += `  ${swift.module}:\n    type: library.static\n    platform: iOS\n    sources: [Core/${swift.module}]\n    settings:\n      base:\n        SWIFT_VERSION: "5"\n        SWIFT_INSTALL_OBJC_HEADER: NO\n        SWIFT_INCLUDE_PATHS: $(SRCROOT)/Core/src\n${Object.entries(swiftSettings).map(([k, v]) => `        ${k}: ${v}\n`).join('')}`;
     project.kitDependencies += `      - target: ${swift.module}\n`;
     project.appDependencies += `      - target: ${swift.module}\n`;
   }
   mirror(dir, join(out, 'Core'));
   rmSync(dir, { recursive: true, force: true });
   return project;
+}
+
+/** `@nativescript/core`'s `NativeScriptMainWindow.swift` declares `shared` and `app` in `objc!nsswiftsupport.d.ts` without `public`. */
+const publicizeCoreSwift = (code: string) => code.replace(/@objc\s+static\s+var\s+(shared|app)\b/g, '@objc public static var $1');
+
+/** Arguments that let a plugin's or the app's Swift import `nsswiftsupport` when extracting its symbol table. */
+export function coreSwiftExtractArgs(core: string, scratch: string): string[] {
+  const m = coreNativeModules(core).find((x) => x.kind === 'swift');
+  return m ? extractArgs(m, scratch) : [];
 }
 
 /** The `ios-…-simulator` framework of an xcframework, which the tables are generated from. */
@@ -144,7 +154,7 @@ function files(m: CoreNativeModule): string[] {
 }
 
 function key(m: CoreNativeModule): string {
-  const h = createHash('sha256').update(`core-tables-1\0${m.kind}\0${m.module}\0`);
+  const h = createHash('sha256').update(`core-tables-2\0${m.kind}\0${m.module}\0`);
   for (const f of files(m).sort()) h.update(basename(f)).update('\0').update(readFileSync(f)).update('\0');
   return h.digest('hex').slice(0, 16);
 }
@@ -153,7 +163,13 @@ function extractArgs(m: CoreNativeModule, scratch: string): string[] {
   if (m.kind === 'framework') return ['-F', join(simulatorSlice(m.path)!, '..')];
   if (m.kind === 'clang') return ['-I', m.path];
   const { target, sdk } = iosTarget();
-  const swift = readdirSync(m.path).filter((f) => f.endsWith('.swift')).map((f) => join(m.path, f));
+  const staged = join(scratch, 'src');
+  mkdirSync(staged, { recursive: true });
+  const swift = readdirSync(m.path).filter((f) => f.endsWith('.swift')).map((f) => {
+    const out = join(staged, f);
+    writeFileSync(out, publicizeCoreSwift(readFileSync(join(m.path, f), 'utf8')));
+    return out;
+  });
   try {
     execFileSync('xcrun', ['swiftc', '-emit-module', '-module-name', m.module, '-target', target, '-sdk', sdk, '-swift-version', '5', '-parse-as-library',
       '-I', m.path, '-emit-module-path', join(scratch, `${m.module}.swiftmodule`), ...swift], { stdio: ['ignore', 'ignore', 'pipe'], maxBuffer: 1 << 28 });

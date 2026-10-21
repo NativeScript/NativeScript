@@ -1,16 +1,18 @@
 import ts from 'typescript';
 import { existsSync, readFileSync } from 'node:fs';
-import { dirname, isAbsolute, resolve } from 'node:path';
+import { basename, dirname, isAbsolute, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { foldPlatform, type Platform } from './platform.ts';
 import { desugarConstructorFactories } from './constructor-factories.ts';
-import { KIT_PLUGINS, NATIVE_CONTROLLERS, NATIVE_VIEWS, nativeViewOf } from './core.ts';
+import { CLOSED_SOURCE_UI_PLUGINS, KIT_PLUGINS, NATIVE_CONTROLLERS, NATIVE_VIEWS, nativeViewOf } from './core.ts';
 import type { PluginSources } from './plugins/source.ts';
 import { packageOf, runtimeFile } from './plugins/resolve.ts';
 import { NATIVE_VIEWS_ANDROID } from './core-kotlin.ts';
 
-const ANGULAR_RX_FILE = resolve(dirname(fileURLToPath(import.meta.url)), '../runtime/angular-rx.ts');
+const RUNTIME_DIR = resolve(dirname(fileURLToPath(import.meta.url)), '../runtime');
+const ANGULAR_RX_FILE = resolve(RUNTIME_DIR, 'angular-rx.ts');
 const ANGULAR_RX_MODULES = new Set(['@angular/common/http', '@angular/core/rxjs-interop', '@angular/router', '@nativescript/angular', '@angular#rx']);
+const CLOSED_SOURCE_UI_FILE = resolve(RUNTIME_DIR, 'closed-source-ui.ts');
 
 /**
  * The release build's view of the framework APIs an app imports. Only their
@@ -208,9 +210,9 @@ const SHIMS: Record<string, string> = {
     export declare function withFetch(): any;
     export declare function provideHttpClient(...features: any[]): any;
     export declare function provideNativeScriptHttpClient(...features: any[]): any;
-    export declare function provideNativeScriptNgZone(): any;
-    export declare function provideRouter(routes: any, ...features: any[]): any;
-    export declare function provideNativeScriptRouter(routes: any, ...features: any[]): any;
+    export declare function provideNativeScriptNgZone(options?: any): any;
+    export declare function provideRouter(routes?: any, ...features: any[]): any;
+    export declare function provideNativeScriptRouter(routes?: any, ...features: any[]): any;
     export declare class HttpClientModule { static forRoot(): any }
     export declare function bootstrapApplication(component: any, options?: any): Promise<any>;
     export declare function runNativeScriptAngularApp(options: any): void;
@@ -254,6 +256,7 @@ const SHIMS: Record<string, string> = {
       backToPreviousPage(): void;
       canGoBack(options?: any): boolean;
       canGoBackToPreviousPage(): boolean;
+      getCurrentNavigation(): any;
     }
     export declare class KitNativeDialogRef { static readonly current: KitNativeDialogRef; readonly data: any; close(result?: any): void; afterClosed(): RxObservable<any> }
     export declare class KitNativeDialogService { static readonly shared: KitNativeDialogService; open(component: any, config?: any): KitNativeDialogRef }
@@ -278,6 +281,7 @@ const SHIMS: Record<string, string> = {
     }
     export declare function isPlatformBrowser(platformId: Object): boolean;
     export declare function isPlatformServer(platformId: Object): boolean;
+    export declare function formatDate(value: string | number | Date, format: string, locale?: string, timezone?: string): string;
     export declare const DOCUMENT: import('@angular/core').InjectionToken<any>;
     export declare const CommonModule: any;
     export declare const NgIf: any;
@@ -369,6 +373,8 @@ const SHIMS: Record<string, string> = {
     export declare function linkedSignal<T>(fn: () => T, options?: CreateComputedOptions<T>): WritableSignal<T>;
     export declare function isSignal(value: unknown): value is Signal<unknown>;
     export declare function isDevMode(): boolean;
+    export declare function enableProdMode(): void;
+    export declare function resource<T = any, R = any>(options: any): any;
     export type Provider = any;
     export type EnvironmentProviders = any;
     export interface ModuleWithProviders<T = any> { ngModule: any; providers?: any[] }
@@ -566,6 +572,10 @@ const SHIMS: Record<string, string> = {
     }
     export type Event = NavigationEnd | NavigationStart | NavigationCancel | NavigationError | RoutesRecognized | ResolveStart | ResolveEnd;
     export type NavigationExtras = any;
+    export type Params = Record<string, any>;
+    export type RouterStateSnapshot = { url: string; root: ActivatedRouteSnapshot; [key: string]: any };
+    export type IsActiveMatchOptions = { paths: 'exact' | 'subset'; queryParams: 'exact' | 'subset' | 'ignored'; fragment: 'exact' | 'ignored'; matrixParams: 'exact' | 'subset' | 'ignored' };
+    export interface CanActivate { canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): any }
     export declare class Router {
       readonly url: string;
       readonly routerState: any;
@@ -576,6 +586,7 @@ const SHIMS: Record<string, string> = {
       isActive(url: string | UrlTree, exact?: any): boolean;
       navigate(commands: any[], extras?: NavigationExtras): Promise<boolean>;
       navigateByUrl(url: string | UrlTree, extras?: NavigationExtras): Promise<boolean>;
+      getCurrentNavigation(): any;
     }
     export type Routes = {
       path?: string;
@@ -707,7 +718,7 @@ const SHIMS: Record<string, string> = {
     import type { UrlTree } from '@nativescript/release';
     export type NavigationExtras = any;
     export declare class RouterExtensions {
-      readonly router: { readonly url: string; readonly events: Observable<any>; readonly routerState: any };
+      readonly router: { readonly url: string; readonly events: Observable<any>; readonly routerState: any; getCurrentNavigation(): any };
       readonly url: string;
       readonly events: Observable<any>;
       navigate(commands: any[], extras?: NavigationExtras): Promise<boolean>;
@@ -716,6 +727,7 @@ const SHIMS: Record<string, string> = {
       backToPreviousPage(): void;
       canGoBack(options?: any): boolean;
       canGoBackToPreviousPage(): boolean;
+      getCurrentNavigation(): any;
     }
     export declare const NativeDialogModule: any;
     export declare const NATIVE_DIALOG_DATA: import('@angular/core').InjectionToken<any>;
@@ -728,8 +740,10 @@ const SHIMS: Record<string, string> = {
     export declare const NSEmptyOutletComponent: any;
     export declare function provideNativeScriptHttpClient(...features: any[]): any;
     export declare function provideNativeScriptRouter(routes?: any, ...features: any[]): any;
-    export declare function provideNativeScriptNgZone(): any;
+    export declare function provideNativeScriptNgZone(options?: any): any;
     export declare function bootstrapApplication(component: any, options?: any): Promise<any>;
+    export declare function isAngularHmrRestoringRoute(): boolean;
+    export declare function generateNativeScriptView(component: any, options?: any): { firstNativeLikeView: any; ref: any };
     export type NativeDialogConfig<D = any> = { data?: D; nativeOptions?: any; [key: string]: any };
     export declare class NativeDialogRef<T = any, R = any> { readonly componentInstance: T; close(result?: R): void; afterClosed(): Observable<R | undefined> }
     export declare class NativeDialogService { open<T = any, D = any, R = any>(component: any, config?: NativeDialogConfig<D>): NativeDialogRef<T, R>; closeAll(): void }
@@ -831,6 +845,31 @@ const GLOBALS = `
     randomUUID(): \`\${string}-\${string}-\${string}-\${string}-\${string}\`;
   }
   declare var crypto: Crypto;
+  interface URLSearchParams {
+    get(name: string): string | null;
+    getAll(name: string): string[];
+    has(name: string): boolean;
+    set(name: string, value: string): void;
+    append(name: string, value: string): void;
+    delete(name: string): void;
+    toString(): string;
+    forEach(callbackfn: (value: string, key: string, parent: URLSearchParams) => void): void;
+  }
+  declare var URLSearchParams: { prototype: URLSearchParams; new (init?: string | Record<string, string> | URLSearchParams): URLSearchParams };
+  interface URL {
+    href: string;
+    readonly origin: string;
+    protocol: string;
+    host: string;
+    hostname: string;
+    port: string;
+    pathname: string;
+    search: string;
+    readonly searchParams: URLSearchParams;
+    hash: string;
+    toString(): string;
+  }
+  declare var URL: { prototype: URL; new (url: string | URL, base?: string | URL): URL };
 `;
 
 /** What the Android kit's runtime adds (kit-android `runtime/Workers.kt`): workers compiled with the app, a transfer list copied. */
@@ -844,8 +883,6 @@ const ANDROID_GLOBALS = `
     terminate(): void;
   }
   declare var Worker: { prototype: Worker; new (scriptURL: string | URL): Worker };
-  interface URL { readonly href: string; toString(): string }
-  declare var URL: { prototype: URL; new (url: string | URL, base?: string | URL): URL };
   declare function postMessage(message: any, transfer?: any[]): void;
   declare function close(): void;
 `;
@@ -899,7 +936,7 @@ const RXJS_SHIM = `
  * rest are typings or tooling.
  */
 const NOT_PLUGINS = /^(@nativescript\/(core|types|types-ios|types-android|types-minimal|webpack|vite|tailwind|angular|android|ios)|octane|@nativescript-community\/(octane|solid-js|svelte-native|vite-octane)|nativescript-vue|react|react-nativescript|solid-js|svelte|@angular\/.*|tslib|typescript|vite)$/;
-const notPlugin = (pkg: string, platform: Platform = 'ios') => NOT_PLUGINS.test(pkg) || KIT_PLUGINS.includes(pkg) || (platform === 'android' && pkg === 'rxjs');
+const notPlugin = (pkg: string, platform: Platform = 'ios') => NOT_PLUGINS.test(pkg) || KIT_PLUGINS.includes(pkg) || CLOSED_SOURCE_UI_PLUGINS.has(pkg) || (platform === 'android' && pkg === 'rxjs');
 
 /**
  * A program over the app's modules and the components' virtual classes,
@@ -941,14 +978,30 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
     const pkg = /[\\/]node_modules[\\/]((?:@[^\\/]+[\\/])?[^\\/]+)/.exec(target)?.[1].replace(/\\/g, '/');
     return kind === 'path' && (!pkg || pkg.startsWith('@nativescript/types') || !notPlugin(pkg, platform)) ? line : '';
   });
+  const augmenting = new Map<string, string | null>();
+  const augmentedSource = new Map<string, string>();
+  const augmentations = (source: string) => {
+    if (!augmenting.has(source)) {
+      const beside = source.replace(/(\.(ios|android))?\.tsx?$/, '.d.ts');
+      const found = beside !== source && existsSync(beside) && /^\s*declare module ['"]/m.test(readFileSync(beside, 'utf8')) ? beside : null;
+      augmenting.set(source, found);
+      if (found) augmentedSource.set(found, source);
+    }
+    return augmenting.get(source);
+  };
   host.getSourceFile = (name, version, onError) => {
     const text = files.get(name) ?? (isSource(name) && existsSync(name) ? readFileSync(name, 'utf8') : appTypings.has(name) ? nativeReferences(readFileSync(name, 'utf8'), name) : undefined);
     if (text === undefined) {
+      if (augmentedSource.has(name) && existsSync(name)) {
+        return ts.createSourceFile(name, augmentingDeclaration(name, augmentedSource.get(name)!), version, true);
+      }
       // A package's own TypeScript source.
       if (!/\.tsx?$/.test(name) || name.endsWith('.d.ts') || !existsSync(name)) return readLib(name, version, onError);
-      return ts.createSourceFile(name, desugarConstructorFactories(readFileSync(name, 'utf8'), name), version, true);
+      const raw = pluginFiles.has(name) ? pluginDeclaredExports(readFileSync(name, 'utf8'), name) : readFileSync(name, 'utf8');
+      return ts.createSourceFile(name, desugarConstructorFactories(raw, name), version, true);
     }
-    const code = /\.tsx?$/.test(name) && !name.endsWith('.d.ts') ? desugarConstructorFactories(text, name) : text;
+    const raw = pluginFiles.has(name) && !name.endsWith('.d.ts') ? pluginDeclaredExports(text, name) : text;
+    const code = /\.tsx?$/.test(name) && !name.endsWith('.d.ts') ? desugarConstructorFactories(raw, name) : raw;
     return ts.createSourceFile(name, isSource(name) ? foldPlatform(code, name, platform) : code, version, true);
   };
   const fileExists = host.fileExists.bind(host);
@@ -956,16 +1009,6 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
   const readFile = host.readFile.bind(host);
   host.readFile = (name) => files.get(name) ?? readFile(name);
   const resolutions = new Map<string, string>();
-  // A plugin's augmentations of other packages (`declare module '@nativescript/firebase-core'`), which its source keeps in
-  // the declarations beside it (`index.d.ts`), apply as its published typings apply them.
-  const augmenting = new Map<string, string | null>();
-  const augmentations = (source: string) => {
-    if (!augmenting.has(source)) {
-      const beside = source.replace(/(\.(ios|android))?\.tsx?$/, '.d.ts');
-      augmenting.set(source, beside !== source && existsSync(beside) && /^\s*declare module ['"]/m.test(readFileSync(beside, 'utf8')) ? beside : null);
-    }
-    return augmenting.get(source);
-  };
   host.resolveModuleNameLiterals = (literals, containing) =>
     literals.map((lit) => {
       const r = resolveLiteral(lit, containing);
@@ -982,6 +1025,11 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
       }
       if (m === '@angular#rx') return { resolvedModule: { resolvedFileName: shimPath('@nativescript/release'), extension: ts.Extension.Dts } };
       if (shims[m]) return { resolvedModule: { resolvedFileName: shimPath(m), extension: ts.Extension.Dts } };
+      const pkgName = !m.startsWith('.') && !m.startsWith('/') ? packageOf(m) : '';
+      if (CLOSED_SOURCE_UI_PLUGINS.has(pkgName) && !replacements[pkgName]) {
+        pluginFiles.add(CLOSED_SOURCE_UI_FILE);
+        return { resolvedModule: { resolvedFileName: CLOSED_SOURCE_UI_FILE, extension: ts.Extension.Ts } };
+      }
       // The build's own glue imports app modules by absolute path (`__elements.release.ts`).
       if (m.startsWith('.') || (isAbsolute(m) && !m.startsWith('/__shims__/'))) {
         const base = resolve(dirname(containing), m);
@@ -990,8 +1038,8 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
         // hinge-tracker.ios.ts) means the module's declarations: `x.d.ts`, else the platforms' shared `x.ts`.
         const typeOnly = (ts.isImportDeclaration(lit.parent) && !!lit.parent.importClause?.isTypeOnly) || (ts.isExportDeclaration(lit.parent) && lit.parent.isTypeOnly);
         // A type-only import is TypeScript's, which reads `x.d.ts` beside the platforms' files; only the bundler picks `x.ios.ts`.
-        const own = containing === `${base}.${platform}.ts` || (typeOnly && existsSync(base + '.d.ts'));
-        for (const candidate of own ? [base + '.d.ts', base + '.ts'] : [`${base}.${platform}.ts`, base + '.ts', base + '.tsx', `${base}/index.${platform}.ts`, base + '/index.ts', base.endsWith('.vue') ? base + '.ts' : '']) {
+        const own = containing === `${base}.${platform}.ts` || containing === `${base}/index.${platform}.ts` || (m === '.' && !existsSync(base + '/index.ts') && existsSync(base + '/index.d.ts')) || (typeOnly && (existsSync(base + '.d.ts') || existsSync(base + '/index.d.ts')));
+        for (const candidate of own ? [base + '.d.ts', base + '/index.d.ts', base + '.ts', base + '/index.ts'] : [`${base}.${platform}.ts`, base + '.ts', base + '.tsx', `${base}/index.${platform}.ts`, base + '/index.ts', base.endsWith('.vue') ? base + '.ts' : '']) {
           if (candidate && (files.has(candidate) || existsSync(candidate))) {
             if (candidate.endsWith('.d.ts')) return { resolvedModule: { resolvedFileName: candidate, extension: ts.Extension.Dts } };
             // A plugin's own modules are compiled with it.
@@ -1067,8 +1115,8 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
   // The build types the app strictly; an app whose own configuration is not strict is held only to what that configuration checks.
   const lenient = appStrictness(roots[0] ?? [...virtual.keys()][0]);
   const strictOnly = new Set([2322, 2345, 2531, 2532, 2533, 2454, 2564, 2722, 7005, 7006, 7008, 7015, 7031, 7034, 7053, 18047, 18048, 18049,
-    // What JavaScript defines that a lenient app's own build does not check: a key a spread overwrites, a `??` that never applies.
-    2783, 2869]);
+    // What JavaScript defines that a lenient app's own build does not check: a key a spread overwrites, a `??` or `&&`/`||` that never applies.
+    2783, 2869, 2871, 2873]);
   // Strict narrowing leaves a lenient program's value `never` where its own build reads it as declared.
   const neverRead = (d: ts.Diagnostic) => d.code === 2339 && /on type 'never'/.test(ts.flattenDiagnosticMessageText(d.messageText, '\n'));
   // Another platform's file (`x.android.ts`, which a declaration file may import for its types) is not part of this build.
@@ -1085,10 +1133,11 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
   // rather than this platform's implementation.
   const pluginRoots = (plugins?.all() ?? []).map((p) => p.root + '/');
   const ofPlugin = (name: string) => pluginRoots.some((r) => name.startsWith(r));
-  const diagnostics = ts.getPreEmitDiagnostics(checked).filter((d) => d.category === ts.DiagnosticCategory.Error && (!d.file || (isApp(d.file.fileName) && !ofPlugin(d.file.fileName) && !otherPlatform.test(d.file.fileName))) && !(lenient && (strictOnly.has(d.code) || neverRead(d))));
+  const diagnostics = ts.getPreEmitDiagnostics(checked).filter((d) => d.category === ts.DiagnosticCategory.Error && d.code !== 1203 && (!d.file || (isApp(d.file.fileName) && !ofPlugin(d.file.fileName) && !otherPlatform.test(d.file.fileName))) && !(lenient && (strictOnly.has(d.code) || neverRead(d))));
   if (diagnostics.length) {
     const text = ts.formatDiagnostics(diagnostics.slice(0, Number(process.env.NS_NATIVE_DIAGNOSTICS ?? 12)), { getCanonicalFileName: (f) => f, getCurrentDirectory: () => '/', getNewLine: () => '\n' });
-    throw new Error(`the app does not type-check as the release build sees it:\n${text}`);
+    if (!process.env.NS_NATIVE_TRIAGE) throw new Error(`the app does not type-check as the release build sees it:\n${text}`);
+    console.error(`triage-typecheck: ${diagnostics.length} diagnostics\n${text}`);
   }
   const ordered = [...roots, ...virtual.keys(), ...pluginFiles].map((f) => program.getSourceFile(f)!).filter(Boolean);
   return { program, checker: program.getTypeChecker(), files: ordered, pluginFiles: [...pluginFiles], resolved: (containing, specifier) => resolutions.get(`${containing}\0${specifier}`), lenient };
@@ -1308,4 +1357,183 @@ function appStrictness(from: string | undefined): boolean {
     return !(o.strict || o.strictNullChecks);
   }
   return false;
+}
+
+/**
+ * A plugin's platform implementation (`index.ios.ts`) is compiled as the package's entry, while its published
+ * declarations (`index.d.ts` beside it) export the interfaces and shared types (`./common`, `./Customer`) that
+ * `index.ios.ts` only imports for its own use. Re-exporting them from the implementation matches what the package's
+ * declarations export.
+ */
+function pluginDeclaredExports(code: string, file: string): string {
+  const dts = join(dirname(file), 'index.d.ts');
+  if (dts === file || !existsSync(dts)) return code;
+  const sf = ts.createSourceFile(file, code, ts.ScriptTarget.Latest, true);
+  const dtsSf = ts.createSourceFile(dts, readFileSync(dts, 'utf8'), ts.ScriptTarget.Latest, true);
+  const exported = new Set<string>();
+  const declared = new Set<string>();
+  const imported = new Map<string, string>();
+  for (const st of sf.statements) {
+    const isExported = ts.canHaveModifiers(st) && !!ts.getModifiers(st)?.some((m) => m.kind === ts.SyntaxKind.ExportKeyword);
+    if ((ts.isClassDeclaration(st) || ts.isFunctionDeclaration(st) || ts.isInterfaceDeclaration(st) || ts.isTypeAliasDeclaration(st) || ts.isEnumDeclaration(st)) && st.name) {
+      declared.add(st.name.text);
+      if (isExported) exported.add(st.name.text);
+    } else if (ts.isVariableStatement(st)) {
+      for (const d of st.declarationList.declarations) {
+        if (ts.isIdentifier(d.name)) {
+          declared.add(d.name.text);
+          if (isExported) exported.add(d.name.text);
+        }
+      }
+    } else if (ts.isExportDeclaration(st) && st.exportClause && ts.isNamedExports(st.exportClause)) {
+      for (const el of st.exportClause.elements) exported.add(el.name.text);
+    } else if (ts.isImportDeclaration(st) && st.importClause?.namedBindings && ts.isNamedImports(st.importClause.namedBindings) && ts.isStringLiteral(st.moduleSpecifier)) {
+      const spec = st.moduleSpecifier.text;
+      for (const el of st.importClause.namedBindings.elements) {
+        if (!el.propertyName) imported.set(el.name.text, spec);
+      }
+    }
+  }
+  const dtsTypes = new Set<string>();
+  const dtsInterfaces = new Map<string, ts.InterfaceDeclaration>();
+  const dtsNamed = new Set<string>();
+  const dtsStars = new Set<string>();
+  const dtsClasses = new Map<string, ts.ClassDeclaration>();
+  const normSpec = (s: string) => s.replace(/\/index(\.(ios|android))?$/, '');
+  for (const st of dtsSf.statements) {
+    const isExported = ts.canHaveModifiers(st) && !!ts.getModifiers(st)?.some((m) => m.kind === ts.SyntaxKind.ExportKeyword);
+    if (ts.isClassDeclaration(st) && st.name) dtsClasses.set(st.name.text, st);
+    if (isExported && ts.isInterfaceDeclaration(st) && st.name) dtsInterfaces.set(st.name.text, st);
+    if (isExported && (ts.isInterfaceDeclaration(st) || ts.isTypeAliasDeclaration(st) || ts.isClassDeclaration(st)) && st.name) {
+      dtsTypes.add(st.name.text);
+    } else if (ts.isExportDeclaration(st)) {
+      if (st.exportClause && ts.isNamedExports(st.exportClause)) {
+        for (const el of st.exportClause.elements) dtsNamed.add(el.name.text);
+      } else if (!st.exportClause && st.moduleSpecifier && ts.isStringLiteral(st.moduleSpecifier)) {
+        dtsStars.add(normSpec(st.moduleSpecifier.text));
+      }
+    }
+  }
+  const edits: { start: number; end: number; text: string }[] = [];
+  const builtins = new Set(['Promise', 'Array', 'Map', 'Set', 'Record', 'Date', 'Error', 'Object', 'Function']);
+  const typeInScope = (t: ts.TypeNode): boolean => {
+    let ok = true;
+    const visit = (n: ts.Node) => {
+      if (!ok) return;
+      if (ts.isTypeReferenceNode(n)) {
+        const name = ts.isIdentifier(n.typeName) ? n.typeName.text : '';
+        if (!name || (!builtins.has(name) && !declared.has(name) && !imported.has(name))) { ok = false; return; }
+      }
+      ts.forEachChild(n, visit);
+    };
+    visit(t);
+    return ok;
+  };
+  for (const st of sf.statements) {
+    if (!ts.isClassDeclaration(st) || !st.name) continue;
+    const dtsIface = dtsInterfaces.get(st.name.text);
+    if (dtsIface) {
+      const clsName = st.name.text;
+      const impl = st.heritageClauses?.find((c) => c.token === ts.SyntaxKind.ImplementsKeyword);
+      if (impl && impl.types.length === 1 && ts.isIdentifier(impl.types[0].expression) && impl.types[0].expression.text === clsName) {
+        edits.push({ start: impl.getStart(sf), end: impl.getEnd(), text: '' });
+      }
+      if (!st.members.some((m) => ts.isMethodDeclaration(m) && m.name?.getText(sf) === 'on')) {
+        const onSigs = dtsIface.members.filter((m): m is ts.MethodSignature =>
+          ts.isMethodSignature(m) && m.name.getText(dtsSf) === 'on' && m.parameters.every((p) => !p.type || typeInScope(p.type)),
+        );
+        if (onSigs.length) {
+          onSigs.sort((a, b) => (a.parameters[0]?.type && ts.isLiteralTypeNode(a.parameters[0].type) ? 0 : 1) - (b.parameters[0]?.type && ts.isLiteralTypeNode(b.parameters[0].type) ? 0 : 1));
+          const sigText = [...onSigs.map((s) => s.getText(dtsSf).replace(/\s+/g, ' ').replace(/;?$/, ';')), 'on(event: string, handler: (e: any) => void, thisArg?: any): void;'].join(' ');
+          edits.push({ start: st.getEnd() - 1, end: st.getEnd() - 1, text: ` ${sigText} ` });
+        }
+      }
+    }
+    const dtsCls = dtsClasses.get(st.name.text);
+    if (!dtsCls) continue;
+    for (const m of st.members) {
+      if (!ts.isMethodDeclaration(m) || !m.name || !ts.isIdentifier(m.name) || !m.body) continue;
+      const isStatic = !!ts.getModifiers(m)?.some((x) => x.kind === ts.SyntaxKind.StaticKeyword);
+      const dtsMethods = dtsCls.members.filter((dm): dm is ts.MethodDeclaration =>
+        ts.isMethodDeclaration(dm) && !!dm.name && ts.isIdentifier(dm.name) && dm.name.text === (m.name as ts.Identifier).text
+        && (!!ts.getModifiers(dm)?.some((x) => x.kind === ts.SyntaxKind.StaticKeyword)) === isStatic,
+      );
+      if (!dtsMethods.length) continue;
+      const minReq = Math.min(...dtsMethods.map((dm) => dm.parameters.filter((p) => !p.questionToken && !p.initializer && !p.dotDotDotToken).length));
+      for (let i = minReq; i < m.parameters.length; i++) {
+        const p = m.parameters[i];
+        if (!p.questionToken && !p.initializer && !p.dotDotDotToken) {
+          edits.push({ start: p.name.getEnd(), end: p.name.getEnd(), text: '?' });
+        }
+      }
+      if (!m.type && dtsMethods[0].type && typeInScope(dtsMethods[0].type)) {
+        const closeParen = code.indexOf(')', m.parameters.end);
+        if (closeParen >= 0 && closeParen < m.body.getStart(sf)) {
+          edits.push({ start: closeParen + 1, end: closeParen + 1, text: `: ${dtsMethods[0].type.getText(dtsSf)}` });
+        }
+      }
+    }
+  }
+  for (const e of edits.sort((a, b) => b.start - a.start)) {
+    code = code.slice(0, e.start) + e.text + code.slice(e.end);
+  }
+  const reexportLocalTypes: string[] = [];
+  const reexportLocalValues: string[] = [];
+  for (const name of declared) {
+    if (!exported.has(name) && (dtsTypes.has(name) || dtsNamed.has(name))) {
+      reexportLocalValues.push(name);
+      exported.add(name);
+    }
+  }
+  for (const [name, spec] of imported) {
+    if (exported.has(name)) continue;
+    if ((spec === '.' || spec === './index' || spec === './index.d.ts') && dtsTypes.has(name)) {
+      reexportLocalTypes.push(name);
+      exported.add(name);
+    } else if (dtsNamed.has(name) || dtsTypes.has(name) || dtsStars.has(normSpec(spec))) {
+      reexportLocalValues.push(name);
+      exported.add(name);
+    }
+  }
+  const reexportDtsTypes = [...dtsTypes].filter((n) => !exported.has(n) && !declared.has(n) && !imported.has(n));
+  const lines: string[] = [];
+  if (reexportLocalTypes.length) lines.push(`export type { ${reexportLocalTypes.join(', ')} };`);
+  if (reexportLocalValues.length) lines.push(`export { ${reexportLocalValues.join(', ')} };`);
+  if (reexportDtsTypes.length) lines.push(`export type { ${reexportDtsTypes.join(', ')} } from './index';`);
+  return lines.length ? `${code}\n${lines.join('\n')}\n` : code;
+}
+
+/**
+ * When an augmenting `.d.ts` file (`@nativescript/firebase-crashlytics/index.d.ts`) is added to the program for its
+ * `declare module` block, bind any top-level `declare class` it defines to the compiled implementation class in `sourceFile`
+ * (`index.ios.ts`) so the augmented return type (`firebase().crashlytics()`) matches the class imported from the plugin.
+ */
+function augmentingDeclaration(dtsFile: string, sourceFile: string): string {
+  const text = readFileSync(dtsFile, 'utf8');
+  const dtsSf = ts.createSourceFile(dtsFile, text, ts.ScriptTarget.Latest, true);
+  const srcSf = ts.createSourceFile(sourceFile, readFileSync(sourceFile, 'utf8'), ts.ScriptTarget.Latest, true);
+  const srcClasses = new Set<string>();
+  for (const st of srcSf.statements) {
+    if (ts.isClassDeclaration(st) && st.name && ts.canHaveModifiers(st) && ts.getModifiers(st)?.some((m) => m.kind === ts.SyntaxKind.ExportKeyword)) {
+      srcClasses.add(st.name.text);
+    }
+  }
+  if (!srcClasses.size) return text;
+  const rel = './' + basename(sourceFile).replace(/\.tsx?$/, '');
+  const edits: { start: number; end: number; replacement: string }[] = [];
+  for (const st of dtsSf.statements) {
+    if (ts.isClassDeclaration(st) && st.name && srcClasses.has(st.name.text)) {
+      edits.push({
+        start: st.getStart(dtsSf),
+        end: st.getEnd(),
+        replacement: `import { ${st.name.text} } from '${rel}'; export { ${st.name.text} };`,
+      });
+    }
+  }
+  if (!edits.length) return text;
+  let out = text;
+  for (const e of edits.sort((a, b) => b.start - a.start)) {
+    out = out.slice(0, e.start) + e.replacement + out.slice(e.end);
+  }
+  return out;
 }

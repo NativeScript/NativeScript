@@ -15,6 +15,13 @@ import { dirname, resolve } from 'node:path';
  * The rewrite keeps every line where it was, so diagnostics and source lines still point at the original.
  */
 export function desugarConstructorFactories(text: string, fileName: string): string {
+  if (/from\s+['"]@nativescript\/core\/data\/observable-array['"]/.test(text) && /export\s+class\s+ObservableArray\b/.test(text) && /\bnew\s+Proxy\s*\(/.test(text)) {
+    return `export { ObservableArray, ChangeType, type ChangedData } from '@nativescript/core/data/observable-array';` + '\n'.repeat((text.match(/\n/g) ?? []).length);
+  }
+  if (/from\s+['"]ts-type-checked['"]/.test(text)) text = desugarTypeCheckedGuards(text, fileName);
+  if (/\bnew\s*\(\s*\w+\.constructor\s+as\s+any\s*\)\s*\(/.test(text)) {
+    text = text.replace(/\bnew\s*\(\s*\w+\.constructor\s+as\s+any\s*\)\s*\(([^)]+)\)/g, '(new Array($1) as any)');
+  }
   if (!/=>\s*function\s+\w+\s*\(\s*this\b/.test(text)) return text;
   const sf = ts.createSourceFile(fileName, text, ts.ScriptTarget.Latest, true, fileName.endsWith('x') ? ts.ScriptKind.TSX : ts.ScriptKind.TS);
   const edits: { start: number; end: number; text: string }[] = [];
@@ -104,3 +111,64 @@ function factoryShape(fn: ts.FunctionDeclaration): string | null {
   }
   return null;
 }
+
+/**
+ * Compile-time type-guard calls (`import { isA } from 'ts-type-checked'; isA<T>(x)`): lowered to type-predicate
+ * functions inspecting the target type in the file or its relative imports.
+ */
+function desugarTypeCheckedGuards(text: string, fileName: string): string {
+  const sf = ts.createSourceFile(fileName, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+  const typeDecls = new Map<string, ts.InterfaceDeclaration | ts.TypeAliasDeclaration>();
+  const collectDecls = (source: ts.SourceFile) => {
+    for (const st of source.statements) {
+      if ((ts.isInterfaceDeclaration(st) || ts.isTypeAliasDeclaration(st)) && !typeDecls.has(st.name.text)) {
+        typeDecls.set(st.name.text, st);
+      }
+    }
+  };
+  collectDecls(sf);
+  for (const st of sf.statements) {
+    if (ts.isImportDeclaration(st) && ts.isStringLiteral(st.moduleSpecifier) && st.moduleSpecifier.text.startsWith('.')) {
+      const base = resolve(dirname(fileName), st.moduleSpecifier.text);
+      const target = [base + '.ts', base + '/index.ts'].find((f) => existsSync(f));
+      if (target) collectDecls(ts.createSourceFile(target, readFileSync(target, 'utf8'), ts.ScriptTarget.Latest, true));
+    }
+  }
+  const guards = new Map<string, string>();
+  const helpers: string[] = [];
+  const edits: { start: number; end: number; text: string }[] = [];
+  const checkForType = (typeText: string): string => {
+    const baseName = typeText.replace(/<.*$/, '').trim();
+    if (['Date', 'RegExp', 'Error', 'Array', 'Map', 'Set'].includes(baseName)) return `v instanceof ${baseName}`;
+    const decl = typeDecls.get(baseName);
+    if (decl && ts.isTypeAliasDeclaration(decl) && ts.isFunctionTypeNode(decl.type)) return `typeof v === 'function'`;
+    if (decl && ts.isInterfaceDeclaration(decl)) {
+      const keys = decl.members.filter((m): m is ts.PropertySignature => ts.isPropertySignature(m) && !m.questionToken && !!m.name).map((m) => m.name.getText());
+      return `v !== undefined && v !== null && typeof v === 'object'${keys.map((k) => ` && ${JSON.stringify(k)} in (v as any)`).join('')}`;
+    }
+    return `v !== undefined && v !== null`;
+  };
+  const visit = (n: ts.Node) => {
+    if (ts.isCallExpression(n) && ts.isIdentifier(n.expression) && n.expression.text === 'isA' && n.typeArguments?.length === 1) {
+      const tText = n.typeArguments[0].getText(sf);
+      let fnName = guards.get(tText);
+      if (!fnName) {
+        fnName = `__isA_${guards.size}`;
+        guards.set(tText, fnName);
+        helpers.push(`function ${fnName}(v: unknown): v is ${tText} { return ${checkForType(tText)}; }`);
+      }
+      edits.push({ start: n.expression.getStart(sf), end: n.typeArguments.end + 1, text: fnName });
+    }
+    ts.forEachChild(n, visit);
+  };
+  visit(sf);
+  for (const st of sf.statements) {
+    if (ts.isImportDeclaration(st) && ts.isStringLiteral(st.moduleSpecifier) && st.moduleSpecifier.text === 'ts-type-checked') {
+      edits.push({ start: st.getStart(sf), end: st.end, text: helpers.join(' ') });
+    }
+  }
+  edits.sort((a, b) => b.start - a.start);
+  for (const e of edits) text = text.slice(0, e.start) + e.text + text.slice(e.end);
+  return text;
+}
+

@@ -7,7 +7,7 @@ import Foundation
 /// A component class used as a value (`dialog.open(SheetComponent)`): what creating and rendering it gives.
 public final class ComponentFactory {
     nonisolated deinit {}
-    let make: () throws -> View
+    public let make: () throws -> View
     public init(_ make: @escaping () throws -> View) { self.make = make }
 }
 

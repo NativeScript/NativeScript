@@ -59,6 +59,7 @@ public protocol JSTypedArrayProtocol: JSArrayBufferView {
     var jsLength: Int { get }
     /// The elements as JavaScript values: numbers, or BigInts.
     var jsAnyValues: [Any?] { get }
+    static func jsFrom(_ value: Any?) throws -> Any?
 }
 
 /// `ArrayBuffer`: a fixed number of bytes, zeroed when made, at an address that stays put for
@@ -271,7 +272,7 @@ public typealias JSBigUint64Array = JSTypedArray<JSBigUint64Element>
 /// A typed array (`Float32Array`, `BigInt64Array` …): a view of a buffer's bytes as elements of one
 /// type. An index out of range reads undefined and is ignored on write; a written value is converted
 /// as the element type says.
-public final class JSTypedArray<Kind: JSTypedArrayElement>: JSTypedArrayProtocol, JSToStringTag, JSStringConvertible, JSHostObject, JSIterableValue, Sequence {
+public final class JSTypedArray<Kind: JSTypedArrayElement>: JSTypedArrayProtocol, JSConstructibleType, JSToStringTag, JSStringConvertible, JSHostObject, JSIterableValue, Sequence {
     nonisolated deinit {}
     public let buffer: JSArrayBuffer
     @usableFromInline let base: UnsafeMutableRawPointer
@@ -343,6 +344,9 @@ public final class JSTypedArray<Kind: JSTypedArrayElement>: JSTypedArrayProtocol
             return try JSTypedArray(jsArrayLikeValues(v))
         }
     }
+
+    public static func jsFrom(_ value: Any?) throws -> Any? { try from(value) }
+    public static func jsConstruct(_ arguments: [Any?]) throws -> Any? { try from(jsArg(arguments, 0)) }
 
     /// `Float32Array.of(...items)`.
     public static func of(_ items: Kind.Value...) -> JSTypedArray { JSTypedArray(items) }
@@ -938,6 +942,12 @@ public enum interop {
     public static func bufferFromData(_ data: NSData?) -> JSArrayBuffer { JSArrayBuffer(data: (data ?? NSData()) as Data) }
     /// `new interop.FunctionReference(fn)`: the function, which a native callback parameter takes as it is.
     public static let FunctionReference = JSConstructor { args in args.first ?? nil }
+    /// `interop.alloc(size)`: an allocated byte buffer of `size` bytes.
+    public static func alloc(_ size: Double) -> InteropPointer { InteropPointer(size: Int(size)) }
+    /// `interop.sizeof(type)`: byte size of a pointer/reference type.
+    public static func sizeof(_ type: Any?) -> Double { Double(MemoryLayout<Int>.size) }
+    /// `interop.types`: runtime C type descriptors (`interop.types.byte`, `interop.types.void`, etc.).
+    public static let types: Any? = JSObject()
 }
 
 /// The bytes a native API reads of a buffer or a view passed untyped (`dataWithData(buffer as any)`).
@@ -954,6 +964,13 @@ public func jsNativeData(_ value: Any?) -> Data {
 public func jsNativeBytes(_ value: Any?) -> UnsafeRawPointer? {
     switch jsFlat(value) {
     case let source as JSBufferSource: return source.jsBytes.baseAddress.map(UnsafeRawPointer.init)
+    case let ptr as InteropPointer: return ptr.pointer.map(UnsafeRawPointer.init)
+    case let ptr as UnsafeRawPointer: return ptr
+    case let ptr as UnsafeMutableRawPointer: return UnsafeRawPointer(ptr)
+    case let array as JSArrayProtocol:
+        let floats = array.jsAnyElements.map(jsToNumber)
+        let bytes = Data(bytes: floats, count: floats.count * MemoryLayout<Double>.size)
+        return (bytes as NSData).bytes
     default: return nil
     }
 }

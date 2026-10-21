@@ -21,6 +21,7 @@ export function foldPlatform(text: string, fileName: string, platform: Platform)
     isAndroid: platform === 'android', __ANDROID__: platform === 'android', __VISIONOS__: false, __DEV__: false,
   };
   const kind = fileName.endsWith('x') ? ts.ScriptKind.TSX : ts.ScriptKind.TS;
+  const originalText = text;
   let folded = false;
   // One edit per pass, outermost first, until nothing folds.
   for (let pass = 0; pass < 10_000; pass++) {
@@ -29,11 +30,11 @@ export function foldPlatform(text: string, fileName: string, platform: Platform)
       // A release build has no hot module replacement: `import.meta.hot` is undefined.
       if (isHot(n)) return false;
       if (ts.isIdentifier(n) && Object.hasOwn(flags, n.text) && isReference(n) && !declaredAround(n)) return flags[n.text];
-      if (ts.isPropertyAccessExpression(n) && ts.isIdentifier(n.expression) && ['global', 'globalThis'].includes(n.expression.text) && Object.hasOwn(flags, n.name.text)) return flags[n.name.text];
+      if (ts.isPropertyAccessExpression(n) && ts.isIdentifier(n.expression) && ['global', 'globalThis', 'platform', 'Platform'].includes(n.expression.text) && Object.hasOwn(flags, n.name.text)) return flags[n.name.text];
       if (application && ts.isPropertyAccessExpression(n) && ts.isIdentifier(n.expression) && n.expression.text === 'Application' && ['android', 'ios'].includes(n.name.text) && !declaredAround(n.expression) && isTested(n)) return n.name.text === platform;
       return undefined;
     });
-    if (!edit) return folded ? dropUnreferenced(text, fileName, kind) : text;
+    if (!edit) return folded ? dropUnreferenced(text, originalText, fileName, kind) : text;
     text = apply(text, edit);
     folded = true;
   }
@@ -42,10 +43,16 @@ export function foldPlatform(text: string, fileName: string, platform: Platform)
 
 /**
  * Module-level helpers that only the removed branches used: unexported
- * functions, and constants whose initializer runs nothing, that the rest of
- * the file no longer names. They are the other platform's too.
+ * functions, constants whose initializer runs nothing, and imports whose
+ * bound identifiers were referenced before folding and are now unused.
  */
-function dropUnreferenced(text: string, fileName: string, kind: ts.ScriptKind): string {
+function dropUnreferenced(text: string, originalText: string, fileName: string, kind: ts.ScriptKind): string {
+  const beforeUses = new Map<string, number>();
+  const collectBefore = (n: ts.Node): void => {
+    if (ts.isIdentifier(n)) beforeUses.set(n.text, (beforeUses.get(n.text) ?? 0) + 1);
+    ts.forEachChild(n, collectBefore);
+  };
+  collectBefore(ts.createSourceFile(fileName, originalText, ts.ScriptTarget.Latest, true, kind));
   for (;;) {
     const sf = ts.createSourceFile(fileName, text, ts.ScriptTarget.Latest, true, kind);
     const uses = new Map<string, number[]>();
@@ -57,6 +64,14 @@ function dropUnreferenced(text: string, fileName: string, kind: ts.ScriptKind): 
     const unused = (name: ts.Identifier, decl: ts.Node) =>
       (uses.get(name.text) ?? []).every((at) => at >= decl.getStart(sf) && at < decl.getEnd());
     const dead = sf.statements.find((st) => {
+      if (ts.isImportDeclaration(st) && st.importClause) {
+        const names: ts.Identifier[] = [];
+        if (st.importClause.name) names.push(st.importClause.name);
+        const nb = st.importClause.namedBindings;
+        if (nb && ts.isNamespaceImport(nb)) names.push(nb.name);
+        else if (nb && ts.isNamedImports(nb)) for (const el of nb.elements) names.push(el.name);
+        return names.length > 0 && names.some((id) => (beforeUses.get(id.text) ?? 0) > (uses.get(id.text)?.length ?? 0)) && names.every((id) => unused(id, st));
+      }
       if (ts.getCombinedModifierFlags(st as ts.Declaration) & (ts.ModifierFlags.Export | ts.ModifierFlags.Ambient)) return false;
       if (ts.isFunctionDeclaration(st)) return !!st.name && unused(st.name, st);
       if (!ts.isVariableStatement(st) || st.declarationList.declarations.length !== 1) return false;
@@ -91,12 +106,15 @@ export function setDefines(map: Record<string, string> | undefined) {
 
 /** Each defined expression replaced as the bundler replaces it, padded so positions after it keep their columns where it fits. */
 function applyDefines(text: string, fileName: string): string {
-  if (!defines.length || /[\\/]node_modules[\\/]/.test(fileName)) return text;
+  if (/[\\/]node_modules[\\/]/.test(fileName)) return text;
   for (const [key, value] of defines) {
     if (!text.includes(key)) continue;
     // A bundler replaces the expression, never a declaration of the name (`declare var __non_webpack_require__`).
     const pattern = new RegExp(`(?<![\\w$.])(?<!\\b(?:var|let|const|function|class)\\s+)${key.replace(/[.$]/g, (c) => '\\' + c)}(?![\\w$])`, 'g');
-    text = text.replace(pattern, (m) => `(${value})`.padEnd(m.length, ' '));
+    text = text.replace(pattern, (m) => `(${value === 'undefined' ? 'undefined as any' : value})`.padEnd(m.length, ' '));
+  }
+  if (text.includes('process.env.')) {
+    text = text.replace(/(?<![\w$.])process\.env\.[A-Za-z_$][\w$]*(?!\s*=[^=])/g, (m) => '(undefined as any)'.padEnd(m.length, ' '));
   }
   return text;
 }

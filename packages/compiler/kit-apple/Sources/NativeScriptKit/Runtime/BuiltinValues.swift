@@ -16,10 +16,11 @@ public func jsInstanceOf(_ value: Any?, _ constructor: Any?) -> Bool {
     return false
 }
 
-/// The runtime's error classes by the names script knows them by.
+/// The runtime's error and built-in classes by the names script knows them by.
 private let jsErrorClassNames: [ObjectIdentifier: String] = [
     ObjectIdentifier(JSError.self): "Error", ObjectIdentifier(JSTypeError.self): "TypeError", ObjectIdentifier(JSRangeError.self): "RangeError",
     ObjectIdentifier(JSSyntaxError.self): "SyntaxError", ObjectIdentifier(JSReferenceError.self): "ReferenceError", ObjectIdentifier(JSAggregateError.self): "AggregateError",
+    ObjectIdentifier(JSObject.self): "Object", ObjectIdentifier(JSFunctionObject.self): "Function",
 ]
 
 /// `C.name` of a class held as a value: a runtime error class by its JavaScript name, a program's class by its own

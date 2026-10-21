@@ -479,3 +479,329 @@ private func hmac(_ data: Data, _ key: SymmetricKey, _ hash: String) -> Data {
     default: return Data(HMAC<SHA256>.authenticationCode(for: data, using: key))
     }
 }
+
+/// `URLSearchParams`: an ordered list of `(name, value)` query pairs, optionally backed by a `JSURL`.
+public final class JSURLSearchParams: JSDynamic, Sequence {
+    nonisolated deinit {}
+    var pairs: [(String, String)] = []
+    weak var owner: JSURL?
+    var syncing = false
+
+    public init(_ input: Any? = nil) {
+        if let existing = jsFlat(input) as? JSURLSearchParams {
+            pairs = existing.pairs
+        } else if let s = jsFlat(input) as? String {
+            parse(s.hasPrefix("?") ? String(s.dropFirst()) : s)
+        } else if let arr = jsFlat(input) as? JSArrayProtocol {
+            for item in arr.jsAnyElements {
+                if let pair = jsFlat(item) as? JSArrayProtocol {
+                    let elems = pair.jsAnyElements
+                    if elems.count >= 2 { pairs.append((jsToString(elems[0]), jsToString(elems[1]))) }
+                }
+            }
+        } else if let dyn = jsFlat(input) as? JSDynamic {
+            for k in dyn.jsKeys {
+                pairs.append((k, jsToString(dyn[jsKey: k])))
+            }
+        }
+    }
+
+    func parse(_ query: String) {
+        pairs.removeAll()
+        guard !query.isEmpty else { return }
+        for part in query.split(separator: "&", omittingEmptySubsequences: false) {
+            let s = String(part)
+            guard !s.isEmpty else { continue }
+            if let eq = s.firstIndex(of: "=") {
+                let k = Self.decode(String(s[..<eq]))
+                let v = Self.decode(String(s[s.index(after: eq)...]))
+                pairs.append((k, v))
+            } else {
+                pairs.append((Self.decode(s), ""))
+            }
+        }
+    }
+
+    private static func decode(_ s: String) -> String {
+        let plus = s.replacingOccurrences(of: "+", with: " ")
+        return plus.removingPercentEncoding ?? plus
+    }
+
+    private static let allowed: CharacterSet = {
+        var set = CharacterSet.alphanumerics
+        set.insert(charactersIn: "*-._")
+        return set
+    }()
+
+    private static func encode(_ s: String) -> String {
+        var out = ""
+        for part in s.split(separator: " ", omittingEmptySubsequences: false) {
+            if !out.isEmpty || s.hasPrefix(" ") && out.isEmpty && part.isEmpty { }
+            out += (String(part).addingPercentEncoding(withAllowedCharacters: allowed) ?? String(part)) + "+"
+        }
+        if out.hasSuffix("+") { out.removeLast() }
+        return out
+    }
+
+    private func notifyOwner() {
+        guard !syncing, let owner else { return }
+        owner.syncFromSearchParams()
+    }
+
+    public var size: Double { Double(pairs.count) }
+
+    public func get(_ name: String) -> String? {
+        pairs.first(where: { $0.0 == name })?.1
+    }
+
+    public func getAll(_ name: String) -> JSArray<String> {
+        JSArray(pairs.filter { $0.0 == name }.map(\.1))
+    }
+
+    public func has(_ name: String, _ value: String? = nil) -> Bool {
+        if let value { return pairs.contains(where: { $0.0 == name && $0.1 == value }) }
+        return pairs.contains(where: { $0.0 == name })
+    }
+
+    public func set(_ name: String, _ value: String) {
+        var replaced = false
+        pairs = pairs.compactMap { pair in
+            guard pair.0 == name else { return pair }
+            if !replaced { replaced = true; return (name, value) }
+            return nil
+        }
+        if !replaced { pairs.append((name, value)) }
+        notifyOwner()
+    }
+
+    public func append(_ name: String, _ value: String) {
+        pairs.append((name, value))
+        notifyOwner()
+    }
+
+    public func delete(_ name: String, _ value: String? = nil) {
+        if let value { pairs.removeAll { $0.0 == name && $0.1 == value } }
+        else { pairs.removeAll { $0.0 == name } }
+        notifyOwner()
+    }
+
+    public func sort() {
+        pairs.sort { $0.0 < $1.0 }
+        notifyOwner()
+    }
+
+    public func forEach(_ callback: (String, String, JSURLSearchParams) throws -> Void, _ thisArg: Any? = nil) rethrows {
+        for (k, v) in pairs { try callback(v, k, self) }
+    }
+
+    public func forEach(_ callback: (String, String) throws -> Void, _ thisArg: Any? = nil) rethrows {
+        for (k, v) in pairs { try callback(v, k) }
+    }
+
+    public func forEach(_ callback: (String) throws -> Void, _ thisArg: Any? = nil) rethrows {
+        for (_, v) in pairs { try callback(v) }
+    }
+
+    public func keys() -> JSIterator<String> {
+        var i = 0; let list = pairs.map(\.0)
+        return JSIterator { defer { i += 1 }; return i < list.count ? list[i] : nil }
+    }
+    public func values() -> JSIterator<String> {
+        var i = 0; let list = pairs.map(\.1)
+        return JSIterator { defer { i += 1 }; return i < list.count ? list[i] : nil }
+    }
+    public func entries() -> JSIterator<JSArray<String>> {
+        var i = 0; let list = pairs.map { JSArray([$0.0, $0.1]) }
+        return JSIterator { defer { i += 1 }; return i < list.count ? list[i] : nil }
+    }
+    public func makeIterator() -> IndexingIterator<[JSArray<String>]> { pairs.map { JSArray([$0.0, $0.1]) }.makeIterator() }
+
+    public func toString() -> String {
+        pairs.map { "\(Self.encode($0.0))=\(Self.encode($0.1))" }.joined(separator: "&")
+    }
+
+    public subscript(jsKey key: String) -> Any? {
+        get {
+            switch key {
+            case "size": return size
+            default: return nil
+            }
+        }
+        set {}
+    }
+    public var jsKeys: [String] { [] }
+    public var jsClassName: String? { "URLSearchParams" }
+}
+
+/// `URL`: a parsed WHATWG URL backed by Foundation's `URLComponents`.
+public final class JSURL: JSDynamic {
+    nonisolated deinit {}
+    private var components: URLComponents
+    public let searchParams: JSURLSearchParams
+
+    public init(_ url: Any?, _ base: Any? = nil) throws {
+        let raw = (jsFlat(url) as? JSURL)?.href ?? jsToString(url)
+        let resolved: Foundation.URL?
+        if let base = jsFlat(base) {
+            let baseStr = (base as? JSURL)?.href ?? jsToString(base)
+            guard let baseURL = Foundation.URL(string: baseStr), baseURL.scheme != nil else {
+                throw JSException(JSTypeError("Invalid base URL: \(baseStr)"))
+            }
+            resolved = Foundation.URL(string: raw, relativeTo: baseURL)?.absoluteURL
+        } else {
+            resolved = Foundation.URL(string: raw)
+        }
+        guard let finalURL = resolved, finalURL.scheme != nil, let comps = URLComponents(url: finalURL, resolvingAgainstBaseURL: true) else {
+            throw JSException(JSTypeError("Invalid URL: \(raw)"))
+        }
+        self.components = comps
+        self.searchParams = JSURLSearchParams(comps.percentEncodedQuery ?? "")
+        self.searchParams.owner = self
+    }
+
+    func syncFromSearchParams() {
+        let q = searchParams.toString()
+        components.percentEncodedQuery = q.isEmpty ? nil : q
+    }
+
+    public var href: String {
+        get { components.string ?? "" }
+        set {
+            if let u = Foundation.URL(string: newValue), u.scheme != nil, let c = URLComponents(url: u, resolvingAgainstBaseURL: true) {
+                components = c
+                searchParams.syncing = true
+                searchParams.parse(c.percentEncodedQuery ?? "")
+                searchParams.syncing = false
+            }
+        }
+    }
+
+    public var `protocol`: String {
+        get { components.scheme.map { "\($0):" } ?? "" }
+        set {
+            let s = newValue.hasSuffix(":") ? String(newValue.dropLast()) : newValue
+            if !s.isEmpty { components.scheme = s.lowercased() }
+        }
+    }
+
+    public var username: String {
+        get { components.percentEncodedUser ?? "" }
+        set { components.percentEncodedUser = newValue.isEmpty ? nil : newValue }
+    }
+
+    public var password: String {
+        get { components.percentEncodedPassword ?? "" }
+        set { components.percentEncodedPassword = newValue.isEmpty ? nil : newValue }
+    }
+
+    public var hostname: String {
+        get { components.host ?? "" }
+        set { components.host = newValue }
+    }
+
+    public var port: String {
+        get { components.port.map(String.init) ?? "" }
+        set { components.port = Int(newValue) }
+    }
+
+    public var host: String {
+        get {
+            let h = hostname
+            let p = port
+            return p.isEmpty ? h : "\(h):\(p)"
+        }
+        set {
+            if let colon = newValue.lastIndex(of: ":"), let p = Int(newValue[newValue.index(after: colon)...]) {
+                components.host = String(newValue[..<colon])
+                components.port = p
+            } else {
+                components.host = newValue
+                components.port = nil
+            }
+        }
+    }
+
+    public var origin: String {
+        let p = self.protocol
+        let h = host
+        guard !p.isEmpty, !h.isEmpty else { return "null" }
+        return "\(p)//\(h)"
+    }
+
+    public var pathname: String {
+        get {
+            let p = components.percentEncodedPath
+            return p.isEmpty ? (components.host != nil ? "/" : "") : p
+        }
+        set {
+            components.percentEncodedPath = newValue.hasPrefix("/") || newValue.isEmpty ? newValue : "/\(newValue)"
+        }
+    }
+
+    public var search: String {
+        get {
+            guard let q = components.percentEncodedQuery, !q.isEmpty else { return "" }
+            return "?\(q)"
+        }
+        set {
+            let q = newValue.hasPrefix("?") ? String(newValue.dropFirst()) : newValue
+            components.percentEncodedQuery = q.isEmpty ? nil : q
+            searchParams.syncing = true
+            searchParams.parse(q)
+            searchParams.syncing = false
+        }
+    }
+
+    public var hash: String {
+        get {
+            guard let f = components.percentEncodedFragment, !f.isEmpty else { return "" }
+            return "#\(f)"
+        }
+        set {
+            let f = newValue.hasPrefix("#") ? String(newValue.dropFirst()) : newValue
+            components.percentEncodedFragment = f.isEmpty ? nil : f
+        }
+    }
+
+    public func toString() -> String { href }
+    public func toJSON() -> String { href }
+
+    public subscript(jsKey key: String) -> Any? {
+        get {
+            switch key {
+            case "href": return href
+            case "origin": return origin
+            case "protocol": return self.protocol
+            case "username": return username
+            case "password": return password
+            case "host": return host
+            case "hostname": return hostname
+            case "port": return port
+            case "pathname": return pathname
+            case "search": return search
+            case "searchParams": return searchParams
+            case "hash": return hash
+            default: return nil
+            }
+        }
+        set {
+            let s = jsToString(newValue)
+            switch key {
+            case "href": href = s
+            case "protocol": self.protocol = s
+            case "username": username = s
+            case "password": password = s
+            case "host": host = s
+            case "hostname": hostname = s
+            case "port": port = s
+            case "pathname": pathname = s
+            case "search": search = s
+            case "hash": hash = s
+            default: break
+            }
+        }
+    }
+    public var jsKeys: [String] { ["href", "origin", "protocol", "username", "password", "host", "hostname", "port", "pathname", "search", "searchParams", "hash"] }
+    public var jsClassName: String? { "URL" }
+}
+

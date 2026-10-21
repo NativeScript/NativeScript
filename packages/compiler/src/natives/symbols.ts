@@ -141,23 +141,30 @@ export interface TableOptions {
   internal?: boolean;
 }
 
+const isEmptyTable = (t: NativeTable) => ![t.classes, t.enums, t.functions, t.constants, t.structs].some((x) => Object.keys(x).length > 0);
+
 export function nativeTable(module: string, options: TableOptions = {}): NativeTable {
   let table = tables.get(module);
-  if (table) return table;
+  if (table && (!options.key || !isEmptyTable(table))) return table;
+  table = undefined;
   const file = options.key ? join(moduleCache(), `${module}-${options.key}.json`) : join(cacheDir(), `${module}.json`);
   if (existsSync(file)) table = JSON.parse(readFileSync(file, 'utf8')) as NativeTable;
   if (!table || (table.format ?? 1) !== TABLE_FORMAT) {
     const extraArgs = typeof options.extraArgs === 'function' ? options.extraArgs() : options.extraArgs ?? [];
     table = generate(module, extraArgs, !!options.key, options.internal);
-    mkdirSync(dirname(file), { recursive: true });
-    writeFileSync(file, JSON.stringify(table));
+    if (options.key || !isEmptyTable(table)) {
+      mkdirSync(dirname(file), { recursive: true });
+      writeFileSync(file, JSON.stringify(table));
+    }
   }
   tables.set(module, table);
+  if (module === 'RevenueCat') { delete table.classes.RCPurchasesAuthentication; delete table.classes.RCIdentitySource; }
   for (const c of Object.values(table.classes)) if (c.generics?.length) eraseGenerics(c);
   // Memberwise idioms need only the table's structs: a table cached before one was added gets it here.
   for (const [js, spec] of Object.entries(IDIOMS[module] ?? {})) if (spec && !table.functions[js] && MEMBERWISE.test(spec)) memberwiseIdiom(table, js, spec);
   for (const c of Object.values(table.classes)) {
     if (!c.extension) continue;
+    if (c.swift === 'NSObject' && c.instance.applicationDidFinishLaunchingWithOptions && !c.protocols?.includes('UIApplicationDelegate')) (c.protocols ??= []).push('UIApplicationDelegate');
     for (const m of [...Object.values(c.instance), ...Object.values(c.static), ...Object.values(c.inits)]) categoryModules.set(m, module);
   }
   return table;
@@ -228,8 +235,9 @@ function generate(module: string, extraArgs: string[], plugin = false, internal 
   const symbols = new Map<string, Sym>();
   const rels: Rel[] = [];
   const swiftTypes: Record<string, ScopedKind> = {};
-  // A Swift module's `@objc` declarations (`c:@M@Module@objc(cs)…`; in extensions `c:@CM@Module@…`, `c:@CM@Module@@…`) under the USRs Objective-C's would have.
-  const objcUSR = plugin ? (usr: string) => usr.replace(/^c:@C?M@\w+@@?/, 'c:') : (usr: string) => usr;
+  // A Swift module's `@objc` declarations (`c:@M@Module@objc(cs)…`; `@objc enum` `c:@M@Module@E@…` or nested `c:@M@Module@objc(cs)Class@E@…`; in extensions `c:@CM@Module@…`, `c:@CM@Module@@…`) under the USRs Objective-C's would have.
+  const fileUSR = (usr: string) => usr.replace(/^c:[\w.+-]+@(?=(?:T|E|EA|SA?)@)/, 'c:@');
+  const objcUSR = plugin ? (usr: string) => fileUSR(usr).replace(/^c:@C?M@\w+@@?(?:objc\(cs\)\w+@@?(?=(?:E|EA)@))?(?=(objc)?)/, (_, objc) => (objc ? 'c:' : 'c:@')) : fileUSR;
   try {
     try {
       execFileSync('xcrun', ['swift-symbolgraph-extract', '-module-name', module, '-target', TARGET, '-sdk', sdk().path, '-output-dir', dir,
@@ -280,6 +288,7 @@ function compact(s: any, internal = false): Sym | null {
   const typedefField = /@FI@(\w+)::SYNTHESIZED::(c:@T@\w+)$/.exec(usr);
   if (typedefField) usr = `${typedefField[2]}@FI@${typedefField[1]}`;
   else if (usr.includes('::SYNTHESIZED::')) return null;
+  if (s.spi && !internal) return null;
   if (s.accessLevel !== 'public' && s.accessLevel !== 'open' && !(internal && s.accessLevel === 'internal')) return null;
   const avail: any[] = s.availability ?? [];
   const applies = (a: any) => !a.domain || a.domain === 'iOS' || a.domain === 'Swift' || a.domain === '*';
@@ -339,7 +348,7 @@ export function jsSelectorName(selector: string): string {
 }
 
 /** NativeScript's object-constructor keys for an `init…` selector; the `NSError **` part is not one. */
-function constructorKeys(selector: string, errorPart?: number): string {
+export function constructorKeys(selector: string, errorPart?: number): string {
   const parts = selector.includes(':') ? selector.split(':').slice(0, -1).filter(Boolean) : [];
   const keys = parts.filter((_, i) => i !== errorPart).map((p, i) => {
     if (i) return p;
@@ -546,18 +555,34 @@ function build(module: string, symbols: Map<string, Sym>, rels: Rel[]): NativeTa
       if (f) table.functions[m[1]] ??= f;
     } else if ((m = /^c:@SA?@(\w+)$/.exec(usr)) && s.kind === 'swift.struct') {
       table.structs[m[1]] = { swift: s.path.join('.'), fields: fieldsOf(usr) };
-    } else if ((m = /^c:@T@(\w+)$/.exec(usr)) && s.kind === 'swift.typealias') {
-      const aliased = s.decl.slice(s.decl.findIndex((f) => f.spelling.includes('=')) + 1);
-      const target = aliased.length === 1 && /^c:@SA?@\w+$/.test(aliased[0].preciseIdentifier ?? '') ? aliased[0].preciseIdentifier : undefined;
-      const fields = fieldsOf(target ?? usr);
-      if (target || Object.keys(fields).length) table.structs[m[1]] ??= { swift: s.path.join('.'), fields };
+    } else if (s.kind === 'swift.typealias') {
+      if ((m = /^c:@T@(\w+)$/.exec(usr))) {
+        const aliased = s.decl.slice(s.decl.findIndex((f) => f.spelling.includes('=')) + 1);
+        const target = aliased.length === 1 && /^c:@SA?@\w+$/.test(aliased[0].preciseIdentifier ?? '') ? aliased[0].preciseIdentifier : undefined;
+        const fields = fieldsOf(target ?? usr);
+        if (target || Object.keys(fields).length) table.structs[m[1]] ??= { swift: s.path.join('.'), fields };
+      }
       const text = typeText(s.decl);
-      (table.typealiases ??= {})[s.path.join('.')] = text.slice(text.indexOf('=') + 1).trim();
+      if (text.includes('=')) (table.typealiases ??= {})[s.path.join('.')] = text.slice(text.indexOf('=') + 1).trim();
     } else if (s.kind === 'swift.var' && usr.startsWith('s:So') && s.path.length === 1) {
       // An anonymous enum's constant, imported as a global variable.
       table.constants[s.path[0]] ??= { swift: s.path[0], type: valueType(s) };
     } else if (/^c:@(?:E|EA|T)@\w+$/.test(usr) && (s.kind === 'swift.enum' || s.kind === 'swift.struct')) {
-      if (!usr.startsWith('c:@T@')) enumOf(usr);
+      enumOf(usr);
+    } else if (usr.startsWith('s:') && s.kind === 'swift.enum') {
+      const objcEnum = /^@objc\s*\((\w+)\)/.exec(typeText(s.decl))?.[1];
+      if (objcEnum) {
+        const raw = (members.get(usr) ?? []).map((u) => symbols.get(u)).find((x) => x?.kind === 'swift.init' && x.path[x.path.length - 1] === 'init(rawValue:)');
+        const cases: Record<string, { swift: string }> = {};
+        for (const u of members.get(usr) ?? []) {
+          const c = symbols.get(u);
+          if (c?.kind === 'swift.enum.case') {
+            const name = c.path[c.path.length - 1];
+            cases[upperFirst(name)] = { swift: name };
+          }
+        }
+        table.enums[objcEnum] = { swift: s.path.join('.'), kind: 'enum', raw: raw?.params?.length ? paramType(raw.params[0].decl) : 'Int', cases, ...(s.introduced ? { introduced: s.introduced } : {}) };
+      }
     }
   }
 
@@ -568,7 +593,7 @@ function build(module: string, symbols: Map<string, Sym>, rels: Rel[]): NativeTa
     if (global) e.swift = '';
     for (const c of list) e.cases[c.cName.slice(prefix.length)] = { swift: global ? c.swift : c.swift.slice(c.swift.lastIndexOf('.') + 1) };
   }
-  for (const [js, e] of Object.entries(table.enums)) if (e.kind === 'typedConstants' && !Object.keys(e.cases).length) delete table.enums[js];
+  for (const [js, e] of Object.entries(table.enums)) if (e.kind === 'typedConstants' && !Object.keys(e.cases).length && !e.raw) delete table.enums[js];
 
   // A subclass of a UIKit class is isolated as its superclass is, which Swift imports as preconcurrency: calls need nothing.
   for (const c of Object.values(table.classes)) {
@@ -731,9 +756,12 @@ function allTables(first: string): NativeTable[] {
   if (!cached) {
     const dir = cacheDir();
     cached = existsSync(dir) ? readdirSync(dir).filter((f) => f.endsWith('.json')).map((f) => f.slice(0, -5)) : [];
+    for (const m of cached) nativeTable(m);
   }
-  const names = new Set([first, ...tables.keys(), ...cached]);
-  return [...names].map((m) => nativeTable(m));
+  const firstTable = nativeTable(first);
+  const out = [firstTable];
+  for (const t of tables.values()) if (t !== firstTable) out.push(t);
+  return out;
 }
 
 /** The module declaring a class or protocol, as seen from `module`. */
@@ -772,7 +800,10 @@ function* hierarchy(module: string, jsClass: string): Generator<[string, NativeC
     if (main) yield [js, main];
     for (const t of allTables(home)) {
       const c = t.classes[js];
-      if (c && c !== main && c.extension) yield [js, c];
+      if (c && c !== main && c.extension) {
+        yield [js, c];
+        for (const p of c.protocols ?? []) queue.push([t.module, p]);
+      }
     }
     if (main?.base) queue.push([home, main.base]);
     for (const p of main?.protocols ?? []) queue.push([home, p]);
@@ -835,6 +866,10 @@ export function lookupMember(module: string, jsClass: string, jsMember: string, 
     if (m) return rehome(m, c, receiver);
   }
   if (!isStatic && !jsMember.startsWith('init') && cLong.test(jsMember)) return lookupMember(module, jsClass, jsMember.replace(cLong, 'LongLong'), false);
+  if (!isStatic && !jsMember.startsWith('get') && jsMember.endsWith('WithCompletionBlock')) {
+    const found = lookupMember(module, jsClass, 'get' + upperFirst(jsMember.slice(0, -'WithCompletionBlock'.length)) + 'WithCompletion', false);
+    if (found) return found;
+  }
   if (!isStatic) return jsMember.startsWith('init') ? lookupInit(module, jsClass, jsMember) : null;
   // Swift drops a factory named after its class (`+[NSArray arrayWithArray:]`, `+[UIBezierPath bezierPath]`)
   // when an initializer has the same Swift name (`init(array:)`, `init()`).
@@ -867,7 +902,7 @@ export function lookupInit(module: string, jsClass: string, jsInitName: string):
  * C's `long` in a selector (`initWithLong:`, `longValue`), which Swift imports no differently
  * from the 64-bit one beside it (`initWithInteger:`, `longLongValue`), so the table has only that.
  */
-const cLong = /Long(?!Long)/;
+const cLong = /(?<!Long)Long(?=[A-Z]|$)/;
 
 function ownInit(module: string, jsClass: string, jsInitName: string): NativeMethod | null {
   return findInit(module, jsClass, (c) => c.inits[jsInitName], (init) => {

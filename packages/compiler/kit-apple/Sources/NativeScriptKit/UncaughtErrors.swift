@@ -32,5 +32,8 @@ public enum UncaughtErrors {
     }
 
     /// NSLog reaches the device's log (Console, `log stream`) as well as Xcode's console, where standard error does not.
-    private static func log(_ text: String) { NSLog("%@", text) }
+    private static func log(_ text: String) {
+        jsWriteStandardError(text + "\n")
+        NSLog("%@", text)
+    }
 }

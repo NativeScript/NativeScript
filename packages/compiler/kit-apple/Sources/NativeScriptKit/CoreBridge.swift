@@ -105,7 +105,10 @@ extension ViewBase {
         let key = name.hasPrefix("ios:") ? String(name.dropFirst(4)) : name
         jsReport {
             let path = key.split(separator: ".").map(String.init)
-            guard path.count > 1 else { return try self.set(key, value) }
+            guard path.count > 1 else {
+                if let hook = View.nativeSetterHooks[key] { hook(self, value) }
+                return try self.set(key, value)
+            }
             var target: Any? = self
             for member in path.dropLast() {
                 var next = try jsGet(target, member)
@@ -247,6 +250,17 @@ private let listTemplateKey = JSSymbol("NativeScriptKit:listTemplate")
 // Any view hosting item templates as ListView does (items, itemTemplates, itemTemplateSelector, `itemLoading` taking
 // the row's view): ListView, and plugins' that follow it, the Pager.
 extension View {
+    public struct LifecycleHook {
+        public let initNativeView: ((ViewBase) -> Void)?
+        public let disposeNativeView: ((ViewBase) -> Void)?
+        public init(initNativeView: ((ViewBase) -> Void)? = nil, disposeNativeView: ((ViewBase) -> Void)? = nil) {
+            self.initNativeView = initNativeView
+            self.disposeNativeView = disposeNativeView
+        }
+    }
+    public nonisolated(unsafe) static var lifecycleHooks: [LifecycleHook] = []
+    public nonisolated(unsafe) static var nativeSetterHooks: [String: (ViewBase, Any?) -> Void] = [:]
+
     /// A ListView's items and the templates that render them, as nativescript-vue
     /// gives them to core: `itemTemplates` naming each template, the selector
     /// choosing a row's template, and each row's view made on `itemLoading`, where

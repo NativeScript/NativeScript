@@ -112,6 +112,13 @@ public final class JSResolvers<T> {
         promise.resolveWith(value)
     }
 
+    @_disfavoredOverload
+    public func resolve(_ value: T?) {
+        if let value { resolve(value) }
+        else if let nilValue = Optional<Any>.none as? T { resolve(nilValue) }
+        else { guard !alreadyResolved else { return }; alreadyResolved = true; promise.state = .fulfilled }
+    }
+
     /// `resolve(promise)`: adopts `other`'s eventual state through a NewPromiseResolveThenableJob.
     public func resolve(promise other: JSPromise<T>) {
         guard !alreadyResolved else { return }
@@ -128,6 +135,10 @@ public final class JSResolvers<T> {
 
 extension JSResolvers where T == Void {
     public func resolve() { resolve(()) }
+}
+
+extension JSResolvers where T == Any? {
+    public func resolve() { resolve(nil) }
 }
 
 /// The reactions of `then` beyond a promise's first, the fulfilled ones as `Any`: a field of a generic type
@@ -448,6 +459,16 @@ public final class JSPromise<T>: JSThenable, CustomStringConvertible {
         return promise
     }
 
+    @_disfavoredOverload
+    @discardableResult
+    public static func resolve(_ value: T?) -> JSPromise<T> {
+        if let value { return resolve(value) }
+        if let nilValue = Optional<Any>.none as? T { return resolve(nilValue) }
+        let promise = JSPromise<T>()
+        promise.state = .fulfilled
+        return promise
+    }
+
     /// `Promise.resolve(promise)` is the promise itself (PromiseResolve).
     public static func resolve(_ promise: JSPromise<T>) -> JSPromise<T> { promise }
 
@@ -635,6 +656,11 @@ public func jsAwait<T>(_ promise: JSPromise<T>?, _ onFulfilled: @escaping (T?) -
     promise.performThen({ onFulfilled($0) }, onRejected)
 }
 
+public func jsAwait(_ promise: JSPromise<Void>?, _ onFulfilled: @escaping (Void) -> Void, _ onRejected: @escaping (Any?) -> Void) {
+    guard let promise else { return Microtasks.enqueue { onFulfilled(()) } }
+    promise.performThen(onFulfilled, onRejected)
+}
+
 /// `await value` for a value that is not statically a promise: one tick for a plain value; a
 /// promise of any type held dynamically is awaited as itself.
 public func jsAwait<T>(value: T, _ onFulfilled: @escaping (T) -> Void, _ onRejected: @escaping (Any?) -> Void) {
@@ -677,6 +703,11 @@ public final class JSAsync<T> {
         guard !resolved else { return }
         resolved = true
         promise.adopt(other)
+    }
+
+    public func returnPromise(_ other: JSPromise<T>?) {
+        guard let other else { return }
+        returnPromise(other)
     }
 
     /// An exception escaping the body.

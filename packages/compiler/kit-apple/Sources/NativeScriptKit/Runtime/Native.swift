@@ -71,6 +71,7 @@ public func jsNativeObject<T>(_ value: Any?, _: T.Type) -> T {
 public func jsElements<T>(_ value: Any?, _: T.Type) -> [T] {
     guard let flat = jsFlat(value) else { return [] }
     if let same = flat as? [T] { return same }
+    if let jsArr = flat as? JSArrayProtocol { return jsArr.jsAnyElements.compactMap { jsFlat($0) as? T } }
     return ((flat as? NSArray) ?? []).compactMap { $0 as? T }
 }
 
@@ -179,7 +180,7 @@ public func jsCallExtended(_ object: AnyObject, _ methods: Any?, _ key: String, 
 public final class JSNativeAllocation {
     nonisolated deinit {}
     public let cls: AnyClass
-    init(_ cls: AnyClass) { self.cls = cls }
+    public init(_ cls: AnyClass) { self.cls = cls }
 }
 
 /// A program's subclass of a native class: its own members by name, which Objective-C cannot see; nil for a name it does not declare.
@@ -559,6 +560,7 @@ public func jsNativeStruct<T>(_ value: Any?, _: T.Type) -> T? {
         case is CGSize.Type: return nsValue.cgSizeValue as? T
         case is CGPoint.Type: return nsValue.cgPointValue as? T
         case is UIEdgeInsets.Type: return nsValue.uiEdgeInsetsValue as? T
+        case is NSRange.Type: return nsValue.rangeValue as? T
         default: return nil
         }
     }
@@ -570,6 +572,7 @@ public func jsNativeStruct<T>(_ value: Any?, _: T.Type) -> T? {
         let origin = (try? jsGet(v, "origin")) ?? nil, size = (try? jsGet(v, "size")) ?? nil
         return CGRect(x: n(origin, "x"), y: n(origin, "y"), width: n(size, "width"), height: n(size, "height")) as? T
     case is UIEdgeInsets.Type: return UIEdgeInsets(top: n(v, "top"), left: n(v, "left"), bottom: n(v, "bottom"), right: n(v, "right")) as? T
+    case is NSRange.Type: return NSRange(location: Int(n(v, "location")), length: Int(n(v, "length"))) as? T
     default: return nil
     }
 }
@@ -663,6 +666,10 @@ public func jsToNativeDictionary(_ value: Any?) -> [AnyHashable: Any] {
     switch jsFlat(value) {
     case let dictionary as [AnyHashable: Any]: return dictionary
     case let dictionary as NSDictionary: return dictionary as? [AnyHashable: Any] ?? [:]
+    case let map as JSMapProtocol:
+        var out: [AnyHashable: Any] = [:]
+        for (k, v) in map.jsAnyEntries { if let kh = k as? AnyHashable, let native = jsToNativeMember(v) { out[kh] = native } }
+        return out
     case let object as JSDynamic:
         var out: [AnyHashable: Any] = [:]
         for key in object.jsKeys { if let native = jsToNativeMember(object[jsKey: key]) { out[key] = native } }
@@ -684,6 +691,10 @@ public func jsToNativeArray(_ value: Any?) -> [Any] {
 private func jsToNativeMember(_ value: Any?) -> Any? {
     switch jsFlat(value) {
     case let array as JSArrayProtocol: return array.jsAnyElements.map { jsToNativeMember($0) ?? NSNull() }
+    case let map as JSMapProtocol:
+        var out: [AnyHashable: Any] = [:]
+        for (k, v) in map.jsAnyEntries { if let kh = k as? AnyHashable, let native = jsToNativeMember(v) { out[kh] = native } }
+        return out
     case let object as JSDynamic: return jsToNativeDictionary(object) as NSDictionary
     default: return jsToNative(value)
     }

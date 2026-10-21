@@ -129,6 +129,7 @@ private func callMethod(_ object: Any?, _ key: String, _ arguments: [Any?]) thro
     }
     // `cls.new()` of a native class object: an instance of its plain initializer, as `[cls new]`.
     if key == "new", arguments.isEmpty, let cls = jsFlat(object) as? NSObject.Type { return cls.init() }
+    if key == "from", let typed = jsFlat(object) as? JSTypedArrayProtocol.Type { return try typed.jsFrom(jsArg(arguments, 0)) }
     if key == "toString", let cls = jsFlat(object) as? Any.Type { return jsClassString(cls) }
     if let host = jsFlat(object) as? JSHostObject, let result = try host.jsInvoke(key, arguments) { return result }
     if let native = jsFlat(object).flatMap(jsAsNSObject) {

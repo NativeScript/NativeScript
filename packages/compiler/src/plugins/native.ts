@@ -5,6 +5,7 @@ import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, 
 import { tmpdir } from 'node:os';
 import { basename, dirname, join, relative, sep } from 'node:path';
 import { iosTarget, moduleOfDeclaration, nativeTable, registerDeclarationModule, type ScopedKind } from '../natives/symbols.ts';
+import { coreSwiftExtractArgs } from '../natives/core-ios.ts';
 import { boundToEngine, definedObjCClasses, productLines, type Dependencies, type SwiftPackage } from '../ios-dependencies.ts';
 import type { PluginSource } from './source.ts';
 import { mirror } from '../mirror.ts';
@@ -32,7 +33,7 @@ export interface PluginNative {
   /** The local package (absolute), its name and its library products; null when no plugin ships code for it. */
   package: { dir: string; name: string; products: string[] } | null;
   /** Swift modules built as the project's own static library targets: their names, source directories (absolute) and the Swift packages their plugin declares. */
-  swift: { name: string; dir: string; packages: SwiftPackage[] }[];
+  swift: { name: string; dir: string; packages: SwiftPackage[]; clangDirs: string[] }[];
   /** The app's own Swift (absolute), compiled into the app target; null when it has none. */
   appSwift: string | null;
   /** Plugins' Objective-C and C that import a pod (absolute directories, each with its module map), compiled into the app target as the CLI compiles them, where the pods' headers are. */
@@ -60,7 +61,8 @@ interface Target {
   /** Compiled into the app target: Swift, its internal declarations in its table; or Objective-C that imports a pod. */
   inApp?: boolean;
   /** Arguments that let the extractor see the module, given the copied files and a scratch directory. */
-  extract: (scratch: string) => string[];
+  extract: (scratch: string, extraArgs?: string[]) => string[];
+  extraDirs?: { prefix: string; dir: string }[];
 }
 
 const PACKAGE = 'NSPlugins';
@@ -77,14 +79,14 @@ const PREFIX_HEADER = `#ifdef __OBJC__
 const PREFIX_FILE = 'NSPluginsPrefix.h';
 
 /** A set of native sources: a plugin's `platforms/ios`, or the app's `App_Resources/iOS/src` (whose Swift module is the app's). */
-interface NativeSources { name: string; version: string; dir: string; ios: string; typings: string[]; appModule?: string }
+interface NativeSources { name: string; version: string; dir: string; ios: string; typings: string[]; appModule?: string; extraIos?: { prefix: string; dir: string }[] }
 
 /**
  * A plugin whose iOS code installs objects into the JavaScript engine (`global.CanvasModule`)
  * has their Swift counterpart in the kit, at `Bindings/<package>/ios`: the same objects over the
  * same native API, which `NSBinding_<package>.install()` puts in `globalThis`.
  */
-export function pluginNative(sources: PluginSource[], outDir: string, o: { deps: Dependencies; packages: SwiftPackage[]; app?: { module: string; src: string; declarations: string[] }; declarations: string[]; bindings: string; say: (m: string) => void }): PluginNative {
+export function pluginNative(sources: PluginSource[], outDir: string, o: { deps: Dependencies; packages: SwiftPackage[]; app?: { module: string; src: string; declarations: string[] }; core?: string | null; declarations: string[]; bindings: string; say: (m: string) => void }): PluginNative {
   // Assembled in a scratch folder and mirrored into the project, so a rebuild leaves unchanged files as they were.
   const root = join(outDir, 'Plugins');
   const stage = mkdtempSync(join(tmpdir(), 'ns-plugins-'));
@@ -101,10 +103,18 @@ export function pluginNative(sources: PluginSource[], outDir: string, o: { deps:
 /** Writes the plugins' files to `stage`, returning paths under `root`, where they are mirrored. */
 function assemble(sources: PluginSource[], root: string, stage: string, o: Parameters<typeof pluginNative>[2]): PluginNative {
   const errors: string[] = [];
-  const sets: NativeSources[] = [...sources].sort((a, b) => a.name.localeCompare(b.name)).map((s) => ({ name: s.name, version: s.version, dir: s.dir, ios: join(s.dir, 'platforms', 'ios'), typings: [...new Set([...s.typings, ...ownTypings(s, o.declarations)])] }));
-  if (o.app) sets.push({ name: 'App_Resources', version: 'app', dir: dirname(dirname(o.app.src)), ios: o.app.src, typings: o.app.declarations, appModule: o.app.module });
-  const perPackage = sets.map((source) => ({ source, targets: targetsOf(source, errors, o.deps) }));
-  if (errors.length) throw new Error(`plugins' iOS code that cannot be built yet:\n  ${errors.join('\n  ')}`);
+  // `@nativescript/swift-ui` declares internal protocols (`SwiftUIProvider`) that `App_Resources/iOS/src` conforms to in the app module.
+  const isAppSwift = (s: PluginSource) => {
+    const ios = join(s.dir, 'platforms', 'ios');
+    return existsSync(ios) && filesUnder(ios).some((f) => f.endsWith('.swift') && /\bprotocol\s+SwiftUIProvider\b/.test(readFileSync(f, 'utf8')));
+  };
+  const sorted = [...sources].sort((a, b) => a.name.localeCompare(b.name));
+  const appSwiftPlugins = o.app ? sorted.filter(isAppSwift) : [];
+  const sets: NativeSources[] = sorted.filter((s) => !appSwiftPlugins.includes(s)).map((s) => ({ name: s.name, version: s.version, dir: s.dir, ios: join(s.dir, 'platforms', 'ios'), typings: [...new Set([...s.typings, ...ownTypings(s, o.declarations)])] }));
+  if (o.app) sets.push({ name: 'App_Resources', version: 'app', dir: dirname(dirname(o.app.src)), ios: o.app.src, typings: o.app.declarations, appModule: o.app.module, extraIos: appSwiftPlugins.map((s) => ({ prefix: derivedModule(s.name), dir: join(s.dir, 'platforms', 'ios') })) });
+  const perPackage = sets.map((source) => ({ source, targets: targetsOf(source, errors, o.deps, stage) }));
+  if (errors.length && process.env.NS_NATIVE_TRIAGE) console.error(`triage-native: plugins' iOS code that cannot be built yet:\n  ${errors.join('\n  ')}`);
+  else if (errors.length) throw new Error(`plugins' iOS code that cannot be built yet:\n  ${errors.join('\n  ')}`);
   const all = perPackage.flatMap((p) => p.targets);
 
   const seen = new Map<string, string>();
@@ -116,10 +126,25 @@ function assemble(sources: PluginSource[], root: string, stage: string, o: Param
 
   for (const t of all) {
     const to = join(stage, t.path);
-    if (t.kind === 'binary') cpSync(t.from, to, { recursive: true, verbatimSymlinks: true });
-    else for (const f of t.files) {
-      mkdirSync(dirname(join(to, relative(t.from, f))), { recursive: true });
-      cpSync(f, join(to, relative(t.from, f)));
+    if (t.kind === 'binary') {
+      cpSync(t.from, to, { recursive: true, verbatimSymlinks: true });
+      // A binary framework header that includes a sibling header with `<Notification.h>` instead of `"Notification.h"`.
+      for (const f of filesUnder(to).filter((x) => x.endsWith('.h'))) {
+        const hDir = dirname(f);
+        const text = readFileSync(f, 'utf8');
+        const fixed = text.replace(/^(\s*#\s*(?:import|include)\s*)<([^/>]+\.h)>/gm, (m, pre: string, name: string) => (existsSync(join(hDir, name)) ? `${pre}"${name}"` : m));
+        if (fixed !== text) writeFileSync(f, fixed);
+      }
+    } else for (const f of t.files) {
+      const extra = t.extraDirs?.find((e) => f.startsWith(e.dir + sep));
+      const dest = join(to, extra ? join(extra.prefix, relative(extra.dir, f)) : relative(t.from, f));
+      mkdirSync(dirname(dest), { recursive: true });
+      if (f.endsWith('.swift')) {
+        const raw = readFileSync(f, 'utf8');
+        const text = !t.inApp ? publicizeObjcSwift(raw) : raw;
+        const needsCore = /\bNativeScriptViewFactory\b/.test(text) && !/^\s*import\s+nsswiftsupport\b/m.test(text);
+        writeFileSync(dest, needsCore ? `import nsswiftsupport\n${text}` : text);
+      } else cpSync(f, dest);
     }
   }
   const packaged = all.filter((t) => t.kind !== 'swift' && !t.inApp);
@@ -128,11 +153,15 @@ function assemble(sources: PluginSource[], root: string, stage: string, o: Param
   if (packaged.length) writeFileSync(join(stage, 'Package.swift'), manifest(packaged, join(root, PREFIX_FILE)));
 
   const left = new Set<Target>();
+  const clangExtractArgs = (scratch: string) => all.filter((t) => t.kind === 'clang' || t.kind === 'binary').flatMap((t) => t.extract(scratch));
   for (const { source, targets } of perPackage) {
     const tables = targets.map((t) => {
       const scratch = mkdtempSync(join(tmpdir(), `ns-plugin-${t.module}-`));
       try {
-        return nativeTable(t.module, { key: hash(t), internal: t.inApp && t.kind === 'swift', extraArgs: () => [...t.extract(scratch), ...o.deps.searchArgs()] });
+        const coreArgs = t.kind === 'swift' && o.core ? coreSwiftExtractArgs(o.core, scratch) : [];
+        const clangArgs = t.kind === 'swift' ? [...coreArgs, ...clangExtractArgs(scratch)] : [];
+        const extra = [...clangArgs, ...t.extract(scratch, clangArgs)];
+        return nativeTable(t.module, { key: hash(t), internal: t.inApp && t.kind === 'swift', extraArgs: () => [...extra, ...o.deps.searchArgs()] });
       } catch (e) {
         // Swift the app's NativeScript build compiles against the JavaScript runtime's code; what TypeScript calls in it stops the translation.
         if (t.inApp && t.kind === 'swift') {
@@ -141,6 +170,7 @@ function assemble(sources: PluginSource[], root: string, stage: string, o: Param
           rmSync(join(stage, t.path), { recursive: true, force: true });
           return { classes: {} } as ReturnType<typeof nativeTable>;
         }
+        if (process.env.NS_NATIVE_TRIAGE) { console.error(`triage-symbols: ${source.name}: ${(e as Error).message.split('\n').slice(0, 4).join(' | ')}`); return { classes: {} } as ReturnType<typeof nativeTable>; }
         throw new Error(`${source.name}: ${(e as Error).message}`);
       } finally {
         rmSync(scratch, { recursive: true, force: true });
@@ -163,10 +193,20 @@ function assemble(sources: PluginSource[], root: string, stage: string, o: Param
   // A package's or pod's module is imported where the program declares something of it.
   const declared = new Set(o.declarations.map(moduleOfDeclaration));
   const app = all.find((t) => t.inApp && !left.has(t));
+  const packagedNames = new Set(packaged.map((t) => t.name));
   return {
     modules: [...all.filter((t) => !(t.inApp && t.kind === 'swift')).map((t) => t.module), ...o.deps.modules.filter((m) => declared.has(m))],
     package: packaged.length ? { dir: root, name: PACKAGE, products: packaged.map((t) => t.name) } : null,
-    swift: all.filter((t) => t.kind === 'swift' && !t.inApp).map((t) => ({ name: t.name, dir: join(root, t.path), packages: o.packages.filter((p) => p.plugin === perPackage.find((x) => x.targets.includes(t))!.source.name) })),
+    swift: all.filter((t) => t.kind === 'swift' && !t.inApp).map((t) => {
+      const importedPackaged = [...new Set(t.files.filter((f) => f.endsWith('.swift')).flatMap((f) => [...readFileSync(f, 'utf8').matchAll(/^\s*import\s+(\w+)/gm)].map((m) => m[1])).filter((m) => packagedNames.has(m)))];
+      const pkgs = o.packages.filter((p) => p.plugin === perPackage.find((x) => x.targets.includes(t))!.source.name);
+      return {
+        name: t.name,
+        dir: join(root, t.path),
+        packages: pkgs,
+        clangDirs: importedPackaged.map((m) => join(root, 'Sources', m)),
+      };
+    }),
     appSwift: app ? join(root, app.path) : null,
     appClang: all.filter((t) => t.kind === 'clang' && t.inApp).map((t) => join(root, t.path)),
     prefixHeader: clangTargets ? join(root, PREFIX_FILE) : null,
@@ -181,7 +221,13 @@ export function xcodegenLines(native: PluginNative, projectDir: string): { packa
   const conditions = [...new Set(native.bindings.flatMap((b) => b.conditions))];
   return {
     packages: p ? `  ${p.name}:\n    path: ${relative(projectDir, p.dir)}\n` : '',
-    targets: native.swift.map((t) => `  ${t.name}:\n    type: library.static\n    platform: iOS\n    sources: [${relative(projectDir, t.dir)}]\n${t.packages.length ? `    dependencies:\n${productLines(t.packages, false)}` : ''}    settings:\n      base:\n        SWIFT_VERSION: "5"\n`).join(''),
+    targets: native.swift.map((t) => {
+      const search = t.clangDirs.length ? JSON.stringify(['$(inherited)', ...t.clangDirs.map((d) => `$(SRCROOT)/${relative(projectDir, d)}`)].join(' ')) : '';
+      const modMaps = t.packages.flatMap((p) => p.libs.map((l) => `-Xcc -fmodule-map-file=$(OBJROOT)/GeneratedModuleMaps-$(PLATFORM_NAME)/${l}.modulemap -Xcc -I$(OBJROOT)/../../SourcePackages/checkouts/${p.name}/${l}/include -Xcc -I$(OBJROOT)/../../SourcePackages/checkouts/${p.name}/Sources/${l}/include`));
+      const flags = modMaps.length ? `        OTHER_SWIFT_FLAGS: ${JSON.stringify(['$(inherited)', ...modMaps].join(' '))}\n` : '';
+      const extraSettings = (search ? `        SWIFT_INCLUDE_PATHS: ${search}\n        HEADER_SEARCH_PATHS: ${search}\n` : '') + flags;
+      return `  ${t.name}:\n    type: library.static\n    platform: iOS\n    sources: [${relative(projectDir, t.dir)}]\n${t.packages.length ? `    dependencies:\n${productLines(t.packages, false)}` : ''}    settings:\n      base:\n        SWIFT_VERSION: "5"\n        SWIFT_INSTALL_OBJC_HEADER: NO\n${extraSettings}`;
+    }).join(''),
     dependencies: [
       ...(p?.products ?? []).map((product) => `      - package: ${p!.name}\n        product: ${product}\n`),
       ...native.swift.map((t) => `      - target: ${t.name}\n`),
@@ -213,9 +259,9 @@ const derivedModule =(pkg: string) => 'NSPlugin_' + pkg.replace(/^@/, '').replac
 /** Files at the top of `platforms/ios` that the project takes from every production plugin (app-resources.ts, ios-dependencies.ts). */
 const PROJECT_FILES = new Set(['Info.plist', 'build.xcconfig', 'app.entitlements', 'Podfile']);
 
-function targetsOf(source: NativeSources, errors: string[], deps: Dependencies): Target[] {
+function targetsOf(source: NativeSources, errors: string[], deps: Dependencies, stage: string): Target[] {
   const ios = source.ios;
-  if (!existsSync(ios)) return [];
+  if (!existsSync(ios) && !source.extraIos?.length) return [];
   const clang: string[] = [], swift: string[] = [], maps: string[] = [], xcframeworks: string[] = [], shaders: string[] = [];
   const fail = (file: string, why: string) => errors.push(`${source.name}@${source.version}: ${relative(source.dir, file)}: ${why}`);
   const walk = (dir: string) => {
@@ -223,7 +269,7 @@ function targetsOf(source: NativeSources, errors: string[], deps: Dependencies):
       if (dir === ios && PROJECT_FILES.has(f)) continue;
       const p = join(dir, f);
       if (f === '.DS_Store' || /\.md$/i.test(f)) continue;
-      else if (f === 'native-api-usage.json') continue;
+      else if (f === 'native-api-usage.json' || f.endsWith('.d.ts')) continue;
       if (statSync(p).isDirectory()) {
         // Code bound to the V8 engine (`v8::` objects installed into the JavaScript runtime, as @nativescript/canvas's
         // CanvasModule): no engine runs a compiled app, whose Swift binding of the same API the kit provides.
@@ -246,17 +292,23 @@ function targetsOf(source: NativeSources, errors: string[], deps: Dependencies):
       else fail(p, 'not a source file the build knows what to do with');
     }
   };
-  walk(ios);
-  if (swift.length && clang.length) fail(ios, 'Swift and Objective-C sources in one plugin are not supported yet');
+  if (existsSync(ios)) walk(ios);
+  for (const e of source.extraIos ?? []) if (existsSync(e.dir)) walk(e.dir);
+  // A Swift plugin that also leaves an empty umbrella header (`@nativescript/firebase-messaging`) has no Clang target of its own.
+  if (swift.length && clang.length && clang.every((f) => /\.h+$/.test(f) && !readFileSync(f, 'utf8').trim())) {
+    clang.length = 0;
+    maps.length = 0;
+  }
   if (shaders.length && !swift.length) fail(shaders[0], 'Metal shaders need Swift beside them in App_Resources/iOS/src');
   if (maps.length > 1) fail(ios, `more than one module.modulemap (${maps.map((m) => relative(ios, m)).join(', ')})`);
-  if (maps.length && !clang.length) fail(maps[0], 'a module map without sources');
+  if (maps.length && !clang.length && !swift.length) fail(maps[0], 'a module map without sources');
 
   const { target, sdk } = iosTarget();
   const targets: Target[] = [];
   if (clang.length && maps.length <= 1) {
     const map = maps[0];
-    const module = map ? /^\s*(?:explicit\s+)?module\s+(\w+)/m.exec(readFileSync(map, 'utf8'))?.[1] : derivedModule(source.name);
+    const baseModule = map ? /^\s*(?:explicit\s+)?module\s+(\w+)/m.exec(readFileSync(map, 'utf8'))?.[1] : derivedModule(source.name);
+    const module = baseModule && swift.length && baseModule === (source.appModule ?? derivedModule(source.name)) ? `${baseModule}_ObjC` : baseModule;
     if (!module) fail(map, 'declares no module (a `framework module` is not supported yet)');
     else {
       const from = commonDir([...clang, ...maps]);
@@ -271,7 +323,7 @@ function targetsOf(source: NativeSources, errors: string[], deps: Dependencies):
         extract: (scratch) => {
           writeFileSync(join(scratch, PREFIX_FILE), PREFIX_HEADER);
           const prefix = ['-Xcc', '-include', '-Xcc', join(scratch, PREFIX_FILE)];
-          if (map) return ['-I', dirname(map), ...prefix];
+          if (map && module === baseModule) return ['-I', dirname(map), ...prefix];
           // What SwiftPM generates for a target without a module map: every header under its public headers directory.
           writeFileSync(join(scratch, 'module.modulemap'), `module ${module} {\n  umbrella ${JSON.stringify(from)}\n  export *\n  module * { export * }\n}\n`);
           return ['-I', scratch, ...prefix];
@@ -279,15 +331,18 @@ function targetsOf(source: NativeSources, errors: string[], deps: Dependencies):
       });
     }
   }
-  if (swift.length && !clang.length) {
+  if (swift.length) {
     const module = source.appModule ?? derivedModule(source.name);
-    const from = commonDir([...swift, ...shaders]);
+    const ownFiles = [...swift, ...shaders].filter((f) => !source.extraIos?.some((e) => f.startsWith(e.dir + sep)));
+    const from = ownFiles.length ? commonDir(ownFiles) : ios;
+    const path = source.appModule ? 'App' : `Sources/${module}`;
     targets.push({
-      kind: 'swift', name: module, module, from, path: source.appModule ? 'App' : `Sources/${module}`, files: [...swift, ...shaders], inApp: !!source.appModule,
-      extract: (scratch) => {
+      kind: 'swift', name: module, module, from, path, files: [...swift, ...shaders], inApp: !!source.appModule, extraDirs: source.extraIos,
+      extract: (scratch, extraArgs = []) => {
+        const stagedSwift = filesUnder(join(stage, path)).filter((f) => f.endsWith('.swift'));
         try {
           execFileSync('xcrun', ['swiftc', '-emit-module', '-module-name', module, '-target', target, '-sdk', sdk, '-swift-version', '5', '-parse-as-library',
-            '-emit-module-path', join(scratch, `${module}.swiftmodule`), ...deps.searchArgs(), ...swift], { stdio: ['ignore', 'ignore', 'pipe'], maxBuffer: 1 << 28 });
+            '-emit-module-path', join(scratch, `${module}.swiftmodule`), ...extraArgs, ...deps.searchArgs(), ...stagedSwift], { stdio: ['ignore', 'ignore', 'pipe'], maxBuffer: 1 << 28 });
         } catch (e: any) {
           const out = String(e.stderr ?? e.message).split('\n').filter((l) => /^\S.*\berror:/.test(l));
           throw new Error(`its Swift sources do not compile as module ${module}:\n${out.join('\n')}`);
@@ -307,7 +362,8 @@ function targetsOf(source: NativeSources, errors: string[], deps: Dependencies):
     const mapFile = join(xc, slice, framework, 'Modules', 'module.modulemap');
     const module = (existsSync(mapFile) && /framework\s+module\s+(\w+)/.exec(readFileSync(mapFile, 'utf8'))?.[1]) || basename(framework, '.framework');
     const binary = join(xc, slice, framework, basename(framework, '.framework'));
-    targets.push({ kind: 'binary', name, module, from: xc, path: `Binaries/${name}.xcframework`, files: filesUnder(xc), binary: existsSync(binary) ? binary : undefined, extract: () => ['-F', join(xc, slice)] });
+    const path = `Binaries/${name}.xcframework`;
+    targets.push({ kind: 'binary', name, module, from: xc, path, files: filesUnder(xc), binary: existsSync(binary) ? binary : undefined, extract: () => ['-F', join(stage, path, slice)] });
   }
   return targets;
 }
@@ -337,9 +393,56 @@ ${targets.map((t) => `        ${decl(t)},`).join('\n')}
 }
 
 function hash(t: Target): string {
-  const h = createHash('sha256').update(`tables-2\0${t.kind}\0${t.module}\0${t.inApp ? 'app' : ''}\0${t.kind === 'clang' ? PREFIX_HEADER : ''}`);
+  const h = createHash('sha256').update(`tables-5\0${t.kind}\0${t.module}\0${t.inApp ? 'app' : ''}\0${t.kind === 'clang' ? PREFIX_HEADER : ''}`);
   for (const f of [...t.files].sort()) h.update(relative(t.from, f)).update('\0').update(readFileSync(f)).update('\0');
   return h.digest('hex').slice(0, 16);
+}
+
+/**
+ * In the NativeScript CLI, plugin Swift files are compiled into the app target where `internal` `@objc` and
+ * `@objcMembers` declarations are visible; compiled into their own `NSPlugin_*` module, they must be `public`.
+ */
+function publicizeObjcSwift(text: string): string {
+  const lines = text.split('\n');
+  let pendingObjc = false;
+  let pendingObjcMembers = false;
+  let depth = 0;
+  let classDepth = -1;
+  let prevNonObjc = false;
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const s = line.replace(/\/\/.*$/, '').trim();
+    const hasInlineObjc = /^(?:@\w+(?:\([^)]*\))?\s+)*@(?:objc|objcMembers)\b/.test(s);
+    if (/^@(?:objc|objcMembers)\b/.test(s)) {
+      pendingObjc = true;
+      if (/\bobjcMembers\b/.test(s)) pendingObjcMembers = true;
+    }
+    const isObjc = pendingObjc || hasInlineObjc;
+    const isObjcMembers = pendingObjcMembers || /\bobjcMembers\b/.test(s);
+    if (depth === 0 && isObjc && /^(?:@\w+(?:\([^)]*\))?\s+)*(?:(?:public|open|internal|fileprivate|private|final)\s+)*(class|enum|protocol)\s+\w+/.test(s)) {
+      if (((/\bclass\s+\w+/.test(s) && isObjcMembers) || /\benum\s+\w+/.test(s)) && !/\b(private|fileprivate)\b/.test(s)) classDepth = 0;
+      if (!/\b(public|open|private|fileprivate|internal)\b/.test(s)) {
+        lines[i] = line.replace(/^(\s*(?:@\w+(?:\([^)]*\))?\s+)*)((?:final\s+)?(?:class|enum|protocol)\b)/, '$1public $2');
+      }
+    } else if (classDepth !== -1 && depth === classDepth + 1 && !prevNonObjc && /^(?:@\w+(?:\([^)]*\))?\s+)*(?:override\s+|static\s+|class\s+|convenience\s+|required\s+)*(?:func|init|var|let|typealias)\b/.test(s)) {
+      if (!/\b(public|open|private|fileprivate|internal)\b/.test(s)) {
+        lines[i] = line.replace(/^(\s*(?:@\w+(?:\([^)]*\))?\s+)*)((?:override\s+|static\s+|class\s+|convenience\s+|required\s+)*(?:func|init|var|let|typealias)\b)/, '$1public $2');
+      }
+    }
+    if (s.startsWith('@nonobjc')) {
+      prevNonObjc = true;
+    } else if (s && !s.startsWith('@')) {
+      prevNonObjc = false;
+      pendingObjc = false;
+      pendingObjcMembers = false;
+    }
+    for (const ch of s) {
+      if (ch === '{') depth++;
+      else if (ch === '}') depth--;
+    }
+    if (classDepth !== -1 && depth <= classDepth) classDepth = -1;
+  }
+  return lines.join('\n');
 }
 
 /**
@@ -354,6 +457,7 @@ export function ownTypings(source: PluginSource, declarations: string[]): string
 /** The classes and interfaces (protocols) a typings file declares at its top level. */
 function declaredNames(dts: string): string[] {
   const sf = ts.createSourceFile(dts, readFileSync(dts, 'utf8'), ts.ScriptTarget.Latest, false);
+  if (ts.isExternalModule(sf)) return [];
   return sf.statements.flatMap((s) => ((ts.isClassDeclaration(s) || ts.isInterfaceDeclaration(s)) && s.name ? [s.name.text] : []));
 }
 

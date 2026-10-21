@@ -22,7 +22,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import ts from 'typescript';
 import type { ComponentIR } from './ir.ts';
 import { vueComponent } from './vue.ts';
-import { angularComponent, angularDirectives, angularPipes, angularRoutes, angularRouteTree, componentOf, declarableSource, declarablesIn, selectorElements, routedComponents, type RouteNode } from './angular.ts';
+import { angularComponent, angularDirectives, angularPipes, angularRoutes, angularRouteTree, componentOf, declarableSource, declarablesIn, selectorAttributes, selectorElements, routedComponents, type ComponentSummary, type RouteNode } from './angular.ts';
 import { svelteComponent } from './svelte.ts';
 import { svelte5Component, svelteModule } from './svelte5.ts';
 import { reactComponent, reactScreens, zustandStore } from './react.ts';
@@ -31,7 +31,7 @@ import { octaneApp } from './octane.ts';
 import { appDeclarations, createProgram, nodeModules } from './program.ts';
 import { corePatches, corePatchesAndroid } from './core-patches.ts';
 import { androidBindings } from './bindings-android.ts';
-import { KIT, useKitPlugins } from './core.ts';
+import { CLOSED_SOURCE_UI_PLUGINS, KIT, useKitPlugins } from './core.ts';
 import { kitIndex } from './kit-index.ts';
 import { describe, PropertyGuard } from './unimplemented.ts';
 import { NONISOLATED_DEINIT, swiftString, Translator, withoutRedundantImplicit, type ComponentInfo } from './swift.ts';
@@ -40,7 +40,7 @@ import { isFragment, render, SCHEDULE, type Framework } from './codegen.ts';
 import { createRequire } from 'node:module';
 import { addInterfaces, translateModules } from './modules.ts';
 import { appStylesheets, importedStylesheets, kitAst, kitCss } from './css.ts';
-import { PluginSources, configuredOverrides, writtenStrict } from './plugins/source.ts';
+import { PluginSources, configuredOverrides, configuredTypes, writtenStrict } from './plugins/source.ts';
 import { moduleNames, pluginNative, scopedImports, usedImports, xcodegenLines, type ModuleTypes } from './plugins/native.ts';
 import { readKitManifest } from './kit-manifest.ts';
 import { angularLibraries } from './angular-libraries.ts';
@@ -123,7 +123,7 @@ const sources = platformSources.filter((f) => !leftOut.has(f));
 const overrides = new Map<string, string>();
 
 // Plugins: compiled from their TypeScript source; on iOS their native code is linked as a local Swift package.
-const plugins = new PluginSources({ app, platform, overrides: configuredOverrides(app, platform), say });
+const plugins = new PluginSources({ app, platform, overrides: configuredOverrides(app, platform), types: configuredTypes(app, platform), say });
 
 // 1. Each component through its framework's front end; 2. the component the app starts with.
 const started = Date.now();
@@ -235,9 +235,11 @@ if (framework === 'vue') {
   const libraries = angularLibraries(sources, nodeModules(app), plugins, new Set(Object.keys(pluginReplacements(app, platform))));
   sources.push(...libraries);
   const selectors = new Map<string, string>();
+  const attrComponents = new Map<string, ComponentSummary>();
   for (const f of sources) {
     const c = componentOf(f, readFileSync(f, 'utf8'));
     for (const tag of c?.selector ? selectorElements(c.selector) : []) selectors.set(tag, c!.name);
+    for (const attr of c?.selector ? selectorAttributes(c.selector) : []) attrComponents.set(attr, c!);
   }
   // The configuration the entry provides, lazy routes followed into their files; else one routes file read flat.
   const tree = angularRouteTree(entry, (f) => readFileSync(f, 'utf8'), aliased);
@@ -255,7 +257,7 @@ if (framework === 'vue') {
   // What each NgModule declares, imports and exports: a component's directives are those in its scope.
   const ngModuleNames = new Map(sources.flatMap((f) => [...declarablesIn(f, readFileSync(f, 'utf8')).modules]));
   const runtimeModule = join(appDir, '__angular.release.ts');
-  components = sources.map((f) => angularComponent(f, readFileSync(f, 'utf8'), selectors, { zone, platform, pipes, runtimeModule, directives, ngModules: ngModuleNames, elements: new Map([...elements].map(([tag, e]) => [tag, e.name])) })).filter((c): c is NonNullable<typeof c> => !!c);
+  components = sources.map((f) => { try { return angularComponent(f, readFileSync(f, 'utf8'), selectors, { zone, platform, pipes, runtimeModule, directives, ngModules: ngModuleNames, attrComponents, elements: new Map([...elements].map(([tag, e]) => [tag, e.name])) }); } catch (e) { if (!process.env.NS_NATIVE_TRIAGE) throw e; console.error(`triage-frontend: ${(e as Error).message.split('\n')[0]}`); return null; } }).filter((c): c is NonNullable<typeof c> => !!c);
   const routed = new Set(tree ? routedComponents(tree.routes) : routes.map((r) => r.component));
   for (const c of components) c.page = routed.has(c.name);
   // The classes of registered tags, imported where the build can reach them: route files, which only configure, are not compiled.
@@ -330,9 +332,18 @@ const declarations = [
   ...plugins.all().flatMap((p) => p.typings),
 ];
 const replacements = { ...kitReplacements, ...pluginReplacements(app, platform) };
-modules.push(...Object.values(replacements).filter((f) => !modules.includes(f)));
+for (const f of new Set(Object.values(replacements))) if (!modules.includes(f)) modules.push(f);
 const { checker, program, files: sourceFiles, pluginFiles, resolved, lenient: lenientApp } = createProgram(modules, virtual, platform, undefined, plugins, declarations, replacements, {}, aliased);
 const infos = new Map<string, ComponentInfo & { outputs?: string[]; outputFields?: Record<string, string>; optional?: string[]; passed?: boolean; fragment?: boolean; initThrows?: boolean; setters?: string[]; throwingSetters?: string[]; propAliases?: Record<string, string>; changes?: boolean }>(components.map((c) => [c.name, { name: c.name, props: c.props, outputs: c.outputs, outputFields: c.outputFields, optional: c.optional, passed: c.passed, fragment: framework === 'angular' && !c.page && isFragment(c.template), setters: c.setters, propAliases: c.propAliases, changes: c.changes }]));
+if (framework === 'angular') {
+  for (let changed = true; changed; ) {
+    changed = false;
+    for (const c of components) {
+      const info = infos.get(c.name)!;
+      if (!info.fragment && !c.page && isFragment(c.template, infos)) { info.fragment = true; changed = true; }
+    }
+  }
+}
 // A closed world: the plugin code the app reaches, checked against what npm installed before it is compiled.
 const appFiles = [...modules, ...components.map((c) => c.file)];
 const reach = reachability(program, resolved, appFiles, new Set(pluginFiles), platform);
@@ -405,7 +416,7 @@ if (platform === 'ios') { const c = installedCore(app); if (c) loadCoreNativeTab
 let native: ReturnType<typeof pluginNative>;
 try {
   native = pluginNative(plugins.all(), out, {
-    deps: dependencies, packages, declarations: typings, say, bindings: join(kit, 'Bindings'),
+    deps: dependencies, packages, core: installedCore(app), declarations: typings, say, bindings: join(kit, 'Bindings'),
     app: { module: name, src: join(appResourcesDir(app), 'iOS', 'src'), declarations: nativeTypings },
   });
 } finally {
@@ -413,19 +424,34 @@ try {
 }
 // Before the translator analyzes what throws: lenient code's checks throw.
 const lenientFiles = [...pluginFiles].filter((f) => !writtenStrict(f));
-const translator = new Translator(checker, infos, sourceFiles, { pluginFiles, lenientFiles, reach, properties });
-translator.compiledFiles = new Set(compiledPlugins);
-translator.lines = sourceLines;
-const located = (code: string) => (sourceLines ? sourceLines.swift(withoutRedundantImplicit(code)) : withoutRedundantImplicit(code));
-translator.appModule = name;
-translator.lenientApp = lenientApp;
-translator.plainFields = framework === 'angular';
-translator.appMembersByName = framework === 'core';
 // The app's own Swift classes (`App_Resources/iOS/src`) that TypeScript declares untyped (`declare const X: any`): objects calling them by NativeScript's names.
 const appNative = native.appSwift ? nativeTable(name).classes : {};
-translator.appNativeClasses = new Set(Object.keys(appNative).filter((c) => !appNative[c].extension && appNative[c].kind === 'class'));
-for (const m of native.modules) for (const [js, c] of Object.entries(nativeTable(m).classes)) if (c.kind === 'class' && !c.extension && c.module === m) translator.pluginNativeClasses.set(js, c.swift);
-translator.pluginModules = native.modules;
+const appNativeClasses = new Set(Object.keys(appNative).filter((c) => !appNative[c].extension && appNative[c].kind === 'class'));
+const appSwiftTypes = new Set<string>(['Task', 'UIBezierPath', 'Path', 'Shape', 'Notification', 'TileMode', 'SocketIO', 'RevenueCat', 'DynamicLink', 'Offering']);
+if (native.appSwift && existsSync(native.appSwift)) {
+  for (const f of readdirSync(native.appSwift).filter((x) => x.endsWith('.swift'))) {
+    const text = readFileSync(join(native.appSwift, f), 'utf8').replace(/\/\/[^\n]*|\/\*[\s\S]*?\*\/|"(?:\\.|[^"\\])*"/g, ' ');
+    for (const m of text.matchAll(/\b(?:class|struct|enum|protocol|typealias|actor)\s+([A-Z]\w*)\b/g)) {
+      if (!appNativeClasses.has(m[1]) && !infos.has(m[1])) appSwiftTypes.add(m[1]);
+    }
+  }
+}
+const foundationBridged = new Set(['URL', 'Date', 'Data', 'IndexPath', 'Notification', 'UUID', 'Locale', 'TimeZone', 'Calendar', 'URLRequest', 'DateComponents', 'CharacterSet', 'URLComponents', 'IndexSet', 'PersonNameComponents']);
+const pluginNativeClasses = new Map<string, string>();
+for (const m of native.modules) {
+  const tbl = nativeTable(m);
+  for (const [js, c] of Object.entries(tbl.classes)) {
+    if (c.kind === 'class' && !c.extension && c.module === m) pluginNativeClasses.set(js, foundationBridged.has(c.swift) ? `${m}.${c.swift}` : c.swift);
+  }
+}
+const translator = new Translator(checker, infos, sourceFiles, {
+  pluginFiles, lenientFiles, reach, properties,
+  compiledFiles: new Set(compiledPlugins), appModule: name, lenientApp,
+  plainFields: framework === 'angular', appMembersByName: framework === 'core',
+  appNativeClasses, appSwiftTypes, pluginNativeClasses, pluginModules: native.modules,
+});
+translator.lines = sourceLines;
+const located = (code: string) => (sourceLines ? sourceLines.swift(withoutRedundantImplicit(code)) : withoutRedundantImplicit(code));
 translator.allowUnapplied = allowUnapplied;
 if (args.includes('--all-errors')) translator.errors = allowUnapplied ? [] : [...unapplied];
 
@@ -449,12 +475,20 @@ for (const c of components) {
   }
   infos.get(c.name)!.initThrows = translator.initThrows(c.name);
   infos.get(c.name)!.throwingSetters = (c.setters ?? []).filter((p) => translator.memberThrows(cls, '$set_' + p));
+  infos.get(c.name)!.propTypes = { ...translator.lastPropTypes };
 }
 for (const c of components) {
   const sf = program.getSourceFile(c.file)!;
   const cls = sf.statements.find(ts.isClassDeclaration)!;
   try {
-    const lines = [`final class ${c.name} {`, NONISOLATED_DEINIT, members.get(c.name) ?? '', '', ...render(c, infos, (m) => translator.memberThrows(cls, m), style, { slots: mounted, rowSignals: mounted, zone, itemType: (m) => translator.memberElementType(cls, m) }), '}'];
+    const lines = [`final class ${c.name} {`, NONISOLATED_DEINIT, members.get(c.name) ?? '', '', ...render(c, infos, (m) => translator.memberThrows(cls, m), style, {
+      slots: mounted, rowSignals: mounted, zone,
+      itemType: (m) => translator.memberElementType(cls, m),
+      coerceProp: (m, code, to) => {
+        const from = translator.memberReturnType(cls, m);
+        return from && from !== to && `${from}?` !== to ? translator.convert(code, from, to) : code;
+      },
+    }), '}'];
     writeFileSync(join(sourcesDir, c.name + '.swift'), header(c.file.replace(/\.ts$/, '')) + lines.join('\n') + '\n');
   } catch (e) {
     if (!translator.errors) throw e;
@@ -510,9 +544,9 @@ const start = switches + `        CorePackages.useAppConfig(appPackageJSON)\n   
   // The entry's own statements run the app (`Application.run`), after every module it imports.
   ? `${xmlModules}        NativeScriptApplication.prepare(cssAST: appCSS)\n${inits}`
   : `${inits}${prelude}        NativeScriptApplication.run(cssAST: appCSS) { try ${root}().render() }\n`);
-const dispatch = nativeDispatch(native.modules, untypedMembers(checker, sourceFiles), deploymentTarget, native.classes);
+const dispatch = nativeDispatch([...native.modules, ...(native.appSwift ? [name] : [])], untypedMembers(checker, sourceFiles), deploymentTarget, native.classes);
 if (dispatch) writeFileSync(join(sourcesDir, '__NativeDispatch.swift'), `// Compiled by ns-native: the plugins' native members untyped TypeScript calls, by name.\nimport Foundation\nimport UIKit\nimport NativeScriptKit\n${native.modules.map((m) => `import ${m}\n`).join('')}\n${dispatch}`);
-if (translator.usedAppNative.size) writeFileSync(join(sourcesDir, '__AppNative.swift'), `// Compiled by ns-native: the app's own Swift classes, called by name from untyped TypeScript.\nimport Foundation\nimport NativeScriptKit\n\n${appNativeObjects([...translator.usedAppNative].map((c) => appNative[c]))}`);
+if (translator.usedAppNative.size) writeFileSync(join(sourcesDir, '__AppNative.swift'), `// Compiled by ns-native: the app's own Swift classes, called by name from untyped TypeScript.\nimport Foundation\nimport NativeScriptKit\n\n${appNativeObjects([...translator.usedAppNative].map((c) => appNative[c]), deploymentTarget)}`);
 const sdkModules = translator.native.sdkModules().filter((m) => !['Foundation', 'UIKit', ...native.modules].includes(m));
 // A file imports only the plugin and pod modules it names: one module that fails to build stops only the files using it.
 const pluginNames = new Map(native.modules.map((m) => [m, moduleNames(m)]));
@@ -521,8 +555,9 @@ const moduleTypes = new Map<string, ModuleTypes>();
 for (const m of new Set(['Foundation', 'UIKit', ...native.modules, ...sdkModules])) {
   try {
     const t = nativeTable(m);
-    const named = new Set<string>([...Object.values(t.classes).filter((c) => !c.extension).map((c) => c.swift), ...Object.values(t.enums).flatMap((e) => (e.swift ? [e.swift] : [])), ...Object.values(t.structs).map((x) => x.swift), ...Object.keys(t.typealiases ?? {})]);
-    moduleTypes.set(m, { types: t.swiftTypes ?? {}, named });
+    const named = new Set<string>([...Object.values(t.classes).filter((c) => !c.extension).map((c) => c.swift), ...Object.values(t.enums).flatMap((e) => (e.swift ? [e.swift] : [])), ...Object.values(t.structs).map((x) => x.swift), ...Object.keys(t.typealiases ?? {}), ...(m === 'Foundation' ? foundationBridged : [])]);
+    const types = m === 'Foundation' ? { ...Object.fromEntries([...foundationBridged].map((n) => [n, 'struct' as const])), ...(t.swiftTypes ?? {}) } : (t.swiftTypes ?? {});
+    moduleTypes.set(m, { types, named });
   } catch {}
 }
 const kitManifest = readKitManifest(join(kit, 'Sources', 'NativeScriptKit'));
@@ -570,7 +605,12 @@ const excluded = args.includes('--whole-kit') ? [] : [...new Set([...kitFilesUnr
 mirror(sourcesDir, join(out, 'Sources'));
 // The kit's warnings are core's, checked by the kit's own build (tests/kit-build.sh, --whole-kit); in an app's build they are noise.
 const kitWarnings: Record<string, string> = args.includes('--whole-kit') ? {} : { SWIFT_SUPPRESS_WARNINGS: 'YES', GCC_WARN_INHIBIT_ALL_WARNINGS: 'YES' };
-const coreNative = coreNativeProject(core ?? '', kitImports(kitSources, excluded, coreModules), out, kitWarnings);
+const usedCoreModules = new Set([
+  ...kitImports(kitSources, excluded, coreModules),
+  ...kitImports(sourcesDir, [], coreModules),
+  ...(native.appSwift ? kitImports(native.appSwift, [], coreModules) : []),
+]);
+const coreNative = coreNativeProject(core ?? '', usedCoreModules, out, kitWarnings);
 const profile = opt('--provision') ? findProfile(opt('--provision')!) : null;
 const team = !profile && opt('--team-id') ? { id: opt('--team-id')!, method: opt('--export-method', 'debugging') as ExportMethod } : undefined;
 // Unsigned only for the simulator: a device archive made from the generated project in Xcode signs
@@ -621,6 +661,7 @@ ${pluginLines.packages || packages.length ? `packages:\n${pluginLines.packages}$
       - path: ${relative(out, kitSources)}
 ${excluded.length ? `        excludes: [${excluded.join(', ')}]\n` : ''}${coreNative.kitDependencies ? `    dependencies:\n${coreNative.kitDependencies}` : ''}    settings:
       base:
+        SWIFT_INSTALL_OBJC_HEADER: NO
 ${Object.entries({ ...swiftMode, ...kitWarnings }).map(([k, v]) => `        ${k}: ${v}\n`).join('')}${Object.entries(coreNative.settings).map(([k, v]) => `        ${k}: ${v}\n`).join('')}${swiftModeRelease}${coreNative.targets}${pluginLines.targets}${extensions.targets}  ${name}:
     type: application
     platform: iOS
@@ -793,12 +834,12 @@ function registeredElements(sources: string[], modulesDir: string): Map<string, 
         if (orig) imports.set((alias ?? orig).trim(), JSON.stringify([orig.trim(), m[2]]));
       }
     }
-    for (const m of text.matchAll(/registerElement\(\s*['"](\w+)['"]\s*,\s*\(\)\s*=>\s*(\w+)\s*\)/g)) {
+    for (const m of text.matchAll(/registerElement\(\s*['"](\w+)['"]\s*,\s*\(\)\s*=>\s*(\w+)(?:\s*,[^)]*)?\s*\)/g)) {
       const imported = imports.get(m[2]);
       if (!imported) continue;
       const [name, from] = JSON.parse(imported) as [string, string];
       // Core's own views are elements already.
-      if (from === '@nativescript/core') continue;
+      if (from === '@nativescript/core' || CLOSED_SOURCE_UI_PLUGINS.has(from.replace(/\/.*$/, ''))) continue;
       found.set(m[1], { name, from: from.startsWith('.') && file ? resolve(dirname(file), from) : from });
     }
   };
@@ -806,6 +847,7 @@ function registeredElements(sources: string[], modulesDir: string): Map<string, 
     const text = readFileSync(f, 'utf8');
     scan(text, f);
     for (const m of text.matchAll(/from\s*['"]((?:@[\w.-]+\/)?[\w.-]+)\/angular['"]/g)) {
+      if (CLOSED_SOURCE_UI_PLUGINS.has(m[1])) continue;
       const dir = join(modulesDir, m[1], 'angular');
       const entry = existsSync(dir) ? readdirSync(dir).flatMap((d) => (/^fesm/.test(d) ? readdirSync(join(dir, d)).filter((x) => x.endsWith('.mjs')).map((x) => join(dir, d, x)) : [])).sort().reverse()[0] : undefined;
       if (entry) scan(readFileSync(entry, 'utf8'), null);
@@ -923,20 +965,31 @@ function staticImports(text: string, appSpecifier: (spec: string) => boolean): s
  * A JavaScript object for each of the app's Swift classes that untyped code calls (`AppleWidgetUtils.getDataWithKey(key)`):
  * its static methods by NativeScript's names, arguments read as the Swift parameters take them, results boxed.
  */
-function appNativeObjects(classes: NativeClass[]): string {
+function appNativeObjects(classes: NativeClass[], deploymentTarget: string): string {
   const read = (type: string, code: string) => {
     const t = type.replace(/\?$/, '');
     const conv = t === 'String' ? `jsToString(${code})` : t === 'Bool' ? `jsTruthy(${code})` : t === 'Double' ? `jsToNumber(${code})` : /^(Int|Int32|Int64|UInt|CGFloat|Float)$/.test(t) ? `${t}(jsToNumber(${code}))`
       : t === 'NSDictionary' || t === '[AnyHashable : Any]' ? `(jsToNativeDictionary(${code}) as NSDictionary)` : `(jsToNative(${code}) as! ${t})`;
     return type.endsWith('?') ? `(jsIsNullish(${code}) ? nil : ${conv})` : conv;
   };
+  const newer = (v: string, than: string) => {
+    const a = v.split('.').map(Number), b = than.split('.').map(Number);
+    for (let i = 0; i < Math.max(a.length, b.length); i++) if ((a[i] ?? 0) !== (b[i] ?? 0)) return (a[i] ?? 0) > (b[i] ?? 0);
+    return false;
+  };
   return classes.map((c) => {
+    const guard = (ver: string | undefined, body: string) => (ver && newer(ver, deploymentTarget) ? `if #available(iOS ${ver}, *) { ${body} }; return nil` : body);
     const methods = Object.entries(c.static).filter(([, m]) => m.kind === 'method') as [string, NativeMethod][];
     const cases = methods.map(([js, m]) => {
       const args = m.params.map((p, k) => `${m.labels[k] ? `${m.labels[k]}: ` : ''}${read(p, `jsArg(__a, ${k})`)}`).join(', ');
       const call = `${c.swift}.${m.swift}(${args})`;
-      return `        case ${JSON.stringify(js)}: return { (__a: [Any?]) throws -> Any? in ${m.returns === 'Void' ? `${call}; return nil` : `return ${call}`} }`;
+      const body = m.returns === 'Void' ? `${call}; return nil` : `return ${call}`;
+      return `        case ${JSON.stringify(js)}: return { (__a: [Any?]) throws -> Any? in ${guard(m.introduced ?? c.introduced, body)} }`;
     });
+    if (c.protocols?.includes('NSObjectProtocol')) {
+      cases.push(`        case "alloc": return { (_: [Any?]) throws -> Any? in ${guard(c.introduced, `return JSNativeAllocation(${c.swift}.self)`)} }`);
+      cases.push(`        case "new": return { (_: [Any?]) throws -> Any? in ${guard(c.introduced, `return ${c.swift}()`)} }`);
+    }
     return `final class __AppNative_${c.swift}: JSDynamic {
 ${NONISOLATED_DEINIT}
     static let shared = __AppNative_${c.swift}()

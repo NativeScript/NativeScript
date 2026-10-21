@@ -10,7 +10,7 @@ import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { basename, join, relative, resolve } from 'node:path';
+import { basename, dirname, join, relative, resolve } from 'node:path';
 import { appResourcesDir, productionPlugins, readConfig } from './app-resources.ts';
 import { moduleCache, nativeTable, setEmptyTable } from './natives/symbols.ts';
 
@@ -254,7 +254,7 @@ export function iosDependencies(o: { app: string; packages: SwiftPackage[]; depl
 }
 
 function dependencyKey(packages: SwiftPackage[], pods: string | null): string {
-  const h = createHash('sha256').update('dependencies-1\0').update(pods ?? '').update('\0');
+  const h = createHash('sha256').update('dependencies-2\0').update(pods ?? '').update('\0');
   for (const p of packages) {
     h.update(JSON.stringify({ ...p, path: undefined, plugin: undefined, pluginDir: undefined })).update('\0');
     if (p.path) for (const f of filesUnder(p.path)) h.update(relative(p.path, f)).update('\0').update(readFileSync(f)).update('\0');
@@ -316,8 +316,17 @@ ${packages.length ? `    dependencies:\n${productLines(packages)}` : ''}    sett
       if (!f.endsWith('.modulemap')) continue;
       const module = basename(f, '.modulemap');
       modules.add(module);
+      const mapFile = join(maps, f);
+      const umbrella = /^\s*umbrella\s+(?:header\s+)?"([^"]+)"/m.exec(readFileSync(mapFile, 'utf8'))?.[1];
+      if (umbrella) {
+        const uDir = umbrella.endsWith('.h') ? dirname(umbrella) : umbrella;
+        if (existsSync(uDir)) {
+          args.push('-I', uDir, '-Xcc', `-I${uDir}`);
+          if (basename(uDir) === module) args.push('-I', dirname(uDir), '-Xcc', `-I${dirname(uDir)}`);
+        }
+      }
       // Clang finds only `module.modulemap` on a search path: a C target's map (`ZipArchive.modulemap`) is loaded by name, as Xcode loads it.
-      if (!existsSync(join(products, `${module}.swiftmodule`))) args.push('-Xcc', `-fmodule-map-file=${join(maps, f)}`);
+      if (!existsSync(join(products, `${module}.swiftmodule`))) args.push('-Xcc', `-fmodule-map-file=${mapFile}`);
     }
   }
   // A binary target of a static library: its headers and module map are copied to `include`.
@@ -329,18 +338,43 @@ ${packages.length ? `    dependencies:\n${productLines(packages)}` : ''}    sett
       for (const m of readFileSync(join(include, f), 'utf8').matchAll(/^\s*(?:framework\s+)?module\s+(\w+)/gm)) modules.add(m[1]);
     }
   }
-  // A binary target's framework is copied to the products themselves.
-  if (readdirSync(products).some((f) => f.endsWith('.framework'))) args.push('-F', products);
-  for (const f of readdirSync(products)) {
-    const p = join(products, f);
-    if (f.endsWith('.swiftmodule')) modules.add(basename(f, '.swiftmodule'));
-    else if (f.endsWith('.framework') && f !== `${SCRATCH_TARGET}.framework` && existsSync(join(p, 'Modules'))) modules.add(basename(f, '.framework'));
-    else if (statSync(p).isDirectory() && !/\.(framework|bundle)$/.test(f)) {
-      const frameworks = readdirSync(p).filter((x) => x.endsWith('.framework'));
-      if (frameworks.length) args.push('-F', p);
-      for (const fw of frameworks) modules.add(basename(fw, '.framework'));
+  // A C target in a Swift package that ships its own `module.modulemap` (`MBProgressHUD`) has no generated map in `GeneratedModuleMaps`.
+  const checkouts = join(derived, 'SourcePackages', 'checkouts');
+  if (existsSync(checkouts)) {
+    const wanted = new Set(packages.flatMap((p) => p.libs));
+    const findModuleMaps = (dir: string, out: string[] = []): string[] => {
+      for (const e of readdirSync(dir, { withFileTypes: true })) {
+        if (e.isSymbolicLink()) continue;
+        if (e.isDirectory()) {
+          if (!/^(Tests|Examples|\.git|\.build)$/.test(e.name)) findModuleMaps(join(dir, e.name), out);
+        } else if (e.name === 'module.modulemap') {
+          out.push(join(dir, e.name));
+        }
+      }
+      return out;
+    };
+    for (const mapFile of findModuleMaps(checkouts)) {
+      for (const m of readFileSync(mapFile, 'utf8').matchAll(/^\s*(?:framework\s+)?module\s+(\w+)/gm)) {
+        if (!wanted.has(m[1])) continue;
+        modules.add(m[1]);
+        args.push('-I', dirname(mapFile), '-Xcc', `-I${dirname(mapFile)}`, '-Xcc', `-fmodule-map-file=${mapFile}`);
+      }
     }
   }
+  // Frameworks built or extracted from vendored xcframeworks (`XCFrameworkIntermediates/...`).
+  const fwDirs = new Set<string>();
+  const scanProducts = (pDir: string) => {
+    for (const f of readdirSync(pDir)) {
+      const p = join(pDir, f);
+      if (pDir === products && f.endsWith('.swiftmodule')) modules.add(basename(f, '.swiftmodule'));
+      else if (f.endsWith('.framework') && f !== `${SCRATCH_TARGET}.framework` && existsSync(join(p, 'Modules'))) {
+        fwDirs.add(pDir);
+        modules.add(basename(f, '.framework'));
+      } else if (statSync(p).isDirectory() && !/\.(framework|bundle|swiftmodule|dSYM)$/.test(f)) scanProducts(p);
+    }
+  };
+  scanProducts(products);
+  for (const d of fwDirs) args.push('-F', d);
   // What each module's binary (`libX.a`, `X.o`, `X.framework/X`) defines.
   const classes: Record<string, string[]> = {};
   for (const f of readdirSync(products, { recursive: true }) as string[]) {

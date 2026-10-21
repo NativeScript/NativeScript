@@ -5,9 +5,9 @@ public final class JSWeakRef<T: AnyObject>: JSHostObject, JSToStringTag {
     nonisolated deinit {}
     private weak var target: T?
 
-    public init(_ target: T) {
+    public init(_ target: T?) {
         self.target = target
-        Microtasks.kept.append(target)
+        if let target { Microtasks.kept.append(target) }
     }
 
     public func get() -> T? { target }

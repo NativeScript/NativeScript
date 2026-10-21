@@ -71,6 +71,9 @@ public func jsNullishCoalesce(_ a: Any?, _ b: @autoclosure () throws -> Any?) re
 public func jsArrayOf<T>(_ value: Any?, _ element: (Any?) throws -> T) rethrows -> JSArray<T> {
     // An array of the type already is the same array: what is written through either is in both.
     if let same = jsFlat(value) as? JSArray<T> { return same }
+    if let typed = jsFlat(value) as? JSTypedArrayProtocol {
+        return JSArray(try typed.jsAnyValues.map(element))
+    }
     guard let array = value as? JSArrayProtocol else { return JSArray<T>() }
     return JSArray(try array.jsAnyElements.map(element))
 }
@@ -421,7 +424,15 @@ public func jsNumberToString(_ x: Double, radix: Double) throws -> String { try 
 public func jsRecordOf<T>(_ value: Any?, _ element: (Any?) throws -> T) rethrows -> JSRecord<T> {
     if let record = jsFlat(value) as? JSRecord<T> { return record }
     guard let object = jsFlat(value) as? JSDynamic else { return JSRecord<T>() }
-    return JSRecord(try object.jsKeys.map { ($0, try element(object[jsKey: $0])) })
+    let out = JSRecord<T>()
+    for k in object.jsKeys {
+        let raw = object[jsKey: k]
+        out[k] = try element(raw)
+        if !(raw is Double || raw is Int || raw is String || raw is Bool || raw == nil) {
+            out.object[jsKey: k] = raw
+        }
+    }
+    return out
 }
 
 /// The RegExp match, matchAll and search make of a pattern that is not one.
@@ -538,5 +549,6 @@ public protocol JSStaticKeyed: AnyObject {
 /// `value.constructor`: the class of the object.
 public func jsConstructor(_ value: Any?) -> Any? {
     guard let object = jsFlat(value) else { return nil }
+    if jsIsFunction(object) { return JSFunctionObject.self }
     return type(of: object) as Any
 }

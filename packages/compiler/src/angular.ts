@@ -8,6 +8,29 @@ import { scopeTemplate, type Attr, type ComponentIR, type ComponentStyle, type D
 import { rewrite, type Scope } from './rewrite.ts';
 import { canonical } from './elements.ts';
 
+const CLOSED_SOURCE_ELEMENTS: Record<string, string> = {
+  radradialgauge: 'nativescript-ui-gauge',
+  radlistview: 'nativescript-ui-listview',
+  radsidedrawer: 'nativescript-ui-sidedrawer',
+  radcalendar: 'nativescript-ui-calendar',
+  raddataform: 'nativescript-ui-dataform',
+  radautocompletetextview: 'nativescript-ui-autocomplete',
+  radcartesianchart: 'nativescript-ui-chart',
+  radpiechart: 'nativescript-ui-chart',
+};
+
+const LAYOUT_ATTRS = new Set([
+  'row', 'col', 'rowSpan', 'colSpan', 'width', 'height', 'minWidth', 'minHeight',
+  'class', 'scaleX', 'scaleY', 'translateX', 'translateY', 'rotate', 'opacity', 'visibility',
+  'horizontalAlignment', 'verticalAlignment',
+  'margin', 'marginTop', 'marginRight', 'marginBottom', 'marginLeft',
+  'padding', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft',
+  'left', 'top', 'dock', 'order', 'flexGrow', 'flexShrink', 'alignSelf',
+  'backgroundColor', 'borderRadius', 'borderWidth', 'borderColor',
+]);
+
+const warnedClosedSourceElements = new Set<string>();
+
 /** Angular's standalone component as the release build sees it. */
 export interface AngularComponent extends ComponentIR {
   selector: string;
@@ -50,7 +73,7 @@ const UNSUPPORTED_COMMON_PIPES = new Set(['currency', 'i18nPlural', 'i18nSelect'
  * per template expression. The class keeps Angular's API; the translator
  * knows what `signal()`, `computed()`, `input()`, `output()` and `inject()` mean.
  */
-export function angularComponent(path: string, text: string, selectors: Map<string, string>, options: { zone?: boolean; elements?: Map<string, string>; platform?: 'ios' | 'android'; pipes?: Map<string, PipeDecl>; runtimeModule?: string; directives?: DirectiveDecl[]; ngModules?: Map<string, string[]> } = {}): AngularComponent | null {
+export function angularComponent(path: string, text: string, selectors: Map<string, string>, options: { zone?: boolean; elements?: Map<string, string>; platform?: 'ios' | 'android'; pipes?: Map<string, PipeDecl>; runtimeModule?: string; directives?: DirectiveDecl[]; ngModules?: Map<string, string[]>; attrComponents?: Map<string, ComponentSummary> } = {}): AngularComponent | null {
   const written = text;
   let sf = ts.createSourceFile(path, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
   let cls = sf.statements.find((s): s is ts.ClassDeclaration => ts.isClassDeclaration(s) && !!decorator(s, 'Component'));
@@ -102,6 +125,7 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
       if (callee === 'output' || callee === 'model' || callee === 'model.required') outputs.push(m.name.text);
     }
   }
+  collectInheritedMembers(path, sf, cls, members);
   for (const [field, alias] of classic?.aliases ?? []) inputAliases[field] = alias;
   for (const name of classic?.setters ?? []) { props.push(name); optional.push(name); }
   const scope: Scope = { names: new Map([...members].map((m) => [m, classic?.inputs.has(m) ? `this.${m}()` : `this.${m}`])) };
@@ -157,7 +181,7 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
    * which injects them; one with `ngOnDestroy` is destroyed with its view.
    */
   const withPipes = (asts: (ng.AST | null | undefined)[], loops: Loop[]): { loops: Loop[]; wrap: (body: TNode[]) => TNode[] } => {
-    const found = asts.flatMap((a) => (a ? allPipes(a instanceof ng.ASTWithSource ? a.ast : a) : [])).filter((p) => !sites.has(p));
+    const found = asts.flatMap((a) => (a ? allPipes(a instanceof ng.ASTWithSource ? a.ast : a) : [])).filter((p) => !sites.has(p) || !loops.some((l) => l.item === sites.get(p)!.pipe));
     if (!found.length) return { loops, wrap: (body) => body };
     const made: { name: string; make: string; destroy?: string }[] = [];
     let inner = loops;
@@ -221,7 +245,11 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
   };
   // `$any(x)` is Angular's escape from template type checking; the release build is typed by the component's code,
   // except `$any($event)`, whose event data the handler reads as the type it declares.
-  const clean = (code: string) => code.replace(/\$any\(\s*\$event\s*\)/g, '($event as any)').replace(/\$any\(/g, '(');
+  const clean = (code: string) =>
+    code
+      .replace(/(['"])(?:\\.|(?!\1)[\s\S])*?\1/g, (s) => (s.includes('\n') || s.includes('\r') ? s.replace(/\r?\n/g, '\\n').replace(/\r/g, '\\r') : s))
+      .replace(/\$any\(\s*\$event\s*\)/g, '($event as any)')
+      .replace(/\$any\(/g, '(');
   /** The template line (0-based) of the binding being compiled, and each template method's (by its index in `methods`). */
   let here: number | null = null;
   const located = new Map<number, number>();
@@ -259,12 +287,12 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
     const hooks: QueryHook[] = [];
     for (const q of queries) {
       if (q.ref ? !refs.includes(q.ref) : q.type !== component && q.type !== tag) continue;
-      const instance = !!component && (q.read === null || q.read === component);
+      const instance = !!component && (q.read === null || q.read === component || q.read === 'any');
       const wrapped = q.read === 'ElementRef' || (q.read === null && !component);
       if (wrapped) usesElementRef = true;
       // The made node as its own class (the component, the element's view class), else untyped and read as the query's class.
-      const own = instance ? component : !wrapped && q.read === tag ? tag : null;
-      const value = wrapped ? 'new $ElementRef($q)' : own || !q.read ? '$q' : `($q as ${q.read})`;
+      const own = q.read === 'any' ? null : instance ? component : !wrapped && q.read === tag ? tag : null;
+      const value = wrapped ? 'new $ElementRef($q)' : own || !q.read || q.read === 'any' ? '$q' : `($q as ${q.read})`;
       const inner = [...loops, { item: '$q', param: `$q: ${own ?? 'any'}` }];
       // A single query keeps its match once the match's view goes, which Angular's next refresh would clear.
       const set = handlerOf(q.many ? `this.${q.field}.$add($q, ${value})` : `this.${q.field} = ${value}`, inner);
@@ -347,7 +375,11 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
 
   /** The expressions a node evaluates in the view it is in (its children's are theirs): where its pipes are. */
   const ownExpressions = (n: ng.TmplAstNode): ng.AST[] => {
-    if (n instanceof ng.TmplAstElement) return [...n.inputs.map((i) => i.value), ...n.children.flatMap((c) => (c instanceof ng.TmplAstBoundText ? [c.value] : []))];
+    if (n instanceof ng.TmplAstElement) {
+      const skipped = !selectors.has(n.name) && CLOSED_SOURCE_ELEMENTS[n.name.replace(/-/g, '').toLowerCase()];
+      if (skipped) return n.inputs.filter((i) => LAYOUT_ATTRS.has(i.name) || i.type === ng.BindingType.Class || i.type === ng.BindingType.Style).map((i) => i.value);
+      return [...n.inputs.map((i) => i.value), ...n.children.flatMap((c) => (c instanceof ng.TmplAstBoundText ? [c.value] : []))];
+    }
     // `*ngFor` on an element: the element's own inputs are the template's, evaluated in each view it renders.
     if (n instanceof ng.TmplAstTemplate) return [...n.templateAttrs, ...(n.tagName === 'ng-template' ? n.inputs : [])].flatMap((a) => (a instanceof ng.TmplAstBoundAttribute ? [a.value] : []));
     if (n instanceof ng.TmplAstIfBlock) return n.branches.flatMap((b) => (b.expression ? [b.expression] : []));
@@ -393,13 +425,62 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
       }
       if (n instanceof ng.TmplAstElement) {
         at(n.startSourceSpan);
+        const skippedPkg = !selectors.has(n.name) ? CLOSED_SOURCE_ELEMENTS[n.name.replace(/-/g, '').toLowerCase()] : undefined;
+        if (skippedPkg) {
+          const warnKey = `${path}:${n.name}`;
+          if (!warnedClosedSourceElements.has(warnKey)) {
+            warnedClosedSourceElements.add(warnKey);
+            console.warn(`warning: ${path}: <${n.name}> (${skippedPkg}) is a closed-source binary plugin and renders as blank ContentView`);
+          }
+          const attrs: Attr[] = [];
+          for (const a of n.attributes) if (LAYOUT_ATTRS.has(a.name)) attrs.push({ name: a.name, value: a.value });
+          const toggles = n.inputs.filter((i) => i.type === ng.BindingType.Class);
+          if (toggles.length) {
+            at(toggles[0].sourceSpan);
+            const fixed = attrs.findIndex((a) => a.name === 'class');
+            const base = fixed >= 0 ? attrs.splice(fixed, 1)[0].value ?? '' : '';
+            const parts = [JSON.stringify(base), ...toggles.map((t) => `(${code(t.value, loops)}) ? ${JSON.stringify(t.name)} : ''`)];
+            attrs.push({ name: 'class', method: expr(`[${parts.join(', ')}].filter((c) => !!c).join(' ')`, loops) });
+          }
+          for (const i of n.inputs) {
+            if (i.type === ng.BindingType.Class) continue;
+            if (i.type === ng.BindingType.Style && i.name !== 'style') {
+              at(i.sourceSpan);
+              const v = code(i.value, loops);
+              attrs.push({ name: i.name, method: expr(i.unit ? `((${v}) == null ? (${v}) : \`\${${v}}${i.unit}\`)` : v, loops, true) });
+              continue;
+            }
+            if ((i.type === ng.BindingType.Property || i.type === ng.BindingType.Attribute) && LAYOUT_ATTRS.has(i.name)) {
+              at(i.sourceSpan);
+              const root = i.value instanceof ng.ASTWithSource ? i.value.ast : i.value;
+              const chained = root instanceof ng.SafePropertyRead || root instanceof ng.SafeKeyedRead || root instanceof ng.SafeCall;
+              attrs.push({ name: i.name, method: expr(code(i.value, loops), loops, chained) });
+            }
+          }
+          const refs = n.references.map((r) => r.name);
+          const hooks = queryHooks(refs, null, 'ContentView', loops);
+          const statics = hooks.length ? queries.filter((q) => q.static && q.ref && refs.includes(q.ref) && staticRefs.has(q.ref)) : [];
+          for (const q of statics) staticQueries.delete(q);
+          const late = statics.length > 0 && staticQueries.size === 0;
+          out.push({ kind: 'element', tag: 'ContentView', attrs, events: [], children: [], ...(hooks.length ? { queries: hooks } : {}), ...(late ? { init: true } : {}) });
+          if (late) lateInit = true;
+          continue;
+        }
         const attrs: Attr[] = [];
         const events: Event[] = [];
+        const hostedAttr = !selectors.has(n.name) ? n.attributes.find((a) => options.attrComponents?.has(a.name)) : undefined;
+        const hosted = hostedAttr ? options.attrComponents!.get(hostedAttr.name) : undefined;
+        const compAttrs: Attr[] = [];
+        const compEvents: Event[] = [];
         // A ListView, or a plugin view taking item templates (`<Pager>` with `<ng-template let-item>`), renders rows from templates.
         const isList = canonical(n.name) === 'ListView' || (n.inputs.some((i) => i.name === 'items') && n.children.some((c) => c instanceof ng.TmplAstTemplate && c.tagName === 'ng-template' && c.variables.length > 0));
         const link = routerLink(n, loops);
         if (link) events.push(link);
-        for (const a of n.attributes) if (!link || !ROUTER_LINK_INPUTS.has(a.name)) attrs.push({ name: a.name, value: a.value });
+        for (const a of n.attributes) {
+          if (a === hostedAttr || (link && ROUTER_LINK_INPUTS.has(a.name))) continue;
+          if (hosted?.inputs.has(a.name)) compAttrs.push({ name: a.name, value: a.value });
+          else attrs.push({ name: a.name, value: a.value });
+        }
         for (const c of n.children) {
           if (c instanceof ng.TmplAstText && c.value.trim()) attrs.push({ name: 'text', value: c.value });
           if (c instanceof ng.TmplAstBoundText) {
@@ -428,6 +509,10 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
         for (const i of n.inputs) {
           if (i === switched || consumed.has(i.name) || i.type === ng.BindingType.Class || (isList && i.name === 'itemTemplateSelector') || (link && ROUTER_LINK_INPUTS.has(i.name))) continue;
           at(i.sourceSpan);
+          if (hosted?.inputs.has(i.name) && (i.type === ng.BindingType.Property || i.type === ng.BindingType.TwoWay)) {
+            compAttrs.push({ name: i.name, method: expr(code(i.value, loops), loops, false) });
+            continue;
+          }
           // `[style.fontSize.px]`: the renderer's setStyle, `view.style[name] = value`, the unit appended to a value that is there.
           if (i.type === ng.BindingType.Style && i.name !== 'style' && !selectors.has(n.name)) {
             const v = code(i.value, loops);
@@ -447,23 +532,29 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
         }
         for (const o of n.outputs) {
           at(o.sourceSpan);
+          if (hosted?.outputs.has(o.name)) {
+            compEvents.push({ name: o.name, method: handler(code(o.handler, loops), loops, true), payload: true });
+            continue;
+          }
           events.push({ name: o.name, method: handler(code(o.handler, loops), loops, selectors.has(n.name)), ...(selectors.has(n.name) ? { payload: true } : {}) });
         }
         const component = selectors.get(n.name);
         const refs = n.references.map((r) => r.name);
         if (component) {
           const hooks = queryHooks(refs, component, null, loops);
-          out.push({ kind: 'component', name: component, props: attrs, events, ...(hooks.length ? { queries: hooks } : {}) });
+          out.push({ kind: 'component', name: component, props: attrs, events, ...(hooks.length ? { queries: hooks } : {}) }, ...nodes(n.children, loops));
           continue;
         }
         if (n.name === 'page-router-outlet') { out.push({ kind: 'element', tag: 'Frame', attrs: [{ name: 'router', value: n.attributes.find((a) => a.name === 'name')?.value ?? 'primary' }], events: [], children: [] }); continue; }
         const tag = elementOf(n.name);
         if (!tag) throw new Error(`${path}: <${n.name}> is not a @nativescript/core element the release build knows`);
         const sections = isList && isSectioned(n);
-        const children = () => (isList ? listTemplates(n, attrs, loops) : nodes(n.children, loops));
-        const hooks = queryHooks(refs, null, tag, loops);
+        const hooks = hosted ? [] : queryHooks(refs, null, tag, loops);
+        const compHooks = hosted ? queryHooks(refs, hosted.name, tag, loops) : [];
+        const hostedChildren: TNode[] = hosted ? [{ kind: 'component', name: hosted.name, props: compAttrs, events: compEvents, ...(compHooks.length ? { queries: compHooks } : {}) }] : [];
+        const children = () => (isList ? listTemplates(n, attrs, loops) : [...hostedChildren, ...nodes(n.children, loops)]);
         // A static query is resolved when the template's views are made, before ngOnInit: ngOnInit runs once the last element one names is.
-        const statics = hooks.length ? queries.filter((q) => q.static && q.ref && refs.includes(q.ref) && staticRefs.has(q.ref)) : [];
+        const statics = hooks.length || compHooks.length ? queries.filter((q) => q.static && q.ref && refs.includes(q.ref) && staticRefs.has(q.ref)) : [];
         for (const q of statics) staticQueries.delete(q);
         const late = statics.length > 0 && staticQueries.size === 0;
         out.push({ kind: 'element', tag, attrs, events, children: switched ? switching(n, switched.value, loops, children) : children(), ...(sections ? { sections } : {}), ...(hooks.length ? { queries: hooks } : {}), ...(late ? { init: true } : {}), ...(directives.length ? { directives } : {}) });
@@ -503,6 +594,10 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
         out.push(tabItem(n, loops));
         continue;
       }
+      if (n instanceof ng.TmplAstTemplate && n.templateAttrs.some((a) => a.name === 'pagerItem')) {
+        out.push({ kind: 'element', tag: 'PagerItem', attrs: [], events: [], children: nodes(n.children, loops) });
+        continue;
+      }
       if (n instanceof ng.TmplAstTemplate) {
         out.push(...structural(n, loops));
         continue;
@@ -519,7 +614,7 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
         continue;
       }
       // Text in an element is its `text` (@nativescript/angular's renderer sets it on the parent): a template's text nodes bind there.
-      if (n instanceof ng.TmplAstText || n instanceof ng.TmplAstBoundText) continue;
+      if (n instanceof ng.TmplAstText || n instanceof ng.TmplAstBoundText || n instanceof ng.TmplAstContent) continue;
       throw new Error(`${path}: ${n.constructor.name} in a template is not supported in a release build yet`);
     }
     for (const name of declared) aliases.delete(name);
@@ -649,7 +744,7 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
     if (n.outputs.length) throw new Error(`${path}: (${n.outputs[0].name}) on <ng-container> is not supported in a release build yet`);
     const bound = new Map(n.inputs.map((i) => [i.name, i] as const));
     for (const name of bound.keys()) {
-      if (!['ngSwitch', 'ngTemplateOutlet', 'ngTemplateOutletContext'].includes(name)) throw new Error(`${path}: [${name}] on <ng-container> is not supported in a release build yet`);
+      if (!['ngSwitch', 'ngTemplateOutlet', 'ngTemplateOutletContext', 'formGroup'].includes(name)) throw new Error(`${path}: [${name}] on <ng-container> is not supported in a release build yet`);
     }
     if (bound.has('ngTemplateOutletContext') && !bound.has('ngTemplateOutlet')) throw new Error(`${path}: [ngTemplateOutletContext] without [ngTemplateOutlet]`);
     const children = () => nodes(n.children, loops);
@@ -862,6 +957,16 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
   const findReferences = (list: ng.TmplAstNode[]) => {
     for (const n of list) {
       if (n instanceof ng.TmplAstTemplate) for (const r of n.references) references.set(r.name, n);
+      if (n instanceof ng.TmplAstElement) {
+        for (const r of n.references) {
+          if (!members.has(r.name) && !scope.names.has(r.name) && new RegExp(`(?<!#)\\b${r.name}\\b`).test(template)) {
+            const field = `$ref_${r.name}`;
+            scope.names.set(r.name, `this.${field}`);
+            methods.push(`  ${field}: any;`);
+            queries.push({ field, ref: r.name, read: 'any', static: false, many: false });
+          }
+        }
+      }
       if (n instanceof ng.TmplAstElement || n instanceof ng.TmplAstTemplate || n instanceof ng.TmplAstForLoopBlock) findReferences(n.children);
       if (n instanceof ng.TmplAstIfBlock) for (const b of n.branches) findReferences(b.children);
       if (n instanceof ng.TmplAstForLoopBlock && n.empty) findReferences(n.empty.children);
@@ -887,7 +992,7 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
   const onChanges = cls.members.find((m): m is ts.MethodDeclaration => ts.isMethodDeclaration(m) && m.name.getText() === 'ngOnChanges');
   if (onChanges) {
     if (onChanges.parameters.length > 1) throw new Error(`${path}: ngOnChanges takes one parameter`);
-    methods.push(...CHANGES_MEMBERS);
+    methods.push(...changesMembers(onChanges.parameters.length > 0));
   }
   const cached = [...sites.values()].some((x) => x.cache);
   let imports = `import { ${cached ? 'PurePipeCache as $PurePipeCache, ' : ''}type EventData as $EventData } from '@nativescript/release';\n`;
@@ -1023,12 +1128,14 @@ export function angularPipes(files: string[], read: (file: string) => string): M
  * What ngOnChanges takes in a component or directive: the template records each input it sets (`$change`), and one
  * check after its inputs' calls `$flushChanges`, which calls the hook with what changed since it last ran.
  */
-const CHANGES_MEMBERS = [
+const changesMembers = (hasParam: boolean) => [
   '  readonly $changed = signal(0);',
   '  readonly $changes = new Map<string, $SimpleChange>();',
   '  readonly $previous = new Map<string, any>();',
   '  $change(name: string, value: any): void { const first = !this.$previous.has(name); this.$changes.set(name, new $SimpleChange(first ? undefined : this.$previous.get(name), value, first)); this.$previous.set(name, value); this.$changed.update((n) => n + 1); }',
-  '  $flushChanges(): void { if (!this.$changes.size) return; const changes = Object.fromEntries(this.$changes); this.$changes.clear(); this.ngOnChanges(changes); }',
+  hasParam
+    ? '  $flushChanges(): void { if (!this.$changes.size) return; const changes = Object.fromEntries(this.$changes); this.$changes.clear(); this.ngOnChanges(changes); }'
+    : '  $flushChanges(): void { if (!this.$changes.size) return; this.$changes.clear(); this.ngOnChanges(); }',
 ];
 
 /** An app's `@Directive` class as templates use it: what it matches and the members Angular's compiler wires to its host. */
@@ -1142,9 +1249,10 @@ export function declarableSource(path: string, text: string): string | null {
     edits.push({ start: own.getStart(), end: own.getEnd(), text: '' });
     // A directive's member decorators (@Input, @HostListener, @HostBinding) are the template compiler's to read.
     for (const m of st.members) for (const d of ts.canHaveDecorators(m) ? ts.getDecorators(m) ?? [] : []) edits.push({ start: d.getStart(), end: d.getEnd(), text: '' });
-    if (st.members.some((m) => ts.isMethodDeclaration(m) && m.name.getText() === 'ngOnChanges')) {
+    const onChanges = st.members.find((m): m is ts.MethodDeclaration => ts.isMethodDeclaration(m) && m.name.getText() === 'ngOnChanges');
+    if (onChanges) {
       changes = true;
-      edits.push({ start: st.members.end, end: st.members.end, text: '\n' + CHANGES_MEMBERS.join('\n') + '\n' });
+      edits.push({ start: st.members.end, end: st.members.end, text: '\n' + changesMembers(onChanges.parameters.length > 0).join('\n') + '\n' });
     }
     const ctor = st.members.find(ts.isConstructorDeclaration);
     if (!ctor?.parameters.length) continue;
@@ -1298,6 +1406,17 @@ function classicClass(path: string, text: string, cls: ts.ClassDeclaration): Cla
         }
         if (options && !ts.isObjectLiteralExpression(options)) throw new Error(`${path}: @${d.getText()} ${name} is not supported in a release build yet`);
         if (query.read && /^(ViewContainerRef|TemplateRef|ChangeDetectorRef|Injector)$/.test(query.read)) throw new Error(`${path}: @${which}'s read: ${query.read} (${name}) is not supported in a release build yet`);
+        if (query.read === null && !query.many && m.type) {
+          const ref = ts.isTypeReferenceNode(m.type)
+            ? m.type
+            : ts.isUnionTypeNode(m.type)
+              ? m.type.types.find(ts.isTypeReferenceNode)
+              : undefined;
+          const typeName = ref && ts.isIdentifier(ref.typeName) ? ref.typeName.text : undefined;
+          if (typeName && !/^(ElementRef|TemplateRef|ViewContainerRef|ChangeDetectorRef|Injector|QueryList|any|unknown|Object)$/.test(typeName)) {
+            query.read = typeName;
+          }
+        }
         queries.push(query);
         const decorator = ts.getDecorators(m)![0];
         if (query.many) {
@@ -1356,8 +1475,12 @@ function classicClass(path: string, text: string, cls: ts.ClassDeclaration): Cla
             : (used.add('inject'), `inject(${token}${optional ? ', { optional: true }' : ''})`);
         const typed = p.type ? `: ${p.type.getText()}` : '';
         // A parameter property is a field; a plain parameter is a local of the constructor's body.
-        if (modifiers.length) injected.push(`  ${modifiers.join(' ')} ${p.name.getText()}${typed} = ${value};\n`);
-        else locals.push(`const ${p.name.getText()}${typed} = ${value};`);
+        if (modifiers.length) {
+          injected.push(`  ${modifiers.join(' ')} ${p.name.getText()}${typed} = ${value};\n`);
+          if (m.body && new RegExp(`(?<![.\\w$])${p.name.getText()}\\b`).test(m.body.getText())) {
+            locals.push(`const ${p.name.getText()} = this.${p.name.getText()};`);
+          }
+        } else locals.push(`const ${p.name.getText()}${typed} = ${value};`);
       }
       ctor = m;
     }
@@ -1375,6 +1498,13 @@ function classicClass(path: string, text: string, cls: ts.ClassDeclaration): Cla
     }
   }
   if (injected.length) edits.push({ start: cls.members[0].getFullStart(), end: cls.members[0].getFullStart(), text: '\n' + injected.join('') });
+  if (inputs.size) {
+    const impl = cls.heritageClauses?.find((c) => c.token === ts.SyntaxKind.ImplementsKeyword);
+    if (impl) {
+      const kept = impl.types.filter((t) => /^(OnInit|OnDestroy|OnChanges|AfterViewInit|AfterContentInit|AfterViewChecked|AfterContentChecked|DoCheck|ControlValueAccessor|Validator|AsyncValidator)$/.test(t.expression.getText()));
+      edits.push({ start: impl.getFullStart(), end: impl.getEnd(), text: kept.length ? ` implements ${kept.map((t) => t.getText()).join(', ')}` : '' });
+    }
+  }
   // `this.input` reads the input's signal and writes it with `$assign`; `this.setter = v` calls the setter's method.
   const isInput = (n: ts.Node): n is ts.PropertyAccessExpression => ts.isPropertyAccessExpression(n) && n.expression.kind === ts.SyntaxKind.ThisKeyword && (inputs.has(n.name.text) || setters.has(n.name.text));
   /** The text of `n` with the reads and writes inside it rewritten. */
@@ -1416,6 +1546,66 @@ function classicClass(path: string, text: string, cls: ts.ClassDeclaration): Cla
   return { text: (missing.length ? `import { ${missing.join(', ')} } from '@angular/core';\n` : '') + out, inputs, setters, aliases, optional, queries, host };
 }
 
+function collectInheritedMembers(path: string, sf: ts.SourceFile, cls: ts.ClassDeclaration, members: Set<string>, seen = new Set<string>()): void {
+  const ext = cls.heritageClauses?.find((c) => c.token === ts.SyntaxKind.ExtendsKeyword)?.types[0]?.expression;
+  if (!ext || !ts.isIdentifier(ext)) return;
+  const baseName = ext.text;
+  let targetFile = path;
+  let targetClassName = baseName;
+  let targetSf: ts.SourceFile | undefined = sf.statements.some((st) => ts.isClassDeclaration(st) && st.name?.text === baseName) ? sf : undefined;
+  if (!targetSf) {
+    for (const st of sf.statements) {
+      if (!ts.isImportDeclaration(st) || !st.importClause || !ts.isStringLiteral(st.moduleSpecifier)) continue;
+      const spec = st.moduleSpecifier.text;
+      let importedName: string | undefined;
+      if (st.importClause.name?.text === baseName) importedName = st.importClause.name.text;
+      else if (st.importClause.namedBindings && ts.isNamedImports(st.importClause.namedBindings)) {
+        const el = st.importClause.namedBindings.elements.find((e) => e.name.text === baseName);
+        if (el) importedName = (el.propertyName ?? el.name).text;
+      }
+      if (!importedName) continue;
+      const resolved = resolveClassImport(path, spec);
+      if (resolved) {
+        targetFile = resolved;
+        targetClassName = importedName;
+        targetSf = ts.createSourceFile(resolved, readFileSync(resolved, 'utf8'), ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+      }
+      break;
+    }
+  }
+  if (!targetSf) return;
+  const key = `${targetFile}#${targetClassName}`;
+  if (seen.has(key)) return;
+  seen.add(key);
+  const baseCls = targetSf.statements.find((st): st is ts.ClassDeclaration => ts.isClassDeclaration(st) && st.name?.text === targetClassName);
+  if (!baseCls) return;
+  for (const m of baseCls.members) {
+    if (m.name && ts.isIdentifier(m.name)) members.add(m.name.text);
+    else if (ts.isConstructorDeclaration(m)) {
+      for (const p of m.parameters) {
+        if ((ts.getModifiers(p) ?? []).length && ts.isIdentifier(p.name)) members.add(p.name.text);
+      }
+    }
+  }
+  collectInheritedMembers(targetFile, targetSf, baseCls, members, seen);
+}
+
+function resolveClassImport(fromFile: string, spec: string): string | undefined {
+  const candidates: string[] = [];
+  if (spec.startsWith('.')) {
+    const base = join(dirname(fromFile), spec);
+    candidates.push(base + '.ts', join(base, 'index.ts'));
+  } else if (spec.startsWith('~/') || spec.startsWith('@/')) {
+    const sub = spec.slice(2);
+    for (let dir = dirname(fromFile); dirname(dir) !== dir; dir = dirname(dir)) {
+      if (existsSync(join(dir, 'tsconfig.json')) || existsSync(join(dir, 'package.json'))) {
+        candidates.push(join(dir, 'src', sub + '.ts'), join(dir, 'src', sub, 'index.ts'), join(dir, sub + '.ts'), join(dir, sub, 'index.ts'));
+      }
+    }
+  }
+  return candidates.find((c) => existsSync(c));
+}
+
 function literalType(e: ts.Expression | undefined): string | undefined {
   if (!e) return undefined;
   if (ts.isNumericLiteral(e)) return 'number';
@@ -1452,20 +1642,58 @@ export function declarablesIn(path: string, text: string): { classes: string[]; 
   return { classes, modules };
 }
 
-/** The element names a component's selector matches (`resource, [talkResource]` is `<resource>`, and an attribute on a view, which a compiled template does not host). */
+/** The element names a component's selector matches (`resource, [talkResource]` is `<resource>`). */
 export function selectorElements(selector: string): string[] {
   return ng.CssSelector.parse(selector).flatMap((s) => (s.element && s.element !== '*' && !s.attrs.length && !s.classNames.length && !s.notSelectors.length ? [s.element] : []));
 }
 
-/** A file's `@Component` class and the selector it declares. */
-export function componentOf(path: string, text: string): { name: string; selector?: string } | null {
+/** The bare attribute names a component's selector matches (`[searchBar]` is `searchBar`). */
+export function selectorAttributes(selector: string): string[] {
+  return ng.CssSelector.parse(selector).flatMap((s) => (!s.element && s.attrs.length === 2 && s.attrs[1] === '' && !s.classNames.length && !s.notSelectors.length ? [s.attrs[0]] : []));
+}
+
+export interface ComponentSummary {
+  name: string;
+  selector?: string;
+  inputs: Set<string>;
+  outputs: Set<string>;
+}
+
+/** A file's `@Component` class, the selector it declares, and its inputs and outputs. */
+export function componentOf(path: string, text: string): ComponentSummary | null {
   if (!text.includes('@Component')) return null;
   const sf = ts.createSourceFile(path, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
   for (const st of sf.statements) {
     const meta = ts.isClassDeclaration(st) && st.name ? decorator(st, 'Component')?.arguments[0] : undefined;
     if (!meta) continue;
     const selector = ts.isObjectLiteralExpression(meta) ? meta.properties.find((p): p is ts.PropertyAssignment => ts.isPropertyAssignment(p) && p.name.getText() === 'selector')?.initializer : undefined;
-    return { name: (st as ts.ClassDeclaration).name!.text, selector: selector && ts.isStringLiteralLike(selector) ? selector.text : undefined };
+    const inputs = new Set<string>();
+    const outputs = new Set<string>();
+    for (const m of (st as ts.ClassDeclaration).members) {
+      if (!m.name || !ts.isIdentifier(m.name)) continue;
+      if (ts.isPropertyDeclaration(m) && m.initializer && ts.isCallExpression(m.initializer)) {
+        const callee = m.initializer.expression.getText();
+        if (callee === 'input' || callee === 'input.required' || callee === 'model' || callee === 'model.required') {
+          const opts = m.initializer.arguments[callee === 'input' || callee === 'model' ? 1 : 0];
+          const alias = opts && ts.isObjectLiteralExpression(opts) ? opts.properties.find((p): p is ts.PropertyAssignment => ts.isPropertyAssignment(p) && p.name.getText() === 'alias')?.initializer : undefined;
+          inputs.add(alias && ts.isStringLiteralLike(alias) ? alias.text : m.name.text);
+        }
+        if (callee === 'output' || callee === 'model' || callee === 'model.required') {
+          const opts = m.initializer.arguments[callee === 'output' ? 0 : callee === 'model' ? 1 : 0];
+          const alias = opts && ts.isObjectLiteralExpression(opts) ? opts.properties.find((p): p is ts.PropertyAssignment => ts.isPropertyAssignment(p) && p.name.getText() === 'alias')?.initializer : undefined;
+          outputs.add(alias && ts.isStringLiteralLike(alias) ? alias.text : m.name.text);
+        }
+      }
+      for (const d of ts.canHaveDecorators(m) ? ts.getDecorators(m) ?? [] : []) {
+        if (!ts.isCallExpression(d.expression)) continue;
+        const which = d.expression.expression.getText();
+        const arg = d.expression.arguments[0];
+        const alias = arg && ts.isStringLiteralLike(arg) ? arg.text : arg && ts.isObjectLiteralExpression(arg) ? (arg.properties.find((p): p is ts.PropertyAssignment => ts.isPropertyAssignment(p) && p.name.getText() === 'alias')?.initializer as ts.StringLiteral | undefined)?.text : undefined;
+        if (which === 'Input') inputs.add(alias ?? m.name.text);
+        else if (which === 'Output') outputs.add(alias ?? m.name.text);
+      }
+    }
+    return { name: (st as ts.ClassDeclaration).name!.text, selector: selector && ts.isStringLiteralLike(selector) ? selector.text : undefined, inputs, outputs };
   }
   return null;
 }

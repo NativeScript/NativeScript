@@ -725,6 +725,75 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
         try flatMap { v, i in try transform(v, i, self) }
     }
 
+    public final func flatMap<U>(_ transform: (Element) throws -> JSArray<U>?) rethrows -> JSArray<U?> {
+        var out: [U?] = []
+        try each { v, _ in
+            if let arr = try transform(v) {
+                out += arr.elements.map { Optional($0) }
+            } else {
+                out.append(nil)
+            }
+            return true
+        }
+        return JSArray<U?>(out)
+    }
+
+    public final func flatMap<U>(_ transform: (Element, Double) throws -> JSArray<U>?) rethrows -> JSArray<U?> {
+        var out: [U?] = []
+        try each { v, i in
+            if let arr = try transform(v, Double(i)) {
+                out += arr.elements.map { Optional($0) }
+            } else {
+                out.append(nil)
+            }
+            return true
+        }
+        return JSArray<U?>(out)
+    }
+
+    public final func flatMap<U>(_ transform: (Element, Double, JSArray<Element>) throws -> JSArray<U>?) rethrows -> JSArray<U?> {
+        try flatMap { v, i in try transform(v, i, self) }
+    }
+
+    @_disfavoredOverload
+    public final func flatMap<U>(_ transform: (Element) throws -> U) rethrows -> JSArray<U> {
+        var out: [U] = []
+        try each { v, _ in
+            let r = try transform(v)
+            if U.self == Optional<Any>.self, let nested = jsFlat(r) as? JSArrayProtocol {
+                for item in nested.jsAnyElements {
+                    out.append(item as! U)
+                }
+            } else {
+                out.append(r)
+            }
+            return true
+        }
+        return JSArray<U>(out)
+    }
+
+    @_disfavoredOverload
+    public final func flatMap<U>(_ transform: (Element, Double) throws -> U) rethrows -> JSArray<U> {
+        var out: [U] = []
+        try each { v, i in
+            let r = try transform(v, Double(i))
+            if U.self == Optional<Any>.self, let nested = jsFlat(r) as? JSArrayProtocol {
+                for item in nested.jsAnyElements {
+                    out.append(item as! U)
+                }
+            } else {
+                out.append(r)
+            }
+            return true
+        }
+        return JSArray<U>(out)
+    }
+
+    @_disfavoredOverload
+    public final func flatMap<U>(_ transform: (Element, Double, JSArray<Element>) throws -> U) rethrows -> JSArray<U> {
+        try flatMap { v, i in try transform(v, i, self) }
+    }
+
     /// `array.reduce(f, initial)`.
     @inlinable public final func reduce<U>(_ next: (U, Element) throws -> U, _ initial: U) rethrows -> U {
         var accumulator = initial
@@ -924,6 +993,16 @@ extension JSArray {
             return true
         }
         return JSArray<T>(out)
+    }
+
+    /// `array.flat()` for an array of optional arrays.
+    public func flat<T>() -> JSArray<T?> where Element == JSArray<T>? {
+        var out: [T?] = []
+        each { v, _ in
+            if let v { out += v.elements.map { Optional($0) } } else { out.append(nil) }
+            return true
+        }
+        return JSArray<T?>(out)
     }
 }
 

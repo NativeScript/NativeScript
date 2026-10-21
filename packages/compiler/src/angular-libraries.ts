@@ -1,7 +1,7 @@
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { componentOf, declarablesIn } from './angular.ts';
-import { KIT_PLUGINS } from './core.ts';
+import { CLOSED_SOURCE_UI_PLUGINS, KIT_PLUGINS } from './core.ts';
 import type { PluginSources } from './plugins/source.ts';
 
 /** The TypeScript of each `<package>/angular` entry the app imports, from the plugin's source beside its main module. */
@@ -13,7 +13,7 @@ export function angularLibraries(sources: string[], modulesDir: string, plugins:
       const wanted = m[1].split(',').map((x) => x.trim().split(/\s+as\s+/)[0]).filter(Boolean);
       // A plugin the kit implements renders its elements itself, and one the app replaces is the app's module: neither
       // has an Angular wrapper of its own compiled.
-      if (seen.has(m[2]) || KIT_PLUGINS.includes(m[2]) || replaced.has(m[2])) continue;
+      if (seen.has(m[2]) || KIT_PLUGINS.includes(m[2]) || CLOSED_SOURCE_UI_PLUGINS.has(m[2]) || replaced.has(m[2])) continue;
       seen.add(m[2]);
       const dir = join(modulesDir, m[2]);
       const main = ['index.ios.js', 'index.js'].map((x) => join(dir, x)).find(existsSync);

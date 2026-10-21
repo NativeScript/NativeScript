@@ -249,11 +249,17 @@ export function implementedInterfaces(checker: ts.TypeChecker, cls: ts.ClassLike
  * typed by the plugin's declarations but compiled against its platform file, whose stub class may declare none of them.
  */
 export function undeclaredMemberOf(e: ts.PropertyAccessExpression, checker: ts.TypeChecker): ts.ClassLikeDeclaration | null {
-  if (checker.getSymbolAtLocation(e.name)) return null;
+  const sym = checker.getSymbolAtLocation(e.name);
+  if (sym && !sym.declarations?.every((d) => ts.isInterfaceDeclaration(d.parent) && d.getSourceFile().isDeclarationFile)) return null;
   const t = checker.getNonNullableType(checker.getTypeAtLocation(e.expression));
   if (t.getConstructSignatures().length) return null;
   const decl = t.getSymbol()?.valueDeclaration;
-  return decl && ts.isClassLike(decl) && !decl.getSourceFile().isDeclarationFile ? decl : null;
+  if (!decl || !ts.isClassLike(decl) || decl.getSourceFile().isDeclarationFile) return null;
+  if (sym) {
+    if (decl.heritageClauses?.some((x) => x.token === ts.SyntaxKind.ExtendsKeyword)) return null;
+    if (decl.members.some((m) => m.name?.getText() === e.name.text || (ts.isConstructorDeclaration(m) && m.parameters.some((p) => p.name.getText() === e.name.text && (ts.getModifiers(p) ?? []).some((mod) => [ts.SyntaxKind.PublicKeyword, ts.SyntaxKind.ProtectedKeyword, ts.SyntaxKind.PrivateKeyword, ts.SyntaxKind.ReadonlyKeyword].includes(mod.kind)))))) return null;
+  }
+  return decl;
 }
 
 /**

@@ -1,6 +1,6 @@
 import { basename } from 'node:path';
 import { withoutLocals, type Attr, type ComponentIR, type DirectiveUse, type QueryHook, type TNode } from './ir.ts';
-import { EVENT_SCOPED, TEMPLATE_HOSTS, isFragment, type ComponentInfo, type Framework } from './codegen.ts';
+import { DRAWER_SLOTS, EVENT_SCOPED, TEMPLATE_HOSTS, isFragment, type ComponentInfo, type Framework } from './codegen.ts';
 import { ident, kotlinString } from './kotlin.ts';
 
 /** Template hosts' attributes that `bind` takes rather than `set`. */
@@ -152,7 +152,7 @@ export function render(c: ComponentIR, components: Map<string, ComponentInfo>, o
           if (node.ref) say(depth, `${call(node.ref, loops)}.current = ${v}`);
           queried(depth, node.queries, loops, v, v);
           directed(depth, node.directives, loops, v);
-          const isList = TEMPLATE_HOSTS.has(node.tag);
+          const isList = node.tag === 'ListView' || (TEMPLATE_HOSTS.has(node.tag) && node.children.some((ch) => ch.kind === 'template'));
           const props = () => {
             for (const a of node.attrs) if (!isList || !LIST_BINDINGS.has(a.name)) attr(depth, v, a, loops);
             for (const e of node.events) {
@@ -162,7 +162,10 @@ export function render(c: ComponentIR, components: Map<string, ComponentInfo>, o
             }
           };
           if (isList || !postOrder) props();
-          attach(depth, v, parent, region, 'created');
+          const idAttr = node.attrs.find((a): a is { name: string; value: string } => a.name === 'id' && 'value' in a);
+          const drawerSlot = parent && idAttr ? DRAWER_SLOTS[idAttr.value] : undefined;
+          if (drawerSlot) say(depth, `${parent}.kitSet(${kotlinString(drawerSlot)}, ${v})`);
+          else attach(depth, v, parent, region, 'created');
           if (node.init && c.init) say(depth, `jsReport { this.${ident(c.init)}() }`);
           if (isList) list(node, depth, loops, v);
           else emit(node.children, depth, loops, v, null);
@@ -369,7 +372,7 @@ export function render(c: ComponentIR, components: Map<string, ComponentInfo>, o
     say(depth, '}');
   };
 
-  const fragment = framework === 'angular' && !c.page && isFragment(c.template);
+  const fragment = framework === 'angular' && !c.page && isFragment(c.template, components);
   say(1, fragment ? 'fun render(into: Region) {' : 'fun render(): View {');
   const wrap = scoped('template');
   const d = wrap ? 3 : 2;

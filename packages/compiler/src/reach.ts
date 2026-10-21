@@ -231,16 +231,22 @@ export function reachability(program: ts.Program, resolved: (containing: string,
       const c = constant(n.condition);
       if (c !== undefined) { dead.add(c ? n.whenFalse : n.whenTrue); walk(c ? n.whenTrue : n.whenFalse); return; }
     }
-    if (ts.isTypeNode(n) && !ts.isExpressionWithTypeArguments(n)) return;
+    if (ts.isTypeQueryNode(n)) return;
     // Decorators are applied at compile time: the patterns the translator recognizes, not code that runs.
-    if (ts.isDecorator(n)) return;
+    // `@Inject(TOKEN)` passes its token expression into the generated `Injector.inject(TOKEN)` call.
+    if (ts.isDecorator(n)) {
+      if (ts.isCallExpression(n.expression) && ts.isIdentifier(n.expression.expression) && n.expression.expression.text === 'Inject') {
+        n.expression.arguments.forEach(walk);
+      }
+      return;
+    }
     // A mixin application installs its classes; the copying function itself does not run.
     if (ts.isCallExpression(n) && patterns.isMixinCall(n)) { n.arguments.slice(1).forEach(walk); return; }
     if (ts.isVariableDeclaration(n) && patterns.requiredCore(n)) return;
     if (ts.isInterfaceDeclaration(n) || ts.isTypeAliasDeclaration(n)) return;
     if (ts.isImportDeclaration(n)) return;
-    // A member of a module imported whole (`permissions.request(…)`): what the module exports under that name.
-    if (ts.isPropertyAccessExpression(n) && ts.isIdentifier(n.expression) && (resolveSym(n.expression)?.flags ?? 0) & ts.SymbolFlags.ValueModule) {
+    // A member of a module or namespace (`permissions.request(…)`, `moment.tz.guess()`): what it exports under that name.
+    if (ts.isPropertyAccessExpression(n) && (ts.isIdentifier(n.expression) || ts.isPropertyAccessExpression(n.expression)) && (resolveSym(n.expression)?.flags ?? 0) & ts.SymbolFlags.ValueModule) {
       const member = resolveSym(n.name);
       if (member && isValue(member)) reachDecl(member, n.name);
     }
@@ -298,7 +304,7 @@ function isDeclarationName(id: ts.Identifier): boolean {
   if ((ts.isPropertyAssignment(p) || ts.isPropertyDeclaration(p) || ts.isMethodDeclaration(p) || ts.isPropertySignature(p) || ts.isMethodSignature(p) || ts.isGetAccessor(p) || ts.isSetAccessor(p) || ts.isEnumMember(p)) && p.name === id) return true;
   if ((ts.isVariableDeclaration(p) || ts.isParameter(p) || ts.isFunctionDeclaration(p) || ts.isClassDeclaration(p) || ts.isBindingElement(p) || ts.isEnumDeclaration(p)) && p.name === id) return true;
   if (ts.isImportSpecifier(p) || ts.isImportClause(p) || ts.isNamespaceImport(p) || ts.isExportSpecifier(p)) return true;
-  if (ts.isTypeReferenceNode(p) || ts.isQualifiedName(p) || ts.isTypeQueryNode(p)) return true;
+  if (ts.isTypeQueryNode(p)) return true;
   return false;
 }
 

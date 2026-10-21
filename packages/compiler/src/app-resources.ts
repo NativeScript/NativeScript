@@ -8,7 +8,7 @@ import { dirname, join, relative, resolve } from 'node:path';
 import ts from 'typescript';
 import { mergePlist, readPlist, writePlist, type PlistDict } from './plist.ts';
 import { productLines, type SwiftPackage } from './ios-dependencies.ts';
-import { KIT_PLUGINS } from './core.ts';
+import { CLOSED_SOURCE_UI_PLUGINS, KIT_PLUGINS } from './core.ts';
 import { mirror, writeIfChanged } from './mirror.ts';
 
 /** The literal values of nativescript.config.ts's exported object; anything computed is left out. */
@@ -89,7 +89,7 @@ export function productionPlugins(app: string, platform: 'ios' | 'android'): { n
     const { from, deps } = queue.shift()!;
     for (const name of Object.keys(deps)) {
       // A plugin the kit implements, or the app replaces, brings none of its native pieces, nor its own dependencies' (canvas's font manager).
-      if (KIT_PLUGINS.includes(name) || replaced[name]) continue;
+      if (KIT_PLUGINS.includes(name) || CLOSED_SOURCE_UI_PLUGINS.has(name) || replaced[name]) continue;
       const dir = locatePackage(from, name);
       if (!dir || seen.has(dir)) continue;
       seen.add(dir);

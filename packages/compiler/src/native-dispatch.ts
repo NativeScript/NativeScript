@@ -1,7 +1,7 @@
 import ts from 'typescript';
 import { CF_CLASSES, functionParts } from './swift.ts';
 import { posted } from './native-calls.ts';
-import { lookupClass, lookupInit, nativeTable, type NativeClass, type NativeMethod, type NativeProperty, type SwiftType } from './natives/symbols.ts';
+import { lookupClass, lookupInit, lookupTypealias, nativeTable, type NativeClass, type NativeMethod, type NativeProperty, type SwiftType } from './natives/symbols.ts';
 
 /**
  * Native objects script holds untyped (`declare var NSCCanvas: any`,
@@ -40,12 +40,16 @@ interface Candidate { js: string; cls: NativeClass; depth: number }
 /** The Swift source of `__NativeDispatch`, or null when no plugin class has a member script uses untyped. */
 export function nativeDispatch(modules: string[], uses: Map<string, UntypedUse>, deploymentTarget: string, defined: Record<string, string[]> = {}): string | null {
   const candidates: Candidate[] = [];
+  const unbuilt = new Set<string>();
   for (const module of modules) {
     // A class its headers declare and its binary does not define is no class at run time.
     const built = defined[module] ? new Set(defined[module]) : null;
     for (const [js, cls] of Object.entries(nativeTable(module).classes)) {
       if (cls.kind !== 'class' || cls.extension || cls.module !== module) continue;
-      if (built && !built.has(js)) continue;
+      if (built && !built.has(js)) {
+        unbuilt.add(cls.swift);
+        continue;
+      }
       let depth = 0;
       for (let b = cls.base; b; b = lookupClass(module, b)?.base) depth++;
       candidates.push({ js, cls, depth });
@@ -53,10 +57,9 @@ export function nativeDispatch(modules: string[], uses: Map<string, UntypedUse>,
   }
   // A subclass's member before the one it inherits.
   candidates.sort((a, b) => b.depth - a.depth || a.js.localeCompare(b.js));
-  // A class name two modules declare is written with its module's.
-  const named = new Map<string, number>();
-  for (const { cls } of candidates) named.set(cls.swift, (named.get(cls.swift) ?? 0) + 1);
-  const typeName = (cls: NativeClass) => (named.get(cls.swift)! > 1 ? `${cls.module}.${cls.swift}` : cls.swift);
+  // A class name whose module has no class of the module's own name is qualified with its module, avoiding TS class shadowing.
+  const isClassName = (name: string) => modules.some((m) => lookupClass(m, name)?.swift === name) || candidates.some((c) => c.cls.swift === name);
+  const typeName = (cls: NativeClass) => (!isClassName(cls.module) ? `${cls.module}.${cls.swift}` : cls.swift);
   const gets: string[] = [], sets: string[] = [], calls: string[] = [];
   const guarded = (introduced: string | undefined, code: string) => introduced && newer(introduced, deploymentTarget) ? `if #available(iOS ${introduced}, *) { ${code} }` : code;
   for (const [name, u] of [...uses].sort(([a], [b]) => a.localeCompare(b))) {
@@ -70,27 +73,29 @@ export function nativeDispatch(modules: string[], uses: Map<string, UntypedUse>,
         const self = isStatic ? `let o = object as? ${typeName(cls)}.Type` : `let o = object as? ${typeName(cls)}`;
         if (m.kind === 'property') {
           const p = m as NativeProperty;
-          if (u.get) get.push(guarded(p.introduced, `if ${self} { return .some(${fromNative(`o.${p.swift}`, p.type)}) }`));
-          const value = !p.readonly && u.set ? toNative('value', p.type) : null;
-          if (value) set.push(guarded(p.introduced, `if ${self} { o.${p.swift} = ${value}; return true }`));
+          if (u.get) get.push(guarded(p.introduced ?? cls.introduced, `if ${self} { return .some(${fromNative(`o.${p.swift}`, p.type, cls.module)}) }`));
+          const value = !p.readonly && u.set ? toNative('value', p.type, unbuilt, cls.module) : null;
+          if (value) set.push(guarded(p.introduced ?? cls.introduced, `if ${self} { o.${p.swift} = ${value}; return true }`));
           continue;
         }
         const method = m as NativeMethod;
         if (method.kind !== 'method') continue;
+        if (cls.swift === 'LoginManager' && method.swift === 'application') continue;
         const given = method.params.length - (method.errorParam === undefined ? 0 : 1);
         if (!u.arities.has(given)) continue;
-        const args = argumentList(method);
+        const args = argumentList(method, unbuilt, cls.module);
         if (args === null) continue;
-        const invoke = `${method.throws ? 'try ' : ''}o.${method.swift}(${args})`;
-        call.push(guarded(method.introduced, `if ${self}, arguments.count == ${given} { ${method.returns === 'Void' ? `${invoke}; return .some(nil)` : `return .some(${fromNative(invoke, method.returns)})`} }`));
+        const appDel = !isStatic && method.swift === 'application' && (!!cls.protocols?.includes('UIApplicationDelegate') || (cls.swift === 'ApplicationDelegate' && name === 'applicationOpenURLOptions'));
+        const invoke = `${method.throws ? 'try ' : ''}${appDel ? `(o as UIApplicationDelegate).${method.swift}?` : `o.${method.swift}`}(${args})`;
+        call.push(guarded(method.introduced ?? cls.introduced, `if ${self}, arguments.count == ${given} { ${method.returns === 'Void' ? `${invoke}; return .some(nil)` : `return .some(${fromNative(invoke, method.returns, cls.module)})`} }`));
       }
       // `Cls.alloc().initWithFrame(rect)`: the class's initializer, on what `alloc` gave.
       if (/^init([A-Z]|$)/.test(name)) {
-        const init = name === 'init' ? null : lookupInit(cls.module, js, name);
+        const init = name === 'init' ? null : (Object.keys(cls.inits).length ? cls.inits[name] ?? null : lookupInit(cls.module, js, name));
         const given = init ? init.params.length - (init.errorParam === undefined ? 0 : 1) : 0;
         if (init && u.arities.has(given)) {
-          const args = argumentList(init);
-          if (args !== null) call.push(guarded(init.introduced, `if let a = object as? JSNativeAllocation, a.cls == ${typeName(cls)}.self { return .some(${init.throws ? 'try ' : ''}${typeName(cls)}(${args})) }`));
+          const args = argumentList(init, unbuilt, cls.module);
+          if (args !== null) call.push(guarded(init.introduced ?? cls.introduced, `if let a = object as? JSNativeAllocation, a.cls == ${typeName(cls)}.self { return .some(${init.throws ? 'try ' : ''}${typeName(cls)}(${args})) }`));
         }
       }
     }
@@ -121,12 +126,12 @@ ${fn('call(_ object: AnyObject, _ key: String, _ arguments: [Any?]) throws -> An
 }
 
 /** A method's arguments from the call's, or null when one of its parameters takes nothing script can give (a block). */
-function argumentList(m: NativeMethod): string | null {
+function argumentList(m: NativeMethod, unbuilt: Set<string>, module: string): string | null {
   const out: string[] = [];
   let k = 0;
   for (let i = 0; i < m.params.length; i++) {
     if (i === m.errorParam) continue;
-    const value = toNative(`jsArg(arguments, ${k++})`, m.params[i]);
+    const value = toNative(`jsArg(arguments, ${k++})`, m.params[i], unbuilt, module);
     if (value === null) return null;
     out.push(`${m.labels[i] ? `${m.labels[i]}: ` : ''}${value}`);
   }
@@ -137,12 +142,20 @@ const INTEGERS = new Set(['Int', 'Int8', 'Int16', 'Int32', 'Int64', 'UInt', 'UIn
 const FLOATS = new Set(['Float', 'CGFloat', 'Double']);
 const STRUCTS = new Set(['CGRect', 'CGSize', 'CGPoint', 'UIEdgeInsets']);
 
+/** A Swift typealias of a block, number, boolean, string or struct (`LaunchCallback`, `TimeInterval`), as the type it names. */
+function unalias(module: string, t: SwiftType): SwiftType {
+  const target = lookupTypealias(module, t)?.replace(/[?!]$/, '').replace(/^\((.*)\)$/, (whole, inner) => (functionParts(inner) ? inner : whole));
+  if (target && (/->/.test(target) || INTEGERS.has(target) || FLOATS.has(target) || STRUCTS.has(target) || target === 'String' || target === 'Bool')) return target;
+  return t;
+}
+
 /** Script's value as a native parameter of this type, as the runtime marshals it; null for a type it cannot marshal here. */
-function toNative(code: string, type: SwiftType): string | null {
+function toNative(code: string, type: SwiftType, unbuilt: Set<string>, module: string): string | null {
   const optional = /[?!]$/.test(type);
-  const t = type.replace(/[?!]$/, '').replace(/^\((.*)\)$/, (whole, inner) => (functionParts(inner) ? inner : whole));
+  const t = unalias(module, type.replace(/[?!]$/, '').replace(/^\((.*)\)$/, (whole, inner) => (functionParts(inner) ? inner : whole)));
+  if (unbuilt.has(t)) return null;
   if (/->/.test(t)) {
-    const block = blockOf(code, t);
+    const block = blockOf(code, t, unbuilt, module);
     // The block typed as the property's: Swift's type checker gives up on the conditional's sendable closure otherwise.
     return block && optional ? `(jsIsNullish(${code}) ? nil : (${block} as ${t}))` : block;
   }
@@ -168,18 +181,18 @@ function toNative(code: string, type: SwiftType): string | null {
 }
 
 /** A script function as a block of this type, which calls it with the block's arguments as script reads them; null for a block returning a value. */
-function blockOf(code: string, type: SwiftType): string | null {
+function blockOf(code: string, type: SwiftType, unbuilt: Set<string>, module: string): string | null {
   const fn = functionParts(type.replace(/@(escaping|Sendable) /g, ''));
-  if (!fn || fn.result !== 'Void' || fn.params.some((p) => /->/.test(p))) return null;
+  if (!fn || (fn.result !== 'Void' && fn.result !== '()') || fn.params.some((p) => /->/.test(p) || unbuilt.has(p.replace(/[?!]$/, '')))) return null;
   const params = fn.params.map((p, k) => `__b${k}: ${p}`);
-  const args = fn.params.map((p, k) => fromNative(`__b${k}`, p));
+  const args = fn.params.map((p, k) => fromNative(`__b${k}`, p, module));
   const report = `jsReport { _ = try jsCall(__f${args.map((a) => `, ${a}`).join('')}) }`;
   return `${posted('Void', fn.params) ? 'jsEnter' : 'jsEnterAwaiting'} { [__f = jsFlat(${code})] (${params.join(', ')}) -> Void in ${report} }`;
 }
 
 /** A native result as script reads it. */
-function fromNative(code: string, type: SwiftType): string {
-  const t = type.replace(/[?!]$/, '');
+function fromNative(code: string, type: SwiftType, module: string): string {
+  const t = unalias(module, type.replace(/[?!]$/, ''));
   const optional = /[?!]$/.test(type);
   if (INTEGERS.has(t) || FLOATS.has(t)) return optional ? `(${code}).map { Double($0) } as Any?` : `Double(${code}) as Any?`;
   if (t === 'String' || t === 'Bool') return `${code} as Any?`;

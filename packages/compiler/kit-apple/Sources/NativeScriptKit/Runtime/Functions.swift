@@ -89,6 +89,22 @@ public func jsInvoke(_ function: Any?, _ this: Any?, _ arguments: [Any?]) throws
     case let f as JSFunctionObject: return try f.call(this, arguments)
     case let f as JSFunction: return try f(arguments)
     case let m as JSMethod: return try m(this, arguments)
+    case let f as () throws -> Any?: return try f()
+    case let f as () -> Any?: return f()
+    case let f as () throws -> Void: try f(); return nil
+    case let f as () -> Void: f(); return nil
+    case let f as (Any?) throws -> Any?: return try f(jsArg(arguments, 0))
+    case let f as (Any?) -> Any?: return f(jsArg(arguments, 0))
+    case let f as (Any?) throws -> Void: try f(jsArg(arguments, 0)); return nil
+    case let f as (Any?) -> Void: f(jsArg(arguments, 0)); return nil
+    case let f as (Any?) throws -> Bool: return try f(jsArg(arguments, 0))
+    case let f as (Any?) -> Bool: return f(jsArg(arguments, 0))
+    case let f as (Any?, Any?) throws -> Any?: return try f(jsArg(arguments, 0), jsArg(arguments, 1))
+    case let f as (Any?, Any?) -> Any?: return f(jsArg(arguments, 0), jsArg(arguments, 1))
+    case let f as (Any?, Any?) throws -> Void: try f(jsArg(arguments, 0), jsArg(arguments, 1)); return nil
+    case let f as (Any?, Any?) -> Void: f(jsArg(arguments, 0), jsArg(arguments, 1)); return nil
+    case let f as (Any?, Any?, Any?) throws -> Any?: return try f(jsArg(arguments, 0), jsArg(arguments, 1), jsArg(arguments, 2))
+    case let f as (Any?, Any?, Any?) -> Any?: return f(jsArg(arguments, 0), jsArg(arguments, 1), jsArg(arguments, 2))
     case let moot as JSMootValue: throw moot.unavailable()
     default: throw JSException(JSTypeError("\(jsInspect(function)) is not a function"))
     }

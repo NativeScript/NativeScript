@@ -314,6 +314,7 @@ public func jsNativeZero<T>(_ type: T.Type) -> T {
     if let none = (T.self as? JSOptionalProtocol.Type)?.jsNone as? T { return none }
     if let empty = (T.self as? JSEmptyConstructible.Type)?.jsEmpty as? T { return empty }
     if let cls = T.self as? NSObject.Type, let made = cls.init() as? T { return made }
+    if let noop = ({} as () -> Void) as? T { return noop }
     if _isPOD(T.self) {
         return withUnsafeTemporaryAllocation(of: T.self, capacity: 1) { buffer in
             UnsafeMutableRawPointer(buffer.baseAddress!).initializeMemory(as: UInt8.self, repeating: 0, count: MemoryLayout<T>.stride)

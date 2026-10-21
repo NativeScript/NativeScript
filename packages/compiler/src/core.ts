@@ -94,6 +94,15 @@ export function unappliedProperty(t: { resolve(n: ts.Node): ts.Symbol | undefine
  */
 const APPLE_KIT_PLUGINS: string[] = [];
 export const KIT_PLUGINS = [...APPLE_KIT_PLUGINS];
+export const CLOSED_SOURCE_UI_PLUGINS = new Set([
+  'nativescript-ui-listview',
+  'nativescript-ui-gauge',
+  'nativescript-ui-sidedrawer',
+  'nativescript-ui-calendar',
+  'nativescript-ui-dataform',
+  'nativescript-ui-autocomplete',
+  'nativescript-ui-chart',
+]);
 const kitPackages = () => new RegExp(`[\\\\/](${['@nativescript/core', ...KIT_PLUGINS].map((p) => p.replace(/\//g, '[\\\\/]')).join('|')})[\\\\/]`);
 let KIT_PACKAGES = kitPackages();
 
@@ -277,10 +286,20 @@ export class CoreAPI {
     const rel = file.slice(root.length + 1).replace(/\\/g, '/').replace(/(\.(ios|android))?\.d\.ts$|(\.(ios|android))?\.ts$/, '');
     const kind = variable ? 'var' : 'func';
     const owner = `Core_${rel.replace(/[^A-Za-z0-9]+/g, '_')}`;
-    if (kitMember(this.index, owner, name)?.kind === kind) return `${owner}.${name}`;
+    const memberOf = (o: string) => {
+      const m = kitMember(this.index, o, name);
+      if (!m) return null;
+      if (m.kind === kind) return `${o}.${name}`;
+      if (!variable && m.kind === 'var' && this.t.functionTypeParts(m.type.replace(/[?!]$/, '').replace(/^\((.*)\)$/, '$1'))) {
+        return `${o}.${name}${m.type.endsWith('?') ? '!' : ''}`;
+      }
+      return null;
+    };
+    const direct = memberOf(owner) ?? (rel.endsWith('/index') ? memberOf(`Core_${rel.slice(0, -6).replace(/[^A-Za-z0-9]+/g, '_')}_${rel.slice(0, -6).split('/').pop()!.replace(/[^A-Za-z0-9]+/g, '_')}_common`) : null);
+    if (direct) return direct;
     // A module core's index exports as a namespace (`export * as Http from './http'`): the kit's type of that name.
     const barrel = rel.endsWith('/index') || !rel.includes('/') ? coreBarrels(root).get(rel.split('/')[0]) : undefined;
-    return barrel && kitMember(this.index, barrel, name)?.kind === kind ? `${barrel}.${name}` : null;
+    return barrel ? memberOf(barrel) : null;
   }
 
   private moduleOwner(e: ts.Identifier): string | null {
@@ -301,7 +320,7 @@ export class CoreAPI {
   private addedMember(owner: string, e: ts.PropertyAccessExpression): boolean {
     if (kitMember(this.index, owner, e.name.text)) return false;
     const decls = this.t.resolve(e.name)?.declarations ?? [];
-    return decls.length > 0 && decls.every((d) => !isCoreDeclaration(d) && !d.getSourceFile().isDeclarationFile);
+    return decls.length > 0 && decls.every((d) => !isCoreDeclaration(d));
   }
 
   /**
@@ -364,8 +383,9 @@ export class CoreAPI {
     // A kit without the member (`ios` is a Page's controller where the kit has it from core).
     if (!owner.isStatic && NATIVE_MEMBERS.has(name) && this.isView(owner.name) && !kitMember(this.index, owner.name, name)) return `${recv}.nativeView`;
     if (!owner.isStatic && this.isView(owner.name) && !kitMember(this.index, owner.name, name)) {
-      if (!this.isViewProperty(owner.name, name)) unappliedProperty(t, e.name, `${owner.name}.${name}`, 'NativeScriptKit');
-      return t.fromAnyCode(`${recv}.get(${JSON.stringify(name)})`, t.typeOf(e), true);
+      const symDecl = t.checker.getSymbolAtLocation(e.name)?.valueDeclaration;
+      if ((!symDecl || isCoreDeclaration(symDecl)) && !this.isViewProperty(owner.name, name)) unappliedProperty(t, e.name, `${owner.name}.${name}`, 'NativeScriptKit');
+      return t.fromAnyCode(t.library ? `${recv}.get(${JSON.stringify(name)})` : `(jsReported { try ${recv}.get(${JSON.stringify(name)}) } ?? nil)`, t.typeOf(e), true);
     }
     // A namespace of core's held as a value (`knownFolders.ios[name]()`): an object of its functions that take nothing, as script reads it.
     if (owner.isStatic && !kitMember(this.index, owner.name, name) && this.index.has(`${owner.name}.${name}`)) {
@@ -375,6 +395,9 @@ export class CoreAPI {
     }
     // `Color.equals` as a value: the class's own function of the name, not an instance method of it.
     const own = (() => { for (let x = this.index.get(owner.name); x; x = x.base ? this.index.get(x.base) : undefined) { const f = x.members.get(name)?.find((y) => y.kind === 'func' && !!y.static === owner.isStatic); if (f) return f; } return undefined; })();
+    if (!own && !owner.isStatic && !kitMember(this.index, owner.name, name)) {
+      return t.fromAnyCode(`jsField(${recv}, ${JSON.stringify(name)})`, t.typeOf(e), true);
+    }
     const m = own ?? this.member(owner.name, name, e);
     if (inChain && continued) return `${recv}.${name}`;
     // A method as a value (`Builder.load` given to `isFunction`): the function Swift has of it, adapted to the declared type.
@@ -418,6 +441,9 @@ export class CoreAPI {
       // Core's `set` runs the property's change handlers, whose errors are reported as core reports them.
       return `jsReport { try ${recv}.set(${JSON.stringify(name)}, ${t.coerce(value, 'Any?')}) }`;
     }
+    if (!owner.isStatic && !kitMember(this.index, owner.name, name)) {
+      return `jsExpandoSet(${recv}, ${JSON.stringify(name)}, ${t.coerce(value, 'Any?')})`;
+    }
     const m = this.member(owner.name, name, left);
     // A kit member typed `Any?` holds what core reads as a plain script object (`TouchManager.animations`).
     if (m.type.trim() === 'Any?') return `${recv}.${name} = ${this.scriptValue(value)}`;
@@ -427,6 +453,11 @@ export class CoreAPI {
     if (zero && nullish) return `${recv}.${name} = ${zero}`;
     // Null where the kit holds an object maybe missing (`view.backgroundColor = null`): none.
     if (nullish && /[?!]$/.test(m.type.trim())) return `${recv}.${name} = nil`;
+    if (m.type.replace(/[?!]$/, '') === 'Color' && t.typeOf(value).replace(/[?!]$/, '') !== 'Color') {
+      const arg = t.coerce(value, 'Any?');
+      const color = t.typeOf(value).replace(/[?!]$/, '') === 'String' ? `(try? Color(JSArray<Any?>([${arg}])))` : `((${arg}) as? Color ?? (try? Color(JSArray<Any?>([${arg}]))))`;
+      return `${recv}.${name} = ${color}`;
+    }
     return `${recv}.${name} = ${this.toKit(t.coerce(value, t.typeOf(left)), m.type)}`;
   }
 
@@ -434,10 +465,12 @@ export class CoreAPI {
   private inheritedOwner(target: ts.Expression, name: ts.MemberName): { name: string; isStatic: boolean } | null {
     const c = this.t.checker;
     const decl = c.getSymbolAtLocation(name)?.valueDeclaration;
-    if (!decl || !isCoreDeclaration(decl)) return null;
+    const overloadOnly = !!decl && ts.isMethodDeclaration(decl) && !decl.body && !decl.getSourceFile().isDeclarationFile && !ts.getModifiers(decl)?.some((m) => m.kind === ts.SyntaxKind.AbstractKeyword);
+    const augmentedView = !!decl && ts.isPropertySignature(decl) && ts.isInterfaceDeclaration(decl.parent) && (c.getSymbolAtLocation(decl.parent.name)?.declarations ?? []).some(isCoreDeclaration);
+    if (!decl || (!isCoreDeclaration(decl) && !overloadOnly && !augmentedView)) return null;
     const cls = c.getNonNullableType(c.getTypeAtLocation(target)).getSymbol()?.valueDeclaration;
     const root = cls && ts.isClassLike(cls) && !cls.getSourceFile().isDeclarationFile ? this.t.kitRootOf(cls) : null;
-    return root ? { name: root, isStatic: false } : null;
+    return root && (kitMember(this.index, root, name.text) || (augmentedView && this.isView(root))) ? { name: root, isStatic: false } : null;
   }
 
   /** A member a mixin class declares: the extension it becomes has it by name. */
@@ -476,12 +509,16 @@ export class CoreAPI {
       // By its own name, whatever the import calls it (`bindingBuilder.getBindingOptions`, read as `__bindingBuilder_getBindingOptions`).
       const name = decl.name?.text ?? e.expression.text;
       const owned = this.moduleFunction(decl);
-      return owned ? !!kitMember(this.index, owned.slice(0, owned.lastIndexOf('.')), name)?.throws : this.throwingExports().has(name);
+      const m = owned ? kitMember(this.index, owned.slice(0, owned.lastIndexOf('.')), name) : null;
+      return owned ? !!(m?.throws || (m?.kind === 'var' && /\)\s*throws\s*->[^>]*\)?[?!]?$/.test(m.type))) : this.throwingExports().has(name);
     }
+    const proto = this.prototypeMethod(e);
+    if (proto) return !!proto.throws;
     if (!ts.isPropertyAccessExpression(e.expression) || this.mixinOwn(e.expression.name)) return false;
     // `super.initNativeView()`, `this.requestLayout()` in a program's class of a core one: the core class declaring the method.
     const member = this.t.resolve(e.expression.name)?.declarations?.[0];
-    const declaring = member && isCoreDeclaration(member) && ts.isClassLike(member.parent) && member.parent.name ? member.parent.name.text : null;
+    const overloadOnly = !!member && ts.isMethodDeclaration(member) && !member.body && !member.getSourceFile().isDeclarationFile && !ts.getModifiers(member)?.some((m) => m.kind === ts.SyntaxKind.AbstractKeyword);
+    const declaring = member && isCoreDeclaration(member) && ts.isClassLike(member.parent) && member.parent.name ? member.parent.name.text : overloadOnly && ts.isClassLike(member.parent) ? this.t.kitRootOf(member.parent) : null;
     const owner = this.owner(e.expression.expression)?.name ?? declaring;
     if (owner && this.addedMember(owner, e.expression)) return true;
     const m = owner ? this.callMember(owner, e.expression.name.text, e.arguments.length) : null;
@@ -510,7 +547,7 @@ export class CoreAPI {
       const sym = this.t.resolve(x);
       const decl = sym?.declarations?.[0];
       if (!sym || !decl || !ts.isVariableDeclaration(decl) || !isCoreDeclaration(decl) || this.t.compiledCounterpart(sym)) return false;
-      return /\?$/.test(this.exportVarType(sym.name) ?? '');
+      return /\?$/.test(this.exportVarType(sym.name, decl) ?? '');
     }
     if (!ts.isPropertyAccessExpression(x) || x.questionDotToken || ts.isOptionalChain(x)) return false;
     const owner = this.mixinOwn(x.name) ? null : this.owner(x.expression) ?? this.inheritedOwner(x.expression, x.name);
@@ -522,8 +559,11 @@ export class CoreAPI {
   }
 
   /** The type of a variable core's index exports, as the kit's top-level accessor gives it. */
-  private exportVarType(name: string): string | null {
-    return this.coreGlobal(name, 'var')?.type ?? null;
+  private exportVarType(name: string, decl?: ts.Declaration): string | null {
+    const g = this.coreGlobal(name, 'var')?.type;
+    if (g) return g;
+    const owned = decl ? this.moduleFunction(decl) : null;
+    return owned ? kitMember(this.index, owned.slice(0, owned.lastIndexOf('.')), name)?.type ?? null : null;
   }
 
   /** The functions the kit's index exports that throw. */
@@ -536,7 +576,8 @@ export class CoreAPI {
     if (!ts.isFunctionDeclaration(decl) || !decl.name || !isCoreDeclaration(decl)) return code;
     const owned = this.moduleFunction(decl);
     const m = owned && kitMember(this.index, owned.slice(0, owned.lastIndexOf('.')), decl.name.text);
-    const result = m ? m.type : !owned ? this.exportSignature(decl.name.text)?.result : undefined;
+    const raw = m ? m.type : !owned ? this.exportSignature(decl.name.text)?.result : undefined;
+    const result = m?.kind === 'var' && raw ? this.t.functionTypeParts(raw.replace(/[?!]$/, '').replace(/^\((.*)\)$/, '$1'))?.result ?? raw : raw;
     return result ? this.fromKit(code, result, tsType) : code;
   }
 
@@ -556,7 +597,7 @@ export class CoreAPI {
     const restAt = decl.parameters.findIndex((p) => !!p.dotDotDotToken);
     const restType = params && restAt >= 0 && restAt === params.length - 1 ? /:\s*(JSArray<.*>)\s*$/.exec(params[restAt])?.[1] : undefined;
     if (restType && args.length >= restAt && !e.arguments.some(ts.isSpreadElement)) return [...args.slice(0, restAt), `${restType}([${args.slice(restAt).join(', ')}])`];
-    if (!params || params.length < e.arguments.length) return args;
+    if (!params || (params.length < e.arguments.length && !(params.length === 1 && /^_ (__arguments|args): JSArray<Any\?>$/.test(params[0].trim())))) return args;
     const out = [...args];
     this.matchKitParams(e, params, out);
     return out;
@@ -567,6 +608,32 @@ export class CoreAPI {
     if (!ts.isPropertyAccessExpression(callee)) return false;
     const owner = this.owner(callee.expression);
     return !!owner && !owner.isStatic && kitMember(this.index, owner.name, callee.name.text)?.kind === 'func';
+  }
+
+  private prototypeMethod(e: ts.CallExpression): KitMember | null {
+    const callee = e.expression;
+    if (!ts.isPropertyAccessExpression(callee) || callee.name.text !== 'call' || e.arguments[0]?.kind !== ts.SyntaxKind.ThisKeyword) return null;
+    const method = callee.expression;
+    if (!ts.isPropertyAccessExpression(method) || !ts.isPropertyAccessExpression(method.expression) || method.expression.name.text !== 'prototype') return null;
+    const owner = this.owner(method.expression.expression);
+    if (!owner?.isStatic) return null;
+    const m = this.callMember(owner.name, method.name.text, e.arguments.length - 1);
+    return m?.kind === 'func' ? m : null;
+  }
+
+  /** `Observable.prototype.addEventListener.call(this, …)`: a core class's prototype method called on `this`. */
+  prototypeCall(e: ts.CallExpression): string | null {
+    const m = this.prototypeMethod(e);
+    if (!m) return null;
+    const method = (e.expression as ts.PropertyAccessExpression).expression as ts.PropertyAccessExpression;
+    const name = method.name.text;
+    const kitParams = (m.params ?? '').trim() ? splitParams(m.params!) : [];
+    const args = e.arguments.slice(1).map((a, k) => {
+      const p = kitParams[k];
+      const type = p ? kitParamType(p).replace(/^@escaping\s+/, '').replace(/!$/, '?') : 'Any?';
+      return this.t.coerce(a, type);
+    });
+    return this.fromKit(`super.${name}(${args.join(', ')})`, m.type, this.t.typeOf(e));
   }
 
   /** `target.method(args)` where target is core-typed, or `new CoreClass(args)`. */
@@ -590,15 +657,15 @@ export class CoreAPI {
     this.member(owner.name, name, e.expression);
     const m = this.callMember(owner.name, name, e.arguments.length)!;
     // `this.hud?.animate(…)`: nothing runs where the object is missing.
-    const chained = !owner.isStatic && !!e.expression.questionDotToken && t.typeOf(e.expression.expression).endsWith('?');
+    const chained = !owner.isStatic && !!e.expression.questionDotToken && (t.typeOf(e.expression.expression).endsWith('?') || t.loose(e.expression.expression) || this.optionalKitValue(e.expression.expression));
     // A namespace of core's by its module (`path.join`), which a local of the name (`path: string`) would shadow.
     const recv = owner.isStatic ? (/^[a-z]/.test(owner.name) ? `NativeScriptKit.${owner.name}` : owner.name) : chained ? `${t.expr(e.expression.expression)}?` : this.receiver(e.expression.expression, name);
     if (name === 'navigate' && kitExtends(this.index, owner.name, 'Frame')) return this.navigate(recv, e);
     const listener = this.listenerArgs(e, m);
     // A kit method takes the arguments given; its own defaults stand for the rest.
     // A last argument spread into the kit's rest parameter is placed below, as the array it is.
-    const spreadLast = e.arguments.length > 0 && ts.isSpreadElement(e.arguments[e.arguments.length - 1]);
-    const args = listener ?? (SCRIPT_OBJECTS.has(name) && this.isView(owner.name) ? e.arguments.map((a) => this.scriptValue(a)) : spreadLast ? [...t.args(e, e.arguments.length - 1), ''] : t.args(e, e.arguments.length));
+    const firstSpread = e.arguments.findIndex(ts.isSpreadElement);
+    const args = listener ?? (SCRIPT_OBJECTS.has(name) && this.isView(owner.name) ? e.arguments.map((a) => this.scriptValue(a)) : firstSpread >= 0 ? [...t.args(e, firstSpread), ...Array(e.arguments.length - firstSpread).fill('')] : t.args(e, e.arguments.length));
     // A property holding a function (`Application.on`, which core assigns in its constructor): its parameters are the function type's,
     // each of them passed, as a Swift function value has no defaults.
     const held = m.kind === 'var' && !m.params ? t.functionTypeParts(m.type.replace(/[?!]$/, '').replace(/^\((.*)\)$/, '$1')) : null;
@@ -616,10 +683,11 @@ export class CoreAPI {
     // One array spread into the rest (`path.join(...parts)`): the array the kit's rest parameter is.
     const spread = e.arguments[restAt];
     if (restType && !listener && !packed && e.arguments.length === restAt + 1 && spread && ts.isSpreadElement(spread)) args.splice(restAt, args.length - restAt, t.coerce(spread.expression, restType));
+    else if (restType && !listener && !packed && e.arguments.slice(restAt).some(ts.isSpreadElement) && args.length >= restAt) args.splice(restAt, args.length - restAt, t.packed(e.arguments.slice(restAt), restType));
     // Fewer arguments than core declares (lenient code's `Builder.parseMultipleTemplates(value)`): undefined for each optional one left out.
     if (!held && !listener && !packed && !e.arguments.some(ts.isSpreadElement)) while (args.length < kitParams.length && !kitParams[args.length].includes('=') && /[?!]\s*$/.test(kitParams[args.length])) args.push('nil');
     if (held) {
-      while (args.length < held.params.length && /[?!]$/.test(held.params[args.length])) args.push('nil');
+      while (args.length < held.params.length && (/[?!]$/.test(held.params[args.length]) || held.params[args.length] === 'Double')) args.push(held.params[args.length] === 'Double' ? 'Double.nan' : 'nil');
       // Held optional (core assigns it later): V8's "is not a function" where it is missing.
       const fn = /[?!]$/.test(m.type.trim()) ? `jsCallable(${recv}.${name}, ${JSON.stringify(e.expression.getText().replace(/\s+/g, ' '))})` : `${recv}.${name}`;
       return this.fromKit(`${fn}(${args.join(', ')})`, held.result, t.typeOf(e));
@@ -645,8 +713,8 @@ export class CoreAPI {
       // or a method reading `arguments`, which takes them all so.
       // Not where the kit spreads the rest over parameters of its own (`showModal(_ __b0: Any?, _ __b1: Any?)`).
       const wholeRest = type === 'JSArray<Any?>' || (type === 'Any?' && k === kitParams.length - 1 && !/^_\s+__b\d/.test(p.trim()));
-      if ((declared?.[k]?.dotDotDotToken && wholeRest) || (k === 0 && kitParams.length === 1 && /^_ __arguments: JSArray<Any\?>$/.test(p.trim()))) {
-        args.splice(k, args.length - k, `JSArray<Any?>([${e.arguments.slice(k).map((a) => t.coerce(a, 'Any?')).join(', ')}])`);
+      if ((declared?.[k]?.dotDotDotToken && wholeRest) || (k === 0 && kitParams.length === 1 && /^_ (__arguments|args): JSArray<Any\?>$/.test(p.trim()))) {
+        args.splice(k, args.length - k, e.arguments.slice(k).some(ts.isSpreadElement) ? t.packed(e.arguments.slice(k), 'JSArray<Any?>') : `JSArray<Any?>([${e.arguments.slice(k).map((a) => t.coerce(a, 'Any?')).join(', ')}])`);
         packed = true;
         return;
       }
@@ -681,8 +749,7 @@ export class CoreAPI {
         if ((ts.isArrowFunction(a) || ts.isFunctionExpression(a)) && fn) {
           args[k] = this.closureArgument(a, plain);
         } else {
-          const own = t.typeOf(a);
-          args[k] = /->/.test(own) && own.replace(/^\((.*)\)$/, '$1') !== type ? t.convert(t.expr(a), own, type) : t.coerce(a, type);
+          args[k] = t.coerce(a, type);
         }
       }
     });

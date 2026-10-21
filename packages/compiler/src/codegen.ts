@@ -13,6 +13,15 @@ export const EVENT_SCOPED = new Set<string>(['angular', 'react', 'octane']);
 /** Views whose children are item templates, rendered through one `bind`: core's ListView and the kit's Pager. */
 export const TEMPLATE_HOSTS = new Set(['ListView', 'Pager']);
 
+/** `@nativescript-community/ui-drawer`'s child `id`s that map to its slot properties (`sideDrawerMeta.insertChild`). */
+export const DRAWER_SLOTS: Record<string, string> = {
+  MainContent: 'mainContent',
+  LeftDrawer: 'leftDrawer',
+  RightDrawer: 'rightDrawer',
+  TopDrawer: 'topDrawer',
+  BottomDrawer: 'bottomDrawer',
+};
+
 /** Item-template host attributes that `bind` takes rather than `set`. */
 export const LIST_BINDINGS = new Set(['items', 'itemTemplateSelector']);
 
@@ -34,6 +43,7 @@ export interface ComponentInfo {
   setters?: string[];
   throwingSetters?: string[];
   propAliases?: Record<string, string>;
+  propTypes?: Record<string, string>;
   /** The component implements ngOnChanges (`ComponentIR.changes`). */
   changes?: boolean;
 }
@@ -47,6 +57,8 @@ export interface RenderOptions {
   zone?: boolean;
   /** The element type of a binding method returning a loop's items, which spares Swift inferring it through the loop's closures. */
   itemType?: (method: string) => string | null;
+  /** Converts a binding's return value to the Swift type the target component's prop expects. */
+  coerceProp?: (method: string, code: string, to: string) => string;
 }
 
 export function render(c: ComponentIR, components: Map<string, ComponentInfo>, throws: (method: string) => boolean = () => false, framework: Framework = 'octane', options: RenderOptions = {}): string[] {
@@ -194,7 +206,7 @@ export function render(c: ComponentIR, components: Map<string, ComponentInfo>, t
           if (node.ref) say(depth, `${call(node.ref, loops)}.current = ${v}`);
           queried(depth, node.queries, loops, v, v);
           directed(depth, node.directives, loops, v);
-          const isList = TEMPLATE_HOSTS.has(node.tag);
+          const isList = node.tag === 'ListView' || (TEMPLATE_HOSTS.has(node.tag) && node.children.some((ch) => ch.kind === 'template'));
           const props = () => {
             for (const a of node.attrs) if (!isList || !LIST_BINDINGS.has(a.name)) attr(depth, v, a, loops);
             for (const e of node.events) {
@@ -204,7 +216,10 @@ export function render(c: ComponentIR, components: Map<string, ComponentInfo>, t
             }
           };
           if (isList || !postOrder) props();
-          attach(depth, v, parent, region, 'created');
+          const idAttr = node.attrs.find((a): a is { name: string; value: string } => a.name === 'id' && 'value' in a);
+          const drawerSlot = parent && idAttr ? DRAWER_SLOTS[idAttr.value] : undefined;
+          if (drawerSlot) say(depth, `${parent}.kitSet(${swiftString(drawerSlot)}, ${v})`);
+          else attach(depth, v, parent, region, 'created');
           if (node.init && c.init) say(depth, reported(c.init, `${throws(c.init) ? 'try ' : ''}self.${ident(c.init)}()`));
           if (isList) list(node, depth, loops, v);
           else emit(node.children, depth, loops, v, null);
@@ -215,27 +230,33 @@ export function render(c: ComponentIR, components: Map<string, ComponentInfo>, t
           const bound = new Map(node.props.map((p) => [p.name, p]));
           const given = { get: (p: string) => bound.get(info.propAliases?.[p] ?? p) };
           const c0 = `c${n++}`;
+          const propVal = (p: string, method: string, code: string) => {
+            const pt = info.propTypes?.[p];
+            return pt && options.coerceProp ? options.coerceProp(method, code, pt) : code;
+          };
           const args = info.props.flatMap((p) => {
             if (info.setters?.includes(p)) return [];
             const a = given.get(p);
             if (!a && info.optional?.includes(p)) return [];
             if (!a) throw new Error(`${c.name}: <${node.name}> needs the prop "${p}"`);
             if ('value' in a) return [`${ident(p)}: ${swiftString(a.value)}`];
-            if (!throws(a.method)) return [`${ident(p)}: untrack { ${call(a.method, loops)} }`];
+            if (!throws(a.method)) return [`${ident(p)}: untrack { ${propVal(p, a.method, call(a.method, loops))} }`];
             // A binding that may throw: the prop starts at its default and the binding's own effect, created right after,
             // sets it or reports what it throws, as Angular's error handler does. One with no default starts at its type's zero.
             if (info.optional?.includes(p)) return [];
-            return [`${ident(p)}: untrack { jsReportedOrZero { ${call(a.method, loops)} } }`];
+            return [`${ident(p)}: untrack { jsReportedOrZero { ${propVal(p, a.method, call(a.method, loops))} } }`];
           });
           if (info.passed) args.push(`_passed: [${node.props.map((a) => swiftString(a.name)).concat(node.events.map((e) => swiftString('on' + e.name[0].toUpperCase() + e.name.slice(1)))).join(', ')}]`);
           say(depth, `let ${c0} = ${info.initThrows ? 'try ' : ''}${node.name}(${args.join(', ')})`);
           /** A prop's binding as it applies: the setter's method called (reporting what it throws), or the prop's signal written. */
-          const write = (p: string, value: string) => {
-            const change = info.changes ? `; ${c0}._change(${swiftString(p)}, ${value})` : '';
-            if (!info.setters?.includes(p)) return `${c0}.${ident(p)}.value = ${value}${change}`;
+          const write = (p: string, value: string, method?: string) => {
+            const vCode = method ? propVal(p, method, value) : value;
+            const change = info.changes ? `; ${c0}._change(${swiftString(p)}, ${vCode})` : '';
+            if (!info.setters?.includes(p)) return `${c0}.${ident(p)}.value = ${vCode}${change}`;
             // `$0` names the Check's value only outside the closure jsReport takes.
             const held = info.throwingSetters?.includes(p) && value === '$0';
-            const set = `${c0}.${ident('$set_' + p)}(${held ? '__v' : value})`;
+            const setArg = held ? (method ? propVal(p, method, '__v') : '__v') : vCode;
+            const set = `${c0}.${ident('$set_' + p)}(${setArg})`;
             return (info.throwingSetters?.includes(p) ? `${held ? 'let __v = $0; ' : ''}jsReport { try ${set} }` : set) + change;
           };
           for (const p of info.props) {
@@ -250,7 +271,7 @@ export function render(c: ComponentIR, components: Map<string, ComponentInfo>, t
             if (!parent) throw new Error(`${c.name}: <${node.name}>, whose template has no single root element, at the root of a template`);
             for (const p of info.props) {
               const a = given.get(p);
-              if (a && 'method' in a) say(depth, zoneless || info.setters?.includes(p) ? check(a.method, loops, write(p, '$0')) : `Effect { ${reported(a.method, write(p, call(a.method, loops)))} }`);
+              if (a && 'method' in a) say(depth, zoneless || info.setters?.includes(p) ? check(a.method, loops, write(p, '$0', a.method)) : `Effect { ${reported(a.method, write(p, call(a.method, loops), a.method))} }`);
             }
             for (const e of node.events) {
               if (!info.outputs?.includes(e.name)) throw new Error(`${c.name}: <${node.name}> takes no ${e.name} event: its template has no single root view`);
@@ -264,7 +285,7 @@ export function render(c: ComponentIR, components: Map<string, ComponentInfo>, t
           }
           for (const p of info.props) {
             const a = given.get(p);
-            if (a && 'method' in a) say(depth, options.zone ? `Check({ ${checked(a.method, loops)} }) { ${write(p, '$0')} }` : zoneless || info.setters?.includes(p) ? check(a.method, loops, write(p, '$0')) : `Effect { ${reported(a.method, write(p, call(a.method, loops)))} }`);
+            if (a && 'method' in a) say(depth, options.zone ? `Check({ ${checked(a.method, loops)} }) { ${write(p, '$0', a.method)} }` : zoneless || info.setters?.includes(p) ? check(a.method, loops, write(p, '$0', a.method)) : `Effect { ${reported(a.method, write(p, call(a.method, loops), a.method))} }`);
           }
           changed();
           say(depth, `let ${v} = try ${c0}.render()`);
@@ -323,7 +344,7 @@ export function render(c: ComponentIR, components: Map<string, ComponentInfo>, t
       if (node.kind === 'if') {
         const which = node.branches.map((b, i) => (b.cond ? `${cond(b.cond, loops)} ? ${i} : ` : `${i}`)).join('') + (node.branches.at(-1)!.cond ? `${node.branches.length}` : '');
         say(depth, `Choose(${host}, { ${which} }, site: ${site('if')}) { branch in`);
-        const wrap = scoped('region', '[View]');
+        const wrap = scoped('region', '[ViewBase]');
         const d = wrap ? depth + 1 : depth;
         if (wrap) say(depth + 1, wrap);
         if (framework === 'angular' && node.branches.some((b) => hasRegion(b.body))) say(d + 1, 'let __view = EffectOrder.current');
@@ -365,7 +386,7 @@ export function render(c: ComponentIR, components: Map<string, ComponentInfo>, t
       const element = options.itemType?.(node.items);
       // Untyped items (`Any?`) are iterated as JavaScript iterates them.
       const read = element === 'Any?' ? `jsReportedItems { try jsItemsOf(${call(node.items, loops).replace(/^try /, '')}) }` : null;
-      const items = (element ? `() -> [${element}] in ` : '') + (read ?? (throws(node.items) ? `jsReportedItems { ${call(node.items, loops)} }` : `Array(${call(node.items, loops)})`));
+      const items = (element ? `() -> [${element}] in ` : '') + (read ?? `jsReportedItems { ${call(node.items, loops)} }`);
       // Angular's @for keeps a row by its key and gives it the item now at that key: the row reads item and index as signals.
       const row = framework === 'angular' ? `row${n++}` : null;
       const rowLoops = row ? [...loops, { item: node.item, index: node.index, itemExpr: `${row}.item.value`, indexExpr: `${row}.index.value` }] : inner;
@@ -378,7 +399,7 @@ export function render(c: ComponentIR, components: Map<string, ComponentInfo>, t
         continue;
       }
       say(depth, opening('For'));
-      const wrap = scoped('region', '[View]');
+      const wrap = scoped('region', '[ViewBase]');
       const d = wrap ? depth + 1 : depth;
       if (wrap) say(depth + 1, wrap);
       if (framework === 'angular' && hasRegion(node.body)) say(d + 1, 'let __view = EffectOrder.current');
@@ -402,8 +423,10 @@ export function render(c: ComponentIR, components: Map<string, ComponentInfo>, t
     const all = node.children.filter((t): t is Extract<TNode, { kind: 'template' }> => t.kind === 'template');
     const templates = all.filter((t) => !t.header);
     const header = all.find((t) => t.header);
+    const element = options.itemType?.(items.method);
+    const read = element === 'Any?' ? `jsReportedItems { try jsItemsOf(${call(items.method, loops).replace(/^try /, '')}) }` : `Array(${call(items.method, loops)})`;
     // A sectioned list's items are its sections; a row's item is one of a section's `items`.
-    const source = node.sections ? `sections: { Array(${call(items.method, loops)}) }, rows: { Array($0.items) }` : `items: { Array(${call(items.method, loops)}) }`;
+    const source = node.sections ? `sections: { ${read} }, rows: { Array($0.items) }` : `items: { ${read} }`;
     if (!templates.length) { say(depth, `${v}.bind(${source}${sel})`); return; }
     const row = `row${n++}`;
     /** One template's view for a row: the closure body rendering it. */
@@ -433,7 +456,7 @@ export function render(c: ComponentIR, components: Map<string, ComponentInfo>, t
     say(depth, '})');
   };
 
-  const fragment = framework === 'angular' && !c.page && isFragment(c.template);
+  const fragment = framework === 'angular' && !c.page && isFragment(c.template, components);
   say(1, fragment ? 'func render(into region: Region) throws {' : 'func render() throws -> View {');
   const wrap = scoped('template', fragment ? 'Void' : 'View');
   const d = wrap ? 3 : 2;
@@ -484,9 +507,11 @@ export function render(c: ComponentIR, components: Map<string, ComponentInfo>, t
 }
 
 /** A template that is not a single element: its views join the parent of the component's host. */
-export function isFragment(nodes: TNode[]): boolean {
+export function isFragment(nodes: TNode[], components?: ReadonlyMap<string, { fragment?: boolean }>): boolean {
   const shown = withoutLocals(nodes);
-  return shown.length !== 1 || shown[0].kind !== 'element' && shown[0].kind !== 'component';
+  if (shown.length !== 1) return true;
+  if (shown[0].kind === 'component') return Boolean(components?.get(shown[0].name)?.fragment);
+  return shown[0].kind !== 'element';
 }
 
 /** Whether a template holds an `if` or `for` of its own (not inside an item template). */

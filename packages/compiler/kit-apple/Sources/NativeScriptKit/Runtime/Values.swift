@@ -69,11 +69,19 @@ extension Optional: JSOptionalProtocol {
     static var jsNone: Any { Optional<Wrapped>.none as Any }
 }
 
-/// `value` with nested optionals collapsed: a generic `T?` holding nil, boxed in `Any?`, is undefined.
+/// `value` with nested optionals collapsed: a generic `T?` holding nil, boxed in `Any?`, is undefined,
+/// as is a null Objective-C pointer returned from a header marked `NS_ASSUME_NONNULL` (`UIApplication.shared` before launch).
 @inline(__always)
 public func jsFlat(_ value: Any?) -> Any? {
     guard let value else { return nil }
-    guard jsTypeKind(value) == .optional else { return value }
+    let kind = jsTypeKind(value)
+    if kind == .swiftClass || kind == .objCClass {
+        let ptr = withUnsafePointer(to: value) {
+            UnsafeRawPointer($0).assumingMemoryBound(to: JSExistentialWords.self).pointee.word0
+        }
+        return ptr == 0 ? nil : value
+    }
+    guard kind == .optional else { return value }
     // A cast to `Any?` unwraps one level of any optional without looking up its type's conformance to a protocol.
     if let unwrapped = jsDynamicCast(value, to: Any?.self) { return jsFlat(unwrapped) }
     return value
@@ -84,6 +92,14 @@ public func jsFlat(_ value: Any?) -> Any? {
 func jsDynamicCast<T>(_ value: Any, to _: T.Type) -> T? { value as? T }
 
 // MARK: - What a value is, read from its type's metadata
+
+/// The four-word layout of `Any` on 64-bit Swift: three words of inline storage and the static metadata pointer.
+private struct JSExistentialWords {
+    var word0: UInt
+    var word1: UInt
+    var word2: UInt
+    var metadata: UnsafePointer<UInt>
+}
 
 /// The kind word that starts every type's metadata (the Swift ABI's `MetadataKind`). Hot paths read it
 /// before casting: a cast to a protocol or a bridged type looks up conformances, slowly for each new type.
@@ -102,7 +118,11 @@ enum JSTypeKind: UInt {
 
 @inline(__always)
 func jsTypeKind(_ value: Any) -> JSTypeKind {
-    let word = unsafeBitCast(type(of: value), to: UnsafePointer<UInt>.self).pointee
+    // Read from the existential's metadata slot rather than `type(of: value)` (`swift_getDynamicType`),
+    // which dereferences `word0` on class types and faults when an Objective-C `nonnull` API returned nil.
+    let word = withUnsafePointer(to: value) {
+        UnsafeRawPointer($0).assumingMemoryBound(to: JSExistentialWords.self).pointee.metadata.pointee
+    }
     // A class's metadata starts with its isa pointer, never a small kind number.
     if word > 0x7FF { return .swiftClass }
     return JSTypeKind(rawValue: word) ?? .other
@@ -535,8 +555,14 @@ public func jsGet(_ object: Any?, _ key: String) throws -> Any? {
             if jsIsNativeOnly(native) { return jsNativeGet(native, key) }
         } else {
             if let moot = value as? JSMootValue, moot.undeclared { throw moot.unavailable() }
-            if let plain = value as? JSObject { return try plain.get(key) }
-            if let dynamic = value as? JSDynamic { return dynamic[jsKey: key] }
+            if let plain = value as? JSObject {
+                if let v = try plain.get(key) { return v }
+                return key == "constructor" ? JSObject.self : nil
+            }
+            if let dynamic = value as? JSDynamic {
+                if let v = dynamic[jsKey: key] { return v }
+                return key == "constructor" ? type(of: dynamic) : nil
+            }
         }
     }
     // A class itself (`cls.prototype`), before any cast a class object could wrongly pass as an instance.
@@ -547,9 +573,11 @@ public func jsGet(_ object: Any?, _ key: String) throws -> Any? {
     case is JSNull:
         throw JSException(JSTypeError("Cannot read properties of null (reading '\(key)')"))
     case let plain as JSObject:
-        return try plain.get(key)
+        if let v = try plain.get(key) { return v }
+        return key == "constructor" ? JSObject.self : nil
     case let dynamic as JSDynamic:
-        return dynamic[jsKey: key]
+        if let v = dynamic[jsKey: key] { return v }
+        return key == "constructor" ? type(of: dynamic) : nil
     case let array as JSArrayProtocol:
         if key == "length" { return Double(array.jsLength) }
         if let index = jsArrayIndex(key) { return Int(index) < array.jsLength ? array.jsElement(at: Int(index)) : nil }
@@ -756,11 +784,7 @@ public func jsCall(_ function: Any?, _ arguments: Any?...) throws -> Any? {
 /// `f(...args)` on an untyped value.
 @discardableResult
 public func jsCall(_ function: Any?, spread arguments: [Any?]) throws -> Any? {
-    if let f = jsFlat(function) as? JSFunctionObject { return try f.call(nil, arguments) }
-    if let f = jsFlat(function) as? JSFunction { return try f(arguments) }
-    if let method = jsFlat(function) as? JSMethod { return try method(nil, arguments) }
-    if let moot = jsFlat(function) as? JSMootValue { throw moot.unavailable() }
-    throw JSException(JSTypeError("\(jsInspect(function)) is not a function"))
+    try jsInvoke(function, nil, arguments)
 }
 
 /// `Object.keys(value)`.

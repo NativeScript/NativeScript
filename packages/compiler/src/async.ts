@@ -426,6 +426,7 @@ export class AsyncLowering {
       if (!decl || decl.getSourceFile().isDeclarationFile) return true;
       if (ts.isFunctionDeclaration(decl) || ts.isClassDeclaration(decl) || ts.isEnumDeclaration(decl)) return true;
       if (ts.isVariableDeclaration(decl) && ts.isVariableDeclarationList(decl.parent) && decl.parent.flags & ts.NodeFlags.Const) return true;
+      if (ts.isParameter(decl) && ts.isIdentifier(decl.name) && !this.t.needsVar(decl.name, 'Any?')) return true;
     }
     return false;
   }

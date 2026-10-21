@@ -40,6 +40,10 @@ export interface PluginSource {
   typings: string[];
   /** How the source was checked: against the published files, not at all (an override), or not needed (npm installed it with the files built from it). */
   verified: 'published' | 'override' | 'shipped';
+  /** True when the package is authored in JavaScript and has no `.d.ts` declarations (shipped, `@types/*`, or `release.pluginTypes`). */
+  missingTypes?: boolean;
+  /** True when the package is a dynamic ES5/UMD JavaScript bundle that requires `release.pluginReplacements`. */
+  dynamicBundle?: boolean;
 }
 
 /** What a bundle's source map lists: each source as the checkout has it (null: not there) and as the bundle was built from it. */
@@ -54,6 +58,7 @@ export interface SourceOptions {
   platform: 'ios' | 'android';
   cache?: string;
   overrides?: Record<string, string>;
+  types?: Record<string, string>;
   say?: (message: string) => void;
 }
 
@@ -107,8 +112,8 @@ export class PluginSources {
         if (!js) continue;
         if (!source.checked.has(js) && source.verified === 'published') {
           const bundle = source.bundles.get(js);
-          if (bundle) verifyBundle(source.name, js, bundle);
-          else verify(source.name, js, src);
+          if (bundle) verifyBundle(source.name, js, bundle, this.options.app, source.version);
+          else verify(source.name, js, src, this.options.app, source.version);
         }
         source.checked.add(js);
       }
@@ -124,6 +129,12 @@ export class PluginSources {
 
 /** Why an installed file has no source to compile; for a bundle, which of its sources the checkout lacks. */
 function noSource(source: PluginSource, js: string): string {
+  if (source.missingTypes) {
+    return `is authored in JavaScript and has no TypeScript declarations (.d.ts); install @types/${source.name}, upgrade ${source.name} to a version that ships types, point release.pluginTypes['${source.name}'] at a .d.ts file, or replace it in release.pluginReplacements['${source.name}']`;
+  }
+  if (source.dynamicBundle) {
+    return `is a dynamic ES5/UMD JavaScript bundle that cannot be statically lowered; provide a typed replacement in nativescript.config.ts via release.pluginReplacements['${source.name}']`;
+  }
   const bundle = source.bundles.get(js);
   if (!bundle) return `has no TypeScript source in ${source.root}`;
   const found = bundle.files.filter(Boolean).length;
@@ -139,10 +150,20 @@ export function configuredOverrides(app: string, platform: 'ios' | 'android'): R
   }));
 }
 
+/** `release.pluginTypes` for `platform` from the project's nativescript.config.ts, paths resolved against the project. */
+export function configuredTypes(app: string, platform: 'ios' | 'android'): Record<string, string> {
+  const types = releaseOptions(app, platform).pluginTypes;
+  return Object.fromEntries(Object.entries(types && typeof types === 'object' ? types : {}).map(([name, path]) => {
+    if (typeof path !== 'string') throw new Error(`nativescript.config: release.pluginTypes entries are 'package': 'path'`);
+    return [name, resolve(app, path)];
+  }));
+}
+
 const writtenStrictness = new Map<string, boolean>();
 
 /** Whether a source's own tsconfig (its `extends` followed) checks null: code written without it is translated as core is. */
 export function writtenStrict(file: string, strictness = writtenStrictness): boolean {
+  if (file.includes(`${sep}typed${sep}`)) return false;
   for (let dir = dirname(file); dirname(dir) !== dir; dir = dirname(dir)) {
     const config = join(dir, 'tsconfig.json');
     if (!existsSync(config)) continue;
@@ -162,11 +183,11 @@ function acquire(dir: string, options: SourceOptions): PluginSource {
   const name: string = pkg.name;
   const version: string = pkg.version;
   const say = options.say ?? (() => {});
-  const override = options.overrides?.[name];
+  const override = options.overrides?.[name] ? resolve(options.app, options.overrides[name]) : undefined;
   let root: string;
   let repo: string | null = null;
   let rev: string | null = null;
-  const shipped = !override && shipsSource(dir, pkg);
+  let shipped = !override && shipsSource(dir, pkg);
   if (override) {
     if (!existsSync(override)) throw new Error(`${name}: the source configured in release.pluginSources (${override}) does not exist`);
     root = override;
@@ -176,7 +197,9 @@ function acquire(dir: string, options: SourceOptions): PluginSource {
     repo = repositoryOf(pkg);
     if (!repo) throw new Error(`${name}@${version}: package.json names no repository; point release.pluginSources['${name}'] at a checkout of its source`);
     const checkout = join(options.cache ?? DEFAULT_CACHE, `${name.replace(/\//g, '+')}@${version}`);
-    rev = fetch(checkout, repo, pkg, say);
+    const fetched = fetch(checkout, repo, pkg, dir, say);
+    repo = fetched.repo;
+    rev = fetched.rev;
     root = join(checkout, 'repo');
   }
 
@@ -184,31 +207,64 @@ function acquire(dir: string, options: SourceOptions): PluginSource {
   const packageDir = sourcePackageDir(root, repoFiles, name);
   const bundles = new Map<string, BundleSources>();
   let files = mapFiles(dir, root, repoFiles, packageDir, bundles);
+  let missingTypes = false;
+  let dynamicBundle = false;
+  if ([...files.values()].every((v) => !v)) {
+    const dtsFile = findPackageDts(dir, root, pkg, name, options);
+    if (!dtsFile) {
+      missingTypes = true;
+    } else {
+      const typedDir = join(dirname(root), 'typed');
+      const synthesized = synthesizeJsPackage(dir, root, repoFiles, dtsFile, typedDir);
+      if (synthesized) {
+        files = synthesized;
+        shipped = true;
+      } else {
+        dynamicBundle = true;
+      }
+    }
+  }
 
-  // Source-level patches apply to a copy of the package's directory.
+  // Source-level patches apply to a copy of the package's directory (or repo root when sources live in `src/<pkg>` outside `packages/<pkg>`).
   const patch = join(options.app, 'native-release', 'patches', `${name.replace(/\//g, '+')}+${version}.patch`);
   if (existsSync(patch)) {
-    if (!packageDir) throw new Error(`${name}: ${relative(options.app, patch)} needs the package's directory in its source, which was not found`);
     const text = readFileSync(patch, 'utf8');
+    const firstTarget = /^---\s+a\/([^\s\n]+)/m.exec(text)?.[1];
+    const patchBase = (firstTarget && packageDir && existsSync(join(packageDir, firstTarget)) ? packageDir
+      : firstTarget && existsSync(join(root, firstTarget)) ? root
+      : packageDir) ?? null;
+    if (!patchBase) throw new Error(`${name}: ${relative(options.app, patch)} needs the package's directory in its source, which was not found`);
     const copy = join(override ? join(options.cache ?? DEFAULT_CACHE, 'overrides', name.replace(/\//g, '+')) : dirname(root), `patched-${createHash('sha1').update(text).digest('hex').slice(0, 12)}`);
+    const relBase = relative(root, patchBase);
+    const targetDir = relBase ? join(copy, relBase) : copy;
     if (!existsSync(join(copy, '.applied'))) {
       rmSync(copy, { recursive: true, force: true });
-      mkdirSync(copy, { recursive: true });
-      cpSync(packageDir, copy, { recursive: true, filter: (f) => !f.includes(`${sep}node_modules`) });
+      mkdirSync(targetDir, { recursive: true });
+      cpSync(patchBase, targetDir, { recursive: true, filter: (f) => !f.includes(`${sep}node_modules`) && !f.includes(`${sep}.git`) });
+      if (relBase) {
+        for (const f of readdirSync(root, { withFileTypes: true })) {
+          if (f.isFile() && (/^tsconfig.*\.json$/.test(f.name) || f.name.endsWith('.d.ts'))) cpSync(join(root, f.name), join(copy, f.name));
+        }
+      }
       try {
-        execFileSync('patch', ['-p1', '--forward', '--batch', '-s', '-d', copy, '-i', patch], { stdio: 'pipe' });
+        execFileSync('patch', ['-p1', '--forward', '--batch', '-s', '-d', targetDir, '-i', patch], { stdio: 'pipe' });
       } catch (e) {
         throw new Error(`${name}: ${relative(options.app, patch)} does not apply to the source at ${rev ?? override}:\n${(e as { stdout?: Buffer }).stdout?.toString() ?? e}`);
       }
       writeFileSync(join(copy, '.applied'), patch);
     }
-    files = new Map([...files].map(([js, src]) => [js, src?.startsWith(packageDir + sep) ? join(copy, relative(packageDir, src)) : src]));
+    files = new Map([...files].map(([js, src]) => [js, src?.startsWith(root + sep) ? join(copy, relative(root, src)) : src]));
+    for (const b of bundles.values()) {
+      if (b.entry?.startsWith(root + sep)) b.entry = join(copy, relative(root, b.entry));
+      b.files = b.files.map((f) => (f?.startsWith(root + sep) ? join(copy, relative(root, f)) : f));
+    }
+    root = copy;
     say(`${name}: ${relative(options.app, patch)} applied to its source`);
   }
 
   const typings = typingsNear([...files.values()].filter((f): f is string => !!f), options.platform, root);
   say(`${name}@${version}: source from ${override ? `${override} (not verified: a configured source)` : shipped ? 'the package (it ships its TypeScript)' : `${repo} @ ${rev!.slice(0, 7)}`}`);
-  return { name, version, dir, root, repo, rev, files, bundles, typings, checked: new Set(), verified: override ? 'override' : shipped ? 'shipped' : 'published' };
+  return { name, version, dir, root, repo, rev, files, bundles, typings, checked: new Set(), verified: override ? 'override' : shipped ? 'shipped' : 'published', missingTypes, dynamicBundle };
 }
 
 /** Whether the package's own TypeScript is installed with it (rxjs's `src/`): its main file's map names a source inside the package. */
@@ -240,63 +296,164 @@ export function repositoryOf(pkg: any): string | null {
   return null;
 }
 
-function git(cwd: string, args: string[]): string {
-  return execFileSync('git', ['-c', 'advice.detachedHead=false', ...args], { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], maxBuffer: 256 << 20 }).trim();
-}
-
-/** Clones (blobless) into `checkout/repo` at the package's revision, once; returns the revision. */
-function fetch(checkout: string, repo: string, pkg: any, say: (m: string) => void): string {
-  const meta = join(checkout, 'source.json');
-  if (existsSync(meta)) return JSON.parse(readFileSync(meta, 'utf8')).rev;
-  const dir = join(checkout, 'repo');
-  rmSync(checkout, { recursive: true, force: true });
-  mkdirSync(dir, { recursive: true });
-  say(`${pkg.name}@${pkg.version}: fetching ${repo}`);
-  git(dir, ['init', '-q']);
-  git(dir, ['remote', 'add', 'origin', repo]);
-  const head = pkg['git' + 'Head'];
-  let rev: string | null = null;
-  let how = '';
-  if (typeof head === 'string' && /^[0-9a-f]{40}$/.test(head)) {
-    try {
-      git(dir, ['fetch', '-q', '--filter=blob:none', '--depth', '1', 'origin', head]);
-      rev = head;
-      how = 'package.json gitHead';
-    } catch { /* not on the remote: fall back to tags */ }
-  }
-  if (!rev) {
-    const short = pkg.name.split('/').pop();
-    const wanted = [`${pkg.version}-${short}`, `v${pkg.version}`, `${pkg.version}`, `${pkg.name}@${pkg.version}`, `${short}@${pkg.version}`, `${short}-v${pkg.version}`, `${short}-${pkg.version}`];
-    const tags = git(dir, ['ls-remote', '--tags', 'origin']).split('\n').map((l) => l.split('\t')[1]?.replace(/^refs\/tags\//, '')).filter(Boolean);
-    const tag = wanted.find((t) => tags.includes(t));
-    if (tag) {
-      git(dir, ['fetch', '-q', '--filter=blob:none', '--depth', '1', 'origin', `refs/tags/${tag}:refs/tags/${tag}`]);
-      rev = git(dir, ['rev-list', '-n', '1', tag]);
-      how = `tag ${tag}`;
+/** Scope monorepos to search when a scoped package's `repository` field still points at an older standalone or sibling repo. */
+function candidateRepos(pkg: any, primary: string): string[] {
+  const out = [primary];
+  const add = (r: string) => { if (!out.includes(r)) out.push(r); };
+  if (typeof pkg.name === 'string') {
+    if (pkg.name.startsWith('@nativescript/')) {
+      add('https://github.com/NativeScript/plugins.git');
+      add('https://github.com/NativeScript/firebase.git');
+      add('https://github.com/NativeScript/ui-kit.git');
+    } else if (pkg.name.startsWith('@triniwiz/')) {
+      add('https://github.com/triniwiz/nativescript-plugins.git');
+    } else if (pkg.name.startsWith('@nstudio/')) {
+      add('https://github.com/nstudio/nativescript-plugins.git');
+      add('https://github.com/nstudio/nativescript-ui-kit.git');
     }
   }
-  if (!rev) {
-    // The commit that set the published version in the package's own package.json.
+  return out;
+}
+
+function git(cwd: string, args: string[]): string {
+  return execFileSync('git', ['-c', 'advice.detachedHead=false', '-c', 'filter.lfs.smudge=', '-c', 'filter.lfs.process=', '-c', 'filter.lfs.required=false', ...args], {
+    cwd,
+    encoding: 'utf8',
+    env: { ...process.env, GIT_LFS_SKIP_SMUDGE: '1' },
+    stdio: ['ignore', 'pipe', 'pipe'],
+    maxBuffer: 256 << 20,
+  }).trim();
+}
+
+function treeHasPackage(dir: string, ref: string, pkgName: string): string | null {
+  const manifests = git(dir, ['ls-tree', '-r', '--name-only', ref]).split('\n').filter((f) => /(^|\/)package\.json$/.test(f) && !f.includes('node_modules/'));
+  return manifests.find((f) => { try { return JSON.parse(git(dir, ['show', `${ref}:${f}`])).name === pkgName; } catch { return false; } }) ?? null;
+}
+
+/** Clones (blobless) into `checkout/repo` at the package's revision, once; returns the repository and revision. */
+function fetch(checkout: string, primaryRepo: string, pkg: any, pkgDir: string, say: (m: string) => void): { repo: string; rev: string } {
+  const meta = join(checkout, 'source.json');
+  if (existsSync(meta)) {
+    const parsed = JSON.parse(readFileSync(meta, 'utf8'));
+    return { repo: parsed.repo ?? primaryRepo, rev: parsed.rev };
+  }
+  const dir = join(checkout, 'repo');
+  const repos = candidateRepos(pkg, primaryRepo);
+  const head = pkg['git' + 'Head'];
+  const short = pkg.name.split('/').pop();
+  const wantedTags = [`${pkg.version}-${short}`, `v${pkg.version}`, `${pkg.version}`, `${pkg.name}@${pkg.version}`, `${short}@${pkg.version}`, `${short}-v${pkg.version}`, `${short}-${pkg.version}`];
+  const fallbacks: { repo: string; own: string; commits: string[] }[] = [];
+
+  for (const repo of repos) {
+    rmSync(checkout, { recursive: true, force: true });
+    mkdirSync(dir, { recursive: true });
+    say(`${pkg.name}@${pkg.version}: fetching ${repo}`);
+    git(dir, ['init', '-q']);
+    git(dir, ['remote', 'add', 'origin', repo]);
+    let rev: string | null = null;
+    let how = '';
+    if (typeof head === 'string' && /^[0-9a-f]{40}$/.test(head)) {
+      try {
+        git(dir, ['fetch', '-q', '--filter=blob:none', '--depth', '1', 'origin', head]);
+        if (treeHasPackage(dir, head, pkg.name)) {
+          rev = head;
+          how = 'package.json gitHead';
+        }
+      } catch { /* not a directly fetchable ref on this remote */ }
+    }
+    if (!rev) {
+      try {
+        const tags = git(dir, ['ls-remote', '--tags', 'origin']).split('\n').map((l) => l.split('\t')[1]?.replace(/^refs\/tags\//, '')).filter(Boolean);
+        const tag = wantedTags.find((t) => tags.includes(t));
+        if (tag) {
+          git(dir, ['fetch', '-q', '--filter=blob:none', '--depth', '1', 'origin', `refs/tags/${tag}:refs/tags/${tag}`]);
+          const tagRev = git(dir, ['rev-list', '-n', '1', tag]);
+          if (treeHasPackage(dir, tagRev, pkg.name)) {
+            rev = tagRev;
+            how = `tag ${tag}`;
+          }
+        }
+      } catch { /* remote unreachable or no tags */ }
+    }
+    if (!rev) {
+      try {
+        git(dir, ['fetch', '-q', '--filter=blob:none', 'origin']);
+        if (typeof head === 'string' && /^[0-9a-f]{40}$/.test(head)) {
+          try {
+            git(dir, ['cat-file', '-e', `${head}^{commit}`]);
+            if (treeHasPackage(dir, head, pkg.name)) {
+              rev = head;
+              how = 'package.json gitHead';
+            }
+          } catch { /* not in fetched branches */ }
+        }
+        const branch = git(dir, ['symbolic-ref', '--short', 'refs/remotes/origin/HEAD']).replace(/^origin\//, '') || 'HEAD';
+        const ref = `origin/${branch}`;
+        const own = treeHasPackage(dir, ref, pkg.name);
+        if (!rev && own) {
+          for (const scope of [ref, '--all']) {
+            const commits = git(dir, ['log', '--format=%H', `-S"version": "${pkg.version}"`, scope, '--', own]).split('\n').filter(Boolean);
+            for (const c of commits.reverse()) {
+              try {
+                if (JSON.parse(git(dir, ['show', `${c}:${own}`])).version === pkg.version) { rev = c; how = `the commit that set version ${pkg.version} in ${own}`; break; }
+              } catch { /* manifest did not parse at that commit */ }
+            }
+            if (rev) break;
+          }
+          if (!rev) {
+            const pkgSubdir = dirname(own);
+            const major = String(pkg.version).split('.')[0];
+            const candidates = git(dir, ['log', '--format=%H', ref, '--', pkgSubdir === '.' ? own : pkgSubdir]).split('\n').filter(Boolean)
+              .filter((c) => {
+                try {
+                  const v = String(JSON.parse(git(dir, ['show', `${c}:${own}`])).version ?? '');
+                  return v.split('.')[0] === major && v.localeCompare(pkg.version, undefined, { numeric: true }) <= 0;
+                } catch { return false; }
+              });
+            if (candidates.length) fallbacks.push({ repo, own, commits: candidates });
+          }
+        }
+      } catch { /* ignore and try next candidate repo */ }
+    }
+    if (rev) {
+      git(dir, ['checkout', '-q', rev]);
+      writeFileSync(meta, JSON.stringify({ repo, rev, how }, null, 2));
+      say(`${pkg.name}@${pkg.version}: ${repo} @ ${rev.slice(0, 7)} (${how})`);
+      return { repo, rev };
+    }
+  }
+
+  // Fallback for packages published from a monorepo without pushing the version-bump commit (e.g. @nativescript/pdf@2.2.0, @triniwiz/nativescript-socketio@4.0.3):
+  // find the commit touching the package directory on the same major version whose TypeScript sources match the installed JavaScript files.
+  for (const fb of fallbacks) {
+    rmSync(checkout, { recursive: true, force: true });
+    mkdirSync(dir, { recursive: true });
+    git(dir, ['init', '-q']);
+    git(dir, ['remote', 'add', 'origin', fb.repo]);
     git(dir, ['fetch', '-q', '--filter=blob:none', 'origin']);
-    const branch = git(dir, ['symbolic-ref', '--short', 'refs/remotes/origin/HEAD']).replace(/^origin\//, '') || 'HEAD';
-    const ref = `origin/${branch}`;
-    const manifests = git(dir, ['ls-tree', '-r', '--name-only', ref]).split('\n').filter((f) => /(^|\/)package\.json$/.test(f) && !f.includes('node_modules/'));
-    const own = manifests.find((f) => { try { return JSON.parse(git(dir, ['show', `${ref}:${f}`])).name === pkg.name; } catch { return false; } });
-    if (own) {
-      const commits = git(dir, ['log', '--format=%H', `-S"version": "${pkg.version}"`, ref, '--', own]).split('\n').filter(Boolean);
-      // Oldest first: the bump, not a later commit that moved past the version.
-      for (const c of commits.reverse()) {
+    const pkgSubdir = dirname(fb.own);
+    const jsFiles = ['index.ios.js', 'index.android.js', 'common.js', 'index.js'].map((f) => join(pkgDir, f)).filter(existsSync);
+    for (const c of fb.commits) {
+      const ok = jsFiles.length > 0 && jsFiles.every((js) => {
+        const tsRel = (pkgSubdir === '.' ? '' : pkgSubdir + '/') + basename(js).replace(/\.js$/, '.ts');
         try {
-          if (JSON.parse(git(dir, ['show', `${c}:${own}`])).version === pkg.version) { rev = c; how = `the commit that set version ${pkg.version} in ${own}`; break; }
-        } catch { /* the manifest did not parse at that commit */ }
+          const srcText = git(dir, ['show', `${c}:${tsRel}`]);
+          const jsText = readFileSync(js, 'utf8');
+          const lowered = /@NativeClass\b/.test(srcText) ? lowerNativeClasses(srcText, tsRel) : srcText;
+          return unexplained(normalize(lowered, tsRel, jsText), normalize(jsText, js, jsText)).length === 0;
+        } catch { return true; }
+      });
+      if (ok) {
+        const how = `commit matching published files in ${pkgSubdir}`;
+        git(dir, ['checkout', '-q', c]);
+        writeFileSync(meta, JSON.stringify({ repo: fb.repo, rev: c, how }, null, 2));
+        say(`${pkg.name}@${pkg.version}: ${fb.repo} @ ${c.slice(0, 7)} (${how})`);
+        return { repo: fb.repo, rev: c };
       }
     }
   }
-  if (!rev) throw new Error(`${pkg.name}@${pkg.version}: no revision of ${repo} matches the published package (no gitHead, no release tag, no commit setting the version); point release.pluginSources['${pkg.name}'] at a checkout of its source`);
-  git(dir, ['checkout', '-q', rev]);
-  writeFileSync(meta, JSON.stringify({ repo, rev, how }, null, 2));
-  say(`${pkg.name}@${pkg.version}: ${repo} @ ${rev.slice(0, 7)} (${how})`);
-  return rev;
+
+  throw new Error(`${pkg.name}@${pkg.version}: no revision of ${primaryRepo} matches the published package (no gitHead, no release tag, no commit setting the version); point release.pluginSources['${pkg.name}'] at a checkout of its source`);
 }
 
 function listFiles(root: string): string[] {
@@ -331,13 +488,17 @@ function mapFiles(dir: string, root: string, repoFiles: string[], packageDir: st
   const sources = repoFiles.filter((f) => /\.tsx?$/.test(f) && !f.endsWith('.d.ts'));
   const out = new Map<string, string | null>();
   const installed = listFiles(dir).filter((f) => /\.m?js$/.test(f) && !f.includes(`${sep}platforms${sep}`) && !/\.(config|webpack)\.js$/.test(f));
-  const bySuffix = (suffix: string) => {
-    const hits = sources.filter((f) => f === join(root, suffix) || f.endsWith(sep + suffix));
-    if (hits.length <= 1) return hits[0] ?? null;
-    // Several files end the same way: the one in the package's own directory.
-    return hits.find((f) => packageDir && f.startsWith(packageDir + sep)) ?? hits.sort((a, b) => a.length - b.length)[0];
-  };
   for (const js of installed) {
+    const jsInSubdir = dirname(relative(dir, js)) !== '.';
+    const bySuffix = (suffix: string) => {
+      if (jsInSubdir && !suffix.includes(sep)) return null;
+      const hits = sources.filter((f) => f === join(root, suffix) || f.endsWith(sep + suffix));
+      if (hits.length <= 1) return hits[0] ?? null;
+      const inPkg = packageDir ? hits.filter((f) => f.startsWith(packageDir + sep)) : hits;
+      if (inPkg.length === 1) return inPkg[0];
+      if (packageDir && inPkg.includes(join(packageDir, suffix))) return join(packageDir, suffix);
+      return (inPkg.length ? inPkg : hits).sort((a, b) => a.length - b.length)[0];
+    };
     let src: string | null = null;
     const map = js + '.map';
     if (existsSync(map)) {
@@ -410,7 +571,152 @@ function typingsNear(sources: string[], platform: 'ios' | 'android', root: strin
   return [...out];
 }
 
+/**
+ * Finds the `.d.ts` declaration file for a package: `release.pluginTypes['<pkg>']`, the package's own
+ * `types` / `typings` / `index.d.ts`, or `@types/<pkg>/index.d.ts`.
+ */
+function findPackageDts(dir: string, root: string, pkg: any, name: string, options: SourceOptions): string | null {
+  const configured = options.types?.[name] ? resolve(options.app, options.types[name]) : undefined;
+  if (configured) {
+    if (!existsSync(configured)) throw new Error(`${name}: the declaration file configured in release.pluginTypes (${configured}) does not exist`);
+    return configured;
+  }
+  const declared = typeof pkg.types === 'string' ? pkg.types : typeof pkg.typings === 'string' ? pkg.typings : null;
+  const candidates = [
+    ...(declared ? [resolve(dir, declared), resolve(root, declared)] : []),
+    join(dir, 'index.d.ts'),
+    join(root, 'index.d.ts'),
+    join(dir, `${basename(name)}.d.ts`),
+    join(root, `${basename(name)}.d.ts`),
+    join(options.app, 'node_modules', '@types', name.replace(/^@/, '').replace(/\//g, '__'), 'index.d.ts'),
+  ];
+  return candidates.find((c) => existsSync(c)) ?? null;
+}
+
+/**
+ * Synthesizes typed TypeScript modules for a JavaScript-authored package that has `.d.ts` declarations and uses
+ * static ES/CJS constructs. Returns `null` for dynamic ES5/UMD bundles that require `release.pluginReplacements`.
+ */
+function synthesizeJsPackage(dir: string, root: string, repoFiles: string[], dtsFile: string, typedDir: string): Map<string, string | null> | null {
+  const jsSources = repoFiles.filter((f) => /\.m?js$/.test(f) && !f.endsWith('.min.js') && !/\.(config|webpack|spec|test|karma|gulpfile|Gruntfile)\.js$/i.test(f) && !f.includes(`${sep}test${sep}`) && !f.includes(`${sep}spec${sep}`) && !f.includes(`${sep}demo${sep}`) && !f.includes(`${sep}benchmarks${sep}`));
+  const primary = jsSources.find((f) => f.includes(`${sep}src${sep}`))
+    ?? jsSources.find((f) => f.endsWith('.esm.js'))
+    ?? jsSources[0];
+  if (!primary) return null;
+  const jsText = readFileSync(primary, 'utf8');
+  // Legacy UMD / dynamic ES5 prototype libraries (attaching methods onto `.prototype`, reading `arguments`, or UMD factory wrappers)
+  // cannot be statically lowered without a typed replacement.
+  if (/\btypeof\s+define\s*===\s*['"]function['"]/.test(jsText) || /\.prototype\.\w+\s*=/.test(jsText) || /\barguments\b/.test(jsText)) {
+    return null;
+  }
+  const dtsText = readFileSync(dtsFile, 'utf8');
+  const tsCode = synthesizeTypedJsModule(jsText, dtsText, basename(primary).replace(/\.m?js$/, '.ts'));
+  mkdirSync(typedDir, { recursive: true });
+  const outFile = join(typedDir, basename(primary).replace(/\.m?js$/, '.ts'));
+  writeFileSync(outFile, tsCode);
+  const out = new Map<string, string | null>();
+  const installed = listFiles(dir).filter((f) => /\.m?js$/.test(f) && !f.includes(`${sep}platforms${sep}`) && !/\.(config|webpack)\.js$/.test(f));
+  for (const js of installed) out.set(js, outFile);
+  return out;
+}
+
+function defaultExportFromDts(dts: string): { name: string; returnType: string } {
+  const sf = ts.createSourceFile('index.d.ts', dts, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+  let targetName = 'defaultExport';
+  let returnType = 'any';
+  for (const st of sf.statements) {
+    if (ts.isExportAssignment(st) && ts.isIdentifier(st.expression)) targetName = st.expression.text;
+    if (ts.isFunctionDeclaration(st) && st.modifiers?.some((m) => m.kind === ts.SyntaxKind.DefaultKeyword)) {
+      if (st.name) targetName = st.name.text;
+      if (st.type) returnType = st.type.getText(sf);
+    }
+  }
+  for (const st of sf.statements) {
+    if (ts.isVariableStatement(st)) {
+      for (const d of st.declarationList.declarations) {
+        if (ts.isIdentifier(d.name) && d.name.text === targetName && d.type && ts.isFunctionTypeNode(d.type)) {
+          returnType = d.type.type.getText(sf);
+        }
+      }
+    } else if (ts.isFunctionDeclaration(st) && st.name?.text === targetName && st.type) {
+      returnType = st.type.getText(sf);
+    }
+  }
+  return { name: targetName, returnType: /^(string|number|boolean|void|any)$/.test(returnType) ? returnType : 'any' };
+}
+
+function synthesizeTypedJsModule(js: string, dts: string, fileName: string): string {
+  const sf = ts.createSourceFile(fileName, js, ts.ScriptTarget.Latest, true, ts.ScriptKind.JS);
+  const { name: exportName, returnType: exportReturn } = defaultExportFromDts(dts);
+  const edits: { start: number; end: number; text: string }[] = [];
+  const propAssignedVars = new Set<string>();
+  const mutatedVars = new Set<string>();
+  const visitReadsWrites = (n: ts.Node) => {
+    if (ts.isBinaryExpression(n) && n.operatorToken.kind === ts.SyntaxKind.EqualsToken) {
+      if (ts.isPropertyAccessExpression(n.left) && ts.isIdentifier(n.left.expression)) propAssignedVars.add(n.left.expression.text);
+      if (ts.isIdentifier(n.left)) mutatedVars.add(n.left.text);
+    }
+    ts.forEachChild(n, visitReadsWrites);
+  };
+  visitReadsWrites(sf);
+
+  const isModuleExportsAssign = (n: ts.Node): n is ts.ExpressionStatement & { expression: ts.BinaryExpression } =>
+    ts.isExpressionStatement(n) && ts.isBinaryExpression(n.expression) && n.expression.operatorToken.kind === ts.SyntaxKind.EqualsToken && n.expression.left.getText(sf) === 'module.exports';
+
+  const visit = (n: ts.Node) => {
+    if (isModuleExportsAssign(n) && (ts.isArrowFunction(n.expression.right) || ts.isFunctionExpression(n.expression.right))) {
+      const fn = n.expression.right;
+      const params = fn.parameters.map((p) => (p.initializer ? `${p.name.getText(sf)}: any = ${p.initializer.getText(sf)}` : `${p.name.getText(sf)}?: any`)).join(', ');
+      edits.push({ start: n.getStart(sf), end: fn.body.getStart(sf), text: `export default function ${exportName}(${params}): ${exportReturn} ` });
+      if (js[n.end - 1] === ';') edits.push({ start: n.end - 1, end: n.end, text: '' });
+      ts.forEachChild(fn.body, visit);
+      return;
+    }
+    if (ts.isFunctionDeclaration(n) || ts.isFunctionExpression(n) || ts.isArrowFunction(n) || ts.isMethodDeclaration(n)) {
+      for (const p of n.parameters) {
+        if (!p.type) {
+          if (ts.isArrowFunction(n) && n.parameters.length === 1 && p.getStart(sf) === n.getStart(sf)) {
+            edits.push({ start: p.getStart(sf), end: p.end, text: `(${p.getText(sf)}: any)` });
+          } else if (p.initializer) {
+            edits.push({ start: p.name.end, end: p.name.end, text: ': any' });
+          } else {
+            edits.push({ start: p.end, end: p.end, text: '?: any' });
+          }
+        }
+      }
+      if (!n.type && (ts.isFunctionDeclaration(n) || ts.isFunctionExpression(n) || ts.isArrowFunction(n))) {
+        const closeParen = js.indexOf(')', n.parameters.end);
+        if (closeParen >= 0) edits.push({ start: closeParen + 1, end: closeParen + 1, text: ': any' });
+      }
+    }
+    if (ts.isVariableDeclaration(n) && ts.isIdentifier(n.name) && !n.type && n.initializer) {
+      if (ts.isObjectLiteralExpression(n.initializer) && propAssignedVars.has(n.name.text)) {
+        edits.push({ start: n.name.end, end: n.name.end, text: ': Record<string, any>' });
+      } else if (mutatedVars.has(n.name.text)) {
+        edits.push({ start: n.name.end, end: n.name.end, text: ': any' });
+      }
+    }
+    ts.forEachChild(n, visit);
+  };
+  visit(sf);
+  edits.sort((a, b) => b.start - a.start);
+  let out = js;
+  for (const e of edits) out = out.slice(0, e.start) + e.text + out.slice(e.end);
+  return out;
+}
+
 // ---------------------------------------------------------------- verification
+
+function patchHint(app: string | undefined, name: string, version: string | undefined): string {
+  if (!app || !version) return '';
+  const patchName = `${name.replace(/\//g, '+')}+${version}.patch`;
+  const appPatch = join(app, 'patches', patchName);
+  const srcPatch = join(app, 'native-release', 'patches', patchName);
+  if (existsSync(appPatch) && !existsSync(srcPatch)) {
+    return ` (the installed package is patched by patches/${patchName}; port its source changes to native-release/patches/${patchName})`;
+  }
+  return '';
+}
 
 /**
  * Each source file transpiled and compared with the published file it maps
@@ -419,23 +725,40 @@ function typingsNear(sources: string[], platform: 'ios' | 'android', root: strin
  * helpers, const enum members inlined as their values, imports elided as
  * type-only. Anything else stops the build.
  */
-function verify(name: string, js: string, src: string) {
+function verify(name: string, js: string, src: string, app?: string, version?: string) {
   const source = readFileSync(src, 'utf8');
-  const lowered = /@NativeClass\b/.test(source) ? lowerNativeClasses(source, src) : source;
-  const bad = unexplained(normalize(lowered, src), normalize(readFileSync(js, 'utf8'), js));
+  let jsText = readFileSync(js, 'utf8');
+  let jsReference: string | undefined = jsText;
+  let lowered = /@NativeClass\b/.test(source) ? lowerNativeClasses(source, src) : source;
+  // A Rollup single-file CJS bundle inlines relative modules (`../utils`) before the entry file's own declarations.
+  const sf = ts.createSourceFile(src, lowered, ts.ScriptTarget.Latest, true);
+  const relImports = sf.statements.filter((st): st is ts.ImportDeclaration => ts.isImportDeclaration(st) && !st.importClause?.isTypeOnly && ts.isStringLiteral(st.moduleSpecifier) && st.moduleSpecifier.text.startsWith('.'));
+  if (relImports.length && relImports.every((st) => !jsText.includes((st.moduleSpecifier as ts.StringLiteral).text))) {
+    const firstExport = sf.statements.find((st) => (ts.isFunctionDeclaration(st) || ts.isVariableStatement(st)) && st.modifiers?.some((m) => m.kind === ts.SyntaxKind.ExportKeyword));
+    const firstName = firstExport && (ts.isFunctionDeclaration(firstExport) ? firstExport.name?.text : (firstExport as ts.VariableStatement).declarationList.declarations[0]?.name.getText(sf));
+    if (firstName) {
+      const m = new RegExp(`^(?:export\\s+)?(?:function|(?:var|let|const))\\s+${firstName}\\b`, 'm').exec(jsText);
+      if (m && m.index > 0) {
+        lowered = lowered.slice(firstExport.getStart(sf));
+        jsText = jsText.slice(m.index).replace(/^exports\.(\w+)\s*=\s*\1;$/gm, 'export { $1 };');
+        jsReference = undefined;
+      }
+    }
+  }
+  const bad = unexplained(normalize(lowered, src, jsReference), normalize(jsText, js, jsReference));
   if (process.env.NS_NATIVE_DEBUG_VERIFY) console.log(JSON.stringify(bad));
-  if (bad.length) throw new Error(`${name}: ${src} does not match the published ${js}:\n${bad.slice(0, 12).map((l) => '    ' + l).join('\n')}${bad.length > 12 ? `\n    … ${bad.length - 12} more lines` : ''}`);
+  if (bad.length) throw new Error(`${name}: ${src} does not match the published ${js}${patchHint(app, name, version)}:\n${bad.slice(0, 12).map((l) => '    ' + l).join('\n')}${bad.length > 12 ? `\n    … ${bad.length - 12} more lines` : ''}`);
 }
 
 /**
  * A bundle checked against the sources its map embeds: each must be the checkout's file as it is. A source the checkout
  * lacks may be the bundler's own index, re-exporting only.
  */
-export function verifyBundle(name: string, js: string, b: BundleSources) {
+export function verifyBundle(name: string, js: string, b: BundleSources, app?: string, version?: string) {
   if (b.contents.length !== b.listed.length) throw new Error(`${name}: ${js} has no sources in its source map to check its source against (sourcesContent)`);
   const bad = b.listed.filter((listed, k) => b.files[k] ? readFileSync(b.files[k]!, 'utf8') !== b.contents[k]
     : !/^(\s|\/\*[\s\S]*?\*\/|\/\/[^\n]*|export\s*(\*|\{[^}]*\})\s*from\s*['"][^'"]+['"];?)*$/.test(b.contents[k] ?? ''));
-  if (bad.length) throw new Error(`${name}: ${js} was not built from its source at this revision: ${bad.slice(0, 6).join(', ')}${bad.length > 6 ? ` and ${bad.length - 6} more` : ''} differ`);
+  if (bad.length) throw new Error(`${name}: ${js} was not built from its source at this revision${patchHint(app, name, version)}: ${bad.slice(0, 6).join(', ')}${bad.length > 6 ? ` and ${bad.length - 6} more` : ''} differ`);
 }
 
 // Both sides are lowered to one target, so the published file's own target does not show.
@@ -468,13 +791,33 @@ function lowerNativeClasses(text: string, file: string): string {
   return text;
 }
 
-function normalize(text: string, file: string): string[] {
-  const out = ts.transpileModule(text, { compilerOptions: PRINT, fileName: file.replace(/\.js$/, '.ts') }).outputText;
+function normalize(text: string, file: string, jsReference?: string): string[] {
+  if (jsReference !== undefined && text !== jsReference && /\bconst\s+enum\b/.test(text)) {
+    const tsf = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+    const drops: { start: number; end: number }[] = [];
+    for (const st of tsf.statements) {
+      if (ts.isEnumDeclaration(st) && st.modifiers?.some((m) => m.kind === ts.SyntaxKind.ConstKeyword) && !new RegExp(`\\b${st.name.text}\\b`).test(jsReference)) {
+        drops.push({ start: st.getStart(tsf), end: st.end });
+      }
+    }
+    for (const d of drops.sort((a, b) => b.start - a.start)) text = text.slice(0, d.start) + text.slice(d.end);
+  }
+  const isCjs = !!jsReference && /\bObject\.defineProperty\(exports,\s*["']__esModule["']/.test(jsReference);
+  const isEs5 = !!jsReference && isCjs && /\.prototype\.|\bvar \w+ = (?:\s*\/\*\* @class \*\/\s*)?\(function \(/.test(jsReference);
+  const options: ts.CompilerOptions = isCjs || isEs5
+    ? { ...PRINT, module: isCjs ? ts.ModuleKind.CommonJS : PRINT.module, target: isEs5 ? ts.ScriptTarget.ES5 : PRINT.target }
+    : PRINT;
+  const out = ts.transpileModule(text, { compilerOptions: options, fileName: file.replace(/\.js$/, '.ts') }).outputText;
   const sf = ts.createSourceFile('x.js', out, ts.ScriptTarget.Latest, true, ts.ScriptKind.JS);
-  // Decorator helpers: imported from tslib, or declared inline by the emitter.
+  // Decorator and CommonJS helpers: imported from tslib, or declared inline by the emitter.
   const kept = sf.statements.filter((st) => {
     if (ts.isImportDeclaration(st) && (st.moduleSpecifier as ts.StringLiteral).text === 'tslib') return false;
     if (ts.isVariableStatement(st) && st.declarationList.declarations.every((d) => /^__\w+$/.test(d.name.getText()))) return false;
+    if (ts.isFunctionDeclaration(st) && st.name && /^__\w+$/.test(st.name.text)) return false;
+    if (ts.isExpressionStatement(st)) {
+      const t = st.getText(sf).trim();
+      if (t === '"use strict";' || t === "'use strict';" || /^Object\.defineProperty\(exports,\s*["']__esModule["']/.test(t) || /^(?:exports\.\w+\s*=\s*)+void 0;$/.test(t)) return false;
+    }
     return true;
   });
   const printer = ts.createPrinter({ removeComments: true });
@@ -483,27 +826,39 @@ function normalize(text: string, file: string): string[] {
     .replace(/,?\s*(?:\b(?:tslib_\d+|tslib)\.)?__metadata\("design:\w+",\s*(?:\[[^\]]*\]|[\w.$]+|void 0)\)/g, '');
   return printed.split('\n')
     .map((l) => l.trim().replace(/\b(tslib_\d+|tslib)\.(__\w+)/g, '$2'))
-    .filter((l) => l && !l.startsWith('//# sourceMappingURL') && l !== 'export {};');
+    .filter((l) => l && !l.startsWith('//# sourceMappingURL') && l !== 'export {};' && l !== '"use strict";' && l !== "'use strict';" && !/^var (?:_[a-z],\s*)*_[a-z];$/.test(l));
 }
 
 /** Lines of a diff between the source's output `a` and the published `b` that no benign difference explains. */
 function unexplained(a: string[], b: string[]): string[] {
   const ops = diff(a, b);
   const bad: string[] = [];
-  // Inlined enum members: a line whose only difference is `E.Member` against a literal.
-  const shape = (l: string) => l.replace(/\b[A-Za-z_$][\w$]*(\.[A-Za-z_$][\w$]*)+\b|-?\b\d+(\.\d+)?\b|"[^"]*"|'[^']*'/g, '#');
+  // Inlined enum members and emitter temp aliases (`_a`, `_b`): a line whose only difference is `E.Member` against a literal or `_a` vs `_b`.
+  const shape = (l: string) => l
+    .replace(/^export\s+(?=(?:function|const|let|var)\s+)/, '')
+    .replace(/^__exportStar\(require\(([^)]+)\),\s*exports\);$/, '__export(require($1));')
+    .replace(/^\}\)\((\w+)\s*\|\|\s*\(exports\.\1\s*=\s*\1\s*=\s*\{\}\)\);$/, '})($1 = exports.$1 || (exports.$1 = {}));')
+    .replace(/\(([A-Za-z_$][\w$]*)\)\s*=>/g, '$1 =>')
+    .replace(/^(?:const|let)\s+\{\s*(\w+)\s*\}\s*=\s*(\w+);$/, 'var $1 = $2.$1;')
+    .replace(/(?:^|(?<=for\s*\(\s*))(?:const|let)\s+/, 'var ')
+    .replace(/`[^`]*`|"[^"]*"\.concat\([^)]*\)/g, '"#"')
+    .replace(/\s*\{\s*$/, '')
+    .replace(/\((_[a-z])\s*=\s*([A-Za-z_$][\w$]*)\)\s*!==\s*null\s*&&\s*\1\s*!==\s*void 0\s*\?\s*\1\s*:/g, '$2 !== null && $2 !== void 0 ? $2 :')
+    .replace(/\b_[a-z]\b/g, '_a')
+    .replace(/\b[A-Za-z_$][\w$]*(\.[A-Za-z_$][\w$]*)+\b|-?\b\d+(\.\d+)?\b|"[^"]*"|'[^']*'/g, '#');
   for (let i = 0; i < ops.length; ) {
     if (ops[i].op === '=') { i++; continue; }
     const del: string[] = [], add: string[] = [];
     while (i < ops.length && ops[i].op !== '=') { (ops[i].op === '-' ? del : add).push(ops[i].line); i++; }
-    for (let k = 0; k < Math.max(del.length, add.length); k++) {
-      const x = del[k], y = add[k];
+    const filteredAdd = add.filter((l) => l !== '}' && !/^export \{[^}]*\};?$/.test(l));
+    for (let k = 0; k < Math.max(del.length, filteredAdd.length); k++) {
+      const x = del[k], y = filteredAdd[k];
       if (x !== undefined && y !== undefined && shape(x) === shape(y)) continue;
       // Imports and re-exports a whole-program build elides as type-only.
       if (x !== undefined && y === undefined && /^(import|export) \{?/.test(x) && !/^export (default |const |let |var |function |class |async )/.test(x)) continue;
       if (x !== undefined && y !== undefined && /^import\b/.test(x) && /^import\b/.test(y)) continue;
       const names = (l: string) => /^export \{([^}]*)\}/.exec(l)?.[1].split(',').map((n) => n.trim()).filter(Boolean);
-      if (x !== undefined && y !== undefined && names(x) && names(y)!.every((n) => names(x)!.includes(n))) continue;
+      if (x !== undefined && y !== undefined && names(x) && names(y) && names(y)!.every((n) => names(x)!.includes(n))) continue;
       if (x !== undefined) bad.push(`- ${x}`);
       if (y !== undefined) bad.push(`+ ${y}`);
     }

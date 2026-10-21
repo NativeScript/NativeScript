@@ -100,6 +100,7 @@ export interface HttpInterceptor {
 }
 
 export type HttpInterceptorFn = (req: HttpRequest<any>, next: (req: HttpRequest<any>) => Observable<any>) => Observable<any>;
+export type HttpEvent<T = any> = HttpResponse<T>;
 
 export class HttpClient {
   static readonly shared = new HttpClient();
@@ -328,6 +329,10 @@ export class Router {
   canGoBackToPreviousPage(): boolean {
     return KitRouter.shared.canGoBackToPreviousPage();
   }
+
+  getCurrentNavigation(): any {
+    return null;
+  }
 }
 
 export type Routes = {
@@ -351,6 +356,12 @@ export type Routes = {
 
 export type Route = Routes[number];
 export type NavigationExtras = any;
+export type Params = Record<string, any>;
+export type RouterStateSnapshot = { url: string; root: ActivatedRouteSnapshot; [key: string]: any };
+export type IsActiveMatchOptions = { paths: 'exact' | 'subset'; queryParams: 'exact' | 'subset' | 'ignored'; fragment: 'exact' | 'ignored'; matrixParams: 'exact' | 'subset' | 'ignored' };
+export interface CanActivate {
+  canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): any;
+}
 export type ParamMapType = ParamMap;
 export { Router as RouterExtensions };
 
@@ -390,6 +401,12 @@ export { NativeDialogService as NativeDialog };
 
 export const NativeDialogModule: any = undefined;
 export function registerElement(_name: string, _resolver: () => any, _meta?: any): void {}
+export function isAngularHmrRestoringRoute(): boolean {
+  return false;
+}
+export function generateNativeScriptView(_component: any, _options?: any): { firstNativeLikeView: any; ref: any } {
+  return { firstNativeLikeView: null, ref: null };
+}
 export const ActionBarComponent: any = undefined;
 export const ActionItemDirective: any = undefined;
 export const NavigationButtonDirective: any = undefined;

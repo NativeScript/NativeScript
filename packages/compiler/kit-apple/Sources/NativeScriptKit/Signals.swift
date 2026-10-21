@@ -427,14 +427,14 @@ public final class Signal<T>: Source, Holding {
     func release() { held = nil }
 
     /// `signal.update { $0 + 1 }`, as Angular writes it.
-    public func update(_ transform: (T) -> T) {
+    public func update(_ transform: (T) throws -> T) {
         linkEffect?.runIfStale()
         let current: T
         switch backing {
         case .stored(let s): current = s
         case .computed(let c): current = c()
         }
-        value = transform(current)
+        jsReport { value = try transform(current) }
     }
 
     func unsubscribe(_ subscriber: Subscriber) { subscribers[ObjectIdentifier(subscriber)] = nil }
@@ -676,8 +676,8 @@ public final class SimpleChange {
 }
 
 public protocol JSInjectableType: AnyObject {
-    static var jsSharedInstance: Any? { get }
-    static func jsConstruct() throws -> Any?
+    static var jsSharedInstance: Any? { get throws }
+    static func jsConstruct(_ __a: [Any?]) throws -> Any?
 }
 
 public func forwardRef(_ fn: @escaping () throws -> Any?) -> Any? { fn }
@@ -736,8 +736,8 @@ public final class Injector {
 
     public func get(_ token: Any?, _ notFoundValue: Any? = nil, _ options: Any? = nil) -> Any? {
         let unwrapped = resolveForwardRef(token)
-        let skipSelf = ((try? jsGet(options, "skipSelf")) as? Bool) == true
-        let selfOnly = ((try? jsGet(options, "self")) as? Bool) == true
+        let skipSelf = ((try? jsGetIfPresent(options, "skipSelf")) as? Bool) == true
+        let selfOnly = ((try? jsGetIfPresent(options, "self")) as? Bool) == true
         if !skipSelf, let key = Injector.tokenKey(unwrapped) {
             if let entry = instanceValues[key] { return entry }
             if let multis = instanceMultiFactories[key], !multis.isEmpty {
@@ -785,9 +785,13 @@ public final class Injector {
             if let over = active.get(type) as? T { return over }
         }
         if let over = tokenValues[key] as? T { return over }
-        if let factory = tokenFactories[key], let over = try factory() as? T {
-            tokenValues[key] = over
-            return over
+        if let factory = tokenFactories[key] {
+            guard making.insert(key).inserted else { throw JSException(JSError("NG0200: Circular dependency in DI detected for \(type)")) }
+            defer { making.remove(key) }
+            if let over = try factory() as? T {
+                tokenValues[key] = over
+                return over
+            }
         }
         if let service = made[key] as? T { return service }
         guard making.insert(key).inserted else { throw JSException(JSError("NG0200: Circular dependency in DI detected for \(type)")) }
@@ -795,6 +799,10 @@ public final class Injector {
         let service = try root(make)
         made[key] = service
         return service
+    }
+
+    public static func root<T: AnyObject>(_ type: T.Type, _ make: () -> T) -> T {
+        (jsReported { try root(type, { () throws -> T in make() }) } ?? nil) ?? make()
     }
 
     private static var tokenValues: [ObjectIdentifier: Any?] = [:]
@@ -863,11 +871,17 @@ public final class Injector {
                 return Injector.inject(existing)
             }
             if let injectable = useClass as? JSInjectableType.Type {
-                return try injectable.jsConstruct()
+                return try Injector.root { try injectable.jsConstruct([]) }
+            }
+            if let constructible = useClass as? JSConstructibleType.Type {
+                return try Injector.root { try constructible.jsConstruct([]) }
             }
             if let fn = useClass { return try jsCall(fn, spread: []) }
             if let injectable = jsFlat(token) as? JSInjectableType.Type {
-                return try injectable.jsConstruct()
+                return try Injector.root { try injectable.jsConstruct([]) }
+            }
+            if let constructible = jsFlat(token) as? JSConstructibleType.Type {
+                return try Injector.root { try constructible.jsConstruct([]) }
             }
             return nil
         }
@@ -895,6 +909,16 @@ public final class Injector {
             guard let flat = jsFlat(item) else { return }
             if let arr = flat as? JSArrayProtocol {
                 for el in arr.jsAnyElements { walk(el) }
+                return
+            }
+            if let injectable = flat as? JSInjectableType.Type, let key = Injector.tokenKey(flat) {
+                instanceFactories[key] = { try injectable.jsConstruct([]) }
+                instanceValues.removeValue(forKey: key)
+                return
+            }
+            if let constructible = flat as? JSConstructibleType.Type, let key = Injector.tokenKey(flat) {
+                instanceFactories[key] = { try constructible.jsConstruct([]) }
+                instanceValues.removeValue(forKey: key)
                 return
             }
             if let dyn = flat as? JSDynamic {
@@ -925,12 +949,30 @@ public final class Injector {
                 initializers.append({ fn(); return nil })
                 return
             }
+            if flat is JSInjectableType.Type, let key = tokenKey(flat) {
+                tokenFactories.removeValue(forKey: key)
+                tokenValues.removeValue(forKey: key)
+                return
+            }
+            if let constructible = flat as? JSConstructibleType.Type, let key = tokenKey(flat) {
+                tokenFactories[key] = { try Injector.root { try constructible.jsConstruct([]) } }
+                tokenValues.removeValue(forKey: key)
+                return
+            }
             if let dyn = flat as? JSDynamic {
                 if jsHasKey(dyn, "providers") || (dyn as? JSObject)?.has("providers") == true {
                     walk(dyn[jsKey: "providers"])
                 }
                 if jsHasKey(dyn, "provide") || (dyn as? JSObject)?.has("provide") == true {
                     parseProvider(dyn, into: nil)
+                }
+                if jsHasKey(dyn, "ngModule") || (dyn as? JSObject)?.has("ngModule") == true {
+                    let ngModule = dyn[jsKey: "ngModule"]
+                    if let key = tokenKey(ngModule), let constructible = jsFlat(ngModule) as? JSConstructibleType.Type {
+                        tokenFactories[key] = { try Injector.root { try constructible.jsConstruct([]) } }
+                        tokenValues.removeValue(forKey: key)
+                        initializers.append({ Injector.inject(ngModule) })
+                    }
                 }
             }
         }
@@ -945,7 +987,7 @@ public final class Injector {
         if let active = current, active !== shared {
             return active.get(unwrapped, notFoundValue, options)
         }
-        if ((try? jsGet(options, "skipSelf")) as? Bool) == true {
+        if ((try? jsGetIfPresent(options, "skipSelf")) as? Bool) == true {
             return notFoundValue
         }
         return resolveRoot(unwrapped, notFoundValue: notFoundValue)
@@ -961,6 +1003,11 @@ public final class Injector {
             return arr
         }
         if let factory = tokenFactories[key] {
+            guard making.insert(key).inserted else {
+                _ = jsReported { throw JSException(JSError("NG0200: Circular dependency in DI detected for \(unwrapped ?? "nil")")) }
+                return notFoundValue
+            }
+            defer { making.remove(key) }
             let val = jsReported { try factory() } ?? nil
             tokenValues[key] = val
             return val
@@ -972,7 +1019,7 @@ public final class Injector {
         }
         let flat = jsFlat(unwrapped)
         if let injectable = flat as? JSInjectableType.Type {
-            return injectable.jsSharedInstance
+            return jsReported { try injectable.jsSharedInstance } ?? nil
         }
         if flat is ErrorHandler.Type { return ErrorHandler.shared }
         if flat is Injector.Type { return current ?? Injector.shared }
@@ -984,6 +1031,19 @@ public final class Injector {
         if flat is ViewContainerRef.Type { return ViewContainerRef() }
         return notFoundValue
     }
+
+    internal static func resolveCustomErrorHandler() -> Any? {
+        let key = ObjectIdentifier(ErrorHandler.self)
+        if let entry = tokenValues[key] { return entry }
+        if let factory = tokenFactories[key] {
+            guard making.insert(key).inserted else { return nil }
+            defer { making.remove(key) }
+            let val = try? factory()
+            tokenValues[key] = val
+            return val
+        }
+        return nil
+    }
 }
 
 /// `new InjectionToken<T>(desc, options)`: an Angular DI token, optionally carrying a root factory.
@@ -993,7 +1053,7 @@ public final class InjectionToken {
     public let factory: (() throws -> Any?)?
     public init(_ desc: String = "", _ options: Any? = nil) {
         self.desc = desc
-        if let fn = jsFlat(try? jsGet(options, "factory")) {
+        if let fn = jsFlat(try? jsGetIfPresent(options, "factory")) {
             if let zero = fn as? () throws -> Any? {
                 self.factory = zero
             } else if let zero = fn as? () -> Any? {
@@ -1012,11 +1072,14 @@ public class ErrorHandler {
     nonisolated deinit {}
     public static let shared = ErrorHandler()
     public init() {}
-    open func handleError(_ error: Any?) {}
+    open func handleError(_ error: Any?) {
+        if let custom = Injector.resolveCustomErrorHandler(), (custom as AnyObject) !== self {
+            _ = jsReported { try jsCallMethod(custom, "handleError", error) }
+        }
+    }
 }
 
 public func makeEnvironmentProviders(_ providers: Any?) -> Any? {
-    Injector.register(providers)
     return providers
 }
 
@@ -1029,10 +1092,10 @@ public func provideAppInitializer(_ fn: @escaping () throws -> Any?) -> Any? {
 }
 
 public func importProvidersFrom(_ modules: Any?...) -> Any? {
-    let arr = JSArray<Any?>(modules)
-    Injector.register(arr)
-    return arr
+    return JSArray<Any?>(modules)
 }
+
+public func enableProdMode() {}
 
 public let PLATFORM_ID = InjectionToken("PLATFORM_ID", JSObject([("factory", { () -> Any? in "browser" })]))
 public let APP_INITIALIZER = InjectionToken("APP_INITIALIZER")
@@ -1109,6 +1172,7 @@ public final class ViewContainerRef {
     public let element = ElementRef()
     public let injector = Injector.shared
     private var views: [EmbeddedViewRef] = []
+    public static var shared: ViewContainerRef { ViewContainerRef() }
     public init() {}
     public var length: Double { Double(views.count) }
     public func clear() {
@@ -1125,7 +1189,7 @@ public final class ViewContainerRef {
     public func createComponent(_ componentType: Any?, _ options: Any? = nil) -> ComponentRef {
         let inst: Any? = {
             if let injectable = jsFlat(componentType) as? JSInjectableType.Type {
-                return jsReported { try injectable.jsConstruct() } ?? nil
+                return jsReported { try injectable.jsConstruct([]) } ?? nil
             }
             if let fn = jsFlat(componentType) {
                 return jsReported { try jsCall(fn, spread: []) } ?? nil
@@ -1637,9 +1701,9 @@ public func withInterceptorsFromDi() -> Any? { JSObject([("__kind", "withInterce
 public func withFetch() -> Any? { JSObject([("__kind", "withFetch")]) }
 public func provideHttpClient(_ features: Any?...) -> Any? { JSArray<Any?>() }
 public func provideNativeScriptHttpClient(_ features: Any?...) -> Any? { JSArray<Any?>() }
-public func provideNativeScriptNgZone() -> Any? { JSArray<Any?>() }
-public func provideRouter(_ routes: Any?, _ features: Any?...) -> Any? { JSArray<Any?>() }
-public func provideNativeScriptRouter(_ routes: Any?, _ features: Any?...) -> Any? { JSArray<Any?>() }
+public func provideNativeScriptNgZone(_ options: Any? = nil) -> Any? { JSArray<Any?>() }
+public func provideRouter(_ routes: Any? = nil, _ features: Any?...) -> Any? { JSArray<Any?>() }
+public func provideNativeScriptRouter(_ routes: Any? = nil, _ features: Any?...) -> Any? { JSArray<Any?>() }
 
 public final class HttpClientModule {
     nonisolated deinit {}
@@ -2233,7 +2297,7 @@ public final class FormControl: AbstractControl {
 
 public final class FormGroup: AbstractControl {
     nonisolated deinit {}
-    public var controls: JSObject
+    public var controls: JSRecord<AbstractControl>
 
     public override init(_ controls: Any? = nil, _ validatorOrOpts: Any? = nil) {
         var pairs: [(String, Any?)] = []
@@ -2247,7 +2311,7 @@ public final class FormGroup: AbstractControl {
                 }
             }
         }
-        self.controls = JSObject(pairs)
+        self.controls = JSRecord(object: JSObject(pairs))
         super.init(JSObject(valPairs), validatorOrOpts)
         updateValueAndValidity(JSObject([("emitEvent", false)]))
     }
@@ -2426,7 +2490,7 @@ public final class FormBuilder: JSInjectableType {
     nonisolated deinit {}
     public static let shared = FormBuilder()
     public static var jsSharedInstance: Any? { shared }
-    public static func jsConstruct() throws -> Any? { FormBuilder() }
+    public static func jsConstruct(_ __a: [Any?] = []) throws -> Any? { FormBuilder() }
     public var nonNullable: FormBuilder { self }
 
     public init() {}
@@ -2474,11 +2538,11 @@ public final class FormBuilder: JSInjectableType {
     }
 }
 
-public func bootstrapApplication(_ rootComponent: Any?, _ options: Any? = nil) -> JSPromise<ApplicationRef> {
+public func bootstrapApplication(_ rootComponent: Any?, _ options: Any? = nil) -> JSPromise<Any?> {
     if let providers = try? jsGet(options, "providers"), !jsIsNullish(providers) {
         Injector.register(providers)
     }
-    return JSPromise.resolve(ApplicationRef.shared)
+    return JSPromise.resolve(ApplicationRef.shared as Any?)
 }
 
 public func runNativeScriptAngularApp(_ options: Any? = nil) {

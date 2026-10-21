@@ -57,6 +57,30 @@ export class Throws {
   /** Whether the translation checks a value there that may be missing (`jsUnwrap`), which throws JavaScript's TypeError. */
   private checked: (n: ts.Node) => boolean;
 
+  private releaseFiles = new Map<string, ts.SourceFile>();
+
+  private releaseDecl<T extends ts.Node>(n: T): T {
+    const sf = n.getSourceFile();
+    const rel = sf && !sf.fileName.endsWith('.release.ts') ? this.releaseFiles.get(sf.fileName) : undefined;
+    if (!rel) return n;
+    if (ts.isClassDeclaration(n) && n.name) {
+      const found = rel.statements.find((s): s is ts.ClassDeclaration => ts.isClassDeclaration(s) && s.name?.text === n.name!.text);
+      return (found as unknown as T) ?? n;
+    }
+    if (ts.isFunctionDeclaration(n) && n.name) {
+      const found = rel.statements.find((s): s is ts.FunctionDeclaration => ts.isFunctionDeclaration(s) && s.name?.text === n.name!.text && !!s.body);
+      return (found as unknown as T) ?? n;
+    }
+    if ((ts.isMethodDeclaration(n) || ts.isGetAccessorDeclaration(n) || ts.isSetAccessorDeclaration(n) || ts.isConstructorDeclaration(n)) && ts.isClassDeclaration(n.parent) && n.parent.name) {
+      const cls = rel.statements.find((s): s is ts.ClassDeclaration => ts.isClassDeclaration(s) && s.name?.text === (n.parent as ts.ClassDeclaration).name!.text);
+      if (cls) {
+        const member = cls.members.find((m) => m.kind === n.kind && (ts.isConstructorDeclaration(n) || m.name?.getText() === n.name?.getText()) && !!(m as ts.FunctionLikeDeclaration).body);
+        if (member) return member as unknown as T;
+      }
+    }
+    return n;
+  }
+
   constructor(checker: ts.TypeChecker, files: readonly ts.SourceFile[], untyped: (n: ts.Node) => boolean, nativeThrows: (call: ts.CallExpression | ts.NewExpression) => boolean = () => false, implementation: (decl: ts.Declaration) => ts.Declaration | null = () => null, dynamicMember: (e: ts.PropertyAccessExpression) => boolean = () => false, baseInitThrows: (cls: ts.ClassLikeDeclaration) => boolean = () => false, replaced: (fn: ts.Node) => boolean = () => false, castThrows: (n: ts.Node) => boolean = () => false, nativeEntry: (call: ts.CallExpression) => boolean = () => false, quiet: (n: ts.Node) => boolean = () => false, kitThrows: (fn: ts.Node) => boolean | undefined = () => undefined, reported: (get: ts.GetAccessorDeclaration, throws: (fn: ts.Node) => boolean) => boolean = () => false, plain: (n: ts.Node) => boolean = () => false, checked: (n: ts.Node) => boolean = () => false) {
     this.checked = checked;
     this.kitThrows = kitThrows;
@@ -72,12 +96,15 @@ export class Throws {
     this.files = files;
     this.untyped = untyped;
     this.nativeThrows = nativeThrows;
+    for (const f of files) {
+      if (f.fileName.endsWith('.release.ts')) this.releaseFiles.set(f.fileName.replace(/\.release\.ts$/, '.ts'), f);
+    }
     const fns: Fn[] = [];
     const collect = (n: ts.Node) => {
       if (ts.isFunctionLike(n) && (n as Fn).body) fns.push(n as Fn);
       ts.forEachChild(n, collect);
     };
-    for (const f of files) collect(f);
+    for (const f of files) if (!f.isDeclarationFile) collect(f);
     for (let changed = true; changed; ) {
       changed = false;
       for (const fn of fns) {
@@ -91,6 +118,7 @@ export class Throws {
 
   /** Whether calling `fn` (a declaration with a body) can throw. */
   fn(fn: ts.Node): boolean {
+    fn = this.releaseDecl(fn);
     const kit = this.kitThrows(fn);
     if (kit !== undefined) return kit;
     if (this.throwing.has(fn)) return true;
@@ -189,7 +217,7 @@ export class Throws {
     }
     // `new Array(x)` of an untyped x: a length that is no valid one is a RangeError.
     if ((ts.isNewExpression(n) || ts.isCallExpression(n)) && ts.isIdentifier(n.expression) && n.expression.text === 'Array' && n.arguments?.length === 1 && !isArrayLengthLiteral(n.arguments[0])
-      && (this.untyped(n.arguments[0]) || numberLike(c.getTypeAtLocation(n.arguments[0])))) return true;
+      && (this.untyped(n.arguments[0]) || numberLike(c.getNonNullableType(c.getTypeAtLocation(n.arguments[0]))))) return true;
     if (ts.isCallExpression(n) || ts.isNewExpression(n)) return this.callThrows(n);
     if (ts.isTaggedTemplateExpression(n)) return !isStringRaw(n.tag, c) && this.tagThrows(n);
     if (ts.isPropertyAccessExpression(n) || ts.isElementAccessExpression(n)) {
@@ -261,8 +289,8 @@ export class Throws {
       return c.getTypeAtLocation(arg).getCallSignatures().length > 0 || (!!param?.type && takesFunction(param.type, c) && this.untyped(arg));
     });
     if (ts.isIdentifier(call.expression) && call.expression.text === 'RegExp') return true;
-    // A buffer or a view of an invalid length is a RangeError.
-    if (ts.isNewExpression(call) && ts.isIdentifier(call.expression) && BUFFER_TYPES.has(call.expression.text) && c.getSymbolAtLocation(call.expression)?.declarations?.every((d) => d.getSourceFile().isDeclarationFile)) return true;
+    // A buffer or a view of an invalid length is a RangeError; an invalid URL is a TypeError.
+    if (ts.isNewExpression(call) && ts.isIdentifier(call.expression) && (BUFFER_TYPES.has(call.expression.text) || call.expression.text === 'URL') && c.getSymbolAtLocation(call.expression)?.declarations?.every((d) => d.getSourceFile().isDeclarationFile)) return true;
     // A weak reference to an untyped value refuses a primitive.
     if (ts.isNewExpression(call) && ts.isIdentifier(call.expression) && call.expression.text === 'WeakRef' && args[0] && this.untyped(args[0])) return true;
     // Intl's constructors reject options out of range; BigInt() a value with no integer.
@@ -286,8 +314,9 @@ export class Throws {
     }
     // A value the program holds, of a function type a declaration file names (`callback: ControlStateChangeListenerCallback`): a Swift function type, which throws.
     if (file.isDeclarationFile && ts.isFunctionTypeNode(decl) && holder && !holder.getSourceFile().isDeclarationFile && !/[\\/]lib\.[\w.]*\.d\.ts$/.test(file.fileName)) return true;
-    // A pure pipe's cache, untracked(fn), or runInInjectionContext(inj, fn) runs the callback it is given at once: it rethrows.
-    if (file.fileName.startsWith('/__shims__/') && ((ts.isFunctionDeclaration(decl) && (decl.name?.text === 'untracked' || decl.name?.text === 'runInInjectionContext')) || (ts.isMethodDeclaration(decl) && ts.isClassDeclaration(decl.parent) && decl.parent.name?.text === 'PurePipeCache'))) return callbackThrows();
+    if (file.fileName.startsWith('/__shims__/') && ts.isFunctionDeclaration(decl) && decl.name?.text === 'formatDate') return true;
+    // A pure pipe's cache, untracked(fn), runInInjectionContext(inj, fn), or NgZone.run* runs the callback it is given at once: it rethrows.
+    if (file.fileName.startsWith('/__shims__/') && ((ts.isFunctionDeclaration(decl) && (decl.name?.text === 'untracked' || decl.name?.text === 'runInInjectionContext')) || (ts.isMethodDeclaration(decl) && ts.isClassDeclaration(decl.parent) && (decl.parent.name?.text === 'PurePipeCache' || decl.parent.name?.text === 'NgZone')))) return callbackThrows();
     const compiled = file.isDeclarationFile ? this.implementation(decl) : null;
     if (compiled) return (compiled as Fn).body ? this.fn(compiled) : false;
     if (file.isDeclarationFile) {
@@ -382,6 +411,7 @@ export class Throws {
   private baseInitThrows: (cls: ts.ClassLikeDeclaration) => boolean;
 
   initThrows(decl: ts.ClassLikeDeclaration): boolean {
+    decl = this.releaseDecl(decl);
     const chain = this.ancestors(decl);
     for (const cls of chain) {
       if (cls.members.some((m) => ts.isPropertyDeclaration(m) && !!m.initializer && !isStatic(m) && this.expr(m.initializer))) return true;
@@ -394,25 +424,40 @@ export class Throws {
     return [root, ...this.descendants(root)].some((d) => { const ctor = d.members.find(ts.isConstructorDeclaration); return !!ctor && this.throwing.has(ctor); });
   }
 
+  private ancestorsCache = new Map<ts.ClassLikeDeclaration, ts.ClassLikeDeclaration[]>();
+  private descendantsCache = new Map<ts.ClassLikeDeclaration, ts.ClassLikeDeclaration[]>();
+  private allClasses: ts.ClassLikeDeclaration[] | null = null;
+
   /** The class and the app classes it extends, nearest first. */
   private ancestors(cls: ts.ClassLikeDeclaration): ts.ClassLikeDeclaration[] {
+    cls = this.releaseDecl(cls);
+    const cached = this.ancestorsCache.get(cls);
+    if (cached) return cached;
     const out: ts.ClassLikeDeclaration[] = [];
     for (let c: ts.ClassLikeDeclaration | undefined = cls; c; ) {
       out.push(c);
       const base = c.heritageClauses?.find((h) => h.token === ts.SyntaxKind.ExtendsKeyword)?.types[0];
       const decl = base && this.checker.getTypeAtLocation(base.expression).getSymbol()?.valueDeclaration;
-      c = decl && ts.isClassLike(decl) && !decl.getSourceFile().isDeclarationFile ? decl : undefined;
+      c = decl && ts.isClassLike(decl) && !decl.getSourceFile().isDeclarationFile ? this.releaseDecl(decl) : undefined;
     }
+    this.ancestorsCache.set(cls, out);
     return out;
   }
 
   private descendants(cls: ts.ClassLikeDeclaration): ts.ClassLikeDeclaration[] {
-    const out: ts.ClassLikeDeclaration[] = [];
-    const visit = (n: ts.Node) => {
-      if (ts.isClassLike(n) && n !== cls && this.ancestors(n).includes(cls)) out.push(n);
-      ts.forEachChild(n, visit);
-    };
-    for (const f of this.files) visit(f);
+    const cached = this.descendantsCache.get(cls);
+    if (cached) return cached;
+    if (!this.allClasses) {
+      const classes: ts.ClassLikeDeclaration[] = [];
+      const visit = (n: ts.Node) => {
+        if (ts.isClassLike(n)) classes.push(n);
+        ts.forEachChild(n, visit);
+      };
+      for (const f of this.files) if (!f.isDeclarationFile) visit(f);
+      this.allClasses = classes;
+    }
+    const out = this.allClasses.filter((n) => n !== cls && this.ancestors(n).includes(cls));
+    this.descendantsCache.set(cls, out);
     return out;
   }
 }

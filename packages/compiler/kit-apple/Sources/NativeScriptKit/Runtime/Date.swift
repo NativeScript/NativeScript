@@ -8,7 +8,9 @@ public final class JSDate: JSDynamic, JSStringConvertible {
 
     public init() { time = (Date().timeIntervalSince1970 * 1000).rounded(.down) }
     public init(_ ms: Double) { time = JSDate.timeClip(ms) }
+    public init(_ ms: Double?) { time = ms.map(JSDate.timeClip) ?? .nan }
     public init(_ text: String) { time = JSDate.parse(text) }
+    public init(_ text: String?) { time = text.map(JSDate.parse) ?? .nan }
 
     /// `new Date(year, month, day?, hours?, minutes?, seconds?, ms?)` in local time; years 0–99 mean 1900–1999.
     public init(_ year: Double, _ month: Double, _ day: Double = 1, _ hours: Double = 0, _ minutes: Double = 0, _ seconds: Double = 0, _ ms: Double = 0) {
