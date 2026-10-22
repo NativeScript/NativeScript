@@ -745,5 +745,27 @@ export async function readDoc(http: HttpClient, url: string): Promise<string> {
   }
 }
 
+// ---- NativeDialogConfig on Android ----
+{
+  const dir = mkdtempSync(join(tmpdir(), 'ns-release-checks-dialog-'));
+  try {
+    const file = join(dir, 'sheet.service.ts');
+    writeFileSync(file, `
+import { NativeDialogConfig, NativeDialogService } from '@nativescript/angular';
+
+export function openSheet(dialogs: NativeDialogService, cmp: any, config?: NativeDialogConfig) {
+  return dialogs.open(cmp, { nativeOptions: { fullscreen: true }, ...(config || {}) });
+}
+`);
+    const kt = createProgram([file], new Map(), 'android', modulesDir);
+    const ktTranslator = new Translator(kt.checker, new Map(), kt.files);
+    ktTranslator.appModule = 'org.example.app';
+    const ktCode = translateKotlinModules(ktTranslator, kt.program, [file]).map((m) => m.code).join('\n');
+    check(/config: Any\? = null/.test(ktCode) && !ktCode.includes('NativeDialogConfig'), "a NativeDialogConfig is the plain object kit-android's NativeDialogService takes (Kotlin)");
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
+
 console.log(failed ? `${failed} release checks failed` : 'release checks pass');
 process.exit(failed ? 1 : 0);

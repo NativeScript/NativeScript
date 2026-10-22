@@ -695,6 +695,8 @@ export class Translator implements AsyncTranslator {
       case 'UntypedFormGroup': if (sym?.declarations?.[0]?.getSourceFile().fileName.startsWith('/__shims__/')) return 'FormGroup'; break;
       case 'UntypedFormArray': if (sym?.declarations?.[0]?.getSourceFile().fileName.startsWith('/__shims__/')) return 'FormArray'; break;
       case 'UntypedFormBuilder': case 'NonNullableFormBuilder': if (sym?.declarations?.[0]?.getSourceFile().fileName.startsWith('/__shims__/')) return 'FormBuilder'; break;
+      // kit-android's NativeDialogService takes its config as script gives it.
+      case 'NativeDialogConfig': if (sym?.declarations?.[0]?.getSourceFile().fileName.startsWith('/__shims__/')) return 'Any?'; break;
       // `Promise.allSettled`'s results are the plain objects it makes (either of them, a union, is untyped).
       case 'PromiseFulfilledResult': case 'PromiseRejectedResult': return 'JSObject';
       case 'NativeDialogRef': case 'NativeDialogService': case 'DestroyRef': case 'Injector': case 'InjectionToken': case 'ErrorHandler': case 'NgZone': case 'HttpClient': case 'ChangeDetectorRef': case 'PurePipeCache': case 'ElementRef': case 'SimpleChange':
