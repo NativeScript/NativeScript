@@ -33,6 +33,14 @@ function coreBarrels(root: string): Map<string, string> {
 }
 
 /** A declaration of core's TypeScript API; the typings of its own native code (`objc!NativeScriptUtils.d.ts`) are native declarations. */
+/**
+ * Whether a member's declarations are the program's own, adding it to a core type (an intersection's added members),
+ * a plugin's declaration modules (`index.d.ts`) among them; native typings are global declarations.
+ */
+export function addedDeclarations(decls: readonly ts.Declaration[]): boolean {
+  return decls.length > 0 && decls.every((d) => !isCoreDeclaration(d) && (!d.getSourceFile().isDeclarationFile || ts.isExternalModule(d.getSourceFile())));
+}
+
 export function isCoreDeclaration(decl: ts.Declaration | undefined): boolean {
   const file = decl?.getSourceFile().fileName;
   return !!file && (KIT_PACKAGES.test(file) || kitPackageDeclaration(file)) && !/[\\/]objc![^\\/]+\.d\.ts$/.test(file);
@@ -310,14 +318,10 @@ export class CoreAPI {
     return candidates.find((c): c is string => !!c && this.index.has(c)) ?? null;
   }
 
-  /**
-   * A member the kit's class lacks that the program's own declarations give a core type (an intersection's added
-   * members), a plugin's declaration modules (`index.d.ts`) among them; native typings are global declarations.
-   */
+  /** A member the kit's class lacks that the program's own declarations give a core type (`addedDeclarations`). */
   private addedMember(owner: string, e: ts.PropertyAccessExpression): boolean {
     if (kitMember(this.index, owner, e.name.text)) return false;
-    const decls = this.t.resolve(e.name)?.declarations ?? [];
-    return decls.length > 0 && decls.every((d) => !isCoreDeclaration(d) && (!d.getSourceFile().isDeclarationFile || ts.isExternalModule(d.getSourceFile())));
+    return addedDeclarations(this.t.resolve(e.name)?.declarations ?? []);
   }
 
   /**

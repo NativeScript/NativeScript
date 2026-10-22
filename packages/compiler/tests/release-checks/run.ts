@@ -28,6 +28,7 @@ import { translateModules } from '../../src/modules.ts';
 import { conformsTo, lookupMember, nativeTable, setEmptyTable } from '../../src/natives/symbols.ts';
 import { isFragment, render } from '../../src/codegen.ts';
 import { Translator } from '../../src/kotlin.ts';
+import { CoreKotlin } from '../../src/core-kotlin.ts';
 import { translateKotlinModules } from '../../src/kotlin-modules.ts';
 import { AndroidNativeAPI, androidClassPath } from '../../src/native-calls-android.ts';
 import { stubbedPlugins } from '../../src/app-resources.ts';
@@ -285,7 +286,7 @@ export class GlyphPipe { constructor(@Inject(TOKEN) private config: any, @Option
     w('node_modules/@hk/decl/index.ios.js', '');
     w('node_modules/@hk/decl/index.android.js', '');
     w('decl/package.json', JSON.stringify({ name: '@hk/decl' }));
-    w('decl/common.ts', "import { View } from '@nativescript/core';\nimport { Holder } from '.';\nexport interface Options { n: number }\nexport function twice(n: number) { return 2 * n; }\nexport const kind = 'decl';\nexport function attach(view: View & Holder) { view.attachHolder(1); }\n");
+    w('decl/common.ts', "import { View } from '@nativescript/core';\nimport { Holder } from '.';\nexport interface Options { n: number }\nexport function twice(n: number) { return 2 * n; }\nexport const kind = 'decl';\nexport function attach(view: View & Holder) { view.attachHolder(1); }\nexport class Indicator { holder: View & Holder; hold(view: View) { if (view?.['attachHolder']) { this.holder = view as View & Holder; this.holder.attachHolder(2); } } }\n");
     w('decl/shapes.ts', 'export class Square { side = 1; }\n');
     w('decl/index.ios.ts', "import { Options, twice } from './common';\nfunction scale(o: Options) { return twice(o.n); }\nexport class Decl { run(o: Options): number { return scale(o); } }\nexport { attach } from './common';\n");
     w('decl/index.android.ts', "import { Options, twice } from './common';\nfunction scale(o: Options) { return twice(o.n); }\nexport class Decl { run(o: Options): number { return scale(o); } }\nexport { attach } from './common';\n");
@@ -303,6 +304,7 @@ export class GlyphPipe { constructor(@Inject(TOKEN) private config: any, @Option
       if (translator.errors.length) declared = translator.errors.join('; ');
       const android = createProgram([declUser], new Map(), 'android', modules, new PluginSources({ app: dir, platform: 'android', overrides: { '@hk/decl': join(dir, 'decl') } }));
       const kotlin = new Translator(android.checker, new Map(), android.files);
+      kotlin.core = new CoreKotlin(kotlin, true);
       kotlin.errors = [];
       translateKotlinModules(kotlin, android.program, android.files.map((f) => f.fileName));
       if (kotlin.errors.length) declared = kotlin.errors.join('; ');
