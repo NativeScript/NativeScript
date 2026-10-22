@@ -767,5 +767,52 @@ export function openSheet(dialogs: NativeDialogService, cmp: any, config?: Nativ
   }
 }
 
+// ---- Angular exports and a non-strict app's diagnostics ----
+{
+  const dir = mkdtempSync(join(tmpdir(), 'ns-release-checks-ng-exports-'));
+  try {
+    symlinkSync(modulesDir, join(dir, 'node_modules'), 'dir');
+    writeFileSync(join(dir, 'tsconfig.json'), JSON.stringify({ compilerOptions: { strict: false } }));
+    const file = join(dir, 'boot.ts');
+    writeFileSync(file, `
+import { enableProdMode } from '@angular/core';
+import type { HttpEvent } from '@angular/common/http';
+import type { CanActivate, IsActiveMatchOptions, Params } from '@angular/router';
+import { isAngularHmrRestoringRoute } from '@nativescript/angular';
+
+export class Guard implements CanActivate {
+  canActivate(): boolean { return true; }
+}
+export const exact: IsActiveMatchOptions = { paths: 'exact', queryParams: 'ignored', fragment: 'ignored', matrixParams: 'ignored' };
+export function page(p: Params): string { return String(p['page'] ?? 1); }
+export function status(e: HttpEvent<string>): number { return e.status; }
+enableProdMode();
+export const restoring = isAngularHmrRestoringRoute();
+`);
+    const lenient = join(dir, 'lenient.ts');
+    writeFileSync(lenient, "declare const flag: boolean;\nexport const a = undefined ?? false;\nexport const b = !Boolean(undefined || flag);\nexport const e = undefined ? 'test' : 'production';\nexport function d() { if ({}) return 1; return 2; }\n");
+    let ios = '', android = '';
+    let swCode = '', ktCode = '';
+    try {
+      const sw = createProgram([file, lenient], new Map(), 'ios', modulesDir, new PluginSources({ app: dir, platform: 'ios' }));
+      swCode = translateModules(new SwiftTranslator(sw.checker, new Map(), sw.files, { pluginFiles: sw.pluginFiles }), sw.program, [file]).map((m) => m.code).join('\n');
+    } catch (e) { ios = String(e); }
+    try {
+      const kt = createProgram([file, lenient], new Map(), 'android', modulesDir);
+      const ktTranslator = new Translator(kt.checker, new Map(), kt.files);
+      ktTranslator.appModule = 'org.example.app';
+      ktCode = translateKotlinModules(ktTranslator, kt.program, [file]).map((m) => m.code).join('\n');
+    } catch (e) { android = String(e); }
+    check(!ios && !android, `Angular's CanActivate, Params, IsActiveMatchOptions, HttpEvent, enableProdMode and isAngularHmrRestoringRoute type-check and translate, and a non-strict app's always-nullish, -truthy and -falsy operands are not errors${ios || android ? `: ${(ios || android).split('\n').slice(0, 3).join(' ')}` : ''}`);
+    check(!/enableProdMode/.test(swCode) && !/enableProdMode/.test(ktCode) && /restoring[^\n]*= false/.test(ktCode), 'enableProdMode is nothing in a release build, and no route is restored for hot module replacement');
+    writeFileSync(join(dir, 'tsconfig.json'), JSON.stringify({ compilerOptions: { strict: true } }));
+    let strict = '';
+    try { createProgram([lenient], new Map(), 'android', modulesDir); } catch (e) { strict = String(e); }
+    check(strict.includes('TS2871') && strict.includes('TS2873'), "a strict app's always-nullish and always-falsy operands stay errors");
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
+
 console.log(failed ? `${failed} release checks failed` : 'release checks pass');
 process.exit(failed ? 1 : 0);

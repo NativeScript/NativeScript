@@ -7522,6 +7522,9 @@ export class Translator implements AsyncTranslator {
       return `resolveForwardRef(${arg(0) ? this.coerce(arg(0), 'Any?') : 'null'})`;
     }
     if (name === 'isDevMode' && lib) return 'false';
+    const shimmed = decl && ts.isFunctionDeclaration(decl) && decl.getSourceFile().fileName.startsWith('/__shims__/') ? decl.name?.text : undefined;
+    if (shimmed === 'enableProdMode') return 'Unit';
+    if (shimmed === 'isAngularHmrRestoringRoute') return 'false';
     // Angular's `effect()`.
     if (name === 'effect' && lib && arg(0)) return `Effect.deferred(${this.callback(arg(0))})`;
     if ((name === 'nextTick' || name === 'tick') && !e.arguments.length && lib) return `Reactivity.${name}()`;

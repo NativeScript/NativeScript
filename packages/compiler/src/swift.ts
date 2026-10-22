@@ -10584,6 +10584,9 @@ ${members.join('\n')}
       return `resolveForwardRef(${arg(0) ? this.coerce(arg(0), 'Any?') : 'nil'})`;
     }
     if (name === 'isDevMode' && lib) return 'false';
+    const shimmed = decl && ts.isFunctionDeclaration(decl) && decl.getSourceFile().fileName.startsWith('/__shims__/') ? decl.name?.text : undefined;
+    if (shimmed === 'enableProdMode') return '()';
+    if (shimmed === 'isAngularHmrRestoringRoute') return 'false';
     if ((name === 'nextTick' || name === 'tick') && !e.arguments.length && lib) return `Reactivity.${name}()`;
     if (name === 'output' && lib) return `${this.typeOf(e)}()`;
     if (name === 'inject' && lib) {
