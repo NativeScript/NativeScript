@@ -10759,7 +10759,9 @@ ${members.join('\n')}
             ? `jsObjectAssign(${target}, spread: ${this.packed(e.arguments.slice(1), 'JSArray<Any?>')}.storage)`
             : `jsObjectAssign(${[target, ...e.arguments.slice(1).map((x) => this.coerce(x, 'Any?'))].join(', ')})`;
           const t = T();
-          return t === 'Any?' ? code : this.fromAnyCode(code, t, true);
+          // Properties assigned onto a function (`Object.assign(memoized, { release })`) leave a function, which no class holds.
+          const callable = this.checker.getTypeAtLocation(arg(0)).getCallSignatures().length > 0;
+          return t === 'Any?' || callable ? code : this.fromAnyCode(code, t, true);
         }
         break;
       }

@@ -1,5 +1,6 @@
 // @swift
 // @ngrx/effects and @ngrx/component-store from source: Actions, ofType, createEffect, and ComponentStore.
+import '@angular/compiler';
 import { Subject, of } from 'rxjs';
 import { map, mergeMap, withLatestFrom } from 'rxjs/operators';
 import { createAction, props } from '@ngrx/store';

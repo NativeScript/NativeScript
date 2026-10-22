@@ -1,5 +1,6 @@
 // @swift
 // @ngrx/store and @ngrx/entity from source: actions, reducers, selectors, features, Store, and EntityAdapter.
+import '@angular/compiler';
 import {
   createAction,
   createActionGroup,

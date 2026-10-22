@@ -121,6 +121,8 @@ public func jsGetPrototypeOf(_ value: Any?) throws -> Any? {
     case is JSSymbol: return JSPrototypes.builtin("Symbol")
     default:
         if jsIsFunction(v) { return JSPrototypes.builtin("Function") }
+        // An object literal's (or interface value's) class: a plain object.
+        if v is JSObjectConvertible { return JSPrototypes.objectPrototype }
         if jsIsObject(v) { return JSPrototypes.of(type(of: v as AnyObject)) }
         return JSPrototypes.objectPrototype
     }
