@@ -258,6 +258,19 @@ describe('native default-import link checking', () => {
 		expect(await mountLinkCheck(source).rejects()).toBe(rejected);
 	});
 
+	it('keeps checking later imports when a target cannot be parsed', async () => {
+		const fixture = mount({
+			sharedTransformRequest: async () => ({
+				code: "import a from 'http://localhost:5173/ns/m/src/a.mjs'; import b from 'http://localhost:5173/ns/m/src/b.mjs'; export { a, b };",
+				map: null,
+			}),
+		});
+		fixture.server.transformRequest.mockImplementation(async (url: string) => ({ code: url.includes('/a.mjs') ? 'export default (;' : 'export const named = 99;' }));
+		const res = makeRes();
+		await fixture.handler({ url: '/ns/m/src/importer.mjs' }, res, vi.fn());
+		expect(res.body).toContain('[link-check] Missing default export in /ns/m/src/b.mjs');
+	});
+
 	it('rechecks the same importer after its target gains or loses a default', async () => {
 		const fixture = mountLinkCheck('export const named = 99;');
 		expect(await fixture.rejects()).toBe(true);
