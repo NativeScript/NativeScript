@@ -735,6 +735,12 @@ public final class Injector {
     }
 
     public func get(_ token: Any?, _ notFoundValue: Any? = nil, _ options: Any? = nil) -> Any? {
+        get(token, notFoundValue, options, root: true)
+    }
+
+    /// Without `root`, only what this injector and its ancestors provide: the root's answer for a service is the
+    /// service's `shared`, which itself asks the active injector first.
+    private func get(_ token: Any?, _ notFoundValue: Any?, _ options: Any?, root: Bool) -> Any? {
         let unwrapped = resolveForwardRef(token)
         let skipSelf = ((try? jsGet(options, "skipSelf")) as? Bool) == true
         let selfOnly = ((try? jsGet(options, "self")) as? Bool) == true
@@ -754,9 +760,9 @@ public final class Injector {
         }
         if selfOnly { return notFoundValue }
         if let parent {
-            return parent.get(unwrapped, notFoundValue)
+            return parent.get(unwrapped, notFoundValue, nil, root: root)
         }
-        if skipSelf { return notFoundValue }
+        if skipSelf || !root { return notFoundValue }
         return Injector.resolveRoot(unwrapped, notFoundValue: notFoundValue)
     }
 
@@ -782,7 +788,7 @@ public final class Injector {
     public static func root<T: AnyObject>(_ type: T.Type, _ make: () throws -> T) throws -> T {
         let key = ObjectIdentifier(type)
         if let active = current, active !== shared {
-            if let over = active.get(type) as? T { return over }
+            if let over = active.get(type, nil, nil, root: false) as? T { return over }
         }
         if let over = tokenValues[key] as? T { return over }
         if let factory = tokenFactories[key], let over = try factory() as? T {

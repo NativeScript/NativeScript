@@ -559,7 +559,7 @@ object AppInjector {
     fun <T : Any> service(type: Class<T>, make: () -> T): T {
         Injector.current?.let { active ->
             if (active !== Injector.shared) {
-                val found = active.get(type, Injector.NOT_FOUND)
+                val found = active.get(type, Injector.NOT_FOUND, null, root = false)
                 if (found !== Injector.NOT_FOUND && type.isInstance(found)) return found as T
             }
         }
@@ -594,7 +594,10 @@ class Injector(providers: Any? = null, private val parent: Injector? = null) {
         if (providers != null) registerInstance(providers)
     }
 
-    fun get(token: Any?, notFoundValue: Any? = null, options: Any? = null): Any? {
+    fun get(token: Any?, notFoundValue: Any? = null, options: Any? = null): Any? = get(token, notFoundValue, options, root = true)
+
+    /** Without [root], only what this injector and its ancestors provide: the root's answer for a service is the service's `shared`, which itself asks the active injector first. */
+    internal fun get(token: Any?, notFoundValue: Any?, options: Any?, root: Boolean): Any? {
         val unwrapped = resolveForwardRef(token)
         val skipSelf = (jsBox(jsGetOptional(options, "skipSelf")) as? Boolean) == true
         val selfOnly = (jsBox(jsGetOptional(options, "self")) as? Boolean) == true
@@ -616,8 +619,8 @@ class Injector(providers: Any? = null, private val parent: Injector? = null) {
             }
         }
         if (selfOnly) return notFoundValue
-        if (parent != null) return parent.get(unwrapped, notFoundValue)
-        if (skipSelf) return notFoundValue
+        if (parent != null) return parent.get(unwrapped, notFoundValue, null, root)
+        if (skipSelf || !root) return notFoundValue
         return resolveRoot(unwrapped, notFoundValue)
     }
 
@@ -697,11 +700,14 @@ class Injector(providers: Any? = null, private val parent: Injector? = null) {
                 val sharedMethod = companion.javaClass.methods.firstOrNull { it.name == "getShared" && it.parameterCount == 0 }
                 if (sharedMethod != null) return sharedMethod.invoke(companion)
             } catch (_: Throwable) {}
-            return try {
-                val ctor = cls.declaredConstructors.firstOrNull { it.parameterCount == 0 }
-                ctor?.isAccessible = true
-                ctor?.newInstance()
-            } catch (_: Throwable) { null }
+            return try { construct(cls) } catch (_: Throwable) { null }
+        }
+
+        /** A new instance, as a child injector's `useClass` provider makes one of its own. */
+        private fun construct(cls: Class<*>): Any? {
+            val ctor = cls.declaredConstructors.firstOrNull { it.parameterCount == 0 } ?: return null
+            ctor.isAccessible = true
+            return try { ctor.newInstance() } catch (e: java.lang.reflect.InvocationTargetException) { throw e.targetException }
         }
 
         private fun parseProvider(dyn: JSDynamic, target: Injector?) {
@@ -730,7 +736,7 @@ class Injector(providers: Any? = null, private val parent: Injector? = null) {
                         jsCall(factory, *resolved.toTypedArray())
                     }
                     existing != null -> if (target != null) target.get(existing) else inject(existing)
-                    useClass is Class<*> -> instantiateClass(useClass)
+                    useClass is Class<*> -> if (target != null) construct(useClass) else instantiateClass(useClass)
                     useClass != null -> jsCall(useClass)
                     key is Class<*> -> instantiateClass(key)
                     else -> null
