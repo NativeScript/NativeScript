@@ -37,6 +37,7 @@
 		"621-optional-callback-adapting": "Lenient app code: a callback's boolean parameter given undefined holds false, `typeof` of an optional function parameter folds to \"function\", and a function literal returning null where its type gives an array gives undefined (Kotlin translator).",
 		"624-json-parse-null": "JSON.parse of a string that is null at run time parses \"undefined\" and throws (Kotlin translator).",
 		"626-array-parameter-mutation": "A typed array, or an untyped array holding a value of another type, given to a number[] parameter is copied, so the callee's writes are lost (Kotlin runtime).",
-		"627-unchecked-class-cast": "`x as C` throws when x is an instance of another class, where TypeScript's cast checks nothing (Kotlin translator)."
+		"627-unchecked-class-cast": "`x as C` throws when x is an instance of another class, where TypeScript's cast checks nothing (Kotlin translator).",
+		"680-replaceable-method-on-field": "A method an instance is given its own function for (`store.dispatch = (a) => …`) is still called as the class's method: the assignment is dropped (Kotlin translator)."
 	}
 }

@@ -85,6 +85,24 @@ export function isRegExpProtocol(t: ts.Type): boolean {
   return own.length > 0 && own.every((p) => /^__@(replace|split|match|matchAll|search)@\d+$/.test(p.name));
 }
 
+/**
+ * `type A = B & { x: T }` over non-generic interfaces and type literals only: the members of the type it names, each
+ * property's first declaration, as one interface's. Null for any other alias.
+ */
+export function intersectionAliasMembers(st: ts.TypeAliasDeclaration, checker: ts.TypeChecker): ts.TypeElement[] | null {
+  if (!ts.isIntersectionTypeNode(st.type) || st.typeParameters?.length) return null;
+  const sym = checker.getSymbolAtLocation(st.name);
+  const t = sym && checker.getDeclaredTypeOfSymbol(sym);
+  if (!t?.isIntersection()) return null;
+  const plain = (u: ts.Type) => {
+    const decls = u.getSymbol()?.declarations ?? [];
+    return !!(u.flags & ts.TypeFlags.Object) && decls.length > 0 && !u.getCallSignatures().length && !u.getConstructSignatures().length && !u.getStringIndexType() && !u.getNumberIndexType()
+      && decls.every((d) => ts.isTypeLiteralNode(d) || (ts.isInterfaceDeclaration(d) && !d.typeParameters?.length));
+  };
+  if (!t.types.every(plain)) return null;
+  return t.getProperties().flatMap((p) => p.declarations?.filter((d): d is ts.TypeElement => ts.isPropertySignature(d) || ts.isMethodSignature(d)).slice(0, 1) ?? []);
+}
+
 /** A type's `[Symbol.iterator]` (or `[Symbol.asyncIterator]`) member. */
 function iteratorMember(t: ts.Type, async: boolean): ts.Symbol | undefined {
   return t.getProperties().find((p) => p.escapedName.toString().startsWith(async ? '__@asyncIterator@' : '__@iterator@'));
