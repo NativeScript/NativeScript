@@ -26,7 +26,7 @@ import { manifest, ownTypings, scopedImports, usedImports } from '../../src/plug
 import { singleTry, Translator as SwiftTranslator } from '../../src/swift.ts';
 import { translateModules } from '../../src/modules.ts';
 import { setEmptyTable } from '../../src/natives/symbols.ts';
-import { render } from '../../src/codegen.ts';
+import { isFragment, render } from '../../src/codegen.ts';
 import { Translator } from '../../src/kotlin.ts';
 import { translateKotlinModules } from '../../src/kotlin-modules.ts';
 import { AndroidNativeAPI, androidClassPath } from '../../src/native-calls-android.ts';
@@ -372,6 +372,28 @@ export class GlyphPipe { constructor(@Inject(TOKEN) private config: any, @Option
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
+}
+
+// ---- Angular component classes ----
+{
+  const make = (text: string) => angularComponent('/app/cls.component.ts', text, new Map())!;
+  const noArg = make("import { Component, Input, OnChanges } from '@angular/core';\n@Component({ selector: 'C', template: `<Label [text]=\"name\"></Label>` })\nexport class C implements OnChanges { @Input() name = ''; seen = 0; ngOnChanges() { this.seen++; } }\n");
+  check(/this\.ngOnChanges\(\);/.test(noArg.source) && !/this\.ngOnChanges\(changes\)/.test(noArg.source), 'ngOnChanges declared without a parameter is called without one');
+  const ctor = make("import { Component } from '@angular/core';\nclass Clock { now() { return 1; } }\n@Component({ selector: 'C', template: `<Label [text]=\"t\"></Label>` })\nexport class C { t = 0; constructor(private clock: Clock) { this.t = clock.now(); } }\n");
+  check(/const clock = this\.clock;/.test(ctor.source), "a constructor's body naming a parameter property reads the field it became");
+  const inherited = make("import { Component } from '@angular/core';\nclass Base { title = 'base'; }\n@Component({ selector: 'C', template: `<Label [text]=\"title\"></Label>` })\nexport class C extends Base {}\n");
+  check(/this\.title/.test(inherited.source), "a template names a member the component inherits");
+  const multiline = make("import { Component } from '@angular/core';\n@Component({ selector: 'C', template: `<Label [text]=\"on ? 'a' : 'b\nc'\"></Label>` })\nexport class C { on = true; }\n");
+  check(multiline.source.includes("'b\\nc'"), 'a string literal written across lines in a template stays one string');
+}
+
+// ---- Angular fragments through nested components ----
+{
+  const outer = angularComponent('/app/outer.component.ts', "import { Component } from '@angular/core';\n@Component({ selector: 'Outer', template: `<Inner></Inner>` })\nexport class Outer {}\n", new Map([['Inner', 'Inner']]))!;
+  const infos = new Map([['Inner', { name: 'Inner', props: [], fragment: true }], ['Outer', { name: 'Outer', props: [] }]]);
+  check(isFragment(outer.template, infos) && !isFragment(outer.template, new Map([['Inner', { name: 'Inner', props: [] }]])), 'a template that is one component is a fragment when that component is');
+  const swift = render(outer, infos, () => false, 'angular').join('\n');
+  check(swift.includes('func render(into region: Region) throws'), 'a component rendering a fragment component renders into its parent region');
 }
 
 // ---- Template errors are reported, never trapped ----
