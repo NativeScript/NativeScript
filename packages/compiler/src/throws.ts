@@ -182,7 +182,7 @@ export class Throws {
     }
     if (ts.isCallExpression(n) && ts.isElementAccessExpression(n.expression) && iterationThrows(c.getTypeAtLocation(n.expression.expression), c)) return true;
     // A library function iterating an untyped value (`Array.from(x)`, `new Set(x)`) iterates it through the runtime, which throws for what is no iterable.
-    if ((ts.isCallExpression(n) || ts.isNewExpression(n)) && n.arguments?.some((a, i) => this.untyped(a) && iterableParameter(c, n, i))) return true;
+    if ((ts.isCallExpression(n) || ts.isNewExpression(n)) && n.arguments?.some((a, i) => iterableParameter(c, n, i) && this.untyped(a))) return true;
     if (ts.isVariableDeclaration(n) && (ts.isObjectBindingPattern(n.name) || ts.isArrayBindingPattern(n.name)) && n.initializer && this.untyped(n.initializer)) return true;
     // Destructuring runs the getters of the members it reads.
     if (ts.isVariableDeclaration(n) && ts.isObjectBindingPattern(n.name) && n.initializer) {
