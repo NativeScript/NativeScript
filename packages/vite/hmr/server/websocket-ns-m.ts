@@ -565,7 +565,12 @@ export function registerNsModuleServerRoute(server: ViteDevServer, options: Regi
 								}
 							} catch {}
 							if (!targetCode) continue;
-							const hasDefault = /\bexport\s+default\b/.test(targetCode) || /export\s*\{\s*default\s*(?:as\s*default)?\s*\}/.test(targetCode);
+							// Compiler output can export a named binding as default.
+							const targetAst = babelParse(targetCode, {
+								sourceType: 'module',
+								plugins: MODULE_IMPORT_ANALYSIS_PLUGINS,
+							});
+							const hasDefault = targetAst.program.body.some((node) => node.type === 'ExportDefaultDeclaration' || (node.type === 'ExportNamedDeclaration' && node.exportKind !== 'type' && node.specifiers.some((specifier) => (specifier.type !== 'ExportSpecifier' || specifier.exportKind !== 'type') && (specifier.exported.type === 'Identifier' ? specifier.exported.name : specifier.exported.value) === 'default')));
 							if (!hasDefault) {
 								// CJS/UMD modules won't have `export default` — they get CJS-wrapped
 								// by the serving pipeline. Only warn, don't fatally block the importer.
