@@ -95,6 +95,12 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
   }
   const meta = decorator(cls, 'Component')!.arguments[0] as ts.ObjectLiteralExpression;
   const prop = (name: string) => meta.properties.find((p): p is ts.PropertyAssignment => ts.isPropertyAssignment(p) && (p.name as ts.Identifier).text === name)?.initializer;
+  for (const p of meta.properties) {
+    const key = ts.isPropertyAssignment(p) && (ts.isIdentifier(p.name) || ts.isStringLiteral(p.name)) ? p.name.text : null;
+    if (key === null) throw new Error(`${path}: @Component's ${p.getText().split('\n')[0]} is read as \`name: value\` in a release build`);
+    if (key === 'preserveWhitespaces' && p.initializer.kind !== ts.SyntaxKind.FalseKeyword) throw new Error(`${path}: @Component's preserveWhitespaces is not supported in a release build yet`);
+    if (!COMPONENT_META.has(key)) throw new Error(`${path}: @Component's ${key} is not supported in a release build yet`);
+  }
   const selector = (prop('selector') as ts.StringLiteral | undefined)?.text ?? cls.name.text;
   const inline = prop('template');
   const templateUrl = (prop('templateUrl') as ts.StringLiteral | undefined)?.text;
@@ -126,7 +132,7 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
       throw new Error(`${path}: the children of <${n.name}> join it through its registerElement meta (${hooks.join(', ')}), which a release build does not run yet`);
     }
   };
-  const { members, props, optional, outputs, inputAliases } = publicMembers(cls, classic);
+  const { members, props, optional, outputs, inputAliases } = publicMembers(path, cls, classic);
   collectInheritedMembers(path, sf, cls, members);
   const scope: Scope = { names: new Map([...members].map((m) => [m, classic?.inputs.has(m) ? `this.${m}()` : `this.${m}`])) };
   const init = cls.members.find((m) => ts.isMethodDeclaration(m) && m.name.getText() === 'ngOnInit');
@@ -404,6 +410,28 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
     return [];
   };
 
+  /**
+   * The directives of @angular/forms, @angular/common and @angular/router an element's bindings, attributes and outputs
+   * select, and events of a global target or an animation, none of which a release build runs: `taken` names those
+   * that select an app directive or a hosted component instead.
+   */
+  const refuseUnbound = (n: ng.TmplAstElement, taken: (name: string) => boolean) => {
+    const written = [
+      ...n.inputs.map((i) => ({ name: i.name, as: i.type === ng.BindingType.TwoWay ? `[(${i.name})]` : i.type === ng.BindingType.Property ? `[${i.name}]` : null })),
+      ...n.attributes.map((a) => ({ name: a.name, as: a.name })),
+      ...n.outputs.filter((o) => o.type === ng.ParsedEventType.Regular && !o.target).map((o) => ({ name: o.name, as: `(${o.name})` })),
+    ];
+    for (const w of written) {
+      const what = FORMS_DIRECTIVES.has(w.name) ? '@angular/forms' : UNSUPPORTED_DIRECTIVES[w.name];
+      if (w.as && what && !taken(w.name)) throw new Error(`${path}: ${w.as} (${what}) on <${n.name}> is not supported in a release build yet`);
+    }
+    for (const o of n.outputs) {
+      if (o.type === ng.ParsedEventType.LegacyAnimation) throw new Error(`${path}: the animation event (@${o.name}${o.phase ? `.${o.phase}` : ''}) on <${n.name}> is not supported in a release build yet`);
+      if (o.type === ng.ParsedEventType.Animation) throw new Error(`${path}: the animation event (${o.name}) on <${n.name}> is not supported in a release build yet`);
+      if (o.target) throw new Error(`${path}: (${o.target}:${o.name}), an event of the ${o.target}, on <${n.name}> is not supported in a release build yet`);
+    }
+  };
+
   const nodes = (list: ng.TmplAstNode[], loops: Loop[]): TNode[] => {
     const out: TNode[] = [];
     // `@let name = expression`: the expression wherever the name is read after it in this block.
@@ -527,6 +555,11 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
           if (d.structural) throw new Error(`${path}: the structural directive ${d.className} without its template (*) is not supported in a release build yet`);
           return directiveUse(d, n, loops, consumed);
         });
+        refuseUnbound(n, (name) => found.some((d) => d.inputs.has(name)) || !!hosted?.inputs.has(name) || !!hosted?.outputs.has(name));
+        if (!selectors.has(n.name) && !hosted) {
+          const ref = n.references.find((r) => r.value);
+          if (ref) throw new Error(`${path}: #${ref.name}="${ref.value}" on <${n.name}>, a reference to a directive's exportAs, is not supported in a release build yet`);
+        }
         for (const i of n.inputs) {
           if (i === switched || consumed.has(i.name) || i.type === ng.BindingType.Class || (isList && i.name === 'itemTemplateSelector') || (link && ROUTER_LINK_INPUTS.has(i.name))) continue;
           at(i.sourceSpan);
@@ -566,7 +599,13 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
           out.push({ kind: 'component', name: component, props: attrs, events, ...(hooks.length ? { queries: hooks } : {}) });
           continue;
         }
-        if (n.name === 'page-router-outlet') { out.push({ kind: 'element', tag: 'Frame', attrs: [{ name: 'router', value: n.attributes.find((a) => a.name === 'name')?.value ?? 'primary' }], events: [], children: [] }); continue; }
+        if (n.name === 'page-router-outlet') {
+          // The outlet's Frame takes its name only: `actionBarVisibility="auto"` is the Frame's default.
+          const other = [...n.inputs.map((i) => `[${i.name}]`), ...n.outputs.map((o) => `(${o.name})`), ...n.references.map((r) => `#${r.name}`), ...n.attributes.filter((a) => a.name !== 'name' && !(a.name === 'actionBarVisibility' && a.value === 'auto')).map((a) => `${a.name}="${a.value}"`)];
+          if (other.length) throw new Error(`${path}: ${other[0]} on <page-router-outlet> is not supported in a release build yet`);
+          out.push({ kind: 'element', tag: 'Frame', attrs: [{ name: 'router', value: n.attributes.find((a) => a.name === 'name')?.value ?? 'primary' }], events: [], children: [] });
+          continue;
+        }
         const tag = elementOf(n.name);
         if (!tag) throw new Error(`${path}: <${n.name}> is not a @nativescript/core element the release build knows`);
         checkMeta(n);
@@ -611,6 +650,10 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
         const loop: Loop = { item, index, param: `${item} = this.${items}(${args(loops)})[0], ${index} = 0`, names };
         const inner = [...loops, loop];
         out.push({ kind: 'for', items, key: expr(sourceOf(n.trackBy), inner), item, index, body: nodes(n.children, inner) });
+        if (n.empty) {
+          at(n.empty.startSourceSpan);
+          out.push({ kind: 'if', branches: [{ cond: test(`${count} === 0`, loops), body: nodes(n.empty.children, loops) }] });
+        }
         continue;
       }
       if (n instanceof ng.TmplAstTemplate && n.templateAttrs.some((a) => a.name === 'tabItem')) {
@@ -761,6 +804,10 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
    */
   const container = (n: ng.TmplAstElement, loops: Loop[]): TNode[] => {
     if (n.outputs.length) throw new Error(`${path}: (${n.outputs[0].name}) on <ng-container> is not supported in a release build yet`);
+    if (n.references.length) throw new Error(`${path}: #${n.references[0].name} on <ng-container> is not supported in a release build yet`);
+    refuseUnbound(n, (name) => ['ngTemplateOutlet', 'ngTemplateOutletContext'].includes(name));
+    const selected = matched('ng-container', n.attributes.map((a) => [a.name, a.value]), n.inputs.map((i) => i.name));
+    if (selected.length) throw new Error(`${path}: the directive ${selected[0].className} on <ng-container> is not supported in a release build yet`);
     const bound = new Map(n.inputs.map((i) => [i.name, i] as const));
     for (const name of bound.keys()) {
       if (!['ngSwitch', 'ngTemplateOutlet', 'ngTemplateOutletContext'].includes(name)) throw new Error(`${path}: [${name}] on <ng-container> is not supported in a release build yet`);
@@ -1187,7 +1234,10 @@ export function angularDirectives(files: string[], read: (file: string) => strin
       if (!selector || !ts.isStringLiteralLike(selector)) throw new Error(`${where} needs a string selector in a release build`);
       if (!(ts.getModifiers(st) ?? []).some((m) => m.kind === ts.SyntaxKind.ExportKeyword)) throw new Error(`${where} is not exported`);
       const d: DirectiveDecl = { className: st.name.text, file, selector: selector.text, inputs: new Map(), listeners: [], bindings: [], attributes: [], create: false, hooks: new Set(), structural: false, members: st.members.flatMap((m) => (m.name && ts.isIdentifier(m.name) ? [m.name.text] : [])) };
-      for (const k of ['outputs', 'providers', 'exportAs', 'hostDirectives', 'queries']) if (get(k)) throw new Error(`${where}: its ${k} are not supported in a release build yet`);
+      for (const p of meta.properties) {
+        const key = ts.isPropertyAssignment(p) ? p.name.getText() : p.getText();
+        if (!['selector', 'inputs', 'host', 'standalone', 'jit'].includes(key)) throw new Error(`${where}: its ${key} ${PLURAL_FIELDS.has(key) ? 'are' : 'is'} not supported in a release build yet`);
+      }
       const inputs = get('inputs');
       for (const e of inputs && ts.isArrayLiteralExpression(inputs) ? inputs.elements : []) {
         if (!ts.isStringLiteralLike(e)) throw new Error(`${where}: inputs are names in a release build`);
@@ -1205,6 +1255,8 @@ export function angularDirectives(files: string[], read: (file: string) => strin
       }
       for (const m of st.members) {
         const name = m.name && (ts.isIdentifier(m.name) || ts.isStringLiteral(m.name)) ? m.name.text : undefined;
+        const made = ts.isPropertyDeclaration(m) && m.initializer && ts.isCallExpression(m.initializer) ? m.initializer.expression.getText() : '';
+        if (/^(input|model|output|viewChild|viewChildren|contentChild|contentChildren)(\.required)?$/.test(made)) throw new Error(`${where}: ${made}() (${name}) in a directive is not supported in a release build yet`);
         if (ts.isMethodDeclaration(m) && name && /^ng(OnInit|OnChanges|AfterViewInit|OnDestroy|DoCheck|AfterContentInit|AfterContentChecked|AfterViewChecked)$/.test(name)) {
           if (!['ngOnInit', 'ngOnChanges', 'ngAfterViewInit', 'ngOnDestroy'].includes(name)) throw new Error(`${where}: ${name} is not supported in a release build yet`);
           d.hooks.add(name);
@@ -1605,7 +1657,7 @@ function literalKey(code: string, path: string): string {
  * library's directives are left out: its Angular wrappers are written against the view internals a compiled template
  * replaces.
  */
-export function declarablesIn(path: string, text: string): { classes: string[]; modules: Map<string, string[]> } {
+export function declarablesIn(path: string, text: string, app = false): { classes: string[]; modules: Map<string, string[]> } {
   const classes: string[] = [];
   const modules = new Map<string, string[]>();
   if (!/@(Pipe|NgModule)\b/.test(text)) return { classes, modules };
@@ -1615,6 +1667,11 @@ export function declarablesIn(path: string, text: string): { classes: string[]; 
     if (decorator(st, 'Pipe')) classes.push(st.name.text);
     const meta = decorator(st, 'NgModule')?.arguments[0];
     if (meta && ts.isObjectLiteralExpression(meta)) {
+      // An app's NgModule provides nothing in a release build: its `bootstrap` is the entry's, the rest only steer Angular's compiler.
+      for (const p of app ? meta.properties : []) {
+        const key = ts.isPropertyAssignment(p) ? p.name.getText() : p.getText();
+        if (!['declarations', 'imports', 'exports', 'bootstrap', 'schemas', 'id', 'jit', 'entryComponents'].includes(key)) throw new Error(`${path}: the NgModule ${st.name.text}'s ${key} ${PLURAL_FIELDS.has(key) ? 'are' : 'is'} not supported in a release build yet`);
+      }
       modules.set(st.name.text, meta.properties.flatMap((p) => (ts.isPropertyAssignment(p) && ['declarations', 'imports', 'exports'].includes(p.name.getText()) && ts.isArrayLiteralExpression(p.initializer)
         ? p.initializer.elements.filter(ts.isIdentifier).map((e) => e.text) : [])));
     }
@@ -1623,7 +1680,7 @@ export function declarablesIn(path: string, text: string): { classes: string[]; 
 }
 
 /** A component class's members, and its inputs (by field, with the names its parent binds where they differ) and outputs. */
-function publicMembers(cls: ts.ClassDeclaration, classic: Classic | null) {
+function publicMembers(path: string, cls: ts.ClassDeclaration, classic: Classic | null) {
   const members = new Set<string>();
   const props: string[] = [];
   const optional: string[] = [];
@@ -1634,10 +1691,19 @@ function publicMembers(cls: ts.ClassDeclaration, classic: Classic | null) {
     members.add(m.name.text);
     if (ts.isPropertyDeclaration(m) && m.initializer && ts.isCallExpression(m.initializer)) {
       const callee = m.initializer.expression.getText();
+      if (/^(viewChild|viewChildren|contentChild|contentChildren)(\.required)?$/.test(callee)) throw new Error(`${path}: the signal query ${callee}() (${m.name.text}) is not supported in a release build yet`);
+      const optionsOf = (k: number, allowed: string[]) => {
+        const o = (m.initializer as ts.CallExpression).arguments[k];
+        if (!o) return undefined;
+        const bad = !ts.isObjectLiteralExpression(o) ? o : o.properties.find((p) => !ts.isPropertyAssignment(p) || !allowed.includes(p.name.getText()));
+        if (bad) throw new Error(`${path}: ${callee}()'s ${ts.isObjectLiteralElementLike(bad) && bad.name ? bad.name.getText() : bad.getText()} (${(m.name as ts.Identifier).text}) is not supported in a release build yet`);
+        return o as ts.ObjectLiteralExpression;
+      };
+      if (callee === 'output') optionsOf(0, []);
       if (callee === 'input' || callee === 'input.required' || callee === 'model' || callee === 'model.required') {
         props.push(m.name.text);
         // `input(init, { alias })`, `input.required({ alias })`: the name the parent binds.
-        const options = m.initializer.arguments[callee === 'input' || callee === 'model' ? 1 : 0];
+        const options = optionsOf(callee === 'input' || callee === 'model' ? 1 : 0, ['alias', 'debugName']);
         const alias = options && ts.isObjectLiteralExpression(options) ? options.properties.find((p): p is ts.PropertyAssignment => ts.isPropertyAssignment(p) && p.name.getText() === 'alias')?.initializer : undefined;
         if (alias && ts.isStringLiteralLike(alias)) inputAliases[m.name.text] = alias.text;
       }
@@ -1678,7 +1744,7 @@ export function hostedComponent(path: string, text: string): HostedComponent | n
   const hostDecorators = cls.members.some((m) => (ts.canHaveDecorators(m) ? ts.getDecorators(m) ?? [] : []).some((d) => /^(HostBinding|HostListener)\b/.test(d.expression.getText())));
   const classic = classicClass(path, text, cls);
   if (classic) cls = named((sf = ts.createSourceFile(path, classic.text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS)));
-  const api = publicMembers(cls, classic);
+  const api = publicMembers(path, cls, classic);
   const models = cls.members.filter((m): m is ts.PropertyDeclaration => ts.isPropertyDeclaration(m) && !!m.initializer && ts.isCallExpression(m.initializer) && /^model(\.required)?$/.test(m.initializer.expression.getText())).map((m) => m.name.getText());
   return {
     name: found.name,
@@ -1725,6 +1791,49 @@ const KEYWORDS = new Set(['break', 'case', 'catch', 'class', 'const', 'continue'
 const ROUTER_LINK_INPUTS = new Set(['nsRouterLink', 'relativeTo', 'clearHistory', 'pageTransition', 'pageTransitionDuration', 'queryParams', 'fragment', 'queryParamsHandling', 'state', 'info', 'preserveFragment', 'skipLocationChange', 'replaceUrl']);
 const ROUTER_LINK_SUPPORTED = new Set(['nsRouterLink', 'relativeTo', 'clearHistory', 'pageTransition', 'pageTransitionDuration']);
 
+/**
+ * The `@Component` fields a release build reads, and those it may leave unread: `standalone`, `schemas`, `moduleId` and
+ * `jit` only steer Angular's compiler, `exportAs` names the component a reference gets anyway, `animations` only
+ * declares triggers (binding one is refused), and `preserveWhitespaces: false` is how templates are parsed.
+ */
+const COMPONENT_META = new Set([
+  'selector', 'template', 'templateUrl', 'styles', 'styleUrl', 'styleUrls', 'imports', 'changeDetection', 'encapsulation',
+  'standalone', 'schemas', 'moduleId', 'jit', 'exportAs', 'animations', 'preserveWhitespaces',
+]);
+
+/** Decorator fields named in the plural, for messages. */
+const PLURAL_FIELDS = new Set(['providers', 'viewProviders', 'inputs', 'outputs', 'queries', 'hostDirectives', 'animations', 'schemas']);
+
+/** What selects a directive of @angular/forms (with @nativescript/angular's value accessors) on an element. */
+const FORMS_DIRECTIVES = new Set([
+  'ngModel', 'ngModelChange', 'ngModelOptions', 'ngModelGroup', 'ngForm', 'ngFormOptions', 'ngNoForm', 'ngSubmit',
+  'formGroup', 'formGroupName', 'formControl', 'formControlName', 'formArray', 'formArrayName',
+]);
+
+/** Directives (and Angular's enter and leave animations) an element can select that the release build does not run, by the input or attribute that selects each. */
+const UNSUPPORTED_DIRECTIVES: Record<string, string> = {
+  ngClass: "@angular/common's NgClass",
+  ngStyle: "@angular/common's NgStyle",
+  ngPlural: "@angular/common's NgPlural",
+  ngPluralCase: "@angular/common's NgPluralCase",
+  ngComponentOutlet: "@angular/common's NgComponentOutlet",
+  ngTemplateOutlet: "@angular/common's NgTemplateOutlet, which a release build runs on <ng-container>",
+  ngTemplateOutletContext: "@angular/common's NgTemplateOutlet, which a release build runs on <ng-container>",
+  ngIf: '@angular/common\'s NgIf without its template (*ngIf)',
+  ngIfElse: '@angular/common\'s NgIf without its template (*ngIf)',
+  ngIfThen: '@angular/common\'s NgIf without its template (*ngIf)',
+  ngForOf: '@angular/common\'s NgForOf without its template (*ngFor)',
+  ngForTrackBy: '@angular/common\'s NgForOf without its template (*ngFor)',
+  ngSwitchCase: '@angular/common\'s NgSwitchCase without its template (*ngSwitchCase)',
+  ngSwitchDefault: '@angular/common\'s NgSwitchDefault without its template (*ngSwitchDefault)',
+  routerLink: "@angular/router's RouterLink; nsRouterLink is supported",
+  routerLinkActive: "@angular/router's RouterLinkActive",
+  routerLinkActiveOptions: "@angular/router's RouterLinkActive",
+  nsRouterLinkActiveOptions: "@nativescript/angular's NSRouterLinkActive",
+  'animate.enter': "Angular's enter animation",
+  'animate.leave': "Angular's leave animation",
+};
+
 /** Whether the file imports `name` from `module` under its own name. */
 function importsAs(sf: ts.SourceFile, name: string, module: string): boolean {
   return sf.statements.some((s) => ts.isImportDeclaration(s) && ts.isStringLiteral(s.moduleSpecifier) && s.moduleSpecifier.text === module && !s.importClause?.isTypeOnly
@@ -1748,6 +1857,55 @@ function sourceOf(ast: ng.AST): string {
   const s = (ast as ng.ASTWithSource).source;
   if (s == null) throw new Error('an Angular expression without source text');
   return s;
+}
+
+/**
+ * The route fields a release build reads, and those it may leave unread: `title` (a native screen has no window title
+ * for it) and `runGuardsAndResolvers` (with no guards or resolvers, nothing it steers runs).
+ */
+const ROUTE_FIELDS = new Set(['path', 'pathMatch', 'component', 'loadComponent', 'redirectTo', 'outlet', 'children', 'loadChildren', 'title', 'runGuardsAndResolvers']);
+const ROUTE_GUARDS = new Set(['canActivate', 'canActivateChild', 'canDeactivate', 'canMatch', 'canLoad']);
+
+const lineOf = (n: ts.Node) => ts.getLineAndCharacterOfPosition(n.getSourceFile(), n.getStart()).line + 1;
+
+/** A route's fields, each one the release build reads as Angular's router does, or may leave unread. */
+function routeFields(file: string, route: ts.ObjectLiteralExpression): void {
+  const pathOf = route.properties.find((p): p is ts.PropertyAssignment => ts.isPropertyAssignment(p) && p.name.getText() === 'path')?.initializer;
+  const named = pathOf && ts.isStringLiteralLike(pathOf) ? ` on '${pathOf.text}'` : '';
+  for (const p of route.properties) {
+    const at = `${file}:${lineOf(p)}`;
+    if (!ts.isPropertyAssignment(p) || !(ts.isIdentifier(p.name) || ts.isStringLiteral(p.name))) throw new Error(`${at}: a route's ${p.getText().split('\n')[0]} is read as \`name: value\` in a release build`);
+    const key = p.name.text;
+    const v = p.initializer;
+    if (ROUTE_GUARDS.has(key)) throw new Error(`${at}: route guards (${key}${named}) are not supported in a release build yet`);
+    if (key === 'resolve') throw new Error(`${at}: route resolvers (resolve${named}) are not supported in a release build yet`);
+    if (!ROUTE_FIELDS.has(key)) throw new Error(`${at}: a route's ${key}${named} is not supported in a release build yet`);
+    if (['path', 'pathMatch', 'redirectTo', 'outlet'].includes(key) && !ts.isStringLiteralLike(v)) throw new Error(`${at}: a route's ${key} that is not a string (${v.getText().split('\n')[0]}) is not supported in a release build yet`);
+    if (key === 'component' && !ts.isIdentifier(v)) throw new Error(`${at}: a route's component that is not a class name (${v.getText().split('\n')[0]}) is not supported in a release build yet`);
+  }
+}
+
+/**
+ * The router's options beside its routes: `withPreloading` (lazy routes are linked in) and `withDebugTracing` (only logs)
+ * change nothing a release build does, and of forRoot's options `enableTracing`, `useHash`, `preloadingStrategy` and the
+ * scrolling ones, which a native page has no use for.
+ */
+function routerOptions(file: string, call: ts.CallExpression): void {
+  const at = `${file}:${lineOf(call)}`;
+  if (/(^|\.)forRoot$/.test(call.expression.getText())) {
+    const options = call.arguments[1];
+    if (!options) return;
+    if (!ts.isObjectLiteralExpression(options)) throw new Error(`${at}: the router's options (${options.getText()}) are not supported in a release build yet`);
+    for (const p of options.properties) {
+      const key = p.name?.getText() ?? p.getText();
+      if (!['enableTracing', 'useHash', 'preloadingStrategy', 'scrollPositionRestoration', 'anchorScrolling', 'scrollOffset'].includes(key)) throw new Error(`${at}: the router option ${key} is not supported in a release build yet`);
+    }
+    return;
+  }
+  for (const f of call.arguments.slice(1)) {
+    const name = ts.isCallExpression(f) ? f.expression.getText() : f.getText();
+    if (!['withPreloading', 'withDebugTracing'].includes(name)) throw new Error(`${at}: the router feature ${name}() is not supported in a release build yet`);
+  }
 }
 
 /** A route of the app's configuration, its lazy children and components resolved to what they import. */
@@ -1809,6 +1967,7 @@ export function angularRouteTree(entry: string, read: (file: string) => string, 
     files.add(file);
     return array.elements.map((el) => {
       if (!ts.isObjectLiteralExpression(el)) throw new Error(`${file}: a route is an object literal in a release build`);
+      routeFields(file, el);
       const get = (k: string) => el.properties.find((p): p is ts.PropertyAssignment => ts.isPropertyAssignment(p) && p.name.getText() === k)?.initializer;
       const text = (k: string) => { const v = get(k); return v && ts.isStringLiteralLike(v) ? v.text : undefined; };
       const node: RouteNode = { path: text('path') ?? '' };
@@ -1824,6 +1983,11 @@ export function angularRouteTree(entry: string, read: (file: string) => string, 
       if (text('outlet')) node.outlet = text('outlet');
       const children = get('children');
       if (children && ts.isArrayLiteralExpression(children)) node.children = routesOf(file, children);
+      else if (children) {
+        const named = ts.isIdentifier(children) ? arrayNamed(file, children.text) : null;
+        if (!named) throw new Error(`${file}:${lineOf(children)}: a route's children are an array in a release build (given ${children.getText()})`);
+        node.children = routesOf(named.file, named.array);
+      }
       const loadChildren = get('loadChildren');
       if (loadChildren) {
         const { file: target, name } = lazy(file, loadChildren);
@@ -1838,7 +2002,10 @@ export function angularRouteTree(entry: string, read: (file: string) => string, 
   let found: { file: string; array: ts.ArrayLiteralExpression } | null = null;
   const visit = (n: ts.Node) => {
     if (found) return;
-    if (ts.isCallExpression(n) && /(^|\.)(provideNativeScriptRouter|provideRouter|forRoot)$/.test(n.expression.getText()) && n.arguments[0] && ts.isIdentifier(n.arguments[0])) found = arrayNamed(entry, n.arguments[0].text);
+    if (ts.isCallExpression(n) && /(^|\.)(provideNativeScriptRouter|provideRouter|forRoot)$/.test(n.expression.getText()) && n.arguments[0] && ts.isIdentifier(n.arguments[0])) {
+      routerOptions(entry, n);
+      found = arrayNamed(entry, n.arguments[0].text);
+    }
     ts.forEachChild(n, visit);
   };
   visit(sf);
@@ -1853,11 +2020,21 @@ export function routedComponents(routes: RouteNode[]): string[] {
 }
 
 /** The route table: path → component, and where the app starts. */
-export function angularRoutes(text: string): { routes: { path: string; component: string }[]; initial: string } {
-  const sf = ts.createSourceFile('routes.ts', text, ts.ScriptTarget.Latest, true);
+export function angularRoutes(text: string, file = 'routes.ts'): { routes: { path: string; component: string }[]; initial: string } {
+  const sf = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true);
   const routes: { path: string; component: string }[] = [];
   let initial = '';
   const visit = (n: ts.Node) => {
+    if (ts.isCallExpression(n) && /(^|\.)forRoot$/.test(n.expression.getText())) routerOptions(file, n);
+    const keys = ts.isObjectLiteralExpression(n) ? n.properties.map((p) => p.name?.getText()) : [];
+    if (ts.isObjectLiteralExpression(n) && keys.includes('path') && keys.some((k) => !!k && (ROUTE_GUARDS.has(k) || ['component', 'loadComponent', 'redirectTo', 'children', 'loadChildren', 'pathMatch', 'resolve'].includes(k)))) {
+      routeFields(file, n);
+      // Only a flat table of paths: nested and lazy routes need provideNativeScriptRouter(routes) in the entry.
+      const nested = keys.find((k) => k === 'children' || k === 'loadChildren' || k === 'loadComponent' || k === 'outlet');
+      if (nested) throw new Error(`${file}:${lineOf(n)}: a route's ${nested}, with the routes given outside the entry, is not supported in a release build yet`);
+      const path = n.properties.find((p) => p.name?.getText() === 'path') as ts.PropertyAssignment;
+      if (keys.includes('redirectTo') && (path.initializer as ts.StringLiteral).text !== '') throw new Error(`${file}:${lineOf(n)}: a redirect from a path other than '', with the routes given outside the entry, is not supported in a release build yet`);
+    }
     if (ts.isObjectLiteralExpression(n)) {
       const get = (k: string) => n.properties.find((p): p is ts.PropertyAssignment => ts.isPropertyAssignment(p) && (p.name as ts.Identifier).text === k)?.initializer;
       const path = (get('path') as ts.StringLiteral | undefined)?.text;
