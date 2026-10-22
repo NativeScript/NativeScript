@@ -559,6 +559,40 @@ export function slotType(d: ts.Declaration, checker: ts.TypeChecker): ts.Type | 
 }
 
 /**
+ * The fields of a class its code sets to null though their written type leaves null out (`colors: string[] = null`,
+ * `this.indices = h.length ? h : null`): code checked without strictNullChecks, where such a field holds null apart from undefined.
+ */
+export function nullSetFields(cls: ts.ClassLikeDeclaration): ts.PropertyDeclaration[] {
+  const givesNull = (e: ts.Expression): boolean => {
+    e = ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses);
+    if (e.kind === ts.SyntaxKind.NullKeyword) return true;
+    if (ts.isConditionalExpression(e)) return givesNull(e.whenTrue) || givesNull(e.whenFalse);
+    return ts.isBinaryExpression(e) && [ts.SyntaxKind.QuestionQuestionToken, ts.SyntaxKind.BarBarToken].includes(e.operatorToken.kind) && givesNull(e.right);
+  };
+  const nullable = (t: ts.TypeNode) => t.kind === ts.SyntaxKind.AnyKeyword || t.kind === ts.SyntaxKind.UnknownKeyword
+    || (ts.isUnionTypeNode(t) && t.types.some((x) => x.kind === ts.SyntaxKind.UndefinedKeyword || (ts.isLiteralTypeNode(x) && x.literal.kind === ts.SyntaxKind.NullKeyword)));
+  return cls.members.filter((m): m is ts.PropertyDeclaration => ts.isPropertyDeclaration(m) && !m.modifiers?.some((x) => x.kind === ts.SyntaxKind.StaticKeyword)
+    && ts.isIdentifier(m.name) && !!m.type && !nullable(m.type) && ((!!m.initializer && givesNull(m.initializer)) || assignedValues(m).some(givesNull)));
+}
+
+/** Whether a field's initializer is null. */
+export function initializedNull(m: ts.PropertyDeclaration): boolean {
+  return !!m.initializer && ts.skipOuterExpressions(m.initializer, ts.OuterExpressionKinds.Parentheses).kind === ts.SyntaxKind.NullKeyword;
+}
+
+/** The values a class's own code assigns its field (`this.name = value`). */
+export function assignedValues(field: ts.PropertyDeclaration): ts.Expression[] {
+  const name = field.name.getText(), out: ts.Expression[] = [];
+  const visit = (x: ts.Node): void => {
+    if (ts.isBinaryExpression(x) && x.operatorToken.kind === ts.SyntaxKind.EqualsToken && ts.isPropertyAccessExpression(x.left)
+      && x.left.expression.kind === ts.SyntaxKind.ThisKeyword && x.left.name.text === name) out.push(x.right);
+    ts.forEachChild(x, visit);
+  };
+  ts.forEachChild(field.parent, visit);
+  return out;
+}
+
+/**
  * The fields of a class with no base that its constructor assigns on every path before any read of them and before
  * `this` escapes it (a method called on it, `this` passed or stored, a function that captures it): a backend may hold
  * them as their type, never undefined. Anything the walk cannot follow ends it, keeping only what was assigned before.
