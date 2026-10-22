@@ -196,8 +196,9 @@ function acquire(dir: string, options: SourceOptions): PluginSource {
       : firstTarget && existsSync(join(root, firstTarget)) ? root
       : packageDir) ?? null;
     if (!patchBase) throw new Error(`${name}: ${relative(options.app, patch)} needs the package's directory in its source, which was not found`);
-    const copy = join(override ? join(options.cache ?? DEFAULT_CACHE, 'overrides', name.replace(/\//g, '+')) : dirname(root), `patched-${createHash('sha1').update(text).digest('hex').slice(0, 12)}`);
     const relBase = relative(root, patchBase);
+    // The copy keeps the repository's layout below the patch's base; its name changes with that layout.
+    const copy = join(override ? join(options.cache ?? DEFAULT_CACHE, 'overrides', name.replace(/\//g, '+')) : dirname(root), `patched-${createHash('sha1').update(`repo-layout\0${relBase}\0`).update(text).digest('hex').slice(0, 12)}`);
     const targetDir = relBase ? join(copy, relBase) : copy;
     if (!existsSync(join(copy, '.applied'))) {
       rmSync(copy, { recursive: true, force: true });
