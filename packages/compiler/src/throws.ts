@@ -181,6 +181,8 @@ export class Throws {
       if (file?.isDeclarationFile && !isNativeDeclaration(file)) return true;
     }
     if (ts.isCallExpression(n) && ts.isElementAccessExpression(n.expression) && iterationThrows(c.getTypeAtLocation(n.expression.expression), c)) return true;
+    // A library function iterating an untyped value (`Array.from(x)`, `new Set(x)`) iterates it through the runtime, which throws for what is no iterable.
+    if ((ts.isCallExpression(n) || ts.isNewExpression(n)) && n.arguments?.some((a, i) => this.untyped(a) && iterableParameter(c, n, i))) return true;
     if (ts.isVariableDeclaration(n) && (ts.isObjectBindingPattern(n.name) || ts.isArrayBindingPattern(n.name)) && n.initializer && this.untyped(n.initializer)) return true;
     // Destructuring runs the getters of the members it reads.
     if (ts.isVariableDeclaration(n) && ts.isObjectBindingPattern(n.name) && n.initializer) {
@@ -505,4 +507,15 @@ function objectPrototypeMethod(callee: ts.Expression, c: ts.TypeChecker): boolea
   return ts.isPropertyAccessExpression(target) && ['hasOwnProperty', 'propertyIsEnumerable', 'toString'].includes(target.name.text)
     && ts.isPropertyAccessExpression(target.expression) && target.expression.name.text === 'prototype'
     && ts.isIdentifier(target.expression.expression) && target.expression.expression.text === 'Object';
+}
+
+/** Whether the library parameter a call's argument `i` goes to takes an iterable (`Iterable<T> | ArrayLike<T>`). */
+function iterableParameter(c: ts.TypeChecker, call: ts.CallExpression | ts.NewExpression, i: number): boolean {
+  const sig = c.getResolvedSignature(call);
+  const decl = sig?.getDeclaration();
+  if (!sig || !decl || ts.isJSDocSignature(decl) || !decl.getSourceFile().isDeclarationFile || isNativeDeclaration(decl.getSourceFile())) return false;
+  const p = sig.getParameters()[Math.min(i, sig.getParameters().length - 1)];
+  if (!p) return false;
+  const t = c.getTypeOfSymbolAtLocation(p, call);
+  return (t.isUnion() ? t.types : [t]).some((u) => ['Iterable', 'ArrayLike', 'IterableIterator'].includes((u.aliasSymbol ?? u.getSymbol())?.getName() ?? ''));
 }
