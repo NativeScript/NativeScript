@@ -676,7 +676,7 @@ public final class SimpleChange {
 }
 
 public protocol JSInjectableType: AnyObject {
-    static var jsSharedInstance: Any? { get }
+    static var jsSharedInstance: Any? { get throws }
     static func jsConstruct() throws -> Any?
 }
 
@@ -801,6 +801,12 @@ public final class Injector {
         let service = try root(make)
         made[key] = service
         return service
+    }
+
+    /// A root service whose constructor cannot throw, so neither can the inject() that makes it: a provider's factory
+    /// that throws for it, or its construction injecting itself, stops the app with that error.
+    public static func root<T: AnyObject>(_ type: T.Type, making make: () -> T) -> T {
+        do { return try root(type, { () throws -> T in make() }) } catch { fatalError(jsErrorOf(jsCaught(error)).message) }
     }
 
     private static var tokenValues: [ObjectIdentifier: Any?] = [:]
@@ -978,7 +984,7 @@ public final class Injector {
         }
         let flat = jsFlat(unwrapped)
         if let injectable = flat as? JSInjectableType.Type {
-            return injectable.jsSharedInstance
+            return jsReported { try injectable.jsSharedInstance } ?? nil
         }
         if flat is ErrorHandler.Type { return ErrorHandler.shared }
         if flat is Injector.Type { return current ?? Injector.shared }
