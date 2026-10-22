@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { classifyServedModule, classifyServedRequest } from './websocket-served-module-helpers.js';
+import { classifyServedModule, classifyServedRequest, hasEsmDefaultExport } from './websocket-served-module-helpers.js';
 
 describe('classifyServedRequest', () => {
 	it('treats a package request as library code when its resolved id is a symlink target outside node_modules', () => {
@@ -22,5 +22,25 @@ describe('classifyServedRequest', () => {
 	it('falls back to the spec when nothing resolved', () => {
 		expect(classifyServedRequest('/node_modules/pkg/index.js', null)).toBe('library');
 		expect(classifyServedModule('/node_modules/pkg/index.js')).toBe('library');
+	});
+});
+
+describe('hasEsmDefaultExport', () => {
+	it.each([
+		['export default 17;', true],
+		['const named = 23; export { named as default };', true],
+		['export { default } from "./base.mjs";', true],
+		['export * as default from "./base.mjs";', true],
+		['export const named = 99;', false],
+		['export * from "./base.mjs";', false],
+		['// export default 17;\nexport const text = "export default 17";', false],
+		['export { type Value as default } from "./types";', false],
+		['module.exports = 17;', false],
+	])('%s → %s', (code, expected) => {
+		expect(hasEsmDefaultExport(code)).toBe(expected);
+	});
+
+	it('returns null for unparseable code', () => {
+		expect(hasEsmDefaultExport('export default (;')).toBeNull();
 	});
 });

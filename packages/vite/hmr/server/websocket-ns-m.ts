@@ -12,7 +12,7 @@ import { createNsMRequestContext, resolveFsAnchoredSpec, resolveNsMTransformedMo
 import { setDeviceModuleHeaders } from './route-helpers.js';
 import { RAW_QUERY_PATTERN } from './constants.js';
 import { CSS_MODULE_RE, buildCssRegisterSnippetFromVar, normalizeCssForDevice } from './css-device-module.js';
-import { assertNoOptimizedArtifacts, buildBootProgressSnippet, canonicalizeRtImports, dedupeRtNamedImportsAgainstDestructures, deduplicateLinkerImports, ensureDestructureCoreImports, ensureGuardPlainDynamicImports, ensureVariableDynamicImportHelper, expandStarExports, hoistTopLevelStaticImports, MODULE_IMPORT_ANALYSIS_PLUGINS, wrapCommonJsModuleForDevice, ensureWorkerEntryGlobalsImport, classifyServedRequest } from './websocket-served-module-helpers.js';
+import { assertNoOptimizedArtifacts, buildBootProgressSnippet, canonicalizeRtImports, dedupeRtNamedImportsAgainstDestructures, deduplicateLinkerImports, ensureDestructureCoreImports, ensureGuardPlainDynamicImports, ensureVariableDynamicImportHelper, expandStarExports, hasEsmDefaultExport, hoistTopLevelStaticImports, MODULE_IMPORT_ANALYSIS_PLUGINS, wrapCommonJsModuleForDevice, ensureWorkerEntryGlobalsImport, classifyServedRequest } from './websocket-served-module-helpers.js';
 import { cleanCode, collectImportDependencies, isWorkerEntryModuleId, processCodeForDevice, rewriteImports } from './websocket-device-transform.js';
 import { REQUIRE_GUARD_SNIPPET } from './require-guard.js';
 import { getServerOrigin } from './server-origin.js';
@@ -565,7 +565,8 @@ export function registerNsModuleServerRoute(server: ViteDevServer, options: Regi
 								}
 							} catch {}
 							if (!targetCode) continue;
-							const hasDefault = /\bexport\s+default\b/.test(targetCode) || /export\s*\{\s*default\s*(?:as\s*default)?\s*\}/.test(targetCode);
+							const hasDefault = hasEsmDefaultExport(targetCode);
+							if (hasDefault === null) continue;
 							if (!hasDefault) {
 								// CJS/UMD modules won't have `export default` — they get CJS-wrapped
 								// by the serving pipeline. Only warn, don't fatally block the importer.
