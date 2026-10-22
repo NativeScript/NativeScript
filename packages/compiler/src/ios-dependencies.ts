@@ -254,7 +254,7 @@ export function iosDependencies(o: { app: string; packages: SwiftPackage[]; depl
 }
 
 function dependencyKey(packages: SwiftPackage[], pods: string | null): string {
-  const h = createHash('sha256').update('dependencies-1\0').update(pods ?? '').update('\0');
+  const h = createHash('sha256').update('dependencies-2\0').update(pods ?? '').update('\0');
   for (const p of packages) {
     h.update(JSON.stringify({ ...p, path: undefined, plugin: undefined, pluginDir: undefined })).update('\0');
     if (p.path) for (const f of filesUnder(p.path)) h.update(relative(p.path, f)).update('\0').update(readFileSync(f)).update('\0');

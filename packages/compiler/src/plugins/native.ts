@@ -15,10 +15,12 @@ import { mirror } from '../mirror.ts';
  * library target of the project (built with its settings, as the link's
  * dead code elimination needs every Swift module to be), the rest as targets of a
  * local Swift package. One target per plugin source set:
- * - Objective-C and C: the module its `module.modulemap` declares, else `NSPlugin_<package>`;
+ * - Objective-C and C: the module its `module.modulemap` declares, else `NSPlugin_<package>`
+ *   (`NSPlugin_<package>_ObjC` beside Swift);
  * - Swift: `NSPlugin_<package>`, the package's name without `@` and with every
  *   other character that is not a letter or digit as `_`
- *   (`@nativescript/input-accessory` → `NSPlugin_nativescript_input_accessory`);
+ *   (`@nativescript/input-accessory` → `NSPlugin_nativescript_input_accessory`),
+ *   depending on the plugins' Objective-C and binary modules it imports;
  * - an `.xcframework`: a binary target, imported as the module its framework declares.
  * The app's own `App_Resources/iOS/src` is read the same way, except that its
  * Swift is compiled into the app target, as the NativeScript CLI compiles it.
@@ -31,8 +33,12 @@ export interface PluginNative {
   modules: string[];
   /** The local package (absolute), its name and its library products; null when no plugin ships code for it. */
   package: { dir: string; name: string; products: string[] } | null;
-  /** Swift modules built as the project's own static library targets: their names, source directories (absolute) and the Swift packages their plugin declares. */
-  swift: { name: string; dir: string; packages: SwiftPackage[] }[];
+  /**
+   * Swift modules built as the project's own static library targets: their names, source directories (absolute), the
+   * Swift packages their plugin declares, the products of the local package they import, and the directories (absolute)
+   * of the module maps of the Objective-C modules they import.
+   */
+  swift: { name: string; dir: string; packages: SwiftPackage[]; products: string[]; includes: string[] }[];
   /** The app's own Swift (absolute), compiled into the app target; null when it has none. */
   appSwift: string | null;
   /** Plugins' Objective-C and C that import a pod (absolute directories, each with its module map), compiled into the app target as the CLI compiles them, where the pods' headers are. */
@@ -59,8 +65,10 @@ interface Target {
   binary?: string;
   /** Compiled into the app target: Swift, its internal declarations in its table; or Objective-C that imports a pod. */
   inApp?: boolean;
-  /** Arguments that let the extractor see the module, given the copied files and a scratch directory. */
-  extract: (scratch: string) => string[];
+  /** Swift: the modules its files import. */
+  imports?: string[];
+  /** Arguments that let the extractor see the module, given a scratch directory and the arguments that let it see the modules the target imports. */
+  extract: (scratch: string, imported: string[]) => string[];
 }
 
 const PACKAGE = 'NSPlugins';
@@ -127,12 +135,20 @@ function assemble(sources: PluginSource[], root: string, stage: string, o: Param
   if (clangTargets) writeFileSync(join(stage, PREFIX_FILE), PREFIX_HEADER);
   if (packaged.length) writeFileSync(join(stage, 'Package.swift'), manifest(packaged, join(root, PREFIX_FILE)));
 
+  const byModule = new Map(all.map((t) => [t.module, t]));
+  // Swift sees the Objective-C and binary modules of every plugin, as in the app target the NativeScript CLI compiles it into.
+  const importedTargets = (t: Target) => (t.imports ?? []).map((m) => byModule.get(m)).filter((d): d is Target => !!d && d.kind !== 'swift');
   const left = new Set<Target>();
   for (const { source, targets } of perPackage) {
     const tables = targets.map((t) => {
       const scratch = mkdtempSync(join(tmpdir(), `ns-plugin-${t.module}-`));
+      const imported = () => importedTargets(t).flatMap((d) => {
+        const dir = join(scratch, 'imports', d.name);
+        mkdirSync(dir, { recursive: true });
+        return d.extract(dir, []);
+      });
       try {
-        return nativeTable(t.module, { key: hash(t), internal: t.inApp && t.kind === 'swift', extraArgs: () => [...t.extract(scratch), ...o.deps.searchArgs()] });
+        return nativeTable(t.module, { key: hash(t, importedTargets(t)), internal: t.inApp && t.kind === 'swift', extraArgs: () => [...t.extract(scratch, imported()), ...o.deps.searchArgs()] });
       } catch (e) {
         // Swift the app's NativeScript build compiles against the JavaScript runtime's code; what TypeScript calls in it stops the translation.
         if (t.inApp && t.kind === 'swift') {
@@ -166,7 +182,12 @@ function assemble(sources: PluginSource[], root: string, stage: string, o: Param
   return {
     modules: [...all.filter((t) => !(t.inApp && t.kind === 'swift')).map((t) => t.module), ...o.deps.modules.filter((m) => declared.has(m))],
     package: packaged.length ? { dir: root, name: PACKAGE, products: packaged.map((t) => t.name) } : null,
-    swift: all.filter((t) => t.kind === 'swift' && !t.inApp).map((t) => ({ name: t.name, dir: join(root, t.path), packages: o.packages.filter((p) => p.plugin === perPackage.find((x) => x.targets.includes(t))!.source.name) })),
+    swift: all.filter((t) => t.kind === 'swift' && !t.inApp).map((t) => ({
+      name: t.name, dir: join(root, t.path), packages: o.packages.filter((p) => p.plugin === perPackage.find((x) => x.targets.includes(t))!.source.name),
+      products: importedTargets(t).filter((d) => !d.inApp).map((d) => d.name),
+      // A package product's headers reach the app target only: a static library finds the module by its map.
+      includes: importedTargets(t).filter((d) => d.kind === 'clang').map((d) => join(root, d.path, d.publicHeaders!)),
+    })),
     appSwift: app ? join(root, app.path) : null,
     appClang: all.filter((t) => t.kind === 'clang' && t.inApp).map((t) => join(root, t.path)),
     prefixHeader: clangTargets ? join(root, PREFIX_FILE) : null,
@@ -181,7 +202,11 @@ export function xcodegenLines(native: PluginNative, projectDir: string): { packa
   const conditions = [...new Set(native.bindings.flatMap((b) => b.conditions))];
   return {
     packages: p ? `  ${p.name}:\n    path: ${relative(projectDir, p.dir)}\n` : '',
-    targets: native.swift.map((t) => `  ${t.name}:\n    type: library.static\n    platform: iOS\n    sources: [${relative(projectDir, t.dir)}]\n${t.packages.length ? `    dependencies:\n${productLines(t.packages, false)}` : ''}    settings:\n      base:\n        SWIFT_VERSION: "5"\n`).join(''),
+    targets: native.swift.map((t) => {
+      const dependencies = productLines(t.packages, false) + t.products.map((product) => `      - package: ${p!.name}\n        product: ${product}\n        link: false\n`).join('');
+      const includes = t.includes.length ? Object.entries(searchPaths(t.includes, projectDir)).map(([k, v]) => `        ${k}: ${v}\n`).join('') : '';
+      return `  ${t.name}:\n    type: library.static\n    platform: iOS\n    sources: [${relative(projectDir, t.dir)}]\n${dependencies ? `    dependencies:\n${dependencies}` : ''}    settings:\n      base:\n        SWIFT_VERSION: "5"\n${includes}`;
+    }).join(''),
     dependencies: [
       ...(p?.products ?? []).map((product) => `      - package: ${p!.name}\n        product: ${product}\n`),
       ...native.swift.map((t) => `      - target: ${t.name}\n`),
@@ -190,11 +215,16 @@ export function xcodegenLines(native: PluginNative, projectDir: string): { packa
       + native.appClang.map((d) => `      - path: ${relative(projectDir, d)}\n        excludes: ["**/*.modulemap"]\n`).join(''),
     settings: {
       // The app's Swift imports their modules by the module maps beside them.
-      ...(native.appClang.length ? Object.fromEntries(['SWIFT_INCLUDE_PATHS', 'HEADER_SEARCH_PATHS'].map((k) => [k, JSON.stringify(['$(inherited)', ...native.appClang.map((d) => `$(SRCROOT)/${relative(projectDir, d)}`)].join(' '))])) : {}),
+      ...(native.appClang.length ? searchPaths(native.appClang, projectDir) : {}),
       ...(native.appClang.length && native.prefixHeader ? { GCC_PREFIX_HEADER: JSON.stringify(`$(SRCROOT)/${relative(projectDir, native.prefixHeader)}`) } : {}),
       ...(conditions.length ? { SWIFT_ACTIVE_COMPILATION_CONDITIONS: JSON.stringify(['$(inherited)', ...conditions].join(' ')) } : {}),
     },
   };
+}
+
+/** Settings that let Swift import the modules whose maps are in `dirs`. */
+function searchPaths(dirs: string[], projectDir: string): Record<string, string> {
+  return Object.fromEntries(['SWIFT_INCLUDE_PATHS', 'HEADER_SEARCH_PATHS'].map((k) => [k, JSON.stringify(['$(inherited)', ...dirs.map((d) => `$(SRCROOT)/${relative(projectDir, d)}`)].join(' '))]));
 }
 
 /**
@@ -223,7 +253,8 @@ function targetsOf(source: NativeSources, errors: string[], deps: Dependencies):
       if (dir === ios && PROJECT_FILES.has(f)) continue;
       const p = join(dir, f);
       if (f === '.DS_Store' || /\.md$/i.test(f)) continue;
-      else if (f === 'native-api-usage.json') continue;
+      // Typings beside the sources are the program's, not the build's.
+      else if (f === 'native-api-usage.json' || f.endsWith('.d.ts')) continue;
       if (statSync(p).isDirectory()) {
         // Code bound to the V8 engine (`v8::` objects installed into the JavaScript runtime, as @nativescript/canvas's
         // CanvasModule): no engine runs a compiled app, whose Swift binding of the same API the kit provides.
@@ -247,17 +278,21 @@ function targetsOf(source: NativeSources, errors: string[], deps: Dependencies):
     }
   };
   walk(ios);
-  if (swift.length && clang.length) fail(ios, 'Swift and Objective-C sources in one plugin are not supported yet');
+  // Empty headers beside Swift (an umbrella header with nothing to declare) are no module: SwiftPM builds no target without sources.
+  if (swift.length && clang.every((f) => /\.(h|hh|hpp)$/.test(f) && !readFileSync(f, 'utf8').trim())) clang.length = 0;
   if (shaders.length && !swift.length) fail(shaders[0], 'Metal shaders need Swift beside them in App_Resources/iOS/src');
   if (maps.length > 1) fail(ios, `more than one module.modulemap (${maps.map((m) => relative(ios, m)).join(', ')})`);
-  if (maps.length && !clang.length) fail(maps[0], 'a module map without sources');
+  // Beside Swift alone, a module map names headers the plugin doesn't ship (the CLI's own framework's): there is no module to build.
+  if (maps.length && !clang.length && !swift.length) fail(maps[0], 'a module map without sources');
+  const swiftModule = source.appModule ?? derivedModule(source.name);
 
   const { target, sdk } = iosTarget();
   const targets: Target[] = [];
   if (clang.length && maps.length <= 1) {
     const map = maps[0];
-    const module = map ? /^\s*(?:explicit\s+)?module\s+(\w+)/m.exec(readFileSync(map, 'utf8'))?.[1] : derivedModule(source.name);
+    const module = map ? /^\s*(?:explicit\s+)?module\s+(\w+)/m.exec(readFileSync(map, 'utf8'))?.[1] : swift.length ? `${derivedModule(source.name)}_ObjC` : derivedModule(source.name);
     if (!module) fail(map, 'declares no module (a `framework module` is not supported yet)');
+    else if (swift.length && module === swiftModule) fail(map, `declares module ${module}, the name of the plugin's Swift module`);
     else {
       const from = commonDir([...clang, ...maps]);
       const path = `Sources/${module}`;
@@ -279,20 +314,21 @@ function targetsOf(source: NativeSources, errors: string[], deps: Dependencies):
       });
     }
   }
-  if (swift.length && !clang.length) {
-    const module = source.appModule ?? derivedModule(source.name);
+  if (swift.length) {
+    const module = swiftModule;
     const from = commonDir([...swift, ...shaders]);
+    const imports = [...new Set(swift.flatMap((f) => [...readFileSync(f, 'utf8').matchAll(/^\s*(?:@\w+\s+)*import\s+(?:(?:typealias|struct|class|enum|protocol|let|var|func)\s+)?(\w+)/gm)].map((m) => m[1])))].sort();
     targets.push({
-      kind: 'swift', name: module, module, from, path: source.appModule ? 'App' : `Sources/${module}`, files: [...swift, ...shaders], inApp: !!source.appModule,
-      extract: (scratch) => {
+      kind: 'swift', name: module, module, from, path: source.appModule ? 'App' : `Sources/${module}`, files: [...swift, ...shaders], inApp: !!source.appModule, imports,
+      extract: (scratch, imported) => {
         try {
           execFileSync('xcrun', ['swiftc', '-emit-module', '-module-name', module, '-target', target, '-sdk', sdk, '-swift-version', '5', '-parse-as-library',
-            '-emit-module-path', join(scratch, `${module}.swiftmodule`), ...deps.searchArgs(), ...swift], { stdio: ['ignore', 'ignore', 'pipe'], maxBuffer: 1 << 28 });
+            '-emit-module-path', join(scratch, `${module}.swiftmodule`), ...imported, ...deps.searchArgs(), ...swift], { stdio: ['ignore', 'ignore', 'pipe'], maxBuffer: 1 << 28 });
         } catch (e: any) {
           const out = String(e.stderr ?? e.message).split('\n').filter((l) => /^\S.*\berror:/.test(l));
           throw new Error(`its Swift sources do not compile as module ${module}:\n${out.join('\n')}`);
         }
-        return ['-I', scratch];
+        return [...imported, '-I', scratch];
       },
     });
   }
@@ -336,9 +372,11 @@ ${targets.map((t) => `        ${decl(t)},`).join('\n')}
 `;
 }
 
-function hash(t: Target): string {
-  const h = createHash('sha256').update(`tables-2\0${t.kind}\0${t.module}\0${t.inApp ? 'app' : ''}\0${t.kind === 'clang' ? PREFIX_HEADER : ''}`);
+/** A module's table depends on its files and on the modules it imports, whose types its declarations name. */
+function hash(t: Target, imported: Target[] = []): string {
+  const h = createHash('sha256').update(`tables-3\0${t.kind}\0${t.module}\0${t.inApp ? 'app' : ''}\0${t.kind === 'clang' ? PREFIX_HEADER : ''}`);
   for (const f of [...t.files].sort()) h.update(relative(t.from, f)).update('\0').update(readFileSync(f)).update('\0');
+  for (const d of imported) h.update(hash(d)).update('\0');
   return h.digest('hex').slice(0, 16);
 }
 

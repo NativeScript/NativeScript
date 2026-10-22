@@ -8,7 +8,7 @@
 // - a plugin's own Java classes (plugin-java/, compiled with javac) translate as native calls without typings declaring them;
 // - an app's module graph (tsconfig paths and exclude, what its entry reaches), its plugins' ES module bundles, the
 //   imports and prefix header of the generated project, and native calls into a module the build has no table for.
-import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -22,10 +22,10 @@ import { pathAliases } from '../../src/app-paths.ts';
 import { appImports, reachedFrom, tsconfigIncluded } from '../../src/app-modules.ts';
 import { runtimeFile } from '../../src/plugins/resolve.ts';
 import { PluginSources, verify, verifyBundle } from '../../src/plugins/source.ts';
-import { manifest, ownTypings, scopedImports, usedImports } from '../../src/plugins/native.ts';
+import { manifest, ownTypings, pluginNative, scopedImports, usedImports, xcodegenLines } from '../../src/plugins/native.ts';
 import { singleTry, Translator as SwiftTranslator } from '../../src/swift.ts';
 import { translateModules } from '../../src/modules.ts';
-import { setEmptyTable } from '../../src/natives/symbols.ts';
+import { conformsTo, lookupMember, nativeTable, setEmptyTable } from '../../src/natives/symbols.ts';
 import { isFragment, render } from '../../src/codegen.ts';
 import { Translator } from '../../src/kotlin.ts';
 import { translateKotlinModules } from '../../src/kotlin-modules.ts';
@@ -326,6 +326,82 @@ export class GlyphPipe { constructor(@Inject(TOKEN) private config: any, @Option
     const clang = { kind: 'clang', name: 'Canvas', module: 'Canvas', path: 'Sources/Canvas', publicHeaders: 'include' } as unknown as Parameters<typeof manifest>[0][0];
     check(manifest([clang], '/out/Plugins/NSPluginsPrefix.h').includes('cSettings: [.unsafeFlags(["-include", "/out/Plugins/NSPluginsPrefix.h"])]'), "a plugin's Objective-C is compiled with the prefix header an app's own build gives it");
   } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
+
+// ---- Plugins' iOS code: Swift beside Objective-C, and the tables of their modules ----
+{
+  const dir = mkdtempSync(join(tmpdir(), 'ns-release-checks-mixed-'));
+  const w = (f: string, text: string) => { mkdirSync(dirname(join(dir, f)), { recursive: true }); writeFileSync(join(dir, f), text); return join(dir, f); };
+  const tableCache = process.env.NS_NATIVE_TABLE_CACHE;
+  try {
+    // As firebase-messaging-core: a module map over Objective-C, and Swift importing it.
+    w('mixed/platforms/ios/src/module.modulemap', 'module HKMixedObjC {\n  umbrella header "HKMixedObjC.h"\n  export *\n}\n');
+    w('mixed/platforms/ios/src/HKMixedObjC.h', '#import <Foundation/Foundation.h>\n@interface HKMixedLoader : NSObject\n+ (NSString *)greeting;\n@end\n');
+    w('mixed/platforms/ios/src/HKMixedLoader.m', '#import "HKMixedObjC.h"\n@implementation HKMixedLoader\n+ (NSString *)greeting { return @"hi"; }\n@end\n');
+    w('mixed/platforms/ios/src/HKMixedHelper.swift', [
+      'import UIKit', 'import HKMixedObjC', '',
+      '@objc public enum HKMixedMode: Int {', '  case quiet, loud', '}', '',
+      '@objc(HKMixedHelper)', 'public class HKMixedHelper: NSObject {',
+      '  @objc public static func greet(_ mode: HKMixedMode) -> String { HKMixedLoader.greeting() }',
+      '  @_spi(Testing) @objc public static func hidden() {}', '}', '',
+      '@objc public protocol HKMixedPinging {', '  func hkPing() -> Int', '}', '',
+      'extension UIView: HKMixedPinging {', '  public func hkPing() -> Int { 1 }', '}', ''].join('\n'));
+    w('mixed/platforms/ios/typings/objc!HKMixed.d.ts', 'declare class HKMixedHelper extends NSObject { static greet(mode: HKMixedMode): string; }\n');
+    const typings = w('mixed/typings/objc!HKMixed.d.ts', 'declare const enum HKMixedMode { Quiet = 0, Loud = 1 }\ndeclare class HKMixedHelper extends NSObject { static greet(mode: HKMixedMode): string; }\ninterface HKMixedPinging { hkPing(): number; }\n');
+    // Without a module map, the Objective-C module is named apart from the Swift one.
+    w('nomap/platforms/ios/src/HKNoMap.h', '#import <Foundation/Foundation.h>\n@interface HKNoMap : NSObject\n@end\n');
+    w('nomap/platforms/ios/src/HKNoMap.m', '#import "HKNoMap.h"\n@implementation HKNoMap\n@end\n');
+    w('nomap/platforms/ios/src/HKNoMapSwift.swift', 'import Foundation\n@objc public class HKNoMapSwift: NSObject {}\n');
+    // As firebase-messaging: an empty umbrella header beside Swift that imports another plugin's Objective-C.
+    w('umbrella/platforms/ios/src/module.modulemap', 'module HKUmbrella {\n  umbrella header "HKUmbrella.h"\n  export *\n}\n');
+    w('umbrella/platforms/ios/src/HKUmbrella.h', '');
+    w('umbrella/platforms/ios/src/HKUmbrellaDelegate.swift', 'import Foundation\nimport HKMixedObjC\n@objc public class HKUmbrellaDelegate: NSObject {\n  @objc public static func greeting() -> String { HKMixedLoader.greeting() }\n}\n');
+    // As ui-webview: a module map of the CLI's own framework beside Swift alone.
+    w('stale/platforms/ios/src/module.modulemap', 'framework module HKStale {\n  umbrella header "HKStale.h"\n}\n');
+    w('stale/platforms/ios/src/HKStale.swift', 'import Foundation\n@objc public class HKStale: NSObject {}\n');
+
+    process.env.NS_NATIVE_TABLE_CACHE = join(dir, 'tables');
+    const unread = nativeTable('NSPlugin_hk_mixed');
+    if (tableCache === undefined) delete process.env.NS_NATIVE_TABLE_CACHE; else process.env.NS_NATIVE_TABLE_CACHE = tableCache;
+    const cachedEmpty = (existsSync(join(dir, 'tables')) ? readdirSync(join(dir, 'tables'), { recursive: true }) as string[] : []).filter((f) => f.endsWith('.json'));
+    check(!Object.keys(unread.classes).length && !cachedEmpty.length, `an SDK module the extractor cannot read is not cached as empty${cachedEmpty.length ? `: ${cachedEmpty.join()}` : ''}`);
+
+    const source = (name: string, at: string, typings: string[] = []) => ({ name, version: '1.0.0', dir: join(dir, at), typings, files: new Map() }) as unknown as Parameters<typeof pluginNative>[0][0];
+    const out = join(dir, 'project');
+    let native: ReturnType<typeof pluginNative> | null = null;
+    let failure = '';
+    try {
+      native = pluginNative([source('@hk/mixed', 'mixed', [typings]), source('@hk/nomap', 'nomap'), source('@hk/umbrella', 'umbrella'), source('@hk/stale', 'stale')], out,
+        { deps: { modules: [], searchArgs: () => [], classes: {}, dispose: () => {} }, packages: [], declarations: [typings], bindings: join(dir, 'bindings'), say: () => {} });
+    } catch (e) { failure = String(e); }
+    check(!!native && native.modules.join() === 'HKMixedObjC,NSPlugin_hk_mixed,NSPlugin_hk_nomap_ObjC,NSPlugin_hk_nomap,NSPlugin_hk_stale,NSPlugin_hk_umbrella'
+      && native.package?.products.join() === 'HKMixedObjC,NSPlugin_hk_nomap_ObjC',
+      `a plugin's Swift and Objective-C are modules of their own; an empty umbrella header, a module map beside Swift alone and typings are none${failure ? `: ${failure.split('\n').slice(0, 3).join(' ')}` : native ? ` (${native.modules.join()})` : ''}`);
+    if (native) {
+      const swift = Object.fromEntries(native.swift.map((t) => [t.name, t.products.join()]));
+      check(swift.NSPlugin_hk_mixed === 'HKMixedObjC' && swift.NSPlugin_hk_umbrella === 'HKMixedObjC' && swift.NSPlugin_hk_nomap === '', `a plugin's Swift depends on the Objective-C modules it imports, another plugin's too (${JSON.stringify(swift)})`);
+      const lines = xcodegenLines(native, out).targets;
+      check(/ {2}NSPlugin_hk_umbrella:\n(?: {4}.*\n)*? {4}dependencies:\n {6}- package: NSPlugins\n {8}product: HKMixedObjC\n {8}link: false\n(?: {4,}.*\n)*? {8}SWIFT_INCLUDE_PATHS: "\$\(inherited\) \$\(SRCROOT\)\/Plugins\/Sources\/HKMixedObjC"\n/.test(lines),
+        "the Swift module's target depends on the local package's product it imports, and finds its module map");
+      const table = nativeTable('NSPlugin_hk_mixed');
+      const mode = table.enums.HKMixedMode;
+      check(mode?.kind === 'enum' && mode.raw === 'Int' && mode.cases.Loud?.swift === 'loud', `a Swift @objc enum is in its module's table as Objective-C names it (${JSON.stringify(mode)})`);
+      check(!!table.classes.HKMixedHelper?.static.greet && !table.classes.HKMixedHelper.static.hidden, "a declaration of a Swift module's SPI is not in its table");
+      check(conformsTo('UIKit', 'UIView', 'HKMixedPinging') && lookupMember('UIKit', 'UIView', 'hkPing', false)?.swift === 'hkPing', "a protocol a plugin's extension adopts is one of the extended class's");
+      let longName: unknown = 'threw';
+      try { longName = lookupMember('UIKit', 'UIView', 'setLongPressHK', false); } catch { /* reported below */ }
+      check(longName === null, 'a member a class lacks, its name spelling `Long` as a word, is not found');
+      const use = w('src/use.ios.ts', 'export const loud = HKMixedHelper.greet(HKMixedMode.Loud);\n');
+      const { checker, program, files } = createProgram([use], new Map(), 'ios', modulesDir, undefined, [typings]);
+      const translator = new SwiftTranslator(checker, new Map(), files);
+      translator.errors = [];
+      const code = translateModules(translator, program, [use]).map((m) => m.code).join('\n');
+      check(!translator.errors.length && /HKMixedHelper\.greet\(HKMixedMode\.loud\)/.test(code), `a Swift @objc enum's case is named as Swift names it${translator.errors.length ? `: ${translator.errors[0]}` : ''}`);
+    }
+  } finally {
+    if (tableCache === undefined) delete process.env.NS_NATIVE_TABLE_CACHE; else process.env.NS_NATIVE_TABLE_CACHE = tableCache;
     rmSync(dir, { recursive: true, force: true });
   }
 }
