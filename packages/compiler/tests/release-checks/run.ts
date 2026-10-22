@@ -481,5 +481,34 @@ export class KiddoCardComponent {
   }
 }
 
+// ---- HttpClient: a `responseType: 'text'` response is a string ----
+{
+  const dir = mkdtempSync(join(tmpdir(), 'ns-release-checks-http-'));
+  try {
+    const file = join(dir, 'docs.service.ts');
+    writeFileSync(file, `
+import { HttpClient } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
+
+export async function readDoc(http: HttpClient, url: string): Promise<string> {
+  const text = await firstValueFrom(http.get(url, { responseType: 'text' }));
+  return text.trim();
+}
+`);
+    // An app's iOS build compiles @angular/common/http from runtime/angular-rx.ts, as it does with plugins.
+    symlinkSync(modulesDir, join(dir, 'node_modules'), 'dir');
+    const sw = createProgram([file], new Map(), 'ios', modulesDir, new PluginSources({ app: dir, platform: 'ios' }));
+    const swCode = translateModules(new SwiftTranslator(sw.checker, new Map(), sw.files, { pluginFiles: sw.pluginFiles }), sw.program, [file]).map((m) => m.code).join('\n');
+    check(/let text: String = /.test(swCode), "HttpClient.get with responseType 'text' reads its body as a String (Swift)");
+    const kt = createProgram([file], new Map(), 'android', modulesDir);
+    const ktTranslator = new Translator(kt.checker, new Map(), kt.files);
+    ktTranslator.appModule = 'org.example.app';
+    const ktCode = translateKotlinModules(ktTranslator, kt.program, [file]).map((m) => m.code).join('\n');
+    check(/\.get\(url, [^\n]*\)\.mapValues \{ __v: Any\? -> jsAssertedString\(__v\) \}/.test(ktCode), "HttpClient.get with responseType 'text' reads its body as a String (Kotlin)");
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
+
 console.log(failed ? `${failed} release checks failed` : 'release checks pass');
 process.exit(failed ? 1 : 0);
