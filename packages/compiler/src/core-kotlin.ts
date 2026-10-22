@@ -1,7 +1,7 @@
 import ts from 'typescript';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { isCoreDeclaration, unappliedProperty } from './core.ts';
+import { addedDeclarations, isCoreDeclaration, unappliedProperty } from './core.ts';
 import { kitExtends, kitMember, readNames, type KitMember, type KitType } from './kit-index.ts';
 import { KIT_NAMES_ANDROID, asserted, functionTypeParts, isAsserted, kotlinString, numberLiteral, splitTopLevel, type KotlinCore, type Translator } from './kotlin.ts';
 import { KIT_ANDROID } from './paths.ts';
@@ -562,8 +562,9 @@ export class CoreKotlin implements KotlinCore {
     const t = this.t;
     const name = this.kitName(owner.name, e.expression.name.text);
     // A method the app's own type adds to a core class (`View & { addChild(view): void }`): called by name, as script calls it.
-    const declared = t.checker.getSymbolAtLocation(e.expression.name)?.declarations?.[0];
-    if (!owner.isStatic && !kitMember(this.index, owner.name, name) && declared && !isCoreDeclaration(declared) && ts.isTypeLiteralNode(declared.parent)) {
+    const declarations = t.checker.getSymbolAtLocation(e.expression.name)?.declarations ?? [];
+    const declared = declarations[0];
+    if (!owner.isStatic && !kitMember(this.index, owner.name, name) && addedDeclarations(declarations)) {
       const call = `jsCallMethod(${t.expr(e.expression.expression)}, ${kotlinString(e.expression.name.text)}${e.arguments.map((a) => `, ${t.coerce(a, 'Any?')}`).join('')})`;
       return ts.isExpressionStatement(e.parent) ? call : t.fromAnyCode(call, t.typeOf(e), true);
     }

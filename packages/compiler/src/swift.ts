@@ -8092,7 +8092,8 @@ ${members.join('\n')}
     if (!ts.isCallExpression(e) || e.arguments.length || !['WritableSignal', 'InputSignal', 'Signal'].includes(this.symbolName(e.expression))) return false;
     const callee = e.expression;
     if (ts.isPropertyAccessExpression(callee) && this.isSelf(callee.expression) && (this.computed.has(callee.name.text) || this.props.has(callee.name.text) || this.signalFields.has(callee.name.text))) return false;
-    try { return /\?>$/.test(this.typeOf(callee)) && !/\?$/.test(this.typeOf(e)); } catch { return false; }
+    // A component's computed field is typed as its value (`JSArray<Any?>`), which is no signal.
+    try { return /^Signal<.*\?>$/.test(this.typeOf(callee)) && !/\?$/.test(this.typeOf(e)); } catch { return false; }
   }
 
   /**

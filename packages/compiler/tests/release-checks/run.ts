@@ -28,6 +28,7 @@ import { translateModules } from '../../src/modules.ts';
 import { conformsTo, lookupMember, nativeTable, setEmptyTable } from '../../src/natives/symbols.ts';
 import { isFragment, render } from '../../src/codegen.ts';
 import { Translator } from '../../src/kotlin.ts';
+import { CoreKotlin } from '../../src/core-kotlin.ts';
 import { translateKotlinModules } from '../../src/kotlin-modules.ts';
 import { AndroidNativeAPI, androidClassPath } from '../../src/native-calls-android.ts';
 import { stubbedPlugins } from '../../src/app-resources.ts';
@@ -285,7 +286,7 @@ export class GlyphPipe { constructor(@Inject(TOKEN) private config: any, @Option
     w('node_modules/@hk/decl/index.ios.js', '');
     w('node_modules/@hk/decl/index.android.js', '');
     w('decl/package.json', JSON.stringify({ name: '@hk/decl' }));
-    w('decl/common.ts', "import { View } from '@nativescript/core';\nimport { Holder } from '.';\nexport interface Options { n: number }\nexport function twice(n: number) { return 2 * n; }\nexport const kind = 'decl';\nexport function attach(view: View & Holder) { view.attachHolder(1); }\n");
+    w('decl/common.ts', "import { View } from '@nativescript/core';\nimport { Holder } from '.';\nexport interface Options { n: number }\nexport function twice(n: number) { return 2 * n; }\nexport const kind = 'decl';\nexport function attach(view: View & Holder) { view.attachHolder(1); }\nexport class Indicator { holder: View & Holder; hold(view: View) { if (view?.['attachHolder']) { this.holder = view as View & Holder; this.holder.attachHolder(2); } } }\n");
     w('decl/shapes.ts', 'export class Square { side = 1; }\n');
     w('decl/index.ios.ts', "import { Options, twice } from './common';\nfunction scale(o: Options) { return twice(o.n); }\nexport class Decl { run(o: Options): number { return scale(o); } }\nexport { attach } from './common';\n");
     w('decl/index.android.ts', "import { Options, twice } from './common';\nfunction scale(o: Options) { return twice(o.n); }\nexport class Decl { run(o: Options): number { return scale(o); } }\nexport { attach } from './common';\n");
@@ -303,6 +304,7 @@ export class GlyphPipe { constructor(@Inject(TOKEN) private config: any, @Option
       if (translator.errors.length) declared = translator.errors.join('; ');
       const android = createProgram([declUser], new Map(), 'android', modules, new PluginSources({ app: dir, platform: 'android', overrides: { '@hk/decl': join(dir, 'decl') } }));
       const kotlin = new Translator(android.checker, new Map(), android.files);
+      kotlin.core = new CoreKotlin(kotlin, true);
       kotlin.errors = [];
       translateKotlinModules(kotlin, android.program, android.files.map((f) => f.fileName));
       if (kotlin.errors.length) declared = kotlin.errors.join('; ');
@@ -546,6 +548,37 @@ export class GlyphPipe { constructor(@Inject(TOKEN) private config: any, @Option
   check(/Choose\(r\d+, \{ jsReportedTruthy\(\{ try self\._b0\(\) \}\) \? 0 : 1 \}[,)]/.test(swift), 'a condition that throws is reported and counts as false');
   check(/if jsReportedTruthy\(\{ try self\._b4\(\) \}\) \{/.test(swift), "a listener's guard that throws is reported and counts as false");
   check(!/try!|try\?/.test(swift.replace(/let v\d+ = try! StackLayout\(\)/g, '')), 'no binding, condition or prop is read with try! or try?');
+  const list = render({ name: 'Rows', file: '/app/rows.ts', source: '', props: [], template: [{ kind: 'element' as const, tag: 'ListView', attrs: [{ name: 'items', method: '$b0' }], events: [], children: [] }] }, new Map(), () => true, 'angular').join('\n');
+  check(/\.bind\(items: \{ jsReportedItems \{ try self\._b0\(\) \} \}/.test(list), "a list's items that throw are reported, and the list shows none");
+}
+
+// ---- A component's computed signal read in a binding ----
+{
+  const dir = mkdtempSync(join(tmpdir(), 'ns-release-checks-computed-'));
+  try {
+    const file = join(dir, 'people.component.ts');
+    writeFileSync(file, `import { Component, computed, signal } from '@angular/core';
+const BYLINE = { byline: true } as const;
+class Person { name = 'Ada'; }
+type Row = Person | typeof BYLINE;
+@Component({ selector: 'People', template: '<ListView [items]="rows()"></ListView>' })
+export class People {
+  readonly people = signal<Person[]>([]);
+  readonly rows = computed<Row[]>(() => [BYLINE, ...this.people()]);
+}
+`);
+    const ir = angularComponent(file, readFileSync(file, 'utf8'), new Map())!;
+    const { checker, program, files } = createProgram([file], new Map([[file, ir.source]]), 'ios', modulesDir);
+    const sw = new SwiftTranslator(checker, new Map([['People', { props: ir.props, optional: ir.optional }]]), files);
+    sw.plainFields = true;
+    translateModules(sw, program, [file]);
+    const cls = program.getSourceFile(file)!.statements.filter(ts.isClassDeclaration).find((c) => c.name?.text === 'People')!;
+    sw.componentMembers(cls, ir.props);
+    const items = (ir.template as { attrs?: { name: string; method?: string }[] }[])[0]?.attrs?.find((a) => a.name === 'items')?.method ?? '-';
+    check(!sw.memberThrows(cls, items), "reading a component's computed array (`rows()`) in a binding throws nothing (Swift)");
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 }
 
 // ---- Top-level names the kit declares too ----
@@ -707,6 +740,28 @@ export async function readDoc(http: HttpClient, url: string): Promise<string> {
     ktTranslator.appModule = 'org.example.app';
     const ktCode = translateKotlinModules(ktTranslator, kt.program, [file]).map((m) => m.code).join('\n');
     check(/\.get\(url, [^\n]*\)\.mapValues \{ __v: Any\? -> jsAssertedString\(__v\) \}/.test(ktCode), "HttpClient.get with responseType 'text' reads its body as a String (Kotlin)");
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
+
+// ---- NativeDialogConfig on Android ----
+{
+  const dir = mkdtempSync(join(tmpdir(), 'ns-release-checks-dialog-'));
+  try {
+    const file = join(dir, 'sheet.service.ts');
+    writeFileSync(file, `
+import { NativeDialogConfig, NativeDialogService } from '@nativescript/angular';
+
+export function openSheet(dialogs: NativeDialogService, cmp: any, config?: NativeDialogConfig) {
+  return dialogs.open(cmp, { nativeOptions: { fullscreen: true }, ...(config || {}) });
+}
+`);
+    const kt = createProgram([file], new Map(), 'android', modulesDir);
+    const ktTranslator = new Translator(kt.checker, new Map(), kt.files);
+    ktTranslator.appModule = 'org.example.app';
+    const ktCode = translateKotlinModules(ktTranslator, kt.program, [file]).map((m) => m.code).join('\n');
+    check(/config: Any\? = null/.test(ktCode) && !ktCode.includes('NativeDialogConfig'), "a NativeDialogConfig is the plain object kit-android's NativeDialogService takes (Kotlin)");
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
