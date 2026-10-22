@@ -1,0 +1,65 @@
+name: ⚙️ --compiled report
+description: A problem with a release compiled to Swift or Kotlin (`ns build|run <platform> --compiled`). Usually filled in by `ns compiled report`.
+title: '[compiled] '
+labels: [compiled]
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Run `ns compiled report` in your project after a failed `--compiled` build (or with `--error <file>` for a runtime error): it fills in this form, and first looks for an issue with the same signature so you can add a 👍 instead.
+
+        Each report becomes a test case in the compiler and then a fix. The labeler reads Platform, Framework and Kind exactly as written below.
+
+  - type: input
+    id: platform
+    attributes:
+      label: Platform
+      description: '`ios` or `android`'
+    validations:
+      required: true
+
+  - type: input
+    id: framework
+    attributes:
+      label: Framework
+      description: '`angular`, `vue`, `svelte`, `react`, `solid` or `xml` (XML with TypeScript or JavaScript)'
+    validations:
+      required: true
+
+  - type: input
+    id: kind
+    attributes:
+      label: Kind
+      description: '`compile-refused` (the compiler refused a construct), `native-compile` (the generated Swift or Kotlin did not compile) or `runtime` (the compiled app failed while running)'
+    validations:
+      required: true
+
+  - type: input
+    id: signature
+    attributes:
+      label: Signature
+      description: The hash `ns compiled report` puts in the title. Reports with the same signature are the same problem.
+
+  - type: textarea
+    id: diagnostic
+    attributes:
+      label: Diagnostic
+      description: The error, as the compiler, Swift, Kotlin, Gradle, Xcode or the app printed it.
+      render: text
+    validations:
+      required: true
+
+  - type: textarea
+    id: source
+    attributes:
+      label: Source
+      description: Where in your code it happens (file:line), and the lines around it if you choose to share them.
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: CLI, `@nativescript/compiler`, `@nativescript/core` and framework versions, Xcode or Gradle, OS and dependencies.
+    validations:
+      required: true
