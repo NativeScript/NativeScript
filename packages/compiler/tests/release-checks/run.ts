@@ -975,5 +975,25 @@ export const restoring = isAngularHmrRestoringRoute();
   }
 }
 
+// ---- An instance's own value for a class method (Kotlin) ----
+{
+  const dir = mkdtempSync(join(tmpdir(), 'ns-release-checks-own-method-'));
+  try {
+    const translate = (source: string) => {
+      const file = join(dir, 'store.ts');
+      writeFileSync(file, source);
+      const kt = createProgram([file], new Map(), 'android', modulesDir);
+      const ktTranslator = new Translator(kt.checker, new Map(), kt.files);
+      ktTranslator.appModule = 'org.example.app';
+      try { translateKotlinModules(ktTranslator, kt.program, [file]); return ''; } catch (e) { return String(e); }
+    };
+    const store = 'export class Store { dispatch(a: string): number { return a.length; } }\nexport const s = new Store();\n';
+    check(translate(store + 's.dispatch = (a: string) => -1;\n').includes("giving an instance its own Store.dispatch in place of the class's method is not supported in a release build yet"), "an instance given its own function for a class method stops the Android build");
+    check(!translate(store + "export const o = { f(): number { return 1; } };\no.f = () => 2;\n"), "an object literal's method is replaced on Android");
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
+
 console.log(failed ? `${failed} release checks failed` : 'release checks pass');
 process.exit(failed ? 1 : 0);
