@@ -156,8 +156,8 @@ export class HttpClient {
     return fromKit(KitHttpClient.shared.request(first, url, options));
   }
 
-  get<T = any>(url: string, options?: any): Observable<T>;
   get(url: string, options: { headers?: Record<string, string> | HttpHeaders; responseType: 'text'; params?: any; observe?: any; context?: HttpContext }): Observable<string>;
+  get<T = any>(url: string, options?: any): Observable<T>;
   get(url: string, options?: any): Observable<any> {
     const interceptors = inject<HttpInterceptor[]>(HTTP_INTERCEPTORS as any, { optional: true } as any);
     if (Array.isArray(interceptors) && interceptors.length > 0) {

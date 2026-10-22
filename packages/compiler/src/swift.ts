@@ -4695,12 +4695,12 @@ ${members.join('\n')}
         ? [
             `    static var shared: ${name} { get throws { try Injector.root(${name}.self) { try ${name}() } } }`,
             `    static var jsSharedInstance: Any? { get throws { try shared } }`,
-            `    static func jsConstruct(_ __a: [Any?]) throws -> Any? { try ${name}() }`,
+            `    static func jsConstruct() throws -> Any? { try ${name}() }`,
           ]
         : [
-            `    static var shared: ${name} { Injector.root(${name}.self) { ${name}() } }`,
+            `    static var shared: ${name} { Injector.root(${name}.self, making: { ${name}() }) }`,
             `    static var jsSharedInstance: Any? { shared }`,
-            `    static func jsConstruct(_ __a: [Any?]) throws -> Any? { ${name}() }`,
+            `    static func jsConstruct() throws -> Any? { ${name}() }`,
           ];
       return [`final class ${name}: JSInjectableType {`, NONISOLATED_DEINIT, ...shared, '', ...members, '}'].join('\n');
     }
