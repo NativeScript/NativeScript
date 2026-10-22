@@ -2482,7 +2482,7 @@ export class Translator implements AsyncTranslator {
 
   /** `(r) => r.id` as a Kotlin anonymous function, where `return` means what it does in JavaScript. */
   closure(fn: ts.ArrowFunction | ts.FunctionExpression | ts.MethodDeclaration, slot?: string): string {
-    if (ts.isFunctionExpression(fn) && (this.library ? this.thisValues().functions.has(fn) : this.takesOwnThis(fn))) return this.thisMethod(fn);
+    if (ts.isFunctionExpression(fn) && (this.library ? this.thisValues().functions.has(fn) : this.takesOwnThis(fn) || this.givenThis(fn))) return this.thisMethod(fn);
     const contextual = this.checker.getContextualType(fn)?.getCallSignatures()[0];
     const slotRet = slot ? functionTypeParts(slot)?.ret : undefined;
     // An async function where a void callback is taken (`onTap: async () => …`): called for its effects, its promise left alone.
@@ -9159,6 +9159,11 @@ export class Translator implements AsyncTranslator {
    */
   private takesOwnThis(d: ts.Declaration | undefined): boolean {
     return !!d && (ts.isFunctionTypeNode(d) || ts.isFunctionExpression(d)) && d.parameters.some((q) => isThisParameter(q) && !!q.type && q.type.kind !== ts.SyntaxKind.VoidKeyword);
+  }
+
+  /** A function expression reading a `this` it does not declare, where it is given to a function type declaring one. */
+  private givenThis(fn: ts.FunctionExpression): boolean {
+    return thisNodes(fn).length > 0 && this.takesOwnThis(this.checker.getContextualType(fn)?.getCallSignatures()[0]?.getDeclaration());
   }
 
   private thisMethod(fn: ts.FunctionExpression): string {

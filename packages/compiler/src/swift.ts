@@ -1707,6 +1707,13 @@ export class Translator implements AsyncTranslator {
     return found;
   }
 
+  /** A function expression reading a `this` it does not declare, where it is given to a function type declaring one. */
+  private givenThis(fn: ts.FunctionExpression): boolean {
+    if (!thisNodes(fn).length) return false;
+    const decl = this.checker.getContextualType(fn)?.getCallSignatures()[0]?.getDeclaration();
+    return !!decl && !ts.isJSDocSignature(decl) && declaresThis(decl);
+  }
+
   /** A function expression reading the `this` it is called with, as a method value (`JSMethod`) taking it. */
   private methodValue(fn: ts.FunctionExpression): string {
     const forwarding = this.forwardingSetter(fn);
@@ -7430,7 +7437,7 @@ ${members.join('\n')}
       if (source === 'Double' && numericLiteralOnly(e)) return `Double(${this.expr(e)})`;
       // A method value is untyped already.
       if (this.library && ts.isFunctionExpression(bare) && (this.carriesMethod(bare) || this.readsArguments(bare))) return this.expr(e);
-      if (ts.isFunctionExpression(bare) && declaresThis(bare)) return this.methodValue(bare);
+      if (ts.isFunctionExpression(bare) && (declaresThis(bare) || this.givenThis(bare))) return this.methodValue(bare);
       if (ts.isPropertyAccessExpression(bare) && bare.expression.kind === ts.SyntaxKind.SuperKeyword && this.isInstanceMethod(bare.name)) return 'nil';
       const parse = ts.isIdentifier(bare) ? this.parseFunction(bare) : null;
       if (parse) return this.boxFunction(parse.code, parse.type);
