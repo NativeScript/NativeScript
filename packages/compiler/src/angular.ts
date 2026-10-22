@@ -79,7 +79,7 @@ const UNSUPPORTED_COMMON_PIPES = new Set(['currency', 'i18nPlural', 'i18nSelect'
  * per template expression. The class keeps Angular's API; the translator
  * knows what `signal()`, `computed()`, `input()`, `output()` and `inject()` mean.
  */
-export function angularComponent(path: string, text: string, selectors: Map<string, string>, options: { zone?: boolean; elements?: Map<string, string>; platform?: 'ios' | 'android'; pipes?: Map<string, PipeDecl>; runtimeModule?: string; directives?: DirectiveDecl[]; ngModules?: Map<string, string[]>; hosts?: HostedComponent[] } = {}): AngularComponent | null {
+export function angularComponent(path: string, text: string, selectors: Map<string, string>, options: { zone?: boolean; elements?: Map<string, string>; platform?: 'ios' | 'android'; pipes?: Map<string, PipeDecl>; runtimeModule?: string; directives?: DirectiveDecl[]; ngModules?: Map<string, string[]>; hosts?: HostedComponent[]; elementMeta?: Map<string, string[] | null> } = {}): AngularComponent | null {
   const written = text;
   let sf = ts.createSourceFile(path, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
   let cls = sf.statements.find((s): s is ts.ClassDeclaration => ts.isClassDeclaration(s) && !!decorator(s, 'Component'));
@@ -109,6 +109,23 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
   const registered = new Map<string, string>();
   for (const [tag, cls] of options.elements ?? []) for (const k of [tag, tag.toLowerCase(), tag.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase()]) registered.set(k, cls);
   const elementOf = (name: string): string | undefined => canonical(name) ?? canonical(name.replace(/-/g, '')) ?? registered.get(name) ?? registered.get(name.toLowerCase()) ?? undefined;
+  const metas = new Map<string, string[] | null>();
+  for (const [tag, keys] of options.elementMeta ?? []) for (const k of [tag, tag.toLowerCase(), tag.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase()]) metas.set(k, keys);
+  /**
+   * A plugin tag registered with a `ViewClassMeta` (`registerElement('Drawer', () => Drawer, meta)`): its renderer hooks
+   * decide where the element and its children go, and the release build runs none of them yet.
+   */
+  const checkMeta = (n: ng.TmplAstElement) => {
+    if (canonical(n.name) || canonical(n.name.replace(/-/g, ''))) return;
+    const keys = metas.has(n.name) ? metas.get(n.name) : metas.get(n.name.toLowerCase());
+    if (keys === undefined) return;
+    if (keys === null) throw new Error(`${path}: <${n.name}> is registered with a ViewClassMeta the build cannot read (not an object literal in the registering file)`);
+    if (keys.includes('skipAddToDom')) throw new Error(`${path}: <${n.name}> is registered with skipAddToDom, which a release build does not support yet`);
+    const hooks = keys.filter((k) => ['insertChild', 'removeChild', 'insertInvisibleNode', 'removeInvisibleNode'].includes(k));
+    if (hooks.length && n.children.some((c) => !(c instanceof ng.TmplAstText) || c.value.trim())) {
+      throw new Error(`${path}: the children of <${n.name}> join it through its registerElement meta (${hooks.join(', ')}), which a release build does not run yet`);
+    }
+  };
   const { members, props, optional, outputs, inputAliases } = publicMembers(cls, classic);
   collectInheritedMembers(path, sf, cls, members);
   const scope: Scope = { names: new Map([...members].map((m) => [m, classic?.inputs.has(m) ? `this.${m}()` : `this.${m}`])) };
@@ -552,6 +569,7 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
         if (n.name === 'page-router-outlet') { out.push({ kind: 'element', tag: 'Frame', attrs: [{ name: 'router', value: n.attributes.find((a) => a.name === 'name')?.value ?? 'primary' }], events: [], children: [] }); continue; }
         const tag = elementOf(n.name);
         if (!tag) throw new Error(`${path}: <${n.name}> is not a @nativescript/core element the release build knows`);
+        checkMeta(n);
         const sections = isList && isSectioned(n);
         // A reference on a host names its component; ElementRef and the view's class read the element.
         const matches = queryHooks(refs, hosted?.name ?? null, tag, loops);

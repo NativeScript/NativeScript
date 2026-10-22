@@ -17,7 +17,7 @@ import { preflight } from '../../src/preflight.ts';
 import { satisfies } from '../../src/contract.ts';
 import { mapKotlinDiagnostics } from '../../src/kotlin-diagnostics.ts';
 import { angularComponent, angularRouteTree, componentOf, declarableSource, hostedComponent, routedComponents, type AngularComponent } from '../../src/angular.ts';
-import { angularLibraries } from '../../src/angular-libraries.ts';
+import { angularLibraries, registeredElements } from '../../src/angular-libraries.ts';
 import { pathAliases } from '../../src/app-paths.ts';
 import { appImports, reachedFrom, tsconfigIncluded } from '../../src/app-modules.ts';
 import { runtimeFile } from '../../src/plugins/resolve.ts';
@@ -788,6 +788,33 @@ export function openSheet(dialogs: NativeDialogService, cmp: any, config?: Nativ
   };
   check(refused(`<GridLayout searchBar><Label text="x"></Label></GridLayout>`).includes('content on <GridLayout>, the host of SearchBar'), "content inside a component's host is refused (no <ng-content> yet)");
   check(refused(`<GridLayout searchBar></GridLayout>`, bar.replace('export class SearchBar {', "export class SearchBar { el = inject(ElementRef);").replace('{ Component,', '{ Component, ElementRef, inject,')).includes("SearchBar's own ElementRef or host bindings"), 'a hosted component reading its host element is refused');
+}
+
+// ---- Plugin elements registered with a ViewClassMeta ----
+{
+  const dir = mkdtempSync(join(tmpdir(), 'ns-release-checks-ng-elements-'));
+  try {
+    const entry = join(dir, 'node_modules/fake-panel/angular/fesm2022/fake-panel-angular.mjs');
+    mkdirSync(dirname(entry), { recursive: true });
+    writeFileSync(entry, "import { registerElement } from '@nativescript/angular';\nimport { Panel, Badge, Chip } from 'fake-panel';\nconst panelMeta = {\n  insertChild: (parent, child) => { if (child.id === 'main') parent.mainContent = child; },\n  removeChild: (parent, child) => { if (child.id === 'main') parent.mainContent = null; },\n};\nregisterElement('Panel', () => Panel, panelMeta);\nregisterElement('Badge', () => Badge, {});\nregisterElement('Chip', () => Chip);\n");
+    const app = join(dir, 'src/main.ts');
+    mkdirSync(dirname(app), { recursive: true });
+    writeFileSync(app, "import { registerElement } from '@nativescript/angular';\nimport { PanelModule } from 'fake-panel/angular';\nimport { Glass } from './glass';\nregisterElement('Glass', () => Glass, { skipAddToDom: true });\n");
+    const found = registeredElements([app], join(dir, 'node_modules'));
+    check(found.get('Panel')?.name === 'Panel' && found.get('Panel')?.meta?.join() === 'insertChild,removeChild' && found.get('Badge')?.meta?.length === 0 && found.get('Chip')?.meta === undefined && found.get('Glass')?.from === join(dir, 'src/glass'),
+      "registerElement with a third argument registers its tag, with the meta's keys");
+    const elements = new Map([...found].map(([tag, e]) => [tag, e.name]));
+    const elementMeta = new Map([...found].flatMap(([tag, e]) => (e.meta === undefined ? [] : [[tag, e.meta] as const])));
+    const use = (template: string) => {
+      try { return angularComponent('/app/home.component.ts', `import { Component } from '@angular/core';\n@Component({ selector: 'Home', template: \`${template}\` })\nexport class Home {}\n`, new Map(), { elements, elementMeta })!.template[0] as { tag?: string }; } catch (e) { return String(e); }
+    };
+    const empty = use('<Panel></Panel>');
+    check(typeof empty === 'object' && empty.tag === 'Panel' && typeof use('<Badge><Label text="1"></Label></Badge>') === 'object', 'a tag registered with a meta is an element; one whose meta has no renderer hooks takes children');
+    check(String(use('<Panel><Label id="main" text="x"></Label></Panel>')).includes('the children of <Panel> join it through its registerElement meta (insertChild, removeChild)'), "children of a tag whose meta inserts them itself are refused, not added as the layout's");
+    check(String(use('<StackLayout><Glass></Glass></StackLayout>')).includes('<Glass> is registered with skipAddToDom'), 'a tag registered with skipAddToDom is refused');
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 }
 
 // ---- Angular exports and a non-strict app's diagnostics ----

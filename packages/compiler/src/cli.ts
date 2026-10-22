@@ -43,8 +43,7 @@ import { appStylesheets, importedStylesheets, kitAst, kitCss } from './css.ts';
 import { PluginSources, configuredOverrides, writtenStrict } from './plugins/source.ts';
 import { moduleNames, pluginNative, scopedImports, usedImports, xcodegenLines, type ModuleTypes } from './plugins/native.ts';
 import { readKitManifest } from './kit-manifest.ts';
-import { packageOf } from './plugins/resolve.ts';
-import { angularLibraries } from './angular-libraries.ts';
+import { angularLibraries, registeredElements } from './angular-libraries.ts';
 import { nativeDispatch, untypedMembers } from './native-dispatch.ts';
 import { reachability } from './reach.ts';
 import { nativeTable, type NativeClass, type NativeMethod } from './natives/symbols.ts';
@@ -263,7 +262,7 @@ if (framework === 'vue') {
   // What each NgModule declares, imports and exports: a component's directives are those in its scope.
   const ngModuleNames = new Map(sources.flatMap((f) => [...declarablesIn(f, readFileSync(f, 'utf8')).modules]));
   const runtimeModule = join(appDir, '__angular.release.ts');
-  components = sources.map((f) => angularComponent(f, readFileSync(f, 'utf8'), selectors, { zone, platform, pipes, runtimeModule, directives, ngModules: ngModuleNames, hosts, elements: new Map([...elements].map(([tag, e]) => [tag, e.name])) })).filter((c): c is NonNullable<typeof c> => !!c);
+  components = sources.map((f) => angularComponent(f, readFileSync(f, 'utf8'), selectors, { zone, platform, pipes, runtimeModule, directives, ngModules: ngModuleNames, hosts, elements: new Map([...elements].map(([tag, e]) => [tag, e.name])), elementMeta: new Map([...elements].flatMap(([tag, e]) => (e.meta === undefined ? [] : [[tag, e.meta] as const]))) })).filter((c): c is NonNullable<typeof c> => !!c);
   const routed = new Set(tree ? routedComponents(tree.routes) : routes.map((r) => r.component));
   for (const c of components) c.page = routed.has(c.name);
   // The classes of registered tags, imported where the build can reach them: route files, which only configure, are not compiled.
@@ -794,42 +793,6 @@ function routeConfig(routes: RouteNode[], indent: string): string {
     return `RouteConfig(${[JSON.stringify(r.path), ...named].join(', ')})${r.component ? ` { try ${r.component}().render() }` : ''}`;
   };
   return `[\n${routes.map((r) => `${indent}    ${one(r)}`).join(',\n')}\n${indent}]`;
-}
-
-/**
- * Tags registered for plugin views: `registerElement('Tag', () => Class)` in the app, and in the
- * Angular entry (`<package>/angular`) of a plugin the app imports, with the module each class is from.
- */
-function registeredElements(sources: string[], modulesDir: string): Map<string, { name: string; from: string }> {
-  const found = new Map<string, { name: string; from: string }>();
-  const scan = (text: string, file: string | null) => {
-    const imports = new Map<string, string>();
-    for (const m of text.matchAll(/import\s*\{([^}]*)\}\s*from\s*['"]([^'"]+)['"]/g)) {
-      for (const part of m[1].split(',')) {
-        const [orig, alias] = part.trim().split(/\s+as\s+/);
-        if (orig) imports.set((alias ?? orig).trim(), JSON.stringify([orig.trim(), m[2]]));
-      }
-    }
-    for (const m of text.matchAll(/registerElement\(\s*['"](\w+)['"]\s*,\s*\(\)\s*=>\s*(\w+)\s*\)/g)) {
-      const imported = imports.get(m[2]);
-      if (!imported) continue;
-      const [name, from] = JSON.parse(imported) as [string, string];
-      // Core's own views are elements already.
-      if (from === '@nativescript/core' || STUBBED_PLUGINS.has(packageOf(from))) continue;
-      found.set(m[1], { name, from: from.startsWith('.') && file ? resolve(dirname(file), from) : from });
-    }
-  };
-  for (const f of sources) {
-    const text = readFileSync(f, 'utf8');
-    scan(text, f);
-    for (const m of text.matchAll(/from\s*['"]((?:@[\w.-]+\/)?[\w.-]+)\/angular['"]/g)) {
-      if (STUBBED_PLUGINS.has(m[1])) continue;
-      const dir = join(modulesDir, m[1], 'angular');
-      const entry = existsSync(dir) ? readdirSync(dir).flatMap((d) => (/^fesm/.test(d) ? readdirSync(join(dir, d)).filter((x) => x.endsWith('.mjs')).map((x) => join(dir, d, x)) : [])).sort().reverse()[0] : undefined;
-      if (entry) scan(readFileSync(entry, 'utf8'), null);
-    }
-  }
-  return found;
 }
 
 /** The Angular entry without the call that bootstraps the app, or null when that is all it does. */
