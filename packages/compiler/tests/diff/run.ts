@@ -3,6 +3,7 @@
 // as a native program: Swift as a macOS command-line program linking the
 // kit's JavaScript runtime (Foundation only), and Kotlin on the host JVM
 // with kit-android's runtime (plain JVM). Output and exit status must match.
+// Node's run is the reference only when it prints something and ends with 0, or with the status a `// @exit <n>` line declares.
 //   node tests/diff/run.ts [case-name…] [--swift | --kotlin] [--keep] [--osize] [--no-cache]
 // A case whose build inputs (its emitted program, the runtime, flags, toolchain and host) are a stored run's reuses that
 // run's outcome from tests/build-cache.ts's cache, and Node's output is reused for unchanged JavaScript. --no-cache builds
@@ -19,7 +20,7 @@ import { basename, dirname, join, relative, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import ts from 'typescript';
-import { kotlinApp, kotlinOnly, kotlinOptions, swiftOnly, swiftOptions } from './case-options.ts';
+import { expectedExit, kotlinApp, kotlinOnly, kotlinOptions, swiftOnly, swiftOptions } from './case-options.ts';
 import { buildKotlinRuntime, buildSwiftRuntime, kotlinc, kotlinMain, kotlinStdlib, swiftc, swiftMain, translateKotlin as translateKotlinProgram, translateSwift } from '../native-build.ts';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -122,12 +123,29 @@ function report(name: string, target: string, want: { stdout: string; status: nu
   return false;
 }
 
+/** Why Node's run of a case is no reference to compare with: it ended with a status the case does not declare, or printed nothing. */
+function unusable(name: string, want: Outcome): string | null {
+  const exit = expectedExit(join(here, 'cases', name + '.ts'));
+  const lines = want.stderr.trim().split('\n');
+  const stderr = lines.find((l) => /^\w*(Error|Exception)\b/.test(l)) ?? lines[0];
+  if (want.status !== exit) return `Node's run exits ${want.status ?? want.signal}${exit ? ` where the case declares ${exit}` : ''} (a case ending otherwise declares \`// @exit <n>\`)${stderr ? `: ${stderr}` : ''}`;
+  if (!want.stdout) return "Node's run prints nothing";
+  return null;
+}
+
 /**
  * Reports a case's native outcome: `hit`, the stored one, or else what `make` builds and runs. A new outcome is stored
  * when it matches Node or the case is a known failure. One that newly differs is not, so it is built and run again
  * next time: a flaky failure never sticks.
  */
 function settle(cache: BuildCache, key: string, hit: Outcome | null, name: string, target: string, want: Outcome, make: () => Outcome) {
+  const why = unusable(name, want);
+  if (why) {
+    ran.add(`${target}:${name}`);
+    fail(name, target);
+    console.log(`✗ ${name} (${target})${known[target]?.[name] ? ' [known]' : ''}: ${why}`);
+    return;
+  }
   const outcome = hit ?? make();
   let matches = false;
   if (outcome.error === undefined) matches = report(name, target, want, outcome);

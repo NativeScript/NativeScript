@@ -354,13 +354,7 @@ export class Translator implements AsyncTranslator {
   /** Code checked without strictNullChecks, as core is: any declaration may hold null or undefined. */
   readonly lenient: boolean;
   /** The app's own configuration is not strict. */
-  get lenientApp(): boolean { return this.appNotStrict; }
-  set lenientApp(v: boolean) {
-    this.appNotStrict = v;
-    // Which files are strict decides the loose slots: any found before this was known are found again.
-    this.looseSlotSet = null;
-  }
-  private appNotStrict = false;
+  readonly lenientApp: boolean;
 
   private trustScope: TrustScope | null = null;
   /** The trust rule's view of this program (lang.ts): which files are strict, which declarations are the platform's. */
@@ -419,10 +413,11 @@ export class Translator implements AsyncTranslator {
     return !this.library && !!d && this.looseSlots.has(d as ts.Declaration);
   }
 
-  constructor(checker: ts.TypeChecker, components: Map<string, ComponentInfo>, files: readonly ts.SourceFile[], options: { pluginFiles?: Iterable<string>; reach?: Reach; properties?: Properties; lenient?: boolean; library?: KotlinLibrary } = {}) {
+  constructor(checker: ts.TypeChecker, components: Map<string, ComponentInfo>, files: readonly ts.SourceFile[], options: { pluginFiles?: Iterable<string>; reach?: Reach; properties?: Properties; lenient?: boolean; lenientApp?: boolean; library?: KotlinLibrary } = {}) {
     this.checker = checker;
     this.library = options.library ?? null;
     this.lenient = options.lenient ?? false;
+    this.lenientApp = options.lenientApp ?? false;
     this.components = components;
     this.sourceFiles = files;
     this.pluginFiles = new Set(options.pluginFiles ?? []);

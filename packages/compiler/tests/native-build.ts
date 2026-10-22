@@ -92,13 +92,11 @@ export function translateSwift(roots: string[], out: string, o: SwiftOptions = {
   const plugin = [...(o.plugin ? all.map((f) => f.fileName).filter((f) => /[\\/]plugin[\\/]/.test(f)) : []), ...packageFiles];
   const lenientPlugins = [...(o.plugin ? plugin.filter((f) => !packageFiles.includes(f)) : []), ...packageFiles.filter((f) => !writtenStrict(f))];
   // Every module, as an app's are: names its modules share are told apart across them.
-  const translator = new Translator(checker, new Map(), all, { lenient: loose, library, weak: o.weak, ...(loose ? { pluginFiles: all.map((f) => f.fileName), properties: collectProperties(checker, all) } : plugin.length ? { pluginFiles: plugin, lenientFiles: lenientPlugins, properties: collectProperties(checker, all), reach } : {}) });
+  const translator = new Translator(checker, new Map(), all, { lenient: loose, library, weak: o.weak, lenientApp: !!(o.plugin || o.lenientApp || (o.appStrictness && lenientApp)), ...(loose ? { pluginFiles: all.map((f) => f.fileName), properties: collectProperties(checker, all) } : plugin.length ? { pluginFiles: plugin, lenientFiles: lenientPlugins, properties: collectProperties(checker, all), reach } : {}) });
   if (reach) translator.compiledFiles = new Set(compiled);
   if (process.env.NS_DIFF_ALL_ERRORS) translator.errors = [];
   translator.appModule = 'Main';
   translator.appMembersByName = !!o.membersByName;
-  if (o.appStrictness) translator.lenientApp = lenientApp;
-  if (o.plugin || o.lenientApp) translator.lenientApp = true;
   // With source lines, as an app is built: the directives must compile wherever a statement can be.
   const lines = translator.lines = new SourceLines(new Map());
   const files = [...appFiles, ...compiled];
@@ -190,12 +188,9 @@ export function translateKotlin(roots: string[], out: string, pkg: string, o: Ko
   const all = [...rootFiles, ...imported.map((f) => program.getSourceFile(f)!).filter((sf) => sf && !rootFiles.includes(sf)), ...packageFiles.map((f) => program.getSourceFile(f)!)];
   const library = { identities: new Set<string>(), counterpart: () => null, moduleName: (f: string) => (f.endsWith('.d.ts') ? null : 'Module_' + basename(f).replace(/\W/g, '_')) };
   const lenientPlugins = packageFiles.filter((f) => !writtenStrict(f));
-  const translator = new KotlinTranslator(checker, new Map(), all, loose ? { lenient: true, library, pluginFiles: all.map((f) => f.fileName), properties: collectProperties(checker, all) } : packageFiles.length ? { pluginFiles: packageFiles, lenientFiles: lenientPlugins, properties: collectProperties(checker, all), reach } : {});
+  const translator = new KotlinTranslator(checker, new Map(), all, { lenientApp: !!(o.lenientApp || (o.appStrictness && lenientApp)), ...(loose ? { lenient: true, library, pluginFiles: all.map((f) => f.fileName), properties: collectProperties(checker, all) } : packageFiles.length ? { pluginFiles: packageFiles, lenientFiles: lenientPlugins, properties: collectProperties(checker, all), reach } : {}) });
   translator.appModule = pkg;
   translator.appMembersByName = !!o.membersByName;
-  // As android.ts sets it: the Kotlin translator reads the field without declaring it.
-  if (o.appStrictness) (translator as { lenientApp?: boolean }).lenientApp = lenientApp;
-  if (o.lenientApp) (translator as { lenientApp?: boolean }).lenientApp = true;
   const lines = translator.lines = new SourceLines(new Map());
   const files = [...appFiles, ...compiled];
   const modules = o.refused ? eachModule(program, files, (f) => translateKotlinModules(translator, program, [f], resolved), o.refused) : translateKotlinModules(translator, program, files, resolved);

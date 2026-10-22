@@ -621,7 +621,8 @@ fun <T> jsArrayFrom(value: Any?, element: (Any?) -> T): JSArray<T> {
     if (value !is JSArray<*>) return JSArray()
     val mapped = value.storage.map(element)
     // Elements that are already of the type: the same array, so what is written through either is in both.
-    if (mapped.indices.all { mapped[it] === value.storage[it] }) return value as JSArray<T>
+    // A number or string converted to itself comes back in a new box.
+    if (mapped.indices.all { val m = mapped[it]; val v = value.storage[it]; m === v || ((m is Double || m is String) && m == v) }) return value as JSArray<T>
     return JSArray(ArrayList(mapped))
 }
 

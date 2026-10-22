@@ -140,13 +140,12 @@ export async function writeAndroid(b: AndroidBuild): Promise<void> {
     native.archives = prepared.archives;
     bindingDefines.push(...prepared.defines);
   }
-  const translator = new Translator(b.checker, b.infos, b.files, { pluginFiles: b.pluginFiles, reach: b.reach, properties: b.properties });
+  const translator = new Translator(b.checker, b.infos, b.files, { pluginFiles: b.pluginFiles, reach: b.reach, properties: b.properties, lenientApp: !!b.lenient });
   translator.appModule = pkg;
   translator.allowUnapplied = !!b.allowUnapplied;
   translator.core = new CoreKotlin(translator, !!b.generatedKit);
   translator.lines = b.lines;
   if (b.allErrors) translator.errors = [];
-  translator.lenientApp = !!b.lenient;
   translator.plainFields = b.framework === 'angular';
   translator.appMembersByName = b.framework === 'core';
   translator.pluginRoots = (b.plugins ?? []).map((p) => p.root + '/');

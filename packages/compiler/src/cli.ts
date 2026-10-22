@@ -427,12 +427,11 @@ try {
 }
 // Before the translator analyzes what throws: lenient code's checks throw.
 const lenientFiles = [...pluginFiles].filter((f) => !writtenStrict(f));
-const translator = new Translator(checker, infos, sourceFiles, { pluginFiles, lenientFiles, reach, properties });
+const translator = new Translator(checker, infos, sourceFiles, { pluginFiles, lenientFiles, reach, properties, lenientApp });
 translator.compiledFiles = new Set(compiledPlugins);
 translator.lines = sourceLines;
 const located = (code: string) => (sourceLines ? sourceLines.swift(withoutRedundantImplicit(code)) : withoutRedundantImplicit(code));
 translator.appModule = name;
-translator.lenientApp = lenientApp;
 translator.plainFields = framework === 'angular';
 translator.appMembersByName = framework === 'core';
 // The app's own Swift classes (`App_Resources/iOS/src`) that TypeScript declares untyped (`declare const X: any`): objects calling them by NativeScript's names.

@@ -31,6 +31,9 @@ export function weakOf(file: string) {
   return { fields: list('weak-fields'), captures: list('weak-captures') };
 }
 
+/** A `// @exit <n>` line: the status the case ends with when not 0. Node's run of a case declaring none must end with 0 and print something. */
+export const expectedExit = (file: string) => Number(/^\/\/ @exit (\d+)$/m.exec(head(file))?.[1] ?? 0);
+
 /** A `// @members-by-name` line: the case is translated as an XML app's code is, its classes' accessors and methods readable by name (core's Builder binds to them). */
 export const membersByName = (file: string) => /^\/\/ @members-by-name$/m.test(head(file));
 
