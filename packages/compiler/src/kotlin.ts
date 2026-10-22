@@ -911,7 +911,7 @@ export class Translator implements AsyncTranslator {
     const declared = this.type(this.checker.getTypeAtLocation(n), n);
     const own = ts.isPropertySignature(n) || ts.isPropertyDeclaration(n) ? n : (n.parent as ts.NamedDeclaration | undefined)?.name === n ? n.parent : undefined;
     const t = this.isLenientDecl(own) ? this.lenientRef(declared) : this.looseDeclaration(own) ? optionalType(declared) : declared;
-    if (/^Signal<.*[^?]>$/.test(t) && t !== 'Signal<Any?>' && this.madeHoldingNull(n)) return t.replace(/>$/, '?>');
+    if (this.holdingNull(t, n)) return t.replace(/>$/, '?>');
     if (['String', 'Double', 'Boolean'].includes(t) && this.givenNullSignalValue(n)) return `${t}?`;
     if (!t.includes('.')) return t;
     const sym = ts.isIdentifier(n) ? this.checker.getSymbolAtLocation(n) : undefined;
@@ -1130,7 +1130,7 @@ export class Translator implements AsyncTranslator {
     // A parameter with a default is nullable in its signature only; the body sees it filled in.
     if (ts.isParameter(decl) && decl.questionToken) t = optionalType(t);
     if ((this.nullableDecls.has(sym) || this.looseDeclaration(decl)) && t !== 'Any?') t = optionalType(t);
-    if (/^Signal<.*[^?]>$/.test(t) && t !== 'Signal<Any?>' && this.madeHoldingNull(e)) t = t.replace(/>$/, '?>');
+    if (this.holdingNull(t, e)) t = t.replace(/>$/, '?>');
     return this.heldSignal(e) ?? t;
   }
 
@@ -9168,6 +9168,14 @@ export class Translator implements AsyncTranslator {
    */
   private takesOwnThis(d: ts.Declaration | undefined): boolean {
     return !!d && (ts.isFunctionTypeNode(d) || ts.isFunctionExpression(d)) && d.parameters.some((q) => isThisParameter(q) && !!q.type && q.type.kind !== ts.SyntaxKind.VoidKeyword);
+  }
+
+  /**
+   * A `signal<T>(null)` whose `T` must be typed `T?` to hold the null. An object type holds it unchecked
+   * (`jsUncheckedNull`), as a non-strict app's other object slots do, so its reads stay `T`.
+   */
+  private holdingNull(t: string, n: ts.Node): boolean {
+    return /^Signal<(String|Double|Boolean)>$/.test(t) && this.madeHoldingNull(n);
   }
 
   /** Whether `n` is, names or declares a `signal(null)` or `signal(undefined)`: code checked without strictNullChecks, whose type leaves the null out. */
