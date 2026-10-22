@@ -1934,7 +1934,7 @@ export class Translator implements AsyncTranslator {
     // Lenient code: a number field never assigned is undefined, which compares and computes as NaN does.
     if (this.lenient && t === 'Double') return 'Double = .nan';
     // A non-strict app's array, map or set field holds undefined until given one, and the null it may be set to.
-    if (this.lenientApp && /^JS(Array|Map|Set)</.test(t)) return `${t}!`;
+    if (this.lenientApp && !this.lenient && /^JS(Array|Map|Set)</.test(t)) return `${t}!`;
     const declared = this.lenientRef(t);
     if (declared === t) return this.deferred(t);
     const z = this.zero(t);
