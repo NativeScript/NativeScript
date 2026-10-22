@@ -1,6 +1,6 @@
 import ts from 'typescript';
 import { existsSync, readFileSync } from 'node:fs';
-import { dirname, isAbsolute, resolve } from 'node:path';
+import { basename, dirname, isAbsolute, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { foldPlatform, type Platform } from './platform.ts';
 import { desugarConstructorFactories } from './constructor-factories.ts';
@@ -942,14 +942,15 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
     const pkg = /[\\/]node_modules[\\/]((?:@[^\\/]+[\\/])?[^\\/]+)/.exec(target)?.[1].replace(/\\/g, '/');
     return kind === 'path' && (!pkg || pkg.startsWith('@nativescript/types') || !notPlugin(pkg, platform)) ? line : '';
   });
+  const declaredExports = (name: string, code: string) => (pluginFiles.has(name) ? pluginDeclaredExports(code, name, platform) : code);
   host.getSourceFile = (name, version, onError) => {
     const text = files.get(name) ?? (isSource(name) && existsSync(name) ? readFileSync(name, 'utf8') : appTypings.has(name) ? nativeReferences(readFileSync(name, 'utf8'), name) : undefined);
     if (text === undefined) {
       // A package's own TypeScript source.
       if (!/\.tsx?$/.test(name) || name.endsWith('.d.ts') || !existsSync(name)) return readLib(name, version, onError);
-      return ts.createSourceFile(name, desugarConstructorFactories(readFileSync(name, 'utf8'), name), version, true);
+      return ts.createSourceFile(name, desugarConstructorFactories(declaredExports(name, readFileSync(name, 'utf8')), name), version, true);
     }
-    const code = /\.tsx?$/.test(name) && !name.endsWith('.d.ts') ? desugarConstructorFactories(text, name) : text;
+    const code = /\.tsx?$/.test(name) && !name.endsWith('.d.ts') ? desugarConstructorFactories(declaredExports(name, text), name) : text;
     return ts.createSourceFile(name, isSource(name) ? foldPlatform(code, name, platform) : code, version, true);
   };
   const fileExists = host.fileExists.bind(host);
@@ -1313,4 +1314,53 @@ function appStrictness(from: string | undefined): boolean {
     return !(o.strict || o.strictNullChecks);
   }
   return false;
+}
+
+/**
+ * A plugin's platform file (`index.ios.ts`) with the exports of the declarations beside it (`index.d.ts`) that it
+ * lacks: an app is written against those declarations, and the build compiles the platform file in their place. A
+ * name the file declares or imports is exported as it is; a type only the declarations have is exported from them. A
+ * value only the declarations have is left out: the platform's JavaScript doesn't define it either.
+ */
+export function pluginDeclaredExports(code: string, file: string, platform: Platform): string {
+  const stem = file.endsWith(`.${platform}.ts`) ? file.slice(0, -`.${platform}.ts`.length) : null;
+  if (!stem || !existsSync(`${stem}.d.ts`)) return code;
+  const exportsOf = (sf: ts.SourceFile) => {
+    const exported = new Set<string>(), local = new Map<string, 'type' | 'value'>(), stars = new Set<string>(), from = new Map<string, string>();
+    for (const st of sf.statements) {
+      const isExported = ts.canHaveModifiers(st) && !!ts.getModifiers(st)?.some((m) => m.kind === ts.SyntaxKind.ExportKeyword);
+      const names = ts.isVariableStatement(st) ? st.declarationList.declarations.flatMap((d) => (ts.isIdentifier(d.name) ? [d.name.text] : []))
+        : (ts.isClassDeclaration(st) || ts.isFunctionDeclaration(st) || ts.isEnumDeclaration(st) || ts.isInterfaceDeclaration(st) || ts.isTypeAliasDeclaration(st)) && st.name ? [st.name.text] : [];
+      for (const n of names) {
+        local.set(n, ts.isInterfaceDeclaration(st) || ts.isTypeAliasDeclaration(st) ? 'type' : 'value');
+        if (isExported) exported.add(n);
+      }
+      const spec = (ts.isImportDeclaration(st) || ts.isExportDeclaration(st)) && st.moduleSpecifier && ts.isStringLiteral(st.moduleSpecifier) ? st.moduleSpecifier.text : null;
+      if (ts.isImportDeclaration(st) && spec) {
+        const c = st.importClause;
+        for (const n of [c?.name, c?.namedBindings && ts.isNamespaceImport(c.namedBindings) ? c.namedBindings.name : undefined, ...(c?.namedBindings && ts.isNamedImports(c.namedBindings) ? c.namedBindings.elements.map((e) => e.name) : [])]) {
+          if (n) { local.set(n.text, 'value'); from.set(n.text, spec); }
+        }
+      } else if (ts.isExportDeclaration(st)) {
+        if (!st.exportClause && spec) stars.add(spec);
+        else if (st.exportClause && ts.isNamedExports(st.exportClause)) for (const e of st.exportClause.elements) {
+          exported.add(e.name.text);
+          if (spec && !e.propertyName) from.set(e.name.text, spec);
+        }
+      }
+    }
+    return { exported, local, stars, from };
+  };
+  const own = exportsOf(ts.createSourceFile(file, code, ts.ScriptTarget.Latest, false));
+  const declared = exportsOf(ts.createSourceFile(`${stem}.d.ts`, readFileSync(`${stem}.d.ts`, 'utf8'), ts.ScriptTarget.Latest, false));
+  const lines: string[] = [];
+  for (const name of declared.exported) {
+    if (own.exported.has(name)) continue;
+    const spec = declared.from.get(name);
+    if (own.local.has(name)) lines.push(`export { ${name} };`);
+    else if (spec) lines.push(`export { ${name} } from ${JSON.stringify(spec)};`);
+    else if (declared.local.get(name) === 'type') lines.push(`export type { ${name} } from ${JSON.stringify(`./${basename(stem)}`)};`);
+  }
+  for (const spec of declared.stars) if (!own.stars.has(spec)) lines.push(`export * from ${JSON.stringify(spec)};`);
+  return lines.length ? `${code}\n${lines.join('\n')}\n` : code;
 }

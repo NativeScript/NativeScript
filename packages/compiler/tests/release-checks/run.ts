@@ -279,6 +279,28 @@ export class GlyphPipe { constructor(@Inject(TOKEN) private config: any, @Option
     try { createProgram([user], new Map(), 'ios', modules, new PluginSources({ app: dir, platform: 'ios', overrides: { '@hk/hub': join(dir, 'hub'), '@hk/ext': join(dir, 'ext') } })); } catch (e) { augmented = String(e); }
     check(!augmented, `a plugin's augmentation of another plugin's module applies to that module's source${augmented ? `: ${augmented.split('\n')[1]}` : ''}`);
 
+    // A plugin whose platform file exports less than the declarations beside it.
+    w('node_modules/@hk/decl/package.json', JSON.stringify({ name: '@hk/decl', version: '1.0.0', main: 'index' }));
+    w('node_modules/@hk/decl/index.ios.js', '');
+    w('decl/package.json', JSON.stringify({ name: '@hk/decl' }));
+    w('decl/common.ts', "export interface Options { n: number }\nexport function twice(n: number) { return 2 * n; }\nexport const kind = 'decl';\n");
+    w('decl/shapes.ts', 'export class Square { side = 1; }\n');
+    w('decl/index.ios.ts', "import { Options, twice } from './common';\nfunction scale(o: Options) { return twice(o.n); }\nexport class Decl { run(o: Options): number { return scale(o); } }\n");
+    w('decl/index.d.ts', "import { Options } from './common';\nexport { Options };\nexport * from './shapes';\nexport { kind } from './common';\nexport interface Result { ok: boolean }\nexport declare function scale(o: Options): number;\nexport declare function missing(): void;\nexport declare class Decl { run(o: Options): number; }\n");
+    const declUser = w('src/decl-user.ts', "import { Decl, Options, Result, Square, kind, scale } from '@hk/decl';\nconst o: Options = { n: 2 };\nexport const r: Result = { ok: new Decl().run(o) === scale(o) && new Square().side === 1 && kind === 'decl' };\n");
+    let declared = '';
+    try {
+      const { program, checker, files } = createProgram([declUser], new Map(), 'ios', modules, new PluginSources({ app: dir, platform: 'ios', overrides: { '@hk/decl': join(dir, 'decl') } }));
+      const entry = files.find((f) => f.fileName.endsWith('decl/index.ios.ts'))!;
+      const names = checker.getExportsOfModule(checker.getSymbolAtLocation(entry)!).map((s) => s.name).sort().join();
+      if (names !== 'Decl,Options,Result,Square,kind,scale') declared = `exports ${names}`;
+      const translator = new SwiftTranslator(checker, new Map(), files);
+      translator.errors = [];
+      translateModules(translator, program, files.map((f) => f.fileName));
+      if (translator.errors.length) declared = translator.errors.join('; ');
+    } catch (e) { declared = String(e); }
+    check(!declared, `a plugin's platform file exports what the declarations beside it export, values only where it has them${declared ? `: ${declared.split('\n').slice(0, 3).join(' ')}` : ''}`);
+
     const stub = { get: () => { throw new Error('acquired'); } } as unknown as PluginSources;
     const home = w('src/home.ts', "import { PagerModule } from '@hk/pager/angular';\n");
     w('node_modules/@hk/pager/index.js', '');
