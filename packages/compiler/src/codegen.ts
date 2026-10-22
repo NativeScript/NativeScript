@@ -77,7 +77,7 @@ export function render(c: ComponentIR, components: Map<string, ComponentInfo>, t
   /** A closure that renders content in the scope its framework orders it in. */
   const scoped = (kind: 'template' | 'region', result: string) => {
     if (framework === 'vue' || framework === 'svelte') return kind === 'template' ? `try EffectOrder.component { () throws -> ${result} in` : null;
-    if (framework === 'angular') return kind === 'template' ? `try EffectOrder.view { () throws -> ${result} in` : `try EffectOrder.embedded(in: __view) { () throws -> ${result} in`;
+    if (framework === 'angular') return kind === 'template' ? `try EffectOrder.view${c.injector ? `(injector: self.${ident(c.injector)})` : ''} { () throws -> ${result} in` : `try EffectOrder.embedded(in: __view) { () throws -> ${result} in`;
     if (framework === 'solid') return kind === 'template' ? `try EffectOrder.solid { () throws -> ${result} in` : `try EffectOrder.deeper { () throws -> ${result} in`;
     return null;
   };

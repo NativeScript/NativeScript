@@ -138,22 +138,27 @@ public final class Router {
         let routes: [RouteConfig]
         /// The pages navigated to in this outlet and not navigated back from, the shown one last.
         var entries: [Entry] = []
-        init(frame: Frame, routes: [RouteConfig]) { self.frame = frame; self.routes = routes }
+        /// The injector of the view holding the outlet, which its routed components inject from.
+        let injector: Injector?
+        init(frame: Frame, routes: [RouteConfig], injector: Injector?) { self.frame = frame; self.routes = routes; self.injector = injector }
     }
     private var outlets: [String: Outlet] = [:]
     /// Navigations to outlets not created yet, applied when they are.
     private var pending: [String: [String]] = [:]
     /// The outlets in the order they were last navigated, for `back()`.
     private var history: [String] = []
+    /// A flat route table's outlet: the injector of the view holding it.
+    private var flatInjector: Injector?
 
     /// A `page-router-outlet`: a frame showing its outlet's URL. A route that fails to render is reported and the frame stays empty.
     public func outlet(_ name: String = Router.primary) throws -> View {
         let frame = try Frame()
         if config.isEmpty {
-            if let (route, params) = resolveFlatRoute(initial) { jsReport { try push(route.make, ActivatedRoute(params: params), into: frame, extras: nil) } }
+            flatInjector = Injector.current
+            if let (route, params) = resolveFlatRoute(initial) { jsReport { try push(route.make, ActivatedRoute(params: params), into: frame, extras: nil, injector: flatInjector) } }
             return frame
         }
-        outlets[name] = Outlet(frame: frame, routes: name == Router.primary ? config : Router.routes(in: config, outlet: name))
+        outlets[name] = Outlet(frame: frame, routes: name == Router.primary ? config : Router.routes(in: config, outlet: name), injector: Injector.current)
         jsReport {
             if name == Router.primary {
                 if try show(name, [], extras: nil) == true { ended(url: "/") }
@@ -174,7 +179,7 @@ public final class Router {
         if config.isEmpty {
             let path = commands.map { jsToString($0) }.joined(separator: "/")
             guard let (route, params) = resolveFlatRoute(path), let frame = (try? Frame.topmost()) as? Frame else { return false }
-            try push(route.make, ActivatedRoute(params: params), into: frame, extras: extras)
+            try push(route.make, ActivatedRoute(params: params), into: frame, extras: extras, injector: flatInjector)
             ended(url: "/" + path.split(separator: "/").joined(separator: "/"))
             return true
         }
@@ -328,13 +333,13 @@ public final class Router {
         }
         history.removeAll { $0 == name }
         history.append(name)
-        try push(make, ActivatedRoute(params: params, outlet: name, url: resolved), into: frame, extras: extras, outlet: outlet)
+        try push(make, ActivatedRoute(params: params, outlet: name, url: resolved), into: frame, extras: extras, outlet: outlet, injector: outlet.injector)
         return true
     }
 
     /// `PageRouterOutlet.activateOnGoForward` and `loadComponentInPage`: a new page, the component rendered into
     /// it in a scope of its own, and the frame navigated to it. A component that throws leaves the outlet as it was.
-    private func push(_ make: () throws -> View, _ route: ActivatedRoute, into frame: Frame, extras: Any?, outlet: Outlet? = nil) throws {
+    private func push(_ make: () throws -> View, _ route: ActivatedRoute, into frame: Frame, extras: Any?, outlet: Outlet? = nil, injector: Injector?) throws {
         let page = try Page()
         page.route = route
         let owner = Owner(parent: nil)
@@ -349,7 +354,7 @@ public final class Router {
         let view: View
         do {
             defer { Page.building.removeLast() }
-            view = try owner.run(make)
+            view = try owner.run { try Injector.runInContext(injector, make) }
         } catch {
             owner.dispose()
             outlet?.entries.removeAll { $0 === entry }

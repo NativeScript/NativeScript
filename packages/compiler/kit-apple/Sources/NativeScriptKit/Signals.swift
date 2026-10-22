@@ -253,11 +253,14 @@ public enum EffectOrder {
         let height: Int?
         /// Angular: the component view whose bindings this scope's checks are.
         public let view: AngularView?
+        /// Angular: the injector of the nearest component with `providers` above this scope, current while it runs.
+        let injector: Injector?
 
-        init(prefix: [Int], height: Int? = nil, view: AngularView? = nil) {
+        init(prefix: [Int], height: Int? = nil, view: AngularView? = nil, injector: Injector? = Injector.current) {
             self.prefix = prefix
             self.height = height
             self.view = view
+            self.injector = injector
         }
 
         func next(_ phase: Int) -> [Int] {
@@ -284,8 +287,13 @@ public enum EffectOrder {
 
     static func run<T>(_ scope: Scope, _ body: () throws -> T) rethrows -> T {
         let previous = current
+        let injector = Injector.current
         current = scope
-        defer { current = previous }
+        Injector.current = scope.injector
+        defer {
+            current = previous
+            Injector.current = injector
+        }
         return try body()
     }
 
@@ -295,14 +303,15 @@ public enum EffectOrder {
         return try run(Scope(prefix: [components]), body)
     }
 
-    /// Angular's component view: after its parent view's bindings and embedded views.
-    public static func view<T>(_ body: () throws -> T) rethrows -> T {
-        try run(Scope(prefix: current.next(2), view: AngularView(parent: current.view)), body)
+    /// Angular's component view: after its parent view's bindings and embedded views. `injector` is the component's
+    /// own (`providers`); without one, the view's children inject from the injector the component was made in.
+    public static func view<T>(injector: Injector? = nil, _ body: () throws -> T) rethrows -> T {
+        try run(Scope(prefix: current.next(2), view: AngularView(parent: current.view), injector: injector ?? Injector.current), body)
     }
 
     /// Angular's embedded view (`@if`, `@for` content): after its declaring view's own bindings.
     public static func embedded<T>(in view: Scope, _ body: () throws -> T) rethrows -> T {
-        try run(Scope(prefix: view.next(1), view: view.view), body)
+        try run(Scope(prefix: view.next(1), view: view.view, injector: view.injector), body)
     }
 
     /// Solid's control-flow content: one level deeper than the template that holds it.
@@ -457,6 +466,7 @@ public final class Effect: Subscriber {
     let key: [Int]
     private let height: Int?
     private let view: AngularView?
+    private let injector: Injector?
     private let derived: Bool
 
     @discardableResult
@@ -470,6 +480,7 @@ public final class Effect: Subscriber {
         self.derived = derived
         height = EffectOrder.current.height
         view = EffectOrder.current.view
+        injector = Injector.current
         Owner.current?.effects.append(self)
         Effect.created?(self)
         if deferred {
@@ -519,7 +530,7 @@ public final class Effect: Subscriber {
         owner = Owner(parent: nil)
         let previous = currentEffect
         currentEffect = self
-        EffectOrder.run(EffectOrder.Scope(prefix: key, height: height, view: view)) { owner?.run(body) }
+        EffectOrder.run(EffectOrder.Scope(prefix: key, height: height, view: view, injector: injector)) { owner?.run(body) }
         currentEffect = previous
     }
 
@@ -705,14 +716,19 @@ public final class Inject {
     public init(_ token: Any?) { self.token = token }
 }
 
+public typealias NodeInjector = Injector
+
 /// `inject(Injector)`; supports hierarchical child injectors (`Injector.create`) as well as root providers.
 public final class Injector {
     nonisolated deinit {}
     public static let shared = Injector()
     public static var root: Injector { current ?? shared }
-    private static var current: Injector? = nil
+    static var current: Injector? = nil
 
     private let parent: Injector?
+    /// A component's injector (`enter`): what its providers make belongs to the component, and goes when it does.
+    private var owner: Owner?
+    private var entered: Injector?
     private var instanceValues: [ObjectIdentifier: Any?] = [:]
     private var instanceFactories: [ObjectIdentifier: () throws -> Any?] = [:]
     private var instanceMultiFactories: [ObjectIdentifier: [() throws -> Any?]] = [:]
@@ -734,6 +750,23 @@ public final class Injector {
         return Injector(providers, resolvedParent)
     }
 
+    /// `@Component({ providers })`: the component's own injector over the one it is made in, current from the
+    /// component's first field to the end of its constructor (`leave()`), and in its view (`EffectOrder.view`).
+    public static func enter(_ providers: Any?) -> Injector {
+        let node = Injector(providers, current)
+        node.owner = Owner()
+        node.entered = current
+        current = node
+        return node
+    }
+
+    public func leave() { Injector.current = entered }
+
+    private func owned<T>(_ body: () -> T) -> T {
+        guard let owner else { return body() }
+        return untrack { owner.run(body) }
+    }
+
     public func get(_ token: Any?, _ notFoundValue: Any? = nil, _ options: Any? = nil) -> Any? {
         get(token, notFoundValue, options, root: true)
     }
@@ -747,13 +780,13 @@ public final class Injector {
         if !skipSelf, let key = Injector.tokenKey(unwrapped) {
             if let entry = instanceValues[key] { return entry }
             if let multis = instanceMultiFactories[key], !multis.isEmpty {
-                let values = multis.map { fn in Injector.runInContext(self) { jsReported { try fn() } ?? nil } }
+                let values = multis.map { fn in owned { Injector.runInContext(self) { jsReported { try fn() } ?? nil } } }
                 let arr = JSArray<Any?>(values)
                 instanceValues[key] = arr
                 return arr
             }
             if let factory = instanceFactories[key] {
-                let val = Injector.runInContext(self) { jsReported { try factory() } ?? nil }
+                let val = owned { Injector.runInContext(self) { jsReported { try factory() } ?? nil } }
                 instanceValues[key] = val
                 return val
             }
@@ -774,9 +807,13 @@ public final class Injector {
     }
 
     /// A root service, made as the root injector makes it: whatever component first injects it, its effects
-    /// and its `DestroyRef` belong to the application, and what its constructor reads subscribes no binding.
+    /// and its `DestroyRef` belong to the application, what its constructor reads subscribes no binding, and what
+    /// it injects comes from the root, not from the providers of the component that injected it.
     public static func root<T>(_ make: () throws -> T) rethrows -> T {
-        try untrack { try Owner(parent: nil).run(make) }
+        let active = current
+        current = nil
+        defer { current = active }
+        return try untrack { try Owner(parent: nil).run(make) }
     }
 
     private static var made: [ObjectIdentifier: AnyObject] = [:]
@@ -907,6 +944,13 @@ public final class Injector {
             guard let flat = jsFlat(item) else { return }
             if let arr = flat as? JSArrayProtocol {
                 for el in arr.jsAnyElements { walk(el) }
+                return
+            }
+            // A class: its own instance, as `{ provide: X, useClass: X }`.
+            if let injectable = flat as? JSInjectableType.Type, let key = Injector.tokenKey(flat) {
+                instanceFactories[key] = { try injectable.jsConstruct() }
+                instanceMultiFactories.removeValue(forKey: key)
+                instanceValues.removeValue(forKey: key)
                 return
             }
             if let dyn = flat as? JSDynamic {

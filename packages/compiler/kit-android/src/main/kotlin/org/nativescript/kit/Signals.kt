@@ -193,7 +193,8 @@ private fun flush() {
  * every shallower one.
  */
 object EffectOrder {
-    class Scope internal constructor(private val prefix: List<Int>, internal val height: Int? = null) {
+    /** [injector]: Angular's, of the nearest component with `providers` above this scope, current while it runs. */
+    class Scope internal constructor(private val prefix: List<Int>, internal val height: Int? = null, internal val injector: Injector? = Injector.current) {
         /** Next key for: the scope's own effects, embedded views, child views. */
         private val counters = intArrayOf(0, 0, 0)
 
@@ -221,22 +222,28 @@ object EffectOrder {
 
     internal fun <T> run(scope: Scope, body: () -> T): T {
         val previous = current
+        val injector = Injector.current
         current = scope
+        Injector.current = scope.injector
         try {
             return body()
         } finally {
             current = previous
+            Injector.current = injector
         }
     }
 
     /** Vue's and Svelte's component: ordered after every component created before it. */
     fun <T> component(body: () -> T): T = run(Scope(listOf(++components)), body)
 
-    /** Angular's component view: after its parent view's bindings and embedded views. */
-    fun <T> view(body: () -> T): T = run(Scope(current.next(2)), body)
+    /**
+     * Angular's component view: after its parent view's bindings and embedded views. [injector] is the component's own
+     * (`providers`); without one, the view's children inject from the injector the component was made in.
+     */
+    fun <T> view(injector: Injector? = null, body: () -> T): T = run(Scope(current.next(2), null, injector ?: Injector.current), body)
 
     /** Angular's embedded view (`@if`, `@for` content): after its declaring view's own bindings. */
-    fun <T> embedded(view: Scope, body: () -> T): T = run(Scope(view.next(1)), body)
+    fun <T> embedded(view: Scope, body: () -> T): T = run(Scope(view.next(1), null, view.injector), body)
 
     /** Solid's control-flow content: one level deeper than the template that holds it. */
     fun <T> deeper(body: () -> T): T = run(Scope(emptyList(), (current.height ?: 0) + 1), body)
@@ -343,6 +350,7 @@ class Effect internal constructor(internal val key: List<Int>, private val deriv
     private var stale = false
     private var owner: Owner? = null
     private val height = EffectOrder.current.height
+    private val injector = Injector.current
 
     constructor(body: () -> Unit) : this(EffectOrder.key(), false, body)
 
@@ -400,7 +408,7 @@ class Effect internal constructor(internal val key: List<Int>, private val deriv
         currentEffect = this
         // What an effect throws is reported, as a framework's scheduler reports a failed job: the update goes on.
         try {
-            EffectOrder.run(EffectOrder.Scope(key, height)) { next.run(body) }
+            EffectOrder.run(EffectOrder.Scope(key, height, injector)) { next.run(body) }
         } catch (e: Throwable) {
             jsReportUncaught(jsCaught(e))
         } finally {
@@ -567,7 +575,7 @@ object AppInjector {
         services[type]?.let { return it as T }
         if (!making.add(type)) throw JSException(JSError("NG0200: Circular dependency in DI detected for ${type.simpleName}"))
         try {
-            val made = untrack { owner.run(make) }
+            val made = Injector.atRoot { untrack { owner.run(make) } }
             services[type] = made
             return made
         } finally {
@@ -585,7 +593,12 @@ object AppInjector {
     }
 }
 
+typealias NodeInjector = Injector
+
 class Injector(providers: Any? = null, private val parent: Injector? = null) {
+    /** A component's injector ([enter]): what its providers make belongs to the component, and goes when it does. */
+    private var owner: Owner? = null
+    private var entered: Injector? = null
     private val instanceValues = IdentityHashMap<Any, Any?>()
     private val instanceFactories = IdentityHashMap<Any, () -> Any?>()
     private val instanceMultiFactories = IdentityHashMap<Any, MutableList<() -> Any?>>()
@@ -606,14 +619,14 @@ class Injector(providers: Any? = null, private val parent: Injector? = null) {
             if (instanceValues.containsKey(key)) return instanceValues[key]
             val multis = instanceMultiFactories[key]
             if (!multis.isNullOrEmpty()) {
-                val values = multis.map { fn -> runInContext(this) { try { fn() } catch (t: Throwable) { jsReportUncaught(jsCaught(t)); null } } }
+                val values = multis.map { fn -> owned { runInContext(this) { try { fn() } catch (t: Throwable) { jsReportUncaught(jsCaught(t)); null } } } }
                 val arr = JSArray(values.toMutableList())
                 instanceValues[key] = arr
                 return arr
             }
             val factory = instanceFactories[key]
             if (factory != null) {
-                val v = runInContext(this) { try { factory() } catch (t: Throwable) { jsReportUncaught(jsCaught(t)); null } }
+                val v = owned { runInContext(this) { try { factory() } catch (t: Throwable) { jsReportUncaught(jsCaught(t)); null } } }
                 instanceValues[key] = v
                 return v
             }
@@ -631,12 +644,28 @@ class Injector(providers: Any? = null, private val parent: Injector? = null) {
                 for (el in flat.storage) walk(el)
                 return
             }
+            // A class: its own instance, as `{ provide: X, useClass: X }`.
+            if (flat is Class<*>) {
+                instanceFactories[flat] = { construct(flat) }
+                instanceMultiFactories.remove(flat)
+                instanceValues.remove(flat)
+                return
+            }
             if (flat is JSDynamic) {
                 if ("providers" in flat.jsKeys) walk(flat.jsGet("providers"))
                 if ("provide" in flat.jsKeys) parseProvider(flat, this)
             }
         }
         walk(providers)
+    }
+
+    fun leave() {
+        current = entered
+    }
+
+    private fun <T> owned(body: () -> T): T {
+        val owner = owner ?: return body()
+        return untrack { owner.run(body) }
     }
 
     companion object {
@@ -667,13 +696,32 @@ class Injector(providers: Any? = null, private val parent: Injector? = null) {
             return Injector(providers, resolvedParent)
         }
 
+        /**
+         * `@Component({ providers })`: the component's own injector over the one it is made in, current from the
+         * component's first field to the end of its constructor ([leave]), and in its view (`EffectOrder.view`).
+         */
+        fun enter(providers: Any?): Injector {
+            val node = Injector(providers, current)
+            node.owner = Owner()
+            node.entered = current
+            current = node
+            return node
+        }
+
+        /** What a root service makes and injects comes from the root, not from the providers of the component that injected it. */
+        internal fun <T> atRoot(body: () -> T): T {
+            val active = current
+            current = null
+            try { return body() } finally { current = active }
+        }
+
         fun <T> runInContext(injector: Any?, fn: () -> T): T {
             val prev = current
             current = (jsBox(injector) as? Injector) ?: shared
             try { return fn() } finally { current = prev }
         }
 
-        fun <T> root(make: () -> T): T = untrack { AppInjector.owner.run(make) }
+        fun <T> root(make: () -> T): T = atRoot { untrack { AppInjector.owner.run(make) } }
 
         fun reset() {
             tokenValues.clear()

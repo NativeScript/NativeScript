@@ -132,6 +132,8 @@ export interface ComponentIR {
   destroy?: string;
   /** A field holding the component's own ElementRef (Angular's host element), given the template's root view once it is made. */
   host?: string;
+  /** A field holding the component's own injector (Angular's `providers`), which its view injects from. */
+  injector?: string;
   /** Angular's `ngOnChanges`: the parent records each input it sets with `$change(name, value)`, then calls `$flushChanges()` once its `$changed` signal moves. */
   changes?: boolean;
   /** The component's own stylesheets, scoped by its framework, which the app's build adds after app.css. */
