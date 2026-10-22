@@ -5,27 +5,38 @@ import java.net.URLDecoder
 // Angular's router with @nativescript/angular's page-router-outlets and RouterExtensions, over the
 // Frame and Page compiled from core (kit-apple's Router.swift).
 
-/** An event a component raises (Angular `output()`): the parent subscribes, the component emits. */
-class Emitter<T> {
-    private val handlers = mutableListOf<(T) -> Unit>()
-    fun on(handler: (T) -> Unit) {
-        handlers.add(handler)
-    }
-    fun emit(value: T) {
-        for (h in handlers.toList()) h(value)
-    }
-}
-
-fun Emitter<Unit>.emit() = emit(Unit)
-
 /** The route a component was created for (Angular `ActivatedRoute`): set by the router before it constructs the routed component. */
-class ActivatedRoute(params: Map<String, String>, internal val outlet: String = Router.PRIMARY, internal val url: List<String> = emptyList()) {
-    class Snapshot(val params: JSRecord<String>)
-
-    val snapshot = Snapshot(JSRecord(params.toList()))
+class ActivatedRoute(
+    params: Map<String, String>,
+    val outlet: String = Router.PRIMARY,
+    internal val url: List<String> = emptyList(),
+    queryParams: Map<String, String> = emptyMap(),
+    data: Map<String, Any?> = emptyMap(),
+) {
+    val snapshot = ActivatedRouteSnapshot(
+        params = JSRecord(params.toList()),
+        queryParams = JSRecord(queryParams.toList()),
+        data = JSRecord(data.toList()),
+        url = JSArray(url.map { UrlSegment(it) }.toMutableList()),
+        fragment = null,
+        outlet = outlet,
+    )
 
     /** `route.params`: the route's parameters, replayed to each subscriber. */
     val params = RxBehaviorSubject(snapshot.params)
+    val queryParams = RxBehaviorSubject(snapshot.queryParams)
+    val data = RxBehaviorSubject(snapshot.data)
+    val paramMap = RxBehaviorSubject(ParamMap(snapshot.params))
+    val queryParamMap = RxBehaviorSubject(ParamMap(snapshot.queryParams))
+    val fragment = RxBehaviorSubject<String?>(null)
+    val title = RxBehaviorSubject<String?>(null)
+    var routeConfig: JSObject? = null
+
+    val root: ActivatedRoute get() = this
+    val parent: ActivatedRoute? get() = null
+    val firstChild: ActivatedRoute? get() = null
+    val children: JSArray<ActivatedRoute> get() = JSArray()
+    val pathFromRoot: JSArray<ActivatedRoute> get() = JSArray(mutableListOf(this))
 
     companion object {
         var current = ActivatedRoute(emptyMap())
@@ -41,9 +52,6 @@ class Route(path: String, internal val make: () -> View) {
 class RouteConfig(path: String, internal val outlet: String = Router.PRIMARY, internal val redirectTo: String? = null, internal val full: Boolean = false, internal val children: List<RouteConfig> = emptyList(), internal val make: (() -> View)? = null) {
     internal val segments = path.split("/").filter { it.isNotEmpty() }
 }
-
-/** `NavigationEnd`, the router event each completed navigation emits. */
-class NavigationEnd(val id: Double, val url: String, val urlAfterRedirects: String)
 
 private val routeKey = jsSymbol("NativeScriptKit:route")
 
@@ -78,7 +86,8 @@ class Router {
 
     private class Entry(val owner: Owner, val route: ActivatedRoute)
 
-    private class Outlet(frame: Frame, val routes: List<RouteConfig>) {
+    /** [injector]: the injector of the view holding the outlet, which its routed components inject from. */
+    private class Outlet(frame: Frame, val routes: List<RouteConfig>, val injector: Injector?) {
         private val frameRef = java.lang.ref.WeakReference(frame)
         val frame: Frame? get() = frameRef.get()
         /** The pages navigated to in this outlet and not navigated back from, the shown one last. */
@@ -90,6 +99,8 @@ class Router {
     private val pending = HashMap<String, List<String>>()
     /** The outlets in the order they were last navigated, for `back()`. */
     private val history = ArrayList<String>()
+    /** A flat route table's outlet: the injector of the view holding it. */
+    private var flatInjector: Injector? = null
 
     /** The app ended (core's exit event): every routed component is destroyed, newest first, and the outlets forgotten. */
     fun destroy() {
@@ -99,32 +110,43 @@ class Router {
         history.clear()
     }
 
-    /** A `page-router-outlet`: a frame showing its outlet's URL. */
+    /** A `page-router-outlet`: a frame showing its outlet's URL. A route that fails to render is reported and the frame stays empty. */
     fun outlet(name: String = PRIMARY): View {
         val frame = Frame()
         if (config.isEmpty()) {
-            resolveFlatRoute(initial)?.let { (route, params) -> push(route.make, ActivatedRoute(params), frame, null) }
+            flatInjector = Injector.current
+            resolveFlatRoute(initial)?.let { (route, params) -> jsReport { push(route.make, ActivatedRoute(params), frame, null, injector = flatInjector) } }
             return frame
         }
-        outlets[name] = Outlet(frame, if (name == PRIMARY) config else routesIn(config, name))
-        if (name == PRIMARY) {
-            if (show(name, emptyList(), null) == true) ended("/")
-        } else {
-            pending.remove(name)?.let { show(name, it, null) }
+        outlets[name] = Outlet(frame, if (name == PRIMARY) config else routesIn(config, name), Injector.current)
+        jsReport {
+            if (name == PRIMARY) {
+                if (show(name, emptyList(), null) == true) ended("/")
+            } else {
+                pending.remove(name)?.let { show(name, it, null) }
+            }
         }
         return frame
     }
 
     fun navigate(commands: JSArray<*>, extras: Any? = null): JSPromise<Boolean> = navigate(commands.storage.toList(), extras)
 
-    fun navigate(commands: List<Any?>, extras: Any? = null): JSPromise<Boolean> {
+    /** A navigation whose component throws shows nothing new, and its promise rejects with the error, as Angular's router's does. */
+    fun navigate(commands: List<Any?>, extras: Any? = null): JSPromise<Boolean> =
+        try {
+            JSPromise.resolve(navigation(commands, extras))
+        } catch (e: Throwable) {
+            JSPromise.reject(jsCaught(e))
+        }
+
+    private fun navigation(commands: List<Any?>, extras: Any?): Boolean {
         if (config.isEmpty()) {
             val path = commands.joinToString("/") { jsToString(it) }
-            val (route, params) = resolveFlatRoute(path) ?: return JSPromise.resolve(false)
-            val frame = FrameBase.topmost() as? Frame ?: return JSPromise.resolve(false)
-            push(route.make, ActivatedRoute(params), frame, extras)
+            val (route, params) = resolveFlatRoute(path) ?: return false
+            val frame = FrameBase.topmost() as? Frame ?: return false
+            push(route.make, ActivatedRoute(params), frame, extras, injector = flatInjector)
             ended("/" + path.split("/").filter { it.isNotEmpty() }.joinToString("/"))
-            return JSPromise.resolve(true)
+            return true
         }
         val relativeTo = field(extras, "relativeTo") as? ActivatedRoute
         val targets = ArrayList<Pair<String, List<String>>>()
@@ -170,10 +192,13 @@ class Router {
             navigated = navigated || shown == true
         }
         if (navigated) ended(if (absolute || relativeTo == null) "/" + segments.joinToString("/") else this.url)
-        return JSPromise.resolve(ok)
+        return ok
     }
 
-    fun navigateByUrl(url: String, extras: Any? = null): JSPromise<Boolean> = navigate(listOf(if (url.startsWith("/")) url else "/$url"), extras)
+    fun navigateByUrl(urlTarget: Any?, extras: Any? = null): JSPromise<Boolean> {
+        val str = (jsBox(urlTarget) as? UrlTree)?.toString() ?: jsToString(urlTarget)
+        return navigate(listOf(if (str.startsWith("/")) str else "/$str"), extras)
+    }
 
     /** `back()`: the outlet of the given route, else the one navigated last that can go back, else the topmost frame. */
     fun back(options: Any? = null) {
@@ -192,13 +217,41 @@ class Router {
         }
     }
 
+    fun backToPreviousPage() = back()
+
     /** `RouterExtensions.router`: the router itself. */
     val router: Router get() = this
 
     /** `router.url`: the primary outlet's URL. */
     val url: String get() = "/" + (current(PRIMARY) ?: emptyList()).joinToString("/")
 
-    fun canGoBack(): Boolean = history.any { outlets[it]?.frame?.canGoBack() == true }
+    val routerState: JSObject
+        get() = JSObject(
+            "snapshot" to JSObject("url" to url, "root" to ActivatedRoute.current.snapshot),
+            "root" to ActivatedRoute.current,
+        )
+
+    fun createUrlTree(commands: Any?, extras: Any? = null): UrlTree {
+        val items = (jsBox(commands) as? JSArray<*>)?.storage ?: emptyList<Any?>()
+        val joined = items.joinToString("/") { jsToString(it) }.trim('/')
+        val q = field(extras, "queryParams")
+        val f = field(extras, "fragment") as? String
+        return UrlTree("/$joined", q, f)
+    }
+
+    fun serializeUrl(tree: Any?): String = (jsBox(tree) as? UrlTree)?.toString() ?: jsToString(tree)
+
+    fun parseUrl(raw: String): UrlTree = DefaultUrlSerializer().parse(raw)
+
+    fun isActive(targetUrl: Any?, exact: Any? = false): Boolean {
+        val target = (jsBox(targetUrl) as? UrlTree)?.toString() ?: jsToString(targetUrl)
+        val isExact = (jsBox(exact) as? Boolean) ?: (field(exact, "paths") == "exact")
+        return if (isExact) url == target else url.startsWith(target)
+    }
+
+    fun canGoBack(@Suppress("UNUSED_PARAMETER") options: Any? = null): Boolean = history.any { outlets[it]?.frame?.canGoBack() == true }
+
+    fun canGoBackToPreviousPage(): Boolean = canGoBack()
 
     private fun routesIn(routes: List<RouteConfig>, outlet: String): List<RouteConfig> =
         routes.filter { it.outlet == outlet } + routes.flatMap { routesIn(it.children, outlet) }
@@ -219,50 +272,61 @@ class Router {
         if (outlet.entries.lastOrNull()?.route?.url == resolved) return false
         history.remove(name)
         history.add(name)
-        push(make, ActivatedRoute(params, name, resolved), frame, extras, outlet)
+        push(make, ActivatedRoute(params, name, resolved), frame, extras, outlet, outlet.injector)
         return true
     }
 
-    /** PageRouterOutlet's `activateOnGoForward`: a new page, the component rendered into it in a scope of its own, and the frame navigated to it. */
-    private fun push(make: () -> View, route: ActivatedRoute, frame: Frame, extras: Any?, outlet: Outlet? = null) {
-        jsReport {
-            val page = Page()
-            page.route = route
-            val owner = Owner(null)
-            // Shown before the component renders, as Angular's URL is current by activation: a navigation the
-            // component makes while rendering (a tab view filling its outlets) finds this route already there.
-            val entry = Entry(owner, route)
-            outlet?.entries?.add(entry)
-            ActivatedRoute.current = route
-            building.add(page)
-            val view = try { owner.run(make) } finally { building.removeAt(building.size - 1) }
-            if (view !== page) page.content = view
-            val outletRef = outlet?.let { java.lang.ref.WeakReference(it) }
-            page.on(PageBase.navigatedFromEvent, { data ->
-                if (jsTruthy(jsGet(data, "isBackNavigation"))) {
-                    owner.dispose()
-                    val o = outletRef?.get()
-                    if (o != null && o.entries.remove(entry)) ended(url)
-                }
-            })
-            val clearHistory = jsTruthy(field(extras, "clearHistory"))
-            if (clearHistory && outletRef != null) {
-                page.once(PageBase.navigatedToEvent, { _ ->
-                    val o = outletRef.get() ?: return@once
-                    val cleared = o.entries.filter { it !== entry }
-                    o.entries.retainAll { it === entry }
-                    for (old in cleared) old.owner.dispose()
-                })
-            }
-            val animated = field(extras, "animated")
-            val navigation = mutableListOf<Pair<String, Any?>>(
-                "create" to jsFunction { page },
-                "clearHistory" to clearHistory,
-                "animated" to (if (animated == null) true else jsTruthy(animated)),
-            )
-            field(extras, "transition")?.let { navigation.add("transition" to it) }
-            frame.navigate(JSObject(navigation))
+    /**
+     * PageRouterOutlet's `activateOnGoForward`: a new page, the component rendered into it in a scope of its own, and the frame navigated to it.
+     * A component that throws leaves the outlet as it was.
+     */
+    private fun push(make: () -> View, route: ActivatedRoute, frame: Frame, extras: Any?, outlet: Outlet? = null, injector: Injector?) {
+        val page = Page()
+        page.route = route
+        val owner = Owner(null)
+        // Shown before the component renders, as Angular's URL is current by activation: a navigation the
+        // component makes while rendering (a tab view filling its outlets) finds this route already there.
+        val entry = Entry(owner, route)
+        outlet?.entries?.add(entry)
+        val previousRoute = ActivatedRoute.current
+        ActivatedRoute.current = route
+        building.add(page)
+        val view = try {
+            owner.run { Injector.runInContext(injector, make) }
+        } catch (e: Throwable) {
+            owner.dispose()
+            outlet?.entries?.remove(entry)
+            ActivatedRoute.current = previousRoute
+            throw e
+        } finally {
+            building.removeAt(building.size - 1)
         }
+        if (view !== page) page.content = view
+        val outletRef = outlet?.let { java.lang.ref.WeakReference(it) }
+        page.on(PageBase.navigatedFromEvent, { data ->
+            if (jsTruthy(jsGet(data, "isBackNavigation"))) {
+                owner.dispose()
+                val o = outletRef?.get()
+                if (o != null && o.entries.remove(entry)) ended(url)
+            }
+        })
+        val clearHistory = jsTruthy(field(extras, "clearHistory"))
+        if (clearHistory && outletRef != null) {
+            page.once(PageBase.navigatedToEvent, { _ ->
+                val o = outletRef.get() ?: return@once
+                val cleared = o.entries.filter { it !== entry }
+                o.entries.retainAll { it === entry }
+                for (old in cleared) old.owner.dispose()
+            })
+        }
+        val animated = field(extras, "animated")
+        val navigation = mutableListOf<Pair<String, Any?>>(
+            "create" to jsFunction { page },
+            "clearHistory" to clearHistory,
+            "animated" to (if (animated == null) true else jsTruthy(animated)),
+        )
+        field(extras, "transition")?.let { navigation.add("transition" to it) }
+        frame.navigate(JSObject(navigation))
     }
 
     /** The routes a URL resolves through, its parameters and the URL once redirects applied. */

@@ -166,10 +166,14 @@ export class NativeAPI {
     if (t?.introduced && parseFloat(t.introduced) > DEPLOYMENT) this.t.requireTypeAvailability(parseFloat(t.introduced), t.swift);
   }
 
-  /** A native class's Swift name, qualified by its module where the kit declares a type of that name (`Foundation.Progress`). */
+  /**
+   * A native class's Swift name, qualified by its module where the kit or the program declares a type of that name
+   * (`Foundation.Progress`; `FirebaseRemoteConfig.RemoteConfig` beside a plugin's own `RemoteConfig` class).
+   */
   private className(cls: { swift: string; module?: string; introduced?: string; generics?: string[] }): string {
     this.typeAvailable(cls);
-    const name = cls.module && (this.t.isKitType(cls.swift) || this.internalTypes.has(cls.swift)) ? `${cls.module}.${cls.swift}` : cls.swift;
+    // Not where the program has a type of the module's name (a plugin's `RevenueCat` class), which the qualifier would name.
+    const name = cls.module && (this.t.isKitType(cls.swift) || this.internalTypes.has(cls.swift) || (this.t.programDeclares(cls.swift) && !this.t.programDeclares(cls.module))) ? `${cls.module}.${cls.swift}` : cls.swift;
     return cls.generics?.length ? `${name}<${cls.generics.map(() => 'AnyObject').join(', ')}>` : name;
   }
 
@@ -348,10 +352,15 @@ export class NativeAPI {
 
   /** Whether a getter of a class extending a native one is a native property's, which Swift types as the SDK does. */
   nativeGetter(get: ts.GetAccessorDeclaration): boolean {
+    return this.nativeGetterType(get) !== null;
+  }
+
+  /** The Swift type of the native property a getter of a class extending a native one is (`UIWindow?` of `window`), or null. */
+  nativeGetterType(get: ts.GetAccessorDeclaration): SwiftType | null {
     const cls = get.parent;
     const heritage = ts.isClassLike(cls) ? cls.heritageClauses?.find((h) => h.token === ts.SyntaxKind.ExtendsKeyword)?.types[0] : undefined;
     const base = heritage && this.symbolModule(this.t.resolve(heritage.expression));
-    return !!base && !!this.nativeProperty(base, this.adoptedProtocols(cls as ts.ClassLikeDeclaration), get.name.getText()).native;
+    return (base && this.nativeProperty(base, this.adoptedProtocols(cls as ts.ClassLikeDeclaration), get.name.getText()).native?.type) || null;
   }
 
   /** A call of an app class's override of its native base's method: Swift calls it by the native signature. */
@@ -490,6 +499,31 @@ export class NativeAPI {
     return NUMBERS.has(b) && b !== 'Double' && b !== 'TimeInterval' && this.t.typeOf(e).replace(/\?$/, '') === 'Double' ? `(${chained}).map { Double($0) }` : chained;
   }
 
+  /**
+   * Lenient code: a native property or method result Swift has optional where TypeScript declares it present, of a
+   * type lenient code otherwise holds present (an array, a dictionary, a struct, an enum), whose member is read: a
+   * missing one throws JavaScript's TypeError there.
+   */
+  optionalRead(e: ts.Expression): boolean {
+    if (!this.t.lenient || ts.isOptionalChain(e)) return false;
+    const p = ts.walkUpParenthesizedExpressions(e.parent);
+    const receiver = (ts.isPropertyAccessExpression(p) || ts.isElementAccessExpression(p)) && ts.skipOuterExpressions(p.expression, ts.OuterExpressionKinds.Parentheses) === e && !p.questionDotToken;
+    if (!receiver && !this.t.looseTolerated(e)) return false;
+    const swift = ts.isPropertyAccessExpression(e) ? this.memberType(e) : ts.isCallExpression(e) ? this.methodReturns(e) : null;
+    return !!swift && optional(swift);
+  }
+
+  /** A native call Swift declares to give a value it never lacks (`NSIndexPath.indexPathForRowInSection(…)`, an initializer that cannot fail). */
+  presentResult(call: ts.Expression): boolean {
+    if (!ts.isCallExpression(call) || ts.isOptionalChain(call)) return false;
+    const callee = call.expression;
+    if (!ts.isPropertyAccessExpression(callee) || this.appMember(callee.name)) return false;
+    const r = this.receiver(callee.expression);
+    if (!r) return false;
+    const m = lookupMember(r.module, r.name, callee.name.text, r.isStatic);
+    return !!m && (m.kind === 'method' || m.kind === 'init') && !!m.returns && m.returns !== 'Void' && !optional(m.returns);
+  }
+
   /** The Swift type of a native property or struct field `x.name`, or null for anything else. */
   private memberType(e: ts.PropertyAccessExpression): SwiftType | null {
     if (this.appMember(e.name)) return null;
@@ -520,9 +554,27 @@ export class NativeAPI {
     // A link the chain continues past stays Swift's; the chain's value is a number as script reads it, still optional.
     if (this.keepOptional.has(e)) return ts.isPropertyAccessExpression(e.parent) && e.parent.expression === e ? chained : code;
     const coalesced = ts.isBinaryExpression(e.parent) && e.parent.operatorToken.kind === ts.SyntaxKind.QuestionQuestionToken && e.parent.left === e;
-    if (coalesced || this.t.typeOf(e).endsWith('?') || this.t.typeOf(e) === 'Any?') return code;
-    // Lenient code: an object the chain does not reach is undefined, which an object declaration holds.
-    return this.t.lenient && this.t.lenientRef(this.t.typeOf(e)) !== this.t.typeOf(e) ? `jsImplicit(${code})` : `(${code})!`;
+    const tsType = this.t.typeOf(e);
+    if (coalesced || tsType.endsWith('?') || tsType === 'Any?' || onlyTested(e)) return code;
+    if (this.t.lenient) {
+      // Lenient code: where the chain stops, a string, number or boolean is what undefined converts to, and an object is
+      // undefined, which an object declaration holds.
+      if (['String', 'Double', 'Bool'].includes(tsType)) return this.t.undefinedAs(code, tsType);
+      if (this.t.lenientRef(tsType) !== tsType) return `jsImplicit(${code})`;
+      // An enum compared (`traits?.horizontalSizeClass === Compact`): Swift compares the optional, which nil equals no case of.
+      if (this.isEnumType(b) && this.enumCompared(e)) return code;
+    }
+    return `(${code})!`;
+  }
+
+  /** Whether `e` is compared for equality with a case of a native enum (`traits?.horizontalSizeClass === Compact`), not with a number. */
+  private enumCompared(e: ts.Expression): boolean {
+    let x: ts.Node = e;
+    while (ts.isParenthesizedExpression(x.parent)) x = x.parent;
+    const p = x.parent;
+    if (!ts.isBinaryExpression(p) || ![ts.SyntaxKind.EqualsEqualsEqualsToken, ts.SyntaxKind.ExclamationEqualsEqualsToken, ts.SyntaxKind.EqualsEqualsToken, ts.SyntaxKind.ExclamationEqualsToken].includes(p.operatorToken.kind)) return false;
+    const other = ts.skipOuterExpressions(p.left === x ? p.right : p.left, ts.OuterExpressionKinds.Parentheses);
+    return ts.isPropertyAccessExpression(other) && !!this.enumMember(other);
   }
 
   /** Native calls whose optional Swift result an optional chain reads. */
@@ -661,7 +713,8 @@ export class NativeAPI {
       const ownBase = own && ts.isClassDeclaration(own) && own.name && !own.getSourceFile().isDeclarationFile ? this.nativeBase(this.t.checker.getDeclaredTypeOfSymbol(this.t.resolve(allocated)!)) : null;
       const r = ownBase ? { ...ownBase, isStatic: true } : this.receiver(allocated);
       if (!r) return null;
-      const cls = lookupClass(r.module, r.name)!;
+      const cls = lookupClass(r.module, r.name);
+      if (!cls) throw this.t.error(e, `${r.name}.alloc().${name}() (${this.noCounterpart(r.module)})`);
       // A class held as a value (`typeof UIGestureRecognizer`): its own initializer, which Objective-C dispatches.
       const classRef = !!((this.t.resolve(allocated)?.flags ?? 0) & ts.SymbolFlags.Class);
       const made = ownBase ? this.t.topName(own!, (own as ts.ClassDeclaration).name!.text) : r.isStatic || classRef ? this.className(cls) : `${this.t.expr(allocated)}.init`;
@@ -1136,12 +1189,12 @@ export class NativeAPI {
       const raw = this.typedConstantsRaw(b)!;
       if (source === 'Double') return `${b}(rawValue: ${integral(t.expr(e), raw)})`;
       if (source === 'Any?') return `${b}(rawValue: ${integral(`jsToNumber(${t.expr(e)})`, raw)})`;
-      return `(${t.expr(e)}).map { ${b}(rawValue: ${integral('$0', raw)}) }${optional(target) ? '' : '!'}`;
+      return `(${t.expr(e)}).map { ${b}(rawValue: ${integral('$0', raw)}) }${optional(target) ? '' : ` ?? ${b}(rawValue: 0)`}`;
     }
     if (source === 'Double' && this.isEnumType(b)) {
       // A number where Swift takes an enum or option set: its raw value.
       const raw = this.rawTypeOf(b);
-      return `${b}(rawValue: ${integral(t.expr(e), raw)})${this.isOptionSet(b) ? '' : '!'}`;
+      return this.isOptionSet(b) ? `${b}(rawValue: ${integral(t.expr(e), raw)})` : `jsNativeEnum(${b}.self, ${integral(t.expr(e), raw)})`;
     }
     // An untyped value where Swift takes a native enum or option set: the number the runtime marshals.
     if (source === 'Any?' && this.isEnumType(b)) return this.enumFromNumber(`jsToNumber(${t.expr(e)})`, b);
@@ -1228,13 +1281,18 @@ export class NativeAPI {
   }
 
   /** A Swift API's value as TypeScript reads it: numbers are Double, an implicitly unwrapped or optional object is the object. */
-  fromSwift(code: string, swiftType: SwiftType, e: ts.Expression): string {
+  fromSwift(code: string, swiftType: SwiftType, e: ts.Expression, as?: string): string {
     swiftType = this.numericAlias(swiftType);
     // A result nothing reads: a nil one is no error.
     if (this.keepOptional.has(e) || ts.isExpressionStatement(e.parent)) return code;
     // A value only tested (`if (controller.viewControllers)`): nil is falsy, not an error.
     if (optional(swiftType) && onlyTested(e)) return code;
-    const tsType = this.t.typeOf(e);
+    const tsType = as ?? this.t.typeOf(e);
+    // Lenient code holds a missing one as the optional it is; where it is used, JavaScript's TypeError if that throws.
+    if (!as && optional(swiftType) && !optional(tsType) && !['Double', 'String', 'Bool', 'Void'].includes(tsType) && this.t.lenient && this.t.loose(e)) {
+      const held = this.fromSwift(code, swiftType, e, optionalType(tsType));
+      return held.startsWith('jsImplicit(') ? held : `jsImplicit(${held})`;
+    }
     const b = base(swiftType);
     const bridged = bridge(code, swiftType, tsType);
     if (bridged) return bridged;
@@ -1380,6 +1438,7 @@ export class NativeAPI {
     const body = ret ? `jsReportedOrZero { ${call} }` : `jsReport { ${call} }`;
     const types = params.map((p) => p.slice(p.indexOf(':') + 1).trim());
     const guard = enteredGuard(`__objc_${jsName}`, types.map(() => null), types, ret ?? 'Void', '');
+    this.t.declare(`__objc_${jsName}`, { kind: 'func', params: params.join(', '), type: ret ?? 'Void' });
     return `    @objc(${jsName}${':'.repeat(params.length)}) public nonisolated func __objc_${jsName}(${params.join(', ')})${ret ? ` -> ${ret}` : ''} { ${guard}; ${onMainThread(body, ret ?? 'Void', '', params.map((_, k) => `__a${k}`), types)} }`;
   }
 
@@ -1425,6 +1484,11 @@ export class NativeAPI {
     if (!baseCls) throw t.error(heritage, `extending ${base.name} (no Swift class)`);
     // A namespace's class is declared inside the namespace's enum, by its own name.
     const name = ts.isModuleBlock(cls.parent) ? cls.name!.text : t.topName(cls, cls.name!.text);
+    return t.declaring(t.nestedName(cls, name), 'class', this.className(baseCls), () => this.subclassCode(cls, name, base, baseCls));
+  }
+
+  private subclassCode(cls: ts.ClassDeclaration, name: string, base: { module: string; name: string }, baseCls: NonNullable<ReturnType<typeof lookupClass>>): string {
+    const t = this.t;
     const protocols = this.adoptedProtocols(cls);
     const statics = cls.members.filter((m): m is ts.PropertyDeclaration => ts.isPropertyDeclaration(m) && !!m.initializer && ts.getModifiers(m)?.some((x) => x.kind === ts.SyntaxKind.StaticKeyword) === true);
     const listed = statics.find((m) => m.name.getText() === 'ObjCProtocols');
@@ -1440,10 +1504,13 @@ export class NativeAPI {
       const n = m.name.getText();
       const type = t.typeOf(m.name);
       const isStatic = ts.getModifiers(m)?.some((x) => x.kind === ts.SyntaxKind.StaticKeyword);
-      if (isStatic) { lines.push(`    static var ${n}: ${type} = ${m.initializer ? t.coerce(m.initializer, type) : t.zero(type) ?? 'nil'}`); continue; }
-      if (!m.initializer) { lines.push(`    var ${n}: ${t.deferredType(type)}`); continue; }
+      if (isStatic) { lines.push(`    static var ${n}: ${type} = ${m.initializer ? t.coerce(m.initializer, type) : t.zero(type) ?? 'nil'}`); t.declare(n, { kind: 'var', mods: 'static ', type }); continue; }
+      if (!m.initializer) { lines.push(`    var ${n}: ${t.deferredType(type)}`); t.declare(n, { kind: 'var', type: t.deferredType(type) }); continue; }
+      t.declare(n, { kind: 'var', type });
       // UIKit decides which initializer runs (init(frame:), init(coder:)…): fields initialize on first use instead.
-      lines.push(`    ${t.pure(m.initializer) ? '' : 'lazy '}var ${n}: ${type} = ${t.tryPrefix(m.initializer) ? 'try! ' : ''}${t.coerce(m.initializer, type)}`);
+      // One that throws is reported, the field then holding its type's zero, as no constructor call is there to throw to.
+      const init = t.coerce(m.initializer, type);
+      lines.push(`    ${t.pure(m.initializer) ? '' : 'lazy '}var ${n}: ${type} = ${t.tryPrefix(m.initializer) ? `jsReportedOrZero { () throws -> ${type} in try ${init} }` : init}`);
     }
     if (cls.members.some((m) => ts.isConstructorDeclaration(m))) throw t.error(cls, `a constructor in a class extending ${base.name} (NativeScript creates these with new() or alloc().init())`);
     // Accessors of the app's own: Swift properties.
@@ -1477,6 +1544,7 @@ export class NativeAPI {
           parts.push(t.throwsInfo.fn(a.set) ? `        set {\n${bind}\n            jsReport ${body.trimStart()}\n        }` : `        set {\n${bind}${body.slice(1)}`);
         }
         lines.push(`    ${viaProtocol ? '' : 'override '}var ${native.swift}: ${native.type} {`, ...parts, '    }');
+        t.declare(native.swift, { kind: 'var', mods: viaProtocol ? '' : 'override ', type: native.type });
         continue;
       }
       const type = a.get ? t.returnTypeOf(a.get) : optionalType(t.typeOf(a.set!.parameters[0].name));
@@ -1487,13 +1555,14 @@ export class NativeAPI {
         parts.push(t.throwsInfo.fn(a.set) ? `        set {\n            let ${p.text}: ${type} = newValue\n            jsReport ${body.trimStart()}\n        }` : `        set {\n            let ${p.text}: ${type} = newValue${body.slice(1)}`);
       }
       lines.push(`    var ${n}: ${t.lenientRef(type)} {`, ...parts, '    }');
+      t.declare(n, { kind: 'var', type: t.lenientRef(type), throws: !!a.get && t.throwsInfo.fn(a.get) });
     }
     for (const m of cls.members) {
       if (!ts.isMethodDeclaration(m) || !m.body) continue;
       const jsName = m.name.getText();
       if (ts.getModifiers(m)?.some((x) => x.kind === ts.SyntaxKind.StaticKeyword)) {
         if (jsName === 'new' || jsName === 'alloc') continue;
-        lines.push('    ' + t.func(m, jsName, 'static '));
+        lines.push('    ' + t.memberFunc(m, jsName, 'static '));
         continue;
       }
       // Swift has no `dealloc` to override: the object's deinit, which runs the base's teardown after it.
@@ -1505,7 +1574,10 @@ export class NativeAPI {
       const init = /^init/.test(jsName) ? lookupInit(base.module, base.name, jsName) : null;
       if (init) {
         lines.push(this.nativeInit(m, init));
-        if (!lines.some((l) => /init\?\(coder/.test(l))) lines.push('    required init?(coder: NSCoder) { super.init(coder: coder) }');
+        if (!lines.some((l) => /init\?\(coder/.test(l))) {
+          lines.push('    required init?(coder: NSCoder) { super.init(coder: coder) }');
+          t.declare('init', { kind: 'init', params: 'coder: NSCoder', type: `${t.nestedName(cls, name)}?` });
+        }
         continue;
       }
       const fromProtocol = protocols.map((p) => lookupMember(p.module, p.name, jsName, false)).find(Boolean);
@@ -1516,10 +1588,10 @@ export class NativeAPI {
         continue;
       }
       if (exposed.has(jsName) && t.throwsInfo.fn(m)) {
-        lines.push('    ' + t.func(m, jsName), this.exposedEntry(t.func(m, jsName), jsName));
+        lines.push('    ' + t.memberFunc(m, jsName), this.exposedEntry(t.func(m, jsName), jsName));
         continue;
       }
-      lines.push('    ' + t.func(m, jsName, exposed.has(jsName) ? '@objc ' : ''));
+      lines.push('    ' + t.memberFunc(m, jsName, exposed.has(jsName) ? '@objc ' : ''));
     }
     // The class's own fields and getters, which Objective-C cannot see, read by name from untyped code (`(<any>controller).owner`).
     const native = (n: string) => !!lookupMember(base.module, base.name, n, false) || protocols.some((p) => lookupMember(p.module, p.name, n, false));
@@ -1527,6 +1599,8 @@ export class NativeAPI {
       && m !== listed && m !== exposedSpec && !ts.getModifiers(m)?.some((x) => x.kind === ts.SyntaxKind.StaticKeyword) && !native(m.name.text) && !t.typeOf(m.name).includes('->'));
     if (own.length) {
       lines.push('    func jsMember(_ key: String) -> Any?? {', '        switch key {');
+      t.declare('jsMember', { kind: 'func', params: '_ key: String', type: 'Any??' });
+      if (t.declOwnerName) t.declarations?.names(t.declOwnerName, own.map((m) => (m.name as ts.Identifier).text));
       for (const m of own) {
         const n = (m.name as ts.Identifier).text;
         lines.push(`        case ${JSON.stringify(n)}: return .some(${ts.isGetAccessorDeclaration(m) && t.throwsInfo.fn(m) ? `jsReported { try self.${n} } ?? nil` : `self.${n} as Any?`})`);
@@ -1600,6 +1674,7 @@ export class NativeAPI {
     const available = introduced ? `@available(iOS ${target.introduced}, *) ` : '';
     const guard = enteredGuard(target.swift, target.labels, target.params, ret, '        ', target.escaping, names);
     const isolated = onMainThread([...binds, result].join('\n'), ret, '        ', names, target.params.map((p, k) => (target.escaping?.includes(k) ? `@escaping ${p}` : p)));
+    t.declare(target.swift, { kind: 'func', mods: `${available}${override ? 'override ' : ''}`, params: swiftParams.join(', '), type: ret });
     return [`    ${available}nonisolated ${override ? 'override ' : ''}func ${target.swift}(${swiftParams.join(', ')})${ret === 'Void' ? '' : ` -> ${ret}`} {`, guard, isolated, '    }'].join('\n');
   }
 
@@ -1650,6 +1725,7 @@ export class NativeAPI {
     let body: string[];
     try { body = t.statements(middle); } finally { for (const r of refs) t.subst.delete(r); t.indent = '    '; }
     const throws = middle.some((x) => t.throwsInfo.expr(x));
+    if (t.declOwnerName) t.declare('init', { kind: 'init', params: swiftParams.join(', '), type: `${t.declOwnerName}${init.failable ? '?' : ''}` });
     return [`    override init${init.failable ? '?' : ''}(${swiftParams.join(', ')}) {`, ...binds,
       `        super.init(${passed.map((a, k) => (init.labels[k] ? `${init.labels[k]}: ${a}` : a)).join(', ')})`,
       ...(throws ? ['        jsReport {', ...body.map((l) => '    ' + l), '        }'] : body), '    }'].join('\n');
@@ -1699,7 +1775,7 @@ export class NativeAPI {
     // A Foundation array of objects where Swift has its element type (`NSArray<UIViewController>` as `[UIViewController]`).
     const elements = /^\[([\w.]+)\]$/.exec(b)?.[1];
     if (/^\[Any\][?!]?$/.test(tsType) && elements && elements !== 'Any') return optional(swiftType) ? `(${code} as? [${elements}])` : typedCollection(code, `[${elements}]`)!;
-    if (tsType === 'Double' && this.isEnumType(b)) return `${b}(rawValue: ${integral(code, this.rawTypeOf(b))})${this.isOptionSet(b) ? '' : '!'}`;
+    if (tsType === 'Double' && this.isEnumType(b)) return this.enumFromNumber(code, b);
     return code;
   }
 
@@ -1720,7 +1796,7 @@ export class NativeAPI {
   /** A JavaScript number where Swift has a native enum or option set: the value of that raw value. */
   enumFromNumber(code: string, swiftType: string): string {
     const b = swiftType.replace(/[?!]$/, '');
-    return `${b}(rawValue: ${integral(code, this.rawTypeOf(b))})${this.isOptionSet(b) ? '' : '!'}`;
+    return this.isOptionSet(b) ? `${b}(rawValue: ${integral(code, this.rawTypeOf(b))})` : `jsNativeEnum(${b}.self, ${integral(code, this.rawTypeOf(b))})`;
   }
 
   /** A type of named constants of any raw type (`CFRunLoopMode`, `NSNotification.Name`). */

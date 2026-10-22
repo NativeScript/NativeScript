@@ -5,19 +5,6 @@ package org.nativescript.kit
 // its value to each new subscriber, and an operator subscribes to its source
 // once per subscriber.
 
-class RxSubscription internal constructor(private var teardown: (() -> Unit)? = null) {
-    var closed = false
-        private set
-
-    fun unsubscribe() {
-        if (closed) return
-        closed = true
-        val finalize = teardown
-        teardown = null
-        finalize?.invoke()
-    }
-}
-
 open class RxObservable<T>(private val producer: ((T) -> Unit) -> RxSubscription) {
     /** A source that settles once (an HTTP request): its value or its error, for `firstValueFrom`. */
     var first: (() -> JSPromise<T>)? = null
@@ -203,47 +190,6 @@ class AsyncPipe {
         subscription = null
         source = null
         latest = null
-    }
-}
-
-/**
- * The root injector: `providedIn: 'root'` services, each made on first use in the root scope (its
- * `inject(DestroyRef)` and effects belong there) and destroyed with the app, after which the next
- * use makes a new one, as a new bootstrap does.
- */
-object AppInjector {
-    private var owner = Owner(null)
-    private val services = HashMap<Class<*>, Any>()
-
-    @Suppress("UNCHECKED_CAST")
-    fun <T : Any> service(type: Class<T>, make: () -> T): T {
-        services[type]?.let { return it as T }
-        val made = owner.run(make)
-        services[type] = made
-        return made
-    }
-
-    fun destroy() {
-        val old = owner
-        owner = Owner(null)
-        services.clear()
-        old.dispose()
-    }
-}
-
-/** `inject(DestroyRef)`: callbacks run when the injecting component's scope ends. */
-class DestroyRef internal constructor(owner: Owner?) {
-    private val owner = java.lang.ref.WeakReference(owner)
-
-    /** Registers the callback; the function returned unregisters it. */
-    fun onDestroy(callback: () -> Unit): () -> Unit {
-        var active = true
-        owner.get()?.onCleanup { if (active) jsReport { callback() } }
-        return { active = false }
-    }
-
-    companion object {
-        fun current(): DestroyRef = DestroyRef(Owner.current)
     }
 }
 

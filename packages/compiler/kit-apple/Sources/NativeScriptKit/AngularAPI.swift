@@ -4,75 +4,26 @@ import Foundation
 // injects, for components and services compiled to classes with a `shared`
 // instance (`providedIn: 'root'`).
 
-/// An event a component raises (Angular `output()`): the parent subscribes, the component emits.
-public final class Emitter<T> {
-    nonisolated deinit {}
-    private var handlers: [(T) -> Void] = []
-    public init() {}
-    public func on(_ handler: @escaping (T) -> Void) { handlers.append(handler) }
-    public func emit(_ value: T) { for h in handlers { h(value) } }
-}
-
-extension Emitter where T == Void {
-    public func emit() { emit(()) }
-}
-
-/// `inject(DestroyRef)`: callbacks run when the injecting component's scope ends.
-public final class DestroyRef {
-    nonisolated deinit {}
-    private weak var owner: Owner?
-    init(_ owner: Owner?) { self.owner = owner }
-    public static func current() -> DestroyRef { DestroyRef(Owner.current) }
-
-    @discardableResult
-    public func onDestroy(_ callback: @escaping () -> Void) -> () -> Void {
-        var active = true
-        owner?.onCleanup { if active { callback() } }
-        return { active = false }
-    }
-
-    @discardableResult
-    public func onDestroy(_ callback: @escaping () throws -> Void) -> () -> Void {
-        onDestroy { () -> Void in jsReport(callback) }
-    }
-}
-
-/// `inject(Injector)`; `injector.get(Service)` is compiled to the service's shared instance.
-public final class Injector {
-    nonisolated deinit {}
-    public static let shared = Injector()
-
-    /// A root service, made as the root injector makes it: whatever component first injects it, its effects
-    /// and its `DestroyRef` belong to the application, and what its constructor reads subscribes no binding.
-    public static func root<T>(_ make: () -> T) -> T {
-        untrack { Owner(parent: nil).run(make) }
-    }
-}
-
-/// `NgZone` without zone.js: both run their function at once.
-public final class NgZone {
-    nonisolated deinit {}
-    public static let shared = NgZone()
-    public func run<T>(_ fn: () throws -> T) rethrows -> T { try fn() }
-    public func runOutsideAngular<T>(_ fn: () throws -> T) rethrows -> T { try fn() }
-}
-
 /// A component class used as a value (`dialog.open(SheetComponent)`): what creating and rendering it gives.
 public final class ComponentFactory {
     nonisolated deinit {}
-    let make: () -> View
-    public init(_ make: @escaping () -> View) { self.make = make }
+    let make: () throws -> View
+    public init(_ make: @escaping () throws -> View) { self.make = make }
 }
 
 /// `NativeDialogRef`: the open dialog a component was created in.
 public final class NativeDialogRef {
     nonisolated deinit {}
-    public static var current: NativeDialogRef!
+    /// `inject(NativeDialogRef)`: the dialog being created; outside one, a ref to no dialog, whose `close` does nothing.
+    public static var current: NativeDialogRef { open ?? NativeDialogRef(detached: true) }
+    static var open: NativeDialogRef?
+    private let detached: Bool
+    init(detached: Bool = false) { self.detached = detached }
     /// `NATIVE_DIALOG_DATA`: the `data` the dialog was opened with.
     public internal(set) var data: Any? = nil
     private let closed = RxReplaySubject<Any?>(1)
 
-    public func close(_ result: Any? = nil) { Modal.close(result) }
+    public func close(_ result: Any? = nil) { if !detached { Modal.close(result) } }
     public func afterClosed() -> RxObservable<Any?> { closed.asObservable() }
     func didClose(_ result: Any?) { closed.next(result) }
 }
@@ -89,14 +40,14 @@ public final class NativeDialogService {
         guard let factory = jsFlat(component) as? ComponentFactory else { return ref }
         let options = (try? jsGet(config, "nativeOptions")) ?? nil
         Modal.show(options: options, closeCallback: { result in ref.didClose(jsFlat(result)) }) {
-            let previous = NativeDialogRef.current
-            NativeDialogRef.current = ref
-            defer { NativeDialogRef.current = previous }
+            let previous = NativeDialogRef.open
+            NativeDialogRef.open = ref
+            defer { NativeDialogRef.open = previous }
             // The component in a ContentView of its own, the modal's root, as @nativescript/angular presents it:
             // the root takes the safe area its content then lays out within.
             let pending = Reactivity.pending()
-            let host = try! ContentView()
-            host.content = factory.make()
+            let host = try ContentView()
+            host.content = try factory.make()
             Reactivity.detectChanges(after: pending)
             return host
         }
@@ -104,20 +55,46 @@ public final class NativeDialogService {
     }
 }
 
-/// `HttpClient.get` through core's `Http.request`, the request @nativescript/angular's backend sends through
+/// `HttpClient` through core's `Http.request`, the request @nativescript/angular's backend sends through
 /// core's XMLHttpRequest: the body parsed as JSON unless `responseType` is `'text'`, a status of 400 or more an error.
 public final class HttpClient {
     nonisolated deinit {}
     public static let shared = HttpClient()
 
-    public func get(_ url: String, _ options: Any? = nil) -> RxObservable<Any?> {
-        let text = jsToString((try? jsGet(options, "responseType")) ?? nil) == "text"
-        let headers = (try? jsGet(options, "headers")) ?? nil
+    private func send(_ method: String, _ url: String, _ body: Any? = nil, _ options: Any? = nil) -> RxObservable<Any?> {
+        let flatOpts = jsFlat(options)
+        let text = jsToString((try? jsGet(flatOpts, "responseType")) ?? nil) == "text"
+        let observe = jsToString((try? jsGet(flatOpts, "observe")) ?? "body")
+        let rawHeaders = (try? jsGet(flatOpts, "headers")) ?? nil
+        let rawParams = (try? jsGet(flatOpts, "params")) ?? nil
+
+        var fullUrl = url
+        if !jsIsNullish(rawParams) {
+            let q = (jsFlat(rawParams) as? HttpParams)?.toString() ?? HttpParams(rawParams).toString()
+            if !q.isEmpty {
+                fullUrl = fullUrl.contains("?") ? "\(fullUrl)&\(q)" : "\(fullUrl)?\(q)"
+            }
+        }
+
+        var headersObj: Any? = (jsFlat(rawHeaders) as? HttpHeaders)?.toJSObject() ?? rawHeaders
+        let payloadBody = body ?? ((try? jsGet(flatOpts, "body")) ?? nil)
+        let upperMethod = method.uppercased()
+
         let request: () -> JSPromise<Any?> = {
-            let failure = { (status: Double, reason: String) in JSError("Http failure response for \(url): \(jsToString(status)) \(reason)") }
+            let failure = { (status: Double, reason: String) in JSError("Http failure response for \(fullUrl): \(jsToString(status)) \(reason)") }
             let (promise, resolvers) = JSPromise<Any?>.pending()
-            var settings: [(String, Any?)] = [("url", url), ("method", "GET")]
-            if !jsIsNullish(headers) { settings.append(("headers", headers)) }
+            var settings: [(String, Any?)] = [("url", fullUrl), ("method", upperMethod)]
+            if !jsIsNullish(payloadBody) && upperMethod != "GET" && upperMethod != "HEAD" {
+                if let s = payloadBody as? String {
+                    settings.append(("content", s))
+                } else if let json = try? jsJSONStringifyChecked(payloadBody) {
+                    settings.append(("content", json))
+                    if jsIsNullish(headersObj) {
+                        headersObj = JSObject([("Content-Type", "application/json")])
+                    }
+                }
+            }
+            if !jsIsNullish(headersObj) { settings.append(("headers", headersObj)) }
             let sent: JSPromise<Any?>
             do { sent = try jsUnwrap(Core_http_http_request_index.request(JSObject(settings)), "then") } catch {
                 resolvers.reject(jsCaught(error))
@@ -126,28 +103,94 @@ public final class HttpClient {
             _ = sent.then({ (response: Any?) -> Void in
                 do {
                     let status = jsToNumber(try jsGet(response, "statusCode"))
+                    let reason = status == 0 ? "Unknown Error" : HTTPURLResponse.localizedString(forStatusCode: Int(status)).capitalized
                     if status >= 400 || status == 0 {
-                        let reason = HTTPURLResponse.localizedString(forStatusCode: Int(status)).capitalized
-                        resolvers.reject(failure(status, status == 0 ? "Unknown Error" : reason))
+                        resolvers.reject(failure(status, reason))
                         return
                     }
-                    let body = jsToString(try jsCallMethod(try jsGet(response, "content"), "toString"))
-                    if text { resolvers.resolve(body) } else { resolvers.resolve(body.isEmpty ? nil : try jsJSONParse(body)) }
+                    let rawContent = jsToString(try jsCallMethod(try jsGet(response, "content"), "toString"))
+                    let parsed: Any? = text ? rawContent : (rawContent.isEmpty ? nil : try jsJSONParse(rawContent))
+                    if observe == "response" {
+                        resolvers.resolve(HttpResponse(JSObject([
+                            ("body", parsed),
+                            ("status", status),
+                            ("statusText", reason),
+                            ("url", fullUrl),
+                        ])))
+                    } else {
+                        resolvers.resolve(parsed)
+                    }
                 } catch {
                     resolvers.reject(jsCaught(error))
                 }
             }, { (_: Any?) -> Void in resolvers.reject(failure(0, "Unknown Error")) })
             return promise
         }
-        let observable = RxObservable<Any?> { next in
+        let observable = RxObservable<Any?>(full: { next, error, complete in
             let subscription = RxSubscription()
-            _ = request().then { value in if !subscription.closed { next(value) } }
+            _ = request().then({ value in
+                if !subscription.closed {
+                    next(value)
+                    complete()
+                }
+            }, { err in
+                if !subscription.closed { error(err) }
+            })
             return subscription
-        }
+        })
         observable.first = request
         return observable
     }
+
+    public func request(_ first: Any?, _ url: String? = nil, _ options: Any? = nil) -> RxObservable<Any?> {
+        if let req = jsFlat(first) as? HttpRequest {
+            return send(req.method, req.url, req.body, JSObject([
+                ("headers", req.headers),
+                ("params", req.params),
+                ("responseType", req.responseType),
+                ("observe", "response"),
+            ]))
+        }
+        return send(jsToString(first), url ?? "", nil, options)
+    }
+
+    public func get(_ url: String, _ options: Any? = nil) -> RxObservable<Any?> {
+        send("GET", url, nil, options)
+    }
+
+    public func delete(_ url: String, _ options: Any? = nil) -> RxObservable<Any?> {
+        send("DELETE", url, nil, options)
+    }
+
+    public func head(_ url: String, _ options: Any? = nil) -> RxObservable<Any?> {
+        send("HEAD", url, nil, options)
+    }
+
+    public func options(_ url: String, _ options: Any? = nil) -> RxObservable<Any?> {
+        send("OPTIONS", url, nil, options)
+    }
+
+    public func post(_ url: String, _ body: Any? = nil, _ options: Any? = nil) -> RxObservable<Any?> {
+        send("POST", url, body, options)
+    }
+
+    public func put(_ url: String, _ body: Any? = nil, _ options: Any? = nil) -> RxObservable<Any?> {
+        send("PUT", url, body, options)
+    }
+
+    public func patch(_ url: String, _ body: Any? = nil, _ options: Any? = nil) -> RxObservable<Any?> {
+        send("PATCH", url, body, options)
+    }
+
+    public func jsonp(_ url: String, _ callbackParam: String) -> RxObservable<Any?> {
+        let sep = url.contains("?") ? "&" : "?"
+        return get("\(url)\(sep)\(jsEncodeURIComponent(callbackParam))=JSONP_CALLBACK")
+    }
 }
+
+public typealias KitHttpClient = HttpClient
+public typealias KitNativeDialogRef = NativeDialogRef
+public typealias KitNativeDialogService = NativeDialogService
 
 // MARK: @angular/core/rxjs-interop
 

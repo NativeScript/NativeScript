@@ -133,12 +133,41 @@ inline fun jsReport(body: () -> Unit) {
     try {
         body()
     } catch (e: Throwable) {
-        if (jsTraceErrors) e.printStackTrace()
-        jsReportUncaught(jsCaught(e))
+        jsReportThrown(e)
     }
 }
 
-var jsUncaughtHandler: (Any?) -> Unit = { value -> jsError("Uncaught", value) }
+/** Reports `e`, which escaped the code a host called, as uncaught. */
+fun jsReportThrown(e: Throwable) {
+    if (jsTraceErrors) e.printStackTrace()
+    jsReportUncaught(jsCaught(e))
+}
+
+/** Runs `body`, a method Java calls; what it throws is reported as uncaught, and Java gets `fallback`. */
+inline fun <T> jsReportedOr(fallback: T, body: () -> T): T =
+    try {
+        body()
+    } catch (e: Throwable) {
+        jsReportThrown(e)
+        fallback
+    }
+
+/**
+ * Without NativeScript's `Application` (a plain program, the differential tests), an uncaught error goes to
+ * `globalThis.__onUncaughtError` when script sets one, where core's handler is; else to standard error.
+ */
+var jsUncaughtHandler: (Any?) -> Unit = { value -> if (!jsReportedToScript(value)) jsError("Uncaught", value) }
+
+internal fun jsReportedToScript(value: Any?): Boolean {
+    val handler = jsField(jsGlobalThis, "__onUncaughtError")
+    if (jsIsNullish(handler)) return false
+    try {
+        jsCall(handler, value)
+    } catch (e: Throwable) {
+        jsError("Error in the uncaught error handler:", jsCaught(e))
+    }
+    return true
+}
 
 fun jsReportUncaught(value: Any?) = (JSRealm.current().uncaught ?: jsUncaughtHandler)(value)
 

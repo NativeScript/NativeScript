@@ -1,6 +1,7 @@
 // @kotlin
 // Values outside their declared type: JavaScript carries on where compiled code throws a catchable TypeError.
 // Each line prints "TypeError" either way: Node's for the wrong value it got, the native one for the error it threw.
+// The field is the exception: a number slot an untyped value is placed in holds it as JavaScript converts it to a number.
 type Kind = 'a' | 'b';
 function weight(k: Kind): number {
   switch (k) {
@@ -24,7 +25,7 @@ const v: any = 'red';
 try {
   const b = new Box();
   b.n = v;
-  console.log('field', typeof b.n === 'number' ? b.n : 'TypeError');
+  console.log('field', Number(b.n));
 } catch (e) {
   console.log('field', e instanceof TypeError ? 'TypeError' : (e as Error).name);
 }

@@ -12,9 +12,10 @@ public enum Microtasks {
 
     /// Receives the reason of every promise still rejected without a handler when a checkpoint
     /// ends, as Node's `unhandledRejection` event does. The default prints
-    /// `Uncaught (in promise) <reason>` to standard error and carries on (Node would exit).
+    /// `Uncaught (in promise) <reason>` to standard error, or gives it to `globalThis.__onUncaughtError` as
+    /// `jsUncaughtHandler` does, and carries on (Node would exit).
     public static var onUnhandledRejection: (Any?) -> Void = { reason in
-        jsWriteStandardError("Uncaught (in promise) \(jsToString(reason))\n")
+        if !jsReportedToScript(reason) { jsWriteStandardError("Uncaught (in promise) \(jsToString(reason))\n") }
     }
 
     public static func enqueue(_ job: @escaping () -> Void) { queue.append(job) }
@@ -769,4 +770,11 @@ private func jsThenFunction(_ object: JSDynamic) -> JSMethod? {
     case let f as JSFunction: return { _, arguments in try f(arguments) }
     default: return nil
     }
+}
+
+/// `Promise` held as a value (a `PromiseConstructorLike` passed around): `new` through it makes a JSPromise, as the
+/// global Promise is the only promise constructor a compiled program has.
+public final class JSPromiseConstructor: @unchecked Sendable {
+    public static let promise = JSPromiseConstructor()
+    private init() {}
 }

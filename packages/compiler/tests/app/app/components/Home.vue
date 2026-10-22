@@ -48,6 +48,18 @@
           <AbsoluteLayout height="40">
             <Label text="Absolute" left="10" top="10" />
           </AbsoluteLayout>
+          <!-- Content that throws while it renders: each failed region is reported and left empty. -->
+          <StackLayout v-if="count >= 0">
+            <Faulty :fail="true" />
+          </StackLayout>
+          <StackLayout v-for="n in [1, 2, 3]" :key="n">
+            <Faulty :fail="n === 2" />
+          </StackLayout>
+          <ListView :items="[false, true]" height="80">
+            <template #default="{ item }">
+              <Faulty :fail="item" />
+            </template>
+          </ListView>
           <TabView height="200" :selectedIndex="0">
             <TabViewItem title="First">
               <Label text="First tab" />
@@ -64,6 +76,7 @@
 
 <script setup lang="ts">
 import { ref } from 'nativescript-vue';
+import Faulty from './Faulty.vue';
 
 const count = ref(0);
 </script>

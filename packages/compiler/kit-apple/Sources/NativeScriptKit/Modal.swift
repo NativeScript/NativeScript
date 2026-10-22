@@ -16,12 +16,12 @@ public enum Modal {
 
     /// `$showModal(Component, options)`. Effects the component creates end when it closes.
     public static func show(fullscreen: Bool = false, animated: Bool = true, cancelable: Bool = true, stretched: Bool = false,
-                            closeCallback: ((Any) -> Void)? = nil, _ create: () -> View) {
+                            closeCallback: ((Any) -> Void)? = nil, _ create: () throws -> View) {
         show([("fullscreen", fullscreen), ("animated", animated), ("cancelable", cancelable), ("stretched", stretched)], closeCallback: closeCallback, create)
     }
 
     /// A modal opened with `showModal` options given as script gives them (a dialog's `nativeOptions`), over the defaults core's own take.
-    public static func show(options: Any?, closeCallback: ((Any) -> Void)? = nil, _ create: () -> View) {
+    public static func show(options: Any?, closeCallback: ((Any) -> Void)? = nil, _ create: () throws -> View) {
         var settings: [(String, Any?)] = [("fullscreen", false), ("animated", true), ("cancelable", true), ("stretched", false)]
         for key in jsKeysOf(options) where key != "context" && key != "closeCallback" {
             let value = (try? jsGet(options, key)) ?? nil
@@ -30,11 +30,12 @@ public enum Modal {
         show(settings, closeCallback: closeCallback, create)
     }
 
-    private static func show(_ settings: [(String, Any?)], closeCallback: ((Any) -> Void)?, _ create: () -> View) {
+    private static func show(_ settings: [(String, Any?)], closeCallback: ((Any) -> Void)?, _ create: () throws -> View) {
         jsReport {
             guard let target = try stack.last?.view ?? jsUnwrap(Core_application_application.Application, "getRootView").getRootView() else { return }
             let owner = Owner(parent: nil)
-            let view = owner.run(create)
+            let view: View
+            do { view = try owner.run(create) } catch { owner.dispose(); throw error }
             let shown = Shown(view: view, owner: owner)
             let close: JSFunction = { args in
                 guard !shown.resolved else { return nil }

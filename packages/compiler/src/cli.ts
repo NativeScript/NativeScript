@@ -16,11 +16,13 @@ import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, w
 import { tmpdir } from 'node:os';
 import { basename, dirname, join, relative, resolve } from 'node:path';
 import { mirror, writeIfChanged } from './mirror.ts';
+import { pathAliases } from './app-paths.ts';
+import { appImports, reachedFrom, tsconfigIncluded } from './app-modules.ts';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import ts from 'typescript';
 import type { ComponentIR } from './ir.ts';
 import { vueComponent } from './vue.ts';
-import { angularComponent, angularRoutes, angularRouteTree, routedComponents, type RouteNode } from './angular.ts';
+import { angularComponent, angularDirectives, angularPipes, angularRoutes, angularRouteTree, componentOf, declarableSource, declarablesIn, hostedComponent, selectorElements, routedComponents, type HostedComponent, type RouteNode } from './angular.ts';
 import { svelteComponent } from './svelte.ts';
 import { svelte5Component, svelteModule } from './svelte5.ts';
 import { reactComponent, reactScreens, zustandStore } from './react.ts';
@@ -29,7 +31,7 @@ import { octaneApp } from './octane.ts';
 import { appDeclarations, createProgram, nodeModules } from './program.ts';
 import { corePatches, corePatchesAndroid } from './core-patches.ts';
 import { androidBindings } from './bindings-android.ts';
-import { KIT, KIT_PLUGINS, useKitPlugins } from './core.ts';
+import { KIT, STUBBED_PLUGINS, useKitPlugins } from './core.ts';
 import { kitIndex } from './kit-index.ts';
 import { describe, PropertyGuard } from './unimplemented.ts';
 import { NONISOLATED_DEINIT, swiftString, Translator, withoutRedundantImplicit, type ComponentInfo } from './swift.ts';
@@ -38,21 +40,24 @@ import { isFragment, render, SCHEDULE, type Framework } from './codegen.ts';
 import { createRequire } from 'node:module';
 import { addInterfaces, translateModules } from './modules.ts';
 import { appStylesheets, importedStylesheets, kitAst, kitCss } from './css.ts';
-import { PluginSources, configuredOverrides } from './plugins/source.ts';
-import { pluginNative, xcodegenLines } from './plugins/native.ts';
+import { PluginSources, configuredOverrides, writtenStrict } from './plugins/source.ts';
+import { moduleNames, pluginNative, scopedImports, usedImports, xcodegenLines, type ModuleTypes } from './plugins/native.ts';
+import { readKitManifest } from './kit-manifest.ts';
+import { angularLibraries, registeredElements } from './angular-libraries.ts';
 import { nativeDispatch, untypedMembers } from './native-dispatch.ts';
 import { reachability } from './reach.ts';
 import { nativeTable, type NativeClass, type NativeMethod } from './natives/symbols.ts';
 import { coreNativeModules, coreNativeProject, installedCore, loadCoreNativeTables } from './natives/core-ios.ts';
 import { collectProperties } from './properties.ts';
-import { appResourcesDir, iosDeploymentTarget, iosExtensionNames, iosExtensions, iosProjectResources, mergePodsXcconfig, pluginReplacements, releaseOptions, uncaughtErrorSwitches } from './app-resources.ts';
+import { appResourcesDir, iosDeploymentTarget, iosExtensionNames, iosExtensions, iosProjectResources, mergePodsXcconfig, pluginReplacements, releaseOptions, stubbedPlugins, uncaughtErrorSwitches } from './app-resources.ts';
 import { generateProject, iosDependencies, packageLines, podfile, productLines, PROJECT_MARKER, removePods, swiftPackages } from './ios-dependencies.ts';
 import { SourceLines } from './source-lines.ts';
 import { archive, automaticSigningSettings, findProfile, signingSettings, type ExportMethod } from './ios-signing.ts';
-import { KIT_ANDROID, KIT_APPLE } from './paths.ts';
+import { KIT_ANDROID, KIT_APPLE, PACKAGE } from './paths.ts';
 import { checkContract } from './contract.ts';
 import { checkToolchain } from './toolchain.ts';
 import { formatPreflight, preflight } from './preflight.ts';
+import { detectFramework, excludedFrameworkKitFiles } from './framework.ts';
 
 const args = process.argv.slice(2);
 const opt = (name: string, fallback?: string) => { const i = args.indexOf(name); return i >= 0 ? args[i + 1] : fallback; };
@@ -70,6 +75,9 @@ useKitPlugins(platform);
 const generatedKit = platform === 'android' && !args.includes('--hand-port-kit')
   && (args.includes('--generated-kit') || (releaseOptions(app, platform).generatedKit ?? existsSync(join(KIT_ANDROID, 'generated', 'manifest.json'))) === true);
 stopOn(args.includes('--skip-toolchain-check') ? { errors: [], warnings: [] } : checkToolchain(platform), 'toolchain');
+const stubs = stubbedPlugins(app, platform);
+for (const p of stubs.stubbed) STUBBED_PLUGINS.add(p);
+stopOn({ errors: stubs.errors, warnings: stubs.stubbed.length ? [`release.stubPlugins: ${stubs.stubbed.join(', ')} build as no-op stand-ins: their views render empty and their methods do nothing`] : [] }, 'binary-only plugins');
 /** Prints the warnings, then the errors, and stops on any error. */
 function stopOn(r: { errors: string[]; warnings: string[] }, what: string) {
   for (const w of r.warnings) console.warn(`warning: ${w}`);
@@ -82,10 +90,7 @@ const files: string[] = [];
 const walk = (d: string) => { for (const f of readdirSync(d)) { const p = join(d, f); if (statSync(p).isDirectory()) walk(p); else files.push(p); } };
 walk(appDir);
 const entry = join(app, pkg.main ?? 'app/app.ts');
-const deps = { ...pkg.dependencies };
-const framework = deps['nativescript-vue'] ? 'vue' : deps['@nativescript/angular'] ? 'angular' : deps['@nativescript-community/svelte-native'] ? 'svelte' : deps['react-nativescript'] ? 'react' : deps['@nativescript-community/solid-js'] ? 'solid' : deps['@nativescript-community/octane'] ? 'octane'
-  // No framework, XML pages: core's own Builder makes the views, as in the app's JavaScript build.
-  : files.some((f) => f.endsWith('.xml') && f.startsWith(appDir)) ? 'core' : null;
+const framework = detectFramework(app, entry, files, appDir);
 if (!framework) throw new Error('no supported framework in package.json');
 stopOn(checkContract({ app, platform, generatedKit, framework, allowCoreMismatch: args.includes('--allow-core-mismatch') || releaseOptions(app, platform).allowCoreMismatch === true, allowUntestedFrameworks: args.includes('--allow-untested-frameworks') || releaseOptions(app, platform).allowUntestedFrameworks === true }), 'version');
 const entryText = readFileSync(entry, 'utf8');
@@ -94,24 +99,19 @@ const otherPlatform = opt('--platform') === 'android' ? /\.ios\.tsx?$/ : /\.andr
 // `x.ts` beside `x.ios.ts` is the other platforms' module: the platform's own file is the one `./x` resolves to.
 const thisPlatform = platform === 'android' ? '.android.ts' : '.ios.ts';
 const platformSources = files.filter((f) => f.endsWith('.ts') && !f.endsWith('.d.ts') && f !== entry && !/polyfills\.ts$/.test(f) && !otherPlatform.test(f) && !(!/\.(ios|android)\.ts$/.test(f) && files.includes(f.replace(/\.ts$/, thisPlatform))));
+// The app's own specifiers: relative ones and its tsconfig's path aliases (`~/app/x`).
+const aliased = pathAliases(app);
+const appSpecifier = (spec: string) => spec.startsWith('.') || aliased(spec) !== undefined;
+const { importsOf, usedBy, workerScripts } = appImports(files, aliased, thisPlatform);
+// The modules of the build: what the bundler reaches. An Angular app's bundle is what its entry imports, lazy routes
+// included; another framework's, every file its tsconfig.json does not exclude (specs, mocks), and what those import.
+const included = framework === 'angular' ? null : tsconfigIncluded(app, appDir);
+const reached = reachedFrom(framework === 'angular' ? [entry] : files.filter((f) => !included || !/\.tsx?$/.test(f) || included.has(f)), importsOf);
 // A file only the other platform's files use (an Android audio worker) is no module of this build.
-const usedBy = new Map<string, Set<string>>();
 // A worker's script runs in a worker, not as a module of the app; compiled apps start no workers yet (the kit's Worker throws).
-const workerScripts = new Set<string>();
-for (const f of files.filter((x) => /\.tsx?$/.test(x) && !x.endsWith('.d.ts'))) {
-  const text = readFileSync(f, 'utf8');
-  for (const m of text.matchAll(/(?:from\s*|import\s*\(\s*|(new\s+Worker\s*\(\s*(?:new\s+URL\s*\(\s*)?)|require\s*\(\s*)['"](\.{1,2}\/[^'"]+)['"]/g)) {
-    const base = resolve(dirname(f), m[2]).replace(/\.(ts|js)$/, '');
-    for (const c of [base + '.ts', base + thisPlatform, base + '/index.ts']) {
-      if (!files.includes(c)) continue;
-      if (m[1]) workerScripts.add(c);
-      else usedBy.set(c, (usedBy.get(c) ?? new Set()).add(f));
-    }
-  }
-}
 // Transitively: a file only such files use is out too (an Android track engine its worker imports).
 // Android compiles worker scripts: the kit runs each on a worker thread.
-const leftOut = new Set<string>(platform === 'android' ? [] : [...workerScripts].filter((w) => !usedBy.has(w)));
+const leftOut = new Set<string>([...(platform === 'android' ? [] : [...workerScripts].filter((w) => !usedBy.has(w))), ...platformSources.filter((f) => !reached.has(f))]);
 for (let changed = true; changed; ) {
   changed = false;
   for (const f of platformSources) {
@@ -235,24 +235,34 @@ if (framework === 'vue') {
   root = '';
 } else {
   // The Angular components of plugins the app imports (`<package>/angular`), compiled from their source with the app's.
-  const libraries = angularLibraries(sources, nodeModules(app), plugins);
+  const libraries = angularLibraries(sources, nodeModules(app), plugins, new Set(Object.keys(pluginReplacements(app, platform))));
   sources.push(...libraries);
   const selectors = new Map<string, string>();
+  const hosts: HostedComponent[] = [];
   for (const f of sources) {
     const text = readFileSync(f, 'utf8');
-    const m = /@Component\(\{[\s\S]*?selector:\s*['"]([^'"]+)['"][\s\S]*?\}\)\s*export class (\w+)/.exec(text);
-    if (m) selectors.set(m[1], m[2]);
+    const c = componentOf(f, text);
+    for (const tag of c?.selector ? selectorElements(c.selector) : []) selectors.set(tag, c!.name);
+    const hosted = c ? hostedComponent(f, text) : null;
+    if (hosted) hosts.push(hosted);
   }
   // The configuration the entry provides, lazy routes followed into their files; else one routes file read flat.
-  const tree = angularRouteTree(entry, (f) => readFileSync(f, 'utf8'));
+  const tree = angularRouteTree(entry, (f) => readFileSync(f, 'utf8'), aliased);
   const routesFile = tree ? undefined : sources.find((f) => /Routes\b/.test(readFileSync(f, 'utf8')) && /component:/.test(readFileSync(f, 'utf8')));
-  const { routes, initial } = routesFile ? angularRoutes(readFileSync(routesFile, 'utf8')) : { routes: [], initial: '/' };
+  const { routes, initial } = routesFile ? angularRoutes(readFileSync(routesFile, 'utf8'), routesFile) : { routes: [], initial: '/' };
   const routeFiles = new Set([...(tree?.files ?? []), ...(routesFile ? [routesFile] : [])]);
   // Tags the entry registers too (`registerElement('Glass', …)` in main.ts, before the app bootstraps).
   const elements = registeredElements([...(entry && !sources.includes(entry) ? [entry] : []), ...sources], nodeModules(app));
   // zone.js change detection, which Angular 22 runs only where the app provides it.
   zone = [entryText, ...sources.map((f) => readFileSync(f, 'utf8'))].some((t) => /\bprovideZoneChangeDetection\(/.test(t));
-  components = sources.map((f) => angularComponent(f, readFileSync(f, 'utf8'), selectors, { zone, elements: new Map([...elements].map(([tag, e]) => [tag, e.name])) })).filter((c): c is NonNullable<typeof c> => !!c);
+  // The pipes templates name: the app's and its libraries' `@Pipe` classes, and @angular/common's, in the build's Angular runtime module.
+  const pipes = angularPipes(sources, (f) => readFileSync(f, 'utf8'));
+  // The app's own directives: a library's are written against the view internals a compiled template replaces.
+  const directives = angularDirectives(sources.filter((f) => !libraries.includes(f)), (f) => readFileSync(f, 'utf8'));
+  // What each NgModule declares, imports and exports: a component's directives are those in its scope.
+  const ngModuleNames = new Map(sources.flatMap((f) => [...declarablesIn(f, readFileSync(f, 'utf8'), !libraries.includes(f)).modules]));
+  const runtimeModule = join(appDir, '__angular.release.ts');
+  components = sources.map((f) => angularComponent(f, readFileSync(f, 'utf8'), selectors, { zone, platform, pipes, runtimeModule, directives, ngModules: ngModuleNames, hosts, elements: new Map([...elements].map(([tag, e]) => [tag, e.name])), elementMeta: new Map([...elements].flatMap(([tag, e]) => (e.meta === undefined ? [] : [[tag, e.meta] as const]))) })).filter((c): c is NonNullable<typeof c> => !!c);
   const routed = new Set(tree ? routedComponents(tree.routes) : routes.map((r) => r.component));
   for (const c of components) c.page = routed.has(c.name);
   // The classes of registered tags, imported where the build can reach them: route files, which only configure, are not compiled.
@@ -268,9 +278,19 @@ if (framework === 'vue') {
       && sf.statements.every((st) => ts.isImportDeclaration(st) || (ts.isClassDeclaration(st) && ts.getDecorators(st)?.some((d) => /^NgModule\(/.test(d.expression.getText()))));
   });
   modules = [...sources.filter((f) => !routeFiles.has(f) && !ngModules.includes(f) && !components.some((c) => c.file === f.replace(/\.ts$/, '.release.ts'))), ...(elements.size ? [join(appDir, '__elements.release.ts')] : [])];
+  if (components.some((c) => c.usesRuntime)) {
+    overrides.set(runtimeModule, readFileSync(join(PACKAGE, 'runtime', 'angular.ts'), 'utf8'));
+    modules.push(runtimeModule);
+  }
+  // `@Pipe` and `@Directive` classes without their decorators, made through the `$create` that injects their constructor's parameters.
+  for (const f of modules) {
+    if (overrides.has(f)) continue;
+    const declarable = declarableSource(f, readFileSync(f, 'utf8'));
+    if (declarable) overrides.set(f, declarable);
+  }
   routing = { routes, initial };
   // The entry's own statements (an app delegate, a keyboard setup) run after the modules it imports, the bootstrap call aside.
-  const entryModule = angularEntryModule(entry, entryText);
+  const entryModule = angularEntryModule(entry, entryText, routeFiles, components, aliased);
   if (entryModule) {
     overrides.set(entry, entryModule);
     modules.push(entry);
@@ -285,7 +305,7 @@ if (framework === 'vue') {
   routeTree = tree?.routes ?? null;
   prelude = tree
     ? ''
-    : `        Router.shared.routes = [${routes.map((r) => `Route(${JSON.stringify(r.path)}) { ${r.component}().render() }`).join(', ')}]\n        Router.shared.initial = ${JSON.stringify(initial)}\n`;
+    : `        Router.shared.routes = [${routes.map((r) => `Route(${JSON.stringify(r.path)}) { try ${r.component}().render() }`).join(', ')}]\n        Router.shared.initial = ${JSON.stringify(initial)}\n`;
 }
 
 // The app's CSS through its own build's pipeline, which also gives the bundler's defines the sources are read with.
@@ -297,10 +317,10 @@ const sheets = allSheets.filter((sh) => !pageSheets.includes(sh));
 
 // 3. Type-check everything as one program, then translate.
 // `const { X } = await import('./x')` reads an app module the build links statically: the module evaluates at startup.
-for (const c of components) c.source = staticImports(c.source);
+for (const c of components) c.source = staticImports(c.source, appSpecifier);
 for (const f of modules) {
   const text = overrides.get(f) ?? (existsSync(f) ? readFileSync(f, 'utf8') : undefined);
-  const rewritten = text === undefined ? undefined : staticImports(text);
+  const rewritten = text === undefined ? undefined : staticImports(text, appSpecifier);
   if (rewritten !== undefined && rewritten !== text) overrides.set(f, rewritten);
 }
 const virtual = new Map([...components.map((c) => [c.file, c.source] as [string, string]), ...overrides]);
@@ -318,8 +338,18 @@ const declarations = [
 ];
 const replacements = { ...kitReplacements, ...pluginReplacements(app, platform) };
 modules.push(...Object.values(replacements).filter((f) => !modules.includes(f)));
-const { checker, program, files: sourceFiles, pluginFiles, resolved, lenient: lenientApp } = createProgram(modules, virtual, platform, undefined, plugins, declarations, replacements);
-const infos = new Map<string, ComponentInfo & { outputs?: string[]; outputFields?: Record<string, string>; optional?: string[]; passed?: boolean; fragment?: boolean; initThrows?: boolean }>(components.map((c) => [c.name, { name: c.name, props: c.props, outputs: c.outputs, outputFields: c.outputFields, optional: c.optional, passed: c.passed, fragment: framework === 'angular' && !c.page && isFragment(c.template) }]));
+const { checker, program, files: sourceFiles, pluginFiles, resolved, lenient: lenientApp } = createProgram(modules, virtual, platform, undefined, plugins, declarations, replacements, {}, aliased);
+const infos = new Map<string, ComponentInfo & { outputs?: string[]; outputFields?: Record<string, string>; optional?: string[]; passed?: boolean; fragment?: boolean; initThrows?: boolean; setters?: string[]; throwingSetters?: string[]; propAliases?: Record<string, string>; changes?: boolean }>(components.map((c) => [c.name, { name: c.name, props: c.props, outputs: c.outputs, outputFields: c.outputFields, optional: c.optional, passed: c.passed, fragment: framework === 'angular' && !c.page && isFragment(c.template), setters: c.setters, propAliases: c.propAliases, changes: c.changes }]));
+// A component whose template is one fragment component is a fragment too, however deep the chain.
+if (framework === 'angular') {
+  for (let changed = true; changed; ) {
+    changed = false;
+    for (const c of components) {
+      const info = infos.get(c.name)!;
+      if (!info.fragment && !c.page && isFragment(c.template, infos)) { info.fragment = true; changed = true; }
+    }
+  }
+}
 // A closed world: the plugin code the app reaches, checked against what npm installed before it is compiled.
 const appFiles = [...modules, ...components.map((c) => c.file)];
 const reach = reachability(program, resolved, appFiles, new Set(pluginFiles), platform);
@@ -388,20 +418,23 @@ const nativeTypings = typings.filter((f) => !f.startsWith('/__shims__/') && (!f.
 // Core's own native code (TNSWidgets, NativeScriptUtils), which app code may call as core's does (`TNSLabel.font`):
 // its tables before anything reads a module of that name, as the first read of a table is the one kept.
 if (platform === 'ios') { const c = installedCore(app); if (c) loadCoreNativeTables(c); }
-const native = pluginNative(plugins.all(), out, {
-  deps: dependencies, packages, declarations: typings, say, bindings: join(kit, 'Bindings'),
-  app: { module: name, src: join(appResourcesDir(app), 'iOS', 'src'), declarations: nativeTypings },
-});
-dependencies.dispose();
-const writtenStrictness = new Map<string, boolean>();
+// The dependencies' scratch build is gigabytes: removed whether or not the plugins' native code assembles.
+let native: ReturnType<typeof pluginNative>;
+try {
+  native = pluginNative(plugins.all(), out, {
+    deps: dependencies, packages, declarations: typings, say, bindings: join(kit, 'Bindings'),
+    app: { module: name, src: join(appResourcesDir(app), 'iOS', 'src'), declarations: nativeTypings },
+  });
+} finally {
+  dependencies.dispose();
+}
 // Before the translator analyzes what throws: lenient code's checks throw.
 const lenientFiles = [...pluginFiles].filter((f) => !writtenStrict(f));
-const translator = new Translator(checker, infos, sourceFiles, { pluginFiles, lenientFiles, reach, properties });
+const translator = new Translator(checker, infos, sourceFiles, { pluginFiles, lenientFiles, reach, properties, lenientApp });
 translator.compiledFiles = new Set(compiledPlugins);
 translator.lines = sourceLines;
 const located = (code: string) => (sourceLines ? sourceLines.swift(withoutRedundantImplicit(code)) : withoutRedundantImplicit(code));
 translator.appModule = name;
-translator.lenientApp = lenientApp;
 translator.plainFields = framework === 'angular';
 translator.appMembersByName = framework === 'core';
 // The app's own Swift classes (`App_Resources/iOS/src`) that TypeScript declares untyped (`declare const X: any`): objects calling them by NativeScript's names.
@@ -431,6 +464,7 @@ for (const c of components) {
     translator.errors.push(`${c.name}: ${(e as Error).message}`);
   }
   infos.get(c.name)!.initThrows = translator.initThrows(c.name);
+  infos.get(c.name)!.throwingSetters = (c.setters ?? []).filter((p) => translator.memberThrows(cls, '$set_' + p));
 }
 for (const c of components) {
   const sf = program.getSourceFile(c.file)!;
@@ -465,7 +499,7 @@ const inits = translated.filter((m) => m.init).map((m) => `        ${m.init}()\n
 const css = kitAst(sheets);
 const patched = corePatches(app, nodeModules(app));
 if (patched?.patches.length) say(`${relative(app, patched.file)}: ${patched.patches.join(', ')}`);
-if (routeTree) prelude = `        Router.shared.config = ${routeConfig(routeTree, '        ', translator.throwingInits)}\n`;
+if (routeTree) prelude = `        Router.shared.config = ${routeConfig(routeTree, '        ')}\n`;
 // A plain XML app's pages, page stylesheets and the core classes its XML names, registered before its modules run.
 let xmlModules = '';
 if (xml) {
@@ -491,15 +525,33 @@ const switches = (zone ? '        Zone.enabled = true\n' : '') + (patched?.patch
 const start = switches + `        CorePackages.useAppConfig(appPackageJSON)\n        CoreModules.initialize()\n        Reactivity.schedule = .${SCHEDULE[framework]}\n` + (mounted
   // The entry's own statements run the app (`Application.run`), after every module it imports.
   ? `${xmlModules}        NativeScriptApplication.prepare(cssAST: appCSS)\n${inits}`
-  : `${inits}${prelude}        NativeScriptApplication.run(cssAST: appCSS) { ${root}().render() }\n`);
+  : `${inits}${prelude}        NativeScriptApplication.run(cssAST: appCSS) { try ${root}().render() }\n`);
 const dispatch = nativeDispatch(native.modules, untypedMembers(checker, sourceFiles), deploymentTarget, native.classes);
 if (dispatch) writeFileSync(join(sourcesDir, '__NativeDispatch.swift'), `// Compiled by ns-native: the plugins' native members untyped TypeScript calls, by name.\nimport Foundation\nimport UIKit\nimport NativeScriptKit\n${native.modules.map((m) => `import ${m}\n`).join('')}\n${dispatch}`);
 if (translator.usedAppNative.size) writeFileSync(join(sourcesDir, '__AppNative.swift'), `// Compiled by ns-native: the app's own Swift classes, called by name from untyped TypeScript.\nimport Foundation\nimport NativeScriptKit\n\n${appNativeObjects([...translator.usedAppNative].map((c) => appNative[c]))}`);
 const sdkModules = translator.native.sdkModules().filter((m) => !['Foundation', 'UIKit', ...native.modules].includes(m));
+// A file imports only the plugin and pod modules it names: one module that fails to build stops only the files using it.
+const pluginNames = new Map(native.modules.map((m) => [m, moduleNames(m)]));
+// A type name two imported modules declare (the kit's `ImageAsset` and Lottie's) is the one the code means, by a scoped import.
+const moduleTypes = new Map<string, ModuleTypes>();
+for (const m of new Set(['Foundation', 'UIKit', ...native.modules, ...sdkModules])) {
+  try {
+    const t = nativeTable(m);
+    const named = new Set<string>([...Object.values(t.classes).filter((c) => !c.extension).map((c) => c.swift), ...Object.values(t.enums).flatMap((e) => (e.swift ? [e.swift] : [])), ...Object.values(t.structs).map((x) => x.swift), ...Object.keys(t.typealiases ?? {})]);
+    moduleTypes.set(m, { types: t.swiftTypes ?? {}, named });
+  } catch {}
+}
+const kitManifest = readKitManifest(join(kit, 'Sources', 'NativeScriptKit'));
+if (kitManifest) {
+  const kinds: Record<string, 'class' | 'struct' | 'enum' | 'protocol' | 'typealias'> = {};
+  for (const [n, t] of Object.entries(kitManifest.types)) if (!n.includes('.') && (t.alias || ['class', 'struct', 'enum', 'protocol'].includes(t.kind))) kinds[n] = t.alias ? 'typealias' : (t.kind as 'class');
+  moduleTypes.set('NativeScriptKit', { types: kinds, named: new Set(Object.keys(kinds)) });
+}
 for (const f of readdirSync(sourcesDir)) {
   const p = join(sourcesDir, f);
   const text = readFileSync(p, 'utf8');
-  if (text.includes(SDK_IMPORTS)) writeFileSync(p, text.replace(SDK_IMPORTS, sdkModules.map((m) => `import ${m}\n`).join('')));
+  const out = scopedImports(usedImports(text.replace(SDK_IMPORTS, sdkModules.map((m) => `import ${m}\n`).join('')), pluginNames), moduleTypes, 'NativeScriptKit', (n) => translator.programDeclares(n));
+  if (out !== text) writeFileSync(p, out);
 }
 // A kit type an imported SDK module also declares (`Progress`): the app's module resolves the name to the kit's.
 const clashes = translator.native.kitClashes(translator.kitTypes());
@@ -529,7 +581,8 @@ const kitSources = join(kit, 'Sources', 'NativeScriptKit');
 const core = installedCore(app);
 const coreModules = core ? coreNativeModules(core).map((m) => m.module) : [];
 // `--whole-kit` compiles every file of the kit, however little of it the app reaches: a check that all of it builds.
-const excluded = args.includes('--whole-kit') ? [] : [...kitFilesUnreached(kitSources, readdirSync(sourcesDir).map((f) => readFileSync(join(sourcesDir, f), 'utf8')).join('\n'), coreModules, new Set(closedWorld.excluded)), ...closedWorld.excluded];
+const otherFrameworkFiles = excludedFrameworkKitFiles(framework, 'apple');
+const excluded = args.includes('--whole-kit') ? [] : [...new Set([...kitFilesUnreached(kitSources, readdirSync(sourcesDir).map((f) => readFileSync(join(sourcesDir, f), 'utf8')).join('\n'), coreModules, new Set([...closedWorld.excluded, ...otherFrameworkFiles])), ...closedWorld.excluded, ...otherFrameworkFiles])];
 mirror(sourcesDir, join(out, 'Sources'));
 // The kit's warnings are core's, checked by the kit's own build (tests/kit-build.sh, --whole-kit); in an app's build they are noise.
 const kitWarnings: Record<string, string> = args.includes('--whole-kit') ? {} : { SWIFT_SUPPRESS_WARNINGS: 'YES', GCC_WARN_INHIBIT_ALL_WARNINGS: 'YES' };
@@ -711,20 +764,6 @@ async function svelteCss(app: string, fallback: 'injected' | 'external'): Promis
   return css === true ? 'injected' : css === false ? 'external' : typeof css === 'string' ? css : fallback;
 }
 
-/** Whether a source's own tsconfig (its `extends` followed) checks null: code written without it is translated as core is. */
-function writtenStrict(file: string, strictness = writtenStrictness): boolean {
-  for (let dir = dirname(file); dirname(dir) !== dir; dir = dirname(dir)) {
-    const config = join(dir, 'tsconfig.json');
-    if (!existsSync(config)) continue;
-    if (!strictness.has(config)) {
-      const o = ts.getParsedCommandLineOfConfigFile(config, {}, { ...ts.sys, onUnRecoverableConfigFileDiagnostic: () => {} })?.options ?? {};
-      strictness.set(config, !!(o.strictNullChecks ?? o.strict));
-    }
-    return strictness.get(config)!;
-  }
-  return true;
-}
-
 /** The app's package.json as its bundle has it, or an empty object. */
 function appPackageJSON(app: string): string {
   const file = join(app, 'package.json');
@@ -742,127 +781,106 @@ function kitImports(dir: string, excluded: string[], modules: string[]): Set<str
 }
 
 /** A route tree as the kit's `RouteConfig`s. */
-function routeConfig(routes: RouteNode[], indent: string, throwing: Set<string> = new Set()): string {
+function routeConfig(routes: RouteNode[], indent: string): string {
   const one = (r: RouteNode): string => {
     const named = [
       r.outlet ? `outlet: ${JSON.stringify(r.outlet)}` : '',
       r.redirectTo !== undefined ? `redirectTo: ${JSON.stringify(r.redirectTo)}` : '',
       r.full ? 'full: true' : '',
       r.emptyOutlet ? 'emptyOutlet: true' : '',
-      r.children?.length ? `children: ${routeConfig(r.children, indent + '    ', throwing)}` : '',
+      r.children?.length ? `children: ${routeConfig(r.children, indent + '    ')}` : '',
     ].filter(Boolean);
-    return `RouteConfig(${[JSON.stringify(r.path), ...named].join(', ')})${r.component ? ` { ${throwing.has(r.component) ? 'try! ' : ''}${r.component}().render() }` : ''}`;
+    return `RouteConfig(${[JSON.stringify(r.path), ...named].join(', ')})${r.component ? ` { try ${r.component}().render() }` : ''}`;
   };
   return `[\n${routes.map((r) => `${indent}    ${one(r)}`).join(',\n')}\n${indent}]`;
 }
 
-/**
- * Tags registered for plugin views: `registerElement('Tag', () => Class)` in the app, and in the
- * Angular entry (`<package>/angular`) of a plugin the app imports, with the module each class is from.
- */
-function registeredElements(sources: string[], modulesDir: string): Map<string, { name: string; from: string }> {
-  const found = new Map<string, { name: string; from: string }>();
-  const scan = (text: string, file: string | null) => {
-    const imports = new Map<string, string>();
-    for (const m of text.matchAll(/import\s*\{([^}]*)\}\s*from\s*['"]([^'"]+)['"]/g)) {
-      for (const part of m[1].split(',')) {
-        const [orig, alias] = part.trim().split(/\s+as\s+/);
-        if (orig) imports.set((alias ?? orig).trim(), JSON.stringify([orig.trim(), m[2]]));
-      }
-    }
-    for (const m of text.matchAll(/registerElement\(\s*['"](\w+)['"]\s*,\s*\(\)\s*=>\s*(\w+)\s*\)/g)) {
-      const imported = imports.get(m[2]);
-      if (!imported) continue;
-      const [name, from] = JSON.parse(imported) as [string, string];
-      // Core's own views are elements already.
-      if (from === '@nativescript/core') continue;
-      found.set(m[1], { name, from: from.startsWith('.') && file ? resolve(dirname(file), from) : from });
-    }
-  };
-  for (const f of sources) {
-    const text = readFileSync(f, 'utf8');
-    scan(text, f);
-    for (const m of text.matchAll(/from\s*['"]((?:@[\w.-]+\/)?[\w.-]+)\/angular['"]/g)) {
-      const dir = join(modulesDir, m[1], 'angular');
-      const entry = existsSync(dir) ? readdirSync(dir).flatMap((d) => (/^fesm/.test(d) ? readdirSync(join(dir, d)).filter((x) => x.endsWith('.mjs')).map((x) => join(dir, d, x)) : [])).sort().reverse()[0] : undefined;
-      if (entry) scan(readFileSync(entry, 'utf8'), null);
-    }
-  }
-  return found;
-}
-
-/** The TypeScript of each `<package>/angular` entry the app imports, from the plugin's source beside its main module. */
-function angularLibraries(sources: string[], modulesDir: string, plugins: PluginSources): string[] {
-  const out: string[] = [];
-  const seen = new Set<string>();
-  for (const f of sources) {
-    for (const m of readFileSync(f, 'utf8').matchAll(/import\s*\{([^}]*)\}\s*from\s*['"]((?:@[\w.-]+\/)?[\w.-]+)\/angular['"]/g)) {
-      const wanted = m[1].split(',').map((x) => x.trim().split(/\s+as\s+/)[0]).filter(Boolean);
-      // A plugin the kit implements renders its elements itself: its Angular wrapper's components are not compiled.
-      if (seen.has(m[2]) || KIT_PLUGINS.includes(m[2])) continue;
-      seen.add(m[2]);
-      const dir = join(modulesDir, m[2]);
-      const main = ['index.ios.js', 'index.js'].map((x) => join(dir, x)).find(existsSync);
-      if (!main) continue;
-      plugins.get(dir);
-      const mainSource = plugins.sourceOf(main);
-      const angular = mainSource && join(dirname(mainSource), 'angular');
-      // A wrapper written against Angular's view internals (ElementRef, ViewContainerRef) has no components of its own the build reads.
-      if (!angular || !existsSync(angular)) continue;
-      const components = new Map<string, string>();
-      const walk = (d: string) => {
-        for (const x of readdirSync(d)) {
-          const p = join(d, x);
-          if (statSync(p).isDirectory()) walk(p);
-          else if (x.endsWith('.ts') && !x.endsWith('.d.ts') && !x.endsWith('.spec.ts')) {
-            const name = /@Component\([\s\S]*?\}\)\s*export class (\w+)/.exec(readFileSync(p, 'utf8'))?.[1];
-            if (name) components.set(name, p);
-          }
-        }
-      };
-      walk(angular);
-      // The components the app imports and those their `imports` name, transitively, with the modules of their own they import.
-      const queue = wanted.filter((w) => components.has(w));
-      const taken = new Set<string>();
-      const files = [...components.values()];
-      while (queue.length) {
-        const name = queue.pop()!;
-        if (taken.has(name)) continue;
-        taken.add(name);
-        const file = components.get(name)!;
-        out.push(file);
-        const text = readFileSync(file, 'utf8');
-        const imports = /imports:\s*\[([^\]]*)\]/.exec(text)?.[1] ?? '';
-        for (const i of imports.split(',').map((x) => x.trim())) if (components.has(i)) queue.push(i);
-        for (const m of text.matchAll(/from\s*['"](\.[^'"]+)['"]/g)) {
-          const support = [resolve(dirname(file), m[1]) + '.ts', join(resolve(dirname(file), m[1]), 'index.ts')].find(existsSync);
-          if (support && !files.includes(support) && !out.includes(support)) out.push(support);
-          // A component the code itself uses (a dialog it opens).
-          for (const [other, f] of components) if (f === support) queue.push(other);
-        }
-      }
-    }
-  }
-  return out;
-}
-
 /** The Angular entry without the call that bootstraps the app, or null when that is all it does. */
-function angularEntryModule(file: string, text: string): string | null {
+function angularEntryModule(
+  file: string,
+  text: string,
+  routeFiles: ReadonlySet<string>,
+  components: ComponentIR[],
+  aliased: (spec: string) => string | undefined,
+): string | null {
   const sf = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true);
   const isBootstrap = (st: ts.Statement) => ts.isExpressionStatement(st) && ts.isCallExpression(st.expression)
     && /^(runNativeScriptAngularApp|platformNativeScript|platformNativeScriptDynamic|bootstrapApplication)\b/.test(st.expression.expression.getText());
+  const isBuiltinProviderCall = (e: ts.Expression): boolean => {
+    if (!ts.isCallExpression(e)) return false;
+    const fn = e.expression.getText();
+    if (/^(provideNativeScriptRouter|provideRouter|provideZoneChangeDetection|provideZonelessChangeDetection|provideExperimentalZonelessChangeDetection|provideNativeScriptNgZone)$/.test(fn)) return true;
+    if (/^(provideNativeScriptHttpClient|provideHttpClient)$/.test(fn) && e.arguments.every((a) => ts.isCallExpression(a) && /^(withInterceptorsFromDi|withFetch|withJsonpSupport|withNoXsrfProtection)$/.test(a.expression.getText()))) return true;
+    return false;
+  };
+  let hasCustomProviders = false;
+  const blankRanges: [number, number][] = [];
+  const nullFirstArgRanges: [number, number][] = [];
+  const visit = (n: ts.Node) => {
+    if (ts.isCallExpression(n)) {
+      const fn = n.expression.getText();
+      if (fn === 'bootstrapApplication') {
+        if (n.arguments[0]) {
+          nullFirstArgRanges.push([n.arguments[0].getStart(), n.arguments[0].getEnd()]);
+        }
+        const cfg = n.arguments[1];
+        if (cfg) {
+          if (ts.isObjectLiteralExpression(cfg)) {
+            for (const prop of cfg.properties) {
+              if (ts.isPropertyAssignment(prop) && prop.name.getText() === 'providers' && ts.isArrayLiteralExpression(prop.initializer)) {
+                if (prop.initializer.elements.some((el) => !isBuiltinProviderCall(el))) {
+                  hasCustomProviders = true;
+                }
+              }
+            }
+          } else {
+            hasCustomProviders = true;
+          }
+        }
+      } else if (fn === 'provideNativeScriptRouter' || fn === 'provideRouter') {
+        if (n.arguments.length) {
+          blankRanges.push([n.arguments[0].getStart(), n.arguments[n.arguments.length - 1].getEnd()]);
+        }
+      }
+    }
+    ts.forEachChild(n, visit);
+  };
+  visit(sf);
   const rest = sf.statements.filter((st) => !ts.isImportDeclaration(st) && !isBootstrap(st));
-  if (!rest.length) return null;
+  if (!rest.length && !hasCustomProviders) return null;
+  const componentFiles = new Set(components.map((c) => c.file.replace(/\.release\.ts$/, '.ts')));
+  for (const st of sf.statements) {
+    if (ts.isImportDeclaration(st) && ts.isStringLiteral(st.moduleSpecifier)) {
+      const spec = st.moduleSpecifier.text;
+      const base = aliased(spec) ?? (spec.startsWith('.') ? resolve(dirname(file), spec) : undefined);
+      if (base) {
+        const candidates = [base, base + '.ts', join(base, 'index.ts')];
+        if (candidates.some((c) => routeFiles.has(c) || componentFiles.has(c))) {
+          blankRanges.push([st.getStart(), st.getEnd()]);
+        }
+      }
+    } else if (isBootstrap(st) && !hasCustomProviders) {
+      blankRanges.push([st.getStart(), st.getEnd()]);
+    }
+  }
   let out = text;
-  for (const st of [...sf.statements].filter(isBootstrap).reverse()) out = out.slice(0, st.getStart()) + out.slice(st.getStart(), st.getEnd()).replace(/[^\n]/g, ' ') + out.slice(st.getEnd());
+  for (const [s, e] of nullFirstArgRanges) {
+    const len = e - s;
+    const rep = (len >= 4 ? 'null' : '0').padEnd(len, ' ');
+    out = out.slice(0, s) + rep + out.slice(e);
+  }
+  for (const [s, e] of blankRanges) {
+    out = out.slice(0, s) + out.slice(s, e).replace(/[^\n]/g, ' ') + out.slice(e);
+  }
   return out;
 }
 
 /** `const { A, B } = await import('./x')` as a destructuring of names imported from './x' (appended: imports hoist), positions kept where the text fits. */
-function staticImports(text: string): string {
+function staticImports(text: string, appSpecifier: (spec: string) => boolean): string {
   let n = 0;
   const added: string[] = [];
-  const out = text.replace(/\{([\w\s,]+)\}(\s*=\s*)await\s+import\((\s*['"](\.[^'"]+)['"]\s*)\)/g, (whole, names: string, eq: string, arg: string, spec: string) => {
+  const out = text.replace(/\{([\w\s,]+)\}(\s*=\s*)await\s+import\((\s*['"]([^'"]+)['"]\s*)\)/g, (whole, names: string, eq: string, arg: string, spec: string) => {
+    if (!appSpecifier(spec)) return whole;
     const list = names.split(',').map((x) => x.trim()).filter(Boolean);
     const prefix = `__import${n++}_`;
     added.push(`import { ${list.map((x) => `${x} as ${prefix}${x}`).join(', ')} } from '${spec}';`);
@@ -870,7 +888,8 @@ function staticImports(text: string): string {
     return `{${names}}${eq}${value}`.padEnd(whole.length, ' ');
   });
   // `const tests = await import('./x')`, read only as `tests.member`: an object of the members read, each imported by name.
-  const whole = out.replace(/\b(const|let|var)(\s+)(\w+)(\s*=\s*)await\s+import\((\s*['"](\.[^'"]+)['"]\s*)\)/g, (match, kw: string, sp: string, name: string, eq: string, arg: string, spec: string) => {
+  const whole = out.replace(/\b(const|let|var)(\s+)(\w+)(\s*=\s*)await\s+import\((\s*['"]([^'"]+)['"]\s*)\)/g, (match, kw: string, sp: string, name: string, eq: string, arg: string, spec: string) => {
+    if (!appSpecifier(spec)) return match;
     const reads = [...out.matchAll(new RegExp(`\\b${name}\\.(\\w+)`, 'g'))].map((m) => m[1]);
     if (!reads.length || new RegExp(`\\b${name}\\b(?!\\s*[.=])`, 'g').exec(out.replace(match, ''))) return match;
     const list = [...new Set(reads)];

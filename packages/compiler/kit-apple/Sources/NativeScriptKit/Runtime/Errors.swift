@@ -286,6 +286,11 @@ public func jsReported<T>(_ body: () throws -> T) -> T? {
     do { return try body() } catch { jsReport { throw error }; return nil }
 }
 
+/// A template's condition: its truth, false where it throws, what it throws reported.
+public func jsReportedTruthy<T>(_ body: () throws -> T) -> Bool {
+    do { return jsTruthy(try body()) } catch { jsReportUncaught(jsCaught(error)); return false }
+}
+
 /// A native callback's result from a body that may throw: what it throws is reported as uncaught,
 /// and the callback returns its type's neutral value (`jsNativeZero`), as NativeScript's runtime
 /// returns from a delegate whose JavaScript threw.

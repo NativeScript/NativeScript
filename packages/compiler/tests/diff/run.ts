@@ -3,17 +3,24 @@
 // as a native program: Swift as a macOS command-line program linking the
 // kit's JavaScript runtime (Foundation only), and Kotlin on the host JVM
 // with kit-android's runtime (plain JVM). Output and exit status must match.
-//   node tests/diff/run.ts [case-name…] [--swift | --kotlin] [--keep] [--osize]
+// Node's run is the reference only when it prints something and ends with 0, or with the status a `// @exit <n>` line declares.
+//   node tests/diff/run.ts [case-name…] [--swift | --kotlin] [--keep] [--osize] [--no-cache]
+// A case whose build inputs (its emitted program, the runtime, flags, toolchain and host) are a stored run's reuses that
+// run's outcome from tests/build-cache.ts's cache, and Node's output is reused for unchanged JavaScript. --no-cache builds
+// and runs every case and stores the outcomes; --keep does too, leaving every case's build products.
 // --osize builds the Swift runtime and cases with -Osize, the optimizer release builds use (into <build>-osize).
 // Build products go to $NS_DIFF_BUILD (default: <tmp>/ns-native-diff).
 // Node runs with --expose-gc: a case checking object lifetimes calls `globalThis.gc?.()`, which ARC needs no call for.
 // Kotlin compiles with $KOTLINC, `kotlinc` on PATH, or the compiler Gradle cached for kit-android.
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { basename, dirname, join } from 'node:path';
+import { BuildCache, cacheRoot, failedBuild, hash, hashDir, hashFiles, host, kotlinCompiler, javaRuntime, nodeRuntime, outcomeOf, swiftToolchain, type Outcome } from '../build-cache.ts';
+import { kotlinRuntimeSources, modulesDir, root, runtimeSources, SWIFT_MODE } from '../native-build.ts';
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { basename, dirname, join, relative, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import ts from 'typescript';
+import { expectedExit, kotlinApp, kotlinOnly, kotlinOptions, swiftOnly, swiftOptions } from './case-options.ts';
 import { buildKotlinRuntime, buildSwiftRuntime, kotlinc, kotlinMain, kotlinStdlib, swiftc, swiftMain, translateKotlin as translateKotlinProgram, translateSwift } from '../native-build.ts';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -21,45 +28,21 @@ const optimize = process.argv.includes('--osize') ? '-Osize' : '-Onone';
 const build = (process.env.NS_DIFF_BUILD ?? join(tmpdir(), 'ns-native-diff')) + (optimize === '-Osize' ? '-osize' : '');
 const args = process.argv.slice(2).filter((a) => !a.startsWith('--'));
 const keep = process.argv.includes('--keep');
+const caches: BuildCache[] = [];
+const cacheFor = (backend: string) => { const c = new BuildCache(backend, { read: !keep && !process.argv.includes('--no-cache'), paths: { BUILD: build, ROOT: root } }); caches.push(c); return c; };
+/** How the cases are built and run, checked, and their outcomes stored. */
+const harness = hashFiles([fileURLToPath(import.meta.url), join(here, 'case-options.ts'), join(root, 'tests/native-build.ts'), join(root, 'tests/kotlin-toolchain.ts'), join(root, 'tests/build-cache.ts')]);
 const targets = process.argv.includes('--swift') ? ['swift'] : process.argv.includes('--kotlin') ? ['kotlin'] : ['swift', 'kotlin'];
 mkdirSync(build, { recursive: true });
 
-/**
- * A case starting `// @lenient` is checked as core is, without strictNullChecks, and translated
- * as the kit generated from core is, lenient and in library mode (Swift only, as the kit is
- * generated for iOS first). One starting `// @lenient-kotlin` is translated so as Kotlin only,
- * as kit-gen-kotlin.ts generates kit-android; one starting `// @lenient-both` so as both.
- */
-const lenient = (file: string) => readFileSync(file, 'utf8').startsWith('// @lenient');
-const lenientBoth = (file: string) => readFileSync(file, 'utf8').startsWith('// @lenient-both');
-const kotlinOnly = (file: string) => readFileSync(file, 'utf8').startsWith('// @lenient-kotlin');
-/** A case starting `// @kotlin` covers what only the Kotlin translator does yet: it is not run as Swift. */
-const kotlinApp = (file: string) => readFileSync(file, 'utf8').startsWith('// @kotlin');
-/** A case starting `// @plugin` is a non-strict app whose imports from `helpers/plugin/` are a plugin's, compiled from its source (Swift only). */
-const pluginCase = (file: string) => readFileSync(file, 'utf8').startsWith('// @plugin');
-/** A case starting `// @app-lenient` is a non-strict app's own code (`strict: false` in its tsconfig.json), on both targets. */
-const appLenient = (file: string) => readFileSync(file, 'utf8').startsWith('// @app-lenient');
-/** A case starting `// @swift` covers what only the Swift runtime has yet (typed arrays): it is not run as Kotlin. */
-const swiftOnly = (file: string) => (lenient(file) && !kotlinOnly(file) && !lenientBoth(file)) || pluginCase(file) || readFileSync(file, 'utf8').startsWith('// @swift');
-
-/** `// @weak-fields A.b C.d` and `// @weak-captures A.e` lines: what the kit's configuration holds weakly (tools/native-kit/modules.mts). */
-function weakOf(file: string) {
-  const text = readFileSync(file, 'utf8');
-  const list = (tag: string) => [...text.matchAll(new RegExp(`^// @${tag} (.+)$`, 'gm'))].flatMap((m) => m[1].trim().split(/\s+/));
-  return { fields: list('weak-fields'), captures: list('weak-captures') };
-}
-
-/** A `// @members-by-name` line: the case is translated as an XML app's code is, its classes' accessors and methods readable by name (core's Builder binds to them). */
-const membersByName = (file: string) => /^\/\/ @members-by-name$/m.test(readFileSync(file, 'utf8'));
-
 function translate(file: string, out: string): void {
-  const modules = translateSwift([file], out, { lenient: lenient(file), weak: weakOf(file), membersByName: membersByName(file), plugin: pluginCase(file), lenientApp: appLenient(file) });
+  const modules = translateSwift([file], out, swiftOptions(file));
   writeFileSync(join(out, 'main.swift'), swiftMain(modules));
 }
 
 /** The case as Kotlin in package `pkg`, with a `main` running its modules' top level and then the event loop. */
 function translateKotlin(file: string, out: string, pkg: string): void {
-  const modules = translateKotlinProgram([file], out, pkg, { lenient: lenient(file), membersByName: membersByName(file), lenientApp: appLenient(file) });
+  const modules = translateKotlinProgram([file], out, pkg, kotlinOptions(file));
   writeFileSync(join(out, '__Main.kt'), kotlinMain(modules, pkg));
 }
 
@@ -67,6 +50,8 @@ function translateKotlin(file: string, out: string, pkg: string): void {
 function toJavaScript(dir: string, out: string) {
   mkdirSync(out, { recursive: true });
   writeFileSync(join(out, 'package.json'), '{ "type": "module" }');
+  // A case importing a package (rxjs) loads the one the translator compiles from source.
+  symlinkSync(modulesDir, join(out, 'node_modules'), 'dir');
   for (const f of readdirSync(dir, { recursive: true }) as string[]) {
     if (!f.endsWith('.ts')) continue;
     const text = readFileSync(join(dir, f), 'utf8');
@@ -80,11 +65,36 @@ function toJavaScript(dir: string, out: string) {
 // ---- Run ---------------------------------------------------------------------------------------
 
 const cases = readdirSync(join(here, 'cases')).filter((f) => f.endsWith('.ts') && (!args.length || args.some((a) => f.startsWith(a)))).sort();
-if (targets.includes('swift')) buildSwiftRuntime(build, optimize);
 const js = join(build, 'js');
 rmSync(js, { recursive: true, force: true });
 toJavaScript(join(here, 'cases'), js);
-const expected = new Map(cases.map((c) => [c, spawnSync('node', ['--expose-gc', '--import', join(here, 'native-shim.js'), join(js, basename(c, '.ts') + '.js')], { encoding: 'utf8' })]));
+
+/** The JavaScript files Node loads for `entry`: it and its relative imports, transitively. Null when it imports a package, which the key would not cover. */
+function jsProgram(entry: string): string[] | null {
+  const files = new Set([entry]);
+  for (const f of files) {
+    if (!existsSync(f)) continue;
+    for (const { fileName } of ts.preProcessFile(readFileSync(f, 'utf8'), true, true).importedFiles) {
+      if (fileName.startsWith('.')) files.add(resolve(dirname(f), fileName));
+      else if (!fileName.startsWith('node:')) return null;
+    }
+  }
+  return [...files].sort();
+}
+
+const nodeCache = cacheFor('node');
+const shim = join(here, 'native-shim.js');
+const nodeBase = hash('node', nodeRuntime(), host(), readFileSync(shim), harness);
+const expected = new Map(cases.map((c): [string, Outcome] => {
+  const entry = join(js, basename(c, '.ts') + '.js');
+  const program = jsProgram(entry);
+  const key = program && hash(nodeBase, ...program.flatMap((f) => [relative(js, f), existsSync(f) ? readFileSync(f) : '']));
+  const hit = key ? nodeCache.get(key) : null;
+  if (hit) return [c, hit];
+  const outcome = outcomeOf(spawnSync('node', ['--expose-gc', '--import', shim, entry], { encoding: 'utf8' }));
+  if (key) nodeCache.put(key, outcome);
+  return [c, outcome];
+}));
 let failed = 0;
 /**
  * Cases known to fail on a target, each with its cause (tests/diff/known-failures.json). A known failure is reported
@@ -102,7 +112,7 @@ function fail(name: string, target: string) {
 function report(name: string, target: string, want: { stdout: string; status: number | null }, actual: { stdout: string; stderr: string; status: number | null }) {
   const same = actual.stdout === want.stdout && (actual.status === 0) === (want.status === 0);
   ran.add(`${target}:${name}`);
-  if (same) { console.log(`✓ ${name} (${target})`); return; }
+  if (same) { console.log(`✓ ${name} (${target})`); return true; }
   fail(name, target);
   console.log(`✗ ${name} (${target})${known[target]?.[name] ? ' [known]' : ''}: output differs (exit ${want.status} in Node, ${actual.status} native)`);
   const e = want.stdout.split('\n'), a = actual.stdout.split('\n');
@@ -110,10 +120,48 @@ function report(name: string, target: string, want: { stdout: string; status: nu
     if (e[k] !== a[k]) { console.log(`    line ${k + 1}\n      node:   ${JSON.stringify(e[k])}\n      native: ${JSON.stringify(a[k])}`); shown++; }
   }
   if (actual.stderr) console.log('    native stderr: ' + actual.stderr.split('\n').slice(0, 4).join('\n    '));
+  return false;
+}
+
+/** Why Node's run of a case is no reference to compare with: it ended with a status the case does not declare, or printed nothing. */
+function unusable(name: string, want: Outcome): string | null {
+  const exit = expectedExit(join(here, 'cases', name + '.ts'));
+  const lines = want.stderr.trim().split('\n');
+  const stderr = lines.find((l) => /^\w*(Error|Exception)\b/.test(l)) ?? lines[0];
+  if (want.status !== exit) return `Node's run exits ${want.status ?? want.signal}${exit ? ` where the case declares ${exit}` : ''} (a case ending otherwise declares \`// @exit <n>\`)${stderr ? `: ${stderr}` : ''}`;
+  if (!want.stdout) return "Node's run prints nothing";
+  return null;
+}
+
+/**
+ * Reports a case's native outcome: `hit`, the stored one, or else what `make` builds and runs. A new outcome is stored
+ * when it matches Node or the case is a known failure. One that newly differs is not, so it is built and run again
+ * next time: a flaky failure never sticks.
+ */
+function settle(cache: BuildCache, key: string, hit: Outcome | null, name: string, target: string, want: Outcome, make: () => Outcome) {
+  const why = unusable(name, want);
+  if (why) {
+    ran.add(`${target}:${name}`);
+    fail(name, target);
+    console.log(`✗ ${name} (${target})${known[target]?.[name] ? ' [known]' : ''}: ${why}`);
+    return;
+  }
+  const outcome = hit ?? make();
+  let matches = false;
+  if (outcome.error === undefined) matches = report(name, target, want, outcome);
+  else {
+    ran.add(`${target}:${name}`);
+    fail(name, target);
+    console.log(`✗ ${name} (${target})${known[target]?.[name] ? ' [known]' : ''}: ${outcome.error}`);
+  }
+  if (!hit && (matches || known[target]?.[name])) cache.put(key, outcome);
 }
 
 let swiftSkipped = 0;
 if (targets.includes('swift')) {
+  const cache = cacheFor('swift');
+  const base = hash('swift', swiftToolchain(), host(), hashFiles(runtimeSources), optimize, ...SWIFT_MODE, harness);
+  let runtimeBuilt = false;
   for (const c of cases) {
     const name = basename(c, '.ts');
     const file = join(here, 'cases', c);
@@ -121,19 +169,25 @@ if (targets.includes('swift')) {
     const dir = join(build, name);
     try {
       translate(file, join(dir, 'Sources'));
-      const swiftFiles = readdirSync(join(dir, 'Sources')).map((f) => join(dir, 'Sources', f));
-      const warnings: string[] = [];
-      const errors = swiftc(swiftFiles, join(dir, name), build, optimize, [], warnings);
-      if (errors) throw new Error(`swiftc:\n${errors.slice(0, 15).join('\n')}`);
-      // Isolation and sendability are checked as an app's code is: a warning there fails the case.
-      const concurrency = warnings.filter((w) => /Sendable|actor|isolat|data race|concurrently/i.test(w));
-      if (concurrency.length) throw new Error(`swiftc concurrency warnings:\n${concurrency.slice(0, 15).join('\n')}`);
-      report(name, 'swift', expected.get(c)!, spawnSync(join(dir, name), { encoding: 'utf8', timeout: 20000 }));
     } catch (err) {
       ran.add(`swift:${name}`);
       fail(name, 'swift');
       console.log(`✗ ${name} (swift)${known.swift?.[name] ? ' [known]' : ''}: ${(err as Error).message}${process.env.NS_NATIVE_STACKS ? (err as Error).stack : ""}`);
+      if (!keep) rmSync(dir, { recursive: true, force: true });
+      continue;
     }
+    const key = hash(base, JSON.stringify(swiftOptions(file)), hashDir(join(dir, 'Sources')));
+    settle(cache, key, cache.get(key), name, 'swift', expected.get(c)!, () => {
+      if (!runtimeBuilt) { buildSwiftRuntime(build, optimize); runtimeBuilt = true; }
+      const swiftFiles = readdirSync(join(dir, 'Sources')).map((f) => join(dir, 'Sources', f));
+      const warnings: string[] = [];
+      const errors = swiftc(swiftFiles, join(dir, name), build, optimize, [], warnings);
+      if (errors) return failedBuild(`swiftc:\n${errors.slice(0, 15).join('\n')}`);
+      // Isolation and sendability are checked as an app's code is: a warning there fails the case.
+      const concurrency = warnings.filter((w) => /Sendable|actor|isolat|data race|concurrently/i.test(w));
+      if (concurrency.length) return failedBuild(`swiftc concurrency warnings:\n${concurrency.slice(0, 15).join('\n')}`);
+      return outcomeOf(spawnSync(join(dir, name), { encoding: 'utf8', timeout: 20000 }));
+    });
     if (!keep) rmSync(dir, { recursive: true, force: true });
   }
 }
@@ -154,26 +208,34 @@ if (targets.includes('kotlin')) {
       console.log(`✗ ${name} (kotlin)${known.kotlin?.[name] ? ' [known]' : ''}: ${(err as Error).message}`);
     }
   }
-  const runtime = buildKotlinRuntime(build);
+  const cache = cacheFor('kotlin');
+  const base = hash('kotlin', kotlinCompiler(), javaRuntime(), host(), hashFiles(kotlinRuntimeSources), harness);
+  const keys = new Map(translated.map((name) => [name, hash(base, JSON.stringify(kotlinOptions(join(here, 'cases', name + '.ts'))), hashDir(join(build, 'kotlin', name)))]));
+  const hits = new Map<string, Outcome>();
+  for (const name of translated) { const hit = cache.get(keys.get(name)!); if (hit) hits.set(name, hit); }
+  const misses = translated.filter((name) => !hits.has(name));
+  const runtime = misses.length ? buildKotlinRuntime(build) : '';
   const sourcesOf = (name: string) => readdirSync(join(build, 'kotlin', name)).map((f) => join(build, 'kotlin', name, f));
   const classes = join(build, 'kotlin-classes');
   // One compile for every case; a case that breaks it is then compiled alone to say which.
-  const together = translated.length ? kotlinc(translated.flatMap(sourcesOf), classes, [runtime]) : null;
+  const together = misses.length ? kotlinc(misses.flatMap(sourcesOf), classes, [runtime]) : null;
   const runnable = new Map<string, string>();
-  if (!together) for (const name of translated) runnable.set(name, classes);
+  const errors = new Map<string, string>();
+  if (!together) for (const name of misses) runnable.set(name, classes);
   else {
-    for (const name of translated) {
+    for (const name of misses) {
       const out = join(build, 'kotlin-classes-' + name);
-      const errors = kotlinc(sourcesOf(name), out, [runtime]);
-      if (errors) { ran.add(`kotlin:${name}`); fail(name, 'kotlin'); console.log(`✗ ${name} (kotlin)${known.kotlin?.[name] ? ' [known]' : ''}: kotlinc:\n${errors.slice(0, 15).join('\n')}`); } else runnable.set(name, out);
+      const e = kotlinc(sourcesOf(name), out, [runtime]);
+      if (e) errors.set(name, `kotlinc:\n${e.slice(0, 15).join('\n')}`); else runnable.set(name, out);
     }
   }
-  for (const c of cases) {
-    const name = basename(c, '.ts');
+  const settleKotlin = (name: string, make: () => Outcome) => settle(cache, keys.get(name)!, hits.get(name) ?? null, name, 'kotlin', expected.get(name + '.ts')!, make);
+  // Build errors before runs, as each case's own build and run would report them.
+  for (const name of translated) if (hits.get(name)?.error !== undefined || errors.has(name)) settleKotlin(name, () => failedBuild(errors.get(name)!));
+  for (const name of translated) {
     const out = runnable.get(name);
-    if (!out) continue;
-    const run = spawnSync('java', ['-Xss16m', '-cp', [out, runtime, kotlinStdlib()].join(':'), `${pkg(name)}.entry.__MainKt`], { encoding: 'utf8', timeout: 30000 });
-    report(name, 'kotlin', expected.get(c)!, run);
+    if (!out && (!hits.has(name) || hits.get(name)!.error !== undefined)) continue;
+    settleKotlin(name, () => outcomeOf(spawnSync('java', ['-Xss16m', '-cp', [out!, runtime, kotlinStdlib()].join(':'), `${pkg(name)}.entry.__MainKt`], { encoding: 'utf8', timeout: 30000 })));
   }
   if (!keep) for (const d of readdirSync(build)) if (d.startsWith('kotlin-classes') || d === 'kotlin') rmSync(join(build, d), { recursive: true, force: true });
 }
@@ -184,5 +246,6 @@ const nowPassing = targets.flatMap((t) => Object.keys(known[t] ?? {}).filter((n)
 for (const n of nowPassing) console.log(`✗ ${n} matches Node: remove it from tests/diff/known-failures.json`);
 failed += nowPassing.length;
 if (knownFailed.length) console.log(`${knownFailed.length} known failures (tests/diff/known-failures.json): ${knownFailed.join(', ')}`);
+console.log(`cache (${cacheRoot}): ${caches.map((c) => c.summary()).join(', ')}`);
 console.log(`${total - failed - knownFailed.length + nowPassing.length} of ${total} runs match Node (${targets.join(', ')})`);
 process.exit(failed ? 1 : 0);

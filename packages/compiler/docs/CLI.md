@@ -35,7 +35,8 @@ export default {
 ```
 
 `release` is also the compiler's options object: `pluginReplacements`,
-`pluginSources` and `allowUnimplementedProperties`. A platform's `release`
+`pluginSources`, `stubPlugins` and `allowUnimplementedProperties` (see
+`docs/PACKAGE-TYPES.md` for how packages are compiled). A platform's `release`
 merges over the top-level one, and object options merge by key.
 
 A property core declares that the kit does not apply stops the native build with the view, property and file:line; `release: { allowUnimplementedProperties: true }` in the config builds anyway, with warnings.
@@ -166,6 +167,8 @@ projects), so the CLI has nothing to add.
   	pluginReplacements?: Record<string, string>;
   	/** Checkouts of plugins' TypeScript source, as `'package': 'path'`, used instead of fetching the published revision. */
   	pluginSources?: Record<string, string>;
+  	/** Binary-only plugins to build as no-op stand-ins (empty views, methods that do nothing), each named in a build warning. */
+  	stubPlugins?: string[];
   	/** Build despite properties core declares that the compiled build does not apply, with a warning for each. */
   	allowUnimplementedProperties?: boolean;
   }

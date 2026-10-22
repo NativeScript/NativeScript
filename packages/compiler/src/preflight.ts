@@ -93,7 +93,8 @@ export function preflight(checker: ts.TypeChecker, files: readonly ts.SourceFile
       const sym = checker.getSymbolAtLocation(n);
       const decls = sym?.declarations ?? [];
       const hint = UNSUPPORTED_GLOBALS[n.text];
-      if (hint && decls.length && decls.every((d) => isLibFile(d.getSourceFile().fileName))) {
+      const functionSupported = n.text === 'Function' && ((ts.isPropertyAccessExpression(n.parent) && n.parent.expression === n && n.parent.name.text === 'prototype') || (ts.isBinaryExpression(n.parent) && n.parent.operatorToken.kind === ts.SyntaxKind.InstanceOfKeyword && n.parent.right === n));
+      if (hint && !functionSupported && decls.length && decls.every((d) => isLibFile(d.getSourceFile().fileName))) {
         report(n, n.text === 'eval' || n.text === 'Function' ? `\`${n.text}\`` : `\`${n.text}\` (not provided by the compiled runtime)`, hint);
       } else if (DEFINE_LIKE.test(n.text) && decls.length && !assignedGlobals.has(n.text) && decls.every((d) => isAmbientAppVariable(d))) {
         report(n, `${n.text}, declared but never given a value`, `if your bundler defines ${n.text} (Vite \`define\`, webpack DefinePlugin), the compiled build reads the same config: check the name there; otherwise assign globalThis.${n.text} before it is read`);

@@ -17,7 +17,14 @@
 		"290-regexp-backtracking": "A capture inside a quantified group keeps its value from an earlier iteration instead of resetting to undefined (NSRegularExpression semantics, Swift runtime).",
 		"291-json-edges": "A lone surrogate becomes U+FFFD because Swift strings hold only valid Unicode, and the circular-structure TypeError has an empty message (Swift runtime).",
 		"293-array-sort-callbacks": "A comparator declared with fewer parameters than sort passes does not compile (Swift translator).",
-		"363-operator-pipe": "An overloaded generic method with an `any` implementation (`pipe(...operators: OperatorFunction<any, any>[])`) is called as the implementation, and an overload's function argument names the implementation's type parameter `T` (Swift translator)."
+		"363-operator-pipe": "An overloaded generic method with an `any` implementation (`pipe(...operators: OperatorFunction<any, any>[])`) is called as the implementation, and an overload's function argument names the implementation's type parameter `T` (Swift translator).",
+		"620-interface-identity": "An object read as an interface type twice is wrapped anew each time (an object already of the interface's class is kept), so the two are not === and a Map keyed by one misses the other (Swift translator).",
+		"621-optional-callback-adapting": "Lenient app code: a callback's boolean parameter given undefined holds false, and a function literal returning null where its type gives an array does not compile (Swift translator).",
+		"624-json-parse-null": "A non-strict function's string result that is null at run time is one nil with undefined, so JSON.parse of it throws as of undefined (Swift translator).",
+		"626-array-parameter-mutation": "A typed array or an untyped array given to a number[] parameter is copied, so the callee's writes are lost (Swift translator).",
+		"627-unchecked-class-cast": "`x as C` throws when x is an instance of another class, where TypeScript's cast checks nothing (Swift translator).",
+		"662-untyped-array-parameter": "An untyped array (JSArray<Any?>) given to a number[] or string[] parameter is converted into a new array, so the callee's writes are lost; sharing needs a typed view over it (Swift runtime).",
+		"700-signal-null-object": "A class-typed `signal<T>(null)` outside a component doesn't compile (`equals: jsSame` loses MainActor), and a function returning its value as `T` throws where script returns the null (Swift translator)."
 	},
 	"kotlin": {
 		"250-void-promise-values": "A function value with a rest parameter passed to then (`then(log)`) matches no overload (Kotlin translator).",
@@ -25,6 +32,12 @@
 		"252-prototype-method-calls": "A built-in's prototype method called with call or apply (`Array.prototype.slice.call(list, 1)`) is refused, test262 cluster 2 (Kotlin translator).",
 		"254-destructuring-assignment": "A rest element in a destructuring assignment (`[first, ...others] = list`) is refused, test262 cluster 8 (Kotlin translator).",
 		"257-typeof-lenient-optional": "Lenient code: a module or local `let x: boolean;` declared without a value holds false, not undefined (`isA11yEnabled()`); `typeof` of a function variable read from an optional member folds to \"function\"; `typeof val === 'string'` of a narrowed `string | string[]` parameter folds to true, so `enforceArray(undefined)` throws (Kotlin translator).",
-		"270-json-edges": "JSON.parse and JSON.stringify edges the Swift perf round covers: number forms, escapes, toJSON and replacer order, syntax error messages (Kotlin runtime, being fixed in the Kotlin perf work)."
+		"270-json-edges": "JSON.parse and JSON.stringify edges the Swift perf round covers: number forms, escapes, toJSON and replacer order, syntax error messages (Kotlin runtime, being fixed in the Kotlin perf work).",
+		"620-interface-identity": "An object read as an interface type is wrapped anew at each conversion, so the same object is not === itself (Kotlin translator).",
+		"621-optional-callback-adapting": "Lenient app code: a callback's boolean parameter given undefined holds false, `typeof` of an optional function parameter folds to \"function\", and a function literal returning null where its type gives an array gives undefined (Kotlin translator).",
+		"624-json-parse-null": "JSON.parse of a string that is null at run time parses \"undefined\" and throws (Kotlin translator).",
+		"626-array-parameter-mutation": "A typed array, or an untyped array holding a value of another type, given to a number[] parameter is copied, so the callee's writes are lost (Kotlin runtime).",
+		"627-unchecked-class-cast": "`x as C` throws when x is an instance of another class, where TypeScript's cast checks nothing (Kotlin translator).",
+		"680-replaceable-method-on-field": "Refused: an instance given its own function for a class method (`store.dispatch = (a) => …`) is a build error on Kotlin, as calls go straight to the class's method (Kotlin translator)."
 	}
 }

@@ -481,8 +481,11 @@ export class AndroidNativeAPI implements KotlinNative {
     const decl = root?.valueDeclaration;
     const nativeRoot = cast && !!root?.declarations?.length && root.declarations.every((d) => this.isNativeDeclaration(d));
     const ambient = nativeRoot || (decl && ts.isVariableDeclaration(decl) && !decl.initializer && !!(ts.getCombinedModifierFlags(decl) & ts.ModifierFlags.Ambient));
-    // Library mode: a Java class the typings lack under a package they have (`org.nativescript.widgets.Async.File`), found on the classpath.
-    const missing = this.t.library && !!root && !!(root.flags & ts.SymbolFlags.Namespace) && !!root.declarations?.every((d) => this.isNativeDeclaration(d)) && !this.t.resolve(e) && !(ts.isPropertyAccessExpression(e) && this.t.resolve(e.name));
+    // Library mode and plugins: a Java class the typings lack (`org.nativescript.widgets.Async.File`), found on the classpath, as
+    // NativeScript's runtime finds it. A plugin's own typings are a type-check aid its package may not carry (an ignored `typings/`).
+    const lenient = this.t.library || this.t.pluginFiles.has(e.getSourceFile().fileName);
+    const nativePackage = !root || (!!(root.flags & ts.SymbolFlags.Namespace) && !!root.declarations?.every((d) => this.isNativeDeclaration(d)));
+    const missing = lenient && nativePackage && !this.t.resolve(e) && !(ts.isPropertyAccessExpression(e) && this.t.resolve(e.name));
     if (!missing && !nativeRoot && (!ambient || !(this.t.checker.getTypeAtLocation(x).flags & ts.TypeFlags.Any))) return null;
     segs.unshift(x.text);
     for (let k = segs.length - 1; k >= 1; k--) {
@@ -1340,7 +1343,7 @@ export class AndroidNativeAPI implements KotlinNative {
       // The guard calls the method itself again: a deprecated one is a use of it.
       if (target.m.deprecated) this.t.noteDeprecated(`${target.m.owner}#${target.m.name}`);
       const code = this.overrideMethodCode(fn, name, target, indent, typeVar);
-      return this.t.threadAnnotation(fn) === '@UiThread ' ? mainThreadOverride(code) : code;
+      return reportingOverride(this.t.threadAnnotation(fn) === '@UiThread ' ? mainThreadOverride(code) : code, target.ret);
     });
   }
 
@@ -1426,7 +1429,7 @@ export class AndroidNativeAPI implements KotlinNative {
       // The guard calls the method itself again: a deprecated one is a use of it.
       if (target.m.deprecated) this.t.noteDeprecated(`${target.m.owner}#${target.m.name}`);
       const code = this.overrideWithValueCode(value, decl, name, target, indent, typeVar);
-      return this.t.threadAnnotation(value) === '@UiThread ' ? mainThreadOverride(code) : code;
+      return reportingOverride(this.t.threadAnnotation(value) === '@UiThread ' ? mainThreadOverride(code) : code, target.ret);
     });
   }
 
@@ -2088,6 +2091,29 @@ function mainThreadOverride(code: string): string {
   const body = lines.slice(guard + 1, close).map((l) => (l ? '    ' + l : l));
   if (!body.some((l) => l.trim())) return lines.join('\n');
   return [...lines.slice(0, guard + 1), `${indent}    jsOnMainThread {`, ...body, `${indent}    }`, lines[close]].join('\n');
+}
+
+/** What Java gets from an override whose code threw, by its return descriptor: the type's zero, null for an object. */
+const REPORTED_RESULT: Record<string, string> = { Z: 'false', B: '0.toByte()', S: '0.toShort()', C: "'\\u0000'", I: '0', J: '0L', F: '0f', D: '0.0' };
+
+/**
+ * An override Java calls: what its code throws is reported as uncaught, as NativeScript reports an error escaping a
+ * callback, and Java gets the result type's zero; an exception escaping to Java would end the app. An override whose
+ * result Kotlin declares non-null is left as it is: it has no value to give.
+ */
+function reportingOverride(code: string, ret: string): string {
+  const lines = code.split('\n');
+  const head = lines.findIndex((l) => /^\s*(@AnyThread )?override fun /.test(l));
+  const guard = lines.findIndex((l) => l.includes('jsElsewhere(__realm)?.let {'));
+  const close = lines.length - 1;
+  if (head < 0 || guard < head || !/^\s*}$/.test(lines[close])) return code;
+  const nullable = /\)\s*:\s*[^{]*\?\s*\{\s*$/.test(lines[head]);
+  const fallback = ret === 'V' ? null : REPORTED_RESULT[ret] ?? (nullable ? 'null' : undefined);
+  if (fallback === undefined) return code;
+  const body = lines.slice(guard + 1, close).map((l) => (l ? '    ' + l : l));
+  if (!body.some((l) => l.trim())) return code;
+  const indent = /^\s*/.exec(lines[close])![0];
+  return [...lines.slice(0, guard + 1), fallback === null ? `${indent}    jsReport {` : `${indent}    return jsReportedOr(${fallback}) {`, ...body, `${indent}    }`, lines[close]].join('\n');
 }
 
 /** A class's members, with the realm its overrides' guards read when any has one: the realm that made the object. */

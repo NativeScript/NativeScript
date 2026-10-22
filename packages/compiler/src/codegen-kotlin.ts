@@ -1,5 +1,6 @@
-import type { Attr, ComponentIR, TNode } from './ir.ts';
-import { EVENT_SCOPED, TEMPLATE_HOSTS, isFragment, type Framework } from './codegen.ts';
+import { basename } from 'node:path';
+import { withoutLocals, type Attr, type ComponentIR, type DirectiveUse, type QueryHook, type TNode } from './ir.ts';
+import { EVENT_SCOPED, TEMPLATE_HOSTS, isFragment, type ComponentInfo, type Framework } from './codegen.ts';
 import { ident, kotlinString } from './kotlin.ts';
 
 /** Template hosts' attributes that `bind` takes rather than `set`. */
@@ -27,7 +28,7 @@ export interface RenderOptions {
   zone?: boolean;
 }
 
-export function render(c: ComponentIR, components: Map<string, { props: string[]; outputs?: string[]; outputFields?: Record<string, string>; optional?: string[]; passed?: boolean }>, options: RenderOptions = {}): string[] {
+export function render(c: ComponentIR, components: Map<string, ComponentInfo>, options: RenderOptions = {}): string[] {
   const lines: string[] = [];
   const framework = (options.framework ?? 'octane') as Framework;
   // The order each framework applies bindings and inserts views in, as codegen.ts does for Swift.
@@ -35,30 +36,33 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
   const deferBindings = framework === 'solid' || framework === 'angular' || framework === 'svelte5';
   const insertion = framework === 'angular' ? 'created' : framework === 'svelte' ? 'mounted' : 'built';
   type Line = { depth: number; text: string };
-  const templates: { bindings: Line[]; inserts: Line[]; listeners: Line[] }[] = [];
-  /** A template's views and structure, then its deferred inserts, bindings and (Svelte 5) listeners. */
+  const templates: { bindings: Line[]; inserts: Line[]; listeners: Line[]; after: Line[] }[] = [];
+  /** A template's views and structure, then its deferred inserts, bindings, (Svelte 5) listeners and (Angular directives') ngAfterViewInit. */
   const template = (depth: number, body: () => void) => {
-    templates.push({ bindings: [], inserts: [], listeners: [] });
+    templates.push({ bindings: [], inserts: [], listeners: [], after: [] });
     body();
     const t = templates.pop()!;
-    for (const d of [...t.inserts, ...t.bindings, ...t.listeners]) say(d.depth, d.text);
+    for (const d of [...t.inserts, ...t.bindings, ...t.listeners, ...t.after]) say(d.depth, d.text);
   };
   // Svelte 5 adds a template's event listeners after its template effect has set the properties.
   const listener = (depth: number, text: string) => (framework === 'svelte5' && templates.length ? templates.at(-1)!.listeners.push({ depth, text }) : say(depth, text));
   /** A lambda that renders content in the scope its framework orders it in. */
   const scoped = (kind: 'template' | 'region') => {
     if (framework === 'vue' || framework === 'svelte') return kind === 'template' ? 'EffectOrder.component {' : null;
-    if (framework === 'angular') return kind === 'template' ? 'EffectOrder.view {' : 'EffectOrder.embedded(__view) {';
+    if (framework === 'angular') return kind === 'template' ? `EffectOrder.view${c.injector ? `(this.${ident(c.injector)})` : ''} {` : 'EffectOrder.embedded(__view) {';
     if (framework === 'solid') return kind === 'template' ? 'EffectOrder.solid {' : 'EffectOrder.deeper {';
     return null;
   };
   let n = 0;
+  /** Where a region is, for the error a failed render reports: the component and its source file. */
+  const site = (what: string) => kotlinString(`${c.name} (${basename(c.file).replace(/\.ts$/, '')}): ${what}`);
   const say = (depth: number, text: string) => lines.push('    '.repeat(depth) + text);
   // Loop variables in scope, passed to every binding method in order.
   // A ListView row reads its item and index through the row's signals.
-  type Loop = { item: string; index: string; itemExpr?: string; indexExpr?: string };
+  // A view's local (an Angular pipe) is one name, without an index.
+  type Loop = { item: string; index?: string; itemExpr?: string; indexExpr?: string };
   const call = (method: string, loops: Loop[], extra: string[] = []) =>
-    `this.${ident(method)}(${[...loops.flatMap((l) => [l.itemExpr ?? ident(l.item), l.indexExpr ?? ident(l.index)]), ...extra].join(', ')})`;
+    `this.${ident(method)}(${[...loops.flatMap((l) => (l.index === undefined ? [l.itemExpr ?? ident(l.item)] : [l.itemExpr ?? ident(l.item), l.indexExpr ?? ident(l.index)])), ...extra].join(', ')})`;
   const handler = (code: string) => (EVENT_SCOPED.has(framework) ? `Reactivity.event { jsReport { ${code} } }` : `jsReport { ${code} }`);
   /** A value a binding computes; what it throws is reported and the value is undefined. */
   const caught = (code: string) => `try { ${code} } catch (__e: Throwable) { jsReportUncaught(jsCaught(__e)); null }`;
@@ -93,9 +97,48 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
     }
   };
 
+  /** Angular directives on an element's view, as codegen.ts emits them for Swift. */
+  const directed = (depth: number, uses: DirectiveUse[] | undefined, loops: Loop[], v: string) => {
+    for (const u of uses ?? []) {
+      const dv = `d${n++}`;
+      say(depth, `val ${dv} = ElementRef.hosting(${v}) { ${call(u.make, loops)} }`);
+      const inner = [...loops, { item: u.name, itemExpr: dv }];
+      const run = (m: string, extra: string[] = []) => `jsReport { ${call(m, inner, extra)} }`;
+      if (u.destroy) say(depth, `Owner.current?.onCleanup { ${run(u.destroy)} }`);
+      for (const a of u.attributes) say(depth, `${v}.kitSet(${kotlinString(a.name)}, ${kotlinString(a.value)})`);
+      for (const i of u.inputs) {
+        if ('value' in i) binding(depth, run(i.set, [kotlinString(i.value)]));
+        else binding(depth, `Check({ ${call(i.method, loops)} }) { ${run(i.set, ['it'])} }`);
+      }
+      if (u.changes) binding(depth, `Check({ ${dv}._changed.value }) { jsReport { ${dv}._flushChanges() } }`);
+      if (u.init) binding(depth, run(u.init));
+      for (const b of u.bindings) binding(depth, `Check({ ${call(b.method, inner)} }) { ${v}.kitSet(${kotlinString(b.prop)}, it) }`);
+      for (const l of u.listeners) listener(depth, `${v}.kitOn(${kotlinString(l.event)}) { event -> ${handler(call(l.method, inner, ['event']))} }`);
+      if (u.afterViewInit && templates.length) templates.at(-1)!.after.push({ depth, text: run(u.afterViewInit) });
+      else if (u.afterViewInit) say(depth, run(u.afterViewInit));
+    }
+  };
+
+  /** An Angular view query's field set to what a node made (its view, or the component made there), and cleared when it goes. */
+  const queried = (depth: number, hooks: QueryHook[] | undefined, loops: Loop[], view: string, instance: string) => {
+    for (const q of hooks ?? []) {
+      const made = q.on === 'view' ? view : instance;
+      say(depth, `jsReport { ${call(q.set, loops, [made])} }`);
+      if (q.unset) say(depth, `Owner.current?.onCleanup { jsReport { ${call(q.unset, loops, [made])} } }`);
+    }
+  };
+
   /** Emits the nodes into the container `parent`; returns the views made at this level when `collect` is set. */
   const emit = (nodes: TNode[], depth: number, loops: Loop[], parent: string | null, collect: string[] | null, region: string | null = null) => {
     for (const node of nodes) {
+      if (node.kind === 'local') {
+        const l = `l${n++}`;
+        say(depth, `val ${l} = ${call(node.make, loops)}`);
+        const inner = [...loops, { item: node.name, itemExpr: l }];
+        if (node.destroy) say(depth, `Owner.current?.onCleanup { jsReport { ${call(node.destroy, inner)} } }`);
+        emit(node.body, depth, inner, parent, collect, region);
+        continue;
+      }
       if (node.kind === 'element' || node.kind === 'component') {
         const v = `v${n++}`;
         if (node.kind === 'element' && node.tag === 'Frame' && node.attrs.some((a) => a.name === 'router')) {
@@ -104,7 +147,11 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
           attach(depth, v, parent, region, 'created');
         } else if (node.kind === 'element') {
           say(depth, `val ${v} = ${node.tag}()`);
+          // The component's own ElementRef is its host: its template's root view.
+          if (c.host && !parent && !region && !loops.length) say(depth, `this.${ident(c.host)}.attach(${v})`);
           if (node.ref) say(depth, `${call(node.ref, loops)}.current = ${v}`);
+          queried(depth, node.queries, loops, v, v);
+          directed(depth, node.directives, loops, v);
           const isList = TEMPLATE_HOSTS.has(node.tag);
           const props = () => {
             for (const a of node.attrs) if (!isList || !LIST_BINDINGS.has(a.name)) attr(depth, v, a, loops);
@@ -116,15 +163,18 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
           };
           if (isList || !postOrder) props();
           attach(depth, v, parent, region, 'created');
+          if (node.init && c.init) say(depth, `jsReport { this.${ident(c.init)}() }`);
           if (isList) list(node, depth, loops, v);
           else emit(node.children, depth, loops, v, null);
           if (!isList && postOrder) props();
         } else {
           const info = components.get(node.name);
           if (!info) throw new Error(`${c.name}: <${node.name}> is not a component`);
-          const given = new Map(node.props.map((p) => [p.name, p]));
+          const bound = new Map(node.props.map((p) => [p.name, p]));
+          const given = { get: (p: string) => bound.get(info.propAliases?.[p] ?? p) };
           const c0 = `c${n++}`;
           const args = info.props.flatMap((p) => {
+            if (info.setters?.includes(p)) return [];
             const a = given.get(p);
             if (!a && info.optional?.includes(p)) return [];
             if (!a) throw new Error(`${c.name}: <${node.name}> needs the prop "${p}"`);
@@ -132,27 +182,41 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
           });
           if (info.passed) args.push(`_passed = setOf(${node.props.map((a) => kotlinString(a.name)).concat(node.events.map((e) => kotlinString('on' + e.name[0].toUpperCase() + e.name.slice(1)))).join(', ')})`);
           say(depth, `val ${c0} = ${node.name}(${args.join(', ')})`);
+          /** A prop's binding as it applies: the setter's method called (reporting what it throws), or the prop's signal written. */
+          const write = (p: string, value: string) => (info.setters?.includes(p) ? `jsReport { ${c0}.${ident('$set_' + p)}(${value}) }` : `${c0}.${ident(p)}.value = ${value}`) + (info.changes ? `; ${c0}._change(${kotlinString(p)}, ${value})` : '');
+          for (const p of info.props) {
+            const a = given.get(p);
+            if (a && 'value' in a && info.setters?.includes(p)) say(depth, write(p, kotlinString(a.value)));
+            else if (a && 'value' in a && info.changes) say(depth, `${c0}._change(${kotlinString(p)}, ${kotlinString(a.value)})`);
+          }
+          /** After the props' bindings: ngOnChanges with what they changed, as Angular calls it before the component's own check. */
+          const changed = () => { if (info.changes) say(depth, `Check({ ${c0}._changed.value }) { jsReport { ${c0}._flushChanges() } }`); };
           if (info.fragment) {
             // A component whose template is not one element: its views join the parent where its host is, as a ProxyViewContainer's do.
             if (!parent) throw new Error(`${c.name}: <${node.name}>, whose template has no single root element, at the root of a template`);
             for (const p of info.props) {
               const a = given.get(p);
-              if (a && 'method' in a) say(depth, options.zone ? `Check({ ${call(a.method, loops)} }) { ${c0}.${ident(p)}.value = it }` : `Effect { jsReport { ${c0}.${ident(p)}.value = ${call(a.method, loops)} } }`);
+              if (a && 'method' in a) say(depth, options.zone || info.setters?.includes(p) ? `Check({ ${call(a.method, loops)} }) { ${write(p, 'it')} }` : `Effect { jsReport { ${write(p, call(a.method, loops))} } }`);
             }
             for (const e of node.events) {
               if (!info.outputs?.includes(e.name)) throw new Error(`${c.name}: <${node.name}> takes no ${e.name} event: its template has no single root view`);
               say(depth, `${c0}.${ident(info.outputFields?.[e.name] ?? e.name)}.on { value -> ${handler(call(e.method, loops, [e.payload ? 'value' : `EventData(${kotlinString(e.name)}, null, value)`]))} }`);
             }
+            changed();
+            if (node.queries?.some((q) => q.on === 'view')) throw new Error(`${c.name}: a view query reading <${node.name}>'s view, whose template has no single root view`);
+            queried(depth, node.queries, loops, c0, c0);
             say(depth, `${c0}.render(${parent}.kitAddRegion())`);
             continue;
           }
           for (const p of info.props) {
             const a = given.get(p);
-            if (a && 'method' in a) say(depth, options.zone ? `Check({ ${call(a.method, loops)} }) { ${c0}.${ident(p)}.value = it }` : `Effect { jsReport { ${c0}.${ident(p)}.value = ${call(a.method, loops)} } }`);
+            if (a && 'method' in a) say(depth, options.zone || info.setters?.includes(p) ? `Check({ ${call(a.method, loops)} }) { ${write(p, 'it')} }` : `Effect { jsReport { ${write(p, call(a.method, loops))} } }`);
           }
+          changed();
           say(depth, `val ${v} = ${c0}.render()`);
+          queried(depth, node.queries, loops, v, c0);
           // Attributes that are not props fall through to the component's root view, as in Vue.
-          for (const a of node.props) if (!info.props.includes(a.name)) attr(depth, v, a, loops);
+          for (const a of node.props) if (!info.props.some((p) => (info.propAliases?.[p] ?? p) === a.name)) attr(depth, v, a, loops);
           for (const e of node.events) {
             if (info.outputs?.includes(e.name)) say(depth, `${c0}.${ident(info.outputFields?.[e.name] ?? e.name)}.on { value -> ${handler(call(e.method, loops, [e.payload ? 'value' : `EventData(${kotlinString(e.name)}, ${v}, value)`]))} }`);
             else say(depth, `${v}.kitOn(${kotlinString(e.name)}) { event -> ${handler(call(e.method, loops, ['event']))} }`);
@@ -166,7 +230,7 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
       if (node.kind === 'template') throw new Error(`${c.name}: an item template outside a ListView or Pager`);
       if (!parent) throw new Error(`${c.name}: an if/for at the root of a template`);
       // A component whose views join its parent (no single root) is a region of the body it is in.
-      const nested = (body: TNode[]) => body.some((x) => x.kind === 'if' || x.kind === 'for' || (x.kind === 'component' && !!components.get(x.name)?.fragment));
+      const nested = (body: TNode[]) => withoutLocals(body).some((x) => x.kind === 'if' || x.kind === 'for' || (x.kind === 'component' && !!components.get(x.name)?.fragment));
       const nestedBody = node.kind === 'if' ? node.branches.some((b) => nested(b.body)) : nested(node.body);
       // A framework that inserts top-down puts a branch's views in place as it builds them; a body with regions of its own attaches as a fragment.
       const live = insertion !== 'built' && !nestedBody ? `r${n++}` : null;
@@ -191,7 +255,7 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
       };
       const which = node.kind === 'if' ? node.branches.map((b, i) => (b.cond ? `if (${cond(b.cond, loops)}) ${i} else ` : `${i}`)).join('') + (node.branches.at(-1)!.cond ? `${node.branches.length}` : '') : '';
       if (node.kind === 'if' && fragmented) {
-        say(depth, `ChooseFragment(${host}, { ${which} }) { branch ->`);
+        say(depth, `ChooseFragment(${host}, { ${which} }, site = ${site('if')}) { branch ->`);
         say(depth + 1, 'when (branch) {');
         node.branches.forEach((b, i) => {
           say(depth + 2, `${i} -> {`);
@@ -204,7 +268,7 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
         continue;
       }
       if (node.kind === 'if') {
-        say(depth, `Choose(${host}, { ${which} }) { branch ->`);
+        say(depth, `Choose(${host}, { ${which} }, site = ${site('if')}) { branch ->`);
         const wrap = scoped('region');
         const d = wrap ? depth + 1 : depth;
         if (wrap) say(depth + 1, wrap);
@@ -231,7 +295,7 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
         const key = node.key ? `{ ${ident(node.item)}, ${ident(node.index)} -> jsKey(${caught(call(node.key, keyLoops))}) }` : `{ item, _ -> jsKey(item) }`;
         // `{list?.map(…)}`: an absent list renders no rows.
         const items = `{ octaneItems(try { ${call(node.items, loops)} } catch (__e: Throwable) { jsReportUncaught(jsCaught(__e)); null }) }`;
-        say(depth, `${fragmented ? 'ForEachFragment' : 'ForEach'}(${host}, ${items}, ${key}) { ${row} ->`);
+        say(depth, `${fragmented ? 'ForEachFragment' : 'ForEach'}(${host}, ${items}, ${key}, site = ${site('for')}) { ${row} ->`);
         if (fragmented) fragment(node.body, depth + 1, rowLoops);
         else {
           const made: string[] = [];
@@ -247,7 +311,7 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
       // Angular's @for keeps a row by its key and gives it the item now at that key: the row reads item and index as signals.
       const row = framework === 'angular' ? `row${n++}` : null;
       const rowLoops = row ? [...loops, { item: node.item, index: node.index, itemExpr: `${row}.item.value`, indexExpr: `${row}.index.value` }] : inner;
-      const opening = (kind: string) => `${row ? kind.replace(/^For/, 'ForEach') : kind}(${host}, { ${call(node.items, loops)}.forItems }, ${key}) { ${row ?? `${ident(node.item)}, ${ident(node.index)}`} ->`;
+      const opening = (kind: string) => `${row ? kind.replace(/^For/, 'ForEach') : kind}(${host}, { ${call(node.items, loops)}.forItems }, ${key}, site = ${site('for')}) { ${row ?? `${ident(node.item)}, ${ident(node.index)}`} ->`;
       // Iterating reads the array through its tracker: a Vue ref's array re-renders on push.
       if (fragmented) {
         say(depth, opening('ForFragment'));
@@ -305,7 +369,7 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
     say(depth, '}');
   };
 
-  const fragment = framework === 'angular' && !c.page && isFragment(c.template);
+  const fragment = framework === 'angular' && !c.page && isFragment(c.template, components);
   say(1, fragment ? 'fun render(into: Region) {' : 'fun render(): View {');
   const wrap = scoped('template');
   const d = wrap ? 3 : 2;
@@ -314,7 +378,11 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
   for (const x of c.derived ?? []) say(d, `derive { jsReport { this.${ident(x.name)}.value = ${call(x.method, [])} } }`);
   // Inside the scope lambda the result is its last expression.
   const result = (v: string) => say(d, wrap ? v : `return ${v}`);
-  if (c.init) say(d, `jsReport { this.${ident(c.init)}() }`);
+  // ngOnDestroy runs when the scope the component was made in ends.
+  if (c.destroy) say(d, `Owner.current?.onCleanup { jsReport { this.${ident(c.destroy)}() } }`);
+  if (c.init && !c.lateInit) say(d, `jsReport { this.${ident(c.init)}() }`);
+  // ngAfterViewInit, once the template's views and its children's are made and their bindings applied.
+  const afterView = () => { if (c.afterViewInit) say(d, `jsReport { this.${ident(c.afterViewInit)}() }`); };
   // A watcher runs before the bindings of its component, as Vue's pre-flush jobs do.
   for (const w of c.watchers ?? []) {
     if (!w.source) continue;
@@ -325,6 +393,7 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
   if (c.page) {
     // A routed component's template is its page's content: the action bar and the view.
     say(d, 'val page = routedPage()');
+    if (c.host) say(d, `this.${ident(c.host)}.attach(page)`);
     if (options.screenContent) {
       const isBar = (n: TNode) => n.kind === 'element' && n.tag === 'ActionBar';
       template(d, () => {
@@ -338,12 +407,14 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
       template(d, () => emit(c.template, d, [], 'page', null));
     }
     userEffects();
+    afterView();
     result('page');
   } else if (fragment) {
     say(d, 'val root = RegionFragment(into)');
     template(d, () => emit(c.template, d, [], 'root', null));
     say(d, 'root.fill()');
     userEffects();
+    afterView();
   } else {
     const roots: string[] = [];
     template(d, () => emit(c.template, d, [], null, roots));
@@ -351,6 +422,7 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
     // Effects run once the component's views exist, as a renderer runs them after its commit.
     for (const e of c.effects ?? []) say(d, `ComponentEffect(${e.layout}, ${e.deps ? `{ ${call(e.deps, [])}.elements }` : 'null'}) { this.${ident(e.run)}() }`);
     userEffects();
+    afterView();
     result(roots[0]);
   }
   if (wrap) say(2, '}');
@@ -360,5 +432,5 @@ export function render(c: ComponentIR, components: Map<string, { props: string[]
 
 /** Whether a template holds an `if` or `for` of its own (not inside a ListView row). */
 function hasRegion(nodes: TNode[]): boolean {
-  return nodes.some((n) => n.kind === 'if' || n.kind === 'for' || (n.kind === 'element' && !TEMPLATE_HOSTS.has(n.tag) && hasRegion(n.children)));
+  return withoutLocals(nodes).some((n) => n.kind === 'if' || n.kind === 'for' || (n.kind === 'element' && !TEMPLATE_HOSTS.has(n.tag) && hasRegion(n.children)));
 }

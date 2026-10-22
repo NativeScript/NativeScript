@@ -4,28 +4,50 @@ import Foundation
 /// router before it constructs the routed component.
 public final class ActivatedRoute {
     nonisolated deinit {}
-    public struct Snapshot { public let params: JSRecord<String> }
-    public let snapshot: Snapshot
+    public typealias Snapshot = ActivatedRouteSnapshot
+    public let snapshot: ActivatedRouteSnapshot
     /// `route.params`: the route's parameters, replayed to each subscriber.
     public let params: RxBehaviorSubject<JSRecord<String>>
+    public let queryParams: RxBehaviorSubject<JSRecord<String>>
+    public let data: RxBehaviorSubject<JSRecord<Any?>>
+    public let paramMap: RxBehaviorSubject<ParamMap>
+    public let queryParamMap: RxBehaviorSubject<ParamMap>
+    public let fragment: RxBehaviorSubject<String?>
+    public let title: RxBehaviorSubject<String?>
     /// The outlet the route renders in, and the URL segments within that outlet up to and including the route's own.
-    let outlet: String
+    public let outlet: String
+    public var routeConfig: JSObject? = nil
     let url: [String]
     public static var current = ActivatedRoute(params: [:])
 
-    public init(params: [String: String], outlet: String = Router.primary, url: [String] = []) {
+    public init(params: [String: String], outlet: String = Router.primary, url: [String] = [], queryParams: [String: String] = [:], data: [String: Any?] = [:]) {
         let record = JSRecord(params)
-        snapshot = Snapshot(params: record)
+        let queryRecord = JSRecord(queryParams)
+        let dataRecord = JSRecord(data)
+        let segs = JSArray(url.map { UrlSegment($0) })
+        snapshot = ActivatedRouteSnapshot(params: record, queryParams: queryRecord, data: dataRecord, url: segs, fragment: nil, outlet: outlet)
         self.params = RxBehaviorSubject(record)
+        self.queryParams = RxBehaviorSubject(queryRecord)
+        self.data = RxBehaviorSubject(dataRecord)
+        self.paramMap = RxBehaviorSubject(ParamMap(record))
+        self.queryParamMap = RxBehaviorSubject(ParamMap(queryRecord))
+        self.fragment = RxBehaviorSubject(nil)
+        self.title = RxBehaviorSubject(nil)
         self.outlet = outlet
         self.url = url
     }
+
+    public var root: ActivatedRoute { self }
+    public var parent: ActivatedRoute? { nil }
+    public var firstChild: ActivatedRoute? { nil }
+    public var children: JSArray<ActivatedRoute> { JSArray() }
+    public var pathFromRoot: JSArray<ActivatedRoute> { JSArray([self]) }
 }
 
 public struct Route {
     let segments: [String]
-    let make: () -> View
-    public init(_ path: String, _ make: @escaping () -> View) {
+    let make: () throws -> View
+    public init(_ path: String, _ make: @escaping () throws -> View) {
         segments = path.split(separator: "/").map(String.init)
         self.make = make
     }
@@ -39,11 +61,11 @@ public final class RouteConfig {
     let redirectTo: String?
     let full: Bool
     let children: [RouteConfig]
-    let make: (() -> View)?
+    let make: (() throws -> View)?
     /// `NSEmptyOutletComponent`: its children show in a frame of their own, on a page of the outlet's frame.
     let emptyOutlet: Bool
 
-    public init(_ path: String, outlet: String = Router.primary, redirectTo: String? = nil, full: Bool = false, emptyOutlet: Bool = false, children: [RouteConfig] = [], _ make: (() -> View)? = nil) {
+    public init(_ path: String, outlet: String = Router.primary, redirectTo: String? = nil, full: Bool = false, emptyOutlet: Bool = false, children: [RouteConfig] = [], _ make: (() throws -> View)? = nil) {
         segments = path.split(separator: "/").map(String.init)
         self.outlet = outlet
         self.redirectTo = redirectTo
@@ -54,19 +76,6 @@ public final class RouteConfig {
     }
 }
 
-/// `NavigationEnd`, the router event each completed navigation emits.
-public final class NavigationEnd {
-    nonisolated deinit {}
-    public let id: Double
-    public let url: String
-    public let urlAfterRedirects: String
-    init(id: Double, url: String, urlAfterRedirects: String) {
-        self.id = id
-        self.url = url
-        self.urlAfterRedirects = urlAfterRedirects
-    }
-}
-
 private let routeKey = JSSymbol("NativeScriptKit:route")
 
 extension Page {
@@ -74,13 +83,16 @@ extension Page {
     static var building: [Page] = []
 
     /// The page a routed component's template fills.
-    public static func routed() -> Page { building.last ?? (try! Page()) }
+    public static func routed() throws -> Page {
+        if let page = building.last { return page }
+        return try Page()
+    }
 
     /// `inject(Page)`: the routed page being built, else the page shown.
-    public static func injected() -> Page {
+    public static func injected() throws -> Page {
         if let page = building.last { return page }
         if let page = (try? Frame.topmost()?.currentPage) ?? nil { return page }
-        return try! Page()
+        return try Page()
     }
 
     /// The route the router created the page for.
@@ -126,40 +138,52 @@ public final class Router {
         let routes: [RouteConfig]
         /// The pages navigated to in this outlet and not navigated back from, the shown one last.
         var entries: [Entry] = []
-        init(frame: Frame, routes: [RouteConfig]) { self.frame = frame; self.routes = routes }
+        /// The injector of the view holding the outlet, which its routed components inject from.
+        let injector: Injector?
+        init(frame: Frame, routes: [RouteConfig], injector: Injector?) { self.frame = frame; self.routes = routes; self.injector = injector }
     }
     private var outlets: [String: Outlet] = [:]
     /// Navigations to outlets not created yet, applied when they are.
     private var pending: [String: [String]] = [:]
     /// The outlets in the order they were last navigated, for `back()`.
     private var history: [String] = []
+    /// A flat route table's outlet: the injector of the view holding it.
+    private var flatInjector: Injector?
 
-    /// A `page-router-outlet`: a frame showing its outlet's URL.
-    public func outlet(_ name: String = Router.primary) -> View {
-        let frame = try! Frame()
+    /// A `page-router-outlet`: a frame showing its outlet's URL. A route that fails to render is reported and the frame stays empty.
+    public func outlet(_ name: String = Router.primary) throws -> View {
+        let frame = try Frame()
         if config.isEmpty {
-            if let (route, params) = resolveFlatRoute(initial) { push(route.make, ActivatedRoute(params: params), into: frame, extras: nil) }
+            flatInjector = Injector.current
+            if let (route, params) = resolveFlatRoute(initial) { jsReport { try push(route.make, ActivatedRoute(params: params), into: frame, extras: nil, injector: flatInjector) } }
             return frame
         }
-        outlets[name] = Outlet(frame: frame, routes: name == Router.primary ? config : Router.routes(in: config, outlet: name))
-        if name == Router.primary {
-            if show(name, [], extras: nil) == true { ended(url: "/") }
-        } else if let url = pending.removeValue(forKey: name) {
-            show(name, url, extras: nil)
+        outlets[name] = Outlet(frame: frame, routes: name == Router.primary ? config : Router.routes(in: config, outlet: name), injector: Injector.current)
+        jsReport {
+            if name == Router.primary {
+                if try show(name, [], extras: nil) == true { ended(url: "/") }
+            } else if let url = pending.removeValue(forKey: name) {
+                try show(name, url, extras: nil)
+            }
         }
         return frame
     }
 
+    /// A navigation whose component throws shows nothing new, and its promise rejects with the error, as Angular's router's does.
     @discardableResult
     public func navigate(_ commands: [Any], _ extras: Any? = nil) -> JSPromise<Bool> {
+        do { return JSPromise.resolve(try navigation(commands, extras)) } catch { return JSPromise.reject(jsCaught(error)) }
+    }
+
+    private func navigation(_ commands: [Any], _ extras: Any?) throws -> Bool {
         if config.isEmpty {
             let path = commands.map { jsToString($0) }.joined(separator: "/")
-            guard let (route, params) = resolveFlatRoute(path), let frame = (try? Frame.topmost()) as? Frame else { return JSPromise.resolve(false) }
-            push(route.make, ActivatedRoute(params: params), into: frame, extras: extras)
+            guard let (route, params) = resolveFlatRoute(path), let frame = (try? Frame.topmost()) as? Frame else { return false }
+            try push(route.make, ActivatedRoute(params: params), into: frame, extras: extras, injector: flatInjector)
             ended(url: "/" + path.split(separator: "/").joined(separator: "/"))
-            return JSPromise.resolve(true)
+            return true
         }
-        let relativeTo = field(extras, "relativeTo") as? ActivatedRoute
+        let relativeTo = (field(extras, "relativeTo") as? ActivatedRoute) ?? (field(field(extras, "relativeTo"), "_kit") as? ActivatedRoute)
         var targets: [(outlet: String, url: [String])] = []
         var segments: [String] = []
         var absolute = false
@@ -197,12 +221,12 @@ public final class Router {
                 pending[name] = url
                 continue
             }
-            let shown = show(name, url, extras: extras)
+            let shown = try show(name, url, extras: extras)
             ok = shown != nil && ok
             navigated = navigated || shown == true
         }
         if navigated { ended(url: absolute || relativeTo == nil ? "/" + segments.joined(separator: "/") : self.url) }
-        return JSPromise.resolve(ok)
+        return ok
     }
 
     /// `navigate(['/recipe', id])` as translated code passes it.
@@ -213,14 +237,15 @@ public final class Router {
 
     /// `navigateByUrl(url, extras)`.
     @discardableResult
-    public func navigateByUrl(_ url: String, _ extras: Any? = nil) -> JSPromise<Bool> {
-        navigate([url.hasPrefix("/") ? url : "/" + url], extras)
+    public func navigateByUrl(_ url: Any?, _ extras: Any? = nil) -> JSPromise<Bool> {
+        let str = (jsFlat(url) as? UrlTree)?.toString() ?? jsToString(url)
+        return navigate([str.hasPrefix("/") ? str : "/" + str], extras)
     }
 
     /// `back()`: the outlet of the given route, else the one navigated last that can go back, else the topmost frame.
     public func back(_ options: Any? = nil) {
         jsReport {
-            if let route = field(options, "relativeTo") as? ActivatedRoute, let frame = outlets[route.outlet]?.shown, try frame.canGoBack() {
+            if let route = (field(options, "relativeTo") as? ActivatedRoute) ?? (field(field(options, "relativeTo"), "_kit") as? ActivatedRoute), let frame = outlets[route.outlet]?.shown, try frame.canGoBack() {
                 try frame.goBack()
                 return
             }
@@ -231,14 +256,55 @@ public final class Router {
         }
     }
 
+    public func backToPreviousPage() {
+        back()
+    }
+
     /// `RouterExtensions.router`: the router itself.
     public var router: Router { self }
 
     /// `router.url`: the primary outlet's URL.
     public var url: String { "/" + (current(Router.primary) ?? []).joined(separator: "/") }
 
-    public func canGoBack() -> Bool {
+    public var routerState: JSObject {
+        JSObject([
+            ("snapshot", JSObject([("url", url), ("root", ActivatedRoute.current.snapshot)])),
+            ("root", ActivatedRoute.current),
+        ])
+    }
+
+    public func createUrlTree(_ commands: Any?, _ extras: Any? = nil) -> UrlTree {
+        let items = (jsFlat(commands) as? JSArrayProtocol)?.jsAnyElements ?? []
+        let joined = items.map { jsToString($0) }.joined(separator: "/").trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+        let path = "/" + joined
+        let q = field(extras, "queryParams")
+        let f = field(extras, "fragment") as? String
+        return UrlTree(path, q, f)
+    }
+
+    public func serializeUrl(_ tree: Any?) -> String {
+        (jsFlat(tree) as? UrlTree)?.toString() ?? jsToString(tree)
+    }
+
+    public func parseUrl(_ url: String) -> UrlTree {
+        DefaultUrlSerializer().parse(url)
+    }
+
+    public func isActive(_ url: Any?, _ exact: Any? = false) -> Bool {
+        let target = (jsFlat(url) as? UrlTree)?.toString() ?? jsToString(url)
+        let isExact: Bool = {
+            if let b = jsFlat(exact) as? Bool { return b }
+            return (field(exact, "paths") as? String) == "exact"
+        }()
+        return isExact ? self.url == target : self.url.hasPrefix(target)
+    }
+
+    public func canGoBack(_ options: Any? = nil) -> Bool {
         history.contains { name in (try? outlets[name]?.shown?.canGoBack()) ?? false }
+    }
+
+    public func canGoBackToPreviousPage() -> Bool {
+        canGoBack()
     }
 
     /// The routes of a named outlet, wherever in the configuration they are.
@@ -256,7 +322,7 @@ public final class Router {
 
     /// Whether the outlet navigated: nil when the URL matches no route, false when the outlet shows it already.
     @discardableResult
-    private func show(_ name: String, _ url: [String], extras: Any?) -> Bool? {
+    private func show(_ name: String, _ url: [String], extras: Any?) throws -> Bool? {
         guard let outlet = outlets[name], var frame = outlet.frame,
               let (chain, params, resolved) = match(outlet.routes, url, outlet: name == Router.primary ? Router.primary : nil),
               let make = chain.last?.make else { return nil }
@@ -267,52 +333,59 @@ public final class Router {
         }
         history.removeAll { $0 == name }
         history.append(name)
-        push(make, ActivatedRoute(params: params, outlet: name, url: resolved), into: frame, extras: extras, outlet: outlet)
+        try push(make, ActivatedRoute(params: params, outlet: name, url: resolved), into: frame, extras: extras, outlet: outlet, injector: outlet.injector)
         return true
     }
 
     /// `PageRouterOutlet.activateOnGoForward` and `loadComponentInPage`: a new page, the component rendered into
-    /// it in a scope of its own, and the frame navigated to it.
-    private func push(_ make: () -> View, _ route: ActivatedRoute, into frame: Frame, extras: Any?, outlet: Outlet? = nil) {
-        jsReport {
-            let page = try Page()
-            page.route = route
-            let owner = Owner(parent: nil)
-            // Shown before the component renders, as Angular's URL is current by activation: a navigation the
-            // component makes while rendering (a tab view filling its outlets) finds this route already there.
-            let entry = Entry(owner: owner, route: route)
-            outlet?.entries.append(entry)
-            ActivatedRoute.current = route
-            Page.building.append(page)
-            let pending = Reactivity.pending()
-            let view = owner.run(make)
-            Page.building.removeLast()
-            if view !== page { page.content = view }
-            if Reactivity.schedule == .task { Reactivity.detectChanges(after: pending) }
-            try page.on(Page.navigatedFromEvent, { [weak self, weak outlet] (data: EventData?) in
-                guard jsTruthy(data?[jsKey: "isBackNavigation"]) else { return }
-                owner.dispose()
-                guard let self, let outlet, let at = outlet.entries.firstIndex(where: { $0 === entry }) else { return }
-                outlet.entries.remove(at: at)
-                self.ended(url: self.url)
-            })
-            let clearHistory = jsTruthy(field(extras, "clearHistory"))
-            if clearHistory, let outlet {
-                try page.once(Page.navigatedToEvent, { [weak outlet] (_: EventData?) in
-                    guard let outlet else { return }
-                    let cleared = outlet.entries.filter { $0 !== entry }
-                    outlet.entries.removeAll { $0 !== entry }
-                    for old in cleared { old.owner.dispose() }
-                })
-            }
-            var navigation: [(String, Any?)] = [
-                ("create", { (_: [Any?]) throws -> Any? in page } as JSFunction),
-                ("clearHistory", clearHistory),
-                ("animated", field(extras, "animated").map { jsTruthy($0) } ?? true),
-            ]
-            if let transition = field(extras, "transition") { navigation.append(("transition", transition)) }
-            try frame.navigate(JSObject(navigation))
+    /// it in a scope of its own, and the frame navigated to it. A component that throws leaves the outlet as it was.
+    private func push(_ make: () throws -> View, _ route: ActivatedRoute, into frame: Frame, extras: Any?, outlet: Outlet? = nil, injector: Injector?) throws {
+        let page = try Page()
+        page.route = route
+        let owner = Owner(parent: nil)
+        // Shown before the component renders, as Angular's URL is current by activation: a navigation the
+        // component makes while rendering (a tab view filling its outlets) finds this route already there.
+        let entry = Entry(owner: owner, route: route)
+        outlet?.entries.append(entry)
+        let previousRoute = ActivatedRoute.current
+        ActivatedRoute.current = route
+        Page.building.append(page)
+        let pending = Reactivity.pending()
+        let view: View
+        do {
+            defer { Page.building.removeLast() }
+            view = try owner.run { try Injector.runInContext(injector, make) }
+        } catch {
+            owner.dispose()
+            outlet?.entries.removeAll { $0 === entry }
+            ActivatedRoute.current = previousRoute
+            throw error
         }
+        if view !== page { page.content = view }
+        if Reactivity.schedule == .task { Reactivity.detectChanges(after: pending) }
+        try page.on(Page.navigatedFromEvent, { [weak self, weak outlet] (data: EventData?) in
+            guard jsTruthy(data?[jsKey: "isBackNavigation"]) else { return }
+            owner.dispose()
+            guard let self, let outlet, let at = outlet.entries.firstIndex(where: { $0 === entry }) else { return }
+            outlet.entries.remove(at: at)
+            self.ended(url: self.url)
+        })
+        let clearHistory = jsTruthy(field(extras, "clearHistory"))
+        if clearHistory, let outlet {
+            try page.once(Page.navigatedToEvent, { [weak outlet] (_: EventData?) in
+                guard let outlet else { return }
+                let cleared = outlet.entries.filter { $0 !== entry }
+                outlet.entries.removeAll { $0 !== entry }
+                for old in cleared { old.owner.dispose() }
+            })
+        }
+        var navigation: [(String, Any?)] = [
+            ("create", { (_: [Any?]) throws -> Any? in page } as JSFunction),
+            ("clearHistory", clearHistory),
+            ("animated", field(extras, "animated").map { jsTruthy($0) } ?? true),
+        ]
+        if let transition = field(extras, "transition") { navigation.append(("transition", transition)) }
+        try frame.navigate(JSObject(navigation))
     }
 
     /// `NSEmptyOutletComponent` in `frame`: a page without an action bar holding a `page-router-outlet` that takes the
@@ -376,3 +449,5 @@ public final class Router {
 /// A key of an options object script passes, nil when absent.
 private func field(_ object: Any?, _ key: String) -> Any? { object == nil ? nil : (try? jsGet(object, key)) ?? nil }
 
+public typealias KitRouter = Router
+public typealias KitActivatedRoute = ActivatedRoute

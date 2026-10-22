@@ -4,8 +4,11 @@
 //   node tests/release-checks/run.ts
 // - preflight: every line of cases/*.ts ending in `// expect: <text>` is reported with <text>, and no other line;
 // - satisfies: version ranges as the contract reads package.json's peerDependencies;
-// - Kotlin diagnostics: a Gradle error in a generated file maps to its TypeScript line through source-lines.json.
-import { mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+// - Kotlin diagnostics: a Gradle error in a generated file maps to its TypeScript line through source-lines.json;
+// - a plugin's own Java classes (plugin-java/, compiled with javac) translate as native calls without typings declaring them;
+// - an app's module graph (tsconfig paths and exclude, what its entry reaches), its plugins' ES module bundles, the
+//   imports and prefix header of the generated project, and native calls into a module the build has no table for.
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -13,7 +16,28 @@ import { createProgram } from '../../src/program.ts';
 import { preflight } from '../../src/preflight.ts';
 import { satisfies } from '../../src/contract.ts';
 import { mapKotlinDiagnostics } from '../../src/kotlin-diagnostics.ts';
-import { angularComponent, type AngularComponent } from '../../src/angular.ts';
+import { angularComponent, angularDirectives, angularRouteTree, angularRoutes, componentOf, declarableSource, declarablesIn, hostedComponent, routedComponents, type AngularComponent } from '../../src/angular.ts';
+import { angularLibraries, registeredElements } from '../../src/angular-libraries.ts';
+import { pathAliases } from '../../src/app-paths.ts';
+import { appImports, reachedFrom, tsconfigIncluded } from '../../src/app-modules.ts';
+import { runtimeFile } from '../../src/plugins/resolve.ts';
+import { PluginSources, verify, verifyBundle } from '../../src/plugins/source.ts';
+import { manifest, ownTypings, pluginNative, scopedImports, usedImports, xcodegenLines } from '../../src/plugins/native.ts';
+import { singleTry, Translator as SwiftTranslator } from '../../src/swift.ts';
+import { translateModules } from '../../src/modules.ts';
+import { conformsTo, lookupMember, nativeTable, setEmptyTable } from '../../src/natives/symbols.ts';
+import { isFragment, render } from '../../src/codegen.ts';
+import { render as renderKotlin } from '../../src/codegen-kotlin.ts';
+import { Translator } from '../../src/kotlin.ts';
+import { CoreKotlin } from '../../src/core-kotlin.ts';
+import { translateKotlinModules } from '../../src/kotlin-modules.ts';
+import { AndroidNativeAPI, androidClassPath } from '../../src/native-calls-android.ts';
+import { stubbedPlugins } from '../../src/app-resources.ts';
+import { builtModules } from '../../src/ios-dependencies.ts';
+import { STUBBED_PLUGINS } from '../../src/core.ts';
+import { detectFramework, excludedFrameworkKitFiles, getFrameworkKitInfo } from '../../src/framework.ts';
+import { spawnSync } from 'node:child_process';
+import ts from 'typescript';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const modulesDir = process.env.NS_DIFF_MODULES ?? resolve(here, '../node_modules');
@@ -106,6 +130,938 @@ export class People { items = [{ id: 1, name: 'Alan Turing' }]; }
   let refused = '';
   try { component(`<Label nsRouterLink="/a" [queryParams]="{ q: 1 }"></Label>`); } catch (e) { refused = String(e); }
   check(refused.includes("nsRouterLink's queryParams is not supported"), 'a link input the compiled router has no use for stops the build');
+
+  const mixed = component(`<Label text="Hi {{ items.length > 1 ? 'all' : 'one' }}!"></Label>`);
+  check(method(mixed, (linked(mixed, 'Label').attrs as { name: string; method?: string }[]).find((a) => a.name === 'text')?.method ?? '-').includes("return (`Hi ${(this.items.length > 1 ? 'all' : 'one') ?? ''}!`);"), 'a text attribute mixing literal text and {{ }} is a template literal of both');
+  const documented = componentOf('/app/pill.component.ts', `@Component({ selector: 'primary-pill', template: '' })\n/** A doc comment between the decorator and the class. */\nexport class PrimaryPill {}\n`);
+  check(documented?.selector === 'primary-pill' && documented.name === 'PrimaryPill', "a component's selector is read whatever comes between its decorator and its class");
+
+  // Angular's template features beyond bindings: platform filters, ng-container, NgSwitch, NgTemplateOutlet, pipes.
+  const source = (template: string, members = 'items = [{ id: 1, name: "Alan Turing" }]; mode = "a"; when = new Date(0); first = { name: "Ada" };') => `import { Component } from '@angular/core';
+@Component({ selector: 'People', template: \`${template}\` })
+export class People { ${members} }
+`;
+  const shaped = (template: string, options: Parameters<typeof angularComponent>[3] = {}) => angularComponent('/app/people.component.ts', source(template), new Map(), options)!;
+  const tags = (c: AngularComponent) => all(c.template as Node[]).map((n) => n.tag ?? n.kind);
+  const filtered = shaped(`<StackLayout><android><Label text="a"></Label></android><ios><Button text="i"></Button></ios></StackLayout>`, { platform: 'ios' });
+  check(tags(filtered).includes('Button') && !tags(filtered).includes('Label'), '<ios> renders its content on iOS and <android> nothing, as the platform filter components do');
+  const contained = shaped(`<StackLayout><ng-container row="1"><Label text="x"></Label></ng-container></StackLayout>`);
+  check(tags(contained).join() === 'StackLayout,Label', "<ng-container>'s attributes select directives only: its children join its parent");
+  const switched = shaped(`<StackLayout [ngSwitch]="mode"><Label *ngSwitchCase="'a'" text="a"></Label><Label *ngSwitchDefault text="d"></Label></StackLayout>`);
+  check(/=== \('a'\)/.test(switched.source) && /!\(\(this\.\$b\d+\(\)\) === \('a'\)\)/.test(switched.source), "ngSwitchDefault renders when no ngSwitchCase is === the switch's value");
+  const outlet = shaped(`<StackLayout><ng-template #row let-person let-n="index"><Label [text]="n + person.name"></Label></ng-template><ng-container *ngTemplateOutlet="row; context: { $implicit: first, index: 1 }"></ng-container></StackLayout>`);
+  check(/return \(\(\(1\)\) \+ \(\(this\.first\)\)\.name\)/.test(outlet.source), "ngTemplateOutlet renders the referenced template, its let- variables read from the context's properties");
+  const piped = shaped(`<StackLayout><Label *ngFor="let item of items" [text]="item.name | uppercase"></Label><Label [text]="when | date: 'y'"></Label><Label [text]="items | json"></Label></StackLayout>`, { runtimeModule: '/app/__angular.release.ts' });
+  const loop = all(piped.template as Node[]).find((n) => n.kind === 'for') as Node | undefined;
+  check(!!loop && (loop.body ?? []).some((n) => n.kind === 'local'), 'a pipe in an *ngFor row is one per row, a local of the row');
+  check(/\$c\d+\.pure1\(/.test(piped.source) && /\$c\d+\.pure2\(\(this\.when\), \('y'\)/.test(piped.source) && /\$p\d+\.transform\(this\.items\)/.test(piped.source), 'a pure pipe transforms through its site\'s cache, an impure one on every check');
+  check(!!piped.usesRuntime && piped.source.includes("from './__angular.release'"), "@angular/common's pipes come from the build's Angular runtime module");
+  let unknown = '';
+  try { shaped(`<Label [text]="items | currency"></Label>`); } catch (e) { unknown = String(e); }
+  check(unknown.includes("@angular/common's currency pipe is not supported"), 'a pipe the build has no class for stops the build, naming it');
+  const classic = angularComponent('/app/badge.component.ts', `import { Component, Input } from '@angular/core';
+@Component({ selector: 'Badge', template: '<Label [text]="tone"></Label>' })
+export class Badge { @Input('total') count = 0; @Input() set tone(v: string) { this.shown = v; } shown = ''; bump() { this.count += 1; this.tone = 'x'; } }
+`, new Map())!;
+  check(classic.setters?.join() === 'tone' && classic.propAliases?.count === 'total', "an @Input setter is a setter prop, an aliased input bound by its alias");
+  check(/this\.count\.\$assign\(this\.count\(\) \+ \(1\)\)/.test(classic.source) && /this\.\$set_tone\('x'\)/.test(classic.source), 'a component writing its own inputs writes their signal, or calls the setter');
+  const queried = angularComponent('/app/q.component.ts', `import { Component, ElementRef, ViewChild } from '@angular/core';
+@Component({ selector: 'Q', template: '<StackLayout #box><Label #title></Label></StackLayout>' })
+export class Q { @ViewChild('box', { static: true }) box: ElementRef; @ViewChild('title') title: ElementRef; ngOnInit() {} ngAfterViewInit() {} ngOnDestroy() {} }
+`, new Map())!;
+  const box = all(queried.template as Node[]).find((n) => n.tag === 'StackLayout') as Node & { init?: boolean; queries?: unknown[] };
+  check(!!queried.lateInit && !!box?.init && box.queries?.length === 1, 'a static view query is set when its element is made, and ngOnInit runs once it is');
+  check(queried.afterViewInit === 'ngAfterViewInit' && queried.destroy === 'ngOnDestroy' && /this\.box = new \$ElementRef\(\$q\)/.test(queried.source), "ngAfterViewInit and ngOnDestroy are the component's hooks, a #ref query an ElementRef");
+  const directive = { className: 'Glow', file: '/app/glow.directive.ts', selector: '[glow]', inputs: new Map([['glow', 'level']]), listeners: [{ event: 'tap', code: 'flash($event)' }], bindings: [{ prop: 'opacity', code: 'level' }], attributes: [], create: false, hooks: new Set(['ngOnInit']), structural: false, members: ['level', 'flash'] };
+  const glowing = angularComponent('/app/g.component.ts', `import { Component } from '@angular/core';
+import { Glow } from './glow.directive';
+@Component({ selector: 'G', imports: [Glow], template: '<StackLayout><Label [glow]="2"></Label><Label text="no glow"></Label></StackLayout>' })
+export class G {}
+`, new Map(), { directives: [directive] })!;
+  const lit = all(glowing.template as Node[]).filter((n) => n.tag === 'Label') as (Node & { directives?: { inputs: unknown[]; listeners: unknown[]; bindings: unknown[] }[] })[];
+  check(lit[0]?.directives?.length === 1 && lit[0].directives[0].inputs.length === 1 && !lit[0].attrs?.some((a) => a.name === 'glow') && !lit[1]?.directives, "a directive in the component's scope applies where its selector matches, and its inputs' bindings are its own");
+  const outOfScope = angularComponent('/app/h.component.ts', `import { Component } from '@angular/core';
+@Component({ selector: 'H', template: '<Label [glow]="2"></Label>' })
+export class H {}
+`, new Map(), { directives: [directive] })!;
+  check(!(all(outOfScope.template as Node[])[0] as { directives?: unknown[] }).directives, "a directive the component does not import does not apply");
+  const keyworded = angularComponent('/app/k.component.ts', `import { Component } from '@angular/core';
+@Component({ selector: 'K', template: '<Button (tap)="continue()" text="go"></Button>' })
+export class K { continue() {} }
+`, new Map())!;
+  check(/\$e\d+\(\$event: \$EventData\) \{ this\.continue\(\); \}/.test(keyworded.source), 'a member named like a keyword (continue) is read on the component');
+  const decl = declarableSource('/app/glyph.pipe.ts', `import { Pipe, Inject, Optional, ChangeDetectorRef } from '@angular/core';
+@Pipe({ name: 'glyph', pure: false })
+export class GlyphPipe { constructor(@Inject(TOKEN) private config: any, @Optional() private ref: ChangeDetectorRef) {} transform(v: string) { return v; } }
+`) ?? '';
+  check(!decl.includes('@Pipe') && !decl.includes('@Inject') && /static \$create\(\): GlyphPipe \{ return new GlyphPipe\(inject\(TOKEN\), inject\(ChangeDetectorRef, \{ optional: true \}\)\); \}/.test(decl) && decl.startsWith("import { inject } from '@angular/core';"), "a pipe's constructor is injected through $create, as Angular's factory injects it");
+}
+
+// ---- An app's own module graph ----
+{
+  const dir = mkdtempSync(join(tmpdir(), 'ns-release-checks-app-'));
+  const w = (f: string, text: string) => { mkdirSync(dirname(join(dir, f)), { recursive: true }); writeFileSync(join(dir, f), text); return join(dir, f); };
+  try {
+    w('tsconfig.json', JSON.stringify({ compilerOptions: { paths: { '~/*': ['./src/*'], '@fixtures': ['./src/fixtures/index'], '@outside/*': ['../outside/*'] } }, exclude: ['**/*.spec.ts'] }));
+    const main = w('src/main.ts', "import { routes } from './app.routes';\nimport { App } from '~/app/app';\nbootstrapApplication(App, { providers: [provideRouter(routes)] });\n");
+    const routes = w('src/app.routes.ts', "export const routes = [{ path: 'a', loadComponent: () => import('~/app/lazy').then((m) => m.Lazy) }, { path: 'b', loadChildren: () => import('~/app/child.routes').then((m) => m.childRoutes) }];\n");
+    const child = w('src/app/child.routes.ts', "import { Lazy } from '~/app/lazy';\nexport const childRoutes = [{ path: 'c', component: Lazy }];\n");
+    const app = w('src/app/app.ts', "import { helper } from './helper';\nexport class App {}\n");
+    const helper = w('src/app/helper.ios.ts', 'export const helper = 2;\n');
+    const lazy = w('src/app/lazy.ts', 'export class Lazy {}\n');
+    const spec = w('src/app/app.spec.ts', "import { App } from './app';\nimport { stub } from '@fixtures';\n");
+    const fixtures = w('src/fixtures/index.ts', 'export const stub = 0;\n');
+    const test = w('src/test.ts', "import './app/app.spec';\n");
+    const aliased = pathAliases(dir);
+    check(aliased('~/app/app') === join(dir, 'src/app/app') && aliased('@fixtures') === fixtures.replace(/\.ts$/, '') && aliased('~/app/missing') === undefined && aliased('@outside/x') === undefined, "tsconfig paths name the app's own files, and only those");
+    const files = [main, routes, child, app, helper, lazy, spec, fixtures, test];
+    const reached = reachedFrom([main], appImports(files, aliased, '.ios.ts').importsOf);
+    check([routes, child, app, helper, lazy].every((f) => reached.has(f)) && ![spec, fixtures, test].some((f) => reached.has(f)), "an entry reaches its modules through relative and aliased imports, lazy ones too, and no test's");
+    const included = tsconfigIncluded(dir, join(dir, 'src'))!;
+    check(!included.has(spec) && included.has(test) && included.has(app), "a file the app's tsconfig excludes is not one of its modules");
+    const tree = angularRouteTree(main, (f) => readFileSync(f, 'utf8'), aliased);
+    check(!!tree && routedComponents(tree.routes).join() === 'Lazy,Lazy' && tree.files.has(child), 'lazy routes are followed through tsconfig paths');
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
+
+// ---- Plugins published as ES modules, and the generated project ----
+{
+  const dir = mkdtempSync(join(tmpdir(), 'ns-release-checks-esm-'));
+  const w = (f: string, text: string) => { mkdirSync(dirname(join(dir, f)), { recursive: true }); writeFileSync(join(dir, f), text); return join(dir, f); };
+  try {
+    const modules = join(dir, 'node_modules');
+    const pkg = join(modules, '@hk/esm');
+    w('node_modules/@hk/esm/package.json', JSON.stringify({ name: '@hk/esm', version: '1.0.0', module: 'fesm2022/hk-esm.mjs', exports: { './package.json': { default: './package.json' }, '.': { types: './types/hk-esm.d.ts', default: './fesm2022/hk-esm.mjs' }, './testing': { types: './types/testing.d.ts', default: './fesm2022/hk-esm-testing.mjs' } } }));
+    const sources = { a: 'export const a = 1;\n', index: "export * from './src/a';\n", generated: "/**\n * Generated bundle index. Do not edit.\n */\n\nexport * from './index';\n" };
+    const bundle = w('node_modules/@hk/esm/fesm2022/hk-esm.mjs', 'const a = 1;\nexport { a };\n');
+    w('node_modules/@hk/esm/fesm2022/hk-esm.mjs.map', JSON.stringify({ version: 3, file: 'hk-esm.mjs', sources: ['../../../../modules/esm/src/a.ts', '../../../../modules/esm/index.ts', '../../../../modules/esm/hk-esm.ts'], sourcesContent: [sources.a, sources.index, sources.generated], mappings: '' }));
+    const testing = w('node_modules/@hk/esm/fesm2022/hk-esm-testing.mjs', 'export {};\n');
+    w('checkout/modules/esm/package.json', JSON.stringify({ name: '@hk/esm' }));
+    const a = w('checkout/modules/esm/src/a.ts', sources.a);
+    const entry = w('checkout/modules/esm/index.ts', sources.index);
+    check(runtimeFile('@hk/esm', modules, 'ios')?.file === bundle && runtimeFile('@hk/esm/testing', modules, 'ios')?.file === testing, "a package with only ES modules resolves to the file its exports name");
+    const plugins = new PluginSources({ app: dir, platform: 'ios', overrides: { '@hk/esm': join(dir, 'checkout') } });
+    const source = plugins.get(pkg);
+    check(plugins.sourceOf(bundle) === entry, "a bundle is compiled from the entry its generated index re-exports");
+    let verified = '';
+    try { verifyBundle(source.name, bundle, source.bundles.get(bundle)!); } catch (e) { verified = String(e); }
+    writeFileSync(a, 'export const a = 2;\n');
+    let changed = '';
+    try { verifyBundle(source.name, bundle, source.bundles.get(bundle)!); } catch (e) { changed = String(e); }
+    check(!verified && changed.includes('was not built from its source') && changed.includes('src/a.ts'), "a bundle is checked against the sources its map embeds");
+    let missing = '';
+    try { plugins.sourceOf(testing); } catch (e) { missing = String(e); }
+    check(missing.includes('has no TypeScript source'), "a bundle file without sources says so");
+
+    // A plugin published as ES5 CommonJS is checked against its source lowered the same way.
+    const cjsSource = 'export class Counter {\n  constructor(private start: number) {}\n  next(step = 1): number { return this.start + step; }\n}\nexport const label = (n: number) => `n${n}`;\n';
+    const cjsSrc = w('cjs/src/index.ios.ts', cjsSource);
+    const cjsOut = (text: string) => ts.transpileModule(text, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES5 } }).outputText;
+    const cjsJs = w('node_modules/@hk/cjs/index.ios.js', cjsOut(cjsSource));
+    let cjs = '';
+    try { verify('@hk/cjs', cjsJs, cjsSrc); } catch (e) { cjs = String(e); }
+    writeFileSync(cjsJs, cjsOut(cjsSource.replace('this.start + step', 'this.start - step')));
+    w('patches/@hk+cjs+1.0.0.patch', '');
+    let cjsChanged = '';
+    try { verify('@hk/cjs', cjsJs, cjsSrc, dir, '1.0.0'); } catch (e) { cjsChanged = String(e); }
+    check(!cjs && cjsChanged.includes('does not match the published') && cjsChanged.includes('patched by patches/@hk+cjs+1.0.0.patch'), `an ES5 CommonJS plugin is verified against its source, and a mismatch names the app's patch of it${cjs ? `: ${cjs.split('\n').slice(0, 4).join(' ')}` : ''}`);
+
+    // A plugin augmenting another's module in the declarations beside its source, as firebase-messaging augments firebase-core.
+    symlinkSync(join(modulesDir, '@nativescript'), join(modules, '@nativescript'));
+    for (const [name, text] of [['hub', 'export class Hub { name = "hub"; }\nexport function hub() { return new Hub(); }\n'], ['ext', "import '@hk/hub';\nexport const ext = 1;\n"]]) {
+      w(`node_modules/@hk/${name}/package.json`, JSON.stringify({ name: `@hk/${name}`, version: '1.0.0', main: 'index' }));
+      w(`node_modules/@hk/${name}/index.ios.js`, '');
+      w(`${name}/package.json`, JSON.stringify({ name: `@hk/${name}` }));
+      w(`${name}/index.ios.ts`, text);
+    }
+    w('ext/index.d.ts', "declare module '@hk/hub' {\n  interface Hub { extended(): number }\n}\nexport declare const ext: number;\n");
+    const user = w('src/hub-user.ts', "import '@hk/ext';\nimport { hub } from '@hk/hub';\nexport const n: () => number = () => hub().extended();\n");
+    let augmented = '';
+    try { createProgram([user], new Map(), 'ios', modules, new PluginSources({ app: dir, platform: 'ios', overrides: { '@hk/hub': join(dir, 'hub'), '@hk/ext': join(dir, 'ext') } })); } catch (e) { augmented = String(e); }
+    check(!augmented, `a plugin's augmentation of another plugin's module applies to that module's source${augmented ? `: ${augmented.split('\n')[1]}` : ''}`);
+
+    // A plugin whose platform file exports less than the declarations beside it.
+    w('node_modules/@hk/decl/package.json', JSON.stringify({ name: '@hk/decl', version: '1.0.0', main: 'index' }));
+    w('node_modules/@hk/decl/index.ios.js', '');
+    w('node_modules/@hk/decl/index.android.js', '');
+    w('decl/package.json', JSON.stringify({ name: '@hk/decl' }));
+    w('decl/common.ts', "import { View } from '@nativescript/core';\nimport { Holder } from '.';\nexport interface Options { n: number }\nexport function twice(n: number) { return 2 * n; }\nexport const kind = 'decl';\nexport function attach(view: View & Holder) { view.attachHolder(1); }\nexport class Indicator { holder: View & Holder; hold(view: View) { if (view?.['attachHolder']) { this.holder = view as View & Holder; this.holder.attachHolder(2); } } }\n");
+    w('decl/shapes.ts', 'export class Square { side = 1; }\n');
+    w('decl/index.ios.ts', "import { Options, twice } from './common';\nfunction scale(o: Options) { return twice(o.n); }\nexport class Decl { run(o: Options): number { return scale(o); } }\nexport { attach } from './common';\n");
+    w('decl/index.android.ts', "import { Options, twice } from './common';\nfunction scale(o: Options) { return twice(o.n); }\nexport class Decl { run(o: Options): number { return scale(o); } }\nexport { attach } from './common';\n");
+    w('decl/index.d.ts', "import { Options } from './common';\nexport { Options };\nexport * from './shapes';\nexport { kind } from './common';\nexport interface Result { ok: boolean }\nexport interface Holder { attachHolder(n: number): void }\nexport declare function scale(o: Options): number;\nexport declare function missing(): void;\nexport declare class Decl { run(o: Options): number; }\n");
+    const declUser = w('src/decl-user.ts', "import { Decl, Options, Result, Square, kind, scale, attach } from '@hk/decl';\nconst o: Options = { n: 2 };\nexport const attachTo = attach;\nexport const r: Result = { ok: new Decl().run(o) === scale(o) && new Square().side === 1 && kind === 'decl' };\n");
+    let declared = '';
+    try {
+      const { program, checker, files } = createProgram([declUser], new Map(), 'ios', modules, new PluginSources({ app: dir, platform: 'ios', overrides: { '@hk/decl': join(dir, 'decl') } }));
+      const entry = files.find((f) => f.fileName.endsWith('decl/index.ios.ts'))!;
+      const names = checker.getExportsOfModule(checker.getSymbolAtLocation(entry)!).map((s) => s.name).sort().join();
+      if (names !== 'Decl,Holder,Options,Result,Square,attach,kind,scale') declared = `exports ${names}`;
+      const translator = new SwiftTranslator(checker, new Map(), files);
+      translator.errors = [];
+      translateModules(translator, program, files.map((f) => f.fileName));
+      if (translator.errors.length) declared = translator.errors.join('; ');
+      const android = createProgram([declUser], new Map(), 'android', modules, new PluginSources({ app: dir, platform: 'android', overrides: { '@hk/decl': join(dir, 'decl') } }));
+      const kotlin = new Translator(android.checker, new Map(), android.files);
+      kotlin.core = new CoreKotlin(kotlin, true);
+      kotlin.errors = [];
+      translateKotlinModules(kotlin, android.program, android.files.map((f) => f.fileName));
+      if (kotlin.errors.length) declared = kotlin.errors.join('; ');
+    } catch (e) { declared = String(e); }
+    check(!declared, `a plugin's platform file exports what the declarations beside it export, values only where it has them${declared ? `: ${declared.split('\n').slice(0, 3).join(' ')}` : ''}`);
+
+    const stub = { get: () => { throw new Error('acquired'); } } as unknown as PluginSources;
+    const home = w('src/home.ts', "import { PagerModule } from '@hk/pager/angular';\n");
+    w('node_modules/@hk/pager/index.js', '');
+    let acquired = '';
+    try { angularLibraries([home], modules, stub, new Set(['@hk/pager'])); } catch (e) { acquired = String(e); }
+    check(!acquired, "the Angular wrapper of a package the app replaces is not acquired");
+
+    const names = new Map<string, Set<string> | null>([['PlugA', new Set(['PlugA', 'PAView'])], ['PlugB', new Set(['PlugB', 'PBThing'])], ['Empty', new Set(['Empty'])], ['Untabled', null]]);
+    const imported = usedImports('import Foundation\nimport PlugA\nimport PlugB\nimport Empty\nimport Untabled\n\nlet v = PAView()\n', names);
+    check(imported === 'import Foundation\nimport PlugA\nimport Untabled\n\nlet v = PAView()\n', "a generated file imports the plugin modules it names, and those no table describes");
+    const types = new Map([
+      ['NativeScriptKit', { types: { ImageAsset: 'class' as const, Utils: 'enum' as const }, named: new Set(['ImageAsset', 'Utils']) }],
+      ['Lottie', { types: { ImageAsset: 'class' as const }, named: new Set<string>() }],
+      ['RevenueCat', { types: { SubscriptionInfo: 'class' as const }, named: new Set(['SubscriptionInfo']) }],
+      ['StoreKit', { types: { SubscriptionInfo: 'struct' as const, Product: 'struct' as const }, named: new Set<string>() }],
+    ]);
+    const scoped = scopedImports('import NativeScriptKit\nimport Lottie\nimport RevenueCat\nimport StoreKit\n\nvar a: ImageAsset? = nil\nvar s: SubscriptionInfo? = nil\nvar u = Utils.self\n', types, 'NativeScriptKit', () => false);
+    check(scoped.includes('import StoreKit\nimport class NativeScriptKit.ImageAsset\nimport class RevenueCat.SubscriptionInfo\n\n') && !scoped.includes('Utils\n'), "a type name two imported modules declare is the kit's, else the one its typings name, by a scoped import");
+    const reexported = scopedImports('import NativeScriptKit\nimport RevenueCat\n\n// SubscriptionInfo\nvar s: SubscriptionInfo? = nil\nlet t = s.toString()\n', types, 'NativeScriptKit', () => false);
+    check(reexported.includes('import RevenueCat\nimport class RevenueCat.SubscriptionInfo\n\n'), "a type name a module the file does not import declares too (StoreKit, which RevenueCat re-exports) is named by a scoped import");
+    const own = { files: new Map([[join(pkg, 'index.ios.js'), join(dir, 'checkout/packages/review/index.ios.ts')]]) } as unknown as Parameters<typeof ownTypings>[0];
+    check(ownTypings(own, [join(dir, 'checkout/packages/review/types/objc!NSCReview.d.ts'), join(dir, 'checkout/packages/other/types/objc!X.d.ts')]).join() === join(dir, 'checkout/packages/review/types/objc!NSCReview.d.ts'), "a plugin's typings beside its source are its own native code's");
+    const clang = { kind: 'clang', name: 'Canvas', module: 'Canvas', path: 'Sources/Canvas', publicHeaders: 'include' } as unknown as Parameters<typeof manifest>[0][0];
+    check(manifest([clang], '/out/Plugins/NSPluginsPrefix.h').includes('cSettings: [.unsafeFlags(["-include", "/out/Plugins/NSPluginsPrefix.h"])]'), "a plugin's Objective-C is compiled with the prefix header an app's own build gives it");
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
+
+// ---- Plugins' iOS code: Swift beside Objective-C, and the tables of their modules ----
+{
+  const dir = mkdtempSync(join(tmpdir(), 'ns-release-checks-mixed-'));
+  const w = (f: string, text: string) => { mkdirSync(dirname(join(dir, f)), { recursive: true }); writeFileSync(join(dir, f), text); return join(dir, f); };
+  const tableCache = process.env.NS_NATIVE_TABLE_CACHE;
+  try {
+    // As firebase-messaging-core: a module map over Objective-C, and Swift importing it.
+    w('mixed/platforms/ios/src/module.modulemap', 'module HKMixedObjC {\n  umbrella header "HKMixedObjC.h"\n  export *\n}\n');
+    w('mixed/platforms/ios/src/HKMixedObjC.h', '#import <Foundation/Foundation.h>\n@interface HKMixedLoader : NSObject\n+ (NSString *)greeting;\n@end\n');
+    w('mixed/platforms/ios/src/HKMixedLoader.m', '#import "HKMixedObjC.h"\n@implementation HKMixedLoader\n+ (NSString *)greeting { return @"hi"; }\n@end\n');
+    w('mixed/platforms/ios/src/HKMixedHelper.swift', [
+      'import UIKit', 'import HKMixedObjC', '',
+      '@objc public enum HKMixedMode: Int {', '  case quiet, loud', '}', '',
+      '@objc(HKMixedHelper)', 'public class HKMixedHelper: NSObject {',
+      '  @objc public static func greet(_ mode: HKMixedMode) -> String { HKMixedLoader.greeting() }',
+      '  @_spi(Testing) @objc public static func hidden() {}', '}', '',
+      '@objc public protocol HKMixedPinging {', '  func hkPing() -> Int', '}', '',
+      'extension UIView: HKMixedPinging {', '  public func hkPing() -> Int { 1 }', '}', ''].join('\n'));
+    w('mixed/platforms/ios/typings/objc!HKMixed.d.ts', 'declare class HKMixedHelper extends NSObject { static greet(mode: HKMixedMode): string; }\n');
+    const typings = w('mixed/typings/objc!HKMixed.d.ts', 'declare const enum HKMixedMode { Quiet = 0, Loud = 1 }\ndeclare class HKMixedHelper extends NSObject { static greet(mode: HKMixedMode): string; }\ninterface HKMixedPinging { hkPing(): number; }\n');
+    // Without a module map, the Objective-C module is named apart from the Swift one.
+    w('nomap/platforms/ios/src/HKNoMap.h', '#import <Foundation/Foundation.h>\n@interface HKNoMap : NSObject\n@end\n');
+    w('nomap/platforms/ios/src/HKNoMap.m', '#import "HKNoMap.h"\n@implementation HKNoMap\n@end\n');
+    w('nomap/platforms/ios/src/HKNoMapSwift.swift', 'import Foundation\n@objc public class HKNoMapSwift: NSObject {}\n');
+    // As firebase-messaging: an empty umbrella header beside Swift that imports another plugin's Objective-C.
+    w('umbrella/platforms/ios/src/module.modulemap', 'module HKUmbrella {\n  umbrella header "HKUmbrella.h"\n  export *\n}\n');
+    w('umbrella/platforms/ios/src/HKUmbrella.h', '');
+    w('umbrella/platforms/ios/src/HKUmbrellaDelegate.swift', 'import Foundation\nimport HKMixedObjC\n@objc public class HKUmbrellaDelegate: NSObject {\n  @objc public static func greeting() -> String { HKMixedLoader.greeting() }\n}\n');
+    // As ui-webview: a module map of the CLI's own framework beside Swift alone.
+    w('stale/platforms/ios/src/module.modulemap', 'framework module HKStale {\n  umbrella header "HKStale.h"\n}\n');
+    w('stale/platforms/ios/src/HKStale.swift', 'import Foundation\n@objc public class HKStale: NSObject {}\n');
+
+    process.env.NS_NATIVE_TABLE_CACHE = join(dir, 'tables');
+    const unread = nativeTable('NSPlugin_hk_mixed');
+    if (tableCache === undefined) delete process.env.NS_NATIVE_TABLE_CACHE; else process.env.NS_NATIVE_TABLE_CACHE = tableCache;
+    const cachedEmpty = (existsSync(join(dir, 'tables')) ? readdirSync(join(dir, 'tables'), { recursive: true }) as string[] : []).filter((f) => f.endsWith('.json'));
+    check(!Object.keys(unread.classes).length && !cachedEmpty.length, `an SDK module the extractor cannot read is not cached as empty${cachedEmpty.length ? `: ${cachedEmpty.join()}` : ''}`);
+
+    const source = (name: string, at: string, typings: string[] = []) => ({ name, version: '1.0.0', dir: join(dir, at), typings, files: new Map() }) as unknown as Parameters<typeof pluginNative>[0][0];
+    const out = join(dir, 'project');
+    let native: ReturnType<typeof pluginNative> | null = null;
+    let failure = '';
+    try {
+      native = pluginNative([source('@hk/mixed', 'mixed', [typings]), source('@hk/nomap', 'nomap'), source('@hk/umbrella', 'umbrella'), source('@hk/stale', 'stale')], out,
+        { deps: { modules: [], searchArgs: () => [], classes: {}, dispose: () => {} }, packages: [], declarations: [typings], bindings: join(dir, 'bindings'), say: () => {} });
+    } catch (e) { failure = String(e); }
+    check(!!native && native.modules.join() === 'HKMixedObjC,NSPlugin_hk_mixed,NSPlugin_hk_nomap_ObjC,NSPlugin_hk_nomap,NSPlugin_hk_stale,NSPlugin_hk_umbrella'
+      && native.package?.products.join() === 'HKMixedObjC,NSPlugin_hk_nomap_ObjC',
+      `a plugin's Swift and Objective-C are modules of their own; an empty umbrella header, a module map beside Swift alone and typings are none${failure ? `: ${failure.split('\n').slice(0, 3).join(' ')}` : native ? ` (${native.modules.join()})` : ''}`);
+    if (native) {
+      const swift = Object.fromEntries(native.swift.map((t) => [t.name, t.products.join()]));
+      check(swift.NSPlugin_hk_mixed === 'HKMixedObjC' && swift.NSPlugin_hk_umbrella === 'HKMixedObjC' && swift.NSPlugin_hk_nomap === '', `a plugin's Swift depends on the Objective-C modules it imports, another plugin's too (${JSON.stringify(swift)})`);
+      const lines = xcodegenLines(native, out).targets;
+      check(/ {2}NSPlugin_hk_umbrella:\n(?: {4}.*\n)*? {4}dependencies:\n {6}- package: NSPlugins\n {8}product: HKMixedObjC\n {8}link: false\n(?: {4,}.*\n)*? {8}SWIFT_INCLUDE_PATHS: "\$\(inherited\) \$\(SRCROOT\)\/Plugins\/Sources\/HKMixedObjC"\n/.test(lines),
+        "the Swift module's target depends on the local package's product it imports, and finds its module map");
+      const table = nativeTable('NSPlugin_hk_mixed');
+      const mode = table.enums.HKMixedMode;
+      check(mode?.kind === 'enum' && mode.raw === 'Int' && mode.cases.Loud?.swift === 'loud', `a Swift @objc enum is in its module's table as Objective-C names it (${JSON.stringify(mode)})`);
+      check(!!table.classes.HKMixedHelper?.static.greet && !table.classes.HKMixedHelper.static.hidden, "a declaration of a Swift module's SPI is not in its table");
+      check(conformsTo('UIKit', 'UIView', 'HKMixedPinging') && lookupMember('UIKit', 'UIView', 'hkPing', false)?.swift === 'hkPing', "a protocol a plugin's extension adopts is one of the extended class's");
+      let longName: unknown = 'threw';
+      try { longName = lookupMember('UIKit', 'UIView', 'setLongPressHK', false); } catch { /* reported below */ }
+      check(longName === null, 'a member a class lacks, its name spelling `Long` as a word, is not found');
+      const use = w('src/use.ios.ts', 'export const loud = HKMixedHelper.greet(HKMixedMode.Loud);\n');
+      const { checker, program, files } = createProgram([use], new Map(), 'ios', modulesDir, undefined, [typings]);
+      const translator = new SwiftTranslator(checker, new Map(), files);
+      translator.errors = [];
+      const code = translateModules(translator, program, [use]).map((m) => m.code).join('\n');
+      check(!translator.errors.length && /HKMixedHelper\.greet\(HKMixedMode\.loud\)/.test(code), `a Swift @objc enum's case is named as Swift names it${translator.errors.length ? `: ${translator.errors[0]}` : ''}`);
+    }
+  } finally {
+    if (tableCache === undefined) delete process.env.NS_NATIVE_TABLE_CACHE; else process.env.NS_NATIVE_TABLE_CACHE = tableCache;
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
+
+// ---- The modules a build of the Swift packages and pods leaves ----
+{
+  const dir = mkdtempSync(join(tmpdir(), 'ns-release-checks-built-'));
+  const w = (f: string, text: string) => { mkdirSync(dirname(join(dir, f)), { recursive: true }); writeFileSync(join(dir, f), text); return join(dir, f); };
+  try {
+    const products = 'Build/Products/Debug-iphonesimulator';
+    const maps = 'Build/Intermediates.noindex/GeneratedModuleMaps-iphonesimulator';
+    w(`${maps}/CNested.modulemap`, `module CNested {\n  umbrella header "${join(dir, 'SourcePackages/checkouts/nested/Sources/CNested/include/CNested/CNested.h')}"\n  export *\n}\n`);
+    w('SourcePackages/checkouts/nested/Sources/CNested/include/CNested/CNested.h', '');
+    w(`${products}/CNested.o`, '');
+    const own = w('SourcePackages/checkouts/hud/Sources/CHud/include/module.modulemap', 'module CHud {\n  header "CHud.h"\n  export *\n}\n');
+    w(`${products}/CHud.o`, '');
+    w('SourcePackages/checkouts/hud/Tests/CHudTests/module.modulemap', 'module CHudTests {}\n');
+    w('SourcePackages/checkouts/unused/Sources/CUnused/include/module.modulemap', 'module CUnused {}\n');
+    w(`${products}/XCFrameworkIntermediates/vendor/Vendor.framework/Modules/module.modulemap`, 'framework module Vendor {}\n');
+    w(`${products}/Swifty.swiftmodule/arm64.swiftmodule`, '');
+    const built = builtModules(dir);
+    const arg = (a: string) => built.args.includes(a);
+    check(built.modules.join() === 'CHud,CNested,Swifty,Vendor', `a build's modules include a C target's with a module map of its own and a framework below the products, and no other package's (${built.modules.join()})`);
+    check(arg(`-I${join(dir, 'SourcePackages/checkouts/nested/Sources/CNested/include')}`) && arg(`-fmodule-map-file=${own}`) && arg(join(dir, products, 'XCFrameworkIntermediates/vendor')),
+      "a C target's public headers, a package's own module map and a nested framework's directory are visible as Xcode makes them");
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
+
+// ---- Binary-only plugins: refused unless stubbed ----
+{
+  const dir = mkdtempSync(join(tmpdir(), 'ns-release-checks-stubs-'));
+  const w = (f: string, text: string) => { mkdirSync(dirname(join(dir, f)), { recursive: true }); writeFileSync(join(dir, f), text); return join(dir, f); };
+  try {
+    w('package.json', JSON.stringify({ name: 'stubs', main: 'src/main.ts', dependencies: { 'nativescript-ui-listview': '15.2.3' } }));
+    const refused = stubbedPlugins(dir, 'ios');
+    check(refused.stubbed.length === 0 && refused.errors.length === 1 && refused.errors[0].startsWith('nativescript-ui-listview is a binary-only plugin') && refused.errors[0].includes("release.pluginReplacements: { 'nativescript-ui-listview'") && refused.errors[0].includes("release.stubPlugins: ['nativescript-ui-listview']"), 'a binary-only plugin stops the build, naming both remedies');
+    w('nativescript.config.ts', "export default { id: 'org.stubs', release: { pluginReplacements: { 'nativescript-ui-listview': './src/list.ts' } } };\n");
+    const replaced = stubbedPlugins(dir, 'ios');
+    check(!replaced.errors.length && !replaced.stubbed.length, 'a binary-only plugin the app replaces builds');
+    w('nativescript.config.ts', "export default { id: 'org.stubs', release: { stubPlugins: ['nativescript-ui-listview'] } };\n");
+    const stubbed = stubbedPlugins(dir, 'ios');
+    check(!stubbed.errors.length && stubbed.stubbed.join() === 'nativescript-ui-listview', 'release.stubPlugins builds a binary-only plugin as its stand-in');
+    w('nativescript.config.ts', "export default { id: 'org.stubs', release: { stubPlugins: ['nativescript-ui-listview', 'some-plugin'] } };\n");
+    let unknown = '';
+    try { stubbedPlugins(dir, 'ios'); } catch (e) { unknown = String(e); }
+    check(unknown.includes('some-plugin has no stand-in'), 'release.stubPlugins refuses a package it has no stand-in for');
+
+    STUBBED_PLUGINS.add('nativescript-ui-listview');
+    const user = w('src/list-user.ts', "import { RadListView, ListViewEventData } from 'nativescript-ui-listview';\nexport const list = new RadListView();\nexport function onTap(e: ListViewEventData): number { list.refresh(); return e.index; }\n");
+    let typed = '';
+    try { createProgram([user], new Map(), 'ios', modulesDir); } catch (e) { typed = String(e); }
+    check(!typed, `a stubbed plugin's imports type-check against its stand-ins${typed ? `: ${typed.split('\n')[1]}` : ''}`);
+    const c = angularComponent(join(dir, 'src/list.component.ts'), "import { Component } from '@angular/core';\n@Component({ selector: 'List', template: `<GridLayout rows=\"*\"><RadListView row=\"0\" [items]=\"items\" (itemTap)=\"tap()\"><ng-template tkListItemTemplate let-item=\"item\"><Label [text]=\"item\"></Label></ng-template></RadListView></GridLayout>` })\nexport class List { items = ['a']; tap() {} }\n", new Map())!;
+    const stand = (c.template[0] as { children: { tag: string; attrs: { name: string }[]; events: unknown[]; children: unknown[] }[] }).children[0];
+    check(stand.tag === 'ContentView' && stand.attrs.map((a) => a.name).join() === 'row' && !stand.events.length && !stand.children.length, "a stubbed plugin's element is an empty ContentView keeping its place in the layout");
+  } finally {
+    STUBBED_PLUGINS.clear();
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
+
+// ---- Swift emission ----
+{
+  check(singleTry('try (try! Color(a))') === 'try (try! Color(a))' && singleTry('try ((try? x) != nil)') === 'try ((try? x) != nil)' && singleTry('try (try jsGet(a))') === 'try ( jsGet(a))', 'one try is dropped where two cover a check, never a try! or try?');
+  const dir = mkdtempSync(join(tmpdir(), 'ns-release-checks-native-'));
+  try {
+    const dts = join(dir, 'objc!HKFakeKit.d.ts');
+    writeFileSync(dts, 'declare class HKThing extends NSObject { static alloc(): HKThing; initWithName(name: string): HKThing; }\n');
+    const file = join(dir, 'use.ios.ts');
+    writeFileSync(file, "export const thing = HKThing.alloc().initWithName('x');\n");
+    setEmptyTable('HKFakeKit', 'release-checks');
+    const { checker, program, files } = createProgram([file], new Map(), 'ios', modulesDir, undefined, [dts]);
+    const translator = new SwiftTranslator(checker, new Map(), files);
+    translator.errors = [];
+    translateModules(translator, program, [file]);
+    check(translator.errors.some((e) => e.includes('HKThing.alloc().initWithName() (HKFakeKit is a module of neither')), 'a class of a module the build has no table for is reported where it is allocated');
+    const setter = join(dir, 'offset.ts');
+    writeFileSync(setter, 'export class Offset {\n  x = 0;\n  get at() { return { x: this.x }; }\n  set at({ x }: { x: number }) { this.x = x; }\n}\nnew Offset().at = { x: 2 };\n');
+    const typed = createProgram([setter], new Map(), 'ios', modulesDir);
+    const setters = new SwiftTranslator(typed.checker, new Map(), typed.files);
+    setters.errors = [];
+    translateModules(setters, typed.program, [setter]);
+    check(setters.errors.length === 1 && setters.errors[0].includes('a setter whose parameter is a destructuring pattern'), 'a setter destructuring its value is reported, not a crash');
+    const named = join(dir, 'named.ios.ts');
+    writeFileSync(named, "export class ProcessInfo {\n  name = 'mine';\n}\nexport const processName = NSProcessInfo.processInfo.processName;\nexport const own = new ProcessInfo().name;\n");
+    const clash = createProgram([named], new Map(), 'ios', modulesDir);
+    const clashes = new SwiftTranslator(clash.checker, new Map(), clash.files);
+    const clashCode = translateModules(clashes, clash.program, [named]).map((m) => m.code).join('\n');
+    check(/= Foundation\.ProcessInfo\.processInfo\.processName/.test(clashCode) && /= ProcessInfo\(\)\.name/.test(clashCode), "a native class named as one of the program's is named by its module (Foundation.ProcessInfo)");
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
+
+// ---- Angular component classes ----
+{
+  const make = (text: string) => angularComponent('/app/cls.component.ts', text, new Map())!;
+  const noArg = make("import { Component, Input, OnChanges } from '@angular/core';\n@Component({ selector: 'C', template: `<Label [text]=\"name\"></Label>` })\nexport class C implements OnChanges { @Input() name = ''; seen = 0; ngOnChanges() { this.seen++; } }\n");
+  check(/this\.ngOnChanges\(\);/.test(noArg.source) && !/this\.ngOnChanges\(changes\)/.test(noArg.source), 'ngOnChanges declared without a parameter is called without one');
+  const ctor = make("import { Component } from '@angular/core';\nclass Clock { now() { return 1; } }\n@Component({ selector: 'C', template: `<Label [text]=\"t\"></Label>` })\nexport class C { t = 0; constructor(private clock: Clock) { this.t = clock.now(); } }\n");
+  check(/const clock = this\.clock;/.test(ctor.source), "a constructor's body naming a parameter property reads the field it became");
+  const inherited = make("import { Component } from '@angular/core';\nclass Base { title = 'base'; }\n@Component({ selector: 'C', template: `<Label [text]=\"title\"></Label>` })\nexport class C extends Base {}\n");
+  check(/this\.title/.test(inherited.source), "a template names a member the component inherits");
+  const multiline = make("import { Component } from '@angular/core';\n@Component({ selector: 'C', template: `<Label [text]=\"on ? 'a' : 'b\nc'\"></Label>` })\nexport class C { on = true; }\n");
+  check(multiline.source.includes("'b\\nc'"), 'a string literal written across lines in a template stays one string');
+}
+
+// ---- Angular fragments through nested components ----
+{
+  const outer = angularComponent('/app/outer.component.ts', "import { Component } from '@angular/core';\n@Component({ selector: 'Outer', template: `<Inner></Inner>` })\nexport class Outer {}\n", new Map([['Inner', 'Inner']]))!;
+  const infos = new Map([['Inner', { name: 'Inner', props: [], fragment: true }], ['Outer', { name: 'Outer', props: [] }]]);
+  check(isFragment(outer.template, infos) && !isFragment(outer.template, new Map([['Inner', { name: 'Inner', props: [] }]])), 'a template that is one component is a fragment when that component is');
+  const swift = render(outer, infos, () => false, 'angular').join('\n');
+  check(swift.includes('func render(into region: Region) throws'), 'a component rendering a fragment component renders into its parent region');
+}
+
+// ---- Component providers: each instance of a component makes its own injector ----
+{
+  const dir = mkdtempSync(join(tmpdir(), 'ns-release-checks-providers-'));
+  try {
+    const store = join(dir, 'store.ts'), panel = join(dir, 'panel.component.ts'), page = join(dir, 'page.component.ts');
+    writeFileSync(store, `import { Injectable, InjectionToken, inject } from '@angular/core';
+export const LABEL = new InjectionToken<string>('LABEL');
+@Injectable() export class Counter { count = 0; }
+@Injectable() export class Tally { readonly counter = inject(Counter); }
+`);
+    writeFileSync(panel, `import { Component, inject } from '@angular/core';
+import { Counter, LABEL, Tally } from './store';
+@Component({ selector: 'Panel', template: '<Label [text]="label"></Label>', providers: [Counter, { provide: Tally, useClass: Tally }, { provide: LABEL, useValue: 'one' }] })
+export class Panel {
+  readonly tally = inject(Tally);
+  readonly label = inject(LABEL);
+  constructor(private readonly counter: Counter) {
+    if (this.counter.count > 0) return;
+    this.counter.count++;
+  }
+}
+`);
+    writeFileSync(page, "import { Component } from '@angular/core';\nimport { Panel } from './panel.component';\n@Component({ selector: 'Page', imports: [Panel], template: '<StackLayout><Panel></Panel><Panel></Panel></StackLayout>' })\nexport class Page {}\n");
+    const ir = angularComponent(panel, readFileSync(panel, 'utf8'), new Map())!;
+    const pageIr = angularComponent(page, readFileSync(page, 'utf8'), new Map([['Panel', 'Panel']]))!;
+    const members = ir.source.slice(ir.source.indexOf('export class Panel {'));
+    check(ir.injector === '$injector' && /^export class Panel \{\s*readonly \$injector = NodeInjector\.enter\(\[Counter, /.test(members) && members.indexOf('$injector') < members.indexOf('counter: Counter = inject(Counter)'), "a component's providers make its injector in its first field, before its injected constructor parameters");
+    check(/\{ this\.\$injector\.leave\(\); return; \}[\s\S]*this\.counter\.count\+\+;\s*this\.\$injector\.leave\(\);\s*\}/.test(members), 'the injector stops being current when the constructor returns, early or at its end');
+    const infos = new Map([['Panel', { name: 'Panel', props: [] }], ['Page', { name: 'Page', props: [] }]]);
+    check(render(ir, infos, () => false, 'angular').join('\n').includes('try EffectOrder.view(injector: self._injector) {') && renderKotlin(ir, infos, { framework: 'angular' }).join('\n').includes('EffectOrder.view(this._injector) {'), "a component's view injects from its injector (Swift, Kotlin)");
+    const pageSwift = render(pageIr, infos, () => false, 'angular').join('\n');
+    check((pageSwift.match(/let c\d+ = Panel\(\)/g) ?? []).length === 2 && pageSwift.includes('try EffectOrder.view {'), 'a parent without providers renders two instances of the component, each made by its own init');
+    for (const platform of ['ios', 'android'] as const) {
+      const { checker, program, files } = createProgram([panel, store], new Map([[panel, ir.source]]), platform, modulesDir);
+      const cls = program.getSourceFile(panel)!.statements.filter(ts.isClassDeclaration).find((c) => c.name?.text === 'Panel')!;
+      if (platform === 'ios') {
+        const sw = new SwiftTranslator(checker, new Map([['Panel', { props: ir.props, optional: ir.optional }]]), files);
+        translateModules(sw, program, [panel, store]);
+        const init = sw.componentMembers(cls, ir.props).join('\n').split('init() {')[1] ?? '';
+        check(/^\s*self\._injector = NodeInjector\.enter\(JSArray<Any\?>\(\[Counter\.self, JSObject\(\[\("provide", Tally\.self\), \("useClass", Tally\.self\)\]\)/.test(init), 'each instance makes its injector first, from its providers (Swift)');
+      } else {
+        const kt = new Translator(checker, new Map([['Panel', { props: ir.props }]]), files);
+        kt.appModule = 'org.example.app';
+        translateKotlinModules(kt, program, [panel, store]);
+        const lines = kt.componentMembers(cls, ir.props).lines;
+        check(/^\s*val _injector: NodeInjector = NodeInjector\.enter\(jsArrayOf<Any\?>\(Counter::class\.java, /.test(lines[0] ?? ''), 'each instance makes its injector first, from its providers (Kotlin)');
+      }
+    }
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
+
+// ---- Template errors are reported, never trapped ----
+{
+  // nstreamdown's `@if (token.type === 'mermaid') { <MdMermaid [content]="…" [isIncomplete]="getIsIncomplete(token)"> }`, every binding able to throw.
+  const parent = {
+    name: 'Streamdown', file: '/app/streamdown.ts', source: '', props: [],
+    template: [{ kind: 'element' as const, tag: 'StackLayout', attrs: [], events: [{ name: 'tap', method: '$e3', when: '$b4' }], children: [
+      { kind: 'if' as const, branches: [{ cond: '$b0', body: [{ kind: 'component' as const, name: 'MdMermaid', props: [{ name: 'content', method: '$b1' }, { name: 'isIncomplete', method: '$b2' }, { name: 'token', method: '$b5' }], events: [] }] }] },
+    ] }],
+  };
+  const children = new Map([['MdMermaid', { props: ['content', 'isIncomplete', 'token'], optional: ['content', 'isIncomplete'] }]]);
+  const swift = render(parent, children, () => true, 'angular').join('\n');
+  const made = /let (c\d+) = MdMermaid\((.*)\)$/m.exec(swift);
+  check(!!made && !/content:|isIncomplete:/.test(made[2]), "a component prop whose binding may throw starts at its default, not at a value read with try!");
+  check(!!made && /token: untrack \{ jsReportedOrZero \{ try self\._b5\(\) \} \}/.test(made[2]), 'a required prop whose binding may throw starts at its zero, the error reported');
+  check(!!made && new RegExp(`Check\\(\\{ try self\\._b2\\(\\) \\}\\) \\{ ${made[1]}\\.isIncomplete\\.value = \\$0 \\}`).test(swift), "the binding's own check sets the prop, reporting what it throws");
+  check(/Choose\(r\d+, \{ jsReportedTruthy\(\{ try self\._b0\(\) \}\) \? 0 : 1 \}[,)]/.test(swift), 'a condition that throws is reported and counts as false');
+  check(/if jsReportedTruthy\(\{ try self\._b4\(\) \}\) \{/.test(swift), "a listener's guard that throws is reported and counts as false");
+  check(!/try!|try\?/.test(swift.replace(/let v\d+ = try! StackLayout\(\)/g, '')), 'no binding, condition or prop is read with try! or try?');
+  const list = render({ name: 'Rows', file: '/app/rows.ts', source: '', props: [], template: [{ kind: 'element' as const, tag: 'ListView', attrs: [{ name: 'items', method: '$b0' }], events: [], children: [] }] }, new Map(), () => true, 'angular').join('\n');
+  check(/\.bind\(items: \{ jsReportedItems \{ try self\._b0\(\) \} \}/.test(list), "a list's items that throw are reported, and the list shows none");
+}
+
+// ---- A component's computed signal read in a binding ----
+{
+  const dir = mkdtempSync(join(tmpdir(), 'ns-release-checks-computed-'));
+  try {
+    const file = join(dir, 'people.component.ts');
+    writeFileSync(file, `import { Component, computed, signal } from '@angular/core';
+const BYLINE = { byline: true } as const;
+class Person { name = 'Ada'; }
+type Row = Person | typeof BYLINE;
+@Component({ selector: 'People', template: '<ListView [items]="rows()"></ListView>' })
+export class People {
+  readonly people = signal<Person[]>([]);
+  readonly rows = computed<Row[]>(() => [BYLINE, ...this.people()]);
+}
+`);
+    const ir = angularComponent(file, readFileSync(file, 'utf8'), new Map())!;
+    const { checker, program, files } = createProgram([file], new Map([[file, ir.source]]), 'ios', modulesDir);
+    const sw = new SwiftTranslator(checker, new Map([['People', { props: ir.props, optional: ir.optional }]]), files);
+    sw.plainFields = true;
+    translateModules(sw, program, [file]);
+    const cls = program.getSourceFile(file)!.statements.filter(ts.isClassDeclaration).find((c) => c.name?.text === 'People')!;
+    sw.componentMembers(cls, ir.props);
+    const items = (ir.template as { attrs?: { name: string; method?: string }[] }[])[0]?.attrs?.find((a) => a.name === 'items')?.method ?? '-';
+    check(!sw.memberThrows(cls, items), "reading a component's computed array (`rows()`) in a binding throws nothing (Swift)");
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
+
+// ---- Top-level names the kit declares too ----
+{
+  // ui-chart's `Utils` namespace in the app's one package would hide kit-android's `Utils` from every file.
+  const dir = mkdtempSync(join(tmpdir(), 'ns-release-checks-names-'));
+  try {
+    writeFileSync(join(dir, 'charting.ts'), 'export namespace Utils {\n  export function scaled(n: number): number {\n    return n * 2;\n  }\n}\nexport enum Trace {\n  Off,\n  On,\n}\n');
+    writeFileSync(join(dir, 'theme.ts'), 'export interface Page {\n  title: string;\n}\n');
+    const app = join(dir, 'app.ts');
+    writeFileSync(app, "import { Trace, Utils } from './charting';\nimport { Page } from './theme';\nconst page: Page = { title: 'home' };\nconsole.log(Utils.scaled(2), Trace.On, page.title);\n");
+    const { checker, program } = createProgram([app], new Map(), 'android', modulesDir);
+    const all = program.getSourceFiles().filter((f) => !f.isDeclarationFile);
+    const translator = new Translator(checker, new Map(), all, { pluginFiles: [join(dir, 'charting.ts')] });
+    translator.appModule = 'org.example.app';
+    const kit = new Set(['Utils', 'Trace', 'Page']);
+    translator.core = { has: (n) => kit.has(n), isKitView: () => false, kitMember: () => null, isKitMethod: () => false, nativeClassOf: () => null, type: () => null, property: () => null, lvalue: () => null, call: () => null, construct: () => null, assign: () => null };
+    const code = translateKotlinModules(translator, program, all.map((f) => f.fileName)).map((m) => m.code).join('\n') + translator.interfacesOf(join(dir, 'theme.ts'));
+    check(/^object Utils__charting \{/m.test(code) && /^object Trace__charting \{/m.test(code) && /Utils__charting\.scaled\(2\.0\), Trace__charting\.On/.test(code) && !/^object (Utils|Trace) /m.test(code), "a plugin's namespace and enum named as kit-android's take their module's name (Kotlin)");
+    check(/^class Page__theme\(/m.test(code) && /val page: Page__theme = Page__theme\(title = "home"\)/.test(code), "an app's interface named as a kit-android class takes its module's name, its literals too (Kotlin)");
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
+
+// ---- A plugin's own Java classes ----
+{
+  const dir = join(here, 'plugin-java');
+  const out = mkdtempSync(join(tmpdir(), 'ns-release-checks-java-'));
+  try {
+    const javac = spawnSync('javac', ['-d', join(out, 'classes'), join(dir, 'com/example/peek/Peeker.java')], { encoding: 'utf8' });
+    const jar = spawnSync('jar', ['cf', join(out, 'plugin.jar'), '-C', join(out, 'classes'), '.'], { encoding: 'utf8' });
+    if (javac.status !== 0 || jar.status !== 0) throw new Error(`javac: ${javac.stderr}${jar.stderr}`);
+    const file = join(dir, 'index.android.ts');
+    // Type-checked as a plugin's source is: not as strictly as the app's.
+    const plugin = { all: () => [{ root: dir }] } as unknown as Parameters<typeof createProgram>[4];
+    const { checker, program, files } = createProgram([file], new Map(), 'android', modulesDir, plugin);
+    const translator = new Translator(checker, new Map(), files, { pluginFiles: [file] });
+    translator.appModule = 'org.example.app';
+    translator.native = new AndroidNativeAPI(translator, androidClassPath(null, { archives: [join(out, 'plugin.jar')], dependencies: [] }));
+    const code = translateKotlinModules(translator, program, [file]).map((m) => m.code).join('\n');
+    check(/= com\.example\.peek\.Peeker\(\)/.test(code) && !/jsGet\(com\b/.test(code), "a plugin's Java class its typings lack is made with its constructor, found on the classpath");
+    check(/com\.example\.peek\.Peeker\.twice\(/.test(code), "a plugin's Java class its typings lack has its static methods called directly");
+  } finally {
+    rmSync(out, { recursive: true, force: true });
+  }
+}
+
+// ---- Framework kit auto-detection & layering + Angular C2/E5/F6/F7/F12 ----
+{
+  const dir = mkdtempSync(join(tmpdir(), 'ns-release-checks-ng-kit-'));
+  try {
+    writeFileSync(join(dir, 'package.json'), JSON.stringify({ dependencies: { '@angular/core': '~19.0.0' } }));
+    mkdirSync(join(dir, 'nested-xml', 'app'), { recursive: true });
+    writeFileSync(join(dir, 'nested-xml', 'package.json'), JSON.stringify({ dependencies: { '@nativescript/core': '~9.1.0' } }));
+    writeFileSync(join(dir, 'nested-xml', 'app', 'main-page.xml'), '<Page></Page>');
+    check(detectFramework(dir) === 'angular' && detectFramework(join(dir, 'nested-xml')) === 'core', 'detectFramework auto-detects angular from package.json dependencies without leaking ancestor packages');
+    check(getFrameworkKitInfo('angular').kitName === 'NativeScriptAngularKit', 'getFrameworkKitInfo maps angular to NativeScriptAngularKit layered on NativeScriptKit');
+    check(excludedFrameworkKitFiles('vue', 'apple').has('AngularAPI.swift') && !excludedFrameworkKitFiles('angular', 'apple').has('AngularAPI.swift'), 'excludedFrameworkKitFiles excludes non-active framework kit sources');
+
+    const compFile = join(dir, 'kiddo-card.component.ts');
+    writeFileSync(compFile, `
+import { Component, Injectable, Input, Optional, SkipSelf, input, model } from '@angular/core';
+
+@Injectable({ providedIn: 'root' })
+export class CardService {
+  prefix = 'card:';
+}
+
+@Injectable({ providedIn: 'root' })
+export class CoreSingletonModule {
+  constructor(@Optional() @SkipSelf() parentModule?: CoreSingletonModule) {
+    if (parentModule) throw new Error('already loaded');
+  }
+}
+
+@Component({
+  selector: 'KiddoCard',
+  template: '<Label [text]="displayTitle"></Label>',
+})
+export class KiddoCardComponent {
+  subtitle = input<string>();
+  active = model<boolean>();
+  private _title = '';
+  private _badge = '';
+
+  constructor(private cardService: CardService) {}
+
+  @Input()
+  get title(): string {
+    return this._title;
+  }
+  set title(v: string) {
+    this._title = v.trim();
+  }
+
+  @Input()
+  set badge(v: string) {
+    this._badge = '[' + v + ']';
+  }
+
+  get displayTitle(): string {
+    return this.cardService.prefix + this._title + this._badge + (this.subtitle() ?? '');
+  }
+}
+`);
+    const ir = angularComponent(compFile, readFileSync(compFile, 'utf8'), new Map())!;
+    check(ir.props.includes('subtitle') && ir.props.includes('active') && ir.props.includes('title') && ir.props.includes('badge'), 'angularComponent extracts 0-arg input<T>()/model<T>() and getter/setter @Input props');
+
+    const overrides = new Map([[compFile, ir.source]]);
+    const { checker: swChecker, program: swProg, files: swFiles } = createProgram([compFile], overrides, 'ios', modulesDir);
+    const sw = new SwiftTranslator(swChecker, new Map([['KiddoCardComponent', { props: ir.props, optional: ir.optional }]]), swFiles);
+    sw.plainFields = true;
+    const swMod = translateModules(sw, swProg, [compFile]).map((m) => m.code).join('\n');
+    const swCls = swProg.getSourceFile(compFile)!.statements.filter(ts.isClassDeclaration).find((c) => c.name?.text === 'KiddoCardComponent')!;
+    const swCode = sw.componentMembers(swCls, ir.props).join('\n') + '\n' + swMod;
+    check(/let subtitle: Signal<String\?>/.test(swCode) && /let active: Signal<Bool\?>/.test(swCode) && /init\(subtitle: String\? = nil, active: Bool\? = nil\)/.test(swCode), '0-arg input<T>() and model<T>() emit optional Signal initialized to nil (Swift)');
+    check(/let cardService: CardService/.test(swCode) && /self\.cardService = CardService\.shared/.test(swCode), '@Component constructor parameter property is DI-resolved to shared instance (Swift)');
+    check(/var title: String \{/.test(swCode) && /func _set_title\(/.test(swCode) && /func _set_badge\(/.test(swCode), 'getter+setter and setter-only @Input accessors rewrite cleanly to getter + _set_ methods (Swift)');
+    check(/init\(_ parentModule: CoreSingletonModule\? = nil\)/.test(swCode), '@Optional() @SkipSelf() singleton guard parameter defaults to nil (Swift)');
+
+    const { checker: ktChecker, program: ktProg, files: ktFiles } = createProgram([compFile], overrides, 'android', modulesDir);
+    const kt = new Translator(ktChecker, new Map([['KiddoCardComponent', { props: ir.props, optional: ir.optional }]]), ktFiles);
+    kt.appModule = 'org.example.app';
+    kt.plainFields = true;
+    const ktMod = translateKotlinModules(kt, ktProg, [compFile]).map((m) => m.code).join('\n');
+    const ktCls = ktProg.getSourceFile(compFile)!.statements.filter(ts.isClassDeclaration).find((c) => c.name?.text === 'KiddoCardComponent')!;
+    const ktMembers = kt.componentMembers(ktCls, ir.props);
+    const ktCode = [...ktMembers.params, ...ktMembers.lines, ktMod].join('\n');
+    check(/subtitle: String\? = null/.test(ktCode) && /active: Boolean\? = null/.test(ktCode) && /val subtitle: Signal<String\?> = Signal<String\?>\(subtitle\)/.test(ktCode) && /val active: Signal<Boolean\?> = Signal<Boolean\?>\(active\)/.test(ktCode), '0-arg input<T>() and model<T>() emit nullable Signal initialized to null (Kotlin)');
+    check(/val cardService: CardService = CardService\.shared/.test(ktCode), '@Component constructor parameter property is DI-resolved to shared instance (Kotlin)');
+    check(/val title: String\s+get\(\)/.test(ktCode) && /fun _set_title\(/.test(ktCode) && /fun _set_badge\(/.test(ktCode), 'getter+setter and setter-only @Input accessors rewrite cleanly to getter + _set_ methods (Kotlin)');
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
+
+// ---- HttpClient: a `responseType: 'text'` response is a string ----
+{
+  const dir = mkdtempSync(join(tmpdir(), 'ns-release-checks-http-'));
+  try {
+    const file = join(dir, 'docs.service.ts');
+    writeFileSync(file, `
+import { HttpClient } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
+
+export async function readDoc(http: HttpClient, url: string): Promise<string> {
+  const text = await firstValueFrom(http.get(url, { responseType: 'text' }));
+  return text.trim();
+}
+`);
+    // An app's iOS build compiles @angular/common/http from runtime/angular-rx.ts, as it does with plugins.
+    symlinkSync(modulesDir, join(dir, 'node_modules'), 'dir');
+    const sw = createProgram([file], new Map(), 'ios', modulesDir, new PluginSources({ app: dir, platform: 'ios' }));
+    const swCode = translateModules(new SwiftTranslator(sw.checker, new Map(), sw.files, { pluginFiles: sw.pluginFiles }), sw.program, [file]).map((m) => m.code).join('\n');
+    check(/let text: String = /.test(swCode), "HttpClient.get with responseType 'text' reads its body as a String (Swift)");
+    const kt = createProgram([file], new Map(), 'android', modulesDir);
+    const ktTranslator = new Translator(kt.checker, new Map(), kt.files);
+    ktTranslator.appModule = 'org.example.app';
+    const ktCode = translateKotlinModules(ktTranslator, kt.program, [file]).map((m) => m.code).join('\n');
+    check(/\.get\(url, [^\n]*\)\.mapValues \{ __v: Any\? -> jsAssertedString\(__v\) \}/.test(ktCode), "HttpClient.get with responseType 'text' reads its body as a String (Kotlin)");
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
+
+// ---- NativeDialogConfig on Android ----
+{
+  const dir = mkdtempSync(join(tmpdir(), 'ns-release-checks-dialog-'));
+  try {
+    const file = join(dir, 'sheet.service.ts');
+    writeFileSync(file, `
+import { NativeDialogConfig, NativeDialogService } from '@nativescript/angular';
+
+export function openSheet(dialogs: NativeDialogService, cmp: any, config?: NativeDialogConfig) {
+  return dialogs.open(cmp, { nativeOptions: { fullscreen: true }, ...(config || {}) });
+}
+`);
+    const kt = createProgram([file], new Map(), 'android', modulesDir);
+    const ktTranslator = new Translator(kt.checker, new Map(), kt.files);
+    ktTranslator.appModule = 'org.example.app';
+    const ktCode = translateKotlinModules(ktTranslator, kt.program, [file]).map((m) => m.code).join('\n');
+    check(/config: Any\? = null/.test(ktCode) && !ktCode.includes('NativeDialogConfig'), "a NativeDialogConfig is the plain object kit-android's NativeDialogService takes (Kotlin)");
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
+
+// ---- Angular components an attribute selects ----
+{
+  const bar = "import { Component, input, output } from '@angular/core';\n@Component({ selector: '[searchBar]', template: `<Label [text]=\"hint()\"></Label>` })\nexport class SearchBar { ai = input(false); hint = input('', { alias: 'hintText' }); submitted = output<string>(); }\n";
+  const hosted = hostedComponent('/app/search-bar.component.ts', bar)!;
+  const page = (template: string, imports = 'SearchBar') => angularComponent('/app/home.component.ts', `import { Component, ViewChild } from '@angular/core';\nimport { SearchBar } from './search-bar.component';\n@Component({ selector: 'Home', imports: [${imports}], template: \`${template}\` })\nexport class Home { @ViewChild('bar') bar: SearchBar; go() {} done(v: string) {} }\n`, new Map(), { hosts: [hosted] })!;
+  type Node = { kind: string; tag?: string; name?: string; attrs?: { name: string }[]; props?: { name: string }[]; events?: { name: string; payload?: boolean }[]; children?: Node[]; queries?: { on: string }[] };
+  const host = page(`<GridLayout searchBar [ai]="true" [columns]="2" hintText="Ask" (tap)="go()" (submitted)="done($event)" #bar></GridLayout>`).template[0] as Node;
+  const inner = host.children?.[0];
+  check(host.tag === 'GridLayout' && host.children?.length === 1 && inner?.kind === 'component' && inner.name === 'SearchBar', 'an element whose attribute selects a component hosts it: the component renders into the element');
+  check(inner?.props?.map((p) => p.name).sort().join() === 'ai,hintText' && inner.events?.map((e) => e.name).join() === 'submitted' && !!inner.events?.[0].payload, "the component's inputs (by alias) and outputs bound on its host are the component's");
+  check(host.attrs?.map((a) => a.name).sort().join() === 'columns,hintText,searchBar' && host.events?.map((e) => e.name).join() === 'tap', "the host's other bindings and events are the element's, and its static attributes are written to it");
+  check(inner?.queries?.length === 1 && inner.queries[0].on === 'instance' && !host.queries?.length, "a reference on the host names the component");
+  const swift = render(page(`<StackLayout><GridLayout searchBar></GridLayout></StackLayout>`), new Map([['SearchBar', { props: ['ai', 'hint'], optional: ['ai', 'hint'], propAliases: { hint: 'hintText' }, outputs: ['submitted'] }], ['Home', { props: [] }]]), () => false, 'angular').join('\n');
+  check(/let (v\d+) = try GridLayout\(\)[\s\S]*let (v\d+) = try c\d+\.render\(\)[\s\S]*\1\.kitAddChild\(\2\)/.test(swift), "the hosted component's view is the host element's child (Swift)");
+  const outOfScope = page(`<GridLayout searchBar [ai]="true"></GridLayout>`, '').template[0] as Node;
+  check(!outOfScope.children?.length && outOfScope.attrs?.some((a) => a.name === 'ai'), 'a component the template does not import is not hosted');
+  const refused = (template: string, source = bar) => {
+    try { angularComponent('/app/home.component.ts', `import { Component } from '@angular/core';\nimport { SearchBar } from './search-bar.component';\n@Component({ selector: 'Home', imports: [SearchBar], template: \`${template}\` })\nexport class Home {}\n`, new Map(), { hosts: [hostedComponent('/app/search-bar.component.ts', source)!] }); return ''; } catch (e) { return String(e); }
+  };
+  check(refused(`<GridLayout searchBar><Label text="x"></Label></GridLayout>`).includes('content on <GridLayout>, the host of SearchBar'), "content inside a component's host is refused (no <ng-content> yet)");
+  check(refused(`<GridLayout searchBar></GridLayout>`, bar.replace('export class SearchBar {', "export class SearchBar { el = inject(ElementRef);").replace('{ Component,', '{ Component, ElementRef, inject,')).includes("SearchBar's own ElementRef or host bindings"), 'a hosted component reading its host element is refused');
+}
+
+// ---- Plugin elements registered with a ViewClassMeta ----
+{
+  const dir = mkdtempSync(join(tmpdir(), 'ns-release-checks-ng-elements-'));
+  try {
+    const entry = join(dir, 'node_modules/fake-panel/angular/fesm2022/fake-panel-angular.mjs');
+    mkdirSync(dirname(entry), { recursive: true });
+    writeFileSync(entry, "import { registerElement } from '@nativescript/angular';\nimport { Panel, Badge, Chip } from 'fake-panel';\nconst panelMeta = {\n  insertChild: (parent, child) => { if (child.id === 'main') parent.mainContent = child; },\n  removeChild: (parent, child) => { if (child.id === 'main') parent.mainContent = null; },\n};\nregisterElement('Panel', () => Panel, panelMeta);\nregisterElement('Badge', () => Badge, {});\nregisterElement('Chip', () => Chip);\n");
+    const app = join(dir, 'src/main.ts');
+    mkdirSync(dirname(app), { recursive: true });
+    writeFileSync(app, "import { registerElement } from '@nativescript/angular';\nimport { PanelModule } from 'fake-panel/angular';\nimport { Glass } from './glass';\nregisterElement('Glass', () => Glass, { skipAddToDom: true });\n");
+    const found = registeredElements([app], join(dir, 'node_modules'));
+    check(found.get('Panel')?.name === 'Panel' && found.get('Panel')?.meta?.join() === 'insertChild,removeChild' && found.get('Badge')?.meta?.length === 0 && found.get('Chip')?.meta === undefined && found.get('Glass')?.from === join(dir, 'src/glass'),
+      "registerElement with a third argument registers its tag, with the meta's keys");
+    const elements = new Map([...found].map(([tag, e]) => [tag, e.name]));
+    const elementMeta = new Map([...found].flatMap(([tag, e]) => (e.meta === undefined ? [] : [[tag, e.meta] as const])));
+    const use = (template: string) => {
+      try { return angularComponent('/app/home.component.ts', `import { Component } from '@angular/core';\n@Component({ selector: 'Home', template: \`${template}\` })\nexport class Home {}\n`, new Map(), { elements, elementMeta })!.template[0] as { tag?: string }; } catch (e) { return String(e); }
+    };
+    const empty = use('<Panel></Panel>');
+    check(typeof empty === 'object' && empty.tag === 'Panel' && typeof use('<Badge><Label text="1"></Label></Badge>') === 'object', 'a tag registered with a meta is an element; one whose meta has no renderer hooks takes children');
+    check(String(use('<Panel><Label id="main" text="x"></Label></Panel>')).includes('the children of <Panel> join it through its registerElement meta (insertChild, removeChild)'), "children of a tag whose meta inserts them itself are refused, not added as the layout's");
+    check(String(use('<StackLayout><Glass></Glass></StackLayout>')).includes('<Glass> is registered with skipAddToDom'), 'a tag registered with skipAddToDom is refused');
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
+
+// ---- Angular features a release build refuses rather than ignores ----
+{
+  const thrown = (f: () => unknown) => { try { f(); return ''; } catch (e) { return String(e); } };
+  const page = (template: string, members = 'form: any; name = ""; items: string[] = [];', options: Parameters<typeof angularComponent>[3] = {}, selectors = new Map<string, string>()) =>
+    thrown(() => angularComponent('/app/form.component.ts', `import { Component } from '@angular/core';\n@Component({ selector: 'Form', template: \`${template}\` })\nexport class Form { ${members} }\n`, selectors, options));
+  const refuses = (template: string, text: string, what: string, selectors?: Map<string, string>) => {
+    const e = page(template, undefined, {}, selectors);
+    check(e.includes(text) && e.includes('not supported in a release build yet'), `${what} stops the build: ${e ? e.split(': ').slice(1).join(': ') : 'it compiled'}`);
+  };
+  refuses(`<StackLayout [formGroup]="form"></StackLayout>`, '[formGroup] (@angular/forms) on <StackLayout>', '[formGroup]');
+  refuses(`<TextField formControlName="name"></TextField>`, 'formControlName (@angular/forms) on <TextField>', 'formControlName');
+  refuses(`<StackLayout formGroupName="address"></StackLayout>`, 'formGroupName (@angular/forms)', 'formGroupName');
+  refuses(`<TextField [formControl]="form"></TextField>`, '[formControl] (@angular/forms)', '[formControl]');
+  refuses(`<TextField [(ngModel)]="name"></TextField>`, '[(ngModel)] (@angular/forms) on <TextField>', '[(ngModel)]');
+  refuses(`<TextField [ngModel]="name" (ngModelChange)="name = $event"></TextField>`, '[ngModel] (@angular/forms)', '[ngModel] with (ngModelChange)');
+  refuses(`<StackLayout ngForm (ngSubmit)="name = ''"></StackLayout>`, 'ngForm (@angular/forms)', 'ngForm');
+  refuses(`<StackLayout (ngSubmit)="name = ''"></StackLayout>`, '(ngSubmit) (@angular/forms)', '(ngSubmit)');
+  refuses(`<Rating [(ngModel)]="name"></Rating>`, '[(ngModel)] (@angular/forms) on <Rating>', '[(ngModel)] on a component', new Map([['Rating', 'Rating']]));
+  refuses(`<Label #m="ngModel"></Label>`, `#m="ngModel" on <Label>, a reference to a directive's exportAs`, "a reference to a directive's exportAs");
+  refuses(`<Label [ngClass]="{ on: true }"></Label>`, "[ngClass] (@angular/common's NgClass)", '[ngClass]');
+  refuses(`<Label [ngStyle]="{ color: 'red' }"></Label>`, "[ngStyle] (@angular/common's NgStyle)", '[ngStyle]');
+  refuses(`<Label routerLink="/a"></Label>`, "routerLink (@angular/router's RouterLink; nsRouterLink is supported)", "@angular/router's routerLink");
+  refuses(`<StackLayout [ngTemplateOutlet]="null"></StackLayout>`, "[ngTemplateOutlet] (@angular/common's NgTemplateOutlet, which a release build runs on <ng-container>)", '[ngTemplateOutlet] on an element');
+  refuses(`<Label [ngIf]="true"></Label>`, "[ngIf] (@angular/common's NgIf without its template (*ngIf))", 'NgIf without its template');
+  refuses(`<Label animate.enter="fade"></Label>`, "animate.enter (Angular's enter animation)", 'animate.enter');
+  refuses(`<Label (animate.leave)="name = ''"></Label>`, 'the animation event (animate.leave) on <Label>', '(animate.leave)');
+  refuses(`<Label (@fade.done)="name = ''"></Label>`, 'the animation event (@fade.done) on <Label>', 'a legacy animation event');
+  refuses(`<Label (window:resize)="name = ''"></Label>`, '(window:resize), an event of the window, on <Label>', 'a global event target');
+  refuses(`<ng-container #group></ng-container>`, '#group on <ng-container>', 'a reference on <ng-container>');
+  refuses(`<ng-container formGroupName="address"></ng-container>`, 'formGroupName (@angular/forms) on <ng-container>', 'a forms directive on <ng-container>');
+  refuses(`<page-router-outlet actionBarVisibility="never"></page-router-outlet>`, 'actionBarVisibility="never" on <page-router-outlet>', "page-router-outlet's actionBarVisibility other than auto");
+  refuses(`<page-router-outlet (activate)="name = ''"></page-router-outlet>`, '(activate) on <page-router-outlet>', "page-router-outlet's events");
+  check(!page(`<page-router-outlet name="tab" actionBarVisibility="auto"></page-router-outlet>`), "page-router-outlet's name and actionBarVisibility=\"auto\" (the Frame's default) compile");
+  const fc = angularDirectives(['/app/fc.directive.ts'], () => "import { Directive } from '@angular/core';\n@Directive({ selector: '[formControl]', inputs: ['formControl'] })\nexport class FormControlLike { formControl: any; }\n");
+  const fcPage = thrown(() => angularComponent('/app/form.component.ts', "import { Component } from '@angular/core';\nimport { FormControlLike } from './fc.directive';\n@Component({ selector: 'Form', imports: [FormControlLike], template: `<TextField [formControl]=\"form\"></TextField>` })\nexport class Form { form: any; }\n", new Map(), { directives: fc }));
+  check(!fcPage, `an app directive selected by [formControl] binds it${fcPage ? `: ${fcPage}` : ''}`);
+  const dim = angularDirectives(['/app/dim.directive.ts'], () => "import { Directive } from '@angular/core';\n@Directive({ selector: '[dimmed]' })\nexport class Dim {}\n");
+  const dimmed = thrown(() => angularComponent('/app/form.component.ts', "import { Component } from '@angular/core';\nimport { Dim } from './dim.directive';\n@Component({ selector: 'Form', imports: [Dim], template: `<ng-container dimmed></ng-container>` })\nexport class Form {}\n", new Map(), { directives: dim }));
+  check(dimmed.includes('the directive Dim on <ng-container> is not supported in a release build yet'), `an app directive on <ng-container> stops the build${dimmed ? '' : ': it compiled'}`);
+
+  const empty = angularComponent('/app/list.component.ts', "import { Component } from '@angular/core';\n@Component({ selector: 'List', template: `<StackLayout>@for (x of items; track x) { <Label [text]=\"x\"></Label> } @empty { <Label text=\"None\"></Label> }</StackLayout>` })\nexport class List { items: string[] = []; }\n", new Map())!;
+  type Node = { kind: string; tag?: string; items?: string; branches?: { cond: string | null; body: Node[] }[]; children?: Node[]; attrs?: { name: string; value?: string }[] };
+  const [loop, none] = (empty.template[0] as Node).children ?? [];
+  const cond = none?.branches?.[0]?.cond ?? '-';
+  check(loop?.kind === 'for' && none?.kind === 'if' && none.branches?.length === 1 && none.branches[0].body[0]?.attrs?.some((a) => a.value === 'None') === true
+    && empty.source.includes(`${cond}() { return (!!(this.${loop.items}().length === 0)); }`), "@for's @empty renders in the loop's place while its collection is empty");
+
+  const meta = (fields: string, members = '') => thrown(() => angularComponent('/app/c.component.ts', `import { Component, input, output, viewChild, booleanAttribute } from '@angular/core';\nconst template = '';\n@Component({ selector: 'C', template: '<Label></Label>', ${fields} })\nexport class C { ${members} }\n`, new Map()));
+  for (const [fields, text] of [
+    ["viewProviders: [Object]", "@Component's viewProviders"], ["host: { class: 'card' }", "@Component's host"],
+    ["inputs: ['x']", "@Component's inputs"], ["outputs: ['y']", "@Component's outputs"], ["preserveWhitespaces: true", "@Component's preserveWhitespaces"],
+    ["hostDirectives: []", "@Component's hostDirectives"], ["interpolation: ['[[', ']]']", "@Component's interpolation"],
+  ]) {
+    const e = meta(fields);
+    check(e.includes(`${text} is not supported in a release build yet`), `${text} stops the build${e ? '' : ': it compiled'}`);
+  }
+  check(meta('template').includes("@Component's template is read as `name: value`"), "a shorthand @Component field stops the build");
+  check(!meta("standalone: true, schemas: [], exportAs: 'c', animations: [], preserveWhitespaces: false, encapsulation: 2"), '@Component fields that only steer the compiler compile');
+  for (const [members, text] of [
+    ["on = input(false, { transform: booleanAttribute });", "input()'s transform (on) is not supported in a release build yet"],
+    ["done = output<void>({ alias: 'finished' });", "output()'s alias (done) is not supported in a release build yet"],
+    ["box = viewChild('box');", 'the signal query viewChild() (box) is not supported in a release build yet'],
+  ]) {
+    const e = meta('standalone: true', members);
+    check(e.includes(text), `${text.split(' is ')[0]} stops the build${e ? '' : ': it compiled'}`);
+  }
+  check(!meta('standalone: true', "on = input(false, { alias: 'enabled', debugName: 'on' });"), "input()'s alias and debugName compile");
+  const directive = (body: string, fields = '') => thrown(() => angularDirectives(['/app/d.directive.ts'], () => `import { Directive, input } from '@angular/core';\n@Directive({ selector: '[dim]'${fields} })\nexport class Dim { ${body} }\n`));
+  check(directive("level = input(1);").includes('input() (level) in a directive is not supported in a release build yet'), "a directive's signal input stops the build");
+  check(directive('', ", exportAs: 'dim'").includes('its exportAs is not supported in a release build yet'), "a directive's exportAs stops the build");
+  for (const [fields, members, text] of [
+    ['providers: [Store, { provide: Store, useClass: Store, multi: true }]', '', "its multi is not supported in a release build yet"],
+    ['providers: [...SHARED]', '', "the provider ...SHARED in @Component's providers is not supported in a release build yet"],
+    ['providers: [provideStore()]', '', "the provider provideStore() in @Component's providers is not supported in a release build yet"],
+    ['providers: SHARED', '', "@Component's providers are read as an array literal in a release build"],
+    ['providers: [{ provide: Store }]', '', 'needs provide and one of useClass, useValue, useFactory or useExisting'],
+    ['providers: [{ provide: Store, useFactory: (s: Store) => s, deps: [[new Optional(), Store]] }]', '', 'deps other than a list of tokens for useFactory are not supported'],
+    ['providers: [Store]', 'store = inject(Store, { skipSelf: true });', "inject()'s skipSelf in a component with providers is not supported in a release build yet"],
+    ['providers: [Store]', 'constructor(@Self() private store: Store) {}', '@Self() in a component with providers is not supported in a release build yet'],
+  ]) {
+    const e = meta(fields, members);
+    check(e.includes(text), `component providers: ${text.split(' is ')[0].split(' are ')[0]} stops the build${e ? '' : ': it compiled'}`);
+  }
+  const extended = thrown(() => angularComponent('/app/c.component.ts', "import { Component } from '@angular/core';\nclass Base {}\n@Component({ selector: 'C', template: '<Label></Label>', providers: [Base] })\nexport class C extends Base {}\n", new Map()));
+  check(extended.includes("@Component's providers on a class that extends another are not supported in a release build yet"), 'component providers on a derived class stop the build');
+  const ngModule = "import { NgModule } from '@angular/core';\n@NgModule({ declarations: [], providers: [{ provide: 'API', useValue: '/api' }] })\nexport class AppModule {}\n";
+  check(thrown(() => declarablesIn('/app/app.module.ts', ngModule, true)).includes("the NgModule AppModule's providers are not supported in a release build yet") && !thrown(() => declarablesIn('/lib/lib.module.ts', ngModule)), "an app NgModule's providers stop the build (a library's wrapper module is not read for them)");
+
+  const dir = mkdtempSync(join(tmpdir(), 'ns-release-checks-ng-routes-'));
+  try {
+    const w = (f: string, text: string) => { mkdirSync(dirname(join(dir, f)), { recursive: true }); writeFileSync(join(dir, f), text); return join(dir, f); };
+    w('src/home.ts', 'export class Home {}\n');
+    const tree = (route: string, features = '') => {
+      const main = w('src/main.ts', `import { routes } from './app.routes';\nbootstrapApplication(App, { providers: [provideNativeScriptRouter(routes${features})] });\n`);
+      w('src/app.routes.ts', `import { Home } from './home';\nconst more = [{ path: 'more', component: Home }];\nexport const routes = [${route}];\n`);
+      return thrown(() => angularRouteTree(main, (f) => readFileSync(f, 'utf8')));
+    };
+    for (const guard of ['canActivate', 'canActivateChild', 'canDeactivate', 'canMatch', 'canLoad']) {
+      const e = tree(`{ path: 'admin', component: Home, ${guard}: [() => false] }`);
+      check(e.includes(`route guards (${guard} on 'admin') are not supported in a release build yet`), `the route guard ${guard} stops the build${e ? '' : ': it compiled'}`);
+    }
+    check(tree("{ path: 'item', component: Home, resolve: { item: () => 1 } }").includes("route resolvers (resolve on 'item') are not supported in a release build yet"), 'a route resolver stops the build');
+    for (const [field, text] of [
+      ["data: { title: 'x' }", "a route's data on 'a' is not supported"], ['providers: []', "a route's providers on 'a' is not supported"],
+      ["redirectTo: () => '/b'", "a route's redirectTo that is not a string (() => '/b') is not supported"], ['component', "a route's component is read as `name: value`"],
+    ]) {
+      const e = tree(`{ path: 'a', ${field} }`);
+      check(e.includes(text), `${text.split(' is ')[0]} stops the build${e ? '' : ': it compiled'}`);
+    }
+    check(tree("{ matcher: () => null, component: Home }").includes("a route's matcher is not supported"), "a route's matcher stops the build");
+    check(tree("{ path: 'a', component: Home }", ', withComponentInputBinding()').includes('the router feature withComponentInputBinding() is not supported in a release build yet'), 'a router feature that changes routing stops the build');
+    check(!tree("{ path: 'a', component: Home, title: 'A', runGuardsAndResolvers: 'always' }", ', withPreloading(PreloadAllModules)'), "a route's title and runGuardsAndResolvers, and withPreloading, compile");
+    const followed = (() => { try { return routedComponents(angularRouteTree(w('src/main.ts', "import { routes } from './app.routes';\nprovideNativeScriptRouter(routes);\n"), (f) => readFileSync(f, 'utf8'))!.routes); } catch { return []; } });
+    w('src/app.routes.ts', "import { Home } from './home';\nconst more = [{ path: 'more', component: Home }];\nexport const routes = [{ path: '', children: more }];\n");
+    check(followed().join() === 'Home', "a route's children named by a constant are followed");
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+  const flat = (text: string) => thrown(() => angularRoutes(text, '/app/app-routing.module.ts'));
+  check(flat("const routes = [{ path: 'a', component: A, canActivate: [AuthGuard] }];").includes("route guards (canActivate on 'a') are not supported in a release build yet"), 'a route guard in a routes file outside the entry stops the build');
+  check(flat("const routes = [{ path: 'a', component: A, children: [] }];").includes("a route's children, with the routes given outside the entry, is not supported"), 'nested routes outside the entry stop the build');
+  check(flat("const routes = [{ path: 'a', redirectTo: '/b' }];").includes("a redirect from a path other than ''"), "a redirect from a path other than '' outside the entry stops the build");
+  check(flat("const routes = [{ path: 'a', component: A }];\n@NgModule({ imports: [NativeScriptRouterModule.forRoot(routes, { bindToComponentInputs: true })] })\nexport class R {}\n").includes('the router option bindToComponentInputs is not supported'), "forRoot's options that change routing stop the build");
+  check(!flat("const routes = [{ path: '', redirectTo: '/a', pathMatch: 'full' }, { path: 'a', component: A }];\nNativeScriptRouterModule.forRoot(routes, { enableTracing: true });\nconst row = { id: 1, path: 'x' };\n"), 'a flat route table, and an object with a path that is not a route, compile');
+}
+
+// ---- Angular exports and a non-strict app's diagnostics ----
+{
+  const dir = mkdtempSync(join(tmpdir(), 'ns-release-checks-ng-exports-'));
+  try {
+    symlinkSync(modulesDir, join(dir, 'node_modules'), 'dir');
+    writeFileSync(join(dir, 'tsconfig.json'), JSON.stringify({ compilerOptions: { strict: false } }));
+    const file = join(dir, 'boot.ts');
+    writeFileSync(file, `
+import { enableProdMode } from '@angular/core';
+import type { HttpEvent } from '@angular/common/http';
+import type { CanActivate, IsActiveMatchOptions, Params } from '@angular/router';
+import { isAngularHmrRestoringRoute } from '@nativescript/angular';
+
+export class Guard implements CanActivate {
+  canActivate(): boolean { return true; }
+}
+export const exact: IsActiveMatchOptions = { paths: 'exact', queryParams: 'ignored', fragment: 'ignored', matrixParams: 'ignored' };
+export function page(p: Params): string { return String(p['page'] ?? 1); }
+export function status(e: HttpEvent<string>): number { return e.status; }
+enableProdMode();
+export const restoring = isAngularHmrRestoringRoute();
+`);
+    const lenient = join(dir, 'lenient.ts');
+    writeFileSync(lenient, "declare const flag: boolean;\nexport const a = undefined ?? false;\nexport const b = !Boolean(undefined || flag);\nexport const e = undefined ? 'test' : 'production';\nexport function d() { if ({}) return 1; return 2; }\n");
+    let ios = '', android = '';
+    let swCode = '', ktCode = '';
+    try {
+      const sw = createProgram([file, lenient], new Map(), 'ios', modulesDir, new PluginSources({ app: dir, platform: 'ios' }));
+      swCode = translateModules(new SwiftTranslator(sw.checker, new Map(), sw.files, { pluginFiles: sw.pluginFiles }), sw.program, [file]).map((m) => m.code).join('\n');
+    } catch (e) { ios = String(e); }
+    try {
+      const kt = createProgram([file, lenient], new Map(), 'android', modulesDir);
+      const ktTranslator = new Translator(kt.checker, new Map(), kt.files);
+      ktTranslator.appModule = 'org.example.app';
+      ktCode = translateKotlinModules(ktTranslator, kt.program, [file]).map((m) => m.code).join('\n');
+    } catch (e) { android = String(e); }
+    check(!ios && !android, `Angular's CanActivate, Params, IsActiveMatchOptions, HttpEvent, enableProdMode and isAngularHmrRestoringRoute type-check and translate, and a non-strict app's always-nullish, -truthy and -falsy operands are not errors${ios || android ? `: ${(ios || android).split('\n').slice(0, 3).join(' ')}` : ''}`);
+    check(!/enableProdMode/.test(swCode) && !/enableProdMode/.test(ktCode) && /restoring[^\n]*= false/.test(ktCode), 'enableProdMode is nothing in a release build, and no route is restored for hot module replacement');
+    writeFileSync(join(dir, 'tsconfig.json'), JSON.stringify({ compilerOptions: { strict: true } }));
+    let strict = '';
+    try { createProgram([lenient], new Map(), 'android', modulesDir); } catch (e) { strict = String(e); }
+    check(strict.includes('TS2871') && strict.includes('TS2873'), "a strict app's always-nullish and always-falsy operands stay errors");
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
+
+// ---- An instance's own value for a class method (Kotlin) ----
+{
+  const dir = mkdtempSync(join(tmpdir(), 'ns-release-checks-own-method-'));
+  try {
+    const translate = (source: string) => {
+      const file = join(dir, 'store.ts');
+      writeFileSync(file, source);
+      const kt = createProgram([file], new Map(), 'android', modulesDir);
+      const ktTranslator = new Translator(kt.checker, new Map(), kt.files);
+      ktTranslator.appModule = 'org.example.app';
+      try { translateKotlinModules(ktTranslator, kt.program, [file]); return ''; } catch (e) { return String(e); }
+    };
+    const store = 'export class Store { dispatch(a: string): number { return a.length; } }\nexport const s = new Store();\n';
+    check(translate(store + 's.dispatch = (a: string) => -1;\n').includes("giving an instance its own Store.dispatch in place of the class's method is not supported in a release build yet"), "an instance given its own function for a class method stops the Android build");
+    check(!translate(store + "export const o = { f(): number { return 1; } };\no.f = () => 2;\n"), "an object literal's method is replaced on Android");
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 }
 
 console.log(failed ? `${failed} release checks failed` : 'release checks pass');

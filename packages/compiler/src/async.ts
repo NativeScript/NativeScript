@@ -206,7 +206,8 @@ export class AsyncLowering {
     const t = this.t;
     if (!e) return ctx.ret(null, false);
     const isPromise = t.isPromiseType(t.typeOf(e));
-    return t.tryPrefix(e) + ctx.ret(isPromise ? t.expr(e) : t.coerce(e, ctx.result), isPromise);
+    // The `try` marks the value: a return through a finally holds it in a block, which a `try` cannot mark.
+    return ctx.ret(t.tryPrefix(e) + (isPromise ? t.expr(e) : t.coerce(e, ctx.result)), isPromise);
   }
 
   /** A statement list, its tail moved into a continuation at the first statement that awaits. */

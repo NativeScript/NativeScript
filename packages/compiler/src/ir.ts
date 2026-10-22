@@ -30,16 +30,56 @@ export interface Event {
   payload?: boolean;
 }
 
+/**
+ * An Angular view query's hooks on the node it matches: `set` and `unset` called, after the names in scope, with the
+ * node's view (`view`) or the component made there (`instance`), when the view is made and when it goes.
+ */
+export interface QueryHook {
+  set: string;
+  unset?: string;
+  on: 'view' | 'instance';
+}
+
+/**
+ * An Angular directive on an element, one per view of it. Its methods take the names in scope, then the directive
+ * (`name`): `make` gives it, made with the element as its ElementRef; each input's `set` takes the value too, from its
+ * binding's `method` or the attribute's `value`; `listeners` take the event; `bindings` give a host property's value.
+ */
+export interface DirectiveUse {
+  name: string;
+  make: string;
+  inputs: ({ set: string; method: string } | { set: string; value: string })[];
+  listeners: { event: string; method: string }[];
+  bindings: { prop: string; method: string }[];
+  /** Host attributes it sets (`host: { role: 'x' }`). */
+  attributes: { name: string; value: string }[];
+  init?: string;
+  destroy?: string;
+  afterViewInit?: string;
+  /** It implements ngOnChanges: its inputs record their changes, flushed by one check after them. */
+  changes?: boolean;
+}
+
 export type TNode =
   | {
       kind: 'element'; tag: string; attrs: Attr[]; events: Event[]; children: TNode[];
       /** A method returning the ref object (`useRef`) the view is stored in, as `ref={…}` does. */
       ref?: string;
+      queries?: QueryHook[];
+      /** The component's `init` runs once this view is made (Angular's static queries resolve before ngOnInit). */
+      init?: boolean;
+      directives?: DirectiveUse[];
       /** A ListView whose items are sections (`sectioned`), each holding its rows in `items`. */
       sections?: boolean;
     }
-  | { kind: 'component'; name: string; props: Attr[]; events: Event[] }
+  | { kind: 'component'; name: string; props: Attr[]; events: Event[]; queries?: QueryHook[] }
   | { kind: 'if'; branches: { cond: string | null; body: TNode[] }[] }
+  /**
+   * A value of the view the body is in, made when the view is (an Angular pipe): `make` is called with the names in
+   * scope, the body's methods take the value as `name` after them, and `destroy`, with the value too, runs when the
+   * view goes.
+   */
+  | { kind: 'local'; name: string; make: string; destroy?: string; body: TNode[] }
   /** `items` and `key` are methods; `vars` are the item and index names the body sees. */
   | { kind: 'for'; items: string; key: string | null; item: string; index: string; body: TNode[] }
   /**
@@ -68,6 +108,10 @@ export interface ComponentIR {
   template: TNode[];
   /** Props a parent may leave out. */
   optional?: string[];
+  /** Props set through the component's `$set_<prop>` method (an Angular `@Input()` setter) when the binding changes, not passed to its constructor. */
+  setters?: string[];
+  /** Props the parent names otherwise (an aliased Angular input), by prop. */
+  propAliases?: Record<string, string>;
   /** Whether the component takes the names of the props its parent gave (`$passed`), for a spread of its rest props. */
   passed?: boolean;
   /** Svelte's `$:` declarations: the state `name`, which `method` recomputes before the bindings update. */
@@ -80,6 +124,18 @@ export interface ComponentIR {
   watchers?: Watcher[];
   /** A method run once the props are set, before the template (Angular's `ngOnInit`). */
   init?: string;
+  /** `init` runs where the template's element marked `init` is made, not before the template. */
+  lateInit?: boolean;
+  /** Run once the template is made and its bindings applied (Angular's `ngAfterViewInit`). */
+  afterViewInit?: string;
+  /** Run when the component's scope ends (Angular's `ngOnDestroy`). */
+  destroy?: string;
+  /** A field holding the component's own ElementRef (Angular's host element), given the template's root view once it is made. */
+  host?: string;
+  /** A field holding the component's own injector (Angular's `providers`), which its view injects from. */
+  injector?: string;
+  /** Angular's `ngOnChanges`: the parent records each input it sets with `$change(name, value)`, then calls `$flushChanges()` once its `$changed` signal moves. */
+  changes?: boolean;
   /** The component's own stylesheets, scoped by its framework, which the app's build adds after app.css. */
   styles?: ComponentStyle[];
   /** Lines of the virtual file (0-based) its template's bindings were made from, with their line (1-based) in `file`, the template's own. */
@@ -98,10 +154,15 @@ export function scopeTemplate(nodes: TNode[], attribute: string): TNode[] {
     switch (n.kind) {
       case 'element': return { ...n, attrs: [...n.attrs, { name: attribute, value: '' }], children: scopeTemplate(n.children, attribute) };
       case 'if': return { ...n, branches: n.branches.map((b) => ({ ...b, body: scopeTemplate(b.body, attribute) })) };
-      case 'for': case 'template': return { ...n, body: scopeTemplate(n.body, attribute) };
+      case 'for': case 'template': case 'local': return { ...n, body: scopeTemplate(n.body, attribute) };
       default: return n;
     }
   });
+}
+
+/** The nodes with each `local` replaced by its body: what renders where the local is. */
+export function withoutLocals(nodes: TNode[]): TNode[] {
+  return nodes.flatMap((n) => (n.kind === 'local' ? withoutLocals(n.body) : [n]));
 }
 
 export interface Watcher {

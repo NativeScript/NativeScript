@@ -10,7 +10,7 @@ import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { basename, join, relative, resolve } from 'node:path';
+import { basename, dirname, join, relative, resolve } from 'node:path';
 import { appResourcesDir, productionPlugins, readConfig } from './app-resources.ts';
 import { moduleCache, nativeTable, setEmptyTable } from './natives/symbols.ts';
 
@@ -254,7 +254,7 @@ export function iosDependencies(o: { app: string; packages: SwiftPackage[]; depl
 }
 
 function dependencyKey(packages: SwiftPackage[], pods: string | null): string {
-  const h = createHash('sha256').update('dependencies-1\0').update(pods ?? '').update('\0');
+  const h = createHash('sha256').update('dependencies-3\0').update(pods ?? '').update('\0');
   for (const p of packages) {
     h.update(JSON.stringify({ ...p, path: undefined, plugin: undefined, pluginDir: undefined })).update('\0');
     if (p.path) for (const f of filesUnder(p.path)) h.update(relative(p.path, f)).update('\0').update(readFileSync(f)).update('\0');
@@ -266,6 +266,15 @@ interface Built { dir: string; args: string[]; modules: string[]; classes: Recor
 
 function buildDependencies(packages: SwiftPackage[], pods: string | null, deploymentTarget: string, say: (m: string) => void): Built {
   const dir = mkdtempSync(join(tmpdir(), 'ns-dependencies-'));
+  try {
+    return buildIn(dir, packages, pods, deploymentTarget, say);
+  } catch (e) {
+    rmSync(dir, { recursive: true, force: true });
+    throw e;
+  }
+}
+
+function buildIn(dir: string, packages: SwiftPackage[], pods: string | null, deploymentTarget: string, say: (m: string) => void): Built {
   say(`building the Swift packages and pods once for their symbol tables (${[...packages.map((p) => p.name), ...(pods ? ['CocoaPods'] : [])].join(', ')})`);
   mkdirSync(join(dir, 'Empty'));
   writeFileSync(join(dir, 'Empty', 'Empty.swift'), '');
@@ -297,6 +306,14 @@ ${packages.length ? `    dependencies:\n${productLines(packages)}` : ''}    sett
     const lines = `${e.stdout ?? ''}${e.stderr ?? ''}`.split('\n').filter((l) => /\berror\b/.test(l));
     throw new Error(`the Swift packages and pods do not build for the simulator:\n${lines.slice(0, 20).join('\n') || e.message}`);
   }
+  return { dir, ...builtModules(derived) };
+}
+
+/**
+ * The modules a build for the simulator left in `derived` (its DerivedData), the arguments that let the Swift compiler
+ * and the extractor see them as Xcode lets the build's targets see them, and the Objective-C classes each one's binary defines.
+ */
+export function builtModules(derived: string): { args: string[]; modules: string[]; classes: Record<string, string[]> } {
   const products = join(derived, 'Build', 'Products', 'Debug-iphonesimulator');
   const maps = join(derived, 'Build', 'Intermediates.noindex', 'GeneratedModuleMaps-iphonesimulator');
   const modules = new Set<string>();
@@ -307,8 +324,22 @@ ${packages.length ? `    dependencies:\n${productLines(packages)}` : ''}    sett
       if (!f.endsWith('.modulemap')) continue;
       const module = basename(f, '.modulemap');
       modules.add(module);
+      // A C target's public headers directory is on its dependents' header search path (`#include <CLib/x.h>`).
+      const umbrella = /^\s*umbrella\s+(header\s+)?"([^"]+)"/m.exec(readFileSync(join(maps, f), 'utf8'));
+      const headers = umbrella && (!umbrella[1] ? umbrella[2] : basename(dirname(umbrella[2])) === module ? dirname(dirname(umbrella[2])) : dirname(umbrella[2]));
+      if (headers && existsSync(headers)) args.push('-Xcc', `-I${headers}`);
       // Clang finds only `module.modulemap` on a search path: a C target's map (`ZipArchive.modulemap`) is loaded by name, as Xcode loads it.
       if (!existsSync(join(products, `${module}.swiftmodule`))) args.push('-Xcc', `-fmodule-map-file=${join(maps, f)}`);
+    }
+  }
+  // A C target with a module map of its own has none generated: Xcode loads its map where the package keeps it.
+  const checkouts = join(derived, 'SourcePackages', 'checkouts');
+  const built = existsSync(products) ? new Set(readdirSync(products).filter((f) => f.endsWith('.o')).map((f) => basename(f, '.o'))) : new Set<string>();
+  if (existsSync(checkouts)) for (const map of ownModuleMaps(checkouts)) {
+    for (const m of readFileSync(map, 'utf8').matchAll(/^\s*module\s+(\w+)/gm)) {
+      if (!built.has(m[1]) || modules.has(m[1])) continue;
+      modules.add(m[1]);
+      args.push('-Xcc', `-I${dirname(map)}`, '-Xcc', `-fmodule-map-file=${map}`);
     }
   }
   // A binary target of a static library: its headers and module map are copied to `include`.
@@ -320,26 +351,38 @@ ${packages.length ? `    dependencies:\n${productLines(packages)}` : ''}    sett
       for (const m of readFileSync(join(include, f), 'utf8').matchAll(/^\s*(?:framework\s+)?module\s+(\w+)/gm)) modules.add(m[1]);
     }
   }
-  // A binary target's framework is copied to the products themselves.
-  if (readdirSync(products).some((f) => f.endsWith('.framework'))) args.push('-F', products);
-  for (const f of readdirSync(products)) {
-    const p = join(products, f);
-    if (f.endsWith('.swiftmodule')) modules.add(basename(f, '.swiftmodule'));
-    else if (f.endsWith('.framework') && f !== `${SCRATCH_TARGET}.framework` && existsSync(join(p, 'Modules'))) modules.add(basename(f, '.framework'));
-    else if (statSync(p).isDirectory() && !/\.(framework|bundle)$/.test(f)) {
-      const frameworks = readdirSync(p).filter((x) => x.endsWith('.framework'));
-      if (frameworks.length) args.push('-F', p);
-      for (const fw of frameworks) modules.add(basename(fw, '.framework'));
+  // A binary target's framework is copied to the products, or below them (`XCFrameworkIntermediates/<package>/<name>.framework`).
+  const frameworkDirs = new Set<string>();
+  const scan = (dir: string) => {
+    for (const f of readdirSync(dir)) {
+      const p = join(dir, f);
+      if (dir === products && f.endsWith('.swiftmodule')) modules.add(basename(f, '.swiftmodule'));
+      else if (f.endsWith('.framework')) {
+        if (f !== `${SCRATCH_TARGET}.framework` && existsSync(join(p, 'Modules'))) modules.add(basename(f, '.framework'));
+        frameworkDirs.add(dir);
+      } else if (statSync(p).isDirectory() && !/\.(bundle|swiftmodule|dSYM)$/.test(f) && dir !== include) scan(p);
     }
-  }
+  };
+  if (existsSync(products)) scan(products);
+  for (const d of frameworkDirs) args.push('-F', d);
   // What each module's binary (`libX.a`, `X.o`, `X.framework/X`) defines.
   const classes: Record<string, string[]> = {};
-  for (const f of readdirSync(products, { recursive: true }) as string[]) {
+  for (const f of existsSync(products) ? readdirSync(products, { recursive: true }) as string[] : []) {
     const name = /(?:^|\/)(?:lib(\w+)\.a|(\w+)\.o|(\w+)\.framework\/\3)$/.exec(f);
     const module = name && (name[1] ?? name[2] ?? name[3]);
     if (module && modules.has(module) && statSync(join(products, f)).isFile()) classes[module] = definedObjCClasses([join(products, f)]);
   }
-  return { dir, args, modules: [...modules].sort(), classes };
+  return { args, modules: [...modules].sort(), classes };
+}
+
+/** The module maps packages keep in their checkouts, outside their tests and examples. */
+function ownModuleMaps(dir: string, out: string[] = []): string[] {
+  for (const e of readdirSync(dir, { withFileTypes: true })) {
+    if (e.isSymbolicLink()) continue;
+    if (e.isDirectory() && !/^(\.\w+|Tests?|Examples?)$/.test(e.name)) ownModuleMaps(join(dir, e.name), out);
+    else if (e.isFile() && e.name === 'module.modulemap') out.push(join(dir, e.name));
+  }
+  return out;
 }
 
 /**

@@ -1,7 +1,7 @@
 import ts from 'typescript';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
-import { kitExtends, kitIndex, kitMember, unwrapped, type KitMember, type KitType } from './kit-index.ts';
+import { KIT_GLOBALS, kitExtends, kitIndex, kitMember, type KitMember, type KitType } from './kit-index.ts';
 import { optionalType, splitTopLevel, type Translator } from './swift.ts';
 import { KIT_APPLE_SOURCES } from './paths.ts';
 
@@ -33,6 +33,14 @@ function coreBarrels(root: string): Map<string, string> {
 }
 
 /** A declaration of core's TypeScript API; the typings of its own native code (`objc!NativeScriptUtils.d.ts`) are native declarations. */
+/**
+ * Whether a member's declarations are the program's own, adding it to a core type (an intersection's added members),
+ * a plugin's declaration modules (`index.d.ts`) among them; native typings are global declarations.
+ */
+export function addedDeclarations(decls: readonly ts.Declaration[]): boolean {
+  return decls.length > 0 && decls.every((d) => !isCoreDeclaration(d) && (!d.getSourceFile().isDeclarationFile || ts.isExternalModule(d.getSourceFile())));
+}
+
 export function isCoreDeclaration(decl: ts.Declaration | undefined): boolean {
   const file = decl?.getSourceFile().fileName;
   return !!file && (KIT_PACKAGES.test(file) || kitPackageDeclaration(file)) && !/[\\/]objc![^\\/]+\.d\.ts$/.test(file);
@@ -97,6 +105,19 @@ export const KIT_PLUGINS = [...APPLE_KIT_PLUGINS];
 const kitPackages = () => new RegExp(`[\\\\/](${['@nativescript/core', ...KIT_PLUGINS].map((p) => p.replace(/\//g, '[\\\\/]')).join('|')})[\\\\/]`);
 let KIT_PACKAGES = kitPackages();
 
+/** Binary-only plugins (no TypeScript source anywhere) that `release.stubPlugins` may build with the no-op stand-ins of `runtime/binary-plugin-stubs.ts`. */
+export const STUBBABLE_PLUGINS = [
+  'nativescript-ui-listview',
+  'nativescript-ui-gauge',
+  'nativescript-ui-sidedrawer',
+  'nativescript-ui-calendar',
+  'nativescript-ui-dataform',
+  'nativescript-ui-autocomplete',
+  'nativescript-ui-chart',
+];
+/** The binary-only plugins this build stubs (`stubbedPlugins` in app-resources.ts). */
+export const STUBBED_PLUGINS = new Set<string>();
+
 /** The kit plugins of `platform`'s kit: kit-android implements none, so every plugin compiles from its source there. */
 export function useKitPlugins(platform: 'ios' | 'android') {
   KIT_PLUGINS.splice(0, KIT_PLUGINS.length, ...(platform === 'android' ? [] : APPLE_KIT_PLUGINS));
@@ -145,7 +166,12 @@ export class CoreAPI {
 
   /** Whether NativeScriptKit has a top-level function or variable of this name (core's index exports it). */
   exportsTopLevel(name: string): boolean {
-    return existsSync(join(KIT, 'Core', `__Export.${name}.swift`));
+    return !!this.coreGlobal(name);
+  }
+
+  /** A top-level function or variable the kit generated from core's index exports (`getRootLayout`, `widthProperty`). */
+  private coreGlobal(name: string, kind?: 'func' | 'var'): KitMember | null {
+    return this.index.get(KIT_GLOBALS)?.members.get(name)?.find((m) => m.exported && (!kind || m.kind === kind)) ?? null;
   }
 
   /** Whether NativeScriptKit declares a type of this name. */
@@ -265,7 +291,7 @@ export class CoreAPI {
     const variable = ts.isVariableDeclaration(decl) && ts.isIdentifier(decl.name) && ts.isSourceFile(decl.parent.parent.parent);
     if (!(ts.isFunctionDeclaration(decl) || variable) || !(decl as ts.NamedDeclaration).name || !isCoreDeclaration(decl)) return null;
     const name = ((decl as ts.NamedDeclaration).name as ts.Identifier).text;
-    if (existsSync(join(KIT, 'Core', `__Export.${name}.swift`))) return null;
+    if (this.coreGlobal(name)) return null;
     const file = decl.getSourceFile().fileName;
     const root = /^(.*[\\/]@nativescript[\\/]core)[\\/]/.exec(file)?.[1] ?? (packageOf(file)?.name === '@nativescript/core' ? packageOf(file)!.root : undefined);
     if (!root) return null;
@@ -292,11 +318,10 @@ export class CoreAPI {
     return candidates.find((c): c is string => !!c && this.index.has(c)) ?? null;
   }
 
-  /** A member the kit's class lacks that the program's own declarations give a core type (an intersection's added members). */
+  /** A member the kit's class lacks that the program's own declarations give a core type (`addedDeclarations`). */
   private addedMember(owner: string, e: ts.PropertyAccessExpression): boolean {
     if (kitMember(this.index, owner, e.name.text)) return false;
-    const decls = this.t.resolve(e.name)?.declarations ?? [];
-    return decls.length > 0 && decls.every((d) => !isCoreDeclaration(d) && !d.getSourceFile().isDeclarationFile);
+    return addedDeclarations(this.t.resolve(e.name)?.declarations ?? []);
   }
 
   /**
@@ -385,7 +410,8 @@ export class CoreAPI {
     while (ts.isParenthesizedExpression(outer)) outer = outer.parent;
     const untyped = (ts.isAsExpression(outer) || ts.isTypeAssertionExpression(outer)) && outer.type.kind === ts.SyntaxKind.AnyKeyword;
     const read = m.type.trim() === 'Any?' && untyped && ['String', 'Double', 'Bool'].includes(t.typeOf(e)) ? 'Any?' : t.typeOf(e);
-    return this.fromKit(`${recv}.${name}`, inChain ? m.type.replace(/[?!]?$/, '?') : m.type, read);
+    const optional = !inChain && /[?!]$/.test(m.type.trim()) && read !== 'Any?' && !read.endsWith('?') && t.readOptional(e);
+    return this.fromKit(`${recv}.${name}`, inChain ? m.type.replace(/[?!]?$/, '?') : m.type, optional ? optionalType(read) : read);
   }
 
   /** A constant core declares with a literal type (`CoreTypes.AnimationCurve.easeIn` is "easeIn"), as that literal. */
@@ -515,34 +541,14 @@ export class CoreAPI {
     return read === 'Any?' || read.endsWith('?');
   }
 
-  private exportVars = new Map<string, string | null>();
   /** The type of a variable core's index exports, as the kit's top-level accessor gives it. */
   private exportVarType(name: string): string | null {
-    if (!this.exportVars.has(name)) {
-      const file = join(KIT, 'Core', `__Export.${name}.swift`);
-      const text = existsSync(file) ? readFileSync(file, 'utf8') : '';
-      this.exportVars.set(name, new RegExp(`^public var ${name}: (.+?) \\{`, 'm').exec(text)?.[1] ?? null);
-    }
-    return this.exportVars.get(name)!;
+    return this.coreGlobal(name, 'var')?.type ?? null;
   }
 
-  private exportsThrowing: Set<string> | null = null;
   /** The functions the kit's index exports that throw. */
   private throwingExports(): Set<string> {
-    if (!this.exportsThrowing) {
-      this.exportsThrowing = new Set();
-      const dir = join(KIT, 'Core');
-      for (const f of existsSync(dir) ? readdirSync(dir) : []) {
-        if (!f.startsWith('__Export.')) continue;
-        for (const m of unwrapped(readFileSync(join(dir, f), 'utf8')).matchAll(/^public func (\w+)(?:<[^>]*>)?(\(.*)$/gm)) {
-          // `throws` right after the parameter list, not inside a function type it returns.
-          let depth = 0, end = 0;
-          for (; end < m[2].length; end++) { if (m[2][end] === '(') depth++; else if (m[2][end] === ')' && --depth === 0) break; }
-          if (/^\s*throws\b/.test(m[2].slice(end + 1))) this.exportsThrowing.add(m[1]);
-        }
-      }
-    }
-    return this.exportsThrowing;
+    return new Set([...this.index.get(KIT_GLOBALS)?.members ?? []].filter(([, list]) => list.some((m) => m.exported && m.kind === 'func' && m.throws)).map(([n]) => n));
   }
 
   /** A call of a core function, its result as the declarations type it: one the kit compiled into its module enum, or one core's index exports. */
@@ -554,27 +560,10 @@ export class CoreAPI {
     return result ? this.fromKit(code, result, tsType) : code;
   }
 
-  private exportParams = new Map<string, string[] | null>();
-  private exportResults = new Map<string, string>();
   /** The kit's forwarder of a function core's index exports: its parameters and result. */
   private exportSignature(name: string): { params: string[]; result: string } | null {
-    if (!this.exportParams.has(name)) {
-      const file = join(KIT, 'Core', `__Export.${name}.swift`);
-      const text = existsSync(file) ? unwrapped(readFileSync(file, 'utf8')) : '';
-      const at = text.indexOf(`\npublic func ${name}(`);
-      let params: string[] | null = null;
-      if (at >= 0) {
-        const open = text.indexOf('(', at);
-        let depth = 0, end = open;
-        for (; end < text.length; end++) { if (text[end] === '(') depth++; else if (text[end] === ')' && --depth === 0) break; }
-        params = splitParams(text.slice(open + 1, end));
-        const tail = text.slice(end + 1, text.indexOf('{', end)).trim();
-        this.exportResults.set(name, /->\s*(.+)$/.exec(tail)?.[1].trim() ?? 'Void');
-      }
-      this.exportParams.set(name, params);
-    }
-    const params = this.exportParams.get(name);
-    return params ? { params, result: this.exportResults.get(name)! } : null;
+    const m = this.coreGlobal(name, 'func');
+    return m ? { params: (m.params ?? '').trim() ? splitParams(m.params!) : [], result: m.type } : null;
   }
   /** The arguments of a call of a function core's index exports, as the kit's forwarder takes them (`addWeakEventListener(…, target.onEvent, …)`). */
   exportArgs(e: ts.CallExpression, decl: ts.Declaration, args: string[]): string[] {

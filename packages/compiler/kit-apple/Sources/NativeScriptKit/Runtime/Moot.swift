@@ -41,6 +41,7 @@ public func jsConstruct(_ f: Any?, _ arguments: Any?...) throws -> Any? {
 public func jsConstruct(_ f: Any?, spread arguments: [Any?]) throws -> Any? {
     if let c = jsFlat(f) as? JSConstructor { return try c.make(arguments) }
     if let c = jsFlat(f) as? JSConstructible { return try c.jsConstruct(arguments) }
+    if let c = jsFlat(f) as? JSConstructibleType.Type { return try c.jsConstruct(arguments) }
     if let moot = jsFlat(f) as? JSMootValue { throw moot.unavailable() }
     throw JSException(JSTypeError("\(jsInspect(f)) is not a constructor"))
 }
@@ -48,6 +49,11 @@ public func jsConstruct(_ f: Any?, spread arguments: [Any?]) throws -> Any? {
 /// An object script constructs with `new` as a binding's engine object answers it (`new CanvasModule()`).
 public protocol JSConstructible: AnyObject {
     func jsConstruct(_ arguments: [Any?]) throws -> Any?
+}
+
+/// A class script holds as a metatype (`typeof Action`) and constructs (`new this.schedulerActionCtor(…)`).
+public protocol JSConstructibleType: AnyObject {
+    static func jsConstruct(_ arguments: [Any?]) throws -> Any?
 }
 
 /// A class held as a value that script constructs (`new bag.PropertyBag()`).

@@ -117,16 +117,22 @@ public func jsArgumentList(_ list: Any?) throws -> [Any?] {
 /// A closure's two words, code and context, read through a struct of one field of the closure's own
 /// type (the translator emits one per function type). Read any other way (passed to a generic, to
 /// `unsafeBitCast`), Swift first wraps the closure in a new thunk, whose words differ on each call.
+/// The two words alone don't tell closures apart: the linker folds identical code, so every closure
+/// that compiles to the same instructions with no captures (each empty one) has the same words,
+/// whatever its type. A box made for one type's arguments must never answer for another type.
 public struct JSFunctionKey: Hashable {
     let code: UInt
     let context: UInt
+    let type: ObjectIdentifier
 }
 
 @inline(__always)
 public func jsFunctionKey<Cell>(_ cell: Cell) -> JSFunctionKey {
     withUnsafeBytes(of: cell) { b in
         let word = MemoryLayout<UInt>.size
-        return JSFunctionKey(code: b.count >= word ? b.load(as: UInt.self) : 0, context: b.count >= 2 * word ? b.load(fromByteOffset: word, as: UInt.self) : 0)
+        return JSFunctionKey(
+            code: b.count >= word ? b.load(as: UInt.self) : 0, context: b.count >= 2 * word ? b.load(fromByteOffset: word, as: UInt.self) : 0,
+            type: ObjectIdentifier(Cell.self))
     }
 }
 

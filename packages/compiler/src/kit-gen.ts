@@ -12,6 +12,7 @@ import { SourceLines } from './source-lines.ts';
 import { collectProperties } from './properties.ts';
 import { evaluatedImports, evaluationOrder } from './modules.ts';
 import { kitIndexOptions } from './kit-index.ts';
+import { KitDeclarations, paramsText, runtimeFiles, runtimeNames, type KitManifest, type ManifestMember } from './kit-manifest.ts';
 import { loadCoreNativeTables } from './natives/core-ios.ts';
 import { nativeTable } from './natives/symbols.ts';
 import { KIT_APPLE_SOURCES } from './paths.ts';
@@ -75,6 +76,8 @@ export interface KitGraph {
 
 export interface KitResult {
   files: KitFile[];
+  /** What the generated files declare, as the translator wrote it (the kit manifest's generated part). */
+  declarations: Pick<KitManifest, 'types' | 'globals'>;
   /** With `report`: each construct that did not translate, at its file and line. */
   errors: string[];
   graph: KitGraph;
@@ -212,7 +215,8 @@ export function generateKit(o: KitOptions): KitResult {
 
   // The kit as it is without what is being generated: a hand-ported class of a compiled one's name is a clash, not a base.
   kitIndexOptions.exclude = o.replaces ? new RegExp(`^Core/|${o.replaces.source}`) : /^Core\//;
-  const kitInternal = internalTypes(KIT, o.replaces);
+  const runtime = runtimeNames(KIT, runtimeFiles(KIT, o.replaces));
+  const kitInternal = runtime.internalTypes;
   const counterparts = new Map<string, Record<string, string>>(Object.entries(o.counterparts ?? {}).map(([f, m]) => [f.startsWith('npm:') ? `${MOOT}npm/${f.slice(4)}.d.ts` : f.startsWith('moot:') ? MOOT + f.slice(5).replace(/\.ts$/, '.d.ts') : f.startsWith('~/') ? f : join(core, f), m]));
   // The compiled core file a declaration (`ui/layouts/root-layout/index.d.ts`) declares: published, or beside core's own source.
   const sourceOf = (dts: string): string | null => {
@@ -238,6 +242,7 @@ export function generateKit(o: KitOptions): KitResult {
     });
   } finally { kitIndexOptions.exclude = null; }
   translator.appModule = 'NativeScriptKit';
+  const declarations = translator.declarations = new KitDeclarations();
   // Kit code names the line of core it was made from (`#sourceLocation`), as a debugger, a crash report and a warning show it.
   // Its folders are joined by dots, as the kit's file names are: Swift warns where two paths of a module give one #fileID
   // (`NativeScriptKit/index.ios.ts`).
@@ -265,6 +270,7 @@ export function generateKit(o: KitOptions): KitResult {
     let result: { code: string; init: string[] } | null = null;
     for (let attempt = 0; attempt < 1000 && !result; attempt++) {
       translator.native.used.clear();
+      declarations.begin(rel);
       try { result = translator.module(sf); } catch (e) {
         if (!o.report) throw e;
         errors.push(located(e, sf, core));
@@ -272,7 +278,8 @@ export function generateKit(o: KitOptions): KitResult {
         if (!dropAt(e, sf)) break;
       }
     }
-    if (!result) continue;
+    if (!result) { declarations.drop(rel); continue; }
+    if (result.init.length) declarations.global(init, { kind: 'func', params: '', type: 'Void' });
     const code = result.code + (result.init.length ? `\nfunc ${init}() {\n${result.init.some((l) => THROWING_CODE.test(l)) ? `    jsReport {\n${result.init.map((l) => '    ' + l).join('\n')}\n    }` : result.init.join('\n')}\n}\n` : '');
     initOf.set(file, result.init.length ? init : undefined);
     const kitFile = { name: rel.replace(/\.ts$/, '').replace(/\//g, '.') + '.swift', code, sources: { [rel]: hash(sources.get(file) ?? '') } };
@@ -286,12 +293,14 @@ export function generateKit(o: KitOptions): KitResult {
   const sdk = translator.native.sdkModules().filter((m) => !['Foundation', 'UIKit'].includes(m) && !coreNative.has(m));
   optionalStatics = staticsHeldOptional(out.map((f) => f.code));
   for (const f of out) {
+    declarations.begin(`interfaces:${f.name}`);
     const code = withLocations((translator.interfacesOf(paths.get(f)!) + f.code).trim());
     f.code = header(new Set([...sdk, ...importsOf(code, imports.get(f))])) + publicize(code) + '\n';
   }
   // Each function core's index exports and each object shape is a file of its own: an app's build compiles
   // those the code it keeps names, as it does core's modules.
-  const exported = indexFunctions(program, checker, join(core, 'index.ts'), compiled, (f) => enumName(relOf(f), barrels), sourceOf, out, KIT, o.replaces);
+  declarations.begin('exports');
+  const exported = indexFunctions(program, checker, join(core, 'index.ts'), compiled, (f) => enumName(relOf(f), barrels), sourceOf, declarations, runtime.functions);
   const exports = new Map<string, string[]>();
   for (const fn of exported.split(/\n(?=public (?:func|var) )/)) {
     const name = /^public (?:func|var) (\w+)/.exec(fn)?.[1];
@@ -299,10 +308,11 @@ export function generateKit(o: KitOptions): KitResult {
   }
   for (const [name, fns] of exports) out.push({ name: `__Export.${name}.swift`, code: header(new Set(sdk)) + fns.join('\n\n') + '\n', sources: {} });
   // The namespaces core's index exports (`export * as Utils from './utils'`), as an app reaches them: `Utils.layout.EXACTLY`.
-  const codeOf = (file: string) => { const f = [...paths].find(([, p]) => p === file)?.[0]; return f ? f.code : undefined; };
-  for (const [name, code] of indexNamespaces(program, checker, join(core, 'index.ts'), compiled, (f) => enumName(relOf(f), barrels), sourceOf, codeOf)) {
+  declarations.begin('namespaces');
+  for (const [name, code] of indexNamespaces(program, checker, join(core, 'index.ts'), compiled, (f) => enumName(relOf(f), barrels), sourceOf, translator, declarations)) {
     out.push({ name: `__Namespace.${name}.swift`, code: header(new Set(sdk)) + code + '\n', sources: {} });
   }
+  declarations.begin('shapes');
   const shapes = publicize(withLocations(translator.shapesCode(false).trim()));
   const shapeFiles = new Set<string>();
   for (const shape of shapes ? shapes.split(/\n(?=public final class )/) : []) {
@@ -315,6 +325,7 @@ export function generateKit(o: KitOptions): KitResult {
   }
   // The function types' cells, apart from the shapes and grouped by how many parameters the function takes.
   const cellFiles = new Map<string, string[]>();
+  declarations.begin('cells');
   for (const cell of translator.cellsCode()) {
     const file = `FunctionCells.${cell.params < 3 ? `Arity${cell.params}` : 'Arity3Plus'}`;
     cellFiles.set(file, [...(cellFiles.get(file) ?? []), publicize(withLocations(cell.code.trim()))]);
@@ -325,6 +336,10 @@ export function generateKit(o: KitOptions): KitResult {
   }
   // Core's modules run their top level once, before the app's: those the app reaches, in the order JavaScript evaluates them,
   // which its build lists (the manifest's graph), so that nothing in the kit keeps the others in its binary.
+  declarations.begin('modules');
+  declarations.type('CoreModules', 'enum');
+  declarations.member('CoreModules', 'initializers', { kind: 'var', mods: 'static ', type: '[() -> Void]' });
+  declarations.member('CoreModules', 'initialize', { kind: 'func', mods: 'static ', params: '', type: 'Void' });
   out.push({ name: '__Modules.swift', sources: {}, code: `${header()}public enum CoreModules {\n    private static var initialized = false\n\n    /// The initializers of the core modules the app reaches, in the order core's index evaluates them.\n    public static var initializers: [() -> Void] = []\n\n    public static func initialize() {\n        if initialized { return }\n        initialized = true\n        for run in initializers { run() }\n    }\n}\n` });
   if (errors.length && !o.report) throw new Error(errors.join('\n'));
   const nameOf = new Map([...paths].map(([f, path]) => [path, f.name]));
@@ -337,35 +352,19 @@ export function generateKit(o: KitOptions): KitResult {
       [...(nameOf.has(f) ? [nameOf.get(f)!] : []), ...Object.values(counterparts.get(f) ?? {}).flatMap((target) => nameOfEnum.get(target.split('.')[0]) ?? [])]);
     graph[name] = { ...(initOf.get(path) ? { init: initOf.get(path) } : {}), imports: [...new Set(imports)].filter((i) => i !== name).sort() };
   }
-  return { files: out, errors: [...new Set(errors)], graph };
+  return { files: out, declarations: declarations.manifest(), errors: [...new Set(errors)], graph };
 }
 
 /**
  * The functions and constants core's index exports (`getRootLayout`, `widthProperty`), as an
  * app imports them from `@nativescript/core`: top-level functions and globals forwarding to the
  * module enum each is compiled into, with its own Swift signature or type. Names the hand-written kit declares at the
- * top level already are left to it.
+ * top level already (`taken`) are left to it.
  */
-/** A static function's Swift signature in generated code (`public static func name<…>(…) throws -> R {`), its parameter list read with its nested parentheses. */
-function swiftSignature(code: string, name: string): { generics: string; params: string; throws: string; ret?: string } | null {
-  const head = new RegExp(`\\n\\s*public static func ${name}(<[^>]*>)?\\(`).exec(code);
-  if (!head) return null;
-  let depth = 1, k = head.index + head[0].length;
-  for (; k < code.length && depth; k++) depth += code[k] === '(' ? 1 : code[k] === ')' ? -1 : 0;
-  const params = code.slice(head.index + head[0].length, k - 1);
-  const rest = /^( throws)?(?: -> ([^\n]+?))? \{\n/.exec(code.slice(k));
-  return rest ? { generics: head[1] ?? '', params, throws: rest[1] ?? '', ret: rest[2] } : null;
-}
-
-function indexFunctions(program: ts.Program, checker: ts.TypeChecker, index: string, compiled: Set<string>, moduleOf: (file: string) => string, sourceOf: (dts: string) => string | null, out: KitFile[], kit: string, replaces?: RegExp): string {
+function indexFunctions(program: ts.Program, checker: ts.TypeChecker, index: string, compiled: Set<string>, moduleOf: (file: string) => string, sourceOf: (dts: string) => string | null, declarations: KitDeclarations, taken: Set<string>): string {
   const sf = program.getSourceFile(index);
   const sym = sf && checker.getSymbolAtLocation(sf);
   if (!sym) return '';
-  const taken = new Set<string>();
-  for (const f of readdirSync(kit, { recursive: true }) as string[]) {
-    if (!f.endsWith('.swift') || f.startsWith('Core/') || replaces?.test(f)) continue;
-    for (const m of readFileSync(join(kit, f), 'utf8').matchAll(/^(?:@\w+\s+)*public\s+func\s+(\w+)/gm)) taken.add(m[1]);
-  }
   const lines: string[] = [];
   const resolveAlias = (e: ts.Symbol) => (e.flags & ts.SymbolFlags.Alias ? checker.getAliasedSymbol(e) : e);
   // A function a declaration file declares (`root-layout/index.d.ts`) is implemented by the platform file beside it.
@@ -379,35 +378,41 @@ function indexFunctions(program: ts.Program, checker: ts.TypeChecker, index: str
     return found ? resolveAlias(found) : target;
   };
   // A type of the kit's (`Application`) keeps its name: a constant of the same name is reached as the type is.
-  const types = new Set<string>();
-  for (const f of out) for (const m of f.code.matchAll(/^(?:@\w+(?:\([^)]*\))?\s+)*(?:(?:open|public|final)\s+)*(?:class|struct|enum|protocol|typealias)\s+(\w+)/gm)) types.add(m[1]);
+  const types = new Set([...declarations.typeNames()].filter((n) => !n.includes('.') && declarations.kindOf(n) !== 'extension'));
   for (const e of checker.getExportsOfModule(sym)) {
     const target = implementation(resolveAlias(e));
     // A constant (`widthProperty`): a global reading the module's static.
     const variable = target.declarations?.find((d): d is ts.VariableDeclaration => ts.isVariableDeclaration(d));
     if (variable && compiled.has(variable.getSourceFile().fileName) && !taken.has(e.name) && !types.has(e.name) && e.name === target.name) {
       const module = moduleOf(variable.getSourceFile().fileName);
-      const code = out.find((f) => f.code.includes(`enum ${module} {`))?.code;
-      const m = code && new RegExp(`\\n\\s*public static (?:var|let) ${target.name}: ([^={\\n]+?)\\s*(?:=|\\{|\\n)`).exec(code);
-      if (m) lines.push(`public var ${e.name}: ${m[1].trim()} { ${module}.${target.name} }`);
+      const m = declarations.find(module, target.name);
+      if (m?.kind === 'var' && m.static) {
+        lines.push(`public var ${e.name}: ${m.type} { ${module}.${target.name} }`);
+        declarations.global(e.name, { kind: 'var', type: m.type, readonly: true, exported: true });
+      }
       continue;
     }
     const decl = target.declarations?.find((d): d is ts.FunctionDeclaration => ts.isFunctionDeclaration(d) && !!d.body);
     if (!decl || !compiled.has(decl.getSourceFile().fileName) || taken.has(e.name)) continue;
     const module = moduleOf(decl.getSourceFile().fileName);
-    const code = out.find((f) => f.code.includes(`enum ${module} {`))?.code;
-    // The function's Swift declaration: `public static func name<…>(…) throws -> R {`.
-    const m = code ? swiftSignature(code, target.name) : null;
-    if (!m) continue;
-    const { generics, params, throws, ret } = m;
-    const args = splitTop(params).filter(Boolean).map((p) => {
-      const [label, name] = p.trim().split(':')[0].trim().split(/\s+/);
-      const inner = name ?? label;
-      return label === '_' ? inner : `${label}: ${inner}`;
-    });
-    lines.push(`public func ${e.name}${generics}(${params})${throws}${ret ? ` -> ${ret.trim()}` : ''} {\n    ${ret ? 'return ' : ''}${throws ? 'try ' : ''}${module}.${target.name}(${args.join(', ')})\n}`);
+    const m = declarations.find(module, target.name);
+    if (m?.kind !== 'func' || !m.static) continue;
+    const { params, ret, throws, call } = forwarded(m);
+    lines.push(`public func ${e.name}${m.generics ?? ''}(${params})${throws}${ret ? ` -> ${ret}` : ''} {\n    ${ret ? 'return ' : ''}${throws ? 'try ' : ''}${module}.${target.name}(${call})\n}`);
+    declarations.global(e.name, { kind: 'func', params, throws: !!m.throws, type: m.type, generics: m.generics, exported: true });
   }
   return lines.length ? `// What @nativescript/core's index exports as functions and constants, as an app imports them.\n\n${lines.join('\n\n')}\n` : '';
+}
+
+/** A recorded function's parameters and result as a forwarder declares them, and the arguments it passes on. */
+function forwarded(m: ManifestMember): { params: string; ret: string; throws: string; call: string } {
+  const params = m.params ?? [];
+  return {
+    params: paramsText(params),
+    ret: m.type === 'Void' ? '' : m.type,
+    throws: m.throws ? ' throws' : '',
+    call: params.map((p) => (p.label === '_' ? p.name : `${p.label}: ${p.name}`)).join(', '),
+  };
 }
 
 /**
@@ -415,7 +420,7 @@ function indexFunctions(program: ts.Program, checker: ts.TypeChecker, index: str
  * generated code: a function to its module's, a variable to its module's (read and written), a
  * namespace (`layout`) as a nested enum of its own members. Types are the module's own already.
  */
-function indexNamespaces(program: ts.Program, checker: ts.TypeChecker, index: string, compiled: Set<string>, moduleOf: (file: string) => string, sourceOf: (dts: string) => string | null, codeOf: (file: string) => string | undefined): Map<string, string> {
+function indexNamespaces(program: ts.Program, checker: ts.TypeChecker, index: string, compiled: Set<string>, moduleOf: (file: string) => string, sourceOf: (dts: string) => string | null, translator: Translator, declarations: KitDeclarations): Map<string, string> {
   const result = new Map<string, string>();
   const sf = program.getSourceFile(index);
   const sym = sf && checker.getSymbolAtLocation(sf);
@@ -428,7 +433,12 @@ function indexNamespaces(program: ts.Program, checker: ts.TypeChecker, index: st
     const impl = file ? program.getSourceFile(file) : undefined;
     return (impl && checker.getSymbolAtLocation(impl)) ?? m;
   };
-  const members = (exports: ts.Symbol[], indent: string, own?: string): string[] => {
+  /** The type a declaration's function or variable is a static member of: its namespace's enum, or its module's. */
+  const ownerOf = (decl: ts.Declaration, file: string): string | null => {
+    const block = ts.isVariableDeclaration(decl) ? decl.parent.parent.parent : decl.parent;
+    return ts.isModuleBlock(block) ? translator.namespaceOwner(block.parent) : moduleOf(file);
+  };
+  const members = (exports: ts.Symbol[], indent: string, path: string, own?: string): string[] => {
     const lines: string[] = [];
     const seen = new Set<string>();
     for (const e of exports) {
@@ -438,38 +448,33 @@ function indexNamespaces(program: ts.Program, checker: ts.TypeChecker, index: st
       if (!decl) continue;
       const file = decl.getSourceFile().fileName;
       if (!compiled.has(file)) continue;
-      const code = codeOf(file);
-      if (!code) continue;
       if (ts.isModuleDeclaration(decl) && decl.body && ts.isModuleBlock(decl.body)) {
         // A namespace compiled to an enum of its name: its own exports, nested.
-        if (!new RegExp(`\\npublic enum ${target.name} \\{`).test(code)) continue;
+        if (translator.namespaceOwner(decl) !== target.name || declarations.kindOf(target.name) !== 'enum') continue;
         // Qualified with the module: inside the nested enum of the same name, the bare name is the nested enum.
-        const inner = members(checker.getExportsOfModule(target).map((x) => x), indent + '    ').map((l) => l.replace(new RegExp(`\\bOWNER\\b`, 'g'), `NativeScriptKit.${target.name}`));
-        if (inner.length) { lines.push(`${indent}public enum ${e.name} {`, ...inner, `${indent}}`); seen.add(e.name); }
+        const inner = members(checker.getExportsOfModule(target).map((x) => x), indent + '    ', `${path}.${e.name}`).map((l) => l.replace(new RegExp(`\\bOWNER\\b`, 'g'), `NativeScriptKit.${target.name}`));
+        if (inner.length) { lines.push(`${indent}public enum ${e.name} {`, ...inner, `${indent}}`); seen.add(e.name); declarations.type(`${path}.${e.name}`, 'enum'); }
         continue;
       }
       const owner = ts.isModuleBlock(decl.parent) || (ts.isVariableDeclaration(decl) && ts.isModuleBlock(decl.parent.parent.parent)) ? 'OWNER' : `NativeScriptKit.${moduleOf(file)}`;
       // The barrel's own members are its enum's already.
       if (own && owner === `NativeScriptKit.${own}`) continue;
+      const recordedIn = ownerOf(decl, file);
+      const m = recordedIn ? declarations.find(recordedIn, target.name) : undefined;
       if (ts.isFunctionDeclaration(decl) && decl.body) {
-        const m = swiftSignature(code, target.name);
-        if (!m) continue;
-        const { generics, params, throws, ret } = m;
-        const args = splitTop(params).filter(Boolean).map((p) => {
-          const [label, n] = p.trim().split(':')[0].trim().split(/\s+/);
-          return label === '_' ? (n ?? label) : `${label}: ${n ?? label}`;
-        });
-        lines.push(`${indent}public static func ${e.name}${generics}(${params})${throws}${ret ? ` -> ${ret.trim()}` : ''} { ${ret ? 'return ' : ''}${throws ? 'try ' : ''}${owner}.${target.name}(${args.join(', ')}) }`);
+        if (m?.kind !== 'func' || !m.static) continue;
+        const { params, ret, throws, call } = forwarded(m);
+        lines.push(`${indent}public static func ${e.name}${m.generics ?? ''}(${params})${throws}${ret ? ` -> ${ret}` : ''} { ${ret ? 'return ' : ''}${throws ? 'try ' : ''}${owner}.${target.name}(${call}) }`);
+        declarations.member(path, e.name, { kind: 'func', mods: 'static ', params, throws: !!m.throws, type: m.type, generics: m.generics });
         seen.add(e.name);
         continue;
       }
       if (ts.isVariableDeclaration(decl)) {
-        const m = new RegExp(`\\n\\s*public static (var|let) ${target.name}: ([^=\\n{]+?)(?: =|\\s*\\{|\\n)`).exec(code);
-        if (!m) continue;
-        const type = m[2].trim();
-        lines.push(m[1] === 'var'
-          ? `${indent}public static var ${e.name}: ${type} { get { ${owner}.${target.name} } set { ${owner}.${target.name} = newValue } }`
-          : `${indent}public static var ${e.name}: ${type} { ${owner}.${target.name} }`);
+        if (m?.kind !== 'var' || !m.static) continue;
+        lines.push(!m.readonly
+          ? `${indent}public static var ${e.name}: ${m.type} { get { ${owner}.${target.name} } set { ${owner}.${target.name} = newValue } }`
+          : `${indent}public static var ${e.name}: ${m.type} { ${owner}.${target.name} }`);
+        declarations.member(path, e.name, { kind: 'var', mods: 'static ', type: m.type, readonly: m.readonly });
         seen.add(e.name);
       }
     }
@@ -482,34 +487,13 @@ function indexNamespaces(program: ts.Program, checker: ts.TypeChecker, index: st
     // A barrel compiled to an enum of the namespace's name (`utils/index` as `Utils`) gains what it re-exports.
     const barrel = module.declarations?.[0] && ts.isSourceFile(module.declarations[0]) ? moduleOf(module.declarations[0].fileName) : null;
     const extending = barrel === e.name;
-    const body = members(checker.getExportsOfModule(module), '    ', extending ? e.name : undefined);
-    if (body.length) result.set(e.name, `// What @nativescript/core's index exports as the namespace ${e.name}, as an app reaches it.\n${extending ? `extension ${e.name}` : `public enum ${e.name}`} {\n${body.join('\n')}\n}`);
+    const body = members(checker.getExportsOfModule(module), '    ', e.name, extending ? e.name : undefined);
+    if (body.length) {
+      declarations.type(e.name, extending ? 'extension' : 'enum');
+      result.set(e.name, `// What @nativescript/core's index exports as the namespace ${e.name}, as an app reaches it.\n${extending ? `extension ${e.name}` : `public enum ${e.name}`} {\n${body.join('\n')}\n}`);
+    }
   }
   return result;
-}
-
-/** A Swift parameter list split at its top-level commas. */
-function splitTop(list: string): string[] {
-  const parts: string[] = [];
-  let depth = 0, start = 0;
-  for (let i = 0; i < list.length; i++) {
-    const ch = list[i];
-    if ('([<{'.includes(ch)) depth++;
-    else if (')]>}'.includes(ch) && !(ch === '>' && list[i - 1] === '-')) depth--;
-    else if (ch === ',' && depth === 0) { parts.push(list.slice(start, i)); start = i + 1; }
-  }
-  parts.push(list.slice(start));
-  return parts;
-}
-
-/** The top-level types the hand-written kit declares without making them public (`TNSLabel`), in the files the generated modules do not replace; `Core/` is what is generated. */
-function internalTypes(dir: string, replaces?: RegExp): Set<string> {
-  const names = new Set<string>();
-  for (const f of readdirSync(dir, { recursive: true }) as string[]) {
-    if (!f.endsWith('.swift') || f.startsWith('Core/') || replaces?.test(f)) continue;
-    for (const m of readFileSync(join(dir, f), 'utf8').matchAll(/^(?:@\w+(?:\([^)]*\))?\s+)*(?:(?:final|internal|indirect)\s+)*(?:class|struct|enum|protocol|typealias|actor)\s+(\w+)/gm)) names.add(m[1]);
-  }
-  return names;
 }
 
 /** A translation error as `file:line: what`, relative to core. */
