@@ -740,10 +740,11 @@ export class Translator implements AsyncTranslator {
    */
   weak: { fields: Set<string>; captures: Set<string> } = { fields: new Set(), captures: new Set() };
 
-  constructor(checker: ts.TypeChecker, components: Map<string, ComponentInfo>, files: readonly ts.SourceFile[], options: { pluginFiles?: Iterable<string>; lenientFiles?: Iterable<string>; reach?: Reach; properties?: Properties; library?: Translator['library']; lenient?: boolean; weak?: { fields?: Iterable<string>; captures?: Iterable<string> } } = {}) {
+  constructor(checker: ts.TypeChecker, components: Map<string, ComponentInfo>, files: readonly ts.SourceFile[], options: { pluginFiles?: Iterable<string>; lenientFiles?: Iterable<string>; reach?: Reach; properties?: Properties; library?: Translator['library']; lenient?: boolean; lenientApp?: boolean; weak?: { fields?: Iterable<string>; captures?: Iterable<string> } } = {}) {
     this.weak = { fields: new Set(options.weak?.fields ?? []), captures: new Set(options.weak?.captures ?? []) };
     this.library = options.library ?? null;
     this.lenientAll = options.lenient ?? false;
+    this.lenientApp = options.lenientApp ?? false;
     this.pluginFiles = new Set(options.pluginFiles ?? []);
     for (const f of options.lenientFiles ?? []) this.lenientFiles.add(f);
     this.reach = options.reach ?? null;
@@ -3141,7 +3142,7 @@ ${members.join('\n')}
     let set = this.nullFieldSets.get(cls);
     if (set) return set;
     this.nullFieldSets.set(cls, set = new Set());
-    // Not gated on lenientApp, which is set after what throws is decided: a field set to a null its type leaves out is non-strict code.
+    // A field set to a null its type leaves out is non-strict code, whatever the app's configuration says.
     if (this.lenient || this.library || cls.getSourceFile().isDeclarationFile || this.pluginFiles.has(cls.getSourceFile().fileName)) return set;
     // One set per object: a class whose program base keeps one adds none of its own.
     for (let b = this.programBase(cls); b; b = this.programBase(b)) if (this.nullFields(b).size) return set;
@@ -6076,13 +6077,7 @@ ${members.join('\n')}
   get lenient(): boolean { return this.lenientAll || (!!this.currentFile && this.lenientFiles.has(this.currentFile)); }
   private lenientAll = false;
   /** The app's configuration is not strict: a variable declared without a value may be read before one is assigned. */
-  get lenientApp(): boolean { return this.appNotStrict; }
-  set lenientApp(v: boolean) {
-    this.appNotStrict = v;
-    // Which files are strict decides the loose slots: any found before this was known are found again.
-    this.looseSlotSet = null;
-  }
-  private appNotStrict = false;
+  readonly lenientApp: boolean;
   /** Files of plugins written without strictNullChecks, translated as core is. */
   readonly lenientFiles = new Set<string>();
   private currentFile: string | null = null;
