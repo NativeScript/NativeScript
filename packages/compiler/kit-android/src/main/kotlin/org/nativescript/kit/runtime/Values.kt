@@ -15,6 +15,13 @@ object JSNull {
 
 val jsNull: JSNull get() = JSNull
 
+/** A field read untyped: null where the object notes the key as set to null (`jsNulls`), else its value. */
+fun jsNullable(value: Any?, nulls: Set<String>?, key: String): Any? = if (value == null && nulls?.contains(key) == true) jsNull else value
+
+/** A field written untyped: the keys noted as holding null once `value` is written at `key`. */
+fun jsNoteNull(nulls: MutableSet<String>?, key: String, value: Any?): MutableSet<String>? =
+    if (value is JSNull) (nulls ?: mutableSetOf()).also { it.add(key) } else nulls?.also { it.remove(key) }
+
 /**
  * An object whose properties dynamic code reaches by name (`o[key]`, JSON, `console.log`):
  * plain objects (`JSObject`) and the classes generated for TypeScript classes and interfaces.
