@@ -779,6 +779,9 @@ export class Translator implements AsyncTranslator {
     // Properties script assigns a function (`fn.tag = …`) are the function value's own, not its type's.
     if (calls.length && t.getProperties().every((p) => p.declarations?.every((d) => ts.isPropertyAccessExpression(d) || ts.isBinaryExpression(d)))) {
       const s = calls[0];
+      // App mode: a function type reading the receiver it is called with (`(this: Action, state) => void`) is a script
+      // function (a JSMethod), as `call`/`apply` pass that receiver.
+      if (!this.library && this.takesOwnThis(s.getDeclaration())) return 'Any?';
       const self = this.library ? (s as ts.Signature & { thisParameter?: ts.Symbol }).thisParameter : undefined;
       const selfType = self && this.type(c.getTypeOfSymbolAtLocation(self, where ?? self.valueDeclaration!), where);
       const params = [...(selfType && selfType !== 'Unit' ? [self!] : []), ...s.getParameters()].map((p) => {
@@ -2479,7 +2482,7 @@ export class Translator implements AsyncTranslator {
 
   /** `(r) => r.id` as a Kotlin anonymous function, where `return` means what it does in JavaScript. */
   closure(fn: ts.ArrowFunction | ts.FunctionExpression | ts.MethodDeclaration, slot?: string): string {
-    if (this.library && ts.isFunctionExpression(fn) && this.thisValues().functions.has(fn)) return this.thisMethod(fn);
+    if (ts.isFunctionExpression(fn) && (this.library ? this.thisValues().functions.has(fn) : this.takesOwnThis(fn))) return this.thisMethod(fn);
     const contextual = this.checker.getContextualType(fn)?.getCallSignatures()[0];
     const slotRet = slot ? functionTypeParts(slot)?.ret : undefined;
     // An async function where a void callback is taken (`onTap: async () => …`): called for its effects, its promise left alone.
@@ -3109,6 +3112,8 @@ export class Translator implements AsyncTranslator {
         continue;
       }
       if (m.initializer) lines.push(`    ${fieldMods}var ${ident(n)}: ${t} = ${this.coerce(m.initializer, t)}`);
+      // A non-strict app's array, map or set field holds undefined until given one.
+      else if (this.lenientApp && !this.library && /^JS(Array|Map|Set)</.test(t)) lines.push(`    ${fieldMods}var ${ident(n)}: ${t} = jsUncheckedNull<${t}>()`);
       else {
         const d = this.deferredDeclaration(ident(n), t);
         lines.push(`    ${d.startsWith('lateinit') && fieldMods === '@JvmField ' ? '' : fieldMods}${d}`);
@@ -5625,7 +5630,14 @@ export class Translator implements AsyncTranslator {
           }
           return `${fn.includes('::') ? `(${fn})` : fn}.let { __f -> ${adapt} }`;
         }
-        return /\)\?$/.test(source) ? `${this.expr(e)}?.let { __f -> ${adapter.replace(fn.includes('::') ? `(${fn})` : fn, '__f')} }` : adapter;
+        // An optional member (`closeCallback?: …`) given to an optional parameter (`cb?: …`): undefined stays undefined,
+        // as the checker without strictNullChecks types neither as optional.
+        const member = ts.isPropertyAccessExpression(e) ? this.resolve(e.name)?.valueDeclaration : undefined;
+        const outer = ts.isCallExpression(e.parent) ? e.parent : undefined;
+        const sig = outer ? this.checker.getResolvedSignature(outer)?.getDeclaration() : undefined;
+        const param = sig && !ts.isJSDocSignature(sig) ? sig.parameters[outer!.arguments.indexOf(e)] : undefined;
+        const optional = !!member && (ts.isPropertySignature(member) || ts.isPropertyDeclaration(member)) && !!member.questionToken && (/\)\?$/.test(target) || !!param?.questionToken || !!param?.initializer);
+        return /\)\?$/.test(source) || optional ? `${this.expr(e)}?.let { __f -> ${adapter.replace(fn.includes('::') ? `(${fn})` : fn, '__f')} }` : adapter;
       }
     }
     if (/^JSArray<.*>$/.test(source) && /^JSArray<.*>\??$/.test(target) && source !== target.replace(/\?$/, '') && source === 'JSArray<Any?>') return cast(this.expr(e), target);
@@ -5873,7 +5885,20 @@ export class Translator implements AsyncTranslator {
       if (wider) return this.fromAny(this.expr(e.expression), isNullable(to) ? optionalType(wider) : wider);
       // The assertion is erased in JavaScript: where Kotlin needs the type, the value is converted as script converts it there.
       if (!this.library && from === 'Any?' && ['String', 'Double', 'Boolean'].includes(to)) return `jsAsserted${to === 'Double' ? 'Number' : to}(${this.expr(e.expression)})`;
-      if (from === 'Any?' && to !== 'Any?') return this.fromAny(this.expr(e.expression), to);
+      if (from === 'Any?' && to !== 'Any?') {
+        // A script function asserted to a function type taking a rest (`as (...a: unknown[]) => unknown`): the rest is spread
+        // into its arguments, as JavaScript calls it.
+        const g = functionTypeParts(to.replace(/^\((.*)\)\?$/, '$1'));
+        const sig = this.checker.getTypeAtLocation(e).getNonNullableType().getCallSignatures()[0]?.getDeclaration();
+        const rest = g && sig && !ts.isJSDocSignature(sig) && sig.parameters.at(-1)?.dotDotDotToken ? sig.parameters.length - 1 : -1;
+        if (g && rest >= 0 && rest === g.params.length - 1) {
+          const names = g.params.map((_, k) => `__c${k}`);
+          const call = `jsCall(__f, ${[...names.slice(0, rest), `*${names[rest]}.toList().toTypedArray()`].join(', ')})`;
+          const lam = `{ ${g.params.map((t, k) => `${names[k]}: ${t}`).join(', ')} -> ${g.ret === 'Unit' ? `${call}; Unit` : this.fromAny(call, g.ret)} }`;
+          return `run { val __f = ${this.expr(e.expression)}; ${/\)\?$/.test(to) ? `if (jsIsNullish(__f)) null else ${lam}` : lam} }`;
+        }
+        return this.fromAny(this.expr(e.expression), to);
+      }
       // `<androidx.fragment.app.Fragment>object` of a `java.lang.Object`.
       if (from === 'Any' && to !== 'Any' && to !== 'Any?') return this.fromAny(this.expr(e.expression), to);
       // `x as string` of a string that may be undefined: the value as JavaScript then reads it as one.
@@ -5891,6 +5916,15 @@ export class Translator implements AsyncTranslator {
         return this.classCast(this.expr(e.expression), from, to);
       }
       if (from.endsWith('?') && !to.endsWith('?') && from.replace(/\?$/, '') === to) return asserted(this.expr(e.expression));
+      // A function asserted to a function type of other parameter or result types: adapted, each value converted.
+      const fnOf = (t: string) => t.replace(/^\((.*)\)\?$/, '$1');
+      const f = from !== to ? functionTypeParts(fnOf(from)) : null, g = f ? functionTypeParts(fnOf(to)) : null;
+      if (f && g && f.params.length === g.params.length) {
+        const names = g.params.map((_, k) => `__c${k}`);
+        const call = `__f(${f.params.map((p, k) => this.convert(names[k], g.params[k], p)).join(', ')})`;
+        const result = g.ret !== 'Unit' ? this.convert(call, f.ret, g.ret) : f.ret === 'Unit' ? call : `${call}; Unit`;
+        return `${this.expr(e.expression)}${from.endsWith('?') ? '?' : ''}.let { __f -> { ${g.params.map((p, k) => `${names[k]}: ${p}`).join(', ')} -> ${result} } }`;
+      }
       return this.expr(e.expression);
     }
     // `f<T>`: the function, its type arguments only TypeScript's.
@@ -9123,8 +9157,12 @@ export class Translator implements AsyncTranslator {
    * Library mode: a function script calls with a `this` of its choosing (`fn.call(view, value)`, a property descriptor's
    * `set`) that core holds in a function-typed field (`Property.set`): a JSMethod, which takes the receiver.
    */
+  private takesOwnThis(d: ts.Declaration | undefined): boolean {
+    return !!d && (ts.isFunctionTypeNode(d) || ts.isFunctionExpression(d)) && d.parameters.some((q) => isThisParameter(q) && !!q.type && q.type.kind !== ts.SyntaxKind.VoidKeyword);
+  }
+
   private thisMethod(fn: ts.FunctionExpression): string {
-    const self = fn.parameters.find((q) => isThisParameter(q) && !this.voidThis(q));
+    const self = fn.parameters.find((q) => isThisParameter(q) && (this.library ? !this.voidThis(q) : this.takesOwnThis(fn)));
     const params = fn.parameters.filter((q) => !isThisParameter(q));
     const ret = this.returnTypeOf(fn);
     // A string, number or boolean the body reads as one (`switch (value)`): its type's, as a missing argument reads.
