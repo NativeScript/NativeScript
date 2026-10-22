@@ -1124,6 +1124,10 @@ export class Translator implements AsyncTranslator {
       const impl = calls.length > 1 && t.getSymbol()?.valueDeclaration && ts.isFunctionDeclaration(t.getSymbol()!.valueDeclaration!) ? implementationOf(t.getSymbol()!.valueDeclaration!) : null;
       if (impl && ts.isFunctionDeclaration(impl)) return this.functionValueType(impl);
       const s = calls[0];
+      // A function type reading the receiver it is called with (`(this: Action, state) => void`): a script function, as
+      // `call`/`apply` pass that receiver and a Swift closure has none.
+      const sd = s.getDeclaration() as ts.SignatureDeclaration | undefined;
+      if (sd && (ts.isFunctionTypeNode(sd) || ts.isFunctionExpression(sd)) && declaresThis(sd)) return 'Any?';
       // A generic function as a value (`obj.notify`) is no Swift closure's type: its own type parameters are their constraints.
       const own = (x: ts.Type) => (x.flags & F.TypeParameter && s.typeParameters?.includes(x as ts.TypeParameter) ? c.getBaseConstraintOfType(x) ?? c.getAnyType() : x);
       const params = s.getParameters().filter((p) => p.name !== 'this').map((p) => {
@@ -1703,6 +1707,13 @@ export class Translator implements AsyncTranslator {
     return found;
   }
 
+  /** A function expression reading a `this` it does not declare, where it is given to a function type declaring one. */
+  private givenThis(fn: ts.FunctionExpression): boolean {
+    if (!thisNodes(fn).length) return false;
+    const decl = this.checker.getContextualType(fn)?.getCallSignatures()[0]?.getDeclaration();
+    return !!decl && !ts.isJSDocSignature(decl) && declaresThis(decl);
+  }
+
   /** A function expression reading the `this` it is called with, as a method value (`JSMethod`) taking it. */
   private methodValue(fn: ts.FunctionExpression): string {
     const forwarding = this.forwardingSetter(fn);
@@ -1929,6 +1940,8 @@ export class Translator implements AsyncTranslator {
   private fieldType(t: string): string {
     // Lenient code: a number field never assigned is undefined, which compares and computes as NaN does.
     if (this.lenient && t === 'Double') return 'Double = .nan';
+    // A non-strict app's array, map or set field holds undefined until given one, and the null it may be set to.
+    if (this.lenientApp && !this.lenient && /^JS(Array|Map|Set)</.test(t)) return `${t}!`;
     const declared = this.lenientRef(t);
     if (declared === t) return this.deferred(t);
     const z = this.zero(t);
@@ -2980,8 +2993,8 @@ ${members.join('\n')}
     }
     if (this.interfaces.has(base) || [...this.shapes.values()].some((s) => s.name === base)) {
       this.used.add(base);
-      // The value once (it may be a call), in parentheses: a conditional binds looser than what follows it.
-      return type.endsWith('?') ? `jsUnlessNullish(${code}, { ${base}(jsObject: $0) })` : `${base}(jsObject: ${code})`;
+      // An object of the interface's class already is the object read (a receiver `call` passes); any other is read by its keys.
+      return type.endsWith('?') ? `jsUnlessNullish(${code}, { (jsFlat($0) as? ${base}) ?? ${base}(jsObject: $0) })` : `{ (__o: Any?) -> ${base} in (jsFlat(__o) as? ${base}) ?? ${base}(jsObject: __o) }(${code})`;
     }
     const fn = functionParts(/^\(.*\)$/.test(base) && hasTopLevelArrow(base.slice(1, -1)) ? base.slice(1, -1) : base);
     if (fn && (type.endsWith('?') || type.endsWith(')?')) && this.functionCell(fn.text)) return this.unboxFunction(code, fn, true);
@@ -3627,21 +3640,21 @@ ${members.join('\n')}
     const optionalParams = new Set(fn.parameters.filter((p) => p.questionToken && !p.initializer).map((p) => this.checker.getSymbolAtLocation(p.name)));
     const visit = (n: ts.Node) => {
       if (found || (n !== fn && ts.isFunctionLike(n))) return;
-      if (ts.isReturnStatement(n)) {
-        let e = n.expression;
-        // `a ?? b`, `a || b`: what the last operand gives when the first gives nothing; `c ? a : b`: either branch.
-        while (e && ts.isParenthesizedExpression(e)) e = e.expression;
-        while (e && ts.isBinaryExpression(e) && (e.operatorToken.kind === ts.SyntaxKind.QuestionQuestionToken || e.operatorToken.kind === ts.SyntaxKind.BarBarToken)) e = e.right;
-        if (e && ts.isConditionalExpression(e) && [e.whenTrue, e.whenFalse].some((b) => isNullish(b))) e = [e.whenTrue, e.whenFalse].find((b) => isNullish(b));
-        const local = e && ts.isIdentifier(e) ? this.checker.getSymbolAtLocation(e)?.valueDeclaration : undefined;
-        // A library call that may give undefined (`map.get(key)`), which the lenient checker reads as its value type.
-        const sig = e && ts.isCallExpression(e) ? this.checker.getResolvedSignature(e)?.getDeclaration() : undefined;
-        const declared = sig && !ts.isJSDocSignature(sig) ? sig.type : undefined;
-        if (declared && isLibDeclaration(sig as ts.Declaration) && ts.isUnionTypeNode(declared) && declared.types.some((y) => y.kind === ts.SyntaxKind.UndefinedKeyword)) found = true;
-        // An optional parameter, or a local declared without a value, may still be undefined.
-        if (!e || isNullish(e) || (ts.isCallExpression(e) && this.typeOf(e) === 'Void') || (ts.isIdentifier(e) && optionalParams.has(this.checker.getSymbolAtLocation(e))) || (local && ts.isVariableDeclaration(local) && (!local.initializer || isNullish(local.initializer)) && ts.findAncestor(local, (n) => n === fn))) found = true;
-      }
+      if (ts.isReturnStatement(n)) gives(n.expression);
       ts.forEachChild(n, visit);
+    };
+    const gives = (e: ts.Expression | undefined): void => {
+      // `a ?? b`, `a || b`: what the last operand gives when the first gives nothing; `c ? a : b`: either branch.
+      while (e && ts.isParenthesizedExpression(e)) e = e.expression;
+      while (e && ts.isBinaryExpression(e) && (e.operatorToken.kind === ts.SyntaxKind.QuestionQuestionToken || e.operatorToken.kind === ts.SyntaxKind.BarBarToken)) e = e.right;
+      if (e && ts.isConditionalExpression(e)) { gives(e.whenTrue); gives(e.whenFalse); return; }
+      const local = e && ts.isIdentifier(e) ? this.checker.getSymbolAtLocation(e)?.valueDeclaration : undefined;
+      // A library call that may give undefined (`map.get(key)`), which the lenient checker reads as its value type.
+      const sig = e && ts.isCallExpression(e) ? this.checker.getResolvedSignature(e)?.getDeclaration() : undefined;
+      const declared = sig && !ts.isJSDocSignature(sig) ? sig.type : undefined;
+      if (declared && isLibDeclaration(sig as ts.Declaration) && ts.isUnionTypeNode(declared) && declared.types.some((y) => y.kind === ts.SyntaxKind.UndefinedKeyword)) found = true;
+      // An optional parameter, or a local declared without a value, may still be undefined.
+      if (!e || isNullish(e) || (ts.isCallExpression(e) && this.typeOf(e) === 'Void') || (ts.isIdentifier(e) && optionalParams.has(this.checker.getSymbolAtLocation(e))) || (local && ts.isVariableDeclaration(local) && (!local.initializer || isNullish(local.initializer)) && ts.findAncestor(local, (n) => n === fn))) found = true;
     };
     visit(fn.body!);
     this.undefinedReturns.set(fn, found);
@@ -4937,13 +4950,16 @@ ${members.join('\n')}
         continue;
       }
       // A field of its own beside the kit's property of its name: script reads the property by that name, the kit's.
-      if (!this.kitRedeclared(m)) fields.push({ name: n, type: t });
+      const own = this.kitRedeclared(m) ? undefined : { name: n, type: t };
+      if (own) fields.push(own);
+      // A field held implicitly unwrapped where its type has a zero (a non-strict app's array): undefined is stored as nil.
+      const heldAs = (h: string) => { if (own && h === `${t}!` && this.zero(t) !== null) own.type = optionalType(t); return h; };
       // `field: string = null` in code checked without strictNullChecks: unset, read as the type's zero or an unwrapped nil.
-      if (m.initializer && (m.initializer.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(m.initializer) && m.initializer.text === 'undefined')) && !isOptional(t)) { lines.push(`    var ${ident(n)}: ${this.fieldType(t)}`); this.declare(n, { kind: 'var', type: this.fieldType(t) }); continue; }
+      if (m.initializer && (m.initializer.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(m.initializer) && m.initializer.text === 'undefined')) && !isOptional(t)) { lines.push(`    var ${ident(n)}: ${heldAs(this.fieldType(t))}`); this.declare(n, { kind: 'var', type: this.fieldType(t) }); continue; }
       if (m.initializer && this.pure(m.initializer) && !refersToThis(m.initializer)) { lines.push(`    var ${ident(n)}: ${this.lenientRef(t)} = ${this.storedInit(m.initializer, t)}`); this.declare(n, { kind: 'var', type: this.lenientRef(t) }); continue; }
       // A field the constructor assigns before anything can read it holds its type, not an implicitly unwrapped one.
       const deferred = this.fieldType(t);
-      const held = deferred.endsWith('!') && !m.initializer && this.definiteFields(cls).has(m) ? t : deferred;
+      const held = heldAs(deferred.endsWith('!') && !m.initializer && this.definiteFields(cls).has(m) ? t : deferred);
       this.declare(n, { kind: 'var', type: held });
       lines.push(`    ${this.weak.fields.has(`${cls.name?.text}.${n}`) && /^[A-Z][\w.]*[!?]$/.test(held) ? 'weak ' : ''}var ${ident(n)}: ${held}`);
       if (m.initializer) {
@@ -7421,7 +7437,7 @@ ${members.join('\n')}
       if (source === 'Double' && numericLiteralOnly(e)) return `Double(${this.expr(e)})`;
       // A method value is untyped already.
       if (this.library && ts.isFunctionExpression(bare) && (this.carriesMethod(bare) || this.readsArguments(bare))) return this.expr(e);
-      if (ts.isFunctionExpression(bare) && declaresThis(bare)) return this.methodValue(bare);
+      if (ts.isFunctionExpression(bare) && (declaresThis(bare) || this.givenThis(bare))) return this.methodValue(bare);
       if (ts.isPropertyAccessExpression(bare) && bare.expression.kind === ts.SyntaxKind.SuperKeyword && this.isInstanceMethod(bare.name)) return 'nil';
       const parse = ts.isIdentifier(bare) ? this.parseFunction(bare) : null;
       if (parse) return this.boxFunction(parse.code, parse.type);
@@ -7495,7 +7511,17 @@ ${members.join('\n')}
       const actual = this.functionValueType(fnDecl);
       if (actual !== target) return this.convert(this.expr(e), actual, target);
     }
-    if (source !== target && !ts.isArrowFunction(e) && !ts.isFunctionExpression(e) && functionParts(unwrapFunction(source, false)) && functionParts(unwrapFunction(target, false))) return this.convert(this.expr(e), source, target);
+    if (source !== target && !ts.isArrowFunction(e) && !ts.isFunctionExpression(e) && functionParts(unwrapFunction(source, false)) && functionParts(unwrapFunction(target, false))) {
+      // An optional member (`closeCallback?: …`) holds undefined, which the checker without strictNullChecks leaves out of its type.
+      const optionalMember = !!member && (ts.isPropertySignature(member) || ts.isPropertyDeclaration(member)) && !!member.questionToken && !/[?!]$/.test(source);
+      // So does an optional parameter (`cb?: …`) it is given to.
+      const call = ts.isCallExpression(e.parent) || ts.isNewExpression(e.parent) ? e.parent : undefined;
+      const at = call?.arguments?.indexOf(e) ?? -1;
+      const sig = at >= 0 ? this.checker.getResolvedSignature(call!)?.getDeclaration() : undefined;
+      const param = sig && !ts.isJSDocSignature(sig) ? sig.parameters[at] : undefined;
+      const optionalParam = !!param && !param.dotDotDotToken && !!(param.questionToken || param.initializer) && !/[?!]$/.test(target);
+      return this.convert(this.expr(e), optionalMember ? `(${source})?` : source, optionalParam ? `(${target})?` : target);
+    }
     if (source === 'Any?' && target !== 'Void') {
       if (ts.isArrowFunction(e) || ts.isFunctionExpression(e)) return this.expr(e);
       return this.fromAnyChecked(this.expr(e), target, this.castThrows(e));
@@ -8412,6 +8438,8 @@ ${members.join('\n')}
       }
       // A non-strict app's assertion of a value that may be missing (`<UITableViewCell>table.cellForRow(…)`): unwrapped where used.
       if (this.lenientApp && from === optionalType(to) && to !== 'Any?' && !isFunctionType(to)) return `${this.expr(e.expression)}!`;
+      const fnOf = (t: string) => t.replace(/^\((.*)\)[?!]$/, '$1');
+      if (from !== to && isFunctionType(fnOf(from)) && isFunctionType(fnOf(to))) return this.convert(this.expr(e.expression), from, to);
       return this.expr(e.expression);
     }
     // `f<T>`: the function, its type arguments only TypeScript's.
@@ -10738,7 +10766,9 @@ ${members.join('\n')}
             ? `jsObjectAssign(${target}, spread: ${this.packed(e.arguments.slice(1), 'JSArray<Any?>')}.storage)`
             : `jsObjectAssign(${[target, ...e.arguments.slice(1).map((x) => this.coerce(x, 'Any?'))].join(', ')})`;
           const t = T();
-          return t === 'Any?' ? code : this.fromAnyCode(code, t, true);
+          // Properties assigned onto a function (`Object.assign(memoized, { release })`) leave a function, which no class holds.
+          const callable = this.checker.getTypeAtLocation(arg(0)).getCallSignatures().length > 0;
+          return t === 'Any?' || callable ? code : this.fromAnyCode(code, t, true);
         }
         break;
       }
