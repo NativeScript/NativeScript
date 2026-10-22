@@ -31,6 +31,7 @@ import { Translator } from '../../src/kotlin.ts';
 import { translateKotlinModules } from '../../src/kotlin-modules.ts';
 import { AndroidNativeAPI, androidClassPath } from '../../src/native-calls-android.ts';
 import { stubbedPlugins } from '../../src/app-resources.ts';
+import { builtModules } from '../../src/ios-dependencies.ts';
 import { STUBBED_PLUGINS } from '../../src/core.ts';
 import { detectFramework, excludedFrameworkKitFiles, getFrameworkKitInfo } from '../../src/framework.ts';
 import { spawnSync } from 'node:child_process';
@@ -402,6 +403,32 @@ export class GlyphPipe { constructor(@Inject(TOKEN) private config: any, @Option
     }
   } finally {
     if (tableCache === undefined) delete process.env.NS_NATIVE_TABLE_CACHE; else process.env.NS_NATIVE_TABLE_CACHE = tableCache;
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
+
+// ---- The modules a build of the Swift packages and pods leaves ----
+{
+  const dir = mkdtempSync(join(tmpdir(), 'ns-release-checks-built-'));
+  const w = (f: string, text: string) => { mkdirSync(dirname(join(dir, f)), { recursive: true }); writeFileSync(join(dir, f), text); return join(dir, f); };
+  try {
+    const products = 'Build/Products/Debug-iphonesimulator';
+    const maps = 'Build/Intermediates.noindex/GeneratedModuleMaps-iphonesimulator';
+    w(`${maps}/CNested.modulemap`, `module CNested {\n  umbrella header "${join(dir, 'SourcePackages/checkouts/nested/Sources/CNested/include/CNested/CNested.h')}"\n  export *\n}\n`);
+    w('SourcePackages/checkouts/nested/Sources/CNested/include/CNested/CNested.h', '');
+    w(`${products}/CNested.o`, '');
+    const own = w('SourcePackages/checkouts/hud/Sources/CHud/include/module.modulemap', 'module CHud {\n  header "CHud.h"\n  export *\n}\n');
+    w(`${products}/CHud.o`, '');
+    w('SourcePackages/checkouts/hud/Tests/CHudTests/module.modulemap', 'module CHudTests {}\n');
+    w('SourcePackages/checkouts/unused/Sources/CUnused/include/module.modulemap', 'module CUnused {}\n');
+    w(`${products}/XCFrameworkIntermediates/vendor/Vendor.framework/Modules/module.modulemap`, 'framework module Vendor {}\n');
+    w(`${products}/Swifty.swiftmodule/arm64.swiftmodule`, '');
+    const built = builtModules(dir);
+    const arg = (a: string) => built.args.includes(a);
+    check(built.modules.join() === 'CHud,CNested,Swifty,Vendor', `a build's modules include a C target's with a module map of its own and a framework below the products, and no other package's (${built.modules.join()})`);
+    check(arg(`-I${join(dir, 'SourcePackages/checkouts/nested/Sources/CNested/include')}`) && arg(`-fmodule-map-file=${own}`) && arg(join(dir, products, 'XCFrameworkIntermediates/vendor')),
+      "a C target's public headers, a package's own module map and a nested framework's directory are visible as Xcode makes them");
+  } finally {
     rmSync(dir, { recursive: true, force: true });
   }
 }
