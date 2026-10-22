@@ -1,3 +1,14 @@
+## 8.0.21 (2026-10-22)
+
+### 🩹 Fixes
+
+- **vite:** recognize aliased default exports in link checks ([#11567](https://github.com/NativeScript/NativeScript/pull/11567))
+- **vite:** preserve package imports during vendor bundling ([#11565](https://github.com/NativeScript/NativeScript/pull/11565))
+
+### ❤️ Thank You
+
+- Alec Larson @aleclarson
+
 ## 8.0.20 (2026-10-21)
 
 ### 🩹 Fixes
