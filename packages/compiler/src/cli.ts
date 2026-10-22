@@ -249,7 +249,7 @@ if (framework === 'vue') {
   // The configuration the entry provides, lazy routes followed into their files; else one routes file read flat.
   const tree = angularRouteTree(entry, (f) => readFileSync(f, 'utf8'), aliased);
   const routesFile = tree ? undefined : sources.find((f) => /Routes\b/.test(readFileSync(f, 'utf8')) && /component:/.test(readFileSync(f, 'utf8')));
-  const { routes, initial } = routesFile ? angularRoutes(readFileSync(routesFile, 'utf8')) : { routes: [], initial: '/' };
+  const { routes, initial } = routesFile ? angularRoutes(readFileSync(routesFile, 'utf8'), routesFile) : { routes: [], initial: '/' };
   const routeFiles = new Set([...(tree?.files ?? []), ...(routesFile ? [routesFile] : [])]);
   // Tags the entry registers too (`registerElement('Glass', …)` in main.ts, before the app bootstraps).
   const elements = registeredElements([...(entry && !sources.includes(entry) ? [entry] : []), ...sources], nodeModules(app));
@@ -260,7 +260,7 @@ if (framework === 'vue') {
   // The app's own directives: a library's are written against the view internals a compiled template replaces.
   const directives = angularDirectives(sources.filter((f) => !libraries.includes(f)), (f) => readFileSync(f, 'utf8'));
   // What each NgModule declares, imports and exports: a component's directives are those in its scope.
-  const ngModuleNames = new Map(sources.flatMap((f) => [...declarablesIn(f, readFileSync(f, 'utf8')).modules]));
+  const ngModuleNames = new Map(sources.flatMap((f) => [...declarablesIn(f, readFileSync(f, 'utf8'), !libraries.includes(f)).modules]));
   const runtimeModule = join(appDir, '__angular.release.ts');
   components = sources.map((f) => angularComponent(f, readFileSync(f, 'utf8'), selectors, { zone, platform, pipes, runtimeModule, directives, ngModules: ngModuleNames, hosts, elements: new Map([...elements].map(([tag, e]) => [tag, e.name])), elementMeta: new Map([...elements].flatMap(([tag, e]) => (e.meta === undefined ? [] : [[tag, e.meta] as const]))) })).filter((c): c is NonNullable<typeof c> => !!c);
   const routed = new Set(tree ? routedComponents(tree.routes) : routes.map((r) => r.component));

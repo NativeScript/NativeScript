@@ -16,7 +16,7 @@ import { createProgram } from '../../src/program.ts';
 import { preflight } from '../../src/preflight.ts';
 import { satisfies } from '../../src/contract.ts';
 import { mapKotlinDiagnostics } from '../../src/kotlin-diagnostics.ts';
-import { angularComponent, angularRouteTree, componentOf, declarableSource, hostedComponent, routedComponents, type AngularComponent } from '../../src/angular.ts';
+import { angularComponent, angularDirectives, angularRouteTree, angularRoutes, componentOf, declarableSource, declarablesIn, hostedComponent, routedComponents, type AngularComponent } from '../../src/angular.ts';
 import { angularLibraries, registeredElements } from '../../src/angular-libraries.ts';
 import { pathAliases } from '../../src/app-paths.ts';
 import { appImports, reachedFrom, tsconfigIncluded } from '../../src/app-modules.ts';
@@ -815,6 +815,117 @@ export function openSheet(dialogs: NativeDialogService, cmp: any, config?: Nativ
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
+}
+
+// ---- Angular features a release build refuses rather than ignores ----
+{
+  const thrown = (f: () => unknown) => { try { f(); return ''; } catch (e) { return String(e); } };
+  const page = (template: string, members = 'form: any; name = ""; items: string[] = [];', options: Parameters<typeof angularComponent>[3] = {}, selectors = new Map<string, string>()) =>
+    thrown(() => angularComponent('/app/form.component.ts', `import { Component } from '@angular/core';\n@Component({ selector: 'Form', template: \`${template}\` })\nexport class Form { ${members} }\n`, selectors, options));
+  const refuses = (template: string, text: string, what: string, selectors?: Map<string, string>) => {
+    const e = page(template, undefined, {}, selectors);
+    check(e.includes(text) && e.includes('not supported in a release build yet'), `${what} stops the build: ${e ? e.split(': ').slice(1).join(': ') : 'it compiled'}`);
+  };
+  refuses(`<StackLayout [formGroup]="form"></StackLayout>`, '[formGroup] (@angular/forms) on <StackLayout>', '[formGroup]');
+  refuses(`<TextField formControlName="name"></TextField>`, 'formControlName (@angular/forms) on <TextField>', 'formControlName');
+  refuses(`<StackLayout formGroupName="address"></StackLayout>`, 'formGroupName (@angular/forms)', 'formGroupName');
+  refuses(`<TextField [formControl]="form"></TextField>`, '[formControl] (@angular/forms)', '[formControl]');
+  refuses(`<TextField [(ngModel)]="name"></TextField>`, '[(ngModel)] (@angular/forms) on <TextField>', '[(ngModel)]');
+  refuses(`<TextField [ngModel]="name" (ngModelChange)="name = $event"></TextField>`, '[ngModel] (@angular/forms)', '[ngModel] with (ngModelChange)');
+  refuses(`<StackLayout ngForm (ngSubmit)="name = ''"></StackLayout>`, 'ngForm (@angular/forms)', 'ngForm');
+  refuses(`<StackLayout (ngSubmit)="name = ''"></StackLayout>`, '(ngSubmit) (@angular/forms)', '(ngSubmit)');
+  refuses(`<Rating [(ngModel)]="name"></Rating>`, '[(ngModel)] (@angular/forms) on <Rating>', '[(ngModel)] on a component', new Map([['Rating', 'Rating']]));
+  refuses(`<Label #m="ngModel"></Label>`, `#m="ngModel" on <Label>, a reference to a directive's exportAs`, "a reference to a directive's exportAs");
+  refuses(`<Label [ngClass]="{ on: true }"></Label>`, "[ngClass] (@angular/common's NgClass)", '[ngClass]');
+  refuses(`<Label [ngStyle]="{ color: 'red' }"></Label>`, "[ngStyle] (@angular/common's NgStyle)", '[ngStyle]');
+  refuses(`<Label routerLink="/a"></Label>`, "routerLink (@angular/router's RouterLink; nsRouterLink is supported)", "@angular/router's routerLink");
+  refuses(`<StackLayout [ngTemplateOutlet]="null"></StackLayout>`, "[ngTemplateOutlet] (@angular/common's NgTemplateOutlet, which a release build runs on <ng-container>)", '[ngTemplateOutlet] on an element');
+  refuses(`<Label [ngIf]="true"></Label>`, "[ngIf] (@angular/common's NgIf without its template (*ngIf))", 'NgIf without its template');
+  refuses(`<Label animate.enter="fade"></Label>`, "animate.enter (Angular's enter animation)", 'animate.enter');
+  refuses(`<Label (animate.leave)="name = ''"></Label>`, 'the animation event (animate.leave) on <Label>', '(animate.leave)');
+  refuses(`<Label (@fade.done)="name = ''"></Label>`, 'the animation event (@fade.done) on <Label>', 'a legacy animation event');
+  refuses(`<Label (window:resize)="name = ''"></Label>`, '(window:resize), an event of the window, on <Label>', 'a global event target');
+  refuses(`<ng-container #group></ng-container>`, '#group on <ng-container>', 'a reference on <ng-container>');
+  refuses(`<ng-container formGroupName="address"></ng-container>`, 'formGroupName (@angular/forms) on <ng-container>', 'a forms directive on <ng-container>');
+  refuses(`<page-router-outlet actionBarVisibility="never"></page-router-outlet>`, 'actionBarVisibility="never" on <page-router-outlet>', "page-router-outlet's actionBarVisibility other than auto");
+  refuses(`<page-router-outlet (activate)="name = ''"></page-router-outlet>`, '(activate) on <page-router-outlet>', "page-router-outlet's events");
+  check(!page(`<page-router-outlet name="tab" actionBarVisibility="auto"></page-router-outlet>`), "page-router-outlet's name and actionBarVisibility=\"auto\" (the Frame's default) compile");
+  const fc = angularDirectives(['/app/fc.directive.ts'], () => "import { Directive } from '@angular/core';\n@Directive({ selector: '[formControl]', inputs: ['formControl'] })\nexport class FormControlLike { formControl: any; }\n");
+  const fcPage = thrown(() => angularComponent('/app/form.component.ts', "import { Component } from '@angular/core';\nimport { FormControlLike } from './fc.directive';\n@Component({ selector: 'Form', imports: [FormControlLike], template: `<TextField [formControl]=\"form\"></TextField>` })\nexport class Form { form: any; }\n", new Map(), { directives: fc }));
+  check(!fcPage, `an app directive selected by [formControl] binds it${fcPage ? `: ${fcPage}` : ''}`);
+  const dim = angularDirectives(['/app/dim.directive.ts'], () => "import { Directive } from '@angular/core';\n@Directive({ selector: '[dimmed]' })\nexport class Dim {}\n");
+  const dimmed = thrown(() => angularComponent('/app/form.component.ts', "import { Component } from '@angular/core';\nimport { Dim } from './dim.directive';\n@Component({ selector: 'Form', imports: [Dim], template: `<ng-container dimmed></ng-container>` })\nexport class Form {}\n", new Map(), { directives: dim }));
+  check(dimmed.includes('the directive Dim on <ng-container> is not supported in a release build yet'), `an app directive on <ng-container> stops the build${dimmed ? '' : ': it compiled'}`);
+
+  const empty = angularComponent('/app/list.component.ts', "import { Component } from '@angular/core';\n@Component({ selector: 'List', template: `<StackLayout>@for (x of items; track x) { <Label [text]=\"x\"></Label> } @empty { <Label text=\"None\"></Label> }</StackLayout>` })\nexport class List { items: string[] = []; }\n", new Map())!;
+  type Node = { kind: string; tag?: string; items?: string; branches?: { cond: string | null; body: Node[] }[]; children?: Node[]; attrs?: { name: string; value?: string }[] };
+  const [loop, none] = (empty.template[0] as Node).children ?? [];
+  const cond = none?.branches?.[0]?.cond ?? '-';
+  check(loop?.kind === 'for' && none?.kind === 'if' && none.branches?.length === 1 && none.branches[0].body[0]?.attrs?.some((a) => a.value === 'None') === true
+    && empty.source.includes(`${cond}() { return (!!(this.${loop.items}().length === 0)); }`), "@for's @empty renders in the loop's place while its collection is empty");
+
+  const meta = (fields: string, members = '') => thrown(() => angularComponent('/app/c.component.ts', `import { Component, input, output, viewChild, booleanAttribute } from '@angular/core';\nconst template = '';\n@Component({ selector: 'C', template: '<Label></Label>', ${fields} })\nexport class C { ${members} }\n`, new Map()));
+  for (const [fields, text] of [
+    ["providers: [Object]", "@Component's providers"], ["viewProviders: [Object]", "@Component's viewProviders"], ["host: { class: 'card' }", "@Component's host"],
+    ["inputs: ['x']", "@Component's inputs"], ["outputs: ['y']", "@Component's outputs"], ["preserveWhitespaces: true", "@Component's preserveWhitespaces"],
+    ["hostDirectives: []", "@Component's hostDirectives"], ["interpolation: ['[[', ']]']", "@Component's interpolation"],
+  ]) {
+    const e = meta(fields);
+    check(e.includes(`${text} is not supported in a release build yet`), `${text} stops the build${e ? '' : ': it compiled'}`);
+  }
+  check(meta('template').includes("@Component's template is read as `name: value`"), "a shorthand @Component field stops the build");
+  check(!meta("standalone: true, schemas: [], exportAs: 'c', animations: [], preserveWhitespaces: false, encapsulation: 2"), '@Component fields that only steer the compiler compile');
+  for (const [members, text] of [
+    ["on = input(false, { transform: booleanAttribute });", "input()'s transform (on) is not supported in a release build yet"],
+    ["done = output<void>({ alias: 'finished' });", "output()'s alias (done) is not supported in a release build yet"],
+    ["box = viewChild('box');", 'the signal query viewChild() (box) is not supported in a release build yet'],
+  ]) {
+    const e = meta('standalone: true', members);
+    check(e.includes(text), `${text.split(' is ')[0]} stops the build${e ? '' : ': it compiled'}`);
+  }
+  check(!meta('standalone: true', "on = input(false, { alias: 'enabled', debugName: 'on' });"), "input()'s alias and debugName compile");
+  const directive = (body: string, fields = '') => thrown(() => angularDirectives(['/app/d.directive.ts'], () => `import { Directive, input } from '@angular/core';\n@Directive({ selector: '[dim]'${fields} })\nexport class Dim { ${body} }\n`));
+  check(directive("level = input(1);").includes('input() (level) in a directive is not supported in a release build yet'), "a directive's signal input stops the build");
+  check(directive('', ", exportAs: 'dim'").includes('its exportAs is not supported in a release build yet'), "a directive's exportAs stops the build");
+  const ngModule = "import { NgModule } from '@angular/core';\n@NgModule({ declarations: [], providers: [{ provide: 'API', useValue: '/api' }] })\nexport class AppModule {}\n";
+  check(thrown(() => declarablesIn('/app/app.module.ts', ngModule, true)).includes("the NgModule AppModule's providers are not supported in a release build yet") && !thrown(() => declarablesIn('/lib/lib.module.ts', ngModule)), "an app NgModule's providers stop the build (a library's wrapper module is not read for them)");
+
+  const dir = mkdtempSync(join(tmpdir(), 'ns-release-checks-ng-routes-'));
+  try {
+    const w = (f: string, text: string) => { mkdirSync(dirname(join(dir, f)), { recursive: true }); writeFileSync(join(dir, f), text); return join(dir, f); };
+    w('src/home.ts', 'export class Home {}\n');
+    const tree = (route: string, features = '') => {
+      const main = w('src/main.ts', `import { routes } from './app.routes';\nbootstrapApplication(App, { providers: [provideNativeScriptRouter(routes${features})] });\n`);
+      w('src/app.routes.ts', `import { Home } from './home';\nconst more = [{ path: 'more', component: Home }];\nexport const routes = [${route}];\n`);
+      return thrown(() => angularRouteTree(main, (f) => readFileSync(f, 'utf8')));
+    };
+    for (const guard of ['canActivate', 'canActivateChild', 'canDeactivate', 'canMatch', 'canLoad']) {
+      const e = tree(`{ path: 'admin', component: Home, ${guard}: [() => false] }`);
+      check(e.includes(`route guards (${guard} on 'admin') are not supported in a release build yet`), `the route guard ${guard} stops the build${e ? '' : ': it compiled'}`);
+    }
+    check(tree("{ path: 'item', component: Home, resolve: { item: () => 1 } }").includes("route resolvers (resolve on 'item') are not supported in a release build yet"), 'a route resolver stops the build');
+    for (const [field, text] of [
+      ["data: { title: 'x' }", "a route's data on 'a' is not supported"], ['providers: []', "a route's providers on 'a' is not supported"],
+      ["redirectTo: () => '/b'", "a route's redirectTo that is not a string (() => '/b') is not supported"], ['component', "a route's component is read as `name: value`"],
+    ]) {
+      const e = tree(`{ path: 'a', ${field} }`);
+      check(e.includes(text), `${text.split(' is ')[0]} stops the build${e ? '' : ': it compiled'}`);
+    }
+    check(tree("{ matcher: () => null, component: Home }").includes("a route's matcher is not supported"), "a route's matcher stops the build");
+    check(tree("{ path: 'a', component: Home }", ', withComponentInputBinding()').includes('the router feature withComponentInputBinding() is not supported in a release build yet'), 'a router feature that changes routing stops the build');
+    check(!tree("{ path: 'a', component: Home, title: 'A', runGuardsAndResolvers: 'always' }", ', withPreloading(PreloadAllModules)'), "a route's title and runGuardsAndResolvers, and withPreloading, compile");
+    const followed = (() => { try { return routedComponents(angularRouteTree(w('src/main.ts', "import { routes } from './app.routes';\nprovideNativeScriptRouter(routes);\n"), (f) => readFileSync(f, 'utf8'))!.routes); } catch { return []; } });
+    w('src/app.routes.ts', "import { Home } from './home';\nconst more = [{ path: 'more', component: Home }];\nexport const routes = [{ path: '', children: more }];\n");
+    check(followed().join() === 'Home', "a route's children named by a constant are followed");
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+  const flat = (text: string) => thrown(() => angularRoutes(text, '/app/app-routing.module.ts'));
+  check(flat("const routes = [{ path: 'a', component: A, canActivate: [AuthGuard] }];").includes("route guards (canActivate on 'a') are not supported in a release build yet"), 'a route guard in a routes file outside the entry stops the build');
+  check(flat("const routes = [{ path: 'a', component: A, children: [] }];").includes("a route's children, with the routes given outside the entry, is not supported"), 'nested routes outside the entry stop the build');
+  check(flat("const routes = [{ path: 'a', redirectTo: '/b' }];").includes("a redirect from a path other than ''"), "a redirect from a path other than '' outside the entry stops the build");
+  check(flat("const routes = [{ path: 'a', component: A }];\n@NgModule({ imports: [NativeScriptRouterModule.forRoot(routes, { bindToComponentInputs: true })] })\nexport class R {}\n").includes('the router option bindToComponentInputs is not supported'), "forRoot's options that change routing stop the build");
+  check(!flat("const routes = [{ path: '', redirectTo: '/a', pathMatch: 'full' }, { path: 'a', component: A }];\nNativeScriptRouterModule.forRoot(routes, { enableTracing: true });\nconst row = { id: 1, path: 'x' };\n"), 'a flat route table, and an object with a path that is not a route, compile');
 }
 
 // ---- Angular exports and a non-strict app's diagnostics ----
