@@ -13,8 +13,8 @@ npm install @nativescript/core@alpha
 npm install --save-dev @nativescript/compiler@alpha
 ```
 
-The CLI, `@nativescript/core` and `@nativescript/compiler` must be the same version: the build stops if your core is
-not the one this compiler was made from. You need Node.js 20+, Xcode 26+ for iOS, and JDK 17+ with the Android SDK
+`@nativescript/core` and `@nativescript/compiler` must be the same version: the build stops if your core is not the
+one this compiler was made from. You need Node.js 20+, Xcode 26+ for iOS, and JDK 17+ with the Android SDK
 for Android.
 
 ## Use
@@ -39,6 +39,8 @@ releases. React, Solid and Octane compile through the same pipeline but are not 
 - `ns compiled report ios` (or `android`) turns a failed build or a runtime error into a NativeScript issue; it shows
   you the report and asks before sending anything.
 - `--no-compiled` builds that release on the JavaScript runtime, so you can still ship.
+- [Preview limits](https://docs.nativescript.org/guide/publishing/compiled-differences#preview-limits) lists what the
+  preview refuses to build, with the feature named in the error.
 
 ## Links
 
