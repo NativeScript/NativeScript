@@ -128,6 +128,8 @@ const cacheDir = () => join(process.env.NS_NATIVE_TABLE_CACHE ?? join(COMPILER, 
 const TABLE_FORMAT = 6;
 
 const tables = new Map<string, NativeTable>();
+/** The key each module outside the SDK was loaded under. */
+const tableKeys = new Map<string, string>();
 
 export interface TableOptions {
   /** Arguments that make the module visible to the extractor (`-I`, `-F`); a function runs only when the table is generated. */
@@ -143,16 +145,21 @@ export interface TableOptions {
 
 export function nativeTable(module: string, options: TableOptions = {}): NativeTable {
   let table = tables.get(module);
-  if (table) return table;
+  if (table && (!options.key || tableKeys.get(module) === options.key)) return table;
+  table = undefined;
   const file = options.key ? join(moduleCache(), `${module}-${options.key}.json`) : join(cacheDir(), `${module}.json`);
   if (existsSync(file)) table = JSON.parse(readFileSync(file, 'utf8')) as NativeTable;
   if (!table || (table.format ?? 1) !== TABLE_FORMAT) {
     const extraArgs = typeof options.extraArgs === 'function' ? options.extraArgs() : options.extraArgs ?? [];
     table = generate(module, extraArgs, !!options.key, options.internal);
-    mkdirSync(dirname(file), { recursive: true });
-    writeFileSync(file, JSON.stringify(table));
+    // An SDK module the extractor could not read this time (not a module of the SDK at all) is not remembered as empty.
+    if (options.key || !isEmptyTable(table)) {
+      mkdirSync(dirname(file), { recursive: true });
+      writeFileSync(file, JSON.stringify(table));
+    }
   }
   tables.set(module, table);
+  if (options.key) tableKeys.set(module, options.key);
   for (const c of Object.values(table.classes)) if (c.generics?.length) eraseGenerics(c);
   // Memberwise idioms need only the table's structs: a table cached before one was added gets it here.
   for (const [js, spec] of Object.entries(IDIOMS[module] ?? {})) if (spec && !table.functions[js] && MEMBERWISE.test(spec)) memberwiseIdiom(table, js, spec);
@@ -193,6 +200,7 @@ export function setEmptyTable(module: string, key: string) {
   mkdirSync(moduleCache(), { recursive: true });
   writeFileSync(join(moduleCache(), `${module}-${key}.json`), JSON.stringify(table));
   tables.set(module, table);
+  tableKeys.set(module, key);
 }
 
 const declarationModules = new Map<string, string>();
@@ -228,8 +236,9 @@ function generate(module: string, extraArgs: string[], plugin = false, internal 
   const symbols = new Map<string, Sym>();
   const rels: Rel[] = [];
   const swiftTypes: Record<string, ScopedKind> = {};
-  // A Swift module's `@objc` declarations (`c:@M@Module@objc(cs)…`; in extensions `c:@CM@Module@…`, `c:@CM@Module@@…`) under the USRs Objective-C's would have.
-  const objcUSR = plugin ? (usr: string) => usr.replace(/^c:@C?M@\w+@@?/, 'c:') : (usr: string) => usr;
+  // A Swift module's `@objc` declarations (`c:@M@Module@objc(cs)…`, `c:@M@Module@E@…` for an `@objc enum`; in extensions
+  // `c:@CM@Module@…`, `c:@CM@Module@@…`) under the USRs Objective-C's would have.
+  const objcUSR = plugin ? (usr: string) => usr.replace(/^c:@C?M@\w+@@?(?=objc\()/, 'c:').replace(/^c:@M@\w+@(?=E@)/, 'c:@') : (usr: string) => usr;
   try {
     try {
       execFileSync('xcrun', ['swift-symbolgraph-extract', '-module-name', module, '-target', TARGET, '-sdk', sdk().path, '-output-dir', dir,
@@ -267,8 +276,10 @@ function generate(module: string, extraArgs: string[], plugin = false, internal 
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
-  return { ...build(module, symbols, rels), swiftTypes };
+  return { ...build(module, symbols, rels, plugin), swiftTypes };
 }
+
+const isEmptyTable = (t: NativeTable) => [t.classes, t.enums, t.functions, t.constants, t.structs].every((x) => !Object.keys(x).length);
 
 function emptyTable(module: string): NativeTable {
   return { module, sdk: sdk().version, format: TABLE_FORMAT, classes: {}, enums: {}, functions: {}, constants: {}, structs: {} };
@@ -280,6 +291,8 @@ function compact(s: any, internal = false): Sym | null {
   const typedefField = /@FI@(\w+)::SYNTHESIZED::(c:@T@\w+)$/.exec(usr);
   if (typedefField) usr = `${typedefField[2]}@FI@${typedefField[1]}`;
   else if (usr.includes('::SYNTHESIZED::')) return null;
+  // Visible only to a module importing its SPI (`@_spi(Name) import`).
+  if (s.spi && !internal) return null;
   if (s.accessLevel !== 'public' && s.accessLevel !== 'open' && !(internal && s.accessLevel === 'internal')) return null;
   const avail: any[] = s.availability ?? [];
   const applies = (a: any) => !a.domain || a.domain === 'iOS' || a.domain === 'Swift' || a.domain === '*';
@@ -410,7 +423,7 @@ function property(s: Sym): NativeProperty {
 
 const OBJC = /^c:objc\((cs|pl)\)([A-Za-z0-9_]+)(?:\((im|cm|py|cpy)\)(.+))?$/;
 
-function build(module: string, symbols: Map<string, Sym>, rels: Rel[]): NativeTable {
+function build(module: string, symbols: Map<string, Sym>, rels: Rel[], plugin = false): NativeTable {
   const table = emptyTable(module);
   const types: Record<string, string> = {};
   const memberOf = new Map<string, Rel>();
@@ -559,6 +572,15 @@ function build(module: string, symbols: Map<string, Sym>, rels: Rel[]): NativeTa
     } else if (/^c:@(?:E|EA|T)@\w+$/.test(usr) && (s.kind === 'swift.enum' || s.kind === 'swift.struct')) {
       if (!usr.startsWith('c:@T@')) enumOf(usr);
     }
+  }
+
+  // A plugin's extension of another module's class adopting a protocol (`extension UIView: Pinging`): the extension's entry has it.
+  if (plugin) for (const r of rels) {
+    const from = OBJC.exec(r.source), to = OBJC.exec(r.target);
+    if (r.kind !== 'conformsTo' || symbols.has(r.source) || !from || from[1] !== 'cs' || from[3] || !to || to[1] !== 'pl' || to[3]) continue;
+    const c = table.classes[jsTypeName('cs', from[2])];
+    const name = jsTypeName('pl', to[2]);
+    if (c?.extension && !c.protocols?.includes(name)) (c.protocols ??= []).push(name);
   }
 
   for (const [js, list] of enumCases) {
@@ -772,7 +794,9 @@ function* hierarchy(module: string, jsClass: string): Generator<[string, NativeC
     if (main) yield [js, main];
     for (const t of allTables(home)) {
       const c = t.classes[js];
-      if (c && c !== main && c.extension) yield [js, c];
+      if (!c || c === main || !c.extension) continue;
+      yield [js, c];
+      for (const p of c.protocols ?? []) queue.push([t.module, p]);
     }
     if (main?.base) queue.push([home, main.base]);
     for (const p of main?.protocols ?? []) queue.push([home, p]);
@@ -867,7 +891,7 @@ export function lookupInit(module: string, jsClass: string, jsInitName: string):
  * C's `long` in a selector (`initWithLong:`, `longValue`), which Swift imports no differently
  * from the 64-bit one beside it (`initWithInteger:`, `longLongValue`), so the table has only that.
  */
-const cLong = /Long(?!Long)/;
+const cLong = /(?<!Long)Long(?!Long)(?=[A-Z]|$)/;
 
 function ownInit(module: string, jsClass: string, jsInitName: string): NativeMethod | null {
   return findInit(module, jsClass, (c) => c.inits[jsInitName], (init) => {

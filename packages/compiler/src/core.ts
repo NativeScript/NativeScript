@@ -310,11 +310,14 @@ export class CoreAPI {
     return candidates.find((c): c is string => !!c && this.index.has(c)) ?? null;
   }
 
-  /** A member the kit's class lacks that the program's own declarations give a core type (an intersection's added members). */
+  /**
+   * A member the kit's class lacks that the program's own declarations give a core type (an intersection's added
+   * members), a plugin's declaration modules (`index.d.ts`) among them; native typings are global declarations.
+   */
   private addedMember(owner: string, e: ts.PropertyAccessExpression): boolean {
     if (kitMember(this.index, owner, e.name.text)) return false;
     const decls = this.t.resolve(e.name)?.declarations ?? [];
-    return decls.length > 0 && decls.every((d) => !isCoreDeclaration(d) && !d.getSourceFile().isDeclarationFile);
+    return decls.length > 0 && decls.every((d) => !isCoreDeclaration(d) && (!d.getSourceFile().isDeclarationFile || ts.isExternalModule(d.getSourceFile())));
   }
 
   /**
