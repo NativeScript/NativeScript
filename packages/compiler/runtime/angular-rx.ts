@@ -100,6 +100,7 @@ export interface HttpInterceptor {
 }
 
 export type HttpInterceptorFn = (req: HttpRequest<any>, next: (req: HttpRequest<any>) => Observable<any>) => Observable<any>;
+export type HttpEvent<T = any> = HttpResponse<T>;
 
 export class HttpClient {
   static readonly shared = new HttpClient();
@@ -351,6 +352,16 @@ export type Routes = {
 
 export type Route = Routes[number];
 export type NavigationExtras = any;
+export type Params = { [key: string]: any };
+export interface IsActiveMatchOptions {
+  matrixParams: 'exact' | 'subset' | 'ignored';
+  queryParams: 'exact' | 'subset' | 'ignored';
+  paths: 'exact' | 'subset';
+  fragment: 'exact' | 'ignored';
+}
+export interface CanActivate {
+  canActivate(route: ActivatedRouteSnapshot, state: any): any;
+}
 export type ParamMapType = ParamMap;
 export { Router as RouterExtensions };
 
@@ -390,6 +401,10 @@ export { NativeDialogService as NativeDialog };
 
 export const NativeDialogModule: any = undefined;
 export function registerElement(_name: string, _resolver: () => any, _meta?: any): void {}
+/** A release build never restores routes for hot module replacement. */
+export function isAngularHmrRestoringRoute(): boolean {
+  return false;
+}
 export const ActionBarComponent: any = undefined;
 export const ActionItemDirective: any = undefined;
 export const NavigationButtonDirective: any = undefined;

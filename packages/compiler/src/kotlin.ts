@@ -3,7 +3,7 @@ import ts from 'typescript';
 import { dirname as pathDirname, resolve as pathResolve } from 'node:path';
 import { AsyncLowering, usedBefore, type AsyncCtx, type AsyncSyntax, type AsyncTranslator } from './async.ts';
 import { isAsync, isStatic } from './throws.ts';
-import { assignedValues, definitelyAssignedFields, initializedNull, nullSetFields, isRegExpProtocol, intlConstructor, isObjectToStringCall, isStringRaw, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, classesHeldUntyped, LooseSlots, originOf, ownSlot, implementedInterfaceDeclarations, slotOf, slotType, type TrustScope } from './lang.ts';
+import { assignedValues, definitelyAssignedFields, initializedNull, intersectionAliasMembers, nullSetFields, isRegExpProtocol, intlConstructor, isObjectToStringCall, isStringRaw, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, classesHeldUntyped, LooseSlots, originOf, ownSlot, implementedInterfaceDeclarations, slotOf, slotType, type TrustScope } from './lang.ts';
 import { isCoreDeclaration } from './core.ts';
 import type { Properties } from './properties.ts';
 import { recognizePatterns, type Patterns } from './patterns.ts';
@@ -1501,6 +1501,7 @@ export class Translator implements AsyncTranslator {
         if (ts.isInterfaceDeclaration(st) && this.library && this.checker.getSymbolAtLocation(st.name)?.declarations?.some(ts.isClassDeclaration)) continue;
         if (ts.isInterfaceDeclaration(st)) { this.registerInterface(this.topName(st, st.name.text), sf.fileName, st.members, st); continue; }
         if (ts.isTypeAliasDeclaration(st) && ts.isTypeLiteralNode(st.type) && !isRegExpProtocol(this.checker.getTypeAtLocation(st.type))) { this.registerInterface(this.topName(st, st.name.text), sf.fileName, st.type.members, st); continue; }
+        if (ts.isTypeAliasDeclaration(st) && intersectionAliasMembers(st, this.checker)) { this.registerInterface(this.topName(st, st.name.text), sf.fileName, ts.factory.createNodeArray(intersectionAliasMembers(st, this.checker)!), st); continue; }
         if (ts.isTypeAliasDeclaration(st)) continue;
         if (ts.isEnumDeclaration(st)) {
           // A namespace merged into the enum: members of its object.
@@ -1647,6 +1648,7 @@ export class Translator implements AsyncTranslator {
       // A namespace's interfaces are the module's: a class of the interface's name.
       if (ts.isInterfaceDeclaration(st)) { this.registerInterface(this.topName(st, st.name.text), md.getSourceFile().fileName, st.members, st); continue; }
       if (ts.isTypeAliasDeclaration(st) && ts.isTypeLiteralNode(st.type) && !isRegExpProtocol(this.checker.getTypeAtLocation(st.type))) { this.registerInterface(this.topName(st, st.name.text), md.getSourceFile().fileName, st.type.members, st); continue; }
+      if (ts.isTypeAliasDeclaration(st) && intersectionAliasMembers(st, this.checker)) { this.registerInterface(this.topName(st, st.name.text), md.getSourceFile().fileName, ts.factory.createNodeArray(intersectionAliasMembers(st, this.checker)!), st); continue; }
       if (ts.isTypeAliasDeclaration(st)) continue;
       values = true;
       if (ts.isFunctionDeclaration(st)) { if (st.name && st.body) lines.push(this.func(st, ident(st.name.text))); continue; }
@@ -7520,6 +7522,9 @@ export class Translator implements AsyncTranslator {
       return `resolveForwardRef(${arg(0) ? this.coerce(arg(0), 'Any?') : 'null'})`;
     }
     if (name === 'isDevMode' && lib) return 'false';
+    const shimmed = decl && ts.isFunctionDeclaration(decl) && decl.getSourceFile().fileName.startsWith('/__shims__/') ? decl.name?.text : undefined;
+    if (shimmed === 'enableProdMode') return 'Unit';
+    if (shimmed === 'isAngularHmrRestoringRoute') return 'false';
     // Angular's `effect()`.
     if (name === 'effect' && lib && arg(0)) return `Effect.deferred(${this.callback(arg(0))})`;
     if ((name === 'nextTick' || name === 'tick') && !e.arguments.length && lib) return `Reactivity.${name}()`;
@@ -8933,6 +8938,8 @@ export class Translator implements AsyncTranslator {
     const conforming = this.appInterfaces?.find((i) => i.name === name);
     if (conforming && !(decl && ts.isInterfaceDeclaration(decl) && decl.name.text === name)) decl = conforming.type.getSymbol()?.declarations?.[0];
     const shape = [...this.shapes.values()].find((s) => s.name === name);
+    const alias = this.checker.getNonNullableType(type).aliasSymbol?.declarations?.[0];
+    const joined = alias && ts.isTypeAliasDeclaration(alias) ? intersectionAliasMembers(alias, this.checker) : null;
     let order: { name: string; type: string; label?: string }[];
     let target = name;
     if (this.protocols.has(name) && decl && ts.isInterfaceDeclaration(decl)) {
@@ -8944,6 +8951,8 @@ export class Translator implements AsyncTranslator {
     } else if (shape) order = shape.fields;
     else if (decl && (ts.isInterfaceDeclaration(decl) || ts.isTypeLiteralNode(decl))) {
       order = decl.members.filter((m) => ts.isPropertySignature(m) || ts.isMethodSignature(m)).map((m) => ({ name: (m.name as ts.Identifier).text, type: m.questionToken ? optionalType(this.typeOf(m)) : this.typeOf(m) }));
+    } else if (joined) {
+      order = joined.map((m) => ({ name: (m.name as ts.Identifier).text, type: m.questionToken ? optionalType(this.typeOf(m)) : this.typeOf(m) }));
     } else if (this.library && this.literalClassOf(type)) return this.classLiteral(e, this.literalClassOf(type)!, name);
     else throw this.error(e, `an object literal of type ${name}`);
     const given = new Map<string, string>();

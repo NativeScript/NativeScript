@@ -370,6 +370,7 @@ const SHIMS: Record<string, string> = {
     export declare function linkedSignal<T>(fn: () => T, options?: CreateComputedOptions<T>): WritableSignal<T>;
     export declare function isSignal(value: unknown): value is Signal<unknown>;
     export declare function isDevMode(): boolean;
+    export declare function enableProdMode(): void;
     export type Provider = any;
     export type EnvironmentProviders = any;
     export interface ModuleWithProviders<T = any> { ngModule: any; providers?: any[] }
@@ -597,6 +598,9 @@ const SHIMS: Record<string, string> = {
       title?: any;
     }[];
     export type Route = Routes[number];
+    export type Params = { [key: string]: any };
+    export interface IsActiveMatchOptions { matrixParams: 'exact' | 'subset' | 'ignored'; queryParams: 'exact' | 'subset' | 'ignored'; paths: 'exact' | 'subset'; fragment: 'exact' | 'ignored' }
+    export interface CanActivate { canActivate(route: ActivatedRouteSnapshot, state: any): any }
     export declare const RouterModule: { forRoot(routes: Routes, config?: any): any; forChild(routes: Routes): any };
     export declare function provideRouter(routes?: any, ...features: any[]): any;
     export declare const RouterOutlet: any;
@@ -721,6 +725,7 @@ const SHIMS: Record<string, string> = {
     export declare const NativeDialogModule: any;
     export declare const NATIVE_DIALOG_DATA: import('@angular/core').InjectionToken<any>;
     export declare function registerElement(name: string, resolver: () => any, meta?: any): void;
+    export declare function isAngularHmrRestoringRoute(): boolean;
     export declare const ActionBarComponent: any;
     export declare const ActionItemDirective: any;
     export declare const NavigationButtonDirective: any;
@@ -1073,8 +1078,9 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
   // The build types the app strictly; an app whose own configuration is not strict is held only to what that configuration checks.
   const lenient = appStrictness(roots[0] ?? [...virtual.keys()][0]);
   const strictOnly = new Set([2322, 2345, 2531, 2532, 2533, 2454, 2564, 2722, 7005, 7006, 7008, 7015, 7031, 7034, 7053, 18047, 18048, 18049,
-    // What JavaScript defines that a lenient app's own build does not check: a key a spread overwrites, a `??` that never applies.
-    2783, 2869]);
+    // What JavaScript defines that a lenient app's own build does not check: a key a spread overwrites, a `??` that never applies,
+    // an operand always nullish, truthy or falsy.
+    2783, 2869, 2871, 2872, 2873]);
   // Strict narrowing leaves a lenient program's value `never` where its own build reads it as declared.
   const neverRead = (d: ts.Diagnostic) => d.code === 2339 && /on type 'never'/.test(ts.flattenDiagnosticMessageText(d.messageText, '\n'));
   // Another platform's file (`x.android.ts`, which a declaration file may import for its types) is not part of this build.

@@ -3,6 +3,8 @@ import { dirname, join, resolve } from 'node:path';
 import { componentOf, declarablesIn } from './angular.ts';
 import { KIT_PLUGINS, STUBBED_PLUGINS } from './core.ts';
 import type { PluginSources } from './plugins/source.ts';
+import { packageOf } from './plugins/resolve.ts';
+import ts from 'typescript';
 
 /** The TypeScript of each `<package>/angular` entry the app imports, from the plugin's source beside its main module. */
 export function angularLibraries(sources: string[], modulesDir: string, plugins: PluginSources, replaced: ReadonlySet<string>): string[] {
@@ -68,3 +70,65 @@ export function angularLibraries(sources: string[], modulesDir: string, plugins:
   return out;
 }
 
+
+/** A tag registered for a plugin view: its class, the module it is from, and the `ViewClassMeta` keys it was registered with. */
+export interface RegisteredElement {
+  name: string;
+  from: string;
+  /** The keys of the third argument (`insertChild`, `skipAddToDom`…), or null when it is not an object literal the file declares. */
+  meta?: string[] | null;
+}
+
+/**
+ * Tags registered for plugin views: `registerElement('Tag', () => Class)` or `registerElement('Tag', () => Class, meta)`
+ * in the app, and in the Angular entry (`<package>/angular`) of a plugin the app imports, with the module each class is from.
+ */
+export function registeredElements(sources: string[], modulesDir: string): Map<string, RegisteredElement> {
+  const found = new Map<string, RegisteredElement>();
+  const scan = (text: string, file: string | null) => {
+    if (!text.includes('registerElement')) return;
+    const imports = new Map<string, string>();
+    for (const m of text.matchAll(/import\s*\{([^}]*)\}\s*from\s*['"]([^'"]+)['"]/g)) {
+      for (const part of m[1].split(',')) {
+        const [orig, alias] = part.trim().split(/\s+as\s+/);
+        if (orig) imports.set((alias ?? orig).trim(), JSON.stringify([orig.trim(), m[2]]));
+      }
+    }
+    const sf = ts.createSourceFile(file ?? 'entry.mjs', text, ts.ScriptTarget.Latest, true, file?.endsWith('.ts') ? ts.ScriptKind.TS : ts.ScriptKind.JS);
+    const objectOf = (e: ts.Expression): ts.ObjectLiteralExpression | null => {
+      if (ts.isObjectLiteralExpression(e)) return e;
+      if (!ts.isIdentifier(e)) return null;
+      for (const st of sf.statements) {
+        if (!ts.isVariableStatement(st) || !(st.declarationList.flags & ts.NodeFlags.Const)) continue;
+        for (const d of st.declarationList.declarations) if (ts.isIdentifier(d.name) && d.name.text === e.text && d.initializer) return objectOf(d.initializer);
+      }
+      return null;
+    };
+    const visit = (n: ts.Node) => {
+      ts.forEachChild(n, visit);
+      if (!ts.isCallExpression(n) || !ts.isIdentifier(n.expression) || n.expression.text !== 'registerElement') return;
+      const [tag, resolver, meta] = n.arguments;
+      if (!tag || !ts.isStringLiteralLike(tag) || !resolver || !ts.isArrowFunction(resolver) || resolver.parameters.length || !ts.isIdentifier(resolver.body)) return;
+      const imported = imports.get(resolver.body.text);
+      if (!imported) return;
+      const [name, from] = JSON.parse(imported) as [string, string];
+      // Core's own views are elements already.
+      if (from === '@nativescript/core' || STUBBED_PLUGINS.has(packageOf(from))) return;
+      const object = meta ? objectOf(meta) : null;
+      const keys = object && object.properties.every((p) => p.name && !ts.isComputedPropertyName(p.name)) ? object.properties.map((p) => p.name!.getText().replace(/^['"]|['"]$/g, '')) : null;
+      found.set(tag.text, { name, from: from.startsWith('.') && file ? resolve(dirname(file), from) : from, ...(meta ? { meta: keys } : {}) });
+    };
+    visit(sf);
+  };
+  for (const f of sources) {
+    const text = readFileSync(f, 'utf8');
+    scan(text, f);
+    for (const m of text.matchAll(/from\s*['"]((?:@[\w.-]+\/)?[\w.-]+)\/angular['"]/g)) {
+      if (STUBBED_PLUGINS.has(m[1])) continue;
+      const dir = join(modulesDir, m[1], 'angular');
+      const entry = existsSync(dir) ? readdirSync(dir).flatMap((d) => (/^fesm/.test(d) ? readdirSync(join(dir, d)).filter((x) => x.endsWith('.mjs')).map((x) => join(dir, d, x)) : [])).sort().reverse()[0] : undefined;
+      if (entry) scan(readFileSync(entry, 'utf8'), null);
+    }
+  }
+  return found;
+}

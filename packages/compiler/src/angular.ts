@@ -79,7 +79,7 @@ const UNSUPPORTED_COMMON_PIPES = new Set(['currency', 'i18nPlural', 'i18nSelect'
  * per template expression. The class keeps Angular's API; the translator
  * knows what `signal()`, `computed()`, `input()`, `output()` and `inject()` mean.
  */
-export function angularComponent(path: string, text: string, selectors: Map<string, string>, options: { zone?: boolean; elements?: Map<string, string>; platform?: 'ios' | 'android'; pipes?: Map<string, PipeDecl>; runtimeModule?: string; directives?: DirectiveDecl[]; ngModules?: Map<string, string[]> } = {}): AngularComponent | null {
+export function angularComponent(path: string, text: string, selectors: Map<string, string>, options: { zone?: boolean; elements?: Map<string, string>; platform?: 'ios' | 'android'; pipes?: Map<string, PipeDecl>; runtimeModule?: string; directives?: DirectiveDecl[]; ngModules?: Map<string, string[]>; hosts?: HostedComponent[]; elementMeta?: Map<string, string[] | null> } = {}): AngularComponent | null {
   const written = text;
   let sf = ts.createSourceFile(path, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
   let cls = sf.statements.find((s): s is ts.ClassDeclaration => ts.isClassDeclaration(s) && !!decorator(s, 'Component'));
@@ -109,31 +109,25 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
   const registered = new Map<string, string>();
   for (const [tag, cls] of options.elements ?? []) for (const k of [tag, tag.toLowerCase(), tag.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase()]) registered.set(k, cls);
   const elementOf = (name: string): string | undefined => canonical(name) ?? canonical(name.replace(/-/g, '')) ?? registered.get(name) ?? registered.get(name.toLowerCase()) ?? undefined;
-  const members = new Set<string>();
-  const props: string[] = [];
-  const optional: string[] = [];
-  const outputs: string[] = [];
-  const inputAliases: Record<string, string> = {};
-  for (const m of cls.members) {
-    if (!m.name || !ts.isIdentifier(m.name)) continue;
-    members.add(m.name.text);
-    if (ts.isPropertyDeclaration(m) && m.initializer && ts.isCallExpression(m.initializer)) {
-      const callee = m.initializer.expression.getText();
-      if (callee === 'input' || callee === 'input.required' || callee === 'model' || callee === 'model.required') {
-        props.push(m.name.text);
-        // `input(init, { alias })`, `input.required({ alias })`: the name the parent binds.
-        const options = m.initializer.arguments[callee === 'input' || callee === 'model' ? 1 : 0];
-        const alias = options && ts.isObjectLiteralExpression(options) ? options.properties.find((p): p is ts.PropertyAssignment => ts.isPropertyAssignment(p) && p.name.getText() === 'alias')?.initializer : undefined;
-        if (alias && ts.isStringLiteralLike(alias)) inputAliases[m.name.text] = alias.text;
-      }
-      // An input with a default value (or `input<T>()` with implicit undefined) is one a parent may leave out.
-      if (callee === 'input' || callee === 'model') optional.push(m.name.text);
-      if (callee === 'output' || callee === 'model' || callee === 'model.required') outputs.push(m.name.text);
+  const metas = new Map<string, string[] | null>();
+  for (const [tag, keys] of options.elementMeta ?? []) for (const k of [tag, tag.toLowerCase(), tag.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase()]) metas.set(k, keys);
+  /**
+   * A plugin tag registered with a `ViewClassMeta` (`registerElement('Drawer', () => Drawer, meta)`): its renderer hooks
+   * decide where the element and its children go, and the release build runs none of them yet.
+   */
+  const checkMeta = (n: ng.TmplAstElement) => {
+    if (canonical(n.name) || canonical(n.name.replace(/-/g, ''))) return;
+    const keys = metas.has(n.name) ? metas.get(n.name) : metas.get(n.name.toLowerCase());
+    if (keys === undefined) return;
+    if (keys === null) throw new Error(`${path}: <${n.name}> is registered with a ViewClassMeta the build cannot read (not an object literal in the registering file)`);
+    if (keys.includes('skipAddToDom')) throw new Error(`${path}: <${n.name}> is registered with skipAddToDom, which a release build does not support yet`);
+    const hooks = keys.filter((k) => ['insertChild', 'removeChild', 'insertInvisibleNode', 'removeInvisibleNode'].includes(k));
+    if (hooks.length && n.children.some((c) => !(c instanceof ng.TmplAstText) || c.value.trim())) {
+      throw new Error(`${path}: the children of <${n.name}> join it through its registerElement meta (${hooks.join(', ')}), which a release build does not run yet`);
     }
-  }
+  };
+  const { members, props, optional, outputs, inputAliases } = publicMembers(cls, classic);
   collectInheritedMembers(path, sf, cls, members);
-  for (const [field, alias] of classic?.aliases ?? []) inputAliases[field] = alias;
-  for (const name of classic?.setters ?? []) { props.push(name); optional.push(name); }
   const scope: Scope = { names: new Map([...members].map((m) => [m, classic?.inputs.has(m) ? `this.${m}()` : `this.${m}`])) };
   const init = cls.members.find((m) => ts.isMethodDeclaration(m) && m.name.getText() === 'ngOnInit');
   /** A lifecycle hook the class implements: a method of that name, taking nothing. */
@@ -346,6 +340,22 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
     matcher.match(css, (_s, d) => { if (!found.includes(d)) found.push(d); });
     return found;
   };
+  const hostMatcher = new ng.SelectorMatcher<HostedComponent>();
+  for (const h of options.hosts ?? []) if (inScope.has(h.name)) hostMatcher.addSelectables(ng.CssSelector.parse(h.selector), h);
+  /** The component in scope an element hosts, matched as directives are. */
+  const hostedBy = (n: ng.TmplAstElement): HostedComponent | undefined => {
+    const css = new ng.CssSelector();
+    css.setElement(n.name);
+    for (const a of n.attributes) {
+      css.addAttribute(a.name, a.value);
+      if (a.name === 'class') for (const c of a.value.split(/\s+/).filter(Boolean)) css.addClassName(c);
+    }
+    for (const b of [...n.inputs.map((i) => i.name), ...n.outputs.map((o) => o.name)]) css.addAttribute(b, '');
+    const found: HostedComponent[] = [];
+    hostMatcher.match(css, (_s, h) => { if (!found.includes(h)) found.push(h); });
+    if (found.length > 1) throw new Error(`${path}: <${n.name}> matches the components ${found.map((h) => h.name).join(' and ')}; an element hosts one`);
+    return found[0];
+  };
   let directiveCount = 0;
   /**
    * A directive on an element, one per view of it: made with the element as its ElementRef, its inputs set from the
@@ -471,9 +481,27 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
         const events: Event[] = [];
         // A ListView, or a plugin view taking item templates (`<Pager>` with `<ng-template let-item>`), renders rows from templates.
         const isList = canonical(n.name) === 'ListView' || (n.inputs.some((i) => i.name === 'items') && n.children.some((c) => c instanceof ng.TmplAstTemplate && c.tagName === 'ng-template' && c.variables.length > 0));
+        // The component an attribute selects renders its template into the element; its inputs and outputs are bound
+        // on it, the element's properties and events beside them.
+        const hosted = selectors.has(n.name) ? undefined : hostedBy(n);
+        const hostProps: Attr[] = [];
+        const hostEvents: Event[] = [];
+        if (hosted) {
+          const unsupported = (what: string) => new Error(`${path}: ${what} on <${n.name}>, the host of ${hosted.name}, is not supported in a release build yet`);
+          if (hosted.readsHost) throw unsupported(`${hosted.name}'s own ElementRef or host bindings`);
+          if (isList) throw unsupported('item templates');
+          if (n.children.some((c) => !(c instanceof ng.TmplAstText) || c.value.trim())) throw unsupported('content');
+          for (const i of n.inputs) if (hosted.inputs.has(i.name) && i.type === ng.BindingType.TwoWay) throw unsupported(`[(${i.name})]`);
+          for (const o of n.outputs) if (hosted.models.has(o.name.replace(/Change$/, ''))) throw unsupported(`(${o.name})`);
+        }
         const link = routerLink(n, loops);
         if (link) events.push(link);
-        for (const a of n.attributes) if (!link || !ROUTER_LINK_INPUTS.has(a.name)) attrs.push({ name: a.name, value: a.value });
+        for (const a of n.attributes) {
+          if (link && ROUTER_LINK_INPUTS.has(a.name)) continue;
+          // A static attribute is the element's too, as Angular writes every one to its host.
+          attrs.push({ name: a.name, value: a.value });
+          if (hosted?.inputs.has(a.name)) hostProps.push({ name: a.name, value: a.value });
+        }
         for (const c of n.children) {
           if (c instanceof ng.TmplAstText && c.value.trim()) attrs.push({ name: 'text', value: c.value });
           if (c instanceof ng.TmplAstBoundText) {
@@ -502,6 +530,10 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
         for (const i of n.inputs) {
           if (i === switched || consumed.has(i.name) || i.type === ng.BindingType.Class || (isList && i.name === 'itemTemplateSelector') || (link && ROUTER_LINK_INPUTS.has(i.name))) continue;
           at(i.sourceSpan);
+          if (hosted?.inputs.has(i.name) && i.type === ng.BindingType.Property) {
+            hostProps.push({ name: i.name, method: expr(code(i.value, loops), loops) });
+            continue;
+          }
           // `[style.fontSize.px]`: the renderer's setStyle, `view.style[name] = value`, the unit appended to a value that is there.
           if (i.type === ng.BindingType.Style && i.name !== 'style' && !selectors.has(n.name)) {
             const v = code(i.value, loops);
@@ -521,6 +553,10 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
         }
         for (const o of n.outputs) {
           at(o.sourceSpan);
+          if (hosted?.outputs.has(o.name)) {
+            hostEvents.push({ name: o.name, method: handler(code(o.handler, loops), loops, true), payload: true });
+            continue;
+          }
           events.push({ name: o.name, method: handler(code(o.handler, loops), loops, selectors.has(n.name)), ...(selectors.has(n.name) ? { payload: true } : {}) });
         }
         const component = selectors.get(n.name);
@@ -533,11 +569,15 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
         if (n.name === 'page-router-outlet') { out.push({ kind: 'element', tag: 'Frame', attrs: [{ name: 'router', value: n.attributes.find((a) => a.name === 'name')?.value ?? 'primary' }], events: [], children: [] }); continue; }
         const tag = elementOf(n.name);
         if (!tag) throw new Error(`${path}: <${n.name}> is not a @nativescript/core element the release build knows`);
+        checkMeta(n);
         const sections = isList && isSectioned(n);
-        const children = () => (isList ? listTemplates(n, attrs, loops) : nodes(n.children, loops));
-        const hooks = queryHooks(refs, null, tag, loops);
+        // A reference on a host names its component; ElementRef and the view's class read the element.
+        const matches = queryHooks(refs, hosted?.name ?? null, tag, loops);
+        const hooks = matches.filter((h) => h.on !== 'instance');
+        const own = matches.filter((h) => h.on === 'instance');
+        const children = () => (isList ? listTemplates(n, attrs, loops) : hosted ? [{ kind: 'component' as const, name: hosted.name, props: hostProps, events: hostEvents, ...(own.length ? { queries: own } : {}) }] : nodes(n.children, loops));
         // A static query is resolved when the template's views are made, before ngOnInit: ngOnInit runs once the last element one names is.
-        const statics = hooks.length ? queries.filter((q) => q.static && q.ref && refs.includes(q.ref) && staticRefs.has(q.ref)) : [];
+        const statics = matches.length ? queries.filter((q) => q.static && q.ref && refs.includes(q.ref) && staticRefs.has(q.ref)) : [];
         for (const q of statics) staticQueries.delete(q);
         const late = statics.length > 0 && staticQueries.size === 0;
         out.push({ kind: 'element', tag, attrs, events, children: switched ? switching(n, switched.value, loops, children) : children(), ...(sections ? { sections } : {}), ...(hooks.length ? { queries: hooks } : {}), ...(late ? { init: true } : {}), ...(directives.length ? { directives } : {}) });
@@ -1582,7 +1622,75 @@ export function declarablesIn(path: string, text: string): { classes: string[]; 
   return { classes, modules };
 }
 
-/** The element names a component's selector matches (`resource, [talkResource]` is `<resource>`, and an attribute on a view, which a compiled template does not host). */
+/** A component class's members, and its inputs (by field, with the names its parent binds where they differ) and outputs. */
+function publicMembers(cls: ts.ClassDeclaration, classic: Classic | null) {
+  const members = new Set<string>();
+  const props: string[] = [];
+  const optional: string[] = [];
+  const outputs: string[] = [];
+  const inputAliases: Record<string, string> = {};
+  for (const m of cls.members) {
+    if (!m.name || !ts.isIdentifier(m.name)) continue;
+    members.add(m.name.text);
+    if (ts.isPropertyDeclaration(m) && m.initializer && ts.isCallExpression(m.initializer)) {
+      const callee = m.initializer.expression.getText();
+      if (callee === 'input' || callee === 'input.required' || callee === 'model' || callee === 'model.required') {
+        props.push(m.name.text);
+        // `input(init, { alias })`, `input.required({ alias })`: the name the parent binds.
+        const options = m.initializer.arguments[callee === 'input' || callee === 'model' ? 1 : 0];
+        const alias = options && ts.isObjectLiteralExpression(options) ? options.properties.find((p): p is ts.PropertyAssignment => ts.isPropertyAssignment(p) && p.name.getText() === 'alias')?.initializer : undefined;
+        if (alias && ts.isStringLiteralLike(alias)) inputAliases[m.name.text] = alias.text;
+      }
+      // An input with a default value (or `input<T>()` with implicit undefined) is one a parent may leave out.
+      if (callee === 'input' || callee === 'model') optional.push(m.name.text);
+      if (callee === 'output' || callee === 'model' || callee === 'model.required') outputs.push(m.name.text);
+    }
+  }
+  for (const [field, alias] of classic?.aliases ?? []) inputAliases[field] = alias;
+  for (const name of classic?.setters ?? []) { props.push(name); optional.push(name); }
+  return { members, props, optional, outputs, inputAliases };
+}
+
+/**
+ * A component whose selector names attributes (`[searchBar]`, `GridLayout[pane]`): the element that matches is its
+ * host, and the template binds the component's inputs and outputs there, the element's own properties and events
+ * beside them.
+ */
+export interface HostedComponent {
+  name: string;
+  selector: string;
+  inputs: Set<string>;
+  outputs: Set<string>;
+  models: Set<string>;
+  /** It reads its host element (`inject(ElementRef)`, `host: {…}`, `@HostBinding`, `@HostListener`). */
+  readsHost: boolean;
+}
+
+/** A file's component as an element hosting it sees it, when its selector names attributes. */
+export function hostedComponent(path: string, text: string): HostedComponent | null {
+  const found = componentOf(path, text);
+  if (!found?.selector || !ng.CssSelector.parse(found.selector).some((s) => s.attrs.length || s.classNames.length)) return null;
+  let sf = ts.createSourceFile(path, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+  const named = (f: ts.SourceFile) => f.statements.find((s): s is ts.ClassDeclaration => ts.isClassDeclaration(s) && s.name?.text === found.name)!;
+  let cls = named(sf);
+  const meta = decorator(cls, 'Component')!.arguments[0];
+  const hostMeta = !!meta && ts.isObjectLiteralExpression(meta) && meta.properties.some((p) => p.name?.getText() === 'host');
+  const hostDecorators = cls.members.some((m) => (ts.canHaveDecorators(m) ? ts.getDecorators(m) ?? [] : []).some((d) => /^(HostBinding|HostListener)\b/.test(d.expression.getText())));
+  const classic = classicClass(path, text, cls);
+  if (classic) cls = named((sf = ts.createSourceFile(path, classic.text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS)));
+  const api = publicMembers(cls, classic);
+  const models = cls.members.filter((m): m is ts.PropertyDeclaration => ts.isPropertyDeclaration(m) && !!m.initializer && ts.isCallExpression(m.initializer) && /^model(\.required)?$/.test(m.initializer.expression.getText())).map((m) => m.name.getText());
+  return {
+    name: found.name,
+    selector: found.selector,
+    inputs: new Set(api.props.map((p) => api.inputAliases[p] ?? p)),
+    outputs: new Set(api.outputs),
+    models: new Set(models),
+    readsHost: hostMeta || hostDecorators || !!classic?.host || /\binject\(\s*ElementRef\b/.test(cls.getText()),
+  };
+}
+
+/** The element names a component's selector matches (`resource, [talkResource]` is `<resource>`; its attribute is `hostedComponent`'s). */
 export function selectorElements(selector: string): string[] {
   return ng.CssSelector.parse(selector).flatMap((s) => (s.element && s.element !== '*' && !s.attrs.length && !s.classNames.length && !s.notSelectors.length ? [s.element] : []));
 }

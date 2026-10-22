@@ -5,7 +5,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { KIT_APPLE_SOURCES } from './paths.ts';
 import { Throws, digitsLiteral, isArrayLengthLiteral, isArrayLengthWrite, isAsync, isStatic } from './throws.ts';
-import { assignedValues, initializedNull, intlConstructor, nullSetFields, isRegExpProtocol, isObjectToStringCall, isStringRaw, leadingNeverRead, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, uncheckedMatch, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, LooseSlots, originOf, ownSlot, implementedInterfaceDeclarations, slotOf, slotType, definitelyAssignedFields, type TrustScope } from './lang.ts';
+import { assignedValues, initializedNull, intersectionAliasMembers, intlConstructor, nullSetFields, isRegExpProtocol, isObjectToStringCall, isStringRaw, leadingNeverRead, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, uncheckedMatch, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, LooseSlots, originOf, ownSlot, implementedInterfaceDeclarations, slotOf, slotType, definitelyAssignedFields, type TrustScope } from './lang.ts';
 import { AsyncLowering, type AsyncCtx, type AsyncSyntax, type AsyncTranslator } from './async.ts';
 import { CoreAPI, isCoreDeclaration, packageOf } from './core.ts';
 import type { KitMember } from './kit-index.ts';
@@ -374,7 +374,7 @@ export class Translator implements AsyncTranslator {
       const visit = (statements: readonly ts.Statement[], nested: boolean) => {
         for (const st of statements) {
           if (hasModifier(st, ts.SyntaxKind.DeclareKeyword)) continue;
-          if ((ts.isInterfaceDeclaration(st) || (ts.isTypeAliasDeclaration(st) && ts.isTypeLiteralNode(st.type))) && !(this.checker.getSymbolAtLocation(st.name)!.flags & ts.SymbolFlags.Class)) add(st, st.name.text);
+          if ((ts.isInterfaceDeclaration(st) || (ts.isTypeAliasDeclaration(st) && (ts.isTypeLiteralNode(st.type) || intersectionAliasMembers(st, this.checker)))) && !(this.checker.getSymbolAtLocation(st.name)!.flags & ts.SymbolFlags.Class)) add(st, st.name.text);
           if (nested) continue;
           if ((ts.isClassDeclaration(st) || ts.isEnumDeclaration(st)) && st.name) add(st, st.name.text);
           if (ts.isModuleDeclaration(st) && ts.isIdentifier(st.name)) add(st, st.name.text);
@@ -2029,6 +2029,7 @@ export class Translator implements AsyncTranslator {
       // Types, which a plugin's values reached may name though nothing reaches them as values: emitted where used.
       if (ts.isInterfaceDeclaration(st)) { this.registerInterface(this.topName(st, st.name.text), sf.fileName, this.interfaceMembers(st)); continue; }
       if (ts.isTypeAliasDeclaration(st) && ts.isTypeLiteralNode(st.type)) { this.registerInterface(this.topName(st, st.name.text), sf.fileName, st.type.members); continue; }
+      if (ts.isTypeAliasDeclaration(st) && intersectionAliasMembers(st, this.checker)) { this.registerInterface(this.topName(st, st.name.text), sf.fileName, intersectionAliasMembers(st, this.checker)!); continue; }
       if (ts.isTypeAliasDeclaration(st)) continue;
       if (this.reach && !this.reach.keeps(st)) continue;
       if (ts.isEnumDeclaration(st)) { out.push(this.enumDecl(st)); continue; }
@@ -2146,6 +2147,7 @@ export class Translator implements AsyncTranslator {
       // A namespace's interfaces are the module's: a class of the interface's name.
       if (ts.isInterfaceDeclaration(st)) { this.registerInterface(this.topName(st, st.name.text), md.getSourceFile().fileName, this.interfaceMembers(st)); continue; }
       if (ts.isTypeAliasDeclaration(st) && ts.isTypeLiteralNode(st.type)) { this.registerInterface(this.topName(st, st.name.text), md.getSourceFile().fileName, st.type.members); continue; }
+      if (ts.isTypeAliasDeclaration(st) && intersectionAliasMembers(st, this.checker)) { this.registerInterface(this.topName(st, st.name.text), md.getSourceFile().fileName, intersectionAliasMembers(st, this.checker)!); continue; }
       if (ts.isTypeAliasDeclaration(st)) continue;
       values = true;
       if (ts.isFunctionDeclaration(st)) { if (st.name && st.body) lines.push(this.memberFunc(st, ident(st.name.text), 'static ')); continue; }
@@ -10055,7 +10057,10 @@ ${members.join('\n')}
       || (ts.isMethodDeclaration(d) && ts.isClassLike(d.parent) && !d.questionToken));
     // A method an instance may be given a property in place of (`Object.defineProperty(this, 'm', …)`): the instance's, when it has one.
     if (ts.isPropertyAccessExpression(callee) && callee.expression.kind !== ts.SyntaxKind.SuperKeyword && !this.ownCalls.has(e) && this.isInstanceMethod(callee.name)) {
-      if (!this.pure(callee.expression) && callee.expression.kind !== ts.SyntaxKind.ThisKeyword) throw this.error(callee, 'a method an instance can replace, on an object with effects');
+      // The receiver is evaluated twice: reading `this`'s fields again is unobservable, an accessor's read is not.
+      const fieldRead = (x: ts.Expression): boolean => x.kind === ts.SyntaxKind.ThisKeyword || (ts.isPropertyAccessExpression(x) && !x.questionDotToken && fieldRead(x.expression) && !this.isAny(x.expression)
+        && this.looseReceiverKey(x.expression) === null && !!this.resolve(x.name)?.declarations?.length && !this.resolve(x.name)!.declarations!.some(ts.isAccessor));
+      if (!this.pure(callee.expression) && !fieldRead(callee.expression)) throw this.error(callee, 'a method an instance can replace, on an object with effects');
       const t = this.typeOf(e);
       this.ownCalls.add(e);
       try {
@@ -10579,6 +10584,9 @@ ${members.join('\n')}
       return `resolveForwardRef(${arg(0) ? this.coerce(arg(0), 'Any?') : 'nil'})`;
     }
     if (name === 'isDevMode' && lib) return 'false';
+    const shimmed = decl && ts.isFunctionDeclaration(decl) && decl.getSourceFile().fileName.startsWith('/__shims__/') ? decl.name?.text : undefined;
+    if (shimmed === 'enableProdMode') return '()';
+    if (shimmed === 'isAngularHmrRestoringRoute') return 'false';
     if ((name === 'nextTick' || name === 'tick') && !e.arguments.length && lib) return `Reactivity.${name}()`;
     if (name === 'output' && lib) return `${this.typeOf(e)}()`;
     if (name === 'inject' && lib) {
@@ -12338,6 +12346,8 @@ ${members.join('\n')}
     const conforming = this.appInterfaces?.find((i) => i.name === name);
     if (conforming && !(decl && ts.isInterfaceDeclaration(decl) && decl.name.text === name)) decl = conforming.type.getSymbol()?.declarations?.[0];
     const shape = [...this.shapes.values()].find((s) => s.name === name);
+    const alias = this.checker.getNonNullableType(type).aliasSymbol?.declarations?.[0];
+    const joined = alias && ts.isTypeAliasDeclaration(alias) ? intersectionAliasMembers(alias, this.checker) : null;
     let order: { name: string; type: string }[];
     let target = name;
     // An interface classes implement (the program's, or core's the kit made a protocol of): the protocol's object class.
@@ -12349,6 +12359,7 @@ ${members.join('\n')}
       ];
     } else if (shape) order = shape.fields;
     else if (decl && (ts.isInterfaceDeclaration(decl) || ts.isTypeLiteralNode(decl))) order = this.interfaceFields(decl.members);
+    else if (joined) order = this.interfaceFields(joined);
     else throw this.error(e, `an object literal of type ${name}`);
     const given = new Map<string, string>();
     const spreadTemps: string[] = [];
