@@ -548,6 +548,37 @@ export class GlyphPipe { constructor(@Inject(TOKEN) private config: any, @Option
   check(/Choose\(r\d+, \{ jsReportedTruthy\(\{ try self\._b0\(\) \}\) \? 0 : 1 \}[,)]/.test(swift), 'a condition that throws is reported and counts as false');
   check(/if jsReportedTruthy\(\{ try self\._b4\(\) \}\) \{/.test(swift), "a listener's guard that throws is reported and counts as false");
   check(!/try!|try\?/.test(swift.replace(/let v\d+ = try! StackLayout\(\)/g, '')), 'no binding, condition or prop is read with try! or try?');
+  const list = render({ name: 'Rows', file: '/app/rows.ts', source: '', props: [], template: [{ kind: 'element' as const, tag: 'ListView', attrs: [{ name: 'items', method: '$b0' }], events: [], children: [] }] }, new Map(), () => true, 'angular').join('\n');
+  check(/\.bind\(items: \{ jsReportedItems \{ try self\._b0\(\) \} \}/.test(list), "a list's items that throw are reported, and the list shows none");
+}
+
+// ---- A component's computed signal read in a binding ----
+{
+  const dir = mkdtempSync(join(tmpdir(), 'ns-release-checks-computed-'));
+  try {
+    const file = join(dir, 'people.component.ts');
+    writeFileSync(file, `import { Component, computed, signal } from '@angular/core';
+const BYLINE = { byline: true } as const;
+class Person { name = 'Ada'; }
+type Row = Person | typeof BYLINE;
+@Component({ selector: 'People', template: '<ListView [items]="rows()"></ListView>' })
+export class People {
+  readonly people = signal<Person[]>([]);
+  readonly rows = computed<Row[]>(() => [BYLINE, ...this.people()]);
+}
+`);
+    const ir = angularComponent(file, readFileSync(file, 'utf8'), new Map())!;
+    const { checker, program, files } = createProgram([file], new Map([[file, ir.source]]), 'ios', modulesDir);
+    const sw = new SwiftTranslator(checker, new Map([['People', { props: ir.props, optional: ir.optional }]]), files);
+    sw.plainFields = true;
+    translateModules(sw, program, [file]);
+    const cls = program.getSourceFile(file)!.statements.filter(ts.isClassDeclaration).find((c) => c.name?.text === 'People')!;
+    sw.componentMembers(cls, ir.props);
+    const items = (ir.template as { attrs?: { name: string; method?: string }[] }[])[0]?.attrs?.find((a) => a.name === 'items')?.method ?? '-';
+    check(!sw.memberThrows(cls, items), "reading a component's computed array (`rows()`) in a binding throws nothing (Swift)");
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 }
 
 // ---- Top-level names the kit declares too ----

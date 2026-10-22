@@ -403,7 +403,8 @@ export function render(c: ComponentIR, components: Map<string, ComponentInfo>, t
     const templates = all.filter((t) => !t.header);
     const header = all.find((t) => t.header);
     // A sectioned list's items are its sections; a row's item is one of a section's `items`.
-    const source = node.sections ? `sections: { Array(${call(items.method, loops)}) }, rows: { Array($0.items) }` : `items: { Array(${call(items.method, loops)}) }`;
+    const read = throws(items.method) ? `jsReportedItems { ${call(items.method, loops)} }` : `Array(${call(items.method, loops)})`;
+    const source = node.sections ? `sections: { ${read} }, rows: { Array($0.items) }` : `items: { ${read} }`;
     if (!templates.length) { say(depth, `${v}.bind(${source}${sel})`); return; }
     const row = `row${n++}`;
     /** One template's view for a row: the closure body rendering it. */
