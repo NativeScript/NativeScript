@@ -8593,6 +8593,10 @@ export class Translator implements AsyncTranslator {
     // `this.x = …` in a static block or method, of a static field the class declares: the companion's.
     const staticOwn = ts.isPropertyAccessExpression(left) && left.expression.kind === ts.SyntaxKind.ThisKeyword && !!this.resolve(left.name)?.declarations?.some((d) => ts.isPropertyDeclaration(d) && isStatic(d));
     if (staticOwn) return `${this.expr(left.expression)}.${ident(left.name.text)} = ${this.coerce(right, this.typeOf(left))}`;
+    // Calls of a program class's method go straight to it, and its jsSet keeps no value under the method's name.
+    const ownMethod = ts.isPropertyAccessExpression(left) && !this.library && !this.isPrototypeRef(left.expression)
+      ? this.checker.getSymbolAtLocation(left.name)?.declarations?.find((d): d is ts.MethodDeclaration => ts.isMethodDeclaration(d) && !!d.body && ts.isClassLike(d.parent) && !d.getSourceFile().isDeclarationFile) : undefined;
+    if (ownMethod) throw this.error(left.parent, `giving an instance its own ${(ownMethod.parent as ts.ClassLikeDeclaration).name?.text ?? 'class'}.${ownMethod.name.getText()} in place of the class's method`);
     if (ts.isPropertyAccessExpression(left) && !this.library && !staticOwn && ['Any?', 'Nothing'].includes(this.typeOf(left.expression)) && !this.isExpando(left)) return `jsSet(${this.expr(left.expression)}, ${kotlinString(left.name.text)}, ${this.untypedCallable(right)})`;
     // A method of a class replaced on an instance (`image.requestLayout = () => …`): set by name, which the class's own calls do not see.
     if (ts.isPropertyAccessExpression(left) && !this.library && (this.checker.getSymbolAtLocation(left.name)?.flags ?? 0) & ts.SymbolFlags.Method && !this.isPrototypeRef(left.expression)) return `jsSet(${this.expr(left.expression)}, ${kotlinString(left.name.text)}, ${this.untypedCallable(right)})`;
