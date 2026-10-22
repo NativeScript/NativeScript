@@ -16,7 +16,7 @@ import { createProgram } from '../../src/program.ts';
 import { preflight } from '../../src/preflight.ts';
 import { satisfies } from '../../src/contract.ts';
 import { mapKotlinDiagnostics } from '../../src/kotlin-diagnostics.ts';
-import { angularComponent, angularRouteTree, componentOf, declarableSource, routedComponents, type AngularComponent } from '../../src/angular.ts';
+import { angularComponent, angularRouteTree, componentOf, declarableSource, hostedComponent, routedComponents, type AngularComponent } from '../../src/angular.ts';
 import { angularLibraries } from '../../src/angular-libraries.ts';
 import { pathAliases } from '../../src/app-paths.ts';
 import { appImports, reachedFrom, tsconfigIncluded } from '../../src/app-modules.ts';
@@ -765,6 +765,29 @@ export function openSheet(dialogs: NativeDialogService, cmp: any, config?: Nativ
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
+}
+
+// ---- Angular components an attribute selects ----
+{
+  const bar = "import { Component, input, output } from '@angular/core';\n@Component({ selector: '[searchBar]', template: `<Label [text]=\"hint()\"></Label>` })\nexport class SearchBar { ai = input(false); hint = input('', { alias: 'hintText' }); submitted = output<string>(); }\n";
+  const hosted = hostedComponent('/app/search-bar.component.ts', bar)!;
+  const page = (template: string, imports = 'SearchBar') => angularComponent('/app/home.component.ts', `import { Component, ViewChild } from '@angular/core';\nimport { SearchBar } from './search-bar.component';\n@Component({ selector: 'Home', imports: [${imports}], template: \`${template}\` })\nexport class Home { @ViewChild('bar') bar: SearchBar; go() {} done(v: string) {} }\n`, new Map(), { hosts: [hosted] })!;
+  type Node = { kind: string; tag?: string; name?: string; attrs?: { name: string }[]; props?: { name: string }[]; events?: { name: string; payload?: boolean }[]; children?: Node[]; queries?: { on: string }[] };
+  const host = page(`<GridLayout searchBar [ai]="true" [columns]="2" hintText="Ask" (tap)="go()" (submitted)="done($event)" #bar></GridLayout>`).template[0] as Node;
+  const inner = host.children?.[0];
+  check(host.tag === 'GridLayout' && host.children?.length === 1 && inner?.kind === 'component' && inner.name === 'SearchBar', 'an element whose attribute selects a component hosts it: the component renders into the element');
+  check(inner?.props?.map((p) => p.name).sort().join() === 'ai,hintText' && inner.events?.map((e) => e.name).join() === 'submitted' && !!inner.events?.[0].payload, "the component's inputs (by alias) and outputs bound on its host are the component's");
+  check(host.attrs?.map((a) => a.name).sort().join() === 'columns,hintText,searchBar' && host.events?.map((e) => e.name).join() === 'tap', "the host's other bindings and events are the element's, and its static attributes are written to it");
+  check(inner?.queries?.length === 1 && inner.queries[0].on === 'instance' && !host.queries?.length, "a reference on the host names the component");
+  const swift = render(page(`<StackLayout><GridLayout searchBar></GridLayout></StackLayout>`), new Map([['SearchBar', { props: ['ai', 'hint'], optional: ['ai', 'hint'], propAliases: { hint: 'hintText' }, outputs: ['submitted'] }], ['Home', { props: [] }]]), () => false, 'angular').join('\n');
+  check(/let (v\d+) = try GridLayout\(\)[\s\S]*let (v\d+) = try c\d+\.render\(\)[\s\S]*\1\.kitAddChild\(\2\)/.test(swift), "the hosted component's view is the host element's child (Swift)");
+  const outOfScope = page(`<GridLayout searchBar [ai]="true"></GridLayout>`, '').template[0] as Node;
+  check(!outOfScope.children?.length && outOfScope.attrs?.some((a) => a.name === 'ai'), 'a component the template does not import is not hosted');
+  const refused = (template: string, source = bar) => {
+    try { angularComponent('/app/home.component.ts', `import { Component } from '@angular/core';\nimport { SearchBar } from './search-bar.component';\n@Component({ selector: 'Home', imports: [SearchBar], template: \`${template}\` })\nexport class Home {}\n`, new Map(), { hosts: [hostedComponent('/app/search-bar.component.ts', source)!] }); return ''; } catch (e) { return String(e); }
+  };
+  check(refused(`<GridLayout searchBar><Label text="x"></Label></GridLayout>`).includes('content on <GridLayout>, the host of SearchBar'), "content inside a component's host is refused (no <ng-content> yet)");
+  check(refused(`<GridLayout searchBar></GridLayout>`, bar.replace('export class SearchBar {', "export class SearchBar { el = inject(ElementRef);").replace('{ Component,', '{ Component, ElementRef, inject,')).includes("SearchBar's own ElementRef or host bindings"), 'a hosted component reading its host element is refused');
 }
 
 // ---- Angular exports and a non-strict app's diagnostics ----

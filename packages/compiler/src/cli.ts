@@ -22,7 +22,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import ts from 'typescript';
 import type { ComponentIR } from './ir.ts';
 import { vueComponent } from './vue.ts';
-import { angularComponent, angularDirectives, angularPipes, angularRoutes, angularRouteTree, componentOf, declarableSource, declarablesIn, selectorElements, routedComponents, type RouteNode } from './angular.ts';
+import { angularComponent, angularDirectives, angularPipes, angularRoutes, angularRouteTree, componentOf, declarableSource, declarablesIn, hostedComponent, selectorElements, routedComponents, type HostedComponent, type RouteNode } from './angular.ts';
 import { svelteComponent } from './svelte.ts';
 import { svelte5Component, svelteModule } from './svelte5.ts';
 import { reactComponent, reactScreens, zustandStore } from './react.ts';
@@ -239,9 +239,13 @@ if (framework === 'vue') {
   const libraries = angularLibraries(sources, nodeModules(app), plugins, new Set(Object.keys(pluginReplacements(app, platform))));
   sources.push(...libraries);
   const selectors = new Map<string, string>();
+  const hosts: HostedComponent[] = [];
   for (const f of sources) {
-    const c = componentOf(f, readFileSync(f, 'utf8'));
+    const text = readFileSync(f, 'utf8');
+    const c = componentOf(f, text);
     for (const tag of c?.selector ? selectorElements(c.selector) : []) selectors.set(tag, c!.name);
+    const hosted = c ? hostedComponent(f, text) : null;
+    if (hosted) hosts.push(hosted);
   }
   // The configuration the entry provides, lazy routes followed into their files; else one routes file read flat.
   const tree = angularRouteTree(entry, (f) => readFileSync(f, 'utf8'), aliased);
@@ -259,7 +263,7 @@ if (framework === 'vue') {
   // What each NgModule declares, imports and exports: a component's directives are those in its scope.
   const ngModuleNames = new Map(sources.flatMap((f) => [...declarablesIn(f, readFileSync(f, 'utf8')).modules]));
   const runtimeModule = join(appDir, '__angular.release.ts');
-  components = sources.map((f) => angularComponent(f, readFileSync(f, 'utf8'), selectors, { zone, platform, pipes, runtimeModule, directives, ngModules: ngModuleNames, elements: new Map([...elements].map(([tag, e]) => [tag, e.name])) })).filter((c): c is NonNullable<typeof c> => !!c);
+  components = sources.map((f) => angularComponent(f, readFileSync(f, 'utf8'), selectors, { zone, platform, pipes, runtimeModule, directives, ngModules: ngModuleNames, hosts, elements: new Map([...elements].map(([tag, e]) => [tag, e.name])) })).filter((c): c is NonNullable<typeof c> => !!c);
   const routed = new Set(tree ? routedComponents(tree.routes) : routes.map((r) => r.component));
   for (const c of components) c.page = routed.has(c.name);
   // The classes of registered tags, imported where the build can reach them: route files, which only configure, are not compiled.
