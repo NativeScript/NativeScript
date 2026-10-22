@@ -86,7 +86,8 @@ class Router {
 
     private class Entry(val owner: Owner, val route: ActivatedRoute)
 
-    private class Outlet(frame: Frame, val routes: List<RouteConfig>) {
+    /** [injector]: the injector of the view holding the outlet, which its routed components inject from. */
+    private class Outlet(frame: Frame, val routes: List<RouteConfig>, val injector: Injector?) {
         private val frameRef = java.lang.ref.WeakReference(frame)
         val frame: Frame? get() = frameRef.get()
         /** The pages navigated to in this outlet and not navigated back from, the shown one last. */
@@ -98,6 +99,8 @@ class Router {
     private val pending = HashMap<String, List<String>>()
     /** The outlets in the order they were last navigated, for `back()`. */
     private val history = ArrayList<String>()
+    /** A flat route table's outlet: the injector of the view holding it. */
+    private var flatInjector: Injector? = null
 
     /** The app ended (core's exit event): every routed component is destroyed, newest first, and the outlets forgotten. */
     fun destroy() {
@@ -111,10 +114,11 @@ class Router {
     fun outlet(name: String = PRIMARY): View {
         val frame = Frame()
         if (config.isEmpty()) {
-            resolveFlatRoute(initial)?.let { (route, params) -> jsReport { push(route.make, ActivatedRoute(params), frame, null) } }
+            flatInjector = Injector.current
+            resolveFlatRoute(initial)?.let { (route, params) -> jsReport { push(route.make, ActivatedRoute(params), frame, null, injector = flatInjector) } }
             return frame
         }
-        outlets[name] = Outlet(frame, if (name == PRIMARY) config else routesIn(config, name))
+        outlets[name] = Outlet(frame, if (name == PRIMARY) config else routesIn(config, name), Injector.current)
         jsReport {
             if (name == PRIMARY) {
                 if (show(name, emptyList(), null) == true) ended("/")
@@ -140,7 +144,7 @@ class Router {
             val path = commands.joinToString("/") { jsToString(it) }
             val (route, params) = resolveFlatRoute(path) ?: return false
             val frame = FrameBase.topmost() as? Frame ?: return false
-            push(route.make, ActivatedRoute(params), frame, extras)
+            push(route.make, ActivatedRoute(params), frame, extras, injector = flatInjector)
             ended("/" + path.split("/").filter { it.isNotEmpty() }.joinToString("/"))
             return true
         }
@@ -268,7 +272,7 @@ class Router {
         if (outlet.entries.lastOrNull()?.route?.url == resolved) return false
         history.remove(name)
         history.add(name)
-        push(make, ActivatedRoute(params, name, resolved), frame, extras, outlet)
+        push(make, ActivatedRoute(params, name, resolved), frame, extras, outlet, outlet.injector)
         return true
     }
 
@@ -276,7 +280,7 @@ class Router {
      * PageRouterOutlet's `activateOnGoForward`: a new page, the component rendered into it in a scope of its own, and the frame navigated to it.
      * A component that throws leaves the outlet as it was.
      */
-    private fun push(make: () -> View, route: ActivatedRoute, frame: Frame, extras: Any?, outlet: Outlet? = null) {
+    private fun push(make: () -> View, route: ActivatedRoute, frame: Frame, extras: Any?, outlet: Outlet? = null, injector: Injector?) {
         val page = Page()
         page.route = route
         val owner = Owner(null)
@@ -288,7 +292,7 @@ class Router {
         ActivatedRoute.current = route
         building.add(page)
         val view = try {
-            owner.run(make)
+            owner.run { Injector.runInContext(injector, make) }
         } catch (e: Throwable) {
             owner.dispose()
             outlet?.entries?.remove(entry)

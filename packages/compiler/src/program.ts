@@ -258,6 +258,8 @@ const SHIMS: Record<string, string> = {
     }
     export declare class KitNativeDialogRef { static readonly current: KitNativeDialogRef; readonly data: any; close(result?: any): void; afterClosed(): RxObservable<any> }
     export declare class KitNativeDialogService { static readonly shared: KitNativeDialogService; open(component: any, config?: any): KitNativeDialogRef }
+    /** A component's own injector, from its @Component providers: classes, and { provide, useClass | useValue | useFactory | useExisting }. */
+    export declare class NodeInjector { static enter(providers: any[]): NodeInjector; leave(): void }
     /** A pure Angular pipe at one binding site: \`transform\` runs when an argument is no longer \`Object.is\` the last one. */
     export declare class PurePipeCache {
       pure1<A, R>(a: A, transform: (a: A) => R): R;

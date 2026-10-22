@@ -86,6 +86,7 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
   if (!cls || !cls.name) return null;
   const others = sf.statements.filter((s) => s !== cls && ts.isClassDeclaration(s) && !!decorator(s, 'Component'));
   if (others.length) throw new Error(`${path}: ${others.length + 1} components in one file; a compiled release takes one @Component per file`);
+  const asWritten = cls;
   // A class with decorated inputs and outputs, or constructor injection, as the signal-style class the translator reads.
   const classic = classicClass(path, text, cls);
   if (classic) {
@@ -100,6 +101,13 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
     if (key === null) throw new Error(`${path}: @Component's ${p.getText().split('\n')[0]} is read as \`name: value\` in a release build`);
     if (key === 'preserveWhitespaces' && p.initializer.kind !== ts.SyntaxKind.FalseKeyword) throw new Error(`${path}: @Component's preserveWhitespaces is not supported in a release build yet`);
     if (!COMPONENT_META.has(key)) throw new Error(`${path}: @Component's ${key} is not supported in a release build yet`);
+  }
+  const providers = prop('providers');
+  if (providers) {
+    refuseScopedInjection(path, asWritten);
+    text = withInjector(path, text, cls, providers);
+    sf = ts.createSourceFile(path, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+    cls = sf.statements.find((s): s is ts.ClassDeclaration => ts.isClassDeclaration(s) && !!decorator(s, 'Component'))!;
   }
   const selector = (prop('selector') as ts.StringLiteral | undefined)?.text ?? cls.name.text;
   const inline = prop('template');
@@ -1053,6 +1061,7 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
   const cached = [...sites.values()].some((x) => x.cache);
   let imports = `import { ${cached ? 'PurePipeCache as $PurePipeCache, ' : ''}type EventData as $EventData } from '@nativescript/release';\n`;
   if (usesElementRef) imports += `import { ElementRef as $ElementRef } from '@angular/core';\n`;
+  if (providers) imports += `import { NodeInjector } from '@nativescript/release';\n`;
   if (onChanges) {
     imports += `import { SimpleChange as $SimpleChange } from '@angular/core';\n`;
     if (!importsAs(sf, 'signal', '@angular/core')) {
@@ -1094,7 +1103,7 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
   });
   const { styles, scope: styleScope } = angularStyles(path, prop);
   const scoped = styleScope ? scopeTemplate(tree, styleScope.content).map((n) => (n.kind === 'element' ? { ...n, attrs: [...n.attrs, { name: styleScope.host, value: '' }] } : n)) : tree;
-  return { name: cls.name.text, file: path.replace(/\.ts$/, '.release.ts'), source, ...(usesRuntime ? { usesRuntime } : {}), props, optional, outputs, template: scoped, selector, styles, ...(init ? { init: 'ngOnInit' } : {}), ...(init && lateInit ? { lateInit } : {}), ...(hook('ngAfterViewInit') ? { afterViewInit: 'ngAfterViewInit' } : {}), ...(hook('ngOnDestroy') ? { destroy: 'ngOnDestroy' } : {}), ...(onChanges ? { changes: true } : {}), ...(classic?.host ? { host: '$host' } : {}), ...(classic?.setters.size ? { setters: [...classic.setters] } : {}), ...(Object.keys(inputAliases).length ? { propAliases: inputAliases } : {}), ...(lines.length ? { templateLines: { file: templateFile, lines } } : {}) } as AngularComponent;
+  return { name: cls.name.text, file: path.replace(/\.ts$/, '.release.ts'), source, ...(usesRuntime ? { usesRuntime } : {}), props, optional, outputs, template: scoped, selector, styles, ...(init ? { init: 'ngOnInit' } : {}), ...(init && lateInit ? { lateInit } : {}), ...(hook('ngAfterViewInit') ? { afterViewInit: 'ngAfterViewInit' } : {}), ...(hook('ngOnDestroy') ? { destroy: 'ngOnDestroy' } : {}), ...(onChanges ? { changes: true } : {}), ...(classic?.host ? { host: '$host' } : {}), ...(providers ? { injector: '$injector' } : {}), ...(classic?.setters.size ? { setters: [...classic.setters] } : {}), ...(Object.keys(inputAliases).length ? { propAliases: inputAliases } : {}), ...(lines.length ? { templateLines: { file: templateFile, lines } } : {}) } as AngularComponent;
 }
 
 /**
@@ -1792,13 +1801,77 @@ const ROUTER_LINK_INPUTS = new Set(['nsRouterLink', 'relativeTo', 'clearHistory'
 const ROUTER_LINK_SUPPORTED = new Set(['nsRouterLink', 'relativeTo', 'clearHistory', 'pageTransition', 'pageTransitionDuration']);
 
 /**
+ * `@Component({ providers })`: the component's own injector, made by its first field and current until its constructor
+ * returns, so that its fields and constructor inject from it as its view does.
+ */
+function withInjector(path: string, text: string, cls: ts.ClassDeclaration, providers: ts.Expression): string {
+  // A base class's fields are made before the component's first field.
+  if (cls.heritageClauses?.some((h) => h.token === ts.SyntaxKind.ExtendsKeyword)) throw new Error(`${path}: @Component's providers on a class that extends another are not supported in a release build yet`);
+  if (!ts.isArrayLiteralExpression(providers)) throw new Error(`${path}: @Component's providers are read as an array literal in a release build`);
+  for (const e of providers.elements) checkProvider(path, e);
+  const leave = 'this.$injector.leave();';
+  const edits = [{ at: cls.members.pos, text: `\n  readonly $injector = NodeInjector.enter(${providers.getText()});` }];
+  const ctor = cls.members.find((m): m is ts.ConstructorDeclaration => ts.isConstructorDeclaration(m) && !!m.body);
+  if (ctor?.body) {
+    const returns = (n: ts.Node): void => {
+      if (ts.isFunctionLike(n) || ts.isClassLike(n)) return;
+      if (ts.isReturnStatement(n)) edits.push({ at: n.getStart(), text: `{ ${leave} ` }, { at: n.getEnd(), text: ' }' });
+      else ts.forEachChild(n, returns);
+    };
+    ctor.body.statements.forEach(returns);
+    edits.push({ at: ctor.body.getEnd() - 1, text: `${leave} ` });
+  } else edits.push({ at: cls.members.end, text: `\n  constructor() { ${leave} }\n` });
+  let out = text;
+  for (const e of edits.sort((a, b) => b.at - a.at)) out = out.slice(0, e.at) + e.text + out.slice(e.at);
+  return out;
+}
+
+/**
+ * `@Self()`, `@SkipSelf()`, `@Host()` and their `inject()` options in a component with providers: which injector they
+ * start or stop at is not modelled, so a component's own provider would answer where Angular asks its parent.
+ */
+function refuseScopedInjection(path: string, cls: ts.ClassDeclaration): void {
+  const visit = (n: ts.Node): void => {
+    if (ts.isDecorator(n) && ts.isCallExpression(n.expression) && ['Self', 'SkipSelf', 'Host'].includes(n.expression.expression.getText())) {
+      throw new Error(`${path}: @${n.expression.expression.getText()}() in a component with providers is not supported in a release build yet`);
+    }
+    if (ts.isCallExpression(n) && n.expression.getText() === 'inject' && n.arguments[1] && ts.isObjectLiteralExpression(n.arguments[1])) {
+      const scoped = n.arguments[1].properties.find((p) => ['self', 'skipSelf', 'host'].includes(p.name?.getText() ?? ''));
+      if (scoped) throw new Error(`${path}: inject()'s ${scoped.name!.getText()} in a component with providers is not supported in a release build yet`);
+    }
+    ts.forEachChild(n, visit);
+  };
+  cls.members.forEach(visit);
+}
+
+/** A component provider the release build makes: a class, or `{ provide, useClass | useValue | useFactory (and deps) | useExisting }`. */
+function checkProvider(path: string, e: ts.Expression): void {
+  const what = `${path}: the provider ${e.getText().split('\n')[0]} in @Component's providers`;
+  if (ts.isIdentifier(e)) return;
+  if (!ts.isObjectLiteralExpression(e)) throw new Error(`${what} is not supported in a release build yet`);
+  const fields = new Map<string, ts.Expression>();
+  for (const p of e.properties) {
+    if (ts.isPropertyAssignment(p) && (ts.isIdentifier(p.name) || ts.isStringLiteral(p.name))) fields.set(p.name.text, p.initializer);
+    else if (ts.isShorthandPropertyAssignment(p)) fields.set(p.name.text, p.name);
+    else throw new Error(`${what} is read as \`{ provide: token, useClass: X }\` in a release build`);
+  }
+  for (const k of fields.keys()) if (!['provide', 'useClass', 'useValue', 'useFactory', 'useExisting', 'deps'].includes(k)) throw new Error(`${what}: its ${k} is not supported in a release build yet`);
+  const uses = ['useClass', 'useValue', 'useFactory', 'useExisting'].filter((k) => fields.has(k));
+  if (!fields.has('provide') || uses.length !== 1) throw new Error(`${what} needs provide and one of useClass, useValue, useFactory or useExisting`);
+  const deps = fields.get('deps');
+  if (deps && (uses[0] !== 'useFactory' || !ts.isArrayLiteralExpression(deps) || deps.elements.some((d) => !ts.isIdentifier(d) && !ts.isPropertyAccessExpression(d)))) {
+    throw new Error(`${what}: deps other than a list of tokens for useFactory are not supported in a release build yet`);
+  }
+}
+
+/**
  * The `@Component` fields a release build reads, and those it may leave unread: `standalone`, `schemas`, `moduleId` and
  * `jit` only steer Angular's compiler, `exportAs` names the component a reference gets anyway, `animations` only
  * declares triggers (binding one is refused), and `preserveWhitespaces: false` is how templates are parsed.
  */
 const COMPONENT_META = new Set([
   'selector', 'template', 'templateUrl', 'styles', 'styleUrl', 'styleUrls', 'imports', 'changeDetection', 'encapsulation',
-  'standalone', 'schemas', 'moduleId', 'jit', 'exportAs', 'animations', 'preserveWhitespaces',
+  'standalone', 'schemas', 'moduleId', 'jit', 'exportAs', 'animations', 'preserveWhitespaces', 'providers',
 ]);
 
 /** Decorator fields named in the plural, for messages. */

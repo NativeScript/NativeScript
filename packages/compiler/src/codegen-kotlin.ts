@@ -49,7 +49,7 @@ export function render(c: ComponentIR, components: Map<string, ComponentInfo>, o
   /** A lambda that renders content in the scope its framework orders it in. */
   const scoped = (kind: 'template' | 'region') => {
     if (framework === 'vue' || framework === 'svelte') return kind === 'template' ? 'EffectOrder.component {' : null;
-    if (framework === 'angular') return kind === 'template' ? 'EffectOrder.view {' : 'EffectOrder.embedded(__view) {';
+    if (framework === 'angular') return kind === 'template' ? `EffectOrder.view${c.injector ? `(this.${ident(c.injector)})` : ''} {` : 'EffectOrder.embedded(__view) {';
     if (framework === 'solid') return kind === 'template' ? 'EffectOrder.solid {' : 'EffectOrder.deeper {';
     return null;
   };

@@ -27,6 +27,7 @@ import { singleTry, Translator as SwiftTranslator } from '../../src/swift.ts';
 import { translateModules } from '../../src/modules.ts';
 import { conformsTo, lookupMember, nativeTable, setEmptyTable } from '../../src/natives/symbols.ts';
 import { isFragment, render } from '../../src/codegen.ts';
+import { render as renderKotlin } from '../../src/codegen-kotlin.ts';
 import { Translator } from '../../src/kotlin.ts';
 import { CoreKotlin } from '../../src/core-kotlin.ts';
 import { translateKotlinModules } from '../../src/kotlin-modules.ts';
@@ -530,6 +531,59 @@ export class GlyphPipe { constructor(@Inject(TOKEN) private config: any, @Option
   check(swift.includes('func render(into region: Region) throws'), 'a component rendering a fragment component renders into its parent region');
 }
 
+// ---- Component providers: each instance of a component makes its own injector ----
+{
+  const dir = mkdtempSync(join(tmpdir(), 'ns-release-checks-providers-'));
+  try {
+    const store = join(dir, 'store.ts'), panel = join(dir, 'panel.component.ts'), page = join(dir, 'page.component.ts');
+    writeFileSync(store, `import { Injectable, InjectionToken, inject } from '@angular/core';
+export const LABEL = new InjectionToken<string>('LABEL');
+@Injectable() export class Counter { count = 0; }
+@Injectable() export class Tally { readonly counter = inject(Counter); }
+`);
+    writeFileSync(panel, `import { Component, inject } from '@angular/core';
+import { Counter, LABEL, Tally } from './store';
+@Component({ selector: 'Panel', template: '<Label [text]="label"></Label>', providers: [Counter, { provide: Tally, useClass: Tally }, { provide: LABEL, useValue: 'one' }] })
+export class Panel {
+  readonly tally = inject(Tally);
+  readonly label = inject(LABEL);
+  constructor(private readonly counter: Counter) {
+    if (this.counter.count > 0) return;
+    this.counter.count++;
+  }
+}
+`);
+    writeFileSync(page, "import { Component } from '@angular/core';\nimport { Panel } from './panel.component';\n@Component({ selector: 'Page', imports: [Panel], template: '<StackLayout><Panel></Panel><Panel></Panel></StackLayout>' })\nexport class Page {}\n");
+    const ir = angularComponent(panel, readFileSync(panel, 'utf8'), new Map())!;
+    const pageIr = angularComponent(page, readFileSync(page, 'utf8'), new Map([['Panel', 'Panel']]))!;
+    const members = ir.source.slice(ir.source.indexOf('export class Panel {'));
+    check(ir.injector === '$injector' && /^export class Panel \{\s*readonly \$injector = NodeInjector\.enter\(\[Counter, /.test(members) && members.indexOf('$injector') < members.indexOf('counter: Counter = inject(Counter)'), "a component's providers make its injector in its first field, before its injected constructor parameters");
+    check(/\{ this\.\$injector\.leave\(\); return; \}[\s\S]*this\.counter\.count\+\+;\s*this\.\$injector\.leave\(\);\s*\}/.test(members), 'the injector stops being current when the constructor returns, early or at its end');
+    const infos = new Map([['Panel', { name: 'Panel', props: [] }], ['Page', { name: 'Page', props: [] }]]);
+    check(render(ir, infos, () => false, 'angular').join('\n').includes('try EffectOrder.view(injector: self._injector) {') && renderKotlin(ir, infos, { framework: 'angular' }).join('\n').includes('EffectOrder.view(this._injector) {'), "a component's view injects from its injector (Swift, Kotlin)");
+    const pageSwift = render(pageIr, infos, () => false, 'angular').join('\n');
+    check((pageSwift.match(/let c\d+ = Panel\(\)/g) ?? []).length === 2 && pageSwift.includes('try EffectOrder.view {'), 'a parent without providers renders two instances of the component, each made by its own init');
+    for (const platform of ['ios', 'android'] as const) {
+      const { checker, program, files } = createProgram([panel, store], new Map([[panel, ir.source]]), platform, modulesDir);
+      const cls = program.getSourceFile(panel)!.statements.filter(ts.isClassDeclaration).find((c) => c.name?.text === 'Panel')!;
+      if (platform === 'ios') {
+        const sw = new SwiftTranslator(checker, new Map([['Panel', { props: ir.props, optional: ir.optional }]]), files);
+        translateModules(sw, program, [panel, store]);
+        const init = sw.componentMembers(cls, ir.props).join('\n').split('init() {')[1] ?? '';
+        check(/^\s*self\._injector = NodeInjector\.enter\(JSArray<Any\?>\(\[Counter\.self, JSObject\(\[\("provide", Tally\.self\), \("useClass", Tally\.self\)\]\)/.test(init), 'each instance makes its injector first, from its providers (Swift)');
+      } else {
+        const kt = new Translator(checker, new Map([['Panel', { props: ir.props }]]), files);
+        kt.appModule = 'org.example.app';
+        translateKotlinModules(kt, program, [panel, store]);
+        const lines = kt.componentMembers(cls, ir.props).lines;
+        check(/^\s*val _injector: NodeInjector = NodeInjector\.enter\(jsArrayOf<Any\?>\(Counter::class\.java, /.test(lines[0] ?? ''), 'each instance makes its injector first, from its providers (Kotlin)');
+      }
+    }
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
+
 // ---- Template errors are reported, never trapped ----
 {
   // nstreamdown's `@if (token.type === 'mermaid') { <MdMermaid [content]="…" [isIncomplete]="getIsIncomplete(token)"> }`, every binding able to throw.
@@ -866,7 +920,7 @@ export function openSheet(dialogs: NativeDialogService, cmp: any, config?: Nativ
 
   const meta = (fields: string, members = '') => thrown(() => angularComponent('/app/c.component.ts', `import { Component, input, output, viewChild, booleanAttribute } from '@angular/core';\nconst template = '';\n@Component({ selector: 'C', template: '<Label></Label>', ${fields} })\nexport class C { ${members} }\n`, new Map()));
   for (const [fields, text] of [
-    ["providers: [Object]", "@Component's providers"], ["viewProviders: [Object]", "@Component's viewProviders"], ["host: { class: 'card' }", "@Component's host"],
+    ["viewProviders: [Object]", "@Component's viewProviders"], ["host: { class: 'card' }", "@Component's host"],
     ["inputs: ['x']", "@Component's inputs"], ["outputs: ['y']", "@Component's outputs"], ["preserveWhitespaces: true", "@Component's preserveWhitespaces"],
     ["hostDirectives: []", "@Component's hostDirectives"], ["interpolation: ['[[', ']]']", "@Component's interpolation"],
   ]) {
@@ -887,6 +941,21 @@ export function openSheet(dialogs: NativeDialogService, cmp: any, config?: Nativ
   const directive = (body: string, fields = '') => thrown(() => angularDirectives(['/app/d.directive.ts'], () => `import { Directive, input } from '@angular/core';\n@Directive({ selector: '[dim]'${fields} })\nexport class Dim { ${body} }\n`));
   check(directive("level = input(1);").includes('input() (level) in a directive is not supported in a release build yet'), "a directive's signal input stops the build");
   check(directive('', ", exportAs: 'dim'").includes('its exportAs is not supported in a release build yet'), "a directive's exportAs stops the build");
+  for (const [fields, members, text] of [
+    ['providers: [Store, { provide: Store, useClass: Store, multi: true }]', '', "its multi is not supported in a release build yet"],
+    ['providers: [...SHARED]', '', "the provider ...SHARED in @Component's providers is not supported in a release build yet"],
+    ['providers: [provideStore()]', '', "the provider provideStore() in @Component's providers is not supported in a release build yet"],
+    ['providers: SHARED', '', "@Component's providers are read as an array literal in a release build"],
+    ['providers: [{ provide: Store }]', '', 'needs provide and one of useClass, useValue, useFactory or useExisting'],
+    ['providers: [{ provide: Store, useFactory: (s: Store) => s, deps: [[new Optional(), Store]] }]', '', 'deps other than a list of tokens for useFactory are not supported'],
+    ['providers: [Store]', 'store = inject(Store, { skipSelf: true });', "inject()'s skipSelf in a component with providers is not supported in a release build yet"],
+    ['providers: [Store]', 'constructor(@Self() private store: Store) {}', '@Self() in a component with providers is not supported in a release build yet'],
+  ]) {
+    const e = meta(fields, members);
+    check(e.includes(text), `component providers: ${text.split(' is ')[0].split(' are ')[0]} stops the build${e ? '' : ': it compiled'}`);
+  }
+  const extended = thrown(() => angularComponent('/app/c.component.ts', "import { Component } from '@angular/core';\nclass Base {}\n@Component({ selector: 'C', template: '<Label></Label>', providers: [Base] })\nexport class C extends Base {}\n", new Map()));
+  check(extended.includes("@Component's providers on a class that extends another are not supported in a release build yet"), 'component providers on a derived class stop the build');
   const ngModule = "import { NgModule } from '@angular/core';\n@NgModule({ declarations: [], providers: [{ provide: 'API', useValue: '/api' }] })\nexport class AppModule {}\n";
   check(thrown(() => declarablesIn('/app/app.module.ts', ngModule, true)).includes("the NgModule AppModule's providers are not supported in a release build yet") && !thrown(() => declarablesIn('/lib/lib.module.ts', ngModule)), "an app NgModule's providers stop the build (a library's wrapper module is not read for them)");
 
