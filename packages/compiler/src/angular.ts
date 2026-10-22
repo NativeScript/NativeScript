@@ -7,6 +7,35 @@ import { dirname, extname, isAbsolute, join, relative } from 'node:path';
 import { scopeTemplate, type Attr, type ComponentIR, type ComponentStyle, type DirectiveUse, type Event, type QueryHook, type TNode } from './ir.ts';
 import { rewrite, type Scope } from './rewrite.ts';
 import { canonical } from './elements.ts';
+import { STUBBED_PLUGINS } from './core.ts';
+
+/** The elements of the binary-only plugins `release.stubPlugins` can stub, by lowercase tag, and their packages. */
+const STUB_ELEMENTS: Record<string, string> = {
+  radradialgauge: 'nativescript-ui-gauge',
+  radlistview: 'nativescript-ui-listview',
+  radsidedrawer: 'nativescript-ui-sidedrawer',
+  radcalendar: 'nativescript-ui-calendar',
+  raddataform: 'nativescript-ui-dataform',
+  radautocompletetextview: 'nativescript-ui-autocomplete',
+  radcartesianchart: 'nativescript-ui-chart',
+  radpiechart: 'nativescript-ui-chart',
+};
+
+/** What a stubbed element keeps: its place in the layout and its box, which its stand-in, an empty ContentView, takes. */
+const STUB_LAYOUT_ATTRS = new Set([
+  'row', 'col', 'rowSpan', 'colSpan', 'width', 'height', 'minWidth', 'minHeight',
+  'class', 'scaleX', 'scaleY', 'translateX', 'translateY', 'rotate', 'opacity', 'visibility',
+  'horizontalAlignment', 'verticalAlignment',
+  'margin', 'marginTop', 'marginRight', 'marginBottom', 'marginLeft',
+  'padding', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft',
+  'left', 'top', 'dock', 'order', 'flexGrow', 'flexShrink', 'alignSelf',
+  'backgroundColor', 'borderRadius', 'borderWidth', 'borderColor',
+]);
+
+const stubbedElement = (tag: string): boolean => {
+  const pkg = STUB_ELEMENTS[tag.replace(/-/g, '').toLowerCase()];
+  return !!pkg && STUBBED_PLUGINS.has(pkg);
+};
 
 /** Angular's standalone component as the release build sees it. */
 export interface AngularComponent extends ComponentIR {
@@ -102,6 +131,7 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
       if (callee === 'output' || callee === 'model' || callee === 'model.required') outputs.push(m.name.text);
     }
   }
+  collectInheritedMembers(path, sf, cls, members);
   for (const [field, alias] of classic?.aliases ?? []) inputAliases[field] = alias;
   for (const name of classic?.setters ?? []) { props.push(name); optional.push(name); }
   const scope: Scope = { names: new Map([...members].map((m) => [m, classic?.inputs.has(m) ? `this.${m}()` : `this.${m}`])) };
@@ -221,7 +251,12 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
   };
   // `$any(x)` is Angular's escape from template type checking; the release build is typed by the component's code,
   // except `$any($event)`, whose event data the handler reads as the type it declares.
-  const clean = (code: string) => code.replace(/\$any\(\s*\$event\s*\)/g, '($event as any)').replace(/\$any\(/g, '(');
+  // A string literal a template writes across lines is one string in the template's expression, and must stay one in TypeScript.
+  const clean = (code: string) =>
+    code
+      .replace(/(['"])(?:\\.|(?!\1)[\s\S])*?\1/g, (s) => s.replace(/\r?\n/g, '\\n').replace(/\r/g, '\\r'))
+      .replace(/\$any\(\s*\$event\s*\)/g, '($event as any)')
+      .replace(/\$any\(/g, '(');
   /** The template line (0-based) of the binding being compiled, and each template method's (by its index in `methods`). */
   let here: number | null = null;
   const located = new Map<number, number>();
@@ -347,7 +382,10 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
 
   /** The expressions a node evaluates in the view it is in (its children's are theirs): where its pipes are. */
   const ownExpressions = (n: ng.TmplAstNode): ng.AST[] => {
-    if (n instanceof ng.TmplAstElement) return [...n.inputs.map((i) => i.value), ...n.children.flatMap((c) => (c instanceof ng.TmplAstBoundText ? [c.value] : []))];
+    if (n instanceof ng.TmplAstElement) {
+      if (!selectors.has(n.name) && stubbedElement(n.name)) return n.inputs.filter((i) => STUB_LAYOUT_ATTRS.has(i.name) || i.type === ng.BindingType.Class || i.type === ng.BindingType.Style).map((i) => i.value);
+      return [...n.inputs.map((i) => i.value), ...n.children.flatMap((c) => (c instanceof ng.TmplAstBoundText ? [c.value] : []))];
+    }
     // `*ngFor` on an element: the element's own inputs are the template's, evaluated in each view it renders.
     if (n instanceof ng.TmplAstTemplate) return [...n.templateAttrs, ...(n.tagName === 'ng-template' ? n.inputs : [])].flatMap((a) => (a instanceof ng.TmplAstBoundAttribute ? [a.value] : []));
     if (n instanceof ng.TmplAstIfBlock) return n.branches.flatMap((b) => (b.expression ? [b.expression] : []));
@@ -389,6 +427,42 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
       if (n instanceof ng.TmplAstElement && n.name === 'ng-container') {
         at(n.startSourceSpan);
         out.push(...container(n, loops));
+        continue;
+      }
+      if (n instanceof ng.TmplAstElement && !selectors.has(n.name) && stubbedElement(n.name)) {
+        at(n.startSourceSpan);
+        const attrs: Attr[] = [];
+        for (const a of n.attributes) if (STUB_LAYOUT_ATTRS.has(a.name)) attrs.push({ name: a.name, value: a.value });
+        const toggles = n.inputs.filter((i) => i.type === ng.BindingType.Class);
+        if (toggles.length) {
+          at(toggles[0].sourceSpan);
+          const fixed = attrs.findIndex((a) => a.name === 'class');
+          const base = fixed >= 0 ? attrs.splice(fixed, 1)[0].value ?? '' : '';
+          const parts = [JSON.stringify(base), ...toggles.map((t) => `(${code(t.value, loops)}) ? ${JSON.stringify(t.name)} : ''`)];
+          attrs.push({ name: 'class', method: expr(`[${parts.join(', ')}].filter((c) => !!c).join(' ')`, loops) });
+        }
+        for (const i of n.inputs) {
+          if (i.type === ng.BindingType.Class) continue;
+          if (i.type === ng.BindingType.Style && i.name !== 'style') {
+            at(i.sourceSpan);
+            const v = code(i.value, loops);
+            attrs.push({ name: i.name, method: expr(i.unit ? `((${v}) == null ? (${v}) : \`\${${v}}${i.unit}\`)` : v, loops, true) });
+            continue;
+          }
+          if ((i.type === ng.BindingType.Property || i.type === ng.BindingType.Attribute) && STUB_LAYOUT_ATTRS.has(i.name)) {
+            at(i.sourceSpan);
+            const root = i.value instanceof ng.ASTWithSource ? i.value.ast : i.value;
+            const chained = root instanceof ng.SafePropertyRead || root instanceof ng.SafeKeyedRead || root instanceof ng.SafeCall;
+            attrs.push({ name: i.name, method: expr(code(i.value, loops), loops, chained) });
+          }
+        }
+        const refs = n.references.map((r) => r.name);
+        const hooks = queryHooks(refs, null, 'ContentView', loops);
+        const statics = hooks.length ? queries.filter((q) => q.static && q.ref && refs.includes(q.ref) && staticRefs.has(q.ref)) : [];
+        for (const q of statics) staticQueries.delete(q);
+        const late = statics.length > 0 && staticQueries.size === 0;
+        out.push({ kind: 'element', tag: 'ContentView', attrs, events: [], children: [], ...(hooks.length ? { queries: hooks } : {}), ...(late ? { init: true } : {}) });
+        if (late) lateInit = true;
         continue;
       }
       if (n instanceof ng.TmplAstElement) {
@@ -887,7 +961,7 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
   const onChanges = cls.members.find((m): m is ts.MethodDeclaration => ts.isMethodDeclaration(m) && m.name.getText() === 'ngOnChanges');
   if (onChanges) {
     if (onChanges.parameters.length > 1) throw new Error(`${path}: ngOnChanges takes one parameter`);
-    methods.push(...CHANGES_MEMBERS);
+    methods.push(...changesMembers(onChanges.parameters.length > 0));
   }
   const cached = [...sites.values()].some((x) => x.cache);
   let imports = `import { ${cached ? 'PurePipeCache as $PurePipeCache, ' : ''}type EventData as $EventData } from '@nativescript/release';\n`;
@@ -1023,12 +1097,14 @@ export function angularPipes(files: string[], read: (file: string) => string): M
  * What ngOnChanges takes in a component or directive: the template records each input it sets (`$change`), and one
  * check after its inputs' calls `$flushChanges`, which calls the hook with what changed since it last ran.
  */
-const CHANGES_MEMBERS = [
+const changesMembers = (hasParam: boolean) => [
   '  readonly $changed = signal(0);',
   '  readonly $changes = new Map<string, $SimpleChange>();',
   '  readonly $previous = new Map<string, any>();',
   '  $change(name: string, value: any): void { const first = !this.$previous.has(name); this.$changes.set(name, new $SimpleChange(first ? undefined : this.$previous.get(name), value, first)); this.$previous.set(name, value); this.$changed.update((n) => n + 1); }',
-  '  $flushChanges(): void { if (!this.$changes.size) return; const changes = Object.fromEntries(this.$changes); this.$changes.clear(); this.ngOnChanges(changes); }',
+  hasParam
+    ? '  $flushChanges(): void { if (!this.$changes.size) return; const changes = Object.fromEntries(this.$changes); this.$changes.clear(); this.ngOnChanges(changes); }'
+    : '  $flushChanges(): void { if (!this.$changes.size) return; this.$changes.clear(); this.ngOnChanges(); }',
 ];
 
 /** An app's `@Directive` class as templates use it: what it matches and the members Angular's compiler wires to its host. */
@@ -1142,9 +1218,10 @@ export function declarableSource(path: string, text: string): string | null {
     edits.push({ start: own.getStart(), end: own.getEnd(), text: '' });
     // A directive's member decorators (@Input, @HostListener, @HostBinding) are the template compiler's to read.
     for (const m of st.members) for (const d of ts.canHaveDecorators(m) ? ts.getDecorators(m) ?? [] : []) edits.push({ start: d.getStart(), end: d.getEnd(), text: '' });
-    if (st.members.some((m) => ts.isMethodDeclaration(m) && m.name.getText() === 'ngOnChanges')) {
+    const onChanges = st.members.find((m): m is ts.MethodDeclaration => ts.isMethodDeclaration(m) && m.name.getText() === 'ngOnChanges');
+    if (onChanges) {
       changes = true;
-      edits.push({ start: st.members.end, end: st.members.end, text: '\n' + CHANGES_MEMBERS.join('\n') + '\n' });
+      edits.push({ start: st.members.end, end: st.members.end, text: '\n' + changesMembers(onChanges.parameters.length > 0).join('\n') + '\n' });
     }
     const ctor = st.members.find(ts.isConstructorDeclaration);
     if (!ctor?.parameters.length) continue;
@@ -1356,8 +1433,11 @@ function classicClass(path: string, text: string, cls: ts.ClassDeclaration): Cla
             : (used.add('inject'), `inject(${token}${optional ? ', { optional: true }' : ''})`);
         const typed = p.type ? `: ${p.type.getText()}` : '';
         // A parameter property is a field; a plain parameter is a local of the constructor's body.
-        if (modifiers.length) injected.push(`  ${modifiers.join(' ')} ${p.name.getText()}${typed} = ${value};\n`);
-        else locals.push(`const ${p.name.getText()}${typed} = ${value};`);
+        if (modifiers.length) {
+          injected.push(`  ${modifiers.join(' ')} ${p.name.getText()}${typed} = ${value};\n`);
+          // The constructor's body may still name the parameter, which is now the field.
+          if (m.body && new RegExp(`(?<![.\\w$])${p.name.getText()}\\b`).test(m.body.getText())) locals.push(`const ${p.name.getText()} = this.${p.name.getText()};`);
+        } else locals.push(`const ${p.name.getText()}${typed} = ${value};`);
       }
       ctor = m;
     }
@@ -1414,6 +1494,56 @@ function classicClass(path: string, text: string, cls: ts.ClassDeclaration): Cla
   const imported = new Set(cls.getSourceFile().statements.flatMap((st) => ts.isImportDeclaration(st) && st.importClause?.namedBindings && ts.isNamedImports(st.importClause.namedBindings) ? st.importClause.namedBindings.elements.map((e) => e.name.text) : []));
   const missing = [...used].filter((u) => !imported.has(u));
   return { text: (missing.length ? `import { ${missing.join(', ')} } from '@angular/core';\n` : '') + out, inputs, setters, aliases, optional, queries, host };
+}
+
+/** The members a component inherits from its base classes in the program, which its template may name too. */
+function collectInheritedMembers(path: string, sf: ts.SourceFile, cls: ts.ClassDeclaration, members: Set<string>, seen = new Set<string>()): void {
+  const ext = cls.heritageClauses?.find((c) => c.token === ts.SyntaxKind.ExtendsKeyword)?.types[0]?.expression;
+  if (!ext || !ts.isIdentifier(ext)) return;
+  let file = path;
+  let name = ext.text;
+  let source: ts.SourceFile | undefined = sf.statements.some((st) => ts.isClassDeclaration(st) && st.name?.text === name) ? sf : undefined;
+  if (!source) {
+    for (const st of sf.statements) {
+      if (!ts.isImportDeclaration(st) || !st.importClause || !ts.isStringLiteral(st.moduleSpecifier)) continue;
+      const bindings = st.importClause.namedBindings;
+      const el = bindings && ts.isNamedImports(bindings) ? bindings.elements.find((e) => e.name.text === ext.text) : undefined;
+      if (!el) continue;
+      const resolved = resolveClassImport(path, st.moduleSpecifier.text);
+      if (resolved) {
+        file = resolved;
+        name = (el.propertyName ?? el.name).text;
+        source = ts.createSourceFile(resolved, readFileSync(resolved, 'utf8'), ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+      }
+      break;
+    }
+  }
+  if (!source || seen.has(`${file}#${name}`)) return;
+  seen.add(`${file}#${name}`);
+  const base = source.statements.find((st): st is ts.ClassDeclaration => ts.isClassDeclaration(st) && st.name?.text === name);
+  if (!base) return;
+  for (const m of base.members) {
+    if (m.name && ts.isIdentifier(m.name)) members.add(m.name.text);
+    else if (ts.isConstructorDeclaration(m)) for (const p of m.parameters) if ((ts.getModifiers(p) ?? []).length && ts.isIdentifier(p.name)) members.add(p.name.text);
+  }
+  collectInheritedMembers(file, source, base, members, seen);
+}
+
+/** A base class's file: relative, or under the app's `~/` or `@/` alias (its `src` or `app` folder). */
+function resolveClassImport(fromFile: string, spec: string): string | undefined {
+  const candidates: string[] = [];
+  if (spec.startsWith('.')) {
+    const base = join(dirname(fromFile), spec);
+    candidates.push(base + '.ts', join(base, 'index.ts'));
+  } else if (spec.startsWith('~/') || spec.startsWith('@/')) {
+    const sub = spec.slice(2);
+    for (let dir = dirname(fromFile); dirname(dir) !== dir; dir = dirname(dir)) {
+      if (!existsSync(join(dir, 'package.json'))) continue;
+      for (const appDir of ['src', 'app']) candidates.push(join(dir, appDir, sub + '.ts'), join(dir, appDir, sub, 'index.ts'));
+      break;
+    }
+  }
+  return candidates.find((c) => existsSync(c));
 }
 
 function literalType(e: ts.Expression | undefined): string | undefined {

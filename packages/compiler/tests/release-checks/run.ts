@@ -21,15 +21,17 @@ import { angularLibraries } from '../../src/angular-libraries.ts';
 import { pathAliases } from '../../src/app-paths.ts';
 import { appImports, reachedFrom, tsconfigIncluded } from '../../src/app-modules.ts';
 import { runtimeFile } from '../../src/plugins/resolve.ts';
-import { PluginSources, verifyBundle } from '../../src/plugins/source.ts';
+import { PluginSources, verify, verifyBundle } from '../../src/plugins/source.ts';
 import { manifest, ownTypings, scopedImports, usedImports } from '../../src/plugins/native.ts';
 import { singleTry, Translator as SwiftTranslator } from '../../src/swift.ts';
 import { translateModules } from '../../src/modules.ts';
 import { setEmptyTable } from '../../src/natives/symbols.ts';
-import { render } from '../../src/codegen.ts';
+import { isFragment, render } from '../../src/codegen.ts';
 import { Translator } from '../../src/kotlin.ts';
 import { translateKotlinModules } from '../../src/kotlin-modules.ts';
 import { AndroidNativeAPI, androidClassPath } from '../../src/native-calls-android.ts';
+import { stubbedPlugins } from '../../src/app-resources.ts';
+import { STUBBED_PLUGINS } from '../../src/core.ts';
 import { detectFramework, excludedFrameworkKitFiles, getFrameworkKitInfo } from '../../src/framework.ts';
 import { spawnSync } from 'node:child_process';
 import ts from 'typescript';
@@ -250,6 +252,19 @@ export class GlyphPipe { constructor(@Inject(TOKEN) private config: any, @Option
     try { plugins.sourceOf(testing); } catch (e) { missing = String(e); }
     check(missing.includes('has no TypeScript source'), "a bundle file without sources says so");
 
+    // A plugin published as ES5 CommonJS is checked against its source lowered the same way.
+    const cjsSource = 'export class Counter {\n  constructor(private start: number) {}\n  next(step = 1): number { return this.start + step; }\n}\nexport const label = (n: number) => `n${n}`;\n';
+    const cjsSrc = w('cjs/src/index.ios.ts', cjsSource);
+    const cjsOut = (text: string) => ts.transpileModule(text, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES5 } }).outputText;
+    const cjsJs = w('node_modules/@hk/cjs/index.ios.js', cjsOut(cjsSource));
+    let cjs = '';
+    try { verify('@hk/cjs', cjsJs, cjsSrc); } catch (e) { cjs = String(e); }
+    writeFileSync(cjsJs, cjsOut(cjsSource.replace('this.start + step', 'this.start - step')));
+    w('patches/@hk+cjs+1.0.0.patch', '');
+    let cjsChanged = '';
+    try { verify('@hk/cjs', cjsJs, cjsSrc, dir, '1.0.0'); } catch (e) { cjsChanged = String(e); }
+    check(!cjs && cjsChanged.includes('does not match the published') && cjsChanged.includes('patched by patches/@hk+cjs+1.0.0.patch'), `an ES5 CommonJS plugin is verified against its source, and a mismatch names the app's patch of it${cjs ? `: ${cjs.split('\n').slice(0, 4).join(' ')}` : ''}`);
+
     // A plugin augmenting another's module in the declarations beside its source, as firebase-messaging augments firebase-core.
     symlinkSync(join(modulesDir, '@nativescript'), join(modules, '@nativescript'));
     for (const [name, text] of [['hub', 'export class Hub { name = "hub"; }\nexport function hub() { return new Hub(); }\n'], ['ext', "import '@hk/hub';\nexport const ext = 1;\n"]]) {
@@ -293,6 +308,39 @@ export class GlyphPipe { constructor(@Inject(TOKEN) private config: any, @Option
   }
 }
 
+// ---- Binary-only plugins: refused unless stubbed ----
+{
+  const dir = mkdtempSync(join(tmpdir(), 'ns-release-checks-stubs-'));
+  const w = (f: string, text: string) => { mkdirSync(dirname(join(dir, f)), { recursive: true }); writeFileSync(join(dir, f), text); return join(dir, f); };
+  try {
+    w('package.json', JSON.stringify({ name: 'stubs', main: 'src/main.ts', dependencies: { 'nativescript-ui-listview': '15.2.3' } }));
+    const refused = stubbedPlugins(dir, 'ios');
+    check(refused.stubbed.length === 0 && refused.errors.length === 1 && refused.errors[0].startsWith('nativescript-ui-listview is a binary-only plugin') && refused.errors[0].includes("release.pluginReplacements: { 'nativescript-ui-listview'") && refused.errors[0].includes("release.stubPlugins: ['nativescript-ui-listview']"), 'a binary-only plugin stops the build, naming both remedies');
+    w('nativescript.config.ts', "export default { id: 'org.stubs', release: { pluginReplacements: { 'nativescript-ui-listview': './src/list.ts' } } };\n");
+    const replaced = stubbedPlugins(dir, 'ios');
+    check(!replaced.errors.length && !replaced.stubbed.length, 'a binary-only plugin the app replaces builds');
+    w('nativescript.config.ts', "export default { id: 'org.stubs', release: { stubPlugins: ['nativescript-ui-listview'] } };\n");
+    const stubbed = stubbedPlugins(dir, 'ios');
+    check(!stubbed.errors.length && stubbed.stubbed.join() === 'nativescript-ui-listview', 'release.stubPlugins builds a binary-only plugin as its stand-in');
+    w('nativescript.config.ts', "export default { id: 'org.stubs', release: { stubPlugins: ['nativescript-ui-listview', 'some-plugin'] } };\n");
+    let unknown = '';
+    try { stubbedPlugins(dir, 'ios'); } catch (e) { unknown = String(e); }
+    check(unknown.includes('some-plugin has no stand-in'), 'release.stubPlugins refuses a package it has no stand-in for');
+
+    STUBBED_PLUGINS.add('nativescript-ui-listview');
+    const user = w('src/list-user.ts', "import { RadListView, ListViewEventData } from 'nativescript-ui-listview';\nexport const list = new RadListView();\nexport function onTap(e: ListViewEventData): number { list.refresh(); return e.index; }\n");
+    let typed = '';
+    try { createProgram([user], new Map(), 'ios', modulesDir); } catch (e) { typed = String(e); }
+    check(!typed, `a stubbed plugin's imports type-check against its stand-ins${typed ? `: ${typed.split('\n')[1]}` : ''}`);
+    const c = angularComponent(join(dir, 'src/list.component.ts'), "import { Component } from '@angular/core';\n@Component({ selector: 'List', template: `<GridLayout rows=\"*\"><RadListView row=\"0\" [items]=\"items\" (itemTap)=\"tap()\"><ng-template tkListItemTemplate let-item=\"item\"><Label [text]=\"item\"></Label></ng-template></RadListView></GridLayout>` })\nexport class List { items = ['a']; tap() {} }\n", new Map())!;
+    const stand = (c.template[0] as { children: { tag: string; attrs: { name: string }[]; events: unknown[]; children: unknown[] }[] }).children[0];
+    check(stand.tag === 'ContentView' && stand.attrs.map((a) => a.name).join() === 'row' && !stand.events.length && !stand.children.length, "a stubbed plugin's element is an empty ContentView keeping its place in the layout");
+  } finally {
+    STUBBED_PLUGINS.clear();
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
+
 // ---- Swift emission ----
 {
   check(singleTry('try (try! Color(a))') === 'try (try! Color(a))' && singleTry('try ((try? x) != nil)') === 'try ((try? x) != nil)' && singleTry('try (try jsGet(a))') === 'try ( jsGet(a))', 'one try is dropped where two cover a check, never a try! or try?');
@@ -324,6 +372,28 @@ export class GlyphPipe { constructor(@Inject(TOKEN) private config: any, @Option
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
+}
+
+// ---- Angular component classes ----
+{
+  const make = (text: string) => angularComponent('/app/cls.component.ts', text, new Map())!;
+  const noArg = make("import { Component, Input, OnChanges } from '@angular/core';\n@Component({ selector: 'C', template: `<Label [text]=\"name\"></Label>` })\nexport class C implements OnChanges { @Input() name = ''; seen = 0; ngOnChanges() { this.seen++; } }\n");
+  check(/this\.ngOnChanges\(\);/.test(noArg.source) && !/this\.ngOnChanges\(changes\)/.test(noArg.source), 'ngOnChanges declared without a parameter is called without one');
+  const ctor = make("import { Component } from '@angular/core';\nclass Clock { now() { return 1; } }\n@Component({ selector: 'C', template: `<Label [text]=\"t\"></Label>` })\nexport class C { t = 0; constructor(private clock: Clock) { this.t = clock.now(); } }\n");
+  check(/const clock = this\.clock;/.test(ctor.source), "a constructor's body naming a parameter property reads the field it became");
+  const inherited = make("import { Component } from '@angular/core';\nclass Base { title = 'base'; }\n@Component({ selector: 'C', template: `<Label [text]=\"title\"></Label>` })\nexport class C extends Base {}\n");
+  check(/this\.title/.test(inherited.source), "a template names a member the component inherits");
+  const multiline = make("import { Component } from '@angular/core';\n@Component({ selector: 'C', template: `<Label [text]=\"on ? 'a' : 'b\nc'\"></Label>` })\nexport class C { on = true; }\n");
+  check(multiline.source.includes("'b\\nc'"), 'a string literal written across lines in a template stays one string');
+}
+
+// ---- Angular fragments through nested components ----
+{
+  const outer = angularComponent('/app/outer.component.ts', "import { Component } from '@angular/core';\n@Component({ selector: 'Outer', template: `<Inner></Inner>` })\nexport class Outer {}\n", new Map([['Inner', 'Inner']]))!;
+  const infos = new Map([['Inner', { name: 'Inner', props: [], fragment: true }], ['Outer', { name: 'Outer', props: [] }]]);
+  check(isFragment(outer.template, infos) && !isFragment(outer.template, new Map([['Inner', { name: 'Inner', props: [] }]])), 'a template that is one component is a fragment when that component is');
+  const swift = render(outer, infos, () => false, 'angular').join('\n');
+  check(swift.includes('func render(into region: Region) throws'), 'a component rendering a fragment component renders into its parent region');
 }
 
 // ---- Template errors are reported, never trapped ----

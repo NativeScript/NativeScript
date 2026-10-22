@@ -433,7 +433,7 @@ export function render(c: ComponentIR, components: Map<string, ComponentInfo>, t
     say(depth, '})');
   };
 
-  const fragment = framework === 'angular' && !c.page && isFragment(c.template);
+  const fragment = framework === 'angular' && !c.page && isFragment(c.template, components);
   say(1, fragment ? 'func render(into region: Region) throws {' : 'func render() throws -> View {');
   const wrap = scoped('template', fragment ? 'Void' : 'View');
   const d = wrap ? 3 : 2;
@@ -484,9 +484,12 @@ export function render(c: ComponentIR, components: Map<string, ComponentInfo>, t
 }
 
 /** A template that is not a single element: its views join the parent of the component's host. */
-export function isFragment(nodes: TNode[]): boolean {
+export function isFragment(nodes: TNode[], components?: ReadonlyMap<string, { fragment?: boolean }>): boolean {
   const shown = withoutLocals(nodes);
-  return shown.length !== 1 || shown[0].kind !== 'element' && shown[0].kind !== 'component';
+  if (shown.length !== 1) return true;
+  // A template that is one component is a fragment when that component's template is.
+  if (shown[0].kind === 'component') return !!components?.get(shown[0].name)?.fragment;
+  return shown[0].kind !== 'element';
 }
 
 /** Whether a template holds an `if` or `for` of its own (not inside an item template). */

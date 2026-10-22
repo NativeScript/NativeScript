@@ -97,6 +97,19 @@ export const KIT_PLUGINS = [...APPLE_KIT_PLUGINS];
 const kitPackages = () => new RegExp(`[\\\\/](${['@nativescript/core', ...KIT_PLUGINS].map((p) => p.replace(/\//g, '[\\\\/]')).join('|')})[\\\\/]`);
 let KIT_PACKAGES = kitPackages();
 
+/** Binary-only plugins (no TypeScript source anywhere) that `release.stubPlugins` may build with the no-op stand-ins of `runtime/binary-plugin-stubs.ts`. */
+export const STUBBABLE_PLUGINS = [
+  'nativescript-ui-listview',
+  'nativescript-ui-gauge',
+  'nativescript-ui-sidedrawer',
+  'nativescript-ui-calendar',
+  'nativescript-ui-dataform',
+  'nativescript-ui-autocomplete',
+  'nativescript-ui-chart',
+];
+/** The binary-only plugins this build stubs (`stubbedPlugins` in app-resources.ts). */
+export const STUBBED_PLUGINS = new Set<string>();
+
 /** The kit plugins of `platform`'s kit: kit-android implements none, so every plugin compiles from its source there. */
 export function useKitPlugins(platform: 'ios' | 'android') {
   KIT_PLUGINS.splice(0, KIT_PLUGINS.length, ...(platform === 'android' ? [] : APPLE_KIT_PLUGINS));
