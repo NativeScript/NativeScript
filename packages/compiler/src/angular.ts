@@ -317,6 +317,7 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
     return hooks;
   };
   let usesElementRef = false;
+  let usesUnset = false;
   const queries = classic?.queries ?? [];
   /** The `#refs` of the template's own elements, outside any embedded view: what a static query can resolve. */
   const staticRefs = new Set<string>();
@@ -404,10 +405,76 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
     return { name, make, inputs, listeners, bindings, ...(init ? { init } : {}), ...(destroy ? { destroy } : {}), ...(afterViewInit ? { afterViewInit } : {}), ...(d.hooks.has('ngOnChanges') ? { changes: true } : {}), attributes: d.attributes };
   };
 
+  /** A function or class of the build's Angular runtime module, imported into the component's file under a name of its own. */
+  const fromRuntime = (name: string): string => {
+    usesRuntime = true;
+    const from = options.runtimeModule ?? RUNTIME;
+    const names = imported.get(from) ?? new Map<string, string>();
+    imported.set(from, names);
+    if (!names.has(name)) names.set(name, `$Ng_${name}`);
+    return names.get(name)!;
+  };
+  /**
+   * An element's static `class` and `[class.x]` toggles as one bound `class`. With NgClass (`[ngClass]` or
+   * `ngClass="a b"`), the runtime's NgClass directive, returned, which takes all three; on a component, whose root
+   * view it can't host, one bound `class` from the runtime's ngClassNames.
+   */
+  const classAttr = (n: ng.TmplAstElement, attrs: Attr[], loops: Loop[], ngClass: ng.TmplAstBoundAttribute | ng.TmplAstTextAttribute | undefined): DirectiveUse | null => {
+    const toggles = n.inputs.filter((i) => i.type === ng.BindingType.Class);
+    if (!toggles.length && !ngClass) return null;
+    at((ngClass ?? toggles[0]).sourceSpan);
+    const fixed = attrs.findIndex((a) => a.name === 'class');
+    const base = fixed >= 0 ? attrs.splice(fixed, 1)[0].value ?? '' : '';
+    if (!ngClass) {
+      const parts = [JSON.stringify(base), ...toggles.map((t) => `(${code(t.value, loops)}) ? ${JSON.stringify(t.name)} : ''`)];
+      attrs.push({ name: 'class', method: expr(`[${parts.join(', ')}].filter((c) => !!c).join(' ')`, loops) });
+      return null;
+    }
+    if (n.inputs.some((i) => i.name === 'class' && i.type === ng.BindingType.Property)) throw new Error(`${path}: [class] beside [ngClass] on <${n.name}> is not supported in a release build yet`);
+    const value = ngClass instanceof ng.TmplAstBoundAttribute ? code(ngClass.value, loops) : JSON.stringify(ngClass.value);
+    const pairs = toggles.flatMap((t) => [JSON.stringify(t.name), `(${code(t.value, loops)})`]);
+    if (selectors.has(n.name)) {
+      attrs.push({ name: 'class', method: expr(`${fromRuntime('ngClassNames')}(${JSON.stringify(base)}, ${value}, [${pairs.join(', ')}])`, loops) });
+      return null;
+    }
+    const alias = fromRuntime('NgClass');
+    const name = `$d${directiveCount++}`;
+    const inner = [...loops, { item: name, param: `${name}: ${alias}` }];
+    return {
+      name,
+      make: expr(`new ${alias}()`, loops),
+      inputs: [{ set: handlerOf(`${name}.apply($v)`, [...inner, { item: '$v', param: '$v: any' }]), method: expr(`[${JSON.stringify(base)}, ${value}, [${pairs.join(', ')}]] as any[]`, loops, true) }],
+      listeners: [],
+      bindings: [],
+      attributes: [],
+    };
+  };
+  /**
+   * `[ngStyle]` as the runtime's NgStyle directive on the element. A static `style` moves into it, set before NgStyle's
+   * first styles, as Angular sets the attribute when it makes the element.
+   */
+  const ngStyleUse = (b: ng.TmplAstBoundAttribute, attrs: Attr[], loops: Loop[]): DirectiveUse => {
+    at(b.sourceSpan);
+    const alias = fromRuntime('NgStyle');
+    usesUnset = true;
+    const name = `$d${directiveCount++}`;
+    const inner = [...loops, { item: name, param: `${name}: ${alias}` }];
+    const fixed = attrs.findIndex((a) => a.name === 'style' && 'value' in a);
+    const attributes = fixed >= 0 ? [attrs.splice(fixed, 1)[0] as { name: string; value: string }] : [];
+    return {
+      name,
+      make: expr(`new ${alias}($unsetValue)`, loops),
+      inputs: [{ set: handlerOf(`${name}.apply($v)`, [...inner, { item: '$v', param: '$v: any' }]), method: expr(`[${code(b.value, loops)}] as any[]`, loops, true) }],
+      listeners: [],
+      bindings: [],
+      attributes,
+    };
+  };
+
   /** The expressions a node evaluates in the view it is in (its children's are theirs): where its pipes are. */
   const ownExpressions = (n: ng.TmplAstNode): ng.AST[] => {
     if (n instanceof ng.TmplAstElement) {
-      if (!selectors.has(n.name) && stubbedElement(n.name)) return n.inputs.filter((i) => STUB_LAYOUT_ATTRS.has(i.name) || i.type === ng.BindingType.Class || i.type === ng.BindingType.Style).map((i) => i.value);
+      if (!selectors.has(n.name) && stubbedElement(n.name)) return n.inputs.filter((i) => STUB_LAYOUT_ATTRS.has(i.name) || i.type === ng.BindingType.Class || i.type === ng.BindingType.Style || i.name === 'ngClass' || i.name === 'ngStyle').map((i) => i.value);
       return [...n.inputs.map((i) => i.value), ...n.children.flatMap((c) => (c instanceof ng.TmplAstBoundText ? [c.value] : []))];
     }
     // `*ngFor` on an element: the element's own inputs are the template's, evaluated in each view it renders.
@@ -479,14 +546,9 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
         at(n.startSourceSpan);
         const attrs: Attr[] = [];
         for (const a of n.attributes) if (STUB_LAYOUT_ATTRS.has(a.name)) attrs.push({ name: a.name, value: a.value });
-        const toggles = n.inputs.filter((i) => i.type === ng.BindingType.Class);
-        if (toggles.length) {
-          at(toggles[0].sourceSpan);
-          const fixed = attrs.findIndex((a) => a.name === 'class');
-          const base = fixed >= 0 ? attrs.splice(fixed, 1)[0].value ?? '' : '';
-          const parts = [JSON.stringify(base), ...toggles.map((t) => `(${code(t.value, loops)}) ? ${JSON.stringify(t.name)} : ''`)];
-          attrs.push({ name: 'class', method: expr(`[${parts.join(', ')}].filter((c) => !!c).join(' ')`, loops) });
-        }
+        const classed = classAttr(n, attrs, loops, n.inputs.find((i) => i.name === 'ngClass' && i.type === ng.BindingType.Property) ?? n.attributes.find((a) => a.name === 'ngClass'));
+        const styled = n.inputs.find((i) => i.name === 'ngStyle' && i.type === ng.BindingType.Property);
+        const stubDirectives = [...(classed ? [classed] : []), ...(styled ? [ngStyleUse(styled, attrs, loops)] : [])];
         for (const i of n.inputs) {
           if (i.type === ng.BindingType.Class) continue;
           if (i.type === ng.BindingType.Style && i.name !== 'style') {
@@ -507,7 +569,7 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
         const statics = hooks.length ? queries.filter((q) => q.static && q.ref && refs.includes(q.ref) && staticRefs.has(q.ref)) : [];
         for (const q of statics) staticQueries.delete(q);
         const late = statics.length > 0 && staticQueries.size === 0;
-        out.push({ kind: 'element', tag: 'ContentView', attrs, events: [], children: [], ...(hooks.length ? { queries: hooks } : {}), ...(late ? { init: true } : {}) });
+        out.push({ kind: 'element', tag: 'ContentView', attrs, events: [], children: [], ...(hooks.length ? { queries: hooks } : {}), ...(late ? { init: true } : {}), ...(stubDirectives.length ? { directives: stubDirectives } : {}) });
         if (late) lateInit = true;
         continue;
       }
@@ -532,8 +594,12 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
         }
         const link = routerLink(n, loops);
         if (link) events.push(link);
+        const found = matched(n.name, n.attributes.map((a) => [a.name, a.value]), [...n.inputs.map((i) => i.name), ...n.outputs.map((o) => o.name)]);
+        // An app directive or the hosted component taking NgClass's or NgStyle's input name is what that binding sets.
+        const appOwns = (name: string) => found.some((d) => d.inputs.has(name)) || !!hosted?.inputs.has(name);
         for (const a of n.attributes) {
           if (link && ROUTER_LINK_INPUTS.has(a.name)) continue;
+          if (a.name === 'ngClass' && !appOwns('ngClass')) continue;
           // A static attribute is the element's too, as Angular writes every one to its host.
           attrs.push({ name: a.name, value: a.value });
           if (hosted?.inputs.has(a.name)) hostProps.push({ name: a.name, value: a.value });
@@ -545,31 +611,27 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
             attrs.push({ name: 'text', method: expr(code(c.value, loops), loops) });
           }
         }
-        // `[class.on]="cond"` toggles a class beside the static ones: one bound `class` naming them all.
-        const toggles = n.inputs.filter((i) => i.type === ng.BindingType.Class);
-        if (toggles.length) {
-          at(toggles[0].sourceSpan);
-          const fixed = attrs.findIndex((a) => a.name === 'class');
-          const base = fixed >= 0 ? attrs.splice(fixed, 1)[0].value ?? '' : '';
-          const parts = [JSON.stringify(base), ...toggles.map((t) => `(${code(t.value, loops)}) ? ${JSON.stringify(t.name)} : ''`)];
-          attrs.push({ name: 'class', method: expr(`[${parts.join(', ')}].filter((c) => !!c).join(' ')`, loops) });
-        }
+        // The static classes, `[class.on]="cond"` toggles and NgClass: one bound `class` naming them all.
+        const ngClass = appOwns('ngClass') ? undefined : n.inputs.find((i) => i.name === 'ngClass' && i.type === ng.BindingType.Property) ?? n.attributes.find((a) => a.name === 'ngClass');
+        const ngClassUse = classAttr(n, attrs, loops, ngClass);
+        const ngStyle = appOwns('ngStyle') || selectors.has(n.name) ? undefined : n.inputs.find((i) => i.name === 'ngStyle' && i.type === ng.BindingType.Property);
         // NgSwitch on any element: the cases below it, in its subtree, compare with its value.
         const switched = n.inputs.find((i) => i.name === 'ngSwitch');
-        const found = matched(n.name, n.attributes.map((a) => [a.name, a.value]), [...n.inputs.map((i) => i.name), ...n.outputs.map((o) => o.name)]);
         if (found.length && selectors.has(n.name)) throw new Error(`${path}: the directive ${found[0].className} on the component <${n.name}> is not supported in a release build yet`);
         const consumed = new Set<string>();
         const directives = found.map((d) => {
           if (d.structural) throw new Error(`${path}: the structural directive ${d.className} without its template (*) is not supported in a release build yet`);
           return directiveUse(d, n, loops, consumed);
         });
-        refuseUnbound(n, (name) => found.some((d) => d.inputs.has(name)) || !!hosted?.inputs.has(name) || !!hosted?.outputs.has(name));
+        refuseUnbound(n, (name) => found.some((d) => d.inputs.has(name)) || !!hosted?.inputs.has(name) || !!hosted?.outputs.has(name) || (name === 'ngClass' && !!ngClass) || (name === 'ngStyle' && !!ngStyle));
+        if (ngClassUse) directives.push(ngClassUse);
+        if (ngStyle) directives.push(ngStyleUse(ngStyle, attrs, loops));
         if (!selectors.has(n.name) && !hosted) {
           const ref = n.references.find((r) => r.value);
           if (ref) throw new Error(`${path}: #${ref.name}="${ref.value}" on <${n.name}>, a reference to a directive's exportAs, is not supported in a release build yet`);
         }
         for (const i of n.inputs) {
-          if (i === switched || consumed.has(i.name) || i.type === ng.BindingType.Class || (isList && i.name === 'itemTemplateSelector') || (link && ROUTER_LINK_INPUTS.has(i.name))) continue;
+          if (i === switched || i === ngClass || i === ngStyle || consumed.has(i.name) || i.type === ng.BindingType.Class || (isList && i.name === 'itemTemplateSelector') || (link && ROUTER_LINK_INPUTS.has(i.name))) continue;
           at(i.sourceSpan);
           if (hosted?.inputs.has(i.name) && i.type === ng.BindingType.Property) {
             hostProps.push({ name: i.name, method: expr(code(i.value, loops), loops) });
@@ -1061,6 +1123,7 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
   const cached = [...sites.values()].some((x) => x.cache);
   let imports = `import { ${cached ? 'PurePipeCache as $PurePipeCache, ' : ''}type EventData as $EventData } from '@nativescript/release';\n`;
   if (usesElementRef) imports += `import { ElementRef as $ElementRef } from '@angular/core';\n`;
+  if (usesUnset) imports += `import { unsetValue as $unsetValue } from '@nativescript/core';\n`;
   if (providers) imports += `import { NodeInjector } from '@nativescript/release';\n`;
   if (onChanges) {
     imports += `import { SimpleChange as $SimpleChange } from '@angular/core';\n`;
