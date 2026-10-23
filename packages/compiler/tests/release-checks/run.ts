@@ -1220,5 +1220,35 @@ export const restoring = isAngularHmrRestoringRoute();
   }
 }
 
+// ---- @angular/forms: the port against the package ----
+{
+  // Each forms diff case run in Node twice, against @angular/forms and against runtime/angular-forms.ts in its place: the
+  // port's semantics checked apart from the translators. What the package's typing would reject, the cases leave out.
+  const dir = mkdtempSync(join(tmpdir(), 'ns-release-checks-forms-'));
+  try {
+    symlinkSync(modulesDir, join(dir, 'node_modules'), 'dir');
+    const js = (source: string) => ts.transpileModule(source, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext } }).outputText;
+    writeFileSync(join(dir, 'forms-port.mjs'), js(readFileSync(join(here, '../../runtime/angular-forms.ts'), 'utf8')));
+    const run = (file: string) => {
+      const r = spawnSync(process.execPath, [file], { cwd: dir, encoding: 'utf8', timeout: 60_000 });
+      return `${r.status}\n${r.stdout}\n${r.stderr.split('\n')[0]}`;
+    };
+    const casesDir = join(here, '../diff/cases');
+    const formsCases = readdirSync(casesDir).filter((f) => /^78\d-forms-.*\.ts$/.test(f));
+    check(formsCases.length >= 7, 'the forms diff cases are found');
+    for (const c of formsCases) {
+      const source = js(readFileSync(join(casesDir, c), 'utf8'));
+      writeFileSync(join(dir, 'package.mjs'), source);
+      writeFileSync(join(dir, 'port.mjs'), source.replace(/from ['"]@angular\/forms['"]/g, "from './forms-port.mjs'"));
+      const expected = run('package.mjs');
+      const got = run('port.mjs');
+      check(expected.startsWith('0\n') && got === expected, `${c} prints the same in Node with the port as with @angular/forms`);
+      if (got !== expected) console.log(`    package: ${JSON.stringify(expected.slice(0, 400))}\n    port:    ${JSON.stringify(got.slice(0, 400))}`);
+    }
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
+
 console.log(failed ? `${failed} release checks failed` : 'release checks pass');
 process.exit(failed ? 1 : 0);

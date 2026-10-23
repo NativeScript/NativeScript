@@ -988,7 +988,8 @@ export class Translator implements AsyncTranslator {
       // `[]`'s `never[]` holds anything once it is written to.
       return el.flags & F.Never ? 'JSArray<Any?>' : `JSArray<${this.type(el, where)}>`;
     }
-    const sym = t.aliasSymbol ?? t.getSymbol();
+    // An alias of a class's type (`type UntypedFormGroup = FormGroup<any>`) is that class.
+    const sym = t.aliasSymbol && !((t.getSymbol()?.flags ?? 0) & ts.SymbolFlags.Class && t.aliasSymbol.flags & ts.SymbolFlags.TypeAlias && !(t.aliasSymbol.flags & ts.SymbolFlags.Class)) ? t.aliasSymbol : t.getSymbol();
     if (isRegExpProtocol(t)) return 'JSRegExp';
     // `Awaited<T>` of a type parameter (what `await` of a `T` gives): the value a promise of it settles with, else `T` itself.
     if (t.aliasSymbol?.name === 'Awaited' && isLibDeclaration(t.aliasSymbol.declarations?.[0]) && t.aliasTypeArguments?.length === 1) {
@@ -1020,10 +1021,6 @@ export class Translator implements AsyncTranslator {
       case 'OutputEmitterRef': case 'EventEmitter': return `Emitter<${arg(0)}>`;
       case 'RouterExtensions': if (sym?.declarations?.[0]?.getSourceFile().fileName.startsWith('/__shims__/')) return 'Router'; break;
       case 'EnvironmentInjector': if (sym?.declarations?.[0]?.getSourceFile().fileName.startsWith('/__shims__/')) return 'Injector'; break;
-      case 'UntypedFormControl': if (sym?.declarations?.[0]?.getSourceFile().fileName.startsWith('/__shims__/')) return 'FormControl'; break;
-      case 'UntypedFormGroup': if (sym?.declarations?.[0]?.getSourceFile().fileName.startsWith('/__shims__/')) return 'FormGroup'; break;
-      case 'UntypedFormArray': if (sym?.declarations?.[0]?.getSourceFile().fileName.startsWith('/__shims__/')) return 'FormArray'; break;
-      case 'UntypedFormBuilder': case 'NonNullableFormBuilder': if (sym?.declarations?.[0]?.getSourceFile().fileName.startsWith('/__shims__/')) return 'FormBuilder'; break;
       // `Promise.allSettled`'s results are the plain objects it makes.
       case 'PromiseSettledResult': case 'PromiseFulfilledResult': case 'PromiseRejectedResult': return 'JSObject';
       case 'NativeDialogRef': case 'NativeDialogService': case 'DestroyRef': case 'Injector': case 'InjectionToken': case 'ErrorHandler': case 'NgZone': case 'HttpClient': case 'ChangeDetectorRef': case 'PurePipeCache': case 'NodeInjector': case 'ElementRef': case 'SimpleChange':
@@ -1031,7 +1028,6 @@ export class Translator implements AsyncTranslator {
       case 'KitHttpClient': case 'KitActivatedRoute': case 'KitRouter': case 'KitNativeDialogRef': case 'KitNativeDialogService':
       case 'HttpParams': case 'HttpHeaders': case 'HttpResponse': case 'HttpErrorResponse': case 'HttpRequest': case 'HttpContext': case 'HttpContextToken':
       case 'ParamMap': case 'UrlSegment': case 'UrlTree': case 'DefaultUrlSerializer': case 'ActivatedRouteSnapshot':
-      case 'FormControl': case 'FormGroup': case 'FormArray': case 'FormBuilder': case 'Validators': case 'AbstractControl':
       case 'ViewContainerRef': case 'TemplateRef': case 'ComponentRef': case 'EmbeddedViewRef': case 'ApplicationRef': case 'Location':
         if (sym?.declarations?.[0]?.getSourceFile().fileName.startsWith('/__shims__/')) return name;
         break;
@@ -4465,6 +4461,8 @@ ${members.join('\n')}
     if (!decl || !ts.isClassDeclaration(decl) || decl.getSourceFile().isDeclarationFile) return false;
     const fn = decl.getSourceFile().fileName;
     if (fn.endsWith('/runtime/angular-rx.ts') || fn.endsWith('/runtime/angular.ts')) return true;
+    // @angular/forms' builders: services whose root instance is their static `shared`.
+    if (fn.endsWith('/runtime/angular-forms.ts')) return decl.members.some((m) => (ts.isPropertyDeclaration(m) || ts.isGetAccessorDeclaration(m)) && isStatic(m) && m.name.getText() === 'shared');
     if (this.pluginFiles.has(fn)) return false;
     return (ts.getDecorators(decl) ?? []).some((d) => /^Injectable\b/.test(d.expression.getText()));
   }
@@ -4485,7 +4483,7 @@ ${members.join('\n')}
     if (injectArg && ts.isCallExpression(injectArg) && injectArg.expression.getText() === 'forwardRef' && injectArg.arguments[0] && (ts.isArrowFunction(injectArg.arguments[0]) || ts.isFunctionExpression(injectArg.arguments[0])) && !ts.isBlock(injectArg.arguments[0].body)) {
       injectArg = injectArg.arguments[0].body;
     }
-    const builtins = ['RouterExtensions', 'ActivatedRoute', 'Page', 'DestroyRef', 'ChangeDetectorRef', 'ElementRef', 'NativeDialogRef', 'NativeDialogService', 'Router', 'HttpClient', 'Injector', 'EnvironmentInjector', 'NgZone', 'ErrorHandler', 'FormBuilder', 'UntypedFormBuilder', 'NonNullableFormBuilder', 'Location', 'ViewContainerRef', 'ApplicationRef'];
+    const builtins = ['RouterExtensions', 'ActivatedRoute', 'Page', 'DestroyRef', 'ChangeDetectorRef', 'ElementRef', 'NativeDialogRef', 'NativeDialogService', 'Router', 'HttpClient', 'Injector', 'EnvironmentInjector', 'NgZone', 'ErrorHandler', 'Location', 'ViewContainerRef', 'ApplicationRef'];
     if (injectArg) {
       const target = ts.isExpressionWithTypeArguments(injectArg) ? injectArg.expression : injectArg;
       const token = this.tokenName(target);
@@ -4665,6 +4663,8 @@ ${members.join('\n')}
         continue;
       }
       if (ts.isMethodDeclaration(m)) {
+        // An overload's signature: Swift's one method is the implementation's.
+        if (!m.body) continue;
         this.templateParams = /^\$[be]\d+$/.test(m.name.getText());
         try { lines.push('    ' + this.func(m, ident((m.name as ts.Identifier).text))); } finally { this.templateParams = false; }
         continue;
@@ -9394,6 +9394,7 @@ ${members.join('\n')}
     const p = e.parent;
     if ((ts.isCallExpression(p) && p.expression === e) || ts.isPropertyAccessExpression(p) || ts.isElementAccessExpression(p) || ts.isTypeOfExpression(p) || ts.isDeleteExpression(p)) return null;
     const decl = this.checker.getSymbolAtLocation(e.name)?.valueDeclaration;
+    if (decl && ts.isMethodDeclaration(decl) && isStatic(decl)) return this.staticMethodValue(e, decl);
     if (!decl || !ts.isMethodDeclaration(decl) || isStatic(decl) || decl.typeParameters?.length || decl.asteriskToken || !ts.isClassDeclaration(decl.parent) || decl.getSourceFile().isDeclarationFile) return null;
     if (decl.parameters.some((q) => q.dotDotDotToken)) return null;
     if (e.expression.kind === ts.SyntaxKind.SuperKeyword && this.isInstanceMethod(e.name)) return 'nil';
@@ -9411,6 +9412,17 @@ ${members.join('\n')}
     const body = fn.result !== 'Void' ? `return ${call}` : this.returnTypeOf(decl) === 'Void' ? call : `_ = ${call}`;
     const closure = `{ [weak __r] (${params.join(', ')}) throws -> ${fn.result} in guard let __r else { throw jsReleasedReceiver(${swiftString(name)}) }; ${this.keeping('__i', body, fn.result)} }`;
     return `jsMethodValue(${this.expr(e.expression)}, ${swiftString(name)}) { __r, __i in ${cell}(f: ${closure}) }.f`;
+  }
+
+  /** A program class's static method read as a value (`Validators.required`): one closure for good, as a module's function is. */
+  private staticMethodValue(e: ts.PropertyAccessExpression, decl: ts.MethodDeclaration): string | null {
+    if (decl.typeParameters?.length || decl.asteriskToken || decl.parameters.some((q) => q.dotDotDotToken) || !ts.isClassDeclaration(decl.parent) || decl.getSourceFile().isDeclarationFile || !this.programClass(e.expression)) return null;
+    const fn = functionParts(this.typeOf(e));
+    const cell = fn && fn.rest < 0 ? this.functionCell(escapingFunction(fn)) : null;
+    if (!cell) return null;
+    const ref = `${this.expr(e.expression)}.${this.memberName(e)}`;
+    if (!this.functionDepth) this.isolatedInit = true;
+    return `${cell}.${this.cellStatic(cell, 'declared', 'jsDeclaredFunction(id, Self(f: __h)).f')}(${swiftString(ref.replace(/`/g, ''))}, ${ref})`;
   }
 
   /** A receiver that can be missing though its type says not (`x!`, `items[i]`): JavaScript's TypeError when it is. */
@@ -10122,7 +10134,7 @@ ${members.join('\n')}
         const tokTarget = ts.isExpressionWithTypeArguments(rawArg0) ? rawArg0.expression : rawArg0;
         const token = this.tokenName(tokTarget);
         const tokenDecl = this.resolve(tokTarget)?.declarations?.[0];
-        const builtin = ['RouterExtensions', 'ActivatedRoute', 'Page', 'DestroyRef', 'ChangeDetectorRef', 'ElementRef', 'NativeDialogRef', 'NativeDialogService', 'Router', 'HttpClient', 'Injector', 'EnvironmentInjector', 'NgZone', 'ErrorHandler', 'FormBuilder', 'UntypedFormBuilder', 'NonNullableFormBuilder', 'Location', 'ViewContainerRef', 'ApplicationRef'].includes(token);
+        const builtin = ['RouterExtensions', 'ActivatedRoute', 'Page', 'DestroyRef', 'ChangeDetectorRef', 'ElementRef', 'NativeDialogRef', 'NativeDialogService', 'Router', 'HttpClient', 'Injector', 'EnvironmentInjector', 'NgZone', 'ErrorHandler', 'Location', 'ViewContainerRef', 'ApplicationRef'].includes(token);
         const appService = this.isInjectableClass(tokenDecl);
         if ((builtin || appService) && e.arguments.length === 1 && this.throwsInfo.expr(e)) return injected(token);
         const raw = `${this.expr(target)}.get(${this.coerce(rawArg0, 'Any?')}${e.arguments[1] ? `, ${this.coerce(e.arguments[1], 'Any?')}` : ''}${e.arguments[2] ? `, ${this.coerce(e.arguments[2], 'Any?')}` : ''})`;
@@ -10598,7 +10610,7 @@ ${members.join('\n')}
       const token = this.tokenName(target);
       if (token === 'NATIVE_DIALOG_DATA') return this.fromAny('NativeDialogRef.current.data', this.typeOf(e));
       const tokenDecl = this.resolve(target)?.declarations?.[0];
-      const builtin = ['RouterExtensions', 'ActivatedRoute', 'Page', 'DestroyRef', 'ChangeDetectorRef', 'ElementRef', 'NativeDialogRef', 'NativeDialogService', 'Router', 'HttpClient', 'Injector', 'EnvironmentInjector', 'NgZone', 'ErrorHandler', 'FormBuilder', 'UntypedFormBuilder', 'NonNullableFormBuilder', 'Location', 'ViewContainerRef', 'ApplicationRef'].includes(token);
+      const builtin = ['RouterExtensions', 'ActivatedRoute', 'Page', 'DestroyRef', 'ChangeDetectorRef', 'ElementRef', 'NativeDialogRef', 'NativeDialogService', 'Router', 'HttpClient', 'Injector', 'EnvironmentInjector', 'NgZone', 'ErrorHandler', 'Location', 'ViewContainerRef', 'ApplicationRef'].includes(token);
       const appService = this.isInjectableClass(tokenDecl);
       if (builtin || appService) return injected(token);
       const raw = `Injector.inject(${this.coerce(rawArg0, 'Any?')}${arg(1) ? `, ${this.coerce(arg(1), 'Any?')}` : ''})`;
@@ -13177,7 +13189,6 @@ function injected(token: string): string {
   switch (token) {
     case 'RouterExtensions': return 'Router.shared';
     case 'EnvironmentInjector': return 'Injector.shared';
-    case 'UntypedFormBuilder': case 'NonNullableFormBuilder': return 'FormBuilder.shared';
     case 'ActivatedRoute': return 'ActivatedRoute.current';
     case 'Page': return 'Page.injected()';
     case 'DestroyRef': return 'DestroyRef.current()';
