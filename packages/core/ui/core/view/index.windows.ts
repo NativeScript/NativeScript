@@ -4,6 +4,7 @@ export * from '../properties';
 
 import { ViewCommon, originXProperty, originYProperty } from './view-common';
 import type { CoreTypes } from '../../../core-types';
+import type { Point } from './view-interfaces';
 import { visibilityProperty, opacityProperty, backgroundInternalProperty, translateXProperty, translateYProperty, scaleXProperty, scaleYProperty, rotateProperty, rotateXProperty, rotateYProperty, perspectiveProperty, horizontalAlignmentProperty, verticalAlignmentProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty } from '../../styling/style-properties';
 import { LinearGradient } from '../../styling/linear-gradient';
 import { widthProperty, heightProperty, minWidthProperty, minHeightProperty, marginLeftProperty, marginTopProperty, marginRightProperty, marginBottomProperty } from '../../styling/style-properties';
@@ -13,7 +14,7 @@ import { Background } from '../../styling/background';
 import { BoxShadow } from '../../styling/box-shadow';
 import { Color } from '../../../color';
 import { hiddenProperty } from '../view-base';
-import { getCurrentWindowBounds, getCurrentWindowContent, getWindowBounds } from '../../../application/window-helper.windows';
+import { getClientOriginOnScreen, getCurrentWindowBounds, getCurrentWindowContent, getWindowBounds } from '../../../application/window-helper.windows';
 import { ImageSource } from '../../../image-source';
 import { ClipPathFunction } from '../../styling/clip-path-function';
 import { nativeChildIndex, removeNativeChild } from './native-children.windows';
@@ -630,6 +631,11 @@ class CompositionBorderHandler {
 	}
 }
 
+let _zeroPoint: Windows.Foundation.Point | undefined;
+function zeroPoint(): Windows.Foundation.Point {
+	return (_zeroPoint ??= Microsoft.UI.Xaml.PointHelper.FromCoordinates(0, 0));
+}
+
 export class View extends ViewCommon {
 	nativeViewProtected: Microsoft.UI.Xaml.FrameworkElement;
 
@@ -1178,6 +1184,32 @@ export class View extends ViewCommon {
 		}
 	}
 
+	private _originIn(target: Microsoft.UI.Xaml.UIElement | null): Point {
+		try {
+			const p = (this.nativeViewProtected as any).TransformToVisual(target).TransformPoint(zeroPoint());
+			return { x: p.X, y: p.Y };
+		} catch (_e) {
+			return undefined;
+		}
+	}
+
+	public getLocationInWindow(): Point {
+		return (this.nativeViewProtected as any)?.XamlRoot ? this._originIn(null) : undefined;
+	}
+
+	public getLocationOnScreen(): Point {
+		const root = (this.nativeViewProtected as any)?.XamlRoot;
+		const inWindow = root ? this._originIn(null) : undefined;
+		const client = inWindow ? getClientOriginOnScreen(root) : null;
+		return client ? { x: client.x + inWindow.x, y: client.y + inWindow.y } : undefined;
+	}
+
+	public getLocationRelativeTo(otherView: ViewCommon): Point {
+		const other = otherView?.nativeViewProtected as any;
+		const root = (this.nativeViewProtected as any)?.XamlRoot;
+		return root && other?.XamlRoot === root ? this._originIn(other) : undefined;
+	}
+
 	// Button-family controls override their template's brush resources. Probed on first need: most
 	// views never set a colour or background, and the probe is a WinRT call.
 	protected _nativeIsButton(): boolean {
@@ -1476,6 +1508,15 @@ export class View extends ViewCommon {
 		} catch (_e) { }
 	}
 
+	/**
+	 * A parent that lays out its children itself can take over a child's percentage width or height
+	 * (`fraction` 0-1, `null` once it is no longer a percentage) by returning `true`: the child then
+	 * leaves its XAML size unset and skips its own percent sizing.
+	 */
+	_setChildPercentSize(child: View, horizontal: boolean, fraction: number | null): boolean {
+		return false;
+	}
+
 	private _applyPercentSizing(): void {
 		const nativeView = this.nativeViewProtected as any;
 		if (!nativeView) {
@@ -1521,6 +1562,11 @@ export class View extends ViewCommon {
 
 		if (value && typeof value === 'object' && (value as any).unit === '%') {
 			const pct = (value as any).value;
+			if (this.parent instanceof View && this.parent._setChildPercentSize(this, true, pct)) {
+				this._percentWidth = null;
+				this.nativeViewProtected.Width = NaN;
+				return;
+			}
 			this._percentWidth = pct;
 			this._ensureSizeWatch(); // re-apply percent when the parent resizes
 			this.nativeViewProtected.Width = NaN;
@@ -1543,6 +1589,7 @@ export class View extends ViewCommon {
 		}
 
 		this._percentWidth = null;
+		if (this.parent instanceof View) this.parent._setChildPercentSize(this, true, null);
 		// Clear any previously set flex-basis so the C++ widget falls back to DesiredSize.
 		try {
 			(NativeScript as any).Widgets.FlexboxLayout.SetFlexBasisPercent(
@@ -1560,6 +1607,11 @@ export class View extends ViewCommon {
 
 		if (value && typeof value === 'object' && (value as any).unit === '%') {
 			const pct = (value as any).value;
+			if (this.parent instanceof View && this.parent._setChildPercentSize(this, false, pct)) {
+				this._percentHeight = null;
+				this.nativeViewProtected.Height = NaN;
+				return;
+			}
 			this._percentHeight = pct;
 			this._ensureSizeWatch(); // re-apply percent when the parent resizes
 			this.nativeViewProtected.Height = NaN;
@@ -1577,6 +1629,7 @@ export class View extends ViewCommon {
 		}
 
 		this._percentHeight = null;
+		if (this.parent instanceof View) this.parent._setChildPercentSize(this, false, null);
 		this.nativeViewProtected.Height = toXamlLength(value);
 	}
 
