@@ -960,9 +960,10 @@ export class Translator implements AsyncTranslator {
       let parts = t.types.filter((u) => !(u.flags & (F.Undefined | F.Null | F.Void)));
       if (!parts.length) return 'Any?';
       const optional = parts.length < t.types.length;
-      // `xs || []`: the empty literal's `never[]` takes the other side's type.
+      // `xs || []`: the empty literal's `never[]` takes the other side's type; beside a primitive (`['a', []]`'s elements) it is an array still.
       const empty = (u: ts.Type) => c.isArrayType(u) && !!(c.getTypeArguments(u as ts.TypeReference)[0]?.flags & F.Never);
-      if (parts.length > 1 && parts.some((u) => !empty(u))) parts = parts.filter((u) => !empty(u));
+      const primitive = (u: ts.Type) => !!(u.flags & (F.StringLike | F.NumberLike | F.BooleanLike | F.BigIntLike));
+      if (parts.length > 1 && parts.some((u) => !empty(u)) && !parts.some(primitive)) parts = parts.filter((u) => !empty(u));
       // A union with a type the build cannot translate (`string | RegExp`) reads as the parts it can.
       const translated = parts.flatMap((u) => { try { return [this.type(u, where)]; } catch { return []; } });
       if (!translated.length) return this.type(parts[0], where);
@@ -1370,6 +1371,10 @@ export class Translator implements AsyncTranslator {
     if (t.startsWith('JSRecord<') && (ts.isIdentifier(n) || ts.isElementAccessExpression(n) || ts.isPropertyAccessExpression(n)) && !(ts.isIdentifier(n) && n.parent && (ts.isParameter(n.parent) || ts.isVariableDeclaration(n.parent) || ts.isPropertyDeclaration(n.parent) || ts.isPropertySignature(n.parent) || ts.isBindingElement(n.parent)) && n.parent.name === n)) {
       const declared = ts.isElementAccessExpression(n) && /^JSArray<Any\?>[?!]?$/.test(this.typeOf(n.expression)) ? 'Any?' : this.declaredTypeOf(n as ts.Expression);
       if (declared === 'Any?') return 'Any?';
+    }
+    // An untyped value `instanceof Map` or `Set` narrows: Swift's map or set of any values is not one of other types, so it stays untyped.
+    if (/^JS(Map<Any\?, Any\?>|Set<Any\?>)[?!]?$/.test(t) && (ts.isIdentifier(n) || ts.isPropertyAccessExpression(n)) && !(ts.isIdentifier(n) && n.parent && (ts.isParameter(n.parent) || ts.isVariableDeclaration(n.parent) || ts.isPropertyDeclaration(n.parent) || ts.isBindingElement(n.parent)) && n.parent.name === n)) {
+      if (this.declaredTypeOf(n as ts.Expression) === 'Any?') return 'Any?';
     }
     if ((t === 'Bool' || t === 'String' || t === 'Double') && (this.holdsUndefined(n) || this.givenNullSignalValue(n))) return `${t}?`;
     if (this.looseObjectDeclaration(n, t)) return optionalType(t);
@@ -3772,7 +3777,7 @@ ${members.join('\n')}
   /** A call of a function that may return undefined, read where its declared type is wanted: as JavaScript converts undefined there. */
   /** Checked without strictNullChecks, a library call's `T | undefined` (`map.get(k)`) reads as `T`; Swift still says it may be missing. */
   private libMayBeUndefined(e: ts.CallExpression): boolean {
-    if (!this.lenient || isOptional(this.typeOf(e)) || this.typeOf(e) === 'Any?') return false;
+    if (!(this.lenient || this.lenientApp) || isOptional(this.typeOf(e)) || this.typeOf(e) === 'Any?') return false;
     const sig = this.checker.getResolvedSignature(e)?.getDeclaration();
     const t = sig && !ts.isJSDocSignature(sig) ? sig.type : undefined;
     return !!t && isLibDeclaration(sig as ts.Declaration) && ts.isUnionTypeNode(t) && t.types.some((x) => x.kind === ts.SyntaxKind.UndefinedKeyword || (ts.isLiteralTypeNode(x) && x.literal.kind === ts.SyntaxKind.NullKeyword));
@@ -6526,7 +6531,9 @@ ${members.join('\n')}
         while (ts.isParenthesizedExpression(read)) read = read.expression;
         const held = (ts.isElementAccessExpression(read) || ts.isPropertyAccessExpression(read)) && this.typeOf(read.expression).replace(/[?!]$/, '') === 'JSRecord<Any?>' ? 'Any?' : optionalType(t);
         if (sym) this.undefinedVars.set(sym, held);
-        return `${i}${(lowered ? !constant : this.needsVar(d.name, held)) ? 'var' : 'let'} ${name}: ${held} = ${this.tryPrefix(d.initializer)}${maybe}`;
+        // An untyped value declared a type (`const s: string = untyped[0]`): converted, undefined staying undefined.
+        const value = this.typeOf(d.initializer) === 'Any?' && held !== 'Any?' ? this.fromAny(maybe, held) : maybe;
+        return `${i}${(lowered ? !constant : this.needsVar(d.name, held)) ? 'var' : 'let'} ${name}: ${held} = ${this.tryPrefix(d.initializer)}${value}`;
       }
       // A native struct is a value in Swift: a constant one's fields can still be assigned in JavaScript.
       const binding = lowered ? (constant && !this.native.isStructType(t) ? 'let' : 'var') : this.needsVar(d.name, t) ? 'var' : 'let';
@@ -6847,14 +6854,17 @@ ${members.join('\n')}
   private switchStatement(s: ts.SwitchStatement): string {
     const i = this.indent;
     const subject = this.fresh('__switch');
-    const subjectType = this.typeOf(s.expression);
+    // A string, number or boolean that may be undefined (`s[i]` past its end) is matched as the optional it is, so `case undefined` can match.
+    const raw = ['String', 'Double', 'Bool'].includes(this.typeOf(s.expression)) ? this.maybeUndefined(s.expression) : null;
+    const subjectType = raw ? optionalType(this.typeOf(s.expression)) : this.typeOf(s.expression);
+    const subjectCode = `${this.tryPrefix(s.expression)}${raw ?? this.expr(s.expression)}`;
     const clauses = s.caseBlock.clauses;
     const fallback = clauses.findIndex(ts.isDefaultClause);
-    if (fallback >= 0 && fallback < clauses.length - 1) return this.switchBlock(s, subject, subjectType);
+    if (fallback >= 0 && fallback < clauses.length - 1) return this.switchBlock(s, subject, subjectType, subjectCode);
     const literal = (l: ts.Expression) => ts.isLiteralExpression(l) || (ts.isPrefixUnaryExpression(l) && ts.isNumericLiteral(l.operand));
     // Cases of literals match by pattern, which names no subject: Swift's switch evaluates its own once.
     const direct = subjectType !== 'Any?' && clauses.every((c) => !ts.isCaseClause(c) || literal(c.expression));
-    const lines = direct ? [`${i}switch ${this.tryPrefix(s.expression)}${this.expr(s.expression)} {`] : [`${i}let ${subject}: ${subjectType} = ${this.tryPrefix(s.expression)}${this.expr(s.expression)}`, `${i}switch ${subject} {`];
+    const lines = direct ? [`${i}switch ${subjectCode} {`] : [`${i}let ${subject}: ${subjectType} = ${subjectCode}`, `${i}switch ${subject} {`];
     let labels: ts.Expression[] = [];
     this.plainBreak++;
     this.breakTargets.push(null);
@@ -6898,12 +6908,12 @@ ${members.join('\n')}
    * say: the clause execution starts at is found first, then each clause runs
    * if it is at or after it (fallthrough), and `break` leaves the labeled block.
    */
-  private switchBlock(s: ts.SwitchStatement, subject: string, subjectType: string): string {
+  private switchBlock(s: ts.SwitchStatement, subject: string, subjectType: string, subjectCode: string): string {
     const i = this.indent;
     const label = this.fresh('__switchBlock');
     const start = this.fresh('__start');
     const clauses = s.caseBlock.clauses;
-    const lines = [`${i}${label}: do {`, `${i}    let ${subject}: ${subjectType} = ${this.tryPrefix(s.expression)}${this.expr(s.expression)}`, `${i}    var ${start} = ${clauses.findIndex(ts.isDefaultClause)}`];
+    const lines = [`${i}${label}: do {`, `${i}    let ${subject}: ${subjectType} = ${subjectCode}`, `${i}    var ${start} = ${clauses.findIndex(ts.isDefaultClause)}`];
     const tests = clauses.flatMap((c, k) => {
       if (!ts.isCaseClause(c)) return [];
       const l = c.expression;
@@ -7395,6 +7405,8 @@ ${members.join('\n')}
     // `new Array<Base>()` where an array of a subclass is wanted: an empty array of it.
     if (ts.isNewExpression(bare) && ts.isIdentifier(bare.expression) && bare.expression.text === 'Array' && !bare.arguments?.length && /^JSArray<.*>[?!]?$/.test(target)) return `${target.replace(/[?!]$/, '')}()`;
     // Lenient code passing null or undefined where a string, number or boolean is declared: the type's zero, as such a slot reads it.
+    // Library code's undefined number is NaN, as its fields without a value hold it and `x === undefined` tests it.
+    if (this.lenient && target === 'Double' && isNullish(bare) && bare.kind !== ts.SyntaxKind.NullKeyword) return '.nan';
     if ((this.lenient || this.lenientApp) && isNullish(bare) && ['String', 'Double', 'Bool'].includes(target)) return this.zero(target)!;
     // Null where a native struct is declared: its zero value, as the iOS runtime marshals null for one.
     if (this.lenient && isNullish(bare) && this.native.isStructType(target)) return `${target}()`;
@@ -11672,6 +11684,7 @@ ${members.join('\n')}
       if (ts.isParameter(d)) return !d.dotDotDotToken && !/[?!]$/.test(this.paramType(d)) && !this.mayBeNull(d) && (value || !this.lenient);
       if (!ts.isVariableDeclaration(d) || !d.initializer || isNullish(d.initializer) || this.writtenIn(d.getSourceFile(), false).vars.has(sym)) return false;
       const init = ts.skipOuterExpressions(d.initializer, ts.OuterExpressionKinds.Parentheses);
+      if (ts.isCallExpression(init) && this.libMayBeUndefined(init)) return false;
       return ts.isNewExpression(init) || ts.isLiteralExpression(init) || ts.isObjectLiteralExpression(init) || ts.isArrayLiteralExpression(init) || (value && !this.maybeUndefined(d.initializer));
     }
     if (ts.isPropertyAccessExpression(x) && !x.questionDotToken) {
@@ -12274,6 +12287,9 @@ ${members.join('\n')}
     const K2 = ts.SyntaxKind;
     const compared = (x: ts.Expression) => (ts.isBinaryExpression(x) && x.operatorToken.kind >= K2.LessThanToken && x.operatorToken.kind <= K2.ExclamationEqualsEqualsToken ? `(${this.expr(x)})` : this.expr(x));
     if (isStringType(lt)) return `${negate ? '!' : ''}jsStringEquals(${this.expr(a)}, ${this.expr(b)})`;
+    // Lenient code holds an undefined number as NaN: two variables or members holding undefined are equal. `x !== x` still tests for NaN.
+    const held = (x: ts.Expression) => { x = ts.skipOuterExpressions(x, ts.OuterExpressionKinds.Parentheses); return ts.isIdentifier(x) || ts.isPropertyAccessExpression(x) || ts.isElementAccessExpression(x); };
+    if (this.lenient && strict && lt === 'Double' && rt === 'Double' && held(a) && held(b) && a.getText() !== b.getText()) return `${negate ? '!' : ''}jsLenientNumberEquals(${this.expr(a)}, ${this.expr(b)})`;
     return `${compared(a)} ${negate ? '!=' : '=='} ${compared(b)}`;
   }
 

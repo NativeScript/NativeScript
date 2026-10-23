@@ -21,8 +21,7 @@ function ngClassNames(base: string, value: any, toggles: any[]): string {
   decide(base, true);
   if (typeof value === 'string') decide(value, true);
   else if (Array.isArray(value) || value instanceof Set) {
-    const listed: any = value;
-    for (const name of listed) {
+    for (const name of value) {
       if (typeof name !== 'string') throw new Error(`NgClass can only toggle CSS classes expressed as strings, got ${name}`);
       decide(name, true);
     }
@@ -56,7 +55,7 @@ class NgClass {
   private toggled: any[] = [];
 
   apply(input: any[]): void {
-    const base = String(input[0]);
+    const base: string = input[0];
     const value: any = input[1];
     const toggles: any = input[2];
     const statics = base.trim().split(/\s+/).filter((c) => !!c);
@@ -71,8 +70,7 @@ class NgClass {
     if (typeof value === 'string') {
       for (const name of value.trim().split(/\s+/)) this.update(name, true);
     } else if (Array.isArray(value) || value instanceof Set) {
-      const listed: any = value;
-      for (const name of listed) {
+      for (const name of value) {
         if (typeof name !== 'string') throw new Error(`NgClass can only toggle CSS classes expressed as strings, got ${name}`);
         this.update(name, true);
       }
@@ -95,7 +93,7 @@ class NgClass {
     this.changed = names.map(() => false);
     this.touched = names.map(() => false);
     for (let k = 0, t = 0; k + 1 < toggles.length; k += 2, t++) {
-      const name = String(toggles[k]);
+      const name: string = toggles[k];
       const on = toggles[k + 1] === undefined ? statics.indexOf(name) >= 0 : !!toggles[k + 1];
       if (this.toggled[t] === on) continue;
       this.toggled[t] = on;
@@ -143,10 +141,8 @@ function ngStyleEntries(value: any): NgStyleEntry[] {
     const parts = key.split('.');
     entries.push({ key, name: parts[0], value: given == null ? null : parts.length > 1 ? `${given}${parts[1]}` : given });
   };
-  // Iterated untyped, and read so before `instanceof` narrows it: a Map of any key and value types.
-  const pairs: any = value;
   if (value instanceof Map) {
-    for (const pair of pairs) add(String(pair[0]), pair[1]);
+    for (const [key, given] of value) add(String(key), given);
   } else if (typeof value === 'object') {
     for (const key of Object.keys(value)) add(key, value[key]);
   } else throw new Error(`NgStyle takes an object or a Map of styles, got ${value}`);
@@ -169,8 +165,8 @@ class NgStyle {
     const entries = ngStyleEntries(value);
     for (const old of this.applied) if (!entries.some((e) => e.key === old.key)) this.set(old.name, null);
     for (const entry of entries) {
-      const at = this.applied.findIndex((e) => e.key === entry.key);
-      if (at < 0 || !Object.is(this.applied[at].value, entry.value)) this.set(entry.name, entry.value);
+      const old = this.applied.find((e) => e.key === entry.key);
+      if (!old || !Object.is(old.value, entry.value)) this.set(entry.name, entry.value);
     }
     this.applied = entries;
   }
