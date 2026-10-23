@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { foldPlatform, type Platform } from './platform.ts';
 import { desugarConstructorFactories } from './constructor-factories.ts';
 import { KIT_PLUGINS, NATIVE_CONTROLLERS, NATIVE_VIEWS, STUBBED_PLUGINS, nativeViewOf } from './core.ts';
-import type { PluginSources } from './plugins/source.ts';
+import { COMPILER_RUNTIME, type PluginSources } from './plugins/source.ts';
 import { packageOf, runtimeFile } from './plugins/resolve.ts';
 import { NATIVE_VIEWS_ANDROID } from './core-kotlin.ts';
 
@@ -940,7 +940,7 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
   // the other platform's types name what code for that platform holds (`signal<android.view.View | null>`).
   const pluginFiles = new Set<string>();
   const extraRoots = new Set<string>();
-  const isSource = (name: string) => !name.startsWith('/__shims__/') && !name.endsWith('.d.ts') && !name.includes('/node_modules/');
+  const isSource = (name: string) => !name.startsWith('/__shims__/') && !name.endsWith('.d.ts') && (name.startsWith(COMPILER_RUNTIME) || !name.includes('/node_modules/'));
   const isApp = (name: string) => isSource(name) && !pluginFiles.has(name);
   // The app's declarations are read for the native APIs they declare: the frameworks' own typings they reference would replace the shims.
   const appTypings = new Set(declarations);
