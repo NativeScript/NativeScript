@@ -553,6 +553,13 @@ export class C { on = signal(true); w = signal(10); name = 'Ada'; }
   check(!!use && method(styled, use.make).includes('new $Ng_NgStyle($unsetValue)') && styled.source.includes("import { unsetValue as $unsetValue } from '@nativescript/core';") && method(styled, use.inputs[0].set).includes('.apply($v)')
     && method(styled, use.inputs[0].method!).includes(`[{ 'width.px': this.w(), 'background-color': this.on() ? 'red' : null }] as any[]`), "[ngStyle] is the runtime's NgStyle on the element, given its value");
   check(!!use && use.attributes.some((a) => a.name === 'style' && a.value === 'color: red') && !label(styled).attrs!.some((a) => a.name === 'style' || a.name === 'ngStyle'), 'a static style beside [ngStyle] is set by it, before its first styles');
+  const bound = make(`<Label style="color: red" [style.background-color]="on() ? 'red' : null" [style.width.px]="w()" [style.--gap]="w()"></Label>`);
+  const boundUse = label(bound).directives?.find((d) => d.make && method(bound, d.make).includes('NgStyle'));
+  check(!!boundUse && method(bound, boundUse.inputs[0].method!).includes(`[{ "background-color": (this.on() ? 'red' : null), "width.px": (this.w()), "--gap": (this.w()) }] as any[]`)
+    && boundUse.attributes.some((a) => a.name === 'style') && !label(bound).attrs!.some((a) => a.name !== 'style' && /background|width|gap/.test(a.name)), "[style.x] bindings are one NgStyle object on the element (dashed names, units, CSS variables; null removes)");
+  const toggled = make(`<Label class="a x b" [class.x]="on()" [class.y]="on()"></Label>`);
+  const toggledClass = label(toggled).attrs!.find((a) => a.name === 'class');
+  check(!!toggledClass?.method && method(toggled, toggledClass.method).includes('$Ng_ngClassNames("a x b", null, ["x", (this.on()), "y", (this.on())])'), '[class.x] without NgClass decides a static class x it names, through ngClassNames');
   const swift = render(styled, new Map(), () => false, 'angular').join('\n');
   const kotlin = renderKotlin(styled, new Map(), { framework: 'angular' }).join('\n');
   check(/ElementRef\.hosting\(v\d+\) \{ self\._b\d+\(\) \}[\s\S]*kitSet\("style", "color: red"\)[\s\S]*Check\(\{ self\._b\d+\(\) \}\)/.test(swift) && /ElementRef\.hosting\(v\d+\) \{ this\._b\d+\(\) \}[\s\S]*kitSet\("style", "color: red"\)[\s\S]*Check\(\{ this\._b\d+\(\) \}\)/.test(kotlin), "NgStyle is made with the element as its ElementRef, the static style set before its styles (Swift, Kotlin)");
@@ -601,6 +608,7 @@ export class C { on = signal(true); w = signal(10); name = 'Ada'; }
     const before = names('card x', { a: true, b: true }, ['on', true]), after = names('card x', { b: true }, ['on', true]);
     check(before === 'card x a b on' && after === 'card x b on', 'on a component, a class NgClass no longer names is removed, and only that one');
     check(names('card x', { x: false }, []) === 'card' && names('card x', {}, []) === 'card x', 'on a component, NgClass naming a static class false removes it, and no longer naming it brings it back');
+    check(names('a x b', null, ['x', false, 'y', true]) === 'a b y' && names('a x', null, ['x', true]) === 'a x', 'without NgClass, a false [class.x] removes a static class x');
     check(names('card', { on: true }, ['on', false]) === 'card' && names('card', { on: false }, ['on', true]) === 'card on' && names('card on', null, ['on', undefined]) === 'card on', "on a component, [class.x] decides its class after NgClass, and an undefined one decides nothing");
 
     const sets: [string, unknown][] = [];

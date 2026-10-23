@@ -415,7 +415,7 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
     return names.get(name)!;
   };
   /**
-   * An element's static `class` and `[class.x]` toggles as one bound `class`. With NgClass (`[ngClass]` or
+   * An element's static `class` and `[class.x]` toggles as one bound `class` from the runtime's ngClassNames. With NgClass (`[ngClass]` or
    * `ngClass="a b"`), the runtime's NgClass directive, returned, which takes all three; on a component, whose root
    * view it can't host, one bound `class` from the runtime's ngClassNames.
    */
@@ -425,14 +425,13 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
     at((ngClass ?? toggles[0]).sourceSpan);
     const fixed = attrs.findIndex((a) => a.name === 'class');
     const base = fixed >= 0 ? attrs.splice(fixed, 1)[0].value ?? '' : '';
+    const pairs = toggles.flatMap((t) => [JSON.stringify(t.name), `(${code(t.value, loops)})`]);
     if (!ngClass) {
-      const parts = [JSON.stringify(base), ...toggles.map((t) => `(${code(t.value, loops)}) ? ${JSON.stringify(t.name)} : ''`)];
-      attrs.push({ name: 'class', method: expr(`[${parts.join(', ')}].filter((c) => !!c).join(' ')`, loops) });
+      attrs.push({ name: 'class', method: expr(`${fromRuntime('ngClassNames')}(${JSON.stringify(base)}, null, [${pairs.join(', ')}])`, loops) });
       return null;
     }
     if (n.inputs.some((i) => i.name === 'class' && i.type === ng.BindingType.Property)) throw new Error(`${path}: [class] beside [ngClass] on <${n.name}> is not supported in a release build yet`);
     const value = ngClass instanceof ng.TmplAstBoundAttribute ? code(ngClass.value, loops) : JSON.stringify(ngClass.value);
-    const pairs = toggles.flatMap((t) => [JSON.stringify(t.name), `(${code(t.value, loops)})`]);
     if (selectors.has(n.name)) {
       attrs.push({ name: 'class', method: expr(`${fromRuntime('ngClassNames')}(${JSON.stringify(base)}, ${value}, [${pairs.join(', ')}])`, loops) });
       return null;
@@ -450,10 +449,16 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
     };
   };
   /**
-   * `[ngStyle]` as the runtime's NgStyle directive on the element. A static `style` moves into it, set before NgStyle's
+   * `[ngStyle]`, or an element's `[style.x]` bindings as one NgStyle object (each set by the renderer's setStyle, removed
+   * when null), as the runtime's NgStyle directive on the element. A static `style` moves into the first, set before its
    * first styles, as Angular sets the attribute when it makes the element.
    */
-  const ngStyleUse = (b: ng.TmplAstBoundAttribute, attrs: Attr[], loops: Loop[]): DirectiveUse => {
+  const styleBindings = (n: ng.TmplAstElement) => n.inputs.filter((i) => i.type === ng.BindingType.Style && i.name !== 'style');
+  // Angular's parser namespaces a bound CSS variable (`--%NS%gap`) for view encapsulation, which NativeScript's styles don't have.
+  const styleKey = (i: ng.TmplAstBoundAttribute) => JSON.stringify(i.name.replace(/^--%NS%/, '--') + (i.unit ? `.${i.unit}` : ''));
+  const styleBindingsUse = (bound: ng.TmplAstBoundAttribute[], attrs: Attr[], loops: Loop[]): DirectiveUse =>
+    ngStyleUse(bound[0], `{ ${bound.map((i) => `${styleKey(i)}: (${code(i.value, loops)})`).join(', ')} }`, attrs, loops);
+  const ngStyleUse = (b: ng.TmplAstBoundAttribute, value: string, attrs: Attr[], loops: Loop[]): DirectiveUse => {
     at(b.sourceSpan);
     const alias = fromRuntime('NgStyle');
     usesUnset = true;
@@ -464,7 +469,7 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
     return {
       name,
       make: expr(`new ${alias}($unsetValue)`, loops),
-      inputs: [{ set: handlerOf(`${name}.apply($v)`, [...inner, { item: '$v', param: '$v: any' }]), method: expr(`[${code(b.value, loops)}] as any[]`, loops, true) }],
+      inputs: [{ set: handlerOf(`${name}.apply($v)`, [...inner, { item: '$v', param: '$v: any' }]), method: expr(`[${value}] as any[]`, loops, true) }],
       listeners: [],
       bindings: [],
       attributes,
@@ -548,15 +553,10 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
         for (const a of n.attributes) if (STUB_LAYOUT_ATTRS.has(a.name)) attrs.push({ name: a.name, value: a.value });
         const classed = classAttr(n, attrs, loops, n.inputs.find((i) => i.name === 'ngClass' && i.type === ng.BindingType.Property) ?? n.attributes.find((a) => a.name === 'ngClass'));
         const styled = n.inputs.find((i) => i.name === 'ngStyle' && i.type === ng.BindingType.Property);
-        const stubDirectives = [...(classed ? [classed] : []), ...(styled ? [ngStyleUse(styled, attrs, loops)] : [])];
+        const stubDirectives = [...(classed ? [classed] : []), ...(styled ? [ngStyleUse(styled, code(styled.value, loops), attrs, loops)] : [])];
+        if (styleBindings(n).length) stubDirectives.push(styleBindingsUse(styleBindings(n), attrs, loops));
         for (const i of n.inputs) {
-          if (i.type === ng.BindingType.Class) continue;
-          if (i.type === ng.BindingType.Style && i.name !== 'style') {
-            at(i.sourceSpan);
-            const v = code(i.value, loops);
-            attrs.push({ name: i.name, method: expr(i.unit ? `((${v}) == null ? (${v}) : \`\${${v}}${i.unit}\`)` : v, loops, true) });
-            continue;
-          }
+          if (i.type === ng.BindingType.Class || i.type === ng.BindingType.Style) continue;
           if ((i.type === ng.BindingType.Property || i.type === ng.BindingType.Attribute) && STUB_LAYOUT_ATTRS.has(i.name)) {
             at(i.sourceSpan);
             const root = i.value instanceof ng.ASTWithSource ? i.value.ast : i.value;
@@ -625,7 +625,8 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
         });
         refuseUnbound(n, (name) => found.some((d) => d.inputs.has(name)) || !!hosted?.inputs.has(name) || !!hosted?.outputs.has(name) || (name === 'ngClass' && !!ngClass) || (name === 'ngStyle' && !!ngStyle));
         if (ngClassUse) directives.push(ngClassUse);
-        if (ngStyle) directives.push(ngStyleUse(ngStyle, attrs, loops));
+        if (ngStyle) directives.push(ngStyleUse(ngStyle, code(ngStyle.value, loops), attrs, loops));
+        if (!selectors.has(n.name) && styleBindings(n).length) directives.push(styleBindingsUse(styleBindings(n), attrs, loops));
         if (!selectors.has(n.name) && !hosted) {
           const ref = n.references.find((r) => r.value);
           if (ref) throw new Error(`${path}: #${ref.name}="${ref.value}" on <${n.name}>, a reference to a directive's exportAs, is not supported in a release build yet`);
@@ -637,12 +638,7 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
             hostProps.push({ name: i.name, method: expr(code(i.value, loops), loops) });
             continue;
           }
-          // `[style.fontSize.px]`: the renderer's setStyle, `view.style[name] = value`, the unit appended to a value that is there.
-          if (i.type === ng.BindingType.Style && i.name !== 'style' && !selectors.has(n.name)) {
-            const v = code(i.value, loops);
-            attrs.push({ name: i.name, method: expr(i.unit ? `((${v}) == null ? (${v}) : \`\${${v}}${i.unit}\`)` : v, loops, true) });
-            continue;
-          }
+          if (i.type === ng.BindingType.Style && i.name !== 'style' && !selectors.has(n.name)) continue;
           // `[attr.name]`: the renderer's setAttribute, which on a NativeScript view sets the property of that name.
           if (i.type === ng.BindingType.Attribute && !selectors.has(n.name)) {
             attrs.push({ name: i.name, method: expr(code(i.value, loops), loops, true) });
