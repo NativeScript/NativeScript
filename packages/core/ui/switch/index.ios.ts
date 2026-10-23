@@ -60,6 +60,9 @@ export class Switch extends SwitchBase {
 
 	private setNativeBackgroundColor(value: UIColor | Color) {
 		const native = this.nativeViewProtected;
+		if (!native) {
+			return;
+		}
 		if (value) {
 			const nativeValue = value instanceof Color ? value.ios : value;
 			// Keep the legacy behavior for on/off colors
