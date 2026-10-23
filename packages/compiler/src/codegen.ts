@@ -139,7 +139,8 @@ export function render(c: ComponentIR, components: Map<string, ComponentInfo>, t
    * inputs, ngOnChanges, ngOnInit and host bindings applied with the template's bindings, in that order, its host
    * listeners on the view, and its ngAfterViewInit once the template is made.
    */
-  const directed = (depth: number, uses: DirectiveUse[] | undefined, loops: Loop[], v: string) => {
+  const directed = (depth: number, uses: DirectiveUse[] | undefined, outer: Loop[], v: string): Loop[] => {
+    let loops = outer;
     for (const u of uses ?? []) {
       const dv = `d${n++}`;
       const made = call(u.make, loops);
@@ -156,9 +157,12 @@ export function render(c: ComponentIR, components: Map<string, ComponentInfo>, t
       if (u.init) binding(depth, run(u.init));
       for (const b of u.bindings) binding(depth, `Check({ ${call(b.method, inner)} }) { ${v}.kitSet(${swiftString(b.prop)}, $0) }`);
       for (const l of u.listeners) listener(depth, `${v}.kitOn(${swiftString(l.event)}) { ${captures}event in ${handler(l.method, call(l.method, inner, ['event']))} }`);
+      for (const o of u.outputs ?? []) listener(depth, `${dv}.${o.name}.subscribe { ${captures}(event: Any?) in ${handler(o.method, call(o.method, inner, ['event']))} }`);
       if (u.afterViewInit && templates.length) templates.at(-1)!.after.push({ depth, text: run(u.afterViewInit) });
       else if (u.afterViewInit) say(depth, run(u.afterViewInit));
+      if (u.exposed) loops = inner;
     }
+    return loops;
   };
 
   /** An Angular view query's field set to what a node made (its view, or the component made there), and cleared when it goes. */
@@ -171,8 +175,11 @@ export function render(c: ComponentIR, components: Map<string, ComponentInfo>, t
   };
 
   /** Emits the nodes into the container `parent`; returns the views made at this level when `collect` is set. */
-  const emit = (nodes: TNode[], depth: number, loops: Loop[], parent: string | null, collect: string[] | null, region: string | null = null) => {
+  const emit = (nodes: TNode[], depth: number, outer: Loop[], parent: string | null, collect: string[] | null, region: string | null = null) => {
+    // A directive an element exposes is in scope for the nodes after the element.
+    let scope = outer;
     for (const node of nodes) {
+      const loops = scope;
       if (node.kind === 'local') {
         const l = `l${n++}`;
         say(depth, `let ${l} = ${call(node.make, loops)}`);
@@ -193,21 +200,22 @@ export function render(c: ComponentIR, components: Map<string, ComponentInfo>, t
           if (c.host && !parent && !region && !loops.length) say(depth, `self.${ident(c.host)}.attach(${v})`);
           if (node.ref) say(depth, `${call(node.ref, loops)}.current = ${v}`);
           queried(depth, node.queries, loops, v, v);
-          directed(depth, node.directives, loops, v);
+          const own = directed(depth, node.directives, loops, v);
+          scope = own;
           const isList = TEMPLATE_HOSTS.has(node.tag);
           const props = () => {
-            for (const a of node.attrs) if (!isList || !LIST_BINDINGS.has(a.name)) attr(depth, v, a, loops);
+            for (const a of node.attrs) if (!isList || !LIST_BINDINGS.has(a.name)) attr(depth, v, a, own);
             for (const e of node.events) {
-              const listen = `${v}.kitOn(${swiftString(e.name)}) { ${captures}event in ${handler(e.method, call(e.method, loops, ['event']))} }`;
-              const guarded = e.when ? `if ${cond(e.when, loops)} { ${listen} }` : listen;
+              const listen = `${v}.kitOn(${swiftString(e.name)}) { ${captures}event in ${handler(e.method, call(e.method, own, ['event']))} }`;
+              const guarded = e.when ? `if ${cond(e.when, own)} { ${listen} }` : listen;
               listener(depth, e.ifPassed ? `if self._passed.contains(${swiftString(e.ifPassed)}) { ${guarded} }` : guarded);
             }
           };
           if (isList || !postOrder) props();
           attach(depth, v, parent, region, 'created');
           if (node.init && c.init) say(depth, reported(c.init, `${throws(c.init) ? 'try ' : ''}self.${ident(c.init)}()`));
-          if (isList) list(node, depth, loops, v);
-          else emit(node.children, depth, loops, v, null);
+          if (isList) list(node, depth, own, v);
+          else emit(node.children, depth, own, v, null);
           if (!isList && postOrder) props();
         } else {
           const info = components.get(node.name);

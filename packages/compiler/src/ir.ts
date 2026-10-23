@@ -58,6 +58,13 @@ export interface DirectiveUse {
   afterViewInit?: string;
   /** It implements ngOnChanges: its inputs record their changes, flushed by one check after them. */
   changes?: boolean;
+  /** Its outputs (`ngModelChange`): the handler each event of the directive's emitter of that name runs, as a listener. */
+  outputs?: { name: string; method: string }[];
+  /**
+   * The template's code after it reads it by its name (a template reference, a forms directive below it): the
+   * directives made after it on the element, the element's bindings and events, its children and the nodes after it.
+   */
+  exposed?: boolean;
 }
 
 export type TNode =

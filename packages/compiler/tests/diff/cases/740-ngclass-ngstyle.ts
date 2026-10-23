@@ -31,12 +31,21 @@ function ngClassNames(base: string, value: any, toggles: any[]): string {
   return names.filter((_, k) => enabled[k]).join(' ');
 }
 
+/** The classes @nativescript/angular's renderer keeps for a view: an ordered set on the view, shared with the forms runtime's ng-* classes. */
+function viewClasses(view: any): Map<string, boolean> {
+  if (!view.ngCssClasses) {
+    const classes = new Map<string, boolean>();
+    for (const name of String(view.className ?? '').split(/\s+/)) if (name) classes.set(name, true);
+    view.ngCssClasses = classes;
+  }
+  return view.ngCssClasses;
+}
+
 class NgClass {
   private readonly view: any;
   constructor(view: any) {
     this.view = view;
   }
-  private classes: string[] = [];
   private started = false;
   private names: string[] = [];
   private enabled: boolean[] = [];
@@ -51,8 +60,10 @@ class NgClass {
     const statics = base.trim().split(/\s+/).filter((c) => !!c);
     if (!this.started) {
       this.started = true;
-      this.classes = statics.slice();
-      this.view.className = this.classes.join(' ');
+      const classes = new Map<string, boolean>();
+      for (const name of statics) classes.set(name, true);
+      this.view.ngCssClasses = classes;
+      this.view.className = Array.from(classes.keys()).join(' ');
     }
     for (const name of statics) this.update(name, true);
     if (typeof value === 'string') {
@@ -109,11 +120,11 @@ class NgClass {
   private toggle(written: string, on: boolean): void {
     for (const name of written.trim().split(/\s+/)) {
       if (!name) continue;
-      const at = this.classes.indexOf(name);
-      if (on === at >= 0) continue;
-      if (on) this.classes.push(name);
-      else this.classes.splice(at, 1);
-      this.view.className = this.classes.join(' ');
+      const classes = viewClasses(this.view);
+      if (on === classes.has(name)) continue;
+      if (on) classes.set(name, true);
+      else classes.delete(name);
+      this.view.className = Array.from(classes.keys()).join(' ');
     }
   }
 }
