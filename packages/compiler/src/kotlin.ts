@@ -441,6 +441,8 @@ export class Translator implements AsyncTranslator {
           }
           // `implements TKUnit.TestInfoEntry`: the interface by its own name, as its module declares it.
           for (const i of implementedInterfaces(this.checker, n)) this.protocols.add(ts.isPropertyAccessExpression(i.expression) ? i.expression.name.text : i.expression.getText());
+          // @angular/forms' controls, read untyped as often as typed (`form.get('name').value`): their accessors by name too.
+          if (f.fileName.endsWith('/runtime/angular-forms.ts')) this.readByName.add(n);
         }
         if (!this.library) {
           const given = ts.isCallExpression(n) || ts.isNewExpression(n) ? n.arguments ?? [] : ts.isVariableDeclaration(n) && n.type && n.initializer ? [n.initializer]
@@ -641,7 +643,8 @@ export class Translator implements AsyncTranslator {
       return el.flags & F.Never || (this.lenient && el.flags & (F.Undefined | F.Null)) ? 'JSArray<Any?>' : `JSArray<${this.type(el, where)}>`;
     }
     if (isRegExpProtocol(t)) return 'JSRegExp';
-    const sym = t.aliasSymbol ?? t.getSymbol();
+    // An alias of a class's type (`type UntypedFormGroup = FormGroup<any>`) is that class.
+    const sym = t.aliasSymbol && !((t.getSymbol()?.flags ?? 0) & ts.SymbolFlags.Class && t.aliasSymbol.flags & ts.SymbolFlags.TypeAlias && !(t.aliasSymbol.flags & ts.SymbolFlags.Class)) ? t.aliasSymbol : t.getSymbol();
     if (sym?.declarations?.some((d) => IOS_TYPINGS.test(d.getSourceFile().fileName))) return 'Any?';
     // An Angular component class as a value (`typeof SheetComponent`) is what creating and rendering it gives.
     const classDecl = sym?.valueDeclaration;
@@ -691,10 +694,6 @@ export class Translator implements AsyncTranslator {
       case 'OutputEmitterRef': case 'EventEmitter': return `Emitter<${arg(0)}>`;
       case 'RouterExtensions': return 'Router';
       case 'EnvironmentInjector': if (sym?.declarations?.[0]?.getSourceFile().fileName.startsWith('/__shims__/')) return 'Injector'; break;
-      case 'UntypedFormControl': if (sym?.declarations?.[0]?.getSourceFile().fileName.startsWith('/__shims__/')) return 'FormControl'; break;
-      case 'UntypedFormGroup': if (sym?.declarations?.[0]?.getSourceFile().fileName.startsWith('/__shims__/')) return 'FormGroup'; break;
-      case 'UntypedFormArray': if (sym?.declarations?.[0]?.getSourceFile().fileName.startsWith('/__shims__/')) return 'FormArray'; break;
-      case 'UntypedFormBuilder': case 'NonNullableFormBuilder': if (sym?.declarations?.[0]?.getSourceFile().fileName.startsWith('/__shims__/')) return 'FormBuilder'; break;
       // kit-android's NativeDialogService takes its config as script gives it.
       case 'NativeDialogConfig': if (sym?.declarations?.[0]?.getSourceFile().fileName.startsWith('/__shims__/')) return 'Any?'; break;
       // `Promise.allSettled`'s results are the plain objects it makes (either of them, a union, is untyped).
@@ -703,7 +702,6 @@ export class Translator implements AsyncTranslator {
       case 'RxSubscription': case 'NavigationEnd': case 'NavigationStart': case 'NavigationCancel': case 'NavigationError': case 'RoutesRecognized': case 'ResolveStart': case 'ResolveEnd':
       case 'HttpParams': case 'HttpHeaders': case 'HttpResponse': case 'HttpErrorResponse': case 'HttpRequest': case 'HttpContext': case 'HttpContextToken':
       case 'ParamMap': case 'UrlSegment': case 'UrlTree': case 'DefaultUrlSerializer': case 'ActivatedRouteSnapshot':
-      case 'FormControl': case 'FormGroup': case 'FormArray': case 'FormBuilder': case 'Validators': case 'AbstractControl':
       case 'ViewContainerRef': case 'TemplateRef': case 'ComponentRef': case 'EmbeddedViewRef': case 'ApplicationRef': case 'Location':
         if (sym?.declarations?.[0]?.getSourceFile().fileName.startsWith('/__shims__/')) return name;
         break;
@@ -2599,6 +2597,8 @@ export class Translator implements AsyncTranslator {
     if (!decl || !ts.isClassDeclaration(decl) || decl.getSourceFile().isDeclarationFile) return false;
     const fn = decl.getSourceFile().fileName;
     if (fn.endsWith('/runtime/angular-rx.ts') || fn.endsWith('/runtime/angular.ts')) return true;
+    // @angular/forms' builders: services whose root instance is their static `shared`.
+    if (fn.endsWith('/runtime/angular-forms.ts')) return decl.members.some((m) => (ts.isPropertyDeclaration(m) || ts.isGetAccessorDeclaration(m)) && isStatic(m) && m.name.getText() === 'shared');
     if (this.pluginFiles.has(fn)) return false;
     return (ts.getDecorators(decl) ?? []).some((d) => /^Injectable\b/.test(d.expression.getText()));
   }
@@ -2619,7 +2619,7 @@ export class Translator implements AsyncTranslator {
     if (injectArg && ts.isCallExpression(injectArg) && injectArg.expression.getText() === 'forwardRef' && injectArg.arguments[0] && (ts.isArrowFunction(injectArg.arguments[0]) || ts.isFunctionExpression(injectArg.arguments[0])) && !ts.isBlock(injectArg.arguments[0].body)) {
       injectArg = injectArg.arguments[0].body;
     }
-    const builtins = ['RouterExtensions', 'ActivatedRoute', 'Page', 'DestroyRef', 'ChangeDetectorRef', 'ElementRef', 'NativeDialogRef', 'NativeDialogService', 'Router', 'HttpClient', 'Injector', 'EnvironmentInjector', 'NgZone', 'ErrorHandler', 'FormBuilder', 'UntypedFormBuilder', 'NonNullableFormBuilder', 'Location', 'ViewContainerRef', 'ApplicationRef'];
+    const builtins = ['RouterExtensions', 'ActivatedRoute', 'Page', 'DestroyRef', 'ChangeDetectorRef', 'ElementRef', 'NativeDialogRef', 'NativeDialogService', 'Router', 'HttpClient', 'Injector', 'EnvironmentInjector', 'NgZone', 'ErrorHandler', 'Location', 'ViewContainerRef', 'ApplicationRef'];
     if (injectArg) {
       const target = ts.isExpressionWithTypeArguments(injectArg) ? injectArg.expression : injectArg;
       const token = this.tokenName(target);
@@ -2778,6 +2778,8 @@ export class Translator implements AsyncTranslator {
         continue;
       }
       if (ts.isMethodDeclaration(m)) {
+        // An overload's signature: Kotlin's one function is the implementation's.
+        if (!m.body) continue;
         this.templateParams = /^\$[be]\d+$/.test(m.name.getText());
         try { lines.push('    ' + this.func(m, ident((m.name as ts.Identifier).text))); } finally { this.templateParams = false; }
         continue;
@@ -2912,6 +2914,8 @@ export class Translator implements AsyncTranslator {
     const implemented = implementedInterfaces(this.checker, cls).filter((i) => !isLibDeclaration(this.checker.getTypeAtLocation(i).getSymbol()?.declarations?.[0]))
       // Library mode: an interface only a declaration file has is no Kotlin interface.
       .filter((i) => !this.library || !(this.checker.getTypeAtLocation(i).getSymbol()?.declarations ?? []).every((d) => d.getSourceFile().isDeclarationFile))
+      // What an app implements of @angular/forms (`Validator`) is called untyped: no Kotlin interface.
+      .filter((i) => !(this.checker.getTypeAtLocation(i).getSymbol()?.declarations ?? []).every((d) => d.getSourceFile().fileName === '/__shims__/_angular#forms.d.ts'))
       // The generated kit: an interface core declares that the kit has no type for (`TraceWriter`, which core holds untyped).
       .filter((i) => !this.generatedKit || !isCoreDeclaration(this.checker.getTypeAtLocation(i).getSymbol()?.declarations?.[0]) || !!this.core?.has(ts.isPropertyAccessExpression(i.expression) ? i.expression.name.text : i.expression.getText()))
       // An interface the class's signatures cannot meet is left out; untyped parameters meet it through a witness.
@@ -6516,10 +6520,14 @@ export class Translator implements AsyncTranslator {
       ? this.fieldIn(this.checker.getNonNullableType(this.checker.getTypeAtLocation(target)), name) ?? this.compiledField(this.checker.getNonNullableType(this.checker.getTypeAtLocation(target)), name) : undefined;
     // Library mode: a field of a generic class (`Property<T, U>.defaultValue`), its type parameters erased: read as this use's type.
     // So is any field compiled untyped that this read types (`Style.fontStyle`, a union of strings and an enum's).
-    const erased = this.library && symbol?.valueDeclaration && ts.isPropertyDeclaration(symbol.valueDeclaration) && !symbol.valueDeclaration.getSourceFile().isDeclarationFile
-      && ts.isClassLike(symbol.valueDeclaration.parent) && !isWriteTarget(e)
-      && this.typeOf(symbol.valueDeclaration.name) === 'Any?' && this.typeOf(e) !== 'Any?';
-    if (erased) return this.fromAnyCode(`${recv()}${dot}${ident(name)}`, this.typeOf(e), true);
+    // So is a field or getter of a package's source (`FormGroup.controls`) read outside it, its class's type parameters erased.
+    const vd = symbol?.valueDeclaration;
+    const packageMember = !this.library && !!vd && (ts.isPropertyDeclaration(vd) || ts.isGetAccessorDeclaration(vd)) && this.pluginFiles.has(vd.getSourceFile().fileName) && !this.pluginFiles.has(e.getSourceFile().fileName);
+    const erased = (this.library || packageMember) && vd && (ts.isPropertyDeclaration(vd) || (packageMember && ts.isGetAccessorDeclaration(vd))) && !vd.getSourceFile().isDeclarationFile
+      && ts.isClassLike(vd.parent) && !isWriteTarget(e)
+      && this.typeOf(vd.name) === 'Any?' && this.typeOf(e) !== 'Any?';
+    // A package's record or array is read as script reads it, a plain object shared rather than refused.
+    if (erased) return packageMember && /^JS(Record|Array)</.test(this.typeOf(e)) ? this.fromAny(`${recv()}${dot}${ident(name)}`, this.typeOf(e)) : this.fromAnyCode(`${recv()}${dot}${ident(name)}`, this.typeOf(e), true);
     // Library mode: a member core's declarations give a class whose compiled code has none (`Transition.androidFragmentTransactionCallback`,
     // its subclasses'): read by name.
     const describedClass = this.library && symbol?.valueDeclaration?.getSourceFile().isDeclarationFile && !isLibDeclaration(symbol.valueDeclaration) && !this.native?.isNativeDeclaration(symbol.valueDeclaration)
@@ -6903,7 +6911,9 @@ export class Translator implements AsyncTranslator {
       // Library mode: a generic function's parameter is its declaration's Kotlin type, the type parameters erased.
       // So is any parameter whose type reads otherwise here (an alias of a union resolving apart at the call).
       const generic = this.library && appDeclared && decl && ts.isParameter(decl) && (!!(decl.parent as ts.SignatureDeclaration).typeParameters?.length || (ts.isClassLike(decl.parent.parent) && !!decl.parent.parent.typeParameters?.length) || pt === 'Any?');
-      if (generic) pt = this.typeOf((decl as ts.ParameterDeclaration).name);
+      // So is a parameter of a package's source called from outside it (`new FormArray(controls)`), its class's type parameters erased.
+      const packageParam = !this.library && !!decl && ts.isParameter(decl) && this.pluginFiles.has(decl.getSourceFile().fileName) && !this.pluginFiles.has(e.getSourceFile().fileName);
+      if (generic || packageParam) pt = this.typeOf((decl as ts.ParameterDeclaration).name);
       // Library mode: an override's parameter is the topmost declaration's, which Kotlin's signature has (`appOverride`).
       const root = this.library && decl && ts.isParameter(decl) && ts.isMethodDeclaration(decl.parent) ? this.rootMethod(decl.parent) : null;
       if (root && root !== decl.parent && root.parameters[k] && !root.parameters[k].dotDotDotToken) pt = this.paramType(root.parameters[k]);
@@ -6924,6 +6934,9 @@ export class Translator implements AsyncTranslator {
       // Library mode: a value a library collection holds (`cache.set(key, result)` with a null result), as script stores it.
       if (this.library && decl && isLibDeclaration(decl) && this.isObjectType(pt) && !isNullable(pt) && !['String', 'Double', 'Boolean'].includes(pt) && !isFunctionType(pt)
           && (isNullable(this.declaredTypeOf(a) ?? this.typeOf(a)) || this.maybeUndefined(a))) { out.push(`jsUnchecked<${pt}>(${this.coerce(a, optionalType(pt))})`); continue; }
+      // An object or a record of other values where a package's parameter takes a record of any: as script passes it.
+      const record = packageParam ? /^JSRecord<(.*)>(\??)$/.exec(pt) : null;
+      if (record && this.typeOf(a).replace(/\?$/, '') !== pt.replace(/\?$/, '')) { out.push(`${record[2] ? 'jsRecordOrNull' : 'jsRecord'}<${record[1]}>(${this.expr(a)})`); continue; }
       out.push(this.coerce(a, pt));
     }
     if (restAt >= 0 && appDeclared && list.length <= restAt) out.push(`${this.typeOf((params[restAt].valueDeclaration as ts.ParameterDeclaration).name)}()`);
@@ -7538,7 +7551,7 @@ export class Translator implements AsyncTranslator {
       const token = this.tokenName(target);
       if (token === 'NATIVE_DIALOG_DATA') return this.fromAny('NativeDialogRef.current.data', this.typeOf(e));
       const tokenDecl = this.resolve(target)?.declarations?.[0];
-      const builtin = ['RouterExtensions', 'ActivatedRoute', 'Page', 'DestroyRef', 'ChangeDetectorRef', 'ElementRef', 'NativeDialogRef', 'NativeDialogService', 'Router', 'HttpClient', 'Injector', 'EnvironmentInjector', 'NgZone', 'ErrorHandler', 'FormBuilder', 'UntypedFormBuilder', 'NonNullableFormBuilder', 'Location', 'ViewContainerRef', 'ApplicationRef'].includes(token);
+      const builtin = ['RouterExtensions', 'ActivatedRoute', 'Page', 'DestroyRef', 'ChangeDetectorRef', 'ElementRef', 'NativeDialogRef', 'NativeDialogService', 'Router', 'HttpClient', 'Injector', 'EnvironmentInjector', 'NgZone', 'ErrorHandler', 'Location', 'ViewContainerRef', 'ApplicationRef'].includes(token);
       const appService = this.isInjectableClass(tokenDecl);
       if (builtin || appService) return injected(token);
       const raw = `Injector.inject(${this.coerce(rawArg0, 'Any?')}${arg(1) ? `, ${this.coerce(arg(1), 'Any?')}` : ''})`;
@@ -9985,7 +9998,6 @@ function injected(token: string): string {
   switch (token) {
     case 'RouterExtensions': return 'Router.shared';
     case 'EnvironmentInjector': return 'Injector.shared';
-    case 'UntypedFormBuilder': case 'NonNullableFormBuilder': return 'FormBuilder.shared';
     case 'ActivatedRoute': return 'ActivatedRoute.current';
     case 'Page': return 'injectedPage()';
     case 'DestroyRef': return 'DestroyRef.current()';
