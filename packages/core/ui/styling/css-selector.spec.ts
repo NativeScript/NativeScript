@@ -347,6 +347,29 @@ describe('css-selector', () => {
 		}
 	});
 
+	describe(':root', () => {
+		it('matches the root view and modal root views', () => {
+			const sel = createSelector(':root');
+
+			expect(sel.match(<any>{ cssType: 'frame', cssClasses: new Set(['ns-root', 'ns-ios']) })).toBe(true);
+			expect(sel.match(<any>{ cssType: 'page', cssClasses: new Set(['ns-modal']) })).toBe(true);
+			expect(sel.match(<any>{ cssType: 'label', cssClasses: new Set(['title']) })).toBe(false);
+			expect(sel.match(<any>{ cssType: 'label' })).toBe(false);
+		});
+
+		it('has the specificity of a class', () => {
+			expect(createSelector(':root').specificity).toBe(createSelector('.ns-root').specificity);
+		});
+
+		it('scopes descendants', () => {
+			const sel = createSelector(':root label');
+			const root = { cssType: 'frame', cssClasses: new Set(['ns-root']) };
+
+			expect(sel.match(<any>{ cssType: 'label', parent: root })).toBe(true);
+			expect(sel.match(<any>{ cssType: 'label', parent: { cssType: 'stacklayout' } })).toBe(false);
+		});
+	});
+
 	describe('attribute selectors', () => {
 		class Widget {
 			public cssType = 'widget';

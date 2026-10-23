@@ -1207,6 +1207,18 @@ export class StyleScope {
 		return !!applicationSelectorScope?.hasSiblingCombinatorSelectors || !!this._localSelectorScope?.hasSiblingCombinatorSelectors;
 	}
 
+	get hasNextSiblingSelectors(): boolean {
+		this.ensureSelectors();
+
+		return !!applicationSelectorScope?.hasNextSiblingSelectors || !!this._localSelectorScope?.hasNextSiblingSelectors;
+	}
+
+	get hasFollowingSiblingSelectors(): boolean {
+		this.ensureSelectors();
+
+		return !!applicationSelectorScope?.hasFollowingSiblingSelectors || !!this._localSelectorScope?.hasFollowingSiblingSelectors;
+	}
+
 	/**
 	 * Increase the application CSS selector version.
 	 */
