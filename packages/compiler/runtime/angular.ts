@@ -1,8 +1,10 @@
 // The Angular runtime a compiled template uses, written once for both backends: @angular/common's pipes, which the
 // template compiler creates one of per pipe in a template, as Angular's does, and calls as Angular calls them (a pure
-// pipe only when an argument changed), and @angular/core's QueryList. The pipes' output is Angular's for the `en-US`
-// locale, the only one a compiled release has: the formatting follows @angular/common's formatDate and formatNumber,
-// with en-US's locale data.
+// pipe only when an argument changed), NgClass and NgStyle, and @angular/core's QueryList. The pipes' output is
+// Angular's for the `en-US` locale, the only one a compiled release has: the formatting follows @angular/common's
+// formatDate and formatNumber, with en-US's locale data.
+import { ElementRef, inject } from '@angular/core';
+
 /** Angular's NG02100 error, as `invalidPipeArgumentError` words it. */
 function invalidPipeArgument(pipe: string, value: unknown): Error {
   return new Error(`NG02100: InvalidPipeArgument: '${value}' for pipe '${pipe}'`);
@@ -536,6 +538,194 @@ export class KeyValuePipe {
       this.compareFn = compareFn;
     }
     return this.keyValues;
+  }
+}
+
+/**
+ * The className NgClass gives a component's root view, which has no renderer of its own here: its static classes, then
+ * each class NgClass's value names (a string or array of names, a Set, or an object mapping names to conditions), then
+ * each `[class.x]` whose value is not undefined. A later entry decides a class an earlier one named. `toggles`
+ * alternates a `[class.x]` binding's class name and its value.
+ */
+export function ngClassNames(base: string, value: any, toggles: any[]): string {
+  const names: string[] = [];
+  const enabled: boolean[] = [];
+  const decide = (written: string, on: boolean) => {
+    for (const name of written.trim().split(/\s+/)) {
+      if (!name) continue;
+      const at = names.indexOf(name);
+      if (at < 0) {
+        names.push(name);
+        enabled.push(on);
+      } else enabled[at] = on;
+    }
+  };
+  decide(base, true);
+  if (typeof value === 'string') decide(value, true);
+  else if (Array.isArray(value) || value instanceof Set) {
+    const listed: any = value;
+    for (const name of listed) {
+      if (typeof name !== 'string') throw new Error(`NgClass can only toggle CSS classes expressed as strings, got ${name}`);
+      decide(name, true);
+    }
+  } else if (value != null && typeof value === 'object') {
+    for (const key of Object.keys(value)) decide(key, !!value[key]);
+  }
+  for (let k = 0; k + 1 < toggles.length; k += 2) if (toggles[k + 1] !== undefined) decide(String(toggles[k]), !!toggles[k + 1]);
+  return names.filter((_, k) => enabled[k]).join(' ');
+}
+
+/**
+ * @angular/common's NgClass on an element's view, beside its static classes and `[class.x]` bindings, changing the view's
+ * classes one at a time as @nativescript/angular's renderer does (each add or remove sets className): one className
+ * swapping several classes at once can leave a removed class's background behind. Each apply takes the static classes,
+ * NgClass's value (a string or array of names, a Set, or an object mapping names to conditions) and the `[class.x]`
+ * bindings (a class name and its value, alternating). NgClass removes only a class it named; a `[class.x]` changes its
+ * class when its value changes, an undefined one deferring to the static classes.
+ */
+export class NgClass {
+  private readonly view: any = inject(ElementRef).nativeElement;
+  private classes: string[] = [];
+  private started = false;
+  private names: string[] = [];
+  private enabled: boolean[] = [];
+  private changed: boolean[] = [];
+  private touched: boolean[] = [];
+  private toggled: any[] = [];
+
+  apply(input: any[]): void {
+    const base = String(input[0]);
+    const value: any = input[1];
+    const toggles: any = input[2];
+    const statics = base.trim().split(/\s+/).filter((c) => !!c);
+    if (!this.started) {
+      this.started = true;
+      this.classes = statics.slice();
+      this.view.className = this.classes.join(' ');
+    }
+    for (const name of statics) this.update(name, true);
+    if (typeof value === 'string') {
+      for (const name of value.trim().split(/\s+/)) this.update(name, true);
+    } else if (Array.isArray(value) || value instanceof Set) {
+      const listed: any = value;
+      for (const name of listed) {
+        if (typeof name !== 'string') throw new Error(`NgClass can only toggle CSS classes expressed as strings, got ${name}`);
+        this.update(name, true);
+      }
+    } else if (value != null && typeof value === 'object') {
+      for (const key of Object.keys(value)) this.update(key, !!value[key]);
+    }
+    const names: string[] = [];
+    const enabled: boolean[] = [];
+    for (let k = 0; k < this.names.length; k++) {
+      if (this.changed[k]) this.toggle(this.names[k], this.enabled[k]);
+      else if (!this.touched[k]) {
+        if (this.enabled[k]) this.toggle(this.names[k], false);
+        continue;
+      }
+      names.push(this.names[k]);
+      enabled.push(this.enabled[k]);
+    }
+    this.names = names;
+    this.enabled = enabled;
+    this.changed = names.map(() => false);
+    this.touched = names.map(() => false);
+    for (let k = 0, t = 0; k + 1 < toggles.length; k += 2, t++) {
+      const name = String(toggles[k]);
+      const on = toggles[k + 1] === undefined ? statics.indexOf(name) >= 0 : !!toggles[k + 1];
+      if (this.toggled[t] === on) continue;
+      this.toggled[t] = on;
+      this.toggle(name, on);
+    }
+  }
+
+  private update(name: string, on: boolean): void {
+    const at = this.names.indexOf(name);
+    if (at < 0) {
+      this.names.push(name);
+      this.enabled.push(on);
+      this.changed.push(true);
+      this.touched.push(true);
+      return;
+    }
+    if (this.enabled[at] !== on) {
+      this.enabled[at] = on;
+      this.changed[at] = true;
+    }
+    this.touched[at] = true;
+  }
+
+  private toggle(written: string, on: boolean): void {
+    for (const name of written.trim().split(/\s+/)) {
+      if (!name) continue;
+      const at = this.classes.indexOf(name);
+      if (on === at >= 0) continue;
+      if (on) this.classes.push(name);
+      else this.classes.splice(at, 1);
+      this.view.className = this.classes.join(' ');
+    }
+  }
+}
+
+/** One style NgStyle sets: its key as written (`'width.px'`), the style it names, and the value with the unit appended. */
+export interface NgStyleEntry {
+  key: string;
+  name: string;
+  value: any;
+}
+
+/** NgStyle's value (an object or a Map of styles) as the styles it sets; a null or undefined style value removes the style. */
+export function ngStyleEntries(value: any): NgStyleEntry[] {
+  const entries: NgStyleEntry[] = [];
+  const add = (key: string, given: any) => {
+    const parts = key.split('.');
+    entries.push({ key, name: parts[0], value: given == null ? null : parts.length > 1 ? `${given}${parts[1]}` : given });
+  };
+  // Iterated untyped, and read so before `instanceof` narrows it: a Map of any key and value types.
+  const pairs: any = value;
+  if (value instanceof Map) {
+    for (const pair of pairs) add(String(pair[0]), pair[1]);
+  } else if (typeof value === 'object') {
+    for (const key of Object.keys(value)) add(key, value[key]);
+  } else throw new Error(`NgStyle takes an object or a Map of styles, got ${value}`);
+  return entries;
+}
+
+/**
+ * @angular/common's NgStyle on an element's view, set as @nativescript/angular's renderer sets a style: `view.style[name]`,
+ * a CSS variable (`--x`) through the style's unscoped variables. A key no longer given is removed, a style is set
+ * again only when its value changed, and a null or undefined value leaves the styles as they are.
+ */
+export class NgStyle {
+  private readonly view: any = inject(ElementRef).nativeElement;
+  private readonly unset: any;
+  private applied: NgStyleEntry[] = [];
+
+  /** `unset` is core's unsetValue, which the component passes: this module also runs under Node, where core doesn't load. */
+  constructor(unset: any) {
+    this.unset = unset;
+  }
+
+  /** `input` holds NgStyle's value, a new array on each read so that a value changed in place is applied again. */
+  apply(input: any[]): void {
+    const value: any = input[0];
+    if (value == null) return;
+    const entries = ngStyleEntries(value);
+    for (const old of this.applied) if (!entries.some((e) => e.key === old.key)) this.set(old.name, null);
+    for (const entry of entries) {
+      const at = this.applied.findIndex((e) => e.key === entry.key);
+      if (at < 0 || !Object.is(this.applied[at].value, entry.value)) this.set(entry.name, entry.value);
+    }
+    this.applied = entries;
+  }
+
+  private set(name: string, value: any): void {
+    const style = this.view.style;
+    if (name.startsWith('--')) {
+      if (value == null) style.unscopedCssVariables.delete(name);
+      else style.setUnscopedCssVariable(name, value);
+      this.view._onCssStateChange();
+    } else style[name] = value == null ? this.unset : value;
   }
 }
 
