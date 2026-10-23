@@ -2038,7 +2038,7 @@ export class Translator implements AsyncTranslator {
         if (target) { out.push(this.mixinDecl(st, target)); continue; }
         // Components are translated with their templates; other classes are services and models.
         // A component's class is written with its render function, in its own file.
-        const component = (ts.getDecorators(st) ?? []).some((d) => d.expression.getText().startsWith('Component')) || (!!st.name && this.components.has(st.name.text));
+        const component = this.isComponentClass(st);
         if (!component && st.name) {
           this.staticInits = [];
           try { out.push(this.classDecl(st)); } finally {
@@ -3175,7 +3175,13 @@ ${members.join('\n')}
     const decl = this.resolve(left.name)?.valueDeclaration;
     if (!decl || !(ts.isPropertyDeclaration(decl) || ts.isPropertySignature(decl) || ts.isSetAccessorDeclaration(decl) || ts.isGetAccessorDeclaration(decl))) return false;
     if (!ts.isClassLike(decl.parent) || isStatic(decl) || left.expression.kind === ts.SyntaxKind.SuperKeyword) return false;
+    // A component's class has no members by name: its fields are written typed.
+    if (ts.isClassDeclaration(decl.parent) && this.isComponentClass(decl.parent)) return false;
     return !decl.getSourceFile().isDeclarationFile || isCoreDeclaration(decl);
+  }
+
+  private isComponentClass(cls: ts.ClassDeclaration): boolean {
+    return (ts.getDecorators(cls) ?? []).some((d) => d.expression.getText().startsWith('Component')) || (!!cls.name && this.components.has(cls.name.text));
   }
 
   /** Lenient code: a setter without a getter given undefined runs with it, as the type's zero for a primitive. */

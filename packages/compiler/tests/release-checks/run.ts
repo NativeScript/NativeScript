@@ -681,6 +681,15 @@ export class Panel {
         check(/^\s*val _injector: NodeInjector = NodeInjector\.enter\(jsArrayOf<Any\?>\(Counter::class\.java, /.test(lines[0] ?? ''), 'each instance makes its injector first, from its providers (Kotlin)');
       }
     }
+    const field = join(dir, 'field.component.ts');
+    writeFileSync(field, "import { Component } from '@angular/core';\n@Component({ selector: 'Field', template: '<Label [text]=\"name\"></Label>' })\nexport class Field {\n  name = '';\n  take(value: any) { this.name = value; }\n}\n");
+    const fieldIr = angularComponent(field, readFileSync(field, 'utf8'), new Map())!;
+    const fieldProgram = createProgram([field], new Map([[field, fieldIr.source]]), 'ios', modulesDir);
+    const fieldSwift = new SwiftTranslator(fieldProgram.checker, new Map([['Field', { props: fieldIr.props, optional: fieldIr.optional }]]), fieldProgram.files);
+    translateModules(fieldSwift, fieldProgram.program, [field]);
+    const fieldCls = fieldProgram.program.getSourceFile(field)!.statements.filter(ts.isClassDeclaration).find((c) => c.name?.text === 'Field')!;
+    const fieldCode = fieldSwift.componentMembers(fieldCls, fieldIr.props).join('\n');
+    check(/self\.name = \S*\(value\)/.test(fieldCode) && !fieldCode.includes('jsSet(self'), "an untyped value written to a component's field is assigned to it, as a component has no members by name (Swift)");
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
