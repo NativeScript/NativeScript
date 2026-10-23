@@ -641,6 +641,19 @@ export class C { on = signal(true); w = signal(10); name = 'Ada'; }
   check(swift.includes('func render(into region: Region) throws'), 'a component rendering a fragment component renders into its parent region');
 }
 
+// ---- Zoneless Angular: a listener checks its view and the views above it ----
+{
+  const page = angularComponent('/app/status.component.ts', "import { Component } from '@angular/core';\n@Component({ selector: 'Status', template: `<StackLayout><Label [text]=\"status\"></Label><Badge [count]=\"taps\" (picked)=\"pick()\"></Badge><Button text=\"Go\" (tap)=\"go()\"></Button></StackLayout>` })\nexport class Status { status = 'idle'; taps = 0; go() { this.status = 'busy'; this.taps++; } pick() {} }\n", new Map([['Badge', 'Badge']]))!;
+  const infos = new Map([['Badge', { name: 'Badge', props: ['count'], outputs: ['picked'] }], ['Status', { name: 'Status', props: [] }]]);
+  for (const [backend, code] of [['Swift', render(page, infos, () => false, 'angular').join('\n')], ['Kotlin', renderKotlin(page, infos, { framework: 'angular' }).join('\n')]] as const) {
+    const effects = code.match(/^\s*Effect \{.*$/gm) ?? [];
+    check(!effects.length && (code.match(/Check\(\{ (self|this)\._b\d+\(\) \}\)/g) ?? []).length === 2, `a zoneless template's bindings, a view's and a component input's, are checks of its view, re-read when it is checked (${backend})`);
+    const listeners = code.split('\n').filter((l) => /\.kitOn\("tap"\)|\.on \{/.test(l));
+    const marks = backend === 'Swift' ? /\[__dv = EffectOrder\.current\.view\] .* in Reactivity\.event\(dirty: __dv\)/ : /^\s*EffectOrder\.current\.view\.let \{ __dv -> .* -> Reactivity\.event\(__dv\) \{/;
+    check(listeners.length === 2 && listeners.every((l) => marks.test(l)), `a zoneless template's listeners, a view's and a component output's, mark the view they were added in dirty (${backend})`);
+  }
+}
+
 // ---- Component providers: each instance of a component makes its own injector ----
 {
   const dir = mkdtempSync(join(tmpdir(), 'ns-release-checks-providers-'));
