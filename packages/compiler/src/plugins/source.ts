@@ -4,6 +4,7 @@ import { createHash } from 'node:crypto';
 import { cpSync, existsSync, mkdirSync, readFileSync, lstatSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { basename, dirname, join, relative, resolve, sep } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { releaseOptions } from '../app-resources.ts';
 
 /**
@@ -139,10 +140,17 @@ export function configuredOverrides(app: string, platform: 'ios' | 'android'): R
   }));
 }
 
+/**
+ * The compiler's own TypeScript modules (`runtime/`). Installed, they sit under the app's node_modules, below its
+ * tsconfig.json: they compile as written wherever the package is.
+ */
+export const COMPILER_RUNTIME = resolve(dirname(fileURLToPath(import.meta.url)), '../../runtime') + sep;
+
 const writtenStrictness = new Map<string, boolean>();
 
 /** Whether a source's own tsconfig (its `extends` followed) checks null: code written without it is translated as core is. */
 export function writtenStrict(file: string, strictness = writtenStrictness): boolean {
+  if (file.startsWith(COMPILER_RUNTIME)) return true;
   for (let dir = dirname(file); dirname(dir) !== dir; dir = dirname(dir)) {
     const config = join(dir, 'tsconfig.json');
     if (!existsSync(config)) continue;
