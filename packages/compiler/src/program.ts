@@ -931,8 +931,8 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
         for (const candidate of own ? [base + '.d.ts', base + '.ts'] : [`${base}.${platform}.ts`, base + '.ts', base + '.tsx', `${base}/index.${platform}.ts`, base + '/index.ts', base.endsWith('.vue') ? base + '.ts' : '']) {
           if (candidate && (files.has(candidate) || existsSync(candidate))) {
             if (candidate.endsWith('.d.ts')) return { resolvedModule: { resolvedFileName: candidate, extension: ts.Extension.Dts } };
-            // A plugin's own modules are compiled with it.
-            if (pluginFiles.has(containing)) pluginFiles.add(candidate);
+            // A plugin's own modules are compiled with it; the forms port is one however it is imported.
+            if (pluginFiles.has(containing) || candidate === ANGULAR_FORMS_FILE) pluginFiles.add(candidate);
             return { resolvedModule: { resolvedFileName: candidate, extension: candidate.endsWith('.tsx') ? ts.Extension.Tsx : ts.Extension.Ts } };
           }
         }

@@ -591,7 +591,8 @@ export abstract class AbstractControl<TValue = any, TRawValue extends TValue = T
   public readonly events: EventEmitter<ControlEvent<TValue>> = this._events;
   public readonly valueChanges: EventEmitter<TValue> = new EventEmitter<TValue>();
   public readonly statusChanges: EventEmitter<FormControlStatus> = new EventEmitter<FormControlStatus>();
-  _onDisabledChange: Array<(isDisabled: boolean) => void> = [];
+  // Held untyped: a callback is removed by identity, which a typed function array's element read loses on iOS.
+  _onDisabledChange: any[] = [];
 
   constructor(validators: ValidatorFn | ValidatorFn[] | null, asyncValidators: AsyncValidatorFn | AsyncValidatorFn[] | null) {
     this._assignValidators(validators);
@@ -629,7 +630,24 @@ export abstract class AbstractControl<TValue = any, TRawValue extends TValue = T
     return this._statusValue;
   }
   private _setStatus(v: FormControlStatus): void {
+    if (this._statusValue === v) return;
     this._statusValue = v;
+    this._stateChanged();
+  }
+
+  /**
+   * What Angular's NgControlStatus learns from the `_status`, `_pristine` and `_touched` signals its host bindings read:
+   * one of them changed, so the view showing it is checked again.
+   */
+  _stateListeners: ControlStateObserver[] = [];
+
+  private _stateChanged(): void {
+    for (const observer of this._stateListeners.slice()) observer.controlStateChanged();
+  }
+
+  /** A form's submitted state changed: Angular's NgControlStatusGroup reads it as a signal. */
+  _stateChangedOutside(): void {
+    this._stateChanged();
   }
 
   get valid(): boolean {
@@ -660,7 +678,9 @@ export abstract class AbstractControl<TValue = any, TRawValue extends TValue = T
     return this._pristineValue;
   }
   private _setPristine(v: boolean): void {
+    if (this._pristineValue === v) return;
     this._pristineValue = v;
+    this._stateChanged();
   }
 
   get dirty(): boolean {
@@ -671,7 +691,9 @@ export abstract class AbstractControl<TValue = any, TRawValue extends TValue = T
     return this._touchedValue;
   }
   private _setTouched(v: boolean): void {
+    if (this._touchedValue === v) return;
     this._touchedValue = v;
+    this._stateChanged();
   }
 
   get untouched(): boolean {
@@ -816,7 +838,7 @@ export abstract class AbstractControl<TValue = any, TRawValue extends TValue = T
       this.statusChanges.emit(this.status);
     }
     this._updateAncestors({ ...opts, skipPristineCheck }, this);
-    this._onDisabledChange.forEach((changeFn) => changeFn(true));
+    this._onDisabledChange.forEach((changeFn: any) => changeFn(true));
   }
 
   enable(opts: { onlySelf?: boolean; emitEvent?: boolean } = {}): void {
@@ -827,7 +849,7 @@ export abstract class AbstractControl<TValue = any, TRawValue extends TValue = T
     });
     this.updateValueAndValidity({ onlySelf: true, emitEvent: opts.emitEvent });
     this._updateAncestors({ ...opts, skipPristineCheck }, this);
-    this._onDisabledChange.forEach((changeFn) => changeFn(false));
+    this._onDisabledChange.forEach((changeFn: any) => changeFn(false));
   }
 
   private _updateAncestors(opts: { onlySelf?: boolean; emitEvent?: boolean; skipPristineCheck?: boolean }, sourceControl: AbstractControl): void {
@@ -1034,12 +1056,12 @@ export abstract class AbstractControl<TValue = any, TRawValue extends TValue = T
     return null;
   }
 
-  private _assignValidators(validators: any): void {
+  _assignValidators(validators: any): void {
     this._rawValidators = Array.isArray(validators) ? validators.slice() : validators;
     this._composedValidatorFn = coerceToValidator(this._rawValidators);
   }
 
-  private _assignAsyncValidators(validators: any): void {
+  _assignAsyncValidators(validators: any): void {
     this._rawAsyncValidators = Array.isArray(validators) ? validators.slice() : validators;
     this._composedAsyncValidatorFn = coerceToAsyncValidator(this._rawAsyncValidators);
   }
@@ -1075,7 +1097,7 @@ function removeListItem<T>(list: T[], el: T): void {
 
 export class FormControl<TValue = any> extends AbstractControl<TValue> {
   public defaultValue: TValue = NULL;
-  _onChange: Array<Function> = [];
+  _onChange: any[] = [];
   _pendingValue: any = undefined;
   _pendingChange: boolean = false;
 
@@ -1100,7 +1122,7 @@ export class FormControl<TValue = any> extends AbstractControl<TValue> {
     untracked(() => {
       this._value = this._pendingValue = value;
       if (this._onChange.length && options.emitModelToViewChange !== false) {
-        this._onChange.forEach((changeFn) => changeFn(this.value, options.emitViewToModelChange !== false));
+        this._onChange.forEach((changeFn: any) => changeFn(this.value, options.emitViewToModelChange !== false));
       }
       this.updateValueAndValidity(options);
     });
@@ -1776,8 +1798,1302 @@ export class UntypedFormBuilder {
   }
 }
 
-// ---- The modules and directives a component imports: what they select, the release build's template compiler runs. ----
+// ---- directives (packages/forms/src/directives) and @nativescript/angular's value accessors ----
+//
+// What the release build's template compiler makes for the forms directives an element selects. Each is given what
+// Angular's injector would give it, which the template compiler resolves from the template: its view, its view's
+// ChangeDetectorRef (as its markForCheck), the form directive it is under, and the value accessor and validator directives its element selects.
+// Its inputs come in one call per check (`apply`), which runs ngOnChanges with the inputs that changed, as Angular does.
+// What Angular reports from a template's structure (a formControlName with no form above it) is a build error instead.
+
+const resolvedPromise = Promise.resolve(null);
+
+export function booleanAttribute(value: unknown): boolean {
+  return typeof value === 'boolean' ? value : value != null && value !== 'false';
+}
+
+/** What @nativescript/angular's renderer keeps of a view's classes: an ordered set on the view, written whole to className. */
+function viewClasses(view: any): Map<string, boolean> {
+  if (!view.ngCssClasses) {
+    const classes = new Map<string, boolean>();
+    for (const name of String(view.className ?? '').split(/\s+/)) if (name) classes.set(name, true);
+    view.ngCssClasses = classes;
+  }
+  return view.ngCssClasses;
+}
+
+/** The renderer's addClass or removeClass on a view. */
+export function setViewClass(view: any, name: string, on: boolean): void {
+  const classes = viewClasses(view);
+  if (on) classes.set(name, true);
+  else classes.delete(name);
+  view.className = Array.from(classes.keys()).join(' ');
+}
+
+/** One input's change, as ngOnChanges receives it. */
+export class InputChange {
+  constructor(public readonly previousValue: any, public readonly currentValue: any, public readonly firstChange: boolean) {}
+
+  isFirstChange(): boolean {
+    return this.firstChange;
+  }
+}
+
+/** A directive's inputs as Angular checks them: each bound one is changed when its value is not Object.is the last. */
+class Inputs {
+  private readonly previous: any[] = [];
+  private started = false;
+
+  constructor(private readonly names: string[], private readonly bound: boolean[]) {}
+
+  changes(values: any[]): Map<string, InputChange> {
+    const out = new Map<string, InputChange>();
+    for (let k = 0; k < this.names.length; k++) {
+      if (!this.bound[k]) continue;
+      if (this.started && Object.is(this.previous[k], values[k])) continue;
+      out.set(this.names[k], new InputChange(this.previous[k], values[k], !this.started));
+      this.previous[k] = values[k];
+    }
+    this.started = true;
+    return out;
+  }
+}
+
+/** Notified when a control's status, pristine or touched state changes. */
+export abstract class ControlStateObserver {
+  abstract controlStateChanged(): void;
+}
+
+/**
+ * @nativescript/angular's value accessors: TextValueAccessor (TextField, TextView, SearchBar: `text`, its textChange
+ * and blur), CheckedValueAccessor (Switch: `checked`), DateValueAccessor (DatePicker: `date`), TimeValueAccessor
+ * (TimePicker: `time`), NumberValueAccessor (Slider: `value`) and SelectedIndexValueAccessor (SegmentedBar, ListPicker,
+ * TabView: `selectedIndex`, written once the view is made). A change reaches the control 20 ms after its event, the
+ * last of several in that time only, and a blank value is written as core's unsetValue, which the component passes.
+ */
+export class NsValueAccessor {
+  private pendingChangeNotification: any = 0;
+  private value: any = undefined;
+  private viewInitialized = false;
+  onChange: (value: any) => void = () => {};
+  onTouched: () => void = () => {};
+
+  constructor(private readonly view: any, readonly kind: string, private readonly unset: any) {}
+
+  registerOnChange(fn: (value: any) => void): void {
+    this.onChange = (arg: any) => {
+      if (this.pendingChangeNotification) clearTimeout(this.pendingChangeNotification);
+      this.pendingChangeNotification = setTimeout(() => {
+        this.pendingChangeNotification = 0;
+        fn(arg);
+      }, 20);
+    };
+  }
+
+  registerOnTouched(fn: () => void): void {
+    this.onTouched = fn;
+  }
+
+  setDisabledState(isDisabled: boolean): void {
+    this.view.isEnabled = !isDisabled;
+  }
+
+  writeValue(value: any): void {
+    if (this.kind === 'text') {
+      this.view.text = this.normalizeValue(value ? `${value}` : value);
+    } else if (this.kind === 'selectedIndex') {
+      this.value = this.normalizeValue(value);
+      if (this.viewInitialized) this.view.selectedIndex = this.value;
+    } else {
+      this.view[this.kind] = this.normalizeValue(value);
+    }
+  }
+
+  ngAfterViewInit(): void {
+    if (this.kind !== 'selectedIndex') return;
+    this.viewInitialized = true;
+    this.view.selectedIndex = this.value;
+  }
+
+  private normalizeValue(value: any): any {
+    return value === undefined || value === null ? this.unset : value;
+  }
+}
+
+export abstract class AbstractControlDirective {
+  get control(): AbstractControl | null {
+    return null;
+  }
+
+  get value(): any {
+    const control = this.control;
+    return control ? control.value : null;
+  }
+
+  get valid(): boolean | null {
+    const control = this.control;
+    return control ? control.valid : null;
+  }
+
+  get invalid(): boolean | null {
+    const control = this.control;
+    return control ? control.invalid : null;
+  }
+
+  get pending(): boolean | null {
+    const control = this.control;
+    return control ? control.pending : null;
+  }
+
+  get disabled(): boolean | null {
+    const control = this.control;
+    return control ? control.disabled : null;
+  }
+
+  get enabled(): boolean | null {
+    const control = this.control;
+    return control ? control.enabled : null;
+  }
+
+  get errors(): ValidationErrors | null {
+    const control = this.control;
+    return control ? control.errors : null;
+  }
+
+  get pristine(): boolean | null {
+    const control = this.control;
+    return control ? control.pristine : null;
+  }
+
+  get dirty(): boolean | null {
+    const control = this.control;
+    return control ? control.dirty : null;
+  }
+
+  get touched(): boolean | null {
+    const control = this.control;
+    return control ? control.touched : null;
+  }
+
+  get status(): string | null {
+    const control = this.control;
+    return control ? control.status : null;
+  }
+
+  get untouched(): boolean | null {
+    const control = this.control;
+    return control ? control.untouched : null;
+  }
+
+  get statusChanges(): EventEmitter<FormControlStatus> | null {
+    const control = this.control;
+    return control ? control.statusChanges : null;
+  }
+
+  get valueChanges(): EventEmitter<any> | null {
+    const control = this.control;
+    return control ? control.valueChanges : null;
+  }
+
+  get path(): string[] | null {
+    return null;
+  }
+
+  _composedValidatorFn: any = null;
+  _composedAsyncValidatorFn: any = null;
+  _rawValidators: any[] = [];
+  _rawAsyncValidators: any[] = [];
+
+  _setValidators(validators: any[] | undefined): void {
+    this._rawValidators = validators || [];
+    this._composedValidatorFn = composeValidators(this._rawValidators);
+  }
+
+  _setAsyncValidators(validators: any[] | undefined): void {
+    this._rawAsyncValidators = validators || [];
+    this._composedAsyncValidatorFn = composeAsyncValidators(this._rawAsyncValidators);
+  }
+
+  get validator(): ValidatorFn | null {
+    return this._composedValidatorFn || null;
+  }
+
+  get asyncValidator(): AsyncValidatorFn | null {
+    return this._composedAsyncValidatorFn || null;
+  }
+
+  private _onDestroyCallbacks: any[] = [];
+
+  _registerOnDestroy(fn: () => void): void {
+    this._onDestroyCallbacks.push(fn);
+  }
+
+  _invokeOnDestroyCallbacks(): void {
+    this._onDestroyCallbacks.forEach((fn: any) => fn());
+    this._onDestroyCallbacks = [];
+  }
+
+  reset(value: any = undefined): void {
+    this.control?.reset(value);
+  }
+
+  hasError(errorCode: string, path?: Array<string | number> | string): boolean {
+    const control = this.control;
+    return control ? control.hasError(errorCode, path) : false;
+  }
+
+  getError(errorCode: string, path?: Array<string | number> | string): any {
+    const control = this.control;
+    return control ? control.getError(errorCode, path) : null;
+  }
+}
+
+/**
+ * A form directive or a named group or array under one. What NgForm and the reactive form directives do for the
+ * directives below them (Angular's `Form`) is declared here, done by those two.
+ */
+export abstract class ControlContainer extends AbstractControlDirective {
+  name: string | number | null = null;
+
+  get formDirective(): ControlContainer | null {
+    return null;
+  }
+
+  override get path(): string[] | null {
+    return null;
+  }
+
+  get submitted(): boolean {
+    return false;
+  }
+
+  addControl(dir: NgControl): FormControl | null {
+    return null;
+  }
+
+  removeControl(dir: NgControl): void {}
+
+  addFormGroup(dir: ControlContainer): void {}
+
+  removeFormGroup(dir: ControlContainer): void {}
+
+  getFormGroup(dir: ControlContainer): FormGroup | null {
+    return null;
+  }
+
+  addFormArray(dir: ControlContainer): void {}
+
+  removeFormArray(dir: ControlContainer): void {}
+
+  getFormArray(dir: ControlContainer): AbstractControl | null {
+    return null;
+  }
+
+  updateModel(dir: NgControl, value: any): void {}
+}
+
+export abstract class NgControl extends AbstractControlDirective {
+  _parent: ControlContainer | null = null;
+  name: string | number | null = null;
+  _accessor: NsValueAccessor | null = null;
+
+  get valueAccessor(): any {
+    return this._accessor;
+  }
+
+  abstract viewToModelUpdate(newValue: any): void;
+}
+
+function controlPath(name: string | null, parent: ControlContainer): string[] {
+  const path = parent.path!.slice();
+  path.push(name!);
+  return path;
+}
+
+function describeControlLocation(dir: AbstractControlDirective): string {
+  const path = dir.path;
+  if (path && path.length > 1) return `path: '${path.join(' -> ')}'`;
+  if (path?.[0]) return `name: '${path}'`;
+  return 'unspecified name attribute';
+}
+
+function throwControlError(dir: AbstractControlDirective, message: string): void {
+  throw new Error(`${message} ${describeControlLocation(dir)}`);
+}
+
+export function setUpControl(control: FormControl, dir: NgControl, callSetDisabledState: string = 'always'): void {
+  if (!control) throwControlError(dir, 'Cannot find control with');
+  const accessor = dir._accessor!;
+  setUpValidators(control, dir);
+  accessor.writeValue(control.value);
+  if (control.disabled || callSetDisabledState === 'always') accessor.setDisabledState(control.disabled);
+  setUpViewChangePipeline(control, dir);
+  setUpModelChangePipeline(control, dir);
+  setUpBlurPipeline(control, dir);
+  setUpDisabledChangeHandler(control, dir);
+}
+
+export function cleanUpControl(control: FormControl | null, dir: NgControl, validateControlPresenceOnChange: boolean = true): void {
+  const noop = () => {
+    if (validateControlPresenceOnChange) throwControlError(dir, 'There is no FormControl instance attached to form control element with');
+  };
+  dir._accessor?.registerOnChange(noop);
+  dir._accessor?.registerOnTouched(noop);
+  cleanUpValidators(control, dir);
+  if (control) {
+    dir._invokeOnDestroyCallbacks();
+    control._registerOnCollectionChange(() => {});
+  }
+}
+
+function registerOnValidatorChange(validators: any[], onChange: () => void): void {
+  for (const validator of validators) if (validator instanceof AbstractValidatorDirective) validator.registerOnValidatorChange(onChange);
+}
+
+function setUpDisabledChangeHandler(control: FormControl, dir: NgControl): void {
+  const onDisabledChange = (isDisabled: boolean) => {
+    dir._accessor!.setDisabledState(isDisabled);
+  };
+  control.registerOnDisabledChange(onDisabledChange);
+  dir._registerOnDestroy(() => {
+    control._unregisterOnDisabledChange(onDisabledChange);
+  });
+}
+
+// A composed validator is null or a function: compared loosely, as the native build may hold null as undefined.
+export function setUpValidators(control: AbstractControl, dir: AbstractControlDirective): void {
+  const validators = getControlValidators(control);
+  if (dir._composedValidatorFn != null) {
+    control._assignValidators(mergeValidators(validators, dir._composedValidatorFn));
+  } else if (typeof validators === 'function') {
+    control._assignValidators([validators]);
+  }
+  const asyncValidators = getControlAsyncValidators(control);
+  if (dir._composedAsyncValidatorFn != null) {
+    control._assignAsyncValidators(mergeValidators(asyncValidators, dir._composedAsyncValidatorFn));
+  } else if (typeof asyncValidators === 'function') {
+    control._assignAsyncValidators([asyncValidators]);
+  }
+  const onValidatorChange = () => control.updateValueAndValidity();
+  registerOnValidatorChange(dir._rawValidators, onValidatorChange);
+  registerOnValidatorChange(dir._rawAsyncValidators, onValidatorChange);
+}
+
+export function cleanUpValidators(control: AbstractControl | null, dir: AbstractControlDirective): boolean {
+  let isControlUpdated = false;
+  if (control !== null) {
+    if (dir._composedValidatorFn != null) {
+      const validators = getControlValidators(control);
+      if (Array.isArray(validators) && validators.length > 0) {
+        const updatedValidators = validators.filter((validator: any) => validator !== dir._composedValidatorFn);
+        if (updatedValidators.length !== validators.length) {
+          isControlUpdated = true;
+          control._assignValidators(updatedValidators);
+        }
+      }
+    }
+    if (dir._composedAsyncValidatorFn != null) {
+      const asyncValidators = getControlAsyncValidators(control);
+      if (Array.isArray(asyncValidators) && asyncValidators.length > 0) {
+        const updatedAsyncValidators = asyncValidators.filter((asyncValidator: any) => asyncValidator !== dir._composedAsyncValidatorFn);
+        if (updatedAsyncValidators.length !== asyncValidators.length) {
+          isControlUpdated = true;
+          control._assignAsyncValidators(updatedAsyncValidators);
+        }
+      }
+    }
+  }
+  const noop = () => {};
+  registerOnValidatorChange(dir._rawValidators, noop);
+  registerOnValidatorChange(dir._rawAsyncValidators, noop);
+  return isControlUpdated;
+}
+
+function setUpViewChangePipeline(control: FormControl, dir: NgControl): void {
+  dir._accessor!.registerOnChange((newValue: any) => {
+    control._pendingValue = newValue;
+    control._pendingChange = true;
+    control._pendingDirty = true;
+    if (control.updateOn === 'change') updateControl(control, dir);
+  });
+}
+
+function setUpBlurPipeline(control: FormControl, dir: NgControl): void {
+  dir._accessor!.registerOnTouched(() => {
+    control._pendingTouched = true;
+    if (control.updateOn === 'blur' && control._pendingChange) updateControl(control, dir);
+    if (control.updateOn !== 'submit') control.markAsTouched();
+  });
+}
+
+function updateControl(control: FormControl, dir: NgControl): void {
+  if (control._pendingDirty) control.markAsDirty();
+  control.setValue(control._pendingValue, { emitModelToViewChange: false });
+  dir.viewToModelUpdate(control._pendingValue);
+  control._pendingChange = false;
+}
+
+function setUpModelChangePipeline(control: FormControl, dir: NgControl): void {
+  const onChange = (newValue?: any, emitModelEvent?: boolean) => {
+    dir._accessor!.writeValue(newValue);
+    if (emitModelEvent) dir.viewToModelUpdate(newValue);
+  };
+  control.registerOnChange(onChange);
+  dir._registerOnDestroy(() => {
+    control._unregisterOnChange(onChange);
+  });
+}
+
+export function setUpFormContainer(control: AbstractControl, dir: ControlContainer): void {
+  if (control == null) throwControlError(dir, 'Cannot find control with');
+  setUpValidators(control, dir);
+}
+
+export function cleanUpFormContainer(control: AbstractControl, dir: ControlContainer): boolean {
+  return cleanUpValidators(control, dir);
+}
+
+function isPropertyUpdated(changes: Map<string, InputChange>, viewModel: any): boolean {
+  const change = changes.get('model');
+  if (!change) return false;
+  if (change.isFirstChange()) return true;
+  return !Object.is(viewModel, change.currentValue);
+}
+
+function syncPendingControls(form: AbstractControl, directives: NgControl[]): void {
+  form._syncPendingControls();
+  directives.forEach((dir: NgControl) => {
+    const control = dir.control as FormControl;
+    if (control.updateOn === 'submit' && control._pendingChange) {
+      dir.viewToModelUpdate(control._pendingValue);
+      control._pendingChange = false;
+    }
+  });
+}
+
+// ---- validator directives (directives/validators.ts): the ones whose selectors a NativeScript element can match ----
+
+export abstract class AbstractValidatorDirective {
+  private _validator: ValidatorFn = nullValidator;
+  private _onChange: (() => void) | null = null;
+  private readonly inputs: Inputs;
+  _enabled = false;
+
+  constructor(private readonly inputName: string, bound: boolean) {
+    this.inputs = new Inputs([inputName], [bound]);
+  }
+
+  apply(input: any[]): void {
+    const changes = this.inputs.changes(input);
+    const change = changes.get(this.inputName);
+    if (change) {
+      const value = this.normalizeInput(change.currentValue);
+      this._enabled = this.enabled(value);
+      this._validator = this._enabled ? this.createValidator(value) : nullValidator;
+      const onChange = this._onChange;
+      if (onChange) onChange();
+    }
+  }
+
+  validate(control: AbstractControl): ValidationErrors | null {
+    return this._validator(control);
+  }
+
+  registerOnValidatorChange(fn: () => void): void {
+    this._onChange = fn;
+  }
+
+  enabled(input: any): boolean {
+    return input != null;
+  }
+
+  abstract normalizeInput(input: any): any;
+
+  abstract createValidator(input: any): ValidatorFn;
+}
+
+export class RequiredValidator extends AbstractValidatorDirective {
+  constructor(bound: boolean) {
+    super('required', bound);
+  }
+
+  override normalizeInput(input: any): any {
+    return booleanAttribute(input);
+  }
+
+  override createValidator(input: any): ValidatorFn {
+    return requiredValidator;
+  }
+
+  override enabled(input: any): boolean {
+    return input;
+  }
+}
+
+export class MinLengthValidator extends AbstractValidatorDirective {
+  constructor(bound: boolean) {
+    super('minlength', bound);
+  }
+
+  override normalizeInput(input: any): any {
+    return toInteger(input);
+  }
+
+  override createValidator(minlength: any): ValidatorFn {
+    return minLengthValidator(minlength);
+  }
+}
+
+export class MaxLengthValidator extends AbstractValidatorDirective {
+  constructor(bound: boolean) {
+    super('maxlength', bound);
+  }
+
+  override normalizeInput(input: any): any {
+    return toInteger(input);
+  }
+
+  override createValidator(maxlength: any): ValidatorFn {
+    return maxLengthValidator(maxlength);
+  }
+}
+
+export class PatternValidator extends AbstractValidatorDirective {
+  constructor(bound: boolean) {
+    super('pattern', bound);
+  }
+
+  override normalizeInput(input: any): any {
+    return input;
+  }
+
+  override createValidator(input: any): ValidatorFn {
+    return patternValidator(input);
+  }
+}
+
+export class EmailValidator extends AbstractValidatorDirective {
+  constructor(bound: boolean) {
+    super('email', bound);
+  }
+
+  override normalizeInput(input: any): any {
+    return input === '' || input === true || input === 'true';
+  }
+
+  override createValidator(input: any): ValidatorFn {
+    return emailValidator;
+  }
+
+  override enabled(input: any): boolean {
+    return input;
+  }
+}
+
+function toInteger(value: any): number {
+  return typeof value === 'number' ? value : parseInt(value, 10);
+}
+
+// ---- NgControlStatus and NgControlStatusGroup ----
+
+const STATUS_CLASSES = ['ng-untouched', 'ng-touched', 'ng-pristine', 'ng-dirty', 'ng-valid', 'ng-invalid', 'ng-pending', 'ng-submitted'];
+
+/**
+ * NgControlStatus (on a control's element) and NgControlStatusGroup (`group`, on a container's): the `ng-*` classes of
+ * its directive's control, a class written only when it changes, and the view checked again when the control's
+ * status, pristine or touched state, or the form's submitted state, changes.
+ */
+export class NgControlStatus extends ControlStateObserver {
+  private readonly applied: boolean[] = [];
+  private watched: AbstractControl | null = null;
+
+  constructor(private readonly view: any, private readonly markForCheck: () => void, private readonly dir: AbstractControlDirective, private readonly group: boolean) {
+    super();
+  }
+
+  /** The classes as the control is now: run when its view is checked. */
+  check(): void {
+    const control = this.dir.control;
+    if (control !== this.watched) {
+      if (this.watched) this.unwatch(this.watched);
+      this.watched = control;
+      if (control) control._stateListeners.push(this);
+    }
+    const flags = [!!control?.untouched, !!control?.touched, !!control?.pristine, !!control?.dirty, !!control?.valid, !!control?.invalid, !!control?.pending];
+    if (this.group) flags.push(this.dir instanceof ControlContainer && this.dir.submitted);
+    for (let k = 0; k < flags.length; k++) {
+      const first = this.applied.length <= k;
+      if (!first && this.applied[k] === flags[k]) continue;
+      this.applied[k] = flags[k];
+      if (!first || flags[k]) setViewClass(this.view, STATUS_CLASSES[k], flags[k]);
+    }
+  }
+
+  override controlStateChanged(): void {
+    this.markForCheck();
+    this.check();
+  }
+
+  destroy(): void {
+    if (this.watched) this.unwatch(this.watched);
+    this.watched = null;
+  }
+
+  private unwatch(control: AbstractControl): void {
+    const at = control._stateListeners.indexOf(this);
+    if (at > -1) control._stateListeners.splice(at, 1);
+  }
+}
+
+// ---- template-driven directives ----
+
+export class NgModel extends NgControl {
+  _control: FormControl = new FormControl();
+  _registered = false;
+  viewModel: any;
+  isDisabled: any;
+  model: any;
+  options: { name?: string; standalone?: boolean; updateOn?: FormHooks } | undefined;
+  readonly update = new EventEmitter<any>();
+  private readonly inputs: Inputs;
+
+  /** `bound` says which of ngModel, name, ngModelOptions and disabled the element binds or sets. */
+  constructor(parent: ControlContainer | null, validators: any[], asyncValidators: any[], accessor: NsValueAccessor, private readonly markForCheck: () => void, bound: boolean[]) {
+    super();
+    this._parent = parent;
+    this._accessor = accessor;
+    this._setValidators(validators);
+    this._setAsyncValidators(asyncValidators);
+    this.inputs = new Inputs(['model', 'name', 'options', 'isDisabled'], bound);
+  }
+
+  /** The element's ngModel, name, ngModelOptions and disabled, at each check. */
+  apply(values: any[]): void {
+    const changes = this.inputs.changes(values);
+    if (changes.has('model')) this.model = values[0];
+    if (changes.has('name')) this.name = values[1];
+    if (changes.has('options')) this.options = values[2];
+    if (changes.has('isDisabled')) this.isDisabled = values[3];
+    if (changes.size) this.ngOnChanges(changes);
+  }
+
+  ngOnChanges(changes: Map<string, InputChange>): void {
+    this._checkName();
+    if (!this._registered || changes.has('name')) {
+      if (this._registered) {
+        this._checkName();
+        const formDirective = this.formDirective;
+        if (formDirective) {
+          const oldName = changes.get('name')!.previousValue;
+          (formDirective as NgForm).removeControlAt(this._getPath(oldName), oldName);
+        }
+      }
+      this._setUpControl();
+    }
+    if (changes.has('isDisabled')) this._updateDisabled(changes.get('isDisabled')!);
+    if (isPropertyUpdated(changes, this.viewModel)) {
+      this._updateValue(this.model);
+      this.viewModel = this.model;
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.formDirective?.removeControl(this);
+  }
+
+  override get control(): FormControl {
+    return this._control;
+  }
+
+  override get path(): string[] {
+    return this._getPath(this.name);
+  }
+
+  get formDirective(): ControlContainer | null {
+    const parent = this._parent;
+    return parent ? parent.formDirective : null;
+  }
+
+  override viewToModelUpdate(newValue: any): void {
+    this.viewModel = newValue;
+    this.update.emit(newValue);
+  }
+
+  private _setUpControl(): void {
+    this._setUpdateStrategy();
+    if (this._isStandalone()) this._setUpStandalone();
+    else this.formDirective!.addControl(this);
+    this._registered = true;
+  }
+
+  private _setUpdateStrategy(): void {
+    const options = this.options;
+    if (options && options.updateOn != null) this.control._updateOn = options.updateOn;
+  }
+
+  _isStandalone(): boolean {
+    const options = this.options;
+    return !this._parent || !!(options && options.standalone);
+  }
+
+  private _setUpStandalone(): void {
+    setUpControl(this.control, this);
+    this.control.updateValueAndValidity({ emitEvent: false });
+  }
+
+  _setupWithForm(): void {
+    setUpControl(this.control, this);
+  }
+
+  private _checkName(): void {
+    const options = this.options;
+    if (options && options.name) this.name = options.name;
+    if (!this._isStandalone() && !this.name) {
+      throw new Error(`NG01352: If ngModel is used within a form tag, either the name attribute must be set or the form
+    control must be defined as 'standalone' in ngModelOptions.
+
+    Example 1: <input [(ngModel)]="person.firstName" name="first">
+    Example 2: <input [(ngModel)]="person.firstName" [ngModelOptions]="{standalone: true}">`);
+    }
+  }
+
+  private _updateValue(value: any): void {
+    resolvedPromise.then(() => {
+      this.control.setValue(value, { emitViewToModelChange: false });
+      this.markForCheck();
+    });
+  }
+
+  private _updateDisabled(change: InputChange): void {
+    const disabledValue = change.currentValue;
+    const isDisabled = disabledValue !== 0 && booleanAttribute(disabledValue);
+    resolvedPromise.then(() => {
+      if (isDisabled && !this.control.disabled) this.control.disable();
+      else if (!isDisabled && this.control.disabled) this.control.enable();
+      this.markForCheck();
+    });
+  }
+
+  private _getPath(controlName: string): string[] {
+    const parent = this._parent;
+    return parent ? controlPath(controlName, parent) : [controlName];
+  }
+}
+
+export class NgForm extends ControlContainer {
+  private _submitted = false;
+  private readonly _directives: NgModel[] = [];
+  readonly form: FormGroup;
+  readonly ngSubmit = new EventEmitter<any>();
+  options: { updateOn?: FormHooks } | undefined;
+  private readonly inputs: Inputs;
+
+  private readonly callSetDisabledState: string;
+
+  constructor(validators: any[], asyncValidators: any[], callSetDisabledState: string, bound: boolean[]) {
+    super();
+    this.callSetDisabledState = callSetDisabledState;
+    this.form = new FormGroup({}, composeValidators(validators), composeAsyncValidators(asyncValidators));
+    this.inputs = new Inputs(['options'], bound);
+  }
+
+  /** The element's ngFormOptions at each check. */
+  apply(values: any[]): void {
+    if (this.inputs.changes(values).has('options')) this.options = values[0];
+  }
+
+  override get submitted(): boolean {
+    return this._submitted;
+  }
+
+  private _setSubmitted(value: boolean): void {
+    if (this._submitted === value) return;
+    this._submitted = value;
+    this.form._stateChangedOutside();
+  }
+
+  ngAfterViewInit(): void {
+    this._setUpdateStrategy();
+  }
+
+  override get formDirective(): ControlContainer {
+    return this;
+  }
+
+  override get control(): FormGroup {
+    return this.form;
+  }
+
+  override get path(): string[] {
+    return [];
+  }
+
+  get controls(): { [key: string]: AbstractControl } {
+    const controls: any = this.form.controls;
+    return controls;
+  }
+
+  override addControl(dir: NgControl): FormControl | null {
+    const model = dir as NgModel;
+    resolvedPromise.then(() => {
+      const container = this._findContainer(model.path);
+      model._control = container.registerControl(model.name, model.control) as FormControl;
+      model._setupWithForm();
+      model.control.updateValueAndValidity({ emitEvent: false });
+      this._directives.push(model);
+    });
+    return null;
+  }
+
+  getControl(dir: NgControl): FormControl | null {
+    return this.form.get(dir.path!) as FormControl;
+  }
+
+  override removeControl(dir: NgControl): void {
+    const model = dir as NgModel;
+    resolvedPromise.then(() => {
+      const container = this._findContainer(model.path);
+      container?.removeControl(model.name);
+      const at = this._directives.indexOf(model);
+      if (at > -1) this._directives.splice(at, 1);
+    });
+  }
+
+  /** removeControl of the control a directive had at `path` under `name`, before its name changed. */
+  removeControlAt(path: string[], name: string): void {
+    resolvedPromise.then(() => {
+      const container = this._findContainer(path);
+      container?.removeControl(name);
+    });
+  }
+
+  override addFormGroup(dir: ControlContainer): void {
+    resolvedPromise.then(() => {
+      const container = this._findContainer(dir.path!);
+      const group = new FormGroup({});
+      setUpFormContainer(group, dir);
+      container.registerControl(String(dir.name), group);
+      group.updateValueAndValidity({ emitEvent: false });
+    });
+  }
+
+  override removeFormGroup(dir: ControlContainer): void {
+    resolvedPromise.then(() => {
+      const container = this._findContainer(dir.path!);
+      container?.removeControl(String(dir.name));
+    });
+  }
+
+  override getFormGroup(dir: ControlContainer): FormGroup | null {
+    return this.form.get(dir.path!) as FormGroup;
+  }
+
+  override addFormArray(dir: ControlContainer): void {}
+
+  override removeFormArray(dir: ControlContainer): void {}
+
+  override getFormArray(dir: ControlContainer): AbstractControl | null {
+    return this.form.get(dir.path!);
+  }
+
+  override updateModel(dir: NgControl, value: any): void {
+    resolvedPromise.then(() => {
+      const ctrl = this.form.get(dir.path!) as FormControl;
+      ctrl.setValue(value);
+    });
+  }
+
+  setValue(value: { [key: string]: any }): void {
+    this.control.setValue(value);
+  }
+
+  onSubmit($event?: any): boolean {
+    this._setSubmitted(true);
+    syncPendingControls(this.form, this._directives);
+    this.ngSubmit.emit($event);
+    this.form._events.next(new FormSubmittedEvent(this.control));
+    return false;
+  }
+
+  onReset(): void {
+    this.resetForm();
+  }
+
+  resetForm(value: any = undefined): void {
+    this.form.reset(value);
+    this._setSubmitted(false);
+  }
+
+  private _setUpdateStrategy(): void {
+    const options = this.options;
+    if (options && options.updateOn != null) this.form._updateOn = options.updateOn;
+  }
+
+  private _findContainer(path: string[]): FormGroup {
+    path.pop();
+    return path.length ? (this.form.get(path) as FormGroup) : this.form;
+  }
+}
+
+/** NgModelGroup, FormGroupName (a group, `formGroupName`) and FormArrayName (`array`): a named control of the form above. */
+export class AbstractFormGroupDirective extends ControlContainer {
+  _parent: ControlContainer;
+  private readonly inputs: Inputs;
+
+  constructor(parent: ControlContainer, validators: any[], asyncValidators: any[], private readonly array: boolean, bound: boolean[]) {
+    super();
+    this._parent = parent;
+    this._setValidators(validators);
+    this._setAsyncValidators(asyncValidators);
+    this.inputs = new Inputs(['name'], bound);
+  }
+
+  /** The element's ngModelGroup, formGroupName or formArrayName at each check. */
+  apply(values: any[]): void {
+    if (this.inputs.changes(values).has('name')) this.name = values[0];
+  }
+
+  ngOnInit(): void {
+    if (this.array) this.formDirective!.addFormArray(this);
+    else this.formDirective!.addFormGroup(this);
+  }
+
+  ngOnDestroy(): void {
+    const formDirective = this.formDirective;
+    if (!formDirective) return;
+    if (this.array) formDirective.removeFormArray(this);
+    else formDirective.removeFormGroup(this);
+  }
+
+  override get control(): AbstractControl | null {
+    const formDirective = this.formDirective;
+    if (!formDirective) return null;
+    return this.array ? formDirective.getFormArray(this) : formDirective.getFormGroup(this);
+  }
+
+  override get path(): string[] {
+    const name = this.name;
+    return controlPath(name == null ? name : String(name), this._parent);
+  }
+
+  override get formDirective(): ControlContainer | null {
+    const parent = this._parent;
+    return parent ? parent.formDirective : null;
+  }
+}
+
+export class NgModelGroup extends AbstractFormGroupDirective {}
+export class FormGroupName extends AbstractFormGroupDirective {}
+export class FormArrayName extends AbstractFormGroupDirective {}
+
+// ---- reactive directives ----
+
+/** FormGroupDirective (`[formGroup]`) and FormArrayDirective (`[formArray]`). */
+export class AbstractFormDirective extends ControlContainer {
+  private _submitted = false;
+  private _oldForm: AbstractControl | undefined;
+  private readonly _onCollectionChange = () => this._updateDomValue();
+  directives: FormControlName[] = [];
+  form!: AbstractControl;
+  readonly ngSubmit = new EventEmitter<any>();
+  private readonly inputs: Inputs;
+
+  private readonly callSetDisabledState: string;
+  private readonly inputName: string;
+
+  constructor(validators: any[], asyncValidators: any[], callSetDisabledState: string, inputName: string, bound: boolean[]) {
+    super();
+    this.callSetDisabledState = callSetDisabledState;
+    this.inputName = inputName;
+    this._setValidators(validators);
+    this._setAsyncValidators(asyncValidators);
+    this.inputs = new Inputs(['form'], bound);
+  }
+
+  /** The element's formGroup or formArray at each check. */
+  apply(values: any[]): void {
+    const changes = this.inputs.changes(values);
+    if (changes.has('form')) this.form = values[0];
+    if (changes.size) this.onChanges(changes);
+  }
+
+  override get submitted(): boolean {
+    return this._submitted;
+  }
+
+  private _setSubmitted(value: boolean): void {
+    if (this._submitted === value) return;
+    this._submitted = value;
+    this.form._stateChangedOutside();
+  }
+
+  private onChanges(changes: Map<string, InputChange>): void {
+    if (!this.form) {
+      throw new Error(`NG01050: ${this.inputName} expects a ${this.inputName === 'formGroup' ? 'FormGroup' : 'FormArray'} instance. Please pass one in.`);
+    }
+    if (changes.has('form')) {
+      this._updateValidators();
+      this._updateDomValue();
+      this._updateRegistrations();
+      this._oldForm = this.form;
+    }
+  }
+
+  ngOnDestroy(): void {
+    if (this.form) {
+      cleanUpValidators(this.form, this);
+      if (this.form._onCollectionChange === this._onCollectionChange) this.form._registerOnCollectionChange(() => {});
+    }
+  }
+
+  override get formDirective(): ControlContainer {
+    return this;
+  }
+
+  override get control(): AbstractControl {
+    return this.form;
+  }
+
+  override get path(): string[] {
+    return [];
+  }
+
+  override addControl(dir: NgControl): FormControl | null {
+    const named = dir as FormControlName;
+    const ctrl = this.form.get(named.path) as FormControl;
+    named._setupWithForm(ctrl, this.callSetDisabledState);
+    ctrl.updateValueAndValidity({ emitEvent: false });
+    this.directives.push(named);
+    return ctrl;
+  }
+
+  getControl(dir: NgControl): FormControl | null {
+    return this.form.get(dir.path!) as FormControl;
+  }
+
+  override removeControl(dir: NgControl): void {
+    const named = dir as FormControlName;
+    cleanUpControl(named._controlOrNull(), named, false);
+    const at = this.directives.indexOf(named);
+    if (at > -1) this.directives.splice(at, 1);
+  }
+
+  override addFormGroup(dir: ControlContainer): void {
+    this._setUpFormContainer(dir);
+  }
+
+  override removeFormGroup(dir: ControlContainer): void {
+    this._cleanUpFormContainer(dir);
+  }
+
+  override getFormGroup(dir: ControlContainer): FormGroup | null {
+    return this.form.get(dir.path!) as FormGroup;
+  }
+
+  override getFormArray(dir: ControlContainer): AbstractControl | null {
+    return this.form.get(dir.path!);
+  }
+
+  override addFormArray(dir: ControlContainer): void {
+    this._setUpFormContainer(dir);
+  }
+
+  override removeFormArray(dir: ControlContainer): void {
+    this._cleanUpFormContainer(dir);
+  }
+
+  override updateModel(dir: NgControl, value: any): void {
+    const ctrl = this.form.get(dir.path!) as FormControl;
+    ctrl.setValue(value);
+  }
+
+  onReset(): void {
+    this.resetForm();
+  }
+
+  resetForm(value: any = undefined, options: { onlySelf?: boolean; emitEvent?: boolean } = {}): void {
+    this.form.reset(value, options);
+    this._setSubmitted(false);
+  }
+
+  onSubmit($event?: any): boolean {
+    this._setSubmitted(true);
+    syncPendingControls(this.form, this.directives);
+    this.ngSubmit.emit($event);
+    this.form._events.next(new FormSubmittedEvent(this.control));
+    return false;
+  }
+
+  _updateDomValue(): void {
+    this.directives.forEach((dir: FormControlName) => {
+      const oldCtrl = dir._controlOrNull();
+      const newCtrl = this.form.get(dir.path);
+      if (oldCtrl !== newCtrl) {
+        cleanUpControl(oldCtrl || null, dir);
+        if (newCtrl instanceof FormControl) dir._setupWithForm(newCtrl, this.callSetDisabledState);
+      }
+    });
+    this.form._updateTreeValidity({ emitEvent: false });
+  }
+
+  private _setUpFormContainer(dir: ControlContainer): void {
+    const ctrl = this.form.get(dir.path!)!;
+    setUpFormContainer(ctrl, dir);
+    ctrl.updateValueAndValidity({ emitEvent: false });
+  }
+
+  private _cleanUpFormContainer(dir: ControlContainer): void {
+    const ctrl = this.form?.get(dir.path!);
+    if (ctrl) {
+      const isControlUpdated = cleanUpFormContainer(ctrl, dir);
+      if (isControlUpdated) ctrl.updateValueAndValidity({ emitEvent: false });
+    }
+  }
+
+  private _updateRegistrations(): void {
+    this.form._registerOnCollectionChange(this._onCollectionChange);
+    this._oldForm?._registerOnCollectionChange(() => {});
+  }
+
+  private _updateValidators(): void {
+    setUpValidators(this.form, this);
+    if (this._oldForm) cleanUpValidators(this._oldForm, this);
+  }
+}
+
+export class FormGroupDirective extends AbstractFormDirective {}
+export class FormArrayDirective extends AbstractFormDirective {}
+
+export class FormControlName extends NgControl {
+  private _added = false;
+  viewModel: any;
+  private _control: FormControl | null = null;
+  model: any;
+  readonly update = new EventEmitter<any>();
+  private readonly inputs: Inputs;
+
+  /** `bound` says which of formControlName and ngModel the element binds or sets. */
+  constructor(parent: ControlContainer, validators: any[], asyncValidators: any[], accessor: NsValueAccessor, bound: boolean[]) {
+    super();
+    this._parent = parent;
+    this._accessor = accessor;
+    this._setValidators(validators);
+    this._setAsyncValidators(asyncValidators);
+    this.inputs = new Inputs(['name', 'model'], bound);
+  }
+
+  apply(values: any[]): void {
+    const changes = this.inputs.changes(values);
+    if (changes.has('name')) this.name = values[0];
+    if (changes.has('model')) this.model = values[1];
+    if (changes.size) this.ngOnChanges(changes);
+  }
+
+  override get control(): FormControl {
+    return this._control!;
+  }
+
+  _controlOrNull(): FormControl | null {
+    return this._control;
+  }
+
+  _setupWithForm(control: FormControl, callSetDisabledState?: string): void {
+    this._control = control;
+    setUpControl(control, this, callSetDisabledState);
+  }
+
+  ngOnChanges(changes: Map<string, InputChange>): void {
+    if (!this._added) this._setUpControl();
+    if (isPropertyUpdated(changes, this.viewModel)) {
+      this.viewModel = this.model;
+      this.formDirective!.updateModel(this, this.model);
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.formDirective?.removeControl(this);
+  }
+
+  override viewToModelUpdate(newValue: any): void {
+    this.viewModel = newValue;
+    this.update.emit(newValue);
+  }
+
+  override get path(): string[] {
+    const name = this.name;
+    return controlPath(name == null ? name : String(name), this._parent!);
+  }
+
+  get formDirective(): ControlContainer | null {
+    const parent = this._parent;
+    return parent ? parent.formDirective : null;
+  }
+
+  private _setUpControl(): void {
+    this._control = this.formDirective!.addControl(this);
+    this._added = true;
+  }
+}
+
+export class FormControlDirective extends NgControl {
+  viewModel: any;
+  form!: FormControl;
+  model: any;
+  readonly update = new EventEmitter<any>();
+  private readonly inputs: Inputs;
+
+  /** `bound` says which of formControl and ngModel the element binds. */
+  private readonly callSetDisabledState: string;
+
+  constructor(validators: any[], asyncValidators: any[], accessor: NsValueAccessor, callSetDisabledState: string, bound: boolean[]) {
+    super();
+    this.callSetDisabledState = callSetDisabledState;
+    this._accessor = accessor;
+    this._setValidators(validators);
+    this._setAsyncValidators(asyncValidators);
+    this.inputs = new Inputs(['form', 'model'], bound);
+  }
+
+  apply(values: any[]): void {
+    const changes = this.inputs.changes(values);
+    if (changes.has('form')) this.form = values[0];
+    if (changes.has('model')) this.model = values[1];
+    if (changes.size) this.ngOnChanges(changes);
+  }
+
+  ngOnChanges(changes: Map<string, InputChange>): void {
+    const formChange = changes.get('form');
+    if (formChange) {
+      const previousForm: FormControl | null = formChange.previousValue;
+      if (previousForm) cleanUpControl(previousForm, this, false);
+      setUpControl(this.form, this, this.callSetDisabledState);
+      this.form.updateValueAndValidity({ emitEvent: false });
+    }
+    if (isPropertyUpdated(changes, this.viewModel)) {
+      this.form.setValue(this.model);
+      this.viewModel = this.model;
+    }
+  }
+
+  ngOnDestroy(): void {
+    if (this.form) cleanUpControl(this.form, this, false);
+  }
+
+  override get path(): string[] {
+    return [];
+  }
+
+  override get control(): FormControl {
+    return this.form;
+  }
+
+  override viewToModelUpdate(newValue: any): void {
+    this.viewModel = newValue;
+    this.update.emit(newValue);
+  }
+}
+
+// ---- What a component imports: the template compiler runs the directives they declare. ----
 
 export const FormsModule: any = undefined;
 export const ReactiveFormsModule: any = undefined;
-export const NgModel: any = undefined;

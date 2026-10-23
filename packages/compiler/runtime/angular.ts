@@ -3,7 +3,7 @@
 // pipe only when an argument changed), NgClass and NgStyle, and @angular/core's QueryList. The pipes' output is
 // Angular's for the `en-US` locale, the only one a compiled release has: the formatting follows @angular/common's
 // formatDate and formatNumber, with en-US's locale data.
-import { ElementRef, inject } from '@angular/core';
+import { ChangeDetectorRef, ElementRef, inject } from '@angular/core';
 
 /** Angular's NG02100 error, as `invalidPipeArgumentError` words it. */
 function invalidPipeArgument(pipe: string, value: unknown): Error {
@@ -541,6 +541,16 @@ export class KeyValuePipe {
   }
 }
 
+/** The classes @nativescript/angular's renderer keeps for a view: an ordered set on the view, shared with the forms runtime's ng-* classes. */
+function viewClasses(view: any): Map<string, boolean> {
+  if (!view.ngCssClasses) {
+    const classes = new Map<string, boolean>();
+    for (const name of String(view.className ?? '').split(/\s+/)) if (name) classes.set(name, true);
+    view.ngCssClasses = classes;
+  }
+  return view.ngCssClasses;
+}
+
 /**
  * The className NgClass gives a component's root view, which has no renderer of its own here: its static classes, then
  * each class NgClass's value names (a string or array of names, a Set, or an object mapping names to conditions), then
@@ -585,7 +595,6 @@ export function ngClassNames(base: string, value: any, toggles: any[]): string {
  */
 export class NgClass {
   private readonly view: any = inject(ElementRef).nativeElement;
-  private classes: string[] = [];
   private started = false;
   private names: string[] = [];
   private enabled: boolean[] = [];
@@ -600,8 +609,10 @@ export class NgClass {
     const statics = base.trim().split(/\s+/).filter((c) => !!c);
     if (!this.started) {
       this.started = true;
-      this.classes = statics.slice();
-      this.view.className = this.classes.join(' ');
+      const classes = new Map<string, boolean>();
+      for (const name of statics) classes.set(name, true);
+      this.view.ngCssClasses = classes;
+      this.view.className = Array.from(classes.keys()).join(' ');
     }
     for (const name of statics) this.update(name, true);
     if (typeof value === 'string') {
@@ -658,11 +669,11 @@ export class NgClass {
   private toggle(written: string, on: boolean): void {
     for (const name of written.trim().split(/\s+/)) {
       if (!name) continue;
-      const at = this.classes.indexOf(name);
-      if (on === at >= 0) continue;
-      if (on) this.classes.push(name);
-      else this.classes.splice(at, 1);
-      this.view.className = this.classes.join(' ');
+      const classes = viewClasses(this.view);
+      if (on === classes.has(name)) continue;
+      if (on) classes.set(name, true);
+      else classes.delete(name);
+      this.view.className = Array.from(classes.keys()).join(' ');
     }
   }
 }
@@ -799,4 +810,15 @@ export class QueryList {
       this.settled = true;
     });
   }
+}
+
+/** The view a directive is being made on (its ElementRef), for the forms runtime, which a compiled template gives it. */
+export function hostView(): any {
+  return inject(ElementRef).nativeElement;
+}
+
+/** The markForCheck of the view a directive is being made in, for the forms runtime, which a compiled template gives it. */
+export function viewChecker(): () => void {
+  const cd = inject(ChangeDetectorRef);
+  return () => cd.markForCheck();
 }

@@ -570,14 +570,14 @@ export class C { on = signal(true); w = signal(10); name = 'Ada'; }
   const runtimePieces = pieces(join(here, '../../runtime/angular.ts'));
   for (const c of ['740-ngclass-ngstyle.ts', '741-ngclass-ngstyle-lenient.ts']) {
     const casePieces = pieces(join(here, '../diff/cases', c));
-    check(['ngClassNames', 'ngStyleEntries', 'NgClass.apply', 'NgClass.update', 'NgClass.toggle', 'NgStyle.apply', 'NgStyle.set'].every((k) => !!runtimePieces.get(k) && runtimePieces.get(k) === casePieces.get(k)), `diff case ${c}'s NgClass and NgStyle code is the runtime's`);
+    check(['ngClassNames', 'ngStyleEntries', 'viewClasses', 'NgClass.apply', 'NgClass.update', 'NgClass.toggle', 'NgStyle.apply', 'NgStyle.set'].every((k) => !!runtimePieces.get(k) && runtimePieces.get(k) === casePieces.get(k)), `diff case ${c}'s NgClass and NgStyle code is the runtime's`);
   }
 
   // The runtime's NgClass and NgStyle, run in Node with a stand-in for the ElementRef they inject.
   const dir = mkdtempSync(join(tmpdir(), 'ns-release-checks-ngclass-'));
   try {
     const unset = 'UNSET';
-    writeFileSync(join(dir, 'ng.ts'), `let host: any = null;\nexport const $host = (v: any) => { host = v; };\nexport class ElementRef { nativeElement: any = host; }\nexport function inject(_: any): any { return new ElementRef(); }\n`);
+    writeFileSync(join(dir, 'ng.ts'), `let host: any = null;\nexport const $host = (v: any) => { host = v; };\nexport class ElementRef { nativeElement: any = host; }\nexport class ChangeDetectorRef { markForCheck(): void {} }\nexport function inject(_: any): any { return new ElementRef(); }\n`);
     writeFileSync(join(dir, 'angular.ts'), readFileSync(join(here, '../../runtime/angular.ts'), 'utf8').replace("from '@angular/core'", "from './ng.ts'"));
     const rt = await import(join(dir, 'angular.ts'));
     const ng = await import(join(dir, 'ng.ts'));
@@ -681,6 +681,15 @@ export class Panel {
         check(/^\s*val _injector: NodeInjector = NodeInjector\.enter\(jsArrayOf<Any\?>\(Counter::class\.java, /.test(lines[0] ?? ''), 'each instance makes its injector first, from its providers (Kotlin)');
       }
     }
+    const field = join(dir, 'field.component.ts');
+    writeFileSync(field, "import { Component } from '@angular/core';\n@Component({ selector: 'Field', template: '<Label [text]=\"name\"></Label>' })\nexport class Field {\n  name = '';\n  take(value: any) { this.name = value; }\n}\n");
+    const fieldIr = angularComponent(field, readFileSync(field, 'utf8'), new Map())!;
+    const fieldProgram = createProgram([field], new Map([[field, fieldIr.source]]), 'ios', modulesDir);
+    const fieldSwift = new SwiftTranslator(fieldProgram.checker, new Map([['Field', { props: fieldIr.props, optional: fieldIr.optional }]]), fieldProgram.files);
+    translateModules(fieldSwift, fieldProgram.program, [field]);
+    const fieldCls = fieldProgram.program.getSourceFile(field)!.statements.filter(ts.isClassDeclaration).find((c) => c.name?.text === 'Field')!;
+    const fieldCode = fieldSwift.componentMembers(fieldCls, fieldIr.props).join('\n');
+    check(/self\.name = \S*\(value\)/.test(fieldCode) && !fieldCode.includes('jsSet(self'), "an untyped value written to a component's field is assigned to it, as a component has no members by name (Swift)");
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
@@ -1220,6 +1229,66 @@ export const restoring = isAngularHmrRestoringRoute();
   }
 }
 
+// ---- @angular/forms' directives in templates ----
+{
+  const compile = (template: string, members = 'name = ""; agree = false; form: any; save(f: any) {}', imports = 'NativeScriptFormsModule, ReactiveFormsModule', selectors = new Map<string, string>()) =>
+    angularComponent('/app/form.component.ts', `import { Component, signal } from '@angular/core';\nimport { ReactiveFormsModule, FormsModule } from '@angular/forms';\nimport { NativeScriptFormsModule } from '@nativescript/angular';\n@Component({ selector: 'Form', imports: [${imports}], template: \`${template}\` })\nexport class Form { ${members} }\n`, selectors, {})!;
+  const fails = (template: string, members?: string, imports?: string, selectors?: Map<string, string>) => { try { compile(template, members, imports, selectors); return ''; } catch (e) { return String(e); } };
+  const methodOf = (c: AngularComponent, m: string) => c.source.split('\n').find((l) => l.trimStart().startsWith(`${m}(`)) ?? '';
+  const usesOf = (c: AngularComponent): any[] => {
+    const all: any[] = [];
+    const walk = (nodes: any[]) => { for (const x of nodes) { all.push(...(x.directives ?? [])); walk(x.children ?? []); walk(x.body ?? []); for (const b of x.branches ?? []) walk(b.body); } };
+    walk(c.template);
+    return all;
+  };
+  const makes = (c: AngularComponent) => usesOf(c).map((u) => methodOf(c, u.make).replace(/^.*return \(new \$F_(\w+)\((.*)\)\); }$/, '$1($2)'));
+
+  const td = compile(`<StackLayout ngForm #f="ngForm" (ngSubmit)="save(f)"><TextField [(ngModel)]="name" name="n" required minlength="3" #m="ngModel"></TextField><Label [text]="m.valid ? 'ok' : 'bad'"></Label></StackLayout><Button [isEnabled]="f.valid"></Button>`);
+  const tdMakes = makes(td);
+  check(JSON.stringify(tdMakes) === JSON.stringify([
+    "NgForm([], [], 'always', [false])",
+    'NgControlStatus($Ng_hostView(), $Ng_viewChecker(), $d0, true)',
+    'NsValueAccessor($Ng_hostView(), "text", $unsetValue)',
+    'RequiredValidator(true)',
+    'MinLengthValidator(true)',
+    'NgModel($d0, [$d3, $d4], [], $d2, $Ng_viewChecker(), [true, true, false, false])',
+    'NgControlStatus($Ng_hostView(), $Ng_viewChecker(), $d5, false)',
+  ]), `an ngForm with an ngModel below it: NgForm, the accessor, validator directives, NgModel under the form, and their NgControlStatus, in Angular's order (${tdMakes.join(' · ')})`);
+  check(/\$e\d+\(\$d0: \$F_NgForm, \$event: any\) \{ this\.save\(\$d0\); \}/.test(td.source), "(ngSubmit) is NgForm's output, its template reference naming NgForm in its own handler");
+  check(td.source.includes('this.name = $event;') && td.source.includes('[(this.name), "n", undefined, undefined]'), '[(ngModel)] binds NgModel and writes its ngModelChange back to the field');
+  check(td.source.includes("return ($d5.valid ? 'ok' : 'bad');") && /\$b\d+\(\$d0: \$F_NgForm, \$d1: \$F_NgControlStatus\) \{ return \(\$d0\.valid\); \}/.test(td.source), 'a template reference to NgModel or NgForm names it in the elements after it and below it');
+  check(td.source.includes('$d2.onChange($event.value);') && td.source.includes('$d2.onTouched();') && usesOf(td).some((u) => u.listeners.some((l: any) => l.event === 'textChange')), "a TextField's value accessor takes its textChange and blur, as @nativescript/angular's does");
+  const sig = compile(`<Switch [(ngModel)]="on"></Switch><Slider [(ngModel)]="level"></Slider>`, 'on = signal(false); level = 3;');
+  check(sig.source.includes('this.on.set($event);') && sig.source.includes('this.level = $event;') && sig.source.includes('"checked"') && sig.source.includes('"value"'), '[(ngModel)] on a signal sets it, on a field assigns it, and Switch and Slider take their accessors');
+
+  const rx = compile(`<StackLayout [formGroup]="form" (ngSubmit)="save(form)"><TextField formControlName="name" class="in" [class.big]="agree"></TextField><StackLayout formGroupName="address"><SegmentedBar formControlName="plan"></SegmentedBar></StackLayout></StackLayout><DatePicker [formControl]="form"></DatePicker>`);
+  const rxMakes = makes(rx);
+  check(rxMakes.includes('FormGroupDirective([], [], \'always\', "formGroup", [true])') && rxMakes.includes('FormControlName($d0, [], [], $d2, [true, false])')
+    && rxMakes.some((m) => /^FormGroupName\(\$d0, \[\], \[\], false, \[true\]\)$/.test(m)) && rxMakes.some((m) => /^FormControlName\(\$d\d+, \[\], \[\], \$d\d+, \[true, false\]\)$/.test(m) && !m.startsWith('FormControlName($d0,'))
+    && rxMakes.some((m) => /^FormControlDirective\(\[\], \[\], \$d\d+, 'always', \[true, false\]\)$/.test(m)), `formGroup with formControlName and formGroupName below it, and a standalone formControl, each under its parent (${rxMakes.join(' · ')})`);
+  check(usesOf(rx).some((u) => methodOf(rx, u.make).includes('new $Ng_NgClass()')) && !rx.template.some((x: any) => (x.children ?? []).some((c: any) => c.attrs?.some((a: any) => a.name === 'class'))), "[class.x] beside the ng-* classes goes through NgClass, which shares the view's classes with them");
+
+  const swift = render(td, new Map(), () => false, 'angular').join('\n');
+  const kotlin = renderKotlin(td, new Map(), { framework: 'angular' }).join('\n');
+  check(/d\d+\.update\.subscribe \{ \[__dv = EffectOrder\.current\.view\] \(event: Any\?\) in Reactivity\.event\(dirty: __dv\)/.test(swift) && /d\d+\.update\.subscribe \{ event: Any\? -> /.test(kotlin), "a directive's output is a listener of the view it is in (Swift, Kotlin)");
+  check(/Button\(\)[\s\S]*self\._b\d+\(d1, d2\)/.test(swift) && /Button\(\)[\s\S]*this\._b\d+\(d1, d2\)/.test(kotlin), 'an element after a form directive reads it (Swift, Kotlin)');
+
+  const refused = (what: string, e: string, text: string) => check(e.includes(text), `${what}: ${e ? e.split(': ').slice(1).join(': ').slice(0, 160) : 'it compiled'}`);
+  refused('ngDefaultControl stops the build', fails(`<Label ngModel ngDefaultControl></Label>`), "ngDefaultControl (@angular/forms' DefaultValueAccessor");
+  refused('a forms control on a component stops the build', fails(`<Rating [(ngModel)]="name"></Rating>`, undefined, undefined, new Map([['Rating', 'Rating']])), "a component, is not supported in a release build yet: it needs the component's own ControlValueAccessor");
+  refused('ngModel on a view no accessor takes stops the build (NG01203)', fails(`<Label [(ngModel)]="name"></Label>`), 'NG01203: No value accessor for form control');
+  refused('ngModel without NativeScriptFormsModule stops the build (NG01203)', fails(`<TextField [(ngModel)]="name"></TextField>`, undefined, 'FormsModule'), "TextValueAccessor: import NativeScriptFormsModule");
+  refused('formControlName without a form above it stops the build', fails(`<TextField formControlName="name"></TextField>`), 'NG01050: formControlName must be used with a parent formGroup');
+  refused('formControlName in an ngModelGroup stops the build', fails(`<StackLayout ngForm><StackLayout ngModelGroup="a"><TextField formControlName="name"></TextField></StackLayout></StackLayout>`), 'NG01051');
+  refused('formGroupName without a form above it stops the build', fails(`<StackLayout formGroupName="a"></StackLayout>`), 'NG01053');
+  refused('ngModelGroup outside a form stops the build', fails(`<StackLayout ngModelGroup="a"></StackLayout>`), 'NG01353');
+  refused('ngModel in a formGroup stops the build', fails(`<StackLayout [formGroup]="form"><TextField [(ngModel)]="name"></TextField></StackLayout>`), 'NG01350');
+  check(!fails(`<StackLayout [formGroup]="form"><TextField [(ngModel)]="name" [ngModelOptions]="{ standalone: true }"></TextField></StackLayout>`), 'a standalone ngModel in a formGroup compiles');
+  refused('ngModel in a form without a name stops the build', fails(`<StackLayout ngForm><TextField [(ngModel)]="name"></TextField></StackLayout>`), 'NG01352');
+  refused('[class] beside a forms control stops the build', fails(`<TextField [(ngModel)]="name" [class]="'x'"></TextField>`), '[class] beside');
+  refused("a reference to an exportAs the element doesn't have stops the build", fails(`<TextField [(ngModel)]="name" #f="ngForm"></TextField>`), `#f="ngForm" on <TextField>, a reference to a directive's exportAs`);
+}
+
 // ---- @angular/forms: the port against the package ----
 {
   // Each forms diff case run in Node twice, against @angular/forms and against runtime/angular-forms.ts in its place: the
@@ -1234,7 +1303,7 @@ export const restoring = isAngularHmrRestoringRoute();
       return `${r.status}\n${r.stdout}\n${r.stderr.split('\n')[0]}`;
     };
     const casesDir = join(here, '../diff/cases');
-    const formsCases = readdirSync(casesDir).filter((f) => /^78\d-forms-.*\.ts$/.test(f));
+    const formsCases = readdirSync(casesDir).filter((f) => /^78\d-forms-.*\.ts$/.test(f) && !/^\/\/ @forms-port$/m.test(readFileSync(join(casesDir, f), 'utf8')));
     check(formsCases.length >= 7, 'the forms diff cases are found');
     for (const c of formsCases) {
       const source = js(readFileSync(join(casesDir, c), 'utf8'));
