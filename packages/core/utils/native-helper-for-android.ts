@@ -291,9 +291,14 @@ export namespace resources {
 }
 
 export function isRealDevice(): boolean {
-	const fingerprint = android.os.Build.FINGERPRINT;
+	const { FINGERPRINT, HARDWARE } = android.os.Build;
+	const fingerprint = FINGERPRINT || '';
+	const hardware = HARDWARE || '';
 
-	return fingerprint != null && (fingerprint.indexOf('vbox') > -1 || fingerprint.indexOf('generic') > -1);
+	// goldfish/ranchu are the Android Emulator's virtual boards; vbox is Genymotion.
+	const isEmulator = hardware === 'goldfish' || hardware === 'ranchu' || fingerprint.startsWith('generic') || fingerprint.includes('vbox');
+
+	return !isEmulator;
 }
 
 const DefaultLightScrim = new Color(0xe6, 0xff, 0xff, 0xff);
