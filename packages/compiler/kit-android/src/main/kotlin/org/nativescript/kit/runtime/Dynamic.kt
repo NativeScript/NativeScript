@@ -338,7 +338,7 @@ class JavaMethodRef(private val target: Any?, private val cls: Class<*>, private
             ?: throw JSException(JSTypeError("${cls.name}.$name: no overload takes these ${args.size} arguments"))
         val converted = chosen.parameterTypes.mapIndexed { i, type -> toJavaValue(args[i], type) }
         return try {
-            fromJavaValue(chosen.invoke(target, *converted.toTypedArray()))
+            fromJavaResult(chosen, chosen.invoke(target, *converted.toTypedArray()))
         } catch (e: java.lang.reflect.InvocationTargetException) {
             throw e.targetException
         }
@@ -379,7 +379,7 @@ fun jsCallDeclared(target: Any?, name: String, vararg args: Any?): Any? {
         val m = c.declaredMethods.firstOrNull { it.name == name && it.parameterCount == args.size && it.parameterTypes.withIndex().all { (i, t) -> javaScore(args[i], t) != null } }
         if (m != null) {
             m.isAccessible = true
-            return try { fromJavaValue(m.invoke(receiver, *m.parameterTypes.mapIndexed { i, t -> toJavaValue(args[i], t) }.toTypedArray())) } catch (e: java.lang.reflect.InvocationTargetException) { throw e.targetException }
+            return try { fromJavaResult(m, m.invoke(receiver, *m.parameterTypes.mapIndexed { i, t -> toJavaValue(args[i], t) }.toTypedArray())) } catch (e: java.lang.reflect.InvocationTargetException) { throw e.targetException }
         }
         c = c.superclass
     }
@@ -461,6 +461,14 @@ fun toJavaValue(value: Any?, type: Class<*>): Any? = when {
     else -> value
 }
 
+/**
+ * What a Java method gives script: undefined from a void one, and Java's null as script's null, as NativeScript marshals it.
+ * The kit's own Kotlin members hold undefined as null, so their null stays undefined.
+ */
+fun fromJavaResult(method: Method, value: Any?): Any? = if (method.returnType == Void.TYPE) null else fromJavaValue(value) ?: javaNull(method.declaringClass)
+
+private fun javaNull(declaring: Class<*>): Any? = if (declaring.name.startsWith("org.nativescript.kit.")) null else JSNull
+
 /** A Java value as script reads it: numbers are Double, a char is a string, an array is a JSArray. */
 fun fromJavaValue(value: Any?): Any? = when (value) {
     null -> null
@@ -484,7 +492,7 @@ fun jsJavaGet(target: Any, key: String): Any? {
     javaExpando(target)?.let { if (it.has(key)) return it[key] }
     val static = target is Class<*>
     val cls = if (static) target as Class<*> else target.javaClass
-    javaField(target, key, static)?.let { return fromJavaValue(it.get(if (static) null else target)) }
+    javaField(target, key, static)?.let { return fromJavaValue(it.get(if (static) null else target)) ?: javaNull(it.declaringClass) }
     val methods = javaMethods(cls, key, static)
     if (methods.isNotEmpty()) return JavaMethodRef(if (static) null else target, cls, key, methods)
     // A static member script declared on a base class (`ListViewBase.knownFunctions` read through ListView): a Kotlin
