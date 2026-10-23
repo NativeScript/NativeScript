@@ -6847,14 +6847,17 @@ ${members.join('\n')}
   private switchStatement(s: ts.SwitchStatement): string {
     const i = this.indent;
     const subject = this.fresh('__switch');
-    const subjectType = this.typeOf(s.expression);
+    // A string, number or boolean that may be undefined (`s[i]` past its end) is matched as the optional it is, so `case undefined` can match.
+    const raw = ['String', 'Double', 'Bool'].includes(this.typeOf(s.expression)) ? this.maybeUndefined(s.expression) : null;
+    const subjectType = raw ? optionalType(this.typeOf(s.expression)) : this.typeOf(s.expression);
+    const subjectCode = `${this.tryPrefix(s.expression)}${raw ?? this.expr(s.expression)}`;
     const clauses = s.caseBlock.clauses;
     const fallback = clauses.findIndex(ts.isDefaultClause);
-    if (fallback >= 0 && fallback < clauses.length - 1) return this.switchBlock(s, subject, subjectType);
+    if (fallback >= 0 && fallback < clauses.length - 1) return this.switchBlock(s, subject, subjectType, subjectCode);
     const literal = (l: ts.Expression) => ts.isLiteralExpression(l) || (ts.isPrefixUnaryExpression(l) && ts.isNumericLiteral(l.operand));
     // Cases of literals match by pattern, which names no subject: Swift's switch evaluates its own once.
     const direct = subjectType !== 'Any?' && clauses.every((c) => !ts.isCaseClause(c) || literal(c.expression));
-    const lines = direct ? [`${i}switch ${this.tryPrefix(s.expression)}${this.expr(s.expression)} {`] : [`${i}let ${subject}: ${subjectType} = ${this.tryPrefix(s.expression)}${this.expr(s.expression)}`, `${i}switch ${subject} {`];
+    const lines = direct ? [`${i}switch ${subjectCode} {`] : [`${i}let ${subject}: ${subjectType} = ${subjectCode}`, `${i}switch ${subject} {`];
     let labels: ts.Expression[] = [];
     this.plainBreak++;
     this.breakTargets.push(null);
@@ -6898,12 +6901,12 @@ ${members.join('\n')}
    * say: the clause execution starts at is found first, then each clause runs
    * if it is at or after it (fallthrough), and `break` leaves the labeled block.
    */
-  private switchBlock(s: ts.SwitchStatement, subject: string, subjectType: string): string {
+  private switchBlock(s: ts.SwitchStatement, subject: string, subjectType: string, subjectCode: string): string {
     const i = this.indent;
     const label = this.fresh('__switchBlock');
     const start = this.fresh('__start');
     const clauses = s.caseBlock.clauses;
-    const lines = [`${i}${label}: do {`, `${i}    let ${subject}: ${subjectType} = ${this.tryPrefix(s.expression)}${this.expr(s.expression)}`, `${i}    var ${start} = ${clauses.findIndex(ts.isDefaultClause)}`];
+    const lines = [`${i}${label}: do {`, `${i}    let ${subject}: ${subjectType} = ${subjectCode}`, `${i}    var ${start} = ${clauses.findIndex(ts.isDefaultClause)}`];
     const tests = clauses.flatMap((c, k) => {
       if (!ts.isCaseClause(c)) return [];
       const l = c.expression;
