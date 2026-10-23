@@ -223,4 +223,17 @@ describe('createNsDevClientBootstrapCode', () => {
 		// So must an entry import failure observed by the boot poller.
 		expect(code).toContain('else if (globalThis.__NS_ENTRY_ERROR__)');
 	});
+
+	it('installs seeded app.css in the /ns/core realm before the app entry evaluates', () => {
+		const code = createNsDevClientBootstrapCode({
+			wsUrl: 'ws://127.0.0.1:5173/__ns_dev__/ws',
+			origin: 'http://127.0.0.1:5173',
+			clientImport: '/ns/m/node_modules/@nativescript/vite/hmr/client/index.js',
+		});
+		expect(code).toContain('import { installHttpCoreCssSupport as __nsBrowserRuntimeInstallHttpCoreCssSupport } from "http://127.0.0.1:5173/ns/m/node_modules/@nativescript/vite/hmr/entry-runtime.js";');
+		const installAt = code.indexOf('__nsBrowserRuntimeInstallHttpCoreCssSupport(__nsBrowserRuntimeCoreBridge, false);');
+		expect(installAt).toBeGreaterThan(-1);
+		// Top-level, ahead of the boot-complete poller that replays it lazily.
+		expect(installAt).toBeLessThan(code.indexOf('if (!globalThis.__NS_HMR_BROWSER_RUNTIME_CLIENT_ACTIVE__)'));
+	});
 });

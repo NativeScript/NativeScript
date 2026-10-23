@@ -1,10 +1,12 @@
 import * as esbuild from 'esbuild';
 import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
+import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
+import { runInNewContext } from 'node:vm';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-import { createNodeBuiltinPolyfillEsbuildPlugin, createWebpackLoaderStubEsbuildPlugin } from './vendor-esbuild-plugins.js';
+import { createNodeBuiltinPolyfillEsbuildPlugin, createWebpackLoaderStubEsbuildPlugin, createOptionalDependencyStubEsbuildPlugin } from './vendor-esbuild-plugins.js';
 
 // --- createWebpackLoaderStubEsbuildPlugin --------------------------------
 //
@@ -117,5 +119,49 @@ describe('createNodeBuiltinPolyfillEsbuildPlugin', () => {
 		expect(result.errors).toHaveLength(0);
 		const output = result.outputFiles?.[0]?.text ?? '';
 		expect(output).toMatch(/from\s+["']fs["']/);
+	});
+});
+
+describe('createOptionalDependencyStubEsbuildPlugin', () => {
+	it('resolves package imports while preserving absent optional dependency fallbacks', async () => {
+		const projectRoot = await mkdtemp(path.join(tmpdir(), 'ns-vendor-imports-'));
+		try {
+			const dependency = path.join(projectRoot, 'node_modules', 'fixture');
+			await mkdir(dependency, { recursive: true });
+			await writeFile(path.join(projectRoot, 'package.json'), JSON.stringify({ private: true }));
+			await writeFile(path.join(dependency, 'package.json'), JSON.stringify({ name: 'fixture', type: 'module', imports: { '#internal': './internal.js' } }));
+			await writeFile(path.join(dependency, 'internal.js'), 'export const value = 42;');
+			await writeFile(
+				path.join(dependency, 'index.js'),
+				`import { value } from '#internal';
+				let optional;
+				let optionalError;
+				try {
+					optional = require('missing-optional-fixture');
+				} catch (error) {
+					optional = 'fallback';
+					optionalError = error.message;
+				}
+				export { value, optional, optionalError };`,
+			);
+
+			const result = await esbuild.build({
+				entryPoints: [path.join(dependency, 'index.js')],
+				bundle: true,
+				format: 'cjs',
+				platform: 'neutral',
+				write: false,
+				plugins: [createOptionalDependencyStubEsbuildPlugin(projectRoot)],
+			});
+			const module = { exports: {} };
+			runInNewContext(result.outputFiles[0].text, { module });
+			expect(module.exports).toMatchObject({
+				value: 42,
+				optional: 'fallback',
+				optionalError: "Cannot find module 'missing-optional-fixture'",
+			});
+		} finally {
+			await rm(projectRoot, { recursive: true, force: true });
+		}
 	});
 });

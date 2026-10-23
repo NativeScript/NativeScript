@@ -1834,3 +1834,48 @@ export const testLiquidGlassViews_do_not_crash_when_updating_iosGlassEffect = is
 			TKUnit.assertTrue(root.isLoaded, 'Liquid glass view tree should remain loaded after glass effect updates.');
 		})
 	: undefined;
+
+let getGlassViews = (template: string) => {
+	let root = Builder.parse(template);
+
+	return {
+		root,
+		parent: root.getViewById('parent') as View,
+		glass: root.getViewById('glass') as View,
+		child: root.getViewById('child') as View,
+	};
+};
+
+// Parents subtract only a child's margins from its measure spec, so glass views must deduct their own padding.
+
+let activity_liquidglass_padding = () =>
+	getGlassViews(
+		`<FlexboxLayout iosOverflowSafeArea="false" id="parent" width="300" height="300" flexDirection="${FlexDirection.ROW}" backgroundColor="gray">
+        <LiquidGlass id="glass" width="300" height="100" paddingLeft="20" paddingRight="20">
+            <Label id="child" text="content" horizontalAlignment="stretch" />
+        </LiquidGlass>
+    </FlexboxLayout>`,
+	);
+
+export const testLiquidGlassFlexboxLayout_padding_measures_content_box = isIOS
+	? test(activity_liquidglass_padding, noop, ({ glass, child }) => {
+			closeEnough(width(child), dipToDp(260), `Expected ${child} width to equal glass width minus 2x20 padding`);
+			isLeftWith(glass, child, dipToDp(20), `Expected ${child} to start 20dip inside ${glass}`);
+		})
+	: undefined;
+
+let activity_liquidglasscontainer_autowidth = () =>
+	getGlassViews(
+		`<FlexboxLayout iosOverflowSafeArea="false" id="parent" flexDirection="${FlexDirection.ROW}" alignItems="${AlignItems.FLEX_START}" backgroundColor="gray">
+        <LiquidGlassContainer id="glass" paddingLeft="20" paddingRight="20" paddingTop="10" paddingBottom="10">
+            <Label id="child" width="100" height="40" />
+        </LiquidGlassContainer>
+    </FlexboxLayout>`,
+	);
+
+export const testLiquidGlassContainerFlexboxLayout_padding_wraps_content = isIOS
+	? test(activity_liquidglasscontainer_autowidth, noop, ({ glass }) => {
+			closeEnough(width(glass), dipToDp(140), `Expected ${glass} width to equal child width plus 2x20 padding`);
+			closeEnough(height(glass), dipToDp(60), `Expected ${glass} height to equal child height plus 2x10 padding`);
+		})
+	: undefined;

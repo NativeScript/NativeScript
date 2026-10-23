@@ -193,7 +193,8 @@ function getLoadedCode(loadResult: string | { code?: string } | TransformResult 
 
 /**
  * Anchors a root-relative spec to the `/@fs/<abs>` id of the file it names,
- * probing the project root, then the monorepo workspace root. Vite only
+ * probing the project root, then the monorepo workspace root and linked
+ * dependency roots. Vite only
  * resolves root-relative URLs under its configured `root`, so workspace files
  * outside it need the absolute form.
  */
@@ -202,8 +203,13 @@ export function resolveFsAnchoredSpec(spec: string, serverRoot: string, workspac
 	for (const root of roots) {
 		const rootPosix = root.replace(/\\/g, '/').replace(/\/$/, '');
 		const fsId = `/@fs${rootPosix.startsWith('/') ? '' : '/'}${rootPosix}${spec.startsWith('/') ? '' : '/'}${spec}`;
-		if (resolveCandidateFilePath(fsId, serverRoot, workspaceRoot)) {
-			return fsId;
+		// The fs id is a guess composed under a root — serve the path the
+		// resolver actually found; a fallback hit can live in a linked
+		// dependency's node_modules, outside both roots.
+		const resolved = resolveCandidateFilePath(fsId, serverRoot, workspaceRoot);
+		if (resolved) {
+			const resolvedPosix = resolved.replace(/\\/g, '/');
+			return `/@fs${resolvedPosix.startsWith('/') ? '' : '/'}${resolvedPosix}`;
 		}
 	}
 	return null;

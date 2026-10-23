@@ -31,4 +31,27 @@ export default obj;
 		expect(result.diagnostics.some((d) => d.includes('[ast][warn]'))).toBe(false);
 		expect(result.body.replace(/\s+/g, ' ').trim()).toContain('const obj = { default: 1, other: 2 }');
 	});
+
+	it('keeps object properties whose value is undefined or null', () => {
+		const source = `
+import { ref } from 'vue';
+const themeOptions = [{ label: 'System', value: undefined }, { label: 'Light', value: 'light' }];
+const flags = { a: 1, b: null, c: void 0, nullable: 2 };
+`;
+		const body = astExtractImportsAndStripTypes(source).body.replace(/\s+/g, ' ');
+		expect(body).toContain("{ label: 'System', value: undefined }");
+		expect(body).toContain('{ a: 1, b: null, c: void 0, nullable: 2 }');
+	});
+
+	it('strips type annotations left on function parameters', () => {
+		const source = `
+function f(a: string, b?: undefined, ...rest: any[]) { return [a, b, rest]; }
+const g = (x: number = 1) => x;
+`;
+		const result = astExtractImportsAndStripTypes(source);
+		const body = result.body.replace(/\s+/g, ' ');
+		expect(body).toContain('function f(a, b, ...rest)');
+		expect(body).toContain('const g = (x = 1) => x');
+		expect(result.diagnostics).toEqual(expect.arrayContaining(['[ast-fallback] stripped residual param annotations']));
+	});
 });

@@ -8,6 +8,34 @@ export interface AstProcessResult {
 	diagnostics: string[];
 }
 
+function stripParamAnnotations(statements: Statement[]): boolean {
+	let stripped = false;
+	const strip = (param: any) => {
+		for (const node of [param, param?.left, param?.argument, param?.parameter]) {
+			if (node?.typeAnnotation) {
+				node.typeAnnotation = null;
+				stripped = true;
+			}
+			if (node?.optional) {
+				node.optional = false;
+				stripped = true;
+			}
+		}
+	};
+	const visit = (node: any) => {
+		if (!node || typeof node.type !== 'string') return;
+		if (Array.isArray(node.params)) node.params.forEach(strip);
+		for (const key of Object.keys(node)) {
+			if (key === 'loc' || key === 'leadingComments' || key === 'trailingComments' || key === 'innerComments') continue;
+			const value = node[key];
+			if (Array.isArray(value)) value.forEach(visit);
+			else if (value && typeof value === 'object') visit(value);
+		}
+	};
+	statements.forEach(visit);
+	return stripped;
+}
+
 export function astExtractImportsAndStripTypes(source: string): AstProcessResult {
 	const diagnostics: string[] = [];
 	let ast: File | null = null;
@@ -39,6 +67,10 @@ export function astExtractImportsAndStripTypes(source: string): AstProcessResult
 		}
 	}
 
+	if (stripParamAnnotations(other)) {
+		diagnostics.push('[ast-fallback] stripped residual param annotations');
+	}
+
 	const fileNoImports: File = {
 		...ast,
 		program: { ...ast.program, body: other },
@@ -50,11 +82,6 @@ export function astExtractImportsAndStripTypes(source: string): AstProcessResult
 	} catch (e) {
 		diagnostics.push('[ast] generate body failed: ' + (e as any)?.message);
 		bodyCode = source;
-	}
-
-	if (/(\(|,|=)\s*[A-Za-z_$][\w$]*\s*:\s*(?:boolean|string|number|any|unknown|void|null|undefined)/.test(bodyCode)) {
-		bodyCode = bodyCode.replace(/(\(|,|=)\s*([A-Za-z_$][\w$]*)\s*:\s*(boolean|string|number|any|unknown|void|null|undefined)/g, '$1 $2');
-		diagnostics.push('[ast-fallback] stripped residual param annotations');
 	}
 
 	const beforeVarStrip = bodyCode;

@@ -144,6 +144,9 @@ export function rewriteImports(code: string, importerPath: string, sfcFileMap: M
 	// Inline JSON imports (package.json, config.json, etc.)
 	// This must happen BEFORE other rewrites because JSON imports get a ?import query added by Vite
 	result = result.replace(/import\s+(\w+)\s+from\s+["']([^"']+\.json(?:\?[^"']*)?)["'];?/g, (match, varName, jsonPath) => {
+		if (PAT.RAW_QUERY_PATTERN.test(jsonPath)) {
+			return match;
+		}
 		try {
 			// Remove query params like ?import
 			const cleanPath = jsonPath.split('?')[0];
@@ -535,14 +538,24 @@ export function rewriteImports(code: string, importerPath: string, sfcFileMap: M
 		return `${prefix}${spec}${suffix}`;
 	};
 
+	const replaceImport = (match: string, prefix: string, spec: string, suffix: string): string => {
+		if (typeof spec !== 'string' || !PAT.RAW_QUERY_PATTERN.test(spec)) {
+			return replaceVueImport(match, prefix, spec, suffix);
+		}
+		const routed = replaceVueImport(match, prefix, spec.replace(PAT.QUERY_PATTERN, ''), suffix);
+		const rawRouted = routed.replace(/(\/ns\/m\/[^"'?\s]+)(?=["'])/, '$1?raw');
+		// Only the /ns/m route serves ?raw; a URL left for Vite to serve (e.g. /@fs outside both roots) needs Vite's own query.
+		return rawRouted !== routed ? rawRouted : replaceVueImport(match, prefix, spec, suffix);
+	};
+
 	// Apply to all import/export patterns (but only .vue files will be rewritten)
-	result = result.replace(PAT.IMPORT_PATTERN_1, replaceVueImport);
-	result = result.replace(PAT.IMPORT_PATTERN_2, replaceVueImport);
-	result = result.replace(PAT.EXPORT_PATTERN, replaceVueImport);
-	result = result.replace(PAT.IMPORT_PATTERN_3, replaceVueImport);
+	result = result.replace(PAT.IMPORT_PATTERN_1, replaceImport);
+	result = result.replace(PAT.IMPORT_PATTERN_2, replaceImport);
+	result = result.replace(PAT.EXPORT_PATTERN, replaceImport);
+	result = result.replace(PAT.IMPORT_PATTERN_3, replaceImport);
 	// Side-effect imports (import "spec") — must run AFTER named-import patterns
 	// since IMPORT_PATTERN_1 already handles `import ... from "spec"`.
-	result = result.replace(PAT.IMPORT_PATTERN_SIDE_EFFECT, replaceVueImport);
+	result = result.replace(PAT.IMPORT_PATTERN_SIDE_EFFECT, replaceImport);
 	result = ensureDynamicHmrImportHelper(result);
 
 	// Extra guard: map any lingering dynamic import('@') to a safe stub module path

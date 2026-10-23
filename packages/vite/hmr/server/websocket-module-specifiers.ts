@@ -4,7 +4,7 @@ import * as path from 'path';
 import * as PAT from './constants.js';
 import type { VendorManifest } from '../shared/vendor/manifest.js';
 import { getVendorManifest, resolveVendorSpecifier } from '../shared/vendor/registry.js';
-import { getProjectRootPath } from '../../helpers/project.js';
+import { getLinkedDependencyRoots, getMonorepoWorkspaceRoot, getProjectRootPath } from '../../helpers/project.js';
 import { extractRootPackageName, getPackageRuntimeInfo } from '../shared/package-classifier.js';
 import { getFlavorClientPackages } from '../framework-flavors.js';
 import { normalizeModuleId, stripViteFsPrefix } from '../../helpers/normalize-id.js';
@@ -382,6 +382,52 @@ function listWorkspaceNodeModulesDirs(workspaceRoot: string): string[] {
 	return dirs;
 }
 
+const linkedDependencyNodeModulesDirsCache = new Map<string, string[]>();
+
+/**
+ * `node_modules` dirs reachable through the app's dependency specs rather
+ * than its workspace layout — consulted when neither the project root nor
+ * the workspace root can anchor a served `/node_modules/` tail. Linked
+ * source checkouts (`link:`/`file:`/`portal:` deps and install-time hook
+ * symlinks) keep their own `node_modules` at the real target, and their
+ * workspace siblings can own transitive deps too, so each linked root's
+ * detected workspace root is scanned with the existing bounded workspace
+ * scan. Cached per project root; the set only changes on install.
+ */
+function listLinkedDependencyNodeModulesDirs(projectRoot: string): string[] {
+	const key = path.resolve(projectRoot);
+	const cached = linkedDependencyNodeModulesDirsCache.get(key);
+	if (cached) {
+		return cached;
+	}
+	const dirs: string[] = [];
+	const seen = new Set<string>();
+	const pushIfPresent = (dir: string) => {
+		if (!seen.has(dir) && existsSync(dir)) {
+			seen.add(dir);
+			dirs.push(dir);
+		}
+	};
+	const linkedWorkspaces = new Set<string>();
+	// Direct deps precede their workspace scans: importer info is gone from
+	// the URL, so first hit wins.
+	for (const root of getLinkedDependencyRoots(key)) {
+		pushIfPresent(path.join(root, 'node_modules'));
+		const workspace = getMonorepoWorkspaceRoot(root);
+		if (workspace) {
+			linkedWorkspaces.add(workspace);
+		}
+	}
+	for (const workspace of linkedWorkspaces) {
+		pushIfPresent(path.join(workspace, 'node_modules'));
+		for (const dir of listWorkspaceNodeModulesDirs(workspace)) {
+			pushIfPresent(dir);
+		}
+	}
+	linkedDependencyNodeModulesDirsCache.set(key, dirs);
+	return dirs;
+}
+
 /**
  * Resolve a candidate URL ('/node_modules/...', '/@fs/...', or an
  * absolute fs path) to a real file on disk under one of the allowed
@@ -391,9 +437,13 @@ function listWorkspaceNodeModulesDirs(workspaceRoot: string): string[] {
  * resolved under `projectRoot` — this keeps the existing app-local
  * behaviour identical and adds a fallback for monorepos where
  * `node_modules/` is hoisted above the app dir (Nx, Rush, Turborepo,
- * etc.). Without this fallback, every `/ns/m/node_modules/<hoisted-pkg>`
- * request to the dev server's bridge fails with a "transform miss"
- * 404 even though the file is right there at the workspace root.
+ * etc.). Linked dependency checkouts (`link:`/`file:`/`portal:` deps and
+ * install-time hook symlinks) are probed last, by the same
+ * `/node_modules/<pkg>/...` tail, since their private `node_modules`
+ * live under neither root. Without these fallbacks, every
+ * `/ns/m/node_modules/<pkg>` request to the dev server's bridge fails
+ * with a "transform miss" 404 even though the file is right there on
+ * disk.
  */
 export function resolveCandidateFilePath(candidate: string, projectRoot: string, workspaceRoot?: string | null): string | null {
 	const cleaned = candidate.replace(PAT.QUERY_PATTERN, '');
@@ -426,6 +476,23 @@ export function resolveCandidateFilePath(candidate: string, projectRoot: string,
 	const fromProjectRoot = tryUnderRoot(projectRoot);
 	if (fromProjectRoot) return fromProjectRoot;
 
+	// Served URLs keep only the last `/node_modules/<pkg>/...` tail, so a
+	// package installed solely in a fallback `node_modules` dir has no root
+	// to resolve under. First hit wins: the importer is gone from the URL.
+	const probeNodeModulesTail = (nmDirs: string[]): string | null => {
+		if (!cleaned.includes('/node_modules/')) {
+			return null;
+		}
+		const tail = cleaned.slice(cleaned.lastIndexOf('/node_modules/') + '/node_modules/'.length);
+		for (const nmDir of nmDirs) {
+			const absPath = path.resolve(nmDir, tail);
+			if (absPath.startsWith(nmDir + path.sep) && existsSync(absPath)) {
+				return absPath;
+			}
+		}
+		return null;
+	};
+
 	if (workspaceRoot) {
 		const resolvedProject = path.resolve(projectRoot);
 		const resolvedWorkspace = path.resolve(workspaceRoot);
@@ -433,17 +500,30 @@ export function resolveCandidateFilePath(candidate: string, projectRoot: string,
 			const fromWorkspace = tryUnderRoot(resolvedWorkspace);
 			if (fromWorkspace) return fromWorkspace;
 
-			// Served URLs keep only the last `/node_modules/<pkg>/...` tail, so a
-			// package installed solely in the pnpm store or in a workspace
-			// package's private node_modules has no root to resolve under.
-			// First hit wins: the importer is gone from the URL.
-			if (cleaned.includes('/node_modules/')) {
-				const tail = cleaned.slice(cleaned.lastIndexOf('/node_modules/') + '/node_modules/'.length);
-				for (const nmDir of listWorkspaceNodeModulesDirs(resolvedWorkspace)) {
-					const absPath = path.resolve(nmDir, tail);
-					if (absPath.startsWith(nmDir + path.sep) && existsSync(absPath)) return absPath;
-				}
-			}
+			// A package installed solely in the pnpm store or in a workspace
+			// package's private node_modules.
+			const fromWorkspaceScan = probeNodeModulesTail(listWorkspaceNodeModulesDirs(resolvedWorkspace));
+			if (fromWorkspaceScan) return fromWorkspaceScan;
+		}
+	}
+
+	// Linked source checkouts keep private node_modules outside both roots.
+	// Only packages the app's own install lacks may come from them: each
+	// extension/index variant is resolved separately, so a variant missing
+	// from the app's copy would otherwise pull in a checkout's other copy.
+	if (cleaned.includes('/node_modules/')) {
+		const tail = cleaned.slice(cleaned.lastIndexOf('/node_modules/') + '/node_modules/'.length);
+		const pkgName = extractRootPackageName(tail);
+		const installedForApp =
+			!!pkgName &&
+			[projectRoot, workspaceRoot].some((root) => {
+				if (!root) return false;
+				const nodeModules = path.join(path.resolve(root), 'node_modules');
+				return existsSync(path.join(nodeModules, pkgName)) || existsSync(path.join(nodeModules, '.pnpm', 'node_modules', pkgName));
+			});
+		if (!installedForApp) {
+			const fromLinkedDeps = probeNodeModulesTail(listLinkedDependencyNodeModulesDirs(projectRoot));
+			if (fromLinkedDeps) return fromLinkedDeps;
 		}
 	}
 
@@ -533,8 +613,10 @@ export function rewriteFsAbsoluteToNsM(spec: string, projectRoot: string, worksp
  * `export const X: string = '...'`. Routing through the realpath makes
  * Vite see a non-`node_modules` path and the TS transform applies.
  *
- * App-local candidates whose real path is also app-local are returned
- * unchanged so existing behaviour is preserved bit-for-bit.
+ * Candidates are returned unchanged only when their URL addresses the
+ * file found. Fallback files need filesystem anchors even when they live
+ * inside the app root — a linked checkout under `projectRoot` can hold a
+ * `node_modules` the served URL does not address.
  */
 export function filterExistingNodeModulesTransformCandidates(spec: string, candidates: string[], projectRoot: string, workspaceRoot?: string | null): string[] {
 	const cleanedSpec = spec.replace(PAT.QUERY_PATTERN, '');
@@ -581,20 +663,16 @@ export function filterExistingNodeModulesTransformCandidates(spec: string, candi
 		}
 
 		if (mapped === null) {
-			if (!hasDistinctWorkspaceRoot) {
+			const candidatePath = cleanedCandidate.startsWith('/@fs/') ? path.resolve(cleanedCandidate.slice('/@fs'.length)) : path.resolve(resolvedProjectRoot, cleanedCandidate.replace(/^\/+/, ''));
+			if (candidatePath === resolved) {
 				mapped = candidate;
 			} else {
-				const relFromProject = path.relative(resolvedProjectRoot, resolved);
-				const insideProjectRoot = relFromProject !== '' && !relFromProject.startsWith('..') && !path.isAbsolute(relFromProject);
-				if (insideProjectRoot) {
-					mapped = candidate;
-				} else {
-					// Hoisted `node_modules/<pkg>/...` file lives above projectRoot.
-					// Rewrite the URL to its fs-anchored form so Vite reads it directly
-					// instead of bouncing through bare-specifier resolution that the
-					// hoisted package's `exports` field may refuse.
-					mapped = `/@fs${resolved.replace(/\\/g, '/')}${querySuffix}`;
-				}
+				// The candidate URL does not address the discovered file. A
+				// fallback hit may live inside the project (a linked
+				// checkout's private node_modules) as well as outside it
+				// (a hoisted dependency). Anchor the actual path so Vite
+				// loads the same file we found.
+				mapped = `/@fs${resolved.replace(/\\/g, '/')}${querySuffix}`;
 			}
 		}
 
