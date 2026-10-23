@@ -1,6 +1,6 @@
 import { parse as convertToCSSWhatSelector, Selector as CSSWhatSelector, DataType as CSSWhatDataType } from 'css-what';
 import '../../globals';
-import { _expandCssShorthand, _pendingCssShorthandSubstitution, isCssVariable } from '../core/properties';
+import { _expandCssShorthand, _getCssShorthandsVersion, _isCssShorthand, _pendingCssShorthandSubstitution, isCssVariable } from '../core/properties';
 import { isNullOrUndefined } from '../../utils/types';
 import { cleanupImportantFlags } from './css-utils';
 
@@ -919,10 +919,41 @@ export class RuleSet {
 	public tag?: string | number;
 	public scopedTag?: string;
 
+	private shorthandsVersion = _getCssShorthandsVersion();
+
 	constructor(selectors: SelectorCore[], declarations: Declaration[]) {
 		this.selectors = selectors;
 		this.declarations = declarations;
 		this.selectors.forEach((sel) => (sel.ruleset = this));
+	}
+
+	/** Expands, once, shorthands registered after this rule was parsed (e.g. by a plugin). */
+	public expandLateShorthands(): void {
+		const version = _getCssShorthandsVersion();
+		if (this.shorthandsVersion === version) {
+			return;
+		}
+		this.shorthandsVersion = version;
+
+		const declarations = this.declarations;
+		let expanded: Declaration[];
+		for (let i = 0, length = declarations.length; i < length; i++) {
+			const declaration = declarations[i];
+			if (!expanded && typeof declaration.value === 'string' && _isCssShorthand(declaration.property)) {
+				expanded = declarations.slice(0, i);
+			}
+			if (!expanded) {
+				continue;
+			}
+			if (typeof declaration.value === 'string') {
+				pushDeclaration(expanded, declaration.property, declaration.value);
+			} else {
+				expanded.push(declaration);
+			}
+		}
+		if (expanded) {
+			this.declarations = expanded;
+		}
 	}
 	public toString(): string {
 		let desc = `${this.selectors.join(', ')} {${this.declarations.map((d, i) => `${i === 0 ? ' ' : ''}${d.property}: ${d.value}`).join('; ')} }`;
@@ -954,8 +985,10 @@ export function fromAstNode(astRule: ReworkCSS.Rule): RuleSet {
 
 function appendDeclaration(declarations: Declaration[], decl: ReworkCSS.Declaration): void {
 	const property = isCssVariable(decl.property) ? decl.property : decl.property.toLowerCase();
-	const value = cleanupImportantFlags(decl.value, decl.property);
+	pushDeclaration(declarations, property, cleanupImportantFlags(decl.value, decl.property));
+}
 
+function pushDeclaration(declarations: Declaration[], property: string, value: string): void {
 	// The cascade is defined on longhands: a shorthand declares each of its
 	// longhands in its place, so it is expanded here to keep source order meaningful.
 	const expanded = _expandCssShorthand(property, value);

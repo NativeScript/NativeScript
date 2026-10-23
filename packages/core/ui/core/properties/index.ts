@@ -14,6 +14,8 @@ export { unsetValue } from './property-shared';
 const cssPropertyNames: string[] = [];
 const cssShorthandConverters = new Map<string, (value: string) => [any, any][]>();
 const cssShorthandLonghands = new Map<string, string[]>();
+// Bumped per shorthand registration, so rules parsed before it can still expand it.
+let cssShorthandsVersion = 0;
 const HAS_OWN = Object.prototype.hasOwnProperty;
 const symbolPropertyMap = {};
 const cssSymbolPropertyMap = {};
@@ -163,6 +165,16 @@ export function _pendingCssShorthandSubstitution(cssName: string, value: string)
 	}
 
 	return declarations;
+}
+
+/** Changes whenever a shorthand is registered. */
+export function _getCssShorthandsVersion(): number {
+	return cssShorthandsVersion;
+}
+
+/** Whether `cssName` is a registered shorthand. */
+export function _isCssShorthand(cssName: string): boolean {
+	return cssShorthandConverters.has(cssName);
 }
 
 /**
@@ -1421,6 +1433,7 @@ export class ShorthandProperty<T extends Style, P> implements ShorthandProperty<
 		this.cssName = `css:${options.cssName}`;
 		this.cssLocalName = `${options.cssName}`;
 		cssShorthandConverters.set(options.cssName, options.converter as (value: string) => [any, any][]);
+		cssShorthandsVersion++;
 
 		const converter = options.converter;
 
