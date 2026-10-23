@@ -8,7 +8,7 @@
 // - a plugin's own Java classes (plugin-java/, compiled with javac) translate as native calls without typings declaring them;
 // - an app's module graph (tsconfig paths and exclude, what its entry reaches), its plugins' ES module bundles, the
 //   imports and prefix header of the generated project, and native calls into a module the build has no table for.
-import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -794,6 +794,57 @@ export async function readDoc(http: HttpClient, url: string): Promise<string> {
     ktTranslator.appModule = 'org.example.app';
     const ktCode = translateKotlinModules(ktTranslator, kt.program, [file]).map((m) => m.code).join('\n');
     check(/\.get\(url, [^\n]*\)\.mapValues \{ __v: Any\? -> jsAssertedString\(__v\) \}/.test(ktCode), "HttpClient.get with responseType 'text' reads its body as a String (Kotlin)");
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
+
+// ---- the compiler installed in an app's node_modules ----
+{
+  // Its runtime modules (runtime/angular-rx.ts) then sit under node_modules and below the app's tsconfig.json; a lenient
+  // app's iOS build must translate them as the checkout does.
+  const dir = mkdtempSync(join(tmpdir(), 'ns-release-checks-installed-'));
+  try {
+    const compiler = resolve(here, '../..');
+    const pkg = join(dir, 'node_modules', '@nativescript', 'compiler');
+    for (const d of ['bin', 'src', 'runtime']) cpSync(join(compiler, d), join(pkg, d), { recursive: true });
+    cpSync(join(compiler, 'package.json'), join(pkg, 'package.json'));
+    for (const d of ['node_modules', 'kit-apple', 'kit-android']) if (existsSync(join(compiler, d))) symlinkSync(join(compiler, d), join(pkg, d), 'dir');
+    // Node strips no types under node_modules: the installed package runs dist/, as published.
+    const dist = spawnSync(process.execPath, [join(pkg, 'bin', 'build-dist.mjs')], { encoding: 'utf8' });
+    const app = join(dir, 'app');
+    mkdirSync(app);
+    symlinkSync(modulesDir, join(app, 'node_modules'), 'dir');
+    writeFileSync(join(app, 'tsconfig.json'), '{ "compilerOptions": { "strict": false } }\n');
+    writeFileSync(join(app, 'person-detail.component.ts'), `
+import { inject } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+
+export class PersonDetail {
+  route = inject(ActivatedRoute);
+  router = inject(Router);
+  id(): number { return +this.route.snapshot.params.id; }
+  open(id: number) { this.router.navigate(['/item', id], { relativeTo: this.route }); }
+}
+`);
+    writeFileSync(join(dir, 'translate.mjs'), `
+const [base, ext, app] = process.argv.slice(2);
+const load = (m) => import(base + '/' + m + ext);
+const { createProgram } = await load('program');
+const { PluginSources, writtenStrict } = await load('plugins/source');
+const { Translator } = await load('swift');
+const { translateModules } = await load('modules');
+const file = app + '/person-detail.component.ts';
+const sw = createProgram([file], new Map(), 'ios', app + '/node_modules', new PluginSources({ app, platform: 'ios' }));
+const rx = sw.pluginFiles.filter((f) => f.endsWith('/runtime/angular-rx.ts'));
+const t = new Translator(sw.checker, new Map(), sw.files, { pluginFiles: sw.pluginFiles, lenientFiles: sw.pluginFiles.filter((f) => !writtenStrict(f)), lenientApp: sw.lenient });
+console.log(translateModules(t, sw.program, [file, ...rx]).map((m) => m.code.split(base.replace(/\\/(src|dist)$/, '')).join('<compiler>')).join('\\n'));
+`);
+    const run = (base: string, ext: string) => spawnSync(process.execPath, [join(dir, 'translate.mjs'), base, ext, app], { encoding: 'utf8', maxBuffer: 64 << 20 });
+    const checkout = run(join(compiler, 'src'), '.ts');
+    const installed = dist.status === 0 ? run(join(pkg, 'dist'), '.js') : dist;
+    if (checkout.status !== 0 || installed.status !== 0) console.log((checkout.stderr + installed.stderr).trim().split('\n').slice(-6).join('\n'));
+    check(checkout.status === 0 && installed.status === 0 && /class ActivatedRoute/.test(checkout.stdout) && installed.stdout === checkout.stdout, "an installed compiler translates its runtime modules as the checkout does (a lenient app's ActivatedRoute, rxjs's Observable)");
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
