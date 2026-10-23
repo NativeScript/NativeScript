@@ -9,7 +9,7 @@ export function _resolveAnimationCurve(curve: any): any {
 import { AnimationBase, Properties } from './animation-common';
 import type { View } from '../core/view';
 //@ts-ignore
-import { _ensureNativeTransforms } from '../core/view/index';
+import { _ensureNativeTransforms } from '../core/view/native-transforms.windows';
 
 function _applyFinalValue(target: any, property: string, to: any): void {
 	try {

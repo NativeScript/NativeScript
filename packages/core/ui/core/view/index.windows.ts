@@ -1,6 +1,7 @@
 export * from './view-common';
 export * from './view-helper';
 export * from '../properties';
+export { _ensureNativeTransforms } from './native-transforms.windows';
 
 import { ViewCommon, originXProperty, originYProperty } from './view-common';
 import type { CoreTypes } from '../../../core-types';
@@ -18,6 +19,7 @@ import { getClientOriginOnScreen, getCurrentWindowBounds, getCurrentWindowConten
 import { ImageSource } from '../../../image-source';
 import { ClipPathFunction } from '../../styling/clip-path-function';
 import { nativeChildIndex, removeNativeChild } from './native-children.windows';
+import { _ensureNativeTransforms } from './native-transforms.windows';
 type WindowsColor = Color & { windows: Windows.UI.Color, windowsArgb: number };
 
 // Windows.UI.Color is a plain {A,R,G,B} struct. Bridge reads fields directly, no WinRT call needed.
@@ -90,26 +92,6 @@ function _resolveToWinColor(color: any): Windows.UI.Color | null {
 	return null;
 }
 
-
-export function _ensureNativeTransforms(native: any): { scale: any; rotate: any; translate: any } | null {
-	try {
-		if (native.__ns_transforms) return native.__ns_transforms;
-
-		const tg = new Microsoft.UI.Xaml.Media.TransformGroup();
-		const scale = new Microsoft.UI.Xaml.Media.ScaleTransform();
-		const rotate = new Microsoft.UI.Xaml.Media.RotateTransform();
-		const translate = new Microsoft.UI.Xaml.Media.TranslateTransform();
-		tg.Children.Append(scale);
-		tg.Children.Append(rotate);
-		tg.Children.Append(translate);
-		native.RenderTransform = tg;
-		const result = { scale, rotate, translate };
-		native.__ns_transforms = result;
-		return result;
-	} catch (_e) {
-		return null;
-	}
-}
 
 const hidden = Symbol('[[hidden]]');
 function setVisibility(nativeView: Microsoft.UI.Xaml.UIElement & { [hidden]?: boolean }, value: CoreTypes.VisibilityType) {
