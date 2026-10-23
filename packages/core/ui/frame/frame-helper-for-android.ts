@@ -37,6 +37,10 @@ function findPageForFragment(fragment: androidx.fragment.app.Fragment, frame: Fr
 		entry = current;
 	} else if (executingContext && executingContext.entry && executingContext.entry.fragmentTag === fragmentTag) {
 		entry = executingContext.entry;
+	} else {
+		// Android also restores fragments that were only in the backstack or still queued, so
+		// widen the lookup before treating this fragment as an orphan.
+		entry = frame._findEntryForTag(fragmentTag);
 	}
 
 	let page: Page;
@@ -52,7 +56,41 @@ function findPageForFragment(fragment: androidx.fragment.app.Fragment, frame: Fr
 		entry.fragment = fragment;
 		_updateTransitions(entry);
 	} else {
-		throw new Error(`Could not find a page for ${fragmentTag}.`);
+		// Android restored a fragment no live entry owns anymore - the frame navigated on (or was
+		// reset) while the activity was being recreated. Throwing is fatal across the JNI boundary
+		// and this fragment can never produce a view, so discard it instead.
+		Trace.write(`Could not find a page for ${fragmentTag}. Discarding orphaned fragment.`, Trace.categories.NativeLifecycle, Trace.messageType.error);
+		removeFragmentIfAdded(fragment);
+	}
+}
+
+/**
+ * Drops a fragment the JS side no longer owns from its FragmentManager, so the manager stops
+ * driving it through the lifecycle. The removal is always deferred - callers may be inside a
+ * FragmentManager transaction, where commitNow throws "already executing transactions".
+ */
+export function removeFragmentIfAdded(fragment: androidx.fragment.app.Fragment): void {
+	if (!fragment.isAdded()) {
+		return;
+	}
+
+	const manager = fragment.getParentFragmentManager();
+	if (manager.isDestroyed()) {
+		return;
+	}
+
+	manager.beginTransaction().remove(fragment).commitAllowingStateLoss();
+}
+
+/**
+ * Breaks the fragment -> BackstackEntry link so a fragment the FragmentManager is still holding
+ * cannot bring a discarded entry (and its torn down page) back into the frame.
+ */
+export function detachFragmentCallbacks(fragment: androidx.fragment.app.Fragment): void {
+	const callbacks: FragmentCallbacksImplementation = fragment[CALLBACKS];
+	if (callbacks) {
+		callbacks.entry = null;
+		callbacks.frame = null;
 	}
 }
 
@@ -214,7 +252,7 @@ export class FragmentCallbacksImplementation implements AndroidFragmentCallbacks
 			const hasRemovingParent = fragment.getRemovingParentFragment();
 
 			if (hasRemovingParent) {
-				const nativeFrameView = this.frame.nativeViewProtected;
+				const nativeFrameView = this.frame?.nativeViewProtected;
 				if (nativeFrameView) {
 					const bitmapDrawable = new android.graphics.drawable.BitmapDrawable(getNativeApp<android.app.Application>().getApplicationContext().getResources(), this.backgroundBitmap);
 					this.frame._originalBackground = this.frame.backgroundColor || new Color('White');
@@ -237,7 +275,10 @@ export class FragmentCallbacksImplementation implements AndroidFragmentCallbacks
 
 		const entry = this.entry;
 		if (!entry) {
-			Trace.error(`${fragment}.onDestroy: entry is null or undefined`);
+			// A fragment that was never bound to an entry, or whose entry has already been
+			// discarded, is still destroyed by the FragmentManager. Trace.error routes to the error
+			// handler, which rethrows and turns this teardown into a fatal exception.
+			Trace.write(`${fragment}.onDestroy: entry is null or undefined`, Trace.categories.NativeLifecycle, Trace.messageType.error);
 
 			return null;
 		}
@@ -270,7 +311,7 @@ export class FragmentCallbacksImplementation implements AndroidFragmentCallbacks
 			const hasRemovingParent = fragment.getRemovingParentFragment();
 
 			if (hasRemovingParent) {
-				this.backgroundBitmap = this.loadBitmapFromView(this.frame.nativeViewProtected);
+				this.backgroundBitmap = this.loadBitmapFromView(this.frame?.nativeViewProtected);
 			}
 		} finally {
 			superFunc.call(fragment);
@@ -279,7 +320,16 @@ export class FragmentCallbacksImplementation implements AndroidFragmentCallbacks
 
 	@profile
 	public onResume(fragment: org.nativescript.widgets.FragmentBase, superFunc: Function): void {
-		const frame = this.entry.resolvedPage.frame;
+		const frame = this.entry?.resolvedPage?.frame;
+		if (!frame) {
+			// Stale fragment the FragmentManager is still driving after its entry (or page) was
+			// discarded: there is no navigation left to complete, and dereferencing the missing page
+			// would throw across the JNI boundary.
+			superFunc.call(fragment);
+
+			return;
+		}
+
 		// on some cases during the first navigation on nested frames the animation doesn't trigger
 		// we depend on the animation (even None animation) to set the entry as the current entry
 		// animation should start between start and resume, so if we have an executing navigation here it probably means the animation was skipped
@@ -288,7 +338,7 @@ export class FragmentCallbacksImplementation implements AndroidFragmentCallbacks
 		const weakRef = new WeakRef(this);
 		setTimeout(() => {
 			const owner = weakRef.get();
-			if (!owner) {
+			if (!owner || !owner.entry) {
 				return;
 			}
 			if (!owner.entry.isAnimationRunning) {
