@@ -861,6 +861,9 @@ public func jsIsTruthy(_ value: Any?) -> Bool {
     }
 }
 
+/// `a === b` of two numbers lenient code holds, where NaN stands for undefined: two undefined ones are equal.
+@inlinable public func jsLenientNumberEquals(_ a: Double, _ b: Double) -> Bool { a == b || (a.isNaN && b.isNaN) }
+
 /// `a === b`: numbers by value (NaN unequal to itself, -0 equal to +0), strings by code units,
 /// objects by identity. Closures cannot be compared in Swift and are never equal.
 public func jsStrictEquals(_ a: Any?, _ b: Any?) -> Bool {

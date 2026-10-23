@@ -7399,6 +7399,8 @@ ${members.join('\n')}
     // `new Array<Base>()` where an array of a subclass is wanted: an empty array of it.
     if (ts.isNewExpression(bare) && ts.isIdentifier(bare.expression) && bare.expression.text === 'Array' && !bare.arguments?.length && /^JSArray<.*>[?!]?$/.test(target)) return `${target.replace(/[?!]$/, '')}()`;
     // Lenient code passing null or undefined where a string, number or boolean is declared: the type's zero, as such a slot reads it.
+    // Library code's undefined number is NaN, as its fields without a value hold it and `x === undefined` tests it.
+    if (this.lenient && target === 'Double' && isNullish(bare) && bare.kind !== ts.SyntaxKind.NullKeyword) return '.nan';
     if ((this.lenient || this.lenientApp) && isNullish(bare) && ['String', 'Double', 'Bool'].includes(target)) return this.zero(target)!;
     // Null where a native struct is declared: its zero value, as the iOS runtime marshals null for one.
     if (this.lenient && isNullish(bare) && this.native.isStructType(target)) return `${target}()`;
@@ -12267,6 +12269,9 @@ ${members.join('\n')}
     const K2 = ts.SyntaxKind;
     const compared = (x: ts.Expression) => (ts.isBinaryExpression(x) && x.operatorToken.kind >= K2.LessThanToken && x.operatorToken.kind <= K2.ExclamationEqualsEqualsToken ? `(${this.expr(x)})` : this.expr(x));
     if (isStringType(lt)) return `${negate ? '!' : ''}jsStringEquals(${this.expr(a)}, ${this.expr(b)})`;
+    // Lenient code holds an undefined number as NaN: two variables or members holding undefined are equal. `x !== x` still tests for NaN.
+    const held = (x: ts.Expression) => { x = ts.skipOuterExpressions(x, ts.OuterExpressionKinds.Parentheses); return ts.isIdentifier(x) || ts.isPropertyAccessExpression(x) || ts.isElementAccessExpression(x); };
+    if (this.lenient && strict && lt === 'Double' && rt === 'Double' && held(a) && held(b) && a.getText() !== b.getText()) return `${negate ? '!' : ''}jsLenientNumberEquals(${this.expr(a)}, ${this.expr(b)})`;
     return `${compared(a)} ${negate ? '!=' : '=='} ${compared(b)}`;
   }
 
