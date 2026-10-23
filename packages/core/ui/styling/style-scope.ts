@@ -7,6 +7,7 @@ import * as ReworkCSS from '../../css';
 
 import { RuleSet, StyleSheetSelectorScope, SelectorCore, SelectorTier, SelectorsMatch, ChangeMap, Changes, fromAstNode, Node, matchMediaQueryString, matchSelectorCandidates } from './css-selector';
 import { Trace } from './styling-shared';
+import { isEvaluableMediaQuery } from '../../css-mediaquery';
 import { File, knownFolders, path } from '../../file-system';
 import { Application, CssChangedEventData, LoadAppCSSEventData } from '../../application';
 import { profile } from './styling-profile';
@@ -432,6 +433,12 @@ export function _populateRules(nodes: ReworkCSS.Node[], rulesets: RuleSet[], key
 
 			keyframes.push(keyframeRule);
 		} else if (isMedia(node)) {
+			// A query the runtime cannot evaluate never matches, so its rules are dead weight
+			if (!isEvaluableMediaQuery(node.media)) {
+				Trace.write(`Dropping '@media ${node.media}': the runtime cannot evaluate it`, Trace.categories.MediaQuery, Trace.messageType.warn);
+				continue;
+			}
+
 			// Media query can be an array of strings in case of nested queries
 			let compositeMediaQuery: string | string[];
 

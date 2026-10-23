@@ -47,8 +47,38 @@ export interface MediaQueryFeature {
 	value: string;
 }
 
+const EVALUABLE_FEATURES = new Set<string>(['width', 'height', 'device-width', 'device-height', 'orientation', 'prefers-color-scheme']);
+
+const parsedQueryCache = new Map<string, MediaQueryExpression[]>();
+
+function getParsedQuery(mediaQuery: string): MediaQueryExpression[] {
+	let expressions = parsedQueryCache.get(mediaQuery);
+	if (!expressions) {
+		expressions = parseQuery(mediaQuery);
+		parsedQueryCache.set(mediaQuery, expressions);
+	}
+
+	return expressions;
+}
+
+/**
+ * Whether a media query is valid and uses only features the runtime can evaluate.
+ * @param mediaQuery The media query string.
+ */
+export function isEvaluableMediaQuery(mediaQuery: string): boolean {
+	let expressions: MediaQueryExpression[];
+
+	try {
+		expressions = getParsedQuery(mediaQuery);
+	} catch {
+		return false;
+	}
+
+	return expressions.every((query) => query.features.every((feature) => EVALUABLE_FEATURES.has(feature.property)));
+}
+
 export function matchQuery(mediaQuery: string, values: MediaQueryEnvironmentParams): boolean {
-	const expressions = parseQuery(mediaQuery);
+	const expressions = getParsedQuery(mediaQuery);
 
 	return expressions.some((query) => {
 		const { type, inverse, features } = query;
