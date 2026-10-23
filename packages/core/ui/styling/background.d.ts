@@ -80,6 +80,13 @@ export namespace ios {
 	export function createUIImageFromURI(view: View, imageURI: string, flip: boolean, callback: (image: any) => void): void;
 	export function generateClipPath(view: View, bounds: any /* CGRect */): any;
 	export function generateShadowLayerPaths(view: View, bounds: any /* CGRect */): { maskPath: any; shadowPath: any };
+	/**
+	 * Whether the layer's own cornerRadius and cornerCurve can draw the corners.
+	 * The CSS squircle has no CALayer curve, so it always goes through a path mask.
+	 * @param background The view's background.
+	 * @returns True when no path mask is needed for the corners.
+	 */
+	export function drawsCornersNatively(background: BackgroundDefinition): boolean;
 	export function getUniformBorderRadius(view: View, bounds: any /* CGRect */): number;
 	export function generateNonUniformBorderInnerClipRoundedPath(view: View, bounds: any /* CGRect */): any;
 	export function generateNonUniformBorderOuterClipRoundedPath(view: View, bounds: any /* CGRect */): any;

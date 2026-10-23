@@ -154,10 +154,19 @@ export class Style extends Observable {
 
 	/**
 	 * The curve used to round the corners: 'round' (circular arcs, the default)
-	 * or 'squircle' (Apple's continuous corner curve). iOS only; Android always
-	 * renders circular corners.
+	 * or 'squircle' (the CSS superellipse). On Apple platforms it also accepts
+	 * 'continuous' (Apple's continuous corner curve), normally set through
+	 * iosCornerShape. Android always renders circular corners.
 	 */
-	public cornerShape: CoreTypes.CornerShapeType;
+	public cornerShape: CoreTypes.IOSCornerShapeType;
+
+	/**
+	 * Apple-only alias of cornerShape (`-ios-corner-shape` in CSS). It cascades
+	 * in place of cornerShape on Apple platforms and is ignored elsewhere, so
+	 * `corner-shape: squircle; -ios-corner-shape: continuous;` renders the
+	 * continuous curve on iOS and the squircle on Android.
+	 */
+	public iosCornerShape: CoreTypes.IOSCornerShapeType;
 
 	public boxShadow: string | ShadowCSSValues[];
 
