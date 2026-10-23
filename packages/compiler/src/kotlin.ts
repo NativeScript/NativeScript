@@ -612,9 +612,10 @@ export class Translator implements AsyncTranslator {
       let parts = t.types.filter((u) => !(u.flags & (F.Undefined | F.Null | F.Void)));
       if (!parts.length) return 'Any?';
       const optional = parts.length < t.types.length;
-      // `xs || []`: the empty literal's `never[]` takes the other side's type.
+      // `xs || []`: the empty literal's `never[]` takes the other side's type; beside a primitive (`['a', []]`'s elements) it is an array still.
       const empty = (u: ts.Type) => c.isArrayType(u) && !!(c.getTypeArguments(u as ts.TypeReference)[0]?.flags & F.Never);
-      if (parts.length > 1 && parts.some((u) => !empty(u))) parts = parts.filter((u) => !empty(u));
+      const primitive = (u: ts.Type) => !!(u.flags & (F.StringLike | F.NumberLike | F.BooleanLike | F.BigIntLike));
+      if (parts.length > 1 && parts.some((u) => !empty(u)) && !parts.some(primitive)) parts = parts.filter((u) => !empty(u));
       const translated = parts.flatMap((u) => { try { return [this.type(u, where)]; } catch { return []; } });
       if (!translated.length) return this.type(parts[0], where);
       const kinds = [...new Set(translated)];
@@ -6830,7 +6831,7 @@ export class Translator implements AsyncTranslator {
       if (own && this.typeOf(own.name) === 'Any?') return this.fromAny(`${this.typeOf(e.expression).endsWith('?') ? this.present(this.expr(e.expression), e.name.text, e.expression) : this.expr(e.expression)}.${ident(e.name.text)}`, optionalType(this.typeOf(e)));
     }
     // Lenient code: `list.pop()`, `list.shift()`, `list.find(…)` give undefined when there is none, whatever the type says.
-    if (this.lenient && ts.isCallExpression(e) && ts.isPropertyAccessExpression(e.expression) && ['pop', 'shift', 'find', 'findLast'].includes(e.expression.name.text)
+    if ((this.lenient || this.lenientApp) && ts.isCallExpression(e) && ts.isPropertyAccessExpression(e.expression) && ['pop', 'shift', 'find', 'findLast'].includes(e.expression.name.text)
         && this.typeOf(e.expression.expression).replace(/\?$/, '').startsWith('JSArray<') && !isNullable(this.typeOf(e)) && this.typeOf(e) !== 'Any?') return this.expr(e);
     if (ts.isPropertyAccessExpression(e) && e.questionDotToken && !this.typeOf(e.expression).endsWith('?')) {
       const target = this.maybeUndefined(e.expression);
