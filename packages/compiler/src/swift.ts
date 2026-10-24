@@ -5,7 +5,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { KIT_APPLE_SOURCES } from './paths.ts';
 import { Throws, digitsLiteral, isArrayLengthLiteral, isArrayLengthWrite, isAsync, isStatic } from './throws.ts';
-import { assignedValues, initializedNull, intersectionAliasMembers, intlConstructor, nullSetFields, isRegExpProtocol, isObjectToStringCall, isStringRaw, leadingNeverRead, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, uncheckedMatch, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, LooseSlots, originOf, ownSlot, implementedInterfaceDeclarations, slotOf, slotType, definitelyAssignedFields, type TrustScope } from './lang.ts';
+import { assignedValues, initializedNull, intersectionAliasMembers, intlConstructor, nullSetFields, isRegExpProtocol, isObjectToStringCall, isStringRaw, leadingNeverRead, forwardedSetter, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, uncheckedMatch, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, LooseSlots, originOf, ownSlot, implementedInterfaceDeclarations, slotOf, slotType, definitelyAssignedFields, type TrustScope } from './lang.ts';
 import { AsyncLowering, type AsyncCtx, type AsyncSyntax, type AsyncTranslator } from './async.ts';
 import { CoreAPI, isCoreDeclaration, packageOf } from './core.ts';
 import type { KitMember } from './kit-index.ts';
@@ -1508,6 +1508,19 @@ export class Translator implements AsyncTranslator {
   }
 
   /**
+   * A setter taking values its getter's type can't hold: one testing what script gives it (`typeofTestedSetter`), or one
+   * declaring a wider type (`set tint(value: Color | string)`). Its body is a method of its own, `__set_<name>`, taking any
+   * value, which every write reaches.
+   */
+  private setterTakesAny(set: ts.SetAccessorDeclaration): boolean {
+    if (this.typeofTestedSetter(set)) return true;
+    const p = set.parameters[0];
+    if (!p || !ts.isIdentifier(p.name) || !set.body || isStatic(set) || !ts.isClassLike(set.parent)) return false;
+    const get = set.parent.members.find((m): m is ts.GetAccessorDeclaration => ts.isGetAccessorDeclaration(m) && m.name.getText() === set.name.getText() && !isStatic(m));
+    return !!get?.body && this.typeOf(p.name) === 'Any?' && this.returnTypeOf(get) !== 'Any?';
+  }
+
+  /**
    * Lenient code: a function literal's parameter typed a string, number or boolean where its slot passes
    * any value (`scale: (value: number) => ({ property: 'scale', value })` stored where a `Pair | number` is
    * passed): JavaScript passes the value through unconverted, so the parameter holds it untyped.
@@ -1689,7 +1702,7 @@ export class Translator implements AsyncTranslator {
    * as a method value passing on what script gave it: a string the style's converter parses goes on as it is.
    */
   private forwardingSetter(fn: ts.FunctionLikeDeclaration): string | null {
-    const forward = ts.isMethodDeclaration(fn) && fn.name.getText() !== 'set' ? null : this.forwardedTo(fn);
+    const forward = ts.isMethodDeclaration(fn) && fn.name.getText() !== 'set' ? null : forwardedSetter(fn);
     if (!forward || !ts.isObjectLiteralExpression(fn.parent) && !ts.isPropertyAssignment(fn.parent)) return null;
     const target = this.withThis(fn, '__this', true, () => this.expr(forward.expression));
     return `({ (__this: Any?, __a: [Any?]) throws -> Any? in try jsSet(${target}, ${swiftString(forward.name.text)}, jsArg(__a, 0)); return nil } as JSMethod)`;
@@ -5131,7 +5144,7 @@ ${members.join('\n')}
       else parts.push('        get { nil }');
       if (ignoredSet) parts.push('        set {}');
       if (a.set && !ts.isIdentifier(a.set.parameters[0]?.name)) throw this.error(a.set, 'a setter whose parameter is a destructuring pattern');
-      const anySetter = !!a.set && this.typeofTestedSetter(a.set);
+      const anySetter = !!a.set && this.setterTakesAny(a.set);
       if (a.set && anySetter) {
         const p = a.set.parameters[0].name as ts.Identifier;
         const body = this.functionBody(a.set, 'Void', '    ');
@@ -5667,19 +5680,6 @@ ${members.join('\n')}
     return lines.join('\n').replace(/__\w+_(initNativeView|disposeNativeView)\(\) throws/g, (x) => x);
   }
 
-  /** A setter that only assigns its value to a member of `this`'s (`this.style.color = value`): that member. */
-  private forwardedTo(set: ts.FunctionLikeDeclaration): ts.PropertyAccessExpression | null {
-    const params = set.parameters.filter((q) => !(ts.isIdentifier(q.name) && q.name.text === 'this'));
-    const p = params.length === 1 ? params[0] : undefined;
-    const only = set.body && ts.isBlock(set.body) && set.body.statements.length === 1 ? set.body.statements[0] : undefined;
-    if (!p || !ts.isIdentifier(p.name) || !only || !ts.isExpressionStatement(only)) return null;
-    const e = only.expression;
-    if (!ts.isBinaryExpression(e) || e.operatorToken.kind !== ts.SyntaxKind.EqualsToken || !ts.isIdentifier(e.right) || e.right.text !== p.name.text || !ts.isPropertyAccessExpression(e.left)) return null;
-    let base: ts.Expression = e.left.expression;
-    while (ts.isPropertyAccessExpression(base) || ts.isParenthesizedExpression(base) || ts.isAsExpression(base)) base = base.expression;
-    return base.kind === ts.SyntaxKind.ThisKeyword ? e.left : null;
-  }
-
   /** What defining a class does beyond declaring it (library mode): its accessors on its prototype, then its decorators, the last first. */
   private classDefinition(cls: ts.ClassDeclaration): string {
     const i = this.indent;
@@ -5702,11 +5702,11 @@ ${members.join('\n')}
         const t = (a.get && this.narrowedFrom(a.get)) ?? (a.get ? this.returnTypeOf(a.get) : optionalType(this.typeOf(a.set!.parameters[0].name)));
         const self = `guard let __o = __this as? ${name} else { throw JSException(JSTypeError("Illegal invocation")) }`;
         const get = a.get ? `{ (__this: Any?) throws -> Any? in ${self}; return ${this.convert(`${this.throwsInfo.fn(a.get) && !this.reportedGetter(a.get) ? 'try ' : ''}__o.${ident(n)}`, t, 'Any?')} }` : 'nil';
-        const forward = a.set ? this.forwardedTo(a.set) : null;
+        const forward = a.set ? forwardedSetter(a.set) : null;
         const set = !a.set ? 'nil'
           // `set color(value) { this.style.color = value; }`: the value script gives (a string the style converts) goes on as it is.
           : forward ? `{ (__this: Any?, __v: Any?) throws -> Void in ${self}; try jsSet(${this.withThis(a.set, '__o', false, () => this.expr(forward.expression))}, ${swiftString(forward.name.text)}, __v) }`
-          : this.typeofTestedSetter(a.set) ? `{ (__this: Any?, __v: Any?) throws -> Void in ${self}; __o.__set_${n.replace(/\W/g, '_')}(__v) }`
+          : this.setterTakesAny(a.set) ? `{ (__this: Any?, __v: Any?) throws -> Void in ${self}; __o.__set_${n.replace(/\W/g, '_')}(__v) }`
           : `{ (__this: Any?, __v: Any?) throws -> Void in ${self}; __o.${ident(n)} = ${this.fromAny('__v', t)} }`;
         return `${i}JSPrototypes.declare(${name}.self, ${swiftString(key)}, get: ${get}, set: ${set})`;
       });
@@ -11904,6 +11904,13 @@ ${members.join('\n')}
       }
     }
     if (ts.isPropertyAccessExpression(left) && this.symbolName(left.expression) === 'VueRef' && left.name.text === 'value') return `${this.lvalue(left)} = ${this.signalWrite(left.expression, right, this.typeOf(left))}`;
+    const takesAny = ts.isPropertyAccessExpression(left) && (this.checker.getSymbolAtLocation(left.name)?.declarations ?? [])
+      .some((d) => ts.isSetAccessorDeclaration(d) && !d.getSourceFile().isDeclarationFile && this.setterTakesAny(d));
+    if (takesAny) {
+      const place = this.lvalue(left);
+      const member = `.${ident(left.name.text)}`;
+      if (place.endsWith(member)) return `${place.slice(0, -member.length)}.__set_${left.name.text.replace(/\W/g, '_')}(${this.coerce(right, 'Any?')})`;
+    }
     if (ts.isArrayLiteralExpression(left) || ts.isObjectLiteralExpression(left)) {
       // Its value is the value assigned from (`result = [a, b] = list`).
       let bare = right;
