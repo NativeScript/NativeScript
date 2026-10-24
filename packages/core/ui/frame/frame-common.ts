@@ -13,6 +13,7 @@ import { profile } from '../../profiling';
 import { FRAME_SYMBOL } from './frame-helpers';
 import { SharedTransition } from '../transition/shared-transition';
 import { Frame as FrameDefinition, NavigationData } from '.';
+import type { FrameBackPreview, FrameBackPreviewOptions } from '.';
 import type { WindowBase } from '../../native-window';
 
 export { NavigationType } from './frame-interfaces';
@@ -53,6 +54,10 @@ function buildEntryFromArgs(arg: any): NavigationEntry {
 
 @CSSType('Frame')
 export class FrameBase extends CustomLayoutView implements FrameDefinition {
+	public beginBackPreview(_options?: FrameBackPreviewOptions): FrameBackPreview | undefined {
+		return undefined;
+	}
+
 	public static navigatingToEvent = 'navigatingTo';
 	public static navigatedToEvent = 'navigatedTo';
 

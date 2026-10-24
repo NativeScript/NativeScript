@@ -8,6 +8,23 @@ import type { WindowBase } from '../../native-window';
 
 export * from './frame-interfaces';
 
+/** Options for an experimental, presentation-only back preview. */
+export interface FrameBackPreviewOptions {
+	onDispose?: () => void;
+}
+
+/** Experimental Android snapshot preview; it never changes navigation history. */
+export interface FrameBackPreview {
+	readonly version: 1;
+	readonly active: boolean;
+	readonly snapshotBytes: number;
+	update(progress: number, edge: 'left' | 'right' | 'none'): void;
+	cancel(): void;
+	/** Resolves false when interrupted; true only after the exit animation. */
+	finish(): Promise<boolean>;
+	dispose(): void;
+}
+
 /**
  * Represents the logical View unit that is responsible for navigation within an application.
  * Nested frames are supported, enabling hierarchical navigation scenarios.
@@ -15,6 +32,15 @@ export * from './frame-interfaces';
  * @nsView Frame
  */
 export class Frame extends FrameBase {
+	/**
+	 * Creates an experimental Android preview without reparenting the previous Page.
+	 * Returns undefined for busy/unsupported frames, secure windows, surface content,
+	 * custom/shared transitions, or snapshots exceeding four million pixels.
+	 * The caller owns gesture dispatch and guards. finish() does not call goBack().
+	 * Navigation or native teardown disposes the session; iOS returns undefined.
+	 */
+	beginBackPreview(options?: FrameBackPreviewOptions): FrameBackPreview | undefined;
+
 	/**
 	 * String value used when hooking to OptionSelected event.
 	 *
