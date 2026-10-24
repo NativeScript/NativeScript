@@ -1399,7 +1399,8 @@ export class Translator implements AsyncTranslator {
    * counts as a read), as Kotlin requires of a variable declared without one, and whether only once (a `val`).
    * Conservative: loops, switches and try statements naming it count as reads.
    */
-  private assignedBeforeUse(d: ts.VariableDeclaration): 'once' | 'more' | null {
+  /** `destructured`: a destructuring assignment's plain target (`[a, b] = …`) counts as set. */
+  private assignedBeforeUse(d: ts.VariableDeclaration, destructured = false): 'once' | 'more' | null {
     const sym = ts.isIdentifier(d.name) ? this.checker.getSymbolAtLocation(d.name) : undefined;
     const statement = d.parent.parent;
     if (!sym || !ts.isVariableStatement(statement) || !ts.isBlock(statement.parent)) return null;
@@ -1413,6 +1414,10 @@ export class Translator implements AsyncTranslator {
         let e = s.expression;
         while (ts.isParenthesizedExpression(e)) e = e.expression;
         if (ts.isBinaryExpression(e) && e.operatorToken.kind === ts.SyntaxKind.EqualsToken && ts.isIdentifier(e.left) && this.checker.getSymbolAtLocation(e.left) === sym) return { kind: names(e.right) ? 'read' : 'assigned', once: true };
+        if (destructured && ts.isBinaryExpression(e) && e.operatorToken.kind === ts.SyntaxKind.EqualsToken && !names(e.right)) {
+          const targets = ts.isArrayLiteralExpression(e.left) ? e.left.elements : ts.isObjectLiteralExpression(e.left) ? e.left.properties.map((p) => (ts.isShorthandPropertyAssignment(p) && !p.objectAssignmentInitializer ? p.name : ts.isPropertyAssignment(p) ? p.initializer : p)) : [];
+          if (targets.some((x) => ts.isIdentifier(x) && this.checker.getSymbolAtLocation(x) === sym)) return { kind: 'assigned', once: false };
+        }
         return { kind: names(s) ? 'read' : 'none' };
       }
       if (ts.isBlock(s)) return sequence(s.statements);
@@ -5140,7 +5145,7 @@ export class Translator implements AsyncTranslator {
       const set = (!d.initializer || deadLiteral) && !lowered ? this.assignedBeforeUse(d) : null;
       if (set) return `${i}${set === 'once' ? 'val' : 'var'} ${name}: ${t}`;
       // Lenient code may read it before any assignment (`let found: boolean; … typeof found`): undefined until assigned.
-      if (!d.initializer && (this.lenient || this.lenientApp) && !lowered && ['String', 'Double', 'Boolean'].includes(t)) {
+      if (!d.initializer && (this.lenient || this.lenientApp) && !lowered && ['String', 'Double', 'Boolean'].includes(t) && !this.assignedBeforeUse(d, true)) {
         const sym = this.resolve(d.name);
         if (sym) this.undefinedVars.set(sym, optionalType(t));
         return `${i}var ${name}: ${optionalType(t)} = null`;
