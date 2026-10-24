@@ -36,6 +36,17 @@ public func jsNullable(_ value: Any?, _ nulls: Set<String>?, _ key: String) -> A
     return value
 }
 
+/// A value typed `T | null`, held as an optional, read untyped: nil is null.
+@inline(__always)
+public func jsNulled(_ value: Any?) -> Any? { value ?? jsNull }
+
+/// An element or map entry of `T | null` values read untyped: a missing one is undefined, a present nil null.
+@inline(__always)
+public func jsNulledEntry<V>(_ entry: V??) -> Any? {
+    guard let value = entry else { return nil }
+    return jsNulled(value)
+}
+
 /// An optional field written untyped: whether it now holds null rather than undefined.
 @inline(__always)
 public func jsNoteNull(_ nulls: inout Set<String>?, _ key: String, _ value: Any?) {

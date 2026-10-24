@@ -779,3 +779,19 @@ public final class JSAsyncGenerator<Element>: JSAsyncIterator<Element> {
     public override func jsReturnPromise(_ value: Any?) -> JSPromise<Any?>? { core.request(.return(value)) }
     public override func jsThrowPromise(_ error: Any?) -> JSPromise<Any?>? { core.request(.throw(error)) }
 }
+
+/// What `new Set(v)` and `new Map(v)` iterate: nothing for null or undefined, otherwise the value's iteration.
+public func jsCollectionSource(_ value: Any?) throws -> [Any?] {
+    if value == nil || value is JSNull { return [] }
+    return try jsIteratorOf(value).jsCollect()
+}
+
+/// `new Map(v)` of an untyped iterable: each value an entry object, its `0` and `1` the key and value.
+public func jsMapEntries(_ value: Any?) throws -> [(Any?, Any?)] {
+    try jsCollectionSource(value).map { entry in
+        guard let entry, jsIsObject(entry), !(entry is JSNull), !(entry is JSSymbol), !(entry is JSBigInt) else {
+            throw JSException(JSTypeError("Iterator value \(jsToString(entry)) is not an entry object"))
+        }
+        return (try jsGet(entry, "0"), try jsGet(entry, "1"))
+    }
+}

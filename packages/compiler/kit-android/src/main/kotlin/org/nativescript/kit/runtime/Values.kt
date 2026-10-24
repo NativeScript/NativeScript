@@ -18,6 +18,25 @@ val jsNull: JSNull get() = JSNull
 /** A field read untyped: null where the object notes the key as set to null (`jsNulls`), else its value. */
 fun jsNullable(value: Any?, nulls: Set<String>?, key: String): Any? = if (value == null && nulls?.contains(key) == true) jsNull else value
 
+/** A value typed `T | null`, which Kotlin holds as a nullable, read untyped: null is JavaScript's null. */
+fun jsNulled(value: Any?): Any? = value ?: jsNull
+
+/** A map value of `T | null` values read untyped: a missing one is undefined, a held null null. */
+fun <K, V> jsNulledEntry(map: JSMap<K, V>, key: K): Any? = if (map.has(key)) jsNulled(map.get(key)) else null
+
+/** An array element of `T | null` values read untyped: past the end is undefined, a held null null. */
+fun <T> jsNulledElement(array: JSArray<T>, index: Double): Any? {
+    val k = index.toInt()
+    return if (k.toDouble() == index && k >= 0 && k < array.storage.size) jsNulled(array.storage[k]) else null
+}
+
+/** The keys of `obj` among `keys` that hold null, for a typed object read from it. */
+fun jsNullKeys(obj: Any?, keys: List<String>): MutableSet<String>? {
+    val dynamic = obj as? JSDynamic ?: return null
+    val nulls = keys.filter { dynamic.jsGet(it) is JSNull }
+    return if (nulls.isEmpty()) null else nulls.toMutableSet()
+}
+
 /** A field written untyped: the keys noted as holding null once `value` is written at `key`. */
 fun jsNoteNull(nulls: MutableSet<String>?, key: String, value: Any?): MutableSet<String>? =
     if (value is JSNull) (nulls ?: mutableSetOf()).also { it.add(key) } else nulls?.also { it.remove(key) }
