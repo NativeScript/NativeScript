@@ -448,19 +448,12 @@ private enum JSJSONClassKind {
     case dynamic, error
 }
 
-private enum JSJSONLink {
-    case index(Int)
-    case key(String)
-}
-
 /// SerializeJSONProperty over one output buffer of UTF-8.
 private struct JSJSONWriter {
     private let gap: [UInt8]
     private let output = JSUTF8Buffer()
     private var depth = 0
     private var stack: [AnyObject] = []
-    /// The index or key each object on `stack` is serializing: the cycle's links, for its TypeError.
-    private var links: [JSJSONLink] = []
     private var kinds: [ObjectIdentifier: JSJSONClassKind] = [:]
     var replacer: Any?
     var allowed: [String]?
@@ -616,14 +609,10 @@ private struct JSJSONWriter {
         try jsCheckStack()
         if let start = stack.firstIndex(where: { $0 === object }) { throw JSException(JSTypeError(circularMessage(start))) }
         stack.append(object)
-        links.append(.index(0))
     }
 
     private mutating func leave(_ object: AnyObject?) {
-        if object != nil {
-            stack.removeLast()
-            links.removeLast()
-        }
+        if object != nil { stack.removeLast() }
     }
 
     /// V8's CircularStructureMessageBuilder: the first two links of the cycle, an ellipsis, the last.
@@ -631,20 +620,28 @@ private struct JSJSONWriter {
         func constructor(_ object: AnyObject) -> String {
             object is JSArrayProtocol || object is JSMatch ? "'Array'" : "'\((object as? JSDynamic)?.jsClassName ?? "Object")'"
         }
-        func link(_ k: Int) -> String {
-            switch links[k] {
-            case .index(let i): "index \(i)"
-            case .key(let key): "property '\(key)'"
+        // The first key holding the next object is the one being serialized: an earlier one would have met the cycle first.
+        func link(_ k: Int, to next: AnyObject) -> String {
+            let holder = stack[k]
+            func holds(_ value: Any?) -> Bool {
+                guard let v = jsFlat(value), jsIsClassInstance(v) else { return false }
+                return jsObjectReference(v) === next
             }
+            let elements: [Any?]? = (holder as? JSArrayProtocol)?.jsAnyElements ?? (holder as? JSMatch)?.values.storage.map { $0 }
+            if let elements { return "index \(elements.firstIndex(where: holds) ?? 0)" }
+            let key: String? = if let plain = holder as? JSObject { plain.keys.first { holds(plain[$0]) } }
+                else if let dynamic = holder as? JSDynamic { dynamic.jsKeys.first { holds(dynamic[jsKey: $0]) } }
+                else { nil }
+            return "property '\(key ?? "")'"
         }
-        func line(_ k: Int) -> String { "\n    |     \(link(k - 1)) -> object with constructor \(constructor(stack[k]))" }
+        func line(_ k: Int) -> String { "\n    |     \(link(k - 1, to: stack[k])) -> object with constructor \(constructor(stack[k]))" }
         var text = "Converting circular structure to JSON\n    --> starting at object with constructor \(constructor(stack[start]))"
         var k = start + 1
         while k < min(stack.count, start + 3) { text += line(k); k += 1 }
         if stack.count > k + 1 { text += "\n    |     ..." }
         k = max(k, stack.count - 1)
         while k < stack.count { text += line(k); k += 1 }
-        return text + "\n    --- \(link(stack.count - 1)) closes the circle"
+        return text + "\n    --- \(link(stack.count - 1, to: stack[start])) closes the circle"
     }
 
     private mutating func array(_ object: AnyObject?, _ values: [Any?]) throws {
@@ -658,11 +655,9 @@ private struct JSJSONWriter {
         guard count > 0 else { return output.append("[]") }
         output.append(0x5B)
         depth += 1
-        let frame = object == nil ? nil : links.count - 1
         for i in 0..<count {
             if i > 0 { output.append(0x2C) }
             newline()
-            if let frame { links[frame] = .index(i) }
             if try !property(object, String(i), element(i)) { output.append("null") }
         }
         depth -= 1
@@ -677,10 +672,8 @@ private struct JSJSONWriter {
         output.append(0x7B)
         depth += 1
         var empty = true
-        let frame = links.count - 1
         for key in allowed ?? keys {
             if allowed != nil, !keys.contains(key) { continue }
-            links[frame] = .key(key)
             let start = output.count
             if !empty { output.append(0x2C) }
             newline()
