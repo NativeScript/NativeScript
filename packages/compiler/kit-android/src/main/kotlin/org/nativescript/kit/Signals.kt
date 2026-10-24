@@ -119,6 +119,51 @@ object Reactivity {
         }
         if (eventDepth == 0 && schedule != Schedule.TASK) flush()
     }
+
+    /** A listener of a zoneless Angular template: the update it schedules re-checks the bindings of [view] and of every view above it. */
+    fun event(view: AngularView?, handler: () -> Unit) {
+        view?.markDirty()
+        event(handler)
+    }
+
+    /**
+     * `ChangeDetectorRef.markForCheck()` on a zoneless view: an update re-checks it and the views above it, scheduled as
+     * a write schedules one, or run at once.
+     */
+    internal fun markForCheck(view: AngularView?, now: Boolean = false) {
+        view?.markDirty()
+        if (now) flush() else scheduleFlush()
+    }
+}
+
+/**
+ * An Angular component view as zoneless change detection refreshes it: a listener marks its view and the views above it
+ * dirty, and refreshing a view re-checks every binding (`Check`) of its template and of its embedded views, applying what
+ * is no longer `Object.is` the value last applied. Child components are refreshed only through their own inputs, which
+ * are signals here. A binding that reads no signal has no source holding it, so the view holds its checks until they are
+ * disposed.
+ */
+class AngularView internal constructor(private val parent: AngularView?) {
+    private val checks = mutableListOf<Effect>()
+    /** Rows and branches a signal re-renders dispose their checks without any listener running here. */
+    private var pruneAt = 64
+
+    internal fun add(effect: Effect) {
+        if (checks.size >= pruneAt) {
+            checks.removeAll { it.disposed }
+            pruneAt = maxOf(64, checks.size * 2)
+        }
+        checks.add(effect)
+    }
+
+    internal fun markDirty() {
+        var view: AngularView? = this
+        while (view != null) {
+            view.checks.removeAll { it.disposed }
+            for (check in view.checks) check.invalidate()
+            view = view.parent
+        }
+    }
 }
 
 /** Groups writes so each affected effect runs once, after the last write. */
@@ -193,8 +238,11 @@ private fun flush() {
  * every shallower one.
  */
 object EffectOrder {
-    /** [injector]: Angular's, of the nearest component with `providers` above this scope, current while it runs. */
-    class Scope internal constructor(private val prefix: List<Int>, internal val height: Int? = null, internal val injector: Injector? = Injector.current) {
+    /**
+     * [injector]: Angular's, of the nearest component with `providers` above this scope, current while it runs. [view]:
+     * Angular's component view whose bindings this scope's checks are.
+     */
+    class Scope internal constructor(private val prefix: List<Int>, internal val height: Int? = null, internal val injector: Injector? = Injector.current, val view: AngularView? = null) {
         /** Next key for: the scope's own effects, embedded views, child views. */
         private val counters = intArrayOf(0, 0, 0)
 
@@ -240,10 +288,10 @@ object EffectOrder {
      * Angular's component view: after its parent view's bindings and embedded views. [injector] is the component's own
      * (`providers`); without one, the view's children inject from the injector the component was made in.
      */
-    fun <T> view(injector: Injector? = null, body: () -> T): T = run(Scope(current.next(2), null, injector ?: Injector.current), body)
+    fun <T> view(injector: Injector? = null, body: () -> T): T = run(Scope(current.next(2), null, injector ?: Injector.current, AngularView(current.view)), body)
 
     /** Angular's embedded view (`@if`, `@for` content): after its declaring view's own bindings. */
-    fun <T> embedded(view: Scope, body: () -> T): T = run(Scope(view.next(1), null, view.injector), body)
+    fun <T> embedded(view: Scope, body: () -> T): T = run(Scope(view.next(1), null, view.injector, view.view), body)
 
     /** Solid's control-flow content: one level deeper than the template that holds it. */
     fun <T> deeper(body: () -> T): T = run(Scope(emptyList(), (current.height ?: 0) + 1), body)
@@ -351,6 +399,7 @@ class Effect internal constructor(internal val key: List<Int>, private val deriv
     private var owner: Owner? = null
     private val height = EffectOrder.current.height
     private val injector = Injector.current
+    private val view = EffectOrder.current.view
 
     constructor(body: () -> Unit) : this(EffectOrder.key(), false, body)
 
@@ -408,7 +457,7 @@ class Effect internal constructor(internal val key: List<Int>, private val deriv
         currentEffect = this
         // What an effect throws is reported, as a framework's scheduler reports a failed job: the update goes on.
         try {
-            EffectOrder.run(EffectOrder.Scope(key, height, injector)) { next.run(body) }
+            EffectOrder.run(EffectOrder.Scope(key, height, injector, view)) { next.run(body) }
         } catch (e: Throwable) {
             jsReportUncaught(jsCaught(e))
         } finally {

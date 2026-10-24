@@ -26,17 +26,18 @@ object Zone {
 }
 
 /**
- * A binding as Angular checks it (`bindingUpdated`): re-read on every check,
+ * A binding as Angular checks it (`bindingUpdated`): re-read on every check of its view,
  * applied only when the value is not `Object.is` the last one applied.
  */
 fun <T> Check(read: () -> T, apply: (T) -> Unit) {
     var last: Any? = UNCHECKED
-    Effect {
+    val effect = Effect {
         val value = read()
         if (last !== UNCHECKED && jsSameValue(last, value)) return@Effect
         last = value
         untrack { apply(value) }
     }
+    EffectOrder.current.view?.add(effect)
 }
 
 private val UNCHECKED = Any()
@@ -94,17 +95,25 @@ class PurePipeCache {
 }
 
 /**
- * `inject(ChangeDetectorRef)`. With zone.js the tick after every task checks every view, so `markForCheck` has nothing
- * to add, and `detectChanges` ticks now; a zoneless template's bindings re-run when the signals they read change.
+ * `inject(ChangeDetectorRef)`: the view being created when it is injected (a component's, or the embedded view a pipe is
+ * in). `markForCheck` marks it and the views above it dirty and schedules the update that re-checks them; with zone.js
+ * the tick after every task checks every view, so it has nothing to add.
  */
-class ChangeDetectorRef internal constructor() {
-    fun markForCheck() {}
-    fun detectChanges() { if (Zone.enabled) Zone.tick() }
+class ChangeDetectorRef internal constructor(private val view: AngularView?) {
+    fun markForCheck() {
+        if (!Zone.enabled) Reactivity.markForCheck(view)
+    }
+
+    /** Checks the view now: its bindings and the views above it, which is more than Angular checks and gives the same values. */
+    fun detectChanges() {
+        if (Zone.enabled) Zone.tick() else Reactivity.markForCheck(view, now = true)
+    }
+
     fun detach() {}
     fun reattach() {}
     fun checkNoChanges() {}
 
     companion object {
-        fun current(): ChangeDetectorRef = ChangeDetectorRef()
+        fun current(): ChangeDetectorRef = ChangeDetectorRef(EffectOrder.current.view)
     }
 }
