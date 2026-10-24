@@ -24,13 +24,12 @@
 		"252-prototype-method-calls": "A built-in's prototype method called with call or apply (`Array.prototype.slice.call(list, 1)`) is refused, test262 cluster 2 (Kotlin translator).",
 		"254-destructuring-assignment": "A rest element in a destructuring assignment (`[first, ...others] = list`) is refused, test262 cluster 8 (Kotlin translator).",
 		"620-interface-identity": "An object read as an interface type is wrapped anew at each conversion, so the same object is not === itself (Kotlin translator).",
-		"621-optional-callback-adapting": "Lenient app code: a callback's boolean parameter given undefined holds false, and a function literal returning null where its type gives an array gives undefined (Kotlin translator).",
+		"621-optional-callback-adapting": "Lenient app code: a function literal returning null where its type gives an array gives undefined, not null (Kotlin translator; null vs undefined in typed values).",
 		"624-json-parse-null": "JSON.parse of a string that is null at run time parses \"undefined\" and throws (Kotlin translator).",
 		"626-array-parameter-mutation": "A typed array, or an untyped array holding a value of another type, given to a number[] parameter is copied, so the callee's writes are lost (Kotlin runtime).",
 		"627-unchecked-class-cast": "`x as C` throws when x is an instance of another class, where TypeScript's cast checks nothing (Kotlin translator).",
 		"860-regexp-unset-group-reads": "A module-level destructuring of a match reads an unset group as \"undefined\", and a named group read from `groups` does not compile (Kotlin translator).",
 		"861-array-holes-own-properties": "hasOwnProperty and Object.getOwnPropertyNames list the empty slots of new Array(n) (Kotlin runtime).",
-		"865-script-called-undefined": "A function declaration as an object literal's shorthand value (`{ flag }`) does not compile; a number parameter of a function script calls, given undefined, throws, and a string one script reaches through a typed variable reads typeof \"string\" (Kotlin translator).",
-		"866-lenient-optional-parameters": "A non-strict app's optional parameter left out reads typeof as its type's name (\"object\", \"function\", \"number\"), the call giving them all fails (\"cb is not a function\"), and a string parameter of a function type given undefined does not compile (Kotlin translator)."
+		"865-script-called-undefined": "A function declaration as an object literal's shorthand value (`{ flag }`) does not compile; a number parameter of a function script calls, given undefined, throws, and a string one script reaches through a typed variable reads typeof \"string\" (Kotlin translator)."
 	}
 }
