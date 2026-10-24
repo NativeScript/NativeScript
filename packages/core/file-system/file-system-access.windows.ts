@@ -433,9 +433,11 @@ export class FileSystemAccess {
 		}
 	}
 
+	// The app ships in the package's app\ folder (ms-appx:///app/), so ~/ resolves there,
+	// as on iOS (<bundle>/app) and Android (files/app).
 	public getCurrentAppPath(): string {
 		try {
-			return Windows.ApplicationModel.Package.Current.InstalledLocation.Path;
+			return Windows.ApplicationModel.Package.Current.InstalledLocation.Path + '\\app';
 		} catch {
 			if (!global.__dirname) {
 				global.__dirname = typeof __dirname !== 'undefined' ? __dirname : '';
@@ -445,7 +447,11 @@ export class FileSystemAccess {
 	}
 
 	public getLogicalRootPath(): string {
-		return this.getCurrentAppPath();
+		try {
+			return Windows.ApplicationModel.Package.Current.InstalledLocation.Path;
+		} catch {
+			return this.getCurrentAppPath();
+		}
 	}
 
 	private _ensureParentDir(path: string): void {

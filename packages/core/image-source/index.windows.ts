@@ -45,7 +45,7 @@ function fileUri(filePath: string): string {
 	return 'file:///' + filePath.replace(/\\/g, '/');
 }
 
-// Packaged MSIX apps cannot load bundled assets via file://: currentApp().path is the
+// Packaged MSIX apps cannot load bundled assets via file://: currentApp().path is inside the
 // InstalledLocation, which is access-restricted for file:// URIs (BitmapImage.ImageFailed fires).
 // App-relative ~/ paths must use the ms-appx:/// scheme instead (the same scheme the
 // background-image path already relies on). Other schemes / absolute paths pass through fileUri.
@@ -306,8 +306,8 @@ export class ImageSource implements ImageSourceDefinition {
 	}
 
 	static fromFile(filePath: string): Promise<ImageSource> {
-		// App-relative ~/ assets load via ms-appx:/// (like fromFileSync); the InstalledLocation
-		// filesystem path lacks the app/ folder and PathIO.ReadBufferAsync against it can stall.
+		// App-relative ~/ assets load via ms-appx:/// (like fromFileSync): PathIO.ReadBufferAsync
+		// against the InstalledLocation filesystem path can stall.
 		if (filePath && filePath.startsWith('~/')) {
 			return bitmapFromUriAsync(appContentUri(filePath)).then((bmp) => {
 				const src = new ImageSource(bmp);
