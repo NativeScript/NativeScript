@@ -9145,12 +9145,6 @@ ${members.join('\n')}
     return d && ts.isClassLike(d) && !d.getSourceFile().isDeclarationFile ? d : undefined;
   }
 
-  /**
-   * Whether a class can conform to an interface's protocol. A method whose
-   * untyped parameters the protocol types (`handlerError(error)` for
-   * `handlerError(error: Error)`) conforms through a witness of the protocol's
-   * signature that calls it; any other difference leaves the protocol out.
-   */
   /** The interfaces a class implements, named or met, that are Swift protocols it conforms to; `witnesses` gets the adapters its methods need. */
   private implementedProtocols(cls: ts.ClassLikeDeclaration, kitRoot: string | null, witnesses: string[]) {
     const named = implementedInterfaces(this.checker, cls).map((i) => ({ name: this.heritageName(i), type: this.checker.getTypeAtLocation(i) }));
@@ -9191,6 +9185,12 @@ ${members.join('\n')}
     return [`extension ${name}: ${implemented.join(', ')} {`, ...witnesses, ...this.dynamicMembers(fields, cls.name?.text ?? name, false, [], [], false, new Set(), readOnly), '}'].join('\n');
   }
 
+  /**
+   * Whether a class can conform to an interface's protocol. A method whose
+   * untyped parameters the protocol types (`handlerError(error)` for
+   * `handlerError(error: Error)`) conforms through a witness of the protocol's
+   * signature that calls it; any other difference leaves the protocol out.
+   */
   private protocolWitnesses(cls: ts.ClassLikeDeclaration, name: string, type: ts.Type, out: string[]): boolean {
     const decl = type.getSymbol()?.declarations?.find(ts.isInterfaceDeclaration);
     if (!decl || !this.protocols.has(name)) return true;
