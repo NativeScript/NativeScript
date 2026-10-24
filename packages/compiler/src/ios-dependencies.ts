@@ -69,20 +69,34 @@ export function productLines(packages: SwiftPackage[], link = true): string {
   return packages.flatMap((p) => p.libs.map((lib) => `      - package: ${p.name}\n        product: ${lib}\n${link ? '' : '        link: false\n'}`)).join('');
 }
 
-/** `classifyVersion`: an exact version, `^`/`~` ranges, `>=a <b`, `#<revision>`, else a branch. */
+/** The identity a package's products are named by in a manifest depending on it: its directory's or repository's name. */
+export const packageIdentity = (p: SwiftPackage) => basename(p.path ?? p.url!).replace(/\.git$/, '');
+
+/** A manifest's requirement on a package's version, as `requirement` gives xcodegen's. */
+export function packageRequirement(version: string): string {
+  const [k, v] = Object.entries(requirementOf(version))[0];
+  const q = JSON.stringify;
+  return k === 'revision' ? `revision: ${q(v)}` : k === 'exactVersion' ? `exact: ${q(v)}` : k === 'majorVersion' ? `from: ${q(v)}`
+    : k === 'minorVersion' ? `.upToNextMinor(from: ${q(v)})` : k === 'minVersion' ? `${q(v)}..<${q(requirementOf(version).maxVersion)}` : `branch: ${q(v)}`;
+}
+
 function requirement(version: string): string {
+  return Object.entries(requirementOf(version)).map(([k, v]) => `    ${k}: ${JSON.stringify(v)}\n`).join('');
+}
+
+/** `classifyVersion`: an exact version, `^`/`~` ranges, `>=a <b`, `#<revision>`, else a branch. */
+function requirementOf(version: string): Record<string, string> {
   const v = version.trim();
-  const line = (k: string, value: string) => `    ${k}: ${JSON.stringify(value)}\n`;
   const full = (s: string) => [...s.split('.'), '0', '0'].slice(0, 3).join('.');
-  if (v.startsWith('#')) return line('revision', v.slice(1));
-  if (/^v?\d+\.\d+\.\d+(?:[-+][\w.-]+)?$/.test(v)) return line('exactVersion', v.replace(/^v/, ''));
+  if (v.startsWith('#')) return { revision: v.slice(1) };
+  if (/^v?\d+\.\d+\.\d+(?:[-+][\w.-]+)?$/.test(v)) return { exactVersion: v.replace(/^v/, '') };
   const caret = /^([\^~])\s*v?(\d+(?:\.\d+){0,2})/.exec(v);
-  if (caret) return line(caret[1] === '^' ? 'majorVersion' : 'minorVersion', full(caret[2]));
+  if (caret) return { [caret[1] === '^' ? 'majorVersion' : 'minorVersion']: full(caret[2]) };
   const range = /^>=?\s*v?(\d+(?:\.\d+){0,2})\s+<=?\s*v?(\d+(?:\.\d+){0,2})$/.exec(v);
-  if (range) return line('minVersion', full(range[1])) + line('maxVersion', full(range[2]));
+  if (range) return { minVersion: full(range[1]), maxVersion: full(range[2]) };
   const min = /^>=?\s*v?(\d+(?:\.\d+){0,2})$/.exec(v);
-  if (min) return line('majorVersion', full(min[1]));
-  return line('branch', v);
+  if (min) return { majorVersion: full(min[1]) };
+  return { branch: v };
 }
 
 // ---------------------------------------------------------------- CocoaPods
@@ -213,6 +227,8 @@ export interface Dependencies {
   searchArgs: () => string[];
   /** The Objective-C classes each module's built binary defines, by module; a module missing here is not known. */
   classes: Record<string, string[]>;
+  /** The packages' Clang modules, which Xcode makes visible only to a target linking their product. */
+  clangModules: string[];
   /** Removes what the build left. */
   dispose: () => void;
 }
@@ -228,13 +244,13 @@ const SCRATCH_TARGET = 'NSDependencies';
  */
 export function iosDependencies(o: { app: string; packages: SwiftPackage[]; deploymentTarget: string; say: (m: string) => void }): Dependencies {
   const pods = podfile({ app: o.app, name: SCRATCH_TARGET, deploymentTarget: o.deploymentTarget });
-  if (!o.packages.length && !pods) return { modules: [], searchArgs: () => [], classes: {}, dispose: () => {} };
+  if (!o.packages.length && !pods) return { modules: [], searchArgs: () => [], classes: {}, clangModules: [], dispose: () => {} };
   const key = dependencyKey(o.packages, pods);
   let built: Built | null = null;
   const build = () => built ??= buildDependencies(o.packages, pods, o.deploymentTarget, o.say);
   const manifest = join(moduleCache(), `dependencies-${key}.json`);
-  const cached: { modules: string[]; classes?: Record<string, string[]> } | null = existsSync(manifest) ? JSON.parse(readFileSync(manifest, 'utf8')) : null;
-  const { modules, classes } = cached?.classes ? { modules: cached.modules, classes: cached.classes } : build();
+  const cached: { modules: string[]; classes?: Record<string, string[]>; clangModules?: string[] } | null = existsSync(manifest) ? JSON.parse(readFileSync(manifest, 'utf8')) : null;
+  const { modules, classes, clangModules } = cached?.classes && cached.clangModules ? { modules: cached.modules, classes: cached.classes, clangModules: cached.clangModules } : build();
   for (const m of modules) {
     try {
       nativeTable(m, { key, extraArgs: () => build().args });
@@ -244,11 +260,12 @@ export function iosDependencies(o: { app: string; packages: SwiftPackage[]; depl
     }
   }
   mkdirSync(moduleCache(), { recursive: true });
-  writeFileSync(manifest, JSON.stringify({ modules, classes }));
+  writeFileSync(manifest, JSON.stringify({ modules, classes, clangModules }));
   return {
     modules,
     searchArgs: () => build().args,
     classes,
+    clangModules,
     dispose: () => { if (built) rmSync(built.dir, { recursive: true, force: true }); },
   };
 }
@@ -262,7 +279,7 @@ function dependencyKey(packages: SwiftPackage[], pods: string | null): string {
   return h.digest('hex').slice(0, 16);
 }
 
-interface Built { dir: string; args: string[]; modules: string[]; classes: Record<string, string[]> }
+interface Built { dir: string; args: string[]; modules: string[]; classes: Record<string, string[]>; clangModules: string[] }
 
 function buildDependencies(packages: SwiftPackage[], pods: string | null, deploymentTarget: string, say: (m: string) => void): Built {
   const dir = mkdtempSync(join(tmpdir(), 'ns-dependencies-'));
@@ -313,10 +330,11 @@ ${packages.length ? `    dependencies:\n${productLines(packages)}` : ''}    sett
  * The modules a build for the simulator left in `derived` (its DerivedData), the arguments that let the Swift compiler
  * and the extractor see them as Xcode lets the build's targets see them, and the Objective-C classes each one's binary defines.
  */
-export function builtModules(derived: string): { args: string[]; modules: string[]; classes: Record<string, string[]> } {
+export function builtModules(derived: string): { args: string[]; modules: string[]; classes: Record<string, string[]>; clangModules: string[] } {
   const products = join(derived, 'Build', 'Products', 'Debug-iphonesimulator');
   const maps = join(derived, 'Build', 'Intermediates.noindex', 'GeneratedModuleMaps-iphonesimulator');
   const modules = new Set<string>();
+  const clangModules: string[] = [];
   const args = ['-I', products];
   if (existsSync(maps)) {
     args.push('-I', maps);
@@ -329,7 +347,10 @@ export function builtModules(derived: string): { args: string[]; modules: string
       const headers = umbrella && (!umbrella[1] ? umbrella[2] : basename(dirname(umbrella[2])) === module ? dirname(dirname(umbrella[2])) : dirname(umbrella[2]));
       if (headers && existsSync(headers)) args.push('-Xcc', `-I${headers}`);
       // Clang finds only `module.modulemap` on a search path: a C target's map (`ZipArchive.modulemap`) is loaded by name, as Xcode loads it.
-      if (!existsSync(join(products, `${module}.swiftmodule`))) args.push('-Xcc', `-fmodule-map-file=${join(maps, f)}`);
+      if (!existsSync(join(products, `${module}.swiftmodule`))) {
+        args.push('-Xcc', `-fmodule-map-file=${join(maps, f)}`);
+        clangModules.push(module);
+      }
     }
   }
   // A C target with a module map of its own has none generated: Xcode loads its map where the package keeps it.
@@ -339,6 +360,7 @@ export function builtModules(derived: string): { args: string[]; modules: string
     for (const m of readFileSync(map, 'utf8').matchAll(/^\s*module\s+(\w+)/gm)) {
       if (!built.has(m[1]) || modules.has(m[1])) continue;
       modules.add(m[1]);
+      clangModules.push(m[1]);
       args.push('-Xcc', `-I${dirname(map)}`, '-Xcc', `-fmodule-map-file=${map}`);
     }
   }
@@ -372,7 +394,7 @@ export function builtModules(derived: string): { args: string[]; modules: string
     const module = name && (name[1] ?? name[2] ?? name[3]);
     if (module && modules.has(module) && statSync(join(products, f)).isFile()) classes[module] = definedObjCClasses([join(products, f)]);
   }
-  return { args, modules: [...modules].sort(), classes };
+  return { args, modules: [...modules].sort(), classes, clangModules: clangModules.sort() };
 }
 
 /** The module maps packages keep in their checkouts, outside their tests and examples. */

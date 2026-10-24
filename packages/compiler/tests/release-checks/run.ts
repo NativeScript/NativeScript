@@ -33,10 +33,10 @@ import { CoreKotlin } from '../../src/core-kotlin.ts';
 import { translateKotlinModules } from '../../src/kotlin-modules.ts';
 import { AndroidNativeAPI, androidClassPath } from '../../src/native-calls-android.ts';
 import { stubbedPlugins } from '../../src/app-resources.ts';
-import { builtModules } from '../../src/ios-dependencies.ts';
+import { builtModules, iosDependencies, packageLines, productLines, type SwiftPackage } from '../../src/ios-dependencies.ts';
 import { STUBBED_PLUGINS } from '../../src/core.ts';
 import { detectFramework, excludedFrameworkKitFiles, getFrameworkKitInfo } from '../../src/framework.ts';
-import { spawnSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 import { kitProjectDir } from '../../src/android.ts';
 import { KIT_ANDROID } from '../../src/paths.ts';
 import { buildKotlinRuntime, kotlinc, kotlinStdlib } from '../native-build.ts';
@@ -391,7 +391,7 @@ export class GlyphPipe { constructor(@Inject(TOKEN) private config: any, @Option
     let failure = '';
     try {
       native = pluginNative([source('@hk/mixed', 'mixed', [typings]), source('@hk/nomap', 'nomap'), source('@hk/umbrella', 'umbrella'), source('@hk/stale', 'stale')], out,
-        { deps: { modules: [], searchArgs: () => [], classes: {}, dispose: () => {} }, packages: [], declarations: [typings], bindings: join(dir, 'bindings'), say: () => {} });
+        { deps: { modules: [], searchArgs: () => [], classes: {}, clangModules: [], dispose: () => {} }, packages: [], declarations: [typings], bindings: join(dir, 'bindings'), say: () => {} });
     } catch (e) { failure = String(e); }
     check(!!native && native.modules.join() === 'HKMixedObjC,NSPlugin_hk_mixed,NSPlugin_hk_nomap_ObjC,NSPlugin_hk_nomap,NSPlugin_hk_stale,NSPlugin_hk_umbrella'
       && native.package?.products.join() === 'HKMixedObjC,NSPlugin_hk_nomap_ObjC',
@@ -423,6 +423,58 @@ export class GlyphPipe { constructor(@Inject(TOKEN) private config: any, @Option
   }
 })();
 
+// ---- A plugin's Swift built on its own Swift package's Clang module ----
+(() => {
+  const dir = mkdtempSync(join(tmpdir(), 'ns-release-checks-spm-'));
+  const w = (f: string, text: string) => { mkdirSync(dirname(join(dir, f)), { recursive: true }); writeFileSync(join(dir, f), text); return join(dir, f); };
+  const tableCache = process.env.NS_NATIVE_TABLE_CACHE;
+  process.env.NS_NATIVE_TABLE_CACHE = join(dir, 'tables');
+  let deps: ReturnType<typeof iosDependencies> | null = null;
+  try {
+    // As image-cache-it over SDWebImage: everything the plugin declares is under `#if canImport` of its package's Objective-C module.
+    w('package.json', JSON.stringify({ name: 'spm-app', version: '1.0.0' }));
+    w('cached/pkg/Package.swift', '// swift-tools-version:5.7\nimport PackageDescription\nlet package = Package(name: "HKCPkg", platforms: [.iOS(.v13)], products: [.library(name: "HKCPkg", targets: ["HKCPkg"])], targets: [.target(name: "HKCPkg", path: "Sources/HKCPkg")])\n');
+    w('cached/pkg/Sources/HKCPkg/include/HKCLoader.h', '#import <Foundation/Foundation.h>\n@interface HKCLoader : NSObject\n+ (NSInteger)answer;\n@end\n');
+    w('cached/pkg/Sources/HKCPkg/HKCLoader.m', '#import "HKCLoader.h"\n@implementation HKCLoader\n+ (NSInteger)answer { return 42; }\n@end\n');
+    w('cached/platforms/ios/src/HKCachedView.swift', ['import UIKit', '#if canImport(HKCPkg)', 'import HKCPkg', '',
+      '@objc(HKCachedStretch)', 'public enum HKCachedStretch: Int {', '  case none, aspectFill', '}', '',
+      '@objcMembers', '@objc(HKCachedView)', 'public class HKCachedView: UIView {', '  public var stretch: HKCachedStretch = .none',
+      '  public static func answer() -> Int { HKCLoader.answer() }', '}', '#endif', ''].join('\n'));
+    const packages: SwiftPackage[] = [{ name: 'HKCPkg', libs: ['HKCPkg'], targets: [], path: join(dir, 'cached/pkg'), plugin: '@hk/cached', pluginDir: join(dir, 'cached') }];
+    deps = iosDependencies({ app: dir, packages, deploymentTarget: '17.0', say: () => {} });
+    const source = { name: '@hk/cached', version: '1.0.0', dir: join(dir, 'cached'), typings: [], files: new Map() } as unknown as Parameters<typeof pluginNative>[0][0];
+    // The app's project as cli.ts writes it, its Swift naming what the plugin declares as translated code does.
+    const build = (owner: string | null) => {
+      const out = join(dir, `project-${owner ? 'plugin' : 'app'}`);
+      const declared = packages.map((p) => ({ ...p, plugin: owner }));
+      const native = pluginNative([source], out, { deps: deps!, packages: declared, declarations: [], bindings: join(dir, 'bindings'), say: () => {} });
+      const lines = xcodegenLines(native, out);
+      w(`${out.slice(dir.length + 1)}/App/main.swift`, 'import UIKit\nimport NSPlugin_hk_cached\nlet view = HKCachedView()\nview.stretch = HKCachedStretch.aspectFill\nprint(HKCachedView.answer())\n');
+      writeFileSync(join(out, 'project.yml'), `name: SPMCheck\noptions:\n  deploymentTarget:\n    iOS: "17.0"\npackages:\n${lines.packages}${packageLines(declared, out)}targets:\n${lines.targets}  SPMCheck:\n    type: application\n    platform: iOS\n    sources: [App]\n    dependencies:\n${lines.dependencies}${productLines(declared)}    settings:\n      base:\n        GENERATE_INFOPLIST_FILE: YES\n        CODE_SIGNING_ALLOWED: NO\n        PRODUCT_BUNDLE_IDENTIFIER: org.nativescript.spmcheck\n`);
+      execFileSync('xcodegen', ['generate', '--quiet'], { cwd: out, stdio: 'ignore' });
+      const r = spawnSync('xcodebuild', ['-project', 'SPMCheck.xcodeproj', '-scheme', 'SPMCheck', '-configuration', 'Release', '-destination', 'generic/platform=iOS Simulator',
+        '-derivedDataPath', join(out, 'dd'), '-quiet', 'build'], { cwd: out, encoding: 'utf8', maxBuffer: 1 << 28 });
+      const app = join(out, 'dd/Build/Products/Release-iphonesimulator/SPMCheck.app/SPMCheck');
+      const classes = existsSync(app) ? spawnSync('nm', ['-gUj', app], { encoding: 'utf8' }).stdout : '';
+      rmSync(join(out, 'dd'), { recursive: true, force: true });
+      return { status: r.status, output: `${r.stdout}${r.stderr}`, classes };
+    };
+    const built = build('@hk/cached');
+    const table = nativeTable('NSPlugin_hk_cached');
+    check(!!table.classes.HKCachedView?.static.answer && table.enums.HKCachedStretch?.cases.AspectFill?.swift === 'aspectFill', "a plugin's Swift under `canImport` of its Swift package's Objective-C module is in its table");
+    check(built.status === 0 && built.classes.includes('_OBJC_CLASS_$_HKCachedView') && built.classes.includes('_OBJC_CLASS_$_HKCLoader'), `a plugin's Swift on its package's Objective-C module builds what its table describes, the package linked once${built.status ? `: ${built.output.split('\n').find((l) => /error:/.test(l)) ?? ''}` : ''}`);
+    // The app declaring the package too, it is the app's: the plugin's Swift stays a static library, which cannot see the module.
+    const blind = build(null);
+    check(blind.status !== 0 && blind.output.includes('@hk/cached: its Swift tests canImport(HKCPkg), which the build translated against, and its target cannot import HKCPkg'), "a plugin target that cannot see a module its table was extracted with fails to build, naming the module");
+  } catch (e) {
+    check(false, `a plugin's Swift built on its own Swift package's Clang module: ${String(e).split('\n').slice(0, 3).join(' ')}`);
+  } finally {
+    deps?.dispose();
+    if (tableCache === undefined) delete process.env.NS_NATIVE_TABLE_CACHE; else process.env.NS_NATIVE_TABLE_CACHE = tableCache;
+    rmSync(dir, { recursive: true, force: true });
+  }
+})();
+
 // ---- The modules a build of the Swift packages and pods leaves ----
 (() => {
   const dir = mkdtempSync(join(tmpdir(), 'ns-release-checks-built-'));
@@ -441,6 +493,7 @@ export class GlyphPipe { constructor(@Inject(TOKEN) private config: any, @Option
     w(`${products}/Swifty.swiftmodule/arm64.swiftmodule`, '');
     const built = builtModules(dir);
     const arg = (a: string) => built.args.includes(a);
+    check(built.clangModules.join() === 'CHud,CNested', `a build's Clang modules are known, with maps of their own or generated (${built.clangModules.join()})`);
     check(built.modules.join() === 'CHud,CNested,Swifty,Vendor', `a build's modules include a C target's with a module map of its own and a framework below the products, and no other package's (${built.modules.join()})`);
     check(arg(`-I${join(dir, 'SourcePackages/checkouts/nested/Sources/CNested/include')}`) && arg(`-fmodule-map-file=${own}`) && arg(join(dir, products, 'XCFrameworkIntermediates/vendor')),
       "a C target's public headers, a package's own module map and a nested framework's directory are visible as Xcode makes them");
