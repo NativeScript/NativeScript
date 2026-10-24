@@ -20,6 +20,7 @@ import { angularComponent, angularDirectives, angularRouteTree, angularRoutes, c
 import { angularLibraries, registeredElements } from '../../src/angular-libraries.ts';
 import { pathAliases } from '../../src/app-paths.ts';
 import { appImports, reachedFrom, tsconfigIncluded } from '../../src/app-modules.ts';
+import { foldPlatform } from '../../src/platform.ts';
 import { runtimeFile } from '../../src/plugins/resolve.ts';
 import { PluginSources, verify, verifyBundle } from '../../src/plugins/source.ts';
 import { manifest, ownTypings, pluginNative, scopedImports, usedImports, xcodegenLines } from '../../src/plugins/native.ts';
@@ -227,6 +228,37 @@ export class GlyphPipe { constructor(@Inject(TOKEN) private config: any, @Option
     check(!included.has(spec) && included.has(test) && included.has(app), "a file the app's tsconfig excludes is not one of its modules");
     const tree = angularRouteTree(main, (f) => readFileSync(f, 'utf8'), aliased);
     check(!!tree && routedComponents(tree.routes).join() === 'Lazy,Lazy' && tree.files.has(child), 'lazy routes are followed through tsconfig paths');
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+})();
+
+// ---- Imports a release build's folding leaves unused ----
+(() => {
+  const dir = mkdtempSync(join(tmpdir(), 'ns-release-checks-side-effects-'));
+  const w = (f: string, text: string) => { mkdirSync(dirname(join(dir, f)), { recursive: true }); writeFileSync(join(dir, f), text); return join(dir, f); };
+  try {
+    const pkg = (name: string, json: object, files: string[] = ['index.js']) => { w(`node_modules/${name}/package.json`, JSON.stringify({ name, ...json })); for (const f of files) w(`node_modules/${name}/${f}`, 'globalThis.ran = true;\n'); };
+    pkg('@dev/inspector', { sideEffects: false });
+    pkg('dev-plain', {});
+    pkg('dev-listed', { main: './lib/index.js', sideEffects: ['./lib/polyfill.js', '*.css'] }, ['lib/index.js', 'lib/polyfill.js']);
+    pkg('dev-entry-listed', { exports: { '.': { import: './index.mjs', require: './index.js' } }, sideEffects: ['index.mjs'] }, ['index.js', 'index.mjs']);
+    const main = w('src/main.ts', [
+      "import { startInspector } from '@dev/inspector';",
+      "import * as plain from 'dev-plain';",
+      "import listed from 'dev-listed';",
+      "import { entry } from 'dev-entry-listed';",
+      "import { polyfill } from 'dev-listed/lib/polyfill';",
+      "import { stillUsed } from 'dev-plain/used';",
+      'if (__DEV__) { startInspector(); plain.start(); listed(); entry(); polyfill(); }',
+      'stillUsed();',
+      '',
+    ].join('\n'));
+    const out = foldPlatform(readFileSync(main, 'utf8'), main, 'ios');
+    const kept = (m: string) => out.includes(`'${m}'`);
+    check(!kept('@dev/inspector') && !kept('dev-listed'), 'an import folding leaves unused goes where its package declares no side effects (sideEffects false, or a list missing its entry)');
+    check(kept('dev-plain') && kept('dev-entry-listed') && kept('dev-listed/lib/polyfill') && kept('dev-plain/used'), 'an import folding leaves unused stays where its package may have side effects (no sideEffects, or a list naming the file), and so does a used one');
+    check(out.split('\n').length === readFileSync(main, 'utf8').split('\n').length, 'dropped imports keep every line in place');
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
