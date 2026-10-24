@@ -1517,8 +1517,10 @@ export class Translator implements AsyncTranslator {
   private setterTakesAny(set: ts.SetAccessorDeclaration): boolean {
     if (this.typeofTestedSetter(set)) return true;
     const p = set.parameters[0];
-    if (!p || !ts.isIdentifier(p.name) || !set.body || isStatic(set) || !ts.isClassLike(set.parent)) return false;
+    if (!p || !set.body || isStatic(set) || !ts.isClassLike(set.parent)) return false;
     const get = set.parent.members.find((m): m is ts.GetAccessorDeclaration => ts.isGetAccessorDeclaration(m) && m.name.getText() === set.name.getText() && !isStatic(m));
+    // A destructured parameter takes apart whatever object it is given (`set offset({ x, y })` beside `get offset(): Point`).
+    if (!ts.isIdentifier(p.name)) return !!get?.body && this.typeOf(p.name) !== this.returnTypeOf(get);
     return !!get?.body && this.typeOf(p.name) === 'Any?' && this.returnTypeOf(get) !== 'Any?';
   }
 
@@ -5194,29 +5196,34 @@ ${members.join('\n')}
       } else if (a.get) parts.push(`        get${this.throwsInfo.fn(a.get) ? ' throws' : ''} ${this.functionBody(a.get, t, '        ')}`);
       else parts.push('        get { nil }');
       if (ignoredSet) parts.push('        set {}');
-      if (a.set && !ts.isIdentifier(a.set.parameters[0]?.name)) throw this.error(a.set, 'a setter whose parameter is a destructuring pattern');
       const anySetter = !!a.set && this.setterTakesAny(a.set);
       const setMethod = `__set_${n.replace(/\W/g, '_')}`;
       const overSetMethod = !!a.set && !isStatic(a.set) && this.baseSetterMethod(cls, n);
       if (a.set && anySetter) {
-        const p = a.set.parameters[0].name as ts.Identifier;
-        const body = this.functionBody(a.set, 'Void', '    ');
+        const p = a.set.parameters[0].name;
+        let body = this.functionBody(a.set, 'Void', '    ');
         const fmods = overSetMethod ? 'override ' : '';
-        this.declare(setMethod, { kind: 'func', mods: fmods, params: `_ ${ident(p.text)}: Any?`, type: 'Void' });
-        lines.push(`    ${fmods}func ${setMethod}(_ ${ident(p.text)}: Any?) {\n        ${this.throwsInfo.fn(a.set) ? 'jsReport' : 'do'} ${body.trimStart().replace(/\n/g, '\n    ')}\n    }`);
+        const param = ts.isIdentifier(p) ? ident(p.text) : '__v';
+        // A destructured parameter is bound from `__p0`, which the body's prelude takes apart.
+        if (!ts.isIdentifier(p)) body = body.replace('{\n', `{\n        let __p0: ${this.typeOf(p)} = ${this.fromAnyCode('__v', this.typeOf(p), true)}\n`);
+        const report = this.throwsInfo.fn(a.set) || !ts.isIdentifier(p);
+        this.declare(setMethod, { kind: 'func', mods: fmods, params: `_ ${param}: Any?`, type: 'Void' });
+        lines.push(`    ${fmods}func ${setMethod}(_ ${param}: Any?) {\n        ${report ? 'jsReport' : 'do'} ${body.trimStart().replace(/\n/g, '\n    ')}\n    }`);
         parts.push(`        set { ${setMethod}(newValue) }`);
       } else if (a.set) {
         if (this.throwsInfo.fn(a.set) && !reported) throw this.error(a.set, 'a setter that throws');
-        const p = a.set.parameters[0].name as ts.Identifier;
+        const p = a.set.parameters[0].name;
         const body = this.functionBody(a.set, 'Void', '        ');
         // A setter taking more than its getter gives (`set style(value: Style | string)`): its parameter as declared, from the property's value.
         const own = this.typeOf(p);
-        const value = !this.isRead(p) ? '' : a.get && own !== t && own.replace(/[?!]$/, '') !== t.replace(/[?!]$/, '') ? `let ${ident(p.text)}: ${own} = ${this.convert('newValue', declared.replace(/!$/, '?'), own)}`
-          : declared !== t ? `let ${ident(p.text)}: ${declared} = newValue` : !a.get && this.lenient ? this.setterOnlyValue(p, t) : `let ${ident(p.text)} = newValue${a.get ? '' : '!'}`;
-        const bound = value ? `            ${value}\n` : '';
+        // A destructured parameter is bound from `__p0`, which the body's prelude takes apart.
+        const bound = ts.isIdentifier(p) ? ident(p.text) : '__p0';
+        const value = ts.isIdentifier(p) && !this.isRead(p) ? '' : a.get && own !== t && own.replace(/[?!]$/, '') !== t.replace(/[?!]$/, '') ? `let ${bound}: ${own} = ${this.convert('newValue', declared.replace(/!$/, '?'), own)}`
+          : declared !== t ? `let ${bound}: ${declared} = newValue` : !a.get && this.lenient && ts.isIdentifier(p) ? this.setterOnlyValue(p, t) : `let ${bound} = newValue${a.get ? '' : '!'}`;
+        const binding = value ? `            ${value}\n` : '';
         parts.push(this.throwsInfo.fn(a.set)
-          ? `        set {\n${bound}            jsReport ${body.trimStart()}\n        }`
-          : `        set {\n${bound}            do ${body.trimStart()}\n        }`);
+          ? `        set {\n${binding}            jsReport ${body.trimStart()}\n        }`
+          : `        set {\n${binding}            do ${body.trimStart()}\n        }`);
         // A base's `__set_<name>` is what writes through its type and by name call: here, this class's setter.
         if (overSetMethod) {
           lines.push(`    override func ${setMethod}(_ newValue: Any?) { self.${ident(n)} = ${declared.endsWith('!') ? this.fromAny('newValue', declared.replace(/!$/, '?')) : this.fromAnyCode('newValue', declared, true)} }`);
@@ -5356,6 +5363,7 @@ ${members.join('\n')}
       const sameParams = (a: ts.MethodDeclaration, b: ts.MethodDeclaration) => { const x = this.signatureOf(a).params, y = this.signatureOf(b).params; return x.length === y.length && x.every((p, k) => p.type === y[k].type); };
       const modifiers = isStatic(m) ? (overriddenStatic && sameParams(m, overriddenStatic) ? 'override class ' : 'class ') : inherited.has(n) ? 'override ' : '';
       lines.push('    ' + this.memberFunc(m, ident(n), modifiers, extra));
+      if (!isStatic(m) && !generic && this.nonVirtualEntry(m)) lines.push('    ' + this.memberFunc(m, ident(nonVirtualName(n, cls.name!.text)), 'final '));
       // A plugin's objects are read untyped too (`handler.attachToView(view)` on an `any`): their methods by name.
       const restAt = m.parameters.findIndex((p) => p.dotDotDotToken);
       if ((this.pluginFiles.has(cls.getSourceFile().fileName) || this.appMembersByName) && !isStatic(m) && (restAt < 0 || restAt === m.parameters.length - 1) && !extra.length && !generic) {
@@ -6771,7 +6779,7 @@ ${members.join('\n')}
       // Past the end is undefined.
       else if (this.isAny(name)) read = `(try jsGet(${value}, "${k}"))`;
       else if (arrayValue && /^JSArray<Any\?>[?!]?$/.test(_type) && ts.isIdentifier(el.name)) read = `(${value}.element(${k}) ?? nil)`;
-      else read = arrayValue && ts.isIdentifier(el.name) ? this.undefinedAs(`${value}.element(${k})`, this.typeOf(el.name)) : arrayValue && el.initializer ? `${value}.element(${k})` : `${value}[${k}]`;
+      else read = arrayValue && ts.isIdentifier(el.name) && (!el.initializer || /[?!]$/.test(this.typeOf(el.name))) ? this.undefinedAs(`${value}.element(${k})`, this.typeOf(el.name)) : arrayValue && el.initializer ? `${value}.element(${k})` : `${value}[${k}]`;
       if (el.initializer) read = `(${read} ?? ${this.coerce(el.initializer, ts.isIdentifier(el.name) ? this.typeOf(el.name) : this.partType(name, el, k, source, _type) ?? this.typeOf(el.name))})`;
       if (ts.isIdentifier(el.name)) {
         const t = this.typeOf(el.name);
@@ -10365,6 +10373,7 @@ ${members.join('\n')}
       const builtin = method === 'call' || method === 'apply' ? this.builtinPrototypeCall(method, target, e) : null;
       if (builtin) return builtin;
       if (['call', 'apply', 'bind'].includes(method) && isLibDeclaration(this.checker.getResolvedSignature(e)?.getDeclaration()) && functionParts(this.typeOf(target).replace(/^\((.*)\)[?!]$/, '$1'))) return this.functionMethod(method, target, e);
+      if ((method === 'call' || method === 'apply') && this.programPrototypeMethod(target) && isLibDeclaration(this.checker.getResolvedSignature(e)?.getDeclaration())) return this.functionMethod(method, target, e);
       const required = this.library ? null : this.core.requiredModuleCall(e);
       if (required) return required;
       // `handler.toString()` of a typed function value: the text script gives a function the runtime holds.
@@ -10589,16 +10598,89 @@ ${members.join('\n')}
     const plain = (x: ts.Expression): boolean => x.kind === ts.SyntaxKind.ThisKeyword || ts.isIdentifier(x) || (ts.isPropertyAccessExpression(x) ? plain(x.expression) : this.pure(x));
     const typed = thisArg && this.classNamed(this.typeOf(thisArg).replace(/[?!]$/, ''));
     if (thisArg && plain(thisArg) && typed && (typed === cls || below(typed))) {
-      if (!overridden) return this.expr(thisArg).replace(/!$/, '');
-      const host = thisArg.kind === ts.SyntaxKind.ThisKeyword ? ts.findAncestor(e, (n) => ts.isClassLike(n) || (ts.isFunctionLike(n) && !ts.isArrowFunction(n) && !ts.isMethodDeclaration(n) && !ts.isConstructorDeclaration(n) && !ts.isAccessor(n))) : undefined;
-      if (host && ts.isClassLike(host) && below(host)) {
-        let between = false;
-        for (let b = this.sourceBase(host); b && b !== cls; b = this.sourceBase(b)) if (declares(b)) between = true;
-        if (!between) return 'super';
-      }
+      const receiver = this.expr(thisArg).replace(/!$/, '');
+      if (!overridden) return `${receiver}.${ident(name)}`;
+      const entry = this.declaringMethod(cls, name);
+      if (entry && this.nonVirtualEntry(entry)) return `${receiver}.${ident(nonVirtualName(name, (entry.parent as ts.ClassLikeDeclaration).name!.text))}`;
     }
     throw this.error(e, `${method} of ${found.owner.getText()}.prototype.${name} on an object whose class may override it`);
   }
+
+  /** `X.prototype.m` of a method of a class the program declares. */
+  private programPrototypeMethod(target: ts.Expression): ts.MethodDeclaration | undefined {
+    const found = this.prototypeMethod(target);
+    const cls = found && this.resolve(found.owner)?.valueDeclaration;
+    return found && cls && ts.isClassDeclaration(cls) && !cls.getSourceFile().isDeclarationFile ? this.declaringMethod(cls, found.name) : undefined;
+  }
+
+  /** The method with a body `X.prototype.name` is: X's own, or the nearest base's of the program's. */
+  private declaringMethod(cls: ts.ClassLikeDeclaration, name: string): ts.MethodDeclaration | undefined {
+    for (let c: ts.ClassLikeDeclaration | undefined = cls; c; c = this.sourceBase(c)) {
+      const m = c.members.find((x): x is ts.MethodDeclaration => ts.isMethodDeclaration(x) && !isStatic(x) && !!x.body && x.name.getText() === name);
+      if (m) return m;
+      if (c.members.some((x) => !isStatic(x) && x.name?.getText() === name)) return undefined;
+    }
+    return undefined;
+  }
+
+  private nonVirtualMethods: Set<ts.MethodDeclaration> | null = null;
+  /**
+   * A method some subclass overrides, which `X.prototype.m.call(obj, …)` calls as X has it whatever obj's class is: it
+   * gets a final copy too, as Swift dispatches `m` by the object's class. Library mode: each such method, which an app
+   * may name; otherwise those the program names.
+   */
+  private nonVirtualEntry(m: ts.MethodDeclaration): boolean {
+    if (!this.nonVirtualMethods) {
+      const set = new Set<ts.MethodDeclaration>();
+      const overriddenBelow = (m: ts.MethodDeclaration) => {
+        const owner = m.parent as ts.ClassLikeDeclaration, name = m.name.getText();
+        const below = (c: ts.ClassLikeDeclaration) => { for (let b = this.sourceBase(c); b; b = this.sourceBase(b)) if (b === owner) return true; return false; };
+        return this.allClasses().some((c) => c !== owner && below(c) && c.members.some((x) => !isStatic(x) && x.name?.getText() === name));
+      };
+      const consider = (m: ts.MethodDeclaration | undefined) => { if (m && !m.typeParameters?.length && ts.isClassDeclaration(m.parent) && m.parent.name && overriddenBelow(m)) set.add(m); };
+      if (this.library) {
+        for (const c of this.allClasses()) for (const x of c.members) if (ts.isMethodDeclaration(x) && !isStatic(x) && x.body && !ts.isComputedPropertyName(x.name)) consider(x);
+      } else {
+        const visit = (n: ts.Node) => {
+          const found = ts.isPropertyAccessExpression(n) ? this.prototypeMethod(n) : null;
+          const owner = found && this.resolve(found.owner)?.valueDeclaration;
+          if (found && owner && ts.isClassDeclaration(owner) && !owner.getSourceFile().isDeclarationFile) consider(this.declaringMethod(owner, found.name));
+          ts.forEachChild(n, visit);
+        };
+        for (const sf of this.sourceFiles) if (!sf.isDeclarationFile) visit(sf);
+      }
+      this.nonVirtualMethods = set;
+    }
+    return this.nonVirtualMethods.has(m);
+  }
+
+  /**
+   * `KitClass.prototype.m.call(obj, …)` of a kit class: its final copy of `m` where the kit has one, and `super.m` for
+   * `this` where neither the kit nor a program class between overrides it.
+   */
+  private kitPrototypeCall(held: ts.Expression, e: ts.CallExpression, method: string): string | null {
+    const found = this.prototypeMethod(held);
+    const cls = found && this.resolve(found.owner)?.valueDeclaration;
+    if (!found || !cls || !ts.isClassDeclaration(cls) || !cls.getSourceFile().isDeclarationFile || !cls.name) return null;
+    const kit = this.core.kitTypeName(cls.name.text);
+    if (!kit || !this.core.kitMember(kit, found.name)) return null;
+    const [thisArg, ...rest] = e.arguments;
+    const args = method === 'call' ? rest : !rest.length ? [] : ts.isArrayLiteralExpression(rest[0]) ? [...rest[0].elements] : null;
+    const plain = (x: ts.Expression): boolean => x.kind === ts.SyntaxKind.ThisKeyword || ts.isIdentifier(x) || (ts.isPropertyAccessExpression(x) ? plain(x.expression) : this.pure(x));
+    const isInstance = !!thisArg && plain(thisArg) && this.checker.isTypeAssignableTo(this.checker.getTypeAtLocation(thisArg), this.checker.getDeclaredTypeOfSymbol(this.resolve(cls.name)!));
+    if (method !== 'bind' && isInstance && args && !args.some(ts.isSpreadElement)) {
+      const entry = this.core.nonVirtualEntry(kit, found.name);
+      if (entry) return this.core.nonVirtualCall(e, this.expr(thisArg).replace(/!$/, ''), kit, entry, args);
+      const host = thisArg.kind === ts.SyntaxKind.ThisKeyword ? ts.findAncestor(e, (n) => ts.isClassLike(n) || (ts.isFunctionLike(n) && !ts.isArrowFunction(n) && !ts.isMethodDeclaration(n) && !ts.isConstructorDeclaration(n) && !ts.isAccessor(n))) : undefined;
+      if (host && ts.isClassLike(host)) {
+        let between = false;
+        for (let b = this.sourceBase(host); b; b = this.sourceBase(b)) if (b.members.some((x) => !isStatic(x) && x.name?.getText() === found.name)) between = true;
+        if (!between) return this.core.nonVirtualCall(e, 'super', kit, found.name, args);
+      }
+    }
+    throw this.error(e, `${method} of ${cls.name.text}.prototype.${found.name} on an object whose class may override it`);
+  }
+
 
   private classList: ts.ClassLikeDeclaration[] | null = null;
   private allClasses(): ts.ClassLikeDeclaration[] {
@@ -10666,6 +10748,8 @@ ${members.join('\n')}
     const sym = ts.isPropertyAccessExpression(held) || ts.isIdentifier(held) ? this.resolve(ts.isPropertyAccessExpression(held) ? held.name : held) : undefined;
     const decl = sym?.declarations?.find((d): d is ts.MethodDeclaration | ts.FunctionDeclaration => (ts.isMethodDeclaration(d) || ts.isFunctionDeclaration(d)) && !!d.body) ?? sym?.valueDeclaration;
     const bound = !!decl && (ts.isMethodDeclaration(decl) || ts.isMethodSignature(decl) || (ts.isFunctionDeclaration(decl) && thisNodes(decl).length > 0));
+    const kitCall = this.kitPrototypeCall(held, e, method);
+    if (kitCall) return kitCall;
     const viaPrototype = this.classPrototypeReceiver(held, thisArg, e, method);
     if (viaPrototype) {
       if (method === 'bind') throw this.error(e, 'bind of a method read off a prototype');
@@ -10701,7 +10785,7 @@ ${members.join('\n')}
     const given = restAt >= 0 && restAt < fn.params.length && method !== 'bind'
       ? fn.params.map((_, k) => (k === restAt ? this.packed(items.slice(k), param(k).replace(/[?!]$/, '')) : items[k] ? this.coerce(items[k], param(k)) : 'nil'))
       : items.slice(0, fn.params.length).map((x, k) => this.coerce(x, param(k)));
-    const f = viaPrototype ? `${viaPrototype}.${ident((held as ts.PropertyAccessExpression).name.text)}` : `${this.expr(target)}${optional && !e.questionDotToken && !ts.isOptionalChain(e) ? '!' : ''}`;
+    const f = viaPrototype ? viaPrototype : `${this.expr(target)}${optional && !e.questionDotToken && !ts.isOptionalChain(e) ? '!' : ''}`;
     if (method !== 'bind') {
       // A parameter left out is undefined: NaN where lenient code holds a number, the type's zero where it holds another value.
       const missing = fn.params.slice(given.length).map((p) => (p === 'Void' ? '()' : isOptional(p) || p === 'Any?' ? 'nil' : p === 'Double' ? '.nan' : this.zero(p.replace(/^@escaping /, '')) ?? 'nil'));
@@ -11241,6 +11325,7 @@ ${members.join('\n')}
     switch (name) {
       case 'pow': return `jsPow(${a[0]}, ${a[1]})`;
       case 'atan2': return `Foundation.atan2(${a[0]}, ${a[1]})`;
+      case 'imul': return `jsImul(${a[0] ?? '.nan'}, ${a[1] ?? '.nan'})`;
       case 'hypot': return `jsHypot(${a.join(', ')})`;
       case 'min': return `jsMathMin(${a.join(', ')})`;
       case 'max': return `jsMathMax(${a.join(', ')})`;
@@ -12882,6 +12967,11 @@ const SWIFT_SYNTAX: AsyncSyntax = {
   closeAsyncIteratorThrowing: (iterator, error, onError) => `jsAsyncCloseThrowing(${iterator}, ${error}, ${onError})`,
   tryStatement: (statement) => statement.replace(/^(let \w+(?:: [^=]+)? = )/, '$1try '),
 };
+
+/** The final copy of a method that `X.prototype.m.call(obj, …)` calls (see `nonVirtualEntry`). */
+export function nonVirtualName(method: string, cls: string): string {
+  return `${method}__${cls}`;
+}
 
 /** Whether Swift code is a postfix chain still open at its top level (`a?.b(c)`): what follows it is part of the chain. */
 function openSwiftChain(code: string): boolean {
