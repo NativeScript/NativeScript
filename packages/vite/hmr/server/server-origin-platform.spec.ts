@@ -226,6 +226,23 @@ describe('getServerOrigin platform routing', () => {
 		expect(getServerOrigin(server)).toBe('http://localhost:5173');
 	});
 
+	it('routes Windows to IPv4 loopback (the app runs on the dev machine)', () => {
+		getCliFlagsSpy.mockReturnValue({ windows: true });
+		const server = makeFakeServer({
+			host: '0.0.0.0',
+			resolvedNetwork: ['http://192.168.0.8:5173/'],
+		});
+
+		expect(getServerOrigin(server)).toBe('http://127.0.0.1:5173');
+	});
+
+	it('keeps the Windows loopback bind verbatim', () => {
+		getCliFlagsSpy.mockReturnValue({ windows: true });
+		const server = makeFakeServer({ host: '127.0.0.1', port: 6173 });
+
+		expect(getServerOrigin(server)).toBe('http://127.0.0.1:6173');
+	});
+
 	it('respects explicit non-loopback host on Android', () => {
 		// Developer wrote `server.host: '192.168.1.42'` deliberately —
 		// trust it. Matches `dev-host.ts` precedence rule #2.

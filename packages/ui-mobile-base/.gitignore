@@ -53,3 +53,6 @@ android/widgets/.settings
 android/.project
 android/widgets/.project
 android/.settings
+
+windows/widgets/bin
+windows/widgets/obj

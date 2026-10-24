@@ -171,6 +171,7 @@ export interface WindowOpenOptions {
 	 * Data to pass to the new window.
 	 * On iOS: serialized into NSUserActivity.userInfo.
 	 * On Android: added as intent extras.
+	 * On Windows: passed to the content resolver.
 	 */
 	data?: Record<string, any>;
 }
@@ -192,7 +193,7 @@ export interface WindowContentRequest {
 	window: NativeWindow;
 	/** Whether the window is the application's primary window. */
 	isPrimary: boolean;
-	/** NSUserActivity.userInfo on iOS, intent extras on Android. */
+	/** NSUserActivity.userInfo on iOS, intent extras on Android, `WindowOpenOptions.data` on Windows. */
 	data?: Record<string, any>;
 	ios?: {
 		connectionOptions?: UISceneConnectionOptions;
