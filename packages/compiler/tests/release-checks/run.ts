@@ -499,8 +499,8 @@ export class GlyphPipe { constructor(@Inject(TOKEN) private config: any, @Option
     const typed = createProgram([setter], new Map(), 'ios', modulesDir);
     const setters = new SwiftTranslator(typed.checker, new Map(), typed.files);
     setters.errors = [];
-    translateModules(setters, typed.program, [setter]);
-    check(setters.errors.length === 1 && setters.errors[0].includes('a setter whose parameter is a destructuring pattern'), 'a setter destructuring its value is reported, not a crash');
+    const setterCode = translateModules(setters, typed.program, [setter]).map((m) => m.code).join('\n');
+    check(!setters.errors.length && /let __p0\b/.test(setterCode), `a setter destructuring its value takes it apart${setters.errors.length ? `: ${setters.errors[0]}` : ''}`);
     const holes = join(dir, 'holes.ts');
     writeFileSync(holes, "class Card { name = 'c'; }\nconst c = new Card();\n// @ts-ignore\nexport const cards: Card[] = [c, undefined, null];\n");
     const loose = createProgram([holes], new Map(), 'ios', modulesDir);
