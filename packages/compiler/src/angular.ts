@@ -8,6 +8,7 @@ import { scopeTemplate, type Attr, type ComponentIR, type ComponentStyle, type D
 import { rewrite, type Scope } from './rewrite.ts';
 import { canonical } from './elements.ts';
 import { STUBBED_PLUGINS } from './core.ts';
+import { flattenComponent, openStatics } from './component-bases.ts';
 
 /** The elements of the binary-only plugins `release.stubPlugins` can stub, by lowercase tag, and their packages. */
 const STUB_ELEMENTS: Record<string, string> = {
@@ -87,6 +88,13 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
   const others = sf.statements.filter((s) => s !== cls && ts.isClassDeclaration(s) && !!decorator(s, 'Component'));
   if (others.length) throw new Error(`${path}: ${others.length + 1} components in one file; a compiled release takes one @Component per file`);
   const asWritten = cls;
+  const flat = flattenComponent(path, text, cls.name.text);
+  const opened = openStatics(flat ?? text, flat === null ? cls : ts.createSourceFile(path, flat, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS).statements.find((s): s is ts.ClassDeclaration => ts.isClassDeclaration(s) && !!decorator(s, 'Component'))!);
+  if (opened !== text) {
+    text = opened;
+    sf = ts.createSourceFile(path, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+    cls = sf.statements.find((s): s is ts.ClassDeclaration => ts.isClassDeclaration(s) && !!decorator(s, 'Component'))!;
+  }
   // A class with decorated inputs and outputs, or constructor injection, as the signal-style class the translator reads.
   const classic = classicClass(path, text, cls);
   if (classic) {
@@ -104,6 +112,7 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
   }
   const providers = prop('providers');
   if (providers) {
+    if (flat !== null) throw new Error(`${path}: @Component's providers on a class that extends another are not supported in a release build yet`);
     refuseScopedInjection(path, asWritten);
     text = withInjector(path, text, cls, providers);
     sf = ts.createSourceFile(path, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
@@ -141,7 +150,6 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
     }
   };
   const { members, props, optional, outputs, inputAliases } = publicMembers(path, cls, classic);
-  collectInheritedMembers(path, sf, cls, members);
   const scope: Scope = { names: new Map([...members].map((m) => [m, classic?.inputs.has(m) ? `this.${m}()` : `this.${m}`])) };
   const init = cls.members.find((m) => ts.isMethodDeclaration(m) && m.name.getText() === 'ngOnInit');
   /** A lifecycle hook the class implements: a method of that name, taking nothing. */
@@ -1877,56 +1885,6 @@ function classicClass(path: string, text: string, cls: ts.ClassDeclaration): Cla
   const imported = new Set(cls.getSourceFile().statements.flatMap((st) => ts.isImportDeclaration(st) && st.importClause?.namedBindings && ts.isNamedImports(st.importClause.namedBindings) ? st.importClause.namedBindings.elements.map((e) => e.name.text) : []));
   const missing = [...used].filter((u) => !imported.has(u));
   return { text: (missing.length ? `import { ${missing.join(', ')} } from '@angular/core';\n` : '') + out, inputs, setters, aliases, optional, queries, host };
-}
-
-/** The members a component inherits from its base classes in the program, which its template may name too. */
-function collectInheritedMembers(path: string, sf: ts.SourceFile, cls: ts.ClassDeclaration, members: Set<string>, seen = new Set<string>()): void {
-  const ext = cls.heritageClauses?.find((c) => c.token === ts.SyntaxKind.ExtendsKeyword)?.types[0]?.expression;
-  if (!ext || !ts.isIdentifier(ext)) return;
-  let file = path;
-  let name = ext.text;
-  let source: ts.SourceFile | undefined = sf.statements.some((st) => ts.isClassDeclaration(st) && st.name?.text === name) ? sf : undefined;
-  if (!source) {
-    for (const st of sf.statements) {
-      if (!ts.isImportDeclaration(st) || !st.importClause || !ts.isStringLiteral(st.moduleSpecifier)) continue;
-      const bindings = st.importClause.namedBindings;
-      const el = bindings && ts.isNamedImports(bindings) ? bindings.elements.find((e) => e.name.text === ext.text) : undefined;
-      if (!el) continue;
-      const resolved = resolveClassImport(path, st.moduleSpecifier.text);
-      if (resolved) {
-        file = resolved;
-        name = (el.propertyName ?? el.name).text;
-        source = ts.createSourceFile(resolved, readFileSync(resolved, 'utf8'), ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
-      }
-      break;
-    }
-  }
-  if (!source || seen.has(`${file}#${name}`)) return;
-  seen.add(`${file}#${name}`);
-  const base = source.statements.find((st): st is ts.ClassDeclaration => ts.isClassDeclaration(st) && st.name?.text === name);
-  if (!base) return;
-  for (const m of base.members) {
-    if (m.name && ts.isIdentifier(m.name)) members.add(m.name.text);
-    else if (ts.isConstructorDeclaration(m)) for (const p of m.parameters) if ((ts.getModifiers(p) ?? []).length && ts.isIdentifier(p.name)) members.add(p.name.text);
-  }
-  collectInheritedMembers(file, source, base, members, seen);
-}
-
-/** A base class's file: relative, or under the app's `~/` or `@/` alias (its `src` or `app` folder). */
-function resolveClassImport(fromFile: string, spec: string): string | undefined {
-  const candidates: string[] = [];
-  if (spec.startsWith('.')) {
-    const base = join(dirname(fromFile), spec);
-    candidates.push(base + '.ts', join(base, 'index.ts'));
-  } else if (spec.startsWith('~/') || spec.startsWith('@/')) {
-    const sub = spec.slice(2);
-    for (let dir = dirname(fromFile); dirname(dir) !== dir; dir = dirname(dir)) {
-      if (!existsSync(join(dir, 'package.json'))) continue;
-      for (const appDir of ['src', 'app']) candidates.push(join(dir, appDir, sub + '.ts'), join(dir, appDir, sub, 'index.ts'));
-      break;
-    }
-  }
-  return candidates.find((c) => existsSync(c));
 }
 
 function literalType(e: ts.Expression | undefined): string | undefined {

@@ -102,6 +102,13 @@ export function isRegExpProtocol(t: ts.Type): boolean {
  * `type A = B & { x: T }` over non-generic interfaces and type literals only: the members of the type it names, each
  * property's first declaration, as one interface's. Null for any other alias.
  */
+// A spread source whose fields are only known when it runs (`T`, `T & U`, `Partial<T>`): no fixed shape holds them all.
+export function openSpreadType(t: ts.Type): boolean {
+  if (t.isUnionOrIntersection()) return t.types.some(openSpreadType);
+  if (t.flags & ts.TypeFlags.Instantiable) return true;
+  return !!t.aliasTypeArguments?.some(openSpreadType) && !!(ts.getObjectFlags(t) & ts.ObjectFlags.Mapped);
+}
+
 export function intersectionAliasMembers(st: ts.TypeAliasDeclaration, checker: ts.TypeChecker): ts.TypeElement[] | null {
   if (!ts.isIntersectionTypeNode(st.type) || st.typeParameters?.length) return null;
   const sym = checker.getSymbolAtLocation(st.name);
