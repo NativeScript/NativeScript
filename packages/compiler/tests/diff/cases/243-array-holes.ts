@@ -15,3 +15,9 @@ try {
 } catch (e) {
   console.log((e as Error).name, (e as Error).message);
 }
+const sparse: string[] = new Array<string>(4);
+sparse[2] = 'c';
+const forIn: string[] = [];
+for (const k in sparse) forIn.push(k);
+console.log(forIn.join(','), Object.entries(sparse).length, Object.values(sparse).join('|'));
+console.log(Object.keys(new Array<number>(2)).length, 3 in sparse, 2 in sparse);

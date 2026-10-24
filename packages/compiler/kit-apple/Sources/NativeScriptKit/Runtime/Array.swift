@@ -6,6 +6,8 @@ public protocol JSArrayProtocol: AnyObject {
     /// The elements boxed as JavaScript values (nested optionals collapsed).
     var jsAnyElements: [Any?] { get }
     func jsElement(at index: Int) -> Any?
+    /// Whether `index` is a slot holding a value, not past the end or empty (`new Array(n)`).
+    func jsHasElement(at index: Int) -> Bool
     /// `array[index] = value`; throws a TypeError when `value` is not an `Element`.
     func jsSetElement(_ value: Any?, at index: Int) throws
     func jsSetLength(_ length: Int) throws
@@ -872,6 +874,11 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
     public final func jsElement(at index: Int) -> Any? {
         track()
         return index >= 0 && index < storage.count && !JSArray.isHole(storage[index]) ? jsFlat(read(index)) : nil
+    }
+
+    public final func jsHasElement(at index: Int) -> Bool {
+        track()
+        return index >= 0 && index < storage.count && !JSArray.isHole(storage[index])
     }
 
     public final func jsSetElement(_ value: Any?, at index: Int) throws {

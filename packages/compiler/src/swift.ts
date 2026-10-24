@@ -2108,7 +2108,13 @@ export class Translator implements AsyncTranslator {
       if (!ts.isIdentifier(d.name)) {
         // An object rest (`const { tag, ...rest } = p`) has the shape of its fields, as bindTo declares it.
         const typeOfBound = (n: ts.Identifier) => (ts.isBindingElement(n.parent) && n.parent.dotDotDotToken && ts.isObjectBindingPattern(n.parent.parent) ? this.shape(this.checker.getTypeAtLocation(n), n.parent) : this.typeOf(n));
-        for (const n of boundNames(d.name)) { const name = this.topName(n.parent, n.text); const t = this.deferred(typeOfBound(n)); field(`${modifiers}var ${ident(name)}: ${t}`, name, t); }
+        const groups = ts.isArrayBindingPattern(d.name) && /^JSMatch[?!]?$/.test(this.typeOf(d.initializer!));
+        for (const n of boundNames(d.name)) {
+          const name = this.topName(n.parent, n.text);
+          const group = groups && n.parent.parent === d.name && !(n.parent as ts.BindingElement).initializer && !(n.parent as ts.BindingElement).dotDotDotToken && /^(Double|String|Bool)$/.test(typeOfBound(n));
+          const t = this.deferred(group ? this.bindsOptional(n, typeOfBound(n)) : typeOfBound(n));
+          field(`${modifiers}var ${ident(name)}: ${t}`, name, t);
+        }
         const tmp = this.fresh('__d');
         later(() => `    let ${tmp}${this.destructured(d.name, d.initializer!)}\n${this.bindTo(d.name, tmp, '', 'assign')}`);
         continue;
@@ -6742,6 +6748,7 @@ ${members.join('\n')}
     const lines: string[] = [];
     const source = this.checker.getTypeAtLocation(name);
     const arrayValue = (_type || this.typeOf(name)).replace(/\?$/, '').startsWith('JSArray<');
+    const matchValue = ts.isArrayBindingPattern(name) && /^JSMatch[?!]?$/.test(_type || this.typeOf(name));
     name.elements.forEach((el, k) => {
       if (ts.isOmittedExpression(el)) return;
       if (el.dotDotDotToken) {
@@ -6766,7 +6773,7 @@ ${members.join('\n')}
           : record ? this.undefinedAs(`${value}[${swiftString(key)}]`, ts.isIdentifier(el.name) ? this.typeOf(el.name) : record[1])
           : `${this.getterThrows(source, key) ? 'try ' : ''}${value}.${ident(key)}`;
       } else if (_type === 'Any?') read = `(try jsGet(${value}, "${k}"))`;
-      else if (/^JSMatch[?!]?$/.test(_type)) read = this.undefinedAs(`(${value}.values.element(${k}) ?? nil)`, ts.isIdentifier(el.name) ? this.typeOf(el.name) : 'Any?');
+      else if (matchValue) read = this.undefinedAs(`(${value}.values.element(${k}) ?? nil)`, ts.isIdentifier(el.name) ? this.typeOf(el.name) : 'Any?');
       else if (this.checker.isTupleType(source) && !arrayValue) read = `${value}.${k}`;
       // Past the end is undefined.
       else if (this.isAny(name)) read = `(try jsGet(${value}, "${k}"))`;
@@ -6775,6 +6782,11 @@ ${members.join('\n')}
       if (el.initializer) read = `(${read} ?? ${this.coerce(el.initializer, ts.isIdentifier(el.name) ? this.typeOf(el.name) : this.partType(name, el, k, source, _type) ?? this.typeOf(el.name))})`;
       if (ts.isIdentifier(el.name)) {
         const t = this.typeOf(el.name);
+        if (matchValue && !el.initializer && /^(Double|String|Bool)$/.test(t)) {
+          const group = `(${value}.values.element(${k}) ?? nil)`;
+          lines.push(mutable === 'assign' ? `${i}${ident(this.topName(el, el.name.text))} = ${group}` : `${i}${keyword(el.name, t)}${ident(el.name.text)}: ${this.bindsOptional(el.name, t)} = ${group}`);
+          return;
+        }
         // An array's element past its end is undefined, which a number, string or boolean cannot hold: `if (second)` tests it.
         if (arrayValue && !el.initializer && mutable !== 'assign' && /^(Double|String|Bool)$/.test(t) && !ts.isObjectBindingPattern(name) && !this.checker.isTupleType(source)) {
           lines.push(`${i}${keyword(el.name, t)}${ident(el.name.text)}: ${this.bindsOptional(el.name, t)} = ${value}.element(${k})`);
@@ -7501,8 +7513,10 @@ ${members.join('\n')}
     if (ts.isArrayLiteralExpression(bare) && !bare.elements.length && /^JSArray<.*>$/.test(target.replace(/\?$/, ''))) return `${target.replace(/\?$/, '')}()`;
     // An empty array held as a map from number to value (`numberKeyedArray`): an empty record.
     if (/^JSRecord<.*>$/.test(target) && ((ts.isArrayLiteralExpression(bare) && !bare.elements.length) || (ts.isNewExpression(bare) && ts.isIdentifier(bare.expression) && bare.expression.text === 'Array' && !bare.arguments?.length))) return `${target}()`;
-    // An array literal where any value may go holds any value: script may store a string in `const list: any = [1, 2]`.
-    if (ts.isArrayLiteralExpression(bare) && target === 'Any?' && !ts.isAsExpression(e) && !!(this.checker.getContextualType(bare)?.flags! & ts.TypeFlags.Any)) return this.array(bare, 'JSArray<Any?>');
+    // An array literal where any value may go holds any value: script may store a string in `const list: any = [1, 2]`,
+    // or in `{ list: [1] }` of an untyped object.
+    const untypedMember = ts.isPropertyAssignment(bare.parent) && this.dynamicLiterals.has(bare.parent.parent);
+    if (ts.isArrayLiteralExpression(bare) && target === 'Any?' && !ts.isAsExpression(e) && (untypedMember || !!(this.checker.getContextualType(bare)?.flags! & ts.TypeFlags.Any))) return this.array(bare, 'JSArray<Any?>');
     // An array of tuples where the slot's type has them typed (`[[property, color]]` for `[any, any][]` returned as `[CssProperty, Color][]`).
     const tuples = /^(JSArray<)?(\(.*\))>?$/.exec(target.replace(/\?$/, ''));
     const arity = tuples && !hasTopLevelArrow(tuples[2]) ? splitTopLevel(tuples[2].slice(1, -1)).length : 0;
@@ -8569,7 +8583,7 @@ ${members.join('\n')}
     }
     if (ts.isNumericLiteral(e)) return numberLiteral(e.text);
     if (ts.isBigIntLiteral(e)) return `JSBigInt(literal: ${swiftString(e.text.replace(/n$/, ''))})`;
-    if (ts.isStringLiteral(e) || ts.isNoSubstitutionTemplateLiteral(e)) return swiftString(e.text);
+    if (ts.isStringLiteral(e) || ts.isNoSubstitutionTemplateLiteral(e)) return swiftString(this.wellFormed(e, e.text));
     if (e.kind === ts.SyntaxKind.TrueKeyword) return 'true';
     if (e.kind === ts.SyntaxKind.FalseKeyword) return 'false';
     if (e.kind === ts.SyntaxKind.NullKeyword) return this.typeOf(e) === 'Any?' && !this.optionalContext(e) ? 'jsNull' : 'nil';
@@ -8582,6 +8596,7 @@ ${members.join('\n')}
     if (e.kind === ts.SyntaxKind.SuperKeyword) return 'super';
     if (ts.isIdentifier(e)) return this.moduleValue(e) ?? this.identifier(e);
     if (ts.isTemplateExpression(e)) {
+      [e.head, ...e.templateSpans.map((span) => span.literal)].forEach((part) => this.wellFormed(e, part.text));
       const pieces = e.templateSpans.map((span) => this.str(span.expression));
       // A string literal's interpolation is one line in Swift: a piece of statements (a closure), which a formatter may lay
       // out on lines of their own, joins the literal's parts instead.
@@ -9643,6 +9658,7 @@ ${members.join('\n')}
     }
     if (t === 'JSMatch') {
       if (!q && uncheckedMatch(e.expression, this.checker)) return `jsUnwrap(${target}, ${ts.isNumericLiteral(key) || ts.isStringLiteral(key) ? swiftString(key.text) : `jsToString(${this.coerce(key, 'Any?')})`}, null: true)[Int(${this.expr(key)})]`;
+      if (!isWriteTarget(e)) return this.undefinedAs(this.maybeUndefined(e)!, this.typeOf(e), 'String?');
       return `${target}${q}[Int(${this.expr(key)})]`;
     }
     if (isTypedArrayType(t)) {
@@ -9865,6 +9881,11 @@ ${members.join('\n')}
         const [truthy, falsy] = e.operatorToken.kind === ts.SyntaxKind.BarBarToken ? [v, 'nil'] : ['nil', v];
         return `({ () ${tr ? 'throws ' : ''}-> ${optionalType(t)} in let ${v}: ${optionalType(t)} = ${tr}${left ?? this.expr(e.left)}; return jsTruthy(${v} as Any?) ? ${truthy} : ${falsy} }())`;
       }
+    }
+    // A match's group that took no part in it: undefined, though TypeScript types every element a string.
+    if (ts.isElementAccessExpression(e) && !isWriteTarget(e) && this.typeOf(e.expression).replace(/[?!]$/, '') === 'JSMatch' && !uncheckedMatch(e.expression, this.checker)) {
+      const q = e.questionDotToken || this.continuesOptional(e.expression) ? '?' : '';
+      return `(${this.expr(e.expression)}${q}.values.element(${this.toNumber(e.argumentExpression)}) ?? nil)`;
     }
     if (ts.isElementAccessExpression(e) && !isWriteTarget(e) && isTypedArrayType(this.typeOf(e.expression).replace(/[?!]$/, ''))) {
       return `${this.expr(e.expression)}${e.questionDotToken || this.continuesOptional(e.expression) ? '?' : ''}[jsIndex: ${this.toNumber(e.argumentExpression)}]`;
@@ -12830,6 +12851,12 @@ ${members.join('\n')}
     const call = `try { () throws -> ${ret} in${body.slice(1)}()`;
     const result = ret === 'Void' ? `${call}; return nil` : `return ${this.convert(call, ret, 'Any?')}`;
     return `({ (__this: Any?, __a: [Any?]) throws -> Any? in ${binds.join('; ')}${binds.length ? '; ' : ''}${result} } as JSMethod)`;
+  }
+
+  /** A literal's text, which a Swift string holds only without lone surrogates (it would hold U+FFFD for one). */
+  private wellFormed(n: ts.Node, text: string): string {
+    if (!text.isWellFormed()) throw this.error(n, 'a string with a lone surrogate');
+    return text;
   }
 
   /** `return value` in an async generator: the value awaited first. */
