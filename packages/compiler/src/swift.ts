@@ -167,6 +167,14 @@ function hasTopLevelArrow(t: string): boolean {
   return false;
 }
 
+/**
+ * A function type as a collection holds it: the function object script holds, one per function. A closure Swift holds
+ * as a generic parameter (an element, a key) is a new thunk at each conversion in or out, another function to `===`.
+ */
+function heldType(t: string): string {
+  return functionParts(unwrapFunction(t, false)) ? 'Any?' : t;
+}
+
 /** A function type with an enclosing `(...)?` or `(...)!` removed, leaving one returning an optional function intact. */
 function unwrapFunction(t: string, iuo = true): string {
   return (iuo ? /^\(.*\)[?!]$/ : /^\(.*\)\?$/).test(t) && !hasTopLevelArrow(t) ? t.slice(1, -2) : t;
@@ -1005,7 +1013,7 @@ export class Translator implements AsyncTranslator {
     if (c.isArrayType(t)) {
       const el = c.getTypeArguments(t as ts.TypeReference)[0];
       // `[]`'s `never[]` holds anything once it is written to.
-      return el.flags & F.Never ? 'JSArray<Any?>' : `JSArray<${this.type(el, where)}>`;
+      return el.flags & F.Never ? 'JSArray<Any?>' : `JSArray<${heldType(this.type(el, where))}>`;
     }
     // An alias of a class's type (`type UntypedFormGroup = FormGroup<any>`) is that class.
     const sym = t.aliasSymbol && !((t.getSymbol()?.flags ?? 0) & ts.SymbolFlags.Class && t.aliasSymbol.flags & ts.SymbolFlags.TypeAlias && !(t.aliasSymbol.flags & ts.SymbolFlags.Class)) ? t.aliasSymbol : t.getSymbol();
@@ -1056,8 +1064,8 @@ export class Translator implements AsyncTranslator {
       case 'AnimationPromise': if (isCoreDeclaration(sym?.declarations?.[0])) return 'JSPromise<Void>'; break;
       // Script writes animation definitions as object literals; the kit's Animation reads them by key.
       case 'AnimationDefinition': if (isCoreDeclaration(sym?.declarations?.[0])) return 'Any?'; break;
-      case 'Map': case 'ReadonlyMap': return `JSMap<${arg(0)}, ${arg(1)}>`;
-      case 'Set': case 'ReadonlySet': return `JSSet<${arg(0)}>`;
+      case 'Map': case 'ReadonlyMap': return `JSMap<${heldType(arg(0))}, ${heldType(arg(1))}>`;
+      case 'Set': case 'ReadonlySet': return `JSSet<${heldType(arg(0))}>`;
       case 'Date': return 'JSDate';
       case 'RegExp': return 'JSRegExp';
       case 'RegExpMatchArray': case 'RegExpExecArray': return 'JSMatch';
@@ -1123,7 +1131,7 @@ export class Translator implements AsyncTranslator {
     // Library mode: what a constructor typed `new (): { [k: string]: T }` makes is a plain object, whatever script writes into it.
     const made = sym?.declarations?.[0];
     if (index && !t.getProperties().length && this.library && made && ts.isTypeLiteralNode(made) && ts.isConstructSignatureDeclaration(made.parent)) return 'JSRecord<Any?>';
-    if (index && !t.getProperties().length) return `JSRecord<${this.type(index, where)}>`;
+    if (index && !t.getProperties().length) return `JSRecord<${heldType(this.type(index, where))}>`;
     // A literal with computed keys beside named ones (`{ [k]: 1, a: 2 }`): its keys are known only when it runs.
     if (index && sym?.getName() === '__object') return 'Any?';
     // A mapped type (`Partial<…>`, `{ [k in Side]: number }`) is read by computed keys: an untyped object.
@@ -1177,7 +1185,7 @@ export class Translator implements AsyncTranslator {
       if (base && (base as ts.ClassDeclaration).name) return this.type(c.getTypeAtLocation(base), where);
     }
     const renamed = sym && this.topNames().get(sym.valueDeclaration ?? sym.declarations?.[0]!);
-    if (renamed) return renamed;
+    if (renamed) return `${renamed}${this.classTypeArguments(t, classDecl, where)}`;
     // A mixin's class is the core class it is applied to.
     const mixin = this.mixinOf(sym);
     if (mixin) return mixin;
@@ -1194,16 +1202,19 @@ export class Translator implements AsyncTranslator {
         const kit = this.core.platformClass(name);
         return this.core.has(kit) ? kit : 'Any?';
       }
-      // A generic class of the app's keeps its arguments (`UITest<View>`); one Swift has erased is named without them.
-      const generic = classDecl && ts.isClassDeclaration(classDecl) && !classDecl.getSourceFile().isDeclarationFile && !this.erasesGenerics(classDecl) ? classDecl.typeParameters ?? [] : [];
-      const args = generic.length && t.flags & F.Object && (t as ts.ObjectType).objectFlags & ts.ObjectFlags.Reference ? c.getTypeArguments(t as ts.TypeReference).slice(0, generic.length) : [];
-      if (args.length === generic.length && args.length) return `${name}<${args.map((a, k) => this.typeArgumentOf(generic[k], a, where)).join(', ')}>`;
-      return name;
+      return `${name}${this.classTypeArguments(t, classDecl, where)}`;
     }
     const props = t.getProperties().map((p) => p.name);
     // An inline object type naming only an event's fields is the event's data (`args: { value: boolean }`).
     if (props.length && props.every((p) => ['eventName', 'object', 'value'].includes(p))) return 'EventData';
     return this.shape(t, where);
+  }
+
+  /** A generic class of the app's keeps its arguments (`UITest<View>`); one Swift has erased is named without them. */
+  private classTypeArguments(t: ts.Type, classDecl: ts.Declaration | undefined, where?: ts.Node): string {
+    const generic = classDecl && ts.isClassDeclaration(classDecl) && !classDecl.getSourceFile().isDeclarationFile && !this.erasesGenerics(classDecl) ? classDecl.typeParameters ?? [] : [];
+    const args = generic.length && t.flags & ts.TypeFlags.Object && (t as ts.ObjectType).objectFlags & ts.ObjectFlags.Reference ? this.checker.getTypeArguments(t as ts.TypeReference).slice(0, generic.length) : [];
+    return args.length === generic.length && args.length ? `<${args.map((a, k) => heldType(this.typeArgumentOf(generic[k], a, where))).join(', ')}>` : '';
   }
 
   /**
@@ -1329,6 +1340,76 @@ export class Translator implements AsyncTranslator {
     return !!d && ts.isVariableDeclaration(d) && !d.type && !d.initializer;
   }
 
+  /** An element or value read out of a collection whose Swift type holds functions as function objects (`heldType`). */
+  private heldRead(n: ts.Node): boolean {
+    if (ts.isNonNullExpression(n) || ts.isParenthesizedExpression(n)) return this.heldRead(n.expression);
+    if (ts.isIdentifier(n)) return this.heldParameter(this.resolve(n)?.valueDeclaration);
+    const reads = ['find', 'findLast', 'at', 'pop', 'shift', 'get'];
+    const target = ts.isElementAccessExpression(n) ? n.expression
+      : ts.isCallExpression(n) && ts.isPropertyAccessExpression(n.expression) && reads.includes(n.expression.name.text) ? n.expression.expression : null;
+    if (target) return /^JS(Array<Any\?>|Record<Any\?>|Map<.*, Any\?>)[?!]?$/.test(this.typeOf(target));
+    // A result or field the program types by a bare type parameter, bound here to a function type: Swift binds the parameter to the function object.
+    const decl = ts.isCallExpression(n) ? this.checker.getResolvedSignature(n)?.getDeclaration() : ts.isPropertyAccessExpression(n) ? this.resolve(n.name)?.valueDeclaration : undefined;
+    const typed = decl && !ts.isJSDocSignature(decl) && (ts.isCallExpression(n) ? ts.isFunctionLike(decl) : ts.isPropertyDeclaration(decl) || ts.isParameter(decl)) ? decl.type : undefined;
+    return (!!typed && !decl!.getSourceFile().isDeclarationFile && this.isBareTypeParameter(typed)) || (ts.isPropertyAccessExpression(n) && this.heldParameter(decl)) || (ts.isCallExpression(n) && this.heldReturn(decl));
+  }
+
+  /**
+   * A parameter of the program's generic class, method or function typed as a function of its type parameters
+   * (`on(fn: (v: T) => void)`): held as the function object (`heldType`), since Swift reabstracts a closure passed to a
+   * generic parameter at each call, and `off(fn)` would never find what `on(fn)` stored.
+   */
+  private heldParameter(d: ts.Node | undefined): boolean {
+    return !this.library && !!d && ts.isParameter(d) && !!d.type && !d.dotDotDotToken && !d.getSourceFile().isDeclarationFile && this.genericFunctionType(d.type) && keepsIdentity(d);
+  }
+
+  /** A function or method of the program returning a held parameter (`heldParameter`) as a function of its type parameters: the function object. */
+  private heldReturn(d: ts.Node | undefined): boolean {
+    if (this.library || !d || !(ts.isMethodDeclaration(d) || ts.isFunctionDeclaration(d)) || !d.type || !d.body || d.getSourceFile().isDeclarationFile || !this.genericFunctionType(d.type)) return false;
+    let held = false;
+    const visit = (n: ts.Node): void => {
+      if (held || (ts.isFunctionLike(n) && n !== d)) return;
+      if (ts.isReturnStatement(n) && n.expression && this.heldParameter(this.resolve(n.expression)?.valueDeclaration)) held = true;
+      ts.forEachChild(n, visit);
+    };
+    visit(d.body);
+    return held;
+  }
+
+  /** Library code's parameter typed as a function of a type parameter is a closure Swift reabstracts at each call: no identity to compare. */
+  private refuseUnheldIdentity(e: ts.Expression): void {
+    while (ts.isParenthesizedExpression(e) || ts.isNonNullExpression(e)) e = e.expression;
+    const d = ts.isIdentifier(e) ? this.resolve(e)?.valueDeclaration : undefined;
+    if (this.library && d && ts.isParameter(d) && d.type && !d.getSourceFile().isDeclarationFile && this.genericFunctionType(d.type)) {
+      throw this.error(e, 'comparing a function passed to a generic parameter typed with its type parameter (its identity, in library code)');
+    }
+  }
+
+  private genericFunctionType(type: ts.TypeNode): boolean {
+    let t = type;
+    while (ts.isParenthesizedTypeNode(t)) t = t.type;
+    if (ts.isUnionTypeNode(t)) {
+      const present = t.types.filter((u) => u.kind !== ts.SyntaxKind.UndefinedKeyword && !(ts.isLiteralTypeNode(u) && u.literal.kind === ts.SyntaxKind.NullKeyword));
+      if (present.length !== 1) return false;
+      t = present[0];
+      while (ts.isParenthesizedTypeNode(t)) t = t.type;
+    }
+    if (!ts.isFunctionTypeNode(t)) return false;
+    const generic = (n: ts.Node): boolean => {
+      if (ts.isTypeReferenceNode(n)) {
+        const tp = this.checker.getSymbolAtLocation(n.typeName)?.declarations?.find(ts.isTypeParameterDeclaration);
+        const owner = tp?.parent;
+        if (tp && owner && (ts.isClassDeclaration(owner) || ts.isFunctionDeclaration(owner) || ts.isMethodDeclaration(owner)) && !this.erasesGenerics(owner) && !erasedTypeParameter(tp)) return true;
+      }
+      return !!ts.forEachChild(n, (c) => generic(c) || undefined);
+    };
+    return generic(t);
+  }
+
+  private isBareTypeParameter(t: ts.TypeNode): boolean {
+    return ts.isTypeReferenceNode(t) && !t.typeArguments && !!(this.checker.getTypeFromTypeNode(t).flags & ts.TypeFlags.TypeParameter);
+  }
+
   typeOf(n: ts.Node): string {
     if (this.isArguments(n)) return 'JSArray<Any?>';
     const stored = this.storedLiteralType(n);
@@ -1370,6 +1451,7 @@ export class Translator implements AsyncTranslator {
       if (present?.getCallSignatures().length) return this.type(present, n);
     }
     const t = this.type(this.checker.getTypeAtLocation(n), n);
+    if (t !== 'Any?' && heldType(t) === 'Any?' && this.heldRead(n)) return 'Any?';
     if (t === 'Void' && ts.isCallExpression(n)) {
       const decl = this.checker.getResolvedSignature(n)?.getDeclaration();
       const impl = decl && !ts.isJSDocSignature(decl) ? implementationOf(decl) : null;
@@ -2990,6 +3072,7 @@ ${members.join('\n')}
 
   /** Swift code reading an untyped value (`Any?`) as `type`. */
   fromAny(code: string, type: string): string {
+    type = type.replace(/^@escaping /, '');
     const checked = this.checkedCast, throwing = this.throwingCast;
     this.checkedCast = this.throwingCast = false;
     try { return this.fromAnyUnchecked(code, type, checked, throwing); } finally { this.checkedCast = checked; this.throwingCast = throwing; }
@@ -3687,6 +3770,7 @@ ${members.join('\n')}
   returnTypeOf(fn: ts.SignatureDeclaration): string {
     if (this.nullish().held.has(fn)) return 'Any?';
     if ((ts.isArrowFunction(fn) || ts.isFunctionExpression(fn) || ts.isFunctionDeclaration(fn)) && this.returnsMethod(fn)) return 'Any?';
+    if (this.heldReturn(fn)) return 'Any?';
     const t = this.type(this.checker.getSignatureFromDeclaration(fn)!.getReturnType(), fn);
     return this.mayReturnUndefined(fn) && t !== 'Void' && t !== 'Any?' && !t.endsWith('?') && !t.endsWith('!') && !isFunctionType(t) ? optionalType(t) : t;
   }
@@ -6469,8 +6553,15 @@ ${members.join('\n')}
       const seq = (this.tryPrefix(s.expression) || (this.isAny(s.expression) ? 'try ' : '')) + (/^\{/.test(iterable) ? `(${iterable})` : iterable);
       return this.loopBody(() => {
         const label = this.takeLabel();
-        if (ts.isIdentifier(decl.name)) return `${i}${label}for ${mutable ? 'var ' : ''}${ident(decl.name.text)} in ${seq} ${this.block(s.statement)}`;
+        // A collection holding functions as function objects (`heldType`) gives each as any value, converted to the binding's type.
+        const held = ts.isIdentifier(decl.name) && this.elementTypeOf(s.expression) === 'Any?' && this.typeOf(decl.name) !== 'Any?' && heldType(this.typeOf(decl.name)) === 'Any?';
+        if (ts.isIdentifier(decl.name) && !held) return `${i}${label}for ${mutable ? 'var ' : ''}${ident(decl.name.text)} in ${seq} ${this.block(s.statement)}`;
         const item = this.fresh('__item');
+        if (ts.isIdentifier(decl.name)) {
+          const t = this.typeOf(decl.name);
+          const bind = `${i}    ${mutable ? 'var' : 'let'} ${ident(decl.name.text)}: ${t} = ${isOptional(t) ? this.convert(item, 'Any?', t) : this.presentFromAny(item, t)}`;
+          return `${i}${label}for ${item} in ${seq} {\n${bind}\n${this.block(s.statement).slice(2)}`;
+        }
         const bind = this.nested(() => this.bindTo(decl.name, item, this.isAny(s.expression) ? 'Any?' : '', mutable));
         const body = this.block(s.statement);
         return `${i}${label}for ${item} in ${seq} {\n${bind}\n${body.slice(2)}`;
@@ -7684,7 +7775,7 @@ ${members.join('\n')}
       if (ts.isConditionalExpression(bare) && [bare.whenTrue, bare.whenFalse].some((x) => ts.isFunctionExpression(x) || ts.isArrowFunction(x) || (ts.isPropertyAccessExpression(x) && x.expression.kind === ts.SyntaxKind.SuperKeyword))) {
         return `(${this.cond(bare.condition)} ? ${this.coerce(bare.whenTrue, 'Any?')} : ${this.coerce(bare.whenFalse, 'Any?')})`;
       }
-      if ((ts.isArrowFunction(e) || ts.isFunctionExpression(e)) && !e.parameters.some((p) => !ts.isIdentifier(p.name))) {
+      if (ts.isArrowFunction(e) || ts.isFunctionExpression(e)) {
         const rest = e.parameters.findIndex((p) => p.dotDotDotToken);
         return rest < 0 ? this.convert(this.expr(e), this.closureType(e), 'Any?') : this.boxFunction(this.expr(e), this.closureType(e), rest);
       }
@@ -10072,6 +10163,11 @@ ${members.join('\n')}
         || (!!decl && ts.isParameter(decl) && !!decl.type && !decl.getSourceFile().isDeclarationFile && !!(decl.parent as ts.SignatureDeclaration).typeParameters?.some((tp) => (erasedTypeParameter(tp) || (!this.library && this.erasesGenerics(decl.parent))) && new RegExp(`\\b${tp.name.text}\\b`).test(decl.type!.getText())));
       // In code the checker finds unreachable a parameter's type is never: its declared type.
       const at = decl && this.nullish().held.has(decl) ? 'Any?' : this.type(this.checker.getTypeOfSymbolAtLocation(p, e), e);
+      // A function where the program's parameter is a bare type parameter: the function object, which Swift binds the parameter to (`heldRead`).
+      if (decl && ts.isParameter(decl) && decl.type && !decl.getSourceFile().isDeclarationFile && at !== 'Any?' && heldType(at) === 'Any?' && (this.isBareTypeParameter(decl.type) || this.heldParameter(decl))) {
+        out.push(this.coerce(a, 'Any?'));
+        continue;
+      }
       // An override emitted with its root's signature: the parameter as Swift has it.
       const method = decl && ts.isParameter(decl) && ts.isMethodDeclaration(decl.parent) && !isStatic(decl.parent) && !decl.getSourceFile().isDeclarationFile ? decl.parent : null;
       const emitted = method && this.baseMethod(method) ? this.emittedSignature(method).params[k]?.type.replace(/!$/, '?') : undefined;
@@ -10262,6 +10358,7 @@ ${members.join('\n')}
   }
 
   private call(e: ts.CallExpression): string {
+    if (ts.isPropertyAccessExpression(e.expression) && ['indexOf', 'lastIndexOf', 'includes', 'has', 'get', 'set', 'add', 'delete'].includes(e.expression.name.text) && e.arguments[0]) this.refuseUnheldIdentity(e.arguments[0]);
     const extended = this.extendCall(e);
     if (extended) return extended;
     const callee = e.expression;
@@ -10294,6 +10391,10 @@ ${members.join('\n')}
     const declaredFunction = (x: ts.Expression) => ts.isIdentifier(x) && !!this.resolve(x)?.declarations?.some(ts.isFunctionDeclaration);
     if (ts.isExpressionWithTypeArguments(callee) && (!e.questionDotToken || declaredFunction(callee.expression))) return this.call(ts.factory.updateCallExpression(e, callee.expression, callee.typeArguments, e.arguments));
     if (e.questionDotToken && this.isAny(callee)) return `jsCallOptional(${this.expr(callee)}${this.untypedArgs(e.arguments)})`;
+    if (!e.questionDotToken && this.heldRead(callee) && this.isAny(callee)) {
+      const t = this.typeOf(e), value = `try jsCall(${this.expr(callee)}${this.untypedArgs(e.arguments)})`;
+      return t === 'Void' || t === 'Any?' || statementLevel(e) ? value : this.fromAnyCode(value, t, true);
+    }
     if (ts.isPropertyAccessExpression(callee) && this.declaredOnly(callee)) {
       const o = this.fresh('__o'), key = swiftString(callee.name.text);
       const call = `try jsCallMethod(${[o, key, ...e.arguments.map((a) => this.coerce(a, 'Any?'))].join(', ')})`;
@@ -11410,7 +11511,10 @@ ${members.join('\n')}
         if (e.arguments.slice(2).some(ts.isSpreadElement)) return `${t}.splice(${e.arguments.slice(0, 2).map((x) => this.coerce(x, 'Double')).join(', ')}, contentsOf: ${this.packed(e.arguments.slice(2), `JSArray<${el}>`)}.storage)`;
         return `${t}.splice(${[...a().slice(0, 2), ...e.arguments.slice(2).map((x) => this.coerce(x, el))].join(', ')})`;
       case 'fill': return `${t}.fill(${a().join(', ')})`;
-      case 'slice': case 'indexOf': case 'lastIndexOf': case 'includes': case 'at': return `${t}.${name}(${a().join(', ')})`;
+      // An array holding functions as function objects (`heldType`) is searched for the one the function is.
+      case 'indexOf': case 'lastIndexOf': case 'includes': if (el === 'Any?' && e.arguments[0] && !ts.isSpreadElement(e.arguments[0])) return `${t}.${name}(${[this.coerce(e.arguments[0], 'Any?'), ...a().slice(1)].join(', ')})`;
+      // falls through
+      case 'slice': case 'at': return `${t}.${name}(${a().join(', ')})`;
       case 'join': return `${t}.join(${!e.arguments[0] ? '' : this.isAny(e.arguments[0]) ? `jsJoinSeparator(${this.expr(e.arguments[0])})` : this.expr(e.arguments[0])})`;
       case 'concat':
         if (e.arguments.some(ts.isSpreadElement)) return `${t}.concat(spread: ${this.packed(e.arguments, `JSArray<${el}>`)}.storage)`;
@@ -11447,7 +11551,7 @@ ${members.join('\n')}
           if (held?.params.length === 1 && (held.params[0] !== el || held.result !== want)) {
             // Throwing only as the function it calls does: a call given a throwing closure throws, and is tried.
             const throwing = isLiteral ? this.throwsInfo.fn(callback) : this.valueThrows(callback);
-            return `${t}.${name}({ (__e: ${el}) ${throwing ? 'throws ' : ''}-> ${want} in ${held.result === 'Void' ? '' : 'return '}${this.convert(`${throwing ? 'try ' : ''}(${this.fn(callback)})(${this.convert('__e', el, held.params[0])})`, held.result, want!)} })`;
+            return `${t}.${name}({ (__e: ${el}) ${throwing ? 'throws ' : ''}-> ${want} in ${held.result === 'Void' ? '' : 'return '}${this.convert(`${throwing ? 'try ' : ''}(${this.fn(callback)})(${el === 'Any?' && heldType(held.params[0].replace(/^@escaping /, '')) === 'Any?' && !isOptional(held.params[0]) ? this.presentFromAny('__e', held.params[0].replace(/^@escaping /, '')) : this.convert('__e', el, held.params[0])})`, held.result, want!)} })`;
           }
           return `${t}.${name}(${this.fn(callback)})`;
         };
@@ -12556,6 +12660,8 @@ ${members.join('\n')}
   }
 
   private equality(e: ts.BinaryExpression): string {
+    this.refuseUnheldIdentity(e.left);
+    this.refuseUnheldIdentity(e.right);
     const K = ts.SyntaxKind;
     const op = e.operatorToken.kind;
     const negate = op === K.ExclamationEqualsEqualsToken || op === K.ExclamationEqualsToken;
@@ -13598,5 +13704,53 @@ function erasedTypeParameter(p: ts.TypeParameterDeclaration): boolean {
   // Bound to a shape (`U extends { root: View }`), which no Swift constraint states: any value, its members read by name.
   if (p.constraint && (ts.isTypeLiteralNode(p.constraint) || (ts.isIntersectionTypeNode(p.constraint) && p.constraint.types.some(ts.isTypeLiteralNode)))) return true;
   const named = new RegExp(`\\b${p.name.text}\\b`);
-  return !fn.parameters.some((q) => q.type && named.test(q.type.getText()));
+  // Named only inside function types (`fn: (v: T) => void`, `list: ((v: T) => void)[]`): as a Swift generic, each closure
+  // passed would be reabstracted at the call, so the function's identity would not survive it.
+  return !fn.parameters.some((q) => q.type && named.test(q.type.getText()) && !(functionShaped(q.type) && (!functionTypeNode(q.type) || keepsIdentity(q))));
+}
+
+/** A function type, with null or undefined. */
+function functionTypeNode(t: ts.TypeNode): ts.FunctionTypeNode | null {
+  while (ts.isParenthesizedTypeNode(t)) t = t.type;
+  if (ts.isUnionTypeNode(t)) {
+    const present = t.types.filter((u) => u.kind !== ts.SyntaxKind.UndefinedKeyword && !(ts.isLiteralTypeNode(u) && u.literal.kind === ts.SyntaxKind.NullKeyword));
+    return present.length === 1 ? functionTypeNode(present[0]) : null;
+  }
+  return ts.isFunctionTypeNode(t) ? t : null;
+}
+
+/**
+ * Whether a function-typed parameter's identity can matter: a method's always (an override shares its signature),
+ * a function's when its body does more with it than call or test it (stores, compares, passes or returns it).
+ */
+function keepsIdentity(p: ts.ParameterDeclaration): boolean {
+  const fn = p.parent;
+  if (!ts.isFunctionDeclaration(fn) || !fn.body || !ts.isIdentifier(p.name)) return true;
+  const name = p.name.text;
+  let escapes = false;
+  const visit = (n: ts.Node): void => {
+    if (escapes) return;
+    if (ts.isIdentifier(n) && n.text === name && !(ts.isPropertyAccessExpression(n.parent) && n.parent.name === n) && !(ts.isPropertyAssignment(n.parent) && n.parent.name === n)) {
+      const at = n.parent;
+      const called = (ts.isCallExpression(at) && at.expression === n) || (ts.isPropertyAccessExpression(at) && at.expression === n);
+      const tested = ts.isTypeOfExpression(at) || (ts.isPrefixUnaryExpression(at) && at.operator === ts.SyntaxKind.ExclamationToken) || ((ts.isIfStatement(at) || ts.isWhileStatement(at)) && at.expression === n) || (ts.isBinaryExpression(at) && at.left === n && [ts.SyntaxKind.AmpersandAmpersandToken, ts.SyntaxKind.BarBarToken].includes(at.operatorToken.kind));
+      if (!called && !tested) escapes = true;
+    }
+    ts.forEachChild(n, visit);
+  };
+  visit(fn.body);
+  return escapes;
+}
+
+/** A function type, or an array, Set or Map of them, optionally with null or undefined. */
+function functionShaped(t: ts.TypeNode): boolean {
+  if (ts.isParenthesizedTypeNode(t)) return functionShaped(t.type);
+  if (ts.isFunctionTypeNode(t)) return true;
+  if (ts.isArrayTypeNode(t)) return functionShaped(t.elementType);
+  if (ts.isUnionTypeNode(t)) {
+    const present = t.types.filter((u) => u.kind !== ts.SyntaxKind.UndefinedKeyword && !(ts.isLiteralTypeNode(u) && u.literal.kind === ts.SyntaxKind.NullKeyword));
+    return present.length === 1 && functionShaped(present[0]);
+  }
+  if (ts.isTypeReferenceNode(t) && ts.isIdentifier(t.typeName) && ['Array', 'ReadonlyArray', 'Set', 'ReadonlySet'].includes(t.typeName.text) && t.typeArguments?.length === 1) return functionShaped(t.typeArguments[0]);
+  return false;
 }
