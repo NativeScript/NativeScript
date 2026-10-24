@@ -60,6 +60,12 @@ public func jsNullKeys(_ object: Any?, _ keys: [String]) -> Set<String>? {
     return nulls.isEmpty ? nil : Set(nulls)
 }
 
+/// An object literal's keys that hold null: `known` ones, and those of `values` (untyped values it was given) that are null.
+public func jsNullKeysOf(_ known: [String], _ values: [(String, Any?)]) -> Set<String>? {
+    let nulls = known + values.filter { $0.1 is JSNull }.map { $0.0 }
+    return nulls.isEmpty ? nil : Set(nulls)
+}
+
 /// A class with its own `toString()`, which JavaScript's string conversion calls.
 public protocol JSStringConvertible {
     func toString() throws -> String

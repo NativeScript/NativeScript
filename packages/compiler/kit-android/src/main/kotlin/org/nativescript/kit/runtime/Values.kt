@@ -37,6 +37,12 @@ fun jsNullKeys(obj: Any?, keys: List<String>): MutableSet<String>? {
     return if (nulls.isEmpty()) null else nulls.toMutableSet()
 }
 
+/** An object literal's keys that hold null: `known` ones, and those of `values` (untyped values it was given) that are null. */
+fun jsNullKeysOf(known: List<String>, vararg values: Pair<String, Any?>): MutableSet<String>? {
+    val nulls = known + values.filter { it.second is JSNull }.map { it.first }
+    return if (nulls.isEmpty()) null else nulls.toMutableSet()
+}
+
 /** A field written untyped: the keys noted as holding null once `value` is written at `key`. */
 fun jsNoteNull(nulls: MutableSet<String>?, key: String, value: Any?): MutableSet<String>? =
     if (value is JSNull) (nulls ?: mutableSetOf()).also { it.add(key) } else nulls?.also { it.remove(key) }
