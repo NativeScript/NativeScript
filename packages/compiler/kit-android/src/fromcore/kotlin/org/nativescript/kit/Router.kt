@@ -452,6 +452,7 @@ class Router {
     }
 
     /** An Observable's first value (Angular's `first()`): the kit's Observables complete with no value only by never emitting. */
+    @Suppress("UNCHECKED_CAST")
     private fun first(source: RxObservable<*>, next: (Any?) -> Unit) {
         var taken = false
         var subscription: RxSubscription? = null
