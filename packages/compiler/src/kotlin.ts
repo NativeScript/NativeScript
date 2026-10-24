@@ -2181,8 +2181,9 @@ export class Translator implements AsyncTranslator {
     const base = type.replace(/\?$/, '');
     if (this.interfaces.has(base) || [...this.shapes.values()].some((s) => s.name === base)) {
       this.used.add(base);
-      const target = this.protocols.has(base) ? `${base}Object` : base;
-      return type.endsWith('?') ? `(if (jsIsNullish(${code})) null else ${target}.fromJS(${code}))` : `${target}.fromJS(${code})`;
+      // An object of a class implementing the interface is itself; anything else is read into the interface's class.
+      const read = (x: string) => (this.protocols.has(base) ? `${x}.let { it as? ${base} ?: ${base}Object.fromJS(it) }` : `${base}.fromJS(${x})`);
+      return type.endsWith('?') ? `(if (jsIsNullish(${code})) null else ${read(code)})` : read(code);
     }
     if (!this.library && /^[A-Z]\w*\??$/.test(type)) {
       const reified = this.reifiedRead(code, type);
@@ -2830,6 +2831,57 @@ export class Translator implements AsyncTranslator {
     return out;
   }
 
+  /** The interfaces a class implements, named or met, that are Kotlin interfaces it implements; `witnesses` gets the adapters its methods need. */
+  private implementedProtocols(cls: ts.ClassLikeDeclaration, witnesses: string[], notOverrides: Set<string>): string[] {
+    const implemented: string[] = implementedInterfaces(this.checker, cls).filter((i) => !isLibDeclaration(this.checker.getTypeAtLocation(i).getSymbol()?.declarations?.[0]))
+      // Library mode: an interface only a declaration file has is no Kotlin interface.
+      .filter((i) => !this.library || !(this.checker.getTypeAtLocation(i).getSymbol()?.declarations ?? []).every((d) => d.getSourceFile().isDeclarationFile))
+      // What an app implements of @angular/forms (`Validator`) is called untyped: no Kotlin interface.
+      .filter((i) => !(this.checker.getTypeAtLocation(i).getSymbol()?.declarations ?? []).every((d) => d.getSourceFile().fileName === '/__shims__/_angular#forms.d.ts'))
+      // The generated kit: an interface core declares that the kit has no type for (`TraceWriter`, which core holds untyped).
+      .filter((i) => !this.generatedKit || !isCoreDeclaration(this.checker.getTypeAtLocation(i).getSymbol()?.declarations?.[0]) || !!this.core?.has(ts.isPropertyAccessExpression(i.expression) ? i.expression.name.text : i.expression.getText()))
+      // An interface the class's signatures cannot meet is left out; untyped parameters meet it through a witness.
+      .filter((i) => this.protocolWitnesses(cls, this.checker.getTypeAtLocation(i).getSymbol()?.declarations?.find(ts.isInterfaceDeclaration), i.expression.getText(), witnesses, notOverrides))
+      .map((i) => (ts.isPropertyAccessExpression(i.expression) ? i.expression.name.text : i.expression.getText()));
+    for (const d of this.structural.get(cls) ?? []) {
+      if (!implemented.includes(d.name.text) && this.protocolWitnesses(cls, d, d.name.text, witnesses, notOverrides)) implemented.push(d.name.text);
+    }
+    return implemented;
+  }
+
+  /**
+   * A component class's supertypes for the app interfaces it implements, the names its members override, and the
+   * members it adds: every app interface extends JSDynamic, which here reads and writes the interfaces' fields only.
+   */
+  componentConformance(cls: ts.ClassDeclaration): { supertypes: string[]; overrides: Set<string>; lines: string[] } {
+    const witnesses: string[] = [];
+    const notOverrides = new Set<string>();
+    const appInterface = (n: string) => this.protocols.has(n) && [...implementedInterfaces(this.checker, cls).map((i) => this.checker.getTypeAtLocation(i).getSymbol()?.declarations?.find(ts.isInterfaceDeclaration)), ...this.structural.get(cls) ?? []]
+      .some((d) => !!d && d.name.text === n && !d.getSourceFile().isDeclarationFile);
+    const supertypes = this.implementedProtocols(cls, witnesses, notOverrides).filter(appInterface);
+    if (!supertypes.length) return { supertypes, overrides: new Set(), lines: [] };
+    for (const i of supertypes) this.used.add(i);
+    const overrides = this.overridden(cls, supertypes);
+    for (const n of notOverrides) overrides.delete(n);
+    const fields: { name: string; type: string }[] = [];
+    const accessors: { name: string; type: string; readable: boolean; settable: boolean }[] = [];
+    const seen = new Set<string>();
+    for (const i of implementedInterfaces(this.checker, cls)) {
+      const d = this.checker.getTypeAtLocation(i).getSymbol()?.declarations?.find(ts.isInterfaceDeclaration);
+      if (!d || !supertypes.includes(d.name.text)) continue;
+      for (const m of this.withInherited(d, d.members)) {
+        if (!ts.isPropertySignature(m) || !ts.isIdentifier(m.name) || seen.has(m.name.text)) continue;
+        seen.add(m.name.text);
+        const type = m.questionToken ? optionalType(this.typeOf(m)) : this.typeOf(m);
+        const own = cls.members.find((x) => x.name?.getText() === m.name.getText());
+        const readOnly = hasModifier(m, ts.SyntaxKind.ReadonlyKeyword) || (!!own && hasModifier(own, ts.SyntaxKind.ReadonlyKeyword));
+        if (readOnly) accessors.push({ name: m.name.text, type, readable: true, settable: false });
+        else fields.push({ name: m.name.text, type });
+      }
+    }
+    return { supertypes, overrides, lines: [...witnesses, ...this.dynamicMembers(fields, cls.name?.text ?? null, false, 'null', '', [], [], false, accessors)] };
+  }
+
   /**
    * Whether a class can implement an interface. A method whose untyped
    * parameters the interface types (`handle(error)` for `handle(error: Error)`)
@@ -2917,19 +2969,7 @@ export class Translator implements AsyncTranslator {
     // The library's interfaces (`Iterable<T>`, `Iterator<T>`) are interfaces of the kit's, implemented below.
     const witnesses: string[] = [];
     const notOverrides = new Set<string>();
-    const implemented = implementedInterfaces(this.checker, cls).filter((i) => !isLibDeclaration(this.checker.getTypeAtLocation(i).getSymbol()?.declarations?.[0]))
-      // Library mode: an interface only a declaration file has is no Kotlin interface.
-      .filter((i) => !this.library || !(this.checker.getTypeAtLocation(i).getSymbol()?.declarations ?? []).every((d) => d.getSourceFile().isDeclarationFile))
-      // What an app implements of @angular/forms (`Validator`) is called untyped: no Kotlin interface.
-      .filter((i) => !(this.checker.getTypeAtLocation(i).getSymbol()?.declarations ?? []).every((d) => d.getSourceFile().fileName === '/__shims__/_angular#forms.d.ts'))
-      // The generated kit: an interface core declares that the kit has no type for (`TraceWriter`, which core holds untyped).
-      .filter((i) => !this.generatedKit || !isCoreDeclaration(this.checker.getTypeAtLocation(i).getSymbol()?.declarations?.[0]) || !!this.core?.has(ts.isPropertyAccessExpression(i.expression) ? i.expression.name.text : i.expression.getText()))
-      // An interface the class's signatures cannot meet is left out; untyped parameters meet it through a witness.
-      .filter((i) => this.protocolWitnesses(cls, this.checker.getTypeAtLocation(i).getSymbol()?.declarations?.find(ts.isInterfaceDeclaration), i.expression.getText(), witnesses, notOverrides))
-      .map((i) => (ts.isPropertyAccessExpression(i.expression) ? i.expression.name.text : i.expression.getText()));
-    for (const d of this.structural.get(cls) ?? []) {
-      if (!implemented.includes(d.name.text) && this.protocolWitnesses(cls, d, d.name.text, witnesses, notOverrides)) implemented.push(d.name.text);
-    }
+    const implemented = this.implementedProtocols(cls, witnesses, notOverrides);
     for (const i of implemented) this.used.add(i);
     const ownToString = cls.members.some((m) => ts.isMethodDeclaration(m) && m.name.getText() === 'toString' && !m.parameters.length) && !this.inheritsToString(cls);
     const ownValueOf = cls.members.some((m) => ts.isMethodDeclaration(m) && !isStatic(m) && !!m.body && m.name.getText() === 'valueOf' && !m.parameters.length) && !this.inheritedMethod(cls, 'valueOf');

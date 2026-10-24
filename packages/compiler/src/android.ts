@@ -98,9 +98,12 @@ function kotlinRouteConfig(routes: RouteNode[], indent: string): string {
       r.outlet ? `outlet = ${kotlinString(r.outlet)}` : '',
       r.redirectTo !== undefined ? `redirectTo = ${kotlinString(r.redirectTo)}` : '',
       r.full ? 'full = true' : '',
+      r.guards !== undefined ? `guards = ${r.guards}` : '',
       r.children?.length ? `children = ${kotlinRouteConfig(r.children, indent + '    ')}` : '',
     ].filter(Boolean);
-    return `RouteConfig(${[kotlinString(r.path), ...named].join(', ')})${r.component ? ` { ${r.component}().render() }` : ''}`;
+    // canDeactivate guards take the component: the router keeps the instance it renders.
+    const make = r.deactivate ? `Router.shared.activating(${r.component}())` : `${r.component}()`;
+    return `RouteConfig(${[kotlinString(r.path), ...named].join(', ')})${r.component ? ` { ${make}.render() }` : ''}`;
   };
   return `listOf(\n${routes.map((r) => `${indent}    ${one(r)}`).join(',\n')}\n${indent})`;
 }
@@ -219,7 +222,12 @@ export async function writeAndroid(b: AndroidBuild): Promise<void> {
     const cls = sf.statements.find(ts.isClassDeclaration)!;
     try {
       const { params, lines, statics } = translator.componentMembers(cls, c.props);
-      const body = [`${translator.threadAnnotation(cls)}class ${c.name}(${params.join(', ')}) {`, ...lines, ...(statics.length ? ['    companion object {', ...statics, '    }'] : []), SourceLines.end, ...render(c, b.infos, { framework: b.framework, zone: b.zone, slots: b.mounted, rowSignals: b.mounted, ...(b.framework === 'react' ? { screenContent: REACT_SCREEN_CONTENT } : {}) }), '}'];
+      const conformance = translator.componentConformance(cls);
+      const declared = (l: string) => /^ {4}(?:@\S+ )*(?:lateinit )?(?:val|var|fun) `?(\w+)/.exec(l)?.[1];
+      const members = lines.map((l) => (conformance.overrides.has(declared(l) ?? '') ? l.replace(/^ {4}((?:@\S+ )*)/, '    $1override ') : l));
+      const ctorFields = params.map((x) => (conformance.overrides.has(/^(?:@\S+ )*(?:val|var) `?(\w+)/.exec(x)?.[1] ?? '') ? `override ${x}` : x));
+      const supertypes = conformance.supertypes.length ? ` : ${conformance.supertypes.join(', ')}` : '';
+      const body = [`${translator.threadAnnotation(cls)}class ${c.name}(${ctorFields.join(', ')})${supertypes} {`, ...members, ...conformance.lines, ...(statics.length ? ['    companion object {', ...statics, '    }'] : []), SourceLines.end, ...render(c, b.infos, { framework: b.framework, zone: b.zone, slots: b.mounted, rowSignals: b.mounted, ...(b.framework === 'react' ? { screenContent: REACT_SCREEN_CONTENT } : {}) }), '}'];
       write(join(sources, c.name + '.kt'), header(c.file.replace(/\.ts$/, '')) + body.join('\n') + '\n');
     } catch (e) {
       if (!translator.errors) throw e;
