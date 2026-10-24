@@ -7257,7 +7257,7 @@ ${members.join('\n')}
   coerce(e: ts.Expression, target: string): string {
     const code = this.coerceTyped(e, target);
     if (target !== 'Any?') return code;
-    const entry = this.nullableEntry(e, code);
+    const entry = this.nullableEntry(e, () => code);
     if (entry) return entry;
     if (!this.nilIsNull(e) || code === 'jsNull') return code;
     return code.startsWith('try ') ? `try jsNulled(${code.slice(4)})` : `jsNulled(${code})`;
@@ -7278,11 +7278,12 @@ ${members.join('\n')}
     return true;
   }
 
-  /** An array element or map value of strict code's `T | null` values, read untyped: missing is undefined, a nil held null. */
-  private nullableEntry(e: ts.Expression, code: string): string | null {
+  /** An array element or map value of strict code's `T | null` values, read untyped: missing is undefined, a nil held null. `code` builds the value's `Any?` translation; call it only when needed, since building it changes how later reads compile. */
+  private nullableEntry(e: ts.Expression, code: () => string): string | null {
     if (this.lenient || this.library || this.pluginFiles.has(e.getSourceFile().fileName)) return null;
     const bare = ts.skipOuterExpressions(e);
-    const element = ts.isElementAccessExpression(bare) && !bare.questionDotToken ? /^\(\((.+\.element\(.+\)) \?\? nil\) as Any\?\)$/s.exec(code)?.[1] : undefined;
+    const text = ts.isElementAccessExpression(bare) || ts.isCallExpression(bare) ? code() : '';
+    const element = ts.isElementAccessExpression(bare) && !bare.questionDotToken ? /^\(\((.+\.element\(.+\)) \?\? nil\) as Any\?\)$/s.exec(text)?.[1] : undefined;
     const valueType = (t: ts.Type) => (this.checker.getTypeArguments(t as ts.TypeReference) ?? [])[ts.isElementAccessExpression(bare) ? 0 : 1];
     let held: ts.Type | undefined;
     if (element && balanced(element) && /^JSArray<.+\?>$/.test(this.typeOf((bare as ts.ElementAccessExpression).expression))) {
@@ -7290,11 +7291,11 @@ ${members.join('\n')}
       if (held && nullNotUndefined(held)) return `jsNulledEntry(${element})`;
       return null;
     }
-    if (ts.isCallExpression(bare) && ts.isPropertyAccessExpression(bare.expression) && !bare.expression.questionDotToken && bare.expression.name.text === 'get' && /\.get\(.*\)$/s.test(code) && !code.startsWith('(')
+    if (ts.isCallExpression(bare) && ts.isPropertyAccessExpression(bare.expression) && !bare.expression.questionDotToken && bare.expression.name.text === 'get' && /\.get\(.*\)$/s.test(text) && !text.startsWith('(')
       && /^JSMap<.+\?>$/.test(this.typeOf(bare.expression.expression))) {
       const map = this.checker.getTypeAtLocation(bare.expression.expression);
       held = map.getSymbol()?.name === 'Map' ? valueType(map) : undefined;
-      if (held && nullNotUndefined(held)) return code.startsWith('try ') ? `try jsNulledEntry(${code.slice(4)})` : `jsNulledEntry(${code})`;
+      if (held && nullNotUndefined(held)) return text.startsWith('try ') ? `try jsNulledEntry(${text.slice(4)})` : `jsNulledEntry(${text})`;
     }
     // An optional field that may hold null or undefined: the literal's shape notes which (`jsNulls`), read by key.
     if (ts.isPropertyAccessExpression(bare) && !bare.questionDotToken && bare.expression.kind !== ts.SyntaxKind.SuperKeyword && !isWriteTarget(bare)) {
@@ -7309,7 +7310,7 @@ ${members.join('\n')}
 
   /** A typed value whose untyped read tells null from undefined, where its Swift optional alone does not. */
   private nullDistinct(e: ts.Expression): boolean {
-    return this.nilIsNull(e) || !!this.nullableEntry(e, this.coerceTyped(e, 'Any?'));
+    return this.nilIsNull(e) || !!this.nullableEntry(e, () => this.coerceTyped(e, 'Any?'));
   }
 
   /** Strict code's value typed `T | undefined`, held as an optional: nil is undefined, never null. */
@@ -12380,7 +12381,7 @@ ${members.join('\n')}
     // A `T | null` value compared strictly with undefined, or a `T | undefined` one with null: never the same.
     if (strict && (isNullish(a) !== isNullish(b))) {
       const [x, n] = isNullish(b) ? [a, b] : [b, a];
-      if (n.kind !== K.NullKeyword ? this.nullDistinct(x) : this.nullableEntry(x, this.coerceTyped(x, 'Any?'))) return `${negate ? '!' : ''}jsStrictEquals(${this.coerce(x, 'Any?')}, ${n.kind === K.NullKeyword ? 'jsNull' : 'nil'})`;
+      if (n.kind !== K.NullKeyword ? this.nullDistinct(x) : this.nullableEntry(x, () => this.coerceTyped(x, 'Any?'))) return `${negate ? '!' : ''}jsStrictEquals(${this.coerce(x, 'Any?')}, ${n.kind === K.NullKeyword ? 'jsNull' : 'nil'})`;
       if (n.kind === K.NullKeyword && this.nilIsUndefined(x)) return `${negate ? '!' : ''}jsStrictEquals(${this.coerce(x, 'Any?')}, jsNull)`;
     }
     // Comparing a typed optional with null or undefined.

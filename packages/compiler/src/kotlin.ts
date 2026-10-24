@@ -5503,7 +5503,7 @@ export class Translator implements AsyncTranslator {
   coerce(e: ts.Expression, target: string): string {
     const code = this.coerceTyped(e, target);
     if (target !== 'Any?') return code;
-    const entry = this.nullableEntry(e, code);
+    const entry = this.nullableEntry(e, () => code);
     if (entry) return entry;
     return this.nilIsNull(e) && code !== 'jsNull' ? `jsNulled(${code})` : code;
   }
@@ -5523,16 +5523,16 @@ export class Translator implements AsyncTranslator {
     return true;
   }
 
-  /** An array element or map value of strict code's `T | null` values, read untyped: missing is undefined, a null held null. */
-  private nullableEntry(e: ts.Expression, code: string): string | null {
+  /** An array element or map value of strict code's `T | null` values, read untyped: missing is undefined, a null held null. `code` builds the value's `Any?` translation; call it only when needed, since building it changes how later reads compile. */
+  private nullableEntry(e: ts.Expression, code: () => string): string | null {
     if (this.lenient || this.library || this.pluginFiles.has(e.getSourceFile().fileName)) return null;
     const bare = ts.skipOuterExpressions(e);
     const valueType = (t: ts.Type, k: number) => (this.checker.getTypeArguments(t as ts.TypeReference) ?? [])[k];
     if (ts.isCallExpression(bare) && ts.isPropertyAccessExpression(bare.expression) && !bare.expression.questionDotToken && bare.expression.name.text === 'get' && bare.arguments.length === 1) {
       const map = this.checker.getTypeAtLocation(bare.expression.expression);
       const held = map.getSymbol()?.name === 'Map' ? valueType(map, 1) : undefined;
-      const call = /^(.+)\.get\((.+)\)$/s.exec(code);
-      if (held && this.onlyNullType(held) && call && balanced(call[1]) && balanced(call[2]) && /^JSMap</.test(this.typeOf(bare.expression.expression))) return `jsNulledEntry(${call[1]}, ${call[2]})`;
+      const call = held && this.onlyNullType(held) ? /^(.+)\.get\((.+)\)$/s.exec(code()) : null;
+      if (call && balanced(call[1]) && balanced(call[2]) && /^JSMap</.test(this.typeOf(bare.expression.expression))) return `jsNulledEntry(${call[1]}, ${call[2]})`;
       return null;
     }
     if (ts.isElementAccessExpression(bare) && !bare.questionDotToken && this.checker.isArrayType(this.checker.getTypeAtLocation(bare.expression))) {
@@ -5553,7 +5553,7 @@ export class Translator implements AsyncTranslator {
 
   /** A typed value whose untyped read tells null from undefined, where its Kotlin nullable alone does not. */
   private nullDistinct(e: ts.Expression): boolean {
-    return this.nilIsNull(e) || !!this.nullableEntry(e, this.coerceTyped(e, 'Any?'));
+    return this.nilIsNull(e) || !!this.nullableEntry(e, () => this.coerceTyped(e, 'Any?'));
   }
 
   /** Strict code's value typed `T | undefined`, held as a nullable: null is undefined, never JavaScript's null. */
@@ -9044,7 +9044,7 @@ export class Translator implements AsyncTranslator {
     // A `T | null` value compared strictly with undefined, or a `T | undefined` one with null: never the same.
     if (strict && isNullish(a) !== isNullish(b)) {
       const [x, n] = isNullish(b) ? [a, b] : [b, a];
-      if (n.kind !== K.NullKeyword ? this.nullDistinct(x) : this.nullableEntry(x, this.coerceTyped(x, 'Any?'))) return `${negate ? '!' : ''}jsStrictEquals(${this.coerce(x, 'Any?')}, ${n.kind === K.NullKeyword ? 'jsNull' : 'null'})`;
+      if (n.kind !== K.NullKeyword ? this.nullDistinct(x) : this.nullableEntry(x, () => this.coerceTyped(x, 'Any?'))) return `${negate ? '!' : ''}jsStrictEquals(${this.coerce(x, 'Any?')}, ${n.kind === K.NullKeyword ? 'jsNull' : 'null'})`;
       if (n.kind === K.NullKeyword && this.nilIsUndefined(x)) return `${negate ? '!' : ''}jsStrictEquals(${this.coerce(x, 'Any?')}, jsNull)`;
     }
     const maybe = isNullish(b) ? this.maybeUndefined(a) : isNullish(a) ? this.maybeUndefined(b) : null;
