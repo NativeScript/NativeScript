@@ -2114,11 +2114,13 @@ export class Translator implements AsyncTranslator {
     accessors = accessors.filter((a) => !fields.some((f) => f.name === a.name) && !methods.some((m) => m.name === a.name));
     const members = [...new Set([...accessors.map((a) => accessorKey(a.name)), ...methods.filter((m) => !m.key).map((m) => m.name)])];
     const keys = [...fields.map((f) => (isNullable(f.type) && !nilNull.has(f.name) ? `(if (${ident(f.name)} == null) listOf() else listOf(${kotlinString(f.name)}))` : `listOf(${kotlinString(f.name)})`)), ...(expando ? ['(jsExpando?.jsKeys ?: listOf())'] : [])];
+    const ownNames = new Set([...this.instanceKeys()].map((d) => d.name.getText()));
     // A method read by name is a script function calling it with the arguments it is given.
     const method = (m: { name: string; key?: string; params: string[]; ret: string }) => {
       const args = m.params.map((t, k) => this.fromAnyCode(`__a.getOrNull(${k})`, t, true));
       const call = `this.${this.methodIdent(m.name)}(${args.join(', ')})`;
-      return `        ${m.key ?? kotlinString(m.name)} -> jsFunction ${lambda(['__a'], m.ret === 'Unit' ? `${call}; null` : call)}`;
+      const fn = `jsFunction ${lambda(['__a'], m.ret === 'Unit' ? `${call}; null` : call)}`;
+      return `        ${m.key ?? kotlinString(m.name)} -> ${!m.key && ownNames.has(m.name) ? `(jsOwnProperty(this, ${kotlinString(m.name)}) ?: JSFound(${fn})).value` : fn}`;
     };
     return [
       // A subclass adding no keys has its superclass's.
@@ -4389,7 +4391,63 @@ export class Translator implements AsyncTranslator {
 
   private undeclaredRoots: Set<ts.ClassLikeDeclaration> | null = null;
   private givenUndeclared(): Set<ts.ClassLikeDeclaration> {
-    return (this.undeclaredRoots ??= this.library ? new Set() : new Set([...classesGivenUndeclaredMembers(this.sourceFiles, this.checker), ...classesHeldUntyped(this.sourceFiles, this.checker)]));
+    if (this.undeclaredRoots) return this.undeclaredRoots;
+    if (this.library) return (this.undeclaredRoots = new Set());
+    const roots = new Set([...classesGivenUndeclaredMembers(this.sourceFiles, this.checker), ...classesHeldUntyped(this.sourceFiles, this.checker)]);
+    // An instance's own value for a method lives in its hierarchy root's expando.
+    for (const d of this.instanceKeys()) {
+      let cls = d.parent as ts.ClassLikeDeclaration;
+      for (let b = this.baseClassOf(cls); b; b = this.baseClassOf(b)) cls = b;
+      roots.add(cls);
+    }
+    return (this.undeclaredRoots = roots);
+  }
+
+  private ownKeys: Set<ts.MethodDeclaration> | null = null;
+  /** App mode: the program's instance methods some `obj.m = fn` gives an instance its own value for. */
+  private instanceKeys(): Set<ts.MethodDeclaration> {
+    if (this.ownKeys) return this.ownKeys;
+    const keys = new Set<ts.MethodDeclaration>();
+    const visit = (n: ts.Node) => {
+      if (ts.isBinaryExpression(n) && n.operatorToken.kind === ts.SyntaxKind.EqualsToken && ts.isPropertyAccessExpression(n.left)) {
+        const d = this.replacedMethod(n.left);
+        if (d && !isStatic(d)) keys.add(d);
+      }
+      ts.forEachChild(n, visit);
+    };
+    if (!this.library) for (const sf of this.sourceFiles) if (!sf.isDeclarationFile) visit(sf);
+    return (this.ownKeys = keys);
+  }
+
+  /** The program class's method `obj.m = …` writes over. */
+  private replacedMethod(left: ts.PropertyAccessExpression): ts.MethodDeclaration | undefined {
+    if (this.library || this.isPrototypeRef(left.expression) || left.expression.kind === ts.SyntaxKind.SuperKeyword) return undefined;
+    return this.checker.getSymbolAtLocation(left.name)?.declarations?.find((d): d is ts.MethodDeclaration => ts.isMethodDeclaration(d) && !!d.body && ts.isClassLike(d.parent) && !d.getSourceFile().isDeclarationFile);
+  }
+
+  /** A method an instance may hold its own value for (see `instanceKeys`), or one overriding such a method. */
+  private isInstanceKey(name: ts.MemberName): boolean {
+    const keys = this.instanceKeys();
+    if (!keys.size) return false;
+    const decls = this.resolve(name)?.declarations?.filter((d): d is ts.MethodDeclaration => ts.isMethodDeclaration(d) && ts.isClassLike(d.parent)) ?? [];
+    for (let d = decls.find((x) => !!x.body) ?? decls[0]; d; d = this.inheritedMethod(d.parent as ts.ClassLikeDeclaration, name.text)) if (keys.has(d)) return true;
+    return false;
+  }
+
+  private ownCalls = new Set<ts.Node>();
+  /** `recv.m(…)` of an instance key: the instance's own value, with `recv` as its `this`, else the class's method. */
+  private ownValueCall(e: ts.CallExpression, callee: ts.PropertyAccessExpression): string {
+    const recv = callee.expression;
+    const self = recv.kind === ts.SyntaxKind.ThisKeyword;
+    const recvCode = this.expr(recv);
+    const o = self ? recvCode : this.fresh('__o'), own = this.fresh('__own');
+    const args = e.arguments.some(ts.isSpreadElement) ? [`*${this.packed(e.arguments, 'JSArray<Any?>')}.storage.toTypedArray()`] : e.arguments.map((a) => this.coerce(a, 'Any?'));
+    this.ownCalls.add(e);
+    if (!self) this.subst.set(recv, o);
+    let plain: string;
+    try { plain = this.call(e); } finally { this.ownCalls.delete(e); if (!self) this.subst.delete(recv); }
+    const value = this.fromAnyCode(`jsCallValue(${[`${own}.value`, o, String(!!e.questionDotToken), ...args].join(', ')})`, this.typeOf(e), true);
+    return `run { ${self ? '' : `val ${o} = ${recvCode}; `}val ${own} = jsOwnProperty(${o}, ${kotlinString(callee.name.text)}); if (${own} != null) ${value} else ${plain} }`;
   }
 
   private isExpando(e: ts.PropertyAccessExpression): boolean {
@@ -6677,6 +6735,11 @@ export class Translator implements AsyncTranslator {
         return `{ ${params.join(', ')} -> ${this.className(decl.parent)}.${method}(${decl.parameters.map((_, k) => `__s${k}`).join(', ')}) }`;
       }
       const r = recv();
+      if (target.kind !== ts.SyntaxKind.SuperKeyword && !isWriteTarget(e) && this.isInstanceKey(e.name)) {
+        const o = this.fresh('__o'), own = this.fresh('__own');
+        const read = `val ${own} = jsOwnProperty(${o}, ${kotlinString(name)}); if (${own} != null) ${this.fromAnyCode(`${own}.value`, this.typeOf(e).replace(/\?$/, ''), true)} else ${o}::${method}`;
+        return r.endsWith('?') ? `${r.slice(0, -1)}?.let { ${o} -> ${read} }` : `${r}.let { ${o} -> ${read} }`;
+      }
       // Read through `?.` (`child?.getChildAt`): undefined where the receiver is.
       return r.endsWith('?') ? `${r.slice(0, -1)}?.let { __r -> __r::${method} }` : `${r}::${method}`;
     }
@@ -7196,6 +7259,7 @@ export class Translator implements AsyncTranslator {
     }
     const onPrototype = this.prototypeMethodCall(e);
     if (onPrototype) return onPrototype;
+    if (ts.isPropertyAccessExpression(callee) && callee.expression.kind !== ts.SyntaxKind.SuperKeyword && !this.ownCalls.has(e) && this.isInstanceKey(callee.name)) return this.ownValueCall(e, callee);
     // A static method of a class whose instances are the kit's collection: its object's.
     const aliasClass = ts.isPropertyAccessExpression(callee) && ts.isIdentifier(callee.expression) ? this.resolve(callee.expression)?.valueDeclaration : undefined;
     if (!this.library && aliasClass && ts.isClassDeclaration(aliasClass) && this.collectionAlias(aliasClass)) return `${this.className(aliasClass)}.${ident((callee as ts.PropertyAccessExpression).name.text)}(${this.args(e).join(', ')})`;
@@ -8423,8 +8487,15 @@ export class Translator implements AsyncTranslator {
   private untypedCallable(e: ts.Expression): string {
     let f = e;
     while (ts.isParenthesizedExpression(f)) f = f.expression;
-    if (!(ts.isArrowFunction(f) || ts.isFunctionExpression(f)) || f.parameters.some((p) => !ts.isIdentifier(p.name) || p.dotDotDotToken)) return this.coerce(e, 'Any?');
+    // A function declaring `this` is a JSMethod already, which takes its receiver and arguments as given.
+    if (!(ts.isArrowFunction(f) || ts.isFunctionExpression(f)) || f.parameters.some((p, k) => !ts.isIdentifier(p.name) || (p.dotDotDotToken && k < f.parameters.length - 1) || p.name.text === 'this')) return this.coerce(e, 'Any?');
     const types = f.parameters.map((p) => this.typeOf(p.name));
+    // A rest parameter takes every argument from its position on, which a fixed-arity lambda cannot.
+    if (f.parameters.at(-1)?.dotDotDotToken) {
+      const k = f.parameters.length - 1;
+      const args = types.map((t, i) => (i < k ? this.fromAny(`__a.getOrNull(${i})`, t) : this.fromAny(`JSArray<Any?>(__a.drop(${k}))`, t)));
+      return `run { val __f = ${this.closure(f)}; jsFunction(${k}) { __a -> __f(${args.join(', ')}) } }`;
+    }
     if (types.every((t) => t === 'Any?')) return this.coerce(e, 'Any?');
     const names = types.map((_, k) => `__a${k}`);
     return `run { val __f = ${this.closure(f)}; { ${names.map((n) => `${n}: Any?`).join(', ')} -> __f(${types.map((t, k) => this.fromAny(names[k], t)).join(', ')}) } }`;
@@ -8794,10 +8865,9 @@ export class Translator implements AsyncTranslator {
     // `this.x = …` in a static block or method, of a static field the class declares: the companion's.
     const staticOwn = ts.isPropertyAccessExpression(left) && left.expression.kind === ts.SyntaxKind.ThisKeyword && !!this.resolve(left.name)?.declarations?.some((d) => ts.isPropertyDeclaration(d) && isStatic(d));
     if (staticOwn) return `${this.expr(left.expression)}.${ident(left.name.text)} = ${this.coerce(right, this.typeOf(left))}`;
-    // Calls of a program class's method go straight to it, and its jsSet keeps no value under the method's name.
-    const ownMethod = ts.isPropertyAccessExpression(left) && !this.library && !this.isPrototypeRef(left.expression)
-      ? this.checker.getSymbolAtLocation(left.name)?.declarations?.find((d): d is ts.MethodDeclaration => ts.isMethodDeclaration(d) && !!d.body && ts.isClassLike(d.parent) && !d.getSourceFile().isDeclarationFile) : undefined;
-    if (ownMethod) throw this.error(left.parent, `giving an instance its own ${(ownMethod.parent as ts.ClassLikeDeclaration).name?.text ?? 'class'}.${ownMethod.name.getText()} in place of the class's method`);
+    // A static method is called straight on the companion, which keeps no value under its name.
+    const ownMethod = ts.isPropertyAccessExpression(left) ? this.replacedMethod(left) : undefined;
+    if (ownMethod && isStatic(ownMethod)) throw this.error(left.parent, `giving ${(ownMethod.parent as ts.ClassLikeDeclaration).name?.text ?? 'a class'}.${ownMethod.name.getText()} a value in place of the class's static method`);
     if (ts.isPropertyAccessExpression(left) && !this.library && !staticOwn && ['Any?', 'Nothing'].includes(this.typeOf(left.expression)) && !this.isExpando(left)) return `jsSet(${this.expr(left.expression)}, ${kotlinString(left.name.text)}, ${this.untypedCallable(right)})`;
     // A method of a class replaced on an instance (`image.requestLayout = () => …`): set by name, which the class's own calls do not see.
     if (ts.isPropertyAccessExpression(left) && !this.library && (this.checker.getSymbolAtLocation(left.name)?.flags ?? 0) & ts.SymbolFlags.Method && !this.isPrototypeRef(left.expression)) return `jsSet(${this.expr(left.expression)}, ${kotlinString(left.name.text)}, ${this.untypedCallable(right)})`;
