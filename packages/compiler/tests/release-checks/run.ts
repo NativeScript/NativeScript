@@ -896,6 +896,28 @@ export class People {
   }
 })();
 
+// ---- A plugin's @Injectable class with a base, or extended, on Android ----
+(() => {
+  const dir = mkdtempSync(join(tmpdir(), 'ns-release-checks-plugin-service-'));
+  try {
+    writeFileSync(join(dir, 'store.ts'), "import { Injectable } from '@angular/core';\nexport class Source<T> { constructor(readonly value: T) {} }\n@Injectable()\nexport class Store<T> extends Source<T> { constructor() { super(null as T); } }\n");
+    writeFileSync(join(dir, 'component-store.ts'), "import { Injectable } from '@angular/core';\n@Injectable()\nexport class ComponentStore<T> { state?: T; patch(s: T) { this.state = s; } }\n");
+    const translate = (text: string) => {
+      const app = join(dir, 'app.ts');
+      writeFileSync(app, text);
+      const { checker, program } = createProgram([app], new Map(), 'android', modulesDir);
+      const all = program.getSourceFiles().filter((f) => !f.isDeclarationFile);
+      const translator = new Translator(checker, new Map(), all, { pluginFiles: [join(dir, 'store.ts'), join(dir, 'component-store.ts')] });
+      translator.appModule = 'org.example.app';
+      try { translateKotlinModules(translator, program, all.map((f) => f.fileName)); return ''; } catch (e) { return String((e as Error).message); }
+    };
+    check(/store\.ts:4:\d+: on Android, a plugin's @Injectable class extending another \(Store\) is not supported/.test(translate("import { Store } from './store';\nexport const s = new Store<number>();\n")), "a plugin's @Injectable class extending a class is a build error naming it on Android, never a service without its base");
+    check(/app\.ts:3:\d+: on Android, extending a plugin's @Injectable class \(ComponentStore\) is not supported/.test(translate("import { Injectable } from '@angular/core';\nimport { ComponentStore } from './component-store';\n@Injectable() export class Cart extends ComponentStore<string> {}\nexport const c = new Cart();\n")), "an app class extending a plugin's @Injectable class is a build error naming it on Android");
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+})();
+
 // ---- A plugin's own Java classes ----
 (() => {
   const dir = join(here, 'plugin-java');

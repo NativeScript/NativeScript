@@ -3006,6 +3006,12 @@ export class Translator implements AsyncTranslator {
     // A namespace's class is declared in its object, by its own name.
     const name = ts.isModuleBlock(cls.parent) ? ident(cls.name!.text) : this.className(cls);
     const service = (ts.getDecorators(cls) ?? []).some((d) => d.expression.getText().startsWith('Injectable')) && !this.isBasedService(cls);
+    // A plugin's @Injectable class is a final service with no base (ngrx's Store extends rxjs' Observable, ComponentStore is extended).
+    const extendsOf = (c: ts.ClassDeclaration) => c.heritageClauses?.find((h) => h.token === ts.SyntaxKind.ExtendsKeyword)?.types[0];
+    if (service && this.pluginFiles.has(cls.getSourceFile().fileName) && extendsOf(cls)) throw this.error(extendsOf(cls), `on Android, a plugin's @Injectable class extending another (${cls.name?.text ?? 'class'})`);
+    const pluginService = (d: ts.Node | undefined) => !!d && ts.isClassDeclaration(d) && this.pluginFiles.has(d.getSourceFile().fileName) && (ts.getDecorators(d) ?? []).some((x) => x.expression.getText().startsWith('Injectable'));
+    const extendedService = extendsOf(cls) && this.checker.getTypeAtLocation(extendsOf(cls)!.expression).getSymbol()?.valueDeclaration;
+    if (pluginService(extendedService)) throw this.error(extendsOf(cls), `on Android, extending a plugin's @Injectable class (${(extendedService as ts.ClassDeclaration).name?.text})`);
     if (service) {
       const { params, lines, statics } = this.componentMembers(cls, []);
       return [`class ${name}(${params.join(', ')}) {`, ...lines, '', '    companion object {', `        val shared: ${name} get() = AppInjector.service(${name}::class.java) { ${name}() }`, ...statics, '    }', '}'].join('\n');
