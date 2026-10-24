@@ -499,6 +499,13 @@ export class GlyphPipe { constructor(@Inject(TOKEN) private config: any, @Option
     setters.errors = [];
     translateModules(setters, typed.program, [setter]);
     check(setters.errors.length === 1 && setters.errors[0].includes('a setter whose parameter is a destructuring pattern'), 'a setter destructuring its value is reported, not a crash');
+    const holes = join(dir, 'holes.ts');
+    writeFileSync(holes, "class Card { name = 'c'; }\nconst c = new Card();\n// @ts-ignore\nexport const cards: Card[] = [c, undefined, null];\n");
+    const loose = createProgram([holes], new Map(), 'ios', modulesDir);
+    const looseApp = new SwiftTranslator(loose.checker, new Map(), loose.files, { lenientApp: true });
+    looseApp.errors = [];
+    translateModules(looseApp, loose.program, [holes]);
+    check(looseApp.errors.length === 1 && looseApp.errors[0].includes('null or undefined in an array of Card, whose type leaves both out'), "a non-strict app's null or undefined in an array of objects is reported, as Swift's array of them holds neither");
     const named = join(dir, 'named.ios.ts');
     writeFileSync(named, "export class ProcessInfo {\n  name = 'mine';\n}\nexport const processName = NSProcessInfo.processInfo.processName;\nexport const own = new ProcessInfo().name;\n");
     const clash = createProgram([named], new Map(), 'ios', modulesDir);

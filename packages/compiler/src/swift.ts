@@ -2375,7 +2375,7 @@ export class Translator implements AsyncTranslator {
       return false;
     }
     if (ts.isCallExpression(e) && ts.isIdentifier(e.expression) && ['ref', '$ref', '$signal', 'signal', 'writable', '$writable', 'computed'].includes(e.expression.text)) return e.arguments.every(c);
-    if (ts.isNewExpression(e) && ts.isIdentifier(e.expression) && ['Map', 'Set'].includes(e.expression.text)) return !e.arguments?.length || e.arguments.every(c);
+    if (ts.isNewExpression(e) && ts.isIdentifier(e.expression) && ['Map', 'Set'].includes(e.expression.text)) return !e.arguments?.length || (!this.isAny(e.arguments[0]) && e.arguments.every(c));
     return false;
   }
 
@@ -2826,14 +2826,14 @@ ${members.join('\n')}
   }
 
   /** `JSDynamic`: the object's keys and members by name, for printing, JSON and untyped access. */
-  private dynamicMembers(fields: { name: string; type: string }[], className: string | null, override: boolean, methods: { name: string; type: string; available?: number; length?: number }[] = [], symbols: { key: string; member: string; type: string }[] = [], expando = false, raw = new Set<string>(), accessors: { name: string; get: string | null; set: string | null }[] = [], symbolKeyedBase = false, extra = false, nulls = new Set<string>(), classNameMember = true): string[] {
+  private dynamicMembers(fields: { name: string; type: string }[], className: string | null, override: boolean, methods: { name: string; type: string; available?: number; length?: number }[] = [], symbols: { key: string; member: string; type: string }[] = [], expando = false, raw = new Set<string>(), accessors: { name: string; get: string | null; set: string | null }[] = [], symbolKeyedBase = false, extra = false, nulls = new Set<string>(), classNameMember = true, nilNull = new Set<string>()): string[] {
     const o = override ? 'override ' : '';
     this.declare('jsKeys', { kind: 'var', mods: o, type: '[String]' });
     if (symbols.length) this.declare('jsSymbolKeys', { kind: 'var', mods: symbolKeyedBase ? 'override ' : '', type: '[String]' });
     if (classNameMember) this.declare('jsClassName', { kind: 'var', mods: o, type: 'String?' });
     this.declare('subscript', { kind: 'subscript', mods: o, params: 'jsKey key: String', type: 'Any?' });
     if (this.declOwner) this.declarations?.names(this.declOwner, [...fields.map((f) => f.name), ...accessors.map((a) => a.name), ...methods.map((m) => m.name)]);
-    const keys = fields.map((f) => (f.type.endsWith('?') ? `(self.${ident(f.name)} == nil${nulls.has(f.name) ? ` && jsNulls?.contains(${swiftString(f.name)}) != true` : ''} ? [] : [${swiftString(f.name)}])` : `[${swiftString(f.name)}]`));
+    const keys = fields.map((f) => (f.type.endsWith('?') && !nilNull.has(f.name) ? `(self.${ident(f.name)} == nil${nulls.has(f.name) ? ` && jsNulls?.contains(${swiftString(f.name)}) != true` : ''} ? [] : [${swiftString(f.name)}])` : `[${swiftString(f.name)}]`));
     const lines = [
       `    ${o}var jsKeys: [String] { ${[override ? 'super.jsKeys' : '', ...keys, expando ? '(jsExpando?.jsKeys ?? [])' : ''].filter(Boolean).join(' + ') || '[]'} }`,
       ...(symbols.length ? [`    ${symbolKeyedBase ? 'override ' : ''}var jsSymbolKeys: [String] { ${symbolKeyedBase ? 'super.jsSymbolKeys + ' : ''}[${symbols.map((f) => f.key).join(', ')}]${expando ? ' + (jsExpando?.jsSymbolKeys ?? [])' : ''} }`] : []),
@@ -2841,7 +2841,7 @@ ${members.join('\n')}
       `    ${o}subscript(jsKey key: String) -> Any? {`,
       '        get {',
       ...this.keySwitch([
-        ...fields.map((f) => ({ name: f.name, code: `return ${raw.has(f.name) ? `jsExpandoGet(self, ${swiftString(f.name)})` : isFunctionType(f.type.replace(/^\((.*)\)[?!]$/, '$1')) ? this.boxedField(`self.${ident(f.name)}`, f.type) : nulls.has(f.name) ? `jsNullable(${this.untypedEnum(`self.${ident(f.name)}`, f.type)}, jsNulls, ${swiftString(f.name)})` : this.untypedEnum(`self.${ident(f.name)}`, f.type)}` })),
+        ...fields.map((f) => ({ name: f.name, code: `return ${raw.has(f.name) ? `jsExpandoGet(self, ${swiftString(f.name)})` : isFunctionType(f.type.replace(/^\((.*)\)[?!]$/, '$1')) ? (nilNull.has(f.name) ? `jsNulled(${this.boxedField(`self.${ident(f.name)}`, f.type)})` : this.boxedField(`self.${ident(f.name)}`, f.type)) : nulls.has(f.name) ? `jsNullable(${this.untypedEnum(`self.${ident(f.name)}`, f.type)}, jsNulls, ${swiftString(f.name)})` : nilNull.has(f.name) ? `jsNulled(${this.untypedEnum(`self.${ident(f.name)}`, f.type)})` : this.untypedEnum(`self.${ident(f.name)}`, f.type)}` })),
         ...accessors.map((a) => ({ name: a.name, code: `return ${a.get ?? 'nil'}` })),
         ...methods.filter((m) => !fields.some((f) => f.name === m.name)).map((m) => ({ name: m.name, code: m.available
           ? `if #available(iOS ${m.available}, *) { return ${this.boxFunction(`self.${ident(m.name)}`, m.type, -1, m.name, m.length, undefined, false)} } else { return nil }`
@@ -3174,6 +3174,16 @@ ${members.join('\n')}
     // One set per object: a class whose program base keeps one adds none of its own.
     for (let b = this.programBase(cls); b; b = this.programBase(b)) if (this.nullFields(b).size) return set;
     for (const m of nullSetFields(cls)) if (this.typeOf(m.name) !== 'Any?') set.add(m.name.getText());
+    return set;
+  }
+
+  /** Strict code's fields typed `T | null` that start with a value (an initializer, a constructor parameter's): nil in them is null. */
+  private nullFieldsTyped(cls: ts.ClassLikeDeclaration): Set<string> {
+    const set = new Set<string>();
+    if (this.lenient || this.library || cls.getSourceFile().isDeclarationFile || this.pluginFiles.has(cls.getSourceFile().fileName)) return set;
+    const ctor = cls.members.find(ts.isConstructorDeclaration);
+    const given = [...cls.members.filter((m): m is ts.PropertyDeclaration => ts.isPropertyDeclaration(m) && !!m.initializer && !isStatic(m)), ...(ctor?.parameters.filter((p) => ts.isParameterPropertyDeclaration(p, ctor)) ?? [])];
+    for (const m of given) if (ts.isIdentifier(m.name) && nullNotUndefined(this.checker.getTypeAtLocation(m.name))) set.add(m.name.text);
     return set;
   }
 
@@ -5353,7 +5363,7 @@ ${members.join('\n')}
         const initial = cls.members.filter((m): m is ts.PropertyDeclaration => ts.isPropertyDeclaration(m) && nulls.has(m.name.getText()) && initializedNull(m));
         lines.push(`    var jsNulls: Set<String>?${initial.length ? ` = [${initial.map((m) => swiftString(m.name.getText())).join(', ')}]` : ''}`);
       }
-      lines.push(...this.dynamicMembers(fields, cls.name?.text ?? name, !!appBase || !!kitRoot, dynMethods, symbolFields, expando, raw, dynAccessors, symbolKeyedBase, false, nulls));
+      lines.push(...this.dynamicMembers(fields, cls.name?.text ?? name, !!appBase || !!kitRoot, dynMethods, symbolFields, expando, raw, dynAccessors, symbolKeyedBase, false, nulls, true, this.nullFieldsTyped(cls)));
     }
     // Library mode: the class's `name`, which a static method reads of the class it is called on.
     if (this.library && !this.errorBased(cls)) {
@@ -7245,6 +7255,73 @@ ${members.join('\n')}
 
   /** An expression where Swift needs a value of `target`. */
   coerce(e: ts.Expression, target: string): string {
+    const code = this.coerceTyped(e, target);
+    if (target !== 'Any?') return code;
+    const entry = this.nullableEntry(e, () => code);
+    if (entry) return entry;
+    if (!this.nilIsNull(e) || code === 'jsNull') return code;
+    return code.startsWith('try ') ? `try jsNulled(${code.slice(4)})` : `jsNulled(${code})`;
+  }
+
+  /**
+   * Strict code's value typed `T | null` (or narrowed to null), which Swift holds as an optional: nil is null, as its
+   * type has no undefined. A field without an initializer is undefined until assigned, whatever its type says.
+   */
+  nilIsNull(e: ts.Expression): boolean {
+    if (this.lenient || this.library || this.pluginFiles.has(e.getSourceFile().fileName)) return false;
+    const bare = ts.skipOuterExpressions(e);
+    if (bare.kind === ts.SyntaxKind.NullKeyword || !nullNotUndefined(this.checker.getTypeAtLocation(e))) return false;
+    if (ts.isPropertyAccessExpression(bare)) {
+      const d = this.checker.getSymbolAtLocation(bare.name)?.valueDeclaration;
+      if (d && ts.isPropertyDeclaration(d) && !d.initializer) return false;
+    }
+    return true;
+  }
+
+  /** An array element or map value of strict code's `T | null` values, read untyped: missing is undefined, a nil held null. `code` builds the value's `Any?` translation; call it only when needed, since building it changes how later reads compile. */
+  private nullableEntry(e: ts.Expression, code: () => string): string | null {
+    if (this.lenient || this.library || this.pluginFiles.has(e.getSourceFile().fileName)) return null;
+    const bare = ts.skipOuterExpressions(e);
+    const text = ts.isElementAccessExpression(bare) || ts.isCallExpression(bare) ? code() : '';
+    const element = ts.isElementAccessExpression(bare) && !bare.questionDotToken ? /^\(\((.+\.element\(.+\)) \?\? nil\) as Any\?\)$/s.exec(text)?.[1] : undefined;
+    const valueType = (t: ts.Type) => (this.checker.getTypeArguments(t as ts.TypeReference) ?? [])[ts.isElementAccessExpression(bare) ? 0 : 1];
+    let held: ts.Type | undefined;
+    if (element && balanced(element) && /^JSArray<.+\?>$/.test(this.typeOf((bare as ts.ElementAccessExpression).expression))) {
+      held = this.checker.isArrayType(this.checker.getTypeAtLocation((bare as ts.ElementAccessExpression).expression)) ? valueType(this.checker.getTypeAtLocation((bare as ts.ElementAccessExpression).expression)) : undefined;
+      if (held && nullNotUndefined(held)) return `jsNulledEntry(${element})`;
+      return null;
+    }
+    if (ts.isCallExpression(bare) && ts.isPropertyAccessExpression(bare.expression) && !bare.expression.questionDotToken && bare.expression.name.text === 'get' && /\.get\(.*\)$/s.test(text) && !text.startsWith('(')
+      && /^JSMap<.+\?>$/.test(this.typeOf(bare.expression.expression))) {
+      const map = this.checker.getTypeAtLocation(bare.expression.expression);
+      held = map.getSymbol()?.name === 'Map' ? valueType(map) : undefined;
+      if (held && nullNotUndefined(held)) return text.startsWith('try ') ? `try jsNulledEntry(${text.slice(4)})` : `jsNulledEntry(${text})`;
+    }
+    // An optional field that may hold null or undefined: the literal's shape notes which (`jsNulls`), read by key.
+    if (ts.isPropertyAccessExpression(bare) && !bare.questionDotToken && bare.expression.kind !== ts.SyntaxKind.SuperKeyword && !isWriteTarget(bare)) {
+      const parts = ((t) => (t.isUnion() ? t.types : [t]))(this.checker.getTypeAtLocation(bare));
+      if (!parts.some((x) => x.flags & ts.TypeFlags.Null) || !parts.some((x) => x.flags & ts.TypeFlags.Undefined)) return null;
+      const shape = [...this.shapes.values()].find((x) => x.name === this.typeOf(bare.expression).replace(/!$/, ''));
+      const f = shape?.fields.find((x) => x.name === bare.name.text);
+      if (shape && f && isOptional(f.type) && f.type !== 'Any?' && !shape.fields.some((x) => x.symbol || x.accessor)) return `${this.expr(bare.expression)}[jsKey: ${swiftString(f.name)}]`;
+    }
+    return null;
+  }
+
+  /** A typed value whose untyped read tells null from undefined, where its Swift optional alone does not. */
+  private nullDistinct(e: ts.Expression): boolean {
+    return this.nilIsNull(e) || !!this.nullableEntry(e, () => this.coerceTyped(e, 'Any?'));
+  }
+
+  /** Strict code's value typed `T | undefined`, held as an optional: nil is undefined, never null. */
+  private nilIsUndefined(e: ts.Expression): boolean {
+    if (this.lenient || this.library || this.lenientApp || this.pluginFiles.has(e.getSourceFile().fileName)) return false;
+    const t = this.checker.getTypeAtLocation(e);
+    const parts = t.isUnion() ? t.types : [t];
+    return parts.some((x) => x.flags & (ts.TypeFlags.Undefined | ts.TypeFlags.Void)) && !parts.some((x) => x.flags & (ts.TypeFlags.Null | ts.TypeFlags.Any | ts.TypeFlags.Unknown));
+  }
+
+  private coerceTyped(e: ts.Expression, target: string): string {
     const stored = this.storedLiterals.get(e);
     if (stored && (target === 'Any?' || target.replace(/[?!]$/, '') === stored.type)) return stored.code;
     if (target === 'Any?') {
@@ -9058,7 +9135,7 @@ ${members.join('\n')}
 
   /** An operand of `+` beside a string: an object converts with the default hint. */
   private concatOperand(e: ts.Expression): string {
-    return (this.isObjectRef(e) || this.typeOf(e) === 'Any?') && !this.maybeUndefined(e) && this.typeOf(e) !== 'JSSymbol' ? `jsToStringDefault(${this.expr(e)})` : this.str(e);
+    return (this.isObjectRef(e) || this.typeOf(e) === 'Any?') && !this.maybeUndefined(e) && this.typeOf(e) !== 'JSSymbol' ? `jsToStringDefault(${this.coerce(e, 'Any?')})` : this.str(e);
   }
 
   /** A property key: a symbol's own key, anything else as a string. */
@@ -9104,10 +9181,8 @@ ${members.join('\n')}
     if (t === 'Double' || t === 'Bool') return `js(${this.expr(e)})`;
     if (t === 'Void' && !isNullish(e)) return this.pure(e) ? '"undefined"' : `jsToString(jsUndefined(${this.expr(e)}))`;
     // Typed `T | null` (`headers.get(name)`), held as an optional: missing is null, not undefined.
-    const declared = this.checker.getTypeAtLocation(e);
-    if (/\?$/.test(t) && t !== 'Any?' && declared.isUnion() && declared.types.some((x) => x.flags & ts.TypeFlags.Null) && !declared.types.some((x) => x.flags & ts.TypeFlags.Undefined)) {
-      return `(${this.expr(e)}.map { jsToString($0) } ?? "null")`;
-    }
+    if (this.nilIsNull(e) && /\?$/.test(t) && t !== 'Any?') return `(${this.expr(e)}.map { jsToString($0) } ?? "null")`;
+    if (this.nullDistinct(e)) return `jsToString(${this.coerce(e, 'Any?')})`;
     return `jsToString(${this.expr(e)})`;
   }
 
@@ -11560,9 +11635,13 @@ ${members.join('\n')}
       const src = args[0];
       // A Set of typed values from an untyped iterable (`new GPUSupportedFeatures(native.features)`): each value converted.
       const element = /^JSSet<(.*)>$/.exec(collection ?? t)?.[1];
-      if (element && element !== 'Any?' && this.isAny(src)) return `${t}(try jsIteratorOf(${this.expr(src)}).jsCollect().map { ${this.fromAnyCode('$0', element, true)} })`;
+      if (element && this.isAny(src)) return `${t}(try jsCollectionSource(${this.expr(src)})${element === 'Any?' ? '' : `.map { ${this.fromAnyCode('$0', element, true)} }`})`;
       // Entries written in place take the map's own types (a function value, which lenient code would hold optional).
       const entry = /^JSMap<(.*)>$/.exec(collection ?? t)?.[1];
+      if (entry && this.isAny(src)) {
+        const [k, v] = splitTopLevel(entry);
+        return `${t}(try jsMapEntries(${this.expr(src)})${k === 'Any?' && v === 'Any?' ? '' : `.map { (${this.fromAnyCode('$0.0', k, true)}, ${this.fromAnyCode('$0.1', v, true)}) }`})`;
+      }
       if (entry && ts.isArrayLiteralExpression(src) && splitTopLevel(entry).length === 2) return `${t}(${this.coerce(src, `JSArray<(${splitTopLevel(entry).join(', ')})>`)})`;
       return `${t}(${this.iterable(src)})`;
     }
@@ -11877,6 +11956,7 @@ ${members.join('\n')}
     const lib = ts.isIdentifier(e.expression) ? this.resolve(e.expression)?.declarations : undefined;
     const callable = this.checker.getTypeAtLocation(e.expression);
     if (lib?.length && lib.every((d) => /[\\/]lib\.[\w.]*\.d\.ts$/.test(d.getSourceFile().fileName)) && (callable.getConstructSignatures().length || callable.getCallSignatures().length)) return '"function"';
+    if (this.nullDistinct(e.expression)) return `jsTypeof(${this.coerce(e.expression, 'Any?')})`;
     const t = this.typeOf(e.expression);
     // A variable held untyped and narrowed (`val: string | string[]` past `Array.isArray(val)`): the narrowing does not exclude undefined.
     if (ts.isIdentifier(read) && t !== 'Any?' && !this.subst.has(read) && this.declaredTypeOf(read) === 'Any?') return `jsTypeof(${this.refName(read)})`;
@@ -12298,6 +12378,12 @@ ${members.join('\n')}
       const result = negate !== equal;
       return this.pure(nothing) ? String(result) : `jsUndefined(${this.expr(nothing)}) ${result ? '==' : '!='} nil`;
     }
+    // A `T | null` value compared strictly with undefined, or a `T | undefined` one with null: never the same.
+    if (strict && (isNullish(a) !== isNullish(b))) {
+      const [x, n] = isNullish(b) ? [a, b] : [b, a];
+      if (n.kind !== K.NullKeyword ? this.nullDistinct(x) : this.nullableEntry(x, () => this.coerceTyped(x, 'Any?'))) return `${negate ? '!' : ''}jsStrictEquals(${this.coerce(x, 'Any?')}, ${n.kind === K.NullKeyword ? 'jsNull' : 'nil'})`;
+      if (n.kind === K.NullKeyword && this.nilIsUndefined(x)) return `${negate ? '!' : ''}jsStrictEquals(${this.coerce(x, 'Any?')}, jsNull)`;
+    }
     // Comparing a typed optional with null or undefined.
     const maybe = isNullish(b) ? this.maybeUndefined(a) : isNullish(a) ? this.maybeUndefined(b) : null;
     if (maybe) return `${maybe} ${negate ? '!=' : '=='} nil`;
@@ -12386,7 +12472,9 @@ ${members.join('\n')}
         const from = this.elementTypeOf(x.expression);
         parts.push(from !== el && from === 'Any?' ? `Array(${this.iterable(x.expression)}).map { ${this.fromAny('$0', el)} }` : `Array(${this.iterable(x.expression)})`);
       } else if (ts.isOmittedExpression(x)) throw this.error(x, 'an array hole');
-      else run.push(this.coerce(x, el));
+      else if (!this.lenient && isNullish(ts.skipOuterExpressions(x)) && !isOptional(el) && el !== 'Any?' && this.zero(el) === null) {
+        throw this.error(x, `null or undefined in an array of ${el}, whose type leaves both out (declare the element type \`${el} | null\`)`);
+      } else run.push(this.coerce(x, el));
     }
     if (run.length) parts.push(`[${run.join(', ')}]`);
     return `${t}(${parts.join(' + ')})`;
@@ -12499,7 +12587,7 @@ ${members.join('\n')}
           given.set(p.name.text, variable === 'Any?' || this.typeOf(p.name) === 'Any?' ? this.fromAny(code, optionalType(want!)) : code);
           continue;
         }
-        given.set(p.name.text, actual && want && functionParts(want) && actual !== want ? this.convert(code, actual, want) : undefinedVar ? this.undefinedAs(code, want!) : unwrap && !code.endsWith('!') ? `${code}!` : code);
+        given.set(p.name.text, actual && want && functionParts(want) && actual !== want ? this.convert(code, actual, want) : undefinedVar ? this.undefinedAs(code, want!) : unwrap && !code.endsWith('!') ? `${code}!` : want === 'Any?' && this.nilIsNull(p.name) ? `jsNulled(${code})` : code);
       }
       else if (ts.isSpreadAssignment(p)) {
         const src = this.expr(p.expression);
@@ -12558,7 +12646,7 @@ ${members.join('\n')}
       return given.has(f.name) ? [`${label((f as { label?: string }).label ?? f.name)}: ${given.get(f.name)}`] : [];
     }).join(', ');
     // A field the literal sets to null, which the shape holds as nil, is kept as null (JSON, keys, untyped reads).
-    const nullKeys = !order.some((f) => (f as ShapeField).accessor || (f as ShapeField).symbol) ? e.properties.filter((p): p is ts.PropertyAssignment => ts.isPropertyAssignment(p) && ts.skipOuterExpressions(p.initializer).kind === ts.SyntaxKind.NullKeyword)
+    const nullKeys = !order.some((f) => (f as ShapeField).accessor || (f as ShapeField).symbol) ? e.properties.filter((p): p is ts.PropertyAssignment | ts.ShorthandPropertyAssignment => (ts.isPropertyAssignment(p) && (ts.skipOuterExpressions(p.initializer).kind === ts.SyntaxKind.NullKeyword || this.nilIsNull(p.initializer))) || (ts.isShorthandPropertyAssignment(p) && this.nilIsNull(p.name)))
       .map((p) => literalKey(p.name, this.checker) ?? p.name.getText()).filter((k) => order.some((f) => f.name === k && isOptional(f.type) && f.type !== 'Any?')) : [];
     const nulled = nullKeys.length ? `, jsNulls: [${nullKeys.map(swiftString).join(', ')}]` : '';
     const made = `${target}(${args}${args && reorder ? reorder : reorder.slice(2)}${args || reorder ? nulled : nulled.slice(2)})`;
@@ -12774,6 +12862,12 @@ const LIB_CONSTANTS: Record<string, string> = {
 
 /** A field of an object literal's class; an accessor runs closures the literal gives. */
 interface IteratorMethod { name: string; params: number; param?: string; ret: string; throws: boolean }
+/** A type with null among its values and no undefined (nor any or unknown, which may be either). */
+function nullNotUndefined(t: ts.Type): boolean {
+  const parts = t.isUnion() ? t.types : [t];
+  return parts.some((x) => x.flags & ts.TypeFlags.Null) && !parts.some((x) => x.flags & (ts.TypeFlags.Undefined | ts.TypeFlags.Void | ts.TypeFlags.Any | ts.TypeFlags.Unknown));
+}
+
 interface ShapeField { name: string; type: string; accessor?: { get: boolean; set: boolean; throws: boolean; value: string }; symbol?: boolean }
 
 /** The `this` nodes of a function, and of the arrow functions inside it. */
