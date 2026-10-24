@@ -3,8 +3,10 @@
   "type": "module",
   "description": "What the tests type their cases against, as an app's node_modules would hold it.",
   "devDependencies": {
+    "@angular/common": "^22.2.1",
     "@angular/compiler": "^22.2.1",
     "@angular/core": "^22.2.1",
+    "@angular/forms": "^22.2.1",
     "@nativescript/core": "~9.1.0",
     "@nativescript/types": "~9.0.0",
     "@ngrx/component-store": "22.0.0",

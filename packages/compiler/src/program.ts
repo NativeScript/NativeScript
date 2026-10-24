@@ -11,6 +11,8 @@ import { NATIVE_VIEWS_ANDROID } from './core-kotlin.ts';
 
 const ANGULAR_RX_FILE = resolve(dirname(fileURLToPath(import.meta.url)), '../runtime/angular-rx.ts');
 const PLUGIN_STUBS_FILE = resolve(dirname(fileURLToPath(import.meta.url)), '../runtime/binary-plugin-stubs.ts');
+/** @angular/forms, ported: compiled as a package's source is, its classes' type parameters erased. */
+export const ANGULAR_FORMS_FILE = resolve(dirname(fileURLToPath(import.meta.url)), '../runtime/angular-forms.ts');
 const ANGULAR_RX_MODULES = new Set(['@angular/common/http', '@angular/core/rxjs-interop', '@angular/router', '@nativescript/angular', '@angular#rx']);
 
 /**
@@ -609,105 +611,23 @@ const SHIMS: Record<string, string> = {
     export declare const RouterLink: any;
     export declare const RouterLinkActive: any;
   `,
-  '@angular/forms': `
-    import type { EventEmitter } from '@angular/core';
-    export type ValidationErrors = any;
-    export type ValidatorFn = (control: any) => any;
-    export type AsyncValidatorFn = (control: any) => any;
-    export type FormControlStatus = 'VALID' | 'INVALID' | 'PENDING' | 'DISABLED';
+  // What an app implements of @angular/forms (runtime/angular-forms.ts re-exports them): declarations, no classes.
+  '@angular#forms': `
+    import type { Observable } from 'rxjs';
+    import type { AbstractControl, ValidationErrors } from '@angular/forms';
+    export interface Validator {
+      validate(control: AbstractControl): ValidationErrors | null;
+      registerOnValidatorChange?(fn: () => void): void;
+    }
+    export interface AsyncValidator extends Validator {
+      validate(control: AbstractControl): Promise<ValidationErrors | null> | Observable<ValidationErrors | null>;
+    }
     export interface ControlValueAccessor {
       writeValue(obj: any): void;
       registerOnChange(fn: any): void;
       registerOnTouched(fn: any): void;
       setDisabledState?(isDisabled: boolean): void;
     }
-    export declare const NG_VALUE_ACCESSOR: import('@angular/core').InjectionToken<readonly ControlValueAccessor[]>;
-    export declare const NG_VALIDATORS: import('@angular/core').InjectionToken<readonly any[]>;
-    export declare class Validators {
-      static required(control: any): any;
-      static requiredTrue(control: any): any;
-      static minLength(minLength: number): ValidatorFn;
-      static maxLength(maxLength: number): ValidatorFn;
-      static min(min: number): ValidatorFn;
-      static max(max: number): ValidatorFn;
-      static pattern(pattern: string | RegExp): ValidatorFn;
-      static email(control: any): any;
-      static nullValidator(control: any): any;
-      static compose(validators: (ValidatorFn | null | undefined)[] | null): ValidatorFn | null;
-    }
-    export declare class AbstractControl<TValue = any, TRawValue extends TValue = TValue> {
-      value: any;
-      readonly errors: ValidationErrors | null;
-      readonly pristine: boolean;
-      readonly dirty: boolean;
-      readonly touched: boolean;
-      readonly untouched: boolean;
-      readonly status: FormControlStatus;
-      readonly valid: boolean;
-      readonly invalid: boolean;
-      readonly disabled: boolean;
-      readonly enabled: boolean;
-      readonly valueChanges: EventEmitter<any>;
-      readonly statusChanges: EventEmitter<FormControlStatus>;
-      constructor(value?: any, validatorOrOpts?: any);
-      setValue(value: any, options?: { onlySelf?: boolean; emitEvent?: boolean }): void;
-      patchValue(value: any, options?: { onlySelf?: boolean; emitEvent?: boolean }): void;
-      reset(value?: any, options?: { onlySelf?: boolean; emitEvent?: boolean }): void;
-      markAsTouched(opts?: { onlySelf?: boolean }): void;
-      markAllAsTouched(): void;
-      markAsUntouched(opts?: { onlySelf?: boolean }): void;
-      markAsDirty(opts?: { onlySelf?: boolean }): void;
-      markAsPristine(opts?: { onlySelf?: boolean }): void;
-      disable(opts?: { onlySelf?: boolean; emitEvent?: boolean }): void;
-      enable(opts?: { onlySelf?: boolean; emitEvent?: boolean }): void;
-      setValidators(validators: ValidatorFn | ValidatorFn[] | null): void;
-      addValidators(validators: ValidatorFn | ValidatorFn[]): void;
-      clearValidators(): void;
-      setErrors(errors: ValidationErrors | null, opts?: { emitEvent?: boolean }): void;
-      hasError(errorCode: string, path?: string | (string | number)[]): boolean;
-      getError(errorCode: string, path?: string | (string | number)[]): any;
-      get(path: Array<string | number> | string): AbstractControl | null;
-      getRawValue(): any;
-      updateValueAndValidity(opts?: { onlySelf?: boolean; emitEvent?: boolean }): void;
-    }
-    export declare class FormControl<TValue = any> extends AbstractControl<any> {
-      readonly defaultValue: any;
-      constructor(value?: TValue | { value: TValue; disabled?: boolean }, validatorOrOpts?: any, asyncValidator?: any);
-    }
-    export declare class UntypedFormControl extends FormControl<any> {}
-    export declare class FormGroup<TControl = any> extends AbstractControl<any> {
-      controls: Record<string, AbstractControl>;
-      constructor(controls: any, validatorOrOpts?: any, asyncValidator?: any);
-      registerControl(name: string, control: AbstractControl): AbstractControl;
-      addControl(name: string, control: AbstractControl, options?: { emitEvent?: boolean }): void;
-      removeControl(name: string, options?: { emitEvent?: boolean }): void;
-      setControl(name: string, control: AbstractControl, options?: { emitEvent?: boolean }): void;
-      contains(controlName: string): boolean;
-    }
-    export declare class UntypedFormGroup extends FormGroup<any> {}
-    export declare class FormArray<TControl = any> extends AbstractControl<any> {
-      controls: AbstractControl[];
-      readonly length: number;
-      constructor(controls: any[], validatorOrOpts?: any, asyncValidator?: any);
-      at(index: number): AbstractControl;
-      push(control: AbstractControl, options?: { emitEvent?: boolean }): void;
-      insert(index: number, control: AbstractControl, options?: { emitEvent?: boolean }): void;
-      removeAt(index: number, options?: { emitEvent?: boolean }): void;
-      clear(options?: { emitEvent?: boolean }): void;
-    }
-    export declare class UntypedFormArray extends FormArray<any> {}
-    export declare class FormBuilder {
-      readonly nonNullable: NonNullableFormBuilder;
-      control<T = any>(formState: T | { value: T; disabled: boolean }, validatorOrOpts?: any, asyncValidator?: any): FormControl<any>;
-      group(controls: Record<string, any>, options?: any): FormGroup<any>;
-      record(controls: Record<string, any>, options?: any): FormGroup<any>;
-      array(controls: any[], validatorOrOpts?: any, asyncValidator?: any): FormArray<any>;
-    }
-    export declare class UntypedFormBuilder extends FormBuilder {}
-    export declare class NonNullableFormBuilder extends FormBuilder {}
-    export declare const FormsModule: any;
-    export declare const ReactiveFormsModule: any;
-    export declare const NgModel: any;
   `,
   '@nativescript/angular': `
     import type { Observable } from 'rxjs';
@@ -989,6 +909,10 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
         pluginFiles.add(ANGULAR_RX_FILE);
         return { resolvedModule: { resolvedFileName: ANGULAR_RX_FILE, extension: ts.Extension.Ts } };
       }
+      if (m === '@angular/forms' && !replacements[m]) {
+        pluginFiles.add(ANGULAR_FORMS_FILE);
+        return { resolvedModule: { resolvedFileName: ANGULAR_FORMS_FILE, extension: ts.Extension.Ts } };
+      }
       if (m === '@angular#rx') return { resolvedModule: { resolvedFileName: shimPath('@nativescript/release'), extension: ts.Extension.Dts } };
       if (shims[m]) return { resolvedModule: { resolvedFileName: shimPath(m), extension: ts.Extension.Dts } };
       if (!m.startsWith('.') && !isAbsolute(m) && STUBBED_PLUGINS.has(packageOf(m))) {
@@ -1007,8 +931,8 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
         for (const candidate of own ? [base + '.d.ts', base + '.ts'] : [`${base}.${platform}.ts`, base + '.ts', base + '.tsx', `${base}/index.${platform}.ts`, base + '/index.ts', base.endsWith('.vue') ? base + '.ts' : '']) {
           if (candidate && (files.has(candidate) || existsSync(candidate))) {
             if (candidate.endsWith('.d.ts')) return { resolvedModule: { resolvedFileName: candidate, extension: ts.Extension.Dts } };
-            // A plugin's own modules are compiled with it.
-            if (pluginFiles.has(containing)) pluginFiles.add(candidate);
+            // A plugin's own modules are compiled with it; the forms port is one however it is imported.
+            if (pluginFiles.has(containing) || candidate === ANGULAR_FORMS_FILE) pluginFiles.add(candidate);
             return { resolvedModule: { resolvedFileName: candidate, extension: candidate.endsWith('.tsx') ? ts.Extension.Tsx : ts.Extension.Ts } };
           }
         }

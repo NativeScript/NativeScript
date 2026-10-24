@@ -216,6 +216,15 @@ export function reachability(program: ts.Program, resolved: (containing: string,
     }
   };
 
+  const reachClassTypes = (n: ts.Node) => {
+    if (ts.isTypeReferenceNode(n)) {
+      const name = ts.isQualifiedName(n.typeName) ? n.typeName.right : n.typeName;
+      const sym = resolveSym(name);
+      if (sym && sym.flags & ts.SymbolFlags.Class) reachDecl(sym, name);
+    }
+    ts.forEachChild(n, reachClassTypes);
+  };
+
   const walk = (n: ts.Node) => {
     if (ts.isIfStatement(n)) {
       const c = constant(n.expression);
@@ -231,7 +240,8 @@ export function reachability(program: ts.Program, resolved: (containing: string,
       const c = constant(n.condition);
       if (c !== undefined) { dead.add(c ? n.whenFalse : n.whenTrue); walk(c ? n.whenTrue : n.whenFalse); return; }
     }
-    if (ts.isTypeNode(n) && !ts.isExpressionWithTypeArguments(n)) return;
+    // A class that reached code names only as a type is still declared: the native languages need it as one.
+    if (ts.isTypeNode(n) && !ts.isExpressionWithTypeArguments(n)) { reachClassTypes(n); return; }
     // Decorators are applied at compile time: the patterns the translator recognizes, not code that runs.
     if (ts.isDecorator(n)) return;
     // A mixin application installs its classes; the copying function itself does not run.

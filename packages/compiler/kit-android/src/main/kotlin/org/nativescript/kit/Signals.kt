@@ -119,6 +119,51 @@ object Reactivity {
         }
         if (eventDepth == 0 && schedule != Schedule.TASK) flush()
     }
+
+    /** A listener of a zoneless Angular template: the update it schedules re-checks the bindings of [view] and of every view above it. */
+    fun event(view: AngularView?, handler: () -> Unit) {
+        view?.markDirty()
+        event(handler)
+    }
+
+    /**
+     * `ChangeDetectorRef.markForCheck()` on a zoneless view: an update re-checks it and the views above it, scheduled as
+     * a write schedules one, or run at once.
+     */
+    internal fun markForCheck(view: AngularView?, now: Boolean = false) {
+        view?.markDirty()
+        if (now) flush() else scheduleFlush()
+    }
+}
+
+/**
+ * An Angular component view as zoneless change detection refreshes it: a listener marks its view and the views above it
+ * dirty, and refreshing a view re-checks every binding (`Check`) of its template and of its embedded views, applying what
+ * is no longer `Object.is` the value last applied. Child components are refreshed only through their own inputs, which
+ * are signals here. A binding that reads no signal has no source holding it, so the view holds its checks until they are
+ * disposed.
+ */
+class AngularView internal constructor(private val parent: AngularView?) {
+    private val checks = mutableListOf<Effect>()
+    /** Rows and branches a signal re-renders dispose their checks without any listener running here. */
+    private var pruneAt = 64
+
+    internal fun add(effect: Effect) {
+        if (checks.size >= pruneAt) {
+            checks.removeAll { it.disposed }
+            pruneAt = maxOf(64, checks.size * 2)
+        }
+        checks.add(effect)
+    }
+
+    internal fun markDirty() {
+        var view: AngularView? = this
+        while (view != null) {
+            view.checks.removeAll { it.disposed }
+            for (check in view.checks) check.invalidate()
+            view = view.parent
+        }
+    }
 }
 
 /** Groups writes so each affected effect runs once, after the last write. */
@@ -193,8 +238,11 @@ private fun flush() {
  * every shallower one.
  */
 object EffectOrder {
-    /** [injector]: Angular's, of the nearest component with `providers` above this scope, current while it runs. */
-    class Scope internal constructor(private val prefix: List<Int>, internal val height: Int? = null, internal val injector: Injector? = Injector.current) {
+    /**
+     * [injector]: Angular's, of the nearest component with `providers` above this scope, current while it runs. [view]:
+     * Angular's component view whose bindings this scope's checks are.
+     */
+    class Scope internal constructor(private val prefix: List<Int>, internal val height: Int? = null, internal val injector: Injector? = Injector.current, val view: AngularView? = null) {
         /** Next key for: the scope's own effects, embedded views, child views. */
         private val counters = intArrayOf(0, 0, 0)
 
@@ -240,10 +288,10 @@ object EffectOrder {
      * Angular's component view: after its parent view's bindings and embedded views. [injector] is the component's own
      * (`providers`); without one, the view's children inject from the injector the component was made in.
      */
-    fun <T> view(injector: Injector? = null, body: () -> T): T = run(Scope(current.next(2), null, injector ?: Injector.current), body)
+    fun <T> view(injector: Injector? = null, body: () -> T): T = run(Scope(current.next(2), null, injector ?: Injector.current, AngularView(current.view)), body)
 
     /** Angular's embedded view (`@if`, `@for` content): after its declaring view's own bindings. */
-    fun <T> embedded(view: Scope, body: () -> T): T = run(Scope(view.next(1), null, view.injector), body)
+    fun <T> embedded(view: Scope, body: () -> T): T = run(Scope(view.next(1), null, view.injector, view.view), body)
 
     /** Solid's control-flow content: one level deeper than the template that holds it. */
     fun <T> deeper(body: () -> T): T = run(Scope(emptyList(), (current.height ?: 0) + 1), body)
@@ -351,6 +399,7 @@ class Effect internal constructor(internal val key: List<Int>, private val deriv
     private var owner: Owner? = null
     private val height = EffectOrder.current.height
     private val injector = Injector.current
+    private val view = EffectOrder.current.view
 
     constructor(body: () -> Unit) : this(EffectOrder.key(), false, body)
 
@@ -408,7 +457,7 @@ class Effect internal constructor(internal val key: List<Int>, private val deriv
         currentEffect = this
         // What an effect throws is reported, as a framework's scheduler reports a failed job: the update goes on.
         try {
-            EffectOrder.run(EffectOrder.Scope(key, height, injector)) { next.run(body) }
+            EffectOrder.run(EffectOrder.Scope(key, height, injector, view)) { next.run(body) }
         } catch (e: Throwable) {
             jsReportUncaught(jsCaught(e))
         } finally {
@@ -879,7 +928,6 @@ class Injector(providers: Any? = null, private val parent: Injector? = null) {
                     ApplicationRef::class.java -> return ApplicationRef.shared
                     Location::class.java -> return Location.shared
                     ViewContainerRef::class.java -> return ViewContainerRef()
-                    FormBuilder::class.java -> return FormBuilder.shared
                 }
                 instantiateClass(key)?.let { return it }
             }
@@ -1617,493 +1665,6 @@ class ResolveEnd(val id: Double, val url: String, val urlAfterRedirects: String 
 
 fun createRouterStateSnapshot(url: String = "/"): JSObject =
     JSObject("url" to url, "root" to ActivatedRouteSnapshot())
-
-// @angular/forms
-
-class Validators {
-    companion object {
-        internal fun runValidator(fn: Any?, control: Any?): Any? {
-            val flat = jsBox(fn) ?: return null
-            return try { jsCall(flat, control) } catch (t: Throwable) { jsReportUncaught(jsCaught(t)); null }
-        }
-
-        fun required(control: Any?): Any? {
-            val v = (jsBox(control) as? AbstractControl)?.value ?: jsGetOptional(control, "value")
-            if (jsIsNullish(v)) return JSObject("required" to true)
-            if (v is String && v.isEmpty()) return JSObject("required" to true)
-            val box = jsBox(v)
-            if (box is JSArray<*> && box.storage.isEmpty()) return JSObject("required" to true)
-            return null
-        }
-
-        fun requiredTrue(control: Any?): Any? {
-            val v = (jsBox(control) as? AbstractControl)?.value ?: jsGetOptional(control, "value")
-            return if ((jsBox(v) as? Boolean) == true) null else JSObject("required" to true)
-        }
-
-        fun minLength(minLength: Double): (Any?) -> Any? = { control ->
-            val v = (jsBox(control) as? AbstractControl)?.value ?: jsGetOptional(control, "value")
-            val len: Int? = when (val box = jsBox(v)) {
-                is String -> box.length
-                is JSArray<*> -> box.storage.size
-                else -> null
-            }
-            if (len == null || len == 0) null
-            else if (len.toDouble() < minLength) JSObject("minlength" to JSObject("requiredLength" to minLength, "actualLength" to len.toDouble()))
-            else null
-        }
-
-        fun maxLength(maxLength: Double): (Any?) -> Any? = { control ->
-            val v = (jsBox(control) as? AbstractControl)?.value ?: jsGetOptional(control, "value")
-            val len: Int? = when (val box = jsBox(v)) {
-                is String -> box.length
-                is JSArray<*> -> box.storage.size
-                else -> null
-            }
-            if (len != null && len.toDouble() > maxLength) JSObject("maxlength" to JSObject("requiredLength" to maxLength, "actualLength" to len.toDouble()))
-            else null
-        }
-
-        fun min(minVal: Double): (Any?) -> Any? = { control ->
-            val v = (jsBox(control) as? AbstractControl)?.value ?: jsGetOptional(control, "value")
-            if (jsIsNullish(v) || v == "") null
-            else {
-                val num = jsToNumber(v)
-                if (!num.isNaN() && num < minVal) JSObject("min" to JSObject("min" to minVal, "actual" to v)) else null
-            }
-        }
-
-        fun max(maxVal: Double): (Any?) -> Any? = { control ->
-            val v = (jsBox(control) as? AbstractControl)?.value ?: jsGetOptional(control, "value")
-            if (jsIsNullish(v) || v == "") null
-            else {
-                val num = jsToNumber(v)
-                if (!num.isNaN() && num > maxVal) JSObject("max" to JSObject("max" to maxVal, "actual" to v)) else null
-            }
-        }
-
-        fun pattern(pattern: Any?): (Any?) -> Any? = { control ->
-            val v = (jsBox(control) as? AbstractControl)?.value ?: jsGetOptional(control, "value")
-            val s = v as? String
-            if (s.isNullOrEmpty()) null
-            else {
-                val flatPat = jsBox(pattern)
-                if (flatPat is JSRegExp) {
-                    if (flatPat.test(s)) null else JSObject("pattern" to JSObject("requiredPattern" to flatPat.source, "actualValue" to s))
-                } else {
-                    val patStr = jsToString(pattern)
-                    val anchored = (if (patStr.startsWith("^")) "" else "^") + patStr + (if (patStr.endsWith("$")) "" else "$")
-                    val rx = JSRegExp(anchored)
-                    if (rx.test(s)) null else JSObject("pattern" to JSObject("requiredPattern" to anchored, "actualValue" to s))
-                }
-            }
-        }
-
-        fun email(control: Any?): Any? {
-            val v = (jsBox(control) as? AbstractControl)?.value ?: jsGetOptional(control, "value")
-            val s = v as? String
-            if (s.isNullOrEmpty()) return null
-            val rx = JSRegExp("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$")
-            return if (rx.test(s)) null else JSObject("email" to true)
-        }
-
-        fun nullValidator(@Suppress("UNUSED_PARAMETER") control: Any?): Any? = null
-
-        fun compose(validators: Any?): ((Any?) -> Any?)? {
-            val arr = jsBox(validators) as? JSArray<*> ?: return null
-            val fns = arr.storage.mapNotNull { jsBox(it) }
-            if (fns.isEmpty()) return null
-            return { control ->
-                val merged = mutableListOf<Pair<String, Any?>>()
-                for (fn in fns) {
-                    val res = runValidator(fn, control)
-                    if (!jsIsNullish(res)) {
-                        for (k in jsKeysOf(res)) merged.add(k to jsGetOptional(res, k))
-                    }
-                }
-                if (merged.isEmpty()) null else JSObject(merged)
-            }
-        }
-    }
-}
-
-open class AbstractControl(
-    var value: Any? = null,
-    validatorOrOpts: Any? = null,
-) {
-    var errors: JSObject? = null
-    var pristine: Boolean = true
-    var touched: Boolean = false
-    var status: String = "VALID"
-        protected set
-    val valueChanges = Emitter<Any?>()
-    val statusChanges = Emitter<String>()
-    internal var validators: MutableList<Any> = extractValidators(validatorOrOpts).toMutableList()
-
-    val dirty: Boolean get() = !pristine
-    val untouched: Boolean get() = !touched
-    val valid: Boolean get() = status == "VALID"
-    val invalid: Boolean get() = status == "INVALID"
-    val disabled: Boolean get() = status == "DISABLED"
-    val enabled: Boolean get() = status != "DISABLED"
-
-    open fun setValue(nextVal: Any?, options: Any? = null) {
-        value = nextVal
-        updateValueAndValidity(options)
-    }
-
-    open fun patchValue(nextVal: Any?, options: Any? = null) {
-        setValue(nextVal, options)
-    }
-
-    open fun reset(nextVal: Any? = null, options: Any? = null) {
-        pristine = true
-        touched = false
-        setValue(nextVal, options)
-    }
-
-    fun markAsTouched(@Suppress("UNUSED_PARAMETER") opts: Any? = null) { touched = true }
-    fun markAllAsTouched() { markAsTouched() }
-    fun markAsUntouched(@Suppress("UNUSED_PARAMETER") opts: Any? = null) { touched = false }
-    fun markAsDirty(@Suppress("UNUSED_PARAMETER") opts: Any? = null) { pristine = false }
-    fun markAsPristine(@Suppress("UNUSED_PARAMETER") opts: Any? = null) { pristine = true }
-
-    fun disable(opts: Any? = null) {
-        status = "DISABLED"
-        errors = null
-        if (jsGetOptional(opts, "emitEvent") as? Boolean != false) {
-            statusChanges.emit(status)
-        }
-    }
-
-    fun enable(opts: Any? = null) {
-        status = "VALID"
-        updateValueAndValidity(opts)
-    }
-
-    fun setValidators(newValidator: Any?) {
-        validators = extractValidators(newValidator).toMutableList()
-    }
-
-    fun addValidators(newValidators: Any?) {
-        validators.addAll(extractValidators(newValidators))
-    }
-
-    fun clearValidators() {
-        validators.clear()
-    }
-
-    fun setErrors(errs: Any?, opts: Any? = null) {
-        val flat = jsBox(errs)
-        if (flat is JSObject && flat.keys.isNotEmpty()) {
-            errors = flat
-            status = "INVALID"
-        } else if (flat != null && jsKeysOf(flat).isNotEmpty()) {
-            val pairs = jsKeysOf(flat).map { it to jsGetOptional(flat, it) }
-            errors = JSObject(pairs)
-            status = "INVALID"
-        } else {
-            errors = null
-            if (status != "DISABLED") status = "VALID"
-        }
-        if (jsGetOptional(opts, "emitEvent") as? Boolean != false) {
-            statusChanges.emit(status)
-        }
-    }
-
-    fun hasError(errorCode: String, path: Any? = null): Boolean = getError(errorCode, path) != null
-
-    fun getError(errorCode: String, path: Any? = null): Any? {
-        val target = if (!jsIsNullish(path)) get(path) else this
-        val errs = target?.errors ?: return null
-        return if (errs.has(errorCode)) errs[errorCode] else null
-    }
-
-    open fun get(@Suppress("UNUSED_PARAMETER") path: Any?): AbstractControl? = null
-
-    open fun getRawValue(): Any? = value
-
-    open fun updateValueAndValidity(opts: Any? = null) {
-        if (status == "DISABLED") return
-        val merged = mutableListOf<Pair<String, Any?>>()
-        for (fn in validators) {
-            val res = Validators.runValidator(fn, this)
-            if (!jsIsNullish(res)) {
-                for (k in jsKeysOf(res)) merged.add(k to jsGetOptional(res, k))
-            }
-        }
-        if (merged.isEmpty()) {
-            errors = null
-            status = "VALID"
-        } else {
-            errors = JSObject(merged)
-            status = "INVALID"
-        }
-        if (jsGetOptional(opts, "emitEvent") as? Boolean != false) {
-            valueChanges.emit(value)
-            statusChanges.emit(status)
-        }
-    }
-
-    companion object {
-        internal fun extractValidators(validatorOrOpts: Any?): List<Any> {
-            val flat = jsBox(validatorOrOpts) ?: return emptyList()
-            if (flat is JSArray<*>) return flat.storage.mapNotNull { jsBox(it) }
-            if (flat is JSDynamic && "validators" in flat.jsKeys) {
-                return extractValidators(flat.jsGet("validators"))
-            }
-            return listOf(flat)
-        }
-    }
-}
-
-class FormControl(formState: Any? = null, validatorOrOpts: Any? = null) : AbstractControl(null, validatorOrOpts) {
-    val defaultValue: Any?
-
-    init {
-        var initVal = formState
-        var initDisabled = false
-        val flat = jsBox(formState)
-        if (flat is JSDynamic && "value" in flat.jsKeys) {
-            initVal = flat.jsGet("value")
-            initDisabled = jsTruthy(flat.jsGet("disabled"))
-        }
-        defaultValue = initVal
-        value = initVal
-        if (initDisabled) {
-            disable(JSObject("emitEvent" to false))
-        } else {
-            updateValueAndValidity(JSObject("emitEvent" to false))
-        }
-    }
-
-    override fun reset(nextVal: Any?, options: Any?) {
-        var resolved = nextVal ?: defaultValue
-        val flat = jsBox(nextVal)
-        if (flat is JSDynamic && "value" in flat.jsKeys) {
-            resolved = flat.jsGet("value")
-            if (jsTruthy(flat.jsGet("disabled"))) {
-                disable(JSObject("emitEvent" to false))
-            } else {
-                enable(JSObject("emitEvent" to false))
-            }
-        }
-        super.reset(resolved, options)
-    }
-}
-
-class FormGroup(controlsInit: Any? = null, validatorOrOpts: Any? = null) : AbstractControl(JSObject(), validatorOrOpts) {
-    var controls: JSObject
-
-    init {
-        val pairs = mutableListOf<Pair<String, Any?>>()
-        val flat = jsBox(controlsInit)
-        if (flat != null) {
-            for (k in jsKeysOf(flat)) {
-                pairs.add(k to jsGetOptional(flat, k))
-            }
-        }
-        controls = JSObject(pairs)
-        updateValueAndValidity(JSObject("emitEvent" to false))
-    }
-
-    override fun get(path: Any?): AbstractControl? {
-        val flat = jsBox(path)
-        if (flat is JSArray<*>) {
-            var cur: AbstractControl? = this
-            for (part in flat.storage) cur = cur?.get(part)
-            return cur
-        }
-        val key = jsToString(path)
-        if (key.contains(".")) {
-            var cur: AbstractControl? = this
-            for (part in key.split(".")) cur = cur?.get(part)
-            return cur
-        }
-        return jsBox(controls[key]) as? AbstractControl
-    }
-
-    fun registerControl(name: String, control: AbstractControl): AbstractControl {
-        controls[name] = control
-        return control
-    }
-
-    fun addControl(name: String, control: AbstractControl, options: Any? = null) {
-        controls[name] = control
-        updateValueAndValidity(options)
-    }
-
-    fun removeControl(name: String, options: Any? = null) {
-        controls.delete(name)
-        updateValueAndValidity(options)
-    }
-
-    fun setControl(name: String, control: AbstractControl, options: Any? = null) {
-        controls[name] = control
-        updateValueAndValidity(options)
-    }
-
-    fun contains(controlName: String): Boolean {
-        val c = jsBox(controls[controlName]) as? AbstractControl ?: return false
-        return c.enabled
-    }
-
-    override fun setValue(nextVal: Any?, options: Any?) {
-        val flat = jsBox(nextVal)
-        if (flat != null) {
-            for (k in jsKeysOf(controls)) {
-                val ctrl = jsBox(controls[k]) as? AbstractControl
-                ctrl?.setValue(jsGetOptional(flat, k), JSObject("emitEvent" to false))
-            }
-        }
-        updateValueAndValidity(options)
-    }
-
-    override fun patchValue(nextVal: Any?, options: Any?) {
-        val flat = jsBox(nextVal)
-        if (flat != null) {
-            for (k in jsKeysOf(flat)) {
-                val ctrl = jsBox(controls[k]) as? AbstractControl
-                ctrl?.patchValue(jsGetOptional(flat, k), JSObject("emitEvent" to false))
-            }
-        }
-        updateValueAndValidity(options)
-    }
-
-    override fun reset(nextVal: Any?, options: Any?) {
-        val flat = jsBox(nextVal)
-        for (k in jsKeysOf(controls)) {
-            val ctrl = jsBox(controls[k]) as? AbstractControl
-            ctrl?.reset(if (flat != null) jsGetOptional(flat, k) else null, JSObject("emitEvent" to false))
-        }
-        pristine = true
-        touched = false
-        updateValueAndValidity(options)
-    }
-
-    override fun getRawValue(): Any? {
-        val pairs = mutableListOf<Pair<String, Any?>>()
-        for (k in jsKeysOf(controls)) {
-            val ctrl = jsBox(controls[k]) as? AbstractControl
-            if (ctrl != null) pairs.add(k to ctrl.getRawValue())
-        }
-        return JSObject(pairs)
-    }
-
-    override fun updateValueAndValidity(opts: Any?) {
-        val valPairs = mutableListOf<Pair<String, Any?>>()
-        var childInvalid = false
-        for (k in jsKeysOf(controls)) {
-            val ctrl = jsBox(controls[k]) as? AbstractControl
-            if (ctrl != null && ctrl.enabled) {
-                valPairs.add(k to ctrl.value)
-                if (ctrl.invalid) childInvalid = true
-            }
-        }
-        value = JSObject(valPairs)
-        super.updateValueAndValidity(JSObject("emitEvent" to false))
-        if (childInvalid && status == "VALID") {
-            status = "INVALID"
-        }
-        if (jsGetOptional(opts, "emitEvent") as? Boolean != false) {
-            valueChanges.emit(value)
-            statusChanges.emit(status)
-        }
-    }
-}
-
-class FormArray(controlsInit: Any? = null, validatorOrOpts: Any? = null) : AbstractControl(JSArray<Any?>(), validatorOrOpts) {
-    var controls: JSArray<AbstractControl>
-
-    init {
-        val list = (jsBox(controlsInit) as? JSArray<*>)?.storage?.mapNotNull { jsBox(it) as? AbstractControl } ?: emptyList()
-        controls = JSArray(list.toMutableList())
-        updateValueAndValidity(JSObject("emitEvent" to false))
-    }
-
-    val length: Double get() = controls.storage.size.toDouble()
-
-    fun at(index: Double): AbstractControl {
-        val i = index.toInt()
-        return if (i in controls.storage.indices) controls.storage[i] else FormControl()
-    }
-
-    fun push(control: AbstractControl, options: Any? = null) {
-        controls.storage.add(control)
-        updateValueAndValidity(options)
-    }
-
-    fun insert(index: Double, control: AbstractControl, options: Any? = null) {
-        val i = index.toInt().coerceIn(0, controls.storage.size)
-        controls.storage.add(i, control)
-        updateValueAndValidity(options)
-    }
-
-    fun removeAt(index: Double, options: Any? = null) {
-        val i = index.toInt()
-        if (i in controls.storage.indices) {
-            controls.storage.removeAt(i)
-            updateValueAndValidity(options)
-        }
-    }
-
-    fun clear(options: Any? = null) {
-        controls.storage.clear()
-        updateValueAndValidity(options)
-    }
-
-    override fun getRawValue(): Any? = JSArray(controls.storage.map { it.getRawValue() }.toMutableList())
-
-    override fun updateValueAndValidity(opts: Any?) {
-        value = JSArray(controls.storage.filter { it.enabled }.map { it.value }.toMutableList())
-        super.updateValueAndValidity(opts)
-    }
-}
-
-class FormBuilder {
-    val nonNullable: FormBuilder get() = this
-
-    fun control(formState: Any? = null, validatorOrOpts: Any? = null): FormControl =
-        FormControl(formState, validatorOrOpts)
-
-    fun group(controlsConfig: Any?, options: Any? = null): FormGroup {
-        val built = mutableListOf<Pair<String, Any?>>()
-        val flat = jsBox(controlsConfig)
-        if (flat != null) {
-            for (k in jsKeysOf(flat)) {
-                val raw = jsBox(jsGetOptional(flat, k))
-                when (raw) {
-                    is AbstractControl -> built.add(k to raw)
-                    is JSArray<*> -> {
-                        val state = raw.storage.firstOrNull()
-                        val validator = if (raw.storage.size > 1) raw.storage[1] else null
-                        built.add(k to FormControl(state, validator))
-                    }
-                    else -> built.add(k to FormControl(raw))
-                }
-            }
-        }
-        return FormGroup(JSObject(built), options)
-    }
-
-    fun record(controlsConfig: Any?, options: Any? = null): FormGroup = group(controlsConfig, options)
-
-    fun array(controlsConfig: Any?, validatorOrOpts: Any? = null): FormArray {
-        val list = mutableListOf<AbstractControl>()
-        val arr = jsBox(controlsConfig) as? JSArray<*>
-        if (arr != null) {
-            for (item in arr.storage) {
-                val box = jsBox(item)
-                list.add((box as? AbstractControl) ?: FormControl(box))
-            }
-        }
-        return FormArray(JSArray(list), validatorOrOpts)
-    }
-
-    companion object {
-        val shared = FormBuilder()
-    }
-}
 
 fun bootstrapApplication(@Suppress("UNUSED_PARAMETER") rootComponent: Any?, options: Any? = null): JSPromise<ApplicationRef> {
     val providers = jsGetOptional(options, "providers")

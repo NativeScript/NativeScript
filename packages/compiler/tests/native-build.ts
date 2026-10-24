@@ -23,8 +23,8 @@ export const kitAndroid = join(root, 'kit-android/src/main/kotlin/org/nativescri
 /** What test programs are typed against: core and the ES library, as an app's node_modules hold them (tests/package.json). */
 export const modulesDir = process.env.NS_DIFF_MODULES ?? join(root, 'tests/node_modules');
 
-export const runtimeSources = [...readdirSync(join(kit, 'Runtime')).filter((f) => f.endsWith('.swift')).map((f) => join(kit, 'Runtime', f)), join(kit, 'JS.swift'), join(kit, 'Signals.swift')];
-export const kotlinRuntimeSources = [...readdirSync(join(kitAndroid, 'runtime')).filter((f) => f.endsWith('.kt')).map((f) => join(kitAndroid, 'runtime', f)), join(kitAndroid, 'Signals.kt')];
+export const runtimeSources = [...readdirSync(join(kit, 'Runtime')).filter((f) => f.endsWith('.swift')).map((f) => join(kit, 'Runtime', f)), join(kit, 'JS.swift'), join(kit, 'Signals.swift'), join(kit, 'ChangeDetection.swift')];
+export const kotlinRuntimeSources = [...readdirSync(join(kitAndroid, 'runtime')).filter((f) => f.endsWith('.kt')).map((f) => join(kitAndroid, 'runtime', f)), join(kitAndroid, 'Signals.kt'), join(kitAndroid, 'ChangeDetection.kt')];
 
 export type Optimize = '-Onone' | '-O' | '-Osize';
 

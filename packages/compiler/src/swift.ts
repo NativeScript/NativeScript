@@ -960,9 +960,10 @@ export class Translator implements AsyncTranslator {
       let parts = t.types.filter((u) => !(u.flags & (F.Undefined | F.Null | F.Void)));
       if (!parts.length) return 'Any?';
       const optional = parts.length < t.types.length;
-      // `xs || []`: the empty literal's `never[]` takes the other side's type.
+      // `xs || []`: the empty literal's `never[]` takes the other side's type; beside a primitive (`['a', []]`'s elements) it is an array still.
       const empty = (u: ts.Type) => c.isArrayType(u) && !!(c.getTypeArguments(u as ts.TypeReference)[0]?.flags & F.Never);
-      if (parts.length > 1 && parts.some((u) => !empty(u))) parts = parts.filter((u) => !empty(u));
+      const primitive = (u: ts.Type) => !!(u.flags & (F.StringLike | F.NumberLike | F.BooleanLike | F.BigIntLike));
+      if (parts.length > 1 && parts.some((u) => !empty(u)) && !parts.some(primitive)) parts = parts.filter((u) => !empty(u));
       // A union with a type the build cannot translate (`string | RegExp`) reads as the parts it can.
       const translated = parts.flatMap((u) => { try { return [this.type(u, where)]; } catch { return []; } });
       if (!translated.length) return this.type(parts[0], where);
@@ -988,7 +989,8 @@ export class Translator implements AsyncTranslator {
       // `[]`'s `never[]` holds anything once it is written to.
       return el.flags & F.Never ? 'JSArray<Any?>' : `JSArray<${this.type(el, where)}>`;
     }
-    const sym = t.aliasSymbol ?? t.getSymbol();
+    // An alias of a class's type (`type UntypedFormGroup = FormGroup<any>`) is that class.
+    const sym = t.aliasSymbol && !((t.getSymbol()?.flags ?? 0) & ts.SymbolFlags.Class && t.aliasSymbol.flags & ts.SymbolFlags.TypeAlias && !(t.aliasSymbol.flags & ts.SymbolFlags.Class)) ? t.aliasSymbol : t.getSymbol();
     if (isRegExpProtocol(t)) return 'JSRegExp';
     // `Awaited<T>` of a type parameter (what `await` of a `T` gives): the value a promise of it settles with, else `T` itself.
     if (t.aliasSymbol?.name === 'Awaited' && isLibDeclaration(t.aliasSymbol.declarations?.[0]) && t.aliasTypeArguments?.length === 1) {
@@ -1020,10 +1022,6 @@ export class Translator implements AsyncTranslator {
       case 'OutputEmitterRef': case 'EventEmitter': return `Emitter<${arg(0)}>`;
       case 'RouterExtensions': if (sym?.declarations?.[0]?.getSourceFile().fileName.startsWith('/__shims__/')) return 'Router'; break;
       case 'EnvironmentInjector': if (sym?.declarations?.[0]?.getSourceFile().fileName.startsWith('/__shims__/')) return 'Injector'; break;
-      case 'UntypedFormControl': if (sym?.declarations?.[0]?.getSourceFile().fileName.startsWith('/__shims__/')) return 'FormControl'; break;
-      case 'UntypedFormGroup': if (sym?.declarations?.[0]?.getSourceFile().fileName.startsWith('/__shims__/')) return 'FormGroup'; break;
-      case 'UntypedFormArray': if (sym?.declarations?.[0]?.getSourceFile().fileName.startsWith('/__shims__/')) return 'FormArray'; break;
-      case 'UntypedFormBuilder': case 'NonNullableFormBuilder': if (sym?.declarations?.[0]?.getSourceFile().fileName.startsWith('/__shims__/')) return 'FormBuilder'; break;
       // `Promise.allSettled`'s results are the plain objects it makes.
       case 'PromiseSettledResult': case 'PromiseFulfilledResult': case 'PromiseRejectedResult': return 'JSObject';
       case 'NativeDialogRef': case 'NativeDialogService': case 'DestroyRef': case 'Injector': case 'InjectionToken': case 'ErrorHandler': case 'NgZone': case 'HttpClient': case 'ChangeDetectorRef': case 'PurePipeCache': case 'NodeInjector': case 'ElementRef': case 'SimpleChange':
@@ -1031,7 +1029,6 @@ export class Translator implements AsyncTranslator {
       case 'KitHttpClient': case 'KitActivatedRoute': case 'KitRouter': case 'KitNativeDialogRef': case 'KitNativeDialogService':
       case 'HttpParams': case 'HttpHeaders': case 'HttpResponse': case 'HttpErrorResponse': case 'HttpRequest': case 'HttpContext': case 'HttpContextToken':
       case 'ParamMap': case 'UrlSegment': case 'UrlTree': case 'DefaultUrlSerializer': case 'ActivatedRouteSnapshot':
-      case 'FormControl': case 'FormGroup': case 'FormArray': case 'FormBuilder': case 'Validators': case 'AbstractControl':
       case 'ViewContainerRef': case 'TemplateRef': case 'ComponentRef': case 'EmbeddedViewRef': case 'ApplicationRef': case 'Location':
         if (sym?.declarations?.[0]?.getSourceFile().fileName.startsWith('/__shims__/')) return name;
         break;
@@ -1374,6 +1371,10 @@ export class Translator implements AsyncTranslator {
     if (t.startsWith('JSRecord<') && (ts.isIdentifier(n) || ts.isElementAccessExpression(n) || ts.isPropertyAccessExpression(n)) && !(ts.isIdentifier(n) && n.parent && (ts.isParameter(n.parent) || ts.isVariableDeclaration(n.parent) || ts.isPropertyDeclaration(n.parent) || ts.isPropertySignature(n.parent) || ts.isBindingElement(n.parent)) && n.parent.name === n)) {
       const declared = ts.isElementAccessExpression(n) && /^JSArray<Any\?>[?!]?$/.test(this.typeOf(n.expression)) ? 'Any?' : this.declaredTypeOf(n as ts.Expression);
       if (declared === 'Any?') return 'Any?';
+    }
+    // An untyped value `instanceof Map` or `Set` narrows: Swift's map or set of any values is not one of other types, so it stays untyped.
+    if (/^JS(Map<Any\?, Any\?>|Set<Any\?>)[?!]?$/.test(t) && (ts.isIdentifier(n) || ts.isPropertyAccessExpression(n)) && !(ts.isIdentifier(n) && n.parent && (ts.isParameter(n.parent) || ts.isVariableDeclaration(n.parent) || ts.isPropertyDeclaration(n.parent) || ts.isBindingElement(n.parent)) && n.parent.name === n)) {
+      if (this.declaredTypeOf(n as ts.Expression) === 'Any?') return 'Any?';
     }
     if ((t === 'Bool' || t === 'String' || t === 'Double') && (this.holdsUndefined(n) || this.givenNullSignalValue(n))) return `${t}?`;
     if (this.looseObjectDeclaration(n, t)) return optionalType(t);
@@ -2042,7 +2043,7 @@ export class Translator implements AsyncTranslator {
         if (target) { out.push(this.mixinDecl(st, target)); continue; }
         // Components are translated with their templates; other classes are services and models.
         // A component's class is written with its render function, in its own file.
-        const component = (ts.getDecorators(st) ?? []).some((d) => d.expression.getText().startsWith('Component')) || (!!st.name && this.components.has(st.name.text));
+        const component = this.isComponentClass(st);
         if (!component && st.name) {
           this.staticInits = [];
           try { out.push(this.classDecl(st)); } finally {
@@ -3179,7 +3180,13 @@ ${members.join('\n')}
     const decl = this.resolve(left.name)?.valueDeclaration;
     if (!decl || !(ts.isPropertyDeclaration(decl) || ts.isPropertySignature(decl) || ts.isSetAccessorDeclaration(decl) || ts.isGetAccessorDeclaration(decl))) return false;
     if (!ts.isClassLike(decl.parent) || isStatic(decl) || left.expression.kind === ts.SyntaxKind.SuperKeyword) return false;
+    // A component's class has no members by name: its fields are written typed.
+    if (ts.isClassDeclaration(decl.parent) && this.isComponentClass(decl.parent)) return false;
     return !decl.getSourceFile().isDeclarationFile || isCoreDeclaration(decl);
+  }
+
+  private isComponentClass(cls: ts.ClassDeclaration): boolean {
+    return (ts.getDecorators(cls) ?? []).some((d) => d.expression.getText().startsWith('Component')) || (!!cls.name && this.components.has(cls.name.text));
   }
 
   /** Lenient code: a setter without a getter given undefined runs with it, as the type's zero for a primitive. */
@@ -3770,7 +3777,7 @@ ${members.join('\n')}
   /** A call of a function that may return undefined, read where its declared type is wanted: as JavaScript converts undefined there. */
   /** Checked without strictNullChecks, a library call's `T | undefined` (`map.get(k)`) reads as `T`; Swift still says it may be missing. */
   private libMayBeUndefined(e: ts.CallExpression): boolean {
-    if (!this.lenient || isOptional(this.typeOf(e)) || this.typeOf(e) === 'Any?') return false;
+    if (!(this.lenient || this.lenientApp) || isOptional(this.typeOf(e)) || this.typeOf(e) === 'Any?') return false;
     const sig = this.checker.getResolvedSignature(e)?.getDeclaration();
     const t = sig && !ts.isJSDocSignature(sig) ? sig.type : undefined;
     return !!t && isLibDeclaration(sig as ts.Declaration) && ts.isUnionTypeNode(t) && t.types.some((x) => x.kind === ts.SyntaxKind.UndefinedKeyword || (ts.isLiteralTypeNode(x) && x.literal.kind === ts.SyntaxKind.NullKeyword));
@@ -4465,6 +4472,8 @@ ${members.join('\n')}
     if (!decl || !ts.isClassDeclaration(decl) || decl.getSourceFile().isDeclarationFile) return false;
     const fn = decl.getSourceFile().fileName;
     if (fn.endsWith('/runtime/angular-rx.ts') || fn.endsWith('/runtime/angular.ts')) return true;
+    // @angular/forms' builders: services whose root instance is their static `shared`.
+    if (fn.endsWith('/runtime/angular-forms.ts')) return decl.members.some((m) => (ts.isPropertyDeclaration(m) || ts.isGetAccessorDeclaration(m)) && isStatic(m) && m.name.getText() === 'shared');
     if (this.pluginFiles.has(fn)) return false;
     return (ts.getDecorators(decl) ?? []).some((d) => /^Injectable\b/.test(d.expression.getText()));
   }
@@ -4485,7 +4494,7 @@ ${members.join('\n')}
     if (injectArg && ts.isCallExpression(injectArg) && injectArg.expression.getText() === 'forwardRef' && injectArg.arguments[0] && (ts.isArrowFunction(injectArg.arguments[0]) || ts.isFunctionExpression(injectArg.arguments[0])) && !ts.isBlock(injectArg.arguments[0].body)) {
       injectArg = injectArg.arguments[0].body;
     }
-    const builtins = ['RouterExtensions', 'ActivatedRoute', 'Page', 'DestroyRef', 'ChangeDetectorRef', 'ElementRef', 'NativeDialogRef', 'NativeDialogService', 'Router', 'HttpClient', 'Injector', 'EnvironmentInjector', 'NgZone', 'ErrorHandler', 'FormBuilder', 'UntypedFormBuilder', 'NonNullableFormBuilder', 'Location', 'ViewContainerRef', 'ApplicationRef'];
+    const builtins = ['RouterExtensions', 'ActivatedRoute', 'Page', 'DestroyRef', 'ChangeDetectorRef', 'ElementRef', 'NativeDialogRef', 'NativeDialogService', 'Router', 'HttpClient', 'Injector', 'EnvironmentInjector', 'NgZone', 'ErrorHandler', 'Location', 'ViewContainerRef', 'ApplicationRef'];
     if (injectArg) {
       const target = ts.isExpressionWithTypeArguments(injectArg) ? injectArg.expression : injectArg;
       const token = this.tokenName(target);
@@ -4665,6 +4674,8 @@ ${members.join('\n')}
         continue;
       }
       if (ts.isMethodDeclaration(m)) {
+        // An overload's signature: Swift's one method is the implementation's.
+        if (!m.body) continue;
         this.templateParams = /^\$[be]\d+$/.test(m.name.getText());
         try { lines.push('    ' + this.func(m, ident((m.name as ts.Identifier).text))); } finally { this.templateParams = false; }
         continue;
@@ -6520,7 +6531,9 @@ ${members.join('\n')}
         while (ts.isParenthesizedExpression(read)) read = read.expression;
         const held = (ts.isElementAccessExpression(read) || ts.isPropertyAccessExpression(read)) && this.typeOf(read.expression).replace(/[?!]$/, '') === 'JSRecord<Any?>' ? 'Any?' : optionalType(t);
         if (sym) this.undefinedVars.set(sym, held);
-        return `${i}${(lowered ? !constant : this.needsVar(d.name, held)) ? 'var' : 'let'} ${name}: ${held} = ${this.tryPrefix(d.initializer)}${maybe}`;
+        // An untyped value declared a type (`const s: string = untyped[0]`): converted, undefined staying undefined.
+        const value = this.typeOf(d.initializer) === 'Any?' && held !== 'Any?' ? this.fromAny(maybe, held) : maybe;
+        return `${i}${(lowered ? !constant : this.needsVar(d.name, held)) ? 'var' : 'let'} ${name}: ${held} = ${this.tryPrefix(d.initializer)}${value}`;
       }
       // A native struct is a value in Swift: a constant one's fields can still be assigned in JavaScript.
       const binding = lowered ? (constant && !this.native.isStructType(t) ? 'let' : 'var') : this.needsVar(d.name, t) ? 'var' : 'let';
@@ -6841,14 +6854,17 @@ ${members.join('\n')}
   private switchStatement(s: ts.SwitchStatement): string {
     const i = this.indent;
     const subject = this.fresh('__switch');
-    const subjectType = this.typeOf(s.expression);
+    // A string, number or boolean that may be undefined (`s[i]` past its end) is matched as the optional it is, so `case undefined` can match.
+    const raw = ['String', 'Double', 'Bool'].includes(this.typeOf(s.expression)) ? this.maybeUndefined(s.expression) : null;
+    const subjectType = raw ? optionalType(this.typeOf(s.expression)) : this.typeOf(s.expression);
+    const subjectCode = `${this.tryPrefix(s.expression)}${raw ?? this.expr(s.expression)}`;
     const clauses = s.caseBlock.clauses;
     const fallback = clauses.findIndex(ts.isDefaultClause);
-    if (fallback >= 0 && fallback < clauses.length - 1) return this.switchBlock(s, subject, subjectType);
+    if (fallback >= 0 && fallback < clauses.length - 1) return this.switchBlock(s, subject, subjectType, subjectCode);
     const literal = (l: ts.Expression) => ts.isLiteralExpression(l) || (ts.isPrefixUnaryExpression(l) && ts.isNumericLiteral(l.operand));
     // Cases of literals match by pattern, which names no subject: Swift's switch evaluates its own once.
     const direct = subjectType !== 'Any?' && clauses.every((c) => !ts.isCaseClause(c) || literal(c.expression));
-    const lines = direct ? [`${i}switch ${this.tryPrefix(s.expression)}${this.expr(s.expression)} {`] : [`${i}let ${subject}: ${subjectType} = ${this.tryPrefix(s.expression)}${this.expr(s.expression)}`, `${i}switch ${subject} {`];
+    const lines = direct ? [`${i}switch ${subjectCode} {`] : [`${i}let ${subject}: ${subjectType} = ${subjectCode}`, `${i}switch ${subject} {`];
     let labels: ts.Expression[] = [];
     this.plainBreak++;
     this.breakTargets.push(null);
@@ -6892,12 +6908,12 @@ ${members.join('\n')}
    * say: the clause execution starts at is found first, then each clause runs
    * if it is at or after it (fallthrough), and `break` leaves the labeled block.
    */
-  private switchBlock(s: ts.SwitchStatement, subject: string, subjectType: string): string {
+  private switchBlock(s: ts.SwitchStatement, subject: string, subjectType: string, subjectCode: string): string {
     const i = this.indent;
     const label = this.fresh('__switchBlock');
     const start = this.fresh('__start');
     const clauses = s.caseBlock.clauses;
-    const lines = [`${i}${label}: do {`, `${i}    let ${subject}: ${subjectType} = ${this.tryPrefix(s.expression)}${this.expr(s.expression)}`, `${i}    var ${start} = ${clauses.findIndex(ts.isDefaultClause)}`];
+    const lines = [`${i}${label}: do {`, `${i}    let ${subject}: ${subjectType} = ${subjectCode}`, `${i}    var ${start} = ${clauses.findIndex(ts.isDefaultClause)}`];
     const tests = clauses.flatMap((c, k) => {
       if (!ts.isCaseClause(c)) return [];
       const l = c.expression;
@@ -7389,6 +7405,8 @@ ${members.join('\n')}
     // `new Array<Base>()` where an array of a subclass is wanted: an empty array of it.
     if (ts.isNewExpression(bare) && ts.isIdentifier(bare.expression) && bare.expression.text === 'Array' && !bare.arguments?.length && /^JSArray<.*>[?!]?$/.test(target)) return `${target.replace(/[?!]$/, '')}()`;
     // Lenient code passing null or undefined where a string, number or boolean is declared: the type's zero, as such a slot reads it.
+    // Library code's undefined number is NaN, as its fields without a value hold it and `x === undefined` tests it.
+    if (this.lenient && target === 'Double' && isNullish(bare) && bare.kind !== ts.SyntaxKind.NullKeyword) return '.nan';
     if ((this.lenient || this.lenientApp) && isNullish(bare) && ['String', 'Double', 'Bool'].includes(target)) return this.zero(target)!;
     // Null where a native struct is declared: its zero value, as the iOS runtime marshals null for one.
     if (this.lenient && isNullish(bare) && this.native.isStructType(target)) return `${target}()`;
@@ -9394,6 +9412,7 @@ ${members.join('\n')}
     const p = e.parent;
     if ((ts.isCallExpression(p) && p.expression === e) || ts.isPropertyAccessExpression(p) || ts.isElementAccessExpression(p) || ts.isTypeOfExpression(p) || ts.isDeleteExpression(p)) return null;
     const decl = this.checker.getSymbolAtLocation(e.name)?.valueDeclaration;
+    if (decl && ts.isMethodDeclaration(decl) && isStatic(decl)) return this.staticMethodValue(e, decl);
     if (!decl || !ts.isMethodDeclaration(decl) || isStatic(decl) || decl.typeParameters?.length || decl.asteriskToken || !ts.isClassDeclaration(decl.parent) || decl.getSourceFile().isDeclarationFile) return null;
     if (decl.parameters.some((q) => q.dotDotDotToken)) return null;
     if (e.expression.kind === ts.SyntaxKind.SuperKeyword && this.isInstanceMethod(e.name)) return 'nil';
@@ -9411,6 +9430,17 @@ ${members.join('\n')}
     const body = fn.result !== 'Void' ? `return ${call}` : this.returnTypeOf(decl) === 'Void' ? call : `_ = ${call}`;
     const closure = `{ [weak __r] (${params.join(', ')}) throws -> ${fn.result} in guard let __r else { throw jsReleasedReceiver(${swiftString(name)}) }; ${this.keeping('__i', body, fn.result)} }`;
     return `jsMethodValue(${this.expr(e.expression)}, ${swiftString(name)}) { __r, __i in ${cell}(f: ${closure}) }.f`;
+  }
+
+  /** A program class's static method read as a value (`Validators.required`): one closure for good, as a module's function is. */
+  private staticMethodValue(e: ts.PropertyAccessExpression, decl: ts.MethodDeclaration): string | null {
+    if (decl.typeParameters?.length || decl.asteriskToken || decl.parameters.some((q) => q.dotDotDotToken) || !ts.isClassDeclaration(decl.parent) || decl.getSourceFile().isDeclarationFile || !this.programClass(e.expression)) return null;
+    const fn = functionParts(this.typeOf(e));
+    const cell = fn && fn.rest < 0 ? this.functionCell(escapingFunction(fn)) : null;
+    if (!cell) return null;
+    const ref = `${this.expr(e.expression)}.${this.memberName(e)}`;
+    if (!this.functionDepth) this.isolatedInit = true;
+    return `${cell}.${this.cellStatic(cell, 'declared', 'jsDeclaredFunction(id, Self(f: __h)).f')}(${swiftString(ref.replace(/`/g, ''))}, ${ref})`;
   }
 
   /** A receiver that can be missing though its type says not (`x!`, `items[i]`): JavaScript's TypeError when it is. */
@@ -10122,7 +10152,7 @@ ${members.join('\n')}
         const tokTarget = ts.isExpressionWithTypeArguments(rawArg0) ? rawArg0.expression : rawArg0;
         const token = this.tokenName(tokTarget);
         const tokenDecl = this.resolve(tokTarget)?.declarations?.[0];
-        const builtin = ['RouterExtensions', 'ActivatedRoute', 'Page', 'DestroyRef', 'ChangeDetectorRef', 'ElementRef', 'NativeDialogRef', 'NativeDialogService', 'Router', 'HttpClient', 'Injector', 'EnvironmentInjector', 'NgZone', 'ErrorHandler', 'FormBuilder', 'UntypedFormBuilder', 'NonNullableFormBuilder', 'Location', 'ViewContainerRef', 'ApplicationRef'].includes(token);
+        const builtin = ['RouterExtensions', 'ActivatedRoute', 'Page', 'DestroyRef', 'ChangeDetectorRef', 'ElementRef', 'NativeDialogRef', 'NativeDialogService', 'Router', 'HttpClient', 'Injector', 'EnvironmentInjector', 'NgZone', 'ErrorHandler', 'Location', 'ViewContainerRef', 'ApplicationRef'].includes(token);
         const appService = this.isInjectableClass(tokenDecl);
         if ((builtin || appService) && e.arguments.length === 1 && this.throwsInfo.expr(e)) return injected(token);
         const raw = `${this.expr(target)}.get(${this.coerce(rawArg0, 'Any?')}${e.arguments[1] ? `, ${this.coerce(e.arguments[1], 'Any?')}` : ''}${e.arguments[2] ? `, ${this.coerce(e.arguments[2], 'Any?')}` : ''})`;
@@ -10598,7 +10628,7 @@ ${members.join('\n')}
       const token = this.tokenName(target);
       if (token === 'NATIVE_DIALOG_DATA') return this.fromAny('NativeDialogRef.current.data', this.typeOf(e));
       const tokenDecl = this.resolve(target)?.declarations?.[0];
-      const builtin = ['RouterExtensions', 'ActivatedRoute', 'Page', 'DestroyRef', 'ChangeDetectorRef', 'ElementRef', 'NativeDialogRef', 'NativeDialogService', 'Router', 'HttpClient', 'Injector', 'EnvironmentInjector', 'NgZone', 'ErrorHandler', 'FormBuilder', 'UntypedFormBuilder', 'NonNullableFormBuilder', 'Location', 'ViewContainerRef', 'ApplicationRef'].includes(token);
+      const builtin = ['RouterExtensions', 'ActivatedRoute', 'Page', 'DestroyRef', 'ChangeDetectorRef', 'ElementRef', 'NativeDialogRef', 'NativeDialogService', 'Router', 'HttpClient', 'Injector', 'EnvironmentInjector', 'NgZone', 'ErrorHandler', 'Location', 'ViewContainerRef', 'ApplicationRef'].includes(token);
       const appService = this.isInjectableClass(tokenDecl);
       if (builtin || appService) return injected(token);
       const raw = `Injector.inject(${this.coerce(rawArg0, 'Any?')}${arg(1) ? `, ${this.coerce(arg(1), 'Any?')}` : ''})`;
@@ -11654,6 +11684,7 @@ ${members.join('\n')}
       if (ts.isParameter(d)) return !d.dotDotDotToken && !/[?!]$/.test(this.paramType(d)) && !this.mayBeNull(d) && (value || !this.lenient);
       if (!ts.isVariableDeclaration(d) || !d.initializer || isNullish(d.initializer) || this.writtenIn(d.getSourceFile(), false).vars.has(sym)) return false;
       const init = ts.skipOuterExpressions(d.initializer, ts.OuterExpressionKinds.Parentheses);
+      if (ts.isCallExpression(init) && this.libMayBeUndefined(init)) return false;
       return ts.isNewExpression(init) || ts.isLiteralExpression(init) || ts.isObjectLiteralExpression(init) || ts.isArrayLiteralExpression(init) || (value && !this.maybeUndefined(d.initializer));
     }
     if (ts.isPropertyAccessExpression(x) && !x.questionDotToken) {
@@ -12256,6 +12287,9 @@ ${members.join('\n')}
     const K2 = ts.SyntaxKind;
     const compared = (x: ts.Expression) => (ts.isBinaryExpression(x) && x.operatorToken.kind >= K2.LessThanToken && x.operatorToken.kind <= K2.ExclamationEqualsEqualsToken ? `(${this.expr(x)})` : this.expr(x));
     if (isStringType(lt)) return `${negate ? '!' : ''}jsStringEquals(${this.expr(a)}, ${this.expr(b)})`;
+    // Lenient code holds an undefined number as NaN: two variables or members holding undefined are equal. `x !== x` still tests for NaN.
+    const held = (x: ts.Expression) => { x = ts.skipOuterExpressions(x, ts.OuterExpressionKinds.Parentheses); return ts.isIdentifier(x) || ts.isPropertyAccessExpression(x) || ts.isElementAccessExpression(x); };
+    if (this.lenient && strict && lt === 'Double' && rt === 'Double' && held(a) && held(b) && a.getText() !== b.getText()) return `${negate ? '!' : ''}jsLenientNumberEquals(${this.expr(a)}, ${this.expr(b)})`;
     return `${compared(a)} ${negate ? '!=' : '=='} ${compared(b)}`;
   }
 
@@ -13177,7 +13211,6 @@ function injected(token: string): string {
   switch (token) {
     case 'RouterExtensions': return 'Router.shared';
     case 'EnvironmentInjector': return 'Injector.shared';
-    case 'UntypedFormBuilder': case 'NonNullableFormBuilder': return 'FormBuilder.shared';
     case 'ActivatedRoute': return 'ActivatedRoute.current';
     case 'Page': return 'Page.injected()';
     case 'DestroyRef': return 'DestroyRef.current()';

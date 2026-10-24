@@ -37,6 +37,7 @@ import { builtModules } from '../../src/ios-dependencies.ts';
 import { STUBBED_PLUGINS } from '../../src/core.ts';
 import { detectFramework, excludedFrameworkKitFiles, getFrameworkKitInfo } from '../../src/framework.ts';
 import { spawnSync } from 'node:child_process';
+import { buildKotlinRuntime, kotlinc, kotlinStdlib } from '../native-build.ts';
 import ts from 'typescript';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -522,6 +523,116 @@ export class GlyphPipe { constructor(@Inject(TOKEN) private config: any, @Option
   check(multiline.source.includes("'b\\nc'"), 'a string literal written across lines in a template stays one string');
 }
 
+// ---- NgClass and NgStyle ----
+{
+  type Node = { kind: string; tag?: string; attrs?: { name: string; value?: string; method?: string }[]; children?: Node[]; directives?: { make: string; inputs: { set: string; method?: string }[]; attributes: { name: string; value: string }[] }[] };
+  const make = (template: string, selectors = new Map<string, string>()) => angularComponent('/app/c.component.ts', `import { Component, signal } from '@angular/core';
+@Component({ selector: 'C', template: \`${template}\` })
+export class C { on = signal(true); w = signal(10); name = 'Ada'; }
+`, selectors, { runtimeModule: '/app/__angular.release.ts' })!;
+  const all = (nodes: Node[]): Node[] => nodes.flatMap((n) => [n, ...all(n.children ?? [])]);
+  const label = (c: AngularComponent) => all(c.template as Node[]).find((n) => n.tag === 'Label')!;
+  const method = (c: AngularComponent, name: string) => c.source.split('\n').find((l) => l.trimStart().startsWith(`${name}(`)) ?? '';
+
+  const classed = make(`<Label class="base x" [class.on]="on()" [ngClass]="{ big: on(), 'a b': true }"></Label>`);
+  const ngClassUse = label(classed).directives?.[0];
+  check(!!ngClassUse && method(classed, ngClassUse.make).includes('new $Ng_NgClass()') && method(classed, ngClassUse.inputs[0].set).includes('.apply($v)')
+    && method(classed, ngClassUse.inputs[0].method!).includes(`["base x", { big: this.on(), 'a b': true }, ["on", (this.on())]]`), "[ngClass] is the runtime's NgClass on the element, given the static class, NgClass's value and the [class.x] bindings");
+  check(!label(classed).attrs!.some((a) => a.name === 'class' || a.name === 'ngClass'), 'beside [ngClass], the static class and [class.x] are NgClass\'s, not bound as the view\'s className');
+  check(!!classed.usesRuntime && classed.source.includes("NgClass as $Ng_NgClass } from './__angular.release'"), "NgClass comes from the build's Angular runtime module");
+  const fixedClass = make(`<Label ngClass="p q"></Label>`);
+  const fixedUse = label(fixedClass).directives?.[0];
+  check(!!fixedUse && method(fixedClass, fixedUse.inputs[0].method!).includes('["", "p q", []]') && !label(fixedClass).attrs!.some((a) => a.name === 'ngClass'), 'a static ngClass attribute names its classes through NgClass');
+  const piped = make(`<Label [ngClass]="name | lowercase"></Label>`);
+  check(/\["", \$c\d+\.pure1\(\(this\.name\), \(\$x0\) => \$p\d+\.transform\(\$x0\)\), \[\]\]/.test(piped.source), "a pipe in [ngClass] is one per view, as in any binding");
+  const onComponent = make(`<Badge class="b" [ngClass]="{ on: on() }"></Badge>`, new Map([['Badge', 'Badge']]));
+  const badge = all(onComponent.template as Node[]).find((n) => n.kind === 'component') as Node & { props?: { name: string; method?: string }[] };
+  check(!!badge.props?.some((p) => p.name === 'class' && p.method && method(onComponent, p.method).includes('$Ng_ngClassNames("b", { on: this.on() }, [])')), "[ngClass] on a component is its class, which falls through to its root view as [class.x] does");
+
+  const styled = make(`<Label style="color: red" [ngStyle]="{ 'width.px': w(), 'background-color': on() ? 'red' : null }"></Label>`);
+  const use = label(styled).directives?.find((d) => d.make && method(styled, d.make).includes('NgStyle'));
+  check(!!use && method(styled, use.make).includes('new $Ng_NgStyle($unsetValue)') && styled.source.includes("import { unsetValue as $unsetValue } from '@nativescript/core';") && method(styled, use.inputs[0].set).includes('.apply($v)')
+    && method(styled, use.inputs[0].method!).includes(`[{ 'width.px': this.w(), 'background-color': this.on() ? 'red' : null }] as any[]`), "[ngStyle] is the runtime's NgStyle on the element, given its value");
+  check(!!use && use.attributes.some((a) => a.name === 'style' && a.value === 'color: red') && !label(styled).attrs!.some((a) => a.name === 'style' || a.name === 'ngStyle'), 'a static style beside [ngStyle] is set by it, before its first styles');
+  const bound = make(`<Label style="color: red" [style.background-color]="on() ? 'red' : null" [style.width.px]="w()" [style.--gap]="w()"></Label>`);
+  const boundUse = label(bound).directives?.find((d) => d.make && method(bound, d.make).includes('NgStyle'));
+  check(!!boundUse && method(bound, boundUse.inputs[0].method!).includes(`[{ "background-color": (this.on() ? 'red' : null), "width.px": (this.w()), "--gap": (this.w()) }] as any[]`)
+    && boundUse.attributes.some((a) => a.name === 'style') && !label(bound).attrs!.some((a) => a.name !== 'style' && /background|width|gap/.test(a.name)), "[style.x] bindings are one NgStyle object on the element (dashed names, units, CSS variables; null removes)");
+  const toggled = make(`<Label class="a x b" [class.x]="on()" [class.y]="on()"></Label>`);
+  const toggledClass = label(toggled).attrs!.find((a) => a.name === 'class');
+  check(!!toggledClass?.method && method(toggled, toggledClass.method).includes('$Ng_ngClassNames("a x b", null, ["x", (this.on()), "y", (this.on())])'), '[class.x] without NgClass decides a static class x it names, through ngClassNames');
+  const swift = render(styled, new Map(), () => false, 'angular').join('\n');
+  const kotlin = renderKotlin(styled, new Map(), { framework: 'angular' }).join('\n');
+  check(/ElementRef\.hosting\(v\d+\) \{ self\._b\d+\(\) \}[\s\S]*kitSet\("style", "color: red"\)[\s\S]*Check\(\{ self\._b\d+\(\) \}\)/.test(swift) && /ElementRef\.hosting\(v\d+\) \{ this\._b\d+\(\) \}[\s\S]*kitSet\("style", "color: red"\)[\s\S]*Check\(\{ this\._b\d+\(\) \}\)/.test(kotlin), "NgStyle is made with the element as its ElementRef, the static style set before its styles (Swift, Kotlin)");
+
+  // Diff cases 740 and 741 translate the runtime's NgClass and NgStyle code (strict and non-strict): their copies must stay the runtime's.
+  const pieces = (file: string) => {
+    const sf = ts.createSourceFile(file, readFileSync(file, 'utf8'), ts.ScriptTarget.Latest, true);
+    const out = new Map<string, string>();
+    for (const st of sf.statements) {
+      if (ts.isFunctionDeclaration(st) && st.name && st.body) out.set(st.name.text, st.body.getText());
+      if (ts.isClassDeclaration(st) && st.name && ['NgClass', 'NgStyle'].includes(st.name.text)) for (const m of st.members) if (ts.isMethodDeclaration(m) && m.body) out.set(`${st.name.text}.${(m.name as ts.Identifier).text}`, m.body.getText());
+    }
+    return out;
+  };
+  const runtimePieces = pieces(join(here, '../../runtime/angular.ts'));
+  for (const c of ['740-ngclass-ngstyle.ts', '741-ngclass-ngstyle-lenient.ts']) {
+    const casePieces = pieces(join(here, '../diff/cases', c));
+    check(['ngClassNames', 'ngStyleEntries', 'viewClasses', 'NgClass.apply', 'NgClass.update', 'NgClass.toggle', 'NgStyle.apply', 'NgStyle.set'].every((k) => !!runtimePieces.get(k) && runtimePieces.get(k) === casePieces.get(k)), `diff case ${c}'s NgClass and NgStyle code is the runtime's`);
+  }
+
+  // The runtime's NgClass and NgStyle, run in Node with a stand-in for the ElementRef they inject.
+  const dir = mkdtempSync(join(tmpdir(), 'ns-release-checks-ngclass-'));
+  try {
+    const unset = 'UNSET';
+    writeFileSync(join(dir, 'ng.ts'), `let host: any = null;\nexport const $host = (v: any) => { host = v; };\nexport class ElementRef { nativeElement: any = host; }\nexport class ChangeDetectorRef { markForCheck(): void {} }\nexport function inject(_: any): any { return new ElementRef(); }\n`);
+    writeFileSync(join(dir, 'angular.ts'), readFileSync(join(here, '../../runtime/angular.ts'), 'utf8').replace("from '@angular/core'", "from './ng.ts'"));
+    const rt = await import(join(dir, 'angular.ts'));
+    const ng = await import(join(dir, 'ng.ts'));
+    const record = (sets: string[]) => new Proxy({ className: '' } as Record<string, unknown>, { set: (t, k, v) => { if (k === 'className') sets.push(String(v)); t[k as string] = v; return true; } });
+    const classSets: string[] = [];
+    const classView = record(classSets);
+    ng.$host(classView);
+    const ngClass = new rt.NgClass();
+    const classes = (base: string, value: unknown, toggles: unknown[]) => { classSets.length = 0; ngClass.apply([base, value, toggles]); return classView.className; };
+    check(classes('card x', { a: true, 'b c': 1, d: 0 }, ['on', true]) === 'card x a b c on', 'NgClass adds the classes its value names beside the static ones and [class.x]');
+    check(classes('card x', { 'b c': 1, e: true }, ['on', true]) === 'card x b c on e' && JSON.stringify(classSets) === '["card x b c on","card x b c on e"]', 'a class NgClass no longer names is removed and a new one added, one className change each: the static classes and [class.x] stay');
+    check(classes('card x', { x: false, 'b c': 1, e: true }, ['on', true]) === 'card b c on e' && classes('card x', { 'b c': 1, e: true }, ['on', true]) === 'card b c on e x', 'NgClass naming a static class false removes it, and no longer naming it brings it back, as NgClass does');
+    check(classes('card x', ['e'], ['on', false]) === 'card e x' && classes('card x', 'e  f ', ['on', undefined]) === 'card e x f' && classes('card x', new Set(['f']), ['on', 'yes']) === 'card x f on', 'NgClass takes a string, an array or a Set; [class.x] changes its class when its value does');
+    check(classes('card x', null, ['on', true]) === 'card x on' && classSets.length === 1, 'NgClass of null removes what it added and nothing else');
+    let thrownClass = '';
+    try { classes('card', [1], []); } catch (e) { thrownClass = String(e); }
+    check(thrownClass.includes('NgClass can only toggle CSS classes expressed as strings, got 1'), "NgClass of an array holding a non-string throws, as Angular's does");
+    const names = rt.ngClassNames as (base: string, value: unknown, toggles: unknown[]) => string;
+    check(names('', 'a  b ', []) === 'a b' && names('', ['a', 'b c'], []) === 'a b c' && names('', new Set(['a', 'b']), []) === 'a b' && names('', { a: true, 'b c': 1, d: 0, e: null }, []) === 'a b c', 'on a component, NgClass takes a string, an array, a Set, or an object of conditions whose keys may name several classes');
+    check(names('base', null, []) === 'base' && names('base', undefined, []) === 'base' && names('base', 3, []) === 'base', 'on a component, NgClass of null, undefined or a number adds nothing to the static classes');
+    const before = names('card x', { a: true, b: true }, ['on', true]), after = names('card x', { b: true }, ['on', true]);
+    check(before === 'card x a b on' && after === 'card x b on', 'on a component, a class NgClass no longer names is removed, and only that one');
+    check(names('card x', { x: false }, []) === 'card' && names('card x', {}, []) === 'card x', 'on a component, NgClass naming a static class false removes it, and no longer naming it brings it back');
+    check(names('a x b', null, ['x', false, 'y', true]) === 'a b y' && names('a x', null, ['x', true]) === 'a x', 'without NgClass, a false [class.x] removes a static class x');
+    check(names('card', { on: true }, ['on', false]) === 'card' && names('card', { on: false }, ['on', true]) === 'card on' && names('card on', null, ['on', undefined]) === 'card on', "on a component, [class.x] decides its class after NgClass, and an undefined one decides nothing");
+
+    const sets: [string, unknown][] = [];
+    const vars = new Map<string, unknown>();
+    let restyled = 0;
+    const style = new Proxy({ unscopedCssVariables: vars, setUnscopedCssVariable: (k: string, v: unknown) => vars.set(k, v) } as Record<string, unknown>, { set: (t, k, v) => { sets.push([String(k), v]); t[k as string] = v; return true; } });
+    ng.$host({ style, _onCssStateChange: () => restyled++ });
+    const ngStyle = new rt.NgStyle(unset);
+    const apply = (value: unknown) => { sets.length = 0; ngStyle.apply([value]); return JSON.stringify(sets); };
+    check(apply({ 'width.px': 10, 'font-size': 12, color: 'red' }) === '[["width","10px"],["font-size",12],["color","red"]]', "NgStyle sets each style by the name its key gives, a unit after the dot appended");
+    check(apply({ 'width.px': 20, 'font-size': 12 }) === `[["color","${unset}"],["width","20px"]]`, 'a style no longer named is removed, a changed one set again, an unchanged one left');
+    check(apply({ 'width.px': null, 'font-size': 12 }) === `[["width","${unset}"]]` && apply(null) === '[]' && apply(undefined) === '[]', "a null style value removes the style; a null or undefined NgStyle leaves the styles as they are");
+    check(apply({ 'width.%': 50, 'font-size': 12 }) === `[["width","${unset}"],["width","50%"]]` && apply(new Map([['width.%', 50], ['color', 'blue']])) === `[["font-size","${unset}"],["color","blue"]]`, 'a style whose unit changes is set with the new unit, and NgStyle takes a Map');
+    apply({ '--accent': 'red' });
+    check(vars.get('--accent') === 'red' && restyled === 1 && apply({}) === '[]' && !vars.has('--accent') && restyled === 2, "a CSS variable is set and removed among the style's unscoped variables, as @nativescript/angular's renderer does");
+    let wrong = '';
+    try { rt.ngStyleEntries('color: red'); } catch (e) { wrong = String(e); }
+    check(wrong.includes('NgStyle takes an object or a Map of styles'), 'NgStyle of a string throws');
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
+
 // ---- Angular fragments through nested components ----
 {
   const outer = angularComponent('/app/outer.component.ts', "import { Component } from '@angular/core';\n@Component({ selector: 'Outer', template: `<Inner></Inner>` })\nexport class Outer {}\n", new Map([['Inner', 'Inner']]))!;
@@ -529,6 +640,19 @@ export class GlyphPipe { constructor(@Inject(TOKEN) private config: any, @Option
   check(isFragment(outer.template, infos) && !isFragment(outer.template, new Map([['Inner', { name: 'Inner', props: [] }]])), 'a template that is one component is a fragment when that component is');
   const swift = render(outer, infos, () => false, 'angular').join('\n');
   check(swift.includes('func render(into region: Region) throws'), 'a component rendering a fragment component renders into its parent region');
+}
+
+// ---- Zoneless Angular: a listener checks its view and the views above it ----
+{
+  const page = angularComponent('/app/status.component.ts', "import { Component } from '@angular/core';\n@Component({ selector: 'Status', template: `<StackLayout><Label [text]=\"status\"></Label><Badge [count]=\"taps\" (picked)=\"pick()\"></Badge><Button text=\"Go\" (tap)=\"go()\"></Button></StackLayout>` })\nexport class Status { status = 'idle'; taps = 0; go() { this.status = 'busy'; this.taps++; } pick() {} }\n", new Map([['Badge', 'Badge']]))!;
+  const infos = new Map([['Badge', { name: 'Badge', props: ['count'], outputs: ['picked'] }], ['Status', { name: 'Status', props: [] }]]);
+  for (const [backend, code] of [['Swift', render(page, infos, () => false, 'angular').join('\n')], ['Kotlin', renderKotlin(page, infos, { framework: 'angular' }).join('\n')]] as const) {
+    const effects = code.match(/^\s*Effect \{.*$/gm) ?? [];
+    check(!effects.length && (code.match(/Check\(\{ (self|this)\._b\d+\(\) \}\)/g) ?? []).length === 2, `a zoneless template's bindings, a view's and a component input's, are checks of its view, re-read when it is checked (${backend})`);
+    const listeners = code.split('\n').filter((l) => /\.kitOn\("tap"\)|\.on \{/.test(l));
+    const marks = backend === 'Swift' ? /\[__dv = EffectOrder\.current\.view\] .* in Reactivity\.event\(dirty: __dv\)/ : /^\s*EffectOrder\.current\.view\.let \{ __dv -> .* -> Reactivity\.event\(__dv\) \{/;
+    check(listeners.length === 2 && listeners.every((l) => marks.test(l)), `a zoneless template's listeners, a view's and a component output's, mark the view they were added in dirty (${backend})`);
+  }
 }
 
 // ---- Component providers: each instance of a component makes its own injector ----
@@ -579,6 +703,15 @@ export class Panel {
         check(/^\s*val _injector: NodeInjector = NodeInjector\.enter\(jsArrayOf<Any\?>\(Counter::class\.java, /.test(lines[0] ?? ''), 'each instance makes its injector first, from its providers (Kotlin)');
       }
     }
+    const field = join(dir, 'field.component.ts');
+    writeFileSync(field, "import { Component } from '@angular/core';\n@Component({ selector: 'Field', template: '<Label [text]=\"name\"></Label>' })\nexport class Field {\n  name = '';\n  take(value: any) { this.name = value; }\n}\n");
+    const fieldIr = angularComponent(field, readFileSync(field, 'utf8'), new Map())!;
+    const fieldProgram = createProgram([field], new Map([[field, fieldIr.source]]), 'ios', modulesDir);
+    const fieldSwift = new SwiftTranslator(fieldProgram.checker, new Map([['Field', { props: fieldIr.props, optional: fieldIr.optional }]]), fieldProgram.files);
+    translateModules(fieldSwift, fieldProgram.program, [field]);
+    const fieldCls = fieldProgram.program.getSourceFile(field)!.statements.filter(ts.isClassDeclaration).find((c) => c.name?.text === 'Field')!;
+    const fieldCode = fieldSwift.componentMembers(fieldCls, fieldIr.props).join('\n');
+    check(/self\.name = \S*\(value\)/.test(fieldCode) && !fieldCode.includes('jsSet(self'), "an untyped value written to a component's field is assigned to it, as a component has no members by name (Swift)");
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
@@ -941,8 +1074,11 @@ export function openSheet(dialogs: NativeDialogService, cmp: any, config?: Nativ
   refuses(`<StackLayout (ngSubmit)="name = ''"></StackLayout>`, '(ngSubmit) (@angular/forms)', '(ngSubmit)');
   refuses(`<Rating [(ngModel)]="name"></Rating>`, '[(ngModel)] (@angular/forms) on <Rating>', '[(ngModel)] on a component', new Map([['Rating', 'Rating']]));
   refuses(`<Label #m="ngModel"></Label>`, `#m="ngModel" on <Label>, a reference to a directive's exportAs`, "a reference to a directive's exportAs");
-  refuses(`<Label [ngClass]="{ on: true }"></Label>`, "[ngClass] (@angular/common's NgClass)", '[ngClass]');
-  refuses(`<Label [ngStyle]="{ color: 'red' }"></Label>`, "[ngStyle] (@angular/common's NgStyle)", '[ngStyle]');
+  refuses(`<Rating [ngStyle]="{ color: 'red' }"></Rating>`, "[ngStyle] (@angular/common's NgStyle) on <Rating>", '[ngStyle] on a component', new Map([['Rating', 'Rating']]));
+  refuses(`<Label ngStyle="color: red"></Label>`, "ngStyle (@angular/common's NgStyle) on <Label>", 'a static ngStyle attribute');
+  refuses(`<ng-container [ngClass]="{ on: true }"></ng-container>`, "[ngClass] (@angular/common's NgClass) on <ng-container>", '[ngClass] on <ng-container>');
+  refuses(`<ng-container [ngStyle]="{ color: 'red' }"></ng-container>`, "[ngStyle] (@angular/common's NgStyle) on <ng-container>", '[ngStyle] on <ng-container>');
+  refuses(`<Label [class]="name" [ngClass]="{ on: true }"></Label>`, '[class] beside [ngClass] on <Label>', '[class] beside [ngClass]');
   refuses(`<Label routerLink="/a"></Label>`, "routerLink (@angular/router's RouterLink; nsRouterLink is supported)", "@angular/router's routerLink");
   refuses(`<StackLayout [ngTemplateOutlet]="null"></StackLayout>`, "[ngTemplateOutlet] (@angular/common's NgTemplateOutlet, which a release build runs on <ng-container>)", '[ngTemplateOutlet] on an element');
   refuses(`<Label [ngIf]="true"></Label>`, "[ngIf] (@angular/common's NgIf without its template (*ngIf))", 'NgIf without its template');
@@ -1113,6 +1249,125 @@ export const restoring = isAngularHmrRestoringRoute();
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
+}
+
+// ---- @angular/forms' directives in templates ----
+{
+  const compile = (template: string, members = 'name = ""; agree = false; form: any; save(f: any) {}', imports = 'NativeScriptFormsModule, ReactiveFormsModule', selectors = new Map<string, string>()) =>
+    angularComponent('/app/form.component.ts', `import { Component, signal } from '@angular/core';\nimport { ReactiveFormsModule, FormsModule } from '@angular/forms';\nimport { NativeScriptFormsModule } from '@nativescript/angular';\n@Component({ selector: 'Form', imports: [${imports}], template: \`${template}\` })\nexport class Form { ${members} }\n`, selectors, {})!;
+  const fails = (template: string, members?: string, imports?: string, selectors?: Map<string, string>) => { try { compile(template, members, imports, selectors); return ''; } catch (e) { return String(e); } };
+  const methodOf = (c: AngularComponent, m: string) => c.source.split('\n').find((l) => l.trimStart().startsWith(`${m}(`)) ?? '';
+  const usesOf = (c: AngularComponent): any[] => {
+    const all: any[] = [];
+    const walk = (nodes: any[]) => { for (const x of nodes) { all.push(...(x.directives ?? [])); walk(x.children ?? []); walk(x.body ?? []); for (const b of x.branches ?? []) walk(b.body); } };
+    walk(c.template);
+    return all;
+  };
+  const makes = (c: AngularComponent) => usesOf(c).map((u) => methodOf(c, u.make).replace(/^.*return \(new \$F_(\w+)\((.*)\)\); }$/, '$1($2)'));
+
+  const td = compile(`<StackLayout ngForm #f="ngForm" (ngSubmit)="save(f)"><TextField [(ngModel)]="name" name="n" required minlength="3" #m="ngModel"></TextField><Label [text]="m.valid ? 'ok' : 'bad'"></Label></StackLayout><Button [isEnabled]="f.valid"></Button>`);
+  const tdMakes = makes(td);
+  check(JSON.stringify(tdMakes) === JSON.stringify([
+    "NgForm([], [], 'always', [false])",
+    'NgControlStatus($Ng_hostView(), $Ng_viewChecker(), $d0, true)',
+    'NsValueAccessor($Ng_hostView(), "text", $unsetValue)',
+    'RequiredValidator(true)',
+    'MinLengthValidator(true)',
+    'NgModel($d0, [$d3, $d4], [], $d2, $Ng_viewChecker(), [true, true, false, false])',
+    'NgControlStatus($Ng_hostView(), $Ng_viewChecker(), $d5, false)',
+  ]), `an ngForm with an ngModel below it: NgForm, the accessor, validator directives, NgModel under the form, and their NgControlStatus, in Angular's order (${tdMakes.join(' · ')})`);
+  check(/\$e\d+\(\$d0: \$F_NgForm, \$event: any\) \{ this\.save\(\$d0\); \}/.test(td.source), "(ngSubmit) is NgForm's output, its template reference naming NgForm in its own handler");
+  check(td.source.includes('this.name = $event;') && td.source.includes('[(this.name), "n", undefined, undefined]'), '[(ngModel)] binds NgModel and writes its ngModelChange back to the field');
+  check(td.source.includes("return ($d5.valid ? 'ok' : 'bad');") && /\$b\d+\(\$d0: \$F_NgForm, \$d1: \$F_NgControlStatus\) \{ return \(\$d0\.valid\); \}/.test(td.source), 'a template reference to NgModel or NgForm names it in the elements after it and below it');
+  check(td.source.includes('$d2.onChange($event.value);') && td.source.includes('$d2.onTouched();') && usesOf(td).some((u) => u.listeners.some((l: any) => l.event === 'textChange')), "a TextField's value accessor takes its textChange and blur, as @nativescript/angular's does");
+  const sig = compile(`<Switch [(ngModel)]="on"></Switch><Slider [(ngModel)]="level"></Slider>`, 'on = signal(false); level = 3;');
+  check(sig.source.includes('this.on.set($event);') && sig.source.includes('this.level = $event;') && sig.source.includes('"checked"') && sig.source.includes('"value"'), '[(ngModel)] on a signal sets it, on a field assigns it, and Switch and Slider take their accessors');
+
+  const rx = compile(`<StackLayout [formGroup]="form" (ngSubmit)="save(form)"><TextField formControlName="name" class="in" [class.big]="agree"></TextField><StackLayout formGroupName="address"><SegmentedBar formControlName="plan"></SegmentedBar></StackLayout></StackLayout><DatePicker [formControl]="form"></DatePicker>`);
+  const rxMakes = makes(rx);
+  check(rxMakes.includes('FormGroupDirective([], [], \'always\', "formGroup", [true])') && rxMakes.includes('FormControlName($d0, [], [], $d2, [true, false])')
+    && rxMakes.some((m) => /^FormGroupName\(\$d0, \[\], \[\], false, \[true\]\)$/.test(m)) && rxMakes.some((m) => /^FormControlName\(\$d\d+, \[\], \[\], \$d\d+, \[true, false\]\)$/.test(m) && !m.startsWith('FormControlName($d0,'))
+    && rxMakes.some((m) => /^FormControlDirective\(\[\], \[\], \$d\d+, 'always', \[true, false\]\)$/.test(m)), `formGroup with formControlName and formGroupName below it, and a standalone formControl, each under its parent (${rxMakes.join(' · ')})`);
+  check(usesOf(rx).some((u) => methodOf(rx, u.make).includes('new $Ng_NgClass()')) && !rx.template.some((x: any) => (x.children ?? []).some((c: any) => c.attrs?.some((a: any) => a.name === 'class'))), "[class.x] beside the ng-* classes goes through NgClass, which shares the view's classes with them");
+
+  const swift = render(td, new Map(), () => false, 'angular').join('\n');
+  const kotlin = renderKotlin(td, new Map(), { framework: 'angular' }).join('\n');
+  check(/d\d+\.update\.subscribe \{ \[__dv = EffectOrder\.current\.view\] \(event: Any\?\) in Reactivity\.event\(dirty: __dv\)/.test(swift) && /d\d+\.update\.subscribe \{ event: Any\? -> /.test(kotlin), "a directive's output is a listener of the view it is in (Swift, Kotlin)");
+  check(/Button\(\)[\s\S]*self\._b\d+\(d1, d2\)/.test(swift) && /Button\(\)[\s\S]*this\._b\d+\(d1, d2\)/.test(kotlin), 'an element after a form directive reads it (Swift, Kotlin)');
+
+  const refused = (what: string, e: string, text: string) => check(e.includes(text), `${what}: ${e ? e.split(': ').slice(1).join(': ').slice(0, 160) : 'it compiled'}`);
+  refused('ngDefaultControl stops the build', fails(`<Label ngModel ngDefaultControl></Label>`), "ngDefaultControl (@angular/forms' DefaultValueAccessor");
+  refused('a forms control on a component stops the build', fails(`<Rating [(ngModel)]="name"></Rating>`, undefined, undefined, new Map([['Rating', 'Rating']])), "a component, is not supported in a release build yet: it needs the component's own ControlValueAccessor");
+  refused('ngModel on a view no accessor takes stops the build (NG01203)', fails(`<Label [(ngModel)]="name"></Label>`), 'NG01203: No value accessor for form control');
+  refused('ngModel without NativeScriptFormsModule stops the build (NG01203)', fails(`<TextField [(ngModel)]="name"></TextField>`, undefined, 'FormsModule'), "TextValueAccessor: import NativeScriptFormsModule");
+  refused('formControlName without a form above it stops the build', fails(`<TextField formControlName="name"></TextField>`), 'NG01050: formControlName must be used with a parent formGroup');
+  refused('formControlName in an ngModelGroup stops the build', fails(`<StackLayout ngForm><StackLayout ngModelGroup="a"><TextField formControlName="name"></TextField></StackLayout></StackLayout>`), 'NG01051');
+  refused('formGroupName without a form above it stops the build', fails(`<StackLayout formGroupName="a"></StackLayout>`), 'NG01053');
+  refused('ngModelGroup outside a form stops the build', fails(`<StackLayout ngModelGroup="a"></StackLayout>`), 'NG01353');
+  refused('ngModel in a formGroup stops the build', fails(`<StackLayout [formGroup]="form"><TextField [(ngModel)]="name"></TextField></StackLayout>`), 'NG01350');
+  check(!fails(`<StackLayout [formGroup]="form"><TextField [(ngModel)]="name" [ngModelOptions]="{ standalone: true }"></TextField></StackLayout>`), 'a standalone ngModel in a formGroup compiles');
+  refused('ngModel in a form without a name stops the build', fails(`<StackLayout ngForm><TextField [(ngModel)]="name"></TextField></StackLayout>`), 'NG01352');
+  refused('[class] beside a forms control stops the build', fails(`<TextField [(ngModel)]="name" [class]="'x'"></TextField>`), '[class] beside');
+  refused("a reference to an exportAs the element doesn't have stops the build", fails(`<TextField [(ngModel)]="name" #f="ngForm"></TextField>`), `#f="ngForm" on <TextField>, a reference to a directive's exportAs`);
+}
+
+// ---- @angular/forms: the port against the package ----
+{
+  // Each forms diff case run in Node twice, against @angular/forms and against runtime/angular-forms.ts in its place: the
+  // port's semantics checked apart from the translators. What the package's typing would reject, the cases leave out.
+  const dir = mkdtempSync(join(tmpdir(), 'ns-release-checks-forms-'));
+  try {
+    symlinkSync(modulesDir, join(dir, 'node_modules'), 'dir');
+    const js = (source: string) => ts.transpileModule(source, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext } }).outputText;
+    writeFileSync(join(dir, 'forms-port.mjs'), js(readFileSync(join(here, '../../runtime/angular-forms.ts'), 'utf8')));
+    const run = (file: string) => {
+      const r = spawnSync(process.execPath, [file], { cwd: dir, encoding: 'utf8', timeout: 60_000 });
+      return `${r.status}\n${r.stdout}\n${r.stderr.split('\n')[0]}`;
+    };
+    const casesDir = join(here, '../diff/cases');
+    const formsCases = readdirSync(casesDir).filter((f) => /^78\d-forms-.*\.ts$/.test(f) && !/^\/\/ @forms-port$/m.test(readFileSync(join(casesDir, f), 'utf8')));
+    check(formsCases.length >= 7, 'the forms diff cases are found');
+    for (const c of formsCases) {
+      const source = js(readFileSync(join(casesDir, c), 'utf8'));
+      writeFileSync(join(dir, 'package.mjs'), source);
+      writeFileSync(join(dir, 'port.mjs'), source.replace(/from ['"]@angular\/forms['"]/g, "from './forms-port.mjs'"));
+      const expected = run('package.mjs');
+      const got = run('port.mjs');
+      check(expected.startsWith('0\n') && got === expected, `${c} prints the same in Node with the port as with @angular/forms`);
+      if (got !== expected) console.log(`    package: ${JSON.stringify(expected.slice(0, 400))}\n    port:    ${JSON.stringify(got.slice(0, 400))}`);
+    }
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
+
+{
+  // kit-android's runtime on the host JVM, for what no diff case reaches: the harness translates no Java class reference.
+  const build = process.env.NS_DIFF_BUILD ?? join(tmpdir(), 'ns-native-diff');
+  const dir = join(build, 'release-checks-java');
+  rmSync(dir, { recursive: true, force: true });
+  mkdirSync(dir, { recursive: true });
+  writeFileSync(join(dir, 'Main.kt'), `import org.nativescript.kit.*
+class Holder { @JvmField var drawable: Any? = null }
+fun main() {
+    val map = java.util.HashMap<String, String>()
+    val view = Holder()
+    if (jsGet(view, "cached") == null) jsSet(view, "cached", jsCallMethod(map, "get", "missing"))
+    println(listOf(jsCallMethod(map, "get", "missing") === JSNull, jsCallMethod(map, "put", "k", "a") === JSNull, jsCallMethod(map, "put", "k", "b"),
+        jsCallMethod(map, "clear") == null, jsGet(view, "drawable") === JSNull, jsGet(view, "cached") === JSNull).joinToString(" "))
+}
+`);
+  let got: string;
+  try {
+    const runtime = buildKotlinRuntime(build);
+    const errors = kotlinc([join(dir, 'Main.kt')], join(dir, 'classes'), [runtime]);
+    got = errors ? errors[0] : spawnSync('java', ['-cp', [join(dir, 'classes'), runtime, kotlinStdlib()].join(':'), 'MainKt'], { encoding: 'utf8' }).stdout.trim();
+  } catch (e) {
+    got = (e as Error).message.split('\n')[0];
+  }
+  const expected = 'true true a true true true';
+  check(got === expected, "a Java method's or field's null reads as script's null on Android, a void method's result as undefined");
+  if (got !== expected) console.log(`    got: ${got.slice(0, 300)}`);
 }
 
 console.log(failed ? `${failed} release checks failed` : 'release checks pass');

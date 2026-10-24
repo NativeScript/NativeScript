@@ -31,6 +31,9 @@ export function weakOf(file: string) {
   return { fields: list('weak-fields'), captures: list('weak-captures') };
 }
 
+/** A `// @forms-port` line: Node runs the case against runtime/angular-forms.ts, not @angular/forms (it drives the directives as a compiled template does). */
+export const formsPortCase = (file: string) => /^\/\/ @forms-port$/m.test(head(file));
+
 /** A `// @exit <n>` line: the status the case ends with when not 0. Node's run of a case declaring none must end with 0 and print something. */
 export const expectedExit = (file: string) => Number(/^\/\/ @exit (\d+)$/m.exec(head(file))?.[1] ?? 0);
 

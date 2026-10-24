@@ -20,7 +20,7 @@ import { basename, dirname, join, relative, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import ts from 'typescript';
-import { expectedExit, kotlinApp, kotlinOnly, kotlinOptions, swiftOnly, swiftOptions } from './case-options.ts';
+import { expectedExit, formsPortCase, kotlinApp, kotlinOnly, kotlinOptions, swiftOnly, swiftOptions } from './case-options.ts';
 import { buildKotlinRuntime, buildSwiftRuntime, kotlinc, kotlinMain, kotlinStdlib, swiftc, swiftMain, translateKotlin as translateKotlinProgram, translateSwift } from '../native-build.ts';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -52,9 +52,13 @@ function toJavaScript(dir: string, out: string) {
   writeFileSync(join(out, 'package.json'), '{ "type": "module" }');
   // A case importing a package (rxjs) loads the one the translator compiles from source.
   symlinkSync(modulesDir, join(out, 'node_modules'), 'dir');
+  // A `// @forms-port` case runs in Node against the forms runtime it drives (its compiled-template API), as it is compiled.
+  const formsPort = ts.transpileModule(readFileSync(join(root, 'runtime/angular-forms.ts'), 'utf8'), { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext } }).outputText;
+  writeFileSync(join(out, '__forms-port.js'), formsPort);
   for (const f of readdirSync(dir, { recursive: true }) as string[]) {
     if (!f.endsWith('.ts')) continue;
-    const text = readFileSync(join(dir, f), 'utf8');
+    const read = readFileSync(join(dir, f), 'utf8');
+    const text = formsPortCase(join(dir, f)) ? read.replace(/from '@angular\/forms'/g, `from '${'../'.repeat(f.split('/').length - 1) || './'}__forms-port.ts'`) : read;
     // A lenient case runs as core is built: class fields assigned, not defined (a declared field leaves the prototype's accessor visible).
     const { outputText } = ts.transpileModule(text, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext, rewriteRelativeImportExtensions: true, ...(text.startsWith('// @lenient') ? { useDefineForClassFields: false } : {}) } });
     mkdirSync(dirname(join(out, f)), { recursive: true });

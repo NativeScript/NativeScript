@@ -63,7 +63,10 @@ export function render(c: ComponentIR, components: Map<string, ComponentInfo>, o
   type Loop = { item: string; index?: string; itemExpr?: string; indexExpr?: string };
   const call = (method: string, loops: Loop[], extra: string[] = []) =>
     `this.${ident(method)}(${[...loops.flatMap((l) => (l.index === undefined ? [l.itemExpr ?? ident(l.item)] : [l.itemExpr ?? ident(l.item), l.indexExpr ?? ident(l.index)])), ...extra].join(', ')})`;
-  const handler = (code: string) => (EVENT_SCOPED.has(framework) ? `Reactivity.event { jsReport { ${code} } }` : `jsReport { ${code} }`);
+  // Zoneless Angular checks a view when one of its listeners runs: each listener holds the view current where it is added.
+  const zoneless = framework === 'angular' && !options.zone;
+  const handler = (code: string) => (!EVENT_SCOPED.has(framework) ? `jsReport { ${code} }` : zoneless ? `Reactivity.event(__dv) { jsReport { ${code} } }` : `Reactivity.event { jsReport { ${code} } }`);
+  const held = (listen: string) => (zoneless ? `EffectOrder.current.view.let { __dv -> ${listen} }` : listen);
   /** A value a binding computes; what it throws is reported and the value is undefined. */
   const caught = (code: string) => `try { ${code} } catch (__e: Throwable) { jsReportUncaught(jsCaught(__e)); null }`;
   // Mounted templates take any value as a condition (`{detail && <Label/>}`), as JSX does.
@@ -88,7 +91,7 @@ export function render(c: ComponentIR, components: Map<string, ComponentInfo>, o
     if ('value' in a) {
       if (a.name === 'class') say(depth, `${v}.className = ${kotlinString(a.value)}`);
       else say(depth, `${v}.kitSet(${kotlinString(a.name)}, ${kotlinString(a.value)})`);
-    } else if (options.zone) {
+    } else if (options.zone || zoneless) {
       binding(depth, `Check({ ${call(a.method, loops)} }) { ${a.name === 'class' ? `${v}.className = it` : `${v}.kitSet(${kotlinString(a.name)}, it)`} }`);
     } else if (a.name === 'class') {
       binding(depth, `Effect { jsReport { ${v}.className = ${options.slots ? `octaneClassName(${call(a.method, loops)})` : call(a.method, loops)} } }`);
@@ -98,7 +101,8 @@ export function render(c: ComponentIR, components: Map<string, ComponentInfo>, o
   };
 
   /** Angular directives on an element's view, as codegen.ts emits them for Swift. */
-  const directed = (depth: number, uses: DirectiveUse[] | undefined, loops: Loop[], v: string) => {
+  const directed = (depth: number, uses: DirectiveUse[] | undefined, outer: Loop[], v: string): Loop[] => {
+    let loops = outer;
     for (const u of uses ?? []) {
       const dv = `d${n++}`;
       say(depth, `val ${dv} = ElementRef.hosting(${v}) { ${call(u.make, loops)} }`);
@@ -113,10 +117,13 @@ export function render(c: ComponentIR, components: Map<string, ComponentInfo>, o
       if (u.changes) binding(depth, `Check({ ${dv}._changed.value }) { jsReport { ${dv}._flushChanges() } }`);
       if (u.init) binding(depth, run(u.init));
       for (const b of u.bindings) binding(depth, `Check({ ${call(b.method, inner)} }) { ${v}.kitSet(${kotlinString(b.prop)}, it) }`);
-      for (const l of u.listeners) listener(depth, `${v}.kitOn(${kotlinString(l.event)}) { event -> ${handler(call(l.method, inner, ['event']))} }`);
+      for (const l of u.listeners) listener(depth, held(`${v}.kitOn(${kotlinString(l.event)}) { event -> ${handler(call(l.method, inner, ['event']))} }`));
+      for (const o of u.outputs ?? []) listener(depth, held(`${dv}.${o.name}.subscribe { event: Any? -> ${handler(call(o.method, inner, ['event']))} }`));
       if (u.afterViewInit && templates.length) templates.at(-1)!.after.push({ depth, text: run(u.afterViewInit) });
       else if (u.afterViewInit) say(depth, run(u.afterViewInit));
+      if (u.exposed) loops = inner;
     }
+    return loops;
   };
 
   /** An Angular view query's field set to what a node made (its view, or the component made there), and cleared when it goes. */
@@ -129,8 +136,11 @@ export function render(c: ComponentIR, components: Map<string, ComponentInfo>, o
   };
 
   /** Emits the nodes into the container `parent`; returns the views made at this level when `collect` is set. */
-  const emit = (nodes: TNode[], depth: number, loops: Loop[], parent: string | null, collect: string[] | null, region: string | null = null) => {
+  const emit = (nodes: TNode[], depth: number, outer: Loop[], parent: string | null, collect: string[] | null, region: string | null = null) => {
+    // A directive an element exposes is in scope for the nodes after the element.
+    let scope = outer;
     for (const node of nodes) {
+      const loops = scope;
       if (node.kind === 'local') {
         const l = `l${n++}`;
         say(depth, `val ${l} = ${call(node.make, loops)}`);
@@ -151,21 +161,22 @@ export function render(c: ComponentIR, components: Map<string, ComponentInfo>, o
           if (c.host && !parent && !region && !loops.length) say(depth, `this.${ident(c.host)}.attach(${v})`);
           if (node.ref) say(depth, `${call(node.ref, loops)}.current = ${v}`);
           queried(depth, node.queries, loops, v, v);
-          directed(depth, node.directives, loops, v);
+          const own = directed(depth, node.directives, loops, v);
+          scope = own;
           const isList = TEMPLATE_HOSTS.has(node.tag);
           const props = () => {
-            for (const a of node.attrs) if (!isList || !LIST_BINDINGS.has(a.name)) attr(depth, v, a, loops);
+            for (const a of node.attrs) if (!isList || !LIST_BINDINGS.has(a.name)) attr(depth, v, a, own);
             for (const e of node.events) {
-              const listen = `${v}.kitOn(${kotlinString(e.name)}) { event -> ${handler(call(e.method, loops, ['event']))} }`;
-              const guarded = e.when ? `if (jsTruthy(${caught(call(e.when, loops))})) ${listen}` : listen;
+              const listen = held(`${v}.kitOn(${kotlinString(e.name)}) { event -> ${handler(call(e.method, own, ['event']))} }`);
+              const guarded = e.when ? `if (jsTruthy(${caught(call(e.when, own))})) ${listen}` : listen;
               listener(depth, e.ifPassed ? `if (this._passed.contains(${kotlinString(e.ifPassed)})) ${guarded}` : guarded);
             }
           };
           if (isList || !postOrder) props();
           attach(depth, v, parent, region, 'created');
           if (node.init && c.init) say(depth, `jsReport { this.${ident(c.init)}() }`);
-          if (isList) list(node, depth, loops, v);
-          else emit(node.children, depth, loops, v, null);
+          if (isList) list(node, depth, own, v);
+          else emit(node.children, depth, own, v, null);
           if (!isList && postOrder) props();
         } else {
           const info = components.get(node.name);
@@ -196,11 +207,11 @@ export function render(c: ComponentIR, components: Map<string, ComponentInfo>, o
             if (!parent) throw new Error(`${c.name}: <${node.name}>, whose template has no single root element, at the root of a template`);
             for (const p of info.props) {
               const a = given.get(p);
-              if (a && 'method' in a) say(depth, options.zone || info.setters?.includes(p) ? `Check({ ${call(a.method, loops)} }) { ${write(p, 'it')} }` : `Effect { jsReport { ${write(p, call(a.method, loops))} } }`);
+              if (a && 'method' in a) say(depth, options.zone || zoneless || info.setters?.includes(p) ? `Check({ ${call(a.method, loops)} }) { ${write(p, 'it')} }` : `Effect { jsReport { ${write(p, call(a.method, loops))} } }`);
             }
             for (const e of node.events) {
               if (!info.outputs?.includes(e.name)) throw new Error(`${c.name}: <${node.name}> takes no ${e.name} event: its template has no single root view`);
-              say(depth, `${c0}.${ident(info.outputFields?.[e.name] ?? e.name)}.on { value -> ${handler(call(e.method, loops, [e.payload ? 'value' : `EventData(${kotlinString(e.name)}, null, value)`]))} }`);
+              say(depth, held(`${c0}.${ident(info.outputFields?.[e.name] ?? e.name)}.on { value -> ${handler(call(e.method, loops, [e.payload ? 'value' : `EventData(${kotlinString(e.name)}, null, value)`]))} }`));
             }
             changed();
             if (node.queries?.some((q) => q.on === 'view')) throw new Error(`${c.name}: a view query reading <${node.name}>'s view, whose template has no single root view`);
@@ -210,7 +221,7 @@ export function render(c: ComponentIR, components: Map<string, ComponentInfo>, o
           }
           for (const p of info.props) {
             const a = given.get(p);
-            if (a && 'method' in a) say(depth, options.zone || info.setters?.includes(p) ? `Check({ ${call(a.method, loops)} }) { ${write(p, 'it')} }` : `Effect { jsReport { ${write(p, call(a.method, loops))} } }`);
+            if (a && 'method' in a) say(depth, options.zone || zoneless || info.setters?.includes(p) ? `Check({ ${call(a.method, loops)} }) { ${write(p, 'it')} }` : `Effect { jsReport { ${write(p, call(a.method, loops))} } }`);
           }
           changed();
           say(depth, `val ${v} = ${c0}.render()`);
@@ -218,8 +229,8 @@ export function render(c: ComponentIR, components: Map<string, ComponentInfo>, o
           // Attributes that are not props fall through to the component's root view, as in Vue.
           for (const a of node.props) if (!info.props.some((p) => (info.propAliases?.[p] ?? p) === a.name)) attr(depth, v, a, loops);
           for (const e of node.events) {
-            if (info.outputs?.includes(e.name)) say(depth, `${c0}.${ident(info.outputFields?.[e.name] ?? e.name)}.on { value -> ${handler(call(e.method, loops, [e.payload ? 'value' : `EventData(${kotlinString(e.name)}, ${v}, value)`]))} }`);
-            else say(depth, `${v}.kitOn(${kotlinString(e.name)}) { event -> ${handler(call(e.method, loops, ['event']))} }`);
+            if (info.outputs?.includes(e.name)) say(depth, held(`${c0}.${ident(info.outputFields?.[e.name] ?? e.name)}.on { value -> ${handler(call(e.method, loops, [e.payload ? 'value' : `EventData(${kotlinString(e.name)}, ${v}, value)`]))} }`));
+            else say(depth, held(`${v}.kitOn(${kotlinString(e.name)}) { event -> ${handler(call(e.method, loops, ['event']))} }`));
           }
           attach(depth, v, parent, region, 'created');
         }

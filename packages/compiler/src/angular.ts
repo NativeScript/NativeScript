@@ -317,6 +317,7 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
     return hooks;
   };
   let usesElementRef = false;
+  let usesUnset = false;
   const queries = classic?.queries ?? [];
   /** The `#refs` of the template's own elements, outside any embedded view: what a static query can resolve. */
   const staticRefs = new Set<string>();
@@ -404,10 +405,82 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
     return { name, make, inputs, listeners, bindings, ...(init ? { init } : {}), ...(destroy ? { destroy } : {}), ...(afterViewInit ? { afterViewInit } : {}), ...(d.hooks.has('ngOnChanges') ? { changes: true } : {}), attributes: d.attributes };
   };
 
+  /** A function or class of the build's Angular runtime module, imported into the component's file under a name of its own. */
+  const fromRuntime = (name: string): string => {
+    usesRuntime = true;
+    const from = options.runtimeModule ?? RUNTIME;
+    const names = imported.get(from) ?? new Map<string, string>();
+    imported.set(from, names);
+    if (!names.has(name)) names.set(name, `$Ng_${name}`);
+    return names.get(name)!;
+  };
+  /**
+   * An element's static `class` and `[class.x]` toggles as one bound `class` from the runtime's ngClassNames. With NgClass (`[ngClass]` or
+   * `ngClass="a b"`), the runtime's NgClass directive, returned, which takes all three; on a component, whose root
+   * view it can't host, one bound `class` from the runtime's ngClassNames.
+   */
+  const classAttr = (n: ng.TmplAstElement, attrs: Attr[], loops: Loop[], ngClass: ng.TmplAstBoundAttribute | ng.TmplAstTextAttribute | undefined, shared = false): DirectiveUse | null => {
+    const toggles = n.inputs.filter((i) => i.type === ng.BindingType.Class);
+    if (!toggles.length && !ngClass) return null;
+    at((ngClass ?? toggles[0]).sourceSpan);
+    const fixed = attrs.findIndex((a) => a.name === 'class');
+    const base = fixed >= 0 ? attrs.splice(fixed, 1)[0].value ?? '' : '';
+    const pairs = toggles.flatMap((t) => [JSON.stringify(t.name), `(${code(t.value, loops)})`]);
+    // Beside the forms runtime's ng-* classes the toggles go through NgClass, which keeps the classes they share.
+    if (!ngClass && !shared) {
+      attrs.push({ name: 'class', method: expr(`${fromRuntime('ngClassNames')}(${JSON.stringify(base)}, null, [${pairs.join(', ')}])`, loops) });
+      return null;
+    }
+    if (n.inputs.some((i) => i.name === 'class' && i.type === ng.BindingType.Property)) throw new Error(`${path}: [class] beside [ngClass] on <${n.name}> is not supported in a release build yet`);
+    const value = ngClass instanceof ng.TmplAstBoundAttribute ? code(ngClass.value, loops) : ngClass ? JSON.stringify(ngClass.value) : 'null';
+    if (selectors.has(n.name)) {
+      attrs.push({ name: 'class', method: expr(`${fromRuntime('ngClassNames')}(${JSON.stringify(base)}, ${value}, [${pairs.join(', ')}])`, loops) });
+      return null;
+    }
+    const alias = fromRuntime('NgClass');
+    const name = `$d${directiveCount++}`;
+    const inner = [...loops, { item: name, param: `${name}: ${alias}` }];
+    return {
+      name,
+      make: expr(`new ${alias}()`, loops),
+      inputs: [{ set: handlerOf(`${name}.apply($v)`, [...inner, { item: '$v', param: '$v: any' }]), method: expr(`[${JSON.stringify(base)}, ${value}, [${pairs.join(', ')}]] as any[]`, loops, true) }],
+      listeners: [],
+      bindings: [],
+      attributes: [],
+    };
+  };
+  /**
+   * `[ngStyle]`, or an element's `[style.x]` bindings as one NgStyle object (each set by the renderer's setStyle, removed
+   * when null), as the runtime's NgStyle directive on the element. A static `style` moves into the first, set before its
+   * first styles, as Angular sets the attribute when it makes the element.
+   */
+  const styleBindings = (n: ng.TmplAstElement) => n.inputs.filter((i) => i.type === ng.BindingType.Style && i.name !== 'style');
+  // Angular's parser namespaces a bound CSS variable (`--%NS%gap`) for view encapsulation, which NativeScript's styles don't have.
+  const styleKey = (i: ng.TmplAstBoundAttribute) => JSON.stringify(i.name.replace(/^--%NS%/, '--') + (i.unit ? `.${i.unit}` : ''));
+  const styleBindingsUse = (bound: ng.TmplAstBoundAttribute[], attrs: Attr[], loops: Loop[]): DirectiveUse =>
+    ngStyleUse(bound[0], `{ ${bound.map((i) => `${styleKey(i)}: (${code(i.value, loops)})`).join(', ')} }`, attrs, loops);
+  const ngStyleUse = (b: ng.TmplAstBoundAttribute, value: string, attrs: Attr[], loops: Loop[]): DirectiveUse => {
+    at(b.sourceSpan);
+    const alias = fromRuntime('NgStyle');
+    usesUnset = true;
+    const name = `$d${directiveCount++}`;
+    const inner = [...loops, { item: name, param: `${name}: ${alias}` }];
+    const fixed = attrs.findIndex((a) => a.name === 'style' && 'value' in a);
+    const attributes = fixed >= 0 ? [attrs.splice(fixed, 1)[0] as { name: string; value: string }] : [];
+    return {
+      name,
+      make: expr(`new ${alias}($unsetValue)`, loops),
+      inputs: [{ set: handlerOf(`${name}.apply($v)`, [...inner, { item: '$v', param: '$v: any' }]), method: expr(`[${value}] as any[]`, loops, true) }],
+      listeners: [],
+      bindings: [],
+      attributes,
+    };
+  };
+
   /** The expressions a node evaluates in the view it is in (its children's are theirs): where its pipes are. */
   const ownExpressions = (n: ng.TmplAstNode): ng.AST[] => {
     if (n instanceof ng.TmplAstElement) {
-      if (!selectors.has(n.name) && stubbedElement(n.name)) return n.inputs.filter((i) => STUB_LAYOUT_ATTRS.has(i.name) || i.type === ng.BindingType.Class || i.type === ng.BindingType.Style).map((i) => i.value);
+      if (!selectors.has(n.name) && stubbedElement(n.name)) return n.inputs.filter((i) => STUB_LAYOUT_ATTRS.has(i.name) || i.type === ng.BindingType.Class || i.type === ng.BindingType.Style || i.name === 'ngClass' || i.name === 'ngStyle').map((i) => i.value);
       return [...n.inputs.map((i) => i.value), ...n.children.flatMap((c) => (c instanceof ng.TmplAstBoundText ? [c.value] : []))];
     }
     // `*ngFor` on an element: the element's own inputs are the template's, evaluated in each view it renders.
@@ -438,6 +511,212 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
       if (o.type === ng.ParsedEventType.Animation) throw new Error(`${path}: the animation event (${o.name}) on <${n.name}> is not supported in a release build yet`);
       if (o.target) throw new Error(`${path}: (${o.target}:${o.name}), an event of the ${o.target}, on <${n.name}> is not supported in a release build yet`);
     }
+  };
+
+  // ---- @angular/forms ----
+  /** A forms directive's class, imported into the component's file from @angular/forms (the build's forms runtime). */
+  const fromForms = (name: string): string => {
+    const names = imported.get('@angular/forms') ?? new Map<string, string>();
+    imported.set('@angular/forms', names);
+    if (!names.has(name)) names.set(name, `$F_${name}`);
+    return names.get(name)!;
+  };
+  const formsMatcher = new ng.SelectorMatcher<FormsDirective>();
+  for (const [d, selector] of FORMS_SELECTORS) formsMatcher.addSelectables(ng.CssSelector.parse(selector), d);
+  /** The forms directives an element selects, in the order Angular runs them, as its selectors match. */
+  const formsMatched = (n: ng.TmplAstElement): FormsDirective[] => {
+    const css = new ng.CssSelector();
+    css.setElement(n.name);
+    for (const a of n.attributes) css.addAttribute(a.name, a.value);
+    for (const b of [...n.inputs.map((i) => i.name), ...n.outputs.map((o) => o.name)]) css.addAttribute(b, '');
+    const found = new Set<FormsDirective>();
+    formsMatcher.match(css, (_s, d) => { found.add(d); });
+    return FORMS_SELECTORS.map(([d]) => d).filter((d) => found.has(d));
+  };
+  /** The form directives around the element being compiled, innermost last: what Angular injects as its ControlContainer. */
+  const formContainers: { kind: FormsDirective; name: string }[] = [];
+  /** A member of the component holding a writable signal (`name = signal('')`): `[(ngModel)]` sets it, as Angular's two-way binding does. */
+  const signalMember = (name: string) => cls.members.some((m) => ts.isPropertyDeclaration(m) && m.name.getText() === name
+    && ((!!m.initializer && ts.isCallExpression(m.initializer) && /^(signal|model(\.required)?|linkedSignal)$/.test(m.initializer.expression.getText()))
+      || (!!m.type && /^(WritableSignal|ModelSignal)\b/.test(m.type.getText()))));
+  /**
+   * The forms directives an element selects, as directive uses after its others: its @nativescript/angular value
+   * accessor, validator directives, NgModel, FormControlDirective or FormControlName, form or group directive, and
+   * NgControlStatus or NgControlStatusGroup. Each is made with what Angular's injector gives it, the form directive
+   * above it found from the template, and each is in scope for what the template compiles after it (`scope`), which
+   * is how the directives below it reach a form directive and a template reference names one. Null when it selects none.
+   */
+  const formsUses = (n: ng.TmplAstElement, loops: Loop[]) => {
+    // A directive whose module the component doesn't import isn't Angular's on this element: its name is left to the
+    // element's other directives, else refused as a binding nothing takes.
+    const templateDriven = inScope.has('FormsModule') || inScope.has('NativeScriptFormsModule');
+    const reactive = inScope.has('ReactiveFormsModule');
+    const found = formsMatched(n).filter((d) => (FORMS_TEMPLATE_DRIVEN.has(d) ? templateDriven : FORMS_VALIDATORS[d] || d === 'DefaultValueAccessor' ? templateDriven || reactive : reactive));
+    if (!found.some((d) => FORMS_CONTROLS.has(d) || FORMS_CONTAINERS.has(d) || d === 'DefaultValueAccessor')) return null;
+    const where = `on <${n.name}>`;
+    const writes = (name: string) => n.inputs.find((i) => i.name === name && (i.type === ng.BindingType.Property || i.type === ng.BindingType.TwoWay)) ?? n.attributes.find((a) => a.name === name);
+    /** The input or attribute that selects a directive. */
+    const trigger = (d: FormsDirective) => d === 'NgModel' ? 'ngModel' : d === 'FormControlDirective' ? 'formControl' : d === 'FormControlName' ? 'formControlName' : d === 'NgForm' ? 'ngForm' : d === 'FormGroupDirective' ? 'formGroup'
+      : d === 'FormArrayDirective' ? 'formArray' : d === 'FormGroupName' ? 'formGroupName' : d === 'FormArrayName' ? 'formArrayName' : d === 'NgModelGroup' ? 'ngModelGroup' : FORMS_VALIDATORS[d] ?? '';
+    const describe = (d: FormsDirective) => {
+      const w = writes(trigger(d));
+      return !w ? d : w instanceof ng.TmplAstTextAttribute ? w.name : w.type === ng.BindingType.TwoWay ? `[(${w.name})]` : `[${w.name}]`;
+    };
+    if (found.includes('DefaultValueAccessor')) throw new Error(`${path}: ngDefaultControl (@angular/forms' DefaultValueAccessor, which writes an HTML input's value) ${where} is not supported in a release build yet`);
+    if (selectors.has(n.name) || hostedBy(n)) throw new Error(`${path}: ${describe(found.find((d) => !FORMS_VALIDATORS[d]) ?? found[0])} (@angular/forms) ${where}, a component, is not supported in a release build yet: it needs the component's own ControlValueAccessor (NG_VALUE_ACCESSOR)`);
+    const controls = found.filter((d) => FORMS_CONTROLS.has(d));
+    const containers = found.filter((d) => FORMS_CONTAINERS.has(d));
+    if (controls.length > 1 || containers.length > 1) throw new Error(`${path}: ${[...controls, ...containers].map(describe).join(' and ')} together ${where} are not supported in a release build yet`);
+    const control = controls[0];
+    const container = containers[0];
+    const parent = formContainers.at(-1);
+    const consumedInputs = new Set<string>(found.map(trigger));
+    if (n.inputs.some((i) => i.name === 'class' && i.type === ng.BindingType.Property)) throw new Error(`${path}: [class] beside ${describe(found[0])} ${where} is not supported in a release build yet: it would replace the ng-* classes`);
+    const consumedOutputs = new Set<ng.TmplAstBoundEvent>();
+    const refs = new Set<string>();
+    const uses: DirectiveUse[] = [];
+    let scope = loops;
+    /** The code of an input's value: its binding's, its attribute's (a string), else undefined. */
+    const value = (name: string) => {
+      const w = writes(name);
+      if (!w) return 'undefined';
+      consumedInputs.add(name);
+      return w instanceof ng.TmplAstTextAttribute ? JSON.stringify(w.value) : `(${code(w.value, loops)})`;
+    };
+    const bound = (...names: string[]) => `[${names.map((x) => String(!!writes(x))).join(', ')}]`;
+    const use = (kind: FormsDirective | 'accessor' | 'status', className: string, args: (self: string) => string, extra: (self: string, inner: Loop[]) => Partial<DirectiveUse> = () => ({})) => {
+      const alias = fromForms(className);
+      const name = `$d${directiveCount++}`;
+      // A template reference to it by its exportAs (`#f="ngForm"`) names it wherever it is in scope, its own bindings too.
+      const named = n.references.filter((r) => kind !== 'accessor' && kind !== 'status' && !!r.value && FORMS_EXPORT_AS[kind] === r.value);
+      for (const r of named) refs.add(r.name);
+      const loop: Loop = { item: name, param: `${name}: ${alias}`, ...(named.length ? { names: Object.fromEntries(named.map((r) => [r.name, name])) } : {}) };
+      const inner = [...scope, loop];
+      const u: DirectiveUse = { name, make: expr(`new ${alias}(${args(name)})`, scope), inputs: [], listeners: [], bindings: [], attributes: [], exposed: true, ...extra(name, inner) };
+      uses.push(u);
+      scope = inner;
+      return name;
+    };
+    const applies = (values: string[], self: string, inner: Loop[], before: Loop[]) => [{ set: handlerOf(`${self}.apply($v)`, [...inner, { item: '$v', param: '$v: any' }]), method: expr(`[${values.join(', ')}] as any[]`, before, true) }];
+    /** The handlers of the template's `(output)` and `[(input)]` bindings, on the directive's emitter `emitter`. */
+    const outputs = (output: string, emitter: string, inner: Loop[]) => n.outputs.filter((o) => o.name === output).map((o) => {
+      at(o.sourceSpan);
+      consumedOutputs.add(o);
+      const target = code(o.handler, loops);
+      const statement = o.type !== ng.ParsedEventType.TwoWay ? target : /^[A-Za-z_$][\w$]*$/.test(target) && signalMember(target) ? `${target}.set($event)` : `${target} = $event`;
+      return { name: emitter, method: handler(statement, inner, true) };
+    });
+    const unset = () => {
+      usesUnset = true;
+      return '$unsetValue';
+    };
+    // The value accessor and the validator directives a control's directive is given.
+    let accessorName: string | null = null;
+    const validatorNames: string[] = [];
+    if (control) {
+      const tag = canonical(n.name);
+      const accessor = FORMS_ACCESSORS[tag];
+      const name = control === 'NgModel' ? 'ngModel' : control === 'FormControlName' ? 'formControlName' : 'formControl';
+      const viaAccessor = accessor && (inScope.has('NativeScriptFormsModule') || inScope.has(accessor.accessor));
+      if (!viaAccessor) {
+        throw new Error(`${path}: ${describe(control)} ${where}: NG01203: No value accessor for form control ${control === 'FormControlName' ? `name: '${writes(name) instanceof ng.TmplAstTextAttribute ? (writes(name) as ng.TmplAstTextAttribute).value : ''}'` : 'unspecified name attribute'}. ${accessor ? `<${n.name}>'s accessor is @nativescript/angular's ${accessor.accessor}: import NativeScriptFormsModule` : `@nativescript/angular's value accessors take ${Object.keys(FORMS_ACCESSORS).join(', ')}; a component's own (NG_VALUE_ACCESSOR) is not supported in a release build yet`}`);
+      }
+      accessorName = use('accessor', 'NsValueAccessor', () => `${fromRuntime('hostView')}(), ${JSON.stringify(accessor.kind)}, ${unset()}`, (self, inner) => ({
+        listeners: [
+          { event: accessor.event, method: handlerOf(`${self}.onChange($event.value)`, [...inner, { item: '$event', param: '$event: any' }]) },
+          ...(accessor.kind === 'text' ? [{ event: 'blur', method: handlerOf(`${self}.onTouched()`, [...inner, { item: '$event', param: '$event: any' }]) }] : []),
+        ],
+        ...(accessor.kind === 'selectedIndex' ? { afterViewInit: handlerOf(`${self}.ngAfterViewInit()`, inner) } : {}),
+      }));
+      for (const d of found) {
+        const input = FORMS_VALIDATORS[d];
+        if (!input) continue;
+        const before = scope;
+        validatorNames.push(use(d, d, () => 'true', (self, inner) => ({ inputs: applies([value(input)], self, inner, before) })));
+      }
+    }
+    const validators = `[${validatorNames.join(', ')}]`;
+    /** The structural rules Angular checks when the directives are made, as build errors (its messages). */
+    const parentKind = parent?.kind;
+    if (control === 'FormControlName' && (!parentKind || !FORMS_REACTIVE_PARENTS.has(parentKind))) {
+      if (parentKind === 'NgModelGroup' || parentKind === 'NgForm') throw new Error(`${path}: formControlName ${where}: NG01051: formControlName cannot be used with an ngModelGroup parent. It is only compatible with parents that also have a "form" prefix: formGroupName, formArrayName, or formGroup.`);
+      throw new Error(`${path}: formControlName ${where}: NG01050: formControlName must be used with a parent formGroup or formArray directive. You'll want to add a formGroup/formArray directive and pass it an existing FormGroup/FormArray instance (you can create one in your class).`);
+    }
+    if ((container === 'FormGroupName' || container === 'FormArrayName') && (!parentKind || !FORMS_REACTIVE_PARENTS.has(parentKind))) {
+      throw new Error(`${path}: ${describe(container)} ${where}: NG0105${container === 'FormGroupName' ? '3' : '4'}: ${container === 'FormGroupName' ? 'formGroupName' : 'formArrayName'} must be used with a parent formGroup directive.  You'll want to add a formGroup directive and pass it an existing FormGroup instance (you can create one in your class).`);
+    }
+    if (container === 'NgModelGroup' && parentKind !== 'NgForm' && parentKind !== 'NgModelGroup') {
+      throw new Error(`${path}: ngModelGroup ${where}: NG01353: ngModelGroup ${parentKind ? 'cannot be used with a parent formGroup directive' : 'must be used inside an ngForm'}.`);
+    }
+    const ngModelOptions = writes('ngModelOptions');
+    const standalone = !!ngModelOptions && ngModelOptions instanceof ng.TmplAstBoundAttribute && /\bstandalone\s*:\s*true\b/.test(code(ngModelOptions.value, loops));
+    if (control === 'NgModel' && parentKind && FORMS_REACTIVE_PARENTS.has(parentKind) && !standalone) {
+      throw new Error(`${path}: ngModel ${where}: NG0135${parentKind === 'FormGroupDirective' || parentKind === 'FormArrayDirective' ? '0' : '1'}: ngModel cannot be used to register form controls with a parent ${parentKind === 'FormGroupDirective' || parentKind === 'FormArrayDirective' ? 'formGroup' : 'formGroupName or formArrayName'} directive. Use formControlName, or indicate that it's standalone in ngModelOptions.`);
+    }
+    if (control === 'NgModel' && parentKind && !FORMS_REACTIVE_PARENTS.has(parentKind) && !writes('name') && !ngModelOptions) {
+      throw new Error(`${path}: ngModel ${where}: NG01352: If ngModel is used within a form tag, either the name attribute must be set or the form control must be defined as 'standalone' in ngModelOptions.`);
+    }
+    const parentRef = control === 'NgModel' && standalone ? 'null' : parent ? parent.name : 'null';
+    let controlName: string | null = null;
+    if (control) {
+      const before = scope;
+      const acc = accessorName!;
+      if (control === 'NgModel') {
+        controlName = use('NgModel', 'NgModel', () => `${parentRef}, ${validators}, [], ${acc}, ${fromRuntime('viewChecker')}(), ${bound('ngModel', 'name', 'ngModelOptions', 'disabled')}`, (self, inner) => ({
+          inputs: applies([value('ngModel'), value('name'), value('ngModelOptions'), value('disabled')], self, inner, before),
+          outputs: outputs('ngModelChange', 'update', inner),
+          destroy: handlerOf(`${self}.ngOnDestroy()`, inner),
+        }));
+      } else if (control === 'FormControlDirective') {
+        consumedInputs.add('disabled');
+        controlName = use(control, 'FormControlDirective', () => `${validators}, [], ${acc}, 'always', ${bound('formControl', 'ngModel')}`, (self, inner) => ({
+          inputs: applies([value('formControl'), value('ngModel')], self, inner, before),
+          outputs: outputs('ngModelChange', 'update', inner),
+          destroy: handlerOf(`${self}.ngOnDestroy()`, inner),
+        }));
+      } else {
+        consumedInputs.add('disabled');
+        controlName = use(control, 'FormControlName', () => `${parent!.name}, ${validators}, [], ${acc}, ${bound('formControlName', 'ngModel')}`, (self, inner) => ({
+          inputs: applies([value('formControlName'), value('ngModel')], self, inner, before),
+          outputs: outputs('ngModelChange', 'update', inner),
+          destroy: handlerOf(`${self}.ngOnDestroy()`, inner),
+        }));
+      }
+    }
+    let containerName: string | null = null;
+    if (container) {
+      const before = scope;
+      if (container === 'NgForm') {
+        containerName = use(container, 'NgForm', () => `[], [], 'always', ${bound('ngFormOptions')}`, (self, inner) => ({
+          inputs: applies([value('ngFormOptions')], self, inner, before),
+          outputs: outputs('ngSubmit', 'ngSubmit', inner),
+          afterViewInit: handlerOf(`${self}.ngAfterViewInit()`, inner),
+        }));
+      } else if (container === 'FormGroupDirective' || container === 'FormArrayDirective') {
+        const input = container === 'FormGroupDirective' ? 'formGroup' : 'formArray';
+        containerName = use(container, container, () => `[], [], 'always', ${JSON.stringify(input)}, ${bound(input)}`, (self, inner) => ({
+          inputs: applies([value(input)], self, inner, before),
+          outputs: outputs('ngSubmit', 'ngSubmit', inner),
+          destroy: handlerOf(`${self}.ngOnDestroy()`, inner),
+        }));
+      } else {
+        const input = container === 'NgModelGroup' ? 'ngModelGroup' : container === 'FormGroupName' ? 'formGroupName' : 'formArrayName';
+        containerName = use(container, container, () => `${parent!.name}, [], [], ${container === 'FormArrayName'}, ${bound(input)}`, (self, inner) => ({
+          inputs: applies([value(input)], self, inner, before),
+          init: handlerOf(`${self}.ngOnInit()`, inner),
+          destroy: handlerOf(`${self}.ngOnDestroy()`, inner),
+        }));
+      }
+    }
+    // NgControlStatus and NgControlStatusGroup: the ng-* classes, checked with the view.
+    const statusOf = controlName ?? containerName;
+    if (statusOf) {
+      use('status', 'NgControlStatus', () => `${fromRuntime('hostView')}(), ${fromRuntime('viewChecker')}(), ${statusOf}, ${!controlName}`, (self, inner) => ({
+        inputs: [{ set: handlerOf(`${self}.check()`, [...inner, { item: '$v', param: '$v: any' }]), method: expr('[] as any[]', inner.slice(0, -1), true) }],
+        destroy: handlerOf(`${self}.destroy()`, inner),
+      }));
+    }
+    return { uses, scope, consumedInputs, consumedOutputs, refs, container: containerName ? { kind: container!, name: containerName } : null, status: !!statusOf };
   };
 
   const nodes = (list: ng.TmplAstNode[], loops: Loop[]): TNode[] => {
@@ -479,22 +758,12 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
         at(n.startSourceSpan);
         const attrs: Attr[] = [];
         for (const a of n.attributes) if (STUB_LAYOUT_ATTRS.has(a.name)) attrs.push({ name: a.name, value: a.value });
-        const toggles = n.inputs.filter((i) => i.type === ng.BindingType.Class);
-        if (toggles.length) {
-          at(toggles[0].sourceSpan);
-          const fixed = attrs.findIndex((a) => a.name === 'class');
-          const base = fixed >= 0 ? attrs.splice(fixed, 1)[0].value ?? '' : '';
-          const parts = [JSON.stringify(base), ...toggles.map((t) => `(${code(t.value, loops)}) ? ${JSON.stringify(t.name)} : ''`)];
-          attrs.push({ name: 'class', method: expr(`[${parts.join(', ')}].filter((c) => !!c).join(' ')`, loops) });
-        }
+        const classed = classAttr(n, attrs, loops, n.inputs.find((i) => i.name === 'ngClass' && i.type === ng.BindingType.Property) ?? n.attributes.find((a) => a.name === 'ngClass'));
+        const styled = n.inputs.find((i) => i.name === 'ngStyle' && i.type === ng.BindingType.Property);
+        const stubDirectives = [...(classed ? [classed] : []), ...(styled ? [ngStyleUse(styled, code(styled.value, loops), attrs, loops)] : [])];
+        if (styleBindings(n).length) stubDirectives.push(styleBindingsUse(styleBindings(n), attrs, loops));
         for (const i of n.inputs) {
-          if (i.type === ng.BindingType.Class) continue;
-          if (i.type === ng.BindingType.Style && i.name !== 'style') {
-            at(i.sourceSpan);
-            const v = code(i.value, loops);
-            attrs.push({ name: i.name, method: expr(i.unit ? `((${v}) == null ? (${v}) : \`\${${v}}${i.unit}\`)` : v, loops, true) });
-            continue;
-          }
+          if (i.type === ng.BindingType.Class || i.type === ng.BindingType.Style) continue;
           if ((i.type === ng.BindingType.Property || i.type === ng.BindingType.Attribute) && STUB_LAYOUT_ATTRS.has(i.name)) {
             at(i.sourceSpan);
             const root = i.value instanceof ng.ASTWithSource ? i.value.ast : i.value;
@@ -507,7 +776,7 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
         const statics = hooks.length ? queries.filter((q) => q.static && q.ref && refs.includes(q.ref) && staticRefs.has(q.ref)) : [];
         for (const q of statics) staticQueries.delete(q);
         const late = statics.length > 0 && staticQueries.size === 0;
-        out.push({ kind: 'element', tag: 'ContentView', attrs, events: [], children: [], ...(hooks.length ? { queries: hooks } : {}), ...(late ? { init: true } : {}) });
+        out.push({ kind: 'element', tag: 'ContentView', attrs, events: [], children: [], ...(hooks.length ? { queries: hooks } : {}), ...(late ? { init: true } : {}), ...(stubDirectives.length ? { directives: stubDirectives } : {}) });
         if (late) lateInit = true;
         continue;
       }
@@ -530,10 +799,17 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
           for (const i of n.inputs) if (hosted.inputs.has(i.name) && i.type === ng.BindingType.TwoWay) throw unsupported(`[(${i.name})]`);
           for (const o of n.outputs) if (hosted.models.has(o.name.replace(/Change$/, ''))) throw unsupported(`(${o.name})`);
         }
-        const link = routerLink(n, loops);
+        // @angular/forms' directives, made after the element's others: what the template compiles after each reads it.
+        const forms = formsUses(n, loops);
+        const scoped = forms?.scope ?? loops;
+        const link = routerLink(n, scoped);
         if (link) events.push(link);
+        const found = matched(n.name, n.attributes.map((a) => [a.name, a.value]), [...n.inputs.map((i) => i.name), ...n.outputs.map((o) => o.name)]);
+        // An app directive or the hosted component taking NgClass's or NgStyle's input name is what that binding sets.
+        const appOwns = (name: string) => found.some((d) => d.inputs.has(name)) || !!hosted?.inputs.has(name);
         for (const a of n.attributes) {
           if (link && ROUTER_LINK_INPUTS.has(a.name)) continue;
+          if (a.name === 'ngClass' && !appOwns('ngClass')) continue;
           // A static attribute is the element's too, as Angular writes every one to its host.
           attrs.push({ name: a.name, value: a.value });
           if (hosted?.inputs.has(a.name)) hostProps.push({ name: a.name, value: a.value });
@@ -542,63 +818,58 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
           if (c instanceof ng.TmplAstText && c.value.trim()) attrs.push({ name: 'text', value: c.value });
           if (c instanceof ng.TmplAstBoundText) {
             at(c.sourceSpan);
-            attrs.push({ name: 'text', method: expr(code(c.value, loops), loops) });
+            attrs.push({ name: 'text', method: expr(code(c.value, scoped), scoped) });
           }
         }
-        // `[class.on]="cond"` toggles a class beside the static ones: one bound `class` naming them all.
-        const toggles = n.inputs.filter((i) => i.type === ng.BindingType.Class);
-        if (toggles.length) {
-          at(toggles[0].sourceSpan);
-          const fixed = attrs.findIndex((a) => a.name === 'class');
-          const base = fixed >= 0 ? attrs.splice(fixed, 1)[0].value ?? '' : '';
-          const parts = [JSON.stringify(base), ...toggles.map((t) => `(${code(t.value, loops)}) ? ${JSON.stringify(t.name)} : ''`)];
-          attrs.push({ name: 'class', method: expr(`[${parts.join(', ')}].filter((c) => !!c).join(' ')`, loops) });
-        }
+        // The static classes, `[class.on]="cond"` toggles and NgClass: one bound `class` naming them all.
+        const ngClass = appOwns('ngClass') ? undefined : n.inputs.find((i) => i.name === 'ngClass' && i.type === ng.BindingType.Property) ?? n.attributes.find((a) => a.name === 'ngClass');
+        const ngClassUse = classAttr(n, attrs, loops, ngClass, !!forms?.status);
+        const ngStyle = appOwns('ngStyle') || selectors.has(n.name) ? undefined : n.inputs.find((i) => i.name === 'ngStyle' && i.type === ng.BindingType.Property);
         // NgSwitch on any element: the cases below it, in its subtree, compare with its value.
         const switched = n.inputs.find((i) => i.name === 'ngSwitch');
-        const found = matched(n.name, n.attributes.map((a) => [a.name, a.value]), [...n.inputs.map((i) => i.name), ...n.outputs.map((o) => o.name)]);
         if (found.length && selectors.has(n.name)) throw new Error(`${path}: the directive ${found[0].className} on the component <${n.name}> is not supported in a release build yet`);
         const consumed = new Set<string>();
         const directives = found.map((d) => {
           if (d.structural) throw new Error(`${path}: the structural directive ${d.className} without its template (*) is not supported in a release build yet`);
           return directiveUse(d, n, loops, consumed);
         });
-        refuseUnbound(n, (name) => found.some((d) => d.inputs.has(name)) || !!hosted?.inputs.has(name) || !!hosted?.outputs.has(name));
+        refuseUnbound(n, (name) => found.some((d) => d.inputs.has(name)) || !!hosted?.inputs.has(name) || !!hosted?.outputs.has(name) || (name === 'ngClass' && !!ngClass) || (name === 'ngStyle' && !!ngStyle)
+          || !!forms?.consumedInputs.has(name) || [...(forms?.consumedOutputs ?? [])].some((o) => o.name === name));
+        if (ngClassUse) directives.push(ngClassUse);
+        if (ngStyle) directives.push(ngStyleUse(ngStyle, code(ngStyle.value, loops), attrs, loops));
+        if (!selectors.has(n.name) && styleBindings(n).length) directives.push(styleBindingsUse(styleBindings(n), attrs, loops));
+        if (forms) directives.push(...forms.uses);
         if (!selectors.has(n.name) && !hosted) {
-          const ref = n.references.find((r) => r.value);
+          const ref = n.references.find((r) => r.value && !forms?.refs.has(r.name));
           if (ref) throw new Error(`${path}: #${ref.name}="${ref.value}" on <${n.name}>, a reference to a directive's exportAs, is not supported in a release build yet`);
         }
         for (const i of n.inputs) {
-          if (i === switched || consumed.has(i.name) || i.type === ng.BindingType.Class || (isList && i.name === 'itemTemplateSelector') || (link && ROUTER_LINK_INPUTS.has(i.name))) continue;
+          if (i === switched || i === ngClass || i === ngStyle || consumed.has(i.name) || forms?.consumedInputs.has(i.name) || i.type === ng.BindingType.Class || (isList && i.name === 'itemTemplateSelector') || (link && ROUTER_LINK_INPUTS.has(i.name))) continue;
           at(i.sourceSpan);
           if (hosted?.inputs.has(i.name) && i.type === ng.BindingType.Property) {
-            hostProps.push({ name: i.name, method: expr(code(i.value, loops), loops) });
+            hostProps.push({ name: i.name, method: expr(code(i.value, scoped), scoped) });
             continue;
           }
-          // `[style.fontSize.px]`: the renderer's setStyle, `view.style[name] = value`, the unit appended to a value that is there.
-          if (i.type === ng.BindingType.Style && i.name !== 'style' && !selectors.has(n.name)) {
-            const v = code(i.value, loops);
-            attrs.push({ name: i.name, method: expr(i.unit ? `((${v}) == null ? (${v}) : \`\${${v}}${i.unit}\`)` : v, loops, true) });
-            continue;
-          }
+          if (i.type === ng.BindingType.Style && i.name !== 'style' && !selectors.has(n.name)) continue;
           // `[attr.name]`: the renderer's setAttribute, which on a NativeScript view sets the property of that name.
           if (i.type === ng.BindingType.Attribute && !selectors.has(n.name)) {
-            attrs.push({ name: i.name, method: expr(code(i.value, loops), loops, true) });
+            attrs.push({ name: i.name, method: expr(code(i.value, scoped), scoped, true) });
             continue;
           }
           if (i.type !== ng.BindingType.Property && i.type !== ng.BindingType.TwoWay) throw new Error(`${path}: the [${ng.BindingType[i.type].toLowerCase()}.${i.name}] binding is not supported in a release build yet`);
           // `[text]="person()?.name"`: the view takes undefined where the chain stops, as the renderer passes it, whatever the type says.
           const root = i.value instanceof ng.ASTWithSource ? i.value.ast : i.value;
           const chained = i.type === ng.BindingType.Property && !selectors.has(n.name) && (root instanceof ng.SafePropertyRead || root instanceof ng.SafeKeyedRead || root instanceof ng.SafeCall);
-          attrs.push({ name: i.name, method: expr(code(i.value, loops), loops, chained) });
+          attrs.push({ name: i.name, method: expr(code(i.value, scoped), scoped, chained) });
         }
         for (const o of n.outputs) {
+          if (forms?.consumedOutputs.has(o)) continue;
           at(o.sourceSpan);
           if (hosted?.outputs.has(o.name)) {
-            hostEvents.push({ name: o.name, method: handler(code(o.handler, loops), loops, true), payload: true });
+            hostEvents.push({ name: o.name, method: handler(code(o.handler, scoped), scoped, true), payload: true });
             continue;
           }
-          events.push({ name: o.name, method: handler(code(o.handler, loops), loops, selectors.has(n.name)), ...(selectors.has(n.name) ? { payload: true } : {}) });
+          events.push({ name: o.name, method: handler(code(o.handler, scoped), scoped, selectors.has(n.name)), ...(selectors.has(n.name) ? { payload: true } : {}) });
         }
         const component = selectors.get(n.name);
         const refs = n.references.map((r) => r.name);
@@ -619,16 +890,26 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
         checkMeta(n);
         const sections = isList && isSectioned(n);
         // A reference on a host names its component; ElementRef and the view's class read the element.
-        const matches = queryHooks(refs, hosted?.name ?? null, tag, loops);
+        const matches = queryHooks(refs.filter((r) => !forms?.refs.has(r)), hosted?.name ?? null, tag, loops);
         const hooks = matches.filter((h) => h.on !== 'instance');
         const own = matches.filter((h) => h.on === 'instance');
-        const children = () => (isList ? listTemplates(n, attrs, loops) : hosted ? [{ kind: 'component' as const, name: hosted.name, props: hostProps, events: hostEvents, ...(own.length ? { queries: own } : {}) }] : nodes(n.children, loops));
+        const below = () => (isList ? listTemplates(n, attrs, scoped) : hosted ? [{ kind: 'component' as const, name: hosted.name, props: hostProps, events: hostEvents, ...(own.length ? { queries: own } : {}) }] : nodes(n.children, scoped));
+        // A form or group directive is the ControlContainer of the forms directives below it.
+        const children = () => {
+          if (forms?.container) formContainers.push(forms.container);
+          try { return below(); } finally { if (forms?.container) formContainers.pop(); }
+        };
         // A static query is resolved when the template's views are made, before ngOnInit: ngOnInit runs once the last element one names is.
         const statics = matches.length ? queries.filter((q) => q.static && q.ref && refs.includes(q.ref) && staticRefs.has(q.ref)) : [];
         for (const q of statics) staticQueries.delete(q);
         const late = statics.length > 0 && staticQueries.size === 0;
-        out.push({ kind: 'element', tag, attrs, events, children: switched ? switching(n, switched.value, loops, children) : children(), ...(sections ? { sections } : {}), ...(hooks.length ? { queries: hooks } : {}), ...(late ? { init: true } : {}), ...(directives.length ? { directives } : {}) });
+        out.push({ kind: 'element', tag, attrs, events, children: switched ? switching(n, switched.value, scoped, children) : children(), ...(sections ? { sections } : {}), ...(hooks.length ? { queries: hooks } : {}), ...(late ? { init: true } : {}), ...(directives.length ? { directives } : {}) });
         if (late) lateInit = true;
+        // The nodes after it read its forms directives too (a template reference to one), as the codegen scopes them.
+        if (forms) {
+          out.push(...nodes(list.slice(k + 1), scoped));
+          break;
+        }
         continue;
       }
       if (n instanceof ng.TmplAstIfBlock) {
@@ -1061,6 +1342,7 @@ export function angularComponent(path: string, text: string, selectors: Map<stri
   const cached = [...sites.values()].some((x) => x.cache);
   let imports = `import { ${cached ? 'PurePipeCache as $PurePipeCache, ' : ''}type EventData as $EventData } from '@nativescript/release';\n`;
   if (usesElementRef) imports += `import { ElementRef as $ElementRef } from '@angular/core';\n`;
+  if (usesUnset) imports += `import { unsetValue as $unsetValue } from '@nativescript/core';\n`;
   if (providers) imports += `import { NodeInjector } from '@nativescript/release';\n`;
   if (onChanges) {
     imports += `import { SimpleChange as $SimpleChange } from '@angular/core';\n`;
@@ -1876,6 +2158,50 @@ const COMPONENT_META = new Set([
 
 /** Decorator fields named in the plural, for messages. */
 const PLURAL_FIELDS = new Set(['providers', 'viewProviders', 'inputs', 'outputs', 'queries', 'hostDirectives', 'animations', 'schemas']);
+
+/** The directives of @angular/forms an element can select, in the order Angular runs them on one, and their selectors. */
+const FORMS_SELECTORS: [FormsDirective, string][] = [
+  ['RequiredValidator', ':not([type=checkbox])[required][formControlName],:not([type=checkbox])[required][formControl],:not([type=checkbox])[required][ngModel]'],
+  ['MinLengthValidator', '[minlength][formControlName],[minlength][formControl],[minlength][ngModel]'],
+  ['MaxLengthValidator', '[maxlength][formControlName],[maxlength][formControl],[maxlength][ngModel]'],
+  ['PatternValidator', '[pattern][formControlName],[pattern][formControl],[pattern][ngModel]'],
+  ['EmailValidator', '[email][formControlName],[email][formControl],[email][ngModel]'],
+  ['NgModel', '[ngModel]:not([formControlName]):not([formControl])'],
+  ['NgModelGroup', '[ngModelGroup]'],
+  ['NgForm', 'form:not([ngNoForm]):not([formGroup]):not([formArray]),ng-form,[ngForm]'],
+  ['FormControlDirective', '[formControl]'],
+  ['FormGroupDirective', '[formGroup]'],
+  ['FormArrayDirective', '[formArray]'],
+  ['FormControlName', '[formControlName]'],
+  ['FormGroupName', '[formGroupName]'],
+  ['FormArrayName', '[formArrayName]'],
+  ['DefaultValueAccessor', 'input:not([type=checkbox])[formControlName],textarea[formControlName],input:not([type=checkbox])[formControl],textarea[formControl],input:not([type=checkbox])[ngModel],textarea[ngModel],[ngDefaultControl]'],
+];
+type FormsDirective = 'RequiredValidator' | 'MinLengthValidator' | 'MaxLengthValidator' | 'PatternValidator' | 'EmailValidator' | 'NgModel' | 'NgModelGroup' | 'NgForm'
+  | 'FormControlDirective' | 'FormGroupDirective' | 'FormArrayDirective' | 'FormControlName' | 'FormGroupName' | 'FormArrayName' | 'DefaultValueAccessor';
+const FORMS_VALIDATORS: Partial<Record<FormsDirective, string>> = { RequiredValidator: 'required', MinLengthValidator: 'minlength', MaxLengthValidator: 'maxlength', PatternValidator: 'pattern', EmailValidator: 'email' };
+const FORMS_CONTROLS = new Set<FormsDirective>(['NgModel', 'FormControlDirective', 'FormControlName']);
+const FORMS_CONTAINERS = new Set<FormsDirective>(['NgForm', 'FormGroupDirective', 'FormArrayDirective', 'FormGroupName', 'FormArrayName', 'NgModelGroup']);
+const FORMS_TEMPLATE_DRIVEN = new Set<FormsDirective>(['NgModel', 'NgForm', 'NgModelGroup']);
+const FORMS_REACTIVE_PARENTS = new Set<FormsDirective>(['FormGroupDirective', 'FormArrayDirective', 'FormGroupName', 'FormArrayName']);
+/** A directive's exportAs, the name a template reference (`#f="ngForm"`) takes it by. */
+const FORMS_EXPORT_AS: Partial<Record<FormsDirective, string>> = { NgModel: 'ngModel', NgForm: 'ngForm', NgModelGroup: 'ngModelGroup', FormGroupDirective: 'ngForm', FormArrayDirective: 'ngForm', FormControlDirective: 'ngForm' };
+/**
+ * @nativescript/angular's value accessors (NativeScriptFormsModule), by the element they select: the view's property
+ * they write (`text` and `selectedIndex` have their own rules) and the event that changes it.
+ */
+const FORMS_ACCESSORS: Record<string, { kind: string; event: string; accessor: string }> = {
+  TextField: { kind: 'text', event: 'textChange', accessor: 'TextValueAccessor' },
+  TextView: { kind: 'text', event: 'textChange', accessor: 'TextValueAccessor' },
+  SearchBar: { kind: 'text', event: 'textChange', accessor: 'TextValueAccessor' },
+  Switch: { kind: 'checked', event: 'checkedChange', accessor: 'CheckedValueAccessor' },
+  DatePicker: { kind: 'date', event: 'dateChange', accessor: 'DateValueAccessor' },
+  TimePicker: { kind: 'time', event: 'timeChange', accessor: 'TimeValueAccessor' },
+  Slider: { kind: 'value', event: 'valueChange', accessor: 'NumberValueAccessor' },
+  SegmentedBar: { kind: 'selectedIndex', event: 'selectedIndexChange', accessor: 'SelectedIndexValueAccessor' },
+  ListPicker: { kind: 'selectedIndex', event: 'selectedIndexChange', accessor: 'SelectedIndexValueAccessor' },
+  TabView: { kind: 'selectedIndex', event: 'selectedIndexChange', accessor: 'SelectedIndexValueAccessor' },
+};
 
 /** What selects a directive of @angular/forms (with @nativescript/angular's value accessors) on an element. */
 const FORMS_DIRECTIVES = new Set([
