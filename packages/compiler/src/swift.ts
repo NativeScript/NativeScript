@@ -8037,7 +8037,7 @@ ${members.join('\n')}
     const e = this.presentFunction && ts.skipOuterExpressions(this.presentFunction, ts.OuterExpressionKinds.Parentheses);
     if (!e) return false;
     if (ts.isArrowFunction(e) || ts.isFunctionExpression(e)) return /^\{[\s\S]*\}$/.test(code) && balanced(code);
-    if (ts.isPropertyAccessExpression(e)) return /^jsMethodValue\(/.test(code) && balanced(code);
+    if (ts.isPropertyAccessExpression(e)) return /^(jsMethodValue\(|\(\{ \(\) (throws )?-> [^{]* in let __held)/.test(code) && balanced(code);
     return ts.isIdentifier(e) && code === this.refName(e);
   }
 
@@ -9578,7 +9578,12 @@ ${members.join('\n')}
     if (fn.result !== 'Void' && this.lenient && this.nullableRef(fn.result) !== fn.result) call = `try jsObjectRequired(${call.replace(/^try /, '')})`;
     const body = fn.result !== 'Void' ? `return ${call}` : this.returnTypeOf(decl) === 'Void' ? call : `_ = ${call}`;
     const closure = `{ [weak __r] (${params.join(', ')}) throws -> ${fn.result} in guard let __r else { throw jsReleasedReceiver(${swiftString(name)}) }; ${this.keeping('__i', body, fn.result)} }`;
-    return `jsMethodValue(${this.expr(e.expression)}, ${swiftString(name)}) { __r, __i in ${cell}(f: ${closure}) }.f`;
+    const methodValue = (receiver: string) => `jsMethodValue(${receiver}, ${swiftString(name)}) { __r, __i in ${cell}(f: ${closure}) }.f`;
+    if (!this.isInstanceMethod(e.name)) return methodValue(this.expr(e.expression));
+    // A method an instance can replace (see `instanceKeys`): its own value when it holds one, as a call reads it.
+    const held = this.fresh('__held'), own = this.fresh('__own');
+    const receiver = `${this.tryPrefix(e.expression)}${this.expr(e.expression)}`;
+    return `({ () ${THROWING_CODE.test(receiver) ? 'throws ' : ''}-> ${fn.text} in let ${held}: ${receiverType} = ${receiver}; if let ${own} = jsOwnProperty(${held}, ${swiftString(name)})${this.library ? '' : `, ${own} != nil`} { return ${this.fromAnyCode(own, fn.text, true)} }; return ${methodValue(held)} }())`;
   }
 
   /** A program class's static method read as a value (`Validators.required`): one closure for good, as a module's function is. */
@@ -10236,10 +10241,16 @@ ${members.join('\n')}
       || (ts.isMethodDeclaration(d) && ts.isClassLike(d.parent) && !d.questionToken));
     // A method an instance may be given a property in place of (`Object.defineProperty(this, 'm', …)`): the instance's, when it has one.
     if (ts.isPropertyAccessExpression(callee) && callee.expression.kind !== ts.SyntaxKind.SuperKeyword && !this.ownCalls.has(e) && this.isInstanceMethod(callee.name)) {
-      // The receiver is evaluated twice: reading `this`'s fields again is unobservable, an accessor's read is not.
+      // The receiver is read twice: anything but a variable, `this` or its fields (a call, a getter) is bound first.
       const fieldRead = (x: ts.Expression): boolean => x.kind === ts.SyntaxKind.ThisKeyword || (ts.isPropertyAccessExpression(x) && !x.questionDotToken && fieldRead(x.expression) && !this.isAny(x.expression)
         && this.looseReceiverKey(x.expression) === null && !!this.resolve(x.name)?.declarations?.length && !this.resolve(x.name)!.declarations!.some(ts.isAccessor));
-      if (!this.pure(callee.expression) && !fieldRead(callee.expression)) throw this.error(callee, 'a method an instance can replace, on an object with effects');
+      const recv = callee.expression;
+      let bound = '';
+      if (!ts.isIdentifier(recv) && !fieldRead(recv)) {
+        const o = this.fresh('__o');
+        bound = `let ${o}: ${this.typeOf(recv)} = ${this.tryPrefix(recv)}${this.expr(recv)}; `;
+        this.subst.set(recv, o);
+      }
       const t = this.typeOf(e);
       this.ownCalls.add(e);
       try {
@@ -10249,9 +10260,9 @@ ${members.join('\n')}
         const holder = this.coerce(callee.expression, 'Any?');
         const read = `${THROWING_CODE.test(holder) ? 'try ' : ''}jsOwnProperty(${holder}, ${swiftString(callee.name.text)})`;
         const cond = `if let ${own} = ${read}${this.library ? '' : `, ${own} != nil`}`;
-        if (t === 'Void') return `({ () throws -> Void in ${cond} { ${ownCall} } else { ${this.tryPrefix(e)}${this.call(e)} } }())`;
-        return `({ () throws -> ${t} in ${cond} { return ${t === 'Any?' ? ownCall : this.fromAnyCode(`(${ownCall})`, t, true)} }; return ${this.tryPrefix(e)}${this.call(e)} }())`;
-      } finally { this.ownCalls.delete(e); }
+        if (t === 'Void') return `({ () throws -> Void in ${bound}${cond} { ${ownCall} } else { ${this.tryPrefix(e)}${this.call(e)} } }())`;
+        return `({ () throws -> ${t} in ${bound}${cond} { return ${t === 'Any?' ? ownCall : this.fromAnyCode(`(${ownCall})`, t, true)} }; return ${this.tryPrefix(e)}${this.call(e)} }())`;
+      } finally { this.ownCalls.delete(e); this.subst.delete(recv); }
     }
     // `callback?.(x)` of a parameter declared present: Swift has it as non-optional, and the call is a plain one.
     const param = ts.isIdentifier(callee) ? this.resolve(callee)?.valueDeclaration : undefined;

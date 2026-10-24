@@ -24,7 +24,6 @@
 		"626-array-parameter-mutation": "A typed array or an untyped array given to a number[] parameter is copied, so the callee's writes are lost (Swift translator).",
 		"627-unchecked-class-cast": "`x as C` throws when x is an instance of another class, where TypeScript's cast checks nothing (Swift translator).",
 		"662-untyped-array-parameter": "An untyped array (JSArray<Any?>) given to a number[] or string[] parameter is converted into a new array, so the callee's writes are lost; sharing needs a typed view over it (Swift runtime).",
-		"683-replaceable-method-value": "A method an instance replaced, read as a value through a typed receiver (`const f = obj.m`), is the class's method, and calling an element of an array of such methods misses a `try` (Swift translator).",
 		"700-signal-null-object": "A class-typed `signal<T>(null)` outside a component doesn't compile (`equals: jsSame` loses MainActor), and a function returning its value as `T` throws where script returns the null (Swift translator)."
 	},
 	"kotlin": {
