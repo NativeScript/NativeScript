@@ -613,6 +613,8 @@ export class Translator implements AsyncTranslator {
       // `T & string`, a type parameter narrowed by typeof: the primitive.
       const primitive = t.types.find((u) => u.flags & (F.StringLike | F.NumberLike | F.BooleanLike));
       if (primitive && t.types.every((u) => u === primitive || u.flags & F.TypeParameter)) return this.type(primitive, where);
+      // A function carrying properties (`((p: P) => R) & { type: string }`): an untyped value, called as script calls it.
+      if (t.types.some((u) => u.getCallSignatures().length) && t.types.some((u) => !u.getCallSignatures().length && u.getProperties().length) && !t.types.some((u) => isLibDeclaration(u.getSymbol()?.declarations?.[0]))) return 'Any?';
     }
     if (t.isUnion()) {
       let parts = t.types.filter((u) => !(u.flags & (F.Undefined | F.Null | F.Void)));
@@ -1877,7 +1879,12 @@ export class Translator implements AsyncTranslator {
     if (ts.isObjectLiteralExpression(e)) return e.properties.every((p) => (ts.isPropertyAssignment(p) ? this.pure(p.initializer) && (!ts.isComputedPropertyName(p.name) || this.pure(p.name.expression)) : ts.isShorthandPropertyAssignment(p) ? this.pure(p.name) : ts.isMethodDeclaration(p)));
     if (ts.isPrefixUnaryExpression(e)) return e.operator !== ts.SyntaxKind.PlusPlusToken && e.operator !== ts.SyntaxKind.MinusMinusToken && this.pure(e.operand);
     if (ts.isBinaryExpression(e)) return e.operatorToken.kind !== ts.SyntaxKind.EqualsToken && this.pure(e.left) && this.pure(e.right);
-    if (ts.isPropertyAccessExpression(e)) return this.pure(e.expression) && !(ts.isIdentifier(e.expression) && this.isLibGlobal(e.expression) && !LIB_CONSTANTS[`${e.expression.text}.${e.name.text}`]);
+    if (ts.isPropertyAccessExpression(e)) {
+      // A namespace's variable is set at load only when its own initializer is.
+      const member = this.resolve(e.name)?.valueDeclaration;
+      if (member && ts.isVariableDeclaration(member) && ts.isModuleBlock(member.parent.parent.parent) && !member.getSourceFile().isDeclarationFile) return member.getSourceFile() === e.getSourceFile() && !!member.initializer && this.pure(member.initializer);
+      return this.pure(e.expression) && !(ts.isIdentifier(e.expression) && this.isLibGlobal(e.expression) && !LIB_CONSTANTS[`${e.expression.text}.${e.name.text}`]);
+    }
     if (ts.isCallExpression(e) && ts.isIdentifier(e.expression) && ['ref', '$ref', '$signal', 'signal', 'writable', '$writable', 'computed'].includes(e.expression.text)) return e.arguments.every((a) => this.pure(a));
     if (ts.isNewExpression(e) && ts.isIdentifier(e.expression) && ['Map', 'Set'].includes(e.expression.text)) return !e.arguments?.length || e.arguments.every((a) => this.pure(a));
     return false;
@@ -2615,6 +2622,11 @@ export class Translator implements AsyncTranslator {
     return (ts.getDecorators(decl) ?? []).some((d) => /^Injectable\b/.test(d.expression.getText()));
   }
 
+  /** An app's @Injectable class extending another class: translated as any class is, and made by the injector as a service is. */
+  private isBasedService(cls: ts.ClassDeclaration): boolean {
+    return !this.pluginFiles.has(cls.getSourceFile().fileName) && (ts.getDecorators(cls) ?? []).some((d) => d.expression.getText().startsWith('Injectable')) && !!cls.heritageClauses?.some((h) => h.token === ts.SyntaxKind.ExtendsKeyword);
+  }
+
   private parameterInject(p: ts.ParameterDeclaration): string {
     const pt = this.typeOf(p.name);
     let injectArg: ts.Expression | undefined;
@@ -2929,7 +2941,7 @@ export class Translator implements AsyncTranslator {
     if (nativeSubclass != null) return nativeSubclass;
     // A namespace's class is declared in its object, by its own name.
     const name = ts.isModuleBlock(cls.parent) ? ident(cls.name!.text) : this.className(cls);
-    const service = (ts.getDecorators(cls) ?? []).some((d) => d.expression.getText().startsWith('Injectable'));
+    const service = (ts.getDecorators(cls) ?? []).some((d) => d.expression.getText().startsWith('Injectable')) && !this.isBasedService(cls);
     if (service) {
       const { params, lines, statics } = this.componentMembers(cls, []);
       return [`class ${name}(${params.join(', ')}) {`, ...lines, '', '    companion object {', `        val shared: ${name} get() = AppInjector.service(${name}::class.java) { ${name}() }`, ...statics, '    }', '}'].join('\n');
@@ -3497,6 +3509,11 @@ export class Translator implements AsyncTranslator {
     lines.push(...this.mergedStatics.filter(nestedType).map((l) => l.split('\n').map((x) => (x ? '    ' + x : x)).join('\n')));
     statics.push(...this.mergedStatics.filter((l) => !nestedType(l)).map((l) => l.split('\n').map((x) => (x ? '        ' + x : x)).join('\n')));
     this.mergedStatics = [];
+    if (this.isBasedService(cls)) {
+      const ctor = cls.members.find((m): m is ts.ConstructorDeclaration => ts.isConstructorDeclaration(m) && !!m.body);
+      const made = `${ident(name)}(${(ctor?.parameters ?? []).map((p) => this.parameterInject(p)).join(', ')})`;
+      statics.push(`        val shared: ${ident(name)} get() = AppInjector.service(${ident(name)}::class.java) { ${made} }`);
+    }
     if (statics.length) lines.push('    companion object {', ...statics, '    }');
     this.indent = '';
     const head = `${abstract ? 'abstract ' : open ? 'open ' : ''}class ${ident(name)}${this.generics(cls)}`;
@@ -7316,6 +7333,11 @@ export class Translator implements AsyncTranslator {
     if (ts.isIdentifier(callee)) return this.core?.call(e) ?? this.globalCall(callee, e);
     const nsMember = ts.isPropertyAccessExpression(callee) ? this.namespaceMember(callee) : null;
     if (nsMember) {
+      if (this.typeOf(callee) === 'Any?') {
+        const code = `jsCall(${this.narrowed(callee, nsMember)}${this.untypedArgs(e.arguments)})`;
+        const rt = this.typeOf(e);
+        return rt === 'Any?' || rt === 'Unit' ? code : this.fromAnyCode(code, rt, true);
+      }
       const declared = this.checker.getResolvedSignature(e)?.getDeclaration();
       const isFunctionValue = !declared || ts.isJSDocSignature(declared) || !('body' in declared && declared.body) || ts.isArrowFunction(declared) || ts.isFunctionExpression(declared);
       const call = `${this.narrowed(callee, nsMember)}(${this.args(e, isFunctionValue ? undefined : this.arity(e)).join(', ')})`;
@@ -7433,7 +7455,9 @@ export class Translator implements AsyncTranslator {
       }
       // An untyped field holding a function (`private _resolve;`, `_loader: Function`), called as script calls it.
       const untypedField = this.library || this.holdsFunctionObject(callee) || this.typeOf(callee) === 'Any?' ? this.checker.getSymbolAtLocation(callee.name)?.valueDeclaration : undefined;
-      if (untypedField && (ts.isPropertyDeclaration(untypedField) || ts.isPropertySignature(untypedField)) && this.typeOf(callee) === 'Any?') {
+      // A namespace's const among them, reached through an alias of the namespace.
+      const namespaceConst = !!untypedField && ts.isVariableDeclaration(untypedField) && ts.isModuleBlock(untypedField.parent.parent.parent);
+      if (untypedField && (ts.isPropertyDeclaration(untypedField) || ts.isPropertySignature(untypedField) || namespaceConst) && this.typeOf(callee) === 'Any?') {
         const code = `jsCall(${this.expr(callee)}${this.untypedArgs(e.arguments)})`;
         const rt = this.typeOf(e);
         return rt === 'Any?' || rt === 'Unit' ? code : this.fromAnyCode(code, rt, true);
@@ -9056,8 +9080,10 @@ export class Translator implements AsyncTranslator {
         // Library mode: a class the program declares, by its Kotlin name; a class held in a value, tested when the program runs.
         const cls = this.library && !ERRORS[name] ? this.resolve(e.right)?.valueDeclaration : undefined;
         if (cls && ts.isClassDeclaration(cls) && !cls.getSourceFile().isDeclarationFile) return this.decidedInstanceOf(e) ? `jsIs<${this.className(cls)}>(${left})` : `(${left} is ${this.className(cls)})`;
-        const tested = ERRORS[name] ?? this.typeOf(e.right).replace(/^typeof /, '').replace(/\?$/, '');
         const rightSym = this.resolve(ts.isPropertyAccessExpression(e.right) ? e.right.name : e.right);
+        // A generic class is tested whatever its type arguments: `is Box<*>`.
+        const generic = rightSym?.valueDeclaration && ts.isClassDeclaration(rightSym.valueDeclaration) ? rightSym.valueDeclaration.typeParameters?.length ?? 0 : 0;
+        const tested = ERRORS[name] ?? this.typeOf(e.right).replace(/^typeof /, '').replace(/\?$/, '').replace(/<>$/, generic ? `<${Array(generic).fill('*').join(', ')}>` : '');
         if (this.library && (tested === 'Any' || !tested) && !(rightSym && (rightSym.flags & ts.SymbolFlags.Class || isLibDeclaration(rightSym.declarations?.[0])))) {
           const alias = ts.isIdentifier(e.right) ? this.native?.identifier(e.right) : null;
           return `jsInstanceOf(${this.coerce(e.left, 'Any?')}, ${alias ?? this.coerce(e.right, 'Any?')})`;

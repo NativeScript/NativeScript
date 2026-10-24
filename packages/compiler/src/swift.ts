@@ -955,6 +955,8 @@ export class Translator implements AsyncTranslator {
       const param = t.types.find((u) => u.flags & F.TypeParameter);
       const inNarrowing = (u: ts.Type) => !!(u.flags & F.Object) && !u.getCallSignatures().length && u.getProperties().every((p) => c.getTypeOfSymbol(p).flags & F.Unknown);
       if (param && (this.type(param, where) === 'Any?' || t.types.every((u) => u === param || inNarrowing(u)))) return this.type(param, where);
+      // A function carrying properties (`((p: P) => R) & { type: string }`): an untyped value, called as script calls it.
+      if (t.types.some((u) => u.getCallSignatures().length) && t.types.some((u) => !u.getCallSignatures().length && u.getProperties().length) && !t.types.some((u) => isLibDeclaration(u.getSymbol()?.declarations?.[0]))) return 'Any?';
     }
     if (t.isUnion()) {
       let parts = t.types.filter((u) => !(u.flags & (F.Undefined | F.Null | F.Void)));
@@ -4779,14 +4781,37 @@ ${members.join('\n')}
   private classDecl(cls: ts.ClassDeclaration): string {
     const owner = this.declOwner;
     this.declOwner = this.nestedName(cls, ts.isModuleBlock(cls.parent) ? cls.name!.text : this.topName(cls, cls.name!.text));
-    try { return this.classDeclaration(cls); } finally { this.declOwner = owner; }
+    try {
+      const code = this.classDeclaration(cls);
+      return this.isBasedService(cls) ? `${code}\n${this.injectableExtension(cls, code)}` : code;
+    } finally { this.declOwner = owner; }
+  }
+
+  /** An app's @Injectable class extending another class: translated as any class is, and made by the injector as a service is. */
+  private isBasedService(cls: ts.ClassDeclaration): boolean {
+    return !this.pluginFiles.has(cls.getSourceFile().fileName) && (ts.getDecorators(cls) ?? []).some((d) => d.expression.getText().startsWith('Injectable')) && !!cls.heritageClauses?.some((h) => h.token === ts.SyntaxKind.ExtendsKeyword);
+  }
+
+  private injectableExtension(cls: ts.ClassDeclaration, code: string): string {
+    const name = ts.isModuleBlock(cls.parent) ? cls.name!.text : this.topName(cls, cls.name!.text);
+    const ctor = cls.members.find((m): m is ts.ConstructorDeclaration => ts.isConstructorDeclaration(m) && !!m.body);
+    const args = (ctor?.parameters ?? []).map((p) => this.parameterInject(p));
+    const throwsInit = /^\s*(?:override )?(?:convenience )?init\(.*\) throws/m.test(code) || args.some((a) => THROWING_CODE.test(a));
+    const make = `${throwsInit ? 'try ' : ''}${name}(${args.join(', ')})`;
+    return [
+      `extension ${name}: JSInjectableType {`,
+      throwsInit ? `    static var shared: ${name} { get throws { try Injector.root(${name}.self) { ${make} } } }` : `    static var shared: ${name} { Injector.root(${name}.self, making: { ${make} }) }`,
+      `    static var jsSharedInstance: Any? { get throws { ${throwsInit ? 'try ' : ''}shared } }`,
+      `    static func jsConstruct() throws -> Any? { ${make} }`,
+      '}',
+    ].join('\n');
   }
 
   private classDeclaration(cls: ts.ClassDeclaration): string {
     const nativeSubclass = this.native.classDecl(cls);
     if (nativeSubclass) return nativeSubclass;
     const name = ts.isModuleBlock(cls.parent) ? cls.name!.text : this.topName(cls, cls.name!.text);
-    const service = !this.pluginFiles.has(cls.getSourceFile().fileName) && (ts.getDecorators(cls) ?? []).some((d) => d.expression.getText().startsWith('Injectable'));
+    const service = !this.pluginFiles.has(cls.getSourceFile().fileName) && (ts.getDecorators(cls) ?? []).some((d) => d.expression.getText().startsWith('Injectable')) && !this.isBasedService(cls);
     if (service) {
       const members = this.componentMembers(cls, []);
       // A constructor that throws throws from the inject() that made it, and the next inject() makes the service again.
@@ -10235,6 +10260,11 @@ ${members.join('\n')}
     if (ts.isIdentifier(callee)) return this.globalCall(callee, e);
     const nsMember = ts.isPropertyAccessExpression(callee) ? this.namespaceMember(callee) : null;
     if (nsMember) {
+      if (this.typeOf(callee) === 'Any?') {
+        const code = `jsCall(${this.narrowed(callee, nsMember)}${this.untypedArgs(e.arguments)})`;
+        const t = this.typeOf(e);
+        return t === 'Any?' || t === 'Void' ? code : this.fromAnyCode(code, t, true);
+      }
       const declared = this.checker.getResolvedSignature(e)?.getDeclaration();
       const isFunctionValue = !declared || ts.isJSDocSignature(declared) || !('body' in declared && declared.body) || ts.isArrowFunction(declared) || ts.isFunctionExpression(declared);
       const value = this.narrowed(callee, nsMember);
@@ -10336,6 +10366,12 @@ ${members.join('\n')}
       if (this.typeOf(callee) === 'Any?' && field && (ts.isPropertyDeclaration(field) || ts.isPropertySignature(field) || ts.isParameter(field))) {
         const args = e.arguments.some(ts.isSpreadElement) ? `${this.packed(e.arguments, 'JSArray<Any?>')}.storage` : `[${e.arguments.map((a) => this.coerce(a, 'Any?')).join(', ')}]`;
         const code = `jsCallValue(${this.expr(callee)}, this: ${this.coerce(target, 'Any?')}, optional: ${!!e.questionDotToken}, ${args})`;
+        const t = this.typeOf(e);
+        return t === 'Any?' || t === 'Void' ? code : this.fromAnyCode(code, t, true);
+      }
+      // A namespace's const holding a function untyped, reached through an alias of the namespace.
+      if (this.typeOf(callee) === 'Any?' && field && ts.isVariableDeclaration(field) && ts.isModuleBlock(field.parent.parent.parent)) {
+        const code = `jsCall(${this.expr(callee)}${this.untypedArgs(e.arguments)})`;
         const t = this.typeOf(e);
         return t === 'Any?' || t === 'Void' ? code : this.fromAnyCode(code, t, true);
       }
@@ -10832,7 +10868,11 @@ ${members.join('\n')}
     const declared = this.checker.getResolvedSignature(e)?.getDeclaration();
     const isFunctionValue = !declared || ts.isJSDocSignature(declared) || !('body' in declared && declared.body) || ts.isArrowFunction(declared) || ts.isFunctionExpression(declared);
     // A function held untyped (one of several function types): called as script calls it.
-    if (this.typeOf(callee) === 'Any?') return `jsCall(${this.expr(callee)}${this.untypedArgs(e.arguments)})`;
+    if (this.typeOf(callee) === 'Any?') {
+      const code = `jsCall(${this.expr(callee)}${this.untypedArgs(e.arguments)})`;
+      const t = this.typeOf(e);
+      return t === 'Any?' || t === 'Void' ? code : this.fromAnyCode(code, t, true);
+    }
     const fn = ts.isIdentifier(callee) ? this.refName(callee) : ident(name);
     const qualified = this.appModule && shadowedByMember(e, this.resolve(callee)?.declarations?.[0], fn, ident) ? `${this.appModule}.${fn}` : fn;
     const args = this.args(e, isFunctionValue ? undefined : this.arity(e));
