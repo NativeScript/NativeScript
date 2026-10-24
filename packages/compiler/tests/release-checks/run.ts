@@ -8,7 +8,7 @@
 // - a plugin's own Java classes (plugin-java/, compiled with javac) translate as native calls without typings declaring them;
 // - an app's module graph (tsconfig paths and exclude, what its entry reaches), its plugins' ES module bundles, the
 //   imports and prefix header of the generated project, and native calls into a module the build has no table for.
-import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, realpathSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -37,6 +37,8 @@ import { builtModules } from '../../src/ios-dependencies.ts';
 import { STUBBED_PLUGINS } from '../../src/core.ts';
 import { detectFramework, excludedFrameworkKitFiles, getFrameworkKitInfo } from '../../src/framework.ts';
 import { spawnSync } from 'node:child_process';
+import { kitProjectDir } from '../../src/android.ts';
+import { KIT_ANDROID } from '../../src/paths.ts';
 import { buildKotlinRuntime, kotlinc, kotlinStdlib } from '../native-build.ts';
 import ts from 'typescript';
 
@@ -1396,6 +1398,21 @@ fun main() {
   const expected = 'true true a true true true';
   check(got === expected, "a Java method's or field's null reads as script's null on Android, a void method's result as undefined");
   if (got !== expected) console.log(`    got: ${got.slice(0, 300)}`);
+}
+
+// ---- The kit's Gradle path from an output folder under a symlink ----
+{
+  // The link sits at a different depth from its target, as $TMPDIR's /var does from /private/var.
+  const dir = realpathSync(mkdtempSync(join(tmpdir(), 'ns-release-checks-symlinked-out-')));
+  try {
+    mkdirSync(join(dir, 'a', 'b', 'real', 'out'), { recursive: true });
+    symlinkSync(join(dir, 'a', 'b', 'real'), join(dir, 'link'), 'dir');
+    const out = join(dir, 'link', 'out');
+    const resolved = resolve(realpathSync(out), kitProjectDir(out));
+    check(existsSync(resolved) && realpathSync(resolved) === realpathSync(KIT_ANDROID), `settings.gradle.kts names the kit from an --out under a symlink (resolved to ${resolved})`);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 }
 
 console.log(failed ? `${failed} release checks failed` : 'release checks pass');
