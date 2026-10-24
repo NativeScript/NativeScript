@@ -3200,9 +3200,9 @@ export class Translator implements AsyncTranslator {
       this.indent = '    ';
     }
     const baseCtor = appBase && this.constructorOf(appBase);
-    const early = ctor && this.library ? this.statementsBeforeSuper(ctor) : null;
+    const early = ctor ? this.statementsBeforeSuper(ctor) : null;
     if (ctor && early) {
-      // Library mode: statements before `super(…)` (Kotlin's delegation comes first) run in a function of the class's; the
+      // Statements before `super(…)` (Kotlin's delegation comes first) run in a function of the class's; the
       // super arguments, the parameters and the locals they declare go to a private constructor, which runs the rest.
       const { pre, superCall, rest } = early;
       const helper = `__beforeSuper${this.tmp++}`;
