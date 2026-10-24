@@ -37,6 +37,7 @@ import { builtModules } from '../../src/ios-dependencies.ts';
 import { STUBBED_PLUGINS } from '../../src/core.ts';
 import { detectFramework, excludedFrameworkKitFiles, getFrameworkKitInfo } from '../../src/framework.ts';
 import { spawnSync } from 'node:child_process';
+import { buildKotlinRuntime, kotlinc, kotlinStdlib } from '../native-build.ts';
 import ts from 'typescript';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -1325,6 +1326,35 @@ export const restoring = isAngularHmrRestoringRoute();
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
+}
+
+{
+  // kit-android's runtime on the host JVM, for what no diff case reaches: the harness translates no Java class reference.
+  const build = process.env.NS_DIFF_BUILD ?? join(tmpdir(), 'ns-native-diff');
+  const dir = join(build, 'release-checks-java');
+  rmSync(dir, { recursive: true, force: true });
+  mkdirSync(dir, { recursive: true });
+  writeFileSync(join(dir, 'Main.kt'), `import org.nativescript.kit.*
+class Holder { @JvmField var drawable: Any? = null }
+fun main() {
+    val map = java.util.HashMap<String, String>()
+    val view = Holder()
+    if (jsGet(view, "cached") == null) jsSet(view, "cached", jsCallMethod(map, "get", "missing"))
+    println(listOf(jsCallMethod(map, "get", "missing") === JSNull, jsCallMethod(map, "put", "k", "a") === JSNull, jsCallMethod(map, "put", "k", "b"),
+        jsCallMethod(map, "clear") == null, jsGet(view, "drawable") === JSNull, jsGet(view, "cached") === JSNull).joinToString(" "))
+}
+`);
+  let got: string;
+  try {
+    const runtime = buildKotlinRuntime(build);
+    const errors = kotlinc([join(dir, 'Main.kt')], join(dir, 'classes'), [runtime]);
+    got = errors ? errors[0] : spawnSync('java', ['-cp', [join(dir, 'classes'), runtime, kotlinStdlib()].join(':'), 'MainKt'], { encoding: 'utf8' }).stdout.trim();
+  } catch (e) {
+    got = (e as Error).message.split('\n')[0];
+  }
+  const expected = 'true true a true true true';
+  check(got === expected, "a Java method's or field's null reads as script's null on Android, a void method's result as undefined");
+  if (got !== expected) console.log(`    got: ${got.slice(0, 300)}`);
 }
 
 console.log(failed ? `${failed} release checks failed` : 'release checks pass');
