@@ -3257,13 +3257,15 @@ export class Translator implements AsyncTranslator {
       const takes = a.get && a.set ? this.setterTakes(a.set, t) : null;
       if (a.set && takes) {
         const p = a.set.parameters[0].name as ts.Identifier;
-        target.push(`${pad}${this.setterTakesMods(cls, n, takes, memberOpen)}fun ${setterMethod(n)}(${ident(p.text)}: ${takes}) ${this.functionBody(a.set, 'Unit', pad)}`);
+        target.push(`${pad}${this.setterTakesMods(cls, n, memberOpen)}fun ${setterMethod(n)}(${ident(p.text)}: ${takes}) ${this.functionBody(a.set, 'Unit', pad)}`);
         parts.push(`${pad}    set(__value) { ${setterMethod(n)}(__value) }`);
       } else if (a.set) {
         const p = a.set.parameters[0].name as ts.Identifier;
         const body = this.functionBody(a.set, 'Unit', pad + '    ');
         // The setter's parameter is the declared one: a body assigning it declares a variable of its own.
         parts.push(a.get ? `${pad}    set(${ident(p.text)}) ${body}` : `${pad}    set(__value) {\n${pad}        val ${ident(p.text)} = ${['String', 'Double', 'Boolean'].includes(t.replace(/\?$/, '')) ? this.checkedCast('__value', t.replace(/\?$/, ''), n) : asserted('__value')}${body.slice(1)}`);
+        // A base's setter method is what writes through its type and by name call: here, this class's setter.
+        if (!isStatic(a.set) && this.baseSetterMethod(cls, n)) target.push(`${pad}override fun ${setterMethod(n)}(value: Any?) { this.${ident(n)} = ${t === 'Boolean' ? 'jsTruthy(value)' : t === 'Double' ? 'jsToNumber(value)' : this.fromAnyCode('value', t, true)} }`);
       }
       target.push(`${pad}${a.get && isStatic(a.get) ? '' : n === 'jsToStringTag' ? 'override ' : mods(n)}${a.set ? 'var' : 'val'} ${ident(n)}: ${t}`, ...parts);
       // Library mode: read and set by name as well (`node.cssType` of an untyped node), as the prototype's accessor is.
@@ -3740,17 +3742,21 @@ export class Translator implements AsyncTranslator {
   }
 
   /** The modifiers of a class's setter method (`setterTakes`): an override of the one a base class declares for the same accessor. */
-  private setterTakesMods(cls: ts.ClassLikeDeclaration, n: string, takes: string, open: string): string {
+  private setterTakesMods(cls: ts.ClassLikeDeclaration, n: string, open: string): string {
     const own = cls.members.find((m): m is ts.SetAccessorDeclaration => ts.isSetAccessorDeclaration(m) && m.name.getText() === n);
     if (own && isStatic(own)) return '';
+    return this.baseSetterMethod(cls, n) ? 'override ' : open;
+  }
+
+  /** Whether a base class of `cls` declares `setterMethod(n)` (`setterTakes`): the program's, or the generated kit's. */
+  private baseSetterMethod(cls: ts.ClassLikeDeclaration, n: string): boolean {
     for (let b = this.baseClassOf(cls); b; b = this.baseClassOf(b)) {
       const set = b.members.find((m): m is ts.SetAccessorDeclaration => ts.isSetAccessorDeclaration(m) && m.name.getText() === n && !isStatic(m));
       const get = b.members.find((m): m is ts.GetAccessorDeclaration => ts.isGetAccessorDeclaration(m) && m.name.getText() === n && !isStatic(m));
-      if (set && get && this.setterTakes(set, this.returnTypeOf(get)) === takes) return 'override ';
+      if (set && get?.body && this.setterTakes(set, this.returnTypeOf(get))) return true;
     }
     const kitRoot = !this.library && this.generatedKit ? this.kitRootOf(cls) : null;
-    if (kitRoot && this.core?.kitMember(kitRoot, setterMethod(n))) return 'override ';
-    return open;
+    return !!kitRoot && !!this.core?.kitMember(kitRoot, setterMethod(n));
   }
 
   paramType(p: ts.ParameterDeclaration): string {
@@ -8656,7 +8662,11 @@ export class Translator implements AsyncTranslator {
     if (this.nullField(left)) return `${this.expr(left.expression)}.jsSet(${kotlinString(left.name.text)}, ${this.coerce(right, 'Any?')})`;
     if (ts.isPropertyAccessExpression(left) && this.symbolName(left.expression) === 'VueRef' && left.name.text === 'value') return `${this.lvalue(left)} = ${this.signalWrite(left.expression, right, this.typeOf(left))}`;
     if (ts.isArrayLiteralExpression(left)) throw this.error(left, 'a destructuring assignment');
-    const takes = ts.isPropertyAccessExpression(left) ? this.setterTakesAt(left) : null;
+    // `super.style = value` over the kit's `__set_style`: the kit's body, since its property calls this class's override.
+    const enclosing = ts.findAncestor(left, ts.isClassLike);
+    const overKit = !this.library && !!enclosing && ts.isPropertyAccessExpression(left) && left.expression.kind === ts.SyntaxKind.SuperKeyword
+      && (this.checker.getSymbolAtLocation(left.name)?.declarations ?? []).every((d) => d.getSourceFile().isDeclarationFile) && this.baseSetterMethod(enclosing, left.name.text);
+    const takes = ts.isPropertyAccessExpression(left) ? this.setterTakesAt(left) ?? (overKit ? 'Any?' : null) : null;
     if (takes) {
       const place = this.lvalue(left);
       const member = `.${ident(left.name.text)}`;
