@@ -1517,8 +1517,10 @@ export class Translator implements AsyncTranslator {
   private setterTakesAny(set: ts.SetAccessorDeclaration): boolean {
     if (this.typeofTestedSetter(set)) return true;
     const p = set.parameters[0];
-    if (!p || !ts.isIdentifier(p.name) || !set.body || isStatic(set) || !ts.isClassLike(set.parent)) return false;
+    if (!p || !set.body || isStatic(set) || !ts.isClassLike(set.parent)) return false;
     const get = set.parent.members.find((m): m is ts.GetAccessorDeclaration => ts.isGetAccessorDeclaration(m) && m.name.getText() === set.name.getText() && !isStatic(m));
+    // A destructured parameter takes apart whatever object it is given (`set offset({ x, y })` beside `get offset(): Point`).
+    if (!ts.isIdentifier(p.name)) return !!get?.body && this.typeOf(p.name) !== this.returnTypeOf(get);
     return !!get?.body && this.typeOf(p.name) === 'Any?' && this.returnTypeOf(get) !== 'Any?';
   }
 
@@ -5179,29 +5181,34 @@ ${members.join('\n')}
       } else if (a.get) parts.push(`        get${this.throwsInfo.fn(a.get) ? ' throws' : ''} ${this.functionBody(a.get, t, '        ')}`);
       else parts.push('        get { nil }');
       if (ignoredSet) parts.push('        set {}');
-      if (a.set && !ts.isIdentifier(a.set.parameters[0]?.name)) throw this.error(a.set, 'a setter whose parameter is a destructuring pattern');
       const anySetter = !!a.set && this.setterTakesAny(a.set);
       const setMethod = `__set_${n.replace(/\W/g, '_')}`;
       const overSetMethod = !!a.set && !isStatic(a.set) && this.baseSetterMethod(cls, n);
       if (a.set && anySetter) {
-        const p = a.set.parameters[0].name as ts.Identifier;
-        const body = this.functionBody(a.set, 'Void', '    ');
+        const p = a.set.parameters[0].name;
+        let body = this.functionBody(a.set, 'Void', '    ');
         const fmods = overSetMethod ? 'override ' : '';
-        this.declare(setMethod, { kind: 'func', mods: fmods, params: `_ ${ident(p.text)}: Any?`, type: 'Void' });
-        lines.push(`    ${fmods}func ${setMethod}(_ ${ident(p.text)}: Any?) {\n        ${this.throwsInfo.fn(a.set) ? 'jsReport' : 'do'} ${body.trimStart().replace(/\n/g, '\n    ')}\n    }`);
+        const param = ts.isIdentifier(p) ? ident(p.text) : '__v';
+        // A destructured parameter is bound from `__p0`, which the body's prelude takes apart.
+        if (!ts.isIdentifier(p)) body = body.replace('{\n', `{\n        let __p0: ${this.typeOf(p)} = ${this.fromAnyCode('__v', this.typeOf(p), true)}\n`);
+        const report = this.throwsInfo.fn(a.set) || !ts.isIdentifier(p);
+        this.declare(setMethod, { kind: 'func', mods: fmods, params: `_ ${param}: Any?`, type: 'Void' });
+        lines.push(`    ${fmods}func ${setMethod}(_ ${param}: Any?) {\n        ${report ? 'jsReport' : 'do'} ${body.trimStart().replace(/\n/g, '\n    ')}\n    }`);
         parts.push(`        set { ${setMethod}(newValue) }`);
       } else if (a.set) {
         if (this.throwsInfo.fn(a.set) && !reported) throw this.error(a.set, 'a setter that throws');
-        const p = a.set.parameters[0].name as ts.Identifier;
+        const p = a.set.parameters[0].name;
         const body = this.functionBody(a.set, 'Void', '        ');
         // A setter taking more than its getter gives (`set style(value: Style | string)`): its parameter as declared, from the property's value.
         const own = this.typeOf(p);
-        const value = !this.isRead(p) ? '' : a.get && own !== t && own.replace(/[?!]$/, '') !== t.replace(/[?!]$/, '') ? `let ${ident(p.text)}: ${own} = ${this.convert('newValue', declared.replace(/!$/, '?'), own)}`
-          : declared !== t ? `let ${ident(p.text)}: ${declared} = newValue` : !a.get && this.lenient ? this.setterOnlyValue(p, t) : `let ${ident(p.text)} = newValue${a.get ? '' : '!'}`;
-        const bound = value ? `            ${value}\n` : '';
+        // A destructured parameter is bound from `__p0`, which the body's prelude takes apart.
+        const bound = ts.isIdentifier(p) ? ident(p.text) : '__p0';
+        const value = ts.isIdentifier(p) && !this.isRead(p) ? '' : a.get && own !== t && own.replace(/[?!]$/, '') !== t.replace(/[?!]$/, '') ? `let ${bound}: ${own} = ${this.convert('newValue', declared.replace(/!$/, '?'), own)}`
+          : declared !== t ? `let ${bound}: ${declared} = newValue` : !a.get && this.lenient && ts.isIdentifier(p) ? this.setterOnlyValue(p, t) : `let ${bound} = newValue${a.get ? '' : '!'}`;
+        const binding = value ? `            ${value}\n` : '';
         parts.push(this.throwsInfo.fn(a.set)
-          ? `        set {\n${bound}            jsReport ${body.trimStart()}\n        }`
-          : `        set {\n${bound}            do ${body.trimStart()}\n        }`);
+          ? `        set {\n${binding}            jsReport ${body.trimStart()}\n        }`
+          : `        set {\n${binding}            do ${body.trimStart()}\n        }`);
         // A base's `__set_<name>` is what writes through its type and by name call: here, this class's setter.
         if (overSetMethod) {
           lines.push(`    override func ${setMethod}(_ newValue: Any?) { self.${ident(n)} = ${declared.endsWith('!') ? this.fromAny('newValue', declared.replace(/!$/, '?')) : this.fromAnyCode('newValue', declared, true)} }`);
@@ -6757,7 +6764,7 @@ ${members.join('\n')}
       // Past the end is undefined.
       else if (this.isAny(name)) read = `(try jsGet(${value}, "${k}"))`;
       else if (arrayValue && /^JSArray<Any\?>[?!]?$/.test(_type) && ts.isIdentifier(el.name)) read = `(${value}.element(${k}) ?? nil)`;
-      else read = arrayValue && ts.isIdentifier(el.name) ? this.undefinedAs(`${value}.element(${k})`, this.typeOf(el.name)) : arrayValue && el.initializer ? `${value}.element(${k})` : `${value}[${k}]`;
+      else read = arrayValue && ts.isIdentifier(el.name) && !el.initializer ? this.undefinedAs(`${value}.element(${k})`, this.typeOf(el.name)) : arrayValue && el.initializer ? `${value}.element(${k})` : `${value}[${k}]`;
       if (el.initializer) read = `(${read} ?? ${this.coerce(el.initializer, ts.isIdentifier(el.name) ? this.typeOf(el.name) : this.partType(name, el, k, source, _type) ?? this.typeOf(el.name))})`;
       if (ts.isIdentifier(el.name)) {
         const t = this.typeOf(el.name);

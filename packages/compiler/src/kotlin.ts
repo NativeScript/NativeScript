@@ -3313,14 +3313,18 @@ export class Translator implements AsyncTranslator {
       else parts.push(`${pad}    get() = null`);
       const takes = a.get && a.set ? this.setterTakes(a.set, t) : null;
       if (a.set && takes) {
-        const p = a.set.parameters[0].name as ts.Identifier;
-        target.push(`${pad}${this.setterTakesMods(cls, n, memberOpen)}fun ${setterMethod(n)}(${ident(p.text)}: ${takes}) ${this.functionBody(a.set, 'Unit', pad)}`);
+        const p = a.set.parameters[0].name;
+        let body = this.functionBody(a.set, 'Unit', pad);
+        // A destructured parameter is bound from `__p0`, which the body's prelude takes apart.
+        if (!ts.isIdentifier(p)) body = body.replace('{\n', `{\n${pad}    val __p0: ${this.typeOf(p)} = ${this.fromAnyCode('__v', this.typeOf(p), true)}\n`);
+        target.push(`${pad}${this.setterTakesMods(cls, n, memberOpen)}fun ${setterMethod(n)}(${ts.isIdentifier(p) ? ident(p.text) : '__v'}: ${takes}) ${body}`);
         parts.push(`${pad}    set(__value) { ${setterMethod(n)}(__value) }`);
       } else if (a.set) {
-        const p = a.set.parameters[0].name as ts.Identifier;
+        const p = a.set.parameters[0].name;
+        const name = ts.isIdentifier(p) ? ident(p.text) : '__p0';
         const body = this.functionBody(a.set, 'Unit', pad + '    ');
         // The setter's parameter is the declared one: a body assigning it declares a variable of its own.
-        parts.push(a.get ? `${pad}    set(${ident(p.text)}) ${body}` : `${pad}    set(__value) {\n${pad}        val ${ident(p.text)} = ${['String', 'Double', 'Boolean'].includes(t.replace(/\?$/, '')) ? this.checkedCast('__value', t.replace(/\?$/, ''), n) : asserted('__value')}${body.slice(1)}`);
+        parts.push(a.get ? `${pad}    set(${name}) ${body}` : `${pad}    set(__value) {\n${pad}        val ${name} = ${['String', 'Double', 'Boolean'].includes(t.replace(/\?$/, '')) ? this.checkedCast('__value', t.replace(/\?$/, ''), n) : asserted('__value')}${body.slice(1)}`);
         // A base's setter method is what writes through its type and by name call: here, this class's setter.
         if (!isStatic(a.set) && this.baseSetterMethod(cls, n)) target.push(`${pad}override fun ${setterMethod(n)}(value: Any?) { this.${ident(n)} = ${t === 'Boolean' ? 'jsTruthy(value)' : t === 'Double' ? 'jsToNumber(value)' : this.fromAnyCode('value', t, true)} }`);
       }
@@ -3792,7 +3796,9 @@ export class Translator implements AsyncTranslator {
    */
   setterTakes(set: ts.SetAccessorDeclaration, t: string): string | null {
     const p = set.parameters[0];
-    if (!p || !ts.isIdentifier(p.name) || !set.body || optionalType(t) === 'Any?') return null;
+    if (!p || !set.body || optionalType(t) === 'Any?') return null;
+    // A destructured parameter takes apart whatever object it is given (`set offset({ x, y })` beside `get offset(): Point`).
+    if (!ts.isIdentifier(p.name)) return optionalType(this.typeOf(p.name)) !== optionalType(t) ? 'Any?' : null;
     return this.paramType(p) === 'Any?' ? 'Any?' : null;
   }
 
