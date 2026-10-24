@@ -4810,17 +4810,7 @@ ${members.join('\n')}
     const registered = (n: string) => isView && !!this.properties?.isRegistered(cls, n);
     // The library's interfaces (`Iterable<T>`, `Iterator<T>`) are protocols of the kit's, conformed to below.
     const witnesses: string[] = [];
-    const named = implementedInterfaces(this.checker, cls).map((i) => ({ name: this.heritageName(i), type: this.checker.getTypeAtLocation(i) }));
-    const met = [...this.structural.get(cls) ?? []].map((d) => ({ name: this.topName(d, d.name.text), type: this.checker.getTypeAtLocation(d.name) }));
-    const implemented = [...named, ...met.filter((m) => !named.some((n) => n.name === m.name))].filter((i) => !isLibDeclaration(i.type.getSymbol()?.declarations?.[0]) && !this.uncompiledType(i.type))
-      // An interface only a declaration file has is no Swift protocol (a plugin's `IHttpsResponseLegacy` in its `.d.ts`), unless core's that the kit has.
-      .filter((i) => !(i.type.getSymbol()?.declarations ?? []).every((d) => d.getSourceFile().isDeclarationFile && (this.library || !isCoreDeclaration(d) || !this.core.has(i.name))) || (!this.library && !i.type.getSymbol()?.declarations?.length))
-      // A protocol a base class conforms to is inherited; one the class's signatures cannot meet is left out.
-      .filter((i) => !this.baseImplements(cls, i.name) && this.protocolWitnesses(cls, i.name, i.type, witnesses))
-      // An interface a kit class's own methods meet (`ICanvasBase.on` by View's `on`): script's structural typing, no Swift protocol.
-      .filter((i) => !kitRoot || !i.type.getProperties().some((p) => !!this.core.kitMember(kitRoot, p.name)))
-      .map((i) => i.name);
-    for (const i of implemented) this.used.add(i);
+    const { named, met, implemented } = this.implementedProtocols(cls, kitRoot, witnesses);
     // What a protocol requires the class reads without throwing: a getter that throws reports instead.
     const required = new Set([...named, ...met].filter((i) => implemented.includes(i.name)).flatMap((i) => i.type.getProperties().map((p) => p.name)));
     const conformances = [...(base ? [base] : []), ...implemented];
@@ -9161,6 +9151,46 @@ ${members.join('\n')}
    * `handlerError(error: Error)`) conforms through a witness of the protocol's
    * signature that calls it; any other difference leaves the protocol out.
    */
+  /** The interfaces a class implements, named or met, that are Swift protocols it conforms to; `witnesses` gets the adapters its methods need. */
+  private implementedProtocols(cls: ts.ClassLikeDeclaration, kitRoot: string | null, witnesses: string[]) {
+    const named = implementedInterfaces(this.checker, cls).map((i) => ({ name: this.heritageName(i), type: this.checker.getTypeAtLocation(i) }));
+    const met = [...this.structural.get(cls) ?? []].map((d) => ({ name: this.topName(d, d.name.text), type: this.checker.getTypeAtLocation(d.name) }));
+    const implemented = [...named, ...met.filter((m) => !named.some((n) => n.name === m.name))].filter((i) => !isLibDeclaration(i.type.getSymbol()?.declarations?.[0]) && !this.uncompiledType(i.type))
+      // An interface only a declaration file has is no Swift protocol (a plugin's `IHttpsResponseLegacy` in its `.d.ts`), unless core's that the kit has.
+      .filter((i) => !(i.type.getSymbol()?.declarations ?? []).every((d) => d.getSourceFile().isDeclarationFile && (this.library || !isCoreDeclaration(d) || !this.core.has(i.name))) || (!this.library && !i.type.getSymbol()?.declarations?.length))
+      // A protocol a base class conforms to is inherited; one the class's signatures cannot meet is left out.
+      .filter((i) => !this.baseImplements(cls, i.name) && this.protocolWitnesses(cls, i.name, i.type, witnesses))
+      // An interface a kit class's own methods meet (`ICanvasBase.on` by View's `on`): script's structural typing, no Swift protocol.
+      .filter((i) => !kitRoot || !i.type.getProperties().some((p) => !!this.core.kitMember(kitRoot, p.name)))
+      .map((i) => i.name);
+    for (const i of implemented) this.used.add(i);
+    return { named, met, implemented };
+  }
+
+  /**
+   * A component class's conformance to the app interfaces it implements, as an extension of it. Every app protocol
+   * refines JSDynamic, which here reads and writes the interfaces' fields only.
+   */
+  componentConformance(cls: ts.ClassDeclaration, name: string): string {
+    const witnesses: string[] = [];
+    const { named, met, implemented } = this.implementedProtocols(cls, null, witnesses);
+    if (!implemented.length) return '';
+    const seen = new Set<string>();
+    const fields: { name: string; type: string }[] = [];
+    const readOnly: { name: string; get: string; set: null }[] = [];
+    for (const i of [...named, ...met].filter((x) => implemented.includes(x.name))) {
+      const decl = i.type.getSymbol()?.declarations?.find(ts.isInterfaceDeclaration);
+      for (const m of decl?.members ?? []) {
+        if (!ts.isPropertySignature(m) || !ts.isIdentifier(m.name) || seen.has(m.name.text)) continue;
+        seen.add(m.name.text);
+        const type = m.questionToken ? optionalType(this.typeOf(m)) : this.typeOf(m);
+        if (hasModifier(m, ts.SyntaxKind.ReadonlyKeyword) || this.implementedReadOnly(i.name, m.name.text)) readOnly.push({ name: m.name.text, get: this.untypedEnum(`self.${ident(m.name.text)}`, type), set: null });
+        else fields.push({ name: m.name.text, type });
+      }
+    }
+    return [`extension ${name}: ${implemented.join(', ')} {`, ...witnesses, ...this.dynamicMembers(fields, cls.name?.text ?? name, false, [], [], false, new Set(), readOnly), '}'].join('\n');
+  }
+
   private protocolWitnesses(cls: ts.ClassLikeDeclaration, name: string, type: ts.Type, out: string[]): boolean {
     const decl = type.getSymbol()?.declarations?.find(ts.isInterfaceDeclaration);
     if (!decl || !this.protocols.has(name)) return true;
