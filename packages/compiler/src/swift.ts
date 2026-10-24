@@ -5,7 +5,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { KIT_APPLE_SOURCES } from './paths.ts';
 import { Throws, digitsLiteral, isArrayLengthLiteral, isArrayLengthWrite, isAsync, isStatic } from './throws.ts';
-import { assignedValues, initializedNull, intersectionAliasMembers, intlConstructor, nullSetFields, isRegExpProtocol, isObjectToStringCall, isStringRaw, leadingNeverRead, forwardedSetter, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, uncheckedMatch, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, LooseSlots, originOf, ownSlot, implementedInterfaceDeclarations, slotOf, slotType, definitelyAssignedFields, type TrustScope } from './lang.ts';
+import { assignedValues, openSpreadType, initializedNull, intersectionAliasMembers, intlConstructor, nullSetFields, isRegExpProtocol, isObjectToStringCall, isStringRaw, leadingNeverRead, forwardedSetter, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, uncheckedMatch, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, LooseSlots, originOf, ownSlot, implementedInterfaceDeclarations, slotOf, slotType, definitelyAssignedFields, type TrustScope } from './lang.ts';
 import { AsyncLowering, type AsyncCtx, type AsyncSyntax, type AsyncTranslator } from './async.ts';
 import { CoreAPI, isCoreDeclaration, packageOf } from './core.ts';
 import type { KitMember } from './kit-index.ts';
@@ -2604,11 +2604,21 @@ ${members.join('\n')}
         this.declare('present', { kind: 'func', mods: 'static ', params: `_ value: (${type})?`, throws: true, type });
         return functionParts(type)?.params.length ?? 0;
       }, needs(type) || undefined),
-      code: singleTry(`${needs(type) ? `@available(iOS ${needs(type)}, *)\n` : ''}struct ${name} {\n    let f: ${type}\n    static func implicit(_ value: (${type})?) -> (${type})? { value }\n    static func present(_ value: (${type})?) throws -> ${type} { guard let value else { throw jsNoObject() }; return value }\n${this.cellStaticCode(name, type, needs).map((l) => l + '\n').join('')}}`),
+      code: singleTry(`${needs(type) ? `@available(iOS ${needs(type)}, *)\n` : ''}struct ${name}${this.cellGenerics(type)} {\n    let f: ${type}\n    static func implicit(_ value: (${type})?) -> (${type})? { value }\n    static func present(_ value: (${type})?) throws -> ${type} { guard let value else { throw jsNoObject() }; return value }\n${this.cellStaticCode(name, type, needs).map((l) => l + '\n').join('')}}`),
     }));
   }
 
   private functionCells = new Map<string, string>();
+  /** The type parameters `type` names, in the order it names them. */
+  private typeParameters(type: string): string[] {
+    const at = (g: string) => type.search(new RegExp(`\\b${g}\\b`));
+    return [...this.genericNames].filter((g) => at(g) >= 0).sort((a, b) => at(a) - at(b));
+  }
+  /** A cell's generic parameter clause (`<T, U>`), or ''. */
+  private cellGenerics(type: string): string {
+    const used = this.typeParameters(type);
+    return used.length ? `<${used.join(', ')}>` : '';
+  }
   /** The static members of each function cell (`script`, `fromScript`): their bodies, each under the name it is written as. */
   private cellStatics = new Map<string, { kind: CellStatic; name: string; body: string; from?: string; orNil?: boolean }[]>();
 
@@ -2665,13 +2675,13 @@ ${members.join('\n')}
   }
   /**
    * The struct of one field of function type `type`, through which the runtime reads a closure's
-   * identity (`jsFunctionKey`); null for a type naming a type parameter, which no struct outside
-   * the generic can hold.
+   * identity (`jsFunctionKey`). A type naming type parameters gets a struct generic over them, written
+   * unspecialized at each use (Swift infers them there).
    */
   private functionCell(type: string): string | null {
     // `JSRest<T>` is `JSArray<T>`: one Swift type, one cell (and one `jsImplicit` overload).
     const t = type.trim().replace(/\bJSRest</g, 'JSArray<');
-    if (!functionParts(t) || [...this.genericNames].some((g) => new RegExp(`\\b${g}\\b`).test(t))) return null;
+    if (!functionParts(t)) return null;
     let name = this.functionCells.get(t);
     if (!name) {
       // Named after the function type it holds (`FunctionCell_ViewBaseOpt_to_Void` for `(ViewBase?) throws -> Void`).
@@ -3366,7 +3376,9 @@ ${members.join('\n')}
    * the closure stands for `code`, to `===`. `orNil`: `code` may be missing, and the adapted function is then too.
    */
   private adapter(code: string, from: string, to: FunctionParts, params: string[], body: string, orNil: boolean): string {
-    const hc = this.functionCell(from), gc = this.functionCell(to.text);
+    const gc = this.functionCell(to.text);
+    // The adapter is a static of `to`'s cell, which can't name a type parameter `to` doesn't.
+    const hc = this.typeParameters(from).every((g) => this.typeParameters(to.text).includes(g)) ? this.functionCell(from) : null;
     if (!hc || !gc) {
       const wrap = `{ (__h: @escaping ${from}) -> ${to.text} in { (${params.join(', ')}) throws -> ${to.result} in ${body} } }`;
       // `if let`, not `Optional.map`: a closure passed through a generic is a new thunk, another function to `===`.
@@ -4078,6 +4090,7 @@ ${members.join('\n')}
   }
 
   func(fn: ts.FunctionDeclaration | ts.MethodDeclaration, name: string, modifiers = '', extraParams: string[] = []): string {
+    this.generics(fn);
     const base = ts.isMethodDeclaration(fn) && /\boverride\b/.test(modifiers) ? this.baseMethod(fn) : null;
     if (base && ts.isMethodDeclaration(fn)) {
       const b = this.emittedSignature(fn), own = this.signatureOf(fn);
@@ -4713,7 +4726,7 @@ ${members.join('\n')}
         // An overload's signature: Swift's one method is the implementation's.
         if (!m.body) continue;
         this.templateParams = /^\$[be]\d+$/.test(m.name.getText());
-        try { lines.push('    ' + this.func(m, ident((m.name as ts.Identifier).text))); } finally { this.templateParams = false; }
+        try { lines.push('    ' + this.func(m, ident((m.name as ts.Identifier).text), isStatic(m) ? 'static ' : '')); } finally { this.templateParams = false; }
         continue;
       }
     }
@@ -4811,6 +4824,8 @@ ${members.join('\n')}
     const nativeSubclass = this.native.classDecl(cls);
     if (nativeSubclass) return nativeSubclass;
     const name = ts.isModuleBlock(cls.parent) ? cls.name!.text : this.topName(cls, cls.name!.text);
+    // Before any member: the function cells their code makes are generic in the type parameters they name.
+    this.generics(cls);
     const service = !this.pluginFiles.has(cls.getSourceFile().fileName) && (ts.getDecorators(cls) ?? []).some((d) => d.expression.getText().startsWith('Injectable')) && !this.isBasedService(cls);
     if (service) {
       const members = this.componentMembers(cls, []);
@@ -12574,6 +12589,8 @@ ${members.join('\n')}
     if (name === 'EventData' && this.library) return `EventData(jsObject: ${this.dynamicObject(e)})`;
     if (name === 'Any?' || name === 'Any' || name === 'Never' || name === 'EventData' || name === 'JSObject') return this.dynamicObject(e);
     if (/^JS(Iterator|AsyncIterator)</.test(name)) return this.scriptIterator(e, name);
+    // A spread of an open type (`{ ...state, x }` with `state: T`) carries keys no shape declares; the shape keeps them as extras.
+    if (e.properties.some((p) => ts.isSpreadAssignment(p) && openSpreadType(this.checker.getTypeAtLocation(p.expression)))) return this.fromAnyCode(this.dynamicObject(e), name);
     let decl = this.checker.getNonNullableType(type).getSymbol()?.declarations?.[0];
     // A literal that conforms to an app interface it is not declared as.
     const conforming = this.appInterfaces?.find((i) => i.name === name);

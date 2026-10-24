@@ -50,9 +50,12 @@ const check = (ok: boolean, what: string) => {
   if (!ok) failed++;
 };
 
+// Each section runs in a function of its own, never a bare block: this module's frame lives for the whole run and keeps
+// every top-level block's locals (each a program of several hundred MB) reachable until it ends.
+
 // ---- preflight ----
 const cases = readdirSync(join(here, 'cases')).filter((f) => f.endsWith('.ts')).map((f) => join(here, 'cases', f));
-for (const platform of ['ios', 'android'] as const) {
+for (const platform of ['ios', 'android'] as const) (() => {
   const { checker, files } = createProgram(cases, new Map(), platform, modulesDir);
   const findings = preflight(checker, files);
   for (const file of cases) {
@@ -68,7 +71,7 @@ for (const platform of ['ios', 'android'] as const) {
     }
     for (const f of got.filter((f) => !expected.has(f.line))) check(false, `preflight (${platform}) ${file.split('/').pop()}:${f.line} reports nothing (reported: ${f.what})`);
   }
-}
+})();
 
 // ---- version ranges ----
 const ranges: [string, string, boolean][] = [
@@ -98,7 +101,7 @@ try {
 }
 
 // ---- Angular templates ----
-{
+(() => {
   const component = (template: string) => angularComponent('/app/people.component.ts', `import { Component, inject } from '@angular/core';
 @Component({ selector: 'People', template: \`${template}\` })
 export class People { items = [{ id: 1, name: 'Alan Turing' }]; }
@@ -198,10 +201,10 @@ export class K { continue() {} }
 export class GlyphPipe { constructor(@Inject(TOKEN) private config: any, @Optional() private ref: ChangeDetectorRef) {} transform(v: string) { return v; } }
 `) ?? '';
   check(!decl.includes('@Pipe') && !decl.includes('@Inject') && /static \$create\(\): GlyphPipe \{ return new GlyphPipe\(inject\(TOKEN\), inject\(ChangeDetectorRef, \{ optional: true \}\)\); \}/.test(decl) && decl.startsWith("import { inject } from '@angular/core';"), "a pipe's constructor is injected through $create, as Angular's factory injects it");
-}
+})();
 
 // ---- An app's own module graph ----
-{
+(() => {
   const dir = mkdtempSync(join(tmpdir(), 'ns-release-checks-app-'));
   const w = (f: string, text: string) => { mkdirSync(dirname(join(dir, f)), { recursive: true }); writeFileSync(join(dir, f), text); return join(dir, f); };
   try {
@@ -227,10 +230,10 @@ export class GlyphPipe { constructor(@Inject(TOKEN) private config: any, @Option
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
-}
+})();
 
 // ---- Plugins published as ES modules, and the generated project ----
-{
+(() => {
   const dir = mkdtempSync(join(tmpdir(), 'ns-release-checks-esm-'));
   const w = (f: string, text: string) => { mkdirSync(dirname(join(dir, f)), { recursive: true }); writeFileSync(join(dir, f), text); return join(dir, f); };
   try {
@@ -342,10 +345,10 @@ export class GlyphPipe { constructor(@Inject(TOKEN) private config: any, @Option
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
-}
+})();
 
 // ---- Plugins' iOS code: Swift beside Objective-C, and the tables of their modules ----
-{
+(() => {
   const dir = mkdtempSync(join(tmpdir(), 'ns-release-checks-mixed-'));
   const w = (f: string, text: string) => { mkdirSync(dirname(join(dir, f)), { recursive: true }); writeFileSync(join(dir, f), text); return join(dir, f); };
   const tableCache = process.env.NS_NATIVE_TABLE_CACHE;
@@ -418,10 +421,10 @@ export class GlyphPipe { constructor(@Inject(TOKEN) private config: any, @Option
     if (tableCache === undefined) delete process.env.NS_NATIVE_TABLE_CACHE; else process.env.NS_NATIVE_TABLE_CACHE = tableCache;
     rmSync(dir, { recursive: true, force: true });
   }
-}
+})();
 
 // ---- The modules a build of the Swift packages and pods leaves ----
-{
+(() => {
   const dir = mkdtempSync(join(tmpdir(), 'ns-release-checks-built-'));
   const w = (f: string, text: string) => { mkdirSync(dirname(join(dir, f)), { recursive: true }); writeFileSync(join(dir, f), text); return join(dir, f); };
   try {
@@ -444,10 +447,10 @@ export class GlyphPipe { constructor(@Inject(TOKEN) private config: any, @Option
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
-}
+})();
 
 // ---- Binary-only plugins: refused unless stubbed ----
-{
+(() => {
   const dir = mkdtempSync(join(tmpdir(), 'ns-release-checks-stubs-'));
   const w = (f: string, text: string) => { mkdirSync(dirname(join(dir, f)), { recursive: true }); writeFileSync(join(dir, f), text); return join(dir, f); };
   try {
@@ -477,10 +480,10 @@ export class GlyphPipe { constructor(@Inject(TOKEN) private config: any, @Option
     STUBBED_PLUGINS.clear();
     rmSync(dir, { recursive: true, force: true });
   }
-}
+})();
 
 // ---- Swift emission ----
-{
+(() => {
   check(singleTry('try (try! Color(a))') === 'try (try! Color(a))' && singleTry('try ((try? x) != nil)') === 'try ((try? x) != nil)' && singleTry('try (try jsGet(a))') === 'try ( jsGet(a))', 'one try is dropped where two cover a check, never a try! or try?');
   const dir = mkdtempSync(join(tmpdir(), 'ns-release-checks-native-'));
   try {
@@ -517,10 +520,10 @@ export class GlyphPipe { constructor(@Inject(TOKEN) private config: any, @Option
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
-}
+})();
 
 // ---- Angular component classes ----
-{
+(() => {
   const make = (text: string) => angularComponent('/app/cls.component.ts', text, new Map())!;
   const noArg = make("import { Component, Input, OnChanges } from '@angular/core';\n@Component({ selector: 'C', template: `<Label [text]=\"name\"></Label>` })\nexport class C implements OnChanges { @Input() name = ''; seen = 0; ngOnChanges() { this.seen++; } }\n");
   check(/this\.ngOnChanges\(\);/.test(noArg.source) && !/this\.ngOnChanges\(changes\)/.test(noArg.source), 'ngOnChanges declared without a parameter is called without one');
@@ -530,10 +533,10 @@ export class GlyphPipe { constructor(@Inject(TOKEN) private config: any, @Option
   check(/this\.title/.test(inherited.source), "a template names a member the component inherits");
   const multiline = make("import { Component } from '@angular/core';\n@Component({ selector: 'C', template: `<Label [text]=\"on ? 'a' : 'b\nc'\"></Label>` })\nexport class C { on = true; }\n");
   check(multiline.source.includes("'b\\nc'"), 'a string literal written across lines in a template stays one string');
-}
+})();
 
 // ---- NgClass and NgStyle ----
-{
+await (async () => {
   type Node = { kind: string; tag?: string; attrs?: { name: string; value?: string; method?: string }[]; children?: Node[]; directives?: { make: string; inputs: { set: string; method?: string }[]; attributes: { name: string; value: string }[] }[] };
   const make = (template: string, selectors = new Map<string, string>()) => angularComponent('/app/c.component.ts', `import { Component, signal } from '@angular/core';
 @Component({ selector: 'C', template: \`${template}\` })
@@ -640,19 +643,19 @@ export class C { on = signal(true); w = signal(10); name = 'Ada'; }
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
-}
+})();
 
 // ---- Angular fragments through nested components ----
-{
+(() => {
   const outer = angularComponent('/app/outer.component.ts', "import { Component } from '@angular/core';\n@Component({ selector: 'Outer', template: `<Inner></Inner>` })\nexport class Outer {}\n", new Map([['Inner', 'Inner']]))!;
   const infos = new Map([['Inner', { name: 'Inner', props: [], fragment: true }], ['Outer', { name: 'Outer', props: [] }]]);
   check(isFragment(outer.template, infos) && !isFragment(outer.template, new Map([['Inner', { name: 'Inner', props: [] }]])), 'a template that is one component is a fragment when that component is');
   const swift = render(outer, infos, () => false, 'angular').join('\n');
   check(swift.includes('func render(into region: Region) throws'), 'a component rendering a fragment component renders into its parent region');
-}
+})();
 
 // ---- Zoneless Angular: a listener checks its view and the views above it ----
-{
+(() => {
   const page = angularComponent('/app/status.component.ts', "import { Component } from '@angular/core';\n@Component({ selector: 'Status', template: `<StackLayout><Label [text]=\"status\"></Label><Badge [count]=\"taps\" (picked)=\"pick()\"></Badge><Button text=\"Go\" (tap)=\"go()\"></Button></StackLayout>` })\nexport class Status { status = 'idle'; taps = 0; go() { this.status = 'busy'; this.taps++; } pick() {} }\n", new Map([['Badge', 'Badge']]))!;
   const infos = new Map([['Badge', { name: 'Badge', props: ['count'], outputs: ['picked'] }], ['Status', { name: 'Status', props: [] }]]);
   for (const [backend, code] of [['Swift', render(page, infos, () => false, 'angular').join('\n')], ['Kotlin', renderKotlin(page, infos, { framework: 'angular' }).join('\n')]] as const) {
@@ -662,10 +665,10 @@ export class C { on = signal(true); w = signal(10); name = 'Ada'; }
     const marks = backend === 'Swift' ? /\[__dv = EffectOrder\.current\.view\] .* in Reactivity\.event\(dirty: __dv\)/ : /^\s*EffectOrder\.current\.view\.let \{ __dv -> .* -> Reactivity\.event\(__dv\) \{/;
     check(listeners.length === 2 && listeners.every((l) => marks.test(l)), `a zoneless template's listeners, a view's and a component output's, mark the view they were added in dirty (${backend})`);
   }
-}
+})();
 
 // ---- Component providers: each instance of a component makes its own injector ----
-{
+(() => {
   const dir = mkdtempSync(join(tmpdir(), 'ns-release-checks-providers-'));
   try {
     const store = join(dir, 'store.ts'), panel = join(dir, 'panel.component.ts'), page = join(dir, 'page.component.ts');
@@ -724,18 +727,18 @@ export class Panel {
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
-}
+})();
 
 // ---- A component extending a class: the base's members copied into it ----
-{
+(() => {
   // In a process of its own: the programs this run makes stay in memory until it ends, near Node's default heap limit.
   const r = spawnSync(process.execPath, [join(here, 'component-bases.ts')], { encoding: 'utf8', maxBuffer: 64 << 20 });
   process.stdout.write(r.stdout + r.stderr);
   failed += Math.max((r.stdout.match(/^✗/gm) ?? []).length, r.status === 0 ? 0 : 1);
-}
+})();
 
 // ---- Template errors are reported, never trapped ----
-{
+(() => {
   // nstreamdown's `@if (token.type === 'mermaid') { <MdMermaid [content]="…" [isIncomplete]="getIsIncomplete(token)"> }`, every binding able to throw.
   const parent = {
     name: 'Streamdown', file: '/app/streamdown.ts', source: '', props: [],
@@ -754,10 +757,10 @@ export class Panel {
   check(!/try!|try\?/.test(swift.replace(/let v\d+ = try! StackLayout\(\)/g, '')), 'no binding, condition or prop is read with try! or try?');
   const list = render({ name: 'Rows', file: '/app/rows.ts', source: '', props: [], template: [{ kind: 'element' as const, tag: 'ListView', attrs: [{ name: 'items', method: '$b0' }], events: [], children: [] }] }, new Map(), () => true, 'angular').join('\n');
   check(/\.bind\(items: \{ jsReportedItems \{ try self\._b0\(\) \} \}/.test(list), "a list's items that throw are reported, and the list shows none");
-}
+})();
 
 // ---- A component's computed signal read in a binding ----
-{
+(() => {
   const dir = mkdtempSync(join(tmpdir(), 'ns-release-checks-computed-'));
   try {
     const file = join(dir, 'people.component.ts');
@@ -783,10 +786,10 @@ export class People {
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
-}
+})();
 
 // ---- Top-level names the kit declares too ----
-{
+(() => {
   // ui-chart's `Utils` namespace in the app's one package would hide kit-android's `Utils` from every file.
   const dir = mkdtempSync(join(tmpdir(), 'ns-release-checks-names-'));
   try {
@@ -806,10 +809,10 @@ export class People {
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
-}
+})();
 
 // ---- A plugin's own Java classes ----
-{
+(() => {
   const dir = join(here, 'plugin-java');
   const out = mkdtempSync(join(tmpdir(), 'ns-release-checks-java-'));
   try {
@@ -829,10 +832,10 @@ export class People {
   } finally {
     rmSync(out, { recursive: true, force: true });
   }
-}
+})();
 
 // ---- Framework kit auto-detection & layering + Angular C2/E5/F6/F7/F12 ----
-{
+(() => {
   const dir = mkdtempSync(join(tmpdir(), 'ns-release-checks-ng-kit-'));
   try {
     writeFileSync(join(dir, 'package.json'), JSON.stringify({ dependencies: { '@angular/core': '~19.0.0' } }));
@@ -918,10 +921,10 @@ export class KiddoCardComponent {
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
-}
+})();
 
 // ---- HttpClient: a `responseType: 'text'` response is a string ----
-{
+(() => {
   const dir = mkdtempSync(join(tmpdir(), 'ns-release-checks-http-'));
   try {
     const file = join(dir, 'docs.service.ts');
@@ -947,10 +950,10 @@ export async function readDoc(http: HttpClient, url: string): Promise<string> {
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
-}
+})();
 
 // ---- the compiler installed in an app's node_modules ----
-{
+(() => {
   // Its runtime modules (runtime/angular-rx.ts) then sit under node_modules and below the app's tsconfig.json; a lenient
   // app's iOS build must translate them as the checkout does.
   const dir = mkdtempSync(join(tmpdir(), 'ns-release-checks-installed-'));
@@ -998,10 +1001,10 @@ console.log(translateModules(t, sw.program, [file, ...rx]).map((m) => m.code.spl
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
-}
+})();
 
 // ---- NativeDialogConfig on Android ----
-{
+(() => {
   const dir = mkdtempSync(join(tmpdir(), 'ns-release-checks-dialog-'));
   try {
     const file = join(dir, 'sheet.service.ts');
@@ -1020,10 +1023,10 @@ export function openSheet(dialogs: NativeDialogService, cmp: any, config?: Nativ
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
-}
+})();
 
 // ---- Angular components an attribute selects ----
-{
+(() => {
   const bar = "import { Component, input, output } from '@angular/core';\n@Component({ selector: '[searchBar]', template: `<Label [text]=\"hint()\"></Label>` })\nexport class SearchBar { ai = input(false); hint = input('', { alias: 'hintText' }); submitted = output<string>(); }\n";
   const hosted = hostedComponent('/app/search-bar.component.ts', bar)!;
   const page = (template: string, imports = 'SearchBar') => angularComponent('/app/home.component.ts', `import { Component, ViewChild } from '@angular/core';\nimport { SearchBar } from './search-bar.component';\n@Component({ selector: 'Home', imports: [${imports}], template: \`${template}\` })\nexport class Home { @ViewChild('bar') bar: SearchBar; go() {} done(v: string) {} }\n`, new Map(), { hosts: [hosted] })!;
@@ -1043,10 +1046,10 @@ export function openSheet(dialogs: NativeDialogService, cmp: any, config?: Nativ
   };
   check(refused(`<GridLayout searchBar><Label text="x"></Label></GridLayout>`).includes('content on <GridLayout>, the host of SearchBar'), "content inside a component's host is refused (no <ng-content> yet)");
   check(refused(`<GridLayout searchBar></GridLayout>`, bar.replace('export class SearchBar {', "export class SearchBar { el = inject(ElementRef);").replace('{ Component,', '{ Component, ElementRef, inject,')).includes("SearchBar's own ElementRef or host bindings"), 'a hosted component reading its host element is refused');
-}
+})();
 
 // ---- Plugin elements registered with a ViewClassMeta ----
-{
+(() => {
   const dir = mkdtempSync(join(tmpdir(), 'ns-release-checks-ng-elements-'));
   try {
     const entry = join(dir, 'node_modules/fake-panel/angular/fesm2022/fake-panel-angular.mjs');
@@ -1070,10 +1073,10 @@ export function openSheet(dialogs: NativeDialogService, cmp: any, config?: Nativ
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
-}
+})();
 
 // ---- Angular features a release build refuses rather than ignores ----
-{
+(() => {
   const thrown = (f: () => unknown) => { try { f(); return ''; } catch (e) { return String(e); } };
   const page = (template: string, members = 'form: any; name = ""; items: string[] = [];', options: Parameters<typeof angularComponent>[3] = {}, selectors = new Map<string, string>()) =>
     thrown(() => angularComponent('/app/form.component.ts', `import { Component } from '@angular/core';\n@Component({ selector: 'Form', template: \`${template}\` })\nexport class Form { ${members} }\n`, selectors, options));
@@ -1220,10 +1223,10 @@ export function openSheet(dialogs: NativeDialogService, cmp: any, config?: Nativ
   check(flat("const routes = [{ path: 'a', redirectTo: '/b' }];").includes("a redirect from a path other than ''"), "a redirect from a path other than '' outside the entry stops the build");
   check(flat("const routes = [{ path: 'a', component: A }];\n@NgModule({ imports: [NativeScriptRouterModule.forRoot(routes, { bindToComponentInputs: true })] })\nexport class R {}\n").includes('the router option bindToComponentInputs is not supported'), "forRoot's options that change routing stop the build");
   check(!flat("const routes = [{ path: '', redirectTo: '/a', pathMatch: 'full' }, { path: 'a', component: A }];\nNativeScriptRouterModule.forRoot(routes, { enableTracing: true });\nconst row = { id: 1, path: 'x' };\n"), 'a flat route table, and an object with a path that is not a route, compile');
-}
+})();
 
 // ---- Angular exports and a non-strict app's diagnostics ----
-{
+(() => {
   const dir = mkdtempSync(join(tmpdir(), 'ns-release-checks-ng-exports-'));
   try {
     symlinkSync(modulesDir, join(dir, 'node_modules'), 'dir');
@@ -1267,10 +1270,10 @@ export const restoring = isAngularHmrRestoringRoute();
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
-}
+})();
 
 // ---- An own value for a class's method (Kotlin) ----
-{
+(() => {
   const dir = mkdtempSync(join(tmpdir(), 'ns-release-checks-own-method-'));
   try {
     const translate = (source: string) => {
@@ -1288,10 +1291,10 @@ export const restoring = isAngularHmrRestoringRoute();
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
-}
+})();
 
 // ---- @angular/forms' directives in templates ----
-{
+(() => {
   const compile = (template: string, members = 'name = ""; agree = false; form: any; save(f: any) {}', imports = 'NativeScriptFormsModule, ReactiveFormsModule', selectors = new Map<string, string>()) =>
     angularComponent('/app/form.component.ts', `import { Component, signal } from '@angular/core';\nimport { ReactiveFormsModule, FormsModule } from '@angular/forms';\nimport { NativeScriptFormsModule } from '@nativescript/angular';\n@Component({ selector: 'Form', imports: [${imports}], template: \`${template}\` })\nexport class Form { ${members} }\n`, selectors, {})!;
   const fails = (template: string, members?: string, imports?: string, selectors?: Map<string, string>) => { try { compile(template, members, imports, selectors); return ''; } catch (e) { return String(e); } };
@@ -1348,10 +1351,10 @@ export const restoring = isAngularHmrRestoringRoute();
   refused('ngModel in a form without a name stops the build', fails(`<StackLayout ngForm><TextField [(ngModel)]="name"></TextField></StackLayout>`), 'NG01352');
   refused('[class] beside a forms control stops the build', fails(`<TextField [(ngModel)]="name" [class]="'x'"></TextField>`), '[class] beside');
   refused("a reference to an exportAs the element doesn't have stops the build", fails(`<TextField [(ngModel)]="name" #f="ngForm"></TextField>`), `#f="ngForm" on <TextField>, a reference to a directive's exportAs`);
-}
+})();
 
 // ---- @angular/forms: the port against the package ----
-{
+(() => {
   // Each forms diff case run in Node twice, against @angular/forms and against runtime/angular-forms.ts in its place: the
   // port's semantics checked apart from the translators. What the package's typing would reject, the cases leave out.
   const dir = mkdtempSync(join(tmpdir(), 'ns-release-checks-forms-'));
@@ -1378,9 +1381,9 @@ export const restoring = isAngularHmrRestoringRoute();
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
-}
+})();
 
-{
+(() => {
   // kit-android's runtime on the host JVM, for what no diff case reaches: the harness translates no Java class reference.
   const build = process.env.NS_DIFF_BUILD ?? join(tmpdir(), 'ns-native-diff');
   const dir = join(build, 'release-checks-java');
@@ -1407,10 +1410,10 @@ fun main() {
   const expected = 'true true a true true true';
   check(got === expected, "a Java method's or field's null reads as script's null on Android, a void method's result as undefined");
   if (got !== expected) console.log(`    got: ${got.slice(0, 300)}`);
-}
+})();
 
 // ---- The kit's Gradle path from an output folder under a symlink ----
-{
+(() => {
   // The link sits at a different depth from its target, as $TMPDIR's /var does from /private/var.
   const dir = realpathSync(mkdtempSync(join(tmpdir(), 'ns-release-checks-symlinked-out-')));
   try {
@@ -1422,7 +1425,7 @@ fun main() {
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
-}
+})();
 
 console.log(failed ? `${failed} release checks failed` : 'release checks pass');
 process.exit(failed ? 1 : 0);
