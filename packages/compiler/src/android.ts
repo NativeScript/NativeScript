@@ -98,9 +98,12 @@ function kotlinRouteConfig(routes: RouteNode[], indent: string): string {
       r.outlet ? `outlet = ${kotlinString(r.outlet)}` : '',
       r.redirectTo !== undefined ? `redirectTo = ${kotlinString(r.redirectTo)}` : '',
       r.full ? 'full = true' : '',
+      r.guards !== undefined ? `guards = ${r.guards}` : '',
       r.children?.length ? `children = ${kotlinRouteConfig(r.children, indent + '    ')}` : '',
     ].filter(Boolean);
-    return `RouteConfig(${[kotlinString(r.path), ...named].join(', ')})${r.component ? ` { ${r.component}().render() }` : ''}`;
+    // canDeactivate guards take the component: the router keeps the instance it renders.
+    const make = r.deactivate ? `Router.shared.activating(${r.component}())` : `${r.component}()`;
+    return `RouteConfig(${[kotlinString(r.path), ...named].join(', ')})${r.component ? ` { ${make}.render() }` : ''}`;
   };
   return `listOf(\n${routes.map((r) => `${indent}    ${one(r)}`).join(',\n')}\n${indent})`;
 }

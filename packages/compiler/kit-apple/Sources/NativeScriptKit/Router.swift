@@ -64,17 +64,36 @@ public final class RouteConfig {
     let make: (() throws -> View)?
     /// `NSEmptyOutletComponent`: its children show in a frame of their own, on a page of the outlet's frame.
     let emptyOutlet: Bool
+    /// The id the route's guards are registered under (`Router.addGuard`).
+    let guards: Int?
 
-    public init(_ path: String, outlet: String = Router.primary, redirectTo: String? = nil, full: Bool = false, emptyOutlet: Bool = false, children: [RouteConfig] = [], _ make: (() throws -> View)? = nil) {
+    public init(_ path: String, outlet: String = Router.primary, redirectTo: String? = nil, full: Bool = false, emptyOutlet: Bool = false, guards: Int? = nil, children: [RouteConfig] = [], _ make: (() throws -> View)? = nil) {
         segments = path.split(separator: "/").map(String.init)
         self.outlet = outlet
         self.redirectTo = redirectTo
         self.full = full
         self.emptyOutlet = emptyOutlet
+        self.guards = guards
         self.children = children
         self.make = make
     }
 }
+
+/// Angular's `RouterStateSnapshot`, as guards receive it: a URL and the route it shows.
+public final class RouterStateSnapshot: CustomStringConvertible {
+    nonisolated deinit {}
+    public let url: String
+    public let root: ActivatedRouteSnapshot
+    public init(_ url: String, _ root: ActivatedRouteSnapshot = ActivatedRouteSnapshot()) {
+        self.url = url
+        self.root = root
+    }
+    public func toString() -> String { url }
+    public var description: String { url }
+}
+
+/// A route guard compiled from the app, called with Angular's arguments for its kind (two, or four for canDeactivate).
+public typealias RouteGuard = (Any?, Any?, Any?, Any?) throws -> Any?
 
 private let routeKey = JSSymbol("NativeScriptKit:route")
 
@@ -124,8 +143,33 @@ public final class Router {
         nonisolated deinit {}
         let owner: Owner
         let route: ActivatedRoute
-        init(owner: Owner, route: ActivatedRoute) { self.owner = owner; self.route = route }
+        /// The routes the page's URL resolved through, and the segments each consumed.
+        let match: Match?
+        /// The routed component, kept for canDeactivate guards.
+        var component: AnyObject?
+        init(owner: Owner, route: ActivatedRoute, match: Match?) { self.owner = owner; self.route = route; self.match = match }
     }
+
+    /// A URL resolved through the configuration: the routes, root first, the segments each consumed, the parameters and
+    /// the URL once redirects applied.
+    private struct Match {
+        var chain: [RouteConfig]
+        var consumed: [[String]]
+        var params: [String: String]
+        var url: [String]
+    }
+
+    /// What a route's guards decided.
+    private enum Verdict { case pass, cancel, redirect(UrlTree) }
+
+    /// How an outlet's navigation ended.
+    private enum Shown { case unmatched, already, navigated, cancelled }
+
+    private var guardTable: [Int: [String: [RouteGuard]]] = [:]
+    /// The latest navigation: one whose guards settle after a newer one started is cancelled.
+    private var navigations = 0
+    /// The components of the pages being built, innermost last.
+    private var rendering: [AnyObject?] = []
 
     private final class Outlet {
         nonisolated deinit {}
@@ -150,6 +194,17 @@ public final class Router {
     /// A flat route table's outlet: the injector of the view holding it.
     private var flatInjector: Injector?
 
+    /// A route guard of the route registered under `route` (`RouteConfig.guards`).
+    public func addGuard(_ route: Double, _ kind: String, _ run: @escaping RouteGuard) {
+        guardTable[Int(route), default: [:]][kind, default: []].append(run)
+    }
+
+    /// A routed component whose route has canDeactivate guards, kept as the page's component.
+    public func activating<C: AnyObject>(_ component: C) -> C {
+        if !rendering.isEmpty { rendering[rendering.count - 1] = component }
+        return component
+    }
+
     /// A `page-router-outlet`: a frame showing its outlet's URL. A route that fails to render is reported and the frame stays empty.
     public func outlet(_ name: String = Router.primary) throws -> View {
         let frame = try Frame()
@@ -159,12 +214,12 @@ public final class Router {
             return frame
         }
         outlets[name] = Outlet(frame: frame, routes: name == Router.primary ? config : Router.routes(in: config, outlet: name), injector: Injector.current)
-        jsReport {
-            if name == Router.primary {
-                if try show(name, [], extras: nil) == true { ended(url: "/") }
-            } else if let url = pending.removeValue(forKey: name) {
-                try show(name, url, extras: nil)
-            }
+        let url = name == Router.primary ? [] : pending.removeValue(forKey: name)
+        if let url {
+            show(name, url, extras: nil, token: begin(), { [weak self] shown in
+                if case .redirect(let tree) = shown { self?.navigateByUrl(tree); return }
+                if name == Router.primary, case .done(.navigated) = shown { self?.ended(url: "/") }
+            }, jsReportUncaught)
         }
         return frame
     }
@@ -172,16 +227,24 @@ public final class Router {
     /// A navigation whose component throws shows nothing new, and its promise rejects with the error, as Angular's router's does.
     @discardableResult
     public func navigate(_ commands: [Any], _ extras: Any? = nil) -> JSPromise<Bool> {
-        do { return JSPromise.resolve(try navigation(commands, extras)) } catch { return JSPromise.reject(jsCaught(error)) }
+        let (promise, resolvers) = JSPromise<Bool>.pending()
+        do { try navigation(commands, extras, { resolvers.resolve($0) }, { resolvers.reject($0) }) } catch { resolvers.reject(jsCaught(error)) }
+        return promise
     }
 
-    private func navigation(_ commands: [Any], _ extras: Any?) throws -> Bool {
+    /// A navigation's token: navigations a component starts while its page is built belong to the one building it.
+    private func begin() -> Int {
+        if Page.building.isEmpty { navigations += 1 }
+        return navigations
+    }
+
+    private func navigation(_ commands: [Any], _ extras: Any?, _ done: @escaping (Bool) -> Void, _ fail: @escaping (Any?) -> Void) throws {
         if config.isEmpty {
             let path = commands.map { jsToString($0) }.joined(separator: "/")
-            guard let (route, params) = resolveFlatRoute(path), let frame = (try? Frame.topmost()) as? Frame else { return false }
+            guard let (route, params) = resolveFlatRoute(path), let frame = (try? Frame.topmost()) as? Frame else { return done(false) }
             try push(route.make, ActivatedRoute(params: params), into: frame, extras: extras, injector: flatInjector)
             ended(url: "/" + path.split(separator: "/").joined(separator: "/"))
-            return true
+            return done(true)
         }
         let relativeTo = (field(extras, "relativeTo") as? ActivatedRoute) ?? (field(field(extras, "relativeTo"), "_kit") as? ActivatedRoute)
         var targets: [(outlet: String, url: [String])] = []
@@ -212,21 +275,40 @@ public final class Router {
                 targets.insert((base.outlet, url), at: 0)
             }
         }
+        let token = begin()
+        let several = targets.count > 1
         var ok = true
         var navigated = false
-        for (name, url) in targets {
+        var rest = targets[...]
+        // Outlet by outlet: one whose guards return a promise continues when it settles.
+        func next() {
+            guard let (name, url) = rest.popFirst() else {
+                if navigated { ended(url: absolute || relativeTo == nil ? "/" + segments.joined(separator: "/") : self.url) }
+                return done(ok)
+            }
             // The primary URL `/home` with outlets names the route holding them, already shown.
-            if name == Router.primary, !targets.dropFirst().isEmpty, current(Router.primary)?.first == url.first { continue }
+            if name == Router.primary, several, current(Router.primary)?.first == url.first { return next() }
             guard outlets[name]?.frame != nil else {
                 pending[name] = url
-                continue
+                return next()
             }
-            let shown = try show(name, url, extras: extras)
-            ok = shown != nil && ok
-            navigated = navigated || shown == true
+            show(name, url, extras: extras, token: token, { [weak self] outcome in
+                switch outcome {
+                case .redirect(let tree):
+                    // The first navigation's promise takes the redirect's result, as Angular's does.
+                    guard let self else { return done(false) }
+                    let str = tree.toString()
+                    do { try self.navigation([str.hasPrefix("/") ? str : "/" + str], extras, done, fail) } catch { fail(jsCaught(error)) }
+                case .done(.cancelled):
+                    done(false)
+                case .done(let shown):
+                    ok = shown != .unmatched && ok
+                    navigated = navigated || shown == .navigated
+                    next()
+                }
+            }, fail)
         }
-        if navigated { ended(url: absolute || relativeTo == nil ? "/" + segments.joined(separator: "/") : self.url) }
-        return ok
+        next()
     }
 
     /// `navigate(['/recipe', id])` as translated code passes it.
@@ -320,40 +402,135 @@ public final class Router {
         events.next(NavigationEnd(id: navigationId, url: url, urlAfterRedirects: self.url))
     }
 
-    /// Whether the outlet navigated: nil when the URL matches no route, false when the outlet shows it already.
-    @discardableResult
-    private func show(_ name: String, _ url: [String], extras: Any?) throws -> Bool? {
-        guard let outlet = outlets[name], var frame = outlet.frame,
-              let (chain, params, resolved) = match(outlet.routes, url, outlet: name == Router.primary ? Router.primary : nil),
-              let make = chain.last?.make else { return nil }
-        if outlet.entries.last?.route.url == resolved { return false }
-        if chain.contains(where: { $0.emptyOutlet }) {
-            if outlet.inner == nil { outlet.inner = emptyOutlet(in: frame) }
-            if let inner = outlet.inner { frame = inner }
+    private enum Outcome { case done(Shown), redirect(UrlTree) }
+
+    /// An outlet's navigation to a URL, as Angular's router runs it: canMatch while the URL is matched (a route whose
+    /// guards return false is passed over), canDeactivate of the routes the outlet leaves, then canActivateChild and
+    /// canActivate of each route it activates, root first. Guards that all return synchronously keep the navigation
+    /// synchronous. A navigation is never guarded going back: the frame has gone back already, as with
+    /// @nativescript/angular, which lets the router catch up after the frame.
+    private func show(_ name: String, _ url: [String], extras: Any?, token: Int, _ done: @escaping (Outcome) -> Void, _ fail: @escaping (Any?) -> Void) {
+        guard let outlet = outlets[name] else { return done(.done(.unmatched)) }
+        let candidates = matches(outlet.routes, url, outlet: name == Router.primary ? Router.primary : nil).filter { $0.chain.last?.make != nil }
+        let current = outlet.entries.last
+        let currentUrl = "/" + (current?.route.url ?? []).joined(separator: "/")
+        var matched: [ObjectIdentifier: Bool] = [:]
+        var index = 0
+        func candidate() {
+            guard token == navigations else { return done(.done(.cancelled)) }
+            guard index < candidates.count else { return done(.done(.unmatched)) }
+            let found = candidates[index]
+            index += 1
+            if found.chain.contains(where: { matched[ObjectIdentifier($0)] == false }) { return candidate() }
+            let segments = JSArray(url.map { UrlSegment($0) })
+            let unchecked = found.chain.filter { matched[ObjectIdentifier($0)] == nil && !guards($0, "canMatch").isEmpty }
+            var routes = unchecked[...]
+            func canMatch() {
+                guard let route = routes.popFirst() else { return activate(found) }
+                check([guards(route, "canMatch").map { g in { try g(JSObject([("path", route.segments.joined(separator: "/"))]), segments, nil, nil) } }], outlet: outlet, { verdict in
+                    switch verdict {
+                    case .pass: matched[ObjectIdentifier(route)] = true; canMatch()
+                    case .cancel: matched[ObjectIdentifier(route)] = false; candidate()
+                    case .redirect(let tree): done(.redirect(tree))
+                    }
+                }, fail)
+            }
+            canMatch()
         }
-        history.removeAll { $0 == name }
-        history.append(name)
-        try push(make, ActivatedRoute(params: params, outlet: name, url: resolved), into: frame, extras: extras, outlet: outlet, injector: outlet.injector)
-        return true
+        func activate(_ found: Match) {
+            guard token == navigations else { return done(.done(.cancelled)) }
+            if current?.route.url == found.url { return done(.done(.already)) }
+            let route = ActivatedRoute(params: found.params, outlet: name, url: found.url)
+            let nextUrl = "/" + found.url.joined(separator: "/")
+            // Routes the outlet shows already, with the same segments, are reused: their guards don't run again.
+            var reused = 0
+            if let old = current?.match {
+                while reused < min(old.chain.count, found.chain.count), old.chain[reused] === found.chain[reused], old.consumed[reused] == found.consumed[reused] { reused += 1 }
+            }
+            var groups: [[() throws -> Any?]] = []
+            if let current, let old = current.match {
+                let currentState = RouterStateSnapshot(currentUrl, current.route.snapshot)
+                let nextState = RouterStateSnapshot(nextUrl, route.snapshot)
+                for (i, left) in old.chain.enumerated().dropFirst(reused).reversed() {
+                    let component = i == old.chain.count - 1 ? current.component : nil
+                    let calls = guards(left, "canDeactivate").map { g in { try g(component, current.route.snapshot, currentState, nextState) } }
+                    if !calls.isEmpty { groups.append(calls) }
+                }
+            }
+            let state = RouterStateSnapshot(nextUrl, route.snapshot)
+            for i in reused..<found.chain.count {
+                let children = found.chain[..<i].reversed().flatMap { guards($0, "canActivateChild") }.map { g in { try g(route.snapshot, state, nil, nil) } }
+                if !children.isEmpty { groups.append(children) }
+                let calls = guards(found.chain[i], "canActivate").map { g in { try g(route.snapshot, state, nil, nil) } }
+                if !calls.isEmpty { groups.append(calls) }
+            }
+            check(groups, outlet: outlet, { [weak self] verdict in
+                guard let self, token == self.navigations else { return done(.done(.cancelled)) }
+                switch verdict {
+                case .cancel: return done(.done(.cancelled))
+                case .redirect(let tree): return done(.redirect(tree))
+                case .pass: break
+                }
+                guard var frame = outlet.frame, let make = found.chain.last?.make else { return done(.done(.unmatched)) }
+                if found.chain.contains(where: { $0.emptyOutlet }) {
+                    if outlet.inner == nil { outlet.inner = self.emptyOutlet(in: frame) }
+                    if let inner = outlet.inner { frame = inner }
+                }
+                self.history.removeAll { $0 == name }
+                self.history.append(name)
+                do { try self.push(make, route, into: frame, extras: extras, outlet: outlet, injector: outlet.injector, match: found) } catch { return fail(jsCaught(error)) }
+                done(.done(.navigated))
+            }, fail)
+        }
+        candidate()
+    }
+
+    private func guards(_ route: RouteConfig, _ kind: String) -> [RouteGuard] {
+        route.guards.flatMap { guardTable[$0]?[kind] } ?? []
+    }
+
+    /// Guards group by group, in the outlet's injection context. Each group's guards are all called first, then the first
+    /// result that isn't true decides (Angular's prioritizedGuardValue): false cancels, a UrlTree redirects, and anything
+    /// else passes. A promise defers what follows until it settles.
+    private func check(_ groups: [[() throws -> Any?]], outlet: Outlet, _ next: @escaping (Verdict) -> Void, _ fail: @escaping (Any?) -> Void) {
+        var rest = groups[...]
+        func group() {
+            guard let calls = rest.popFirst() else { return next(.pass) }
+            let results: [Any?]
+            do { results = try Injector.runInContext(outlet.injector) { try calls.map { try $0() } } } catch { return fail(jsCaught(error)) }
+            func result(_ i: Int) {
+                guard i < results.count else { return group() }
+                let decide = { (value: Any?) in
+                    if let tree = jsFlat(value) as? UrlTree { next(.redirect(tree)) } else if (jsFlat(value) as? Bool) == false { next(.cancel) } else { result(i + 1) }
+                }
+                if let promise = jsFlat(results[i]) as? JSThenable { promise.jsSubscribe(decide, fail) } else { decide(results[i]) }
+            }
+            result(0)
+        }
+        group()
     }
 
     /// `PageRouterOutlet.activateOnGoForward` and `loadComponentInPage`: a new page, the component rendered into
     /// it in a scope of its own, and the frame navigated to it. A component that throws leaves the outlet as it was.
-    private func push(_ make: () throws -> View, _ route: ActivatedRoute, into frame: Frame, extras: Any?, outlet: Outlet? = nil, injector: Injector?) throws {
+    private func push(_ make: () throws -> View, _ route: ActivatedRoute, into frame: Frame, extras: Any?, outlet: Outlet? = nil, injector: Injector?, match: Match? = nil) throws {
         let page = try Page()
         page.route = route
         let owner = Owner(parent: nil)
         // Shown before the component renders, as Angular's URL is current by activation: a navigation the
         // component makes while rendering (a tab view filling its outlets) finds this route already there.
-        let entry = Entry(owner: owner, route: route)
+        let entry = Entry(owner: owner, route: route, match: match)
         outlet?.entries.append(entry)
         let previousRoute = ActivatedRoute.current
         ActivatedRoute.current = route
         Page.building.append(page)
+        rendering.append(nil)
         let pending = Reactivity.pending()
         let view: View
         do {
-            defer { Page.building.removeLast() }
+            defer {
+                Page.building.removeLast()
+                entry.component = rendering.removeLast()
+            }
             view = try owner.run { try Injector.runInContext(injector, make) }
         } catch {
             owner.dispose()
@@ -403,15 +580,16 @@ public final class Router {
         }
     }
 
-    /// The routes a URL resolves through, its parameters and the URL once redirects applied.
-    private func match(_ routes: [RouteConfig], _ url: [String], outlet: String?) -> ([RouteConfig], [String: String], [String])? {
+    /// Every way a URL resolves through the routes, in the order Angular's router tries them. A redirect that applies
+    /// ends the search, as in Angular.
+    private func matches(_ routes: [RouteConfig], _ url: [String], outlet: String?) -> [Match] {
+        var found: [Match] = []
         for route in routes where outlet == nil || route.outlet == outlet {
             if let redirect = route.redirectTo {
                 let applies = route.full ? url == route.segments : Array(url.prefix(route.segments.count)) == route.segments
                 guard applies else { continue }
-                let target = redirect.split(separator: "/").map(String.init)
-                if redirect.hasPrefix("/") { return match(config, target + url.dropFirst(route.segments.count), outlet: Router.primary) }
-                return match(routes, target + url.dropFirst(route.segments.count), outlet: outlet)
+                let target = redirect.split(separator: "/").map(String.init) + url.dropFirst(route.segments.count)
+                return found + (redirect.hasPrefix("/") ? matches(config, target, outlet: Router.primary) : matches(routes, target, outlet: outlet))
             }
             guard url.count >= route.segments.count else { continue }
             var params: [String: String] = [:]
@@ -421,14 +599,15 @@ public final class Router {
                 else if pattern != part { matched = false; break }
             }
             guard matched else { continue }
+            let own = Array(url.prefix(route.segments.count))
             let rest = Array(url.dropFirst(route.segments.count))
-            if route.make != nil && rest.isEmpty { return ([route], params, route.segments.isEmpty ? [] : url) }
+            if route.make != nil && rest.isEmpty { found.append(Match(chain: [route], consumed: [own], params: params, url: route.segments.isEmpty ? [] : url)) }
             let children = route.children.filter { $0.outlet == Router.primary }
-            if !children.isEmpty, let (chain, inner, resolved) = match(children, rest, outlet: Router.primary) {
-                return ([route] + chain, params.merging(inner) { $1 }, Array(url.prefix(route.segments.count)) + resolved)
+            for inner in children.isEmpty ? [] : matches(children, rest, outlet: Router.primary) {
+                found.append(Match(chain: [route] + inner.chain, consumed: [own] + inner.consumed, params: params.merging(inner.params) { $1 }, url: own + inner.url))
             }
         }
-        return nil
+        return found
     }
 
     private func resolveFlatRoute(_ path: String) -> (Route, [String: String])? {

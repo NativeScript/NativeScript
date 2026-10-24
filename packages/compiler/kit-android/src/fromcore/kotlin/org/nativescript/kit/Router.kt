@@ -49,9 +49,17 @@ class Route(path: String, internal val make: () -> View) {
 }
 
 /** A route of the app's configuration (Angular's `Route`), lazy children and components resolved at compile time. */
-class RouteConfig(path: String, internal val outlet: String = Router.PRIMARY, internal val redirectTo: String? = null, internal val full: Boolean = false, internal val children: List<RouteConfig> = emptyList(), internal val make: (() -> View)? = null) {
+class RouteConfig(path: String, internal val outlet: String = Router.PRIMARY, internal val redirectTo: String? = null, internal val full: Boolean = false, internal val guards: Int? = null, internal val children: List<RouteConfig> = emptyList(), internal val make: (() -> View)? = null) {
     internal val segments = path.split("/").filter { it.isNotEmpty() }
 }
+
+/** Angular's `RouterStateSnapshot`, as guards receive it: a URL and the route it shows. */
+class RouterStateSnapshot(val url: String, val root: ActivatedRouteSnapshot = ActivatedRouteSnapshot()) {
+    override fun toString(): String = url
+}
+
+/** A route guard compiled from the app, called with Angular's arguments for its kind (two, or four for canDeactivate). */
+typealias RouteGuard = (Any?, Any?, Any?, Any?) -> Any?
 
 private val routeKey = jsSymbol("NativeScriptKit:route")
 
@@ -84,7 +92,28 @@ class Router {
     val events = RxSubject<NavigationEnd>()
     private var navigationId = 0.0
 
-    private class Entry(val owner: Owner, val route: ActivatedRoute)
+    /** [match]: the routes the page's URL resolved through; [component]: the routed component, kept for canDeactivate guards. */
+    private class Entry(val owner: Owner, val route: ActivatedRoute, val match: Match?) {
+        var component: Any? = null
+    }
+
+    /** A URL resolved through the configuration: the routes, root first, the segments each consumed, the parameters and the URL once redirects applied. */
+    private class Match(val chain: List<RouteConfig>, val consumed: List<List<String>>, val params: Map<String, String>, val url: List<String>)
+
+    /** How an outlet's navigation ended, or where its guards redirect it. */
+    private sealed class Outcome {
+        class Done(val shown: Shown) : Outcome()
+        class Redirect(val tree: UrlTree) : Outcome()
+    }
+
+    /** How an outlet's navigation ended. */
+    private enum class Shown { UNMATCHED, ALREADY, NAVIGATED, CANCELLED }
+
+    private val guardTable = HashMap<Int, HashMap<String, MutableList<RouteGuard>>>()
+    /** The latest navigation: one whose guards settle after a newer one started is cancelled. */
+    private var navigations = 0
+    /** The components of the pages being built, innermost last. */
+    private val rendering = ArrayList<Any?>()
 
     /** [injector]: the injector of the view holding the outlet, which its routed components inject from. */
     private class Outlet(frame: Frame, val routes: List<RouteConfig>, val injector: Injector?) {
@@ -110,6 +139,17 @@ class Router {
         history.clear()
     }
 
+    /** A route guard of the route registered under [route] (`RouteConfig.guards`). */
+    fun addGuard(route: Double, kind: String, guard: RouteGuard) {
+        guardTable.getOrPut(route.toInt()) { HashMap() }.getOrPut(kind) { ArrayList() }.add(guard)
+    }
+
+    /** A routed component whose route has canDeactivate guards, kept as the page's component. */
+    fun <C> activating(component: C): C {
+        if (rendering.isNotEmpty()) rendering[rendering.size - 1] = component
+        return component
+    }
+
     /** A `page-router-outlet`: a frame showing its outlet's URL. A route that fails to render is reported and the frame stays empty. */
     fun outlet(name: String = PRIMARY): View {
         val frame = Frame()
@@ -119,12 +159,12 @@ class Router {
             return frame
         }
         outlets[name] = Outlet(frame, if (name == PRIMARY) config else routesIn(config, name), Injector.current)
-        jsReport {
-            if (name == PRIMARY) {
-                if (show(name, emptyList(), null) == true) ended("/")
-            } else {
-                pending.remove(name)?.let { show(name, it, null) }
-            }
+        val url = if (name == PRIMARY) emptyList() else pending.remove(name)
+        if (url != null) {
+            show(name, url, null, begin(), { outcome ->
+                if (outcome is Outcome.Redirect) navigateByUrl(outcome.tree)
+                else if (name == PRIMARY && (outcome as Outcome.Done).shown == Shown.NAVIGATED) ended("/")
+            }, ::jsReportUncaught)
         }
         return frame
     }
@@ -132,21 +172,30 @@ class Router {
     fun navigate(commands: JSArray<*>, extras: Any? = null): JSPromise<Boolean> = navigate(commands.storage.toList(), extras)
 
     /** A navigation whose component throws shows nothing new, and its promise rejects with the error, as Angular's router's does. */
-    fun navigate(commands: List<Any?>, extras: Any? = null): JSPromise<Boolean> =
+    fun navigate(commands: List<Any?>, extras: Any? = null): JSPromise<Boolean> {
+        val (promise, resolvers) = JSPromise.pending<Boolean>()
         try {
-            JSPromise.resolve(navigation(commands, extras))
+            navigation(commands, extras, { resolvers.resolve(it) }, { resolvers.reject(it) })
         } catch (e: Throwable) {
-            JSPromise.reject(jsCaught(e))
+            resolvers.reject(jsCaught(e))
         }
+        return promise
+    }
 
-    private fun navigation(commands: List<Any?>, extras: Any?): Boolean {
+    /** A navigation's token: navigations a component starts while its page is built belong to the one building it. */
+    private fun begin(): Int {
+        if (building.isEmpty()) navigations += 1
+        return navigations
+    }
+
+    private fun navigation(commands: List<Any?>, extras: Any?, done: (Boolean) -> Unit, fail: (Any?) -> Unit) {
         if (config.isEmpty()) {
             val path = commands.joinToString("/") { jsToString(it) }
-            val (route, params) = resolveFlatRoute(path) ?: return false
-            val frame = FrameBase.topmost() as? Frame ?: return false
+            val (route, params) = resolveFlatRoute(path) ?: return done(false)
+            val frame = FrameBase.topmost() as? Frame ?: return done(false)
             push(route.make, ActivatedRoute(params), frame, extras, injector = flatInjector)
             ended("/" + path.split("/").filter { it.isNotEmpty() }.joinToString("/"))
-            return true
+            return done(true)
         }
         val relativeTo = field(extras, "relativeTo") as? ActivatedRoute
         val targets = ArrayList<Pair<String, List<String>>>()
@@ -177,22 +226,40 @@ class Router {
                 targets.add(0, relativeTo.outlet to url)
             }
         }
+        val token = begin()
         var ok = true
         var navigated = false
-        for ((index, target) in targets.withIndex()) {
-            val (name, url) = target
+        var index = 0
+        // Outlet by outlet: one whose guards return a promise continues when it settles.
+        fun next() {
+            if (index == targets.size) {
+                if (navigated) ended(if (absolute || relativeTo == null) "/" + segments.joinToString("/") else this.url)
+                return done(ok)
+            }
+            val (name, url) = targets[index++]
             // The primary URL `/home` with outlets names the route holding them, already shown.
-            if (name == PRIMARY && index == 0 && targets.size > 1 && current(PRIMARY)?.firstOrNull() == url.firstOrNull()) continue
+            if (name == PRIMARY && index == 1 && targets.size > 1 && current(PRIMARY)?.firstOrNull() == url.firstOrNull()) return next()
             if (outlets[name]?.frame == null) {
                 pending[name] = url
-                continue
+                return next()
             }
-            val shown = show(name, url, extras)
-            ok = shown != null && ok
-            navigated = navigated || shown == true
+            show(name, url, extras, token, { outcome ->
+                when {
+                    // The first navigation's promise takes the redirect's result, as Angular's does.
+                    outcome is Outcome.Redirect -> {
+                        val str = outcome.tree.toString()
+                        try { navigation(listOf(if (str.startsWith("/")) str else "/$str"), extras, done, fail) } catch (e: Throwable) { fail(jsCaught(e)) }
+                    }
+                    (outcome as Outcome.Done).shown == Shown.CANCELLED -> done(false)
+                    else -> {
+                        ok = outcome.shown != Shown.UNMATCHED && ok
+                        navigated = navigated || outcome.shown == Shown.NAVIGATED
+                        next()
+                    }
+                }
+            }, fail)
         }
-        if (navigated) ended(if (absolute || relativeTo == null) "/" + segments.joinToString("/") else this.url)
-        return ok
+        next()
     }
 
     fun navigateByUrl(urlTarget: Any?, extras: Any? = null): JSPromise<Boolean> {
@@ -263,34 +330,157 @@ class Router {
         events.next(NavigationEnd(navigationId, url, this.url))
     }
 
-    /** Whether the outlet navigated: null when the URL matches no route, false when the outlet shows it already. */
-    private fun show(name: String, url: List<String>, extras: Any?): Boolean? {
-        val outlet = outlets[name] ?: return null
-        val frame = outlet.frame ?: return null
-        val (chain, params, resolved) = match(outlet.routes, url, if (name == PRIMARY) PRIMARY else null) ?: return null
-        val make = chain.lastOrNull()?.make ?: return null
-        if (outlet.entries.lastOrNull()?.route?.url == resolved) return false
-        history.remove(name)
-        history.add(name)
-        push(make, ActivatedRoute(params, name, resolved), frame, extras, outlet, outlet.injector)
-        return true
+    /**
+     * An outlet's navigation to a URL, as Angular's router runs it: canMatch while the URL is matched (a route whose guards
+     * return false is passed over), canDeactivate of the routes the outlet leaves, then canActivateChild and canActivate of
+     * each route it activates, root first. Guards that all return synchronously keep the navigation synchronous. A
+     * navigation is never guarded going back: the frame has gone back already, as with @nativescript/angular, which lets
+     * the router catch up after the frame.
+     */
+    private fun show(name: String, url: List<String>, extras: Any?, token: Int, done: (Outcome) -> Unit, fail: (Any?) -> Unit) {
+        val outlet = outlets[name] ?: return done(Outcome.Done(Shown.UNMATCHED))
+        val candidates = matches(outlet.routes, url, if (name == PRIMARY) PRIMARY else null).filter { it.chain.lastOrNull()?.make != null }
+        val current = outlet.entries.lastOrNull()
+        val currentUrl = "/" + (current?.route?.url ?: emptyList()).joinToString("/")
+        val matched = java.util.IdentityHashMap<RouteConfig, Boolean>()
+
+        fun activate(found: Match) {
+            if (token != navigations) return done(Outcome.Done(Shown.CANCELLED))
+            if (current?.route?.url == found.url) return done(Outcome.Done(Shown.ALREADY))
+            val route = ActivatedRoute(found.params, name, found.url)
+            val nextUrl = "/" + found.url.joinToString("/")
+            // Routes the outlet shows already, with the same segments, are reused: their guards don't run again.
+            var reused = 0
+            val old = current?.match
+            if (old != null) {
+                while (reused < minOf(old.chain.size, found.chain.size) && old.chain[reused] === found.chain[reused] && old.consumed[reused] == found.consumed[reused]) reused++
+            }
+            val groups = ArrayList<List<() -> Any?>>()
+            if (current != null && old != null) {
+                val currentState = RouterStateSnapshot(currentUrl, current.route.snapshot)
+                val nextState = RouterStateSnapshot(nextUrl, route.snapshot)
+                for (i in old.chain.indices.reversed()) {
+                    if (i < reused) break
+                    val component = if (i == old.chain.size - 1) current.component else null
+                    val calls = guards(old.chain[i], "canDeactivate").map { g -> { g(component, current.route.snapshot, currentState, nextState) } }
+                    if (calls.isNotEmpty()) groups.add(calls)
+                }
+            }
+            val state = RouterStateSnapshot(nextUrl, route.snapshot)
+            for (i in reused until found.chain.size) {
+                val children = found.chain.subList(0, i).asReversed().flatMap { guards(it, "canActivateChild") }.map { g -> { g(route.snapshot, state, null, null) } }
+                if (children.isNotEmpty()) groups.add(children)
+                val calls = guards(found.chain[i], "canActivate").map { g -> { g(route.snapshot, state, null, null) } }
+                if (calls.isNotEmpty()) groups.add(calls)
+            }
+            check(groups, outlet, { verdict ->
+                if (token != navigations || verdict == false) return@check done(Outcome.Done(Shown.CANCELLED))
+                if (verdict is UrlTree) return@check done(Outcome.Redirect(verdict))
+                val frame = outlet.frame
+                val make = found.chain.lastOrNull()?.make
+                if (frame == null || make == null) return@check done(Outcome.Done(Shown.UNMATCHED))
+                history.remove(name)
+                history.add(name)
+                try {
+                    push(make, route, frame, extras, outlet, outlet.injector, found)
+                } catch (e: Throwable) {
+                    return@check fail(jsCaught(e))
+                }
+                done(Outcome.Done(Shown.NAVIGATED))
+            }, fail)
+        }
+
+        var index = 0
+        fun candidate() {
+            if (token != navigations) return done(Outcome.Done(Shown.CANCELLED))
+            if (index >= candidates.size) return done(Outcome.Done(Shown.UNMATCHED))
+            val found = candidates[index++]
+            if (found.chain.any { matched[it] == false }) return candidate()
+            val segments = JSArray(url.map { UrlSegment(it) }.toMutableList())
+            val unchecked = found.chain.filter { matched[it] == null && guards(it, "canMatch").isNotEmpty() }
+            var at = 0
+            fun canMatch() {
+                if (at == unchecked.size) return activate(found)
+                val route = unchecked[at++]
+                val calls = guards(route, "canMatch").map { g -> { g(JSObject("path" to route.segments.joinToString("/")), segments, null, null) } }
+                check(listOf(calls), outlet, { verdict ->
+                    when (verdict) {
+                        null -> { matched[route] = true; canMatch() }
+                        is UrlTree -> done(Outcome.Redirect(verdict))
+                        else -> { matched[route] = false; candidate() }
+                    }
+                }, fail)
+            }
+            canMatch()
+        }
+        candidate()
+    }
+
+    private fun guards(route: RouteConfig, kind: String): List<RouteGuard> = route.guards?.let { guardTable[it]?.get(kind) } ?: emptyList()
+
+    /**
+     * Guards group by group, in the outlet's injection context. Each group's guards are all called first, then the first
+     * result that isn't true decides (Angular's prioritizedGuardValue): false cancels, a UrlTree redirects, and anything
+     * else passes. A promise, or an Observable's first value, defers what follows until it settles. [next] takes null
+     * (passed), false or the UrlTree.
+     */
+    private fun check(groups: List<List<() -> Any?>>, outlet: Outlet, next: (Any?) -> Unit, fail: (Any?) -> Unit) {
+        var at = 0
+        fun group() {
+            if (at == groups.size) return next(null)
+            val calls = groups[at++]
+            val results = try {
+                Injector.runInContext(outlet.injector) { calls.map { it() } }
+            } catch (e: Throwable) {
+                return fail(jsCaught(e))
+            }
+            fun result(i: Int) {
+                if (i == results.size) return group()
+                val decide = { value: Any? ->
+                    val v = jsBox(value)
+                    if (v is UrlTree || v == false) next(v) else result(i + 1)
+                }
+                when (val r = jsBox(results[i])) {
+                    is JSThenable -> r.jsSubscribe(decide, fail)
+                    is RxObservable<*> -> first(r, decide)
+                    else -> decide(r)
+                }
+            }
+            result(0)
+        }
+        group()
+    }
+
+    /** An Observable's first value (Angular's `first()`): the kit's Observables complete with no value only by never emitting. */
+    private fun first(source: RxObservable<*>, next: (Any?) -> Unit) {
+        var taken = false
+        var subscription: RxSubscription? = null
+        subscription = (source as RxObservable<Any?>).subscribe { value ->
+            if (!taken) {
+                taken = true
+                subscription?.unsubscribe()
+                next(value)
+            }
+        }
+        if (taken) subscription.unsubscribe()
     }
 
     /**
      * PageRouterOutlet's `activateOnGoForward`: a new page, the component rendered into it in a scope of its own, and the frame navigated to it.
      * A component that throws leaves the outlet as it was.
      */
-    private fun push(make: () -> View, route: ActivatedRoute, frame: Frame, extras: Any?, outlet: Outlet? = null, injector: Injector?) {
+    private fun push(make: () -> View, route: ActivatedRoute, frame: Frame, extras: Any?, outlet: Outlet? = null, injector: Injector?, match: Match? = null) {
         val page = Page()
         page.route = route
         val owner = Owner(null)
         // Shown before the component renders, as Angular's URL is current by activation: a navigation the
         // component makes while rendering (a tab view filling its outlets) finds this route already there.
-        val entry = Entry(owner, route)
+        val entry = Entry(owner, route, match)
         outlet?.entries?.add(entry)
         val previousRoute = ActivatedRoute.current
         ActivatedRoute.current = route
         building.add(page)
+        rendering.add(null)
         val view = try {
             owner.run { Injector.runInContext(injector, make) }
         } catch (e: Throwable) {
@@ -300,6 +490,7 @@ class Router {
             throw e
         } finally {
             building.removeAt(building.size - 1)
+            entry.component = rendering.removeAt(rendering.size - 1)
         }
         if (view !== page) page.content = view
         val outletRef = outlet?.let { java.lang.ref.WeakReference(it) }
@@ -329,8 +520,9 @@ class Router {
         frame.navigate(JSObject(navigation))
     }
 
-    /** The routes a URL resolves through, its parameters and the URL once redirects applied. */
-    private fun match(routes: List<RouteConfig>, url: List<String>, outlet: String?): Triple<List<RouteConfig>, Map<String, String>, List<String>>? {
+    /** Every way a URL resolves through the routes, in the order Angular's router tries them. A redirect that applies ends the search, as in Angular. */
+    private fun matches(routes: List<RouteConfig>, url: List<String>, outlet: String?): List<Match> {
+        val found = ArrayList<Match>()
         for (route in routes) {
             if (outlet != null && route.outlet != outlet) continue
             val redirect = route.redirectTo
@@ -338,7 +530,7 @@ class Router {
                 val applies = if (route.full) url == route.segments else url.take(route.segments.size) == route.segments
                 if (!applies) continue
                 val target = redirect.split("/").filter { it.isNotEmpty() } + url.drop(route.segments.size)
-                return if (redirect.startsWith("/")) match(config, target, PRIMARY) else match(routes, target, outlet)
+                return found + if (redirect.startsWith("/")) matches(config, target, PRIMARY) else matches(routes, target, outlet)
             }
             if (url.size < route.segments.size) continue
             val params = HashMap<String, String>()
@@ -348,15 +540,15 @@ class Router {
                 else if (pattern != part) { matched = false; break }
             }
             if (!matched) continue
+            val own = url.take(route.segments.size)
             val rest = url.drop(route.segments.size)
-            if (route.make != null && rest.isEmpty()) return Triple(listOf(route), params, if (route.segments.isEmpty()) emptyList() else url)
+            if (route.make != null && rest.isEmpty()) found.add(Match(listOf(route), listOf(own), params, if (route.segments.isEmpty()) emptyList() else url))
             val children = route.children.filter { it.outlet == PRIMARY }
             if (children.isNotEmpty()) {
-                val inner = match(children, rest, PRIMARY)
-                if (inner != null) return Triple(listOf(route) + inner.first, params + inner.second, url.take(route.segments.size) + inner.third)
+                for (inner in matches(children, rest, PRIMARY)) found.add(Match(listOf(route) + inner.chain, listOf(own) + inner.consumed, params + inner.params, own + inner.url))
             }
         }
-        return null
+        return found
     }
 
     private fun resolveFlatRoute(path: String): Pair<Route, Map<String, String>>? {

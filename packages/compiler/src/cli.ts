@@ -278,6 +278,12 @@ if (framework === 'vue') {
       && sf.statements.every((st) => ts.isImportDeclaration(st) || (ts.isClassDeclaration(st) && ts.getDecorators(st)?.some((d) => /^NgModule\(/.test(d.expression.getText()))));
   });
   modules = [...sources.filter((f) => !routeFiles.has(f) && !ngModules.includes(f) && !components.some((c) => c.file === f.replace(/\.ts$/, '.release.ts'))), ...(elements.size ? [join(appDir, '__elements.release.ts')] : [])];
+  // Route files only configure and are not compiled; their guards are, each file's in a module of its own.
+  (tree?.guards ?? []).forEach((g, i) => {
+    const file = join(appDir, `__routes${i}.release.ts`);
+    overrides.set(file, g.source(appDir, platform));
+    modules.push(file);
+  });
   if (components.some((c) => c.usesRuntime)) {
     overrides.set(runtimeModule, readFileSync(join(PACKAGE, 'runtime', 'angular.ts'), 'utf8'));
     modules.push(runtimeModule);
@@ -788,9 +794,12 @@ function routeConfig(routes: RouteNode[], indent: string): string {
       r.redirectTo !== undefined ? `redirectTo: ${JSON.stringify(r.redirectTo)}` : '',
       r.full ? 'full: true' : '',
       r.emptyOutlet ? 'emptyOutlet: true' : '',
+      r.guards !== undefined ? `guards: ${r.guards}` : '',
       r.children?.length ? `children: ${routeConfig(r.children, indent + '    ')}` : '',
     ].filter(Boolean);
-    return `RouteConfig(${[JSON.stringify(r.path), ...named].join(', ')})${r.component ? ` { try ${r.component}().render() }` : ''}`;
+    // canDeactivate guards take the component: the router keeps the instance it renders.
+    const make = r.deactivate ? `Router.shared.activating(${r.component}())` : `${r.component}()`;
+    return `RouteConfig(${[JSON.stringify(r.path), ...named].join(', ')})${r.component ? ` { try ${make}.render() }` : ''}`;
   };
   return `[\n${routes.map((r) => `${indent}    ${one(r)}`).join(',\n')}\n${indent}]`;
 }
