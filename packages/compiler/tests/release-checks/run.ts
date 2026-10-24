@@ -1401,6 +1401,59 @@ fun main() {
   if (got !== expected) console.log(`    got: ${got.slice(0, 300)}`);
 }
 
+// ---- Core members a kit class leaves to each object; a kit method called past its overrides ----
+{
+  const dir = mkdtempSync(join(tmpdir(), 'ns-release-checks-own-members-'));
+  try {
+    const file = join(dir, 'custom.ts');
+    writeFileSync(file, `
+import { EventData, Observable, PageTransition, Transition, View } from '@nativescript/core';
+
+export class StepTransition extends Transition {
+  remember(controller: any, from: any, to: any): any {
+    this.transitionController = controller;
+    this.presented = to;
+    this.presenting = from;
+    return this.transitionController;
+  }
+}
+
+export function tag(t: PageTransition, other: Transition): string {
+  t.name = 'launch';
+  return t.name + (other.name ?? '');
+}
+
+export class Plot extends View {
+  addEventListener(name: string, callback: (data: EventData) => void, thisArg?: any) {
+    if (name === 'tap') Observable.prototype.addEventListener.call(this, name, callback, thisArg);
+    else super.addEventListener(name, callback, thisArg);
+  }
+  removeEventListener(name: string, callback?: (data: EventData) => void, thisArg?: any) {
+    Observable.prototype.removeEventListener.apply(this, [name, callback, thisArg]);
+  }
+}
+`);
+    const sw = createProgram([file], new Map(), 'ios', modulesDir);
+    const swift = new SwiftTranslator(sw.checker, new Map(), sw.files);
+    swift.errors = [];
+    const swCode = translateModules(swift, sw.program, [file]).map((m) => m.code).join('\n');
+    const kt = createProgram([file], new Map(), 'android', modulesDir);
+    const kotlin = new Translator(kt.checker, new Map(), kt.files);
+    kotlin.core = new CoreKotlin(kotlin, true);
+    kotlin.appModule = 'org.example.app';
+    kotlin.errors = [];
+    const ktCode = translateKotlinModules(kotlin, kt.program, [file]).map((m) => m.code).join('\n');
+    check(!swift.errors.length && swCode.includes('self[jsKey: "presented"] = to') && swCode.includes('return self[jsKey: "transitionController"]') && swCode.includes('t[jsKey: "name"] = "launch"'),
+      `a property core's typings declare and the kit's class leaves to each object is the object's own (Swift)${swift.errors.length ? `: ${swift.errors[0]}` : ''}`);
+    check(!kotlin.errors.length && ktCode.includes('this.jsSet("presented", to)') && ktCode.includes('this.jsGet("transitionController")') && ktCode.includes('t.jsSet("name", "launch")'),
+      `a property core's typings declare and the kit's class leaves to each object is the object's own (Kotlin)${kotlin.errors.length ? `: ${kotlin.errors[0]}` : ''}`);
+    check(/self\.addEventListener__Observable\(name, /.test(swCode) && /self\.removeEventListener__Observable\(name, /.test(swCode), "Observable.prototype.m.call(this, …) in a view calls Observable's own m, past View's override (Swift)");
+    check(/this\.addEventListener__Observable\(name, /.test(ktCode) && /this\.removeEventListener__Observable\(name, /.test(ktCode), "Observable.prototype.m.call(this, …) in a view calls Observable's own m, past View's override (Kotlin)");
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
+
 // ---- The kit's Gradle path from an output folder under a symlink ----
 {
   // The link sits at a different depth from its target, as $TMPDIR's /var does from /private/var.

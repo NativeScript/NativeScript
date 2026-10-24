@@ -5,7 +5,7 @@ import { AsyncLowering, usedBefore, type AsyncCtx, type AsyncSyntax, type AsyncT
 import { isAsync, isStatic } from './throws.ts';
 import { assignedValues, definitelyAssignedFields, forwardedSetter, initializedNull, intersectionAliasMembers, nullSetFields, isRegExpProtocol, intlConstructor, isObjectToStringCall, isStringRaw, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, classesHeldUntyped, LooseSlots, originOf, ownSlot, implementedInterfaceDeclarations, slotOf, slotType, type TrustScope } from './lang.ts';
 import { isCoreDeclaration } from './core.ts';
-import { balanced } from './swift.ts';
+import { balanced, nonVirtualName } from './swift.ts';
 import type { Properties } from './properties.ts';
 import { recognizePatterns, type Patterns } from './patterns.ts';
 import type { Reach } from './reach.ts';
@@ -3439,6 +3439,7 @@ export class Translator implements AsyncTranslator {
       if (n === 'toString' && !m.parameters.length) { lines.push('    ' + this.func(m, 'toString', 'override ')); continue; }
       const kit = kitRoot && !inherited.has(n) ? this.core?.kitMember(kitRoot, n) : null;
       if (kit && kit.kind === 'func' && !kit.static) { lines.push(this.kitOverride(m, kit, open)); continue; }
+      if (this.nonVirtualEntry(m)) lines.push('    ' + this.func(m, ident(nonVirtualName(n, cls.name!.text))));
       // An override whose parameters TypeScript types more narrowly than the method it overrides: the base's Kotlin signature.
       // The signature Kotlin has is the topmost declaration's: each override in between takes it too.
       let base = inherited.has(n) ? this.inheritedMethod(cls, n) : undefined;
@@ -7648,13 +7649,88 @@ export class Translator implements AsyncTranslator {
     const method = callee.expression;
     if (!ts.isPropertyAccessExpression(method) || !ts.isPropertyAccessExpression(method.expression) || method.expression.name.text !== 'prototype') return null;
     const cls = this.resolve(method.expression.expression)?.valueDeclaration;
-    if (!cls || !ts.isClassDeclaration(cls) || cls.getSourceFile().isDeclarationFile) return null;
-    const decl = cls.members.find((m): m is ts.MethodDeclaration => ts.isMethodDeclaration(m) && !isStatic(m) && !!m.body && m.name.getText() === method.name.text) ?? this.inheritedMethod(cls, method.name.text);
+    if (!cls || !ts.isClassDeclaration(cls)) return null;
     const rest = callee.name.text === 'call' ? e.arguments.slice(1) : e.arguments[1] && ts.isArrayLiteralExpression(e.arguments[1]) && !e.arguments[1].elements.some(ts.isSpreadElement) ? [...e.arguments[1].elements] : e.arguments.length === 1 ? [] : null;
+    if (cls.getSourceFile().isDeclarationFile) return rest && this.kitPrototypeCall(cls, method.name.text, e, rest);
+    const decl = this.declaringMethod(cls, method.name.text);
     if (!decl || !rest || decl.parameters.some((p) => p.dotDotDotToken) || rest.length > decl.parameters.length) return null;
     const receiver = this.coerce(e.arguments[0], 'Any?');
     const args = rest.map((a, k) => this.coerce(a, this.paramType(decl.parameters[k])));
-    return `${this.checkedCast(receiver, this.className(cls))}.${this.methodIdent(method.name.text)}(${args.join(', ')})`;
+    const owner = decl.parent as ts.ClassDeclaration;
+    const name = this.nonVirtualEntry(decl) ? ident(nonVirtualName(method.name.text, owner.name!.text)) : this.methodIdent(method.name.text);
+    return `${this.checkedCast(receiver, this.className(owner))}.${name}(${args.join(', ')})`;
+  }
+
+  /** The method with a body `X.prototype.name` is: X's own, or the nearest base's of the program's. */
+  private declaringMethod(cls: ts.ClassLikeDeclaration, name: string): ts.MethodDeclaration | undefined {
+    for (let c: ts.ClassLikeDeclaration | undefined = cls; c; c = this.programBase(c)) {
+      const m = c.members.find((x): x is ts.MethodDeclaration => ts.isMethodDeclaration(x) && !isStatic(x) && !!x.body && x.name.getText() === name);
+      if (m) return m;
+      if (c.members.some((x) => !isStatic(x) && x.name?.getText() === name)) return undefined;
+    }
+    return undefined;
+  }
+
+  private nonVirtualMethods: Set<ts.MethodDeclaration> | null = null;
+  /**
+   * A method some subclass overrides, which `X.prototype.m.call(obj, …)` calls as X has it whatever obj's class is: it
+   * gets a final copy too, as Kotlin dispatches `m` by the object's class. Library mode: each such method, which an app
+   * may name; otherwise those the program names.
+   */
+  private nonVirtualEntry(m: ts.MethodDeclaration): boolean {
+    if (!this.nonVirtualMethods) {
+      const set = new Set<ts.MethodDeclaration>();
+      const classes: ts.ClassLikeDeclaration[] = [];
+      const collect = (n: ts.Node) => { if (ts.isClassLike(n)) classes.push(n); ts.forEachChild(n, collect); };
+      for (const sf of this.sourceFiles) if (!sf.isDeclarationFile) collect(sf);
+      const overriddenBelow = (m: ts.MethodDeclaration) => {
+        const owner = m.parent as ts.ClassLikeDeclaration, name = m.name.getText();
+        const below = (c: ts.ClassLikeDeclaration) => { for (let b = this.programBase(c); b; b = this.programBase(b)) if (b === owner) return true; return false; };
+        return classes.some((c) => c !== owner && below(c) && c.members.some((x) => !isStatic(x) && x.name?.getText() === name));
+      };
+      const consider = (m: ts.MethodDeclaration | undefined) => { if (m && !m.typeParameters?.length && !m.parameters.some((p) => p.dotDotDotToken) && ts.isClassDeclaration(m.parent) && m.parent.name && overriddenBelow(m)) set.add(m); };
+      if (this.library) {
+        for (const c of classes) for (const x of c.members) if (ts.isMethodDeclaration(x) && !isStatic(x) && x.body && !ts.isComputedPropertyName(x.name)) consider(x);
+      } else {
+        const visit = (n: ts.Node) => {
+          if (ts.isPropertyAccessExpression(n) && ts.isPropertyAccessExpression(n.expression) && n.expression.name.text === 'prototype') {
+            const owner = this.resolve(n.expression.expression)?.valueDeclaration;
+            if (owner && ts.isClassDeclaration(owner) && !owner.getSourceFile().isDeclarationFile) consider(this.declaringMethod(owner, n.name.text));
+          }
+          ts.forEachChild(n, visit);
+        };
+        for (const sf of this.sourceFiles) if (!sf.isDeclarationFile) visit(sf);
+      }
+      this.nonVirtualMethods = set;
+    }
+    return this.nonVirtualMethods.has(m);
+  }
+
+  /**
+   * `KitClass.prototype.m.call(obj, …)` of a kit class: its final copy of `m` where the kit has one, and `super.m` for
+   * `this` where neither the kit nor a program class between overrides it.
+   */
+  private kitPrototypeCall(cls: ts.ClassDeclaration, name: string, e: ts.CallExpression, rest: ts.Expression[]): string | null {
+    const kit = cls.name && this.core?.has(cls.name.text) ? cls.name.text : null;
+    const thisArg = e.arguments[0];
+    if (!kit || !this.core) return null;
+    const plain = (x: ts.Expression): boolean => x.kind === ts.SyntaxKind.ThisKeyword || ts.isIdentifier(x) || (ts.isPropertyAccessExpression(x) ? plain(x.expression) : this.pure(x));
+    const isInstance = plain(thisArg) && this.checker.isTypeAssignableTo(this.checker.getTypeAtLocation(thisArg), this.checker.getDeclaredTypeOfSymbol(this.resolve(cls.name!)!));
+    const target = ts.isPropertyAccessExpression(e.expression) ? e.expression.expression : undefined;
+    const member = target && this.checker.getSymbolAtLocation((target as ts.PropertyAccessExpression).name);
+    const params = member?.valueDeclaration && ts.isMethodDeclaration(member.valueDeclaration) ? member.valueDeclaration.parameters : undefined;
+    if (isInstance && params && !params.some((p) => p.dotDotDotToken) && rest.length <= params.length && !rest.some(ts.isSpreadElement)) {
+      const args = rest.map((a, k) => this.coerce(a, this.paramType(params[k])));
+      const entry = this.core.nonVirtualEntry(kit, name);
+      if (entry) return `${this.expr(thisArg)}.${ident(entry)}(${args.join(', ')})`;
+      const host = thisArg.kind === ts.SyntaxKind.ThisKeyword ? ts.findAncestor(e, (n) => ts.isClassLike(n) || (ts.isFunctionLike(n) && !ts.isArrowFunction(n) && !ts.isMethodDeclaration(n) && !ts.isConstructorDeclaration(n) && !ts.isAccessor(n))) : undefined;
+      if (host && ts.isClassLike(host) && this.core.kitMember(kit, name)) {
+        let between = false;
+        for (let b = this.programBase(host); b; b = this.programBase(b)) if (b.members.some((x) => !isStatic(x) && x.name?.getText() === name)) between = true;
+        if (!between) return `super.${this.methodIdent(name)}(${args.join(', ')})`;
+      }
+    }
+    throw this.error(e, `${ts.isPropertyAccessExpression(e.expression) ? e.expression.name.text : 'call'} of ${cls.name?.text}.prototype.${name} on an object whose class may override it`);
   }
 
   private boundCall(method: string, target: ts.Expression, e: ts.CallExpression): string | null {
