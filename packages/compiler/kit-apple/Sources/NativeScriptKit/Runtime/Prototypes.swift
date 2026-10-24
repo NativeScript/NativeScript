@@ -135,7 +135,7 @@ public func jsHasOwn(_ object: Any?, _ key: String) -> Bool {
     case let f as JSFunctionObject: return f.hasOwn(key)
     case let e as JSExpando: return e.jsExpando?.has(key) == true || e.jsKeys.contains(key)
     case let d as JSDynamic: return d.jsKeys.contains(key)
-    case let a as JSArrayProtocol: return key == "length" || jsArrayIndex(key).map { Int($0) < a.jsLength } ?? jsSideProperties(a, create: false)?.has(key) == true
+    case let a as JSArrayProtocol: return key == "length" || jsArrayIndex(key).map { a.jsHasElement(at: Int($0)) } ?? jsSideProperties(a, create: false)?.has(key) == true
     case let s as String: return key == "length" || jsArrayIndex(key).map { Int($0) < s.utf16.count } ?? false
     default: return false
     }
@@ -145,7 +145,7 @@ public func jsHasOwn(_ object: Any?, _ key: String) -> Bool {
 public func jsPropertyIsEnumerable(_ object: Any?, _ key: String) -> Bool {
     guard jsHasOwn(object, key) else { return false }
     switch jsFlat(object) {
-    case let a as JSArrayProtocol: return key != "length" && (jsArrayIndex(key) != nil || jsSideProperties(a, create: false)?.keys.contains(key) == true)
+    case let a as JSArrayProtocol: return key != "length" && (jsArrayIndex(key).map { a.jsHasElement(at: Int($0)) } ?? jsSideProperties(a, create: false)?.keys.contains(key) == true)
     case is String: return key != "length"
     default: return (jsOwnPropertyDescriptor(object, key) as? JSObject)?["enumerable"] as? Bool ?? true
     }

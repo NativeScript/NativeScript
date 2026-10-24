@@ -101,7 +101,7 @@ public func jsKeysOf(_ value: Any?) -> [String] {
     if let string = jsFlat(value) as? String { return (0..<string.utf16.count).map { String($0) } }
     if let dynamic = value as? JSDynamic { return dynamic.jsKeys }
     if let dictionary = value as? [String: Any] { return Array(dictionary.keys).sorted() }
-    if let array = value as? JSArrayProtocol { return array.jsAnyElements.indices.map(String.init) + (jsSideProperties(array, create: false)?.keys ?? []) }
+    if let array = value as? JSArrayProtocol { return (0..<array.jsLength).filter(array.jsHasElement).map(String.init) + (jsSideProperties(array, create: false)?.keys ?? []) }
     return []
 }
 
@@ -123,7 +123,7 @@ public func jsHasKey(_ object: Any?, _ key: String) -> Bool {
         return JSPrototypes.holder(type(of: dynamic) as AnyClass, key) != nil
     }
     if let array = object as? JSArrayProtocol {
-        return key == "length" || (Int(key).map { $0 >= 0 && $0 < array.jsAnyElements.count } ?? false) || jsSideProperties(array, create: false)?.has(key) == true
+        return key == "length" || (Int(key).map(array.jsHasElement) ?? false) || jsSideProperties(array, create: false)?.has(key) == true
     }
     return false
 }

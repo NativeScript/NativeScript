@@ -1,14 +1,11 @@
 {
 	"$comment": "Cases that do not match Node yet, by target, each with its cause. The diff run reports them without failing, and fails when one matches Node so it is removed here. Owners: the Kotlin translator (src/kotlin.ts) and runtime (kit-android runtime).",
 	"swift": {
-		"231-regexp-unset-group": "A capture group that took no part in the match reads \"\", not undefined (Swift translator).",
 		"232-async-object-return": "Does not compile: an object literal an async function returns is made as an untyped `JSObject`, which `JSAsync<Stat>.returnValue` doesn't take (Swift translator).",
 		"237-shared-top-names": "Top-level names (an enum, files of the same name in two folders) that several modules declare clash; swiftc crashes (Swift translator).",
-		"243-array-holes": "Object.keys lists the holes of new Array(n) (Swift runtime).",
 		"246-nullable-string-concat": "`null as string | null` in a template or a concatenation does not compile: nil has no contextual type (Swift translator).",
 		"247-missing-values-throw": "A module const read before its declaration runs, and a member of undefined or null read, set or called, trap instead of throwing ReferenceError or TypeError (Swift translator, quality step 4).",
-		"290-regexp-backtracking": "A capture inside a quantified group keeps its value from an earlier iteration instead of resetting to undefined (NSRegularExpression semantics, Swift runtime).",
-		"291-json-edges": "A lone surrogate becomes U+FFFD because Swift strings hold only valid Unicode, and the circular-structure TypeError has an empty message (Swift runtime).",
+		"290-regexp-backtracking": "NSRegularExpression (ICU) is no ECMAScript engine: a capture in a quantified group keeps an earlier iteration's value, an empty iteration is kept, a backreference to an unset or later group fails instead of matching empty, case folding is full Unicode (/ß/i matches SS, /\\u212A/i matches k), v-flag set operations are unsupported, lone surrogates read U+FFFD, error messages are ICU's, and unbounded lookbehind, a quantified lookaround and duplicate group names throw SyntaxError (Swift runtime).",
 		"293-array-sort-callbacks": "A comparator declared with fewer parameters than sort passes does not compile (Swift translator).",
 		"363-operator-pipe": "Does not compile: an overloaded generic method with an `any` implementation (`pipe(...operators: OperatorFunction<any, any>[])`) is called as the implementation (`Stream<T>` assigned to `Stream<Any?>`, no `adapting` from the operator's function type), and an overload's function argument names the implementation's type parameter `T` (Swift translator).",
 		"620-interface-identity": "An object read as an interface type twice is wrapped anew each time (an object already of the interface's class is kept), so the two are not === and a Map keyed by one misses the other (Swift translator).",
@@ -17,7 +14,9 @@
 		"626-array-parameter-mutation": "A typed array or an untyped array given to a number[] parameter is copied, so the callee's writes are lost (Swift translator).",
 		"627-unchecked-class-cast": "`x as C` throws when x is an instance of another class, where TypeScript's cast checks nothing (Swift translator).",
 		"662-untyped-array-parameter": "An untyped array (JSArray<Any?>) given to a number[] or string[] parameter is converted into a new array, so the callee's writes are lost; sharing needs a typed view over it (Swift runtime).",
-		"700-signal-null-object": "A class-typed `signal<T>(null)` outside a component doesn't compile (`equals: jsSame` loses MainActor), and a function returning its value as `T` throws where script returns the null (Swift translator)."
+		"700-signal-null-object": "A class-typed `signal<T>(null)` outside a component doesn't compile (`equals: jsSame` loses MainActor), and a function returning its value as `T` throws where script returns the null (Swift translator).",
+		"862-json-unrepresentable": "A lone surrogate JSON.parse reads from an escape becomes U+FFFD, since Swift strings hold only valid Unicode; and JSON.stringify recurses per nesting level, so 5000 nested arrays exceed the stack (RangeError) where V8 writes them iteratively (Swift runtime limits).",
+		"863-string-lone-surrogate-literal": "A string literal holding a lone surrogate is refused: a Swift string cannot hold one (Swift translator)."
 	},
 	"kotlin": {
 		"250-void-promise-values": "A function value with a rest parameter passed to then (`then(log)`) matches no overload (Kotlin translator).",
@@ -31,6 +30,8 @@
 		"624-json-parse-null": "JSON.parse of a string that is null at run time parses \"undefined\" and throws (Kotlin translator).",
 		"626-array-parameter-mutation": "A typed array, or an untyped array holding a value of another type, given to a number[] parameter is copied, so the callee's writes are lost (Kotlin runtime).",
 		"627-unchecked-class-cast": "`x as C` throws when x is an instance of another class, where TypeScript's cast checks nothing (Kotlin translator).",
+		"860-regexp-unset-group-reads": "A module-level destructuring of a match reads an unset group as \"undefined\", and a named group read from `groups` does not compile (Kotlin translator).",
+		"861-array-holes-own-properties": "hasOwnProperty and Object.getOwnPropertyNames list the empty slots of new Array(n) (Kotlin runtime).",
 		"865-script-called-undefined": "A function declaration as an object literal's shorthand value (`{ flag }`) does not compile; a number parameter of a function script calls, given undefined, throws, and a string one script reaches through a typed variable reads typeof \"string\" (Kotlin translator).",
 		"866-lenient-optional-parameters": "A non-strict app's optional parameter left out reads typeof as its type's name (\"object\", \"function\", \"number\"), the call giving them all fails (\"cb is not a function\"), and a string parameter of a function type given undefined does not compile (Kotlin translator)."
 	}
