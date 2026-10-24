@@ -3,7 +3,7 @@ import ts from 'typescript';
 import { dirname as pathDirname, resolve as pathResolve } from 'node:path';
 import { AsyncLowering, usedBefore, type AsyncCtx, type AsyncSyntax, type AsyncTranslator } from './async.ts';
 import { isAsync, isStatic } from './throws.ts';
-import { assignedValues, definitelyAssignedFields, initializedNull, intersectionAliasMembers, nullSetFields, isRegExpProtocol, intlConstructor, isObjectToStringCall, isStringRaw, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, classesHeldUntyped, LooseSlots, originOf, ownSlot, implementedInterfaceDeclarations, slotOf, slotType, type TrustScope } from './lang.ts';
+import { assignedValues, definitelyAssignedFields, forwardedSetter, initializedNull, intersectionAliasMembers, nullSetFields, isRegExpProtocol, intlConstructor, isObjectToStringCall, isStringRaw, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, classesHeldUntyped, LooseSlots, originOf, ownSlot, implementedInterfaceDeclarations, slotOf, slotType, type TrustScope } from './lang.ts';
 import { isCoreDeclaration } from './core.ts';
 import type { Properties } from './properties.ts';
 import { recognizePatterns, type Patterns } from './patterns.ts';
@@ -66,6 +66,11 @@ function substituteTypes(type: string, args: Map<string, string>): string {
 /** The key script reads an accessor by: a computed name's string (`get ['class']()` is `class`). */
 function accessorKey(name: string): string {
   return /^\[(['"])(.*)\1\]$/.exec(name)?.[2] ?? name;
+}
+
+/** The method holding the body of a setter that takes more than its getter gives (`setterTakes`). */
+function setterMethod(name: string): string {
+  return `__set_${accessorKey(name).replace(/\W/g, '_')}`;
 }
 
 export function ident(name: string): string {
@@ -2102,7 +2107,7 @@ export class Translator implements AsyncTranslator {
   }
 
   /** `JSDynamic`: the object's keys and members by name, for printing, JSON and untyped access. */
-  private dynamicMembers(fields: { name: string; type: string }[], className: string | null, inherits: boolean, fallbackGet = 'null', fallbackSet = '', symbols: { key: string; member: string; type: string }[] = [], methods: { name: string; key?: string; params: string[]; ret: string }[] = [], expando = false, accessors: { name: string; type: string; readable: boolean; settable: boolean }[] = [], superclass?: string, nulls = new Set<string>()): string[] {
+  private dynamicMembers(fields: { name: string; type: string }[], className: string | null, inherits: boolean, fallbackGet = 'null', fallbackSet = '', symbols: { key: string; member: string; type: string }[] = [], methods: { name: string; key?: string; params: string[]; ret: string }[] = [], expando = false, accessors: { name: string; type: string; readable: boolean; settable: boolean; set?: string }[] = [], superclass?: string, nulls = new Set<string>()): string[] {
     accessors = accessors.filter((a) => !fields.some((f) => f.name === a.name) && !methods.some((m) => m.name === a.name));
     const members = [...new Set([...accessors.map((a) => accessorKey(a.name)), ...methods.filter((m) => !m.key).map((m) => m.name)])];
     const keys = [...fields.map((f) => (isNullable(f.type) ? `(if (${ident(f.name)} == null) listOf() else listOf(${kotlinString(f.name)}))` : `listOf(${kotlinString(f.name)})`)), ...(expando ? ['(jsExpando?.jsKeys ?: listOf())'] : [])];
@@ -2131,7 +2136,7 @@ export class Translator implements AsyncTranslator {
       // A registered property's accessor is the prototype's, which converts what script sets (`col = "1"`): the value as it is.
       ...fields.map((f) => `            ${kotlinString(f.name)} -> ${(f as { expando?: boolean }).expando ? `jsExpandoSet(this, ${kotlinString(f.name)}, value)` : nulls.has(f.name) ? `{ this.${ident(f.name)} = ${isNullable(f.type) ? this.fromAny('value', f.type, f.name) : `if (jsIsNullish(value)) jsUncheckedNull<${f.type}>() else ${this.fromAny('value', f.type, f.name)}`}; jsNulls = jsNoteNull(jsNulls, ${kotlinString(f.name)}, value) }` : `this.${ident(f.name)} = ${this.fromAny('value', f.type, f.name)}`}`),
       // A setter takes what script gives it (`textWrap = "true"`): as JavaScript reads it as the setter's type.
-      ...accessors.filter((a) => a.settable).map((a) => `            ${kotlinString(accessorKey(a.name))} -> this.${ident(a.name)} = ${a.type === 'Boolean' ? 'jsTruthy(value)' : a.type === 'Double' ? 'jsToNumber(value)' : this.fromAnyCode('value', a.type, true)}`),
+      ...accessors.filter((a) => a.settable).map((a) => `            ${kotlinString(accessorKey(a.name))} -> ${a.set ?? `this.${ident(a.name)} = ${a.type === 'Boolean' ? 'jsTruthy(value)' : a.type === 'Double' ? 'jsToNumber(value)' : this.fromAnyCode('value', a.type, true)}`}`),
       ...symbols.map((f) => `            ${f.key} -> this.${f.member} = ${this.fromAny('value', f.type)}`),
       `            else -> ${inherits ? 'super.jsSet(key, value)' : fallbackSet || '{}'}`,
       '        }',
@@ -3203,7 +3208,7 @@ export class Translator implements AsyncTranslator {
       }
     }
     if (accessors.has('jsToStringTag')) supertypes.push('JSToStringTag');
-    const dynAccessors: { name: string; type: string; readable: boolean; settable: boolean }[] = [];
+    const dynAccessors: { name: string; type: string; readable: boolean; settable: boolean; set?: string }[] = [];
     // An app class extending the generated kit's (a page's view model, a custom view): read by name as core reads it (bindings, the Builder).
     const byName = !this.library && ((this.generatedKit && !!kitRoot) || this.appMembersByName);
     // A getter over a base class's field holds the field's Kotlin type: optional where the field is, unwrapped where it is read.
@@ -3249,7 +3254,12 @@ export class Translator implements AsyncTranslator {
       if (a.get && !a.get.body && hasModifier(a.get, ts.SyntaxKind.AbstractKeyword)) { target.push(`${pad}${overridden.has(n) ? 'override ' : ''}abstract ${a.set ? 'var' : 'val'} ${ident(n)}: ${t}`); continue; }
       if (a.get) parts.push(`${pad}    get() ${this.functionBody(a.get, t, pad + '    ')}`);
       else parts.push(`${pad}    get() = null`);
-      if (a.set) {
+      const takes = a.get && a.set ? this.setterTakes(a.set, t) : null;
+      if (a.set && takes) {
+        const p = a.set.parameters[0].name as ts.Identifier;
+        target.push(`${pad}${this.setterTakesMods(cls, n, takes, memberOpen)}fun ${setterMethod(n)}(${ident(p.text)}: ${takes}) ${this.functionBody(a.set, 'Unit', pad)}`);
+        parts.push(`${pad}    set(__value) { ${setterMethod(n)}(__value) }`);
+      } else if (a.set) {
         const p = a.set.parameters[0].name as ts.Identifier;
         const body = this.functionBody(a.set, 'Unit', pad + '    ');
         // The setter's parameter is the declared one: a body assigning it declares a variable of its own.
@@ -3257,9 +3267,15 @@ export class Translator implements AsyncTranslator {
       }
       target.push(`${pad}${a.get && isStatic(a.get) ? '' : n === 'jsToStringTag' ? 'override ' : mods(n)}${a.set ? 'var' : 'val'} ${ident(n)}: ${t}`, ...parts);
       // Library mode: read and set by name as well (`node.cssType` of an untyped node), as the prototype's accessor is.
-      // A setter taking more than the getter gives (`string | Color`) is left to the prototype's.
       const own = (a.get ?? a.set)!;
-      if ((this.library || byName || this.readByName.has(cls)) && !isStatic(own) && !this.symbolMember(own.name)) dynAccessors.push({ name: n, type: t, readable: !!a.get, settable: !!a.set && optionalType(this.typeOf(a.set.parameters[0].name)) === optionalType(t) });
+      if ((this.library || byName || this.readByName.has(cls)) && !isStatic(own) && !this.symbolMember(own.name)) {
+        // A write by name gives the setter what script gave (`style="color: red"` and `color="red"` from the Builder); one
+        // passing it to another object's member (`this.style.color = value`) passes it on by name, as that member converts it.
+        const forwarded = a.set && !takes ? forwardedSetter(a.set) : null;
+        const forward = forwarded && forwarded.expression.kind !== ts.SyntaxKind.ThisKeyword ? forwarded : null;
+        const set = takes ? `this.${setterMethod(n)}(${this.fromAnyCode('value', takes, true)})` : forward ? `jsSet(${this.expr(forward.expression)}, ${kotlinString(forward.name.text)}, value)` : undefined;
+        dynAccessors.push({ name: n, type: t, readable: !!a.get, settable: !!set || (!!a.set && optionalType(this.typeOf(a.set.parameters[0].name)) === optionalType(t)), set });
+      }
     }
     // A view class's type selector: its `@CSSType` name, else its class name, as core's `cssType` falls back to `typeName`.
     // The generated kit is core: without a `@CSSType` of its own, a class takes the nearest one above it, which core's decorator
@@ -3704,6 +3720,38 @@ export class Translator implements AsyncTranslator {
     return m.parameters.map((p) => (ts.isIdentifier(p.name) ? p.name.text : null));
   }
 
+
+  /**
+   * A setter taking values its getter's type can't hold (`set tint(value: Color | string)`, or core's `set style(value: Style)`
+   * testing for a CSS string): the type its parameter holds, else null. Its body is then a method of its own, which writes reach.
+   */
+  setterTakes(set: ts.SetAccessorDeclaration, t: string): string | null {
+    const p = set.parameters[0];
+    if (!p || !ts.isIdentifier(p.name) || !set.body || optionalType(t) === 'Any?') return null;
+    return this.paramType(p) === 'Any?' ? 'Any?' : null;
+  }
+
+  /** A write to an accessor of the program's whose setter takes more than its getter gives: what the setter takes. */
+  private setterTakesAt(left: ts.PropertyAccessExpression): string | null {
+    const decls = this.checker.getSymbolAtLocation(left.name)?.declarations ?? [];
+    const set = decls.find((d): d is ts.SetAccessorDeclaration => ts.isSetAccessorDeclaration(d) && !d.getSourceFile().isDeclarationFile && !isStatic(d));
+    const get = decls.find((d): d is ts.GetAccessorDeclaration => ts.isGetAccessorDeclaration(d) && d.parent === set?.parent);
+    return set && get && !(get.body === undefined && hasModifier(get, ts.SyntaxKind.AbstractKeyword)) ? this.setterTakes(set, this.returnTypeOf(get)) : null;
+  }
+
+  /** The modifiers of a class's setter method (`setterTakes`): an override of the one a base class declares for the same accessor. */
+  private setterTakesMods(cls: ts.ClassLikeDeclaration, n: string, takes: string, open: string): string {
+    const own = cls.members.find((m): m is ts.SetAccessorDeclaration => ts.isSetAccessorDeclaration(m) && m.name.getText() === n);
+    if (own && isStatic(own)) return '';
+    for (let b = this.baseClassOf(cls); b; b = this.baseClassOf(b)) {
+      const set = b.members.find((m): m is ts.SetAccessorDeclaration => ts.isSetAccessorDeclaration(m) && m.name.getText() === n && !isStatic(m));
+      const get = b.members.find((m): m is ts.GetAccessorDeclaration => ts.isGetAccessorDeclaration(m) && m.name.getText() === n && !isStatic(m));
+      if (set && get && this.setterTakes(set, this.returnTypeOf(get)) === takes) return 'override ';
+    }
+    const kitRoot = !this.library && this.generatedKit ? this.kitRootOf(cls) : null;
+    if (kitRoot && this.core?.kitMember(kitRoot, setterMethod(n))) return 'override ';
+    return open;
+  }
 
   paramType(p: ts.ParameterDeclaration): string {
     if (this.typeTested(p)) return 'Any?';
@@ -8481,6 +8529,8 @@ export class Translator implements AsyncTranslator {
     const decls = ts.isIdentifier(e.expression) ? this.resolve(e.expression)?.declarations : undefined;
     if (decls?.length && decls.every((d) => IOS_TYPINGS.test(d.getSourceFile().fileName))) return 'undefined';
     if (this.namesClass(e.expression)) return 'function';
+    const param = ts.isIdentifier(e.expression) ? this.resolve(e.expression)?.valueDeclaration : undefined;
+    if (param && ts.isParameter(param) && this.typeTested(param)) return null;
     const t = this.typeOf(e.expression);
     const base = t.replace(/\?$/, '');
     if (base === 'Unit') return 'undefined';
@@ -8556,6 +8606,9 @@ export class Translator implements AsyncTranslator {
     const decls = ts.isIdentifier(e.expression) ? this.resolve(e.expression)?.declarations : undefined;
     if (decls?.length && decls.every((d) => IOS_TYPINGS.test(d.getSourceFile().fileName))) return '"undefined"';
     if (this.namesClass(e.expression)) return '"function"';
+    // A parameter callers give other values than its type (`typeTested`): what it holds, never its declared type's.
+    const tested = ts.isIdentifier(e.expression) ? this.resolve(e.expression)?.valueDeclaration : undefined;
+    if (tested && ts.isParameter(tested) && this.typeTested(tested)) return `jsTypeof(${ident((e.expression as ts.Identifier).text)})`;
     const t = this.typeOf(e.expression);
     const base = t.replace(/\?$/, '');
     if (base === 'Unit') return '"undefined"';
@@ -8603,6 +8656,12 @@ export class Translator implements AsyncTranslator {
     if (this.nullField(left)) return `${this.expr(left.expression)}.jsSet(${kotlinString(left.name.text)}, ${this.coerce(right, 'Any?')})`;
     if (ts.isPropertyAccessExpression(left) && this.symbolName(left.expression) === 'VueRef' && left.name.text === 'value') return `${this.lvalue(left)} = ${this.signalWrite(left.expression, right, this.typeOf(left))}`;
     if (ts.isArrayLiteralExpression(left)) throw this.error(left, 'a destructuring assignment');
+    const takes = ts.isPropertyAccessExpression(left) ? this.setterTakesAt(left) : null;
+    if (takes) {
+      const place = this.lvalue(left);
+      const member = `.${ident(left.name.text)}`;
+      if (place.endsWith(member)) return `${place.slice(0, -member.length)}.${setterMethod(left.name.text)}(${this.coerce(right, takes)})`;
+    }
     // An object Kotlin holds untyped, or none this platform's code can reach (the iOS half of `__APPLE__ ? x : undefined`, narrowed to never), is set by name.
     // `this.x = …` in a static block or method, of a static field the class declares: the companion's.
     const staticOwn = ts.isPropertyAccessExpression(left) && left.expression.kind === ts.SyntaxKind.ThisKeyword && !!this.resolve(left.name)?.declarations?.some((d) => ts.isPropertyDeclaration(d) && isStatic(d));

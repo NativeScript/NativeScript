@@ -9,6 +9,19 @@ export function intlConstructor(e: ts.Expression, checker: ts.TypeChecker): 'Num
   return e.name.text === 'NumberFormat' || e.name.text === 'DateTimeFormat' ? e.name.text : null;
 }
 
+/** A setter that only assigns its value to a member of `this`'s (`this.style.color = value`): that member. */
+export function forwardedSetter(set: ts.FunctionLikeDeclaration): ts.PropertyAccessExpression | null {
+  const params = set.parameters.filter((q) => !(ts.isIdentifier(q.name) && q.name.text === 'this'));
+  const p = params.length === 1 ? params[0] : undefined;
+  const only = set.body && ts.isBlock(set.body) && set.body.statements.length === 1 ? set.body.statements[0] : undefined;
+  if (!p || !ts.isIdentifier(p.name) || !only || !ts.isExpressionStatement(only)) return null;
+  const e = only.expression;
+  if (!ts.isBinaryExpression(e) || e.operatorToken.kind !== ts.SyntaxKind.EqualsToken || !ts.isIdentifier(e.right) || e.right.text !== p.name.text || !ts.isPropertyAccessExpression(e.left)) return null;
+  let base: ts.Expression = e.left.expression;
+  while (ts.isPropertyAccessExpression(base) || ts.isParenthesizedExpression(base) || ts.isAsExpression(base)) base = base.expression;
+  return base.kind === ts.SyntaxKind.ThisKeyword ? e.left : null;
+}
+
 /** `String.raw` as the library declares it. */
 export function isStringRaw(tag: ts.Expression, checker: ts.TypeChecker): boolean {
   if (!ts.isPropertyAccessExpression(tag) || tag.name.text !== 'raw' || !ts.isIdentifier(tag.expression) || tag.expression.text !== 'String') return false;
