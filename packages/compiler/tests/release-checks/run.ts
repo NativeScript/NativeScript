@@ -726,6 +726,14 @@ export class Panel {
   }
 }
 
+// ---- A component extending a class: the base's members copied into it ----
+{
+  // In a process of its own: the programs this run makes stay in memory until it ends, near Node's default heap limit.
+  const r = spawnSync(process.execPath, [join(here, 'component-bases.ts')], { encoding: 'utf8', maxBuffer: 64 << 20 });
+  process.stdout.write(r.stdout + r.stderr);
+  failed += Math.max((r.stdout.match(/^✗/gm) ?? []).length, r.status === 0 ? 0 : 1);
+}
+
 // ---- Template errors are reported, never trapped ----
 {
   // nstreamdown's `@if (token.type === 'mermaid') { <MdMermaid [content]="…" [isIncomplete]="getIsIncomplete(token)"> }`, every binding able to throw.
