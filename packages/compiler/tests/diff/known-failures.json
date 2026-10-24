@@ -1,25 +1,18 @@
 {
 	"$comment": "Cases that do not match Node yet, by target, each with its cause. The diff run reports them without failing, and fails when one matches Node so it is removed here. Owners: the Kotlin translator (src/kotlin.ts) and runtime (kit-android runtime).",
 	"swift": {
-		"227-callback-given-undefined": "A string parameter given undefined reads \"\", and a void promise's value is not undefined (Swift translator).",
 		"231-regexp-unset-group": "A capture group that took no part in the match reads \"\", not undefined (Swift translator).",
-		"232-async-object-return": "An object literal an async function returns is not made as its declared Promise's type (Swift translator).",
-		"233-prototype-call": "X.prototype.m.call(r, …) is refused (Swift translator, SEMANTICS #2).",
-		"234-define-property-instance": "Object.defineProperty on a class instance or an array is dropped (Swift translator and runtime, SEMANTICS #3).",
+		"232-async-object-return": "Does not compile: an object literal an async function returns is made as an untyped `JSObject`, which `JSAsync<Stat>.returnValue` doesn't take (Swift translator).",
 		"237-shared-top-names": "Top-level names (an enum, files of the same name in two folders) that several modules declare clash; swiftc crashes (Swift translator).",
-		"239-destructuring-assignment": "Destructuring assignment to existing variables is refused (Swift translator, SEMANTICS #8).",
 		"243-array-holes": "Object.keys lists the holes of new Array(n) (Swift runtime).",
-		"244-optional-member-later": "An optional member set after the object is made is listed in declaration order, not as the last key (Swift translator).",
 		"246-nullable-string-concat": "`null as string | null` in a template or a concatenation does not compile: nil has no contextual type (Swift translator).",
 		"247-missing-values-throw": "A module const read before its declaration runs, and a member of undefined or null read, set or called, trap instead of throwing ReferenceError or TypeError (Swift translator, quality step 4).",
-		"248-function-properties": "Properties given to a function value (`fn.tag = …`, Object.defineProperty) and Object.prototype.hasOwnProperty.call on one are refused or dropped (Swift translator and runtime, SEMANTICS #3).",
-		"249-literal-to-primitive": "An object literal's own [Symbol.toPrimitive] is ignored, and a literal's valueOf is not called by < or Math.max (Swift translator, SEMANTICS #5).",
 		"290-regexp-backtracking": "A capture inside a quantified group keeps its value from an earlier iteration instead of resetting to undefined (NSRegularExpression semantics, Swift runtime).",
 		"291-json-edges": "A lone surrogate becomes U+FFFD because Swift strings hold only valid Unicode, and the circular-structure TypeError has an empty message (Swift runtime).",
 		"293-array-sort-callbacks": "A comparator declared with fewer parameters than sort passes does not compile (Swift translator).",
-		"363-operator-pipe": "An overloaded generic method with an `any` implementation (`pipe(...operators: OperatorFunction<any, any>[])`) is called as the implementation, and an overload's function argument names the implementation's type parameter `T` (Swift translator).",
+		"363-operator-pipe": "Does not compile: an overloaded generic method with an `any` implementation (`pipe(...operators: OperatorFunction<any, any>[])`) is called as the implementation (`Stream<T>` assigned to `Stream<Any?>`, no `adapting` from the operator's function type), and an overload's function argument names the implementation's type parameter `T` (Swift translator).",
 		"620-interface-identity": "An object read as an interface type twice is wrapped anew each time (an object already of the interface's class is kept), so the two are not === and a Map keyed by one misses the other (Swift translator).",
-		"621-optional-callback-adapting": "Lenient app code: a callback's boolean parameter given undefined holds false, and a function literal returning null where its type gives an array does not compile (Swift translator).",
+		"621-optional-callback-adapting": "Lenient app code: a function literal returning null where its function type gives an array does not compile: the closure's Swift result, `JSArray<Double>`, holds no null (null in typed values, Unit 22) (Swift translator).",
 		"624-json-parse-null": "A non-strict function's string result that is null at run time is one nil with undefined, so JSON.parse of it throws as of undefined (Swift translator).",
 		"626-array-parameter-mutation": "A typed array or an untyped array given to a number[] parameter is copied, so the callee's writes are lost (Swift translator).",
 		"627-unchecked-class-cast": "`x as C` throws when x is an instance of another class, where TypeScript's cast checks nothing (Swift translator).",
@@ -37,6 +30,8 @@
 		"621-optional-callback-adapting": "Lenient app code: a callback's boolean parameter given undefined holds false, `typeof` of an optional function parameter folds to \"function\", and a function literal returning null where its type gives an array gives undefined (Kotlin translator).",
 		"624-json-parse-null": "JSON.parse of a string that is null at run time parses \"undefined\" and throws (Kotlin translator).",
 		"626-array-parameter-mutation": "A typed array, or an untyped array holding a value of another type, given to a number[] parameter is copied, so the callee's writes are lost (Kotlin runtime).",
-		"627-unchecked-class-cast": "`x as C` throws when x is an instance of another class, where TypeScript's cast checks nothing (Kotlin translator)."
+		"627-unchecked-class-cast": "`x as C` throws when x is an instance of another class, where TypeScript's cast checks nothing (Kotlin translator).",
+		"865-script-called-undefined": "A function declaration as an object literal's shorthand value (`{ flag }`) does not compile; a number parameter of a function script calls, given undefined, throws, and a string one script reaches through a typed variable reads typeof \"string\" (Kotlin translator).",
+		"866-lenient-optional-parameters": "A non-strict app's optional parameter left out reads typeof as its type's name (\"object\", \"function\", \"number\"), the call giving them all fails (\"cb is not a function\"), and a string parameter of a function type given undefined does not compile (Kotlin translator)."
 	}
 }

@@ -65,6 +65,7 @@ public final class JSFunctionObject: JSDynamic, CustomStringConvertible {
     }
 
     public var jsKeys: [String] { own?.keys ?? [] }
+    func hasOwn(_ key: String) -> Bool { key == "name" || key == "length" || own?.has(key) == true }
     func ownDescriptor(_ key: String) -> JSObject? { own?.descriptor(key) }
     public var jsClassName: String? { nil }
     public var description: String { name.isEmpty ? "[Function (anonymous)]" : "[Function: \(name)]" }
