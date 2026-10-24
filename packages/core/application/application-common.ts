@@ -1030,7 +1030,9 @@ export class ApplicationCommon {
 			return;
 		}
 		this._systemAppearance = value;
-		this.systemAppearanceChanged(this.getRootView(), value);
+		if (this.autoSystemAppearanceChanged) {
+			this.systemAppearanceChanged(this.getRootView(), value);
+		}
 		this.notify(<SystemAppearanceChangedEventData>{
 			eventName: this.systemAppearanceChangedEvent,
 			android: this.android,
@@ -1060,7 +1062,7 @@ export class ApplicationCommon {
 	 * @param newSystemAppearance the new appearance change
 	 */
 	systemAppearanceChanged(rootView: View, newSystemAppearance: 'dark' | 'light'): void {
-		if (!rootView || !this.autoSystemAppearanceChanged) {
+		if (!rootView) {
 			return;
 		}
 
