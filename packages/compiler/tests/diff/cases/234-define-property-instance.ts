@@ -35,3 +35,6 @@ class Greeter {
 }
 Object.defineProperty(Greeter.prototype, 'loud', { get() { return (this as Greeter).greet().toUpperCase(); }, configurable: true });
 console.log((new Greeter() as any).loud);
+Object.defineProperties(Greeter.prototype, { kind: { value: 'g' }, twice: { get() { return (this as Greeter).greet() + (this as Greeter).greet(); } } });
+const g = new Greeter();
+console.log((g as any).kind, (g as any).twice, Object.keys(g).length, 'kind' in g);

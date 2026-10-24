@@ -14,3 +14,10 @@ console.log(handler.tag, (arrow as any).x, Object.prototype.hasOwnProperty.call(
 console.log(holder.cb === handler, (holder.cb as any).tag, holder.cb(), Object.keys(handler).join(','));
 const untyped: any = handler;
 console.log(untyped === handler, untyped.tag, Object.getOwnPropertyDescriptor(arrow, 'x')?.writable);
+function counter(): number {
+  return counter.calls;
+}
+counter.calls = 0;
+counter.calls = counter() + 2;
+untyped.tag = 'U';
+console.log(counter(), handler.tag, (handler as any).tag, Object.keys(counter).join(','), Object.prototype.hasOwnProperty.call(handler, 'name'));
