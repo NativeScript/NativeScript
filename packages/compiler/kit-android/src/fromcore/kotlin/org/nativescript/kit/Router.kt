@@ -572,6 +572,8 @@ class Router {
     }
 }
 
+typealias KitRouter = Router
+
 /** A key of an options object script passes, null when absent. */
 private fun field(target: Any?, key: String): Any? = if (jsIsNullish(target)) null else jsBox(jsGet(target, key)).let { if (it === JSNull) null else it }
 
