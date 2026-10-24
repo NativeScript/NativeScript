@@ -1,7 +1,7 @@
 // The Android target: the app's components and modules as Kotlin against
 // NativeScriptKit for Android (native-release/kit-android), in a Gradle
 // project whose resources are the app's own App_Resources/Android.
-import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, readdirSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, relative, resolve } from 'node:path';
 import ts from 'typescript';
 import type { ComponentIR, TNode } from './ir.ts';
@@ -125,6 +125,8 @@ function packagingBlock(p: { excludes: string[]; pickFirsts: string[] }): string
 const REACT_SCREEN_CONTENT = { flexGrow: '1', flexDirection: 'column', width: '100%', height: '100%' };
 
 const kit = KIT_ANDROID;
+/** The kit's projectDir for settings.gradle.kts in `out`. Gradle resolves it from `out`'s physical path, so both ends are real paths. */
+export const kitProjectDir = (out: string) => relative(realpathSync(out), realpathSync(kit));
 const say = (m: string) => console.log(`[ns-native] ${m}`);
 
 export async function writeAndroid(b: AndroidBuild): Promise<void> {
@@ -370,7 +372,7 @@ ${native.repositories.map((r) => `        maven { url = uri(${kotlinString(r)}) 
 }
 rootProject.name = ${kotlinString(b.name)}
 include(":kit")
-project(":kit").projectDir = file(${kotlinString(relative(b.out, kit))})
+project(":kit").projectDir = file(${kotlinString(kitProjectDir(b.out))})
 `);
   writeFileSync(join(b.out, 'gradle.properties'), `org.gradle.jvmargs=-Xmx4g -Dfile.encoding=UTF-8
 android.useAndroidX=true
