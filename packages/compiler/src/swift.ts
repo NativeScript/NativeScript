@@ -1520,6 +1520,17 @@ export class Translator implements AsyncTranslator {
     return !!get?.body && this.typeOf(p.name) === 'Any?' && this.returnTypeOf(get) !== 'Any?';
   }
 
+  /** Whether a base class of `cls` declares `__set_<name>` (`setterTakesAny`): the program's, or the kit's. */
+  private baseSetterMethod(cls: ts.ClassLikeDeclaration, name: string): boolean {
+    for (let b = this.baseClassOf(cls); b; b = this.baseClassOf(b)) {
+      const set = b.members.find((m): m is ts.SetAccessorDeclaration => ts.isSetAccessorDeclaration(m) && m.name.getText() === name && !isStatic(m));
+      const get = b.members.find((m): m is ts.GetAccessorDeclaration => ts.isGetAccessorDeclaration(m) && m.name.getText() === name && !isStatic(m));
+      if (set && (get ?? set).body && this.setterTakesAny(set)) return true;
+    }
+    const kitRoot = this.library ? null : this.kitRootOf(cls);
+    return !!kitRoot && this.core.kitMember(kitRoot, `__set_${name.replace(/\W/g, '_')}`)?.kind === 'func';
+  }
+
   /**
    * Lenient code: a function literal's parameter typed a string, number or boolean where its slot passes
    * any value (`scale: (value: number) => ({ property: 'scale', value })` stored where a `Pair | number` is
@@ -5145,12 +5156,15 @@ ${members.join('\n')}
       if (ignoredSet) parts.push('        set {}');
       if (a.set && !ts.isIdentifier(a.set.parameters[0]?.name)) throw this.error(a.set, 'a setter whose parameter is a destructuring pattern');
       const anySetter = !!a.set && this.setterTakesAny(a.set);
+      const setMethod = `__set_${n.replace(/\W/g, '_')}`;
+      const overSetMethod = !!a.set && !isStatic(a.set) && this.baseSetterMethod(cls, n);
       if (a.set && anySetter) {
         const p = a.set.parameters[0].name as ts.Identifier;
         const body = this.functionBody(a.set, 'Void', '    ');
-        this.declare(`__set_${n.replace(/\W/g, '_')}`, { kind: 'func', mods: mods.replace(/\b(static|class) /, ''), params: `_ ${ident(p.text)}: Any?`, type: 'Void' });
-        lines.push(`    ${mods.replace(/\b(static|class) /, '')}func __set_${n.replace(/\W/g, '_')}(_ ${ident(p.text)}: Any?) {\n        ${this.throwsInfo.fn(a.set) ? 'jsReport' : 'do'} ${body.trimStart().replace(/\n/g, '\n    ')}\n    }`);
-        parts.push(`        set { __set_${n.replace(/\W/g, '_')}(newValue) }`);
+        const fmods = overSetMethod ? 'override ' : '';
+        this.declare(setMethod, { kind: 'func', mods: fmods, params: `_ ${ident(p.text)}: Any?`, type: 'Void' });
+        lines.push(`    ${fmods}func ${setMethod}(_ ${ident(p.text)}: Any?) {\n        ${this.throwsInfo.fn(a.set) ? 'jsReport' : 'do'} ${body.trimStart().replace(/\n/g, '\n    ')}\n    }`);
+        parts.push(`        set { ${setMethod}(newValue) }`);
       } else if (a.set) {
         if (this.throwsInfo.fn(a.set) && !reported) throw this.error(a.set, 'a setter that throws');
         const p = a.set.parameters[0].name as ts.Identifier;
@@ -5163,6 +5177,11 @@ ${members.join('\n')}
         parts.push(this.throwsInfo.fn(a.set)
           ? `        set {\n${bound}            jsReport ${body.trimStart()}\n        }`
           : `        set {\n${bound}            do ${body.trimStart()}\n        }`);
+        // A base's `__set_<name>` is what writes through its type and by name call: here, this class's setter.
+        if (overSetMethod) {
+          lines.push(`    override func ${setMethod}(_ newValue: Any?) { self.${ident(n)} = ${declared.endsWith('!') ? this.fromAny('newValue', declared.replace(/!$/, '?')) : this.fromAnyCode('newValue', declared, true)} }`);
+          this.declare(setMethod, { kind: 'func', mods: 'override ', params: '_ newValue: Any?', type: 'Void' });
+        }
       }
       lines.push(`    ${mods}var ${ident(n)}: ${declared} {`, ...parts, '    }');
       this.declare(n, { kind: 'var', mods, type: declared, throws: !!a.get && !reported && this.throwsInfo.fn(a.get) });
@@ -11906,7 +11925,11 @@ ${members.join('\n')}
     if (ts.isPropertyAccessExpression(left) && this.symbolName(left.expression) === 'VueRef' && left.name.text === 'value') return `${this.lvalue(left)} = ${this.signalWrite(left.expression, right, this.typeOf(left))}`;
     const takesAny = ts.isPropertyAccessExpression(left) && (this.checker.getSymbolAtLocation(left.name)?.declarations ?? [])
       .some((d) => ts.isSetAccessorDeclaration(d) && !d.getSourceFile().isDeclarationFile && this.setterTakesAny(d));
-    if (takesAny) {
+    // `super.style = value` over the kit's `__set_style`: the kit's body, since its property calls this class's override.
+    const enclosing = ts.findAncestor(left, ts.isClassLike);
+    const overKitSetter = !takesAny && !this.library && !!enclosing && ts.isPropertyAccessExpression(left) && left.expression.kind === ts.SyntaxKind.SuperKeyword
+      && (this.checker.getSymbolAtLocation(left.name)?.declarations ?? []).every((d) => d.getSourceFile().isDeclarationFile) && this.baseSetterMethod(enclosing, left.name.text);
+    if (takesAny || overKitSetter) {
       const place = this.lvalue(left);
       const member = `.${ident(left.name.text)}`;
       if (place.endsWith(member)) return `${place.slice(0, -member.length)}.__set_${left.name.text.replace(/\W/g, '_')}(${this.coerce(right, 'Any?')})`;
