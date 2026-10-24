@@ -3717,9 +3717,46 @@ ${members.join('\n')}
    * An untyped one is given its default in the body, where an explicit undefined (nil) takes it too and null does not.
    */
   private constantDefault(p: ts.ParameterDeclaration): boolean {
-    return !!p.initializer && this.isConstant(p.initializer) && !this.optionalDefaults.has(p) && this.typeOf(p.name) !== 'Any?';
+    return !!p.initializer && this.isConstant(p.initializer) && !this.optionalDefaults.has(p) && !this.familyDefaultsDiffer(p) && this.typeOf(p.name) !== 'Any?';
   }
   private optionalDefaults = new Set<ts.ParameterDeclaration>();
+
+  /**
+   * A method parameter whose default some other method of its override family does not share: Swift picks a default
+   * argument by the static type, where JavaScript applies the default of the method that runs, so each body applies its own.
+   */
+  private familyDefaultsDiffer(p: ts.ParameterDeclaration): boolean {
+    const m = p.parent;
+    if (!ts.isMethodDeclaration(m) || isStatic(m) || !ts.isClassLike(m.parent)) return false;
+    const k = m.parameters.indexOf(p);
+    let root: ts.MethodDeclaration = m;
+    for (let b = this.baseMethod(root); b; b = this.baseMethod(root)) root = b;
+    const family = this.methodFamily(root);
+    if (!family.length) return false;
+    const text = (x: ts.MethodDeclaration) => x.parameters[k]?.initializer?.getText();
+    return [root, ...family].some((x) => x.parameters.length > k && text(x) !== text(m));
+  }
+
+  private methodFamilies: Map<ts.MethodDeclaration, ts.MethodDeclaration[]> | null = null;
+  /** The methods overriding a root method, directly or through others. */
+  private methodFamily(root: ts.MethodDeclaration): ts.MethodDeclaration[] {
+    if (!this.methodFamilies) {
+      this.methodFamilies = new Map();
+      const visit = (n: ts.Node) => {
+        if (ts.isClassLike(n)) {
+          for (const m of n.members) {
+            if (!ts.isMethodDeclaration(m) || isStatic(m) || (!m.body && !hasModifier(m, ts.SyntaxKind.AbstractKeyword))) continue;
+            let top: ts.MethodDeclaration = m;
+            for (let b = this.baseMethod(top); b; b = this.baseMethod(top)) top = b;
+            if (top !== m) this.methodFamilies.set(top, [...(this.methodFamilies.get(top) ?? []), m]);
+          }
+        }
+        ts.forEachChild(n, visit);
+      };
+      for (const f of this.sourceFiles) visit(f);
+    }
+    return this.methodFamilies.get(root) ?? [];
+  }
 
   private isConstant(e: ts.Expression): boolean {
     return ts.isLiteralExpression(e) || [ts.SyntaxKind.TrueKeyword, ts.SyntaxKind.FalseKeyword].includes(e.kind) || (ts.isPrefixUnaryExpression(e) && ts.isNumericLiteral(e.operand));
@@ -3880,8 +3917,7 @@ ${members.join('\n')}
     if (!sig || !(this.native.isStructType(t!) || t === 'Double' || t === 'String' || t === 'Bool') || this.inNativeClass(fn)) return null;
     let root = fn;
     for (let b = this.baseMethod(root); b; b = this.baseMethod(root)) root = b;
-    this.hierarchyExtras(root);
-    return [root, ...(this.methodFamilies?.get(root) ?? [])];
+    return [root, ...(this.library ? this.methodFamily(root) : [])];
   }
 
   /** A generic function compiled with its type parameters erased (`makeParser<T>`): its result as this call instantiates it. */
@@ -4301,7 +4337,6 @@ ${members.join('\n')}
     return bound;
   }
 
-  private methodFamilies: Map<ts.MethodDeclaration, ts.MethodDeclaration[]> | null = null;
   /**
    * Library mode: the parameters overrides add past their root method's
    * (`layout(l, t, r, b, setFrame)` over `layout(l, t, r, b)`), which the root
@@ -4310,25 +4345,10 @@ ${members.join('\n')}
    */
   private hierarchyExtras(root: ts.MethodDeclaration): { decl: string; type: string }[] {
     if (!this.library || !ts.isClassLike(root.parent)) return [];
-    if (!this.methodFamilies) {
-      this.methodFamilies = new Map();
-      const visit = (n: ts.Node) => {
-        if (ts.isClassLike(n)) {
-          for (const m of n.members) {
-            if (!ts.isMethodDeclaration(m) || isStatic(m) || (!m.body && !hasModifier(m, ts.SyntaxKind.AbstractKeyword))) continue;
-            let top: ts.MethodDeclaration = m;
-            for (let b = this.baseMethod(top); b; b = this.baseMethod(top)) top = b;
-            if (top !== m) this.methodFamilies.set(top, [...(this.methodFamilies.get(top) ?? []), m]);
-          }
-        }
-        ts.forEachChild(n, visit);
-      };
-      for (const f of this.sourceFiles) visit(f);
-    }
     const n = root.parameters.length;
     if (root.parameters.some((p) => p.dotDotDotToken)) return [];
     const extras: { decl: string; type: string }[] = [];
-    for (const m of this.methodFamilies.get(root) ?? []) {
+    for (const m of this.methodFamily(root)) {
       for (let k = n; k < m.parameters.length; k++) {
         const p = m.parameters[k];
         if (p.dotDotDotToken || !ts.isIdentifier(p.name)) break;
@@ -10172,7 +10192,7 @@ ${members.join('\n')}
       const method = decl && ts.isParameter(decl) && ts.isMethodDeclaration(decl.parent) && !isStatic(decl.parent) && !decl.getSourceFile().isDeclarationFile ? decl.parent : null;
       const emitted = method && this.baseMethod(method) ? this.emittedSignature(method).params[k]?.type.replace(/!$/, '?') : undefined;
       // An optional parameter of the program's (`cssFileName?: string`, `namespace: string | undefined`) takes undefined as it is.
-      const omissible = !emitted && !erased && decl && ts.isParameter(decl) && (!!decl.questionToken || this.declaredUndefined(decl) || this.looseDeclaration(decl)) && !decl.getSourceFile().isDeclarationFile && (['String', 'Double', 'Bool'].includes(at) || (this.looseDeclaration(decl) && this.looseObjectType(at)));
+      const omissible = !emitted && !erased && decl && ts.isParameter(decl) && (!!decl.questionToken || this.declaredUndefined(decl) || this.looseDeclaration(decl) || this.familyDefaultsDiffer(decl)) && !decl.getSourceFile().isDeclarationFile && (['String', 'Double', 'Bool'].includes(at) || (this.looseDeclaration(decl) && this.looseObjectType(at)));
       out.push(this.coerce(a, emitted ?? (omissible ? optionalType(at) : erased ? this.inFile(decl!.getSourceFile().fileName, () => this.paramType(decl as ts.ParameterDeclaration)) : at === 'Never' ? this.type(this.checker.getTypeOfSymbol(p), e) : at)));
     }
     if (restAt >= 0 && appDeclared && out.length <= restAt) out.push(`${this.restType(params[restAt])}()`);
