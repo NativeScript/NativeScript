@@ -3,7 +3,7 @@ import ts from 'typescript';
 import { dirname as pathDirname, resolve as pathResolve } from 'node:path';
 import { AsyncLowering, usedBefore, type AsyncCtx, type AsyncSyntax, type AsyncTranslator } from './async.ts';
 import { isAsync, isStatic } from './throws.ts';
-import { assignedValues, definitelyAssignedFields, forwardedSetter, initializedNull, intersectionAliasMembers, nullSetFields, isRegExpProtocol, intlConstructor, isObjectToStringCall, isStringRaw, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, classesHeldUntyped, LooseSlots, originOf, ownSlot, implementedInterfaceDeclarations, slotOf, slotType, type TrustScope } from './lang.ts';
+import { assignedValues, openSpreadType, definitelyAssignedFields, forwardedSetter, initializedNull, intersectionAliasMembers, nullSetFields, isRegExpProtocol, intlConstructor, isObjectToStringCall, isStringRaw, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, classesHeldUntyped, LooseSlots, originOf, ownSlot, implementedInterfaceDeclarations, slotOf, slotType, type TrustScope } from './lang.ts';
 import { isCoreDeclaration } from './core.ts';
 import { balanced } from './swift.ts';
 import type { Properties } from './properties.ts';
@@ -2679,6 +2679,7 @@ export class Translator implements AsyncTranslator {
     const params: string[] = [];
     // A component's or service's static members, in its companion object.
     const statics: string[] = [];
+    const staticAccessors = new Set<string>();
     this.indent = '        ';
     for (const m of cls.members) {
       if (!isStatic(m)) continue;
@@ -2687,7 +2688,16 @@ export class Translator implements AsyncTranslator {
         const constant = hasModifier(m, ts.SyntaxKind.ReadonlyKeyword);
         statics.push(m.initializer ? `        ${constant ? 'val' : 'var'} ${ident(m.name.text)}: ${t} = ${this.coerce(m.initializer, t)}` : `        ${this.deferredDeclaration(ident(m.name.text), t)}`);
       } else if (ts.isMethodDeclaration(m) && m.body) statics.push('        ' + this.func(m, ident(m.name.getText())));
-      else if (m.kind !== ts.SyntaxKind.ClassStaticBlockDeclaration || (m as ts.ClassStaticBlockDeclaration).body.statements.length) throw this.error(m, 'a static member of this kind in a component or service');
+      else if ((ts.isGetAccessorDeclaration(m) || ts.isSetAccessorDeclaration(m)) && ts.isIdentifier(m.name)) {
+        const n = m.name.text;
+        if (staticAccessors.has(n)) continue;
+        staticAccessors.add(n);
+        const get = cls.members.find((x): x is ts.GetAccessorDeclaration => ts.isGetAccessorDeclaration(x) && isStatic(x) && x.name.getText() === n);
+        const set = cls.members.find((x): x is ts.SetAccessorDeclaration => ts.isSetAccessorDeclaration(x) && isStatic(x) && x.name.getText() === n);
+        const t = get ? this.returnTypeOf(get) : this.typeOf(set!.parameters[0].name);
+        statics.push(`        ${set ? 'var' : 'val'} ${ident(n)}: ${t}`, get ? `            get() ${this.functionBody(get, t, '            ')}` : `            get() = ${isNullable(t) || t === 'Any?' ? 'null' : this.zero(t) ?? 'null'}`);
+        if (set) statics.push(`            set(${ident((set.parameters[0].name as ts.Identifier).text)}) ${this.functionBody(set, 'Unit', '            ')}`);
+      } else if (m.kind !== ts.SyntaxKind.ClassStaticBlockDeclaration || (m as ts.ClassStaticBlockDeclaration).body.statements.length) throw this.error(m, 'a static member of this kind in a component or service');
     }
     this.indent = '    ';
     const ctor = cls.members.find((m): m is ts.ConstructorDeclaration => ts.isConstructorDeclaration(m) && !!m.body);
@@ -9240,6 +9250,8 @@ export class Translator implements AsyncTranslator {
     // The generated kit: an object of an interface core declares (`TraceErrorHandler`), which core holds untyped and calls by name.
     if (this.generatedKit && this.core?.has(`${name}Object`) && isCoreDeclaration(this.checker.getNonNullableType(type).getSymbol()?.declarations?.[0])) return this.dynamicObject(e);
     if (/^JS(Iterator|AsyncIterator)</.test(name)) return this.scriptIterator(e, name);
+    // A spread of an open type (`{ ...state, x }` with `state: T`) carries keys no shape declares; the shape keeps them as extras.
+    if (e.properties.some((p) => ts.isSpreadAssignment(p) && openSpreadType(this.checker.getTypeAtLocation(p.expression)))) return this.fromAnyCode(this.dynamicObject(e), name);
     let decl = this.checker.getNonNullableType(type).getSymbol()?.declarations?.[0];
     // A literal that conforms to an app interface it is not declared as.
     const conforming = this.appInterfaces?.find((i) => i.name === name);

@@ -228,4 +228,109 @@ export class Shelf extends Keeper {
   }
 }
 
+// A component's statics, and those it inherits from a component it extends, read through it as JavaScript reads them.
+{
+  const dir = mkdtempSync(join(tmpdir(), 'ns-release-checks-statics-'));
+  try {
+    const files: Record<string, string> = {
+      'dialog.component.ts': `import { Component } from '@angular/core';
+@Component({ selector: 'Dialog', template: '<Label [text]="name"></Label>' })
+export class Dialog {
+  static readonly kind = 'dialog';
+  static opened = 0;
+  private static secret = 's';
+  static get title(): string {
+    return 'T' + Dialog.opened + Dialog.secret;
+  }
+  static open(n: number, tag = '!'): string {
+    Dialog.opened += n;
+    return Dialog.kind + Dialog.opened + tag;
+  }
+  static make(): string {
+    return this.kind;
+  }
+  name = 'd';
+}
+`,
+      'confirm.component.ts': `import { Component } from '@angular/core';
+import { Dialog } from './dialog.component';
+@Component({ selector: 'Confirm', template: '<Label [text]="describe()"></Label>' })
+export class Confirm extends Dialog {
+  static get label(): string {
+    return Confirm.kind + ':' + Confirm.title;
+  }
+  static set label(v: string) {
+    Confirm.open(v.length);
+  }
+  describe(): string {
+    return Confirm.open(1) + ' ' + Confirm.title + ' ' + Confirm.label;
+  }
+}
+`,
+    };
+    for (const [f, text] of Object.entries(files)) writeFileSync(join(dir, f), text);
+    const at = (f: string) => join(dir, f);
+    const stub = 'exports.Component = () => (c) => c;\n';
+    const behaviour = (flat: boolean) => {
+      const out = join(dir, flat ? 'flat' : 'orig');
+      mkdirSync(join(out, 'node_modules', '@angular', 'core'), { recursive: true });
+      writeFileSync(join(out, 'node_modules', '@angular', 'core', 'index.js'), stub);
+      for (const [f, text] of Object.entries(files)) {
+        const name = /export class (\w+)/.exec(text)![1];
+        const source = (flat && flattenComponent(at(f), text, name)) || text;
+        writeFileSync(join(out, f.replace(/\.ts$/, '.js')), ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, experimentalDecorators: true, useDefineForClassFields: false } }).outputText);
+      }
+      const load = createRequire(join(out, 'x.js'));
+      const { Confirm } = load('./confirm.component.js');
+      const { Dialog } = load('./dialog.component.js');
+      const shown = new Confirm().describe();
+      Confirm.label = 'abc';
+      return [shown, Confirm.kind, Confirm.title, Confirm.label, Confirm.open(2, '?'), Dialog.opened].join(' | ');
+    };
+    const [orig, flat] = [behaviour(false), behaviour(true)];
+    check(orig === flat, `inherited statics read through a flattened component behave as under Node${orig === flat ? '' : `:\n    ${orig}\n    ${flat}`}`);
+    const irs = ['dialog', 'confirm'].map((n) => angularComponent(at(`${n}.component.ts`), files[`${n}.component.ts`], new Map())!);
+    const infos = new Map(irs.map((ir) => [ir.name, { props: ir.props, optional: ir.optional }]));
+    const roots = Object.keys(files).map(at);
+    const virtual = new Map(irs.map((ir) => [at(`${ir.name.toLowerCase()}.component.ts`), ir.source]));
+    for (const platform of ['ios', 'android'] as const) {
+      const { checker, program, files: pf } = createProgram(roots, virtual, platform, modulesDir);
+      const errors = ts.getPreEmitDiagnostics(program).filter((d) => d.category === ts.DiagnosticCategory.Error && roots.includes(d.file?.fileName ?? ''));
+      check(!errors.length, `inherited statics read through a flattened component type-check (${platform})${errors.length ? ': ' + ts.flattenDiagnosticMessageText(errors[0].messageText, ' ') : ''}`);
+      const cls = program.getSourceFile(at('confirm.component.ts'))!.statements.filter(ts.isClassDeclaration).find((c) => c.name?.text === 'Confirm')!;
+      if (platform === 'ios') {
+        const sw = new SwiftTranslator(checker, infos, pf);
+        sw.plainFields = true;
+        translateModules(sw, program, roots);
+        const m = sw.componentMembers(cls, infos.get('Confirm')!.props).join('\n');
+        check(/static var title: String/.test(m) && /static var label: String \{[^]*set/.test(m) && /static func `open`\(/.test(m), 'a component\'s static accessors and its base\'s statics (Swift)');
+      } else {
+        const kt = new Translator(checker, infos, pf);
+        kt.appModule = 'org.example.app';
+        kt.plainFields = true;
+        kt.core = new CoreKotlin(kt, false);
+        translateKotlinModules(kt, program, roots);
+        let statics = '';
+        try { statics = kt.componentMembers(cls, infos.get('Confirm')!.props).statics.join('\n'); } catch (e) { statics = String(e); }
+        check(/val title: String\s+get\(\)/.test(statics) && /var label: String\s+get\(\)[^]*set\(v\)/.test(statics) && /fun open\(/.test(statics), `a component's static accessors and its base's statics (Kotlin)${/^Error/.test(statics) ? ': ' + statics : ''}`);
+      }
+    }
+    const refused = (code: string) => {
+      writeFileSync(at('use.ts'), `import { Confirm } from './confirm.component';\nimport { Dialog } from './dialog.component';\n${code}\n`);
+      try { refuseBaseUses([...roots, at('use.ts')]); return ''; } catch (e) { return String(e); }
+    };
+    check(refused('export const shown = Confirm.kind + Confirm.title + Confirm.open(1) + Dialog.make(); Dialog.opened = 2;') === '', 'inherited statics read through a component, and the base\'s written, are not refused');
+    for (const [code, what] of [
+      ['export function reset() { Confirm.opened = 0; }', 'writing Confirm.opened, a static field the component Confirm inherits from Dialog'],
+      ['export function bump() { Confirm.opened++; }', 'writing Confirm.opened'],
+      ['export const made = Confirm.make();', 'Confirm.make, a static method of Dialog reading this'],
+    ]) {
+      const e = refused(code);
+      check(e.includes(what) && e.includes('not supported in a release build yet'), `${what} stops the build: ${e ? e.split(': ').slice(1).join(': ') : 'it compiled'}`);
+    }
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
+
 process.exit(failed ? 1 : 0);

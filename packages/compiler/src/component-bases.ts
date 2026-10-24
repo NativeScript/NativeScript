@@ -183,6 +183,18 @@ function readsThis(n: ts.Node, names?: Set<string>): boolean {
   return found;
 }
 
+/** `this` anywhere a function's own `this` reaches: its body and the arrows in it. */
+function usesThis(n: ts.Node): boolean {
+  let found = false;
+  const visit = (x: ts.Node) => {
+    if (found || ts.isFunctionExpression(x) || ts.isFunctionDeclaration(x) || ts.isClassLike(x)) return;
+    if (x.kind === ts.SyntaxKind.ThisKeyword) found = true;
+    else ts.forEachChild(x, visit);
+  };
+  ts.forEachChild(n, visit);
+  return found;
+}
+
 const REACTIVE = /^(input|input\.required|model|model\.required|output|signal|computed|linkedSignal|toSignal|viewChild|viewChildren|contentChild|contentChildren|inject)$/;
 const reactive = (e: ts.Expression | undefined) => !!e && ((ts.isCallExpression(e) && REACTIVE.test(e.expression.getText())) || (ts.isNewExpression(e) && e.expression.getText() === 'EventEmitter'));
 const BASE_META = new Set(['providers', 'viewProviders', 'host', 'inputs', 'outputs', 'queries', 'hostDirectives']);
@@ -437,6 +449,37 @@ export function flattenComponent(path: string, text: string, name: string, read:
     ctorPiece = `  constructor() {\n    ${assigned.join('\n    ')}\n  }`;
   }
 
+  // ---- The base's statics, which JavaScript reads through the component (`C.x` finds `Base.x`): members reading the
+  // base's own. Where that differs (`this` in them is C in JavaScript, a write through C makes C's own), `refuseBaseUses`
+  // stops the build. A private one can't be read through C; a plain base's protected one can't be read from C once C
+  // no longer extends it (a component base's are opened, `openStatics`).
+  const ref = (extendsOf(cls)!.expression as ts.Identifier).text;
+  const component = decoratorsOf(B).some((d) => /^Component\b/.test(d.expression.getText()));
+  const ownStatics = new Set(cls.members.filter(isStatic).map(memberName));
+  const forwards: string[] = [];
+  const forwarded = new Set<string>();
+  for (const bm of B.members) {
+    const n = memberName(bm);
+    if (!isStatic(bm) || n === undefined || !bm.name || !ts.isIdentifier(bm.name) || ownStatics.has(n) || forwarded.has(n)) continue;
+    const mods = ts.canHaveModifiers(bm) ? ts.getModifiers(bm) ?? [] : [];
+    if (mods.some((x) => x.kind === ts.SyntaxKind.PrivateKeyword) || (!component && mods.some((x) => x.kind === ts.SyntaxKind.ProtectedKeyword))) continue;
+    forwarded.add(n);
+    const same = B.members.filter((x) => isStatic(x) && memberName(x) === n);
+    if (same.some((x) => ts.isMethodDeclaration(x))) {
+      const impl = same.find((x): x is ts.MethodDeclaration => ts.isMethodDeclaration(x) && !!x.body);
+      if (!impl) continue;
+      const overloads = same.filter((x) => ts.isMethodDeclaration(x) && !x.body).map((x) => fromBase(x, [], false));
+      const typeParams = impl.typeParameters ? `<${impl.typeParameters.map((t) => fromBase(t, [], false)).join(', ')}>` : '';
+      const ps = impl.parameters.map((q) => fromBase(q, [], false));
+      const args = impl.parameters.map((q) => `${q.dotDotDotToken ? '...' : ''}${q.name.getText()}`);
+      forwards.push(...overloads.map((o) => `\n  ${o}`), `\n  static ${n}${typeParams}(${ps.join(', ')})${impl.type ? `: ${fromBase(impl.type, [], false)}` : ''} {\n    return ${ref}.${n}(${args.join(', ')});\n  }`);
+      continue;
+    }
+    const set = same.find(ts.isSetAccessorDeclaration);
+    forwards.push(`\n  static get ${n}() {\n    return ${ref}.${n};\n  }`);
+    if (set) forwards.push(`\n  static set ${n}(value: typeof ${ref}.${n}) {\n    ${ref}.${n} = value;\n  }`);
+  }
+
   // ---- The class: the base's members, then the component's.
   const out: string[] = [];
   const movedToMethod = work && (!!ownCtor || !!initCall);
@@ -465,6 +508,7 @@ export function flattenComponent(path: string, text: string, name: string, read:
     if (dropped.has(m)) continue;
     out.push(m === ownCtor && ownCtorText !== undefined ? ownCtorText : fromOwn(m));
   }
+  out.push(...forwards);
   const ext = cls.heritageClauses!.find((h) => h.token === ts.SyntaxKind.ExtendsKeyword)!;
   const others = cls.heritageClauses!.filter((h) => h !== ext);
   const head = text.slice(cls.getStart(), ext.getFullStart()) + (others.length ? ' ' + others.map((h) => h.getText()).join(' ') : '') + ' {';
@@ -499,6 +543,7 @@ function needsBase(id: ts.Identifier, name: string): string | undefined {
  */
 export function refuseBaseUses(files: string[], read: Read = readFile): void {
   const bases = new Map<string, { name: string; by: string }>();
+  const derived = new Map<string, { name: string; statics: Map<string, InheritedStatic> }>();
   for (const f of files) {
     const text = read(f);
     if (!/@Component\b/.test(text) || !/\bextends\b/.test(text)) continue;
@@ -507,25 +552,33 @@ export function refuseBaseUses(files: string[], read: Read = readFile): void {
       if (!ts.isClassDeclaration(st) || !st.name || !decoratorsOf(st).some((d) => /^Component\b/.test(d.expression.getText()))) continue;
       let file = f, at = sf, cls: ts.ClassDeclaration | undefined = st;
       const seen = new Set<string>();
+      const statics = new Map<string, InheritedStatic>();
+      const declared = new Set(st.members.filter(isStatic).map(memberName));
       while (cls && extendsOf(cls) && ts.isIdentifier(extendsOf(cls)!.expression)) {
         const b = classOfName(file, at, (extendsOf(cls)!.expression as ts.Identifier).text, read);
         if (!b || seen.has(`${b.file}#${b.name}`)) break;
         seen.add(`${b.file}#${b.name}`);
         if (!bases.has(`${b.file}#${b.name}`)) bases.set(`${b.file}#${b.name}`, { name: b.name, by: st.name.text });
         file = b.file; at = parse(file, read(file)); cls = classIn(at, b.name);
+        for (const m of cls?.members ?? []) {
+          const n = memberName(m);
+          if (!isStatic(m) || n === undefined || declared.has(n)) continue;
+          const kind = ts.isPropertyDeclaration(m) ? 'field' : ts.isMethodDeclaration(m) && m.body && usesThis(m.body) ? 'method' : ts.isSetAccessorDeclaration(m) && m.body && usesThis(m.body) ? 'setter' : null;
+          if (kind && !statics.has(n)) statics.set(n, { base: b.name, kind });
+        }
+        for (const m of cls?.members ?? []) if (isStatic(m)) declared.add(memberName(m));
       }
+      if (statics.size) derived.set(`${f}#${st.name.text}`, { name: st.name.text, statics });
     }
   }
   if (!bases.size) return;
-  const names = [...new Set([...bases.values()].map((b) => b.name))];
-  for (const f of files) {
-    const text = read(f);
-    if (!names.some((n) => text.includes(n))) continue;
-    const sf = parse(f, text);
-    const local = new Map<string, { name: string; by: string }>();
+  const names = [...new Set([...bases.values(), ...derived.values()].map((b) => b.name))];
+  /** The class declared or imported under `n` in this file, among `among`. */
+  const resolve = <T>(f: string, sf: ts.SourceFile, among: Map<string, T>) => {
+    const local = new Map<string, T>();
     for (const n of names) {
-      const found = text.includes(n) ? classOfName(f, sf, n, read) : undefined;
-      const b = found && bases.get(`${found.file}#${found.name}`);
+      const found = sf.text.includes(n) ? classOfName(f, sf, n, read) : undefined;
+      const b = found && among.get(`${found.file}#${found.name}`);
       if (b) local.set(n, b);
     }
     for (const st of sf.statements) {
@@ -533,22 +586,50 @@ export function refuseBaseUses(files: string[], read: Read = readFile): void {
       for (const e of st.importClause.namedBindings.elements) {
         if (local.has(e.name.text) || !e.propertyName) continue;
         const found = classOfName(f, sf, e.name.text, read);
-        const b = found && bases.get(`${found.file}#${found.name}`);
+        const b = found && among.get(`${found.file}#${found.name}`);
         if (b) local.set(e.name.text, b);
       }
     }
-    if (!local.size) continue;
-    const visit = (n: ts.Node) => {
+    return local;
+  };
+  for (const f of files) {
+    const text = read(f);
+    if (!names.some((n) => text.includes(n))) continue;
+    const sf = parse(f, text);
+    const local = resolve(f, sf, bases);
+    const sub = resolve(f, sf, derived);
+    if (!local.size && !sub.size) continue;
+    // `C.x` (or `this.x` in C's statics) of a static C inherits, where the copy differs from JavaScript's lookup.
+    const inherited = (pa: ts.PropertyAccessExpression, d: { name: string; statics: Map<string, InheritedStatic> }) => {
+      const s = d.statics.get(pa.name.text);
+      const p = pa.parent;
+      const write = (ts.isBinaryExpression(p) && p.left === pa && p.operatorToken.kind >= ts.SyntaxKind.FirstAssignment && p.operatorToken.kind <= ts.SyntaxKind.LastAssignment)
+        || ((ts.isPrefixUnaryExpression(p) || ts.isPostfixUnaryExpression(p)) && (p.operator === ts.SyntaxKind.PlusPlusToken || p.operator === ts.SyntaxKind.MinusMinusToken));
+      const at = `${f}:${lineOf(pa)}`;
+      if (s?.kind === 'method') throw unsupported(at, `${d.name}.${pa.name.text}, a static method of ${s.base} reading this, through the component ${d.name} that extends it,`);
+      if (write && s?.kind === 'field') throw unsupported(at, `writing ${d.name}.${pa.name.text}, a static field the component ${d.name} inherits from ${s.base} (write ${s.base}.${pa.name.text}),`);
+      if (write && s?.kind === 'setter') throw unsupported(at, `writing ${d.name}.${pa.name.text}, a static setter of ${s.base} reading this, through the component ${d.name} that extends it,`);
+    };
+    const visit = (n: ts.Node, self?: { name: string; statics: Map<string, InheritedStatic> }) => {
       if (ts.isIdentifier(n) && local.has(n.text) && isReference(n) && !ts.isImportSpecifier(n.parent) && !ts.isExportSpecifier(n.parent) && !(ts.isClassDeclaration(n.parent) && n.parent.name === n)) {
         const b = local.get(n.text)!;
         const what = needsBase(n, n.text);
         if (what) throw unsupported(`${f}:${lineOf(n)}`, `${what}, where ${b.name} is a class the component ${b.by} extends (and the release build copies into it),`);
       }
-      ts.forEachChild(n, visit);
+      if (ts.isPropertyAccessExpression(n) && ts.isIdentifier(n.expression) && sub.has(n.expression.text)) inherited(n, sub.get(n.expression.text)!);
+      if (self && ts.isPropertyAccessExpression(n) && n.expression.kind === ts.SyntaxKind.ThisKeyword) inherited(n, self);
+      if (ts.isClassDeclaration(n) && n.name && sub.has(n.name.text) && derived.get(`${f}#${n.name.text}`)) {
+        for (const m of n.members) visit(m, isStatic(m) ? derived.get(`${f}#${n.name.text}`) : undefined);
+        return;
+      }
+      ts.forEachChild(n, (c) => visit(c, self && (ts.isFunctionExpression(c) || ts.isFunctionDeclaration(c) || ts.isClassLike(c)) ? undefined : self));
     };
     visit(sf);
   }
 }
+
+/** A static a component inherits that its copy can't give as JavaScript does: a field (written through the component), or a method or setter reading `this`. */
+interface InheritedStatic { base: string; kind: 'field' | 'method' | 'setter' }
 
 /**
  * A component's static members without `private`/`protected`: a subclass's copy of its methods names them through
