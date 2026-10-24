@@ -1115,7 +1115,7 @@ export class Translator implements AsyncTranslator {
     // Library mode: what a constructor typed `new (): { [k: string]: T }` makes is a plain object, whatever script writes into it.
     const made = sym?.declarations?.[0];
     if (index && !t.getProperties().length && this.library && made && ts.isTypeLiteralNode(made) && ts.isConstructSignatureDeclaration(made.parent)) return 'JSRecord<Any?>';
-    if (index && !t.getProperties().length) return `JSRecord<${this.type(index, where)}>`;
+    if (index && !t.getProperties().length) return `JSRecord<${heldType(this.type(index, where))}>`;
     // A literal with computed keys beside named ones (`{ [k]: 1, a: 2 }`): its keys are known only when it runs.
     if (index && sym?.getName() === '__object') return 'Any?';
     // A mapped type (`Partial<…>`, `{ [k in Side]: number }`) is read by computed keys: an untyped object.
@@ -1327,10 +1327,10 @@ export class Translator implements AsyncTranslator {
     const reads = ['find', 'findLast', 'at', 'pop', 'shift', 'get'];
     const target = ts.isElementAccessExpression(n) ? n.expression
       : ts.isCallExpression(n) && ts.isPropertyAccessExpression(n.expression) && reads.includes(n.expression.name.text) ? n.expression.expression : null;
-    if (target) return /^JS(Array<Any\?>|Map<.*, Any\?>)[?!]?$/.test(this.typeOf(target));
+    if (target) return /^JS(Array<Any\?>|Record<Any\?>|Map<.*, Any\?>)[?!]?$/.test(this.typeOf(target));
     // A result or field the program types by a bare type parameter, bound here to a function type: Swift binds the parameter to the function object.
     const decl = ts.isCallExpression(n) ? this.checker.getResolvedSignature(n)?.getDeclaration() : ts.isPropertyAccessExpression(n) ? this.resolve(n.name)?.valueDeclaration : undefined;
-    const typed = decl && !ts.isJSDocSignature(decl) && (ts.isFunctionLike(decl) || ts.isPropertyDeclaration(decl) || ts.isParameter(decl)) ? decl.type : undefined;
+    const typed = decl && !ts.isJSDocSignature(decl) && (ts.isCallExpression(n) ? ts.isFunctionLike(decl) : ts.isPropertyDeclaration(decl) || ts.isParameter(decl)) ? decl.type : undefined;
     return !!typed && !decl!.getSourceFile().isDeclarationFile && this.isBareTypeParameter(typed);
   }
 
