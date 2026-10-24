@@ -1,7 +1,7 @@
 import ts from 'typescript';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { addedDeclarations, isCoreDeclaration, unappliedProperty } from './core.ts';
+import { addedDeclarations, isCoreDeclaration, ownPropertyOnly, unappliedProperty } from './core.ts';
 import { kitExtends, kitMember, readNames, type KitMember, type KitType } from './kit-index.ts';
 import { KIT_NAMES_ANDROID, asserted, functionTypeParts, isAsserted, kotlinString, numberLiteral, splitTopLevel, type KotlinCore, type Translator } from './kotlin.ts';
 import { KIT_ANDROID } from './paths.ts';
@@ -265,6 +265,14 @@ export class CoreKotlin implements KotlinCore {
     return kitExtends(this.index, name, 'View');
   }
 
+  /** The kit's final copy of a method, as the nearest type declaring it has it (see `nonVirtualEntry` in kotlin.ts). */
+  nonVirtualEntry(type: string, name: string): string | null {
+    for (let t = this.index.get(type); t; t = t.base ? this.index.get(t.base) : undefined) {
+      if (t.members.has(name)) return [...t.members.keys()].find((k) => k.startsWith(`${name}__`) && t!.members.get(k)!.some((m) => m.kind === 'func' && !m.static)) ?? null;
+    }
+    return null;
+  }
+
   kitMember(owner: string, name: string): KitMember | null {
     return kitMember(this.index, owner, name);
   }
@@ -481,6 +489,10 @@ export class CoreKotlin implements KotlinCore {
     if (!kitMember(this.index, owner.name, name) && (e.questionDotToken || (ts.isCallExpression(e.parent) && e.parent.expression === e && !!e.parent.questionDotToken))) {
       return `jsGetOptional(${t.coerce(e.expression, 'Any?')}, ${kotlinString(e.name.text)})`;
     }
+    if (!owner.isStatic && ownPropertyOnly(this.index, owner.name, e.name, t.resolve(e.name))) {
+      if (e.questionDotToken || ts.isOptionalChain(e)) throw t.error(e, `${owner.name}.${name} in an optional chain`);
+      return t.fromAnyCode(`${recv}.jsGet(${kotlinString(name)})`, t.typeOf(e), true);
+    }
     const m = this.member(owner.name, name, e);
     // A method read as a value (`typeof view.getSafeAreaInsets === 'function'`): bound to its object.
     // A method as a value; read through `?.` (`child?.getChildAt`), undefined where the receiver is.
@@ -540,6 +552,7 @@ export class CoreKotlin implements KotlinCore {
       if (!this.generated && !this.isViewProperty(owner.name, name)) unappliedProperty(t, left.name, `${owner.name}.${name}`, 'kit-android');
       return `${recv}.set(${JSON.stringify(name)}, ${t.coerce(value, 'Any?')})`;
     }
+    if (!owner.isStatic && ownPropertyOnly(this.index, owner.name, left.name, t.resolve(left.name))) return `${recv}.jsSet(${kotlinString(name)}, ${t.coerce(value, 'Any?')})`;
     const m = this.member(owner.name, name, left);
     // Null or undefined for a member the kit types non-null (`label.text = null`): set by name, as script sets it.
     const unset = value.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(value) && value.text === 'undefined');

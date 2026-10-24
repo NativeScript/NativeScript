@@ -220,6 +220,7 @@ fun jsRound(value: Double): Double {
 
 fun jsSign(x: Double): Double = if (x.isNaN()) Double.NaN else if (x > 0) 1.0 else if (x < 0) -1.0 else x
 fun jsFround(x: Double): Double = x.toFloat().toDouble()
+fun jsImul(a: Double, b: Double): Double = (jsToInt32(a) * jsToInt32(b)).toDouble()
 fun jsClz32(x: Double): Double = Integer.numberOfLeadingZeros(jsToInt32(x)).toDouble()
 fun jsTrunc(x: Double): Double = if (x < 0) Math.ceil(x) else Math.floor(x)
 

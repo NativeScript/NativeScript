@@ -41,6 +41,13 @@ export function addedDeclarations(decls: readonly ts.Declaration[]): boolean {
   return decls.length > 0 && decls.every((d) => !isCoreDeclaration(d) && (!d.getSourceFile().isDeclarationFile || ts.isExternalModule(d.getSourceFile())));
 }
 
+/** A property core's typings declare that the kit's class lacks and leaves to each object's own properties (see `CoreAPI.ownPropertyOnly`). */
+export function ownPropertyOnly(index: Map<string, KitType>, owner: string, name: ts.MemberName, sym: ts.Symbol | undefined): boolean {
+  if (kitMember(index, owner, name.text) || !kitMember(index, owner, 'jsExpando')) return false;
+  const decls = sym?.declarations ?? [];
+  return decls.length > 0 && decls.every((d) => isCoreDeclaration(d) && (ts.isPropertyDeclaration(d) || ts.isPropertySignature(d)) && !(ts.getCombinedModifierFlags(d) & ts.ModifierFlags.Static));
+}
+
 export function isCoreDeclaration(decl: ts.Declaration | undefined): boolean {
   const file = decl?.getSourceFile().fileName;
   return !!file && (KIT_PACKAGES.test(file) || kitPackageDeclaration(file)) && !/[\\/]objc![^\\/]+\.d\.ts$/.test(file);
@@ -187,6 +194,29 @@ export class CoreAPI {
     // A class the kit names by its file where another has its name (`Source__debug_source`): the one such class.
     const renamed = [...this.index.keys()].filter((k) => k.startsWith(`${name}__`) && !k.includes('.'));
     return renamed.length === 1 ? renamed[0] : name;
+  }
+
+  /** The kit type of a core class, if the kit has one. */
+  kitTypeName(name: string): string | null {
+    const k = this.platformClass(name);
+    return this.index.has(k) ? k : null;
+  }
+
+  /** The kit's final copy of a method, as the nearest type declaring it has it (see `nonVirtualEntry` in swift.ts). */
+  nonVirtualEntry(type: string, name: string): string | null {
+    for (let t = this.index.get(type); t; t = t.base ? this.index.get(t.base) : undefined) {
+      if (t.members.has(name)) return [...t.members.keys()].find((k) => k.startsWith(`${name}__`) && t!.members.get(k)!.some((m) => m.kind === 'func' && !m.static)) ?? null;
+    }
+    return null;
+  }
+
+  /** `recv.method(…args)` of a kit method named apart from the call (`Observable.prototype.on.call(this, …)`), arguments as its parameters take them. */
+  nonVirtualCall(e: ts.CallExpression, recv: string, owner: string, method: string, args: readonly ts.Expression[]): string {
+    const m = kitMember(this.index, owner, method)!;
+    const params = (m.params ?? '').trim() ? splitParams(m.params!) : [];
+    const given = args.map((a, k) => this.t.coerce(a, params[k] ? kitParamType(params[k]).replace(/^@escaping /, '') : 'Any?'));
+    while (given.length < params.length && !params[given.length].includes('=') && /[?!]\s*$/.test(params[given.length])) given.push('nil');
+    return this.fromKit(`${recv}.${method}(${given.join(', ')})`, m.type, this.t.typeOf(e));
   }
 
   /** Whether a kit class's initializer taking no arguments throws. */
@@ -347,6 +377,14 @@ export class CoreAPI {
     return all.find((m) => m.kind !== 'func' || fits(m)) ?? all[0] ?? null;
   }
 
+  /**
+   * A property core's typings declare on a class whose implementation leaves it to each object (Transition's `name`,
+   * `presented`): the kit has no member for it, and the object's own property holds it, as script's does.
+   */
+  ownPropertyOnly(owner: string, name: ts.MemberName): boolean {
+    return ownPropertyOnly(this.index, owner, name, this.t.resolve(name));
+  }
+
   private member(owner: string, name: string, e: ts.Node): KitMember {
     const m = kitMember(this.index, owner, name);
     if (!m) throw this.t.error(e, `${owner}.${name} (NativeScriptKit has no such member)`);
@@ -395,6 +433,10 @@ export class CoreAPI {
     }
     // `Color.equals` as a value: the class's own function of the name, not an instance method of it.
     const own = (() => { for (let x = this.index.get(owner.name); x; x = x.base ? this.index.get(x.base) : undefined) { const f = x.members.get(name)?.find((y) => y.kind === 'func' && !!y.static === owner.isStatic); if (f) return f; } return undefined; })();
+    if (!own && !owner.isStatic && this.ownPropertyOnly(owner.name, e.name)) {
+      if (inChain) throw t.error(e, `${owner.name}.${name} in an optional chain`);
+      return t.fromAnyCode(`${recv}[jsKey: ${JSON.stringify(name)}]`, t.typeOf(e), true);
+    }
     const m = own ?? this.member(owner.name, name, e);
     if (inChain && continued) return `${recv}.${name}`;
     // A method as a value (`Builder.load` given to `isFunction`): the function Swift has of it, adapted to the declared type.
@@ -438,6 +480,7 @@ export class CoreAPI {
       // Core's `set` runs the property's change handlers, whose errors are reported as core reports them.
       return `jsReport { try ${recv}.set(${JSON.stringify(name)}, ${t.coerce(value, 'Any?')}) }`;
     }
+    if (!owner.isStatic && this.ownPropertyOnly(owner.name, left.name)) return `${recv}[jsKey: ${JSON.stringify(name)}] = ${t.coerce(value, 'Any?')}`;
     const m = this.member(owner.name, name, left);
     // A kit member typed `Any?` holds what core reads as a plain script object (`TouchManager.animations`).
     if (m.type.trim() === 'Any?') return `${recv}.${name} = ${this.scriptValue(value)}`;
