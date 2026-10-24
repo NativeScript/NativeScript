@@ -1,4 +1,4 @@
-import { Observable, type OperatorFunction, ReplaySubject, type Subscription } from 'rxjs';
+import { firstValueFrom, isObservable, Observable, type OperatorFunction, ReplaySubject, type Subscription } from 'rxjs';
 import { DestroyRef, effect, inject, InjectionToken, type Signal, signal } from '@angular/core';
 import {
   ActivatedRouteSnapshot,
@@ -34,6 +34,7 @@ import {
   ResolveEnd,
   ResolveStart,
   RoutesRecognized,
+  RouterStateSnapshot,
   runNativeScriptAngularApp,
   type RxObservable,
   UrlSegment,
@@ -83,6 +84,7 @@ export {
   ResolveEnd,
   ResolveStart,
   RoutesRecognized,
+  RouterStateSnapshot,
   runNativeScriptAngularApp,
   UrlSegment,
   UrlTree,
@@ -331,7 +333,7 @@ export class Router {
   }
 }
 
-export type Routes = {
+export interface Route {
   path?: string;
   component?: any;
   redirectTo?: string;
@@ -344,13 +346,13 @@ export type Routes = {
   canMatch?: any[];
   resolve?: Record<string, any>;
   providers?: any[];
-  children?: Routes;
+  children?: Route[];
   loadChildren?: () => any;
   loadComponent?: () => any;
   title?: any;
-}[];
+}
+export type Routes = Route[];
 
-export type Route = Routes[number];
 export type NavigationExtras = any;
 export type Params = { [key: string]: any };
 export interface IsActiveMatchOptions {
@@ -359,8 +361,28 @@ export interface IsActiveMatchOptions {
   paths: 'exact' | 'subset';
   fragment: 'exact' | 'ignored';
 }
+export type GuardResult = boolean | UrlTree;
+export type MaybeAsync<T> = T | Observable<T> | Promise<T>;
+export type CanActivateFn = (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => MaybeAsync<GuardResult>;
+export type CanActivateChildFn = (childRoute: ActivatedRouteSnapshot, state: RouterStateSnapshot) => MaybeAsync<GuardResult>;
+export type CanDeactivateFn<T> = (component: T, currentRoute: ActivatedRouteSnapshot, currentState: RouterStateSnapshot, nextState: RouterStateSnapshot) => MaybeAsync<GuardResult>;
+export type CanMatchFn = (route: Route, segments: UrlSegment[]) => MaybeAsync<GuardResult>;
 export interface CanActivate {
-  canActivate(route: ActivatedRouteSnapshot, state: any): any;
+  canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): MaybeAsync<GuardResult>;
+}
+export interface CanActivateChild {
+  canActivateChild(childRoute: ActivatedRouteSnapshot, state: RouterStateSnapshot): MaybeAsync<GuardResult>;
+}
+export interface CanDeactivate<T> {
+  canDeactivate(component: T, currentRoute: ActivatedRouteSnapshot, currentState: RouterStateSnapshot, nextState: RouterStateSnapshot): MaybeAsync<GuardResult>;
+}
+export interface CanMatch {
+  canMatch(route: Route, segments: UrlSegment[]): MaybeAsync<GuardResult>;
+}
+
+/** A guard's result as the kit's router takes it: an Observable's first value as a promise (Angular's `first()`), else the result. */
+export function ɵguardResult(result: any): any {
+  return isObservable(result) ? firstValueFrom(result) : result;
 }
 export type ParamMapType = ParamMap;
 export { Router as RouterExtensions };

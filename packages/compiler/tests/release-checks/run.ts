@@ -1155,9 +1155,30 @@ export function openSheet(dialogs: NativeDialogService, cmp: any, config?: Nativ
       w('src/app.routes.ts', `import { Home } from './home';\nconst more = [{ path: 'more', component: Home }];\nexport const routes = [${route}];\n`);
       return thrown(() => angularRouteTree(main, (f) => readFileSync(f, 'utf8')));
     };
-    for (const guard of ['canActivate', 'canActivateChild', 'canDeactivate', 'canMatch', 'canLoad']) {
+    const canLoad = tree("{ path: 'admin', component: Home, canLoad: [() => false] }");
+    check(canLoad.includes("route guards (canLoad on 'admin') are not supported in a release build yet"), `the route guard canLoad stops the build${canLoad ? '' : ': it compiled'}`);
+    for (const guard of ['canActivate', 'canActivateChild', 'canDeactivate', 'canMatch']) {
       const e = tree(`{ path: 'admin', component: Home, ${guard}: [() => false] }`);
-      check(e.includes(`route guards (${guard} on 'admin') are not supported in a release build yet`), `the route guard ${guard} stops the build${e ? '' : ': it compiled'}`);
+      check(!e, `the route guard ${guard} compiles${e ? `: ${e}` : ''}`);
+    }
+    check(tree("{ path: 'a', component: Home, canActivate: guards }").includes("a route's canActivate that is not an array (guards) is not supported"), 'guards not given as an array stop the build');
+    check(tree("{ path: 'a', redirectTo: '/b', canMatch: [() => true] }").includes("canMatch on a redirect on 'a' is not supported"), 'canMatch on a redirect stops the build');
+    check(tree("{ path: 'a', component: Home, canActivate: [Missing] }").includes("the canActivate guard Missing, which the release build can't find in the app's files, is not supported"), "a guard name the build can't resolve stops it");
+    {
+      w('src/auth.ts', "import { Injectable, inject } from '@angular/core';\nexport class Session { ok = true; }\n@Injectable({ providedIn: 'root' })\nexport class AuthGuard { canActivate(route: any): boolean { return true; } canDeactivate(): boolean { return true; } }\nexport const loggedIn = () => true;\n");
+      w('src/guards/index.ts', "export { AuthGuard as Auth } from '../auth';\n");
+      const main = w('src/main.ts', "import { routes } from './app/app.routes';\nbootstrapApplication(App, { providers: [provideNativeScriptRouter(routes)] });\n");
+      w('src/app/app.routes.ts', "import { inject } from '@angular/core';\nimport { Home } from '../home';\nimport { Auth } from '../guards';\nimport { Session, loggedIn } from '../auth';\nconst role = (r: string) => () => inject(Session).ok && r === 'admin';\nexport const routes = [{ path: 'a', component: Home, canActivate: [Auth, loggedIn, () => inject(Session).ok], canDeactivate: [Auth] }, { path: 'b', children: [{ path: 'c', component: Home }], canActivateChild: [role('admin')] }, { path: 'd', component: Home }];\n");
+      const t = angularRouteTree(main, (f) => readFileSync(f, 'utf8'))!;
+      const [a, b, d] = t.routes;
+      check(a.guards === 0 && a.deactivate === true && b.guards === 1 && !b.children![0].guards && d.guards === undefined && !d.deactivate, 'guarded routes carry the id their guards register under, and canDeactivate marks the route');
+      const ios = t.guards[0].source(join(dir, 'src'), 'ios');
+      const android = t.guards[0].source(join(dir, 'src'), 'android');
+      check(t.guards.length === 1 && ios.includes("import { Auth } from \"./guards\";") && ios.includes("import { Session, loggedIn } from \"./auth\";") && ios.includes("import { inject } from \"@angular/core\";") && !ios.includes('Home'), "a guard module imports what the guards name, its specifiers relative to the app's folder");
+      check(ios.includes("KitRouter.shared.addGuard(0, 'canActivate', (a: any, b: any, c: any, d: any): any => ɵguardResult(inject(Auth).canActivate(a)));") && ios.includes("inject(Auth).canDeactivate()"), "a class guard is injected and its method called with the arguments it declares (a re-export followed)");
+      check(/const ɵguard1: \(a: any, b: any\) => any = loggedIn;/.test(ios) && /const ɵguard2: \(a: any, b: any\) => any = \(\) => inject\(Session\)\.ok;/.test(ios), 'a function guard, named or inline, is evaluated once and called with Angular\'s arguments');
+      check(ios.includes("const role = (r: string) => () => inject(Session).ok && r === 'admin';") && ios.includes("addGuard(1, 'canActivateChild'"), "the route file's declarations a guard names are copied, and a guard factory's call is the guard");
+      check(!android.includes('ɵguardResult') && android.includes('addGuard(0, \'canActivate\', (a: any, b: any, c: any, d: any): any => inject(Auth).canActivate(a));'), "on Android the kit reads a guard's Observable itself");
     }
     check(tree("{ path: 'item', component: Home, resolve: { item: () => 1 } }").includes("route resolvers (resolve on 'item') are not supported in a release build yet"), 'a route resolver stops the build');
     for (const [field, text] of [

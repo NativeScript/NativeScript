@@ -77,6 +77,7 @@ const SHIMS: Record<string, string> = {
       readonly pathFromRoot: ActivatedRouteSnapshot[];
     }
     export declare function createRouterStateSnapshot(url?: string): any;
+    export declare class RouterStateSnapshot { readonly url: string; readonly root: ActivatedRouteSnapshot; toString(): string }
     export declare class HttpHeaders {
       constructor(headers?: string | Record<string, string | number | (string | number)[]>);
       has(name: string): boolean;
@@ -257,6 +258,8 @@ const SHIMS: Record<string, string> = {
       backToPreviousPage(): void;
       canGoBack(options?: any): boolean;
       canGoBackToPreviousPage(): boolean;
+      /** A route guard of the route registered under \`route\`, called with Angular's arguments for its kind. */
+      addGuard(route: number, kind: string, guard: (a: any, b: any, c: any, d: any) => any): void;
     }
     export declare class KitNativeDialogRef { static readonly current: KitNativeDialogRef; readonly data: any; close(result?: any): void; afterClosed(): RxObservable<any> }
     export declare class KitNativeDialogService { static readonly shared: KitNativeDialogService; open(component: any, config?: any): KitNativeDialogRef }
@@ -533,10 +536,12 @@ const SHIMS: Record<string, string> = {
       ResolveEnd,
       ResolveStart,
       RoutesRecognized,
+      RouterStateSnapshot,
       UrlSegment,
       UrlTree,
     } from '@nativescript/release';
     export {
+      RouterStateSnapshot,
       ActivatedRouteSnapshot,
       convertToParamMap,
       createRouterStateSnapshot,
@@ -583,7 +588,7 @@ const SHIMS: Record<string, string> = {
       navigate(commands: any[], extras?: NavigationExtras): Promise<boolean>;
       navigateByUrl(url: string | UrlTree, extras?: NavigationExtras): Promise<boolean>;
     }
-    export type Routes = {
+    export interface Route {
       path?: string;
       component?: any;
       redirectTo?: string;
@@ -596,15 +601,24 @@ const SHIMS: Record<string, string> = {
       canMatch?: any[];
       resolve?: Record<string, any>;
       providers?: any[];
-      children?: Routes;
+      children?: Route[];
       loadChildren?: () => any;
       loadComponent?: () => any;
       title?: any;
-    }[];
-    export type Route = Routes[number];
+    }
+    export type Routes = Route[];
     export type Params = { [key: string]: any };
     export interface IsActiveMatchOptions { matrixParams: 'exact' | 'subset' | 'ignored'; queryParams: 'exact' | 'subset' | 'ignored'; paths: 'exact' | 'subset'; fragment: 'exact' | 'ignored' }
-    export interface CanActivate { canActivate(route: ActivatedRouteSnapshot, state: any): any }
+    export type GuardResult = boolean | UrlTree;
+    export type MaybeAsync<T> = T | Observable<T> | Promise<T>;
+    export type CanActivateFn = (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => MaybeAsync<GuardResult>;
+    export type CanActivateChildFn = (childRoute: ActivatedRouteSnapshot, state: RouterStateSnapshot) => MaybeAsync<GuardResult>;
+    export type CanDeactivateFn<T> = (component: T, currentRoute: ActivatedRouteSnapshot, currentState: RouterStateSnapshot, nextState: RouterStateSnapshot) => MaybeAsync<GuardResult>;
+    export type CanMatchFn = (route: Route, segments: UrlSegment[]) => MaybeAsync<GuardResult>;
+    export interface CanActivate { canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): MaybeAsync<GuardResult> }
+    export interface CanActivateChild { canActivateChild(childRoute: ActivatedRouteSnapshot, state: RouterStateSnapshot): MaybeAsync<GuardResult> }
+    export interface CanDeactivate<T> { canDeactivate(component: T, currentRoute: ActivatedRouteSnapshot, currentState: RouterStateSnapshot, nextState: RouterStateSnapshot): MaybeAsync<GuardResult> }
+    export interface CanMatch { canMatch(route: Route, segments: UrlSegment[]): MaybeAsync<GuardResult> }
     export declare const RouterModule: { forRoot(routes: Routes, config?: any): any; forChild(routes: Routes): any };
     export declare function provideRouter(routes?: any, ...features: any[]): any;
     export declare const RouterOutlet: any;

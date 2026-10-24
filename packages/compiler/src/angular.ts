@@ -2264,11 +2264,13 @@ function sourceOf(ast: ng.AST): string {
  */
 const ROUTE_FIELDS = new Set(['path', 'pathMatch', 'component', 'loadComponent', 'redirectTo', 'outlet', 'children', 'loadChildren', 'title', 'runGuardsAndResolvers']);
 const ROUTE_GUARDS = new Set(['canActivate', 'canActivateChild', 'canDeactivate', 'canMatch', 'canLoad']);
+/** The guards the release build's router runs, each with the arguments Angular calls it with. */
+const RUN_GUARDS: Record<string, number> = { canActivate: 2, canActivateChild: 2, canDeactivate: 4, canMatch: 2 };
 
 const lineOf = (n: ts.Node) => ts.getLineAndCharacterOfPosition(n.getSourceFile(), n.getStart()).line + 1;
 
 /** A route's fields, each one the release build reads as Angular's router does, or may leave unread. */
-function routeFields(file: string, route: ts.ObjectLiteralExpression): void {
+function routeFields(file: string, route: ts.ObjectLiteralExpression, guards = false): void {
   const pathOf = route.properties.find((p): p is ts.PropertyAssignment => ts.isPropertyAssignment(p) && p.name.getText() === 'path')?.initializer;
   const named = pathOf && ts.isStringLiteralLike(pathOf) ? ` on '${pathOf.text}'` : '';
   for (const p of route.properties) {
@@ -2276,9 +2278,11 @@ function routeFields(file: string, route: ts.ObjectLiteralExpression): void {
     if (!ts.isPropertyAssignment(p) || !(ts.isIdentifier(p.name) || ts.isStringLiteral(p.name))) throw new Error(`${at}: a route's ${p.getText().split('\n')[0]} is read as \`name: value\` in a release build`);
     const key = p.name.text;
     const v = p.initializer;
-    if (ROUTE_GUARDS.has(key)) throw new Error(`${at}: route guards (${key}${named}) are not supported in a release build yet`);
+    if (ROUTE_GUARDS.has(key) && !(guards && key in RUN_GUARDS)) throw new Error(`${at}: route guards (${key}${named}) are not supported in a release build yet`);
+    if (key in RUN_GUARDS && !ts.isArrayLiteralExpression(v)) throw new Error(`${at}: a route's ${key} that is not an array (${v.getText().split('\n')[0]}) is not supported in a release build yet`);
+    if (key === 'canMatch' && route.properties.some((q) => q.name?.getText() === 'redirectTo')) throw new Error(`${at}: canMatch on a redirect${named} is not supported in a release build yet`);
     if (key === 'resolve') throw new Error(`${at}: route resolvers (resolve${named}) are not supported in a release build yet`);
-    if (!ROUTE_FIELDS.has(key)) throw new Error(`${at}: a route's ${key}${named} is not supported in a release build yet`);
+    if (!ROUTE_FIELDS.has(key) && !(key in RUN_GUARDS)) throw new Error(`${at}: a route's ${key}${named} is not supported in a release build yet`);
     if (['path', 'pathMatch', 'redirectTo', 'outlet'].includes(key) && !ts.isStringLiteralLike(v)) throw new Error(`${at}: a route's ${key} that is not a string (${v.getText().split('\n')[0]}) is not supported in a release build yet`);
     if (key === 'component' && !ts.isIdentifier(v)) throw new Error(`${at}: a route's component that is not a class name (${v.getText().split('\n')[0]}) is not supported in a release build yet`);
   }
@@ -2317,6 +2321,132 @@ export interface RouteNode {
   /** The route's component is `NSEmptyOutletComponent`. */
   emptyOutlet?: boolean;
   children?: RouteNode[];
+  /** The id the route's guards are registered under (`RouteGuardModule`). */
+  guards?: number;
+  /** The route has canDeactivate guards, which take its component. */
+  deactivate?: boolean;
+}
+
+/** A guard as the route file gives it: a class to inject (with its method's parameter count), else a function. */
+interface RouteGuard {
+  route: number;
+  kind: string;
+  expr: ts.Expression;
+  inject?: { name: string; arity: number };
+}
+
+/**
+ * A route file's guards as a module of their own (route files are not compiled): the imports and top-level declarations
+ * the guards name, then each guard registered with the kit's router under its route's id.
+ */
+export interface RouteGuardModule {
+  file: string;
+  source(appDir: string, platform: 'ios' | 'android'): string;
+}
+
+/** What a class or function name resolves to across the app's files: the declaration, else null (a package's, or not found). */
+function declarationOf(file: string, name: string, parse: (f: string) => ts.SourceFile, fileOf: (from: string, spec: string) => string | undefined, seen = new Set<string>()): ts.Declaration | null {
+  if (seen.has(`${file}#${name}`)) return null;
+  seen.add(`${file}#${name}`);
+  const sf = parse(file);
+  for (const st of sf.statements) {
+    if ((ts.isClassDeclaration(st) || ts.isFunctionDeclaration(st)) && st.name?.text === name) return st;
+    if (ts.isVariableStatement(st)) {
+      const d = st.declarationList.declarations.find((x) => ts.isIdentifier(x.name) && x.name.text === name);
+      if (d) return d;
+    }
+    if ((ts.isImportDeclaration(st) || ts.isExportDeclaration(st)) && st.moduleSpecifier && ts.isStringLiteral(st.moduleSpecifier)) {
+      const bindings = ts.isImportDeclaration(st) ? st.importClause?.namedBindings : st.exportClause;
+      if (!bindings || ts.isNamespaceImport(bindings) || ts.isNamespaceExport(bindings)) continue;
+      const el = (bindings.elements as ts.NodeArray<ts.ImportSpecifier | ts.ExportSpecifier>).find((e) => e.name.text === name);
+      const target = el ? fileOf(file, st.moduleSpecifier.text) : undefined;
+      if (el) return target ? declarationOf(target, (el.propertyName ?? el.name).text, parse, fileOf, seen) : null;
+    }
+  }
+  return null;
+}
+
+/** The top-level names a node refers to, in value and type positions. */
+function namesIn(node: ts.Node, into = new Set<string>()): Set<string> {
+  const visit = (n: ts.Node) => {
+    if (ts.isIdentifier(n)) {
+      const p = n.parent;
+      const member = (ts.isPropertyAccessExpression(p) && p.name === n) || (ts.isQualifiedName(p) && p.right === n) || ((ts.isPropertyAssignment(p) || ts.isMethodDeclaration(p) || ts.isPropertyDeclaration(p) || ts.isPropertySignature(p) || ts.isMethodSignature(p) || ts.isGetAccessor(p) || ts.isSetAccessor(p)) && p.name === n);
+      if (!member) into.add(n.text);
+    }
+    ts.forEachChild(n, visit);
+  };
+  visit(node);
+  return into;
+}
+
+/** A specifier as written in `from`, for a module in `appDir`. */
+function respecify(from: string, spec: string, appDir: string): string {
+  if (!spec.startsWith('.')) return spec;
+  const r = relative(appDir, join(dirname(from), spec)).split('\\').join('/');
+  return r.startsWith('.') ? r : './' + r;
+}
+
+function guardModule(file: string, sf: ts.SourceFile, guards: RouteGuard[]): RouteGuardModule {
+  // The route file's imports and declarations the guards need, followed through the declarations they need in turn.
+  const needed = new Set<string>();
+  const pending = guards.map((g) => g.expr as ts.Node);
+  const declared = new Map<string, ts.Statement>();
+  for (const st of sf.statements) {
+    const names = ts.isVariableStatement(st) ? st.declarationList.declarations.flatMap((d) => (ts.isIdentifier(d.name) ? [d.name.text] : []))
+      : (ts.isFunctionDeclaration(st) || ts.isClassDeclaration(st) || ts.isInterfaceDeclaration(st) || ts.isTypeAliasDeclaration(st) || ts.isEnumDeclaration(st)) && st.name ? [st.name.text] : [];
+    for (const n of names) declared.set(n, st);
+  }
+  const copied = new Set<ts.Statement>();
+  // The translators name imported kit declarations by their own names, so no alias: a class guard's inject is the route
+  // file's own import of it when it has one.
+  if (guards.some((g) => g.inject)) needed.add('inject');
+  const importsInject = sf.statements.some((st) => ts.isImportDeclaration(st) && ts.isStringLiteral(st.moduleSpecifier) && st.moduleSpecifier.text === '@angular/core' && !!st.importClause?.namedBindings && ts.isNamedImports(st.importClause.namedBindings) && st.importClause.namedBindings.elements.some((e) => e.name.text === 'inject' && !e.propertyName));
+  while (pending.length) {
+    for (const n of namesIn(pending.pop()!)) {
+      if (needed.has(n)) continue;
+      needed.add(n);
+      const st = declared.get(n);
+      if (st && !copied.has(st)) { copied.add(st); pending.push(st); }
+    }
+  }
+  return {
+    file,
+    source(appDir, platform) {
+      const lines: string[] = [];
+      for (const st of sf.statements) {
+        if (!ts.isImportDeclaration(st) || !ts.isStringLiteral(st.moduleSpecifier) || !st.importClause) continue;
+        const c = st.importClause;
+        const spec = JSON.stringify(respecify(file, st.moduleSpecifier.text, appDir));
+        const type = c.isTypeOnly ? 'type ' : '';
+        if (c.name && needed.has(c.name.text)) lines.push(`import ${type}${c.name.text} from ${spec};`);
+        if (c.namedBindings && ts.isNamespaceImport(c.namedBindings) && needed.has(c.namedBindings.name.text)) lines.push(`import ${type}* as ${c.namedBindings.name.text} from ${spec};`);
+        if (c.namedBindings && ts.isNamedImports(c.namedBindings)) {
+          const els = c.namedBindings.elements.filter((e) => needed.has(e.name.text)).map((e) => e.getText());
+          if (els.length) lines.push(`import ${type}{ ${els.join(', ')} } from ${spec};`);
+        }
+      }
+      lines.push("import { KitRouter } from '@nativescript/release';");
+      if (guards.some((g) => g.inject) && !importsInject) lines.push("import { inject } from '@angular/core';");
+      // A compiled rxjs Observable is the app's own class on iOS, which the kit can't read: firstValueFrom there.
+      if (platform === 'ios') lines.push("import { ɵguardResult } from '@angular/router';");
+      lines.push(...sf.statements.filter((st) => copied.has(st)).map((st) => st.getText()));
+      const settle = (e: string) => (platform === 'ios' ? `ɵguardResult(${e})` : e);
+      const params = ['a', 'b', 'c', 'd'];
+      const all = params.map((p) => `${p}: any`).join(', ');
+      guards.forEach((g, i) => {
+        const arity = RUN_GUARDS[g.kind];
+        if (g.inject) {
+          lines.push(`KitRouter.shared.addGuard(${g.route}, '${g.kind}', (${all}): any => ${settle(`inject(${g.inject.name}).${g.kind}(${params.slice(0, Math.min(arity, g.inject.arity)).join(', ')})`)});`);
+        } else {
+          // Evaluated once, as Angular reads its route configuration once: a guard factory's call runs at startup.
+          lines.push(`const ɵguard${i}: (${params.slice(0, arity).map((p) => `${p}: any`).join(', ')}) => any = ${g.expr.getText()};`);
+          lines.push(`KitRouter.shared.addGuard(${g.route}, '${g.kind}', (${all}): any => ${settle(`ɵguard${i}(${params.slice(0, arity).join(', ')})`)});`);
+        }
+      });
+      return lines.join('\n') + '\n';
+    },
+  };
 }
 
 /**
@@ -2325,9 +2455,12 @@ export interface RouteNode {
  * `loadComponent` into the files they import. A route whose component is `NSEmptyOutletComponent` is marked
  * `emptyOutlet`: its children render in a frame of their own, on a page of the outlet the route names.
  */
-export function angularRouteTree(entry: string, read: (file: string) => string, aliased: (specifier: string) => string | undefined = () => undefined): { routes: RouteNode[]; files: Set<string> } | null {
+export function angularRouteTree(entry: string, read: (file: string) => string, aliased: (specifier: string) => string | undefined = () => undefined): { routes: RouteNode[]; files: Set<string>; guards: RouteGuardModule[] } | null {
   const files = new Set<string>();
-  const parse = (f: string) => ts.createSourceFile(f, read(f), ts.ScriptTarget.Latest, true);
+  const parsed = new Map<string, ts.SourceFile>();
+  const parse = (f: string) => parsed.get(f) ?? parsed.set(f, ts.createSourceFile(f, read(f), ts.ScriptTarget.Latest, true)).get(f)!;
+  const guards = new Map<string, RouteGuard[]>();
+  let guardIds = 0;
   /** A relative specifier, or one of the app's path aliases (`~/app/x`), as the file it names. */
   const fileOf = (from: string, spec: string) => {
     const base = spec.startsWith('.') ? join(dirname(from), spec) : aliased(spec);
@@ -2366,10 +2499,30 @@ export function angularRouteTree(entry: string, read: (file: string) => string, 
     files.add(file);
     return array.elements.map((el) => {
       if (!ts.isObjectLiteralExpression(el)) throw new Error(`${file}: a route is an object literal in a release build`);
-      routeFields(file, el);
+      routeFields(file, el, true);
       const get = (k: string) => el.properties.find((p): p is ts.PropertyAssignment => ts.isPropertyAssignment(p) && p.name.getText() === k)?.initializer;
       const text = (k: string) => { const v = get(k); return v && ts.isStringLiteralLike(v) ? v.text : undefined; };
       const node: RouteNode = { path: text('path') ?? '' };
+      for (const kind of Object.keys(RUN_GUARDS)) {
+        const list = get(kind) as ts.ArrayLiteralExpression | undefined;
+        if (!list?.elements.length) continue;
+        node.guards ??= guardIds++;
+        if (kind === 'canDeactivate') node.deactivate = true;
+        for (const g of list.elements) {
+          let inject: RouteGuard['inject'];
+          if (ts.isIdentifier(g)) {
+            const d = declarationOf(file, g.text, parse, fileOf);
+            if (!d) throw new Error(`${file}:${lineOf(g)}: the ${kind} guard ${g.text}, which the release build can't find in the app's files, is not supported in a release build yet`);
+            if (ts.isClassDeclaration(d)) {
+              const method = d.members.find((m): m is ts.MethodDeclaration => ts.isMethodDeclaration(m) && m.name.getText() === kind);
+              inject = { name: g.text, arity: method ? method.parameters.length : RUN_GUARDS[kind] };
+            }
+          } else if (ts.isSpreadElement(g)) {
+            throw new Error(`${file}:${lineOf(g)}: a spread in a route's ${kind} is not supported in a release build yet`);
+          }
+          guards.set(file, [...(guards.get(file) ?? []), { route: node.guards, kind, expr: g, inject }]);
+        }
+      }
       const component = get('component');
       if (component && ts.isIdentifier(component)) {
         if (component.text === 'NSEmptyOutletComponent') node.emptyOutlet = true;
@@ -2410,7 +2563,8 @@ export function angularRouteTree(entry: string, read: (file: string) => string, 
   visit(sf);
   if (!found) return null;
   const { file, array } = found as { file: string; array: ts.ArrayLiteralExpression };
-  return { routes: routesOf(file, array), files };
+  const routes = routesOf(file, array);
+  return { routes, files, guards: [...guards].map(([f, list]) => guardModule(f, parse(f), list)) };
 }
 
 /** The components a route tree names. */
