@@ -8189,6 +8189,7 @@ export class Translator implements AsyncTranslator {
     switch (name) {
       case 'pow': return `jsPow(${a[0]}, ${a[1]})`;
       case 'atan2': return `Math.atan2(${a[0]}, ${a[1]})`;
+      case 'imul': return `jsImul(${a[0] ?? 'Double.NaN'}, ${a[1] ?? 'Double.NaN'})`;
       case 'hypot': return `jsHypot(${a.join(', ')})`;
       case 'min': return `jsMathMin(${a.join(', ')})`;
       case 'max': return `jsMathMax(${a.join(', ')})`;

@@ -378,6 +378,7 @@ extension JSArray {
 
 public func jsSign(_ x: Double) -> Double { x.isNaN ? .nan : x > 0 ? 1 : x < 0 ? -1 : x }
 public func jsFround(_ x: Double) -> Double { Double(Float(x)) }
+public func jsImul(_ a: Double, _ b: Double) -> Double { Double(jsToInt32(a) &* jsToInt32(b)) }
 public func jsClz32(_ x: Double) -> Double { Double(UInt32(bitPattern: jsToInt32(x)).leadingZeroBitCount) }
 public func jsHypot(_ values: Double...) -> Double {
     if values.contains(where: { $0.isInfinite }) { return .infinity }
