@@ -371,7 +371,7 @@ const sourceLines = args.includes('--no-source-lines') ? null : new SourceLines(
 ]));
 for (const c of components) if (c.templateLines) sourceLines?.pin(c.file, c.templateLines.file, c.templateLines.lines);
 // Constructs no compiled release runs, all of them with their TypeScript lines, before anything is translated.
-const unsupported = preflight(checker, [...sourceFiles, ...compiledPlugins.map((f) => program.getSourceFile(f)!)], sourceLines ? (n) => sourceLines.locate(n) : undefined, (st) => !compiledPlugins.includes(st.getSourceFile().fileName) || reach.keeps(st));
+const unsupported = preflight(checker, [...sourceFiles, ...compiledPlugins.map((f) => program.getSourceFile(f)!)], sourceLines ? (n) => sourceLines.locate(n) : undefined, (st) => !compiledPlugins.includes(st.getSourceFile().fileName) || reach.keeps(st), (f) => compiledPlugins.includes(f) && !writtenStrict(f));
 if (unsupported.length) {
   console.error(formatPreflight(unsupported));
   if (!args.includes('--keep-going')) throw new Error(`${unsupported.length} construct${unsupported.length > 1 ? 's' : ''} a compiled release does not support (docs: Supported subset and known differences)`);
