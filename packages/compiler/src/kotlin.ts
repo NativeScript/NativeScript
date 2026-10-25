@@ -4,7 +4,7 @@ import { dirname as pathDirname, resolve as pathResolve } from 'node:path';
 import { AsyncLowering, usedBefore, type AsyncCtx, type AsyncSyntax, type AsyncTranslator } from './async.ts';
 import { isAsync, isStatic } from './throws.ts';
 import { assignedMembers } from './sharing.ts';
-import { assignedValues, nothingGiven, readKeyOf, reassigned, openSpreadType, definitelyAssignedFields, forwardedSetter, initializedNull, intersectionAliasMembers, nullSetFields, nullishSlots, type NullishSlots, isRegExpProtocol, intlConstructor, isObjectToStringCall, isStringRaw, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, classesHeldUntyped, LooseSlots, originOf, ownSlot, implementedInterfaceDeclarations, slotOf, slotType, type TrustScope, heldDowncasts, scriptCalledFunction } from './lang.ts';
+import { assignedValues, givenBy, nothingGiven, onlyNullOrPresent, readKeyOf, reassigned, openSpreadType, definitelyAssignedFields, forwardedSetter, initializedNull, intersectionAliasMembers, nullSetFields, nullishSlots, type NullishSlots, isRegExpProtocol, intlConstructor, isObjectToStringCall, isStringRaw, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, classesHeldUntyped, LooseSlots, originOf, ownSlot, implementedInterfaceDeclarations, slotOf, slotType, type TrustScope, heldDowncasts, scriptCalledFunction } from './lang.ts';
 import { isCoreDeclaration } from './core.ts';
 import { balanced, nonVirtualName } from './swift.ts';
 import type { Properties } from './properties.ts';
@@ -1661,6 +1661,13 @@ export class Translator implements AsyncTranslator {
               if (sym) this.nullableDecls.add(sym);
               members.push(moduleProperty(`var ${name}: ${optionalType(t)} = null`));
               later(() => `    ${name} = ${this.expr(d.initializer!)}`);
+              continue;
+            }
+            // A lateinit property's setter throws on the null a non-strict app's function gives where its type says an object.
+            if (this.givenNullResult(d)) {
+              this.noteNullVar(d);
+              members.push(moduleProperty(`var ${name}: ${t} = jsUncheckedNull()`));
+              later(() => `    ${name} = ${this.coerce(d.initializer!, t)}`);
               continue;
             }
             const deferred = this.deferredDeclaration(name, t);
@@ -5623,8 +5630,13 @@ export class Translator implements AsyncTranslator {
     const init = d.initializer && ts.skipOuterExpressions(d.initializer, ts.OuterExpressionKinds.Parentheses);
     const sym = ts.isIdentifier(d.name) ? this.resolve(d.name) : undefined;
     if (!init || !sym || !this.nullResult(init)) return;
-    if (!reassigned(d, this.checker)) this.nullVars.add(sym);
+    if (!reassigned(d, this.checker) || (!ts.isAwaitExpression(init) && onlyNullOrPresent(d, this.checker, (v) => !ts.isAwaitExpression(v) && this.nullResult(v)))) this.nullVars.add(sym);
     else if (ts.isAwaitExpression(init)) throw this.error(d, 'a variable holding the null a non-strict async function may give, assigned again');
+  }
+
+  /** A variable given a non-strict app's null-only result, by its initializer or a later `=`. */
+  private givenNullResult(d: ts.VariableDeclaration): boolean {
+    return givenBy(d, this.checker, (v) => !ts.isAwaitExpression(v) && this.nullResult(v));
   }
 
   resumedValue(code: string, type: string): string {
@@ -9727,6 +9739,9 @@ export class Translator implements AsyncTranslator {
     }
     const el = t.replace(/^JSArray<(.*)>$/, '$1');
     if (!e.elements.length) return `${t}()`;
+    // An array of objects holds a Kotlin null, which reads as undefined.
+    const nulled = !isNullable(el) && e.elements.find((x) => !ts.isSpreadElement(x) && this.nullResult(ts.skipOuterExpressions(x, ts.OuterExpressionKinds.Parentheses)));
+    if (nulled) throw this.error(nulled, `the null a non-strict function may give, in an array of ${el}`);
     if (!e.elements.some(ts.isSpreadElement)) {
       if (e.elements.some(ts.isOmittedExpression)) throw this.error(e, 'an array hole');
       return `jsArrayOf<${el}>(${e.elements.map((x) => this.coerce(x, el)).join(', ')})`;

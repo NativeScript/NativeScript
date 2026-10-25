@@ -1020,6 +1020,60 @@ export function reassigned(d: ts.VariableDeclaration, checker: ts.TypeChecker): 
   return visit(d.getSourceFile());
 }
 
+/** Whether a variable's initializer or a later `=` to it gives a value `test` accepts. */
+export function givenBy(d: ts.VariableDeclaration, checker: ts.TypeChecker, test: (e: ts.Expression) => boolean): boolean {
+  const sym = ts.isIdentifier(d.name) ? checker.getSymbolAtLocation(d.name) : undefined;
+  if (!sym) return false;
+  if (d.initializer && test(ts.skipOuterExpressions(d.initializer))) return true;
+  const visit = (n: ts.Node): boolean => (ts.isBinaryExpression(n) && n.operatorToken.kind === ts.SyntaxKind.EqualsToken && ts.isIdentifier(ts.skipOuterExpressions(n.left))
+    && checker.getSymbolAtLocation(ts.skipOuterExpressions(n.left)) === sym && test(ts.skipOuterExpressions(n.right))) || !!ts.forEachChild(n, visit);
+  return visit(d.getSourceFile());
+}
+
+/**
+ * A variable whose every value, its initializer's and each `=`'s, is one `nullOnly` accepts or one never null or undefined
+ * (`new`, a literal other than null, a function): where it holds nothing, that is null. Any other write (compound, `++`,
+ * destructuring, a `for … of` target) makes it false.
+ */
+export function onlyNullOrPresent(d: ts.VariableDeclaration, checker: ts.TypeChecker, nullOnly: (e: ts.Expression) => boolean): boolean {
+  if (!ts.isIdentifier(d.name) || !d.initializer) return false;
+  const sym = checker.getSymbolAtLocation(d.name);
+  if (!sym) return false;
+  const given = (e: ts.Expression) => {
+    const v = ts.skipOuterExpressions(e);
+    return nullOnly(v) || v.kind === ts.SyntaxKind.NullKeyword || ts.isNewExpression(v) || ts.isObjectLiteralExpression(v) || ts.isArrayLiteralExpression(v)
+      || ts.isStringLiteralLike(v) || ts.isNumericLiteral(v) || ts.isTemplateExpression(v) || ts.isArrowFunction(v) || ts.isFunctionExpression(v);
+  };
+  if (!given(d.initializer)) return false;
+  let ok = true;
+  const visit = (n: ts.Node): void => {
+    if (!ok) return;
+    const named = ts.isShorthandPropertyAssignment(n) ? checker.getShorthandAssignmentValueSymbol(n) : ts.isIdentifier(n) && n !== d.name ? checker.getSymbolAtLocation(n) : undefined;
+    if (named === sym) {
+      let t: ts.Node = n;
+      while (ts.isParenthesizedExpression(t.parent)) t = t.parent;
+      const p = t.parent;
+      if (ts.isBinaryExpression(p) && p.left === t && p.operatorToken.kind >= ts.SyntaxKind.FirstAssignment && p.operatorToken.kind <= ts.SyntaxKind.LastAssignment) {
+        if (p.operatorToken.kind !== ts.SyntaxKind.EqualsToken || !given(p.right) || ts.isArrayLiteralExpression(p.parent) || ts.isPropertyAssignment(p.parent)) ok = false;
+      } else if ((ts.isPrefixUnaryExpression(p) || ts.isPostfixUnaryExpression(p)) && (p.operator === ts.SyntaxKind.PlusPlusToken || p.operator === ts.SyntaxKind.MinusMinusToken)) ok = false;
+      else if ((ts.isForOfStatement(p) || ts.isForInStatement(p)) && p.initializer === t) ok = false;
+      else if (inPattern(ts.isShorthandPropertyAssignment(n) ? n : t)) ok = false;
+    }
+    ts.forEachChild(n, visit);
+  };
+  const inPattern = (n: ts.Node): boolean => {
+    for (let p = n.parent; p; n = p, p = p.parent) {
+      if (ts.isParenthesizedExpression(p) || ts.isSpreadElement(p) || ts.isSpreadAssignment(p) || ts.isShorthandPropertyAssignment(p) || (ts.isPropertyAssignment(p) && p.initializer === n)) continue;
+      if (!ts.isArrayLiteralExpression(p) && !ts.isObjectLiteralExpression(p)) return false;
+      const q = p.parent;
+      if ((ts.isBinaryExpression(q) && q.left === p && q.operatorToken.kind === ts.SyntaxKind.EqualsToken) || ((ts.isForOfStatement(q) || ts.isForInStatement(q)) && q.initializer === p)) return true;
+    }
+    return false;
+  };
+  visit(d.getSourceFile());
+  return ok;
+}
+
 /** The key JavaScript reads of `e` where `e` (parenthesized or not) is a member read's receiver, without `?.`. */
 export function readKeyOf(e: ts.Expression): string | null {
   const p = ts.walkUpParenthesizedExpressions(e.parent);
