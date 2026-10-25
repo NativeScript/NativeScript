@@ -336,6 +336,24 @@ export function classesGivenUndeclaredMembers(files: readonly ts.SourceFile[], c
       for (let b = cls && baseOf(cls); b; b = baseOf(b)) cls = b;
       if (cls) roots.add(cls);
     }
+    // A member written through a downcast (`(view as TextField).hint = …`, held untyped): the object may be another class's.
+    if (ts.isPropertyAccessExpression(n) && ts.isBinaryExpression(n.parent) && n.parent.left === n && n.parent.operatorToken.kind >= ts.SyntaxKind.FirstAssignment && n.parent.operatorToken.kind <= ts.SyntaxKind.LastAssignment) {
+      let r: ts.Node = ts.skipParentheses(n.expression);
+      const v = ts.isIdentifier(r) ? checker.getSymbolAtLocation(r)?.valueDeclaration : undefined;
+      if (v && ts.isVariableDeclaration(v) && !v.type && v.initializer && ts.isVariableStatement(v.parent.parent)) r = ts.skipParentheses(v.initializer);
+      if ((ts.isAsExpression(r) || ts.isTypeAssertionExpression(r)) && downcast(checker, r, (d) => !!d && !d.getSourceFile().isDeclarationFile)) {
+        const from = checker.getNonNullableType(checker.getTypeAtLocation(r.expression));
+        const visitClasses = (x: ts.Node): void => {
+          if (ts.isClassLike(x) && checker.isTypeAssignableTo(checker.getTypeAtLocation(x.name ?? x), from)) {
+            let cls: ts.ClassLikeDeclaration | undefined = x;
+            for (let b = baseOf(x); b; b = baseOf(b)) cls = b;
+            roots.add(cls);
+          }
+          ts.forEachChild(x, visitClasses);
+        };
+        for (const sf of files) if (!sf.isDeclarationFile) visitClasses(sf);
+      }
+    }
     // `Object.defineProperty(instance, key, …)`, `Object.defineProperties(instance, …)`: members its class does not declare.
     if (ts.isCallExpression(n) && ts.isPropertyAccessExpression(n.expression) && ts.isIdentifier(n.expression.expression) && n.expression.expression.text === 'Object'
         && ['defineProperty', 'defineProperties'].includes(n.expression.name.text) && n.arguments.length) {
@@ -845,5 +863,147 @@ export function nullishSlots(checker: ts.TypeChecker, files: readonly ts.SourceF
     };
     scan(f);
   }
+  missingAndNull(checker, files, skip, held, (fn) => fns.includes(fn) && own(fn) && !openSignature(fn), (d) => {
+    if (!ts.isFunctionLike(d) && !ts.isIdentifier((d as ts.NamedDeclaration).name!)) return false;
+    const t = ts.isFunctionLike(d) ? checker.getSignatureFromDeclaration(d)?.getReturnType() : typeOf(d);
+    return own(d) && !!t && !hasNull(t) && value(t);
+  }, local);
+  // `const field = args.view as TextField`: TypeScript checks no class at run time, so the value may be another class's object
+  // (a SearchBar), which script reads by name. Only the program's own classes are read so in every backend.
+  for (const f of files) {
+    if (f.isDeclarationFile || skip(f)) continue;
+    const scan = (n: ts.Node): void => {
+      if (ts.isVariableDeclaration(n) && ts.isIdentifier(n.name) && !n.type && local(n) && n.initializer) {
+        const init = ts.skipOuterExpressions(n.initializer, ts.OuterExpressionKinds.Parentheses);
+        if ((ts.isAsExpression(init) || ts.isTypeAssertionExpression(init)) && downcast(checker, init, own)) held.add(n);
+      }
+      ts.forEachChild(n, scan);
+    };
+    scan(f);
+  }
   return { held, fields };
+}
+
+/**
+ * Downcasts read untyped (`const field = view as TextField`, `(view as TextField).text`): `receivers`, the ones read for a
+ * member in place, and `classes`, the program's classes whose objects any of them may hold (each one assignable to the type
+ * cast from), whose members are read and called by name.
+ */
+export function heldDowncasts(checker: ts.TypeChecker, files: readonly ts.SourceFile[], skip: (file: ts.SourceFile) => boolean, held: Set<ts.Declaration>): { receivers: Set<ts.Expression>; classes: Set<ts.ClassLikeDeclaration> } {
+  const own = (d: ts.Declaration | undefined) => !!d && !d.getSourceFile().isDeclarationFile && !skip(d.getSourceFile());
+  const receivers = new Set<ts.Expression>(), classes = new Set<ts.ClassLikeDeclaration>(), cast: ts.Expression[] = [], declared: ts.ClassLikeDeclaration[] = [];
+  const visit = (n: ts.Node): void => {
+    if ((ts.isAsExpression(n) || ts.isTypeAssertionExpression(n)) && downcast(checker, n, own)) {
+      const holder = ts.findAncestor(n.parent, (p) => !ts.isParenthesizedExpression(p));
+      const inPlace = !!holder && ts.isPropertyAccessExpression(holder) && ts.skipParentheses(holder.expression) === n;
+      if (inPlace) receivers.add(n);
+      if (inPlace || (holder && ts.isVariableDeclaration(holder) && held.has(holder))) cast.push(n.expression);
+    }
+    if (ts.isClassLike(n)) declared.push(n);
+    ts.forEachChild(n, visit);
+  };
+  for (const f of files) if (!f.isDeclarationFile && !skip(f)) visit(f);
+  const from = cast.map((e) => checker.getNonNullableType(checker.getTypeAtLocation(e)));
+  for (const c of declared) if (from.some((f) => checker.isTypeAssignableTo(checker.getTypeAtLocation(c.name ?? c), f))) classes.add(c);
+  return { receivers, classes };
+}
+
+/** `x as C` of an object typed as a class or interface above C, C a class of the program's own. */
+function downcast(checker: ts.TypeChecker, e: ts.AsExpression | ts.TypeAssertion, own: (d: ts.Declaration | undefined) => boolean): boolean {
+  const to = checker.getTypeAtLocation(e), from = checker.getNonNullableType(checker.getTypeAtLocation(e.expression));
+  const cls = to.getSymbol();
+  if (!cls || !(cls.flags & ts.SymbolFlags.Class) || !own(cls.valueDeclaration) || from.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown) || from === to) return false;
+  // A class extending a native or the kit's class keeps its checked cast: such objects are not all read by name.
+  for (let t: ts.Type | undefined = to; t; t = checker.getBaseTypes(t as ts.InterfaceType)[0]) {
+    if (!own(t.getSymbol()?.valueDeclaration)) return false;
+    if (!(t.flags & ts.TypeFlags.Object) || !((t as ts.ObjectType).objectFlags & ts.ObjectFlags.ClassOrInterface)) break;
+  }
+  if (!(from.flags & ts.TypeFlags.Object) || from.getCallSignatures().length) return false;
+  return checker.isTypeAssignableTo(to, from) && !checker.isTypeAssignableTo(from, to);
+}
+
+/**
+ * Non-strict code, whose checker types no slot with null: a parameter, local or function result the program gives both a null
+ * and a missing value (`getString(key, fallback?: string)` called with `null` and without it, and returning `fallback`), held
+ * untyped as strict code's `T | null | undefined` is. `fixed`: a function whose every call the program shows.
+ */
+function missingAndNull(checker: ts.TypeChecker, files: readonly ts.SourceFile[], skip: (file: ts.SourceFile) => boolean, held: Set<ts.Declaration>,
+  fixed: (fn: ts.FunctionLikeDeclaration) => boolean, slot: (d: ts.Declaration) => boolean, local: (d: ts.VariableDeclaration) => boolean): void {
+  const NULL = 1, MISSING = 2;
+  const given = new Map<ts.Declaration, (ts.Expression | undefined)[]>();
+  const give = (d: ts.Declaration, e: ts.Expression | undefined) => { const list = given.get(d) ?? []; list.push(e); given.set(d, list); };
+  const declarationOf = (n: ts.Node) => checker.getSymbolAtLocation(n)?.valueDeclaration;
+  const visit = (n: ts.Node): void => {
+    if (ts.isCallExpression(n) || ts.isNewExpression(n)) {
+      const d = checker.getResolvedSignature(n)?.getDeclaration();
+      const args = n.arguments ?? ts.factory.createNodeArray();
+      if (d && !ts.isJSDocSignature(d) && (ts.isFunctionDeclaration(d) || ts.isMethodDeclaration(d) || ts.isConstructorDeclaration(d)) && fixed(d) && !args.some(ts.isSpreadElement)) {
+        d.parameters.forEach((p, k) => { if (!p.dotDotDotToken) give(p, args[k]); });
+      }
+    }
+    if (ts.isReturnStatement(n)) {
+      const fn = ts.findAncestor(n.parent, ts.isFunctionLike);
+      if (fn && (ts.isFunctionDeclaration(fn) || ts.isMethodDeclaration(fn))) give(fn, n.expression);
+    }
+    if (ts.isVariableDeclaration(n) && ts.isIdentifier(n.name) && ts.isVariableDeclarationList(n.parent) && local(n)) give(n, n.initializer);
+    if (ts.isBinaryExpression(n) && n.operatorToken.kind === ts.SyntaxKind.EqualsToken && ts.isIdentifier(n.left)) {
+      const d = declarationOf(n.left);
+      if (d && ts.isVariableDeclaration(d)) give(d, n.right);
+    }
+    ts.forEachChild(n, visit);
+  };
+  for (const f of files) if (!f.isDeclarationFile && !skip(f)) visit(f);
+  const kinds = (e: ts.Expression | undefined): number => {
+    if (!e) return MISSING;
+    e = ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses | ts.OuterExpressionKinds.Assertions);
+    if (e.kind === ts.SyntaxKind.NullKeyword) return NULL;
+    if (ts.isVoidExpression(e)) return MISSING;
+    if (ts.isIdentifier(e)) {
+      const d = declarationOf(e);
+      if (e.text === 'undefined' && !d) return MISSING;
+      return d && held.has(d) ? NULL | MISSING : 0;
+    }
+    if (ts.isCallExpression(e)) {
+      const d = checker.getResolvedSignature(e)?.getDeclaration();
+      return d && held.has(d as ts.Declaration) ? NULL | MISSING : 0;
+    }
+    if (ts.isConditionalExpression(e)) return kinds(e.whenTrue) | kinds(e.whenFalse);
+    if (ts.isBinaryExpression(e)) {
+      const op = e.operatorToken.kind;
+      if (op === ts.SyntaxKind.BarBarToken || op === ts.SyntaxKind.QuestionQuestionToken) return kinds(e.right);
+      if (op === ts.SyntaxKind.AmpersandAmpersandToken) return kinds(e.left) | kinds(e.right);
+    }
+    return 0;
+  };
+  // A body whose end a call may reach returns undefined there.
+  const ends = (st: ts.Statement | undefined): boolean => {
+    if (!st) return false;
+    if (ts.isReturnStatement(st) || ts.isThrowStatement(st)) return true;
+    if (ts.isBlock(st)) return ends(st.statements[st.statements.length - 1]);
+    if (ts.isIfStatement(st)) return ends(st.thenStatement) && ends(st.elseStatement);
+    if (ts.isTryStatement(st)) return (!!st.finallyBlock && ends(st.finallyBlock)) || (ends(st.tryBlock) && (!st.catchClause || ends(st.catchClause.block)));
+    if (ts.isSwitchStatement(st)) {
+      const clauses = st.caseBlock.clauses;
+      return clauses.some(ts.isDefaultClause) && clauses.every((c, k) => (c.statements.length ? ends(c.statements[c.statements.length - 1]) : k < clauses.length - 1));
+    }
+    return false;
+  };
+  const fallsThrough = (fn: ts.FunctionLikeDeclaration) => !fn.body || (ts.isBlock(fn.body) && !ends(fn.body));
+  for (let changed = true; changed;) {
+    changed = false;
+    for (const [d, list] of given) {
+      if (held.has(d) || !slot(d)) continue;
+      let mask = list.reduce((m, e) => m | kinds(e), 0);
+      if (ts.isParameter(d)) {
+        if (!ts.isIdentifier(d.name) || (ts.isConstructorDeclaration(d.parent) && ts.isParameterPropertyDeclaration(d, d.parent))) continue;
+        if (d.questionToken) mask |= MISSING;
+        // A default takes the place of a missing value.
+        if (d.initializer) mask &= NULL;
+      } else if (ts.isFunctionDeclaration(d) || ts.isMethodDeclaration(d)) {
+        if (!fixed(d) || d.asteriskToken || ts.getModifiers(d)?.some((m) => m.kind === ts.SyntaxKind.AsyncKeyword)) continue;
+        if (fallsThrough(d)) mask |= MISSING;
+      }
+      if (mask === (NULL | MISSING)) { held.add(d); changed = true; }
+    }
+  }
 }
