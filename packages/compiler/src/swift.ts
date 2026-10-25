@@ -6541,7 +6541,7 @@ ${members.join('\n')}
     if (ts.isArrayLiteralExpression(e)) return e.elements.some((x) => ts.isSpreadElement(x) && copied(x.expression));
     if (!ts.isCallExpression(e) || !ts.isPropertyAccessExpression(e.expression)) return false;
     const name = e.expression.name.text, receiver = e.expression.expression;
-    if (name === 'split') return !!e.arguments[0] && !!(this.checker.getTypeAtLocation(receiver).flags & ts.TypeFlags.StringLike) && regexpMayLeaveGroupUnset(e.arguments[0], this.checker);
+    if (name === 'split') return !!e.arguments[0] && !!(this.checker.getNonNullableType(this.checker.getTypeAtLocation(receiver)).flags & ts.TypeFlags.StringLike) && regexpMayLeaveGroupUnset(e.arguments[0], this.checker);
     if (name === 'from' && ts.isIdentifier(receiver) && receiver.text === 'Array') return e.arguments.length === 1 && copied(e.arguments[0]);
     if (['slice', 'filter', 'concat', 'reverse', 'sort', 'splice', 'toReversed', 'toSorted', 'toSpliced'].includes(name)) return copied(receiver);
     if (name === 'map') {

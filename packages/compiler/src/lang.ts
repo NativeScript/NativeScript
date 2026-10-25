@@ -482,7 +482,7 @@ export function scriptCalledFunction(trust: TrustScope): (sig: ts.Node) => boole
     // A replacer given a pattern's groups, any of which may be undefined.
     const call = ts.walkUpParenthesizedExpressions(x.parent);
     if (ts.isCallExpression(call) && call.arguments[1] === ts.walkUpParenthesizedExpressions(x) && ts.isPropertyAccessExpression(call.expression) && ['replace', 'replaceAll'].includes(call.expression.name.text)
-      && checker.getTypeAtLocation(call.expression.expression).flags & ts.TypeFlags.StringLike && regexpMayLeaveGroupUnset(call.arguments[0], checker)) return true;
+      && checker.getNonNullableType(checker.getTypeAtLocation(call.expression.expression)).flags & ts.TypeFlags.StringLike && regexpMayLeaveGroupUnset(call.arguments[0], checker)) return true;
     const decl = checker.getNonNullableType(slot).getCallSignatures()[0]?.getDeclaration();
     return !!decl && !ts.isJSDocSignature(decl) && decl !== own && scriptCalled(decl);
   };
