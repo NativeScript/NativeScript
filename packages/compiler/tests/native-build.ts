@@ -9,6 +9,7 @@ import ts from 'typescript';
 import { PluginSources, writtenStrict } from '../src/plugins/source.ts';
 import { reachability } from '../src/reach.ts';
 import { createProgram } from '../src/program.ts';
+import { checkSharing } from '../src/sharing.ts';
 import { Translator } from '../src/swift.ts';
 import { Translator as KotlinTranslator } from '../src/kotlin.ts';
 import { SourceLines } from '../src/source-lines.ts';
@@ -63,6 +64,8 @@ export interface SwiftOptions {
   plugin?: boolean;
   /** Translated as a non-strict app's own code is (`strict: false` in its tsconfig.json). */
   lenientApp?: boolean;
+  /** False skips the copies preflight refuses (src/sharing.ts). */
+  copiesChecked?: boolean;
   /**
    * Each module translated on its own, what one cannot translate given here rather than thrown: the others still translate.
    * Without it, the first module that cannot translate throws.
@@ -92,6 +95,7 @@ export function translateSwift(roots: string[], out: string, o: SwiftOptions = {
   const plugin = [...(o.plugin ? all.map((f) => f.fileName).filter((f) => /[\\/]plugin[\\/]/.test(f)) : []), ...packageFiles];
   const lenientPlugins = [...(o.plugin ? plugin.filter((f) => !packageFiles.includes(f)) : []), ...packageFiles.filter((f) => !writtenStrict(f))];
   // Every module, as an app's are: names its modules share are told apart across them.
+  if (!loose && o.copiesChecked !== false) refuseCopies(checker, all, lenientPlugins, (st) => !packageFiles.includes(st.getSourceFile().fileName) || !reach || reach.keeps(st));
   const translator = new Translator(checker, new Map(), all, { lenient: loose, library, weak: o.weak, lenientApp: !!(o.plugin || o.lenientApp || (o.appStrictness && lenientApp)), ...(loose ? { pluginFiles: all.map((f) => f.fileName), properties: collectProperties(checker, all) } : plugin.length ? { pluginFiles: plugin, lenientFiles: lenientPlugins, properties: collectProperties(checker, all), reach } : {}) });
   if (reach) translator.compiledFiles = new Set(compiled);
   if (process.env.NS_DIFF_ALL_ERRORS) translator.errors = [];
@@ -147,6 +151,16 @@ const NODE_UNCAUGHT_KOTLIN = `    val reported = jsUncaughtHandler
 `;
 
 /** The entry point an app's modules run from: each module's top level in order, then the event loop. */
+/** The untyped values an app build refuses to copy (cli.ts's preflight), as its error. */
+function refuseCopies(checker: ts.TypeChecker, files: readonly ts.SourceFile[], lenient: string[], keeps: (st: ts.Statement) => boolean): void {
+  const found: string[] = [];
+  checkSharing(checker, files, (n, what) => {
+    const sf = n.getSourceFile();
+    found.push(`${basename(sf.fileName)}:${sf.getLineAndCharacterOfPosition(n.getStart(sf)).line + 1}: ${what} is not supported in a compiled release`);
+  }, keeps, (f) => lenient.includes(f));
+  if (found.length) throw new Error(found.join('\n'));
+}
+
 export function swiftMain(modules: TranslatedModule[]): string {
   const inits = modules.filter((m) => m.init).map((m) => `${m.init}()\n`).join('');
   return `${SWIFT_HEADER}${NODE_UNCAUGHT_SWIFT}${inits}JSEventLoop.runUntilIdle()\n`;
@@ -170,6 +184,8 @@ export interface KotlinOptions {
   membersByName?: boolean;
   appStrictness?: boolean;
   lenientApp?: boolean;
+  /** False skips the copies preflight refuses (src/sharing.ts). */
+  copiesChecked?: boolean;
   refused?: (file: string, error: Error) => void;
 }
 
@@ -188,6 +204,7 @@ export function translateKotlin(roots: string[], out: string, pkg: string, o: Ko
   const all = [...rootFiles, ...imported.map((f) => program.getSourceFile(f)!).filter((sf) => sf && !rootFiles.includes(sf)), ...packageFiles.map((f) => program.getSourceFile(f)!)];
   const library = { identities: new Set<string>(), counterpart: () => null, moduleName: (f: string) => (f.endsWith('.d.ts') ? null : 'Module_' + basename(f).replace(/\W/g, '_')) };
   const lenientPlugins = packageFiles.filter((f) => !writtenStrict(f));
+  if (!loose && o.copiesChecked !== false) refuseCopies(checker, all, lenientPlugins, (st) => !packageFiles.includes(st.getSourceFile().fileName) || !reach || reach.keeps(st));
   const translator = new KotlinTranslator(checker, new Map(), all, { lenientApp: !!(o.lenientApp || (o.appStrictness && lenientApp)), ...(loose ? { lenient: true, library, pluginFiles: all.map((f) => f.fileName), properties: collectProperties(checker, all) } : packageFiles.length ? { pluginFiles: packageFiles, lenientFiles: lenientPlugins, properties: collectProperties(checker, all), reach } : {}) });
   translator.appModule = pkg;
   translator.appMembersByName = !!o.membersByName;

@@ -7,6 +7,7 @@
 // The rules are the documented subset's edges (docs: "Supported subset and
 // known differences"); a rule is added with its diff case or probe.
 import ts from 'typescript';
+import { checkSharing } from './sharing.ts';
 
 export interface PreflightFinding {
   file: string;
@@ -45,7 +46,7 @@ const DEFINE_LIKE = /^(__[\w$]+__|[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+)$/;
  * The findings for `files`. `locate` maps a node to the source the developer wrote; without one, a node is
  * reported where it is in the program. `keeps` selects the top-level statements that are compiled.
  */
-export function preflight(checker: ts.TypeChecker, files: readonly ts.SourceFile[], locate?: Locate, keeps?: (st: ts.Statement) => boolean): PreflightFinding[] {
+export function preflight(checker: ts.TypeChecker, files: readonly ts.SourceFile[], locate?: Locate, keeps?: (st: ts.Statement) => boolean, lenient?: (file: string) => boolean): PreflightFinding[] {
   const out: PreflightFinding[] = [];
   const seen = new Set<string>();
   const report = (n: ts.Node, what: string, hint: string) => {
@@ -104,6 +105,7 @@ export function preflight(checker: ts.TypeChecker, files: readonly ts.SourceFile
   };
   // A plugin module's statements the app never reaches are not compiled.
   for (const sf of files) if (!sf.isDeclarationFile) for (const st of sf.statements) if (!keeps || keeps(st)) visit(st);
+  checkSharing(checker, files, report, keeps, lenient);
   return out;
 }
 
