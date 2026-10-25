@@ -892,7 +892,7 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
       return ts.createSourceFile(name, desugarConstructorFactories(declaredExports(name, readFileSync(name, 'utf8')), name), version, true);
     }
     const code = /\.tsx?$/.test(name) && !name.endsWith('.d.ts') ? desugarConstructorFactories(declaredExports(name, text), name) : text;
-    return ts.createSourceFile(name, isSource(name) ? foldPlatform(code, name, platform) : code, version, true);
+    return ts.createSourceFile(name, isSource(name) ? foldPlatform(code, name, platform, modules) : code, version, true);
   };
   const fileExists = host.fileExists.bind(host);
   host.fileExists = (name) => files.has(name) || fileExists(name);
