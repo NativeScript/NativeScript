@@ -226,6 +226,8 @@ fun jsExpandoSet(obj: JSExpando, key: String, value: Any?) {
     }
     JSPrototypes.holder(obj.javaClass, key)?.setter(key)?.let { return it(obj, value) }
     (obj.jsExpando ?: JSObject().also { obj.jsExpando = it })[key] = value
+    // Without a noted order the new key is last already: the expando's keys follow the fields'.
+    if (obj is JSKeyOrdered && obj.jsOrder != null && !jsIsSymbolKey(key)) obj.jsKeyMade(key)
 }
 
 /** `key in object` for what the object does not declare as a field. */

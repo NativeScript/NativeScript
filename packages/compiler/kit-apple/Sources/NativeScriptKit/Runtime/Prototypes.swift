@@ -199,6 +199,8 @@ public func jsExpandoSet(_ object: JSExpando, _ key: String, _ value: Any?) {
     } catch { jsReportUncaught(jsCaught(error)); return }
     if object.jsExpando == nil { object.jsExpando = JSObject() }
     object.jsExpando![key] = value
+    // Without a noted order the new key is last already: the expando's keys follow the fields'.
+    if let ordered = object as? JSKeyOrdered, ordered.jsOrder != nil, !jsIsSymbolKey(key) { ordered.jsKeyMade(key) }
 }
 
 /// A class's method for a symbol key, looked up once per class: `jsSymbolMethod` compares the key with

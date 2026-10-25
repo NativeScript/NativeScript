@@ -338,7 +338,12 @@ fun jsDefineProperty(target: Any?, key: String, descriptor: Any?): Any? {
     }
     when (val v = jsBox(target)) {
         is JSObject -> v.defineProperty(key, d)
-        is JSExpando -> (v.jsExpando ?: JSObject().also { v.jsExpando = it }).defineProperty(key, d)
+        is JSExpando -> {
+            val own = v.jsExpando ?: JSObject().also { v.jsExpando = it }
+            val made = !own.has(key)
+            own.defineProperty(key, d)
+            if (made && v is JSKeyOrdered && v.jsOrder != null && !jsIsSymbolKey(key)) v.jsKeyMade(key)
+        }
         is Function<*>, is JSFunction -> jsFunctionProperties(v, true)!!.defineProperty(key, d)
         is JSDynamic -> {
             if (d.get != null || d.set != null) throw JSException(JSTypeError("Cannot define an accessor on a typed object: $key"))
@@ -429,6 +434,11 @@ fun <T> jsUncheckedNull(): T = null as T
 /** A field declared without a value (Kotlin's `lateinit`) read by name before it is set: undefined, as script reads it. */
 inline fun jsUnsetIsUndefined(read: () -> Any?): Any? = try { read() } catch (_: UninitializedPropertyAccessException) { null }
 
+/** An app class's name as script knows it, where its Kotlin name is another. */
+@Retention(AnnotationRetention.RUNTIME)
+@Target(AnnotationTarget.CLASS)
+annotation class JSClassName(val name: String)
+
 /** A class's name as JavaScript gives a constructor's: the library's error classes by their JavaScript names. */
 fun jsConstructorName(c: Class<*>): String = when (c) {
     JSError::class.java -> "Error"
@@ -437,5 +447,5 @@ fun jsConstructorName(c: Class<*>): String = when (c) {
     JSSyntaxError::class.java -> "SyntaxError"
     JSReferenceError::class.java -> "ReferenceError"
     JSAggregateError::class.java -> "AggregateError"
-    else -> c.simpleName
+    else -> c.getAnnotation(JSClassName::class.java)?.name ?: c.simpleName
 }

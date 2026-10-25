@@ -77,14 +77,19 @@ class JSLiteralKeys(var nulls: MutableSet<String>? = null, var unset: MutableSet
 interface JSKeyOrdered {
     var jsOrder: List<String>?
     val jsFieldKeys: List<String>
+    /** The keys script gave the object (its expando's), which `jsFieldKeys`' order puts after the fields. */
+    val jsAddedKeys: List<String> get() = listOf()
 }
+
+/** Whether a key made now needs noting: the fields' order alone no longer places it last. */
+val JSKeyOrdered.jsKeysNoted: Boolean get() = jsOrder != null || jsAddedKeys.isNotEmpty()
 
 /**
  * `key` made just now: last among the keys. `early`: made before its class's level of the constructor started, so before
  * keys its static place is after.
  */
 fun JSKeyOrdered.jsKeyMade(key: String, early: Boolean = false) {
-    val keys = jsOrderedKeys(jsOrder, jsFieldKeys)
+    val keys = jsOrderedKeys(jsOrder, jsFieldKeys + jsAddedKeys)
     if (jsOrder == null && !early && keys.lastOrNull() == key) return
     jsOrder = keys.filter { it != key } + key
 }

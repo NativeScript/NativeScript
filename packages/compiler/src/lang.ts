@@ -282,6 +282,57 @@ export function implementedInterfaces(checker: ts.TypeChecker, cls: ts.ClassLike
 }
 
 /**
+ * Types the generated Swift names without qualification (the standard library's, the Foundation types it uses): a program
+ * type of one of these names would hide it from the module's code, so it takes its module's name. Other native classes keep
+ * the program's name for its type and are written with their module (`Foundation.ProcessInfo`).
+ */
+export const SWIFT_NATIVE_TYPES = new Set(`Any AnyClass AnyHashable AnyObject Array ArraySlice AsyncSequence AsyncStream Bool
+  CGFloat CGRect Character ClosedRange Codable Collection Comparable ContiguousArray CustomStringConvertible Data Date Decodable Dictionary
+  Double Duration Encodable Equatable Error Float Float32 Float64 Hashable Hasher Int Int16 Int32 Int64 Int8
+  IteratorProtocol KeyPath MainActor Mirror NSArray NSData NSDate NSDictionary NSError NSNumber NSObject NSString
+  NSURL Never ObjectIdentifier Optional Range RawRepresentable Regex Result Selector Sendable Sequence Set
+  StaticString String Substring Task UInt UInt16 UInt32 UInt64 UInt8 Unicode Void`.split(/\s+/));
+
+/** As `SWIFT_NATIVE_TYPES`, Kotlin's: its default imports (kotlin.*, kotlin.collections.*, kotlin.text.*, …, java.lang.*). */
+export const KOTLIN_NATIVE_TYPES = new Set(`AbstractCollection AbstractIterator AbstractList AbstractMap AbstractSet Annotation
+  Any Appendable ArithmeticException Array ArrayDeque ArrayList AssertionError AutoCloseable Boolean BooleanArray Byte
+  ByteArray Char CharArray CharRange CharSequence Character Charsets Class ClassCastException ClassLoader Cloneable
+  ClosedRange Collection Comparable Comparator ConcurrentModificationException Deprecated Double DoubleArray Enum Error
+  Exception Float FloatArray Function Grouping HashMap HashSet IllegalArgumentException IllegalStateException
+  IndexOutOfBoundsException IndexedValue Int IntArray IntRange Integer InterruptedException Iterable Iterator JvmField
+  JvmName JvmOverloads JvmStatic Lazy LinkedHashMap LinkedHashSet List ListIterator Long LongArray LongRange Map MatchGroup
+  MatchResult Math Metadata Module MustBeDocumented MutableCollection MutableIterable MutableIterator MutableList
+  MutableListIterator MutableMap MutableSet NoSuchElementException NotImplementedError Nothing NullPointerException Number
+  NumberFormatException Object OptIn Override Package Pair Process ProcessBuilder Readable Record Regex RegexOption
+  ReplaceWith Repeatable Result Retention Runnable Runtime RuntimeException Sequence SequenceScope Set Short ShortArray
+  StackTraceElement StrictMath String StringBuffer StringBuilder Suppress Synchronized System Target Thread ThreadLocal
+  Throwable Throws Transient Triple Typography UByte UInt ULong UShort UnsupportedOperationException Unit Void
+  Volatile`.split(/\s+/));
+
+/**
+ * `Object.defineProperty(target, key, …)` with a key known only at run time, or `Object.defineProperties(target, map)` with
+ * a map that is no literal of literal keys, on an untyped target (any, unknown, object, a type parameter).
+ */
+export function definesRunTimeKey(call: ts.CallExpression, checker: ts.TypeChecker): boolean {
+  const [target, key] = call.arguments;
+  if (!target || !key || !ts.isPropertyAccessExpression(call.expression) || !ts.isIdentifier(call.expression.expression) || call.expression.expression.text !== 'Object') return false;
+  if (ts.isPropertyAccessExpression(target) && target.name.text === 'prototype') return false;
+  const t = checker.getTypeAtLocation(target);
+  if (!(t.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown | ts.TypeFlags.NonPrimitive | ts.TypeFlags.TypeParameter))) return false;
+  if (call.expression.name.text === 'defineProperty') {
+    const k = checker.getTypeAtLocation(key);
+    return !(k.isUnion() ? k.types : [k]).every((x) => x.isStringLiteral() || x.isNumberLiteral());
+  }
+  if (call.expression.name.text !== 'defineProperties') return false;
+  return !ts.isObjectLiteralExpression(key) || key.properties.some((p) => !p.name || literalKey(p.name, checker) == null);
+}
+
+/** Whether a program type of this name would hide one of the runtime's from the generated code. */
+export function runtimeTypeName(name: string): boolean {
+  return /^JS[A-Z]/.test(name);
+}
+
+/**
  * `object.name` where the object is an instance of a program class and the type checker finds no member `name`: an own
  * property of the instance, read and written by name. Only code checked leniently reaches here: a plugin's component is
  * typed by the plugin's declarations but compiled against its platform file, whose stub class may declare none of them.
@@ -296,20 +347,34 @@ export function undeclaredMemberOf(e: ts.PropertyAccessExpression, checker: ts.T
 
 /**
  * The program classes, each the root of its program hierarchy, whose instances the program holds untyped (`as any`, an
- * `any` variable or parameter given one), where script may give them members their classes don't declare.
+ * `any` variable or parameter given one), where script may give them members their classes don't declare. `open`: held as
+ * `object`, `{}` or a type parameter as well, by any expression.
  */
-export function classesHeldUntyped(files: readonly ts.SourceFile[], checker: ts.TypeChecker): Set<ts.ClassLikeDeclaration> {
+export function classesHeldUntyped(files: readonly ts.SourceFile[], checker: ts.TypeChecker, open = false): Set<ts.ClassLikeDeclaration> {
   const roots = new Set<ts.ClassLikeDeclaration>();
   const classOf = (n: ts.Expression) => {
     const d = checker.getNonNullableType(checker.getTypeAtLocation(n)).getSymbol()?.valueDeclaration;
     return d && ts.isClassLike(d) && !d.getSourceFile().isDeclarationFile ? d : undefined;
   };
-  const untyped = (t: ts.Type | undefined) => !!t && !!(t.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown));
+  const untyped = (t: ts.Type | undefined) => !!t && (!!(t.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown))
+    || (open && (!!(t.flags & (ts.TypeFlags.NonPrimitive | ts.TypeFlags.TypeParameter)) || (!!(t.flags & ts.TypeFlags.Object) && !t.getProperties().length && !t.getCallSignatures().length && !t.getConstructSignatures().length && !checker.getIndexInfosOfType(t).length))));
+  // An argument of a library function (`JSON.stringify(x)`, `Object.keys(x)`) goes nowhere else, but Object.defineProperty's target.
+  const givenToLibrary = (n: ts.Expression) => {
+    const call = n.parent;
+    if (!(ts.isCallExpression(call) || ts.isNewExpression(call)) || !call.arguments?.includes(n)) return false;
+    const d = checker.getResolvedSignature(call)?.declaration;
+    if (!d || !d.getSourceFile().isDeclarationFile) return false;
+    return !(ts.isCallExpression(call) && call.arguments[0] === n && ts.isPropertyAccessExpression(call.expression) && ['defineProperty', 'defineProperties'].includes(call.expression.name.text));
+  };
   const visit = (n: ts.Node) => {
     let held: ts.Expression | undefined;
     if ((ts.isAsExpression(n) || ts.isTypeAssertionExpression(n)) && untyped(checker.getTypeFromTypeNode(n.type))) held = n.expression;
-    else if ((ts.isNewExpression(n) || ts.isIdentifier(n) || n.kind === ts.SyntaxKind.ThisKeyword) && ts.isExpression(n) && !ts.isPropertyAccessExpression(n.parent) && untyped(checker.getContextualType(n))) held = n;
-    let cls = held && classOf(held);
+    else if ((ts.isNewExpression(n) || ts.isIdentifier(n) || n.kind === ts.SyntaxKind.ThisKeyword || (open && (ts.isPropertyAccessExpression(n) || ts.isCallExpression(n) || ts.isElementAccessExpression(n))))
+      && ts.isExpression(n) && !ts.isPropertyAccessExpression(n.parent) && untyped(checker.getContextualType(n)) && !(open && givenToLibrary(n))) held = n;
+    // `Object.assign(instance, …)` gives it the sources' keys.
+    else if (ts.isCallExpression(n) && n.arguments.length && ts.isPropertyAccessExpression(n.expression) && n.expression.name.text === 'assign' && ts.isIdentifier(n.expression.expression) && n.expression.expression.text === 'Object') held = n.arguments[0];
+    // A class with a string index signature takes any key.
+    let cls = held ? classOf(held) : ts.isClassLike(n) && n.members.some((m) => ts.isIndexSignatureDeclaration(m) && !hasStatic(m)) ? n : undefined;
     for (let h = cls?.heritageClauses?.find((x) => x.token === ts.SyntaxKind.ExtendsKeyword)?.types[0]; cls && h; h = cls.heritageClauses?.find((x) => x.token === ts.SyntaxKind.ExtendsKeyword)?.types[0]) {
       const d = checker.getTypeAtLocation(h.expression).getSymbol()?.valueDeclaration;
       if (!d || !ts.isClassLike(d) || d.getSourceFile().isDeclarationFile) break;

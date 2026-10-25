@@ -182,7 +182,9 @@ public func jsDefineProperty(_ object: Any?, _ key: String, _ descriptor: Any?) 
         try own.defineProperty(key, d)
     case let expando as JSExpando where expando.jsExpando?.has(key) == true || jsIsSymbolKey(key) || !expando.jsKeys.contains(key):
         if expando.jsExpando == nil { expando.jsExpando = JSObject() }
+        let made = !expando.jsExpando!.has(key)
         try expando.jsExpando!.defineProperty(key, d)
+        if made, let ordered = expando as? JSKeyOrdered, ordered.jsOrder != nil, !jsIsSymbolKey(key) { ordered.jsKeyMade(key) }
     case let function as JSFunctionObject: try function.defineOwn(key, d)
     case let dynamic as JSDynamic:
         // A field the class declares is a Swift stored property: it can take a value, not become an accessor.

@@ -52,13 +52,20 @@ public func jsNulledEntry<V>(_ entry: V??) -> Any? {
 public protocol JSKeyOrdered: AnyObject {
     var jsOrder: [String]? { get set }
     var jsFieldKeys: [String] { get }
+    /// The keys script gave the object (its expando's), which `jsFieldKeys`' order puts after the fields.
+    var jsAddedKeys: [String] { get }
 }
 
 extension JSKeyOrdered {
+    public var jsAddedKeys: [String] { [] }
+
+    /// Whether a key made now needs noting: the fields' order alone no longer places it last.
+    public var jsKeysNoted: Bool { jsOrder != nil || !jsAddedKeys.isEmpty }
+
     /// `key` made just now: last among the keys. `early`: made before its class's level of the constructor started, so
     /// before keys its static place is after.
     public func jsKeyMade(_ key: String, early: Bool = false) {
-        let keys = jsOrderedKeys(jsOrder, jsFieldKeys)
+        let keys = jsOrderedKeys(jsOrder, jsFieldKeys + jsAddedKeys)
         if jsOrder == nil && !early && keys.last == key { return }
         jsOrder = keys.filter { $0 != key } + [key]
     }

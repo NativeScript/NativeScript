@@ -4,7 +4,7 @@ import { dirname as pathDirname, resolve as pathResolve } from 'node:path';
 import { AsyncLowering, usedBefore, type AsyncCtx, type AsyncSyntax, type AsyncTranslator } from './async.ts';
 import { isAsync, isStatic } from './throws.ts';
 import { assignedMembers } from './sharing.ts';
-import { admitsUndefined, classKeyPlan, onlyUndefined, assignedValues, openSpreadType, definitelyAssignedFields, forwardedSetter, initializedNull, intersectionAliasMembers, nullSetFields, nullishSlots, type NullishSlots, isRegExpProtocol, intlConstructor, isObjectToStringCall, isStringRaw, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, classesHeldUntyped, LooseSlots, originOf, ownSlot, implementedInterfaceDeclarations, slotOf, slotType, type TrustScope, heldDowncasts, keysDefinedUntyped } from './lang.ts';
+import { admitsUndefined, classKeyPlan, onlyUndefined, assignedValues, openSpreadType, definitelyAssignedFields, forwardedSetter, initializedNull, intersectionAliasMembers, nullSetFields, nullishSlots, type NullishSlots, isRegExpProtocol, intlConstructor, isObjectToStringCall, isStringRaw, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, classesHeldUntyped, LooseSlots, originOf, ownSlot, implementedInterfaceDeclarations, slotOf, slotType, type TrustScope, heldDowncasts, keysDefinedUntyped, KOTLIN_NATIVE_TYPES, runtimeTypeName, definesRunTimeKey } from './lang.ts';
 import { isCoreDeclaration } from './core.ts';
 import { balanced, nonVirtualName } from './swift.ts';
 import type { Properties } from './properties.ts';
@@ -450,7 +450,7 @@ export class Translator implements AsyncTranslator {
             if (d) this.extendedDecls.add(d);
           }
           // `implements TKUnit.TestInfoEntry`: the interface by its own name, as its module declares it.
-          for (const i of implementedInterfaces(this.checker, n)) this.protocols.add(ts.isPropertyAccessExpression(i.expression) ? i.expression.name.text : i.expression.getText());
+          for (const i of implementedInterfaces(this.checker, n)) this.protocols.add(this.implementedName(i));
           // @angular/forms' controls, read untyped as often as typed (`form.get('name').value`): their accessors by name too.
           if (f.fileName.endsWith('/runtime/angular-forms.ts')) this.readByName.add(n);
         }
@@ -477,7 +477,7 @@ export class Translator implements AsyncTranslator {
     if (!cls || !ts.isClassLike(cls) || cls.getSourceFile().isDeclarationFile || cls.typeParameters?.length || implementedInterfaces(this.checker, cls).some((i) => i.expression.getText() === iface.name.text)) return;
     if (!this.meetsFields(cls, iface)) return;
     (this.structural.get(cls) ?? this.structural.set(cls, new Set()).get(cls)!).add(iface);
-    this.protocols.add(iface.name.text);
+    this.protocols.add(this.topName(iface, iface.name.text));
   }
 
   /** Whether a class's own members hold every property of an interface as Kotlin can override it: the same type, writable where the interface's is. */
@@ -699,6 +699,9 @@ export class Translator implements AsyncTranslator {
     // Library mode: a Java class named as a library type (`java.util.Map`, `java.util.Iterator`) is the Java class.
     const javaClass = this.library && !!sym?.declarations?.length && sym.declarations.every((d) => this.native?.isNativeDeclaration(d)) ? this.native?.type(t) : null;
     if (javaClass) return javaClass;
+    // A program type renamed for a name Kotlin has already (`Iterator`, `Pair`) is not the library's type of that name.
+    const clashing = !this.library && sym?.valueDeclaration && this.nativeClash(sym.name) ? this.topNames().get(sym.valueDeclaration) : undefined;
+    if (clashing) return `${clashing}${this.declaredTypeArguments(t, sym!.valueDeclaration!, where)}`;
     switch (name) {
       case 'Sig': case 'Ref': case 'VueRef': case 'WritableSignal': case 'InputSignal': case 'ModelSignal': case 'Writable': return `Signal<${arg(0)}>`;
       case 'Signal': return arg(0);
@@ -820,7 +823,7 @@ export class Translator implements AsyncTranslator {
     if (name && shim && (t as ts.TypeReference).typeArguments?.length) return `${name}<${c.getTypeArguments(t as ts.TypeReference).map((a) => this.type(a, where)).join(', ')}>`;
     if (name && Object.hasOwn(KIT_NAMES_ANDROID, name) && isCoreDeclaration(sym?.declarations?.[0])) return KIT_NAMES_ANDROID[name];
     const renamed = sym?.valueDeclaration && this.topNames().get(sym.valueDeclaration);
-    if (renamed) return renamed;
+    if (renamed) return `${renamed}${this.declaredTypeArguments(t, sym!.valueDeclaration!, where)}`;
     const renamedType = sym && !sym.valueDeclaration && sym.declarations?.[0] ? this.topNames().get(sym.declarations[0]) : undefined;
     if (renamedType) { this.used.add(renamedType); return renamedType; }
     // A mixin's class is the core class it is applied to.
@@ -832,9 +835,7 @@ export class Translator implements AsyncTranslator {
       if (sym?.declarations?.some((d) => !d.getSourceFile().isDeclarationFile)) this.used.add(name);
       const classDecl = sym?.declarations?.find((d): d is ts.ClassDeclaration => ts.isClassDeclaration(d) && !d.getSourceFile().isDeclarationFile);
       // A plugin's generic class is untyped in its parameters, as its code treats them.
-      const declared = classDecl && !this.pluginFiles.has(classDecl.getSourceFile().fileName) ? classDecl.typeParameters?.length ?? 0 : 0;
-      if (declared) return `${name}<${c.getTypeArguments(t as ts.TypeReference).slice(0, declared).map((a) => this.type(a, where)).join(', ')}>`;
-      return name;
+      return classDecl ? `${name}${this.declaredTypeArguments(t, classDecl, where)}` : name;
     }
     const props = t.getProperties().map((p) => p.name);
     if (props.length && props.every((p) => ['eventName', 'object', 'value'].includes(p))) return 'EventData';
@@ -2186,7 +2187,7 @@ export class Translator implements AsyncTranslator {
       ? (inherits && !keys.length ? [] : [`    override val jsKeys: List<String> get() = ${expandoAbove && inherits ? `jsKeysBeforeExpando(super.jsKeys, ${keys.join(' + ')}, jsExpando)` : [inherits ? 'super.jsKeys' : '', ...keys].filter(Boolean).join(' + ') || 'listOf()'}`])
       : keyed.appBase
         ? (fieldKeys.length ? [`    override val jsFieldKeys: List<String> get() = ${['super.jsFieldKeys', ...fieldKeys].join(' + ')}`] : [])
-        : [`    override val jsFieldKeys: List<String> get() = ${[inherits ? 'super.jsKeys' : '', ...fieldKeys].filter(Boolean).join(' + ') || 'listOf()'}`, `    override val jsKeys: List<String> get() = ${['jsOrderedKeys(jsOrder, jsFieldKeys)', ...expandoKeys].join(' + ')}`];
+        : [`    override val jsFieldKeys: List<String> get() = ${[inherits ? 'super.jsKeys' : '', ...fieldKeys].filter(Boolean).join(' + ') || 'listOf()'}`, `    override val jsKeys: List<String> get() = jsOrderedKeys(jsOrder, jsFieldKeys${expandoKeys.length ? ' + jsAddedKeys' : ''})`];
     const definedGet = (f: { name: string }, read: string) => (defined.has(f.name) ? `jsDefinedGet(this, ${kotlinString(f.name)}).let { if (it != null) it.value else ${read} }` : read);
     const definedSet = (f: { name: string }, write: string) => (defined.has(f.name) ? `{ if (!jsDefinedSet(this, ${kotlinString(f.name)}, value)) ${write.startsWith('{') ? write : `{ ${write} }`} }` : write);
     const withDefined = (f: { name: string }, line: string, wrap: (f: { name: string }, code: string) => string) => {
@@ -2948,7 +2949,7 @@ export class Translator implements AsyncTranslator {
     const out = new Set<string>();
     const c = this.checker;
     const addInterface = (h: ts.ExpressionWithTypeArguments) => {
-      if (implemented && h.parent.parent === cls && !implemented.includes(ts.isPropertyAccessExpression(h.expression) ? h.expression.name.text : h.expression.getText())) return;
+      if (implemented && h.parent.parent === cls && !implemented.includes(this.implementedName(h))) return;
       const t = c.getTypeAtLocation(h);
       if (isLibDeclaration(t.getSymbol()?.declarations?.[0])) return;
       // A class implemented as an interface (core's `implements ListViewDefinition`, a subclass of its own) is no supertype.
@@ -2960,12 +2961,19 @@ export class Translator implements AsyncTranslator {
     for (let b: ts.ClassLikeDeclaration | undefined = cls; b; ) {
       if (b !== cls) for (const m of b.members) if (m.name) out.add(m.name.getText());
       for (const i of b.heritageClauses?.find((h) => h.token === ts.SyntaxKind.ImplementsKeyword)?.types ?? []) addInterface(i);
-      for (const d of this.structural.get(b) ?? []) if (b !== cls || !implemented || implemented.includes(d.name.text)) for (const m of d.members) if (m.name) out.add(m.name.getText());
+      for (const d of this.structural.get(b) ?? []) if (b !== cls || !implemented || implemented.includes(this.topName(d, d.name.text))) for (const m of d.members) if (m.name) out.add(m.name.getText());
       const h = b.heritageClauses?.find((x) => x.token === ts.SyntaxKind.ExtendsKeyword)?.types[0];
       const d = h && c.getTypeAtLocation(h.expression).getSymbol()?.valueDeclaration;
       b = d && ts.isClassLike(d) && !d.getSourceFile().isDeclarationFile ? d : undefined;
     }
     return out;
+  }
+
+  /** The Kotlin name of an interface a class names in its `implements` clause. */
+  private implementedName(i: ts.ExpressionWithTypeArguments): string {
+    const text = ts.isPropertyAccessExpression(i.expression) ? i.expression.name.text : i.expression.getText();
+    const d = this.checker.getTypeAtLocation(i).getSymbol()?.declarations?.find(ts.isInterfaceDeclaration);
+    return d && !d.getSourceFile().isDeclarationFile ? this.topName(d, text) : text;
   }
 
   /** The interfaces a class implements, named or met, that are Kotlin interfaces it implements; `witnesses` gets the adapters its methods need. */
@@ -2978,10 +2986,11 @@ export class Translator implements AsyncTranslator {
       // The generated kit: an interface core declares that the kit has no type for (`TraceWriter`, which core holds untyped).
       .filter((i) => !this.generatedKit || !isCoreDeclaration(this.checker.getTypeAtLocation(i).getSymbol()?.declarations?.[0]) || !!this.core?.has(ts.isPropertyAccessExpression(i.expression) ? i.expression.name.text : i.expression.getText()))
       // An interface the class's signatures cannot meet is left out; untyped parameters meet it through a witness.
-      .filter((i) => this.protocolWitnesses(cls, this.checker.getTypeAtLocation(i).getSymbol()?.declarations?.find(ts.isInterfaceDeclaration), i.expression.getText(), witnesses, notOverrides))
-      .map((i) => (ts.isPropertyAccessExpression(i.expression) ? i.expression.name.text : i.expression.getText()));
+      .filter((i) => this.protocolWitnesses(cls, this.checker.getTypeAtLocation(i).getSymbol()?.declarations?.find(ts.isInterfaceDeclaration), this.implementedName(i), witnesses, notOverrides))
+      .map((i) => this.implementedName(i));
     for (const d of this.structural.get(cls) ?? []) {
-      if (!implemented.includes(d.name.text) && this.protocolWitnesses(cls, d, d.name.text, witnesses, notOverrides)) implemented.push(d.name.text);
+      const name = this.topName(d, d.name.text);
+      if (!implemented.includes(name) && this.protocolWitnesses(cls, d, name, witnesses, notOverrides)) implemented.push(name);
     }
     return implemented;
   }
@@ -2994,7 +3003,7 @@ export class Translator implements AsyncTranslator {
     const witnesses: string[] = [];
     const notOverrides = new Set<string>();
     const appInterface = (n: string) => this.protocols.has(n) && [...implementedInterfaces(this.checker, cls).map((i) => this.checker.getTypeAtLocation(i).getSymbol()?.declarations?.find(ts.isInterfaceDeclaration)), ...this.structural.get(cls) ?? []]
-      .some((d) => !!d && d.name.text === n && !d.getSourceFile().isDeclarationFile);
+      .some((d) => !!d && this.topName(d, d.name.text) === n && !d.getSourceFile().isDeclarationFile);
     const supertypes = this.implementedProtocols(cls, witnesses, notOverrides).filter(appInterface);
     if (!supertypes.length) return { supertypes, overrides: new Set(), lines: [] };
     for (const i of supertypes) this.used.add(i);
@@ -3005,7 +3014,7 @@ export class Translator implements AsyncTranslator {
     const seen = new Set<string>();
     for (const i of implementedInterfaces(this.checker, cls)) {
       const d = this.checker.getTypeAtLocation(i).getSymbol()?.declarations?.find(ts.isInterfaceDeclaration);
-      if (!d || !supertypes.includes(d.name.text)) continue;
+      if (!d || !supertypes.includes(this.topName(d, d.name.text))) continue;
       for (const m of this.withInherited(d, d.members)) {
         if (!ts.isPropertySignature(m) || !ts.isIdentifier(m.name) || seen.has(m.name.text)) continue;
         seen.add(m.name.text);
@@ -3640,7 +3649,7 @@ export class Translator implements AsyncTranslator {
       lines.push(`    var jsNulls: MutableSet<String>? = ${initial.length ? `mutableSetOf(${initial.map((m) => kotlinString(m.name.getText())).join(', ')})` : 'null'}`);
     }
     const definable = isError ? [] : this.definableNames(cls).filter((n) => fields.some((f) => f.name === n));
-    if (!isError) lines.push(...this.dynamicMembers(fields, name, !!appBase || !!kitRoot, expando ? 'jsExpandoGet(this, key)' : 'null', expando ? 'jsExpandoSet(this, key, value)' : '', symbolFields, dynMethods, expando, dynAccessors, base?.replace(/<.*$/, ''), nulls, this.nullFieldsTyped(cls), keyedInfo, undefined, new Set(definable), !!appBase && this.appRootKeepsExpando(cls)));
+    if (!isError) lines.push(...this.dynamicMembers(fields, this.scriptClassName(cls) ?? name, !!appBase || !!kitRoot, expando ? 'jsExpandoGet(this, key)' : 'null', expando ? 'jsExpandoSet(this, key, value)' : '', symbolFields, dynMethods, expando, dynAccessors, base?.replace(/<.*$/, ''), nulls, this.nullFieldsTyped(cls), keyedInfo, undefined, new Set(definable), !!appBase && this.appRootKeepsExpando(cls)));
     // An error's own fields by name, after JSError's `name`/`message`/`stack`; what script adds to it comes after the fields, and it prints as an error, not as `Name { … }`.
     else lines.push(...this.dynamicMembers(fields, name, true, 'null', '', symbolFields, dynMethods, false, dynAccessors, base!.replace(/<.*$/, ''))
       .filter((l) => !l.startsWith('    override val jsClassName'))
@@ -3664,7 +3673,8 @@ export class Translator implements AsyncTranslator {
     }
     if (statics.length) lines.push('    companion object {', ...statics, '    }');
     this.indent = '';
-    const head = `${abstract ? 'abstract ' : open ? 'open ' : ''}class ${ident(name)}${this.generics(cls)}`;
+    const scriptName = this.scriptClassName(cls);
+    const head = `${scriptName ? `@JSClassName(${kotlinString(scriptName)}) ` : ''}${abstract ? 'abstract ' : open ? 'open ' : ''}class ${ident(name)}${this.generics(cls)}`;
     const supers = [...(base ? [base] : []), ...supertypes];
     return [`${head}${supers.length ? ` : ${supers.join(', ')}` : ''} {`, ...lines, '}'].join('\n');
   }
@@ -4130,6 +4140,19 @@ export class Translator implements AsyncTranslator {
       b = d && ts.isClassLike(d) && !d.getSourceFile().isDeclarationFile ? d : undefined;
     }
     return null;
+  }
+
+  /** `<A, B>` for a program class's type `t` with the type arguments its declaration takes; a plugin's generic class is untyped in them. */
+  private declaredTypeArguments(t: ts.Type, decl: ts.Declaration, where?: ts.Node): string {
+    if (!ts.isClassDeclaration(decl) || decl.getSourceFile().isDeclarationFile || this.pluginFiles.has(decl.getSourceFile().fileName)) return '';
+    const declared = decl.typeParameters?.length ?? 0;
+    return declared ? `<${this.checker.getTypeArguments(t as ts.TypeReference).slice(0, declared).map((a) => this.type(a, where)).join(', ')}>` : '';
+  }
+
+  /** An app class's name as script knows it, where its Kotlin name is another (it took its module's): null where they are one. */
+  private scriptClassName(cls: ts.ClassLikeDeclaration): string | null {
+    const renamed = this.library || !cls.name ? undefined : this.topNames().get(cls);
+    return renamed && !renamed.includes('.') ? cls.name!.text : null;
   }
 
   /** The Kotlin name of a class the program declares. */
@@ -4707,6 +4730,35 @@ export class Translator implements AsyncTranslator {
    * modules (a plugin's `install` in its common and Android files): all but
    * one take the module's name as a suffix, as the app's Kotlin is one package.
    */
+  /** App mode: a type name Kotlin code already has unqualified (a default import's, the runtime's). */
+  private nativeClash(name: string): boolean {
+    return !this.library && (KOTLIN_NATIVE_TYPES.has(name) || runtimeTypeName(name));
+  }
+
+  private openFieldsClass: ts.ClassLikeDeclaration | null | undefined;
+  /**
+   * App mode: a program class declaring instance fields whose objects the program holds untyped somewhere (any, unknown,
+   * object, a type parameter), so that `Object.defineProperty` with a key known only at run time may name one of its fields.
+   */
+  private heldOpenWithFields(): ts.ClassLikeDeclaration | null {
+    if (this.openFieldsClass !== undefined) return this.openFieldsClass;
+    const roots = classesHeldUntyped(this.sourceFiles, this.checker, true);
+    const rootOf = (c: ts.ClassLikeDeclaration) => { let r = c; for (let b = this.baseClassOf(r); b; b = this.baseClassOf(b)) r = b; return r; };
+    const hasFields = (c: ts.ClassLikeDeclaration) => c.members.some((m) => (ts.isPropertyDeclaration(m) && !hasModifier(m, ts.SyntaxKind.StaticKeyword) && !hasModifier(m, ts.SyntaxKind.DeclareKeyword))
+      || (ts.isConstructorDeclaration(m) && m.parameters.some((p) => ts.isParameterPropertyDeclaration(p, m))));
+    const classes: ts.ClassLikeDeclaration[] = [];
+    const visit = (n: ts.Node): void => { if (ts.isClassLike(n)) classes.push(n); ts.forEachChild(n, visit); };
+    for (const f of this.sourceFiles) if (!f.isDeclarationFile && !this.pluginFiles.has(f.fileName)) visit(f);
+    return (this.openFieldsClass = this.library ? null : classes.find((c) => roots.has(rootOf(c)) && hasFields(c)) ?? null);
+  }
+
+  /** Refuses `definesRunTimeKey`'s calls in app code where a program class's declared field may be the key (`heldOpenWithFields`). */
+  private refuseRunTimeDefine(e: ts.CallExpression): void {
+    if (this.library || this.pluginFiles.has(e.getSourceFile().fileName) || !definesRunTimeKey(e, this.checker)) return;
+    const cls = this.heldOpenWithFields();
+    if (cls) throw this.error(e, `Object.${(e.expression as ts.PropertyAccessExpression).name.text} with a key known only at run time on an untyped object that may be a \`${cls.name?.text ?? 'class'}\`, whose declared fields keep no descriptor`);
+  }
+
   private topNames(): Map<ts.Node, string> {
     if (this.renamedTop) return this.renamedTop;
     const byName = new Map<string, { decl: ts.Node; file: ts.SourceFile }[]>();
@@ -4726,7 +4778,7 @@ export class Translator implements AsyncTranslator {
         if (ts.isClassDeclaration(st) && st.name) add(st.name.text, st);
         // An interface becomes a class of its name too; outside the kit, one named as a kit class takes its module's name (below).
         const shape = ts.isInterfaceDeclaration(st) || (ts.isTypeAliasDeclaration(st) && ts.isTypeLiteralNode(st.type)) ? st : null;
-        if (shape && (this.library || (this.core?.has(shape.name.text) && !(this.checker.getSymbolAtLocation(shape.name)!.flags & ts.SymbolFlags.Class)))) add(shape.name.text, shape);
+        if (shape && (this.library || ((this.core?.has(shape.name.text) || this.nativeClash(shape.name.text)) && !(this.checker.getSymbolAtLocation(shape.name)!.flags & ts.SymbolFlags.Class)))) add(shape.name.text, shape);
         if (ts.isModuleDeclaration(st) && ts.isIdentifier(st.name) && !hasModifier(st, ts.SyntaxKind.DeclareKeyword)) add(st.name.text, st);
         if (ts.isEnumDeclaration(st) && !hasModifier(st, ts.SyntaxKind.DeclareKeyword)) add(st.name.text, st);
         // Library mode: a module's functions and variables are its object's, named by it.
@@ -4779,8 +4831,9 @@ export class Translator implements AsyncTranslator {
       // of the app's package hides the kit's of its name, imported with `org.nativescript.kit.*`, from every file of the app.
       const typeLike = (d: ts.Node) => ts.isClassDeclaration(d) || (!this.library && (ts.isModuleDeclaration(d) || ts.isEnumDeclaration(d) || ts.isInterfaceDeclaration(d) || ts.isTypeAliasDeclaration(d)));
       const kitClash = (list.some((x) => typeLike(x.decl)) && !!this.core?.has(name)) || (coreFunctions.has(name) && list.some((x) => ts.isFunctionDeclaration(x.decl) || ts.isVariableDeclaration(x.decl)));
-      // A type the hand-written kit declares for itself: the generated one takes its module's name.
-      const internalClash = !!this.library?.internalTypes?.has(name);
+      // A type the hand-written kit declares for itself, or an app's type named as one Kotlin has already (`Pair`): the
+      // generated one takes its module's name.
+      const internalClash = !!this.library?.internalTypes?.has(name) || (list.some((x) => typeLike(x.decl) || ts.isInterfaceDeclaration(x.decl)) && this.nativeClash(name));
       if (list.length < 2 && !kitClash && !internalClash) continue;
       // The app's declaration keeps its name (the first app module's, of several); the others take their module's.
       const keep = kitClash || internalClash ? undefined : (this.library ? list.find((x) => ts.isClassDeclaration(x.decl)) : undefined) ?? list.find((x) => !this.pluginFiles.has(x.file.fileName)) ?? list[0];
@@ -8320,6 +8373,7 @@ export class Translator implements AsyncTranslator {
         if (method === 'groupBy') return `jsObjectGroupBy<${this.elementTypeOf(arg(0))}, ${T().replace(/^JSRecord<(.*)>\??$/, '$1')}>(${this.iterable(arg(0))}, ${this.fn(arg(1), this.groupKeySlot(arg(0), arg(1), 'Any?'))})`;
         // `Object.create(null)`: the runtime's objects inherit no keys, so an empty one.
         if (method === 'create' && arg(0)?.kind === ts.SyntaxKind.NullKeyword && e.arguments.length === 1) return 'JSObject()';
+        if (method === 'defineProperty' || method === 'defineProperties') this.refuseRunTimeDefine(e);
         if (method === 'defineProperty') {
           const d = arg(2);
           const code = `jsDefineProperty(${this.coerce(arg(0), 'Any?')}, ${this.propertyKey(arg(1))}, ${ts.isObjectLiteralExpression(d) ? this.dynamicObject(d) : this.coerce(d, 'Any?')})`;
@@ -9956,15 +10010,16 @@ export class Translator implements AsyncTranslator {
     return k;
   }
 
-  private keyHierarchies = new Map<ts.ClassLikeDeclaration, { ordered: boolean; gated: boolean }>();
+  private keyHierarchies = new Map<ts.ClassLikeDeclaration, KeyHierarchy>();
 
   /**
-   * A keyed class's hierarchy. `ordered`: some class has flagged fields, so a key may be made out of the plans' order; the
-   * root keeps `jsOrder` (null until that happens) and each class lists its present keys in plan order (`jsFieldKeys`).
-   * `gated`: a subclass has keys from its level of the constructor on, which wait for it (`jsLevel`): its base's constructor
-   * runs first.
+   * A keyed class's hierarchy. `ordered`: some class has flagged fields, or the root keeps an expando below which a subclass
+   * has keys, so a key may be made out of the plans' order; the root keeps `jsOrder` (null until that happens) and each class
+   * lists its present keys in plan order (`jsFieldKeys`), the expando's after them (`jsAddedKeys`). `gated`: a subclass has
+   * keys from its level of the constructor on, which wait for it (`jsLevel`): its base's constructor runs first. `noted`: the
+   * test for whether a key made now must be noted, as the plans' order no longer places it.
    */
-  private keyHierarchy(cls: ts.ClassLikeDeclaration): { ordered: boolean; gated: boolean } {
+  private keyHierarchy(cls: ts.ClassLikeDeclaration): KeyHierarchy {
     const rootOf = (c: ts.ClassLikeDeclaration) => { let r = c; for (let b = this.programBase(r); b; b = this.programBase(b)) r = b; return r; };
     const root = rootOf(cls);
     let h = this.keyHierarchies.get(root);
@@ -9973,8 +10028,9 @@ export class Translator implements AsyncTranslator {
     const visit = (n: ts.Node): void => { if (ts.isClassLike(n)) classes.push(n); ts.forEachChild(n, visit); };
     for (const f of this.sourceFiles) if (!f.isDeclarationFile) visit(f);
     const members = [root, ...classes.filter((c) => c !== root && rootOf(c) === root)].filter((c) => this.classKeys(c).on);
-    const ordered = members.some((c) => this.classKeys(c).flagged.size > 0);
-    h = { ordered, gated: ordered && members.some((c) => this.classKeys(c).depth > 0 && this.classKeys(c).order.some((n) => !this.classKeys(c).written.has(n))) };
+    const expando = members.includes(root) && this.appRootKeepsExpando(root);
+    const ordered = members.some((c) => this.classKeys(c).flagged.size > 0 || (expando && this.classKeys(c).depth > 0 && this.classKeys(c).order.length > 0));
+    h = { ordered, gated: ordered && members.some((c) => this.classKeys(c).depth > 0 && this.classKeys(c).order.some((n) => !this.classKeys(c).written.has(n))), expando: ordered && expando, noted: ordered && expando ? 'jsKeysNoted' : 'jsOrder != null' };
     this.keyHierarchies.set(root, h);
     return h;
   }
@@ -10016,6 +10072,7 @@ export class Translator implements AsyncTranslator {
       if (!appBase) {
         lines.push('    override var jsOrder: List<String>? = null');
         if (gated) lines.push('    var jsLevel = 0');
+        if (this.keyHierarchy(cls).expando) lines.push('    override val jsAddedKeys: List<String> get() = jsExpando?.jsKeys ?: listOf()');
         supertypes.push('JSKeyOrdered');
       }
     }
@@ -10039,7 +10096,7 @@ export class Translator implements AsyncTranslator {
       if (!flagged && !(w.first && based)) continue;
       const made = `__made${this.tmp++}`;
       const before = !flagged ? '' : based ? `val ${made} = !__has_${w.field}; __has_${w.field} = true` : `__has_${w.field} = true`;
-      const after = based ? `if (${flagged ? `${made} && ` : ''}jsOrder != null) jsKeyMade(${kotlinString(w.field)})` : '';
+      const after = based ? `if (${flagged ? `${made} && ` : ''}${this.keyHierarchy(cls).noted}) jsKeyMade(${kotlinString(w.field)})` : '';
       notes.set(x.parent as ts.Statement, { before, after });
     }
     return notes;
@@ -10050,7 +10107,7 @@ export class Translator implements AsyncTranslator {
     const k = this.classKeys(cls);
     if (!k.on || k.depth === 0 || !this.keyHierarchy(cls).gated) return [];
     const now = k.order.filter((n) => k.always.has(n));
-    return [`        jsLevel = ${k.depth}`, ...(now.length ? [`        if (jsOrder != null) { ${now.map((n) => `jsKeyMade(${kotlinString(n)})`).join('; ')} }`] : [])];
+    return [`        jsLevel = ${k.depth}`, ...(now.length ? [`        if (${this.keyHierarchy(cls).noted}) { ${now.map((n) => `jsKeyMade(${kotlinString(n)})`).join('; ')} }`] : [])];
   }
 
   /** A class the class path writes with its members by name, its hierarchy rooted in none but core's: no error, component, service, mixin or native subclass. */
@@ -10453,6 +10510,7 @@ function returnsNull(body: ts.Node): boolean {
 /** A field of an object literal's class; an accessor runs functions the literal gives. */
 /** An app class's keys in `dynamicMembers`: in plan order, each present by `present` (null: always). */
 interface KeyedMembers { order: string[]; present: (name: string) => string | null; ordered: boolean; appBase: boolean }
+interface KeyHierarchy { ordered: boolean; gated: boolean; expando: boolean; noted: string }
 /** An app class's keys: see `classKeys`. */
 interface ClassKeys { on: boolean; order: string[]; always: Set<string>; sure: Set<string>; written: Set<string>; flagged: Set<string>; walked: Map<ts.Node, { field: string; first: boolean }>; depth: number }
 interface ShapeField { name: string; type: string; label?: string; accessor?: { get: boolean; set: boolean; value: string }; symbol?: boolean }

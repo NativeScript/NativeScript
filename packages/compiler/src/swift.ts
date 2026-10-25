@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import { KIT_APPLE_SOURCES } from './paths.ts';
 import { Throws, digitsLiteral, isArrayLengthLiteral, isArrayLengthWrite, isAsync, isStatic } from './throws.ts';
 import { assignedMembers } from './sharing.ts';
-import { admitsUndefined, classKeyPlan, onlyUndefined, assignedValues, openSpreadType, initializedNull, intersectionAliasMembers, intlConstructor, nullSetFields, nullishSlots, type NullishSlots, isRegExpProtocol, isObjectToStringCall, isStringRaw, leadingNeverRead, forwardedSetter, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, uncheckedMatch, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, LooseSlots, originOf, ownSlot, implementedInterfaceDeclarations, slotOf, slotType, definitelyAssignedFields, type TrustScope, heldDowncasts, classesHeldUntyped, keysDefinedUntyped } from './lang.ts';
+import { admitsUndefined, classKeyPlan, onlyUndefined, assignedValues, openSpreadType, initializedNull, intersectionAliasMembers, intlConstructor, nullSetFields, nullishSlots, type NullishSlots, isRegExpProtocol, isObjectToStringCall, isStringRaw, leadingNeverRead, forwardedSetter, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, uncheckedMatch, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, LooseSlots, originOf, ownSlot, implementedInterfaceDeclarations, slotOf, slotType, definitelyAssignedFields, type TrustScope, heldDowncasts, classesHeldUntyped, keysDefinedUntyped, SWIFT_NATIVE_TYPES, runtimeTypeName, definesRunTimeKey } from './lang.ts';
 import { AsyncLowering, type AsyncCtx, type AsyncSyntax, type AsyncTranslator } from './async.ts';
 import { CoreAPI, isCoreDeclaration, packageOf } from './core.ts';
 import type { KitMember } from './kit-index.ts';
@@ -3047,7 +3047,7 @@ ${members.join('\n')}
       ? [`    ${o}var jsKeys: [String] { ${expandoAbove && keys.length ? `jsKeysBeforeExpando(super.jsKeys, ${keys.join(' + ')}, jsExpando)` : [override ? 'super.jsKeys' : '', ...keys, expandoKeys].filter(Boolean).join(' + ') || '[]'} }`]
       : [
           `    ${keyed.appBase ? 'override ' : ''}var jsFieldKeys: [String] { ${[keyed.appBase ? 'super.jsFieldKeys' : override ? 'super.jsKeys' : '', ...keys].filter(Boolean).join(' + ') || '[]'} }`,
-          ...(keyed.appBase ? [] : [`    ${o}var jsKeys: [String] { ${['jsOrderedKeys(jsOrder, jsFieldKeys)', expandoKeys].filter(Boolean).join(' + ')} }`]),
+          ...(keyed.appBase ? [] : [`    ${o}var jsKeys: [String] { jsOrderedKeys(jsOrder, jsFieldKeys${expando ? ' + jsAddedKeys' : ''}) }`]),
         ];
     const definedGet = (f: { name: string }) => (defined.has(f.name) ? `if let __d = jsDefinedGet(self, ${swiftString(f.name)}) { return __d }; ` : '');
     const definedSet = (f: { name: string }) => (defined.has(f.name) ? `if jsDefinedSet(self, ${swiftString(f.name)}, newValue) { return }; ` : '');
@@ -3428,22 +3428,24 @@ ${members.join('\n')}
     return k;
   }
 
-  private keyHierarchies = new Map<ts.ClassLikeDeclaration, { ordered: boolean; gated: boolean }>();
+  private keyHierarchies = new Map<ts.ClassLikeDeclaration, KeyHierarchy>();
 
   /**
-   * A keyed class's hierarchy. `ordered`: some class has flagged fields, so a key may be made out of the plans' order; the
-   * root keeps `jsOrder` (nil until that happens) and each class lists its present keys in plan order (`jsFieldKeys`).
-   * `gated`: a subclass has keys from its level of the constructor on, which wait for it (`jsLevel`): its base's constructor
-   * runs first.
+   * A keyed class's hierarchy. `ordered`: some class has flagged fields, or the root keeps an expando below which a subclass
+   * has keys, so a key may be made out of the plans' order; the root keeps `jsOrder` (nil until that happens) and each class
+   * lists its present keys in plan order (`jsFieldKeys`), the expando's after them (`jsAddedKeys`). `gated`: a subclass has
+   * keys from its level of the constructor on, which wait for it (`jsLevel`): its base's constructor runs first. `noted`: the
+   * test for whether a key made now must be noted, as the plans' order no longer places it.
    */
-  private keyHierarchy(cls: ts.ClassLikeDeclaration): { ordered: boolean; gated: boolean } {
+  private keyHierarchy(cls: ts.ClassLikeDeclaration): KeyHierarchy {
     const rootOf = (c: ts.ClassLikeDeclaration) => { let r = c; for (let b = this.programBase(r); b; b = this.programBase(b)) r = b; return r; };
     const root = rootOf(cls);
     let h = this.keyHierarchies.get(root);
     if (h) return h;
     const members = [root, ...this.allClasses().filter((c) => c !== root && rootOf(c) === root)].filter((c) => this.classKeys(c).on);
-    const ordered = members.some((c) => this.classKeys(c).flagged.size > 0);
-    h = { ordered, gated: ordered && members.some((c) => this.classKeys(c).depth > 0 && this.classKeys(c).order.some((n) => !this.classKeys(c).written.has(n))) };
+    const expando = members.includes(root) && this.appRootKeepsExpando(root);
+    const ordered = members.some((c) => this.classKeys(c).flagged.size > 0 || (expando && this.classKeys(c).depth > 0 && this.classKeys(c).order.length > 0));
+    h = { ordered, gated: ordered && members.some((c) => this.classKeys(c).depth > 0 && this.classKeys(c).order.some((n) => !this.classKeys(c).written.has(n))), expando: ordered && expando, noted: ordered && expando ? 'jsKeysNoted' : 'jsOrder != nil' };
     this.keyHierarchies.set(root, h);
     return h;
   }
@@ -3500,6 +3502,7 @@ ${members.join('\n')}
       if (!appBase) {
         lines.push('    var jsOrder: [String]?');
         if (gated) lines.push('    var jsLevel = 0');
+        if (this.keyHierarchy(cls).expando) lines.push('    var jsAddedKeys: [String] { jsExpando?.jsKeys ?? [] }');
         conformances.push('JSKeyOrdered');
       }
     }
@@ -3519,6 +3522,7 @@ ${members.join('\n')}
     // Below a base, whose constructor may have made keys out of order, a key the walk predicts goes after them all the same.
     const based = !!cls.heritageClauses?.some((h) => h.token === ts.SyntaxKind.ExtendsKeyword);
     const made = (n: string) => `jsKeyMade(${swiftString(n)})`;
+    const { noted } = this.keyHierarchy(cls);
     const visit = (x: ts.Node): void => {
       if (ts.isFunctionLike(x) || ts.isClassLike(x)) return;
       const target = ts.isBinaryExpression(x) && x.operatorToken.kind >= ts.SyntaxKind.FirstAssignment && x.operatorToken.kind <= ts.SyntaxKind.LastAssignment ? x.left
@@ -3530,8 +3534,8 @@ ${members.join('\n')}
         const st = ts.walkUpParenthesizedExpressions(x.parent);
         if (k.flagged.has(n) || (walked?.first && based)) {
           if (!ts.isExpressionStatement(st)) throw this.error(x, 'a write that makes a key, inside an expression of its class\'s constructor');
-          const note = !k.flagged.has(n) ? `if jsOrder != nil { ${made(n)} }`
-            : walked ? (based ? `if !__has_${n} { __has_${n} = true; if jsOrder != nil { ${made(n)} } }` : `__has_${n} = true`)
+          const note = !k.flagged.has(n) ? `if ${noted} { ${made(n)} }`
+            : walked ? (based ? `if !__has_${n} { __has_${n} = true; if ${noted} { ${made(n)} } }` : `__has_${n} = true`)
             : `if !__has_${n} { __has_${n} = true; ${made(n)} }`;
           notes.set(st, note);
         }
@@ -3547,7 +3551,7 @@ ${members.join('\n')}
     const k = this.classKeys(cls);
     if (!k.on || k.depth === 0 || !this.keyHierarchy(cls).gated) return [];
     const now = k.order.filter((n) => k.always.has(n));
-    return [`        jsLevel = ${k.depth}`, ...(now.length ? [`        if jsOrder != nil { ${now.map((n) => `jsKeyMade(${swiftString(n)})`).join('; ')} }`] : [])];
+    return [`        jsLevel = ${k.depth}`, ...(now.length ? [`        if ${this.keyHierarchy(cls).noted} { ${now.map((n) => `jsKeyMade(${swiftString(n)})`).join('; ')} }`] : [])];
   }
 
   /** Strict code's fields typed `T | null` that start with a value (an initializer, a constructor parameter's): nil in them is null. */
@@ -9415,6 +9419,35 @@ ${members.join('\n')}
     return held;
   }
 
+  /** App mode: a type name Swift code already has unqualified (the standard library's, Foundation's, the runtime's). */
+  private nativeClash(name: string): boolean {
+    return !this.library && (SWIFT_NATIVE_TYPES.has(name) || runtimeTypeName(name));
+  }
+
+  private openFieldsClass: ts.ClassLikeDeclaration | null | undefined;
+  /**
+   * App mode: a program class declaring instance fields whose objects the program holds untyped somewhere (any, unknown,
+   * object, a type parameter), so that `Object.defineProperty` with a key known only at run time may name one of its fields.
+   */
+  private heldOpenWithFields(): ts.ClassLikeDeclaration | null {
+    if (this.openFieldsClass !== undefined) return this.openFieldsClass;
+    const roots = classesHeldUntyped(this.sourceFiles, this.checker, true);
+    const rootOf = (c: ts.ClassLikeDeclaration) => { let r = c; for (let b = this.programBase(r); b; b = this.programBase(b)) r = b; return r; };
+    const hasFields = (c: ts.ClassLikeDeclaration) => c.members.some((m) => (ts.isPropertyDeclaration(m) && !hasModifier(m, ts.SyntaxKind.StaticKeyword) && !hasModifier(m, ts.SyntaxKind.DeclareKeyword))
+      || (ts.isConstructorDeclaration(m) && m.parameters.some((p) => ts.isParameterPropertyDeclaration(p, m))));
+    const classes: ts.ClassLikeDeclaration[] = [];
+    const visit = (n: ts.Node): void => { if (ts.isClassLike(n)) classes.push(n); ts.forEachChild(n, visit); };
+    for (const f of this.sourceFiles) if (!f.isDeclarationFile && !this.pluginFiles.has(f.fileName)) visit(f);
+    return (this.openFieldsClass = this.library ? null : classes.find((c) => roots.has(rootOf(c)) && hasFields(c)) ?? null);
+  }
+
+  /** Refuses `definesRunTimeKey`'s calls in app code where a program class's declared field may be the key (`heldOpenWithFields`). */
+  private refuseRunTimeDefine(e: ts.CallExpression): void {
+    if (this.library || this.pluginFiles.has(e.getSourceFile().fileName) || !definesRunTimeKey(e, this.checker)) return;
+    const cls = this.heldOpenWithFields();
+    if (cls) throw this.error(e, `Object.${(e.expression as ts.PropertyAccessExpression).name.text} with a key known only at run time on an untyped object that may be a \`${cls.name?.text ?? 'class'}\`, whose declared fields keep no descriptor`);
+  }
+
   private topNames(): Map<ts.Node, string> {
     if (this.renamedTop) return this.renamedTop;
     const byName = new Map<string, { decl: ts.Node; file: ts.SourceFile }[]>();
@@ -9433,7 +9466,7 @@ ${members.join('\n')}
         // An interface is a Swift type of its name (a class in library mode, else a protocol or object class), so it shares the
         // namespace with the classes (sqlite's `SQLiteDatabase` interface in its common file, the class in its iOS one).
         if (library ? ts.isInterfaceDeclaration(st) || (ts.isTypeAliasDeclaration(st) && ts.isTypeLiteralNode(st.type))
-          : (ts.isInterfaceDeclaration(st) && !(this.checker.getSymbolAtLocation(st.name)!.flags & ts.SymbolFlags.Class)) || (ts.isTypeAliasDeclaration(st) && ts.isTypeLiteralNode(st.type) && this.core.has(st.name.text))) add(st.name.text, st);
+          : (ts.isInterfaceDeclaration(st) && !(this.checker.getSymbolAtLocation(st.name)!.flags & ts.SymbolFlags.Class)) || (ts.isTypeAliasDeclaration(st) && ts.isTypeLiteralNode(st.type) && (this.core.has(st.name.text) || this.nativeClash(st.name.text)))) add(st.name.text, st);
         if (library) continue;
         if (ts.isFunctionDeclaration(st) && st.name) add(st.name.text, st);
         if (ts.isVariableStatement(st) && !hasModifier(st, ts.SyntaxKind.DeclareKeyword)) for (const d of st.declarationList.declarations) for (const n of boundNames(d.name)) add(n.text, n.parent);
@@ -9450,8 +9483,9 @@ ${members.join('\n')}
         || (!this.library && list.some((x) => ts.isFunctionDeclaration(x.decl) || ts.isVariableDeclaration(x.decl) || ts.isBindingElement(x.decl)) && this.core.exportsTopLevel(name));
       // A generated class and a hand-ported one of the same name: the hand port of that module has to go first.
       if (kitClash && list.some((x) => this.library?.moduleName(x.file.fileName))) this.kitClashes.push(name);
-      // A type the hand-written kit declares for itself (Signals' `Source`): the generated one takes its module's name.
-      const internalClash = !!this.library?.internalTypes?.has(name);
+      // A type the hand-written kit declares for itself (Signals' `Source`), or an app's type named as one Swift has already
+      // (`Result`): the generated one takes its module's name.
+      const internalClash = !!this.library?.internalTypes?.has(name) || (list.some((x) => typeLike(x.decl) || ts.isInterfaceDeclaration(x.decl)) && this.nativeClash(name));
       if (list.length < 2 && !kitClash && !internalClash) continue;
       // The app's first declaration keeps its name; the others take their module's.
       // A class keeps its name over an interface of the same name, as it is the public API.
@@ -11572,6 +11606,7 @@ ${members.join('\n')}
         if (method === 'hasOwn') return `jsHasOwn(${this.coerce(arg(0), 'Any?')}, ${this.propertyKey(arg(1))})`;
         if (method === 'getOwnPropertyDescriptor') return `jsOwnPropertyDescriptor(${this.coerce(arg(0), 'Any?')}, ${this.propertyKey(arg(1))})`;
         if (method === 'getPrototypeOf') return `jsGetPrototypeOf(${this.coerce(arg(0), 'Any?')})`;
+        if (method === 'defineProperty' || method === 'defineProperties') this.refuseRunTimeDefine(e);
         if (method === 'defineProperties' && ts.isObjectLiteralExpression(arg(1))) return this.defineProperties(arg(0), arg(1) as ts.ObjectLiteralExpression);
         if (method === 'fromEntries') return `jsObjectFromEntries(${this.iterable(arg(0))})`;
         // The overload by result: `Partial<Record<K, T[]>>` holds optional groups.
@@ -13550,6 +13585,7 @@ function nullNotUndefined(t: ts.Type): boolean {
 
 /** An app class's keys in `dynamicMembers`: in plan order, each present by `present` (null: always). */
 interface KeyedMembers { order: string[]; present: (name: string) => string | null; ordered: boolean; appBase: boolean }
+interface KeyHierarchy { ordered: boolean; gated: boolean; expando: boolean; noted: string }
 /** An app class's keys: see `classKeys`. */
 interface ClassKeys { on: boolean; order: string[]; always: Set<string>; sure: Set<string>; written: Set<string>; flagged: Set<string>; walked: Map<ts.Node, { field: string; first: boolean }>; depth: number }
 interface ShapeField { name: string; type: string; accessor?: { get: boolean; set: boolean; throws: boolean; value: string }; symbol?: boolean }
