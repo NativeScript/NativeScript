@@ -597,6 +597,41 @@ export class GlyphPipe { constructor(@Inject(TOKEN) private config: any, @Option
     looseApp.errors = [];
     translateModules(looseApp, loose.program, [holes]);
     check(looseApp.errors.length === 1 && looseApp.errors[0].includes('null or undefined in an array of Card, whose type leaves both out'), "a non-strict app's null or undefined in an array of objects is reported, as Swift's array of them holds neither");
+    // Each in a file of its own: a module's first refusal ends its translation.
+    const resultCases = { found: 'export const found = [find("z")];', awaited: 'export async function main() { return [await later("z")]; }' };
+    const resultFiles = Object.entries(resultCases).map(([name, line]) => {
+      const f = join(dir, `results-${name}.ts`);
+      writeFileSync(f, [
+        "class Card { name = 'c'; }",
+        "function find(name: string): Card { if (name === 'a') return new Card(); return null; }",
+        "async function later(name: string): Promise<Card> { if (name === 'a') return new Card(); return null; }",
+        line,
+        '',
+      ].join('\n'));
+      return f;
+    });
+    const refusals = (platform: 'ios' | 'android', f: string) => {
+      const p = createProgram([f], new Map(), platform, modulesDir, undefined, [], {}, { strict: false });
+      if (platform === 'ios') {
+        const sw = new SwiftTranslator(p.checker, new Map(), p.files, { lenientApp: true });
+        sw.errors = [];
+        translateModules(sw, p.program, [f]);
+        return sw.errors;
+      }
+      const kt = new Translator(p.checker, new Map(), p.files, { lenientApp: true });
+      kt.core = new CoreKotlin(kt, true);
+      kt.errors = [];
+      translateKotlinModules(kt, p.program, [f]);
+      return kt.errors;
+    };
+    const refused = (platform: 'ios' | 'android', what: string) => {
+      const errs = resultFiles.map((f) => refusals(platform, f));
+      return errs.every((e) => e.length === 1 && e[0].includes(`${what} is not supported in a release build yet`)) ? '' : `: ${errs.map((e) => e.join('; ') || 'none').join(' | ')}`;
+    };
+    const swiftRefused = refused('ios', 'a value a non-strict function may give as null or undefined, in an array of Card');
+    check(!swiftRefused, `a non-strict function's result Swift holds optional is reported in an array of objects, sync or awaited${swiftRefused}`);
+    const kotlinRefused = refused('android', 'the null a non-strict function may give, in an array of Card');
+    check(!kotlinRefused, `a non-strict function's null-only result is reported in a Kotlin array of objects, which reads its null as undefined, sync or awaited${kotlinRefused}`);
     const named = join(dir, 'named.ios.ts');
     writeFileSync(named, "export class ProcessInfo {\n  name = 'mine';\n}\nexport const processName = NSProcessInfo.processInfo.processName;\nexport const own = new ProcessInfo().name;\n");
     const clash = createProgram([named], new Map(), 'ios', modulesDir);

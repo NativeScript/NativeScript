@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import { KIT_APPLE_SOURCES } from './paths.ts';
 import { Throws, digitsLiteral, isArrayLengthLiteral, isArrayLengthWrite, isAsync, isStatic } from './throws.ts';
 import { assignedMembers } from './sharing.ts';
-import { assignedValues, heldDowncasts, openSpreadType, initializedNull, intersectionAliasMembers, intlConstructor, literalPattern, literalFlags, patternGroups, regexpMayLeaveGroupUnset, nullSetFields, nullishSlots, type NullishSlots, isRegExpProtocol, assertedPattern, unsupportedPattern, isObjectToStringCall, isStringRaw, leadingNeverRead, forwardedSetter, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, uncheckedMatch, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, LooseSlots, originOf, ownSlot, implementedInterfaceDeclarations, slotOf, slotType, definitelyAssignedFields, type TrustScope, classesHeldUntyped, scriptCalledFunction, unsetGroupTyping, type UnsetGroupTyping, admitsUndefined, classKeyPlan, onlyUndefined, keysDefinedUntyped, SWIFT_NATIVE_TYPES, runtimeTypeName, definesRunTimeKey, nothingGiven, readKeyOf } from './lang.ts';
+import { assignedValues, heldDowncasts, openSpreadType, initializedNull, intersectionAliasMembers, intlConstructor, literalPattern, literalFlags, patternGroups, regexpMayLeaveGroupUnset, nullSetFields, nullishSlots, type NullishSlots, isRegExpProtocol, assertedPattern, unsupportedPattern, isObjectToStringCall, isStringRaw, leadingNeverRead, forwardedSetter, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, uncheckedMatch, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, LooseSlots, originOf, ownSlot, implementedInterfaceDeclarations, slotOf, slotType, definitelyAssignedFields, type TrustScope, classesHeldUntyped, scriptCalledFunction, unsetGroupTyping, type UnsetGroupTyping, admitsUndefined, classKeyPlan, onlyUndefined, keysDefinedUntyped, SWIFT_NATIVE_TYPES, runtimeTypeName, definesRunTimeKey, nothingGiven, readKeyOf, givenBy, onlyNullOrPresent } from './lang.ts';
 import { AsyncLowering, type AsyncCtx, type AsyncSyntax, type AsyncTranslator } from './async.ts';
 import { CoreAPI, isCoreDeclaration, packageOf } from './core.ts';
 import type { KitMember } from './kit-index.ts';
@@ -2327,8 +2327,18 @@ export class Translator implements AsyncTranslator {
       if (maybe) {
         const sym = this.resolve(d.name);
         if (sym) this.undefinedVars.set(sym, optionalType(t));
+        if (sym && this.lenientApp && onlyNullOrPresent(d, this.checker, (v) => !ts.isAwaitExpression(v) && this.nullResult(v))) this.nullVars.add(sym);
         field(`${modifiers}var ${name}: ${optionalType(t)} = nil`, name, optionalType(t));
         later(() => `    ${this.tryPrefix(d.initializer!)}${target} = ${maybe}`);
+        continue;
+      }
+      // Given a non-strict app's null-only result later: optional, as that result is.
+      if (this.lenientApp && !t.endsWith('?') && t !== 'Any?' && this.zero(t) === null && givenBy(d, this.checker, (v) => !ts.isAwaitExpression(v) && this.nullResult(v))) {
+        const sym = this.resolve(d.name);
+        if (sym) this.undefinedVars.set(sym, optionalType(t));
+        if (sym && onlyNullOrPresent(d, this.checker, (v) => !ts.isAwaitExpression(v) && this.nullResult(v))) this.nullVars.add(sym);
+        field(`${modifiers}var ${name}: ${optionalType(t)} = nil`, name, optionalType(t));
+        later(() => `    ${target} = ${this.tryPrefix(d.initializer!)}${this.coerce(d.initializer!, optionalType(t))}`);
         continue;
       }
       // An object variable starting undefined or null holds one later.
@@ -4244,6 +4254,15 @@ ${members.join('\n')}
     if (!ts.isCallExpression(e)) return false;
     const d = this.checker.getResolvedSignature(e)?.getDeclaration();
     return !!d && !ts.isJSDocSignature(d) && this.lenientAsync(d);
+  }
+
+  /** A call (or an await of one) Swift holds optional where its type says a value, as the function may give nothing. */
+  private heldOptionalResult(e: ts.Expression): boolean {
+    e = ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses);
+    if (this.lenientAwait(e)) return true;
+    if (!ts.isCallExpression(e) || this.typeOf(e).endsWith('?')) return false;
+    const d = this.checker.getResolvedSignature(e)?.getDeclaration();
+    return !!d && !ts.isJSDocSignature(d) && this.mayReturnUndefined(d) && this.returnTypeOf(d).endsWith('?');
   }
 
   /** A call of a non-strict app's own function whose result is optional in Swift and whose body gives only null where it gives nothing, awaited when async. */
@@ -7223,7 +7242,7 @@ ${members.join('\n')}
         const held = (ts.isElementAccessExpression(read) || ts.isPropertyAccessExpression(read)) && this.typeOf(read.expression).replace(/[?!]$/, '') === 'JSRecord<Any?>' ? 'Any?' : optionalType(t);
         if (sym) this.undefinedVars.set(sym, held);
         if (sym && this.lenientApp && this.nullResult(read)) {
-          if (!this.needsVar(d.name, held)) this.nullVars.add(sym);
+          if (!this.needsVar(d.name, held) || (!ts.isAwaitExpression(read) && onlyNullOrPresent(d, this.checker, (v) => !ts.isAwaitExpression(v) && this.nullResult(v)))) this.nullVars.add(sym);
           else if (ts.isAwaitExpression(read)) throw this.error(d, 'a variable holding the null a non-strict async function may give, assigned again');
         }
         // An untyped value declared a type (`const s: string = untyped[0]`): converted, undefined staying undefined.
@@ -13572,6 +13591,8 @@ ${members.join('\n')}
       } else if (ts.isOmittedExpression(x)) throw this.error(x, 'an array hole');
       else if (!this.lenient && isNullish(ts.skipOuterExpressions(x)) && !isOptional(el) && el !== 'Any?' && this.zero(el) === null) {
         throw this.error(x, `null or undefined in an array of ${el}, whose type leaves both out (declare the element type \`${el} | null\`)`);
+      } else if (this.lenientApp && !isOptional(el) && el !== 'Any?' && this.zero(el) === null && this.heldOptionalResult(x)) {
+        throw this.error(x, `a value a non-strict function may give as null or undefined, in an array of ${el}`);
       } else run.push(this.coerce(x, el));
     }
     if (run.length) parts.push(`[${run.join(', ')}]`);

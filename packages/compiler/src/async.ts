@@ -412,7 +412,7 @@ export class AsyncLowering {
       for (const c of children.slice(0, children.indexOf(n))) {
         let e = c as ts.Expression;
         if (!ts.isExpression(c) || ts.isTypeNode(c as ts.Node)) continue;
-        if (ts.isPropertyAccessExpression(p) && c === p.name) continue;
+        if ((ts.isPropertyAccessExpression(p) || ts.isPropertyAssignment(p)) && c === p.name) continue;
         // A method call's receiver, not the method value, is what is read early.
         if (ts.isCallExpression(p) && c === p.expression && ts.isPropertyAccessExpression(c)) e = c.expression;
         if (ts.isBinaryExpression(p) && c === p.left && p.operatorToken.kind >= ts.SyntaxKind.FirstAssignment && p.operatorToken.kind <= ts.SyntaxKind.LastAssignment) continue;

@@ -1,14 +1,18 @@
 package org.nativescript.kit
 
-// Timers as Node schedules them (lib/internal/timers.js): one list per duration, lists
-// ordered by expiry and then by list id, every timer callback followed by a microtask checkpoint.
+// Timers as Node schedules them (lib/internal/timers.js): one list per duration, lists ordered by
+// expiry and then by when their first timer was scheduled, every timer callback followed by a
+// microtask checkpoint. Node re-ids a list it puts off instead, which makes a tie depend on whether a
+// millisecond boundary fell between two setTimeout calls.
 
 internal class JSTimer(val id: Double, var duration: Double, val repeatInterval: Double?, val callback: () -> Unit) {
     var start = 0.0
+    var seq = 0L
     var active = true
 }
 
-internal class JSTimerList(val duration: Double, var expiry: Double, var id: Int) {
+/** `seq` is the scheduling sequence number of the list's first timer, which breaks ties between equal expiries. */
+internal class JSTimerList(val duration: Double, var expiry: Double, var seq: Long) {
     val timers = ArrayDeque<JSTimer>()
 }
 
@@ -23,7 +27,7 @@ class JSEventLoopState internal constructor() {
     private val lists = HashMap<Double, JSTimerList>()
     private val timers = HashMap<Double, JSTimer>()
     private var nextTimerId = 1.0
-    private var nextListId = 0
+    private var nextSeq = 0L
     private val origin = System.nanoTime()
 
     /** Arms a wake-up `delay` milliseconds from now that calls `processTimers`, replacing the previous one; null disarms. */
@@ -48,10 +52,11 @@ class JSEventLoopState internal constructor() {
     private fun insert(timer: JSTimer, start: Double) {
         val duration = Math.floor(timer.duration)
         timer.start = start
+        timer.seq = nextSeq++
         val list = lists[duration]
         if (list != null) list.timers.addLast(timer)
         else {
-            val created = JSTimerList(duration, start + duration, nextListId++)
+            val created = JSTimerList(duration, start + duration, timer.seq)
             created.timers.addLast(timer)
             lists[duration] = created
         }
@@ -73,7 +78,7 @@ class JSEventLoopState internal constructor() {
         var best: JSTimerList? = null
         for (list in lists.values) {
             val current = best
-            if (current == null || list.expiry < current.expiry || (list.expiry == current.expiry && list.id < current.id)) best = list
+            if (current == null || list.expiry < current.expiry || (list.expiry == current.expiry && list.seq < current.seq)) best = list
         }
         return best
     }
@@ -103,7 +108,7 @@ class JSEventLoopState internal constructor() {
             val timer = list.timers.firstOrNull() ?: break
             if (current - timer.start < list.duration) {
                 list.expiry = maxOf(timer.start + list.duration, current + 1)
-                list.id = nextListId++
+                list.seq = timer.seq
                 return
             }
             list.timers.removeFirst()
