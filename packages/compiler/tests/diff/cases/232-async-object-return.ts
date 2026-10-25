@@ -9,6 +9,14 @@ async function stat(cond: boolean): Promise<Stat> {
   return { m: 1, label: 'one' };
 }
 const quick = async (): Promise<Stat> => ({ m: 2, label: 'two' });
+const block = async (): Promise<Stat> => {
+  return { m: 3, label: 'three' };
+};
+async function wrapped(): Promise<Stat> {
+  return ({ m: 4, label: 'four' });
+}
 stat(true).then((s) => console.log(s.m, s.label));
 stat(false).then((s) => console.log(s.m, s.label));
 quick().then((s) => console.log(s.m, s.label));
+block().then((s) => console.log(s.m, s.label));
+wrapped().then((s) => console.log(s.m, s.label));
