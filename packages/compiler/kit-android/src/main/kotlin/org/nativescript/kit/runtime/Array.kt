@@ -62,7 +62,7 @@ class JSArray<T>(storage: ArrayList<T>) : Iterable<T>, JSReactiveConvertible {
         track()
         val k = i.toInt()
         if (k >= 0 && k.toDouble() == i) return if (k < storage.size) read(k) else null
-        if (i != Math.floor(i) || i < 0) return jsProperties?.get(jsNumberToString(i), this) as T?
+        if (i != Math.floor(i) || i < 0 || i >= 4_294_967_295.0) return jsProperties?.get(jsNumberToString(i), this) as T?
         if (i >= storage.size) return null
         return read(i.toInt())
     }
@@ -107,6 +107,24 @@ class JSArray<T>(storage: ArrayList<T>) : Iterable<T>, JSReactiveConvertible {
 
     @Suppress("UNCHECKED_CAST")
     internal fun setAt(i: Int, value: Any?) = set(i, value as T)
+
+    /** `delete array[key]`: an index in range becomes a hole; length cannot be deleted. */
+    @Suppress("UNCHECKED_CAST")
+    internal fun jsDeleteKey(key: String): Boolean {
+        if (key == "length") throw JSException(JSTypeError("Cannot delete property 'length' of [object Array]"))
+        val index = jsArrayIndex(key)
+        if (index == null) {
+            if (jsProperties?.delete(key) == false) throw JSException(JSTypeError("Cannot delete property '$key' of [object Array]"))
+            return true
+        }
+        val k = index.toInt()
+        if (k < storage.size) {
+            storage[k] = null as T
+            (jsHoles ?: java.util.BitSet().also { jsHoles = it }).set(k)
+            trigger()
+        }
+        return true
+    }
 
     fun at(i: Double): T? {
         track()

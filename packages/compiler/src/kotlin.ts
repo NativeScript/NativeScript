@@ -4,7 +4,7 @@ import { dirname as pathDirname, resolve as pathResolve } from 'node:path';
 import { AsyncLowering, usedBefore, type AsyncCtx, type AsyncSyntax, type AsyncTranslator } from './async.ts';
 import { isAsync, isStatic } from './throws.ts';
 import { assignedMembers } from './sharing.ts';
-import { admitsUndefined, classKeyPlan, onlyUndefined, assignedValues, openSpreadType, definitelyAssignedFields, forwardedSetter, initializedNull, intersectionAliasMembers, nullSetFields, nullishSlots, type NullishSlots, isRegExpProtocol, intlConstructor, isObjectToStringCall, isStringRaw, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, classesHeldUntyped, LooseSlots, originOf, ownSlot, implementedInterfaceDeclarations, slotOf, slotType, type TrustScope, heldDowncasts, keysDefinedUntyped, KOTLIN_NATIVE_TYPES, runtimeTypeName, definesRunTimeKey, scriptCalledFunction } from './lang.ts';
+import { admitsUndefined, classKeyPlan, onlyUndefined, assignedValues, openSpreadType, definitelyAssignedFields, forwardedSetter, initializedNull, intersectionAliasMembers, nullSetFields, nullishSlots, type NullishSlots, isRegExpProtocol, intlConstructor, isObjectToStringCall, isStringRaw, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, classesHeldUntyped, LooseSlots, originOf, ownSlot, implementedInterfaceDeclarations, slotOf, slotType, type TrustScope, heldDowncasts, keysDefinedUntyped, KOTLIN_NATIVE_TYPES, runtimeTypeName, definesRunTimeKey, scriptCalledFunction, nothingGiven, readKeyOf, reassigned } from './lang.ts';
 import { isCoreDeclaration } from './core.ts';
 import { balanced, nonVirtualName } from './swift.ts';
 import type { Properties } from './properties.ts';
@@ -578,6 +578,11 @@ export class Translator implements AsyncTranslator {
     // A namespace as a value (`{ Kinds: Trace.Kinds }`): its object.
     const nsDecl = t.flags & F.Object && t.getSymbol()?.flags! & ts.SymbolFlags.ValueModule ? t.getSymbol()!.valueDeclaration : undefined;
     if (nsDecl && ts.isModuleDeclaration(nsDecl) && !nsDecl.getSourceFile().isDeclarationFile) return this.namespacePath(nsDecl)!;
+    // An enum as a value (`typeof Color`) in app code: the object JavaScript makes of it. Not the enum's own name, through
+    // which its members are read (`Color.Red`).
+    const enumObject = !this.library && t.flags & F.Object && (t.getSymbol()?.flags ?? 0) & ts.SymbolFlags.RegularEnum ? t.getSymbol()!.valueDeclaration : undefined;
+    const named = where && (ts.isIdentifier(where) || ts.isPropertyAccessExpression(where)) && this.resolve(ts.isPropertyAccessExpression(where) ? where.name : where)?.valueDeclaration === enumObject;
+    if (enumObject && !named && ts.isEnumDeclaration(enumObject) && !enumObject.getSourceFile().isDeclarationFile && !hasModifier(enumObject, ts.SyntaxKind.ConstKeyword)) return 'JSObject';
     // `OptionsTypeMap[T]` over a type parameter: whatever the call passes.
     if (t.flags & F.IndexedAccess) return 'Any?';
     if (t.flags & F.Never) return 'Nothing';
@@ -896,6 +901,7 @@ export class Translator implements AsyncTranslator {
 
   typeOf(n: ts.Node): string {
     if (this.isArguments(n)) return 'JSArray<Any?>';
+    if (ts.isCallExpression(n) && this.lenientAsyncCall(n)) return this.returnTypeOf(this.checker.getResolvedSignature(n)!.getDeclaration() as ts.SignatureDeclaration);
     if (this.heldNullish(n)) return 'Any?';
     const held = this.heldSignal(n);
     if (held) return held;
@@ -2369,6 +2375,7 @@ export class Translator implements AsyncTranslator {
   private mayBeNull(p: ts.ParameterDeclaration): boolean {
     if (p.dotDotDotToken || !ts.isIdentifier(p.name)) return false;
     if (this.looseDeclaration(p)) return true;
+    if (this.lenientApp && !this.library && this.nullGivenParams().has(p)) return true;
     const t = this.typeOf(p.name);
     if (['String', 'Double', 'Boolean'].includes(t) && this.undefinedParameter(p)) return true;
     // An app checked without strictNullChecks: a string parameter its function tests (`if (state)`) is one callers may leave out.
@@ -2555,6 +2562,7 @@ export class Translator implements AsyncTranslator {
     const t = this.type(this.checker.getSignatureFromDeclaration(fn)!.getReturnType(), fn);
     if (this.library && this.nullablePrimitiveReturn(fn) && ['String', 'Double', 'Boolean'].includes(t)) return optionalType(t);
     if (this.looseDeclaration(fn)) return optionalType(t);
+    if (this.lenientAsync(fn)) return t.replace(/^JSPromise<(String|Double|Boolean)>$/, 'JSPromise<$1?>');
     return fn.getSourceFile().isDeclarationFile || ts.isArrowFunction(fn) || ts.isFunctionExpression(fn) ? t : this.lenientRef(t);
   }
 
@@ -5467,7 +5475,8 @@ export class Translator implements AsyncTranslator {
       if (refersTo(d.initializer, this.checker.getSymbolAtLocation(d.name), this.checker)) {
         return `${i}${t.endsWith('?') ? `var ${name}: ${t} = null` : this.deferredDeclaration(name, t)}\n${i}${name} = ${this.coerce(d.initializer, t)}`;
       }
-      const maybe = !lowered && !t.endsWith('?') ? this.maybeUndefined(d.initializer) : null;
+      const maybe = (!lowered || ts.isAwaitExpression(ts.skipOuterExpressions(d.initializer))) && !t.endsWith('?') ? this.maybeUndefined(d.initializer) : null;
+      this.noteNullVar(d);
       if (maybe) {
         const sym = this.resolve(d.name);
         if (sym) this.undefinedVars.set(sym, optionalType(t));
@@ -5650,6 +5659,131 @@ export class Translator implements AsyncTranslator {
     const async = ts.isForOfStatement(e.parent) && !!e.parent.awaitModifier;
     const el = iteratedType(this.checker.getTypeAtLocation(e), this.checker, e, async);
     return el ? this.type(el, e) : 'Any?';
+  }
+
+  /**
+   * A non-strict app's async function (or method of its own signature) whose body may give null or undefined where its
+   * promise's type says a value: a string, number or boolean promise is of the nullable, an object one holds an unchecked
+   * null. Its promise is only awaited or dropped; a body giving both null and undefined is refused, as Kotlin's null
+   * can't tell them apart.
+   */
+  private lenientAsync(fn: ts.Node): fn is ts.FunctionDeclaration | ts.MethodDeclaration {
+    if (this.lenient || this.library || !this.lenientApp || fn.getSourceFile().isDeclarationFile || this.pluginFiles.has(fn.getSourceFile().fileName)) return false;
+    if (!(ts.isFunctionDeclaration(fn) || this.ownSignatureMethod(fn)) || !isAsync(fn) || fn.asteriskToken || !fn.body) return false;
+    let found = this.lenientAsyncs.get(fn);
+    if (found !== undefined) return found;
+    const v = /^JSPromise<(.*)>$/.exec(this.type(this.checker.getSignatureFromDeclaration(fn)!.getReturnType(), fn))?.[1];
+    const given = nothingGiven(fn, this.checker);
+    found = !!v && v !== 'Unit' && v !== 'Any?' && !isNullable(v) && !isFunctionType(v) && (given.null || given.missing || given.unknown);
+    this.lenientAsyncs.set(fn, found);
+    if (found && given.null && (given.missing || given.unknown)) throw this.error(fn, 'a non-strict async function giving null and undefined both (`return null` and a bare `return`)');
+    return found;
+  }
+  private lenientAsyncs = new Map<ts.Node, boolean>();
+
+  /**
+   * A non-strict app's object parameters of its own functions that a call gives null or a result that may be missing:
+   * nullable in Kotlin, whose parameter checks would throw for the unchecked null.
+   */
+  private nullGivenParams(): Set<ts.ParameterDeclaration> {
+    if (this.nullGiven) return this.nullGiven;
+    const out = this.nullGiven = new Set<ts.ParameterDeclaration>();
+    const missing = (a: ts.Expression): boolean => {
+      a = ts.skipOuterExpressions(a, ts.OuterExpressionKinds.Parentheses);
+      if (a.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(a) && a.text === 'undefined')) return true;
+      const call = ts.isAwaitExpression(a) ? ts.skipOuterExpressions(a.expression, ts.OuterExpressionKinds.Parentheses) : a;
+      if (!ts.isCallExpression(call)) return false;
+      const d = this.checker.getResolvedSignature(call)?.getDeclaration();
+      if (!d || ts.isJSDocSignature(d) || !(ts.isFunctionDeclaration(d) || ts.isMethodDeclaration(d)) || !d.body || d.getSourceFile().isDeclarationFile || this.pluginFiles.has(d.getSourceFile().fileName) || ts.isAwaitExpression(a) !== isAsync(d)) return false;
+      const given = nothingGiven(d, this.checker);
+      return given.null || given.missing || given.unknown;
+    };
+    const visit = (n: ts.Node): void => {
+      if (ts.isCallExpression(n) && n.arguments.length) {
+        const d = this.checker.getResolvedSignature(n)?.getDeclaration();
+        if (d && !ts.isJSDocSignature(d) && (ts.isFunctionDeclaration(d) || this.ownSignatureMethod(d)) && d.body && !d.getSourceFile().isDeclarationFile && !this.pluginFiles.has(d.getSourceFile().fileName)) {
+          n.arguments.forEach((a, k) => {
+            const p = d.parameters[k];
+            if (!p || p.dotDotDotToken || p.questionToken || p.initializer || !ts.isIdentifier(p.name) || ts.isSpreadElement(a) || !missing(a)) return;
+            const t = this.typeOf(p.name);
+            if (this.isObjectType(t) && !isNullable(t) && !['String', 'Double', 'Boolean'].includes(t) && !isFunctionType(t)) out.add(p);
+          });
+        }
+      }
+      ts.forEachChild(n, visit);
+    };
+    for (const sf of this.sourceFiles) if (!sf.isDeclarationFile && !this.pluginFiles.has(sf.fileName)) visit(sf);
+    return out;
+  }
+  private nullGiven: Set<ts.ParameterDeclaration> | null = null;
+
+  /** An app's method whose Kotlin signature is its own: no base, interface or override shares it. */
+  private ownSignatureMethod(m: ts.Node): m is ts.MethodDeclaration {
+    if (!ts.isMethodDeclaration(m) || isStatic(m) || !ts.isClassDeclaration(m.parent) || /^\$[be]\d+$/.test(m.name.getText()) || this.pluginFiles.has(m.getSourceFile().fileName)) return false;
+    let known = this.ownSignatures.get(m);
+    if (known !== undefined) return known;
+    const name = m.name.getText(), cls = m.parent;
+    const t = this.checker.getTypeAtLocation(cls);
+    const inherited = (t.isClassOrInterface() ? this.checker.getBaseTypes(t) : []).some((b) => !!b.getProperty(name))
+      || (cls.heritageClauses ?? []).some((h) => h.token === ts.SyntaxKind.ImplementsKeyword && h.types.some((x) => !!this.checker.getTypeAtLocation(x).getProperty(name)));
+    const overridden = this.sourceFiles.some((sf) => !sf.isDeclarationFile && sf.statements.some((st) => ts.isClassDeclaration(st) && st !== cls
+      && st.members.some((x) => x.name?.getText() === name) && (() => { for (let b = this.baseClassOf(st); b; b = this.baseClassOf(b)) if (b === cls) return true; return false; })()));
+    known = !inherited && !overridden;
+    this.ownSignatures.set(m, known);
+    return known;
+  }
+  private ownSignatures = new Map<ts.Node, boolean>();
+
+  /** A promise an async function returns that is its own promise's type: adopted as it is. */
+  private returnedAsIs(e: ts.CallExpression): boolean {
+    if (!ts.isReturnStatement(ts.walkUpParenthesizedExpressions(e.parent))) return false;
+    const outer = ts.findAncestor(e.parent, ts.isFunctionLike);
+    const d = this.checker.getResolvedSignature(e)?.getDeclaration();
+    return !!outer && !!d && !ts.isJSDocSignature(d) && isAsync(outer) && this.returnTypeOf(outer as ts.SignatureDeclaration) === this.returnTypeOf(d);
+  }
+
+  private lenientAsyncCall(e: ts.Expression): boolean {
+    if (!this.lenientApp) return false;
+    e = ts.skipOuterExpressions(e);
+    if (!ts.isCallExpression(e)) return false;
+    const d = this.checker.getResolvedSignature(e)?.getDeclaration();
+    return !!d && !ts.isJSDocSignature(d) && this.lenientAsync(d);
+  }
+
+  /** A call of a non-strict app's own function whose body gives only null where it gives nothing, awaited when async. */
+  private nullResult(e: ts.Expression): boolean {
+    if (!this.lenientApp || this.library) return false;
+    const awaited = ts.isAwaitExpression(e);
+    const call = awaited ? ts.skipOuterExpressions(e.expression) : e;
+    if (!ts.isCallExpression(call)) return false;
+    const d = this.checker.getResolvedSignature(call)?.getDeclaration();
+    if (!d || ts.isJSDocSignature(d) || !(ts.isFunctionDeclaration(d) || ts.isMethodDeclaration(d)) || !d.body || d.getSourceFile().isDeclarationFile || this.pluginFiles.has(d.getSourceFile().fileName) || awaited !== isAsync(d)) return false;
+    if (awaited ? !this.lenientAsync(d) : !this.isObjectType(this.returnTypeOf(d)) || ['String', 'Double', 'Boolean'].includes(this.returnTypeOf(d))) return false;
+    const given = nothingGiven(d, this.checker);
+    return given.null && !given.missing && !given.unknown;
+  }
+
+  heldAwait(a: ts.AwaitExpression, v: string): [string, string] | undefined {
+    if (!this.lenientAsyncCall(a.expression)) return undefined;
+    const t = this.typeOf(a);
+    if (!['String', 'Double', 'Boolean'].includes(t)) return undefined;
+    this.awaitedRaw.set(a, v);
+    if (!this.nullResult(a)) return [optionalType(t), this.undefinedAs(v, t)];
+    return [optionalType(t), `(${v} ?: ${t === 'Double' ? '0.0' : t === 'String' ? '"null"' : 'false'})`];
+  }
+  /** A lenient async call's awaited string, number or boolean as its continuation holds it, nullable. */
+  private readonly awaitedRaw = new Map<ts.Node, string>();
+  private rawAwait(e: ts.Expression): string | undefined {
+    return this.awaitedRaw.get(ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses));
+  }
+  /** Locals holding a non-strict app's null-only result (`nullResult`): their null is JavaScript's. */
+  private readonly nullVars = new Set<ts.Symbol>();
+  private noteNullVar(d: ts.VariableDeclaration): void {
+    const init = d.initializer && ts.skipOuterExpressions(d.initializer, ts.OuterExpressionKinds.Parentheses);
+    const sym = ts.isIdentifier(d.name) ? this.resolve(d.name) : undefined;
+    if (!init || !sym || !this.nullResult(init)) return;
+    if (!reassigned(d, this.checker)) this.nullVars.add(sym);
+    else if (ts.isAwaitExpression(init)) throw this.error(d, 'a variable holding the null a non-strict async function may give, assigned again');
   }
 
   resumedValue(code: string, type: string): string {
@@ -5957,8 +6091,25 @@ export class Translator implements AsyncTranslator {
     return '';
   }
 
+  /** `x.hasOwnProperty`, `x.toString`: a method every object inherits, read on the object itself. */
+  private objectMethod(e: ts.Node): boolean {
+    return ts.isPropertyAccessExpression(e) && !!this.resolve(e.name)?.declarations?.every((d) => isLibDeclaration(d));
+  }
+
+  /** App code: an app enum named as a value (`Color`, `Shapes.Kind`), which is the object JavaScript makes of it. */
+  private isEnumObject(e: ts.Expression): boolean {
+    if (this.library) return false;
+    const bare = ts.skipOuterExpressions(e);
+    if (!ts.isIdentifier(bare) && !ts.isPropertyAccessExpression(bare)) return false;
+    const sym = this.resolve(ts.isPropertyAccessExpression(bare) ? bare.name : bare);
+    const decl = sym && sym.flags & ts.SymbolFlags.Alias ? this.checker.getAliasedSymbol(sym).valueDeclaration : sym?.valueDeclaration;
+    return !!decl && ts.isEnumDeclaration(decl) && !decl.getSourceFile().isDeclarationFile && !hasModifier(decl, ts.SyntaxKind.ConstKeyword);
+  }
+
   /** An expression where Kotlin needs a value of `target`. */
   coerce(e: ts.Expression, target: string): string {
+    // An enum's object held as a record (`const names: Record<string, string | number> = Color`): an untyped object.
+    if (target.startsWith('JSRecord<') && this.isEnumObject(e)) return this.fromAnyCode(this.expr(e), target);
     const code = this.coerceTyped(e, target);
     if (target !== 'Any?') return code;
     const entry = this.nullableEntry(e, () => code);
@@ -5973,6 +6124,7 @@ export class Translator implements AsyncTranslator {
   nilIsNull(e: ts.Expression): boolean {
     if (this.lenient || this.library || this.pluginFiles.has(e.getSourceFile().fileName)) return false;
     const bare = ts.skipOuterExpressions(e);
+    if (this.lenientApp && (this.nullResult(bare) || (ts.isIdentifier(bare) && this.nullVars.has(this.resolve(bare)!)))) return true;
     if (bare.kind === ts.SyntaxKind.NullKeyword || !this.onlyNull(e) || this.heldNullish(bare)) return false;
     if (ts.isPropertyAccessExpression(bare)) {
       const d = this.checker.getSymbolAtLocation(bare.name)?.valueDeclaration;
@@ -6450,6 +6602,9 @@ export class Translator implements AsyncTranslator {
   // ---- Expressions -----------------------------------------------------------------------------
 
   expr(e: ts.Expression): string {
+    const raw = this.awaitedRaw.get(e), key = raw ? readKeyOf(e) : null;
+    // A member of what the await gives: JavaScript's TypeError where it gives nothing.
+    if (raw && key !== null) return `(${raw} ?: ${this.nullResult(e) ? 'jsCannotReadNull' : 'jsCannotRead'}(${kotlinString(key)}))`;
     const s = this.subst.get(e);
     if (s) return s;
     if (ts.isParenthesizedExpression(e)) return `(${this.expr(e.expression)})`;
@@ -6603,6 +6758,9 @@ export class Translator implements AsyncTranslator {
       // A namespace's class as a value: the class.
       const decl = member ? this.resolve(e.name)?.valueDeclaration : undefined;
       if (decl && ts.isClassDeclaration(decl)) return (ts.isPropertyAccessExpression(e.parent) && e.parent.expression === e) || (ts.isNewExpression(e.parent) && e.parent.expression === e) ? member! : `${member}::class.java`;
+      // A namespace's enum as a value (`Object.keys(Shapes.Kind)`): the object JavaScript makes of it.
+      const p0 = e.parent;
+      if (!this.library && decl && ts.isEnumDeclaration(decl) && this.isEnumObject(e) && !((ts.isPropertyAccessExpression(p0) || ts.isElementAccessExpression(p0)) && p0.expression === e) && !ts.isTypeOfExpression(p0)) return `${member}.jsEnumObject`;
       // A namespace's function as a value (`valueConverter: Length.parse`): a reference to it.
       if (member && this.library && decl && ts.isFunctionDeclaration(decl) && !(ts.isCallExpression(e.parent) && e.parent.expression === e)) {
         const dot = member.lastIndexOf('.');
@@ -6611,7 +6769,11 @@ export class Translator implements AsyncTranslator {
       return member ? this.narrowed(e, member) : this.property(e);
     }
     if (ts.isElementAccessExpression(e)) return this.elementAccess(e);
-    if (ts.isCallExpression(e)) return this.erasedResult(e, this.call(e));
+    if (ts.isCallExpression(e)) {
+      const p = ts.walkUpParenthesizedExpressions(e.parent);
+      if (this.lenientApp && !ts.isAwaitExpression(p) && !ts.isExpressionStatement(p) && !this.returnedAsIs(e) && this.lenientAsyncCall(e)) throw this.error(e, 'the promise of a non-strict async function that may give null or undefined, used other than by `await`,');
+      return this.erasedResult(e, this.call(e));
+    }
     if (ts.isNewExpression(e)) return this.newExpr(e);
     if (ts.isBinaryExpression(e)) return this.binary(e);
     if (ts.isPrefixUnaryExpression(e)) return this.prefix(e);
@@ -6748,6 +6910,10 @@ export class Translator implements AsyncTranslator {
     if (imported && imported.name !== e.text && imported.flags & ts.SymbolFlags.Variable && isCoreDeclaration(imported.declarations?.[0]) && this.core?.kitMember('', imported.name)?.kind === 'var') return imported.name;
     const moduleVariable = !this.library ? this.core?.coreVariable?.(e) : null;
     if (moduleVariable) return moduleVariable;
+    // An enum as a value (`Object.keys(Color)`): the object JavaScript makes of it.
+    const enumDecl = this.library ? undefined : this.resolve(e)?.valueDeclaration;
+    if (enumDecl && ts.isEnumDeclaration(enumDecl) && !enumDecl.getSourceFile().isDeclarationFile && !hasModifier(enumDecl, ts.SyntaxKind.ConstKeyword)
+        && !((ts.isPropertyAccessExpression(p0) || ts.isElementAccessExpression(p0)) && p0.expression === e && !this.objectMethod(p0)) && !ts.isTypeOfExpression(p0)) return `${this.refName(e)}.jsEnumObject`;
     // A module of the program held as a value (`import * as tests`, handed to a runner): an object of its exports.
     const held = this.resolve(e);
     if (held && held.flags & ts.SymbolFlags.ValueModule && held.valueDeclaration && ts.isSourceFile(held.valueDeclaration) && !held.valueDeclaration.isDeclarationFile
@@ -6934,6 +7100,7 @@ export class Translator implements AsyncTranslator {
       const actual = this.typeOf(e);
       // Library mode: narrowed to another type by a guard (`_isCssPendingSubstitution(value)` of a string): cast.
       if (this.library && actual !== 'Any?' && this.undefinedVars.get(sym)!.replace(/\?$/, '') !== actual.replace(/\?$/, '') && this.isObjectType(actual)) return `(${code} as ${actual})`;
+      if (this.nullVars.has(sym) && ['Double', 'String', 'Boolean'].includes(actual)) return `(${code} ?: ${actual === 'Double' ? '0.0' : actual === 'String' ? '"null"' : 'false'})`;
       return actual.endsWith('?') ? code : this.undefinedAs(code, actual);
     }
     const declared = this.declaredTypeOf(e);
@@ -7035,8 +7202,8 @@ export class Translator implements AsyncTranslator {
       const t = this.typeOf(e);
       return t === 'Any?' ? `jsGet(jsGlobalThis, ${kotlinString(name)})` : this.fromAnyCode(`jsGet(jsGlobalThis, ${kotlinString(name)})`, t, true);
     }
-    // A dynamic object (an allSettled result): its field read by name, as its type says.
-    if (!this.library && this.typeOf(target).replace(/\?$/, '') === 'JSObject' && !e.questionDotToken && this.resolve(e.name)?.declarations?.every((d) => d.getSourceFile().isDeclarationFile)) {
+    // A dynamic object (an allSettled result, an enum's object): its field read by name, as its type says.
+    if (!this.library && this.typeOf(target).replace(/\?$/, '') === 'JSObject' && !e.questionDotToken && this.resolve(e.name)?.declarations?.every((d) => d.getSourceFile().isDeclarationFile || ts.isEnumMember(d))) {
       const t = this.typeOf(e);
       const read = `jsField(${this.expr(target)}, ${kotlinString(name)})`;
       return t === 'Any?' ? read : this.fromAnyCode(read, t, true);
@@ -7252,6 +7419,8 @@ export class Translator implements AsyncTranslator {
 
   /** A receiver that can be missing though its type says not (`x!`, `items[i]`): JavaScript's TypeError when it is. */
   private receiver(target: ts.Expression, key: string): string | null {
+    const awaited = this.rawAwait(target);
+    if (awaited && !(ts.isPropertyAccessExpression(target.parent) && target.parent.questionDotToken)) return `(${awaited} ?: ${this.nullResult(ts.skipOuterExpressions(target, ts.OuterExpressionKinds.Parentheses)) ? 'jsCannotReadNull' : 'jsCannotRead'}(${kotlinString(key)}))`;
     if (this.uncheckedMatch(target)) return `(${this.expr(target)} ?: jsCannotReadNull(${kotlinString(key)}))`;
     const kind = unsafeReceiver(target, this.checker);
     if (!kind) return null;
@@ -7278,7 +7447,7 @@ export class Translator implements AsyncTranslator {
     const key = e.argumentExpression;
     // `Enum[name]`, `Enum[value]`: the object JavaScript makes of the enum, by key.
     const enumDecl = ts.isIdentifier(e.expression) ? this.resolve(e.expression)?.valueDeclaration : undefined;
-    if (enumDecl && ts.isEnumDeclaration(enumDecl) && !enumDecl.getSourceFile().isDeclarationFile && !ts.isStringLiteral(key) && !isWriteTarget(e)) {
+    if (((enumDecl && ts.isEnumDeclaration(enumDecl) && !enumDecl.getSourceFile().isDeclarationFile) || this.isEnumObject(e.expression)) && !ts.isStringLiteral(key) && !isWriteTarget(e)) {
       const rt = this.typeOf(e);
       const code = `${this.expr(e.expression)}.jsEnumObject.jsGet(${this.propertyKey(key)})`;
       return rt === 'Any?' ? code : this.fromAny(code, rt);
@@ -7400,6 +7569,8 @@ export class Translator implements AsyncTranslator {
     if (assertion) return this.assertedOptional(assertion);
     // Library mode: `<T[]>record[key]`, an assertion of the type the read has: the read.
     if (this.library && (ts.isAsExpression(e) || ts.isTypeAssertionExpression(e)) && !this.subst.has(e) && this.typeOf(e) === this.typeOf(e.expression)) return this.maybeUndefined(e.expression);
+    const awaited = this.rawAwait(e);
+    if (awaited) return awaited;
     if (this.subst.has(e)) return null;
     // A call of a function Kotlin declares to give a nullable string, number or boolean (`'dark' | 'light' | null`): as it gives it.
     if (ts.isCallExpression(e) && ['String', 'Double', 'Boolean'].includes(this.typeOf(e)) && this.unwrapsResult(e)) {
@@ -7410,6 +7581,11 @@ export class Translator implements AsyncTranslator {
     // `a?.b as T` from an untyped value: undefined where the chain stops, whatever the assertion says.
     if (ts.isAsExpression(e) && ts.isOptionalChain(e.expression) && this.typeOf(e.expression) === 'Any?' && !isNullable(this.typeOf(e))) {
       return this.fromAny(this.expr(e.expression), optionalType(this.typeOf(e)));
+    }
+    // `Enum[value]` of a value no member has: undefined, though TypeScript types it a string.
+    if (ts.isElementAccessExpression(e) && !isWriteTarget(e) && !ts.isStringLiteral(e.argumentExpression) && this.isEnumObject(e.expression) && !this.typeOf(e).endsWith('?')) {
+      const code = `${this.expr(e.expression)}.jsEnumObject.jsGet(${this.propertyKey(e.argumentExpression)})`;
+      return this.typeOf(e) === 'Any?' ? code : this.fromAny(code, optionalType(this.typeOf(e)));
     }
     // A key of a dictionary-typed object, read before its type's zero stands in for a missing one.
     if ((ts.isPropertyAccessExpression(e) || ts.isElementAccessExpression(e)) && !e.questionDotToken && !isWriteTarget(e)
@@ -10633,7 +10809,7 @@ const KOTLIN_SYNTAX: AsyncSyntax = {
   awaitCall: (operand, isPromise, continuation, onError) => `${isPromise ? 'jsAwait' : 'jsAwaitValue'}(${operand}, ${continuation}, ${onError})`,
   asyncStart: (cap, result) => `val ${cap} = JSAsync<${result}>()`,
   asyncBody: (cap) => [`${cap}.body(fun() {`, '})'],
-  asyncReturn: (cap, value, isPromise, result) => (value === null ? `${cap}.returnValue(${result === 'Unit' ? 'Unit' : 'null'})` : `${cap}.${isPromise ? 'returnPromise' : 'returnValue'}(${value})`),
+  asyncReturn: (cap, value, isPromise, result) => (value === null ? `${cap}.returnValue(${result === 'Unit' ? 'Unit' : isNullable(result) || ['String', 'Double', 'Boolean'].includes(result) ? 'null' : `jsUncheckedNull<${result}>()`})` : `${cap}.${isPromise ? 'returnPromise' : 'returnValue'}(${value})`),
   asyncError: (cap) => `${cap}.onError`,
   loopRun: (iteration) => `JSAsyncLoop().run(${iteration})`,
   undefinedValue: 'null',

@@ -847,7 +847,7 @@ public func jsCall(_ function: Any?, spread arguments: [Any?]) throws -> Any? {
 public func jsObjectKeys(_ value: Any?) -> JSArray<String> {
     switch jsFlat(value) {
     case let dynamic as JSDynamic: return JSArray(dynamic.jsKeys)
-    case let array as JSArrayProtocol: return JSArray((0..<array.jsLength).map { String($0) } + (jsSideProperties(array, create: false)?.keys ?? []))
+    case let array as JSArrayProtocol: return JSArray(jsKeysOf(array))
     case let string as String: return JSArray((0..<string.utf16.count).map { String($0) })
     default: return JSArray()
     }
@@ -857,7 +857,7 @@ public func jsObjectKeys(_ value: Any?) -> JSArray<String> {
 public func jsObjectValues(_ value: Any?) -> JSArray<Any?> {
     switch jsFlat(value) {
     case let dynamic as JSDynamic: return JSArray(dynamic.jsKeys.map { dynamic[jsKey: $0] })
-    case let array as JSArrayProtocol: return JSArray(array.jsAnyElements)
+    case let array as JSArrayProtocol: return JSArray(jsKeysOf(array).map { jsField(array, $0) })
     default: return JSArray()
     }
 }
@@ -866,7 +866,7 @@ public func jsObjectValues(_ value: Any?) -> JSArray<Any?> {
 public func jsObjectEntries(_ value: Any?) -> JSArray<(String, Any?)> {
     switch jsFlat(value) {
     case let dynamic as JSDynamic: return JSArray(dynamic.jsKeys.map { ($0, dynamic[jsKey: $0]) })
-    case let array as JSArrayProtocol: return JSArray(array.jsAnyElements.enumerated().map { (String($0.offset), $0.element) })
+    case let array as JSArrayProtocol: return JSArray(jsKeysOf(array).map { ($0, jsField(array, $0)) })
     default: return JSArray()
     }
 }
@@ -878,8 +878,8 @@ public func jsObjectAssign<T: JSDynamic>(_ target: T, _ sources: Any?...) throws
         switch jsFlat(source) {
         case let dynamic as JSDynamic:
             for key in dynamic.jsKeys { try jsSet(target, key, dynamic[jsKey: key]) }
-        case let array as JSArrayProtocol:
-            for (i, v) in array.jsAnyElements.enumerated() { try jsSet(target, String(i), v) }
+        case let indexed? where indexed is JSArrayProtocol || indexed is String:
+            for key in jsKeysOf(indexed) { try jsSet(target, key, jsField(indexed, key)) }
         default:
             break
         }
@@ -1128,6 +1128,13 @@ private func jsObjectToString(_ value: Any) -> String {
     case is JSThenable: return "[object Promise]"
     case let v:
         if let n = jsNumeric(v) { return jsNumberToString(n) }
+        // An entry pair (`[key, value]`) Swift holds as a tuple is the array script made it as.
+        if jsIsTuple(v) {
+            return Mirror(reflecting: v).children.map { (child) -> String in
+                let element = jsFlat(child.value)
+                return element == nil || element is JSNull ? "" : jsToString(element)
+            }.joined(separator: ",")
+        }
         if jsIsFunction(v) { return "function () { [native code] }" }
         if jsIsObject(v) { return "[object Object]" }
         return String(describing: v)

@@ -216,7 +216,7 @@ fun jsAssign(target: Any?, vararg sources: Any?): Any? {
     for (source in sources) {
         when (source) {
             is JSDynamic -> for (key in source.jsKeys) jsSet(target, key, source.jsGet(key))
-            is JSArray<*> -> source.storage.forEachIndexed { i, v -> jsSet(target, i.toString(), v) }
+            is JSArray<*>, is String -> for (key in jsKeysOf(source)) jsSet(target, key, jsField(source, key))
             else -> {}
         }
     }

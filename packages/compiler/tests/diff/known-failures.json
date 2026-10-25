@@ -1,7 +1,6 @@
 {
 	"$comment": "Cases that do not match Node yet, by target, each with its cause. The diff run reports them without failing, and fails when one matches Node so it is removed here. Owners: the Kotlin translator (src/kotlin.ts) and runtime (kit-android runtime).",
 	"swift": {
-		"243-array-holes": "An array key that is no index (`a[1.5] = v`) is left out of Object.keys (Swift runtime).",
 		"247-missing-values-throw": "A module const read before its declaration runs, and a member of undefined or null read, set or called, trap instead of throwing ReferenceError or TypeError (Swift translator, quality step 4).",
 		"290-regexp-backtracking": "NSRegularExpression (ICU) is no ECMAScript engine: a capture in a quantified group keeps an earlier iteration's value, an empty iteration is kept, a backreference to an unset or later group fails instead of matching empty, case folding is full Unicode (/ß/i matches SS, /\\u212A/i matches k), v-flag set operations are unsupported, lone surrogates read U+FFFD, error messages are ICU's, and unbounded lookbehind, a quantified lookaround and duplicate group names throw SyntaxError (Swift runtime).",
 		"363-operator-pipe": "Does not compile: an overloaded generic method with an `any` implementation (`pipe(...operators: OperatorFunction<any, any>[])`) is called as the implementation (`Stream<T>` assigned to `Stream<Any?>`, no `adapting` from the operator's function type), and an overload's function argument names the implementation's type parameter `T` (Swift translator).",

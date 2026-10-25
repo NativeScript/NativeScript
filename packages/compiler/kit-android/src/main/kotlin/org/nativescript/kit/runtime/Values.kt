@@ -446,13 +446,13 @@ fun jsObjectKeys(value: Any?): JSArray<String> = JSArray(jsKeysOf(value))
 
 fun jsObjectValues(value: Any?): JSArray<Any?> = when (value) {
     is JSDynamic -> JSArray(value.jsKeys.map { value.jsGet(it) })
-    is JSArray<*> -> JSArray(value.storage.toList())
+    is JSArray<*> -> JSArray(jsKeysOf(value).map { jsField(value, it) })
     else -> JSArray()
 }
 
 fun jsObjectEntries(value: Any?): JSArray<Pair<String, Any?>> = when (value) {
     is JSDynamic -> JSArray(value.jsKeys.map { Pair(it, value.jsGet(it)) })
-    is JSArray<*> -> JSArray(value.storage.mapIndexed { i, v -> Pair(i.toString(), v) })
+    is JSArray<*> -> JSArray(jsKeysOf(value).map { Pair(it, jsField(value, it)) })
     else -> JSArray()
 }
 
@@ -461,7 +461,7 @@ fun <T : JSDynamic> jsObjectAssign(target: T, vararg sources: Any?): T {
     for (source in sources) {
         when (source) {
             is JSDynamic -> for (key in source.jsKeys) target.jsSet(key, source.jsGet(key))
-            is JSArray<*> -> source.storage.forEachIndexed { i, v -> target.jsSet(i.toString(), v) }
+            is JSArray<*>, is String -> for (key in jsKeysOf(source)) target.jsSet(key, jsField(source, key))
             else -> {}
         }
     }

@@ -217,13 +217,19 @@ class JSWeakSet<T>() : JSWeakCollection {
 fun jsDelete(target: Any?, key: String): Boolean = when (val v = jsBox(target)) {
     is JSObject -> if (v.delete(key)) true else throw JSException(JSTypeError("Cannot delete property '$key' of #<Object>"))
     is JSDeletable -> v.jsDelete(key)
+    is JSArray<*> -> v.jsDeleteKey(key)
     is JSDynamic -> if (jsRestriction(v) >= 2 && key in v.jsKeys) throw JSException(JSTypeError("Cannot delete property '$key' of #<Object>")) else true
     else -> true
 }
 
 /** `{ ...source }` into an object literal being built: the source's own enumerable keys, symbols last. */
 fun jsObjectSpread(target: JSObject, source: Any?) {
-    val dynamic = jsBox(source) as? JSDynamic ?: return
+    val boxed = jsBox(source)
+    if (boxed is JSArray<*> || boxed is String) {
+        for (key in jsKeysOf(boxed)) target[key] = jsField(boxed, key)
+        return
+    }
+    val dynamic = boxed as? JSDynamic ?: return
     for (key in dynamic.jsKeys) target[key] = dynamic.jsGet(key)
     if (dynamic is JSSymbolKeyed) for (key in dynamic.jsSymbolKeys) target[key] = dynamic.jsGet(key)
 }
