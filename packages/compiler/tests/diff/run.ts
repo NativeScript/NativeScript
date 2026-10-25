@@ -60,7 +60,7 @@ function toJavaScript(dir: string, out: string) {
     const read = readFileSync(join(dir, f), 'utf8');
     const text = formsPortCase(join(dir, f)) ? read.replace(/from '@angular\/forms'/g, `from '${'../'.repeat(f.split('/').length - 1) || './'}__forms-port.ts'`) : read;
     // A lenient case runs as core is built: class fields assigned, not defined (a declared field leaves the prototype's accessor visible).
-    const { outputText } = ts.transpileModule(text, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext, rewriteRelativeImportExtensions: true, ...(text.startsWith('// @lenient') ? { useDefineForClassFields: false } : {}) } });
+    const { outputText } = ts.transpileModule(text, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext, rewriteRelativeImportExtensions: true, ...(text.startsWith('// @lenient') || /^\/\/ @assign-fields$/m.test(text) ? { useDefineForClassFields: false } : {}) } });
     mkdirSync(dirname(join(out, f)), { recursive: true });
     writeFileSync(join(out, f.replace(/\.ts$/, '.js')), outputText);
   }

@@ -20,6 +20,11 @@ public func jsDelete(_ object: Any?, _ key: String) throws -> Bool {
     case let d as JSDynamic where jsRestriction(d) >= 2 && d.jsKeys.contains(key):
         throw JSException(JSTypeError("Cannot delete property '\(key)' of #<Object>"))
     case let d as JSDeletable: return d.jsDeleteOwn(key)
+    case is JSArrayProtocol where key == "length":
+        throw JSException(JSTypeError("Cannot delete property 'length' of [object Array]"))
+    case let array as JSArrayProtocol where jsArrayIndex(key) == nil:
+        if jsSideProperties(array, create: false)?.delete(key) == false { throw JSException(JSTypeError("Cannot delete property '\(key)' of [object Array]")) }
+        return true
     default: return true
     }
 }
@@ -176,9 +181,15 @@ public func jsDefineProperty(_ object: Any?, _ key: String, _ descriptor: Any?) 
     let d = try JSPropertyDescriptor(descriptor)
     switch jsFlat(object) {
     case let o as JSObject: try o.defineProperty(key, d)
+    case let definable as JSDefinable where definable.jsDefinable(key):
+        let own = jsSideProperties(definable, create: true)!
+        if !own.has(key) { own[key] = definable[jsKey: key] }
+        try own.defineProperty(key, d)
     case let expando as JSExpando where expando.jsExpando?.has(key) == true || jsIsSymbolKey(key) || !expando.jsKeys.contains(key):
         if expando.jsExpando == nil { expando.jsExpando = JSObject() }
+        let made = !expando.jsExpando!.has(key)
         try expando.jsExpando!.defineProperty(key, d)
+        if made, let ordered = expando as? JSKeyOrdered, ordered.jsOrder != nil, !jsIsSymbolKey(key) { ordered.jsKeyMade(key) }
     case let function as JSFunctionObject: try function.defineOwn(key, d)
     case let dynamic as JSDynamic:
         // A field the class declares is a Swift stored property: it can take a value, not become an accessor.
@@ -194,6 +205,34 @@ public func jsDefineProperty(_ object: Any?, _ key: String, _ descriptor: Any?) 
     default: throw JSException(JSTypeError("Object.defineProperty called on non-object"))
     }
     return object
+}
+
+/// An object of a program class whose declared fields `Object.defineProperty` may give a descriptor (an accessor, read-only,
+/// hidden): such a field's reads and writes go through `subscript(jsKey:)`, which defers to the descriptor kept beside the object.
+public protocol JSDefinable: JSDynamic {
+    func jsDefinable(_ key: String) -> Bool
+}
+
+/// A definable field's value where it was given a descriptor (its getter's, run with the object as `this`), else nil.
+public func jsDefinedGet(_ object: JSDefinable, _ key: String) -> Any?? {
+    guard let own = jsSideProperties(object, create: false), own.has(key) else { return nil }
+    do { return .some(try own.get(key, receiver: object)) } catch { jsReportUncaught(jsCaught(error)); return .some(nil) }
+}
+
+/// A write of a definable field given a descriptor: its setter, or its value where writable; what that throws, `jsSet` throws.
+/// False where the field has no descriptor.
+public func jsDefinedSet(_ object: JSDefinable, _ key: String, _ value: Any?) -> Bool {
+    guard let own = jsSideProperties(object, create: false), own.has(key) else { return false }
+    do {
+        if let setter = own.setter(key) { try setter(object, value) } else { try own.put(key, value) }
+    } catch { jsRefusedWrite = JSException(jsCaught(error)) }
+    return true
+}
+
+/// A definable field's key as `Object.keys` lists it: per its descriptor where it has one, else `declared`.
+public func jsDefinedKeys(_ object: JSDefinable, _ key: String, _ declared: [String]) -> [String] {
+    guard let own = jsSideProperties(object, create: false), own.has(key) else { return declared }
+    return own.jsKeys.contains(key) ? [key] : []
 }
 
 /// What script gives an object that has no room for it (an array's `Object.defineProperty(list, 'total', …)`, `list.tag = …`):
@@ -215,6 +254,8 @@ public func jsOwnPropertyDescriptor(_ object: Any?, _ key: String) -> Any? {
     case let expando as JSExpando where expando.jsExpando?.has(key) == true: return expando.jsExpando!.descriptor(key)
     case let function as JSFunctionObject: return function.ownDescriptor(key)
     case let array as JSArrayProtocol where key != "length" && jsArrayIndex(key) == nil: return jsSideProperties(array, create: false)?.descriptor(key)
+    case let definable as JSDefinable where jsSideProperties(definable, create: false)?.has(key) == true:
+        return jsSideProperties(definable, create: false)!.descriptor(key)
     case let dynamic as JSDynamic:
         guard dynamic.jsKeys.contains(key) else { return nil }
         let level = jsRestriction(dynamic)
@@ -227,7 +268,7 @@ public func jsOwnPropertyDescriptor(_ object: Any?, _ key: String) -> Any? {
 public func jsOwnPropertyNames(_ value: Any?) -> JSArray<String> {
     switch jsFlat(value) {
     case let o as JSObject: return JSArray(o.ownPropertyNames)
-    case let array as JSArrayProtocol: return JSArray((0..<array.jsLength).filter(array.jsHasElement).map { String($0) } + ["length"])
+    case let array as JSArrayProtocol: return JSArray((0..<array.jsLength).filter(array.jsHasElement).map { String($0) } + ["length"] + (jsSideProperties(array, create: false)?.ownPropertyNames ?? []))
     case let string as String: return JSArray((0..<string.utf16.count).map { String($0) } + ["length"])
     default: return JSArray(jsKeysOf(value))
     }
@@ -315,25 +356,34 @@ public protocol JSDeletable: AnyObject {
 /// `Object.assign(target, ...sources)`: each source's own enumerable keys written to the target in order.
 @discardableResult
 public func jsObjectAssign(_ target: Any?, _ sources: Any?...) throws -> Any? {
-    for source in sources {
-        guard let dynamic = jsFlat(source) as? JSDynamic else { continue }
-        for key in dynamic.jsKeys { try jsSet(target, key, dynamic[jsKey: key]) }
-    }
-    return target
+    try jsObjectAssign(target, spread: sources)
 }
 
 /// `Object.assign(target, ...sources)` with the sources spread from an array.
 @discardableResult
 public func jsObjectAssign(_ target: Any?, spread sources: [Any?]) throws -> Any? {
     for source in sources {
-        guard let dynamic = jsFlat(source) as? JSDynamic else { continue }
-        for key in dynamic.jsKeys { try jsSet(target, key, dynamic[jsKey: key]) }
+        if let dynamic = jsFlat(source) as? JSDynamic {
+            for key in dynamic.jsKeys { try jsSet(target, key, dynamic[jsKey: key]) }
+        } else if let indexed = jsIndexedSource(source) {
+            for key in jsKeysOf(indexed) { try jsSet(target, key, jsField(indexed, key)) }
+        }
     }
     return target
 }
 
+/// An array or a string, whose own enumerable keys are its indexes (and an array's named keys) when it is spread or assigned from.
+private func jsIndexedSource(_ value: Any?) -> Any? {
+    let flat = jsFlat(value)
+    return flat is JSArrayProtocol || flat is String ? flat : nil
+}
+
 /// `{ ...source }` into an object literal being built: the source's own enumerable keys, in order.
 public func jsObjectSpread(_ target: JSObject, _ source: Any?) {
+    if let indexed = jsIndexedSource(source) {
+        for key in jsKeysOf(indexed) { target[key] = jsField(indexed, key) }
+        return
+    }
     guard let dynamic = jsFlat(source) as? JSDynamic else { return }
     for key in dynamic.jsKeys { target[key] = dynamic[jsKey: key] }
     for key in (dynamic as? JSSymbolKeyed)?.jsSymbolKeys ?? [] { target[key] = dynamic[jsKey: key] }

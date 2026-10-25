@@ -261,19 +261,19 @@ public final class JSThrownValue: JSError {
     public override var jsKeys: [String] { Self.isObject(value) ? jsKeysOf(value) : [] }
 }
 
-/// A dynamic write (`obj[key] = v`, a binding's set) a typed field refused: the TypeError `jsSet` throws after the write.
-var jsRefusedWrite: JSTypeError?
+/// A dynamic write (`obj[key] = v`, a binding's set) a typed field refused, or a defined field's setter threw: what `jsSet` throws after the write.
+var jsRefusedWrite: JSException?
 
 /// A dynamic write whose value converting throws (an array holding undefined where its elements are objects): refused, the TypeError `jsSet` throws.
 public func jsStoring(_ body: () throws -> Void) {
     do { try body() } catch {
         let value = jsCaught(error)
-        jsRefusedWrite = value as? JSTypeError ?? JSTypeError(jsToString(value))
+        jsRefusedWrite = JSException(value as? JSTypeError ?? JSTypeError(jsToString(value)))
     }
 }
 
 public func jsRefuseSet(_ value: Any?, _ key: String, _ type: String) {
-    jsRefusedWrite = JSTypeError("Cannot assign \(jsIsNullish(value) ? jsToString(value) : jsTypeof(value)) to '\(key)', a \(type)")
+    jsRefusedWrite = JSException(JSTypeError("Cannot assign \(jsIsNullish(value) ? jsToString(value) : jsTypeof(value)) to '\(key)', a \(type)"))
 }
 
 /// A truthy operand whose Swift type may still be optional (`a?.b` where TypeScript types `a` as present).

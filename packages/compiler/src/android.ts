@@ -78,6 +78,8 @@ export interface AndroidBuild {
   allErrors?: boolean;
   /** The app's own configuration leaves strict checking off. */
   lenient?: boolean;
+  /** The app's configuration assigns class fields rather than defining them (`useDefineForClassFields` off). */
+  assignFields?: boolean;
   /** The kit's bindings of plugins the app uses (bindings-android.ts). */
   bindings?: AndroidBinding[];
   /**
@@ -145,7 +147,7 @@ export async function writeAndroid(b: AndroidBuild): Promise<void> {
     native.archives = prepared.archives;
     bindingDefines.push(...prepared.defines);
   }
-  const translator = new Translator(b.checker, b.infos, b.files, { pluginFiles: b.pluginFiles, reach: b.reach, properties: b.properties, lenientApp: !!b.lenient });
+  const translator = new Translator(b.checker, b.infos, b.files, { pluginFiles: b.pluginFiles, reach: b.reach, properties: b.properties, lenientApp: !!b.lenient, assignFields: !!b.assignFields });
   translator.appModule = pkg;
   translator.allowUnapplied = !!b.allowUnapplied;
   translator.core = new CoreKotlin(translator, !!b.generatedKit);

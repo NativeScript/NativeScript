@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import { KIT_APPLE_SOURCES } from './paths.ts';
 import { Throws, digitsLiteral, isArrayLengthLiteral, isArrayLengthWrite, isAsync, isStatic } from './throws.ts';
 import { assignedMembers } from './sharing.ts';
-import { assignedValues, heldDowncasts, openSpreadType, initializedNull, intersectionAliasMembers, intlConstructor, literalPattern, literalFlags, patternGroups, regexpMayLeaveGroupUnset, nullSetFields, nullishSlots, type NullishSlots, isRegExpProtocol, assertedPattern, unsupportedPattern, isObjectToStringCall, isStringRaw, leadingNeverRead, forwardedSetter, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, uncheckedMatch, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, LooseSlots, originOf, ownSlot, implementedInterfaceDeclarations, slotOf, slotType, definitelyAssignedFields, type TrustScope, classesHeldUntyped, scriptCalledFunction, unsetGroupTyping, type UnsetGroupTyping } from './lang.ts';
+import { assignedValues, heldDowncasts, openSpreadType, initializedNull, intersectionAliasMembers, intlConstructor, literalPattern, literalFlags, patternGroups, regexpMayLeaveGroupUnset, nullSetFields, nullishSlots, type NullishSlots, isRegExpProtocol, assertedPattern, unsupportedPattern, isObjectToStringCall, isStringRaw, leadingNeverRead, forwardedSetter, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, uncheckedMatch, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, LooseSlots, originOf, ownSlot, implementedInterfaceDeclarations, slotOf, slotType, definitelyAssignedFields, type TrustScope, classesHeldUntyped, scriptCalledFunction, unsetGroupTyping, type UnsetGroupTyping, admitsUndefined, classKeyPlan, onlyUndefined, keysDefinedUntyped, SWIFT_NATIVE_TYPES, runtimeTypeName, definesRunTimeKey, nothingGiven, readKeyOf } from './lang.ts';
 import { AsyncLowering, type AsyncCtx, type AsyncSyntax, type AsyncTranslator } from './async.ts';
 import { CoreAPI, isCoreDeclaration, packageOf } from './core.ts';
 import type { KitMember } from './kit-index.ts';
@@ -438,7 +438,7 @@ export class Translator implements AsyncTranslator {
    */
   private nullishSlotSet?: NullishSlots;
   private nullish(): NullishSlots {
-    return this.nullishSlotSet ??= this.lenient || this.library ? { held: new Set(), fields: new Set() } : nullishSlots(this.checker, this.sourceFiles, (f) => this.pluginFiles.has(f.fileName));
+    return this.nullishSlotSet ??= this.lenient || this.library ? { held: new Set(), fields: new Set(), refused: [] } : nullishSlots(this.checker, this.sourceFiles, (f) => this.pluginFiles.has(f.fileName));
   }
 
   private downcastSet?: ReturnType<typeof heldDowncasts>;
@@ -797,11 +797,12 @@ export class Translator implements AsyncTranslator {
    */
   weak: { fields: Set<string>; captures: Set<string> } = { fields: new Set(), captures: new Set() };
 
-  constructor(checker: ts.TypeChecker, components: Map<string, ComponentInfo>, files: readonly ts.SourceFile[], options: { pluginFiles?: Iterable<string>; lenientFiles?: Iterable<string>; reach?: Reach; properties?: Properties; library?: Translator['library']; lenient?: boolean; lenientApp?: boolean; weak?: { fields?: Iterable<string>; captures?: Iterable<string> } } = {}) {
+  constructor(checker: ts.TypeChecker, components: Map<string, ComponentInfo>, files: readonly ts.SourceFile[], options: { pluginFiles?: Iterable<string>; lenientFiles?: Iterable<string>; reach?: Reach; properties?: Properties; library?: Translator['library']; lenient?: boolean; lenientApp?: boolean; assignFields?: boolean; weak?: { fields?: Iterable<string>; captures?: Iterable<string> } } = {}) {
     this.weak = { fields: new Set(options.weak?.fields ?? []), captures: new Set(options.weak?.captures ?? []) };
     this.library = options.library ?? null;
     this.lenientAll = options.lenient ?? false;
     this.lenientApp = options.lenientApp ?? false;
+    this.assignFields = options.assignFields ?? false;
     this.pluginFiles = new Set(options.pluginFiles ?? []);
     for (const f of options.lenientFiles ?? []) this.lenientFiles.add(f);
     this.reach = options.reach ?? null;
@@ -1190,6 +1191,7 @@ export class Translator implements AsyncTranslator {
       // A generic function as a value (`obj.notify`) is no Swift closure's type: its own type parameters are their constraints.
       const own = (x: ts.Type) => (x.flags & F.TypeParameter && s.typeParameters?.includes(x as ts.TypeParameter) ? c.getBaseConstraintOfType(x) ?? c.getAnyType() : x);
       const params = s.getParameters().filter((p) => p.name !== 'this').map((p) => {
+        if (p.valueDeclaration && this.nullish().held.has(p.valueDeclaration)) return 'Any?';
         const pt = this.type(own(c.getTypeOfSymbolAtLocation(p, where ?? p.valueDeclaration!)), where);
         if (p.valueDeclaration && ts.isParameter(p.valueDeclaration) && (p.valueDeclaration.questionToken || p.valueDeclaration.initializer || nullableTypeNode(p.valueDeclaration.type) || this.scriptCalledParameter(p.valueDeclaration))) return optionalType(pt);
         // Lenient code may pass null for an object: the parameter is optional, as a closure's implicitly unwrapped one is.
@@ -1199,7 +1201,7 @@ export class Translator implements AsyncTranslator {
         return isFunctionType(pt) ? `@escaping ${pt}` : pt;
       });
       // One parameter of no value is spelled `(())`: Swift reads `(Void) -> T` as taking no arguments.
-      return `(${params.length === 1 && params[0] === 'Void' ? '()' : params.join(', ')}) throws -> ${this.type(own(s.getReturnType()), where)}`;
+      return `(${params.length === 1 && params[0] === 'Void' ? '()' : params.join(', ')}) throws -> ${sd && this.nullish().held.has(sd) ? 'Any?' : this.type(own(s.getReturnType()), where)}`;
     }
     // An interface extending one class is that class; one merged into a class of its name is the class.
     const extended = sym && sym.flags & ts.SymbolFlags.Interface && !(sym.flags & ts.SymbolFlags.Class) ? this.extendedClass(t) : null;
@@ -1301,8 +1303,44 @@ export class Translator implements AsyncTranslator {
     return (this.undeclaredRoots = roots);
   }
 
+  private definedKeySet: Set<string> | null = null;
+  /** App mode: the keys `Object.defineProperty` names on untyped objects, which a program class's field of that name keeps a descriptor for. */
+  private definedKeys(): Set<string> {
+    return (this.definedKeySet ??= this.library ? new Set() : keysDefinedUntyped(this.sourceFiles, this.checker));
+  }
+
+  /** The class's own fields whose objects `Object.defineProperty` may give a descriptor (`JSDefinable`). */
+  private definableNames(cls: ts.ClassLikeDeclaration): string[] {
+    if (this.library || !this.definedKeys().size || cls.getSourceFile().isDeclarationFile || this.pluginFiles.has(cls.getSourceFile().fileName) || this.errorBased(cls)) return [];
+    const ctor = cls.members.find(ts.isConstructorDeclaration);
+    const own = [...cls.members.filter((m) => ts.isPropertyDeclaration(m) && !isStatic(m) && ts.isIdentifier(m.name)), ...(ctor?.parameters.filter((p) => ts.isParameterPropertyDeclaration(p, ctor)) ?? [])];
+    return own.map((m) => (m.name as ts.Identifier).text).filter((n) => this.definedKeys().has(n));
+  }
+
+  /** The field `definableNames` lists that `key` of the object names, if any (`const { field } = obj`, `obj['field']`). */
+  private definedField(object: ts.Node, key: string): ts.NamedDeclaration | undefined {
+    if (this.library || !this.definedKeys().has(key)) return undefined;
+    const d = this.checker.getNonNullableType(this.checker.getTypeAtLocation(object)).getProperty(key)?.valueDeclaration;
+    const cls = d && (ts.isPropertyDeclaration(d) ? d.parent : ts.isParameter(d) && ts.isConstructorDeclaration(d.parent) ? d.parent.parent : undefined);
+    return cls && ts.isClassLike(cls) && this.definableNames(cls).includes(key) ? (d as ts.NamedDeclaration) : undefined;
+  }
+
+  /**
+   * `obj.field` of a field `definableNames` lists, read or written by key so that a descriptor it was given applies. The
+   * class's own constructor writes `this.field` directly: nothing has been defined on the object it is making.
+   */
+  private definedAccess(e: ts.PropertyAccessExpression): boolean {
+    if (e.expression.kind === ts.SyntaxKind.SuperKeyword || !this.definedField(e.expression, e.name.text)) return false;
+    if (e.expression.kind === ts.SyntaxKind.ThisKeyword) {
+      const fn = ts.getThisContainer(e, false, false);
+      if (ts.isConstructorDeclaration(fn) || ts.isPropertyDeclaration(fn)) return false;
+    }
+    return true;
+  }
+
   /** A member script adds to a native object (`nativeView.nsView`): declared by the code itself, not by the SDK. */
   private isExpando(e: ts.PropertyAccessExpression): boolean {
+    if (this.definedAccess(e)) return true;
     if (this.declaredOnly(e)) return true;
     if (!this.library && undeclaredMemberOf(e, this.checker)) return true;
     if (!this.library && this.core.eventMember(e)) return true;
@@ -1447,6 +1485,7 @@ export class Translator implements AsyncTranslator {
 
   typeOf(n: ts.Node): string {
     if (this.isArguments(n)) return 'JSArray<Any?>';
+    if (ts.isCallExpression(n) && this.lenientApp && this.lenientAsyncCall(n)) return this.returnTypeOf(this.checker.getResolvedSignature(n)!.getDeclaration() as ts.SignatureDeclaration);
     const stored = this.storedLiteralType(n);
     if (stored) return stored;
     if (ts.isIdentifier(n) && this.untypedLetReceiver(n)) return 'Any?';
@@ -2137,6 +2176,8 @@ export class Translator implements AsyncTranslator {
     this.freshCounts = new Map();
     const owner = this.declOwner;
     try {
+      const refused = this.nullish().refused.filter(([n]) => n.getSourceFile() === sf).sort(([a], [b]) => a.getStart() - b.getStart())[0];
+      if (refused) throw this.error(refused[0], refused[1]);
       const { code, init } = this.moduleOf(sf);
       return { code: singleTry(code), init: init.map(singleTry) };
     } finally { this.currentFile = outer; this.freshCounts = counts; this.declOwner = owner; }
@@ -2871,30 +2912,22 @@ ${members.join('\n')}
     const held = (f: ShapeField) => this.shapeHeld(f);
     // A field the program writes, on an object read from another (an event's data), writes that object too.
     const through = new Set(this.library || symbolic.length ? [] : fields.filter((f) => this.membersWritten().has(f.name)).map((f) => f.name));
-    // The optional fields set to null rather than left undefined, which Swift holds as one nil.
-    const nullable = symbolic.length ? [] : fields.filter((f) => isOptional(f.type) && f.type !== 'Any?');
     // Only a field Swift holds as optional can be missing.
     const optional = symbolic.length ? [] : fields.filter((f) => f.type.endsWith('?') && /[?!]$/.test(held(f)) && !hasTopLevelArrow(held(f)));
-    // App code only: the kit generated from core keeps its objects' declared key order.
-    const ordered = this.library ? [] : optional;
-    const wasAbsent = (f: ShapeField) => `oldValue == nil${nullable.includes(f) ? ` && jsNulls?.contains(${swiftString(f.name)}) != true` : ''}`;
-    for (const f of fields) {
-      // A missing field given a value is the object's newest key, as JavaScript lists keys in the order they are added.
-      const set = [...(ordered.includes(f) ? [`if ${ident(f.name)} != nil && ${wasAbsent(f)} { jsAdded(${swiftString(f.name)}) }`] : []), ...(through.has(f.name) ? [`jsWriteThrough(${swiftString(f.name)})`] : [])];
-      lines.push(`    var ${ident(f.name)}: ${held(f)}${set.length ? ` { didSet { ${set.join('; ')} } }` : ''}`);
-      this.declare(f.name, { kind: 'var', type: held(f) });
-    }
+    const observer = (f: ShapeField) => [...(optional.includes(f) ? [`jsWrote(${swiftString(f.name)}, oldValue != nil, ${ident(f.name)} == nil)`] : []), ...(through.has(f.name) ? [`jsWriteThrough(${swiftString(f.name)})`] : [])].join('; ');
+    for (const f of fields) { lines.push(`    var ${ident(f.name)}: ${held(f)}${observer(f) ? ` { didSet { ${observer(f)} } }` : ''}`); this.declare(f.name, { kind: 'var', type: held(f) }); }
     for (const f of symbolic) { lines.push(`    var ${f.name}: ${f.type}`); this.declare(f.name, { kind: 'var', type: f.type }); }
     for (const x of this.shapeProtocols(allFields)) { lines.push(...x.lines); for (const [n, m] of x.members) this.declare(n, m); }
-    // Keys in the order the literal that made this object wrote them and its missing fields were given values, when not the declared order.
-    lines.push(`    private ${ordered.length ? 'var' : 'let'} jsOrder: [String]?`);
-    if (ordered.length) lines.push(`    private func jsAdded(_ key: String) { jsOrder = (jsOrder ?? [${fields.map((f) => swiftString(f.name)).join(', ')}]).filter { $0 != key } + [key] }`);
+    // Keys in the order the literal that made this object wrote them, when not the declared order; a key a write adds comes last.
+    lines.push(`    private ${optional.length ? 'var' : 'let'} jsOrder: [String]?`);
+    // The optional fields set to null rather than left undefined, which Swift holds as one nil.
+    const nullable = symbolic.length ? [] : fields.filter((f) => isOptional(f.type) && f.type !== 'Any?');
     if (nullable.length) lines.push('    private var jsNulls: Set<String>?');
-    const memberwise = [...[...fields, ...symbolic].map((f) => `${f.name === 'self' ? '`self` __self' : ident(f.name)}: ${isFunctionType(held(f)) ? '@escaping ' : ''}${held(f)}${isOptional(f.type) ? ' = nil' : ''}`), 'jsOrder: [String]? = nil', ...(nullable.length ? ['jsNulls: Set<String>? = nil'] : [])].join(', ');
+    const memberwise = [...[...fields, ...symbolic].map((f) => `${f.name === 'self' ? '`self` __self' : ident(f.name)}: ${isFunctionType(held(f)) ? '@escaping ' : ''}${held(f)}${isOptional(f.type) ? ' = nil' : ''}`), 'jsOrder: [String]? = nil', ...(nullable.length ? ['jsNulls: Set<String>? = nil'] : []), ...(optional.length ? ['jsUnset: Set<String>? = nil'] : [])].join(', ');
     lines.push(`    init(${memberwise}) {`);
     this.declareInit(memberwise, false);
     for (const f of [...fields, ...symbolic]) lines.push(`        self.${ident(f.name)} = ${f.name === 'self' ? '__self' : ident(f.name)}`);
-    lines.push('        self.jsOrder = jsOrder', ...(nullable.length ? ['        self.jsNulls = jsNulls'] : []), '    }');
+    lines.push('        self.jsOrder = jsOrder', ...(nullable.length ? ['        self.jsNulls = jsNulls'] : []), ...(optional.length ? ['        self.jsUnset = jsUnset'] : []), '    }');
     // Keys beyond the type's: those of the untyped object it was read from (a cast of JSON.parse), in its order, and those set on it later (`o[key] = v`).
     lines.push('    private var jsExtra: JSDynamic?');
     if (symbolic.length) { lines.push(...this.dynamicMembers(fields, className, false), '}'); return lines.join('\n'); }
@@ -2904,11 +2937,22 @@ ${members.join('\n')}
     const field = (f: ShapeField) => ['String', 'Double', 'Bool'].includes(f.type) ? `jsLenient${f.type === 'Double' ? 'Number' : f.type}(jsField(jsObject, ${swiftString(f.name)}))` : this.reportedRead(this.fromAny(`jsField(jsObject, ${swiftString(f.name)})`, this.lenient ? held(f).replace(/^\((.*)\)!$/, '($1)?') : held(f).endsWith('!') ? optionalType(f.type) : f.type));
     const nulls = nullable.length ? [`jsNulls: jsNullKeys(jsObject, [${nullable.map((f) => swiftString(f.name)).join(', ')}])`] : [];
     lines.push(`        self.init(${[...fields.map((f) => `${label(f.name)}: ${field(f)}`), 'jsOrder: (jsObject as? JSDynamic)?.jsKeys', ...nulls].join(', ')})`);
+    if (optional.length) lines.push(`        jsUnset = jsUnsetKeys(jsObject, [${optional.map((f) => swiftString(f.name)).join(', ')}])`);
     lines.push('        jsExtra = jsObject as? JSDynamic', ...(through.size ? ['        jsSourced = jsExtra != nil'] : []), '    }');
     if (through.size) lines.push('    private var jsSourced = false', '    private func jsWriteThrough(_ key: String) { if jsSourced { jsExtra?[jsKey: key] = self[jsKey: key] } }');
-    const members = this.dynamicMembers(fields, className, false, [], [], false, new Set(), [], false, true, new Set(nullable.map((f) => f.name)));
-    const present = (f: ShapeField) => `${ident(f.name)} != nil${nullable.includes(f) ? ` || jsNulls?.contains(${swiftString(f.name)}) == true` : ''}`;
-    members[0] = `    var jsKeys: [String] {\n        let order = jsOrder ?? [${fields.map((f) => swiftString(f.name)).join(', ')}]\n        let keys = order + (jsExtra?.jsKeys ?? []).filter { !order.contains($0) }\n        return ${optional.length ? `keys.filter { key in switch key { ${optional.map((f) => `case ${swiftString(f.name)}: return ${present(f)}`).join('; ')}; default: return true } }` : 'keys'}\n    }`;
+    const members = this.dynamicMembers(fields, className, false, [], [], false, new Set(), [], false, true, new Set(nullable.map((f) => f.name)), undefined, undefined, undefined, through);
+    const present = (f: ShapeField) => `${ident(f.name)} != nil${nullable.includes(f) ? ` || jsNulls?.contains(${swiftString(f.name)}) == true` : ''} || jsUnset?.contains(${swiftString(f.name)}) == true`;
+    const declared = `[${fields.map((f) => swiftString(f.name)).join(', ')}]`;
+    if (optional.length) {
+      // The optional fields holding undefined as an own key (`o.a = undefined`), which a missing one doesn't.
+      lines.push('    private var jsUnset: Set<String>?');
+      lines.push(`    private func jsHas(_ key: String) -> Bool { switch key { ${optional.map((f) => `case ${swiftString(f.name)}: return ${present(f)}`).join('; ')}; default: return true } }`);
+      lines.push('    private func jsWrote(_ key: String, _ had: Bool, _ unset: Bool) {');
+      lines.push(`        let was = had${nullable.length ? ' || jsNulls?.contains(key) == true' : ''} || jsUnset?.contains(key) == true`);
+      lines.push(`        if unset { ${nullable.length ? 'jsNulls?.remove(key); ' : ''}jsUnset = (jsUnset ?? []).union([key]) } else { jsUnset?.remove(key) }`);
+      lines.push(`        if !was { jsOrder = (jsOrder ?? ${declared}).filter { $0 != key && jsHas($0) } + [key] }`, '    }');
+    }
+    members[0] = `    var jsKeys: [String] {\n        let order = jsOrder ?? ${declared}\n        let keys = order + (jsExtra?.jsKeys ?? []).filter { !order.contains($0) }\n        return ${optional.length ? 'keys.filter(jsHas)' : 'keys'}\n    }`;
     lines.push(...members);
     lines.push('}');
     return lines.join('\n');
@@ -3005,22 +3049,44 @@ ${members.join('\n')}
   }
 
   /** `JSDynamic`: the object's keys and members by name, for printing, JSON and untyped access. */
-  private dynamicMembers(fields: { name: string; type: string }[], className: string | null, override: boolean, methods: { name: string; type: string; available?: number; length?: number }[] = [], symbols: { key: string; member: string; type: string }[] = [], expando = false, raw = new Set<string>(), accessors: { name: string; get: string | null; set: string | null }[] = [], symbolKeyedBase = false, extra = false, nulls = new Set<string>(), classNameMember = true, nilNull = new Set<string>()): string[] {
+  /**
+   * `defined`: fields `Object.defineProperty` may give a descriptor (`JSDefinable`). `expandoAbove`: a program base keeps
+   * the object's expando, whose keys come after every class's fields, as JavaScript defines fields before script adds keys.
+   */
+  private dynamicMembers(fields: { name: string; type: string }[], className: string | null, override: boolean, methods: { name: string; type: string; available?: number; length?: number }[] = [], symbols: { key: string; member: string; type: string }[] = [], expando = false, raw = new Set<string>(), accessors: { name: string; get: string | null; set: string | null }[] = [], symbolKeyedBase = false, extra = false, nulls = new Set<string>(), classNameMember = true, nilNull = new Set<string>(), keyed: KeyedMembers | null = null, rewritten = new Set<string>(), defined = new Set<string>(), expandoAbove = false): string[] {
     const o = override ? 'override ' : '';
-    this.declare('jsKeys', { kind: 'var', mods: o, type: '[String]' });
+    if (!keyed?.ordered || !keyed.appBase) this.declare('jsKeys', { kind: 'var', mods: o, type: '[String]' });
+    if (keyed?.ordered) this.declare('jsFieldKeys', { kind: 'var', mods: keyed.appBase ? 'override ' : '', type: '[String]' });
     if (symbols.length) this.declare('jsSymbolKeys', { kind: 'var', mods: symbolKeyedBase ? 'override ' : '', type: '[String]' });
     if (classNameMember) this.declare('jsClassName', { kind: 'var', mods: o, type: 'String?' });
     this.declare('subscript', { kind: 'subscript', mods: o, params: 'jsKey key: String', type: 'Any?' });
     if (this.declOwner) this.declarations?.names(this.declOwner, [...fields.map((f) => f.name), ...accessors.map((a) => a.name), ...methods.map((m) => m.name)]);
-    const keys = fields.map((f) => (f.type.endsWith('?') && !nilNull.has(f.name) ? `(self.${ident(f.name)} == nil${nulls.has(f.name) ? ` && jsNulls?.contains(${swiftString(f.name)}) != true` : ''} ? [] : [${swiftString(f.name)}])` : `[${swiftString(f.name)}]`));
+    // Absent: nil, apart from null.
+    const absent = (f: { name: string }) => `self.${ident(f.name)} == nil${nulls.has(f.name) ? ` && jsNulls?.contains(${swiftString(f.name)}) != true` : ''}`;
+    const at = (n: string) => { const k = keyed?.order.indexOf(n) ?? -1; return k < 0 ? Infinity : k; };
+    const sorted = keyed ? [...fields].sort((a, b) => at(a.name) - at(b.name)) : fields;
+    const keys = sorted.map((f) => {
+      if (!keyed) return f.type.endsWith('?') && !nilNull.has(f.name) ? `(${absent(f)} ? [] : [${swiftString(f.name)}])` : `[${swiftString(f.name)}]`;
+      const present = keyed.present(f.name);
+      return present ? `(${present} ? [${swiftString(f.name)}] : [])` : `[${swiftString(f.name)}]`;
+    }).map((k, i) => (defined.has(sorted[i].name) ? `jsDefinedKeys(self, ${swiftString(sorted[i].name)}, ${k})` : k));
+    const expandoKeys = expando ? '(jsExpando?.jsKeys ?? [])' : '';
+    const keyLines = !keyed?.ordered
+      ? [`    ${o}var jsKeys: [String] { ${expandoAbove && keys.length ? `jsKeysBeforeExpando(super.jsKeys, ${keys.join(' + ')}, jsExpando)` : [override ? 'super.jsKeys' : '', ...keys, expandoKeys].filter(Boolean).join(' + ') || '[]'} }`]
+      : [
+          `    ${keyed.appBase ? 'override ' : ''}var jsFieldKeys: [String] { ${[keyed.appBase ? 'super.jsFieldKeys' : override ? 'super.jsKeys' : '', ...keys].filter(Boolean).join(' + ') || '[]'} }`,
+          ...(keyed.appBase ? [] : [`    ${o}var jsKeys: [String] { jsOrderedKeys(jsOrder, jsFieldKeys${expando ? ' + jsAddedKeys' : ''}) }`]),
+        ];
+    const definedGet = (f: { name: string }) => (defined.has(f.name) ? `if let __d = jsDefinedGet(self, ${swiftString(f.name)}) { return __d }; ` : '');
+    const definedSet = (f: { name: string }) => (defined.has(f.name) ? `if jsDefinedSet(self, ${swiftString(f.name)}, newValue) { return }; ` : '');
     const lines = [
-      `    ${o}var jsKeys: [String] { ${[override ? 'super.jsKeys' : '', ...keys, expando ? '(jsExpando?.jsKeys ?? [])' : ''].filter(Boolean).join(' + ') || '[]'} }`,
+      ...keyLines,
       ...(symbols.length ? [`    ${symbolKeyedBase ? 'override ' : ''}var jsSymbolKeys: [String] { ${symbolKeyedBase ? 'super.jsSymbolKeys + ' : ''}[${symbols.map((f) => f.key).join(', ')}]${expando ? ' + (jsExpando?.jsSymbolKeys ?? [])' : ''} }`] : []),
       `    ${o}var jsClassName: String? { ${className ? swiftString(className) : 'nil'} }`,
       `    ${o}subscript(jsKey key: String) -> Any? {`,
       '        get {',
       ...this.keySwitch([
-        ...fields.map((f) => ({ name: f.name, code: `return ${raw.has(f.name) ? `jsExpandoGet(self, ${swiftString(f.name)})` : isFunctionType(f.type.replace(/^\((.*)\)[?!]$/, '$1')) ? (nilNull.has(f.name) ? `jsNulled(${this.boxedField(`self.${ident(f.name)}`, f.type)})` : this.boxedField(`self.${ident(f.name)}`, f.type)) : nulls.has(f.name) ? `jsNullable(${this.untypedEnum(`self.${ident(f.name)}`, f.type)}, jsNulls, ${swiftString(f.name)})` : nilNull.has(f.name) ? `jsNulled(${this.untypedEnum(`self.${ident(f.name)}`, f.type)})` : this.untypedEnum(`self.${ident(f.name)}`, f.type)}` })),
+        ...fields.map((f) => ({ name: f.name, code: `${definedGet(f)}return ${raw.has(f.name) ? `jsExpandoGet(self, ${swiftString(f.name)})` : isFunctionType(f.type.replace(/^\((.*)\)[?!]$/, '$1')) ? (nilNull.has(f.name) ? `jsNulled(${this.boxedField(`self.${ident(f.name)}`, f.type)})` : this.boxedField(`self.${ident(f.name)}`, f.type)) : nulls.has(f.name) ? `jsNullable(${this.untypedEnum(`self.${ident(f.name)}`, f.type)}, jsNulls, ${swiftString(f.name)})` : nilNull.has(f.name) ? `jsNulled(${this.untypedEnum(`self.${ident(f.name)}`, f.type)})` : this.untypedEnum(`self.${ident(f.name)}`, f.type)}` })),
         ...accessors.map((a) => ({ name: a.name, code: `return ${a.get ?? 'nil'}` })),
         ...methods.filter((m) => !fields.some((f) => f.name === m.name)).map((m) => ({ name: m.name, code: m.available
           ? `if #available(iOS ${m.available}, *) { return ${this.boxFunction(`self.${ident(m.name)}`, m.type, -1, m.name, m.length, undefined, false)} } else { return nil }`
@@ -3029,11 +3095,14 @@ ${members.join('\n')}
       '        }',
       '        set {',
       ...this.keySwitch([
-        // A null is noted before the store (a write-through reads it back), a value after it (a field's didSet tells a null field from a missing one).
+        // A null is noted after the store, whose observer reads the key's state from before it; a field written through to
+        // its source (`rewritten`) is written again once the null is noted.
         ...fields.map((f) => {
-          const note = `jsNoteNull(&jsNulls, ${swiftString(f.name)}, newValue)`;
           const store = raw.has(f.name) ? `jsExpandoSet(self, ${swiftString(f.name)}, newValue)` : this.storeFromAny(`self.${ident(f.name)}`, f.type, f.name);
-          return { name: f.name, code: nulls.has(f.name) ? `if newValue is JSNull { ${note} }; ${store}; if !(newValue is JSNull) { ${note} }; return` : `${store}; return` };
+          // An object field that holds null is implicitly unwrapped: null and undefined both store nil, which `jsNulls` tells apart.
+          const nullable = nulls.has(f.name) && !raw.has(f.name) && /^[A-Z][\w.]*$/.test(f.type) && !['Double', 'String', 'Bool'].includes(f.type) && !this.native.isStructType(f.type);
+          const write = nullable ? `if jsIsNullish(newValue) { self.${ident(f.name)} = nil } else { ${store} }` : store;
+          return { name: f.name, code: `${definedSet(f)}${write}${nulls.has(f.name) ? `; jsNoteNull(&jsNulls, ${swiftString(f.name)}, newValue)${rewritten.has(f.name) ? `; jsWriteThrough(${swiftString(f.name)})` : ''}` : ''}; return` };
         }),
         ...accessors.filter((a) => a.set).map((a) => ({ name: a.name, code: `${a.set}; return` })),
       ], symbols.map((f) => `            case ${f.key}: ${this.storeFromAny(f.member, f.type, f.member, true)}`), override ? 'super[jsKey: key] = newValue' : expando ? 'jsExpandoSet(self, key, newValue)' : extra ? 'if jsExtra == nil { jsExtra = JSObject() }; jsExtra?[jsKey: key] = newValue' : 'break'),
@@ -3278,6 +3347,7 @@ ${members.join('\n')}
   private decideCast(n: ts.Expression): boolean {
     if ((ts.isAsExpression(n) || ts.isTypeAssertionExpression(n)) && this.downcasts(n)) return true;
     if ((ts.isPropertyAccessExpression(n) || ts.isElementAccessExpression(n)) && !n.questionDotToken && this.definiteReceiver(ts.skipOuterExpressions(n.expression, ts.OuterExpressionKinds.Parentheses))) return true;
+    if ((ts.isPropertyAccessExpression(n) || ts.isElementAccessExpression(n)) && !n.questionDotToken && this.lenientAwait(n.expression)) return true;
     // `obj.field = untyped` on an object of the program or core: written by name, as its setter takes any value.
     if (ts.isBinaryExpression(n) && n.operatorToken.kind === ts.SyntaxKind.EqualsToken && (this.untypedWrite(n.left, n.right) || (ts.isPropertyAccessExpression(n.left) && !this.lenient && !this.library && this.nullishMember(n.left, true)))) return true;
     if (ts.isCallExpression(n)) {
@@ -3367,6 +3437,158 @@ ${members.join('\n')}
     return false;
   }
 
+  private classKeySets = new Map<ts.ClassLikeDeclaration, ClassKeys>();
+  /** The constructor being written's notes after its statements that make keys (`initKeyNotes`). */
+  private keyNotes: Map<ts.Statement, string> | null = null;
+
+  /**
+   * An app class's keys (`classKeyPlan`), and its fields `flagged` with a `__has_` flag: those that are keys only once
+   * written, and those some code deletes. A hierarchy with any is `ordered` (`keyHierarchy`).
+   */
+  private classKeys(cls: ts.ClassLikeDeclaration): ClassKeys {
+    let k = this.classKeySets.get(cls);
+    if (k) return k;
+    k = { on: false, order: [], always: new Set(), sure: new Set(), written: new Set(), flagged: new Set(), walked: new Map(), depth: 0 };
+    this.classKeySets.set(cls, k);
+    if (this.lenient || this.library || cls.getSourceFile().isDeclarationFile || this.pluginFiles.has(cls.getSourceFile().fileName)) return k;
+    if (!this.keyedClass(cls)) return k;
+    const plan = classKeyPlan(cls, !this.assignFields);
+    Object.assign(k, { on: true, order: plan.order, always: plan.always, sure: plan.sure, walked: plan.walked });
+    // A field core's property or the kit's class holds is no key of the object's own.
+    const kitRoot = this.kitRootOf(cls);
+    const kitHeld = (m: ts.PropertyDeclaration) => !!this.kitRedeclared(m) || (!!kitRoot && !!this.core.isKitView(kitRoot) && !!this.properties?.isRegistered(cls, m.name.getText()));
+    for (const m of plan.written) if (!kitHeld(m)) { k.written.add(m.name.getText()); k.flagged.add(m.name.getText()); }
+    for (const m of cls.members) if (ts.isPropertyDeclaration(m) && ts.isIdentifier(m.name) && this.deletedFields().has(m) && this.typeOf(m.name).endsWith('?') && !kitHeld(m)) k.flagged.add(m.name.text);
+    for (let b = this.programBase(cls); b; b = this.programBase(b)) k.depth++;
+    return k;
+  }
+
+  private keyHierarchies = new Map<ts.ClassLikeDeclaration, KeyHierarchy>();
+
+  /**
+   * A keyed class's hierarchy. `ordered`: some class has flagged fields, or the root keeps an expando below which a subclass
+   * has keys, so a key may be made out of the plans' order; the root keeps `jsOrder` (nil until that happens) and each class
+   * lists its present keys in plan order (`jsFieldKeys`), the expando's after them (`jsAddedKeys`). `gated`: a subclass has
+   * keys from its level of the constructor on, which wait for it (`jsLevel`): its base's constructor runs first. `noted`: the
+   * test for whether a key made now must be noted, as the plans' order no longer places it.
+   */
+  private keyHierarchy(cls: ts.ClassLikeDeclaration): KeyHierarchy {
+    const rootOf = (c: ts.ClassLikeDeclaration) => { let r = c; for (let b = this.programBase(r); b; b = this.programBase(b)) r = b; return r; };
+    const root = rootOf(cls);
+    let h = this.keyHierarchies.get(root);
+    if (h) return h;
+    const members = [root, ...this.allClasses().filter((c) => c !== root && rootOf(c) === root)].filter((c) => this.classKeys(c).on);
+    const expando = members.includes(root) && this.appRootKeepsExpando(root);
+    const ordered = members.some((c) => this.classKeys(c).flagged.size > 0 || (expando && this.classKeys(c).depth > 0 && this.classKeys(c).order.length > 0));
+    h = { ordered, gated: ordered && members.some((c) => this.classKeys(c).depth > 0 && this.classKeys(c).order.some((n) => !this.classKeys(c).written.has(n))), expando: ordered && expando, noted: ordered && expando ? 'jsKeysNoted' : 'jsOrder != nil' };
+    this.keyHierarchies.set(root, h);
+    return h;
+  }
+
+  private deletedDecls: Set<ts.Declaration> | null = null;
+
+  /** The fields some code deletes (`delete o.field`). */
+  private deletedFields(): Set<ts.Declaration> {
+    if (this.deletedDecls) return this.deletedDecls;
+    const out = this.deletedDecls = new Set<ts.Declaration>();
+    const visit = (n: ts.Node): void => {
+      if (ts.isDeleteExpression(n) && ts.isPropertyAccessExpression(n.expression)) {
+        const d = this.checker.getSymbolAtLocation(n.expression.name)?.valueDeclaration;
+        if (d) out.add(d);
+      }
+      ts.forEachChild(n, visit);
+    };
+    for (const f of this.sourceFiles) if (!f.isDeclarationFile) visit(f);
+    return out;
+  }
+
+  /** A flagged field's observer, which notes its key when a write makes it (Swift runs none in the class's own initializer: `initKeyNotes`). */
+  private keyObservers(cls: ts.ClassLikeDeclaration, n: string): string {
+    return this.classKeys(cls).flagged.has(n) && this.keyHierarchy(cls).ordered ? ` { didSet { if !__has_${n} { __has_${n} = true; jsKeyMade(${swiftString(n)}${this.earlyKey(cls)}) } } }` : '';
+  }
+
+  /**
+   * A subclass's field made by its base's constructor (a method it overrides) goes before the keys of the subclass's own
+   * level, which its static place is after: `jsKeyMade`'s `early` argument.
+   */
+  private earlyKey(cls: ts.ClassLikeDeclaration): string {
+    const k = this.classKeys(cls);
+    return k.depth > 0 && this.keyHierarchy(cls).gated ? `, early: jsLevel < ${k.depth}` : '';
+  }
+
+  /** A class the class path writes with its members by name, its hierarchy rooted in none but core's: no error, component, service, mixin or native subclass. */
+  private keyedClass(cls: ts.ClassLikeDeclaration): boolean {
+    for (let c: ts.ClassLikeDeclaration | undefined = cls; c; c = this.programBase(c)) {
+      if (!ts.isClassDeclaration(c) || !c.name || this.isComponentClass(c) || this.patterns.mixinTarget(c)) return false;
+      if ((ts.getDecorators(c) ?? []).some((d) => d.expression.getText().startsWith('Injectable')) && !this.isBasedService(c)) return false;
+      const h = c.heritageClauses?.find((x) => x.token === ts.SyntaxKind.ExtendsKeyword)?.types[0];
+      if (h && !this.programBase(c) && (ERRORS[h.expression.getText()] || !this.kitRootOf(c))) return false;
+    }
+    return true;
+  }
+
+  /** A keyed class's keys for `dynamicMembers`, declaring the state they read (`classKeys`): its flags, and in the root `jsOrder` and `jsLevel`. */
+  private keyedMembers(cls: ts.ClassLikeDeclaration, appBase: boolean, lines: string[], conformances: string[]): KeyedMembers | null {
+    const k = this.classKeys(cls);
+    if (!k.on) return null;
+    const { ordered, gated } = this.keyHierarchy(cls);
+    if (ordered) {
+      for (const n of k.flagged) lines.push(`    var __has_${n} = ${!k.written.has(n)}`);
+      if (!appBase) {
+        lines.push('    var jsOrder: [String]?');
+        if (gated) lines.push('    var jsLevel = 0');
+        if (this.keyHierarchy(cls).expando) lines.push('    var jsAddedKeys: [String] { jsExpando?.jsKeys ?? [] }');
+        conformances.push('JSKeyOrdered');
+      }
+    }
+    const gate = gated && k.depth > 0 ? `jsLevel >= ${k.depth}` : '';
+    const present = (n: string) => {
+      const own = k.flagged.has(n) ? `__has_${n}` : '';
+      return [k.written.has(n) ? '' : gate, own].filter(Boolean).join(' && ') || null;
+    };
+    return { order: k.order, present, ordered, appBase };
+  }
+
+  /** The notes after the statements of a constructor that write keys, which run no observer there; a write elsewhere in it is refused. */
+  private initKeyNotes(cls: ts.ClassLikeDeclaration, ctor: ts.ConstructorDeclaration): Map<ts.Statement, string> {
+    const notes = new Map<ts.Statement, string>();
+    const k = this.classKeys(cls);
+    if (!k.on || !this.keyHierarchy(cls).ordered || !ctor.body) return notes;
+    // Below a base, whose constructor may have made keys out of order, a key the walk predicts goes after them all the same.
+    const based = !!cls.heritageClauses?.some((h) => h.token === ts.SyntaxKind.ExtendsKeyword);
+    const made = (n: string) => `jsKeyMade(${swiftString(n)})`;
+    const { noted } = this.keyHierarchy(cls);
+    const visit = (x: ts.Node): void => {
+      if (ts.isFunctionLike(x) || ts.isClassLike(x)) return;
+      const target = ts.isBinaryExpression(x) && x.operatorToken.kind >= ts.SyntaxKind.FirstAssignment && x.operatorToken.kind <= ts.SyntaxKind.LastAssignment ? x.left
+        : (ts.isPrefixUnaryExpression(x) || ts.isPostfixUnaryExpression(x)) && [ts.SyntaxKind.PlusPlusToken, ts.SyntaxKind.MinusMinusToken].includes(x.operator) ? x.operand : null;
+      const left = target && ts.skipOuterExpressions(target);
+      if (left && ts.isPropertyAccessExpression(left) && left.expression.kind === ts.SyntaxKind.ThisKeyword && ts.isIdentifier(left.name)) {
+        const n = left.name.text;
+        const walked = k.walked.get(x);
+        const st = ts.walkUpParenthesizedExpressions(x.parent);
+        if (k.flagged.has(n) || (walked?.first && based)) {
+          if (!ts.isExpressionStatement(st)) throw this.error(x, 'a write that makes a key, inside an expression of its class\'s constructor');
+          const note = !k.flagged.has(n) ? `if ${noted} { ${made(n)} }`
+            : walked ? (based ? `if !__has_${n} { __has_${n} = true; if ${noted} { ${made(n)} } }` : `__has_${n} = true`)
+            : `if !__has_${n} { __has_${n} = true; ${made(n)} }`;
+          notes.set(st, note);
+        }
+      }
+      ts.forEachChild(x, visit);
+    };
+    visit(ctor.body);
+    return notes;
+  }
+
+  /** A subclass's start of its level of the constructor: its keys from there on (`jsLevel`), and its keys made now. */
+  private levelStart(cls: ts.ClassLikeDeclaration): string[] {
+    const k = this.classKeys(cls);
+    if (!k.on || k.depth === 0 || !this.keyHierarchy(cls).gated) return [];
+    const now = k.order.filter((n) => k.always.has(n));
+    return [`        jsLevel = ${k.depth}`, ...(now.length ? [`        if ${this.keyHierarchy(cls).noted} { ${now.map((n) => `jsKeyMade(${swiftString(n)})`).join('; ')} }`] : [])];
+  }
+
   /** Strict code's fields typed `T | null` that start with a value (an initializer, a constructor parameter's): nil in them is null. */
   private nullFieldsTyped(cls: ts.ClassLikeDeclaration): Set<string> {
     const set = new Set<string>();
@@ -3375,6 +3597,15 @@ ${members.join('\n')}
     const given = [...cls.members.filter((m): m is ts.PropertyDeclaration => ts.isPropertyDeclaration(m) && !!m.initializer && !isStatic(m)), ...(ctor?.parameters.filter((p) => ts.isParameterPropertyDeclaration(p, ctor)) ?? [])];
     for (const m of given) if (ts.isIdentifier(m.name) && nullNotUndefined(this.checker.getTypeAtLocation(m.name))) set.add(m.name.text);
     return set;
+  }
+
+  /** Whether the program class at the root of the class's program hierarchy keeps what script adds to its objects (`JSExpando`). */
+  private appRootKeepsExpando(cls: ts.ClassLikeDeclaration): boolean {
+    if (this.library) return false;
+    let root = cls;
+    for (let b = this.programBase(cls); b; b = this.programBase(b)) root = b;
+    if (root.heritageClauses?.some((h) => h.token === ts.SyntaxKind.ExtendsKeyword)) return false;
+    return this.pluginFiles.has(root.getSourceFile().fileName) || this.givenUndeclared().has(root);
   }
 
   private programBase(cls: ts.ClassLikeDeclaration): ts.ClassLikeDeclaration | undefined {
@@ -3883,6 +4114,7 @@ ${members.join('\n')}
     if ((ts.isArrowFunction(fn) || ts.isFunctionExpression(fn) || ts.isFunctionDeclaration(fn)) && this.returnsMethod(fn)) return 'Any?';
     if (this.heldReturn(fn)) return 'Any?';
     const t = this.type(this.checker.getSignatureFromDeclaration(fn)!.getReturnType(), fn);
+    if (this.lenientAsync(fn)) return t.replace(/^JSPromise<(.*)>$/, (_, v: string) => `JSPromise<${optionalType(v)}>`);
     return this.mayReturnUndefined(fn) && t !== 'Void' && t !== 'Any?' && !t.endsWith('?') && !t.endsWith('!') && !isFunctionType(t) ? optionalType(t) : t;
   }
 
@@ -3951,6 +4183,79 @@ ${members.join('\n')}
     // An object is held implicitly unwrapped already, nil where undefined; only a string, number or boolean needs the optional.
     const sig = this.checker.getSignatureFromDeclaration(root);
     return !!sig && ['String', 'Double', 'Bool'].includes(this.type(sig.getReturnType(), root));
+  }
+
+  /**
+   * A non-strict app's async function (or method of its own signature) whose body may give null or undefined where its
+   * promise's type says a value: the promise is of the optional. Its promise is only awaited or dropped; a body giving
+   * both null and undefined is refused, as the optional can't tell them apart.
+   */
+  private lenientAsync(fn: ts.Node): fn is ts.FunctionDeclaration | ts.MethodDeclaration {
+    if (this.lenient || this.library || !this.lenientApp || fn.getSourceFile().isDeclarationFile || this.pluginFiles.has(fn.getSourceFile().fileName)) return false;
+    if (!(ts.isFunctionDeclaration(fn) || (this.unfamiliedMethod(fn as ts.SignatureDeclaration) && !isTemplateMethod(fn))) || !isAsync(fn) || fn.asteriskToken || !fn.body) return false;
+    let found = this.lenientAsyncs.get(fn);
+    if (found !== undefined) return found;
+    const v = /^JSPromise<(.*)>$/.exec(this.type(this.checker.getSignatureFromDeclaration(fn)!.getReturnType(), fn))?.[1];
+    const given = nothingGiven(fn, this.checker);
+    found = !!v && v !== 'Void' && v !== 'Any?' && !isOptional(v) && !v.endsWith('!') && !isFunctionType(v) && (given.null || given.missing || given.unknown);
+    this.lenientAsyncs.set(fn, found);
+    if (found && given.null && (given.missing || given.unknown)) throw this.error(fn, 'a non-strict async function giving null and undefined both (`return null` and a bare `return`)');
+    return found;
+  }
+  private lenientAsyncs = new Map<ts.Node, boolean>();
+
+  /** A promise an async function returns that is its own promise's type: adopted as it is. */
+  private returnedAsIs(e: ts.CallExpression): boolean {
+    if (!ts.isReturnStatement(ts.walkUpParenthesizedExpressions(e.parent))) return false;
+    const outer = ts.findAncestor(e.parent, ts.isFunctionLike);
+    const d = this.checker.getResolvedSignature(e)?.getDeclaration();
+    return !!outer && !!d && !ts.isJSDocSignature(d) && isAsync(outer) && this.returnTypeOf(outer as ts.SignatureDeclaration) === this.returnTypeOf(d);
+  }
+
+  heldAwait(a: ts.AwaitExpression, v: string): [string, string] | undefined {
+    if (!this.lenientApp || !this.lenientAsyncCall(a.expression)) return undefined;
+    const t = this.typeOf(a);
+    this.awaitedRaw.set(a, v);
+    if (!this.nullResult(a)) return [optionalType(t), this.undefinedAs(v, t, optionalType(t))];
+    return [optionalType(t), t === 'Double' ? `(${v} ?? 0)` : t === 'String' ? `(${v} ?? "null")` : this.undefinedAs(v, t, optionalType(t))];
+  }
+  /** A lenient async call's awaited value as its continuation holds it, optional. */
+  private readonly awaitedRaw = new Map<ts.Node, string>();
+  /** Locals holding a non-strict app's null-only result (`nullResult`): their nil is null. */
+  private readonly nullVars = new Set<ts.Symbol>();
+  private rawAwait(e: ts.Expression): string | undefined {
+    return this.awaitedRaw.get(ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses));
+  }
+
+  /** A local Swift holds optional though its type says a value (`const x = f()` of a call that may give nothing). */
+  private heldOptional(e: ts.Expression, type: string): boolean {
+    e = ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses);
+    const sym = ts.isIdentifier(e) ? this.resolve(e) : undefined;
+    return !!sym && this.undefinedVars.get(sym) === optionalType(type);
+  }
+
+  private lenientAwait(e: ts.Expression): boolean {
+    e = ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses);
+    return ts.isAwaitExpression(e) && this.lenientApp && this.lenientAsyncCall(e.expression);
+  }
+
+  private lenientAsyncCall(e: ts.Expression): boolean {
+    e = ts.skipOuterExpressions(e);
+    if (!ts.isCallExpression(e)) return false;
+    const d = this.checker.getResolvedSignature(e)?.getDeclaration();
+    return !!d && !ts.isJSDocSignature(d) && this.lenientAsync(d);
+  }
+
+  /** A call of a non-strict app's own function whose result is optional in Swift and whose body gives only null where it gives nothing, awaited when async. */
+  private nullResult(e: ts.Expression): boolean {
+    const awaited = ts.isAwaitExpression(e);
+    const call = awaited ? ts.skipOuterExpressions(e.expression) : e;
+    if (!ts.isCallExpression(call)) return false;
+    const d = this.checker.getResolvedSignature(call)?.getDeclaration();
+    if (!d || ts.isJSDocSignature(d) || !(ts.isFunctionDeclaration(d) || ts.isMethodDeclaration(d)) || !d.body || awaited !== isAsync(d)) return false;
+    if (awaited ? !this.lenientAsync(d) : !(this.mayReturnUndefined(d) && this.returnTypeOf(d).endsWith('?'))) return false;
+    const given = nothingGiven(d, this.checker);
+    return given.null && !given.missing && !given.unknown;
   }
 
   /** An app's instance method no other method overrides or is overridden by, so its Swift signature is its own. */
@@ -4074,6 +4379,7 @@ ${members.join('\n')}
   /** A call Swift has as optional though TypeScript types its result as a value (`getWindow()` that may return undefined). */
   givesUndefined(e: ts.Expression): boolean {
     while (ts.isParenthesizedExpression(e)) e = e.expression;
+    if (ts.isAwaitExpression(e) && this.lenientApp && this.lenientAsyncCall(e.expression)) return true;
     if (!ts.isCallExpression(e) || this.typeOf(e).endsWith('?')) return false;
     const decl = this.checker.getResolvedSignature(e)?.getDeclaration();
     return !!decl && !ts.isJSDocSignature(decl) && this.mayReturnUndefined(decl) && this.returnTypeOf(decl).endsWith('?');
@@ -5297,12 +5603,12 @@ ${members.join('\n')}
       const heldAs = (h: string) => { if (own && h === `${t}!` && this.zero(t) !== null) own.type = optionalType(t); return h; };
       // `field: string = null` in code checked without strictNullChecks: unset, read as the type's zero or an unwrapped nil.
       if (m.initializer && (m.initializer.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(m.initializer) && m.initializer.text === 'undefined')) && !isOptional(t)) { lines.push(`    var ${ident(n)}: ${heldAs(this.fieldType(t))}`); this.declare(n, { kind: 'var', type: this.fieldType(t) }); continue; }
-      if (m.initializer && this.pure(m.initializer) && !refersToThis(m.initializer)) { lines.push(`    var ${ident(n)}: ${this.lenientRef(t)} = ${this.storedInit(m.initializer, t)}`); this.declare(n, { kind: 'var', type: this.lenientRef(t) }); continue; }
+      if (m.initializer && this.pure(m.initializer) && !refersToThis(m.initializer)) { lines.push(`    var ${ident(n)}: ${this.lenientRef(t)} = ${this.storedInit(m.initializer, t)}${this.keyObservers(cls, n)}`); this.declare(n, { kind: 'var', type: this.lenientRef(t) }); continue; }
       // A field the constructor assigns before anything can read it holds its type, not an implicitly unwrapped one.
       const deferred = this.fieldType(t);
       const held = heldAs(deferred.endsWith('!') && !m.initializer && this.definiteFields(cls).has(m) ? t : deferred);
       this.declare(n, { kind: 'var', type: held });
-      lines.push(`    ${this.weak.fields.has(`${cls.name?.text}.${n}`) && /^[A-Z][\w.]*[!?]$/.test(held) ? 'weak ' : ''}var ${ident(n)}: ${held}`);
+      lines.push(`    ${this.weak.fields.has(`${cls.name?.text}.${n}`) && /^[A-Z][\w.]*[!?]$/.test(held) ? 'weak ' : ''}var ${ident(n)}: ${held}${this.keyObservers(cls, n)}`);
       if (m.initializer) {
         this.indent = '        ';
         fieldInits.push(`        self.${ident(n)} = ${this.tryPrefix(m.initializer)}${this.coerce(m.initializer, t)}`);
@@ -5335,25 +5641,29 @@ ${members.join('\n')}
         const stmts = [...ctor.body!.statements];
         const superAt = stmts.findIndex((s) => ts.isExpressionStatement(s) && ts.isCallExpression(s.expression) && s.expression.expression.kind === ts.SyntaxKind.SuperKeyword);
         const own = () => [...paramProps.map((p) => `        self.${ident((p.name as ts.Identifier).text)} = ${paramPropValues.get(p)}`), ...fieldInits];
-        if (superAt < 0) out.push(...own(), ...this.statements(stmts));
-        else {
-          out.push(...this.statements(stmts.slice(0, superAt)));
-          const call = (stmts[superAt] as ts.ExpressionStatement).expression as ts.CallExpression;
-          // Over a kit class: its initializer's parameter types.
-          const given = !appBase && kitRoot ? this.core.kitInitArgs(kitRoot, call.arguments) : null;
-          out.push(`        ${this.tryPrefix(call)}super.init(${(given ?? this.args(call)).join(', ')})`, ...own(), ...this.statements(stmts.slice(superAt + 1)));
-        }
+        const notes = this.keyNotes;
+        this.keyNotes = this.initKeyNotes(cls, ctor);
+        try {
+          if (superAt < 0) out.push(...own(), ...this.statements(stmts));
+          else {
+            out.push(...this.statements(stmts.slice(0, superAt)));
+            const call = (stmts[superAt] as ts.ExpressionStatement).expression as ts.CallExpression;
+            // Over a kit class: its initializer's parameter types.
+            const given = !appBase && kitRoot ? this.core.kitInitArgs(kitRoot, call.arguments) : null;
+            out.push(`        ${this.tryPrefix(call)}super.init(${(given ?? this.args(call)).join(', ')})`, ...this.levelStart(cls), ...own(), ...this.statements(stmts.slice(superAt + 1)));
+          }
+        } finally { this.keyNotes = notes; }
         return out;
       });
       this.indent = '    ';
       lines.push(`    ${sameAsBase ? 'override ' : ''}init(${this.params(ctor, false)})${throws} {`, ...body, '    }');
       this.declareInit(this.params(ctor, false), !!throws);
-    } else if (fieldInits.length || this.throwsInfo.initThrows(cls)) {
+    } else if (fieldInits.length || this.throwsInfo.initThrows(cls) || this.levelStart(cls).length) {
       const baseThrows = appBase ? this.throwsInfo.initThrows(appBase) : !!kitRoot && this.core.initThrows(kitRoot);
       if (baseCtor) this.declareInit(this.params(baseCtor, false), baseThrows || this.throwsInfo.initThrows(cls));
       else this.declareInit('', this.throwsInfo.initThrows(cls));
-      if (baseCtor) lines.push(`    override init(${this.params(baseCtor, false)})${baseThrows || this.throwsInfo.initThrows(cls) ? ' throws' : ''} {`, `        ${baseThrows ? 'try ' : ''}super.init(${this.readsArguments(baseCtor) ? '__arguments' : baseCtor.parameters.map((p) => ident((p.name as ts.Identifier).text)).join(', ')})`, ...fieldInits, '    }');
-      else lines.push(`    ${appBase || kitRoot ? 'override ' : ''}init()${this.throwsInfo.initThrows(cls) ? ' throws' : ''} {`, ...(appBase || kitRoot ? [`        ${baseThrows ? 'try ' : ''}super.init()`] : []), ...fieldInits, '    }');
+      if (baseCtor) lines.push(`    override init(${this.params(baseCtor, false)})${baseThrows || this.throwsInfo.initThrows(cls) ? ' throws' : ''} {`, `        ${baseThrows ? 'try ' : ''}super.init(${this.readsArguments(baseCtor) ? '__arguments' : baseCtor.parameters.map((p) => ident((p.name as ts.Identifier).text)).join(', ')})`, ...this.levelStart(cls), ...fieldInits, '    }');
+      else lines.push(`    ${appBase || kitRoot ? 'override ' : ''}init()${this.throwsInfo.initThrows(cls) ? ' throws' : ''} {`, ...(appBase || kitRoot ? [`        ${baseThrows ? 'try ' : ''}super.init()`] : []), ...this.levelStart(cls), ...fieldInits, '    }');
     } else if ((this.library || this.extended.has(name) || this.extendedDecls.has(cls)) && !base && !cls.members.some((m) => ts.isConstructorDeclaration(m)) && !this.literalClasses().has(cls)) {
       // Library mode: Swift's implicit initializer is internal; an app makes the class (`new StyleScope()`) from another module.
       // A class subclassed: Swift would leave its implicit initializer nonisolated, and a subclass's, isolated to the main actor, could not override it.
@@ -5633,7 +5943,16 @@ ${members.join('\n')}
         const initial = cls.members.filter((m): m is ts.PropertyDeclaration => ts.isPropertyDeclaration(m) && nulls.has(m.name.getText()) && initializedNull(m));
         lines.push(`    var jsNulls: Set<String>?${initial.length ? ` = [${initial.map((m) => swiftString(m.name.getText())).join(', ')}]` : ''}`);
       }
-      lines.push(...this.dynamicMembers(fields, cls.name?.text ?? name, !!appBase || !!kitRoot, dynMethods, symbolFields, expando, raw, dynAccessors, symbolKeyedBase, false, nulls, true, this.nullFieldsTyped(cls)));
+      const definable = this.definableNames(cls).filter((n) => fields.some((f) => f.name === n));
+      lines.push(...this.dynamicMembers(fields, cls.name?.text ?? name, !!appBase || !!kitRoot, dynMethods, symbolFields, expando, raw, dynAccessors, symbolKeyedBase, false, nulls, true, this.nullFieldsTyped(cls), this.keyedMembers(cls, !!appBase, lines, conformances), undefined, new Set(definable), !!appBase && this.appRootKeepsExpando(cls)));
+      if (definable.length) {
+        let inherited = false;
+        for (let b = this.programBase(cls); b && !inherited; b = this.programBase(b)) inherited = this.definableNames(b).length > 0;
+        if (!inherited) conformances.push('JSDefinable');
+        const mods = inherited ? 'override ' : '';
+        lines.push(`    ${mods}func jsDefinable(_ key: String) -> Bool {`, `        switch key { case ${definable.map(swiftString).join(', ')}: return true; default: return ${inherited ? 'super.jsDefinable(key)' : 'false'} }`, '    }');
+        this.declare('jsDefinable', { kind: 'func', mods, params: '_ key: String', type: 'Bool' });
+      }
     }
     // Library mode: the class's `name`, which a static method reads of the class it is called on.
     if (this.library && !this.errorBased(cls)) {
@@ -6380,6 +6699,8 @@ ${members.join('\n')}
   private lenientAll = false;
   /** The app's configuration is not strict: a variable declared without a value may be read before one is assigned. */
   readonly lenientApp: boolean;
+  /** The app's configuration assigns class fields in the constructor rather than defining them (`useDefineForClassFields` off). */
+  readonly assignFields: boolean;
   /** Files of plugins written without strictNullChecks, translated as core is. */
   readonly lenientFiles = new Set<string>();
   private currentFile: string | null = null;
@@ -6639,7 +6960,8 @@ ${members.join('\n')}
       const self = /^([\w.]+) = (.+)$/.exec(code);
       if (self && self[1] === self[2]) return '';
       const assigned = code.startsWith('do {') || code.startsWith('if ') ? code : tryAssigned(this.tryPrefix(s.expression), code);
-      return i + (code.startsWith('{') ? `do { ${assigned} }` : assigned);
+      const note = this.keyNotes?.get(s);
+      return i + (code.startsWith('{') ? `do { ${assigned} }` : assigned) + (note ? `\n${i}${note}` : '');
     }
     if (ts.isReturnStatement(s)) {
       if (a) {
@@ -6892,7 +7214,7 @@ ${members.join('\n')}
         if (sym) this.undefinedVars.set(sym, optionalType(t));
         return `${i}var ${name}: ${optionalType(t)} = nil`;
       }
-      const maybe = !lowered && !t.endsWith('?') ? this.maybeUndefined(d.initializer) : null;
+      const maybe = (!lowered || ts.isAwaitExpression(ts.skipOuterExpressions(d.initializer))) && !t.endsWith('?') ? this.maybeUndefined(d.initializer) : null;
       if (maybe) {
         const sym = this.resolve(d.name);
         // A value of an untyped record (`const value = bag[key]`) is whatever script put there.
@@ -6900,6 +7222,10 @@ ${members.join('\n')}
         while (ts.isParenthesizedExpression(read)) read = read.expression;
         const held = (ts.isElementAccessExpression(read) || ts.isPropertyAccessExpression(read)) && this.typeOf(read.expression).replace(/[?!]$/, '') === 'JSRecord<Any?>' ? 'Any?' : optionalType(t);
         if (sym) this.undefinedVars.set(sym, held);
+        if (sym && this.lenientApp && this.nullResult(read)) {
+          if (!this.needsVar(d.name, held)) this.nullVars.add(sym);
+          else if (ts.isAwaitExpression(read)) throw this.error(d, 'a variable holding the null a non-strict async function may give, assigned again');
+        }
         // An untyped value declared a type (`const s: string = untyped[0]`): converted, undefined staying undefined.
         const value = this.typeOf(d.initializer) === 'Any?' && held !== 'Any?' ? this.fromAny(maybe, held) : maybe;
         return `${i}${(lowered ? !constant : this.needsVar(d.name, held)) ? 'var' : 'let'} ${name}: ${held} = ${this.tryPrefix(d.initializer)}${value}`;
@@ -7073,7 +7399,9 @@ ${members.join('\n')}
       if (ts.isObjectBindingPattern(name)) {
         const key = (el.propertyName ?? el.name).getText();
         const record = /^JSRecord<(.*)>$/.exec(this.typeOf(name).replace(/\?$/, ''));
+        const defined = this.definedField(name, key);
         read = this.isAny(name) || _type === 'Any?' ? `(try jsGet(${value}, ${swiftString(key)}))`
+          : defined ? this.fromAnyCode(`${value}[jsKey: ${swiftString(key)}]`, this.typeOf(defined.name!), true)
           : record ? this.undefinedAs(`${value}[${swiftString(key)}]`, ts.isIdentifier(el.name) ? this.typeOf(el.name) : record[1])
           : `${this.getterThrows(source, key) ? 'try ' : ''}${value}.${ident(key)}`;
       } else if (_type === 'Any?') read = `(try jsGet(${value}, "${k}"))`;
@@ -7613,6 +7941,21 @@ ${members.join('\n')}
     return this.throwsInfo.expr(e) ? 'try ' : '';
   }
 
+  /** `x.hasOwnProperty`, `x.toString`: a method every object inherits, read on the object itself. */
+  private objectMethod(e: ts.Node): boolean {
+    return ts.isPropertyAccessExpression(e) && !!this.resolve(e.name)?.declarations?.every((d) => isLibDeclaration(d));
+  }
+
+  /** App code: an app enum named as a value (`Color`, `Shapes.Kind`), which is the object JavaScript makes of it. */
+  private isEnumObject(e: ts.Expression): boolean {
+    if (this.library) return false;
+    const bare = ts.skipOuterExpressions(e);
+    if (!ts.isIdentifier(bare) && !ts.isPropertyAccessExpression(bare)) return false;
+    const sym = this.resolve(ts.isPropertyAccessExpression(bare) ? bare.name : bare);
+    const decl = sym && sym.flags & ts.SymbolFlags.Alias ? this.checker.getAliasedSymbol(sym).valueDeclaration : sym?.valueDeclaration;
+    return !!decl && ts.isEnumDeclaration(decl) && !decl.getSourceFile().isDeclarationFile && !hasModifier(decl, ts.SyntaxKind.ConstKeyword);
+  }
+
   /** An expression where Swift needs a value of `target`. */
   coerce(e: ts.Expression, target: string): string {
     this.checkFieldsMet(e, target);
@@ -7621,6 +7964,13 @@ ${members.join('\n')}
       throw this.error(e, 'strings a pattern\'s unset group may leave undefined, given where `string[]` is declared (declare it `(string | undefined)[]`)');
     }
     if (target === 'JSArray<String?>' && /^JSMatch[?!]?$/.test(this.typeOf(e))) return this.convert(this.expr(e), this.typeOf(e), target);
+    // An enum's object held as a record (`const names: Record<string, string | number> = Color`): an untyped object.
+    if (target.startsWith('JSRecord<') && this.isEnumObject(e)) return this.fromAnyCode(this.expr(e), target);
+    const bare = ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses);
+    if (ts.isVoidExpression(bare) && target !== 'Any?' && isOptional(target)) {
+      const tp = this.throwsInfo.expr(bare.expression) ? 'try ' : '';
+      return `{ () ${tp ? 'throws ' : ''}-> ${target} in _ = ${tp}${this.expr(bare.expression)}; return nil }()`;
+    }
     const code = this.coerceTyped(e, target);
     if (target !== 'Any?') return code;
     const entry = this.nullableEntry(e, () => code);
@@ -7661,6 +8011,7 @@ ${members.join('\n')}
   nilIsNull(e: ts.Expression): boolean {
     if (this.lenient || this.library || this.pluginFiles.has(e.getSourceFile().fileName)) return false;
     const bare = ts.skipOuterExpressions(e);
+    if (this.lenientApp && (this.nullResult(bare) || (ts.isIdentifier(bare) && this.nullVars.has(this.resolve(bare)!)))) return true;
     if (bare.kind === ts.SyntaxKind.NullKeyword || !nullNotUndefined(this.checker.getTypeAtLocation(e)) || this.heldNullish(bare)) return false;
     if (ts.isPropertyAccessExpression(bare)) {
       const d = this.checker.getSymbolAtLocation(bare.name)?.valueDeclaration;
@@ -7735,6 +8086,8 @@ ${members.join('\n')}
   private coerceTyped(e: ts.Expression, target: string): string {
     const stored = this.storedLiterals.get(e);
     if (stored && (target === 'Any?' || target.replace(/[?!]$/, '') === stored.type)) return stored.code;
+    const awaited = this.rawAwait(e);
+    if (awaited && (target === 'Any?' || optionalType(this.typeOf(e)) === target)) return target === 'Any?' ? `(${awaited} as Any?)` : awaited;
     if (target === 'Any?') {
       const chain = this.chainRead(e);
       if (chain) return `(${chain} as Any?)`;
@@ -8904,6 +9257,9 @@ ${members.join('\n')}
   }
 
   private exprOf(e: ts.Expression): string {
+    const raw = this.awaitedRaw.get(e), key = raw ? readKeyOf(e) : null;
+    // A member of what the await gives: JavaScript's TypeError where it gives nothing.
+    if (raw && key !== null) return `jsUnwrap(${raw}, ${swiftString(key)}${this.nullResult(e) ? ', null: true' : ''})`;
     const s = this.subst.get(e);
     if (s) return s;
     if (ts.isParenthesizedExpression(e) && ts.isBinaryExpression(e.expression) && e.expression.operatorToken.kind === ts.SyntaxKind.EqualsToken && ts.isIdentifier(e.expression.left)) {
@@ -9032,7 +9388,11 @@ ${members.join('\n')}
       return member ? this.narrowed(e, member) : this.property(e);
     }
     if (ts.isElementAccessExpression(e)) return this.elementAccess(e);
-    if (ts.isCallExpression(e)) return this.undefinedResult(e, this.erasedResult(e, this.call(e)));
+    if (ts.isCallExpression(e)) {
+      const p = ts.walkUpParenthesizedExpressions(e.parent);
+      if (this.lenientApp && !ts.isAwaitExpression(p) && !ts.isExpressionStatement(p) && !this.returnedAsIs(e) && this.lenientAsyncCall(e)) throw this.error(e, 'the promise of a non-strict async function that may give null or undefined, used other than by `await`,');
+      return this.undefinedResult(e, this.erasedResult(e, this.call(e)));
+    }
     if (ts.isNewExpression(e)) return this.newExpr(e);
     if (ts.isBinaryExpression(e)) return this.binary(e);
     if (ts.isPrefixUnaryExpression(e)) return this.prefix(e);
@@ -9085,6 +9445,11 @@ ${members.join('\n')}
       if (ts.isPropertyAccessExpression(target) && !(this.isSelf(target.expression) && this.props.has(target.name.text))) {
         const decl = this.checker.getSymbolAtLocation(target.name)?.valueDeclaration;
         const field = decl && ts.isPropertyDeclaration(decl) && ts.isClassLike(decl.parent) && !decl.getSourceFile().isDeclarationFile && !isStatic(decl) ? this.declaredTypeOf(target) : null;
+        if (field?.endsWith('?') && ts.isClassLike(decl!.parent) && this.classKeys(decl!.parent).flagged.has(target.name.text)) {
+          if (!ts.isIdentifier(target.expression) && target.expression.kind !== ts.SyntaxKind.ThisKeyword && !this.pure(target.expression)) throw this.error(e, 'delete of a field of an object this expression makes');
+          const o = this.expr(target.expression);
+          return `{ () -> Bool in if ${o}.__has_${target.name.text} { ${this.lvalue(target)} = nil; ${o}.__has_${target.name.text} = false }; return true }()`;
+        }
         if (field?.endsWith('?')) return `{ () -> Bool in ${this.lvalue(target)} = nil; return true }()`;
       }
       // Library mode: what script added to an instance of a compiled class, or to an object used as a map.
@@ -9205,7 +9570,7 @@ ${members.join('\n')}
     if (name === 'Application' && sym?.declarations?.some((d) => isCoreDeclaration(d)) && ts.isAsExpression(p)) return 'NativeScriptKit.Application';
     // An enum as a value (`Object.entries(Role)`): the object JavaScript makes of it.
     const enumDecl = sym?.valueDeclaration;
-    if (enumDecl && ts.isEnumDeclaration(enumDecl) && (!enumDecl.getSourceFile().isDeclarationFile || (!this.library && isCoreDeclaration(enumDecl))) && !(ts.isPropertyAccessExpression(p) && p.expression === e)) {
+    if (enumDecl && ts.isEnumDeclaration(enumDecl) && (!enumDecl.getSourceFile().isDeclarationFile || (!this.library && isCoreDeclaration(enumDecl))) && !(ts.isPropertyAccessExpression(p) && p.expression === e && (this.library || !this.objectMethod(p))) && !(!this.library && ts.isElementAccessExpression(p) && p.expression === e)) {
       return `${identPath(this.declaredName(e))}.jsEnumObject`;
     }
     if (sym && sym.flags & ts.SymbolFlags.Class && !(ts.isPropertyAccessExpression(p) && p.expression === e) && !(ts.isNewExpression(p) && p.expression === e)
@@ -9354,6 +9719,35 @@ ${members.join('\n')}
     return held;
   }
 
+  /** App mode: a type name Swift code already has unqualified (the standard library's, Foundation's, the runtime's). */
+  private nativeClash(name: string): boolean {
+    return !this.library && (SWIFT_NATIVE_TYPES.has(name) || runtimeTypeName(name));
+  }
+
+  private openFieldsClass: ts.ClassLikeDeclaration | null | undefined;
+  /**
+   * App mode: a program class declaring instance fields whose objects the program holds untyped somewhere (any, unknown,
+   * object, a type parameter), so that `Object.defineProperty` with a key known only at run time may name one of its fields.
+   */
+  private heldOpenWithFields(): ts.ClassLikeDeclaration | null {
+    if (this.openFieldsClass !== undefined) return this.openFieldsClass;
+    const roots = classesHeldUntyped(this.sourceFiles, this.checker, true);
+    const rootOf = (c: ts.ClassLikeDeclaration) => { let r = c; for (let b = this.programBase(r); b; b = this.programBase(b)) r = b; return r; };
+    const hasFields = (c: ts.ClassLikeDeclaration) => c.members.some((m) => (ts.isPropertyDeclaration(m) && !hasModifier(m, ts.SyntaxKind.StaticKeyword) && !hasModifier(m, ts.SyntaxKind.DeclareKeyword))
+      || (ts.isConstructorDeclaration(m) && m.parameters.some((p) => ts.isParameterPropertyDeclaration(p, m))));
+    const classes: ts.ClassLikeDeclaration[] = [];
+    const visit = (n: ts.Node): void => { if (ts.isClassLike(n)) classes.push(n); ts.forEachChild(n, visit); };
+    for (const f of this.sourceFiles) if (!f.isDeclarationFile && !this.pluginFiles.has(f.fileName)) visit(f);
+    return (this.openFieldsClass = this.library ? null : classes.find((c) => roots.has(rootOf(c)) && hasFields(c)) ?? null);
+  }
+
+  /** Refuses `definesRunTimeKey`'s calls in app code where a program class's declared field may be the key (`heldOpenWithFields`). */
+  private refuseRunTimeDefine(e: ts.CallExpression): void {
+    if (this.library || this.pluginFiles.has(e.getSourceFile().fileName) || !definesRunTimeKey(e, this.checker)) return;
+    const cls = this.heldOpenWithFields();
+    if (cls) throw this.error(e, `Object.${(e.expression as ts.PropertyAccessExpression).name.text} with a key known only at run time on an untyped object that may be a \`${cls.name?.text ?? 'class'}\`, whose declared fields keep no descriptor`);
+  }
+
   private topNames(): Map<ts.Node, string> {
     if (this.renamedTop) return this.renamedTop;
     const byName = new Map<string, { decl: ts.Node; file: ts.SourceFile }[]>();
@@ -9372,7 +9766,7 @@ ${members.join('\n')}
         // An interface is a Swift type of its name (a class in library mode, else a protocol or object class), so it shares the
         // namespace with the classes (sqlite's `SQLiteDatabase` interface in its common file, the class in its iOS one).
         if (library ? ts.isInterfaceDeclaration(st) || (ts.isTypeAliasDeclaration(st) && ts.isTypeLiteralNode(st.type))
-          : (ts.isInterfaceDeclaration(st) && !(this.checker.getSymbolAtLocation(st.name)!.flags & ts.SymbolFlags.Class)) || (ts.isTypeAliasDeclaration(st) && ts.isTypeLiteralNode(st.type) && this.core.has(st.name.text))) add(st.name.text, st);
+          : (ts.isInterfaceDeclaration(st) && !(this.checker.getSymbolAtLocation(st.name)!.flags & ts.SymbolFlags.Class)) || (ts.isTypeAliasDeclaration(st) && ts.isTypeLiteralNode(st.type) && (this.core.has(st.name.text) || this.nativeClash(st.name.text)))) add(st.name.text, st);
         if (library) continue;
         if (ts.isFunctionDeclaration(st) && st.name) add(st.name.text, st);
         if (ts.isVariableStatement(st) && !hasModifier(st, ts.SyntaxKind.DeclareKeyword)) for (const d of st.declarationList.declarations) for (const n of boundNames(d.name)) add(n.text, n.parent);
@@ -9390,8 +9784,9 @@ ${members.join('\n')}
         || (!this.library && list.some((x) => ts.isFunctionDeclaration(x.decl) || ts.isVariableDeclaration(x.decl) || ts.isBindingElement(x.decl)) && this.core.exportsTopLevel(name));
       // A generated class and a hand-ported one of the same name: the hand port of that module has to go first.
       if (kitClash && list.some((x) => this.library?.moduleName(x.file.fileName))) this.kitClashes.push(name);
-      // A type the hand-written kit declares for itself (Signals' `Source`): the generated one takes its module's name.
-      const internalClash = !!this.library?.internalTypes?.has(name);
+      // A type the hand-written kit declares for itself (Signals' `Source`), or an app's type named as one Swift has already
+      // (`Result`): the generated one takes its module's name.
+      const internalClash = !!this.library?.internalTypes?.has(name) || (list.some((x) => typeLike(x.decl) || ts.isInterfaceDeclaration(x.decl)) && this.nativeClash(name));
       if (list.length < 2 && !kitClash && !internalClash) continue;
       // The app's first declaration keeps its name; the others take their module's.
       // A class keeps its name over an interface of the same name, as it is the public API.
@@ -9509,6 +9904,7 @@ ${members.join('\n')}
       // Narrowed by a test (`value instanceof LinearGradient`): what the test found.
       const held = this.undefinedVars.get(sym)!.replace(/[?!]$/, '');
       if (held !== actual.replace(/[?!]$/, '') && actual !== 'Any?' && this.isObjectRef(e) && /^[A-Z][\w.]*$/.test(held)) return this.narrowCast(e, code, actual.replace(/[?!]$/, ''));
+      if (this.nullVars.has(sym) && (actual === 'Double' || actual === 'String')) return `(${code} ?? ${actual === 'Double' ? '0' : '"null"'})`;
       return isOptional(actual) ? code : this.undefinedAs(code, actual, this.undefinedVars.get(sym));
     }
     const declared = this.declaredTypeOf(e);
@@ -9607,7 +10003,7 @@ ${members.join('\n')}
     if (inner !== e && /\?$/.test(this.typeOf(inner)) && this.typeOf(e) === 'String') return `jsToString(${this.expr(inner)} as Any?)`;
     if (this.nullField(e)) return `jsToString(${this.coerce(e, 'Any?')})`;
     const maybe = this.maybeUndefined(e);
-    if (maybe) return `jsToString(${maybe} as Any?)`;
+    if (maybe) return `jsToString(${this.nilIsNull(e) ? `jsNulled(${maybe} as Any?)` : `${maybe} as Any?`})`;
     const chain = this.chainRead(e);
     if (chain) return `jsToString(${chain} as Any?)`;
     const t = this.typeOf(e);
@@ -10052,6 +10448,8 @@ ${members.join('\n')}
     while (ts.isParenthesizedExpression(x)) x = x.expression;
     const access = target.parent;
     const chained = (ts.isPropertyAccessExpression(access) || ts.isElementAccessExpression(access)) && !!access.questionDotToken;
+    const awaited = this.rawAwait(x);
+    if (awaited && !chained) return `jsUnwrap(${awaited}, ${swiftString(key)}${this.nullResult(x) ? ', null: true' : ''})`;
     if (!chained && this.definiteReceiver(x)) return `jsUnwrap(${this.expr(x)}, ${swiftString(key)})`;
     if (!chained && uncheckedMatch(x, this.checker)) return `jsUnwrap(${this.expr(x)}, ${swiftString(key)}, null: true)`;
     const kind = unsafeReceiver(target, this.checker);
@@ -10122,9 +10520,10 @@ ${members.join('\n')}
     }
     // `Enum[name]`, `Enum[value]`: the object JavaScript makes of the enum, by key.
     const enumDecl = ts.isIdentifier(e.expression) ? this.resolve(e.expression)?.valueDeclaration : undefined;
-    if (enumDecl && ts.isEnumDeclaration(enumDecl) && !enumDecl.getSourceFile().isDeclarationFile && !ts.isStringLiteral(key) && !isWriteTarget(e)) {
+    if (((enumDecl && ts.isEnumDeclaration(enumDecl) && !enumDecl.getSourceFile().isDeclarationFile) || this.isEnumObject(e.expression)) && !ts.isStringLiteral(key) && !isWriteTarget(e)) {
       const rt = this.typeOf(e);
-      const code = `${identPath(this.declaredName(e.expression as ts.Identifier))}.jsEnumObject[jsKey: ${this.propertyKey(key)}]`;
+      const object = ts.isIdentifier(e.expression) ? identPath(this.declaredName(e.expression)) : this.expr(e.expression);
+      const code = `${object}.jsEnumObject[jsKey: ${this.propertyKey(key)}]`;
       return rt === 'Any?' ? code : this.fromAny(code, rt);
     }
     if (this.typeOf(e.expression) === 'Any?') {
@@ -10134,6 +10533,10 @@ ${members.join('\n')}
     }
     // A key the type does not declare (`view?.['setIndicator']` on a View): looked up by name, as JavaScript does.
     const declared = !ts.isStringLiteral(key) || !!this.checker.getNonNullableType(this.checker.getTypeAtLocation(e.expression)).getProperty(key.text);
+    if (ts.isStringLiteral(key) && declared && this.definedField(e.expression, key.text)) {
+      if (isWriteTarget(e)) throw this.error(e, `a write of a field Object.defineProperty may restrict by an element access (write \`.${key.text}\`)`);
+      if (!q) return this.fromAnyCode(`${target}[jsKey: ${swiftString(key.text)}]`, this.typeOf(e), true);
+    }
     if (ts.isStringLiteral(key) && declared) return `${target}${q}.${ident(key.text)}`;
     const keyed = ts.isIdentifier(key) && this.typeOf(key) === 'JSSymbol' ? this.checker.getTypeAtLocation(e.expression).getProperties().find((p) => {
       const n = p.valueDeclaration && (p.valueDeclaration as ts.NamedDeclaration).name;
@@ -10204,6 +10607,8 @@ ${members.join('\n')}
 
   maybeUndefined(e: ts.Expression): string | null {
     while (ts.isParenthesizedExpression(e)) e = e.expression;
+    const awaited = this.rawAwait(e);
+    if (awaited) return awaited;
     const asserted = this.assertedUntyped(e);
     // An object variable (`const v = x as View`) is held as Swift's type says, the value checked there; one declared optional takes it unchecked.
     if (asserted && (['String', 'Double', 'Bool'].includes(this.typeOf(asserted)) || !ts.isVariableDeclaration(ts.walkUpParenthesizedExpressions(asserted.parent)))) return this.assertedOptional(asserted);
@@ -10304,6 +10709,12 @@ ${members.join('\n')}
     if (ts.isElementAccessExpression(e) && !isWriteTarget(e) && this.typeOf(e.expression).replace(/[?!]$/, '') === 'JSMatch' && !uncheckedMatch(e.expression, this.checker)) {
       const q = e.questionDotToken || this.continuesOptional(e.expression) ? '?' : '';
       return `(${this.expr(e.expression)}${q}.values.element(${this.toNumber(e.argumentExpression)}) ?? nil)`;
+    }
+    // `Enum[value]` of a value no member has: undefined, though TypeScript types it a string.
+    if (ts.isElementAccessExpression(e) && !isWriteTarget(e) && !ts.isStringLiteral(e.argumentExpression) && this.isEnumObject(e.expression) && !isOptional(this.typeOf(e))) {
+      const object = ts.isIdentifier(e.expression) ? identPath(this.declaredName(e.expression)) : this.expr(e.expression);
+      const code = `${object}.jsEnumObject[jsKey: ${this.propertyKey(e.argumentExpression)}]`;
+      return this.typeOf(e) === 'Any?' ? code : this.fromAny(code, optionalType(this.typeOf(e)));
     }
     if (ts.isElementAccessExpression(e) && !isWriteTarget(e) && isTypedArrayType(this.typeOf(e.expression).replace(/[?!]$/, ''))) {
       return `${this.expr(e.expression)}${e.questionDotToken || this.continuesOptional(e.expression) ? '?' : ''}[jsIndex: ${this.toNumber(e.argumentExpression)}]`;
@@ -10472,6 +10883,9 @@ ${members.join('\n')}
       const emitted = method && this.baseMethod(method) ? this.emittedSignature(method).params[k]?.type.replace(/!$/, '?') : undefined;
       // An optional parameter of the program's (`cssFileName?: string`, `namespace: string | undefined`) takes undefined as it is.
       const omissible = !emitted && !erased && decl && ts.isParameter(decl) && (!!decl.questionToken || this.declaredUndefined(decl) || this.looseDeclaration(decl) || this.familyDefaultsDiffer(decl)) && !decl.getSourceFile().isDeclarationFile && (['String', 'Double', 'Bool'].includes(at) || (this.looseDeclaration(decl) && this.looseObjectType(at)));
+      // A result Swift has as optional, given to an object parameter the program's code takes optional or implicitly unwrapped: as it is.
+      const raw = !emitted && !erased && decl && ts.isParameter(decl) && !decl.getSourceFile().isDeclarationFile && (this.mayBeNull(decl) || (!!decl.questionToken && !['String', 'Double', 'Bool'].includes(at))) && (this.givesUndefined(a) || (this.lenientApp && !!(decl.parent as ts.FunctionLikeDeclaration).body && this.heldOptional(a, at))) ? this.maybeUndefined(a) : null;
+      if (raw) { out.push(raw); continue; }
       out.push(this.coerce(a, emitted ?? (omissible ? optionalType(at) : erased ? this.inFile(decl!.getSourceFile().fileName, () => this.paramType(decl as ts.ParameterDeclaration)) : at === 'Never' ? this.type(this.checker.getTypeOfSymbol(p), e) : at)));
     }
     if (restAt >= 0 && appDeclared && out.length <= restAt) out.push(`${this.restType(params[restAt])}()`);
@@ -10733,7 +11147,11 @@ ${members.join('\n')}
     // `callback?.(x)` of a parameter declared present: Swift has it as non-optional, and the call is a plain one.
     const param = ts.isIdentifier(callee) ? this.resolve(callee)?.valueDeclaration : undefined;
     const presentParam = !!param && ts.isParameter(param) && !param.questionToken && !param.initializer && !this.mayBeNull(param) && !nullableTypeNode(param.type) && isFunctionType(this.typeOf(callee));
-    if (e.questionDotToken && !presentParam && !this.core.isKitMethod(callee) && !declaredMethod && !declaredFunction(callee)) return `${this.expr(callee)}?(${this.args(e).join(', ')})`;
+    if (e.questionDotToken && !presentParam && !this.core.isKitMethod(callee) && !declaredMethod && !declaredFunction(callee)) {
+      // A field narrowed to a function already reads unwrapped.
+      const fn = this.expr(callee);
+      return fn.endsWith('!') ? `${fn}(${this.args(e).join(', ')})` : `${fn}?(${this.args(e).join(', ')})`;
+    }
     if (ts.isIdentifier(callee)) return this.globalCall(callee, e);
     const nsMember = ts.isPropertyAccessExpression(callee) ? this.namespaceMember(callee) : null;
     if (nsMember) {
@@ -11555,6 +11973,7 @@ ${members.join('\n')}
         if (method === 'hasOwn') return `jsHasOwn(${this.coerce(arg(0), 'Any?')}, ${this.propertyKey(arg(1))})`;
         if (method === 'getOwnPropertyDescriptor') return `jsOwnPropertyDescriptor(${this.coerce(arg(0), 'Any?')}, ${this.propertyKey(arg(1))})`;
         if (method === 'getPrototypeOf') return `jsGetPrototypeOf(${this.coerce(arg(0), 'Any?')})`;
+        if (method === 'defineProperty' || method === 'defineProperties') this.refuseRunTimeDefine(e);
         if (method === 'defineProperties') {
           const d = arg(1);
           if (!ts.isObjectLiteralExpression(d)) this.checkFieldDefinition(arg(0), undefined, d);
@@ -11583,7 +12002,7 @@ ${members.join('\n')}
           const t = T();
           // Properties assigned onto a function (`Object.assign(memoized, { release })`) leave a function, which no class holds.
           const callable = this.checker.getTypeAtLocation(arg(0)).getCallSignatures().length > 0;
-          return t === 'Any?' || callable ? code : this.fromAnyCode(code, t, true);
+          return t === 'Any?' || callable || statementLevel(e) ? code : this.fromAnyCode(code, t, true);
         }
         break;
       }
@@ -11891,7 +12310,7 @@ ${members.join('\n')}
         // A type-guard filter (`(s): s is UIWindowScene => …`): its elements as the guard narrows them.
         const narrowed = name === 'filter' ? /^JSArray<(\w+)>$/.exec(this.typeOf(e))?.[1] : undefined;
         // The guard passed each element, so each is of its class.
-        if (narrowed && narrowed !== el && /^\w+$/.test(el)) return `JSArray<${narrowed}>(${this.ignoringThisArg(e, target, call())}.storage.compactMap { $0 as? ${narrowed} })`;
+        if (narrowed && narrowed !== el && (/^\w+$/.test(el) || (!this.library && el === 'Any?' && ['Double', 'String', 'Bool'].includes(narrowed)))) return `JSArray<${narrowed}>(${this.ignoringThisArg(e, target, call())}.storage.compactMap { $0 as? ${narrowed} })`;
         if (name === 'find' && /^\w+$/.test(el)) {
           const found = this.typeOf(e).replace(/[?!]$/, '');
           if (/^\w+$/.test(found) && found !== el && found !== 'Any') return `(${this.ignoringThisArg(e, target, call())}.flatMap { $0 as? ${found} })`;
@@ -13204,6 +13623,13 @@ ${members.join('\n')}
     if (/^JS(Iterator|AsyncIterator)</.test(name)) return this.scriptIterator(e, name);
     // A spread of an open type (`{ ...state, x }` with `state: T`) carries keys no shape declares; the shape keeps them as extras.
     if (e.properties.some((p) => ts.isSpreadAssignment(p) && openSpreadType(this.checker.getTypeAtLocation(p.expression)))) return this.fromAnyCode(this.dynamicObject(e), name);
+    // So does an untyped spread, with keys holding undefined or null besides, in its order.
+    if (!this.lenient && !this.library && !this.pluginFiles.has(e.getSourceFile().fileName) && e.properties.some((p) => ts.isSpreadAssignment(p) && this.isAny(p.expression))) {
+      // Members reading `this` would read the untyped object, not the one made of it.
+      const own = e.properties.find((p) => ts.isMethodDeclaration(p) || ts.isAccessor(p) || (ts.isPropertyAssignment(p) && ts.isFunctionExpression(p.initializer) && thisNodes(p.initializer).length > 0));
+      if (own) throw this.error(own, 'a method beside an untyped spread in a typed object literal');
+      return this.fromAnyCode(this.dynamicObject(e), name);
+    }
     let decl = this.checker.getNonNullableType(type).getSymbol()?.declarations?.[0];
     // A literal that conforms to an app interface it is not declared as.
     const conforming = this.appInterfaces?.find((i) => i.name === name);
@@ -13226,6 +13652,34 @@ ${members.join('\n')}
     else throw this.error(e, `an object literal of type ${name}`);
     const given = new Map<string, string>();
     const spreadTemps: string[] = [];
+    // An optional field given undefined is a key all the same, as one given null is: the shape notes which (`jsUnset`,
+    // `jsNulls`), from the value's type, or as it runs (`JSLiteralKeys`) where only the run tells.
+    const notesKeys = !this.lenient && !this.library && !this.pluginFiles.has(e.getSourceFile().fileName) && (target === name || (target === `${name}Object` && this.protocols.has(name) && !isCoreDeclaration(decl!))) && !order.some((f) => (f as ShapeField).accessor || (f as ShapeField).symbol);
+    const keyed = new Set(notesKeys ? order.filter((f) => f.type.endsWith('?') && /[?!]$/.test(this.shapeHeld(f)) && !hasTopLevelArrow(this.shapeHeld(f))).map((f) => f.name) : []);
+    const unsetKeys: string[] = [], keyNotes: string[] = [];
+    let keysVar: string | null = null;
+    const noteKey = (key: string, value: ts.Expression, code: () => string): string => {
+      const f = order.find((x) => x.name === key);
+      // Null given as such is noted with the literal's other nulls.
+      if (!f || !keyed.has(key) || ts.skipOuterExpressions(value).kind === ts.SyntaxKind.NullKeyword) return code();
+      const t = this.checker.getTypeAtLocation(value);
+      if (onlyUndefined(t)) { unsetKeys.push(key); return code(); }
+      if (ts.isObjectLiteralExpression(ts.skipOuterExpressions(value)) || ts.isArrayLiteralExpression(ts.skipOuterExpressions(value))) return code();
+      const untyped = this.typeOf(value) === 'Any?';
+      if (!untyped && !admitsUndefined(t)) return code();
+      const k = keysVar ??= this.fresh('__keys');
+      const how = untyped && f.type !== 'Any?' ? 'untyped' : 'typed';
+      if (ts.isIdentifier(value)) { keyNotes.push(`${k}.${how}(${swiftString(key)}, ${this.expr(value)})`); return code(); }
+      const wrap = (x: string) => (x.startsWith('try ') ? `try ${k}.${how}(${swiftString(key)}, ${x.slice(4)})` : `${k}.${how}(${swiftString(key)}, ${x})`);
+      if (how === 'typed') return wrap(code());
+      // Null and undefined apart before the value is converted to the field's type, which holds both as nil.
+      this.subst.set(value, wrap(this.expr(value)));
+      try {
+        const made = code();
+        if (!made.includes(`${k}.untyped(`)) throw this.error(value, 'this untyped value for an optional field of an object literal');
+        return made;
+      } finally { this.subst.delete(value); }
+    };
     // A field the class holds implicitly unwrapped (`shapeHeld`) takes what the literal gives as optional, undefined included.
     const loose = (want: string | undefined) => !!want && target === name && this.shapeHeld({ type: want }) === `${want}!`;
     // Methods that read `this` see the object through a weak reference the literal sets once it exists.
@@ -13237,7 +13691,7 @@ ${members.join('\n')}
         const key = literalKey(p.name, this.checker) ?? p.name.getText();
         const field = order.find((f) => f.name === key)?.type ?? 'Any?';
         const want = loose(field) ? optionalType(field) : field;
-        given.set(key, self && thisFunction(p) ? this.withThis(p.initializer as ts.FunctionExpression, `${self}!`, false, () => this.coerce(p.initializer, want)) : this.coerce(p.initializer, want));
+        given.set(key, self && thisFunction(p) ? this.withThis(p.initializer as ts.FunctionExpression, `${self}!`, false, () => this.coerce(p.initializer, want)) : noteKey(key, p.initializer, () => this.coerce(p.initializer, want)));
       } else if (ts.isGetAccessorDeclaration(p) || ts.isSetAccessorDeclaration(p)) {
         const key = literalKey(p.name, this.checker) ?? p.name.getText();
         const f = order.find((x) => x.name === key) as ShapeField | undefined;
@@ -13253,6 +13707,7 @@ ${members.join('\n')}
           given.set(`__set_${key}`, `{ (__this: ${target}, ${ident(v.text)}: ${f.accessor.value}) -> Void in${body.slice(1)}`);
         }
       } else if (ts.isShorthandPropertyAssignment(p)) {
+        noteKey(p.name.text, p.name, () => '');
         const held = this.checker.getShorthandAssignmentValueSymbol(p);
         const fn = (held && held.flags & ts.SymbolFlags.Alias ? this.checker.getAliasedSymbol(held) : held)?.valueDeclaration;
         const code = fn && (ts.isClassDeclaration(fn) || ts.isModuleDeclaration(fn)) ? `${identPath(this.topNames().get(fn) ?? p.name.text)}.self` : this.narrowed(p.name, this.shorthandValue(p));
@@ -13266,6 +13721,11 @@ ${members.join('\n')}
         const undefinedVar = !!valueSym && this.undefinedVars.has(valueSym) && !!want && !isOptional(want) && want !== 'Any?';
         if (loose(want) && !actual) {
           given.set(p.name.text, variable === 'Any?' || this.typeOf(p.name) === 'Any?' ? this.fromAny(code, optionalType(want!)) : code);
+          continue;
+        }
+        // An untyped variable for a typed field (`{ tint }`, tint untyped): converted as script reads it there.
+        if (!actual && want && want !== 'Any?' && (variable === 'Any?' || this.typeOf(p.name) === 'Any?')) {
+          given.set(p.name.text, this.fromAny(code, want));
           continue;
         }
         given.set(p.name.text, actual && want && functionParts(want) && actual !== want ? this.convert(code, actual, want) : undefinedVar ? this.undefinedAs(code, want!) : unwrap && !code.endsWith('!') ? `${code}!` : want === 'Any?' && this.nilIsNull(p.name) ? `jsNulled(${code})` : code);
@@ -13330,13 +13790,17 @@ ${members.join('\n')}
     const nullKeys = !order.some((f) => (f as ShapeField).accessor || (f as ShapeField).symbol) ? e.properties.filter((p): p is ts.PropertyAssignment | ts.ShorthandPropertyAssignment => (ts.isPropertyAssignment(p) && (ts.skipOuterExpressions(p.initializer).kind === ts.SyntaxKind.NullKeyword || this.nilIsNull(p.initializer))) || (ts.isShorthandPropertyAssignment(p) && this.nilIsNull(p.name)))
       .map((p) => literalKey(p.name, this.checker) ?? p.name.getText()).filter((k) => order.some((f) => f.name === k && isOptional(f.type) && f.type !== 'Any?')) : [];
     // An untyped value may be null, which only the run can tell.
-    const untypedKeys = nullKeys.length || !order.some((f) => (f as ShapeField).accessor || (f as ShapeField).symbol) ? e.properties.flatMap((p) => {
+    const untypedKeys = !notesKeys && (nullKeys.length || !order.some((f) => (f as ShapeField).accessor || (f as ShapeField).symbol)) ? e.properties.flatMap((p) => {
       const value = ts.isPropertyAssignment(p) ? p.initializer : ts.isShorthandPropertyAssignment(p) ? p.name : null;
       const k = value && p.name ? literalKey(p.name, this.checker) ?? p.name.getText() : null;
       if (!value || !k || nullKeys.includes(k) || !ts.isIdentifier(value) || this.typeOf(value) !== 'Any?' || !order.some((f) => f.name === k && isOptional(f.type) && f.type !== 'Any?')) return [];
       return [`(${swiftString(k)}, ${this.expr(value)})`];
     }) : [];
-    const nulled = untypedKeys.length ? `, jsNulls: jsNullKeysOf([${nullKeys.map(swiftString).join(', ')}], [${untypedKeys.join(', ')}])` : nullKeys.length ? `, jsNulls: [${nullKeys.map(swiftString).join(', ')}]` : '';
+    const holdsNulls = order.some((f) => isOptional(f.type) && f.type !== 'Any?');
+    if (keysVar) spreadTemps.unshift(`var ${keysVar} = JSLiteralKeys(${[...(nullKeys.length ? [`nulls: [${nullKeys.map(swiftString).join(', ')}]`] : []), ...(unsetKeys.length ? [`unset: [${unsetKeys.map(swiftString).join(', ')}]`] : [])].join(', ')})`, ...keyNotes);
+    const nulled = keysVar ? `${holdsNulls ? `, jsNulls: ${keysVar}.nulls` : ''}, jsUnset: ${keysVar}.unset`
+      : (untypedKeys.length ? `, jsNulls: jsNullKeysOf([${nullKeys.map(swiftString).join(', ')}], [${untypedKeys.join(', ')}])` : nullKeys.length ? `, jsNulls: [${nullKeys.map(swiftString).join(', ')}]` : '')
+        + (unsetKeys.length ? `, jsUnset: [${unsetKeys.map(swiftString).join(', ')}]` : '');
     const made = `${target}(${args}${args && reorder ? reorder : reorder.slice(2)}${args || reorder ? nulled : nulled.slice(2)})`;
     if (!spreadTemps.length && !self) return made;
     const throws = this.throwsInfo.expr(e) || [...spreadTemps, made].some((x) => THROWING_CODE.test(outsideClosures(x)));
@@ -13567,6 +14031,11 @@ function nullNotUndefined(t: ts.Type): boolean {
   return parts.some((x) => x.flags & ts.TypeFlags.Null) && !parts.some((x) => x.flags & (ts.TypeFlags.Undefined | ts.TypeFlags.Void | ts.TypeFlags.Any | ts.TypeFlags.Unknown));
 }
 
+/** An app class's keys in `dynamicMembers`: in plan order, each present by `present` (null: always). */
+interface KeyedMembers { order: string[]; present: (name: string) => string | null; ordered: boolean; appBase: boolean }
+interface KeyHierarchy { ordered: boolean; gated: boolean; expando: boolean; noted: string }
+/** An app class's keys: see `classKeys`. */
+interface ClassKeys { on: boolean; order: string[]; always: Set<string>; sure: Set<string>; written: Set<string>; flagged: Set<string>; walked: Map<ts.Node, { field: string; first: boolean }>; depth: number }
 interface ShapeField { name: string; type: string; accessor?: { get: boolean; set: boolean; throws: boolean; value: string }; symbol?: boolean }
 
 /** The `this` nodes of a function, and of the arrow functions inside it. */

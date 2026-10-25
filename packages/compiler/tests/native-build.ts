@@ -66,6 +66,8 @@ export interface SwiftOptions {
   lenientApp?: boolean;
   /** False skips the copies preflight refuses (src/sharing.ts). */
   copiesChecked?: boolean;
+  /** Class fields assigned in the constructor rather than defined (`useDefineForClassFields` off); else as the roots' tsconfig.json says. */
+  assignFields?: boolean;
   /**
    * Each module translated on its own, what one cannot translate given here rather than thrown: the others still translate.
    * Without it, the first module that cannot translate throws.
@@ -80,7 +82,7 @@ export interface SwiftOptions {
 export function translateSwift(roots: string[], out: string, o: SwiftOptions = {}): TranslatedModule[] {
   const loose = !!o.lenient;
   const packages = new PluginSources({ app: join(root, 'tests'), platform: 'ios' });
-  const { checker, program, files: programFiles, pluginFiles: packageFiles, resolved, lenient: lenientApp } = createProgram(roots, new Map(), 'ios', modulesDir, packages, [], {}, loose ? { strict: false, useDefineForClassFields: false } : o.plugin || o.lenientApp ? { strict: false, useUnknownInCatchVariables: false } : {});
+  const { checker, program, files: programFiles, pluginFiles: packageFiles, resolved, lenient: lenientApp, assignsFields } = createProgram(roots, new Map(), 'ios', modulesDir, packages, [], {}, loose ? { strict: false, useDefineForClassFields: false } : o.plugin || o.lenientApp ? { strict: false, useUnknownInCatchVariables: false } : {});
   const rootFiles = programFiles.filter((sf) => !packageFiles.includes(sf.fileName));
   const imported = roots.flatMap((r) => importsOf(program, r, 'ios'));
   const appFiles = [...new Set([...roots, ...imported])];
@@ -96,7 +98,7 @@ export function translateSwift(roots: string[], out: string, o: SwiftOptions = {
   const lenientPlugins = [...(o.plugin ? plugin.filter((f) => !packageFiles.includes(f)) : []), ...packageFiles.filter((f) => !writtenStrict(f))];
   // Every module, as an app's are: names its modules share are told apart across them.
   if (!loose && o.copiesChecked !== false) refuseCopies(checker, all, lenientPlugins, (st) => !packageFiles.includes(st.getSourceFile().fileName) || !reach || reach.keeps(st));
-  const translator = new Translator(checker, new Map(), all, { lenient: loose, library, weak: o.weak, lenientApp: !!(o.plugin || o.lenientApp || (o.appStrictness && lenientApp)), ...(loose ? { pluginFiles: all.map((f) => f.fileName), properties: collectProperties(checker, all) } : plugin.length ? { pluginFiles: plugin, lenientFiles: lenientPlugins, properties: collectProperties(checker, all), reach } : {}) });
+  const translator = new Translator(checker, new Map(), all, { lenient: loose, library, weak: o.weak, assignFields: o.assignFields ?? assignsFields, lenientApp: !!(o.plugin || o.lenientApp || (o.appStrictness && lenientApp)), ...(loose ? { pluginFiles: all.map((f) => f.fileName), properties: collectProperties(checker, all) } : plugin.length ? { pluginFiles: plugin, lenientFiles: lenientPlugins, properties: collectProperties(checker, all), reach } : {}) });
   if (reach) translator.compiledFiles = new Set(compiled);
   if (process.env.NS_DIFF_ALL_ERRORS) translator.errors = [];
   translator.appModule = 'Main';
@@ -186,6 +188,7 @@ export interface KotlinOptions {
   lenientApp?: boolean;
   /** False skips the copies preflight refuses (src/sharing.ts). */
   copiesChecked?: boolean;
+  assignFields?: boolean;
   refused?: (file: string, error: Error) => void;
 }
 
@@ -193,7 +196,7 @@ export interface KotlinOptions {
 export function translateKotlin(roots: string[], out: string, pkg: string, o: KotlinOptions = {}): KotlinModule[] {
   const loose = !!o.lenient;
   const packages = new PluginSources({ app: join(root, 'tests'), platform: 'android' });
-  const { checker, program, files: programFiles, pluginFiles: packageFiles, resolved, lenient: lenientApp } = createProgram(roots, new Map(), 'android', modulesDir, packages, [], {}, loose ? { strict: false, useDefineForClassFields: false } : o.lenientApp ? { strict: false, useUnknownInCatchVariables: false } : {});
+  const { checker, program, files: programFiles, pluginFiles: packageFiles, resolved, lenient: lenientApp, assignsFields } = createProgram(roots, new Map(), 'android', modulesDir, packages, [], {}, loose ? { strict: false, useDefineForClassFields: false } : o.lenientApp ? { strict: false, useUnknownInCatchVariables: false } : {});
   const rootFiles = programFiles.filter((sf) => !packageFiles.includes(sf.fileName));
   const imported = roots.flatMap((r) => importsOf(program, r, 'android'));
   const appFiles = [...new Set([...roots, ...imported])];
@@ -205,7 +208,7 @@ export function translateKotlin(roots: string[], out: string, pkg: string, o: Ko
   const library = { identities: new Set<string>(), counterpart: () => null, moduleName: (f: string) => (f.endsWith('.d.ts') ? null : 'Module_' + basename(f).replace(/\W/g, '_')) };
   const lenientPlugins = packageFiles.filter((f) => !writtenStrict(f));
   if (!loose && o.copiesChecked !== false) refuseCopies(checker, all, lenientPlugins, (st) => !packageFiles.includes(st.getSourceFile().fileName) || !reach || reach.keeps(st));
-  const translator = new KotlinTranslator(checker, new Map(), all, { lenientApp: !!(o.lenientApp || (o.appStrictness && lenientApp)), ...(loose ? { lenient: true, library, pluginFiles: all.map((f) => f.fileName), properties: collectProperties(checker, all) } : packageFiles.length ? { pluginFiles: packageFiles, lenientFiles: lenientPlugins, properties: collectProperties(checker, all), reach } : {}) });
+  const translator = new KotlinTranslator(checker, new Map(), all, { assignFields: o.assignFields ?? assignsFields, lenientApp: !!(o.lenientApp || (o.appStrictness && lenientApp)), ...(loose ? { lenient: true, library, pluginFiles: all.map((f) => f.fileName), properties: collectProperties(checker, all) } : packageFiles.length ? { pluginFiles: packageFiles, lenientFiles: lenientPlugins, properties: collectProperties(checker, all), reach } : {}) });
   translator.appModule = pkg;
   translator.appMembersByName = !!o.membersByName;
   const lines = translator.lines = new SourceLines(new Map());

@@ -304,6 +304,57 @@ export function implementedInterfaces(checker: ts.TypeChecker, cls: ts.ClassLike
 }
 
 /**
+ * Types the generated Swift names without qualification (the standard library's, the Foundation types it uses): a program
+ * type of one of these names would hide it from the module's code, so it takes its module's name. Other native classes keep
+ * the program's name for its type and are written with their module (`Foundation.ProcessInfo`).
+ */
+export const SWIFT_NATIVE_TYPES = new Set(`Any AnyClass AnyHashable AnyObject Array ArraySlice AsyncSequence AsyncStream Bool
+  CGFloat CGRect Character ClosedRange Codable Collection Comparable ContiguousArray CustomStringConvertible Data Date Decodable Dictionary
+  Double Duration Encodable Equatable Error Float Float32 Float64 Hashable Hasher Int Int16 Int32 Int64 Int8
+  IteratorProtocol KeyPath MainActor Mirror NSArray NSData NSDate NSDictionary NSError NSNumber NSObject NSString
+  NSURL Never ObjectIdentifier Optional Range RawRepresentable Regex Result Selector Sendable Sequence Set
+  StaticString String Substring Task UInt UInt16 UInt32 UInt64 UInt8 Unicode Void`.split(/\s+/));
+
+/** As `SWIFT_NATIVE_TYPES`, Kotlin's: its default imports (kotlin.*, kotlin.collections.*, kotlin.text.*, …, java.lang.*). */
+export const KOTLIN_NATIVE_TYPES = new Set(`AbstractCollection AbstractIterator AbstractList AbstractMap AbstractSet Annotation
+  Any Appendable ArithmeticException Array ArrayDeque ArrayList AssertionError AutoCloseable Boolean BooleanArray Byte
+  ByteArray Char CharArray CharRange CharSequence Character Charsets Class ClassCastException ClassLoader Cloneable
+  ClosedRange Collection Comparable Comparator ConcurrentModificationException Deprecated Double DoubleArray Enum Error
+  Exception Float FloatArray Function Grouping HashMap HashSet IllegalArgumentException IllegalStateException
+  IndexOutOfBoundsException IndexedValue Int IntArray IntRange Integer InterruptedException Iterable Iterator JvmField
+  JvmName JvmOverloads JvmStatic Lazy LinkedHashMap LinkedHashSet List ListIterator Long LongArray LongRange Map MatchGroup
+  MatchResult Math Metadata Module MustBeDocumented MutableCollection MutableIterable MutableIterator MutableList
+  MutableListIterator MutableMap MutableSet NoSuchElementException NotImplementedError Nothing NullPointerException Number
+  NumberFormatException Object OptIn Override Package Pair Process ProcessBuilder Readable Record Regex RegexOption
+  ReplaceWith Repeatable Result Retention Runnable Runtime RuntimeException Sequence SequenceScope Set Short ShortArray
+  StackTraceElement StrictMath String StringBuffer StringBuilder Suppress Synchronized System Target Thread ThreadLocal
+  Throwable Throws Transient Triple Typography UByte UInt ULong UShort UnsupportedOperationException Unit Void
+  Volatile`.split(/\s+/));
+
+/**
+ * `Object.defineProperty(target, key, …)` with a key known only at run time, or `Object.defineProperties(target, map)` with
+ * a map that is no literal of literal keys, on an untyped target (any, unknown, object, a type parameter).
+ */
+export function definesRunTimeKey(call: ts.CallExpression, checker: ts.TypeChecker): boolean {
+  const [target, key] = call.arguments;
+  if (!target || !key || !ts.isPropertyAccessExpression(call.expression) || !ts.isIdentifier(call.expression.expression) || call.expression.expression.text !== 'Object') return false;
+  if (ts.isPropertyAccessExpression(target) && target.name.text === 'prototype') return false;
+  const t = checker.getTypeAtLocation(target);
+  if (!(t.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown | ts.TypeFlags.NonPrimitive | ts.TypeFlags.TypeParameter))) return false;
+  if (call.expression.name.text === 'defineProperty') {
+    const k = checker.getTypeAtLocation(key);
+    return !(k.isUnion() ? k.types : [k]).every((x) => x.isStringLiteral() || x.isNumberLiteral());
+  }
+  if (call.expression.name.text !== 'defineProperties') return false;
+  return !ts.isObjectLiteralExpression(key) || key.properties.some((p) => !p.name || literalKey(p.name, checker) == null);
+}
+
+/** Whether a program type of this name would hide one of the runtime's from the generated code. */
+export function runtimeTypeName(name: string): boolean {
+  return /^JS[A-Z]/.test(name);
+}
+
+/**
  * `object.name` where the object is an instance of a program class and the type checker finds no member `name`: an own
  * property of the instance, read and written by name. Only code checked leniently reaches here: a plugin's component is
  * typed by the plugin's declarations but compiled against its platform file, whose stub class may declare none of them.
@@ -318,20 +369,34 @@ export function undeclaredMemberOf(e: ts.PropertyAccessExpression, checker: ts.T
 
 /**
  * The program classes, each the root of its program hierarchy, whose instances the program holds untyped (`as any`, an
- * `any` variable or parameter given one), where script may give them members their classes don't declare.
+ * `any` variable or parameter given one), where script may give them members their classes don't declare. `open`: held as
+ * `object`, `{}` or a type parameter as well, by any expression.
  */
-export function classesHeldUntyped(files: readonly ts.SourceFile[], checker: ts.TypeChecker): Set<ts.ClassLikeDeclaration> {
+export function classesHeldUntyped(files: readonly ts.SourceFile[], checker: ts.TypeChecker, open = false): Set<ts.ClassLikeDeclaration> {
   const roots = new Set<ts.ClassLikeDeclaration>();
   const classOf = (n: ts.Expression) => {
     const d = checker.getNonNullableType(checker.getTypeAtLocation(n)).getSymbol()?.valueDeclaration;
     return d && ts.isClassLike(d) && !d.getSourceFile().isDeclarationFile ? d : undefined;
   };
-  const untyped = (t: ts.Type | undefined) => !!t && !!(t.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown));
+  const untyped = (t: ts.Type | undefined) => !!t && (!!(t.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown))
+    || (open && (!!(t.flags & (ts.TypeFlags.NonPrimitive | ts.TypeFlags.TypeParameter)) || (!!(t.flags & ts.TypeFlags.Object) && !t.getProperties().length && !t.getCallSignatures().length && !t.getConstructSignatures().length && !checker.getIndexInfosOfType(t).length))));
+  // An argument of a library function (`JSON.stringify(x)`, `Object.keys(x)`) goes nowhere else, but Object.defineProperty's target.
+  const givenToLibrary = (n: ts.Expression) => {
+    const call = n.parent;
+    if (!(ts.isCallExpression(call) || ts.isNewExpression(call)) || !call.arguments?.includes(n)) return false;
+    const d = checker.getResolvedSignature(call)?.declaration;
+    if (!d || !d.getSourceFile().isDeclarationFile) return false;
+    return !(ts.isCallExpression(call) && call.arguments[0] === n && ts.isPropertyAccessExpression(call.expression) && ['defineProperty', 'defineProperties'].includes(call.expression.name.text));
+  };
   const visit = (n: ts.Node) => {
     let held: ts.Expression | undefined;
     if ((ts.isAsExpression(n) || ts.isTypeAssertionExpression(n)) && untyped(checker.getTypeFromTypeNode(n.type))) held = n.expression;
-    else if ((ts.isNewExpression(n) || ts.isIdentifier(n) || n.kind === ts.SyntaxKind.ThisKeyword) && ts.isExpression(n) && !ts.isPropertyAccessExpression(n.parent) && untyped(checker.getContextualType(n))) held = n;
-    let cls = held && classOf(held);
+    else if ((ts.isNewExpression(n) || ts.isIdentifier(n) || n.kind === ts.SyntaxKind.ThisKeyword || (open && (ts.isPropertyAccessExpression(n) || ts.isCallExpression(n) || ts.isElementAccessExpression(n))))
+      && ts.isExpression(n) && !ts.isPropertyAccessExpression(n.parent) && untyped(checker.getContextualType(n)) && !(open && givenToLibrary(n))) held = n;
+    // `Object.assign(instance, …)` gives it the sources' keys.
+    else if (ts.isCallExpression(n) && n.arguments.length && ts.isPropertyAccessExpression(n.expression) && n.expression.name.text === 'assign' && ts.isIdentifier(n.expression.expression) && n.expression.expression.text === 'Object') held = n.arguments[0];
+    // A class with a string index signature takes any key.
+    let cls = held ? classOf(held) : ts.isClassLike(n) && n.members.some((m) => ts.isIndexSignatureDeclaration(m) && !hasStatic(m)) ? n : undefined;
     for (let h = cls?.heritageClauses?.find((x) => x.token === ts.SyntaxKind.ExtendsKeyword)?.types[0]; cls && h; h = cls.heritageClauses?.find((x) => x.token === ts.SyntaxKind.ExtendsKeyword)?.types[0]) {
       const d = checker.getTypeAtLocation(h.expression).getSymbol()?.valueDeclaration;
       if (!d || !ts.isClassLike(d) || d.getSourceFile().isDeclarationFile) break;
@@ -389,6 +454,32 @@ export function classesGivenUndeclaredMembers(files: readonly ts.SourceFile[], c
   };
   for (const sf of files) if (!sf.isDeclarationFile) visit(sf);
   return roots;
+}
+
+/**
+ * The keys `Object.defineProperty`/`defineProperties` names on an object of no class type (`any`, `unknown`, `object`, a
+ * type parameter): any program class's field of that name may be the one it defines, so its objects keep the descriptor.
+ */
+export function keysDefinedUntyped(files: readonly ts.SourceFile[], checker: ts.TypeChecker): Set<string> {
+  const keys = new Set<string>();
+  const untyped = (t: ts.Type) => !!(t.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown | ts.TypeFlags.NonPrimitive | ts.TypeFlags.TypeParameter));
+  const visit = (n: ts.Node) => {
+    if (ts.isCallExpression(n) && ts.isPropertyAccessExpression(n.expression) && ts.isIdentifier(n.expression.expression) && n.expression.expression.text === 'Object' && n.arguments.length >= 2
+      && untyped(checker.getTypeAtLocation(n.arguments[0]))) {
+      if (n.expression.name.text === 'defineProperty') {
+        const t = checker.getTypeAtLocation(n.arguments[1]);
+        for (const part of t.isUnion() ? t.types : [t]) if (part.isStringLiteral()) keys.add(part.value);
+      } else if (n.expression.name.text === 'defineProperties' && ts.isObjectLiteralExpression(n.arguments[1])) {
+        for (const p of n.arguments[1].properties) {
+          const k = p.name && literalKey(p.name, checker);
+          if (k !== null && k !== undefined) keys.add(k);
+        }
+      }
+    }
+    ts.forEachChild(n, visit);
+  };
+  for (const sf of files) if (!sf.isDeclarationFile) visit(sf);
+  return keys;
 }
 
 // ---- The trust rule ------------------------------------------------------------------------------------------------
@@ -680,6 +771,162 @@ function hasStatic(d: ts.Declaration): boolean {
   return !!ts.canHaveModifiers(d) && !!ts.getModifiers(d)?.some((m) => m.kind === ts.SyntaxKind.StaticKeyword);
 }
 
+/** Whether a value of type `t` may be undefined when it runs: its type admits undefined or void, or it is untyped. */
+export function admitsUndefined(t: ts.Type): boolean {
+  return (t.isUnion() ? t.types : [t]).some((x) => x.flags & (ts.TypeFlags.Undefined | ts.TypeFlags.Void | ts.TypeFlags.Any | ts.TypeFlags.Unknown));
+}
+
+/** Whether a value is undefined whatever it runs as (`undefined`, `void 0`). */
+export function onlyUndefined(t: ts.Type): boolean {
+  return !t.isUnion() && !!(t.flags & (ts.TypeFlags.Undefined | ts.TypeFlags.Void));
+}
+
+/**
+ * A class's own instance keys and the order its constructor makes them (Node's, for one level of a hierarchy: a subclass's
+ * keys follow everything its base's constructor made).
+ * - `always`: keys once the class's level of the constructor starts: parameter properties and initialized fields, or every
+ *   declared field where the app's configuration defines class fields (`useDefineForClassFields`).
+ * - `sure`: fields without an initializer the constructor assigns on every path before anything else can run (`walked`).
+ * - `written`: the others, each a key at its first write, undefined too.
+ * - `order`: `always` (parameter properties first), then the fields in the order the walk first writes them, then the rest
+ *   as declared. A key made out of this order (a `written` field's first write anywhere but `walked`) is noted as it runs.
+ * - `walked`: the constructor's `this.f = v` writes up to the first statement that could run other code with `this` (a base
+ *   class's constructor may have let `this` out, so there any call ends the walk too); `first`: the path's first write of `f`.
+ */
+export interface ClassKeyPlan { order: string[]; always: Set<string>; sure: Set<string>; written: ts.PropertyDeclaration[]; walked: Map<ts.Node, { field: string; first: boolean }> }
+
+export function classKeyPlan(cls: ts.ClassLikeDeclaration, defines: boolean): ClassKeyPlan {
+  const always = new Set<string>(), written: ts.PropertyDeclaration[] = [], order: string[] = [];
+  const sure = new Set<string>(), walked = new Map<ts.Node, { field: string; first: boolean }>();
+  const ctor = cls.members.find((m): m is ts.ConstructorDeclaration => ts.isConstructorDeclaration(m) && !!m.body);
+  for (const p of ctor?.parameters ?? []) if (ts.isParameterPropertyDeclaration(p, ctor!) && ts.isIdentifier(p.name)) { always.add(p.name.text); order.push(p.name.text); }
+  const fields = new Map<string, ts.PropertyDeclaration>();
+  for (const m of cls.members) {
+    if (!ts.isPropertyDeclaration(m) || hasStatic(m) || !ts.isIdentifier(m.name)) continue;
+    if (ts.getModifiers(m)?.some((x) => x.kind === ts.SyntaxKind.DeclareKeyword || x.kind === ts.SyntaxKind.AbstractKeyword)) continue;
+    if (always.has(m.name.text)) continue;
+    if (defines || m.initializer) { always.add(m.name.text); order.push(m.name.text); }
+    else fields.set(m.name.text, m);
+  }
+  const based = !!cls.heritageClauses?.some((h) => h.token === ts.SyntaxKind.ExtendsKeyword);
+  const stmts = ctor ? [...ctor.body!.statements] : [];
+  const superAt = stmts.findIndex((s) => ts.isExpressionStatement(s) && ts.isCallExpression(s.expression) && s.expression.expression.kind === ts.SyntaxKind.SuperKeyword);
+  // A field holding a function that uses `this` (`onTap = () => this.x = 1`) lets it out when read; any other initializer
+  // using it lets it out at once.
+  const holdsThis = new Set<string>();
+  let initializerEscapes = false;
+  for (const m of cls.members) {
+    if (!ts.isPropertyDeclaration(m) || hasStatic(m) || !m.initializer) continue;
+    const init = ts.skipOuterExpressions(m.initializer);
+    if ((ts.isArrowFunction(init) || ts.isFunctionExpression(init)) && ts.isIdentifier(m.name) && !(based && runsCode(init))) { if (containsThis(init) || ts.isFunctionExpression(init)) holdsThis.add(m.name.text); }
+    else if (containsThis(m.initializer) || (based && runsCode(m.initializer))) initializerEscapes = true;
+  }
+  if (fields.size && ctor && (!based || superAt >= 0) && !initializerEscapes) {
+    const plain = new Set<string>();
+    for (const m of cls.members) if (ts.isPropertyDeclaration(m) && !hasStatic(m) && ts.isIdentifier(m.name)) plain.add(m.name.text);
+    for (const p of ctor.parameters) if (ts.isIdentifier(p.name) && ts.getModifiers(p)?.length) plain.add(p.name.text);
+    const isThis = (n: ts.Node) => n.kind === ts.SyntaxKind.ThisKeyword;
+    // Whether `n` may make a key: `this` used other than to read a field or write one that is a key already, or (below a
+    // base) any call.
+    const escapes = (n: ts.Node): boolean => {
+      let escaped = false;
+      const visit = (x: ts.Node) => {
+        if (escaped) return;
+        if (ts.isFunctionLike(x) || ts.isClassLike(x)) { if (containsThis(x)) escaped = true; return; }
+        if (based && runsCode(x, false)) { escaped = true; return; }
+        if (ts.isPropertyAccessExpression(x) && isThis(x.expression)) {
+          const p = ts.walkUpParenthesizedExpressions(x.parent);
+          const written = (ts.isBinaryExpression(p) && p.left === ts.skipOuterExpressions(x) && p.operatorToken.kind >= ts.SyntaxKind.FirstAssignment && p.operatorToken.kind <= ts.SyntaxKind.LastAssignment)
+            || ts.isPrefixUnaryExpression(p) || ts.isPostfixUnaryExpression(p) || ts.isDeleteExpression(p);
+          if (!ts.isIdentifier(x.name) || !plain.has(x.name.text) || holdsThis.has(x.name.text) || (ts.isCallExpression(p) && p.expression === x) || (written && fields.has(x.name.text))) escaped = true;
+          return;
+        }
+        if (isThis(x) || x.kind === ts.SyntaxKind.SuperKeyword) { escaped = true; return; }
+        ts.forEachChild(x, visit);
+      };
+      visit(n);
+      return escaped;
+    };
+    type State = { assigned: Set<string>; firsts: string[]; done: boolean };
+    const all = () => new Set(fields.keys());
+    // Each path's first writes must run in `order`: a branch that writes them otherwise ends the walk before its `if`.
+    const inOrder = (firsts: string[]) => firsts.every((f, k) => k === 0 || order.indexOf(firsts[k - 1]) < order.indexOf(f));
+    const walk = (list: readonly ts.Statement[], s: State): State => {
+      for (const st of list) {
+        if (s.done) return s;
+        if (ts.isExpressionStatement(st) && ts.isBinaryExpression(st.expression) && st.expression.operatorToken.kind === ts.SyntaxKind.EqualsToken) {
+          const left = ts.skipOuterExpressions(st.expression.left);
+          const f = ts.isPropertyAccessExpression(left) && isThis(left.expression) && ts.isIdentifier(left.name) && fields.has(left.name.text) ? left.name.text : null;
+          if (f !== null) {
+            if (escapes(st.expression.right)) return { ...s, done: true };
+            const first = !s.assigned.has(f) && !s.firsts.includes(f);
+            walked.set(st.expression, { field: f, first });
+            if (!order.includes(f)) order.push(f);
+            s = { assigned: new Set([...s.assigned, f]), firsts: first ? [...s.firsts, f] : s.firsts, done: false };
+            continue;
+          }
+        }
+        if (ts.isIfStatement(st)) {
+          if (escapes(st.expression)) return { ...s, done: true };
+          const before = { order: order.length, walked: new Map(walked) };
+          const branch = (b: ts.Statement | undefined) => (b ? walk(ts.isBlock(b) ? b.statements : [b], { assigned: new Set(s.assigned), firsts: [...s.firsts], done: false }) : { assigned: new Set(s.assigned), firsts: [...s.firsts], done: false });
+          const a = branch(st.thenStatement), b = branch(st.elseStatement);
+          if (!inOrder(a.firsts) || !inOrder(b.firsts)) {
+            order.length = before.order;
+            walked.clear();
+            for (const [n, w] of before.walked) walked.set(n, w);
+            return { ...s, done: true };
+          }
+          const ends = (x: State, br: ts.Statement | undefined) => !!br && !x.done && alwaysThrows(br);
+          const left = ends(a, st.thenStatement) ? all() : a.assigned, right = ends(b, st.elseStatement) ? all() : b.assigned;
+          s = { assigned: new Set([...left].filter((f) => right.has(f))), firsts: [...a.firsts, ...b.firsts.filter((f) => !a.firsts.includes(f))].sort((x, y) => order.indexOf(x) - order.indexOf(y)), done: a.done || b.done };
+          continue;
+        }
+        if (ts.isBlock(st)) { s = walk(st.statements, s); continue; }
+        if (ts.isThrowStatement(st)) return { ...s, assigned: all(), done: true };
+        // Any other statement that can't make a key or leave the constructor (a loop filling an array field) changes nothing.
+        if (!escapes(st) && !mayLeave(st)) continue;
+        return { ...s, done: true };
+      }
+      return s;
+    };
+    const end = walk(stmts.slice(superAt + 1), { assigned: new Set(), firsts: [], done: false });
+    for (const f of end.assigned) if (fields.has(f)) sure.add(f);
+  }
+  for (const [name, m] of fields) {
+    if (!order.includes(name)) order.push(name);
+    if (!sure.has(name)) written.push(m);
+  }
+  return { order, always, sure, written, walked };
+}
+
+/** Whether a statement may end its function early (`return`, `throw`), outside the functions it declares. */
+function mayLeave(st: ts.Statement): boolean {
+  let found = false;
+  const visit = (x: ts.Node) => {
+    if (found || ts.isFunctionLike(x) || ts.isClassLike(x)) return;
+    if (ts.isReturnStatement(x) || ts.isThrowStatement(x)) { found = true; return; }
+    ts.forEachChild(x, visit);
+  };
+  visit(st);
+  return found;
+}
+
+/** Whether evaluating `n` may run code beyond reading values: a call, `new`, a tagged template, `await`, `yield` or iteration. */
+function runsCode(n: ts.Node, deep = true): boolean {
+  const at = (x: ts.Node) => ts.isCallExpression(x) || ts.isNewExpression(x) || ts.isTaggedTemplateExpression(x) || ts.isAwaitExpression(x) || ts.isYieldExpression(x)
+    || ts.isForOfStatement(x) || ts.isSpreadElement(x) || ts.isArrayBindingPattern(x);
+  if (!deep) return at(n);
+  let found = false;
+  const visit = (x: ts.Node) => {
+    if (found || ts.isFunctionLike(x) || ts.isClassLike(x)) return;
+    if (at(x)) { found = true; return; }
+    ts.forEachChild(x, visit);
+  };
+  visit(n);
+  return found;
+}
+
 /** The program's interfaces a class implements, whose fields its classes declare as well. */
 export function implementedInterfaceDeclarations(files: readonly ts.SourceFile[], checker: ts.TypeChecker): Set<ts.Declaration> {
   const out = new Set<ts.Declaration>();
@@ -849,29 +1096,83 @@ function alwaysThrows(st: ts.Statement): boolean {
 /**
  * Strict code's slots that may hold null and undefined both, which a backend's optional alone can't tell apart:
  * one whose type admits both, one typed `T | null` that receives an untyped value, and a field typed `T | null` that may be
- * read before it is written. `held` (variables, parameters, function returns) are held untyped; `fields` (class fields,
- * object-type members) note which of their nils is null.
- * A parameter or return whose function's signature is fixed elsewhere (a callback, a function used as a value, a method an
- * override must match, an overload, a decorated member, an async function's result) keeps its typed form.
+ * read before it is written. `held` (variables, parameters, function returns, and the parameters and results of function
+ * types, function values and override families that admit both) are held untyped; `fields` (class fields, object-type
+ * members) note which of their nils is null. `refused` are such slots neither can cover (an element of an array, Map or
+ * Set, a function or native value, a slot whose signature a library or an interface fixes), each with what it is.
  */
-export interface NullishSlots { held: Set<ts.Declaration>; fields: Set<ts.Declaration> }
+export interface NullishSlots { held: Set<ts.Declaration>; fields: Set<ts.Declaration>; refused: [ts.Node, string][] }
 
 export function nullishSlots(checker: ts.TypeChecker, files: readonly ts.SourceFile[], skip: (file: ts.SourceFile) => boolean): NullishSlots {
   const held = new Set<ts.Declaration>(), fields = new Set<ts.Declaration>();
+  const refused: [ts.Node, string][] = [];
+  const refuse = (n: ts.Node, what: string) => { if (!refused.some(([m]) => m === n)) refused.push([n, what]); };
   const parts = (t: ts.Type) => (t.isUnion() ? t.types : [t]);
   const loose = (t: ts.Type) => parts(t).some((x) => x.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown));
   const hasNull = (t: ts.Type) => !loose(t) && parts(t).some((x) => x.flags & ts.TypeFlags.Null);
   const both = (t: ts.Type) => hasNull(t) && parts(t).some((x) => x.flags & (ts.TypeFlags.Undefined | ts.TypeFlags.Void));
+  // A result typed `void | null` is one callers ignore.
+  const bothResult = (t: ts.Type) => both(t) && !parts(t).some((x) => x.flags & ts.TypeFlags.Void);
+  const nullish = ts.TypeFlags.Null | ts.TypeFlags.Undefined | ts.TypeFlags.Void;
   // Held untyped, a function would be called through the runtime and a library or native object reached by name: such
-  // slots keep their typed form.
-  const primitive = ts.TypeFlags.StringLike | ts.TypeFlags.NumberLike | ts.TypeFlags.BooleanLike | ts.TypeFlags.BigIntLike | ts.TypeFlags.Null | ts.TypeFlags.Undefined | ts.TypeFlags.Void;
+  // slots are refused.
+  const primitive = ts.TypeFlags.StringLike | ts.TypeFlags.NumberLike | ts.TypeFlags.BooleanLike | ts.TypeFlags.BigIntLike | nullish;
   const value = (t: ts.Type) => parts(t).every((x) => x.flags & primitive || (!x.getCallSignatures().length && !!x.getSymbol()?.declarations?.length && x.getSymbol()!.declarations!.every((d) => own(d))));
   const untyped = (e: ts.Expression | undefined) => !!e && e.kind !== ts.SyntaxKind.NullKeyword && !!(checker.getTypeAtLocation(e).flags & ts.TypeFlags.Any);
   const own = (d: ts.Declaration | undefined) => !!d && !d.getSourceFile().isDeclarationFile && !skip(d.getSourceFile());
-  const typeOf = (d: ts.Declaration) => checker.getTypeOfSymbolAtLocation(checker.getSymbolAtLocation((d as ts.NamedDeclaration).name!)!, d);
+  const typeOf = (d: ts.Declaration) => {
+    const name = (d as ts.NamedDeclaration).name, sym = name && checker.getSymbolAtLocation(name);
+    return sym ? checker.getTypeOfSymbolAtLocation(sym, d) : checker.getTypeAtLocation(d);
+  };
+  const text = (t: ts.Type) => checker.typeToString(t);
+  const NATIVE = 'a function or library object that may be null or undefined both';
+  // Values of more than one kind (`number | string`) are held untyped already, null apart from undefined.
+  const oneKind = (t: ts.Type) => {
+    const kinds = new Set(parts(t).filter((x) => !(x.flags & nullish)).map((x) => (x.flags & ts.TypeFlags.StringLike ? 's' : x.flags & ts.TypeFlags.NumberLike ? 'n' : x.flags & ts.TypeFlags.BooleanLike ? 'b' : x.flags & ts.TypeFlags.BigIntLike ? 'g' : x.getSymbol() ?? x)));
+    return kinds.size === 1;
+  };
+  // A variable only compared, assigned, passed or returned: held untyped, a library object is never reached by name.
+  const refs = new Map<ts.Symbol, ts.Identifier[]>();
+  const opaque = (d: ts.Declaration) => {
+    const sym = (d as ts.NamedDeclaration).name && checker.getSymbolAtLocation((d as ts.NamedDeclaration).name!);
+    return !!sym && (refs.get(sym) ?? []).every((r) => {
+      let x: ts.Node = r;
+      while (ts.isParenthesizedExpression(x.parent) || ts.isNonNullExpression(x.parent) || ts.isAsExpression(x.parent)) x = x.parent;
+      const p = x.parent;
+      if (ts.isBinaryExpression(p)) return [ts.SyntaxKind.EqualsEqualsEqualsToken, ts.SyntaxKind.ExclamationEqualsEqualsToken, ts.SyntaxKind.EqualsEqualsToken, ts.SyntaxKind.ExclamationEqualsToken, ts.SyntaxKind.EqualsToken, ts.SyntaxKind.QuestionQuestionToken, ts.SyntaxKind.BarBarToken, ts.SyntaxKind.AmpersandAmpersandToken].includes(p.operatorToken.kind);
+      return ts.isReturnStatement(p) || ((ts.isCallExpression(p) || ts.isNewExpression(p)) && p.expression !== x) || ts.isVariableDeclaration(p) || ts.isIfStatement(p) || ts.isConditionalExpression(p) || ts.isPrefixUnaryExpression(p);
+    });
+  };
+  // A variable or parameter whose code tells null from undefined: compared strictly with either, or `typeof`.
+  const observes = (d: ts.Declaration) => {
+    const sym = (d as ts.NamedDeclaration).name && checker.getSymbolAtLocation((d as ts.NamedDeclaration).name!);
+    return !sym || (refs.get(sym) ?? []).some((r) => {
+      let x: ts.Node = r;
+      while (ts.isParenthesizedExpression(x.parent) || ts.isNonNullExpression(x.parent)) x = x.parent;
+      const p = x.parent;
+      if (ts.isTypeOfExpression(p)) return true;
+      if (ts.isBinaryExpression(p) && [ts.SyntaxKind.EqualsEqualsEqualsToken, ts.SyntaxKind.ExclamationEqualsEqualsToken].includes(p.operatorToken.kind)) {
+        const other = p.left === x ? p.right : p.left;
+        return other.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(other) && other.text === 'undefined');
+      }
+      return false;
+    });
+  };
+  /**
+   * Holds `d` when its type admits both; refuses it when that type isn't one a held slot can carry and its code tells
+   * them apart. A function or library object held untyped would be reached by name.
+   */
+  const hold = (d: ts.Declaration, t: ts.Type | undefined, at: ts.Node = d) => {
+    if (!t || !(ts.isFunctionLike(d) ? bothResult(t) : both(t)) || !oneKind(t)) return;
+    if (value(t) || (ts.isVariableDeclaration(d) && !parts(t).some((x) => x.getCallSignatures().length) && opaque(d))) held.add(d);
+    else if (ts.isFunctionLike(d) || observes(d)) refuse(at, `${NATIVE} (\`${text(t)}\`)`);
+  };
   // Functions whose signature only this program's direct calls see.
   const fixed = new Set<ts.Node>();
   const fns: ts.FunctionLikeDeclaration[] = [];
+  const values: ts.SignatureDeclaration[] = [];
+  const signatures: ts.SignatureDeclaration[] = [];
+  const classes: ts.ClassLikeDeclaration[] = [];
   const anyArgs: [ts.ParameterDeclaration, ts.Expression][] = [];
   const anyStores: [ts.Declaration, ts.Expression][] = [];
   const isCallee = (n: ts.Node) => {
@@ -881,8 +1182,14 @@ export function nullishSlots(checker: ts.TypeChecker, files: readonly ts.SourceF
   };
   const extended = new Set<ts.Symbol>();
   const visit = (n: ts.Node): void => {
-    if (ts.isClassLike(n)) for (const h of n.heritageClauses ?? []) for (const x of h.types) { const b = checker.getTypeAtLocation(x.expression).getSymbol(); if (b) extended.add(b); }
-    if ((ts.isFunctionDeclaration(n) || ts.isMethodDeclaration(n) || ts.isConstructorDeclaration(n)) && n.body) fns.push(n);
+    if (ts.isClassLike(n)) {
+      classes.push(n);
+      for (const h of n.heritageClauses ?? []) for (const x of h.types) { const b = checker.getTypeAtLocation(x.expression).getSymbol(); if (b) extended.add(b); }
+    }
+    if ((ts.isFunctionDeclaration(n) || (ts.isMethodDeclaration(n) && ts.isClassLike(n.parent)) || ts.isConstructorDeclaration(n)) && n.body) fns.push(n);
+    if (ts.isArrowFunction(n) || ts.isFunctionExpression(n) || (ts.isMethodDeclaration(n) && ts.isObjectLiteralExpression(n.parent))) values.push(n);
+    if (ts.isFunctionTypeNode(n) || ts.isCallSignatureDeclaration(n) || ts.isMethodSignature(n)) signatures.push(n);
+    if (ts.isIdentifier(n)) { const sym = checker.getSymbolAtLocation(n); if (sym && sym.valueDeclaration && (sym.valueDeclaration as ts.NamedDeclaration).name !== n) refs.set(sym, [...(refs.get(sym) ?? []), n]); }
     if ((ts.isIdentifier(n) || ts.isPrivateIdentifier(n)) && !isCallee(n)) {
       const d = checker.getSymbolAtLocation(n)?.valueDeclaration;
       if (d && (ts.isFunctionDeclaration(d) || ts.isMethodDeclaration(d)) && (d.name !== n)) fixed.add(d);
@@ -903,6 +1210,13 @@ export function nullishSlots(checker: ts.TypeChecker, files: readonly ts.SourceF
     ts.forEachChild(n, visit);
   };
   for (const f of files) if (!f.isDeclarationFile && !skip(f)) visit(f);
+  const isAsync = (fn: ts.SignatureDeclaration) => !!ts.getModifiers(fn)?.some((m) => m.kind === ts.SyntaxKind.AsyncKeyword) || !!(fn as ts.FunctionLikeDeclaration).asteriskToken;
+  const named = (p: ts.ParameterDeclaration) => ts.isIdentifier(p.name) && !p.dotDotDotToken;
+  const returnOf = (fn: ts.SignatureDeclaration) => checker.getSignatureFromDeclaration(fn)?.getReturnType();
+  const holdSignature = (fn: ts.SignatureDeclaration) => {
+    for (const p of fn.parameters) if (named(p)) hold(p, typeOf(p));
+    if (fn.type && !isAsync(fn) && !ts.isConstructorDeclaration(fn)) hold(fn, returnOf(fn), fn.type);
+  };
   const openSignature = (fn: ts.FunctionLikeDeclaration): boolean => {
     if (fixed.has(fn) || !fn.body || (ts.canHaveDecorators(fn) && ts.getDecorators(fn)?.length)) return true;
     const sym = ts.isConstructorDeclaration(fn) ? undefined : checker.getSymbolAtLocation(fn.name!);
@@ -916,14 +1230,97 @@ export function nullishSlots(checker: ts.TypeChecker, files: readonly ts.SourceF
     if (ts.isConstructorDeclaration(fn) && (fn.parent.heritageClauses?.length || ts.getDecorators(fn.parent)?.length)) return true;
     return false;
   };
-  for (const fn of fns) {
-    if (!own(fn) || openSignature(fn)) continue;
-    for (const p of fn.parameters) {
-      if (!ts.isIdentifier(p.name) || p.dotDotDotToken || (ts.isConstructorDeclaration(fn) && ts.isParameterPropertyDeclaration(p, fn))) continue;
-      if (both(typeOf(p)) && value(typeOf(p))) held.add(p);
+  // Any parameter or result of `fn` that may hold both, refused as `why`.
+  const refuseBoth = (fn: ts.SignatureDeclaration, why: string) => {
+    for (const p of fn.parameters) { const t = typeOf(p); if (both(t) && oneKind(t)) refuse(p, `${why} (\`${text(t)}\`)`); }
+    const ret = returnOf(fn);
+    if (fn.type && !ts.isConstructorDeclaration(fn) && ret && bothResult(ret) && oneKind(ret)) refuse(fn.type, `${why} (\`${text(ret)}\`)`);
+  };
+  // A function type's parameters and result: what every function of that type, and every call through it, uses.
+  for (const sig of signatures) if (own(sig)) holdSignature(sig);
+  const ownBase = (c: ts.ClassLikeDeclaration): ts.ClassLikeDeclaration | 'library' | undefined => {
+    const h = c.heritageClauses?.find((x) => x.token === ts.SyntaxKind.ExtendsKeyword)?.types[0];
+    if (!h) return undefined;
+    const d = checker.getTypeAtLocation(h.expression).getSymbol()?.valueDeclaration;
+    return d && ts.isClassLike(d) && own(d) ? d : 'library';
+  };
+  const memberName = (m: ts.MethodDeclaration) => (ts.isIdentifier(m.name) || ts.isPrivateIdentifier(m.name) ? m.name.text : undefined);
+  const isStatic = (m: ts.Node) => !!ts.getModifiers(m as ts.HasModifiers)?.some((k) => k.kind === ts.SyntaxKind.StaticKeyword);
+  type Family = { members: ts.MethodDeclaration[]; why?: string };
+  const families = new Map<ts.MethodDeclaration, Family>();
+  /** The methods overriding one another with `m`, and why their signatures are fixed elsewhere if they are. */
+  const familyOf = (m: ts.MethodDeclaration): Family => {
+    const name = memberName(m), cls = m.parent as ts.ClassLikeDeclaration;
+    if (!name) return { members: [m], why: 'a method with a computed name' };
+    let top = cls, why: string | undefined;
+    for (let c: ts.ClassLikeDeclaration | 'library' | undefined = cls; c; c = ownBase(c)) {
+      if (c === 'library') { const h = top.heritageClauses!.find((x) => x.token === ts.SyntaxKind.ExtendsKeyword)!.types[0]; if (checker.getTypeAtLocation(h).getProperty(name)) why = 'a method overriding a library class\'s'; break; }
+      top = c;
     }
-    const ret = checker.getSignatureFromDeclaration(fn)?.getReturnType();
-    if (!ts.isConstructorDeclaration(fn) && fn.type && !fn.asteriskToken && !ts.getModifiers(fn)?.some((m) => m.kind === ts.SyntaxKind.AsyncKeyword) && ret && both(ret) && value(ret)) held.add(fn);
+    const tree = [top];
+    for (let k = 0; k < tree.length; k++) for (const c of classes) if (ownBase(c) === tree[k] && !tree.includes(c)) tree.push(c);
+    const members = tree.flatMap((c) => c.members.filter((x): x is ts.MethodDeclaration => ts.isMethodDeclaration(x) && !isStatic(x) && memberName(x) === name));
+    for (const c of tree) for (const h of c.heritageClauses ?? []) if (h.token === ts.SyntaxKind.ImplementsKeyword && h.types.some((x) => checker.getTypeAtLocation(x).getProperty(name))) why ??= 'a method an interface declares';
+    if (members.some((x) => !x.body || (ts.canHaveDecorators(x) && ts.getDecorators(x)?.length) || (checker.getSymbolAtLocation(x.name)?.declarations?.length ?? 0) > 1)) why ??= 'an overloaded or decorated method';
+    if (tree.some((c) => ts.getDecorators(c)?.length)) why ??= 'a method of a decorated class';
+    const result = { members, why };
+    for (const x of members) families.set(x, result);
+    return result;
+  };
+  for (const fn of fns) {
+    if (!own(fn)) continue;
+    if (ts.isMethodDeclaration(fn) && !isStatic(fn)) {
+      if (families.has(fn)) continue;
+      const { members: family, why } = familyOf(fn);
+      if (why) { for (const x of family) refuseBoth(x, why); continue; }
+      const width = Math.max(...family.map((x) => x.parameters.length));
+      for (let k = 0; k < width; k++) {
+        const ps = family.map((x) => x.parameters[k]).filter((p): p is ts.ParameterDeclaration => !!p);
+        const wide = ps.find((p) => both(typeOf(p)) && oneKind(typeOf(p)));
+        if (!wide) continue;
+        if (!ps.every(named) || !ps.every((p) => value(typeOf(p)))) { refuse(wide, `${NATIVE} (\`${text(typeOf(wide))}\`)`); continue; }
+        for (const p of ps) held.add(p);
+      }
+      const wide = family.find((x) => { const r = returnOf(x); return !!r && bothResult(r) && oneKind(r) && !isAsync(x); });
+      if (wide) {
+        if (family.every((x) => { const r = returnOf(x); return !r || value(r); }) && family.every((x) => !isAsync(x))) for (const x of family) held.add(x);
+        else refuse(wide.type ?? wide, `${NATIVE} (\`${text(returnOf(wide)!)}\`)`);
+      }
+      continue;
+    }
+    if (ts.isConstructorDeclaration(fn) && (fn.parent.heritageClauses?.some((h) => h.token === ts.SyntaxKind.ExtendsKeyword) || ts.getDecorators(fn.parent)?.length)) { refuseBoth(fn, 'a constructor parameter of a class that extends another or is decorated'); continue; }
+    if (ts.isFunctionDeclaration(fn) && (checker.getSymbolAtLocation(fn.name!)?.declarations?.length ?? 0) > 1) { refuseBoth(fn, 'an overloaded function'); continue; }
+    if (ts.canHaveDecorators(fn) && ts.getDecorators(fn)?.length) { refuseBoth(fn, 'a decorated member'); continue; }
+    for (const p of fn.parameters) {
+      if (!named(p) || (ts.isConstructorDeclaration(fn) && ts.isParameterPropertyDeclaration(p, fn))) continue;
+      hold(p, typeOf(p));
+    }
+    if (!ts.isConstructorDeclaration(fn) && fn.type && !isAsync(fn)) hold(fn, returnOf(fn), fn.type);
+  }
+  // A function value takes the slots of the function type it is given as: held where that type's are, else refused where
+  // that type may pass (or take) both.
+  for (const fn of values) {
+    if (!own(fn)) continue;
+    const contextual = ts.isMethodDeclaration(fn)
+      ? (() => { const o = checker.getContextualType(fn.parent as ts.ObjectLiteralExpression); const m = o && ts.isIdentifier(fn.name) ? o.getProperty(fn.name.text) : undefined; return m ? checker.getTypeOfSymbolAtLocation(m, fn) : undefined; })()
+      : checker.getContextualType(fn as ts.Expression);
+    const ctx = contextual?.getNonNullableType().getCallSignatures()[0];
+    if (!ctx) { holdSignature(fn); continue; }
+    const decl = ctx.getDeclaration() as ts.SignatureDeclaration | undefined;
+    const ownDecl = !!decl && !ts.isJSDocSignature(decl) && own(decl);
+    fn.parameters.forEach((p, k) => {
+      const sym = ctx.getParameters()[k];
+      const given = sym && checker.getTypeOfSymbolAtLocation(sym, fn);
+      if (!given || !both(given) || !oneKind(given)) return;
+      const slot = ownDecl ? decl!.parameters[k] : undefined;
+      if (slot && held.has(slot) && named(p)) held.add(p);
+      else refuse(p, `a callback parameter that may be null or undefined both (\`${text(given)}\`)`);
+    });
+    const ret = ctx.getReturnType();
+    if (bothResult(ret) && oneKind(ret) && !isAsync(fn)) {
+      if (ownDecl && held.has(decl!)) held.add(fn);
+      else refuse(fn, `a callback that may return null or undefined both (\`${text(ret)}\`)`);
+    }
   }
   for (const [p] of anyArgs) {
     const fn = p.parent;
@@ -937,12 +1334,33 @@ export function nullishSlots(checker: ts.TypeChecker, files: readonly ts.SourceF
     if (ts.isVariableDeclaration(d)) { if (local(d) && value(typeOf(d))) held.add(d); }
     else if (fieldLike(d)) fields.add(d);
   }
+  /** An element, entry or type argument of `t` that may be null or undefined both (what no held slot carries). */
+  const nested = (t: ts.Type, depth = 0, seen = new Set<ts.Type>()): ts.Type | undefined => {
+    if (seen.has(t) || depth > 4 || loose(t)) return undefined;
+    seen.add(t);
+    if (depth > 0 && both(t) && oneKind(t)) return t;
+    for (const x of parts(t)) {
+      if (!(x.flags & ts.TypeFlags.Object) || x.getCallSignatures().length) continue;
+      const args = (x as ts.ObjectType).objectFlags & ts.ObjectFlags.Reference ? checker.getTypeArguments(x as ts.TypeReference) : x.aliasTypeArguments ?? [];
+      for (const a of [...args, ...checker.getIndexInfosOfType(x).map((i) => i.type)]) { const r = nested(a, depth + 1, seen); if (r) return r; }
+    }
+    return undefined;
+  };
+  const checkNested = (n: ts.Node, t: ts.Type | undefined) => {
+    const inner = t && nested(t);
+    if (inner) refuse(n, `an array, Map or Set element (or other type argument) that may be null or undefined both (\`${text(inner)}\` in \`${text(t!)}\`)`);
+  };
   for (const f of files) {
     if (f.isDeclarationFile || skip(f)) continue;
     const scan = (n: ts.Node): void => {
-      if (ts.isVariableDeclaration(n) && ts.isIdentifier(n.name) && local(n) && both(typeOf(n)) && value(typeOf(n))) held.add(n);
+      if (ts.isVariableDeclaration(n) && ts.isIdentifier(n.name) && local(n) && both(typeOf(n))) hold(n, typeOf(n));
+      else if (ts.isVariableDeclaration(n) && ts.isIdentifier(n.name) && both(typeOf(n)) && oneKind(typeOf(n))) refuse(n, `a loop variable that may be null or undefined both (\`${text(typeOf(n))}\`)`);
+      else if (ts.isBindingElement(n) && ts.isIdentifier(n.name) && both(typeOf(n)) && oneKind(typeOf(n))) refuse(n, `a destructured binding that may be null or undefined both (\`${text(typeOf(n))}\`)`);
       else if (ts.isPropertyDeclaration(n) && fieldLike(n) && ts.isIdentifier(n.name) && hasNull(typeOf(n)) && (!n.initializer || both(typeOf(n)))) fields.add(n);
       else if (ts.isPropertySignature(n) && ts.isIdentifier(n.name) && both(typeOf(n))) fields.add(n);
+      else if ((ts.isGetAccessorDeclaration(n) || ts.isSetAccessorDeclaration(n)) && n.body) refuseBoth(n, 'an accessor that may take or give null or undefined both');
+      if ((ts.isVariableDeclaration(n) || ts.isParameter(n) || ts.isPropertyDeclaration(n) || ts.isPropertySignature(n)) && (n as ts.NamedDeclaration).name && checker.getSymbolAtLocation((n as ts.NamedDeclaration).name!)) checkNested(n, typeOf(n));
+      if (ts.isFunctionLike(n) && !ts.isConstructorDeclaration(n)) checkNested(n.type ?? n, returnOf(n as ts.SignatureDeclaration));
       ts.forEachChild(n, scan);
     };
     scan(f);
@@ -965,7 +1383,101 @@ export function nullishSlots(checker: ts.TypeChecker, files: readonly ts.SourceF
     };
     scan(f);
   }
-  return { held, fields };
+  return { held, fields, refused };
+}
+
+/**
+ * Code checked without strictNullChecks: what a function's body gives where it gives nothing, which its type can't say.
+ * `null`: only `null` itself; `missing`: undefined (a bare `return`, `undefined`, a void call, a library result typed
+ * `T | undefined`, an optional parameter, a body whose end may be reached); `unknown`: a value that may be either (a
+ * local, a signal, a library result typed with both).
+ */
+export function nothingGiven(fn: ts.FunctionLikeDeclaration, checker: ts.TypeChecker, seen = new Set<ts.Node>()): { null: boolean; missing: boolean; unknown: boolean } {
+  const out = { null: false, missing: false, unknown: false };
+  if (!fn.body || !ts.isBlock(fn.body)) return out;
+  seen.add(fn);
+  const optional = new Set(fn.parameters.filter((p) => p.questionToken && !p.initializer).map((p) => checker.getSymbolAtLocation(p.name)));
+  const gives = (e: ts.Expression | undefined): void => {
+    if (!e) { out.missing = true; return; }
+    e = ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses);
+    if (ts.isBinaryExpression(e) && (e.operatorToken.kind === ts.SyntaxKind.QuestionQuestionToken || e.operatorToken.kind === ts.SyntaxKind.BarBarToken)) return gives(e.right);
+    if (ts.isConditionalExpression(e)) { gives(e.whenTrue); gives(e.whenFalse); return; }
+    if (e.kind === ts.SyntaxKind.NullKeyword) { out.null = true; return; }
+    if ((ts.isIdentifier(e) && e.text === 'undefined') || ts.isVoidExpression(e)) { out.missing = true; return; }
+    if (ts.isIdentifier(e)) {
+      const sym = checker.getSymbolAtLocation(e);
+      if (optional.has(sym)) { out.missing = true; return; }
+      const d = sym?.valueDeclaration;
+      // A local declared without a value may still be undefined; one starting null may still be null.
+      if (d && ts.isVariableDeclaration(d) && ts.findAncestor(d, (n) => n === fn) && !ts.isForOfStatement(d.parent.parent) && !ts.isForInStatement(d.parent.parent)) {
+        if (!d.initializer) out.missing = true;
+        else gives(d.initializer.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(d.initializer) && d.initializer.text === 'undefined') ? d.initializer : ts.factory.createTrue());
+      }
+      return;
+    }
+    if (ts.isCallExpression(e)) {
+      const t = checker.getTypeAtLocation(e);
+      if (t.flags & ts.TypeFlags.Void) { out.missing = true; return; }
+      const sig = checker.getResolvedSignature(e)?.getDeclaration();
+      const declared = sig && !ts.isJSDocSignature(sig) && sig.getSourceFile().isDeclarationFile ? sig.type : undefined;
+      // The program's own function: what its body gives.
+      if (sig && !ts.isJSDocSignature(sig) && (ts.isFunctionDeclaration(sig) || ts.isMethodDeclaration(sig)) && sig.body && !sig.getSourceFile().isDeclarationFile) {
+        if (seen.has(sig)) return;
+        const inner = nothingGiven(sig, checker, seen);
+        out.null ||= inner.null; out.missing ||= inner.missing; out.unknown ||= inner.unknown;
+      } else if (declared && ts.isUnionTypeNode(declared)) {
+        const n = declared.types.some((x) => ts.isLiteralTypeNode(x) && x.literal.kind === ts.SyntaxKind.NullKeyword);
+        const u = declared.types.some((x) => x.kind === ts.SyntaxKind.UndefinedKeyword);
+        if (n && u) out.unknown = true;
+        else if (n) out.null = true;
+        else if (u) out.missing = true;
+      }
+      // A function's or signal's result read without its own declaration's evidence (a signal made with null).
+      else if (!e.arguments.length && !(sig && !ts.isJSDocSignature(sig) && !sig.getSourceFile().isDeclarationFile)) out.unknown = true;
+    }
+  };
+  const visit = (n: ts.Node): void => {
+    if (ts.isFunctionLike(n) || ts.isClassLike(n)) return;
+    if (ts.isReturnStatement(n)) gives(n.expression);
+    ts.forEachChild(n, visit);
+  };
+  visit(fn.body);
+  if (!leaves(fn.body)) out.missing = true;
+  return out;
+}
+
+/** Whether a statement always returns or throws, as far as its last statements, both branches of an `if` and a `try`'s blocks show. */
+function leaves(st: ts.Statement | undefined): boolean {
+  if (!st) return false;
+  if (ts.isReturnStatement(st) || ts.isThrowStatement(st)) return true;
+  if (ts.isBlock(st)) return leaves(st.statements[st.statements.length - 1]);
+  if (ts.isTryStatement(st)) return (!!st.finallyBlock && leaves(st.finallyBlock)) || (leaves(st.tryBlock) && (!st.catchClause || leaves(st.catchClause.block)));
+  return ts.isIfStatement(st) && !!st.elseStatement && leaves(st.thenStatement) && leaves(st.elseStatement);
+}
+
+/** Whether code assigns a variable anywhere after its declaration. */
+export function reassigned(d: ts.VariableDeclaration, checker: ts.TypeChecker): boolean {
+  if (!ts.isIdentifier(d.name)) return true;
+  const sym = checker.getSymbolAtLocation(d.name);
+  if (!sym) return true;
+  const target = (x: ts.Expression) => ts.isIdentifier(ts.skipOuterExpressions(x)) && checker.getSymbolAtLocation(ts.skipOuterExpressions(x)) === sym;
+  const visit = (n: ts.Node): boolean => {
+    if (ts.isBinaryExpression(n) && n.operatorToken.kind >= ts.SyntaxKind.FirstAssignment && n.operatorToken.kind <= ts.SyntaxKind.LastAssignment && target(n.left)) return true;
+    if ((ts.isPrefixUnaryExpression(n) || ts.isPostfixUnaryExpression(n)) && (n.operator === ts.SyntaxKind.PlusPlusToken || n.operator === ts.SyntaxKind.MinusMinusToken) && target(n.operand)) return true;
+    return !!ts.forEachChild(n, visit);
+  };
+  return visit(d.getSourceFile());
+}
+
+/** The key JavaScript reads of `e` where `e` (parenthesized or not) is a member read's receiver, without `?.`. */
+export function readKeyOf(e: ts.Expression): string | null {
+  const p = ts.walkUpParenthesizedExpressions(e.parent);
+  if (ts.isPropertyAccessExpression(p) && !p.questionDotToken && ts.skipOuterExpressions(p.expression, ts.OuterExpressionKinds.Parentheses) === e) return p.name.text;
+  if (ts.isElementAccessExpression(p) && !p.questionDotToken && ts.skipOuterExpressions(p.expression, ts.OuterExpressionKinds.Parentheses) === e) {
+    const k = p.argumentExpression;
+    return ts.isStringLiteralLike(k) || ts.isNumericLiteral(k) ? k.text : k.getText();
+  }
+  return null;
 }
 
 /**

@@ -47,6 +47,36 @@ public func jsNulledEntry<V>(_ entry: V??) -> Any? {
     return jsNulled(value)
 }
 
+/// A class's instance whose keys a write can make out of its fields' declared order (assign mode's fields without an
+/// initializer, a field deleted and written again): `jsOrder` is nil while the keys run in `jsFieldKeys`' order.
+public protocol JSKeyOrdered: AnyObject {
+    var jsOrder: [String]? { get set }
+    var jsFieldKeys: [String] { get }
+    /// The keys script gave the object (its expando's), which `jsFieldKeys`' order puts after the fields.
+    var jsAddedKeys: [String] { get }
+}
+
+extension JSKeyOrdered {
+    public var jsAddedKeys: [String] { [] }
+
+    /// Whether a key made now needs noting: the fields' order alone no longer places it last.
+    public var jsKeysNoted: Bool { jsOrder != nil || !jsAddedKeys.isEmpty }
+
+    /// `key` made just now: last among the keys. `early`: made before its class's level of the constructor started, so
+    /// before keys its static place is after.
+    public func jsKeyMade(_ key: String, early: Bool = false) {
+        let keys = jsOrderedKeys(jsOrder, jsFieldKeys + jsAddedKeys)
+        if jsOrder == nil && !early && keys.last == key { return }
+        jsOrder = keys.filter { $0 != key } + [key]
+    }
+}
+
+/// An object's present field keys `keys` in the order `order` notes, any it lacks after.
+public func jsOrderedKeys(_ order: [String]?, _ keys: [String]) -> [String] {
+    guard let order else { return keys }
+    return order.filter(keys.contains) + keys.filter { !order.contains($0) }
+}
+
 /// An optional field written untyped: whether it now holds null rather than undefined.
 @inline(__always)
 public func jsNoteNull(_ nulls: inout Set<String>?, _ key: String, _ value: Any?) {
@@ -60,10 +90,43 @@ public func jsNullKeys(_ object: Any?, _ keys: [String]) -> Set<String>? {
     return nulls.isEmpty ? nil : Set(nulls)
 }
 
+/// The keys of `object` among `keys` that it holds as undefined, for a typed object read from it.
+public func jsUnsetKeys(_ object: Any?, _ keys: [String]) -> Set<String>? {
+    guard let dynamic = jsFlat(object) as? JSDynamic else { return nil }
+    let own = dynamic.jsKeys
+    let unset = keys.filter { own.contains($0) && dynamic[jsKey: $0] == nil }
+    return unset.isEmpty ? nil : Set(unset)
+}
+
 /// An object literal's keys that hold null: `known` ones, and those of `values` (untyped values it was given) that are null.
 public func jsNullKeysOf(_ known: [String], _ values: [(String, Any?)]) -> Set<String>? {
     let nulls = known + values.filter { $0.1 is JSNull }.map { $0.0 }
     return nulls.isEmpty ? nil : Set(nulls)
+}
+
+/// An object literal's optional fields given null or undefined, as its values run: the keys its shape notes (`jsNulls`, `jsUnset`).
+public struct JSLiteralKeys {
+    public private(set) var nulls: Set<String>?
+    public private(set) var unset: Set<String>?
+
+    public init(nulls: Set<String>? = nil, unset: Set<String>? = nil) {
+        self.nulls = nulls
+        self.unset = unset
+    }
+
+    /// An untyped value, before it is converted to the field's type, which holds null and undefined both as nil.
+    @discardableResult
+    public mutating func untyped(_ key: String, _ value: Any?) -> Any? {
+        if value == nil { unset = (unset ?? []).union([key]) } else if value is JSNull { nulls = (nulls ?? []).union([key]) }
+        return value
+    }
+
+    /// A typed value, whose nil is undefined.
+    @discardableResult
+    public mutating func typed<V>(_ key: String, _ value: V?) -> V? {
+        if value == nil { unset = (unset ?? []).union([key]) }
+        return value
+    }
 }
 
 /// A class with its own `toString()`, which JavaScript's string conversion calls.
@@ -742,7 +805,7 @@ public func jsSet(_ object: Any?, _ key: String, _ value: Any?) throws {
         dynamic[jsKey: key] = value
         if let refused = jsRefusedWrite {
             jsRefusedWrite = nil
-            throw JSException(refused)
+            throw refused
         }
     // `promise.cancel = fn` on the promise an animation returns: what its `cancel()` does.
     case let cancelable as JSCancelable where key == "cancel":
@@ -786,7 +849,7 @@ public func jsCall(_ function: Any?, spread arguments: [Any?]) throws -> Any? {
 public func jsObjectKeys(_ value: Any?) -> JSArray<String> {
     switch jsFlat(value) {
     case let dynamic as JSDynamic: return JSArray(dynamic.jsKeys)
-    case let array as JSArrayProtocol: return JSArray((0..<array.jsLength).map { String($0) } + (jsSideProperties(array, create: false)?.keys ?? []))
+    case let array as JSArrayProtocol: return JSArray(jsKeysOf(array))
     case let string as String: return JSArray((0..<string.utf16.count).map { String($0) })
     default: return JSArray()
     }
@@ -796,7 +859,7 @@ public func jsObjectKeys(_ value: Any?) -> JSArray<String> {
 public func jsObjectValues(_ value: Any?) -> JSArray<Any?> {
     switch jsFlat(value) {
     case let dynamic as JSDynamic: return JSArray(dynamic.jsKeys.map { dynamic[jsKey: $0] })
-    case let array as JSArrayProtocol: return JSArray(array.jsAnyElements)
+    case let array as JSArrayProtocol: return JSArray(jsKeysOf(array).map { jsField(array, $0) })
     default: return JSArray()
     }
 }
@@ -805,7 +868,7 @@ public func jsObjectValues(_ value: Any?) -> JSArray<Any?> {
 public func jsObjectEntries(_ value: Any?) -> JSArray<(String, Any?)> {
     switch jsFlat(value) {
     case let dynamic as JSDynamic: return JSArray(dynamic.jsKeys.map { ($0, dynamic[jsKey: $0]) })
-    case let array as JSArrayProtocol: return JSArray(array.jsAnyElements.enumerated().map { (String($0.offset), $0.element) })
+    case let array as JSArrayProtocol: return JSArray(jsKeysOf(array).map { ($0, jsField(array, $0)) })
     default: return JSArray()
     }
 }
@@ -817,8 +880,8 @@ public func jsObjectAssign<T: JSDynamic>(_ target: T, _ sources: Any?...) throws
         switch jsFlat(source) {
         case let dynamic as JSDynamic:
             for key in dynamic.jsKeys { try jsSet(target, key, dynamic[jsKey: key]) }
-        case let array as JSArrayProtocol:
-            for (i, v) in array.jsAnyElements.enumerated() { try jsSet(target, String(i), v) }
+        case let indexed? where indexed is JSArrayProtocol || indexed is String:
+            for key in jsKeysOf(indexed) { try jsSet(target, key, jsField(indexed, key)) }
         default:
             break
         }
@@ -1067,6 +1130,13 @@ private func jsObjectToString(_ value: Any) -> String {
     case is JSThenable: return "[object Promise]"
     case let v:
         if let n = jsNumeric(v) { return jsNumberToString(n) }
+        // An entry pair (`[key, value]`) Swift holds as a tuple is the array script made it as.
+        if jsIsTuple(v) {
+            return Mirror(reflecting: v).children.map { (child) -> String in
+                let element = jsFlat(child.value)
+                return element == nil || element is JSNull ? "" : jsToString(element)
+            }.joined(separator: ",")
+        }
         if jsIsFunction(v) { return "function () { [native code] }" }
         if jsIsObject(v) { return "[object Object]" }
         return String(describing: v)
