@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import { KIT_APPLE_SOURCES } from './paths.ts';
 import { Throws, digitsLiteral, isArrayLengthLiteral, isArrayLengthWrite, isAsync, isStatic } from './throws.ts';
 import { assignedMembers } from './sharing.ts';
-import { assignedValues, heldDowncasts, openSpreadType, initializedNull, intersectionAliasMembers, intlConstructor, nullSetFields, nullishSlots, type NullishSlots, isRegExpProtocol, isObjectToStringCall, isStringRaw, leadingNeverRead, forwardedSetter, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, uncheckedMatch, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, LooseSlots, originOf, ownSlot, implementedInterfaceDeclarations, slotOf, slotType, definitelyAssignedFields, type TrustScope, classesHeldUntyped } from './lang.ts';
+import { assignedValues, heldDowncasts, openSpreadType, initializedNull, intersectionAliasMembers, intlConstructor, nullSetFields, nullishSlots, type NullishSlots, isRegExpProtocol, isObjectToStringCall, isStringRaw, leadingNeverRead, forwardedSetter, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, uncheckedMatch, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, LooseSlots, originOf, ownSlot, implementedInterfaceDeclarations, slotOf, slotType, definitelyAssignedFields, type TrustScope, classesHeldUntyped, scriptCalledFunction } from './lang.ts';
 import { AsyncLowering, type AsyncCtx, type AsyncSyntax, type AsyncTranslator } from './async.ts';
 import { CoreAPI, isCoreDeclaration, packageOf } from './core.ts';
 import type { KitMember } from './kit-index.ts';
@@ -6482,52 +6482,11 @@ ${members.join('\n')}
     return !!d && (this.looseSlots.has(d) || (ts.isParameter(d) && this.scriptCalledParameter(d)));
   }
 
-  private scriptCalledSignatures = new Map<ts.Node, boolean>();
-  /**
-   * Strict code's function whose value reaches an untyped slot (`callbacks.push(cb)` for `cb: (v: string) => void`), itself
-   * or through function-typed slots it is placed in: script calls it with whatever it passes.
-   */
+  private scriptCalledFunctions?: (sig: ts.Node) => boolean;
+  /** See `scriptCalledFunction` (lang.ts). */
   private scriptCalled(sig: ts.Node): boolean {
-    if (this.library || sig.getSourceFile().isDeclarationFile || !this.trust.strictFile(sig.getSourceFile())) return false;
-    if (!(ts.isFunctionTypeNode(sig) || ts.isArrowFunction(sig) || ts.isFunctionExpression(sig) || (ts.isFunctionDeclaration(sig) && sig.body && sig.name))) return false;
-    let found = this.scriptCalledSignatures.get(sig);
-    if (found !== undefined) return found;
-    this.scriptCalledSignatures.set(sig, false);
-    const refs = (d: ts.Node, name: ts.Identifier, scope: ts.Node | undefined): boolean => {
-      const sym = this.checker.getSymbolAtLocation(name);
-      const named = (x: ts.Identifier) => (ts.isShorthandPropertyAssignment(x.parent) && x.parent.name === x ? this.checker.getShorthandAssignmentValueSymbol(x.parent) : this.checker.getSymbolAtLocation(x)) === sym;
-      const visit = (x: ts.Node): boolean => (ts.isIdentifier(x) && x !== name && named(x) && this.reachesScript(x, d)) || !!ts.forEachChild(x, visit);
-      return !!sym && !!scope && visit(scope);
-    };
-    if (ts.isFunctionTypeNode(sig)) {
-      const d = sig.parent;
-      if ((ts.isParameter(d) || ts.isVariableDeclaration(d)) && d.type === sig && ts.isIdentifier(d.name)) found = refs(sig, d.name, ts.isParameter(d) ? d.parent : ts.findAncestor(d.parent, (x) => ts.isFunctionLike(x) || ts.isSourceFile(x)));
-    } else if (ts.isFunctionDeclaration(sig)) {
-      found = refs(sig, sig.name!, sig.getSourceFile());
-    } else {
-      let x: ts.Expression = sig;
-      while (ts.isParenthesizedExpression(x.parent)) x = x.parent;
-      found = this.reachesScript(x, sig);
-    }
-    this.scriptCalledSignatures.set(sig, found);
-    return found;
-  }
-
-  /** Whether a function value is placed in an untyped slot, or in a function-typed one whose value reaches one (`scriptCalled`). */
-  private reachesScript(x: ts.Expression, own: ts.Node): boolean {
-    const untyped = (t: ts.Type) => !!(t.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown));
-    let slot: ts.Type | undefined;
-    const field = (ts.isShorthandPropertyAssignment(x.parent) && x.parent.name === x) || (ts.isPropertyAssignment(x.parent) && x.parent.initializer === x) ? x.parent : null;
-    if (field) {
-      const obj = this.checker.getContextualType(field.parent);
-      const key = field.name && literalKey(field.name, this.checker);
-      const prop = obj && !untyped(obj) && key ? obj.getProperty(key) : undefined;
-      slot = obj && untyped(obj) ? obj : prop && this.checker.getTypeOfSymbolAtLocation(prop, x);
-    } else slot = this.checker.getContextualType(x);
-    if (!slot) return false;
-    if (untyped(slot)) return true;
-    const decl = this.checker.getNonNullableType(slot).getCallSignatures()[0]?.getDeclaration();
-    return !!decl && !ts.isJSDocSignature(decl) && decl !== own && this.scriptCalled(decl);
+    if (this.library) return false;
+    return (this.scriptCalledFunctions ??= scriptCalledFunction(this.trust))(sig);
   }
 
   /**
