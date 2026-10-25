@@ -335,11 +335,22 @@ class JSInspectAccessor(val kind: String)
 /** `Object.defineProperty(object, key, descriptor)`. */
 fun jsDefineProperty(target: Any?, key: String, descriptor: Any?): Any? {
     val d = JSPropertyDescriptor.of(descriptor)
+    val definable = jsBox(target) as? JSDefinable
+    if (definable != null && definable.jsDefinable(key)) {
+        val own = definable.jsDefined ?: JSObject().also { definable.jsDefined = it }
+        if (!own.has(key)) own[key] = definable.jsGet(key)
+        own.defineProperty(key, d)
+        return target
+    }
     when (val v = jsBox(target)) {
         is JSObject -> v.defineProperty(key, d)
         // A field the class declares is the field, as a typed read finds it.
-        is JSExpando -> if (v.jsExpando?.has(key) != true && key in v.jsKeys) jsDefineDeclared(v, key, d)
-            else (v.jsExpando ?: JSObject().also { v.jsExpando = it }).defineProperty(key, d)
+        is JSExpando -> if (v.jsExpando?.has(key) != true && key in v.jsKeys) jsDefineDeclared(v, key, d) else {
+            val own = v.jsExpando ?: JSObject().also { v.jsExpando = it }
+            val made = !own.has(key)
+            own.defineProperty(key, d)
+            if (made && v is JSKeyOrdered && v.jsOrder != null && !jsIsSymbolKey(key)) v.jsKeyMade(key)
+        }
         is Function<*>, is JSFunction -> jsFunctionProperties(v, true)!!.defineProperty(key, d)
         is JSDynamic -> jsDefineDeclared(v, key, d)
         is JSArray<*> -> if (key == "length" || jsArrayIndex(key) != null) {
@@ -366,6 +377,7 @@ fun jsDefineProperties(target: Any?, descriptors: Any?): Any? {
 /** `Object.getOwnPropertyDescriptor(object, key)`. */
 fun jsOwnPropertyDescriptor(target: Any?, key: String): Any? = when (val v = jsBox(target)) {
     is JSObject -> v.descriptor(key)
+    is JSDefinable -> v.jsDefined?.descriptor(key) ?: (if (v is JSExpando) v.jsExpando?.descriptor(key) else null) ?: jsDeclaredDescriptor(v, key)
     is JSExpando -> v.jsExpando?.descriptor(key) ?: jsDeclaredDescriptor(v, key)
     is JSArray<*> -> v.jsProperties?.descriptor(key)
     is Function<*>, is JSFunction -> jsFunctionProperties(v, false)?.descriptor(key)
@@ -432,6 +444,11 @@ fun <T> jsUncheckedNull(): T = null as T
 /** A field declared without a value (Kotlin's `lateinit`) read by name before it is set: undefined, as script reads it. */
 inline fun jsUnsetIsUndefined(read: () -> Any?): Any? = try { read() } catch (_: UninitializedPropertyAccessException) { null }
 
+/** An app class's name as script knows it, where its Kotlin name is another. */
+@Retention(AnnotationRetention.RUNTIME)
+@Target(AnnotationTarget.CLASS)
+annotation class JSClassName(val name: String)
+
 /** A class's name as JavaScript gives a constructor's: the library's error classes by their JavaScript names. */
 fun jsConstructorName(c: Class<*>): String = when (c) {
     JSError::class.java -> "Error"
@@ -440,5 +457,5 @@ fun jsConstructorName(c: Class<*>): String = when (c) {
     JSSyntaxError::class.java -> "SyntaxError"
     JSReferenceError::class.java -> "ReferenceError"
     JSAggregateError::class.java -> "AggregateError"
-    else -> c.simpleName
+    else -> c.getAnnotation(JSClassName::class.java)?.name ?: c.simpleName
 }

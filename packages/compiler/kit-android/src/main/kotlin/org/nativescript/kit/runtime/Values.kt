@@ -37,6 +37,14 @@ fun jsNullKeys(obj: Any?, keys: List<String>): MutableSet<String>? {
     return if (nulls.isEmpty()) null else nulls.toMutableSet()
 }
 
+/** The keys of `obj` among `keys` that it holds as undefined, for a typed object read from it. */
+fun jsUnsetKeys(obj: Any?, keys: List<String>): MutableSet<String>? {
+    val dynamic = obj as? JSDynamic ?: return null
+    val own = dynamic.jsKeys
+    val unset = keys.filter { it in own && dynamic.jsGet(it) == null }
+    return if (unset.isEmpty()) null else unset.toMutableSet()
+}
+
 /** An object literal's keys that hold null: `known` ones, and those of `values` (untyped values it was given) that are null. */
 fun jsNullKeysOf(known: List<String>, vararg values: Pair<String, Any?>): MutableSet<String>? {
     val nulls = known + values.filter { it.second is JSNull }.map { it.first }
@@ -46,6 +54,51 @@ fun jsNullKeysOf(known: List<String>, vararg values: Pair<String, Any?>): Mutabl
 /** A field written untyped: the keys noted as holding null once `value` is written at `key`. */
 fun jsNoteNull(nulls: MutableSet<String>?, key: String, value: Any?): MutableSet<String>? =
     if (value is JSNull) (nulls ?: mutableSetOf()).also { it.add(key) } else nulls?.also { it.remove(key) }
+
+/** An object literal's optional fields given null or undefined, as its values run: the keys its shape notes (`jsNulls`, `jsUnset`). */
+class JSLiteralKeys(var nulls: MutableSet<String>? = null, var unset: MutableSet<String>? = null) {
+    /** An untyped value, before it is converted to the field's type, which holds null and undefined both as Kotlin's null. */
+    fun untyped(key: String, value: Any?): Any? {
+        if (value == null) unset = (unset ?: mutableSetOf()).also { it.add(key) } else if (value is JSNull) nulls = (nulls ?: mutableSetOf()).also { it.add(key) }
+        return value
+    }
+
+    /** A typed value, whose null is undefined. */
+    fun <T> typed(key: String, value: T): T {
+        if (value == null) unset = (unset ?: mutableSetOf()).also { it.add(key) }
+        return value
+    }
+}
+
+/**
+ * A class's instance whose keys a write can make out of its fields' declared order (assign mode's fields without an
+ * initializer, a field deleted and written again): `jsOrder` is null while the keys run in `jsFieldKeys`' order.
+ */
+interface JSKeyOrdered {
+    var jsOrder: List<String>?
+    val jsFieldKeys: List<String>
+    /** The keys script gave the object (its expando's), which `jsFieldKeys`' order puts after the fields. */
+    val jsAddedKeys: List<String> get() = listOf()
+}
+
+/** Whether a key made now needs noting: the fields' order alone no longer places it last. */
+val JSKeyOrdered.jsKeysNoted: Boolean get() = jsOrder != null || jsAddedKeys.isNotEmpty()
+
+/**
+ * `key` made just now: last among the keys. `early`: made before its class's level of the constructor started, so before
+ * keys its static place is after.
+ */
+fun JSKeyOrdered.jsKeyMade(key: String, early: Boolean = false) {
+    val keys = jsOrderedKeys(jsOrder, jsFieldKeys + jsAddedKeys)
+    if (jsOrder == null && !early && keys.lastOrNull() == key) return
+    jsOrder = keys.filter { it != key } + key
+}
+
+/** An object's present field keys `keys` in the order `order` notes, any it lacks after. */
+fun jsOrderedKeys(order: List<String>?, keys: List<String>): List<String> {
+    if (order == null) return keys
+    return order.filter { it in keys } + keys.filter { it !in order }
+}
 
 /**
  * An object whose properties dynamic code reaches by name (`o[key]`, JSON, `console.log`):

@@ -346,7 +346,7 @@ const declarations = [
 ];
 const replacements = { ...kitReplacements, ...pluginReplacements(app, platform) };
 modules.push(...Object.values(replacements).filter((f) => !modules.includes(f)));
-const { checker, program, files: sourceFiles, pluginFiles, resolved, lenient: lenientApp } = createProgram(modules, virtual, platform, undefined, plugins, declarations, replacements, {}, aliased);
+const { checker, program, files: sourceFiles, pluginFiles, resolved, lenient: lenientApp, assignsFields } = createProgram(modules, virtual, platform, undefined, plugins, declarations, replacements, {}, aliased);
 const infos = new Map<string, ComponentInfo & { outputs?: string[]; outputFields?: Record<string, string>; optional?: string[]; passed?: boolean; fragment?: boolean; initThrows?: boolean; setters?: string[]; throwingSetters?: string[]; propAliases?: Record<string, string>; changes?: boolean }>(components.map((c) => [c.name, { name: c.name, props: c.props, outputs: c.outputs, outputFields: c.outputFields, optional: c.optional, passed: c.passed, fragment: framework === 'angular' && !c.page && isFragment(c.template), setters: c.setters, propAliases: c.propAliases, changes: c.changes }]));
 // A component whose template is one fragment component is a fragment too, however deep the chain.
 if (framework === 'angular') {
@@ -411,7 +411,7 @@ else if (unapplied.length && !(platform === 'ios' && args.includes('--all-errors
 if (platform === 'android') {
   const { writeAndroid } = await import('./android.ts');
   const css = kitCss(sheets);
-  await writeAndroid({ app, out: resolve(opt('--out', join(app, 'platforms', 'native-android'))!), name, framework: style, zone, components, modules, program, checker, files: sourceFiles, infos, css, root, routes: routing, routeTree, lines: sourceLines, applicationId: opt('--bundle'), widgetsAar: opt('--widgets'), appDir, build: args.includes('--build'), bundle: args.includes('--aab') || args.includes('--device'), keyStore: keyStore(), plugins: plugins.all(), pluginFiles, reach, properties, compiledPlugins, resolved, mounted, workers: [...workerScripts], corePatches: corePatchesAndroid(app, nodeModules(app)), allowUnapplied, allErrors: args.includes('--all-errors'), lenient: lenientApp, bindings: bindings.filter((b) => replacements[b.package] === b.script), generatedKit, narrowKitKeeps: releaseOptions(app, platform).narrowKitKeeps === true, cssAST: generatedKit ? kitAst(sheets) : undefined,
+  await writeAndroid({ app, out: resolve(opt('--out', join(app, 'platforms', 'native-android'))!), name, framework: style, zone, components, modules, program, checker, files: sourceFiles, infos, css, root, routes: routing, routeTree, lines: sourceLines, applicationId: opt('--bundle'), widgetsAar: opt('--widgets'), appDir, build: args.includes('--build'), bundle: args.includes('--aab') || args.includes('--device'), keyStore: keyStore(), plugins: plugins.all(), pluginFiles, reach, properties, compiledPlugins, resolved, mounted, workers: [...workerScripts], corePatches: corePatchesAndroid(app, nodeModules(app)), allowUnapplied, allErrors: args.includes('--all-errors'), lenient: lenientApp, assignFields: assignsFields, bindings: bindings.filter((b) => replacements[b.package] === b.script), generatedKit, narrowKitKeeps: releaseOptions(app, platform).narrowKitKeeps === true, cssAST: generatedKit ? kitAst(sheets) : undefined,
     xml: xml ? { pages: xml.xml, styles: pageSheets.map((sh) => ({ name: relative(appDir, sh.file).split('\\').join('/').replace(/\.scss$/, '.css'), ast: JSON.stringify(sh.ast) })), elements: xml.elements } : undefined });
   process.exit(0);
 }
@@ -438,7 +438,7 @@ try {
 }
 // Before the translator analyzes what throws: lenient code's checks throw.
 const lenientFiles = [...pluginFiles].filter((f) => !writtenStrict(f));
-const translator = new Translator(checker, infos, sourceFiles, { pluginFiles, lenientFiles, reach, properties, lenientApp });
+const translator = new Translator(checker, infos, sourceFiles, { pluginFiles, lenientFiles, reach, properties, lenientApp, assignFields: assignsFields });
 translator.compiledFiles = new Set(compiledPlugins);
 translator.lines = sourceLines;
 const located = (code: string) => (sourceLines ? sourceLines.swift(withoutRedundantImplicit(code)) : withoutRedundantImplicit(code));

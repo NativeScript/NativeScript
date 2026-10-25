@@ -814,6 +814,8 @@ export interface Program {
   resolved: (containing: string, specifier: string) => string | undefined;
   /** The app's own configuration checks without strictNullChecks. */
   lenient: boolean;
+  /** The app's configuration assigns class fields rather than defining them (`useDefineForClassFields` off). */
+  assignsFields: boolean;
 }
 
 const RXJS_SHIM = `
@@ -1043,7 +1045,7 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
     throw new Error(`the app does not type-check as the release build sees it:\n${text}`);
   }
   const ordered = [...roots, ...virtual.keys(), ...pluginFiles].map((f) => program.getSourceFile(f)!).filter(Boolean);
-  return { program, checker: program.getTypeChecker(), files: ordered, pluginFiles: [...pluginFiles], resolved: (containing, specifier) => resolutions.get(`${containing}\0${specifier}`), lenient };
+  return { program, checker: program.getTypeChecker(), files: ordered, pluginFiles: [...pluginFiles], resolved: (containing, specifier) => resolutions.get(`${containing}\0${specifier}`), lenient, assignsFields: defineFields === false };
 }
 
 /**

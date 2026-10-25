@@ -40,5 +40,8 @@ export const expectedExit = (file: string) => Number(/^\/\/ @exit (\d+)$/m.exec(
 /** A `// @members-by-name` line: the case is translated as an XML app's code is, its classes' accessors and methods readable by name (core's Builder binds to them). */
 export const membersByName = (file: string) => /^\/\/ @members-by-name$/m.test(head(file));
 
-export const swiftOptions = (file: string): SwiftOptions => ({ lenient: lenient(file), weak: weakOf(file), membersByName: membersByName(file), plugin: pluginCase(file), lenientApp: appLenient(file) });
-export const kotlinOptions = (file: string): KotlinOptions => ({ lenient: lenient(file), membersByName: membersByName(file), lenientApp: appLenient(file) });
+/** A `// @assign-fields` line: the case's class fields are assigned in the constructor, not defined, as in an app whose target is below ES2022. */
+export const assignFields = (file: string) => /^\/\/ @assign-fields$/m.test(head(file));
+
+export const swiftOptions = (file: string): SwiftOptions => ({ lenient: lenient(file), weak: weakOf(file), membersByName: membersByName(file), plugin: pluginCase(file), lenientApp: appLenient(file), assignFields: assignFields(file) });
+export const kotlinOptions = (file: string): KotlinOptions => ({ lenient: lenient(file), membersByName: membersByName(file), lenientApp: appLenient(file), assignFields: assignFields(file) });

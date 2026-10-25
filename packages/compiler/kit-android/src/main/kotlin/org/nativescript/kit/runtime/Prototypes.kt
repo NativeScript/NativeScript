@@ -171,6 +171,44 @@ interface JSExpando : JSDynamic, JSSymbolKeyed, JSDeletable {
     override fun jsDelete(key: String): Boolean = jsExpando?.delete(key) ?: true
 }
 
+/** A subclass's keys: its base's (which end with the expando's), then its own fields', then the expando's. */
+fun jsKeysBeforeExpando(inherited: List<String>, own: List<String>, expando: JSObject?): List<String> {
+    val added = expando?.jsKeys
+    if (added.isNullOrEmpty()) return inherited + own
+    return inherited.dropLast(added.size) + own + added
+}
+
+/**
+ * An object of a program class whose declared fields `Object.defineProperty` may give a descriptor (an accessor, read-only,
+ * hidden): such a field's accessors defer to the descriptor kept in `jsDefined`.
+ */
+interface JSDefinable : JSDynamic {
+    var jsDefined: JSObject?
+    fun jsDefinable(key: String): Boolean
+}
+
+/** A definable field's value where it was given a descriptor (its getter's, run with the object as `this`), else null. */
+fun jsDefinedGet(obj: JSDefinable, key: String): JSFound? {
+    val own = obj.jsDefined ?: return null
+    return if (own.has(key)) JSFound(own.get(key, obj)) else null
+}
+
+/** A write of a definable field given a descriptor: its setter, or its value where writable (strict code: a refused write throws). False where it has none. */
+fun jsDefinedSet(obj: JSDefinable, key: String, value: Any?): Boolean {
+    val own = obj.jsDefined ?: return false
+    if (!own.has(key)) return false
+    val setter = own.setter(key)
+    if (setter != null) setter(obj, value) else own.put(key, value)
+    return true
+}
+
+/** A definable field's key as `Object.keys` lists it: per its descriptor where it has one, else `declared`. */
+fun jsDefinedKeys(obj: JSDefinable, key: String, declared: List<String>): List<String> {
+    val own = obj.jsDefined
+    if (own == null || !own.has(key)) return declared
+    return if (key in own.jsKeys) listOf(key) else listOf()
+}
+
 /** A key a class does not declare as a field: a symbol-named method, the instance's own property, or its prototype's. */
 fun jsExpandoGet(obj: JSExpando, key: String): Any? {
     if (jsIsSymbolKey(key)) obj.jsSymbolMethod(key)?.let { return it }
@@ -188,6 +226,8 @@ fun jsExpandoSet(obj: JSExpando, key: String, value: Any?) {
     }
     JSPrototypes.holder(obj.javaClass, key)?.setter(key)?.let { return it(obj, value) }
     (obj.jsExpando ?: JSObject().also { obj.jsExpando = it })[key] = value
+    // Without a noted order the new key is last already: the expando's keys follow the fields'.
+    if (obj is JSKeyOrdered && obj.jsOrder != null && !jsIsSymbolKey(key)) obj.jsKeyMade(key)
 }
 
 /** `key in object` for what the object does not declare as a field. */
