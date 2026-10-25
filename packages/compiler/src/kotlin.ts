@@ -4,7 +4,7 @@ import { dirname as pathDirname, resolve as pathResolve } from 'node:path';
 import { AsyncLowering, usedBefore, type AsyncCtx, type AsyncSyntax, type AsyncTranslator } from './async.ts';
 import { isAsync, isStatic } from './throws.ts';
 import { assignedMembers } from './sharing.ts';
-import { admitsUndefined, classFieldKeys, onlyUndefined, assignedValues, openSpreadType, definitelyAssignedFields, forwardedSetter, initializedNull, intersectionAliasMembers, nullSetFields, nullishSlots, type NullishSlots, isRegExpProtocol, intlConstructor, isObjectToStringCall, isStringRaw, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, classesHeldUntyped, LooseSlots, originOf, ownSlot, implementedInterfaceDeclarations, slotOf, slotType, type TrustScope } from './lang.ts';
+import { admitsUndefined, classKeyPlan, onlyUndefined, assignedValues, openSpreadType, definitelyAssignedFields, forwardedSetter, initializedNull, intersectionAliasMembers, nullSetFields, nullishSlots, type NullishSlots, isRegExpProtocol, intlConstructor, isObjectToStringCall, isStringRaw, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, classesHeldUntyped, LooseSlots, originOf, ownSlot, implementedInterfaceDeclarations, slotOf, slotType, type TrustScope } from './lang.ts';
 import { isCoreDeclaration } from './core.ts';
 import { balanced, nonVirtualName } from './swift.ts';
 import type { Properties } from './properties.ts';
@@ -2144,10 +2144,23 @@ export class Translator implements AsyncTranslator {
   }
 
   /** `JSDynamic`: the object's keys and members by name, for printing, JSON and untyped access. */
-  private dynamicMembers(fields: { name: string; type: string }[], className: string | null, inherits: boolean, fallbackGet = 'null', fallbackSet = '', symbols: { key: string; member: string; type: string }[] = [], methods: { name: string; key?: string; params: string[]; ret: string }[] = [], expando = false, accessors: { name: string; type: string; readable: boolean; settable: boolean; set?: string }[] = [], superclass?: string, nulls = new Set<string>(), nilNull = new Set<string>(), keyed: { always: Set<string>; unset: Set<string> } = { always: new Set(), unset: new Set() }, rewritten = new Set<string>()): string[] {
+  private dynamicMembers(fields: { name: string; type: string }[], className: string | null, inherits: boolean, fallbackGet = 'null', fallbackSet = '', symbols: { key: string; member: string; type: string }[] = [], methods: { name: string; key?: string; params: string[]; ret: string }[] = [], expando = false, accessors: { name: string; type: string; readable: boolean; settable: boolean; set?: string }[] = [], superclass?: string, nulls = new Set<string>(), nilNull = new Set<string>(), keyed: KeyedMembers | null = null, rewritten = new Set<string>()): string[] {
     accessors = accessors.filter((a) => !fields.some((f) => f.name === a.name) && !methods.some((m) => m.name === a.name));
     const members = [...new Set([...accessors.map((a) => accessorKey(a.name)), ...methods.filter((m) => !m.key).map((m) => m.name)])];
-    const keys = [...fields.map((f) => (isNullable(f.type) && !nilNull.has(f.name) && !keyed.always.has(f.name) ? `(if (${ident(f.name)} == null${nulls.has(f.name) ? ` && jsNulls?.contains(${kotlinString(f.name)}) != true` : ''}${keyed.unset.has(f.name) ? ` && jsUnset?.contains(${kotlinString(f.name)}) != true` : ''}) listOf() else listOf(${kotlinString(f.name)}))` : `listOf(${kotlinString(f.name)})`)), ...(expando ? ['(jsExpando?.jsKeys ?: listOf())'] : [])];
+    const at = (n: string) => { const k = keyed?.order.indexOf(n) ?? -1; return k < 0 ? Infinity : k; };
+    const fieldKeys = (keyed ? [...fields].sort((a, b) => at(a.name) - at(b.name)) : fields).map((f) => {
+      if (!keyed) return isNullable(f.type) && !nilNull.has(f.name) ? `(if (${ident(f.name)} == null${nulls.has(f.name) ? ` && jsNulls?.contains(${kotlinString(f.name)}) != true` : ''}) listOf() else listOf(${kotlinString(f.name)}))` : `listOf(${kotlinString(f.name)})`;
+      const present = keyed.present(f.name);
+      return present ? `(if (${present}) listOf(${kotlinString(f.name)}) else listOf())` : `listOf(${kotlinString(f.name)})`;
+    });
+    const expandoKeys = expando ? ['(jsExpando?.jsKeys ?: listOf())'] : [];
+    const keys = [...fieldKeys, ...expandoKeys];
+    const keyLines = !keyed?.ordered
+      // A subclass adding no keys has its superclass's.
+      ? (inherits && !keys.length ? [] : [`    override val jsKeys: List<String> get() = ${[inherits ? 'super.jsKeys' : '', ...keys].filter(Boolean).join(' + ') || 'listOf()'}`])
+      : keyed.appBase
+        ? (fieldKeys.length ? [`    override val jsFieldKeys: List<String> get() = ${['super.jsFieldKeys', ...fieldKeys].join(' + ')}`] : [])
+        : [`    override val jsFieldKeys: List<String> get() = ${[inherits ? 'super.jsKeys' : '', ...fieldKeys].filter(Boolean).join(' + ') || 'listOf()'}`, `    override val jsKeys: List<String> get() = ${['jsOrderedKeys(jsOrder, jsFieldKeys)', ...expandoKeys].join(' + ')}`];
     const ownNames = new Set([...this.instanceKeys()].map((d) => d.name.getText()));
     // A method read by name is a script function calling it with the arguments it is given.
     const method = (m: { name: string; key?: string; params: string[]; ret: string }) => {
@@ -2157,8 +2170,7 @@ export class Translator implements AsyncTranslator {
       return `        ${m.key ?? kotlinString(m.name)} -> ${!m.key && ownNames.has(m.name) ? `(jsOwnProperty(this, ${kotlinString(m.name)}) ?: JSFound(${fn})).value` : fn}`;
     };
     return [
-      // A subclass adding no keys has its superclass's.
-      ...(inherits && !keys.length ? [] : [`    override val jsKeys: List<String> get() = ${[inherits ? 'super.jsKeys' : '', ...keys].filter(Boolean).join(' + ') || 'listOf()'}`]),
+      ...keyLines,
       ...(symbols.length ? [`    override val jsSymbolKeys: List<String> get() = listOf(${symbols.map((f) => f.key).join(', ')})`] : []),
       `    override val jsClassName: String? get() = ${className ? kotlinString(className) : 'null'}`,
       `    override fun jsGet(key: String): Any? = when (key) {`,
@@ -2176,8 +2188,7 @@ export class Translator implements AsyncTranslator {
       // A null is noted after the store, whose setter reads the key's state from before it; a field written through to its
       // source (`rewritten`) is written again once the null is noted.
       ...fields.map((f) => {
-        const unset = keyed.unset.has(f.name) ? `; jsUnset = jsNoteUnset(jsUnset, ${kotlinString(f.name)}, value)` : '';
-        return `            ${kotlinString(f.name)} -> ${(f as { expando?: boolean }).expando ? `jsExpandoSet(this, ${kotlinString(f.name)}, value)` : nulls.has(f.name) ? `{ this.${ident(f.name)} = ${isNullable(f.type) ? this.fromAny('value', f.type, f.name) : `if (jsIsNullish(value)) jsUncheckedNull<${f.type}>() else ${this.fromAny('value', f.type, f.name)}`}; jsNulls = jsNoteNull(jsNulls, ${kotlinString(f.name)}, value)${rewritten.has(f.name) ? `; jsWriteThrough(${kotlinString(f.name)})` : ''}${unset} }` : unset ? `{ this.${ident(f.name)} = ${this.fromAny('value', f.type, f.name)}${unset} }` : `this.${ident(f.name)} = ${this.fromAny('value', f.type, f.name)}`}`;
+        return `            ${kotlinString(f.name)} -> ${(f as { expando?: boolean }).expando ? `jsExpandoSet(this, ${kotlinString(f.name)}, value)` : nulls.has(f.name) ? `{ this.${ident(f.name)} = ${isNullable(f.type) ? this.fromAny('value', f.type, f.name) : `if (jsIsNullish(value)) jsUncheckedNull<${f.type}>() else ${this.fromAny('value', f.type, f.name)}`}; jsNulls = jsNoteNull(jsNulls, ${kotlinString(f.name)}, value)${rewritten.has(f.name) ? `; jsWriteThrough(${kotlinString(f.name)})` : ''} }` : `this.${ident(f.name)} = ${this.fromAny('value', f.type, f.name)}`}`;
       }),
       // A setter takes what script gives it (`textWrap = "true"`): as JavaScript reads it as the setter's type.
       ...accessors.filter((a) => a.settable).map((a) => `            ${kotlinString(accessorKey(a.name))} -> ${a.set ?? `this.${ident(a.name)} = ${a.type === 'Boolean' ? 'jsTruthy(value)' : a.type === 'Double' ? 'jsToNumber(value)' : this.fromAnyCode('value', a.type, true)}`}`),
@@ -3101,7 +3112,8 @@ export class Translator implements AsyncTranslator {
     const paramProps = (ctor?.parameters ?? []).filter((p) => ts.canHaveModifiers(p) && ts.getModifiers(p)?.some((m) => [ts.SyntaxKind.PublicKeyword, ts.SyntaxKind.PrivateKeyword, ts.SyntaxKind.ProtectedKeyword, ts.SyntaxKind.ReadonlyKeyword].includes(m.kind)));
     const fields: { name: string; type: string; expando?: boolean }[] = [];
     // Before the fields: a constructor's writes note into it, which a later initializer would reset.
-    const lines: string[] = !isError && this.classKeys(cls).unset.size && !this.baseKeepsUnset(cls) ? ['    var jsUnset: MutableSet<String>? = null'] : [];
+    const lines: string[] = [];
+    const keyedInfo = isError ? null : this.keyedMembers(cls, !!appBase, lines, supertypes);
     const statics: string[] = [];
     this.indent = '    ';
     const narrowedParams = new Map<ts.ParameterDeclaration, string>();
@@ -3255,26 +3267,29 @@ export class Translator implements AsyncTranslator {
       const nullInit = !!m.initializer && (m.initializer.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(m.initializer) && m.initializer.text === 'undefined'));
       // A field of a class with no base that something may read before the constructor assigns it (see `definitelyAssignedFields`).
       const readEarly = !m.initializer && !this.library && !cls.heritageClauses?.some((h) => h.token === ts.SyntaxKind.ExtendsKeyword) && !this.definiteFields(cls).has(m) && this.deferredDeclaration('x', t).startsWith('lateinit ');
-      if ((plugin || readEarly || (!m.initializer && chainedThrough(cls, n))) && (nullInit || !m.initializer) && !isNullable(t) && t !== 'Any?' && t !== 'Unit') {
+      // A field whose writes note its key has a setter, which `lateinit` can't.
+      const setter = this.keySetter(cls, n);
+      const lateSetter = setter.length > 0 && !m.initializer && this.deferredDeclaration('x', t).startsWith('lateinit ');
+      if ((plugin || readEarly || lateSetter || (!m.initializer && chainedThrough(cls, n))) && (nullInit || !m.initializer) && !isNullable(t) && t !== 'Any?' && t !== 'Unit') {
         // Unset (or `null`) in code checked without strictNullChecks: nullable, unwrapped where it is read.
         if (sym) this.nullableDecls.add(sym);
         fields.push({ name: n, type: optionalType(t) });
-        lines.push(`    ${fieldMods}var ${ident(n)}: ${optionalType(t)} = null`);
+        lines.push(`    ${fieldMods}var ${ident(n)}: ${optionalType(t)} = null`, ...setter);
         continue;
       }
       fields.push({ name: n, type: t });
       // Read early by a base class's constructor: null (undefined) until the class's own initialization sets it.
       if (m.initializer && fieldMods !== '@JvmField ' && this.earlyField(m)) {
         const backing = earlyBacking(n);
-        lines.push(`    var ${backing}: ${t}? = ${this.coerce(m.initializer, t)}`, `    ${fieldMods}var ${ident(n)}: ${t}`, `        get() = ${this.undefinedAs(backing, t)}`, `        set(value) { ${backing} = value }`);
+        lines.push(`    var ${backing}: ${t}? = ${this.coerce(m.initializer, t)}`, `    ${fieldMods}var ${ident(n)}: ${t}`, `        get() = ${this.undefinedAs(backing, t)}`, setter.length ? setter[0].replace('field = value', `${backing} = value`) : `        set(value) { ${backing} = value }`);
         continue;
       }
-      if (m.initializer) lines.push(`    ${fieldMods}var ${ident(n)}: ${t} = ${this.coerce(m.initializer, t)}`);
+      if (m.initializer) lines.push(`    ${fieldMods}var ${ident(n)}: ${t} = ${this.coerce(m.initializer, t)}`, ...setter);
       // A non-strict app's array, map or set field holds undefined until given one.
-      else if (this.lenientApp && !this.library && /^JS(Array|Map|Set)</.test(t)) lines.push(`    ${fieldMods}var ${ident(n)}: ${t} = jsUncheckedNull<${t}>()`);
+      else if (this.lenientApp && !this.library && /^JS(Array|Map|Set)</.test(t)) lines.push(`    ${fieldMods}var ${ident(n)}: ${t} = jsUncheckedNull<${t}>()`, ...setter);
       else {
         const d = this.deferredDeclaration(ident(n), t);
-        lines.push(`    ${d.startsWith('lateinit') && fieldMods === '@JvmField ' ? '' : fieldMods}${d}`);
+        lines.push(`    ${d.startsWith('lateinit') && fieldMods === '@JvmField ' ? '' : fieldMods}${d}`, ...setter);
       }
     }
     fieldStarts.forEach(([at, m], k) => { if ((fieldStarts[k + 1]?.[0] ?? lines.length) > at) fieldStarts[k][0] = -1 - at; });
@@ -3311,7 +3326,9 @@ export class Translator implements AsyncTranslator {
         const binds = [...ctor.parameters.map((p, k) => `        ${assignsTo(ctor.body!, this.checker.getSymbolAtLocation(p.name), this.checker) ? 'var' : 'val'} ${names[k]}: ${this.paramType(p)} = (__s[${superArgs.length + k}] as ${this.paramType(p)})`),
           ...locals.map((n, k) => `        var ${ident(n.text)}: ${optionalType(this.typeOf(n))} = (__s[${superArgs.length + names.length + k}] as ${optionalType(this.typeOf(n))})`)];
         const own = paramProps.map((p) => `        this.${ident((p.name as ts.Identifier).text)} = ${ident((p.name as ts.Identifier).text)}`);
-        return [...binds, ...own, ...this.statements(rest)];
+        const notes = this.keyNotes;
+        this.keyNotes = this.initKeyNotes(cls);
+        try { return [...binds, ...this.levelStart(cls), ...own, ...this.statements(rest)]; } finally { this.keyNotes = notes; }
       });
       for (const n of locals) { const sym = this.checker.getSymbolAtLocation(n); if (sym) this.nullableDecls.add(sym); }
       this.indent = '    ';
@@ -3325,7 +3342,9 @@ export class Translator implements AsyncTranslator {
         const superAt = stmts.findIndex((s) => ts.isExpressionStatement(s) && ts.isCallExpression(s.expression) && s.expression.expression.kind === ts.SyntaxKind.SuperKeyword);
         if (superAt > 0) throw this.error(stmts[0], 'statements before super() in a constructor');
         const own = paramProps.map((p) => `        this.${ident((p.name as ts.Identifier).text)} = ${narrowedParams.has(p) ? `(${ident((p.name as ts.Identifier).text)} as ${narrowedParams.get(p)})` : ident((p.name as ts.Identifier).text)}`);
-        out.push(...own, ...this.statements(stmts.slice(superAt + 1)));
+        const notes = this.keyNotes;
+        this.keyNotes = this.initKeyNotes(cls);
+        try { out.push(...this.levelStart(cls), ...own, ...this.statements(stmts.slice(superAt + 1))); } finally { this.keyNotes = notes; }
         return out;
       });
       const superCall = superAt(ctor);
@@ -3334,10 +3353,11 @@ export class Translator implements AsyncTranslator {
       this.indent = '    ';
       lines.push(`    constructor(${this.params(ctor, false)})${delegation} {`, ...body, '    }');
     } else if (base) {
-      if (baseCtor) lines.push(`    constructor(${this.params(baseCtor, false)}) : super(${this.readsArguments(baseCtor) ? '__arguments' : baseCtor.parameters.map((p) => ident((p.name as ts.Identifier).text)).join(', ')})`);
+      const level = this.levelStart(cls);
+      if (baseCtor) lines.push(`    constructor(${this.params(baseCtor, false)}) : super(${this.readsArguments(baseCtor) ? '__arguments' : baseCtor.parameters.map((p) => ident((p.name as ts.Identifier).text)).join(', ')})${level.length ? ' {' : ''}`, ...(level.length ? [...level, '    }'] : []));
       // `new HttpError(message, { cause })` of a class that declares no constructor: Error's.
       else if (isError && base !== 'JSAggregateError') lines.push('    constructor(message: Any? = null, options: Any? = null) : super(if (message == null) "" else jsToString(message), jsGetOptional(options, "cause"))');
-      else lines.push('    constructor() : super()');
+      else lines.push(`    constructor() : super()${level.length ? ' {' : ''}`, ...(level.length ? [...level, '    }'] : []));
     }
     const accessors = new Map<string, { get?: ts.GetAccessorDeclaration; set?: ts.SetAccessorDeclaration }>();
     for (const m of cls.members) {
@@ -3589,7 +3609,7 @@ export class Translator implements AsyncTranslator {
       const initial = cls.members.filter((m): m is ts.PropertyDeclaration => ts.isPropertyDeclaration(m) && nulls.has(m.name.getText()) && initializedNull(m));
       lines.push(`    var jsNulls: MutableSet<String>? = ${initial.length ? `mutableSetOf(${initial.map((m) => kotlinString(m.name.getText())).join(', ')})` : 'null'}`);
     }
-    if (!isError) lines.push(...this.dynamicMembers(fields, name, !!appBase || !!kitRoot, expando ? 'jsExpandoGet(this, key)' : 'null', expando ? 'jsExpandoSet(this, key, value)' : '', symbolFields, dynMethods, expando, dynAccessors, base?.replace(/<.*$/, ''), nulls, this.nullFieldsTyped(cls), this.classKeys(cls)));
+    if (!isError) lines.push(...this.dynamicMembers(fields, name, !!appBase || !!kitRoot, expando ? 'jsExpandoGet(this, key)' : 'null', expando ? 'jsExpandoSet(this, key, value)' : '', symbolFields, dynMethods, expando, dynAccessors, base?.replace(/<.*$/, ''), nulls, this.nullFieldsTyped(cls), keyedInfo));
     // An error's own fields by name, after JSError's `name`/`message`/`stack`; what script adds to it comes after the fields, and it prints as an error, not as `Name { … }`.
     else lines.push(...this.dynamicMembers(fields, name, true, 'null', '', symbolFields, dynMethods, false, dynAccessors, base!.replace(/<.*$/, ''))
       .filter((l) => !l.startsWith('    override val jsClassName'))
@@ -4893,6 +4913,8 @@ export class Translator implements AsyncTranslator {
     const a = this.asyncCtx;
     if (ts.isExpressionStatement(s)) {
       const code = this.exprStatement(s.expression);
+      const note = this.keyNotes?.get(s);
+      if (note) return [note.before, code, note.after].filter(Boolean).map((l) => i + l).join('\n');
       return inert(code) ? '' : i + code;
     }
     if (ts.isReturnStatement(s)) {
@@ -6349,6 +6371,14 @@ export class Translator implements AsyncTranslator {
       if (ts.isPropertyAccessExpression(target) && this.isAny(target.expression)) return `jsDelete(${this.expr(target.expression)}, ${kotlinString(target.name.text)})`;
       if (ts.isPropertyAccessExpression(target) && this.typeOf(target.expression).startsWith('JSRecord<')) return `${this.expr(target.expression)}.delete(${kotlinString(target.name.text)})`;
       if (ts.isPropertyAccessExpression(target) && this.typeOf(target.expression) === 'JSObject') return `${this.expr(target.expression)}.delete(${kotlinString(target.name.text)})`;
+      // A field of a program class some code deletes: its flag (`classKeys`).
+      const decl = ts.isPropertyAccessExpression(target) ? this.checker.getSymbolAtLocation(target.name)?.valueDeclaration : undefined;
+      if (decl && ts.isPropertyDeclaration(decl) && ts.isClassLike(decl.parent) && this.classKeys(decl.parent).flagged.has((target as ts.PropertyAccessExpression).name.text) && this.keyHierarchy(decl.parent).ordered) {
+        const t = target as ts.PropertyAccessExpression;
+        if (!ts.isIdentifier(t.expression) && t.expression.kind !== ts.SyntaxKind.ThisKeyword) throw this.error(e, 'delete of a field of an object this expression makes');
+        const o = this.expr(t.expression), n = t.name.text;
+        return `run { if (${o}.__has_${n}) { ${o}.${ident(n)} = null; ${o}.__has_${n} = false }; true }`;
+      }
       throw this.error(e, 'delete of this member');
     }
     if (ts.isVoidExpression(e)) {
@@ -9065,7 +9095,7 @@ export class Translator implements AsyncTranslator {
 
   /** `left = right` (also the assignment `??=` and `||=` make). */
   private assignment(left: ts.Expression, right: ts.Expression): string {
-    if (this.nullField(left) || this.unsetWrite(left, right)) return `${this.expr(left.expression)}.jsSet(${kotlinString(left.name.text)}, ${this.coerce(right, 'Any?')})`;
+    if (this.nullField(left)) return `${this.expr(left.expression)}.jsSet(${kotlinString(left.name.text)}, ${this.coerce(right, 'Any?')})`;
     const keyed = ts.isPropertyAccessExpression(left) && !this.lenient && !this.library ? this.nullishShapeField(left, true) : null;
     if (keyed) return `${this.expr((left as ts.PropertyAccessExpression).expression)}.jsSet(${kotlinString(keyed)}, ${this.coerce(right, 'Any?')})`;
     if (ts.isPropertyAccessExpression(left) && this.symbolName(left.expression) === 'VueRef' && left.name.text === 'value') return `${this.lvalue(left)} = ${this.signalWrite(left.expression, right, this.typeOf(left))}`;
@@ -9796,26 +9826,127 @@ export class Translator implements AsyncTranslator {
     return false;
   }
 
-  private classKeySets = new Map<ts.ClassLikeDeclaration, { always: Set<string>; unset: Set<string> }>();
+  private classKeySets = new Map<ts.ClassLikeDeclaration, ClassKeys>();
+  /** The constructor being written's statements that make keys the walk predicts: what runs before and after each (`initKeyNotes`). */
+  private keyNotes: Map<ts.Statement, { before: string; after: string }> | null = null;
 
   /**
-   * An app class's fields by when they are keys (`classFieldKeys`): `always`, and `unset`, the optional ones that become
-   * keys once written, which a write of undefined notes in `jsUnset` (written by name where the value may be undefined).
+   * An app class's keys (`classKeyPlan`), and its fields `flagged` with a `__has_` flag: those that are keys only once
+   * written, and those some code deletes. A hierarchy with any is `ordered` (`keyHierarchy`).
    */
-  private classKeys(cls: ts.ClassLikeDeclaration): { always: Set<string>; unset: Set<string> } {
-    let sets = this.classKeySets.get(cls);
-    if (sets) return sets;
-    sets = { always: new Set(), unset: new Set() };
-    this.classKeySets.set(cls, sets);
-    if (this.lenient || this.library || cls.getSourceFile().isDeclarationFile || this.pluginFiles.has(cls.getSourceFile().fileName)) return sets;
-    if (!this.keyedClass(cls)) return sets;
-    const { always, written } = classFieldKeys(cls, !this.assignFields);
-    sets.always = always;
-    for (const m of written) {
-      const t = this.typeOf(m.name);
-      if (isNullable(t)) sets.unset.add(m.name.getText());
+  private classKeys(cls: ts.ClassLikeDeclaration): ClassKeys {
+    let k = this.classKeySets.get(cls);
+    if (k) return k;
+    k = { on: false, order: [], always: new Set(), sure: new Set(), written: new Set(), flagged: new Set(), walked: new Map(), depth: 0 };
+    this.classKeySets.set(cls, k);
+    if (this.lenient || this.library || cls.getSourceFile().isDeclarationFile || this.pluginFiles.has(cls.getSourceFile().fileName)) return k;
+    if (!this.keyedClass(cls)) return k;
+    const plan = classKeyPlan(cls, !this.assignFields);
+    Object.assign(k, { on: true, order: plan.order, always: plan.always, sure: plan.sure, walked: plan.walked });
+    // A field core's property or the kit's class holds is no key of the object's own.
+    const kitRoot = this.kitRootOf(cls);
+    const kitHeld = (m: ts.PropertyDeclaration) => !!this.kitRedeclared(m) || (!!kitRoot && !!this.core?.isKitView(kitRoot) && !!this.properties?.isRegistered(cls, m.name.getText()));
+    for (const m of plan.written) if (!kitHeld(m)) { k.written.add(m.name.getText()); k.flagged.add(m.name.getText()); }
+    for (const m of cls.members) if (ts.isPropertyDeclaration(m) && ts.isIdentifier(m.name) && this.deletedFields().has(m) && isNullable(this.typeOf(m.name)) && !kitHeld(m)) k.flagged.add(m.name.text);
+    for (let b = this.programBase(cls); b; b = this.programBase(b)) k.depth++;
+    return k;
+  }
+
+  private keyHierarchies = new Map<ts.ClassLikeDeclaration, { ordered: boolean; gated: boolean }>();
+
+  /**
+   * A keyed class's hierarchy. `ordered`: some class has flagged fields, so a key may be made out of the plans' order; the
+   * root keeps `jsOrder` (null until that happens) and each class lists its present keys in plan order (`jsFieldKeys`).
+   * `gated`: a subclass has keys from its level of the constructor on, which wait for it (`jsLevel`): its base's constructor
+   * runs first.
+   */
+  private keyHierarchy(cls: ts.ClassLikeDeclaration): { ordered: boolean; gated: boolean } {
+    const rootOf = (c: ts.ClassLikeDeclaration) => { let r = c; for (let b = this.programBase(r); b; b = this.programBase(b)) r = b; return r; };
+    const root = rootOf(cls);
+    let h = this.keyHierarchies.get(root);
+    if (h) return h;
+    const classes: ts.ClassLikeDeclaration[] = [];
+    const visit = (n: ts.Node): void => { if (ts.isClassLike(n)) classes.push(n); ts.forEachChild(n, visit); };
+    for (const f of this.sourceFiles) if (!f.isDeclarationFile) visit(f);
+    const members = [root, ...classes.filter((c) => c !== root && rootOf(c) === root)].filter((c) => this.classKeys(c).on);
+    const ordered = members.some((c) => this.classKeys(c).flagged.size > 0);
+    h = { ordered, gated: ordered && members.some((c) => this.classKeys(c).depth > 0 && this.classKeys(c).order.some((n) => !this.classKeys(c).written.has(n))) };
+    this.keyHierarchies.set(root, h);
+    return h;
+  }
+
+  private deletedDecls: Set<ts.Declaration> | null = null;
+
+  /** The fields some code deletes (`delete o.field`). */
+  private deletedFields(): Set<ts.Declaration> {
+    if (this.deletedDecls) return this.deletedDecls;
+    const out = this.deletedDecls = new Set<ts.Declaration>();
+    const visit = (n: ts.Node): void => {
+      if (ts.isDeleteExpression(n) && ts.isPropertyAccessExpression(n.expression)) {
+        const d = this.checker.getSymbolAtLocation(n.expression.name)?.valueDeclaration;
+        if (d) out.add(d);
+      }
+      ts.forEachChild(n, visit);
+    };
+    for (const f of this.sourceFiles) if (!f.isDeclarationFile) visit(f);
+    return out;
+  }
+
+  /** A flagged field's setter, which notes its key when a write makes it. */
+  private keySetter(cls: ts.ClassLikeDeclaration, n: string): string[] {
+    if (!this.classKeys(cls).flagged.has(n) || !this.keyHierarchy(cls).ordered) return [];
+    // A subclass's field made by its base's constructor (a method it overrides) goes before the keys of the subclass's own
+    // level, which its static place is after.
+    const k = this.classKeys(cls);
+    const early = k.depth > 0 && this.keyHierarchy(cls).gated ? `, early = jsLevel < ${k.depth}` : '';
+    return [`        set(value) { field = value; if (!__has_${n}) { __has_${n} = true; jsKeyMade(${kotlinString(n)}${early}) } }`];
+  }
+
+  /** A keyed class's keys for `dynamicMembers`, declaring the state they read (`classKeys`): its flags, and in the root `jsOrder` and `jsLevel`. */
+  private keyedMembers(cls: ts.ClassLikeDeclaration, appBase: boolean, lines: string[], supertypes: string[]): KeyedMembers | null {
+    const k = this.classKeys(cls);
+    if (!k.on) return null;
+    const { ordered, gated } = this.keyHierarchy(cls);
+    if (ordered) {
+      for (const n of k.flagged) lines.push(`    var __has_${n} = ${!k.written.has(n)}`);
+      if (!appBase) {
+        lines.push('    override var jsOrder: List<String>? = null');
+        if (gated) lines.push('    var jsLevel = 0');
+        supertypes.push('JSKeyOrdered');
+      }
     }
-    return sets;
+    const gate = gated && k.depth > 0 ? `jsLevel >= ${k.depth}` : '';
+    const present = (n: string) => [k.written.has(n) ? '' : gate, k.flagged.has(n) ? `__has_${n}` : ''].filter(Boolean).join(' && ') || null;
+    return { order: k.order, present, ordered, appBase };
+  }
+
+  /**
+   * The statements of a constructor whose writes the walk predicts (`classKeyPlan`): a flagged field's flag is set before,
+   * so its setter notes nothing, and below a base, whose constructor may have made keys out of order, the key goes last
+   * after. Every other write makes its key through the setter.
+   */
+  private initKeyNotes(cls: ts.ClassLikeDeclaration): Map<ts.Statement, { before: string; after: string }> {
+    const notes = new Map<ts.Statement, { before: string; after: string }>();
+    const k = this.classKeys(cls);
+    if (!k.on || !this.keyHierarchy(cls).ordered) return notes;
+    const based = !!cls.heritageClauses?.some((h) => h.token === ts.SyntaxKind.ExtendsKeyword);
+    for (const [x, w] of k.walked) {
+      const flagged = k.flagged.has(w.field);
+      if (!flagged && !(w.first && based)) continue;
+      const made = `__made${this.tmp++}`;
+      const before = !flagged ? '' : based ? `val ${made} = !__has_${w.field}; __has_${w.field} = true` : `__has_${w.field} = true`;
+      const after = based ? `if (${flagged ? `${made} && ` : ''}jsOrder != null) jsKeyMade(${kotlinString(w.field)})` : '';
+      notes.set(x.parent as ts.Statement, { before, after });
+    }
+    return notes;
+  }
+
+  /** A subclass's start of its level of the constructor: its keys from there on (`jsLevel`), and its keys made now. */
+  private levelStart(cls: ts.ClassLikeDeclaration): string[] {
+    const k = this.classKeys(cls);
+    if (!k.on || k.depth === 0 || !this.keyHierarchy(cls).gated) return [];
+    const now = k.order.filter((n) => k.always.has(n));
+    return [`        jsLevel = ${k.depth}`, ...(now.length ? [`        if (jsOrder != null) { ${now.map((n) => `jsKeyMade(${kotlinString(n)})`).join('; ')} }`] : [])];
   }
 
   /** A class the class path writes with its members by name, its hierarchy rooted in none but core's: no error, component, service, mixin or native subclass. */
@@ -9827,19 +9958,6 @@ export class Translator implements AsyncTranslator {
       if (h && !this.programBase(c) && (ERRORS[h.expression.getText()] || !this.kitRootOf(c))) return false;
     }
     return true;
-  }
-
-  /** One `jsUnset` per object, as `jsNulls`. */
-  private baseKeepsUnset(cls: ts.ClassLikeDeclaration): boolean {
-    for (let b = this.programBase(cls); b; b = this.programBase(b)) if (this.classKeys(b).unset.size) return true;
-    return false;
-  }
-
-  /** A write to a field `classKeys` notes when unset, of a value that may be undefined. */
-  private unsetWrite(left: ts.Expression, right: ts.Expression): left is ts.PropertyAccessExpression {
-    if (!ts.isPropertyAccessExpression(left) || left.questionDotToken || left.expression.kind === ts.SyntaxKind.SuperKeyword) return false;
-    const d = this.checker.getSymbolAtLocation(left.name)?.valueDeclaration;
-    return !!d && ts.isPropertyDeclaration(d) && ts.isClassLike(d.parent) && this.classKeys(d.parent).unset.has(left.name.text) && admitsUndefined(this.checker.getTypeAtLocation(right));
   }
 
   /** Strict code's fields typed `T | null` that start with a value (an initializer, a constructor parameter's): null in them is JavaScript's. */
@@ -10229,6 +10347,10 @@ function returnsNull(body: ts.Node): boolean {
 }
 
 /** A field of an object literal's class; an accessor runs functions the literal gives. */
+/** An app class's keys in `dynamicMembers`: in plan order, each present by `present` (null: always). */
+interface KeyedMembers { order: string[]; present: (name: string) => string | null; ordered: boolean; appBase: boolean }
+/** An app class's keys: see `classKeys`. */
+interface ClassKeys { on: boolean; order: string[]; always: Set<string>; sure: Set<string>; written: Set<string>; flagged: Set<string>; walked: Map<ts.Node, { field: string; first: boolean }>; depth: number }
 interface ShapeField { name: string; type: string; label?: string; accessor?: { get: boolean; set: boolean; value: string }; symbol?: boolean }
 
 /** `Symbol.iterator`, as the library declares `Symbol`. */

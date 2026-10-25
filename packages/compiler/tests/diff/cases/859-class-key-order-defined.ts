@@ -1,4 +1,3 @@
-// @swift
 // Class fields defined (ES2022): every declared field is a key from construction, in declaration order; a field deleted and
 // written again moves to the end, as does any other key it is written after.
 class Panel {

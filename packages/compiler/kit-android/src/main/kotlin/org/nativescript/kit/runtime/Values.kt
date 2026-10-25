@@ -70,9 +70,30 @@ class JSLiteralKeys(var nulls: MutableSet<String>? = null, var unset: MutableSet
     }
 }
 
-/** A class's optional field written: undefined makes it an own key (`jsUnset`), as any write does. */
-fun jsNoteUnset(unset: MutableSet<String>?, key: String, value: Any?): MutableSet<String>? =
-    if (value == null) (unset ?: mutableSetOf()).also { it.add(key) } else unset
+/**
+ * A class's instance whose keys a write can make out of its fields' declared order (assign mode's fields without an
+ * initializer, a field deleted and written again): `jsOrder` is null while the keys run in `jsFieldKeys`' order.
+ */
+interface JSKeyOrdered {
+    var jsOrder: List<String>?
+    val jsFieldKeys: List<String>
+}
+
+/**
+ * `key` made just now: last among the keys. `early`: made before its class's level of the constructor started, so before
+ * keys its static place is after.
+ */
+fun JSKeyOrdered.jsKeyMade(key: String, early: Boolean = false) {
+    val keys = jsOrderedKeys(jsOrder, jsFieldKeys)
+    if (jsOrder == null && !early && keys.lastOrNull() == key) return
+    jsOrder = keys.filter { it != key } + key
+}
+
+/** An object's present field keys `keys` in the order `order` notes, any it lacks after. */
+fun jsOrderedKeys(order: List<String>?, keys: List<String>): List<String> {
+    if (order == null) return keys
+    return order.filter { it in keys } + keys.filter { it !in order }
+}
 
 /**
  * An object whose properties dynamic code reaches by name (`o[key]`, JSON, `console.log`):

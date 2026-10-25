@@ -47,23 +47,33 @@ public func jsNulledEntry<V>(_ entry: V??) -> Any? {
     return jsNulled(value)
 }
 
+/// A class's instance whose keys a write can make out of its fields' declared order (assign mode's fields without an
+/// initializer, a field deleted and written again): `jsOrder` is nil while the keys run in `jsFieldKeys`' order.
+public protocol JSKeyOrdered: AnyObject {
+    var jsOrder: [String]? { get set }
+    var jsFieldKeys: [String] { get }
+}
+
+extension JSKeyOrdered {
+    /// `key` made just now: last among the keys. `early`: made before its class's level of the constructor started, so
+    /// before keys its static place is after.
+    public func jsKeyMade(_ key: String, early: Bool = false) {
+        let keys = jsOrderedKeys(jsOrder, jsFieldKeys)
+        if jsOrder == nil && !early && keys.last == key { return }
+        jsOrder = keys.filter { $0 != key } + [key]
+    }
+}
+
+/// An object's present field keys `keys` in the order `order` notes, any it lacks after.
+public func jsOrderedKeys(_ order: [String]?, _ keys: [String]) -> [String] {
+    guard let order else { return keys }
+    return order.filter(keys.contains) + keys.filter { !order.contains($0) }
+}
+
 /// An optional field written untyped: whether it now holds null rather than undefined.
 @inline(__always)
 public func jsNoteNull(_ nulls: inout Set<String>?, _ key: String, _ value: Any?) {
     if value is JSNull { nulls = (nulls ?? []).union([key]) } else if nulls != nil { nulls!.remove(key) }
-}
-
-/// A class's optional field written: undefined makes it an own key (`jsUnset`), as any write does.
-@inline(__always)
-public func jsNoteUnset<V>(_ keys: inout Set<String>?, _ key: String, _ value: V?) {
-    if value == nil { keys = (keys ?? []).union([key]) }
-}
-
-/// `jsNoteUnset` for a write in the class's own initializer, where Swift runs no `didSet`: the value written.
-@inline(__always)
-public func jsNotedUnset<V>(_ keys: inout Set<String>?, _ key: String, _ value: V?) -> V? {
-    jsNoteUnset(&keys, key, value)
-    return value
 }
 
 /// The keys of `object` among `keys` that hold null, for a typed object read from it.
