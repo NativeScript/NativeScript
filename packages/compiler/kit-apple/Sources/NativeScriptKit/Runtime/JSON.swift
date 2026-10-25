@@ -443,7 +443,7 @@ public protocol JSToJSONConvertible: AnyObject {
 /// What JSON.stringify does with an instance of a class, found once per class: casts to the runtime's
 /// protocols look up conformances, and a value cast to one only to fail costs as much as one that succeeds.
 private enum JSJSONClassKind {
-    case null, plainObject, numbers, strings, values, array, match, toJSON, date, function, other
+    case null, plainObject, numbers, strings, values, array, match, matchIndices, toJSON, date, function, other
     /// A dynamic object whose `toJSON` is looked up; an error's is not.
     case dynamic, error
 }
@@ -508,6 +508,7 @@ private struct JSJSONWriter {
         case is JSArray<Any?>: .values
         case is JSArrayProtocol: .array
         case is JSMatch: .match
+        case is JSMatchIndices: .matchIndices
         case is JSDate: .date
         case let f where jsIsFunction(f): .function
         case is JSError: .error
@@ -571,6 +572,9 @@ private struct JSJSONWriter {
             try elements(array, array.storage.count) { array.storage[$0] }
         case .match:
             let values = unsafeDowncast(object, to: JSMatch.self).values
+            try elements(values, values.storage.count) { values.storage[$0] }
+        case .matchIndices:
+            let values = unsafeDowncast(object, to: JSMatchIndices.self).values
             try elements(values, values.storage.count) { values.storage[$0] }
         case .values, .array:
             let array = object as! JSArrayProtocol
@@ -702,7 +706,8 @@ private struct JSJSONWriter {
 
 /// The object a value `jsIsClassInstance` holds, without the bridging `as AnyObject` would consider.
 @inline(__always) private func jsObjectReference(_ value: Any) -> AnyObject {
-    func reference<T>(_ object: T) -> AnyObject { unsafeBitCast(object, to: AnyObject.self) }
+    // Opening can give a class-bound existential (an array of a protocol's values), which is wider than a reference.
+    func reference<T>(_ object: T) -> AnyObject { MemoryLayout<T>.size == MemoryLayout<AnyObject>.size ? unsafeBitCast(object, to: AnyObject.self) : object as AnyObject }
     return _openExistential(value, do: reference)
 }
 

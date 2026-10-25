@@ -1,0 +1,20 @@
+// Named groups: the groups object (a key for every name, undefined where unset), $<name>, \k<name>, duplicates in alternatives.
+const date = /(?<year>\d{4})-(?<month>\d{2})(?:-(?<day>\d{2}))?/;
+const m = date.exec('on 2024-01 ok')!;
+const g = m.groups!;
+console.log(g.year, g.month, g.day === undefined, 'day' in g, Object.keys(g).join(','), JSON.stringify(g));
+const { year, month, day } = date.exec('2023-12-31')!.groups!;
+console.log(year, month, day);
+console.log('2024-01-12'.replace(date, '$<day>/$<month>/$<year>'), '2024-01'.replace(date, '[$<day>]'), 'x'.replace(/x/, '$<name>'));
+console.log('2024-01-12'.replace(date, (...args: any[]) => JSON.stringify(args[args.length - 1])));
+console.log(/(?<q>['"]).*?\k<q>/.exec(`say "hi" 'there'`)![0]);
+const either = /(?<v>a)|(?<v>b)/;
+console.log(either.exec('b')!.groups!.v, either.exec('a')!.groups!.v, Object.keys(either.exec('b')!.groups!).length);
+for (const r of 'k=v; x=y'.matchAll(/(?<key>\w+)=(?<value>\w+)/g)) console.log(r.groups!.key, r.groups!.value, r.index);
+const anyMatch: any = /(?<w>\w+)/.exec('hello');
+console.log(anyMatch.groups.w, /(\w)/.exec('a')!.groups === undefined);
+console.log(/(?<$name>a)(?<_b2>b)/.exec('ab')!.groups!.$name, /(?<π>x)/u.exec('x')!.groups!.π);
+const dynamic = new RegExp(['(a)', '(b)'].join('|'));
+const typed = (m: string, a: string, b: string, at: number, all: string) => [m, typeof a, a === undefined, b, at, all].join(':');
+console.log('b'.replace(/(a)|(b)/, (m: string, a: string, b: string, at: number, all: string) => [m, typeof a, a === undefined, b, at, all].join(':')), 'xb'.replace(dynamic, typed));
+console.log('xb'.replace(dynamic, (m: string, a: string, b: string, at: number, all: string) => [m, typeof a, `${a}`, b, at, all].join(':')), 'q'.replace(/(q)(z)?/, (m, ...rest: any[]) => JSON.stringify(rest)));
