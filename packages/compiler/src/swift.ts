@@ -1935,7 +1935,7 @@ export class Translator implements AsyncTranslator {
     if (!sym || !decl) return null;
     const maybe = this.undefinedVars.get(sym);
     if (maybe) return maybe;
-    if (ts.isIdentifier(e) && this.unsetGroups(e)) return 'JSArray<String?>';
+    if (ts.isIdentifier(e) && this.unsetGroups(e) && !/^JSMatch[?!]?$/.test(this.typeOf(decl))) return 'JSArray<String?>';
     const erased = this.erasedMemberType(decl);
     if (erased) return erased;
     const root = ts.isPropertyDeclaration(decl) || (ts.isParameter(decl) && ts.isPropertyAccessExpression(e)) ? this.redeclaredField(decl) : null;
@@ -11851,7 +11851,7 @@ ${members.join('\n')}
       case 'join': return `${t}.join(${!e.arguments[0] ? '' : this.isAny(e.arguments[0]) ? `jsJoinSeparator(${this.expr(e.arguments[0])})` : this.expr(e.arguments[0])})`;
       case 'concat':
         if (e.arguments.some(ts.isSpreadElement)) return `${t}.concat(spread: ${this.packed(e.arguments, `JSArray<${el}>`)}.storage)`;
-        return `${t}.concat(${e.arguments.map((x) => (this.isArray(x) ? this.coerce(x, `JSArray<${el}>`) : `[${this.coerce(x, el)}]`)).join(', ')})`;
+        return `${t}.concat(${e.arguments.map((x) => (!this.isArray(x) ? `[${this.coerce(x, el)}]` : this.typeOf(x).replace(/[?!]$/, '') === `JSArray<${el}>` ? this.expr(x) : this.coerce(x, `JSArray<${el}>`))).join(', ')})`;
       case 'map': case 'filter': case 'find': case 'findIndex': case 'findLast': case 'findLastIndex': case 'some': case 'every': case 'forEach': case 'flatMap': {
         const callback = e.arguments[0];
         const call = () => {
