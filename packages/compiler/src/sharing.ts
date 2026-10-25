@@ -53,6 +53,8 @@ export function checkSharing(checker: ts.TypeChecker, files: readonly ts.SourceF
   /** A value nothing else can hold: what its copy is made from is never seen again. */
   const fresh = (e: ts.Expression): boolean => {
     e = skip(e);
+    while (ts.isAsExpression(e) || ts.isTypeAssertionExpression(e)) e = skip(e.expression);
+    if (isNullishLiteral(e) || ts.isLiteralExpression(e)) return true;
     if (ts.isArrayLiteralExpression(e) || ts.isObjectLiteralExpression(e) || ts.isNewExpression(e)) return true;
     if (!ts.isCallExpression(e)) return false;
     const c = e.expression;

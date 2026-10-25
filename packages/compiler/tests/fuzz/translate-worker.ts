@@ -10,7 +10,8 @@ export type TranslateResult = { inits: string[] } | { error: string };
 parentPort!.on('message', ({ id, job }: { id: number; job: TranslateJob }) => {
   let result: TranslateResult;
   try {
-    const modules = job.target === 'swift' ? translateSwift([job.root], job.out, swiftOptions(job.file)) : translateKotlin([job.root], job.out, job.pkg, kotlinOptions(job.file));
+    // Every instrumented site converts an untyped value by design: the copies a release refuses are the diff run's to check.
+    const modules = job.target === 'swift' ? translateSwift([job.root], job.out, { ...swiftOptions(job.file), copiesChecked: false }) : translateKotlin([job.root], job.out, job.pkg, { ...kotlinOptions(job.file), copiesChecked: false });
     result = { inits: modules.filter((m) => m.init).map((m) => m.init!) };
   } catch (e) {
     result = { error: (e as Error).message };
