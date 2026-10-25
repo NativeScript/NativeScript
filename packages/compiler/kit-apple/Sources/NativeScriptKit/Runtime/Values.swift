@@ -60,6 +60,14 @@ public func jsNullKeys(_ object: Any?, _ keys: [String]) -> Set<String>? {
     return nulls.isEmpty ? nil : Set(nulls)
 }
 
+/// The keys of `object` among `keys` that it holds as undefined, for a typed object read from it.
+public func jsUnsetKeys(_ object: Any?, _ keys: [String]) -> Set<String>? {
+    guard let dynamic = jsFlat(object) as? JSDynamic else { return nil }
+    let own = dynamic.jsKeys
+    let unset = keys.filter { own.contains($0) && dynamic[jsKey: $0] == nil }
+    return unset.isEmpty ? nil : Set(unset)
+}
+
 /// An object literal's keys that hold null: `known` ones, and those of `values` (untyped values it was given) that are null.
 public func jsNullKeysOf(_ known: [String], _ values: [(String, Any?)]) -> Set<String>? {
     let nulls = known + values.filter { $0.1 is JSNull }.map { $0.0 }

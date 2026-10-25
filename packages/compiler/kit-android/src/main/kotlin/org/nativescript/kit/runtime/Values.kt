@@ -37,6 +37,14 @@ fun jsNullKeys(obj: Any?, keys: List<String>): MutableSet<String>? {
     return if (nulls.isEmpty()) null else nulls.toMutableSet()
 }
 
+/** The keys of `obj` among `keys` that it holds as undefined, for a typed object read from it. */
+fun jsUnsetKeys(obj: Any?, keys: List<String>): MutableSet<String>? {
+    val dynamic = obj as? JSDynamic ?: return null
+    val own = dynamic.jsKeys
+    val unset = keys.filter { it in own && dynamic.jsGet(it) == null }
+    return if (unset.isEmpty()) null else unset.toMutableSet()
+}
+
 /** An object literal's keys that hold null: `known` ones, and those of `values` (untyped values it was given) that are null. */
 fun jsNullKeysOf(known: List<String>, vararg values: Pair<String, Any?>): MutableSet<String>? {
     val nulls = known + values.filter { it.second is JSNull }.map { it.first }
