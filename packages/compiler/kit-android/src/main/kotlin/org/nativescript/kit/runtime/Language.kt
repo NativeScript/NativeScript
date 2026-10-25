@@ -376,7 +376,7 @@ private fun jsDeclaredDescriptor(v: JSDynamic, key: String): JSObject? = if (key
 /** `Object.getOwnPropertyNames(value)`. */
 fun jsOwnPropertyNames(value: Any?): JSArray<String> = when (val v = jsBox(value)) {
     is JSObject -> JSArray(ArrayList(v.ownPropertyNames))
-    is JSArray<*> -> JSArray(ArrayList((0 until v.storage.size).map { it.toString() } + "length"))
+    is JSArray<*> -> JSArray(ArrayList((0 until v.storage.size).filter { v.jsHoles?.get(it) != true }.map { it.toString() } + "length" + (v.jsProperties?.ownPropertyNames ?: emptyList())))
     is String -> JSArray(ArrayList(v.indices.map { it.toString() } + "length"))
     else -> JSArray(ArrayList(jsKeysOf(v)))
 }
