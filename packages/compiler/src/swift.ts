@@ -11958,7 +11958,11 @@ ${members.join('\n')}
       case 'trim': return `jsTrim(${t})`;
       case 'trimStart': return `jsTrimStart(${t})`;
       case 'trimEnd': return `jsTrimEnd(${t})`;
-      case 'split': return first && this.isAny(first) ? `jsSplit(${t}, untyped: ${this.expr(first)}, ${opt(1)})` : `jsSplit(${t}, ${a[0] ?? 'nil'}, ${opt(1)})`;
+      case 'split': {
+        if (first && this.isAny(first)) return `jsSplit(${t}, ${this.unsetGroups(e) ? 'untypedKeepingUnset' : 'untyped'}: ${this.expr(first)}, ${opt(1)})`;
+        const call = `jsSplit(${t}, ${a[0] ?? 'nil'}, ${opt(1)})`;
+        return this.unsetGroups(e) ? this.convert(call, 'JSArray<String>', 'JSArray<String?>') : call;
+      }
       case 'indexOf': return `jsIndexOf(${t}, ${a[0]}, ${opt(1)})`;
       case 'lastIndexOf': return `jsLastIndexOf(${t}, ${a[0]}${a[1] !== undefined ? `, ${a[1]}` : ''})`;
       case 'slice': return `jsSlice(${t}, ${a.join(', ')})`;

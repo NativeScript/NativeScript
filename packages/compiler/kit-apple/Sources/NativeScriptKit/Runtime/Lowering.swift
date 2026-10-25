@@ -201,6 +201,12 @@ public func jsSplit(_ s: String, untyped separator: Any?, _ limit: Double? = nil
     }
 }
 
+/// `jsSplit(_:untyped:_:)` where a regular expression's group that took no part stays undefined.
+public func jsSplit(_ s: String, untypedKeepingUnset separator: Any?, _ limit: Double? = nil) -> JSArray<String?> {
+    if let re = jsFlat(separator) as? JSRegExp { return jsSplit(s, re, limit) }
+    return JSArray<String?>(jsSplit(s, untyped: separator, limit).storage.map { $0 })
+}
+
 /// `array.join(separator)` with an untyped separator: undefined joins with a comma.
 public func jsJoinSeparator(_ separator: Any?) -> String {
     jsFlat(separator) == nil ? "," : jsToString(separator)

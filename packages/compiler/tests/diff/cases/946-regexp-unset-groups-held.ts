@@ -15,3 +15,6 @@ console.log(held.map(show).join(' '), held.filter((x) => x !== undefined).length
 console.log(Array.from('ab'.matchAll(/(a)|(b)/g), (r) => r.map(show).join('/')).join(' '));
 const asStrings: string[] = /(x)?y/.exec('y')!;
 console.log(asStrings.length, show(asStrings[1]), asStrings.join('-'));
+const untypedSep: any = /(-)|(\+)/;
+const viaUntyped = 'a-b+c'.split(untypedSep);
+console.log(viaUntyped.map(show).join(' '), 'a,b'.split(',' as any).join('|'));
