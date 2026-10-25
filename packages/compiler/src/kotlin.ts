@@ -4,7 +4,7 @@ import { dirname as pathDirname, resolve as pathResolve } from 'node:path';
 import { AsyncLowering, usedBefore, type AsyncCtx, type AsyncSyntax, type AsyncTranslator } from './async.ts';
 import { isAsync, isStatic } from './throws.ts';
 import { assignedMembers } from './sharing.ts';
-import { assignedValues, heldDowncasts, openSpreadType, definitelyAssignedFields, forwardedSetter, initializedNull, intersectionAliasMembers, nullSetFields, nullishSlots, type NullishSlots, isRegExpProtocol, intlConstructor, isObjectToStringCall, isStringRaw, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, classesHeldUntyped, LooseSlots, originOf, ownSlot, implementedInterfaceDeclarations, slotOf, slotType, type TrustScope, scriptCalledFunction } from './lang.ts';
+import { assignedValues, heldDowncasts, openSpreadType, definitelyAssignedFields, forwardedSetter, initializedNull, intersectionAliasMembers, nullSetFields, nullishSlots, type NullishSlots, isRegExpProtocol, intlConstructor, isObjectToStringCall, isStringRaw, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, classesHeldUntyped, LooseSlots, originOf, ownSlot, implementedInterfaceDeclarations, slotOf, slotType, type TrustScope, scriptCalledFunction, unsetGroupTyping, type UnsetGroupTyping } from './lang.ts';
 import { isCoreDeclaration } from './core.ts';
 import { balanced, nonVirtualName } from './swift.ts';
 import type { Properties } from './properties.ts';
@@ -417,7 +417,23 @@ export class Translator implements AsyncTranslator {
 
   /** Strict code's declaration holding a string, number or boolean an untrusted value is placed in (see `looseSlots`). */
   private looseDeclaration(d: ts.Node | undefined): boolean {
-    return !this.library && !!d && (this.looseSlots.has(d as ts.Declaration) || (ts.isParameter(d) && this.scriptCalledParameter(d)));
+    return !this.library && !!d && (this.looseSlots.has(d as ts.Declaration) || (ts.isParameter(d) && this.scriptCalledParameter(d)) || this.unset.element(d));
+  }
+
+  private unsetTyping?: UnsetGroupTyping;
+  /** App mode: a match's groups that took no part, though TypeScript types them strings (see `unsetGroupTyping`). */
+  private get unset(): UnsetGroupTyping {
+    return (this.unsetTyping ??= unsetGroupTyping(this.checker, (n) => this.resolve(n), (e) => this.typeOf(e).replace(/\?$/, '') === 'JSMatch'));
+  }
+
+  /** App mode: a `string[]` a group that took no part may have put undefined in, held `JSArray<String?>`. */
+  private unsetGroups(n: ts.Node): boolean {
+    return !this.library && this.unset.groups(n);
+  }
+
+  /** App mode: a match whose groups may include one that took no part. */
+  private unsetMatch(e: ts.Expression): boolean {
+    return !this.library && this.unset.match(e);
   }
 
   constructor(checker: ts.TypeChecker, components: Map<string, ComponentInfo>, files: readonly ts.SourceFile[], options: { pluginFiles?: Iterable<string>; reach?: Reach; properties?: Properties; lenient?: boolean; lenientApp?: boolean; library?: KotlinLibrary } = {}) {
@@ -962,6 +978,8 @@ export class Translator implements AsyncTranslator {
     const t = this.isLenientDecl(own) ? this.lenientRef(declared) : this.looseDeclaration(own) ? optionalType(declared) : declared;
     if (this.holdingNull(t, n)) return t.replace(/>$/, '?>');
     if (['String', 'Double', 'Boolean'].includes(t) && this.givenNullSignalValue(n)) return `${t}?`;
+    if (t === 'JSArray<String>' && this.unsetGroups(n)) return 'JSArray<String?>';
+    if (t === 'String' && !this.library && ts.isIdentifier(n) && this.unset.element(n)) return 'String?';
     if (!t.includes('.')) return t;
     const sym = ts.isIdentifier(n) ? this.checker.getSymbolAtLocation(n) : undefined;
     const decl = sym?.valueDeclaration;
@@ -1165,6 +1183,7 @@ export class Translator implements AsyncTranslator {
     if (this.library && (this.thisValues().symbols.has(declOf(sym)) || sym.declarations?.some((d) => this.thisValues().symbols.has(d)))) return 'Any?';
     const maybe = this.undefinedVars.get(sym);
     if (maybe) return maybe;
+    if (ts.isIdentifier(e) && this.unsetGroups(e) && this.typeOf(decl).replace(/\?$/, '') !== 'JSMatch') return 'JSArray<String?>';
     if (!(ts.isVariableDeclaration(decl) || ts.isParameter(decl) || ts.isPropertyDeclaration(decl) || ts.isPropertySignature(decl) || ts.isBindingElement(decl) || ts.isGetAccessorDeclaration(decl) || ts.isPropertyAssignment(decl))) return null;
     if (ts.isParameter(decl) && this.typeTested(decl)) return 'Any?';
     if (this.library && this.untypedJavaFields().has(decl)) return 'Any?';
@@ -2515,7 +2534,7 @@ export class Translator implements AsyncTranslator {
     if (this.library && this.returnsNullApart(fn)) return 'Any?';
     const t = this.type(this.checker.getSignatureFromDeclaration(fn)!.getReturnType(), fn);
     if (this.library && this.nullablePrimitiveReturn(fn) && ['String', 'Double', 'Boolean'].includes(t)) return optionalType(t);
-    if (this.looseDeclaration(fn)) return optionalType(t);
+    if (this.looseDeclaration(fn) || (!this.library && (ts.isArrowFunction(fn) || ts.isFunctionExpression(fn)) && this.unset.returnsElement(fn))) return optionalType(t);
     return fn.getSourceFile().isDeclarationFile || ts.isArrowFunction(fn) || ts.isFunctionExpression(fn) ? t : this.lenientRef(t);
   }
 
@@ -5466,7 +5485,7 @@ export class Translator implements AsyncTranslator {
     if (/^JS(Array|Set|Map)</.test(t) || t === 'String') return `jsIterator(${code})`;
     if (t === 'JSMatch') {
       const values = `${this.typeOf(e).endsWith('?') ? this.present(code, 'values', e) : code}.values`;
-      return this.elementTypeOf(e) === 'String' ? `jsIterator(JSArray(ArrayList(${values}.storage.map { it ?: "undefined" })))` : `jsIterator(${values})`;
+      return this.elementTypeOf(e) === 'String' && !this.unsetMatch(e) ? `jsIterator(JSArray(ArrayList(${values}.storage.map { it ?: "undefined" })))` : `jsIterator(${values})`;
     }
     // The generated kit's class gives its own generator, its element type erased.
     if (this.generatedKit && this.core?.has(t) && this.core.kitMember(t, 'jsSymbolIterator')?.type.startsWith('JSGenerator<')) return `jsUnchecked<JSGenerator<${this.elementTypeOf(e)}>>(${code}.jsSymbolIterator())`;
@@ -5753,6 +5772,9 @@ export class Translator implements AsyncTranslator {
 
   /** An expression where Kotlin needs a value of `target`. */
   coerce(e: ts.Expression, target: string): string {
+    if (/^JSArray<String>\??$/.test(target) && ((this.typeOf(e) === 'JSArray<String?>' && this.unsetGroups(e)) || this.unsetMatch(e))) {
+      throw this.error(e, 'strings a pattern\'s unset group may leave undefined, given where `string[]` is declared (declare it `(string | undefined)[]`)');
+    }
     const code = this.coerceTyped(e, target);
     if (target !== 'Any?') return code;
     const entry = this.nullableEntry(e, () => code);
@@ -5912,6 +5934,7 @@ export class Translator implements AsyncTranslator {
     if (this.library && /^String\??$/.test(target) && /^[a-z]\w*(\.\w+)+$/.test(source.replace(/\?$/, ''))) return `jsToString(${this.expr(e)})`;
     // Library mode: a string where core's code declares a number (`toString(eventNames)` of GestureTypes), as script's operators read it.
     if (this.library && target === 'Double' && /^String\??$/.test(this.declaredTypeOf(e) ?? source)) return `jsToNumber(${this.expr(e)})`;
+    if (!this.library && source.replace(/\?$/, '') === 'JSMatch' && /^JSArray<String\?>\??$/.test(target)) return `${this.expr(e)}${source.endsWith('?') ? '?' : ''}.values`;
     // Library mode: a match where its type is a list of strings (`RegExpMatchArray` as `string[]`): its values, null where none matched.
     if (this.library && source.replace(/\?$/, '') === 'JSMatch' && /^JSArray<String\??>\??$/.test(target)) {
       const values = cast(`${this.expr(e)}?.values`, optionalType(target));
@@ -8598,7 +8621,10 @@ export class Translator implements AsyncTranslator {
       case 'trim': return `jsTrim(${t})`;
       case 'trimStart': return `jsTrimStart(${t})`;
       case 'trimEnd': return `jsTrimEnd(${t})`;
-      case 'split': return first && this.isAny(first) ? `jsSplitUntyped(${t}, ${this.expr(first)}${opt(1)})` : `jsSplit(${t}, ${first ? s(0) : 'null'}${opt(1)})`;
+      case 'split': {
+        const call = first && this.isAny(first) ? `jsSplitUntyped(${t}, ${this.expr(first)}${opt(1)})` : `jsSplit(${t}, ${first ? s(0) : 'null'}${opt(1)})`;
+        return this.unsetGroups(e) ? `jsUnchecked<JSArray<String?>>(${call})` : call;
+      }
       case 'indexOf': return `jsIndexOf(${t}, ${s(0)}${opt(1)})`;
       case 'lastIndexOf': return `jsLastIndexOf(${t}, ${s(0)}${opt(1)})`;
       case 'slice': return `jsSlice(${t}${e.arguments.map((_, k) => `, ${n(k)}`).join('')})`;
@@ -8630,7 +8656,10 @@ export class Translator implements AsyncTranslator {
       case 'match': return `jsMatch(${s}, ${r})`;
       case 'matchAll': return `jsMatchAll(${s}, ${r})`;
       case 'search': return `jsSearch(${s}, ${r})`;
-      case 'split': return `jsSplit(${s}, ${r}${second ? `, ${this.toNumber(second)}` : ''})`;
+      case 'split': {
+        const call = `jsSplit(${s}, ${r}${second ? `, ${this.toNumber(second)}` : ''})`;
+        return this.unsetGroups(e) ? `jsUnchecked<JSArray<String?>>(${call})` : call;
+      }
       case 'replace': case 'replaceAll': {
         const fn = name === 'replace' ? 'jsReplace' : 'jsReplaceAll';
         // A function value: called with the match, each group (undefined where it took no part), the match's index and the string.
