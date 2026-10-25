@@ -5,7 +5,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { KIT_APPLE_SOURCES } from './paths.ts';
 import { Throws, digitsLiteral, isArrayLengthLiteral, isArrayLengthWrite, isAsync, isStatic } from './throws.ts';
-import { assignedValues, openSpreadType, initializedNull, intersectionAliasMembers, intlConstructor, nullSetFields, isRegExpProtocol, isObjectToStringCall, isStringRaw, leadingNeverRead, forwardedSetter, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, uncheckedMatch, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, LooseSlots, originOf, ownSlot, implementedInterfaceDeclarations, slotOf, slotType, definitelyAssignedFields, type TrustScope } from './lang.ts';
+import { assignedValues, openSpreadType, initializedNull, intersectionAliasMembers, intlConstructor, nullSetFields, nullishSlots, type NullishSlots, isRegExpProtocol, isObjectToStringCall, isStringRaw, leadingNeverRead, forwardedSetter, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, uncheckedMatch, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, LooseSlots, originOf, ownSlot, implementedInterfaceDeclarations, slotOf, slotType, definitelyAssignedFields, type TrustScope } from './lang.ts';
 import { AsyncLowering, type AsyncCtx, type AsyncSyntax, type AsyncTranslator } from './async.ts';
 import { CoreAPI, isCoreDeclaration, packageOf } from './core.ts';
 import type { KitMember } from './kit-index.ts';
@@ -422,6 +422,22 @@ export class Translator implements AsyncTranslator {
    * Library mode, in a file written for strictNullChecks (a package core compiles): a variable or
    * parameter declared `T | null`, which the lenient checker reads as `T`, holds null apart from undefined: untyped.
    */
+  private nullishSlotSet?: NullishSlots;
+  private nullish(): NullishSlots {
+    return this.nullishSlotSet ??= this.lenient || this.library ? { held: new Set(), fields: new Set() } : nullishSlots(this.checker, this.sourceFiles, (f) => this.pluginFiles.has(f.fileName));
+  }
+
+  /** A variable, parameter, or call result whose slot may hold null and undefined both: held untyped (`nullishSlots`). */
+  private heldNullish(n: ts.Node): boolean {
+    if (ts.isCallExpression(n) || ts.isNewExpression(n)) {
+      const d = this.checker.getResolvedSignature(n)?.getDeclaration();
+      return !!d && !ts.isJSDocSignature(d) && this.nullish().held.has(d);
+    }
+    if (!ts.isIdentifier(n) || ts.isShorthandPropertyAssignment(n.parent)) return false;
+    const d = this.checker.getSymbolAtLocation(n)?.valueDeclaration;
+    return !!d && (ts.isVariableDeclaration(d) || ts.isParameter(d)) && this.nullish().held.has(d);
+  }
+
   private declaredNullable(n: ts.Node): boolean {
     if (!this.library?.strict || !ts.isIdentifier(n) || !this.library.strict(n.getSourceFile().fileName)) return false;
     const d = this.checker.getSymbolAtLocation(n)?.valueDeclaration;
@@ -1321,7 +1337,7 @@ export class Translator implements AsyncTranslator {
     // What a class extending Array, Set or Map inherits is read as the kit's collection, which its Swift class subclasses.
     const inherited = n.parent && (ts.isPropertyAccessExpression(n.parent) || ts.isElementAccessExpression(n.parent)) && n.parent.expression === n ? this.inheritedCollection(n as ts.Expression) : null;
     if (inherited) return inherited;
-    if (this.isPrototypeRef(n) || this.isPrototypeMember(n) || (ts.isMetaProperty(n) && n.keywordToken === ts.SyntaxKind.ImportKeyword) || this.declaredNullable(n)) return 'Any?';
+    if (this.isPrototypeRef(n) || this.isPrototypeMember(n) || (ts.isMetaProperty(n) && n.keywordToken === ts.SyntaxKind.ImportKeyword) || this.declaredNullable(n) || this.heldNullish(n)) return 'Any?';
     // `value.constructor` (library mode) is read as its class, whatever the receiver.
     if (this.library && ts.isPropertyAccessExpression(n) && n.name.text === 'constructor' && !isWriteTarget(n) && !(ts.isPropertyAccessExpression(n.parent) && n.parent.expression === n && n.parent.name.text === 'name')) return 'Any?';
     if (this.untypedThis.has(n) || (ts.isIdentifier(n) && n.text === 'globalThis' && this.isGlobalThis(n)) || this.isAmbientGlobal(n) || this.holdsFunctionObject(n) || this.isAugmentedLibMember(n)) return 'Any?';
@@ -1794,6 +1810,7 @@ export class Translator implements AsyncTranslator {
 
   /** A declared type, before the narrowing the checker applies at a use. */
   declaredTypeOf(e: ts.Expression): string | null {
+    if (this.heldNullish(e)) return 'Any?';
     if (ts.isElementAccessExpression(e) && this.typeOf(e.expression).replace(/[?!]$/, '') === 'JSRecord<Any?>') return 'Any?';
     if ((this.library && this.holdsMethods(e)) || this.holdsFunctionObject(e)) return 'Any?';
     const sym = this.checker.getSymbolAtLocation(ts.isPropertyAccessExpression(e) ? e.name : e);
@@ -3108,7 +3125,7 @@ ${members.join('\n')}
     if ((ts.isAsExpression(n) || ts.isTypeAssertionExpression(n)) && this.downcasts(n)) return true;
     if ((ts.isPropertyAccessExpression(n) || ts.isElementAccessExpression(n)) && !n.questionDotToken && this.definiteReceiver(ts.skipOuterExpressions(n.expression, ts.OuterExpressionKinds.Parentheses))) return true;
     // `obj.field = untyped` on an object of the program or core: written by name, as its setter takes any value.
-    if (ts.isBinaryExpression(n) && n.operatorToken.kind === ts.SyntaxKind.EqualsToken && this.untypedWrite(n.left, n.right)) return true;
+    if (ts.isBinaryExpression(n) && n.operatorToken.kind === ts.SyntaxKind.EqualsToken && (this.untypedWrite(n.left, n.right) || (ts.isPropertyAccessExpression(n.left) && !this.lenient && !this.library && this.nullishMember(n.left, true)))) return true;
     if (ts.isCallExpression(n)) {
       try {
         const erased = this.erasedGeneric(n);
@@ -3185,10 +3202,15 @@ ${members.join('\n')}
     this.nullFieldSets.set(cls, set = new Set());
     // A field set to a null its type leaves out is non-strict code, whatever the app's configuration says.
     if (this.lenient || this.library || cls.getSourceFile().isDeclarationFile || this.pluginFiles.has(cls.getSourceFile().fileName)) return set;
-    // One set per object: a class whose program base keeps one adds none of its own.
-    for (let b = this.programBase(cls); b; b = this.programBase(b)) if (this.nullFields(b).size) return set;
     for (const m of nullSetFields(cls)) if (this.typeOf(m.name) !== 'Any?') set.add(m.name.getText());
+    for (const m of cls.members) if (ts.isPropertyDeclaration(m) && this.nullish().fields.has(m) && this.typeOf(m.name) !== 'Any?') set.add(m.name.getText());
     return set;
+  }
+
+  /** One `jsNulls` per object: a class whose program base keeps one declares none of its own. */
+  private baseKeepsNulls(cls: ts.ClassLikeDeclaration): boolean {
+    for (let b = this.programBase(cls); b; b = this.programBase(b)) if (this.nullFields(b).size) return true;
+    return false;
   }
 
   /** Strict code's fields typed `T | null` that start with a value (an initializer, a constructor parameter's): nil in them is null. */
@@ -3663,6 +3685,7 @@ ${members.join('\n')}
 
   /** The Swift type a function returns: `JSPromise<T>` for an async one. */
   returnTypeOf(fn: ts.SignatureDeclaration): string {
+    if (this.nullish().held.has(fn)) return 'Any?';
     if ((ts.isArrowFunction(fn) || ts.isFunctionExpression(fn) || ts.isFunctionDeclaration(fn)) && this.returnsMethod(fn)) return 'Any?';
     const t = this.type(this.checker.getSignatureFromDeclaration(fn)!.getReturnType(), fn);
     return this.mayReturnUndefined(fn) && t !== 'Void' && t !== 'Any?' && !t.endsWith('?') && !t.endsWith('!') && !isFunctionType(t) ? optionalType(t) : t;
@@ -5407,7 +5430,7 @@ ${members.join('\n')}
     if (isError) lines.push(...this.dynamicMembers(fields, null, true, dynMethods, symbolFields, false, raw, dynAccessors, false, false, new Set(), false).filter((l) => !l.includes(' var jsClassName: ')));
     else {
       const nulls = this.nullFields(cls);
-      if (nulls.size) {
+      if (nulls.size && !this.baseKeepsNulls(cls)) {
         const initial = cls.members.filter((m): m is ts.PropertyDeclaration => ts.isPropertyDeclaration(m) && nulls.has(m.name.getText()) && initializedNull(m));
         lines.push(`    var jsNulls: Set<String>?${initial.length ? ` = [${initial.map((m) => swiftString(m.name.getText())).join(', ')}]` : ''}`);
       }
@@ -7318,10 +7341,10 @@ ${members.join('\n')}
   nilIsNull(e: ts.Expression): boolean {
     if (this.lenient || this.library || this.pluginFiles.has(e.getSourceFile().fileName)) return false;
     const bare = ts.skipOuterExpressions(e);
-    if (bare.kind === ts.SyntaxKind.NullKeyword || !nullNotUndefined(this.checker.getTypeAtLocation(e))) return false;
+    if (bare.kind === ts.SyntaxKind.NullKeyword || !nullNotUndefined(this.checker.getTypeAtLocation(e)) || this.heldNullish(bare)) return false;
     if (ts.isPropertyAccessExpression(bare)) {
       const d = this.checker.getSymbolAtLocation(bare.name)?.valueDeclaration;
-      if (d && ts.isPropertyDeclaration(d) && !d.initializer) return false;
+      if (d && ((ts.isPropertyDeclaration(d) && !d.initializer) || this.nullish().fields.has(d))) return false;
     }
     return true;
   }
@@ -7345,15 +7368,35 @@ ${members.join('\n')}
       held = map.getSymbol()?.name === 'Map' ? valueType(map) : undefined;
       if (held && nullNotUndefined(held)) return text.startsWith('try ') ? `try jsNulledEntry(${text.slice(4)})` : `jsNulledEntry(${text})`;
     }
+    if (this.nullField(bare) && !isWriteTarget(bare)) return `${this.expr(bare.expression)}[jsKey: ${swiftString(bare.name.text)}]`;
     // An optional field that may hold null or undefined: the literal's shape notes which (`jsNulls`), read by key.
-    if (ts.isPropertyAccessExpression(bare) && !bare.questionDotToken && bare.expression.kind !== ts.SyntaxKind.SuperKeyword && !isWriteTarget(bare)) {
-      const parts = ((t) => (t.isUnion() ? t.types : [t]))(this.checker.getTypeAtLocation(bare));
-      if (!parts.some((x) => x.flags & ts.TypeFlags.Null) || !parts.some((x) => x.flags & ts.TypeFlags.Undefined)) return null;
-      const shape = [...this.shapes.values()].find((x) => x.name === this.typeOf(bare.expression).replace(/!$/, ''));
-      const f = shape?.fields.find((x) => x.name === bare.name.text);
-      if (shape && f && isOptional(f.type) && f.type !== 'Any?' && !shape.fields.some((x) => x.symbol || x.accessor)) return `${this.expr(bare.expression)}[jsKey: ${swiftString(f.name)}]`;
+    const f = ts.isPropertyAccessExpression(bare) && !isWriteTarget(bare) ? this.nullishShapeField(bare) : null;
+    return f ? `${this.expr((bare as ts.PropertyAccessExpression).expression)}[jsKey: ${swiftString(f)}]` : null;
+  }
+
+  /** A member that may hold null or undefined both, by its type or as `nullishSlots` finds. */
+  private nullishMember(e: ts.PropertyAccessExpression, write = false): boolean {
+    if (e.questionDotToken || e.expression.kind === ts.SyntaxKind.SuperKeyword) return false;
+    const d = this.checker.getSymbolAtLocation(e.name)?.valueDeclaration;
+    if (d && ts.isPropertySignature(d) && this.nullish().fields.has(d)) return true;
+    const parts = ((t) => (t.isUnion() ? t.types : [t]))(this.checker.getTypeAtLocation(e));
+    return parts.some((x) => x.flags & ts.TypeFlags.Null) && (write || parts.some((x) => x.flags & ts.TypeFlags.Undefined)) && !!d && (ts.isPropertySignature(d) || (ts.isPropertyAssignment(d) || ts.isShorthandPropertyAssignment(d)));
+  }
+
+  /** An object type's field that may hold null or undefined, which its shape notes (`jsNulls`) and is read and written by key: its name. */
+  private nullishShapeField(e: ts.PropertyAccessExpression, write = false): string | null {
+    if (!this.nullishMember(e, write)) return null;
+    const held = this.typeOf(e.expression).replace(/[?!]$/, '');
+    const shape = [...this.shapes.values()].find((x) => x.name === held);
+    if (!shape) {
+      // An interface's object class, whose fields are its property signatures.
+      const d = this.checker.getSymbolAtLocation(e.name)?.valueDeclaration;
+      if (!d || !ts.isPropertySignature(d) || !ts.isInterfaceDeclaration(d.parent) || d.parent.name.text !== held || !this.interfaces.has(held) || this.protocols.has(held)) return null;
+      const t = this.typeOf(d);
+      return (d.questionToken || isOptional(t)) && t !== 'Any?' ? e.name.text : null;
     }
-    return null;
+    const f = shape.fields.find((x) => x.name === e.name.text);
+    return f && isOptional(f.type) && f.type !== 'Any?' && !shape.fields.some((x) => x.symbol || x.accessor) ? f.name : null;
   }
 
   /** A typed value whose untyped read tells null from undefined, where its Swift optional alone does not. */
@@ -10028,7 +10071,7 @@ ${members.join('\n')}
         // A program function's type parameter Swift erases (`U extends { root: View }`, any of a plugin's): the parameter as declared, the argument's type erased with it.
         || (!!decl && ts.isParameter(decl) && !!decl.type && !decl.getSourceFile().isDeclarationFile && !!(decl.parent as ts.SignatureDeclaration).typeParameters?.some((tp) => (erasedTypeParameter(tp) || (!this.library && this.erasesGenerics(decl.parent))) && new RegExp(`\\b${tp.name.text}\\b`).test(decl.type!.getText())));
       // In code the checker finds unreachable a parameter's type is never: its declared type.
-      const at = this.type(this.checker.getTypeOfSymbolAtLocation(p, e), e);
+      const at = decl && this.nullish().held.has(decl) ? 'Any?' : this.type(this.checker.getTypeOfSymbolAtLocation(p, e), e);
       // An override emitted with its root's signature: the parameter as Swift has it.
       const method = decl && ts.isParameter(decl) && ts.isMethodDeclaration(decl.parent) && !isStatic(decl.parent) && !decl.getSourceFile().isDeclarationFile ? decl.parent : null;
       const emitted = method && this.baseMethod(method) ? this.emittedSignature(method).params[k]?.type.replace(/!$/, '?') : undefined;
@@ -12223,6 +12266,8 @@ ${members.join('\n')}
     if (ts.isElementAccessExpression(left) && this.isAny(left.expression)) return `jsSet(${this.expr(left.expression)}, ${this.propertyKey(left.argumentExpression)}, ${this.coerce(right, 'Any?')})`;
     if (this.library && this.holdsMethods(left) && this.carriesMethod(right)) return `${this.lvalue(left)} = ${this.expr(right)}`;
     if (this.untypedWrite(left, right)) return `jsSet(${this.expr(left.expression)}, ${swiftString(left.name.text)}, ${this.nullField(left) ? this.coerce(right, 'Any?') : this.expr(right)})`;
+    const keyed = ts.isPropertyAccessExpression(left) && !this.lenient && !this.library ? this.nullishShapeField(left, true) : null;
+    if (keyed) return `jsSet(${this.expr((left as ts.PropertyAccessExpression).expression)}, ${swiftString(keyed)}, ${this.coerce(right, 'Any?')})`;
     if (isArrayLengthWrite(left, right, this.checker)) return `${this.expr(left.expression)}.jsSetLength(checked: ${this.toNumber(right)})`;
     return `${this.lvalue(left)} = ${this.coerce(right, this.declaredTypeOf(left) ?? this.typeOf(left))}`;
   }
@@ -12347,6 +12392,7 @@ ${members.join('\n')}
         // TypeScript types `s ?? 1` as the string `s` is declared; a missing `s` gives the fallback as a string.
         // Parenthesized: the optional may be a conditional (`x == nil ? nil : T(jsObject: x)`), which binds looser than `??`.
         if (maybe) return `((${maybe}) ?? ${t === 'String' && this.typeOf(e.right) !== 'String' ? this.str(e.right) : this.coerce(e.right, t)})`;
+        if (this.isAny(e.left) && t !== 'Any?' && this.heldNullish(left)) return `(${this.fromAny(l(), optionalType(t))} ?? ${this.coerce(e.right, t)})`;
         if (this.isAny(e.left)) return `jsNullishCoalesce(${l()}, ${this.coerce(e.right, 'Any?')})`;
         // A left side Swift holds as no optional is never missing.
         if (!isOptional(lt) && !lt.endsWith('!') && lt !== 'Any?' && lt === t && !inOptionalChain(e.left) && this.definitelyPresent(e.left)) return l();
@@ -12801,7 +12847,14 @@ ${members.join('\n')}
     // A field the literal sets to null, which the shape holds as nil, is kept as null (JSON, keys, untyped reads).
     const nullKeys = !order.some((f) => (f as ShapeField).accessor || (f as ShapeField).symbol) ? e.properties.filter((p): p is ts.PropertyAssignment | ts.ShorthandPropertyAssignment => (ts.isPropertyAssignment(p) && (ts.skipOuterExpressions(p.initializer).kind === ts.SyntaxKind.NullKeyword || this.nilIsNull(p.initializer))) || (ts.isShorthandPropertyAssignment(p) && this.nilIsNull(p.name)))
       .map((p) => literalKey(p.name, this.checker) ?? p.name.getText()).filter((k) => order.some((f) => f.name === k && isOptional(f.type) && f.type !== 'Any?')) : [];
-    const nulled = nullKeys.length ? `, jsNulls: [${nullKeys.map(swiftString).join(', ')}]` : '';
+    // An untyped value may be null, which only the run can tell.
+    const untypedKeys = nullKeys.length || !order.some((f) => (f as ShapeField).accessor || (f as ShapeField).symbol) ? e.properties.flatMap((p) => {
+      const value = ts.isPropertyAssignment(p) ? p.initializer : ts.isShorthandPropertyAssignment(p) ? p.name : null;
+      const k = value && p.name ? literalKey(p.name, this.checker) ?? p.name.getText() : null;
+      if (!value || !k || nullKeys.includes(k) || !ts.isIdentifier(value) || this.typeOf(value) !== 'Any?' || !order.some((f) => f.name === k && isOptional(f.type) && f.type !== 'Any?')) return [];
+      return [`(${swiftString(k)}, ${this.expr(value)})`];
+    }) : [];
+    const nulled = untypedKeys.length ? `, jsNulls: jsNullKeysOf([${nullKeys.map(swiftString).join(', ')}], [${untypedKeys.join(', ')}])` : nullKeys.length ? `, jsNulls: [${nullKeys.map(swiftString).join(', ')}]` : '';
     const made = `${target}(${args}${args && reorder ? reorder : reorder.slice(2)}${args || reorder ? nulled : nulled.slice(2)})`;
     if (!spreadTemps.length && !self) return made;
     const throws = this.throwsInfo.expr(e) || [...spreadTemps, made].some((x) => THROWING_CODE.test(outsideClosures(x)));
