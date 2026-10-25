@@ -106,6 +106,21 @@ export function classifyServedRequest(spec: string | undefined | null, resolvedI
 
 export const MODULE_IMPORT_ANALYSIS_PLUGINS = ['typescript', 'jsx', 'importMeta', 'topLevelAwait', 'classProperties', 'classPrivateProperties', 'classPrivateMethods', 'decorators-legacy'] as any;
 
+/** Whether `code` has an ESM default export, or `null` when it cannot be parsed. */
+export function hasEsmDefaultExport(code: string): boolean | null {
+	let body: t.Statement[];
+	try {
+		body = babelParse(code, { sourceType: 'module', plugins: MODULE_IMPORT_ANALYSIS_PLUGINS }).program.body;
+	} catch {
+		return null;
+	}
+	return body.some((node) => {
+		if (t.isExportDefaultDeclaration(node)) return true;
+		if (!t.isExportNamedDeclaration(node) || node.exportKind === 'type') return false;
+		return node.specifiers.some((spec) => !(t.isExportSpecifier(spec) && spec.exportKind === 'type') && (t.isIdentifier(spec.exported) ? spec.exported.name : spec.exported.value) === 'default');
+	});
+}
+
 export type TopLevelImportRecord = {
 	start: number;
 	end: number;

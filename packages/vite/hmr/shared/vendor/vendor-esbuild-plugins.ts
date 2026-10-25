@@ -469,7 +469,9 @@ export function createOptionalDependencyStubEsbuildPlugin(projectRoot: string): 
 				// Only bare ids requested by node_modules code; app-code imports
 				// should keep failing loudly so misconfiguration stays visible.
 				if (!args.importer || !/node_modules[\\/]/.test(args.importer)) return undefined;
-				if (args.path.startsWith('node:')) return undefined;
+				// `#` imports resolve against the project's package.json under
+				// createRequire (`paths` doesn't change that); esbuild uses the importer's.
+				if (args.path.startsWith('node:') || args.path.startsWith('#')) return undefined;
 				try {
 					requireFromProject.resolve(args.path, { paths: [path.dirname(args.importer)] });
 					return undefined; // resolvable — let esbuild handle it normally

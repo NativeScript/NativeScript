@@ -736,6 +736,14 @@ export class CssState {
 		return this.viewRef.get()._styleScope.getSelectorsVersion() === this._appliedSelectorsVersion;
 	}
 
+	/**
+	 * The value the cascade last resolved for a longhand, `undefined` if it resolved none.
+	 * Recorded even while a local value suppresses the write.
+	 */
+	public _getAppliedPropertyValue(property: string): unknown {
+		return this._appliedPropertyValues[property];
+	}
+
 	public onLoaded(): void {
 		if (this._matchInvalid) {
 			this.updateMatch();
