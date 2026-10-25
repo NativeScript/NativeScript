@@ -19,3 +19,11 @@ function parse(line: string) {
   return v === undefined ? `${k}:none` : `${k}:${v}`;
 }
 console.log(parse('a=1'), parse('b'));
+function pair(line: string) {
+  const [, k, v] = /(\w+)(?:=(\w+))?/.exec(line)!;
+  return show(k) + show(v) + typeof v;
+}
+console.log(pair('a=1'), pair('b'));
+for (const [, x, y] of 'ab'.matchAll(/(a)|(b)/g)) console.log(show(x), show(y));
+const second = (g: { [key: string]: string }) => show(g['second']);
+console.log(second(named.groups!), show(named.groups?.second));

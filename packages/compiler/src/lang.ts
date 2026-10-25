@@ -458,6 +458,68 @@ function calledByUntrusted(p: ts.ParameterDeclaration, scope: TrustScope): boole
   return !!callee && !ts.isJSDocSignature(callee) && declarationOrigin(callee, scope) !== null && declarationOrigin(callee, scope) !== 'loose';
 }
 
+/**
+ * Strict code's functions whose value reaches an untyped slot (`callbacks.push(cb)` for `cb: (v: string) => void`), itself
+ * or through function-typed slots it is placed in: script calls them with whatever it passes. Given a function type node,
+ * an arrow function, a function expression or a function declaration.
+ */
+export function scriptCalledFunction(trust: TrustScope): (sig: ts.Node) => boolean {
+  const checker = trust.checker;
+  const known = new Map<ts.Node, boolean>();
+  const untyped = (t: ts.Type) => !!(t.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown));
+  /** Whether a function value is placed in an untyped slot, or in a function-typed one whose value reaches one. */
+  const reachesScript = (x: ts.Expression, own: ts.Node): boolean => {
+    let slot: ts.Type | undefined;
+    const field = (ts.isShorthandPropertyAssignment(x.parent) && x.parent.name === x) || (ts.isPropertyAssignment(x.parent) && x.parent.initializer === x) ? x.parent : null;
+    if (field) {
+      const obj = checker.getContextualType(field.parent);
+      const key = field.name && literalKey(field.name, checker);
+      const prop = obj && !untyped(obj) && key ? obj.getProperty(key) : undefined;
+      slot = obj && untyped(obj) ? obj : prop && checker.getTypeOfSymbolAtLocation(prop, x);
+    } else slot = checker.getContextualType(x);
+    if (!slot) return false;
+    if (untyped(slot)) return true;
+    // A replacer given a pattern's groups, any of which may be undefined.
+    const call = ts.walkUpParenthesizedExpressions(x.parent);
+    if (ts.isCallExpression(call) && call.arguments[1] === ts.walkUpParenthesizedExpressions(x) && ts.isPropertyAccessExpression(call.expression) && ['replace', 'replaceAll'].includes(call.expression.name.text)
+      && checker.getTypeAtLocation(call.expression.expression).flags & ts.TypeFlags.StringLike && regexpMayLeaveGroupUnset(call.arguments[0], checker)) return true;
+    const decl = checker.getNonNullableType(slot).getCallSignatures()[0]?.getDeclaration();
+    return !!decl && !ts.isJSDocSignature(decl) && decl !== own && scriptCalled(decl);
+  };
+  const scriptCalled = (sig: ts.Node): boolean => {
+    if (sig.getSourceFile().isDeclarationFile || !trust.strictFile(sig.getSourceFile())) return false;
+    if (!(ts.isFunctionTypeNode(sig) || ts.isArrowFunction(sig) || ts.isFunctionExpression(sig) || (ts.isFunctionDeclaration(sig) && sig.body && sig.name))) return false;
+    let found = known.get(sig);
+    if (found !== undefined) return found;
+    known.set(sig, false);
+    const refs = (d: ts.Node, name: ts.Identifier, scope: ts.Node | undefined): boolean => {
+      const sym = checker.getSymbolAtLocation(name);
+      const named = (x: ts.Identifier) => (ts.isShorthandPropertyAssignment(x.parent) && x.parent.name === x ? checker.getShorthandAssignmentValueSymbol(x.parent) : checker.getSymbolAtLocation(x)) === sym;
+      const visit = (x: ts.Node): boolean => (ts.isIdentifier(x) && x !== name && named(x) && reachesScript(x, d)) || !!ts.forEachChild(x, visit);
+      return !!sym && !!scope && visit(scope);
+    };
+    found = false;
+    if (ts.isFunctionTypeNode(sig)) {
+      const d = sig.parent;
+      if ((ts.isParameter(d) || ts.isVariableDeclaration(d)) && d.type === sig && ts.isIdentifier(d.name)) found = refs(sig, d.name, ts.isParameter(d) ? d.parent : ts.findAncestor(d.parent, (x) => ts.isFunctionLike(x) || ts.isSourceFile(x)));
+    } else if (ts.isFunctionDeclaration(sig)) {
+      found = refs(sig, sig.name!, sig.getSourceFile());
+    } else {
+      let x: ts.Expression = sig as ts.Expression;
+      while (ts.isParenthesizedExpression(x.parent)) x = x.parent;
+      found = reachesScript(x, sig);
+      // A constant holding the function (`const f = (s: string) => …`): wherever the constant is given.
+      const d = x.parent;
+      if (!found && ts.isVariableDeclaration(d) && d.initializer === x && !d.type && ts.isIdentifier(d.name) && ts.getCombinedNodeFlags(d) & ts.NodeFlags.Const) {
+        found = refs(sig, d.name, ts.findAncestor(d.parent, (n) => ts.isFunctionLike(n) || ts.isSourceFile(n)));
+      }
+    }
+    known.set(sig, found);
+    return found;
+  };
+  return scriptCalled;
+}
+
 /** The slot a value is placed in: a variable, field, parameter, literal field or a function's result. */
 export function slotOf(e: ts.Expression, checker: ts.TypeChecker): ts.Declaration | null {
   let x: ts.Node = e;
