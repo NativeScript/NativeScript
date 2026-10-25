@@ -1,7 +1,9 @@
 import Foundation
 
-// Timers as Node schedules them (lib/internal/timers.js): one list per duration, lists
-// ordered by expiry and then by list id, every timer callback followed by a microtask checkpoint.
+// Timers as Node schedules them (lib/internal/timers.js): one list per duration, lists ordered by
+// expiry and then by when their first timer was scheduled, every timer callback followed by a
+// microtask checkpoint. Node re-ids a list it puts off instead, which makes a tie depend on whether a
+// millisecond boundary fell between two setTimeout calls.
 
 final class JSTimer {
     nonisolated deinit {}
@@ -10,6 +12,7 @@ final class JSTimer {
     let repeatInterval: Double?
     var duration: Double
     var start = 0.0
+    var seq = 0
     var active = true
 
     init(id: Double, duration: Double, repeatInterval: Double?, callback: @escaping () -> Void) {
@@ -24,14 +27,15 @@ final class JSTimerList {
     nonisolated deinit {}
     let duration: Double
     var expiry: Double
-    var id: Int
+    /// The scheduling sequence number of the list's first timer, which breaks ties between equal expiries.
+    var seq: Int
     var timers: [JSTimer] = []
     var head = 0
 
-    init(duration: Double, expiry: Double, id: Int) {
+    init(duration: Double, expiry: Double, seq: Int) {
         self.duration = duration
         self.expiry = expiry
-        self.id = id
+        self.seq = seq
     }
 
     var first: JSTimer? { head < timers.count ? timers[head] : nil }
@@ -57,7 +61,7 @@ public enum JSEventLoop {
     static var lists: [Double: JSTimerList] = [:]
     static var timers: [Double: JSTimer] = [:]
     static var nextTimerId = 1.0
-    static var nextListId = 0
+    static var nextSeq = 0
     static var processing = false
     static var runLoopTimer: CFRunLoopTimer?
     static var observer: CFRunLoopObserver?
@@ -86,11 +90,12 @@ public enum JSEventLoop {
     private static func insert(_ timer: JSTimer, start: Double) {
         let duration = timer.duration.rounded(.towardZero)
         timer.start = start
+        timer.seq = nextSeq
+        nextSeq += 1
         if let list = lists[duration] {
             list.timers.append(timer)
         } else {
-            let list = JSTimerList(duration: duration, expiry: start + duration, id: nextListId)
-            nextListId += 1
+            let list = JSTimerList(duration: duration, expiry: start + duration, seq: timer.seq)
             list.timers.append(timer)
             lists[duration] = list
         }
@@ -111,7 +116,7 @@ public enum JSEventLoop {
         var best: JSTimerList?
         for list in lists.values {
             guard let current = best else { best = list; continue }
-            if list.expiry < current.expiry || (list.expiry == current.expiry && list.id < current.id) { best = list }
+            if list.expiry < current.expiry || (list.expiry == current.expiry && list.seq < current.seq) { best = list }
         }
         return best
     }
@@ -136,8 +141,7 @@ public enum JSEventLoop {
         while let timer = list.first {
             if current - timer.start < list.duration {
                 list.expiry = max(timer.start + list.duration, current + 1)
-                list.id = nextListId
-                nextListId += 1
+                list.seq = timer.seq
                 return
             }
             list.removeFirst()
