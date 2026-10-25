@@ -3,6 +3,7 @@
 	"swift": {
 		"232-async-object-return": "Does not compile: an object literal an async function returns is made as an untyped `JSObject`, which `JSAsync<Stat>.returnValue` doesn't take (Swift translator).",
 		"237-shared-top-names": "Top-level names (an enum, files of the same name in two folders) that several modules declare clash; swiftc crashes (Swift translator).",
+		"243-array-holes": "An array key that is no index (`a[1.5] = v`) is left out of Object.keys (Swift runtime).",
 		"246-nullable-string-concat": "`null as string | null` in a template or a concatenation does not compile: nil has no contextual type (Swift translator).",
 		"247-missing-values-throw": "A module const read before its declaration runs, and a member of undefined or null read, set or called, trap instead of throwing ReferenceError or TypeError (Swift translator, quality step 4).",
 		"290-regexp-backtracking": "NSRegularExpression (ICU) is no ECMAScript engine: a capture in a quantified group keeps an earlier iteration's value, an empty iteration is kept, a backreference to an unset or later group fails instead of matching empty, case folding is full Unicode (/ß/i matches SS, /\\u212A/i matches k), v-flag set operations are unsupported, lone surrogates read U+FFFD, error messages are ICU's, and unbounded lookbehind, a quantified lookaround and duplicate group names throw SyntaxError (Swift runtime).",
