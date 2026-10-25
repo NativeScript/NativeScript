@@ -1,6 +1,48 @@
 import { StackLayout } from '../../layouts/stack-layout';
 
 describe('iOS requestLayout', () => {
+	it('invalidates layout without loading an unloaded controller view', () => {
+		const view = new StackLayout();
+		const controller = new UIViewController();
+		const loadView = vi.spyOn(controller, 'view', 'get');
+		view.viewController = controller;
+		view.layout(0, 0, 100, 100);
+		expect(view.isLayoutRequested).toBe(false);
+
+		view.requestLayout();
+
+		expect(loadView).not.toHaveBeenCalled();
+		expect(controller.viewIfLoaded).toBeNull();
+		expect(view.isLayoutRequested).toBe(true);
+	});
+
+	it('invalidates an already loaded controller view and its distinct native view', () => {
+		const view = new StackLayout();
+		const controller = new UIViewController();
+		const nativeController = new UIViewController();
+		view.viewController = controller;
+		view.nativeViewProtected = nativeController.view;
+		const controllerLayout = vi.spyOn(controller.view, 'setNeedsLayout');
+		const nativeLayout = vi.spyOn(view.nativeViewProtected, 'setNeedsLayout');
+
+		view.requestLayout();
+
+		expect(controllerLayout).toHaveBeenCalledTimes(1);
+		expect(nativeLayout).toHaveBeenCalledTimes(1);
+	});
+
+	it('invalidates only once when the native view is the loaded controller view', () => {
+		const view = new StackLayout();
+		const controller = new UIViewController();
+		view.viewController = controller;
+		view.nativeViewProtected = controller.view;
+		const nativeLayout = vi.spyOn(controller.view, 'setNeedsLayout');
+
+		view.requestLayout();
+
+		expect(nativeLayout).toHaveBeenCalledTimes(1);
+	});
+
 	async function tree() {
 		const parent = new StackLayout();
 		const child = new StackLayout();
