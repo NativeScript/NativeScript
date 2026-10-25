@@ -410,6 +410,12 @@ public func jsReplace(_ s: String, untyped pattern: Any?, _ replacement: String)
     return jsReplace(s, jsToString(pattern), replacement)
 }
 
+/// `s.replaceAll(pattern, replacement)` with an untyped pattern: a regular expression replaces as one (it must be global), any other value by its string.
+public func jsReplaceAll(_ s: String, untyped pattern: Any?, _ replacement: String) throws -> String {
+    if let re = jsFlat(pattern) as? JSRegExp { return try jsReplaceAll(s, re, replacement) }
+    return jsReplaceAll(s, jsToString(pattern), replacement)
+}
+
 /// `s.replace(re, replacement)` with GetSubstitution's `$$ $& $` $' $n $nn $<name>`.
 public func jsReplace(_ s: String, _ re: JSRegExp, _ replacement: String) -> String {
     let subject = JSRegExpSubject.of(s)

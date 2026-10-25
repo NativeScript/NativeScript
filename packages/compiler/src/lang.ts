@@ -98,6 +98,28 @@ export function isRegExpProtocol(t: ts.Type): boolean {
   return own.length > 0 && own.every((p) => /^__@(replace|split|match|matchAll|search)@\d+$/.test(p.name));
 }
 
+/** An assertion from untyped to RegExp's protocol methods (`x as any as { [Symbol.replace](…) }`), alone or as a `? :` branch: its value may be anything, not only a RegExp. */
+export function assertedPattern(x: ts.Expression, checker: ts.TypeChecker): boolean {
+  x = ts.skipParentheses(x);
+  if (ts.isConditionalExpression(x)) return assertedPattern(x.whenTrue, checker) || assertedPattern(x.whenFalse, checker);
+  return (ts.isAsExpression(x) || ts.isTypeAssertionExpression(x)) && isRegExpProtocol(checker.getTypeAtLocation(x)) && !!(checker.getTypeAtLocation(x.expression).flags & ts.TypeFlags.Any);
+}
+
+/**
+ * Why a string method's pattern argument can't be translated, or null: a replacement that may be a function for a
+ * pattern that may be a string (JavaScript calls it with the match, its index and the string).
+ */
+export function unsupportedPattern(name: string, call: ts.CallExpression, checker: ts.TypeChecker): string | null {
+  const [pattern, replacement] = call.arguments;
+  if ((name !== 'replace' && name !== 'replaceAll') || !pattern || !replacement) return null;
+  const r = checker.getTypeAtLocation(replacement);
+  if (!(r.flags & ts.TypeFlags.Any) && !r.getCallSignatures().length) return null;
+  const t = checker.getTypeAtLocation(pattern);
+  const regexp = (x: ts.Type) => x.getSymbol()?.name === 'RegExp' || isRegExpProtocol(x);
+  if ((t.isUnion() ? t.types.every(regexp) : regexp(t)) && !assertedPattern(pattern, checker)) return null;
+  return 'a replacement that may be a function, for a pattern that may be a string';
+}
+
 /**
  * `type A = B & { x: T }` over non-generic interfaces and type literals only: the members of the type it names, each
  * property's first declaration, as one interface's. Null for any other alias.

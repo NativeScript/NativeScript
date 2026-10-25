@@ -4,7 +4,7 @@ import { dirname as pathDirname, resolve as pathResolve } from 'node:path';
 import { AsyncLowering, usedBefore, type AsyncCtx, type AsyncSyntax, type AsyncTranslator } from './async.ts';
 import { isAsync, isStatic } from './throws.ts';
 import { assignedMembers } from './sharing.ts';
-import { assignedValues, heldDowncasts, openSpreadType, definitelyAssignedFields, forwardedSetter, initializedNull, intersectionAliasMembers, nullSetFields, nullishSlots, type NullishSlots, isRegExpProtocol, intlConstructor, isObjectToStringCall, isStringRaw, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, classesHeldUntyped, LooseSlots, originOf, ownSlot, implementedInterfaceDeclarations, slotOf, slotType, type TrustScope, scriptCalledFunction, literalPattern, patternGroups, unsetGroupTyping, type UnsetGroupTyping } from './lang.ts';
+import { assignedValues, heldDowncasts, openSpreadType, definitelyAssignedFields, forwardedSetter, initializedNull, intersectionAliasMembers, nullSetFields, nullishSlots, type NullishSlots, isRegExpProtocol, assertedPattern, unsupportedPattern, intlConstructor, isObjectToStringCall, isStringRaw, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, classesHeldUntyped, LooseSlots, originOf, ownSlot, implementedInterfaceDeclarations, slotOf, slotType, type TrustScope, scriptCalledFunction, literalPattern, patternGroups, unsetGroupTyping, type UnsetGroupTyping } from './lang.ts';
 import { isCoreDeclaration } from './core.ts';
 import { balanced, nonVirtualName } from './swift.ts';
 import type { Properties } from './properties.ts';
@@ -8715,8 +8715,12 @@ export class Translator implements AsyncTranslator {
   private stringMethod(name: string, target: ts.Expression, e: ts.CallExpression, receiver?: string): string {
     const t = receiver ?? this.expr(target);
     const first = e.arguments[0];
-    if (first && this.typeOf(first) === 'JSRegExp') return this.regexpStringMethod(name, t, e);
+    const unsupported = unsupportedPattern(name, e, this.checker);
+    if (unsupported) throw this.error(first, unsupported);
+    const asserted = !!first && name !== 'matchAll' && assertedPattern(first, this.checker);
+    if (first && this.typeOf(first) === 'JSRegExp' && !asserted) return this.regexpStringMethod(name, t, e);
     const s = (k: number) => this.str(e.arguments[k]);
+    const untyped = !first ? undefined : asserted ? this.assertedPatternValue(first) : this.isAny(first) ? this.expr(first) : undefined;
     const n = (k: number) => this.toNumber(e.arguments[k]);
     const opt = (k: number) => (e.arguments[k] ? `, ${n(k)}` : '');
     switch (name) {
@@ -8729,7 +8733,7 @@ export class Translator implements AsyncTranslator {
       case 'trimStart': return `jsTrimStart(${t})`;
       case 'trimEnd': return `jsTrimEnd(${t})`;
       case 'split': {
-        const call = first && this.isAny(first) ? `jsSplitUntyped(${t}, ${this.expr(first)}${opt(1)})` : `jsSplit(${t}, ${first ? s(0) : 'null'}${opt(1)})`;
+        const call = untyped ? `jsSplitUntyped(${t}, ${untyped}${opt(1)})` : `jsSplit(${t}, ${first ? s(0) : 'null'}${opt(1)})`;
         return this.unsetGroups(e) ? `jsUnchecked<JSArray<String?>>(${call})` : call;
       }
       case 'indexOf': return `jsIndexOf(${t}, ${s(0)}${opt(1)})`;
@@ -8737,9 +8741,9 @@ export class Translator implements AsyncTranslator {
       case 'slice': return `jsSlice(${t}${e.arguments.map((_, k) => `, ${n(k)}`).join('')})`;
       case 'substring': return `jsSubstring(${t}, ${first ? n(0) : '0.0'}${opt(1)})`;
       case 'substr': return `jsSubstr(${t}, ${first ? n(0) : '0.0'}${opt(1)})`;
-      case 'match': return `jsMatch(${t}, jsRegExpFrom(${first ? this.coerce(first, 'Any?') : 'null'}))`;
-      case 'replace': return `jsReplace(${t}, ${s(0)}, ${s(1)})`;
-      case 'replaceAll': return `jsReplaceAll(${t}, ${s(0)}, ${s(1)})`;
+      case 'match': return `jsMatch(${t}, jsRegExpFrom(${untyped ?? (first ? this.coerce(first, 'Any?') : 'null')}))`;
+      case 'replace': return untyped ? `jsReplaceUntyped(${t}, ${untyped}, ${s(1)})` : `jsReplace(${t}, ${s(0)}, ${s(1)})`;
+      case 'replaceAll': return untyped ? `jsReplaceAllUntyped(${t}, ${untyped}, ${s(1)})` : `jsReplaceAll(${t}, ${s(0)}, ${s(1)})`;
       case 'charAt': return `jsCharAt(${t}, ${first ? n(0) : '0.0'})`;
       case 'charCodeAt': return `jsCharCodeAt(${t}, ${first ? n(0) : '0.0'})`;
       case 'codePointAt': return `jsCodePointAt(${t}, ${first ? n(0) : '0.0'})`;
@@ -8750,10 +8754,18 @@ export class Translator implements AsyncTranslator {
       case 'concat': return `(${[t, ...e.arguments.map((x) => this.str(x))].join(' + ')})`;
       case 'localeCompare': return e.arguments.length > 1 ? `jsLocaleCompare(${[t, s(0), ...e.arguments.slice(1).map((x) => this.coerce(x, 'Any?'))].join(', ')})` : `jsLocaleCompare(${t}, ${s(0)})`;
       // A string searches as `new RegExp(x)` does.
-      case 'search': return `jsSearch(${t}, JSRegExp(${e.arguments[0] ? s(0) : '"(?:)"'}))`;
+      case 'search': return untyped ? `jsSearch(${t}, jsRegExpFrom(${untyped}))` : `jsSearch(${t}, JSRegExp(${e.arguments[0] ? s(0) : '"(?:)"'}))`;
       case 'toString': case 'valueOf': return t;
     }
     throw this.error(e, `String.${name}`);
+  }
+
+  /** A pattern an assertion from untyped gives (`assertedPattern`), as its untyped value. */
+  private assertedPatternValue(x: ts.Expression): string {
+    x = ts.skipParentheses(x);
+    if (ts.isConditionalExpression(x)) return `(if (${this.cond(x.condition)}) ${this.assertedPatternValue(x.whenTrue)} else ${this.assertedPatternValue(x.whenFalse)})`;
+    if ((ts.isAsExpression(x) || ts.isTypeAssertionExpression(x)) && this.checker.getTypeAtLocation(x.expression).flags & ts.TypeFlags.Any) return this.expr(x.expression);
+    return this.coerce(x, 'Any?');
   }
 
   private regexpStringMethod(name: string, s: string, e: ts.CallExpression): string {

@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import { KIT_APPLE_SOURCES } from './paths.ts';
 import { Throws, digitsLiteral, isArrayLengthLiteral, isArrayLengthWrite, isAsync, isStatic } from './throws.ts';
 import { assignedMembers } from './sharing.ts';
-import { assignedValues, heldDowncasts, openSpreadType, initializedNull, intersectionAliasMembers, intlConstructor, literalPattern, literalFlags, patternGroups, regexpMayLeaveGroupUnset, nullSetFields, nullishSlots, type NullishSlots, isRegExpProtocol, isObjectToStringCall, isStringRaw, leadingNeverRead, forwardedSetter, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, uncheckedMatch, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, LooseSlots, originOf, ownSlot, implementedInterfaceDeclarations, slotOf, slotType, definitelyAssignedFields, type TrustScope, classesHeldUntyped, scriptCalledFunction, unsetGroupTyping, type UnsetGroupTyping } from './lang.ts';
+import { assignedValues, heldDowncasts, openSpreadType, initializedNull, intersectionAliasMembers, intlConstructor, literalPattern, literalFlags, patternGroups, regexpMayLeaveGroupUnset, nullSetFields, nullishSlots, type NullishSlots, isRegExpProtocol, assertedPattern, unsupportedPattern, isObjectToStringCall, isStringRaw, leadingNeverRead, forwardedSetter, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, uncheckedMatch, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, LooseSlots, originOf, ownSlot, implementedInterfaceDeclarations, slotOf, slotType, definitelyAssignedFields, type TrustScope, classesHeldUntyped, scriptCalledFunction, unsetGroupTyping, type UnsetGroupTyping } from './lang.ts';
 import { AsyncLowering, type AsyncCtx, type AsyncSyntax, type AsyncTranslator } from './async.ts';
 import { CoreAPI, isCoreDeclaration, packageOf } from './core.ts';
 import type { KitMember } from './kit-index.ts';
@@ -11948,10 +11948,22 @@ ${members.join('\n')}
     return `({ ${this.tryPrefix(thisArg)}${this.exprStatement(thisArg)}; return ${this.tryPrefix(e)}${code} }())`;
   }
 
+  /** A pattern an assertion from untyped gives (`assertedPattern`), as its untyped value. */
+  private assertedPatternValue(x: ts.Expression): string {
+    x = ts.skipParentheses(x);
+    if (ts.isConditionalExpression(x)) return this.ternary(x, 'Any?', (b) => this.assertedPatternValue(b));
+    if ((ts.isAsExpression(x) || ts.isTypeAssertionExpression(x)) && this.checker.getTypeAtLocation(x.expression).flags & ts.TypeFlags.Any) return this.expr(x.expression);
+    return `(${this.coerce(x, 'Any?')} as Any?)`;
+  }
+
   private stringMethod(name: string, target: ts.Expression, e: ts.CallExpression): string {
     const t = this.expr(target);
     const first = e.arguments[0];
-    if (first && this.typeOf(first) === 'JSRegExp') return this.regexpStringMethod(name, t, e);
+    const unsupported = unsupportedPattern(name, e, this.checker);
+    if (unsupported) throw this.error(first, unsupported);
+    const asserted = !!first && name !== 'matchAll' && assertedPattern(first, this.checker);
+    if (first && this.typeOf(first) === 'JSRegExp' && !asserted) return this.regexpStringMethod(name, t, e);
+    const untyped = !first ? undefined : asserted ? this.assertedPatternValue(first) : this.isAny(first) ? this.expr(first) : undefined;
     const a = this.args(e);
     const opt = (k: number) => (a[k] !== undefined ? a[k] : 'nil');
     switch (name) {
@@ -11964,7 +11976,7 @@ ${members.join('\n')}
       case 'trimStart': return `jsTrimStart(${t})`;
       case 'trimEnd': return `jsTrimEnd(${t})`;
       case 'split': {
-        if (first && this.isAny(first)) return `jsSplit(${t}, ${this.unsetGroups(e) ? 'untypedKeepingUnset' : 'untyped'}: ${this.expr(first)}, ${opt(1)})`;
+        if (untyped) return `jsSplit(${t}, ${this.unsetGroups(e) ? 'untypedKeepingUnset' : 'untyped'}: ${untyped}, ${opt(1)})`;
         const call = `jsSplit(${t}, ${a[0] ?? 'nil'}, ${opt(1)})`;
         return this.unsetGroups(e) ? this.convert(call, 'JSArray<String>', 'JSArray<String?>') : call;
       }
@@ -11973,10 +11985,10 @@ ${members.join('\n')}
       case 'slice': return `jsSlice(${t}, ${a.join(', ')})`;
       case 'substring': return `jsSubstring(${t}, ${a[0] ?? '0'}, ${opt(1)})`;
       case 'substr': return `jsSubstr(${t}, ${a[0] ?? '0'}, ${opt(1)})`;
-      case 'match': return `jsMatch(${t}, jsRegExpFrom(${first ? this.coerce(first, 'Any?') : 'nil'}))`;
-      case 'search': return `jsSearch(${t}, jsRegExpFrom(${first ? this.coerce(first, 'Any?') : 'nil'}))`;
-      case 'replace': return first && this.isAny(first) && e.arguments[1] && this.isString(e.arguments[1]) ? `jsReplace(${t}, untyped: ${this.expr(first)}, ${a[1]})` : `jsReplace(${t}, ${first && this.isString(first) ? this.str(first) : a[0]}, ${a[1]})`;
-      case 'replaceAll': return `jsReplaceAll(${t}, ${a[0]}, ${a[1]})`;
+      case 'match': return `jsMatch(${t}, jsRegExpFrom(${untyped ?? (first ? this.coerce(first, 'Any?') : 'nil')}))`;
+      case 'search': return `jsSearch(${t}, jsRegExpFrom(${untyped ?? (first ? this.coerce(first, 'Any?') : 'nil')}))`;
+      case 'replace': return untyped && e.arguments[1] && this.isString(e.arguments[1]) ? `jsReplace(${t}, untyped: ${untyped}, ${a[1]})` : `jsReplace(${t}, ${first && this.isString(first) ? this.str(first) : a[0]}, ${a[1]})`;
+      case 'replaceAll': return untyped && e.arguments[1] && this.isString(e.arguments[1]) ? `jsReplaceAll(${t}, untyped: ${untyped}, ${a[1]})` : `jsReplaceAll(${t}, ${a[0]}, ${a[1]})`;
       case 'charAt': return `jsCharAt(${t}, ${a[0] ?? '0'})`;
       case 'charCodeAt': return `jsCharCodeAt(${t}, ${a[0] ?? '0'})`;
       case 'codePointAt': return `jsCodePointAt(${t}, ${a[0] ?? '0'})`;

@@ -329,6 +329,14 @@ fun jsReplaceAll(s: String, re: JSRegExp, replacer: (JSMatch) -> String): String
     return jsReplace(s, re, replacer)
 }
 
+/** `s.replace(pattern, replacement)` with an untyped pattern: a RegExp replaces as one, any other value by its string. */
+fun jsReplaceUntyped(s: String, pattern: Any?, replacement: String): String =
+    if (pattern is JSRegExp) jsReplace(s, pattern, replacement) else jsReplace(s, jsToString(pattern), replacement)
+
+/** `s.replaceAll(pattern, replacement)` with an untyped pattern: a RegExp replaces as one (it must be global), any other value by its string. */
+fun jsReplaceAllUntyped(s: String, pattern: Any?, replacement: String): String =
+    if (pattern is JSRegExp) jsReplaceAll(s, pattern, replacement) else jsReplaceAll(s, jsToString(pattern), replacement)
+
 /** RegExp.prototype[@@replace]: every match is found before the first replacement is computed. */
 private inline fun replaceMatches(s: String, re: JSRegExp, replacement: (IntArray) -> String): String {
     val results = ArrayList<IntArray>()
