@@ -3,7 +3,7 @@ import { implementedInterfaces } from './lang.ts';
 import { isStatic } from './throws.ts';
 import { balanced, CF_CLASSES, functionParts, ident, isWriteTarget, NONISOLATED_DEINIT, optionalType, splitTopLevel, THROWING_CODE, type Translator } from './swift.ts';
 import {
-  categoryModule, conformsTo, conformsToSwift, isSubframework, lookupClass, lookupConstant, lookupConstructor, lookupEnum, lookupFunction, lookupInit, lookupMember, lookupStruct, lookupTypealias, moduleOfDeclaration, nativeTable,
+  categoryModule, conformsTo, conformsToSwift, isSubframework, lookupClass, lookupConstant, lookupConstructor, lookupEnum, lookupFunction, lookupInit, lookupMember, lookupStruct, lookupTypealias, moduleOfDeclaration, nativeTable, unavailableReason,
   type NativeClass, type NativeMethod, type NativeProperty, type SwiftType,
 } from './natives/symbols.ts';
 
@@ -106,8 +106,10 @@ export class NativeAPI {
     this.used.add(module);
   }
 
-  /** Why a name of `module` has no Swift spelling: the module has none, or the build has no such module at all (a pod no Podfile names). */
-  private noCounterpart(module: string): string {
+  /** Why a name of `module` has no Swift spelling: Swift leaves it out, the module has none, or the build has no such module at all (a pod no Podfile names). */
+  private noCounterpart(module: string, name?: string): string {
+    const unavailable = name && unavailableReason(module, name);
+    if (unavailable) return `${unavailable}, in ${module}`;
     const t = nativeTable(module);
     const empty = ![t.classes, t.enums, t.functions, t.constants, t.structs].some((x) => Object.keys(x).length);
     return empty ? `${module} is a module of neither the SDK nor the Swift packages and pods the app and its plugins build` : `no Swift counterpart in ${module}`;
@@ -199,6 +201,11 @@ export class NativeAPI {
     if (sym && sym.flags & ts.SymbolFlags.Class && (e.kind !== ts.SyntaxKind.SuperKeyword || inStaticMember(e))) {
       const native = this.symbolModule(sym);
       if (native) return { ...native, isStatic: true };
+    }
+    // Typings declaring a native class's class methods as a namespace's functions (`declare namespace UIDrawingText { function measureText…(…) }`).
+    if (sym && sym.flags & ts.SymbolFlags.ValueModule && !(sym.flags & ts.SymbolFlags.Class)) {
+      const native = this.symbolModule(sym);
+      if (native && lookupClass(native.module, native.name)) return { ...native, isStatic: true };
     }
     // `this` in an app class extending a native one is the class.
     let type = c.getApparentType(c.getNonNullableType(c.getTypeAtLocation(e)));
@@ -687,9 +694,10 @@ export class NativeAPI {
       if (native.name === 'UIApplicationMain' && e.arguments.length === 4) return `UIApplicationMain(CommandLine.argc, CommandLine.unsafeArgv, ${this.toSwift(e.arguments[2], 'String?')}, ${this.toSwift(e.arguments[3], 'String?')})`;
       if (native.name === 'dispatch_get_current_queue' && !e.arguments.length) return this.fromSwift('jsDispatchCurrentQueue()', 'dispatch_queue_t', e);
       const f = lookupFunction(native.module, native.name);
-      if (!f) throw this.t.error(e, `${native.name}() (${this.noCounterpart(native.module)})`);
+      if (!f) throw this.t.error(e, `${native.name}() (${this.noCounterpart(native.module, native.name)})`);
       this.checkAvailable(f, e, `${native.name}()`);
       const args = [...e.arguments];
+      if (f.kind === 'equal') return this.fromSwift(`(${this.toSwift(args[0], f.params[0])} == ${this.toSwift(args[1], f.params[1])})`, f.returns, e);
       const selfCode = (x: ts.Expression) => (f.owner ? this.toSwift(x, f.owner) : this.t.expr(x));
       if (f.kind === 'property') return this.fromSwift(`${selfCode(args[f.self!])}.${f.swift}`, f.returns, e);
       if (f.kind === 'staticProperty') return this.fromSwift(`${f.owner}.${f.swift}`, f.returns, e);
@@ -1031,7 +1039,7 @@ export class NativeAPI {
     if (native && sym!.flags & ts.SymbolFlags.Function) return this.functionValue(e, native);
     if (!native || !(sym!.flags & ts.SymbolFlags.Variable)) return null;
     const k = lookupConstant(native.module, native.name);
-    if (!k) throw this.t.error(e, `${native.name} (${this.noCounterpart(native.module)})`);
+    if (!k) throw this.t.error(e, `${native.name} (${this.noCounterpart(native.module, native.name)})`);
     return this.fromSwift(k.swift, k.type, e);
   }
 
