@@ -1,4 +1,6 @@
 import ts from 'typescript';
+import { existsSync, readFileSync } from 'node:fs';
+import { dirname, join, matchesGlob, posix } from 'node:path';
 
 export type Platform = 'ios' | 'android';
 
@@ -9,7 +11,7 @@ export type Platform = 'ios' | 'android';
  * reaches the type checker. Removed text is blanked rather than deleted:
  * every position, and so every diagnostic's line and column, is unchanged.
  */
-export function foldPlatform(text: string, fileName: string, platform: Platform): string {
+export function foldPlatform(text: string, fileName: string, platform: Platform, modulesDir?: string): string {
   text = applyDefines(text, fileName);
   // A defined string compared with a literal (`'nativescript' === 'css-tree'`) folds as well.
   if (!/\b(isIOS|isAndroid|__IOS__|__ANDROID__|__APPLE__|__VISIONOS__|__DEV__)\b|\bApplication\.(android|ios)\b|import\.meta\.hot|(['"])[^'"\n]*\2\)?\s*[!=]==?\s*\(?['"]/.test(text)) return text;
@@ -33,7 +35,7 @@ export function foldPlatform(text: string, fileName: string, platform: Platform)
       if (application && ts.isPropertyAccessExpression(n) && ts.isIdentifier(n.expression) && n.expression.text === 'Application' && ['android', 'ios'].includes(n.name.text) && !declaredAround(n.expression) && isTested(n)) return n.name.text === platform;
       return undefined;
     });
-    if (!edit) return folded ? dropUnreferenced(text, fileName, kind) : text;
+    if (!edit) return folded ? dropUnreferenced(text, fileName, kind, modulesDir) : text;
     text = apply(text, edit);
     folded = true;
   }
@@ -43,9 +45,11 @@ export function foldPlatform(text: string, fileName: string, platform: Platform)
 /**
  * Module-level helpers that only the removed branches used: unexported
  * functions, and constants whose initializer runs nothing, that the rest of
- * the file no longer names. They are the other platform's too.
+ * the file no longer names. They are the other platform's too. So is an import
+ * of a package declaring the module free of side effects (`"sideEffects"`), as
+ * the bundlers drop it; any other import runs its module and stays.
  */
-function dropUnreferenced(text: string, fileName: string, kind: ts.ScriptKind): string {
+function dropUnreferenced(text: string, fileName: string, kind: ts.ScriptKind, modulesDir?: string): string {
   for (;;) {
     const sf = ts.createSourceFile(fileName, text, ts.ScriptTarget.Latest, true, kind);
     const uses = new Map<string, number[]>();
@@ -59,6 +63,12 @@ function dropUnreferenced(text: string, fileName: string, kind: ts.ScriptKind): 
     const dead = sf.statements.find((st) => {
       if (ts.getCombinedModifierFlags(st as ts.Declaration) & (ts.ModifierFlags.Export | ts.ModifierFlags.Ambient)) return false;
       if (ts.isFunctionDeclaration(st)) return !!st.name && unused(st.name, st);
+      if (ts.isImportDeclaration(st)) {
+        const c = st.importClause;
+        if (!c || c.isTypeOnly || !ts.isStringLiteral(st.moduleSpecifier)) return false;
+        const names = [...(c.name ? [c.name] : []), ...(c.namedBindings ? (ts.isNamespaceImport(c.namedBindings) ? [c.namedBindings.name] : c.namedBindings.elements.map((e) => e.name)) : [])];
+        return names.length > 0 && names.every((n) => unused(n, st)) && sideEffectFree(st.moduleSpecifier.text, fileName, modulesDir);
+      }
       if (!ts.isVariableStatement(st) || st.declarationList.declarations.length !== 1) return false;
       const d = st.declarationList.declarations[0];
       return ts.isIdentifier(d.name) && (!d.initializer || inert(d.initializer)) && unused(d.name, st);
@@ -66,6 +76,36 @@ function dropUnreferenced(text: string, fileName: string, kind: ts.ScriptKind): 
     if (!dead) return text;
     text = apply(text, { span: [dead.getStart(sf), dead.getEnd()], keep: null });
   }
+}
+
+/**
+ * Whether a package's `"sideEffects"` says the module a bare specifier names has none: `false`, or a list of
+ * globs (relative to the package; one without a `/` matches anywhere in it) no candidate entry file matches.
+ */
+function sideEffectFree(specifier: string, fromFile: string, modulesDir?: string): boolean {
+  if (/^[./]/.test(specifier) || specifier.includes(':')) return false;
+  const parts = specifier.split('/');
+  const name = specifier.startsWith('@') ? parts.slice(0, 2).join('/') : parts[0];
+  const sub = specifier.slice(name.length + 1);
+  let dir: string | undefined;
+  for (let d = dirname(fromFile); ; d = dirname(d)) {
+    if (existsSync(join(d, 'node_modules', name, 'package.json'))) { dir = join(d, 'node_modules', name); break; }
+    if (dirname(d) === d) break;
+  }
+  if (!dir && modulesDir && existsSync(join(modulesDir, name, 'package.json'))) dir = join(modulesDir, name);
+  if (!dir) return false;
+  let pkg: any;
+  try { pkg = JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8')); } catch { return false; }
+  const declared = pkg?.sideEffects;
+  if (declared === false) return true;
+  if (!Array.isArray(declared) || !declared.every((g) => typeof g === 'string')) return false;
+  const conditions = (e: unknown): string[] => typeof e === 'string' ? [e] : e && typeof e === 'object' && !Array.isArray(e) ? Object.values(e).flatMap(conditions) : [];
+  const exported = pkg.exports && typeof pkg.exports === 'object' && !Array.isArray(pkg.exports) && Object.keys(pkg.exports).some((k) => k.startsWith('.')) ? pkg.exports[sub ? `./${sub}` : '.'] : sub ? undefined : pkg.exports;
+  const entries = exported !== undefined ? conditions(exported)
+    : sub ? [sub, `${sub}.js`, `${sub}/index.js`] : [pkg.module, pkg.main, 'index.js'].filter((f): f is string => typeof f === 'string');
+  if (!entries.length) return false;
+  const globs = declared.map((g) => g.replace(/^\.\//, '')).flatMap((g) => (g.includes('/') ? [g] : [`**/${g}`])).flatMap((g) => [g, `${g}/**`]);
+  return entries.every((f) => { const file = posix.normalize(f.replace(/^\.\//, '')); return !globs.some((g) => matchesGlob(file, g)); });
 }
 
 /** An initializer whose evaluation has no effect: a literal, a function, or an empty collection. */

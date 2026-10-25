@@ -20,6 +20,7 @@ import { angularComponent, angularDirectives, angularRouteTree, angularRoutes, c
 import { angularLibraries, registeredElements } from '../../src/angular-libraries.ts';
 import { pathAliases } from '../../src/app-paths.ts';
 import { appImports, reachedFrom, tsconfigIncluded } from '../../src/app-modules.ts';
+import { foldPlatform } from '../../src/platform.ts';
 import { runtimeFile } from '../../src/plugins/resolve.ts';
 import { PluginSources, verify, verifyBundle } from '../../src/plugins/source.ts';
 import { manifest, ownTypings, pluginNative, scopedImports, usedImports, xcodegenLines } from '../../src/plugins/native.ts';
@@ -227,6 +228,37 @@ export class GlyphPipe { constructor(@Inject(TOKEN) private config: any, @Option
     check(!included.has(spec) && included.has(test) && included.has(app), "a file the app's tsconfig excludes is not one of its modules");
     const tree = angularRouteTree(main, (f) => readFileSync(f, 'utf8'), aliased);
     check(!!tree && routedComponents(tree.routes).join() === 'Lazy,Lazy' && tree.files.has(child), 'lazy routes are followed through tsconfig paths');
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+})();
+
+// ---- Imports a release build's folding leaves unused ----
+(() => {
+  const dir = mkdtempSync(join(tmpdir(), 'ns-release-checks-side-effects-'));
+  const w = (f: string, text: string) => { mkdirSync(dirname(join(dir, f)), { recursive: true }); writeFileSync(join(dir, f), text); return join(dir, f); };
+  try {
+    const pkg = (name: string, json: object, files: string[] = ['index.js']) => { w(`node_modules/${name}/package.json`, JSON.stringify({ name, ...json })); for (const f of files) w(`node_modules/${name}/${f}`, 'globalThis.ran = true;\n'); };
+    pkg('@dev/inspector', { sideEffects: false });
+    pkg('dev-plain', {});
+    pkg('dev-listed', { main: './lib/index.js', sideEffects: ['./lib/polyfill.js', '*.css'] }, ['lib/index.js', 'lib/polyfill.js']);
+    pkg('dev-entry-listed', { exports: { '.': { import: './index.mjs', require: './index.js' } }, sideEffects: ['index.mjs'] }, ['index.js', 'index.mjs']);
+    const main = w('src/main.ts', [
+      "import { startInspector } from '@dev/inspector';",
+      "import * as plain from 'dev-plain';",
+      "import listed from 'dev-listed';",
+      "import { entry } from 'dev-entry-listed';",
+      "import { polyfill } from 'dev-listed/lib/polyfill';",
+      "import { stillUsed } from 'dev-plain/used';",
+      'if (__DEV__) { startInspector(); plain.start(); listed(); entry(); polyfill(); }',
+      'stillUsed();',
+      '',
+    ].join('\n'));
+    const out = foldPlatform(readFileSync(main, 'utf8'), main, 'ios');
+    const kept = (m: string) => out.includes(`'${m}'`);
+    check(!kept('@dev/inspector') && !kept('dev-listed'), 'an import folding leaves unused goes where its package declares no side effects (sideEffects false, or a list missing its entry)');
+    check(kept('dev-plain') && kept('dev-entry-listed') && kept('dev-listed/lib/polyfill') && kept('dev-plain/used'), 'an import folding leaves unused stays where its package may have side effects (no sideEffects, or a list naming the file), and so does a used one');
+    check(out.split('\n').length === readFileSync(main, 'utf8').split('\n').length, 'dropped imports keep every line in place');
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
@@ -859,6 +891,28 @@ export class People {
     const code = translateKotlinModules(translator, program, all.map((f) => f.fileName)).map((m) => m.code).join('\n') + translator.interfacesOf(join(dir, 'theme.ts'));
     check(/^object Utils__charting \{/m.test(code) && /^object Trace__charting \{/m.test(code) && /Utils__charting\.scaled\(2\.0\), Trace__charting\.On/.test(code) && !/^object (Utils|Trace) /m.test(code), "a plugin's namespace and enum named as kit-android's take their module's name (Kotlin)");
     check(/^class Page__theme\(/m.test(code) && /val page: Page__theme = Page__theme\(title = "home"\)/.test(code), "an app's interface named as a kit-android class takes its module's name, its literals too (Kotlin)");
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+})();
+
+// ---- A plugin's @Injectable class with a base, or extended, on Android ----
+(() => {
+  const dir = mkdtempSync(join(tmpdir(), 'ns-release-checks-plugin-service-'));
+  try {
+    writeFileSync(join(dir, 'store.ts'), "import { Injectable } from '@angular/core';\nexport class Source<T> { constructor(readonly value: T) {} }\n@Injectable()\nexport class Store<T> extends Source<T> { constructor() { super(null as T); } }\n");
+    writeFileSync(join(dir, 'component-store.ts'), "import { Injectable } from '@angular/core';\n@Injectable()\nexport class ComponentStore<T> { state?: T; patch(s: T) { this.state = s; } }\n");
+    const translate = (text: string) => {
+      const app = join(dir, 'app.ts');
+      writeFileSync(app, text);
+      const { checker, program } = createProgram([app], new Map(), 'android', modulesDir);
+      const all = program.getSourceFiles().filter((f) => !f.isDeclarationFile);
+      const translator = new Translator(checker, new Map(), all, { pluginFiles: [join(dir, 'store.ts'), join(dir, 'component-store.ts')] });
+      translator.appModule = 'org.example.app';
+      try { translateKotlinModules(translator, program, all.map((f) => f.fileName)); return ''; } catch (e) { return String((e as Error).message); }
+    };
+    check(/store\.ts:4:\d+: on Android, a plugin's @Injectable class extending another \(Store\) is not supported/.test(translate("import { Store } from './store';\nexport const s = new Store<number>();\n")), "a plugin's @Injectable class extending a class is a build error naming it on Android, never a service without its base");
+    check(/app\.ts:3:\d+: on Android, extending a plugin's @Injectable class \(ComponentStore\) is not supported/.test(translate("import { Injectable } from '@angular/core';\nimport { ComponentStore } from './component-store';\n@Injectable() export class Cart extends ComponentStore<string> {}\nexport const c = new Cart();\n")), "an app class extending a plugin's @Injectable class is a build error naming it on Android");
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

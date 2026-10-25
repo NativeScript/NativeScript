@@ -124,9 +124,11 @@ fun jsInstanceOf(value: Any?, type: Any?): Boolean = type is Class<*> && value !
  * (`off(name, handler)` removing what `on(name, handler)` added).
  */
 abstract class JSAdapted(val original: Any) {
-    override fun equals(other: Any?): Boolean = other is JSAdapted && other.javaClass == javaClass && other.original == original
-    override fun hashCode(): Int = original.hashCode()
+    override fun equals(other: Any?): Boolean = other is JSAdapted && jsUnadapted(other) == jsUnadapted(this)
+    override fun hashCode(): Int = jsUnadapted(this).hashCode()
 }
+/** The function an adaptation (or an adaptation of one) was made from. */
+internal fun jsUnadapted(f: Any): Any { var g = f; while (g is JSAdapted) g = g.original; return g }
 class JSAdapted0<R>(original: Any, private val body: () -> R) : JSAdapted(original), () -> R { override fun invoke(): R = body() }
 class JSAdapted1<A, R>(original: Any, private val body: (A) -> R) : JSAdapted(original), (A) -> R { override fun invoke(a: A): R = body(a) }
 class JSAdapted2<A, B, R>(original: Any, private val body: (A, B) -> R) : JSAdapted(original), (A, B) -> R { override fun invoke(a: A, b: B): R = body(a, b) }

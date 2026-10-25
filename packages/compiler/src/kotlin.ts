@@ -2355,8 +2355,8 @@ export class Translator implements AsyncTranslator {
       }
       let given = '';
       if (p.questionToken || (p.initializer && !this.templateParams)) {
-        if (!closure && p.initializer && this.isConstant(p.initializer)) given = ` = ${this.coerce(p.initializer, t)}`;
-        else if (!(override && p.initializer && this.isConstant(p.initializer))) { t = optionalType(t); if (!closure) given = ' = null'; }
+        if (!closure && this.constantDefault(p)) given = ` = ${this.coerce(p.initializer!, t)}`;
+        else if (!(override && this.constantDefault(p))) { t = optionalType(t); if (!closure) given = ' = null'; }
       }
       return `${name}: ${t}${given}`;
     })].filter(Boolean).join(', ');
@@ -2369,6 +2369,43 @@ export class Translator implements AsyncTranslator {
 
   private isConstant(e: ts.Expression): boolean {
     return ts.isLiteralExpression(e) || [ts.SyntaxKind.TrueKeyword, ts.SyntaxKind.FalseKeyword].includes(e.kind) || (ts.isPrefixUnaryExpression(e) && ts.isNumericLiteral(e.operand));
+  }
+
+  /**
+   * A parameter Kotlin gives its constant default itself. Not where another method of its override family declares the
+   * parameter otherwise: Kotlin overrides take the root's default, where JavaScript applies the default of the method that runs.
+   */
+  private constantDefault(p: ts.ParameterDeclaration): boolean {
+    return !!p.initializer && this.isConstant(p.initializer) && !this.familyDefaultsDiffer(p);
+  }
+
+  private familyDefaultsDiffer(p: ts.ParameterDeclaration): boolean {
+    const m = p.parent;
+    if (!ts.isMethodDeclaration(m) || isStatic(m) || !ts.isClassLike(m.parent)) return false;
+    const k = m.parameters.indexOf(p);
+    const family = this.methodFamily(this.rootMethod(m));
+    const text = (x: ts.MethodDeclaration) => x.parameters[k]?.initializer?.getText();
+    return family.some((x) => x.parameters.length > k && text(x) !== text(m));
+  }
+
+  private methodFamilies: Map<ts.MethodDeclaration, ts.MethodDeclaration[]> | null = null;
+  /** A root method with every method overriding it, directly or through others. */
+  private methodFamily(root: ts.MethodDeclaration): ts.MethodDeclaration[] {
+    if (!this.methodFamilies) {
+      this.methodFamilies = new Map();
+      const visit = (n: ts.Node) => {
+        if (ts.isClassLike(n)) {
+          for (const m of n.members) {
+            if (!ts.isMethodDeclaration(m) || isStatic(m) || (!m.body && !hasModifier(m, ts.SyntaxKind.AbstractKeyword))) continue;
+            const top = this.rootMethod(m);
+            this.methodFamilies.set(top, [...(this.methodFamilies.get(top) ?? [top]), ...(top === m ? [] : [m])]);
+          }
+        }
+        ts.forEachChild(n, visit);
+      };
+      for (const f of this.sourceFiles) if (!f.isDeclarationFile) visit(f);
+    }
+    return this.methodFamilies.get(root) ?? [root];
   }
 
   /** Statements a function body starts with: computed defaults, destructured parameters. */
@@ -2398,7 +2435,7 @@ export class Translator implements AsyncTranslator {
       const closure = ts.isArrowFunction(fn) || ts.isFunctionExpression(fn) || (ts.isMethodDeclaration(fn) && ts.isObjectLiteralExpression(fn.parent));
       // A parameter the body assigns is a variable of its own (Kotlin parameters are constants).
       const assigned = ts.isIdentifier(p.name) && !!(fn as ts.FunctionLikeDeclaration).body && assignsTo((fn as ts.FunctionLikeDeclaration).body!, this.checker.getSymbolAtLocation(p.name), this.checker, (e) => this.staticTruth(e));
-      if (p.initializer && !this.templateParams && (closure || !this.isConstant(p.initializer))) {
+      if (p.initializer && !this.templateParams && (closure || !this.constantDefault(p))) {
         const t = this.typeOf(p.name);
         // Library mode: NaN is how a number slot carries undefined (`return index` of an unset `index?: number`), which the default fills in for.
         const value = this.library && t === 'Double' ? `${given}.let { if (it == null || it.isNaN()) ${this.coerce(p.initializer, t)} else it }` : `${given} ?: ${this.coerce(p.initializer, t)}`;
@@ -3003,6 +3040,12 @@ export class Translator implements AsyncTranslator {
     // A namespace's class is declared in its object, by its own name.
     const name = ts.isModuleBlock(cls.parent) ? ident(cls.name!.text) : this.className(cls);
     const service = (ts.getDecorators(cls) ?? []).some((d) => d.expression.getText().startsWith('Injectable')) && !this.isBasedService(cls);
+    // A plugin's @Injectable class is a final service with no base (ngrx's Store extends rxjs' Observable, ComponentStore is extended).
+    const extendsOf = (c: ts.ClassDeclaration) => c.heritageClauses?.find((h) => h.token === ts.SyntaxKind.ExtendsKeyword)?.types[0];
+    if (service && this.pluginFiles.has(cls.getSourceFile().fileName) && extendsOf(cls)) throw this.error(extendsOf(cls), `on Android, a plugin's @Injectable class extending another (${cls.name?.text ?? 'class'})`);
+    const pluginService = (d: ts.Node | undefined) => !!d && ts.isClassDeclaration(d) && this.pluginFiles.has(d.getSourceFile().fileName) && (ts.getDecorators(d) ?? []).some((x) => x.expression.getText().startsWith('Injectable'));
+    const extendedService = extendsOf(cls) && this.checker.getTypeAtLocation(extendsOf(cls)!.expression).getSymbol()?.valueDeclaration;
+    if (pluginService(extendedService)) throw this.error(extendsOf(cls), `on Android, extending a plugin's @Injectable class (${(extendedService as ts.ClassDeclaration).name?.text})`);
     if (service) {
       const { params, lines, statics } = this.componentMembers(cls, []);
       return [`class ${name}(${params.join(', ')}) {`, ...lines, '', '    companion object {', `        val shared: ${name} get() = AppInjector.service(${name}::class.java) { ${name}() }`, ...statics, '    }', '}'].join('\n');
@@ -3892,7 +3935,7 @@ export class Translator implements AsyncTranslator {
   paramType(p: ts.ParameterDeclaration): string {
     if (this.typeTested(p)) return 'Any?';
     const t = this.typeOf(p.name);
-    if (p.questionToken || (p.initializer && !this.templateParams)) return p.initializer && this.isConstant(p.initializer) ? t : optionalType(t);
+    if (p.questionToken || (p.initializer && !this.templateParams)) return this.constantDefault(p) ? t : optionalType(t);
     return this.mayBeNull(p) ? optionalType(t) : t;
   }
 
@@ -4379,7 +4422,7 @@ export class Translator implements AsyncTranslator {
     const args = m.parameters.map((p, k) => {
       const t = this.paramType(p);
       if (k < baseTypes.length) return this.convert(names[k], baseTypes[k], t);
-      if (p.initializer && this.isConstant(p.initializer)) return this.coerce(p.initializer, t);
+      if (this.constantDefault(p)) return this.coerce(p.initializer!, t);
       return isNullable(t) || t === 'Any?' ? 'null' : this.zero(t) ?? 'null';
     });
     const call = `this.${name}(${args.join(', ')})`;
@@ -5965,8 +6008,8 @@ export class Translator implements AsyncTranslator {
         const unwrap = /^\(.*\)\?$/.test(this.declaredTypeOf(e) ?? '') && !/\)\?$/.test(source) ? '!!' : '';
         const call = `${fn.includes('::') ? `(${fn})` : fn}${unwrap}(${names.slice(0, f.params.length).map((n, k) => this.convert(n, g.params[k], f.params[k])).join(', ')})`;
         const adapter = `{ ${g.params.map((p, k) => `${names[k]}: ${p}`).join(', ')} -> ${call} }`;
-        // Library mode: the function as it is now, equal to its other adaptations (a listener added and later removed).
-        if (this.library && g.params.length <= 4 && !ts.isArrowFunction(e) && !ts.isFunctionExpression(e)) {
+        // The function as it is now, equal to its other adaptations and to itself (a listener added and later removed).
+        if (g.params.length <= 4 && !ts.isArrowFunction(e) && !ts.isFunctionExpression(e)) {
           const held = adapter.replace(`${fn.includes('::') ? `(${fn})` : fn}${unwrap}(`, '__f(');
           const adapt = `jsAdapt${g.params.length}<${[...g.params, g.ret].join(', ')}>(__f) ${held}`;
           if (/\)\?$/.test(source) || unwrap) {
@@ -5993,6 +6036,10 @@ export class Translator implements AsyncTranslator {
       // A function value whose result a void slot ignores.
       const params = functionTypeParts(source)!.params;
       const names = params.map((_, k) => `__a${k}`);
+      if (params.length <= 4 && !ts.isArrowFunction(e) && !ts.isFunctionExpression(e)) {
+        const fn = this.functionValue(e);
+        return `${fn.includes('::') ? `(${fn})` : fn}.let { __f -> jsAdapt${params.length}<${[...params, 'Unit'].join(', ')}>(__f) { ${params.map((p, k) => `${names[k]}: ${p}`).join(', ')} -> __f(${names.join(', ')}) } }`;
+      }
       return `{ ${params.map((p, k) => `${names[k]}: ${p}`).join(', ')} -> ${this.functionValue(e)}(${names.join(', ')}) }`;
     }
     if (target === 'Boolean' && source !== 'Boolean' && source !== 'Nothing') return `jsTruthy(${this.expr(e)})`;
@@ -7266,7 +7313,7 @@ export class Translator implements AsyncTranslator {
       else if (this.library && appDeclared && !isNullable(pt) && this.isObjectType(pt) && !['String', 'Double', 'Boolean'].includes(pt) && decl && ts.isParameter(decl) && ts.isIdentifier(decl.name) && !decl.questionToken && !decl.initializer
         && ts.isFunctionDeclaration(decl.parent) && !decl.getSourceFile().isDeclarationFile && isNullable(this.paramType(decl))
         && ts.isCallExpression(e) && (ts.isIdentifier(e.expression) || (ts.isPropertyAccessExpression(e.expression) && !!this.namespaceMember(e.expression)))) pt = optionalType(pt);
-      const constantDefault = !!decl && ts.isParameter(decl) && !!decl.initializer && this.isConstant(decl.initializer) && appDeclared && !this.templateParams;
+      const constantDefault = !!decl && ts.isParameter(decl) && this.constantDefault(decl) && appDeclared && !this.templateParams;
       if (decl && ts.isParameter(decl) && ['String', 'Double', 'Boolean'].includes(pt) && this.givenUndefined(decl)) pt = optionalType(pt);
       if (decl && ts.isParameter(decl) && (decl.questionToken || decl.initializer) && appDeclared && !constantDefault) pt = optionalType(pt);
       // An argument that may be undefined where Kotlin's parameter has the constant default JavaScript would use.
@@ -7639,7 +7686,7 @@ export class Translator implements AsyncTranslator {
         if (impl && ts.isMethodDeclaration(impl) && !impl.getSourceFile().isDeclarationFile && !this.readsArguments(impl)) {
           for (let k = args.length; k < impl.parameters.length && !impl.parameters[k].dotDotDotToken; k++) {
             const p = impl.parameters[k];
-            args.push(p.initializer && this.isConstant(p.initializer) ? this.coerce(p.initializer, this.typeOf(p.name)) : 'null');
+            args.push(this.constantDefault(p) ? this.coerce(p.initializer!, this.typeOf(p.name)) : 'null');
           }
         }
       }
@@ -9344,6 +9391,8 @@ export class Translator implements AsyncTranslator {
     // A function reference (`::fn`) is made where it is read, equal to every other of its function: compared by equality.
     const fnType = (t: string) => isFunctionType(t.replace(/^\((.*)\)\?$/, '$1'));
     if (this.isObjectRef(a) && this.isObjectRef(b) && !fnType(lt) && !fnType(rt)) return `${this.expr(a)} ${negate ? '!==' : '==='} ${this.expr(b)}`;
+    // An adaptation (`JSAdapted`) is its original either way round, which `==` on the original does not see.
+    if (fnType(lt) || fnType(rt)) return `${negate ? '!' : ''}jsStrictEquals(${this.expr(a)}, ${this.expr(b)})`;
     return `${this.expr(a)} ${negate ? '!=' : '=='} ${this.expr(b)}`;
   }
 
