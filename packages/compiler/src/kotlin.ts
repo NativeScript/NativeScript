@@ -9663,7 +9663,12 @@ export class Translator implements AsyncTranslator {
     const props = contextual ? this.checker.getNonNullableType(contextual).getProperties() : [];
     if (!props.length) return null;
     // A literal is made as its contextual type already; a copy would lose the keys it notes.
-    if (ts.isObjectLiteralExpression(ts.skipOuterExpressions(e)) && this.type(this.checker.getNonNullableType(contextual!)).replace(/\?$/, '') === to) return null;
+    if (ts.isObjectLiteralExpression(ts.skipOuterExpressions(e))) {
+      // Naming the contextual type registers its shape, which only a literal made as it may emit.
+      const known = new Set(this.shapes.keys());
+      if (this.type(this.checker.getNonNullableType(contextual!)).replace(/\?$/, '') === to) return this.expr(e);
+      for (const k of [...this.shapes.keys()]) if (!known.has(k)) this.shapes.delete(k);
+    }
     const fields = props.map((p) => `${ident(p.name)} = __s.${ident(p.name)}`).join(', ');
     const notesNulls = (n: string) => [...this.shapes.values()].some((s) => s.name === n && !s.fields.some((f) => f.symbol || f.accessor) && s.fields.some((f) => f.type.endsWith('?') && !isFunctionType(f.type)));
     const nulls = notesNulls(from) && notesNulls(to) ? '.also { it.jsNulls = __s.jsNulls?.toMutableSet() }' : '';
