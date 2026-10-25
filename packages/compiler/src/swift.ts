@@ -91,6 +91,11 @@ function isCompoundAssignment(op: ts.SyntaxKind): boolean {
   return op >= ts.SyntaxKind.FirstCompoundAssignment && op <= ts.SyntaxKind.LastCompoundAssignment;
 }
 
+/** A method angular.ts adds to a component for its template: a binding's value (`$b3`) or a handler (`$e4`). */
+function isTemplateMethod(m: ts.Node): boolean {
+  return ts.isMethodDeclaration(m) && /^\$[be]\d+$/.test(m.name.getText());
+}
+
 function isNullish(e: ts.Expression): boolean {
   while (ts.isParenthesizedExpression(e)) e = e.expression;
   return e.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(e) && e.text === 'undefined') || ts.isVoidExpression(e);
@@ -3857,7 +3862,9 @@ ${members.join('\n')}
   private mayReturnUndefined(fn: ts.SignatureDeclaration): boolean {
     if (fn.getSourceFile().isDeclarationFile) return false;
     // A non-strict app's function returning null (`return null` from a `Color` helper): optional too.
-    if (!this.lenient) return (this.lenientApp && !!fn.body && (ts.isFunctionDeclaration(fn) || this.unfamiliedMethod(fn)) && this.returnsUndefined(fn as ts.FunctionDeclaration | ts.MethodDeclaration)) || (!this.library && this.looseSlots.has(fn));
+    // An async function or a generator gives its promise or iterator whatever its body returns; a template's binding
+    // method gives the template's codegen, which takes the declared type.
+    if (!this.lenient) return (this.lenientApp && !!fn.body && (ts.isFunctionDeclaration(fn) || (this.unfamiliedMethod(fn) && !isTemplateMethod(fn))) && !isAsync(fn) && !(fn as ts.FunctionDeclaration | ts.MethodDeclaration).asteriskToken && this.returnsUndefined(fn as ts.FunctionDeclaration | ts.MethodDeclaration)) || (!this.library && this.looseSlots.has(fn));
     if (ts.isMethodDeclaration(fn) && !isStatic(fn) && this.declaresNullableReturn(fn)) return true;
     // A function or getter declared `string | null`: a string, number or boolean it gives may be undefined.
     if ((ts.isGetAccessorDeclaration(fn) || ts.isFunctionDeclaration(fn) || (ts.isMethodDeclaration(fn) && isStatic(fn))) && fn.type && ts.isUnionTypeNode(fn.type) && fn.type.types.some((x) => x.kind === ts.SyntaxKind.UndefinedKeyword || (ts.isLiteralTypeNode(x) && x.literal.kind === ts.SyntaxKind.NullKeyword))) {
@@ -4882,7 +4889,7 @@ ${members.join('\n')}
       if (ts.isMethodDeclaration(m)) {
         // An overload's signature: Swift's one method is the implementation's.
         if (!m.body) continue;
-        this.templateParams = /^\$[be]\d+$/.test(m.name.getText());
+        this.templateParams = isTemplateMethod(m);
         try { lines.push('    ' + this.func(m, ident((m.name as ts.Identifier).text), isStatic(m) ? 'static ' : '')); } finally { this.templateParams = false; }
         continue;
       }

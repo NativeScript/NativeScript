@@ -873,6 +873,33 @@ export class People {
   }
 })();
 
+// ---- A non-strict app's signal made with null, read by a template's binding ----
+(() => {
+  const dir = mkdtempSync(join(tmpdir(), 'ns-release-checks-null-signal-'));
+  try {
+    const file = join(dir, 'person.component.ts');
+    writeFileSync(file, `import { Component, signal } from '@angular/core';
+class Person { name = 'Ada'; }
+@Component({ selector: 'PersonView', template: '@if (person(); as person) { <Label [bindingContext]="person"></Label> }' })
+export class PersonView {
+  readonly person = signal<Person>(null);
+  current(): Person { return this.person(); }
+}
+`);
+    const ir = angularComponent(file, readFileSync(file, 'utf8'), new Map())!;
+    const { checker, program, files } = createProgram([file], new Map([[file, ir.source]]), 'ios', modulesDir, undefined, [], {}, { strict: false, useUnknownInCatchVariables: false });
+    const sw = new SwiftTranslator(checker, new Map([['PersonView', { props: ir.props, optional: ir.optional }]]), files, { lenientApp: true });
+    translateModules(sw, program, [file]);
+    const cls = program.getSourceFile(file)!.statements.filter(ts.isClassDeclaration).find((c) => c.name?.text === 'PersonView')!;
+    const methods = cls.members.filter(ts.isMethodDeclaration);
+    const binding = methods.find((m) => /^\$b\d+$/.test(m.name.getText()) && /return \(\(this\.person\(\)\)\);/.test(m.getText()));
+    const current = methods.find((m) => m.name.getText() === 'current')!;
+    check(!!binding && sw.returnTypeOf(binding) === 'Person' && sw.returnTypeOf(current) === 'Person?', `a template binding reading a non-strict app's signal made with null gives the type the template's codegen takes, where the app's own method gives an optional (Swift: ${binding ? sw.returnTypeOf(binding) : 'no binding'}, ${sw.returnTypeOf(current)})`);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+})();
+
 // ---- Top-level names the kit declares too ----
 (() => {
   // ui-chart's `Utils` namespace in the app's one package would hide kit-android's `Utils` from every file.
