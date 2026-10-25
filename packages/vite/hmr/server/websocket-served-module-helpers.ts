@@ -167,8 +167,26 @@ export function collectTopLevelImportRecords(code: string): TopLevelImportRecord
 	}
 }
 
+function collectTopLevelModuleRequests(code: string): Array<{ start: number; end: number; text: string }> {
+	if (!code || typeof code !== 'string' || !/\b(?:import|export)\b/.test(code)) {
+		return [];
+	}
+
+	try {
+		const body = babelParse(code, { sourceType: 'module', plugins: MODULE_IMPORT_ANALYSIS_PLUGINS }).program.body;
+		return body
+			.filter((node) => t.isImportDeclaration(node) || t.isExportAllDeclaration(node) || (t.isExportNamedDeclaration(node) && !!node.source))
+			.filter((node) => typeof node.start === 'number' && typeof node.end === 'number')
+			.map((node) => ({ start: node.start!, end: node.end!, text: code.slice(node.start!, node.end!) }));
+	} catch {
+		return [];
+	}
+}
+
+/** Hoists top-level imports and `export ... from` declarations, keeping their order. */
 export function hoistTopLevelStaticImports(code: string): string {
-	const imports = collectTopLevelImportRecords(code);
+	// Re-exports move too: ESM evaluates every module request in source order.
+	const imports = collectTopLevelModuleRequests(code);
 	if (!imports.length) {
 		return code;
 	}

@@ -218,7 +218,19 @@ function rewriteWorkerReExportSpecifiers(code: string): string {
 	return code;
 }
 
-function stripTopLevelImportRecords(code: string, records: TopLevelImportRecord[]): string {
+function collectTopLevelReExportDeclarations(code: string): Array<{ start: number; end: number; text: string }> {
+	try {
+		const body = babelParse(code, { sourceType: 'module', plugins: [...MODULE_IMPORT_ANALYSIS_PLUGINS] }).program.body;
+		return body
+			.filter((node) => node.type === 'ExportAllDeclaration' || (node.type === 'ExportNamedDeclaration' && !!node.source))
+			.filter((node) => typeof node.start === 'number' && typeof node.end === 'number')
+			.map((node) => ({ start: node.start!, end: node.end!, text: code.slice(node.start!, node.end!).trim() }));
+	} catch {
+		return [];
+	}
+}
+
+function stripTopLevelImportRecords(code: string, records: Array<{ start: number; end: number }>): string {
 	let stripped = code;
 	for (const record of [...records].sort((left, right) => right.start - left.start)) {
 		stripped = stripped.slice(0, record.start) + stripped.slice(record.end);
@@ -237,7 +249,7 @@ export function ensureNativeScriptModuleBindings(code: string, options?: EnsureN
 		return code;
 	}
 
-	const preservedImports: string[] = [];
+	const preservedImports: Array<{ start: number; text: string }> = [];
 	const modules = new Map<string, NativeScriptImportBinding>();
 
 	const getModuleBinding = (canonical: string) => {
@@ -278,8 +290,9 @@ export function ensureNativeScriptModuleBindings(code: string, options?: EnsureN
 		if (!original) {
 			continue;
 		}
+		const preserve = (text: string) => preservedImports.push({ start: record.start, text });
 		if (record.isTypeOnly) {
-			preservedImports.push(original);
+			preserve(original);
 			continue;
 		}
 
@@ -287,18 +300,18 @@ export function ensureNativeScriptModuleBindings(code: string, options?: EnsureN
 		const specifier = rawSpec.replace(PAT.QUERY_PATTERN, '');
 		const workerSpecifier = options?.vendorImportsAsHttp ? getWorkerNodeModulesSpecifier(specifier) : null;
 		if (workerSpecifier) {
-			preservedImports.push(rewritePreservedImportSpecifier(original, rawSpec, workerSpecifier));
+			preserve(rewritePreservedImportSpecifier(original, rawSpec, workerSpecifier));
 			continue;
 		}
 		const preservedSpecifier = getPreservedImportSpecifier(specifier, options);
 
 		if (!record.clause) {
 			if (preservedSpecifier) {
-				preservedImports.push(rewritePreservedImportSpecifier(original, rawSpec, preservedSpecifier));
+				preserve(rewritePreservedImportSpecifier(original, rawSpec, preservedSpecifier));
 				continue;
 			}
 			if (isEsmFrameworkPackageSpecifier(specifier)) {
-				preservedImports.push(original);
+				preserve(original);
 				continue;
 			}
 			const runtimePluginBareSpecifier = resolveInternalRuntimePluginBareSpecifier(specifier, getProjectRootPath());
@@ -314,18 +327,18 @@ export function ensureNativeScriptModuleBindings(code: string, options?: EnsureN
 			// ("does not provide an export named ..."). When vendorImportsAsHttp
 			// is set (worker serve), fall through to the HTTP rewrite below.
 			if (options?.preserveNonPluginVendorImports && !runtimePluginSpecifier && !options?.vendorImportsAsHttp) {
-				preservedImports.push(original);
+				preserve(original);
 				continue;
 			}
 			if (!canonical && isLikelyNativeScriptPluginSpecifier(specifier, getProjectRootPath()) && !isUnvendoredPackage(specifier)) {
 				canonical = specifier;
 			}
 			if (canonical && /^@nativescript\/core(\b|\/)/i.test(canonical)) {
-				preservedImports.push(original);
+				preserve(original);
 				continue;
 			}
 			if (!canonical) {
-				preservedImports.push(original);
+				preserve(original);
 				continue;
 			}
 			if (options?.vendorImportsAsHttp) {
@@ -343,7 +356,7 @@ export function ensureNativeScriptModuleBindings(code: string, options?: EnsureN
 				// both drops subpath-only exports ("does not provide an export
 				// named 'TableName'") and manufactures import cycles through
 				// the barrel (lodash-es `add.js` ↔ root → TDZ fatal).
-				preservedImports.push(rewritePreservedImportSpecifier(original, rawSpec, `/ns/m/node_modules/${normalizeNodeModulesSpecifier(specifier) || (/^[^./]/.test(specifier) ? specifier : canonical)}?ns_worker=1`));
+				preserve(rewritePreservedImportSpecifier(original, rawSpec, `/ns/m/node_modules/${normalizeNodeModulesSpecifier(specifier) || (/^[^./]/.test(specifier) ? specifier : canonical)}?ns_worker=1`));
 				continue;
 			}
 			const binding = getModuleBinding(canonical);
@@ -352,11 +365,11 @@ export function ensureNativeScriptModuleBindings(code: string, options?: EnsureN
 		}
 
 		if (preservedSpecifier) {
-			preservedImports.push(rewritePreservedImportSpecifier(original, rawSpec, preservedSpecifier));
+			preserve(rewritePreservedImportSpecifier(original, rawSpec, preservedSpecifier));
 			continue;
 		}
 		if (isEsmFrameworkPackageSpecifier(specifier)) {
-			preservedImports.push(original);
+			preserve(original);
 			continue;
 		}
 		const runtimePluginBareSpecifier = resolveInternalRuntimePluginBareSpecifier(specifier, getProjectRootPath());
@@ -369,24 +382,24 @@ export function ensureNativeScriptModuleBindings(code: string, options?: EnsureN
 		// realm's import map; in a worker serve (vendorImportsAsHttp) it must not
 		// win over the /ns/m HTTP rewrite.
 		if (options?.preserveNonPluginVendorImports && !runtimePluginSpecifier && !options?.vendorImportsAsHttp) {
-			preservedImports.push(original);
+			preserve(original);
 			continue;
 		}
 		if (!canonical && isLikelyNativeScriptPluginSpecifier(specifier, getProjectRootPath()) && !isUnvendoredPackage(specifier)) {
 			canonical = specifier;
 		}
 		if (canonical && /^@nativescript\/core(\b|\/)/i.test(canonical)) {
-			preservedImports.push(original);
+			preserve(original);
 			continue;
 		}
 		if (!canonical) {
-			preservedImports.push(original);
+			preserve(original);
 			continue;
 		}
 		if (options?.vendorImportsAsHttp) {
 			// See the side-effect branch above for the `ns_worker=1` rationale
 			// and why the URL must keep the importer's concrete subpath.
-			preservedImports.push(rewritePreservedImportSpecifier(original, rawSpec, `/ns/m/node_modules/${normalizeNodeModulesSpecifier(specifier) || (/^[^./]/.test(specifier) ? specifier : canonical)}?ns_worker=1`));
+			preserve(rewritePreservedImportSpecifier(original, rawSpec, `/ns/m/node_modules/${normalizeNodeModulesSpecifier(specifier) || (/^[^./]/.test(specifier) ? specifier : canonical)}?ns_worker=1`));
 			continue;
 		}
 
@@ -415,14 +428,21 @@ export function ensureNativeScriptModuleBindings(code: string, options?: EnsureN
 		binding.default.add(trimmed);
 	}
 
-	code = stripTopLevelImportRecords(code, importRecords);
+	// Re-exports move with the imports: ESM evaluates module requests in source order.
+	const reExports = collectTopLevelReExportDeclarations(code);
+	for (const reExport of reExports) {
+		preservedImports.push({ start: reExport.start, text: reExport.text });
+	}
+	code = stripTopLevelImportRecords(code, [...importRecords, ...reExports]);
+	const preserved = preservedImports.length
+		? preservedImports
+				.sort((left, right) => left.start - right.start)
+				.map((entry) => entry.text)
+				.join('\n') + '\n'
+		: '';
 
 	if (!modules.size) {
-		if (preservedImports.length) {
-			const preserved = preservedImports.join('\n') + '\n';
-			return preserved + code;
-		}
-		return code;
+		return preserved + code;
 	}
 
 	let injection = 'var __nsVendorRegistry = (globalThis.__nsVendorRegistry ||= new Map());\n';
@@ -470,7 +490,6 @@ export function ensureNativeScriptModuleBindings(code: string, options?: EnsureN
 	}
 
 	injection += '\n';
-	const preserved = preservedImports.length ? preservedImports.join('\n') + '\n' : '';
 	return preserved + injection + code;
 }
 

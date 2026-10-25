@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { classifyServedModule, classifyServedRequest, hasEsmDefaultExport } from './websocket-served-module-helpers.js';
+import { classifyServedModule, classifyServedRequest, hasEsmDefaultExport, hoistTopLevelStaticImports } from './websocket-served-module-helpers.js';
 
 describe('classifyServedRequest', () => {
 	it('treats a package request as library code when its resolved id is a symlink target outside node_modules', () => {
@@ -42,5 +42,25 @@ describe('hasEsmDefaultExport', () => {
 
 	it('returns null for unparseable code', () => {
 		expect(hasEsmDefaultExport('export default (;')).toBeNull();
+	});
+});
+
+describe('hoistTopLevelStaticImports', () => {
+	const hoist = (...code: string[]) =>
+		hoistTopLevelStaticImports(code.join('\n'))
+			.split('\n')
+			.filter((line) => line.trim());
+
+	it('keeps a side-effect import after the re-exports it follows', () => {
+		// Hoisting only the import evaluated ./web before ./scroll (TDZ on `Scroll`).
+		expect(hoist('const __DEV__ = true;', "export { Scroll } from './scroll';", "export * from './web';", "import './html';", 'export function f() {}')).toEqual(["export { Scroll } from './scroll';", "export * from './web';", "import './html';", 'const __DEV__ = true;', 'export function f() {}']);
+	});
+
+	it('hoists imports above preceding statements', () => {
+		expect(hoist('const a = 1;', "import { b } from './b';", 'console.log(a, b);')).toEqual(["import { b } from './b';", 'const a = 1;', 'console.log(a, b);']);
+	});
+
+	it('leaves local export declarations in place', () => {
+		expect(hoist('const x = 1;', 'export { x };', "import './a';")).toEqual(["import './a';", 'const x = 1;', 'export { x };']);
 	});
 });
