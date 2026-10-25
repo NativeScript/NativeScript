@@ -3347,7 +3347,7 @@ ${members.join('\n')}
     sets.always = always;
     for (const m of written) {
       const t = this.typeOf(m.name);
-      if (t.endsWith('?') && !isFunctionType(t.replace(/^\((.*)\)\?$/, '$1'))) sets.unset.add(m.name.getText());
+      if (t.endsWith('?')) sets.unset.add(m.name.getText());
     }
     for (const m of cls.members) if (ts.isPropertyDeclaration(m) && ts.isIdentifier(m.name) && this.deletedFields().has(m) && this.typeOf(m.name).endsWith('?')) sets.deleted.add(m.name.text);
     return sets;
@@ -10576,7 +10576,11 @@ ${members.join('\n')}
     // `callback?.(x)` of a parameter declared present: Swift has it as non-optional, and the call is a plain one.
     const param = ts.isIdentifier(callee) ? this.resolve(callee)?.valueDeclaration : undefined;
     const presentParam = !!param && ts.isParameter(param) && !param.questionToken && !param.initializer && !this.mayBeNull(param) && !nullableTypeNode(param.type) && isFunctionType(this.typeOf(callee));
-    if (e.questionDotToken && !presentParam && !this.core.isKitMethod(callee) && !declaredMethod && !declaredFunction(callee)) return `${this.expr(callee)}?(${this.args(e).join(', ')})`;
+    if (e.questionDotToken && !presentParam && !this.core.isKitMethod(callee) && !declaredMethod && !declaredFunction(callee)) {
+      // A field narrowed to a function already reads unwrapped.
+      const fn = this.expr(callee);
+      return fn.endsWith('!') ? `${fn}(${this.args(e).join(', ')})` : `${fn}?(${this.args(e).join(', ')})`;
+    }
     if (ts.isIdentifier(callee)) return this.globalCall(callee, e);
     const nsMember = ts.isPropertyAccessExpression(callee) ? this.namespaceMember(callee) : null;
     if (nsMember) {
@@ -12976,6 +12980,13 @@ ${members.join('\n')}
     if (/^JS(Iterator|AsyncIterator)</.test(name)) return this.scriptIterator(e, name);
     // A spread of an open type (`{ ...state, x }` with `state: T`) carries keys no shape declares; the shape keeps them as extras.
     if (e.properties.some((p) => ts.isSpreadAssignment(p) && openSpreadType(this.checker.getTypeAtLocation(p.expression)))) return this.fromAnyCode(this.dynamicObject(e), name);
+    // So does an untyped spread, with keys holding undefined or null besides, in its order.
+    if (!this.lenient && !this.library && !this.pluginFiles.has(e.getSourceFile().fileName) && e.properties.some((p) => ts.isSpreadAssignment(p) && this.isAny(p.expression))) {
+      // Members reading `this` would read the untyped object, not the one made of it.
+      const own = e.properties.find((p) => ts.isMethodDeclaration(p) || ts.isAccessor(p) || (ts.isPropertyAssignment(p) && ts.isFunctionExpression(p.initializer) && thisNodes(p.initializer).length > 0));
+      if (own) throw this.error(own, 'a method beside an untyped spread in a typed object literal');
+      return this.fromAnyCode(this.dynamicObject(e), name);
+    }
     let decl = this.checker.getNonNullableType(type).getSymbol()?.declarations?.[0];
     // A literal that conforms to an app interface it is not declared as.
     const conforming = this.appInterfaces?.find((i) => i.name === name);
@@ -13000,7 +13011,7 @@ ${members.join('\n')}
     const spreadTemps: string[] = [];
     // An optional field given undefined is a key all the same, as one given null is: the shape notes which (`jsUnset`,
     // `jsNulls`), from the value's type, or as it runs (`JSLiteralKeys`) where only the run tells.
-    const notesKeys = !this.lenient && !this.library && !this.pluginFiles.has(e.getSourceFile().fileName) && target === name && !order.some((f) => (f as ShapeField).accessor || (f as ShapeField).symbol);
+    const notesKeys = !this.lenient && !this.library && !this.pluginFiles.has(e.getSourceFile().fileName) && (target === name || (target === `${name}Object` && this.protocols.has(name) && !isCoreDeclaration(decl!))) && !order.some((f) => (f as ShapeField).accessor || (f as ShapeField).symbol);
     const keyed = new Set(notesKeys ? order.filter((f) => f.type.endsWith('?') && /[?!]$/.test(this.shapeHeld(f)) && !hasTopLevelArrow(this.shapeHeld(f))).map((f) => f.name) : []);
     const unsetKeys: string[] = [], keyNotes: string[] = [];
     let keysVar: string | null = null;

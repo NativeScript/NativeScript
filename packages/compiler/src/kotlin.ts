@@ -2034,7 +2034,7 @@ export class Translator implements AsyncTranslator {
     const optional = fields.filter((f) => f.type.endsWith('?') && !isFunctionType(f.type));
     // An optional member set after the object is made becomes its last key, as a property JavaScript adds does.
     const symbolic = allFields.some((f) => f.symbol);
-    const tracked = new Set(symbolic ? [] : optional.filter((f) => !overrides?.has(f.name) && !jvmField(f)).map((f) => f.name));
+    const tracked = new Set(symbolic ? [] : optional.filter((f) => (!overrides?.has(f.name) || !this.library) && !jvmField(f)).map((f) => f.name));
     const modifiers = (f: ShapeField) => (overrides?.has(f.name) ? 'override ' : jvmField(f) ? '@JvmField ' : '');
     // A literal stores what it is given, undefined included (`{ …, view } as ItemEventData` before the view exists). Kotlin
     // checks a non-null constructor parameter at the call, so such a field is set from a nullable one inside the class.
@@ -2056,7 +2056,7 @@ export class Translator implements AsyncTranslator {
       lines.push('    private var jsOrder: List<String>? = jsOrder');
       for (const f of fields) {
         if (!tracked.has(f.name)) continue;
-        lines.push(`    var ${ident(f.name)}: ${f.type} = ${ident(f.name)}`, `        set(value) { field = jsKeySet(field, value, ${kotlinString(f.name)})${writes(f)} }`);
+        lines.push(`    ${modifiers(f)}var ${ident(f.name)}: ${f.type} = ${ident(f.name)}`, `        set(value) { field = jsKeySet(field, value, ${kotlinString(f.name)})${writes(f)} }`);
       }
       lines.push(`    private fun <T> jsKeySet(old: T?, value: T?, key: String): T? = value.also {`,
         '        val was = old != null || jsNulls?.contains(key) == true || jsUnset?.contains(key) == true',
@@ -9439,6 +9439,13 @@ export class Translator implements AsyncTranslator {
     if (/^JS(Iterator|AsyncIterator)</.test(name)) return this.scriptIterator(e, name);
     // A spread of an open type (`{ ...state, x }` with `state: T`) carries keys no shape declares; the shape keeps them as extras.
     if (e.properties.some((p) => ts.isSpreadAssignment(p) && openSpreadType(this.checker.getTypeAtLocation(p.expression)))) return this.fromAnyCode(this.dynamicObject(e), name);
+    // So does an untyped spread, with keys holding undefined or null besides, in its order.
+    if (!this.lenient && !this.library && !this.pluginFiles.has(e.getSourceFile().fileName) && e.properties.some((p) => ts.isSpreadAssignment(p) && this.isAny(p.expression))) {
+      // Members reading `this` would read the untyped object, not the one made of it.
+      const own = e.properties.find((p) => ts.isMethodDeclaration(p) || ts.isAccessor(p) || (ts.isPropertyAssignment(p) && ts.isFunctionExpression(p.initializer) && thisNodes(p.initializer).length > 0));
+      if (own) throw this.error(own, 'a method beside an untyped spread in a typed object literal');
+      return this.fromAnyCode(this.dynamicObject(e), name);
+    }
     let decl = this.checker.getNonNullableType(type).getSymbol()?.declarations?.[0];
     // A literal that conforms to an app interface it is not declared as.
     const conforming = this.appInterfaces?.find((i) => i.name === name);
@@ -9468,8 +9475,9 @@ export class Translator implements AsyncTranslator {
     const self = e.properties.some((p) => (ts.isMethodDeclaration(p) && thisNodes(p).length) || thisFunction(p)) ? this.fresh('__self') : null;
     const spreadTemps: string[] = [];
     // A field the literal sets to null, which the shape holds as Kotlin's null, is noted as null (JSON, keys, untyped reads).
-    const nullFields = (shape?.fields ?? (decl && (ts.isInterfaceDeclaration(decl) || ts.isTypeLiteralNode(decl)) && !this.protocols.has(name) ? order : null)) as ShapeField[] | null;
-    const tracksNulls = !!nullFields && target === name && !nullFields.some((f) => f.symbol || f.accessor);
+    const protocolObject = target === `${name}Object` && !this.library;
+    const nullFields = (shape?.fields ?? (decl && (ts.isInterfaceDeclaration(decl) || ts.isTypeLiteralNode(decl)) && (!this.protocols.has(name) || protocolObject) ? order : null)) as ShapeField[] | null;
+    const tracksNulls = !!nullFields && (target === name || protocolObject) && !nullFields.some((f) => f.symbol || f.accessor);
     // An optional field given undefined is a key all the same, as one given null is: the shape notes which (`jsUnset`,
     // `jsNulls`), from the value's type, or as it runs (`JSLiteralKeys`) where only the run tells.
     const notesKeys = tracksNulls && !this.lenient && !this.library && !this.pluginFiles.has(e.getSourceFile().fileName);
@@ -9654,6 +9662,8 @@ export class Translator implements AsyncTranslator {
     const contextual = this.checker.getContextualType(e);
     const props = contextual ? this.checker.getNonNullableType(contextual).getProperties() : [];
     if (!props.length) return null;
+    // A literal is made as its contextual type already; a copy would lose the keys it notes.
+    if (ts.isObjectLiteralExpression(ts.skipOuterExpressions(e)) && this.type(this.checker.getNonNullableType(contextual!)).replace(/\?$/, '') === to) return null;
     const fields = props.map((p) => `${ident(p.name)} = __s.${ident(p.name)}`).join(', ');
     const notesNulls = (n: string) => [...this.shapes.values()].some((s) => s.name === n && !s.fields.some((f) => f.symbol || f.accessor) && s.fields.some((f) => f.type.endsWith('?') && !isFunctionType(f.type)));
     const nulls = notesNulls(from) && notesNulls(to) ? '.also { it.jsNulls = __s.jsNulls?.toMutableSet() }' : '';
@@ -9798,7 +9808,7 @@ export class Translator implements AsyncTranslator {
     sets.always = always;
     for (const m of written) {
       const t = this.typeOf(m.name);
-      if (isNullable(t) && !isFunctionType(t.replace(/^\((.*)\)\?$/, '$1'))) sets.unset.add(m.name.getText());
+      if (isNullable(t)) sets.unset.add(m.name.getText());
     }
     return sets;
   }

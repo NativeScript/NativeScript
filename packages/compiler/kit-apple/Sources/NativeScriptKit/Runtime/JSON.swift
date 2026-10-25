@@ -674,7 +674,8 @@ private struct JSJSONWriter {
 
 /// The object a value `jsIsClassInstance` holds, without the bridging `as AnyObject` would consider.
 @inline(__always) private func jsObjectReference(_ value: Any) -> AnyObject {
-    func reference<T>(_ object: T) -> AnyObject { unsafeBitCast(object, to: AnyObject.self) }
+    // Opening can give a class-bound existential (an array of a protocol's values), which is wider than a reference.
+    func reference<T>(_ object: T) -> AnyObject { MemoryLayout<T>.size == MemoryLayout<AnyObject>.size ? unsafeBitCast(object, to: AnyObject.self) : object as AnyObject }
     return _openExistential(value, do: reference)
 }
 
