@@ -1158,3 +1158,92 @@ export function regexpMayLeaveGroupUnset(e: ts.Expression, checker: ts.TypeCheck
   const t = checker.getTypeAtLocation(e);
   return !(t.flags & ts.TypeFlags.StringLike) && !(t.isUnion() && t.types.every((p) => p.flags & (ts.TypeFlags.StringLike | ts.TypeFlags.Null | ts.TypeFlags.Undefined)));
 }
+
+export interface UnsetGroupTyping {
+  /**
+   * A string array a group that took no part in a match may have put undefined in, though TypeScript types it `string[]`:
+   * a split over a pattern that can leave a group unset, a match of one copied (spread, `Array.from`, slice, filter…),
+   * and a variable initialized with one.
+   */
+  groups(n: ts.Node): boolean;
+  /** A match whose groups may include one that took no part: from a pattern that can leave one unset, or of unknown origin. */
+  match(e: ts.Expression): boolean;
+  /** An element-visiting callback's element parameter (`m.map((v) => …)`), or a loop's variable, over such strings. */
+  element(n: ts.Node): boolean;
+  /** A map callback over such elements that may give one back (`(v) => v`). */
+  returnsElement(f: ts.ArrowFunction | ts.FunctionExpression): boolean;
+}
+
+/** `isMatch`: whether the backend holds a value as a match (RegExpMatchArray, RegExpExecArray). */
+export function unsetGroupTyping(checker: ts.TypeChecker, resolve: (n: ts.Node) => ts.Symbol | undefined, isMatch: (e: ts.Expression) => boolean): UnsetGroupTyping {
+  const memo = new Map<ts.Node, boolean>();
+  const outer = ts.OuterExpressionKinds.Parentheses | ts.OuterExpressionKinds.NonNullAssertions;
+  const groups = (n: ts.Node): boolean => {
+    let found = memo.get(n);
+    if (found !== undefined) return found;
+    memo.set(n, false);
+    found = findGroups(n);
+    memo.set(n, found);
+    return found;
+  };
+  const copied = (x: ts.Expression) => groups(x) || match(x);
+  const findGroups = (n: ts.Node): boolean => {
+    if (ts.isIdentifier(n) && n.parent && ts.isVariableDeclaration(n.parent) && n.parent.name === n) n = n.parent;
+    if (ts.isIdentifier(n)) {
+      const d = resolve(n)?.valueDeclaration;
+      return !!d && ts.isVariableDeclaration(d) && groups(d);
+    }
+    if (ts.isVariableDeclaration(n)) return ts.isIdentifier(n.name) && !!n.initializer && !ts.isForInOrOfStatement(n.parent.parent) && copied(n.initializer);
+    if (!ts.isExpression(n)) return false;
+    const e = ts.skipOuterExpressions(n, outer);
+    if (ts.isArrayLiteralExpression(e)) return e.elements.some((x) => ts.isSpreadElement(x) && copied(x.expression));
+    if (!ts.isCallExpression(e) || !ts.isPropertyAccessExpression(e.expression)) return false;
+    const name = e.expression.name.text, receiver = e.expression.expression;
+    if (name === 'split') return !!e.arguments[0] && !!(checker.getNonNullableType(checker.getTypeAtLocation(receiver)).flags & ts.TypeFlags.StringLike) && regexpMayLeaveGroupUnset(e.arguments[0], checker);
+    if (name === 'from' && ts.isIdentifier(receiver) && receiver.text === 'Array') return e.arguments.length === 1 && copied(e.arguments[0]);
+    if (['slice', 'filter', 'concat', 'reverse', 'sort', 'splice', 'toReversed', 'toSorted', 'toSpliced'].includes(name)) return copied(receiver);
+    if (name === 'map') {
+      const f = e.arguments[0] && ts.skipOuterExpressions(e.arguments[0]);
+      return !!f && (ts.isArrowFunction(f) || ts.isFunctionExpression(f)) && returnsElement(f);
+    }
+    return false;
+  };
+  const match = (e: ts.Expression): boolean => {
+    if (!isMatch(e)) return false;
+    let x = ts.skipOuterExpressions(e, outer);
+    if (ts.isIdentifier(x)) {
+      const d = resolve(x)?.valueDeclaration;
+      if (d && ts.isVariableDeclaration(d) && ts.isIdentifier(d.name) && ts.isForOfStatement(d.parent.parent) && d.parent.parent.initializer === d.parent) x = d.parent.parent.expression;
+      else if (d && ts.isVariableDeclaration(d) && ts.isIdentifier(d.name) && d.initializer && ts.getCombinedNodeFlags(d) & ts.NodeFlags.Const) x = d.initializer;
+      x = ts.skipOuterExpressions(x, outer);
+    }
+    if (!ts.isCallExpression(x) || !ts.isPropertyAccessExpression(x.expression)) return true;
+    const name = x.expression.name.text;
+    const re = name === 'exec' ? x.expression.expression : ['match', 'matchAll'].includes(name) ? x.arguments[0] : undefined;
+    if (!re) return true;
+    // A global match lists whole matches only.
+    if (name === 'match' && literalFlags(re, checker)?.includes('g')) return false;
+    return regexpMayLeaveGroupUnset(re, checker);
+  };
+  const elementCallback = (f: ts.Node): boolean => {
+    if (!(ts.isArrowFunction(f) || ts.isFunctionExpression(f)) || !f.parameters.length) return false;
+    const call = ts.walkUpParenthesizedExpressions(f.parent);
+    if (!ts.isCallExpression(call) || call.arguments[0] !== ts.walkUpParenthesizedExpressions(f) || !ts.isPropertyAccessExpression(call.expression)) return false;
+    if (!['map', 'filter', 'forEach', 'some', 'every', 'find', 'findIndex', 'findLast', 'findLastIndex', 'flatMap'].includes(call.expression.name.text)) return false;
+    return copied(call.expression.expression);
+  };
+  const element = (n: ts.Node): boolean => {
+    const p = ts.isParameter(n) || ts.isVariableDeclaration(n) ? n : ts.isIdentifier(n) ? ((ts.isParameter(n.parent) || ts.isVariableDeclaration(n.parent)) && n.parent.name === n ? n.parent : resolve(n)?.valueDeclaration) : undefined;
+    if (p && ts.isVariableDeclaration(p) && ts.isIdentifier(p.name) && ts.isForOfStatement(p.parent.parent) && p.parent.parent.initializer === p.parent) return copied(p.parent.parent.expression);
+    return !!p && ts.isParameter(p) && p.parent.parameters[0] === p && ts.isIdentifier(p.name) && elementCallback(p.parent);
+  };
+  const returnsElement = (f: ts.ArrowFunction | ts.FunctionExpression): boolean => {
+    if (!elementCallback(f) || !ts.isIdentifier(f.parameters[0].name)) return false;
+    const sym = resolve(f.parameters[0].name);
+    const gives = (x: ts.Expression) => { x = ts.skipOuterExpressions(x); return ts.isIdentifier(x) && resolve(x) === sym; };
+    if (!ts.isBlock(f.body)) return gives(f.body);
+    const visit = (x: ts.Node): boolean => (ts.isReturnStatement(x) && !!x.expression && gives(x.expression)) || (!ts.isFunctionLike(x) && !!ts.forEachChild(x, visit));
+    return visit(f.body);
+  };
+  return { groups, match, element, returnsElement };
+}

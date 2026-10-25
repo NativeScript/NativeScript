@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import { KIT_APPLE_SOURCES } from './paths.ts';
 import { Throws, digitsLiteral, isArrayLengthLiteral, isArrayLengthWrite, isAsync, isStatic } from './throws.ts';
 import { assignedMembers } from './sharing.ts';
-import { assignedValues, heldDowncasts, openSpreadType, initializedNull, intersectionAliasMembers, intlConstructor, literalPattern, literalFlags, patternGroups, regexpMayLeaveGroupUnset, nullSetFields, nullishSlots, type NullishSlots, isRegExpProtocol, isObjectToStringCall, isStringRaw, leadingNeverRead, forwardedSetter, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, uncheckedMatch, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, LooseSlots, originOf, ownSlot, implementedInterfaceDeclarations, slotOf, slotType, definitelyAssignedFields, type TrustScope, classesHeldUntyped, scriptCalledFunction } from './lang.ts';
+import { assignedValues, heldDowncasts, openSpreadType, initializedNull, intersectionAliasMembers, intlConstructor, literalPattern, literalFlags, patternGroups, regexpMayLeaveGroupUnset, nullSetFields, nullishSlots, type NullishSlots, isRegExpProtocol, isObjectToStringCall, isStringRaw, leadingNeverRead, forwardedSetter, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, uncheckedMatch, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, LooseSlots, originOf, ownSlot, implementedInterfaceDeclarations, slotOf, slotType, definitelyAssignedFields, type TrustScope, classesHeldUntyped, scriptCalledFunction, unsetGroupTyping, type UnsetGroupTyping } from './lang.ts';
 import { AsyncLowering, type AsyncCtx, type AsyncSyntax, type AsyncTranslator } from './async.ts';
 import { CoreAPI, isCoreDeclaration, packageOf } from './core.ts';
 import type { KitMember } from './kit-index.ts';
@@ -6513,97 +6513,18 @@ ${members.join('\n')}
     return (this.lenient && this.declaredUndefined(n)) || this.looseDeclaration(n) || this.lenientAppOptional(n) || this.unsetGroupElement(n);
   }
 
-  private unsetGroupMemo = new Map<ts.Node, boolean>();
-  /**
-   * A string array a group that took no part in a match may have put undefined in, though TypeScript types it `string[]`:
-   * a split over a pattern that can leave a group unset, a match of one copied (spread, `Array.from`, slice, filter…),
-   * and a variable initialized with one. Swift holds it `JSArray<String?>`.
-   */
-  private unsetGroups(n: ts.Node): boolean {
-    let found = this.unsetGroupMemo.get(n);
-    if (found !== undefined) return found;
-    this.unsetGroupMemo.set(n, false);
-    found = this.findUnsetGroups(n);
-    this.unsetGroupMemo.set(n, found);
-    return found;
+  private unsetTyping?: UnsetGroupTyping;
+  private get unset(): UnsetGroupTyping {
+    return (this.unsetTyping ??= unsetGroupTyping(this.checker, (n) => this.resolve(n), (e) => this.typeOf(e).replace(/[?!]$/, '') === 'JSMatch'));
   }
-
-  private findUnsetGroups(n: ts.Node): boolean {
-    if (ts.isIdentifier(n) && n.parent && ts.isVariableDeclaration(n.parent) && n.parent.name === n) n = n.parent;
-    if (ts.isIdentifier(n)) {
-      const d = this.resolve(n)?.valueDeclaration;
-      return !!d && ts.isVariableDeclaration(d) && this.unsetGroups(d);
-    }
-    if (ts.isVariableDeclaration(n)) return ts.isIdentifier(n.name) && !!n.initializer && !ts.isForInOrOfStatement(n.parent.parent) && (this.unsetGroups(n.initializer) || this.unsetMatch(n.initializer));
-    if (!ts.isExpression(n)) return false;
-    const e = ts.skipOuterExpressions(n, ts.OuterExpressionKinds.Parentheses | ts.OuterExpressionKinds.NonNullAssertions);
-    const copied = (x: ts.Expression) => this.unsetGroups(x) || this.unsetMatch(x);
-    if (ts.isArrayLiteralExpression(e)) return e.elements.some((x) => ts.isSpreadElement(x) && copied(x.expression));
-    if (!ts.isCallExpression(e) || !ts.isPropertyAccessExpression(e.expression)) return false;
-    const name = e.expression.name.text, receiver = e.expression.expression;
-    if (name === 'split') return !!e.arguments[0] && !!(this.checker.getNonNullableType(this.checker.getTypeAtLocation(receiver)).flags & ts.TypeFlags.StringLike) && regexpMayLeaveGroupUnset(e.arguments[0], this.checker);
-    if (name === 'from' && ts.isIdentifier(receiver) && receiver.text === 'Array') return e.arguments.length === 1 && copied(e.arguments[0]);
-    if (['slice', 'filter', 'concat', 'reverse', 'sort', 'splice', 'toReversed', 'toSorted', 'toSpliced'].includes(name)) return copied(receiver);
-    if (name === 'map') {
-      const f = e.arguments[0] && ts.skipOuterExpressions(e.arguments[0]);
-      return !!f && (ts.isArrowFunction(f) || ts.isFunctionExpression(f)) && this.returnsUnsetElement(f);
-    }
-    return false;
-  }
+  private unsetGroups(n: ts.Node): boolean { return this.unset.groups(n); }
+  private unsetMatch(e: ts.Expression): boolean { return this.unset.match(e); }
+  private unsetGroupElement(n: ts.Node): boolean { return this.unset.element(n); }
+  private returnsUnsetElement(f: ts.ArrowFunction | ts.FunctionExpression): boolean { return this.unset.returnsElement(f); }
 
   /** The elements an array method of a match visits: its strings, unless a group may be unset or the method changes the match. */
   private matchElement(target: ts.Expression, method: string): string {
     return this.unsetMatch(target) || ['push', 'pop', 'shift', 'unshift', 'splice', 'sort', 'reverse', 'fill', 'copyWithin'].includes(method) ? 'String?' : 'String';
-  }
-
-  /** A match whose groups may include one that took no part: from a pattern that can leave one unset, or of unknown origin. */
-  private unsetMatch(e: ts.Expression): boolean {
-    if (this.typeOf(e).replace(/[?!]$/, '') !== 'JSMatch') return false;
-    let x = ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses | ts.OuterExpressionKinds.NonNullAssertions);
-    if (ts.isIdentifier(x)) {
-      const d = this.resolve(x)?.valueDeclaration;
-      if (d && ts.isVariableDeclaration(d) && ts.isIdentifier(d.name) && ts.isForOfStatement(d.parent.parent) && d.parent.parent.initializer === d.parent) x = d.parent.parent.expression;
-      else if (d && ts.isVariableDeclaration(d) && ts.isIdentifier(d.name) && d.initializer && ts.getCombinedNodeFlags(d) & ts.NodeFlags.Const) x = d.initializer;
-      x = ts.skipOuterExpressions(x, ts.OuterExpressionKinds.Parentheses | ts.OuterExpressionKinds.NonNullAssertions);
-    }
-    if (!ts.isCallExpression(x) || !ts.isPropertyAccessExpression(x.expression)) return true;
-    const name = x.expression.name.text;
-    const re = name === 'exec' ? x.expression.expression : ['match', 'matchAll'].includes(name) ? x.arguments[0] : undefined;
-    if (!re) return true;
-    // A global match lists whole matches only.
-    if (name === 'match' && literalFlags(re, this.checker)?.includes('g')) return false;
-    return regexpMayLeaveGroupUnset(re, this.checker);
-  }
-
-  /** An element-visiting callback (`m.map((v) => …)`) of an array or match whose groups may be undefined. */
-  private unsetElementCallback(f: ts.Node): boolean {
-    if (!(ts.isArrowFunction(f) || ts.isFunctionExpression(f)) || !f.parameters.length) return false;
-    const call = ts.walkUpParenthesizedExpressions(f.parent);
-    if (!ts.isCallExpression(call) || call.arguments[0] !== ts.walkUpParenthesizedExpressions(f) || !ts.isPropertyAccessExpression(call.expression)) return false;
-    if (!['map', 'filter', 'forEach', 'some', 'every', 'find', 'findIndex', 'findLast', 'findLastIndex', 'flatMap'].includes(call.expression.name.text)) return false;
-    const receiver = call.expression.expression;
-    return this.unsetGroups(receiver) || this.unsetMatch(receiver);
-  }
-
-  /** Such a callback's element parameter, or a loop's variable over them: held `String?`. */
-  private unsetGroupElement(n: ts.Node): boolean {
-    const p = ts.isParameter(n) || ts.isVariableDeclaration(n) ? n : ts.isIdentifier(n) ? ((ts.isParameter(n.parent) || ts.isVariableDeclaration(n.parent)) && n.parent.name === n ? n.parent : this.resolve(n)?.valueDeclaration) : undefined;
-    // A loop's variable over them (`for (const g of m)`).
-    if (p && ts.isVariableDeclaration(p) && ts.isIdentifier(p.name) && ts.isForOfStatement(p.parent.parent) && p.parent.parent.initializer === p.parent) {
-      const over = p.parent.parent.expression;
-      return this.unsetGroups(over) || this.unsetMatch(over);
-    }
-    return !!p && ts.isParameter(p) && p.parent.parameters[0] === p && ts.isIdentifier(p.name) && this.unsetElementCallback(p.parent);
-  }
-
-  /** A map callback over such elements that may give one back (`(v) => v`): it gives `String?`. */
-  private returnsUnsetElement(f: ts.ArrowFunction | ts.FunctionExpression): boolean {
-    if (!this.unsetElementCallback(f) || !ts.isIdentifier(f.parameters[0].name)) return false;
-    const sym = this.resolve(f.parameters[0].name);
-    const gives = (x: ts.Expression) => { x = ts.skipOuterExpressions(x); return ts.isIdentifier(x) && this.resolve(x) === sym; };
-    if (!ts.isBlock(f.body)) return gives(f.body);
-    const visit = (x: ts.Node): boolean => (ts.isReturnStatement(x) && !!x.expression && gives(x.expression)) || (!ts.isFunctionLike(x) && !!ts.forEachChild(x, visit));
-    return visit(f.body);
   }
 
   /** A non-strict app's optional parameter (`n?: number`), whose type, without strictNullChecks, leaves out the undefined it takes. */
