@@ -5925,8 +5925,8 @@ export class Translator implements AsyncTranslator {
         const unwrap = /^\(.*\)\?$/.test(this.declaredTypeOf(e) ?? '') && !/\)\?$/.test(source) ? '!!' : '';
         const call = `${fn.includes('::') ? `(${fn})` : fn}${unwrap}(${names.slice(0, f.params.length).map((n, k) => this.convert(n, g.params[k], f.params[k])).join(', ')})`;
         const adapter = `{ ${g.params.map((p, k) => `${names[k]}: ${p}`).join(', ')} -> ${call} }`;
-        // Library mode: the function as it is now, equal to its other adaptations (a listener added and later removed).
-        if (this.library && g.params.length <= 4 && !ts.isArrowFunction(e) && !ts.isFunctionExpression(e)) {
+        // The function as it is now, equal to its other adaptations and to itself (a listener added and later removed).
+        if (g.params.length <= 4 && !ts.isArrowFunction(e) && !ts.isFunctionExpression(e)) {
           const held = adapter.replace(`${fn.includes('::') ? `(${fn})` : fn}${unwrap}(`, '__f(');
           const adapt = `jsAdapt${g.params.length}<${[...g.params, g.ret].join(', ')}>(__f) ${held}`;
           if (/\)\?$/.test(source) || unwrap) {
@@ -5953,6 +5953,10 @@ export class Translator implements AsyncTranslator {
       // A function value whose result a void slot ignores.
       const params = functionTypeParts(source)!.params;
       const names = params.map((_, k) => `__a${k}`);
+      if (params.length <= 4 && !ts.isArrowFunction(e) && !ts.isFunctionExpression(e)) {
+        const fn = this.functionValue(e);
+        return `${fn.includes('::') ? `(${fn})` : fn}.let { __f -> jsAdapt${params.length}<${[...params, 'Unit'].join(', ')}>(__f) { ${params.map((p, k) => `${names[k]}: ${p}`).join(', ')} -> __f(${names.join(', ')}) } }`;
+      }
       return `{ ${params.map((p, k) => `${names[k]}: ${p}`).join(', ')} -> ${this.functionValue(e)}(${names.join(', ')}) }`;
     }
     if (target === 'Boolean' && source !== 'Boolean' && source !== 'Nothing') return `jsTruthy(${this.expr(e)})`;
@@ -9294,6 +9298,8 @@ export class Translator implements AsyncTranslator {
     // A function reference (`::fn`) is made where it is read, equal to every other of its function: compared by equality.
     const fnType = (t: string) => isFunctionType(t.replace(/^\((.*)\)\?$/, '$1'));
     if (this.isObjectRef(a) && this.isObjectRef(b) && !fnType(lt) && !fnType(rt)) return `${this.expr(a)} ${negate ? '!==' : '==='} ${this.expr(b)}`;
+    // An adaptation (`JSAdapted`) is its original either way round, which `==` on the original does not see.
+    if (fnType(lt) || fnType(rt)) return `${negate ? '!' : ''}jsStrictEquals(${this.expr(a)}, ${this.expr(b)})`;
     return `${this.expr(a)} ${negate ? '!=' : '=='} ${this.expr(b)}`;
   }
 

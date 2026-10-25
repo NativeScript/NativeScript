@@ -478,7 +478,7 @@ fun jsStrictEquals(a: Any?, b: Any?): Boolean {
     val m = jsNumeric(x)
     val n = jsNumeric(y)
     if (m != null || n != null) return m != null && n != null && m == n
-    if (x is JSAdapted || y is JSAdapted) return x == y
+    if (x is JSAdapted || y is JSAdapted) return jsSameFunction(jsUnadapted(x), jsUnadapted(y))
     if (x is JSFunction || y is JSFunction || x is kotlin.reflect.KCallable<*>) return jsSameFunction(x, y)
     return x === y
 }
