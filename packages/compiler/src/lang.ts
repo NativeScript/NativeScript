@@ -369,6 +369,32 @@ export function classesGivenUndeclaredMembers(files: readonly ts.SourceFile[], c
   return roots;
 }
 
+/**
+ * The keys `Object.defineProperty`/`defineProperties` names on an object of no class type (`any`, `unknown`, `object`, a
+ * type parameter): any program class's field of that name may be the one it defines, so its objects keep the descriptor.
+ */
+export function keysDefinedUntyped(files: readonly ts.SourceFile[], checker: ts.TypeChecker): Set<string> {
+  const keys = new Set<string>();
+  const untyped = (t: ts.Type) => !!(t.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown | ts.TypeFlags.NonPrimitive | ts.TypeFlags.TypeParameter));
+  const visit = (n: ts.Node) => {
+    if (ts.isCallExpression(n) && ts.isPropertyAccessExpression(n.expression) && ts.isIdentifier(n.expression.expression) && n.expression.expression.text === 'Object' && n.arguments.length >= 2
+      && untyped(checker.getTypeAtLocation(n.arguments[0]))) {
+      if (n.expression.name.text === 'defineProperty') {
+        const t = checker.getTypeAtLocation(n.arguments[1]);
+        for (const part of t.isUnion() ? t.types : [t]) if (part.isStringLiteral()) keys.add(part.value);
+      } else if (n.expression.name.text === 'defineProperties' && ts.isObjectLiteralExpression(n.arguments[1])) {
+        for (const p of n.arguments[1].properties) {
+          const k = p.name && literalKey(p.name, checker);
+          if (k !== null && k !== undefined) keys.add(k);
+        }
+      }
+    }
+    ts.forEachChild(n, visit);
+  };
+  for (const sf of files) if (!sf.isDeclarationFile) visit(sf);
+  return keys;
+}
+
 // ---- The trust rule ------------------------------------------------------------------------------------------------
 // A TypeScript type is a contract only where TypeScript proves it. A value whose type it cannot prove may be anything
 // JavaScript allows there, so the slot it is placed in holds whatever it is, converted where it is used; the compiled

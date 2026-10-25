@@ -183,6 +183,12 @@ public func jsExpandoGet(_ object: JSExpando, _ key: String) -> Any? {
     return inherited
 }
 
+/// A subclass's keys: its base's (which end with the expando's), then its own fields', then the expando's.
+public func jsKeysBeforeExpando(_ inherited: [String], _ own: [String], _ expando: JSObject?) -> [String] {
+    guard let added = expando?.jsKeys, !added.isEmpty else { return inherited + own }
+    return inherited.dropLast(added.count) + own + added
+}
+
 public func jsExpandoSet(_ object: JSExpando, _ key: String, _ value: Any?) {
     do {
         if let own = object.jsExpando, own.has(key) {
