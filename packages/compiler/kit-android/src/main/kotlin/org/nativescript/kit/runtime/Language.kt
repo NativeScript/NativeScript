@@ -338,17 +338,15 @@ fun jsDefineProperty(target: Any?, key: String, descriptor: Any?): Any? {
     }
     when (val v = jsBox(target)) {
         is JSObject -> v.defineProperty(key, d)
-        is JSExpando -> {
+        // A field the class declares is the field, as a typed read finds it.
+        is JSExpando -> if (v.jsExpando?.has(key) != true && key in v.jsKeys) jsDefineDeclared(v, key, d) else {
             val own = v.jsExpando ?: JSObject().also { v.jsExpando = it }
             val made = !own.has(key)
             own.defineProperty(key, d)
             if (made && v is JSKeyOrdered && v.jsOrder != null && !jsIsSymbolKey(key)) v.jsKeyMade(key)
         }
         is Function<*>, is JSFunction -> jsFunctionProperties(v, true)!!.defineProperty(key, d)
-        is JSDynamic -> {
-            if (d.get != null || d.set != null) throw JSException(JSTypeError("Cannot define an accessor on a typed object: $key"))
-            if (d.hasValue) v.jsSet(key, d.value)
-        }
+        is JSDynamic -> jsDefineDeclared(v, key, d)
         is JSArray<*> -> if (key == "length" || jsArrayIndex(key) != null) {
             if (d.get != null || d.set != null) throw JSException(JSTypeError("Cannot define an accessor on an array's index or length: $key"))
             if (d.hasValue) jsSet(v, key, d.value)
@@ -356,6 +354,12 @@ fun jsDefineProperty(target: Any?, key: String, descriptor: Any?): Any? {
         else -> throw JSException(JSTypeError("Object.defineProperty called on non-object"))
     }
     return target
+}
+
+private fun jsDefineDeclared(v: JSDynamic, key: String, d: JSPropertyDescriptor) {
+    if (d.get != null || d.set != null) throw JSException(JSTypeError("Cannot define an accessor on a typed object: $key"))
+    if (d.writable == false || d.enumerable == false || d.configurable == false) throw JSException(JSTypeError("Cannot restrict a typed object's field: $key"))
+    if (d.hasValue) v.jsSet(key, d.value)
 }
 
 /** `Object.defineProperties(object, descriptors)`. */
@@ -384,7 +388,7 @@ private fun jsDeclaredDescriptor(v: JSDynamic, key: String): JSObject? = if (key
 /** `Object.getOwnPropertyNames(value)`. */
 fun jsOwnPropertyNames(value: Any?): JSArray<String> = when (val v = jsBox(value)) {
     is JSObject -> JSArray(ArrayList(v.ownPropertyNames))
-    is JSArray<*> -> JSArray(ArrayList((0 until v.storage.size).map { it.toString() } + "length"))
+    is JSArray<*> -> JSArray(ArrayList((0 until v.storage.size).filter { v.jsHoles?.get(it) != true }.map { it.toString() } + "length" + (v.jsProperties?.ownPropertyNames ?: emptyList())))
     is String -> JSArray(ArrayList(v.indices.map { it.toString() } + "length"))
     else -> JSArray(ArrayList(jsKeysOf(v)))
 }

@@ -26,7 +26,7 @@ import { PluginSources, verify, verifyBundle } from '../../src/plugins/source.ts
 import { manifest, ownTypings, pluginNative, scopedImports, usedImports, xcodegenLines } from '../../src/plugins/native.ts';
 import { singleTry, Translator as SwiftTranslator } from '../../src/swift.ts';
 import { translateModules } from '../../src/modules.ts';
-import { conformsTo, lookupMember, nativeTable, setEmptyTable } from '../../src/natives/symbols.ts';
+import { conformsTo, iosTarget, lookupMember, nativeTable, setEmptyTable } from '../../src/natives/symbols.ts';
 import { isFragment, render } from '../../src/codegen.ts';
 import { render as renderKotlin } from '../../src/codegen-kotlin.ts';
 import { Translator } from '../../src/kotlin.ts';
@@ -398,7 +398,7 @@ export class GlyphPipe { constructor(@Inject(TOKEN) private config: any, @Option
       '@objc public protocol HKMixedPinging {', '  func hkPing() -> Int', '}', '',
       'extension UIView: HKMixedPinging {', '  public func hkPing() -> Int { 1 }', '}', ''].join('\n'));
     w('mixed/platforms/ios/typings/objc!HKMixed.d.ts', 'declare class HKMixedHelper extends NSObject { static greet(mode: HKMixedMode): string; }\n');
-    const typings = w('mixed/typings/objc!HKMixed.d.ts', 'declare const enum HKMixedMode { Quiet = 0, Loud = 1 }\ndeclare class HKMixedHelper extends NSObject { static greet(mode: HKMixedMode): string; }\ninterface HKMixedPinging { hkPing(): number; }\n');
+    const typings = w('mixed/typings/objc!HKMixed.d.ts', 'declare const enum HKMixedMode { Quiet = 0, Loud = 1 }\ndeclare class HKMixedHelper extends NSObject { static greet(mode: HKMixedMode): string; }\ninterface HKMixedPinging { hkPing(): number; }\ndeclare namespace HKMixedLoader { function greeting(): string; }\n');
     // Without a module map, the Objective-C module is named apart from the Swift one.
     w('nomap/platforms/ios/src/HKNoMap.h', '#import <Foundation/Foundation.h>\n@interface HKNoMap : NSObject\n@end\n');
     w('nomap/platforms/ios/src/HKNoMap.m', '#import "HKNoMap.h"\n@implementation HKNoMap\n@end\n');
@@ -442,12 +442,13 @@ export class GlyphPipe { constructor(@Inject(TOKEN) private config: any, @Option
       let longName: unknown = 'threw';
       try { longName = lookupMember('UIKit', 'UIView', 'setLongPressHK', false); } catch { /* reported below */ }
       check(longName === null, 'a member a class lacks, its name spelling `Long` as a word, is not found');
-      const use = w('src/use.ios.ts', 'export const loud = HKMixedHelper.greet(HKMixedMode.Loud);\n');
+      const use = w('src/use.ios.ts', 'export const loud = HKMixedHelper.greet(HKMixedMode.Loud);\nexport const hello = HKMixedLoader.greeting();\n');
       const { checker, program, files } = createProgram([use], new Map(), 'ios', modulesDir, undefined, [typings]);
       const translator = new SwiftTranslator(checker, new Map(), files);
       translator.errors = [];
       const code = translateModules(translator, program, [use]).map((m) => m.code).join('\n');
       check(!translator.errors.length && /HKMixedHelper\.greet\(HKMixedMode\.loud\)/.test(code), `a Swift @objc enum's case is named as Swift names it${translator.errors.length ? `: ${translator.errors[0]}` : ''}`);
+      check(!translator.errors.length && /hello = \(?HKMixedLoader\.greeting\(\)/.test(code), `a class method typings declare as a namespace's function is the class's${translator.errors.length ? `: ${translator.errors[0]}` : ` (${/hello = .*/.exec(code)?.[0]})`}`);
     }
   } finally {
     if (tableCache === undefined) delete process.env.NS_NATIVE_TABLE_CACHE; else process.env.NS_NATIVE_TABLE_CACHE = tableCache;
@@ -602,6 +603,48 @@ export class GlyphPipe { constructor(@Inject(TOKEN) private config: any, @Option
     const clashes = new SwiftTranslator(clash.checker, new Map(), clash.files);
     const clashCode = translateModules(clashes, clash.program, [named]).map((m) => m.code).join('\n');
     check(/= Foundation\.ProcessInfo\.processInfo\.processName/.test(clashCode) && /= ProcessInfo\(\)\.name/.test(clashCode), "a native class named as one of the program's is named by its module (Foundation.ProcessInfo)");
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+})();
+
+// ---- SDK names Swift leaves out: their values, Swift's equivalent, or a build error naming them ----
+(() => {
+  const dir = mkdtempSync(join(tmpdir(), 'ns-release-checks-unavailable-'));
+  try {
+    const file = join(dir, 'use.ios.ts');
+    writeFileSync(file, [
+      'export const none = UNAuthorizationOptionNone;',
+      'export const actionNone = UNNotificationActionOptionNone;',
+      'export const space = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);',
+      'export const color = UITextAttributeTextColor;',
+      'export const dot = NSUnderlinePatternDot;',
+      'export const same = CGAffineTransformEqualToTransform(CGAffineTransformIdentity, CGAffineTransformMakeScale(2, 2));',
+      'export const lines = CGPathEqualToPath(CGPathCreateMutable(), CGPathCreateMutable());', ''].join('\n'));
+    const { checker, program, files } = createProgram([file], new Map(), 'ios', modulesDir);
+    const translator = new SwiftTranslator(checker, new Map(), files);
+    translator.errors = [];
+    const code = translateModules(translator, program, [file]).map((m) => m.code).join('\n');
+    const assigned = (name: string) => new RegExp(`^\\s*${name} = (.+)$`, 'm').exec(code)?.[1] ?? '';
+    const expected: Record<string, string> = {
+      none: 'UNAuthorizationOptions([])', actionNone: 'UNNotificationActionOptions([])', space: 'CGColorSpace(name: ("kCGColorSpaceGenericRGB" as CFString))',
+      color: '"NSColor"', same: '(CGAffineTransform.identity == CGAffineTransform(scaleX: 2, y: 2))',
+    };
+    for (const [name, want] of Object.entries(expected)) check(assigned(name) === want, `an SDK name Swift leaves out is given as ${want} (${name} = ${assigned(name) || translator.errors.join(' ')})`);
+    check(/NSUnderlineStyle\(rawValue: 256\)/.test(assigned('dot')) && /__equalTo\(/.test(assigned('lines')), `a constant Swift leaves out of an option set is its value; a function Swift imports as a member stays one (${assigned('dot')}; ${assigned('lines')})`);
+    const exprs = Object.keys(expected).concat('dot').map((n) => `_ = ${assigned(n)}`);
+    writeFileSync(join(dir, 'check.swift'), ['import UIKit', 'import UserNotifications', ...exprs, ''].join('\n'));
+    const { target, sdk } = iosTarget();
+    const typed = spawnSync('xcrun', ['swiftc', '-typecheck', '-target', target, '-sdk', sdk, join(dir, 'check.swift')], { encoding: 'utf8' });
+    check(typed.status === 0, `the Swift given for SDK names Swift leaves out compiles${typed.status ? `: ${typed.stderr.split('\n').find((l) => l.includes('error')) ?? typed.stderr}` : ''}`);
+    const refused = join(dir, 'refused.ios.ts');
+    writeFileSync(refused, 'export const callbacks = NSIntMapKeyCallBacks;\n');
+    const other = createProgram([refused], new Map(), 'ios', modulesDir);
+    const refusing = new SwiftTranslator(other.checker, new Map(), other.files);
+    refusing.errors = [];
+    translateModules(refusing, other.program, [refused]);
+    check(refusing.errors.length === 1 && refusing.errors[0].includes('NSIntMapKeyCallBacks (deprecated in iOS 2.0; APIs deprecated as of iOS 7 and earlier are unavailable in Swift, in Foundation)'),
+      `an SDK constant Swift leaves out with no value to give is a build error naming it and why (${refusing.errors.join(' ')})`);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
@@ -868,6 +911,33 @@ export class People {
     sw.componentMembers(cls, ir.props);
     const items = (ir.template as { attrs?: { name: string; method?: string }[] }[])[0]?.attrs?.find((a) => a.name === 'items')?.method ?? '-';
     check(!sw.memberThrows(cls, items), "reading a component's computed array (`rows()`) in a binding throws nothing (Swift)");
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+})();
+
+// ---- A non-strict app's signal made with null, read by a template's binding ----
+(() => {
+  const dir = mkdtempSync(join(tmpdir(), 'ns-release-checks-null-signal-'));
+  try {
+    const file = join(dir, 'person.component.ts');
+    writeFileSync(file, `import { Component, signal } from '@angular/core';
+class Person { name = 'Ada'; }
+@Component({ selector: 'PersonView', template: '@if (person(); as person) { <Label [bindingContext]="person"></Label> }' })
+export class PersonView {
+  readonly person = signal<Person>(null);
+  current(): Person { return this.person(); }
+}
+`);
+    const ir = angularComponent(file, readFileSync(file, 'utf8'), new Map())!;
+    const { checker, program, files } = createProgram([file], new Map([[file, ir.source]]), 'ios', modulesDir, undefined, [], {}, { strict: false, useUnknownInCatchVariables: false });
+    const sw = new SwiftTranslator(checker, new Map([['PersonView', { props: ir.props, optional: ir.optional }]]), files, { lenientApp: true });
+    translateModules(sw, program, [file]);
+    const cls = program.getSourceFile(file)!.statements.filter(ts.isClassDeclaration).find((c) => c.name?.text === 'PersonView')!;
+    const methods = cls.members.filter(ts.isMethodDeclaration);
+    const binding = methods.find((m) => /^\$b\d+$/.test(m.name.getText()) && /return \(\(this\.person\(\)\)\);/.test(m.getText()));
+    const current = methods.find((m) => m.name.getText() === 'current')!;
+    check(!!binding && sw.returnTypeOf(binding) === 'Person' && sw.returnTypeOf(current) === 'Person?', `a template binding reading a non-strict app's signal made with null gives the type the template's codegen takes, where the app's own method gives an optional (Swift: ${binding ? sw.returnTypeOf(binding) : 'no binding'}, ${sw.returnTypeOf(current)})`);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

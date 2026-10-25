@@ -1,4 +1,4 @@
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { basename, dirname, join, resolve } from 'node:path';
@@ -76,8 +76,11 @@ export interface NativeEnum {
   introduced?: string;
 }
 export interface NativeFunction {
-  /** Also 'staticProperty': `owner.swift` (`UIAccessibilityIsVoiceOverRunning()` → `UIAccessibility.isVoiceOverRunning`). */
-  kind: 'init' | 'property' | 'method' | 'function' | 'staticMethod' | 'staticProperty';
+  /**
+   * Also 'staticProperty': `owner.swift` (`UIAccessibilityIsVoiceOverRunning()` → `UIAccessibility.isVoiceOverRunning`);
+   * 'equal': Swift's `==` on the two arguments.
+   */
+  kind: 'init' | 'property' | 'method' | 'function' | 'staticMethod' | 'staticProperty' | 'equal';
   owner?: string; swift: string; self?: number; labels: (string | null)[]; params: SwiftType[]; returns: SwiftType; introduced?: string;
 }
 export interface NativeConstant { swift: string; type: SwiftType; enumType?: string }
@@ -691,7 +694,6 @@ const IDIOMS: Record<string, Record<string, string | null>> = {
     CGAffineTransformRotate: 'CGAffineTransform.rotated(by:)', CGAffineTransformScale: 'CGAffineTransform.scaledBy(x:y:)',
     CGAffineTransformTranslate: 'CGAffineTransform.translatedBy(x:y:)', CGAffineTransformInvert: 'CGAffineTransform.inverted()',
     CGAffineTransformConcat: 'CGAffineTransform.concatenating(_:)', CGAffineTransformIsIdentity: 'CGAffineTransform.isIdentity',
-    CGAffineTransformEqualToTransform: null,
     CGRectZero: 'CGRect.zero', CGRectNull: 'CGRect.null', CGRectInfinite: 'CGRect.infinite', CGPointZero: 'CGPoint.zero',
     CGSizeZero: 'CGSize.zero', CGAffineTransformIdentity: 'CGAffineTransform.identity',
   },
@@ -920,8 +922,19 @@ function lookupIn<K extends 'functions' | 'constants' | 'structs'>(module: strin
   return null;
 }
 
-export const lookupFunction = (module: string, jsName: string): NativeFunction | null => lookupIn(module, 'functions', jsName);
-export const lookupConstant = (module: string, jsName: string): NativeConstant | null => lookupIn(module, 'constants', jsName);
+export function lookupFunction(module: string, jsName: string): NativeFunction | null {
+  const f = lookupIn(module, 'functions', jsName);
+  // The C function as Swift's global of its name, which the module's overlay shadows with an unavailable one.
+  const shadowed = overlayUnavailable(module)[jsName];
+  return shadowed !== undefined && (!f || (f.kind === 'function' && f.swift === jsName)) ? shadowed.f : f;
+}
+export const lookupConstant = (module: string, jsName: string): NativeConstant | null => lookupIn(module, 'constants', jsName) ?? swiftUnavailable(module).constants[jsName] ?? null;
+
+/** Why Swift has no `jsName` of SDK module `module` (Swift's own words where it has them), or null if Swift has it. */
+export function unavailableReason(module: string, jsName: string): string | null {
+  return overlayUnavailable(module)[jsName]?.reason ?? swiftUnavailable(module).reasons[jsName] ?? null;
+}
+
 export const lookupStruct = (module: string, jsName: string): NativeStruct | null => lookupIn(module, 'structs', jsName);
 
 /** The type a Swift typedef name stands for (`TimeInterval` → `Double`), through chains of typedefs. */
@@ -933,6 +946,160 @@ export function lookupTypealias(module: string, swiftName: string): SwiftType | 
     found = name = next;
   }
   return found;
+}
+
+// ---------------------------------------------------------------- declarations Swift does not import
+
+const isSdkFramework = (module: string) => !tableKeys.has(module) && /^[A-Z]\w*$/.test(module) && existsSync(join(sdk().path, 'System', 'Library', 'Frameworks', `${module}.framework`));
+
+/** The functions a module's Swift overlay redeclares unavailable, which hide the C functions of their names from Swift. */
+const overlays = new Map<string, Record<string, { f: NativeFunction | null; reason: string }>>();
+function overlayUnavailable(module: string): Record<string, { f: NativeFunction | null; reason: string }> {
+  let found = overlays.get(module);
+  if (found) return found;
+  overlays.set(module, found = {});
+  const arch = TARGET.split('-')[0];
+  const file = join(sdk().path, 'System', 'Library', 'Frameworks', `${module}.framework`, 'Modules', `${module}.swiftmodule`, `${arch}-apple-ios-simulator.swiftinterface`);
+  if (!isSdkFramework(module) || !existsSync(file)) return found;
+  const text = readFileSync(file, 'utf8');
+  const unqualified = (t: string) => t.trim().replace(/\b\w+::/g, '').replace(/^Swift\.|(?<=[^\w.])Swift\./g, '');
+  for (const m of text.matchAll(/^@available\(\*, unavailable((?:, \w+: "(?:[^"\\]|\\.)*")*)\)\n(?:@\w.*\n)*public func (\w+)\(([^)]*)\)(?: -> (.+))?$/gm)) {
+    const [, args, name, paramList, result = 'Void'] = m;
+    const message = /\bmessage: "((?:[^"\\]|\\.)*)"/.exec(args)?.[1] ?? '';
+    const renamed = /\brenamed: "((?:[^"\\]|\\.)*)"/.exec(args)?.[1];
+    const params = paramList ? paramList.split(',').map((p) => unqualified(p.slice(p.indexOf(':') + 1))) : [];
+    const equality = message === 'Use == instead' && params.length === 2 && params[0] === params[1] && unqualified(result) === 'Bool';
+    found[name] = {
+      f: equality ? { kind: 'equal', swift: '==', labels: [null, null], params, returns: 'Bool' } : null,
+      reason: renamed ? `renamed in Swift to ${renamed}` : message ? `unavailable in Swift: ${message}` : 'unavailable in Swift',
+    };
+  }
+  return found;
+}
+
+/**
+ * A module's C constants that Swift does not import though Objective-C (and NativeScript's metadata) has them: marked
+ * `NS_SWIFT_UNAVAILABLE` or `Availability: nonswift` in API notes, or deprecated by iOS 7 (unavailable in Swift by its
+ * own rule). A string or integer one is its value, as the SDK gives it: read from a Mac Catalyst build of the module.
+ */
+interface UnavailableTable { format: number; constants: Record<string, NativeConstant>; reasons: Record<string, string> }
+const UNAVAILABLE_FORMAT = 1;
+const unavailableTables = new Map<string, UnavailableTable>();
+function swiftUnavailable(module: string): UnavailableTable {
+  let table = unavailableTables.get(module);
+  if (table) return table;
+  table = { format: UNAVAILABLE_FORMAT, constants: {}, reasons: {} };
+  unavailableTables.set(module, table);
+  if (!isSdkFramework(module)) return table;
+  const file = join(cacheDir(), `${module}.unavailable.json`);
+  if (existsSync(file)) {
+    const cached = JSON.parse(readFileSync(file, 'utf8')) as UnavailableTable;
+    if (cached.format === UNAVAILABLE_FORMAT) {
+      unavailableTables.set(module, cached);
+      return cached;
+    }
+  }
+  const dir = mkdtempSync(join(tmpdir(), `unavailable-${module}-`));
+  try {
+    const found = unavailableConstants(module, dir);
+    if (!found) return table;
+    const values = found.size ? constantValues(module, [...found.values()], dir) : {};
+    for (const [name, c] of found) {
+      table.reasons[name] = c.reason;
+      const k = values[name] === undefined ? null : constantOf(module, c, values[name]);
+      if (k) table.constants[name] = k;
+    }
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+  mkdirSync(dirname(file), { recursive: true });
+  writeFileSync(file, JSON.stringify(table));
+  return table;
+}
+
+interface UnavailableConstant { name: string; type: string; canonical: string; reason: string }
+
+/** The module's constants Swift leaves out, by clang's reading of its headers and API notes; null if clang cannot read it. */
+function unavailableConstants(module: string, dir: string): Map<string, UnavailableConstant> | null {
+  let dump: string;
+  try {
+    dump = execFileSync('xcrun', ['clang', '-x', 'objective-c', '-target', TARGET, '-isysroot', sdk().path, '-fsyntax-only', '-fmodules', '-fapinotes-modules',
+      `-fmodules-cache-path=${join(dir, 'modules')}`, '-Xclang', '-ast-dump-all', '-'], { input: `@import ${module};\n`, encoding: 'utf8', maxBuffer: 1 << 30, stdio: ['pipe', 'pipe', 'ignore'] });
+  } catch {
+    return null;
+  }
+  const found = new Map<string, UnavailableConstant>();
+  const lines = dump.split('\n');
+  for (let i = 0; i < lines.length; i++) {
+    if (!/^[|`]-VarDecl /.test(lines[i])) continue;
+    const head = / imported in ([\w.]+) (?:(?:hidden|used|referenced|implicit|invalid) )*(\w+) '([^']*)'(?::'([^']*)')?/.exec(lines[i]);
+    if (!head || (head[1] !== module && !head[1].startsWith(`${module}.`))) continue;
+    let reason: string | null = null;
+    for (let j = i + 1; j < lines.length && /^[| ] /.test(lines[j]); j++) {
+      const a = /^[| ] [|`]-AvailabilityAttr .*?> (\w+) ([\d.]+) ([\d.]+) ([\d.]+) (Unavailable )?"((?:[^"\\]|\\.)*)"/.exec(lines[j]);
+      if (!a) continue;
+      if (a[1] === 'swift' && a[5]) reason = a[6] ? `unavailable in Swift: ${a[6]}` : 'unavailable in Swift';
+      else if (a[1] === 'ios' && a[3] !== '0' && parseFloat(a[3]) < 8 && !reason) reason = `deprecated in iOS ${a[3]}; APIs deprecated as of iOS 7 and earlier are unavailable in Swift`;
+    }
+    const plain = (t: string) => t.replace(/\s*\b_(?:Nonnull|Nullable|Null_unspecified)\b/g, '').replace(/^const /, '').replace(/ \*\s*const$/, ' *');
+    if (reason && !found.has(head[2])) found.set(head[2], { name: head[2], type: plain(head[3]), canonical: plain(head[4] ?? head[3]), reason });
+  }
+  return found;
+}
+
+const STRING_TYPE = /^(?:NSString|struct __CFString) \*$/;
+const INTEGER_TYPES: Record<string, string> = {
+  'char': 'Int8', 'signed char': 'Int8', 'unsigned char': 'UInt8', 'short': 'Int16', 'unsigned short': 'UInt16', 'int': 'Int32', 'unsigned int': 'UInt32',
+  'long': 'Int', 'unsigned long': 'UInt', 'long long': 'Int64', 'unsigned long long': 'UInt64',
+};
+
+/** The values of string and integer constants, from a Mac Catalyst program reading them; a constant Catalyst lacks has none. */
+function constantValues(module: string, constants: UnavailableConstant[], dir: string): Record<string, string | number> {
+  const mac = execFileSync('xcrun', ['--sdk', 'macosx', '--show-sdk-path'], { encoding: 'utf8' }).trim();
+  const frameworks = join(mac, 'System', 'iOSSupport', 'System', 'Library', 'Frameworks');
+  const arch = process.arch === 'arm64' ? 'arm64' : 'x86_64';
+  let wanted = constants.filter((c) => STRING_TYPE.test(c.canonical) || /^enum \w+$/.test(c.canonical) || INTEGER_TYPES[c.canonical]);
+  for (let attempt = 0; attempt < 2 && wanted.length; attempt++) {
+    const head = ['@import Foundation;', `@import ${module};`, 'int main(void) {', '  NSMutableDictionary *d = [NSMutableDictionary dictionary];'];
+    const source = [...head,
+      ...wanted.map((c) => `  d[@"${c.name}"] = ${c.canonical === 'NSString *' ? c.name : STRING_TYPE.test(c.canonical) ? `(__bridge NSString *)${c.name}` : `@((long long)${c.name})`};`),
+      '  NSData *json = [NSJSONSerialization dataWithJSONObject:d options:0 error:nil];', '  fwrite(json.bytes, 1, json.length, stdout);', '  return 0;', '}', ''].join('\n');
+    writeFileSync(join(dir, 'values.m'), source);
+    const exe = join(dir, 'values');
+    const built = spawnSync('xcrun', ['--sdk', 'macosx', 'clang', '-target', `${arch}-apple-ios17.0-macabi`, '-isysroot', mac, '-F', frameworks, '-fmodules', '-fobjc-arc', '-w',
+      `-fmodules-cache-path=${join(dir, 'modules')}`, join(dir, 'values.m'), '-o', exe], { encoding: 'utf8' });
+    if (built.status === 0) {
+      try {
+        return JSON.parse(execFileSync(exe, { encoding: 'utf8' }));
+      } catch {
+        return {};
+      }
+    }
+    // Lines that do not compile (a name Catalyst does not declare): read the rest without them.
+    const failed = new Set([...String(built.stderr).matchAll(/values\.m:(\d+):\d+: error/g)].map((m) => Number(m[1]) - head.length - 1));
+    if (!failed.size) break;
+    wanted = wanted.filter((_, k) => !failed.has(k));
+  }
+  return {};
+}
+
+function swiftLiteral(text: string): string {
+  return '"' + text.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/[\u0000-\u001f\u007f]/g, (ch) => `\\u{${ch.charCodeAt(0).toString(16)}}`) + '"';
+}
+
+/** A constant's value as Swift writes one of its type. */
+function constantOf(module: string, c: UnavailableConstant, value: string | number): NativeConstant | null {
+  const tag = /^enum (\w+)$/.exec(c.canonical)?.[1];
+  const en = lookupEnum(module, c.type) ?? (tag ? lookupEnum(module, tag) : null);
+  if (typeof value === 'number' && !Number.isSafeInteger(value)) return null;
+  if (typeof value === 'string') {
+    if (en?.kind === 'typedConstants' && en.swift) return { swift: `${en.swift}(rawValue: ${swiftLiteral(value)})`, type: en.swift };
+    return c.canonical === 'NSString *' ? { swift: swiftLiteral(value), type: 'String' } : { swift: `(${swiftLiteral(value)} as CFString)`, type: 'CFString' };
+  }
+  if (en?.swift && en.kind === 'options') return { swift: value === 0 ? `${en.swift}([])` : `${en.swift}(rawValue: ${value})`, type: en.swift };
+  if (en?.swift && en.kind === 'enum') return { swift: `${en.swift}(rawValue: ${value})!`, type: en.swift };
+  const int = INTEGER_TYPES[c.canonical];
+  return int ? { swift: `${int}(${value})`, type: int } : null;
 }
 
 // ---------------------------------------------------------------- CLI

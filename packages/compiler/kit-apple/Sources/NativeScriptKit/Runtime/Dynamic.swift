@@ -263,7 +263,7 @@ public func jsOwnPropertyDescriptor(_ object: Any?, _ key: String) -> Any? {
 public func jsOwnPropertyNames(_ value: Any?) -> JSArray<String> {
     switch jsFlat(value) {
     case let o as JSObject: return JSArray(o.ownPropertyNames)
-    case let array as JSArrayProtocol: return JSArray((0..<array.jsLength).map { String($0) } + ["length"])
+    case let array as JSArrayProtocol: return JSArray((0..<array.jsLength).filter(array.jsHasElement).map { String($0) } + ["length"])
     case let string as String: return JSArray((0..<string.utf16.count).map { String($0) } + ["length"])
     default: return JSArray(jsKeysOf(value))
     }

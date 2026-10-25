@@ -389,6 +389,7 @@ private class JSONWriter(val gap: String?) {
         }
         val r = replacer
         if (r != null) {
+            if (v is JSDate) v = v.toJSON() ?: JSNull
             val name = key ?: index.toString()
             v = if (r is JSMethod) jsBox(r.call(holder, arrayOf(name, v))) else jsBox(jsCall(r, name, v))
         }

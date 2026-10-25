@@ -13,3 +13,7 @@ console.log(Object.keys(point).join(','), JSON.stringify(point));
 for (const k in point) console.log(k);
 point.label = 'q';
 console.log(JSON.stringify(point));
+interface Saved { id?: number; name?: string }
+const saved: Saved = JSON.parse('{"name":"s"}');
+saved.id = 7;
+console.log(JSON.stringify(saved));
