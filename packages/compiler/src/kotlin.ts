@@ -575,6 +575,11 @@ export class Translator implements AsyncTranslator {
     // A namespace as a value (`{ Kinds: Trace.Kinds }`): its object.
     const nsDecl = t.flags & F.Object && t.getSymbol()?.flags! & ts.SymbolFlags.ValueModule ? t.getSymbol()!.valueDeclaration : undefined;
     if (nsDecl && ts.isModuleDeclaration(nsDecl) && !nsDecl.getSourceFile().isDeclarationFile) return this.namespacePath(nsDecl)!;
+    // An enum as a value (`typeof Color`) in app code: the object JavaScript makes of it. Not the enum's own name, through
+    // which its members are read (`Color.Red`).
+    const enumObject = !this.library && t.flags & F.Object && (t.getSymbol()?.flags ?? 0) & ts.SymbolFlags.RegularEnum ? t.getSymbol()!.valueDeclaration : undefined;
+    const named = where && (ts.isIdentifier(where) || ts.isPropertyAccessExpression(where)) && this.resolve(ts.isPropertyAccessExpression(where) ? where.name : where)?.valueDeclaration === enumObject;
+    if (enumObject && !named && ts.isEnumDeclaration(enumObject) && !enumObject.getSourceFile().isDeclarationFile && !hasModifier(enumObject, ts.SyntaxKind.ConstKeyword)) return 'JSObject';
     // `OptionsTypeMap[T]` over a type parameter: whatever the call passes.
     if (t.flags & F.IndexedAccess) return 'Any?';
     if (t.flags & F.Never) return 'Nothing';
@@ -5751,8 +5756,25 @@ export class Translator implements AsyncTranslator {
     return '';
   }
 
+  /** `x.hasOwnProperty`, `x.toString`: a method every object inherits, read on the object itself. */
+  private objectMethod(e: ts.Node): boolean {
+    return ts.isPropertyAccessExpression(e) && !!this.resolve(e.name)?.declarations?.every((d) => isLibDeclaration(d));
+  }
+
+  /** App code: an app enum named as a value (`Color`, `Shapes.Kind`), which is the object JavaScript makes of it. */
+  private isEnumObject(e: ts.Expression): boolean {
+    if (this.library) return false;
+    const bare = ts.skipOuterExpressions(e);
+    if (!ts.isIdentifier(bare) && !ts.isPropertyAccessExpression(bare)) return false;
+    const sym = this.resolve(ts.isPropertyAccessExpression(bare) ? bare.name : bare);
+    const decl = sym && sym.flags & ts.SymbolFlags.Alias ? this.checker.getAliasedSymbol(sym).valueDeclaration : sym?.valueDeclaration;
+    return !!decl && ts.isEnumDeclaration(decl) && !decl.getSourceFile().isDeclarationFile && !hasModifier(decl, ts.SyntaxKind.ConstKeyword);
+  }
+
   /** An expression where Kotlin needs a value of `target`. */
   coerce(e: ts.Expression, target: string): string {
+    // An enum's object held as a record (`const names: Record<string, string | number> = Color`): an untyped object.
+    if (target.startsWith('JSRecord<') && this.isEnumObject(e)) return this.fromAnyCode(this.expr(e), target);
     const code = this.coerceTyped(e, target);
     if (target !== 'Any?') return code;
     const entry = this.nullableEntry(e, () => code);
@@ -6396,6 +6418,9 @@ export class Translator implements AsyncTranslator {
       // A namespace's class as a value: the class.
       const decl = member ? this.resolve(e.name)?.valueDeclaration : undefined;
       if (decl && ts.isClassDeclaration(decl)) return (ts.isPropertyAccessExpression(e.parent) && e.parent.expression === e) || (ts.isNewExpression(e.parent) && e.parent.expression === e) ? member! : `${member}::class.java`;
+      // A namespace's enum as a value (`Object.keys(Shapes.Kind)`): the object JavaScript makes of it.
+      const p0 = e.parent;
+      if (!this.library && decl && ts.isEnumDeclaration(decl) && this.isEnumObject(e) && !((ts.isPropertyAccessExpression(p0) || ts.isElementAccessExpression(p0)) && p0.expression === e) && !ts.isTypeOfExpression(p0)) return `${member}.jsEnumObject`;
       // A namespace's function as a value (`valueConverter: Length.parse`): a reference to it.
       if (member && this.library && decl && ts.isFunctionDeclaration(decl) && !(ts.isCallExpression(e.parent) && e.parent.expression === e)) {
         const dot = member.lastIndexOf('.');
@@ -6531,6 +6556,10 @@ export class Translator implements AsyncTranslator {
     if (imported && imported.name !== e.text && imported.flags & ts.SymbolFlags.Variable && isCoreDeclaration(imported.declarations?.[0]) && this.core?.kitMember('', imported.name)?.kind === 'var') return imported.name;
     const moduleVariable = !this.library ? this.core?.coreVariable?.(e) : null;
     if (moduleVariable) return moduleVariable;
+    // An enum as a value (`Object.keys(Color)`): the object JavaScript makes of it.
+    const enumDecl = this.library ? undefined : this.resolve(e)?.valueDeclaration;
+    if (enumDecl && ts.isEnumDeclaration(enumDecl) && !enumDecl.getSourceFile().isDeclarationFile && !hasModifier(enumDecl, ts.SyntaxKind.ConstKeyword)
+        && !((ts.isPropertyAccessExpression(p0) || ts.isElementAccessExpression(p0)) && p0.expression === e && !this.objectMethod(p0)) && !ts.isTypeOfExpression(p0)) return `${this.refName(e)}.jsEnumObject`;
     // A module of the program held as a value (`import * as tests`, handed to a runner): an object of its exports.
     const held = this.resolve(e);
     if (held && held.flags & ts.SymbolFlags.ValueModule && held.valueDeclaration && ts.isSourceFile(held.valueDeclaration) && !held.valueDeclaration.isDeclarationFile
@@ -6818,8 +6847,8 @@ export class Translator implements AsyncTranslator {
       const t = this.typeOf(e);
       return t === 'Any?' ? `jsGet(jsGlobalThis, ${kotlinString(name)})` : this.fromAnyCode(`jsGet(jsGlobalThis, ${kotlinString(name)})`, t, true);
     }
-    // A dynamic object (an allSettled result): its field read by name, as its type says.
-    if (!this.library && this.typeOf(target).replace(/\?$/, '') === 'JSObject' && !e.questionDotToken && this.resolve(e.name)?.declarations?.every((d) => d.getSourceFile().isDeclarationFile)) {
+    // A dynamic object (an allSettled result, an enum's object): its field read by name, as its type says.
+    if (!this.library && this.typeOf(target).replace(/\?$/, '') === 'JSObject' && !e.questionDotToken && this.resolve(e.name)?.declarations?.every((d) => d.getSourceFile().isDeclarationFile || ts.isEnumMember(d))) {
       const t = this.typeOf(e);
       const read = `jsField(${this.expr(target)}, ${kotlinString(name)})`;
       return t === 'Any?' ? read : this.fromAnyCode(read, t, true);
@@ -7061,7 +7090,7 @@ export class Translator implements AsyncTranslator {
     const key = e.argumentExpression;
     // `Enum[name]`, `Enum[value]`: the object JavaScript makes of the enum, by key.
     const enumDecl = ts.isIdentifier(e.expression) ? this.resolve(e.expression)?.valueDeclaration : undefined;
-    if (enumDecl && ts.isEnumDeclaration(enumDecl) && !enumDecl.getSourceFile().isDeclarationFile && !ts.isStringLiteral(key) && !isWriteTarget(e)) {
+    if (((enumDecl && ts.isEnumDeclaration(enumDecl) && !enumDecl.getSourceFile().isDeclarationFile) || this.isEnumObject(e.expression)) && !ts.isStringLiteral(key) && !isWriteTarget(e)) {
       const rt = this.typeOf(e);
       const code = `${this.expr(e.expression)}.jsEnumObject.jsGet(${this.propertyKey(key)})`;
       return rt === 'Any?' ? code : this.fromAny(code, rt);
@@ -7189,6 +7218,11 @@ export class Translator implements AsyncTranslator {
     // `a?.b as T` from an untyped value: undefined where the chain stops, whatever the assertion says.
     if (ts.isAsExpression(e) && ts.isOptionalChain(e.expression) && this.typeOf(e.expression) === 'Any?' && !isNullable(this.typeOf(e))) {
       return this.fromAny(this.expr(e.expression), optionalType(this.typeOf(e)));
+    }
+    // `Enum[value]` of a value no member has: undefined, though TypeScript types it a string.
+    if (ts.isElementAccessExpression(e) && !isWriteTarget(e) && !ts.isStringLiteral(e.argumentExpression) && this.isEnumObject(e.expression) && !this.typeOf(e).endsWith('?')) {
+      const code = `${this.expr(e.expression)}.jsEnumObject.jsGet(${this.propertyKey(e.argumentExpression)})`;
+      return this.typeOf(e) === 'Any?' ? code : this.fromAny(code, optionalType(this.typeOf(e)));
     }
     // A key of a dictionary-typed object, read before its type's zero stands in for a missing one.
     if ((ts.isPropertyAccessExpression(e) || ts.isElementAccessExpression(e)) && !e.questionDotToken && !isWriteTarget(e)

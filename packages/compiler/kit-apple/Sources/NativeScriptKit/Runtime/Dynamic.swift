@@ -20,6 +20,11 @@ public func jsDelete(_ object: Any?, _ key: String) throws -> Bool {
     case let d as JSDynamic where jsRestriction(d) >= 2 && d.jsKeys.contains(key):
         throw JSException(JSTypeError("Cannot delete property '\(key)' of #<Object>"))
     case let d as JSDeletable: return d.jsDeleteOwn(key)
+    case is JSArrayProtocol where key == "length":
+        throw JSException(JSTypeError("Cannot delete property 'length' of [object Array]"))
+    case let array as JSArrayProtocol where jsArrayIndex(key) == nil:
+        if jsSideProperties(array, create: false)?.delete(key) == false { throw JSException(JSTypeError("Cannot delete property '\(key)' of [object Array]")) }
+        return true
     default: return true
     }
 }
@@ -227,7 +232,7 @@ public func jsOwnPropertyDescriptor(_ object: Any?, _ key: String) -> Any? {
 public func jsOwnPropertyNames(_ value: Any?) -> JSArray<String> {
     switch jsFlat(value) {
     case let o as JSObject: return JSArray(o.ownPropertyNames)
-    case let array as JSArrayProtocol: return JSArray((0..<array.jsLength).filter(array.jsHasElement).map { String($0) } + ["length"])
+    case let array as JSArrayProtocol: return JSArray((0..<array.jsLength).filter(array.jsHasElement).map { String($0) } + ["length"] + (jsSideProperties(array, create: false)?.ownPropertyNames ?? []))
     case let string as String: return JSArray((0..<string.utf16.count).map { String($0) } + ["length"])
     default: return JSArray(jsKeysOf(value))
     }
@@ -315,25 +320,34 @@ public protocol JSDeletable: AnyObject {
 /// `Object.assign(target, ...sources)`: each source's own enumerable keys written to the target in order.
 @discardableResult
 public func jsObjectAssign(_ target: Any?, _ sources: Any?...) throws -> Any? {
-    for source in sources {
-        guard let dynamic = jsFlat(source) as? JSDynamic else { continue }
-        for key in dynamic.jsKeys { try jsSet(target, key, dynamic[jsKey: key]) }
-    }
-    return target
+    try jsObjectAssign(target, spread: sources)
 }
 
 /// `Object.assign(target, ...sources)` with the sources spread from an array.
 @discardableResult
 public func jsObjectAssign(_ target: Any?, spread sources: [Any?]) throws -> Any? {
     for source in sources {
-        guard let dynamic = jsFlat(source) as? JSDynamic else { continue }
-        for key in dynamic.jsKeys { try jsSet(target, key, dynamic[jsKey: key]) }
+        if let dynamic = jsFlat(source) as? JSDynamic {
+            for key in dynamic.jsKeys { try jsSet(target, key, dynamic[jsKey: key]) }
+        } else if let indexed = jsIndexedSource(source) {
+            for key in jsKeysOf(indexed) { try jsSet(target, key, jsField(indexed, key)) }
+        }
     }
     return target
 }
 
+/// An array or a string, whose own enumerable keys are its indexes (and an array's named keys) when it is spread or assigned from.
+private func jsIndexedSource(_ value: Any?) -> Any? {
+    let flat = jsFlat(value)
+    return flat is JSArrayProtocol || flat is String ? flat : nil
+}
+
 /// `{ ...source }` into an object literal being built: the source's own enumerable keys, in order.
 public func jsObjectSpread(_ target: JSObject, _ source: Any?) {
+    if let indexed = jsIndexedSource(source) {
+        for key in jsKeysOf(indexed) { target[key] = jsField(indexed, key) }
+        return
+    }
     guard let dynamic = jsFlat(source) as? JSDynamic else { return }
     for key in dynamic.jsKeys { target[key] = dynamic[jsKey: key] }
     for key in (dynamic as? JSSymbolKeyed)?.jsSymbolKeys ?? [] { target[key] = dynamic[jsKey: key] }

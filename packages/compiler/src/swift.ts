@@ -7561,8 +7561,25 @@ ${members.join('\n')}
     return this.throwsInfo.expr(e) ? 'try ' : '';
   }
 
+  /** `x.hasOwnProperty`, `x.toString`: a method every object inherits, read on the object itself. */
+  private objectMethod(e: ts.Node): boolean {
+    return ts.isPropertyAccessExpression(e) && !!this.resolve(e.name)?.declarations?.every((d) => isLibDeclaration(d));
+  }
+
+  /** App code: an app enum named as a value (`Color`, `Shapes.Kind`), which is the object JavaScript makes of it. */
+  private isEnumObject(e: ts.Expression): boolean {
+    if (this.library) return false;
+    const bare = ts.skipOuterExpressions(e);
+    if (!ts.isIdentifier(bare) && !ts.isPropertyAccessExpression(bare)) return false;
+    const sym = this.resolve(ts.isPropertyAccessExpression(bare) ? bare.name : bare);
+    const decl = sym && sym.flags & ts.SymbolFlags.Alias ? this.checker.getAliasedSymbol(sym).valueDeclaration : sym?.valueDeclaration;
+    return !!decl && ts.isEnumDeclaration(decl) && !decl.getSourceFile().isDeclarationFile && !hasModifier(decl, ts.SyntaxKind.ConstKeyword);
+  }
+
   /** An expression where Swift needs a value of `target`. */
   coerce(e: ts.Expression, target: string): string {
+    // An enum's object held as a record (`const names: Record<string, string | number> = Color`): an untyped object.
+    if (target.startsWith('JSRecord<') && this.isEnumObject(e)) return this.fromAnyCode(this.expr(e), target);
     const code = this.coerceTyped(e, target);
     if (target !== 'Any?') return code;
     const entry = this.nullableEntry(e, () => code);
@@ -9119,7 +9136,7 @@ ${members.join('\n')}
     if (name === 'Application' && sym?.declarations?.some((d) => isCoreDeclaration(d)) && ts.isAsExpression(p)) return 'NativeScriptKit.Application';
     // An enum as a value (`Object.entries(Role)`): the object JavaScript makes of it.
     const enumDecl = sym?.valueDeclaration;
-    if (enumDecl && ts.isEnumDeclaration(enumDecl) && (!enumDecl.getSourceFile().isDeclarationFile || (!this.library && isCoreDeclaration(enumDecl))) && !(ts.isPropertyAccessExpression(p) && p.expression === e)) {
+    if (enumDecl && ts.isEnumDeclaration(enumDecl) && (!enumDecl.getSourceFile().isDeclarationFile || (!this.library && isCoreDeclaration(enumDecl))) && !(ts.isPropertyAccessExpression(p) && p.expression === e && (this.library || !this.objectMethod(p))) && !(!this.library && ts.isElementAccessExpression(p) && p.expression === e)) {
       return `${identPath(this.declaredName(e))}.jsEnumObject`;
     }
     if (sym && sym.flags & ts.SymbolFlags.Class && !(ts.isPropertyAccessExpression(p) && p.expression === e) && !(ts.isNewExpression(p) && p.expression === e)
@@ -10001,9 +10018,10 @@ ${members.join('\n')}
     }
     // `Enum[name]`, `Enum[value]`: the object JavaScript makes of the enum, by key.
     const enumDecl = ts.isIdentifier(e.expression) ? this.resolve(e.expression)?.valueDeclaration : undefined;
-    if (enumDecl && ts.isEnumDeclaration(enumDecl) && !enumDecl.getSourceFile().isDeclarationFile && !ts.isStringLiteral(key) && !isWriteTarget(e)) {
+    if (((enumDecl && ts.isEnumDeclaration(enumDecl) && !enumDecl.getSourceFile().isDeclarationFile) || this.isEnumObject(e.expression)) && !ts.isStringLiteral(key) && !isWriteTarget(e)) {
       const rt = this.typeOf(e);
-      const code = `${identPath(this.declaredName(e.expression as ts.Identifier))}.jsEnumObject[jsKey: ${this.propertyKey(key)}]`;
+      const object = ts.isIdentifier(e.expression) ? identPath(this.declaredName(e.expression)) : this.expr(e.expression);
+      const code = `${object}.jsEnumObject[jsKey: ${this.propertyKey(key)}]`;
       return rt === 'Any?' ? code : this.fromAny(code, rt);
     }
     if (this.typeOf(e.expression) === 'Any?') {
@@ -10183,6 +10201,12 @@ ${members.join('\n')}
     if (ts.isElementAccessExpression(e) && !isWriteTarget(e) && this.typeOf(e.expression).replace(/[?!]$/, '') === 'JSMatch' && !uncheckedMatch(e.expression, this.checker)) {
       const q = e.questionDotToken || this.continuesOptional(e.expression) ? '?' : '';
       return `(${this.expr(e.expression)}${q}.values.element(${this.toNumber(e.argumentExpression)}) ?? nil)`;
+    }
+    // `Enum[value]` of a value no member has: undefined, though TypeScript types it a string.
+    if (ts.isElementAccessExpression(e) && !isWriteTarget(e) && !ts.isStringLiteral(e.argumentExpression) && this.isEnumObject(e.expression) && !isOptional(this.typeOf(e))) {
+      const object = ts.isIdentifier(e.expression) ? identPath(this.declaredName(e.expression)) : this.expr(e.expression);
+      const code = `${object}.jsEnumObject[jsKey: ${this.propertyKey(e.argumentExpression)}]`;
+      return this.typeOf(e) === 'Any?' ? code : this.fromAny(code, optionalType(this.typeOf(e)));
     }
     if (ts.isElementAccessExpression(e) && !isWriteTarget(e) && isTypedArrayType(this.typeOf(e.expression).replace(/[?!]$/, ''))) {
       return `${this.expr(e.expression)}${e.questionDotToken || this.continuesOptional(e.expression) ? '?' : ''}[jsIndex: ${this.toNumber(e.argumentExpression)}]`;
@@ -11737,7 +11761,7 @@ ${members.join('\n')}
         // A type-guard filter (`(s): s is UIWindowScene => …`): its elements as the guard narrows them.
         const narrowed = name === 'filter' ? /^JSArray<(\w+)>$/.exec(this.typeOf(e))?.[1] : undefined;
         // The guard passed each element, so each is of its class.
-        if (narrowed && narrowed !== el && /^\w+$/.test(el)) return `JSArray<${narrowed}>(${this.ignoringThisArg(e, target, call())}.storage.compactMap { $0 as? ${narrowed} })`;
+        if (narrowed && narrowed !== el && (/^\w+$/.test(el) || (!this.library && el === 'Any?' && ['Double', 'String', 'Bool'].includes(narrowed)))) return `JSArray<${narrowed}>(${this.ignoringThisArg(e, target, call())}.storage.compactMap { $0 as? ${narrowed} })`;
         if (name === 'find' && /^\w+$/.test(el)) {
           const found = this.typeOf(e).replace(/[?!]$/, '');
           if (/^\w+$/.test(found) && found !== el && found !== 'Any') return `(${this.ignoringThisArg(e, target, call())}.flatMap { $0 as? ${found} })`;
