@@ -217,13 +217,19 @@ class JSWeakSet<T>() : JSWeakCollection {
 fun jsDelete(target: Any?, key: String): Boolean = when (val v = jsBox(target)) {
     is JSObject -> if (v.delete(key)) true else throw JSException(JSTypeError("Cannot delete property '$key' of #<Object>"))
     is JSDeletable -> v.jsDelete(key)
+    is JSArray<*> -> v.jsDeleteKey(key)
     is JSDynamic -> if (jsRestriction(v) >= 2 && key in v.jsKeys) throw JSException(JSTypeError("Cannot delete property '$key' of #<Object>")) else true
     else -> true
 }
 
 /** `{ ...source }` into an object literal being built: the source's own enumerable keys, symbols last. */
 fun jsObjectSpread(target: JSObject, source: Any?) {
-    val dynamic = jsBox(source) as? JSDynamic ?: return
+    val boxed = jsBox(source)
+    if (boxed is JSArray<*> || boxed is String) {
+        for (key in jsKeysOf(boxed)) target[key] = jsField(boxed, key)
+        return
+    }
+    val dynamic = boxed as? JSDynamic ?: return
     for (key in dynamic.jsKeys) target[key] = dynamic.jsGet(key)
     if (dynamic is JSSymbolKeyed) for (key in dynamic.jsSymbolKeys) target[key] = dynamic.jsGet(key)
 }
@@ -329,14 +335,24 @@ class JSInspectAccessor(val kind: String)
 /** `Object.defineProperty(object, key, descriptor)`. */
 fun jsDefineProperty(target: Any?, key: String, descriptor: Any?): Any? {
     val d = JSPropertyDescriptor.of(descriptor)
+    val definable = jsBox(target) as? JSDefinable
+    if (definable != null && definable.jsDefinable(key)) {
+        val own = definable.jsDefined ?: JSObject().also { definable.jsDefined = it }
+        if (!own.has(key)) own[key] = definable.jsGet(key)
+        own.defineProperty(key, d)
+        return target
+    }
     when (val v = jsBox(target)) {
         is JSObject -> v.defineProperty(key, d)
-        is JSExpando -> (v.jsExpando ?: JSObject().also { v.jsExpando = it }).defineProperty(key, d)
-        is Function<*>, is JSFunction -> jsFunctionProperties(v, true)!!.defineProperty(key, d)
-        is JSDynamic -> {
-            if (d.get != null || d.set != null) throw JSException(JSTypeError("Cannot define an accessor on a typed object: $key"))
-            if (d.hasValue) v.jsSet(key, d.value)
+        // A field the class declares is the field, as a typed read finds it.
+        is JSExpando -> if (v.jsExpando?.has(key) != true && key in v.jsKeys) jsDefineDeclared(v, key, d) else {
+            val own = v.jsExpando ?: JSObject().also { v.jsExpando = it }
+            val made = !own.has(key)
+            own.defineProperty(key, d)
+            if (made && v is JSKeyOrdered && v.jsOrder != null && !jsIsSymbolKey(key)) v.jsKeyMade(key)
         }
+        is Function<*>, is JSFunction -> jsFunctionProperties(v, true)!!.defineProperty(key, d)
+        is JSDynamic -> jsDefineDeclared(v, key, d)
         is JSArray<*> -> if (key == "length" || jsArrayIndex(key) != null) {
             if (d.get != null || d.set != null) throw JSException(JSTypeError("Cannot define an accessor on an array's index or length: $key"))
             if (d.hasValue) jsSet(v, key, d.value)
@@ -344,6 +360,12 @@ fun jsDefineProperty(target: Any?, key: String, descriptor: Any?): Any? {
         else -> throw JSException(JSTypeError("Object.defineProperty called on non-object"))
     }
     return target
+}
+
+private fun jsDefineDeclared(v: JSDynamic, key: String, d: JSPropertyDescriptor) {
+    if (d.get != null || d.set != null) throw JSException(JSTypeError("Cannot define an accessor on a typed object: $key"))
+    if (d.writable == false || d.enumerable == false || d.configurable == false) throw JSException(JSTypeError("Cannot restrict a typed object's field: $key"))
+    if (d.hasValue) v.jsSet(key, d.value)
 }
 
 /** `Object.defineProperties(object, descriptors)`. */
@@ -355,6 +377,7 @@ fun jsDefineProperties(target: Any?, descriptors: Any?): Any? {
 /** `Object.getOwnPropertyDescriptor(object, key)`. */
 fun jsOwnPropertyDescriptor(target: Any?, key: String): Any? = when (val v = jsBox(target)) {
     is JSObject -> v.descriptor(key)
+    is JSDefinable -> v.jsDefined?.descriptor(key) ?: (if (v is JSExpando) v.jsExpando?.descriptor(key) else null) ?: jsDeclaredDescriptor(v, key)
     is JSExpando -> v.jsExpando?.descriptor(key) ?: jsDeclaredDescriptor(v, key)
     is JSArray<*> -> v.jsProperties?.descriptor(key)
     is Function<*>, is JSFunction -> jsFunctionProperties(v, false)?.descriptor(key)
@@ -371,7 +394,7 @@ private fun jsDeclaredDescriptor(v: JSDynamic, key: String): JSObject? = if (key
 /** `Object.getOwnPropertyNames(value)`. */
 fun jsOwnPropertyNames(value: Any?): JSArray<String> = when (val v = jsBox(value)) {
     is JSObject -> JSArray(ArrayList(v.ownPropertyNames))
-    is JSArray<*> -> JSArray(ArrayList((0 until v.storage.size).map { it.toString() } + "length"))
+    is JSArray<*> -> JSArray(ArrayList((0 until v.storage.size).filter { v.jsHoles?.get(it) != true }.map { it.toString() } + "length" + (v.jsProperties?.ownPropertyNames ?: emptyList())))
     is String -> JSArray(ArrayList(v.indices.map { it.toString() } + "length"))
     else -> JSArray(ArrayList(jsKeysOf(v)))
 }
@@ -421,6 +444,11 @@ fun <T> jsUncheckedNull(): T = null as T
 /** A field declared without a value (Kotlin's `lateinit`) read by name before it is set: undefined, as script reads it. */
 inline fun jsUnsetIsUndefined(read: () -> Any?): Any? = try { read() } catch (_: UninitializedPropertyAccessException) { null }
 
+/** An app class's name as script knows it, where its Kotlin name is another. */
+@Retention(AnnotationRetention.RUNTIME)
+@Target(AnnotationTarget.CLASS)
+annotation class JSClassName(val name: String)
+
 /** A class's name as JavaScript gives a constructor's: the library's error classes by their JavaScript names. */
 fun jsConstructorName(c: Class<*>): String = when (c) {
     JSError::class.java -> "Error"
@@ -429,5 +457,5 @@ fun jsConstructorName(c: Class<*>): String = when (c) {
     JSSyntaxError::class.java -> "SyntaxError"
     JSReferenceError::class.java -> "ReferenceError"
     JSAggregateError::class.java -> "AggregateError"
-    else -> c.simpleName
+    else -> c.getAnnotation(JSClassName::class.java)?.name ?: c.simpleName
 }

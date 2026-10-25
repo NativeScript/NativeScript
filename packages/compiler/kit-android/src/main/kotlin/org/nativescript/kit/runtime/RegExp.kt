@@ -211,7 +211,7 @@ class JSMatch internal constructor(
     val input: String,
     val groups: JSObject?,
     internal val isExecResult: Boolean,
-    internal val indices: JSMatchIndices? = null,
+    val indices: JSMatchIndices? = null,
 ) : JSDynamic, JSStringConvertible {
     internal val hasIndices: Boolean get() = indices != null
 
@@ -222,6 +222,9 @@ class JSMatch internal constructor(
     fun element(i: Double): String? = get(i)
 
     val length: Double get() = values.storage.size.toDouble()
+
+    /** What a replace callback is given: the match, each group, the index, the input, then `groups` where the pattern names any. */
+    val replacerArguments: List<Any?> get() = values.storage + listOf<Any?>(index, input) + listOfNotNull(groups)
 
     override fun jsGet(key: String): Any? = when (key) {
         "length" -> length
@@ -326,6 +329,14 @@ fun jsReplaceAll(s: String, re: JSRegExp, replacer: (JSMatch) -> String): String
     return jsReplace(s, re, replacer)
 }
 
+/** `s.replace(pattern, replacement)` with an untyped pattern: a RegExp replaces as one, any other value by its string. */
+fun jsReplaceUntyped(s: String, pattern: Any?, replacement: String): String =
+    if (pattern is JSRegExp) jsReplace(s, pattern, replacement) else jsReplace(s, jsToString(pattern), replacement)
+
+/** `s.replaceAll(pattern, replacement)` with an untyped pattern: a RegExp replaces as one (it must be global), any other value by its string. */
+fun jsReplaceAllUntyped(s: String, pattern: Any?, replacement: String): String =
+    if (pattern is JSRegExp) jsReplaceAll(s, pattern, replacement) else jsReplaceAll(s, jsToString(pattern), replacement)
+
 /** RegExp.prototype[@@replace]: every match is found before the first replacement is computed. */
 private inline fun replaceMatches(s: String, re: JSRegExp, replacement: (IntArray) -> String): String {
     val results = ArrayList<IntArray>()
@@ -422,6 +433,13 @@ fun jsSplit(s: String, re: JSRegExp, limit: Double? = null): JSArray<String> {
     }
     out.add(s.substring(p))
     return JSArray(out as ArrayList<String>)
+}
+
+/** `s.split(separator, limit)` with an untyped separator: a RegExp splits by its pattern, undefined not at all, anything else by its string. */
+fun jsSplitUntyped(s: String, separator: Any?, limit: Double? = null): JSArray<String> = when {
+    separator is JSRegExp -> jsSplit(s, separator, limit)
+    separator == null || separator === Unit -> jsSplit(s, null as String?, limit)
+    else -> jsSplit(s, jsToString(separator), limit)
 }
 
 // Pattern syntax

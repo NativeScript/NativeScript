@@ -23,6 +23,7 @@ import ts from 'typescript';
 import type { ComponentIR } from './ir.ts';
 import { vueComponent } from './vue.ts';
 import { angularComponent, angularDirectives, angularPipes, angularRoutes, angularRouteTree, componentOf, declarableSource, declarablesIn, hostedComponent, selectorElements, routedComponents, type HostedComponent, type RouteNode } from './angular.ts';
+import { refuseBaseUses } from './component-bases.ts';
 import { svelteComponent } from './svelte.ts';
 import { svelte5Component, svelteModule } from './svelte5.ts';
 import { reactComponent, reactScreens, zustandStore } from './react.ts';
@@ -262,6 +263,7 @@ if (framework === 'vue') {
   // What each NgModule declares, imports and exports: a component's directives are those in its scope.
   const ngModuleNames = new Map(sources.flatMap((f) => [...declarablesIn(f, readFileSync(f, 'utf8'), !libraries.includes(f)).modules]));
   const runtimeModule = join(appDir, '__angular.release.ts');
+  refuseBaseUses(sources);
   components = sources.map((f) => angularComponent(f, readFileSync(f, 'utf8'), selectors, { zone, platform, pipes, runtimeModule, directives, ngModules: ngModuleNames, hosts, elements: new Map([...elements].map(([tag, e]) => [tag, e.name])), elementMeta: new Map([...elements].flatMap(([tag, e]) => (e.meta === undefined ? [] : [[tag, e.meta] as const]))) })).filter((c): c is NonNullable<typeof c> => !!c);
   const routed = new Set(tree ? routedComponents(tree.routes) : routes.map((r) => r.component));
   for (const c of components) c.page = routed.has(c.name);
@@ -344,7 +346,7 @@ const declarations = [
 ];
 const replacements = { ...kitReplacements, ...pluginReplacements(app, platform) };
 modules.push(...Object.values(replacements).filter((f) => !modules.includes(f)));
-const { checker, program, files: sourceFiles, pluginFiles, resolved, lenient: lenientApp } = createProgram(modules, virtual, platform, undefined, plugins, declarations, replacements, {}, aliased);
+const { checker, program, files: sourceFiles, pluginFiles, resolved, lenient: lenientApp, assignsFields } = createProgram(modules, virtual, platform, undefined, plugins, declarations, replacements, {}, aliased);
 const infos = new Map<string, ComponentInfo & { outputs?: string[]; outputFields?: Record<string, string>; optional?: string[]; passed?: boolean; fragment?: boolean; initThrows?: boolean; setters?: string[]; throwingSetters?: string[]; propAliases?: Record<string, string>; changes?: boolean }>(components.map((c) => [c.name, { name: c.name, props: c.props, outputs: c.outputs, outputFields: c.outputFields, optional: c.optional, passed: c.passed, fragment: framework === 'angular' && !c.page && isFragment(c.template), setters: c.setters, propAliases: c.propAliases, changes: c.changes }]));
 // A component whose template is one fragment component is a fragment too, however deep the chain.
 if (framework === 'angular') {
@@ -369,7 +371,7 @@ const sourceLines = args.includes('--no-source-lines') ? null : new SourceLines(
 ]));
 for (const c of components) if (c.templateLines) sourceLines?.pin(c.file, c.templateLines.file, c.templateLines.lines);
 // Constructs no compiled release runs, all of them with their TypeScript lines, before anything is translated.
-const unsupported = preflight(checker, [...sourceFiles, ...compiledPlugins.map((f) => program.getSourceFile(f)!)], sourceLines ? (n) => sourceLines.locate(n) : undefined, (st) => !compiledPlugins.includes(st.getSourceFile().fileName) || reach.keeps(st));
+const unsupported = preflight(checker, [...sourceFiles, ...compiledPlugins.map((f) => program.getSourceFile(f)!)], sourceLines ? (n) => sourceLines.locate(n) : undefined, (st) => !compiledPlugins.includes(st.getSourceFile().fileName) || reach.keeps(st), (f) => compiledPlugins.includes(f) && !writtenStrict(f));
 if (unsupported.length) {
   console.error(formatPreflight(unsupported));
   if (!args.includes('--keep-going')) throw new Error(`${unsupported.length} construct${unsupported.length > 1 ? 's' : ''} a compiled release does not support (see What works: https://docs.nativescript.org/guide/publishing/compiled-differences)`);
@@ -409,7 +411,7 @@ else if (unapplied.length && !(platform === 'ios' && args.includes('--all-errors
 if (platform === 'android') {
   const { writeAndroid } = await import('./android.ts');
   const css = kitCss(sheets);
-  await writeAndroid({ app, out: resolve(opt('--out', join(app, 'platforms', 'native-android'))!), name, framework: style, zone, components, modules, program, checker, files: sourceFiles, infos, css, root, routes: routing, routeTree, lines: sourceLines, applicationId: opt('--bundle'), widgetsAar: opt('--widgets'), appDir, build: args.includes('--build'), bundle: args.includes('--aab') || args.includes('--device'), keyStore: keyStore(), plugins: plugins.all(), pluginFiles, reach, properties, compiledPlugins, resolved, mounted, workers: [...workerScripts], corePatches: corePatchesAndroid(app, nodeModules(app)), allowUnapplied, allErrors: args.includes('--all-errors'), lenient: lenientApp, bindings: bindings.filter((b) => replacements[b.package] === b.script), generatedKit, narrowKitKeeps: releaseOptions(app, platform).narrowKitKeeps === true, cssAST: generatedKit ? kitAst(sheets) : undefined,
+  await writeAndroid({ app, out: resolve(opt('--out', join(app, 'platforms', 'native-android'))!), name, framework: style, zone, components, modules, program, checker, files: sourceFiles, infos, css, root, routes: routing, routeTree, lines: sourceLines, applicationId: opt('--bundle'), widgetsAar: opt('--widgets'), appDir, build: args.includes('--build'), bundle: args.includes('--aab') || args.includes('--device'), keyStore: keyStore(), plugins: plugins.all(), pluginFiles, reach, properties, compiledPlugins, resolved, mounted, workers: [...workerScripts], corePatches: corePatchesAndroid(app, nodeModules(app)), allowUnapplied, allErrors: args.includes('--all-errors'), lenient: lenientApp, assignFields: assignsFields, bindings: bindings.filter((b) => replacements[b.package] === b.script), generatedKit, narrowKitKeeps: releaseOptions(app, platform).narrowKitKeeps === true, cssAST: generatedKit ? kitAst(sheets) : undefined,
     xml: xml ? { pages: xml.xml, styles: pageSheets.map((sh) => ({ name: relative(appDir, sh.file).split('\\').join('/').replace(/\.scss$/, '.css'), ast: JSON.stringify(sh.ast) })), elements: xml.elements } : undefined });
   process.exit(0);
 }
@@ -436,7 +438,7 @@ try {
 }
 // Before the translator analyzes what throws: lenient code's checks throw.
 const lenientFiles = [...pluginFiles].filter((f) => !writtenStrict(f));
-const translator = new Translator(checker, infos, sourceFiles, { pluginFiles, lenientFiles, reach, properties, lenientApp });
+const translator = new Translator(checker, infos, sourceFiles, { pluginFiles, lenientFiles, reach, properties, lenientApp, assignFields: assignsFields });
 translator.compiledFiles = new Set(compiledPlugins);
 translator.lines = sourceLines;
 const located = (code: string) => (sourceLines ? sourceLines.swift(withoutRedundantImplicit(code)) : withoutRedundantImplicit(code));

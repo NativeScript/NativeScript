@@ -27,3 +27,19 @@ const d = new Contact();
 d.photo = 'x';
 d.clear(true);
 console.log(Object.keys(d).join(), d.photo);
+
+// A field the class defines (or initializes) is a key until deleted; written again, undefined too, it is one again.
+class Deletable {
+  a?: string;
+  b?: number = 1;
+  drop() {
+    delete this.a;
+    delete this.b;
+  }
+}
+const del = new Deletable();
+console.log('deletable', Object.keys(del).join(','), 'a' in del);
+del.drop();
+console.log('dropped', Object.keys(del).join(','), 'a' in del, 'b' in del, JSON.stringify(del));
+del.a = undefined;
+console.log('again', Object.keys(del).join(','), 'a' in del);

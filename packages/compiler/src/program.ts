@@ -814,6 +814,8 @@ export interface Program {
   resolved: (containing: string, specifier: string) => string | undefined;
   /** The app's own configuration checks without strictNullChecks. */
   lenient: boolean;
+  /** The app's configuration assigns class fields rather than defining them (`useDefineForClassFields` off). */
+  assignsFields: boolean;
 }
 
 const RXJS_SHIM = `
@@ -892,7 +894,7 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
       return ts.createSourceFile(name, desugarConstructorFactories(declaredExports(name, readFileSync(name, 'utf8')), name), version, true);
     }
     const code = /\.tsx?$/.test(name) && !name.endsWith('.d.ts') ? desugarConstructorFactories(declaredExports(name, text), name) : text;
-    return ts.createSourceFile(name, isSource(name) ? foldPlatform(code, name, platform) : code, version, true);
+    return ts.createSourceFile(name, isSource(name) ? foldPlatform(code, name, platform, modules) : code, version, true);
   };
   const fileExists = host.fileExists.bind(host);
   host.fileExists = (name) => files.has(name) || fileExists(name);
@@ -1043,7 +1045,7 @@ export function createProgram(roots: string[], virtual: Map<string, string>, pla
     throw new Error(`the app does not type-check as the release build sees it:\n${text}`);
   }
   const ordered = [...roots, ...virtual.keys(), ...pluginFiles].map((f) => program.getSourceFile(f)!).filter(Boolean);
-  return { program, checker: program.getTypeChecker(), files: ordered, pluginFiles: [...pluginFiles], resolved: (containing, specifier) => resolutions.get(`${containing}\0${specifier}`), lenient };
+  return { program, checker: program.getTypeChecker(), files: ordered, pluginFiles: [...pluginFiles], resolved: (containing, specifier) => resolutions.get(`${containing}\0${specifier}`), lenient, assignsFields: defineFields === false };
 }
 
 /**

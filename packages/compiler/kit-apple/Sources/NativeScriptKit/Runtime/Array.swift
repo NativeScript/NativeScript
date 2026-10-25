@@ -6,6 +6,8 @@ public protocol JSArrayProtocol: AnyObject {
     /// The elements boxed as JavaScript values (nested optionals collapsed).
     var jsAnyElements: [Any?] { get }
     func jsElement(at index: Int) -> Any?
+    /// Whether `index` is a slot holding a value, not past the end or empty (`new Array(n)`).
+    func jsHasElement(at index: Int) -> Bool
     /// `array[index] = value`; throws a TypeError when `value` is not an `Element`.
     func jsSetElement(_ value: Any?, at index: Int) throws
     func jsSetLength(_ length: Int) throws
@@ -34,8 +36,6 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
     nonisolated deinit {}
     public final var storage: [Element]
     public final var jsTracker: JSTracker?
-    /// Values written under keys that are no array index (`a[-1] = v`, `a[1.5] = v`).
-    @usableFromInline final var jsNonIndexed: [Double: Element]?
 
     public init() { storage = [] }
     public init(_ elements: [Element]) { storage = elements }
@@ -124,7 +124,7 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
     /// Inlinable: every typed element read goes through it, which the app's module then specializes.
     @inlinable public final func element(_ i: Double) -> Element? {
         jsTracker?.track()
-        guard let k = Int(exactly: i), k >= 0, k < storage.count else { return jsNonIndexed?[i + 0] }
+        guard let k = Int(exactly: i), k >= 0, k < storage.count else { return index(i) == nil ? nonIndexed(i) : nil }
         let e = jsTracker == nil ? storage[k] : jsReactive(storage[k])
         return JSArray.isHole(e) ? nil : e
     }
@@ -132,7 +132,10 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
     // Inlinable, as the typed reads and writes below: the app's module specializes them for its element types.
     @inlinable public final subscript(i: Int) -> Element {
         get {
-            guard i >= 0 && i < storage.count else { outOfRange(i) }
+            guard i >= 0 && i < storage.count else {
+                if i >= 4_294_967_295, let value = nonIndexed(Double(i)) { return value }
+                outOfRange(i)
+            }
             track()
             return read(i)
         }
@@ -141,6 +144,8 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
                 storage[i] = newValue
             } else if i == storage.count {
                 storage.append(newValue)
+            } else if i >= 4_294_967_295 {
+                return setNonIndexed(Double(i), newValue)
             } else if i > storage.count, let hole = JSArray.hole {
                 storage.append(contentsOf: repeatElement(hole, count: i - storage.count))
                 storage.append(newValue)
@@ -154,19 +159,29 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
     @inlinable public final subscript(i: Double) -> Element {
         get {
             guard let k = index(i) else {
-                if let value = jsNonIndexed?[i + 0] ?? JSArray.hole { return value }
+                if let value = nonIndexed(i) ?? JSArray.hole { return value }
                 fatalError("JSArray<\(Element.self)> has no element \(jsNumberToString(i))")
             }
             return self[k]
         }
         set {
-            guard let k = index(i) else {
-                if jsNonIndexed == nil { jsNonIndexed = [:] }
-                jsNonIndexed?[i + 0] = newValue
-                return
-            }
+            guard let k = index(i) else { return setNonIndexed(i, newValue) }
             self[k] = newValue
         }
+    }
+
+    /// A key that is no array index (`a[-1]`, `a[1.5]`) is an own property like a named one, kept with those.
+    @usableFromInline final func nonIndexed(_ i: Double) -> Element? {
+        guard let side = jsSideProperties(self, create: false) else { return nil }
+        let key = jsNumberToString(i)
+        guard side.has(key) else { return nil }
+        return (try? side.get(key, receiver: self)).flatMap { $0 as? Element }
+    }
+
+    @usableFromInline final func setNonIndexed(_ i: Double, _ value: Element) {
+        let side = jsSideProperties(self, create: true)!
+        let key = jsNumberToString(i)
+        do { if let setter = side.setter(key) { try setter(self, value) } else { try side.put(key, value) } } catch { jsReportUncaught(jsCaught(error)) }
     }
 
     @inlinable final func index(_ d: Double) -> Int? {
@@ -872,6 +887,11 @@ open class JSArray<Element>: JSArrayProtocol, JSReactiveConvertible, Sequence, E
     public final func jsElement(at index: Int) -> Any? {
         track()
         return index >= 0 && index < storage.count && !JSArray.isHole(storage[index]) ? jsFlat(read(index)) : nil
+    }
+
+    public final func jsHasElement(at index: Int) -> Bool {
+        track()
+        return index >= 0 && index < storage.count && !JSArray.isHole(storage[index])
     }
 
     public final func jsSetElement(_ value: Any?, at index: Int) throws {

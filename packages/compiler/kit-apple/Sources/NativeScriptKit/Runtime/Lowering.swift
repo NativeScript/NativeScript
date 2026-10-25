@@ -101,7 +101,7 @@ public func jsKeysOf(_ value: Any?) -> [String] {
     if let string = jsFlat(value) as? String { return (0..<string.utf16.count).map { String($0) } }
     if let dynamic = value as? JSDynamic { return dynamic.jsKeys }
     if let dictionary = value as? [String: Any] { return Array(dictionary.keys).sorted() }
-    if let array = value as? JSArrayProtocol { return array.jsAnyElements.indices.map(String.init) + (jsSideProperties(array, create: false)?.keys ?? []) }
+    if let array = value as? JSArrayProtocol { return (0..<array.jsLength).filter(array.jsHasElement).map(String.init) + (jsSideProperties(array, create: false)?.keys ?? []) }
     return []
 }
 
@@ -123,7 +123,7 @@ public func jsHasKey(_ object: Any?, _ key: String) -> Bool {
         return JSPrototypes.holder(type(of: dynamic) as AnyClass, key) != nil
     }
     if let array = object as? JSArrayProtocol {
-        return key == "length" || (Int(key).map { $0 >= 0 && $0 < array.jsAnyElements.count } ?? false) || jsSideProperties(array, create: false)?.has(key) == true
+        return key == "length" || (Int(key).map(array.jsHasElement) ?? false) || jsSideProperties(array, create: false)?.has(key) == true
     }
     return false
 }
@@ -199,6 +199,12 @@ public func jsSplit(_ s: String, untyped separator: Any?, _ limit: Double? = nil
     case let re as JSRegExp: return jsSplit(s, re, limit).map { $0 ?? "" }
     default: return jsSplit(s, jsToString(separator), limit)
     }
+}
+
+/// `jsSplit(_:untyped:_:)` where a regular expression's group that took no part stays undefined.
+public func jsSplit(_ s: String, untypedKeepingUnset separator: Any?, _ limit: Double? = nil) -> JSArray<String?> {
+    if let re = jsFlat(separator) as? JSRegExp { return jsSplit(s, re, limit) }
+    return JSArray<String?>(jsSplit(s, untyped: separator, limit).storage.map { $0 })
 }
 
 /// `array.join(separator)` with an untyped separator: undefined joins with a comma.
@@ -378,6 +384,7 @@ extension JSArray {
 
 public func jsSign(_ x: Double) -> Double { x.isNaN ? .nan : x > 0 ? 1 : x < 0 ? -1 : x }
 public func jsFround(_ x: Double) -> Double { Double(Float(x)) }
+public func jsImul(_ a: Double, _ b: Double) -> Double { Double(jsToInt32(a) &* jsToInt32(b)) }
 public func jsClz32(_ x: Double) -> Double { Double(UInt32(bitPattern: jsToInt32(x)).leadingZeroBitCount) }
 public func jsHypot(_ values: Double...) -> Double {
     if values.contains(where: { $0.isInfinite }) { return .infinity }
@@ -477,7 +484,7 @@ func jsStringMethod(_ s: String, _ key: String) -> JSMethod? {
             let all = key == "replaceAll"
             // A function replacement receives the match, its groups, the offset and the input, as String.prototype.replace passes them.
             if let fn = jsFlat(replacement), fn is JSFunction || fn is JSMethod || fn is JSFunctionObject {
-                let re = try (pattern as? JSRegExp) ?? JSRegExp(NSRegularExpression.escapedPattern(for: jsToString(pattern)), all ? "g" : "")
+                let re = try (pattern as? JSRegExp) ?? JSRegExp(jsRegExpEscape(jsToString(pattern)), all ? "g" : "")
                 return try jsReplace(s, re) { m in jsToString(try jsCall(fn, spread: m.values.elements.map { $0 as Any? } + [m.index, m.input])) }
             }
             if all, let re = pattern as? JSRegExp { return try jsReplaceAll(s, re, jsToString(replacement)) }

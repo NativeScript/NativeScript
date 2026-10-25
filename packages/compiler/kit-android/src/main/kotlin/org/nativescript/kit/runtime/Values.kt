@@ -18,9 +18,87 @@ val jsNull: JSNull get() = JSNull
 /** A field read untyped: null where the object notes the key as set to null (`jsNulls`), else its value. */
 fun jsNullable(value: Any?, nulls: Set<String>?, key: String): Any? = if (value == null && nulls?.contains(key) == true) jsNull else value
 
+/** A value typed `T | null`, which Kotlin holds as a nullable, read untyped: null is JavaScript's null. */
+fun jsNulled(value: Any?): Any? = value ?: jsNull
+
+/** A map value of `T | null` values read untyped: a missing one is undefined, a held null null. */
+fun <K, V> jsNulledEntry(map: JSMap<K, V>, key: K): Any? = if (map.has(key)) jsNulled(map.get(key)) else null
+
+/** An array element of `T | null` values read untyped: past the end is undefined, a held null null. */
+fun <T> jsNulledElement(array: JSArray<T>, index: Double): Any? {
+    val k = index.toInt()
+    return if (k.toDouble() == index && k >= 0 && k < array.storage.size) jsNulled(array.storage[k]) else null
+}
+
+/** The keys of `obj` among `keys` that hold null, for a typed object read from it. */
+fun jsNullKeys(obj: Any?, keys: List<String>): MutableSet<String>? {
+    val dynamic = obj as? JSDynamic ?: return null
+    val nulls = keys.filter { dynamic.jsGet(it) is JSNull }
+    return if (nulls.isEmpty()) null else nulls.toMutableSet()
+}
+
+/** The keys of `obj` among `keys` that it holds as undefined, for a typed object read from it. */
+fun jsUnsetKeys(obj: Any?, keys: List<String>): MutableSet<String>? {
+    val dynamic = obj as? JSDynamic ?: return null
+    val own = dynamic.jsKeys
+    val unset = keys.filter { it in own && dynamic.jsGet(it) == null }
+    return if (unset.isEmpty()) null else unset.toMutableSet()
+}
+
+/** An object literal's keys that hold null: `known` ones, and those of `values` (untyped values it was given) that are null. */
+fun jsNullKeysOf(known: List<String>, vararg values: Pair<String, Any?>): MutableSet<String>? {
+    val nulls = known + values.filter { it.second is JSNull }.map { it.first }
+    return if (nulls.isEmpty()) null else nulls.toMutableSet()
+}
+
 /** A field written untyped: the keys noted as holding null once `value` is written at `key`. */
 fun jsNoteNull(nulls: MutableSet<String>?, key: String, value: Any?): MutableSet<String>? =
     if (value is JSNull) (nulls ?: mutableSetOf()).also { it.add(key) } else nulls?.also { it.remove(key) }
+
+/** An object literal's optional fields given null or undefined, as its values run: the keys its shape notes (`jsNulls`, `jsUnset`). */
+class JSLiteralKeys(var nulls: MutableSet<String>? = null, var unset: MutableSet<String>? = null) {
+    /** An untyped value, before it is converted to the field's type, which holds null and undefined both as Kotlin's null. */
+    fun untyped(key: String, value: Any?): Any? {
+        if (value == null) unset = (unset ?: mutableSetOf()).also { it.add(key) } else if (value is JSNull) nulls = (nulls ?: mutableSetOf()).also { it.add(key) }
+        return value
+    }
+
+    /** A typed value, whose null is undefined. */
+    fun <T> typed(key: String, value: T): T {
+        if (value == null) unset = (unset ?: mutableSetOf()).also { it.add(key) }
+        return value
+    }
+}
+
+/**
+ * A class's instance whose keys a write can make out of its fields' declared order (assign mode's fields without an
+ * initializer, a field deleted and written again): `jsOrder` is null while the keys run in `jsFieldKeys`' order.
+ */
+interface JSKeyOrdered {
+    var jsOrder: List<String>?
+    val jsFieldKeys: List<String>
+    /** The keys script gave the object (its expando's), which `jsFieldKeys`' order puts after the fields. */
+    val jsAddedKeys: List<String> get() = listOf()
+}
+
+/** Whether a key made now needs noting: the fields' order alone no longer places it last. */
+val JSKeyOrdered.jsKeysNoted: Boolean get() = jsOrder != null || jsAddedKeys.isNotEmpty()
+
+/**
+ * `key` made just now: last among the keys. `early`: made before its class's level of the constructor started, so before
+ * keys its static place is after.
+ */
+fun JSKeyOrdered.jsKeyMade(key: String, early: Boolean = false) {
+    val keys = jsOrderedKeys(jsOrder, jsFieldKeys + jsAddedKeys)
+    if (jsOrder == null && !early && keys.lastOrNull() == key) return
+    jsOrder = keys.filter { it != key } + key
+}
+
+/** An object's present field keys `keys` in the order `order` notes, any it lacks after. */
+fun jsOrderedKeys(order: List<String>?, keys: List<String>): List<String> {
+    if (order == null) return keys
+    return order.filter { it in keys } + keys.filter { it !in order }
+}
 
 /**
  * An object whose properties dynamic code reaches by name (`o[key]`, JSON, `console.log`):
@@ -368,13 +446,13 @@ fun jsObjectKeys(value: Any?): JSArray<String> = JSArray(jsKeysOf(value))
 
 fun jsObjectValues(value: Any?): JSArray<Any?> = when (value) {
     is JSDynamic -> JSArray(value.jsKeys.map { value.jsGet(it) })
-    is JSArray<*> -> JSArray(value.storage.toList())
+    is JSArray<*> -> JSArray(jsKeysOf(value).map { jsField(value, it) })
     else -> JSArray()
 }
 
 fun jsObjectEntries(value: Any?): JSArray<Pair<String, Any?>> = when (value) {
     is JSDynamic -> JSArray(value.jsKeys.map { Pair(it, value.jsGet(it)) })
-    is JSArray<*> -> JSArray(value.storage.mapIndexed { i, v -> Pair(i.toString(), v) })
+    is JSArray<*> -> JSArray(jsKeysOf(value).map { Pair(it, jsField(value, it)) })
     else -> JSArray()
 }
 
@@ -383,7 +461,7 @@ fun <T : JSDynamic> jsObjectAssign(target: T, vararg sources: Any?): T {
     for (source in sources) {
         when (source) {
             is JSDynamic -> for (key in source.jsKeys) target.jsSet(key, source.jsGet(key))
-            is JSArray<*> -> source.storage.forEachIndexed { i, v -> target.jsSet(i.toString(), v) }
+            is JSArray<*>, is String -> for (key in jsKeysOf(source)) target.jsSet(key, jsField(source, key))
             else -> {}
         }
     }
@@ -453,7 +531,7 @@ fun jsStrictEquals(a: Any?, b: Any?): Boolean {
     val m = jsNumeric(x)
     val n = jsNumeric(y)
     if (m != null || n != null) return m != null && n != null && m == n
-    if (x is JSAdapted || y is JSAdapted) return x == y
+    if (x is JSAdapted || y is JSAdapted) return jsSameFunction(jsUnadapted(x), jsUnadapted(y))
     if (x is JSFunction || y is JSFunction || x is kotlin.reflect.KCallable<*>) return jsSameFunction(x, y)
     return x === y
 }

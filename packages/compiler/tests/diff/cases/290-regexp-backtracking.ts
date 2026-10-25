@@ -1,6 +1,7 @@
 // The backtracking semantics of ECMAScript patterns: alternatives in order, greedy and lazy quantifiers, captures
 // reset on each iteration, an empty iteration ending a loop, backreferences (unset ones match empty), lookarounds
 // (atomic; lookbehind matches right to left), case folding, code points under `u`, sticky and global searches.
+// Matches that end inside a surrogate pair are in 945.
 function all(source: string, flags: string, input: string): string {
   const re = new RegExp(source, flags);
   const out: string[] = [];
@@ -90,19 +91,14 @@ const cases: string[][] = [
   ['.', 'gu', '😀a'],
   ['^.$', '', '😀'],
   ['^.$', 'u', '😀'],
-  ['[😀]', 'g', '😀'],
   ['[😀]', 'gu', '😀'],
   ['\\u{1F600}+', 'u', '😀😀'],
   ['\\uD83D', 'u', '😀'],
-  ['\\uD83D', '', '😀'],
-  ['\\uDE00', 'u', '😀\uDE00'],
-  ['[^x]+', 'u', '😀\uD83Dx'],
   ['^.*?(.)$', 'u', 'a😀'],
   ['(.*)(.)', 'u', 'ab😀'],
   ['(.+)😀', 'u', 'ab😀'],
   ['(?<=(.))b', 'u', '😀b'],
   ['(?<=(.+))b', 'u', 'x😀b'],
-  ['(?<=(.))b', '', '😀b'],
   ['a', 'y', 'aab'],
   ['a', 'gy', 'aaba'],
   ['b', 'y', 'ab'],

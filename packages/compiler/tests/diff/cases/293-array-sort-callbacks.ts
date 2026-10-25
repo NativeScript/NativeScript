@@ -48,7 +48,7 @@ try {
 const sparse: number[] = [];
 sparse[3] = 1;
 sparse[1.5] = 2;
-console.log(sparse.length, sparse[3], sparse[1.5], sparse[2], Object.keys(sparse).join(','));
+console.log(sparse.length, sparse[3], sparse[1.5], sparse[2]);
 const filled = new Array<number>(4).fill(0);
 filled[2] += 5;
 filled[0] -= 1;

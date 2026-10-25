@@ -183,6 +183,9 @@ export class Throws {
     if (ts.isCallExpression(n) && ts.isElementAccessExpression(n.expression) && iterationThrows(c.getTypeAtLocation(n.expression.expression), c)) return true;
     // A library function iterating an untyped value (`Array.from(x)`, `new Set(x)`) iterates it through the runtime, which throws for what is no iterable.
     if ((ts.isCallExpression(n) || ts.isNewExpression(n)) && n.arguments?.some((a, i) => iterableParameter(c, n, i) && this.untyped(a))) return true;
+    // The array overloads of `new Map(x)` and `new Set(x)` resolve for an untyped x, which the runtime still iterates.
+    if (ts.isNewExpression(n) && ts.isIdentifier(n.expression) && ['Map', 'Set'].includes(n.expression.text) && n.arguments?.[0] && this.untyped(n.arguments[0])
+      && (c.getSymbolAtLocation(n.expression)?.declarations ?? []).some((d) => isLibFile(d.getSourceFile()))) return true;
     if (ts.isVariableDeclaration(n) && (ts.isObjectBindingPattern(n.name) || ts.isArrayBindingPattern(n.name)) && n.initializer && this.untyped(n.initializer)) return true;
     // Destructuring runs the getters of the members it reads.
     if (ts.isVariableDeclaration(n) && ts.isObjectBindingPattern(n.name) && n.initializer) {
@@ -314,6 +317,9 @@ export class Throws {
     // A function value (an arrow stored in a variable or an object) has a Swift function type, which throws.
     if ((ts.isArrowFunction(decl) || ts.isFunctionExpression(decl)) && skipParens(call.expression) !== decl) return true;
     if (ts.isMethodDeclaration(decl) && ts.isObjectLiteralExpression(decl.parent)) return true;
+    // A class's method reached as a value (`handlers[0](x)`) is a Swift function value, which throws.
+    const reached = skipParens(call.expression);
+    if (ts.isMethodDeclaration(decl) && ts.isClassLike(decl.parent) && !ts.isPropertyAccessExpression(reached) && !(ts.isElementAccessExpression(reached) && ts.isStringLiteralLike(reached.argumentExpression)) && reached.kind !== ts.SyntaxKind.SuperKeyword) return true;
     if ((decl as Fn).body) return this.fn(decl);
     // An abstract method throws as an override of it does.
     if (ts.isMethodDeclaration(decl) && ts.isClassLike(decl.parent) && ts.getModifiers(decl)?.some((m) => m.kind === ts.SyntaxKind.AbstractKeyword)) return this.fn(decl);

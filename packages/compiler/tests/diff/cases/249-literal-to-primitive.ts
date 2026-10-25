@@ -6,3 +6,5 @@ console.log(`${both}`, (both as any) + '', String(both), (both as any) * 1, [bot
 const a = { v: 3, valueOf() { return this.v; } };
 const b = { v: 5, valueOf() { return this.v; } };
 console.log(a < b, (a as any) + 1, Math.max(a as any, b as any));
+const seven = { [Symbol.toPrimitive]() { return 7; } };
+console.log(+(seven as any), `${seven}`, (seven as any) > 6);

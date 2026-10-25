@@ -5,7 +5,7 @@ import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, 
 import { tmpdir } from 'node:os';
 import { basename, dirname, join, relative, sep } from 'node:path';
 import { iosTarget, moduleOfDeclaration, nativeTable, registerDeclarationModule, type ScopedKind } from '../natives/symbols.ts';
-import { boundToEngine, definedObjCClasses, productLines, type Dependencies, type SwiftPackage } from '../ios-dependencies.ts';
+import { boundToEngine, definedObjCClasses, packageIdentity, packageRequirement, productLines, type Dependencies, type SwiftPackage } from '../ios-dependencies.ts';
 import type { PluginSource } from './source.ts';
 import { mirror } from '../mirror.ts';
 
@@ -65,8 +65,13 @@ interface Target {
   binary?: string;
   /** Compiled into the app target: Swift, its internal declarations in its table; or Objective-C that imports a pod. */
   inApp?: boolean;
-  /** Swift: the modules its files import. */
+  /** Swift: the modules its files import or test with `canImport`. */
   imports?: string[];
+  /** Swift: the modules its files test with `canImport`. */
+  conditional?: string[];
+  /** Swift built in the local package, on these Swift packages its plugin declares and these of the package's targets. */
+  packages?: SwiftPackage[];
+  localDeps?: string[];
   /** Arguments that let the extractor see the module, given a scratch directory and the arguments that let it see the modules the target imports. */
   extract: (scratch: string, imported: string[]) => string[];
 }
@@ -130,14 +135,32 @@ function assemble(sources: PluginSource[], root: string, stage: string, o: Param
       cpSync(f, join(to, relative(t.from, f)));
     }
   }
-  const packaged = all.filter((t) => t.kind !== 'swift' && !t.inApp);
-  const clangTargets = all.some((t) => t.kind === 'clang');
-  if (clangTargets) writeFileSync(join(stage, PREFIX_FILE), PREFIX_HEADER);
-  if (packaged.length) writeFileSync(join(stage, 'Package.swift'), manifest(packaged, join(root, PREFIX_FILE)));
-
+  // The tables are extracted with every package and pod visible: Swift whose declarations depend on `canImport` of one
+  // must see it in its target too, or its module builds without them and the code calling them fails far from the cause.
+  for (const { source, targets } of perPackage) for (const t of targets) {
+    const required = (t.conditional ?? []).filter((m) => o.deps.modules.includes(m));
+    if (t.kind !== 'swift' || t.inApp || !required.length) continue;
+    writeFileSync(join(stage, t.path, 'NSPluginRequiredModules.swift'), required.map((m) =>
+      `#if !canImport(${m})\n#error(${JSON.stringify(`${source.name}: its Swift tests canImport(${m}), which the build translated against, and its target cannot import ${m}`)})\n#endif\n`).join(''));
+  }
   const byModule = new Map(all.map((t) => [t.module, t]));
   // Swift sees the Objective-C and binary modules of every plugin, as in the app target the NativeScript CLI compiles it into.
   const importedTargets = (t: Target) => (t.imports ?? []).map((m) => byModule.get(m)).filter((d): d is Target => !!d && d.kind !== 'swift');
+  // A static library target sees a Swift package's Swift modules but not its Clang ones: Xcode imparts those only to a
+  // target linking the product, and a static library linking it carries the package's objects, which the app links too.
+  // Swift importing one is built in the local package, on its plugin's packages, unless it needs what only the project has.
+  for (const { source, targets } of perPackage) for (const t of targets) {
+    const own = o.packages.filter((p) => p.plugin === source.name);
+    const imports = t.imports ?? [];
+    if (t.kind !== 'swift' || t.inApp || !own.length || !imports.some((m) => o.deps.clangModules.includes(m))) continue;
+    if (imports.some((m) => byModule.get(m)?.kind === 'swift' && m !== t.module) || importedTargets(t).some((d) => d.inApp)) continue;
+    t.packages = own;
+    t.localDeps = importedTargets(t).map((d) => d.name);
+  }
+  const packaged = all.filter((t) => (t.kind !== 'swift' && !t.inApp) || t.packages);
+  const clangTargets = all.some((t) => t.kind === 'clang');
+  if (clangTargets) writeFileSync(join(stage, PREFIX_FILE), PREFIX_HEADER);
+  if (packaged.length) writeFileSync(join(stage, 'Package.swift'), manifest(packaged, join(root, PREFIX_FILE), root));
   const left = new Set<Target>();
   for (const { source, targets } of perPackage) {
     const tables = targets.map((t) => {
@@ -182,7 +205,7 @@ function assemble(sources: PluginSource[], root: string, stage: string, o: Param
   return {
     modules: [...all.filter((t) => !(t.inApp && t.kind === 'swift')).map((t) => t.module), ...o.deps.modules.filter((m) => declared.has(m))],
     package: packaged.length ? { dir: root, name: PACKAGE, products: packaged.map((t) => t.name) } : null,
-    swift: all.filter((t) => t.kind === 'swift' && !t.inApp).map((t) => ({
+    swift: all.filter((t) => t.kind === 'swift' && !t.inApp && !t.packages).map((t) => ({
       name: t.name, dir: join(root, t.path), packages: o.packages.filter((p) => p.plugin === perPackage.find((x) => x.targets.includes(t))!.source.name),
       products: importedTargets(t).filter((d) => !d.inApp).map((d) => d.name),
       // A package product's headers reach the app target only: a static library finds the module by its map.
@@ -317,9 +340,11 @@ function targetsOf(source: NativeSources, errors: string[], deps: Dependencies):
   if (swift.length) {
     const module = swiftModule;
     const from = commonDir([...swift, ...shaders]);
-    const imports = [...new Set(swift.flatMap((f) => [...readFileSync(f, 'utf8').matchAll(/^\s*(?:@\w+\s+)*import\s+(?:(?:typealias|struct|class|enum|protocol|let|var|func)\s+)?(\w+)/gm)].map((m) => m[1])))].sort();
+    const texts = swift.map((f) => readFileSync(f, 'utf8'));
+    const conditional = [...new Set(texts.flatMap((t) => [...t.matchAll(/\bcanImport\(\s*(\w+)/g)].map((m) => m[1])))].sort();
+    const imports = [...new Set([...conditional, ...texts.flatMap((t) => [...t.matchAll(/^\s*(?:@\w+\s+)*import\s+(?:(?:typealias|struct|class|enum|protocol|let|var|func)\s+)?(\w+)/gm)].map((m) => m[1]))])].sort();
     targets.push({
-      kind: 'swift', name: module, module, from, path: source.appModule ? 'App' : `Sources/${module}`, files: [...swift, ...shaders], inApp: !!source.appModule, imports,
+      kind: 'swift', name: module, module, from, path: source.appModule ? 'App' : `Sources/${module}`, files: [...swift, ...shaders], inApp: !!source.appModule, imports, conditional,
       extract: (scratch, imported) => {
         try {
           execFileSync('xcrun', ['swiftc', '-emit-module', '-module-name', module, '-target', target, '-sdk', sdk, '-swift-version', '5', '-parse-as-library',
@@ -348,13 +373,15 @@ function targetsOf(source: NativeSources, errors: string[], deps: Dependencies):
   return targets;
 }
 
-export function manifest(targets: Target[], prefix: string): string {
+export function manifest(targets: Target[], prefix: string, root = ''): string {
   const q = JSON.stringify;
+  const external = [...new Map(targets.flatMap((t) => t.packages ?? []).map((p) => [p.name, p])).values()];
+  const dependencies = (t: Target) => [...(t.packages ?? []).flatMap((p) => p.libs.map((lib) => `.product(name: ${q(lib)}, package: ${q(packageIdentity(p))})`)), ...(t.localDeps ?? []).map((d) => q(d))];
   // A local package may pass flags of its own: the app's project depends on it by path.
   const decl = (t: Target) =>
     t.kind === 'binary' ? `.binaryTarget(name: ${q(t.name)}, path: ${q(t.path)})`
     : t.kind === 'clang' ? `.target(name: ${q(t.name)}, path: ${q(t.path)}, publicHeadersPath: ${q(t.publicHeaders)}, cSettings: [.unsafeFlags(["-include", ${q(prefix)}])])`
-    : `.target(name: ${q(t.name)}, path: ${q(t.path)})`;
+    : `.target(name: ${q(t.name)}, dependencies: [${dependencies(t).join(', ')}], path: ${q(t.path)})`;
   return `// swift-tools-version:5.9
 // Generated by ns-native: the iOS code the app's NativeScript plugins ship, unchanged.
 import PackageDescription
@@ -365,7 +392,7 @@ let package = Package(
     products: [
 ${targets.map((t) => `        .library(name: ${q(t.name)}, targets: [${q(t.name)}]),`).join('\n')}
     ],
-    targets: [
+${external.length ? `    dependencies: [\n${external.map((p) => `        .package(${p.path ? `path: ${q(relative(root, p.path))}` : `url: ${q(p.url)}, ${packageRequirement(p.version!)}`}),`).join('\n')}\n    ],\n` : ''}    targets: [
 ${targets.map((t) => `        ${decl(t)},`).join('\n')}
     ]
 )

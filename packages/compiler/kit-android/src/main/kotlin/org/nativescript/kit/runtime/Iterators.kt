@@ -651,3 +651,12 @@ class JSAsyncGenerator<T>(body: (JSAsyncGeneratorContext) -> Unit) : JSAsyncIter
     override fun jsReturnPromise(value: Any?): JSPromise<Any?>? = core.request(JSCompletion.Return(value))
     override fun jsThrowPromise(error: Any?): JSPromise<Any?>? = core.request(JSCompletion.Throw(error))
 }
+
+/** What `new Set(v)` and `new Map(v)` iterate: nothing for null or undefined, otherwise the value's iteration. */
+fun jsCollectionSource(value: Any?): List<Any?> = if (value == null || value === JSNull) listOf() else jsIteratorOf(value).jsCollect()
+
+/** `new Map(v)` of an untyped iterable: each value an entry object, its `0` and `1` the key and value. */
+fun jsMapEntries(value: Any?): List<Pair<Any?, Any?>> = jsCollectionSource(value).map { entry ->
+    if (entry == null || entry === JSNull || entry is String || entry is Boolean || entry is Double || entry is JSSymbol) throw JSException(JSTypeError("Iterator value ${jsToString(entry)} is not an entry object"))
+    Pair(jsGet(entry, "0"), jsGet(entry, "1"))
+}

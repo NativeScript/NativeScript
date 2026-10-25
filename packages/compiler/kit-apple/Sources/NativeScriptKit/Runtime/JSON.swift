@@ -443,7 +443,7 @@ public protocol JSToJSONConvertible: AnyObject {
 /// What JSON.stringify does with an instance of a class, found once per class: casts to the runtime's
 /// protocols look up conformances, and a value cast to one only to fail costs as much as one that succeeds.
 private enum JSJSONClassKind {
-    case null, plainObject, numbers, strings, values, array, match, toJSON, date, function, other
+    case null, plainObject, numbers, strings, values, array, match, matchIndices, toJSON, date, function, other
     /// A dynamic object whose `toJSON` is looked up; an error's is not.
     case dynamic, error
 }
@@ -453,7 +453,7 @@ private struct JSJSONWriter {
     private let gap: [UInt8]
     private let output = JSUTF8Buffer()
     private var depth = 0
-    private var stack: [ObjectIdentifier] = []
+    private var stack: [AnyObject] = []
     private var kinds: [ObjectIdentifier: JSJSONClassKind] = [:]
     var replacer: Any?
     var allowed: [String]?
@@ -508,6 +508,7 @@ private struct JSJSONWriter {
         case is JSArray<Any?>: .values
         case is JSArrayProtocol: .array
         case is JSMatch: .match
+        case is JSMatchIndices: .matchIndices
         case is JSDate: .date
         case let f where jsIsFunction(f): .function
         case is JSError: .error
@@ -572,6 +573,9 @@ private struct JSJSONWriter {
         case .match:
             let values = unsafeDowncast(object, to: JSMatch.self).values
             try elements(values, values.storage.count) { values.storage[$0] }
+        case .matchIndices:
+            let values = unsafeDowncast(object, to: JSMatchIndices.self).values
+            try elements(values, values.storage.count) { values.storage[$0] }
         case .values, .array:
             let array = object as! JSArrayProtocol
             let values = array.jsAnyElements
@@ -607,13 +611,41 @@ private struct JSJSONWriter {
     private mutating func enter(_ object: AnyObject?) throws {
         guard let object else { return }
         try jsCheckStack()
-        let id = ObjectIdentifier(object)
-        if stack.contains(id) { throw JSException(JSTypeError("Converting circular structure to JSON")) }
-        stack.append(id)
+        if let start = stack.firstIndex(where: { $0 === object }) { throw JSException(JSTypeError(circularMessage(start))) }
+        stack.append(object)
     }
 
     private mutating func leave(_ object: AnyObject?) {
         if object != nil { stack.removeLast() }
+    }
+
+    /// V8's CircularStructureMessageBuilder: the first two links of the cycle, an ellipsis, the last.
+    private func circularMessage(_ start: Int) -> String {
+        func constructor(_ object: AnyObject) -> String {
+            object is JSArrayProtocol || object is JSMatch ? "'Array'" : "'\((object as? JSDynamic)?.jsClassName ?? "Object")'"
+        }
+        // The first key holding the next object is the one being serialized: an earlier one would have met the cycle first.
+        func link(_ k: Int, to next: AnyObject) -> String {
+            let holder = stack[k]
+            func holds(_ value: Any?) -> Bool {
+                guard let v = jsFlat(value), jsIsClassInstance(v) else { return false }
+                return jsObjectReference(v) === next
+            }
+            let elements: [Any?]? = (holder as? JSArrayProtocol)?.jsAnyElements ?? (holder as? JSMatch)?.values.storage.map { $0 }
+            if let elements { return "index \(elements.firstIndex(where: holds) ?? 0)" }
+            let key: String? = if let plain = holder as? JSObject { plain.keys.first { holds(plain[$0]) } }
+                else if let dynamic = holder as? JSDynamic { dynamic.jsKeys.first { holds(dynamic[jsKey: $0]) } }
+                else { nil }
+            return "property '\(key ?? "")'"
+        }
+        func line(_ k: Int) -> String { "\n    |     \(link(k - 1, to: stack[k])) -> object with constructor \(constructor(stack[k]))" }
+        var text = "Converting circular structure to JSON\n    --> starting at object with constructor \(constructor(stack[start]))"
+        var k = start + 1
+        while k < min(stack.count, start + 3) { text += line(k); k += 1 }
+        if stack.count > k + 1 { text += "\n    |     ..." }
+        k = max(k, stack.count - 1)
+        while k < stack.count { text += line(k); k += 1 }
+        return text + "\n    --- \(link(stack.count - 1, to: stack[start])) closes the circle"
     }
 
     private mutating func array(_ object: AnyObject?, _ values: [Any?]) throws {
@@ -674,7 +706,8 @@ private struct JSJSONWriter {
 
 /// The object a value `jsIsClassInstance` holds, without the bridging `as AnyObject` would consider.
 @inline(__always) private func jsObjectReference(_ value: Any) -> AnyObject {
-    func reference<T>(_ object: T) -> AnyObject { unsafeBitCast(object, to: AnyObject.self) }
+    // Opening can give a class-bound existential (an array of a protocol's values), which is wider than a reference.
+    func reference<T>(_ object: T) -> AnyObject { MemoryLayout<T>.size == MemoryLayout<AnyObject>.size ? unsafeBitCast(object, to: AnyObject.self) : object as AnyObject }
     return _openExistential(value, do: reference)
 }
 
