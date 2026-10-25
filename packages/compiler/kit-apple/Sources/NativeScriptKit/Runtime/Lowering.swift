@@ -201,6 +201,12 @@ public func jsSplit(_ s: String, untyped separator: Any?, _ limit: Double? = nil
     }
 }
 
+/// `jsSplit(_:untyped:_:)` where a regular expression's group that took no part stays undefined.
+public func jsSplit(_ s: String, untypedKeepingUnset separator: Any?, _ limit: Double? = nil) -> JSArray<String?> {
+    if let re = jsFlat(separator) as? JSRegExp { return jsSplit(s, re, limit) }
+    return JSArray<String?>(jsSplit(s, untyped: separator, limit).storage.map { $0 })
+}
+
 /// `array.join(separator)` with an untyped separator: undefined joins with a comma.
 public func jsJoinSeparator(_ separator: Any?) -> String {
     jsFlat(separator) == nil ? "," : jsToString(separator)
@@ -478,7 +484,7 @@ func jsStringMethod(_ s: String, _ key: String) -> JSMethod? {
             let all = key == "replaceAll"
             // A function replacement receives the match, its groups, the offset and the input, as String.prototype.replace passes them.
             if let fn = jsFlat(replacement), fn is JSFunction || fn is JSMethod || fn is JSFunctionObject {
-                let re = try (pattern as? JSRegExp) ?? JSRegExp(NSRegularExpression.escapedPattern(for: jsToString(pattern)), all ? "g" : "")
+                let re = try (pattern as? JSRegExp) ?? JSRegExp(jsRegExpEscape(jsToString(pattern)), all ? "g" : "")
                 return try jsReplace(s, re) { m in jsToString(try jsCall(fn, spread: m.values.elements.map { $0 as Any? } + [m.index, m.input])) }
             }
             if all, let re = pattern as? JSRegExp { return try jsReplaceAll(s, re, jsToString(replacement)) }
