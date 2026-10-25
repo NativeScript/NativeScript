@@ -9,7 +9,6 @@
 		"237-shared-top-names": "Top-level names (an enum, files of the same name in two folders) that several modules declare clash; swiftc crashes (Swift translator).",
 		"239-destructuring-assignment": "Destructuring assignment to existing variables is refused (Swift translator, SEMANTICS #8).",
 		"243-array-holes": "Object.keys lists the holes of new Array(n) (Swift runtime).",
-		"244-optional-member-later": "An optional member set after the object is made is listed in declaration order, not as the last key (Swift translator).",
 		"246-nullable-string-concat": "`null as string | null` in a template or a concatenation does not compile: nil has no contextual type (Swift translator).",
 		"247-missing-values-throw": "A module const read before its declaration runs, and a member of undefined or null read, set or called, trap instead of throwing ReferenceError or TypeError (Swift translator, quality step 4).",
 		"248-function-properties": "Properties given to a function value (`fn.tag = …`, Object.defineProperty) and Object.prototype.hasOwnProperty.call on one are refused or dropped (Swift translator and runtime, SEMANTICS #3).",
@@ -24,7 +23,9 @@
 		"626-array-parameter-mutation": "Refused: an untyped or typed array given to a number[] parameter its callee writes to is converted into a copy (preflight, src/sharing.ts).",
 		"627-unchecked-class-cast": "`x as C` throws when x is an instance of another class, where TypeScript's cast checks nothing (Swift translator).",
 		"662-untyped-array-parameter": "Refused: an untyped array given to a number[] or string[] parameter its callee writes to is converted into a copy (preflight, src/sharing.ts); Kotlin passes it as is only when its elements already are the type, which a build cannot know.",
-		"700-signal-null-object": "A class-typed `signal<T>(null)` outside a component doesn't compile (`equals: jsSame` loses MainActor), and a function returning its value as `T` throws where script returns the null (Swift translator)."
+		"700-signal-null-object": "A class-typed `signal<T>(null)` outside a component doesn't compile (`equals: jsSame` loses MainActor), and a function returning its value as `T` throws where script returns the null (Swift translator).",
+		"853-nullish-elements-refused": "An array element typed to hold null and undefined both (`(string | null | undefined)[]`) is refused: the element type holds them as one nil (Unit 22b; covering it needs element reads held untyped).",
+		"854-nullish-function-slot-refused": "A parameter holding a function that may be null or undefined both is refused: a function held untyped is not callable typed yet (Unit 22b)."
 	},
 	"kotlin": {
 		"250-void-promise-values": "A function value with a rest parameter passed to then (`then(log)`) matches no overload (Kotlin translator).",
@@ -38,6 +39,8 @@
 		"624-json-parse-null": "JSON.parse of a string that is null at run time parses \"undefined\" and throws (Kotlin translator).",
 		"626-array-parameter-mutation": "Refused: an untyped or typed array given to a number[] parameter its callee writes to is converted into a copy (preflight, src/sharing.ts).",
 		"627-unchecked-class-cast": "`x as C` throws when x is an instance of another class, where TypeScript's cast checks nothing (Kotlin translator).",
-		"662-untyped-array-parameter": "Refused: an untyped array given to a number[] or string[] parameter its callee writes to is converted into a copy (preflight, src/sharing.ts); Kotlin passes it as is only when its elements already are the type, which a build cannot know."
+		"662-untyped-array-parameter": "Refused: an untyped array given to a number[] or string[] parameter its callee writes to is converted into a copy (preflight, src/sharing.ts); Kotlin passes it as is only when its elements already are the type, which a build cannot know.",
+		"853-nullish-elements-refused": "An array element typed to hold null and undefined both (`(string | null | undefined)[]`) is refused: the element type holds them as one nil (Unit 22b; covering it needs element reads held untyped).",
+		"854-nullish-function-slot-refused": "A parameter holding a function that may be null or undefined both is refused: a function held untyped is not callable typed yet (Unit 22b)."
 	}
 }

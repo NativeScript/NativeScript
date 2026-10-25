@@ -433,7 +433,7 @@ export class Translator implements AsyncTranslator {
    */
   private nullishSlotSet?: NullishSlots;
   private nullish(): NullishSlots {
-    return this.nullishSlotSet ??= this.lenient || this.library ? { held: new Set(), fields: new Set() } : nullishSlots(this.checker, this.sourceFiles, (f) => this.pluginFiles.has(f.fileName));
+    return this.nullishSlotSet ??= this.lenient || this.library ? { held: new Set(), fields: new Set(), refused: [] } : nullishSlots(this.checker, this.sourceFiles, (f) => this.pluginFiles.has(f.fileName));
   }
 
   /** A variable, parameter, or call result whose slot may hold null and undefined both: held untyped (`nullishSlots`). */
@@ -1156,6 +1156,7 @@ export class Translator implements AsyncTranslator {
       // A generic function as a value (`obj.notify`) is no Swift closure's type: its own type parameters are their constraints.
       const own = (x: ts.Type) => (x.flags & F.TypeParameter && s.typeParameters?.includes(x as ts.TypeParameter) ? c.getBaseConstraintOfType(x) ?? c.getAnyType() : x);
       const params = s.getParameters().filter((p) => p.name !== 'this').map((p) => {
+        if (p.valueDeclaration && this.nullish().held.has(p.valueDeclaration)) return 'Any?';
         const pt = this.type(own(c.getTypeOfSymbolAtLocation(p, where ?? p.valueDeclaration!)), where);
         if (p.valueDeclaration && ts.isParameter(p.valueDeclaration) && (p.valueDeclaration.questionToken || p.valueDeclaration.initializer || nullableTypeNode(p.valueDeclaration.type))) return optionalType(pt);
         // Lenient code may pass null for an object: the parameter is optional, as a closure's implicitly unwrapped one is.
@@ -1165,7 +1166,7 @@ export class Translator implements AsyncTranslator {
         return isFunctionType(pt) ? `@escaping ${pt}` : pt;
       });
       // One parameter of no value is spelled `(())`: Swift reads `(Void) -> T` as taking no arguments.
-      return `(${params.length === 1 && params[0] === 'Void' ? '()' : params.join(', ')}) throws -> ${this.type(own(s.getReturnType()), where)}`;
+      return `(${params.length === 1 && params[0] === 'Void' ? '()' : params.join(', ')}) throws -> ${sd && this.nullish().held.has(sd) ? 'Any?' : this.type(own(s.getReturnType()), where)}`;
     }
     // An interface extending one class is that class; one merged into a class of its name is the class.
     const extended = sym && sym.flags & ts.SymbolFlags.Interface && !(sym.flags & ts.SymbolFlags.Class) ? this.extendedClass(t) : null;
@@ -2101,6 +2102,8 @@ export class Translator implements AsyncTranslator {
     this.freshCounts = new Map();
     const owner = this.declOwner;
     try {
+      const refused = this.nullish().refused.filter(([n]) => n.getSourceFile() === sf).sort(([a], [b]) => a.getStart() - b.getStart())[0];
+      if (refused) throw this.error(refused[0], refused[1]);
       const { code, init } = this.moduleOf(sf);
       return { code: singleTry(code), init: init.map(singleTry) };
     } finally { this.currentFile = outer; this.freshCounts = counts; this.declOwner = owner; }
@@ -2828,11 +2831,14 @@ ${members.join('\n')}
     const held = (f: ShapeField) => this.shapeHeld(f);
     // A field the program writes, on an object read from another (an event's data), writes that object too.
     const through = new Set(this.library || symbolic.length ? [] : fields.filter((f) => this.membersWritten().has(f.name)).map((f) => f.name));
-    for (const f of fields) { lines.push(`    var ${ident(f.name)}: ${held(f)}${through.has(f.name) ? ` { didSet { jsWriteThrough(${swiftString(f.name)}) } }` : ''}`); this.declare(f.name, { kind: 'var', type: held(f) }); }
+    // Only a field Swift holds as optional can be missing.
+    const optional = symbolic.length ? [] : fields.filter((f) => f.type.endsWith('?') && /[?!]$/.test(held(f)) && !hasTopLevelArrow(held(f)));
+    const observer = (f: ShapeField) => [...(optional.includes(f) ? [`jsWrote(${swiftString(f.name)}, oldValue != nil, ${ident(f.name)} == nil)`] : []), ...(through.has(f.name) ? [`jsWriteThrough(${swiftString(f.name)})`] : [])].join('; ');
+    for (const f of fields) { lines.push(`    var ${ident(f.name)}: ${held(f)}${observer(f) ? ` { didSet { ${observer(f)} } }` : ''}`); this.declare(f.name, { kind: 'var', type: held(f) }); }
     for (const f of symbolic) { lines.push(`    var ${f.name}: ${f.type}`); this.declare(f.name, { kind: 'var', type: f.type }); }
     for (const x of this.shapeProtocols(allFields)) { lines.push(...x.lines); for (const [n, m] of x.members) this.declare(n, m); }
-    // Keys in the order the literal that made this object wrote them, when not the declared order.
-    lines.push('    private let jsOrder: [String]?');
+    // Keys in the order the literal that made this object wrote them, when not the declared order; a key a write adds comes last.
+    lines.push(`    private ${optional.length ? 'var' : 'let'} jsOrder: [String]?`);
     // The optional fields set to null rather than left undefined, which Swift holds as one nil.
     const nullable = symbolic.length ? [] : fields.filter((f) => isOptional(f.type) && f.type !== 'Any?');
     if (nullable.length) lines.push('    private var jsNulls: Set<String>?');
@@ -2850,13 +2856,22 @@ ${members.join('\n')}
     const field = (f: ShapeField) => ['String', 'Double', 'Bool'].includes(f.type) ? `jsLenient${f.type === 'Double' ? 'Number' : f.type}(jsField(jsObject, ${swiftString(f.name)}))` : this.reportedRead(this.fromAny(`jsField(jsObject, ${swiftString(f.name)})`, this.lenient ? held(f).replace(/^\((.*)\)!$/, '($1)?') : held(f).endsWith('!') ? optionalType(f.type) : f.type));
     const nulls = nullable.length ? [`jsNulls: jsNullKeys(jsObject, [${nullable.map((f) => swiftString(f.name)).join(', ')}])`] : [];
     lines.push(`        self.init(${[...fields.map((f) => `${label(f.name)}: ${field(f)}`), 'jsOrder: (jsObject as? JSDynamic)?.jsKeys', ...nulls].join(', ')})`);
+    if (optional.length) lines.push(`        jsUnset = jsUnsetKeys(jsObject, [${optional.map((f) => swiftString(f.name)).join(', ')}])`);
     lines.push('        jsExtra = jsObject as? JSDynamic', ...(through.size ? ['        jsSourced = jsExtra != nil'] : []), '    }');
     if (through.size) lines.push('    private var jsSourced = false', '    private func jsWriteThrough(_ key: String) { if jsSourced { jsExtra?[jsKey: key] = self[jsKey: key] } }');
     const members = this.dynamicMembers(fields, className, false, [], [], false, new Set(), [], false, true, new Set(nullable.map((f) => f.name)));
-    // Only a field Swift holds as optional can be missing.
-    const optional = fields.filter((f) => f.type.endsWith('?') && /[?!]$/.test(held(f)) && !hasTopLevelArrow(held(f)));
-    const present = (f: ShapeField) => `${ident(f.name)} != nil${nullable.includes(f) ? ` || jsNulls?.contains(${swiftString(f.name)}) == true` : ''}`;
-    members[0] = `    var jsKeys: [String] {\n        let order = jsOrder ?? [${fields.map((f) => swiftString(f.name)).join(', ')}]\n        let keys = order + (jsExtra?.jsKeys ?? []).filter { !order.contains($0) }\n        return ${optional.length ? `keys.filter { key in switch key { ${optional.map((f) => `case ${swiftString(f.name)}: return ${present(f)}`).join('; ')}; default: return true } }` : 'keys'}\n    }`;
+    const present = (f: ShapeField) => `${ident(f.name)} != nil${nullable.includes(f) ? ` || jsNulls?.contains(${swiftString(f.name)}) == true` : ''} || jsUnset?.contains(${swiftString(f.name)}) == true`;
+    const declared = `[${fields.map((f) => swiftString(f.name)).join(', ')}]`;
+    if (optional.length) {
+      // The optional fields holding undefined as an own key (`o.a = undefined`), which a missing one doesn't.
+      lines.push('    private var jsUnset: Set<String>?');
+      lines.push(`    private func jsHas(_ key: String) -> Bool { switch key { ${optional.map((f) => `case ${swiftString(f.name)}: return ${present(f)}`).join('; ')}; default: return true } }`);
+      lines.push('    private func jsWrote(_ key: String, _ had: Bool, _ unset: Bool) {');
+      lines.push(`        let was = had${nullable.length ? ' || jsNulls?.contains(key) == true' : ''} || jsUnset?.contains(key) == true`);
+      lines.push(`        if unset { ${nullable.length ? 'jsNulls?.remove(key); ' : ''}jsUnset = (jsUnset ?? []).union([key]) } else { jsUnset?.remove(key) }`);
+      lines.push(`        if !was { jsOrder = (jsOrder ?? ${declared}).filter { $0 != key && jsHas($0) } + [key] }`, '    }');
+    }
+    members[0] = `    var jsKeys: [String] {\n        let order = jsOrder ?? ${declared}\n        let keys = order + (jsExtra?.jsKeys ?? []).filter { !order.contains($0) }\n        return ${optional.length ? 'keys.filter(jsHas)' : 'keys'}\n    }`;
     lines.push(...members);
     lines.push('}');
     return lines.join('\n');

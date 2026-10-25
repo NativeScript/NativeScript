@@ -747,29 +747,65 @@ function alwaysThrows(st: ts.Statement): boolean {
 /**
  * Strict code's slots that may hold null and undefined both, which a backend's optional alone can't tell apart:
  * one whose type admits both, one typed `T | null` that receives an untyped value, and a field typed `T | null` that may be
- * read before it is written. `held` (variables, parameters, function returns) are held untyped; `fields` (class fields,
- * object-type members) note which of their nils is null.
- * A parameter or return whose function's signature is fixed elsewhere (a callback, a function used as a value, a method an
- * override must match, an overload, a decorated member, an async function's result) keeps its typed form.
+ * read before it is written. `held` (variables, parameters, function returns, and the parameters and results of function
+ * types, function values and override families that admit both) are held untyped; `fields` (class fields, object-type
+ * members) note which of their nils is null. `refused` are such slots neither can cover (an element of an array, Map or
+ * Set, a function or native value, a slot whose signature a library or an interface fixes), each with what it is.
  */
-export interface NullishSlots { held: Set<ts.Declaration>; fields: Set<ts.Declaration> }
+export interface NullishSlots { held: Set<ts.Declaration>; fields: Set<ts.Declaration>; refused: [ts.Node, string][] }
 
 export function nullishSlots(checker: ts.TypeChecker, files: readonly ts.SourceFile[], skip: (file: ts.SourceFile) => boolean): NullishSlots {
   const held = new Set<ts.Declaration>(), fields = new Set<ts.Declaration>();
+  const refused: [ts.Node, string][] = [];
+  const refuse = (n: ts.Node, what: string) => { if (!refused.some(([m]) => m === n)) refused.push([n, what]); };
   const parts = (t: ts.Type) => (t.isUnion() ? t.types : [t]);
   const loose = (t: ts.Type) => parts(t).some((x) => x.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown));
   const hasNull = (t: ts.Type) => !loose(t) && parts(t).some((x) => x.flags & ts.TypeFlags.Null);
   const both = (t: ts.Type) => hasNull(t) && parts(t).some((x) => x.flags & (ts.TypeFlags.Undefined | ts.TypeFlags.Void));
+  // A result typed `void | null` is one callers ignore.
+  const bothResult = (t: ts.Type) => both(t) && !parts(t).some((x) => x.flags & ts.TypeFlags.Void);
+  const nullish = ts.TypeFlags.Null | ts.TypeFlags.Undefined | ts.TypeFlags.Void;
   // Held untyped, a function would be called through the runtime and a library or native object reached by name: such
-  // slots keep their typed form.
-  const primitive = ts.TypeFlags.StringLike | ts.TypeFlags.NumberLike | ts.TypeFlags.BooleanLike | ts.TypeFlags.BigIntLike | ts.TypeFlags.Null | ts.TypeFlags.Undefined | ts.TypeFlags.Void;
+  // slots are refused.
+  const primitive = ts.TypeFlags.StringLike | ts.TypeFlags.NumberLike | ts.TypeFlags.BooleanLike | ts.TypeFlags.BigIntLike | nullish;
   const value = (t: ts.Type) => parts(t).every((x) => x.flags & primitive || (!x.getCallSignatures().length && !!x.getSymbol()?.declarations?.length && x.getSymbol()!.declarations!.every((d) => own(d))));
   const untyped = (e: ts.Expression | undefined) => !!e && e.kind !== ts.SyntaxKind.NullKeyword && !!(checker.getTypeAtLocation(e).flags & ts.TypeFlags.Any);
   const own = (d: ts.Declaration | undefined) => !!d && !d.getSourceFile().isDeclarationFile && !skip(d.getSourceFile());
-  const typeOf = (d: ts.Declaration) => checker.getTypeOfSymbolAtLocation(checker.getSymbolAtLocation((d as ts.NamedDeclaration).name!)!, d);
+  const typeOf = (d: ts.Declaration) => {
+    const name = (d as ts.NamedDeclaration).name, sym = name && checker.getSymbolAtLocation(name);
+    return sym ? checker.getTypeOfSymbolAtLocation(sym, d) : checker.getTypeAtLocation(d);
+  };
+  const text = (t: ts.Type) => checker.typeToString(t);
+  const NATIVE = 'a function or library object that may be null or undefined both';
+  // Values of more than one kind (`number | string`) are held untyped already, null apart from undefined.
+  const oneKind = (t: ts.Type) => {
+    const kinds = new Set(parts(t).filter((x) => !(x.flags & nullish)).map((x) => (x.flags & ts.TypeFlags.StringLike ? 's' : x.flags & ts.TypeFlags.NumberLike ? 'n' : x.flags & ts.TypeFlags.BooleanLike ? 'b' : x.flags & ts.TypeFlags.BigIntLike ? 'g' : x.getSymbol() ?? x)));
+    return kinds.size === 1;
+  };
+  // A variable only compared, assigned, passed or returned: held untyped, a library object is never reached by name.
+  const refs = new Map<ts.Symbol, ts.Identifier[]>();
+  const opaque = (d: ts.Declaration) => {
+    const sym = (d as ts.NamedDeclaration).name && checker.getSymbolAtLocation((d as ts.NamedDeclaration).name!);
+    return !!sym && (refs.get(sym) ?? []).every((r) => {
+      let x: ts.Node = r;
+      while (ts.isParenthesizedExpression(x.parent) || ts.isNonNullExpression(x.parent) || ts.isAsExpression(x.parent)) x = x.parent;
+      const p = x.parent;
+      if (ts.isBinaryExpression(p)) return [ts.SyntaxKind.EqualsEqualsEqualsToken, ts.SyntaxKind.ExclamationEqualsEqualsToken, ts.SyntaxKind.EqualsEqualsToken, ts.SyntaxKind.ExclamationEqualsToken, ts.SyntaxKind.EqualsToken, ts.SyntaxKind.QuestionQuestionToken, ts.SyntaxKind.BarBarToken, ts.SyntaxKind.AmpersandAmpersandToken].includes(p.operatorToken.kind);
+      return ts.isReturnStatement(p) || ((ts.isCallExpression(p) || ts.isNewExpression(p)) && p.expression !== x) || ts.isVariableDeclaration(p) || ts.isIfStatement(p) || ts.isConditionalExpression(p) || ts.isPrefixUnaryExpression(p);
+    });
+  };
+  /** Holds `d` when its type admits both; refuses it when that type isn't one a held slot can carry. */
+  const hold = (d: ts.Declaration, t: ts.Type | undefined, at: ts.Node = d) => {
+    if (!t || !(ts.isFunctionLike(d) ? bothResult(t) : both(t)) || !oneKind(t)) return;
+    if (value(t) || (ts.isVariableDeclaration(d) && !parts(t).some((x) => x.getCallSignatures().length) && opaque(d))) held.add(d);
+    else refuse(at, `${NATIVE} (\`${text(t)}\`)`);
+  };
   // Functions whose signature only this program's direct calls see.
   const fixed = new Set<ts.Node>();
   const fns: ts.FunctionLikeDeclaration[] = [];
+  const values: ts.SignatureDeclaration[] = [];
+  const signatures: ts.SignatureDeclaration[] = [];
+  const classes: ts.ClassLikeDeclaration[] = [];
   const anyArgs: [ts.ParameterDeclaration, ts.Expression][] = [];
   const anyStores: [ts.Declaration, ts.Expression][] = [];
   const isCallee = (n: ts.Node) => {
@@ -779,8 +815,14 @@ export function nullishSlots(checker: ts.TypeChecker, files: readonly ts.SourceF
   };
   const extended = new Set<ts.Symbol>();
   const visit = (n: ts.Node): void => {
-    if (ts.isClassLike(n)) for (const h of n.heritageClauses ?? []) for (const x of h.types) { const b = checker.getTypeAtLocation(x.expression).getSymbol(); if (b) extended.add(b); }
-    if ((ts.isFunctionDeclaration(n) || ts.isMethodDeclaration(n) || ts.isConstructorDeclaration(n)) && n.body) fns.push(n);
+    if (ts.isClassLike(n)) {
+      classes.push(n);
+      for (const h of n.heritageClauses ?? []) for (const x of h.types) { const b = checker.getTypeAtLocation(x.expression).getSymbol(); if (b) extended.add(b); }
+    }
+    if ((ts.isFunctionDeclaration(n) || (ts.isMethodDeclaration(n) && ts.isClassLike(n.parent)) || ts.isConstructorDeclaration(n)) && n.body) fns.push(n);
+    if (ts.isArrowFunction(n) || ts.isFunctionExpression(n) || (ts.isMethodDeclaration(n) && ts.isObjectLiteralExpression(n.parent))) values.push(n);
+    if (ts.isFunctionTypeNode(n) || ts.isCallSignatureDeclaration(n) || ts.isMethodSignature(n)) signatures.push(n);
+    if (ts.isIdentifier(n)) { const sym = checker.getSymbolAtLocation(n); if (sym && sym.valueDeclaration && (sym.valueDeclaration as ts.NamedDeclaration).name !== n) refs.set(sym, [...(refs.get(sym) ?? []), n]); }
     if ((ts.isIdentifier(n) || ts.isPrivateIdentifier(n)) && !isCallee(n)) {
       const d = checker.getSymbolAtLocation(n)?.valueDeclaration;
       if (d && (ts.isFunctionDeclaration(d) || ts.isMethodDeclaration(d)) && (d.name !== n)) fixed.add(d);
@@ -801,6 +843,13 @@ export function nullishSlots(checker: ts.TypeChecker, files: readonly ts.SourceF
     ts.forEachChild(n, visit);
   };
   for (const f of files) if (!f.isDeclarationFile && !skip(f)) visit(f);
+  const isAsync = (fn: ts.SignatureDeclaration) => !!ts.getModifiers(fn)?.some((m) => m.kind === ts.SyntaxKind.AsyncKeyword) || !!(fn as ts.FunctionLikeDeclaration).asteriskToken;
+  const named = (p: ts.ParameterDeclaration) => ts.isIdentifier(p.name) && !p.dotDotDotToken;
+  const returnOf = (fn: ts.SignatureDeclaration) => checker.getSignatureFromDeclaration(fn)?.getReturnType();
+  const holdSignature = (fn: ts.SignatureDeclaration) => {
+    for (const p of fn.parameters) if (named(p)) hold(p, typeOf(p));
+    if (fn.type && !isAsync(fn) && !ts.isConstructorDeclaration(fn)) hold(fn, returnOf(fn), fn.type);
+  };
   const openSignature = (fn: ts.FunctionLikeDeclaration): boolean => {
     if (fixed.has(fn) || !fn.body || (ts.canHaveDecorators(fn) && ts.getDecorators(fn)?.length)) return true;
     const sym = ts.isConstructorDeclaration(fn) ? undefined : checker.getSymbolAtLocation(fn.name!);
@@ -814,14 +863,97 @@ export function nullishSlots(checker: ts.TypeChecker, files: readonly ts.SourceF
     if (ts.isConstructorDeclaration(fn) && (fn.parent.heritageClauses?.length || ts.getDecorators(fn.parent)?.length)) return true;
     return false;
   };
-  for (const fn of fns) {
-    if (!own(fn) || openSignature(fn)) continue;
-    for (const p of fn.parameters) {
-      if (!ts.isIdentifier(p.name) || p.dotDotDotToken || (ts.isConstructorDeclaration(fn) && ts.isParameterPropertyDeclaration(p, fn))) continue;
-      if (both(typeOf(p)) && value(typeOf(p))) held.add(p);
+  // Any parameter or result of `fn` that may hold both, refused as `why`.
+  const refuseBoth = (fn: ts.SignatureDeclaration, why: string) => {
+    for (const p of fn.parameters) { const t = typeOf(p); if (both(t) && oneKind(t)) refuse(p, `${why} (\`${text(t)}\`)`); }
+    const ret = returnOf(fn);
+    if (fn.type && !ts.isConstructorDeclaration(fn) && ret && bothResult(ret) && oneKind(ret)) refuse(fn.type, `${why} (\`${text(ret)}\`)`);
+  };
+  // A function type's parameters and result: what every function of that type, and every call through it, uses.
+  for (const sig of signatures) if (own(sig)) holdSignature(sig);
+  const ownBase = (c: ts.ClassLikeDeclaration): ts.ClassLikeDeclaration | 'library' | undefined => {
+    const h = c.heritageClauses?.find((x) => x.token === ts.SyntaxKind.ExtendsKeyword)?.types[0];
+    if (!h) return undefined;
+    const d = checker.getTypeAtLocation(h.expression).getSymbol()?.valueDeclaration;
+    return d && ts.isClassLike(d) && own(d) ? d : 'library';
+  };
+  const memberName = (m: ts.MethodDeclaration) => (ts.isIdentifier(m.name) || ts.isPrivateIdentifier(m.name) ? m.name.text : undefined);
+  const isStatic = (m: ts.Node) => !!ts.getModifiers(m as ts.HasModifiers)?.some((k) => k.kind === ts.SyntaxKind.StaticKeyword);
+  type Family = { members: ts.MethodDeclaration[]; why?: string };
+  const families = new Map<ts.MethodDeclaration, Family>();
+  /** The methods overriding one another with `m`, and why their signatures are fixed elsewhere if they are. */
+  const familyOf = (m: ts.MethodDeclaration): Family => {
+    const name = memberName(m), cls = m.parent as ts.ClassLikeDeclaration;
+    if (!name) return { members: [m], why: 'a method with a computed name' };
+    let top = cls, why: string | undefined;
+    for (let c: ts.ClassLikeDeclaration | 'library' | undefined = cls; c; c = ownBase(c)) {
+      if (c === 'library') { const h = top.heritageClauses!.find((x) => x.token === ts.SyntaxKind.ExtendsKeyword)!.types[0]; if (checker.getTypeAtLocation(h).getProperty(name)) why = 'a method overriding a library class\'s'; break; }
+      top = c;
     }
-    const ret = checker.getSignatureFromDeclaration(fn)?.getReturnType();
-    if (!ts.isConstructorDeclaration(fn) && fn.type && !fn.asteriskToken && !ts.getModifiers(fn)?.some((m) => m.kind === ts.SyntaxKind.AsyncKeyword) && ret && both(ret) && value(ret)) held.add(fn);
+    const tree = [top];
+    for (let k = 0; k < tree.length; k++) for (const c of classes) if (ownBase(c) === tree[k] && !tree.includes(c)) tree.push(c);
+    const members = tree.flatMap((c) => c.members.filter((x): x is ts.MethodDeclaration => ts.isMethodDeclaration(x) && !isStatic(x) && memberName(x) === name));
+    for (const c of tree) for (const h of c.heritageClauses ?? []) if (h.token === ts.SyntaxKind.ImplementsKeyword && h.types.some((x) => checker.getTypeAtLocation(x).getProperty(name))) why ??= 'a method an interface declares';
+    if (members.some((x) => !x.body || (ts.canHaveDecorators(x) && ts.getDecorators(x)?.length) || (checker.getSymbolAtLocation(x.name)?.declarations?.length ?? 0) > 1)) why ??= 'an overloaded or decorated method';
+    if (tree.some((c) => ts.getDecorators(c)?.length)) why ??= 'a method of a decorated class';
+    const result = { members, why };
+    for (const x of members) families.set(x, result);
+    return result;
+  };
+  for (const fn of fns) {
+    if (!own(fn)) continue;
+    if (ts.isMethodDeclaration(fn) && !isStatic(fn)) {
+      if (families.has(fn)) continue;
+      const { members: family, why } = familyOf(fn);
+      if (why) { for (const x of family) refuseBoth(x, why); continue; }
+      const width = Math.max(...family.map((x) => x.parameters.length));
+      for (let k = 0; k < width; k++) {
+        const ps = family.map((x) => x.parameters[k]).filter((p): p is ts.ParameterDeclaration => !!p);
+        const wide = ps.find((p) => both(typeOf(p)) && oneKind(typeOf(p)));
+        if (!wide) continue;
+        if (!ps.every(named) || !ps.every((p) => value(typeOf(p)))) { refuse(wide, `${NATIVE} (\`${text(typeOf(wide))}\`)`); continue; }
+        for (const p of ps) held.add(p);
+      }
+      const wide = family.find((x) => { const r = returnOf(x); return !!r && bothResult(r) && oneKind(r) && !isAsync(x); });
+      if (wide) {
+        if (family.every((x) => { const r = returnOf(x); return !r || value(r); }) && family.every((x) => !isAsync(x))) for (const x of family) held.add(x);
+        else refuse(wide.type ?? wide, `${NATIVE} (\`${text(returnOf(wide)!)}\`)`);
+      }
+      continue;
+    }
+    if (ts.isConstructorDeclaration(fn) && (fn.parent.heritageClauses?.some((h) => h.token === ts.SyntaxKind.ExtendsKeyword) || ts.getDecorators(fn.parent)?.length)) { refuseBoth(fn, 'a constructor parameter of a class that extends another or is decorated'); continue; }
+    if (ts.isFunctionDeclaration(fn) && (checker.getSymbolAtLocation(fn.name!)?.declarations?.length ?? 0) > 1) { refuseBoth(fn, 'an overloaded function'); continue; }
+    if (ts.canHaveDecorators(fn) && ts.getDecorators(fn)?.length) { refuseBoth(fn, 'a decorated member'); continue; }
+    for (const p of fn.parameters) {
+      if (!named(p) || (ts.isConstructorDeclaration(fn) && ts.isParameterPropertyDeclaration(p, fn))) continue;
+      hold(p, typeOf(p));
+    }
+    if (!ts.isConstructorDeclaration(fn) && fn.type && !isAsync(fn)) hold(fn, returnOf(fn), fn.type);
+  }
+  // A function value takes the slots of the function type it is given as: held where that type's are, else refused where
+  // that type may pass (or take) both.
+  for (const fn of values) {
+    if (!own(fn)) continue;
+    const contextual = ts.isMethodDeclaration(fn)
+      ? (() => { const o = checker.getContextualType(fn.parent as ts.ObjectLiteralExpression); const m = o && ts.isIdentifier(fn.name) ? o.getProperty(fn.name.text) : undefined; return m ? checker.getTypeOfSymbolAtLocation(m, fn) : undefined; })()
+      : checker.getContextualType(fn as ts.Expression);
+    const ctx = contextual?.getNonNullableType().getCallSignatures()[0];
+    if (!ctx) { holdSignature(fn); continue; }
+    const decl = ctx.getDeclaration() as ts.SignatureDeclaration | undefined;
+    const ownDecl = !!decl && !ts.isJSDocSignature(decl) && own(decl);
+    fn.parameters.forEach((p, k) => {
+      const sym = ctx.getParameters()[k];
+      const given = sym && checker.getTypeOfSymbolAtLocation(sym, fn);
+      if (!given || !both(given) || !oneKind(given)) return;
+      const slot = ownDecl ? decl!.parameters[k] : undefined;
+      if (slot && held.has(slot) && named(p)) held.add(p);
+      else refuse(p, `a callback parameter that may be null or undefined both (\`${text(given)}\`)`);
+    });
+    const ret = ctx.getReturnType();
+    if (bothResult(ret) && oneKind(ret) && !isAsync(fn)) {
+      if (ownDecl && held.has(decl!)) held.add(fn);
+      else refuse(fn, `a callback that may return null or undefined both (\`${text(ret)}\`)`);
+    }
   }
   for (const [p] of anyArgs) {
     const fn = p.parent;
@@ -835,15 +967,36 @@ export function nullishSlots(checker: ts.TypeChecker, files: readonly ts.SourceF
     if (ts.isVariableDeclaration(d)) { if (local(d) && value(typeOf(d))) held.add(d); }
     else if (fieldLike(d)) fields.add(d);
   }
+  /** An element, entry or type argument of `t` that may be null or undefined both (what no held slot carries). */
+  const nested = (t: ts.Type, depth = 0, seen = new Set<ts.Type>()): ts.Type | undefined => {
+    if (seen.has(t) || depth > 4 || loose(t)) return undefined;
+    seen.add(t);
+    if (depth > 0 && both(t) && oneKind(t)) return t;
+    for (const x of parts(t)) {
+      if (!(x.flags & ts.TypeFlags.Object) || x.getCallSignatures().length) continue;
+      const args = (x as ts.ObjectType).objectFlags & ts.ObjectFlags.Reference ? checker.getTypeArguments(x as ts.TypeReference) : x.aliasTypeArguments ?? [];
+      for (const a of [...args, ...checker.getIndexInfosOfType(x).map((i) => i.type)]) { const r = nested(a, depth + 1, seen); if (r) return r; }
+    }
+    return undefined;
+  };
+  const checkNested = (n: ts.Node, t: ts.Type | undefined) => {
+    const inner = t && nested(t);
+    if (inner) refuse(n, `an array, Map or Set element (or other type argument) that may be null or undefined both (\`${text(inner)}\` in \`${text(t!)}\`)`);
+  };
   for (const f of files) {
     if (f.isDeclarationFile || skip(f)) continue;
     const scan = (n: ts.Node): void => {
-      if (ts.isVariableDeclaration(n) && ts.isIdentifier(n.name) && local(n) && both(typeOf(n)) && value(typeOf(n))) held.add(n);
+      if (ts.isVariableDeclaration(n) && ts.isIdentifier(n.name) && local(n) && both(typeOf(n))) hold(n, typeOf(n));
+      else if (ts.isVariableDeclaration(n) && ts.isIdentifier(n.name) && both(typeOf(n)) && oneKind(typeOf(n))) refuse(n, `a loop variable that may be null or undefined both (\`${text(typeOf(n))}\`)`);
+      else if (ts.isBindingElement(n) && ts.isIdentifier(n.name) && both(typeOf(n)) && oneKind(typeOf(n))) refuse(n, `a destructured binding that may be null or undefined both (\`${text(typeOf(n))}\`)`);
       else if (ts.isPropertyDeclaration(n) && fieldLike(n) && ts.isIdentifier(n.name) && hasNull(typeOf(n)) && (!n.initializer || both(typeOf(n)))) fields.add(n);
       else if (ts.isPropertySignature(n) && ts.isIdentifier(n.name) && both(typeOf(n))) fields.add(n);
+      else if ((ts.isGetAccessorDeclaration(n) || ts.isSetAccessorDeclaration(n)) && n.body) refuseBoth(n, 'an accessor that may take or give null or undefined both');
+      if ((ts.isVariableDeclaration(n) || ts.isParameter(n) || ts.isPropertyDeclaration(n) || ts.isPropertySignature(n)) && (n as ts.NamedDeclaration).name && checker.getSymbolAtLocation((n as ts.NamedDeclaration).name!)) checkNested(n, typeOf(n));
+      if (ts.isFunctionLike(n) && !ts.isConstructorDeclaration(n)) checkNested(n.type ?? n, returnOf(n as ts.SignatureDeclaration));
       ts.forEachChild(n, scan);
     };
     scan(f);
   }
-  return { held, fields };
+  return { held, fields, refused };
 }

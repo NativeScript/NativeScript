@@ -790,6 +790,7 @@ export class Translator implements AsyncTranslator {
       const self = this.library ? (s as ts.Signature & { thisParameter?: ts.Symbol }).thisParameter : undefined;
       const selfType = self && this.type(c.getTypeOfSymbolAtLocation(self, where ?? self.valueDeclaration!), where);
       const params = [...(selfType && selfType !== 'Unit' ? [self!] : []), ...s.getParameters()].map((p) => {
+        if (p.valueDeclaration && this.nullish().held.has(p.valueDeclaration)) return 'Any?';
         const pt = this.type(c.getTypeOfSymbolAtLocation(p, where ?? p.valueDeclaration!), where);
         if (p.valueDeclaration && ts.isParameter(p.valueDeclaration) && (p.valueDeclaration.questionToken || p.valueDeclaration.initializer)) return optionalType(pt);
         return pt;
@@ -797,7 +798,8 @@ export class Translator implements AsyncTranslator {
       // A generic signature held as a value (`assertEqual<T>` of a module object): its type parameters are whatever script passes.
       const generic = (s.typeParameters ?? []).map((p) => p.symbol.name);
       const erase = (x: string) => generic.reduce((acc, n) => acc.replace(new RegExp(`\\b${n}\\b`, 'g'), 'Any?'), x).replace(/\?\?/g, '?');
-      return erase(`(${params.join(', ')}) -> ${this.type(s.getReturnType(), where)}`);
+      const sd = s.getDeclaration() as ts.Declaration | undefined;
+      return erase(`(${params.join(', ')}) -> ${sd && this.nullish().held.has(sd) ? 'Any?' : this.type(s.getReturnType(), where)}`);
     }
     // An interface extending a class; one merged into a class (`interface ListViewBase { on(…) }`) is the class.
     // An interface typing a variable of its name a lazily defined class is assigned to (`interface PagerAdapter` with
@@ -852,7 +854,7 @@ export class Translator implements AsyncTranslator {
 
   private nullishSlotSet?: NullishSlots;
   private nullish(): NullishSlots {
-    return this.nullishSlotSet ??= this.lenient || this.library ? { held: new Set(), fields: new Set() } : nullishSlots(this.checker, this.sourceFiles, (f) => this.pluginFiles.has(f.fileName));
+    return this.nullishSlotSet ??= this.lenient || this.library ? { held: new Set(), fields: new Set(), refused: [] } : nullishSlots(this.checker, this.sourceFiles, (f) => this.pluginFiles.has(f.fileName));
   }
 
   /** A variable, parameter, or call result whose slot may hold null and undefined both: held untyped (`nullishSlots`). */
@@ -1506,6 +1508,8 @@ export class Translator implements AsyncTranslator {
 
   /** A module's declarations, and the statements that run when it is first imported. */
   module(sf: ts.SourceFile): { code: string; init: string[] } {
+    const refused = this.nullish().refused.filter(([n]) => n.getSourceFile() === sf).sort(([a], [b]) => a.getStart() - b.getStart())[0];
+    if (refused) throw this.error(refused[0], refused[1]);
     this.props = new Set();
     this.moduleTemporaries.clear();
     const out: string[] = [];
@@ -2027,7 +2031,7 @@ export class Translator implements AsyncTranslator {
     const optional = fields.filter((f) => f.type.endsWith('?') && !isFunctionType(f.type));
     // An optional member set after the object is made becomes its last key, as a property JavaScript adds does.
     const symbolic = allFields.some((f) => f.symbol);
-    const tracked = new Set(symbolic ? [] : optional.filter((f) => !overrides?.has(f.name) && !jvmField(f) && this.membersSetLater().has(f.name)).map((f) => f.name));
+    const tracked = new Set(symbolic ? [] : optional.filter((f) => !overrides?.has(f.name) && !jvmField(f)).map((f) => f.name));
     const modifiers = (f: ShapeField) => (overrides?.has(f.name) ? 'override ' : jvmField(f) ? '@JvmField ' : '');
     // A literal stores what it is given, undefined included (`{ …, view } as ItemEventData` before the view exists). Kotlin
     // checks a non-null constructor parameter at the call, so such a field is set from a nullable one inside the class.
@@ -2051,9 +2055,15 @@ export class Translator implements AsyncTranslator {
         if (!tracked.has(f.name)) continue;
         lines.push(`    var ${ident(f.name)}: ${f.type} = ${ident(f.name)}`, `        set(value) { field = jsKeySet(field, value, ${kotlinString(f.name)})${writes(f)} }`);
       }
-      lines.push(`    private fun <T> jsKeySet(old: T?, value: T?, key: String): T? = value.also { if (old == null && it != null) jsOrder = jsKeyAppended(jsOrder ?: ${declared}.filter(::jsHas), key) }`);
+      lines.push(`    private fun <T> jsKeySet(old: T?, value: T?, key: String): T? = value.also {`,
+        '        val was = old != null || jsNulls?.contains(key) == true || jsUnset?.contains(key) == true',
+        '        if (it == null) { jsNulls?.remove(key); jsUnset = (jsUnset ?: mutableSetOf()).also { s -> s.add(key) } } else jsUnset?.remove(key)',
+        `        if (!was) jsOrder = (jsOrder ?: ${declared}).filter { k -> k != key && jsHas(k) } + key`,
+        '    }');
     }
     for (const f of fields) if (through.has(f.name) && !tracked.has(f.name) && !loose(f)) lines.push(`    ${modifiers(f)}var ${ident(f.name)}: ${f.type} = ${ident(f.name)}`, `        set(value) { field = value${writes(f)} }`);
+    // The optional fields holding undefined as an own key (`o.a = undefined`), which a missing one doesn't.
+    if (optional.length) lines.push('    private var jsUnset: MutableSet<String>? = null');
     // Read from an untyped object (a cast of JSON.parse): the keys it has beyond the type's stay readable, in its order.
     lines.push('    private var jsExtra: JSDynamic? = null');
     if (through.size) lines.push('    private var jsSourced = false', '    private fun jsWriteThrough(key: String) { if (jsSourced) jsExtra?.jsSet(key, jsGet(key)) }');
@@ -2065,9 +2075,9 @@ export class Translator implements AsyncTranslator {
     const zero: Record<string, string> = { String: '""', Double: 'Double.NaN', Boolean: 'false' };
     const field = (f: ShapeField) => (this.library && /^[A-Z]\w*\?$/.test(f.type) && !f.type.startsWith('JS') && this.isObjectType(f.type) ? `(jsField(o, ${kotlinString(f.name)}) as? ${f.type.slice(0, -1)})`
       : !this.library && zero[f.type] ? this.fromAny(`(jsField(o, ${kotlinString(f.name)}) ?: ${zero[f.type]})`, f.type, f.name) : this.fromAny(`jsField(o, ${kotlinString(f.name)})`, f.type, f.name));
-    lines.push(`        fun fromJS(o: Any?): ${name} = ${name}(${[...fields.map((f) => `${ident(f.name)} = ${field(f)}`), 'jsOrder = (o as? JSDynamic)?.jsKeys'].join(', ')}).also { it.jsExtra = o as? JSDynamic${through.size ? '; it.jsSourced = it.jsExtra != null' : ''}${optional.length ? `; it.jsNulls = jsNullKeys(o, listOf(${optional.map((f) => kotlinString(f.name)).join(', ')}))` : ''} }`);
+    lines.push(`        fun fromJS(o: Any?): ${name} = ${name}(${[...fields.map((f) => `${ident(f.name)} = ${field(f)}`), 'jsOrder = (o as? JSDynamic)?.jsKeys'].join(', ')}).also { it.jsExtra = o as? JSDynamic${through.size ? '; it.jsSourced = it.jsExtra != null' : ''}${optional.length ? `; it.jsNulls = jsNullKeys(o, listOf(${optional.map((f) => kotlinString(f.name)).join(', ')})); it.jsUnset = jsUnsetKeys(o, listOf(${optional.map((f) => kotlinString(f.name)).join(', ')}))` : ''} }`);
     lines.push('    }');
-    if (optional.length) lines.push(`    private fun jsHas(key: String): Boolean = when (key) { ${optional.map((f) => `${kotlinString(f.name)} -> this.${ident(f.name)} != null || jsNulls?.contains(${kotlinString(f.name)}) == true`).join('; ')}; else -> true }`);
+    if (optional.length) lines.push(`    private fun jsHas(key: String): Boolean = when (key) { ${optional.map((f) => `${kotlinString(f.name)} -> this.${ident(f.name)} != null || jsNulls?.contains(${kotlinString(f.name)}) == true || jsUnset?.contains(${kotlinString(f.name)}) == true`).join('; ')}; else -> true }`);
     lines.push(`    override val jsKeys: List<String>`);
     lines.push(`        get() = (jsOrder ?: ${declared}).let { order -> order + (jsExtra?.jsKeys ?: listOf()).filter { it !in order } }${optional.length ? '.filter(::jsHas)' : ''}`);
     // Keys set beyond the type's (`Object.assign(shape, more)`) are kept with the extra ones.
