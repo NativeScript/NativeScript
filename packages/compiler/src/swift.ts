@@ -3021,7 +3021,12 @@ ${members.join('\n')}
       '        }',
       '        set {',
       ...this.keySwitch([
-        ...fields.map((f) => ({ name: f.name, code: `${nulls.has(f.name) ? `jsNoteNull(&jsNulls, ${swiftString(f.name)}, newValue); ` : ''}${raw.has(f.name) ? `jsExpandoSet(self, ${swiftString(f.name)}, newValue)` : this.storeFromAny(`self.${ident(f.name)}`, f.type, f.name)}; return` })),
+        // A null is noted before the store (a write-through reads it back), a value after it (a field's didSet tells a null field from a missing one).
+        ...fields.map((f) => {
+          const note = `jsNoteNull(&jsNulls, ${swiftString(f.name)}, newValue)`;
+          const store = raw.has(f.name) ? `jsExpandoSet(self, ${swiftString(f.name)}, newValue)` : this.storeFromAny(`self.${ident(f.name)}`, f.type, f.name);
+          return { name: f.name, code: nulls.has(f.name) ? `if newValue is JSNull { ${note} }; ${store}; if !(newValue is JSNull) { ${note} }; return` : `${store}; return` };
+        }),
         ...accessors.filter((a) => a.set).map((a) => ({ name: a.name, code: `${a.set}; return` })),
       ], symbols.map((f) => `            case ${f.key}: ${this.storeFromAny(f.member, f.type, f.member, true)}`), override ? 'super[jsKey: key] = newValue' : expando ? 'jsExpandoSet(self, key, newValue)' : extra ? 'if jsExtra == nil { jsExtra = JSObject() }; jsExtra?[jsKey: key] = newValue' : 'break'),
       '        }',
