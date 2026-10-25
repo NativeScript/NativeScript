@@ -796,7 +796,7 @@ public func jsSet(_ object: Any?, _ key: String, _ value: Any?) throws {
         dynamic[jsKey: key] = value
         if let refused = jsRefusedWrite {
             jsRefusedWrite = nil
-            throw JSException(refused)
+            throw refused
         }
     // `promise.cancel = fn` on the promise an animation returns: what its `cancel()` does.
     case let cancelable as JSCancelable where key == "cancel":

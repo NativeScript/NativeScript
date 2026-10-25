@@ -176,6 +176,10 @@ public func jsDefineProperty(_ object: Any?, _ key: String, _ descriptor: Any?) 
     let d = try JSPropertyDescriptor(descriptor)
     switch jsFlat(object) {
     case let o as JSObject: try o.defineProperty(key, d)
+    case let definable as JSDefinable where definable.jsDefinable(key):
+        let own = jsSideProperties(definable, create: true)!
+        if !own.has(key) { own[key] = definable[jsKey: key] }
+        try own.defineProperty(key, d)
     case let expando as JSExpando where expando.jsExpando?.has(key) == true || jsIsSymbolKey(key) || !expando.jsKeys.contains(key):
         if expando.jsExpando == nil { expando.jsExpando = JSObject() }
         try expando.jsExpando!.defineProperty(key, d)
@@ -194,6 +198,34 @@ public func jsDefineProperty(_ object: Any?, _ key: String, _ descriptor: Any?) 
     default: throw JSException(JSTypeError("Object.defineProperty called on non-object"))
     }
     return object
+}
+
+/// An object of a program class whose declared fields `Object.defineProperty` may give a descriptor (an accessor, read-only,
+/// hidden): such a field's reads and writes go through `subscript(jsKey:)`, which defers to the descriptor kept beside the object.
+public protocol JSDefinable: JSDynamic {
+    func jsDefinable(_ key: String) -> Bool
+}
+
+/// A definable field's value where it was given a descriptor (its getter's, run with the object as `this`), else nil.
+public func jsDefinedGet(_ object: JSDefinable, _ key: String) -> Any?? {
+    guard let own = jsSideProperties(object, create: false), own.has(key) else { return nil }
+    do { return .some(try own.get(key, receiver: object)) } catch { jsReportUncaught(jsCaught(error)); return .some(nil) }
+}
+
+/// A write of a definable field given a descriptor: its setter, or its value where writable; what that throws, `jsSet` throws.
+/// False where the field has no descriptor.
+public func jsDefinedSet(_ object: JSDefinable, _ key: String, _ value: Any?) -> Bool {
+    guard let own = jsSideProperties(object, create: false), own.has(key) else { return false }
+    do {
+        if let setter = own.setter(key) { try setter(object, value) } else { try own.put(key, value) }
+    } catch { jsRefusedWrite = JSException(jsCaught(error)) }
+    return true
+}
+
+/// A definable field's key as `Object.keys` lists it: per its descriptor where it has one, else `declared`.
+public func jsDefinedKeys(_ object: JSDefinable, _ key: String, _ declared: [String]) -> [String] {
+    guard let own = jsSideProperties(object, create: false), own.has(key) else { return declared }
+    return own.jsKeys.contains(key) ? [key] : []
 }
 
 /// What script gives an object that has no room for it (an array's `Object.defineProperty(list, 'total', …)`, `list.tag = …`):
@@ -215,6 +247,8 @@ public func jsOwnPropertyDescriptor(_ object: Any?, _ key: String) -> Any? {
     case let expando as JSExpando where expando.jsExpando?.has(key) == true: return expando.jsExpando!.descriptor(key)
     case let function as JSFunctionObject: return function.ownDescriptor(key)
     case let array as JSArrayProtocol where key != "length" && jsArrayIndex(key) == nil: return jsSideProperties(array, create: false)?.descriptor(key)
+    case let definable as JSDefinable where jsSideProperties(definable, create: false)?.has(key) == true:
+        return jsSideProperties(definable, create: false)!.descriptor(key)
     case let dynamic as JSDynamic:
         guard dynamic.jsKeys.contains(key) else { return nil }
         let level = jsRestriction(dynamic)

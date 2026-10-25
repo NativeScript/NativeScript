@@ -329,6 +329,13 @@ class JSInspectAccessor(val kind: String)
 /** `Object.defineProperty(object, key, descriptor)`. */
 fun jsDefineProperty(target: Any?, key: String, descriptor: Any?): Any? {
     val d = JSPropertyDescriptor.of(descriptor)
+    val definable = jsBox(target) as? JSDefinable
+    if (definable != null && definable.jsDefinable(key)) {
+        val own = definable.jsDefined ?: JSObject().also { definable.jsDefined = it }
+        if (!own.has(key)) own[key] = definable.jsGet(key)
+        own.defineProperty(key, d)
+        return target
+    }
     when (val v = jsBox(target)) {
         is JSObject -> v.defineProperty(key, d)
         is JSExpando -> (v.jsExpando ?: JSObject().also { v.jsExpando = it }).defineProperty(key, d)
@@ -355,6 +362,7 @@ fun jsDefineProperties(target: Any?, descriptors: Any?): Any? {
 /** `Object.getOwnPropertyDescriptor(object, key)`. */
 fun jsOwnPropertyDescriptor(target: Any?, key: String): Any? = when (val v = jsBox(target)) {
     is JSObject -> v.descriptor(key)
+    is JSDefinable -> v.jsDefined?.descriptor(key) ?: (if (v is JSExpando) v.jsExpando?.descriptor(key) else null) ?: jsDeclaredDescriptor(v, key)
     is JSExpando -> v.jsExpando?.descriptor(key) ?: jsDeclaredDescriptor(v, key)
     is JSArray<*> -> v.jsProperties?.descriptor(key)
     is Function<*>, is JSFunction -> jsFunctionProperties(v, false)?.descriptor(key)
