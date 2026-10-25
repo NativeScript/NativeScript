@@ -337,12 +337,11 @@ fun jsDefineProperty(target: Any?, key: String, descriptor: Any?): Any? {
     val d = JSPropertyDescriptor.of(descriptor)
     when (val v = jsBox(target)) {
         is JSObject -> v.defineProperty(key, d)
-        is JSExpando -> (v.jsExpando ?: JSObject().also { v.jsExpando = it }).defineProperty(key, d)
+        // A field the class declares is the field, as a typed read finds it.
+        is JSExpando -> if (v.jsExpando?.has(key) != true && key in v.jsKeys) jsDefineDeclared(v, key, d)
+            else (v.jsExpando ?: JSObject().also { v.jsExpando = it }).defineProperty(key, d)
         is Function<*>, is JSFunction -> jsFunctionProperties(v, true)!!.defineProperty(key, d)
-        is JSDynamic -> {
-            if (d.get != null || d.set != null) throw JSException(JSTypeError("Cannot define an accessor on a typed object: $key"))
-            if (d.hasValue) v.jsSet(key, d.value)
-        }
+        is JSDynamic -> jsDefineDeclared(v, key, d)
         is JSArray<*> -> if (key == "length" || jsArrayIndex(key) != null) {
             if (d.get != null || d.set != null) throw JSException(JSTypeError("Cannot define an accessor on an array's index or length: $key"))
             if (d.hasValue) jsSet(v, key, d.value)
@@ -350,6 +349,12 @@ fun jsDefineProperty(target: Any?, key: String, descriptor: Any?): Any? {
         else -> throw JSException(JSTypeError("Object.defineProperty called on non-object"))
     }
     return target
+}
+
+private fun jsDefineDeclared(v: JSDynamic, key: String, d: JSPropertyDescriptor) {
+    if (d.get != null || d.set != null) throw JSException(JSTypeError("Cannot define an accessor on a typed object: $key"))
+    if (d.writable == false || d.enumerable == false || d.configurable == false) throw JSException(JSTypeError("Cannot restrict a typed object's field: $key"))
+    if (d.hasValue) v.jsSet(key, d.value)
 }
 
 /** `Object.defineProperties(object, descriptors)`. */

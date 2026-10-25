@@ -1,29 +1,27 @@
 {
 	"$comment": "Cases that do not match Node yet, by target, each with its cause. The diff run reports them without failing, and fails when one matches Node so it is removed here. Owners: the Kotlin translator (src/kotlin.ts) and runtime (kit-android runtime).",
 	"swift": {
-		"232-async-object-return": "Does not compile: an object literal an async function returns is made as an untyped `JSObject`, which `JSAsync<Stat>.returnValue` doesn't take (Swift translator).",
-		"237-shared-top-names": "Top-level names (an enum, files of the same name in two folders) that several modules declare clash; swiftc crashes (Swift translator).",
-		"246-nullable-string-concat": "`null as string | null` in a template or a concatenation does not compile: nil has no contextual type (Swift translator).",
+		"243-array-holes": "An array key that is no index (`a[1.5] = v`) is left out of Object.keys (Swift runtime).",
 		"247-missing-values-throw": "A module const read before its declaration runs, and a member of undefined or null read, set or called, trap instead of throwing ReferenceError or TypeError (Swift translator, quality step 4).",
 		"290-regexp-backtracking": "NSRegularExpression (ICU) is no ECMAScript engine: a capture in a quantified group keeps an earlier iteration's value, an empty iteration is kept, a backreference to an unset or later group fails instead of matching empty, case folding is full Unicode (/ß/i matches SS, /\\u212A/i matches k), v-flag set operations are unsupported, lone surrogates read U+FFFD, error messages are ICU's, and unbounded lookbehind, a quantified lookaround and duplicate group names throw SyntaxError (Swift runtime).",
-		"293-array-sort-callbacks": "A comparator declared with fewer parameters than sort passes does not compile (Swift translator).",
 		"363-operator-pipe": "Does not compile: an overloaded generic method with an `any` implementation (`pipe(...operators: OperatorFunction<any, any>[])`) is called as the implementation (`Stream<T>` assigned to `Stream<Any?>`, no `adapting` from the operator's function type), and an overload's function argument names the implementation's type parameter `T` (Swift translator).",
 		"620-interface-identity": "Refused: an untyped object converted to an interface's class (a copy) where the code compares it by identity, looks it up as a key, or a callee keeps it (preflight, src/sharing.ts).",
 		"621-optional-callback-adapting": "Lenient app code: a function literal returning null where its function type gives an array does not compile: the closure's Swift result, `JSArray<Double>`, holds no null (null in typed values, Unit 22) (Swift translator).",
 		"626-array-parameter-mutation": "Refused: an untyped or typed array given to a number[] parameter its callee writes to is converted into a copy (preflight, src/sharing.ts).",
 		"662-untyped-array-parameter": "Refused: an untyped array given to a number[] or string[] parameter its callee writes to is converted into a copy (preflight, src/sharing.ts); Kotlin passes it as is only when its elements already are the type, which a build cannot know.",
-		"700-signal-null-object": "A class-typed `signal<T>(null)` outside a component doesn't compile (`equals: jsSame` loses MainActor), and a function returning its value as `T` throws where script returns the null (Swift translator).",
 		"862-json-unrepresentable": "A lone surrogate JSON.parse reads from an escape becomes U+FFFD, since Swift strings hold only valid Unicode; and JSON.stringify recurses per nesting level, so 5000 nested arrays exceed the stack (RangeError) where V8 writes them iteratively (Swift runtime limits).",
-		"863-string-lone-surrogate-literal": "A string literal holding a lone surrogate is refused: a Swift string cannot hold one (Swift translator)."
+		"863-string-lone-surrogate-literal": "A string literal holding a lone surrogate is refused: a Swift string cannot hold one (Swift translator).",
+		"891-generic-class-fields-as-interface": "Refused (build error): a generic class whose field or getter typed by its type parameter meets a generic interface's field, held as the interface; Swift can't overload a property by its type (Swift translator).",
+		"892-define-property-declared-field": "Refused (build error): Object.defineProperty making a class's declared field an accessor, read-only, hidden or fixed, which the class's Swift field keeps none of (Swift translator)."
 	},
 	"kotlin": {
-		"250-void-promise-values": "A function value with a rest parameter passed to then (`then(log)`) matches no overload (Kotlin translator).",
-		"251-define-property-targets": "A function declaration used as a value (`Object.defineProperty(greet, …)`) and `error.constructor.name` do not compile; defineProperty on a class's object, an array or a function is dropped, test262 cluster 3 (Kotlin translator and runtime).",
 		"252-prototype-method-calls": "A built-in's prototype method called with call or apply (`Array.prototype.slice.call(list, 1)`) is refused, test262 cluster 2 (Kotlin translator).",
 		"254-destructuring-assignment": "A rest element in a destructuring assignment (`[first, ...others] = list`) is refused, test262 cluster 8 (Kotlin translator).",
 		"620-interface-identity": "Refused: an untyped object converted to an interface's class (a copy) where the code compares it by identity, looks it up as a key, or a callee keeps it (preflight, src/sharing.ts).",
 		"621-optional-callback-adapting": "Lenient app code: a function literal returning null where its type gives an array gives undefined, not null (Kotlin translator; null vs undefined in typed values).",
 		"626-array-parameter-mutation": "Refused: an untyped or typed array given to a number[] parameter its callee writes to is converted into a copy (preflight, src/sharing.ts).",
-		"662-untyped-array-parameter": "Refused: an untyped array given to a number[] or string[] parameter its callee writes to is converted into a copy (preflight, src/sharing.ts); Kotlin passes it as is only when its elements already are the type, which a build cannot know."
+		"662-untyped-array-parameter": "Refused: an untyped array given to a number[] or string[] parameter its callee writes to is converted into a copy (preflight, src/sharing.ts); Kotlin passes it as is only when its elements already are the type, which a build cannot know.",
+		"891-generic-class-fields-as-interface": "Refused (build error): a generic class's field typed by its type parameter meeting a generic interface's writable field, which the interface erases to any value (Kotlin translator).",
+		"892-define-property-declared-field": "Refused (build error): Object.defineProperty making a class's declared field an accessor, read-only, hidden or fixed, which the class's Kotlin field keeps none of (Kotlin translator)."
 	}
 }
