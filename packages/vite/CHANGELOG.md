@@ -1,3 +1,36 @@
+## 8.0.21 (2026-10-22)
+
+### 🩹 Fixes
+
+- **vite:** recognize aliased default exports in link checks ([#11567](https://github.com/NativeScript/NativeScript/pull/11567))
+- **vite:** preserve package imports during vendor bundling ([#11565](https://github.com/NativeScript/NativeScript/pull/11565))
+
+### ❤️ Thank You
+
+- Alec Larson @aleclarson
+
+## 8.0.20 (2026-10-21)
+
+### 🩹 Fixes
+
+- **vite:** apply app.css before the app entry on HMR dev boots ([#11522](https://github.com/NativeScript/NativeScript/pull/11522))
+- **vite:** keep source-only dependencies out of the HMR vendor bundle regardless of spec ([#11560](https://github.com/NativeScript/NativeScript/pull/11560))
+- **vite:** resolve nested node_modules requests for install-linked dependencies ([#11559](https://github.com/NativeScript/NativeScript/pull/11559))
+- **vite:** preserve Vue plugin imports and canonical runtime bridge ([#11555](https://github.com/NativeScript/NativeScript/pull/11555))
+- **vite:** give HMR deps-bundle shims the named exports of CommonJS and minified ESM ([#11543](https://github.com/NativeScript/NativeScript/pull/11543))
+- **vite:** keep `value: undefined` in HMR-served Vue scripts ([#11542](https://github.com/NativeScript/NativeScript/pull/11542))
+- **vite:** keep the ?raw query on HMR imports ([#11541](https://github.com/NativeScript/NativeScript/pull/11541))
+- **vite:** serve a plugin module under one URL whether imported or re-exported ([#11540](https://github.com/NativeScript/NativeScript/pull/11540))
+- **vite:** emit the Android activity chunk under a stable name ([#11539](https://github.com/NativeScript/NativeScript/pull/11539))
+- **vite:** keep the rules after @layer, @container and other at-rules css can't parse ([#11538](https://github.com/NativeScript/NativeScript/pull/11538))
+
+### ❤️ Thank You
+
+- Alec Larson @aleclarson
+- Nathan Walker
+- Osei Fortune @triniwiz
+- Rafael Augusto @rafaelaugustos
+
 ## 8.0.19 (2026-10-12)
 
 ### 🩹 Fixes

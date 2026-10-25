@@ -1,5 +1,4 @@
 import * as helper from '../../ui-helper';
-import * as TKUnit from '../../tk-unit';
 import { Color, Button, StackLayout, unsetValue } from '@nativescript/core';
 
 export var test_value_Inherited_after_unset = function () {
@@ -51,5 +50,5 @@ export function test_value_Local_stronger_than_Css() {
 	btn.style.color = new Color('#0000FF');
 	helper.assertViewColor(btn, '#0000FF');
 	btn.style.color = unsetValue;
-	TKUnit.assertEqual(btn.style.color, undefined, 'style.color should be undefined when set locally.');
+	helper.assertViewColor(btn, '#FF0000');
 }

@@ -1,9 +1,10 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
-import { mkdtempSync, mkdirSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { mkdtempSync, mkdirSync, realpathSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { createNsMRequestContext, resolveFsAnchoredSpec, resolveNsMTransformedModule } from './websocket-ns-m-request.js';
+import { clearLinkedDependencyRootsCache, clearMonorepoWorkspaceRootCache } from '../../helpers/project.js';
 
 describe('createNsMRequestContext', () => {
 	it('normalizes decorated HMR request paths into canonical module specs', () => {
@@ -181,5 +182,59 @@ describe('resolveFsAnchoredSpec', () => {
 		} finally {
 			rmSync(wsRoot, { recursive: true, force: true });
 		}
+	});
+});
+
+describe('ns/m requests against linked dependency checkouts', () => {
+	let sandbox: string | null = null;
+
+	beforeEach(() => {
+		clearLinkedDependencyRootsCache();
+		clearMonorepoWorkspaceRootCache();
+		vi.stubEnv('NATIVESCRIPT_BUNDLER_ENV', JSON.stringify({ android: true }));
+	});
+
+	afterEach(() => {
+		vi.unstubAllEnvs();
+		if (sandbox) {
+			rmSync(sandbox, { recursive: true, force: true });
+			sandbox = null;
+		}
+	});
+
+	// `app` depends on `auth` via a semver spec whose install symlinked a
+	// source checkout (pnpm readPackage-hook style); the checkout owns a
+	// private native plugin the app's own node_modules lacks.
+	function createLinkedDepApp(): { app: string; pluginFile: string } {
+		sandbox = realpathSync(mkdtempSync(join(tmpdir(), 'ns-hmr-ns-m-linked-deps-')));
+		const app = join(sandbox, 'app');
+		const checkout = join(sandbox, 'checkout');
+		mkdirSync(join(app, 'node_modules'), { recursive: true });
+		mkdirSync(join(checkout, 'packages/auth/node_modules/@scope/sign-in'), { recursive: true });
+		writeFileSync(join(app, 'package.json'), JSON.stringify({ name: 'app', version: '1.0.0', dependencies: { auth: '1.0.0' } }));
+		writeFileSync(join(checkout, 'packages/auth/package.json'), JSON.stringify({ name: 'auth', version: '1.0.0' }));
+		symlinkSync('../../checkout/packages/auth', join(app, 'node_modules/auth'), 'dir');
+		const pluginFile = join(checkout, 'packages/auth/node_modules/@scope/sign-in/index.android.js');
+		writeFileSync(pluginFile, 'export const signIn = () => "ok";\n');
+		return { app, pluginFile };
+	}
+
+	it('anchors linked-checkout candidates in the request context', () => {
+		const { app, pluginFile } = createLinkedDepApp();
+
+		const result = createNsMRequestContext('/ns/m/node_modules/@scope/sign-in/index?v=7', app, '/src/', app);
+
+		expect(result.kind).toBe('context');
+		if (result.kind !== 'context') {
+			return;
+		}
+		expect(result.value.forcedVer).toBe('7');
+		expect(result.value.transformCandidates).toEqual([`/@fs${pluginFile.replace(/\\/g, '/')}`]);
+	});
+
+	it('resolveFsAnchoredSpec returns the path actually found, not the guessed root id', () => {
+		const { app, pluginFile } = createLinkedDepApp();
+
+		expect(resolveFsAnchoredSpec('/node_modules/@scope/sign-in/index.android.js', app, null)).toBe(`/@fs${pluginFile.replace(/\\/g, '/')}`);
 	});
 });

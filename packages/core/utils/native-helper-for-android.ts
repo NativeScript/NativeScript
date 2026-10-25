@@ -344,9 +344,9 @@ export function setStatusBarColor(options?: { activity?: androidx.appcompat.app.
 			statusBarLight: DefaultStatusBarLight,
 			statusBarDark: DefaultStatusBarDark,
 		};
-		existingColors.statusBarLight ??= statusBarLightColor;
-		existingColors.statusBarDark ??= statusBarDarkColor;
-		systemColors.set(getCurrentActivity(), existingColors);
+		existingColors.statusBarLight = statusBarLightColor ?? existingColors.statusBarLight;
+		existingColors.statusBarDark = statusBarDarkColor ?? existingColors.statusBarDark;
+		systemColors.set(activity, existingColors);
 
 		setEnableEdgeToEdge(activity, existingColors);
 	}
@@ -363,9 +363,9 @@ export function setNavigationBarColor(options?: { activity?: androidx.appcompat.
 			statusBarLight: DefaultStatusBarLight,
 			statusBarDark: DefaultStatusBarDark,
 		};
-		existingColors.navigationBarLight ??= navigationBarLightColor;
-		existingColors.navigationBarDark ??= navigationBarDarkColor;
-		systemColors.set(getCurrentActivity(), existingColors);
+		existingColors.navigationBarLight = navigationBarLightColor ?? existingColors.navigationBarLight;
+		existingColors.navigationBarDark = navigationBarDarkColor ?? existingColors.navigationBarDark;
+		systemColors.set(activity, existingColors);
 
 		setEnableEdgeToEdge(activity, existingColors);
 	}
@@ -382,9 +382,9 @@ export function setDarkModeHandler(options?: { activity?: androidx.appcompat.app
 			statusBarDark: DefaultStatusBarDark,
 		};
 
-		existingColors.handler ??= darkModeHandler;
+		existingColors.handler = darkModeHandler;
 
-		systemColors.set(getCurrentActivity(), existingColors);
+		systemColors.set(activity, existingColors);
 
 		setEnableEdgeToEdge(activity, existingColors);
 	}

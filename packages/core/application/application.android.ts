@@ -854,9 +854,11 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 	}
 
 	getSystemAppearance(): 'light' | 'dark' {
-		const resources = this.context.getResources();
-		const configuration = resources.getConfiguration();
-		return this.getSystemAppearanceValue(configuration);
+		return this.getSystemAppearanceValue(this.getConfiguration());
+	}
+
+	private getConfiguration(): android.content.res.Configuration {
+		return (this.context ?? this.getNativeApplication()).getResources().getConfiguration();
 	}
 
 	// https://developer.android.com/guide/topics/ui/look-and-feel/darktheme#configuration_changes
@@ -873,9 +875,7 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 	}
 
 	getLayoutDirection(): CoreTypes.LayoutDirectionType {
-		const resources = this.context.getResources();
-		const configuration = resources.getConfiguration();
-		return this.getLayoutDirectionValue(configuration);
+		return this.getLayoutDirectionValue(this.getConfiguration());
 	}
 
 	private getLayoutDirectionValue(configuration: android.content.res.Configuration): CoreTypes.LayoutDirectionType {
@@ -890,9 +890,7 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 	}
 
 	getOrientation() {
-		const resources = this.context.getResources();
-		const configuration = <android.content.res.Configuration>resources.getConfiguration();
-		return this.getOrientationValue(configuration);
+		return this.getOrientationValue(this.getConfiguration());
 	}
 
 	private getOrientationValue(configuration: android.content.res.Configuration): 'portrait' | 'landscape' | 'unknown' {

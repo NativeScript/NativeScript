@@ -1,5 +1,5 @@
-import { existsSync, readFileSync } from 'fs';
-import { dirname, join, resolve } from 'path';
+import { existsSync, readFileSync, realpathSync, statSync } from 'fs';
+import { dirname, join, resolve, sep } from 'path';
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 
@@ -139,6 +139,123 @@ export function getMonorepoWorkspaceRoot(start: string = getProjectRootPath()): 
  */
 export function clearMonorepoWorkspaceRootCache(): void {
 	monorepoWorkspaceRootCache.clear();
+}
+
+const linkedDependencyRootsCache = new Map<string, string[]>();
+
+/**
+ * Directories of the app's dependencies that are installed as source
+ * checkouts rather than registry packages — and therefore keep their own
+ * `node_modules` outside the app's install tree:
+ *  - `link:`, `file:`, and `portal:` specs name the checkout directly.
+ *  - Install-time hooks (e.g. a pnpm `readPackage` hook) can swap a
+ *    registry spec for an on-disk symlink without touching the manifest,
+ *    so `<projectRoot>/node_modules/<name>` is realpath'd as well; the
+ *    result counts only when it lives outside any `node_modules` dir,
+ *    which excludes registry installs and pnpm/external stores.
+ *
+ * `file:` entries that name a tarball, and declared-but-missing deps, are
+ * skipped. Results are deduped in declaration order and memoized per
+ * project root; the set only changes on install.
+ * @param projectRoot app root to inspect
+ */
+export function getLinkedDependencyRoots(projectRoot: string = getProjectRootPath()): string[] {
+	const key = resolve(projectRoot);
+	const cached = linkedDependencyRootsCache.get(key);
+	if (cached) {
+		return cached;
+	}
+
+	const roots: string[] = [];
+	const seen = new Set<string>();
+	try {
+		const pkg = JSON.parse(readFileSync(join(key, 'package.json'), 'utf-8'));
+		for (const section of ['dependencies', 'devDependencies', 'optionalDependencies', 'peerDependencies']) {
+			for (const [name, spec] of Object.entries(pkg[section] ?? {})) {
+				const candidates: string[] = [];
+				const linkTarget = /^(?:link|file|portal):(.+)$/.exec(String(spec))?.[1];
+				if (linkTarget) {
+					candidates.push(resolve(key, linkTarget));
+				}
+				try {
+					const installed = realpathSync(join(key, 'node_modules', name));
+					if (!installed.split(sep).includes('node_modules')) {
+						candidates.push(installed);
+					}
+				} catch {}
+				for (const candidate of candidates) {
+					try {
+						const depDir = realpathSync(candidate);
+						if (!seen.has(depDir) && statSync(depDir).isDirectory()) {
+							seen.add(depDir);
+							roots.push(depDir);
+						}
+					} catch {}
+				}
+			}
+		}
+	} catch {}
+
+	linkedDependencyRootsCache.set(key, roots);
+	return roots;
+}
+
+/**
+ * Clear the {@link getLinkedDependencyRoots} memoization cache. Intended
+ * for tests that mutate the filesystem inside a temp dir between calls.
+ */
+export function clearLinkedDependencyRootsCache(): void {
+	linkedDependencyRootsCache.clear();
+}
+
+/**
+ * Compute the dev server's `server.fs.allow` list for `projectRoot`.
+ *
+ * Returns the existing `[monorepoRoot, projectRoot]` pair when a distinct
+ * monorepo workspace root exists, extended with the workspace root of
+ * every linked dependency checkout (`getMonorepoWorkspaceRoot(root)` so
+ * sibling workspace packages' private `node_modules` stay readable, with
+ * the linked dir itself as fallback) — skipping entries equal to or
+ * inside `projectRoot`. Returns `[]` when nothing needs widening so the
+ * caller can leave `fs.allow` unset and keep Vite's default.
+ * @param projectRoot app root to inspect
+ */
+export function getDevServerFsAllow(projectRoot: string = getProjectRootPath()): string[] {
+	const resolvedProject = resolve(projectRoot);
+	// Linked roots come back realpath'd, so containment checks need the
+	// real project root too (/var vs /private/var on macOS).
+	let realProject = resolvedProject;
+	try {
+		realProject = realpathSync(resolvedProject);
+	} catch {}
+	const allow: string[] = [];
+	const seen = new Set<string>();
+	const push = (dir: string | null) => {
+		if (dir && !seen.has(dir)) {
+			seen.add(dir);
+			allow.push(dir);
+		}
+	};
+	const monorepoRoot = findMonorepoWorkspaceRoot(resolvedProject);
+	if (monorepoRoot && monorepoRoot !== resolvedProject) {
+		push(monorepoRoot);
+	}
+	const linkedRoots: string[] = [];
+	for (const root of getLinkedDependencyRoots(resolvedProject)) {
+		const allowRoot = getMonorepoWorkspaceRoot(root) ?? root;
+		if (allowRoot === resolvedProject || allowRoot === realProject || allowRoot.startsWith(realProject + sep)) {
+			continue;
+		}
+		linkedRoots.push(allowRoot);
+	}
+	if (!allow.length && !linkedRoots.length) {
+		return [];
+	}
+	push(resolvedProject);
+	for (const root of linkedRoots) {
+		push(root);
+	}
+	return allow;
 }
 
 // Get current directory for ES modules (equivalent to __dirname)

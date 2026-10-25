@@ -132,17 +132,23 @@ function parseBorderColorPositioning(value: string): ShorthandPositioning {
 	return positioningFromParts(splitOnTopLevelSpacesAndCommas(value.trim()), value);
 }
 
+const TRANSPARENT = new Color('transparent');
+
 function convertToBackgrounds(value: string): [CssProperty<any, any> | CssAnimationProperty<any, any>, any][] {
 	if (typeof value === 'string') {
 		const backgrounds = parseBackground(value).value;
 		let backgroundColor = unsetValue;
 		if (backgrounds.color) {
 			backgroundColor = backgrounds.color instanceof Color ? backgrounds.color : new Color(backgrounds.color);
+		} else if (backgrounds.image === 'none') {
+			backgroundColor = TRANSPARENT;
 		}
 
 		let backgroundImage: string | LinearGradient;
 		if (typeof backgrounds.image === 'object' && backgrounds.image) {
 			backgroundImage = LinearGradient.parse(backgrounds.image);
+		} else if (backgrounds.image === 'none') {
+			backgroundImage = unsetValue;
 		} else {
 			backgroundImage = backgrounds.image || unsetValue;
 		}
