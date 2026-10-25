@@ -223,6 +223,9 @@ class JSMatch internal constructor(
 
     val length: Double get() = values.storage.size.toDouble()
 
+    /** What a replace callback is given: the match, each group, the index, the input, then `groups` where the pattern names any. */
+    val replacerArguments: List<Any?> get() = values.storage + listOf<Any?>(index, input) + listOfNotNull(groups)
+
     override fun jsGet(key: String): Any? = when (key) {
         "length" -> length
         "index" -> if (isExecResult) index else null

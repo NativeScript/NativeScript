@@ -4,7 +4,7 @@ import { dirname as pathDirname, resolve as pathResolve } from 'node:path';
 import { AsyncLowering, usedBefore, type AsyncCtx, type AsyncSyntax, type AsyncTranslator } from './async.ts';
 import { isAsync, isStatic } from './throws.ts';
 import { assignedMembers } from './sharing.ts';
-import { assignedValues, heldDowncasts, openSpreadType, definitelyAssignedFields, forwardedSetter, initializedNull, intersectionAliasMembers, nullSetFields, nullishSlots, type NullishSlots, isRegExpProtocol, intlConstructor, isObjectToStringCall, isStringRaw, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, classesHeldUntyped, LooseSlots, originOf, ownSlot, implementedInterfaceDeclarations, slotOf, slotType, type TrustScope, scriptCalledFunction, unsetGroupTyping, type UnsetGroupTyping } from './lang.ts';
+import { assignedValues, heldDowncasts, openSpreadType, definitelyAssignedFields, forwardedSetter, initializedNull, intersectionAliasMembers, nullSetFields, nullishSlots, type NullishSlots, isRegExpProtocol, intlConstructor, isObjectToStringCall, isStringRaw, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, classesHeldUntyped, LooseSlots, originOf, ownSlot, implementedInterfaceDeclarations, slotOf, slotType, type TrustScope, scriptCalledFunction, literalPattern, patternGroups, unsetGroupTyping, type UnsetGroupTyping } from './lang.ts';
 import { isCoreDeclaration } from './core.ts';
 import { balanced, nonVirtualName } from './swift.ts';
 import type { Properties } from './properties.ts';
@@ -8665,13 +8665,39 @@ export class Translator implements AsyncTranslator {
         // A function value: called with the match, each group (undefined where it took no part), the match's index and the string.
         if (!(ts.isArrowFunction(second) || ts.isFunctionExpression(second)) && this.checker.getTypeAtLocation(second).getCallSignatures().length) {
           if (name === 'replaceAll') throw this.error(e, 'replaceAll with a function');
-          return `${fn}(${s}, ${r}, fun(__m: JSMatch): String = jsToString(jsCall(${this.functionValue(second)}, *(__m.values.storage + listOf<Any?>(__m.index, __m.input)).toTypedArray())))`;
+          // A rest parameter takes the arguments from its position on, which a call by script cannot give it.
+          const decl = this.checker.getTypeAtLocation(second).getCallSignatures()[0]?.getDeclaration();
+          const restAt = decl && !ts.isJSDocSignature(decl) ? decl.parameters.findIndex((p) => p.dotDotDotToken) : -1;
+          if (decl && !ts.isJSDocSignature(decl) && restAt >= 0 && restAt === decl.parameters.length - 1) {
+            const args = decl.parameters.map((p, k) => {
+              if (k < restAt) return this.fromAnyCode(`__m.replacerArguments.getOrNull(${k})`, this.paramType(p), true);
+              const rest = `JSArray<Any?>(ArrayList(__m.replacerArguments.drop(${k})))`, t = this.typeOf(p.name);
+              return t === 'JSArray<Any?>' ? rest : this.fromAnyCode(rest, t, true);
+            });
+            return `${fn}(${s}, ${r}, fun(__m: JSMatch): String = jsToString((${this.functionValue(second)})(${args.join(', ')})))`;
+          }
+          return `${fn}(${s}, ${r}, fun(__m: JSMatch): String = jsToString(jsCall(${this.functionValue(second)}, *__m.replacerArguments.toTypedArray())))`;
         }
         if (!(ts.isArrowFunction(second) || ts.isFunctionExpression(second))) return `${fn}(${s}, ${r}, ${this.str(second)})`;
         if (name === 'replaceAll') throw this.error(e, 'replaceAll with a function');
         // The replacer gets the match, then each group, then the offset.
         const m = this.fresh('__match');
-        const binds = second.parameters.map((p, k) => `val ${ident((p.name as ts.Identifier).text)}: ${this.typeOf(p.name)} = ${this.typeOf(p.name) === 'Double' ? `${m}.index` : this.typeOf(p.name).endsWith('?') ? `${m}[${k}]` : `(${m}[${k}] ?: "undefined")`}`);
+        // The match, each group (undefined where it took no part), the index, the input, then the groups object.
+        const source = literalPattern(re, this.checker);
+        const groups = source === null ? null : patternGroups(source);
+        const binds = second.parameters.map((p, k) => {
+          const name = ident((p.name as ts.Identifier).text), t = this.typeOf(p.name);
+          const bind = (code: string) => `val ${name}: ${t} = ${code}`;
+          if (p.dotDotDotToken) {
+            const rest = `JSArray<Any?>(ArrayList(${m}.replacerArguments.drop(${k})))`;
+            return bind(t === 'JSArray<Any?>' ? rest : this.fromAnyCode(rest, t, true));
+          }
+          const group = (code: string) => (t.endsWith('?') ? code : `(${code} ?: "undefined")`);
+          if (k === 0 || (groups && k <= groups.count)) return bind(group(`${m}[${k}]`));
+          if (groups && k === groups.count + 1) return bind(t.replace(/\?$/, '') === 'Double' ? `${m}.index` : this.fromAnyCode(`${m}.index`, t, true));
+          if (groups && k === groups.count + 2) return bind(t.replace(/\?$/, '') === 'String' ? `${m}.input` : this.fromAnyCode(`${m}.input`, t, true));
+          return bind(this.fromAnyCode(`${m}.replacerArguments.getOrNull(${k})`, t, true));
+        });
         const body = this.inFunction('String', () => this.functionBody(second, 'String', this.indent));
         const inner = this.indent + '    ';
         return `${fn}(${s}, ${r}, fun(${m}: JSMatch): String {\n${binds.map((b) => inner + b).join('\n')}${body.slice(1)})`;
