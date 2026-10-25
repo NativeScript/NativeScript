@@ -3,32 +3,27 @@
 	"swift": {
 		"227-callback-given-undefined": "A string parameter given undefined reads \"\", and a void promise's value is not undefined (Swift translator).",
 		"231-regexp-unset-group": "A capture group that took no part in the match reads \"\", not undefined (Swift translator).",
-		"232-async-object-return": "An object literal an async function returns is not made as its declared Promise's type (Swift translator).",
 		"233-prototype-call": "X.prototype.m.call(r, …) is refused (Swift translator, SEMANTICS #2).",
 		"234-define-property-instance": "Object.defineProperty on a class instance or an array is dropped (Swift translator and runtime, SEMANTICS #3).",
-		"237-shared-top-names": "Top-level names (an enum, files of the same name in two folders) that several modules declare clash; swiftc crashes (Swift translator).",
 		"239-destructuring-assignment": "Destructuring assignment to existing variables is refused (Swift translator, SEMANTICS #8).",
-		"243-array-holes": "Object.keys lists the holes of new Array(n) (Swift runtime).",
+		"243-array-holes": "Object.keys lists the holes of new Array(n) and leaves out keys that are no index (`a[1.5] = v`) (Swift runtime).",
 		"244-optional-member-later": "An optional member set after the object is made is listed in declaration order, not as the last key (Swift translator).",
-		"246-nullable-string-concat": "`null as string | null` in a template or a concatenation does not compile: nil has no contextual type (Swift translator).",
 		"247-missing-values-throw": "A module const read before its declaration runs, and a member of undefined or null read, set or called, trap instead of throwing ReferenceError or TypeError (Swift translator, quality step 4).",
 		"248-function-properties": "Properties given to a function value (`fn.tag = …`, Object.defineProperty) and Object.prototype.hasOwnProperty.call on one are refused or dropped (Swift translator and runtime, SEMANTICS #3).",
 		"249-literal-to-primitive": "An object literal's own [Symbol.toPrimitive] is ignored, and a literal's valueOf is not called by < or Math.max (Swift translator, SEMANTICS #5).",
 		"290-regexp-backtracking": "A capture inside a quantified group keeps its value from an earlier iteration instead of resetting to undefined (NSRegularExpression semantics, Swift runtime).",
 		"291-json-edges": "A lone surrogate becomes U+FFFD because Swift strings hold only valid Unicode, and the circular-structure TypeError has an empty message (Swift runtime).",
-		"293-array-sort-callbacks": "A comparator declared with fewer parameters than sort passes does not compile (Swift translator).",
-		"363-operator-pipe": "An overloaded generic method with an `any` implementation (`pipe(...operators: OperatorFunction<any, any>[])`) is called as the implementation, and an overload's function argument names the implementation's type parameter `T` (Swift translator).",
+		"363-operator-pipe": "Refused (build error): an app generic class's instance held with `any` as its type argument (`let stream: Stream<any> = this` in Stream<T>), which Swift's invariant generic classes can't convert; an overload's function argument also names the implementation's type parameter (Swift translator).",
 		"620-interface-identity": "Refused: an untyped object converted to an interface's class (a copy) where the code compares it by identity, looks it up as a key, or a callee keeps it (preflight, src/sharing.ts).",
 		"621-optional-callback-adapting": "Lenient app code: a callback's boolean parameter given undefined holds false, and a function literal returning null where its type gives an array does not compile (Swift translator).",
 		"624-json-parse-null": "A non-strict function's string result that is null at run time is one nil with undefined, so JSON.parse of it throws as of undefined (Swift translator).",
 		"626-array-parameter-mutation": "Refused: an untyped or typed array given to a number[] parameter its callee writes to is converted into a copy (preflight, src/sharing.ts).",
 		"627-unchecked-class-cast": "`x as C` throws when x is an instance of another class, where TypeScript's cast checks nothing (Swift translator).",
 		"662-untyped-array-parameter": "Refused: an untyped array given to a number[] or string[] parameter its callee writes to is converted into a copy (preflight, src/sharing.ts); Kotlin passes it as is only when its elements already are the type, which a build cannot know.",
-		"700-signal-null-object": "A class-typed `signal<T>(null)` outside a component doesn't compile (`equals: jsSame` loses MainActor), and a function returning its value as `T` throws where script returns the null (Swift translator)."
+		"891-generic-class-fields-as-interface": "Refused (build error): a generic class whose field or getter typed by its type parameter meets a generic interface's field, held as the interface; Swift can't overload a property by its type (Swift translator).",
+		"892-define-property-declared-field": "Refused (build error): Object.defineProperty making a class's declared field an accessor, read-only, hidden or fixed, which the class's Swift field keeps none of (Swift translator)."
 	},
 	"kotlin": {
-		"250-void-promise-values": "A function value with a rest parameter passed to then (`then(log)`) matches no overload (Kotlin translator).",
-		"251-define-property-targets": "A function declaration used as a value (`Object.defineProperty(greet, …)`) and `error.constructor.name` do not compile; defineProperty on a class's object, an array or a function is dropped, test262 cluster 3 (Kotlin translator and runtime).",
 		"252-prototype-method-calls": "A built-in's prototype method called with call or apply (`Array.prototype.slice.call(list, 1)`) is refused, test262 cluster 2 (Kotlin translator).",
 		"254-destructuring-assignment": "A rest element in a destructuring assignment (`[first, ...others] = list`) is refused, test262 cluster 8 (Kotlin translator).",
 		"257-typeof-lenient-optional": "Lenient code: a module or local `let x: boolean;` declared without a value holds false, not undefined (`isA11yEnabled()`); `typeof` of a function variable read from an optional member folds to \"function\"; `typeof val === 'string'` of a narrowed `string | string[]` parameter folds to true, so `enforceArray(undefined)` throws (Kotlin translator).",
@@ -38,6 +33,8 @@
 		"624-json-parse-null": "JSON.parse of a string that is null at run time parses \"undefined\" and throws (Kotlin translator).",
 		"626-array-parameter-mutation": "Refused: an untyped or typed array given to a number[] parameter its callee writes to is converted into a copy (preflight, src/sharing.ts).",
 		"627-unchecked-class-cast": "`x as C` throws when x is an instance of another class, where TypeScript's cast checks nothing (Kotlin translator).",
-		"662-untyped-array-parameter": "Refused: an untyped array given to a number[] or string[] parameter its callee writes to is converted into a copy (preflight, src/sharing.ts); Kotlin passes it as is only when its elements already are the type, which a build cannot know."
+		"662-untyped-array-parameter": "Refused: an untyped array given to a number[] or string[] parameter its callee writes to is converted into a copy (preflight, src/sharing.ts); Kotlin passes it as is only when its elements already are the type, which a build cannot know.",
+		"891-generic-class-fields-as-interface": "Refused (build error): a generic class's field typed by its type parameter meeting a generic interface's writable field, which the interface erases to any value (Kotlin translator).",
+		"892-define-property-declared-field": "Refused (build error): Object.defineProperty making a class's declared field an accessor, read-only, hidden or fixed, which the class's Kotlin field keeps none of (Kotlin translator)."
 	}
 }
