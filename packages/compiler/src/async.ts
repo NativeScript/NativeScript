@@ -121,6 +121,8 @@ export interface AsyncTranslator {
   /** `var name: type` for a value assigned later. */
   deferredDeclaration(name: string, type: string): string;
   isPromiseType(type: string): boolean;
+  /** An await whose promise may resolve with nothing its type has: the continuation's parameter type, and the expression's value from it. */
+  heldAwait?(a: ts.AwaitExpression, v: string): [type: string, value: string] | undefined;
   error(n: ts.Node | undefined, what: string): Error;
 }
 
@@ -342,7 +344,9 @@ export class AsyncLowering {
       const isPromise = !untyped && t.isPromiseType(t.typeOf(operand));
       const code = `${t.tryPrefix(operand)}${untyped ? t.coerce(operand, 'Any?') : t.expr(operand)}`;
       const v = t.fresh('__t');
-      t.subst.set(a, v);
+      const held = untyped ? undefined : t.heldAwait?.(a, v);
+      if (held) type = held[0];
+      t.subst.set(a, held ? held[1] : v);
       const body = t.nested(() => step(k + 1));
       lines.push(`${i}${this.s.awaitCall(code, isPromise, this.closure([[v, type]], body, ctx.onError), ctx.onError)}`);
       return lines;
