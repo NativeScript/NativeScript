@@ -11,3 +11,8 @@ console.log('xb'.replace(/(a)|(b)/, plain), 'k'.replace(/k/, (m: string, at: num
 console.log('a-b'.replace(/(-)/g, (m: string, dash: string, at: number) => `[${dash}@${at}]`));
 function joined(first: string, ...more: string[]) { return first + '/' + more.length; }
 console.log('a1'.replace(/(\d)/, joined));
+const restTyped: (m: string, ...rest: any[]) => string = (m, ...rest) => m + rest.length;
+const upper: (m: string, ...rest: any[]) => string = (m) => m.toUpperCase();
+const either = (flip: boolean) => (flip ? upper : restTyped);
+console.log('xb'.replace(/(a)|(b)/, restTyped), 'xb'.replace(/(a)|(b)/, either(false)), 'ab'.replace(/a(b)?/g, either(true)));
+console.log('ab'.replace(/a(b)?/g, Math.min(1, 2) > 1 ? named : restTyped), 'ab'.replace(/a(x)?/, Math.min(1, 2) > 1 ? restTyped : (m: string, g?: string) => (g === undefined ? 'U' : 'D')));

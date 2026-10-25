@@ -5979,6 +5979,10 @@ export class Translator implements AsyncTranslator {
       // Null kept as untyped values hold it, apart from undefined.
       let bare = e;
       while (ts.isParenthesizedExpression(bare)) bare = bare.expression;
+      if (!this.library) {
+        const rest = this.restCallable(bare);
+        if (rest) return rest;
+      }
       // Library mode: a member of an untyped object, kept as it is (whatever class this use's type says it has).
       if (this.library && ts.isPropertyAccessExpression(bare) && !isWriteTarget(bare) && this.typeOf(bare.expression) === 'Any?' && bare.name.text !== 'prototype' && !(ts.isIdentifier(bare.expression) && (this.isLibGlobal(bare.expression) || this.namesClass(bare.expression)))) {
         return `${bare.questionDotToken ? 'jsGetOptional' : 'jsGet'}(${this.expr(bare.expression)}, ${kotlinString(bare.name.text)})`;
@@ -6216,6 +6220,38 @@ export class Translator implements AsyncTranslator {
   }
 
   /** An expression as a value: a declared function named by a reference. */
+  /**
+   * App code: a function value whose last parameter is a rest, held untyped, which jsCall calls with however many
+   * arguments: the rest packed from its position on. A conditional's branches are each held so.
+   */
+  private restCallable(e: ts.Expression): string | null {
+    const hasRest = (x: ts.Expression): boolean => {
+      const sig = this.checker.getTypeAtLocation(x).getNonNullableType().getCallSignatures();
+      const d = sig.length === 1 ? sig[0].getDeclaration() : undefined;
+      return !!d && !ts.isJSDocSignature(d) && !!d.parameters.at(-1)?.dotDotDotToken && !d.parameters.some((p) => isThisParameter(p))
+        && /^JSArray</.test(functionTypeParts(this.typeOf(x).replace(/^\((.*)\)\?$/, '$1'))?.params.at(-1) ?? '');
+    };
+    const held = (x: ts.Expression): boolean => {
+      const b = ts.skipOuterExpressions(x);
+      return ts.isConditionalExpression(b) ? held(b.whenTrue) || held(b.whenFalse) : !ts.isArrowFunction(b) && !ts.isFunctionExpression(b) && hasRest(b);
+    };
+    const bare = ts.skipOuterExpressions(e);
+    if (!held(bare)) return null;
+    if (ts.isConditionalExpression(bare)) return `(if (${this.cond(bare.condition)}) ${this.coerce(bare.whenTrue, 'Any?')} else ${this.coerce(bare.whenFalse, 'Any?')})`;
+    const type = this.typeOf(bare);
+    const g = functionTypeParts(type.replace(/^\((.*)\)\?$/, '$1'))!;
+    const n = g.params.length - 1;
+    const lead = g.params.slice(0, n).map((t, k) => (t === 'Any?' ? `__a.getOrNull(${k})` : this.fromAnyCode(`__a.getOrNull(${k})`, t, true)));
+    const packed = `JSArray<Any?>(ArrayList(__a.drop(${n})))`;
+    const call = `__f(${[...lead, g.params[n] === 'JSArray<Any?>' ? packed : this.fromAnyCode(packed, g.params[n], true)].join(', ')})`;
+    const fn = `jsFunction(${n}) { __a -> ${g.ret === 'Unit' ? `${call}; null` : call} }`;
+    // A variable narrowed to its function is still held nullable when declared so.
+    const sym = ts.isIdentifier(bare) ? this.resolve(bare) : undefined;
+    const declared = sym?.valueDeclaration ? this.checker.getTypeOfSymbol(sym) : undefined;
+    const nullable = /\)\?$/.test(type) || (!!declared && declared.isUnion() && declared.types.some((t) => t.flags & (ts.TypeFlags.Undefined | ts.TypeFlags.Null)));
+    return `run { val __f = ${this.expr(bare)}; ${nullable ? `if (__f == null) null else ${fn}` : fn} }`;
+  }
+
   functionValue(e: ts.Expression): string {
     if (ts.isIdentifier(e)) {
       const decl = this.resolve(e)?.valueDeclaration;
@@ -8668,7 +8704,8 @@ export class Translator implements AsyncTranslator {
           // A rest parameter takes the arguments from its position on, which a call by script cannot give it.
           const decl = this.checker.getTypeAtLocation(second).getCallSignatures()[0]?.getDeclaration();
           const restAt = decl && !ts.isJSDocSignature(decl) ? decl.parameters.findIndex((p) => p.dotDotDotToken) : -1;
-          if (decl && !ts.isJSDocSignature(decl) && !ts.isFunctionTypeNode(decl) && restAt >= 0 && restAt === decl.parameters.length - 1) {
+          const branched = ts.isConditionalExpression(ts.skipOuterExpressions(second));
+          if (decl && !ts.isJSDocSignature(decl) && !branched && restAt >= 0 && restAt === decl.parameters.length - 1) {
             const args = decl.parameters.map((p, k) => {
               if (k < restAt) return this.fromAnyCode(`__m.replacerArguments.getOrNull(${k})`, this.paramType(p), true);
               const rest = `JSArray<Any?>(ArrayList(__m.replacerArguments.drop(${k})))`, t = this.typeOf(p.name);
@@ -8676,7 +8713,8 @@ export class Translator implements AsyncTranslator {
             });
             return `${fn}(${s}, ${r}, fun(__m: JSMatch): String = jsToString((${this.functionValue(second)})(${args.join(', ')})))`;
           }
-          return `${fn}(${s}, ${r}, fun(__m: JSMatch): String = jsToString(jsCall(${this.functionValue(second)}, *__m.replacerArguments.toTypedArray())))`;
+          const callee = !this.library && branched ? this.coerce(second, 'Any?') : this.functionValue(second);
+          return `${fn}(${s}, ${r}, fun(__m: JSMatch): String = jsToString(jsCall(${callee}, *__m.replacerArguments.toTypedArray())))`;
         }
         if (!(ts.isArrowFunction(second) || ts.isFunctionExpression(second))) return `${fn}(${s}, ${r}, ${this.str(second)})`;
         if (name === 'replaceAll') throw this.error(e, 'replaceAll with a function');
