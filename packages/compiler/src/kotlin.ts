@@ -3,6 +3,7 @@ import ts from 'typescript';
 import { dirname as pathDirname, resolve as pathResolve } from 'node:path';
 import { AsyncLowering, usedBefore, type AsyncCtx, type AsyncSyntax, type AsyncTranslator } from './async.ts';
 import { isAsync, isStatic } from './throws.ts';
+import { assignedMembers } from './sharing.ts';
 import { assignedValues, openSpreadType, definitelyAssignedFields, forwardedSetter, initializedNull, intersectionAliasMembers, nullSetFields, nullishSlots, type NullishSlots, isRegExpProtocol, intlConstructor, isObjectToStringCall, isStringRaw, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, classesHeldUntyped, LooseSlots, originOf, ownSlot, implementedInterfaceDeclarations, slotOf, slotType, type TrustScope } from './lang.ts';
 import { isCoreDeclaration } from './core.ts';
 import { balanced, nonVirtualName } from './swift.ts';
@@ -2011,17 +2012,7 @@ export class Translator implements AsyncTranslator {
   private setLater: Set<string> | null = null;
   /** Names of members the program assigns on objects that are not class instances (`options.width = 2`). */
   private membersSetLater(): Set<string> {
-    if (this.setLater) return this.setLater;
-    const names = new Set<string>();
-    const visit = (n: ts.Node): void => {
-      if (ts.isBinaryExpression(n) && n.operatorToken.kind >= ts.SyntaxKind.FirstAssignment && n.operatorToken.kind <= ts.SyntaxKind.LastAssignment && ts.isPropertyAccessExpression(n.left)) {
-        const owner = this.checker.getSymbolAtLocation(n.left.name)?.declarations?.[0]?.parent;
-        if (!owner || !ts.isClassLike(owner)) names.add(n.left.name.text);
-      }
-      ts.forEachChild(n, visit);
-    };
-    for (const sf of this.sourceFiles) if (!sf.isDeclarationFile) visit(sf);
-    return (this.setLater = names);
+    return (this.setLater ??= assignedMembers(this.checker, this.sourceFiles));
   }
 
   /** A plain JavaScript object of a known shape: a class with named fields, readable as a dynamic object. */
@@ -2041,9 +2032,13 @@ export class Translator implements AsyncTranslator {
     // A literal stores what it is given, undefined included (`{ …, view } as ItemEventData` before the view exists). Kotlin
     // checks a non-null constructor parameter at the call, so such a field is set from a nullable one inside the class.
     const loose = (f: ShapeField) => !this.library && !tracked.has(f.name) && !isNullable(f.type) && this.zero(f.type) === null && f.type !== 'Unit' && !this.isTypeParameterName(f.type);
-    const params = [...fields, ...allFields.filter((f) => f.symbol)].map((f) => (loose(f) ? `${ident(f.name)}: ${optionalType(f.type)}` : `${tracked.has(f.name) ? '' : `${modifiers(f)}var `}${ident(f.name)}: ${f.type}${isNullable(f.type) ? ' = null' : ''}`));
+    // A field the program writes, on an object read from another (an event's data), writes that object too.
+    const through = new Set(this.library || symbolic ? [] : fields.filter((f) => !jvmField(f) && this.membersSetLater().has(f.name)).map((f) => f.name));
+    const own = (f: ShapeField) => tracked.has(f.name) || through.has(f.name);
+    const params = [...fields, ...allFields.filter((f) => f.symbol)].map((f) => (loose(f) ? `${ident(f.name)}: ${optionalType(f.type)}` : `${own(f) ? '' : `${modifiers(f)}var `}${ident(f.name)}: ${f.type}${isNullable(f.type) ? ' = null' : ''}`));
     const lines = [`class ${name}(${[...params, `${tracked.size ? '' : 'private val '}jsOrder: List<String>? = null`].join(', ')}) : ${[implementing ?? 'JSDynamic', ...protocols.map((x) => x.conformance)].join(', ')} {`];
-    for (const f of [...fields, ...allFields.filter((f) => f.symbol)]) if (loose(f)) lines.push(`    ${modifiers(f)}var ${ident(f.name)}: ${f.type} = jsUnchecked(${ident(f.name)})`);
+    const writes = (f: ShapeField) => (through.has(f.name) ? `; jsWriteThrough(${kotlinString(f.name)})` : '');
+    for (const f of [...fields, ...allFields.filter((f) => f.symbol)]) if (loose(f)) lines.push(`    ${modifiers(f)}var ${ident(f.name)}: ${f.type} = jsUnchecked(${ident(f.name)})`, ...(through.has(f.name) ? [`        set(value) { field = value${writes(f)} }`] : []));
     for (const x of protocols) lines.push(...x.lines);
     if (symbolic) {
       lines.push(...this.dynamicMembers(fields, className, false), '}');
@@ -2054,12 +2049,14 @@ export class Translator implements AsyncTranslator {
       lines.push('    private var jsOrder: List<String>? = jsOrder');
       for (const f of fields) {
         if (!tracked.has(f.name)) continue;
-        lines.push(`    var ${ident(f.name)}: ${f.type} = ${ident(f.name)}`, `        set(value) { field = jsKeySet(field, value, ${kotlinString(f.name)}) }`);
+        lines.push(`    var ${ident(f.name)}: ${f.type} = ${ident(f.name)}`, `        set(value) { field = jsKeySet(field, value, ${kotlinString(f.name)})${writes(f)} }`);
       }
       lines.push(`    private fun <T> jsKeySet(old: T?, value: T?, key: String): T? = value.also { if (old == null && it != null) jsOrder = jsKeyAppended(jsOrder ?: ${declared}.filter(::jsHas), key) }`);
     }
+    for (const f of fields) if (through.has(f.name) && !tracked.has(f.name) && !loose(f)) lines.push(`    ${modifiers(f)}var ${ident(f.name)}: ${f.type} = ${ident(f.name)}`, `        set(value) { field = value${writes(f)} }`);
     // Read from an untyped object (a cast of JSON.parse): the keys it has beyond the type's stay readable, in its order.
     lines.push('    private var jsExtra: JSDynamic? = null');
+    if (through.size) lines.push('    private var jsSourced = false', '    private fun jsWriteThrough(key: String) { if (jsSourced) jsExtra?.jsSet(key, jsGet(key)) }');
     // Kotlin's null is undefined: the optional fields holding JavaScript's null are noted by key.
     if (optional.length) lines.push('    var jsNulls: MutableSet<String>? = null');
     lines.push('    companion object {');
@@ -2068,7 +2065,7 @@ export class Translator implements AsyncTranslator {
     const zero: Record<string, string> = { String: '""', Double: 'Double.NaN', Boolean: 'false' };
     const field = (f: ShapeField) => (this.library && /^[A-Z]\w*\?$/.test(f.type) && !f.type.startsWith('JS') && this.isObjectType(f.type) ? `(jsField(o, ${kotlinString(f.name)}) as? ${f.type.slice(0, -1)})`
       : !this.library && zero[f.type] ? this.fromAny(`(jsField(o, ${kotlinString(f.name)}) ?: ${zero[f.type]})`, f.type, f.name) : this.fromAny(`jsField(o, ${kotlinString(f.name)})`, f.type, f.name));
-    lines.push(`        fun fromJS(o: Any?): ${name} = ${name}(${[...fields.map((f) => `${ident(f.name)} = ${field(f)}`), 'jsOrder = (o as? JSDynamic)?.jsKeys'].join(', ')}).also { it.jsExtra = o as? JSDynamic${optional.length ? `; it.jsNulls = jsNullKeys(o, listOf(${optional.map((f) => kotlinString(f.name)).join(', ')}))` : ''} }`);
+    lines.push(`        fun fromJS(o: Any?): ${name} = ${name}(${[...fields.map((f) => `${ident(f.name)} = ${field(f)}`), 'jsOrder = (o as? JSDynamic)?.jsKeys'].join(', ')}).also { it.jsExtra = o as? JSDynamic${through.size ? '; it.jsSourced = it.jsExtra != null' : ''}${optional.length ? `; it.jsNulls = jsNullKeys(o, listOf(${optional.map((f) => kotlinString(f.name)).join(', ')}))` : ''} }`);
     lines.push('    }');
     if (optional.length) lines.push(`    private fun jsHas(key: String): Boolean = when (key) { ${optional.map((f) => `${kotlinString(f.name)} -> this.${ident(f.name)} != null || jsNulls?.contains(${kotlinString(f.name)}) == true`).join('; ')}; else -> true }`);
     lines.push(`    override val jsKeys: List<String>`);
@@ -2163,7 +2160,7 @@ export class Translator implements AsyncTranslator {
       `    override fun jsSet(key: String, value: Any?) {`,
       '        when (key) {',
       // A registered property's accessor is the prototype's, which converts what script sets (`col = "1"`): the value as it is.
-      ...fields.map((f) => `            ${kotlinString(f.name)} -> ${(f as { expando?: boolean }).expando ? `jsExpandoSet(this, ${kotlinString(f.name)}, value)` : nulls.has(f.name) ? `{ this.${ident(f.name)} = ${isNullable(f.type) ? this.fromAny('value', f.type, f.name) : `if (jsIsNullish(value)) jsUncheckedNull<${f.type}>() else ${this.fromAny('value', f.type, f.name)}`}; jsNulls = jsNoteNull(jsNulls, ${kotlinString(f.name)}, value) }` : `this.${ident(f.name)} = ${this.fromAny('value', f.type, f.name)}`}`),
+      ...fields.map((f) => `            ${kotlinString(f.name)} -> ${(f as { expando?: boolean }).expando ? `jsExpandoSet(this, ${kotlinString(f.name)}, value)` : nulls.has(f.name) ? `{ jsNulls = jsNoteNull(jsNulls, ${kotlinString(f.name)}, value); this.${ident(f.name)} = ${isNullable(f.type) ? this.fromAny('value', f.type, f.name) : `if (jsIsNullish(value)) jsUncheckedNull<${f.type}>() else ${this.fromAny('value', f.type, f.name)}`} }` : `this.${ident(f.name)} = ${this.fromAny('value', f.type, f.name)}`}`),
       // A setter takes what script gives it (`textWrap = "true"`): as JavaScript reads it as the setter's type.
       ...accessors.filter((a) => a.settable).map((a) => `            ${kotlinString(accessorKey(a.name))} -> ${a.set ?? `this.${ident(a.name)} = ${a.type === 'Boolean' ? 'jsTruthy(value)' : a.type === 'Double' ? 'jsToNumber(value)' : this.fromAnyCode('value', a.type, true)}`}`),
       ...symbols.map((f) => `            ${f.key} -> this.${f.member} = ${this.fromAny('value', f.type)}`),
