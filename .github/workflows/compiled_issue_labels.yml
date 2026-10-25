@@ -1,0 +1,32 @@
+name: 'Label --compiled reports'
+
+on:
+  issues:
+    types: [opened, edited]
+
+permissions:
+  contents: read
+
+jobs:
+  label:
+    # The form applies `compiled`; `ns compiled report` filing through gh may not be allowed to set labels, so its title counts too.
+    if: contains(github.event.issue.labels.*.name, 'compiled') || startsWith(github.event.issue.title, '[compiled]')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: .github/scripts
+
+      - name: Apply platform, framework and kind labels
+        run: node .github/scripts/compiled-issue-labels.mjs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
