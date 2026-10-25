@@ -8668,7 +8668,7 @@ export class Translator implements AsyncTranslator {
           // A rest parameter takes the arguments from its position on, which a call by script cannot give it.
           const decl = this.checker.getTypeAtLocation(second).getCallSignatures()[0]?.getDeclaration();
           const restAt = decl && !ts.isJSDocSignature(decl) ? decl.parameters.findIndex((p) => p.dotDotDotToken) : -1;
-          if (decl && !ts.isJSDocSignature(decl) && restAt >= 0 && restAt === decl.parameters.length - 1) {
+          if (decl && !ts.isJSDocSignature(decl) && !ts.isFunctionTypeNode(decl) && restAt >= 0 && restAt === decl.parameters.length - 1) {
             const args = decl.parameters.map((p, k) => {
               if (k < restAt) return this.fromAnyCode(`__m.replacerArguments.getOrNull(${k})`, this.paramType(p), true);
               const rest = `JSArray<Any?>(ArrayList(__m.replacerArguments.drop(${k})))`, t = this.typeOf(p.name);
