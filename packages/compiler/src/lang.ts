@@ -938,6 +938,100 @@ export function nullishSlots(checker: ts.TypeChecker, files: readonly ts.SourceF
 }
 
 /**
+ * Code checked without strictNullChecks: what a function's body gives where it gives nothing, which its type can't say.
+ * `null`: only `null` itself; `missing`: undefined (a bare `return`, `undefined`, a void call, a library result typed
+ * `T | undefined`, an optional parameter, a body whose end may be reached); `unknown`: a value that may be either (a
+ * local, a signal, a library result typed with both).
+ */
+export function nothingGiven(fn: ts.FunctionLikeDeclaration, checker: ts.TypeChecker, seen = new Set<ts.Node>()): { null: boolean; missing: boolean; unknown: boolean } {
+  const out = { null: false, missing: false, unknown: false };
+  if (!fn.body || !ts.isBlock(fn.body)) return out;
+  seen.add(fn);
+  const optional = new Set(fn.parameters.filter((p) => p.questionToken && !p.initializer).map((p) => checker.getSymbolAtLocation(p.name)));
+  const gives = (e: ts.Expression | undefined): void => {
+    if (!e) { out.missing = true; return; }
+    e = ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses);
+    if (ts.isBinaryExpression(e) && (e.operatorToken.kind === ts.SyntaxKind.QuestionQuestionToken || e.operatorToken.kind === ts.SyntaxKind.BarBarToken)) return gives(e.right);
+    if (ts.isConditionalExpression(e)) { gives(e.whenTrue); gives(e.whenFalse); return; }
+    if (e.kind === ts.SyntaxKind.NullKeyword) { out.null = true; return; }
+    if ((ts.isIdentifier(e) && e.text === 'undefined') || ts.isVoidExpression(e)) { out.missing = true; return; }
+    if (ts.isIdentifier(e)) {
+      const sym = checker.getSymbolAtLocation(e);
+      if (optional.has(sym)) { out.missing = true; return; }
+      const d = sym?.valueDeclaration;
+      // A local declared without a value may still be undefined; one starting null may still be null.
+      if (d && ts.isVariableDeclaration(d) && ts.findAncestor(d, (n) => n === fn) && !ts.isForOfStatement(d.parent.parent) && !ts.isForInStatement(d.parent.parent)) {
+        if (!d.initializer) out.missing = true;
+        else gives(d.initializer.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(d.initializer) && d.initializer.text === 'undefined') ? d.initializer : ts.factory.createTrue());
+      }
+      return;
+    }
+    if (ts.isCallExpression(e)) {
+      const t = checker.getTypeAtLocation(e);
+      if (t.flags & ts.TypeFlags.Void) { out.missing = true; return; }
+      const sig = checker.getResolvedSignature(e)?.getDeclaration();
+      const declared = sig && !ts.isJSDocSignature(sig) && sig.getSourceFile().isDeclarationFile ? sig.type : undefined;
+      // The program's own function: what its body gives.
+      if (sig && !ts.isJSDocSignature(sig) && (ts.isFunctionDeclaration(sig) || ts.isMethodDeclaration(sig)) && sig.body && !sig.getSourceFile().isDeclarationFile) {
+        if (seen.has(sig)) return;
+        const inner = nothingGiven(sig, checker, seen);
+        out.null ||= inner.null; out.missing ||= inner.missing; out.unknown ||= inner.unknown;
+      } else if (declared && ts.isUnionTypeNode(declared)) {
+        const n = declared.types.some((x) => ts.isLiteralTypeNode(x) && x.literal.kind === ts.SyntaxKind.NullKeyword);
+        const u = declared.types.some((x) => x.kind === ts.SyntaxKind.UndefinedKeyword);
+        if (n && u) out.unknown = true;
+        else if (n) out.null = true;
+        else if (u) out.missing = true;
+      }
+      // A function's or signal's result read without its own declaration's evidence (a signal made with null).
+      else if (!e.arguments.length && !(sig && !ts.isJSDocSignature(sig) && !sig.getSourceFile().isDeclarationFile)) out.unknown = true;
+    }
+  };
+  const visit = (n: ts.Node): void => {
+    if (ts.isFunctionLike(n) || ts.isClassLike(n)) return;
+    if (ts.isReturnStatement(n)) gives(n.expression);
+    ts.forEachChild(n, visit);
+  };
+  visit(fn.body);
+  if (!leaves(fn.body)) out.missing = true;
+  return out;
+}
+
+/** Whether a statement always returns or throws, as far as its last statements, both branches of an `if` and a `try`'s blocks show. */
+function leaves(st: ts.Statement | undefined): boolean {
+  if (!st) return false;
+  if (ts.isReturnStatement(st) || ts.isThrowStatement(st)) return true;
+  if (ts.isBlock(st)) return leaves(st.statements[st.statements.length - 1]);
+  if (ts.isTryStatement(st)) return (!!st.finallyBlock && leaves(st.finallyBlock)) || (leaves(st.tryBlock) && (!st.catchClause || leaves(st.catchClause.block)));
+  return ts.isIfStatement(st) && !!st.elseStatement && leaves(st.thenStatement) && leaves(st.elseStatement);
+}
+
+/** Whether code assigns a variable anywhere after its declaration. */
+export function reassigned(d: ts.VariableDeclaration, checker: ts.TypeChecker): boolean {
+  if (!ts.isIdentifier(d.name)) return true;
+  const sym = checker.getSymbolAtLocation(d.name);
+  if (!sym) return true;
+  const target = (x: ts.Expression) => ts.isIdentifier(ts.skipOuterExpressions(x)) && checker.getSymbolAtLocation(ts.skipOuterExpressions(x)) === sym;
+  const visit = (n: ts.Node): boolean => {
+    if (ts.isBinaryExpression(n) && n.operatorToken.kind >= ts.SyntaxKind.FirstAssignment && n.operatorToken.kind <= ts.SyntaxKind.LastAssignment && target(n.left)) return true;
+    if ((ts.isPrefixUnaryExpression(n) || ts.isPostfixUnaryExpression(n)) && (n.operator === ts.SyntaxKind.PlusPlusToken || n.operator === ts.SyntaxKind.MinusMinusToken) && target(n.operand)) return true;
+    return !!ts.forEachChild(n, visit);
+  };
+  return visit(d.getSourceFile());
+}
+
+/** The key JavaScript reads of `e` where `e` (parenthesized or not) is a member read's receiver, without `?.`. */
+export function readKeyOf(e: ts.Expression): string | null {
+  const p = ts.walkUpParenthesizedExpressions(e.parent);
+  if (ts.isPropertyAccessExpression(p) && !p.questionDotToken && ts.skipOuterExpressions(p.expression, ts.OuterExpressionKinds.Parentheses) === e) return p.name.text;
+  if (ts.isElementAccessExpression(p) && !p.questionDotToken && ts.skipOuterExpressions(p.expression, ts.OuterExpressionKinds.Parentheses) === e) {
+    const k = p.argumentExpression;
+    return ts.isStringLiteralLike(k) || ts.isNumericLiteral(k) ? k.text : k.getText();
+  }
+  return null;
+}
+
+/**
  * Downcasts read untyped (`const field = view as TextField`, `(view as TextField).text`): `receivers`, the ones read for a
  * member in place, and `classes`, the program's classes whose objects any of them may hold (each one assignable to the type
  * cast from), whose members are read and called by name.
