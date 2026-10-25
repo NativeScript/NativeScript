@@ -792,6 +792,7 @@ export class Translator implements AsyncTranslator {
       const params = [...(selfType && selfType !== 'Unit' ? [self!] : []), ...s.getParameters()].map((p) => {
         const pt = this.type(c.getTypeOfSymbolAtLocation(p, where ?? p.valueDeclaration!), where);
         if (p.valueDeclaration && ts.isParameter(p.valueDeclaration) && (p.valueDeclaration.questionToken || p.valueDeclaration.initializer)) return optionalType(pt);
+        if (p.valueDeclaration && ts.isParameter(p.valueDeclaration) && ['String', 'Double', 'Boolean'].includes(pt) && this.givenUndefined(p.valueDeclaration)) return optionalType(pt);
         return pt;
       });
       // A generic signature held as a value (`assertEqual<T>` of a module object): its type parameters are whatever script passes.
@@ -1437,7 +1438,8 @@ export class Translator implements AsyncTranslator {
    * counts as a read), as Kotlin requires of a variable declared without one, and whether only once (a `val`).
    * Conservative: loops, switches and try statements naming it count as reads.
    */
-  private assignedBeforeUse(d: ts.VariableDeclaration): 'once' | 'more' | null {
+  /** `destructured`: a destructuring assignment's plain target (`[a, b] = …`) counts as set. */
+  private assignedBeforeUse(d: ts.VariableDeclaration, destructured = false): 'once' | 'more' | null {
     const sym = ts.isIdentifier(d.name) ? this.checker.getSymbolAtLocation(d.name) : undefined;
     const statement = d.parent.parent;
     if (!sym || !ts.isVariableStatement(statement) || !ts.isBlock(statement.parent)) return null;
@@ -1451,6 +1453,10 @@ export class Translator implements AsyncTranslator {
         let e = s.expression;
         while (ts.isParenthesizedExpression(e)) e = e.expression;
         if (ts.isBinaryExpression(e) && e.operatorToken.kind === ts.SyntaxKind.EqualsToken && ts.isIdentifier(e.left) && this.checker.getSymbolAtLocation(e.left) === sym) return { kind: names(e.right) ? 'read' : 'assigned', once: true };
+        if (destructured && ts.isBinaryExpression(e) && e.operatorToken.kind === ts.SyntaxKind.EqualsToken && !names(e.right)) {
+          const targets = ts.isArrayLiteralExpression(e.left) ? e.left.elements : ts.isObjectLiteralExpression(e.left) ? e.left.properties.map((p) => (ts.isShorthandPropertyAssignment(p) && !p.objectAssignmentInitializer ? p.name : ts.isPropertyAssignment(p) ? p.initializer : p)) : [];
+          if (targets.some((x) => ts.isIdentifier(x) && this.checker.getSymbolAtLocation(x) === sym)) return { kind: 'assigned', once: false };
+        }
         return { kind: names(s) ? 'read' : 'none' };
       }
       if (ts.isBlock(s)) return sequence(s.statements);
@@ -2308,10 +2314,38 @@ export class Translator implements AsyncTranslator {
     if (p.dotDotDotToken || !ts.isIdentifier(p.name)) return false;
     if (this.looseDeclaration(p)) return true;
     const t = this.typeOf(p.name);
+    if (['String', 'Double', 'Boolean'].includes(t) && this.givenUndefined(p)) return true;
     // An app checked without strictNullChecks: a string parameter its function tests (`if (state)`) is one callers may leave out.
     if (this.lenientApp && !this.library && !p.getSourceFile().isDeclarationFile && t === 'String' && ts.isFunctionDeclaration(p.parent) && this.truthTested(p.name)) return true;
     if (!this.pluginFiles.has(p.getSourceFile().fileName)) return false;
     return !t.endsWith('?') && !['Double', 'Boolean', 'Unit', 'Nothing'].includes(t) && !isFunctionType(t) && (t === 'String' || this.isObjectType(t));
+  }
+
+  private undefinedGiven = new Map<ts.ParameterDeclaration, boolean>();
+  /** A non-strict app's function-type parameter a call gives undefined (`f(i, last ? true : undefined)`), or the matching parameter of a literal for that type. */
+  private givenUndefined(p: ts.ParameterDeclaration): boolean {
+    if (!this.lenientApp || this.lenient || this.library || p.getSourceFile().isDeclarationFile || this.pluginFiles.has(p.getSourceFile().fileName)) return false;
+    let found = this.undefinedGiven.get(p);
+    if (found !== undefined) return found;
+    this.undefinedGiven.set(p, false);
+    const fn = p.parent, k = fn.parameters.indexOf(p);
+    found = false;
+    if (ts.isArrowFunction(fn) || ts.isFunctionExpression(fn)) {
+      const slot = this.checker.getContextualType(fn)?.getNonNullableType().getCallSignatures()[0]?.getDeclaration();
+      const q = slot && !ts.isJSDocSignature(slot) && ts.isFunctionTypeNode(slot) ? slot.parameters[k] : undefined;
+      found = !!q && this.givenUndefined(q);
+    } else if (ts.isFunctionTypeNode(fn) && (ts.isParameter(fn.parent) || ts.isVariableDeclaration(fn.parent)) && fn.parent.type === fn && ts.isIdentifier(fn.parent.name)) {
+      const d = fn.parent, sym = this.checker.getSymbolAtLocation(d.name as ts.Identifier);
+      const undef = (e: ts.Expression): boolean => {
+        e = ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses);
+        return (ts.isIdentifier(e) && e.text === 'undefined') || ts.isVoidExpression(e) || (ts.isConditionalExpression(e) && (undef(e.whenTrue) || undef(e.whenFalse)));
+      };
+      const visit = (x: ts.Node): boolean => (ts.isCallExpression(x) && ts.isIdentifier(x.expression) && this.checker.getSymbolAtLocation(x.expression) === sym && !!x.arguments[k] && undef(x.arguments[k])) || !!ts.forEachChild(x, visit);
+      const scope = ts.isParameter(d) ? d.parent : ts.findAncestor(d.parent, (x) => ts.isFunctionLike(x) || ts.isSourceFile(x));
+      found = !!sym && !!scope && visit(scope);
+    }
+    this.undefinedGiven.set(p, found);
+    return found;
   }
 
   /** `override`: an override's, which takes a constant default from the method it overrides. */
@@ -5235,6 +5269,12 @@ export class Translator implements AsyncTranslator {
       const deadLiteral = !!d.initializer && !constant && this.isConstant(d.initializer) && !this.pluginFiles.has(d.getSourceFile().fileName);
       const set = (!d.initializer || deadLiteral) && !lowered ? this.assignedBeforeUse(d) : null;
       if (set) return `${i}${set === 'once' ? 'val' : 'var'} ${name}: ${t}`;
+      // Lenient code may read it before any assignment (`let found: boolean; … typeof found`): undefined until assigned.
+      if (!d.initializer && (this.lenient || this.lenientApp) && !lowered && ['String', 'Double', 'Boolean'].includes(t) && !this.assignedBeforeUse(d, true)) {
+        const sym = this.resolve(d.name);
+        if (sym) this.undefinedVars.set(sym, optionalType(t));
+        return `${i}var ${name}: ${optionalType(t)} = null`;
+      }
       if (!d.initializer) return `${i}${lowered || !t.endsWith('?') ? this.deferredDeclaration(name, t) : `var ${name}: ${t} = null`}`;
       // A value whose functions name it (a function calling itself, a listener removing itself): declared first, so they can.
       if (refersTo(d.initializer, this.checker.getSymbolAtLocation(d.name), this.checker)) {
@@ -5862,9 +5902,9 @@ export class Translator implements AsyncTranslator {
       const parts = source.startsWith('Triple') ? ['first', 'second', 'third'] : ['first', 'second'];
       return `(${this.expr(e)})${isNullable(source) ? '?' : ''}.let { __t -> jsArrayOf<${array[1]}>(${parts.map((p) => `__t.${p}`).join(', ')}) }`;
     }
-    // Library mode: each branch where the slot goes, as Kotlin types the `if` by its branches; a nullable string, number
-    // or boolean slot (`scale(): number` returning `c ? 2 : null`) takes a missing branch as it is.
-    if (this.library && ts.isConditionalExpression(e) && (isFunctionType(target.replace(/^\((.*)\)\?$/, '$1')) || ['String?', 'Double?', 'Boolean?'].includes(target))) {
+    // Library mode and non-strict apps: each branch where the slot goes, as Kotlin types the `if` by its branches; a nullable
+    // string, number or boolean slot (`scale(): number` returning `c ? 2 : null`) takes a missing branch as it is.
+    if ((this.library || this.lenientApp) && ts.isConditionalExpression(e) && (isFunctionType(target.replace(/^\((.*)\)\?$/, '$1')) || ['String?', 'Double?', 'Boolean?'].includes(target))) {
       return `(if (${this.cond(e.condition)}) ${this.coerce(e.whenTrue, target)} else ${this.coerce(e.whenFalse, target)})`;
     }
     // Lenient code: `a ?? b` where `b` may be unset itself, read as the type says.
@@ -7340,6 +7380,7 @@ export class Translator implements AsyncTranslator {
         && ts.isFunctionDeclaration(decl.parent) && !decl.getSourceFile().isDeclarationFile && isNullable(this.paramType(decl))
         && ts.isCallExpression(e) && (ts.isIdentifier(e.expression) || (ts.isPropertyAccessExpression(e.expression) && !!this.namespaceMember(e.expression)))) pt = optionalType(pt);
       const constantDefault = !!decl && ts.isParameter(decl) && this.constantDefault(decl) && appDeclared && !this.templateParams;
+      if (decl && ts.isParameter(decl) && ['String', 'Double', 'Boolean'].includes(pt) && this.givenUndefined(decl)) pt = optionalType(pt);
       if (decl && ts.isParameter(decl) && (decl.questionToken || decl.initializer) && appDeclared && !constantDefault) pt = optionalType(pt);
       // An argument that may be undefined where Kotlin's parameter has the constant default JavaScript would use.
       if (constantDefault && this.typeOf(a) === optionalType(pt)) { out.push(`(${this.coerce(a, optionalType(pt))} ?: ${this.coerce((decl as ts.ParameterDeclaration).initializer!, pt)})`); continue; }
@@ -9008,7 +9049,7 @@ export class Translator implements AsyncTranslator {
     if (decls?.length && decls.every((d) => IOS_TYPINGS.test(d.getSourceFile().fileName))) return 'undefined';
     if (this.namesClass(e.expression)) return 'function';
     const param = ts.isIdentifier(e.expression) ? this.resolve(e.expression)?.valueDeclaration : undefined;
-    if (param && ts.isParameter(param) && this.typeTested(param)) return null;
+    if (param && ts.isParameter(param) && (this.typeTested(param) || this.untypedNarrowed(param))) return null;
     const t = this.typeOf(e.expression);
     const base = t.replace(/\?$/, '');
     if (base === 'Unit') return 'undefined';
@@ -9024,11 +9065,12 @@ export class Translator implements AsyncTranslator {
   private heldNullable(e: ts.Expression, t: string): boolean {
     if (!this.library) {
       const x = ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses);
+      if (this.lenientApp && ts.isIdentifier(x) && this.declaredTypeOf(x) === optionalType(t)) return true;
       const d = ts.isCallExpression(x) ? this.checker.getResolvedSignature(x)?.getDeclaration() : ts.isIdentifier(x) || ts.isPropertyAccessExpression(x) ? this.resolve(ts.isPropertyAccessExpression(x) ? x.name : x)?.valueDeclaration : undefined;
       return !!d && !ts.isJSDocSignature(d) && this.looseDeclaration(d);
     }
     if (ts.isIdentifier(e)) {
-      if (this.declaredTypeOf(e) === `${t}?`) return true;
+      if (this.declaredTypeOf(e) === optionalType(t)) return true;
       // A copy of such a call's result, which flow analysis may ask about before its declaration is translated.
       const d = this.resolve(e)?.valueDeclaration;
       return !!d && ts.isVariableDeclaration(d) && !!d.initializer && ts.isCallExpression(ts.skipOuterExpressions(d.initializer)) && this.heldNullable(ts.skipOuterExpressions(d.initializer), t);
@@ -9086,21 +9128,29 @@ export class Translator implements AsyncTranslator {
     if (this.namesClass(e.expression)) return '"function"';
     // A parameter callers give other values than its type (`typeTested`): what it holds, never its declared type's.
     const tested = ts.isIdentifier(e.expression) ? this.resolve(e.expression)?.valueDeclaration : undefined;
-    if (tested && ts.isParameter(tested) && this.typeTested(tested)) return `jsTypeof(${ident((e.expression as ts.Identifier).text)})`;
+    if (tested && ts.isParameter(tested) && (this.typeTested(tested) || this.untypedNarrowed(tested))) return `jsTypeof(${ident((e.expression as ts.Identifier).text)})`;
     if (this.nullDistinct(e.expression)) return `jsTypeof(${this.coerce(e.expression, 'Any?')})`;
     const t = this.typeOf(e.expression);
     const base = t.replace(/\?$/, '');
     if (base === 'Unit') return '"undefined"';
     const known = typeofName(base);
     if (t === 'Any?' || !known) return `jsTypeof(${this.expr(e.expression)})`;
-    // Library mode: an optional parameter (`atIndex?: number`), which unchecked code reads as its type: undefined when left out.
-    const param = this.library && ts.isIdentifier(e.expression) ? this.resolve(e.expression)?.valueDeclaration : undefined;
-    if (param && ts.isParameter(param) && !t.endsWith('?') && this.declaredTypeOf(e.expression as ts.Identifier) === `${t}?`) return this.rawTypeof(e.expression);
+    // Code unchecked for null: an optional parameter (`atIndex?: number`), which it reads as its type: undefined when left out.
+    const param = (this.library || this.lenient || this.lenientApp) && ts.isIdentifier(e.expression) ? this.resolve(e.expression)?.valueDeclaration : undefined;
+    if (param && ts.isParameter(param) && !t.endsWith('?') && this.declaredTypeOf(e.expression as ts.Identifier) === optionalType(t)) return this.rawTypeof(e.expression);
     const maybe = this.maybeUndefined(e.expression);
     // A value that may be missing: the runtime's typeof, as a test before it may already prove it present.
     if (maybe) return `jsTypeof(${maybe})`;
     if (!t.endsWith('?') && this.heldNullable(e.expression, t)) return this.rawTypeof(e.expression);
     return t.endsWith('?') ? `jsTypeof(${this.expr(e.expression)})` : kotlinString(known);
+  }
+
+  /**
+   * Lenient code: a parameter Kotlin holds untyped (`val: string | string[]`) that the checker narrows to one type, which
+   * unchecked for null leaves undefined possible (`Array.isArray(val)` false).
+   */
+  private untypedNarrowed(p: ts.ParameterDeclaration): boolean {
+    return this.lenient && ts.isIdentifier(p.name) && this.declaredTypeOf(p.name) === 'Any?';
   }
 
   /** `typeof x` of a value Kotlin holds nullable, read as it is held. */

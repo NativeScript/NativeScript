@@ -20,3 +20,9 @@ try {
 } catch (e) {
   console.log((e as Error).name, (e as Error).message);
 }
+const sparseNames: string[] = new Array<string>(4);
+sparseNames[2] = 'c';
+const forIn: string[] = [];
+for (const k in sparseNames) forIn.push(k);
+console.log(forIn.join(','), Object.entries(sparseNames).length, Object.values(sparseNames).join('|'));
+console.log(Object.keys(new Array<number>(2)).length, 3 in sparseNames, 2 in sparseNames);

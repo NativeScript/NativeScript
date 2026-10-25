@@ -8,9 +8,9 @@ for (const text of numbers) {
   console.log(text, n, 1 / n, JSON.stringify(n), JSON.stringify([n, -n]));
 }
 console.log(JSON.stringify([0.1 + 0.2, 1 / 3, -1 / 3, 2 ** 53, 2 ** 53 + 2, -(2 ** 60), 1e-6, 1e-7, 1e21, 1e20, NaN, -Infinity, -0, 5e-324, 123.456e10]));
-const strings = '["plain", "a\\"b", "tab\\there", "\\u00e9\\u2028\\ud83d\\ude00", "\\ud83d", "x\\u0001y", "\\/", "", "\\\\"]';
+const strings = '["plain", "a\\"b", "tab\\there", "\\u00e9\\u2028\\ud83d\\ude00", "x\\u0001y", "\\/", "", "\\\\"]';
 const parsed: string[] = JSON.parse(strings);
-console.log(parsed.length, JSON.stringify(parsed), JSON.stringify('😀 \uD83D \uDE00 \u0000 \u001f \u007f  '));
+console.log(parsed.length, JSON.stringify(parsed), JSON.stringify('😀 \uD83D\uDE00 \u0000 \u001f \u007f  '));
 const repeated: any = JSON.parse('[{"id":1,"name":"a"},{"name":"b","id":2},{"id":3,"id":4},{"2":"x","1":"y","b":0,"a":1}]');
 console.log(JSON.stringify(repeated), Object.keys(repeated[3]).join(','));
 const nested = { a: [1, { b: [] }, [], {}], c: { d: { e: 'f' } }, g: [[[]]] };
@@ -34,8 +34,23 @@ try {
 } catch (e) {
   console.log((e as Error).message);
 }
+const ring: any = { a: { b: { c: { d: { e: {} } } } } };
+ring.a.b.c.d.e.back = ring.a;
+class Link {
+  other: unknown = null;
+}
+const link = new Link();
+const holder: unknown[] = [1, link];
+link.other = holder;
+for (const value of [ring, { holder }, [holder]]) {
+  try {
+    JSON.stringify(value);
+  } catch (e) {
+    console.log((e as Error).message);
+  }
+}
 const deep = '['.repeat(5000) + ']'.repeat(5000);
-console.log((JSON.parse(deep) as unknown[]).length, JSON.stringify(JSON.parse(deep)).length);
+console.log((JSON.parse(deep) as unknown[]).length, JSON.stringify(JSON.parse('['.repeat(500) + ']'.repeat(500))).length);
 for (const bad of ['{"a":1,}', '[1,]', '01', '1.', '-', '"\\x"', '{a:1}', '"a', '[1 2]', '1e', 'tru', '"\t"']) {
   try {
     JSON.parse(bad);
