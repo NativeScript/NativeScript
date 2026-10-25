@@ -1007,3 +1007,92 @@ function missingAndNull(checker: ts.TypeChecker, files: readonly ts.SourceFile[]
     }
   }
 }
+
+/**
+ * A pattern's capture groups: how many, which (by number) can take no part in a match (inside an alternative, under a
+ * quantifier that allows none, or in a negative lookaround), and whether any is named.
+ */
+export function patternGroups(source: string): { count: number; unset: Set<number>; named: boolean } {
+  type Frame = { capturing: boolean; alternates: boolean; optional: boolean; negative: boolean; parent: Frame | null };
+  const top: Frame = { capturing: false, alternates: false, optional: false, negative: false, parent: null };
+  const groups: Frame[] = [];
+  let frame = top, named = false;
+  let closed: Frame | null = null;
+  for (let i = 0; i < source.length; i++) {
+    const c = source[i];
+    if (c === '\\') { i++; closed = null; continue; }
+    if (c === '[') {
+      for (i++; i < source.length && source[i] !== ']'; i++) if (source[i] === '\\') i++;
+      closed = null;
+      continue;
+    }
+    if (c === '(') {
+      const name = source[i + 1] === '?' && source[i + 2] === '<' && source[i + 3] !== '=' && source[i + 3] !== '!';
+      const capturing = source[i + 1] !== '?' || name;
+      const negative = source.startsWith('?!', i + 1) || source.startsWith('?<!', i + 1);
+      frame = { capturing, alternates: false, optional: false, negative, parent: frame };
+      if (capturing) groups.push(frame);
+      named ||= name;
+      closed = null;
+      continue;
+    }
+    if (c === ')' && frame.parent) { closed = frame; frame = frame.parent; continue; }
+    if (c === '|') frame.alternates = true;
+    else if (closed && (c === '?' || c === '*' || (c === '{' && /^\{0+(,\d*)?\}/.test(source.slice(i, i + 24))))) closed.optional = true;
+    closed = null;
+  }
+  const unset = new Set<number>();
+  groups.forEach((g, k) => {
+    let may = g.optional || g.negative;
+    for (let f = g.parent; f && !may; f = f.parent) may = f.alternates || f.optional || f.negative;
+    if (may) unset.add(k + 1);
+  });
+  return { count: groups.length, unset, named };
+}
+
+export function patternMayLeaveGroupUnset(source: string): boolean {
+  return patternGroups(source).unset.size > 0;
+}
+
+/** The flags of a pattern argument known when compiling (`/x/g`, `new RegExp(source, 'g')`, or a constant holding one). */
+export function literalFlags(e: ts.Expression, checker: ts.TypeChecker): string | null {
+  e = ts.skipOuterExpressions(e);
+  if (ts.isRegularExpressionLiteral(e)) return e.text.slice(e.text.lastIndexOf('/') + 1);
+  if ((ts.isNewExpression(e) || ts.isCallExpression(e)) && ts.isIdentifier(e.expression) && e.expression.text === 'RegExp') {
+    const flags = e.arguments?.[1];
+    return flags && ts.isStringLiteralLike(flags) ? flags.text : null;
+  }
+  if (ts.isIdentifier(e)) {
+    const d = checker.getSymbolAtLocation(e)?.valueDeclaration;
+    if (d && ts.isVariableDeclaration(d) && d.initializer && ts.getCombinedNodeFlags(d) & ts.NodeFlags.Const) return literalFlags(d.initializer, checker);
+  }
+  return null;
+}
+
+/** The source of a pattern argument known when compiling: a literal, `new RegExp('…')`, or a constant holding one. */
+export function literalPattern(e: ts.Expression, checker: ts.TypeChecker): string | null {
+  e = ts.skipOuterExpressions(e);
+  if (ts.isRegularExpressionLiteral(e)) return e.text.slice(1, e.text.lastIndexOf('/'));
+  if ((ts.isNewExpression(e) || ts.isCallExpression(e)) && ts.isIdentifier(e.expression) && e.expression.text === 'RegExp') {
+    const [p] = e.arguments ?? [];
+    if (p && ts.isStringLiteralLike(p)) return p.text;
+    if (p && ts.isRegularExpressionLiteral(ts.skipOuterExpressions(p))) return literalPattern(p, checker);
+    return null;
+  }
+  if (ts.isIdentifier(e)) {
+    const d = checker.getSymbolAtLocation(e)?.valueDeclaration;
+    if (d && ts.isVariableDeclaration(d) && d.initializer && ts.getCombinedNodeFlags(d) & ts.NodeFlags.Const) return literalPattern(d.initializer, checker);
+  }
+  return null;
+}
+
+/**
+ * Whether a split, match or exec over this pattern argument can give a group that took no part (undefined): a literal
+ * pattern (or a constant holding one) by its source; any other RegExp, made at run time, is taken to.
+ */
+export function regexpMayLeaveGroupUnset(e: ts.Expression, checker: ts.TypeChecker): boolean {
+  const source = literalPattern(e, checker);
+  if (source !== null) return patternMayLeaveGroupUnset(source);
+  const t = checker.getTypeAtLocation(e);
+  return !(t.flags & ts.TypeFlags.StringLike) && !(t.isUnion() && t.types.every((p) => p.flags & (ts.TypeFlags.StringLike | ts.TypeFlags.Null | ts.TypeFlags.Undefined)));
+}

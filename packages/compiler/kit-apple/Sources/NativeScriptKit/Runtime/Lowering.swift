@@ -478,7 +478,7 @@ func jsStringMethod(_ s: String, _ key: String) -> JSMethod? {
             let all = key == "replaceAll"
             // A function replacement receives the match, its groups, the offset and the input, as String.prototype.replace passes them.
             if let fn = jsFlat(replacement), fn is JSFunction || fn is JSMethod || fn is JSFunctionObject {
-                let re = try (pattern as? JSRegExp) ?? JSRegExp(NSRegularExpression.escapedPattern(for: jsToString(pattern)), all ? "g" : "")
+                let re = try (pattern as? JSRegExp) ?? JSRegExp(jsRegExpEscape(jsToString(pattern)), all ? "g" : "")
                 return try jsReplace(s, re) { m in jsToString(try jsCall(fn, spread: m.values.elements.map { $0 as Any? } + [m.index, m.input])) }
             }
             if all, let re = pattern as? JSRegExp { return try jsReplaceAll(s, re, jsToString(replacement)) }

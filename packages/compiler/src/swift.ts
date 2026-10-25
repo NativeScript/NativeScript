@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import { KIT_APPLE_SOURCES } from './paths.ts';
 import { Throws, digitsLiteral, isArrayLengthLiteral, isArrayLengthWrite, isAsync, isStatic } from './throws.ts';
 import { assignedMembers } from './sharing.ts';
-import { assignedValues, heldDowncasts, openSpreadType, initializedNull, intersectionAliasMembers, intlConstructor, nullSetFields, nullishSlots, type NullishSlots, isRegExpProtocol, isObjectToStringCall, isStringRaw, leadingNeverRead, forwardedSetter, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, uncheckedMatch, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, LooseSlots, originOf, ownSlot, implementedInterfaceDeclarations, slotOf, slotType, definitelyAssignedFields, type TrustScope, classesHeldUntyped } from './lang.ts';
+import { assignedValues, heldDowncasts, openSpreadType, initializedNull, intersectionAliasMembers, intlConstructor, literalPattern, literalFlags, patternGroups, regexpMayLeaveGroupUnset, nullSetFields, nullishSlots, type NullishSlots, isRegExpProtocol, isObjectToStringCall, isStringRaw, leadingNeverRead, forwardedSetter, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, uncheckedMatch, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, LooseSlots, originOf, ownSlot, implementedInterfaceDeclarations, slotOf, slotType, definitelyAssignedFields, type TrustScope, classesHeldUntyped } from './lang.ts';
 import { AsyncLowering, type AsyncCtx, type AsyncSyntax, type AsyncTranslator } from './async.ts';
 import { CoreAPI, isCoreDeclaration, packageOf } from './core.ts';
 import type { KitMember } from './kit-index.ts';
@@ -1507,6 +1507,7 @@ export class Translator implements AsyncTranslator {
       if (this.declaredTypeOf(n as ts.Expression) === 'Any?') return 'Any?';
     }
     if ((t === 'Bool' || t === 'String' || t === 'Double') && (this.holdsUndefined(n) || this.givenNullSignalValue(n))) return `${t}?`;
+    if (t === 'JSArray<String>' && this.unsetGroups(n)) return 'JSArray<String?>';
     if (this.looseObjectDeclaration(n, t) || (isFunctionType(t) && this.lenientAppOptional(n))) return optionalType(t);
     // An element of an array literal typed `never[]` (`callbacks = []` under strict checks), which Swift holds as any value.
     if (t === 'Never' && (ts.isIdentifier(n) || ts.isVariableDeclaration(n)) && this.resolve(n)?.valueDeclaration && ts.isVariableDeclaration(this.resolve(n)!.valueDeclaration!)) return 'Any?';
@@ -1934,6 +1935,7 @@ export class Translator implements AsyncTranslator {
     if (!sym || !decl) return null;
     const maybe = this.undefinedVars.get(sym);
     if (maybe) return maybe;
+    if (ts.isIdentifier(e) && this.unsetGroups(e)) return 'JSArray<String?>';
     const erased = this.erasedMemberType(decl);
     if (erased) return erased;
     const root = ts.isPropertyDeclaration(decl) || (ts.isParameter(decl) && ts.isPropertyAccessExpression(e)) ? this.redeclaredField(decl) : null;
@@ -3562,6 +3564,9 @@ ${members.join('\n')}
   /** Swift code of type `from` where Swift needs `to`: functions are adapted parameter by parameter. */
   convert(code: string, from: string, to: string): string {
     if (from === to) return code;
+    const widened = /^JSArray<(String|Double|Bool)>$/.exec(from);
+    if (widened && to === `JSArray<${widened[1]}?>`) return `${to}(${code}.storage.map { $0 })`;
+    if (from.replace(/[?!]$/, '') === 'JSMatch' && to === 'JSArray<String?>') return `${code}${/[?!]$/.test(from) ? '!' : ''}.values`;
     const rxFrom = /^Rx(?:Observable|Subject|BehaviorSubject|ReplaySubject)<(.+)>[?!]?$/.exec(from)?.[1], rxTo = /^RxObservable<(.+)>[?!]?$/.exec(to)?.[1];
     if (rxFrom && rxTo && rxFrom !== rxTo) return `${code}.mapValues { (__v: ${rxFrom}) -> ${rxTo} in ${this.convert('__v', rxFrom, rxTo)} }`;
     const sigFrom = /^Signal<(.+)>[?!]?$/.exec(from)?.[1], sigTo = /^Signal<(.+)>[?!]?$/.exec(to)?.[1];
@@ -3909,6 +3914,7 @@ ${members.join('\n')}
 
   private mayReturnUndefined(fn: ts.SignatureDeclaration): boolean {
     if (fn.getSourceFile().isDeclarationFile) return false;
+    if ((ts.isArrowFunction(fn) || ts.isFunctionExpression(fn)) && this.returnsUnsetElement(fn)) return true;
     // A non-strict app's function returning null (`return null` from a `Color` helper): optional too.
     if (!this.lenient) return (this.lenientApp && ts.isFunctionDeclaration(fn) && !!fn.body && this.returnsUndefined(fn)) || (!this.library && this.looseSlots.has(fn));
     if (ts.isMethodDeclaration(fn) && !isStatic(fn) && this.declaresNullableReturn(fn)) return true;
@@ -6482,6 +6488,11 @@ ${members.join('\n')}
       let x: ts.Expression = sig;
       while (ts.isParenthesizedExpression(x.parent)) x = x.parent;
       found = this.reachesScript(x, sig);
+      // A constant holding the function (`const f = (s: string) => …`): wherever the constant is given.
+      const d = x.parent;
+      if (!found && ts.isVariableDeclaration(d) && d.initializer === x && !d.type && ts.isIdentifier(d.name) && ts.getCombinedNodeFlags(d) & ts.NodeFlags.Const) {
+        found = refs(sig, d.name, ts.findAncestor(d.parent, (n) => ts.isFunctionLike(n) || ts.isSourceFile(n)));
+      }
     }
     this.scriptCalledSignatures.set(sig, found);
     return found;
@@ -6500,6 +6511,10 @@ ${members.join('\n')}
     } else slot = this.checker.getContextualType(x);
     if (!slot) return false;
     if (untyped(slot)) return true;
+    // A replacer given a pattern's groups, any of which may be undefined.
+    const call = ts.walkUpParenthesizedExpressions(x.parent);
+    if (ts.isCallExpression(call) && call.arguments[1] === ts.walkUpParenthesizedExpressions(x) && ts.isPropertyAccessExpression(call.expression) && ['replace', 'replaceAll'].includes(call.expression.name.text)
+      && this.checker.getTypeAtLocation(call.expression.expression).flags & ts.TypeFlags.StringLike && regexpMayLeaveGroupUnset(call.arguments[0], this.checker)) return true;
     const decl = this.checker.getNonNullableType(slot).getCallSignatures()[0]?.getDeclaration();
     return !!decl && !ts.isJSDocSignature(decl) && decl !== own && this.scriptCalled(decl);
   }
@@ -6545,7 +6560,100 @@ ${members.join('\n')}
 
   /** A string, number or boolean declaration that holds undefined apart from its type's values. */
   private holdsUndefined(n: ts.Node): boolean {
-    return (this.lenient && this.declaredUndefined(n)) || this.looseDeclaration(n) || this.lenientAppOptional(n);
+    return (this.lenient && this.declaredUndefined(n)) || this.looseDeclaration(n) || this.lenientAppOptional(n) || this.unsetGroupElement(n);
+  }
+
+  private unsetGroupMemo = new Map<ts.Node, boolean>();
+  /**
+   * A string array a group that took no part in a match may have put undefined in, though TypeScript types it `string[]`:
+   * a split over a pattern that can leave a group unset, a match of one copied (spread, `Array.from`, slice, filter…),
+   * and a variable initialized with one. Swift holds it `JSArray<String?>`.
+   */
+  private unsetGroups(n: ts.Node): boolean {
+    let found = this.unsetGroupMemo.get(n);
+    if (found !== undefined) return found;
+    this.unsetGroupMemo.set(n, false);
+    found = this.findUnsetGroups(n);
+    this.unsetGroupMemo.set(n, found);
+    return found;
+  }
+
+  private findUnsetGroups(n: ts.Node): boolean {
+    if (ts.isIdentifier(n) && n.parent && ts.isVariableDeclaration(n.parent) && n.parent.name === n) n = n.parent;
+    if (ts.isIdentifier(n)) {
+      const d = this.resolve(n)?.valueDeclaration;
+      return !!d && ts.isVariableDeclaration(d) && this.unsetGroups(d);
+    }
+    if (ts.isVariableDeclaration(n)) return ts.isIdentifier(n.name) && !!n.initializer && !ts.isForInOrOfStatement(n.parent.parent) && (this.unsetGroups(n.initializer) || this.unsetMatch(n.initializer));
+    if (!ts.isExpression(n)) return false;
+    const e = ts.skipOuterExpressions(n, ts.OuterExpressionKinds.Parentheses | ts.OuterExpressionKinds.NonNullAssertions);
+    const copied = (x: ts.Expression) => this.unsetGroups(x) || this.unsetMatch(x);
+    if (ts.isArrayLiteralExpression(e)) return e.elements.some((x) => ts.isSpreadElement(x) && copied(x.expression));
+    if (!ts.isCallExpression(e) || !ts.isPropertyAccessExpression(e.expression)) return false;
+    const name = e.expression.name.text, receiver = e.expression.expression;
+    if (name === 'split') return !!e.arguments[0] && !!(this.checker.getTypeAtLocation(receiver).flags & ts.TypeFlags.StringLike) && regexpMayLeaveGroupUnset(e.arguments[0], this.checker);
+    if (name === 'from' && ts.isIdentifier(receiver) && receiver.text === 'Array') return e.arguments.length === 1 && copied(e.arguments[0]);
+    if (['slice', 'filter', 'concat', 'reverse', 'sort', 'splice', 'toReversed', 'toSorted', 'toSpliced'].includes(name)) return copied(receiver);
+    if (name === 'map') {
+      const f = e.arguments[0] && ts.skipOuterExpressions(e.arguments[0]);
+      return !!f && (ts.isArrowFunction(f) || ts.isFunctionExpression(f)) && this.returnsUnsetElement(f);
+    }
+    return false;
+  }
+
+  /** The elements an array method of a match visits: its strings, unless a group may be unset or the method changes the match. */
+  private matchElement(target: ts.Expression, method: string): string {
+    return this.unsetMatch(target) || ['push', 'pop', 'shift', 'unshift', 'splice', 'sort', 'reverse', 'fill', 'copyWithin'].includes(method) ? 'String?' : 'String';
+  }
+
+  /** A match whose groups may include one that took no part: from a pattern that can leave one unset, or of unknown origin. */
+  private unsetMatch(e: ts.Expression): boolean {
+    if (this.typeOf(e).replace(/[?!]$/, '') !== 'JSMatch') return false;
+    let x = ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses | ts.OuterExpressionKinds.NonNullAssertions);
+    if (ts.isIdentifier(x)) {
+      const d = this.resolve(x)?.valueDeclaration;
+      if (d && ts.isVariableDeclaration(d) && ts.isIdentifier(d.name) && ts.isForOfStatement(d.parent.parent) && d.parent.parent.initializer === d.parent) x = d.parent.parent.expression;
+      else if (d && ts.isVariableDeclaration(d) && ts.isIdentifier(d.name) && d.initializer && ts.getCombinedNodeFlags(d) & ts.NodeFlags.Const) x = d.initializer;
+      x = ts.skipOuterExpressions(x, ts.OuterExpressionKinds.Parentheses | ts.OuterExpressionKinds.NonNullAssertions);
+    }
+    if (!ts.isCallExpression(x) || !ts.isPropertyAccessExpression(x.expression)) return true;
+    const name = x.expression.name.text;
+    const re = name === 'exec' ? x.expression.expression : ['match', 'matchAll'].includes(name) ? x.arguments[0] : undefined;
+    if (!re) return true;
+    // A global match lists whole matches only.
+    if (name === 'match' && literalFlags(re, this.checker)?.includes('g')) return false;
+    return regexpMayLeaveGroupUnset(re, this.checker);
+  }
+
+  /** An element-visiting callback (`m.map((v) => …)`) of an array or match whose groups may be undefined. */
+  private unsetElementCallback(f: ts.Node): boolean {
+    if (!(ts.isArrowFunction(f) || ts.isFunctionExpression(f)) || !f.parameters.length) return false;
+    const call = ts.walkUpParenthesizedExpressions(f.parent);
+    if (!ts.isCallExpression(call) || call.arguments[0] !== ts.walkUpParenthesizedExpressions(f) || !ts.isPropertyAccessExpression(call.expression)) return false;
+    if (!['map', 'filter', 'forEach', 'some', 'every', 'find', 'findIndex', 'findLast', 'findLastIndex', 'flatMap'].includes(call.expression.name.text)) return false;
+    const receiver = call.expression.expression;
+    return this.unsetGroups(receiver) || this.unsetMatch(receiver);
+  }
+
+  /** Such a callback's element parameter, or a loop's variable over them: held `String?`. */
+  private unsetGroupElement(n: ts.Node): boolean {
+    const p = ts.isParameter(n) || ts.isVariableDeclaration(n) ? n : ts.isIdentifier(n) ? ((ts.isParameter(n.parent) || ts.isVariableDeclaration(n.parent)) && n.parent.name === n ? n.parent : this.resolve(n)?.valueDeclaration) : undefined;
+    // A loop's variable over them (`for (const g of m)`).
+    if (p && ts.isVariableDeclaration(p) && ts.isIdentifier(p.name) && ts.isForOfStatement(p.parent.parent) && p.parent.parent.initializer === p.parent) {
+      const over = p.parent.parent.expression;
+      return this.unsetGroups(over) || this.unsetMatch(over);
+    }
+    return !!p && ts.isParameter(p) && p.parent.parameters[0] === p && ts.isIdentifier(p.name) && this.unsetElementCallback(p.parent);
+  }
+
+  /** A map callback over such elements that may give one back (`(v) => v`): it gives `String?`. */
+  private returnsUnsetElement(f: ts.ArrowFunction | ts.FunctionExpression): boolean {
+    if (!this.unsetElementCallback(f) || !ts.isIdentifier(f.parameters[0].name)) return false;
+    const sym = this.resolve(f.parameters[0].name);
+    const gives = (x: ts.Expression) => { x = ts.skipOuterExpressions(x); return ts.isIdentifier(x) && this.resolve(x) === sym; };
+    if (!ts.isBlock(f.body)) return gives(f.body);
+    const visit = (x: ts.Node): boolean => (ts.isReturnStatement(x) && !!x.expression && gives(x.expression)) || (!ts.isFunctionLike(x) && !!ts.forEachChild(x, visit));
+    return visit(f.body);
   }
 
   /** A non-strict app's optional parameter (`n?: number`), whose type, without strictNullChecks, leaves out the undefined it takes. */
@@ -7155,7 +7263,7 @@ ${members.join('\n')}
       return own && this.lenient && this.lenientRef(t) !== t ? `jsIterated(${code}, ${swiftString(notIterable(e))})` : code;
     }
     // A match's groups; one that matched nothing is undefined, read as the string TypeScript types it.
-    if (t === 'JSMatch') return this.elementTypeOf(e) === 'String' ? `jsIterator(${code}.values.map { (s: String?) in s ?? "" })` : `jsIterator(${code}.values)`;
+    if (t === 'JSMatch') return this.elementTypeOf(e) === 'String' && !this.unsetMatch(e) ? `jsIterator(${code}.values.map { (s: String?) in s ?? "" })` : `jsIterator(${code}.values)`;
     if (t.startsWith('JSIterable<')) return `${code}.jsIterator()`;
     if (t === 'Any?' || t === 'Any') return `jsIteratorOf(${code})`;
     if (/^JS(Array|Set|Map)</.test(t) || t === 'String') return `jsIterator(${code})`;
@@ -7604,6 +7712,10 @@ ${members.join('\n')}
 
   /** An expression where Swift needs a value of `target`. */
   coerce(e: ts.Expression, target: string): string {
+    if (/^JSArray<String>[?!]?$/.test(target) && ((this.typeOf(e) === 'JSArray<String?>' && this.unsetGroups(e)) || this.unsetMatch(e))) {
+      throw this.error(e, 'strings a pattern\'s unset group may leave undefined, given where `string[]` is declared (declare it `(string | undefined)[]`)');
+    }
+    if (target === 'JSArray<String?>' && /^JSMatch[?!]?$/.test(this.typeOf(e))) return this.convert(this.expr(e), this.typeOf(e), target);
     const code = this.coerceTyped(e, target);
     if (target !== 'Any?') return code;
     const entry = this.nullableEntry(e, () => code);
@@ -7828,6 +7940,7 @@ ${members.join('\n')}
     let bare: ts.Expression = e;
     while (ts.isParenthesizedExpression(bare) || ts.isAsExpression(bare)) bare = bare.expression;
     if (ts.isArrayLiteralExpression(bare) && !bare.elements.length && /^JSArray<.*>$/.test(target.replace(/\?$/, ''))) return `${target.replace(/\?$/, '')}()`;
+    if (ts.isArrayLiteralExpression(bare) && /^JSArray<(String|Double|Bool)\?>$/.test(target) && this.typeOf(bare) === target.replace('?>', '>')) return this.array(bare, target);
     // An empty array held as a map from number to value (`numberKeyedArray`): an empty record.
     if (/^JSRecord<.*>$/.test(target) && ((ts.isArrayLiteralExpression(bare) && !bare.elements.length) || (ts.isNewExpression(bare) && ts.isIdentifier(bare.expression) && bare.expression.text === 'Array' && !bare.arguments?.length))) return `${target}()`;
     // An array literal where any value may go holds any value: script may store a string in `const list: any = [1, 2]`,
@@ -10795,7 +10908,7 @@ ${members.join('\n')}
         return rt.endsWith('?') || rt === 'Any?' || rt === 'Void' || ts.isExpressionStatement(e.parent) || comparedToNullish(e) || this.rawOptional.has(e) ? code : this.undefinedAs(`(${code})`, rt);
       }
       if (t === 'JSMatch' && method !== 'toString') {
-        this.subst.set(target, `${this.expr(target)}${q}.values`);
+        this.subst.set(target, `${this.expr(target)}${q}.${this.matchElement(target, method) === 'String' ? 'jsStrings' : 'values'}`);
         try { return this.arrayMethod(method, target, e, ''); } finally { this.subst.delete(target); }
       }
       if (t.startsWith('(') && this.checker.isTupleType(this.checker.getTypeAtLocation(target))) {
@@ -11512,7 +11625,7 @@ ${members.join('\n')}
           const body = ts.isBlock(fn.body) ? this.functionBody(fn, el, this.indent).slice(1, -1) : ` return ${this.coerce(fn.body, el)} `;
           return `${T()}.from(length: ${this.expr(length.initializer)}) { (${index}: Double) ${this.throwsInfo.fn(fn) ? 'throws ' : ''}-> ${el} in ${value}${body}}`;
         }
-        if (method === 'from' && e.arguments.length === 2) return `${T()}.from(${this.iterable(arg(0))}).map(${this.expr(arg(1))})`;
+        if (method === 'from' && e.arguments.length === 2) return `JSArray<${this.elementTypeOf(arg(0))}>.from(${this.iterable(arg(0))}).map(${this.expr(arg(1))})`;
         if (method === 'of') return `${T()}([${a().join(', ')}])`;
         // `Array.apply(thisArg, list)`: `Array(...list)`, a length when the list is one number.
         if (method === 'apply' && e.arguments.length === 2) {
@@ -11708,7 +11821,7 @@ ${members.join('\n')}
     // Lenient code holds arrays implicitly unwrapped, where `map` and `flatMap` would be Optional's.
     const t = receiver ?? (!q && this.lenient && ['map', 'flatMap'].includes(name) && /^JSArray<.*>$/.test(held) ? `(${this.expr(target)} as ${held})` : `${this.expr(target)}${q}`);
     const a = () => this.args(e);
-    const el = held.replace(/\?$/, '').replace(/^JSArray<(.*)>$/, '$1');
+    const el = held.replace(/[?!]$/, '') === 'JSMatch' ? this.matchElement(target, name) : held.replace(/\?$/, '').replace(/^JSArray<(.*)>$/, '$1');
     switch (name) {
       case 'push': case 'unshift':
         if (e.arguments.some(ts.isSpreadElement)) return `${t}.${name}(contentsOf: ${this.packed(e.arguments, `JSArray<${el}>`)})`;
@@ -11732,13 +11845,13 @@ ${members.join('\n')}
         return `${t}.splice(${[...a().slice(0, 2), ...e.arguments.slice(2).map((x) => this.coerce(x, el))].join(', ')})`;
       case 'fill': return `${t}.fill(${a().join(', ')})`;
       // An array holding functions as function objects (`heldType`) is searched for the one the function is.
-      case 'indexOf': case 'lastIndexOf': case 'includes': if (el === 'Any?' && e.arguments[0] && !ts.isSpreadElement(e.arguments[0])) return `${t}.${name}(${[this.coerce(e.arguments[0], 'Any?'), ...a().slice(1)].join(', ')})`;
+      case 'indexOf': case 'lastIndexOf': case 'includes': if ((el === 'Any?' || el === 'String?') && e.arguments[0] && !ts.isSpreadElement(e.arguments[0])) return `${t}.${name}(${[this.coerce(e.arguments[0], el), ...a().slice(1)].join(', ')})`;
       // falls through
       case 'slice': case 'at': return `${t}.${name}(${a().join(', ')})`;
       case 'join': return `${t}.join(${!e.arguments[0] ? '' : this.isAny(e.arguments[0]) ? `jsJoinSeparator(${this.expr(e.arguments[0])})` : this.expr(e.arguments[0])})`;
       case 'concat':
         if (e.arguments.some(ts.isSpreadElement)) return `${t}.concat(spread: ${this.packed(e.arguments, `JSArray<${el}>`)}.storage)`;
-        return `${t}.concat(${e.arguments.map((x) => (this.isArray(x) ? this.expr(x) : `[${this.coerce(x, el)}]`)).join(', ')})`;
+        return `${t}.concat(${e.arguments.map((x) => (this.isArray(x) ? this.coerce(x, `JSArray<${el}>`) : `[${this.coerce(x, el)}]`)).join(', ')})`;
       case 'map': case 'filter': case 'find': case 'findIndex': case 'findLast': case 'findLastIndex': case 'some': case 'every': case 'forEach': case 'flatMap': {
         const callback = e.arguments[0];
         const call = () => {
@@ -11889,15 +12002,29 @@ ${members.join('\n')}
         if (!(ts.isArrowFunction(second) || ts.isFunctionExpression(second)) && this.checker.getTypeAtLocation(second).getCallSignatures().length) {
           if (name === 'replaceAll') throw this.error(e, 'replaceAll with a function');
           const f = this.typeOf(second) === 'Any?' ? this.expr(second) : this.convert(this.expr(second), this.typeOf(second), 'Any?');
-          return `${fn}(${s}, ${r}) { (__m: JSMatch) throws -> String in jsToString(try jsCall(${f}, spread: __m.values.storage.map { $0 as Any? } + [__m.index, __m.input])) }`;
+          return `${fn}(${s}, ${r}) { (__m: JSMatch) throws -> String in jsToString(try jsCall(${f}, spread: __m.replacerArguments)) }`;
         }
         if (!(ts.isArrowFunction(second) || ts.isFunctionExpression(second))) return `${fn}(${s}, ${r}, ${this.str(second)})`;
         if (name === 'replaceAll') throw this.error(e, 'replaceAll with a function');
         // The replacer gets the match, then each group.
         const m = this.fresh('__match');
-        // A group that took no part is undefined, except where the parameter is declared `string`.
-        const group = (t: string, k: number) => t === 'Double' ? `${m}.index` : t === 'String' ? `${m}[${k}]` : this.undefinedAs(`(${m}.values.element(${k}) ?? nil)`, t);
-        const binds = second.parameters.map((p, k) => `let ${ident((p.name as ts.Identifier).text)}: ${this.typeOf(p.name)} = ${group(this.typeOf(p.name), k)}`);
+        // The match, each group (undefined where it took no part), the index, the input, then the groups object.
+        const source = literalPattern(re, this.checker);
+        const groups = source === null ? null : patternGroups(source);
+        const binds = second.parameters.map((p, k) => {
+          const name = ident((p.name as ts.Identifier).text), t = this.typeOf(p.name);
+          if (p.dotDotDotToken) return `let ${name}: ${t} = ${this.convert(`JSArray<Any?>(Array(${m}.replacerArguments.dropFirst(${k})))`, 'JSArray<Any?>', t)}`;
+          if (k === 0) return `let ${name}: ${t} = ${this.convert(`${m}[0]`, 'String', t)}`;
+          const scalar = ['String', 'Double', 'Bool'].includes(t);
+          if (groups && k <= groups.count) {
+            const value = `(${m}.values.element(${k}) ?? nil)`;
+            if (t === 'String' && !groups.unset.has(k)) return `let ${name}: String = ${m}[${k}]`;
+            return scalar ? `let ${name}: ${this.bindsOptional(p.name, t)} = ${this.fromAny(value, optionalType(t))}` : `let ${name}: ${t} = ${this.undefinedAs(value, t)}`;
+          }
+          const value = groups && k === groups.count + 1 ? `${m}.index` : groups && k === groups.count + 2 ? `${m}.input` : `(${m}.replacerArguments.dropFirst(${k}).first ?? nil)`;
+          if (groups && k <= groups.count + 2) return `let ${name}: ${t} = ${this.convert(value, k === groups.count + 1 ? 'Double' : 'String', t)}`;
+          return scalar ? `let ${name}: ${this.bindsOptional(p.name, t)} = ${this.fromAny(value, optionalType(t))}` : `let ${name}: ${t} = ${this.fromAny(value, t)}`;
+        });
         const body = this.functionBody(second, 'String', this.indent);
         const inner = this.indent + '    ';
         return `${fn}(${s}, ${r}) { (${m}: JSMatch) ${this.throwsInfo.fn(second) ? 'throws ' : ''}-> String in\n${binds.map((b) => inner + b).join('\n')}${body.slice(1)}`;

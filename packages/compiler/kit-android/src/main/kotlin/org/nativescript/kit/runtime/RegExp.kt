@@ -211,7 +211,7 @@ class JSMatch internal constructor(
     val input: String,
     val groups: JSObject?,
     internal val isExecResult: Boolean,
-    internal val indices: JSMatchIndices? = null,
+    val indices: JSMatchIndices? = null,
 ) : JSDynamic, JSStringConvertible {
     internal val hasIndices: Boolean get() = indices != null
 

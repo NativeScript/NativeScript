@@ -584,8 +584,10 @@ public func jsGet(_ object: Any?, _ key: String) throws -> Any? {
         return jsStringMethod(string, key)
     case let match as JSMatch:
         if key == "length" { return match.length }
-        if key == "index" { return match.index }
-        if key == "input" { return match.input }
+        if key == "index" { return match.isExecResult ? match.index : nil }
+        if key == "input" { return match.isExecResult ? match.input : nil }
+        if key == "groups" { return match.isExecResult ? match.groups : nil }
+        if key == "indices" { return match.indices }
         if let index = jsArrayIndex(key) { return match.values.element(Double(index)) ?? nil }
         return nil
     case let map as JSMapProtocol:
