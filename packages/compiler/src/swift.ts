@@ -3731,7 +3731,7 @@ ${members.join('\n')}
     const k = m.parameters.indexOf(p);
     let root: ts.MethodDeclaration = m;
     for (let b = this.baseMethod(root); b; b = this.baseMethod(root)) root = b;
-    const family = this.methodFamily(root);
+    const family = this.overridesOf(root);
     if (!family.length) return false;
     const text = (x: ts.MethodDeclaration) => x.parameters[k]?.initializer?.getText();
     return [root, ...family].some((x) => x.parameters.length > k && text(x) !== text(m));
@@ -3739,7 +3739,7 @@ ${members.join('\n')}
 
   private methodFamilies: Map<ts.MethodDeclaration, ts.MethodDeclaration[]> | null = null;
   /** The methods overriding a root method, directly or through others. */
-  private methodFamily(root: ts.MethodDeclaration): ts.MethodDeclaration[] {
+  private overridesOf(root: ts.MethodDeclaration): ts.MethodDeclaration[] {
     if (!this.methodFamilies) {
       this.methodFamilies = new Map();
       const visit = (n: ts.Node) => {
@@ -3917,7 +3917,7 @@ ${members.join('\n')}
     if (!sig || !(this.native.isStructType(t!) || t === 'Double' || t === 'String' || t === 'Bool') || this.inNativeClass(fn)) return null;
     let root = fn;
     for (let b = this.baseMethod(root); b; b = this.baseMethod(root)) root = b;
-    return [root, ...(this.library ? this.methodFamily(root) : [])];
+    return [root, ...(this.library ? this.overridesOf(root) : [])];
   }
 
   /** A generic function compiled with its type parameters erased (`makeParser<T>`): its result as this call instantiates it. */
@@ -4348,7 +4348,7 @@ ${members.join('\n')}
     const n = root.parameters.length;
     if (root.parameters.some((p) => p.dotDotDotToken)) return [];
     const extras: { decl: string; type: string }[] = [];
-    for (const m of this.methodFamily(root)) {
+    for (const m of this.overridesOf(root)) {
       for (let k = n; k < m.parameters.length; k++) {
         const p = m.parameters[k];
         if (p.dotDotDotToken || !ts.isIdentifier(p.name)) break;
