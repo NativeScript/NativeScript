@@ -1172,6 +1172,8 @@ export interface UnsetGroupTyping {
   element(n: ts.Node): boolean;
   /** A map callback over such elements that may give one back (`(v) => v`). */
   returnsElement(f: ts.ArrowFunction | ts.FunctionExpression): boolean;
+  /** A function value (no literal) given to visit such elements, whose element parameter is declared to hold no undefined. */
+  typedCallback(call: ts.CallExpression): ts.Expression | undefined;
 }
 
 /** `isMatch`: whether the backend holds a value as a match (RegExpMatchArray, RegExpExecArray). */
@@ -1225,11 +1227,23 @@ export function unsetGroupTyping(checker: ts.TypeChecker, resolve: (n: ts.Node) 
     if (name === 'match' && literalFlags(re, checker)?.includes('g')) return false;
     return regexpMayLeaveGroupUnset(re, checker);
   };
+  const ELEMENT_METHODS = ['map', 'filter', 'forEach', 'some', 'every', 'find', 'findIndex', 'findLast', 'findLastIndex', 'flatMap'];
+  const typedCallback = (call: ts.CallExpression): ts.Expression | undefined => {
+    const f = call.arguments[0];
+    if (!f || !ts.isPropertyAccessExpression(call.expression) || !ELEMENT_METHODS.includes(call.expression.name.text)) return undefined;
+    const bare = ts.skipOuterExpressions(f);
+    if (ts.isArrowFunction(bare) || ts.isFunctionExpression(bare) || !copied(call.expression.expression)) return undefined;
+    const param = checker.getTypeAtLocation(f).getNonNullableType().getCallSignatures()[0]?.getParameters()[0];
+    if (!param) return undefined;
+    const t = checker.getTypeOfSymbolAtLocation(param, f);
+    const holds = (x: ts.Type) => !!(x.flags & (ts.TypeFlags.Undefined | ts.TypeFlags.Void | ts.TypeFlags.Any | ts.TypeFlags.Unknown));
+    return holds(t) || (t.isUnion() && t.types.some(holds)) ? undefined : f;
+  };
   const elementCallback = (f: ts.Node): boolean => {
     if (!(ts.isArrowFunction(f) || ts.isFunctionExpression(f)) || !f.parameters.length) return false;
     const call = ts.walkUpParenthesizedExpressions(f.parent);
     if (!ts.isCallExpression(call) || call.arguments[0] !== ts.walkUpParenthesizedExpressions(f) || !ts.isPropertyAccessExpression(call.expression)) return false;
-    if (!['map', 'filter', 'forEach', 'some', 'every', 'find', 'findIndex', 'findLast', 'findLastIndex', 'flatMap'].includes(call.expression.name.text)) return false;
+    if (!ELEMENT_METHODS.includes(call.expression.name.text)) return false;
     return copied(call.expression.expression);
   };
   const element = (n: ts.Node): boolean => {
@@ -1245,5 +1259,5 @@ export function unsetGroupTyping(checker: ts.TypeChecker, resolve: (n: ts.Node) 
     const visit = (x: ts.Node): boolean => (ts.isReturnStatement(x) && !!x.expression && gives(x.expression)) || (!ts.isFunctionLike(x) && !!ts.forEachChild(x, visit));
     return visit(f.body);
   };
-  return { groups, match, element, returnsElement };
+  return { groups, match, element, returnsElement, typedCallback };
 }

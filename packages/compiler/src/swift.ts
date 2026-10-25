@@ -6546,6 +6546,12 @@ ${members.join('\n')}
   private unsetGroups(n: ts.Node): boolean { return this.unset.groups(n); }
   private unsetMatch(e: ts.Expression): boolean { return this.unset.match(e); }
   private unsetGroupElement(n: ts.Node): boolean { return this.unset.element(n); }
+
+  /** A string a pattern's unset group may leave undefined, read a member of (`part[0]`, `part.length`). */
+  private unsetGroupReceiver(x: ts.Expression): boolean {
+    const p = x.parent;
+    return ts.isIdentifier(x) && !this.subst.has(x) && !!p && (ts.isPropertyAccessExpression(p) || ts.isElementAccessExpression(p)) && p.expression === x && !p.questionDotToken && this.unsetGroupElement(x);
+  }
   private returnsUnsetElement(f: ts.ArrowFunction | ts.FunctionExpression): boolean { return this.unset.returnsElement(f); }
 
   /** The elements an array method of a match visits: its strings, unless a group may be unset or the method changes the match. */
@@ -8451,7 +8457,7 @@ ${members.join('\n')}
    */
   loose(x: ts.Expression): boolean {
     if (this.checkedNodes.has(x)) return false;
-    if (!this.lenient) return this.lenientValue(x) || this.nullObjectSignalRead(x) || this.looseObjectRead(x) || (ts.isCallExpression(x.parent) && x.parent.expression === x && this.lenientAppOptional(x));
+    if (!this.lenient) return this.lenientValue(x) || this.nullObjectSignalRead(x) || this.looseObjectRead(x) || (ts.isCallExpression(x.parent) && x.parent.expression === x && this.lenientAppOptional(x)) || this.unsetGroupReceiver(x);
     // A name that is no value read: a member's name after its dot, a declaration's own name, a label.
     if (ts.isIdentifier(x)) {
       const p = x.parent;
@@ -9908,7 +9914,7 @@ ${members.join('\n')}
     const linked = !this.library && ts.isPropertyAccessExpression(target) && ts.isOptionalChain(target) && ![this.typeOf(target), held(target)].some((t) => /[?!]$/.test(t));
     const dot = e.questionDotToken && !linked ? '?.' : '.';
     if (name === 'length' && this.isString(target)) {
-      if (!this.typeOf(target).endsWith('?')) return `Double(${this.expr(target)}.utf16.count)`;
+      if (!this.typeOf(target).endsWith('?') || this.unsetGroupReceiver(target)) return `Double(${this.expr(target)}.utf16.count)`;
       // Only a chain (`s?.length`) reads undefined; `s.length` of null or undefined throws, as unwrapping traps.
       return e.questionDotToken || ts.isOptionalChain(e) ? `${this.expr(target)}.map { Double($0.utf16.count) }` : `Double(${this.expr(target)}!.utf16.count)`;
     }
@@ -10898,7 +10904,7 @@ ${members.join('\n')}
       }
       // `s.slice(…)` of null or undefined throws, as unwrapping traps; only a chain reads undefined.
       if ((t === 'String' || t === 'Double') && this.typeOf(target).endsWith('?') && !ts.isOptionalChain(e)) {
-        this.subst.set(target, `${this.expr(target)}!`);
+        this.subst.set(target, this.unsetGroupReceiver(target) ? this.expr(target) : `${this.expr(target)}!`);
         try {
           return t === 'String' ? this.stringMethod(method, target, e) : this.numberMethod(method, target, e);
         } finally { this.subst.delete(target); }
@@ -11809,6 +11815,8 @@ ${members.join('\n')}
   }
 
   private arrayMethod(name: string, target: ts.Expression, e: ts.CallExpression, q: string, receiver?: string): string {
+    const typedCallback = this.unset.typedCallback(e);
+    if (typedCallback) throw this.error(typedCallback, 'a function whose element parameter is declared to hold no undefined, given strings a pattern\'s unset group may leave undefined (declare the parameter `string | undefined`)');
     const held = this.typeOf(target);
     // Lenient code holds arrays implicitly unwrapped, where `map` and `flatMap` would be Optional's.
     const t = receiver ?? (!q && this.lenient && ['map', 'flatMap'].includes(name) && /^JSArray<.*>$/.test(held) ? `(${this.expr(target)} as ${held})` : `${this.expr(target)}${q}`);

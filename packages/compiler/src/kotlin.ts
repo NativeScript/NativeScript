@@ -7184,7 +7184,11 @@ export class Translator implements AsyncTranslator {
       const rt = this.typeOf(e);
       if (!isWriteTarget(e)) return rt === 'Any?' ? code : this.fromAnyCode(code, rt, true);
     }
-    if (t === 'String' && !isWriteTarget(e) && !ts.isStringLiteral(key)) return this.undefinedAs(`jsCharAtOrNull(${target}, ${this.toNumber(key)})`, this.typeOf(e));
+    if (t === 'String' && !isWriteTarget(e) && !ts.isStringLiteral(key)) {
+      // A string Kotlin holds nullable (a pattern's unset group) though its type says not: JavaScript's TypeError where it is missing.
+      const present = !this.library && this.typeOf(e.expression) === 'String?' && !q && !(e.flags & ts.NodeFlags.OptionalChain) && ts.isIdentifier(e.expression) && this.unset.element(e.expression);
+      return this.undefinedAs(`jsCharAtOrNull(${present ? this.present(target, key, e.expression) : target}, ${this.toNumber(key)})`, this.typeOf(e));
+    }
     if (t === 'String') return `jsCharAt(${target}, ${this.toNumber(key)})`;
     // A typed array's element by index: a number, read and written in place.
     if (/^JS(Int8|Uint8|Uint8Clamped|Int16|Uint16|Int32|Uint32|Float32|Float64)Array$/.test(t) && !ts.isStringLiteral(key)) return `${target}${q}[${this.toNumber(key)}]`;
@@ -8622,6 +8626,8 @@ export class Translator implements AsyncTranslator {
   }
 
   private arrayMethod(name: string, target: ts.Expression, e: ts.CallExpression, q: string): string {
+    const typedCallback = !this.library ? this.unset.typedCallback(e) : undefined;
+    if (typedCallback) throw this.error(typedCallback, 'a function whose element parameter is declared to hold no undefined, given strings a pattern\'s unset group may leave undefined (declare the parameter `string | undefined`)');
     const t = `${this.expr(target)}${q}`;
     const a = () => this.args(e);
     const el = this.typeOf(target).replace(/\?$/, '').replace(/^JSArray<(.*)>$/, '$1').replace(/^(Pair|Triple)<.*>$/, 'Any?');

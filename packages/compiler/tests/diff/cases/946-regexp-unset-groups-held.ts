@@ -18,3 +18,10 @@ console.log(asStrings.length, show(asStrings[1]), asStrings.join('-'));
 const untypedSep: any = /(-)|(\+)/;
 const viaUntyped = 'a-b+c'.split(untypedSep);
 console.log(viaUntyped.map(show).join(' '), 'a,b'.split(',' as any).join('|'));
+// A member of such a string: JavaScript's TypeError where the group took no part.
+function initials(name: string, sep: string | RegExp): string {
+  return name.split(sep).map((part) => part[0] + part.length + part.toUpperCase()).join(',');
+}
+const firstOrDash = (value: string | undefined, index: number) => (value ?? '-') + index;
+console.log(initials('Ada Lovelace', ' '), initials('Ada Lovelace', / /), 'a b'.split(/(x)? /).map(firstOrDash).join());
+try { console.log(initials('ab', /(x)?/)); } catch (e) { console.log(String(e)); }
