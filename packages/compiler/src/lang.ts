@@ -578,6 +578,34 @@ function hasStatic(d: ts.Declaration): boolean {
   return !!ts.canHaveModifiers(d) && !!ts.getModifiers(d)?.some((m) => m.kind === ts.SyntaxKind.StaticKeyword);
 }
 
+/** Whether a value of type `t` may be undefined when it runs: its type admits undefined or void, or it is untyped. */
+export function admitsUndefined(t: ts.Type): boolean {
+  return (t.isUnion() ? t.types : [t]).some((x) => x.flags & (ts.TypeFlags.Undefined | ts.TypeFlags.Void | ts.TypeFlags.Any | ts.TypeFlags.Unknown));
+}
+
+/** Whether a value is undefined whatever it runs as (`undefined`, `void 0`). */
+export function onlyUndefined(t: ts.Type): boolean {
+  return !t.isUnion() && !!(t.flags & (ts.TypeFlags.Undefined | ts.TypeFlags.Void));
+}
+
+/**
+ * A class's own instance fields by when they become keys. `always`: from construction, whatever they hold: every declared
+ * field where the app's configuration defines class fields (`useDefineForClassFields`), else those the constructor assigns
+ * (an initializer, a parameter property). `written`: the others, a key once written, undefined too.
+ */
+export function classFieldKeys(cls: ts.ClassLikeDeclaration, defines: boolean): { always: Set<string>; written: ts.PropertyDeclaration[] } {
+  const always = new Set<string>(), written: ts.PropertyDeclaration[] = [];
+  const ctor = cls.members.find(ts.isConstructorDeclaration);
+  for (const p of ctor?.parameters ?? []) if (ts.isParameterPropertyDeclaration(p, ctor!) && ts.isIdentifier(p.name)) always.add(p.name.text);
+  for (const m of cls.members) {
+    if (!ts.isPropertyDeclaration(m) || hasStatic(m) || !ts.isIdentifier(m.name)) continue;
+    if (ts.getModifiers(m)?.some((x) => x.kind === ts.SyntaxKind.DeclareKeyword || x.kind === ts.SyntaxKind.AbstractKeyword)) continue;
+    if (defines || m.initializer) always.add(m.name.text);
+    else written.push(m);
+  }
+  return { always, written };
+}
+
 /** The program's interfaces a class implements, whose fields its classes declare as well. */
 export function implementedInterfaceDeclarations(files: readonly ts.SourceFile[], checker: ts.TypeChecker): Set<ts.Declaration> {
   const out = new Set<ts.Declaration>();

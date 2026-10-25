@@ -55,6 +55,25 @@ fun jsNullKeysOf(known: List<String>, vararg values: Pair<String, Any?>): Mutabl
 fun jsNoteNull(nulls: MutableSet<String>?, key: String, value: Any?): MutableSet<String>? =
     if (value is JSNull) (nulls ?: mutableSetOf()).also { it.add(key) } else nulls?.also { it.remove(key) }
 
+/** An object literal's optional fields given null or undefined, as its values run: the keys its shape notes (`jsNulls`, `jsUnset`). */
+class JSLiteralKeys(var nulls: MutableSet<String>? = null, var unset: MutableSet<String>? = null) {
+    /** An untyped value, before it is converted to the field's type, which holds null and undefined both as Kotlin's null. */
+    fun untyped(key: String, value: Any?): Any? {
+        if (value == null) unset = (unset ?: mutableSetOf()).also { it.add(key) } else if (value is JSNull) nulls = (nulls ?: mutableSetOf()).also { it.add(key) }
+        return value
+    }
+
+    /** A typed value, whose null is undefined. */
+    fun <T> typed(key: String, value: T): T {
+        if (value == null) unset = (unset ?: mutableSetOf()).also { it.add(key) }
+        return value
+    }
+}
+
+/** A class's optional field written: undefined makes it an own key (`jsUnset`), as any write does. */
+fun jsNoteUnset(unset: MutableSet<String>?, key: String, value: Any?): MutableSet<String>? =
+    if (value == null) (unset ?: mutableSetOf()).also { it.add(key) } else unset
+
 /**
  * An object whose properties dynamic code reaches by name (`o[key]`, JSON, `console.log`):
  * plain objects (`JSObject`) and the classes generated for TypeScript classes and interfaces.

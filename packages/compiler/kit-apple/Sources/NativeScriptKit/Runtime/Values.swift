@@ -53,6 +53,19 @@ public func jsNoteNull(_ nulls: inout Set<String>?, _ key: String, _ value: Any?
     if value is JSNull { nulls = (nulls ?? []).union([key]) } else if nulls != nil { nulls!.remove(key) }
 }
 
+/// A class's optional field written: undefined makes it an own key (`jsUnset`), as any write does.
+@inline(__always)
+public func jsNoteUnset<V>(_ keys: inout Set<String>?, _ key: String, _ value: V?) {
+    if value == nil { keys = (keys ?? []).union([key]) }
+}
+
+/// `jsNoteUnset` for a write in the class's own initializer, where Swift runs no `didSet`: the value written.
+@inline(__always)
+public func jsNotedUnset<V>(_ keys: inout Set<String>?, _ key: String, _ value: V?) -> V? {
+    jsNoteUnset(&keys, key, value)
+    return value
+}
+
 /// The keys of `object` among `keys` that hold null, for a typed object read from it.
 public func jsNullKeys(_ object: Any?, _ keys: [String]) -> Set<String>? {
     guard let dynamic = jsFlat(object) as? JSDynamic else { return nil }
@@ -72,6 +85,31 @@ public func jsUnsetKeys(_ object: Any?, _ keys: [String]) -> Set<String>? {
 public func jsNullKeysOf(_ known: [String], _ values: [(String, Any?)]) -> Set<String>? {
     let nulls = known + values.filter { $0.1 is JSNull }.map { $0.0 }
     return nulls.isEmpty ? nil : Set(nulls)
+}
+
+/// An object literal's optional fields given null or undefined, as its values run: the keys its shape notes (`jsNulls`, `jsUnset`).
+public struct JSLiteralKeys {
+    public private(set) var nulls: Set<String>?
+    public private(set) var unset: Set<String>?
+
+    public init(nulls: Set<String>? = nil, unset: Set<String>? = nil) {
+        self.nulls = nulls
+        self.unset = unset
+    }
+
+    /// An untyped value, before it is converted to the field's type, which holds null and undefined both as nil.
+    @discardableResult
+    public mutating func untyped(_ key: String, _ value: Any?) -> Any? {
+        if value == nil { unset = (unset ?? []).union([key]) } else if value is JSNull { nulls = (nulls ?? []).union([key]) }
+        return value
+    }
+
+    /// A typed value, whose nil is undefined.
+    @discardableResult
+    public mutating func typed<V>(_ key: String, _ value: V?) -> V? {
+        if value == nil { unset = (unset ?? []).union([key]) }
+        return value
+    }
 }
 
 /// A class with its own `toString()`, which JavaScript's string conversion calls.
