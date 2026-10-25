@@ -794,11 +794,29 @@ export function nullishSlots(checker: ts.TypeChecker, files: readonly ts.SourceF
       return ts.isReturnStatement(p) || ((ts.isCallExpression(p) || ts.isNewExpression(p)) && p.expression !== x) || ts.isVariableDeclaration(p) || ts.isIfStatement(p) || ts.isConditionalExpression(p) || ts.isPrefixUnaryExpression(p);
     });
   };
-  /** Holds `d` when its type admits both; refuses it when that type isn't one a held slot can carry. */
+  // A variable or parameter whose code tells null from undefined: compared strictly with either, or `typeof`.
+  const observes = (d: ts.Declaration) => {
+    const sym = (d as ts.NamedDeclaration).name && checker.getSymbolAtLocation((d as ts.NamedDeclaration).name!);
+    return !sym || (refs.get(sym) ?? []).some((r) => {
+      let x: ts.Node = r;
+      while (ts.isParenthesizedExpression(x.parent) || ts.isNonNullExpression(x.parent)) x = x.parent;
+      const p = x.parent;
+      if (ts.isTypeOfExpression(p)) return true;
+      if (ts.isBinaryExpression(p) && [ts.SyntaxKind.EqualsEqualsEqualsToken, ts.SyntaxKind.ExclamationEqualsEqualsToken].includes(p.operatorToken.kind)) {
+        const other = p.left === x ? p.right : p.left;
+        return other.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(other) && other.text === 'undefined');
+      }
+      return false;
+    });
+  };
+  /**
+   * Holds `d` when its type admits both; refuses it when that type isn't one a held slot can carry and its code tells
+   * them apart. A function or library object held untyped would be reached by name.
+   */
   const hold = (d: ts.Declaration, t: ts.Type | undefined, at: ts.Node = d) => {
     if (!t || !(ts.isFunctionLike(d) ? bothResult(t) : both(t)) || !oneKind(t)) return;
     if (value(t) || (ts.isVariableDeclaration(d) && !parts(t).some((x) => x.getCallSignatures().length) && opaque(d))) held.add(d);
-    else refuse(at, `${NATIVE} (\`${text(t)}\`)`);
+    else if (ts.isFunctionLike(d) || observes(d)) refuse(at, `${NATIVE} (\`${text(t)}\`)`);
   };
   // Functions whose signature only this program's direct calls see.
   const fixed = new Set<ts.Node>();
