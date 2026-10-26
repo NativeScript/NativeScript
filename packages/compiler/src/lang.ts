@@ -1250,7 +1250,7 @@ export function nullishSlots(checker: ts.TypeChecker, files: readonly ts.SourceF
   const returnOf = (fn: ts.SignatureDeclaration) => checker.getSignatureFromDeclaration(fn)?.getReturnType();
   const holdSignature = (fn: ts.SignatureDeclaration) => {
     for (const p of fn.parameters) if (named(p)) hold(p, typeOf(p));
-    if (fn.type && !isAsync(fn) && !ts.isConstructorDeclaration(fn)) hold(fn, returnOf(fn), fn.type);
+    if (!isAsync(fn) && !ts.isConstructorDeclaration(fn)) hold(fn, returnOf(fn), fn.type ?? fn);
   };
   const openSignature = (fn: ts.FunctionLikeDeclaration): boolean => {
     if (fixed.has(fn) || !fn.body || (ts.canHaveDecorators(fn) && ts.getDecorators(fn)?.length)) return true;
@@ -1269,7 +1269,7 @@ export function nullishSlots(checker: ts.TypeChecker, files: readonly ts.SourceF
   const refuseBoth = (fn: ts.SignatureDeclaration, why: string) => {
     for (const p of fn.parameters) { const t = typeOf(p); if (both(t) && oneKind(t)) refuse(p, `${why} (\`${text(t)}\`)`); }
     const ret = returnOf(fn);
-    if (fn.type && !ts.isConstructorDeclaration(fn) && ret && bothResult(ret) && oneKind(ret)) refuse(fn.type, `${why} (\`${text(ret)}\`)`);
+    if (!ts.isConstructorDeclaration(fn) && ret && bothResult(ret) && oneKind(ret)) refuse(fn.type ?? fn, `${why} (\`${text(ret)}\`)`);
   };
   // A function type's parameters and result: what every function of that type, and every call through it, uses.
   for (const sig of signatures) if (own(sig)) holdSignature(sig);
@@ -1349,7 +1349,7 @@ export function nullishSlots(checker: ts.TypeChecker, files: readonly ts.SourceF
       if (!named(p) || (ts.isConstructorDeclaration(fn) && ts.isParameterPropertyDeclaration(p, fn))) continue;
       hold(p, typeOf(p));
     }
-    if (!ts.isConstructorDeclaration(fn) && fn.type && !isAsync(fn)) hold(fn, returnOf(fn), fn.type);
+    if (!ts.isConstructorDeclaration(fn) && !isAsync(fn)) hold(fn, returnOf(fn), fn.type ?? fn);
   }
   // A function value takes the slots of the function type it is given as: held where that type's are, else refused where
   // that type may pass (or take) both.

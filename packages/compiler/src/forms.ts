@@ -123,6 +123,8 @@ export class Forms {
   private readonly printed: [ts.Expression, boolean][] = [];
   /** The slots each value is placed in. */
   private readonly placed = new Map<ts.Expression, Slot[]>();
+  /** Values placed where script holds them untyped: a slot of no type, a field or element no type reads, an unknown callee's argument. */
+  private readonly placedUntyped = new Set<ts.Expression>();
   private built = false;
   /** Wall-clock milliseconds the program-wide build took. */
   buildMs = 0;
@@ -166,6 +168,12 @@ export class Forms {
     this.build();
     const s = this.slotFor(d);
     return this.formFrom({ states: 0, from: [[s, ~0]] }, this.find(s).type ?? this.checker.getTypeAtLocation(d));
+  }
+
+  /** Values the program places where script holds them untyped (`placedUntyped`). */
+  untypedPlacements(): ReadonlySet<ts.Expression> {
+    this.build();
+    return this.placedUntyped;
   }
 
   /**
@@ -353,6 +361,7 @@ export class Forms {
     const into = this.placed.get(x);
     if (into) into.push(target);
     else this.placed.set(x, [target]);
+    if (!t.fixed && t.type && untyped(t.type)) this.placedUntyped.add(x);
     const d = target.decl;
     if (d && declarationFile(d) && !ts.isParameter(d) && !ts.isFunctionLike(d) && this.unseenReader(d)) this.observe(value);
     for (const [s, keep] of f.from) { this.edges.push([s, target, keep]); this.aliases.push([s, target]); }
@@ -456,11 +465,13 @@ export class Forms {
   }
 
   private readonly openedShapes = new Set<ts.Type>();
+  private readonly openedSignatures = new Set<ts.Declaration>();
 
   /**
    * A foreign value held as an interface or object literal type has its keys, not the type's (§2.3b M4): each field of the
-   * type may be missing, null or another type, and so may a foreign array's or Map's elements. A class's instance is
-   * its class's or fails the cast. Returns the slots this widened.
+   * type may be missing, null or another type, and so may a foreign array's or Map's elements, and a foreign function's
+   * (or a shape's method's) parameters and result. A class's instance is its class's or fails the cast. Returns the
+   * slots this widened.
    */
   private openForeignShapes(): Slot[] {
     const widened: Slot[] = [];
@@ -473,16 +484,27 @@ export class Forms {
       r.give(U | N | F);
       widened.push(r);
     };
+    const openSignature = (sig: ts.Signature | ts.Declaration | undefined) => {
+      const d = sig && 'getDeclaration' in sig ? sig.getDeclaration() : sig;
+      if (!d || ts.isJSDocSignature(d) || !ts.isFunctionLike(d) || declarationFile(d) || this.openedSignatures.has(d)) return;
+      this.openedSignatures.add(d);
+      for (const p of d.parameters) if (!p.dotDotDotToken) open(this.slotFor(p));
+      const result = ts.isConstructorDeclaration(d) || ts.isSetAccessorDeclaration(d) ? null : this.resultOf(d);
+      if (result) open(result);
+    };
     for (const s of [...this.made]) {
       const r = this.find(s);
       if (!(r.states & F) || r.generic || !r.type) continue;
       for (const c of r.children.values()) open(c);
+      const whole = this.checker.getNonNullableType(r.type);
+      for (const m of whole.isUnion() ? whole.types : [whole]) if (!m.isClass()) m.getCallSignatures().forEach(openSignature);
       for (const t of shapes(this.checker, r.type)) {
         if (this.openedShapes.has(t)) continue;
         this.openedShapes.add(t);
         for (const p of this.checker.getPropertiesOfType(t)) {
           const d = p.valueDeclaration;
           if (d && (ts.isPropertySignature(d) || ts.isPropertyDeclaration(d)) && !declarationFile(d)) open(this.slotFor(d));
+          if (d && ts.isMethodSignature(d)) openSignature(d);
         }
       }
     }
@@ -496,6 +518,12 @@ export class Forms {
     const x = ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses);
     this.observedValues.add(x);
     this.flow(x);
+  }
+
+  /** A value script holds untyped, which reads it as it likes and may write into what it holds. */
+  private observeUntyped(e: ts.Expression): void {
+    this.observe(e);
+    this.placedUntyped.add(ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses));
   }
 
   /** Whether an expression may give null or undefined: whether comparing with it tells them apart. */
@@ -554,7 +582,7 @@ export class Forms {
 
   /** Arguments given to a declaration file's function, or to a callee of no known declaration. */
   private observeArguments(call: ts.CallExpression | ts.NewExpression, sig: ts.SignatureDeclaration | undefined, args: ts.NodeArray<ts.Expression>): void {
-    if (!sig) { for (const a of args) this.observe(ts.isSpreadElement(a) ? a.expression : a); return; }
+    if (!sig) { for (const a of args) this.observeUntyped(ts.isSpreadElement(a) ? a.expression : a); return; }
     const callee = ts.isPropertyAccessExpression(call.expression) && ts.isIdentifier(call.expression.expression) && LIB_FILE.test(sig.getSourceFile().fileName) ? call.expression.expression.text : '';
     args.forEach((a, k) => {
       const q = sig.parameters[Math.min(k, sig.parameters.length - 1)];
@@ -675,7 +703,7 @@ export class Forms {
     }
     if (ts.isArrayLiteralExpression(p)) {
       this.place(e, this.child(this.slotFor(p), 'element'));
-      if (this.untypedContext(p)) this.observe(e);
+      if (this.untypedContext(p)) this.observeUntyped(e);
       return;
     }
     if (ts.isSpreadElement(p) && ts.isArrayLiteralExpression(p.parent)) {
@@ -686,7 +714,7 @@ export class Forms {
     if ((ts.isPropertyAssignment(p) && p.initializer === x) || (ts.isShorthandPropertyAssignment(p) && p.name === x)) {
       const own = this.slotFor(p);
       this.place(e, own);
-      if (this.untypedContext(p.parent)) this.observe(e);
+      if (this.untypedContext(p.parent)) this.observeUntyped(e);
       const key = literalKey(p.name, this.checker);
       const declared = key !== null ? this.checker.getContextualType(p.parent)?.getProperty(key) : undefined;
       const d = declared?.valueDeclaration ?? declared?.declarations?.[0];
@@ -700,7 +728,7 @@ export class Forms {
       return;
     }
     if (ts.isBinaryExpression(p) && p.right === x && p.operatorToken.kind === ts.SyntaxKind.EqualsToken && (ts.isPropertyAccessExpression(p.left) || ts.isElementAccessExpression(p.left))
-      && untyped(this.checker.getTypeAtLocation(p.left.expression))) this.observe(e);
+      && untyped(this.checker.getTypeAtLocation(p.left.expression))) this.observeUntyped(e);
     const d = slotOf(e, this.checker);
     if (!d || ts.isFunctionLike(d)) return;
     if ((ts.isParameter(d) || ts.isVariableDeclaration(d) || ts.isPropertyDeclaration(d)) && d.initializer === x) {
@@ -918,6 +946,12 @@ export class Forms {
         const given = q === rest && q?.type && ts.isArrayTypeNode(q.type) ? q.type.elementType : q?.type;
         // A built-in's `any` says nothing of the value's type; a parameter that declares its own type is believed.
         states = q ? typeNodeStates(given) & (p.type ? ~F : ~0) | (q.questionToken ? U : 0) : U;
+        // A replacer's `...args: any[]` are groups (a string, or undefined where one is unset), the offset, the input and the
+        // named groups: never null, which the `any` an untyped parameter takes from them says it may be.
+        if (q === rest && stringReplacer(lib)) {
+          states &= ~N;
+          if (!p.type) { const r = this.find(this.slotFor(p)); r.states &= ~N; r.local &= ~N; }
+        }
       } else states = this.strict(p) ? 0 : this.openStates(p);
       const q = caller.platform?.parameters[k];
       if (q && this.nativeNil(q)) states |= N;
@@ -1232,6 +1266,12 @@ function shapes(checker: ts.TypeChecker, t: ts.Type): ts.Type[] {
     const sym = m.aliasSymbol ?? m.getSymbol();
     return !!sym && !!(sym.flags & (ts.SymbolFlags.Interface | ts.SymbolFlags.TypeLiteral)) && !(sym.flags & ts.SymbolFlags.Class);
   });
+}
+
+/** The replacer function type `String.prototype.replace` and `replaceAll` take. */
+function stringReplacer(sig: ts.SignatureDeclaration): boolean {
+  const p = sig.parent, m = p?.parent;
+  return !!m && ts.isParameter(p) && ts.isMethodSignature(m) && ts.isIdentifier(m.name) && ['replace', 'replaceAll'].includes(m.name.text) && ts.isInterfaceDeclaration(m.parent) && m.parent.name.text === 'String';
 }
 
 function untyped(t: ts.Type): boolean {

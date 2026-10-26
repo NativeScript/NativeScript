@@ -138,7 +138,30 @@ export class ValueStates {
       if (shown === 'nullish') this.nullishHeldSet.add(d);
       else if (shown === 'foreign' && what) found.refused.push([d, what]);
     }
-    return this.nullishSlotSet = found;
+    // A variable, parameter or result held untyped for its null and undefined: `JSNullish<T>` where something tells them
+    // apart, as every member of its group (a function type and its values, an override family) reads one form.
+    for (const d of found.held) if (representation(this.forms().formOfSlot(d)) === 'nullish') { found.held.delete(d); this.nullishHeldSet.add(d); }
+    this.nullishSlotSet = found;
+    if (this.nullishElementSet.size) {
+      const text = (e: ts.Expression) => this.checker.typeToString(this.checker.getTypeAtLocation(e));
+      // Script writes into what it holds untyped as it likes, which elements held as `JSNullish<T>` can't take.
+      for (const e of this.forms().untypedPlacements()) {
+        if (this.nullishElements(e)) found.refused.push([e, `an array, Map or Set whose elements may be null or undefined both (\`${text(e)}\`), given where its type isn't known (declare the slot it goes to with that type)`]);
+      }
+      // A Map's entries spread into a literal (`[...map.entries()]`): pairs, whose value no slot of its own holds.
+      const scan = (n: ts.Node): void => {
+        if (ts.isSpreadElement(n) && ts.isArrayLiteralExpression(n.parent)) {
+          const x = ts.skipOuterExpressions(n.expression);
+          const map = ts.isCallExpression(x) && ts.isPropertyAccessExpression(x.expression) && x.expression.name.text === 'entries' && !x.arguments.length ? x.expression.expression : x;
+          if (this.checker.getNonNullableType(this.checker.getTypeAtLocation(map)).getSymbol()?.name === 'Map' && this.nullishElements(map)) {
+            found.refused.push([n.parent, `an array, Map or Set element (or other type argument) that may be null or undefined both (a value of \`${text(map)}\` in \`${text(n.parent)}\`)`]);
+          }
+        }
+        ts.forEachChild(n, scan);
+      };
+      for (const f of this.backend.sourceFiles) if (!f.isDeclarationFile) scan(f);
+    }
+    return found;
   }
 
   /** The program's value forms (review/DESIGN-VALUE-MODEL.md §2), built when first asked. */
@@ -148,10 +171,10 @@ export class ValueStates {
   }
 
   /**
-   * A parameter or variable holding a function that may be null or undefined both, which the program tells apart: held
-   * as `JSNullish<F>`, read as `F?` except where null and undefined are told apart or kept.
+   * A parameter, variable or function result that may hold null and undefined both, which the program tells apart: held
+   * as `JSNullish<T>`, read as `T?` except where null and undefined are told apart or kept.
    */
-  nullishHeld(d: ts.Node): d is ts.ParameterDeclaration | ts.VariableDeclaration {
+  nullishHeld(d: ts.Node): d is ts.ParameterDeclaration | ts.VariableDeclaration | ts.SignatureDeclaration {
     return this.nullish() && this.nullishHeldSet.has(d as ts.Declaration);
   }
 
@@ -196,12 +219,43 @@ export class ValueStates {
     return null;
   }
 
-  /** A read of a `nullishHeld` slot whose value may still be null or undefined: the slot's declaration. */
-  nullishRead(e: ts.Expression): ts.ParameterDeclaration | ts.VariableDeclaration | null {
+  /**
+   * A function's result type: a function value without its own annotation gives what the function type it is placed
+   * in declares (`give() { return null; }` for `give(): number | null | undefined`).
+   */
+  resultType(fn: ts.SignatureDeclaration): ts.Type {
+    const own = this.checker.getSignatureFromDeclaration(fn)!.getReturnType();
+    if (fn.type || !(ts.isArrowFunction(fn) || ts.isFunctionExpression(fn) || (ts.isMethodDeclaration(fn) && ts.isObjectLiteralExpression(fn.parent)))) return own;
+    const contextual = ts.isMethodDeclaration(fn)
+      ? (() => { const o = this.checker.getContextualType(fn.parent as ts.ObjectLiteralExpression); const m = o && ts.isIdentifier(fn.name) ? o.getProperty(fn.name.text) : undefined; return m ? this.checker.getTypeOfSymbolAtLocation(m, fn) : undefined; })()
+      : this.checker.getContextualType(fn as ts.Expression);
+    return contextual?.getNonNullableType().getCallSignatures()[0]?.getReturnType() ?? own;
+  }
+
+  /** A value placed in a `JSNullish<T>` slot: a variable, parameter or result `nullishHeld` holds, or an element `nullishElements` holds. */
+  nullishPlaced(e: ts.Expression): boolean {
+    if (this.backend.library || this.backend.lenient || !e.parent) return false;
+    const slot = slotOf(e, this.checker);
+    if (slot && this.nullishHeld(slot)) return true;
+    let x: ts.Node = e;
+    while (ts.isParenthesizedExpression(x.parent)) x = x.parent;
+    const p = x.parent;
+    if (ts.isArrayLiteralExpression(p)) return this.nullishElements(p);
+    if (ts.isBinaryExpression(p) && p.right === x && p.operatorToken.kind === ts.SyntaxKind.EqualsToken && ts.isElementAccessExpression(p.left)) return this.nullishElements(p.left.expression);
+    return ts.isCallExpression(p) && ts.isPropertyAccessExpression(p.expression) && p.arguments.includes(x as ts.Expression) && this.nullishElements(p.expression.expression);
+  }
+
+  /** A read of a `nullishHeld` slot (a name, or a call giving such a result): the slot's declaration. */
+  nullishRead(e: ts.Expression): ts.ParameterDeclaration | ts.VariableDeclaration | ts.SignatureDeclaration | null {
     const bare = ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses);
-    if (!ts.isIdentifier(bare) || this.backend.library || this.backend.lenient) return null;
+    if (this.backend.library || this.backend.lenient) return null;
+    if (ts.isCallExpression(bare)) {
+      const d = this.checker.getResolvedSignature(bare)?.getDeclaration();
+      return d && !ts.isJSDocSignature(d) && this.nullishHeld(d) ? d : null;
+    }
+    if (!ts.isIdentifier(bare)) return null;
     const d = this.checker.getSymbolAtLocation(bare)?.valueDeclaration;
-    return d && this.nullishHeld(d) ? d : null;
+    return d && (ts.isParameter(d) || ts.isVariableDeclaration(d)) && this.nullishHeld(d) ? d : null;
   }
 
   heldCasts(): ReturnType<typeof heldDowncasts> {
