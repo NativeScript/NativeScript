@@ -1744,9 +1744,7 @@ console.log(typeof both, both, both | 8, typeof one, one, typeof order, order, t
 (() => {
   // Strict app code checks an untyped value entering a string, number or boolean slot (§2.3b M6). A native API gives
   // those in representations Node has no counterpart for, so no diff case reaches them.
-  const build = process.env.NS_DIFF_BUILD ?? join(tmpdir(), 'ns-native-diff');
-  mkdirSync(build, { recursive: true });
-  const dir = mkdtempSync(join(build, 'release-checks-native-primitives-'));
+  const dir = mkdtempSync(join(nativeBuild, 'release-checks-native-primitives-'));
   const file = join(dir, 'app.ts');
   writeFileSync(file, `function twice(n: number): number { return n * 2; }
 function shout(s: string): string { return s.toUpperCase(); }
@@ -1768,7 +1766,7 @@ export function refused(v: any): string {
   try {
     let got: string;
     try {
-      buildSwiftRuntime(build, '-Onone');
+      buildSwiftRuntime(nativeBuild, '-Onone');
       const out = join(dir, 'swift');
       translateSwift([file], out);
       writeFileSync(join(out, 'main.swift'), `import Foundation
@@ -1780,7 +1778,7 @@ for v: Any in ["s", NSString(string: "ns"), NSMutableString(string: "mut")] { pr
 for v: Any in [true, NSNumber(value: true), kCFBooleanFalse!] { print(try bool(v)) }
 for v: Any in [NSNumber(value: 1), NSDecimalNumber(string: "1"), NSNumber(value: false), Int8(1), NSString(string: "1"), JSObject([])] { print(try refused(v)) }
 `);
-      const errors = swiftc(readdirSync(out).map((f) => join(out, f)), join(dir, 'main'), build, '-Onone');
+      const errors = swiftc(readdirSync(out).map((f) => join(out, f)), join(dir, 'main'), nativeBuild, '-Onone');
       got = errors ? errors[0] : spawnSync(join(dir, 'main'), { encoding: 'utf8' }).stdout.trim();
     } catch (e) {
       got = (e as Error).message.split('\n')[0];
@@ -1804,7 +1802,7 @@ fun main() {
     for (v in listOf<Any>(1, 'c', java.math.BigDecimal("1"), StringBuilder("1"), true)) println(refused(v))
 }
 `);
-      const runtime = buildKotlinRuntime(build);
+      const runtime = buildKotlinRuntime(nativeBuild);
       const errors = kotlinc(readdirSync(out).map((f) => join(out, f)), join(dir, 'classes'), [runtime]);
       got = errors ? errors[0] : spawnSync('java', ['-cp', [join(dir, 'classes'), runtime, kotlinStdlib()].join(':'), 'MainKt'], { encoding: 'utf8' }).stdout.trim();
     } catch (e) {
