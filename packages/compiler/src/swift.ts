@@ -2093,11 +2093,13 @@ export class Translator implements AsyncTranslator {
 
   /**
    * A non-strict app's function type taking an object (`done: (err: Error) => void`, called `done(null)`): its parameter is
-   * optional, as one of a closure written for it is implicitly unwrapped.
+   * optional, as one of a closure written for it is implicitly unwrapped. Where its group's form decides, it is optional
+   * only where that form holds an empty value (`widened`), as every member of the group is.
    */
   private lenientAppParameter(d: ts.Declaration | undefined, t: string): boolean {
     return this.lenientApp && !!d && ts.isParameter(d) && !d.dotDotDotToken && !d.getSourceFile().isDeclarationFile && !this.pluginFiles.has(d.getSourceFile().fileName)
-      && (ts.isFunctionTypeNode(d.parent) || ts.isArrowFunction(d.parent) || ts.isFunctionExpression(d.parent)) && !isFunctionType(t) && this.nullableRef(t) !== t;
+      && (ts.isFunctionTypeNode(d.parent) || ts.isArrowFunction(d.parent) || ts.isFunctionExpression(d.parent)) && !isFunctionType(t) && this.nullableRef(t) !== t
+      && (!this.states.formDecides(d) || this.states.widened(d));
   }
 
   /** A reference type as code without null checks holds it: implicitly unwrapped, as null may be given where it is declared. */

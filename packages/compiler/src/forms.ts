@@ -1198,11 +1198,16 @@ export class Forms {
     return withMissing(guarded(e));
   }
 
-  /** A library's value: its declared type node, in strict code the checker's type there, and a platform binding's nil. */
+  /**
+   * A library's value: its declared type node, in strict code the checker's type there, and a platform binding's nil.
+   * Read by a non-strict app, a kit's or plugin's typed object (not JavaScript's or a platform's) may be empty: its
+   * typings, written without strictNullChecks, say nothing of null, and its binding holds nil for one.
+   */
   private libraryStates(e: ts.Expression, d: ts.Declaration): number {
     let s = typeNodeStates((d as { type?: ts.TypeNode }).type) | (this.nativeNil(d) ? N : 0);
     if ((d as { questionToken?: ts.Node }).questionToken && !ts.isMethodDeclaration(d) && !ts.isMethodSignature(d)) s |= U;
     if (this.strict(e)) s |= typeStates(this.checker.getTypeAtLocation(e));
+    else if (!this.library && !LIB_FILE.test(d.getSourceFile().fileName) && !this.native(d) && objectValue(this.checker.getTypeAtLocation(e))) s |= U | N;
     return s;
   }
 
@@ -1246,6 +1251,12 @@ function shapes(checker: ts.TypeChecker, t: ts.Type): ts.Type[] {
     const sym = m.aliasSymbol ?? m.getSymbol();
     return !!sym && !!(sym.flags & (ts.SymbolFlags.Interface | ts.SymbolFlags.TypeLiteral)) && !(sym.flags & ts.SymbolFlags.Class);
   });
+}
+
+/** A value of an object type: not a string, number, boolean, bigint, symbol or enum, which a binding holds as a value. */
+function objectValue(t: ts.Type): boolean {
+  const parts = (t.isUnion() ? t.types : [t]).filter((x) => !(x.flags & (ts.TypeFlags.Undefined | ts.TypeFlags.Null | ts.TypeFlags.Void)));
+  return parts.length > 0 && parts.every((x) => !!(x.flags & (ts.TypeFlags.Object | ts.TypeFlags.NonPrimitive | ts.TypeFlags.TypeParameter)) && !x.getCallSignatures().length);
 }
 
 function untyped(t: ts.Type): boolean {
