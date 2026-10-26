@@ -2120,11 +2120,13 @@ export class Translator implements AsyncTranslator {
 
   /**
    * A non-strict app's function type taking an object (`done: (err: Error) => void`, called `done(null)`): its parameter is
-   * optional, as one of a closure written for it is implicitly unwrapped.
+   * optional, as one of a closure written for it is implicitly unwrapped. Where its group's form decides, it is optional
+   * only where that form holds an empty value (`widened`), as every member of the group is.
    */
   private lenientAppParameter(d: ts.Declaration | undefined, t: string): boolean {
     return this.lenientApp && !!d && ts.isParameter(d) && !d.dotDotDotToken && !d.getSourceFile().isDeclarationFile && !this.pluginFiles.has(d.getSourceFile().fileName)
-      && (ts.isFunctionTypeNode(d.parent) || ts.isArrowFunction(d.parent) || ts.isFunctionExpression(d.parent)) && !isFunctionType(t) && this.nullableRef(t) !== t;
+      && (ts.isFunctionTypeNode(d.parent) || ts.isArrowFunction(d.parent) || ts.isFunctionExpression(d.parent)) && !isFunctionType(t) && this.nullableRef(t) !== t
+      && (!this.states.formDecides(d) || this.states.widened(d));
   }
 
   /** A reference type as code without null checks holds it: implicitly unwrapped, as null may be given where it is declared. */
@@ -3992,6 +3994,8 @@ ${members.join('\n')}
    * rebound implicitly unwrapped in the body (`paramPrelude`), which reads it as other such parameters are read.
    */
   private optionalWidened(p: ts.ParameterDeclaration): boolean {
+    // A template method's loop item, whose default only types it, shares no signature: held implicitly unwrapped.
+    if (p.initializer && this.templateParams) return false;
     return !this.lenient && !p.questionToken && ts.isIdentifier(p.name) && this.states.widened(p) && !isOptional(this.typeOf(p.name)) && this.typeOf(p.name) !== 'Any?';
   }
 
@@ -11244,11 +11248,11 @@ ${members.join('\n')}
         const el = this.typeOf(target).slice(1, -1).split(', ');
         const element = el.every((x) => x === el[0]) ? el[0] : 'Any?';
         const tmp = this.fresh('__tuple');
-        const value = this.expr(target);
+        const value = this.expr(target), valueTry = this.tryPrefix(target);
         this.subst.set(target, `JSArray<${element}>([${Array.from({ length: n }, (_, k) => `${tmp}.${k}`).join(', ')}])`);
         try {
           const tr = this.tryPrefix(e);
-          return `{ () ${tr ? 'throws ' : ''}-> ${this.typeOf(e)} in let ${tmp}: ${t} = ${value}; return ${tr}${this.arrayMethod(method, target, e, '')} }()`;
+          return `{ () ${tr || valueTry ? 'throws ' : ''}-> ${this.typeOf(e)} in let ${tmp}: ${t} = ${valueTry}${value}; return ${tr}${this.arrayMethod(method, target, e, '')} }()`;
         } finally { this.subst.delete(target); }
       }
       // `n?.toString()`, `s?.trim().split(',')`: the method on the value when there is one.

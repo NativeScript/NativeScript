@@ -65,7 +65,7 @@ export interface StateRules {
    * Kotlin: a parameter's checks throw for a null its type leaves out, so `mayBeNull` counts every way an empty value
    * reaches one, with these analyses of the backend's; and a string an unset regexp group may leave undefined is loose.
    */
-  readonly checkedParameters?: { nullGiven(p: ts.ParameterDeclaration): boolean; truthTested(name: ts.Identifier): boolean; unsetElement(d: ts.Node): boolean };
+  readonly checkedParameters?: { truthTested(name: ts.Identifier): boolean; unsetElement(d: ts.Node): boolean };
 }
 
 /** Whether a type admits null and undefined both, and nothing untyped. */
@@ -549,23 +549,40 @@ export class ValueStates {
   }
 
   /**
-   * A parameter whose native type takes an empty value its declared type leaves out. A plugin's code is checked without
-   * strictNullChecks: callers pass null and undefined for an object parameter (core's `valueChanged(target, oldValue,
-   * newValue)` starts from undefined; ui-drawer applies a closing drawer's data with no side).
+   * A parameter whose native type takes an empty value its declared type leaves out. An app's parameter takes what its
+   * group's form holds (`formDecides`), whether or not its code is checked with strictNullChecks. A plugin's is an
+   * entry point, its code checked without them: callers pass null and undefined for an object parameter (core's
+   * `valueChanged(target, oldValue, newValue)` starts from undefined; ui-drawer applies a closing drawer's data with
+   * no side).
    */
   mayBeNull(p: ts.ParameterDeclaration): boolean {
     const b = this.backend, checked = b.rules.checkedParameters;
     if (p.dotDotDotToken || !ts.isIdentifier(p.name)) return false;
-    if (this.widened(p)) return true;
     const t = b.typeOf(p.name);
+    if (this.formDecides(p)) {
+      // Swift reads a non-strict app's optional parameter unwrapped where its body tests it, as nothing narrows it there.
+      const optional = !checked && b.lenientApp && !!p.questionToken && b.nullableParameter(t);
+      return optional || this.widened(p) || (!!checked && (this.looseDeclaration(p) || (this.primitive(t) && this.undefinedParameter(p))));
+    }
     if (!checked) return (this.plugin(p) || b.lenientApp) && b.nullableParameter(t);
     if (this.looseDeclaration(p)) return true;
-    if (b.lenientApp && !b.library && checked.nullGiven(p)) return true;
     if (this.primitive(t) && this.undefinedParameter(p)) return true;
-    // An app checked without strictNullChecks: a string parameter its function tests (`if (state)`) is one callers may leave out.
+    // A plugin's string parameter its function tests (`if (state)`), in a non-strict app: one callers may leave out.
     if (b.lenientApp && !b.library && !p.getSourceFile().isDeclarationFile && t === 'String' && ts.isFunctionDeclaration(p.parent) && checked.truthTested(p.name)) return true;
     return this.plugin(p) && b.nullableParameter(t);
   }
+
+  /**
+   * Whether an app's parameter is held as its group's form says (`widened`) rather than by its declared type: not where
+   * that form is decided elsewhere (`ownForm`).
+   */
+  formDecides(p: ts.ParameterDeclaration): boolean {
+    if (p.dotDotDotToken || !ts.isIdentifier(p.name) || !this.appParameter(p)) return false;
+    let found = this.decidedParams.get(p);
+    if (found === undefined) this.decidedParams.set(p, found = this.ownForm(p));
+    return found;
+  }
+  private readonly decidedParams = new Map<ts.ParameterDeclaration, boolean>();
 
   /**
    * An app's parameter that holds what its form holds beyond its declared type: its callers' values, or what any caller
@@ -575,7 +592,7 @@ export class ValueStates {
    */
   widened(p: ts.ParameterDeclaration): boolean {
     const b = this.backend;
-    if (p.dotDotDotToken || !ts.isIdentifier(p.name) || !this.appParameter(p)) return false;
+    if (!this.formDecides(p)) return false;
     let found = this.widenedParams.get(p);
     if (found === undefined) this.widenedParams.set(p, found = (!!b.rules.checkedParameters || b.nullableParameter(b.typeOf(p.name))) && this.givenEmpty(p));
     return found;
@@ -605,16 +622,19 @@ export class ValueStates {
   }
 
   /**
-   * A parameter whose form holds null or undefined where its declared type admits neither. One typed by a type parameter
-   * holds what each instantiation admits (§2.3b M5), which its native type parameter does as well; one sharing a fixed
-   * point's form (a callback parameter of a kit or platform function type) is spelled as that declaration is, and a
-   * parameter property as its field is.
+   * A parameter whose group's form is its own to decide. One typed by a type parameter holds what each instantiation
+   * admits (§2.3b M5), which its native type parameter does as well; one sharing a fixed point's form (a callback
+   * parameter of a kit or platform function type) is spelled as that declaration is, and a parameter property as its
+   * field is. A foreign form is held untyped by other rules.
    */
-  private givenEmpty(p: ts.ParameterDeclaration): boolean {
+  private ownForm(p: ts.ParameterDeclaration): boolean {
     if (ts.isParameterPropertyDeclaration(p, p.parent)) return false;
-    const declared = this.forms().declaredForm(p);
-    if (declared.foreign || isGeneric(this.checker.getTypeAtLocation(p.name)) || this.forms().fixedSlot(p)) return false;
-    const form = this.forms().formOfSlot(p);
+    return !this.forms().declaredForm(p).foreign && !isGeneric(this.checker.getTypeAtLocation(p.name)) && !this.forms().fixedSlot(p);
+  }
+
+  /** A parameter whose form holds null or undefined where its declared type admits neither. */
+  private givenEmpty(p: ts.ParameterDeclaration): boolean {
+    const declared = this.forms().declaredForm(p), form = this.forms().formOfSlot(p);
     return (form.null && !declared.null) || (form.undefined && !declared.undefined);
   }
 }
