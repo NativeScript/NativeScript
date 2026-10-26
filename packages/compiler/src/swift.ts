@@ -6596,7 +6596,7 @@ ${members.join('\n')}
       get library() { return t.library; },
       get native() { return t.native; },
       spelling: { boolean: 'Bool', void: 'Void' },
-      rules: { appNullResults: false, givenUndefinedIsScriptCalled: true, optionalParametersTakeUndefined: true, looseReads: true },
+      rules: { appNullResults: false, optionalParametersTakeUndefined: true, looseReads: true },
       typeOf: (n) => this.typeOf(n),
       type: (type, at) => this.type(type, at),
       returnTypeOf: (d) => this.returnTypeOf(d),

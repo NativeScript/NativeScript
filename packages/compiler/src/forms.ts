@@ -15,6 +15,11 @@ export interface Form {
   /** May hold a value of another type than `type` (untyped, asserted, JSON). */
   foreign: boolean;
   /**
+   * Its undefined may be a value the program leaves out: an argument not given, an optional parameter without a default,
+   * a read past an array's or string's end, a hole. Undefined an outside caller gives (an entry point) is not missing.
+   */
+  missing: boolean;
+  /**
    * Something its value reaches tells its null from its undefined (§2.3b M1'). A form holding both that isn't observed
    * holds one empty state, read as undefined.
    */
@@ -33,6 +38,8 @@ export function representation(f: Form): Representation {
 }
 
 const U = 1, N = 2, H = 4, F = 8;
+/** `Form.missing`, carried beside U: whatever keeps or drops U keeps or drops it with it (`withMissing`). */
+const M = 16;
 
 type Part = 'element' | 'value' | 'result';
 
@@ -175,7 +182,7 @@ export class Forms {
   declaredForm(d: ts.Declaration): Form {
     const s = this.declaredStates(d) | ((d as { initializer?: ts.Node }).initializer && ts.isParameter(d) ? U : 0);
     const type = this.declaredType(d) ?? this.checker.getTypeAtLocation(d);
-    return { type: this.checker.getNonNullableType(type), undefined: !!(s & U), null: !!(s & N), hole: false, foreign: !!(s & F), observed: false };
+    return { type: this.checker.getNonNullableType(type), undefined: !!(s & U), null: !!(s & N), hole: false, foreign: !!(s & F), missing: false, observed: false };
   }
 
   /** A read as a `T` (of a generic slot, at a type parameter's type) holds what the slot holds less what instantiations bring. */
@@ -190,7 +197,7 @@ export class Forms {
       for (const [p, c] of r.children) { const list = parts.get(p); if (list) list.push(c); else parts.set(p, [c]); }
     }
     if (type.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown)) states |= F;
-    const form: Form = { type: this.checker.getNonNullableType(type), undefined: !!(states & U), null: !!(states & N), hole: !!(states & H), foreign: !!(states & F), observed };
+    const form: Form = { type: this.checker.getNonNullableType(type), undefined: !!(states & U), null: !!(states & N), hole: !!(states & H), foreign: !!(states & F), missing: !!(states & U && states & M), observed };
     const part = this.partOf(type);
     const inner = part && parts.get(part);
     if (inner && depth < 4) {
@@ -256,8 +263,8 @@ export class Forms {
    * parameter's; in strict code, only the empty states the concrete slot's type admits.
    */
   private crossing(concrete: Slot, intoGeneric: boolean): number {
-    const admitted = concrete.typed && concrete.type ? typeStates(concrete.type) : U | N;
-    return ~((U | N) & ~admitted) & (intoGeneric ? ~F : ~0);
+    const admitted = withMissing(concrete.typed && concrete.type ? typeStates(concrete.type) : U | N);
+    return ~((U | M | N) & ~admitted) & (intoGeneric ? ~F : ~0);
   }
 
   private child(s: Slot, part: Part): Slot {
@@ -349,7 +356,7 @@ export class Forms {
   private instantiated(value: ts.Expression): number {
     const at = this.checker.getContextualType(value);
     if (!at || !this.strict(value) || isGeneric(at)) return ~F;
-    return ~F & ~((U | N) & ~typeStates(at));
+    return ~F & ~((U | M | N) & ~withMissing(typeStates(at)));
   }
 
   private seed(target: Slot, states: number): void {
@@ -607,7 +614,7 @@ export class Forms {
     const c = this.checker;
     if (ts.isExpression(n) && !ts.isParenthesizedExpression(n)) this.placeExpression(n);
     this.placeObservers(n);
-    if (ts.isParameter(n) && n.questionToken && !n.initializer) this.seed(this.slotFor(n), U);
+    if (ts.isParameter(n) && n.questionToken && !n.initializer) this.seed(this.slotFor(n), U | M);
     if (ts.isVariableDeclaration(n) && !n.initializer && ts.isIdentifier(n.name) && ts.isVariableDeclarationList(n.parent)) {
       const loop = n.parent.parent;
       if (ts.isForOfStatement(loop) && loop.initializer === n.parent) this.placeElements(loop.expression, this.slotFor(n), loop.awaitModifier ? 'result' : null);
@@ -745,7 +752,7 @@ export class Forms {
   private placeBinding(b: ts.BindingElement): void {
     const slot = this.slotFor(b);
     if (b.initializer) this.place(b.initializer, slot);
-    const keep = b.initializer ? ~U : ~0;
+    const keep = b.initializer ? ~(U | M) : ~0;
     const pattern = b.parent;
     if (ts.isObjectBindingPattern(pattern)) {
       if (b.dotDotDotToken) return;
@@ -764,7 +771,7 @@ export class Forms {
       this.edges.push([this.child(s, 'element'), slot, keep]);
       if (b.initializer) this.observedSlots.push(this.child(s, 'element'));
     }
-    this.seed(slot, U & keep);
+    this.seed(slot, (U | M) & keep);
   }
 
   /** Arguments a call gives beyond `slotOf`'s: missing ones, rest elements, pushes, callbacks of arrays, Maps and Promises. */
@@ -777,7 +784,7 @@ export class Forms {
     if (sig && !ts.isJSDocSignature(sig) && !declarationFile(sig) && !args.some(ts.isSpreadElement)) {
       sig.parameters.forEach((p, k) => {
         if (p.dotDotDotToken) { for (const a of args.slice(k)) this.place(a, this.child(this.slotFor(p), 'element')); }
-        else if (k >= args.length) this.seed(this.slotFor(p), U);
+        else if (k >= args.length) this.seed(this.slotFor(p), U | M);
       });
     }
     if (ts.isNewExpression(call)) { this.placeConstructed(call, args); return; }
@@ -787,11 +794,13 @@ export class Forms {
     if (invoked && name === 'call') invoked.parameters.forEach((p, k) => {
       if (p.dotDotDotToken) { for (const a of args.slice(k + 1)) this.place(a, this.child(this.slotFor(p), 'element')); }
       else if (args[k + 1]) this.place(args[k + 1], this.slotFor(p));
-      else this.seed(this.slotFor(p), U);
+      else this.seed(this.slotFor(p), U | M);
     });
     if (invoked && name === 'apply') {
       if (args[1]) for (const p of invoked.parameters) this.placeElements(args[1], p.dotDotDotToken ? this.child(this.slotFor(p), 'element') : this.slotFor(p), null);
-      for (const p of invoked.parameters) if (!p.dotDotDotToken) this.seed(this.slotFor(p), U);
+      const list = args[1] && ts.skipOuterExpressions(args[1]);
+      const given = list && ts.isArrayLiteralExpression(list) && !list.elements.some(ts.isSpreadElement) ? list.elements.length : 0;
+      invoked.parameters.forEach((p, k) => { if (!p.dotDotDotToken && k >= given) this.seed(this.slotFor(p), U | M); });
     }
     const t = c.getNonNullableType(c.getTypeAtLocation(recv));
     const kind = c.isArrayType(t) || c.isTupleType(t) ? 'Array' : t.getSymbol()?.name;
@@ -843,7 +852,7 @@ export class Forms {
         }
       } else for (const [s] of this.flow(args[0]).from) this.edges.push([this.child(this.child(s, 'element'), 'element'), own, ~0]);
     } else if (name === 'Set' || name === 'WeakSet') this.placeElements(args[0], own, 'element');
-    else if (args.length === 1 && this.checker.getTypeAtLocation(args[0]).flags & ts.TypeFlags.NumberLike) this.seed(own, H | U);
+    else if (args.length === 1 && this.checker.getTypeAtLocation(args[0]).flags & ts.TypeFlags.NumberLike) this.seed(own, H | U | M);
     else for (const a of args) this.place(a, own);
   }
 
@@ -1059,12 +1068,12 @@ export class Forms {
     if (ts.isConditionalExpression(e)) return merge(this.flow(e.whenTrue), this.flow(e.whenFalse));
     if (ts.isBinaryExpression(e)) {
       const op = e.operatorToken.kind;
-      if (op === K.QuestionQuestionToken || op === K.BarBarToken || op === K.QuestionQuestionEqualsToken || op === K.BarBarEqualsToken) return merge(mask(this.flow(e.left), ~(U | N | H)), this.flow(e.right));
-      if (op === K.AmpersandAmpersandToken || op === K.AmpersandAmpersandEqualsToken) return merge(mask(this.flow(e.left), U | N | F), this.flow(e.right));
+      if (op === K.QuestionQuestionToken || op === K.BarBarToken || op === K.QuestionQuestionEqualsToken || op === K.BarBarEqualsToken) return merge(mask(this.flow(e.left), ~(U | M | N | H)), this.flow(e.right));
+      if (op === K.AmpersandAmpersandToken || op === K.AmpersandAmpersandEqualsToken) return merge(mask(this.flow(e.left), U | M | N | F), this.flow(e.right));
       if (op === K.EqualsToken || op === K.CommaToken) return this.flow(e.right);
       return PRESENT;
     }
-    if (ts.isNonNullExpression(e)) return mask(this.flow(e.expression), ~(U | N | H));
+    if (ts.isNonNullExpression(e)) return mask(this.flow(e.expression), ~(U | M | N | H));
     if (ts.isAsExpression(e) || ts.isTypeAssertionExpression(e)) {
       const inner = this.flow(e.expression);
       const from = c.getTypeAtLocation(e.expression), to = c.getTypeAtLocation(e);
@@ -1107,11 +1116,13 @@ export class Forms {
     const t = c.getNonNullableType(c.getTypeAtLocation(e.expression));
     const optional = e.questionDotToken ? U : 0;
     if (t.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown)) return { states: F | U | N, from: [] };
-    if (t.flags & ts.TypeFlags.StringLike) return { states: U | optional, from: [] };
+    if (t.flags & ts.TypeFlags.StringLike) return { states: U | M | optional, from: [] };
     if (isMatchArray(t)) return { states: U | optional, from: [] };
     const tuple = c.isTupleType(t) && ts.isNumericLiteral(e.argumentExpression);
     const part: Part = c.isArrayType(t) || c.isTupleType(t) ? 'element' : 'value';
-    return { states: (tuple ? 0 : U) | optional, from: this.flow(e.expression).from.map(([s]): [Slot, number] => [this.child(s, part), ~0]) };
+    // Past an array's end is a value left out (M); a key never set is not.
+    const empty = tuple ? 0 : part === 'element' ? U | M : U;
+    return { states: empty | optional, from: this.flow(e.expression).from.map(([s]): [Slot, number] => [this.child(s, part), ~0]) };
   }
 
   private call(e: ts.CallExpression): Flow {
@@ -1124,7 +1135,7 @@ export class Forms {
       const kind = c.isArrayType(t) || c.isTupleType(t) ? 'Array' : t.getSymbol()?.name;
       const own = () => this.slotFor(e);
       const recvParts = (p: Part) => this.flow(recv).from.map(([s]) => this.child(s, p));
-      if (kind === 'Array' && ONE_ELEMENT.has(name)) return { states: U | optional, from: recvParts('element').map((s): [Slot, number] => [s, ~0]) };
+      if (kind === 'Array' && ONE_ELEMENT.has(name)) return { states: U | M | optional, from: recvParts('element').map((s): [Slot, number] => [s, ~0]) };
       if (kind === 'Array' && SAME_ELEMENTS.has(name)) { for (const s of recvParts('element')) this.share(this.child(own(), 'element'), s); return { states: optional, from: [[own(), ~0]] }; }
       if (kind === 'Array' && (name === 'map' || name === 'flatMap')) {
         const fn = e.arguments[0] && this.functionDeclarationOf(e.arguments[0]);
@@ -1160,7 +1171,7 @@ export class Forms {
     const keep = ~this.narrowed(e, d);
     const init = (ts.isParameter(d) || ts.isBindingElement(d)) && !isTemplateDefault(d) && d.initializer;
     if (!init) return { states: 0, from: [[slot, keep]] };
-    return merge({ states: 0, from: [[slot, keep & ~U]] }, mask(this.flow(init), keep));
+    return merge({ states: 0, from: [[slot, keep & ~(U | M)]] }, mask(this.flow(init), keep));
   }
 
   /** The states a read at `e` is proved not to hold: by the checker's narrowing in strict code, by its guards in other code. */
@@ -1168,9 +1179,9 @@ export class Forms {
     if (isWriteTarget(e)) return 0;
     if (this.strict(e)) {
       const declared = typeStates(this.declaredType(d) ?? undefined), here = typeStates(this.checker.getTypeAtLocation(e));
-      return declared & ~here & (U | N);
+      return withMissing(declared & ~here & (U | N));
     }
-    return guarded(e);
+    return withMissing(guarded(e));
   }
 
   /** A library's value: its declared type node, in strict code the checker's type there, and a platform binding's nil. */
@@ -1243,6 +1254,11 @@ function declarationFile(n: ts.Node): boolean {
 
 function merge(a: Flow, b: Flow): Flow {
   return { states: a.states | b.states, from: [...a.from, ...b.from] };
+}
+
+/** States with M wherever they have U: a mask or an admitted set that names undefined names a missing one too. */
+function withMissing(s: number): number {
+  return s & U ? s | M : s;
 }
 
 function mask(f: Flow, keep: number): Flow {

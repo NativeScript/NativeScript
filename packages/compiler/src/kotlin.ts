@@ -853,7 +853,7 @@ export class Translator implements AsyncTranslator {
       get native() { return t.native; },
       spelling: { boolean: 'Boolean', void: 'Unit' },
       rules: {
-        appNullResults: true, givenUndefinedIsScriptCalled: false, optionalParametersTakeUndefined: false, looseReads: false,
+        appNullResults: true, optionalParametersTakeUndefined: false, looseReads: false,
         checkedParameters: { nullGiven: (p) => this.nullGivenParams().has(p), truthTested: (name) => this.truthTested(name), unsetElement: (d) => this.unset.element(d) },
       },
       typeOf: (n) => this.typeOf(n),
@@ -8183,6 +8183,12 @@ export class Translator implements AsyncTranslator {
     if (!decl || !rest || decl.parameters.some((p) => p.dotDotDotToken) || rest.length > decl.parameters.length) return null;
     const receiver = this.coerce(e.arguments[0], 'Any?');
     const args = rest.map((a, k) => this.coerce(a, this.paramType(decl.parameters[k])));
+    // Parameters left out are undefined: Kotlin's defaults for the trailing ones that declare one, null up to them.
+    const left = decl.parameters.slice(rest.length);
+    for (const p of left.slice(0, left.findLastIndex((x) => !x.initializer && !x.questionToken) + 1)) {
+      if (p.initializer || !isNullable(this.paramType(p))) throw this.error(e, `${callee.name.text} of ${cls.name?.text}.prototype.${method.name.text} leaving out \`${p.name.getText()}\`, which can't hold undefined`);
+      args.push('null');
+    }
     const owner = decl.parent as ts.ClassDeclaration;
     const name = this.nonVirtualEntry(decl) ? ident(nonVirtualName(method.name.text, owner.name!.text)) : this.methodIdent(method.name.text);
     return `${this.checkedCast(receiver, this.className(owner))}.${name}(${args.join(', ')})`;
