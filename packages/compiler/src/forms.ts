@@ -149,6 +149,12 @@ export class Forms {
     };
   }
 
+  /** An array's or Set's element type, or a Map's value type: the part `Form.element` is the form of. */
+  elementOf(t: ts.Type): ts.Type | null {
+    const part = this.partOf(t);
+    return part && part !== 'result' && !this.checker.isTupleType(this.checker.getNonNullableType(t)) ? elementType(this.checker, t, part) : null;
+  }
+
   formOf(e: ts.Expression): Form {
     this.build();
     const x = ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses);

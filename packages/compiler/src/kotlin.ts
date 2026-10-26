@@ -147,6 +147,17 @@ function nullishType(t: string): string {
   return `JSNullish<${present}>`;
 }
 
+/** An array, Set or Map type (`JSArray<T?>`, `JSMap<K, T?>`) with its elements or values held as `JSNullish<T>`. */
+function nullishElementsType(t: string): string {
+  const m = /^(JSArray|JSSet|JSMap)<(.*)>(\??)$/.exec(t);
+  if (!m) return t;
+  const args = splitTopLevel(m[2]);
+  const k = args.length - 1;
+  if (!isNullable(args[k]) && !/^\(.*\)\?$/.test(args[k]) || args[k].startsWith('JSNullish<')) return t;
+  args[k] = nullishType(args[k]);
+  return `${m[1]}<${args.join(', ')}>${m[3]}`;
+}
+
 /** A nullable Kotlin type (`T?`, `((A) -> B)?`), not a function returning one. */
 const isNullable = (t: string) => t.endsWith('?') && !isFunctionType(t);
 
@@ -882,6 +893,15 @@ export class Translator implements AsyncTranslator {
   }
 
   typeOf(n: ts.Node): string {
+    return this.heldElements(n, this.plainTypeOf(n));
+  }
+
+  /** `t`, the type of `n`, with the elements `ValueStates.nullishElements` holds as `JSNullish<T>` so. */
+  private heldElements(n: ts.Node, t: string): string {
+    return this.states.nullishElements(n) ? nullishElementsType(t) : t;
+  }
+
+  private plainTypeOf(n: ts.Node): string {
     if (this.isArguments(n)) return 'JSArray<Any?>';
     if (ts.isCallExpression(n) && this.states.lenientAsyncCall(n)) return this.returnTypeOf(this.checker.getResolvedSignature(n)!.getDeclaration() as ts.SignatureDeclaration);
     if (this.states.heldNullish(n)) return 'Any?';
@@ -1145,6 +1165,11 @@ export class Translator implements AsyncTranslator {
   }
 
   private declaredTypeOf(e: ts.Expression): string | null {
+    const t = this.plainDeclaredTypeOf(e);
+    return t && this.heldElements(e, t);
+  }
+
+  private plainDeclaredTypeOf(e: ts.Expression): string | null {
     if (this.holdsFunctionObject(e) || this.states.heldNullish(e)) return 'Any?';
     // A shorthand property (`{ positions }`) names the variable it reads.
     let sym = ts.isIdentifier(e) && ts.isShorthandPropertyAssignment(e.parent) && e.parent.name === e
@@ -2495,7 +2520,7 @@ export class Translator implements AsyncTranslator {
   returnTypeOf(fn: ts.SignatureDeclaration): string {
     if (this.states.nullish().held.has(fn) || (this.library && this.thisValues().returning.has(fn))) return 'Any?';
     if (this.library && this.returnsNullApart(fn)) return 'Any?';
-    const t = this.type(this.checker.getSignatureFromDeclaration(fn)!.getReturnType(), fn);
+    const t = this.heldElements(fn, this.type(this.checker.getSignatureFromDeclaration(fn)!.getReturnType(), fn));
     if (this.library && this.nullablePrimitiveReturn(fn) && ['String', 'Double', 'Boolean'].includes(t)) return optionalType(t);
     if (this.states.looseDeclaration(fn) || (!this.library && (ts.isArrowFunction(fn) || ts.isFunctionExpression(fn)) && this.unset.returnsElement(fn))) return optionalType(t);
     if (this.states.lenientAsync(fn)) return t.replace(/^JSPromise<(String|Double|Boolean)>$/, 'JSPromise<$1?>');
@@ -6028,6 +6053,7 @@ export class Translator implements AsyncTranslator {
     const bare = ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses);
     const name = held && this.refName(bare as ts.Identifier);
     const into = /^JSNullish<(.*)>$/.exec(target)?.[1];
+    if (!into && target === 'Any?' && this.states.nullishElementRead(e)) return `jsBox(${this.expr(e)})`;
     if (!into) return name && target === 'Any?' ? `${name}.jsAny` : null;
     if (name) return nullishType(this.typeOf(bare)) === target ? name : `JSNullish.of(${this.convert(`${name}.optional`, optionalType(this.typeOf(bare)), optionalType(into))})`;
     if (bare.kind === ts.SyntaxKind.NullKeyword) return 'JSNullish.Null';
@@ -7672,7 +7698,7 @@ export class Translator implements AsyncTranslator {
         continue;
       }
       if (decl && this.states.nullishHeld(decl)) { out.push(this.coerce(a, nullishType(this.type(this.checker.getTypeOfSymbolAtLocation(p, e), e)))); continue; }
-      let pt = decl && this.states.nullish().held.has(decl) ? 'Any?' : this.type(this.checker.getTypeOfSymbolAtLocation(p, e), e);
+      let pt = decl && this.states.nullish().held.has(decl) ? 'Any?' : this.heldElements(decl && ts.isParameter(decl) ? decl : e, this.type(this.checker.getTypeOfSymbolAtLocation(p, e), e));
       // A generic implementation's parameter is not instantiated by an overload's call: the overload's, as this call instantiates it.
       const implTypes = impl && impl !== sig?.getDeclaration() ? impl.typeParameters?.map((t) => t.name.text) ?? [] : [];
       const resolved = sig?.getParameters()[k];
@@ -8894,7 +8920,7 @@ export class Translator implements AsyncTranslator {
       }
       case 'fill': return `${t}.fill(${[this.coerce(e.arguments[0], element), ...e.arguments.slice(1).map((x) => this.toNumber(x))].join(', ')})`;
       case 'slice': case 'at': return `${t}.${name}(${e.arguments.map((x) => this.toNumber(x)).join(', ')})`;
-      case 'indexOf': case 'lastIndexOf': case 'includes': return `${t}.${name}(${[this.coerce(e.arguments[0], optionalType(element)),...e.arguments.slice(1).map((x) => this.toNumber(x))].join(', ')})`;
+      case 'indexOf': case 'lastIndexOf': case 'includes': return `${t}.${name}(${[this.coerce(e.arguments[0], element.startsWith('JSNullish<') ? element : optionalType(element)),...e.arguments.slice(1).map((x) => this.toNumber(x))].join(', ')})`;
       case 'join': return `${t}.join(${e.arguments[0] ? (this.library ? this.str(e.arguments[0]) : this.expr(e.arguments[0])) : ''})`;
       case 'concat':
         if (e.arguments.some(ts.isSpreadElement)) return `${t}.concatSpread(${this.packed(e.arguments, `JSArray<${element}>`)}.storage)`;
@@ -9662,7 +9688,8 @@ export class Translator implements AsyncTranslator {
         && !/^(JSArray|JSRecord|JSMatch|Pair|Triple)\b/.test(this.typeOf(left.expression).replace(/\?$/, ''))))) {
       return `jsSet(${this.expr(left.expression)}, ${this.propertyKey(left.argumentExpression)}, ${this.coerce(right, 'Any?')})`;
     }
-    return `${this.lvalue(left)} = ${this.coerce(right, this.declaredTypeOf(left) ?? this.typeOf(left))}`;
+    const element = ts.isElementAccessExpression(left) && this.states.nullishElements(left.expression) ? this.elementTypeOf(left.expression) : null;
+    return `${this.lvalue(left)} = ${this.coerce(right, element ?? this.declaredTypeOf(left) ?? this.typeOf(left))}`;
   }
 
   private binary(e: ts.BinaryExpression): string {
@@ -9875,7 +9902,7 @@ export class Translator implements AsyncTranslator {
     // A `T | null` value compared strictly with undefined, or a `T | undefined` one with null: never the same.
     if (strict && isNullish(a) !== isNullish(b)) {
       const [x, n] = isNullish(b) ? [a, b] : [b, a];
-      if (n.kind !== K.NullKeyword ? this.states.nullDistinct(x) : this.states.nullishRead(x) || this.states.nullableEntry(x, () => this.coerceTyped(x, 'Any?'))) return `${negate ? '!' : ''}jsStrictEquals(${this.coerce(x, 'Any?')}, ${n.kind === K.NullKeyword ? 'jsNull' : 'null'})`;
+      if (n.kind !== K.NullKeyword ? this.states.nullDistinct(x) : this.states.nullishRead(x) || this.states.nullishElementRead(x) || this.states.nullableEntry(x, () => this.coerceTyped(x, 'Any?'))) return `${negate ? '!' : ''}jsStrictEquals(${this.coerce(x, 'Any?')}, ${n.kind === K.NullKeyword ? 'jsNull' : 'null'})`;
       if (n.kind === K.NullKeyword && this.states.nilIsUndefined(x)) return `${negate ? '!' : ''}jsStrictEquals(${this.coerce(x, 'Any?')}, jsNull)`;
     }
     const maybe = isNullish(b) ? this.maybeUndefined(a) : isNullish(a) ? this.maybeUndefined(b) : null;
@@ -9909,7 +9936,7 @@ export class Translator implements AsyncTranslator {
     let t = this.typeOf(e);
     // A spread's length is known only when it runs: no tuple.
     if (context && !(context.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown | ts.TypeFlags.TypeParameter)) && !(this.checker.isTupleType(context) && e.elements.some(ts.isSpreadElement))) {
-      const c = this.type(context, e).replace(/\?$/, '');
+      const c = this.heldElements(e, this.type(context, e)).replace(/\?$/, '');
       if (c.startsWith('JSArray<') || c.startsWith('Pair<') || c.startsWith('Triple<') || !e.elements.length) t = c;
       // Where an array or other kinds of value go (`data: string[][] | string`): that array.
       const arrays = context.isUnion() ? context.types.filter((u) => this.checker.isArrayType(u)) : [];
