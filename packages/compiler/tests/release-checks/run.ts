@@ -1024,8 +1024,8 @@ export class Kinds {
       } catch (e) {
         code = String((e as Error).message);
       }
-      const typed = platform === 'ios' ? /func formatAchievements\(_ achievements: JSArray<String>\?\)/.test(code) && /func label\(_ name: Any\?\)/.test(code) : /fun formatAchievements\(achievements: JSArray<String>\?\)/.test(code) && /fun label\(name: Any\?\)/.test(code);
-      check(lenient && typed, `a component's method given null or undefined both by its template and its code translates: an array it never tells apart keeps one nil, a string it does is held (${name}${typed ? '' : `: ${code.split('\n').find((l) => /formatAchievements|label|not supported/.test(l))?.trim().slice(0, 160)}`})`);
+      const typed = platform === 'ios' ? /func formatAchievements\(_ achievements: JSArray<String>\?\)/.test(code) && /func label\(_ name: JSNullish<String>\)/.test(code) : /fun formatAchievements\(achievements: JSArray<String>\?\)/.test(code) && /fun label\(name: JSNullish<String>\)/.test(code);
+      check(lenient && typed, `a component's method given null or undefined both by its template and its code translates: an array it never tells apart keeps one nil, a string it does is held as JSNullish (${name}${typed ? '' : `: ${code.split('\n').find((l) => /formatAchievements|label|not supported/.test(l))?.trim().slice(0, 160)}`})`);
       const other = createProgram([observed], new Map([[observed, kinds.source]]), platform, modulesDir);
       let refusal = '';
       try {

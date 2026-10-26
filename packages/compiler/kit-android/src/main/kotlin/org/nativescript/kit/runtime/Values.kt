@@ -40,8 +40,11 @@ class JSNullish<out T> private constructor(@JvmField val jsAny: Any?) {
         /** A typed value whose null is JavaScript's null. */
         fun <T> ofNull(value: T?): JSNullish<T> = if (value == null) Null else JSNullish(value)
 
-        /** An untyped value. */
-        fun <T> ofAny(value: Any?): JSNullish<T> = if (value == null) Undefined else if (value === JSNull) Null else JSNullish(value)
+        /** An untyped value: `jsNull` is null and null undefined; a present one is `present`'s (which throws the TypeError for another type). */
+        fun <T> ofAny(value: Any?, present: (Any) -> T): JSNullish<T> {
+            val v = jsBox(value)
+            return if (v == null) Undefined else if (v === JSNull) Null else JSNullish(present(v))
+        }
     }
 }
 
