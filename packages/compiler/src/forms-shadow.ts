@@ -2,19 +2,12 @@ import { appendFileSync } from 'node:fs';
 import { relative } from 'node:path';
 import ts from 'typescript';
 import { type Form, Forms, representation } from './forms.ts';
-import type { NullishSlots, TrustScope } from './lang.ts';
+import type { NullishSlots } from './lang.ts';
+import type { ValueStates } from './value-states.ts';
 
-// Shadow mode (NS_FORMS_SHADOW=<file>): each null/undefined decider a backend asks today is answered as before, and one
-// JSONL record per question says what `Form` would answer, so the two can be compared before any backend reads `Form`.
-// It only observes: answers, call order and arguments reach the translator unchanged.
-
-interface Translator {
-  readonly checker: ts.TypeChecker;
-  readonly sourceFiles: readonly ts.SourceFile[];
-  readonly trust: TrustScope;
-  readonly library: unknown;
-  readonly lenientApp: boolean;
-}
+// Shadow mode (NS_FORMS_SHADOW=<file>): each null/undefined decider a backend asks (value-states.ts) is answered as
+// before, and one JSONL record per question says what `Form` would answer, so the two can be compared before any backend
+// reads `Form`. It only observes: answers, call order and arguments reach the translator unchanged.
 
 type Answer = (forms: Forms, node: ts.Node, checker: ts.TypeChecker) => boolean | null;
 
@@ -34,13 +27,20 @@ const member = (forms: Forms, n: ts.Node, checker: ts.TypeChecker) => {
  */
 const entry: Answer = (forms, n, checker) => {
   const x = ts.isExpression(n) ? ts.skipOuterExpressions(n) : n;
-  if (ts.isElementAccessExpression(x)) return !!forms.formOf(x.expression).element?.null;
-  if (ts.isCallExpression(x) && ts.isPropertyAccessExpression(x.expression) && x.expression.name.text === 'get') return !!forms.formOf(x.expression.expression).element?.null;
+  const element = (e: ts.Expression) => { const f = forms.formOf(e).element; return !!f && nilMayBeNull(f); };
+  if (ts.isElementAccessExpression(x)) return element(x.expression);
+  if (ts.isCallExpression(x) && ts.isPropertyAccessExpression(x.expression) && x.expression.name.text === 'get') return element(x.expression.expression);
   if (!ts.isPropertyAccessExpression(x)) return null;
   const d = checker.getSymbolAtLocation(x.name)?.valueDeclaration;
   const form = d && isSlotDeclaration(d) ? forms.formOfSlot(d) : forms.formOf(x);
-  return form.null && !form.foreign;
+  return nilMayBeNull(form);
 };
+
+/** A typed form whose nil may be null: it holds null alone, or null and undefined apart. */
+function nilMayBeNull(f: Form): boolean {
+  const r = representation(f);
+  return r === 'null' || r === 'nullish';
+}
 
 /** A parameter's states beyond what its declared type admits, which its native type then must hold too. */
 const beyondDeclared = (...states: ('null' | 'undefined')[]): Answer => (forms, n) => {
@@ -60,9 +60,12 @@ function heldForm(forms: Forms, n: ts.Expression, checker: ts.TypeChecker): Form
   return d && isSlotDeclaration(d) && !ts.isFunctionLike(d) && !d.getSourceFile().isDeclarationFile ? forms.formOfSlot(d) : forms.formOf(n);
 }
 
-/** Whether a form holds both empty states, foreign or not: today's deciders ask that of untyped slots as well. */
+/**
+ * Whether a form holds both empty states apart, foreign or not: today's deciders ask that of untyped slots as well. Both
+ * unobserved are one empty state (§2.3b M1').
+ */
 function both(f: Form): boolean {
-  return f.undefined && f.null;
+  return f.undefined && f.null && f.observed;
 }
 
 /** Values of more than one kind (`number | string`, a function or an object): held untyped already, whatever their empty states. */
@@ -85,7 +88,8 @@ const heldUntyped: Answer = (forms, n, checker) => {
 const nilIs = (state: 'null' | 'undefined'): Answer => (forms, n, checker) => {
   if (!ts.isExpression(n)) return null;
   const held = heldForm(forms, n, checker), here = forms.formOf(n);
-  return representation(held) === state && here[state];
+  // One empty state for both: its nil is undefined wherever the value there may be empty.
+  return representation(held) === state && (here[state] || (state === 'undefined' && here.null));
 };
 
 const DECIDERS: Record<string, { answer: Answer; old: (r: unknown) => boolean }> = {
@@ -101,6 +105,7 @@ const DECIDERS: Record<string, { answer: Answer; old: (r: unknown) => boolean }>
   mayBeNull: { answer: beyondDeclared('null', 'undefined'), old: Boolean },
   givenUndefined: { answer: beyondDeclared('undefined'), old: Boolean },
   // Today's loose slots are strings, numbers and booleans: other values are held by reference, untyped where they must be.
+  nullishHeld: { answer: (f, n) => declaration(n, (x) => representation(x) === 'nullish')(f), old: Boolean },
   looseDeclaration: { answer: (f, n) => declaration(n, (x) => x.foreign && !!(x.type.flags & (ts.TypeFlags.StringLike | ts.TypeFlags.NumberLike | ts.TypeFlags.BooleanLike)))(f), old: Boolean },
 };
 
@@ -121,17 +126,17 @@ function isSlotDeclaration(n: ts.Node): n is ts.Declaration {
 const unflushed = new Set<() => void>();
 let exitHook = false;
 
-/** Records each decider's questions on `t` (a Swift or Kotlin translator) to `NS_FORMS_SHADOW`. */
-export function shadowForms(t: object, backend: 'swift' | 'kotlin'): void {
+/** Records each question asked of `states` to `NS_FORMS_SHADOW`. */
+export function shadowForms(states: ValueStates): void {
   const out = process.env.NS_FORMS_SHADOW!;
   if (!exitHook) { exitHook = true; process.once('exit', () => { for (const f of [...unflushed]) f(); }); }
-  const translator = t as unknown as Translator;
-  const methods = t as unknown as Record<string, (...args: unknown[]) => unknown>;
+  const translator = states.backend, backend = translator.name;
+  const methods = states as unknown as Record<string, (...args: unknown[]) => unknown>;
   let forms: Forms | null = null, failed: Error | null = null;
   const formsOf = () => {
     if (forms) return forms;
     if (failed) throw failed;
-    forms = new Forms(translator.sourceFiles, translator.checker, (f) => translator.trust.strictFile(f), { library: !!translator.library, native: (d) => translator.trust.nativeDeclaration(d) });
+    forms = new Forms(translator.sourceFiles, translator.checker, (f) => translator.trust.strictFile(f), { library: !!translator.library, native: (d) => translator.trust.nativeDeclaration(d), nativeNil: (d) => !!translator.native?.holdsNil?.(d) });
     try {
       forms.build();
     } catch (e) {
@@ -139,7 +144,7 @@ export function shadowForms(t: object, backend: 'swift' | 'kotlin'): void {
       forms = null;
       throw (failed = e as Error);
     }
-    appendFileSync(out, JSON.stringify({ timing: backend, ms: Math.round(forms.buildMs), files: translator.sourceFiles.filter((f) => !f.isDeclarationFile).length, library: !!translator.library }) + '\n');
+    appendFileSync(out, JSON.stringify({ timing: backend, ms: Math.round(forms.buildMs), files: translator.sourceFiles.filter((f) => !f.isDeclarationFile).length, library: !!translator.library, ...forms.bothStates() }) + '\n');
     return forms;
   };
   const seen = new Set<string>();
@@ -166,7 +171,7 @@ export function shadowForms(t: object, backend: 'swift' | 'kotlin'): void {
       try {
         form = moot(node) ? null : answer();
         const f = ts.isExpression(node) ? formsOf().formOf(node) : isSlotDeclaration(node) ? formsOf().formOfSlot(node) : null;
-        if (f) states = (f.undefined ? 'U' : '') + (f.null ? 'N' : '') + (f.hole ? 'H' : '') + (f.foreign ? 'F' : '') + (f.element ? `[${(f.element.undefined ? 'U' : '') + (f.element.null ? 'N' : '') + (f.element.foreign ? 'F' : '')}]` : '');
+        if (f) states = (f.undefined ? 'U' : '') + (f.null ? 'N' : '') + (f.hole ? 'H' : '') + (f.foreign ? 'F' : '') + (f.observed ? 'o' : '') + (f.element ? `[${(f.element.undefined ? 'U' : '') + (f.element.null ? 'N' : '') + (f.element.foreign ? 'F' : '')}]` : '');
       } catch (e) {
         error = (e as Error).message.slice(0, 200);
       }
@@ -175,9 +180,8 @@ export function shadowForms(t: object, backend: 'swift' | 'kotlin'): void {
   };
   for (const [name, { answer, old }] of Object.entries(DECIDERS)) {
     const original = methods[name];
-    if (typeof original !== 'function') continue;
     methods[name] = function (this: unknown, ...args: unknown[]) {
-      const result = original.apply(t, args);
+      const result = original.apply(states, args);
       const node = args[0] as ts.Node | undefined;
       if (node && typeof node === 'object' && 'kind' in node) record(name, node, old(result), () => answer(formsOf(), node, translator.checker));
       return result;
@@ -186,7 +190,7 @@ export function shadowForms(t: object, backend: 'swift' | 'kotlin'): void {
   const nullish = methods.nullish;
   const wrapped = new WeakSet<object>();
   methods.nullish = function () {
-    const slots = nullish.apply(t) as NullishSlots;
+    const slots = nullish.apply(states) as NullishSlots;
     if (!wrapped.has(slots)) {
       wrapped.add(slots);
       slots.held = recording(slots.held, (d, has) => record('nullishSlots.held', d, has, () => heldSlot(formsOf(), d, translator.checker)));
