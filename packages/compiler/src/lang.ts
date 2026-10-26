@@ -1105,14 +1105,22 @@ function alwaysThrows(st: ts.Statement): boolean {
  * read before it is written. `held` (variables, parameters, function returns, and the parameters and results of function
  * types, function values and override families that admit both) are held untyped; `fields` (class fields, object-type
  * members) note which of their nils is null. `refused` are such slots neither can cover (an element of an array, Map or
- * Set, a function or native value, a slot whose signature a library or an interface fixes), each with what it is.
+ * Set, a function or native value, a slot whose signature a library or an interface fixes), each with what it is, and
+ * with the slot whose value form may cover it instead: the declaration whose type's element it is, or a callback's
+ * parameter. `functions` are the parameters and local variables holding a function that may be null or undefined
+ * both, which value forms decide (`ValueStates.nullish`), each with what it is where its code tells null from undefined.
  */
-export interface NullishSlots { held: Set<ts.Declaration>; fields: Set<ts.Declaration>; refused: [ts.Node, string][] }
+export interface NullishSlots { held: Set<ts.Declaration>; fields: Set<ts.Declaration>; refused: [ts.Node, string, NullishCover?][]; functions: Map<ts.Declaration, string | null> }
+
+/** A refused slot a backend may hold by its value form after all (`ValueStates.nullish`). */
+export interface NullishCover { kind: 'element' | 'value'; slot: ts.Declaration }
 
 export function nullishSlots(checker: ts.TypeChecker, files: readonly ts.SourceFile[], skip: (file: ts.SourceFile) => boolean): NullishSlots {
   const held = new Set<ts.Declaration>(), fields = new Set<ts.Declaration>();
-  const refused: [ts.Node, string][] = [];
-  const refuse = (n: ts.Node, what: string) => { if (!refused.some(([m]) => m === n)) refused.push([n, what]); };
+  const refused: [ts.Node, string, NullishCover?][] = [];
+  const functions = new Map<ts.Declaration, string | null>();
+  const refuse = (n: ts.Node, what: string, cover?: NullishCover) => { if (!refused.some(([m]) => m === n)) refused.push([n, what, cover]); };
+  const callable = (t: ts.Type) => parts(t).filter((x) => !(x.flags & nullish)).every((x) => x.getCallSignatures().length && !x.getProperties().length);
   const parts = (t: ts.Type) => (t.isUnion() ? t.types : [t]);
   const loose = (t: ts.Type) => parts(t).some((x) => x.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown));
   const hasNull = (t: ts.Type) => !loose(t) && parts(t).some((x) => x.flags & ts.TypeFlags.Null);
@@ -1171,6 +1179,7 @@ export function nullishSlots(checker: ts.TypeChecker, files: readonly ts.SourceF
   const hold = (d: ts.Declaration, t: ts.Type | undefined, at: ts.Node = d) => {
     if (!t || !(ts.isFunctionLike(d) ? bothResult(t) : both(t)) || !oneKind(t)) return;
     if (value(t) || (ts.isVariableDeclaration(d) && !parts(t).some((x) => x.getCallSignatures().length) && opaque(d))) held.add(d);
+    else if ((ts.isParameter(d) || ts.isVariableDeclaration(d)) && ts.isIdentifier(d.name) && callable(t)) functions.set(d, observes(d) ? `${NATIVE} (\`${text(t)}\`)` : null);
     else if (ts.isFunctionLike(d) || observes(d)) refuse(at, `${NATIVE} (\`${text(t)}\`)`);
   };
   // Functions whose signature only this program's direct calls see.
@@ -1320,7 +1329,7 @@ export function nullishSlots(checker: ts.TypeChecker, files: readonly ts.SourceF
       if (!given || !both(given) || !oneKind(given)) return;
       const slot = ownDecl ? decl!.parameters[k] : undefined;
       if (slot && held.has(slot) && named(p)) held.add(p);
-      else refuse(p, `a callback parameter that may be null or undefined both (\`${text(given)}\`)`);
+      else refuse(p, `a callback parameter that may be null or undefined both (\`${text(given)}\`)`, named(p) ? { kind: 'value', slot: p } : undefined);
     });
     const ret = ctx.getReturnType();
     if (bothResult(ret) && oneKind(ret) && !isAsync(fn)) {
@@ -1354,7 +1363,7 @@ export function nullishSlots(checker: ts.TypeChecker, files: readonly ts.SourceF
   };
   const checkNested = (n: ts.Node, t: ts.Type | undefined) => {
     const inner = t && nested(t);
-    if (inner) refuse(n, `an array, Map or Set element (or other type argument) that may be null or undefined both (\`${text(inner)}\` in \`${text(t!)}\`)`);
+    if (inner) refuse(n, `an array, Map or Set element (or other type argument) that may be null or undefined both (\`${text(inner)}\` in \`${text(t!)}\`)`, { kind: 'element', slot: n as ts.Declaration });
   };
   for (const f of files) {
     if (f.isDeclarationFile || skip(f)) continue;
@@ -1389,7 +1398,7 @@ export function nullishSlots(checker: ts.TypeChecker, files: readonly ts.SourceF
     };
     scan(f);
   }
-  return { held, fields, refused };
+  return { held, fields, refused, functions };
 }
 
 /**

@@ -139,6 +139,46 @@ public protocol JSValueOfConvertible: AnyObject {
     func jsValueOf() throws -> Any?
 }
 
+// MARK: - Null and undefined told apart
+
+/// A typed slot that may hold undefined, null or a `Wrapped`, where the program tells null from undefined (a
+/// `T | null | undefined` whose code compares it with either). Its nil literal is undefined.
+public enum JSNullish<Wrapped>: ExpressibleByNilLiteral {
+    case undefined
+    case null
+    case value(Wrapped)
+
+    public init(nilLiteral: ()) { self = .undefined }
+
+    /// A typed value whose nil is undefined.
+    public init(_ value: Wrapped?) { self = value.map { .value($0) } ?? .undefined }
+
+    /// A typed value whose nil is null.
+    public init(null value: Wrapped?) { self = value.map { .value($0) } ?? .null }
+
+    /// An untyped value: `jsNull` is null and nil undefined; another value not a `Wrapped` throws the TypeError.
+    public init(any value: Any?) throws {
+        guard let value = jsFlat(value) else { self = .undefined; return }
+        self = value is JSNull ? .null : .value(try jsCastPresent(value, Wrapped.self))
+    }
+
+    /// Its value, with null and undefined both nil.
+    @inline(__always)
+    public var optional: Wrapped? {
+        if case .value(let v) = self { return v }
+        return nil
+    }
+
+    /// As script holds it: null is `jsNull`, undefined nil.
+    public var jsAny: Any? {
+        switch self {
+        case .undefined: return nil
+        case .null: return jsNull
+        case .value(let v): return v
+        }
+    }
+}
+
 // MARK: - Optionals inside Any
 
 protocol JSOptionalProtocol {

@@ -15,6 +15,31 @@ object JSNull {
 
 val jsNull: JSNull get() = JSNull
 
+/**
+ * A typed slot that may hold undefined, null or a `T`, where the program tells null from undefined (a
+ * `T | null | undefined` whose code compares it with either). It holds its value as script does: Kotlin's null is
+ * undefined, `jsNull` null.
+ */
+class JSNullish<out T> private constructor(@JvmField val jsAny: Any?) {
+    /** Its value, with null and undefined both Kotlin's null. */
+    @Suppress("UNCHECKED_CAST")
+    val optional: T? get() = if (jsAny === JSNull) null else jsAny as T?
+
+    companion object {
+        @JvmField val Undefined: JSNullish<Nothing> = JSNullish(null)
+        @JvmField val Null: JSNullish<Nothing> = JSNullish(JSNull)
+
+        /** A typed value whose null is undefined. */
+        fun <T> of(value: T?): JSNullish<T> = if (value == null) Undefined else JSNullish(value)
+
+        /** A typed value whose null is JavaScript's null. */
+        fun <T> ofNull(value: T?): JSNullish<T> = if (value == null) Null else JSNullish(value)
+
+        /** An untyped value. */
+        fun <T> ofAny(value: Any?): JSNullish<T> = if (value == null) Undefined else if (value === JSNull) Null else JSNullish(value)
+    }
+}
+
 /** A field read untyped: null where the object notes the key as set to null (`jsNulls`), else its value. */
 fun jsNullable(value: Any?, nulls: Set<String>?, key: String): Any? = if (value == null && nulls?.contains(key) == true) jsNull else value
 
