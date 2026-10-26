@@ -102,6 +102,9 @@ const ANGULAR_DECORATORS = new Set(['Component', 'Directive', 'Pipe', 'Injectabl
 const METHOD_DECORATORS = new Set(['HostListener']);
 const LIFECYCLE_HOOKS = new Set(['ngOnChanges', 'ngOnInit', 'ngDoCheck', 'ngAfterContentInit', 'ngAfterContentChecked', 'ngAfterViewInit', 'ngAfterViewChecked', 'ngOnDestroy']);
 
+/** A declaration whose members a value's are. */
+type Owner = ts.ClassLikeDeclaration | ts.InterfaceDeclaration | ts.TypeLiteralNode | ts.ObjectLiteralExpression;
+
 export interface FormsOptions {
   /** A library (core) is called by programs this one doesn't contain: its exported and public surface is an entry point. */
   library?: boolean;
@@ -134,6 +137,12 @@ export class Forms {
   private readonly placed = new Map<ts.Expression, Slot[]>();
   /** Values placed where script holds them untyped: a slot of no type, a field or element no type reads, an unknown callee's argument. */
   private readonly placedUntyped = new Set<ts.Expression>();
+  /**
+   * Members script calls by a key the program doesn't spell (`obj[key](…)`): the receiver's declaration (null: an untyped
+   * receiver the program can't trace), the names the key's type allows (null: any), and whether they are statics.
+   */
+  private readonly calledByName: { owner: Owner | null; names: ReadonlySet<string> | null; statics: boolean }[] = [];
+  private readonly classes: ts.ClassLikeDeclaration[] = [];
   private built = false;
   /** Wall-clock milliseconds the program-wide build took. */
   buildMs = 0;
@@ -466,6 +475,7 @@ export class Forms {
     const start = performance.now();
     for (const f of this.files) if (!f.isDeclarationFile) this.visit(f);
     if (this.library) this.openLibrarySurface();
+    this.openCalledByName();
     // Arrays, Maps and Promises are shared storage: wherever one flows, its elements are the same slot.
     for (let changed = true; changed;) {
       changed = false;
@@ -777,6 +787,7 @@ export class Forms {
     }
     if (ts.isArrowFunction(n) || ts.isFunctionExpression(n) || ts.isIdentifier(n) || ts.isPropertyAccessExpression(n)) this.unionFunctionValue(n as ts.Expression);
     if (ts.isCallExpression(n) || ts.isNewExpression(n)) this.placeCall(n);
+    if (ts.isCallExpression(n)) this.placeCallByName(n);
     if (ts.isBinaryExpression(n) && n.operatorToken.kind === ts.SyntaxKind.EqualsToken && ts.isElementAccessExpression(n.left)) {
       const recv = n.left.expression;
       const part: Part = c.isArrayType(c.getNonNullableType(c.getTypeAtLocation(recv))) ? 'element' : 'value';
@@ -848,13 +859,75 @@ export class Forms {
   }
 
   /**
-   * Methods Angular calls by name: an Angular class's lifecycle hooks and `@HostListener` handlers. Its other methods are
-   * called by the program, its templates included. Other decorators (`@CSSType`, `@profile`) register or wrap a class
-   * or method and call nothing; a platform calls a subclass of its class (`extendsNative`).
+   * Members Angular may call: every method and setter of an Angular class but its private ones (lifecycle hooks aside)
+   * and the template glue this compiler writes. Its runtime, forms (`writeValue(null)` of a value accessor registered by a provider), the router
+   * and DI tokens call them where the program can't see. Other decorators (`@CSSType`, `@profile`) register or wrap a
+   * class or method and call nothing; a platform calls a subclass of its class (`extendsNative`).
    */
-  private frameworkCalled(cls: ts.ClassLikeDeclaration, m: ts.MethodDeclaration): boolean {
+  private frameworkCalled(cls: ts.ClassLikeDeclaration, m: ts.MethodDeclaration | ts.SetAccessorDeclaration): boolean {
+    if (isTemplateMethod(m)) return false;
     if (ts.getDecorators(m)?.some((d) => this.angularDecorator(d, METHOD_DECORATORS))) return true;
-    return LIFECYCLE_HOOKS.has(m.name.getText()) && !!ts.getDecorators(cls)?.some((d) => this.angularDecorator(d, ANGULAR_DECORATORS));
+    if (!ts.getDecorators(cls)?.some((d) => this.angularDecorator(d, ANGULAR_DECORATORS))) return false;
+    return LIFECYCLE_HOOKS.has(m.name.getText()) || !(ts.isPrivateIdentifier(m.name) || ts.getCombinedModifierFlags(m) & ts.ModifierFlags.Private);
+  }
+
+  /** A call through a computed key (`this[name](x)`, `obj[k].call(o, x)`): see `calledByName`. */
+  private placeCallByName(call: ts.CallExpression): void {
+    let callee = ts.skipOuterExpressions(call.expression);
+    if (ts.isPropertyAccessExpression(callee) && (callee.name.text === 'call' || callee.name.text === 'apply')) callee = ts.skipOuterExpressions(callee.expression);
+    if (!ts.isElementAccessExpression(callee)) return;
+    const key = ts.skipOuterExpressions(callee.argumentExpression);
+    if (ts.isStringLiteralLike(key) || ts.isNumericLiteral(key)) return;
+    const t = this.checker.getTypeAtLocation(key), parts = t.isUnion() ? t.types : [t];
+    const names = parts.every((x) => x.isStringLiteral()) ? new Set(parts.map((x) => (x as ts.StringLiteralType).value)) : null;
+    for (const { owner, statics } of this.ownersOf(callee.expression)) this.calledByName.push({ owner, names, statics });
+  }
+
+  /**
+   * The declarations whose members a receiver's are: classes (`statics` where it is the class itself), interfaces, type
+   * literals and object literals of the program. An untyped receiver is followed to its variable's initializer
+   * (`const self: any = this`); one that can't be is null.
+   */
+  private ownersOf(e: ts.Expression, depth = 0): { owner: Owner | null; statics: boolean }[] {
+    const c = this.checker, x = ts.skipOuterExpressions(e);
+    let t = c.getNonNullableType(c.getTypeAtLocation(x));
+    if (t.flags & ts.TypeFlags.TypeParameter) t = c.getBaseConstraintOfType(t) ?? t;
+    if (untyped(t)) {
+      const d = ts.isIdentifier(x) ? c.getSymbolAtLocation(x)?.valueDeclaration : undefined;
+      return d && ts.isVariableDeclaration(d) && d.initializer && depth < 4 ? this.ownersOf(d.initializer, depth + 1) : [{ owner: null, statics: false }];
+    }
+    const owners: { owner: Owner; statics: boolean }[] = [];
+    for (const part of t.isUnionOrIntersection() ? t.types : [t]) {
+      for (const d of part.getSymbol()?.declarations ?? []) {
+        if (declarationFile(d)) continue;
+        if (ts.isClassLike(d)) owners.push({ owner: d, statics: part.getConstructSignatures().length > 0 });
+        else if (ts.isInterfaceDeclaration(d) || ts.isTypeLiteralNode(d) || ts.isObjectLiteralExpression(d)) owners.push({ owner: d, statics: false });
+      }
+    }
+    return owners;
+  }
+
+  /**
+   * The parameters of members called by a computed key are entry points: the owner's members the key may name, and a
+   * class's subclasses' (an override is what the call reaches); every non-strict class's where the receiver is untraced.
+   */
+  private openCalledByName(): void {
+    const c = this.checker;
+    const derives = (t: ts.Type, owner: Owner, depth = 0): boolean => depth < 32 && t.isClassOrInterface()
+      && c.getBaseTypes(t).some((b) => !!b.getSymbol()?.declarations?.includes(owner as ts.Declaration) || derives(b, owner, depth + 1));
+    for (const { owner, names, statics } of this.calledByName) {
+      const owners: Owner[] = owner === null ? this.classes.filter((x) => !this.strict(x))
+        : ts.isClassLike(owner) ? [owner, ...this.classes.filter((x) => x !== owner && derives(c.getTypeAtLocation(x.name ?? x), owner))] : [owner];
+      for (const o of owners) {
+        for (const m of ts.isObjectLiteralExpression(o) ? o.properties : o.members) {
+          if (!m.name || hasStatic(m) !== statics) continue;
+          const name = literalKey(m.name, c);
+          if (name === null || (names && !names.has(name))) continue;
+          const fn = ts.isPropertyAssignment(m) ? this.functionDeclarationOf(m.initializer) : ts.isMethodDeclaration(m) || ts.isMethodSignature(m) ? m : null;
+          if (fn) this.openParameters(fn);
+        }
+      }
+    }
   }
 
   private angularDecorator(d: ts.Decorator, names: ReadonlySet<string>): boolean {
@@ -1133,7 +1206,8 @@ export class Forms {
     const bases = [...(type.isClassOrInterface() ? c.getBaseTypes(type) : []),
       ...(cls.heritageClauses ?? []).filter((h) => h.token === ts.SyntaxKind.ImplementsKeyword).flatMap((h) => h.types.map((x) => c.getTypeAtLocation(x)))];
     const native = type.isClassOrInterface() && this.extendsNative(type);
-    for (const m of cls.members) if (ts.isMethodDeclaration(m) && m.body && !hasStatic(m) && (native || this.frameworkCalled(cls, m))) this.openParameters(m);
+    this.classes.push(cls);
+    for (const m of cls.members) if ((ts.isMethodDeclaration(m) || ts.isSetAccessorDeclaration(m)) && m.body && !hasStatic(m) && (native || this.frameworkCalled(cls, m))) this.openParameters(m);
     for (const m of cls.members) {
       if (hasStatic(m) || !m.name || !(ts.isIdentifier(m.name) || ts.isPrivateIdentifier(m.name) || ts.isStringLiteral(m.name))) continue;
       const name = m.name.text;
@@ -1319,11 +1393,16 @@ export class Forms {
     return withMissing(guarded(e));
   }
 
-  /** A library's value: its declared type node, in strict code the checker's type there, and a platform binding's nil. */
+  /**
+   * A library's value: its declared type node, in strict code the checker's type there, and a platform binding's nil.
+   * Read by a non-strict app, a kit's or plugin's typed object (not JavaScript's or a platform's) may be empty: its
+   * typings, written without strictNullChecks, say nothing of null, and its binding holds nil for one.
+   */
   private libraryStates(e: ts.Expression, d: ts.Declaration): number {
     let s = typeNodeStates((d as { type?: ts.TypeNode }).type) | (this.nativeNil(d) ? N : 0);
     if ((d as { questionToken?: ts.Node }).questionToken && !ts.isMethodDeclaration(d) && !ts.isMethodSignature(d)) s |= U;
     if (this.strict(e)) s |= typeStates(this.checker.getTypeAtLocation(e));
+    else if (!this.library && !LIB_FILE.test(d.getSourceFile().fileName) && !this.native(d) && objectValue(this.checker.getTypeAtLocation(e))) s |= U | N;
     return s;
   }
 
@@ -1367,6 +1446,12 @@ function shapes(checker: ts.TypeChecker, t: ts.Type): ts.Type[] {
     const sym = m.aliasSymbol ?? m.getSymbol();
     return !!sym && !!(sym.flags & (ts.SymbolFlags.Interface | ts.SymbolFlags.TypeLiteral)) && !(sym.flags & ts.SymbolFlags.Class);
   });
+}
+
+/** A value of an object type: not a string, number, boolean, bigint, symbol or enum, which a binding holds as a value. */
+function objectValue(t: ts.Type): boolean {
+  const parts = (t.isUnion() ? t.types : [t]).filter((x) => !(x.flags & (ts.TypeFlags.Undefined | ts.TypeFlags.Null | ts.TypeFlags.Void)));
+  return parts.length > 0 && parts.every((x) => !!(x.flags & (ts.TypeFlags.Object | ts.TypeFlags.NonPrimitive | ts.TypeFlags.TypeParameter)) && !x.getCallSignatures().length);
 }
 
 /** The replacer function type `String.prototype.replace` and `replaceAll` take. */

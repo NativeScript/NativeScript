@@ -45,6 +45,10 @@ import ts from 'typescript';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const modulesDir = process.env.NS_DIFF_MODULES ?? resolve(here, '../node_modules');
+// The host runtimes the native checks link; a directory of this run's own unless given, as concurrent runs would rebuild
+// a shared one under each other.
+const nativeBuild = process.env.NS_DIFF_BUILD ?? mkdtempSync(join(tmpdir(), 'ns-release-checks-build-'));
+if (!process.env.NS_DIFF_BUILD) process.on('exit', () => rmSync(nativeBuild, { recursive: true, force: true }));
 let failed = 0;
 const check = (ok: boolean, what: string) => {
   console.log(`${ok ? '✓' : '✗'} ${what}`);
@@ -1660,10 +1664,7 @@ export const restoring = isAngularHmrRestoringRoute();
 
 (() => {
   // kit-android's runtime on the host JVM, for what no diff case reaches: the harness translates no Java class reference.
-  const build = process.env.NS_DIFF_BUILD ?? join(tmpdir(), 'ns-native-diff');
-  const dir = join(build, 'release-checks-java');
-  rmSync(dir, { recursive: true, force: true });
-  mkdirSync(dir, { recursive: true });
+  const dir = mkdtempSync(join(nativeBuild, 'release-checks-java-'));
   writeFileSync(join(dir, 'Main.kt'), `import org.nativescript.kit.*
 class Holder { @JvmField var drawable: Any? = null }
 fun main() {
@@ -1676,11 +1677,13 @@ fun main() {
 `);
   let got: string;
   try {
-    const runtime = buildKotlinRuntime(build);
+    const runtime = buildKotlinRuntime(nativeBuild);
     const errors = kotlinc([join(dir, 'Main.kt')], join(dir, 'classes'), [runtime]);
     got = errors ? errors[0] : spawnSync('java', ['-cp', [join(dir, 'classes'), runtime, kotlinStdlib()].join(':'), 'MainKt'], { encoding: 'utf8' }).stdout.trim();
   } catch (e) {
     got = (e as Error).message.split('\n')[0];
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
   }
   const expected = 'true true a true true true';
   check(got === expected, "a Java method's or field's null reads as script's null on Android, a void method's result as undefined");
@@ -1690,10 +1693,8 @@ fun main() {
 (() => {
   // core's addDelegateHandler: a handler typed by the delegate method (`Delegate[K]`), run by `handler.apply` and its
   // result read as the method's native return type. Node has no native enums, so no diff case reaches it.
-  const build = process.env.NS_DIFF_BUILD ?? join(tmpdir(), 'ns-native-diff');
-  const dir = join(build, 'release-checks-native-results');
-  rmSync(dir, { recursive: true, force: true });
-  mkdirSync(join(dir, 'swift'), { recursive: true });
+  const dir = mkdtempSync(join(nativeBuild, 'release-checks-native-results-'));
+  mkdirSync(join(dir, 'swift'));
   const file = join(dir, 'app.ios.ts');
   writeFileSync(file, `interface Hooks {
   options(text: string, other: string | null): NSStringCompareOptions;
@@ -1724,14 +1725,16 @@ console.log(typeof both, both, both | 8, typeof one, one, typeof order, order, t
 `);
   let got: string;
   try {
-    buildSwiftRuntime(build, '-Onone');
+    buildSwiftRuntime(nativeBuild, '-Onone');
     const out = join(dir, 'swift');
     const modules = translateSwift([file], out);
     writeFileSync(join(out, 'main.swift'), swiftMain(modules));
-    const errors = swiftc(readdirSync(out).map((f) => join(out, f)), join(dir, 'main'), build, '-Onone');
+    const errors = swiftc(readdirSync(out).map((f) => join(out, f)), join(dir, 'main'), nativeBuild, '-Onone');
     got = errors ? errors[0] : spawnSync(join(dir, 'main'), { encoding: 'utf8' }).stdout.trim();
   } catch (e) {
     got = (e as Error).message.split('\n')[0];
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
   }
   const expected = 'number 1 9 number 4 number 1 number 65';
   check(got === expected, 'a native option set or enum a typed handler gives script, through apply or held untyped, is its number');
