@@ -5,6 +5,7 @@ import { AsyncLowering, usedBefore, type AsyncCtx, type AsyncSyntax, type AsyncT
 import { isAsync, isStatic } from './throws.ts';
 import { assignedMembers } from './sharing.ts';
 import { assignedValues, heldDowncasts, openSpreadType, definitelyAssignedFields, forwardedSetter, initializedNull, intersectionAliasMembers, nullSetFields, nullishSlots, type NullishSlots, isRegExpProtocol, assertedPattern, unsupportedPattern, intlConstructor, isObjectToStringCall, isStringRaw, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, classesHeldUntyped, LooseSlots, originOf, ownSlot, implementedInterfaceDeclarations, slotOf, slotType, type TrustScope, scriptCalledFunction, literalPattern, patternGroups, unsetGroupTyping, type UnsetGroupTyping, admitsUndefined, classKeyPlan, onlyUndefined, keysDefinedUntyped, KOTLIN_NATIVE_TYPES, runtimeTypeName, definesRunTimeKey, nothingGiven, readKeyOf, reassigned, givenBy, onlyNullOrPresent } from './lang.ts';
+import { shadowForms } from './forms-shadow.ts';
 import { isCoreDeclaration } from './core.ts';
 import { balanced, nonVirtualName } from './swift.ts';
 import type { Properties } from './properties.ts';
@@ -446,6 +447,7 @@ export class Translator implements AsyncTranslator {
     this.assignFields = options.assignFields ?? false;
     this.components = components;
     this.sourceFiles = files;
+    if (process.env.NS_FORMS_SHADOW) shadowForms(this, 'kotlin');
     this.pluginFiles = new Set(options.pluginFiles ?? []);
     this.reach = options.reach ?? null;
     this.properties = options.properties ?? null;
