@@ -1,5 +1,6 @@
 import ts from 'typescript';
 import { heldDowncasts, implementedInterfaceDeclarations, LooseSlots, nothingGiven, nullishSlots, nullSetFields, originOf, ownSlot, scriptCalledFunction, slotOf, slotType, type NullishSlots, type TrustScope } from './lang.ts';
+import { Forms, representation } from './forms.ts';
 import { isAsync, isStatic } from './throws.ts';
 import { shadowForms } from './forms-shadow.ts';
 
@@ -79,6 +80,8 @@ export class ValueStates {
   /** A non-strict app's variables given only a null result (`nullResult`) or a value: their empty value is null. The backends note them as they declare them. */
   readonly nullVars = new Set<ts.Symbol>();
   private nullishSlotSet?: NullishSlots;
+  private nullishHeldSet = new Set<ts.Declaration>();
+  private formSet?: Forms;
   private downcastSet?: ReturnType<typeof heldDowncasts>;
   private looseSlotSet: LooseSlots | null = null;
   private implementedInterfaceSet: Set<ts.Declaration> | null = null;
@@ -112,7 +115,45 @@ export class ValueStates {
    */
   nullish(): NullishSlots {
     const b = this.backend;
-    return this.nullishSlotSet ??= b.lenient || b.library ? { held: new Set(), fields: new Set(), refused: [] } : nullishSlots(b.checker, b.sourceFiles, (f) => b.pluginFiles.has(f.fileName));
+    if (this.nullishSlotSet) return this.nullishSlotSet;
+    const found: NullishSlots = b.lenient || b.library ? { held: new Set(), fields: new Set(), refused: [], functions: new Map() } : nullishSlots(b.checker, b.sourceFiles, (f) => b.pluginFiles.has(f.fileName));
+    // An element or callback parameter today's analysis can't hold, which nothing tells null from undefined in: one nil,
+    // read as undefined.
+    found.refused = found.refused.filter(([, , cover]) => {
+      if (!cover) return true;
+      const form = cover.kind === 'element' ? this.forms().formOfSlot(cover.slot).element : this.forms().formOfSlot(cover.slot);
+      return !form || !['present', 'undefined', 'null'].includes(representation(form));
+    });
+    // A function slot: `JSNullish` where null and undefined are told apart, else one nil read as undefined. One that may
+    // hold another value too is refused where its own code compares it.
+    for (const [d, what] of found.functions) {
+      const shown = representation(this.forms().formOfSlot(d));
+      if (shown === 'nullish') this.nullishHeldSet.add(d);
+      else if (shown === 'foreign' && what) found.refused.push([d, what]);
+    }
+    return this.nullishSlotSet = found;
+  }
+
+  /** The program's value forms (review/DESIGN-VALUE-MODEL.md §2), built when first asked. */
+  forms(): Forms {
+    const b = this.backend;
+    return this.formSet ??= new Forms(b.sourceFiles, b.checker, (f) => b.trust.strictFile(f), { library: !!b.library, native: (d) => b.trust.nativeDeclaration(d), nativeNil: (d) => !!b.native?.holdsNil?.(d) });
+  }
+
+  /**
+   * A parameter or variable holding a function that may be null or undefined both, which the program tells apart: held
+   * as `JSNullish<F>`, read as `F?` except where null and undefined are told apart or kept.
+   */
+  nullishHeld(d: ts.Node): d is ts.ParameterDeclaration | ts.VariableDeclaration {
+    return this.nullish() && this.nullishHeldSet.has(d as ts.Declaration);
+  }
+
+  /** A read of a `nullishHeld` slot whose value may still be null or undefined: the slot's declaration. */
+  nullishRead(e: ts.Expression): ts.ParameterDeclaration | ts.VariableDeclaration | null {
+    const bare = ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses);
+    if (!ts.isIdentifier(bare) || this.backend.library || this.backend.lenient) return null;
+    const d = this.checker.getSymbolAtLocation(bare)?.valueDeclaration;
+    return d && this.nullishHeld(d) ? d : null;
   }
 
   heldCasts(): ReturnType<typeof heldDowncasts> {
@@ -185,7 +226,7 @@ export class ValueStates {
 
   /** A typed value whose untyped read tells null from undefined, where its optional alone does not. */
   nullDistinct(e: ts.Expression): boolean {
-    return this.nilIsNull(e) || !!this.nullableEntry(e, () => this.backend.untypedCode(e));
+    return this.nilIsNull(e) || !!this.nullishRead(e) || !!this.nullableEntry(e, () => this.backend.untypedCode(e));
   }
 
   /** A member that may hold null or undefined both, by its type or as `nullishSlots` finds; written, one that may hold null. */

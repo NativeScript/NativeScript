@@ -105,6 +105,7 @@ const DECIDERS: Record<string, { answer: Answer; old: (r: unknown) => boolean }>
   mayBeNull: { answer: beyondDeclared('null', 'undefined'), old: Boolean },
   givenUndefined: { answer: beyondDeclared('undefined'), old: Boolean },
   // Today's loose slots are strings, numbers and booleans: other values are held by reference, untyped where they must be.
+  nullishHeld: { answer: (f, n) => declaration(n, (x) => representation(x) === 'nullish')(f), old: Boolean },
   looseDeclaration: { answer: (f, n) => declaration(n, (x) => x.foreign && !!(x.type.flags & (ts.TypeFlags.StringLike | ts.TypeFlags.NumberLike | ts.TypeFlags.BooleanLike)))(f), old: Boolean },
 };
 
