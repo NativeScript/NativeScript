@@ -63,9 +63,9 @@ export interface StateRules {
   readonly looseReads: boolean;
   /**
    * Kotlin: a parameter's checks throw for a null its type leaves out, so `mayBeNull` counts every way an empty value
-   * reaches one, with these analyses of the backend's; and a string an unset regexp group may leave undefined is loose.
+   * reaches one; and a string an unset regexp group may leave undefined is loose.
    */
-  readonly checkedParameters?: { nullGiven(p: ts.ParameterDeclaration): boolean; truthTested(name: ts.Identifier): boolean; unsetElement(d: ts.Node): boolean };
+  readonly checkedParameters?: { unsetElement(d: ts.Node): boolean };
 }
 
 /** Whether a type admits null but not undefined. */
@@ -439,20 +439,32 @@ export class ValueStates {
   }
 
   /**
-   * A parameter whose native type takes an empty value its declared type leaves out. A plugin's code is checked without
-   * strictNullChecks: callers pass null and undefined for an object parameter (core's `valueChanged(target, oldValue,
-   * newValue)` starts from undefined; ui-drawer applies a closing drawer's data with no side).
+   * A parameter whose native type takes an empty value its declared type leaves out. A library's or plugin's code is
+   * checked without strictNullChecks: callers pass null and undefined for an object parameter (core's
+   * `valueChanged(target, oldValue, newValue)` starts from undefined; ui-drawer applies a closing drawer's data with no
+   * side).
    */
   mayBeNull(p: ts.ParameterDeclaration): boolean {
     const b = this.backend, checked = b.rules.checkedParameters;
     if (p.dotDotDotToken || !ts.isIdentifier(p.name)) return false;
-    if (!checked) return (this.plugin(p) || b.lenientApp) && b.nullableParameter(b.typeOf(p.name));
-    if (this.looseDeclaration(p)) return true;
-    if (b.lenientApp && !b.library && checked.nullGiven(p)) return true;
     const t = b.typeOf(p.name);
-    if (this.primitive(t) && this.undefinedParameter(p)) return true;
-    // An app checked without strictNullChecks: a string parameter its function tests (`if (state)`) is one callers may leave out.
-    if (b.lenientApp && !b.library && !p.getSourceFile().isDeclarationFile && t === 'String' && ts.isFunctionDeclaration(p.parent) && checked.truthTested(p.name)) return true;
-    return this.plugin(p) && b.nullableParameter(t);
+    if (checked && (this.looseDeclaration(p) || (this.primitive(t) && this.undefinedParameter(p)))) return true;
+    // An app's parameter holds what its form holds beyond its declared type: its callers' values, or what any caller
+    // may give where the program can't see them all (§2.3a). Swift holds a string, number or boolean given undefined
+    // by its own rules (`looseSlots`, `scriptCalledParameter`).
+    if (this.appParameter(p)) return (!!checked || b.nullableParameter(t)) && this.givenEmpty(p);
+    return (this.plugin(p) || (!checked && b.lenientApp)) && b.nullableParameter(t);
+  }
+
+  /** A parameter of the app's own code: a library's and a plugin's are entry points, decided with the kit's surface. */
+  private appParameter(p: ts.ParameterDeclaration): boolean {
+    const b = this.backend;
+    return !b.lenient && !b.library && !p.getSourceFile().isDeclarationFile && !this.plugin(p);
+  }
+
+  /** A parameter whose form holds null or undefined where its declared type admits neither. */
+  private givenEmpty(p: ts.ParameterDeclaration): boolean {
+    const declared = this.forms().declaredForm(p), form = this.forms().formOfSlot(p);
+    return !declared.foreign && ((form.null && !declared.null) || (form.undefined && !declared.undefined));
   }
 }
