@@ -1,6 +1,6 @@
 import ts from 'typescript';
 import { heldDowncasts, implementedInterfaceDeclarations, LooseSlots, nothingGiven, nullishSlots, nullSetFields, originOf, ownSlot, scriptCalledFunction, slotOf, slotType, type NullishSlots, type TrustScope } from './lang.ts';
-import { Forms, isGeneric, representation } from './forms.ts';
+import { type Form, Forms, isGeneric, representation } from './forms.ts';
 import { isAsync, isStatic } from './throws.ts';
 import { shadowForms } from './forms-shadow.ts';
 
@@ -581,6 +581,20 @@ export class ValueStates {
     return found;
   }
   private readonly widenedParams = new Map<ts.ParameterDeclaration, boolean>();
+
+  /**
+   * An untyped value asserted to a concrete type (`x as T`, `JSON.parse(s) as T`) in the app's own code: the form the
+   * value enters as, for the backend's checked convert. Null where the assertion is no such entry, or where the type of
+   * what it enters is tested, which §2.3b M6 holds untyped rather than checked.
+   */
+  foreignEntry(e: ts.AsExpression | ts.TypeAssertion): Form | null {
+    const b = this.backend, untyped = ts.TypeFlags.Any | ts.TypeFlags.Unknown;
+    if (b.library || this.plugin(e) || !(this.checker.getTypeAtLocation(e.expression).flags & untyped)) return null;
+    const t = this.checker.getTypeAtLocation(e);
+    if (t.flags & untyped || isGeneric(t)) return null;
+    const form = this.forms().formOf(e);
+    return form.foreign && !form.typeObserved ? form : null;
+  }
 
   /**
    * A parameter of the app's own code: a library's and a plugin's are entry points, decided with the kit's surface. Lenient
