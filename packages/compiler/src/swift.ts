@@ -3942,6 +3942,8 @@ ${members.join('\n')}
    * rebound implicitly unwrapped in the body (`paramPrelude`), which reads it as other such parameters are read.
    */
   private optionalWidened(p: ts.ParameterDeclaration): boolean {
+    // A template method's loop item, whose default only types it, shares no signature: held implicitly unwrapped.
+    if (p.initializer && this.templateParams) return false;
     return !this.lenient && !p.questionToken && ts.isIdentifier(p.name) && this.states.widened(p) && !isOptional(this.typeOf(p.name)) && this.typeOf(p.name) !== 'Any?';
   }
 
@@ -11159,11 +11161,11 @@ ${members.join('\n')}
         const el = this.typeOf(target).slice(1, -1).split(', ');
         const element = el.every((x) => x === el[0]) ? el[0] : 'Any?';
         const tmp = this.fresh('__tuple');
-        const value = this.expr(target);
+        const value = this.expr(target), valueTry = this.tryPrefix(target);
         this.subst.set(target, `JSArray<${element}>([${Array.from({ length: n }, (_, k) => `${tmp}.${k}`).join(', ')}])`);
         try {
           const tr = this.tryPrefix(e);
-          return `{ () ${tr ? 'throws ' : ''}-> ${this.typeOf(e)} in let ${tmp}: ${t} = ${value}; return ${tr}${this.arrayMethod(method, target, e, '')} }()`;
+          return `{ () ${tr || valueTry ? 'throws ' : ''}-> ${this.typeOf(e)} in let ${tmp}: ${t} = ${valueTry}${value}; return ${tr}${this.arrayMethod(method, target, e, '')} }()`;
         } finally { this.subst.delete(target); }
       }
       // `n?.toString()`, `s?.trim().split(',')`: the method on the value when there is one.
