@@ -115,7 +115,8 @@ export class AndroidNativeAPI implements KotlinNative {
         const supers = this.classpath.supertypes(cls.name);
         if (ts.isPropertyDeclaration(member)) {
           const f = supers.flatMap((c) => c.fields).find((x) => x.name === name.text && !!(x.access & ACC_STATIC) === isStatic);
-          if (f) return !primitive(f.descriptor) && !f.nonNull;
+          // A static final field is set once, as its class loads: a constant or a platform singleton, never null in practice.
+          if (f) return !primitive(f.descriptor) && !f.nonNull && !(isStatic && f.access & ACC_FINAL);
         } else if (ts.isMethodDeclaration(member)) {
           const arity = member.parameters.length;
           const found = supers.flatMap((c) => c.methods).filter((m) => m.name === name.text && !!(m.access & ACC_STATIC) === isStatic).map((m) => ({ m, ...methodTypes(m.descriptor) })).filter((c) => c.params.length === arity);

@@ -27,13 +27,20 @@ const member = (forms: Forms, n: ts.Node, checker: ts.TypeChecker) => {
  */
 const entry: Answer = (forms, n, checker) => {
   const x = ts.isExpression(n) ? ts.skipOuterExpressions(n) : n;
-  if (ts.isElementAccessExpression(x)) return !!forms.formOf(x.expression).element?.null;
-  if (ts.isCallExpression(x) && ts.isPropertyAccessExpression(x.expression) && x.expression.name.text === 'get') return !!forms.formOf(x.expression.expression).element?.null;
+  const element = (e: ts.Expression) => { const f = forms.formOf(e).element; return !!f && nilMayBeNull(f); };
+  if (ts.isElementAccessExpression(x)) return element(x.expression);
+  if (ts.isCallExpression(x) && ts.isPropertyAccessExpression(x.expression) && x.expression.name.text === 'get') return element(x.expression.expression);
   if (!ts.isPropertyAccessExpression(x)) return null;
   const d = checker.getSymbolAtLocation(x.name)?.valueDeclaration;
   const form = d && isSlotDeclaration(d) ? forms.formOfSlot(d) : forms.formOf(x);
-  return form.null && !form.foreign;
+  return nilMayBeNull(form);
 };
+
+/** A typed form whose nil may be null: it holds null alone, or null and undefined apart. */
+function nilMayBeNull(f: Form): boolean {
+  const r = representation(f);
+  return r === 'null' || r === 'nullish';
+}
 
 /** A parameter's states beyond what its declared type admits, which its native type then must hold too. */
 const beyondDeclared = (...states: ('null' | 'undefined')[]): Answer => (forms, n) => {
@@ -53,9 +60,12 @@ function heldForm(forms: Forms, n: ts.Expression, checker: ts.TypeChecker): Form
   return d && isSlotDeclaration(d) && !ts.isFunctionLike(d) && !d.getSourceFile().isDeclarationFile ? forms.formOfSlot(d) : forms.formOf(n);
 }
 
-/** Whether a form holds both empty states, foreign or not: today's deciders ask that of untyped slots as well. */
+/**
+ * Whether a form holds both empty states apart, foreign or not: today's deciders ask that of untyped slots as well. Both
+ * unobserved are one empty state (§2.3b M1').
+ */
 function both(f: Form): boolean {
-  return f.undefined && f.null;
+  return f.undefined && f.null && f.observed;
 }
 
 /** Values of more than one kind (`number | string`, a function or an object): held untyped already, whatever their empty states. */
@@ -78,7 +88,8 @@ const heldUntyped: Answer = (forms, n, checker) => {
 const nilIs = (state: 'null' | 'undefined'): Answer => (forms, n, checker) => {
   if (!ts.isExpression(n)) return null;
   const held = heldForm(forms, n, checker), here = forms.formOf(n);
-  return representation(held) === state && here[state];
+  // One empty state for both: its nil is undefined wherever the value there may be empty.
+  return representation(held) === state && (here[state] || (state === 'undefined' && here.null));
 };
 
 const DECIDERS: Record<string, { answer: Answer; old: (r: unknown) => boolean }> = {
@@ -132,7 +143,7 @@ export function shadowForms(states: ValueStates): void {
       forms = null;
       throw (failed = e as Error);
     }
-    appendFileSync(out, JSON.stringify({ timing: backend, ms: Math.round(forms.buildMs), files: translator.sourceFiles.filter((f) => !f.isDeclarationFile).length, library: !!translator.library }) + '\n');
+    appendFileSync(out, JSON.stringify({ timing: backend, ms: Math.round(forms.buildMs), files: translator.sourceFiles.filter((f) => !f.isDeclarationFile).length, library: !!translator.library, ...forms.bothStates() }) + '\n');
     return forms;
   };
   const seen = new Set<string>();
@@ -159,7 +170,7 @@ export function shadowForms(states: ValueStates): void {
       try {
         form = moot(node) ? null : answer();
         const f = ts.isExpression(node) ? formsOf().formOf(node) : isSlotDeclaration(node) ? formsOf().formOfSlot(node) : null;
-        if (f) states = (f.undefined ? 'U' : '') + (f.null ? 'N' : '') + (f.hole ? 'H' : '') + (f.foreign ? 'F' : '') + (f.element ? `[${(f.element.undefined ? 'U' : '') + (f.element.null ? 'N' : '') + (f.element.foreign ? 'F' : '')}]` : '');
+        if (f) states = (f.undefined ? 'U' : '') + (f.null ? 'N' : '') + (f.hole ? 'H' : '') + (f.foreign ? 'F' : '') + (f.observed ? 'o' : '') + (f.element ? `[${(f.element.undefined ? 'U' : '') + (f.element.null ? 'N' : '') + (f.element.foreign ? 'F' : '')}]` : '');
       } catch (e) {
         error = (e as Error).message.slice(0, 200);
       }
