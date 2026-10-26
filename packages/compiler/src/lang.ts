@@ -508,7 +508,13 @@ export interface TrustScope {
   looseSlot?(d: ts.Declaration): boolean;
 }
 
-const LIB_FILE = /[\\/]typescript[\\/]lib[\\/]|[\\/]lib\.[\w.]*\.d\.ts$/;
+/** TypeScript's own declarations of JavaScript's built-ins. */
+export const LIB_FILE = /[\\/]typescript[\\/]lib[\\/]|[\\/]lib\.[\w.]*\.d\.ts$/;
+
+/** A method angular.ts adds to a component for its template: a binding's value (`$b3`) or a handler (`$e4`). */
+export function isTemplateMethod(m: ts.Node): boolean {
+  return ts.isMethodDeclaration(m) && /^\$[be]\d+$/.test(m.name.getText());
+}
 
 /** Where a value's type comes from when TypeScript cannot prove it; null when it can. */
 export function originOf(e: ts.Expression, scope: TrustScope): Origin | null {
@@ -1625,20 +1631,7 @@ function missingAndNull(checker: ts.TypeChecker, files: readonly ts.SourceFile[]
     }
     return 0;
   };
-  // A body whose end a call may reach returns undefined there.
-  const ends = (st: ts.Statement | undefined): boolean => {
-    if (!st) return false;
-    if (ts.isReturnStatement(st) || ts.isThrowStatement(st)) return true;
-    if (ts.isBlock(st)) return ends(st.statements[st.statements.length - 1]);
-    if (ts.isIfStatement(st)) return ends(st.thenStatement) && ends(st.elseStatement);
-    if (ts.isTryStatement(st)) return (!!st.finallyBlock && ends(st.finallyBlock)) || (ends(st.tryBlock) && (!st.catchClause || ends(st.catchClause.block)));
-    if (ts.isSwitchStatement(st)) {
-      const clauses = st.caseBlock.clauses;
-      return clauses.some(ts.isDefaultClause) && clauses.every((c, k) => (c.statements.length ? ends(c.statements[c.statements.length - 1]) : k < clauses.length - 1));
-    }
-    return false;
-  };
-  const fallsThrough = (fn: ts.FunctionLikeDeclaration) => !fn.body || (ts.isBlock(fn.body) && !ends(fn.body));
+  const fallsThrough = (fn: ts.FunctionLikeDeclaration) => !fn.body || (ts.isBlock(fn.body) && !alwaysEnds(fn.body));
   for (let changed = true; changed;) {
     changed = false;
     for (const [d, list] of given) {
@@ -1656,6 +1649,20 @@ function missingAndNull(checker: ts.TypeChecker, files: readonly ts.SourceFile[]
       if (mask === (NULL | MISSING)) { held.add(d); changed = true; }
     }
   }
+}
+
+/** Whether a statement always returns or throws: a body whose end it isn't may give undefined there. */
+export function alwaysEnds(st: ts.Statement | undefined): boolean {
+  if (!st) return false;
+  if (ts.isReturnStatement(st) || ts.isThrowStatement(st)) return true;
+  if (ts.isBlock(st)) return alwaysEnds(st.statements[st.statements.length - 1]);
+  if (ts.isIfStatement(st)) return alwaysEnds(st.thenStatement) && alwaysEnds(st.elseStatement);
+  if (ts.isTryStatement(st)) return (!!st.finallyBlock && alwaysEnds(st.finallyBlock)) || (alwaysEnds(st.tryBlock) && (!st.catchClause || alwaysEnds(st.catchClause.block)));
+  if (ts.isSwitchStatement(st)) {
+    const clauses = st.caseBlock.clauses;
+    return clauses.some(ts.isDefaultClause) && clauses.every((c, k) => (c.statements.length ? alwaysEnds(c.statements[c.statements.length - 1]) : k < clauses.length - 1));
+  }
+  return false;
 }
 
 /**
