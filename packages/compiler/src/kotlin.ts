@@ -136,6 +136,11 @@ function escapeText(text: string): string {
   });
 }
 
+/** Code for a branch of an `if` expression: Kotlin reads a leading `{` there as a block, not as a lambda. */
+function branch(code: string): string {
+  return code.startsWith('{') ? `(${code})` : code;
+}
+
 /** `T?`, keeping an already nullable type and parenthesizing a function type. */
 export function optionalType(t: string): string {
   if ((t.endsWith('?') && !isFunctionType(t)) || t === 'Nothing') return t;
@@ -2485,7 +2490,7 @@ export class Translator implements AsyncTranslator {
         const pt = this.typeOf(p.name);
         const declared = p.questionToken && !p.initializer ? optionalType(pt) : pt;
         const value = p.dotDotDotToken ? `JSArray(__arguments.storage.drop(${k}).map { ${this.fromAnyCode('it', pt.replace(/^JSArray<(.*)>$/, '$1'), true)} }.toMutableList())`
-          : p.initializer ? `(if (${arg} == null) ${this.coerce(p.initializer, pt)} else ${this.fromAnyCode(arg, pt, true)})`
+          : p.initializer ? `(if (${arg} == null) ${branch(this.coerce(p.initializer, pt))} else ${this.fromAnyCode(arg, pt, true)})`
           : this.fromAnyCode(arg, declared, true);
         lines.push(`${i}${assigned ? 'var' : 'val'} ${ident(p.name.text)}: ${declared} = ${value}`);
       });
@@ -6042,7 +6047,7 @@ export class Translator implements AsyncTranslator {
     if (ts.isConditionalExpression(bare)) {
       const fixed = this.staticTruth(bare.condition);
       if (fixed !== undefined) return this.coerce(fixed ? bare.whenTrue : bare.whenFalse, target);
-      return `(if (${this.cond(bare.condition)}) ${this.coerce(bare.whenTrue, target)} else ${this.coerce(bare.whenFalse, target)})`;
+      return `(if (${this.cond(bare.condition)}) ${branch(this.coerce(bare.whenTrue, target))} else ${branch(this.coerce(bare.whenFalse, target))})`;
     }
     if (this.typeOf(e) === 'Any?') return this.nullishOfAny(this.expr(e), into);
     const entry = this.states.nullishElementRead(e) ? this.coerce(e, 'Any?') : this.states.nullableEntry(e, () => this.coerceTyped(e, 'Any?'));
@@ -6186,7 +6191,7 @@ export class Translator implements AsyncTranslator {
     // A tuple (a Kotlin Pair) where an array goes: an array of its elements; a conditional's branches each so.
     const array = /^JSArray<(.*)>\??$/.exec(target);
     if (!this.library && array && ts.isConditionalExpression(e) && [e.whenTrue, e.whenFalse].some((x) => /^(Pair|Triple)</.test(this.typeOf(x)))) {
-      return `(if (${this.cond(e.condition)}) ${this.coerce(e.whenTrue, target)} else ${this.coerce(e.whenFalse, target)})`;
+      return `(if (${this.cond(e.condition)}) ${branch(this.coerce(e.whenTrue, target))} else ${branch(this.coerce(e.whenFalse, target))})`;
     }
     if (!this.library && array && /^(Pair|Triple)</.test(source)) {
       const parts = source.startsWith('Triple') ? ['first', 'second', 'third'] : ['first', 'second'];
@@ -6195,7 +6200,7 @@ export class Translator implements AsyncTranslator {
     // Library mode and non-strict apps: each branch where the slot goes, as Kotlin types the `if` by its branches; a nullable
     // string, number or boolean slot (`scale(): number` returning `c ? 2 : null`) takes a missing branch as it is.
     if ((this.library || this.lenientApp) && ts.isConditionalExpression(e) && (isFunctionType(target.replace(/^\((.*)\)\?$/, '$1')) || ['String?', 'Double?', 'Boolean?'].includes(target))) {
-      return `(if (${this.cond(e.condition)}) ${this.coerce(e.whenTrue, target)} else ${this.coerce(e.whenFalse, target)})`;
+      return `(if (${this.cond(e.condition)}) ${branch(this.coerce(e.whenTrue, target))} else ${branch(this.coerce(e.whenFalse, target))})`;
     }
     // Lenient code: `a ?? b` where `b` may be unset itself, read as the type says.
     if (this.lenient && ['String', 'Double', 'Boolean'].includes(target) && ts.isBinaryExpression(e) && e.operatorToken.kind === ts.SyntaxKind.QuestionQuestionToken) return this.library ? this.fromAnyCode(this.expr(e), target, true) : this.undefinedAs(this.expr(e), target);
@@ -6263,7 +6268,7 @@ export class Translator implements AsyncTranslator {
       // Library mode: `a || b` held untyped: either operand as it is.
       if (this.library && ts.isBinaryExpression(bare) && [ts.SyntaxKind.BarBarToken, ts.SyntaxKind.AmpersandAmpersandToken].includes(bare.operatorToken.kind) && this.typeOf(bare) !== 'Any?') {
         const v = this.fresh('__v');
-        const [l, r] = [this.coerce(bare.left, 'Any?'), this.coerce(bare.right, 'Any?')];
+        const [l, r] = [this.coerce(bare.left, 'Any?'), branch(this.coerce(bare.right, 'Any?'))];
         return bare.operatorToken.kind === ts.SyntaxKind.BarBarToken ? `run { val ${v}: Any? = ${l}; if (jsTruthy(${v})) ${v} else ${r} }` : `run { val ${v}: Any? = ${l}; if (jsTruthy(${v})) ${r} else ${v} }`;
       }
       // A function reading `arguments`, held untyped: called as script calls it, with however many arguments.
@@ -6292,7 +6297,7 @@ export class Translator implements AsyncTranslator {
         }
       }
       if (ts.isConditionalExpression(bare) && ([bare.whenTrue, bare.whenFalse].some((x) => x.kind === ts.SyntaxKind.NullKeyword) || (this.library && [bare.whenTrue, bare.whenFalse].some(takesThis)))) {
-        return `(if (${this.cond(bare.condition)}) ${this.coerce(bare.whenTrue, 'Any?')} else ${this.coerce(bare.whenFalse, 'Any?')})`;
+        return `(if (${this.cond(bare.condition)}) ${branch(this.coerce(bare.whenTrue, 'Any?'))} else ${branch(this.coerce(bare.whenFalse, 'Any?'))})`;
       }
       const maybe = this.maybeUndefined(e);
       if (maybe) return maybe;
@@ -6511,7 +6516,7 @@ export class Translator implements AsyncTranslator {
     };
     const bare = ts.skipOuterExpressions(e);
     if (!held(bare)) return null;
-    if (ts.isConditionalExpression(bare)) return `(if (${this.cond(bare.condition)}) ${this.coerce(bare.whenTrue, 'Any?')} else ${this.coerce(bare.whenFalse, 'Any?')})`;
+    if (ts.isConditionalExpression(bare)) return `(if (${this.cond(bare.condition)}) ${branch(this.coerce(bare.whenTrue, 'Any?'))} else ${branch(this.coerce(bare.whenFalse, 'Any?'))})`;
     const type = this.typeOf(bare);
     const g = functionTypeParts(type.replace(/^\((.*)\)\?$/, '$1'))!;
     const n = g.params.length - 1;
@@ -6772,7 +6777,7 @@ export class Translator implements AsyncTranslator {
       const t = this.typeOf(e);
       const fixed = this.staticTruth(e.condition);
       if (fixed !== undefined) return this.coerce(fixed ? e.whenTrue : e.whenFalse, t);
-      return `(if (${this.cond(e.condition)}) ${this.coerce(e.whenTrue, t)} else ${this.coerce(e.whenFalse, t)})`;
+      return `(if (${this.cond(e.condition)}) ${branch(this.coerce(e.whenTrue, t))} else ${branch(this.coerce(e.whenFalse, t))})`;
     }
     // Library mode: `class { [property: string]: string }`, a constructor of plain objects.
     if (this.library && ts.isClassExpression(e) && !e.heritageClauses && e.members.every(ts.isIndexSignatureDeclaration)) return 'JSObject::class.java';
@@ -9868,8 +9873,8 @@ export class Translator implements AsyncTranslator {
         if (leftValue === `jsTruthy(${v})` && t === 'Boolean') return `(jsTruthy(${left}) ${sym} ${right})`;
         // jsTruthy's contract makes the tested value non-null where it holds.
         return op === K.BarBarToken
-          ? `run { val ${v} = ${left}; if (jsTruthy(${v})) ${leftValue === `${v}!!` ? v : leftValue} else ${right} }`
-          : `run { val ${v} = ${left}; if (jsTruthy(${v})) ${right} else ${leftValue} }`;
+          ? `run { val ${v} = ${left}; if (jsTruthy(${v})) ${leftValue === `${v}!!` ? v : leftValue} else ${branch(right)} }`
+          : `run { val ${v} = ${left}; if (jsTruthy(${v})) ${branch(right)} else ${leftValue} }`;
       }
       case K.InstanceOfKeyword: {
         // A class held as a value (`C: ErrorConstructor`): tested by the class it holds.
