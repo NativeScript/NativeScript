@@ -40,7 +40,7 @@ import { detectFramework, excludedFrameworkKitFiles, getFrameworkKitInfo } from 
 import { execFileSync, spawnSync } from 'node:child_process';
 import { kitProjectDir } from '../../src/android.ts';
 import { KIT_ANDROID } from '../../src/paths.ts';
-import { buildKotlinRuntime, kotlinc, kotlinStdlib } from '../native-build.ts';
+import { buildKotlinRuntime, buildSwiftRuntime, kotlinc, kotlinStdlib, swiftc, swiftMain, translateSwift } from '../native-build.ts';
 import ts from 'typescript';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -1684,6 +1684,57 @@ fun main() {
   }
   const expected = 'true true a true true true';
   check(got === expected, "a Java method's or field's null reads as script's null on Android, a void method's result as undefined");
+  if (got !== expected) console.log(`    got: ${got.slice(0, 300)}`);
+})();
+
+(() => {
+  // core's addDelegateHandler: a handler typed by the delegate method (`Delegate[K]`), run by `handler.apply` and its
+  // result read as the method's native return type. Node has no native enums, so no diff case reaches it.
+  const build = process.env.NS_DIFF_BUILD ?? join(tmpdir(), 'ns-native-diff');
+  const dir = join(build, 'release-checks-native-results');
+  rmSync(dir, { recursive: true, force: true });
+  mkdirSync(join(dir, 'swift'), { recursive: true });
+  const file = join(dir, 'app.ios.ts');
+  writeFileSync(file, `interface Hooks {
+  options(text: string, other: string | null): NSStringCompareOptions;
+  order(text: string): NSComparisonResult;
+}
+class Host {
+  private handlers = new Map<string, Function[]>();
+  add<K extends keyof Hooks>(name: K, handler: Hooks[K]): void {
+    if (typeof handler !== 'function') return;
+    const list = this.handlers.get(name) ?? [];
+    list.push(handler);
+    this.handlers.set(name, list);
+  }
+  run(name: string, ...args: any[]): any {
+    let result: any;
+    for (const handler of this.handlers.get(name) ?? []) result = handler.apply(this, args);
+    return result;
+  }
+}
+const host = new Host();
+host.add('options', (_text: string, other: string | null) => (other ? NSStringCompareOptions.CaseInsensitiveSearch : NSStringCompareOptions.BackwardsSearch));
+host.add('order', (text: string) => (text ? NSComparisonResult.OrderedDescending : NSComparisonResult.OrderedAscending));
+const both = host.run('options', 'a', 'b');
+const one = host.run('options', 'a', null);
+const order = host.run('order', 'x');
+const held: any = NSStringCompareOptions.NumericSearch;
+console.log(typeof both, both, both | 8, typeof one, one, typeof order, order, typeof held, held + 1);
+`);
+  let got: string;
+  try {
+    buildSwiftRuntime(build, '-Onone');
+    const out = join(dir, 'swift');
+    const modules = translateSwift([file], out);
+    writeFileSync(join(out, 'main.swift'), swiftMain(modules));
+    const errors = swiftc(readdirSync(out).map((f) => join(out, f)), join(dir, 'main'), build, '-Onone');
+    got = errors ? errors[0] : spawnSync(join(dir, 'main'), { encoding: 'utf8' }).stdout.trim();
+  } catch (e) {
+    got = (e as Error).message.split('\n')[0];
+  }
+  const expected = 'number 1 9 number 4 number 1 number 65';
+  check(got === expected, 'a native option set or enum a typed handler gives script, through apply or held untyped, is its number');
   if (got !== expected) console.log(`    got: ${got.slice(0, 300)}`);
 })();
 
