@@ -57,8 +57,6 @@ export interface StateRules {
    * non-strict app. Swift asks it of any call.
    */
   readonly appNullResults: boolean;
-  /** Swift: a parameter a non-strict call gives undefined counts as script-called. Kotlin asks `givenUndefined` beside it. */
-  readonly givenUndefinedIsScriptCalled: boolean;
   /** Swift: an optional parameter takes undefined as it is, and a declaration file's slot never does. */
   readonly optionalParametersTakeUndefined: boolean;
   /** Swift: `looseDeclaration` is asked of reads and declarations both, and answers for the declaration they name. */
@@ -395,30 +393,33 @@ export class ValueStates {
     return (this.scriptCalledFunctions ??= scriptCalledFunction(this.backend.trust))(sig);
   }
 
-  /** A string, number or boolean parameter of a function script calls (`scriptCalled`): it takes undefined as well. */
+  /** A string, number or boolean parameter of a function script calls (`scriptCalled`) or `givenUndefined`: it takes undefined as well. */
   scriptCalledParameter(p: ts.ParameterDeclaration): boolean {
     const b = this.backend;
-    if (p.dotDotDotToken || !ts.isIdentifier(p.name) || !(this.scriptCalled(p.parent) || (b.rules.givenUndefinedIsScriptCalled && this.givenUndefined(p)))) return false;
+    if (p.dotDotDotToken || !ts.isIdentifier(p.name) || !(this.scriptCalled(p.parent) || this.givenUndefined(p))) return false;
     return b.unemitted(() => this.primitive(b.type(this.checker.getTypeAtLocation(p.name), p)));
   }
 
-  /** A parameter of a function script calls, or one a non-strict app's call gives undefined: it takes undefined as well. */
+  /** A parameter of a function script calls, or one the program gives undefined: it takes undefined as well. */
   undefinedParameter(p: ts.ParameterDeclaration): boolean {
     return this.givenUndefined(p) || this.scriptCalledParameter(p);
   }
 
   /**
-   * A non-strict app's parameter of a function type (`f: (i: number, last: boolean) => string`) that a call through its
-   * name gives undefined (`f(i, end ? true : undefined)`), or a literal's parameter given for one.
+   * An app's parameter the program may give undefined though its declared type has none: its form's undefined is a
+   * value left out (`Form.missing`: fewer arguments, a read past an array's end, a hole, an optional parameter). In a
+   * non-strict app also a parameter of a function type (`f: (i: number, last: boolean) => string`) that a call through
+   * its name gives undefined (`f(i, end ? true : undefined)`), or a literal's parameter given for one.
    */
   givenUndefined(p: ts.ParameterDeclaration): boolean {
     const b = this.backend;
-    if (!b.lenientApp || b.lenient || b.library || p.getSourceFile().isDeclarationFile || this.plugin(p)) return false;
+    // A library's and a plugin's parameters are entry points: their forms change the kit's surface, decided with it.
+    if (b.lenient || b.library || p.getSourceFile().isDeclarationFile || this.plugin(p)) return false;
     let found = this.undefinedGiven.get(p);
     if (found !== undefined) return found;
-    this.undefinedGiven.set(p, false);
+    this.undefinedGiven.set(p, found = !p.dotDotDotToken && this.forms().formOfSlot(p).missing && !this.forms().declaredForm(p).undefined);
+    if (found || !b.lenientApp) return found;
     const fn = p.parent, k = fn.parameters.indexOf(p);
-    found = false;
     if (ts.isArrowFunction(fn) || ts.isFunctionExpression(fn)) {
       const slot = this.checker.getContextualType(fn)?.getNonNullableType().getCallSignatures()[0]?.getDeclaration();
       const q = slot && !ts.isJSDocSignature(slot) && ts.isFunctionTypeNode(slot) ? slot.parameters[k] : undefined;

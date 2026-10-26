@@ -171,7 +171,7 @@ export function shadowForms(states: ValueStates): void {
       try {
         form = moot(node) ? null : answer();
         const f = ts.isExpression(node) ? formsOf().formOf(node) : isSlotDeclaration(node) ? formsOf().formOfSlot(node) : null;
-        if (f) states = (f.undefined ? 'U' : '') + (f.null ? 'N' : '') + (f.hole ? 'H' : '') + (f.foreign ? 'F' : '') + (f.observed ? 'o' : '') + (f.element ? `[${(f.element.undefined ? 'U' : '') + (f.element.null ? 'N' : '') + (f.element.foreign ? 'F' : '')}]` : '');
+        if (f) states = (f.undefined ? 'U' : '') + (f.missing ? 'M' : '') + (f.null ? 'N' : '') + (f.hole ? 'H' : '') + (f.foreign ? 'F' : '') + (f.observed ? 'o' : '') + (f.element ? `[${(f.element.undefined ? 'U' : '') + (f.element.null ? 'N' : '') + (f.element.foreign ? 'F' : '')}]` : '');
       } catch (e) {
         error = (e as Error).message.slice(0, 200);
       }
