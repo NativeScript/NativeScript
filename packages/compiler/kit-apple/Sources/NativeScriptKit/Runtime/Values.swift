@@ -1129,6 +1129,8 @@ public func jsToNumber(_ value: Any?) -> Double {
     case let v?:
         if let n = jsNumeric(v) { return n }
         if jsIsFunction(v) || v is JSSymbol { return .nan }
+        // A native enum or option set a typed function returned into an untyped slot: script sees its raw number.
+        if let raw = v as? any RawRepresentable, let n = raw.rawValue as? any BinaryInteger { return Double(n) }
         if let user = jsUserPrimitive(v, "number") { return jsToNumber(user) }
         return jsNumberFromString(jsToString(v))
     }

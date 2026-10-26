@@ -1445,6 +1445,12 @@ export class Translator implements AsyncTranslator {
     return generic(t);
   }
 
+  /** A parameter type computed from type parameters (indexed access, conditional), which Swift has as `Any?`. */
+  private untypedGeneric(node: ts.TypeNode): boolean {
+    const t = this.checker.getTypeFromTypeNode(node);
+    return !!(t.flags & (ts.TypeFlags.IndexedAccess | ts.TypeFlags.Conditional | ts.TypeFlags.Substitution)) && this.type(t, node) === 'Any?';
+  }
+
   private isBareTypeParameter(t: ts.TypeNode): boolean {
     return ts.isTypeReferenceNode(t) && !t.typeArguments && !!(this.checker.getTypeFromTypeNode(t).flags & ts.TypeFlags.TypeParameter);
   }
@@ -3775,6 +3781,7 @@ ${members.join('\n')}
     if (this.library && from === 'JSObject' && to.replace(/[?!]$/, '') === 'EventData') return `EventData(jsObject: ${code})`;
     if (to === 'Any?') {
       if (from === 'Void') return `jsUndefined(${code})`;
+      if (this.untypedEnum('', from)) return this.untypedEnum(code, from);
       // Lenient code holds a function implicitly unwrapped (`_itemTemplateSelector` before it is set): nil as an optional one is.
       const opt = isOptional(from) || /^\(.*\)!$/.test(from);
       const fn = functionParts(opt ? from.replace(/^\((.*)\)[?!]$/, '$1') : from);
@@ -3906,10 +3913,10 @@ ${members.join('\n')}
 
   // ---- Functions -----------------------------------------------------------------------------
 
-  /** A native enum's value held untyped: its number, as the runtime marshals it; '' (from no code) when the type is not a native enum. */
+  /** A native enum's or option set's value held untyped: its number, as the runtime marshals it; '' (from no code) when the type is neither. */
   private untypedEnum(code: string, type: string): string {
     const base = type.replace(/\?$/, '');
-    if (!this.native.isEnumType(base) || this.native.isOptionSetType(base)) return code;
+    if (!this.native.isEnumType(base)) return code;
     if (!code) return 'enum';
     return type.endsWith('?') ? `${code}.map { Double($0.rawValue) }` : `Double(${code}.rawValue)`;
   }
@@ -10713,6 +10720,12 @@ ${members.join('\n')}
         out.push(this.coerce(a, 'Any?'));
         continue;
       }
+      // A function where the parameter's type is computed from type parameters (`handler: Delegate[K]`, core's too): Swift
+      // declares it untyped, so the argument must be a function object script can call, not the instantiation's closure.
+      if (decl && ts.isParameter(decl) && decl.type && at !== 'Any?' && heldType(at) === 'Any?' && this.untypedGeneric(decl.type)) {
+        out.push(this.coerce(a, 'Any?'));
+        continue;
+      }
       // An override emitted with its root's signature: the parameter as Swift has it.
       const method = decl && ts.isParameter(decl) && ts.isMethodDeclaration(decl.parent) && !isStatic(decl.parent) && !decl.getSourceFile().isDeclarationFile ? decl.parent : null;
       const emitted = method && this.baseMethod(method) ? this.emittedSignature(method).params[k]?.type.replace(/!$/, '?') : undefined;
@@ -10819,7 +10832,10 @@ ${members.join('\n')}
 
   /** A rest parameter's array type; one typed `any` (`...args: any`) holds an array of anything. */
   private restType(p: ts.Symbol): string {
-    const t = this.typeOf((p.valueDeclaration as ts.ParameterDeclaration).name);
+    const d = p.valueDeclaration as ts.ParameterDeclaration;
+    // A rest of a type parameter (`bind`'s `(...args: A) => R`): Swift's function type takes it as one untyped array.
+    if (d.type && this.isBareTypeParameter(d.type)) return 'JSArray<Any?>';
+    const t = this.typeOf(d.name);
     return t === 'Any?' ? 'JSArray<Any?>' : t;
   }
 
