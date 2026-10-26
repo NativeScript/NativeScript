@@ -54,10 +54,11 @@ public final class JSRegExp: JSDynamic, JSStringConvertible {
     static func literal(_ source: String, _ flags: String) -> JSRegExp { JSRegExp(checked: source, flags) }
 
     /// `new RegExp(pattern, flags)` of a pattern that may be a RegExp: its source, and its flags unless others are given.
-    public static func construct(_ pattern: Any?, _ flags: Any? = nil) throws -> JSRegExp {
+    /// `RegExp(re)` called without `new` and given no flags is `re` itself.
+    public static func construct(_ pattern: Any?, _ flags: Any? = nil, call: Bool = false) throws -> JSRegExp {
         let given = jsIsUndefined(jsFlat(flags) as Any?) ? nil : jsToString(flags)
         if let re = jsFlat(pattern) as? JSRegExp {
-            guard let given else { return JSRegExp(sharing: re) }
+            guard let given else { return call ? re : JSRegExp(sharing: re) }
             return try JSRegExp(re.pattern, given)
         }
         return try JSRegExp(jsFlat(pattern) == nil ? "(?:)" : jsToString(pattern), given ?? "")

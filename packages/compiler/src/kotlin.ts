@@ -465,6 +465,12 @@ export class Translator implements AsyncTranslator {
   }
 
   private noteStructural(x: ts.Expression): void {
+    const bare = ts.skipParentheses(x);
+    if (ts.isConditionalExpression(bare)) {
+      this.noteStructural(bare.whenTrue);
+      this.noteStructural(bare.whenFalse);
+      return;
+    }
     const wanted = this.checker.getContextualType(x)?.getSymbol();
     const given = this.checker.getTypeAtLocation(x).getSymbol()?.valueDeclaration;
     if (wanted && wanted.flags & (ts.SymbolFlags.TypeLiteral | ts.SymbolFlags.Interface) && !(wanted.flags & ts.SymbolFlags.Class) && given && ts.isClassLike(given)) {
@@ -6185,6 +6191,11 @@ export class Translator implements AsyncTranslator {
         return this.untypedFunction(decl, fn.includes('::') ? `(${fn})` : fn);
       }
     }
+    // A conditional's branches each placed in a shape slot: a class's object is read into the shape by itself, and
+    // neither branch is held untyped on the way.
+    if (ts.isConditionalExpression(bare) && this.isShapeType(target.replace(/\?$/, '')) && [bare.whenTrue, bare.whenFalse].some((x) => this.typeOf(x).replace(/\?$/, '') !== target.replace(/\?$/, ''))) {
+      return `(if (${this.cond(bare.condition)}) ${branch(this.coerce(bare.whenTrue, target))} else ${branch(this.coerce(bare.whenFalse, target))})`;
+    }
     const source = this.typeOf(e);
     const structural = this.structuralCopy(e, source, target);
     if (structural) return structural;
@@ -6510,13 +6521,16 @@ export class Translator implements AsyncTranslator {
       return !!d && !ts.isJSDocSignature(d) && !!d.parameters.at(-1)?.dotDotDotToken && !d.parameters.some((p) => isThisParameter(p))
         && /^JSArray</.test(functionTypeParts(this.typeOf(x).replace(/^\((.*)\)\?$/, '$1'))?.params.at(-1) ?? '');
     };
+    // Parentheses only: an assertion (`v as Replacer`) is held as the type it asserts.
     const held = (x: ts.Expression): boolean => {
-      const b = ts.skipOuterExpressions(x);
+      const b = ts.skipParentheses(x);
       return ts.isConditionalExpression(b) ? held(b.whenTrue) || held(b.whenFalse) : !ts.isArrowFunction(b) && !ts.isFunctionExpression(b) && hasRest(b);
     };
-    const bare = ts.skipOuterExpressions(e);
+    const bare = ts.skipParentheses(e);
     if (!held(bare)) return null;
     if (ts.isConditionalExpression(bare)) return `(if (${this.cond(bare.condition)}) ${branch(this.coerce(bare.whenTrue, 'Any?'))} else ${branch(this.coerce(bare.whenFalse, 'Any?'))})`;
+    const asserted = ts.isAsExpression(bare) || ts.isTypeAssertionExpression(bare) ? ts.skipOuterExpressions(bare) : null;
+    if (asserted && this.typeOf(asserted) === 'Any?') return this.expr(asserted);
     const type = this.typeOf(bare);
     const g = functionTypeParts(type.replace(/^\((.*)\)\?$/, '$1'))!;
     const n = g.params.length - 1;
@@ -8577,7 +8591,7 @@ export class Translator implements AsyncTranslator {
       if (ERRORS[name]) return this.errorValue(name, e.arguments);
       if (name === 'Array' && this.isLibGlobal(callee as ts.Identifier)) return this.arrayConstruct(e, this.typeOf(e), e.arguments);
       // `RegExp(re)` without flags is `re` itself; otherwise it constructs as `new RegExp` does.
-      if (name === 'RegExp' && decl && isLibDeclaration(decl)) return e.arguments.length === 1 && this.isRegExp(e.arguments[0]) ? this.expr(e.arguments[0]) : this.regExpConstruct(e.arguments);
+      if (name === 'RegExp' && decl && isLibDeclaration(decl)) return e.arguments.length === 1 && this.isRegExp(e.arguments[0]) ? this.expr(e.arguments[0]) : this.regExpConstruct(e.arguments, true);
       if (decl && /[\\/]lib\.[\w.]*\.d\.ts$/.test(decl.getSourceFile().fileName)) throw this.error(e, `${name}()`);
     }
     const resolvers = this.resolvers.get(this.resolve(callee)!);
@@ -9345,8 +9359,9 @@ export class Translator implements AsyncTranslator {
   }
 
   /** `new RegExp(…)`: from a pattern, or a copy of an expression with its flags unless others are given. */
-  private regExpConstruct(args: readonly ts.Expression[]): string {
+  private regExpConstruct(args: readonly ts.Expression[], call = false): string {
     if (args[0] && this.isRegExp(args[0])) return `${this.expr(args[0])}.let { __re -> JSRegExp(__re.source, ${args[1] ? this.str(args[1]) : '__re.flags'}) }`;
+    if (args[0] && !this.isString(args[0])) return `jsRegExpConstruct(${[this.coerce(args[0], 'Any?'), ...(args[1] ? [this.coerce(args[1], 'Any?')] : []), ...(call ? ['call = true'] : [])].join(', ')})`;
     return `JSRegExp(${args[0] ? this.str(args[0]) : '"(?:)"'}${args[1] ? `, ${this.str(args[1])}` : ''})`;
   }
 
@@ -10275,6 +10290,11 @@ export class Translator implements AsyncTranslator {
     return `object : ${this.className(cls)}() { ${lines.join('; ')} }`;
   }
 
+  /** An interface's or object shape's Kotlin class. */
+  private isShapeType(name: string): boolean {
+    return this.interfaces.has(name) || [...this.shapes.values()].some((s) => s.name === name);
+  }
+
   /**
    * A value of one of the app's object types where another goes (`DuoFold` passed as a `StageFold`): TypeScript's
    * types are structural, Kotlin's classes are not, so the slot gets an object of its class with the value's fields.
@@ -10282,8 +10302,7 @@ export class Translator implements AsyncTranslator {
   private structuralCopy(e: ts.Expression, source: string, target: string): string | null {
     if (this.library) return null;
     const from = source.replace(/\?$/, ''), to = target.replace(/\?$/, '');
-    const isShape = (n: string) => this.interfaces.has(n) || [...this.shapes.values()].some((s) => s.name === n);
-    if (from === to || !isShape(from) || !isShape(to)) return null;
+    if (from === to || !this.isShapeType(from) || !this.isShapeType(to)) return null;
     const contextual = this.checker.getContextualType(e);
     const props = contextual ? this.checker.getNonNullableType(contextual).getProperties() : [];
     if (!props.length) return null;

@@ -8015,6 +8015,12 @@ ${members.join('\n')}
       const nonNull = ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses);
       if (ts.isNonNullExpression(nonNull) && this.typeOf(nonNull.expression) === target) return this.expr(nonNull.expression);
     }
+    // A conditional's branches each placed in a shape slot: a class's object is read into the shape by itself, and
+    // neither branch is held untyped on the way.
+    const branched = ts.skipParentheses(e), shape = target.replace(/[?!]$/, '');
+    if (ts.isConditionalExpression(branched) && this.isObjectShape(shape) && [branched.whenTrue, branched.whenFalse].some((x) => this.typeOf(x).replace(/[?!]$/, '') !== shape)) {
+      return this.ternary(branched, target, (x) => this.coerce(x, target));
+    }
     // `x as never` (a value the checker is told to take anywhere): the value, as the slot takes it;
     // a number where the slot is a string (`ret.format = parseVertexFormat(ret.format) as never`) converted as script reads it there.
     if (ts.isAsExpression(e) && e.type.kind === ts.SyntaxKind.NeverKeyword) {
@@ -11654,7 +11660,7 @@ ${members.join('\n')}
     // `RegExp(re)` without flags is `re` itself; otherwise it constructs as `new RegExp` does.
     if (name === 'RegExp' && isLibDeclaration(decl)) {
       if (e.arguments.length === 1 && this.typeOf(arg(0)).replace(/[?!]$/, '') === 'JSRegExp') return this.expr(arg(0));
-      if (arg(0) && !this.isString(arg(0))) return `JSRegExp.construct(${this.coerce(arg(0), 'Any?')}${arg(1) ? `, ${this.coerce(arg(1), 'Any?')}` : ''})`;
+      if (arg(0) && !this.isString(arg(0))) return `JSRegExp.construct(${this.coerce(arg(0), 'Any?')}${arg(1) ? `, ${this.coerce(arg(1), 'Any?')}` : ''}, call: true)`;
       return `JSRegExp(${arg(0) ? this.str(arg(0)) : '"(?:)"'}${arg(1) ? `, ${this.str(arg(1))}` : ''})`;
     }
     if (this.isArrayConstruction(e)) {
