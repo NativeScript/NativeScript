@@ -97,6 +97,40 @@ export class AndroidNativeAPI implements KotlinNative {
     return ANDROID_TYPINGS.test(file) || this.pluginTypings.has(file);
   }
 
+  /**
+   * Whether a typings declaration's Java binding holds null: a field's value, a method's result, a parameter's argument.
+   * Java's reference types are platform types, null unless annotated `@NonNull`; its primitives never are.
+   */
+  holdsNil(d: ts.Declaration): boolean {
+    const param = ts.isParameter(d) ? d : null;
+    const member = param ? param.parent : d;
+    const k = param ? (member as ts.SignatureDeclaration).parameters.indexOf(param) : -1;
+    const primitive = (desc: string) => /^[BCDFIJSZV]$/.test(desc);
+    try {
+      const owner = member.parent, name = (member as ts.NamedDeclaration).name;
+      const sym = ts.isClassDeclaration(owner) && owner.name ? this.t.checker.getSymbolAtLocation(owner.name) : undefined;
+      const cls = sym && name && ts.isIdentifier(name) ? this.classOf(sym) : null;
+      if (cls && name && ts.isIdentifier(name)) {
+        const isStatic = !!(ts.getCombinedModifierFlags(member) & ts.ModifierFlags.Static);
+        const supers = this.classpath.supertypes(cls.name);
+        if (ts.isPropertyDeclaration(member)) {
+          const f = supers.flatMap((c) => c.fields).find((x) => x.name === name.text && !!(x.access & ACC_STATIC) === isStatic);
+          if (f) return !primitive(f.descriptor) && !f.nonNull;
+        } else if (ts.isMethodDeclaration(member)) {
+          const arity = member.parameters.length;
+          const found = supers.flatMap((c) => c.methods).filter((m) => m.name === name.text && !!(m.access & ACC_STATIC) === isStatic).map((m) => ({ m, ...methodTypes(m.descriptor) })).filter((c) => c.params.length === arity);
+          if (found.length) return found.some((c) => (k < 0 ? !primitive(c.ret) && !c.m.nonNull : !primitive(c.params[k]) && !c.m.nonNullParams?.[k]));
+        }
+      }
+    } catch {
+      // A class no Android version has: the typings' type says whether it is a reference.
+    }
+    const c = this.t.checker;
+    const sig = !param && ts.isFunctionLike(member) ? c.getSignatureFromDeclaration(member as ts.SignatureDeclaration) : undefined;
+    const t = sig ? sig.getReturnType() : c.getTypeAtLocation(param ?? (member as ts.NamedDeclaration).name ?? member);
+    return !(c.getNonNullableType(t).flags & (ts.TypeFlags.NumberLike | ts.TypeFlags.BooleanLike | ts.TypeFlags.Void | ts.TypeFlags.Undefined | ts.TypeFlags.Never));
+  }
+
   isValueType(_t: string): boolean {
     return false;
   }

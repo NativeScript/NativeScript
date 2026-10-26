@@ -14,6 +14,8 @@ interface Translator {
   readonly trust: TrustScope;
   readonly library: unknown;
   readonly lenientApp: boolean;
+  /** The backend's platform binding (Swift's SDK tables, Kotlin's class files). */
+  readonly native: { holdsNil?(d: ts.Declaration): boolean } | null;
 }
 
 type Answer = (forms: Forms, node: ts.Node, checker: ts.TypeChecker) => boolean | null;
@@ -131,7 +133,7 @@ export function shadowForms(t: object, backend: 'swift' | 'kotlin'): void {
   const formsOf = () => {
     if (forms) return forms;
     if (failed) throw failed;
-    forms = new Forms(translator.sourceFiles, translator.checker, (f) => translator.trust.strictFile(f), { library: !!translator.library, native: (d) => translator.trust.nativeDeclaration(d) });
+    forms = new Forms(translator.sourceFiles, translator.checker, (f) => translator.trust.strictFile(f), { library: !!translator.library, native: (d) => translator.trust.nativeDeclaration(d), nativeNil: (d) => !!translator.native?.holdsNil?.(d) });
     try {
       forms.build();
     } catch (e) {

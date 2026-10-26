@@ -170,6 +170,8 @@ export interface KotlinNative {
   assertedWiderClass?(d: ts.VariableDeclaration): string | null;
   isValueType(t: string): boolean;
   isNativeDeclaration(d: ts.Node): boolean;
+  /** Whether a typings declaration's Java binding holds null: a field's value, a method's result, a parameter's argument. */
+  holdsNil?(d: ts.Declaration): boolean;
   identifier(e: ts.Identifier): string | null;
   property(e: ts.PropertyAccessExpression): string | null;
   call(e: ts.CallExpression): string | null;

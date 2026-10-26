@@ -998,6 +998,49 @@ export class NativeAPI {
     } catch { return undefined; }
   }
 
+  /**
+   * Whether a typings declaration's Swift binding holds nil (an optional): a property's value, a method's result, a
+   * parameter's argument, or a parameter of a block the method takes. False where the tables have no such member.
+   */
+  holdsNil(d: ts.Declaration): boolean {
+    try {
+      const block = ts.isParameter(d) && ts.isFunctionTypeNode(d.parent) && ts.isParameter(d.parent.parent) ? d.parent.parent : null;
+      const param = block ?? (ts.isParameter(d) ? d : null);
+      const member = param ? param.parent : d;
+      const owner = member.parent;
+      const module = this.module(member);
+      if (!module || !(ts.isClassDeclaration(owner) || ts.isInterfaceDeclaration(owner)) || !owner.name) {
+        if (!module || !ts.isFunctionDeclaration(member) || !member.name) return false;
+        const f = lookupFunction(module, member.name.text);
+        if (!f || f.kind === 'equal') return false;
+        const params = f.params.filter((_, k) => k !== f.self);
+        return this.nilIn(param ? params[member.parameters.indexOf(param)] : f.returns, block, d);
+      }
+      const name = (member as ts.NamedDeclaration).name;
+      if (!name || !ts.isIdentifier(name)) return false;
+      const js = RENAMED[owner.name.text] ?? owner.name.text;
+      const struct = lookupStruct(module, js);
+      if (struct) return false;
+      const m = lookupMember(module, js, name.text, isStatic(member));
+      if (!m) return false;
+      if (m.kind === 'property') return !param && optional(m.type);
+      const k = param ? (member as ts.SignatureDeclaration).parameters.indexOf(param) : -1;
+      return this.nilIn(param ? m.params.filter((p) => p !== '()')[k] : m.returns, block, d);
+    } catch {
+      return false;
+    }
+  }
+
+  /** Whether Swift type `type` holds nil, or for a block parameter `d` of `block`, the block's parameter there. */
+  private nilIn(type: SwiftType | undefined, block: ts.ParameterDeclaration | null, d: ts.Declaration): boolean {
+    if (!type) return false;
+    if (!block) return optional(type);
+    const parts = functionParts(base(type.replace(/^@escaping\s+/, '').trim()));
+    const fn = block.type && ts.isFunctionTypeNode(block.type) ? block.type : null;
+    const k = fn ? fn.parameters.indexOf(d as ts.ParameterDeclaration) : -1;
+    return !!parts && k >= 0 && !!parts.params[k] && optional(parts.params[k]);
+  }
+
   /** The native method or initializer a call runs, as `call` finds it; null for anything else. */
   private calledMethod(e: ts.CallExpression): NativeMethod | null {
     const callee = e.expression;
