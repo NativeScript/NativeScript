@@ -218,6 +218,7 @@ export function postCleanupNativeClass(code: string, bareId: string, verbose = f
 			const classAsDecl = classText.replace(/^class\b/, `class`);
 			const toDownlevel = `class ${className} extends ${baseName} ${classAsDecl.slice(classAsDecl.indexOf('{'))}`;
 
+			// TS 6+ emits a "use strict" prologue for snippets without imports/exports; it must not be spliced into the host file.
 			const downleveled = ts
 				.transpileModule(toDownlevel, {
 					compilerOptions: {
@@ -229,7 +230,8 @@ export function postCleanupNativeClass(code: string, bareId: string, verbose = f
 						useDefineForClassFields: false,
 					},
 				})
-				.outputText.replace(/enumerable:\s*false/g, 'enumerable: true')
+				.outputText.replace(/^\s*(['"])use strict\1;?\s*/, '')
+				.replace(/enumerable:\s*false/g, 'enumerable: true')
 				.replace(/export \{\};?\s*$/m, '')
 				.trim();
 

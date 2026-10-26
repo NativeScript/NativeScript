@@ -71,6 +71,7 @@ export default function (context: ts.TransformationContext, ...args) {
 				.replace(/^\s*\/\*__NativeClass__\*\/\s*/m, '');
 
 			// Perform localized ES5 transpile ONLY for this class block.
+			// TS 6+ emits a "use strict" prologue for snippets without imports/exports; it must not be spliced into the host file.
 			const downleveled = ts
 				.transpileModule(stripped, {
 					compilerOptions: {
@@ -82,7 +83,8 @@ export default function (context: ts.TransformationContext, ...args) {
 						useDefineForClassFields: false,
 					},
 				})
-				.outputText.replace(
+				.outputText.replace(/^\s*(['"])use strict\1;?\s*/, '')
+				.replace(
 					/(Object\.defineProperty\(.*?{.*?)(enumerable:\s*false)(.*?}\))/gs,
 					'$1enumerable: true$3',
 				);
