@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<resources>
+    <!-- The default color of the ActionBar -->
+    <color name="ns_primary">#F5F5F5</color>
+	
+    <!-- (API21+) The color of the status bar and contextual app bars; this is normally a dark version of colorPrimary. -->
+    <color name="ns_primaryDark">#757575</color>
+
+    <!-- The color of UI controls such as check boxes, radio buttons, and edit text boxes. -->
+	<color name="ns_accent">#65ADF1</color>
+
+    <!-- this is unused in the default themes, so we might want to remove it? -->
+    <!-- <color name="ns_blue">#272734</color> -->
+</resources>

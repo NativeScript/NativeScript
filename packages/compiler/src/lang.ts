@@ -508,7 +508,13 @@ export interface TrustScope {
   looseSlot?(d: ts.Declaration): boolean;
 }
 
-const LIB_FILE = /[\\/]typescript[\\/]lib[\\/]|[\\/]lib\.[\w.]*\.d\.ts$/;
+/** TypeScript's own declarations of JavaScript's built-ins. */
+export const LIB_FILE = /[\\/]typescript[\\/]lib[\\/]|[\\/]lib\.[\w.]*\.d\.ts$/;
+
+/** A method angular.ts adds to a component for its template: a binding's value (`$b3`) or a handler (`$e4`). */
+export function isTemplateMethod(m: ts.Node): boolean {
+  return ts.isMethodDeclaration(m) && /^\$[be]\d+$/.test(m.name.getText());
+}
 
 /** Where a value's type comes from when TypeScript cannot prove it; null when it can. */
 export function originOf(e: ts.Expression, scope: TrustScope): Origin | null {
@@ -1158,6 +1164,26 @@ export function nullishSlots(checker: ts.TypeChecker, files: readonly ts.SourceF
       return false;
     });
   };
+  // Where `x`'s value is only tested: null and undefined give the same there.
+  const tested = (x: ts.Node): boolean => {
+    while (ts.isParenthesizedExpression(x.parent) || ts.isNonNullExpression(x.parent)) x = x.parent;
+    const p = x.parent;
+    if (ts.isPrefixUnaryExpression(p)) return p.operator === ts.SyntaxKind.ExclamationToken;
+    if ((ts.isIfStatement(p) || ts.isWhileStatement(p) || ts.isDoStatement(p)) && p.expression === x) return true;
+    if ((ts.isConditionalExpression(p) || ts.isForStatement(p)) && p.condition === x) return true;
+    if ((ts.isPropertyAccessExpression(p) || ts.isElementAccessExpression(p) || ts.isCallExpression(p)) && p.expression === x && !!p.questionDotToken) return true;
+    if (ts.isCallExpression(p) && p.arguments.length === 1 && p.expression.getText() === 'Array.isArray') return true;
+    if (!ts.isBinaryExpression(p)) return false;
+    const op = p.operatorToken.kind;
+    if (op === ts.SyntaxKind.EqualsEqualsToken || op === ts.SyntaxKind.ExclamationEqualsToken) return true;
+    if ((op === ts.SyntaxKind.BarBarToken || op === ts.SyntaxKind.QuestionQuestionToken) && p.left === x) return true;
+    return (op === ts.SyntaxKind.BarBarToken || op === ts.SyntaxKind.AmpersandAmpersandToken || op === ts.SyntaxKind.QuestionQuestionToken) && tested(p);
+  };
+  // A parameter whose value goes on (printed, stored, passed) where it may still be null or undefined both.
+  const escapes = (d: ts.Declaration) => {
+    const sym = (d as ts.NamedDeclaration).name && checker.getSymbolAtLocation((d as ts.NamedDeclaration).name!);
+    return !sym || (refs.get(sym) ?? []).some((r) => both(checker.getTypeAtLocation(r)) && !tested(r));
+  };
   /**
    * Holds `d` when its type admits both; refuses it when that type isn't one a held slot can carry and its code tells
    * them apart. A function or library object held untyped would be reached by name.
@@ -1248,6 +1274,24 @@ export function nullishSlots(checker: ts.TypeChecker, files: readonly ts.SourceF
   const isStatic = (m: ts.Node) => !!ts.getModifiers(m as ts.HasModifiers)?.some((k) => k.kind === ts.SyntaxKind.StaticKeyword);
   type Family = { members: ts.MethodDeclaration[]; why?: string };
   const families = new Map<ts.MethodDeclaration, Family>();
+  // Angular's class decorators. Their classes' plain methods are called only from this program (templates compile to
+  // methods of the class itself); the framework calls lifecycle hooks and the template's own `$` members by name.
+  const ANGULAR = new Set(['Component', 'Directive', 'Pipe', 'Injectable', 'NgModule']);
+  const HOOKS = new Set(['ngOnChanges', 'ngOnInit', 'ngDoCheck', 'ngAfterContentInit', 'ngAfterContentChecked', 'ngAfterViewInit', 'ngAfterViewChecked', 'ngOnDestroy']);
+  const angularDecorator = (d: ts.Decorator) => {
+    const e = ts.isCallExpression(d.expression) ? d.expression.expression : d.expression;
+    let s = checker.getSymbolAtLocation(e);
+    if (s && s.flags & ts.SymbolFlags.Alias) s = checker.getAliasedSymbol(s);
+    return !!s && ANGULAR.has(s.name) && !!s.declarations?.some((x) => /^\/__shims__\/_angular_core\.d\.ts$|[\\/]@angular[\\/]core[\\/]/.test(x.getSourceFile().fileName));
+  };
+  const frameworkCalled = (c: ts.ClassLikeDeclaration, name: string): string | undefined => {
+    const decorators = ts.getDecorators(c);
+    if (!decorators?.length) return undefined;
+    if (!decorators.every(angularDecorator)) return 'a method of a decorated class';
+    if (HOOKS.has(name)) return 'an Angular lifecycle hook';
+    if (name.startsWith('$')) return "a template's binding";
+    return undefined;
+  };
   /** The methods overriding one another with `m`, and why their signatures are fixed elsewhere if they are. */
   const familyOf = (m: ts.MethodDeclaration): Family => {
     const name = memberName(m), cls = m.parent as ts.ClassLikeDeclaration;
@@ -1262,7 +1306,7 @@ export function nullishSlots(checker: ts.TypeChecker, files: readonly ts.SourceF
     const members = tree.flatMap((c) => c.members.filter((x): x is ts.MethodDeclaration => ts.isMethodDeclaration(x) && !isStatic(x) && memberName(x) === name));
     for (const c of tree) for (const h of c.heritageClauses ?? []) if (h.token === ts.SyntaxKind.ImplementsKeyword && h.types.some((x) => checker.getTypeAtLocation(x).getProperty(name))) why ??= 'a method an interface declares';
     if (members.some((x) => !x.body || (ts.canHaveDecorators(x) && ts.getDecorators(x)?.length) || (checker.getSymbolAtLocation(x.name)?.declarations?.length ?? 0) > 1)) why ??= 'an overloaded or decorated method';
-    if (tree.some((c) => ts.getDecorators(c)?.length)) why ??= 'a method of a decorated class';
+    for (const c of tree) why ??= frameworkCalled(c, name);
     const result = { members, why };
     for (const x of members) families.set(x, result);
     return result;
@@ -1278,7 +1322,8 @@ export function nullishSlots(checker: ts.TypeChecker, files: readonly ts.SourceF
         const ps = family.map((x) => x.parameters[k]).filter((p): p is ts.ParameterDeclaration => !!p);
         const wide = ps.find((p) => both(typeOf(p)) && oneKind(typeOf(p)));
         if (!wide) continue;
-        if (!ps.every(named) || !ps.every((p) => value(typeOf(p)))) { refuse(wide, `${NATIVE} (\`${text(typeOf(wide))}\`)`); continue; }
+        // A slot no member tells apart or lets go on while it may be either keeps one nil.
+        if (!ps.every(named) || !ps.every((p) => value(typeOf(p)))) { if (ps.some((p) => observes(p) || escapes(p))) refuse(wide, `${NATIVE} (\`${text(typeOf(wide))}\`)`); continue; }
         for (const p of ps) held.add(p);
       }
       const wide = family.find((x) => { const r = returnOf(x); return !!r && bothResult(r) && oneKind(r) && !isAsync(x); });
@@ -1625,20 +1670,7 @@ function missingAndNull(checker: ts.TypeChecker, files: readonly ts.SourceFile[]
     }
     return 0;
   };
-  // A body whose end a call may reach returns undefined there.
-  const ends = (st: ts.Statement | undefined): boolean => {
-    if (!st) return false;
-    if (ts.isReturnStatement(st) || ts.isThrowStatement(st)) return true;
-    if (ts.isBlock(st)) return ends(st.statements[st.statements.length - 1]);
-    if (ts.isIfStatement(st)) return ends(st.thenStatement) && ends(st.elseStatement);
-    if (ts.isTryStatement(st)) return (!!st.finallyBlock && ends(st.finallyBlock)) || (ends(st.tryBlock) && (!st.catchClause || ends(st.catchClause.block)));
-    if (ts.isSwitchStatement(st)) {
-      const clauses = st.caseBlock.clauses;
-      return clauses.some(ts.isDefaultClause) && clauses.every((c, k) => (c.statements.length ? ends(c.statements[c.statements.length - 1]) : k < clauses.length - 1));
-    }
-    return false;
-  };
-  const fallsThrough = (fn: ts.FunctionLikeDeclaration) => !fn.body || (ts.isBlock(fn.body) && !ends(fn.body));
+  const fallsThrough = (fn: ts.FunctionLikeDeclaration) => !fn.body || (ts.isBlock(fn.body) && !alwaysEnds(fn.body));
   for (let changed = true; changed;) {
     changed = false;
     for (const [d, list] of given) {
@@ -1656,6 +1688,20 @@ function missingAndNull(checker: ts.TypeChecker, files: readonly ts.SourceFile[]
       if (mask === (NULL | MISSING)) { held.add(d); changed = true; }
     }
   }
+}
+
+/** Whether a statement always returns or throws: a body whose end it isn't may give undefined there. */
+export function alwaysEnds(st: ts.Statement | undefined): boolean {
+  if (!st) return false;
+  if (ts.isReturnStatement(st) || ts.isThrowStatement(st)) return true;
+  if (ts.isBlock(st)) return alwaysEnds(st.statements[st.statements.length - 1]);
+  if (ts.isIfStatement(st)) return alwaysEnds(st.thenStatement) && alwaysEnds(st.elseStatement);
+  if (ts.isTryStatement(st)) return (!!st.finallyBlock && alwaysEnds(st.finallyBlock)) || (alwaysEnds(st.tryBlock) && (!st.catchClause || alwaysEnds(st.catchClause.block)));
+  if (ts.isSwitchStatement(st)) {
+    const clauses = st.caseBlock.clauses;
+    return clauses.some(ts.isDefaultClause) && clauses.every((c, k) => (c.statements.length ? alwaysEnds(c.statements[c.statements.length - 1]) : k < clauses.length - 1));
+  }
+  return false;
 }
 
 /**

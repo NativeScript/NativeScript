@@ -1,0 +1,15 @@
+// this configurations is loaded before building plugins, as well as before building
+// the app - this is where you can apply global settings and overrides
+
+project.ext {
+  // androidXAppCompat = "1.4.1"
+  // androidXExifInterface = "1.3.3"
+  // androidXFragment = "1.4.1"
+  // androidXMaterial = "1.5.0"
+  // androidXMultidex = "2.0.1"
+  // androidXTransition = "1.4.1"
+  // androidXViewPager = "1.0.0"
+
+  // useKotlin = true
+  // kotlinVersion = "1.6.0"
+}
