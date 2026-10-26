@@ -10764,10 +10764,10 @@ export class Translator implements AsyncTranslator {
     const rest = p.parameters.some((q) => q.dotDotDotToken);
     if (!thisNodes(p).length && !rest) {
       // Called untyped (an options object's `valueChanged`), with undefined where a number, string or boolean goes, and
-      // an app's object as the script value it is.
+      // an app's object, or null where it may be one, as the script value it is.
       const types = p.parameters.map((q) => this.paramType(q));
       const kit = this.library || this.pluginFiles.has(p.getSourceFile().fileName);
-      const converted = (t: string) => (kit ? ['Double', 'Boolean', 'String'].includes(t) : t !== 'Any?' && this.isObjectType(t) && !isFunctionType(t));
+      const converted = (t: string) => (kit ? ['Double', 'Boolean', 'String'].includes(t) : t !== 'Any?' && (this.isObjectType(t) || /^(Double|Boolean|String)\?$/.test(t)) && !isFunctionType(t));
       if (!types.some(converted) || p.parameters.some((q) => isThisParameter(q) || !ts.isIdentifier(q.name))) return this.closure(p);
       const ret = this.returnTypeOf(p);
       const names = types.map((_, k) => `__u${k}`);
