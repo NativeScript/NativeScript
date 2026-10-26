@@ -482,11 +482,14 @@ export class ValueStates {
 
   /**
    * A parameter whose form holds null or undefined where its declared type admits neither. One typed by a type parameter
-   * holds what each instantiation admits (§2.3b M5), which its native type parameter does as well.
+   * holds what each instantiation admits (§2.3b M5), which its native type parameter does as well; one sharing a fixed
+   * point's form (a callback parameter of a kit or platform function type) is spelled as that declaration is, and a
+   * parameter property as its field is.
    */
   private givenEmpty(p: ts.ParameterDeclaration): boolean {
+    if (ts.isParameterPropertyDeclaration(p, p.parent)) return false;
     const declared = this.forms().declaredForm(p);
-    if (declared.foreign || isGeneric(this.checker.getTypeAtLocation(p.name))) return false;
+    if (declared.foreign || isGeneric(this.checker.getTypeAtLocation(p.name)) || this.forms().fixedSlot(p)) return false;
     const form = this.forms().formOfSlot(p);
     return (form.null && !declared.null) || (form.undefined && !declared.undefined);
   }

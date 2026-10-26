@@ -178,6 +178,12 @@ export class Forms {
     return { slots, both, nullish };
   }
 
+  /** A declaration whose group holds a fixed point's slot (a platform's or library's declaration): its form is that one's. */
+  fixedSlot(d: ts.Declaration): boolean {
+    this.build();
+    return this.find(this.slotFor(d)).fixed;
+  }
+
   /** What a declaration's own type admits (its checker type, its type as written, `?`, a default), before any flow. */
   declaredForm(d: ts.Declaration): Form {
     const s = this.declaredStates(d) | ((d as { initializer?: ts.Node }).initializer && ts.isParameter(d) ? U : 0);
@@ -370,7 +376,13 @@ export class Forms {
     if (fn === sig) return;
     // Callers of `sig` give `fn`'s arguments; `fn`'s result is `sig`'s.
     const theirs = valueParameters(sig);
-    valueParameters(fn).forEach((p, k) => { const q = theirs[k]; if (q && !q.dotDotDotToken === !p.dotDotDotToken) this.share(this.slotFor(q), this.slotFor(p), true); });
+    valueParameters(fn).forEach((p, k) => {
+      const q = theirs[k];
+      if (!q || !q.dotDotDotToken !== !p.dotDotDotToken) return;
+      this.share(this.slotFor(q), this.slotFor(p), true);
+      // Parameters of function type share their signatures too: a function given for one is called through the other.
+      if (p.type && q.type && ts.isFunctionTypeNode(p.type) && ts.isFunctionTypeNode(q.type)) this.unionSignature(p.type, q.type);
+    });
     if (!(fn as ts.FunctionLikeDeclaration).asteriskToken && !(sig as ts.FunctionLikeDeclaration).asteriskToken && !ts.isConstructorDeclaration(fn)) this.share(this.slotFor(fn), this.slotFor(sig), true);
   }
 

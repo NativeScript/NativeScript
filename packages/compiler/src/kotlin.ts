@@ -3441,7 +3441,8 @@ export class Translator implements AsyncTranslator {
         return out;
       });
       const superCall = superAt(ctor);
-      const superArgs = superCall ? (kitRoot && !appBase && this.core?.superArgs ? this.core.superArgs(kitRoot, superCall, this.args(superCall)) : this.args(superCall)) : [];
+      const errorName = isError ? Object.keys(ERRORS).find((k) => ERRORS[k] === base) : undefined;
+      const superArgs = !superCall ? [] : errorName ? this.errorArgs(errorName, superCall.arguments) : kitRoot && !appBase && this.core?.superArgs ? this.core.superArgs(kitRoot, superCall, this.args(superCall)) : this.args(superCall);
       const delegation = superCall ? ` : super(${superArgs.join(', ')})` : base ? ' : super()' : '';
       this.indent = '    ';
       lines.push(`    constructor(${this.params(ctor, false)})${delegation} {`, ...body, '    }');
@@ -9381,13 +9382,18 @@ export class Translator implements AsyncTranslator {
 
   /** One of the library's error classes, constructed: an AggregateError takes its errors first. */
   private errorValue(name: string, args: readonly ts.Expression[]): string {
+    return `${ERRORS[name]}(${this.errorArgs(name, args).join(', ')})`;
+  }
+
+  /** The runtime error class's constructor arguments for a library error class's (`new Error(…)`, `super(…)`). */
+  private errorArgs(name: string, args: readonly ts.Expression[]): string[] {
     const [first, second] = name === 'AggregateError' ? [args[1], args[0]] : [args[0]];
     const errors = name === 'AggregateError' ? [second ? `JSArray<Any?>((${this.iterable(second)}).toList())` : 'JSArray<Any?>()'] : [];
     // An optional string parameter left out (`new Error(message)` of `message?: string`): no message, as undefined gives none.
     const param = first && ts.isIdentifier(first) ? this.resolve(first)?.valueDeclaration : undefined;
     const message = first && param && ts.isParameter(param) && /^String\??$/.test(this.typeOf(first)) && isNullable(this.paramType(param)) ? `(${this.expr(first)} ?: "")` : first ? this.str(first) : null;
     const cause = name === 'Error' && args[1] ? [`jsGetOptional(${this.coerce(args[1], 'Any?')}, "cause")`] : [];
-    return `${ERRORS[name]}(${[...errors, ...(message ? [message] : cause.length ? ['""'] : []), ...cause].join(', ')})`;
+    return [...errors, ...(message ? [message] : cause.length ? ['""'] : []), ...cause];
   }
 
   /**

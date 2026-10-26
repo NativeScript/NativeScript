@@ -33,3 +33,9 @@ console.log(apply((p, tag) => (p ? `${tag} ${p.x}` : `${tag} none`), 'applied'))
 
 function reads(p: Point): number { return p.x; }
 try { console.log(reads(none[6])); } catch (e) { console.log('reads', (e as Error).name); }
+function spread(p: Point): number[] { return Array.from({ length: 2 }, (_, k) => p.x + k); }
+try { console.log(spread({ x: 8 }).join(), spread(none[7])); } catch (e) { console.log('spread', (e as Error).name); }
+
+function pick(test: (p: Point) => string): string;
+function pick(test: (p: Point) => string): string { return `${test({ x: 9 })} ${test(none[8])}`; }
+console.log(pick((p) => (p ? `picked ${p.x}` : 'picked none')));

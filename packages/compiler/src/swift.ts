@@ -11853,7 +11853,7 @@ ${members.join('\n')}
           const el = T().replace(/^JSArray<(.*)>$/, '$1');
           const index = fn.parameters[1] ? ident((fn.parameters[1].name as ts.Identifier).text) : '_';
           const value = fn.parameters[0] && ts.isIdentifier(fn.parameters[0].name) && fn.parameters[0].name.text !== '_' ? `let ${ident(fn.parameters[0].name.text)}: Any? = nil; ` : '';
-          const body = ts.isBlock(fn.body) ? this.functionBody(fn, el, this.indent).slice(1, -1) : ` return ${this.coerce(fn.body, el)} `;
+          const body = ts.isBlock(fn.body) ? this.functionBody(fn, el, this.indent).slice(1, -1) : ` return ${this.tryPrefix(fn.body)}${this.coerce(fn.body, el)} `;
           return `${T()}.from(length: ${this.expr(length.initializer)}) { (${index}: Double) ${this.throwsInfo.fn(fn) ? 'throws ' : ''}-> ${el} in ${value}${body}}`;
         }
         if (method === 'from' && e.arguments.length === 2) return `JSArray<${this.elementTypeOf(arg(0))}>.from(${this.iterable(arg(0))}).map(${this.expr(arg(1))})`;
