@@ -2,10 +2,7 @@
 	"extends": "../../tsconfig.base.json",
 	"compilerOptions": {
 		"outDir": "../../dist/packages/core",
-		"target": "es5",
-		"module": "commonjs",
-		"declaration": false,
-		"lib": ["es6", "dom"]
+		"declaration": false
 	},
 	"include": ["../../packages/core/**/*.d.ts"],
 	"exclude": [
