@@ -2,21 +2,12 @@ import { appendFileSync } from 'node:fs';
 import { relative } from 'node:path';
 import ts from 'typescript';
 import { type Form, Forms, representation } from './forms.ts';
-import type { NullishSlots, TrustScope } from './lang.ts';
+import type { NullishSlots } from './lang.ts';
+import type { ValueStates } from './value-states.ts';
 
-// Shadow mode (NS_FORMS_SHADOW=<file>): each null/undefined decider a backend asks today is answered as before, and one
-// JSONL record per question says what `Form` would answer, so the two can be compared before any backend reads `Form`.
-// It only observes: answers, call order and arguments reach the translator unchanged.
-
-interface Translator {
-  readonly checker: ts.TypeChecker;
-  readonly sourceFiles: readonly ts.SourceFile[];
-  readonly trust: TrustScope;
-  readonly library: unknown;
-  readonly lenientApp: boolean;
-  /** The backend's platform binding (Swift's SDK tables, Kotlin's class files). */
-  readonly native: { holdsNil?(d: ts.Declaration): boolean } | null;
-}
+// Shadow mode (NS_FORMS_SHADOW=<file>): each null/undefined decider a backend asks (value-states.ts) is answered as
+// before, and one JSONL record per question says what `Form` would answer, so the two can be compared before any backend
+// reads `Form`. It only observes: answers, call order and arguments reach the translator unchanged.
 
 type Answer = (forms: Forms, node: ts.Node, checker: ts.TypeChecker) => boolean | null;
 
@@ -123,12 +114,12 @@ function isSlotDeclaration(n: ts.Node): n is ts.Declaration {
 const unflushed = new Set<() => void>();
 let exitHook = false;
 
-/** Records each decider's questions on `t` (a Swift or Kotlin translator) to `NS_FORMS_SHADOW`. */
-export function shadowForms(t: object, backend: 'swift' | 'kotlin'): void {
+/** Records each question asked of `states` to `NS_FORMS_SHADOW`. */
+export function shadowForms(states: ValueStates): void {
   const out = process.env.NS_FORMS_SHADOW!;
   if (!exitHook) { exitHook = true; process.once('exit', () => { for (const f of [...unflushed]) f(); }); }
-  const translator = t as unknown as Translator;
-  const methods = t as unknown as Record<string, (...args: unknown[]) => unknown>;
+  const translator = states.backend, backend = translator.name;
+  const methods = states as unknown as Record<string, (...args: unknown[]) => unknown>;
   let forms: Forms | null = null, failed: Error | null = null;
   const formsOf = () => {
     if (forms) return forms;
@@ -177,9 +168,8 @@ export function shadowForms(t: object, backend: 'swift' | 'kotlin'): void {
   };
   for (const [name, { answer, old }] of Object.entries(DECIDERS)) {
     const original = methods[name];
-    if (typeof original !== 'function') continue;
     methods[name] = function (this: unknown, ...args: unknown[]) {
-      const result = original.apply(t, args);
+      const result = original.apply(states, args);
       const node = args[0] as ts.Node | undefined;
       if (node && typeof node === 'object' && 'kind' in node) record(name, node, old(result), () => answer(formsOf(), node, translator.checker));
       return result;
@@ -188,7 +178,7 @@ export function shadowForms(t: object, backend: 'swift' | 'kotlin'): void {
   const nullish = methods.nullish;
   const wrapped = new WeakSet<object>();
   methods.nullish = function () {
-    const slots = nullish.apply(t) as NullishSlots;
+    const slots = nullish.apply(states) as NullishSlots;
     if (!wrapped.has(slots)) {
       wrapped.add(slots);
       slots.held = recording(slots.held, (d, has) => record('nullishSlots.held', d, has, () => heldSlot(formsOf(), d, translator.checker)));

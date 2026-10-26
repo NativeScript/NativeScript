@@ -1397,9 +1397,9 @@ export class NativeAPI {
       if (!names[k]) return '';
       const param = fn.parameters[k], type = t.typeOf(param.name);
       // A nil object argument reaches a closure that takes it implicitly unwrapped (core's `(image) => { if (image) … }`).
-      if (optional(p) && base(p) === type && t.mayBeNull(param)) return `let ${names[k]}: ${type}? = __b${k}`;
+      if (optional(p) && base(p) === type && t.states.mayBeNull(param)) return `let ${names[k]}: ${type}? = __b${k}`;
       // Bridged or a subclass (`data: NSData` for `Data?`, `response: NSHTTPURLResponse` for `URLResponse?`): converted as an optional, nil kept.
-      if (optional(p) && t.mayBeNull(param)) return `let ${names[k]}: ${type}? = ${this.blockParam(`__b${k}`, p, `${type}?`)}`;
+      if (optional(p) && t.states.mayBeNull(param)) return `let ${names[k]}: ${type}? = ${this.blockParam(`__b${k}`, p, `${type}?`)}`;
       return `let ${names[k]}: ${type} = ${this.blockParam(`__b${k}`, p, type)}`;
     }).filter(Boolean);
     const body = t.closure(fn);
