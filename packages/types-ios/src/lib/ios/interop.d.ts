@@ -1,7 +1,7 @@
 /**
  * Provides API for working with native C types, pointers, pointer arithmetic and memory.
  */
-declare module interop {
+declare namespace interop {
 
     /**
      * A type that is used to represent a void*.
