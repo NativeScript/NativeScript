@@ -14,6 +14,8 @@ export interface StateBackend {
   readonly checker: ts.TypeChecker;
   readonly sourceFiles: readonly ts.SourceFile[];
   readonly pluginFiles: ReadonlySet<string>;
+  /** Where plugins' sources are: a file under one is a plugin's however it is compiled (its Angular components as the app's). */
+  readonly pluginRoots: readonly string[];
   readonly trust: TrustScope;
   readonly lenient: boolean;
   readonly lenientApp: boolean;
@@ -110,6 +112,17 @@ export class ValueStates {
     return this.backend.pluginFiles.has(n.getSourceFile().fileName);
   }
 
+  /** The app's own strict code, where §2.3b M6's held and checked foreign values apply. */
+  strictApp(n: ts.Node): boolean {
+    return !this.packaged(n) && this.backend.trust.strictFile(n.getSourceFile());
+  }
+
+  /** Code of another package than the app: a plugin's or an installed package's, decided by where its source is. */
+  packaged(n: ts.Node): boolean {
+    const f = n.getSourceFile().fileName;
+    return this.plugin(n) || /[\\/]node_modules[\\/]/.test(f) || this.backend.pluginRoots.some((r) => f.startsWith(r.endsWith('/') ? r : r + '/'));
+  }
+
   private primitive(t: string): boolean {
     return t === 'String' || t === 'Double' || t === this.backend.spelling.boolean;
   }
@@ -141,6 +154,12 @@ export class ValueStates {
     // A variable, parameter or result held untyped for its null and undefined: `JSNullish<T>` where something tells them
     // apart, as every member of its group (a function type and its values, an override family) reads one form.
     for (const d of found.held) if (representation(this.forms().formOfSlot(d)) === 'nullish') { found.held.delete(d); this.nullishHeldSet.add(d); }
+    // A foreign value whose type the program tests (§2.3b M6) is held untyped, by every member of its group or by none.
+    if (!b.lenient && !b.library) {
+      for (const group of this.forms().typeTestedForeign()) {
+        if (group.every((d) => this.holdsForeign(d))) for (const d of group) if (!this.untypedDeclaration(d)) { found.held.add(d); this.nullishHeldSet.delete(d); }
+      }
+    }
     this.nullishSlotSet = found;
     if (this.nullishElementSet.size) {
       const text = (e: ts.Expression) => this.checker.typeToString(this.checker.getTypeAtLocation(e));
@@ -589,11 +608,81 @@ export class ValueStates {
    */
   foreignEntry(e: ts.AsExpression | ts.TypeAssertion): Form | null {
     const b = this.backend, untyped = ts.TypeFlags.Any | ts.TypeFlags.Unknown;
-    if (b.library || this.plugin(e) || !(this.checker.getTypeAtLocation(e.expression).flags & untyped)) return null;
+    if (b.library || this.packaged(e) || !(this.checker.getTypeAtLocation(e.expression).flags & untyped)) return null;
     const t = this.checker.getTypeAtLocation(e);
     if (t.flags & untyped || isGeneric(t)) return null;
     const form = this.forms().formOf(e);
     return form.foreign && !form.typeObserved ? form : null;
+  }
+
+  /**
+   * An untyped value passed to a parameter of the app's own strict code that holds its declared type (§2.3b M6, group 2):
+   * the form the value enters as, for the backend's checked convert. Null where the parameter is held untyped (its type
+   * is tested) or is no such parameter.
+   */
+  foreignArgument(a: ts.Expression): Form | null {
+    const b = this.backend;
+    if (b.library || b.lenient || !this.strictApp(a)) return null;
+    let x: ts.Node = a;
+    while (ts.isParenthesizedExpression(x.parent)) x = x.parent;
+    const call = x.parent;
+    if (!(ts.isCallExpression(call) || ts.isNewExpression(call)) || call.expression === x) return null;
+    const k = call.arguments!.indexOf(x as ts.Expression);
+    const sig = this.checker.getResolvedSignature(call)?.getDeclaration();
+    const p = sig && !ts.isJSDocSignature(sig) ? sig.parameters[k] : undefined;
+    if (!p || p.dotDotDotToken || !ts.isIdentifier(p.name) || ts.isParameterPropertyDeclaration(p, p.parent) || p.getSourceFile().isDeclarationFile || !this.strictApp(p)) return null;
+    if (!this.untypedValue(a) || this.nullish().held.has(p)) return null;
+    const t = this.checker.getTypeAtLocation(p.name);
+    if (t.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown) || isGeneric(t)) return null;
+    const form = this.forms().formOfSlot(p);
+    return form.foreign && !form.typeObserved ? form : null;
+  }
+
+  /** A value of no type the program knows: typed `any` or `unknown`, or read from a slot held untyped for its foreign value. */
+  private untypedValue(e: ts.Expression): boolean {
+    const x = ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses);
+    if (x.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(x) && x.text === 'undefined')) return false;
+    if (this.checker.getTypeAtLocation(x).flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown)) return true;
+    const d = ts.isIdentifier(x) ? this.checker.getSymbolAtLocation(x)?.valueDeclaration : ts.isCallExpression(x) ? this.checker.getResolvedSignature(x)?.getDeclaration() : undefined;
+    return !!d && !ts.isJSDocSignature(d) && this.nullish().held.has(d) && this.forms().formOfSlot(d).foreign;
+  }
+
+  /** A declaration typed `any` or `unknown`: held untyped already. */
+  private untypedDeclaration(d: ts.Declaration): boolean {
+    const t = ts.isFunctionLike(d) ? this.checker.getSignatureFromDeclaration(d as ts.SignatureDeclaration)?.getReturnType() : this.checker.getTypeAtLocation((d as ts.NamedDeclaration).name ?? d);
+    return !!t && !!(t.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown));
+  }
+
+  /**
+   * A slot of the app's own strict code that can be held untyped for a foreign value: a variable, a parameter or a sync
+   * function's result, of a string, number or boolean, whose native form no declaration outside its group shares.
+   */
+  private holdsForeign(d: ts.Declaration): boolean {
+    if (d.getSourceFile().isDeclarationFile || !this.strictApp(d)) return false;
+    if (this.untypedDeclaration(d)) return true;
+    let type: ts.Type | undefined;
+    if (ts.isVariableDeclaration(d)) {
+      if (!ts.isIdentifier(d.name) || !ts.isVariableStatement(d.parent.parent)) return false;
+      type = this.checker.getTypeAtLocation(d.name);
+    } else if (ts.isParameter(d)) {
+      const fn = d.parent;
+      if (!ts.isIdentifier(d.name) || d.dotDotDotToken || ts.isParameterPropertyDeclaration(d, fn) || !this.ownFunction(fn)) return false;
+      type = this.checker.getTypeAtLocation(d.name);
+    } else if (ts.isFunctionLike(d)) {
+      if (!this.ownFunction(d) || isAsync(d as ts.SignatureDeclaration) || (d as ts.FunctionLikeDeclaration).asteriskToken || ts.isConstructorDeclaration(d)) return false;
+      type = this.checker.getSignatureFromDeclaration(d as ts.SignatureDeclaration)?.getReturnType();
+    }
+    if (!type || isGeneric(type)) return false;
+    const parts = (type.isUnion() ? type.types : [type]).filter((x) => !(x.flags & (ts.TypeFlags.Null | ts.TypeFlags.Undefined | ts.TypeFlags.Void)));
+    const kind = (x: ts.Type) => (x.flags & ts.TypeFlags.StringLike ? 's' : x.flags & ts.TypeFlags.NumberLike ? 'n' : x.flags & ts.TypeFlags.BooleanLike ? 'b' : null);
+    return parts.length > 0 && parts.every((x) => kind(x) && kind(x) === kind(parts[0]));
+  }
+
+  /** A function whose parameters and result no declaration outside the program's own groups shares. */
+  private ownFunction(fn: ts.Node): boolean {
+    if (ts.isFunctionDeclaration(fn) || ts.isArrowFunction(fn) || ts.isFunctionExpression(fn) || ts.isFunctionTypeNode(fn) || ts.isCallSignatureDeclaration(fn)) return !(ts.canHaveDecorators(fn) && ts.getDecorators(fn)?.length);
+    if (ts.isMethodDeclaration(fn)) return ts.isClassLike(fn.parent) && this.backend.ownSignature(fn) && !ts.getDecorators(fn)?.length && !ts.getDecorators(fn.parent)?.length;
+    return false;
   }
 
   /**

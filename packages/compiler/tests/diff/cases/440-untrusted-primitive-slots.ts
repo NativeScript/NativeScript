@@ -1,5 +1,6 @@
-// Strings, numbers and booleans from untyped values placed in typed slots (a variable, a field, a parameter, a literal
-// field, a return): JavaScript stores undefined, null or another kind as given, so nothing throws where it is placed.
+// Strings, numbers and booleans from untyped values placed in typed slots (a variable, a field, a literal field, a
+// return): JavaScript stores undefined, null or another kind as given, so nothing throws where it is placed. A parameter
+// takes undefined and null so too, and another kind is a TypeError where it is passed.
 interface Settings {
   title: string;
   size: number;
@@ -30,7 +31,7 @@ console.log(`[${label.text}]`, label.text === undefined, label.width * 3, label.
 function describe(text: string, count: number, on: boolean): string {
   return `${text}/${count}/${on}`;
 }
-console.log(describe(raw.title, raw.size * 1, raw.shown === 1), describe(raw.missing, raw.missing, raw.missing));
+console.log(describe(String(raw.title), raw.size * 1, raw.shown === 1), describe(raw.missing, raw.missing, raw.missing));
 
 function titleOf(o: any): string {
   return o.title;

@@ -203,6 +203,23 @@ export class Forms {
     return { slots, both, nullish };
   }
 
+  /**
+   * The program's declarations whose form is foreign and whose type something tests (§2.3b M6), by the group that
+   * shares one form: every member of a group is held as one.
+   */
+  typeTestedForeign(): ts.Declaration[][] {
+    this.build();
+    const groups = new Map<Slot, ts.Declaration[]>();
+    for (const s of this.made) {
+      const r = this.find(s);
+      if (!s.decl || r.generic || !(r.states & F) || !r.typeObserved) continue;
+      const list = groups.get(r);
+      if (list) list.push(s.decl);
+      else groups.set(r, [s.decl]);
+    }
+    return [...groups.values()];
+  }
+
   /** A declaration whose group holds a fixed point's slot (a platform's or library's declaration): its form is that one's. */
   fixedSlot(d: ts.Declaration): boolean {
     this.build();
@@ -560,6 +577,27 @@ export class Forms {
     this.placedUntyped.add(ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses));
   }
 
+  /**
+   * A read of a member the receiver's declared type doesn't have (`(v as any).extra`, a lenient `v['extra']`), which tests
+   * what the value really is (§2.3b M6).
+   */
+  private observeUndeclaredMember(n: ts.PropertyAccessExpression | ts.ElementAccessExpression): void {
+    if (ts.isPropertyAccessExpression(n) && ts.isPrivateIdentifier(n.name)) return;
+    const untyped = ts.TypeFlags.Any | ts.TypeFlags.Unknown;
+    let x = ts.skipOuterExpressions(n.expression, ts.OuterExpressionKinds.Parentheses);
+    if ((ts.isAsExpression(x) || ts.isTypeAssertionExpression(x)) && this.checker.getTypeAtLocation(x).flags & untyped) x = ts.skipOuterExpressions(x.expression, ts.OuterExpressionKinds.Parentheses);
+    const t = this.checker.getNonNullableType(this.checker.getTypeAtLocation(x));
+    if (t.flags & (untyped | ts.TypeFlags.TypeParameter) || isGeneric(t)) return;
+    const apparent = this.checker.getApparentType(t);
+    const key = ts.isPropertyAccessExpression(n) ? n.name.text : ts.isStringLiteralLike(n.argumentExpression) || ts.isNumericLiteral(n.argumentExpression) ? n.argumentExpression.text : null;
+    const indexed = (k: ts.Type) => this.checker.getIndexInfosOfType(apparent).some((i) => this.checker.isTypeAssignableTo(k, i.keyType));
+    if (key === null) {
+      const k = this.checker.getTypeAtLocation(n.argumentExpression);
+      if (!(k.flags & ts.TypeFlags.StringLike) || indexed(k)) return;
+    } else if (this.checker.getPropertyOfType(apparent, key) || indexed(/^\d+$/.test(key) ? this.checker.getNumberType() : this.checker.getStringType())) return;
+    this.observeType(x);
+  }
+
   /** Whether an expression may give null or undefined: whether comparing with it tells them apart. */
   private mayBeEmpty(e: ts.Expression): boolean {
     const f = this.flow(e);
@@ -582,7 +620,8 @@ export class Forms {
     else if (ts.isPostfixUnaryExpression(n)) this.observe(n.operand);
     else if (ts.isTypeOfExpression(n)) { this.observe(n.expression); this.observeType(n.expression); }
     else if (ts.isTemplateSpan(n) || ts.isComputedPropertyName(n)) this.observe(n.expression);
-    else if (ts.isElementAccessExpression(n)) this.observe(n.argumentExpression);
+    else if (ts.isElementAccessExpression(n)) { this.observe(n.argumentExpression); this.observeUndeclaredMember(n); }
+    else if (ts.isPropertyAccessExpression(n)) this.observeUndeclaredMember(n);
     else if (ts.isSwitchStatement(n)) {
       for (const clause of n.caseBlock.clauses) {
         if (!ts.isCaseClause(clause)) continue;
