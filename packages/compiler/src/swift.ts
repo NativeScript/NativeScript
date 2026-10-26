@@ -3773,6 +3773,7 @@ ${members.join('\n')}
     if (this.library && from === 'JSObject' && to.replace(/[?!]$/, '') === 'EventData') return `EventData(jsObject: ${code})`;
     if (to === 'Any?') {
       if (from === 'Void') return `jsUndefined(${code})`;
+      if (this.untypedEnum('', from)) return this.untypedEnum(code, from);
       // Lenient code holds a function implicitly unwrapped (`_itemTemplateSelector` before it is set): nil as an optional one is.
       const opt = isOptional(from) || /^\(.*\)!$/.test(from);
       const fn = functionParts(opt ? from.replace(/^\((.*)\)[?!]$/, '$1') : from);
@@ -3904,10 +3905,10 @@ ${members.join('\n')}
 
   // ---- Functions -----------------------------------------------------------------------------
 
-  /** A native enum's value held untyped: its number, as the runtime marshals it; '' (from no code) when the type is not a native enum. */
+  /** A native enum's or option set's value held untyped: its number, as the runtime marshals it; '' (from no code) when the type is neither. */
   private untypedEnum(code: string, type: string): string {
     const base = type.replace(/\?$/, '');
-    if (!this.native.isEnumType(base) || this.native.isOptionSetType(base)) return code;
+    if (!this.native.isEnumType(base)) return code;
     if (!code) return 'enum';
     return type.endsWith('?') ? `${code}.map { Double($0.rawValue) }` : `Double(${code}.rawValue)`;
   }
