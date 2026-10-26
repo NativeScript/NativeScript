@@ -27180,6 +27180,7 @@
 		"39-finally|27:14:return|[]": "other value: \"[\" → (nothing)",
 		"39-finally|27:14:return|null": "other value: null → (nothing)",
 		"39-finally|27:14:return|undefined": "other value: undefined → (nothing)",
+		"39-finally|29:12:arg|42": "M6 checked convert: other value: text → text (node \"threw stop failed\", native \"threw number is not a boolean\")",
 		"39-finally|46:27:as|null": "no throw (Node throws): TypeError: Cannot read properties of null (reading '…')",
 		"39-finally|46:27:as|undefined": "no throw (Node throws): TypeError: Cannot read properties of undefined (reading '…')",
 		"39-finally|49:15:return|''": "other value: (nothing) → N",
