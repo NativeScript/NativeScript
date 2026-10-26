@@ -7814,11 +7814,12 @@ export class Translator implements AsyncTranslator {
     if (target && !ts.isJSDocSignature(target) && this.readsArguments(target)) return [this.packed(all, 'JSArray<Any?>')];
     const out: string[] = [];
     const restAt = params.findIndex((p) => p.valueDeclaration && ts.isParameter(p.valueDeclaration) && p.valueDeclaration.dotDotDotToken);
-    const appDeclared = (!!sig?.getDeclaration() && !sig!.getDeclaration().getSourceFile().isDeclarationFile) || (!!impl && !impl.getSourceFile().isDeclarationFile);
+    // A function type's rest parameter too (`bind`'s `(...args: A) => R`): Kotlin's function type takes it as one array.
+    const appDeclared = (!!sig?.getDeclaration() && !sig!.getDeclaration().getSourceFile().isDeclarationFile) || (!!impl && !impl.getSourceFile().isDeclarationFile) || (!this.library && !!sig?.getDeclaration() && ts.isFunctionTypeNode(sig!.getDeclaration()));
     for (let k = 0; k < list.length; k++) {
       const a = list[k];
       if (restAt >= 0 && k >= restAt && appDeclared) {
-        const rest = this.typeOf((params[restAt].valueDeclaration as ts.ParameterDeclaration).name);
+        const rest = this.restType(params[restAt]);
         out.push(this.packed(list.slice(k), rest));
         break;
       }
@@ -7841,6 +7842,8 @@ export class Translator implements AsyncTranslator {
       // So is a parameter of a package's source called from outside it (`new FormArray(controls)`), its class's type parameters erased.
       const packageParam = !this.library && !!decl && ts.isParameter(decl) && this.pluginFiles.has(decl.getSourceFile().fileName) && !this.pluginFiles.has(e.getSourceFile().fileName);
       if (generic || packageParam) pt = this.typeOf((decl as ts.ParameterDeclaration).name);
+      // A parameter typed from type parameters (`handler: Delegate[K]`, core's too) is untyped in Kotlin, whatever this call instantiates.
+      else if (decl && ts.isParameter(decl) && decl.type && pt !== 'Any?' && this.untypedGeneric(decl.type)) pt = 'Any?';
       // Library mode: an override's parameter is the topmost declaration's, which Kotlin's signature has (`appOverride`).
       const root = this.library && decl && ts.isParameter(decl) && ts.isMethodDeclaration(decl.parent) ? this.rootMethod(decl.parent) : null;
       if (root && root !== decl.parent && root.parameters[k] && !root.parameters[k].dotDotDotToken) pt = this.paramType(root.parameters[k]);
@@ -7865,11 +7868,11 @@ export class Translator implements AsyncTranslator {
       // An object or a record of other values where a package's parameter takes a record of any: as script passes it.
       const record = packageParam ? /^JSRecord<(.*)>(\??)$/.exec(pt) : null;
       if (record && this.typeOf(a).replace(/\?$/, '') !== pt.replace(/\?$/, '')) { out.push(`${record[2] ? 'jsRecordOrNull' : 'jsRecord'}<${record[1]}>(${this.expr(a)})`); continue; }
-      out.push(this.coerce(a, pt));
+      out.push((pt === 'Any?' && this.untypedArrow(a)) || this.coerce(a, pt));
     }
-    if (restAt >= 0 && appDeclared && list.length <= restAt) out.push(`${this.typeOf((params[restAt].valueDeclaration as ts.ParameterDeclaration).name)}()`);
+    if (restAt >= 0 && appDeclared && list.length <= restAt) out.push(`${this.restType(params[restAt])}()`);
     const decl = sig?.getDeclaration();
-    if (count === undefined && decl && !ts.isJSDocSignature(decl) && (ts.isFunctionTypeNode(decl) || ts.isCallSignatureDeclaration(decl) || ts.isArrowFunction(decl) || ts.isFunctionExpression(decl))) {
+    if (count === undefined && restAt < 0 && decl && !ts.isJSDocSignature(decl) && (ts.isFunctionTypeNode(decl) || ts.isCallSignatureDeclaration(decl) || ts.isArrowFunction(decl) || ts.isFunctionExpression(decl))) {
       for (let k = list.length; k < params.length; k++) {
         const pt = this.type(this.checker.getTypeOfSymbolAtLocation(params[k], e), e);
         out.push(pt === 'Unit' ? 'Unit' : 'null');
@@ -7886,6 +7889,38 @@ export class Translator implements AsyncTranslator {
       }
     }
     return out;
+  }
+
+  /**
+   * App code: a function literal given to an untyped parameter, taking what untyped callers give it (null, an object
+   * literal) as its parameters' types have it; null when it needs no reading. Only for an argument: a slot Kotlin types
+   * as a function (`worker.onmessage`) needs the literal itself.
+   */
+  private untypedArrow(e: ts.Expression): string | null {
+    let bare = e;
+    while (ts.isParenthesizedExpression(bare)) bare = bare.expression;
+    if (this.library || !ts.isArrowFunction(bare) || bare.parameters.length > 4 || this.readsArguments(bare) || bare.parameters.some((q) => q.dotDotDotToken || isThisParameter(q) || !ts.isIdentifier(q.name))) return null;
+    const types = bare.parameters.map((q) => this.paramType(q));
+    // A string, number or boolean arrives as the type it has, but null as script's.
+    const primitive = (t: string) => t === 'Any?' || /^(Double|String|Boolean)\??$/.test(t);
+    if (!types.some((t) => !primitive(t) || (t.endsWith('?') && t !== 'Any?'))) return null;
+    const read = (t: string, x: string) => (t === 'Any?' ? x : !primitive(t) ? this.fromAny(x, t) : t.endsWith('?') ? `(if (jsIsNullish(${x})) null else jsUnchecked<${t}>(${x}))` : `jsUnchecked<${t}>(${x})`);
+    const ret = this.returnTypeOf(bare);
+    const names = types.map((_, k) => `__u${k}`);
+    const call = `__f(${types.map((t, k) => read(t, names[k])).join(', ')})`;
+    return `run<Any?> { val __f = ${this.closure(bare, `(${types.join(', ')}) -> ${ret}`)}; jsAdapt${types.length}<${[...types.map(() => 'Any?'), ret].join(', ')}>(__f) { ${names.map((n) => `${n}: Any?`).join(', ')} -> ${call} } }`;
+  }
+
+  /** A parameter type computed from type parameters (indexed access, conditional), which Kotlin has as `Any?`. */
+  private untypedGeneric(node: ts.TypeNode): boolean {
+    const t = this.checker.getTypeFromTypeNode(node);
+    return !!(t.flags & (ts.TypeFlags.IndexedAccess | ts.TypeFlags.Conditional | ts.TypeFlags.Substitution)) && this.type(t, node) === 'Any?';
+  }
+
+  private restType(p: ts.Symbol): string {
+    const d = p.valueDeclaration as ts.ParameterDeclaration;
+    const bare = !!d.type && ts.isTypeReferenceNode(d.type) && !d.type.typeArguments && !!(this.checker.getTypeFromTypeNode(d.type).flags & ts.TypeFlags.TypeParameter);
+    return bare ? 'JSArray<Any?>' : this.typeOf(d.name);
   }
 
   /** The arguments of a call on an untyped value, after its leading ones: each, or with spreads, all spread from one list. */

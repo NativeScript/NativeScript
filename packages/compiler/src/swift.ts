@@ -1476,6 +1476,12 @@ export class Translator implements AsyncTranslator {
     return generic(t);
   }
 
+  /** A parameter type computed from type parameters (indexed access, conditional), which Swift has as `Any?`. */
+  private untypedGeneric(node: ts.TypeNode): boolean {
+    const t = this.checker.getTypeFromTypeNode(node);
+    return !!(t.flags & (ts.TypeFlags.IndexedAccess | ts.TypeFlags.Conditional | ts.TypeFlags.Substitution)) && this.type(t, node) === 'Any?';
+  }
+
   private isBareTypeParameter(t: ts.TypeNode): boolean {
     return ts.isTypeReferenceNode(t) && !t.typeArguments && !!(this.checker.getTypeFromTypeNode(t).flags & ts.TypeFlags.TypeParameter);
   }
@@ -10894,6 +10900,12 @@ ${members.join('\n')}
         out.push(this.coerce(a, 'Any?'));
         continue;
       }
+      // A function where the parameter's type is computed from type parameters (`handler: Delegate[K]`, core's too): Swift
+      // declares it untyped, so the argument must be a function object script can call, not the instantiation's closure.
+      if (decl && ts.isParameter(decl) && decl.type && at !== 'Any?' && heldType(at) === 'Any?' && this.untypedGeneric(decl.type)) {
+        out.push(this.coerce(a, 'Any?'));
+        continue;
+      }
       // An override emitted with its root's signature: the parameter as Swift has it.
       const method = decl && ts.isParameter(decl) && ts.isMethodDeclaration(decl.parent) && !isStatic(decl.parent) && !decl.getSourceFile().isDeclarationFile ? decl.parent : null;
       const emitted = method && this.baseMethod(method) ? this.emittedSignature(method).params[k]?.type.replace(/!$/, '?') : undefined;
@@ -10998,7 +11010,10 @@ ${members.join('\n')}
 
   /** A rest parameter's array type; one typed `any` (`...args: any`) holds an array of anything. */
   private restType(p: ts.Symbol): string {
-    const t = this.typeOf((p.valueDeclaration as ts.ParameterDeclaration).name);
+    const d = p.valueDeclaration as ts.ParameterDeclaration;
+    // A rest of a type parameter (`bind`'s `(...args: A) => R`): Swift's function type takes it as one untyped array.
+    if (d.type && this.isBareTypeParameter(d.type)) return 'JSArray<Any?>';
+    const t = this.typeOf(d.name);
     return t === 'Any?' ? 'JSArray<Any?>' : t;
   }
 
