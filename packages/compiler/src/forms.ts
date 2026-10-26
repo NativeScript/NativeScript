@@ -178,6 +178,12 @@ export class Forms {
     return { slots, both, nullish };
   }
 
+  /** A declaration whose group holds a fixed point's slot (a platform's or library's declaration): its form is that one's. */
+  fixedSlot(d: ts.Declaration): boolean {
+    this.build();
+    return this.find(this.slotFor(d)).fixed;
+  }
+
   /** What a declaration's own type admits (its checker type, its type as written, `?`, a default), before any flow. */
   declaredForm(d: ts.Declaration): Form {
     const s = this.declaredStates(d) | ((d as { initializer?: ts.Node }).initializer && ts.isParameter(d) ? U : 0);
@@ -369,7 +375,14 @@ export class Forms {
   private unionSignature(fn: ts.SignatureDeclaration, sig: ts.SignatureDeclaration): void {
     if (fn === sig) return;
     // Callers of `sig` give `fn`'s arguments; `fn`'s result is `sig`'s.
-    fn.parameters.forEach((p, k) => { const q = sig.parameters[k]; if (q && !q.dotDotDotToken === !p.dotDotDotToken) this.share(this.slotFor(q), this.slotFor(p), true); });
+    const theirs = valueParameters(sig);
+    valueParameters(fn).forEach((p, k) => {
+      const q = theirs[k];
+      if (!q || !q.dotDotDotToken !== !p.dotDotDotToken) return;
+      this.share(this.slotFor(q), this.slotFor(p), true);
+      // Parameters of function type share their signatures too: a function given for one is called through the other.
+      if (p.type && q.type && ts.isFunctionTypeNode(p.type) && ts.isFunctionTypeNode(q.type)) this.unionSignature(p.type, q.type);
+    });
     if (!(fn as ts.FunctionLikeDeclaration).asteriskToken && !(sig as ts.FunctionLikeDeclaration).asteriskToken && !ts.isConstructorDeclaration(fn)) this.share(this.slotFor(fn), this.slotFor(sig), true);
   }
 
@@ -550,9 +563,10 @@ export class Forms {
   private observeArguments(call: ts.CallExpression | ts.NewExpression, sig: ts.SignatureDeclaration | undefined, args: ts.NodeArray<ts.Expression>): void {
     if (!sig) { for (const a of args) this.observe(ts.isSpreadElement(a) ? a.expression : a); return; }
     const callee = ts.isPropertyAccessExpression(call.expression) && ts.isIdentifier(call.expression.expression) && LIB_FILE.test(sig.getSourceFile().fileName) ? call.expression.expression.text : '';
+    const params = valueParameters(sig);
     args.forEach((a, k) => {
-      const q = sig.parameters[Math.min(k, sig.parameters.length - 1)];
-      if (!q || (k >= sig.parameters.length && !q.dotDotDotToken)) return;
+      const q = params[Math.min(k, params.length - 1)];
+      if (!q || (k >= params.length && !q.dotDotDotToken)) return;
       const value = ts.isSpreadElement(a) ? a.expression : a;
       if (callee === 'JSON' || callee === 'console') this.printed.push([value, callee === 'JSON']);
       if (this.unseenReader(q)) this.observe(value);
@@ -782,7 +796,7 @@ export class Forms {
     if (!sig || ts.isJSDocSignature(sig)) this.observeArguments(call, undefined, args);
     else if (declarationFile(sig)) this.observeArguments(call, sig, args);
     if (sig && !ts.isJSDocSignature(sig) && !declarationFile(sig) && !args.some(ts.isSpreadElement)) {
-      sig.parameters.forEach((p, k) => {
+      valueParameters(sig).forEach((p, k) => {
         if (p.dotDotDotToken) { for (const a of args.slice(k)) this.place(a, this.child(this.slotFor(p), 'element')); }
         else if (k >= args.length) this.seed(this.slotFor(p), U | M);
       });
@@ -791,23 +805,23 @@ export class Forms {
     if (!ts.isPropertyAccessExpression(call.expression)) return;
     const name = call.expression.name.text, recv = call.expression.expression;
     const invoked = this.invokedThrough(call);
-    if (invoked && name === 'call') invoked.parameters.forEach((p, k) => {
+    if (invoked && name === 'call') valueParameters(invoked).forEach((p, k) => {
       if (p.dotDotDotToken) { for (const a of args.slice(k + 1)) this.place(a, this.child(this.slotFor(p), 'element')); }
       else if (args[k + 1]) this.place(args[k + 1], this.slotFor(p));
       else this.seed(this.slotFor(p), U | M);
     });
     if (invoked && name === 'apply') {
-      if (args[1]) for (const p of invoked.parameters) this.placeElements(args[1], p.dotDotDotToken ? this.child(this.slotFor(p), 'element') : this.slotFor(p), null);
+      if (args[1]) for (const p of valueParameters(invoked)) this.placeElements(args[1], p.dotDotDotToken ? this.child(this.slotFor(p), 'element') : this.slotFor(p), null);
       const list = args[1] && ts.skipOuterExpressions(args[1]);
       const given = list && ts.isArrayLiteralExpression(list) && !list.elements.some(ts.isSpreadElement) ? list.elements.length : 0;
-      invoked.parameters.forEach((p, k) => { if (!p.dotDotDotToken && k >= given) this.seed(this.slotFor(p), U | M); });
+      valueParameters(invoked).forEach((p, k) => { if (!p.dotDotDotToken && k >= given) this.seed(this.slotFor(p), U | M); });
     }
     const t = c.getNonNullableType(c.getTypeAtLocation(recv));
     const kind = c.isArrayType(t) || c.isTupleType(t) ? 'Array' : t.getSymbol()?.name;
     const recvSlots = () => this.flow(recv).from.map(([s]) => s);
     const callback = (k: number) => (args[k] ? this.functionDeclarationOf(args[k]) : null);
     const giveParam = (fn: ts.SignatureDeclaration | null, k: number, from: Slot[], states = 0) => {
-      const p = fn?.parameters[k];
+      const p = fn && valueParameters(fn)[k];
       if (!p) return;
       for (const s of from) this.edges.push([s, this.slotFor(p), ~0]);
       if (states) this.seed(this.slotFor(p), states);
@@ -820,7 +834,7 @@ export class Forms {
       if (name === 'sort' || name === 'toSorted') { giveParam(callback(0), 0, elements); giveParam(callback(0), 1, elements); }
       if (name === 'reduce' || name === 'reduceRight') {
         giveParam(callback(0), 1, elements);
-        const fn = callback(0), acc = fn?.parameters[0];
+        const fn = callback(0), acc = fn && valueParameters(fn)[0];
         if (acc) { if (args[1]) this.place(args[1], this.slotFor(acc)); else giveParam(fn, 0, elements); const r = this.resultOf(fn!); if (r) this.edges.push([r, this.slotFor(acc), ~0]); }
       }
       return;
@@ -832,7 +846,7 @@ export class Forms {
     if (kind === 'Promise' && (name === 'then' || name === 'finally')) giveParam(callback(0), 0, name === 'then' ? recvSlots().map((s) => this.child(s, 'result')) : []);
     if (t.flags & ts.TypeFlags.StringLike && (name === 'replace' || name === 'replaceAll') && args[0] && regexpMayLeaveGroupUnset(args[0], c)) {
       const fn = callback(1);
-      fn?.parameters.forEach((p, k) => { if (k > 0 && !p.dotDotDotToken) this.seed(this.slotFor(p), U); });
+      if (fn) valueParameters(fn).forEach((p, k) => { if (k > 0 && !p.dotDotDotToken) this.seed(this.slotFor(p), U); });
     }
   }
 
@@ -903,17 +917,17 @@ export class Forms {
    * fewer arguments, and anything for a primitive (§2.3b M2).
    */
   private openParameters(fn: ts.SignatureDeclaration, caller: { lib?: ts.SignatureDeclaration; platform?: ts.SignatureDeclaration; script?: boolean } = {}): void {
-    const lib = caller.lib;
-    const rest = lib?.parameters.at(-1)?.dotDotDotToken ? lib.parameters.at(-1) : undefined;
-    fn.parameters.forEach((p, k) => {
+    const lib = caller.lib && valueParameters(caller.lib), platform = caller.platform && valueParameters(caller.platform);
+    const rest = lib?.at(-1)?.dotDotDotToken ? lib.at(-1) : undefined;
+    valueParameters(fn).forEach((p, k) => {
       let states: number;
       if (lib) {
-        const q = k < lib.parameters.length && lib.parameters[k] !== rest ? lib.parameters[k] : rest;
+        const q = k < lib.length && lib[k] !== rest ? lib[k] : rest;
         const given = q === rest && q?.type && ts.isArrayTypeNode(q.type) ? q.type.elementType : q?.type;
         // A built-in's `any` says nothing of the value's type; a parameter that declares its own type is believed.
         states = q ? typeNodeStates(given) & (p.type ? ~F : ~0) | (q.questionToken ? U : 0) : U;
       } else states = this.strict(p) ? 0 : this.openStates(p);
-      const q = caller.platform?.parameters[k];
+      const q = platform?.[k];
       if (q && this.nativeNil(q)) states |= N;
       if (caller.script && !p.dotDotDotToken) states |= U | (this.primitive(p) ? F : 0);
       if (states) this.seed(p.dotDotDotToken ? this.child(this.slotFor(p), 'element') : this.slotFor(p), states);
@@ -1212,7 +1226,13 @@ function sourceOf(n: ts.Node): ts.SourceFile | undefined {
 }
 
 /** A type parameter, alone or with null and undefined. */
-function isGeneric(t: ts.Type | null | undefined): boolean {
+/** A signature's parameters as callers give them: a declared `this` is the receiver, not an argument. */
+function valueParameters(sig: ts.SignatureDeclaration): readonly ts.ParameterDeclaration[] {
+  const first = sig.parameters[0];
+  return first && ts.isIdentifier(first.name) && first.name.text === 'this' ? sig.parameters.slice(1) : sig.parameters;
+}
+
+export function isGeneric(t: ts.Type | null | undefined): boolean {
   if (!t) return false;
   const parts = (t.isUnion() ? t.types : [t]).filter((x) => !(x.flags & (ts.TypeFlags.Undefined | ts.TypeFlags.Null | ts.TypeFlags.Void)));
   return parts.length > 0 && parts.every((x) => !!(x.flags & ts.TypeFlags.TypeParameter) && !(x as { isThisType?: boolean }).isThisType);

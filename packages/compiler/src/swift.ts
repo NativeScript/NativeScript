@@ -1159,7 +1159,7 @@ export class Translator implements AsyncTranslator {
         if (p.valueDeclaration && this.states.nullish().held.has(p.valueDeclaration)) return 'Any?';
         const pt = this.type(own(c.getTypeOfSymbolAtLocation(p, where ?? p.valueDeclaration!)), where);
         if (p.valueDeclaration && this.states.nullishHeld(p.valueDeclaration)) return nullishType(pt);
-        if (p.valueDeclaration && ts.isParameter(p.valueDeclaration) && (p.valueDeclaration.questionToken || p.valueDeclaration.initializer || nullableTypeNode(p.valueDeclaration.type) || this.states.scriptCalledParameter(p.valueDeclaration))) return optionalType(pt);
+        if (p.valueDeclaration && ts.isParameter(p.valueDeclaration) && (p.valueDeclaration.questionToken || p.valueDeclaration.initializer || nullableTypeNode(p.valueDeclaration.type) || this.states.scriptCalledParameter(p.valueDeclaration) || this.states.widened(p.valueDeclaration))) return optionalType(pt);
         // Lenient code may pass null for an object: the parameter is optional, as a closure's implicitly unwrapped one is.
         if ((this.lenientRef(pt) !== pt || this.lenientAppParameter(p.valueDeclaration, pt)) && !(p.valueDeclaration && ts.isParameter(p.valueDeclaration) && p.valueDeclaration.dotDotDotToken)) return optionalType(pt);
         // A rest parameter is spelled `JSRest` (an array, to Swift): a script function called as this type takes the array's elements as its arguments.
@@ -2635,7 +2635,7 @@ export class Translator implements AsyncTranslator {
       return { name: own, type: m.questionToken ? optionalType(t) : t, readonly: hasModifier(m, ts.SyntaxKind.ReadonlyKeyword) || this.implementedReadOnly(name, own) };
     });
     const methods = members.filter(ts.isMethodSignature).map((m) => {
-      const params = m.parameters.map((p, k) => ({ name: ts.isIdentifier(p.name) ? ident(p.name.text) : `p${k}`, type: p.questionToken ? optionalType(this.typeOf(p.name)) : this.typeOf(p.name) }));
+      const params = m.parameters.map((p, k) => ({ name: ts.isIdentifier(p.name) ? ident(p.name.text) : `p${k}`, type: this.requirementParamType(p) }));
       // Lenient code's classes return an object implicitly unwrapped, as the requirement they meet must.
       const saved = this.currentFile;
       this.currentFile = m.getSourceFile().fileName;
@@ -3330,6 +3330,7 @@ ${members.join('\n')}
     if ((ts.isAsExpression(n) || ts.isTypeAssertionExpression(n)) && this.downcasts(n)) return true;
     if ((ts.isPropertyAccessExpression(n) || ts.isElementAccessExpression(n)) && !n.questionDotToken && this.definiteReceiver(ts.skipOuterExpressions(n.expression, ts.OuterExpressionKinds.Parentheses))) return true;
     if ((ts.isPropertyAccessExpression(n) || ts.isElementAccessExpression(n)) && !n.questionDotToken && this.lenientAwait(n.expression)) return true;
+    if (ts.isPropertyAccessExpression(n) && !n.questionDotToken && this.widenedParameterRead(ts.skipOuterExpressions(n.expression, ts.OuterExpressionKinds.Parentheses))) return true;
     // `obj.field = untyped` on an object of the program or core: written by name, as its setter takes any value.
     if (ts.isBinaryExpression(n) && n.operatorToken.kind === ts.SyntaxKind.EqualsToken && (this.untypedWrite(n.left, n.right) || (ts.isPropertyAccessExpression(n.left) && !this.lenient && !this.library && this.states.nullishMember(n.left, true)))) return true;
     if (ts.isCallExpression(n)) {
@@ -3921,11 +3922,25 @@ ${members.join('\n')}
   }
 
   /** A parameter's Swift type as `params` declares it (an unwrapped optional written as optional, as a function type has it). */
+  /** An interface method's parameter as its protocol requirement spells it: optional where it is, or where its group's form widens it. */
+  private requirementParamType(p: ts.ParameterDeclaration): string {
+    return p.questionToken || this.states.widened(p) ? optionalType(this.typeOf(p.name)) : this.typeOf(p.name);
+  }
+
   private paramType(p: ts.ParameterDeclaration): string {
     const t = this.typeOf(p.name);
     if (this.states.nullishHeld(p)) return nullishType(t);
     if (p.questionToken || (p.initializer && !this.templateParams)) return this.constantDefault(p) ? t : optionalType(t);
     return this.states.mayBeNull(p) ? optionalType(t) : t;
+  }
+
+  /**
+   * Strict code's parameter its group's form widens (`widened`): spelled optional, as the function type, protocol
+   * requirement or base method it shares a form with spells it (an implicitly unwrapped one witnesses no `T?`), and
+   * rebound implicitly unwrapped in the body (`paramPrelude`), which reads it as other such parameters are read.
+   */
+  private optionalWidened(p: ts.ParameterDeclaration): boolean {
+    return !this.lenient && !p.questionToken && ts.isIdentifier(p.name) && this.states.widened(p) && !isOptional(this.typeOf(p.name)) && this.typeOf(p.name) !== 'Any?';
   }
 
   private params(fn: ts.SignatureDeclaration, closure: boolean): string {
@@ -3938,7 +3953,8 @@ ${members.join('\n')}
       let t = this.typeOf(p.name);
       if (this.states.nullishHeld(p)) return closure ? `${name}: ${nullishType(t)}` : `_ ${name}: ${nullishType(t)}${p.questionToken || p.initializer ? ' = nil' : ''}`;
       // `accessory: UITabAccessory | null`, checked without strictNullChecks: null still passes; the body reads it unwrapped.
-      if (this.states.mayBeNull(p) || (closure && nullableTypeNode(p.type) && !isOptional(t) && t !== 'Any?' && this.lenientRef(t) !== t)) t = this.lenient ? optionalType(t) : `${t}!`;
+      if (!closure && this.optionalWidened(p)) t = optionalType(t);
+      else if (this.states.mayBeNull(p) || (closure && nullableTypeNode(p.type) && !isOptional(t) && t !== 'Any?' && this.lenientRef(t) !== t)) t = this.lenient ? optionalType(t) : `${t}!`;
       let given = '';
       if (p.questionToken || (p.initializer && !this.templateParams)) {
         if (!closure && this.constantDefault(p)) given = ` = ${this.storedInit(p.initializer!, t)}`;
@@ -4033,7 +4049,8 @@ ${members.join('\n')}
         lines.push(`${i}${assigned ? 'var' : 'let'} ${name}: ${optionalType(pt)} = ${this.tryPrefix(p.initializer)}${name} ?? ${this.fromAny(read, optionalType(pt))}`);
       } else if (p.initializer && !this.templateParams && (ts.isArrowFunction(fn) || ts.isFunctionExpression(fn) || !this.constantDefault(p))) {
         lines.push(`${i}${assigned ? 'var' : 'let'} ${name}: ${this.typeOf(p.name)} = ${this.tryPrefix(p.initializer)}${name} ?? ${this.coerce(p.initializer, this.typeOf(p.name))}`);
-      } else if (assigned) lines.push(this.states.mayBeNull(p) ? `${i}var ${name}: ${this.lenient ? optionalType(pt) : `${pt}!`} = ${name}` : `${i}var ${name} = ${name}`);
+      } else if (!p.initializer && this.optionalWidened(p) && !ts.isArrowFunction(fn) && !ts.isFunctionExpression(fn)) lines.push(`${i}${assigned ? 'var' : 'let'} ${name}: ${pt}! = ${name}`);
+      else if (assigned) lines.push(this.states.mayBeNull(p) ? `${i}var ${name}: ${this.lenient ? optionalType(pt) : `${pt}!`} = ${name}` : `${i}var ${name} = ${name}`);
       // A destructured parameter the body assigns binds variables.
       if (!ts.isIdentifier(p.name)) lines.push(this.bindTo(p.name, name, '', !!fn.body && boundNames(p.name).some((b) => assignsTo(fn.body!, this.checker.getSymbolAtLocation(b), this.checker))));
     });
@@ -9969,7 +9986,7 @@ ${members.join('\n')}
         continue;
       }
       if (!ts.isMethodSignature(req) || !ts.isMethodDeclaration(m)) return false;
-      const want = req.parameters.map((p) => (p.questionToken ? optionalType(this.typeOf(p.name)) : this.typeOf(p.name)));
+      const want = req.parameters.map((p) => this.requirementParamType(p));
       const have = m.parameters.map((p) => this.paramType(p));
       const ret = this.returnTypeOf(req), ownRet = this.returnTypeOf(m);
       if (want.length === have.length && want.every((t, k) => t === have[k]) && ret === ownRet) continue;
@@ -10258,6 +10275,13 @@ ${members.join('\n')}
     return `${cell}.${this.cellStatic(cell, 'declared', 'jsDeclaredFunction(id, Self(f: __h)).f')}(${swiftString(ref.replace(/`/g, ''))}, ${ref})`;
   }
 
+  /** A read of strict code's parameter its group's form widens, held implicitly unwrapped: it may be nil where its type says not. */
+  private widenedParameterRead(x: ts.Expression): boolean {
+    if (this.lenient || !ts.isIdentifier(x)) return false;
+    const d = this.resolve(x)?.valueDeclaration;
+    return !!d && ts.isParameter(d) && !d.questionToken && !d.initializer && this.states.widened(d) && !isOptional(this.typeOf(d.name)) && this.typeOf(d.name) !== 'Any?';
+  }
+
   /** A receiver that can be missing though its type says not (`x!`, `items[i]`): JavaScript's TypeError when it is. */
   private receiver(target: ts.Expression, key: string): string | null {
     if (this.loose(target) && !uncheckedMatch(target, this.checker)) return null;
@@ -10269,6 +10293,7 @@ ${members.join('\n')}
     if (awaited && !chained) return `jsUnwrap(${awaited}, ${swiftString(key)}${this.states.nullResult(x) ? ', null: true' : ''})`;
     if (!chained && this.definiteReceiver(x)) return `jsUnwrap(${this.expr(x)}, ${swiftString(key)})`;
     if (!chained && uncheckedMatch(x, this.checker)) return `jsUnwrap(${this.expr(x)}, ${swiftString(key)}, null: true)`;
+    if (!chained && this.widenedParameterRead(x)) return `jsUnwrap(${this.expr(x)}, ${swiftString(key)})`;
     const kind = unsafeReceiver(target, this.checker);
     if (!kind) return null;
     const value = ts.isNonNullExpression(x) ? (this.maybeUndefined(x.expression) ?? this.expr(x.expression)) : this.maybeUndefined(x);
@@ -10709,7 +10734,9 @@ ${members.join('\n')}
       // A result Swift has as optional, given to an object parameter the program's code takes optional or implicitly unwrapped: as it is.
       const raw = !emitted && !erased && decl && ts.isParameter(decl) && !decl.getSourceFile().isDeclarationFile && (this.states.mayBeNull(decl) || (!!decl.questionToken && !['String', 'Double', 'Bool'].includes(at))) && (this.givesUndefined(a) || (this.lenientApp && !!(decl.parent as ts.FunctionLikeDeclaration).body && this.heldOptional(a, at))) ? this.maybeUndefined(a) : null;
       if (raw) { out.push(raw); continue; }
-      out.push(this.coerce(a, emitted ?? (omissible ? optionalType(at) : erased ? this.inFile(decl!.getSourceFile().fileName, () => this.paramType(decl as ts.ParameterDeclaration)) : at === 'Never' ? this.type(this.checker.getTypeOfSymbol(p), e) : at)));
+      // A parameter its group's form widens takes undefined and null as they are, as every member of the group spells it.
+      const widened = !emitted && !erased && !!decl && ts.isParameter(decl) && this.states.widened(decl) && !isOptional(at) && at !== 'Any?';
+      out.push(this.coerce(a, emitted ?? (omissible || widened ? optionalType(at) : erased ? this.inFile(decl!.getSourceFile().fileName, () => this.paramType(decl as ts.ParameterDeclaration)) : at === 'Never' ? this.type(this.checker.getTypeOfSymbol(p), e) : at)));
     }
     if (restAt >= 0 && appDeclared && out.length <= restAt) out.push(`${this.restType(params[restAt])}()`);
     // A function declaring `this`, called plainly: its `this` is undefined.
@@ -11842,7 +11869,7 @@ ${members.join('\n')}
           const el = T().replace(/^JSArray<(.*)>$/, '$1');
           const index = fn.parameters[1] ? ident((fn.parameters[1].name as ts.Identifier).text) : '_';
           const value = fn.parameters[0] && ts.isIdentifier(fn.parameters[0].name) && fn.parameters[0].name.text !== '_' ? `let ${ident(fn.parameters[0].name.text)}: Any? = nil; ` : '';
-          const body = ts.isBlock(fn.body) ? this.functionBody(fn, el, this.indent).slice(1, -1) : ` return ${this.coerce(fn.body, el)} `;
+          const body = ts.isBlock(fn.body) ? this.functionBody(fn, el, this.indent).slice(1, -1) : ` return ${this.tryPrefix(fn.body)}${this.coerce(fn.body, el)} `;
           return `${T()}.from(length: ${this.expr(length.initializer)}) { (${index}: Double) ${this.throwsInfo.fn(fn) ? 'throws ' : ''}-> ${el} in ${value}${body}}`;
         }
         if (method === 'from' && e.arguments.length === 2) return `JSArray<${this.elementTypeOf(arg(0))}>.from(${this.iterable(arg(0))}).map(${this.expr(arg(1))})`;

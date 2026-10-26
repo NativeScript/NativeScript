@@ -1,6 +1,6 @@
 import ts from 'typescript';
 import { heldDowncasts, implementedInterfaceDeclarations, LooseSlots, nothingGiven, nullishSlots, nullSetFields, originOf, ownSlot, scriptCalledFunction, slotOf, slotType, type NullishSlots, type TrustScope } from './lang.ts';
-import { Forms, representation } from './forms.ts';
+import { Forms, isGeneric, representation } from './forms.ts';
 import { isAsync, isStatic } from './throws.ts';
 import { shadowForms } from './forms-shadow.ts';
 
@@ -446,13 +446,51 @@ export class ValueStates {
   mayBeNull(p: ts.ParameterDeclaration): boolean {
     const b = this.backend, checked = b.rules.checkedParameters;
     if (p.dotDotDotToken || !ts.isIdentifier(p.name)) return false;
-    if (!checked) return (this.plugin(p) || b.lenientApp) && b.nullableParameter(b.typeOf(p.name));
+    if (this.widened(p)) return true;
+    const t = b.typeOf(p.name);
+    if (!checked) return (this.plugin(p) || b.lenientApp) && b.nullableParameter(t);
     if (this.looseDeclaration(p)) return true;
     if (b.lenientApp && !b.library && checked.nullGiven(p)) return true;
-    const t = b.typeOf(p.name);
     if (this.primitive(t) && this.undefinedParameter(p)) return true;
     // An app checked without strictNullChecks: a string parameter its function tests (`if (state)`) is one callers may leave out.
     if (b.lenientApp && !b.library && !p.getSourceFile().isDeclarationFile && t === 'String' && ts.isFunctionDeclaration(p.parent) && checked.truthTested(p.name)) return true;
     return this.plugin(p) && b.nullableParameter(t);
+  }
+
+  /**
+   * An app's parameter that holds what its form holds beyond its declared type: its callers' values, or what any caller
+   * may give where the program can't see them all (§2.3a). The form is its group's (the function type it is given for,
+   * the member it implements or overrides), so every place that spells a member of the group asks this. Swift holds a
+   * string, number or boolean given undefined by its own rules (`looseSlots`, `scriptCalledParameter`).
+   */
+  widened(p: ts.ParameterDeclaration): boolean {
+    const b = this.backend;
+    if (p.dotDotDotToken || !ts.isIdentifier(p.name) || !this.appParameter(p)) return false;
+    let found = this.widenedParams.get(p);
+    if (found === undefined) this.widenedParams.set(p, found = (!!b.rules.checkedParameters || b.nullableParameter(b.typeOf(p.name))) && this.givenEmpty(p));
+    return found;
+  }
+  private readonly widenedParams = new Map<ts.ParameterDeclaration, boolean>();
+
+  /**
+   * A parameter of the app's own code: a library's and a plugin's are entry points, decided with the kit's surface. Lenient
+   * files are plugin files, so the answer doesn't depend on the file being emitted.
+   */
+  private appParameter(p: ts.ParameterDeclaration): boolean {
+    return !this.backend.library && !p.getSourceFile().isDeclarationFile && !this.plugin(p);
+  }
+
+  /**
+   * A parameter whose form holds null or undefined where its declared type admits neither. One typed by a type parameter
+   * holds what each instantiation admits (§2.3b M5), which its native type parameter does as well; one sharing a fixed
+   * point's form (a callback parameter of a kit or platform function type) is spelled as that declaration is, and a
+   * parameter property as its field is.
+   */
+  private givenEmpty(p: ts.ParameterDeclaration): boolean {
+    if (ts.isParameterPropertyDeclaration(p, p.parent)) return false;
+    const declared = this.forms().declaredForm(p);
+    if (declared.foreign || isGeneric(this.checker.getTypeAtLocation(p.name)) || this.forms().fixedSlot(p)) return false;
+    const form = this.forms().formOfSlot(p);
+    return (form.null && !declared.null) || (form.undefined && !declared.undefined);
   }
 }
