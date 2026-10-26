@@ -179,6 +179,25 @@ public enum JSNullish<Wrapped>: ExpressibleByNilLiteral {
     }
 }
 
+/// Strict equality, as `indexOf`, `includes` and a Set's or Map's keys compare: null is only null, undefined only undefined.
+extension JSNullish: Equatable where Wrapped: Equatable {}
+extension JSNullish: Hashable where Wrapped: Hashable {}
+
+/// A `JSNullish` of any `Wrapped`, as code reading values dynamically (JSON, console, an untyped read) sees it.
+public protocol JSNullishValue {
+    var jsAny: Any? { get }
+    /// An untyped value as this type; nil where a present value isn't a `Wrapped`.
+    static func jsNullish(_ value: Any?) -> Self?
+}
+
+extension JSNullish: JSNullishValue {
+    public static func jsNullish(_ value: Any?) -> JSNullish? {
+        guard let value = jsFlat(value) else { return .undefined }
+        if value is JSNull { return .null }
+        return jsConverted(value, to: Wrapped.self).map { .value($0) }
+    }
+}
+
 // MARK: - Optionals inside Any
 
 protocol JSOptionalProtocol {
@@ -193,10 +212,17 @@ extension Optional: JSOptionalProtocol {
 @inline(__always)
 public func jsFlat(_ value: Any?) -> Any? {
     guard let value else { return nil }
-    guard jsTypeKind(value) == .optional else { return value }
-    // A cast to `Any?` unwraps one level of any optional without looking up its type's conformance to a protocol.
-    if let unwrapped = jsDynamicCast(value, to: Any?.self) { return jsFlat(unwrapped) }
-    return value
+    switch jsTypeKind(value) {
+    case .optional:
+        // A cast to `Any?` unwraps one level of any optional without looking up its type's conformance to a protocol.
+        if let unwrapped = jsDynamicCast(value, to: Any?.self) { return jsFlat(unwrapped) }
+        return value
+    case .enum:
+        if let nullish = value as? JSNullishValue { return nullish.jsAny }
+        return value
+    default:
+        return value
+    }
 }
 
 /// `value as? T` decided at run time, where `T` (`Any?`) makes the cast one the compiler would call trivial.
@@ -281,11 +307,12 @@ private let jsNativeOnlyLock = NSLock()
 public func jsConverted<T>(_ value: Any?, to type: T.Type = T.self) -> T? {
     if T.self == Void.self { return (() as Any) as? T }
     guard let value = jsFlat(value) else {
-        return (T.self as? JSOptionalProtocol.Type)?.jsNone as? T
+        return (T.self as? JSOptionalProtocol.Type)?.jsNone as? T ?? (T.self as? JSNullishValue.Type)?.jsNullish(nil) as? T
     }
     if let same = value as? T { return same }
     // An untyped object where a typed one is expected (a generic `T` an interface stands for): read into it.
     if let convertible = T.self as? JSObjectConvertible.Type { return convertible.init(jsObject: value) as? T }
+    if let nullish = T.self as? JSNullishValue.Type { return nullish.jsNullish(value) as? T }
     return nil
 }
 

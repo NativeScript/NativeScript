@@ -1250,7 +1250,7 @@ export function nullishSlots(checker: ts.TypeChecker, files: readonly ts.SourceF
   const returnOf = (fn: ts.SignatureDeclaration) => checker.getSignatureFromDeclaration(fn)?.getReturnType();
   const holdSignature = (fn: ts.SignatureDeclaration) => {
     for (const p of fn.parameters) if (named(p)) hold(p, typeOf(p));
-    if (fn.type && !isAsync(fn) && !ts.isConstructorDeclaration(fn)) hold(fn, returnOf(fn), fn.type);
+    if (!isAsync(fn) && !ts.isConstructorDeclaration(fn)) hold(fn, returnOf(fn), fn.type ?? fn);
   };
   const openSignature = (fn: ts.FunctionLikeDeclaration): boolean => {
     if (fixed.has(fn) || !fn.body || (ts.canHaveDecorators(fn) && ts.getDecorators(fn)?.length)) return true;
@@ -1269,7 +1269,7 @@ export function nullishSlots(checker: ts.TypeChecker, files: readonly ts.SourceF
   const refuseBoth = (fn: ts.SignatureDeclaration, why: string) => {
     for (const p of fn.parameters) { const t = typeOf(p); if (both(t) && oneKind(t)) refuse(p, `${why} (\`${text(t)}\`)`); }
     const ret = returnOf(fn);
-    if (fn.type && !ts.isConstructorDeclaration(fn) && ret && bothResult(ret) && oneKind(ret)) refuse(fn.type, `${why} (\`${text(ret)}\`)`);
+    if (!ts.isConstructorDeclaration(fn) && ret && bothResult(ret) && oneKind(ret)) refuse(fn.type ?? fn, `${why} (\`${text(ret)}\`)`);
   };
   // A function type's parameters and result: what every function of that type, and every call through it, uses.
   for (const sig of signatures) if (own(sig)) holdSignature(sig);
@@ -1349,7 +1349,7 @@ export function nullishSlots(checker: ts.TypeChecker, files: readonly ts.SourceF
       if (!named(p) || (ts.isConstructorDeclaration(fn) && ts.isParameterPropertyDeclaration(p, fn))) continue;
       hold(p, typeOf(p));
     }
-    if (!ts.isConstructorDeclaration(fn) && fn.type && !isAsync(fn)) hold(fn, returnOf(fn), fn.type);
+    if (!ts.isConstructorDeclaration(fn) && !isAsync(fn)) hold(fn, returnOf(fn), fn.type ?? fn);
   }
   // A function value takes the slots of the function type it is given as: held where that type's are, else refused where
   // that type may pass (or take) both.
@@ -1389,10 +1389,10 @@ export function nullishSlots(checker: ts.TypeChecker, files: readonly ts.SourceF
     else if (fieldLike(d)) fields.add(d);
   }
   /** An element, entry or type argument of `t` that may be null or undefined both (what no held slot carries). */
-  const nested = (t: ts.Type, depth = 0, seen = new Set<ts.Type>()): ts.Type | undefined => {
+  const nested = (t: ts.Type, depth = 0, seen = new Set<ts.Type>()): [ts.Type, number] | undefined => {
     if (seen.has(t) || depth > 4 || loose(t)) return undefined;
     seen.add(t);
-    if (depth > 0 && both(t) && oneKind(t)) return t;
+    if (depth > 0 && both(t) && oneKind(t)) return [t, depth];
     for (const x of parts(t)) {
       if (!(x.flags & ts.TypeFlags.Object) || x.getCallSignatures().length) continue;
       const args = (x as ts.ObjectType).objectFlags & ts.ObjectFlags.Reference ? checker.getTypeArguments(x as ts.TypeReference) : x.aliasTypeArguments ?? [];
@@ -1400,21 +1400,23 @@ export function nullishSlots(checker: ts.TypeChecker, files: readonly ts.SourceF
     }
     return undefined;
   };
-  const checkNested = (n: ts.Node, t: ts.Type | undefined) => {
-    const inner = t && nested(t);
-    if (inner) refuse(n, `an array, Map or Set element (or other type argument) that may be null or undefined both (\`${text(inner)}\` in \`${text(t!)}\`)`, { kind: 'element', slot: n as ts.Declaration });
+  // Only an array's or Set's element and a Map's value have a form of their own (`Form.element`).
+  const collection = (t: ts.Type) => { const x = checker.getNonNullableType(t); return checker.isArrayType(x) || ['Set', 'ReadonlySet', 'Map', 'ReadonlyMap'].includes(x.getSymbol()?.name ?? ''); };
+  const checkNested = (n: ts.Node, t: ts.Type | undefined, slot = n as ts.Declaration) => {
+    const [inner, depth] = (t && nested(t)) || [];
+    if (inner) refuse(n, `an array, Map or Set element (or other type argument) that may be null or undefined both (\`${text(inner)}\` in \`${text(t!)}\`)`, depth === 1 && collection(t!) ? { kind: 'element', slot } : undefined);
   };
   for (const f of files) {
     if (f.isDeclarationFile || skip(f)) continue;
     const scan = (n: ts.Node): void => {
       if (ts.isVariableDeclaration(n) && ts.isIdentifier(n.name) && local(n) && both(typeOf(n))) hold(n, typeOf(n));
-      else if (ts.isVariableDeclaration(n) && ts.isIdentifier(n.name) && both(typeOf(n)) && oneKind(typeOf(n))) refuse(n, `a loop variable that may be null or undefined both (\`${text(typeOf(n))}\`)`);
+      else if (ts.isVariableDeclaration(n) && ts.isIdentifier(n.name) && both(typeOf(n)) && oneKind(typeOf(n))) refuse(n, `a loop variable that may be null or undefined both (\`${text(typeOf(n))}\`)`, { kind: 'value', slot: n });
       else if (ts.isBindingElement(n) && ts.isIdentifier(n.name) && both(typeOf(n)) && oneKind(typeOf(n))) refuse(n, `a destructured binding that may be null or undefined both (\`${text(typeOf(n))}\`)`);
       else if (ts.isPropertyDeclaration(n) && fieldLike(n) && ts.isIdentifier(n.name) && hasNull(typeOf(n)) && (!n.initializer || both(typeOf(n)))) fields.add(n);
       else if (ts.isPropertySignature(n) && ts.isIdentifier(n.name) && both(typeOf(n))) fields.add(n);
       else if ((ts.isGetAccessorDeclaration(n) || ts.isSetAccessorDeclaration(n)) && n.body) refuseBoth(n, 'an accessor that may take or give null or undefined both');
       if ((ts.isVariableDeclaration(n) || ts.isParameter(n) || ts.isPropertyDeclaration(n) || ts.isPropertySignature(n)) && (n as ts.NamedDeclaration).name && checker.getSymbolAtLocation((n as ts.NamedDeclaration).name!)) checkNested(n, typeOf(n));
-      if (ts.isFunctionLike(n) && !ts.isConstructorDeclaration(n)) checkNested(n.type ?? n, returnOf(n as ts.SignatureDeclaration));
+      if (ts.isFunctionLike(n) && !ts.isConstructorDeclaration(n)) checkNested(n.type ?? n, returnOf(n as ts.SignatureDeclaration), n);
       ts.forEachChild(n, scan);
     };
     scan(f);
