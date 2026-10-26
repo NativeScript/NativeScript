@@ -4,7 +4,7 @@ import { dirname as pathDirname, resolve as pathResolve } from 'node:path';
 import { AsyncLowering, usedBefore, type AsyncCtx, type AsyncSyntax, type AsyncTranslator } from './async.ts';
 import { isAsync, isStatic } from './throws.ts';
 import { assignedMembers } from './sharing.ts';
-import { assignedValues, openSpreadType, definitelyAssignedFields, forwardedSetter, initializedNull, intersectionAliasMembers, isRegExpProtocol, assertedPattern, unsupportedPattern, intlConstructor, isObjectToStringCall, isStringRaw, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, classesHeldUntyped, type TrustScope, literalPattern, patternGroups, unsetGroupTyping, type UnsetGroupTyping, admitsUndefined, classKeyPlan, onlyUndefined, keysDefinedUntyped, KOTLIN_NATIVE_TYPES, runtimeTypeName, definesRunTimeKey, readKeyOf, reassigned, givenBy, onlyNullOrPresent } from './lang.ts';
+import { assignedValues, openSpreadType, definitelyAssignedFields, forwardedSetter, initializedNull, intersectionAliasMembers, isRegExpProtocol, assertedPattern, unsupportedPattern, intlConstructor, isObjectToStringCall, isStringRaw, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, classesHeldUntyped, type TrustScope, literalPattern, patternGroups, unsetGroupTyping, type UnsetGroupTyping, admitsUndefined, classKeyPlan, onlyUndefined, keysDefinedUntyped, KOTLIN_NATIVE_TYPES, runtimeTypeName, definesRunTimeKey, nothingGiven, readKeyOf, reassigned, givenBy, onlyNullOrPresent } from './lang.ts';
 import { onlyNull, ValueStates, type StateBackend } from './value-states.ts';
 import { isCoreDeclaration } from './core.ts';
 import { balanced, nonVirtualName } from './swift.ts';
@@ -786,7 +786,7 @@ export class Translator implements AsyncTranslator {
         if (p.valueDeclaration && this.states.nullish().held.has(p.valueDeclaration)) return 'Any?';
         const pt = this.type(c.getTypeOfSymbolAtLocation(p, where ?? p.valueDeclaration!), where);
         if (p.valueDeclaration && this.states.nullishHeld(p.valueDeclaration)) return nullishType(pt);
-        if (p.valueDeclaration && ts.isParameter(p.valueDeclaration) && (p.valueDeclaration.questionToken || p.valueDeclaration.initializer)) return optionalType(pt);
+        if (p.valueDeclaration && ts.isParameter(p.valueDeclaration) && (p.valueDeclaration.questionToken || p.valueDeclaration.initializer || this.states.widened(p.valueDeclaration))) return optionalType(pt);
         if (p.valueDeclaration && ts.isParameter(p.valueDeclaration) && ['String', 'Double', 'Boolean'].includes(pt) && this.states.undefinedParameter(p.valueDeclaration)) return optionalType(pt);
         return pt;
       });
@@ -854,7 +854,7 @@ export class Translator implements AsyncTranslator {
       spelling: { boolean: 'Boolean', void: 'Unit' },
       rules: {
         appNullResults: true, optionalParametersTakeUndefined: false, looseReads: false,
-        checkedParameters: { unsetElement: (d) => this.unset.element(d) },
+        checkedParameters: { nullGiven: (p) => this.nullGivenParams().has(p), truthTested: (name) => this.truthTested(name), unsetElement: (d) => this.unset.element(d) },
       },
       typeOf: (n) => this.typeOf(n),
       type: (type, at) => this.type(type, at),
@@ -2025,7 +2025,7 @@ export class Translator implements AsyncTranslator {
       return { name: (m.name as ts.Identifier).text, type: m.questionToken ? optionalType(t) : t, readonly: hasModifier(m, ts.SyntaxKind.ReadonlyKeyword) };
     });
     const methods = members.filter(ts.isMethodSignature).map((m) => {
-      const params = m.parameters.map((p, k) => ({ name: ts.isIdentifier(p.name) ? ident(p.name.text) : `p${k}`, type: p.questionToken ? optionalType(this.typeOf(p.name)) : this.typeOf(p.name) }));
+      const params = m.parameters.map((p, k) => ({ name: ts.isIdentifier(p.name) ? ident(p.name.text) : `p${k}`, type: this.requirementParamType(p) }));
       return { name: ident(m.name.getText()), params, ret: this.returnTypeOf(m) };
     });
     const signature = (m: (typeof methods)[0]) => `fun ${m.name}(${m.params.map((p) => `${p.name}: ${p.type}`).join(', ')})${m.ret === 'Unit' ? '' : `: ${m.ret}`}`;
@@ -3088,7 +3088,7 @@ export class Translator implements AsyncTranslator {
       }
       if (!name || !m || !ts.isMethodSignature(req)) continue;
       if (!ts.isMethodDeclaration(m)) return false;
-      const want = req.parameters.map((p) => (p.questionToken ? optionalType(this.typeOf(p.name)) : this.typeOf(p.name)));
+      const want = req.parameters.map((p) => this.requirementParamType(p));
       const have = m.parameters.map((p) => this.paramType(p));
       const ret = this.returnTypeOf(req), ownRet = this.returnTypeOf(m);
       if (want.length === have.length && want.every((t, k) => t === have[k]) && ret === ownRet) continue;
@@ -4033,6 +4033,11 @@ export class Translator implements AsyncTranslator {
     }
     const kitRoot = !this.library && this.generatedKit ? this.kitRootOf(cls) : null;
     return !!kitRoot && !!this.core?.kitMember(kitRoot, setterMethod(n));
+  }
+
+  /** An interface method's parameter as the interface spells it: optional where it is, or where its group's form widens it. */
+  private requirementParamType(p: ts.ParameterDeclaration): string {
+    return p.questionToken || this.states.widened(p) ? optionalType(this.typeOf(p.name)) : this.typeOf(p.name);
   }
 
   paramType(p: ts.ParameterDeclaration): string {
@@ -5598,6 +5603,42 @@ export class Translator implements AsyncTranslator {
     return el ? this.type(el, e) : 'Any?';
   }
 
+  /**
+   * A non-strict app's object parameters of its own functions that a call gives null or a result that may be missing:
+   * nullable in Kotlin, whose parameter checks would throw for the unchecked null.
+   */
+  private nullGivenParams(): Set<ts.ParameterDeclaration> {
+    if (this.nullGiven) return this.nullGiven;
+    const out = this.nullGiven = new Set<ts.ParameterDeclaration>();
+    const missing = (a: ts.Expression): boolean => {
+      a = ts.skipOuterExpressions(a, ts.OuterExpressionKinds.Parentheses);
+      if (a.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(a) && a.text === 'undefined')) return true;
+      const call = ts.isAwaitExpression(a) ? ts.skipOuterExpressions(a.expression, ts.OuterExpressionKinds.Parentheses) : a;
+      if (!ts.isCallExpression(call)) return false;
+      const d = this.checker.getResolvedSignature(call)?.getDeclaration();
+      if (!d || ts.isJSDocSignature(d) || !(ts.isFunctionDeclaration(d) || ts.isMethodDeclaration(d)) || !d.body || d.getSourceFile().isDeclarationFile || this.pluginFiles.has(d.getSourceFile().fileName) || ts.isAwaitExpression(a) !== isAsync(d)) return false;
+      const given = nothingGiven(d, this.checker);
+      return given.null || given.missing || given.unknown;
+    };
+    const visit = (n: ts.Node): void => {
+      if (ts.isCallExpression(n) && n.arguments.length) {
+        const d = this.checker.getResolvedSignature(n)?.getDeclaration();
+        if (d && !ts.isJSDocSignature(d) && (ts.isFunctionDeclaration(d) || this.ownSignatureMethod(d)) && d.body && !d.getSourceFile().isDeclarationFile && !this.pluginFiles.has(d.getSourceFile().fileName)) {
+          n.arguments.forEach((a, k) => {
+            const p = d.parameters[k];
+            if (!p || p.dotDotDotToken || p.questionToken || p.initializer || !ts.isIdentifier(p.name) || ts.isSpreadElement(a) || !missing(a)) return;
+            const t = this.typeOf(p.name);
+            if (this.isObjectType(t) && !isNullable(t) && !['String', 'Double', 'Boolean'].includes(t) && !isFunctionType(t)) out.add(p);
+          });
+        }
+      }
+      ts.forEachChild(n, visit);
+    };
+    for (const sf of this.sourceFiles) if (!sf.isDeclarationFile && !this.pluginFiles.has(sf.fileName)) visit(sf);
+    return out;
+  }
+  private nullGiven: Set<ts.ParameterDeclaration> | null = null;
+
   /** An app's method whose Kotlin signature is its own: no base, interface or override shares it. */
   private ownSignatureMethod(m: ts.Node): m is ts.MethodDeclaration {
     if (!ts.isMethodDeclaration(m) || isStatic(m) || !ts.isClassDeclaration(m.parent) || /^\$[be]\d+$/.test(m.name.getText()) || this.pluginFiles.has(m.getSourceFile().fileName)) return false;
@@ -6270,17 +6311,6 @@ export class Translator implements AsyncTranslator {
         const unwrap = /^\(.*\)\?$/.test(this.declaredTypeOf(e) ?? '') && !/\)\?$/.test(source) ? '!!' : '';
         const call = `${fn.includes('::') ? `(${fn})` : fn}${unwrap}(${names.slice(0, f.params.length).map((n, k) => this.convert(n, g.params[k], f.params[k])).join(', ')})`;
         const adapter = `{ ${g.params.map((p, k) => `${names[k]}: ${p}`).join(', ')} -> ${call} }`;
-        // The function as it is now, equal to its other adaptations and to itself (a listener added and later removed).
-        if (g.params.length <= 4 && !ts.isArrowFunction(e) && !ts.isFunctionExpression(e)) {
-          const held = adapter.replace(`${fn.includes('::') ? `(${fn})` : fn}${unwrap}(`, '__f(');
-          const adapt = `jsAdapt${g.params.length}<${[...g.params, g.ret].join(', ')}>(__f) ${held}`;
-          if (/\)\?$/.test(source) || unwrap) {
-            const value = this.expr(e);
-            if (/\)\?$/.test(target)) return `${value}?.let { __f -> ${adapt} }`;
-            return isAsserted(value) ? `${value}.let { __f -> ${adapt} }` : asserted(`${value}?.let { __f -> ${adapt} }`);
-          }
-          return `${fn.includes('::') ? `(${fn})` : fn}.let { __f -> ${adapt} }`;
-        }
         // An optional member (`closeCallback?: …`) given to an optional parameter (`cb?: …`): undefined stays undefined,
         // as the checker without strictNullChecks types neither as optional.
         const member = ts.isPropertyAccessExpression(e) ? this.resolve(e.name)?.valueDeclaration : undefined;
@@ -6288,6 +6318,17 @@ export class Translator implements AsyncTranslator {
         const sig = outer ? this.checker.getResolvedSignature(outer)?.getDeclaration() : undefined;
         const param = sig && !ts.isJSDocSignature(sig) ? sig.parameters[outer!.arguments.indexOf(e)] : undefined;
         const optional = !!member && (ts.isPropertySignature(member) || ts.isPropertyDeclaration(member)) && !!member.questionToken && (/\)\?$/.test(target) || !!param?.questionToken || !!param?.initializer);
+        // The function as it is now, equal to its other adaptations and to itself (a listener added and later removed).
+        if (g.params.length <= 4 && !ts.isArrowFunction(e) && !ts.isFunctionExpression(e)) {
+          const held = adapter.replace(`${fn.includes('::') ? `(${fn})` : fn}${unwrap}(`, '__f(');
+          const adapt = `jsAdapt${g.params.length}<${[...g.params, g.ret].join(', ')}>(__f) ${held}`;
+          if (/\)\?$/.test(source) || unwrap || optional) {
+            const value = this.expr(e);
+            if (/\)\?$/.test(target)) return `${value}?.let { __f -> ${adapt} }`;
+            return isAsserted(value) ? `${value}.let { __f -> ${adapt} }` : asserted(`${value}?.let { __f -> ${adapt} }`);
+          }
+          return `${fn.includes('::') ? `(${fn})` : fn}.let { __f -> ${adapt} }`;
+        }
         return /\)\?$/.test(source) || optional ? `${this.expr(e)}?.let { __f -> ${adapter.replace(fn.includes('::') ? `(${fn})` : fn, '__f')} }` : adapter;
       }
     }
@@ -7644,7 +7685,7 @@ export class Translator implements AsyncTranslator {
       const root = this.library && decl && ts.isParameter(decl) && ts.isMethodDeclaration(decl.parent) ? this.rootMethod(decl.parent) : null;
       if (root && root !== decl.parent && root.parameters[k] && !root.parameters[k].dotDotDotToken) pt = this.paramType(root.parameters[k]);
       // A plugin's object parameter is nullable in Kotlin: what is passed needs no unwrap.
-      if (decl && ts.isParameter(decl) && appDeclared && !!(decl.parent as ts.FunctionLikeDeclaration).body && this.states.mayBeNull(decl)) pt = optionalType(pt);
+      if (decl && ts.isParameter(decl) && appDeclared && ((!!(decl.parent as ts.FunctionLikeDeclaration).body && this.states.mayBeNull(decl)) || this.states.widened(decl))) pt = optionalType(pt);
       // Library mode: a parameter the method declares nullable in Kotlin takes what may be missing as it is.
       else if (this.library && !isNullable(pt) && pt !== 'Any?' && this.nullableArgument(a)) pt = optionalType(pt);
       // So does a local function's parameter its body tests (`params`).
@@ -10620,9 +10661,12 @@ export class Translator implements AsyncTranslator {
   private untypedMethod(p: ts.MethodDeclaration): string {
     const rest = p.parameters.some((q) => q.dotDotDotToken);
     if (!thisNodes(p).length && !rest) {
-      // Called untyped (an options object's `valueChanged`), with undefined where a number, string or boolean goes.
+      // Called untyped (an options object's `valueChanged`), with undefined where a number, string or boolean goes, and
+      // an app's object as the script value it is.
       const types = p.parameters.map((q) => this.paramType(q));
-      if (!(this.library || this.pluginFiles.has(p.getSourceFile().fileName)) || !types.some((t) => ['Double', 'Boolean', 'String'].includes(t)) || p.parameters.some((q) => isThisParameter(q) || !ts.isIdentifier(q.name))) return this.closure(p);
+      const kit = this.library || this.pluginFiles.has(p.getSourceFile().fileName);
+      const converted = (t: string) => (kit ? ['Double', 'Boolean', 'String'].includes(t) : t !== 'Any?' && this.isObjectType(t) && !isFunctionType(t));
+      if (!types.some(converted) || p.parameters.some((q) => isThisParameter(q) || !ts.isIdentifier(q.name))) return this.closure(p);
       const ret = this.returnTypeOf(p);
       const names = types.map((_, k) => `__u${k}`);
       const call = `__f(${types.map((t, k) => (t === 'Any?' ? names[k] : this.fromAnyCode(names[k], t, true))).join(', ')})`;
