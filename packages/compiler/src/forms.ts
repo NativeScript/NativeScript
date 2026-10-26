@@ -96,8 +96,12 @@ export class Forms {
     this.strictFile = strictFile;
     this.library = options.library ?? false;
     this.native = options.native ?? (() => false);
-    const nil = options.nativeNil ?? (() => false);
-    this.nativeNil = (d) => this.native(d) && nil(d);
+    const nil = options.nativeNil ?? (() => false), known = new Map<ts.Declaration, boolean>();
+    this.nativeNil = (d) => {
+      let found = known.get(d);
+      if (found === undefined) known.set(d, found = this.native(d) && nil(d));
+      return found;
+    };
   }
 
   formOf(e: ts.Expression): Form {
