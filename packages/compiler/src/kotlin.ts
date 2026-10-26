@@ -2324,8 +2324,9 @@ export class Translator implements AsyncTranslator {
     if (code === 'null' && type.endsWith('?')) return 'null';
     const m = /^JSArray<(.*)>(\??)$/.exec(type);
     if (m) {
-      const read = `jsArrayFrom(${code}) { ${this.fromAny('it', m[1])} }`;
-      return m[2] ? `(if (jsIsNullish(${code})) null else ${read})` : read;
+      const read = (x: string) => `jsArrayFrom(${x}) { ${this.fromAny('it', m[1])} }`;
+      if (!m[2]) return read(code);
+      return plainRead(code) ? `(if (jsIsNullish(${code})) null else ${read(code)})` : `jsUnlessNullish(${code}) { ${read('it')} }`;
     }
     const record = /^JSRecord<(.*)>(\??)$/.exec(type);
     if (record) return `${record[2] ? 'jsRecordOrNull' : 'jsRecord'}<${record[1]}>(${code})`;
@@ -2339,7 +2340,8 @@ export class Translator implements AsyncTranslator {
       this.used.add(base);
       // An object of a class implementing the interface is itself; anything else is read into the interface's class.
       const read = (x: string) => (this.protocols.has(base) ? `${x}.let { it as? ${base} ?: ${base}Object.fromJS(it) }` : `${base}.fromJS(${x})`);
-      return type.endsWith('?') ? `(if (jsIsNullish(${code})) null else ${read(code)})` : read(code);
+      if (!type.endsWith('?')) return read(code);
+      return plainRead(code) ? `(if (jsIsNullish(${code})) null else ${read(code)})` : `jsUnlessNullish(${code}) { ${read('it')} }`;
     }
     if (!this.library && /^[A-Z]\w*\??$/.test(type)) {
       const reified = this.reifiedRead(code, type);
@@ -11065,6 +11067,11 @@ function continuesTo(n: ts.Node, label: string): boolean {
 /** Kotlin code that does nothing as a statement: a local's name or a literal. */
 function inert(code: string): boolean {
   return /^(?:[A-Za-z_][\w$]*|-?\d[\w.]*|"(?:[^"\\$]|\\.)*")$/.test(code.trim()) && !['return', 'break', 'continue'].includes(code.trim());
+}
+
+/** Kotlin code giving the same value each time it is read: `inert` code, or an element of an argument list the translator made. */
+function plainRead(code: string): boolean {
+  return inert(code) || /^__\w+(?:\.\w+)*\.getOrNull\(\d+\)$/.test(code);
 }
 
 /** Whether Kotlin code names `name` (a whole word, not part of another, nor a member of something else). */
