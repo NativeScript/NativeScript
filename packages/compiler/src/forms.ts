@@ -178,6 +178,12 @@ export class Forms {
     return { slots, both, nullish };
   }
 
+  /** An array's or Set's element type, or a Map's value type: the part `Form.element` is the form of. */
+  elementOf(t: ts.Type): ts.Type | null {
+    const part = this.partOf(t);
+    return part && part !== 'result' && !this.checker.isTupleType(this.checker.getNonNullableType(t)) ? elementType(this.checker, t, part) : null;
+  }
+
   /** What a declaration's own type admits (its checker type, its type as written, `?`, a default), before any flow. */
   declaredForm(d: ts.Declaration): Form {
     const s = this.declaredStates(d) | ((d as { initializer?: ts.Node }).initializer && ts.isParameter(d) ? U : 0);

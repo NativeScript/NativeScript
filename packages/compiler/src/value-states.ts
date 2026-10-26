@@ -68,6 +68,12 @@ export interface StateRules {
   readonly checkedParameters?: { nullGiven(p: ts.ParameterDeclaration): boolean; truthTested(name: ts.Identifier): boolean; unsetElement(d: ts.Node): boolean };
 }
 
+/** Whether a type admits null and undefined both, and nothing untyped. */
+function bothEmpty(t: ts.Type): boolean {
+  const parts = t.isUnion() ? t.types : [t];
+  return parts.some((x) => x.flags & ts.TypeFlags.Null) && parts.some((x) => x.flags & ts.TypeFlags.Undefined) && !parts.some((x) => x.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown));
+}
+
 /** Whether a type admits null but not undefined. */
 export function onlyNull(t: ts.Type): boolean {
   const parts = t.isUnion() ? t.types : [t];
@@ -79,6 +85,7 @@ export class ValueStates {
   readonly nullVars = new Set<ts.Symbol>();
   private nullishSlotSet?: NullishSlots;
   private nullishHeldSet = new Set<ts.Declaration>();
+  private nullishElementSet = new Set<ts.Declaration>();
   private formSet?: Forms;
   private downcastSet?: ReturnType<typeof heldDowncasts>;
   private looseSlotSet: LooseSlots | null = null;
@@ -115,12 +122,14 @@ export class ValueStates {
     const b = this.backend;
     if (this.nullishSlotSet) return this.nullishSlotSet;
     const found: NullishSlots = b.lenient || b.library ? { held: new Set(), fields: new Set(), refused: [], functions: new Map() } : nullishSlots(b.checker, b.sourceFiles, (f) => b.pluginFiles.has(f.fileName));
-    // An element or callback parameter today's analysis can't hold, which nothing tells null from undefined in: one nil,
-    // read as undefined.
+    // An element, callback parameter or loop variable today's analysis can't hold: one nil, read as undefined, where
+    // nothing tells null from undefined in it; `JSNullish<T>` where something does.
     found.refused = found.refused.filter(([, , cover]) => {
       if (!cover) return true;
       const form = cover.kind === 'element' ? this.forms().formOfSlot(cover.slot).element : this.forms().formOfSlot(cover.slot);
-      return !form || !['present', 'undefined', 'null'].includes(representation(form));
+      const shown = form && representation(form);
+      if (shown === 'nullish') (cover.kind === 'element' ? this.nullishElementSet : this.nullishHeldSet).add(cover.slot);
+      return !shown || !['present', 'undefined', 'null', 'nullish'].includes(shown);
     });
     // A function slot: `JSNullish` where null and undefined are told apart, else one nil read as undefined. One that may
     // hold another value too is refused where its own code compares it.
@@ -144,6 +153,47 @@ export class ValueStates {
    */
   nullishHeld(d: ts.Node): d is ts.ParameterDeclaration | ts.VariableDeclaration {
     return this.nullish() && this.nullishHeldSet.has(d as ts.Declaration);
+  }
+
+  /**
+   * An array, Set or Map (a declaration, its name, or an expression giving one) whose elements or values may be null or
+   * undefined both, which the program tells apart: its elements are held as `JSNullish<T>`.
+   */
+  nullishElements(n: ts.Node): boolean {
+    if (!this.nullish() || !this.nullishElementSet.size) return false;
+    const d = ts.isIdentifier(n) && n.parent && (ts.isVariableDeclaration(n.parent) || ts.isParameter(n.parent) || ts.isPropertyDeclaration(n.parent) || ts.isPropertySignature(n.parent)) && n.parent.name === n ? n.parent : n;
+    if (!ts.isExpression(d) && !ts.isVariableDeclaration(d) && !ts.isParameter(d) && !ts.isPropertyDeclaration(d) && !ts.isPropertySignature(d) && !(ts.isFunctionLike(d) && !isAsync(d))) return false;
+    const type = ts.isFunctionLike(d) ? this.checker.getSignatureFromDeclaration(d as ts.SignatureDeclaration)?.getReturnType() : this.checker.getTypeAtLocation(ts.isExpression(d) ? d : (d as ts.NamedDeclaration).name ?? d);
+    const element = type && this.forms().elementOf(type);
+    // A literal or a new Set is spelled as the slot it goes to, which a conditional or a call between hides from its own form.
+    const to = (ts.isArrayLiteralExpression(d) || ts.isNewExpression(d)) && this.placement(d);
+    if (to && this.nullishElements(to)) return true;
+    if (!element || !bothEmpty(element)) return false;
+    const form = ts.isExpression(d) ? this.forms().formOf(d) : this.forms().formOfSlot(d);
+    return !!form.element && representation(form.element) === 'nullish';
+  }
+
+  /** The slot an expression's value goes to, through parentheses, conditionals and defaults: a declaration, or a new Set's expression. */
+  private placement(e: ts.Expression): ts.Node | null {
+    let x: ts.Node = e;
+    for (let p = x.parent; ; x = p, p = p.parent) {
+      if (ts.isParenthesizedExpression(p) || ts.isAsExpression(p) || ts.isSatisfiesExpression(p) || (ts.isConditionalExpression(p) && p.condition !== x)) continue;
+      if (ts.isBinaryExpression(p) && p.right === x && [ts.SyntaxKind.QuestionQuestionToken, ts.SyntaxKind.BarBarToken, ts.SyntaxKind.AmpersandAmpersandToken].includes(p.operatorToken.kind)) continue;
+      break;
+    }
+    const p = x.parent;
+    if ((ts.isVariableDeclaration(p) || ts.isPropertyDeclaration(p)) && p.initializer === x) return p;
+    if (ts.isBinaryExpression(p) && p.operatorToken.kind === ts.SyntaxKind.EqualsToken && p.right === x) return p.left;
+    if (ts.isReturnStatement(p)) return ts.findAncestor(p, ts.isFunctionLike) ?? null;
+    if (ts.isArrowFunction(p) && p.body === x) return p;
+    if ((ts.isCallExpression(p) || ts.isNewExpression(p)) && p.expression !== x) {
+      const k = p.arguments!.indexOf(x as ts.Expression);
+      if (ts.isNewExpression(p) && k === 0 && ts.isIdentifier(p.expression) && p.expression.text === 'Set') return p;
+      const sig = this.checker.getResolvedSignature(p)?.getDeclaration();
+      const param = sig && !ts.isJSDocSignature(sig) ? sig.parameters[k] : undefined;
+      return param && !param.dotDotDotToken && !param.getSourceFile().isDeclarationFile ? param : null;
+    }
+    return null;
   }
 
   /** A read of a `nullishHeld` slot whose value may still be null or undefined: the slot's declaration. */
@@ -224,7 +274,13 @@ export class ValueStates {
 
   /** A typed value whose untyped read tells null from undefined, where its optional alone does not. */
   nullDistinct(e: ts.Expression): boolean {
-    return this.nilIsNull(e) || !!this.nullishRead(e) || !!this.nullableEntry(e, () => this.backend.untypedCode(e));
+    return this.nilIsNull(e) || !!this.nullishRead(e) || this.nullishElementRead(e) || !!this.nullableEntry(e, () => this.backend.untypedCode(e));
+  }
+
+  /** An element read of an array whose elements are held as `JSNullish<T>` (`nullishElements`). */
+  nullishElementRead(e: ts.Expression): boolean {
+    const bare = ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses);
+    return ts.isElementAccessExpression(bare) && this.nullishElements(bare.expression);
   }
 
   /** A member that may hold null or undefined both, by its type or as `nullishSlots` finds; written, one that may hold null. */

@@ -163,6 +163,17 @@ function nullishType(t: string): string {
   return `JSNullish<${/^\(.*\)$/.test(present) && hasTopLevelArrow(present.slice(1, -1)) ? present.slice(1, -1) : present}>`;
 }
 
+/** An array, Set or Map type (`JSArray<T?>`, `JSMap<K, T?>`) with its elements or values held as `JSNullish<T>`. */
+function nullishElementsType(t: string): string {
+  const m = /^(JSArray|JSSet|JSMap)<(.*)>([?!]?)$/.exec(t);
+  if (!m) return t;
+  const args = splitTopLevel(m[2]);
+  const k = args.length - 1;
+  if (!/[?!]$/.test(args[k]) || args[k].startsWith('JSNullish<')) return t;
+  args[k] = nullishType(args[k]);
+  return `${m[1]}<${args.join(', ')}>${m[3]}`;
+}
+
 /** A function type at the top level (`(A) throws -> B?`), not one inside parentheses or generic arguments. */
 function hasTopLevelArrow(t: string): boolean {
   let depth = 0;
@@ -1456,6 +1467,15 @@ export class Translator implements AsyncTranslator {
   }
 
   typeOf(n: ts.Node): string {
+    return this.heldElements(n, this.plainTypeOf(n));
+  }
+
+  /** `t`, the type of `n`, with the elements `ValueStates.nullishElements` holds as `JSNullish<T>` so. */
+  private heldElements(n: ts.Node, t: string): string {
+    return this.states.nullishElements(n) ? nullishElementsType(t) : t;
+  }
+
+  private plainTypeOf(n: ts.Node): string {
     if (this.isArguments(n)) return 'JSArray<Any?>';
     if (ts.isCallExpression(n) && this.lenientApp && this.states.lenientAsyncCall(n)) return this.returnTypeOf(this.checker.getResolvedSignature(n)!.getDeclaration() as ts.SignatureDeclaration);
     const stored = this.storedLiteralType(n);
@@ -1939,6 +1959,11 @@ export class Translator implements AsyncTranslator {
 
   /** A declared type, before the narrowing the checker applies at a use. */
   declaredTypeOf(e: ts.Expression): string | null {
+    const t = this.plainDeclaredTypeOf(e);
+    return t && this.heldElements(e, t);
+  }
+
+  private plainDeclaredTypeOf(e: ts.Expression): string | null {
     if (this.states.heldNullish(e)) return 'Any?';
     if (ts.isElementAccessExpression(e) && this.typeOf(e.expression).replace(/[?!]$/, '') === 'JSRecord<Any?>') return 'Any?';
     if ((this.library && this.holdsMethods(e)) || this.holdsFunctionObject(e)) return 'Any?';
@@ -4045,7 +4070,7 @@ ${members.join('\n')}
     if (this.states.nullish().held.has(fn)) return 'Any?';
     if ((ts.isArrowFunction(fn) || ts.isFunctionExpression(fn) || ts.isFunctionDeclaration(fn)) && this.returnsMethod(fn)) return 'Any?';
     if (this.heldReturn(fn)) return 'Any?';
-    const t = this.type(this.checker.getSignatureFromDeclaration(fn)!.getReturnType(), fn);
+    const t = this.heldElements(fn, this.type(this.checker.getSignatureFromDeclaration(fn)!.getReturnType(), fn));
     if (this.states.lenientAsync(fn)) return t.replace(/^JSPromise<(.*)>$/, (_, v: string) => `JSPromise<${optionalType(v)}>`);
     return this.mayReturnUndefined(fn) && t !== 'Void' && t !== 'Any?' && !t.endsWith('?') && !t.endsWith('!') && !isFunctionType(t) ? optionalType(t) : t;
   }
@@ -7825,6 +7850,8 @@ ${members.join('\n')}
     if (bare.kind === ts.SyntaxKind.NullKeyword) return '.null';
     if ((ts.isIdentifier(bare) && bare.text === 'undefined') || ts.isVoidExpression(bare)) return '.undefined';
     const from = this.typeOf(e);
+    // A value held untyped for its null and undefined (`ValueStates.heldNullish`) is of the slot's type when present.
+    if (from === 'Any?' && this.states.heldNullish(bare)) return `${target}.jsNullish(${this.expr(e)})!`;
     if (from === 'Any?') return `try ${target}(any: ${this.expr(e)})`;
     const code = this.coerce(e, optionalType(into));
     return this.states.nilIsNull(e) ? `${target}(null: ${code})` : `${target}(${code})`;
@@ -10689,7 +10716,7 @@ ${members.join('\n')}
         // A program function's type parameter Swift erases (`U extends { root: View }`, any of a plugin's): the parameter as declared, the argument's type erased with it.
         || (!!decl && ts.isParameter(decl) && !!decl.type && !decl.getSourceFile().isDeclarationFile && !!(decl.parent as ts.SignatureDeclaration).typeParameters?.some((tp) => (erasedTypeParameter(tp) || (!this.library && this.erasesGenerics(decl.parent))) && new RegExp(`\\b${tp.name.text}\\b`).test(decl.type!.getText())));
       // In code the checker finds unreachable a parameter's type is never: its declared type.
-      const at = decl && this.states.nullish().held.has(decl) ? 'Any?' : decl && this.states.nullishHeld(decl) ? nullishType(this.type(this.checker.getTypeOfSymbolAtLocation(p, e), e)) : this.type(this.checker.getTypeOfSymbolAtLocation(p, e), e);
+      const at = decl && this.states.nullish().held.has(decl) ? 'Any?' : decl && this.states.nullishHeld(decl) ? nullishType(this.type(this.checker.getTypeOfSymbolAtLocation(p, e), e)) : this.heldElements(decl && ts.isParameter(decl) ? decl : e, this.type(this.checker.getTypeOfSymbolAtLocation(p, e), e));
       // A function where the program's parameter is a bare type parameter: the function object, which Swift binds the parameter to (`heldRead`).
       if (decl && ts.isParameter(decl) && decl.type && !decl.getSourceFile().isDeclarationFile && at !== 'Any?' && heldType(at) === 'Any?' && (this.isBareTypeParameter(decl.type) || this.heldParameter(decl))) {
         out.push(this.coerce(a, 'Any?'));
@@ -12090,7 +12117,7 @@ ${members.join('\n')}
         return `${t}.splice(${[...a().slice(0, 2), ...e.arguments.slice(2).map((x) => this.coerce(x, el))].join(', ')})`;
       case 'fill': return `${t}.fill(${a().join(', ')})`;
       // An array holding functions as function objects (`heldType`) is searched for the one the function is.
-      case 'indexOf': case 'lastIndexOf': case 'includes': if ((el === 'Any?' || el === 'String?') && e.arguments[0] && !ts.isSpreadElement(e.arguments[0])) return `${t}.${name}(${[this.coerce(e.arguments[0], el), ...a().slice(1)].join(', ')})`;
+      case 'indexOf': case 'lastIndexOf': case 'includes': if ((el === 'Any?' || el === 'String?' || el.startsWith('JSNullish<')) && e.arguments[0] && !ts.isSpreadElement(e.arguments[0])) return `${t}.${name}(${[this.coerce(e.arguments[0], el), ...a().slice(1)].join(', ')})`;
       // falls through
       case 'slice': case 'at': return `${t}.${name}(${a().join(', ')})`;
       case 'join': return `${t}.join(${!e.arguments[0] ? '' : this.isAny(e.arguments[0]) ? `jsJoinSeparator(${this.expr(e.arguments[0])})` : this.expr(e.arguments[0])})`;
@@ -12448,7 +12475,7 @@ ${members.join('\n')}
         const f = e.arguments[0];
         if (!(ts.isArrowFunction(f) || ts.isFunctionExpression(f))) return `${t}.forEach(${this.expr(f)})`;
         // The map passes (value, key); a callback declaring fewer parameters ignores the rest.
-        const params = f.parameters.map((p) => `${ident((p.name as ts.Identifier).text)}: ${this.typeOf(p.name)}`);
+        const params = f.parameters.map((p) => `${ident((p.name as ts.Identifier).text)}: ${this.states.nullishHeld(p) ? nullishType(this.typeOf(p.name)) : this.typeOf(p.name)}`);
         const types = v ? [v, k] : [k, k];
         while (params.length < 2) params.push(`_: ${types[params.length]}`);
         const throws = this.throwsInfo.fn(f) ? 'throws ' : '';
@@ -12992,7 +13019,8 @@ ${members.join('\n')}
     const keyed = ts.isPropertyAccessExpression(left) && !this.lenient && !this.library ? this.states.nullishShapeField(left, true) : null;
     if (keyed) return `jsSet(${this.expr((left as ts.PropertyAccessExpression).expression)}, ${swiftString(keyed)}, ${this.coerce(right, 'Any?')})`;
     if (isArrayLengthWrite(left, right, this.checker)) return `${this.expr(left.expression)}.jsSetLength(checked: ${this.toNumber(right)})`;
-    return `${this.lvalue(left)} = ${this.coerce(right, this.declaredTypeOf(left) ?? this.typeOf(left))}`;
+    const element = ts.isElementAccessExpression(left) && this.states.nullishElements(left.expression) ? this.elementTypeOf(left.expression) : null;
+    return `${this.lvalue(left)} = ${this.coerce(right, element ?? this.declaredTypeOf(left) ?? this.typeOf(left))}`;
   }
 
   private binary(e: ts.BinaryExpression): string {
@@ -13303,7 +13331,7 @@ ${members.join('\n')}
     // A `T | null` value compared strictly with undefined, or a `T | undefined` one with null: never the same.
     if (strict && (isNullish(a) !== isNullish(b))) {
       const [x, n] = isNullish(b) ? [a, b] : [b, a];
-      if (n.kind !== K.NullKeyword ? this.states.nullDistinct(x) : this.states.nullishRead(x) || this.states.nullableEntry(x, () => this.coerceTyped(x, 'Any?'))) return `${negate ? '!' : ''}jsStrictEquals(${this.coerce(x, 'Any?')}, ${n.kind === K.NullKeyword ? 'jsNull' : 'nil'})`;
+      if (n.kind !== K.NullKeyword ? this.states.nullDistinct(x) : this.states.nullishRead(x) || this.states.nullishElementRead(x) || this.states.nullableEntry(x, () => this.coerceTyped(x, 'Any?'))) return `${negate ? '!' : ''}jsStrictEquals(${this.coerce(x, 'Any?')}, ${n.kind === K.NullKeyword ? 'jsNull' : 'nil'})`;
       if (n.kind === K.NullKeyword && this.states.nilIsUndefined(x)) return `${negate ? '!' : ''}jsStrictEquals(${this.coerce(x, 'Any?')}, jsNull)`;
     }
     // Comparing a typed optional with null or undefined.
@@ -13368,7 +13396,7 @@ ${members.join('\n')}
     const context = patterned ? undefined : this.checker.getContextualType(e);
     let t = want ?? this.typeOf(e);
     if (!want && context && !(context.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown | ts.TypeFlags.TypeParameter))) {
-      const full = this.type(context, e);
+      const full = this.heldElements(e, this.type(context, e));
       const c = full.replace(/\?$/, '');
       // A spread's length is known only when it runs: no tuple.
       if (full !== 'Any?' && (c.startsWith('JSArray<') || (c.startsWith('(') && !e.elements.some(ts.isSpreadElement)) || !e.elements.length)) t = c;
@@ -13396,7 +13424,7 @@ ${members.join('\n')}
         const from = this.elementTypeOf(x.expression);
         parts.push(from !== el && from === 'Any?' ? `Array(${this.iterable(x.expression)}).map { ${this.fromAny('$0', el)} }` : `Array(${this.iterable(x.expression)})`);
       } else if (ts.isOmittedExpression(x)) throw this.error(x, 'an array hole');
-      else if (!this.lenient && isNullish(ts.skipOuterExpressions(x)) && !isOptional(el) && el !== 'Any?' && this.zero(el) === null) {
+      else if (!this.lenient && isNullish(ts.skipOuterExpressions(x)) && !isOptional(el) && el !== 'Any?' && !el.startsWith('JSNullish<') && this.zero(el) === null) {
         throw this.error(x, `null or undefined in an array of ${el}, whose type leaves both out (declare the element type \`${el} | null\`)`);
       } else if (this.lenientApp && !isOptional(el) && el !== 'Any?' && this.zero(el) === null && this.heldOptionalResult(x)) {
         throw this.error(x, `a value a non-strict function may give as null or undefined, in an array of ${el}`);
