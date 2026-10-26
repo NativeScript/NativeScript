@@ -978,6 +978,69 @@ export class PersonView {
   }
 })();
 
+// ---- A component's own methods taking null or undefined both (the `ns create --ng` template's person detail) ----
+(() => {
+  const dir = mkdtempSync(join(tmpdir(), 'ns-release-checks-nullish-method-'));
+  try {
+    writeFileSync(join(dir, 'tsconfig.json'), '{ "compilerOptions": { "strict": false } }');
+    const file = join(dir, 'person-detail.component.ts'), observed = join(dir, 'kinds.component.ts');
+    writeFileSync(file, `import { Component, OnInit, signal } from '@angular/core';
+interface Person { name: string; nickname: string; notableAchievements: string[]; }
+@Component({ selector: 'PersonDetail', template: '<StackLayout><Label [text]="formatAchievements(person()?.notableAchievements)"></Label><Label [text]="label(person()?.nickname)"></Label></StackLayout>' })
+export class PersonDetail implements OnInit {
+  person = signal<Person>(null);
+  ngOnInit(): void { console.log(this.formatAchievements(null), this.label(null), this.label(undefined)); }
+  formatAchievements(achievements: string[] | undefined | null): string {
+    if (!achievements || !Array.isArray(achievements)) return '';
+    return achievements.map((a, index) => index + 1 + '. ' + a.trim()).join('\\n');
+  }
+  label(name: string | undefined | null): string { return name === null ? '(null)' : name === undefined ? '(undefined)' : name; }
+}
+`);
+    writeFileSync(observed, `import { Component } from '@angular/core';
+@Component({ selector: 'Kinds', template: '<Label [text]="kind(null)"></Label>' })
+export class Kinds {
+  kind(list: string[] | undefined | null): string { return list === null ? 'null' : list === undefined ? 'undefined' : 'list'; }
+}
+`);
+    const ir = angularComponent(file, readFileSync(file, 'utf8'), new Map())!;
+    const kinds = angularComponent(observed, readFileSync(observed, 'utf8'), new Map())!;
+    for (const platform of ['ios', 'android'] as const) {
+      const name = platform === 'ios' ? 'Swift' : 'Kotlin';
+      const { checker, program, files, lenient } = createProgram([file], new Map([[file, ir.source]]), platform, modulesDir);
+      const cls = program.getSourceFile(file)!.statements.filter(ts.isClassDeclaration).find((c) => c.name?.text === 'PersonDetail')!;
+      let code = '';
+      try {
+        if (platform === 'ios') {
+          const sw = new SwiftTranslator(checker, new Map([['PersonDetail', { props: ir.props, optional: ir.optional }]]), files, { lenientApp: lenient });
+          translateModules(sw, program, [file]);
+          code = sw.componentMembers(cls, ir.props).join('\n');
+        } else {
+          const kt = new Translator(checker, new Map([['PersonDetail', { props: ir.props }]]), files, { lenientApp: lenient });
+          kt.appModule = 'org.example.app';
+          translateKotlinModules(kt, program, [file]);
+          code = kt.componentMembers(cls, ir.props).lines.join('\n');
+        }
+      } catch (e) {
+        code = String((e as Error).message);
+      }
+      const typed = platform === 'ios' ? /func formatAchievements\(_ achievements: JSArray<String>\?\)/.test(code) && /func label\(_ name: Any\?\)/.test(code) : /fun formatAchievements\(achievements: JSArray<String>\?\)/.test(code) && /fun label\(name: Any\?\)/.test(code);
+      check(lenient && typed, `a component's method given null or undefined both by its template and its code translates: an array it never tells apart keeps one nil, a string it does is held (${name}${typed ? '' : `: ${code.split('\n').find((l) => /formatAchievements|label|not supported/.test(l))?.trim().slice(0, 160)}`})`);
+      const other = createProgram([observed], new Map([[observed, kinds.source]]), platform, modulesDir);
+      let refusal = '';
+      try {
+        if (platform === 'ios') translateModules(new SwiftTranslator(other.checker, new Map([['Kinds', { props: kinds.props, optional: kinds.optional }]]), other.files, { lenientApp: other.lenient }), other.program, [observed]);
+        else { const kt = new Translator(other.checker, new Map([['Kinds', { props: kinds.props }]]), other.files, { lenientApp: other.lenient }); kt.appModule = 'org.example.app'; translateKotlinModules(kt, other.program, [observed]); }
+      } catch (e) {
+        refusal = String((e as Error).message);
+      }
+      check(/kinds\.component\.ts:\d+:8: a function or library object that may be null or undefined both \(`string\[\] \| null \| undefined`\) is not supported in a release build yet: list:/.test(refusal), `a component's method telling null from undefined in an array is refused at its parameter (${name}${/list:/.test(refusal) ? '' : `: ${refusal.slice(0, 200) || 'translated'}`})`);
+    }
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+})();
+
 // ---- Top-level names the kit declares too ----
 (() => {
   // ui-chart's `Utils` namespace in the app's one package would hide kit-android's `Utils` from every file.

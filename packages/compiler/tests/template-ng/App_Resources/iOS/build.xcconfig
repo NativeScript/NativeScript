@@ -1,0 +1,7 @@
+// You can add custom settings here
+// for example you can uncomment the following line to force distribution code signing
+// CODE_SIGN_IDENTITY = iPhone Distribution 
+// To build for device with XCode you need to specify your development team.
+// DEVELOPMENT_TEAM = YOUR_TEAM_ID;
+ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+IPHONEOS_DEPLOYMENT_TARGET = 16.0;
