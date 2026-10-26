@@ -18,7 +18,7 @@ const member = (forms: Forms, n: ts.Node, checker: ts.TypeChecker) => {
   if (!ts.isPropertyAccessExpression(n)) return null;
   const d = checker.getSymbolAtLocation(n.name)?.valueDeclaration;
   const form = d && isSlotDeclaration(d) && !d.getSourceFile().isDeclarationFile ? forms.formOfSlot(d) : forms.formOf(n);
-  return both(form);
+  return heldApart(form);
 };
 
 /**
@@ -68,6 +68,15 @@ function both(f: Form): boolean {
   return f.undefined && f.null && f.observed;
 }
 
+/**
+ * Whether a slot is held untyped for what it may hold: a foreign form only where its type is tested (§2.3b M6), as it
+ * otherwise keeps its declared type and a foreign value is checked where it enters; any other where it holds both empty
+ * states apart.
+ */
+function heldApart(f: Form): boolean {
+  return f.foreign ? f.typeObserved : both(f);
+}
+
 /** Values of more than one kind (`number | string`, a function or an object): held untyped already, whatever their empty states. */
 function oneKind(f: Form, checker: ts.TypeChecker): boolean {
   const parts = f.type.isUnion() ? f.type.types : [f.type];
@@ -75,13 +84,13 @@ function oneKind(f: Form, checker: ts.TypeChecker): boolean {
   return new Set(parts.map(kind)).size === 1;
 }
 
-/** Whether the value is held untyped for its empty states: both of them, or a typed value Form calls foreign. */
+/** Whether the value is held untyped: for both its empty states, or a typed value Form calls foreign whose type is tested (§2.3b M6). */
 const heldUntyped: Answer = (forms, n, checker) => {
   if (!ts.isExpression(n) || ts.isPropertyAccessExpression(n)) return null;
   const held = heldForm(forms, n, checker);
   if (!oneKind(held, checker)) return null;
   const typed = !(checker.getTypeAtLocation(n).flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown));
-  return representation(held) === 'nullish' || (held.foreign && typed);
+  return held.foreign ? typed && held.typeObserved : representation(held) === 'nullish';
 };
 
 /** A typed value held as an optional whose nil is `state`, where the value there may be empty. */
@@ -171,7 +180,7 @@ export function shadowForms(states: ValueStates): void {
       try {
         form = moot(node) ? null : answer();
         const f = ts.isExpression(node) ? formsOf().formOf(node) : isSlotDeclaration(node) ? formsOf().formOfSlot(node) : null;
-        if (f) states = (f.undefined ? 'U' : '') + (f.missing ? 'M' : '') + (f.null ? 'N' : '') + (f.hole ? 'H' : '') + (f.foreign ? 'F' : '') + (f.observed ? 'o' : '') + (f.element ? `[${(f.element.undefined ? 'U' : '') + (f.element.null ? 'N' : '') + (f.element.foreign ? 'F' : '')}]` : '');
+        if (f) states = (f.undefined ? 'U' : '') + (f.missing ? 'M' : '') + (f.null ? 'N' : '') + (f.hole ? 'H' : '') + (f.foreign ? 'F' : '') + (f.observed ? 'o' : '') + (f.typeObserved ? 't' : '') + (f.element ? `[${(f.element.undefined ? 'U' : '') + (f.element.null ? 'N' : '') + (f.element.foreign ? 'F' : '')}]` : '');
       } catch (e) {
         error = (e as Error).message.slice(0, 200);
       }
@@ -194,7 +203,7 @@ export function shadowForms(states: ValueStates): void {
     if (!wrapped.has(slots)) {
       wrapped.add(slots);
       slots.held = recording(slots.held, (d, has) => record('nullishSlots.held', d, has, () => heldSlot(formsOf(), d, translator.checker)));
-      slots.fields = recording(slots.fields, (d, has) => record('nullishSlots.fields', d, has, () => (isSlotDeclaration(d) ? both(formsOf().formOfSlot(d)) : null)));
+      slots.fields = recording(slots.fields, (d, has) => record('nullishSlots.fields', d, has, () => (isSlotDeclaration(d) ? heldApart(formsOf().formOfSlot(d)) : null)));
     }
     return slots;
   };
@@ -204,7 +213,7 @@ export function shadowForms(states: ValueStates): void {
 function heldSlot(forms: Forms, d: ts.Declaration, checker: ts.TypeChecker): boolean | null {
   if (!isSlotDeclaration(d)) return null;
   const f = forms.formOfSlot(d);
-  return oneKind(f, checker) ? both(f) : null;
+  return oneKind(f, checker) ? heldApart(f) : null;
 }
 
 function recording(set: Set<ts.Declaration>, asked: (d: ts.Declaration, has: boolean) => void): Set<ts.Declaration> {

@@ -8,6 +8,7 @@ import { Throws, digitsLiteral, isArrayLengthLiteral, isArrayLengthWrite, isAsyn
 import { assignedMembers } from './sharing.ts';
 import { assignedValues, openSpreadType, initializedNull, intersectionAliasMembers, intlConstructor, literalPattern, literalFlags, patternGroups, regexpMayLeaveGroupUnset, isRegExpProtocol, assertedPattern, unsupportedPattern, isObjectToStringCall, isStringRaw, leadingNeverRead, forwardedSetter, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, uncheckedMatch, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, slotOf, slotType, definitelyAssignedFields, type TrustScope, classesHeldUntyped, unsetGroupTyping, type UnsetGroupTyping, admitsUndefined, classKeyPlan, onlyUndefined, keysDefinedUntyped, SWIFT_NATIVE_TYPES, runtimeTypeName, definesRunTimeKey, readKeyOf, givenBy, onlyNullOrPresent, isTemplateMethod } from './lang.ts';
 import { onlyNull, ValueStates, type StateBackend } from './value-states.ts';
+import type { Form } from './forms.ts';
 import { AsyncLowering, type AsyncCtx, type AsyncSyntax, type AsyncTranslator } from './async.ts';
 import { CoreAPI, isCoreDeclaration, packageOf } from './core.ts';
 import type { KitMember } from './kit-index.ts';
@@ -3359,7 +3360,7 @@ ${members.join('\n')}
       if (ts.isElementAccessExpression(bare) || ts.isPropertyAccessExpression(bare) || (ts.isCallExpression(bare) && ts.isPropertyAccessExpression(bare.expression) && bare.expression.name.text === 'get')) return true;
       try { if (this.typeOf(n) === 'Any?') return true; } catch { return false; }
     }
-    if ((ts.isAsExpression(n) || ts.isTypeAssertionExpression(n)) && this.downcasts(n)) return true;
+    if ((ts.isAsExpression(n) || ts.isTypeAssertionExpression(n)) && (this.downcasts(n) || this.checkedAssertion(n))) return true;
     if ((ts.isPropertyAccessExpression(n) || ts.isElementAccessExpression(n)) && !n.questionDotToken && this.definiteReceiver(ts.skipOuterExpressions(n.expression, ts.OuterExpressionKinds.Parentheses))) return true;
     if ((ts.isPropertyAccessExpression(n) || ts.isElementAccessExpression(n)) && !n.questionDotToken && this.lenientAwait(n.expression)) return true;
     if (ts.isPropertyAccessExpression(n) && !n.questionDotToken && this.widenedParameterRead(ts.skipOuterExpressions(n.expression, ts.OuterExpressionKinds.Parentheses))) return true;
@@ -3416,6 +3417,25 @@ ${members.join('\n')}
       if (made && sameClass(made, to)) return false;
       return this.isObjectRef(e) && this.isObjectRef(e.expression);
     } catch { return false; }
+  }
+
+  /**
+   * The one conversion of a foreign value into the form it enters as (§2.3b M6): a value of the form's type passes, an
+   * empty state as the slot holds it, any other is JavaScript's TypeError. Null where the form's type has none yet.
+   */
+  private checkedConvert(code: string, to: Form, at: ts.Node, optional = false): string | null {
+    const fn = ({ String: 'jsCheckedString', Double: 'jsCheckedNumber', Bool: 'jsCheckedBool' } as Record<string, string>)[this.type(to.type, at)];
+    return fn ? `(try ${fn}${optional ? 'OrNil' : ''}(${code}))` : null;
+  }
+
+  /** An untyped value asserted to a type `checkedConvert` checks, held as that type: the form it enters as. */
+  private checkedAssertion(e: ts.AsExpression | ts.TypeAssertion): Form | null {
+    if (this.lenient || this.library) return null;
+    try {
+      if (this.typeOf(e.expression) !== 'Any?') return null;
+      const entry = this.states.foreignEntry(e);
+      return entry && this.type(entry.type, e) === this.typeOf(e) && this.checkedConvert('', entry, e) ? entry : null;
+    } catch { return null; }
   }
 
   /** Whether `fromAny` writes a cast to `type` that `checkedCast` makes throw (or may, an over-approximation). */
@@ -9229,6 +9249,8 @@ ${members.join('\n')}
       const to = this.typeOf(e);
       if (from === 'Double' && this.native.isEnumType(to)) return this.native.toSwift(e.expression, to);
       if (to === 'Never') return this.expr(e.expression);
+      const entry = this.checkedAssertion(e);
+      if (entry) return this.checkedConvert(this.expr(e.expression), entry, e)!;
       // The assertion is erased in JavaScript: where Swift needs the type, the value is converted as script converts it there.
       if (!this.library && from === 'Any?' && ['String', 'Double', 'Bool'].includes(to)) return `jsLenient${to === 'Double' ? 'Number' : to}(${this.expr(e.expression)})`;
       if (from === 'Any?' && to !== 'Any?') return this.fromAnyChecked(this.expr(e.expression), to, this.castThrows(e.expression));
@@ -10506,6 +10528,8 @@ ${members.join('\n')}
   /** An `assertedUntyped` assertion read as the optional it may be: missing where the value is undefined or null. */
   private assertedOptional(e: ts.AsExpression | ts.TypeAssertion): string {
     const t = this.typeOf(e), code = this.expr(e.expression);
+    const entry = this.checkedAssertion(e);
+    if (entry) return this.checkedConvert(code, entry, e, true)!;
     if (['String', 'Double', 'Bool'].includes(t)) return `jsLenient${t === 'Double' ? 'Number' : t}OrNil(${code})`;
     return this.fromAny(code, optionalType(t));
   }

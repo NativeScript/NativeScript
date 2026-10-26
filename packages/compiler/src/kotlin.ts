@@ -6,6 +6,7 @@ import { isAsync, isStatic } from './throws.ts';
 import { assignedMembers } from './sharing.ts';
 import { assignedValues, openSpreadType, definitelyAssignedFields, forwardedSetter, initializedNull, intersectionAliasMembers, isRegExpProtocol, assertedPattern, unsupportedPattern, intlConstructor, isObjectToStringCall, isStringRaw, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, classesHeldUntyped, type TrustScope, literalPattern, patternGroups, unsetGroupTyping, type UnsetGroupTyping, admitsUndefined, classKeyPlan, onlyUndefined, keysDefinedUntyped, KOTLIN_NATIVE_TYPES, runtimeTypeName, definesRunTimeKey, nothingGiven, readKeyOf, reassigned, givenBy, onlyNullOrPresent } from './lang.ts';
 import { onlyNull, ValueStates, type StateBackend } from './value-states.ts';
+import type { Form } from './forms.ts';
 import { isCoreDeclaration } from './core.ts';
 import { balanced, nonVirtualName } from './swift.ts';
 import type { Properties } from './properties.ts';
@@ -6721,6 +6722,9 @@ export class Translator implements AsyncTranslator {
       const wider = from === 'Any?' ? this.widenedAssertion(e) : null;
       if (wider) return this.fromAny(this.expr(e.expression), isNullable(to) ? optionalType(wider) : wider);
       // The assertion is erased in JavaScript: where Kotlin needs the type, the value is converted as script converts it there.
+      const entry = from === 'Any?' && !this.library && !this.lenient ? this.states.foreignEntry(e) : null;
+      const checked = entry && this.type(entry.type, e) === to ? this.checkedConvert(this.expr(e.expression), entry, e) : null;
+      if (checked) return checked;
       if (!this.library && from === 'Any?' && ['String', 'Double', 'Boolean'].includes(to)) return `jsAsserted${to === 'Double' ? 'Number' : to}(${this.expr(e.expression)})`;
       if (from === 'Any?' && to !== 'Any?') {
         // A script function asserted to a function type taking a rest (`as (...a: unknown[]) => unknown`): the rest is spread
@@ -7564,6 +7568,9 @@ export class Translator implements AsyncTranslator {
   /** An `assertedUntyped` assertion read as the nullable it may be: null where the value is undefined or null. */
   private assertedOptional(e: ts.AsExpression | ts.TypeAssertion): string {
     const t = this.typeOf(e), code = this.expr(e.expression);
+    const entry = !this.library && !this.lenient ? this.states.foreignEntry(e) : null;
+    const checked = entry && this.type(entry.type, e) === t ? this.checkedConvert(code, entry, e, true) : null;
+    if (checked) return checked;
     if (['String', 'Double', 'Boolean'].includes(t)) return `jsAsserted${t === 'Double' ? 'Number' : t}OrNull(${code})`;
     return this.fromAny(code, optionalType(this.widenedAssertion(e) ?? t));
   }
@@ -7725,6 +7732,15 @@ export class Translator implements AsyncTranslator {
     try { inner = translate(); } finally { this.subst.delete(target); }
     // Nullable, as the end of any optional chain is (`optionalChainEnd`).
     return `${unasserted(code)}?.let { ${v} -> ${inner} }`;
+  }
+
+  /**
+   * The one conversion of a foreign value into the form it enters as (§2.3b M6): a value of the form's type passes, an
+   * empty state as the slot holds it, any other is JavaScript's TypeError. Null where the form's type has none yet.
+   */
+  private checkedConvert(code: string, to: Form, at: ts.Node, optional = false): string | null {
+    const fn = ({ String: 'jsCheckedString', Double: 'jsCheckedNumber', Boolean: 'jsCheckedBoolean' } as Record<string, string>)[this.type(to.type, at)];
+    return fn ? `${fn}${optional ? 'OrNull' : ''}(${code})` : null;
   }
 
   /** An undefined-or-value as the TypeScript type reads it: NaN, "undefined" and false are what undefined converts to. */

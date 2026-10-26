@@ -24,6 +24,11 @@ export interface Form {
    * holds one empty state, read as undefined.
    */
   observed: boolean;
+  /**
+   * Something its value reaches tests the value's type (§2.3b M6): `typeof`, `instanceof`, `Array.isArray`, `in`. A
+   * foreign form that isn't keeps its declared representation, the foreign value checked where it enters.
+   */
+  typeObserved: boolean;
   /** An array's or Set's element, a Map's value, a Promise's result. */
   element?: Form;
 }
@@ -57,6 +62,8 @@ class Slot {
   local = 0;
   /** Something tells null from undefined in its value, or in a slot its value flows to (§2.3b M1'). */
   observed = false;
+  /** Something tests the type of its value, or of a slot its value flows to (§2.3b M6). */
+  typeObserved = false;
   children = new Map<Part, Slot>();
   readonly type: ts.Type | null;
   /** The declaration it is the slot of, if any. */
@@ -119,6 +126,8 @@ export class Forms {
   /** Values something tells null from undefined in, and slots whose readers do (§2.3b M1'), before the fixpoint. */
   private readonly observedValues = new Set<ts.Expression>();
   private readonly observedSlots: Slot[] = [];
+  /** Values whose type something tests (§2.3b M6), before the fixpoint. */
+  private readonly typeObservedValues = new Set<ts.Expression>();
   /** Values given to JSON.stringify (true: classes' fields too) or console (interfaces' and literals' fields). */
   private readonly printed: [ts.Expression, boolean][] = [];
   /** The slots each value is placed in. */
@@ -161,7 +170,9 @@ export class Forms {
     this.build();
     const x = ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses);
     const observed = this.observedValues.has(x) || !!this.placed.get(x)?.some((s) => this.find(s).observed);
-    return this.formFrom(this.flow(e), this.checker.getTypeAtLocation(e), observed);
+    const form = this.formFrom(this.flow(e), this.checker.getTypeAtLocation(e), observed);
+    if (this.typeObservedValues.has(x) || this.placed.get(x)?.some((s) => this.find(s).typeObserved)) form.typeObserved = true;
+    return form;
   }
 
   formOfSlot(d: ts.Declaration): Form {
@@ -202,22 +213,23 @@ export class Forms {
   declaredForm(d: ts.Declaration): Form {
     const s = this.declaredStates(d) | ((d as { initializer?: ts.Node }).initializer && ts.isParameter(d) ? U : 0);
     const type = this.declaredType(d) ?? this.checker.getTypeAtLocation(d);
-    return { type: this.checker.getNonNullableType(type), undefined: !!(s & U), null: !!(s & N), hole: false, foreign: !!(s & F), missing: false, observed: false };
+    return { type: this.checker.getNonNullableType(type), undefined: !!(s & U), null: !!(s & N), hole: false, foreign: !!(s & F), missing: false, observed: false, typeObserved: false };
   }
 
   /** A read as a `T` (of a generic slot, at a type parameter's type) holds what the slot holds less what instantiations bring. */
   private formFrom(flow: Flow, type: ts.Type, observed = false, depth = 0): Form {
-    let states = flow.states;
+    let states = flow.states, typeObserved = false;
     const parts = new Map<Part, Slot[]>();
     const asT = isGeneric(type);
     for (const [s, keep] of flow.from) {
       const r = this.find(s);
       states |= (r.generic && asT ? r.local : r.states) & keep;
       if (r.observed && keep & N) observed = true;
+      if (r.typeObserved && keep & F) typeObserved = true;
       for (const [p, c] of r.children) { const list = parts.get(p); if (list) list.push(c); else parts.set(p, [c]); }
     }
     if (type.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown)) states |= F;
-    const form: Form = { type: this.checker.getNonNullableType(type), undefined: !!(states & U), null: !!(states & N), hole: !!(states & H), foreign: !!(states & F), missing: !!(states & U && states & M), observed };
+    const form: Form = { type: this.checker.getNonNullableType(type), undefined: !!(states & U), null: !!(states & N), hole: !!(states & H), foreign: !!(states & F), missing: !!(states & U && states & M), observed, typeObserved };
     const part = this.partOf(type);
     const inner = part && parts.get(part);
     if (inner && depth < 4) {
@@ -249,6 +261,7 @@ export class Forms {
     else if (y.fixed) { x.fixed = true; x.states = x.local = y.states; }
     else if (!x.fixed) { x.states |= y.states; x.local |= y.local; }
     x.observed ||= y.observed;
+    x.typeObserved ||= y.typeObserved;
     for (const [p, c] of y.children) {
       const mine = x.children.get(p);
       if (mine) this.share(mine, c);
@@ -459,6 +472,7 @@ export class Forms {
     this.propagate(out, [...out.keys()]);
     for (let opened = this.openForeignShapes(); opened.length; opened = this.openForeignShapes()) this.propagate(out, opened);
     this.propagateObserved();
+    this.propagateTypeObserved();
     this.buildMs = performance.now() - start;
   }
 
@@ -533,6 +547,13 @@ export class Forms {
     this.flow(x);
   }
 
+  /** A value whose type something tests (§2.3b M6). */
+  private observeType(e: ts.Expression): void {
+    const x = ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses);
+    this.typeObservedValues.add(x);
+    this.flow(x);
+  }
+
   /** A value script holds untyped, which reads it as it likes and may write into what it holds. */
   private observeUntyped(e: ts.Expression): void {
     this.observe(e);
@@ -554,9 +575,12 @@ export class Forms {
         if (this.mayBeEmpty(n.right)) this.observe(n.left);
         if (this.mayBeEmpty(n.left)) this.observe(n.right);
       } else if (CONVERTING.has(op)) { this.observe(n.left); this.observe(n.right); }
-      else if (op === K.InKeyword) this.observe(n.left);
-    } else if (ts.isPrefixUnaryExpression(n)) { if (n.operator !== K.ExclamationToken) this.observe(n.operand); }
-    else if (ts.isPostfixUnaryExpression(n) || ts.isTypeOfExpression(n)) this.observe(ts.isTypeOfExpression(n) ? n.expression : n.operand);
+      else if (op === K.InKeyword) { this.observe(n.left); this.observeType(n.right); }
+      else if (op === K.InstanceOfKeyword) this.observeType(n.left);
+    } else if (ts.isCallExpression(n) && n.arguments.length && ts.isPropertyAccessExpression(n.expression) && n.expression.name.text === 'isArray'
+      && ts.isIdentifier(n.expression.expression) && n.expression.expression.text === 'Array') this.observeType(n.arguments[0]); else if (ts.isPrefixUnaryExpression(n)) { if (n.operator !== K.ExclamationToken) this.observe(n.operand); }
+    else if (ts.isPostfixUnaryExpression(n)) this.observe(n.operand);
+    else if (ts.isTypeOfExpression(n)) { this.observe(n.expression); this.observeType(n.expression); }
     else if (ts.isTemplateSpan(n) || ts.isComputedPropertyName(n)) this.observe(n.expression);
     else if (ts.isElementAccessExpression(n)) this.observe(n.argumentExpression);
     else if (ts.isSwitchStatement(n)) {
@@ -655,6 +679,24 @@ export class Forms {
     for (let work = [...new Set(this.made.map((s) => this.find(s)).filter((r) => r.observed))]; work.length;) {
       const y = work.pop()!;
       for (const x of into.get(y) ?? []) if (!x.observed) { x.observed = true; work.push(x); }
+    }
+  }
+
+  /** Type observation runs backwards along the placements foreign values take, as null observation does along null's. */
+  private propagateTypeObserved(): void {
+    for (const e of this.typeObservedValues) for (const [s, keep] of this.flow(e).from) if (keep & F) this.find(s).typeObserved = true;
+    const into = new Map<Slot, Slot[]>();
+    for (const [from, to, keep] of this.edges) {
+      if (!(keep & F)) continue;
+      const x = this.find(from), y = this.find(to);
+      if (x === y) continue;
+      const list = into.get(y);
+      if (list) list.push(x);
+      else into.set(y, [x]);
+    }
+    for (let work = [...new Set(this.made.map((s) => this.find(s)).filter((r) => r.typeObserved))]; work.length;) {
+      const y = work.pop()!;
+      for (const x of into.get(y) ?? []) if (!x.typeObserved) { x.typeObserved = true; work.push(x); }
     }
   }
 
