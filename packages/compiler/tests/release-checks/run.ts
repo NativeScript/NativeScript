@@ -40,7 +40,7 @@ import { detectFramework, excludedFrameworkKitFiles, getFrameworkKitInfo } from 
 import { execFileSync, spawnSync } from 'node:child_process';
 import { kitProjectDir } from '../../src/android.ts';
 import { KIT_ANDROID } from '../../src/paths.ts';
-import { buildKotlinRuntime, buildSwiftRuntime, kotlinc, kotlinStdlib, swiftc, swiftMain, translateSwift } from '../native-build.ts';
+import { buildKotlinRuntime, buildSwiftRuntime, kotlinc, kotlinStdlib, swiftc, swiftMain, translateKotlin, translateSwift } from '../native-build.ts';
 import ts from 'typescript';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -1736,6 +1736,85 @@ console.log(typeof both, both, both | 8, typeof one, one, typeof order, order, t
   const expected = 'number 1 9 number 4 number 1 number 65';
   check(got === expected, 'a native option set or enum a typed handler gives script, through apply or held untyped, is its number');
   if (got !== expected) console.log(`    got: ${got.slice(0, 300)}`);
+})();
+
+(() => {
+  // Strict app code checks an untyped value entering a string, number or boolean slot (§2.3b M6). A native API gives
+  // those in representations Node has no counterpart for, so no diff case reaches them.
+  const build = process.env.NS_DIFF_BUILD ?? join(tmpdir(), 'ns-native-diff');
+  mkdirSync(build, { recursive: true });
+  const dir = mkdtempSync(join(build, 'release-checks-native-primitives-'));
+  const file = join(dir, 'app.ts');
+  writeFileSync(file, `function twice(n: number): number { return n * 2; }
+function shout(s: string): string { return s.toUpperCase(); }
+function flip(b: boolean): boolean { return !b; }
+function attempt(f: () => unknown): string {
+  try { return String(f()); } catch (e) { return (e as Error).message; }
+}
+export function num(v: any): string { return \`\${typeof v} \${(v as number) + 1} \${twice(v)}\`; }
+export function str(v: any): string { return \`\${typeof v} \${(v as string).toUpperCase()} \${shout(v)}\`; }
+export function bool(v: any): string { return \`\${typeof v} \${(v as boolean) ? 'yes' : 'no'} \${flip(v)}\`; }
+export function refused(v: any): string {
+  return [attempt(() => (v as number) + 1), attempt(() => twice(v)), attempt(() => (v as string).toUpperCase()), attempt(() => shout(v)), attempt(() => !(v as boolean)), attempt(() => flip(v))].join(', ');
+}
+`);
+  // What `refused` prints for a value of `type`: where `ok` gives a result, that type's slots take the value.
+  const wrong = (type: string, ok: { number?: string; string?: string; boolean?: string }) =>
+    [ok.number ?? `${type} is not a number`, ok.number ?? `${type} is not a number`, ok.string ?? `${type} is not a string`, ok.string ?? `${type} is not a string`,
+      ok.boolean ?? `${type} is not a boolean`, ok.boolean ?? `${type} is not a boolean`].join(', ');
+  try {
+    let got: string;
+    try {
+      buildSwiftRuntime(build, '-Onone');
+      const out = join(dir, 'swift');
+      translateSwift([file], out);
+      writeFileSync(join(out, 'main.swift'), `import Foundation
+import NativeScriptKit
+let numbers: [Any] = [1.5, 3, Int8(-2), UInt8(200), Int16(-300), UInt16(400), Int32(-5), UInt32(6), Int64(-7), UInt64(8), UInt(9), Float(0.5), CGFloat(2.5),
+    NSNumber(value: 7), NSDecimalNumber(string: "1.25"), Decimal(string: "4.5")!, NSString.CompareOptions.numeric, ComparisonResult.orderedDescending]
+for v in numbers { print(try num(v)) }
+for v: Any in ["s", NSString(string: "ns"), NSMutableString(string: "mut")] { print(try str(v)) }
+for v: Any in [true, NSNumber(value: true), kCFBooleanFalse!] { print(try bool(v)) }
+for v: Any in [NSNumber(value: 1), NSDecimalNumber(string: "1"), NSNumber(value: false), Int8(1), NSString(string: "1"), JSObject([])] { print(try refused(v)) }
+`);
+      const errors = swiftc(readdirSync(out).map((f) => join(out, f)), join(dir, 'main'), build, '-Onone');
+      got = errors ? errors[0] : spawnSync(join(dir, 'main'), { encoding: 'utf8' }).stdout.trim();
+    } catch (e) {
+      got = (e as Error).message.split('\n')[0];
+    }
+    const expected = ['number 2.5 3', 'number 4 6', 'number -1 -4', 'number 201 400', 'number -299 -600', 'number 401 800', 'number -4 -10', 'number 7 12',
+      'number -6 -14', 'number 9 16', 'number 10 18', 'number 1.5 1', 'number 3.5 5', 'number 8 14', 'number 2.25 2.5', 'number 5.5 9', 'number 65 128',
+      'number 2 2', 'string S S', 'string NS NS', 'string MUT MUT', 'boolean yes false', 'boolean yes false', 'boolean no true',
+      wrong('number', { number: '2' }), wrong('number', { number: '2' }), wrong('boolean', { boolean: 'true' }), wrong('number', { number: '2' }),
+      wrong('string', { string: '1' }), wrong('object', {})].join('\n');
+    check(got === expected, "a native number, string or boolean in any of Swift's representations passes an `as` or an untyped argument as that type; another type is a TypeError (Swift)");
+    if (got !== expected) console.log(`    got: ${got.slice(0, 1500)}`);
+
+    try {
+      const out = join(dir, 'kotlin');
+      translateKotlin([file], out, 'org.example.app');
+      writeFileSync(join(out, 'Main.kt'), `import org.example.app.*
+fun main() {
+    for (v in listOf<Any>(1.5, 3, -2L, 4.toShort(), 5.toByte(), 0.5f, java.lang.Integer.valueOf(6))) println(num(v))
+    for (v in listOf<Any>("s", 'c')) println(str(v))
+    for (v in listOf<Any>(true, java.lang.Boolean.FALSE)) println(bool(v))
+    for (v in listOf<Any>(1, 'c', java.math.BigDecimal("1"), StringBuilder("1"), true)) println(refused(v))
+}
+`);
+      const runtime = buildKotlinRuntime(build);
+      const errors = kotlinc(readdirSync(out).map((f) => join(out, f)), join(dir, 'classes'), [runtime]);
+      got = errors ? errors[0] : spawnSync('java', ['-cp', [join(dir, 'classes'), runtime, kotlinStdlib()].join(':'), 'MainKt'], { encoding: 'utf8' }).stdout.trim();
+    } catch (e) {
+      got = (e as Error).message.split('\n')[0];
+    }
+    const expectedKotlin = ['number 2.5 3', 'number 4 6', 'number -1 -4', 'number 5 8', 'number 6 10', 'number 1.5 1', 'number 7 12',
+      'string S S', 'string C C', 'boolean yes false', 'boolean no true',
+      wrong('number', { number: '2' }), wrong('string', { string: 'C' }), wrong('object', {}), wrong('object', {}), wrong('boolean', { boolean: 'false' })].join('\n');
+    check(got === expectedKotlin, "a native number, string or boolean in any of the JVM's representations passes an `as` or an untyped argument as that type; another type is a TypeError (Kotlin)");
+    if (got !== expectedKotlin) console.log(`    got: ${got.slice(0, 1500)}`);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 })();
 
 // ---- Core members a kit class leaves to each object; a kit method called past its overrides ----

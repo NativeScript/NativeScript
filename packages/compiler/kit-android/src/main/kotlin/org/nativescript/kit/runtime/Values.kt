@@ -521,7 +521,8 @@ fun jsField(target: Any?, key: String): Any? = if (target == null || target === 
 /** `typeof value`. */
 fun jsTypeof(value: Any?): String = when (value) {
     null, Unit -> "undefined"
-    is String -> "string"
+    // A Java char is a one-character string, as NativeScript marshals it.
+    is String, is Char -> "string"
     is Boolean -> "boolean"
     JSNull -> "object"
     is Function<*>, is JSFunction, is JavaMethodRef, is Class<*> -> "function"
@@ -743,15 +744,25 @@ fun jsAssertedNumberOrNull(value: Any?): Double? = if (jsIsNullish(value)) null 
 fun jsAssertedBooleanOrNull(value: Any?): Boolean? = if (jsIsNullish(value)) null else jsAssertedBoolean(value)
 
 /**
- * An untyped value asserted to a string, number or boolean (§2.3b M6): a value of that type passes, an empty state reads
- * as `jsAssertedString`/`jsAssertedNumber`/`jsAssertedBoolean` read it, and any other value is JavaScript's TypeError there
- * rather than a converted one.
+ * An untyped value asserted to a string, number or boolean (§2.3b M6): a value `jsTypeof` calls that type passes, in
+ * whatever representation it has (an `Int`, a `Char`), an empty state reads as `jsAssertedString`/`jsAssertedNumber`/
+ * `jsAssertedBoolean` read it, and any other value is JavaScript's TypeError there rather than a converted one.
  */
-fun jsCheckedString(value: Any?): String = value as? String ?: if (jsIsNullish(value)) "" else jsCheckedFailure(value, "string")
+fun jsCheckedString(value: Any?): String = when (val v = jsBox(value)) {
+    is String -> v
+    is Char -> v.toString()
+    else -> if (jsIsNullish(v)) "" else jsCheckedFailure(v, "string")
+}
 
-fun jsCheckedNumber(value: Any?): Double = value as? Double ?: if (jsIsNullish(value)) jsToNumber(value) else jsCheckedFailure(value, "number")
+fun jsCheckedNumber(value: Any?): Double {
+    val v = jsBox(value)
+    return jsNumeric(v) ?: if (jsIsNullish(v)) jsToNumber(v) else jsCheckedFailure(v, "number")
+}
 
-fun jsCheckedBoolean(value: Any?): Boolean = value as? Boolean ?: if (jsIsNullish(value)) false else jsCheckedFailure(value, "boolean")
+fun jsCheckedBoolean(value: Any?): Boolean {
+    val v = jsBox(value)
+    return v as? Boolean ?: if (jsIsNullish(v)) false else jsCheckedFailure(v, "boolean")
+}
 
 fun jsCheckedStringOrNull(value: Any?): String? = if (jsIsNullish(value)) null else jsCheckedString(value)
 
