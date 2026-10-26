@@ -1133,6 +1133,28 @@ public func jsLenientBoolOrNil(_ value: Any?) -> Bool? { jsIsNullish(value) ? ni
 public func jsLenientNumberOrNil(_ value: Any?) -> Double? { jsIsNullish(value) ? nil : jsLenientNumber(value) }
 public func jsLenientStringOrNil(_ value: Any?) -> String? { jsIsNullish(value) ? nil : jsLenientString(value) }
 
+/// An untyped value asserted to a string, number or boolean (§2.3b M6): a value of that type passes, an empty state
+/// reads as `jsLenientString`/`jsLenientNumber`/`jsLenientBool` read it, and any other value is JavaScript's TypeError
+/// there rather than a converted one.
+public func jsCheckedString(_ value: Any?) throws -> String {
+    if let s = value as? String { return s }
+    if jsIsNullish(value) { return "" }
+    throw jsCastFailure(value, "string")
+}
+public func jsCheckedNumber(_ value: Any?) throws -> Double {
+    if let d = value as? Double { return d }
+    if jsIsNullish(value) { return jsToNumber(value) }
+    throw jsCastFailure(value, "number")
+}
+public func jsCheckedBool(_ value: Any?) throws -> Bool {
+    if let b = value as? Bool { return b }
+    if jsIsNullish(value) { return false }
+    throw jsCastFailure(value, "boolean")
+}
+public func jsCheckedStringOrNil(_ value: Any?) throws -> String? { jsIsNullish(value) ? nil : try jsCheckedString(value) }
+public func jsCheckedNumberOrNil(_ value: Any?) throws -> Double? { jsIsNullish(value) ? nil : try jsCheckedNumber(value) }
+public func jsCheckedBoolOrNil(_ value: Any?) throws -> Bool? { jsIsNullish(value) ? nil : try jsCheckedBool(value) }
+
 /// A value's string where one must be given: undefined and null are "".
 public func jsStringOrEmpty(_ value: Any?) -> String { jsIsNullish(value) ? "" : jsToString(value) }
 
