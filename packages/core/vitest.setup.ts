@@ -29,7 +29,7 @@ global.NSBundle = {
 global.NSTimer = class NSTimer {};
 global.NSObject = class NSObject {
 	static new() {
-		return new NSObject();
+		return new this();
 	}
 };
 global.NSNumber = {};
@@ -225,6 +225,9 @@ global.UIViewController = function () {};
 global.UIViewControllerTransitioningDelegate = function () {};
 global.UINavigationControllerDelegate = function () {};
 global.UINavigationController = function () {};
+global.UINavigationControllerOperation = { Push: 1, Pop: 2 };
+global.UIBarButtonItemStyle = { Plain: 0 };
+global.UIBarButtonItem = { alloc: () => ({ initWithTitleStyleTargetAction: () => ({}) }) };
 global.UIUserInterfaceIdiom = {
 	Phone: 0,
 	Pad: 1,
