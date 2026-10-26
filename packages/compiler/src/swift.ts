@@ -992,6 +992,9 @@ export class Translator implements AsyncTranslator {
       if (param && (this.type(param, where) === 'Any?' || t.types.every((u) => u === param || inNarrowing(u)))) return this.type(param, where);
       // A function carrying properties (`((p: P) => R) & { type: string }`): an untyped value, called as script calls it.
       if (t.types.some((u) => u.getCallSignatures().length) && t.types.some((u) => !u.getCallSignatures().length && u.getProperties().length) && !t.types.some((u) => isLibDeclaration(u.getSymbol()?.declarations?.[0]))) return 'Any?';
+      // Interfaces each held untyped (core's `BackstackEntry & ExpandedEntry`): untyped too. A shape would be a copy, so
+      // the caller's object would not see the writes and `===` would not find it.
+      if (t.types.every((u) => { const s = u.getSymbol(); return !!s && this.isDynamicShape(s); })) return 'Any?';
     }
     if (t.isUnion()) {
       let parts = t.types.filter((u) => !(u.flags & (F.Undefined | F.Null | F.Void)));
