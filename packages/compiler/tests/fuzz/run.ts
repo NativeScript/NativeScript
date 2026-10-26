@@ -11,8 +11,10 @@
 // --set nightly runs every reached site of every case with four values each.
 // Failures listed in known-fuzz-failures.json are reported and don't fail the run; anything else does. The per-merge set
 // draws only from the cases listed there, so a new case is gated once the nightly set has listed it.
-// --update-baseline rewrites the entries of the variants that ran: those now matching Node leave, new failures join, and
-// entries of an edited or deleted case's sites go. After a fix, run it with `--set nightly` (whole, or a case prefix).
+// A build (`<case>-g<n>`, one site group) whose instrumented program differs from Node with no wrong value chosen runs
+// none of its variants; it fails the run too unless `baselineDiffers` lists it.
+// --update-baseline rewrites the entries of the variants and builds that ran: those now matching Node leave, new failures
+// join, and entries of an edited or deleted case's sites go. After a fix, run it with `--set nightly` (whole, or a case prefix).
 // Build products go to $NS_FUZZ_BUILD (default: <tmp>/ns-native-fuzz), one case at a time, deleted after it unless --keep.
 import { spawn } from 'node:child_process';
 import { Worker } from 'node:worker_threads';
@@ -513,6 +515,8 @@ const allFailures: Failure[] = [];
 let regressions = 0;
 const nowPassing: string[] = [];
 const ranKeys: Record<string, Set<string>> = {};
+const differs: Record<string, Record<string, string>> = {};
+const ranBuilds: Record<string, Set<string>> = {};
 const flakyKeys: Record<string, Set<string>> = {};
 
 // The merge subset's cases: a seeded draw, the same for both backends.
@@ -592,23 +596,33 @@ for (const target of targets) {
     failures.push({ key: x.key, target, case: x.p.name, site: x.site.key, kind: x.site.kind, value: BAD_VALUES[x.value], cause: o.cause!, detail: o.detail ?? '', node: o.node, native: o.native, repro: snippet(x.p, x.site, x.value), known });
   };
   const caseBaselines: Record<string, string> = {};
+  const knownDiffers: Record<string, string> = baseline.baselineDiffers?.[target] ?? {};
+  const differing = (differs[target] = {} as Record<string, string>);
+  const builtRan = (ranBuilds[target] = new Set<string>());
+  let freshDiffers = 0, notBuilt = 0;
   const runCase = async (p: Unit, built: { native: Native | null; failed: Map<number, string>; error?: string }) => {
     const list = variants.get(p.caseName)!.filter((x) => p.group.includes(x.site));
     if (!built.native) {
       for (const x of list) if (x.p.dropped.has(x.site.id)) untyped++; else record(x, { pass: false, cause: 'compile', detail: compileCause(built.failed.get(x.site.id) ?? built.error ?? '') });
       caseBaselines[p.name] = built.error ?? 'did not build';
+      notBuilt++;
       return;
     }
-    const base = await built.native.run('');
+    builtRan.add(p.name);
     const want = nodeBaseline.get(p.caseName)!;
-    const b = compare(target, want, base);
+    let b = compare(target, want, await built.native.run(''));
+    if (!b.pass && !knownDiffers[p.name]) b = compare(target, want, await built.native.run(''));
     if (!b.pass) {
       // The instrumented case without a wrong value already differs: its variants say nothing.
-      caseBaselines[p.name] = `${b.cause}: ${b.detail} (node ${JSON.stringify(b.node)}, native ${JSON.stringify(b.native)})`;
+      const why = `${b.cause}: ${b.detail}`;
+      caseBaselines[p.name] = `${why} (node ${JSON.stringify(b.node)}, native ${JSON.stringify(b.native)})`;
+      differing[p.name] = why;
+      if (!knownDiffers[p.name]) { regressions++; freshDiffers++; }
       unrun += list.length;
       if (!keep) built.native.cleanup();
       return;
     }
+    if (knownDiffers[p.name]) nowPassing.push(`build ${p.name} (${target}), its instrumented baseline`);
     await pool(list, target === 'swift' ? jobs : Math.max(2, jobs >> 1), async (x) => {
       if (x.p.dropped.has(x.site.id)) { untyped++; return; }
       const failed = built.failed.get(x.site.id);
@@ -650,14 +664,14 @@ for (const target of targets) {
     await pool(cases, 2, async (p) => runCase(p, built.get(p.name)!));
     if (!keep) for (const d of readdirSync(build)) if (d.startsWith('kotlin-classes') || d === 'kotlin') rmSync(join(build, d), { recursive: true, force: true });
   }
-  const unstable = Object.keys(caseBaselines).length;
+  const unstable = Object.keys(differing).length;
   const clusters = new Map<string, Failure[]>();
   for (const f of failures) {
     const k = `${f.cause}: ${f.detail}`;
     clusters.set(k, [...(clusters.get(k) ?? []), f]);
   }
   const ranked = [...clusters].sort((a, b) => b[1].length - a[1].length);
-  console.log(`\n${target}: ${passed} of ${counted} variants match Node (${counted ? ((100 * passed) / counted).toFixed(1) : '0'}%), ${failures.filter((f) => !f.known).length} new failures, ${unstable} builds whose instrumented baseline differs (${unrun} variants not run), ${untyped} variants whose replacement doesn't type-check, ${flaky.length} flaky (${((Date.now() - t0) / 1000).toFixed(0)} s)`);
+  console.log(`\n${target}: ${passed} of ${counted} variants match Node (${counted ? ((100 * passed) / counted).toFixed(1) : '0'}%), ${failures.filter((f) => !f.known).length} new failures, ${unstable} builds whose instrumented baseline differs (${freshDiffers} not listed, ${unrun} variants not run), ${notBuilt} builds that did not build, ${untyped} variants whose replacement doesn't type-check, ${flaky.length} flaky (${((Date.now() - t0) / 1000).toFixed(0)} s)`);
   for (const [k, list] of ranked.slice(0, 25)) {
     const byKind = [...new Set(list.map((f) => f.kind))].join(',');
     console.log(`  ${String(list.length).padStart(5)}  ${k}  [${byKind}; ${new Set(list.map((f) => f.case)).size} cases]`);
@@ -669,7 +683,10 @@ for (const target of targets) {
     if (f.node !== undefined || f.native !== undefined) console.log(`    node:   ${JSON.stringify(f.node)}\n    native: ${JSON.stringify(f.native)}`);
   }
   if (fresh.length > 40) console.log(`… ${fresh.length - 40} more new failures (--json writes them all)`);
-  for (const [n, why] of Object.entries(caseBaselines)) console.log(`  ! ${n} (${target}): ${why.slice(0, 200)}`);
+  for (const [n, why] of Object.entries(caseBaselines)) {
+    if (n in differing && !knownDiffers[n]) console.log(`✗ build ${n} (${target}): its instrumented baseline differs from Node and baselineDiffers doesn't list it: ${why.slice(0, 200)}`);
+    else console.log(`  ! ${n} (${target}): ${why.slice(0, 200)}`);
+  }
   report[target] = { passed, counted, unrun, untyped, flaky, rate: counted ? passed / counted : 0, unstable: caseBaselines, clusters: ranked.map(([k, l]) => ({ cluster: k, count: l.length, cases: [...new Set(l.map((f) => f.case))].length, kinds: [...new Set(l.map((f) => f.kind))], values: [...new Set(l.map((f) => valueKind(BAD_VALUES.indexOf(f.value))))], example: l[0] })), seconds: Math.round((Date.now() - t0) / 1000) };
   allFailures.push(...failures);
 }
@@ -681,8 +698,16 @@ for (const n of nowPassing.slice(0, 20)) console.log(`✓ ${n} now matches Node:
 if (nowPassing.length > 20) console.log(`… ${nowPassing.length - 20} more now match Node`);
 
 if (argv.includes('--update-baseline')) {
-  const next: Record<string, unknown> = { $comment: baseline.$comment ?? 'Fuzz variants known not to match Node, by backend: `<case>|<line:col:site kind>|<wrong value>` and the failure cluster. `cases` are the cases the per-merge set draws from. tests/fuzz/run.ts fails on a failure not listed here.', seed };
+  const next: Record<string, unknown> = { $comment: baseline.$comment ?? 'Fuzz variants known not to match Node, by backend: `<case>|<line:col:site kind>|<wrong value>` and the failure cluster. `baselineDiffers`: builds (`<case>-g<site group>`) whose instrumented program differs from Node with no wrong value chosen, so none of their variants run. `cases` are the cases the per-merge set draws from. tests/fuzz/run.ts fails on a failure or build not listed here.', seed };
   const existing = new Set(everyCase.map((f) => basename(f, '.ts')));
+  // A run without the per-merge draw builds every group of its cases, so their entries are all replaced.
+  const builtCase = (t: string, c: string) => targets.includes(t) && !chosenCases && !only && units.some((u) => u.caseName === c && runsOn(u.file, t as 'swift' | 'kotlin') && !knownDiff[t]?.[c]);
+  const isStale = (t: string, k: string) => { const c = k.replace(/-g\d+$/, ''); return !existing.has(c) || builtCase(t, c) || ranBuilds[t]?.has(k); };
+  next.baselineDiffers = Object.fromEntries(['swift', 'kotlin'].map((t) => {
+    const entries: Record<string, string> = Object.fromEntries(Object.entries(baseline.baselineDiffers?.[t] ?? {}).filter(([k]) => !isStale(t, k)) as [string, string][]);
+    for (const [k, why] of Object.entries(differs[t] ?? {})) entries[k] = baseline.baselineDiffers?.[t]?.[k] ?? why;
+    return [t, Object.fromEntries(Object.entries(entries).sort(([a], [b]) => a.localeCompare(b)))];
+  }));
   next.cases = [...new Set([...(baseline.cases ?? []), ...prepared.map((p) => p.name)])].filter((c) => existing.has(c)).sort();
   // An entry is stale when its case is gone, or when this run found the case's sites and its site is not one of them (the case was edited).
   const siteKeys = new Map(prepared.map((p) => [p.name, new Set(p.sites.map((x) => x.key))]));
