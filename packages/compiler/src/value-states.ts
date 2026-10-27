@@ -1,7 +1,6 @@
 import { dirname, join } from 'node:path';
-import { appendFileSync as MEASURE_append } from 'node:fs';
 import ts from 'typescript';
-import { heldDowncasts, implementedInterfaceDeclarations, LooseSlots, nothingGiven, nullishSlots, nullSetFields, originOf, ownSlot, scriptCalledFunction, slotOf, slotType, type NullishSlots, type TrustScope } from './lang.ts';
+import { alwaysEnds, givenBy, heldDowncasts, implementedInterfaceDeclarations, isTemplateMethod, LooseSlots, nothingGiven, nullishSlots, nullSetFields, originOf, ownSlot, reassigned, scriptCalledFunction, slotOf, slotType, type NullishSlots, type TrustScope } from './lang.ts';
 import { type Form, Forms, isGeneric, representation } from './forms.ts';
 import { isAsync, isStatic } from './throws.ts';
 import { shadowForms } from './forms-shadow.ts';
@@ -58,6 +57,8 @@ export interface StateBackend {
   optionalShapeField(e: ts.PropertyAccessExpression): string | null;
   /** A string, number or boolean read by name or call that the backend holds optional though its type says present. */
   heldOptional(x: ts.Expression): boolean;
+  /** A variable the backend declares optional though its type says present, known before it is translated. */
+  declaredOptional(x: ts.Identifier): boolean;
 }
 
 /** The rules the two backends still answer differently. Each names the backend that has it. */
@@ -339,10 +340,14 @@ export class ValueStates {
     return true;
   }
 
-  /** Strict code's value typed `T | undefined`, held as an optional: its empty value is undefined, never null. */
+  /** Strict code's value typed `T | undefined`, or a call of a widened result holding no null, held as an optional: its empty value is undefined, never null. */
   nilIsUndefined(e: ts.Expression): boolean {
     const b = this.backend;
-    if (b.lenient || b.library || b.lenientApp || this.plugin(e)) return false;
+    if (b.lenient || b.library || this.plugin(e)) return false;
+    const bare = ts.skipOuterExpressions(e);
+    const d = ts.isCallExpression(bare) ? this.checker.getResolvedSignature(bare)?.getDeclaration() : undefined;
+    if (d && !ts.isJSDocSignature(d) && this.widenedResult(d) && !this.forms().formOfSlot(d).null) return true;
+    if (b.lenientApp) return false;
     const t = this.checker.getTypeAtLocation(e);
     const parts = t.isUnion() ? t.types : [t];
     return parts.some((x) => x.flags & (ts.TypeFlags.Undefined | ts.TypeFlags.Void)) && !parts.some((x) => x.flags & (ts.TypeFlags.Null | ts.TypeFlags.Any | ts.TypeFlags.Unknown));
@@ -459,7 +464,7 @@ export class ValueStates {
     return !!outer && !!d && !ts.isJSDocSignature(d) && isAsync(outer) && this.backend.returnTypeOf(outer as ts.SignatureDeclaration) === this.backend.returnTypeOf(d);
   }
 
-  /** A call of a non-strict app's own function whose result is optional and whose body gives only null where it gives nothing, awaited when async. */
+  /** A call of a non-strict app's own function whose result is optional and whose body gives only null where it gives nothing, awaited when async, or of a `nullOnlyResult`. */
   nullResult(e: ts.Expression): boolean {
     const b = this.backend, app = b.rules.appNullResults;
     if (app && (!b.lenientApp || b.library)) return false;
@@ -467,6 +472,7 @@ export class ValueStates {
     const call = awaited ? ts.skipOuterExpressions(e.expression) : e;
     if (!ts.isCallExpression(call)) return false;
     const d = this.checker.getResolvedSignature(call)?.getDeclaration();
+    if (!awaited && d && !ts.isJSDocSignature(d) && this.nullOnlyResult(d)) return true;
     if (!d || ts.isJSDocSignature(d) || !(ts.isFunctionDeclaration(d) || ts.isMethodDeclaration(d)) || !d.body || (app && (d.getSourceFile().isDeclarationFile || this.plugin(d))) || awaited !== isAsync(d)) return false;
     if (awaited ? !this.lenientAsync(d) : !b.resultHoldsNull(d)) return false;
     const given = nothingGiven(d, this.checker);
@@ -498,12 +504,16 @@ export class ValueStates {
   /** A declaration of strict code (not the kit's) holding a string, number, boolean or object, in a form the backend may choose alone. */
   private holdsLoose(d: ts.Declaration): boolean {
     const b = this.backend;
-    if (b.library || !(b.trust.strictFile(d.getSourceFile()) || (b.lenientApp && this.appCode(d))) || !ownSlot(d, this.checker, this.implementedInterfaceSet ??= implementedInterfaceDeclarations(b.sourceFiles, this.checker))) return false;
+    const strict = b.trust.strictFile(d.getSourceFile());
+    // A non-strict app's fields keep their representation: every reader, a template's binding among them, would see it change.
+    const lenientSlot = b.lenientApp && this.appCode(d) && !ts.isPropertySignature(d) && !ts.isPropertyDeclaration(d) && !ts.isPropertyAssignment(d);
+    if (b.library || !(strict || lenientSlot) || !ownSlot(d, this.checker, this.implementedInterfaceSet ??= implementedInterfaceDeclarations(b.sourceFiles, this.checker))) return false;
     try {
       const st = slotType(d, this.checker);
       if (!st) return false;
       const t = b.type(st, d);
-      return this.primitive(t) || b.looseObjectType(t);
+      // A non-strict app's object slot keeps its checked conversion (§2.3b M6): held optional, a wrong-typed value would read as missing.
+      return this.primitive(t) || (strict && b.looseObjectType(t));
     } catch { return false; }
   }
 
@@ -547,6 +557,10 @@ export class ValueStates {
     // An object-valued record's entry: undefined for a key never set, whatever its value type.
     const objectEntry = ts.isElementAccessExpression(x) && !x.questionDotToken && !(t.flags & (untyped | ts.TypeFlags.TypeParameter)) && !primitive(t) && !empty(t) && record(x.expression);
     if (objectEntry) return this.forms().formOf(x).undefined ? 'undefined' : null;
+    if (!primitive(t) && !empty(t) && !(t.flags & (untyped | ts.TypeFlags.TypeParameter)) && !(x.flags & ts.NodeFlags.OptionalChain) && !t.getCallSignatures().length) {
+      const given = this.widenedObject(x);
+      if (given) return given;
+    }
     if (!primitive(t) || empty(t) || x.flags & ts.NodeFlags.OptionalChain) return null;
     const form = this.forms().formOf(x);
     if (!form.undefined) return null;
@@ -557,6 +571,7 @@ export class ValueStates {
     if (ts.isPropertyAccessExpression(x)) {
       const d = c.getSymbolAtLocation(x.name)?.valueDeclaration;
       if (!d || ts.isIndexSignatureDeclaration(d) || ts.isMappedTypeNode(d)) return record(x.expression) ? 'undefined' : null;
+      if ((ts.isPropertySignature(d) || ts.isPropertyDeclaration(d)) && this.looseSlots.has(d)) return 'undefined';
       return !strict && (ts.isPropertySignature(d) || ts.isPropertyDeclaration(d)) && !!d.questionToken ? 'undefined' : null;
     }
     if (ts.isCallExpression(x) && ts.isPropertyAccessExpression(x.expression) && !x.questionDotToken) {
@@ -569,6 +584,32 @@ export class ValueStates {
     }
     return (ts.isIdentifier(x) || ts.isCallExpression(x)) && b.unemitted(() => b.heldOptional(x)) ? 'undefined' : null;
   }
+
+  /**
+   * An object a `widenedResult` gives: its call, or a variable such calls are given to that the backend holds optional.
+   * Its empty state: null where every such result holds null only.
+   */
+  private widenedObject(x: ts.Expression): 'undefined' | 'null' | null {
+    const results = (e: ts.Expression): ts.SignatureDeclaration[] => {
+      if (!ts.isCallExpression(e)) return [];
+      const d = this.checker.getResolvedSignature(e)?.getDeclaration();
+      return d && !ts.isJSDocSignature(d) && this.widenedResult(d) ? [d] : [];
+    };
+    let fns = results(x);
+    if (ts.isIdentifier(x)) {
+      const d = this.checker.getSymbolAtLocation(x)?.valueDeclaration;
+      if (!d || !ts.isVariableDeclaration(d)) return null;
+      let found = this.widenedGiven.get(d);
+      if (!found) {
+        const all: ts.SignatureDeclaration[] = [];
+        givenBy(d, this.checker, (v) => { all.push(...results(v)); return false; });
+        this.widenedGiven.set(d, found = all);
+      }
+      fns = found.length && this.backend.unemitted(() => this.backend.declaredOptional(x)) ? found : [];
+    }
+    return !fns.length ? null : fns.every((f) => this.nullOnlyResult(f)) ? 'null' : 'undefined';
+  }
+  private readonly widenedGiven = new Map<ts.VariableDeclaration, ts.SignatureDeclaration[]>();
 
   /** Strict code's declaration holding a string, number or boolean an untrusted value is placed in (see `looseSlots`). */
   looseDeclaration(n: ts.Node | undefined): boolean {
@@ -692,30 +733,71 @@ export class ValueStates {
    * value) or, in non-strict code, `return null`/`return undefined`. The form is its group's (overrides, the interface
    * member or function type it is given for), so every place that spells a member of the group asks this. Not for a
    * result typed by a type parameter (§2.3b M5), an async function's or generator's, or one whose group holds a fixed
-   * point (a kit's or platform's callback type).
+   * point (a kit's or platform's callback type), nor one the Angular transform writes for a template (`$b…`, `$e…`),
+   * whose only reader is the template glue. A result whose type already holds null or undefined keeps the empty state
+   * it is held with (§2.3b M1').
    */
   widenedResult(fn: ts.SignatureDeclaration): boolean {
-    return WIDEN_RESULTS && this.resultWidening(fn);
-  }
-  private resultWidening(fn: ts.SignatureDeclaration): boolean {
     const b = this.backend;
     if (b.library || b.lenient || ts.isJSDocSignature(fn as ts.Node) || fn.getSourceFile().isDeclarationFile || this.packaged(fn) || !this.appCode(fn)) return false;
-    if (ts.isConstructorDeclaration(fn) || ts.isSetAccessorDeclaration(fn) || isAsync(fn) || (fn as ts.FunctionLikeDeclaration).asteriskToken) return false;
+    if (ts.isConstructorDeclaration(fn) || ts.isAccessor(fn) || isAsync(fn) || (fn as ts.FunctionLikeDeclaration).asteriskToken || isTemplateMethod(fn)) return false;
     let found = this.widenedResults.get(fn);
     if (found !== undefined) return found;
     found = false;
+    // A literal given for a library's callback whose result is a type parameter (`map`'s `U`), §2.3b M5.
+    const context = ts.isArrowFunction(fn) || ts.isFunctionExpression(fn) ? this.checker.getContextualType(fn)?.getNonNullableType().getCallSignatures()[0]?.getDeclaration() : undefined;
+    const contextResult = context && !ts.isJSDocSignature(context) && context.getSourceFile().isDeclarationFile ? this.checker.getSignatureFromDeclaration(context)?.getReturnType() : undefined;
+    if (contextResult && mentionsTypeParameter(this.checker, contextResult)) { this.widenedResults.set(fn, false); return false; }
     const t = this.checker.getSignatureFromDeclaration(fn)?.getReturnType();
     const none = ts.TypeFlags.Void | ts.TypeFlags.Undefined | ts.TypeFlags.Null | ts.TypeFlags.Any | ts.TypeFlags.Unknown | ts.TypeFlags.Never;
     // A boolean's undefined reads as false wherever a boolean is tested, which a library's callback (`filter`) does.
-    if (t && !(t.flags & (none | ts.TypeFlags.BooleanLike)) && !isGeneric(t)) {
+    if (t && !(t.flags & (none | ts.TypeFlags.BooleanLike)) && !(t.isUnion() && t.types.some((u) => u.flags & none)) && !mentionsTypeParameter(this.checker, t)) {
       const forms = this.forms();
       if (!forms.fixedSlot(fn)) {
         const declared = forms.declaredForm(fn), form = forms.formOfSlot(fn);
         found = !declared.foreign && !form.foreign && ((form.null && !declared.null) || (form.undefined && !declared.undefined));
+        // A function declaration is its group's only member with a body; what its returns give after their guards decides.
+        if (found && ts.isFunctionDeclaration(fn) && fn.body) found = this.returnsGiveEmpty(fn, declared);
       }
     }
     this.widenedResults.set(fn, found);
     return found;
+  }
+
+  /**
+   * Whether a function's own returns may give null or undefined `declared` leaves out. A name a guard has tested truthy
+   * where it is returned (`if (!x) throw …; return x`, `if (x) return x`) gives its value, which the form, blind to
+   * narrowing, counts empty.
+   */
+  private returnsGiveEmpty(fn: ts.FunctionDeclaration, declared: Form): boolean {
+    let empty = false;
+    if (!alwaysEnds(fn.body!)) empty = !declared.undefined;
+    const gives = (e: ts.Expression): boolean => {
+      e = ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses);
+      if (ts.isConditionalExpression(e)) return gives(e.whenTrue) || gives(e.whenFalse);
+      if (ts.isCallExpression(e) && this.checker.getResolvedSignature(e)?.getDeclaration() === fn) return false;
+      if (truthyAt(e, e, this.checker)) return false;
+      const f = this.forms().formOf(e);
+      return (f.null && !declared.null) || (f.undefined && !declared.undefined) || f.foreign;
+    };
+    const visit = (n: ts.Node): void => {
+      if (empty || (n !== fn.body && ts.isFunctionLike(n))) return;
+      if (ts.isReturnStatement(n)) {
+        if (!n.expression) { empty ||= !declared.undefined; return; }
+        empty ||= gives(n.expression);
+        return;
+      }
+      ts.forEachChild(n, visit);
+    };
+    visit(fn.body!);
+    return empty;
+  }
+
+  /** A widened result (`widenedResult`) whose only empty state is null: its nil is null. */
+  nullOnlyResult(fn: ts.SignatureDeclaration): boolean {
+    if (!this.widenedResult(fn)) return false;
+    const form = this.forms().formOfSlot(fn);
+    return form.null && !form.undefined;
   }
   private readonly widenedResults = new Map<ts.SignatureDeclaration, boolean>();
 
@@ -727,33 +809,6 @@ export class ValueStates {
     const ctx = this.checker.getContextualType(fn)?.getNonNullableType().getCallSignatures()[0]?.getDeclaration();
     return ctx && !ts.isJSDocSignature(ctx) && this.widenedResult(ctx) ? ctx : null;
   }
-  MEASURE_dumped = false;
-  MEASURE_dump(): void {
-    if (this.MEASURE_dumped || !process.env.NS_MEASURE_RESULTS) return;
-    this.MEASURE_dumped = true;
-    const out: string[] = [];
-    const where = (n: ts.Node) => { const f = n.getSourceFile(); const { line } = f.getLineAndCharacterOfPosition(n.getStart()); return `${f.fileName.replace(/.*\/(src|app|cases)\//, '')}:${line + 1}`; };
-    const calls = new Map<ts.Node, string[]>();
-    const visit = (n: ts.Node): void => {
-      if (ts.isCallExpression(n)) {
-        const d = this.checker.getResolvedSignature(n)?.getDeclaration();
-        if (d && !ts.isJSDocSignature(d)) { const l = calls.get(d) ?? []; l.push(where(n)); calls.set(d, l); }
-      }
-      if (ts.isFunctionLike(n) && !n.getSourceFile().isDeclarationFile && this.resultWidening(n as ts.SignatureDeclaration)) {
-        const f = this.forms().formOfSlot(n as ts.Declaration);
-        out.push(`W ${ts.SyntaxKind[n.kind]} ${where(n)} ${(n as ts.FunctionDeclaration).name?.getText() ?? ''} u=${f.undefined} n=${f.null} m=${f.missing} f=${f.foreign} :: ${this.checker.typeToString(this.checker.getSignatureFromDeclaration(n as ts.SignatureDeclaration)!.getReturnType())}`);
-        widened.push(n);
-      }
-      ts.forEachChild(n, visit);
-    };
-    const widened: ts.Node[] = [];
-    for (const f of this.backend.sourceFiles) if (!f.isDeclarationFile && !this.packaged(f)) visit(f);
-    let sites = 0;
-    for (const w of widened) { const l = calls.get(w) ?? []; sites += l.length; out.push(`  calls ${l.length}: ${l.slice(0, 6).join(' ')}`); }
-    out.unshift(`widened ${widened.length} calls ${sites}`);
-    MEASURE_append(process.env.NS_MEASURE_RESULTS, `=== ${this.backend.library ? 'lib' : 'app'} ${this.backend.lenientApp ? 'lenientApp' : ''}\n${out.join('\n')}\n`);
-  }
-
   /**
    * An untyped value asserted to a concrete type (`x as T`, `JSON.parse(s) as T`) in the app's own code: the form the
    * value enters as, for the backend's checked convert. Null where the assertion is no such entry, or where the type of
@@ -956,8 +1011,81 @@ export class ValueStates {
   }
 }
 
-/** WIP switch: the result rule stays off until its real-app call-site count is decided (Undefined reads state). */
-const WIDEN_RESULTS = !!process.env.NS_WIDEN_RESULTS;
+/**
+ * A name read at `at` that a guard has made truthy: `at` is inside the true branch of `if (x)` / `x && …` / `x ? … :`, or
+ * follows `if (!x) <ends>` in a block on the way out. Only for a name nothing assigns after its declaration.
+ */
+function truthyAt(e: ts.Expression, at: ts.Node, checker: ts.TypeChecker): boolean {
+  e = ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses);
+  if (!ts.isIdentifier(e)) return false;
+  const sym = checker.getSymbolAtLocation(e), d = sym?.valueDeclaration;
+  if (!sym || !d || (!ts.isVariableDeclaration(d) && !ts.isParameter(d)) || (ts.isVariableDeclaration(d) ? reassigned(d, checker) : assignedParameter(d, checker))) return false;
+  const names = (x: ts.Expression) => ts.isIdentifier(x = ts.skipOuterExpressions(x, ts.OuterExpressionKinds.Parentheses)) && checker.getSymbolAtLocation(x) === sym;
+  const negated = (x: ts.Expression) => (x = ts.skipOuterExpressions(x, ts.OuterExpressionKinds.Parentheses), ts.isPrefixUnaryExpression(x) && x.operator === ts.SyntaxKind.ExclamationToken && names(x.operand));
+  for (let n: ts.Node = at; n.parent && !ts.isFunctionLike(n); n = n.parent) {
+    const p = n.parent;
+    if (ts.isIfStatement(p) && p.thenStatement === n && names(p.expression)) return true;
+    if (ts.isIfStatement(p) && p.elseStatement === n && negated(p.expression)) return true;
+    if (ts.isConditionalExpression(p) && p.whenTrue === n && names(p.condition)) return true;
+    if (ts.isBlock(p) || ts.isSourceFile(p)) {
+      for (const st of (p as ts.Block).statements) {
+        if (st === n) break;
+        if (ts.isIfStatement(st) && negated(st.expression) && alwaysEnds(st.thenStatement)) return true;
+        // A member read of it that always runs first (`if (x.parent) …`, `x.load();`) has thrown had it been empty.
+        const first = ts.isIfStatement(st) ? st.expression : ts.isExpressionStatement(st) ? st.expression : undefined;
+        if (first && dereferences(first, names)) return true;
+      }
+    }
+  }
+  return false;
+}
+
+/** An expression whose evaluation starts by reading a member of a name `names` accepts (`x.a`, `x.a.b()`, `x.m()`), no `?.` on the way. */
+function dereferences(e: ts.Expression, names: (x: ts.Expression) => boolean): boolean {
+  let x: ts.Expression = ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses);
+  for (;;) {
+    if (ts.isPrefixUnaryExpression(x) && x.operator === ts.SyntaxKind.ExclamationToken) x = ts.skipOuterExpressions(x.operand, ts.OuterExpressionKinds.Parentheses);
+    else if (ts.isCallExpression(x) && !x.questionDotToken) x = x.expression;
+    else if ((ts.isPropertyAccessExpression(x) || ts.isElementAccessExpression(x)) && !x.questionDotToken) {
+      if (names(x.expression)) return true;
+      x = x.expression;
+    } else return false;
+  }
+}
+
+function assignedParameter(p: ts.ParameterDeclaration, checker: ts.TypeChecker): boolean {
+  const sym = ts.isIdentifier(p.name) ? checker.getSymbolAtLocation(p.name) : undefined;
+  if (!sym) return true;
+  const visit = (n: ts.Node): boolean => (ts.isBinaryExpression(n) && n.operatorToken.kind >= ts.SyntaxKind.FirstAssignment && n.operatorToken.kind <= ts.SyntaxKind.LastAssignment
+    && ts.isIdentifier(ts.skipOuterExpressions(n.left)) && checker.getSymbolAtLocation(ts.skipOuterExpressions(n.left)) === sym) || !!ts.forEachChild(n, visit);
+  return visit(p.parent);
+}
+
+/**
+ * A read JavaScript converts where it stands (an operand of arithmetic, `+` or a comparison, a template's part, `String(x)`,
+ * `Number(x)`): undefined becomes NaN or "undefined" there. Anywhere else the value is placed as it is.
+ */
+export function convertedRead(e: ts.Expression): boolean {
+  let x: ts.Node = e;
+  while (ts.isParenthesizedExpression(x.parent)) x = x.parent;
+  const p = x.parent, K = ts.SyntaxKind;
+  if (ts.isTemplateSpan(p)) return true;
+  if (ts.isPrefixUnaryExpression(p)) return [K.PlusToken, K.MinusToken, K.TildeToken].includes(p.operator);
+  if (ts.isBinaryExpression(p)) {
+    const op = p.operatorToken.kind;
+    if ([K.PlusEqualsToken, K.MinusEqualsToken, K.AsteriskEqualsToken, K.SlashEqualsToken].includes(op)) return p.right === x;
+    return [K.PlusToken, K.MinusToken, K.AsteriskToken, K.SlashToken, K.PercentToken, K.AsteriskAsteriskToken, K.LessThanToken, K.GreaterThanToken, K.LessThanEqualsToken, K.GreaterThanEqualsToken].includes(op);
+  }
+  return ts.isCallExpression(p) && p.arguments[0] === x && ts.isIdentifier(p.expression) && ['String', 'Number'].includes(p.expression.text);
+}
+
+/** A type naming a type parameter anywhere in it (`T`, `T[]`, `Map<string, T>`): what it holds is each instantiation's (§2.3b M5). */
+function mentionsTypeParameter(checker: ts.TypeChecker, t: ts.Type, depth = 0): boolean {
+  if (depth > 4) return false;
+  if (t.flags & ts.TypeFlags.TypeParameter) return !(t as { isThisType?: boolean }).isThisType;
+  if (t.isUnionOrIntersection()) return t.types.some((u) => mentionsTypeParameter(checker, u, depth + 1));
+  return !!(t.flags & ts.TypeFlags.Object) && !!((t as ts.ObjectType).objectFlags & ts.ObjectFlags.Reference) && checker.getTypeArguments(t as ts.TypeReference).some((a) => mentionsTypeParameter(checker, a, depth + 1));
+}
 
 /** A member read that is written: an assignment's target, an update's operand, a `delete`'s. */
 function assigned(n: ts.Node): boolean {

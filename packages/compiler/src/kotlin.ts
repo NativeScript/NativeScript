@@ -5,7 +5,7 @@ import { AsyncLowering, usedBefore, type AsyncCtx, type AsyncSyntax, type AsyncT
 import { isAsync, isStatic } from './throws.ts';
 import { assignedMembers } from './sharing.ts';
 import { assignedValues, openSpreadType, definitelyAssignedFields, forwardedSetter, initializedNull, intersectionAliasMembers, isRegExpProtocol, assertedPattern, unsupportedPattern, intlConstructor, isObjectToStringCall, isStringRaw, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, classesHeldUntyped, type TrustScope, literalPattern, patternGroups, unsetGroupTyping, type UnsetGroupTyping, admitsUndefined, classKeyPlan, onlyUndefined, keysDefinedUntyped, KOTLIN_NATIVE_TYPES, runtimeTypeName, definesRunTimeKey, readKeyOf, reassigned, givenBy, onlyNullOrPresent, statementLevel, readWrite, asOperation, type ReadWrite } from './lang.ts';
-import { onlyNull, ValueStates, type StateBackend } from './value-states.ts';
+import { convertedRead, onlyNull, ValueStates, type StateBackend } from './value-states.ts';
 import type { Form } from './forms.ts';
 import { isCoreDeclaration } from './core.ts';
 import { balanced, nonVirtualName } from './swift.ts';
@@ -895,6 +895,7 @@ export class Translator implements AsyncTranslator {
         const sym = ts.isIdentifier(x) ? this.resolve(x) : undefined;
         return (!!sym && (this.undefinedVars.get(sym)?.endsWith('?') || !!this.declaredTypeOf(x)?.endsWith('?'))) || (ts.isCallExpression(x) && this.unwrapsResult(x));
       },
+      declaredOptional: (x) => { const sym = this.resolve(x); return !!sym && (!!this.undefinedVars.get(sym)?.endsWith('?') || !!this.declaredTypeOf(x)?.endsWith('?')); },
     };
   }
 
@@ -1147,7 +1148,9 @@ export class Translator implements AsyncTranslator {
     if (this.rawResults.has(e) || !this.unwrapsResult(e)) return code;
     // A string, number or boolean that may be missing reads as what undefined converts to; an object is required present.
     const site = this.typeOf(e);
-    return ['String', 'Double', 'Boolean'].includes(site) ? this.undefinedAs(code, site) : asserted(code);
+    if (['String', 'Double', 'Boolean'].includes(site)) return this.undefinedAs(code, site);
+    // A non-strict app's null-only result: its null is carried as the app's other nulls are (`jsUncheckedNull`).
+    return this.lenientApp && this.isObjectType(site) && this.states.nullResult(e) ? `(${code} ?: jsUncheckedNull<${site}>())` : asserted(code);
   }
 
   /** Calls whose nullable result is wanted as it is (see `maybeUndefined`). */
@@ -2546,13 +2549,18 @@ export class Translator implements AsyncTranslator {
     return lines;
   }
 
+  /** A call of an object `widenedResult` that may give undefined: missing where it gives nothing, as a string's is. One giving only null is `nullResult`'s. */
+  private widenedObjectCall(e: ts.CallExpression): boolean {
+    const d = this.checker.getResolvedSignature(e)?.getDeclaration(), t = this.typeOf(e);
+    return !!d && !ts.isJSDocSignature(d) && this.isObjectType(t) && !isFunctionType(t) && t !== 'Any?' && this.states.widenedResult(d) && !this.states.nullOnlyResult(d);
+  }
+
   /** A function type's result as its group holds it (`widenedResult`). */
   private widenedResultType(sd: ts.Declaration | undefined, t: string): string {
     return sd && ts.isFunctionLike(sd) && !ts.isJSDocSignature(sd as ts.Node) && !['Unit', 'Any?', 'Nothing'].includes(t) && !t.endsWith('?') && this.states.widenedResult(sd as ts.SignatureDeclaration) ? optionalType(t) : t;
   }
 
   returnTypeOf(fn: ts.SignatureDeclaration): string {
-    this.states.MEASURE_dump();
     const context = this.states.widenedContext(fn);
     if (context) return this.returnTypeOf(context);
     if (this.states.nullish().held.has(fn) || (this.library && this.thisValues().returning.has(fn))) return 'Any?';
@@ -6784,8 +6792,8 @@ export class Translator implements AsyncTranslator {
     if (ts.isExpressionWithTypeArguments(e)) return this.functionValue(e.expression);
     if (ts.isNonNullExpression(e)) {
       const maybe = this.maybeUndefined(e.expression);
-      // `!` asserts nothing at run time: a missing string, number or boolean reads as JavaScript reads undefined.
-      const primitive = !this.library && !this.lenient && ['String', 'Double', 'Boolean'].includes(this.typeOf(e));
+      // `!` asserts nothing at run time: a missing string, number or boolean converts as JavaScript converts undefined.
+      const primitive = !this.library && !this.lenient && ['String', 'Double', 'Boolean'].includes(this.typeOf(e)) && convertedRead(e);
       if (maybe) return primitive ? this.undefinedAs(unasserted(maybe), this.typeOf(e)) : asserted(maybe);
       const inner = this.expr(e.expression);
       const optional = this.typeOf(e.expression).endsWith('?') || this.declaredTypeOf(e.expression)?.endsWith('?');
@@ -7463,13 +7471,20 @@ export class Translator implements AsyncTranslator {
     if (!kind) return null;
     let x = target;
     while (ts.isParenthesizedExpression(x)) x = x.expression;
-    const value = ts.isNonNullExpression(x) ? (this.maybeUndefined(x.expression) ?? this.expr(x.expression)) : this.maybeUndefined(x) ?? this.optionalRead(x);
+    const value = ts.isNonNullExpression(x) ? (this.maybeUndefined(x.expression) ?? this.expr(x.expression)) : this.maybeUndefined(x) ?? this.optionalRead(x) ?? this.heldResult(x);
     return value ? `(${value} ?: ${kind === 'null' ? 'jsCannotReadNull' : 'jsCannotRead'}(${kotlinString(key)}))` : null;
+  }
+
+  /** A call whose result Kotlin holds nullable though its type says present, read as it is held. */
+  private heldResult(x: ts.Expression): string | null {
+    if (!ts.isCallExpression(x) || !this.unwrapsResult(x)) return null;
+    this.rawResults.add(x);
+    try { return this.expr(x); } finally { this.rawResults.delete(x); }
   }
 
   /** A parameter or member Kotlin declares optional, read as it is held. */
   private optionalRead(x: ts.Expression): string | null {
-    if (ts.isPropertyAccessExpression(x)) return this.optionalMember(x) ? `${this.expr(x.expression)}.${ident(x.name.text)}` : null;
+    if (ts.isPropertyAccessExpression(x)) return this.optionalMember(x) || (!this.typeOf(x).endsWith('?') && !!this.declaredTypeOf(x)?.endsWith('?')) ? `${this.expr(x.expression)}.${ident(x.name.text)}` : null;
     const d = ts.isIdentifier(x) ? this.resolve(x)?.valueDeclaration : undefined;
     if (!d || !(ts.isParameter(d) || ts.isVariableDeclaration(d)) || !this.declaredTypeOf(x)?.endsWith('?')) return null;
     this.rawNames.add(x);
@@ -7545,7 +7560,7 @@ export class Translator implements AsyncTranslator {
       const read = optional ? `${target}?.get(${this.str(key)})` : `${target}[${this.str(key)}]`;
       // Library mode: an untyped value narrowed where it is read (`Array.isArray(headers[key])`).
       if (this.library && /^JSRecord<Any\?>\??$/.test(t) && vt !== 'Any?') return this.fromAnyCode(read, vt, true);
-      if (!this.library && !this.lenient && ['String', 'Double', 'Boolean'].includes(vt) && !optional) return this.undefinedAs(read, vt);
+      if (!this.library && !this.lenient && ['String', 'Double', 'Boolean'].includes(vt) && !optional && convertedRead(e)) return this.undefinedAs(read, vt);
       return vt.endsWith('?') || optional ? read : z && z !== 'null' ? `(${read} ?: ${z})` : asserted(read);
     }
     if (this.typeOf(e.expression) === 'Any?') {
@@ -7635,7 +7650,7 @@ export class Translator implements AsyncTranslator {
     if (awaited) return awaited;
     if (this.subst.has(e)) return null;
     // A call of a function Kotlin declares to give a nullable string, number or boolean (`'dark' | 'light' | null`): as it gives it.
-    if (ts.isCallExpression(e) && ['String', 'Double', 'Boolean'].includes(this.typeOf(e)) && this.unwrapsResult(e)) {
+    if (ts.isCallExpression(e) && (['String', 'Double', 'Boolean'].includes(this.typeOf(e)) || this.widenedObjectCall(e)) && this.unwrapsResult(e)) {
       this.rawResults.add(e);
       try { return this.expr(e); } finally { this.rawResults.delete(e); }
     }
@@ -7783,7 +7798,8 @@ export class Translator implements AsyncTranslator {
     const t = this.type(to.type, at), fn = checked[t];
     if (fn) return `${fn}${optional ? 'OrNull' : ''}(${code})`;
     const element = /^JSArray<(\w+)>$/.exec(t)?.[1];
-    return element && checked[element] && !optional && to.element?.foreign && !to.element.typeObserved ? `jsCheckedArray(${code}) { ${checked[element]}(it) }` : null;
+    if (!element || !checked[element] || !to.element?.foreign || to.element.typeObserved) return null;
+    return optional ? `jsUnlessNullish(${code}) { __v -> jsCheckedArray(__v) { ${checked[element]}(it) } }` : `jsCheckedArray(${code}) { ${checked[element]}(it) }`;
   }
 
   /** An untyped value placed where its slot holds its declared type (`foreignPlacement`): converted checked, or null. */

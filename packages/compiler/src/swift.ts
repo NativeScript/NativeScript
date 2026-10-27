@@ -7,7 +7,7 @@ import { KIT_APPLE_SOURCES } from './paths.ts';
 import { Throws, digitsLiteral, isArrayLengthLiteral, isArrayLengthWrite, isAsync, isStatic } from './throws.ts';
 import { assignedMembers } from './sharing.ts';
 import { assignedValues, openSpreadType, initializedNull, intersectionAliasMembers, intlConstructor, literalPattern, literalFlags, patternGroups, regexpMayLeaveGroupUnset, isRegExpProtocol, assertedPattern, unsupportedPattern, isObjectToStringCall, isStringRaw, leadingNeverRead, forwardedSetter, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, uncheckedMatch, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, slotOf, slotType, definitelyAssignedFields, type TrustScope, classesHeldUntyped, unsetGroupTyping, type UnsetGroupTyping, admitsUndefined, classKeyPlan, onlyUndefined, keysDefinedUntyped, SWIFT_NATIVE_TYPES, runtimeTypeName, definesRunTimeKey, readKeyOf, givenBy, onlyNullOrPresent, isTemplateMethod, statementLevel, readWrite, asOperation, assignmentOf, type ReadWrite } from './lang.ts';
-import { onlyNull, ValueStates, type StateBackend } from './value-states.ts';
+import { convertedRead, onlyNull, ValueStates, type StateBackend } from './value-states.ts';
 import type { Form } from './forms.ts';
 import { AsyncLowering, type AsyncCtx, type AsyncSyntax, type AsyncTranslator } from './async.ts';
 import { CoreAPI, isCoreDeclaration, packageOf } from './core.ts';
@@ -3434,7 +3434,8 @@ ${members.join('\n')}
     const t = this.type(to.type, at), fn = checked[t];
     if (fn) return `(try ${fn}${optional ? 'OrNil' : ''}(${code}))`;
     const element = /^JSArray<(\w+)>$/.exec(t)?.[1];
-    return element && checked[element] && !optional && to.element?.foreign && !to.element.typeObserved ? `(try jsCheckedArray(${code}) { try ${checked[element]}($0) })` : null;
+    if (!element || !checked[element] || !to.element?.foreign || to.element.typeObserved) return null;
+    return optional ? `(try jsUnlessNullish(${code}) { try jsCheckedArray($0) { try ${checked[element]}($0) } })` : `(try jsCheckedArray(${code}) { try ${checked[element]}($0) })`;
   }
 
   /** An untyped value placed where its slot holds its declared type (`foreignPlacement`): converted checked, or null. */
@@ -4203,7 +4204,6 @@ ${members.join('\n')}
   }
 
   private mayReturnUndefined(fn: ts.SignatureDeclaration): boolean {
-    this.states.MEASURE_dump();
     if (fn.getSourceFile().isDeclarationFile) return false;
     if (this.states.widenedResult(fn)) return true;
     if ((ts.isArrowFunction(fn) || ts.isFunctionExpression(fn)) && this.returnsUnsetElement(fn)) return true;
@@ -6751,6 +6751,8 @@ ${members.join('\n')}
       untypedCode: (e) => this.coerceTyped(e, 'Any?'),
       optionalShapeField: (e) => this.optionalShapeField(e),
       heldOptional: (x) => this.typeOf(x).endsWith('?') || this.optionalResult(x) || (ts.isIdentifier(x) && this.unsetLenientVariable(x)),
+      // Decided from the declaration alone: the throws analysis asks before the declaration is translated.
+      declaredOptional: (x) => { const d = this.resolve(x)?.valueDeclaration; return !!d && ts.isVariableDeclaration(d) && !!d.initializer && this.heldOptionalResult(d.initializer); },
     };
   }
   /** A non-strict app's read of an object type's optional string, number or boolean member (`o.a`, `a?: string`), held optional. */
@@ -9397,8 +9399,8 @@ ${members.join('\n')}
       if (key !== null) return this.assigned(e.parent as ts.Expression) ? `jsUnwrap(${inner}, setting: ${swiftString(key)})` : `jsUnwrap(${inner}, ${swiftString(key)})`;
       if (this.lenient && this.lenientRef(this.typeOf(e)) !== this.typeOf(e)) return `jsImplicit(${inner})`;
       const t = this.typeOf(e);
-      // `!` asserts nothing at run time: a missing string, number or boolean reads as JavaScript reads undefined.
-      if (!this.library && ['String', 'Double', 'Bool'].includes(t) && this.typeOf(e.expression) === optionalType(t)) return this.undefinedAs(inner, t, optionalType(t));
+      // `!` asserts nothing at run time: a missing string, number or boolean converts as JavaScript converts undefined.
+      if (!this.library && ['String', 'Double', 'Bool'].includes(t) && this.typeOf(e.expression) === optionalType(t) && convertedRead(e)) return this.undefinedAs(inner, t, optionalType(t));
       return this.typeOf(e.expression).endsWith('?') && this.typeOf(e.expression) !== 'Any?' && inner !== 'nil' ? `${inner}!` : inner;
     }
     if (ts.isPropertyAccessExpression(e)) {
@@ -9406,7 +9408,7 @@ ${members.join('\n')}
       const member = this.namespaceMember(e);
       const decl = member ? this.resolve(e.name)?.valueDeclaration : undefined;
       if (member && !(ts.isPropertyAccessExpression(e.parent) && e.parent.expression === e) && (this.isNamespace(e) || (decl && ts.isClassDeclaration(decl)))) return `${member}.self`;
-      if (!member && this.lenientOptionalMember(e)) return this.undefinedAs(this.property(e), this.typeOf(e), optionalType(this.typeOf(e)));
+      if (!member && this.lenientOptionalMember(e) && convertedRead(e)) return this.undefinedAs(this.property(e), this.typeOf(e), optionalType(this.typeOf(e)));
       return member ? this.narrowed(e, member) : this.property(e);
     }
     if (ts.isElementAccessExpression(e)) return this.elementAccess(e);
@@ -10385,6 +10387,8 @@ ${members.join('\n')}
       const fn = name === 'return' ? 'jsReturnResult' : 'jsThrowResult';
       return `(${this.expr(target)} as ${optionalType(base.replace(/[?!]$/, ''))}).flatMap { __it in __it.${has} ? { (__v: Any?) throws -> Any? in try __it.${fn}(__v) } : nil }`;
     }
+    const methodOfMissing = this.optionalResult(target) ? this.methodValueRead(e) : null;
+    if (methodOfMissing) return methodOfMissing;
     const checked = this.receiver(target, name);
     if (checked) return this.narrowed(e, `${checked}${dot}${this.memberName(e)}`);
     // `x?.name` on a value Swift has as non-optional: cast to optional, valid for an implicitly unwrapped one too.
@@ -10434,8 +10438,11 @@ ${members.join('\n')}
     if (decl.parameters.some((q) => q.dotDotDotToken)) return null;
     if (e.expression.kind === ts.SyntaxKind.SuperKeyword && this.isInstanceMethod(e.name)) return 'nil';
     if (e.expression.kind === ts.SyntaxKind.SuperKeyword || !(this.isSelf(e.expression) || this.programClass(e.expression))) return null;
-    const receiverType = this.typeOf(e.expression);
-    if (receiverType.endsWith('?')) return null;
+    let receiverType = this.typeOf(e.expression);
+    // A call whose result may be missing: JavaScript's TypeError where it is, the method's value otherwise.
+    const missing = this.optionalResult(e.expression) ? this.receiver(e.expression, e.name.text) : null;
+    if (missing) receiverType = receiverType.replace(/\?$/, '');
+    else if (receiverType.endsWith('?')) return null;
     const fn = functionParts(this.typeOf(e));
     const cell = fn && fn.rest < 0 ? this.functionCell(fn.text) : null;
     if (!fn || !cell) return null;
@@ -10447,10 +10454,10 @@ ${members.join('\n')}
     const body = fn.result !== 'Void' ? `return ${call}` : this.returnTypeOf(decl) === 'Void' ? call : `_ = ${call}`;
     const closure = `{ [weak __r] (${params.join(', ')}) throws -> ${fn.result} in guard let __r else { throw jsReleasedReceiver(${swiftString(name)}) }; ${this.keeping('__i', body, fn.result)} }`;
     const methodValue = (receiver: string) => `jsMethodValue(${receiver}, ${swiftString(name)}) { __r, __i in ${cell}(f: ${closure}) }.f`;
-    if (!this.isInstanceMethod(e.name)) return methodValue(this.expr(e.expression));
+    if (!this.isInstanceMethod(e.name)) return methodValue(missing ? `try ${missing}` : this.expr(e.expression));
     // A method an instance can replace (see `instanceKeys`): its own value when it holds one, as a call reads it.
     const held = this.fresh('__held'), own = this.fresh('__own');
-    const receiver = `${this.tryPrefix(e.expression)}${this.expr(e.expression)}`;
+    const receiver = missing ? `try ${missing}` : `${this.tryPrefix(e.expression)}${this.expr(e.expression)}`;
     return `({ () ${THROWING_CODE.test(receiver) ? 'throws ' : ''}-> ${fn.text} in let ${held}: ${receiverType} = ${receiver}; if let ${own} = jsOwnProperty(${held}, ${swiftString(name)})${this.library ? '' : `, ${own} != nil`} { return ${this.fromAnyCode(own, fn.text, true)} }; return ${methodValue(held)} }())`;
   }
 
@@ -10548,7 +10555,7 @@ ${members.join('\n')}
       // Lenient code: a missing object is undefined, which the code tests for (`if (!list) …`).
       if (this.lenient && this.lenientRef(vt) !== vt) return `jsImplicit(${read})`;
       // App code: a key never set reads undefined, not the value type's zero.
-      if (!this.library && !this.lenient && ['String', 'Double', 'Bool'].includes(vt) && this.states.appCode(e)) return this.undefinedAs(read, vt, optionalType(vt));
+      if (!this.library && !this.lenient && ['String', 'Double', 'Bool'].includes(vt) && this.states.appCode(e) && convertedRead(e)) return this.undefinedAs(read, vt, optionalType(vt));
       const z = isFunctionType(vt) ? null : this.zero(vt);
       return z ? `(${read} ?? ${z})` : `${read}!`;
     }
@@ -11186,7 +11193,7 @@ ${members.join('\n')}
       let bound = '';
       if (!ts.isIdentifier(recv) && !fieldRead(recv)) {
         const o = this.fresh('__o');
-        bound = `let ${o}: ${this.typeOf(recv)} = ${this.tryPrefix(recv)}${this.expr(recv)}; `;
+        bound = `let ${o}: ${this.optionalResult(recv) ? optionalType(this.typeOf(recv)) : this.typeOf(recv)} = ${this.tryPrefix(recv)}${this.expr(recv)}; `;
         this.subst.set(recv, o);
       }
       const t = this.typeOf(e);
@@ -13673,7 +13680,7 @@ ${members.join('\n')}
       const fn = strict ? 'jsStrictEquals' : 'jsLooseEquals';
       return `${negate ? '!' : ''}${fn}(${this.coerce(a, 'Any?')}, ${this.coerce(b, 'Any?')})`;
     }
-    if (this.isObjectRef(a) && this.isObjectRef(b)) return `${this.expr(a)} ${negate ? '!==' : '==='} ${this.expr(b)}`;
+    if (this.isObjectRef(a) && this.isObjectRef(b)) return `${tested(a)} ${negate ? '!==' : '==='} ${tested(b)}`;
     // Swift's comparisons do not associate: an operand that is one is parenthesized (`flag !== n > 0`).
     const K2 = ts.SyntaxKind;
     const compared = (x: ts.Expression) => (ts.isBinaryExpression(x) && x.operatorToken.kind >= K2.LessThanToken && x.operatorToken.kind <= K2.ExclamationEqualsEqualsToken ? `(${this.expr(x)})` : this.expr(x));
