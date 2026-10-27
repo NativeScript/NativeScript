@@ -270,6 +270,16 @@ class JSMatchIndices internal constructor(val values: JSArray<Any?>, val groups:
 /** What `s.match(x)` searches with: a RegExp as it is, anything else as `new RegExp(x)`. */
 fun jsRegExpFrom(value: Any?): JSRegExp = value as? JSRegExp ?: JSRegExp(if (value == null || value === Unit) "(?:)" else jsToString(value))
 
+/**
+ * `new RegExp(pattern, flags)` of a pattern that may be a RegExp: its source, and its flags unless others are given.
+ * `RegExp(re)` called without `new` and given no flags is `re` itself.
+ */
+fun jsRegExpConstruct(pattern: Any?, flags: Any? = null, call: Boolean = false): JSRegExp {
+    val given = if (flags == null || flags === Unit) null else jsToString(flags)
+    if (pattern is JSRegExp) return if (call && given == null) pattern else JSRegExp(pattern.source, given ?: pattern.flags)
+    return JSRegExp(if (pattern == null || pattern === Unit) "(?:)" else jsToString(pattern), given ?: "")
+}
+
 /** A regular expression literal. */
 fun jsRegExpLiteral(source: String, flags: String): JSRegExp = JSRegExp(source, flags)
 
