@@ -15,10 +15,20 @@ export interface Form {
   /** May hold a value of another type than `type` (untyped, asserted, JSON). */
   foreign: boolean;
   /**
+   * Its undefined may be a value the program leaves out: an argument not given, an optional parameter without a default,
+   * a read past an array's or string's end, a hole. Undefined an outside caller gives (an entry point) is not missing.
+   */
+  missing: boolean;
+  /**
    * Something its value reaches tells its null from its undefined (§2.3b M1'). A form holding both that isn't observed
    * holds one empty state, read as undefined.
    */
   observed: boolean;
+  /**
+   * Something its value reaches tests the value's type (§2.3b M6): `typeof`, `instanceof`, `Array.isArray`, `in`. A
+   * foreign form that isn't keeps its declared representation, the foreign value checked where it enters.
+   */
+  typeObserved: boolean;
   /** An array's or Set's element, a Map's value, a Promise's result. */
   element?: Form;
 }
@@ -33,6 +43,8 @@ export function representation(f: Form): Representation {
 }
 
 const U = 1, N = 2, H = 4, F = 8;
+/** `Form.missing`, carried beside U: whatever keeps or drops U keeps or drops it with it (`withMissing`). */
+const M = 16;
 
 type Part = 'element' | 'value' | 'result';
 
@@ -50,6 +62,8 @@ class Slot {
   local = 0;
   /** Something tells null from undefined in its value, or in a slot its value flows to (§2.3b M1'). */
   observed = false;
+  /** Something tests the type of its value, or of a slot its value flows to (§2.3b M6). */
+  typeObserved = false;
   children = new Map<Part, Slot>();
   readonly type: ts.Type | null;
   /** The declaration it is the slot of, if any. */
@@ -88,6 +102,9 @@ const ANGULAR_DECORATORS = new Set(['Component', 'Directive', 'Pipe', 'Injectabl
 const METHOD_DECORATORS = new Set(['HostListener']);
 const LIFECYCLE_HOOKS = new Set(['ngOnChanges', 'ngOnInit', 'ngDoCheck', 'ngAfterContentInit', 'ngAfterContentChecked', 'ngAfterViewInit', 'ngAfterViewChecked', 'ngOnDestroy']);
 
+/** A declaration whose members a value's are. */
+type Owner = ts.ClassLikeDeclaration | ts.InterfaceDeclaration | ts.TypeLiteralNode | ts.ObjectLiteralExpression;
+
 export interface FormsOptions {
   /** A library (core) is called by programs this one doesn't contain: its exported and public surface is an entry point. */
   library?: boolean;
@@ -112,10 +129,20 @@ export class Forms {
   /** Values something tells null from undefined in, and slots whose readers do (§2.3b M1'), before the fixpoint. */
   private readonly observedValues = new Set<ts.Expression>();
   private readonly observedSlots: Slot[] = [];
+  /** Values whose type something tests (§2.3b M6), before the fixpoint. */
+  private readonly typeObservedValues = new Set<ts.Expression>();
   /** Values given to JSON.stringify (true: classes' fields too) or console (interfaces' and literals' fields). */
   private readonly printed: [ts.Expression, boolean][] = [];
   /** The slots each value is placed in. */
   private readonly placed = new Map<ts.Expression, Slot[]>();
+  /** Values placed where script holds them untyped: a slot of no type, a field or element no type reads, an unknown callee's argument. */
+  private readonly placedUntyped = new Set<ts.Expression>();
+  /**
+   * Members script calls by a key the program doesn't spell (`obj[key](…)`): the receiver's declaration (null: an untyped
+   * receiver the program can't trace), the names the key's type allows (null: any), and whether they are statics.
+   */
+  private readonly calledByName: { owner: Owner | null; names: ReadonlySet<string> | null; statics: boolean }[] = [];
+  private readonly classes: ts.ClassLikeDeclaration[] = [];
   private built = false;
   /** Wall-clock milliseconds the program-wide build took. */
   buildMs = 0;
@@ -142,17 +169,31 @@ export class Forms {
     };
   }
 
+  /** An array's or Set's element type, or a Map's value type: the part `Form.element` is the form of. */
+  elementOf(t: ts.Type): ts.Type | null {
+    const part = this.partOf(t);
+    return part && part !== 'result' && !this.checker.isTupleType(this.checker.getNonNullableType(t)) ? elementType(this.checker, t, part) : null;
+  }
+
   formOf(e: ts.Expression): Form {
     this.build();
     const x = ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses);
     const observed = this.observedValues.has(x) || !!this.placed.get(x)?.some((s) => this.find(s).observed);
-    return this.formFrom(this.flow(e), this.checker.getTypeAtLocation(e), observed);
+    const form = this.formFrom(this.flow(e), this.checker.getTypeAtLocation(e), observed);
+    if (this.typeObservedValues.has(x) || this.placed.get(x)?.some((s) => this.find(s).typeObserved)) form.typeObserved = true;
+    return form;
   }
 
   formOfSlot(d: ts.Declaration): Form {
     this.build();
     const s = this.slotFor(d);
     return this.formFrom({ states: 0, from: [[s, ~0]] }, this.find(s).type ?? this.checker.getTypeAtLocation(d));
+  }
+
+  /** Values the program places where script holds them untyped (`placedUntyped`). */
+  untypedPlacements(): ReadonlySet<ts.Expression> {
+    this.build();
+    return this.placedUntyped;
   }
 
   /**
@@ -171,26 +212,50 @@ export class Forms {
     return { slots, both, nullish };
   }
 
+  /**
+   * The program's declarations whose form is foreign and whose type something tests (§2.3b M6), by the group that
+   * shares one form: every member of a group is held as one.
+   */
+  typeTestedForeign(): ts.Declaration[][] {
+    this.build();
+    const groups = new Map<Slot, ts.Declaration[]>();
+    for (const s of this.made) {
+      const r = this.find(s);
+      if (!s.decl || r.generic || !(r.states & F) || !r.typeObserved) continue;
+      const list = groups.get(r);
+      if (list) list.push(s.decl);
+      else groups.set(r, [s.decl]);
+    }
+    return [...groups.values()];
+  }
+
+  /** A declaration whose group holds a fixed point's slot (a platform's or library's declaration): its form is that one's. */
+  fixedSlot(d: ts.Declaration): boolean {
+    this.build();
+    return this.find(this.slotFor(d)).fixed;
+  }
+
   /** What a declaration's own type admits (its checker type, its type as written, `?`, a default), before any flow. */
   declaredForm(d: ts.Declaration): Form {
     const s = this.declaredStates(d) | ((d as { initializer?: ts.Node }).initializer && ts.isParameter(d) ? U : 0);
     const type = this.declaredType(d) ?? this.checker.getTypeAtLocation(d);
-    return { type: this.checker.getNonNullableType(type), undefined: !!(s & U), null: !!(s & N), hole: false, foreign: !!(s & F), observed: false };
+    return { type: this.checker.getNonNullableType(type), undefined: !!(s & U), null: !!(s & N), hole: false, foreign: !!(s & F), missing: false, observed: false, typeObserved: false };
   }
 
   /** A read as a `T` (of a generic slot, at a type parameter's type) holds what the slot holds less what instantiations bring. */
   private formFrom(flow: Flow, type: ts.Type, observed = false, depth = 0): Form {
-    let states = flow.states;
+    let states = flow.states, typeObserved = false;
     const parts = new Map<Part, Slot[]>();
     const asT = isGeneric(type);
     for (const [s, keep] of flow.from) {
       const r = this.find(s);
       states |= (r.generic && asT ? r.local : r.states) & keep;
       if (r.observed && keep & N) observed = true;
+      if (r.typeObserved && keep & F) typeObserved = true;
       for (const [p, c] of r.children) { const list = parts.get(p); if (list) list.push(c); else parts.set(p, [c]); }
     }
     if (type.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown)) states |= F;
-    const form: Form = { type: this.checker.getNonNullableType(type), undefined: !!(states & U), null: !!(states & N), hole: !!(states & H), foreign: !!(states & F), observed };
+    const form: Form = { type: this.checker.getNonNullableType(type), undefined: !!(states & U), null: !!(states & N), hole: !!(states & H), foreign: !!(states & F), missing: !!(states & U && states & M), observed, typeObserved };
     const part = this.partOf(type);
     const inner = part && parts.get(part);
     if (inner && depth < 4) {
@@ -222,6 +287,7 @@ export class Forms {
     else if (y.fixed) { x.fixed = true; x.states = x.local = y.states; }
     else if (!x.fixed) { x.states |= y.states; x.local |= y.local; }
     x.observed ||= y.observed;
+    x.typeObserved ||= y.typeObserved;
     for (const [p, c] of y.children) {
       const mine = x.children.get(p);
       if (mine) this.share(mine, c);
@@ -256,8 +322,8 @@ export class Forms {
    * parameter's; in strict code, only the empty states the concrete slot's type admits.
    */
   private crossing(concrete: Slot, intoGeneric: boolean): number {
-    const admitted = concrete.typed && concrete.type ? typeStates(concrete.type) : U | N;
-    return ~((U | N) & ~admitted) & (intoGeneric ? ~F : ~0);
+    const admitted = withMissing(concrete.typed && concrete.type ? typeStates(concrete.type) : U | N);
+    return ~((U | M | N) & ~admitted) & (intoGeneric ? ~F : ~0);
   }
 
   private child(s: Slot, part: Part): Slot {
@@ -340,6 +406,7 @@ export class Forms {
     const into = this.placed.get(x);
     if (into) into.push(target);
     else this.placed.set(x, [target]);
+    if (!t.fixed && t.type && untyped(t.type)) this.placedUntyped.add(x);
     const d = target.decl;
     if (d && declarationFile(d) && !ts.isParameter(d) && !ts.isFunctionLike(d) && this.unseenReader(d)) this.observe(value);
     for (const [s, keep] of f.from) { this.edges.push([s, target, keep]); this.aliases.push([s, target]); }
@@ -349,7 +416,7 @@ export class Forms {
   private instantiated(value: ts.Expression): number {
     const at = this.checker.getContextualType(value);
     if (!at || !this.strict(value) || isGeneric(at)) return ~F;
-    return ~F & ~((U | N) & ~typeStates(at));
+    return ~F & ~((U | M | N) & ~withMissing(typeStates(at)));
   }
 
   private seed(target: Slot, states: number): void {
@@ -362,7 +429,14 @@ export class Forms {
   private unionSignature(fn: ts.SignatureDeclaration, sig: ts.SignatureDeclaration): void {
     if (fn === sig) return;
     // Callers of `sig` give `fn`'s arguments; `fn`'s result is `sig`'s.
-    fn.parameters.forEach((p, k) => { const q = sig.parameters[k]; if (q && !q.dotDotDotToken === !p.dotDotDotToken) this.share(this.slotFor(q), this.slotFor(p), true); });
+    const theirs = valueParameters(sig);
+    valueParameters(fn).forEach((p, k) => {
+      const q = theirs[k];
+      if (!q || !q.dotDotDotToken !== !p.dotDotDotToken) return;
+      this.share(this.slotFor(q), this.slotFor(p), true);
+      // Parameters of function type share their signatures too: a function given for one is called through the other.
+      if (p.type && q.type && ts.isFunctionTypeNode(p.type) && ts.isFunctionTypeNode(q.type)) this.unionSignature(p.type, q.type);
+    });
     if (!(fn as ts.FunctionLikeDeclaration).asteriskToken && !(sig as ts.FunctionLikeDeclaration).asteriskToken && !ts.isConstructorDeclaration(fn)) this.share(this.slotFor(fn), this.slotFor(sig), true);
   }
 
@@ -401,6 +475,7 @@ export class Forms {
     const start = performance.now();
     for (const f of this.files) if (!f.isDeclarationFile) this.visit(f);
     if (this.library) this.openLibrarySurface();
+    this.openCalledByName();
     // Arrays, Maps and Promises are shared storage: wherever one flows, its elements are the same slot.
     for (let changed = true; changed;) {
       changed = false;
@@ -424,6 +499,7 @@ export class Forms {
     this.propagate(out, [...out.keys()]);
     for (let opened = this.openForeignShapes(); opened.length; opened = this.openForeignShapes()) this.propagate(out, opened);
     this.propagateObserved();
+    this.propagateTypeObserved();
     this.buildMs = performance.now() - start;
   }
 
@@ -443,11 +519,13 @@ export class Forms {
   }
 
   private readonly openedShapes = new Set<ts.Type>();
+  private readonly openedSignatures = new Set<ts.Declaration>();
 
   /**
    * A foreign value held as an interface or object literal type has its keys, not the type's (§2.3b M4): each field of the
-   * type may be missing, null or another type, and so may a foreign array's or Map's elements. A class's instance is
-   * its class's or fails the cast. Returns the slots this widened.
+   * type may be missing, null or another type, and so may a foreign array's or Map's elements, and a foreign function's
+   * (or a shape's method's) parameters and result. A class's instance is its class's or fails the cast. Returns the
+   * slots this widened.
    */
   private openForeignShapes(): Slot[] {
     const widened: Slot[] = [];
@@ -460,16 +538,27 @@ export class Forms {
       r.give(U | N | F);
       widened.push(r);
     };
+    const openSignature = (sig: ts.Signature | ts.Declaration | undefined) => {
+      const d = sig && 'getDeclaration' in sig ? sig.getDeclaration() : sig;
+      if (!d || ts.isJSDocSignature(d) || !ts.isFunctionLike(d) || declarationFile(d) || this.openedSignatures.has(d)) return;
+      this.openedSignatures.add(d);
+      for (const p of d.parameters) if (!p.dotDotDotToken) open(this.slotFor(p));
+      const result = ts.isConstructorDeclaration(d) || ts.isSetAccessorDeclaration(d) ? null : this.resultOf(d);
+      if (result) open(result);
+    };
     for (const s of [...this.made]) {
       const r = this.find(s);
       if (!(r.states & F) || r.generic || !r.type) continue;
       for (const c of r.children.values()) open(c);
+      const whole = this.checker.getNonNullableType(r.type);
+      for (const m of whole.isUnion() ? whole.types : [whole]) if (!m.isClass()) m.getCallSignatures().forEach(openSignature);
       for (const t of shapes(this.checker, r.type)) {
         if (this.openedShapes.has(t)) continue;
         this.openedShapes.add(t);
         for (const p of this.checker.getPropertiesOfType(t)) {
           const d = p.valueDeclaration;
           if (d && (ts.isPropertySignature(d) || ts.isPropertyDeclaration(d)) && !declarationFile(d)) open(this.slotFor(d));
+          if (d && ts.isMethodSignature(d)) openSignature(d);
         }
       }
     }
@@ -483,6 +572,40 @@ export class Forms {
     const x = ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses);
     this.observedValues.add(x);
     this.flow(x);
+  }
+
+  /** A value whose type something tests (§2.3b M6). */
+  private observeType(e: ts.Expression): void {
+    const x = ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses);
+    this.typeObservedValues.add(x);
+    this.flow(x);
+  }
+
+  /** A value script holds untyped, which reads it as it likes and may write into what it holds. */
+  private observeUntyped(e: ts.Expression): void {
+    this.observe(e);
+    this.placedUntyped.add(ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses));
+  }
+
+  /**
+   * A read of a member the receiver's declared type doesn't have (`(v as any).extra`, a lenient `v['extra']`), which tests
+   * what the value really is (§2.3b M6).
+   */
+  private observeUndeclaredMember(n: ts.PropertyAccessExpression | ts.ElementAccessExpression): void {
+    if (ts.isPropertyAccessExpression(n) && ts.isPrivateIdentifier(n.name)) return;
+    const untyped = ts.TypeFlags.Any | ts.TypeFlags.Unknown;
+    let x = ts.skipOuterExpressions(n.expression, ts.OuterExpressionKinds.Parentheses);
+    if ((ts.isAsExpression(x) || ts.isTypeAssertionExpression(x)) && this.checker.getTypeAtLocation(x).flags & untyped) x = ts.skipOuterExpressions(x.expression, ts.OuterExpressionKinds.Parentheses);
+    const t = this.checker.getNonNullableType(this.checker.getTypeAtLocation(x));
+    if (t.flags & (untyped | ts.TypeFlags.TypeParameter) || isGeneric(t)) return;
+    const apparent = this.checker.getApparentType(t);
+    const key = ts.isPropertyAccessExpression(n) ? n.name.text : ts.isStringLiteralLike(n.argumentExpression) || ts.isNumericLiteral(n.argumentExpression) ? n.argumentExpression.text : null;
+    const indexed = (k: ts.Type) => this.checker.getIndexInfosOfType(apparent).some((i) => this.checker.isTypeAssignableTo(k, i.keyType));
+    if (key === null) {
+      const k = this.checker.getTypeAtLocation(n.argumentExpression);
+      if (!(k.flags & ts.TypeFlags.StringLike) || indexed(k)) return;
+    } else if (this.checker.getPropertyOfType(apparent, key) || indexed(/^\d+$/.test(key) ? this.checker.getNumberType() : this.checker.getStringType())) return;
+    this.observeType(x);
   }
 
   /** Whether an expression may give null or undefined: whether comparing with it tells them apart. */
@@ -500,11 +623,15 @@ export class Forms {
         if (this.mayBeEmpty(n.right)) this.observe(n.left);
         if (this.mayBeEmpty(n.left)) this.observe(n.right);
       } else if (CONVERTING.has(op)) { this.observe(n.left); this.observe(n.right); }
-      else if (op === K.InKeyword) this.observe(n.left);
-    } else if (ts.isPrefixUnaryExpression(n)) { if (n.operator !== K.ExclamationToken) this.observe(n.operand); }
-    else if (ts.isPostfixUnaryExpression(n) || ts.isTypeOfExpression(n)) this.observe(ts.isTypeOfExpression(n) ? n.expression : n.operand);
+      else if (op === K.InKeyword) { this.observe(n.left); this.observeType(n.right); }
+      else if (op === K.InstanceOfKeyword) this.observeType(n.left);
+    } else if (ts.isCallExpression(n) && n.arguments.length && ts.isPropertyAccessExpression(n.expression) && n.expression.name.text === 'isArray'
+      && ts.isIdentifier(n.expression.expression) && n.expression.expression.text === 'Array') this.observeType(n.arguments[0]); else if (ts.isPrefixUnaryExpression(n)) { if (n.operator !== K.ExclamationToken) this.observe(n.operand); }
+    else if (ts.isPostfixUnaryExpression(n)) this.observe(n.operand);
+    else if (ts.isTypeOfExpression(n)) { this.observe(n.expression); this.observeType(n.expression); }
     else if (ts.isTemplateSpan(n) || ts.isComputedPropertyName(n)) this.observe(n.expression);
-    else if (ts.isElementAccessExpression(n)) this.observe(n.argumentExpression);
+    else if (ts.isElementAccessExpression(n)) { this.observe(n.argumentExpression); this.observeUndeclaredMember(n); }
+    else if (ts.isPropertyAccessExpression(n)) this.observeUndeclaredMember(n);
     else if (ts.isSwitchStatement(n)) {
       for (const clause of n.caseBlock.clauses) {
         if (!ts.isCaseClause(clause)) continue;
@@ -541,11 +668,12 @@ export class Forms {
 
   /** Arguments given to a declaration file's function, or to a callee of no known declaration. */
   private observeArguments(call: ts.CallExpression | ts.NewExpression, sig: ts.SignatureDeclaration | undefined, args: ts.NodeArray<ts.Expression>): void {
-    if (!sig) { for (const a of args) this.observe(ts.isSpreadElement(a) ? a.expression : a); return; }
+    if (!sig) { for (const a of args) this.observeUntyped(ts.isSpreadElement(a) ? a.expression : a); return; }
     const callee = ts.isPropertyAccessExpression(call.expression) && ts.isIdentifier(call.expression.expression) && LIB_FILE.test(sig.getSourceFile().fileName) ? call.expression.expression.text : '';
+    const params = valueParameters(sig);
     args.forEach((a, k) => {
-      const q = sig.parameters[Math.min(k, sig.parameters.length - 1)];
-      if (!q || (k >= sig.parameters.length && !q.dotDotDotToken)) return;
+      const q = params[Math.min(k, params.length - 1)];
+      if (!q || (k >= params.length && !q.dotDotDotToken)) return;
       const value = ts.isSpreadElement(a) ? a.expression : a;
       if (callee === 'JSON' || callee === 'console') this.printed.push([value, callee === 'JSON']);
       if (this.unseenReader(q)) this.observe(value);
@@ -603,11 +731,29 @@ export class Forms {
     }
   }
 
+  /** Type observation runs backwards along the placements foreign values take, as null observation does along null's. */
+  private propagateTypeObserved(): void {
+    for (const e of this.typeObservedValues) for (const [s, keep] of this.flow(e).from) if (keep & F) this.find(s).typeObserved = true;
+    const into = new Map<Slot, Slot[]>();
+    for (const [from, to, keep] of this.edges) {
+      if (!(keep & F)) continue;
+      const x = this.find(from), y = this.find(to);
+      if (x === y) continue;
+      const list = into.get(y);
+      if (list) list.push(x);
+      else into.set(y, [x]);
+    }
+    for (let work = [...new Set(this.made.map((s) => this.find(s)).filter((r) => r.typeObserved))]; work.length;) {
+      const y = work.pop()!;
+      for (const x of into.get(y) ?? []) if (!x.typeObserved) { x.typeObserved = true; work.push(x); }
+    }
+  }
+
   private visit(n: ts.Node): void {
     const c = this.checker;
     if (ts.isExpression(n) && !ts.isParenthesizedExpression(n)) this.placeExpression(n);
     this.placeObservers(n);
-    if (ts.isParameter(n) && n.questionToken && !n.initializer) this.seed(this.slotFor(n), U);
+    if (ts.isParameter(n) && n.questionToken && !n.initializer) this.seed(this.slotFor(n), U | M);
     if (ts.isVariableDeclaration(n) && !n.initializer && ts.isIdentifier(n.name) && ts.isVariableDeclarationList(n.parent)) {
       const loop = n.parent.parent;
       if (ts.isForOfStatement(loop) && loop.initializer === n.parent) this.placeElements(loop.expression, this.slotFor(n), loop.awaitModifier ? 'result' : null);
@@ -641,6 +787,7 @@ export class Forms {
     }
     if (ts.isArrowFunction(n) || ts.isFunctionExpression(n) || ts.isIdentifier(n) || ts.isPropertyAccessExpression(n)) this.unionFunctionValue(n as ts.Expression);
     if (ts.isCallExpression(n) || ts.isNewExpression(n)) this.placeCall(n);
+    if (ts.isCallExpression(n)) this.placeCallByName(n);
     if (ts.isBinaryExpression(n) && n.operatorToken.kind === ts.SyntaxKind.EqualsToken && ts.isElementAccessExpression(n.left)) {
       const recv = n.left.expression;
       const part: Part = c.isArrayType(c.getNonNullableType(c.getTypeAtLocation(recv))) ? 'element' : 'value';
@@ -662,7 +809,7 @@ export class Forms {
     }
     if (ts.isArrayLiteralExpression(p)) {
       this.place(e, this.child(this.slotFor(p), 'element'));
-      if (this.untypedContext(p)) this.observe(e);
+      if (this.untypedContext(p)) this.observeUntyped(e);
       return;
     }
     if (ts.isSpreadElement(p) && ts.isArrayLiteralExpression(p.parent)) {
@@ -673,7 +820,7 @@ export class Forms {
     if ((ts.isPropertyAssignment(p) && p.initializer === x) || (ts.isShorthandPropertyAssignment(p) && p.name === x)) {
       const own = this.slotFor(p);
       this.place(e, own);
-      if (this.untypedContext(p.parent)) this.observe(e);
+      if (this.untypedContext(p.parent)) this.observeUntyped(e);
       const key = literalKey(p.name, this.checker);
       const declared = key !== null ? this.checker.getContextualType(p.parent)?.getProperty(key) : undefined;
       const d = declared?.valueDeclaration ?? declared?.declarations?.[0];
@@ -687,7 +834,7 @@ export class Forms {
       return;
     }
     if (ts.isBinaryExpression(p) && p.right === x && p.operatorToken.kind === ts.SyntaxKind.EqualsToken && (ts.isPropertyAccessExpression(p.left) || ts.isElementAccessExpression(p.left))
-      && untyped(this.checker.getTypeAtLocation(p.left.expression))) this.observe(e);
+      && untyped(this.checker.getTypeAtLocation(p.left.expression))) this.observeUntyped(e);
     const d = slotOf(e, this.checker);
     if (!d || ts.isFunctionLike(d)) return;
     if ((ts.isParameter(d) || ts.isVariableDeclaration(d) || ts.isPropertyDeclaration(d)) && d.initializer === x) {
@@ -712,13 +859,75 @@ export class Forms {
   }
 
   /**
-   * Methods Angular calls by name: an Angular class's lifecycle hooks and `@HostListener` handlers. Its other methods are
-   * called by the program, its templates included. Other decorators (`@CSSType`, `@profile`) register or wrap a class
-   * or method and call nothing; a platform calls a subclass of its class (`extendsNative`).
+   * Members Angular may call: every method and setter of an Angular class but its private ones (lifecycle hooks aside)
+   * and the template glue this compiler writes. Its runtime, forms (`writeValue(null)` of a value accessor registered by a provider), the router
+   * and DI tokens call them where the program can't see. Other decorators (`@CSSType`, `@profile`) register or wrap a
+   * class or method and call nothing; a platform calls a subclass of its class (`extendsNative`).
    */
-  private frameworkCalled(cls: ts.ClassLikeDeclaration, m: ts.MethodDeclaration): boolean {
+  private frameworkCalled(cls: ts.ClassLikeDeclaration, m: ts.MethodDeclaration | ts.SetAccessorDeclaration): boolean {
+    if (isTemplateMethod(m)) return false;
     if (ts.getDecorators(m)?.some((d) => this.angularDecorator(d, METHOD_DECORATORS))) return true;
-    return LIFECYCLE_HOOKS.has(m.name.getText()) && !!ts.getDecorators(cls)?.some((d) => this.angularDecorator(d, ANGULAR_DECORATORS));
+    if (!ts.getDecorators(cls)?.some((d) => this.angularDecorator(d, ANGULAR_DECORATORS))) return false;
+    return LIFECYCLE_HOOKS.has(m.name.getText()) || !(ts.isPrivateIdentifier(m.name) || ts.getCombinedModifierFlags(m) & ts.ModifierFlags.Private);
+  }
+
+  /** A call through a computed key (`this[name](x)`, `obj[k].call(o, x)`): see `calledByName`. */
+  private placeCallByName(call: ts.CallExpression): void {
+    let callee = ts.skipOuterExpressions(call.expression);
+    if (ts.isPropertyAccessExpression(callee) && (callee.name.text === 'call' || callee.name.text === 'apply')) callee = ts.skipOuterExpressions(callee.expression);
+    if (!ts.isElementAccessExpression(callee)) return;
+    const key = ts.skipOuterExpressions(callee.argumentExpression);
+    if (ts.isStringLiteralLike(key) || ts.isNumericLiteral(key)) return;
+    const t = this.checker.getTypeAtLocation(key), parts = t.isUnion() ? t.types : [t];
+    const names = parts.every((x) => x.isStringLiteral()) ? new Set(parts.map((x) => (x as ts.StringLiteralType).value)) : null;
+    for (const { owner, statics } of this.ownersOf(callee.expression)) this.calledByName.push({ owner, names, statics });
+  }
+
+  /**
+   * The declarations whose members a receiver's are: classes (`statics` where it is the class itself), interfaces, type
+   * literals and object literals of the program. An untyped receiver is followed to its variable's initializer
+   * (`const self: any = this`); one that can't be is null.
+   */
+  private ownersOf(e: ts.Expression, depth = 0): { owner: Owner | null; statics: boolean }[] {
+    const c = this.checker, x = ts.skipOuterExpressions(e);
+    let t = c.getNonNullableType(c.getTypeAtLocation(x));
+    if (t.flags & ts.TypeFlags.TypeParameter) t = c.getBaseConstraintOfType(t) ?? t;
+    if (untyped(t)) {
+      const d = ts.isIdentifier(x) ? c.getSymbolAtLocation(x)?.valueDeclaration : undefined;
+      return d && ts.isVariableDeclaration(d) && d.initializer && depth < 4 ? this.ownersOf(d.initializer, depth + 1) : [{ owner: null, statics: false }];
+    }
+    const owners: { owner: Owner; statics: boolean }[] = [];
+    for (const part of t.isUnionOrIntersection() ? t.types : [t]) {
+      for (const d of part.getSymbol()?.declarations ?? []) {
+        if (declarationFile(d)) continue;
+        if (ts.isClassLike(d)) owners.push({ owner: d, statics: part.getConstructSignatures().length > 0 });
+        else if (ts.isInterfaceDeclaration(d) || ts.isTypeLiteralNode(d) || ts.isObjectLiteralExpression(d)) owners.push({ owner: d, statics: false });
+      }
+    }
+    return owners;
+  }
+
+  /**
+   * The parameters of members called by a computed key are entry points: the owner's members the key may name, and a
+   * class's subclasses' (an override is what the call reaches); every non-strict class's where the receiver is untraced.
+   */
+  private openCalledByName(): void {
+    const c = this.checker;
+    const derives = (t: ts.Type, owner: Owner, depth = 0): boolean => depth < 32 && t.isClassOrInterface()
+      && c.getBaseTypes(t).some((b) => !!b.getSymbol()?.declarations?.includes(owner as ts.Declaration) || derives(b, owner, depth + 1));
+    for (const { owner, names, statics } of this.calledByName) {
+      const owners: Owner[] = owner === null ? this.classes.filter((x) => !this.strict(x))
+        : ts.isClassLike(owner) ? [owner, ...this.classes.filter((x) => x !== owner && derives(c.getTypeAtLocation(x.name ?? x), owner))] : [owner];
+      for (const o of owners) {
+        for (const m of ts.isObjectLiteralExpression(o) ? o.properties : o.members) {
+          if (!m.name || hasStatic(m) !== statics) continue;
+          const name = literalKey(m.name, c);
+          if (name === null || (names && !names.has(name))) continue;
+          const fn = ts.isPropertyAssignment(m) ? this.functionDeclarationOf(m.initializer) : ts.isMethodDeclaration(m) || ts.isMethodSignature(m) ? m : null;
+          if (fn) this.openParameters(fn);
+        }
+      }
+    }
   }
 
   private angularDecorator(d: ts.Decorator, names: ReadonlySet<string>): boolean {
@@ -745,7 +954,7 @@ export class Forms {
   private placeBinding(b: ts.BindingElement): void {
     const slot = this.slotFor(b);
     if (b.initializer) this.place(b.initializer, slot);
-    const keep = b.initializer ? ~U : ~0;
+    const keep = b.initializer ? ~(U | M) : ~0;
     const pattern = b.parent;
     if (ts.isObjectBindingPattern(pattern)) {
       if (b.dotDotDotToken) return;
@@ -764,7 +973,7 @@ export class Forms {
       this.edges.push([this.child(s, 'element'), slot, keep]);
       if (b.initializer) this.observedSlots.push(this.child(s, 'element'));
     }
-    this.seed(slot, U & keep);
+    this.seed(slot, (U | M) & keep);
   }
 
   /** Arguments a call gives beyond `slotOf`'s: missing ones, rest elements, pushes, callbacks of arrays, Maps and Promises. */
@@ -775,30 +984,32 @@ export class Forms {
     if (!sig || ts.isJSDocSignature(sig)) this.observeArguments(call, undefined, args);
     else if (declarationFile(sig)) this.observeArguments(call, sig, args);
     if (sig && !ts.isJSDocSignature(sig) && !declarationFile(sig) && !args.some(ts.isSpreadElement)) {
-      sig.parameters.forEach((p, k) => {
+      valueParameters(sig).forEach((p, k) => {
         if (p.dotDotDotToken) { for (const a of args.slice(k)) this.place(a, this.child(this.slotFor(p), 'element')); }
-        else if (k >= args.length) this.seed(this.slotFor(p), U);
+        else if (k >= args.length) this.seed(this.slotFor(p), U | M);
       });
     }
     if (ts.isNewExpression(call)) { this.placeConstructed(call, args); return; }
     if (!ts.isPropertyAccessExpression(call.expression)) return;
     const name = call.expression.name.text, recv = call.expression.expression;
     const invoked = this.invokedThrough(call);
-    if (invoked && name === 'call') invoked.parameters.forEach((p, k) => {
+    if (invoked && name === 'call') valueParameters(invoked).forEach((p, k) => {
       if (p.dotDotDotToken) { for (const a of args.slice(k + 1)) this.place(a, this.child(this.slotFor(p), 'element')); }
       else if (args[k + 1]) this.place(args[k + 1], this.slotFor(p));
-      else this.seed(this.slotFor(p), U);
+      else this.seed(this.slotFor(p), U | M);
     });
     if (invoked && name === 'apply') {
-      if (args[1]) for (const p of invoked.parameters) this.placeElements(args[1], p.dotDotDotToken ? this.child(this.slotFor(p), 'element') : this.slotFor(p), null);
-      for (const p of invoked.parameters) if (!p.dotDotDotToken) this.seed(this.slotFor(p), U);
+      if (args[1]) for (const p of valueParameters(invoked)) this.placeElements(args[1], p.dotDotDotToken ? this.child(this.slotFor(p), 'element') : this.slotFor(p), null);
+      const list = args[1] && ts.skipOuterExpressions(args[1]);
+      const given = list && ts.isArrayLiteralExpression(list) && !list.elements.some(ts.isSpreadElement) ? list.elements.length : 0;
+      valueParameters(invoked).forEach((p, k) => { if (!p.dotDotDotToken && k >= given) this.seed(this.slotFor(p), U | M); });
     }
     const t = c.getNonNullableType(c.getTypeAtLocation(recv));
     const kind = c.isArrayType(t) || c.isTupleType(t) ? 'Array' : t.getSymbol()?.name;
     const recvSlots = () => this.flow(recv).from.map(([s]) => s);
     const callback = (k: number) => (args[k] ? this.functionDeclarationOf(args[k]) : null);
     const giveParam = (fn: ts.SignatureDeclaration | null, k: number, from: Slot[], states = 0) => {
-      const p = fn?.parameters[k];
+      const p = fn && valueParameters(fn)[k];
       if (!p) return;
       for (const s of from) this.edges.push([s, this.slotFor(p), ~0]);
       if (states) this.seed(this.slotFor(p), states);
@@ -811,7 +1022,7 @@ export class Forms {
       if (name === 'sort' || name === 'toSorted') { giveParam(callback(0), 0, elements); giveParam(callback(0), 1, elements); }
       if (name === 'reduce' || name === 'reduceRight') {
         giveParam(callback(0), 1, elements);
-        const fn = callback(0), acc = fn?.parameters[0];
+        const fn = callback(0), acc = fn && valueParameters(fn)[0];
         if (acc) { if (args[1]) this.place(args[1], this.slotFor(acc)); else giveParam(fn, 0, elements); const r = this.resultOf(fn!); if (r) this.edges.push([r, this.slotFor(acc), ~0]); }
       }
       return;
@@ -823,7 +1034,7 @@ export class Forms {
     if (kind === 'Promise' && (name === 'then' || name === 'finally')) giveParam(callback(0), 0, name === 'then' ? recvSlots().map((s) => this.child(s, 'result')) : []);
     if (t.flags & ts.TypeFlags.StringLike && (name === 'replace' || name === 'replaceAll') && args[0] && regexpMayLeaveGroupUnset(args[0], c)) {
       const fn = callback(1);
-      fn?.parameters.forEach((p, k) => { if (k > 0 && !p.dotDotDotToken) this.seed(this.slotFor(p), U); });
+      if (fn) valueParameters(fn).forEach((p, k) => { if (k > 0 && !p.dotDotDotToken) this.seed(this.slotFor(p), U); });
     }
   }
 
@@ -843,7 +1054,7 @@ export class Forms {
         }
       } else for (const [s] of this.flow(args[0]).from) this.edges.push([this.child(this.child(s, 'element'), 'element'), own, ~0]);
     } else if (name === 'Set' || name === 'WeakSet') this.placeElements(args[0], own, 'element');
-    else if (args.length === 1 && this.checker.getTypeAtLocation(args[0]).flags & ts.TypeFlags.NumberLike) this.seed(own, H | U);
+    else if (args.length === 1 && this.checker.getTypeAtLocation(args[0]).flags & ts.TypeFlags.NumberLike) this.seed(own, H | U | M);
     else for (const a of args) this.place(a, own);
   }
 
@@ -894,17 +1105,23 @@ export class Forms {
    * fewer arguments, and anything for a primitive (§2.3b M2).
    */
   private openParameters(fn: ts.SignatureDeclaration, caller: { lib?: ts.SignatureDeclaration; platform?: ts.SignatureDeclaration; script?: boolean } = {}): void {
-    const lib = caller.lib;
-    const rest = lib?.parameters.at(-1)?.dotDotDotToken ? lib.parameters.at(-1) : undefined;
-    fn.parameters.forEach((p, k) => {
+    const lib = caller.lib && valueParameters(caller.lib), platform = caller.platform && valueParameters(caller.platform);
+    const rest = lib?.at(-1)?.dotDotDotToken ? lib.at(-1) : undefined;
+    valueParameters(fn).forEach((p, k) => {
       let states: number;
       if (lib) {
-        const q = k < lib.parameters.length && lib.parameters[k] !== rest ? lib.parameters[k] : rest;
+        const q = k < lib.length && lib[k] !== rest ? lib[k] : rest;
         const given = q === rest && q?.type && ts.isArrayTypeNode(q.type) ? q.type.elementType : q?.type;
         // A built-in's `any` says nothing of the value's type; a parameter that declares its own type is believed.
         states = q ? typeNodeStates(given) & (p.type ? ~F : ~0) | (q.questionToken ? U : 0) : U;
+        // A replacer's `...args: any[]` are groups (a string, or undefined where one is unset), the offset, the input and the
+        // named groups: never null, which the `any` an untyped parameter takes from them says it may be.
+        if (q === rest && stringReplacer(lib)) {
+          states &= ~N;
+          if (!p.type) { const r = this.find(this.slotFor(p)); r.states &= ~N; r.local &= ~N; }
+        }
       } else states = this.strict(p) ? 0 : this.openStates(p);
-      const q = caller.platform?.parameters[k];
+      const q = platform?.[k];
       if (q && this.nativeNil(q)) states |= N;
       if (caller.script && !p.dotDotDotToken) states |= U | (this.primitive(p) ? F : 0);
       if (states) this.seed(p.dotDotDotToken ? this.child(this.slotFor(p), 'element') : this.slotFor(p), states);
@@ -989,7 +1206,8 @@ export class Forms {
     const bases = [...(type.isClassOrInterface() ? c.getBaseTypes(type) : []),
       ...(cls.heritageClauses ?? []).filter((h) => h.token === ts.SyntaxKind.ImplementsKeyword).flatMap((h) => h.types.map((x) => c.getTypeAtLocation(x)))];
     const native = type.isClassOrInterface() && this.extendsNative(type);
-    for (const m of cls.members) if (ts.isMethodDeclaration(m) && m.body && !hasStatic(m) && (native || this.frameworkCalled(cls, m))) this.openParameters(m);
+    this.classes.push(cls);
+    for (const m of cls.members) if ((ts.isMethodDeclaration(m) || ts.isSetAccessorDeclaration(m)) && m.body && !hasStatic(m) && (native || this.frameworkCalled(cls, m))) this.openParameters(m);
     for (const m of cls.members) {
       if (hasStatic(m) || !m.name || !(ts.isIdentifier(m.name) || ts.isPrivateIdentifier(m.name) || ts.isStringLiteral(m.name))) continue;
       const name = m.name.text;
@@ -1059,12 +1277,12 @@ export class Forms {
     if (ts.isConditionalExpression(e)) return merge(this.flow(e.whenTrue), this.flow(e.whenFalse));
     if (ts.isBinaryExpression(e)) {
       const op = e.operatorToken.kind;
-      if (op === K.QuestionQuestionToken || op === K.BarBarToken || op === K.QuestionQuestionEqualsToken || op === K.BarBarEqualsToken) return merge(mask(this.flow(e.left), ~(U | N | H)), this.flow(e.right));
-      if (op === K.AmpersandAmpersandToken || op === K.AmpersandAmpersandEqualsToken) return merge(mask(this.flow(e.left), U | N | F), this.flow(e.right));
+      if (op === K.QuestionQuestionToken || op === K.BarBarToken || op === K.QuestionQuestionEqualsToken || op === K.BarBarEqualsToken) return merge(mask(this.flow(e.left), ~(U | M | N | H)), this.flow(e.right));
+      if (op === K.AmpersandAmpersandToken || op === K.AmpersandAmpersandEqualsToken) return merge(mask(this.flow(e.left), U | M | N | F), this.flow(e.right));
       if (op === K.EqualsToken || op === K.CommaToken) return this.flow(e.right);
       return PRESENT;
     }
-    if (ts.isNonNullExpression(e)) return mask(this.flow(e.expression), ~(U | N | H));
+    if (ts.isNonNullExpression(e)) return mask(this.flow(e.expression), ~(U | M | N | H));
     if (ts.isAsExpression(e) || ts.isTypeAssertionExpression(e)) {
       const inner = this.flow(e.expression);
       const from = c.getTypeAtLocation(e.expression), to = c.getTypeAtLocation(e);
@@ -1107,11 +1325,13 @@ export class Forms {
     const t = c.getNonNullableType(c.getTypeAtLocation(e.expression));
     const optional = e.questionDotToken ? U : 0;
     if (t.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown)) return { states: F | U | N, from: [] };
-    if (t.flags & ts.TypeFlags.StringLike) return { states: U | optional, from: [] };
+    if (t.flags & ts.TypeFlags.StringLike) return { states: U | M | optional, from: [] };
     if (isMatchArray(t)) return { states: U | optional, from: [] };
     const tuple = c.isTupleType(t) && ts.isNumericLiteral(e.argumentExpression);
     const part: Part = c.isArrayType(t) || c.isTupleType(t) ? 'element' : 'value';
-    return { states: (tuple ? 0 : U) | optional, from: this.flow(e.expression).from.map(([s]): [Slot, number] => [this.child(s, part), ~0]) };
+    // Past an array's end is a value left out (M); a key never set is not.
+    const empty = tuple ? 0 : part === 'element' ? U | M : U;
+    return { states: empty | optional, from: this.flow(e.expression).from.map(([s]): [Slot, number] => [this.child(s, part), ~0]) };
   }
 
   private call(e: ts.CallExpression): Flow {
@@ -1124,7 +1344,7 @@ export class Forms {
       const kind = c.isArrayType(t) || c.isTupleType(t) ? 'Array' : t.getSymbol()?.name;
       const own = () => this.slotFor(e);
       const recvParts = (p: Part) => this.flow(recv).from.map(([s]) => this.child(s, p));
-      if (kind === 'Array' && ONE_ELEMENT.has(name)) return { states: U | optional, from: recvParts('element').map((s): [Slot, number] => [s, ~0]) };
+      if (kind === 'Array' && ONE_ELEMENT.has(name)) return { states: U | M | optional, from: recvParts('element').map((s): [Slot, number] => [s, ~0]) };
       if (kind === 'Array' && SAME_ELEMENTS.has(name)) { for (const s of recvParts('element')) this.share(this.child(own(), 'element'), s); return { states: optional, from: [[own(), ~0]] }; }
       if (kind === 'Array' && (name === 'map' || name === 'flatMap')) {
         const fn = e.arguments[0] && this.functionDeclarationOf(e.arguments[0]);
@@ -1160,7 +1380,7 @@ export class Forms {
     const keep = ~this.narrowed(e, d);
     const init = (ts.isParameter(d) || ts.isBindingElement(d)) && !isTemplateDefault(d) && d.initializer;
     if (!init) return { states: 0, from: [[slot, keep]] };
-    return merge({ states: 0, from: [[slot, keep & ~U]] }, mask(this.flow(init), keep));
+    return merge({ states: 0, from: [[slot, keep & ~(U | M)]] }, mask(this.flow(init), keep));
   }
 
   /** The states a read at `e` is proved not to hold: by the checker's narrowing in strict code, by its guards in other code. */
@@ -1168,16 +1388,21 @@ export class Forms {
     if (isWriteTarget(e)) return 0;
     if (this.strict(e)) {
       const declared = typeStates(this.declaredType(d) ?? undefined), here = typeStates(this.checker.getTypeAtLocation(e));
-      return declared & ~here & (U | N);
+      return withMissing(declared & ~here & (U | N));
     }
-    return guarded(e);
+    return withMissing(guarded(e));
   }
 
-  /** A library's value: its declared type node, in strict code the checker's type there, and a platform binding's nil. */
+  /**
+   * A library's value: its declared type node, in strict code the checker's type there, and a platform binding's nil.
+   * Read by a non-strict app, a kit's or plugin's typed object (not JavaScript's or a platform's) may be empty: its
+   * typings, written without strictNullChecks, say nothing of null, and its binding holds nil for one.
+   */
   private libraryStates(e: ts.Expression, d: ts.Declaration): number {
     let s = typeNodeStates((d as { type?: ts.TypeNode }).type) | (this.nativeNil(d) ? N : 0);
     if ((d as { questionToken?: ts.Node }).questionToken && !ts.isMethodDeclaration(d) && !ts.isMethodSignature(d)) s |= U;
     if (this.strict(e)) s |= typeStates(this.checker.getTypeAtLocation(e));
+    else if (!this.library && !LIB_FILE.test(d.getSourceFile().fileName) && !this.native(d) && objectValue(this.checker.getTypeAtLocation(e))) s |= U | N;
     return s;
   }
 
@@ -1201,7 +1426,13 @@ function sourceOf(n: ts.Node): ts.SourceFile | undefined {
 }
 
 /** A type parameter, alone or with null and undefined. */
-function isGeneric(t: ts.Type | null | undefined): boolean {
+/** A signature's parameters as callers give them: a declared `this` is the receiver, not an argument. */
+function valueParameters(sig: ts.SignatureDeclaration): readonly ts.ParameterDeclaration[] {
+  const first = sig.parameters[0];
+  return first && ts.isIdentifier(first.name) && first.name.text === 'this' ? sig.parameters.slice(1) : sig.parameters;
+}
+
+export function isGeneric(t: ts.Type | null | undefined): boolean {
   if (!t) return false;
   const parts = (t.isUnion() ? t.types : [t]).filter((x) => !(x.flags & (ts.TypeFlags.Undefined | ts.TypeFlags.Null | ts.TypeFlags.Void)));
   return parts.length > 0 && parts.every((x) => !!(x.flags & ts.TypeFlags.TypeParameter) && !(x as { isThisType?: boolean }).isThisType);
@@ -1215,6 +1446,18 @@ function shapes(checker: ts.TypeChecker, t: ts.Type): ts.Type[] {
     const sym = m.aliasSymbol ?? m.getSymbol();
     return !!sym && !!(sym.flags & (ts.SymbolFlags.Interface | ts.SymbolFlags.TypeLiteral)) && !(sym.flags & ts.SymbolFlags.Class);
   });
+}
+
+/** A value of an object type: not a string, number, boolean, bigint, symbol or enum, which a binding holds as a value. */
+function objectValue(t: ts.Type): boolean {
+  const parts = (t.isUnion() ? t.types : [t]).filter((x) => !(x.flags & (ts.TypeFlags.Undefined | ts.TypeFlags.Null | ts.TypeFlags.Void)));
+  return parts.length > 0 && parts.every((x) => !!(x.flags & (ts.TypeFlags.Object | ts.TypeFlags.NonPrimitive | ts.TypeFlags.TypeParameter)) && !x.getCallSignatures().length);
+}
+
+/** The replacer function type `String.prototype.replace` and `replaceAll` take. */
+function stringReplacer(sig: ts.SignatureDeclaration): boolean {
+  const p = sig.parent, m = p?.parent;
+  return !!m && ts.isParameter(p) && ts.isMethodSignature(m) && ts.isIdentifier(m.name) && ['replace', 'replaceAll'].includes(m.name.text) && ts.isInterfaceDeclaration(m.parent) && m.parent.name.text === 'String';
 }
 
 function untyped(t: ts.Type): boolean {
@@ -1243,6 +1486,11 @@ function declarationFile(n: ts.Node): boolean {
 
 function merge(a: Flow, b: Flow): Flow {
   return { states: a.states | b.states, from: [...a.from, ...b.from] };
+}
+
+/** States with M wherever they have U: a mask or an admitted set that names undefined names a missing one too. */
+function withMissing(s: number): number {
+  return s & U ? s | M : s;
 }
 
 function mask(f: Flow, keep: number): Flow {

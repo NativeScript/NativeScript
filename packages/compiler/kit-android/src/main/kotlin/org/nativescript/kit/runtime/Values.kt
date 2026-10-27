@@ -25,6 +25,11 @@ class JSNullish<out T> private constructor(@JvmField val jsAny: Any?) {
     @Suppress("UNCHECKED_CAST")
     val optional: T? get() = if (jsAny === JSNull) null else jsAny as T?
 
+    /** Strict equality, as `indexOf`, `includes` and a Set's or Map's keys compare: null is only null, undefined only undefined. */
+    override fun equals(other: Any?): Boolean = other is JSNullish<*> && jsStrictEquals(jsAny, other.jsAny)
+
+    override fun hashCode(): Int = jsAny?.hashCode() ?: 0
+
     companion object {
         @JvmField val Undefined: JSNullish<Nothing> = JSNullish(null)
         @JvmField val Null: JSNullish<Nothing> = JSNullish(JSNull)
@@ -35,8 +40,11 @@ class JSNullish<out T> private constructor(@JvmField val jsAny: Any?) {
         /** A typed value whose null is JavaScript's null. */
         fun <T> ofNull(value: T?): JSNullish<T> = if (value == null) Null else JSNullish(value)
 
-        /** An untyped value. */
-        fun <T> ofAny(value: Any?): JSNullish<T> = if (value == null) Undefined else if (value === JSNull) Null else JSNullish(value)
+        /** An untyped value: `jsNull` is null and null undefined; a present one is `present`'s (which throws the TypeError for another type). */
+        fun <T> ofAny(value: Any?, present: (Any) -> T): JSNullish<T> {
+            val v = jsBox(value)
+            return if (v == null) Undefined else if (v === JSNull) Null else JSNullish(present(v))
+        }
     }
 }
 
@@ -147,8 +155,8 @@ interface JSValueOf {
     fun jsValueOf(): Any?
 }
 
-/** A value as JavaScript sees it: `Unit` (a void result) is undefined. */
-fun jsBox(value: Any?): Any? = if (value === Unit) null else value
+/** A value as JavaScript sees it: `Unit` (a void result) is undefined, a `JSNullish` the value it holds. */
+fun jsBox(value: Any?): Any? = if (value === Unit) null else if (value is JSNullish<*>) value.jsAny else value
 
 /** Whether `value` is a function value. */
 fun jsIsFunction(value: Any?): Boolean = value is Function<*> || value is JSFunction || value is JavaMethodRef
@@ -513,7 +521,8 @@ fun jsField(target: Any?, key: String): Any? = if (target == null || target === 
 /** `typeof value`. */
 fun jsTypeof(value: Any?): String = when (value) {
     null, Unit -> "undefined"
-    is String -> "string"
+    // A Java char is a one-character string, as NativeScript marshals it.
+    is String, is Char -> "string"
     is Boolean -> "boolean"
     JSNull -> "object"
     is Function<*>, is JSFunction, is JavaMethodRef, is Class<*> -> "function"
@@ -734,6 +743,35 @@ fun jsAssertedNumberOrNull(value: Any?): Double? = if (jsIsNullish(value)) null 
 
 fun jsAssertedBooleanOrNull(value: Any?): Boolean? = if (jsIsNullish(value)) null else jsAssertedBoolean(value)
 
+/**
+ * An untyped value asserted to a string, number or boolean (§2.3b M6): a value `jsTypeof` calls that type passes, in
+ * whatever representation it has (an `Int`, a `Char`), an empty state reads as `jsAssertedString`/`jsAssertedNumber`/
+ * `jsAssertedBoolean` read it, and any other value is JavaScript's TypeError there rather than a converted one.
+ */
+fun jsCheckedString(value: Any?): String = when (val v = jsBox(value)) {
+    is String -> v
+    is Char -> v.toString()
+    else -> if (jsIsNullish(v)) "" else jsCheckedFailure(v, "string")
+}
+
+fun jsCheckedNumber(value: Any?): Double {
+    val v = jsBox(value)
+    return jsNumeric(v) ?: if (jsIsNullish(v)) jsToNumber(v) else jsCheckedFailure(v, "number")
+}
+
+fun jsCheckedBoolean(value: Any?): Boolean {
+    val v = jsBox(value)
+    return v as? Boolean ?: if (jsIsNullish(v)) false else jsCheckedFailure(v, "boolean")
+}
+
+fun jsCheckedStringOrNull(value: Any?): String? = if (jsIsNullish(value)) null else jsCheckedString(value)
+
+fun jsCheckedNumberOrNull(value: Any?): Double? = if (jsIsNullish(value)) null else jsCheckedNumber(value)
+
+fun jsCheckedBooleanOrNull(value: Any?): Boolean? = if (jsIsNullish(value)) null else jsCheckedBoolean(value)
+
+private fun jsCheckedFailure(value: Any?, type: String): Nothing = throw JSException(JSTypeError("${jsTypeof(value)} is not a $type"))
+
 private val joinGuards = object : ThreadLocal<ArrayList<Any>>() {
     override fun initialValue() = ArrayList<Any>()
 }
@@ -771,9 +809,10 @@ internal fun jsJoin(elements: List<Any?>, separator: String, owner: Any): String
     guard.add(owner)
     try {
         val out = StringBuilder()
-        elements.forEachIndexed { i, e ->
+        elements.forEachIndexed { i, element ->
             if (i > 0) out.append(separator)
-            if (e != null && e !== JSNull && e !== Unit) out.append(jsToString(e))
+            val e = jsBox(element)
+            if (e != null && e !== JSNull) out.append(jsToString(e))
         }
         return out.toString()
     } finally {

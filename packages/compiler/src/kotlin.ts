@@ -4,8 +4,9 @@ import { dirname as pathDirname, resolve as pathResolve } from 'node:path';
 import { AsyncLowering, usedBefore, type AsyncCtx, type AsyncSyntax, type AsyncTranslator } from './async.ts';
 import { isAsync, isStatic } from './throws.ts';
 import { assignedMembers } from './sharing.ts';
-import { assignedValues, openSpreadType, definitelyAssignedFields, forwardedSetter, initializedNull, intersectionAliasMembers, isRegExpProtocol, assertedPattern, unsupportedPattern, intlConstructor, isObjectToStringCall, isStringRaw, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, classesHeldUntyped, type TrustScope, literalPattern, patternGroups, unsetGroupTyping, type UnsetGroupTyping, admitsUndefined, classKeyPlan, onlyUndefined, keysDefinedUntyped, KOTLIN_NATIVE_TYPES, runtimeTypeName, definesRunTimeKey, nothingGiven, readKeyOf, reassigned, givenBy, onlyNullOrPresent } from './lang.ts';
+import { assignedValues, openSpreadType, definitelyAssignedFields, forwardedSetter, initializedNull, intersectionAliasMembers, isRegExpProtocol, assertedPattern, unsupportedPattern, intlConstructor, isObjectToStringCall, isStringRaw, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, classesHeldUntyped, type TrustScope, literalPattern, patternGroups, unsetGroupTyping, type UnsetGroupTyping, admitsUndefined, classKeyPlan, onlyUndefined, keysDefinedUntyped, KOTLIN_NATIVE_TYPES, runtimeTypeName, definesRunTimeKey, readKeyOf, reassigned, givenBy, onlyNullOrPresent, statementLevel, readWrite, asOperation, type ReadWrite } from './lang.ts';
 import { onlyNull, ValueStates, type StateBackend } from './value-states.ts';
+import type { Form } from './forms.ts';
 import { isCoreDeclaration } from './core.ts';
 import { balanced, nonVirtualName } from './swift.ts';
 import type { Properties } from './properties.ts';
@@ -135,6 +136,11 @@ function escapeText(text: string): string {
   });
 }
 
+/** Code for a branch of an `if` expression: Kotlin reads a leading `{` there as a block, not as a lambda. */
+function branch(code: string): string {
+  return code.startsWith('{') ? `(${code})` : code;
+}
+
 /** `T?`, keeping an already nullable type and parenthesizing a function type. */
 export function optionalType(t: string): string {
   if ((t.endsWith('?') && !isFunctionType(t)) || t === 'Nothing') return t;
@@ -145,6 +151,17 @@ export function optionalType(t: string): string {
 function nullishType(t: string): string {
   const present = /^\((.*)\)\?$/.exec(t)?.[1] ?? t.replace(/\?$/, '');
   return `JSNullish<${present}>`;
+}
+
+/** An array, Set or Map type (`JSArray<T?>`, `JSMap<K, T?>`) with its elements or values held as `JSNullish<T>`. */
+function nullishElementsType(t: string): string {
+  const m = /^(JSArray|JSSet|JSMap)<(.*)>(\??)$/.exec(t);
+  if (!m) return t;
+  const args = splitTopLevel(m[2]);
+  const k = args.length - 1;
+  if (!isNullable(args[k]) && !/^\(.*\)\?$/.test(args[k]) || args[k].startsWith('JSNullish<')) return t;
+  args[k] = nullishType(args[k]);
+  return `${m[1]}<${args.join(', ')}>${m[3]}`;
 }
 
 /** A nullable Kotlin type (`T?`, `((A) -> B)?`), not a function returning one. */
@@ -259,14 +276,6 @@ function implementationOf(d: ts.SignatureDeclaration | ts.JSDocSignature): ts.Fu
     return (siblings as ts.NodeArray<ts.Node>).find((m): m is ts.FunctionLikeDeclaration => (ts.isMethodDeclaration(m) || ts.isFunctionDeclaration(m)) && !!m.body && m.name?.getText() === d.name!.getText()) ?? null;
   }
   return null;
-}
-
-/** Whether an expression's value is unused: a statement of its own, or a for loop's clause. */
-function statementLevel(e: ts.Expression): boolean {
-  let n: ts.Node = e;
-  while (ts.isParenthesizedExpression(n.parent)) n = n.parent;
-  const p = n.parent;
-  return ts.isExpressionStatement(p) || (ts.isForStatement(p) && (p.incrementor === n || p.initializer === n)) || (ts.isBinaryExpression(p) && p.operatorToken.kind === ts.SyntaxKind.CommaToken && p.left === n);
 }
 
 function moduleProperty(decl: string): string {
@@ -448,6 +457,12 @@ export class Translator implements AsyncTranslator {
   }
 
   private noteStructural(x: ts.Expression): void {
+    const bare = ts.skipParentheses(x);
+    if (ts.isConditionalExpression(bare)) {
+      this.noteStructural(bare.whenTrue);
+      this.noteStructural(bare.whenFalse);
+      return;
+    }
     const wanted = this.checker.getContextualType(x)?.getSymbol();
     const given = this.checker.getTypeAtLocation(x).getSymbol()?.valueDeclaration;
     if (wanted && wanted.flags & (ts.SymbolFlags.TypeLiteral | ts.SymbolFlags.Interface) && !(wanted.flags & ts.SymbolFlags.Class) && given && ts.isClassLike(given)) {
@@ -606,6 +621,9 @@ export class Translator implements AsyncTranslator {
       if (primitive && t.types.every((u) => u === primitive || u.flags & F.TypeParameter)) return this.type(primitive, where);
       // A function carrying properties (`((p: P) => R) & { type: string }`): an untyped value, called as script calls it.
       if (t.types.some((u) => u.getCallSignatures().length) && t.types.some((u) => !u.getCallSignatures().length && u.getProperties().length) && !t.types.some((u) => isLibDeclaration(u.getSymbol()?.declarations?.[0]))) return 'Any?';
+      // Interfaces each held untyped (core's `BackstackEntry & ExpandedEntry`): untyped too. A shape would be a copy, so
+      // the caller's object would not see the writes and `===` would not find it.
+      if (t.types.every((u) => { const s = u.getSymbol(); return !!s && this.isDynamicShape(s); })) return 'Any?';
     }
     if (t.isUnion()) {
       let parts = t.types.filter((u) => !(u.flags & (F.Undefined | F.Null | F.Void)));
@@ -786,7 +804,7 @@ export class Translator implements AsyncTranslator {
         if (p.valueDeclaration && this.states.nullish().held.has(p.valueDeclaration)) return 'Any?';
         const pt = this.type(c.getTypeOfSymbolAtLocation(p, where ?? p.valueDeclaration!), where);
         if (p.valueDeclaration && this.states.nullishHeld(p.valueDeclaration)) return nullishType(pt);
-        if (p.valueDeclaration && ts.isParameter(p.valueDeclaration) && (p.valueDeclaration.questionToken || p.valueDeclaration.initializer)) return optionalType(pt);
+        if (p.valueDeclaration && ts.isParameter(p.valueDeclaration) && (p.valueDeclaration.questionToken || p.valueDeclaration.initializer || this.states.widened(p.valueDeclaration))) return optionalType(pt);
         if (p.valueDeclaration && ts.isParameter(p.valueDeclaration) && ['String', 'Double', 'Boolean'].includes(pt) && this.states.undefinedParameter(p.valueDeclaration)) return optionalType(pt);
         return pt;
       });
@@ -794,7 +812,7 @@ export class Translator implements AsyncTranslator {
       const generic = (s.typeParameters ?? []).map((p) => p.symbol.name);
       const erase = (x: string) => generic.reduce((acc, n) => acc.replace(new RegExp(`\\b${n}\\b`, 'g'), 'Any?'), x).replace(/\?\?/g, '?');
       const sd = s.getDeclaration() as ts.Declaration | undefined;
-      return erase(`(${params.join(', ')}) -> ${sd && this.states.nullish().held.has(sd) ? 'Any?' : this.type(s.getReturnType(), where)}`);
+      return erase(`(${params.join(', ')}) -> ${sd && this.states.nullish().held.has(sd) ? 'Any?' : sd && this.states.nullishHeld(sd) ? nullishType(this.type(s.getReturnType(), where)) : this.type(s.getReturnType(), where)}`);
     }
     // An interface extending a class; one merged into a class (`interface ListViewBase { on(…) }`) is the class.
     // An interface typing a variable of its name a lazily defined class is assigned to (`interface PagerAdapter` with
@@ -846,6 +864,7 @@ export class Translator implements AsyncTranslator {
       get checker() { return t.checker; },
       get sourceFiles() { return t.sourceFiles; },
       get pluginFiles() { return t.pluginFiles; },
+      get pluginRoots() { return t.pluginRoots; },
       get trust() { return t.trust; },
       get lenient() { return t.lenient; },
       get lenientApp() { return t.lenientApp; },
@@ -853,8 +872,8 @@ export class Translator implements AsyncTranslator {
       get native() { return t.native; },
       spelling: { boolean: 'Boolean', void: 'Unit' },
       rules: {
-        appNullResults: true, givenUndefinedIsScriptCalled: false, optionalParametersTakeUndefined: false, looseReads: false,
-        checkedParameters: { nullGiven: (p) => this.nullGivenParams().has(p), truthTested: (name) => this.truthTested(name), unsetElement: (d) => this.unset.element(d) },
+        appNullResults: true, optionalParametersTakeUndefined: false, looseReads: false,
+        checkedParameters: { truthTested: (name) => this.truthTested(name), unsetElement: (d) => this.unset.element(d) },
       },
       typeOf: (n) => this.typeOf(n),
       type: (type, at) => this.type(type, at),
@@ -882,9 +901,19 @@ export class Translator implements AsyncTranslator {
   }
 
   typeOf(n: ts.Node): string {
+    const t = this.heldElements(n, this.plainTypeOf(n));
+    return ts.isIdentifier(n) && n.parent && ts.isVariableDeclaration(n.parent) && n.parent.name === n && this.states.nullishHeld(n.parent) ? nullishType(t) : t;
+  }
+
+  /** `t`, the type of `n`, with the elements `ValueStates.nullishElements` holds as `JSNullish<T>` so. */
+  private heldElements(n: ts.Node, t: string): string {
+    return this.states.nullishElements(n) ? nullishElementsType(t) : t;
+  }
+
+  private plainTypeOf(n: ts.Node): string {
     if (this.isArguments(n)) return 'JSArray<Any?>';
     if (ts.isCallExpression(n) && this.states.lenientAsyncCall(n)) return this.returnTypeOf(this.checker.getResolvedSignature(n)!.getDeclaration() as ts.SignatureDeclaration);
-    if (this.states.heldNullish(n)) return 'Any?';
+    if (this.states.heldNullish(n) || this.nullishReadUntyped(n)) return 'Any?';
     const held = this.heldSignal(n);
     if (held) return held;
     if (!this.library && ts.isIdentifier(n)) {
@@ -1145,6 +1174,11 @@ export class Translator implements AsyncTranslator {
   }
 
   private declaredTypeOf(e: ts.Expression): string | null {
+    const t = this.plainDeclaredTypeOf(e);
+    return t && this.heldElements(e, t);
+  }
+
+  private plainDeclaredTypeOf(e: ts.Expression): string | null {
     if (this.holdsFunctionObject(e) || this.states.heldNullish(e)) return 'Any?';
     // A shorthand property (`{ positions }`) names the variable it reads.
     let sym = ts.isIdentifier(e) && ts.isShorthandPropertyAssignment(e.parent) && e.parent.name === e
@@ -1327,6 +1361,7 @@ export class Translator implements AsyncTranslator {
 
   zero(t: string): string | null {
     if (isNullable(t) || t === 'Any?') return 'null';
+    if (t.startsWith('JSNullish<')) return 'JSNullish.Undefined';
     if (t === 'Double') return '0.0';
     if (t === 'String') return '""';
     if (t === 'Boolean') return 'false';
@@ -1605,6 +1640,11 @@ export class Translator implements AsyncTranslator {
               if (d.initializer) later(() => `    ${name} = ${this.coerce(d.initializer!, t)}`);
               continue;
             }
+            if (this.states.nullishHeld(d)) {
+              members.push(moduleProperty(`var ${name}: ${t} = JSNullish.Undefined`));
+              if (d.initializer) later(() => `    ${name} = ${this.coerce(d.initializer!, t)}`);
+              continue;
+            }
             // A plugin's unset object variable (`let vibrator: Vibrator`, tested before it is assigned): nullable, unwrapped where it is read.
             // So is an app's one its code tests (`let instance: Sdk;` … `if (!instance)`).
             if (!d.initializer && (this.pluginFiles.has(sf.fileName) || this.truthTested(d.name)) && !t.endsWith('?') && this.isObjectType(t) && !isFunctionType(t)) {
@@ -1634,7 +1674,7 @@ export class Translator implements AsyncTranslator {
               const sym = this.resolve(d.name);
               if (sym) this.undefinedVars.set(sym, optionalType(t));
               members.push(moduleProperty(`var ${name}: ${optionalType(t)} = null`));
-              later(() => `    ${name} = ${this.untypedElement(d.initializer!) && t !== 'Any?' ? this.fromAny(maybe, optionalType(t)) : maybe}`);
+              later(() => `    ${name} = ${(this.typeOf(d.initializer!) === 'Any?' || this.untypedElement(d.initializer!)) && t !== 'Any?' ? this.fromAny(maybe, optionalType(t)) : maybe}`);
               continue;
             }
             // A module's Angular `computed(fn)`: read through `x()`, its value is fn's whenever it is read.
@@ -2025,7 +2065,7 @@ export class Translator implements AsyncTranslator {
       return { name: (m.name as ts.Identifier).text, type: m.questionToken ? optionalType(t) : t, readonly: hasModifier(m, ts.SyntaxKind.ReadonlyKeyword) };
     });
     const methods = members.filter(ts.isMethodSignature).map((m) => {
-      const params = m.parameters.map((p, k) => ({ name: ts.isIdentifier(p.name) ? ident(p.name.text) : `p${k}`, type: p.questionToken ? optionalType(this.typeOf(p.name)) : this.typeOf(p.name) }));
+      const params = m.parameters.map((p, k) => ({ name: ts.isIdentifier(p.name) ? ident(p.name.text) : `p${k}`, type: this.requirementParamType(p) }));
       return { name: ident(m.name.getText()), params, ret: this.returnTypeOf(m) };
     });
     const signature = (m: (typeof methods)[0]) => `fun ${m.name}(${m.params.map((p) => `${p.name}: ${p.type}`).join(', ')})${m.ret === 'Unit' ? '' : `: ${m.ret}`}`;
@@ -2268,6 +2308,8 @@ export class Translator implements AsyncTranslator {
   /** Kotlin code reading an untyped value (`Any?`) as `type`; `name` is the field or variable it goes to, for the TypeError. */
   fromAny(code: string, type: string, name?: string): string {
     if (type === 'Any?') return code;
+    const nullish = /^JSNullish<(.*)>$/.exec(type);
+    if (nullish) return this.nullishOfAny(code, nullish[1]);
     // An Error held untyped (a caught or rejected value): the error, or a view of what was thrown instead.
     if (type === 'JSError' && !this.lenient) return `jsErrorOf(${code})`;
     // A call's value read as nothing: the call still runs.
@@ -2275,8 +2317,9 @@ export class Translator implements AsyncTranslator {
     if (code === 'null' && type.endsWith('?')) return 'null';
     const m = /^JSArray<(.*)>(\??)$/.exec(type);
     if (m) {
-      const read = `jsArrayFrom(${code}) { ${this.fromAny('it', m[1])} }`;
-      return m[2] ? `(if (jsIsNullish(${code})) null else ${read})` : read;
+      const read = (x: string) => `jsArrayFrom(${x}) { ${this.fromAny('it', m[1])} }`;
+      if (!m[2]) return read(code);
+      return plainRead(code) ? `(if (jsIsNullish(${code})) null else ${read(code)})` : `jsUnlessNullish(${code}) { ${read('it')} }`;
     }
     const record = /^JSRecord<(.*)>(\??)$/.exec(type);
     if (record) return `${record[2] ? 'jsRecordOrNull' : 'jsRecord'}<${record[1]}>(${code})`;
@@ -2290,7 +2333,8 @@ export class Translator implements AsyncTranslator {
       this.used.add(base);
       // An object of a class implementing the interface is itself; anything else is read into the interface's class.
       const read = (x: string) => (this.protocols.has(base) ? `${x}.let { it as? ${base} ?: ${base}Object.fromJS(it) }` : `${base}.fromJS(${x})`);
-      return type.endsWith('?') ? `(if (jsIsNullish(${code})) null else ${read(code)})` : read(code);
+      if (!type.endsWith('?')) return read(code);
+      return plainRead(code) ? `(if (jsIsNullish(${code})) null else ${read(code)})` : `jsUnlessNullish(${code}) { ${read('it')} }`;
     }
     if (!this.library && /^[A-Z]\w*\??$/.test(type)) {
       const reified = this.reifiedRead(code, type);
@@ -2450,7 +2494,7 @@ export class Translator implements AsyncTranslator {
         const pt = this.typeOf(p.name);
         const declared = p.questionToken && !p.initializer ? optionalType(pt) : pt;
         const value = p.dotDotDotToken ? `JSArray(__arguments.storage.drop(${k}).map { ${this.fromAnyCode('it', pt.replace(/^JSArray<(.*)>$/, '$1'), true)} }.toMutableList())`
-          : p.initializer ? `(if (${arg} == null) ${this.coerce(p.initializer, pt)} else ${this.fromAnyCode(arg, pt, true)})`
+          : p.initializer ? `(if (${arg} == null) ${branch(this.coerce(p.initializer, pt))} else ${this.fromAnyCode(arg, pt, true)})`
           : this.fromAnyCode(arg, declared, true);
         lines.push(`${i}${assigned ? 'var' : 'val'} ${ident(p.name.text)}: ${declared} = ${value}`);
       });
@@ -2494,8 +2538,9 @@ export class Translator implements AsyncTranslator {
 
   returnTypeOf(fn: ts.SignatureDeclaration): string {
     if (this.states.nullish().held.has(fn) || (this.library && this.thisValues().returning.has(fn))) return 'Any?';
+    if (this.states.nullishHeld(fn)) return nullishType(this.type(this.states.resultType(fn), fn));
     if (this.library && this.returnsNullApart(fn)) return 'Any?';
-    const t = this.type(this.checker.getSignatureFromDeclaration(fn)!.getReturnType(), fn);
+    const t = this.heldElements(fn, this.type(this.checker.getSignatureFromDeclaration(fn)!.getReturnType(), fn));
     if (this.library && this.nullablePrimitiveReturn(fn) && ['String', 'Double', 'Boolean'].includes(t)) return optionalType(t);
     if (this.states.looseDeclaration(fn) || (!this.library && (ts.isArrowFunction(fn) || ts.isFunctionExpression(fn)) && this.unset.returnsElement(fn))) return optionalType(t);
     if (this.states.lenientAsync(fn)) return t.replace(/^JSPromise<(String|Double|Boolean)>$/, 'JSPromise<$1?>');
@@ -3088,7 +3133,7 @@ export class Translator implements AsyncTranslator {
       }
       if (!name || !m || !ts.isMethodSignature(req)) continue;
       if (!ts.isMethodDeclaration(m)) return false;
-      const want = req.parameters.map((p) => (p.questionToken ? optionalType(this.typeOf(p.name)) : this.typeOf(p.name)));
+      const want = req.parameters.map((p) => this.requirementParamType(p));
       const have = m.parameters.map((p) => this.paramType(p));
       const ret = this.returnTypeOf(req), ownRet = this.returnTypeOf(m);
       if (want.length === have.length && want.every((t, k) => t === have[k]) && ret === ownRet) continue;
@@ -3441,7 +3486,8 @@ export class Translator implements AsyncTranslator {
         return out;
       });
       const superCall = superAt(ctor);
-      const superArgs = superCall ? (kitRoot && !appBase && this.core?.superArgs ? this.core.superArgs(kitRoot, superCall, this.args(superCall)) : this.args(superCall)) : [];
+      const errorName = isError ? Object.keys(ERRORS).find((k) => ERRORS[k] === base) : undefined;
+      const superArgs = !superCall ? [] : errorName ? this.errorArgs(errorName, superCall.arguments) : kitRoot && !appBase && this.core?.superArgs ? this.core.superArgs(kitRoot, superCall, this.args(superCall)) : this.args(superCall);
       const delegation = superCall ? ` : super(${superArgs.join(', ')})` : base ? ' : super()' : '';
       this.indent = '    ';
       lines.push(`    constructor(${this.params(ctor, false)})${delegation} {`, ...body, '    }');
@@ -4033,6 +4079,11 @@ export class Translator implements AsyncTranslator {
     }
     const kitRoot = !this.library && this.generatedKit ? this.kitRootOf(cls) : null;
     return !!kitRoot && !!this.core?.kitMember(kitRoot, setterMethod(n));
+  }
+
+  /** An interface method's parameter as the interface spells it: optional where it is, or where its group's form widens it. */
+  private requirementParamType(p: ts.ParameterDeclaration): string {
+    return p.questionToken || this.states.widened(p) ? optionalType(this.typeOf(p.name)) : this.typeOf(p.name);
   }
 
   paramType(p: ts.ParameterDeclaration): string {
@@ -5318,6 +5369,7 @@ export class Translator implements AsyncTranslator {
       if (this.forwardDeclared.has(d) || this.scopedDeclared.has(d)) return d.initializer ? `${i}${name} = ${this.coerce(d.initializer, t)}` : '';
       // `var m` again in the same block: the same variable, assigned.
       if (redeclaredVar(d, this.checker)) return d.initializer ? `${i}${name} = ${this.coerce(d.initializer, t)}` : '';
+      if (this.states.nullishHeld(d)) return `${i}${constant && (!lowered || ts.isForStatement(d.parent.parent)) ? 'val' : 'var'} ${name}: ${t} = ${d.initializer ? this.coerce(d.initializer, t) : 'JSNullish.Undefined'}`;
       const nullInit = !!d.initializer && (d.initializer.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(d.initializer) && d.initializer.text === 'undefined'));
       if ((nullInit || (!d.initializer && !lowered)) && this.pluginFiles.has(d.getSourceFile().fileName) && !t.endsWith('?') && this.isObjectType(t)) {
         // Unset (or `null`) in code checked without strictNullChecks: nullable, unwrapped where it is read.
@@ -5598,42 +5650,6 @@ export class Translator implements AsyncTranslator {
     return el ? this.type(el, e) : 'Any?';
   }
 
-  /**
-   * A non-strict app's object parameters of its own functions that a call gives null or a result that may be missing:
-   * nullable in Kotlin, whose parameter checks would throw for the unchecked null.
-   */
-  private nullGivenParams(): Set<ts.ParameterDeclaration> {
-    if (this.nullGiven) return this.nullGiven;
-    const out = this.nullGiven = new Set<ts.ParameterDeclaration>();
-    const missing = (a: ts.Expression): boolean => {
-      a = ts.skipOuterExpressions(a, ts.OuterExpressionKinds.Parentheses);
-      if (a.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(a) && a.text === 'undefined')) return true;
-      const call = ts.isAwaitExpression(a) ? ts.skipOuterExpressions(a.expression, ts.OuterExpressionKinds.Parentheses) : a;
-      if (!ts.isCallExpression(call)) return false;
-      const d = this.checker.getResolvedSignature(call)?.getDeclaration();
-      if (!d || ts.isJSDocSignature(d) || !(ts.isFunctionDeclaration(d) || ts.isMethodDeclaration(d)) || !d.body || d.getSourceFile().isDeclarationFile || this.pluginFiles.has(d.getSourceFile().fileName) || ts.isAwaitExpression(a) !== isAsync(d)) return false;
-      const given = nothingGiven(d, this.checker);
-      return given.null || given.missing || given.unknown;
-    };
-    const visit = (n: ts.Node): void => {
-      if (ts.isCallExpression(n) && n.arguments.length) {
-        const d = this.checker.getResolvedSignature(n)?.getDeclaration();
-        if (d && !ts.isJSDocSignature(d) && (ts.isFunctionDeclaration(d) || this.ownSignatureMethod(d)) && d.body && !d.getSourceFile().isDeclarationFile && !this.pluginFiles.has(d.getSourceFile().fileName)) {
-          n.arguments.forEach((a, k) => {
-            const p = d.parameters[k];
-            if (!p || p.dotDotDotToken || p.questionToken || p.initializer || !ts.isIdentifier(p.name) || ts.isSpreadElement(a) || !missing(a)) return;
-            const t = this.typeOf(p.name);
-            if (this.isObjectType(t) && !isNullable(t) && !['String', 'Double', 'Boolean'].includes(t) && !isFunctionType(t)) out.add(p);
-          });
-        }
-      }
-      ts.forEachChild(n, visit);
-    };
-    for (const sf of this.sourceFiles) if (!sf.isDeclarationFile && !this.pluginFiles.has(sf.fileName)) visit(sf);
-    return out;
-  }
-  private nullGiven: Set<ts.ParameterDeclaration> | null = null;
-
   /** An app's method whose Kotlin signature is its own: no base, interface or override shares it. */
   private ownSignatureMethod(m: ts.Node): m is ts.MethodDeclaration {
     if (!ts.isMethodDeclaration(m) || isStatic(m) || !ts.isClassDeclaration(m.parent) || /^\$[be]\d+$/.test(m.name.getText()) || this.pluginFiles.has(m.getSourceFile().fileName)) return false;
@@ -5841,6 +5857,8 @@ export class Translator implements AsyncTranslator {
   }
 
   exprStatement(e: ts.Expression): string {
+    const rw = readWrite(e, this.checker);
+    if (rw?.held.length && !rw.held.some((h) => this.subst.has(h))) return this.readWriteCode(e, rw);
     const replaced = this.patterns.prototypeMethod(e);
     if (replaced) {
       // A Page's native view made by a plugin (gesturehandler's PageLayout): the kit's factory hook, `this` the page.
@@ -5861,6 +5879,7 @@ export class Translator implements AsyncTranslator {
       return `run { val ${tmp} = ${this.expr(e.right)}; ${assigns.join('; ')} }`;
     }
     if ((ts.isPostfixUnaryExpression(e) || ts.isPrefixUnaryExpression(e)) && [ts.SyntaxKind.PlusPlusToken, ts.SyntaxKind.MinusMinusToken].includes(e.operator)) {
+      if (ts.isElementAccessExpression(e.operand) && this.typeOf(e.operand.expression).replace(/\?$/, '').startsWith('JSRecord<')) return this.readWriteValue(e);
       const place = this.untypedPlace(e.operand);
       if (place) return `jsSet(${place.obj}, ${place.key}, jsToNumber(jsGet(${place.obj}, ${place.key})) ${e.operator === ts.SyntaxKind.PlusPlusToken ? '+' : '-'} 1.0)`;
       // Lenient code: a number left unset (Kotlin's `Double?`), NaN until assigned.
@@ -5938,7 +5957,8 @@ export class Translator implements AsyncTranslator {
       else if (init && isNullable(read.type)) code = `(${this.convert(read.code, read.type, optionalType(want))} ?: ${this.coerce(init, want)})`;
       else if (read.type === optionalType(want) && read.type !== want) code = this.undefinedAs(read.code, want);
       else code = this.convert(read.code, read.type, want);
-      out.push(`${this.lvalue(to)} = ${code}`);
+      const place = this.untypedPlace(to);
+      out.push(place ? `jsSet(${place.obj}, ${place.key}, ${code})` : `${this.lvalue(to)} = ${code}`);
     };
     const withDefault = (x: ts.Expression): [ts.Expression, ts.Expression | undefined] =>
       ts.isBinaryExpression(x) && x.operatorToken.kind === ts.SyntaxKind.EqualsToken ? [x.left, x.right] : [x, undefined];
@@ -6020,15 +6040,71 @@ export class Translator implements AsyncTranslator {
   private nullishConversion(e: ts.Expression, target: string): string | null {
     const held = this.states.nullishRead(e);
     const bare = ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses);
-    const name = held && this.refName(bare as ts.Identifier);
+    const name = held && this.nullishCode(bare);
     const into = /^JSNullish<(.*)>$/.exec(target)?.[1];
+    if (!into && target === 'Any?' && this.states.nullishElementRead(e)) return `jsBox(${this.expr(e)})`;
+    if (target === 'Any?' && !held) {
+      const adapted = this.nullishFunction(e);
+      if (adapted) return adapted;
+    }
     if (!into) return name && target === 'Any?' ? `${name}.jsAny` : null;
-    if (name) return nullishType(this.typeOf(bare)) === target ? name : `JSNullish.of(${this.convert(`${name}.optional`, optionalType(this.typeOf(bare)), optionalType(into))})`;
+    const own = held && this.nullishSlotType(held);
+    if (name) return own === target ? name : `JSNullish.of(${this.convert(`${name}.optional`, optionalType(own!.slice('JSNullish<'.length, -1)), optionalType(into))})`;
     if (bare.kind === ts.SyntaxKind.NullKeyword) return 'JSNullish.Null';
     if ((ts.isIdentifier(bare) && bare.text === 'undefined') || ts.isVoidExpression(bare)) return 'JSNullish.Undefined';
-    if (this.typeOf(e) === 'Any?') return `JSNullish.ofAny<${into}>(${this.expr(e)})`;
+    if (ts.isConditionalExpression(bare)) {
+      const fixed = this.staticTruth(bare.condition);
+      if (fixed !== undefined) return this.coerce(fixed ? bare.whenTrue : bare.whenFalse, target);
+      return `(if (${this.cond(bare.condition)}) ${branch(this.coerce(bare.whenTrue, target))} else ${branch(this.coerce(bare.whenFalse, target))})`;
+    }
+    if (this.typeOf(e) === 'Any?') return this.nullishOfAny(this.expr(e), into);
+    const entry = this.states.nullishElementRead(e) ? this.coerce(e, 'Any?') : this.states.nullableEntry(e, () => this.coerceTyped(e, 'Any?'));
+    if (entry) return this.nullishOfAny(entry, into);
     const code = this.coerce(e, optionalType(into));
     return `JSNullish.${this.states.nilIsNull(e) ? 'ofNull' : 'of'}<${into}>(${code})`;
+  }
+
+  /** An untyped value into `JSNullish<into>`: its present value converted as an untyped value into `into` is (a TypeError where it isn't one). */
+  private nullishOfAny(code: string, into: string): string {
+    return `JSNullish.ofAny<${into}>(${code}) { ${this.fromAny('it', into)} }`;
+  }
+
+  /**
+   * A function value taking or giving `JSNullish` placed untyped: script calls it with values as it holds them and reads
+   * its result so, which the function's own Kotlin type can't take or give.
+   */
+  private nullishFunction(e: ts.Expression): string | null {
+    const from = this.typeOf(e);
+    const f = from.includes('JSNullish<') ? functionTypeParts(from.replace(/^\((.*)\)\?$/, '$1')) : null;
+    const sig = this.checker.getTypeAtLocation(e).getNonNullableType().getCallSignatures()[0]?.getDeclaration();
+    // A declared function named is held untyped by `untypedFunction`, whose results `jsCall` reads as script holds them.
+    if (!f || !sig || ts.isJSDocSignature(sig) || ts.isFunctionDeclaration(sig) || ts.isMethodDeclaration(sig) || sig.parameters.some((p) => p.dotDotDotToken || isThisParameter(p))) return null;
+    const names = f.params.map((_, k) => `__n${k}`);
+    const call = `__f(${f.params.map((p, k) => this.fromAny(names[k], p)).join(', ')})`;
+    const adapter = `{ ${names.map((n) => `${n}: Any?`).join(', ')}${names.length ? ' ' : ''}-> ${f.ret === 'Unit' ? `${call}; Unit` : `jsBox(${call})`} }`;
+    return `${this.expr(e)}.let { __f -> ${adapter} }`;
+  }
+
+  /** Calls of a `JSNullish` result being written as they are, not read as the optional. */
+  private nullishCalls = new Set<ts.Node>();
+
+  /** A `nullishHeld` variable's, parameter's or function result's `JSNullish<T>`. */
+  private nullishSlotType(d: ts.Declaration): string {
+    if (ts.isVariableDeclaration(d)) return this.typeOf(d.name);
+    return ts.isParameter(d) ? this.paramType(d) : this.returnTypeOf(d as ts.SignatureDeclaration);
+  }
+
+  /** A read of a `nullishHeld` slot as script holds it: non-strict app code reads it untyped, as it reads every value its type may not hold. */
+  private nullishReadUntyped(e: ts.Node): boolean {
+    if (!this.lenientApp || !ts.isExpression(e) || !e.parent || ((ts.isParameter(e.parent) || ts.isVariableDeclaration(e.parent)) && e.parent.name === e)) return false;
+    return !!this.states.nullishRead(e);
+  }
+
+  /** A `nullishRead` value as its `JSNullish<T>`. */
+  private nullishCode(e: ts.Expression): string {
+    if (!ts.isCallExpression(e)) return this.refName(e as ts.Identifier);
+    this.nullishCalls.add(e);
+    try { return this.expr(e); } finally { this.nullishCalls.delete(e); }
   }
 
   /** `nullableEntry`'s read: `jsNulledEntry` of the map value, `jsNulledElement` of the element, or the field by key. */
@@ -6117,13 +6193,18 @@ export class Translator implements AsyncTranslator {
         return this.untypedFunction(decl, fn.includes('::') ? `(${fn})` : fn);
       }
     }
+    // A conditional's branches each placed in a shape slot: a class's object is read into the shape by itself, and
+    // neither branch is held untyped on the way.
+    if (ts.isConditionalExpression(bare) && this.isShapeType(target.replace(/\?$/, '')) && [bare.whenTrue, bare.whenFalse].some((x) => this.typeOf(x).replace(/\?$/, '') !== target.replace(/\?$/, ''))) {
+      return `(if (${this.cond(bare.condition)}) ${branch(this.coerce(bare.whenTrue, target))} else ${branch(this.coerce(bare.whenFalse, target))})`;
+    }
     const source = this.typeOf(e);
     const structural = this.structuralCopy(e, source, target);
     if (structural) return structural;
     // A tuple (a Kotlin Pair) where an array goes: an array of its elements; a conditional's branches each so.
     const array = /^JSArray<(.*)>\??$/.exec(target);
     if (!this.library && array && ts.isConditionalExpression(e) && [e.whenTrue, e.whenFalse].some((x) => /^(Pair|Triple)</.test(this.typeOf(x)))) {
-      return `(if (${this.cond(e.condition)}) ${this.coerce(e.whenTrue, target)} else ${this.coerce(e.whenFalse, target)})`;
+      return `(if (${this.cond(e.condition)}) ${branch(this.coerce(e.whenTrue, target))} else ${branch(this.coerce(e.whenFalse, target))})`;
     }
     if (!this.library && array && /^(Pair|Triple)</.test(source)) {
       const parts = source.startsWith('Triple') ? ['first', 'second', 'third'] : ['first', 'second'];
@@ -6132,7 +6213,7 @@ export class Translator implements AsyncTranslator {
     // Library mode and non-strict apps: each branch where the slot goes, as Kotlin types the `if` by its branches; a nullable
     // string, number or boolean slot (`scale(): number` returning `c ? 2 : null`) takes a missing branch as it is.
     if ((this.library || this.lenientApp) && ts.isConditionalExpression(e) && (isFunctionType(target.replace(/^\((.*)\)\?$/, '$1')) || ['String?', 'Double?', 'Boolean?'].includes(target))) {
-      return `(if (${this.cond(e.condition)}) ${this.coerce(e.whenTrue, target)} else ${this.coerce(e.whenFalse, target)})`;
+      return `(if (${this.cond(e.condition)}) ${branch(this.coerce(e.whenTrue, target))} else ${branch(this.coerce(e.whenFalse, target))})`;
     }
     // Lenient code: `a ?? b` where `b` may be unset itself, read as the type says.
     if (this.lenient && ['String', 'Double', 'Boolean'].includes(target) && ts.isBinaryExpression(e) && e.operatorToken.kind === ts.SyntaxKind.QuestionQuestionToken) return this.library ? this.fromAnyCode(this.expr(e), target, true) : this.undefinedAs(this.expr(e), target);
@@ -6200,7 +6281,7 @@ export class Translator implements AsyncTranslator {
       // Library mode: `a || b` held untyped: either operand as it is.
       if (this.library && ts.isBinaryExpression(bare) && [ts.SyntaxKind.BarBarToken, ts.SyntaxKind.AmpersandAmpersandToken].includes(bare.operatorToken.kind) && this.typeOf(bare) !== 'Any?') {
         const v = this.fresh('__v');
-        const [l, r] = [this.coerce(bare.left, 'Any?'), this.coerce(bare.right, 'Any?')];
+        const [l, r] = [this.coerce(bare.left, 'Any?'), branch(this.coerce(bare.right, 'Any?'))];
         return bare.operatorToken.kind === ts.SyntaxKind.BarBarToken ? `run { val ${v}: Any? = ${l}; if (jsTruthy(${v})) ${v} else ${r} }` : `run { val ${v}: Any? = ${l}; if (jsTruthy(${v})) ${r} else ${v} }`;
       }
       // A function reading `arguments`, held untyped: called as script calls it, with however many arguments.
@@ -6229,7 +6310,7 @@ export class Translator implements AsyncTranslator {
         }
       }
       if (ts.isConditionalExpression(bare) && ([bare.whenTrue, bare.whenFalse].some((x) => x.kind === ts.SyntaxKind.NullKeyword) || (this.library && [bare.whenTrue, bare.whenFalse].some(takesThis)))) {
-        return `(if (${this.cond(bare.condition)}) ${this.coerce(bare.whenTrue, 'Any?')} else ${this.coerce(bare.whenFalse, 'Any?')})`;
+        return `(if (${this.cond(bare.condition)}) ${branch(this.coerce(bare.whenTrue, 'Any?'))} else ${branch(this.coerce(bare.whenFalse, 'Any?'))})`;
       }
       const maybe = this.maybeUndefined(e);
       if (maybe) return maybe;
@@ -6306,17 +6387,6 @@ export class Translator implements AsyncTranslator {
         const unwrap = /^\(.*\)\?$/.test(this.declaredTypeOf(e) ?? '') && !/\)\?$/.test(source) ? '!!' : '';
         const call = `${fn.includes('::') ? `(${fn})` : fn}${unwrap}(${names.slice(0, f.params.length).map((n, k) => this.convert(n, g.params[k], f.params[k])).join(', ')})`;
         const adapter = `{ ${g.params.map((p, k) => `${names[k]}: ${p}`).join(', ')} -> ${call} }`;
-        // The function as it is now, equal to its other adaptations and to itself (a listener added and later removed).
-        if (g.params.length <= 4 && !ts.isArrowFunction(e) && !ts.isFunctionExpression(e)) {
-          const held = adapter.replace(`${fn.includes('::') ? `(${fn})` : fn}${unwrap}(`, '__f(');
-          const adapt = `jsAdapt${g.params.length}<${[...g.params, g.ret].join(', ')}>(__f) ${held}`;
-          if (/\)\?$/.test(source) || unwrap) {
-            const value = this.expr(e);
-            if (/\)\?$/.test(target)) return `${value}?.let { __f -> ${adapt} }`;
-            return isAsserted(value) ? `${value}.let { __f -> ${adapt} }` : asserted(`${value}?.let { __f -> ${adapt} }`);
-          }
-          return `${fn.includes('::') ? `(${fn})` : fn}.let { __f -> ${adapt} }`;
-        }
         // An optional member (`closeCallback?: …`) given to an optional parameter (`cb?: …`): undefined stays undefined,
         // as the checker without strictNullChecks types neither as optional.
         const member = ts.isPropertyAccessExpression(e) ? this.resolve(e.name)?.valueDeclaration : undefined;
@@ -6324,6 +6394,17 @@ export class Translator implements AsyncTranslator {
         const sig = outer ? this.checker.getResolvedSignature(outer)?.getDeclaration() : undefined;
         const param = sig && !ts.isJSDocSignature(sig) ? sig.parameters[outer!.arguments.indexOf(e)] : undefined;
         const optional = !!member && (ts.isPropertySignature(member) || ts.isPropertyDeclaration(member)) && !!member.questionToken && (/\)\?$/.test(target) || !!param?.questionToken || !!param?.initializer);
+        // The function as it is now, equal to its other adaptations and to itself (a listener added and later removed).
+        if (g.params.length <= 4 && !ts.isArrowFunction(e) && !ts.isFunctionExpression(e)) {
+          const held = adapter.replace(`${fn.includes('::') ? `(${fn})` : fn}${unwrap}(`, '__f(');
+          const adapt = `jsAdapt${g.params.length}<${[...g.params, g.ret].join(', ')}>(__f) ${held}`;
+          if (/\)\?$/.test(source) || unwrap || optional) {
+            const value = this.expr(e);
+            if (/\)\?$/.test(target)) return `${value}?.let { __f -> ${adapt} }`;
+            return isAsserted(value) ? `${value}.let { __f -> ${adapt} }` : asserted(`${value}?.let { __f -> ${adapt} }`);
+          }
+          return `${fn.includes('::') ? `(${fn})` : fn}.let { __f -> ${adapt} }`;
+        }
         return /\)\?$/.test(source) || optional ? `${this.expr(e)}?.let { __f -> ${adapter.replace(fn.includes('::') ? `(${fn})` : fn, '__f')} }` : adapter;
       }
     }
@@ -6442,13 +6523,16 @@ export class Translator implements AsyncTranslator {
       return !!d && !ts.isJSDocSignature(d) && !!d.parameters.at(-1)?.dotDotDotToken && !d.parameters.some((p) => isThisParameter(p))
         && /^JSArray</.test(functionTypeParts(this.typeOf(x).replace(/^\((.*)\)\?$/, '$1'))?.params.at(-1) ?? '');
     };
+    // Parentheses only: an assertion (`v as Replacer`) is held as the type it asserts.
     const held = (x: ts.Expression): boolean => {
-      const b = ts.skipOuterExpressions(x);
+      const b = ts.skipParentheses(x);
       return ts.isConditionalExpression(b) ? held(b.whenTrue) || held(b.whenFalse) : !ts.isArrowFunction(b) && !ts.isFunctionExpression(b) && hasRest(b);
     };
-    const bare = ts.skipOuterExpressions(e);
+    const bare = ts.skipParentheses(e);
     if (!held(bare)) return null;
-    if (ts.isConditionalExpression(bare)) return `(if (${this.cond(bare.condition)}) ${this.coerce(bare.whenTrue, 'Any?')} else ${this.coerce(bare.whenFalse, 'Any?')})`;
+    if (ts.isConditionalExpression(bare)) return `(if (${this.cond(bare.condition)}) ${branch(this.coerce(bare.whenTrue, 'Any?'))} else ${branch(this.coerce(bare.whenFalse, 'Any?'))})`;
+    const asserted = ts.isAsExpression(bare) || ts.isTypeAssertionExpression(bare) ? ts.skipOuterExpressions(bare) : null;
+    if (asserted && this.typeOf(asserted) === 'Any?') return this.expr(asserted);
     const type = this.typeOf(bare);
     const g = functionTypeParts(type.replace(/^\((.*)\)\?$/, '$1'))!;
     const n = g.params.length - 1;
@@ -6512,13 +6596,20 @@ export class Translator implements AsyncTranslator {
 
   // ---- Expressions -----------------------------------------------------------------------------
 
+  /** Held parts of a member's compound assignment (`readWriteCode`): their code, bound in their place, is final. */
+  private readonly heldParts = new Set<ts.Node>();
+
   expr(e: ts.Expression): string {
+    if (this.heldParts.has(e)) return this.subst.get(e)!;
+    if (ts.isCallExpression(e) && !this.nullishCalls.has(e) && !this.subst.has(e) && this.states.nullishRead(e)) return `${this.nullishCode(e)}${this.lenientApp ? '.jsAny' : '.optional'}`;
     const raw = this.awaitedRaw.get(e), key = raw ? readKeyOf(e) : null;
     // A member of what the await gives: JavaScript's TypeError where it gives nothing.
     if (raw && key !== null) return `(${raw} ?: ${this.states.nullResult(e) ? 'jsCannotReadNull' : 'jsCannotRead'}(${kotlinString(key)}))`;
     const s = this.subst.get(e);
     if (s) return s;
     if (ts.isParenthesizedExpression(e)) return `(${this.expr(e.expression)})`;
+    const rw = readWrite(e, this.checker);
+    if (rw && ((rw.value && !rw.stored) || rw.held.length) && !rw.held.some((h) => this.subst.has(h))) return this.readWriteCode(e, rw);
     // An accessor's getter need not give back what its setter took, so the value is the one read or the one assigned.
     const logical = ts.isBinaryExpression(e) && [ts.SyntaxKind.AmpersandAmpersandEqualsToken, ts.SyntaxKind.BarBarEqualsToken, ts.SyntaxKind.QuestionQuestionEqualsToken].includes(e.operatorToken.kind);
     if (logical && ts.isPropertyAccessExpression(e.left) && !statementLevel(e) && (this.checker.getSymbolAtLocation(e.left.name)?.flags ?? 0) & ts.SymbolFlags.Accessor) {
@@ -6589,7 +6680,8 @@ export class Translator implements AsyncTranslator {
     if (e.kind === ts.SyntaxKind.SuperKeyword) return 'super';
     if (ts.isIdentifier(e)) {
       if (this.states.nullishRead(e)) {
-        if (isWriteTarget(e)) throw this.error(e, 'an assignment to a function slot that may be null or undefined both');
+        if (isWriteTarget(e)) throw this.error(e, 'a compound assignment to a slot that may be null or undefined both');
+        if (this.lenientApp) return `${this.refName(e)}.jsAny`;
         return this.narrowed(e, `${this.refName(e)}.optional`);
       }
       return this.identifier(e);
@@ -6616,6 +6708,9 @@ export class Translator implements AsyncTranslator {
       const wider = from === 'Any?' ? this.widenedAssertion(e) : null;
       if (wider) return this.fromAny(this.expr(e.expression), isNullable(to) ? optionalType(wider) : wider);
       // The assertion is erased in JavaScript: where Kotlin needs the type, the value is converted as script converts it there.
+      const entry = from === 'Any?' && !this.library && !this.lenient ? this.states.foreignEntry(e) : null;
+      const checked = entry && this.type(entry.type, e) === to ? this.checkedConvert(this.expr(e.expression), entry, e) : null;
+      if (checked) return checked;
       if (!this.library && from === 'Any?' && ['String', 'Double', 'Boolean'].includes(to)) return `jsAsserted${to === 'Double' ? 'Number' : to}(${this.expr(e.expression)})`;
       if (from === 'Any?' && to !== 'Any?') {
         // A script function asserted to a function type taking a rest (`as (...a: unknown[]) => unknown`): the rest is spread
@@ -6704,7 +6799,7 @@ export class Translator implements AsyncTranslator {
       const t = this.typeOf(e);
       const fixed = this.staticTruth(e.condition);
       if (fixed !== undefined) return this.coerce(fixed ? e.whenTrue : e.whenFalse, t);
-      return `(if (${this.cond(e.condition)}) ${this.coerce(e.whenTrue, t)} else ${this.coerce(e.whenFalse, t)})`;
+      return `(if (${this.cond(e.condition)}) ${branch(this.coerce(e.whenTrue, t))} else ${branch(this.coerce(e.whenFalse, t))})`;
     }
     // Library mode: `class { [property: string]: string }`, a constructor of plain objects.
     if (this.library && ts.isClassExpression(e) && !e.heritageClauses && e.members.every(ts.isIndexSignatureDeclaration)) return 'JSObject::class.java';
@@ -7459,6 +7554,9 @@ export class Translator implements AsyncTranslator {
   /** An `assertedUntyped` assertion read as the nullable it may be: null where the value is undefined or null. */
   private assertedOptional(e: ts.AsExpression | ts.TypeAssertion): string {
     const t = this.typeOf(e), code = this.expr(e.expression);
+    const entry = !this.library && !this.lenient ? this.states.foreignEntry(e) : null;
+    const checked = entry && this.type(entry.type, e) === t ? this.checkedConvert(code, entry, e, true) : null;
+    if (checked) return checked;
     if (['String', 'Double', 'Boolean'].includes(t)) return `jsAsserted${t === 'Double' ? 'Number' : t}OrNull(${code})`;
     return this.fromAny(code, optionalType(this.widenedAssertion(e) ?? t));
   }
@@ -7562,8 +7660,8 @@ export class Translator implements AsyncTranslator {
       } finally { this.optionalReads.delete(e); }
     }
     // So is a map's `get` of a key it may lack.
-    const mapGet = this.library && ts.isCallExpression(e) && ts.isPropertyAccessExpression(e.expression) && e.expression.name.text === 'get' && /^JS(Weak)?Map</.test(this.typeOf(e.expression.expression));
-    if (this.library && ts.isCallExpression(e) && (e.flags & ts.NodeFlags.OptionalChain || mapGet) && !this.optionalReads.has(e) && (mapGet || ['String', 'Double', 'Boolean'].includes(this.typeOf(e)))) {
+    const mapGet = (this.library || this.lenientApp) && ts.isCallExpression(e) && ts.isPropertyAccessExpression(e.expression) && e.expression.name.text === 'get' && /^JS(Weak)?Map</.test(this.typeOf(e.expression.expression));
+    if ((this.library || mapGet) && ts.isCallExpression(e) && (e.flags & ts.NodeFlags.OptionalChain || mapGet) && !this.optionalReads.has(e) && (mapGet || ['String', 'Double', 'Boolean'].includes(this.typeOf(e)))) {
       this.optionalReads.add(e);
       try {
         const code = this.expr(e);
@@ -7622,6 +7720,22 @@ export class Translator implements AsyncTranslator {
     return `${unasserted(code)}?.let { ${v} -> ${inner} }`;
   }
 
+  /**
+   * The one conversion of a foreign value into the form it enters as (§2.3b M6): a value of the form's type passes, an
+   * empty state as the slot holds it, any other is JavaScript's TypeError. Null where the form's type has none yet.
+   */
+  private checkedConvert(code: string, to: Form, at: ts.Node, optional = false): string | null {
+    const fn = ({ String: 'jsCheckedString', Double: 'jsCheckedNumber', Boolean: 'jsCheckedBoolean' } as Record<string, string>)[this.type(to.type, at)];
+    return fn ? `${fn}${optional ? 'OrNull' : ''}(${code})` : null;
+  }
+
+  /** An untyped argument where the parameter holds its declared type (`foreignArgument`): converted checked, or null. */
+  private checkedArgument(a: ts.Expression, to: string): string | null {
+    const entry = this.lenient ? null : this.states.foreignArgument(a);
+    if (!entry || this.typeOf(a) !== 'Any?' || this.type(entry.type, a) !== to.replace(/\?$/, '')) return null;
+    return this.checkedConvert(this.expr(a), entry, a, isNullable(to));
+  }
+
   /** An undefined-or-value as the TypeScript type reads it: NaN, "undefined" and false are what undefined converts to. */
   private undefinedAs(code: string, type: string): string {
     if (isNullable(type) || type === 'Any?') return code;
@@ -7666,7 +7780,7 @@ export class Translator implements AsyncTranslator {
         continue;
       }
       if (decl && this.states.nullishHeld(decl)) { out.push(this.coerce(a, nullishType(this.type(this.checker.getTypeOfSymbolAtLocation(p, e), e)))); continue; }
-      let pt = decl && this.states.nullish().held.has(decl) ? 'Any?' : this.type(this.checker.getTypeOfSymbolAtLocation(p, e), e);
+      let pt = decl && this.states.nullish().held.has(decl) ? 'Any?' : this.heldElements(decl && ts.isParameter(decl) ? decl : e, this.type(this.checker.getTypeOfSymbolAtLocation(p, e), e));
       // A generic implementation's parameter is not instantiated by an overload's call: the overload's, as this call instantiates it.
       const implTypes = impl && impl !== sig?.getDeclaration() ? impl.typeParameters?.map((t) => t.name.text) ?? [] : [];
       const resolved = sig?.getParameters()[k];
@@ -7683,7 +7797,7 @@ export class Translator implements AsyncTranslator {
       const root = this.library && decl && ts.isParameter(decl) && ts.isMethodDeclaration(decl.parent) ? this.rootMethod(decl.parent) : null;
       if (root && root !== decl.parent && root.parameters[k] && !root.parameters[k].dotDotDotToken) pt = this.paramType(root.parameters[k]);
       // A plugin's object parameter is nullable in Kotlin: what is passed needs no unwrap.
-      if (decl && ts.isParameter(decl) && appDeclared && !!(decl.parent as ts.FunctionLikeDeclaration).body && this.states.mayBeNull(decl)) pt = optionalType(pt);
+      if (decl && ts.isParameter(decl) && appDeclared && ((!!(decl.parent as ts.FunctionLikeDeclaration).body && this.states.mayBeNull(decl)) || this.states.widened(decl))) pt = optionalType(pt);
       // Library mode: a parameter the method declares nullable in Kotlin takes what may be missing as it is.
       else if (this.library && !isNullable(pt) && pt !== 'Any?' && this.nullableArgument(a)) pt = optionalType(pt);
       // So does a local function's parameter its body tests (`params`).
@@ -7703,7 +7817,7 @@ export class Translator implements AsyncTranslator {
       // An object or a record of other values where a package's parameter takes a record of any: as script passes it.
       const record = packageParam ? /^JSRecord<(.*)>(\??)$/.exec(pt) : null;
       if (record && this.typeOf(a).replace(/\?$/, '') !== pt.replace(/\?$/, '')) { out.push(`${record[2] ? 'jsRecordOrNull' : 'jsRecord'}<${record[1]}>(${this.expr(a)})`); continue; }
-      out.push((pt === 'Any?' && this.untypedArrow(a)) || this.coerce(a, pt));
+      out.push((pt === 'Any?' && this.untypedArrow(a)) || this.checkedArgument(a, pt) || this.coerce(a, pt));
     }
     if (restAt >= 0 && appDeclared && list.length <= restAt) out.push(`${this.restType(params[restAt])}()`);
     const decl = sig?.getDeclaration();
@@ -8218,6 +8332,12 @@ export class Translator implements AsyncTranslator {
     if (!decl || !rest || decl.parameters.some((p) => p.dotDotDotToken) || rest.length > decl.parameters.length) return null;
     const receiver = this.coerce(e.arguments[0], 'Any?');
     const args = rest.map((a, k) => this.coerce(a, this.paramType(decl.parameters[k])));
+    // Parameters left out are undefined: Kotlin's defaults for the trailing ones that declare one, null up to them.
+    const left = decl.parameters.slice(rest.length);
+    for (const p of left.slice(0, left.findLastIndex((x) => !x.initializer && !x.questionToken) + 1)) {
+      if (p.initializer || !isNullable(this.paramType(p))) throw this.error(e, `${callee.name.text} of ${cls.name?.text}.prototype.${method.name.text} leaving out \`${p.name.getText()}\`, which can't hold undefined`);
+      args.push('null');
+    }
     const owner = decl.parent as ts.ClassDeclaration;
     const name = this.nonVirtualEntry(decl) ? ident(nonVirtualName(method.name.text, owner.name!.text)) : this.methodIdent(method.name.text);
     return `${this.checkedCast(receiver, this.className(owner))}.${name}(${args.join(', ')})`;
@@ -8486,7 +8606,7 @@ export class Translator implements AsyncTranslator {
       if (ERRORS[name]) return this.errorValue(name, e.arguments);
       if (name === 'Array' && this.isLibGlobal(callee as ts.Identifier)) return this.arrayConstruct(e, this.typeOf(e), e.arguments);
       // `RegExp(re)` without flags is `re` itself; otherwise it constructs as `new RegExp` does.
-      if (name === 'RegExp' && decl && isLibDeclaration(decl)) return e.arguments.length === 1 && this.isRegExp(e.arguments[0]) ? this.expr(e.arguments[0]) : this.regExpConstruct(e.arguments);
+      if (name === 'RegExp' && decl && isLibDeclaration(decl)) return e.arguments.length === 1 && this.isRegExp(e.arguments[0]) ? this.expr(e.arguments[0]) : this.regExpConstruct(e.arguments, true);
       if (decl && /[\\/]lib\.[\w.]*\.d\.ts$/.test(decl.getSourceFile().fileName)) throw this.error(e, `${name}()`);
     }
     const resolvers = this.resolvers.get(this.resolve(callee)!);
@@ -8882,7 +9002,7 @@ export class Translator implements AsyncTranslator {
       }
       case 'fill': return `${t}.fill(${[this.coerce(e.arguments[0], element), ...e.arguments.slice(1).map((x) => this.toNumber(x))].join(', ')})`;
       case 'slice': case 'at': return `${t}.${name}(${e.arguments.map((x) => this.toNumber(x)).join(', ')})`;
-      case 'indexOf': case 'lastIndexOf': case 'includes': return `${t}.${name}(${[this.coerce(e.arguments[0], optionalType(element)),...e.arguments.slice(1).map((x) => this.toNumber(x))].join(', ')})`;
+      case 'indexOf': case 'lastIndexOf': case 'includes': return `${t}.${name}(${[this.coerce(e.arguments[0], element.startsWith('JSNullish<') ? element : optionalType(element)),...e.arguments.slice(1).map((x) => this.toNumber(x))].join(', ')})`;
       case 'join': return `${t}.join(${e.arguments[0] ? (this.library ? this.str(e.arguments[0]) : this.expr(e.arguments[0])) : ''})`;
       case 'concat':
         if (e.arguments.some(ts.isSpreadElement)) return `${t}.concatSpread(${this.packed(e.arguments, `JSArray<${element}>`)}.storage)`;
@@ -9254,8 +9374,9 @@ export class Translator implements AsyncTranslator {
   }
 
   /** `new RegExp(…)`: from a pattern, or a copy of an expression with its flags unless others are given. */
-  private regExpConstruct(args: readonly ts.Expression[]): string {
+  private regExpConstruct(args: readonly ts.Expression[], call = false): string {
     if (args[0] && this.isRegExp(args[0])) return `${this.expr(args[0])}.let { __re -> JSRegExp(__re.source, ${args[1] ? this.str(args[1]) : '__re.flags'}) }`;
+    if (args[0] && !this.isString(args[0])) return `jsRegExpConstruct(${[this.coerce(args[0], 'Any?'), ...(args[1] ? [this.coerce(args[1], 'Any?')] : []), ...(call ? ['call = true'] : [])].join(', ')})`;
     return `JSRegExp(${args[0] ? this.str(args[0]) : '"(?:)"'}${args[1] ? `, ${this.str(args[1])}` : ''})`;
   }
 
@@ -9405,13 +9526,18 @@ export class Translator implements AsyncTranslator {
 
   /** One of the library's error classes, constructed: an AggregateError takes its errors first. */
   private errorValue(name: string, args: readonly ts.Expression[]): string {
+    return `${ERRORS[name]}(${this.errorArgs(name, args).join(', ')})`;
+  }
+
+  /** The runtime error class's constructor arguments for a library error class's (`new Error(…)`, `super(…)`). */
+  private errorArgs(name: string, args: readonly ts.Expression[]): string[] {
     const [first, second] = name === 'AggregateError' ? [args[1], args[0]] : [args[0]];
     const errors = name === 'AggregateError' ? [second ? `JSArray<Any?>((${this.iterable(second)}).toList())` : 'JSArray<Any?>()'] : [];
     // An optional string parameter left out (`new Error(message)` of `message?: string`): no message, as undefined gives none.
     const param = first && ts.isIdentifier(first) ? this.resolve(first)?.valueDeclaration : undefined;
     const message = first && param && ts.isParameter(param) && /^String\??$/.test(this.typeOf(first)) && isNullable(this.paramType(param)) ? `(${this.expr(first)} ?: "")` : first ? this.str(first) : null;
     const cause = name === 'Error' && args[1] ? [`jsGetOptional(${this.coerce(args[1], 'Any?')}, "cause")`] : [];
-    return `${ERRORS[name]}(${[...errors, ...(message ? [message] : cause.length ? ['""'] : []), ...cause].join(', ')})`;
+    return [...errors, ...(message ? [message] : cause.length ? ['""'] : []), ...cause];
   }
 
   /**
@@ -9580,6 +9706,72 @@ export class Translator implements AsyncTranslator {
     throw this.error(e, 'prefix operator');
   }
 
+  /** A member's compound, logical or update assignment (`readWrite`): its held parts evaluated once, its value the one computed. */
+  private readWriteCode(e: ts.Expression, rw: ReadWrite): string {
+    const names = rw.held.map((h) => this.fresh(h === rw.target.expression ? '__o' : '__k'));
+    const binds = rw.held.map((h, k) => `val ${names[k]} = ${this.expr(h)}`);
+    rw.held.forEach((h, k) => { this.subst.set(h, names[k]); this.heldParts.add(h); });
+    try {
+      const body = rw.value ? this.readWriteValue(e) : this.exprStatement(e);
+      const lost = names.find((n) => !new RegExp(`\\b${n}\\b`).test(body));
+      if (lost) throw this.error(e, `a compound assignment whose target the translation evaluates apart from its parts (${lost})`);
+      return binds.length ? `run { ${[...binds, body].join('; ')} }` : body;
+    } finally {
+      rw.held.forEach((h) => { this.subst.delete(h); this.heldParts.delete(h); });
+    }
+  }
+
+  /** `f()` reading a record's entry as present, though Kotlin reads it back nullable. */
+  /** A record's entry declared present, though Kotlin reads it back nullable. */
+  private recordEntry(target: ts.Expression): ts.ElementAccessExpression | null {
+    while (ts.isParenthesizedExpression(target)) target = target.expression;
+    return ts.isElementAccessExpression(target) && this.typeOf(target.expression).replace(/\?$/, '').startsWith('JSRecord<') && !isNullable(this.typeOf(target)) ? target : null;
+  }
+
+  private entryRead(e: ts.Expression, f: () => string): string {
+    const target = this.recordEntry(e);
+    if (!target) return f();
+    this.subst.set(target, asserted(this.expr(target)));
+    try { return f(); } finally { this.subst.delete(target); }
+  }
+
+  /** A member's compound, logical or update assignment as a value: one read, the write, and the value computed or kept. */
+  private readWriteValue(e: ts.Expression): string {
+    const K = ts.SyntaxKind;
+    if (ts.isBinaryExpression(e) && [K.AmpersandAmpersandEqualsToken, K.BarBarEqualsToken, K.QuestionQuestionEqualsToken].includes(e.operatorToken.kind)) {
+      const read = this.fresh('__read'), value = this.fresh('__value');
+      const op = e.operatorToken.kind;
+      const test = op === K.AmpersandAmpersandEqualsToken ? `jsTruthy(${read})` : op === K.BarBarEqualsToken ? `!jsTruthy(${read})` : `jsIsNullish(${read})`;
+      const target = this.declaredTypeOf(e.left) ?? this.typeOf(e.left);
+      const t = this.typeOf(e.left) === 'Any?' ? 'Any?' : this.typeOf(e);
+      const assigned = `val ${value} = ${this.coerce(e.right, t === 'Any?' ? 'Any?' : target)}`;
+      const kept = isNullable(target) && t !== 'Any?' ? this.undefinedAs(read, t) : this.recordEntry(e.left) ? asserted(read) : read;
+      this.subst.set(e.right, value);
+      try {
+        return `run { val ${read} = ${this.expr(e.left)}; if (${test}) { ${assigned}; ${this.assignment(e.left, e.right)}; ${value} } else ${kept} }`;
+      } finally {
+        this.subst.delete(e.right);
+      }
+    }
+    const value = this.fresh('__value');
+    let computed: string, given = value, old = '';
+    if (ts.isBinaryExpression(e)) computed = this.entryRead(e.left, () => this.binary(asOperation(e)));
+    else {
+      const u = e as ts.PrefixUnaryExpression | ts.PostfixUnaryExpression;
+      old = this.fresh('__old');
+      computed = `${old} ${u.operator === K.PlusPlusToken ? '+' : '-'} ${this.one(u.operand)}`;
+      old = `val ${old} = ${this.entryRead(u.operand, () => this.typeOf(u.operand) === 'JSBigInt' ? this.expr(u.operand) : this.toNumber(u.operand))}; `;
+      if (ts.isPostfixUnaryExpression(e)) given = /val (\w+)/.exec(old)![1];
+    }
+    const left = ts.isBinaryExpression(e) ? e.left : (e as ts.PrefixUnaryExpression).operand;
+    this.subst.set(e, value);
+    try {
+      return `run { ${old}val ${value} = ${computed}; ${this.assignment(left, e)}; ${given} }`;
+    } finally {
+      this.subst.delete(e);
+    }
+  }
+
   /** `++`/`--` of a member read and written by key, as a value: the old number (postfix) or the new one. */
   private keyedStep(place: { obj: string; key: string }, sign: string, postfix: boolean): string {
     const o = this.fresh('__o');
@@ -9588,6 +9780,8 @@ export class Translator implements AsyncTranslator {
 
   /** `left = right` (also the assignment `??=` and `||=` make). */
   private assignment(left: ts.Expression, right: ts.Expression): string {
+    const nullish = ts.isIdentifier(left) ? this.states.nullishRead(left) : null;
+    if (nullish) return `${this.refName(left as ts.Identifier)} = ${this.coerce(right, this.nullishSlotType(nullish))}`;
     if (this.states.nullField(left)) return `${this.expr(left.expression)}.jsSet(${kotlinString(left.name.text)}, ${this.coerce(right, 'Any?')})`;
     const keyed = ts.isPropertyAccessExpression(left) && !this.lenient && !this.library ? this.states.nullishShapeField(left, true) : null;
     if (keyed) return `${this.expr((left as ts.PropertyAccessExpression).expression)}.jsSet(${kotlinString(keyed)}, ${this.coerce(right, 'Any?')})`;
@@ -9645,7 +9839,8 @@ export class Translator implements AsyncTranslator {
         && !/^(JSArray|JSRecord|JSMatch|Pair|Triple)\b/.test(this.typeOf(left.expression).replace(/\?$/, ''))))) {
       return `jsSet(${this.expr(left.expression)}, ${this.propertyKey(left.argumentExpression)}, ${this.coerce(right, 'Any?')})`;
     }
-    return `${this.lvalue(left)} = ${this.coerce(right, this.declaredTypeOf(left) ?? this.typeOf(left))}`;
+    const element = ts.isElementAccessExpression(left) && this.states.nullishElements(left.expression) ? this.elementTypeOf(left.expression) : null;
+    return `${this.lvalue(left)} = ${this.coerce(right, element ?? this.declaredTypeOf(left) ?? this.typeOf(left))}`;
   }
 
   private binary(e: ts.BinaryExpression): string {
@@ -9666,6 +9861,14 @@ export class Translator implements AsyncTranslator {
     const big = this.bigIntBinary(e);
     if (big) return big;
     if (bit[op]) return `${bit[op]}(${this.toNumber(e.left)}, ${this.toNumber(e.right)})`;
+    // A member written by key, or a record's entry (read back nullable): the operation's value, assigned as `=` assigns it.
+    const keyed = (compound[op] || op === K.PercentEqualsToken || op === K.AsteriskAsteriskEqualsToken) && this.untypedPlace(e.left);
+    const entry = op >= K.FirstCompoundAssignment && op <= K.LastCompoundAssignment && ![K.QuestionQuestionEqualsToken, K.BarBarEqualsToken, K.AmpersandAmpersandEqualsToken].includes(op)
+      && ts.isElementAccessExpression(e.left) && this.typeOf(e.left.expression).replace(/\?$/, '').startsWith('JSRecord<');
+    if (keyed || entry) {
+      this.subst.set(e, this.entryRead(e.left, () => this.binary(asOperation(e))));
+      try { return this.assignment(e.left, e); } finally { this.subst.delete(e); }
+    }
     if (compound[op]) return `${target()} = ${bit[compound[op]!]}(${this.toNumber(e.left)}, ${this.toNumber(e.right)})`;
     switch (op) {
       case K.EqualsToken: {
@@ -9774,8 +9977,8 @@ export class Translator implements AsyncTranslator {
         if (leftValue === `jsTruthy(${v})` && t === 'Boolean') return `(jsTruthy(${left}) ${sym} ${right})`;
         // jsTruthy's contract makes the tested value non-null where it holds.
         return op === K.BarBarToken
-          ? `run { val ${v} = ${left}; if (jsTruthy(${v})) ${leftValue === `${v}!!` ? v : leftValue} else ${right} }`
-          : `run { val ${v} = ${left}; if (jsTruthy(${v})) ${right} else ${leftValue} }`;
+          ? `run { val ${v} = ${left}; if (jsTruthy(${v})) ${leftValue === `${v}!!` ? v : leftValue} else ${branch(right)} }`
+          : `run { val ${v} = ${left}; if (jsTruthy(${v})) ${branch(right)} else ${leftValue} }`;
       }
       case K.InstanceOfKeyword: {
         // A class held as a value (`C: ErrorConstructor`): tested by the class it holds.
@@ -9858,7 +10061,7 @@ export class Translator implements AsyncTranslator {
     // A `T | null` value compared strictly with undefined, or a `T | undefined` one with null: never the same.
     if (strict && isNullish(a) !== isNullish(b)) {
       const [x, n] = isNullish(b) ? [a, b] : [b, a];
-      if (n.kind !== K.NullKeyword ? this.states.nullDistinct(x) : this.states.nullishRead(x) || this.states.nullableEntry(x, () => this.coerceTyped(x, 'Any?'))) return `${negate ? '!' : ''}jsStrictEquals(${this.coerce(x, 'Any?')}, ${n.kind === K.NullKeyword ? 'jsNull' : 'null'})`;
+      if (n.kind !== K.NullKeyword ? this.states.nullDistinct(x) : this.states.nullishRead(x) || this.states.nullishElementRead(x) || this.states.nullableEntry(x, () => this.coerceTyped(x, 'Any?'))) return `${negate ? '!' : ''}jsStrictEquals(${this.coerce(x, 'Any?')}, ${n.kind === K.NullKeyword ? 'jsNull' : 'null'})`;
       if (n.kind === K.NullKeyword && this.states.nilIsUndefined(x)) return `${negate ? '!' : ''}jsStrictEquals(${this.coerce(x, 'Any?')}, jsNull)`;
     }
     const maybe = isNullish(b) ? this.maybeUndefined(a) : isNullish(a) ? this.maybeUndefined(b) : null;
@@ -9892,7 +10095,7 @@ export class Translator implements AsyncTranslator {
     let t = this.typeOf(e);
     // A spread's length is known only when it runs: no tuple.
     if (context && !(context.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown | ts.TypeFlags.TypeParameter)) && !(this.checker.isTupleType(context) && e.elements.some(ts.isSpreadElement))) {
-      const c = this.type(context, e).replace(/\?$/, '');
+      const c = this.heldElements(e, this.type(context, e)).replace(/\?$/, '');
       if (c.startsWith('JSArray<') || c.startsWith('Pair<') || c.startsWith('Triple<') || !e.elements.length) t = c;
       // Where an array or other kinds of value go (`data: string[][] | string`): that array.
       const arrays = context.isUnion() ? context.types.filter((u) => this.checker.isArrayType(u)) : [];
@@ -10176,6 +10379,11 @@ export class Translator implements AsyncTranslator {
     return `object : ${this.className(cls)}() { ${lines.join('; ')} }`;
   }
 
+  /** An interface's or object shape's Kotlin class. */
+  private isShapeType(name: string): boolean {
+    return this.interfaces.has(name) || [...this.shapes.values()].some((s) => s.name === name);
+  }
+
   /**
    * A value of one of the app's object types where another goes (`DuoFold` passed as a `StageFold`): TypeScript's
    * types are structural, Kotlin's classes are not, so the slot gets an object of its class with the value's fields.
@@ -10183,8 +10391,7 @@ export class Translator implements AsyncTranslator {
   private structuralCopy(e: ts.Expression, source: string, target: string): string | null {
     if (this.library) return null;
     const from = source.replace(/\?$/, ''), to = target.replace(/\?$/, '');
-    const isShape = (n: string) => this.interfaces.has(n) || [...this.shapes.values()].some((s) => s.name === n);
-    if (from === to || !isShape(from) || !isShape(to)) return null;
+    if (from === to || !this.isShapeType(from) || !this.isShapeType(to)) return null;
     const contextual = this.checker.getContextualType(e);
     const props = contextual ? this.checker.getNonNullableType(contextual).getProperties() : [];
     if (!props.length) return null;
@@ -10685,9 +10892,12 @@ export class Translator implements AsyncTranslator {
   private untypedMethod(p: ts.MethodDeclaration): string {
     const rest = p.parameters.some((q) => q.dotDotDotToken);
     if (!thisNodes(p).length && !rest) {
-      // Called untyped (an options object's `valueChanged`), with undefined where a number, string or boolean goes.
+      // Called untyped (an options object's `valueChanged`), with undefined where a number, string or boolean goes, and
+      // an app's object, or null where it may be one, as the script value it is.
       const types = p.parameters.map((q) => this.paramType(q));
-      if (!(this.library || this.pluginFiles.has(p.getSourceFile().fileName)) || !types.some((t) => ['Double', 'Boolean', 'String'].includes(t)) || p.parameters.some((q) => isThisParameter(q) || !ts.isIdentifier(q.name))) return this.closure(p);
+      const kit = this.library || this.pluginFiles.has(p.getSourceFile().fileName);
+      const converted = (t: string) => (kit ? ['Double', 'Boolean', 'String'].includes(t) : t !== 'Any?' && (this.isObjectType(t) || /^(Double|Boolean|String)\?$/.test(t)) && !isFunctionType(t));
+      if (!types.some(converted) || p.parameters.some((q) => isThisParameter(q) || !ts.isIdentifier(q.name))) return this.closure(p);
       const ret = this.returnTypeOf(p);
       const names = types.map((_, k) => `__u${k}`);
       const call = `__f(${types.map((t, k) => (t === 'Any?' ? names[k] : this.fromAnyCode(names[k], t, true))).join(', ')})`;
@@ -10941,6 +11151,11 @@ function continuesTo(n: ts.Node, label: string): boolean {
 /** Kotlin code that does nothing as a statement: a local's name or a literal. */
 function inert(code: string): boolean {
   return /^(?:[A-Za-z_][\w$]*|-?\d[\w.]*|"(?:[^"\\$]|\\.)*")$/.test(code.trim()) && !['return', 'break', 'continue'].includes(code.trim());
+}
+
+/** Kotlin code giving the same value each time it is read: `inert` code, or an element of an argument list the translator made. */
+function plainRead(code: string): boolean {
+  return inert(code) || /^__\w+(?:\.\w+)*\.getOrNull\(\d+\)$/.test(code);
 }
 
 /** Whether Kotlin code names `name` (a whole word, not part of another, nor a member of something else). */

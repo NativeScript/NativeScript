@@ -438,7 +438,7 @@ try {
 }
 // Before the translator analyzes what throws: lenient code's checks throw.
 const lenientFiles = [...pluginFiles].filter((f) => !writtenStrict(f));
-const translator = new Translator(checker, infos, sourceFiles, { pluginFiles, lenientFiles, reach, properties, lenientApp, assignFields: assignsFields });
+const translator = new Translator(checker, infos, sourceFiles, { pluginFiles, pluginRoots: plugins.all().map((p) => p.root + '/'), lenientFiles, reach, properties, lenientApp, assignFields: assignsFields });
 translator.compiledFiles = new Set(compiledPlugins);
 translator.lines = sourceLines;
 const located = (code: string) => (sourceLines ? sourceLines.swift(withoutRedundantImplicit(code)) : withoutRedundantImplicit(code));

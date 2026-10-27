@@ -1,6 +1,6 @@
 import ts from 'typescript';
 import { heldDowncasts, implementedInterfaceDeclarations, LooseSlots, nothingGiven, nullishSlots, nullSetFields, originOf, ownSlot, scriptCalledFunction, slotOf, slotType, type NullishSlots, type TrustScope } from './lang.ts';
-import { Forms, representation } from './forms.ts';
+import { type Form, Forms, isGeneric, representation } from './forms.ts';
 import { isAsync, isStatic } from './throws.ts';
 import { shadowForms } from './forms-shadow.ts';
 
@@ -14,6 +14,8 @@ export interface StateBackend {
   readonly checker: ts.TypeChecker;
   readonly sourceFiles: readonly ts.SourceFile[];
   readonly pluginFiles: ReadonlySet<string>;
+  /** Where plugins' sources are: a file under one is a plugin's however it is compiled (its Angular components as the app's). */
+  readonly pluginRoots: readonly string[];
   readonly trust: TrustScope;
   readonly lenient: boolean;
   readonly lenientApp: boolean;
@@ -57,8 +59,6 @@ export interface StateRules {
    * non-strict app. Swift asks it of any call.
    */
   readonly appNullResults: boolean;
-  /** Swift: a parameter a non-strict call gives undefined counts as script-called. Kotlin asks `givenUndefined` beside it. */
-  readonly givenUndefinedIsScriptCalled: boolean;
   /** Swift: an optional parameter takes undefined as it is, and a declaration file's slot never does. */
   readonly optionalParametersTakeUndefined: boolean;
   /** Swift: `looseDeclaration` is asked of reads and declarations both, and answers for the declaration they name. */
@@ -67,7 +67,13 @@ export interface StateRules {
    * Kotlin: a parameter's checks throw for a null its type leaves out, so `mayBeNull` counts every way an empty value
    * reaches one, with these analyses of the backend's; and a string an unset regexp group may leave undefined is loose.
    */
-  readonly checkedParameters?: { nullGiven(p: ts.ParameterDeclaration): boolean; truthTested(name: ts.Identifier): boolean; unsetElement(d: ts.Node): boolean };
+  readonly checkedParameters?: { truthTested(name: ts.Identifier): boolean; unsetElement(d: ts.Node): boolean };
+}
+
+/** Whether a type admits null and undefined both, and nothing untyped. */
+function bothEmpty(t: ts.Type): boolean {
+  const parts = t.isUnion() ? t.types : [t];
+  return parts.some((x) => x.flags & ts.TypeFlags.Null) && parts.some((x) => x.flags & ts.TypeFlags.Undefined) && !parts.some((x) => x.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown));
 }
 
 /** Whether a type admits null but not undefined. */
@@ -81,6 +87,7 @@ export class ValueStates {
   readonly nullVars = new Set<ts.Symbol>();
   private nullishSlotSet?: NullishSlots;
   private nullishHeldSet = new Set<ts.Declaration>();
+  private nullishElementSet = new Set<ts.Declaration>();
   private formSet?: Forms;
   private downcastSet?: ReturnType<typeof heldDowncasts>;
   private looseSlotSet: LooseSlots | null = null;
@@ -105,6 +112,17 @@ export class ValueStates {
     return this.backend.pluginFiles.has(n.getSourceFile().fileName);
   }
 
+  /** The app's own strict code, where §2.3b M6's held and checked foreign values apply. */
+  strictApp(n: ts.Node): boolean {
+    return !this.packaged(n) && this.backend.trust.strictFile(n.getSourceFile());
+  }
+
+  /** Code of another package than the app: a plugin's or an installed package's, decided by where its source is. */
+  packaged(n: ts.Node): boolean {
+    const f = n.getSourceFile().fileName;
+    return this.plugin(n) || /[\\/]node_modules[\\/]/.test(f) || this.backend.pluginRoots.some((r) => f.startsWith(r.endsWith('/') ? r : r + '/'));
+  }
+
   private primitive(t: string): boolean {
     return t === 'String' || t === 'Double' || t === this.backend.spelling.boolean;
   }
@@ -117,12 +135,14 @@ export class ValueStates {
     const b = this.backend;
     if (this.nullishSlotSet) return this.nullishSlotSet;
     const found: NullishSlots = b.lenient || b.library ? { held: new Set(), fields: new Set(), refused: [], functions: new Map() } : nullishSlots(b.checker, b.sourceFiles, (f) => b.pluginFiles.has(f.fileName));
-    // An element or callback parameter today's analysis can't hold, which nothing tells null from undefined in: one nil,
-    // read as undefined.
+    // An element, callback parameter or loop variable today's analysis can't hold: one nil, read as undefined, where
+    // nothing tells null from undefined in it; `JSNullish<T>` where something does.
     found.refused = found.refused.filter(([, , cover]) => {
       if (!cover) return true;
       const form = cover.kind === 'element' ? this.forms().formOfSlot(cover.slot).element : this.forms().formOfSlot(cover.slot);
-      return !form || !['present', 'undefined', 'null'].includes(representation(form));
+      const shown = form && representation(form);
+      if (shown === 'nullish') (cover.kind === 'element' ? this.nullishElementSet : this.nullishHeldSet).add(cover.slot);
+      return !shown || !['present', 'undefined', 'null', 'nullish'].includes(shown);
     });
     // A function slot: `JSNullish` where null and undefined are told apart, else one nil read as undefined. One that may
     // hold another value too is refused where its own code compares it.
@@ -131,7 +151,36 @@ export class ValueStates {
       if (shown === 'nullish') this.nullishHeldSet.add(d);
       else if (shown === 'foreign' && what) found.refused.push([d, what]);
     }
-    return this.nullishSlotSet = found;
+    // A variable, parameter or result held untyped for its null and undefined: `JSNullish<T>` where something tells them
+    // apart, as every member of its group (a function type and its values, an override family) reads one form.
+    for (const d of found.held) if (representation(this.forms().formOfSlot(d)) === 'nullish') { found.held.delete(d); this.nullishHeldSet.add(d); }
+    // A foreign value whose type the program tests (§2.3b M6) is held untyped, by every member of its group or by none.
+    if (!b.lenient && !b.library) {
+      for (const group of this.forms().typeTestedForeign()) {
+        if (group.every((d) => this.holdsForeign(d))) for (const d of group) if (!this.untypedDeclaration(d)) { found.held.add(d); this.nullishHeldSet.delete(d); }
+      }
+    }
+    this.nullishSlotSet = found;
+    if (this.nullishElementSet.size) {
+      const text = (e: ts.Expression) => this.checker.typeToString(this.checker.getTypeAtLocation(e));
+      // Script writes into what it holds untyped as it likes, which elements held as `JSNullish<T>` can't take.
+      for (const e of this.forms().untypedPlacements()) {
+        if (this.nullishElements(e)) found.refused.push([e, `an array, Map or Set whose elements may be null or undefined both (\`${text(e)}\`), given where its type isn't known (declare the slot it goes to with that type)`]);
+      }
+      // A Map's entries spread into a literal (`[...map.entries()]`): pairs, whose value no slot of its own holds.
+      const scan = (n: ts.Node): void => {
+        if (ts.isSpreadElement(n) && ts.isArrayLiteralExpression(n.parent)) {
+          const x = ts.skipOuterExpressions(n.expression);
+          const map = ts.isCallExpression(x) && ts.isPropertyAccessExpression(x.expression) && x.expression.name.text === 'entries' && !x.arguments.length ? x.expression.expression : x;
+          if (this.checker.getNonNullableType(this.checker.getTypeAtLocation(map)).getSymbol()?.name === 'Map' && this.nullishElements(map)) {
+            found.refused.push([n.parent, `an array, Map or Set element (or other type argument) that may be null or undefined both (a value of \`${text(map)}\` in \`${text(n.parent)}\`)`]);
+          }
+        }
+        ts.forEachChild(n, scan);
+      };
+      for (const f of this.backend.sourceFiles) if (!f.isDeclarationFile) scan(f);
+    }
+    return found;
   }
 
   /** The program's value forms (review/DESIGN-VALUE-MODEL.md §2), built when first asked. */
@@ -141,19 +190,91 @@ export class ValueStates {
   }
 
   /**
-   * A parameter or variable holding a function that may be null or undefined both, which the program tells apart: held
-   * as `JSNullish<F>`, read as `F?` except where null and undefined are told apart or kept.
+   * A parameter, variable or function result that may hold null and undefined both, which the program tells apart: held
+   * as `JSNullish<T>`, read as `T?` except where null and undefined are told apart or kept.
    */
-  nullishHeld(d: ts.Node): d is ts.ParameterDeclaration | ts.VariableDeclaration {
+  nullishHeld(d: ts.Node): d is ts.ParameterDeclaration | ts.VariableDeclaration | ts.SignatureDeclaration {
     return this.nullish() && this.nullishHeldSet.has(d as ts.Declaration);
   }
 
-  /** A read of a `nullishHeld` slot whose value may still be null or undefined: the slot's declaration. */
-  nullishRead(e: ts.Expression): ts.ParameterDeclaration | ts.VariableDeclaration | null {
+  /**
+   * An array, Set or Map (a declaration, its name, or an expression giving one) whose elements or values may be null or
+   * undefined both, which the program tells apart: its elements are held as `JSNullish<T>`.
+   */
+  nullishElements(n: ts.Node): boolean {
+    if (!this.nullish() || !this.nullishElementSet.size) return false;
+    const d = ts.isIdentifier(n) && n.parent && (ts.isVariableDeclaration(n.parent) || ts.isParameter(n.parent) || ts.isPropertyDeclaration(n.parent) || ts.isPropertySignature(n.parent)) && n.parent.name === n ? n.parent : n;
+    if (!ts.isExpression(d) && !ts.isVariableDeclaration(d) && !ts.isParameter(d) && !ts.isPropertyDeclaration(d) && !ts.isPropertySignature(d) && !(ts.isFunctionLike(d) && !isAsync(d))) return false;
+    const type = ts.isFunctionLike(d) ? this.checker.getSignatureFromDeclaration(d as ts.SignatureDeclaration)?.getReturnType() : this.checker.getTypeAtLocation(ts.isExpression(d) ? d : (d as ts.NamedDeclaration).name ?? d);
+    const element = type && this.forms().elementOf(type);
+    // A literal or a new Set is spelled as the slot it goes to, which a conditional or a call between hides from its own form.
+    const to = (ts.isArrayLiteralExpression(d) || ts.isNewExpression(d)) && this.placement(d);
+    if (to && this.nullishElements(to)) return true;
+    if (!element || !bothEmpty(element)) return false;
+    const form = ts.isExpression(d) ? this.forms().formOf(d) : this.forms().formOfSlot(d);
+    return !!form.element && representation(form.element) === 'nullish';
+  }
+
+  /** The slot an expression's value goes to, through parentheses, conditionals and defaults: a declaration, or a new Set's expression. */
+  private placement(e: ts.Expression): ts.Node | null {
+    let x: ts.Node = e;
+    for (let p = x.parent; ; x = p, p = p.parent) {
+      if (ts.isParenthesizedExpression(p) || ts.isAsExpression(p) || ts.isSatisfiesExpression(p) || (ts.isConditionalExpression(p) && p.condition !== x)) continue;
+      if (ts.isBinaryExpression(p) && p.right === x && [ts.SyntaxKind.QuestionQuestionToken, ts.SyntaxKind.BarBarToken, ts.SyntaxKind.AmpersandAmpersandToken].includes(p.operatorToken.kind)) continue;
+      break;
+    }
+    const p = x.parent;
+    if ((ts.isVariableDeclaration(p) || ts.isPropertyDeclaration(p)) && p.initializer === x) return p;
+    if (ts.isBinaryExpression(p) && p.operatorToken.kind === ts.SyntaxKind.EqualsToken && p.right === x) return p.left;
+    if (ts.isReturnStatement(p)) return ts.findAncestor(p, ts.isFunctionLike) ?? null;
+    if (ts.isArrowFunction(p) && p.body === x) return p;
+    if ((ts.isCallExpression(p) || ts.isNewExpression(p)) && p.expression !== x) {
+      const k = p.arguments!.indexOf(x as ts.Expression);
+      if (ts.isNewExpression(p) && k === 0 && ts.isIdentifier(p.expression) && p.expression.text === 'Set') return p;
+      const sig = this.checker.getResolvedSignature(p)?.getDeclaration();
+      const param = sig && !ts.isJSDocSignature(sig) ? sig.parameters[k] : undefined;
+      return param && !param.dotDotDotToken && !param.getSourceFile().isDeclarationFile ? param : null;
+    }
+    return null;
+  }
+
+  /**
+   * A function's result type: a function value without its own annotation gives what the function type it is placed
+   * in declares (`give() { return null; }` for `give(): number | null | undefined`).
+   */
+  resultType(fn: ts.SignatureDeclaration): ts.Type {
+    const own = this.checker.getSignatureFromDeclaration(fn)!.getReturnType();
+    if (fn.type || !(ts.isArrowFunction(fn) || ts.isFunctionExpression(fn) || (ts.isMethodDeclaration(fn) && ts.isObjectLiteralExpression(fn.parent)))) return own;
+    const contextual = ts.isMethodDeclaration(fn)
+      ? (() => { const o = this.checker.getContextualType(fn.parent as ts.ObjectLiteralExpression); const m = o && ts.isIdentifier(fn.name) ? o.getProperty(fn.name.text) : undefined; return m ? this.checker.getTypeOfSymbolAtLocation(m, fn) : undefined; })()
+      : this.checker.getContextualType(fn as ts.Expression);
+    return contextual?.getNonNullableType().getCallSignatures()[0]?.getReturnType() ?? own;
+  }
+
+  /** A value placed in a `JSNullish<T>` slot: a variable, parameter or result `nullishHeld` holds, or an element `nullishElements` holds. */
+  nullishPlaced(e: ts.Expression): boolean {
+    if (this.backend.library || this.backend.lenient || !e.parent) return false;
+    const slot = slotOf(e, this.checker);
+    if (slot && this.nullishHeld(slot)) return true;
+    let x: ts.Node = e;
+    while (ts.isParenthesizedExpression(x.parent)) x = x.parent;
+    const p = x.parent;
+    if (ts.isArrayLiteralExpression(p)) return this.nullishElements(p);
+    if (ts.isBinaryExpression(p) && p.right === x && p.operatorToken.kind === ts.SyntaxKind.EqualsToken && ts.isElementAccessExpression(p.left)) return this.nullishElements(p.left.expression);
+    return ts.isCallExpression(p) && ts.isPropertyAccessExpression(p.expression) && p.arguments.includes(x as ts.Expression) && this.nullishElements(p.expression.expression);
+  }
+
+  /** A read of a `nullishHeld` slot (a name, or a call giving such a result): the slot's declaration. */
+  nullishRead(e: ts.Expression): ts.ParameterDeclaration | ts.VariableDeclaration | ts.SignatureDeclaration | null {
     const bare = ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses);
-    if (!ts.isIdentifier(bare) || this.backend.library || this.backend.lenient) return null;
+    if (this.backend.library || this.backend.lenient) return null;
+    if (ts.isCallExpression(bare)) {
+      const d = this.checker.getResolvedSignature(bare)?.getDeclaration();
+      return d && !ts.isJSDocSignature(d) && this.nullishHeld(d) ? d : null;
+    }
+    if (!ts.isIdentifier(bare)) return null;
     const d = this.checker.getSymbolAtLocation(bare)?.valueDeclaration;
-    return d && this.nullishHeld(d) ? d : null;
+    return d && (ts.isParameter(d) || ts.isVariableDeclaration(d)) && this.nullishHeld(d) ? d : null;
   }
 
   heldCasts(): ReturnType<typeof heldDowncasts> {
@@ -226,7 +347,13 @@ export class ValueStates {
 
   /** A typed value whose untyped read tells null from undefined, where its optional alone does not. */
   nullDistinct(e: ts.Expression): boolean {
-    return this.nilIsNull(e) || !!this.nullishRead(e) || !!this.nullableEntry(e, () => this.backend.untypedCode(e));
+    return this.nilIsNull(e) || !!this.nullishRead(e) || this.nullishElementRead(e) || !!this.nullableEntry(e, () => this.backend.untypedCode(e));
+  }
+
+  /** An element read of an array whose elements are held as `JSNullish<T>` (`nullishElements`). */
+  nullishElementRead(e: ts.Expression): boolean {
+    const bare = ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses);
+    return ts.isElementAccessExpression(bare) && this.nullishElements(bare.expression);
   }
 
   /** A member that may hold null or undefined both, by its type or as `nullishSlots` finds; written, one that may hold null. */
@@ -395,30 +522,33 @@ export class ValueStates {
     return (this.scriptCalledFunctions ??= scriptCalledFunction(this.backend.trust))(sig);
   }
 
-  /** A string, number or boolean parameter of a function script calls (`scriptCalled`): it takes undefined as well. */
+  /** A string, number or boolean parameter of a function script calls (`scriptCalled`) or `givenUndefined`: it takes undefined as well. */
   scriptCalledParameter(p: ts.ParameterDeclaration): boolean {
     const b = this.backend;
-    if (p.dotDotDotToken || !ts.isIdentifier(p.name) || !(this.scriptCalled(p.parent) || (b.rules.givenUndefinedIsScriptCalled && this.givenUndefined(p)))) return false;
+    if (p.dotDotDotToken || !ts.isIdentifier(p.name) || !(this.scriptCalled(p.parent) || this.givenUndefined(p))) return false;
     return b.unemitted(() => this.primitive(b.type(this.checker.getTypeAtLocation(p.name), p)));
   }
 
-  /** A parameter of a function script calls, or one a non-strict app's call gives undefined: it takes undefined as well. */
+  /** A parameter of a function script calls, or one the program gives undefined: it takes undefined as well. */
   undefinedParameter(p: ts.ParameterDeclaration): boolean {
     return this.givenUndefined(p) || this.scriptCalledParameter(p);
   }
 
   /**
-   * A non-strict app's parameter of a function type (`f: (i: number, last: boolean) => string`) that a call through its
-   * name gives undefined (`f(i, end ? true : undefined)`), or a literal's parameter given for one.
+   * An app's parameter the program may give undefined though its declared type has none: its form's undefined is a
+   * value left out (`Form.missing`: fewer arguments, a read past an array's end, a hole, an optional parameter). In a
+   * non-strict app also a parameter of a function type (`f: (i: number, last: boolean) => string`) that a call through
+   * its name gives undefined (`f(i, end ? true : undefined)`), or a literal's parameter given for one.
    */
   givenUndefined(p: ts.ParameterDeclaration): boolean {
     const b = this.backend;
-    if (!b.lenientApp || b.lenient || b.library || p.getSourceFile().isDeclarationFile || this.plugin(p)) return false;
+    // A library's and a plugin's parameters are entry points: their forms change the kit's surface, decided with it.
+    if (b.lenient || b.library || p.getSourceFile().isDeclarationFile || this.plugin(p)) return false;
     let found = this.undefinedGiven.get(p);
     if (found !== undefined) return found;
-    this.undefinedGiven.set(p, false);
+    this.undefinedGiven.set(p, found = !p.dotDotDotToken && this.forms().formOfSlot(p).missing && !this.forms().declaredForm(p).undefined);
+    if (found || !b.lenientApp) return found;
     const fn = p.parent, k = fn.parameters.indexOf(p);
-    found = false;
     if (ts.isArrowFunction(fn) || ts.isFunctionExpression(fn)) {
       const slot = this.checker.getContextualType(fn)?.getNonNullableType().getCallSignatures()[0]?.getDeclaration();
       const q = slot && !ts.isJSDocSignature(slot) && ts.isFunctionTypeNode(slot) ? slot.parameters[k] : undefined;
@@ -438,20 +568,162 @@ export class ValueStates {
   }
 
   /**
-   * A parameter whose native type takes an empty value its declared type leaves out. A plugin's code is checked without
-   * strictNullChecks: callers pass null and undefined for an object parameter (core's `valueChanged(target, oldValue,
-   * newValue)` starts from undefined; ui-drawer applies a closing drawer's data with no side).
+   * A parameter whose native type takes an empty value its declared type leaves out. An app's parameter takes what its
+   * group's form holds (`formDecides`), whether or not its code is checked with strictNullChecks. A plugin's is an
+   * entry point, its code checked without them: callers pass null and undefined for an object parameter (core's
+   * `valueChanged(target, oldValue, newValue)` starts from undefined; ui-drawer applies a closing drawer's data with
+   * no side).
    */
   mayBeNull(p: ts.ParameterDeclaration): boolean {
     const b = this.backend, checked = b.rules.checkedParameters;
     if (p.dotDotDotToken || !ts.isIdentifier(p.name)) return false;
-    if (!checked) return (this.plugin(p) || b.lenientApp) && b.nullableParameter(b.typeOf(p.name));
-    if (this.looseDeclaration(p)) return true;
-    if (b.lenientApp && !b.library && checked.nullGiven(p)) return true;
     const t = b.typeOf(p.name);
+    if (this.formDecides(p)) {
+      // Swift reads a non-strict app's optional parameter unwrapped where its body tests it, as nothing narrows it there.
+      const optional = !checked && b.lenientApp && !!p.questionToken && b.nullableParameter(t);
+      return optional || this.widened(p) || (!!checked && (this.looseDeclaration(p) || (this.primitive(t) && this.undefinedParameter(p))));
+    }
+    if (!checked) return (this.plugin(p) || b.lenientApp) && b.nullableParameter(t);
+    if (this.looseDeclaration(p)) return true;
     if (this.primitive(t) && this.undefinedParameter(p)) return true;
-    // An app checked without strictNullChecks: a string parameter its function tests (`if (state)`) is one callers may leave out.
+    // A plugin's string parameter its function tests (`if (state)`), in a non-strict app: one callers may leave out.
     if (b.lenientApp && !b.library && !p.getSourceFile().isDeclarationFile && t === 'String' && ts.isFunctionDeclaration(p.parent) && checked.truthTested(p.name)) return true;
     return this.plugin(p) && b.nullableParameter(t);
+  }
+
+  /**
+   * Whether an app's parameter is held as its group's form says (`widened`) rather than by its declared type: not where
+   * that form is decided elsewhere (`ownForm`).
+   */
+  formDecides(p: ts.ParameterDeclaration): boolean {
+    if (p.dotDotDotToken || !ts.isIdentifier(p.name) || !this.appParameter(p)) return false;
+    let found = this.decidedParams.get(p);
+    if (found === undefined) this.decidedParams.set(p, found = this.ownForm(p));
+    return found;
+  }
+  private readonly decidedParams = new Map<ts.ParameterDeclaration, boolean>();
+
+  /**
+   * An app's parameter that holds what its form holds beyond its declared type: its callers' values, or what any caller
+   * may give where the program can't see them all (§2.3a). The form is its group's (the function type it is given for,
+   * the member it implements or overrides), so every place that spells a member of the group asks this. Swift holds a
+   * string, number or boolean given undefined by its own rules (`looseSlots`, `scriptCalledParameter`).
+   */
+  widened(p: ts.ParameterDeclaration): boolean {
+    const b = this.backend;
+    if (!this.formDecides(p)) return false;
+    let found = this.widenedParams.get(p);
+    if (found === undefined) this.widenedParams.set(p, found = (!!b.rules.checkedParameters || b.nullableParameter(b.typeOf(p.name))) && this.givenEmpty(p));
+    return found;
+  }
+  private readonly widenedParams = new Map<ts.ParameterDeclaration, boolean>();
+
+  /**
+   * An untyped value asserted to a concrete type (`x as T`, `JSON.parse(s) as T`) in the app's own code: the form the
+   * value enters as, for the backend's checked convert. Null where the assertion is no such entry, or where the type of
+   * what it enters is tested, which §2.3b M6 holds untyped rather than checked.
+   */
+  foreignEntry(e: ts.AsExpression | ts.TypeAssertion): Form | null {
+    const b = this.backend, untyped = ts.TypeFlags.Any | ts.TypeFlags.Unknown;
+    if (b.library || this.packaged(e) || !(this.checker.getTypeAtLocation(e.expression).flags & untyped)) return null;
+    const t = this.checker.getTypeAtLocation(e);
+    if (t.flags & untyped || isGeneric(t)) return null;
+    const form = this.forms().formOf(e);
+    return form.foreign && !form.typeObserved ? form : null;
+  }
+
+  /**
+   * An untyped value passed to a parameter of the app's own strict code that holds its declared type (§2.3b M6, group 2):
+   * the form the value enters as, for the backend's checked convert. Null where the parameter is held untyped (its type
+   * is tested) or is no such parameter.
+   */
+  foreignArgument(a: ts.Expression): Form | null {
+    const b = this.backend;
+    if (b.library || b.lenient || !this.strictApp(a)) return null;
+    let x: ts.Node = a;
+    while (ts.isParenthesizedExpression(x.parent)) x = x.parent;
+    const call = x.parent;
+    if (!(ts.isCallExpression(call) || ts.isNewExpression(call)) || call.expression === x) return null;
+    const k = call.arguments!.indexOf(x as ts.Expression);
+    const sig = this.checker.getResolvedSignature(call)?.getDeclaration();
+    const p = sig && !ts.isJSDocSignature(sig) ? sig.parameters[k] : undefined;
+    if (!p || p.dotDotDotToken || !ts.isIdentifier(p.name) || ts.isParameterPropertyDeclaration(p, p.parent) || p.getSourceFile().isDeclarationFile || !this.strictApp(p)) return null;
+    if (!this.untypedValue(a) || this.nullish().held.has(p)) return null;
+    const t = this.checker.getTypeAtLocation(p.name);
+    if (t.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown) || isGeneric(t)) return null;
+    const form = this.forms().formOfSlot(p);
+    return form.foreign && !form.typeObserved ? form : null;
+  }
+
+  /** A value of no type the program knows: typed `any` or `unknown`, or read from a slot held untyped for its foreign value. */
+  private untypedValue(e: ts.Expression): boolean {
+    const x = ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses);
+    if (x.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(x) && x.text === 'undefined')) return false;
+    if (this.checker.getTypeAtLocation(x).flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown)) return true;
+    const d = ts.isIdentifier(x) ? this.checker.getSymbolAtLocation(x)?.valueDeclaration : ts.isCallExpression(x) ? this.checker.getResolvedSignature(x)?.getDeclaration() : undefined;
+    return !!d && !ts.isJSDocSignature(d) && this.nullish().held.has(d) && this.forms().formOfSlot(d).foreign;
+  }
+
+  /** A declaration typed `any` or `unknown`: held untyped already. */
+  private untypedDeclaration(d: ts.Declaration): boolean {
+    const t = ts.isFunctionLike(d) ? this.checker.getSignatureFromDeclaration(d as ts.SignatureDeclaration)?.getReturnType() : this.checker.getTypeAtLocation((d as ts.NamedDeclaration).name ?? d);
+    return !!t && !!(t.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown));
+  }
+
+  /**
+   * A slot of the app's own strict code that can be held untyped for a foreign value: a variable, a parameter or a sync
+   * function's result, of a string, number or boolean, whose native form no declaration outside its group shares.
+   */
+  private holdsForeign(d: ts.Declaration): boolean {
+    if (d.getSourceFile().isDeclarationFile || !this.strictApp(d)) return false;
+    if (this.untypedDeclaration(d)) return true;
+    let type: ts.Type | undefined;
+    if (ts.isVariableDeclaration(d)) {
+      if (!ts.isIdentifier(d.name) || !ts.isVariableStatement(d.parent.parent)) return false;
+      type = this.checker.getTypeAtLocation(d.name);
+    } else if (ts.isParameter(d)) {
+      const fn = d.parent;
+      if (!ts.isIdentifier(d.name) || d.dotDotDotToken || ts.isParameterPropertyDeclaration(d, fn) || !this.ownFunction(fn)) return false;
+      type = this.checker.getTypeAtLocation(d.name);
+    } else if (ts.isFunctionLike(d)) {
+      if (!this.ownFunction(d) || isAsync(d as ts.SignatureDeclaration) || (d as ts.FunctionLikeDeclaration).asteriskToken || ts.isConstructorDeclaration(d)) return false;
+      type = this.checker.getSignatureFromDeclaration(d as ts.SignatureDeclaration)?.getReturnType();
+    }
+    if (!type || isGeneric(type)) return false;
+    const parts = (type.isUnion() ? type.types : [type]).filter((x) => !(x.flags & (ts.TypeFlags.Null | ts.TypeFlags.Undefined | ts.TypeFlags.Void)));
+    const kind = (x: ts.Type) => (x.flags & ts.TypeFlags.StringLike ? 's' : x.flags & ts.TypeFlags.NumberLike ? 'n' : x.flags & ts.TypeFlags.BooleanLike ? 'b' : null);
+    return parts.length > 0 && parts.every((x) => kind(x) && kind(x) === kind(parts[0]));
+  }
+
+  /** A function whose parameters and result no declaration outside the program's own groups shares. */
+  private ownFunction(fn: ts.Node): boolean {
+    if (ts.isFunctionDeclaration(fn) || ts.isArrowFunction(fn) || ts.isFunctionExpression(fn) || ts.isFunctionTypeNode(fn) || ts.isCallSignatureDeclaration(fn)) return !(ts.canHaveDecorators(fn) && ts.getDecorators(fn)?.length);
+    if (ts.isMethodDeclaration(fn)) return ts.isClassLike(fn.parent) && this.backend.ownSignature(fn) && !ts.getDecorators(fn)?.length && !ts.getDecorators(fn.parent)?.length;
+    return false;
+  }
+
+  /**
+   * A parameter of the app's own code: a library's and a plugin's are entry points, decided with the kit's surface. Lenient
+   * files are plugin files, so the answer doesn't depend on the file being emitted.
+   */
+  private appParameter(p: ts.ParameterDeclaration): boolean {
+    return !this.backend.library && !p.getSourceFile().isDeclarationFile && !this.plugin(p);
+  }
+
+  /**
+   * A parameter whose group's form is its own to decide. One typed by a type parameter holds what each instantiation
+   * admits (§2.3b M5), which its native type parameter does as well; one sharing a fixed point's form (a callback
+   * parameter of a kit or platform function type) is spelled as that declaration is, and a parameter property as its
+   * field is. A foreign form is held untyped by other rules.
+   */
+  private ownForm(p: ts.ParameterDeclaration): boolean {
+    if (ts.isParameterPropertyDeclaration(p, p.parent)) return false;
+    return !this.forms().declaredForm(p).foreign && !isGeneric(this.checker.getTypeAtLocation(p.name)) && !this.forms().fixedSlot(p);
+  }
+
+  /** A parameter whose form holds null or undefined where its declared type admits neither. */
+  private givenEmpty(p: ts.ParameterDeclaration): boolean {
+    const declared = this.forms().declaredForm(p), form = this.forms().formOfSlot(p);
+    return (form.null && !declared.null) || (form.undefined && !declared.undefined);
   }
 }
