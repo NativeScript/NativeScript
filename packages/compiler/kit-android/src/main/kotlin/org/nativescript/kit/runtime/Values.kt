@@ -770,6 +770,15 @@ fun jsCheckedNumberOrNull(value: Any?): Double? = if (jsIsNullish(value)) null e
 
 fun jsCheckedBooleanOrNull(value: Any?): Boolean? = if (jsIsNullish(value)) null else jsCheckedBoolean(value)
 
+/**
+ * An untyped value asserted to an array of strings, numbers or booleans (§2.3b M6): an array's elements each checked by
+ * `element`, an empty state read as `jsArrayFrom` reads it, and any other value JavaScript's TypeError there.
+ */
+fun <T> jsCheckedArray(value: Any?, element: (Any?) -> T): JSArray<T> {
+    if (jsIsNullish(value) || value is JSArray<*> || value!!.javaClass.isArray) return jsArrayFrom(value, element)
+    throw JSException(JSTypeError("${jsTypeof(value)} is not an array"))
+}
+
 private fun jsCheckedFailure(value: Any?, type: String): Nothing = throw JSException(JSTypeError("${jsTypeof(value)} is not a $type"))
 
 private val joinGuards = object : ThreadLocal<ArrayList<Any>>() {

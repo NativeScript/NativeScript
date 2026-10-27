@@ -1,8 +1,13 @@
+import { dirname, join } from 'node:path';
 import ts from 'typescript';
 import { heldDowncasts, implementedInterfaceDeclarations, LooseSlots, nothingGiven, nullishSlots, nullSetFields, originOf, ownSlot, scriptCalledFunction, slotOf, slotType, type NullishSlots, type TrustScope } from './lang.ts';
 import { type Form, Forms, isGeneric, representation } from './forms.ts';
 import { isAsync, isStatic } from './throws.ts';
 import { shadowForms } from './forms-shadow.ts';
+
+const COMPILER = dirname(import.meta.dirname);
+/** Sources the compiler ships to be compiled with an app: plugin bindings and ports of libraries. */
+const SHIPPED = ['kit-android/Bindings', 'kit-apple/Bindings', 'runtime'].map((d) => join(COMPILER, d) + '/');
 
 // The null/undefined/missing deciders both translators ask: which empty states a value or slot may hold where its native
 // form keeps only one. The rules are shared; a backend supplies its mode, how it spells types and how it emits a keyed
@@ -112,15 +117,19 @@ export class ValueStates {
     return this.backend.pluginFiles.has(n.getSourceFile().fileName);
   }
 
-  /** The app's own strict code, where §2.3b M6's held and checked foreign values apply. */
-  strictApp(n: ts.Node): boolean {
-    return !this.packaged(n) && this.backend.trust.strictFile(n.getSourceFile());
+  /** The app's own code, strict or a non-strict app's, where §2.3b M6's held and checked foreign values apply. */
+  appCode(n: ts.Node): boolean {
+    const b = this.backend;
+    return !b.library && !this.packaged(n) && (b.trust.strictFile(n.getSourceFile()) || b.lenientApp);
   }
 
-  /** Code of another package than the app: a plugin's or an installed package's, decided by where its source is. */
+  /**
+   * Code of another package than the app: a plugin's, an installed package's, or a binding or library port the compiler
+   * ships (its plugin bindings and `runtime/`), decided by where its source is.
+   */
   packaged(n: ts.Node): boolean {
     const f = n.getSourceFile().fileName;
-    return this.plugin(n) || /[\\/]node_modules[\\/]/.test(f) || this.backend.pluginRoots.some((r) => f.startsWith(r.endsWith('/') ? r : r + '/'));
+    return this.plugin(n) || /[\\/]node_modules[\\/]/.test(f) || SHIPPED.some((d) => f.startsWith(d)) || this.backend.pluginRoots.some((r) => f.startsWith(r.endsWith('/') ? r : r + '/'));
   }
 
   private primitive(t: string): boolean {
@@ -629,30 +638,99 @@ export class ValueStates {
     const t = this.checker.getTypeAtLocation(e);
     if (t.flags & untyped || isGeneric(t)) return null;
     const form = this.forms().formOf(e);
-    return form.foreign && !form.typeObserved ? form : null;
+    return form.foreign && !form.typeObserved ? this.withElements(form, this.forms().elementsTypeObserved(e)) : null;
   }
 
   /**
-   * An untyped value passed to a parameter of the app's own strict code that holds its declared type (§2.3b M6, group 2):
-   * the form the value enters as, for the backend's checked convert. Null where the parameter is held untyped (its type
-   * is tested) or is no such parameter.
+   * A foreign array of strings, numbers or booleans: its elements are foreign too, checked as they enter, unless their
+   * type is tested (`observed`, or its own element form says so).
    */
-  foreignArgument(a: ts.Expression): Form | null {
+  private withElements(form: Form, observed: boolean): Form {
+    const t = form.type, el = this.checker.isArrayType(t) ? this.forms().elementOf(t) : null;
+    const primitive = ts.TypeFlags.StringLike | ts.TypeFlags.NumberLike | ts.TypeFlags.BooleanLike;
+    if (!el || !(this.checker.getNonNullableType(el).flags & primitive)) return form;
+    if (observed || form.element?.typeObserved) return { ...form, element: { ...(form.element ?? form), type: el, typeObserved: true } };
+    return { ...form, element: { ...(form.element ?? form), type: this.checker.getNonNullableType(el), foreign: true, typeObserved: false, element: undefined } };
+  }
+
+  /**
+   * An untyped value placed in a slot of the app's own code that holds its declared type (§2.3b M6): an argument
+   * (group 2), a function's result (group 3), a field, or an element of an array, Set or Map (group 4). The form the
+   * value enters as, for the backend's checked convert. Null where the slot is held untyped, its type is tested, or the
+   * value or slot is no such one.
+   */
+  foreignPlacement(a: ts.Expression): Form | null {
     const b = this.backend;
-    if (b.library || b.lenient || !this.strictApp(a)) return null;
+    if (b.library || b.lenient || !this.appCode(a) || !this.untypedValue(a)) return null;
+    const form = this.placementForm(a);
+    if (!form || !form.foreign || form.typeObserved || form.type.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown) || isGeneric(form.type)) return null;
+    return this.withElements(form, false);
+  }
+
+  /** The form of the slot of the app's own code `a` is placed in by its parent, if it is one M6 checks. */
+  private placementForm(a: ts.Expression): Form | null {
     let x: ts.Node = a;
     while (ts.isParenthesizedExpression(x.parent)) x = x.parent;
-    const call = x.parent;
-    if (!(ts.isCallExpression(call) || ts.isNewExpression(call)) || call.expression === x) return null;
-    const k = call.arguments!.indexOf(x as ts.Expression);
-    const sig = this.checker.getResolvedSignature(call)?.getDeclaration();
-    const p = sig && !ts.isJSDocSignature(sig) ? sig.parameters[k] : undefined;
-    if (!p || p.dotDotDotToken || !ts.isIdentifier(p.name) || ts.isParameterPropertyDeclaration(p, p.parent) || p.getSourceFile().isDeclarationFile || !this.strictApp(p)) return null;
-    if (!this.untypedValue(a) || this.nullish().held.has(p)) return null;
-    const t = this.checker.getTypeAtLocation(p.name);
-    if (t.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown) || isGeneric(t)) return null;
-    const form = this.forms().formOfSlot(p);
-    return form.foreign && !form.typeObserved ? form : null;
+    const p = x.parent;
+    // A group's form is typed by one of its members; the slot holds its own declared type.
+    const slot = (d: ts.Declaration | undefined) => (d && !d.getSourceFile().isDeclarationFile && this.appCode(d) && !this.nullish().held.has(d) ? { ...this.forms().formOfSlot(d), type: this.checker.getNonNullableType(this.checker.getTypeAtLocation((d as ts.NamedDeclaration).name ?? d)) } : null);
+    if ((ts.isCallExpression(p) || ts.isNewExpression(p)) && p.expression !== x) {
+      const k = p.arguments!.indexOf(x as ts.Expression);
+      const sig = this.checker.getResolvedSignature(p)?.getDeclaration();
+      if (sig && !ts.isJSDocSignature(sig) && !sig.getSourceFile().isDeclarationFile) {
+        const param = sig.parameters[k];
+        return param && !param.dotDotDotToken && ts.isIdentifier(param.name) && !ts.isParameterPropertyDeclaration(param, param.parent) ? slot(param) : null;
+      }
+      return ts.isCallExpression(p) ? this.elementPlacement(p, k) : null;
+    }
+    if (ts.isReturnStatement(p) || (ts.isArrowFunction(p) && p.body === x)) {
+      const fn = ts.isArrowFunction(p) ? p : ts.getContainingFunction(p);
+      if (!fn || fn.asteriskToken || ts.isConstructorDeclaration(fn) || ts.isSetAccessorDeclaration(fn)) return null;
+      const form = slot(fn), result = this.checker.getSignatureFromDeclaration(fn)?.getReturnType();
+      if (!form || !result) return null;
+      if (!isAsync(fn)) return { ...form, type: this.checker.getNonNullableType(result) };
+      const awaited = this.checker.getAwaitedType(result);
+      return form.element && awaited && !ts.isArrowFunction(fn) && !ts.isFunctionExpression(fn) ? { ...form.element, type: this.checker.getNonNullableType(awaited) } : null;
+    }
+    if (ts.isBinaryExpression(p) && p.operatorToken.kind === ts.SyntaxKind.EqualsToken && p.right === x) {
+      const left = ts.skipOuterExpressions(p.left, ts.OuterExpressionKinds.Parentheses);
+      if (ts.isPropertyAccessExpression(left)) return this.fieldSlot(this.checker.getSymbolAtLocation(left.name)?.valueDeclaration, slot);
+      if (ts.isElementAccessExpression(left) && this.collection(left.expression) === 'Array' && this.checker.getTypeAtLocation(left.argumentExpression).flags & ts.TypeFlags.NumberLike) return this.forms().formOf(left.expression).element ?? null;
+      return null;
+    }
+    if (ts.isPropertyDeclaration(p) && p.initializer === x) return this.fieldSlot(p, slot);
+    if (ts.isPropertyAssignment(p) && p.initializer === x && ts.isObjectLiteralExpression(p.parent)) {
+      const literal = this.checker.getContextualType(p.parent);
+      const name = ts.isIdentifier(p.name) || ts.isStringLiteral(p.name) ? p.name.text : null;
+      return literal && name ? this.fieldSlot(this.checker.getNonNullableType(literal).getProperty(name)?.valueDeclaration, slot) : null;
+    }
+    return null;
+  }
+
+  private fieldSlot(d: ts.Declaration | undefined, slot: (d: ts.Declaration | undefined) => Form | null): Form | null {
+    return d && (ts.isPropertyDeclaration(d) || ts.isPropertySignature(d)) && ts.isIdentifier(d.name) ? slot(d) : null;
+  }
+
+  /** `xs.push(v)`, `xs.unshift(v)`, `set.add(v)`, `map.set(k, v)`: the element form `v` enters, its receiver's. */
+  private elementPlacement(call: ts.CallExpression, k: number): Form | null {
+    if (!ts.isPropertyAccessExpression(call.expression)) return null;
+    const method = call.expression.name.text, kind = this.collection(call.expression.expression);
+    const places = (kind === 'Array' && (method === 'push' || method === 'unshift')) || (kind === 'Set' && method === 'add' && k === 0) || (kind === 'Map' && method === 'set' && k === 1);
+    return places ? this.forms().formOf(call.expression.expression).element ?? null : null;
+  }
+
+  /** Whether a receiver of the app's own code (a variable, parameter or field) is an array, Set or Map. */
+  private collection(e: ts.Expression): 'Array' | 'Set' | 'Map' | null {
+    const x = ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses);
+    if (!ts.isNewExpression(x) && !ts.isArrayLiteralExpression(x)) {
+      const name = ts.isIdentifier(x) ? x : ts.isPropertyAccessExpression(x) ? x.name : null;
+      const d = name && this.checker.getSymbolAtLocation(name)?.valueDeclaration;
+      if (!d || d.getSourceFile().isDeclarationFile || !this.appCode(d)) return null;
+    }
+    const t = this.checker.getNonNullableType(this.checker.getTypeAtLocation(e));
+    if (this.checker.isArrayType(t)) return 'Array';
+    const kind = t.getSymbol()?.name;
+    return kind === 'Set' || kind === 'Map' ? kind : null;
   }
 
   /** A value of no type the program knows: typed `any` or `unknown`, or read from a slot held untyped for its foreign value. */
@@ -671,11 +749,11 @@ export class ValueStates {
   }
 
   /**
-   * A slot of the app's own strict code that can be held untyped for a foreign value: a variable, a parameter or a sync
+   * A slot of the app's own code that can be held untyped for a foreign value: a variable, a parameter or a sync
    * function's result, of a string, number or boolean, whose native form no declaration outside its group shares.
    */
   private holdsForeign(d: ts.Declaration): boolean {
-    if (d.getSourceFile().isDeclarationFile || !this.strictApp(d)) return false;
+    if (d.getSourceFile().isDeclarationFile || !this.appCode(d)) return false;
     if (this.untypedDeclaration(d)) return true;
     let type: ts.Type | undefined;
     if (ts.isVariableDeclaration(d)) {

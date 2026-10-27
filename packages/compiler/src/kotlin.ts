@@ -6021,6 +6021,8 @@ export class Translator implements AsyncTranslator {
   coerce(e: ts.Expression, target: string): string {
     const nullish = this.nullishConversion(e, target);
     if (nullish !== null) return nullish;
+    const checked = this.checkedPlacement(e, target);
+    if (checked) return checked;
     if (/^JSArray<String>\??$/.test(target) && ((this.typeOf(e) === 'JSArray<String?>' && this.unsetGroups(e)) || this.unsetMatch(e))) {
       throw this.error(e, 'strings a pattern\'s unset group may leave undefined, given where `string[]` is declared (declare it `(string | undefined)[]`)');
     }
@@ -7725,13 +7727,16 @@ export class Translator implements AsyncTranslator {
    * empty state as the slot holds it, any other is JavaScript's TypeError. Null where the form's type has none yet.
    */
   private checkedConvert(code: string, to: Form, at: ts.Node, optional = false): string | null {
-    const fn = ({ String: 'jsCheckedString', Double: 'jsCheckedNumber', Boolean: 'jsCheckedBoolean' } as Record<string, string>)[this.type(to.type, at)];
-    return fn ? `${fn}${optional ? 'OrNull' : ''}(${code})` : null;
+    const checked: Record<string, string> = { String: 'jsCheckedString', Double: 'jsCheckedNumber', Boolean: 'jsCheckedBoolean' };
+    const t = this.type(to.type, at), fn = checked[t];
+    if (fn) return `${fn}${optional ? 'OrNull' : ''}(${code})`;
+    const element = /^JSArray<(\w+)>$/.exec(t)?.[1];
+    return element && checked[element] && !optional && to.element?.foreign && !to.element.typeObserved ? `jsCheckedArray(${code}) { ${checked[element]}(it) }` : null;
   }
 
-  /** An untyped argument where the parameter holds its declared type (`foreignArgument`): converted checked, or null. */
-  private checkedArgument(a: ts.Expression, to: string): string | null {
-    const entry = this.lenient ? null : this.states.foreignArgument(a);
+  /** An untyped value placed where its slot holds its declared type (`foreignPlacement`): converted checked, or null. */
+  private checkedPlacement(a: ts.Expression, to: string): string | null {
+    const entry = this.lenient || this.library ? null : this.states.foreignPlacement(a);
     if (!entry || this.typeOf(a) !== 'Any?' || this.type(entry.type, a) !== to.replace(/\?$/, '')) return null;
     return this.checkedConvert(this.expr(a), entry, a, isNullable(to));
   }
@@ -7817,7 +7822,7 @@ export class Translator implements AsyncTranslator {
       // An object or a record of other values where a package's parameter takes a record of any: as script passes it.
       const record = packageParam ? /^JSRecord<(.*)>(\??)$/.exec(pt) : null;
       if (record && this.typeOf(a).replace(/\?$/, '') !== pt.replace(/\?$/, '')) { out.push(`${record[2] ? 'jsRecordOrNull' : 'jsRecord'}<${record[1]}>(${this.expr(a)})`); continue; }
-      out.push((pt === 'Any?' && this.untypedArrow(a)) || this.checkedArgument(a, pt) || this.coerce(a, pt));
+      out.push((pt === 'Any?' && this.untypedArrow(a)) || this.coerce(a, pt));
     }
     if (restAt >= 0 && appDeclared && list.length <= restAt) out.push(`${this.restType(params[restAt])}()`);
     const decl = sig?.getDeclaration();

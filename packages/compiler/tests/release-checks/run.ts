@@ -890,7 +890,7 @@ export class Panel {
     translateModules(fieldSwift, fieldProgram.program, [field]);
     const fieldCls = fieldProgram.program.getSourceFile(field)!.statements.filter(ts.isClassDeclaration).find((c) => c.name?.text === 'Field')!;
     const fieldCode = fieldSwift.componentMembers(fieldCls, fieldIr.props).join('\n');
-    check(/self\.name = \S*\(value\)/.test(fieldCode) && !fieldCode.includes('jsSet(self'), "an untyped value written to a component's field is assigned to it, as a component has no members by name (Swift)");
+    check(/self\.name = [^\n]*\(value\)/.test(fieldCode) && !fieldCode.includes('jsSet(self'), "an untyped value written to a component's field is assigned to it, as a component has no members by name (Swift)");
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
