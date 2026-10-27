@@ -54,7 +54,7 @@ export class Font extends FontBase {
 
 function computeFontCacheKey(fontFamily: string, font: Font) {
 	const sep = ':';
-	return [fontFamily, String(FontVariationSettings.toString(font.fontVariationSettings)).replace(/'/g, '').replace(/[\s,]/g, '_')].join(sep);
+	return [fontFamily, String(getNumericFontWeight(font.fontWeight)), String(FontVariationSettings.toString(font.fontVariationSettings)).replace(/'/g, '').replace(/[\s,]/g, '_')].join(sep);
 }
 
 function loadFontFromFile(fontFamily: string, font: Font): android.graphics.Typeface {
@@ -93,8 +93,25 @@ function loadFontFromFile(fontFamily: string, font: Font): android.graphics.Type
 				if (SDK_VERSION >= 26) {
 					const builder = new android.graphics.Typeface.Builder(fontAssetPath);
 					if (builder) {
-						builder.setFontVariationSettings(font.fontVariationSettings?.length ? FontVariationSettings.toString(font.fontVariationSettings) : '');
-						result = builder.build();
+						const explicitSettings = FontVariationSettings.toString(font.fontVariationSettings) || '';
+						const variationSettings = font.fontVariationSettings?.length ? [...font.fontVariationSettings] : [];
+						const hasWeightAxis = variationSettings.some(({ axis }) => axis.toLowerCase() === 'wght');
+						if (!hasWeightAxis) {
+							variationSettings.push({ axis: 'wght', value: getNumericFontWeight(font.fontWeight) });
+						}
+						try {
+							builder.setFontVariationSettings(FontVariationSettings.toString(variationSettings) || '');
+							result = builder.build();
+						} catch (e) {
+							if (hasWeightAxis) {
+								throw e;
+							}
+						}
+						if (!result && !hasWeightAxis) {
+							const fallbackBuilder = new android.graphics.Typeface.Builder(fontAssetPath);
+							fallbackBuilder.setFontVariationSettings(explicitSettings);
+							result = fallbackBuilder.build();
+						}
 					} else {
 						result = android.graphics.Typeface.createFromFile(fontAssetPath);
 						if (Trace.isEnabled()) {
