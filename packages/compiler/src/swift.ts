@@ -3065,7 +3065,7 @@ ${members.join('\n')}
    */
   private dynamicMembers(fields: { name: string; type: string }[], className: string | null, override: boolean, methods: { name: string; type: string; available?: number; length?: number }[] = [], symbols: { key: string; member: string; type: string }[] = [], expando = false, raw = new Set<string>(), accessors: { name: string; get: string | null; set: string | null }[] = [], symbolKeyedBase = false, extra = false, nulls = new Set<string>(), classNameMember = true, nilNull = new Set<string>(), keyed: KeyedMembers | null = null, rewritten = new Set<string>(), defined = new Set<string>(), expandoAbove = false, byName?: { receiver: string; inherits: boolean }): string[] {
     const o = override ? 'override ' : '';
-    const ownNames = new Set([...this.instanceKeys()].flatMap((d) => (ts.isMethodDeclaration(d) ? [d.name.getText()] : [])));
+    const ownNames = byName ? new Set([...this.instanceKeys()].flatMap((d) => (ts.isMethodDeclaration(d) ? [d.name.getText()] : []))) : new Set<string>();
     if (!keyed?.ordered || !keyed.appBase) this.declare('jsKeys', { kind: 'var', mods: o, type: '[String]' });
     if (keyed?.ordered) this.declare('jsFieldKeys', { kind: 'var', mods: keyed.appBase ? 'override ' : '', type: '[String]' });
     if (symbols.length) this.declare('jsSymbolKeys', { kind: 'var', mods: symbolKeyedBase ? 'override ' : '', type: '[String]' });
@@ -3103,7 +3103,7 @@ ${members.join('\n')}
           // An app class's method sees the object it is called on as `this` when that is one of the class's (`obj[k].call(other)`).
           const value = byName ? `jsMethodValue(self) { (__s: ${byName.receiver}) in ${this.boxFunction(`__s.${ident(m.name)}`, m.type, -1, m.name, m.length, undefined, false)} }` : this.boxFunction(`self.${ident(m.name)}`, m.type, -1, m.name, m.length, undefined, false);
           // A value the instance holds in the method's place (`obj.step = …`) is what reading it gives.
-          const own = ownNames.has(m.name) ? `if let __own = jsOwnProperty(self, ${swiftString(m.name)}) { return __own }; ` : '';
+          const own = byName && ownNames.has(m.name) ? `if let __own = jsOwnProperty(self, ${swiftString(m.name)}) { return __own }; ` : '';
           return { name: m.name, code: m.available ? `${own}if #available(iOS ${m.available}, *) { return ${value} } else { return nil }` : `${own}return ${value}` };
         }),
       ], symbols.map((f) => `            case ${f.key}: return ${f.member}`), `return ${override ? 'super[jsKey: key]' : expando ? 'jsExpandoGet(self, key)' : extra ? 'jsExtra?[jsKey: key] ?? nil' : 'nil'}`),
