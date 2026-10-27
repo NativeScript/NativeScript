@@ -872,6 +872,7 @@ export class Translator implements AsyncTranslator {
       get checker() { return t.checker; },
       get sourceFiles() { return t.sourceFiles; },
       get pluginFiles() { return t.pluginFiles; },
+      get pluginRoots() { return t.pluginRoots; },
       get trust() { return t.trust; },
       get lenient() { return t.lenient; },
       get lenientApp() { return t.lenientApp; },
@@ -7726,6 +7727,13 @@ export class Translator implements AsyncTranslator {
     return fn ? `${fn}${optional ? 'OrNull' : ''}(${code})` : null;
   }
 
+  /** An untyped argument where the parameter holds its declared type (`foreignArgument`): converted checked, or null. */
+  private checkedArgument(a: ts.Expression, to: string): string | null {
+    const entry = this.lenient ? null : this.states.foreignArgument(a);
+    if (!entry || this.typeOf(a) !== 'Any?' || this.type(entry.type, a) !== to.replace(/\?$/, '')) return null;
+    return this.checkedConvert(this.expr(a), entry, a, isNullable(to));
+  }
+
   /** An undefined-or-value as the TypeScript type reads it: NaN, "undefined" and false are what undefined converts to. */
   private undefinedAs(code: string, type: string): string {
     if (isNullable(type) || type === 'Any?') return code;
@@ -7807,7 +7815,7 @@ export class Translator implements AsyncTranslator {
       // An object or a record of other values where a package's parameter takes a record of any: as script passes it.
       const record = packageParam ? /^JSRecord<(.*)>(\??)$/.exec(pt) : null;
       if (record && this.typeOf(a).replace(/\?$/, '') !== pt.replace(/\?$/, '')) { out.push(`${record[2] ? 'jsRecordOrNull' : 'jsRecord'}<${record[1]}>(${this.expr(a)})`); continue; }
-      out.push((pt === 'Any?' && this.untypedArrow(a)) || this.coerce(a, pt));
+      out.push((pt === 'Any?' && this.untypedArrow(a)) || this.checkedArgument(a, pt) || this.coerce(a, pt));
     }
     if (restAt >= 0 && appDeclared && list.length <= restAt) out.push(`${this.restType(params[restAt])}()`);
     const decl = sig?.getDeclaration();

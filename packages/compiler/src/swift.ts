@@ -424,6 +424,7 @@ export class Translator implements AsyncTranslator {
 
   /** Files of the plugins compiled from source. */
   readonly pluginFiles: Set<string>;
+  readonly pluginRoots: readonly string[];
   /** Which empty states a value or slot may hold (value-states.ts). */
   readonly states: ValueStates;
   /** What of the plugins the app reaches; everything when absent. */
@@ -773,13 +774,14 @@ export class Translator implements AsyncTranslator {
    */
   weak: { fields: Set<string>; captures: Set<string> } = { fields: new Set(), captures: new Set() };
 
-  constructor(checker: ts.TypeChecker, components: Map<string, ComponentInfo>, files: readonly ts.SourceFile[], options: { pluginFiles?: Iterable<string>; lenientFiles?: Iterable<string>; reach?: Reach; properties?: Properties; library?: Translator['library']; lenient?: boolean; lenientApp?: boolean; assignFields?: boolean; weak?: { fields?: Iterable<string>; captures?: Iterable<string> } } = {}) {
+  constructor(checker: ts.TypeChecker, components: Map<string, ComponentInfo>, files: readonly ts.SourceFile[], options: { pluginFiles?: Iterable<string>; pluginRoots?: Iterable<string>; lenientFiles?: Iterable<string>; reach?: Reach; properties?: Properties; library?: Translator['library']; lenient?: boolean; lenientApp?: boolean; assignFields?: boolean; weak?: { fields?: Iterable<string>; captures?: Iterable<string> } } = {}) {
     this.weak = { fields: new Set(options.weak?.fields ?? []), captures: new Set(options.weak?.captures ?? []) };
     this.library = options.library ?? null;
     this.lenientAll = options.lenient ?? false;
     this.lenientApp = options.lenientApp ?? false;
     this.assignFields = options.assignFields ?? false;
     this.pluginFiles = new Set(options.pluginFiles ?? []);
+    this.pluginRoots = [...(options.pluginRoots ?? [])];
     for (const f of options.lenientFiles ?? []) this.lenientFiles.add(f);
     this.reach = options.reach ?? null;
     this.properties = options.properties ?? null;
@@ -3366,6 +3368,13 @@ ${members.join('\n')}
       try { if (this.typeOf(n) === 'Any?') return true; } catch { return false; }
     }
     if ((ts.isAsExpression(n) || ts.isTypeAssertionExpression(n)) && (this.downcasts(n) || this.checkedAssertion(n))) return true;
+    if (this.checkedArgumentEntry(n)) return true;
+    if ((ts.isAsExpression(n) || ts.isTypeAssertionExpression(n)) && this.checkedClassAssertion(n)) {
+      try {
+        const to = this.typeOf(n);
+        if (this.typeOf(n.expression) === 'Any?' && to !== 'Any?' && (this.assertedUntyped(n) || /^\w+\?$/.test(to))) return true;
+      } catch { return false; }
+    }
     if ((ts.isPropertyAccessExpression(n) || ts.isElementAccessExpression(n)) && !n.questionDotToken && this.definiteReceiver(ts.skipOuterExpressions(n.expression, ts.OuterExpressionKinds.Parentheses))) return true;
     if ((ts.isPropertyAccessExpression(n) || ts.isElementAccessExpression(n)) && !n.questionDotToken && this.lenientAwait(n.expression)) return true;
     if (ts.isPropertyAccessExpression(n) && !n.questionDotToken && this.widenedParameterRead(ts.skipOuterExpressions(n.expression, ts.OuterExpressionKinds.Parentheses))) return true;
@@ -3431,6 +3440,21 @@ ${members.join('\n')}
   private checkedConvert(code: string, to: Form, at: ts.Node, optional = false): string | null {
     const fn = ({ String: 'jsCheckedString', Double: 'jsCheckedNumber', Bool: 'jsCheckedBool' } as Record<string, string>)[this.type(to.type, at)];
     return fn ? `(try ${fn}${optional ? 'OrNil' : ''}(${code}))` : null;
+  }
+
+  /** An untyped argument where the parameter holds its declared type (`foreignArgument`): converted checked, or null. */
+  private checkedArgument(a: ts.Expression, to: string): string | null {
+    const entry = this.checkedArgumentEntry(a);
+    const base = to.replace(/[?!]$/, '');
+    return entry && this.type(entry.type, a) === base ? this.checkedConvert(this.expr(a), entry, a, base !== to) : null;
+  }
+
+  private checkedArgumentEntry(a: ts.Expression): Form | null {
+    if (this.lenient || this.library) return null;
+    try {
+      const entry = this.states.foreignArgument(a);
+      return entry && this.typeOf(a) === 'Any?' && this.checkedConvert('', entry, a) ? entry : null;
+    } catch { return null; }
   }
 
   /** An untyped value asserted to a type `checkedConvert` checks, held as that type: the form it enters as. */
@@ -6674,6 +6698,7 @@ ${members.join('\n')}
       get checker() { return t.checker; },
       get sourceFiles() { return t.sourceFiles; },
       get pluginFiles() { return t.pluginFiles; },
+      get pluginRoots() { return t.pluginRoots; },
       get trust() { return t.trust; },
       get lenient() { return t.lenient; },
       get lenientApp() { return t.lenientApp; },
@@ -9266,6 +9291,7 @@ ${members.join('\n')}
       if (entry) return this.checkedConvert(this.expr(e.expression), entry, e)!;
       // The assertion is erased in JavaScript: where Swift needs the type, the value is converted as script converts it there.
       if (!this.library && from === 'Any?' && ['String', 'Double', 'Bool'].includes(to)) return `jsLenient${to === 'Double' ? 'Number' : to}(${this.expr(e.expression)})`;
+      if (from === 'Any?' && to !== 'Any?' && /^\w+\?$/.test(to) && this.checkedClassAssertion(e)) return `(try jsCast(${this.expr(e.expression)}, ${to.slice(0, -1)}.self))`;
       if (from === 'Any?' && to !== 'Any?') return this.fromAnyChecked(this.expr(e.expression), to, this.castThrows(e.expression));
       // `x as string` of a string that may be undefined: the value as JavaScript then reads it as one.
       if (['String', 'Double', 'Bool'].includes(to) && from === `${to}?`) return this.undefinedAs(this.expr(e.expression), to);
@@ -10544,7 +10570,18 @@ ${members.join('\n')}
     const entry = this.checkedAssertion(e);
     if (entry) return this.checkedConvert(code, entry, e, true)!;
     if (['String', 'Double', 'Bool'].includes(t)) return `jsLenient${t === 'Double' ? 'Number' : t}OrNil(${code})`;
+    if (this.checkedClassAssertion(e)) return `(try jsCast(${code}, ${t}.self))`;
     return this.fromAny(code, optionalType(t));
+  }
+
+  /**
+   * An untyped value asserted to a class of the app's own strict code, where the slot it enters may be empty: an object of
+   * another class is JavaScript's TypeError there (`jsCast`, as Kotlin's), never an empty value.
+   */
+  private checkedClassAssertion(e: ts.AsExpression | ts.TypeAssertion): boolean {
+    if (this.lenient || this.library || !this.states.strictApp(e)) return false;
+    const d = this.checker.getNonNullableType(this.checker.getTypeAtLocation(e)).getSymbol()?.valueDeclaration;
+    return !!d && ts.isClassDeclaration(d) && !d.getSourceFile().isDeclarationFile && !this.states.packaged(d) && !this.native.extendsNative(d);
   }
 
   maybeUndefined(e: ts.Expression): string | null {
@@ -10836,7 +10873,8 @@ ${members.join('\n')}
       if (raw) { out.push(raw); continue; }
       // A parameter its group's form widens takes undefined and null as they are, as every member of the group spells it.
       const widened = !emitted && !erased && !!decl && ts.isParameter(decl) && this.states.widened(decl) && !isOptional(at) && at !== 'Any?';
-      out.push(this.coerce(a, emitted ?? (omissible || widened ? optionalType(at) : erased ? this.inFile(decl!.getSourceFile().fileName, () => this.paramType(decl as ts.ParameterDeclaration)) : at === 'Never' ? this.type(this.checker.getTypeOfSymbol(p), e) : at)));
+      const to = emitted ?? (omissible || widened ? optionalType(at) : erased ? this.inFile(decl!.getSourceFile().fileName, () => this.paramType(decl as ts.ParameterDeclaration)) : at === 'Never' ? this.type(this.checker.getTypeOfSymbol(p), e) : at);
+      out.push(this.checkedArgument(a, to) ?? this.coerce(a, to));
     }
     if (restAt >= 0 && appDeclared && out.length <= restAt) out.push(`${this.restType(params[restAt])}()`);
     // A function declaring `this`, called plainly: its `this` is undefined.

@@ -363,7 +363,35 @@ func jsNumeric(_ value: Any) -> Double? {
     case let i as Int32: return Double(i)
     case let i as UInt32: return Double(i)
     case let i as Int64: return Double(i)
-    default: return nil
+    default: return jsOtherNumeric(value)
+    }
+}
+
+/// The number representations native APIs give besides the common ones above. Read by kind first: casting a string
+/// to an Objective-C class bridges it, and a protocol cast looks up conformances.
+private func jsOtherNumeric(_ value: Any) -> Double? {
+    switch jsTypeKind(value) {
+    case .struct, .enum:
+        switch value {
+        case is String, is Bool: return nil
+        case let f as CGFloat: return Double(f)
+        case let i as UInt: return Double(i)
+        case let i as UInt64: return Double(i)
+        case let i as Int16: return Double(i)
+        case let i as UInt16: return Double(i)
+        case let i as Int8: return Double(i)
+        case let i as UInt8: return Double(i)
+        case let d as Decimal: return NSDecimalNumber(decimal: d).doubleValue
+        default:
+            // A native enum or option set: script sees its raw number.
+            if let raw = value as? any RawRepresentable, let n = raw.rawValue as? any BinaryInteger { return Double(n) }
+            return nil
+        }
+    case .objCClass:
+        guard let n = value as? NSNumber, CFGetTypeID(n) != CFBooleanGetTypeID() else { return nil }
+        return n.doubleValue
+    default:
+        return nil
     }
 }
 
@@ -964,7 +992,8 @@ public func jsTypeof(_ value: Any?) -> String {
     if v is JSFunctionObject { return "function" }
     if jsIsOpaqueObject(v) { return v is JSSymbol ? "symbol" : (v as? JSMootValue)?.undeclared == true ? "undefined" : "object" }
     if let boolean = jsNativeBoolean(v) { _ = boolean; return "boolean" }
-    if jsIsNativeNumber(v) { return "number" }
+    // Any other NSNumber (an NSDecimalNumber among them) is a number, though one of 0 or 1 casts to Bool.
+    if jsTypeKind(v) == .objCClass, v is NSNumber { return "number" }
     switch v {
     case is String: return "string"
     case is Bool: return "boolean"
@@ -1133,23 +1162,29 @@ public func jsLenientBoolOrNil(_ value: Any?) -> Bool? { jsIsNullish(value) ? ni
 public func jsLenientNumberOrNil(_ value: Any?) -> Double? { jsIsNullish(value) ? nil : jsLenientNumber(value) }
 public func jsLenientStringOrNil(_ value: Any?) -> String? { jsIsNullish(value) ? nil : jsLenientString(value) }
 
-/// An untyped value asserted to a string, number or boolean (§2.3b M6): a value of that type passes, an empty state
-/// reads as `jsLenientString`/`jsLenientNumber`/`jsLenientBool` read it, and any other value is JavaScript's TypeError
-/// there rather than a converted one.
+/// An untyped value asserted to a string, number or boolean (§2.3b M6): a value `jsTypeof` calls that type passes, in
+/// whatever representation it has (an NSString, an `Int8`, a CFBoolean), an empty state reads as
+/// `jsLenientString`/`jsLenientNumber`/`jsLenientBool` read it, and any other value is JavaScript's TypeError there
+/// rather than a converted one. Only a Swift struct takes the plain cast: an NSNumber casts to `Bool` and `Double` alike.
 public func jsCheckedString(_ value: Any?) throws -> String {
-    if let s = value as? String { return s }
-    if jsIsNullish(value) { return "" }
-    throw jsCastFailure(value, "string")
+    let v = jsFlat(value)
+    if let v, jsTypeKind(v) == .struct, let s = v as? String { return s }
+    if jsIsNullish(v) { return "" }
+    if jsTypeof(v) == "string" { return jsToString(v) }
+    throw jsCastFailure(v, "string")
 }
 public func jsCheckedNumber(_ value: Any?) throws -> Double {
-    if let d = value as? Double { return d }
-    if jsIsNullish(value) { return jsToNumber(value) }
-    throw jsCastFailure(value, "number")
+    let v = jsFlat(value)
+    if let v, jsTypeKind(v) == .struct, let d = v as? Double { return d }
+    if jsIsNullish(v) || jsTypeof(v) == "number" { return jsToNumber(v) }
+    throw jsCastFailure(v, "number")
 }
 public func jsCheckedBool(_ value: Any?) throws -> Bool {
-    if let b = value as? Bool { return b }
-    if jsIsNullish(value) { return false }
-    throw jsCastFailure(value, "boolean")
+    let v = jsFlat(value)
+    if let v, jsTypeKind(v) == .struct, let b = v as? Bool { return b }
+    if jsIsNullish(v) { return false }
+    if jsTypeof(v) == "boolean" { return jsIsTruthy(v) }
+    throw jsCastFailure(v, "boolean")
 }
 public func jsCheckedStringOrNil(_ value: Any?) throws -> String? { jsIsNullish(value) ? nil : try jsCheckedString(value) }
 public func jsCheckedNumberOrNil(_ value: Any?) throws -> Double? { jsIsNullish(value) ? nil : try jsCheckedNumber(value) }
@@ -1178,8 +1213,6 @@ public func jsToNumber(_ value: Any?) -> Double {
     case let v?:
         if let n = jsNumeric(v) { return n }
         if jsIsFunction(v) || v is JSSymbol { return .nan }
-        // A native enum or option set a typed function returned into an untyped slot: script sees its raw number.
-        if let raw = v as? any RawRepresentable, let n = raw.rawValue as? any BinaryInteger { return Double(n) }
         if let user = jsUserPrimitive(v, "number") { return jsToNumber(user) }
         return jsNumberFromString(jsToString(v))
     }
