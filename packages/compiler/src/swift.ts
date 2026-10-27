@@ -6740,6 +6740,7 @@ ${members.join('\n')}
       nulledEntry: (e, code) => this.nulledEntry(e, code),
       untypedCode: (e) => this.coerceTyped(e, 'Any?'),
       optionalShapeField: (e) => this.optionalShapeField(e),
+      heldOptional: (x) => this.typeOf(x).endsWith('?') || this.optionalResult(x),
     };
   }
   private lenientAll = false;
@@ -9100,7 +9101,7 @@ ${members.join('\n')}
   }
 
   private checkedHere(n: ts.Node): boolean {
-    return this.spreadThrows(n) || this.promiseValueThrows(n) || ((ts.isPropertyAccessExpression(n) || ts.isElementAccessExpression(n)) && (this.looseReceiverKey(n.expression) !== null || this.assertedReceiverKey(n.expression) !== null))
+    return this.spreadThrows(n) || this.promiseValueThrows(n) || ((ts.isPropertyAccessExpression(n) || ts.isElementAccessExpression(n)) && (this.looseReceiverKey(n.expression) !== null || this.assertedReceiverKey(n.expression) !== null || this.states.missingAtRead(n.expression) !== null))
       || (ts.isExpression(n) && !(assignmentValue(n) && this.lenient) && this.loose(n) && !this.looseTolerated(n)) || (ts.isCallExpression(n) && this.heldFunctionCall(n)) || (ts.isExpression(n) && (this.untypedPresentThrows(n) || this.native.foreignArgument(n)));
   }
 
@@ -9373,6 +9374,9 @@ ${members.join('\n')}
       const key = this.assertedReceiverKey(e);
       if (key !== null) return this.assigned(e.parent as ts.Expression) ? `jsUnwrap(${inner}, setting: ${swiftString(key)})` : `jsUnwrap(${inner}, ${swiftString(key)})`;
       if (this.lenient && this.lenientRef(this.typeOf(e)) !== this.typeOf(e)) return `jsImplicit(${inner})`;
+      const t = this.typeOf(e);
+      // `!` asserts nothing at run time: a missing string, number or boolean reads as JavaScript reads undefined.
+      if (!this.library && ['String', 'Double', 'Bool'].includes(t) && this.typeOf(e.expression) === optionalType(t)) return this.undefinedAs(inner, t, optionalType(t));
       return this.typeOf(e.expression).endsWith('?') && this.typeOf(e.expression) !== 'Any?' && inner !== 'nil' ? `${inner}!` : inner;
     }
     if (ts.isPropertyAccessExpression(e)) {
@@ -10305,6 +10309,8 @@ ${members.join('\n')}
     const linked = !this.library && ts.isPropertyAccessExpression(target) && ts.isOptionalChain(target) && ![this.typeOf(target), held(target)].some((t) => /[?!]$/.test(t));
     const dot = e.questionDotToken && !linked ? '?.' : '.';
     if (name === 'length' && this.isString(target)) {
+      const missing = !e.questionDotToken && !ts.isOptionalChain(e) ? this.receiver(target, 'length') : null;
+      if (missing) return `Double(${missing}.utf16.count)`;
       if ((!this.typeOf(target).endsWith('?') && !this.optionalResult(target)) || this.unsetGroupReceiver(target)) return `Double(${this.expr(target)}.utf16.count)`;
       // Only a chain (`s?.length`) reads undefined; `s.length` of null or undefined throws, as unwrapping traps.
       return e.questionDotToken || ts.isOptionalChain(e) ? `${this.expr(target)}.map { Double($0.utf16.count) }` : `Double(${this.expr(target)}!.utf16.count)`;
@@ -10455,9 +10461,9 @@ ${members.join('\n')}
     if (!chained && this.definiteReceiver(x)) return `jsUnwrap(${this.expr(x)}, ${swiftString(key)})`;
     if (!chained && uncheckedMatch(x, this.checker)) return `jsUnwrap(${this.expr(x)}, ${swiftString(key)}, null: true)`;
     if (!chained && this.widenedParameterRead(x)) return `jsUnwrap(${this.expr(x)}, ${swiftString(key)})`;
-    const kind = unsafeReceiver(target, this.checker);
+    const kind = unsafeReceiver(target, this.checker) ?? (chained ? null : this.states.missingAtRead(target));
     if (!kind) return null;
-    const value = ts.isNonNullExpression(x) ? (this.maybeUndefined(x.expression) ?? this.expr(x.expression)) : this.maybeUndefined(x);
+    const value = ts.isNonNullExpression(x) ? (this.maybeUndefined(x.expression) ?? this.expr(x.expression)) : this.maybeUndefined(x) ?? (this.typeOf(x).endsWith('?') || this.optionalResult(x) ? this.expr(x) : null);
     return value ? `jsUnwrap(${value}, ${swiftString(key)}${kind === 'null' ? ', null: true' : ''})` : null;
   }
 
@@ -10466,7 +10472,7 @@ ${members.join('\n')}
     const key = e.argumentExpression;
     const t = this.typeOf(e.expression).replace(/\?$/, '');
     const q = e.questionDotToken ? '?' : '';
-    if (t === 'String') return `jsCharAt(${target}, ${this.expr(key)})`;
+    if (t === 'String') return `jsCharAt(${(!q && this.receiver(e.expression, ts.isNumericLiteral(key) || ts.isStringLiteral(key) ? key.text : key.getText())) || target}, ${this.expr(key)})`;
     if (t.startsWith('JSArray<')) {
       // A key that is no array index (`a[-1] = v`) is a property of the array, as JavaScript keeps it.
       if (isWriteTarget(e)) return `${target}${q}[${ts.isNumericLiteral(key) ? key.text : `(${this.toNumber(key)} as Double)`}]`;
@@ -11344,6 +11350,13 @@ ${members.join('\n')}
         this.subst.set(target, v);
         try {
           return `(${recv}).map { (${v}: ${t}) in ${t === 'String' ? this.stringMethod(method, target, e) : this.numberMethod(method, target, e)} }`;
+        } finally { this.subst.delete(target); }
+      }
+      const missing = (t === 'String' || t === 'Double') && !callee.questionDotToken && !this.subst.has(target) ? this.receiver(target, method) : null;
+      if (missing) {
+        this.subst.set(target, missing);
+        try {
+          return t === 'String' ? this.stringMethod(method, target, e) : this.numberMethod(method, target, e);
         } finally { this.subst.delete(target); }
       }
       // `s.slice(…)` of null or undefined throws, as unwrapping traps; only a chain reads undefined.

@@ -55,6 +55,8 @@ export interface StateBackend {
   untypedCode(e: ts.Expression): string;
   /** The keyed field a member read whose type holds null and undefined is noted under (`jsNulls`), or null. */
   optionalShapeField(e: ts.PropertyAccessExpression): string | null;
+  /** A string, number or boolean read by name or call that the backend holds optional though its type says present. */
+  heldOptional(x: ts.Expression): boolean;
 }
 
 /** The rules the two backends still answer differently. Each names the backend that has it. */
@@ -495,7 +497,7 @@ export class ValueStates {
   /** A declaration of strict code (not the kit's) holding a string, number, boolean or object, in a form the backend may choose alone. */
   private holdsLoose(d: ts.Declaration): boolean {
     const b = this.backend;
-    if (b.library || !b.trust.strictFile(d.getSourceFile()) || !ownSlot(d, this.checker, this.implementedInterfaceSet ??= implementedInterfaceDeclarations(b.sourceFiles, this.checker))) return false;
+    if (b.library || !(b.trust.strictFile(d.getSourceFile()) || (b.lenientApp && this.appCode(d))) || !ownSlot(d, this.checker, this.implementedInterfaceSet ??= implementedInterfaceDeclarations(b.sourceFiles, this.checker))) return false;
     try {
       const st = slotType(d, this.checker);
       if (!st) return false;
@@ -510,6 +512,58 @@ export class ValueStates {
     const slot = slotOf(x, this.checker);
     if (!this.backend.rules.optionalParametersTakeUndefined) return !!slot && this.looseSlots.has(slot);
     return !!slot && !slot.getSourceFile().isDeclarationFile && (this.looseSlots.has(slot) || (ts.isParameter(slot) && !!slot.questionToken));
+  }
+
+  /**
+   * The receiver of a member read, call or index whose value is a string, number or boolean the program may leave
+   * missing at this read though its type says present: JavaScript's TypeError there (`reading 'k'`). Answered from the
+   * read's kind and the value's form: an array's element or a string's character, a record's entry, `Map.get`,
+   * `pop`/`shift`/`find`/`findLast`/`at`, `x!`, a non-strict optional parameter or member, and a name or call the backend
+   * holds optional. An over-answer costs a check that passes.
+   */
+  missingAtRead(target: ts.Expression): 'undefined' | 'null' | null {
+    const b = this.backend, c = this.checker;
+    if (b.library || b.lenient || !this.appCode(target)) return null;
+    let outer: ts.Node = target;
+    while (ts.isParenthesizedExpression(outer.parent)) outer = outer.parent;
+    const p = outer.parent;
+    if (!p || !(ts.isPropertyAccessExpression(p) || ts.isElementAccessExpression(p)) || p.expression !== outer || p.questionDotToken || assigned(p)) return null;
+    const x = ts.skipOuterExpressions(target, ts.OuterExpressionKinds.Parentheses);
+    const untyped = ts.TypeFlags.Any | ts.TypeFlags.Unknown;
+    const primitive = (t: ts.Type) => !(t.flags & untyped) && !!(c.getNonNullableType(t).flags & (ts.TypeFlags.StringLike | ts.TypeFlags.NumberLike | ts.TypeFlags.BooleanLike));
+    const empty = (t: ts.Type) => ((t.isUnion() ? t.types : [t]).some((u) => u.flags & (ts.TypeFlags.Undefined | ts.TypeFlags.Void)) ? 'undefined' : (t.isUnion() ? t.types : [t]).some((u) => u.flags & ts.TypeFlags.Null) ? 'null' : null);
+    const strict = b.trust.strictFile(x.getSourceFile());
+    if (ts.isNonNullExpression(x)) {
+      const t = c.getTypeAtLocation(x.expression);
+      if (!primitive(t)) return null;
+      if (strict) return empty(t);
+      const f = this.forms().formOf(x.expression);
+      return f.undefined ? 'undefined' : f.null ? 'null' : null;
+    }
+    const t = c.getTypeAtLocation(x);
+    if (!primitive(t) || empty(t) || x.flags & ts.NodeFlags.OptionalChain) return null;
+    const form = this.forms().formOf(x);
+    if (!form.undefined) return null;
+    const recvType = (e: ts.Expression) => c.getNonNullableType(c.getTypeAtLocation(e));
+    const record = (e: ts.Expression) => { const r = recvType(e); return !c.isArrayType(r) && !c.isTupleType(r) && c.getIndexInfosOfType(r).length > 0; };
+    if (ts.isElementAccessExpression(x)) {
+      const r = recvType(x.expression);
+      return (c.isArrayType(r) && !c.isTupleType(r)) || !!(r.flags & ts.TypeFlags.StringLike) || record(x.expression) ? 'undefined' : null;
+    }
+    if (ts.isPropertyAccessExpression(x)) {
+      const d = c.getSymbolAtLocation(x.name)?.valueDeclaration;
+      if (!d || ts.isIndexSignatureDeclaration(d) || ts.isMappedTypeNode(d)) return record(x.expression) ? 'undefined' : null;
+      return !strict && (ts.isPropertySignature(d) || ts.isPropertyDeclaration(d)) && !!d.questionToken ? 'undefined' : null;
+    }
+    if (ts.isCallExpression(x) && ts.isPropertyAccessExpression(x.expression) && !x.questionDotToken) {
+      const r = recvType(x.expression.expression), name = x.expression.name.text;
+      if ((c.isArrayType(r) && ['find', 'findLast', 'pop', 'shift', 'at'].includes(name)) || (['Map', 'ReadonlyMap'].includes(r.getSymbol()?.name ?? '') && name === 'get')) return 'undefined';
+    }
+    if (ts.isIdentifier(x) && !strict) {
+      const d = c.getSymbolAtLocation(x)?.valueDeclaration;
+      if (d && ts.isParameter(d) && d.questionToken && !d.initializer) return 'undefined';
+    }
+    return (ts.isIdentifier(x) || ts.isCallExpression(x)) && b.unemitted(() => b.heldOptional(x)) ? 'undefined' : null;
   }
 
   /** Strict code's declaration holding a string, number or boolean an untrusted value is placed in (see `looseSlots`). */
@@ -828,4 +882,13 @@ export class ValueStates {
     const declared = this.forms().declaredForm(p), form = this.forms().formOfSlot(p);
     return (form.null && !declared.null) || (form.undefined && !declared.undefined);
   }
+}
+
+/** A member read that is written: an assignment's target, an update's operand, a `delete`'s. */
+function assigned(n: ts.Node): boolean {
+  let x = n;
+  while (ts.isParenthesizedExpression(x.parent)) x = x.parent;
+  const p = x.parent;
+  if (ts.isBinaryExpression(p)) return p.left === x && p.operatorToken.kind >= ts.SyntaxKind.FirstAssignment && p.operatorToken.kind <= ts.SyntaxKind.LastAssignment;
+  return ts.isPrefixUnaryExpression(p) || ts.isPostfixUnaryExpression(p) ? [ts.SyntaxKind.PlusPlusToken, ts.SyntaxKind.MinusMinusToken].includes(p.operator) : ts.isDeleteExpression(p);
 }
