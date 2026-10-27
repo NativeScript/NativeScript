@@ -708,7 +708,10 @@ develops it with live reload as usual.
   `Math.pow` with a fractional exponent can be an ulp off on Android, whose
   `pow` is not correctly rounded; integer exponents are exact. A BigInt
   added to a number through `any` is NaN rather than a TypeError, and an
-  error `return()` throws while a loop closes its iterator is dropped. React and Octane handlers read the state
+  error `return()` throws while a loop closes its iterator is dropped. A
+  method read by name and called detached (`const f = obj[k]; f()`) runs on
+  the object it was read from, where JavaScript gives it `this` undefined:
+  only a program that throws there in JavaScript can tell. React and Octane handlers read the state
   of their render until they return; after an `await` their closures still
   hold it, where the native build reads the committed state.
 - **Where Swift differs, by design.** Closures have no identity; JSON

@@ -614,6 +614,9 @@ export class Forms {
     if (key === null) {
       const k = this.checker.getTypeAtLocation(n.argumentExpression);
       if (!(k.flags & ts.TypeFlags.StringLike) || indexed(k)) return;
+      // A key of literal types (`scope[SLOT]` of a `const SLOT = '__slot__'`) names the members it may be.
+      const names = k.isUnion() ? k.types : [k];
+      if (names.every((l) => l.isStringLiteral() && this.checker.getPropertyOfType(apparent, l.value))) return;
     } else if (this.checker.getPropertyOfType(apparent, key) || indexed(/^\d+$/.test(key) ? this.checker.getNumberType() : this.checker.getStringType())) return;
     this.observeType(x);
   }
@@ -938,6 +941,90 @@ export class Forms {
         }
       }
     }
+  }
+
+  private byName: Set<ts.ClassLikeDeclaration> | null = null;
+  private byNameStatic = new Set<ts.ClassLikeDeclaration>();
+
+  /**
+   * The program's classes whose instances script reaches by name (§2.5, methods and accessors): a value of the class
+   * placed in an untyped slot (one of the program's, or a library's `any` other than TypeScript's own lib), asserted to
+   * `any`/`unknown`, the receiver of a member access by a key the program doesn't spell, or tested with `in`. A class's
+   * whole hierarchy goes with it: a subclass's object is held as its base, and a base's members are the subclass's too.
+   * A type parameter reached so reaches the classes of the arguments its function is called with.
+   */
+  byNameClasses(): ReadonlySet<ts.ClassLikeDeclaration> {
+    if (this.byName) return this.byName;
+    this.build();
+    const c = this.checker, found = new Set<ts.ClassLikeDeclaration>(), statics = this.byNameStatic;
+    const generic = new Set<ts.Symbol>(), calls: (ts.CallExpression | ts.NewExpression)[] = [];
+    const classOf = (e: ts.Expression) => {
+      let t = c.getNonNullableType(c.getTypeAtLocation(e));
+      if (t.flags & ts.TypeFlags.TypeParameter) {
+        const s = t.getSymbol();
+        if (s) generic.add(s);
+        t = c.getBaseConstraintOfType(t) ?? t;
+      }
+      for (const part of t.isUnionOrIntersection() ? t.types : [t]) {
+        const into = part.getConstructSignatures().length ? statics : found;
+        for (const d of part.getSymbol()?.declarations ?? []) if (ts.isClassLike(d) && !declarationFile(d)) into.add(d);
+      }
+    };
+    for (const [x, slots] of this.placed) {
+      if (slots.some((s) => { const r = this.find(s); return !!r.type && untyped(r.type) && !(r.decl && LIB_FILE.test(r.decl.getSourceFile().fileName)); })) classOf(x);
+    }
+    for (const x of this.placedUntyped) classOf(x);
+    const visit = (n: ts.Node): void => {
+      if ((ts.isAsExpression(n) || ts.isTypeAssertionExpression(n)) && untyped(c.getTypeAtLocation(n))) classOf(n.expression);
+      if (ts.isElementAccessExpression(n)) {
+        const key = ts.skipOuterExpressions(n.argumentExpression);
+        if (!ts.isStringLiteralLike(key) && !ts.isNumericLiteral(key) && c.getTypeAtLocation(key).flags & ts.TypeFlags.StringLike) {
+          for (const { owner, statics: s } of this.ownersOf(n.expression)) if (owner && ts.isClassLike(owner)) (s ? statics : found).add(owner);
+          if (c.getTypeAtLocation(n.expression).flags & ts.TypeFlags.TypeParameter) classOf(n.expression);
+        }
+      }
+      if (ts.isBinaryExpression(n) && n.operatorToken.kind === ts.SyntaxKind.InKeyword) classOf(n.right);
+      if ((ts.isCallExpression(n) || ts.isNewExpression(n)) && n.arguments?.length) calls.push(n);
+      ts.forEachChild(n, visit);
+    };
+    for (const f of this.files) if (!f.isDeclarationFile) visit(f);
+    // `f<T>(x: T) { (x as any)[k]() }`: the arguments given for `x`, through other generic functions passing it on.
+    for (let size = 0; generic.size > size; ) {
+      size = generic.size;
+      for (const call of calls) {
+        const decl = c.getResolvedSignature(call)?.declaration;
+        if (!decl || ts.isJSDocSignature(decl)) continue;
+        decl.parameters.forEach((p, k) => {
+          const arg = call.arguments![k];
+          if (!arg || p.dotDotDotToken || !p.type || !ts.isTypeReferenceNode(p.type)) return;
+          const s = c.getSymbolAtLocation(p.type.typeName);
+          if (s && generic.has(s)) classOf(arg);
+        });
+      }
+    }
+    const own = (t: ts.Type) => t.getSymbol()?.declarations?.find((d): d is ts.ClassLikeDeclaration => ts.isClassLike(d) && !declarationFile(d));
+    // Bases go with a class: a subclass's object is held as its base, and a subclass's statics include its bases'.
+    for (const set of [found, statics]) {
+      for (const cls of [...set]) {
+        for (let t: ts.Type | undefined = c.getTypeAtLocation(cls.name ?? cls); t?.isClassOrInterface(); t = c.getBaseTypes(t)[0]) {
+          const d = own(t);
+          if (!d) break;
+          set.add(d);
+        }
+      }
+    }
+    const derived = (cls: ts.ClassLikeDeclaration, depth = 0): boolean => {
+      const t = c.getTypeAtLocation(cls.name ?? cls);
+      return depth < 32 && t.isClassOrInterface() && c.getBaseTypes(t).some((b) => { const d = own(b); return !!d && (found.has(d) || derived(d, depth + 1)); });
+    };
+    for (const cls of this.classes) if (!found.has(cls) && derived(cls)) found.add(cls);
+    return this.byName = found;
+  }
+
+  /** The program's classes whose statics script reaches by name: the class itself held untyped, or indexed by a key the program doesn't spell. */
+  byNameStaticClasses(): ReadonlySet<ts.ClassLikeDeclaration> {
+    this.byNameClasses();
+    return this.byNameStatic;
   }
 
   private angularDecorator(d: ts.Decorator, names: ReadonlySet<string>): boolean {
