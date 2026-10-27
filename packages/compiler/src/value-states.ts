@@ -314,7 +314,8 @@ export class ValueStates {
     if (ts.isConditionalExpression(n)) return this.heldNullish(n.whenTrue) || this.heldNullish(n.whenFalse);
     if (ts.isBinaryExpression(n) && (n.operatorToken.kind === ts.SyntaxKind.BarBarToken || n.operatorToken.kind === ts.SyntaxKind.QuestionQuestionToken)) return this.heldNullish(n.right);
     // A member of a held value, read by name: whatever the object it is has (`field.hint` of a SearchBar is undefined).
-    if (ts.isPropertyAccessExpression(n) && !(ts.isCallExpression(n.parent) && n.parent.expression === n)) return this.heldNullish(n.expression);
+    if (ts.isPropertyAccessExpression(n) && !(ts.isCallExpression(n.parent) && n.parent.expression === n)) return this.heldMember(n.name) || this.heldNullish(n.expression);
+    if (ts.isElementAccessExpression(n) && !(ts.isCallExpression(n.parent) && n.parent.expression === n)) return this.heldNullish(n.expression);
     // A held variable's assertion (`const field = view as TextField`), or one read for a member in place: the value as it is, unchecked as script leaves it.
     if (ts.isAsExpression(n) || ts.isTypeAssertionExpression(n)) {
       const holder = ts.findAncestor(n.parent, (p) => !ts.isParenthesizedExpression(p));
@@ -324,9 +325,61 @@ export class ValueStates {
       const d = this.checker.getResolvedSignature(n)?.getDeclaration();
       return !!d && !ts.isJSDocSignature(d) && this.nullish().held.has(d);
     }
+    if (ts.isPropertySignature(n) || ts.isPropertyDeclaration(n)) return this.nullish().held.has(n);
     if (!ts.isIdentifier(n) || ts.isShorthandPropertyAssignment(n.parent)) return false;
     const d = this.checker.getSymbolAtLocation(n)?.valueDeclaration;
+    if (d && (ts.isPropertyDeclaration(d) || ts.isPropertySignature(d) || ts.isPropertyAssignment(d)) && d.name === n) return this.nullish().held.has(d);
     return !!d && (ts.isVariableDeclaration(d) || ts.isParameter(d) || ts.isBindingElement(d)) && this.nullish().held.has(d);
+  }
+
+  /**
+   * A read of a slot held untyped for its foreign value (§2.3b M7) that a test of its own type guards: inside the then
+   * branch of `typeof r === 'string'` (or number, boolean), or of `r instanceof C`. The form it is read as, a checked
+   * convert's that cannot throw there; null elsewhere, where it is read untyped. `in`, `Array.isArray` and `typeof …
+   * 'object'` tell no class or element type, so their reads stay untyped.
+   */
+  narrowedRead(e: ts.Node): Form | null {
+    const b = this.backend;
+    if (b.library || b.lenient || !(ts.isIdentifier(e) || ts.isPropertyAccessExpression(e)) || !this.heldSource(e) || isWriteTarget(e)) return null;
+    for (let n: ts.Node = e, p = e.parent; p; n = p, p = p.parent) {
+      if (ts.isFunctionLike(p) || ts.isClassLike(p) || ts.isSourceFile(p)) return null;
+      const cond = ts.isIfStatement(p) && p.thenStatement === n ? p.expression : ts.isConditionalExpression(p) && p.whenTrue === n ? p.condition : ts.isBinaryExpression(p) && p.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken && p.right === n ? p.left : null;
+      const type = cond && this.testedType(cond, e);
+      if (type) return { type, undefined: false, null: false, hole: false, foreign: true, missing: false, observed: false, typeObserved: false };
+    }
+    return null;
+  }
+
+  /** A held variable, parameter or binding read by name, or a held member read (`heldMember`). */
+  private heldSource(e: ts.Identifier | ts.PropertyAccessExpression): boolean {
+    if (ts.isPropertyAccessExpression(e)) return this.heldMember(e.name);
+    const d = this.checker.getSymbolAtLocation(e)?.valueDeclaration;
+    return !!d && (ts.isVariableDeclaration(d) || ts.isParameter(d) || ts.isBindingElement(d)) && this.nullish().held.has(d) && !this.untypedDeclaration(d);
+  }
+
+  /** The type a condition's own test establishes for `r` where it holds, through `&&` and parentheses. */
+  private testedType(cond: ts.Expression, r: ts.Expression): ts.Type | null {
+    const c = ts.skipOuterExpressions(cond, ts.OuterExpressionKinds.Parentheses);
+    if (!ts.isBinaryExpression(c)) return null;
+    const op = c.operatorToken.kind;
+    if (op === ts.SyntaxKind.AmpersandAmpersandToken) return this.testedType(c.right, r) ?? this.testedType(c.left, r);
+    if (op === ts.SyntaxKind.InstanceOfKeyword) {
+      if (!sameReference(c.left, r, this.checker)) return null;
+      const cls = this.checker.getSymbolAtLocation(c.right)?.valueDeclaration;
+      return cls && ts.isClassDeclaration(cls) && !cls.getSourceFile().isDeclarationFile && !this.packaged(cls) ? this.checker.getTypeAtLocation(cls.name ?? cls) : null;
+    }
+    if (op !== ts.SyntaxKind.EqualsEqualsEqualsToken && op !== ts.SyntaxKind.EqualsEqualsToken) return null;
+    const [test, lit] = ts.isTypeOfExpression(ts.skipOuterExpressions(c.left)) ? [ts.skipOuterExpressions(c.left), c.right] : [ts.skipOuterExpressions(c.right), c.left];
+    if (!ts.isTypeOfExpression(test) || !ts.isStringLiteralLike(lit) || !sameReference(test.expression, r, this.checker)) return null;
+    return lit.text === 'string' ? this.checker.getStringType() : lit.text === 'number' ? this.checker.getNumberType() : lit.text === 'boolean' ? this.checker.getBooleanType() : null;
+  }
+
+  /** A member name read of a field, getter or parameter property held untyped for its foreign value (§2.3b M7). */
+  heldMember(name: ts.MemberName): boolean {
+    const b = this.backend;
+    if (b.library || b.lenient) return false;
+    const d = this.checker.getSymbolAtLocation(name)?.valueDeclaration;
+    return !!d && (ts.isPropertyDeclaration(d) || ts.isPropertySignature(d) || ts.isGetAccessorDeclaration(d) || ts.isPropertyAssignment(d) || ts.isShorthandPropertyAssignment(d) || (ts.isParameter(d) && ts.isParameterPropertyDeclaration(d, d.parent))) && this.nullish().held.has(d);
   }
 
   /**
@@ -668,14 +721,14 @@ export class ValueStates {
    * An untyped value placed in a slot of the app's own code that holds its declared type (§2.3b M6): a variable's
    * initializer or assignment, an argument (group 2), a function's result (group 3), a field, or an element of an array,
    * Set or Map (group 4). The form the
-   * value enters as, for the backend's checked convert. Null where the slot is held untyped, its type is tested, or the
-   * value or slot is no such one.
+   * value enters as, for the backend's checked convert. Null where the slot is held untyped or the value or slot is no
+   * such one: a slot whose type is tested but whose group can't be held (§2.3b M7) converts checked too.
    */
   foreignPlacement(a: ts.Expression): Form | null {
     const b = this.backend;
     if (b.library || b.lenient || !this.appCode(a) || !this.untypedValue(a)) return null;
     const form = this.placementForm(a);
-    if (!form || !form.foreign || form.typeObserved || form.type.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown) || isGeneric(form.type)) return null;
+    if (!form || !form.foreign || form.type.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown) || isGeneric(form.type)) return null;
     return this.withElements(form, false);
   }
 
@@ -684,8 +737,13 @@ export class ValueStates {
     let x: ts.Node = a;
     while (ts.isParenthesizedExpression(x.parent)) x = x.parent;
     const p = x.parent;
-    // A group's form is typed by one of its members; the slot holds its own declared type.
-    const slot = (d: ts.Declaration | undefined) => (d && !d.getSourceFile().isDeclarationFile && this.appCode(d) && !this.nullish().held.has(d) ? { ...this.forms().formOfSlot(d), type: this.checker.getNonNullableType(this.checker.getTypeAtLocation((d as ts.NamedDeclaration).name ?? d)) } : null);
+    // A group's form is typed by one of its members; the slot holds its own declared type. One sharing a declaration file's
+    // form (§2.3b M7: not held) takes an untyped value as that declaration's type, checked.
+    const slot = (d: ts.Declaration | undefined) => {
+      if (!d || d.getSourceFile().isDeclarationFile || !this.appCode(d) || this.nullish().held.has(d)) return null;
+      const form = this.forms().formOfSlot(d);
+      return { ...form, foreign: form.foreign || this.forms().fixedSlot(d), type: this.checker.getNonNullableType(this.checker.getTypeAtLocation((d as ts.NamedDeclaration).name ?? d)) };
+    };
     if ((ts.isCallExpression(p) || ts.isNewExpression(p)) && p.expression !== x) {
       const k = p.arguments!.indexOf(x as ts.Expression);
       const sig = this.checker.getResolvedSignature(p)?.getDeclaration();
@@ -733,7 +791,7 @@ export class ValueStates {
     if (b.library || b.lenient || el.dotDotDotToken || !ts.isIdentifier(el.name) || !this.appCode(el) || this.nullish().held.has(el)) return null;
     if (!ts.isVariableDeclaration(holder) || !holder.initializer || !holder.type || !this.untypedValue(holder.initializer)) return null;
     const form = this.forms().formOfSlot(el), type = this.checker.getNonNullableType(this.checker.getTypeAtLocation(el.name));
-    if (!form.foreign || form.typeObserved || type.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown) || isGeneric(type)) return null;
+    if (!form.foreign || type.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown) || isGeneric(type)) return null;
     return this.withElements({ ...form, type }, false);
   }
 
@@ -768,6 +826,8 @@ export class ValueStates {
     const x = ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses);
     if (x.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(x) && x.text === 'undefined')) return false;
     if (this.checker.getTypeAtLocation(x).flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown)) return true;
+    if (this.narrowedRead(x)) return false;
+    if (ts.isPropertyAccessExpression(x)) return this.heldMember(x.name);
     const d = ts.isIdentifier(x) ? this.checker.getSymbolAtLocation(x)?.valueDeclaration : ts.isCallExpression(x) ? this.checker.getResolvedSignature(x)?.getDeclaration() : undefined;
     return !!d && !ts.isJSDocSignature(d) && this.nullish().held.has(d) && this.forms().formOfSlot(d).foreign;
   }
@@ -779,32 +839,66 @@ export class ValueStates {
   }
 
   /**
-   * A slot of the app's own code that can be held untyped for a foreign value: a variable, a parameter or a sync
-   * function's result, of a string, number or boolean, whose native form no declaration outside its group shares.
+   * A slot of the app's own code that can be held untyped for a foreign value (§2.3b M6, M7): a variable, a parameter
+   * or a sync function's result, of a string, number or boolean; a field, a getter's result, a parameter property or an
+   * object literal's field of an undecorated class or type of the program; or a variable of an object type. Its native
+   * form no declaration outside its group shares.
    */
   private holdsForeign(d: ts.Declaration): boolean {
     if (d.getSourceFile().isDeclarationFile || !this.appCode(d)) return false;
     if (this.untypedDeclaration(d)) return true;
-    let type: ts.Type | undefined;
+    let type: ts.Type | undefined, objects = false;
     if (ts.isVariableDeclaration(d)) {
       if (!ts.isIdentifier(d.name) || !ts.isVariableStatement(d.parent.parent)) return false;
       type = this.checker.getTypeAtLocation(d.name);
+      objects = true;
     } else if (ts.isBindingElement(d)) {
       const holder = d.parent.parent;
       if (!ts.isIdentifier(d.name) || d.dotDotDotToken || !ts.isVariableDeclaration(holder) || !ts.isVariableStatement(holder.parent.parent)) return false;
       type = this.checker.getTypeAtLocation(d.name);
     } else if (ts.isParameter(d)) {
       const fn = d.parent;
-      if (!ts.isIdentifier(d.name) || d.dotDotDotToken || ts.isParameterPropertyDeclaration(d, fn) || !this.ownFunction(fn)) return false;
+      if (!ts.isIdentifier(d.name) || d.dotDotDotToken) return false;
+      if (ts.isParameterPropertyDeclaration(d, fn) || ts.isSetAccessorDeclaration(fn)) {
+        if (!this.ownClass(fn.parent) || (ts.isSetAccessorDeclaration(fn) && ts.getDecorators(fn)?.length)) return false;
+        objects = true;
+      } else if (!this.ownFunction(fn)) return false;
       type = this.checker.getTypeAtLocation(d.name);
+    } else if (ts.isPropertyDeclaration(d) || ts.isGetAccessorDeclaration(d)) {
+      if (!ts.isIdentifier(d.name) || isStatic(d) || !this.ownClass(d.parent) || ts.getDecorators(d)?.length) return false;
+      type = ts.isGetAccessorDeclaration(d) ? this.checker.getSignatureFromDeclaration(d)?.getReturnType() : this.checker.getTypeAtLocation(d.name);
+      objects = true;
+    } else if (ts.isPropertySignature(d)) {
+      if (!ts.isIdentifier(d.name) || !(ts.isInterfaceDeclaration(d.parent) || ts.isTypeLiteralNode(d.parent))) return false;
+      type = this.checker.getTypeAtLocation(d.name);
+      objects = true;
+    } else if (ts.isPropertyAssignment(d) || ts.isShorthandPropertyAssignment(d)) {
+      if (!ts.isIdentifier(d.name) || !ts.isObjectLiteralExpression(d.parent)) return false;
+      type = this.checker.getTypeAtLocation(d.name);
+      objects = true;
     } else if (ts.isFunctionLike(d)) {
       if (!this.ownFunction(d) || isAsync(d as ts.SignatureDeclaration) || (d as ts.FunctionLikeDeclaration).asteriskToken || ts.isConstructorDeclaration(d)) return false;
       type = this.checker.getSignatureFromDeclaration(d as ts.SignatureDeclaration)?.getReturnType();
     }
     if (!type || isGeneric(type)) return false;
     const parts = (type.isUnion() ? type.types : [type]).filter((x) => !(x.flags & (ts.TypeFlags.Null | ts.TypeFlags.Undefined | ts.TypeFlags.Void)));
-    const kind = (x: ts.Type) => (x.flags & ts.TypeFlags.StringLike ? 's' : x.flags & ts.TypeFlags.NumberLike ? 'n' : x.flags & ts.TypeFlags.BooleanLike ? 'b' : null);
+    // A function type is called as its native closure is; an object of a type parameter's or mapped type has no one form.
+    const object = (x: ts.Type) => objects && !!(x.flags & ts.TypeFlags.Object) && !x.getCallSignatures().length && !((x as ts.ObjectType).objectFlags & ts.ObjectFlags.Mapped);
+    const kind = (x: ts.Type) => (x.flags & ts.TypeFlags.StringLike ? 's' : x.flags & ts.TypeFlags.NumberLike ? 'n' : x.flags & ts.TypeFlags.BooleanLike ? 'b' : object(x) ? 'o' : null);
     return parts.length > 0 && parts.every((x) => kind(x) && kind(x) === kind(parts[0]));
+  }
+
+  /** A class of the program's own whose members only the program reads: undecorated, extending no declaration file's class. */
+  private ownClass(cls: ts.Node): boolean {
+    if (!ts.isClassLike(cls) || ts.getDecorators(cls)?.length) return false;
+    for (let t = this.checker.getTypeAtLocation(cls.name ?? cls), depth = 0; depth < 32; depth++) {
+      const base = t.isClassOrInterface() ? this.checker.getBaseTypes(t)[0] : undefined;
+      const d = base?.getSymbol()?.declarations?.[0];
+      if (!base || !d) return true;
+      if (d.getSourceFile().isDeclarationFile || this.packaged(d)) return false;
+      t = base;
+    }
+    return false;
   }
 
   /** A function whose parameters and result no declaration outside the program's own groups shares. */
@@ -838,4 +932,20 @@ export class ValueStates {
     const declared = this.forms().declaredForm(p), form = this.forms().formOfSlot(p);
     return (form.null && !declared.null) || (form.undefined && !declared.undefined);
   }
+}
+
+/** The same reference read twice: a name of one symbol, `this`, or a member of the same name of the same reference. */
+function sameReference(a: ts.Expression, b: ts.Expression, checker: ts.TypeChecker): boolean {
+  const x = ts.skipOuterExpressions(a, ts.OuterExpressionKinds.Parentheses), y = ts.skipOuterExpressions(b, ts.OuterExpressionKinds.Parentheses);
+  if (x.kind === ts.SyntaxKind.ThisKeyword) return y.kind === ts.SyntaxKind.ThisKeyword;
+  if (ts.isIdentifier(x)) return ts.isIdentifier(y) && x.text === y.text && checker.getSymbolAtLocation(x) === checker.getSymbolAtLocation(y);
+  return ts.isPropertyAccessExpression(x) && ts.isPropertyAccessExpression(y) && !x.questionDotToken && x.name.text === y.name.text && sameReference(x.expression, y.expression, checker);
+}
+
+function isWriteTarget(e: ts.Node): boolean {
+  let x = e;
+  while (ts.isParenthesizedExpression(x.parent)) x = x.parent;
+  const p = x.parent;
+  if (ts.isBinaryExpression(p) && p.left === x && p.operatorToken.kind >= ts.SyntaxKind.FirstAssignment && p.operatorToken.kind <= ts.SyntaxKind.LastAssignment) return true;
+  return (ts.isPrefixUnaryExpression(p) || ts.isPostfixUnaryExpression(p)) && (p.operator === ts.SyntaxKind.PlusPlusToken || p.operator === ts.SyntaxKind.MinusMinusToken);
 }

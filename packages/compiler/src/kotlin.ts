@@ -901,6 +901,8 @@ export class Translator implements AsyncTranslator {
   }
 
   typeOf(n: ts.Node): string {
+    const narrowed = this.narrowedHeld(n);
+    if (narrowed) return this.type(narrowed.type, n);
     const t = this.heldElements(n, this.plainTypeOf(n));
     return ts.isIdentifier(n) && n.parent && ts.isVariableDeclaration(n.parent) && n.parent.name === n && this.states.nullishHeld(n.parent) ? nullishType(t) : t;
   }
@@ -6631,6 +6633,14 @@ export class Translator implements AsyncTranslator {
     if (raw && key !== null) return `(${raw} ?: ${this.states.nullResult(e) ? 'jsCannotReadNull' : 'jsCannotRead'}(${kotlinString(key)}))`;
     const s = this.subst.get(e);
     if (s) return s;
+    const narrowed = this.narrowedHeld(e);
+    if (narrowed) {
+      this.rawHeld.add(e);
+      try {
+        const raw = this.expr(e);
+        return this.checkedConvert(raw, narrowed, e) ?? this.checkedCast(raw, this.type(narrowed.type, e));
+      } finally { this.rawHeld.delete(e); }
+    }
     if (ts.isParenthesizedExpression(e)) return `(${this.expr(e.expression)})`;
     const rw = readWrite(e, this.checker);
     if (rw && ((rw.value && !rw.stored) || rw.held.length) && !rw.held.some((h) => this.subst.has(h))) return this.readWriteCode(e, rw);
@@ -7755,6 +7765,18 @@ export class Translator implements AsyncTranslator {
     const element = /^JSArray<(\w+)>$/.exec(t)?.[1];
     return element && checked[element] && !optional && to.element?.foreign && !to.element.typeObserved ? `jsCheckedArray(${code}) { ${checked[element]}(it) }` : null;
   }
+
+  /** A held read its own type test narrows (`ValueStates.narrowedRead`), read as that type through its checked convert. */
+  private narrowedHeld(n: ts.Node): Form | null {
+    if (this.lenient || this.library || this.rawHeld.has(n)) return null;
+    const form = this.states.narrowedRead(n);
+    if (!form) return null;
+    if (this.checkedConvert('', form, n)) return form;
+    const d = this.checker.getNonNullableType(form.type).getSymbol()?.valueDeclaration;
+    return d && ts.isClassDeclaration(d) && /^[A-Za-z_][\w.]*$/.test(this.type(form.type, n)) ? form : null;
+  }
+
+  private readonly rawHeld = new Set<ts.Node>();
 
   /** An untyped value placed where its slot holds its declared type (`foreignPlacement`): converted checked, or null. */
   private checkedPlacement(a: ts.Expression, to: string, code?: string): string | null {
