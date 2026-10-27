@@ -297,6 +297,16 @@ export class ValueStates {
     return !this.backend.library && !this.backend.lenient && this.heldCasts().classes.has(cls);
   }
 
+  /** An app class script reaches by name (`Forms.byNameClasses`): its methods and accessors are readable, callable and settable by name. */
+  byNameClass(cls: ts.ClassLikeDeclaration): boolean {
+    return !this.backend.library && !this.packaged(cls) && this.forms().byNameClasses().has(cls);
+  }
+
+  /** An app class whose statics script reaches by name (`Forms.byNameStaticClasses`). */
+  byNameStatics(cls: ts.ClassLikeDeclaration): boolean {
+    return !this.backend.library && !this.packaged(cls) && this.forms().byNameStaticClasses().has(cls);
+  }
+
   /** A variable, parameter, or call result whose slot may hold null and undefined both: held untyped (`nullishSlots`). */
   heldNullish(n: ts.Node): boolean {
     // A conditional or a default giving a held value (`key in saved ? saved[key] : fallback`).

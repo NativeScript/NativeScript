@@ -510,7 +510,7 @@ fun jsHasKey(target: Any?, key: String): Boolean = when (target) {
     is JSArray<*> -> key == "length" || (jsArrayIndex(key)?.let { it < target.size && target.jsHoles?.get(it.toInt()) != true } ?: (target.jsProperties?.has(key) == true))
     null, JSNull, is String, is Number, is Boolean, is Function<*>, is JSFunction -> false
     // A Java object (a native view): its methods and fields, as NativeScript's runtime exposes them.
-    else -> !jsIsSymbolKey(key) && !target.javaClass.name.startsWith("org.nativescript.kit.") && jsJavaHas(target, key)
+    else -> !jsIsSymbolKey(key) && ((target is Class<*> && JSPrototypes.staticMember(target, key) != null) || (!target.javaClass.name.startsWith("org.nativescript.kit.") && jsJavaHas(target, key)))
 }
 
 /** A member of an untyped object, or undefined; reading a typed object from JSON never throws. */

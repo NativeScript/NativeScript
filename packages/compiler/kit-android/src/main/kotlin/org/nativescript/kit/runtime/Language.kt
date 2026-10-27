@@ -296,6 +296,14 @@ class JSMethod(val call: (Any?, Array<out Any?>) -> Any?) : Function<Any?> {
     constructor(length: Int, call: (Any?, Array<out Any?>) -> Any?) : this(call) { this.length = length }
 }
 
+/**
+ * The `this` of a class's method read by name: the object it is called on when that is one of the class's, else the
+ * object it was read from. Typed callbacks drop the `thisArg` script gives them, so a call without an object of the class
+ * runs on the one the method was read from.
+ */
+@Suppress("UNCHECKED_CAST")
+fun <T : Any> jsMethodReceiver(self: Any?, own: T, cls: Class<*>): T = if (cls.isInstance(self)) self as T else own
+
 /** A method read from a prototype for an instance (`View.prototype._setMinWidthNative`): the instance is its `this`. */
 fun jsBoundTo(value: Any?, receiver: Any?): Any? = if (value is JSMethod) JSFunction { args -> value.call(receiver, args.toTypedArray()) } else value
 

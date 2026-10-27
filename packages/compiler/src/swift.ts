@@ -2256,6 +2256,7 @@ export class Translator implements AsyncTranslator {
           }
           // Library mode: the class's accessors are its prototype's, and its decorators run once it is defined.
           if ((library || this.appMembersByName) && (st.members.some((m) => ts.isAccessor(m) && !isStatic(m)) || ts.getDecorators(st)?.length || this.heldAsValue(st))) later(() => this.classDefinition(st));
+          else if (!library && !this.appMembersByName && this.states.byNameStatics(st)) later(() => this.staticsDeclaration(st) ?? '');
         }
         continue;
       }
@@ -2388,6 +2389,7 @@ export class Translator implements AsyncTranslator {
         lines.push(this.classDecl(st));
         // As a module's class: its accessors are its prototype's, and its decorators run once it is defined.
         if ((this.library || this.appMembersByName) && (st.members.some((m) => ts.isAccessor(m) && !isStatic(m)) || ts.getDecorators(st)?.length || this.heldAsValue(st))) later(() => this.classDefinition(st));
+        else if (!this.library && !this.appMembersByName && this.states.byNameStatics(st)) later(() => this.staticsDeclaration(st) ?? '');
         continue;
       }
       later(() => this.stmt(st));
@@ -3061,8 +3063,9 @@ ${members.join('\n')}
    * `defined`: fields `Object.defineProperty` may give a descriptor (`JSDefinable`). `expandoAbove`: a program base keeps
    * the object's expando, whose keys come after every class's fields, as JavaScript defines fields before script adds keys.
    */
-  private dynamicMembers(fields: { name: string; type: string }[], className: string | null, override: boolean, methods: { name: string; type: string; available?: number; length?: number }[] = [], symbols: { key: string; member: string; type: string }[] = [], expando = false, raw = new Set<string>(), accessors: { name: string; get: string | null; set: string | null }[] = [], symbolKeyedBase = false, extra = false, nulls = new Set<string>(), classNameMember = true, nilNull = new Set<string>(), keyed: KeyedMembers | null = null, rewritten = new Set<string>(), defined = new Set<string>(), expandoAbove = false): string[] {
+  private dynamicMembers(fields: { name: string; type: string }[], className: string | null, override: boolean, methods: { name: string; type: string; available?: number; length?: number }[] = [], symbols: { key: string; member: string; type: string }[] = [], expando = false, raw = new Set<string>(), accessors: { name: string; get: string | null; set: string | null }[] = [], symbolKeyedBase = false, extra = false, nulls = new Set<string>(), classNameMember = true, nilNull = new Set<string>(), keyed: KeyedMembers | null = null, rewritten = new Set<string>(), defined = new Set<string>(), expandoAbove = false, byName?: { receiver: string; inherits: boolean }): string[] {
     const o = override ? 'override ' : '';
+    const ownNames = byName ? new Set([...this.instanceKeys()].flatMap((d) => (ts.isMethodDeclaration(d) ? [d.name.getText()] : []))) : new Set<string>();
     if (!keyed?.ordered || !keyed.appBase) this.declare('jsKeys', { kind: 'var', mods: o, type: '[String]' });
     if (keyed?.ordered) this.declare('jsFieldKeys', { kind: 'var', mods: keyed.appBase ? 'override ' : '', type: '[String]' });
     if (symbols.length) this.declare('jsSymbolKeys', { kind: 'var', mods: symbolKeyedBase ? 'override ' : '', type: '[String]' });
@@ -3096,9 +3099,13 @@ ${members.join('\n')}
       ...this.keySwitch([
         ...fields.map((f) => ({ name: f.name, code: `${definedGet(f)}return ${raw.has(f.name) ? `jsExpandoGet(self, ${swiftString(f.name)})` : isFunctionType(f.type.replace(/^\((.*)\)[?!]$/, '$1')) ? (nilNull.has(f.name) ? `jsNulled(${this.boxedField(`self.${ident(f.name)}`, f.type)})` : this.boxedField(`self.${ident(f.name)}`, f.type)) : nulls.has(f.name) ? `jsNullable(${this.untypedEnum(`self.${ident(f.name)}`, f.type)}, jsNulls, ${swiftString(f.name)})` : nilNull.has(f.name) ? `jsNulled(${this.untypedEnum(`self.${ident(f.name)}`, f.type)})` : this.untypedEnum(`self.${ident(f.name)}`, f.type)}` })),
         ...accessors.map((a) => ({ name: a.name, code: `return ${a.get ?? 'nil'}` })),
-        ...methods.filter((m) => !fields.some((f) => f.name === m.name)).map((m) => ({ name: m.name, code: m.available
-          ? `if #available(iOS ${m.available}, *) { return ${this.boxFunction(`self.${ident(m.name)}`, m.type, -1, m.name, m.length, undefined, false)} } else { return nil }`
-          : `return ${this.boxFunction(`self.${ident(m.name)}`, m.type, -1, m.name, m.length, undefined, false)}` })),
+        ...methods.filter((m) => !fields.some((f) => f.name === m.name)).map((m) => {
+          // An app class's method sees the object it is called on as `this` when that is one of the class's (`obj[k].call(other)`).
+          const value = byName ? `jsMethodValue(self) { (__s: ${byName.receiver}) in ${this.boxFunction(`__s.${ident(m.name)}`, m.type, -1, m.name, m.length, undefined, false)} }` : this.boxFunction(`self.${ident(m.name)}`, m.type, -1, m.name, m.length, undefined, false);
+          // A value the instance holds in the method's place (`obj.step = …`) is what reading it gives.
+          const own = byName && ownNames.has(m.name) ? `if let __own = jsOwnProperty(self, ${swiftString(m.name)}) { return __own }; ` : '';
+          return { name: m.name, code: m.available ? `${own}if #available(iOS ${m.available}, *) { return ${value} } else { return nil }` : `${own}return ${value}` };
+        }),
       ], symbols.map((f) => `            case ${f.key}: return ${f.member}`), `return ${override ? 'super[jsKey: key]' : expando ? 'jsExpandoGet(self, key)' : extra ? 'jsExtra?[jsKey: key] ?? nil' : 'nil'}`),
       '        }',
       '        set {',
@@ -3117,6 +3124,14 @@ ${members.join('\n')}
       '        }',
       '    }',
     ];
+    if (byName) {
+      // `key in object` of a member its class declares (an accessor, a method), which is no own key.
+      const members = [...new Set([...accessors.map((a) => a.name), ...methods.map((m) => m.name)])].filter((n) => !fields.some((f) => f.name === n));
+      const mods = byName.inherits ? 'override ' : '';
+      const rest = byName.inherits ? 'super.jsHasMember(key)' : 'false';
+      lines.push(`    ${mods}func jsHasMember(_ key: String) -> Bool { ${members.length ? `switch key { case ${members.map(swiftString).join(', ')}: return true; default: return ${rest} }` : `${rest}`} }`);
+      this.declare('jsHasMember', { kind: 'func', mods, params: '_ key: String', type: 'Bool' });
+    }
     return lines;
   }
 
@@ -5777,7 +5792,7 @@ ${members.join('\n')}
       this.declare(n, { kind: 'var', mods, type: declared, throws: !!a.get && !reported && this.throwsInfo.fn(a.get) });
       // A plugin's objects are read untyped too (`navigator.gpu.native`): their accessors by name.
       const own = (a.get ?? a.set)!;
-      if (!this.library && (this.pluginFiles.has(cls.getSourceFile().fileName) || this.appMembersByName) && !isStatic(own) && !this.symbolMember(own.name)) {
+      if (!this.library && (this.pluginFiles.has(cls.getSourceFile().fileName) || this.appMembersByName || this.states.byNameClass(cls)) && !isStatic(own) && !this.symbolMember(own.name)) {
         const getThrows = !!a.get && this.throwsInfo.fn(a.get) && !reported;
         const read = getThrows ? `(jsReported { try self.${ident(n)} } ?? nil)` : `self.${ident(n)}`;
         dynAccessors.push({ name: n, get: a.get ? this.convert(read, getThrows ? optionalType(declared.replace(/!$/, '?')) : declared, 'Any?') : null, set: anySetter ? `self.__set_${n.replace(/\W/g, '_')}(newValue)` : a.set ? `self.${ident(n)} = ${declared.endsWith('!') ? this.fromAny('newValue', declared.replace(/!$/, '?')) : this.fromAnyCode('newValue', declared, true)}` : null });
@@ -5909,7 +5924,7 @@ ${members.join('\n')}
       if (!isStatic(m) && !generic && this.nonVirtualEntry(m)) lines.push('    ' + this.memberFunc(m, ident(nonVirtualName(n, cls.name!.text)), 'final '));
       // A plugin's objects are read untyped too (`handler.attachToView(view)` on an `any`): their methods by name.
       const restAt = m.parameters.findIndex((p) => p.dotDotDotToken);
-      if ((this.pluginFiles.has(cls.getSourceFile().fileName) || this.appMembersByName || this.states.downcastClass(cls)) && !isStatic(m) && (restAt < 0 || restAt === m.parameters.length - 1) && !extra.length && !generic) {
+      if ((this.pluginFiles.has(cls.getSourceFile().fileName) || this.appMembersByName || this.states.downcastClass(cls) || this.states.byNameClass(cls)) && !isStatic(m) && (restAt < 0 || restAt === m.parameters.length - 1) && !extra.length && !generic) {
         // The signature Swift has for the method: an override's is its root's.
         const sig = this.emittedSignature(m);
         const plain = (t: string) => t.replace(/^\((any .*)\)!$/, '$1?').replace(/!$/, '?');
@@ -5947,7 +5962,9 @@ ${members.join('\n')}
     const symbolKeyedBase = !!kitRoot || this.inheritsSymbolKeyed(cls);
     // Script knows the class by its own name, not the one Swift's module gives it apart from another of that name.
     // An Error subclass keeps JSError's class name, which is the error's `name`.
-    if (isError) lines.push(...this.dynamicMembers(fields, null, true, dynMethods, symbolFields, false, raw, dynAccessors, false, false, new Set(), false).filter((l) => !l.includes(' var jsClassName: ')));
+    const byName = this.states.byNameClass(cls) ? { receiver: name, inherits: !!appBase && this.states.byNameClass(appBase) } : undefined;
+    if (byName && !byName.inherits) conformances.push('JSMemberKeyed');
+    if (isError) lines.push(...this.dynamicMembers(fields, null, true, dynMethods, symbolFields, false, raw, dynAccessors, false, false, new Set(), false, undefined, undefined, undefined, undefined, undefined, byName).filter((l) => !l.includes(' var jsClassName: ')));
     else {
       const nulls = this.states.nullFields(cls);
       if (nulls.size && !this.states.baseKeepsNulls(cls)) {
@@ -5955,7 +5972,7 @@ ${members.join('\n')}
         lines.push(`    var jsNulls: Set<String>?${initial.length ? ` = [${initial.map((m) => swiftString(m.name.getText())).join(', ')}]` : ''}`);
       }
       const definable = this.definableNames(cls).filter((n) => fields.some((f) => f.name === n));
-      lines.push(...this.dynamicMembers(fields, cls.name?.text ?? name, !!appBase || !!kitRoot, dynMethods, symbolFields, expando, raw, dynAccessors, symbolKeyedBase, false, nulls, true, this.states.nullFieldsTyped(cls), this.keyedMembers(cls, !!appBase, lines, conformances), undefined, new Set(definable), !!appBase && this.appRootKeepsExpando(cls)));
+      lines.push(...this.dynamicMembers(fields, cls.name?.text ?? name, !!appBase || !!kitRoot, dynMethods, symbolFields, expando, raw, dynAccessors, symbolKeyedBase, false, nulls, true, this.states.nullFieldsTyped(cls), this.keyedMembers(cls, !!appBase, lines, conformances), undefined, new Set(definable), !!appBase && this.appRootKeepsExpando(cls), byName));
       if (definable.length) {
         let inherited = false;
         for (let b = this.programBase(cls); b && !inherited; b = this.programBase(b)) inherited = this.definableNames(b).length > 0;
@@ -6333,25 +6350,32 @@ ${members.join('\n')}
     }
     // A class script holds as a value (`TouchControlHandler = TouchHandlerImpl`) is asked for its statics by name.
     if (this.heldAsValue(cls)) {
-      const statics = cls.members.flatMap((m): string[] => {
-        // A native subclass's `ObjCProtocols` and `ObjCExposedMethods` are the runtime's metadata, compiled into its declaration, no members.
-        if (!isStatic(m) || !m.name || !ts.isIdentifier(m.name) || ['ObjCProtocols', 'ObjCExposedMethods'].includes(m.name.text)) return [];
-        const n = m.name.text, ref = `${name}.${ident(n)}`;
-        if (ts.isMethodDeclaration(m)) {
-          if (!m.body || m.typeParameters?.length || m.asteriskToken || isAsync(m) || cls.members.filter((x) => ts.isMethodDeclaration(x) && x.name.getText() === n).length > 1) return [];
-          const sig = this.signatureOf(m);
-          // Implicitly unwrapped in a signature, optional in a function type.
-          const plainOpt = (t: string) => t.replace(/^\((.*)\)!$/, '($1)?').replace(/!$/, '?');
-          return [`(${swiftString(n)}, { () -> Any? in ${this.boxFunction(ref, `(${sig.params.map((p) => escapingParam(plainOpt(p.type))).join(', ')}) throws -> ${plainOpt(sig.ret)}`, -1, n, scriptLength(m), undefined, false)} })`];
-        }
-        if (ts.isPropertyDeclaration(m) || (ts.isGetAccessorDeclaration(m) && !this.throwsInfo.fn(m))) return [`(${swiftString(n)}, { () -> Any? in ${this.convert(ref, this.typeOf(m.name), 'Any?')} })`];
-        return [];
-      });
-      if (statics.length) lines.push(`${i}JSPrototypes.declareStatics(${name}.self, [${statics.join(', ')}])`);
+      const statics = this.staticsDeclaration(cls, i);
+      if (statics) lines.push(statics);
     }
     const decorators = (ts.getDecorators(cls) ?? []).filter((d) => !(ts.isIdentifier(d.expression) && this.library?.identities?.has(d.expression.text)) && !/^(CSSType|NativeClass|ObjCClass|NgModule|Injectable)\b/.test(d.expression.getText()));
     if (decorators.length) lines.push(`${i}try jsDecorate(${name}.self, [${decorators.map((d) => this.coerce(d.expression, 'Any?')).join(', ')}])`);
     return lines.join('\n');
+  }
+
+  /** `JSPrototypes.declareStatics` of the class's static methods and properties, for script reading them by name; null where it has none. */
+  private staticsDeclaration(cls: ts.ClassDeclaration, i = this.indent): string | null {
+    const name = this.className(cls);
+    const statics = cls.members.flatMap((m): string[] => {
+      // A native subclass's `ObjCProtocols` and `ObjCExposedMethods` are the runtime's metadata, compiled into its declaration, no members.
+      if (!isStatic(m) || !m.name || !ts.isIdentifier(m.name) || ['ObjCProtocols', 'ObjCExposedMethods'].includes(m.name.text)) return [];
+      const n = m.name.text, ref = `${name}.${ident(n)}`;
+      if (ts.isMethodDeclaration(m)) {
+        if (!m.body || m.typeParameters?.length || m.asteriskToken || isAsync(m) || cls.members.filter((x) => ts.isMethodDeclaration(x) && x.name.getText() === n).length > 1) return [];
+        const sig = this.signatureOf(m);
+        // Implicitly unwrapped in a signature, optional in a function type.
+        const plainOpt = (t: string) => t.replace(/^\((.*)\)!$/, '($1)?').replace(/!$/, '?');
+        return [`(${swiftString(n)}, { () -> Any? in ${this.boxFunction(ref, `(${sig.params.map((p) => escapingParam(plainOpt(p.type))).join(', ')}) throws -> ${plainOpt(sig.ret)}`, -1, n, scriptLength(m), undefined, false)} })`];
+      }
+      if (ts.isPropertyDeclaration(m) || (ts.isGetAccessorDeclaration(m) && !this.throwsInfo.fn(m))) return [`(${swiftString(n)}, { () -> Any? in ${this.convert(ref, this.typeOf(m.name), 'Any?')} })`];
+      return [];
+    });
+    return statics.length ? `${i}JSPrototypes.declareStatics(${name}.self, [${statics.join(', ')}])` : null;
   }
 
   private valueClasses: Set<ts.Symbol> | null = null;
@@ -7072,7 +7096,8 @@ ${members.join('\n')}
             const saved2 = this.indent;
             this.indent = '';
             try { this.hoisted.push(this.classDecl(s)); } finally { this.indent = saved2; }
-            return this.appMembersByName && (s.members.some((m) => ts.isAccessor(m) && !isStatic(m)) || this.heldAsValue(s)) ? this.classDefinition(s) : '';
+            if (this.appMembersByName && (s.members.some((m) => ts.isAccessor(m) && !isStatic(m)) || this.heldAsValue(s))) return this.classDefinition(s);
+            return !this.library && !this.appMembersByName && this.states.byNameStatics(s) ? this.staticsDeclaration(s) ?? '' : '';
           }
         }
         throw this.error(s, 'a class declared inside a function');
