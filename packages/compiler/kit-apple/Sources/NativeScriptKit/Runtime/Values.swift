@@ -1190,6 +1190,14 @@ public func jsCheckedStringOrNil(_ value: Any?) throws -> String? { jsIsNullish(
 public func jsCheckedNumberOrNil(_ value: Any?) throws -> Double? { jsIsNullish(value) ? nil : try jsCheckedNumber(value) }
 public func jsCheckedBoolOrNil(_ value: Any?) throws -> Bool? { jsIsNullish(value) ? nil : try jsCheckedBool(value) }
 
+/// An untyped value asserted to an array of strings, numbers or booleans (§2.3b M6): an array's elements each checked by
+/// `element`, an empty state read as `jsArrayOf` reads it, and any other value JavaScript's TypeError there.
+public func jsCheckedArray<T>(_ value: Any?, _ element: (Any?) throws -> T) throws -> JSArray<T> {
+    let v = jsFlat(value)
+    if jsIsNullish(v) || v is JSArrayProtocol { return try jsArrayOf(v, element) }
+    throw JSException(JSTypeError("\(jsTypeof(v)) is not an array"))
+}
+
 /// A value's string where one must be given: undefined and null are "".
 public func jsStringOrEmpty(_ value: Any?) -> String { jsIsNullish(value) ? "" : jsToString(value) }
 

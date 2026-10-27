@@ -3360,7 +3360,7 @@ ${members.join('\n')}
       try { if (this.typeOf(n) === 'Any?') return true; } catch { return false; }
     }
     if ((ts.isAsExpression(n) || ts.isTypeAssertionExpression(n)) && (this.downcasts(n) || this.checkedAssertion(n))) return true;
-    if (this.checkedArgumentEntry(n)) return true;
+    if (this.checkedPlacementEntry(n)) return true;
     if ((ts.isAsExpression(n) || ts.isTypeAssertionExpression(n)) && this.checkedClassAssertion(n)) {
       try {
         const to = this.typeOf(n);
@@ -3430,23 +3430,33 @@ ${members.join('\n')}
    * empty state as the slot holds it, any other is JavaScript's TypeError. Null where the form's type has none yet.
    */
   private checkedConvert(code: string, to: Form, at: ts.Node, optional = false): string | null {
-    const fn = ({ String: 'jsCheckedString', Double: 'jsCheckedNumber', Bool: 'jsCheckedBool' } as Record<string, string>)[this.type(to.type, at)];
-    return fn ? `(try ${fn}${optional ? 'OrNil' : ''}(${code}))` : null;
+    const checked: Record<string, string> = { String: 'jsCheckedString', Double: 'jsCheckedNumber', Bool: 'jsCheckedBool' };
+    const t = this.type(to.type, at), fn = checked[t];
+    if (fn) return `(try ${fn}${optional ? 'OrNil' : ''}(${code}))`;
+    const element = /^JSArray<(\w+)>$/.exec(t)?.[1];
+    return element && checked[element] && !optional && to.element?.foreign && !to.element.typeObserved ? `(try jsCheckedArray(${code}) { try ${checked[element]}($0) })` : null;
   }
 
-  /** An untyped argument where the parameter holds its declared type (`foreignArgument`): converted checked, or null. */
-  private checkedArgument(a: ts.Expression, to: string): string | null {
-    const entry = this.checkedArgumentEntry(a);
+  /** An untyped value placed where its slot holds its declared type (`foreignPlacement`): converted checked, or null. */
+  private checkedPlacement(a: ts.Expression, to: string): string | null {
+    const entry = this.checkedPlacementEntry(a);
     const base = to.replace(/[?!]$/, '');
-    return entry && this.type(entry.type, a) === base ? this.checkedConvert(this.expr(a), entry, a, base !== to) : null;
+    if (!entry || this.type(entry.type, a) !== base) return null;
+    return this.checkedConvert(this.expr(a), entry, a, base !== to) ?? (base !== to && this.appClass(entry.type) ? `(try jsCast(${this.expr(a)}, ${base}.self))` : null);
   }
 
-  private checkedArgumentEntry(a: ts.Expression): Form | null {
+  private checkedPlacementEntry(a: ts.Expression): Form | null {
     if (this.lenient || this.library) return null;
     try {
-      const entry = this.states.foreignArgument(a);
-      return entry && this.typeOf(a) === 'Any?' && this.checkedConvert('', entry, a) ? entry : null;
+      const entry = this.states.foreignPlacement(a);
+      return entry && this.typeOf(a) === 'Any?' && (this.checkedConvert('', entry, a) || this.appClass(entry.type)) ? entry : null;
     } catch { return null; }
+  }
+
+  /** A class of the app's own code that no platform class roots: an object of another class is never one. */
+  private appClass(t: ts.Type): boolean {
+    const d = this.checker.getNonNullableType(t).getSymbol()?.valueDeclaration;
+    return !!d && ts.isClassDeclaration(d) && !d.getSourceFile().isDeclarationFile && !this.states.packaged(d) && !this.native.extendsNative(d);
   }
 
   /** An untyped value asserted to a type `checkedConvert` checks, held as that type: the form it enters as. */
@@ -3645,6 +3655,7 @@ ${members.join('\n')}
   untypedWrite(left: ts.Expression, right: ts.Expression): left is ts.PropertyAccessExpression {
     if (this.lenient || this.library || !ts.isPropertyAccessExpression(left) || left.questionDotToken) return false;
     if (this.states.nullField(left)) return true;
+    if (this.checkedPlacementEntry(right)) return false;
     try {
       if (this.typeOf(right) !== 'Any?' || this.typeOf(left) === 'Any?' || this.isAny(left.expression)) return false;
     } catch { return false; }
@@ -7894,6 +7905,8 @@ ${members.join('\n')}
     if (held !== undefined) return this.convert(this.subst.get(e)!, held, target);
     const nullish = this.nullishConversion(e, target);
     if (nullish !== null) return nullish;
+    const checked = this.checkedPlacement(e, target);
+    if (checked) return checked;
     this.checkFieldsMet(e, target);
     this.checkAnyArgument(e, target);
     if (/^JSArray<String>[?!]?$/.test(target) && ((this.typeOf(e) === 'JSArray<String?>' && this.unsetGroups(e)) || this.unsetMatch(e))) {
@@ -10584,13 +10597,11 @@ ${members.join('\n')}
   }
 
   /**
-   * An untyped value asserted to a class of the app's own strict code, where the slot it enters may be empty: an object of
+   * An untyped value asserted to a class of the app's own code, where the slot it enters may be empty: an object of
    * another class is JavaScript's TypeError there (`jsCast`, as Kotlin's), never an empty value.
    */
   private checkedClassAssertion(e: ts.AsExpression | ts.TypeAssertion): boolean {
-    if (this.lenient || this.library || !this.states.strictApp(e)) return false;
-    const d = this.checker.getNonNullableType(this.checker.getTypeAtLocation(e)).getSymbol()?.valueDeclaration;
-    return !!d && ts.isClassDeclaration(d) && !d.getSourceFile().isDeclarationFile && !this.states.packaged(d) && !this.native.extendsNative(d);
+    return !this.lenient && !this.library && this.states.appCode(e) && this.appClass(this.checker.getTypeAtLocation(e));
   }
 
   maybeUndefined(e: ts.Expression): string | null {
@@ -10883,7 +10894,7 @@ ${members.join('\n')}
       // A parameter its group's form widens takes undefined and null as they are, as every member of the group spells it.
       const widened = !emitted && !erased && !!decl && ts.isParameter(decl) && this.states.widened(decl) && !isOptional(at) && at !== 'Any?';
       const to = emitted ?? (omissible || widened ? optionalType(at) : erased ? this.inFile(decl!.getSourceFile().fileName, () => this.paramType(decl as ts.ParameterDeclaration)) : at === 'Never' ? this.type(this.checker.getTypeOfSymbol(p), e) : at);
-      out.push(this.checkedArgument(a, to) ?? this.coerce(a, to));
+      out.push(this.coerce(a, to));
     }
     if (restAt >= 0 && appDeclared && out.length <= restAt) out.push(`${this.restType(params[restAt])}()`);
     // A function declaring `this`, called plainly: its `this` is undefined.

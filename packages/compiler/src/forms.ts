@@ -184,6 +184,16 @@ export class Forms {
     return form;
   }
 
+  /** Whether a slot an array value is placed in has its elements' type tested (§2.3b M6). */
+  elementsTypeObserved(e: ts.Expression): boolean {
+    this.build();
+    const x = ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses);
+    return !!this.placed.get(x)?.some((s) => {
+      const c = this.find(s).children.get('element');
+      return !!c && this.find(c).typeObserved;
+    });
+  }
+
   formOfSlot(d: ts.Declaration): Form {
     this.build();
     const s = this.slotFor(d);
