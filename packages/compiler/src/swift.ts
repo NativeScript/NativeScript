@@ -2256,6 +2256,7 @@ export class Translator implements AsyncTranslator {
           }
           // Library mode: the class's accessors are its prototype's, and its decorators run once it is defined.
           if ((library || this.appMembersByName) && (st.members.some((m) => ts.isAccessor(m) && !isStatic(m)) || ts.getDecorators(st)?.length || this.heldAsValue(st))) later(() => this.classDefinition(st));
+          else if (!library && !this.appMembersByName && this.states.byNameStatics(st)) later(() => this.staticsDeclaration(st) ?? '');
         }
         continue;
       }
@@ -2388,6 +2389,7 @@ export class Translator implements AsyncTranslator {
         lines.push(this.classDecl(st));
         // As a module's class: its accessors are its prototype's, and its decorators run once it is defined.
         if ((this.library || this.appMembersByName) && (st.members.some((m) => ts.isAccessor(m) && !isStatic(m)) || ts.getDecorators(st)?.length || this.heldAsValue(st))) later(() => this.classDefinition(st));
+        else if (!this.library && !this.appMembersByName && this.states.byNameStatics(st)) later(() => this.staticsDeclaration(st) ?? '');
         continue;
       }
       later(() => this.stmt(st));
@@ -6331,25 +6333,32 @@ ${members.join('\n')}
     }
     // A class script holds as a value (`TouchControlHandler = TouchHandlerImpl`) is asked for its statics by name.
     if (this.heldAsValue(cls)) {
-      const statics = cls.members.flatMap((m): string[] => {
-        // A native subclass's `ObjCProtocols` and `ObjCExposedMethods` are the runtime's metadata, compiled into its declaration, no members.
-        if (!isStatic(m) || !m.name || !ts.isIdentifier(m.name) || ['ObjCProtocols', 'ObjCExposedMethods'].includes(m.name.text)) return [];
-        const n = m.name.text, ref = `${name}.${ident(n)}`;
-        if (ts.isMethodDeclaration(m)) {
-          if (!m.body || m.typeParameters?.length || m.asteriskToken || isAsync(m) || cls.members.filter((x) => ts.isMethodDeclaration(x) && x.name.getText() === n).length > 1) return [];
-          const sig = this.signatureOf(m);
-          // Implicitly unwrapped in a signature, optional in a function type.
-          const plainOpt = (t: string) => t.replace(/^\((.*)\)!$/, '($1)?').replace(/!$/, '?');
-          return [`(${swiftString(n)}, { () -> Any? in ${this.boxFunction(ref, `(${sig.params.map((p) => escapingParam(plainOpt(p.type))).join(', ')}) throws -> ${plainOpt(sig.ret)}`, -1, n, scriptLength(m), undefined, false)} })`];
-        }
-        if (ts.isPropertyDeclaration(m) || (ts.isGetAccessorDeclaration(m) && !this.throwsInfo.fn(m))) return [`(${swiftString(n)}, { () -> Any? in ${this.convert(ref, this.typeOf(m.name), 'Any?')} })`];
-        return [];
-      });
-      if (statics.length) lines.push(`${i}JSPrototypes.declareStatics(${name}.self, [${statics.join(', ')}])`);
+      const statics = this.staticsDeclaration(cls, i);
+      if (statics) lines.push(statics);
     }
     const decorators = (ts.getDecorators(cls) ?? []).filter((d) => !(ts.isIdentifier(d.expression) && this.library?.identities?.has(d.expression.text)) && !/^(CSSType|NativeClass|ObjCClass|NgModule|Injectable)\b/.test(d.expression.getText()));
     if (decorators.length) lines.push(`${i}try jsDecorate(${name}.self, [${decorators.map((d) => this.coerce(d.expression, 'Any?')).join(', ')}])`);
     return lines.join('\n');
+  }
+
+  /** `JSPrototypes.declareStatics` of the class's static methods and properties, for script reading them by name; null where it has none. */
+  private staticsDeclaration(cls: ts.ClassDeclaration, i = this.indent): string | null {
+    const name = this.className(cls);
+    const statics = cls.members.flatMap((m): string[] => {
+      // A native subclass's `ObjCProtocols` and `ObjCExposedMethods` are the runtime's metadata, compiled into its declaration, no members.
+      if (!isStatic(m) || !m.name || !ts.isIdentifier(m.name) || ['ObjCProtocols', 'ObjCExposedMethods'].includes(m.name.text)) return [];
+      const n = m.name.text, ref = `${name}.${ident(n)}`;
+      if (ts.isMethodDeclaration(m)) {
+        if (!m.body || m.typeParameters?.length || m.asteriskToken || isAsync(m) || cls.members.filter((x) => ts.isMethodDeclaration(x) && x.name.getText() === n).length > 1) return [];
+        const sig = this.signatureOf(m);
+        // Implicitly unwrapped in a signature, optional in a function type.
+        const plainOpt = (t: string) => t.replace(/^\((.*)\)!$/, '($1)?').replace(/!$/, '?');
+        return [`(${swiftString(n)}, { () -> Any? in ${this.boxFunction(ref, `(${sig.params.map((p) => escapingParam(plainOpt(p.type))).join(', ')}) throws -> ${plainOpt(sig.ret)}`, -1, n, scriptLength(m), undefined, false)} })`];
+      }
+      if (ts.isPropertyDeclaration(m) || (ts.isGetAccessorDeclaration(m) && !this.throwsInfo.fn(m))) return [`(${swiftString(n)}, { () -> Any? in ${this.convert(ref, this.typeOf(m.name), 'Any?')} })`];
+      return [];
+    });
+    return statics.length ? `${i}JSPrototypes.declareStatics(${name}.self, [${statics.join(', ')}])` : null;
   }
 
   private valueClasses: Set<ts.Symbol> | null = null;
@@ -7070,7 +7079,8 @@ ${members.join('\n')}
             const saved2 = this.indent;
             this.indent = '';
             try { this.hoisted.push(this.classDecl(s)); } finally { this.indent = saved2; }
-            return this.appMembersByName && (s.members.some((m) => ts.isAccessor(m) && !isStatic(m)) || this.heldAsValue(s)) ? this.classDefinition(s) : '';
+            if (this.appMembersByName && (s.members.some((m) => ts.isAccessor(m) && !isStatic(m)) || this.heldAsValue(s))) return this.classDefinition(s);
+            return !this.library && !this.appMembersByName && this.states.byNameStatics(s) ? this.staticsDeclaration(s) ?? '' : '';
           }
         }
         throw this.error(s, 'a class declared inside a function');

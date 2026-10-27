@@ -3609,6 +3609,21 @@ export class Translator implements AsyncTranslator {
       this.staticInits!.push(`    jsDecorate(${name}::class.java, listOf(${decorators.map((d) => this.coerce(d.expression, 'Any?')).join(', ')}))`);
       this.indent = '    ';
     }
+    // Statics script reads by name (`(Registry as any)[key]`), which a companion's members are not to reflection.
+    if (this.staticInits && this.states.byNameStatics(cls)) {
+      const owner = name.replace(/<.*$/, '');
+      const entries = cls.members.flatMap((m): string[] => {
+        if (!isStatic(m) || !m.name || !ts.isIdentifier(m.name)) return [];
+        const n = m.name.text, ref = `${owner}.${ident(n)}`;
+        if (ts.isMethodDeclaration(m)) {
+          if (!m.body || m.typeParameters?.length || m.asteriskToken || m.parameters.some((p) => p.dotDotDotToken) || this.readsArguments(m) || cls.members.filter((x) => ts.isMethodDeclaration(x) && x.name.getText() === n).length > 1) return [];
+          const call = `${ref}(${m.parameters.map((p, k) => this.fromAnyCode(`__a.getOrNull(${k})`, this.paramType(p), true)).join(', ')})`;
+          return [`${kotlinString(n)} to { jsFunction ${lambda(['__a'], this.returnTypeOf(m) === 'Unit' ? `${call}; null` : call)} }`];
+        }
+        return ts.isPropertyDeclaration(m) || ts.isGetAccessorDeclaration(m) ? [`${kotlinString(n)} to { ${ref} }`] : [];
+      });
+      if (entries.length) this.staticInits.push(`    JSPrototypes.declareStatics(${owner}::class.java, listOf(${entries.join(', ')}))`);
+    }
     // `[fooProperty.setNative](value)`: the class's native setter for that registered property. The generated kit
     // reaches any property's setter by its symbol, core's (`isUserInteractionEnabledProperty`) included.
     const nativeSetter = (x: ts.Expression): string | null => this.library ? null : this.setNativeOf(x) ?? (this.generatedKit && ts.isPropertyAccessExpression(x) && x.name.text === 'setNative' ? x.expression.getText().replace(/\W+/g, '_') : null);
