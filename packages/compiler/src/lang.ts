@@ -1906,3 +1906,76 @@ export function unsetGroupTyping(checker: ts.TypeChecker, resolve: (n: ts.Node) 
   };
   return { groups, match, element, returnsElement, typedCallback };
 }
+
+/** Whether an expression's value is unused: a statement of its own, or a for loop's clause. */
+export function statementLevel(e: ts.Expression): boolean {
+  let n: ts.Node = e;
+  while (ts.isParenthesizedExpression(n.parent)) n = n.parent;
+  const p = n.parent;
+  return ts.isExpressionStatement(p) || (ts.isForStatement(p) && (p.incrementor === n || p.initializer === n)) || (ts.isBinaryExpression(p) && p.operatorToken.kind === ts.SyntaxKind.CommaToken && p.left === n);
+}
+
+/**
+ * A compound (`+=` …), logical (`??=`, `||=`, `&&=`) or update (`++`, `--`) assignment to a member: JavaScript evaluates
+ * the target's object and key once, reads the member, and writes it (a logical one only when it assigns). `held` is the
+ * parts a second evaluation could be seen by (a call, a getter, an untyped read), object first, which each translation
+ * evaluates once into a temporary; `value`, whether the assignment's value is used; `stored`, whether the target is a
+ * plain stored member of a typed object with no held parts, which reading back or writing unchanged runs nothing for.
+ */
+export interface ReadWrite {
+  target: ts.PropertyAccessExpression | ts.ElementAccessExpression;
+  held: ts.Expression[];
+  value: boolean;
+  stored: boolean;
+}
+
+export function readWrite(e: ts.Expression, checker: ts.TypeChecker): ReadWrite | null {
+  const K = ts.SyntaxKind;
+  let target: ts.Expression;
+  if (ts.isBinaryExpression(e) && e.operatorToken.kind >= K.FirstCompoundAssignment && e.operatorToken.kind <= K.LastCompoundAssignment) target = e.left;
+  else if ((ts.isPrefixUnaryExpression(e) || ts.isPostfixUnaryExpression(e)) && (e.operator === K.PlusPlusToken || e.operator === K.MinusMinusToken)) target = e.operand;
+  else return null;
+  while (ts.isParenthesizedExpression(target)) target = target.expression;
+  if (!ts.isPropertyAccessExpression(target) && !ts.isElementAccessExpression(target)) return null;
+  const held: ts.Expression[] = [];
+  if (!stableRead(target.expression, checker)) held.push(target.expression);
+  if (ts.isElementAccessExpression(target) && !stableRead(target.argumentExpression, checker)) held.push(target.argumentExpression);
+  return { target, held, value: !statementLevel(e), stored: stableRead(target, checker) };
+}
+
+/** Whether evaluating an expression again gives the same value and runs nothing that could be seen. */
+function stableRead(x: ts.Expression, checker: ts.TypeChecker): boolean {
+  const K = ts.SyntaxKind;
+  x = ts.skipOuterExpressions(x);
+  if ([K.Identifier, K.ThisKeyword, K.SuperKeyword, K.StringLiteral, K.NumericLiteral, K.BigIntLiteral, K.NoSubstitutionTemplateLiteral, K.TrueKeyword, K.FalseKeyword, K.NullKeyword].includes(x.kind)) return true;
+  if (ts.isPrefixUnaryExpression(x) && x.operator === K.MinusToken) return ts.isNumericLiteral(x.operand);
+  const untyped = (r: ts.Expression) => !!(checker.getTypeAtLocation(r).flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown));
+  if (ts.isPropertyAccessExpression(x)) {
+    const sym = checker.getSymbolAtLocation(x.name);
+    return !!sym && !(sym.flags & ts.SymbolFlags.Accessor) && !untyped(x.expression) && stableRead(x.expression, checker);
+  }
+  if (ts.isElementAccessExpression(x)) return !untyped(x.expression) && stableRead(x.expression, checker) && stableRead(x.argumentExpression, checker);
+  return false;
+}
+
+/** The operator of the operation a compound assignment makes (`+` of `+=`). */
+export function compoundOperator(op: ts.SyntaxKind): ts.BinaryOperator {
+  const K = ts.SyntaxKind;
+  const map: Partial<Record<ts.SyntaxKind, ts.BinaryOperator>> = {
+    [K.PlusEqualsToken]: K.PlusToken, [K.MinusEqualsToken]: K.MinusToken, [K.AsteriskEqualsToken]: K.AsteriskToken, [K.SlashEqualsToken]: K.SlashToken,
+    [K.PercentEqualsToken]: K.PercentToken, [K.AsteriskAsteriskEqualsToken]: K.AsteriskAsteriskToken, [K.AmpersandEqualsToken]: K.AmpersandToken,
+    [K.BarEqualsToken]: K.BarToken, [K.CaretEqualsToken]: K.CaretToken, [K.LessThanLessThanEqualsToken]: K.LessThanLessThanToken,
+    [K.GreaterThanGreaterThanEqualsToken]: K.GreaterThanGreaterThanToken, [K.GreaterThanGreaterThanGreaterThanEqualsToken]: K.GreaterThanGreaterThanGreaterThanToken,
+  };
+  return map[op]!;
+}
+
+/** `a op= b` read as `a op b`: the same node apart from its operator, for a translator's binary expression. */
+export function asOperation(e: ts.BinaryExpression): ts.BinaryExpression {
+  return Object.assign(Object.create(e) as ts.BinaryExpression, { operatorToken: { kind: compoundOperator(e.operatorToken.kind) } });
+}
+
+/** `left = right` in place of `e`, for a translator's assignment of a value it computed (`right`, held by its subst). */
+export function assignmentOf(e: ts.Expression, left: ts.Expression, right: ts.Expression): ts.BinaryExpression {
+  return Object.assign(Object.create(e) as ts.BinaryExpression, { kind: ts.SyntaxKind.BinaryExpression, operatorToken: { kind: ts.SyntaxKind.EqualsToken }, left, right });
+}
