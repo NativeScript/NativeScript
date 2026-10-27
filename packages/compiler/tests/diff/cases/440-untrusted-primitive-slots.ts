@@ -1,6 +1,6 @@
 // Strings, numbers and booleans from untyped values placed in typed slots (a variable, a field, a literal field, a
-// return): JavaScript stores undefined, null or another kind as given, so nothing throws where it is placed. A parameter,
-// a field and a result take undefined and null so too, and another kind is a TypeError where it is placed.
+// return): JavaScript stores undefined, null or another kind as given, so nothing throws where it is placed. A variable,
+// a parameter, a field and a result take undefined and null so too, and another kind is a TypeError where it is placed.
 interface Settings {
   title: string;
   size: number;
@@ -13,9 +13,9 @@ class Label {
 }
 const raw: any = JSON.parse('{"title": 7, "size": "12", "shown": 1, "nothing": null}');
 
-const title: string = raw.title;
-const size: number = raw.size;
-const shown: boolean = raw.shown;
+const title: string = String(raw.title);
+const size: number = Number(raw.size);
+const shown: boolean = Boolean(raw.shown);
 console.log(`${title}`, size * 2, shown ? 'shown' : 'hidden');
 
 const missing: string = raw.missing;

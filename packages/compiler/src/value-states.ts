@@ -129,7 +129,8 @@ export class ValueStates {
    */
   packaged(n: ts.Node): boolean {
     const f = n.getSourceFile().fileName;
-    return this.plugin(n) || /[\\/]node_modules[\\/]/.test(f) || SHIPPED.some((d) => f.startsWith(d)) || this.backend.pluginRoots.some((r) => f.startsWith(r.endsWith('/') ? r : r + '/'));
+    // `__angular.release.ts` is the compiler's `runtime/angular.ts`, placed in the app's directory.
+    return this.plugin(n) || /[\\/]node_modules[\\/]/.test(f) || /[\\/]__angular\.release\.ts$/.test(f) || SHIPPED.some((d) => f.startsWith(d)) || this.backend.pluginRoots.some((r) => f.startsWith(r.endsWith('/') ? r : r + '/'));
   }
 
   private primitive(t: string): boolean {
@@ -315,7 +316,7 @@ export class ValueStates {
     }
     if (!ts.isIdentifier(n) || ts.isShorthandPropertyAssignment(n.parent)) return false;
     const d = this.checker.getSymbolAtLocation(n)?.valueDeclaration;
-    return !!d && (ts.isVariableDeclaration(d) || ts.isParameter(d)) && this.nullish().held.has(d);
+    return !!d && (ts.isVariableDeclaration(d) || ts.isParameter(d) || ts.isBindingElement(d)) && this.nullish().held.has(d);
   }
 
   /**
@@ -654,8 +655,9 @@ export class ValueStates {
   }
 
   /**
-   * An untyped value placed in a slot of the app's own code that holds its declared type (§2.3b M6): an argument
-   * (group 2), a function's result (group 3), a field, or an element of an array, Set or Map (group 4). The form the
+   * An untyped value placed in a slot of the app's own code that holds its declared type (§2.3b M6): a variable's
+   * initializer or assignment, an argument (group 2), a function's result (group 3), a field, or an element of an array,
+   * Set or Map (group 4). The form the
    * value enters as, for the backend's checked convert. Null where the slot is held untyped, its type is tested, or the
    * value or slot is no such one.
    */
@@ -692,8 +694,13 @@ export class ValueStates {
       const awaited = this.checker.getAwaitedType(result);
       return form.element && awaited && !ts.isArrowFunction(fn) && !ts.isFunctionExpression(fn) ? { ...form.element, type: this.checker.getNonNullableType(awaited) } : null;
     }
+    if (ts.isVariableDeclaration(p) && p.initializer === x) return ts.isIdentifier(p.name) ? slot(p) : null;
     if (ts.isBinaryExpression(p) && p.operatorToken.kind === ts.SyntaxKind.EqualsToken && p.right === x) {
       const left = ts.skipOuterExpressions(p.left, ts.OuterExpressionKinds.Parentheses);
+      if (ts.isIdentifier(left)) {
+        const d = this.checker.getSymbolAtLocation(left)?.valueDeclaration;
+        return d && (ts.isVariableDeclaration(d) || (ts.isParameter(d) && !ts.isParameterPropertyDeclaration(d, d.parent))) ? slot(d) : null;
+      }
       if (ts.isPropertyAccessExpression(left)) return this.fieldSlot(this.checker.getSymbolAtLocation(left.name)?.valueDeclaration, slot);
       if (ts.isElementAccessExpression(left) && this.collection(left.expression) === 'Array' && this.checker.getTypeAtLocation(left.argumentExpression).flags & ts.TypeFlags.NumberLike) return this.forms().formOf(left.expression).element ?? null;
       return null;
@@ -705,6 +712,19 @@ export class ValueStates {
       return literal && name ? this.fieldSlot(this.checker.getNonNullableType(literal).getProperty(name)?.valueDeclaration, slot) : null;
     }
     return null;
+  }
+
+  /**
+   * A variable a destructuring pattern binds from an untyped value (`const { a }: { a: string } = raw`), named by a
+   * pattern whose type says what it holds: the form its value enters as, as `foreignPlacement` gives a placement's.
+   */
+  foreignBinding(el: ts.BindingElement): Form | null {
+    const b = this.backend, pattern = el.parent, holder = pattern.parent;
+    if (b.library || b.lenient || el.dotDotDotToken || !ts.isIdentifier(el.name) || !this.appCode(el) || this.nullish().held.has(el)) return null;
+    if (!ts.isVariableDeclaration(holder) || !holder.initializer || !holder.type || !this.untypedValue(holder.initializer)) return null;
+    const form = this.forms().formOfSlot(el), type = this.checker.getNonNullableType(this.checker.getTypeAtLocation(el.name));
+    if (!form.foreign || form.typeObserved || type.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown) || isGeneric(type)) return null;
+    return this.withElements({ ...form, type }, false);
   }
 
   private fieldSlot(d: ts.Declaration | undefined, slot: (d: ts.Declaration | undefined) => Form | null): Form | null {
@@ -758,6 +778,10 @@ export class ValueStates {
     let type: ts.Type | undefined;
     if (ts.isVariableDeclaration(d)) {
       if (!ts.isIdentifier(d.name) || !ts.isVariableStatement(d.parent.parent)) return false;
+      type = this.checker.getTypeAtLocation(d.name);
+    } else if (ts.isBindingElement(d)) {
+      const holder = d.parent.parent;
+      if (!ts.isIdentifier(d.name) || d.dotDotDotToken || !ts.isVariableDeclaration(holder) || !ts.isVariableStatement(holder.parent.parent)) return false;
       type = this.checker.getTypeAtLocation(d.name);
     } else if (ts.isParameter(d)) {
       const fn = d.parent;
