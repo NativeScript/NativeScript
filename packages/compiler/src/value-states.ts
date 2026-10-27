@@ -1,4 +1,5 @@
 import { dirname, join } from 'node:path';
+import { appendFileSync as MEASURE_append } from 'node:fs';
 import ts from 'typescript';
 import { heldDowncasts, implementedInterfaceDeclarations, LooseSlots, nothingGiven, nullishSlots, nullSetFields, originOf, ownSlot, scriptCalledFunction, slotOf, slotType, type NullishSlots, type TrustScope } from './lang.ts';
 import { type Form, Forms, isGeneric, representation } from './forms.ts';
@@ -541,11 +542,14 @@ export class ValueStates {
       return f.undefined ? 'undefined' : f.null ? 'null' : null;
     }
     const t = c.getTypeAtLocation(x);
+    const recvType = (e: ts.Expression) => c.getNonNullableType(c.getTypeAtLocation(e));
+    const record = (e: ts.Expression) => { const r = recvType(e); return !c.isArrayType(r) && !c.isTupleType(r) && !(r.flags & ts.TypeFlags.StringLike) && c.getIndexInfosOfType(r).length > 0; };
+    // An object-valued record's entry: undefined for a key never set, whatever its value type.
+    const objectEntry = ts.isElementAccessExpression(x) && !x.questionDotToken && !(t.flags & (untyped | ts.TypeFlags.TypeParameter)) && !primitive(t) && !empty(t) && record(x.expression);
+    if (objectEntry) return this.forms().formOf(x).undefined ? 'undefined' : null;
     if (!primitive(t) || empty(t) || x.flags & ts.NodeFlags.OptionalChain) return null;
     const form = this.forms().formOf(x);
     if (!form.undefined) return null;
-    const recvType = (e: ts.Expression) => c.getNonNullableType(c.getTypeAtLocation(e));
-    const record = (e: ts.Expression) => { const r = recvType(e); return !c.isArrayType(r) && !c.isTupleType(r) && c.getIndexInfosOfType(r).length > 0; };
     if (ts.isElementAccessExpression(x)) {
       const r = recvType(x.expression);
       return (c.isArrayType(r) && !c.isTupleType(r)) || !!(r.flags & ts.TypeFlags.StringLike) || record(x.expression) ? 'undefined' : null;
@@ -681,6 +685,74 @@ export class ValueStates {
     return found;
   }
   private readonly widenedParams = new Map<ts.ParameterDeclaration, boolean>();
+
+  /**
+   * An app function's result whose form holds null or undefined its declared type leaves out: a value its returns may
+   * leave missing (an element past the end, `find`, `Map.get`, a record's entry, a widened call's result, an untyped
+   * value) or, in non-strict code, `return null`/`return undefined`. The form is its group's (overrides, the interface
+   * member or function type it is given for), so every place that spells a member of the group asks this. Not for a
+   * result typed by a type parameter (§2.3b M5), an async function's or generator's, or one whose group holds a fixed
+   * point (a kit's or platform's callback type).
+   */
+  widenedResult(fn: ts.SignatureDeclaration): boolean {
+    return WIDEN_RESULTS && this.resultWidening(fn);
+  }
+  private resultWidening(fn: ts.SignatureDeclaration): boolean {
+    const b = this.backend;
+    if (b.library || b.lenient || ts.isJSDocSignature(fn as ts.Node) || fn.getSourceFile().isDeclarationFile || this.packaged(fn) || !this.appCode(fn)) return false;
+    if (ts.isConstructorDeclaration(fn) || ts.isSetAccessorDeclaration(fn) || isAsync(fn) || (fn as ts.FunctionLikeDeclaration).asteriskToken) return false;
+    let found = this.widenedResults.get(fn);
+    if (found !== undefined) return found;
+    found = false;
+    const t = this.checker.getSignatureFromDeclaration(fn)?.getReturnType();
+    const none = ts.TypeFlags.Void | ts.TypeFlags.Undefined | ts.TypeFlags.Null | ts.TypeFlags.Any | ts.TypeFlags.Unknown | ts.TypeFlags.Never;
+    // A boolean's undefined reads as false wherever a boolean is tested, which a library's callback (`filter`) does.
+    if (t && !(t.flags & (none | ts.TypeFlags.BooleanLike)) && !isGeneric(t)) {
+      const forms = this.forms();
+      if (!forms.fixedSlot(fn)) {
+        const declared = forms.declaredForm(fn), form = forms.formOfSlot(fn);
+        found = !declared.foreign && !form.foreign && ((form.null && !declared.null) || (form.undefined && !declared.undefined));
+      }
+    }
+    this.widenedResults.set(fn, found);
+    return found;
+  }
+  private readonly widenedResults = new Map<ts.SignatureDeclaration, boolean>();
+
+  /** A function literal typed by nothing of its own (`() => null`, non-strict) given for a widened function type: that type. */
+  widenedContext(fn: ts.SignatureDeclaration): ts.SignatureDeclaration | null {
+    if (!(ts.isArrowFunction(fn) || ts.isFunctionExpression(fn)) || fn.type) return null;
+    const own = this.checker.getSignatureFromDeclaration(fn)?.getReturnType();
+    if (!own || !(own.flags & (ts.TypeFlags.Any | ts.TypeFlags.Null | ts.TypeFlags.Undefined))) return null;
+    const ctx = this.checker.getContextualType(fn)?.getNonNullableType().getCallSignatures()[0]?.getDeclaration();
+    return ctx && !ts.isJSDocSignature(ctx) && this.widenedResult(ctx) ? ctx : null;
+  }
+  MEASURE_dumped = false;
+  MEASURE_dump(): void {
+    if (this.MEASURE_dumped || !process.env.NS_MEASURE_RESULTS) return;
+    this.MEASURE_dumped = true;
+    const out: string[] = [];
+    const where = (n: ts.Node) => { const f = n.getSourceFile(); const { line } = f.getLineAndCharacterOfPosition(n.getStart()); return `${f.fileName.replace(/.*\/(src|app|cases)\//, '')}:${line + 1}`; };
+    const calls = new Map<ts.Node, string[]>();
+    const visit = (n: ts.Node): void => {
+      if (ts.isCallExpression(n)) {
+        const d = this.checker.getResolvedSignature(n)?.getDeclaration();
+        if (d && !ts.isJSDocSignature(d)) { const l = calls.get(d) ?? []; l.push(where(n)); calls.set(d, l); }
+      }
+      if (ts.isFunctionLike(n) && !n.getSourceFile().isDeclarationFile && this.resultWidening(n as ts.SignatureDeclaration)) {
+        const f = this.forms().formOfSlot(n as ts.Declaration);
+        out.push(`W ${ts.SyntaxKind[n.kind]} ${where(n)} ${(n as ts.FunctionDeclaration).name?.getText() ?? ''} u=${f.undefined} n=${f.null} m=${f.missing} f=${f.foreign} :: ${this.checker.typeToString(this.checker.getSignatureFromDeclaration(n as ts.SignatureDeclaration)!.getReturnType())}`);
+        widened.push(n);
+      }
+      ts.forEachChild(n, visit);
+    };
+    const widened: ts.Node[] = [];
+    for (const f of this.backend.sourceFiles) if (!f.isDeclarationFile && !this.packaged(f)) visit(f);
+    let sites = 0;
+    for (const w of widened) { const l = calls.get(w) ?? []; sites += l.length; out.push(`  calls ${l.length}: ${l.slice(0, 6).join(' ')}`); }
+    out.unshift(`widened ${widened.length} calls ${sites}`);
+    MEASURE_append(process.env.NS_MEASURE_RESULTS, `=== ${this.backend.library ? 'lib' : 'app'} ${this.backend.lenientApp ? 'lenientApp' : ''}\n${out.join('\n')}\n`);
+  }
 
   /**
    * An untyped value asserted to a concrete type (`x as T`, `JSON.parse(s) as T`) in the app's own code: the form the
@@ -883,6 +955,9 @@ export class ValueStates {
     return (form.null && !declared.null) || (form.undefined && !declared.undefined);
   }
 }
+
+/** WIP switch: the result rule stays off until its real-app call-site count is decided (Undefined reads state). */
+const WIDEN_RESULTS = !!process.env.NS_WIDEN_RESULTS;
 
 /** A member read that is written: an assignment's target, an update's operand, a `delete`'s. */
 function assigned(n: ts.Node): boolean {

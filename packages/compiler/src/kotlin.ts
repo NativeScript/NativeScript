@@ -812,7 +812,7 @@ export class Translator implements AsyncTranslator {
       const generic = (s.typeParameters ?? []).map((p) => p.symbol.name);
       const erase = (x: string) => generic.reduce((acc, n) => acc.replace(new RegExp(`\\b${n}\\b`, 'g'), 'Any?'), x).replace(/\?\?/g, '?');
       const sd = s.getDeclaration() as ts.Declaration | undefined;
-      return erase(`(${params.join(', ')}) -> ${sd && this.states.nullish().held.has(sd) ? 'Any?' : sd && this.states.nullishHeld(sd) ? nullishType(this.type(s.getReturnType(), where)) : this.type(s.getReturnType(), where)}`);
+      return erase(`(${params.join(', ')}) -> ${sd && this.states.nullish().held.has(sd) ? 'Any?' : sd && this.states.nullishHeld(sd) ? nullishType(this.type(s.getReturnType(), where)) : this.widenedResultType(sd, this.type(s.getReturnType(), where))}`);
     }
     // An interface extending a class; one merged into a class (`interface ListViewBase { on(…) }`) is the class.
     // An interface typing a variable of its name a lazily defined class is assigned to (`interface PagerAdapter` with
@@ -1156,7 +1156,7 @@ export class Translator implements AsyncTranslator {
   /** Whether a call's result Kotlin holds nullable, though its type says present, is unwrapped where it is read (see `lenientResult`). */
   private unwrapsResult(e: ts.CallExpression): boolean {
     const decl = this.checker.getResolvedSignature(e)?.getDeclaration();
-    if (!this.lenient && !(decl && !ts.isJSDocSignature(decl) && this.states.looseDeclaration(decl))) return false;
+    if (!this.lenient && !(decl && !ts.isJSDocSignature(decl) && (this.states.looseDeclaration(decl) || this.states.widenedResult(decl)))) return false;
     if (!decl || ts.isJSDocSignature(decl) || decl.getSourceFile().isDeclarationFile || !(ts.isFunctionDeclaration(decl) || ts.isMethodDeclaration(decl) || ts.isArrowFunction(decl) || ts.isFunctionExpression(decl))) return false;
     // A result nothing reads, or an optional chain's (undefined where it stops), is not unwrapped.
     const chainGoesOn = (ts.isPropertyAccessExpression(e.parent) || ts.isElementAccessExpression(e.parent) || ts.isCallExpression(e.parent)) && e.parent.expression === e && !!(e.parent.flags & ts.NodeFlags.OptionalChain);
@@ -2546,13 +2546,21 @@ export class Translator implements AsyncTranslator {
     return lines;
   }
 
+  /** A function type's result as its group holds it (`widenedResult`). */
+  private widenedResultType(sd: ts.Declaration | undefined, t: string): string {
+    return sd && ts.isFunctionLike(sd) && !ts.isJSDocSignature(sd as ts.Node) && !['Unit', 'Any?', 'Nothing'].includes(t) && !t.endsWith('?') && this.states.widenedResult(sd as ts.SignatureDeclaration) ? optionalType(t) : t;
+  }
+
   returnTypeOf(fn: ts.SignatureDeclaration): string {
+    this.states.MEASURE_dump();
+    const context = this.states.widenedContext(fn);
+    if (context) return this.returnTypeOf(context);
     if (this.states.nullish().held.has(fn) || (this.library && this.thisValues().returning.has(fn))) return 'Any?';
     if (this.states.nullishHeld(fn)) return nullishType(this.type(this.states.resultType(fn), fn));
     if (this.library && this.returnsNullApart(fn)) return 'Any?';
     const t = this.heldElements(fn, this.type(this.checker.getSignatureFromDeclaration(fn)!.getReturnType(), fn));
     if (this.library && this.nullablePrimitiveReturn(fn) && ['String', 'Double', 'Boolean'].includes(t)) return optionalType(t);
-    if (this.states.looseDeclaration(fn) || (!this.library && (ts.isArrowFunction(fn) || ts.isFunctionExpression(fn)) && this.unset.returnsElement(fn))) return optionalType(t);
+    if (this.states.looseDeclaration(fn) || this.widenedResultType(fn, t) !== t || (!this.library && (ts.isArrowFunction(fn) || ts.isFunctionExpression(fn)) && this.unset.returnsElement(fn))) return optionalType(t);
     if (this.states.lenientAsync(fn)) return t.replace(/^JSPromise<(String|Double|Boolean)>$/, 'JSPromise<$1?>');
     return fn.getSourceFile().isDeclarationFile || ts.isArrowFunction(fn) || ts.isFunctionExpression(fn) ? t : this.lenientRef(t);
   }
@@ -9720,6 +9728,9 @@ export class Translator implements AsyncTranslator {
     // Code unchecked for null, or a parameter of a function script calls: undefined when left out, though read as its type.
     const param = ts.isIdentifier(e.expression) ? this.resolve(e.expression)?.valueDeclaration : undefined;
     if (param && ts.isParameter(param) && (this.library || this.lenient || this.lenientApp || this.states.scriptCalledParameter(param)) && !t.endsWith('?') && this.declaredTypeOf(e.expression as ts.Identifier) === optionalType(t)) return this.rawTypeof(e.expression);
+    // A call whose result Kotlin holds nullable though its type says present: what it gives.
+    const callee = ts.isCallExpression(e.expression) && !this.library ? this.checker.getResolvedSignature(e.expression)?.getDeclaration() : undefined;
+    if (callee && !ts.isJSDocSignature(callee) && !callee.getSourceFile().isDeclarationFile && !t.endsWith('?') && this.returnTypeOf(callee) === optionalType(t)) return `jsTypeof(${this.expr(e.expression)})`;
     const maybe = this.maybeUndefined(e.expression);
     // A value that may be missing: the runtime's typeof, as a test before it may already prove it present.
     if (maybe) return `jsTypeof(${maybe})`;

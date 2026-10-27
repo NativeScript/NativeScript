@@ -1176,7 +1176,7 @@ export class Translator implements AsyncTranslator {
         return isFunctionType(pt) ? `@escaping ${pt}` : pt;
       });
       // One parameter of no value is spelled `(())`: Swift reads `(Void) -> T` as taking no arguments.
-      return `(${params.length === 1 && params[0] === 'Void' ? '()' : params.join(', ')}) throws -> ${sd && this.states.nullish().held.has(sd) ? 'Any?' : sd && this.states.nullishHeld(sd) ? nullishType(this.type(own(s.getReturnType()), where)) : this.type(own(s.getReturnType()), where)}`;
+      return `(${params.length === 1 && params[0] === 'Void' ? '()' : params.join(', ')}) throws -> ${sd && this.states.nullish().held.has(sd) ? 'Any?' : sd && this.states.nullishHeld(sd) ? nullishType(this.type(own(s.getReturnType()), where)) : this.widenedResultType(sd, this.type(own(s.getReturnType()), where))}`;
     }
     // An interface extending one class is that class; one merged into a class of its name is the class.
     const extended = sym && sym.flags & ts.SymbolFlags.Interface && !(sym.flags & ts.SymbolFlags.Class) ? this.extendedClass(t) : null;
@@ -2306,7 +2306,7 @@ export class Translator implements AsyncTranslator {
         continue;
       }
       // Lenient code: a string or boolean declared without a value reads undefined until assigned (`let enabled: boolean;`).
-      if (!d.initializer && this.lenient && (t === 'Bool' || t === 'String')) {
+      if (!d.initializer && ((this.lenient && (t === 'Bool' || t === 'String')) || (this.lenientApp && !this.library && ['Bool', 'String', 'Double'].includes(t) && this.states.appCode(d)))) {
         const sym = this.resolve(d.name);
         if (sym) this.undefinedVars.set(sym, optionalType(t));
         field(`${modifiers}var ${name}: ${optionalType(t)} = nil`, name, optionalType(t));
@@ -4152,9 +4152,16 @@ ${members.join('\n')}
     return lines;
   }
 
+  /** A function type's result as its group holds it (`widenedResult`). */
+  private widenedResultType(sd: ts.SignatureDeclaration | undefined, t: string): string {
+    return sd && !ts.isJSDocSignature(sd as ts.Node) && t !== 'Void' && t !== 'Any?' && !isOptional(t) && !t.endsWith('!') && !isFunctionType(t) && this.states.widenedResult(sd) ? optionalType(t) : t;
+  }
+
   /** The Swift type a function returns: `JSPromise<T>` for an async one. */
   returnTypeOf(fn: ts.SignatureDeclaration): string {
     if (this.states.nullish().held.has(fn)) return 'Any?';
+    const context = this.states.widenedContext(fn);
+    if (context) return this.returnTypeOf(context);
     if (this.states.nullishHeld(fn)) return nullishType(this.type(this.states.resultType(fn), fn));
     if ((ts.isArrowFunction(fn) || ts.isFunctionExpression(fn) || ts.isFunctionDeclaration(fn)) && this.returnsMethod(fn)) return 'Any?';
     if (this.heldReturn(fn)) return 'Any?';
@@ -4196,7 +4203,9 @@ ${members.join('\n')}
   }
 
   private mayReturnUndefined(fn: ts.SignatureDeclaration): boolean {
+    this.states.MEASURE_dump();
     if (fn.getSourceFile().isDeclarationFile) return false;
+    if (this.states.widenedResult(fn)) return true;
     if ((ts.isArrowFunction(fn) || ts.isFunctionExpression(fn)) && this.returnsUnsetElement(fn)) return true;
     // A non-strict app's function returning null (`return null` from a `Color` helper): optional too.
     // An async function or a generator gives its promise or iterator whatever its body returns; a template's binding
@@ -4989,7 +4998,8 @@ ${members.join('\n')}
     // A closure giving an untyped value where its slot says a type (lenient code): the slot's type, its value read as that.
     if (!voidSlot && slotType && own === 'Any?' && slotType !== 'Void' && this.lenient) return slotType;
     // A non-strict app's closure giving a value that may be missing (a native `string | null`) where its slot says the value: the slot's.
-    if (!voidSlot && slotType && this.lenientApp && !this.lenient && own === optionalType(slotType)) return slotType;
+    const sd = slot?.getDeclaration();
+    if (!voidSlot && slotType && this.lenientApp && !this.lenient && own === optionalType(slotType) && !(sd && !ts.isJSDocSignature(sd) && this.states.widenedResult(sd))) return slotType;
     // A closure returning a function where its slot takes any value (`TeardownLogic`, `any`) boxes the function.
     if (!voidSlot && isFunctionType(own) && slot && this.type(slot.getReturnType(), fn) === 'Any?') return 'Any?';
     return voidSlot ? 'Void' : slotType && slotType !== own && /^Object_/.test(own) ? slotType : own;
@@ -6740,8 +6750,20 @@ ${members.join('\n')}
       nulledEntry: (e, code) => this.nulledEntry(e, code),
       untypedCode: (e) => this.coerceTyped(e, 'Any?'),
       optionalShapeField: (e) => this.optionalShapeField(e),
-      heldOptional: (x) => this.typeOf(x).endsWith('?') || this.optionalResult(x),
+      heldOptional: (x) => this.typeOf(x).endsWith('?') || this.optionalResult(x) || (ts.isIdentifier(x) && this.unsetLenientVariable(x)),
     };
+  }
+  /** A non-strict app's read of an object type's optional string, number or boolean member (`o.a`, `a?: string`), held optional. */
+  private lenientOptionalMember(x: ts.PropertyAccessExpression): boolean {
+    if (!this.lenientApp || this.library || x.questionDotToken || x.flags & ts.NodeFlags.OptionalChain || isWriteTarget(x) || !['String', 'Double', 'Bool'].includes(this.typeOf(x))) return false;
+    const d = this.resolve(x.name)?.valueDeclaration;
+    return !!d && ts.isPropertySignature(d) && !!d.questionToken && !d.getSourceFile().isDeclarationFile && this.states.appCode(d);
+  }
+  /** A non-strict app's string, number or boolean variable declared without a value: undefined until assigned (`declaration`). */
+  private unsetLenientVariable(x: ts.Identifier): boolean {
+    const d = this.resolve(x)?.valueDeclaration;
+    if (!this.lenientApp || this.library || !d || !ts.isVariableDeclaration(d) || d.initializer || !ts.isIdentifier(d.name) || !ts.isVariableDeclarationList(d.parent) || !ts.isVariableStatement(d.parent.parent)) return false;
+    return ['String', 'Double', 'Bool'].includes(this.typeOf(d.name)) && this.states.appCode(d);
   }
   private lenientAll = false;
   /** The app's configuration is not strict: a variable declared without a value may be read before one is assigned. */
@@ -9384,6 +9406,7 @@ ${members.join('\n')}
       const member = this.namespaceMember(e);
       const decl = member ? this.resolve(e.name)?.valueDeclaration : undefined;
       if (member && !(ts.isPropertyAccessExpression(e.parent) && e.parent.expression === e) && (this.isNamespace(e) || (decl && ts.isClassDeclaration(decl)))) return `${member}.self`;
+      if (!member && this.lenientOptionalMember(e)) return this.undefinedAs(this.property(e), this.typeOf(e), optionalType(this.typeOf(e)));
       return member ? this.narrowed(e, member) : this.property(e);
     }
     if (ts.isElementAccessExpression(e)) return this.elementAccess(e);
@@ -10524,6 +10547,8 @@ ${members.join('\n')}
       if (isOptional(vt)) return `(${read} ?? nil)`;
       // Lenient code: a missing object is undefined, which the code tests for (`if (!list) …`).
       if (this.lenient && this.lenientRef(vt) !== vt) return `jsImplicit(${read})`;
+      // App code: a key never set reads undefined, not the value type's zero.
+      if (!this.library && !this.lenient && ['String', 'Double', 'Bool'].includes(vt) && this.states.appCode(e)) return this.undefinedAs(read, vt, optionalType(vt));
       const z = isFunctionType(vt) ? null : this.zero(vt);
       return z ? `(${read} ?? ${z})` : `${read}!`;
     }
@@ -10754,6 +10779,7 @@ ${members.join('\n')}
       const sym = this.resolve(e);
       if (sym && this.undefinedVars.has(sym)) return this.refName(e);
     }
+    if (ts.isPropertyAccessExpression(e) && this.lenientOptionalMember(e)) return this.property(e);
     // `a?.b` of an untyped `a` where the chain goes on (`a?.b?.c`): the optional the chain continues from.
     if (ts.isPropertyAccessExpression(e) && e.questionDotToken && this.isAny(e.expression) && !isOptional(this.typeOf(e)) && this.typeOf(e) !== 'Any?' && !this.untypedLinks.has(e)) {
       const p = e.parent;
