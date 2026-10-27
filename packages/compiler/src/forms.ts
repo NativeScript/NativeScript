@@ -614,6 +614,9 @@ export class Forms {
     if (key === null) {
       const k = this.checker.getTypeAtLocation(n.argumentExpression);
       if (!(k.flags & ts.TypeFlags.StringLike) || indexed(k)) return;
+      // A key of literal types (`scope[SLOT]` of a `const SLOT = '__slot__'`) names the members it may be.
+      const names = k.isUnion() ? k.types : [k];
+      if (names.every((l) => l.isStringLiteral() && this.checker.getPropertyOfType(apparent, l.value))) return;
     } else if (this.checker.getPropertyOfType(apparent, key) || indexed(/^\d+$/.test(key) ? this.checker.getNumberType() : this.checker.getStringType())) return;
     this.observeType(x);
   }

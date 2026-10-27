@@ -1465,6 +1465,8 @@ export class Translator implements AsyncTranslator {
   }
 
   typeOf(n: ts.Node): string {
+    const narrowed = this.narrowedHeld(n);
+    if (narrowed) return this.type(narrowed.type, n);
     const t = this.heldElements(n, this.plainTypeOf(n));
     return ts.isIdentifier(n) && n.parent && ts.isVariableDeclaration(n.parent) && n.parent.name === n && this.states.nullishHeld(n.parent) ? nullishType(t) : t;
   }
@@ -2060,7 +2062,7 @@ export class Translator implements AsyncTranslator {
       const fields = props.map((p): ShapeField => {
         const ptype = this.checker.getTypeOfSymbolAtLocation(p, where ?? p.valueDeclaration!);
         // A field of a type parameter (`{ at, data: T }`): shared by every instantiation, it holds any value.
-        let pt = ptype.flags & ts.TypeFlags.TypeParameter ? 'Any?' : this.type(ptype, where);
+        let pt = ptype.flags & ts.TypeFlags.TypeParameter || (p.valueDeclaration && this.states.nullish().held.has(p.valueDeclaration)) ? 'Any?' : this.type(ptype, where);
         const symbolic = wellKnownMember(p.name);
         if (symbolic) return { name: symbolic, type: pt, symbol: true };
         if (pt === 'Void' || pt === 'Never') pt = 'Any?';
@@ -3360,7 +3362,7 @@ ${members.join('\n')}
       try { if (this.typeOf(n) === 'Any?') return true; } catch { return false; }
     }
     if ((ts.isAsExpression(n) || ts.isTypeAssertionExpression(n)) && (this.downcasts(n) || this.checkedAssertion(n))) return true;
-    if (this.checkedPlacementEntry(n)) return true;
+    if (this.checkedPlacementEntry(n) || this.narrowedHeld(n)) return true;
     if ((ts.isAsExpression(n) || ts.isTypeAssertionExpression(n)) && this.checkedClassAssertion(n)) {
       try {
         const to = this.typeOf(n);
@@ -3461,6 +3463,15 @@ ${members.join('\n')}
       return entry && this.typeOf(a) === 'Any?' && (this.checkedConvert('', entry, a) || this.appClass(entry.type)) ? entry : null;
     } catch { return null; }
   }
+
+  /** A held read its own type test narrows (`ValueStates.narrowedRead`), read as that type through its checked convert. */
+  private narrowedHeld(n: ts.Node): Form | null {
+    if (this.lenient || this.library || this.rawHeld.has(n)) return null;
+    const form = this.states.narrowedRead(n);
+    return form && (this.checkedConvert('', form, n) || this.appClass(form.type)) ? form : null;
+  }
+
+  private readonly rawHeld = new Set<ts.Node>();
 
   /** A class of the app's own code that no platform class roots: an object of another class is never one. */
   private appClass(t: ts.Type): boolean {
@@ -8723,6 +8734,14 @@ ${members.join('\n')}
 
   expr(e: ts.Expression): string {
     if (this.heldParts.has(e)) return this.subst.get(e)!;
+    const narrowed = this.narrowedHeld(e);
+    if (narrowed) {
+      this.rawHeld.add(e);
+      try {
+        const raw = this.expr(e);
+        return this.checkedConvert(raw, narrowed, e) ?? `(try jsCastPresent(${raw}, ${this.type(narrowed.type, e)}.self))`;
+      } finally { this.rawHeld.delete(e); }
+    }
     if (ts.isCallExpression(e) && !this.nullishCalls.has(e) && !this.subst.has(e) && this.states.nullishRead(e)) return `${this.nullishCode(e)}${this.lenientApp ? '.jsAny' : '.optional'}`;
     const code = this.exprOf(e);
     if ((this.functionDepth === 0 || this.inStoredInit) && /^[\w.`]+$/.test(code) && this.isDeclaredFunctionValue(e)) this.isolatedInit = true;
