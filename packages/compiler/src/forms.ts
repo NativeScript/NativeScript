@@ -966,6 +966,9 @@ export class Forms {
     if (b.initializer) this.place(b.initializer, slot);
     const keep = b.initializer ? ~(U | M) : ~0;
     const pattern = b.parent;
+    // What a pattern reads from an untyped value is whatever that value holds there, whatever the pattern's type says.
+    const whole = ts.isVariableDeclaration(pattern.parent) ? pattern.parent.initializer : undefined;
+    if (whole && this.checker.getTypeAtLocation(whole).flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown)) this.seed(slot, F);
     if (ts.isObjectBindingPattern(pattern)) {
       if (b.dotDotDotToken) return;
       const key = b.propertyName ? literalKey(b.propertyName, this.checker) : (b.name as ts.Identifier).text;

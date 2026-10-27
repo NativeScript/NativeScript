@@ -2327,7 +2327,7 @@ export class Translator implements AsyncTranslator {
         if (sym) this.undefinedVars.set(sym, optionalType(t));
         if (sym && this.lenientApp && onlyNullOrPresent(d, this.checker, (v) => !ts.isAwaitExpression(v) && this.states.nullResult(v))) this.states.nullVars.add(sym);
         field(`${modifiers}var ${name}: ${optionalType(t)} = nil`, name, optionalType(t));
-        later(() => `    ${this.tryPrefix(d.initializer!)}${target} = ${this.typeOf(d.initializer!) === 'Any?' && t !== 'Any?' ? this.fromAny(maybe, optionalType(t)) : maybe}`);
+        later(() => `    ${this.tryPrefix(d.initializer!)}${target} = ${this.typeOf(d.initializer!) === 'Any?' && t !== 'Any?' ? this.checkedPlacement(d.initializer!, optionalType(t), maybe) ?? this.fromAny(maybe, optionalType(t)) : maybe}`);
         continue;
       }
       // Given a non-strict app's null-only result later: optional, as that result is.
@@ -3438,11 +3438,20 @@ ${members.join('\n')}
   }
 
   /** An untyped value placed where its slot holds its declared type (`foreignPlacement`): converted checked, or null. */
-  private checkedPlacement(a: ts.Expression, to: string): string | null {
+  private checkedPlacement(a: ts.Expression, to: string, code?: string): string | null {
     const entry = this.checkedPlacementEntry(a);
     const base = to.replace(/[?!]$/, '');
     if (!entry || this.type(entry.type, a) !== base) return null;
-    return this.checkedConvert(this.expr(a), entry, a, base !== to) ?? (base !== to && this.appClass(entry.type) ? `(try jsCast(${this.expr(a)}, ${base}.self))` : null);
+    const value = code ?? this.expr(a);
+    return this.checkedConvert(value, entry, a, base !== to) ?? (base !== to && this.appClass(entry.type) ? `(try jsCast(${value}, ${base}.self))` : null);
+  }
+
+  /** A variable a pattern binds from an untyped value (`foreignBinding`): its value `code` converted checked, or null. */
+  private checkedBinding(el: ts.BindingElement, code: string, to: string): string | null {
+    if (this.lenient || this.library) return null;
+    const entry = this.states.foreignBinding(el), base = to.replace(/[?!]$/, '');
+    if (!entry || this.type(entry.type, el) !== base) return null;
+    return this.checkedConvert(code, entry, el, base !== to) ?? (base !== to && this.appClass(entry.type) ? `(try jsCast(${code}, ${base}.self))` : null);
   }
 
   private checkedPlacementEntry(a: ts.Expression): Form | null {
@@ -4380,6 +4389,11 @@ ${members.join('\n')}
     if (!ts.isCallExpression(e) || this.typeOf(e).endsWith('?')) return false;
     const decl = this.checker.getResolvedSignature(e)?.getDeclaration();
     return !!decl && !ts.isJSDocSignature(decl) && this.mayReturnUndefined(decl) && this.returnTypeOf(decl).endsWith('?');
+  }
+
+  /** A call read as a receiver, which `undefinedResult` leaves optional where its function may give nothing. */
+  private optionalResult(e: ts.Expression): boolean {
+    return ts.isCallExpression(ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses)) && this.givesUndefined(e);
   }
 
   private undefinedResult(e: ts.CallExpression, code: string): string {
@@ -7163,7 +7177,7 @@ ${members.join('\n')}
           else if (ts.isAwaitExpression(read)) throw this.error(d, 'a variable holding the null a non-strict async function may give, assigned again');
         }
         // An untyped value declared a type (`const s: string = untyped[0]`): converted, undefined staying undefined.
-        const value = this.typeOf(d.initializer) === 'Any?' && held !== 'Any?' ? this.fromAny(maybe, held) : maybe;
+        const value = this.typeOf(d.initializer) === 'Any?' && held !== 'Any?' ? this.checkedPlacement(d.initializer, held, maybe) ?? this.fromAny(maybe, held) : maybe;
         return `${i}${(lowered ? !constant : this.needsVar(d.name, held)) ? 'var' : 'let'} ${name}: ${held} = ${this.tryPrefix(d.initializer)}${value}`;
       }
       // A native struct is a value in Swift: a constant one's fields can still be assigned in JavaScript.
@@ -7360,7 +7374,8 @@ ${members.join('\n')}
           lines.push(`${i}${keyword(el.name, t)}${ident(el.name.text)}: ${this.bindsOptional(el.name, t)} = ${value}.element(${k})`);
           return;
         }
-        const fromAny = (this.isAny(name) || _type === 'Any?' || /^JSArray<Any\?>[?!]?$/.test(_type)) && t !== 'Any?' ? this.fromAny(read, t) : read;
+        const untyped = (this.isAny(name) || _type === 'Any?' || /^JSArray<Any\?>[?!]?$/.test(_type)) && t !== 'Any?';
+        const fromAny = untyped ? this.checkedBinding(el, read, this.lenientRef(t)) ?? this.fromAny(read, t) : read;
         lines.push(declare(el.name, t, fromAny));
       } else {
         const tmp = this.fresh('__d');
@@ -10290,7 +10305,7 @@ ${members.join('\n')}
     const linked = !this.library && ts.isPropertyAccessExpression(target) && ts.isOptionalChain(target) && ![this.typeOf(target), held(target)].some((t) => /[?!]$/.test(t));
     const dot = e.questionDotToken && !linked ? '?.' : '.';
     if (name === 'length' && this.isString(target)) {
-      if (!this.typeOf(target).endsWith('?') || this.unsetGroupReceiver(target)) return `Double(${this.expr(target)}.utf16.count)`;
+      if ((!this.typeOf(target).endsWith('?') && !this.optionalResult(target)) || this.unsetGroupReceiver(target)) return `Double(${this.expr(target)}.utf16.count)`;
       // Only a chain (`s?.length`) reads undefined; `s.length` of null or undefined throws, as unwrapping traps.
       return e.questionDotToken || ts.isOptionalChain(e) ? `${this.expr(target)}.map { Double($0.utf16.count) }` : `Double(${this.expr(target)}!.utf16.count)`;
     }
@@ -11332,7 +11347,7 @@ ${members.join('\n')}
         } finally { this.subst.delete(target); }
       }
       // `s.slice(…)` of null or undefined throws, as unwrapping traps; only a chain reads undefined.
-      if ((t === 'String' || t === 'Double') && this.typeOf(target).endsWith('?') && !ts.isOptionalChain(e)) {
+      if ((t === 'String' || t === 'Double') && (this.typeOf(target).endsWith('?') || this.optionalResult(target)) && !ts.isOptionalChain(e)) {
         this.subst.set(target, this.unsetGroupReceiver(target) ? this.expr(target) : `${this.expr(target)}!`);
         try {
           return t === 'String' ? this.stringMethod(method, target, e) : this.numberMethod(method, target, e);

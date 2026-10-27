@@ -1674,7 +1674,7 @@ export class Translator implements AsyncTranslator {
               const sym = this.resolve(d.name);
               if (sym) this.undefinedVars.set(sym, optionalType(t));
               members.push(moduleProperty(`var ${name}: ${optionalType(t)} = null`));
-              later(() => `    ${name} = ${(this.typeOf(d.initializer!) === 'Any?' || this.untypedElement(d.initializer!)) && t !== 'Any?' ? this.fromAny(maybe, optionalType(t)) : maybe}`);
+              later(() => `    ${name} = ${(this.typeOf(d.initializer!) === 'Any?' || this.untypedElement(d.initializer!)) && t !== 'Any?' ? this.checkedPlacement(d.initializer!, optionalType(t), maybe) ?? this.fromAny(maybe, optionalType(t)) : maybe}`);
               continue;
             }
             // A module's Angular `computed(fn)`: read through `x()`, its value is fn's whenever it is read.
@@ -5470,7 +5470,7 @@ export class Translator implements AsyncTranslator {
         const sym = this.resolve(d.name);
         if (sym) this.undefinedVars.set(sym, optionalType(t));
         // An untyped value (`args[1]` of `...args`) where the declaration names a type: as that type.
-        const read = (this.typeOf(d.initializer) === 'Any?' || this.untypedElement(d.initializer)) && t !== 'Any?' ? this.fromAny(maybe, optionalType(t)) : maybe;
+        const read = (this.typeOf(d.initializer) === 'Any?' || this.untypedElement(d.initializer)) && t !== 'Any?' ? this.checkedPlacement(d.initializer, optionalType(t), maybe) ?? this.fromAny(maybe, optionalType(t)) : maybe;
         return `${i}${constant ? 'val' : 'var'} ${name}: ${optionalType(t)} = ${read}`;
       }
       // An untyped value asserted a Java class its uses need only a superclass of: held as that class, unchecked as script's assertion is.
@@ -5489,7 +5489,7 @@ export class Translator implements AsyncTranslator {
       return `${i}${constant && (!lowered || ts.isForStatement(d.parent.parent)) ? 'val' : 'var'} ${name}: ${t} = ${this.coerce(d.initializer, t)}`;
     }
     const tmp = this.fresh('__d');
-    return `${i}val ${tmp}${this.destructured(d.name, d.initializer!)}\n${this.bindTo(d.name, tmp, '', !constant)}`;
+    return `${i}val ${tmp}${this.destructured(d.name, d.initializer!)}\n${this.bindTo(d.name, tmp, this.untypedPattern(d.name, d.initializer!) ? 'Any?' : '', !constant)}`;
   }
 
   /** Declarations binding `name` (an identifier or a destructuring pattern) to the Kotlin value `value`. */
@@ -5548,7 +5548,7 @@ export class Translator implements AsyncTranslator {
         const key = (el.propertyName ?? el.name).getText();
         const record = /^JSRecord<(.*)>$/.exec(this.typeOf(name).replace(/\?$/, ''));
         const defined = this.definedField(name, key);
-        read = this.isAny(name) ? `jsGet(${value}, ${kotlinString(key)})` : defined ? this.fromAnyCode(`jsGet(${value}, ${kotlinString(key)})`, this.typeOf(defined.name!), true) : record ? this.undefinedAs(`${value}[${kotlinString(key)}]`, ts.isIdentifier(el.name) ? this.typeOf(el.name) : record[1]) : `${value}.${ident(key)}`;
+        read = this.isAny(name) || type === 'Any?' ? `jsGet(${value}, ${kotlinString(key)})` : defined ? this.fromAnyCode(`jsGet(${value}, ${kotlinString(key)})`, this.typeOf(defined.name!), true) : record ? this.undefinedAs(`${value}[${kotlinString(key)}]`, ts.isIdentifier(el.name) ? this.typeOf(el.name) : record[1]) : `${value}.${ident(key)}`;
         // Lenient code: a field Kotlin declares nullable (optional, or left unset) binds as its type reads undefined.
         const field = !this.isAny(name) && !record && this.lenient ? this.checker.getTypeAtLocation(name).getProperty(key) : undefined;
         const fd = field?.valueDeclaration;
@@ -5557,7 +5557,8 @@ export class Translator implements AsyncTranslator {
         const literal = ts.isVariableDeclaration(name.parent) && name.parent.initializer && ts.isObjectLiteralExpression(name.parent.initializer) ? name.parent.initializer : undefined;
         const built = literal && this.checker.getContextualType(literal)?.getProperty(key);
         if (this.library && built && t !== 'Any?' && this.type(this.checker.getTypeOfSymbolAtLocation(built, literal!), literal) === 'Any?') read = this.fromAnyCode(read, t, true);
-      } else if (tuple) read = tupleField(k);
+      } else if (tuple) read = (type === 'Any?' && ts.isIdentifier(el.name) && !el.initializer && this.checkedBinding(el, `jsField(${value}, "${k}")`, elementType(k))) || tupleField(k);
+      else if (type === 'Any?') read = `jsGet(${value}, "${k}")`;
       else {
         // An array pattern past the array's end binds undefined.
         read = `${value}.element(${k}.0)`;
@@ -5581,7 +5582,7 @@ export class Translator implements AsyncTranslator {
       }
       if (el.initializer) read = `(${read} ?: ${this.coerce(el.initializer, t)})`;
       if (ts.isIdentifier(el.name)) {
-        const fromAny = this.isAny(name) && t !== 'Any?' ? this.fromAny(read, t) : read;
+        const fromAny = (this.isAny(name) || (type === 'Any?' && !tuple)) && t !== 'Any?' ? this.checkedBinding(el, read, t) ?? this.fromAny(read, t) : read;
         lines.push(declare(el.name, t, fromAny));
       } else {
         const tmp = this.fresh('__d');
@@ -5742,6 +5743,11 @@ export class Translator implements AsyncTranslator {
     const pattern = el.parent;
     return !this.library && ts.isArrayBindingPattern(pattern) && pattern.elements.indexOf(el) > 0 && !el.initializer && !el.dotDotDotToken && ts.isIdentifier(el.name)
       && this.typeOf(el.name) === 'String' && this.typeOf(pattern).replace(/\?$/, '') === 'JSMatch';
+  }
+
+  /** A pattern reading from a value held `Any?` (`destructured` keeps it so) whose own type is not untyped. */
+  private untypedPattern(name: ts.BindingName, init: ts.Expression): boolean {
+    return !this.isAny(name) && !ts.isObjectLiteralExpression(init) && this.typeOf(init) === 'Any?' && !(ts.isArrayBindingPattern(name) && this.jsIteration(init));
   }
 
   /** The type and value a destructuring pattern reads from: an iterator yields only as many values as an array pattern names. */
@@ -7735,10 +7741,17 @@ export class Translator implements AsyncTranslator {
   }
 
   /** An untyped value placed where its slot holds its declared type (`foreignPlacement`): converted checked, or null. */
-  private checkedPlacement(a: ts.Expression, to: string): string | null {
+  private checkedPlacement(a: ts.Expression, to: string, code?: string): string | null {
     const entry = this.lenient || this.library ? null : this.states.foreignPlacement(a);
     if (!entry || this.typeOf(a) !== 'Any?' || this.type(entry.type, a) !== to.replace(/\?$/, '')) return null;
-    return this.checkedConvert(this.expr(a), entry, a, isNullable(to));
+    return this.checkedConvert(code ?? this.expr(a), entry, a, isNullable(to));
+  }
+
+  /** A variable a pattern binds from an untyped value (`foreignBinding`): its value `code` converted checked, or null. */
+  private checkedBinding(el: ts.BindingElement, code: string, to: string): string | null {
+    const entry = this.lenient || this.library ? null : this.states.foreignBinding(el);
+    if (!entry || this.type(entry.type, el) !== to.replace(/\?$/, '')) return null;
+    return this.checkedConvert(code, entry, el, isNullable(to));
   }
 
   /** An undefined-or-value as the TypeScript type reads it: NaN, "undefined" and false are what undefined converts to. */
