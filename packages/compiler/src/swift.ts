@@ -3065,6 +3065,7 @@ ${members.join('\n')}
    */
   private dynamicMembers(fields: { name: string; type: string }[], className: string | null, override: boolean, methods: { name: string; type: string; available?: number; length?: number }[] = [], symbols: { key: string; member: string; type: string }[] = [], expando = false, raw = new Set<string>(), accessors: { name: string; get: string | null; set: string | null }[] = [], symbolKeyedBase = false, extra = false, nulls = new Set<string>(), classNameMember = true, nilNull = new Set<string>(), keyed: KeyedMembers | null = null, rewritten = new Set<string>(), defined = new Set<string>(), expandoAbove = false, byName?: { receiver: string; inherits: boolean }): string[] {
     const o = override ? 'override ' : '';
+    const ownNames = new Set([...this.instanceKeys()].flatMap((d) => (ts.isMethodDeclaration(d) ? [d.name.getText()] : [])));
     if (!keyed?.ordered || !keyed.appBase) this.declare('jsKeys', { kind: 'var', mods: o, type: '[String]' });
     if (keyed?.ordered) this.declare('jsFieldKeys', { kind: 'var', mods: keyed.appBase ? 'override ' : '', type: '[String]' });
     if (symbols.length) this.declare('jsSymbolKeys', { kind: 'var', mods: symbolKeyedBase ? 'override ' : '', type: '[String]' });
@@ -3101,7 +3102,9 @@ ${members.join('\n')}
         ...methods.filter((m) => !fields.some((f) => f.name === m.name)).map((m) => {
           // An app class's method sees the object it is called on as `this` when that is one of the class's (`obj[k].call(other)`).
           const value = byName ? `jsMethodValue(self) { (__s: ${byName.receiver}) in ${this.boxFunction(`__s.${ident(m.name)}`, m.type, -1, m.name, m.length, undefined, false)} }` : this.boxFunction(`self.${ident(m.name)}`, m.type, -1, m.name, m.length, undefined, false);
-          return { name: m.name, code: m.available ? `if #available(iOS ${m.available}, *) { return ${value} } else { return nil }` : `return ${value}` };
+          // A value the instance holds in the method's place (`obj.step = …`) is what reading it gives.
+          const own = ownNames.has(m.name) ? `if let __own = jsOwnProperty(self, ${swiftString(m.name)}) { return __own }; ` : '';
+          return { name: m.name, code: m.available ? `${own}if #available(iOS ${m.available}, *) { return ${value} } else { return nil }` : `${own}return ${value}` };
         }),
       ], symbols.map((f) => `            case ${f.key}: return ${f.member}`), `return ${override ? 'super[jsKey: key]' : expando ? 'jsExpandoGet(self, key)' : extra ? 'jsExtra?[jsKey: key] ?? nil' : 'nil'}`),
       '        }',
@@ -5945,7 +5948,9 @@ ${members.join('\n')}
     const symbolKeyedBase = !!kitRoot || this.inheritsSymbolKeyed(cls);
     // Script knows the class by its own name, not the one Swift's module gives it apart from another of that name.
     // An Error subclass keeps JSError's class name, which is the error's `name`.
-    if (isError) lines.push(...this.dynamicMembers(fields, null, true, dynMethods, symbolFields, false, raw, dynAccessors, false, false, new Set(), false).filter((l) => !l.includes(' var jsClassName: ')));
+    const byName = this.states.byNameClass(cls) ? { receiver: name, inherits: !!appBase && this.states.byNameClass(appBase) } : undefined;
+    if (byName && !byName.inherits) conformances.push('JSMemberKeyed');
+    if (isError) lines.push(...this.dynamicMembers(fields, null, true, dynMethods, symbolFields, false, raw, dynAccessors, false, false, new Set(), false, undefined, undefined, undefined, undefined, undefined, byName).filter((l) => !l.includes(' var jsClassName: ')));
     else {
       const nulls = this.states.nullFields(cls);
       if (nulls.size && !this.states.baseKeepsNulls(cls)) {
@@ -5953,8 +5958,6 @@ ${members.join('\n')}
         lines.push(`    var jsNulls: Set<String>?${initial.length ? ` = [${initial.map((m) => swiftString(m.name.getText())).join(', ')}]` : ''}`);
       }
       const definable = this.definableNames(cls).filter((n) => fields.some((f) => f.name === n));
-      const byName = this.states.byNameClass(cls) ? { receiver: name, inherits: !!appBase && this.states.byNameClass(appBase) } : undefined;
-      if (byName && !byName.inherits) conformances.push('JSMemberKeyed');
       lines.push(...this.dynamicMembers(fields, cls.name?.text ?? name, !!appBase || !!kitRoot, dynMethods, symbolFields, expando, raw, dynAccessors, symbolKeyedBase, false, nulls, true, this.states.nullFieldsTyped(cls), this.keyedMembers(cls, !!appBase, lines, conformances), undefined, new Set(definable), !!appBase && this.appRootKeepsExpando(cls), byName));
       if (definable.length) {
         let inherited = false;
