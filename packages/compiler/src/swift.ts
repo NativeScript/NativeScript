@@ -8,6 +8,7 @@ import { Throws, digitsLiteral, isArrayLengthLiteral, isArrayLengthWrite, isAsyn
 import { assignedMembers } from './sharing.ts';
 import { assignedValues, openSpreadType, initializedNull, intersectionAliasMembers, intlConstructor, literalPattern, literalFlags, patternGroups, regexpMayLeaveGroupUnset, isRegExpProtocol, assertedPattern, unsupportedPattern, isObjectToStringCall, isStringRaw, leadingNeverRead, forwardedSetter, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, uncheckedMatch, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, slotOf, slotType, definitelyAssignedFields, type TrustScope, classesHeldUntyped, unsetGroupTyping, type UnsetGroupTyping, admitsUndefined, classKeyPlan, onlyUndefined, keysDefinedUntyped, SWIFT_NATIVE_TYPES, runtimeTypeName, definesRunTimeKey, readKeyOf, givenBy, onlyNullOrPresent, isTemplateMethod, statementLevel, readWrite, asOperation, assignmentOf, type ReadWrite } from './lang.ts';
 import { memberName } from './stable-names.ts';
+import { shadowConversions } from './conversion-shadow.ts';
 import { onlyNull, ValueStates, type StateBackend } from './value-states.ts';
 import type { Form } from './forms.ts';
 import { AsyncLowering, type AsyncCtx, type AsyncSyntax, type AsyncTranslator } from './async.ts';
@@ -783,6 +784,7 @@ export class Translator implements AsyncTranslator {
     this.components = components;
     this.sourceFiles = files;
     this.states = new ValueStates(this.stateBackend());
+    if (process.env.NS_CONVERSION_SHADOW) shadowConversions(this, this.states);
     this.lowering = new AsyncLowering(this);
     this.core = new CoreAPI(this);
     this.native = new NativeAPI(this);

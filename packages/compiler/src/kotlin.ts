@@ -6,6 +6,7 @@ import { isAsync, isStatic } from './throws.ts';
 import { assignedMembers } from './sharing.ts';
 import { assignedValues, openSpreadType, definitelyAssignedFields, forwardedSetter, initializedNull, intersectionAliasMembers, isRegExpProtocol, assertedPattern, unsupportedPattern, intlConstructor, isObjectToStringCall, isStringRaw, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, classesHeldUntyped, type TrustScope, literalPattern, patternGroups, unsetGroupTyping, type UnsetGroupTyping, admitsUndefined, classKeyPlan, onlyUndefined, keysDefinedUntyped, KOTLIN_NATIVE_TYPES, runtimeTypeName, definesRunTimeKey, readKeyOf, reassigned, givenBy, onlyNullOrPresent, statementLevel, readWrite, asOperation, type ReadWrite } from './lang.ts';
 import { memberName } from './stable-names.ts';
+import { shadowConversions } from './conversion-shadow.ts';
 import { onlyNull, ValueStates, type StateBackend } from './value-states.ts';
 import type { Form } from './forms.ts';
 import { isCoreDeclaration } from './core.ts';
@@ -422,6 +423,7 @@ export class Translator implements AsyncTranslator {
     this.components = components;
     this.sourceFiles = files;
     this.states = new ValueStates(this.stateBackend());
+    if (process.env.NS_CONVERSION_SHADOW) shadowConversions(this, this.states);
     this.pluginFiles = new Set(options.pluginFiles ?? []);
     this.reach = options.reach ?? null;
     this.properties = options.properties ?? null;
