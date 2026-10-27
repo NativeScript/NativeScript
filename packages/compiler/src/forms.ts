@@ -940,6 +940,58 @@ export class Forms {
     }
   }
 
+  private byName: Set<ts.ClassLikeDeclaration> | null = null;
+
+  /**
+   * The program's classes whose instances script reaches by name (§2.5, methods and accessors): a value of the class
+   * placed in an untyped slot (one of the program's, or a library's `any` other than TypeScript's own lib), asserted to
+   * `any`/`unknown`, the receiver of a member access by a key the program doesn't spell, or tested with `in`. A class's
+   * whole hierarchy goes with it: a subclass's object is held as its base, and a base's members are the subclass's too.
+   */
+  byNameClasses(): ReadonlySet<ts.ClassLikeDeclaration> {
+    if (this.byName) return this.byName;
+    this.build();
+    const c = this.checker, found = new Set<ts.ClassLikeDeclaration>();
+    const classOf = (e: ts.Expression) => {
+      let t = c.getNonNullableType(c.getTypeAtLocation(e));
+      if (t.flags & ts.TypeFlags.TypeParameter) t = c.getBaseConstraintOfType(t) ?? t;
+      for (const part of t.isUnionOrIntersection() ? t.types : [t]) {
+        if (part.getConstructSignatures().length) continue;
+        for (const d of part.getSymbol()?.declarations ?? []) if (ts.isClassLike(d) && !declarationFile(d)) found.add(d);
+      }
+    };
+    for (const [x, slots] of this.placed) {
+      if (slots.some((s) => { const r = this.find(s); return !!r.type && untyped(r.type) && !(r.decl && LIB_FILE.test(r.decl.getSourceFile().fileName)); })) classOf(x);
+    }
+    for (const x of this.placedUntyped) classOf(x);
+    const visit = (n: ts.Node): void => {
+      if ((ts.isAsExpression(n) || ts.isTypeAssertionExpression(n)) && untyped(c.getTypeAtLocation(n))) classOf(n.expression);
+      if (ts.isElementAccessExpression(n)) {
+        const key = ts.skipOuterExpressions(n.argumentExpression);
+        if (!ts.isStringLiteralLike(key) && !ts.isNumericLiteral(key) && c.getTypeAtLocation(key).flags & ts.TypeFlags.StringLike) {
+          for (const { owner, statics } of this.ownersOf(n.expression)) if (owner && ts.isClassLike(owner) && !statics) found.add(owner);
+        }
+      }
+      if (ts.isBinaryExpression(n) && n.operatorToken.kind === ts.SyntaxKind.InKeyword) classOf(n.right);
+      ts.forEachChild(n, visit);
+    };
+    for (const f of this.files) if (!f.isDeclarationFile) visit(f);
+    const own = (t: ts.Type) => t.getSymbol()?.declarations?.find((d): d is ts.ClassLikeDeclaration => ts.isClassLike(d) && !declarationFile(d));
+    for (const cls of [...found]) {
+      for (let t: ts.Type | undefined = c.getTypeAtLocation(cls.name ?? cls); t?.isClassOrInterface(); t = c.getBaseTypes(t)[0]) {
+        const d = own(t);
+        if (!d) break;
+        found.add(d);
+      }
+    }
+    const derived = (cls: ts.ClassLikeDeclaration, depth = 0): boolean => {
+      const t = c.getTypeAtLocation(cls.name ?? cls);
+      return depth < 32 && t.isClassOrInterface() && c.getBaseTypes(t).some((b) => { const d = own(b); return !!d && (found.has(d) || derived(d, depth + 1)); });
+    };
+    for (const cls of this.classes) if (!found.has(cls) && derived(cls)) found.add(cls);
+    return this.byName = found;
+  }
+
   private angularDecorator(d: ts.Decorator, names: ReadonlySet<string>): boolean {
     const e = ts.isCallExpression(d.expression) ? d.expression.expression : d.expression;
     let sym = this.checker.getSymbolAtLocation(e);

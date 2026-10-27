@@ -2231,7 +2231,7 @@ export class Translator implements AsyncTranslator {
    * `defined`: fields `Object.defineProperty` may give a descriptor (`JSDefinable`). `expandoAbove`: a program base keeps
    * the object's expando, whose keys come after every class's fields, as JavaScript defines fields before script adds keys.
    */
-  private dynamicMembers(fields: { name: string; type: string }[], className: string | null, inherits: boolean, fallbackGet = 'null', fallbackSet = '', symbols: { key: string; member: string; type: string }[] = [], methods: { name: string; key?: string; params: string[]; ret: string }[] = [], expando = false, accessors: { name: string; type: string; readable: boolean; settable: boolean; set?: string }[] = [], superclass?: string, nulls = new Set<string>(), nilNull = new Set<string>(), keyed: KeyedMembers | null = null, rewritten = new Set<string>(), defined = new Set<string>(), expandoAbove = false): string[] {
+  private dynamicMembers(fields: { name: string; type: string }[], className: string | null, inherits: boolean, fallbackGet = 'null', fallbackSet = '', symbols: { key: string; member: string; type: string }[] = [], methods: { name: string; key?: string; params: string[]; ret: string }[] = [], expando = false, accessors: { name: string; type: string; readable: boolean; settable: boolean; set?: string }[] = [], superclass?: string, nulls = new Set<string>(), nilNull = new Set<string>(), keyed: KeyedMembers | null = null, rewritten = new Set<string>(), defined = new Set<string>(), expandoAbove = false, receiver?: string): string[] {
     accessors = accessors.filter((a) => !fields.some((f) => f.name === a.name) && !methods.some((m) => m.name === a.name));
     const members = [...new Set([...accessors.map((a) => accessorKey(a.name)), ...methods.filter((m) => !m.key).map((m) => m.name)])];
     const at = (n: string) => { const k = keyed?.order.indexOf(n) ?? -1; return k < 0 ? Infinity : k; };
@@ -2259,8 +2259,9 @@ export class Translator implements AsyncTranslator {
     // A method read by name is a script function calling it with the arguments it is given.
     const method = (m: { name: string; key?: string; params: string[]; ret: string }) => {
       const args = m.params.map((t, k) => this.fromAnyCode(`__a.getOrNull(${k})`, t, true));
-      const call = `this.${this.methodIdent(m.name)}(${args.join(', ')})`;
-      const fn = `jsFunction ${lambda(['__a'], m.ret === 'Unit' ? `${call}; null` : call)}`;
+      // An app class's method sees the object it is called on as `this` when that is one of the class's (`obj[k].call(other)`).
+      const call = `${receiver && !m.key ? `jsMethodReceiver(__s, this, ${receiver}::class.java)` : 'this'}.${this.methodIdent(m.name)}(${args.join(', ')})`;
+      const fn = receiver && !m.key ? `JSMethod(${m.params.length}) ${lambda(['__s', '__a'], m.ret === 'Unit' ? `${call}; null` : call)}` : `jsFunction ${lambda(['__a'], m.ret === 'Unit' ? `${call}; null` : call)}`;
       return `        ${m.key ?? kotlinString(m.name)} -> ${!m.key && ownNames.has(m.name) ? `(jsOwnProperty(this, ${kotlinString(m.name)}) ?: JSFound(${fn})).value` : fn}`;
     };
     return [
@@ -3576,7 +3577,7 @@ export class Translator implements AsyncTranslator {
       target.push(`${pad}${a.get && isStatic(a.get) ? '' : n === 'jsToStringTag' ? 'override ' : mods(n)}${a.set ? 'var' : 'val'} ${ident(n)}: ${t}`, ...parts);
       // Library mode: read and set by name as well (`node.cssType` of an untyped node), as the prototype's accessor is.
       const own = (a.get ?? a.set)!;
-      if ((this.library || byName || this.readByName.has(cls) || this.states.downcastClass(cls)) && !isStatic(own) && !this.symbolMember(own.name)) {
+      if ((this.library || byName || this.readByName.has(cls) || this.states.downcastClass(cls) || this.states.byNameClass(cls)) && !isStatic(own) && !this.symbolMember(own.name)) {
         // A write by name gives the setter what script gave (`style="color: red"` and `color="red"` from the Builder); one
         // passing it to another object's member (`this.style.color = value`) passes it on by name, as that member converts it.
         const forwarded = a.set && !takes ? forwardedSetter(a.set) : null;
@@ -3729,7 +3730,7 @@ export class Translator implements AsyncTranslator {
     if (ownValueOf) lines.push(`    override fun jsValueOf(): Any? = jsBox(this.${this.methodIdent('valueOf')}())`);
     if (toJSON) lines.push(`    override fun jsToJSON(key: String): Any? = jsBox(this.${this.methodIdent('toJSON')}(${toJSON.parameters.length ? 'key' : ''}))`);
     // Library mode: every method of the class is read by name as well (`font.getAndroidTypeface()` on an untyped font), overrides included.
-    if (this.library || byName || this.readByName.has(cls) || this.states.downcastClass(cls)) {
+    if (this.library || byName || this.readByName.has(cls) || this.states.downcastClass(cls) || this.states.byNameClass(cls)) {
       for (const m of cls.members) {
         if (!ts.isMethodDeclaration(m) || !m.body || isStatic(m) || ts.isComputedPropertyName(m.name) || m.parameters.some((p) => p.dotDotDotToken) || this.readsArguments(m)) continue;
         const n = m.name.getText();
@@ -3749,7 +3750,7 @@ export class Translator implements AsyncTranslator {
       lines.push(`    var jsNulls: MutableSet<String>? = ${initial.length ? `mutableSetOf(${initial.map((m) => kotlinString(m.name.getText())).join(', ')})` : 'null'}`);
     }
     const definable = isError ? [] : this.definableNames(cls).filter((n) => fields.some((f) => f.name === n));
-    if (!isError) lines.push(...this.dynamicMembers(fields, this.scriptClassName(cls) ?? name, !!appBase || !!kitRoot, expando ? 'jsExpandoGet(this, key)' : 'null', expando ? 'jsExpandoSet(this, key, value)' : '', symbolFields, dynMethods, expando, dynAccessors, base?.replace(/<.*$/, ''), nulls, this.states.nullFieldsTyped(cls), keyedInfo, undefined, new Set(definable), !!appBase && this.appRootKeepsExpando(cls)));
+    if (!isError) lines.push(...this.dynamicMembers(fields, this.scriptClassName(cls) ?? name, !!appBase || !!kitRoot, expando ? 'jsExpandoGet(this, key)' : 'null', expando ? 'jsExpandoSet(this, key, value)' : '', symbolFields, dynMethods, expando, dynAccessors, base?.replace(/<.*$/, ''), nulls, this.states.nullFieldsTyped(cls), keyedInfo, undefined, new Set(definable), !!appBase && this.appRootKeepsExpando(cls), this.states.byNameClass(cls) ? name.replace(/<.*$/, '') : undefined));
     // An error's own fields by name, after JSError's `name`/`message`/`stack`; what script adds to it comes after the fields, and it prints as an error, not as `Name { … }`.
     else lines.push(...this.dynamicMembers(fields, name, true, 'null', '', symbolFields, dynMethods, false, dynAccessors, base!.replace(/<.*$/, ''))
       .filter((l) => !l.startsWith('    override val jsClassName'))
@@ -8278,6 +8279,10 @@ export class Translator implements AsyncTranslator {
         return `jsCallMethod(${this.coerce(callee.expression, 'Any?')}, (${this.expr(callee.argumentExpression)} as JSSymbol).key${this.untypedArgs(e.arguments)})`;
       }
       if (property) return `${this.expr(callee.expression)}.__setNative_${property}(${e.arguments.map((a) => this.coerce(a, 'Any?')).join(', ')})`;
+      // `obj[key](…)`: a method call, the object its `this`.
+      if (this.typeOf(callee) === 'Any?' && !this.library && !ts.isOptionalChain(e) && this.checker.getTypeAtLocation(callee.argumentExpression).flags & ts.TypeFlags.StringLike && callee.expression.kind !== ts.SyntaxKind.SuperKeyword) {
+        return `jsCallMethod(${this.coerce(callee.expression, 'Any?')}, ${this.str(callee.argumentExpression)}${this.untypedArgs(e.arguments)})`;
+      }
       if (this.typeOf(callee) === 'Any?') return `jsCall(${this.expr(callee)}${this.untypedArgs(e.arguments)})`;
     }
     let fn: ts.Expression = callee;

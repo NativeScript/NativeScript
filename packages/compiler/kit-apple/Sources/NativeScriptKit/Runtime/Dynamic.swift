@@ -83,6 +83,22 @@ private func jsReceiving(_ f: Any) -> (Any?, [Any?]) throws -> Any? {
 /// A function that reads `this`: a method of an untyped object literal.
 public typealias JSMethod = (Any?, [Any?]) throws -> Any?
 
+/// A class whose methods and accessors script reaches by name: `key in object` finds them, though they are no own keys.
+public protocol JSMemberKeyed: AnyObject {
+    func jsHasMember(_ key: String) -> Bool
+}
+
+/// A class's method read by name: called on an object of the class (`obj[k].call(other)`), that object is its `this`,
+/// else the object it was read from. Typed callbacks drop the `thisArg` script gives them, so a call without an object
+/// of the class runs on the one the method was read from.
+public func jsMethodValue<T: AnyObject>(_ own: T, _ method: @escaping (T) -> JSFunctionObject) -> JSFunctionObject {
+    let bound = method(own)
+    return JSFunctionObject(bound.name, bound.length) { this, arguments in
+        if let other = jsFlat(this) as? T, other !== own { return try method(other).call(nil, arguments) }
+        return try bound.call(nil, arguments)
+    }
+}
+
 /// `object.method(args)` on an untyped object: a method sees the object as `this`.
 @discardableResult
 public func jsCallMethod(_ object: Any?, _ key: String, _ arguments: Any?...) throws -> Any? {
