@@ -47,9 +47,20 @@ export interface Value {
 
 /** The outermost operation of a value's code. */
 export type Mark =
-  | { op: 'cast'; to: NativeType; optional: boolean; implicit: boolean; of: Value }
+  /** `unchecked`: Kotlin's `jsUnchecked<T>(x)`, which passes any value for a `T`. */
+  | { op: 'cast'; to: NativeType; optional: boolean; implicit: boolean; of: Value; unchecked?: boolean }
   | { op: 'unwrap' | 'asserted' | 'converted'; of: Value }
-  | { op: 'empty'; null: boolean };
+  | { op: 'empty'; null: boolean }
+  /** Undefined read as a string, number or boolean (`(x ?: "undefined")`). */
+  | { op: 'undefinedAs'; to: NativeType; of: Value }
+  /** A value read as nothing (Kotlin `run { x; Unit }`). */
+  | { op: 'discarded'; of: Value }
+  /** A map's entry as the backend reads it, missing where the map lacks the key (`m.get(k)`). */
+  | { op: 'entry'; of: Value; key: Value }
+  /** An array the code makes, of the element type it spells. */
+  | { op: 'array'; element: string }
+  /** A member read off the value (`x.name`). */
+  | { op: 'member'; of: Value; name: string };
 
 /** What one cell does to the value. */
 export type Step =
