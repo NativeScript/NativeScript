@@ -1,5 +1,5 @@
 import ts from 'typescript';
-import { intlConstructor, isStringRaw, iterationThrows, uncheckedMatch, unsafeReceiver } from './lang.ts';
+import { readWrite, intlConstructor, isStringRaw, iterationThrows, uncheckedMatch, unsafeReceiver } from './lang.ts';
 
 type Fn = ts.SignatureDeclaration & { body?: ts.Node };
 
@@ -167,6 +167,11 @@ export class Throws {
     }
     // `array.length = n` of an n that may be no valid length is a RangeError.
     if (ts.isBinaryExpression(n) && n.operatorToken.kind === ts.SyntaxKind.EqualsToken && isArrayLengthWrite(n.left, n.right, c)) return true;
+    // A compound or update assignment to an array's element at a key that may be no index writes it as script does, by key.
+    if ((ts.isBinaryExpression(n) || ts.isPrefixUnaryExpression(n) || ts.isPostfixUnaryExpression(n)) && readWrite(n, c)) {
+      const t = readWrite(n, c)!.target;
+      if (ts.isElementAccessExpression(t) && c.isArrayLikeType(c.getNonNullableType(c.getTypeAtLocation(t.expression))) && !(c.getTypeAtLocation(t.argumentExpression).flags & ts.TypeFlags.NumberLike)) return true;
+    }
     // BigInt division, remainder and exponent throw a RangeError (a zero divisor, a negative exponent).
     if (ts.isBinaryExpression(n) && [ts.SyntaxKind.SlashToken, ts.SyntaxKind.PercentToken, ts.SyntaxKind.AsteriskAsteriskToken, ts.SyntaxKind.SlashEqualsToken, ts.SyntaxKind.PercentEqualsToken, ts.SyntaxKind.AsteriskAsteriskEqualsToken].includes(n.operatorToken.kind)
       && c.getTypeAtLocation(n.left).flags & ts.TypeFlags.BigIntLike) return true;

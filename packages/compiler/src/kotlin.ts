@@ -4,7 +4,7 @@ import { dirname as pathDirname, resolve as pathResolve } from 'node:path';
 import { AsyncLowering, usedBefore, type AsyncCtx, type AsyncSyntax, type AsyncTranslator } from './async.ts';
 import { isAsync, isStatic } from './throws.ts';
 import { assignedMembers } from './sharing.ts';
-import { assignedValues, openSpreadType, definitelyAssignedFields, forwardedSetter, initializedNull, intersectionAliasMembers, isRegExpProtocol, assertedPattern, unsupportedPattern, intlConstructor, isObjectToStringCall, isStringRaw, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, classesHeldUntyped, type TrustScope, literalPattern, patternGroups, unsetGroupTyping, type UnsetGroupTyping, admitsUndefined, classKeyPlan, onlyUndefined, keysDefinedUntyped, KOTLIN_NATIVE_TYPES, runtimeTypeName, definesRunTimeKey, readKeyOf, reassigned, givenBy, onlyNullOrPresent } from './lang.ts';
+import { assignedValues, openSpreadType, definitelyAssignedFields, forwardedSetter, initializedNull, intersectionAliasMembers, isRegExpProtocol, assertedPattern, unsupportedPattern, intlConstructor, isObjectToStringCall, isStringRaw, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, classesHeldUntyped, type TrustScope, literalPattern, patternGroups, unsetGroupTyping, type UnsetGroupTyping, admitsUndefined, classKeyPlan, onlyUndefined, keysDefinedUntyped, KOTLIN_NATIVE_TYPES, runtimeTypeName, definesRunTimeKey, readKeyOf, reassigned, givenBy, onlyNullOrPresent, statementLevel, readWrite, asOperation, type ReadWrite } from './lang.ts';
 import { onlyNull, ValueStates, type StateBackend } from './value-states.ts';
 import type { Form } from './forms.ts';
 import { isCoreDeclaration } from './core.ts';
@@ -276,14 +276,6 @@ function implementationOf(d: ts.SignatureDeclaration | ts.JSDocSignature): ts.Fu
     return (siblings as ts.NodeArray<ts.Node>).find((m): m is ts.FunctionLikeDeclaration => (ts.isMethodDeclaration(m) || ts.isFunctionDeclaration(m)) && !!m.body && m.name?.getText() === d.name!.getText()) ?? null;
   }
   return null;
-}
-
-/** Whether an expression's value is unused: a statement of its own, or a for loop's clause. */
-function statementLevel(e: ts.Expression): boolean {
-  let n: ts.Node = e;
-  while (ts.isParenthesizedExpression(n.parent)) n = n.parent;
-  const p = n.parent;
-  return ts.isExpressionStatement(p) || (ts.isForStatement(p) && (p.incrementor === n || p.initializer === n)) || (ts.isBinaryExpression(p) && p.operatorToken.kind === ts.SyntaxKind.CommaToken && p.left === n);
 }
 
 function moduleProperty(decl: string): string {
@@ -1682,7 +1674,7 @@ export class Translator implements AsyncTranslator {
               const sym = this.resolve(d.name);
               if (sym) this.undefinedVars.set(sym, optionalType(t));
               members.push(moduleProperty(`var ${name}: ${optionalType(t)} = null`));
-              later(() => `    ${name} = ${this.untypedElement(d.initializer!) && t !== 'Any?' ? this.fromAny(maybe, optionalType(t)) : maybe}`);
+              later(() => `    ${name} = ${(this.typeOf(d.initializer!) === 'Any?' || this.untypedElement(d.initializer!)) && t !== 'Any?' ? this.fromAny(maybe, optionalType(t)) : maybe}`);
               continue;
             }
             // A module's Angular `computed(fn)`: read through `x()`, its value is fn's whenever it is read.
@@ -5865,6 +5857,8 @@ export class Translator implements AsyncTranslator {
   }
 
   exprStatement(e: ts.Expression): string {
+    const rw = readWrite(e, this.checker);
+    if (rw?.held.length && !rw.held.some((h) => this.subst.has(h))) return this.readWriteCode(e, rw);
     const replaced = this.patterns.prototypeMethod(e);
     if (replaced) {
       // A Page's native view made by a plugin (gesturehandler's PageLayout): the kit's factory hook, `this` the page.
@@ -5885,6 +5879,7 @@ export class Translator implements AsyncTranslator {
       return `run { val ${tmp} = ${this.expr(e.right)}; ${assigns.join('; ')} }`;
     }
     if ((ts.isPostfixUnaryExpression(e) || ts.isPrefixUnaryExpression(e)) && [ts.SyntaxKind.PlusPlusToken, ts.SyntaxKind.MinusMinusToken].includes(e.operator)) {
+      if (ts.isElementAccessExpression(e.operand) && this.typeOf(e.operand.expression).replace(/\?$/, '').startsWith('JSRecord<')) return this.readWriteValue(e);
       const place = this.untypedPlace(e.operand);
       if (place) return `jsSet(${place.obj}, ${place.key}, jsToNumber(jsGet(${place.obj}, ${place.key})) ${e.operator === ts.SyntaxKind.PlusPlusToken ? '+' : '-'} 1.0)`;
       // Lenient code: a number left unset (Kotlin's `Double?`), NaN until assigned.
@@ -5962,7 +5957,8 @@ export class Translator implements AsyncTranslator {
       else if (init && isNullable(read.type)) code = `(${this.convert(read.code, read.type, optionalType(want))} ?: ${this.coerce(init, want)})`;
       else if (read.type === optionalType(want) && read.type !== want) code = this.undefinedAs(read.code, want);
       else code = this.convert(read.code, read.type, want);
-      out.push(`${this.lvalue(to)} = ${code}`);
+      const place = this.untypedPlace(to);
+      out.push(place ? `jsSet(${place.obj}, ${place.key}, ${code})` : `${this.lvalue(to)} = ${code}`);
     };
     const withDefault = (x: ts.Expression): [ts.Expression, ts.Expression | undefined] =>
       ts.isBinaryExpression(x) && x.operatorToken.kind === ts.SyntaxKind.EqualsToken ? [x.left, x.right] : [x, undefined];
@@ -6600,7 +6596,11 @@ export class Translator implements AsyncTranslator {
 
   // ---- Expressions -----------------------------------------------------------------------------
 
+  /** Held parts of a member's compound assignment (`readWriteCode`): their code, bound in their place, is final. */
+  private readonly heldParts = new Set<ts.Node>();
+
   expr(e: ts.Expression): string {
+    if (this.heldParts.has(e)) return this.subst.get(e)!;
     if (ts.isCallExpression(e) && !this.nullishCalls.has(e) && !this.subst.has(e) && this.states.nullishRead(e)) return `${this.nullishCode(e)}${this.lenientApp ? '.jsAny' : '.optional'}`;
     const raw = this.awaitedRaw.get(e), key = raw ? readKeyOf(e) : null;
     // A member of what the await gives: JavaScript's TypeError where it gives nothing.
@@ -6608,6 +6608,8 @@ export class Translator implements AsyncTranslator {
     const s = this.subst.get(e);
     if (s) return s;
     if (ts.isParenthesizedExpression(e)) return `(${this.expr(e.expression)})`;
+    const rw = readWrite(e, this.checker);
+    if (rw && ((rw.value && !rw.stored) || rw.held.length) && !rw.held.some((h) => this.subst.has(h))) return this.readWriteCode(e, rw);
     // An accessor's getter need not give back what its setter took, so the value is the one read or the one assigned.
     const logical = ts.isBinaryExpression(e) && [ts.SyntaxKind.AmpersandAmpersandEqualsToken, ts.SyntaxKind.BarBarEqualsToken, ts.SyntaxKind.QuestionQuestionEqualsToken].includes(e.operatorToken.kind);
     if (logical && ts.isPropertyAccessExpression(e.left) && !statementLevel(e) && (this.checker.getSymbolAtLocation(e.left.name)?.flags ?? 0) & ts.SymbolFlags.Accessor) {
@@ -9704,6 +9706,72 @@ export class Translator implements AsyncTranslator {
     throw this.error(e, 'prefix operator');
   }
 
+  /** A member's compound, logical or update assignment (`readWrite`): its held parts evaluated once, its value the one computed. */
+  private readWriteCode(e: ts.Expression, rw: ReadWrite): string {
+    const names = rw.held.map((h) => this.fresh(h === rw.target.expression ? '__o' : '__k'));
+    const binds = rw.held.map((h, k) => `val ${names[k]} = ${this.expr(h)}`);
+    rw.held.forEach((h, k) => { this.subst.set(h, names[k]); this.heldParts.add(h); });
+    try {
+      const body = rw.value ? this.readWriteValue(e) : this.exprStatement(e);
+      const lost = names.find((n) => !new RegExp(`\\b${n}\\b`).test(body));
+      if (lost) throw this.error(e, `a compound assignment whose target the translation evaluates apart from its parts (${lost})`);
+      return binds.length ? `run { ${[...binds, body].join('; ')} }` : body;
+    } finally {
+      rw.held.forEach((h) => { this.subst.delete(h); this.heldParts.delete(h); });
+    }
+  }
+
+  /** `f()` reading a record's entry as present, though Kotlin reads it back nullable. */
+  /** A record's entry declared present, though Kotlin reads it back nullable. */
+  private recordEntry(target: ts.Expression): ts.ElementAccessExpression | null {
+    while (ts.isParenthesizedExpression(target)) target = target.expression;
+    return ts.isElementAccessExpression(target) && this.typeOf(target.expression).replace(/\?$/, '').startsWith('JSRecord<') && !isNullable(this.typeOf(target)) ? target : null;
+  }
+
+  private entryRead(e: ts.Expression, f: () => string): string {
+    const target = this.recordEntry(e);
+    if (!target) return f();
+    this.subst.set(target, asserted(this.expr(target)));
+    try { return f(); } finally { this.subst.delete(target); }
+  }
+
+  /** A member's compound, logical or update assignment as a value: one read, the write, and the value computed or kept. */
+  private readWriteValue(e: ts.Expression): string {
+    const K = ts.SyntaxKind;
+    if (ts.isBinaryExpression(e) && [K.AmpersandAmpersandEqualsToken, K.BarBarEqualsToken, K.QuestionQuestionEqualsToken].includes(e.operatorToken.kind)) {
+      const read = this.fresh('__read'), value = this.fresh('__value');
+      const op = e.operatorToken.kind;
+      const test = op === K.AmpersandAmpersandEqualsToken ? `jsTruthy(${read})` : op === K.BarBarEqualsToken ? `!jsTruthy(${read})` : `jsIsNullish(${read})`;
+      const target = this.declaredTypeOf(e.left) ?? this.typeOf(e.left);
+      const t = this.typeOf(e.left) === 'Any?' ? 'Any?' : this.typeOf(e);
+      const assigned = `val ${value} = ${this.coerce(e.right, t === 'Any?' ? 'Any?' : target)}`;
+      const kept = isNullable(target) && t !== 'Any?' ? this.undefinedAs(read, t) : this.recordEntry(e.left) ? asserted(read) : read;
+      this.subst.set(e.right, value);
+      try {
+        return `run { val ${read} = ${this.expr(e.left)}; if (${test}) { ${assigned}; ${this.assignment(e.left, e.right)}; ${value} } else ${kept} }`;
+      } finally {
+        this.subst.delete(e.right);
+      }
+    }
+    const value = this.fresh('__value');
+    let computed: string, given = value, old = '';
+    if (ts.isBinaryExpression(e)) computed = this.entryRead(e.left, () => this.binary(asOperation(e)));
+    else {
+      const u = e as ts.PrefixUnaryExpression | ts.PostfixUnaryExpression;
+      old = this.fresh('__old');
+      computed = `${old} ${u.operator === K.PlusPlusToken ? '+' : '-'} ${this.one(u.operand)}`;
+      old = `val ${old} = ${this.entryRead(u.operand, () => this.typeOf(u.operand) === 'JSBigInt' ? this.expr(u.operand) : this.toNumber(u.operand))}; `;
+      if (ts.isPostfixUnaryExpression(e)) given = /val (\w+)/.exec(old)![1];
+    }
+    const left = ts.isBinaryExpression(e) ? e.left : (e as ts.PrefixUnaryExpression).operand;
+    this.subst.set(e, value);
+    try {
+      return `run { ${old}val ${value} = ${computed}; ${this.assignment(left, e)}; ${given} }`;
+    } finally {
+      this.subst.delete(e);
+    }
+  }
+
   /** `++`/`--` of a member read and written by key, as a value: the old number (postfix) or the new one. */
   private keyedStep(place: { obj: string; key: string }, sign: string, postfix: boolean): string {
     const o = this.fresh('__o');
@@ -9793,6 +9861,14 @@ export class Translator implements AsyncTranslator {
     const big = this.bigIntBinary(e);
     if (big) return big;
     if (bit[op]) return `${bit[op]}(${this.toNumber(e.left)}, ${this.toNumber(e.right)})`;
+    // A member written by key, or a record's entry (read back nullable): the operation's value, assigned as `=` assigns it.
+    const keyed = (compound[op] || op === K.PercentEqualsToken || op === K.AsteriskAsteriskEqualsToken) && this.untypedPlace(e.left);
+    const entry = op >= K.FirstCompoundAssignment && op <= K.LastCompoundAssignment && ![K.QuestionQuestionEqualsToken, K.BarBarEqualsToken, K.AmpersandAmpersandEqualsToken].includes(op)
+      && ts.isElementAccessExpression(e.left) && this.typeOf(e.left.expression).replace(/\?$/, '').startsWith('JSRecord<');
+    if (keyed || entry) {
+      this.subst.set(e, this.entryRead(e.left, () => this.binary(asOperation(e))));
+      try { return this.assignment(e.left, e); } finally { this.subst.delete(e); }
+    }
     if (compound[op]) return `${target()} = ${bit[compound[op]!]}(${this.toNumber(e.left)}, ${this.toNumber(e.right)})`;
     switch (op) {
       case K.EqualsToken: {
