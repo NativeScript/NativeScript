@@ -7890,6 +7890,8 @@ ${members.join('\n')}
 
   /** An expression where Swift needs a value of `target`. */
   coerce(e: ts.Expression, target: string): string {
+    const held = this.heldValues.get(e);
+    if (held !== undefined) return this.convert(this.subst.get(e)!, held, target);
     const nullish = this.nullishConversion(e, target);
     if (nullish !== null) return nullish;
     this.checkFieldsMet(e, target);
@@ -8688,6 +8690,8 @@ ${members.join('\n')}
 
   /** Held parts of a member's compound assignment (`readWriteCode`): their code, bound in their place, is final. */
   private readonly heldParts = new Set<ts.Node>();
+  /** A logical assignment's right side bound once (`readWriteValue`), with its Swift type: every placement converts that binding. */
+  private readonly heldValues = new Map<ts.Node, string>();
 
   expr(e: ts.Expression): string {
     if (this.heldParts.has(e)) return this.subst.get(e)!;
@@ -13120,16 +13124,18 @@ ${members.join('\n')}
       const declared = this.declaredTypeOf(e.left) ?? this.typeOf(e.left);
       const t = declared === 'Any?' || op !== K.QuestionQuestionEqualsToken ? declared : declared.replace(/\?$/, '');
       const test = op === K.AmpersandAmpersandEqualsToken ? `jsTruthy(${read})` : op === K.BarBarEqualsToken ? `!jsTruthy(${read})` : `jsIsNullish(${read})`;
-      const kept = t !== declared ? `${read}!` : read;
+      const kept = t !== declared || this.recordEntry(e.left) ? `${read}!` : read;
       // Held as the right side's own type where the target is untyped: the write converts it as `=` does.
       const vt = t === 'Any?' && !['Void', 'Any?'].includes(this.typeOf(e.right)) ? this.typeOf(e.right) : t;
       const given = `${this.tryPrefix(e.right)}${this.coerce(e.right, vt)}`, current = `${this.tryPrefix(e.left)}${this.expr(e.left)}`;
       this.subst.set(e.right, value);
+      this.heldValues.set(e.right, vt);
       try {
         const assign = this.assignment(assignmentOf(e, e.left, e.right));
         return { type: t, code: `let ${read} = ${current}; if ${test} { let ${value}: ${vt} = ${given}; ${this.tryPrefix(e)}${assign}; return ${value} }; return ${kept}` };
       } finally {
         this.subst.delete(e.right);
+        this.heldValues.delete(e.right);
       }
     }
     const value = this.fresh('__value');

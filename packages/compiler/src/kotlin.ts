@@ -9722,9 +9722,15 @@ export class Translator implements AsyncTranslator {
   }
 
   /** `f()` reading a record's entry as present, though Kotlin reads it back nullable. */
-  private entryRead(target: ts.Expression, f: () => string): string {
+  /** A record's entry declared present, though Kotlin reads it back nullable. */
+  private recordEntry(target: ts.Expression): ts.ElementAccessExpression | null {
     while (ts.isParenthesizedExpression(target)) target = target.expression;
-    if (!ts.isElementAccessExpression(target) || !this.typeOf(target.expression).replace(/\?$/, '').startsWith('JSRecord<') || isNullable(this.typeOf(target))) return f();
+    return ts.isElementAccessExpression(target) && this.typeOf(target.expression).replace(/\?$/, '').startsWith('JSRecord<') && !isNullable(this.typeOf(target)) ? target : null;
+  }
+
+  private entryRead(e: ts.Expression, f: () => string): string {
+    const target = this.recordEntry(e);
+    if (!target) return f();
     this.subst.set(target, asserted(this.expr(target)));
     try { return f(); } finally { this.subst.delete(target); }
   }
@@ -9739,7 +9745,7 @@ export class Translator implements AsyncTranslator {
       const target = this.declaredTypeOf(e.left) ?? this.typeOf(e.left);
       const t = this.typeOf(e.left) === 'Any?' ? 'Any?' : this.typeOf(e);
       const assigned = `val ${value} = ${this.coerce(e.right, t === 'Any?' ? 'Any?' : target)}`;
-      const kept = isNullable(target) && t !== 'Any?' ? this.undefinedAs(read, t) : read;
+      const kept = isNullable(target) && t !== 'Any?' ? this.undefinedAs(read, t) : this.recordEntry(e.left) ? asserted(read) : read;
       this.subst.set(e.right, value);
       try {
         return `run { val ${read} = ${this.expr(e.left)}; if (${test}) { ${assigned}; ${this.assignment(e.left, e.right)}; ${value} } else ${kept} }`;

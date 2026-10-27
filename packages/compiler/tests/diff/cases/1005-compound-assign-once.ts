@@ -82,4 +82,13 @@ class Holder {
 }
 const hd = new Holder();
 console.log(hd.bump(), hd.items.join(), hd.at, n);
+
+// A logical assignment's value is the object it stored, not a second one made from the right side.
+const lists: any = {};
+(lists[k('l')] ??= []).push(1); (lists[k('l')] ??= []).push(2);
+const rec: Record<string, number[]> = {};
+(rec[k('r')] ||= []).push(3); (rec[k('r')] ||= []).push(4);
+const recs: Record<string, number[]>[] = [{}];
+(recs[i(0)]['s'] ??= []).push(5);
+console.log(JSON.stringify(lists), JSON.stringify(rec), JSON.stringify(recs), n);
 console.log(log.join(' '));
