@@ -49,8 +49,17 @@ export interface Value {
 
 /** The outermost operation of a value's code. */
 export type Mark =
-  /** `unchecked`: Kotlin's `jsUnchecked<T>(x)`, which passes any value for a `T`. */
-  | { op: 'cast'; to: NativeType; optional: boolean; implicit: boolean; of: Value; unchecked?: boolean }
+  /**
+   * `unchecked`: Kotlin's `jsUnchecked<T>(x)`, which passes any value for a `T`. `spelled`: the type as the code names it.
+   * `up`: Swift's `x as T?`, which cannot fail. `implicit`: Swift's `jsImplicit(x as? T)`.
+   */
+  | { op: 'cast'; to: NativeType; optional: boolean; implicit: boolean; of: Value; unchecked?: boolean; spelled?: string; up?: boolean }
+  /** Swift's `jsImplicit(x)`, or a function cell's own (`cell`: `FunctionCell_X.implicit(x)`; `via`: another static, `fromScriptOrNil`; `chained`: `jsImplicit(x)?`, a chain going on). */
+  | { op: 'implicit'; of: Value; cell?: string; via?: string; chained?: boolean }
+  /** Swift's `jsForeign(x, …)`, `jsArrayOrNil(x, …)`, `jsObjectRequired(x)`, `jsUnwrap(x, …)`: the kit's helper around the value, its other arguments `rest`. */
+  | { op: 'helper'; name: 'jsForeign' | 'jsArrayOrNil' | 'jsObjectRequired' | 'jsUnwrap'; of: Value; rest: string }
+  /** The kit's lenient read of a string, number or boolean (`jsLenientNumber(x)`). */
+  | { op: 'lenient'; of: Value }
   | { op: 'unwrap' | 'asserted' | 'converted'; of: Value }
   | { op: 'empty'; null: boolean }
   /** Undefined read as a string, number or boolean (`(x ?: "undefined")`). */
@@ -58,11 +67,11 @@ export type Mark =
   /** A value read as nothing (Kotlin `run { x; Unit }`). */
   | { op: 'discarded'; of: Value }
   /** A map's entry as the backend reads it, missing where the map lacks the key (`m.get(k)`). */
-  | { op: 'entry'; of: Value; key: Value }
+  | { op: 'entry'; of: Value; key: Value; element?: boolean }
   /** An array the code makes, of the element type it spells. */
   | { op: 'array'; element: string }
-  /** A member read off the value (`x.name`). */
-  | { op: 'member'; of: Value; name: string }
+  /** A member read off the value (`x.name`; `optional`: Swift's `x?.name`; `dynamic`: Swift's `jsGet(x, "name")`). */
+  | { op: 'member'; of: Value; name: string; optional?: boolean; dynamic?: boolean }
   /** Swift's `try` before the code of `of`. */
   | { op: 'try'; of: Value };
 
