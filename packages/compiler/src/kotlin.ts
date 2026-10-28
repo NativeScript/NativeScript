@@ -7782,6 +7782,10 @@ export class Translator implements AsyncTranslator {
     if (ts.isIdentifier(e)) {
       const sym = this.resolve(e);
       if (sym && this.undefinedVars.has(sym)) return ident(e.text);
+      if (this.states.narrowedMissing(e) && !this.rawNames.has(e)) {
+        this.rawNames.add(e);
+        try { return this.expr(e); } finally { this.rawNames.delete(e); }
+      }
     }
     if (ts.isPropertyAccessExpression(e) && e.expression.kind === ts.SyntaxKind.ThisKeyword && !isWriteTarget(e)) {
       const d = this.resolve(e.name)?.valueDeclaration;

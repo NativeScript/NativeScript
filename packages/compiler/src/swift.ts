@@ -9289,8 +9289,30 @@ ${members.join('\n')}
   }
 
   private checkedHere(n: ts.Node): boolean {
-    return this.spreadThrows(n) || this.requiredField(n) || this.promiseValueThrows(n) || ((ts.isPropertyAccessExpression(n) || ts.isElementAccessExpression(n)) && (this.looseReceiverKey(n.expression) !== null || this.assertedReceiverKey(n.expression) !== null || this.states.missingAtRead(n.expression) !== null))
+    return this.spreadThrows(n) || this.requiredField(n) || this.requiredNarrowed(n) || this.promiseValueThrows(n) || ((ts.isPropertyAccessExpression(n) || ts.isElementAccessExpression(n)) && (this.looseReceiverKey(n.expression) !== null || this.assertedReceiverKey(n.expression) !== null || this.states.missingAtRead(n.expression) !== null))
       || (ts.isExpression(n) && !(assignmentValue(n) && this.lenient) && this.loose(n) && !this.looseTolerated(n)) || (ts.isCallExpression(n) && this.heldFunctionCall(n)) || (ts.isExpression(n) && (this.untypedPresentThrows(n) || this.native.foreignArgument(n)));
+  }
+
+  /**
+   * An object read `narrowedMissing` answers, placed where Swift needs it present: `narrowed` checks it with
+   * `jsObjectRequired`. Not a receiver (`receiver` checks it), a test of it, or a placement taking it untyped, which read
+   * the optional.
+   */
+  private requiredNarrowed(n: ts.Node): boolean {
+    if (!ts.isIdentifier(n) || !this.states.narrowedMissing(n)) return false;
+    let x: ts.Node = n;
+    while (ts.isParenthesizedExpression(x.parent)) x = x.parent;
+    const p = x.parent, K = ts.SyntaxKind;
+    if ((ts.isPropertyAccessExpression(p) || ts.isElementAccessExpression(p)) && p.expression === x) return false;
+    if (ts.isTypeOfExpression(p) || (ts.isPrefixUnaryExpression(p) && p.operator === K.ExclamationToken)) return false;
+    if ((ts.isIfStatement(p) || ts.isWhileStatement(p) || ts.isDoStatement(p)) && p.expression === x) return false;
+    if (ts.isConditionalExpression(p) && p.condition === x) return false;
+    if (ts.isBinaryExpression(p) && [K.EqualsEqualsEqualsToken, K.ExclamationEqualsEqualsToken, K.EqualsEqualsToken, K.ExclamationEqualsToken].includes(p.operatorToken.kind) && isNullish(p.left === x ? p.right : p.left)) return false;
+    try {
+      if (['String', 'Double', 'Bool'].includes(this.typeOf(n))) return false;
+      const slot = slotOf(n as ts.Identifier, this.checker);
+      return !(slot && (ts.isParameter(slot) || ts.isVariableDeclaration(slot)) && this.typeOf(slot.name) === 'Any?');
+    } catch { return false; }
   }
 
   /** A value Swift holds optional placed in a field it holds present (`placedField`): `coerce` checks it with `jsRequired`. */
@@ -10118,6 +10140,8 @@ ${members.join('\n')}
       if (this.optionalReads.has(e)) { this.optionalReads.set(e, true); return code; }
       // `Error.stack`, optional in the ES library, is always a string in the runtime (`JSError.stack`).
       if (ts.isPropertyAccessExpression(e) && e.name.text === 'stack' && isLibDeclaration(this.checker.getSymbolAtLocation(e.name)?.declarations?.[0])) return code;
+      if (this.states.narrowedMissing(e) && ['String', 'Double', 'Bool'].includes(actual)) return this.undefinedAs(code, actual, declared);
+      if (this.requiredNarrowed(e)) return tryCode(helper('jsObjectRequired', code));
       return ts.isOptionalChain(e) ? unwrappedCode(`(${code})`) : unwrappedCode(code);
     }
     if (declared === 'Any?') return this.fromAny(code, actual);
@@ -10963,6 +10987,10 @@ ${members.join('\n')}
     if (ts.isIdentifier(e)) {
       const sym = this.resolve(e);
       if (sym && this.undefinedVars.has(sym)) return this.refName(e);
+      if (this.states.narrowedMissing(e) && !this.optionalReads.has(e)) {
+        this.optionalReads.set(e, false);
+        try { return this.expr(e); } finally { this.optionalReads.delete(e); }
+      }
     }
     if (ts.isPropertyAccessExpression(e) && this.lenientOptionalMember(e)) return this.property(e);
     // `a?.b` of an untyped `a` where the chain goes on (`a?.b?.c`): the optional the chain continues from.
