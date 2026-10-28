@@ -4186,9 +4186,14 @@ ${members.join('\n')}
    * An untyped one is given its default in the body, where an explicit undefined (nil) takes it too and null does not.
    */
   private constantDefault(p: ts.ParameterDeclaration): boolean {
-    return !!p.initializer && this.isConstant(p.initializer) && !this.optionalDefaults.has(p) && !this.familyDefaultsDiffer(p) && this.typeOf(p.name) !== 'Any?';
+    return !!p.initializer && this.isConstant(p.initializer) && !this.optionalDefaults.has(p) && !this.familyDefaultsDiffer(p) && this.typeOf(p.name) !== 'Any?' && !this.states.defaultTakesUndefined(p);
   }
   private optionalDefaults = new Set<ts.ParameterDeclaration>();
+
+  /** An app parameter whose default its body applies (`paramPrelude`): an argument is given as the optional it may be. */
+  private filledDefault(d: ts.Declaration | undefined): boolean {
+    return !this.library && !!d && ts.isParameter(d) && !!d.initializer && !d.dotDotDotToken && !this.templateParams && !d.getSourceFile().isDeclarationFile && !this.constantDefault(d);
+  }
 
   /**
    * A method parameter whose default some other method of its override family does not share: Swift picks a default
@@ -9289,8 +9294,30 @@ ${members.join('\n')}
   }
 
   private checkedHere(n: ts.Node): boolean {
-    return this.spreadThrows(n) || this.requiredField(n) || this.promiseValueThrows(n) || ((ts.isPropertyAccessExpression(n) || ts.isElementAccessExpression(n)) && (this.looseReceiverKey(n.expression) !== null || this.assertedReceiverKey(n.expression) !== null || this.states.missingAtRead(n.expression) !== null))
+    return this.spreadThrows(n) || this.requiredField(n) || this.requiredNarrowed(n) || this.promiseValueThrows(n) || ((ts.isPropertyAccessExpression(n) || ts.isElementAccessExpression(n)) && (this.looseReceiverKey(n.expression) !== null || this.assertedReceiverKey(n.expression) !== null || this.states.missingAtRead(n.expression) !== null))
       || (ts.isExpression(n) && !(assignmentValue(n) && this.lenient) && this.loose(n) && !this.looseTolerated(n)) || (ts.isCallExpression(n) && this.heldFunctionCall(n)) || (ts.isExpression(n) && (this.untypedPresentThrows(n) || this.native.foreignArgument(n)));
+  }
+
+  /**
+   * An object read `narrowedMissing` answers, placed where Swift needs it present: `narrowed` checks it with
+   * `jsObjectRequired`. Not a receiver (`receiver` checks it), a test of it, or a placement taking it untyped, which read
+   * the optional.
+   */
+  private requiredNarrowed(n: ts.Node): boolean {
+    if (!ts.isIdentifier(n) || !this.states.narrowedMissing(n)) return false;
+    let x: ts.Node = n;
+    while (ts.isParenthesizedExpression(x.parent)) x = x.parent;
+    const p = x.parent, K = ts.SyntaxKind;
+    if ((ts.isPropertyAccessExpression(p) || ts.isElementAccessExpression(p)) && p.expression === x) return false;
+    if (ts.isTypeOfExpression(p) || (ts.isPrefixUnaryExpression(p) && p.operator === K.ExclamationToken)) return false;
+    if ((ts.isIfStatement(p) || ts.isWhileStatement(p) || ts.isDoStatement(p)) && p.expression === x) return false;
+    if (ts.isConditionalExpression(p) && p.condition === x) return false;
+    if (ts.isBinaryExpression(p) && [K.EqualsEqualsEqualsToken, K.ExclamationEqualsEqualsToken, K.EqualsEqualsToken, K.ExclamationEqualsToken].includes(p.operatorToken.kind) && isNullish(p.left === x ? p.right : p.left)) return false;
+    try {
+      if (['String', 'Double', 'Bool'].includes(this.typeOf(n))) return false;
+      const slot = slotOf(n as ts.Identifier, this.checker);
+      return !(slot && (ts.isParameter(slot) || ts.isVariableDeclaration(slot)) && this.typeOf(slot.name) === 'Any?');
+    } catch { return false; }
   }
 
   /** A value Swift holds optional placed in a field it holds present (`placedField`): `coerce` checks it with `jsRequired`. */
@@ -10118,6 +10145,8 @@ ${members.join('\n')}
       if (this.optionalReads.has(e)) { this.optionalReads.set(e, true); return code; }
       // `Error.stack`, optional in the ES library, is always a string in the runtime (`JSError.stack`).
       if (ts.isPropertyAccessExpression(e) && e.name.text === 'stack' && isLibDeclaration(this.checker.getSymbolAtLocation(e.name)?.declarations?.[0])) return code;
+      if (this.states.narrowedMissing(e) && ['String', 'Double', 'Bool'].includes(actual)) return this.undefinedAs(code, actual, declared);
+      if (this.requiredNarrowed(e)) return tryCode(helper('jsObjectRequired', code));
       return ts.isOptionalChain(e) ? unwrappedCode(`(${code})`) : unwrappedCode(code);
     }
     if (declared === 'Any?') return this.fromAny(code, actual);
@@ -10963,6 +10992,10 @@ ${members.join('\n')}
     if (ts.isIdentifier(e)) {
       const sym = this.resolve(e);
       if (sym && this.undefinedVars.has(sym)) return this.refName(e);
+      if (this.states.narrowedMissing(e) && !this.optionalReads.has(e)) {
+        this.optionalReads.set(e, false);
+        try { return this.expr(e); } finally { this.optionalReads.delete(e); }
+      }
     }
     if (ts.isPropertyAccessExpression(e) && this.lenientOptionalMember(e)) return this.property(e);
     // `a?.b` of an untyped `a` where the chain goes on (`a?.b?.c`): the optional the chain continues from.
@@ -11092,7 +11125,8 @@ ${members.join('\n')}
         const held = this.typeOf(a.expression);
         const code = this.expr(a.expression);
         tuple.forEach((el, i) => {
-          const at = this.type(this.checker.getTypeOfSymbolAtLocation(params[k + i], e), e);
+          const given = this.type(this.checker.getTypeOfSymbolAtLocation(params[k + i], e), e);
+          const at = this.filledDefault(params[k + i].valueDeclaration) ? optionalType(given) : given;
           out.push(held.startsWith('(') && !functionParts(held) ? this.convert(`${code}.${i}`, this.type(el, e), at) : this.presentFromAny(`jsArg(${this.coerce(a.expression, 'JSArray<Any?>')}.storage, ${i})`, at, true));
         });
         break;
@@ -11135,7 +11169,7 @@ ${members.join('\n')}
       if (raw) { out.push(raw); continue; }
       // A parameter its group's form widens takes undefined and null as they are, as every member of the group spells it.
       const widened = !emitted && !erased && !!decl && ts.isParameter(decl) && this.states.widened(decl) && !isOptional(at) && at !== 'Any?';
-      const to = emitted ?? (omissible || widened ? optionalType(at) : erased ? this.inFile(decl!.getSourceFile().fileName, () => this.paramType(decl as ts.ParameterDeclaration)) : at === 'Never' ? this.type(this.checker.getTypeOfSymbol(p), e) : at);
+      const to = emitted ?? (omissible || widened || this.filledDefault(decl) ? optionalType(at) : erased ? this.inFile(decl!.getSourceFile().fileName, () => this.paramType(decl as ts.ParameterDeclaration)) : at === 'Never' ? this.type(this.checker.getTypeOfSymbol(p), e) : at);
       out.push(this.coerce(a, to));
     }
     if (restAt >= 0 && appDeclared && out.length <= restAt) out.push(`${this.restType(params[restAt])}()`);
