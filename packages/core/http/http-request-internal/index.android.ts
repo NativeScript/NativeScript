@@ -4,7 +4,7 @@ import { Screen } from '../../platform/screen';
 import * as domainDebugger from '../../debugger';
 import { isObject } from '../../utils';
 import { HttpResponseEncoding } from '../http-interfaces';
-import { addHeader } from './http-request-internal-common';
+import { addHeader, getDebugRequestMethodAndBody } from './http-request-internal-common';
 export { addHeader } from './http-request-internal-common';
 
 export interface BaseHttpContent {
@@ -219,7 +219,7 @@ export function requestInternal<T extends object>(options: HttpRequestOptions, c
 					});
 					const request = {
 						url: options.url,
-						method: 'GET',
+						...getDebugRequestMethodAndBody(options),
 						headers: options.headers,
 						timestamp,
 					};
