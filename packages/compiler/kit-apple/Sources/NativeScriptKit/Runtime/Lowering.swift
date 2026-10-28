@@ -311,6 +311,10 @@ public func jsStringAt(_ s: String, _ index: Double) -> String? {
 }
 
 public func jsFromCharCode(_ codes: Double...) -> String {
+    jsFromCharCode(codes: codes)
+}
+
+public func jsFromCharCode(codes: [Double]) -> String {
     string(codes.map { UInt16(truncatingIfNeeded: Int64(jsToUint32Bits($0))) }[...])
 }
 
