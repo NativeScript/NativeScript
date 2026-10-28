@@ -10,6 +10,7 @@ import { assignedValues, openSpreadType, initializedNull, intersectionAliasMembe
 import { memberName } from './stable-names.ts';
 import { shadowConversions } from './conversion-shadow.ts';
 import { parseNativeType, plan, type Slot, type Value } from './conversion.ts';
+import { isEnumObject, place, type PlacementBackend } from './placement.ts';
 import { castCode, elementOf, helper, implicitOf, isPure, isUnwrap, markOf, marked, memberOf, orNil, pureCode, tried, tryCode, unwrapInner, unwrappedCode, unwrappedIf, valueOf } from './swift-marks.ts';
 import { convertedRead, onlyNull, ValueStates, type StateBackend } from './value-states.ts';
 import type { Form } from './forms.ts';
@@ -8069,66 +8070,69 @@ ${members.join('\n')}
 
   /** App code: an app enum named as a value (`Color`, `Shapes.Kind`), which is the object JavaScript makes of it. */
   private isEnumObject(e: ts.Expression): boolean {
-    if (this.library) return false;
-    const bare = ts.skipOuterExpressions(e);
-    if (!ts.isIdentifier(bare) && !ts.isPropertyAccessExpression(bare)) return false;
-    const sym = this.resolve(ts.isPropertyAccessExpression(bare) ? bare.name : bare);
-    const decl = sym && sym.flags & ts.SymbolFlags.Alias ? this.checker.getAliasedSymbol(sym).valueDeclaration : sym?.valueDeclaration;
-    return !!decl && ts.isEnumDeclaration(decl) && !decl.getSourceFile().isDeclarationFile && !hasModifier(decl, ts.SyntaxKind.ConstKeyword);
+    return isEnumObject(this.placement, e);
   }
 
   /** An expression where Swift needs a value of `target`. */
   coerce(e: ts.Expression, target: string): string {
-    const held = this.heldValues.get(e);
-    if (held !== undefined) return this.convert(this.subst.get(e)!, held, target);
-    const nullish = this.nullishConversion(e, target);
-    if (nullish !== null) return nullish;
-    const checked = this.checkedPlacement(e, target);
-    if (checked) return checked;
-    this.checkFieldsMet(e, target);
-    this.checkAnyArgument(e, target);
-    if (/^JSArray<String>[?!]?$/.test(target) && ((this.typeOf(e) === 'JSArray<String?>' && this.unsetGroups(e)) || this.unsetMatch(e))) {
-      throw this.error(e, 'strings a pattern\'s unset group may leave undefined, given where `string[]` is declared (declare it `(string | undefined)[]`)');
-    }
-    if (target === 'JSArray<String?>' && /^JSMatch[?!]?$/.test(this.typeOf(e))) return this.convert(this.expr(e), this.typeOf(e), target);
-    // An enum's object held as a record (`const names: Record<string, string | number> = Color`): an untyped object.
-    if (target.startsWith('JSRecord<') && this.isEnumObject(e)) return this.fromAnyCode(this.expr(e), target);
-    const bare = ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses);
-    if (ts.isVoidExpression(bare) && target !== 'Any?' && isOptional(target)) {
-      const tp = this.throwsInfo.expr(bare.expression) ? 'try ' : '';
-      return `{ () ${tp ? 'throws ' : ''}-> ${target} in _ = ${tp}${this.expr(bare.expression)}; return nil }()`;
-    }
-    const code = this.coerceTyped(e, target);
-    if (target !== 'Any?') return code;
-    const entry = this.states.nullableEntry(e, () => code);
-    if (entry) return entry;
-    if (!this.states.nilIsNull(e) || code === 'jsNull') return code;
-    const inner = afterTry(code);
-    return inner !== null ? tryCode(`jsNulled(${inner})`) : `jsNulled(${code})`;
+    return place(this.placement, e, target);
   }
 
-  /**
-   * A value placed in or read from a `JSNullish<T>` slot (`ValueStates.nullishHeld`), which keeps null apart from
-   * undefined: the one conversion to and from its other forms. Null if neither side is one.
-   */
-  private nullishConversion(e: ts.Expression, target: string): string | null {
-    const held = this.states.nullishRead(e);
-    const bare = ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses);
-    const name = held && this.nullishCode(bare);
-    const into = /^JSNullish<(.*)>$/.exec(target)?.[1];
-    if (!into) return name && target === 'Any?' ? `${name}.jsAny` : null;
-    const own = held && this.nullishSlotType(held);
-    if (name) return own === target ? name : `${target}(${this.convert(`${name}.optional`, optionalType(own!.slice('JSNullish<'.length, -1)), optionalType(into))})`;
-    if (bare.kind === ts.SyntaxKind.NullKeyword) return '.null';
-    if ((ts.isIdentifier(bare) && bare.text === 'undefined') || ts.isVoidExpression(bare)) return '.undefined';
-    if (ts.isConditionalExpression(bare)) return this.ternary(bare, target, (x) => this.coerce(x, target));
-    const from = this.typeOf(e);
-    // `castThrows` counts these conversions as throwing (`nullishPlaced`).
-    if (from === 'Any?') return tryCode(`${target}(any: ${this.expr(e)})`);
-    const entry = this.states.nullishElementRead(e) ? this.coerce(e, 'Any?') : this.states.nullableEntry(e, () => this.coerceTyped(e, 'Any?'));
-    if (entry) return tryCode(`${target}(any: ${afterTry(entry) ?? entry})`);
-    const code = this.coerce(e, optionalType(into));
-    return this.states.nilIsNull(e) ? `${target}(null: ${code})` : `${target}(${code})`;
+  private placementSet?: PlacementBackend;
+
+  /** What the shared placement front (placement.ts) reads of this translator, and Swift's spelling of its cells. */
+  private get placement(): PlacementBackend {
+    const t = this;
+    return this.placementSet ??= {
+      get checker() { return t.checker; },
+      get library() { return t.library; },
+      get states() { return t.states; },
+      cells: {
+        jsAny: (name) => `${name}.jsAny`,
+        type: (target, _into, code) => `${target}(${code})`,
+        nullishOf: (target, _into, code, isNull) => (isNull ? `${target}(null: ${code})` : `${target}(${code})`),
+        // `castThrows` counts these conversions as throwing (`nullishPlaced`).
+        nullishOfAny: (target, _into, code, entry) => tryCode(`${target}(any: ${entry ? afterTry(code) ?? code : code})`),
+        empty: (isNull) => (isNull ? '.null' : '.undefined'),
+        nulled: (code) => {
+          const inner = afterTry(code);
+          return inner !== null ? tryCode(`jsNulled(${inner})`) : `jsNulled(${code})`;
+        },
+        checked: (e, target) => this.checkedPlacement(e, target),
+      },
+      typeOf: (n) => this.typeOf(n),
+      expr: (e) => this.expr(e),
+      resolve: (n) => this.resolve(n),
+      error: (n, what) => this.error(n, what),
+      optionalType,
+      coerce: (e, target) => this.coerce(e, target),
+      coerceTyped: (e, target) => this.coerceTyped(e, target),
+      convert: (code, from, to) => this.convert(code, from, to),
+      fromAnyCode: (code, type) => this.fromAnyCode(code, type),
+      unsetGroups: (n) => this.unsetGroups(n),
+      unsetMatch: (e) => this.unsetMatch(e),
+      nullishCode: (e) => this.nullishCode(e),
+      nullishSlotType: (d) => this.nullishSlotType(d),
+      before: (e, target) => {
+        const held = this.heldValues.get(e);
+        return held !== undefined ? this.convert(this.subst.get(e)!, held, target) : null;
+      },
+      after: (e, target) => {
+        this.checkFieldsMet(e, target);
+        this.checkAnyArgument(e, target);
+        return null;
+      },
+      shortcut: (e, target) => {
+        if (target === 'JSArray<String?>' && /^JSMatch[?!]?$/.test(this.typeOf(e))) return this.convert(this.expr(e), this.typeOf(e), target);
+        const bare = ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses);
+        if (ts.isVoidExpression(bare) && target !== 'Any?' && isOptional(target)) {
+          const tp = this.throwsInfo.expr(bare.expression) ? 'try ' : '';
+          return `{ () ${tp ? 'throws ' : ''}-> ${target} in _ = ${tp}${this.expr(bare.expression)}; return nil }()`;
+        }
+        return null;
+      },
+      branches: (bare, target) => this.ternary(bare, target, (x) => this.coerce(x, target)),
+    };
   }
 
   /** Calls of a `JSNullish` result being written as they are, not read as the optional. */

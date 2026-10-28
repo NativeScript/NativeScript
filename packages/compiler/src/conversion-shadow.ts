@@ -20,7 +20,7 @@ const ENTRIES: Record<'swift' | 'kotlin', string[]> = {
 /** The conversion pipelines' own functions: a call from one of these is the conversion's inside, not a site. */
 const FAMILY = new Set([
   'coerce', 'coerceTyped', 'coerced', 'convert', 'fromAny', 'fromAnyCode', 'presentFromAny', 'fromAnyChecked', 'fromAnyUnchecked',
-  'fromAnyOrZero', 'forcedCast', 'checkedCast', 'checkedConvert', 'checkedPlacement', 'checkedBinding', 'nullishConversion',
+  'fromAnyOrZero', 'forcedCast', 'checkedCast', 'checkedConvert', 'checkedPlacement', 'checkedBinding', 'nullishConversion', 'place', 'nullishPlacement',
   'nullishOfAny', 'undefinedAs', 'maybeUndefined', 'presentCode', 'keptOptional', 'arrayOf', 'arrayElementFromAny', 'shadowed',
   'fromAnyValue', 'fromAnyCodeValue', 'presentFromAnyValue', 'fromAnyOrZeroValue', 'presentValue',
 ]);
