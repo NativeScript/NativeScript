@@ -1,6 +1,6 @@
 import { dirname, join } from 'node:path';
 import ts from 'typescript';
-import { heldDowncasts, implementedInterfaceDeclarations, LooseSlots, nothingGiven, nullishSlots, nullSetFields, originOf, ownSlot, scriptCalledFunction, slotOf, slotType, type NullishSlots, type TrustScope } from './lang.ts';
+import { alwaysEnds, givenBy, heldDowncasts, implementedInterfaceDeclarations, isTemplateMethod, LooseSlots, nothingGiven, nullishSlots, nullSetFields, originOf, ownSlot, reassigned, scriptCalledFunction, slotOf, slotType, type NullishSlots, type TrustScope } from './lang.ts';
 import { type Form, Forms, isGeneric, representation } from './forms.ts';
 import { isAsync, isStatic } from './throws.ts';
 import { shadowForms } from './forms-shadow.ts';
@@ -55,6 +55,10 @@ export interface StateBackend {
   untypedCode(e: ts.Expression): string;
   /** The keyed field a member read whose type holds null and undefined is noted under (`jsNulls`), or null. */
   optionalShapeField(e: ts.PropertyAccessExpression): string | null;
+  /** A string, number or boolean read by name or call that the backend holds optional though its type says present. */
+  heldOptional(x: ts.Expression): boolean;
+  /** A variable the backend declares optional though its type says present, known before it is translated. */
+  declaredOptional(x: ts.Identifier): boolean;
 }
 
 /** The rules the two backends still answer differently. Each names the backend that has it. */
@@ -196,7 +200,7 @@ export class ValueStates {
   /** The program's value forms (review/DESIGN-VALUE-MODEL.md §2), built when first asked. */
   forms(): Forms {
     const b = this.backend;
-    return this.formSet ??= new Forms(b.sourceFiles, b.checker, (f) => b.trust.strictFile(f), { library: !!b.library, native: (d) => b.trust.nativeDeclaration(d), nativeNil: (d) => !!b.native?.holdsNil?.(d) });
+    return this.formSet ??= new Forms(b.sourceFiles, b.checker, (f) => b.trust.strictFile(f), { library: !!b.library, native: (d) => b.trust.nativeDeclaration(d), nativeNil: (d) => !!b.native?.holdsNil?.(d), ownCode: (n) => !this.packaged(n) });
   }
 
   /**
@@ -399,10 +403,14 @@ export class ValueStates {
     return true;
   }
 
-  /** Strict code's value typed `T | undefined`, held as an optional: its empty value is undefined, never null. */
+  /** Strict code's value typed `T | undefined`, or a call of a widened result holding no null, held as an optional: its empty value is undefined, never null. */
   nilIsUndefined(e: ts.Expression): boolean {
     const b = this.backend;
-    if (b.lenient || b.library || b.lenientApp || this.plugin(e)) return false;
+    if (b.lenient || b.library || this.plugin(e)) return false;
+    const bare = ts.skipOuterExpressions(e);
+    const d = ts.isCallExpression(bare) ? this.checker.getResolvedSignature(bare)?.getDeclaration() : undefined;
+    if (d && !ts.isJSDocSignature(d) && this.widenedResult(d) && !this.forms().formOfSlot(d).null) return true;
+    if (b.lenientApp) return false;
     const t = this.checker.getTypeAtLocation(e);
     const parts = t.isUnion() ? t.types : [t];
     return parts.some((x) => x.flags & (ts.TypeFlags.Undefined | ts.TypeFlags.Void)) && !parts.some((x) => x.flags & (ts.TypeFlags.Null | ts.TypeFlags.Any | ts.TypeFlags.Unknown));
@@ -456,6 +464,7 @@ export class ValueStates {
     if (b.lenient || b.library || cls.getSourceFile().isDeclarationFile || this.plugin(cls)) return set;
     for (const m of nullSetFields(cls)) if (b.typeOf(m.name) !== 'Any?') set.add(m.name.getText());
     for (const m of cls.members) if (ts.isPropertyDeclaration(m) && this.nullish().fields.has(m) && b.typeOf(m.name) !== 'Any?') set.add(m.name.getText());
+    for (const m of cls.members) if (ts.isPropertyDeclaration(m) && this.widenedField(m) && this.forms().formOfSlot(m).null && b.typeOf(m.name) !== 'Any?') set.add(m.name.getText());
     return set;
   }
 
@@ -519,7 +528,7 @@ export class ValueStates {
     return !!outer && !!d && !ts.isJSDocSignature(d) && isAsync(outer) && this.backend.returnTypeOf(outer as ts.SignatureDeclaration) === this.backend.returnTypeOf(d);
   }
 
-  /** A call of a non-strict app's own function whose result is optional and whose body gives only null where it gives nothing, awaited when async. */
+  /** A call of a non-strict app's own function whose result is optional and whose body gives only null where it gives nothing, awaited when async, or of a `nullOnlyResult`. */
   nullResult(e: ts.Expression): boolean {
     const b = this.backend, app = b.rules.appNullResults;
     if (app && (!b.lenientApp || b.library)) return false;
@@ -527,6 +536,7 @@ export class ValueStates {
     const call = awaited ? ts.skipOuterExpressions(e.expression) : e;
     if (!ts.isCallExpression(call)) return false;
     const d = this.checker.getResolvedSignature(call)?.getDeclaration();
+    if (!awaited && d && !ts.isJSDocSignature(d) && this.nullOnlyResult(d)) return true;
     if (!d || ts.isJSDocSignature(d) || !(ts.isFunctionDeclaration(d) || ts.isMethodDeclaration(d)) || !d.body || (app && (d.getSourceFile().isDeclarationFile || this.plugin(d))) || awaited !== isAsync(d)) return false;
     if (awaited ? !this.lenientAsync(d) : !b.resultHoldsNull(d)) return false;
     const given = nothingGiven(d, this.checker);
@@ -539,7 +549,7 @@ export class ValueStates {
    */
   get looseSlots(): LooseSlots {
     const b = this.backend;
-    return this.looseSlotSet ??= new LooseSlots(b.sourceFiles, b.checker, (e) => b.unemitted(() => this.untrustedValue(e)), (d) => b.unemitted(() => this.holdsLoose(d)));
+    return this.looseSlotSet ??= new LooseSlots(b.sourceFiles, b.checker, (e) => b.unemitted(() => this.untrustedValue(e)), (d) => b.unemitted(() => this.holdsLoose(d)), () => this.widenedFields());
   }
 
   /** A value that may be undefined, null or another kind than the native type for it says. */
@@ -558,12 +568,16 @@ export class ValueStates {
   /** A declaration of strict code (not the kit's) holding a string, number, boolean or object, in a form the backend may choose alone. */
   private holdsLoose(d: ts.Declaration): boolean {
     const b = this.backend;
-    if (b.library || !b.trust.strictFile(d.getSourceFile()) || !ownSlot(d, this.checker, this.implementedInterfaceSet ??= implementedInterfaceDeclarations(b.sourceFiles, this.checker))) return false;
+    const strict = b.trust.strictFile(d.getSourceFile());
+    // A non-strict app's fields keep their representation: every reader, a template's binding among them, would see it change.
+    const lenientSlot = b.lenientApp && this.appCode(d) && !ts.isPropertySignature(d) && !ts.isPropertyDeclaration(d) && !ts.isPropertyAssignment(d);
+    if (b.library || !(strict || lenientSlot) || !ownSlot(d, this.checker, this.implementedInterfaceSet ??= implementedInterfaceDeclarations(b.sourceFiles, this.checker))) return false;
     try {
       const st = slotType(d, this.checker);
       if (!st) return false;
       const t = b.type(st, d);
-      return this.primitive(t) || b.looseObjectType(t);
+      // A non-strict app's object slot keeps its checked conversion (§2.3b M6): held optional, a wrong-typed value would read as missing.
+      return this.primitive(t) || (strict && b.looseObjectType(t));
     } catch { return false; }
   }
 
@@ -575,6 +589,94 @@ export class ValueStates {
     return !!slot && !slot.getSourceFile().isDeclarationFile && (this.looseSlots.has(slot) || (ts.isParameter(slot) && !!slot.questionToken));
   }
 
+  /**
+   * The receiver of a member read, call or index whose value is a string, number or boolean the program may leave
+   * missing at this read though its type says present: JavaScript's TypeError there (`reading 'k'`). Answered from the
+   * read's kind and the value's form: an array's element or a string's character, a record's entry, `Map.get`,
+   * `pop`/`shift`/`find`/`findLast`/`at`, `x!`, a non-strict optional parameter or member, and a name or call the backend
+   * holds optional. An over-answer costs a check that passes.
+   */
+  missingAtRead(target: ts.Expression): 'undefined' | 'null' | null {
+    const b = this.backend, c = this.checker;
+    if (b.library || b.lenient || !this.appCode(target)) return null;
+    let outer: ts.Node = target;
+    while (ts.isParenthesizedExpression(outer.parent)) outer = outer.parent;
+    const p = outer.parent;
+    if (!p || !(ts.isPropertyAccessExpression(p) || ts.isElementAccessExpression(p)) || p.expression !== outer || p.questionDotToken || assigned(p)) return null;
+    const x = ts.skipOuterExpressions(target, ts.OuterExpressionKinds.Parentheses);
+    // A held slot's read is untyped, or narrowed by a test of its type to a present value (`narrowedRead`).
+    if ((ts.isIdentifier(x) || ts.isPropertyAccessExpression(x)) && this.heldSource(x)) return null;
+    const untyped = ts.TypeFlags.Any | ts.TypeFlags.Unknown;
+    const primitive = (t: ts.Type) => !(t.flags & untyped) && !!(c.getNonNullableType(t).flags & (ts.TypeFlags.StringLike | ts.TypeFlags.NumberLike | ts.TypeFlags.BooleanLike));
+    const empty = (t: ts.Type) => ((t.isUnion() ? t.types : [t]).some((u) => u.flags & (ts.TypeFlags.Undefined | ts.TypeFlags.Void)) ? 'undefined' : (t.isUnion() ? t.types : [t]).some((u) => u.flags & ts.TypeFlags.Null) ? 'null' : null);
+    const strict = b.trust.strictFile(x.getSourceFile());
+    if (ts.isNonNullExpression(x)) {
+      const t = c.getTypeAtLocation(x.expression);
+      if (!primitive(t)) return null;
+      if (strict) return empty(t);
+      const f = this.forms().formOf(x.expression);
+      return f.undefined ? 'undefined' : f.null ? 'null' : null;
+    }
+    const t = c.getTypeAtLocation(x);
+    const recvType = (e: ts.Expression) => c.getNonNullableType(c.getTypeAtLocation(e));
+    const record = (e: ts.Expression) => { const r = recvType(e); return !c.isArrayType(r) && !c.isTupleType(r) && !(r.flags & ts.TypeFlags.StringLike) && c.getIndexInfosOfType(r).length > 0; };
+    // An object-valued record's entry: undefined for a key never set, whatever its value type.
+    const objectEntry = ts.isElementAccessExpression(x) && !x.questionDotToken && !(t.flags & (untyped | ts.TypeFlags.TypeParameter)) && !primitive(t) && !empty(t) && record(x.expression);
+    if (objectEntry) return this.forms().formOf(x).undefined ? 'undefined' : null;
+    if (!primitive(t) && !empty(t) && !(t.flags & (untyped | ts.TypeFlags.TypeParameter)) && !(x.flags & ts.NodeFlags.OptionalChain) && !t.getCallSignatures().length) {
+      const given = this.widenedObject(x);
+      if (given) return given;
+    }
+    if (!primitive(t) || empty(t) || x.flags & ts.NodeFlags.OptionalChain) return null;
+    const form = this.forms().formOf(x);
+    if (!form.undefined) return null;
+    if (ts.isElementAccessExpression(x)) {
+      const r = recvType(x.expression);
+      return (c.isArrayType(r) && !c.isTupleType(r)) || !!(r.flags & ts.TypeFlags.StringLike) || record(x.expression) ? 'undefined' : null;
+    }
+    if (ts.isPropertyAccessExpression(x)) {
+      const d = c.getSymbolAtLocation(x.name)?.valueDeclaration;
+      if (!d || ts.isIndexSignatureDeclaration(d) || ts.isMappedTypeNode(d)) return record(x.expression) ? 'undefined' : null;
+      if ((ts.isPropertySignature(d) || ts.isPropertyDeclaration(d)) && this.looseSlots.has(d)) return 'undefined';
+      return !strict && (ts.isPropertySignature(d) || ts.isPropertyDeclaration(d)) && !!d.questionToken ? 'undefined' : null;
+    }
+    if (ts.isCallExpression(x) && ts.isPropertyAccessExpression(x.expression) && !x.questionDotToken) {
+      const r = recvType(x.expression.expression), name = x.expression.name.text;
+      if ((c.isArrayType(r) && ['find', 'findLast', 'pop', 'shift', 'at'].includes(name)) || (['Map', 'ReadonlyMap'].includes(r.getSymbol()?.name ?? '') && name === 'get')) return 'undefined';
+    }
+    if (ts.isIdentifier(x) && !strict) {
+      const d = c.getSymbolAtLocation(x)?.valueDeclaration;
+      if (d && ts.isParameter(d) && d.questionToken && !d.initializer) return 'undefined';
+    }
+    return (ts.isIdentifier(x) || ts.isCallExpression(x)) && b.unemitted(() => b.heldOptional(x)) ? 'undefined' : null;
+  }
+
+  /**
+   * An object a `widenedResult` gives: its call, or a variable such calls are given to that the backend holds optional.
+   * Its empty state: null where every such result holds null only.
+   */
+  private widenedObject(x: ts.Expression): 'undefined' | 'null' | null {
+    const results = (e: ts.Expression): ts.SignatureDeclaration[] => {
+      if (!ts.isCallExpression(e)) return [];
+      const d = this.checker.getResolvedSignature(e)?.getDeclaration();
+      return d && !ts.isJSDocSignature(d) && this.widenedResult(d) ? [d] : [];
+    };
+    let fns = results(x);
+    if (ts.isIdentifier(x)) {
+      const d = this.checker.getSymbolAtLocation(x)?.valueDeclaration;
+      if (!d || !ts.isVariableDeclaration(d)) return null;
+      let found = this.widenedGiven.get(d);
+      if (!found) {
+        const all: ts.SignatureDeclaration[] = [];
+        givenBy(d, this.checker, (v) => { all.push(...results(v)); return false; });
+        this.widenedGiven.set(d, found = all);
+      }
+      fns = found.length && this.backend.unemitted(() => this.backend.declaredOptional(x)) ? found : [];
+    }
+    return !fns.length ? null : fns.every((f) => this.nullOnlyResult(f)) ? 'null' : 'undefined';
+  }
+  private readonly widenedGiven = new Map<ts.VariableDeclaration, ts.SignatureDeclaration[]>();
+
   /** Strict code's declaration holding a string, number or boolean an untrusted value is placed in (see `looseSlots`). */
   looseDeclaration(n: ts.Node | undefined): boolean {
     const b = this.backend;
@@ -583,10 +685,18 @@ export class ValueStates {
     if (b.rules.looseReads) {
       const named = ts.isPropertyAccessExpression(n) ? n.name : ts.isPropertyDeclaration(n) || ts.isVariableDeclaration(n) || ts.isParameter(n) || ts.isPropertySignature(n) || ts.isBindingElement(n) ? n.name : n;
       if (!ts.isIdentifier(named) && !ts.isPrivateIdentifier(named)) return false;
-      d = this.checker.getSymbolAtLocation(named)?.valueDeclaration;
+      d = (this.checker.getSymbolAtLocation(named) ?? b.resolve(named))?.valueDeclaration;
       if (!d) return false;
     }
-    return this.looseSlots.has(d as ts.Declaration) || (ts.isParameter(d) && this.scriptCalledParameter(d)) || !!b.rules.checkedParameters?.unsetElement(d);
+    return this.looseSlots.has(d as ts.Declaration) || (ts.isParameter(d) && this.scriptCalledParameter(d)) || !!b.rules.checkedParameters?.unsetElement(d) || (!b.rules.looseReads && this.widenedFieldRead(n));
+  }
+
+  /** A read (or the declaration) of a `widenedField`, where reads aren't resolved to their slot for `looseSlots`. */
+  private widenedFieldRead(n: ts.Node): boolean {
+    const named = ts.isPropertyAccessExpression(n) ? n.name : ts.isPropertyDeclaration(n) || ts.isPropertySignature(n) || ts.isParameter(n) ? n.name : n;
+    if (!ts.isIdentifier(named)) return false;
+    const d = (this.checker.getSymbolAtLocation(named) ?? this.backend.resolve(named))?.valueDeclaration;
+    return !!d && fieldLike(d) && this.widenedField(d);
   }
 
   /** See `scriptCalledFunction` (lang.ts). */
@@ -691,6 +801,145 @@ export class ValueStates {
   }
   private readonly widenedParams = new Map<ts.ParameterDeclaration, boolean>();
 
+  /**
+   * An app function's result whose form holds null or undefined its declared type leaves out: a value its returns may
+   * leave missing (an element past the end, `find`, `Map.get`, a record's entry, a widened call's result, an untyped
+   * value) or, in non-strict code, `return null`/`return undefined`. The form is its group's (overrides, the interface
+   * member or function type it is given for), so every place that spells a member of the group asks this. Not for a
+   * result typed by a type parameter (§2.3b M5), an async function's or generator's, or one whose group holds a fixed
+   * point (a kit's or platform's callback type), nor one the Angular transform writes for a template (`$b…`, `$e…`),
+   * whose only reader is the template glue. A result whose type already holds null or undefined keeps the empty state
+   * it is held with (§2.3b M1').
+   */
+  widenedResult(fn: ts.SignatureDeclaration): boolean {
+    const b = this.backend;
+    if (b.library || b.lenient || ts.isJSDocSignature(fn as ts.Node) || fn.getSourceFile().isDeclarationFile || this.packaged(fn) || !this.appCode(fn)) return false;
+    if (ts.isConstructorDeclaration(fn) || ts.isAccessor(fn) || isAsync(fn) || (fn as ts.FunctionLikeDeclaration).asteriskToken || isTemplateMethod(fn)) return false;
+    let found = this.widenedResults.get(fn);
+    if (found !== undefined) return found;
+    found = false;
+    // A literal given for a library's callback whose result is a type parameter (`map`'s `U`), §2.3b M5.
+    const context = ts.isArrowFunction(fn) || ts.isFunctionExpression(fn) ? this.checker.getContextualType(fn)?.getNonNullableType().getCallSignatures()[0]?.getDeclaration() : undefined;
+    const contextResult = context && !ts.isJSDocSignature(context) && context.getSourceFile().isDeclarationFile ? this.checker.getSignatureFromDeclaration(context)?.getReturnType() : undefined;
+    if (contextResult && mentionsTypeParameter(this.checker, contextResult)) { this.widenedResults.set(fn, false); return false; }
+    const t = this.checker.getSignatureFromDeclaration(fn)?.getReturnType();
+    const none = ts.TypeFlags.Void | ts.TypeFlags.Undefined | ts.TypeFlags.Null | ts.TypeFlags.Any | ts.TypeFlags.Unknown | ts.TypeFlags.Never;
+    // A boolean's undefined reads as false wherever a boolean is tested, which a library's callback (`filter`) does.
+    if (t && !(t.flags & (none | ts.TypeFlags.BooleanLike)) && !(t.isUnion() && t.types.some((u) => u.flags & none)) && !mentionsTypeParameter(this.checker, t)) {
+      const forms = this.forms();
+      if (!forms.fixedSlot(fn)) {
+        const declared = forms.declaredForm(fn), form = forms.formOfSlot(fn);
+        found = !declared.foreign && !form.foreign && ((form.null && !declared.null) || (form.undefined && !declared.undefined));
+        // A function declaration is its group's only member with a body; what its returns give after their guards decides.
+        if (found && ts.isFunctionDeclaration(fn) && fn.body) found = this.returnsGiveEmpty(fn, declared);
+      }
+    }
+    this.widenedResults.set(fn, found);
+    return found;
+  }
+
+  /**
+   * Whether a function's own returns may give null or undefined `declared` leaves out. A name a guard has tested truthy
+   * where it is returned (`if (!x) throw …; return x`, `if (x) return x`) gives its value, which the form, blind to
+   * narrowing, counts empty.
+   */
+  private returnsGiveEmpty(fn: ts.FunctionDeclaration, declared: Form): boolean {
+    let empty = false;
+    if (!alwaysEnds(fn.body!)) empty = !declared.undefined;
+    const gives = (e: ts.Expression): boolean => {
+      e = ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses);
+      if (ts.isConditionalExpression(e)) return gives(e.whenTrue) || gives(e.whenFalse);
+      if (ts.isCallExpression(e) && this.checker.getResolvedSignature(e)?.getDeclaration() === fn) return false;
+      if (truthyAt(e, e, this.checker)) return false;
+      const f = this.forms().formOf(e);
+      return (f.null && !declared.null) || (f.undefined && !declared.undefined) || f.foreign;
+    };
+    const visit = (n: ts.Node): void => {
+      if (empty || (n !== fn.body && ts.isFunctionLike(n))) return;
+      if (ts.isReturnStatement(n)) {
+        if (!n.expression) { empty ||= !declared.undefined; return; }
+        empty ||= gives(n.expression);
+        return;
+      }
+      ts.forEachChild(n, visit);
+    };
+    visit(fn.body!);
+    return empty;
+  }
+
+  /**
+   * An app's field (a class's, an interface's or type literal's, a parameter property) whose group's form holds null or
+   * undefined its declared type leaves out: a widened call's result, an element past the end, a field never assigned.
+   * Every member of the group answers alike, so overrides, the interface member a class implements and the literals given
+   * for it are spelled as one.
+   */
+  widenedField(d: ts.Declaration): boolean {
+    const b = this.backend;
+    if (b.library || b.lenient || !fieldLike(d)) return false;
+    let found = this.widenedFieldSet.get(d);
+    if (found !== undefined) return found;
+    const forms = this.forms(), group = forms.groupOf(d);
+    found = !forms.fixedSlot(d) && group.every((m) => m === d || !fieldLike(m) || (!m.getSourceFile().isDeclarationFile && this.appCode(m)));
+    if (found) {
+      const declared = forms.declaredForm(d), form = forms.formOfSlot(d);
+      const t = this.checker.getTypeAtLocation(d);
+      found = form.absent && !declared.null && !declared.undefined && !declared.foreign && !form.foreign && !(t.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown)) && !mentionsTypeParameter(this.checker, t) && ((form.null && !declared.null) || (form.undefined && !declared.undefined));
+    }
+    for (const m of group) if (fieldLike(m)) this.widenedFieldSet.set(m, found);
+    this.widenedFieldSet.set(d, found);
+    return found;
+  }
+  private readonly widenedFieldSet = new Map<ts.Declaration, boolean>();
+
+  /**
+   * The app field a value is placed in: a literal's property, an assignment, an initializer, a parameter property's
+   * argument. A value its form doesn't hold missing that turns out missing there (a callback's result Form doesn't
+   * follow, §2.3b M5) is JavaScript's TypeError naming the field, never a value made up for it.
+   */
+  placedField(e: ts.Expression): { decl: ts.Declaration; name: string } | null {
+    const b = this.backend;
+    if (b.library || b.lenient || !e.parent || !this.appCode(e)) return null;
+    let x: ts.Node = e;
+    while (ts.isParenthesizedExpression(x.parent)) x = x.parent;
+    // A literal's own property where nothing types the literal (`map`'s callback result, an untyped variable's): the
+    // field of the shape it makes.
+    const d = slotOf(e, this.checker) ?? (ts.isPropertyAssignment(x.parent) && x.parent.initializer === x ? x.parent : null);
+    if (!d || d.getSourceFile().isDeclarationFile || this.packaged(d)) return null;
+    if (fieldLike(d) || (ts.isPropertyAssignment(d) && ts.isIdentifier(d.name))) return { decl: d, name: (d as ts.NamedDeclaration).name!.getText() };
+    // A template's binding method gives the template glue the type it declares: named by the member it reads.
+    const read = ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses);
+    if (isTemplateMethod(d)) return { decl: d, name: ts.isPropertyAccessExpression(read) ? read.name.text : 'value' };
+    return null;
+  }
+
+  /** Every app field `widenedField` answers. */
+  widenedFields(): readonly ts.Declaration[] {
+    const b = this.backend, out: ts.Declaration[] = [];
+    if (b.library || b.lenient) return out;
+    const visit = (n: ts.Node): void => {
+      if (fieldLike(n as ts.Declaration) && this.widenedField(n as ts.Declaration)) out.push(n as ts.Declaration);
+      ts.forEachChild(n, visit);
+    };
+    for (const f of b.sourceFiles) if (!f.isDeclarationFile && this.appCode(f)) visit(f);
+    return out;
+  }
+
+  /** A widened result (`widenedResult`) whose only empty state is null: its nil is null. */
+  nullOnlyResult(fn: ts.SignatureDeclaration): boolean {
+    if (!this.widenedResult(fn)) return false;
+    const form = this.forms().formOfSlot(fn);
+    return form.null && !form.undefined;
+  }
+  private readonly widenedResults = new Map<ts.SignatureDeclaration, boolean>();
+
+  /** A function literal typed by nothing of its own (`() => null`, non-strict) given for a widened function type: that type. */
+  widenedContext(fn: ts.SignatureDeclaration): ts.SignatureDeclaration | null {
+    if (!(ts.isArrowFunction(fn) || ts.isFunctionExpression(fn)) || fn.type) return null;
+    const own = this.checker.getSignatureFromDeclaration(fn)?.getReturnType();
+    if (!own || !(own.flags & (ts.TypeFlags.Any | ts.TypeFlags.Null | ts.TypeFlags.Undefined))) return null;
+    const ctx = this.checker.getContextualType(fn)?.getNonNullableType().getCallSignatures()[0]?.getDeclaration();
+    return ctx && !ts.isJSDocSignature(ctx) && this.widenedResult(ctx) ? ctx : null;
+  }
   /**
    * An untyped value asserted to a concrete type (`x as T`, `JSON.parse(s) as T`) in the app's own code: the form the
    * value enters as, for the backend's checked convert. Null where the assertion is no such entry, or where the type of
@@ -934,6 +1183,91 @@ export class ValueStates {
   }
 }
 
+/**
+ * A name read at `at` that a guard has made truthy: `at` is inside the true branch of `if (x)` / `x && …` / `x ? … :`, or
+ * follows `if (!x) <ends>` in a block on the way out. Only for a name nothing assigns after its declaration.
+ */
+function truthyAt(e: ts.Expression, at: ts.Node, checker: ts.TypeChecker): boolean {
+  e = ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses);
+  if (!ts.isIdentifier(e)) return false;
+  const sym = checker.getSymbolAtLocation(e), d = sym?.valueDeclaration;
+  if (!sym || !d || (!ts.isVariableDeclaration(d) && !ts.isParameter(d)) || (ts.isVariableDeclaration(d) ? reassigned(d, checker) : assignedParameter(d, checker))) return false;
+  const names = (x: ts.Expression) => ts.isIdentifier(x = ts.skipOuterExpressions(x, ts.OuterExpressionKinds.Parentheses)) && checker.getSymbolAtLocation(x) === sym;
+  const negated = (x: ts.Expression) => (x = ts.skipOuterExpressions(x, ts.OuterExpressionKinds.Parentheses), ts.isPrefixUnaryExpression(x) && x.operator === ts.SyntaxKind.ExclamationToken && names(x.operand));
+  for (let n: ts.Node = at; n.parent && !ts.isFunctionLike(n); n = n.parent) {
+    const p = n.parent;
+    if (ts.isIfStatement(p) && p.thenStatement === n && names(p.expression)) return true;
+    if (ts.isIfStatement(p) && p.elseStatement === n && negated(p.expression)) return true;
+    if (ts.isConditionalExpression(p) && p.whenTrue === n && names(p.condition)) return true;
+    if (ts.isBlock(p) || ts.isSourceFile(p)) {
+      for (const st of (p as ts.Block).statements) {
+        if (st === n) break;
+        if (ts.isIfStatement(st) && negated(st.expression) && alwaysEnds(st.thenStatement)) return true;
+        // A member read of it that always runs first (`if (x.parent) …`, `x.load();`) has thrown had it been empty.
+        const first = ts.isIfStatement(st) ? st.expression : ts.isExpressionStatement(st) ? st.expression : undefined;
+        if (first && dereferences(first, names)) return true;
+      }
+    }
+  }
+  return false;
+}
+
+/** An expression whose evaluation starts by reading a member of a name `names` accepts (`x.a`, `x.a.b()`, `x.m()`), no `?.` on the way. */
+function dereferences(e: ts.Expression, names: (x: ts.Expression) => boolean): boolean {
+  let x: ts.Expression = ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses);
+  for (;;) {
+    if (ts.isPrefixUnaryExpression(x) && x.operator === ts.SyntaxKind.ExclamationToken) x = ts.skipOuterExpressions(x.operand, ts.OuterExpressionKinds.Parentheses);
+    else if (ts.isCallExpression(x) && !x.questionDotToken) x = x.expression;
+    else if ((ts.isPropertyAccessExpression(x) || ts.isElementAccessExpression(x)) && !x.questionDotToken) {
+      if (names(x.expression)) return true;
+      x = x.expression;
+    } else return false;
+  }
+}
+
+function assignedParameter(p: ts.ParameterDeclaration, checker: ts.TypeChecker): boolean {
+  const sym = ts.isIdentifier(p.name) ? checker.getSymbolAtLocation(p.name) : undefined;
+  if (!sym) return true;
+  const visit = (n: ts.Node): boolean => (ts.isBinaryExpression(n) && n.operatorToken.kind >= ts.SyntaxKind.FirstAssignment && n.operatorToken.kind <= ts.SyntaxKind.LastAssignment
+    && ts.isIdentifier(ts.skipOuterExpressions(n.left)) && checker.getSymbolAtLocation(ts.skipOuterExpressions(n.left)) === sym) || !!ts.forEachChild(n, visit);
+  return visit(p.parent);
+}
+
+/**
+ * A read JavaScript converts where it stands (an operand of arithmetic, `+` or a comparison, a template's part, `String(x)`,
+ * `Number(x)`): undefined becomes NaN or "undefined" there. Anywhere else the value is placed as it is.
+ */
+export function convertedRead(e: ts.Expression): boolean {
+  let x: ts.Node = e;
+  while (ts.isParenthesizedExpression(x.parent)) x = x.parent;
+  const p = x.parent, K = ts.SyntaxKind;
+  if (ts.isTemplateSpan(p)) return true;
+  if (ts.isPrefixUnaryExpression(p)) return [K.PlusToken, K.MinusToken, K.TildeToken].includes(p.operator);
+  if (ts.isBinaryExpression(p)) {
+    const op = p.operatorToken.kind;
+    if ([K.PlusEqualsToken, K.MinusEqualsToken, K.AsteriskEqualsToken, K.SlashEqualsToken].includes(op)) return p.right === x;
+    return [K.PlusToken, K.MinusToken, K.AsteriskToken, K.SlashToken, K.PercentToken, K.AsteriskAsteriskToken, K.LessThanToken, K.GreaterThanToken, K.LessThanEqualsToken, K.GreaterThanEqualsToken].includes(op);
+  }
+  return ts.isCallExpression(p) && p.arguments[0] === x && ts.isIdentifier(p.expression) && ['String', 'Number'].includes(p.expression.text);
+}
+
+/** A type naming a type parameter anywhere in it (`T`, `T[]`, `Map<string, T>`): what it holds is each instantiation's (§2.3b M5). */
+function mentionsTypeParameter(checker: ts.TypeChecker, t: ts.Type, depth = 0): boolean {
+  if (depth > 4) return false;
+  if (t.flags & ts.TypeFlags.TypeParameter) return !(t as { isThisType?: boolean }).isThisType;
+  if (t.isUnionOrIntersection()) return t.types.some((u) => mentionsTypeParameter(checker, u, depth + 1));
+  return !!(t.flags & ts.TypeFlags.Object) && !!((t as ts.ObjectType).objectFlags & ts.ObjectFlags.Reference) && checker.getTypeArguments(t as ts.TypeReference).some((a) => mentionsTypeParameter(checker, a, depth + 1));
+}
+
+/** A member read that is written: an assignment's target, an update's operand, a `delete`'s. */
+function assigned(n: ts.Node): boolean {
+  let x = n;
+  while (ts.isParenthesizedExpression(x.parent)) x = x.parent;
+  const p = x.parent;
+  if (ts.isBinaryExpression(p)) return p.left === x && p.operatorToken.kind >= ts.SyntaxKind.FirstAssignment && p.operatorToken.kind <= ts.SyntaxKind.LastAssignment;
+  return ts.isPrefixUnaryExpression(p) || ts.isPostfixUnaryExpression(p) ? [ts.SyntaxKind.PlusPlusToken, ts.SyntaxKind.MinusMinusToken].includes(p.operator) : ts.isDeleteExpression(p);
+}
+
 /** The same reference read twice: a name of one symbol, `this`, or a member of the same name of the same reference. */
 function sameReference(a: ts.Expression, b: ts.Expression, checker: ts.TypeChecker): boolean {
   const x = ts.skipOuterExpressions(a, ts.OuterExpressionKinds.Parentheses), y = ts.skipOuterExpressions(b, ts.OuterExpressionKinds.Parentheses);
@@ -948,4 +1282,11 @@ function isWriteTarget(e: ts.Node): boolean {
   const p = x.parent;
   if (ts.isBinaryExpression(p) && p.left === x && p.operatorToken.kind >= ts.SyntaxKind.FirstAssignment && p.operatorToken.kind <= ts.SyntaxKind.LastAssignment) return true;
   return (ts.isPrefixUnaryExpression(p) || ts.isPostfixUnaryExpression(p)) && (p.operator === ts.SyntaxKind.PlusPlusToken || p.operator === ts.SyntaxKind.MinusMinusToken);
+}
+
+/** A field: a class's own (not static), an interface's or type literal's, or a parameter property. */
+function fieldLike(d: ts.Declaration): boolean {
+  if (ts.isPropertyDeclaration(d)) return ts.isIdentifier(d.name) && !isStatic(d) && ts.isClassLike(d.parent);
+  if (ts.isPropertySignature(d)) return ts.isIdentifier(d.name) && (ts.isInterfaceDeclaration(d.parent) || ts.isTypeLiteralNode(d.parent));
+  return ts.isParameter(d) && ts.isIdentifier(d.name) && ts.isParameterPropertyDeclaration(d, d.parent);
 }
