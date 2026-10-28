@@ -5595,7 +5595,7 @@ ${members.join('\n')}
         this.declare(n, { kind: 'var', type: decl });
         fields.push({ name: n, type: t });
       }
-      const val = unset ? `(${ident(n)} ?? ${unset})` : ident(n);
+      const val = unset ? `(${ident(n)} ?? ${unset})` : this.states.nullishHeld(p) ? `${ident(n)}.${t === 'Any?' ? 'jsAny' : 'optional'}` : ident(n);
       paramPropValues.set(p, root ? this.convert(val, t, this.redeclaredType(root)) : val);
     }
     const symbolFields: { key: string; member: string; type: string }[] = [];
@@ -5783,7 +5783,11 @@ ${members.join('\n')}
         const out: string[] = [...this.paramPrelude(ctor)];
         const stmts = [...ctor.body!.statements];
         const superAt = stmts.findIndex((s) => ts.isExpressionStatement(s) && ts.isCallExpression(s.expression) && s.expression.expression.kind === ts.SyntaxKind.SuperKeyword);
-        const own = () => [...paramProps.map((p) => `        self.${ident((p.name as ts.Identifier).text)} = ${paramPropValues.get(p)}`), ...fieldInits];
+        const own = () => [...paramProps.flatMap((p) => {
+          const n = (p.name as ts.Identifier).text;
+          const note = this.states.nullishHeld(p) && this.states.nullFields(cls).has(n) ? [`        jsNoteNull(&jsNulls, ${swiftString(n)}, ${ident(n)}.jsAny)`] : [];
+          return [`        self.${ident(n)} = ${paramPropValues.get(p)}`, ...note];
+        }), ...fieldInits];
         const notes = this.keyNotes;
         this.keyNotes = this.initKeyNotes(cls, ctor);
         try {
@@ -7109,7 +7113,8 @@ ${members.join('\n')}
       // `return undefined` from a function returning nothing.
       if (this.returnType === 'Void' && s.expression && isNullish(s.expression)) return `${i}return`;
       // A library call that may give undefined (`map.get(key)`) returned where a value type is declared: as such a slot reads undefined.
-      if (s.expression && !isOptional(this.returnType) && this.returnType !== 'Any?' && this.returnType !== 'Void' && ts.isCallExpression(s.expression)) {
+      const holder = ts.findAncestor(s.parent, ts.isFunctionLike);
+      if (s.expression && !isOptional(this.returnType) && this.returnType !== 'Any?' && this.returnType !== 'Void' && ts.isCallExpression(s.expression) && !(holder && this.states.nullishHeld(holder))) {
         const maybe = this.maybeUndefined(s.expression);
         if (maybe && /^JSMatch[?!]?$/.test(this.typeOf(s.expression)) && /^JSArray<String>[?!]?$/.test(this.returnType)) return `${i}return ${this.tryPrefix(s.expression)}${this.coerce(s.expression, this.returnType)}`;
         if (maybe) {
@@ -10200,6 +10205,8 @@ ${members.join('\n')}
     if (maybe) return `jsToString(${this.states.nilIsNull(e) ? `jsNulled(${maybe} as Any?)` : `${maybe} as Any?`})`;
     const chain = this.chainRead(e);
     if (chain) return `jsToString(${chain} as Any?)`;
+    // Narrowed by an assignment, a held value may still be missing: its type says present, its form doesn't.
+    if (this.states.nullishRead(e)) return `jsToString(${this.coerce(e, 'Any?')})`;
     const t = this.typeOf(e);
     if (t === 'String') return this.expr(e);
     if (t === 'Double' || t === 'Bool') return `js(${this.expr(e)})`;
@@ -11105,6 +11112,8 @@ ${members.join('\n')}
         || (!!decl && ts.isParameter(decl) && !!decl.type && !decl.getSourceFile().isDeclarationFile && !!(decl.parent as ts.SignatureDeclaration).typeParameters?.some((tp) => (erasedTypeParameter(tp) || (!this.library && this.erasesGenerics(decl.parent))) && new RegExp(`\\b${tp.name.text}\\b`).test(decl.type!.getText())));
       // In code the checker finds unreachable a parameter's type is never: its declared type.
       const at = decl && this.states.nullish().held.has(decl) ? 'Any?' : decl && this.states.nullishHeld(decl) ? nullishType(this.type(this.checker.getTypeOfSymbolAtLocation(p, e), e)) : this.heldElements(decl && ts.isParameter(decl) ? decl : e, this.type(this.checker.getTypeOfSymbolAtLocation(p, e), e));
+      // A parameter property's parameter held `JSNullish` while its field is loose: the parameter's form, not the field's.
+      if (decl && this.states.nullishHeld(decl)) { out.push(this.coerce(a, at)); continue; }
       // A function where the program's parameter is a bare type parameter: the function object, which Swift binds the parameter to (`heldRead`).
       if (decl && ts.isParameter(decl) && decl.type && !decl.getSourceFile().isDeclarationFile && at !== 'Any?' && heldType(at) === 'Any?' && (this.isBareTypeParameter(decl.type) || this.heldParameter(decl))) {
         out.push(this.coerce(a, 'Any?'));

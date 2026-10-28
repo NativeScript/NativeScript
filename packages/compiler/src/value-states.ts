@@ -148,7 +148,7 @@ export class ValueStates {
   nullish(): NullishSlots {
     const b = this.backend;
     if (this.nullishSlotSet) return this.nullishSlotSet;
-    const found: NullishSlots = b.lenient || b.library ? { held: new Set(), fields: new Set(), refused: [], functions: new Map() } : nullishSlots(b.checker, b.sourceFiles, (f) => b.pluginFiles.has(f.fileName));
+    const found: NullishSlots = b.lenient || b.library ? { held: new Set(), fields: new Set(), refused: [], functions: new Map() } : nullishSlots(b.checker, b.sourceFiles, (f) => b.pluginFiles.has(f.fileName), (d) => this.formNullish(d));
     // An element, callback parameter or loop variable today's analysis can't hold: one nil, read as undefined, where
     // nothing tells null from undefined in it; `JSNullish<T>` where something does.
     found.refused = found.refused.filter(([, , cover]) => {
@@ -195,6 +195,17 @@ export class ValueStates {
       for (const f of this.backend.sourceFiles) if (!f.isDeclarationFile) scan(f);
     }
     return found;
+  }
+
+  /**
+   * An app slot whose type admits one empty state but whose form holds both, observed apart (§2.3b M1'), where the other
+   * comes from the program's own missing value (`Form.absent`), as `widenedField` asks of fields: what a package's code
+   * brings into a slot its type says can't hold it keeps the declared form.
+   */
+  private formNullish(d: ts.Declaration): boolean {
+    if (!this.appCode(d)) return false;
+    const form = this.forms().formOfSlot(d);
+    return form.absent && representation(form) === 'nullish';
   }
 
   /** The program's value forms (review/DESIGN-VALUE-MODEL.md §2), built when first asked. */
@@ -508,7 +519,9 @@ export class ValueStates {
     if (b.lenient || b.library || cls.getSourceFile().isDeclarationFile || this.plugin(cls)) return set;
     for (const m of nullSetFields(cls)) if (b.typeOf(m.name) !== 'Any?') set.add(m.name.getText());
     for (const m of cls.members) if (ts.isPropertyDeclaration(m) && this.nullish().fields.has(m) && b.typeOf(m.name) !== 'Any?') set.add(m.name.getText());
-    for (const m of cls.members) if (ts.isPropertyDeclaration(m) && this.widenedField(m) && this.forms().formOfSlot(m).null && b.typeOf(m.name) !== 'Any?') set.add(m.name.getText());
+    const ctor = cls.members.find(ts.isConstructorDeclaration);
+    const properties = ctor?.parameters.filter((p) => ts.isParameterPropertyDeclaration(p, ctor)) ?? [];
+    for (const m of [...cls.members, ...properties]) if ((ts.isPropertyDeclaration(m) || ts.isParameter(m)) && (this.widenedField(m) || this.nullishHeld(m)) && this.forms().formOfSlot(m).null && b.typeOf(m.name) !== 'Any?') set.add(m.name.getText());
     return set;
   }
 
@@ -533,7 +546,8 @@ export class ValueStates {
   nullField(e: ts.Expression): e is ts.PropertyAccessExpression {
     if (!ts.isPropertyAccessExpression(e) || e.questionDotToken || e.expression.kind === ts.SyntaxKind.SuperKeyword) return false;
     const d = this.checker.getSymbolAtLocation(e.name)?.valueDeclaration;
-    return !!d && ts.isPropertyDeclaration(d) && ts.isClassLike(d.parent) && this.nullFields(d.parent).has(e.name.text);
+    const cls = d && (ts.isPropertyDeclaration(d) ? d.parent : ts.isParameter(d) && ts.isParameterPropertyDeclaration(d, d.parent) ? d.parent.parent : null);
+    return !!cls && ts.isClassLike(cls) && this.nullFields(cls).has(e.name.text);
   }
 
   /**

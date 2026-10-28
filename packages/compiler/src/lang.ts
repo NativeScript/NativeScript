@@ -1119,7 +1119,7 @@ export interface NullishSlots { held: Set<ts.Declaration>; fields: Set<ts.Declar
 /** A refused slot a backend may hold by its value form after all (`ValueStates.nullish`). */
 export interface NullishCover { kind: 'element' | 'value'; slot: ts.Declaration }
 
-export function nullishSlots(checker: ts.TypeChecker, files: readonly ts.SourceFile[], skip: (file: ts.SourceFile) => boolean): NullishSlots {
+export function nullishSlots(checker: ts.TypeChecker, files: readonly ts.SourceFile[], skip: (file: ts.SourceFile) => boolean, formBoth: (d: ts.Declaration) => boolean = () => false): NullishSlots {
   const held = new Set<ts.Declaration>(), fields = new Set<ts.Declaration>();
   const refused: [ts.Node, string, NullishCover?][] = [];
   const functions = new Map<ts.Declaration, string | null>();
@@ -1197,10 +1197,16 @@ export function nullishSlots(checker: ts.TypeChecker, files: readonly ts.SourceF
     return !sym || (refs.get(sym) ?? []).some((r) => both(checker.getTypeAtLocation(r)) && !tested(r));
   };
   /**
+   * A slot typed `T | null` whose value form holds undefined too (a missing value reaches it) and tells them apart
+   * (`formBoth`): held as one whose type admits both. Never refused for it: where it can't be held it keeps one nil.
+   */
+  const formHeld = (d: ts.Declaration, t: ts.Type | undefined) => !!t && !(ts.isParameter(d) && d.initializer) && hasNull(t) && !parts(t).some((x) => x.flags & (ts.TypeFlags.Undefined | ts.TypeFlags.Void)) && oneKind(t) && value(t) && formBoth(d);
+  /**
    * Holds `d` when its type admits both; refuses it when that type isn't one a held slot can carry and its code tells
    * them apart. A function or library object held untyped would be reached by name.
    */
   const hold = (d: ts.Declaration, t: ts.Type | undefined, at: ts.Node = d) => {
+    if (formHeld(d, t)) { held.add(d); return; }
     if (!t || !(ts.isFunctionLike(d) ? bothResult(t) : both(t)) || !oneKind(t)) return;
     if (value(t) || (ts.isVariableDeclaration(d) && !parts(t).some((x) => x.getCallSignatures().length) && opaque(d))) held.add(d);
     else if ((ts.isParameter(d) || ts.isVariableDeclaration(d)) && ts.isIdentifier(d.name) && callable(t)) functions.set(d, observes(d) ? `${NATIVE} (\`${text(t)}\`)` : null);
@@ -1334,7 +1340,7 @@ export function nullishSlots(checker: ts.TypeChecker, files: readonly ts.SourceF
       for (let k = 0; k < width; k++) {
         const ps = family.map((x) => x.parameters[k]).filter((p): p is ts.ParameterDeclaration => !!p);
         const wide = ps.find((p) => both(typeOf(p)) && oneKind(typeOf(p)));
-        if (!wide) continue;
+        if (!wide) { if (ps.every(named) && ps.every((p) => formHeld(p, typeOf(p)))) for (const p of ps) held.add(p); continue; }
         // A slot no member tells apart or lets go on while it may be either keeps one nil.
         if (!ps.every(named) || !ps.every((p) => value(typeOf(p)))) { if (ps.some((p) => observes(p) || escapes(p))) refuse(wide, `${NATIVE} (\`${text(typeOf(wide))}\`)`); continue; }
         for (const p of ps) held.add(p);
@@ -1343,14 +1349,16 @@ export function nullishSlots(checker: ts.TypeChecker, files: readonly ts.SourceF
       if (wide) {
         if (family.every((x) => { const r = returnOf(x); return !r || value(r); }) && family.every((x) => !isAsync(x))) for (const x of family) held.add(x);
         else refuse(wide.type ?? wide, `${NATIVE} (\`${text(returnOf(wide)!)}\`)`);
-      }
+      } else if (family.every((x) => !isAsync(x) && formHeld(x, returnOf(x)))) for (const x of family) held.add(x);
       continue;
     }
     if (ts.isConstructorDeclaration(fn) && (fn.parent.heritageClauses?.some((h) => h.token === ts.SyntaxKind.ExtendsKeyword) || ts.getDecorators(fn.parent)?.length)) { refuseBoth(fn, 'a constructor parameter of a class that extends another or is decorated'); continue; }
     if (ts.isFunctionDeclaration(fn) && (checker.getSymbolAtLocation(fn.name!)?.declarations?.length ?? 0) > 1) { refuseBoth(fn, 'an overloaded function'); continue; }
     if (ts.canHaveDecorators(fn) && ts.getDecorators(fn)?.length) { refuseBoth(fn, 'a decorated member'); continue; }
     for (const p of fn.parameters) {
-      if (!named(p) || (ts.isConstructorDeclaration(fn) && ts.isParameterPropertyDeclaration(p, fn))) continue;
+      if (!named(p)) continue;
+      // A parameter property's field is held as a field (`ValueStates.nullFields`); its parameter only by its form.
+      if (ts.isConstructorDeclaration(fn) && ts.isParameterPropertyDeclaration(p, fn)) { const t = typeOf(p); if (formHeld(p, t) || (both(t) && oneKind(t) && value(t) && formBoth(p))) held.add(p); continue; }
       hold(p, typeOf(p));
     }
     if (!ts.isConstructorDeclaration(fn) && !isAsync(fn)) hold(fn, returnOf(fn), fn.type ?? fn);
@@ -1369,8 +1377,9 @@ export function nullishSlots(checker: ts.TypeChecker, files: readonly ts.SourceF
     fn.parameters.forEach((p, k) => {
       const sym = ctx.getParameters()[k];
       const given = sym && checker.getTypeOfSymbolAtLocation(sym, fn);
-      if (!given || !both(given) || !oneKind(given)) return;
       const slot = ownDecl ? decl!.parameters[k] : undefined;
+      if (given && slot && !both(given) && held.has(slot) && named(p) && formBoth(slot)) held.add(p);
+      if (!given || !both(given) || !oneKind(given)) return;
       if (slot && held.has(slot) && named(p)) held.add(p);
       else refuse(p, `a callback parameter that may be null or undefined both (\`${text(given)}\`)`, named(p) ? { kind: 'value', slot: p } : undefined);
     });
@@ -1378,7 +1387,7 @@ export function nullishSlots(checker: ts.TypeChecker, files: readonly ts.SourceF
     if (bothResult(ret) && oneKind(ret) && !isAsync(fn)) {
       if (ownDecl && held.has(decl!)) held.add(fn);
       else refuse(fn, `a callback that may return null or undefined both (\`${text(ret)}\`)`);
-    }
+    } else if (ownDecl && held.has(decl!) && formBoth(decl!) && !isAsync(fn)) held.add(fn);
   }
   for (const [p] of anyArgs) {
     const fn = p.parent;
@@ -1417,7 +1426,7 @@ export function nullishSlots(checker: ts.TypeChecker, files: readonly ts.SourceF
   for (const f of files) {
     if (f.isDeclarationFile || skip(f)) continue;
     const scan = (n: ts.Node): void => {
-      if (ts.isVariableDeclaration(n) && ts.isIdentifier(n.name) && local(n) && both(typeOf(n))) hold(n, typeOf(n));
+      if (ts.isVariableDeclaration(n) && ts.isIdentifier(n.name) && local(n) && (both(typeOf(n)) || formHeld(n, typeOf(n)))) hold(n, typeOf(n));
       else if (ts.isVariableDeclaration(n) && ts.isIdentifier(n.name) && both(typeOf(n)) && oneKind(typeOf(n))) refuse(n, `a loop variable that may be null or undefined both (\`${text(typeOf(n))}\`)`, { kind: 'value', slot: n });
       else if (ts.isBindingElement(n) && ts.isIdentifier(n.name) && both(typeOf(n)) && oneKind(typeOf(n))) refuse(n, `a destructured binding that may be null or undefined both (\`${text(typeOf(n))}\`)`);
       else if (ts.isPropertyDeclaration(n) && fieldLike(n) && ts.isIdentifier(n.name) && hasNull(typeOf(n)) && (!n.initializer || both(typeOf(n)))) fields.add(n);
