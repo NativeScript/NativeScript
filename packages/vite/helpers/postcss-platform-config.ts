@@ -1,6 +1,7 @@
 import path from 'path';
 import { existsSync, readFileSync } from 'fs';
 import { findPackageInNodeModules } from './module-resolution.js';
+import { platformCssExt } from './platform-types.js';
 
 interface PostCssConfigOptions {
 	platform: string;
@@ -39,7 +40,7 @@ export function createPostCssConfig(opts: PostCssConfigOptions) {
 						const cleanBasedir = basedir ? basedir.split('?')[0] : basedir;
 						const abs = path.resolve(cleanBasedir || '', id);
 						if (!existsSync(abs) && /\.css$/.test(abs)) {
-							const platformExt = platform === 'android' ? '.android.css' : '.ios.css';
+							const platformExt = platformCssExt(platform);
 							const alt = abs.replace(/\.css$/, platformExt);
 							if (existsSync(alt)) return alt;
 						}
@@ -51,7 +52,7 @@ export function createPostCssConfig(opts: PostCssConfigOptions) {
 						const rel = id.substring('nativescript-theme-core/'.length);
 						const target = path.join(pkgRoot, rel);
 						if (/^css\/.+\.css$/.test(rel)) {
-							const platformExt = platform === 'android' ? '.android.css' : '.ios.css';
+							const platformExt = platformCssExt(platform);
 							const base = target.replace(/\.css$/, '');
 							const alt = base + platformExt;
 							if (existsSync(alt)) return alt;
@@ -67,7 +68,7 @@ export function createPostCssConfig(opts: PostCssConfigOptions) {
 							return readFileSync(clean, 'utf-8');
 						}
 						if (/\.css$/.test(clean)) {
-							const platformExt = platform === 'android' ? '.android.css' : '.ios.css';
+							const platformExt = platformCssExt(platform);
 							const alt = clean.replace(/\.css$/, platformExt);
 							if (existsSync(alt)) {
 								return readFileSync(alt, 'utf-8');

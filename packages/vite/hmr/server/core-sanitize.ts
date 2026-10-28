@@ -202,7 +202,7 @@ export function isDirectoryIndexFilename(modulePath: string): boolean {
 	if (!modulePath || typeof modulePath !== 'string') return false;
 	const cleaned = modulePath.split(/[?#]/)[0];
 	const base = cleaned.replace(/\\/g, '/').split('/').pop() || '';
-	return /^index(?:\.(?:android|ios|visionos))?\.(?:m?[jt]s)$/i.test(base);
+	return /^index(?:\.(?:android|ios|visionos|windows))?\.(?:m?[jt]s)$/i.test(base);
 }
 
 /**

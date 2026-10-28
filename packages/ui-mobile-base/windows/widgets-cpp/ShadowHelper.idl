@@ -1,0 +1,26 @@
+namespace NativeScript.Widgets
+{
+    // Result of a shadow/border render: a ready-to-place WinUI3 Image plus positioning metrics.
+    // The Image is `Overhang` DIPs larger than the element on every side (blur bleed + spread).
+    runtimeclass ShadowImageResult
+    {
+        Microsoft.UI.Xaml.Controls.Image Image{ get; };
+        Double Width{ get; };
+        Double Height{ get; };
+        Double Overhang{ get; };
+    }
+
+    // Renders CSS box-shadow (Gaussian-blurred rounded silhouette) and per-side borders as native
+    // WinUI3 bitmaps (Image). Replaces the C# ShadowHelper, which produced a UWP Windows.UI.Xaml
+    // Image incompatible with the WinUI3 visual tree. Synchronous by design: JS invokes on the UI
+    // thread, so the SoftwareBitmap/SoftwareBitmapSource/Image are created inline; the blur is a
+    // small (element-sized) buffer and the result is cached by the caller. argb is 0xAARRGGBB.
+    static runtimeclass ShadowHelper
+    {
+        static ShadowImageResult CreateShadow(Double width, Double height, Double blurRadius, Double spread,
+            Double cornerRadius, Double offsetX, Double offsetY, UInt32 argb);
+        static ShadowImageResult CreateBorder(Double width, Double height,
+            Double topW, Double rightW, Double bottomW, Double leftW,
+            UInt32 topArgb, UInt32 rightArgb, UInt32 bottomArgb, UInt32 leftArgb, Double cornerRadius);
+    }
+}

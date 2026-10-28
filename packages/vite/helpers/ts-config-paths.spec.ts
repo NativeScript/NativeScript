@@ -3,6 +3,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createTsConfigPathsResolver, getTsConfigAliasRoots, getTsConfigData } from './ts-config-paths.js';
+import { normalizeModuleId } from './normalize-id.js';
 
 const tempDirs: string[] = [];
 
@@ -38,8 +39,8 @@ describe('createTsConfigPathsResolver', () => {
 			'@scope/common/*': [path.join(root, 'lib', '*')],
 		};
 
-		expect(resolveWith(paths, '@scope/common')).toBe(path.join(root, 'root.ts'));
-		expect(resolveWith(paths, '@scope/common/menu')).toBe(path.join(root, 'lib', 'menu', 'index.ts'));
+		expect(resolveWith(paths, '@scope/common')).toBe(normalizeModuleId(path.join(root, 'root.ts')));
+		expect(resolveWith(paths, '@scope/common/menu')).toBe(normalizeModuleId(path.join(root, 'lib', 'menu', 'index.ts')));
 	});
 
 	it('does not match the bare prefix with only a trailing wildcard alias', () => {

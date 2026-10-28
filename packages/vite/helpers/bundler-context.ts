@@ -1,7 +1,7 @@
 import type { Plugin } from 'vite';
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import path from 'node:path';
-import type { Platform } from './platform-types.js';
+import { isOtherPlatformTagged, type Platform } from './platform-types.js';
 
 export type BundlerPlatform = Platform | undefined;
 
@@ -33,11 +33,7 @@ export function shouldExcludePlatformFile(p: string, platform: BundlerPlatform):
 	if (file.startsWith('_')) return true;
 	if (/\.d\.ts$/.test(p)) return true;
 	if (/([.-]worker)\.(ts|js)$/.test(file)) return true;
-	const isAndroidTagged = /\.android\./.test(p);
-	const isIosTagged = /\.ios\./.test(p) || /\.visionos\./.test(p);
-	if (platform === 'android' && isIosTagged) return true;
-	if ((platform === 'ios' || platform === 'visionos') && isAndroidTagged) return true;
-	return false;
+	return !!platform && isOtherPlatformTagged(p, platform);
 }
 
 /** Absolute app path → root-anchored import specifier the dev server can serve. */

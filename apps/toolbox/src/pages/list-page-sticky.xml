@@ -7,7 +7,7 @@
             <ListView.itemTemplates>
                 <template key="main">
                     <GridLayout columns="auto,auto,*" padding="14 12 14 12" margin="2 6 2 6" borderRadius="10" backgroundColor="#fff" boxShadow="0px 1px 2px rgba(0,0,0,0.2)">
-                        <Label color="black" text="{{ flag }}" marginLeft="4"></Label>
+                        <Label color="black" text="{{ flag }}" marginLeft="4" fontFamily="ms-appx:///app/fonts/Twemoji.Mozilla.ttf#Twemoji Mozilla"></Label>
                         <Label col="1" text="{{ name }}" marginLeft="6" color="black"></Label>
                         <Label col="2" text="{{ code }}" marginLeft="4" color="#999"></Label>
                     </GridLayout>

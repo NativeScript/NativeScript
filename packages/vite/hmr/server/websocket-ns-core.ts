@@ -4,7 +4,8 @@ import type { TransformResult, ViteDevServer } from 'vite';
 
 import { isDirectoryIndexFilename, rewriteSpecifiersForDevice, type RelativeBase } from './core-sanitize.js';
 import { buildDefaultExportFooter, buildShapeInstallHeader, hasExistingDefaultExport, hasNamespaceReExport, rewriteNamespaceReExportsForShape } from './ns-core-cjs-shape.js';
-import { getCliFlags } from '../../helpers/cli-flags.js';
+import { getCliFlags, resolvePlatform } from '../../helpers/cli-flags.js';
+import { getRuntimeDefineValues } from '../../helpers/global-defines.js';
 import { normalizeCoreSub as normalizeCoreSubCanonical } from '../../helpers/ns-core-url.js';
 import { parseCoreBridgeRequest, resolveRuntimeCoreModulePath, collectStaticExportNamesFromFile } from './websocket-core-bridge.js';
 import { setDeviceModuleHeaders } from './route-helpers.js';
@@ -306,25 +307,17 @@ export function registerNsCoreRoute(server: ViteDevServer, options: RegisterNsCo
 			//
 			// We inject LITERAL boolean values based on CLI flags + dev-server
 			// mode rather than reading from globalThis, so the defines are
-			// resolved even before bundle.mjs's body runs.
-			const __cliFlags = getCliFlags() || {};
-			const __platformIsAndroid = !!(__cliFlags as any).android;
-			const __platformIsVisionOS = !!(__cliFlags as any).visionos;
-			const __platformIsIOS = !__platformIsAndroid && !__platformIsVisionOS;
-			const preamble = [
-				`const __ANDROID__ = ${__platformIsAndroid ? 'true' : 'false'};`,
-				`const __IOS__ = ${__platformIsIOS ? 'true' : 'false'};`,
-				`const __VISIONOS__ = ${__platformIsVisionOS ? 'true' : 'false'};`,
-				`const __APPLE__ = __IOS__ || __VISIONOS__;`,
-				`const __DEV__ = ${server.config?.mode === 'development' ? 'true' : 'false'};`,
-				`const __COMMONJS__ = false;`,
-				`const __NS_WEBPACK__ = false;`,
-				`const __NS_ENV_VERBOSE__ = globalThis.__NS_ENV_VERBOSE__ !== undefined ? !!globalThis.__NS_ENV_VERBOSE__ : false;`,
-				`const __CSS_PARSER__ = 'css-tree';`,
-				`const __UI_USE_XML_PARSER__ = true;`,
-				`const __UI_USE_EXTERNAL_RENDERER__ = false;`,
-				`const __TEST__ = false;`,
-			].join('\n');
+			// resolved even before bundle.mjs's body runs. Values come from the
+			// shared getRuntimeDefineValues so they can't drift from the bundle
+			// seed; iOS stays the default when no platform flag is present.
+			const __defineValues = getRuntimeDefineValues({
+				platform: resolvePlatform(getCliFlags() || {}) ?? 'ios',
+				isDevMode: server.config?.mode === 'development',
+				verbose: false,
+			});
+			const preamble = Object.entries(__defineValues)
+				.map(([key, value]) => (key === '__NS_ENV_VERBOSE__' ? `const __NS_ENV_VERBOSE__ = globalThis.__NS_ENV_VERBOSE__ !== undefined ? !!globalThis.__NS_ENV_VERBOSE__ : false;` : `const ${key} = ${JSON.stringify(value)};`))
+				.join('\n');
 
 			// Boot-time instrumentation + module self-registration.
 			//

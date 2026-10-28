@@ -63,3 +63,7 @@ export function isFontWeightBold(fontWeight: FontWeightType): boolean;
 export namespace ios {
 	export function registerFont(fontFile: string);
 }
+
+export namespace windows {
+	export function triggerFontScan(): void;
+}	
