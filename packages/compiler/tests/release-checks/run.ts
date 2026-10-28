@@ -1877,6 +1877,67 @@ fun main() {
   }
 })();
 
+(() => {
+  // A `??` of two objects that may both be missing, placed in a library's slot that holds objects only (`Set.add`), is
+  // a TypeError there. JavaScript stores undefined, so no diff case can expect it.
+  const dir = mkdtempSync(join(nativeBuild, 'release-checks-required-coalesce-'));
+  const file = join(dir, 'app.ts');
+  writeFileSync(file, `class Item { constructor(public name: string) {} }
+export function keep(i: number, j: number): string {
+  const ITEMS: Item[] = [new Item('x')];
+  let p: Item | null = null;
+  p = ITEMS[j];
+  const kept = new Set<Item>();
+  try {
+    kept.add(ITEMS[i] ?? p);
+    return 'kept ' + kept.size;
+  } catch (e) {
+    return e instanceof TypeError ? 'TypeError' : 'other';
+  }
+}
+`);
+  const expected = 'kept 1\nTypeError';
+  try {
+    let got: string;
+    try {
+      buildSwiftRuntime(nativeBuild, '-Onone');
+      const out = join(dir, 'swift');
+      translateSwift([file], out);
+      writeFileSync(join(out, 'main.swift'), `import NativeScriptKit
+print(try keep(0, 9))
+print(try keep(9, 9))
+`);
+      const errors = swiftc(readdirSync(out).map((f) => join(out, f)), join(dir, 'main'), nativeBuild, '-Onone');
+      got = errors ? errors[0] : spawnSync(join(dir, 'main'), { encoding: 'utf8' }).stdout.trim();
+    } catch (e) {
+      got = (e as Error).message.split('\n')[0];
+    }
+    check(got === expected, 'a ?? of missing objects placed in a library slot holding objects is a TypeError, and compiles (Swift)');
+    if (got !== expected) console.log(`    got: ${got.slice(0, 500)}`);
+
+    try {
+      const out = join(dir, 'kotlin');
+      translateKotlin([file], out, 'org.example.app');
+      writeFileSync(join(out, 'Main.kt'), `import org.example.app.*
+import org.nativescript.kit.*
+fun main() {
+    println(keep(0.0, 9.0))
+    println(keep(9.0, 9.0))
+}
+`);
+      const runtime = buildKotlinRuntime(nativeBuild);
+      const errors = kotlinc(readdirSync(out).map((f) => join(out, f)), join(dir, 'classes'), [runtime]);
+      got = errors ? errors[0] : spawnSync('java', ['-cp', [join(dir, 'classes'), runtime, kotlinStdlib()].join(':'), 'MainKt'], { encoding: 'utf8' }).stdout.trim();
+    } catch (e) {
+      got = (e as Error).message.split('\n')[0];
+    }
+    check(got === expected, 'a ?? of missing objects placed in a library slot holding objects is a TypeError (Kotlin)');
+    if (got !== expected) console.log(`    got: ${got.slice(0, 500)}`);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+})();
+
 // ---- Core members a kit class leaves to each object; a kit method called past its overrides ----
 {
   const dir = mkdtempSync(join(tmpdir(), 'ns-release-checks-own-members-'));

@@ -89,6 +89,12 @@ function isCompoundAssignment(op: ts.SyntaxKind): boolean {
   return op >= ts.SyntaxKind.FirstCompoundAssignment && op <= ts.SyntaxKind.LastCompoundAssignment;
 }
 
+/** The object `try jsObjectRequired(x)` checks: `??` checks its whole instead, since `try` can't follow an operator. */
+function requiredOf(code: string): string | null {
+  const m = markOf(code), h = m?.op === 'try' ? m.of.mark : undefined;
+  return h?.op === 'helper' && h.name === 'jsObjectRequired' ? h.of.code : null;
+}
+
 function isNullish(e: ts.Expression): boolean {
   while (ts.isParenthesizedExpression(e)) e = e.expression;
   return e.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(e) && e.text === 'undefined') || ts.isVoidExpression(e);
@@ -13691,12 +13697,17 @@ ${members.join('\n')}
         if (maybe && t === 'Any?') return `jsNullishCoalesce(${maybe} as Any?, ${this.coerce(e.right, 'Any?')})`;
         // TypeScript types `s ?? 1` as the string `s` is declared; a missing `s` gives the fallback as a string.
         // Parenthesized: the optional may be a conditional (`x == nil ? nil : T(jsObject: x)`), which binds looser than `??`.
-        if (maybe) return `((${maybe}) ?? ${t === 'String' && this.typeOf(e.right) !== 'String' ? this.str(e.right) : this.coerce(e.right, t)})`;
+        if (maybe) {
+          const right = t === 'String' && this.typeOf(e.right) !== 'String' ? this.str(e.right) : this.coerce(e.right, t);
+          const checked = requiredOf(right);
+          return checked ? tryCode(helper('jsObjectRequired', `((${maybe}) ?? ${checked})`)) : `((${maybe}) ?? ${right})`;
+        }
         if (this.isAny(e.left) && t !== 'Any?' && this.states.heldNullish(left)) return `(${this.fromAny(l(), optionalType(t))} ?? ${this.coerce(e.right, t)})`;
         if (this.isAny(e.left)) return `jsNullishCoalesce(${l()}, ${this.coerce(e.right, 'Any?')})`;
         // A left side Swift holds as no optional is never missing.
         if (!isOptional(lt) && !lt.endsWith('!') && lt !== 'Any?' && lt === t && !inOptionalChain(e.left) && this.definitelyPresent(e.left)) return l();
-        return `(${l()} ?? ${this.coerce(e.right, t)})`;
+        const right = this.coerce(e.right, t), checked = requiredOf(right);
+        return checked ? tryCode(helper('jsObjectRequired', `(${l()} ?? ${checked})`)) : `(${l()} ?? ${right})`;
       }
       case K.AmpersandAmpersandToken: case K.BarBarToken: {
         const sym = op === K.AmpersandAmpersandToken ? '&&' : '||';
