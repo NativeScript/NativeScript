@@ -13755,7 +13755,7 @@ ${members.join('\n')}
     if (presence) return presence;
     // A `void` value is undefined, which Swift holds as `()`.
     const nothing = isNullish(b) && lt === 'Void' ? a : isNullish(a) && rt === 'Void' ? b : null;
-    if (nothing) {
+    if (nothing && !this.states.nullishElementRead(nothing)) {
       const equal = !strict || (isNullish(b) ? b : a).kind !== K.NullKeyword;
       const result = negate !== equal;
       return this.pure(nothing) ? String(result) : `jsUndefined(${this.expr(nothing)}) ${result ? '==' : '!='} nil`;
@@ -13836,6 +13836,8 @@ ${members.join('\n')}
       const arrays = context.isUnion() ? context.types.filter((u) => this.checker.isArrayType(u)) : [];
       if (full === 'Any?' && arrays.length === 1) t = this.type(arrays[0], e);
     }
+    const placedElement = !want && this.states.literalElementType(e);
+    if (placedElement) t = this.heldElements(e, `JSArray<${this.type(placedElement, e)}>`);
     if (t === 'JSArray<Void>') t = 'JSArray<Any?>';
     if (t === 'Any?' || t === 'JSArray<Never>') t = 'JSArray<Any?>';
     if (t.startsWith('(')) {

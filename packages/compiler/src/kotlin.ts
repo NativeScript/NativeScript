@@ -9211,7 +9211,7 @@ export class Translator implements AsyncTranslator {
         // A type-guard filter or find (`(s): s is Circle => …`): its elements as the guard narrows them.
         const own = this.typeOf(e);
         if (name === 'filter' && /^JSArray<\w+>$/.test(own) && own !== `JSArray<${element}>`) return cast(code, own);
-        if (name === 'find' && /^\w+\??$/.test(own) && own.replace(/\?$/, '') !== element.replace(/\?$/, '') && own !== 'Any?') return `(${code} as ${own.endsWith('?') ? own : own + '?'})`;
+        if (name === 'find' && /^\w+\??$/.test(own) && own.replace(/\?$/, '') !== element.replace(/\?$/, '') && own !== 'Any?' && !element.startsWith('JSNullish<')) return `(${code} as ${own.endsWith('?') ? own : own + '?'})`;
         return code;
       }
       case 'sort': return e.arguments[0] ? `${t}.sort(${this.fn(e.arguments[0], `(${element}, ${element}) -> Double`)})` : `${t}.sort()`;
@@ -10298,6 +10298,8 @@ export class Translator implements AsyncTranslator {
       const arrays = context.isUnion() ? context.types.filter((u) => this.checker.isArrayType(u)) : [];
       if (c === 'Any' && arrays.length === 1) t = this.type(arrays[0], e);
     }
+    const placedElement = this.states.literalElementType(e);
+    if (placedElement) t = this.heldElements(e, `JSArray<${this.type(placedElement, e)}>`);
     // Held untyped, its object literals are script objects (`set('items', [{ subItems: [1] }])`): an untyped array.
     if (t === 'Any?' || (context && context.flags & ts.TypeFlags.Any && (this.inPluginFile(e) || (!this.library && e.elements.some(ts.isObjectLiteralExpression))))) t = 'JSArray<Any?>';
     // `[]` where a match array goes (`text.match(re) || []`): an empty match.

@@ -6,6 +6,7 @@ import java.lang.ref.WeakReference
 private fun jsSameKey(a: Any?, b: Any?): Boolean {
     if (a === b) return true
     if (a == null || b == null) return false
+    if (a is JSNullish<*> || b is JSNullish<*>) return a is JSNullish<*> && b is JSNullish<*> && jsSameKey(a.jsAny, b.jsAny)
     if (a is JSAdapted || b is JSAdapted) return jsUnadapted(a) === jsUnadapted(b)
     if (a is String) return b is String && a == b
     if (a is Double && b is Double) {
@@ -24,6 +25,7 @@ private fun jsSameKey(a: Any?, b: Any?): Boolean {
 /** A hash agreeing with jsSameKey. */
 private fun jsKeyHash(key: Any?): Int = when (key) {
     null -> 0
+    is JSNullish<*> -> jsKeyHash(key.jsAny)
     is JSAdapted -> System.identityHashCode(jsUnadapted(key))
     is String -> key.hashCode()
     is Double -> { val d: Double = key; if (d == 0.0) 0 else d.hashCode() }

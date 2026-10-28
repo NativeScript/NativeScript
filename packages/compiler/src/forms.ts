@@ -95,7 +95,7 @@ const PRESENT: Flow = { states: 0, from: [] };
 
 const ELEMENT_CALLBACKS = new Set(['forEach', 'map', 'filter', 'find', 'findIndex', 'findLast', 'findLastIndex', 'some', 'every', 'flatMap']);
 const SAME_ELEMENTS = new Set(['filter', 'slice', 'concat', 'reverse', 'sort', 'toSorted', 'toReversed', 'splice', 'flat', 'fill', 'copyWithin', 'values']);
-const ONE_ELEMENT = new Set(['find', 'findLast', 'pop', 'shift', 'at']);
+export const ONE_ELEMENT = new Set(['find', 'findLast', 'pop', 'shift', 'at']);
 /** Operators that convert their operands to a number or a string, which null and undefined convert to differently. */
 const CONVERTING = new Set([ts.SyntaxKind.PlusToken, ts.SyntaxKind.MinusToken, ts.SyntaxKind.AsteriskToken, ts.SyntaxKind.AsteriskAsteriskToken, ts.SyntaxKind.SlashToken,
   ts.SyntaxKind.PercentToken, ts.SyntaxKind.LessThanToken, ts.SyntaxKind.GreaterThanToken, ts.SyntaxKind.LessThanEqualsToken, ts.SyntaxKind.GreaterThanEqualsToken,
@@ -140,6 +140,11 @@ export class Forms {
   /** Values something tells null from undefined in, and slots whose readers do (§2.3b M1'), before the fixpoint. */
   private readonly observedValues = new Set<ts.Expression>();
   private readonly observedSlots: Slot[] = [];
+  /**
+   * Slots a copy connects (a spread's, `Array.from`'s or `new Set(values)`'s elements; an element and the callback
+   * parameter given it): states flow from the first to the second, observation both ways, as no element is converted.
+   */
+  private readonly copies: [Slot, Slot][] = [];
   /** Values whose type something tests (§2.3b M6), before the fixpoint. */
   private readonly typeObservedValues = new Set<ts.Expression>();
   /** Values given to JSON.stringify (true: classes' fields too) or console (interfaces' and literals' fields). */
@@ -755,6 +760,12 @@ export class Forms {
    */
   private propagateObserved(): void {
     for (const s of this.observedSlots) this.find(s).observed = true;
+    // A Set keeps a null member apart from an undefined one.
+    for (const s of this.made) {
+      const name = s.type && this.checker.getNonNullableType(s.type).getSymbol()?.name;
+      const c = (name === 'Set' || name === 'ReadonlySet') && this.find(s).children.get('element');
+      if (c) this.find(c).observed = true;
+    }
     for (const e of this.observedValues) for (const [s, keep] of this.flow(e).from) if (keep & N) this.find(s).observed = true;
     const slots = new Set<Slot>(), types = new Set<ts.Type>();
     for (const [e, classes] of this.printed) this.observePrinted(e, classes, slots, types);
@@ -766,6 +777,13 @@ export class Forms {
       const list = into.get(y);
       if (list) list.push(x);
       else into.set(y, [x]);
+    }
+    for (const [from, to] of this.copies) {
+      const x = this.find(from), y = this.find(to);
+      if (x === y) continue;
+      const list = into.get(x);
+      if (list) list.push(y);
+      else into.set(x, [y]);
     }
     for (let work = [...new Set(this.made.map((s) => this.find(s)).filter((r) => r.observed))]; work.length;) {
       const y = work.pop()!;
@@ -856,7 +874,7 @@ export class Forms {
       return;
     }
     if (ts.isSpreadElement(p) && ts.isArrayLiteralExpression(p.parent)) {
-      this.placeElements(e, this.child(this.slotFor(p.parent), 'element'), null);
+      this.placeElements(e, this.child(this.slotFor(p.parent), 'element'), null, true);
       return;
     }
     if (ts.isOmittedExpression(e) && ts.isArrayLiteralExpression(p)) return;
@@ -1070,11 +1088,15 @@ export class Forms {
     return !!t && untyped(t);
   }
 
-  private placeElements(source: ts.Expression, target: Slot, part: Part | null): void {
+  private placeElements(source: ts.Expression, target: Slot, part: Part | null, copy = false): void {
     const f = this.flow(source);
     const t = this.checker.getNonNullableType(this.checker.getTypeAtLocation(source));
     const p: Part = part ?? (t.getSymbol()?.name === 'Map' ? 'value' : 'element');
-    for (const [s] of f.from) this.edges.push([this.child(s, p), target, ~0]);
+    for (const [s] of f.from) {
+      const from = this.child(s, p);
+      this.edges.push([from, target, ~0]);
+      if (copy) this.copies.push([from, target]);
+    }
     if (t.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown)) this.seed(target, F | U | N);
   }
 
@@ -1122,6 +1144,8 @@ export class Forms {
     if (ts.isNewExpression(call)) { this.placeConstructed(call, args); return; }
     if (!ts.isPropertyAccessExpression(call.expression)) return;
     const name = call.expression.name.text, recv = call.expression.expression;
+    // These calls' results share or copy their source's elements when their flow is computed, which must be in the build.
+    if (name === 'values' || name === 'keys' || name === 'from' || name === 'concat') this.flow(call);
     const invoked = this.invokedThrough(call);
     if (invoked && name === 'call') valueParameters(invoked).forEach((p, k) => {
       if (p.dotDotDotToken) { for (const a of args.slice(k + 1)) this.place(a, this.child(this.slotFor(p), 'element')); }
@@ -1141,13 +1165,21 @@ export class Forms {
     const giveParam = (fn: ts.SignatureDeclaration | null, k: number, from: Slot[], states = 0) => {
       const p = fn && valueParameters(fn)[k];
       if (!p) return;
-      for (const s of from) this.edges.push([s, this.slotFor(p), ~0]);
+      // The callback's parameter is typed by the elements it is given: one representation with them.
+      for (const s of from) { this.edges.push([s, this.slotFor(p), ~0]); this.copies.push([s, this.slotFor(p)]); }
       if (states) this.seed(this.slotFor(p), states);
     };
     if (kind === 'Array') {
       if (name === 'push' || name === 'unshift') for (const s of recvSlots()) for (const a of args) this.place(a, this.child(s, 'element'));
       if (name === 'splice') for (const s of recvSlots()) for (const a of args.slice(2)) this.place(a, this.child(s, 'element'));
+      if (name === 'concat') for (const a of args) {
+        const into = this.child(this.slotFor(call), 'element'), at = c.getNonNullableType(c.getTypeAtLocation(a));
+        if (c.isArrayType(at) || c.isTupleType(at)) this.placeElements(a, into, 'element', true);
+        else this.place(a, into);
+      }
       const elements = recvSlots().map((s) => this.child(s, 'element'));
+      // Strict equality and SameValueZero tell a null element from an undefined one.
+      if ((name === 'includes' || name === 'indexOf' || name === 'lastIndexOf') && args[0] && this.mayBeEmpty(args[0])) this.observedSlots.push(...elements);
       if (ELEMENT_CALLBACKS.has(name)) giveParam(callback(0), 0, elements);
       if (name === 'sort' || name === 'toSorted') { giveParam(callback(0), 0, elements); giveParam(callback(0), 1, elements); }
       if (name === 'reduce' || name === 'reduceRight') {
@@ -1183,7 +1215,7 @@ export class Forms {
           else if (!ts.isArrayLiteralExpression(pair)) this.seed(own, F | U | N);
         }
       } else for (const [s] of this.flow(args[0]).from) this.edges.push([this.child(this.child(s, 'element'), 'element'), own, ~0]);
-    } else if (name === 'Set' || name === 'WeakSet') this.placeElements(args[0], own, 'element');
+    } else if (name === 'Set' || name === 'WeakSet') this.placeElements(args[0], own, 'element', true);
     else if (args.length === 1 && this.checker.getTypeAtLocation(args[0]).flags & ts.TypeFlags.NumberLike) this.seed(own, H | U | M);
     else for (const a of args) this.place(a, own);
   }
@@ -1486,6 +1518,14 @@ export class Forms {
         const fn = e.arguments[0] && this.functionDeclarationOf(e.arguments[0]);
         const r = fn && this.resultOf(fn);
         return r ? { states: optional, from: [[r, ~0]] } : { states: this.unknownStates(e) | optional, from: [] };
+      }
+      if (((kind === 'Map' || kind === 'ReadonlyMap') && name === 'values') || ((kind === 'Set' || kind === 'ReadonlySet') && (name === 'values' || name === 'keys'))) {
+        for (const s of recvParts(kind === 'Map' || kind === 'ReadonlyMap' ? 'value' : 'element')) this.share(s, this.child(own(), 'element'));
+        return { states: optional, from: [[own(), ~0]] };
+      }
+      if (ts.isIdentifier(recv) && recv.text === 'Array' && name === 'from' && e.arguments.length === 1 && !ts.isSpreadElement(e.arguments[0]) && this.partOf(c.getTypeAtLocation(e))) {
+        const source = c.getNonNullableType(c.getTypeAtLocation(e.arguments[0])).getSymbol()?.name;
+        if (source !== 'Map' && source !== 'ReadonlyMap') { this.placeElements(e.arguments[0], this.child(own(), 'element'), 'element', true); return { states: optional, from: [[own(), ~0]] }; }
       }
       if ((kind === 'Map' || kind === 'ReadonlyMap') && name === 'get') return { states: U | this.absent(e) | optional, from: recvParts('value').map((s): [Slot, number] => [s, ~0]) };
       if (kind === 'Promise' && name === 'then') {

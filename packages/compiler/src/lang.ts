@@ -1405,10 +1405,14 @@ export function nullishSlots(checker: ts.TypeChecker, files: readonly ts.SourceF
     return undefined;
   };
   // Only an array's or Set's element and a Map's value have a form of their own (`Form.element`).
-  const collection = (t: ts.Type) => { const x = checker.getNonNullableType(t); return checker.isArrayType(x) || ['Set', 'ReadonlySet', 'Map', 'ReadonlyMap'].includes(x.getSymbol()?.name ?? ''); };
+  const collectionElement = (t: ts.Type) => {
+    const x = checker.getNonNullableType(t), name = x.getSymbol()?.name ?? '';
+    if (!checker.isArrayType(x) && !['Set', 'ReadonlySet', 'Map', 'ReadonlyMap'].includes(name)) return undefined;
+    return checker.getTypeArguments(x as ts.TypeReference)[name === 'Map' || name === 'ReadonlyMap' ? 1 : 0];
+  };
   const checkNested = (n: ts.Node, t: ts.Type | undefined, slot = n as ts.Declaration) => {
     const [inner, depth] = (t && nested(t)) || [];
-    if (inner) refuse(n, `an array, Map or Set element (or other type argument) that may be null or undefined both (\`${text(inner)}\` in \`${text(t!)}\`)`, depth === 1 && collection(t!) ? { kind: 'element', slot } : undefined);
+    if (inner) refuse(n, `an array, Map or Set element (or other type argument) that may be null or undefined both (\`${text(inner)}\` in \`${text(t!)}\`)`, depth === 1 && collectionElement(t!) === inner ? { kind: 'element', slot } : undefined);
   };
   for (const f of files) {
     if (f.isDeclarationFile || skip(f)) continue;

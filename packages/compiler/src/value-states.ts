@@ -1,7 +1,7 @@
 import { dirname, join } from 'node:path';
 import ts from 'typescript';
 import { admitsUndefined, alwaysEnds, givenBy, heldDowncasts, implementedInterfaceDeclarations, isTemplateMethod, LooseSlots, nothingGiven, nullishSlots, nullSetFields, originOf, ownSlot, reassigned, scriptCalledFunction, slotOf, slotType, type NullishSlots, type TrustScope } from './lang.ts';
-import { type Form, Forms, isGeneric, representation } from './forms.ts';
+import { type Form, Forms, isGeneric, ONE_ELEMENT, representation } from './forms.ts';
 import { isAsync, isStatic } from './throws.ts';
 import { shadowForms } from './forms-shadow.ts';
 
@@ -245,6 +245,7 @@ export class ValueStates {
     if ((ts.isCallExpression(p) || ts.isNewExpression(p)) && p.expression !== x) {
       const k = p.arguments!.indexOf(x as ts.Expression);
       if (ts.isNewExpression(p) && k === 0 && ts.isIdentifier(p.expression) && p.expression.text === 'Set') return p;
+      if (ts.isCallExpression(p) && ts.isPropertyAccessExpression(p.expression) && p.expression.name.text === 'concat' && this.literalElementType(x as ts.ArrayLiteralExpression)) return p;
       const sig = this.checker.getResolvedSignature(p)?.getDeclaration();
       const param = sig && !ts.isJSDocSignature(sig) ? sig.parameters[k] : undefined;
       return param && !param.dotDotDotToken && !param.getSourceFile().isDeclarationFile ? param : null;
@@ -446,11 +447,39 @@ export class ValueStates {
     return this.nilIsNull(e) || !!this.nullishRead(e) || this.nullishElementRead(e) || !!this.nullableEntry(e, () => this.backend.untypedCode(e));
   }
 
-  /** An element read of an array whose elements are held as `JSNullish<T>` (`nullishElements`). */
+  /**
+   * A read of one element or value of an array, Set or Map whose elements are held as `JSNullish<T>` (`nullishElements`):
+   * an index, `at`/`find`/`pop`/…, a Map's `get`.
+   */
   nullishElementRead(e: ts.Expression): boolean {
     const bare = ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses);
-    return ts.isElementAccessExpression(bare) && this.nullishElements(bare.expression);
+    if (ts.isElementAccessExpression(bare)) return this.nullishElements(bare.expression);
+    if (!ts.isCallExpression(bare) || !ts.isPropertyAccessExpression(bare.expression)) return false;
+    const recv = bare.expression.expression, name = bare.expression.name.text;
+    const t = this.checker.getNonNullableType(this.checker.getTypeAtLocation(recv));
+    const one = this.checker.isArrayType(t) ? ONE_ELEMENT.has(name) : ['Map', 'ReadonlyMap'].includes(t.getSymbol()?.name ?? '') && name === 'get';
+    return one && this.nullishElements(recv);
   }
+
+  /**
+   * The element type an array literal is spelled with where its contextual type isn't an array: a `new Set(…)`'s, or the
+   * receiver's for `concat`, whatever the literal's own elements are (`[null]`).
+   */
+  literalElementType(e: ts.ArrayLiteralExpression): ts.Type | null {
+    let x: ts.Node = e;
+    while (ts.isParenthesizedExpression(x.parent)) x = x.parent;
+    const p = x.parent;
+    if (ts.isNewExpression(p) && p.arguments?.[0] === x && ts.isIdentifier(p.expression) && p.expression.text === 'Set') {
+      const t = this.checker.getTypeAtLocation(p);
+      return t.getSymbol()?.name === 'Set' ? this.forms().elementOf(t) : null;
+    }
+    if (ts.isCallExpression(p) && p.arguments.includes(x as ts.Expression) && ts.isPropertyAccessExpression(p.expression) && p.expression.name.text === 'concat') {
+      const t = this.checker.getNonNullableType(this.checker.getTypeAtLocation(p.expression.expression));
+      return this.checker.isArrayType(t) ? this.forms().elementOf(t) : null;
+    }
+    return null;
+  }
+
 
   /** A member that may hold null or undefined both, by its type or as `nullishSlots` finds; written, one that may hold null. */
   nullishMember(e: ts.PropertyAccessExpression, write = false): boolean {
