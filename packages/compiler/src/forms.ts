@@ -151,6 +151,9 @@ export class Forms {
   private readonly printed: [ts.Expression, boolean][] = [];
   /** The slots each value is placed in. */
   private readonly placed = new Map<ts.Expression, Slot[]>();
+  /** Arguments the program's calls give defaulted parameters, and the defaulted parameters a spread argument reaches. */
+  private readonly defaultArguments: [ts.ParameterDeclaration, ts.Expression][] = [];
+  private readonly spreadDefaults = new Set<ts.ParameterDeclaration>();
   /** Values placed where script holds them untyped: a slot of no type, a field or element no type reads, an unknown callee's argument. */
   private readonly placedUntyped = new Set<ts.Expression>();
   /**
@@ -272,6 +275,16 @@ export class Forms {
     return this.groups.get(this.find(this.slotFor(d))) ?? [d];
   }
   private groups: Map<Slot, ts.Declaration[]> | null = null;
+
+  /**
+   * A defaulted parameter, or one of its group, that a call of the program's gives a value that may be undefined or
+   * spreads arguments over: JavaScript applies the default for an undefined argument as for an omitted one.
+   */
+  defaultGivenUndefined(p: ts.ParameterDeclaration): boolean {
+    this.build();
+    const group = new Set(this.groupOf(p));
+    return [...group].some((q) => ts.isParameter(q) && this.spreadDefaults.has(q)) || this.defaultArguments.some(([q, a]) => group.has(q) && this.formOf(a).undefined);
+  }
 
   /** A declaration whose group holds a fixed point's slot (a platform's or library's declaration): its form is that one's. */
   fixedSlot(d: ts.Declaration): boolean {
@@ -1135,6 +1148,14 @@ export class Forms {
     const sig = c.getResolvedSignature(call)?.getDeclaration();
     if (!sig || ts.isJSDocSignature(sig)) this.observeArguments(call, undefined, args);
     else if (declarationFile(sig)) this.observeArguments(call, sig, args);
+    if (sig && !ts.isJSDocSignature(sig) && !declarationFile(sig)) {
+      const spread = args.findIndex(ts.isSpreadElement);
+      valueParameters(sig).forEach((p, k) => {
+        if (!p.initializer || p.dotDotDotToken) return;
+        if (spread >= 0 && k >= spread) this.spreadDefaults.add(p);
+        else if (k < args.length) this.defaultArguments.push([p, args[k]]);
+      });
+    }
     if (sig && !ts.isJSDocSignature(sig) && !declarationFile(sig) && !args.some(ts.isSpreadElement)) {
       valueParameters(sig).forEach((p, k) => {
         if (p.dotDotDotToken) { for (const a of args.slice(k)) this.place(a, this.child(this.slotFor(p), 'element')); }

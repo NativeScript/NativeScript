@@ -148,7 +148,7 @@ export class ValueStates {
   nullish(): NullishSlots {
     const b = this.backend;
     if (this.nullishSlotSet) return this.nullishSlotSet;
-    const found: NullishSlots = b.lenient || b.library ? { held: new Set(), fields: new Set(), refused: [], functions: new Map() } : nullishSlots(b.checker, b.sourceFiles, (f) => b.pluginFiles.has(f.fileName));
+    const found: NullishSlots = b.lenient || b.library ? { held: new Set(), fields: new Set(), refused: [], functions: new Map() } : nullishSlots(b.checker, b.sourceFiles, (f) => b.pluginFiles.has(f.fileName), (d) => this.formNullish(d));
     // An element, callback parameter or loop variable today's analysis can't hold: one nil, read as undefined, where
     // nothing tells null from undefined in it; `JSNullish<T>` where something does.
     found.refused = found.refused.filter(([, , cover]) => {
@@ -195,6 +195,17 @@ export class ValueStates {
       for (const f of this.backend.sourceFiles) if (!f.isDeclarationFile) scan(f);
     }
     return found;
+  }
+
+  /**
+   * An app slot whose type admits one empty state but whose form holds both, observed apart (§2.3b M1'), where the other
+   * comes from the program's own missing value (`Form.absent`), as `widenedField` asks of fields: what a package's code
+   * brings into a slot its type says can't hold it keeps the declared form.
+   */
+  private formNullish(d: ts.Declaration): boolean {
+    if (!this.appCode(d)) return false;
+    const form = this.forms().formOfSlot(d);
+    return form.absent && representation(form) === 'nullish';
   }
 
   /** The program's value forms (review/DESIGN-VALUE-MODEL.md §2), built when first asked. */
@@ -508,7 +519,9 @@ export class ValueStates {
     if (b.lenient || b.library || cls.getSourceFile().isDeclarationFile || this.plugin(cls)) return set;
     for (const m of nullSetFields(cls)) if (b.typeOf(m.name) !== 'Any?') set.add(m.name.getText());
     for (const m of cls.members) if (ts.isPropertyDeclaration(m) && this.nullish().fields.has(m) && b.typeOf(m.name) !== 'Any?') set.add(m.name.getText());
-    for (const m of cls.members) if (ts.isPropertyDeclaration(m) && this.widenedField(m) && this.forms().formOfSlot(m).null && b.typeOf(m.name) !== 'Any?') set.add(m.name.getText());
+    const ctor = cls.members.find(ts.isConstructorDeclaration);
+    const properties = ctor?.parameters.filter((p) => ts.isParameterPropertyDeclaration(p, ctor)) ?? [];
+    for (const m of [...cls.members, ...properties]) if ((ts.isPropertyDeclaration(m) || ts.isParameter(m)) && (this.widenedField(m) || this.nullishHeld(m)) && this.forms().formOfSlot(m).null && b.typeOf(m.name) !== 'Any?') set.add(m.name.getText());
     return set;
   }
 
@@ -533,7 +546,8 @@ export class ValueStates {
   nullField(e: ts.Expression): e is ts.PropertyAccessExpression {
     if (!ts.isPropertyAccessExpression(e) || e.questionDotToken || e.expression.kind === ts.SyntaxKind.SuperKeyword) return false;
     const d = this.checker.getSymbolAtLocation(e.name)?.valueDeclaration;
-    return !!d && ts.isPropertyDeclaration(d) && ts.isClassLike(d.parent) && this.nullFields(d.parent).has(e.name.text);
+    const cls = d && (ts.isPropertyDeclaration(d) ? d.parent : ts.isParameter(d) && ts.isParameterPropertyDeclaration(d, d.parent) ? d.parent.parent : null);
+    return !!cls && ts.isClassLike(cls) && this.nullFields(cls).has(e.name.text);
   }
 
   /**
@@ -650,6 +664,7 @@ export class ValueStates {
     const x = ts.skipOuterExpressions(target, ts.OuterExpressionKinds.Parentheses);
     // A held slot's read is untyped, or narrowed by a test of its type to a present value (`narrowedRead`).
     if ((ts.isIdentifier(x) || ts.isPropertyAccessExpression(x)) && this.heldSource(x)) return null;
+    if (this.narrowedMissing(x)) return 'undefined';
     const untyped = ts.TypeFlags.Any | ts.TypeFlags.Unknown;
     const primitive = (t: ts.Type) => !(t.flags & untyped) && !!(c.getNonNullableType(t).flags & (ts.TypeFlags.StringLike | ts.TypeFlags.NumberLike | ts.TypeFlags.BooleanLike));
     const empty = (t: ts.Type) => ((t.isUnion() ? t.types : [t]).some((u) => u.flags & (ts.TypeFlags.Undefined | ts.TypeFlags.Void)) ? 'undefined' : (t.isUnion() ? t.types : [t]).some((u) => u.flags & ts.TypeFlags.Null) ? 'null' : null);
@@ -693,6 +708,24 @@ export class ValueStates {
       if (d && ts.isParameter(d) && d.questionToken && !d.initializer) return 'undefined';
     }
     return (ts.isIdentifier(x) || ts.isCallExpression(x)) && b.unemitted(() => b.heldOptional(x)) ? 'undefined' : null;
+  }
+
+  /**
+   * A variable or parameter read the checker narrows to present though it may hold the program's own missing value
+   * there: an assignment narrows to the assigned value's type, which a read past an array's end or a record's entry
+   * types present. A name no assignment narrows (a parameter never assigned, a variable never reassigned whose
+   * initializer's type keeps the empty state) is narrowed by a guard only, and isn't answered.
+   */
+  narrowedMissing(e: ts.Expression): boolean {
+    const b = this.backend, c = this.checker;
+    if (b.library || b.lenient || !ts.isIdentifier(e) || isWriteTarget(e) || !this.appCode(e) || !b.trust.strictFile(e.getSourceFile())) return false;
+    const sym = c.getSymbolAtLocation(e), d = sym?.valueDeclaration;
+    if (!sym || !d || !(ts.isVariableDeclaration(d) || ts.isParameter(d)) || d.getSourceFile().isDeclarationFile) return false;
+    const empty = (t: ts.Type) => (t.isUnion() ? t.types : [t]).some((u) => u.flags & (ts.TypeFlags.Undefined | ts.TypeFlags.Null | ts.TypeFlags.Void));
+    if (!empty(c.getTypeOfSymbol(sym)) || empty(c.getTypeAtLocation(e))) return false;
+    if (ts.isParameter(d) ? !assignedParameter(d, c) : !reassigned(d, c) && (!d.initializer || empty(c.getTypeAtLocation(d.initializer)))) return false;
+    const form = this.forms().formOfSlot(d);
+    return form.undefined && form.absent;
   }
 
   /**
@@ -793,6 +826,19 @@ export class ValueStates {
     this.undefinedGiven.set(p, found);
     return found;
   }
+
+  /**
+   * An app's defaulted parameter the program may give undefined (`Forms.defaultGivenUndefined`): its default is applied
+   * in the body, where undefined takes it too, not by the native signature, which only an omitted argument reaches.
+   */
+  defaultTakesUndefined(p: ts.ParameterDeclaration): boolean {
+    const b = this.backend;
+    if (b.lenient || b.library || !p.initializer || p.getSourceFile().isDeclarationFile || this.plugin(p)) return false;
+    let found = this.defaultsGiven.get(p);
+    if (found === undefined) this.defaultsGiven.set(p, found = !this.forms().fixedSlot(p) && this.forms().defaultGivenUndefined(p));
+    return found;
+  }
+  private readonly defaultsGiven = new Map<ts.ParameterDeclaration, boolean>();
 
   /**
    * A parameter whose native type takes an empty value its declared type leaves out. An app's parameter takes what its
