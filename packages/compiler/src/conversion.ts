@@ -11,7 +11,9 @@ export type SlotKind = 'argument' | 'return' | 'field' | 'literalField' | 'varia
 export type Entry = 'typed' | 'checked' | 'narrowed' | 'lenient' | 'library';
 
 export type NativeKind = 'string' | 'number' | 'boolean' | 'bigint' | 'symbol' | 'void' | 'never' | 'any' | 'nullish'
-  | 'array' | 'record' | 'map' | 'set' | 'promise' | 'function' | 'object';
+  | 'array' | 'record' | 'map' | 'set' | 'promise' | 'function' | 'object'
+  /** A value type a conversion builds from any value, never refusing one: a date, an error, a native struct or enum. */
+  | 'value';
 
 /** A backend's spelling of a slot's type, parsed once. */
 export interface NativeType {
@@ -60,7 +62,9 @@ export type Mark =
   /** An array the code makes, of the element type it spells. */
   | { op: 'array'; element: string }
   /** A member read off the value (`x.name`). */
-  | { op: 'member'; of: Value; name: string };
+  | { op: 'member'; of: Value; name: string }
+  /** Swift's `try` before the code of `of`. */
+  | { op: 'try'; of: Value };
 
 /** What one cell does to the value. */
 export type Step =
@@ -87,6 +91,8 @@ export interface Plan {
 }
 
 const PRIMITIVE: ReadonlySet<NativeKind> = new Set(['string', 'number', 'boolean']);
+/** Kinds a checked conversion of a foreign value builds, never refuses. */
+const CONVERTED: ReadonlySet<NativeKind> = new Set(['string', 'number', 'boolean', 'array', 'record', 'promise', 'function', 'void', 'any', 'value']);
 
 /** The cell for a value of slot `from` placed in slot `to`. Pure: the throws analysis asks it too. */
 export function plan(from: Slot, to: Slot, entry: Entry): Plan {
@@ -128,7 +134,7 @@ function fromForeign(to: Slot, entry: Entry, cell: (s: Step, throws?: boolean, b
     case 'narrowed': return cell('narrowed', true);
     // Lenient code reads a missing primitive as its zero, but an object where one must be present is still a TypeError.
     case 'lenient': return cell('lenient', to.rep === 'present' && !PRIMITIVE.has(to.type.kind) && to.type.kind !== 'any');
-    default: return cell('checked', true);
+    default: return cell('checked', to.rep === 'present' && !CONVERTED.has(to.type.kind));
   }
 }
 
@@ -140,7 +146,7 @@ const KINDS: Record<string, NativeKind> = {
   String: 'string', Double: 'number', Int: 'number', Float: 'number', CGFloat: 'number', Long: 'number', Bool: 'boolean',
   Boolean: 'boolean', JSBigInt: 'bigint', JSSymbol: 'symbol', Void: 'void', Unit: 'void', Never: 'never', Nothing: 'never',
   Any: 'any', JSNullish: 'nullish', JSArray: 'array', JSRecord: 'record', JSMap: 'map', JSSet: 'set', JSPromise: 'promise',
-  Promise: 'promise', Deferred: 'promise',
+  Promise: 'promise', Deferred: 'promise', JSDate: 'value', JSError: 'value',
 };
 
 /** A Swift or Kotlin type as the translators spell it. */
