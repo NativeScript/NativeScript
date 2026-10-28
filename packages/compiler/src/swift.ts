@@ -8450,7 +8450,7 @@ ${members.join('\n')}
       // A Promise executor's resolve held untyped: a function resolving the promise.
       const resolvers = ts.isIdentifier(bare) ? this.resolvers.get(this.resolve(bare)!) : undefined;
       if (resolvers) return `({ (__a: [Any?]) throws -> Any? in ${resolvers.name}.resolve(${resolvers.type === 'Void' ? '' : this.fromAnyCode('jsArg(__a, 0)', resolvers.type, true)}); return nil } as JSFunction)`;
-      if (ts.isConditionalExpression(bare) && [bare.whenTrue, bare.whenFalse].some((x) => x.kind === ts.SyntaxKind.NullKeyword)) {
+      if (ts.isConditionalExpression(bare) && ([bare.whenTrue, bare.whenFalse].some((x) => x.kind === ts.SyntaxKind.NullKeyword) || this.states.nullBranches(bare))) {
         return `(${this.cond(bare.condition)} ? ${this.coerce(bare.whenTrue, 'Any?')} : ${this.coerce(bare.whenFalse, 'Any?')})`;
       }
       const maybe = this.maybeUndefined(e);
@@ -13950,6 +13950,12 @@ ${members.join('\n')}
       const f = order.find((x) => x.name === key);
       // Null given as such is noted with the literal's other nulls.
       if (!f || !keyed.has(key) || ts.skipOuterExpressions(value).kind === ts.SyntaxKind.NullKeyword) return code();
+      const split = this.states.nullBranches(value);
+      if (split) {
+        const k = keysVar ??= this.fresh('__keys');
+        const want = loose(f.type) ? optionalType(f.type) : f.type;
+        return this.ternary(split.cond, want, (x) => (split.nulls.includes(x) ? `${k}.nulled(${swiftString(key)}, ${this.coerce(x, want)})` : this.coerce(x, want)));
+      }
       const t = this.checker.getTypeAtLocation(value);
       if (onlyUndefined(t)) { unsetKeys.push(key); return code(); }
       if (ts.isObjectLiteralExpression(ts.skipOuterExpressions(value)) || ts.isArrayLiteralExpression(ts.skipOuterExpressions(value))) return code();

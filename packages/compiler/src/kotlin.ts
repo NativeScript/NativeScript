@@ -6409,7 +6409,7 @@ export class Translator implements AsyncTranslator {
           return `run { val __f = ${this.closure(bare, `(${types.join(', ')}) -> ${ret}`)}; { ${names.map((n) => `${n}: Any?`).join(', ')} -> ${ret === 'Unit' ? `${call}; Unit` : call} } }`;
         }
       }
-      if (ts.isConditionalExpression(bare) && ([bare.whenTrue, bare.whenFalse].some((x) => x.kind === ts.SyntaxKind.NullKeyword) || (this.library && [bare.whenTrue, bare.whenFalse].some(takesThis)))) {
+      if (ts.isConditionalExpression(bare) && ([bare.whenTrue, bare.whenFalse].some((x) => x.kind === ts.SyntaxKind.NullKeyword) || this.states.nullBranches(bare) || (this.library && [bare.whenTrue, bare.whenFalse].some(takesThis)))) {
         return `(if (${this.cond(bare.condition)}) ${branch(this.coerce(bare.whenTrue, 'Any?'))} else ${branch(this.coerce(bare.whenFalse, 'Any?'))})`;
       }
       const maybe = this.maybeUndefined(e);
@@ -10414,6 +10414,12 @@ export class Translator implements AsyncTranslator {
       const f = order.find((x) => x.name === key);
       // Null given as such is noted with the literal's other nulls.
       if (!f || !keyed.has(key) || ts.skipOuterExpressions(value).kind === ts.SyntaxKind.NullKeyword) return code();
+      const split = this.states.nullBranches(value);
+      if (split) {
+        const k = keysVar ??= this.fresh('__keys');
+        const branch = (x: ts.Expression) => (split.nulls.includes(x) ? `${k}.nulled(${kotlinString(key)}, ${this.coerce(x, f.type)})` : this.coerce(x, f.type));
+        return `(if (${this.cond(split.cond.condition)}) ${branch(split.cond.whenTrue)} else ${branch(split.cond.whenFalse)})`;
+      }
       const t = this.checker.getTypeAtLocation(value);
       if (onlyUndefined(t)) { unsetKeys.push(key); return code(); }
       const untyped = this.typeOf(value) === 'Any?';
