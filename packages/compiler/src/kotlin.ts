@@ -1153,9 +1153,11 @@ export class Translator implements AsyncTranslator {
     if (this.rawResults.has(e) || !this.unwrapsResult(e)) return code;
     // A string, number or boolean that may be missing reads as what undefined converts to; an object is required present.
     const site = this.typeOf(e);
-    if (['String', 'Double', 'Boolean'].includes(site)) return this.undefinedAs(code, site);
     // A non-strict app's null-only result: its null is carried as the app's other nulls are (`jsUncheckedNull`).
-    return this.lenientApp && this.isObjectType(site) && this.states.nullResult(e) ? `(${code} ?: jsUncheckedNull<${site}>())` : asserted(code);
+    if (this.lenientApp && this.isObjectType(site) && this.states.nullResult(e)) return `(${code} ?: jsUncheckedNull<${site}>())`;
+    const field = this.states.placedField(e);
+    if (field) return `jsRequired(${code}, ${kotlinString((field as ts.NamedDeclaration).name!.getText())})`;
+    return ['String', 'Double', 'Boolean'].includes(site) ? this.undefinedAs(code, site) : asserted(code);
   }
 
   /** Calls whose nullable result is wanted as it is (see `maybeUndefined`). */
@@ -6465,7 +6467,10 @@ export class Translator implements AsyncTranslator {
     }
     if (/^JSArray<.*>$/.test(source) && /^JSArray<.*>\??$/.test(target) && source !== target.replace(/\?$/, '') && source === 'JSArray<Any?>') return cast(this.expr(e), target);
     // A value TypeScript's strict typing calls possibly undefined where the code expects one (checked without strictNullChecks).
-    if (source === optionalType(target) && target !== 'Any?' && !isNullable(target) && !isFunctionType(target)) return this.undefinedAs(this.expr(e), target);
+    if (source === optionalType(target) && target !== 'Any?' && !isNullable(target) && !isFunctionType(target)) {
+      const field = this.states.placedField(e);
+      return field ? `jsRequired(${this.expr(e)}, ${kotlinString((field as ts.NamedDeclaration).name!.getText())})` : this.undefinedAs(this.expr(e), target);
+    }
     if (isFunctionType(source) && isFunctionType(target.replace(/^\((.*)\)\?$/, '$1')) && / -> Unit$/.test(target.replace(/^\((.*)\)\?$/, '$1')) && !/ -> Unit$/.test(source)) {
       // A function value whose result a void slot ignores.
       const params = functionTypeParts(source)!.params;

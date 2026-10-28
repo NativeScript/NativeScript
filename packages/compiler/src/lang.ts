@@ -680,12 +680,15 @@ export class LooseSlots {
   private checker: ts.TypeChecker;
   private untrusted: (e: ts.Expression) => boolean;
   private holds: (d: ts.Declaration) => boolean;
+  private given: () => readonly ts.Declaration[];
 
-  constructor(files: readonly ts.SourceFile[], checker: ts.TypeChecker, untrusted: (e: ts.Expression) => boolean, holds: (d: ts.Declaration) => boolean) {
+  /** `given`: slots loose whatever is placed in them, before untrusted values loosen others. */
+  constructor(files: readonly ts.SourceFile[], checker: ts.TypeChecker, untrusted: (e: ts.Expression) => boolean, holds: (d: ts.Declaration) => boolean, given: () => readonly ts.Declaration[] = () => []) {
     this.files = files;
     this.checker = checker;
     this.untrusted = untrusted;
     this.holds = holds;
+    this.given = given;
   }
 
   has(d: ts.Declaration): boolean {
@@ -709,6 +712,7 @@ export class LooseSlots {
 
   private build() {
     this.built = true;
+    for (const d of this.given()) this.loose.add(d);
     const placements: [ts.Expression, ts.Declaration][] = [];
     const destructured: [ts.Declaration, ts.Declaration][] = [];
     const visit = (n: ts.Node) => {

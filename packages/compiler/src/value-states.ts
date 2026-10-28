@@ -200,7 +200,7 @@ export class ValueStates {
   /** The program's value forms (review/DESIGN-VALUE-MODEL.md §2), built when first asked. */
   forms(): Forms {
     const b = this.backend;
-    return this.formSet ??= new Forms(b.sourceFiles, b.checker, (f) => b.trust.strictFile(f), { library: !!b.library, native: (d) => b.trust.nativeDeclaration(d), nativeNil: (d) => !!b.native?.holdsNil?.(d) });
+    return this.formSet ??= new Forms(b.sourceFiles, b.checker, (f) => b.trust.strictFile(f), { library: !!b.library, native: (d) => b.trust.nativeDeclaration(d), nativeNil: (d) => !!b.native?.holdsNil?.(d), ownCode: (n) => !this.packaged(n) });
   }
 
   /**
@@ -464,6 +464,7 @@ export class ValueStates {
     if (b.lenient || b.library || cls.getSourceFile().isDeclarationFile || this.plugin(cls)) return set;
     for (const m of nullSetFields(cls)) if (b.typeOf(m.name) !== 'Any?') set.add(m.name.getText());
     for (const m of cls.members) if (ts.isPropertyDeclaration(m) && this.nullish().fields.has(m) && b.typeOf(m.name) !== 'Any?') set.add(m.name.getText());
+    for (const m of cls.members) if (ts.isPropertyDeclaration(m) && this.widenedField(m) && this.forms().formOfSlot(m).null && b.typeOf(m.name) !== 'Any?') set.add(m.name.getText());
     return set;
   }
 
@@ -548,7 +549,7 @@ export class ValueStates {
    */
   get looseSlots(): LooseSlots {
     const b = this.backend;
-    return this.looseSlotSet ??= new LooseSlots(b.sourceFiles, b.checker, (e) => b.unemitted(() => this.untrustedValue(e)), (d) => b.unemitted(() => this.holdsLoose(d)));
+    return this.looseSlotSet ??= new LooseSlots(b.sourceFiles, b.checker, (e) => b.unemitted(() => this.untrustedValue(e)), (d) => b.unemitted(() => this.holdsLoose(d)), () => this.widenedFields());
   }
 
   /** A value that may be undefined, null or another kind than the native type for it says. */
@@ -856,6 +857,59 @@ export class ValueStates {
     };
     visit(fn.body!);
     return empty;
+  }
+
+  /**
+   * An app's field (a class's, an interface's or type literal's, a parameter property) whose group's form holds null or
+   * undefined its declared type leaves out: a widened call's result, an element past the end, a field never assigned.
+   * Every member of the group answers alike, so overrides, the interface member a class implements and the literals given
+   * for it are spelled as one.
+   */
+  widenedField(d: ts.Declaration): boolean {
+    const b = this.backend;
+    if (b.library || b.lenient || !fieldLike(d)) return false;
+    let found = this.widenedFieldSet.get(d);
+    if (found !== undefined) return found;
+    const forms = this.forms(), group = forms.groupOf(d);
+    found = !forms.fixedSlot(d) && group.every((m) => m === d || !fieldLike(m) || (!m.getSourceFile().isDeclarationFile && this.appCode(m)));
+    if (found) {
+      const declared = forms.declaredForm(d), form = forms.formOfSlot(d);
+      const t = this.checker.getTypeAtLocation(d);
+      found = form.absent && !declared.null && !declared.undefined && !declared.foreign && !form.foreign && !(t.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown)) && !mentionsTypeParameter(this.checker, t) && ((form.null && !declared.null) || (form.undefined && !declared.undefined));
+    }
+    for (const m of group) if (fieldLike(m)) this.widenedFieldSet.set(m, found);
+    this.widenedFieldSet.set(d, found);
+    return found;
+  }
+  private readonly widenedFieldSet = new Map<ts.Declaration, boolean>();
+
+  /**
+   * The app field a value is placed in: a literal's property, an assignment, an initializer, a parameter property's
+   * argument. A value its form doesn't hold missing that turns out missing there (a callback's result Form doesn't
+   * follow, §2.3b M5) is JavaScript's TypeError naming the field, never a value made up for it.
+   */
+  placedField(e: ts.Expression): ts.Declaration | null {
+    const b = this.backend;
+    if (b.library || b.lenient || !this.appCode(e)) return null;
+    let x: ts.Node = e;
+    while (ts.isParenthesizedExpression(x.parent)) x = x.parent;
+    // A literal's own property where nothing types the literal (`map`'s callback result, an untyped variable's): the
+    // field of the shape it makes.
+    const d = slotOf(e, this.checker) ?? (ts.isPropertyAssignment(x.parent) && x.parent.initializer === x ? x.parent : null);
+    const field = !!d && (fieldLike(d) || (ts.isPropertyAssignment(d) && ts.isIdentifier(d.name)));
+    return field && !d.getSourceFile().isDeclarationFile && !this.packaged(d) ? d : null;
+  }
+
+  /** Every app field `widenedField` answers. */
+  widenedFields(): readonly ts.Declaration[] {
+    const b = this.backend, out: ts.Declaration[] = [];
+    if (b.library || b.lenient) return out;
+    const visit = (n: ts.Node): void => {
+      if (fieldLike(n as ts.Declaration) && this.widenedField(n as ts.Declaration)) out.push(n as ts.Declaration);
+      ts.forEachChild(n, visit);
+    };
+    for (const f of b.sourceFiles) if (!f.isDeclarationFile && this.appCode(f)) visit(f);
+    return out;
   }
 
   /** A widened result (`widenedResult`) whose only empty state is null: its nil is null. */
@@ -1216,4 +1270,11 @@ function isWriteTarget(e: ts.Node): boolean {
   const p = x.parent;
   if (ts.isBinaryExpression(p) && p.left === x && p.operatorToken.kind >= ts.SyntaxKind.FirstAssignment && p.operatorToken.kind <= ts.SyntaxKind.LastAssignment) return true;
   return (ts.isPrefixUnaryExpression(p) || ts.isPostfixUnaryExpression(p)) && (p.operator === ts.SyntaxKind.PlusPlusToken || p.operator === ts.SyntaxKind.MinusMinusToken);
+}
+
+/** A field: a class's own (not static), an interface's or type literal's, or a parameter property. */
+function fieldLike(d: ts.Declaration): boolean {
+  if (ts.isPropertyDeclaration(d)) return ts.isIdentifier(d.name) && !isStatic(d) && ts.isClassLike(d.parent);
+  if (ts.isPropertySignature(d)) return ts.isIdentifier(d.name) && (ts.isInterfaceDeclaration(d.parent) || ts.isTypeLiteralNode(d.parent));
+  return ts.isParameter(d) && ts.isIdentifier(d.name) && ts.isParameterPropertyDeclaration(d, d.parent);
 }

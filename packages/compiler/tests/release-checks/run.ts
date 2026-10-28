@@ -1818,6 +1818,65 @@ fun main() {
   }
 })();
 
+(() => {
+  // A missing value placed in a field its form holds present (a `map` callback's literal, whose result Form doesn't
+  // follow, §2.3b M5) is a TypeError naming the field. JavaScript stores undefined there, so no diff case can expect it.
+  const dir = mkdtempSync(join(nativeBuild, 'release-checks-required-field-'));
+  const file = join(dir, 'app.ts');
+  writeFileSync(file, `const NAMES = ['C', 'D'];
+function noteName(i: number): string { return NAMES[i]; }
+interface Voice { note: string; fret: number }
+export function voices(ids: number[]): string {
+  try {
+    const list: Voice[] = ids.map((i) => ({ note: noteName(i), fret: i }));
+    return list.map((v) => v.note + v.fret).join(',');
+  } catch (e) {
+    return \`\${e instanceof TypeError ? 'TypeError' : 'other'}: \${(e as Error).message}\`;
+  }
+}
+`);
+  const expected = 'C0,D1\nTypeError: note is undefined';
+  try {
+    let got: string;
+    try {
+      buildSwiftRuntime(nativeBuild, '-Onone');
+      const out = join(dir, 'swift');
+      translateSwift([file], out);
+      writeFileSync(join(out, 'main.swift'), `import NativeScriptKit
+print(try voices(JSArray<Double>([0, 1])))
+print(try voices(JSArray<Double>([0, 7])))
+`);
+      const errors = swiftc(readdirSync(out).map((f) => join(out, f)), join(dir, 'main'), nativeBuild, '-Onone');
+      got = errors ? errors[0] : spawnSync(join(dir, 'main'), { encoding: 'utf8' }).stdout.trim();
+    } catch (e) {
+      got = (e as Error).message.split('\n')[0];
+    }
+    check(got === expected, 'a missing value placed in a field held present is a TypeError naming the field, not "undefined" (Swift)');
+    if (got !== expected) console.log(`    got: ${got.slice(0, 500)}`);
+
+    try {
+      const out = join(dir, 'kotlin');
+      translateKotlin([file], out, 'org.example.app');
+      writeFileSync(join(out, 'Main.kt'), `import org.example.app.*
+import org.nativescript.kit.*
+fun main() {
+    println(voices(jsArrayOf<Double>(0.0, 1.0)))
+    println(voices(jsArrayOf<Double>(0.0, 7.0)))
+}
+`);
+      const runtime = buildKotlinRuntime(nativeBuild);
+      const errors = kotlinc(readdirSync(out).map((f) => join(out, f)), join(dir, 'classes'), [runtime]);
+      got = errors ? errors[0] : spawnSync('java', ['-cp', [join(dir, 'classes'), runtime, kotlinStdlib()].join(':'), 'MainKt'], { encoding: 'utf8' }).stdout.trim();
+    } catch (e) {
+      got = (e as Error).message.split('\n')[0];
+    }
+    check(got === expected, 'a missing value placed in a field held present is a TypeError naming the field, not "undefined" (Kotlin)');
+    if (got !== expected) console.log(`    got: ${got.slice(0, 500)}`);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+})();
+
 // ---- Core members a kit class leaves to each object; a kit method called past its overrides ----
 {
   const dir = mkdtempSync(join(tmpdir(), 'ns-release-checks-own-members-'));

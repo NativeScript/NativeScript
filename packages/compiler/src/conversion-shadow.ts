@@ -185,7 +185,7 @@ function classify(code: string, input: string | undefined, to: Representation): 
     [/ (?:\?\?|\?:) (?:"undefined"|\.nan|Double\.NaN|false)$/, 'undefinedAs'],
     [/ (?:\?\?|\?:) "null"$/, 'nullAs'],
     [/ (?:\?\?|\?:) (?:""|0|0\.0)$/, 'zero'],
-    [/^(?:jsUnwrap|jsObjectRequired|jsCannotRead)\(| \?: jsObjectRequired\(\)$/, 'typeError'],
+    [/^(?:jsUnwrap|jsObjectRequired|jsCannotRead|jsRequired)\(| \?: jsObjectRequired\(\)$/, 'typeError'],
     [/^\(?.* as! [\w.<>\[\]?, ]+\)?$/s, 'converted'],
     [/^\(?.* as\? [\w.<>\[\]?, ]+\)?$/s, 'lenient'],
     [/[\w)\]]!$|!!$/, 'force'],

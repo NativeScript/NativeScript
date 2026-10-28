@@ -4443,7 +4443,9 @@ ${members.join('\n')}
     const decl = this.checker.getResolvedSignature(e)?.getDeclaration();
     if (!decl || ts.isJSDocSignature(decl) || !this.mayReturnUndefined(decl) || !this.returnTypeOf(decl).endsWith('?')) return code;
     const t = this.typeOf(e);
-    return t.endsWith('?') || t === 'Any?' ? code : this.undefinedAs(code, t, this.returnTypeOf(decl));
+    if (t.endsWith('?') || t === 'Any?') return code;
+    const field = this.states.nullOnlyResult(decl) ? null : this.states.placedField(e);
+    return field ? `try jsRequired(${code}, ${swiftString((field as ts.NamedDeclaration).name!.getText())})` : this.undefinedAs(code, t, this.returnTypeOf(decl));
   }
 
   /**
@@ -6788,11 +6790,16 @@ ${members.join('\n')}
       nulledEntry: (e, code) => this.nulledEntry(e, code),
       untypedCode: (e) => this.coerceTyped(e, 'Any?'),
       optionalShapeField: (e) => this.optionalShapeField(e),
-      heldOptional: (x) => this.typeOf(x).endsWith('?') || this.optionalResult(x) || (ts.isIdentifier(x) && this.unsetLenientVariable(x)),
-      // Decided from the declaration alone: the throws analysis asks before the declaration is translated.
-      declaredOptional: (x) => { const d = this.resolve(x)?.valueDeclaration; return !!d && ts.isVariableDeclaration(d) && !!d.initializer && this.heldOptionalResult(d.initializer); },
+      heldOptional: (x) => this.typeOf(x).endsWith('?') || this.optionalResult(x) || (ts.isIdentifier(x) && (this.unsetLenientVariable(x) || this.declaredOptional(x))),
+      declaredOptional: (x) => this.declaredOptional(x),
     };
   }
+  /** A variable Swift declares optional for the call it is given. Decided from the declaration alone: the throws analysis asks before the declaration is translated. */
+  private declaredOptional(x: ts.Identifier): boolean {
+    const d = this.resolve(x)?.valueDeclaration;
+    return !!d && ts.isVariableDeclaration(d) && !!d.initializer && this.heldOptionalResult(d.initializer);
+  }
+
   /** A non-strict app's read of an object type's optional string, number or boolean member (`o.a`, `a?: string`), held optional. */
   private lenientOptionalMember(x: ts.PropertyAccessExpression): boolean {
     if (!this.lenientApp || this.library || x.questionDotToken || x.flags & ts.NodeFlags.OptionalChain || isWriteTarget(x) || !['String', 'Double', 'Bool'].includes(this.typeOf(x))) return false;
@@ -8427,7 +8434,10 @@ ${members.join('\n')}
     // A value TypeScript's strict typing calls possibly undefined where the code expects one (`map.get(k)` after `has(k)`).
     // Lenient code: undefined passed where a string is declared stays falsy, as the string's zero.
     if (this.lenient && target === 'String' && source === 'String?') return `(${this.expr(e)} ?? "")`;
-    if (source === optionalType(target) && target !== 'Any?' && !target.endsWith('?') && !isFunctionType(target)) return this.undefinedAs(this.expr(e), target, source);
+    if (source === optionalType(target) && target !== 'Any?' && !target.endsWith('?') && !isFunctionType(target)) {
+      const field = this.states.placedField(e);
+      return field ? `try jsRequired(${this.expr(e).replace(/([\w)\]])!$/, '$1')}, ${swiftString((field as ts.NamedDeclaration).name!.getText())})` : this.undefinedAs(this.expr(e), target, source);
+    }
     // Lenient code: a library call Swift gives as optional (`map.get(k)`), which the checker reads as its value type.
     const raw = this.lenient && ts.isCallExpression(bare) && source === target && target !== 'Any?' && !isOptional(target) && !isFunctionType(target) ? this.maybeUndefined(bare) : null;
     if (raw) return this.undefinedAs(raw, target, this.calledType(bare as ts.CallExpression));
@@ -9172,8 +9182,19 @@ ${members.join('\n')}
   }
 
   private checkedHere(n: ts.Node): boolean {
-    return this.spreadThrows(n) || this.promiseValueThrows(n) || ((ts.isPropertyAccessExpression(n) || ts.isElementAccessExpression(n)) && (this.looseReceiverKey(n.expression) !== null || this.assertedReceiverKey(n.expression) !== null || this.states.missingAtRead(n.expression) !== null))
+    return this.spreadThrows(n) || this.requiredField(n) || this.promiseValueThrows(n) || ((ts.isPropertyAccessExpression(n) || ts.isElementAccessExpression(n)) && (this.looseReceiverKey(n.expression) !== null || this.assertedReceiverKey(n.expression) !== null || this.states.missingAtRead(n.expression) !== null))
       || (ts.isExpression(n) && !(assignmentValue(n) && this.lenient) && this.loose(n) && !this.looseTolerated(n)) || (ts.isCallExpression(n) && this.heldFunctionCall(n)) || (ts.isExpression(n) && (this.untypedPresentThrows(n) || this.native.foreignArgument(n)));
+  }
+
+  /** A value Swift holds optional placed in a field it holds present (`placedField`): `coerce` checks it with `jsRequired`. */
+  private requiredField(n: ts.Node): boolean {
+    if (!ts.isExpression(n)) return false;
+    const field = this.states.placedField(n);
+    if (!field) return false;
+    try {
+      const t = this.typeOf(n), want = this.typeOf((field as ts.NamedDeclaration).name!);
+      return ((isOptional(t) && t !== 'Any?') || this.optionalResult(n)) && !isOptional(want) && want !== 'Any?' && !isFunctionType(want);
+    } catch { return false; }
   }
 
   /** A constant made present (`const view = UIView.new()`, `const list = []`): Swift holds it as its type, not optional. */
