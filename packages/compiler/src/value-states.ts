@@ -685,10 +685,18 @@ export class ValueStates {
     if (b.rules.looseReads) {
       const named = ts.isPropertyAccessExpression(n) ? n.name : ts.isPropertyDeclaration(n) || ts.isVariableDeclaration(n) || ts.isParameter(n) || ts.isPropertySignature(n) || ts.isBindingElement(n) ? n.name : n;
       if (!ts.isIdentifier(named) && !ts.isPrivateIdentifier(named)) return false;
-      d = this.checker.getSymbolAtLocation(named)?.valueDeclaration;
+      d = (this.checker.getSymbolAtLocation(named) ?? b.resolve(named))?.valueDeclaration;
       if (!d) return false;
     }
-    return this.looseSlots.has(d as ts.Declaration) || (ts.isParameter(d) && this.scriptCalledParameter(d)) || !!b.rules.checkedParameters?.unsetElement(d);
+    return this.looseSlots.has(d as ts.Declaration) || (ts.isParameter(d) && this.scriptCalledParameter(d)) || !!b.rules.checkedParameters?.unsetElement(d) || (!b.rules.looseReads && this.widenedFieldRead(n));
+  }
+
+  /** A read (or the declaration) of a `widenedField`, where reads aren't resolved to their slot for `looseSlots`. */
+  private widenedFieldRead(n: ts.Node): boolean {
+    const named = ts.isPropertyAccessExpression(n) ? n.name : ts.isPropertyDeclaration(n) || ts.isPropertySignature(n) || ts.isParameter(n) ? n.name : n;
+    if (!ts.isIdentifier(named)) return false;
+    const d = (this.checker.getSymbolAtLocation(named) ?? this.backend.resolve(named))?.valueDeclaration;
+    return !!d && fieldLike(d) && this.widenedField(d);
   }
 
   /** See `scriptCalledFunction` (lang.ts). */
@@ -888,16 +896,20 @@ export class ValueStates {
    * argument. A value its form doesn't hold missing that turns out missing there (a callback's result Form doesn't
    * follow, §2.3b M5) is JavaScript's TypeError naming the field, never a value made up for it.
    */
-  placedField(e: ts.Expression): ts.Declaration | null {
+  placedField(e: ts.Expression): { decl: ts.Declaration; name: string } | null {
     const b = this.backend;
-    if (b.library || b.lenient || !this.appCode(e)) return null;
+    if (b.library || b.lenient || !e.parent || !this.appCode(e)) return null;
     let x: ts.Node = e;
     while (ts.isParenthesizedExpression(x.parent)) x = x.parent;
     // A literal's own property where nothing types the literal (`map`'s callback result, an untyped variable's): the
     // field of the shape it makes.
     const d = slotOf(e, this.checker) ?? (ts.isPropertyAssignment(x.parent) && x.parent.initializer === x ? x.parent : null);
-    const field = !!d && (fieldLike(d) || (ts.isPropertyAssignment(d) && ts.isIdentifier(d.name)));
-    return field && !d.getSourceFile().isDeclarationFile && !this.packaged(d) ? d : null;
+    if (!d || d.getSourceFile().isDeclarationFile || this.packaged(d)) return null;
+    if (fieldLike(d) || (ts.isPropertyAssignment(d) && ts.isIdentifier(d.name))) return { decl: d, name: (d as ts.NamedDeclaration).name!.getText() };
+    // A template's binding method gives the template glue the type it declares: named by the member it reads.
+    const read = ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses);
+    if (isTemplateMethod(d)) return { decl: d, name: ts.isPropertyAccessExpression(read) ? read.name.text : 'value' };
+    return null;
   }
 
   /** Every app field `widenedField` answers. */

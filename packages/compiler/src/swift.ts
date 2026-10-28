@@ -4445,7 +4445,7 @@ ${members.join('\n')}
     const t = this.typeOf(e);
     if (t.endsWith('?') || t === 'Any?') return code;
     const field = this.states.nullOnlyResult(decl) ? null : this.states.placedField(e);
-    return field ? `try jsRequired(${code}, ${swiftString((field as ts.NamedDeclaration).name!.getText())})` : this.undefinedAs(code, t, this.returnTypeOf(decl));
+    return field ? `try jsRequired(${code}, ${swiftString(field.name)})` : this.undefinedAs(code, t, this.returnTypeOf(decl));
   }
 
   /**
@@ -8261,7 +8261,15 @@ ${members.join('\n')}
       return target === 'Any?' ? this.boxFunction(fn, own) : this.convert(fn, own, target);
     }
     // A value declared `T | undefined` where a `T` goes (`scrollEnabled = this._scrollWasEnabled`): undefined reads as it converts.
-    if ((target === 'Bool' || target === 'String' || target === 'Double') && this.typeOf(e) === `${target}?` && this.holdsUndefined(e)) return this.undefinedAs(this.expr(e), target);
+    if ((target === 'Bool' || target === 'String' || target === 'Double') && this.typeOf(e) === `${target}?` && this.holdsUndefined(e)) {
+      const field = this.states.placedField(e);
+      return field ? `try jsRequired(${this.expr(e)}, ${swiftString(field.name)})` : this.undefinedAs(this.expr(e), target);
+    }
+    const inner = ts.isParenthesizedExpression(e) ? ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses) : null;
+    if (inner && (target === 'Bool' || target === 'String' || target === 'Double') && this.typeOf(inner) === `${target}?` && this.holdsUndefined(inner)) {
+      const field = this.states.placedField(inner);
+      if (field) return `try jsRequired(${this.expr(inner)}, ${swiftString(field.name)})`;
+    }
     // An iterable where the type names only its iteration: the kit's iterable of it.
     const iterableSlot = /^JS(Async)?Iterable<.*>\??$/.exec(target);
     if (iterableSlot && !/^JS(Async)?(Iterable|Iterator|Generator)</.test(this.typeOf(e))) return `${iterableSlot[1] ? 'jsAsyncIterable' : 'jsIterable'}(${this.expr(e)})`;
@@ -8436,7 +8444,7 @@ ${members.join('\n')}
     if (this.lenient && target === 'String' && source === 'String?') return `(${this.expr(e)} ?? "")`;
     if (source === optionalType(target) && target !== 'Any?' && !target.endsWith('?') && !isFunctionType(target)) {
       const field = this.states.placedField(e);
-      return field ? `try jsRequired(${this.expr(e).replace(/([\w)\]])!$/, '$1')}, ${swiftString((field as ts.NamedDeclaration).name!.getText())})` : this.undefinedAs(this.expr(e), target, source);
+      return field ? `try jsRequired(${this.expr(e).replace(/([\w)\]])!$/, '$1')}, ${swiftString(field.name)})` : this.undefinedAs(this.expr(e), target, source);
     }
     // Lenient code: a library call Swift gives as optional (`map.get(k)`), which the checker reads as its value type.
     const raw = this.lenient && ts.isCallExpression(bare) && source === target && target !== 'Any?' && !isOptional(target) && !isFunctionType(target) ? this.maybeUndefined(bare) : null;
@@ -9192,7 +9200,7 @@ ${members.join('\n')}
     const field = this.states.placedField(n);
     if (!field) return false;
     try {
-      const t = this.typeOf(n), want = this.typeOf((field as ts.NamedDeclaration).name!);
+      const t = this.typeOf(n), want = ts.isFunctionLike(field.decl) ? this.returnTypeOf(field.decl as ts.SignatureDeclaration) : this.typeOf((field.decl as ts.NamedDeclaration).name!);
       return ((isOptional(t) && t !== 'Any?') || this.optionalResult(n)) && !isOptional(want) && want !== 'Any?' && !isFunctionType(want);
     } catch { return false; }
   }

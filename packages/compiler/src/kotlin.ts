@@ -1156,7 +1156,7 @@ export class Translator implements AsyncTranslator {
     // A non-strict app's null-only result: its null is carried as the app's other nulls are (`jsUncheckedNull`).
     if (this.lenientApp && this.isObjectType(site) && this.states.nullResult(e)) return `(${code} ?: jsUncheckedNull<${site}>())`;
     const field = this.states.placedField(e);
-    if (field) return `jsRequired(${code}, ${kotlinString((field as ts.NamedDeclaration).name!.getText())})`;
+    if (field) return `jsRequired(${code}, ${kotlinString(field.name)})`;
     return ['String', 'Double', 'Boolean'].includes(site) ? this.undefinedAs(code, site) : asserted(code);
   }
 
@@ -6469,7 +6469,7 @@ export class Translator implements AsyncTranslator {
     // A value TypeScript's strict typing calls possibly undefined where the code expects one (checked without strictNullChecks).
     if (source === optionalType(target) && target !== 'Any?' && !isNullable(target) && !isFunctionType(target)) {
       const field = this.states.placedField(e);
-      return field ? `jsRequired(${this.expr(e)}, ${kotlinString((field as ts.NamedDeclaration).name!.getText())})` : this.undefinedAs(this.expr(e), target);
+      return field ? `jsRequired(${this.expr(e)}, ${kotlinString(field.name)})` : this.undefinedAs(this.expr(e), target);
     }
     if (isFunctionType(source) && isFunctionType(target.replace(/^\((.*)\)\?$/, '$1')) && / -> Unit$/.test(target.replace(/^\((.*)\)\?$/, '$1')) && !/ -> Unit$/.test(source)) {
       // A function value whose result a void slot ignores.
@@ -7194,7 +7194,12 @@ export class Translator implements AsyncTranslator {
     const actual = this.typeOf(e);
     if (declared === actual || actual === 'Any?') return code;
     // A string, number or boolean that may be undefined reads as JavaScript reads undefined there; never refused.
-    if (declared === optionalType(actual)) return this.nullTolerant(e) || this.nullableArgument(e) || this.states.takesUndefined(e) ? code : this.lenient || ['String', 'Double', 'Boolean'].includes(actual) ? this.undefinedAs(code, actual) : asserted(code);
+    if (declared === optionalType(actual)) {
+      if (this.nullTolerant(e) || this.nullableArgument(e) || this.states.takesUndefined(e)) return code;
+      const field = isWriteTarget(e) ? null : this.states.placedField(e);
+      if (field) return `jsRequired(${code}, ${kotlinString(field.name)})`;
+      return this.lenient || ['String', 'Double', 'Boolean'].includes(actual) ? this.undefinedAs(code, actual) : asserted(code);
+    }
     if (declared === 'Any?') return this.fromAny(code, actual);
     if (declared.replace(/\?$/, '') !== actual.replace(/\?$/, '') && (this.isObjectRef(e) || ['Double', 'String', 'Boolean'].includes(actual))) return `(${code} as ${actual})`;
     return code;
