@@ -13,7 +13,7 @@ import type { ValueStates } from './value-states.ts';
 
 /** The entry points recorded, per backend: a site is a call of one of them from outside `FAMILY`. */
 const ENTRIES: Record<'swift' | 'kotlin', string[]> = {
-  swift: ['coerce', 'convert', 'fromAny', 'fromAnyCode', 'presentFromAny'],
+  swift: ['coerce', 'convert', 'fromAny', 'fromAnyCode', 'presentFromAny', 'fromAnyValue', 'fromAnyCodeValue', 'presentFromAnyValue'],
   kotlin: ['coerce', 'convert', 'fromAny', 'fromAnyCode', 'checkedCast'],
 };
 
@@ -22,7 +22,12 @@ const FAMILY = new Set([
   'coerce', 'coerceTyped', 'coerced', 'convert', 'fromAny', 'fromAnyCode', 'presentFromAny', 'fromAnyChecked', 'fromAnyUnchecked',
   'fromAnyOrZero', 'forcedCast', 'checkedCast', 'checkedConvert', 'checkedPlacement', 'checkedBinding', 'nullishConversion',
   'nullishOfAny', 'undefinedAs', 'maybeUndefined', 'presentCode', 'keptOptional', 'arrayOf', 'arrayElementFromAny', 'shadowed',
+  'fromAnyValue', 'fromAnyCodeValue', 'presentFromAnyValue', 'fromAnyOrZeroValue', 'presentValue',
 ]);
+
+/** Swift's conversions that take and give a `Value` (S3-1), recorded as the entry point whose code they give. */
+const TWINS: Record<string, string> = { fromAnyValue: 'fromAny', fromAnyCodeValue: 'fromAnyCode', presentFromAnyValue: 'presentFromAny' };
+const codeOf = (x: unknown): string => (x && typeof x === 'object' && 'code' in x ? String((x as { code: string }).code) : String(x));
 
 interface CallSite { getFunctionName(): string | null; getMethodName(): string | null; getFileName(): string | undefined }
 
@@ -50,7 +55,7 @@ let exitHook = false;
 export function shadowConversions(translator: object, states: ValueStates): void {
   const out = process.env.NS_CONVERSION_SHADOW!;
   if (!exitHook) { exitHook = true; process.once('exit', () => { for (const f of [...unflushed]) f(); }); }
-  const methods = translator as Record<string, (...args: unknown[]) => string>;
+  const methods = translator as Record<string, (...args: unknown[]) => unknown>;
   const backend = states.backend.name;
   // Asked only once the translation has run, so a type it registers reaches no output.
   const typeOf = (e: ts.Expression) => (translator as { typeOf(e: ts.Node): string }).typeOf(e);
@@ -65,22 +70,25 @@ export function shadowConversions(translator: object, states: ValueStates): void
     if (!pending.length) { setImmediate(flush); unflushed.add(flush); }
     pending.push(line);
   };
-  for (const fn of ENTRIES[backend]) {
-    const original = methods[fn];
+  for (const name of ENTRIES[backend]) {
+    const original = methods[name];
     if (typeof original !== 'function') continue;
-    const shadowed = function (this: unknown, ...args: unknown[]): string {
-      const result = original.apply(translator, args);
+    const fn = TWINS[name] ?? name;
+    const shadowed = function (this: unknown, ...given: unknown[]): unknown {
+      const value = original.apply(translator, given);
       const site = caller(shadowed);
-      if (FAMILY.has(site) || typeof result !== 'string') return result;
+      if (FAMILY.has(site)) return value;
+      const result = codeOf(value), args = given[0] && typeof given[0] === 'object' && 'code' in given[0] ? [codeOf(given[0]), ...given.slice(1)] : given;
+      if (typeof value !== 'string' && !TWINS[name]) return value;
       const node = args[0] && typeof args[0] === 'object' && 'kind' in (args[0] as object) ? args[0] as ts.Expression : null;
       const key = node ? `${fn}|${node.pos}|${node.end}|${node.getSourceFile?.()?.fileName}|${args[1]}` : `${fn}|${site}|${args.slice(1, 3).join('|')}|${result}`;
-      if (seen.has(key)) return result;
+      if (seen.has(key)) return value;
       seen.add(key);
       if (node) defer(() => nodeRecord(states, typeOf, fn, site, node, String(args[1]), result));
       else defer(() => codeRecord(states, fn, site, String(args[0]), fn === 'convert' ? String(args[1]) : 'Any?', String(fn === 'convert' ? args[2] : args[1]), result, fn === 'fromAnyCode' && args[3] === true));
-      return result;
+      return value;
     };
-    methods[fn] = shadowed;
+    methods[name] = shadowed;
   }
 }
 
