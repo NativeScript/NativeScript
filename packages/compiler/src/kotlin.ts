@@ -1288,13 +1288,12 @@ export class Translator implements AsyncTranslator {
   nullTolerant(e: ts.Expression): boolean {
     let n: ts.Node = e;
     while (ts.isParenthesizedExpression(n.parent)) n = n.parent;
-    if (this.nullOk.has(n) || this.nullOk.has(e)) return true;
+    if (this.nullOk.has(n) || this.nullOk.has(e) || this.states.observedAsIs(e)) return true;
     const p = n.parent;
     const K = ts.SyntaxKind;
-    if ((ts.isIfStatement(p) || ts.isWhileStatement(p) || ts.isDoStatement(p)) && p.expression === n) return true;
-    if (ts.isConditionalExpression(p) && p.condition === n) return true;
-    // A branch of a conditional that itself goes where missing is taken, or a result a function gives as nullable.
+    // A branch of a conditional, or `a ?? b`'s `b`, where the whole goes where missing is taken; or a result a function gives as nullable.
     if (ts.isConditionalExpression(p) && (p.whenTrue === n || p.whenFalse === n)) return this.nullTolerant(p);
+    if (ts.isBinaryExpression(p) && p.operatorToken.kind === K.QuestionQuestionToken && p.right === n) return this.nullTolerant(p);
     if (ts.isReturnStatement(p) || (ts.isArrowFunction(p) && p.body === n)) {
       const fn = ts.isArrowFunction(p) ? p : ts.findAncestor(p, ts.isFunctionLike);
       if (fn && (ts.isMethodDeclaration(fn) || ts.isFunctionDeclaration(fn) || ts.isGetAccessorDeclaration(fn))) {
@@ -1302,22 +1301,9 @@ export class Translator implements AsyncTranslator {
         if (isNullable(rt) || rt === 'Any?') return true;
       }
     }
-    if (ts.isPrefixUnaryExpression(p) && p.operator === K.ExclamationToken) return true;
-    if (ts.isTypeOfExpression(p)) return true;
     // `for (k in x)` of nothing runs no iteration.
     if (ts.isForInStatement(p) && p.expression === n) return true;
-    if (ts.isBinaryExpression(p)) {
-      const op = p.operatorToken.kind;
-      if (op === K.InstanceOfKeyword && p.left === n) return true;
-      if (op === K.AmpersandAmpersandToken || op === K.BarBarToken) return true;
-      // Library mode: `a ?? b` is `b` as it is, missing or not.
-      if (op === K.QuestionQuestionToken && (p.left === n || (this.library && this.nullTolerant(p)))) return true;
-      // An identity or equality test takes a missing value as it is.
-      if ([K.EqualsEqualsToken, K.EqualsEqualsEqualsToken, K.ExclamationEqualsToken, K.ExclamationEqualsEqualsToken].includes(op)) return true;
-    }
-    if ((ts.isPropertyAccessExpression(p) || ts.isElementAccessExpression(p)) && p.expression === n && p.questionDotToken) return true;
-    if (ts.isCallExpression(p) && p.expression === n && p.questionDotToken) return true;
-    return false;
+    return ts.isBinaryExpression(p) && (p.operatorToken.kind === K.AmpersandAmpersandToken || p.operatorToken.kind === K.BarBarToken);
   }
 
   /** The app's interfaces, for object literals TypeScript checks against one without naming it. */
@@ -7730,8 +7716,21 @@ export class Translator implements AsyncTranslator {
     return holder && ts.isVariableDeclaration(holder) ? this.widerAsserted(holder) : null;
   }
 
+  /**
+   * A read `observedAsIs` (an identity operand, `instanceof`'s left): the nullable it may be, never asserted present.
+   * Library mode reads an untyped value as it is held: `maybeUndefined` would cast it to the declared type.
+   */
+  private observed(e: ts.Expression): string {
+    return (this.library ? null : this.maybeUndefined(e)) ?? this.unasserted(this.expr(e));
+  }
+
   private maybeUndefined(e: ts.Expression): string | null {
     while (ts.isParenthesizedExpression(e)) e = e.expression;
+    // `a ?? b` of objects where `b` may be missing too: missing then.
+    if (ts.isBinaryExpression(e) && e.operatorToken.kind === ts.SyntaxKind.QuestionQuestionToken && !this.library && this.isObjectRef(e) && !isNullable(this.typeOf(e)) && this.states.missingObject(e)) {
+      const code = this.expr(e);
+      if (this.isAsserted(code)) return this.unasserted(code);
+    }
     const assertion = this.assertedUntyped(e);
     if (assertion) return this.assertedOptional(assertion);
     // Library mode: `<T[]>record[key]`, an assertion of the type the read has: the read.
@@ -9865,6 +9864,7 @@ export class Translator implements AsyncTranslator {
     // A value that may be missing: the runtime's typeof, as a test before it may already prove it present.
     if (maybe) return `jsTypeof(${maybe})`;
     if (!t.endsWith('?') && this.heldNullable(e.expression, t)) return this.rawTypeof(e.expression);
+    if (!t.endsWith('?') && this.states.missingObject(e.expression)) return `jsTypeof(${this.observed(e.expression)})`;
     return t.endsWith('?') ? `jsTypeof(${this.expr(e.expression)})` : kotlinString(known);
   }
 
@@ -10129,13 +10129,20 @@ export class Translator implements AsyncTranslator {
         const t = this.typeOf(e);
         const maybe = this.maybeUndefined(e.left);
         if (maybe && t === 'Any?') return `jsNullishCoalesce(${maybe}) { ${this.coerce(e.right, 'Any?')} }`;
+        // An object the right operand may leave missing: required present by what reads the whole, not here.
+        if (maybe && !this.library && this.isObjectRef(e) && !isNullable(t) && !isFunctionType(t)) {
+          const right = this.coerce(e.right, t);
+          return this.isAsserted(right) ? this.asserted(`(${maybe} ?: ${this.unasserted(right)})`) : `(${maybe} ?: ${right})`;
+        }
         // TypeScript types `s ?? 1` as the string `s` is declared; a missing `s` gives the fallback as a string.
         if (maybe) return `(${maybe} ?: ${t === 'String' && this.typeOf(e.right) !== 'String' ? this.str(e.right) : this.coerce(e.right, t)})`;
         if (this.isAny(e.left)) {
           const code = `jsNullishCoalesce(${l()}) { ${this.coerce(e.right, 'Any?')} }`;
           return (this.library || this.states.heldNullish(ts.skipOuterExpressions(e.left))) && t !== 'Any?' ? this.fromAnyCode(code, t, true) : code;
         }
-        return `(${l()} ?: ${this.coerce(e.right, t)})`;
+        const left = l(), right = this.coerce(e.right, t);
+        if (!this.library && this.isObjectRef(e) && !isNullable(t) && !isFunctionType(t) && this.isAsserted(right)) return this.asserted(`(${left} ?: ${this.unasserted(right)})`);
+        return `(${left} ?: ${right})`;
       }
       case K.AmpersandAmpersandToken: case K.BarBarToken: {
         const sym = op === K.AmpersandAmpersandToken ? '&&' : '||';
@@ -10195,10 +10202,10 @@ export class Translator implements AsyncTranslator {
         }
         // The library's classes: the runtime's type of any of their instances (a promise of any result).
         const builtin = BUILTIN_CLASSES[name];
-        if (builtin && isLibDeclaration(this.resolve(e.right)?.declarations?.[0])) return `(${l()} is ${builtin})`;
+        if (builtin && isLibDeclaration(this.resolve(e.right)?.declarations?.[0])) return `(${this.observed(e.left)} is ${builtin})`;
         // Library mode: an untyped parameter tested as it is, as a cast here would narrow it in Kotlin past the test.
         const param = ts.isIdentifier(e.left) ? this.resolve(e.left)?.valueDeclaration : undefined;
-        let left = this.library && param && ts.isParameter(param) && this.typeTested(param) ? ident((e.left as ts.Identifier).text) : l();
+        let left = this.library && param && ts.isParameter(param) && this.typeTested(param) ? ident((e.left as ts.Identifier).text) : this.observed(e.left);
         // An untyped value read as the class its type names passes for one whatever it holds: the value itself is tested.
         const cast = this.markOf(left);
         if (cast?.op === 'cast' && cast.unchecked) left = ts.isIdentifier(e.left) ? this.refName(e.left) : cast.to.args.length || cast.optional || cast.to.kind === 'function' ? left : cast.of.code;
@@ -10288,7 +10295,7 @@ export class Translator implements AsyncTranslator {
     }
     // A function reference (`::fn`) is made where it is read, equal to every other of its function: compared by equality.
     const fnType = (t: string) => isFunctionType(t.replace(/^\((.*)\)\?$/, '$1'));
-    if (this.isObjectRef(a) && this.isObjectRef(b) && !fnType(lt) && !fnType(rt)) return `${this.expr(a)} ${negate ? '!==' : '==='} ${this.expr(b)}`;
+    if (this.isObjectRef(a) && this.isObjectRef(b) && !fnType(lt) && !fnType(rt)) return `${this.observed(a)} ${negate ? '!==' : '==='} ${this.observed(b)}`;
     // An adaptation (`JSAdapted`) is its original either way round, which `==` on the original does not see.
     if (fnType(lt) || fnType(rt)) return `${negate ? '!' : ''}jsStrictEquals(${this.expr(a)}, ${this.expr(b)})`;
     return `${this.expr(a)} ${negate ? '!=' : '=='} ${this.expr(b)}`;

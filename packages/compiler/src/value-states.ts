@@ -665,6 +665,7 @@ export class ValueStates {
     // A held slot's read is untyped, or narrowed by a test of its type to a present value (`narrowedRead`).
     if ((ts.isIdentifier(x) || ts.isPropertyAccessExpression(x)) && this.heldSource(x)) return null;
     if (this.narrowedMissing(x)) return 'undefined';
+    if (ts.isBinaryExpression(x) && x.operatorToken.kind === ts.SyntaxKind.QuestionQuestionToken && this.missingObject(x)) return 'undefined';
     const untyped = ts.TypeFlags.Any | ts.TypeFlags.Unknown;
     const primitive = (t: ts.Type) => !(t.flags & untyped) && !!(c.getNonNullableType(t).flags & (ts.TypeFlags.StringLike | ts.TypeFlags.NumberLike | ts.TypeFlags.BooleanLike));
     const empty = (t: ts.Type) => ((t.isUnion() ? t.types : [t]).some((u) => u.flags & (ts.TypeFlags.Undefined | ts.TypeFlags.Void)) ? 'undefined' : (t.isUnion() ? t.types : [t]).some((u) => u.flags & ts.TypeFlags.Null) ? 'null' : null);
@@ -725,6 +726,46 @@ export class ValueStates {
     if (!empty(c.getTypeOfSymbol(sym)) || empty(c.getTypeAtLocation(e))) return false;
     if (ts.isParameter(d) ? !assignedParameter(d, c) : !reassigned(d, c) && (!d.initializer || empty(c.getTypeAtLocation(d.initializer)))) return false;
     const form = this.forms().formOfSlot(d);
+    return form.undefined && form.absent;
+  }
+
+  /**
+   * A read JavaScript takes as it is, missing or not: a test of its truth, `typeof`, `!`, an operand of an equality or
+   * identity comparison, `instanceof`'s left, `??`'s left, `?.`'s receiver, and a `??`, `&&` or `||` right operand or a
+   * `?:` branch whose whole is read so. A missing object here is neither unwrapped nor required present.
+   */
+  observedAsIs(e: ts.Expression): boolean {
+    let n: ts.Node = e;
+    while (ts.isParenthesizedExpression(n.parent)) n = n.parent;
+    const p = n.parent, K = ts.SyntaxKind;
+    if (!p) return false;
+    if ((ts.isIfStatement(p) || ts.isWhileStatement(p) || ts.isDoStatement(p)) && p.expression === n) return true;
+    if (ts.isForStatement(p) && p.condition === n) return true;
+    if (ts.isConditionalExpression(p)) return p.condition === n || this.observedAsIs(p);
+    if (ts.isTypeOfExpression(p) || (ts.isPrefixUnaryExpression(p) && p.operator === K.ExclamationToken)) return true;
+    if ((ts.isPropertyAccessExpression(p) || ts.isElementAccessExpression(p) || ts.isCallExpression(p)) && p.expression === n) return !!p.questionDotToken;
+    if (!ts.isBinaryExpression(p)) return false;
+    const op = p.operatorToken.kind;
+    if ([K.EqualsEqualsEqualsToken, K.ExclamationEqualsEqualsToken, K.EqualsEqualsToken, K.ExclamationEqualsToken].includes(op)) return true;
+    if (op === K.InstanceOfKeyword) return p.left === n;
+    if ([K.QuestionQuestionToken, K.AmpersandAmpersandToken, K.BarBarToken].includes(op)) return p.left === n || this.observedAsIs(p);
+    return false;
+  }
+
+  /**
+   * A read of an object strict app code types present that may be the program's own missing value there (its form
+   * undefined and absent: a read past an array's end, a record's entry never set, a slot such a value reaches). `typeof`
+   * reads such an object as it is; where the backend holds it present it never is missing.
+   */
+  missingObject(e: ts.Expression): boolean {
+    const b = this.backend, c = this.checker;
+    if (b.library || b.lenient || b.lenientApp || !this.appCode(e) || !b.trust.strictFile(e.getSourceFile())) return false;
+    const t = c.getTypeAtLocation(e);
+    const parts = t.isUnion() ? t.types : [t];
+    const notObject = ts.TypeFlags.Any | ts.TypeFlags.Unknown | ts.TypeFlags.TypeParameter | ts.TypeFlags.Undefined | ts.TypeFlags.Null | ts.TypeFlags.Void
+      | ts.TypeFlags.StringLike | ts.TypeFlags.NumberLike | ts.TypeFlags.BooleanLike | ts.TypeFlags.BigIntLike | ts.TypeFlags.ESSymbolLike | ts.TypeFlags.EnumLike;
+    if (parts.some((u) => u.flags & notObject || u.getCallSignatures().length)) return false;
+    const form = this.forms().formOf(e);
     return form.undefined && form.absent;
   }
 

@@ -9300,19 +9300,15 @@ ${members.join('\n')}
 
   /**
    * An object read `narrowedMissing` answers, placed where Swift needs it present: `narrowed` checks it with
-   * `jsObjectRequired`. Not a receiver (`receiver` checks it), a test of it, or a placement taking it untyped, which read
-   * the optional.
+   * `jsObjectRequired`. Not a receiver (`receiver` checks it), a read `observedAsIs`, or a placement taking it untyped,
+   * which read the optional.
    */
   private requiredNarrowed(n: ts.Node): boolean {
-    if (!ts.isIdentifier(n) || !this.states.narrowedMissing(n)) return false;
+    if (!ts.isIdentifier(n) || !this.states.narrowedMissing(n) || this.states.observedAsIs(n)) return false;
     let x: ts.Node = n;
     while (ts.isParenthesizedExpression(x.parent)) x = x.parent;
-    const p = x.parent, K = ts.SyntaxKind;
+    const p = x.parent;
     if ((ts.isPropertyAccessExpression(p) || ts.isElementAccessExpression(p)) && p.expression === x) return false;
-    if (ts.isTypeOfExpression(p) || (ts.isPrefixUnaryExpression(p) && p.operator === K.ExclamationToken)) return false;
-    if ((ts.isIfStatement(p) || ts.isWhileStatement(p) || ts.isDoStatement(p)) && p.expression === x) return false;
-    if (ts.isConditionalExpression(p) && p.condition === x) return false;
-    if (ts.isBinaryExpression(p) && [K.EqualsEqualsEqualsToken, K.ExclamationEqualsEqualsToken, K.EqualsEqualsToken, K.ExclamationEqualsToken].includes(p.operatorToken.kind) && isNullish(p.left === x ? p.right : p.left)) return false;
     try {
       if (['String', 'Double', 'Bool'].includes(this.typeOf(n))) return false;
       const slot = slotOf(n as ts.Identifier, this.checker);
@@ -10864,6 +10860,28 @@ ${members.join('\n')}
     return !this.lenient && !this.library && this.states.appCode(e) && this.appClass(this.checker.getTypeAtLocation(e));
   }
 
+  /** Strict app code's object type, held present, that a `??` may give missing where both its operands may be. */
+  private missingObjectType(e: ts.Expression): boolean {
+    const t = this.typeOf(e);
+    return !this.library && !this.lenient && this.isObjectRef(e) && !/[?!]$/.test(t) && !isFunctionType(t);
+  }
+
+  /** A `missingObject` read Swift holds optional, as it is held; null where Swift holds it present. */
+  private heldMissing(e: ts.Expression): string | null {
+    const code = this.expr(e), m = markOf(code);
+    if (m?.op === 'unwrap') return m.of.code;
+    return this.looseObjectRead(e) || this.widenedParameterRead(e) || /[?!]$/.test(this.declaredTypeOf(e) ?? '') ? code : null;
+  }
+
+  /** A read `observedAsIs` (`instanceof`'s left): the optional it may be, never unwrapped. */
+  private observed(e: ts.Expression): string {
+    if (this.library || this.lenient) return this.expr(e);
+    const raw = this.maybeUndefined(e);
+    if (raw) return raw;
+    const code = this.expr(e), m = markOf(code);
+    return m?.op === 'unwrap' ? m.of.code : code;
+  }
+
   maybeUndefined(e: ts.Expression): string | null {
     while (ts.isParenthesizedExpression(e)) e = e.expression;
     const awaited = this.rawAwait(e);
@@ -10896,7 +10914,7 @@ ${members.join('\n')}
       return `jsCharAtOrUndefined(${this.expr(e.expression)}, ${this.coerce(e.argumentExpression, 'Double')})`;
     }
     // `a ?? b` where `b` may give undefined: the optional `b` gives when `a` gives nothing.
-    if (ts.isBinaryExpression(e) && e.operatorToken.kind === ts.SyntaxKind.QuestionQuestionToken && ['String', 'Double', 'Bool'].includes(this.typeOf(e))) {
+    if (ts.isBinaryExpression(e) && e.operatorToken.kind === ts.SyntaxKind.QuestionQuestionToken && (['String', 'Double', 'Bool'].includes(this.typeOf(e)) || (this.missingObjectType(e) && this.states.missingObject(e)))) {
       const right = this.maybeUndefined(e.right);
       if (right) return `(${this.maybeUndefined(e.left) ?? this.coerce(e.left, optionalType(this.typeOf(e)))} ?? ${right})`;
     }
@@ -13357,6 +13375,8 @@ ${members.join('\n')}
     const absent = (code: string) => (this.lenient && known === 'number' ? `((${code}).map { $0.isNaN } ?? true)` : `${code} == nil`);
     if (maybe) return `(${absent(maybe)} ? "undefined" : ${swiftString(known)})`;
     if (t.endsWith('?')) return `(${absent(this.expr(e.expression))} ? "undefined" : ${swiftString(known)})`;
+    const missing = known === 'object' && this.states.missingObject(read) ? this.heldMissing(read) : null;
+    if (missing) return `(${missing} == nil ? "undefined" : "object")`;
     if (this.lenient && known === 'number' && ts.isIdentifier(e.expression)) return `(${this.expr(e.expression)}.isNaN ? "undefined" : "number")`;
     // Lenient code holds an object implicitly unwrapped: undefined until assigned.
     if ((this.lenient || this.lenientAppOptional(read)) && known === 'object') return `((${this.expr(e.expression)} as Any?) == nil ? "undefined" : ${swiftString(known)})`;
@@ -13663,6 +13683,10 @@ ${members.join('\n')}
           for (let m; (m = /^\((.*) \?\? (?:\.nan|"undefined"|false)\)$/.exec(read)) && balanced(m[1]);) read = m[1];
           if (read !== code) return `(${read} ?? ${this.coerce(e.right, t)})`;
         }
+        if (this.missingObjectType(e) && this.states.observedAsIs(e)) {
+          const missing = this.maybeUndefined(e);
+          if (missing) return missing;
+        }
         const maybe = this.maybeUndefined(e.left);
         if (maybe && t === 'Any?') return `jsNullishCoalesce(${maybe} as Any?, ${this.coerce(e.right, 'Any?')})`;
         // TypeScript types `s ?? 1` as the string `s` is declared; a missing `s` gives the fallback as a string.
@@ -13748,9 +13772,9 @@ ${members.join('\n')}
         // A class the library declares that has no Swift type (the DOM's `FormData`): the kit's class of that name, as the runtime's globals are core's.
         if (swiftType === 'Any?' && ts.isIdentifier(e.right) && isLibDeclaration(this.resolve(e.right)?.declarations?.[0])) return `jsInstanceOfNamed(${this.coerce(e.left, 'Any?')}, ${swiftString(name)})`;
         const known = this.heldInstance(e);
-        if (known === 'present') return `(${l()} != nil)`;
+        if (known === 'present') return `(${this.observed(e.left)} != nil)`;
         if (known === 'always') return this.pure(e.left) ? 'true' : `({ _ = ${l()}; return true }())`;
-        return `(${l()} is ${swiftType ?? name})`;
+        return `(${this.observed(e.left)} is ${swiftType ?? name})`;
       }
       case K.CommaToken: {
         const throws = this.throwsInfo.expr(e);
