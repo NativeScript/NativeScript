@@ -4,6 +4,7 @@ import { dirname, join } from 'node:path';
 import { KIT_GLOBALS, kitExtends, kitIndex, kitMember, type KitMember, type KitType } from './kit-index.ts';
 import { optionalType, splitTopLevel, type Translator } from './swift.ts';
 import { KIT_APPLE_SOURCES } from './paths.ts';
+import { memberOf, tryCode, unwrappedCode } from './swift-marks.ts';
 
 export const KIT = KIT_APPLE_SOURCES;
 
@@ -363,7 +364,7 @@ export class CoreAPI {
     // A value the kit holds optional that the read leaves so: JavaScript's TypeError for the member read of it where it is missing.
     if (key !== undefined && this.optionalKitValue(e) && !code.startsWith('jsUnwrap(')) return this.t.chainingLoose ? `${code}?` : `jsUnwrap(${code}, ${JSON.stringify(key)})`;
     const weak = ts.isCallExpression(e) && ts.isPropertyAccessExpression(e.expression) && ['get', 'deref'].includes(e.expression.name.text) && this.t.typeOf(e.expression.expression).replace(/[?!]$/, '').startsWith('JSWeakRef<');
-    return (weak && !this.t.typeOf(e).endsWith('?')) || this.t.givesUndefined(e) ? `${code}!` : code;
+    return (weak && !this.t.typeOf(e).endsWith('?')) || this.t.givesUndefined(e) ? unwrappedCode(code) : code;
   }
 
   /** The kit's method a call of `count` unlabeled arguments reaches, among overloads of its name (core's `bind(options)` beside the kit's own `bind(items:)`). */
@@ -438,7 +439,7 @@ export class CoreAPI {
       return t.fromAnyCode(`${recv}[jsKey: ${JSON.stringify(name)}]`, t.typeOf(e), true);
     }
     const m = own ?? this.member(owner.name, name, e);
-    if (inChain && continued) return `${recv}.${name}`;
+    if (inChain && continued) return memberOf(recv, '.', name);
     // A method as a value (`Builder.load` given to `isFunction`): the function Swift has of it, adapted to the declared type.
     const called = ts.isCallExpression(e.parent) && e.parent.expression === e;
     if (m.kind === 'func' && !called && !inChain) {
@@ -453,7 +454,7 @@ export class CoreAPI {
     const untyped = (ts.isAsExpression(outer) || ts.isTypeAssertionExpression(outer)) && outer.type.kind === ts.SyntaxKind.AnyKeyword;
     const read = m.type.trim() === 'Any?' && untyped && ['String', 'Double', 'Bool'].includes(t.typeOf(e)) ? 'Any?' : t.typeOf(e);
     const optional = !inChain && /[?!]$/.test(m.type.trim()) && read !== 'Any?' && !read.endsWith('?') && t.readOptional(e);
-    return this.fromKit(`${recv}.${name}`, inChain ? m.type.replace(/[?!]?$/, '?') : m.type, optional ? optionalType(read) : read);
+    return this.fromKit(memberOf(recv, '.', name), inChain ? m.type.replace(/[?!]?$/, '?') : m.type, optional ? optionalType(read) : read);
   }
 
   /** A constant core declares with a literal type (`CoreTypes.AnimationCurve.easeIn` is "easeIn"), as that literal. */
@@ -725,7 +726,7 @@ export class CoreAPI {
         let bare: ts.Expression = a;
         while (ts.isParenthesizedExpression(bare) || ts.isAsExpression(bare) || ts.isTypeAssertionExpression(bare)) bare = bare.expression;
         if ((bare.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(bare) && bare.text === 'undefined')) && !/[?!]$/.test(type) && !['String', 'Double', 'Bool', 'Any?'].includes(type)) {
-          args[k] = `try jsRequired(nil as ${optionalType(type.replace(/^@escaping /, ''))}, ${JSON.stringify(p.trim().split(/[\s:]+/)[1] ?? 'argument')})`;
+          args[k] = tryCode(`jsRequired(nil as ${optionalType(type.replace(/^@escaping /, ''))}, ${JSON.stringify(p.trim().split(/[\s:]+/)[1] ?? 'argument')})`);
           return;
         }
         const own = t.typeOf(a);
@@ -905,7 +906,7 @@ export class CoreAPI {
       };
       if (!e.properties.some(ts.isSpreadAssignment)) return `JSObject([${e.properties.map((p) => `(${entry(p).join(', ')})`).join(', ')}])`;
       // `{ ...base, duration: 150 }`: each in order, a later key over an earlier one.
-      const steps = e.properties.map((p) => (ts.isSpreadAssignment(p) ? `try jsObjectSpread(__o, ${this.t.coerce(p.expression, 'Any?').replace(/^try /, '')})` : `__o[${entry(p)[0]}] = try ${entry(p)[1].replace(/^try /, '')}`));
+      const steps = e.properties.map((p) => (ts.isSpreadAssignment(p) ? tryCode(`jsObjectSpread(__o, ${this.t.coerce(p.expression, 'Any?').replace(/^try /, '')})`) : `__o[${entry(p)[0]}] = try ${entry(p)[1].replace(/^try /, '')}`));
       const body = `let __o = JSObject([]); ${steps.join('; ')}; return __o`;
       return `(try { () throws -> JSObject in ${body} }())`;
     }
@@ -928,7 +929,7 @@ export class CoreAPI {
     const ke = /^JSArray<([A-Z]\w*)>[?!]?$/.exec(k)?.[1], te = /^JSArray<([A-Z]\w*)>$/.exec(tsType)?.[1];
     if (ke && te && ke !== te && !['Any', 'Double', 'String', 'Bool'].includes(te)) {
       // Lenient code's array may be missing, which stays undefined; an element of another class is a TypeError.
-      if (this.t.lenient) return `try (${code} as JSArray<${ke}>?).map { JSArray<${te}>(try $0.storage.map { try (jsCastPresent($0) as ${te}) }) }`;
+      if (this.t.lenient) return tryCode(`(${code} as JSArray<${ke}>?).map { JSArray<${te}>(try $0.storage.map { try (jsCastPresent($0) as ${te}) }) }`);
       return `JSArray<${te}>((${code})${/[?!]$/.test(k) ? '!' : ''}.storage.map { $0 as! ${te} })`;
     }
     const numeric = /^(Int|UInt|Int32|UInt32|Int64|UInt64|CGFloat|Float)\??$/.exec(k);
@@ -943,7 +944,7 @@ export class CoreAPI {
     if (k !== tsType && fn(k) && fn(tsType) && fn(k)!.text !== fn(tsType)!.text) return this.t.convert(code, k.replace(/^\((.*)\)!$/, '($1)?'), tsType);
     if (k.endsWith('?') && !tsType.endsWith('?') && tsType !== 'Any?') {
       const zero = tsType === 'String' ? '""' : tsType === 'Double' ? '0' : tsType === 'Bool' ? 'false' : null;
-      return zero ? `(${code} ?? ${zero})` : `${code}!`;
+      return zero ? `(${code} ?? ${zero})` : unwrappedCode(code);
     }
     return code;
   }
