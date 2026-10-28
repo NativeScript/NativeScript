@@ -10410,14 +10410,14 @@ export class Translator implements AsyncTranslator {
     const keyed = new Set(notesKeys ? nullFields!.filter((f) => f.type.endsWith('?') && !isFunctionType(f.type)).map((f) => f.name) : []);
     const unsetKeys: string[] = [], keyNotes: string[] = [];
     let keysVar: string | null = null;
-    const noteKey = (key: string, value: ts.Expression, code: () => string, want?: string): string => {
+    const noteKey = (key: string, value: ts.Expression, code: () => string): string => {
       const f = order.find((x) => x.name === key);
       // Null given as such is noted with the literal's other nulls.
       if (!f || !keyed.has(key) || ts.skipOuterExpressions(value).kind === ts.SyntaxKind.NullKeyword) return code();
-      const split = want ? this.states.nullBranches(value) : null;
+      const split = this.states.nullBranches(value);
       if (split) {
         const k = keysVar ??= this.fresh('__keys');
-        const branch = (x: ts.Expression) => (split.nulls.includes(x) ? `${k}.nulled(${kotlinString(key)}, ${this.coerce(x, want!)})` : this.coerce(x, want!));
+        const branch = (x: ts.Expression) => (split.nulls.includes(x) ? `${k}.nulled(${kotlinString(key)}, ${this.coerce(x, f.type)})` : this.coerce(x, f.type));
         return `(if (${this.cond(split.cond.condition)}) ${branch(split.cond.whenTrue)} else ${branch(split.cond.whenFalse)})`;
       }
       const t = this.checker.getTypeAtLocation(value);
@@ -10458,7 +10458,7 @@ export class Translator implements AsyncTranslator {
       if (ts.isPropertyAssignment(p)) {
         const key = literalKey(p.name, this.checker) ?? p.name.getText();
         const want = order.find((f) => f.name === key)?.type ?? 'Any?';
-        given.set(key, self && thisFunction(p) ? this.withThis(p.initializer, self, false, () => this.coerce(p.initializer, want)) : noteKey(key, p.initializer, () => this.coerce(p.initializer, want), want));
+        given.set(key, self && thisFunction(p) ? this.withThis(p.initializer, self, false, () => this.coerce(p.initializer, want)) : noteKey(key, p.initializer, () => this.coerce(p.initializer, want)));
       } else if (ts.isShorthandPropertyAssignment(p)) {
         noteKey(p.name.text, p.name, () => '');
         const ft = order.find((f) => f.name === p.name.text)?.type ?? 'Any?';
