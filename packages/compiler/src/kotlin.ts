@@ -3554,7 +3554,12 @@ export class Translator implements AsyncTranslator {
         const stmts = [...ctor.body!.statements];
         const superAt = stmts.findIndex((s) => ts.isExpressionStatement(s) && ts.isCallExpression(s.expression) && s.expression.expression.kind === ts.SyntaxKind.SuperKeyword);
         if (superAt > 0) throw this.error(stmts[0], 'statements before super() in a constructor');
-        const own = paramProps.map((p) => `        this.${ident((p.name as ts.Identifier).text)} = ${narrowedParams.has(p) ? `(${ident((p.name as ts.Identifier).text)} as ${narrowedParams.get(p)})` : ident((p.name as ts.Identifier).text)}`);
+        const own = paramProps.flatMap((p) => {
+          const n = ident((p.name as ts.Identifier).text);
+          if (!this.states.nullishHeld(p)) return [`        this.${n} = ${narrowedParams.has(p) ? `(${n} as ${narrowedParams.get(p)})` : n}`];
+          const note = this.states.nullFields(cls).has((p.name as ts.Identifier).text) ? [`        jsNulls = jsNoteNull(jsNulls, ${kotlinString((p.name as ts.Identifier).text)}, ${n}.jsAny)`] : [];
+          return [`        this.${n} = ${n}.${this.typeOf(p.name) === 'Any?' ? 'jsAny' : 'optional'}`, ...note];
+        });
         const notes = this.keyNotes;
         this.keyNotes = this.initKeyNotes(cls);
         try { out.push(...this.levelStart(cls), ...own, ...this.statements(stmts.slice(superAt + 1))); } finally { this.keyNotes = notes; }
