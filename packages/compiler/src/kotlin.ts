@@ -4,7 +4,7 @@ import { dirname as pathDirname, resolve as pathResolve } from 'node:path';
 import { AsyncLowering, usedBefore, type AsyncCtx, type AsyncSyntax, type AsyncTranslator } from './async.ts';
 import { isAsync, isStatic } from './throws.ts';
 import { assignedMembers } from './sharing.ts';
-import { assignedValues, openSpreadType, definitelyAssignedFields, forwardedSetter, initializedNull, intersectionAliasMembers, isRegExpProtocol, assertedPattern, unsupportedPattern, intlConstructor, isObjectToStringCall, isStringRaw, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, classesHeldUntyped, type TrustScope, literalPattern, patternGroups, unsetGroupTyping, type UnsetGroupTyping, admitsUndefined, classKeyPlan, onlyUndefined, keysDefinedUntyped, KOTLIN_NATIVE_TYPES, runtimeTypeName, definesRunTimeKey, readKeyOf, reassigned, givenBy, onlyNullOrPresent, statementLevel, readWrite, asOperation, type ReadWrite } from './lang.ts';
+import { assignedValues, openSpreadType, spreadsArrays, definitelyAssignedFields, forwardedSetter, initializedNull, intersectionAliasMembers, isRegExpProtocol, assertedPattern, unsupportedPattern, intlConstructor, isObjectToStringCall, isStringRaw, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, classesHeldUntyped, type TrustScope, literalPattern, patternGroups, unsetGroupTyping, type UnsetGroupTyping, admitsUndefined, classKeyPlan, onlyUndefined, keysDefinedUntyped, KOTLIN_NATIVE_TYPES, runtimeTypeName, definesRunTimeKey, readKeyOf, reassigned, givenBy, onlyNullOrPresent, statementLevel, readWrite, asOperation, type ReadWrite } from './lang.ts';
 import { memberName } from './stable-names.ts';
 import { shadowConversions } from './conversion-shadow.ts';
 import { parseNativeType, type Mark, type Value } from './conversion.ts';
@@ -694,8 +694,9 @@ export class Translator implements AsyncTranslator {
     if (t.flags & F.BigIntLike) return 'JSBigInt';
     if (c.isTupleType(t)) {
       const args = c.getTypeArguments(t as ts.TypeReference).map((a) => this.type(a, where));
-      if (args.length === 2) return `Pair<${args.join(', ')}>`;
-      if (args.length === 3) return `Triple<${args.join(', ')}>`;
+      const variadic = ((t as ts.TypeReference).target as ts.TupleType).hasRestElement;
+      if (args.length === 2 && !variadic) return `Pair<${args.join(', ')}>`;
+      if (args.length === 3 && !variadic) return `Triple<${args.join(', ')}>`;
       const same = args.every((a) => a === args[0]);
       return `JSArray<${same && args.length ? args[0] : 'Any?'}>`;
     }
@@ -7951,22 +7952,11 @@ export class Translator implements AsyncTranslator {
     const restAt = params.findIndex((p) => p.valueDeclaration && ts.isParameter(p.valueDeclaration) && p.valueDeclaration.dotDotDotToken);
     // A function type's rest parameter too (`bind`'s `(...args: A) => R`): Kotlin's function type takes it as one array.
     const appDeclared = (!!sig?.getDeclaration() && !sig!.getDeclaration().getSourceFile().isDeclarationFile) || (!!impl && !impl.getSourceFile().isDeclarationFile) || (!this.library && !!sig?.getDeclaration() && ts.isFunctionTypeNode(sig!.getDeclaration()));
-    for (let k = 0; k < list.length; k++) {
-      const a = list[k];
-      if (restAt >= 0 && k >= restAt && appDeclared) {
-        const rest = this.restType(params[restAt]);
-        out.push(this.packed(list.slice(k), rest));
-        break;
-      }
-      if (ts.isSpreadElement(a)) throw this.error(a, 'a spread argument');
+    // The Kotlin type parameter k takes at this call; `a` is the argument given there, absent for an element a spread gives.
+    const slot = (k: number, a?: ts.Expression): { pt: string; held: boolean; constantDefault: boolean; packageParam: boolean } => {
       const p = params[Math.min(k, params.length - 1)];
       const decl = p?.valueDeclaration;
-      if (!p || (decl && ts.isParameter(decl) && decl.dotDotDotToken)) {
-        const pt = decl && ts.isParameter(decl) ? this.typeOf(decl.name).replace(/^JSArray<(.*)>$/, '$1') : 'Any?';
-        out.push(this.coerce(a, pt));
-        continue;
-      }
-      if (decl && this.states.nullishHeld(decl)) { out.push(this.coerce(a, nullishType(this.type(this.checker.getTypeOfSymbolAtLocation(p, e), e)))); continue; }
+      if (decl && this.states.nullishHeld(decl)) return { pt: nullishType(this.type(this.checker.getTypeOfSymbolAtLocation(p, e), e)), held: true, constantDefault: false, packageParam: false };
       let pt = decl && this.states.nullish().held.has(decl) ? 'Any?' : this.heldElements(decl && ts.isParameter(decl) ? decl : e, this.type(this.checker.getTypeOfSymbolAtLocation(p, e), e));
       // A generic implementation's parameter is not instantiated by an overload's call: the overload's, as this call instantiates it.
       const implTypes = impl && impl !== sig?.getDeclaration() ? impl.typeParameters?.map((t) => t.name.text) ?? [] : [];
@@ -7986,7 +7976,7 @@ export class Translator implements AsyncTranslator {
       // A plugin's object parameter is nullable in Kotlin: what is passed needs no unwrap.
       if (decl && ts.isParameter(decl) && appDeclared && ((!!(decl.parent as ts.FunctionLikeDeclaration).body && this.states.mayBeNull(decl)) || this.states.widened(decl))) pt = optionalType(pt);
       // Library mode: a parameter the method declares nullable in Kotlin takes what may be missing as it is.
-      else if (this.library && !isNullable(pt) && pt !== 'Any?' && this.nullableArgument(a)) pt = optionalType(pt);
+      else if (this.library && !isNullable(pt) && pt !== 'Any?' && !!a && this.nullableArgument(a)) pt = optionalType(pt);
       // So does a local function's parameter its body tests (`params`).
       else if (this.library && !isNullable(pt) && decl && ts.isParameter(decl) && ts.isVariableDeclaration(decl.parent.parent) && ts.isIdentifier(decl.name) && (this.nullableDecls.has(p) || (isNullable(this.typeOf(decl.name)) && this.truthTested(decl.name)))) pt = optionalType(pt);
       // So does one the compiled function declares nullable (`toString(settings: …[] | null)`), whatever the checker strips.
@@ -7996,6 +7986,32 @@ export class Translator implements AsyncTranslator {
       const constantDefault = !!decl && ts.isParameter(decl) && this.constantDefault(decl) && appDeclared && !this.templateParams;
       if (decl && ts.isParameter(decl) && ['String', 'Double', 'Boolean'].includes(pt) && this.states.undefinedParameter(decl)) pt = optionalType(pt);
       if (decl && ts.isParameter(decl) && (decl.questionToken || decl.initializer) && appDeclared && !constantDefault) pt = optionalType(pt);
+      return { pt, held: false, constantDefault, packageParam };
+    };
+    let covered = list.length;
+    for (let k = 0; k < list.length; k++) {
+      const a = list[k];
+      if (restAt >= 0 && k >= restAt && appDeclared) {
+        const rest = this.restType(params[restAt]);
+        out.push(this.packed(list.slice(k), rest));
+        break;
+      }
+      if (ts.isSpreadElement(a)) {
+        const spread = k === list.length - 1 ? this.spreadArgs(e, a, k, params, restAt, appDeclared, slot) : null;
+        if (!spread) throw this.error(a, 'a spread argument');
+        out.push(...spread);
+        covered = k + spread.length;
+        break;
+      }
+      const p = params[Math.min(k, params.length - 1)];
+      const decl = p?.valueDeclaration;
+      if (!p || (decl && ts.isParameter(decl) && decl.dotDotDotToken)) {
+        const pt = decl && ts.isParameter(decl) ? this.typeOf(decl.name).replace(/^JSArray<(.*)>$/, '$1') : 'Any?';
+        out.push(this.coerce(a, pt));
+        continue;
+      }
+      const { pt, held, constantDefault, packageParam } = slot(k, a);
+      if (held) { out.push(this.coerce(a, pt)); continue; }
       // An argument that may be undefined where Kotlin's parameter has the constant default JavaScript would use.
       if (constantDefault && this.typeOf(a) === optionalType(pt)) { out.push(`(${this.coerce(a, optionalType(pt))} ?: ${this.coerce((decl as ts.ParameterDeclaration).initializer!, pt)})`); continue; }
       // Library mode: a value a library collection holds (`cache.set(key, result)` with a null result), as script stores it.
@@ -8006,17 +8022,17 @@ export class Translator implements AsyncTranslator {
       if (record && this.typeOf(a).replace(/\?$/, '') !== pt.replace(/\?$/, '')) { out.push(`${record[2] ? 'jsRecordOrNull' : 'jsRecord'}<${record[1]}>(${this.expr(a)})`); continue; }
       out.push((pt === 'Any?' && this.untypedArrow(a)) || this.coerce(a, pt));
     }
-    if (restAt >= 0 && appDeclared && list.length <= restAt) out.push(`${this.restType(params[restAt])}()`);
+    if (restAt >= 0 && appDeclared && covered <= restAt) out.push(`${this.restType(params[restAt])}()`);
     const decl = sig?.getDeclaration();
     if (count === undefined && restAt < 0 && decl && !ts.isJSDocSignature(decl) && (ts.isFunctionTypeNode(decl) || ts.isCallSignatureDeclaration(decl) || ts.isArrowFunction(decl) || ts.isFunctionExpression(decl))) {
-      for (let k = list.length; k < params.length; k++) {
+      for (let k = covered; k < params.length; k++) {
         const pt = this.type(this.checker.getTypeOfSymbolAtLocation(params[k], e), e);
         out.push(pt === 'Unit' ? 'Unit' : 'null');
       }
     }
     // A plugin's call (its code unchecked) leaving out a parameter the callee requires: undefined there.
     else if (count === undefined && !this.library && this.inPluginFile(e) && decl && !ts.isJSDocSignature(decl) && restAt < 0) {
-      for (let k = list.length; k < params.length; k++) {
+      for (let k = covered; k < params.length; k++) {
         const pd = params[k].valueDeclaration;
         if (pd && ts.isParameter(pd) && (pd.questionToken || pd.initializer)) break;
         const pt = this.type(this.checker.getTypeOfSymbolAtLocation(params[k], e), e);
@@ -8057,6 +8073,53 @@ export class Translator implements AsyncTranslator {
     const d = p.valueDeclaration as ts.ParameterDeclaration;
     const bare = !!d.type && ts.isTypeReferenceNode(d.type) && !d.type.typeArguments && !!(this.checker.getTypeFromTypeNode(d.type).flags & ts.TypeFlags.TypeParameter);
     return bare ? 'JSArray<Any?>' : this.typeOf(d.name);
+  }
+
+  /**
+   * The arguments a name spread last gives the parameters from `k` on, each element read in place: a tuple's into fixed
+   * parameters, or (an app function) the leading elements into fixed parameters and the others as the rest parameter's
+   * array; null for any other spread.
+   */
+  private spreadArgs(e: ts.CallExpression | ts.NewExpression, a: ts.SpreadElement, k: number, params: ts.Symbol[], restAt: number, appDeclared: boolean,
+      slot: (k: number) => { pt: string; held: boolean; constantDefault: boolean }): string[] | null {
+    const x = a.expression;
+    if (!ts.isIdentifier(x)) return null;
+    const st = this.checker.getTypeAtLocation(x);
+    // A rest parameter of a tuple type is an array in Kotlin where its reads are typed as a Pair or Triple.
+    const d = this.resolve(x)?.valueDeclaration;
+    if (d && ts.isParameter(d) && d.dotDotDotToken && /^(Pair|Triple)</.test(this.typeOf(x))) return null;
+    const tuple = this.checker.isTupleType(st) ? ((st as ts.TypeReference).target as ts.TupleType) : null;
+    const length = tuple && !tuple.hasRestElement ? this.checker.getTypeArguments(st as ts.TypeReference).length : null;
+    const present = tuple ? tuple.minLength : 0;
+    if (restAt >= 0 ? !appDeclared || k >= restAt : length === null || k + length > params.length) return null;
+    const held = this.typeOf(x), code = this.expr(x);
+    const pair = /^(Pair|Triple)<(.*)>$/.exec(held), array = /^JSArray<(.*)>$/.exec(held);
+    if (!pair && !array) return null;
+    const fields = pair ? splitTopLevel(pair[2]) : [];
+    const read = (i: number): { code: string; type: string } | null =>
+      pair ? (i < fields.length ? { code: `${code}.${['first', 'second', 'third'][i]}`, type: fields[i] } : null)
+        : i < present ? { code: `${code}[${i}]`, type: array![1] } : { code: `${code}.element(${i}.0)`, type: optionalType(array![1]) };
+    const out: string[] = [];
+    for (let i = 0; k + i < (restAt >= 0 ? restAt : k + length!); i++) {
+      const s = slot(k + i);
+      const el = read(i);
+      if (s.held) return null;
+      if (!el) {
+        if (!isNullable(s.pt) && s.pt !== 'Any?') return null;
+        out.push('null');
+        continue;
+      }
+      const decl = params[k + i].valueDeclaration as ts.ParameterDeclaration;
+      if (s.constantDefault && isNullable(el.type)) out.push(`(${this.convert(el.code, el.type, optionalType(s.pt))} ?: ${this.coerce(decl.initializer!, s.pt)})`);
+      else if (isNullable(el.type) && !isNullable(s.pt) && s.pt !== 'Any?' && el.type !== 'Any?') return null;
+      else out.push(this.convert(el.code, el.type, s.pt));
+    }
+    if (restAt < 0) return out;
+    const rest = this.restType(params[restAt]), element = rest.replace(/^JSArray<(.*)>$/, '$1');
+    const from = restAt - k;
+    if (pair) out.push(fields.length > from ? `jsArrayOf<${element}>(${fields.slice(from).map((t, j) => this.convert(`${code}.${['first', 'second', 'third'][from + j]}`, t, element)).join(', ')})` : `${rest}()`);
+    else out.push(this.convert(`${code}.slice(${from}.0)`, held, rest));
+    return out;
   }
 
   /** The arguments of a call on an untyped value, after its leading ones: each, or with spreads, all spread from one list. */
@@ -9027,6 +9090,7 @@ export class Translator implements AsyncTranslator {
         if (method === 'parseInt') return `jsParseInt(${this.expr(arg(0))}${arg(1) ? `, ${this.toNumber(arg(1))}` : ''})`;
         break;
       case 'String':
+        if (method === 'fromCharCode' && e.arguments.some(ts.isSpreadElement)) return `jsFromCharCodeList(${this.packed(e.arguments, 'JSArray<Double>')})`;
         if (method === 'fromCharCode') return `jsFromCharCode(${a().join(', ')})`;
         if (method === 'fromCodePoint') return `jsFromCodePoint(${a().join(', ')})`;
         break;
@@ -9204,6 +9268,8 @@ export class Translator implements AsyncTranslator {
       case 'indexOf': case 'lastIndexOf': case 'includes': return `${t}.${name}(${[this.coerce(e.arguments[0], element.startsWith('JSNullish<') ? element : optionalType(element)),...e.arguments.slice(1).map((x) => this.toNumber(x))].join(', ')})`;
       case 'join': return `${t}.join(${e.arguments[0] ? (this.library ? this.str(e.arguments[0]) : this.expr(e.arguments[0])) : ''})`;
       case 'concat':
+        // Arrays spread as arguments are concatenated, which the runtime tells apart from elements as script does.
+        if (e.arguments.some((x) => ts.isSpreadElement(x) && spreadsArrays(x.expression, this.checker))) return `${t}.concatSpread(${this.unchecked(`List<${element}>`, `${this.packed(e.arguments, 'JSArray<Any?>')}.storage`)})`;
         if (e.arguments.some(ts.isSpreadElement)) return `${t}.concatSpread(${this.packed(e.arguments, `JSArray<${element}>`)}.storage)`;
         return `${t}.concat(${e.arguments.map((x) => (this.isArray(x) ? this.coerce(x, `JSArray<${element}>`) : `jsArrayOf<${element}>(${this.coerce(x, element)})`)).join(', ')})`;
       case 'map': case 'filter': case 'find': case 'findIndex': case 'findLast': case 'findLastIndex': case 'some': case 'every': case 'forEach': case 'flatMap': {

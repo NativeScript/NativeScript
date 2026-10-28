@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import { KIT_APPLE_SOURCES } from './paths.ts';
 import { Throws, digitsLiteral, isArrayLengthLiteral, isArrayLengthWrite, isAsync, isStatic } from './throws.ts';
 import { assignedMembers } from './sharing.ts';
-import { assignedValues, openSpreadType, initializedNull, intersectionAliasMembers, intlConstructor, literalPattern, literalFlags, patternGroups, regexpMayLeaveGroupUnset, isRegExpProtocol, assertedPattern, unsupportedPattern, isObjectToStringCall, isStringRaw, leadingNeverRead, forwardedSetter, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, uncheckedMatch, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, slotOf, slotType, definitelyAssignedFields, type TrustScope, classesHeldUntyped, unsetGroupTyping, type UnsetGroupTyping, admitsUndefined, classKeyPlan, onlyUndefined, keysDefinedUntyped, SWIFT_NATIVE_TYPES, runtimeTypeName, definesRunTimeKey, readKeyOf, givenBy, onlyNullOrPresent, isTemplateMethod, statementLevel, readWrite, asOperation, assignmentOf, type ReadWrite } from './lang.ts';
+import { assignedValues, openSpreadType, spreadsArrays, initializedNull, intersectionAliasMembers, intlConstructor, literalPattern, literalFlags, patternGroups, regexpMayLeaveGroupUnset, isRegExpProtocol, assertedPattern, unsupportedPattern, isObjectToStringCall, isStringRaw, leadingNeverRead, forwardedSetter, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, uncheckedMatch, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, slotOf, slotType, definitelyAssignedFields, type TrustScope, classesHeldUntyped, unsetGroupTyping, type UnsetGroupTyping, admitsUndefined, classKeyPlan, onlyUndefined, keysDefinedUntyped, SWIFT_NATIVE_TYPES, runtimeTypeName, definesRunTimeKey, readKeyOf, givenBy, onlyNullOrPresent, isTemplateMethod, statementLevel, readWrite, asOperation, assignmentOf, type ReadWrite } from './lang.ts';
 import { memberName } from './stable-names.ts';
 import { shadowConversions } from './conversion-shadow.ts';
 import { parseNativeType, plan, type Slot, type Value } from './conversion.ts';
@@ -11099,6 +11099,7 @@ ${members.join('\n')}
     const restAt = params.findIndex((p) => p.valueDeclaration && ts.isParameter(p.valueDeclaration) && p.valueDeclaration.dotDotDotToken);
     // A function type's rest parameter too (`mainThreadify(fn)` gives `(...args) => void`): Swift's function type takes it as `JSRest`.
     const appDeclared = !!sig?.getDeclaration() && (!sig!.getDeclaration().getSourceFile().isDeclarationFile || (!this.library && ts.isFunctionTypeNode(sig!.getDeclaration())));
+    let covered = list.length;
     for (let k = 0; k < list.length; k++) {
       const a = list[k];
       if (restAt >= 0 && k >= restAt && appDeclared) {
@@ -11111,6 +11112,9 @@ ${members.join('\n')}
         // The last argument spreading a tuple of fixed length (`fn(...args)` with `args: Parameters<typeof fn>`): its elements, in order.
         const st = this.checker.getTypeAtLocation(a.expression);
         const hasRest = this.checker.isTupleType(st) && ((st as ts.TypeReference).target as ts.TupleType).hasRestElement;
+        // A rest parameter of a tuple type is an array in Swift where its reads are typed as a tuple.
+        const restParam = ts.isIdentifier(a.expression) && this.resolve(a.expression)?.valueDeclaration;
+        if (restParam && ts.isParameter(restParam) && restParam.dotDotDotToken && this.typeOf(a.expression).startsWith('(') && !functionParts(this.typeOf(a.expression))) throw this.error(a, 'a spread argument');
         if (k === list.length - 1 && ts.isIdentifier(a.expression) && restAt >= 0 && appDeclared) {
           const arr = this.coerce(a.expression, 'JSArray<Any?>');
           for (let i = 0; k + i < restAt; i++) {
@@ -11118,6 +11122,7 @@ ${members.join('\n')}
             out.push(this.presentFromAny(`jsArg(${arr}.storage, ${i})`, at, true));
           }
           out.push(this.presentFromAny(`JSArray<Any?>(Array(${arr}.storage.dropFirst(${restAt - k})))`, this.restType(params[restAt])));
+          covered = params.length;
           break;
         }
         const tuple = k === list.length - 1 && ts.isIdentifier(a.expression) && this.checker.isTupleType(st) && !hasRest ? this.checker.getTypeArguments(st as ts.TypeReference) : null;
@@ -11129,6 +11134,7 @@ ${members.join('\n')}
           const at = this.filledDefault(params[k + i].valueDeclaration) ? optionalType(given) : given;
           out.push(held.startsWith('(') && !functionParts(held) ? this.convert(`${code}.${i}`, this.type(el, e), at) : this.presentFromAny(`jsArg(${this.coerce(a.expression, 'JSArray<Any?>')}.storage, ${i})`, at, true));
         });
+        covered = k + tuple.length;
         break;
       }
       const p = params[Math.min(k, params.length - 1)];
@@ -11180,12 +11186,12 @@ ${members.join('\n')}
     const decl = sig?.getDeclaration();
     const held = ts.isCallExpression(e) && this.isClosureValue(e.expression);
     if ((count === undefined || held) && restAt < 0 && decl && !ts.isJSDocSignature(decl) && (held || ts.isFunctionTypeNode(decl) || ts.isCallSignatureDeclaration(decl) || ts.isArrowFunction(decl) || ts.isFunctionExpression(decl))) {
-      for (let k = list.length; k < params.length; k++) {
+      for (let k = covered; k < params.length; k++) {
         const pt = this.type(this.checker.getTypeOfSymbolAtLocation(params[k], e), e);
         out.push(pt === 'Void' ? '()' : 'nil');
       }
     } else if (restAt < 0 && decl && !ts.isJSDocSignature(decl) && (ts.isMethodDeclaration(decl) || ts.isMethodSignature(decl) || ts.isFunctionDeclaration(decl) || ts.isConstructorDeclaration(decl)) && !decl.getSourceFile().isDeclarationFile && !this.readsArguments(decl)) {
-      for (let k = list.length; k < params.length; k++) {
+      for (let k = covered; k < params.length; k++) {
         const pd = params[k]?.valueDeclaration;
         if (!pd || !ts.isParameter(pd) || pd.questionToken || pd.initializer || pd.dotDotDotToken) break;
         const pt = this.inFile(pd.getSourceFile().fileName, () => this.paramType(pd));
@@ -12335,6 +12341,7 @@ ${members.join('\n')}
         if (method === 'parseInt') return `jsParseInt(${this.str(arg(0))}${arg(1) ? `, ${this.expr(arg(1))}` : ', nil'})`;
         break;
       case 'String':
+        if (method === 'fromCharCode' && e.arguments.some(ts.isSpreadElement)) return `jsFromCharCode(codes: ${this.packed(e.arguments, 'JSArray<Double>')}.storage)`;
         if (method === 'fromCharCode') return `jsFromCharCode(${a().join(', ')})`;
         if (method === 'fromCodePoint') return `jsFromCodePoint(${a().join(', ')})`;
         break;
@@ -12563,6 +12570,17 @@ ${members.join('\n')}
       case 'slice': case 'at': return `${t}.${name}(${a().join(', ')})`;
       case 'join': return `${t}.join(${!e.arguments[0] ? '' : this.isAny(e.arguments[0]) ? `jsJoinSeparator(${this.expr(e.arguments[0])})` : this.expr(e.arguments[0])})`;
       case 'concat':
+        // Arrays spread as arguments are concatenated; the runtime tells them apart from elements only in an array of anything.
+        if (el !== 'Any?' && e.arguments.some((x) => ts.isSpreadElement(x) && spreadsArrays(x.expression, this.checker))) {
+          const parts = e.arguments.map((x) => {
+            if (!ts.isSpreadElement(x)) return this.isArray(x) ? `${this.coerce(x, `JSArray<${el}>`)}.storage` : `[${this.coerce(x, el)}]`;
+            if (!spreadsArrays(x.expression, this.checker)) return `Array(${this.iterable(x.expression)})`;
+            if (ts.isArrayLiteralExpression(x.expression) && !x.expression.elements.some(ts.isSpreadElement)) return x.expression.elements.map((y) => `${this.coerce(y, `JSArray<${el}>`)}.storage`).join(' + ');
+            if (this.typeOf(x.expression).replace(/[?!]$/, '') === `JSArray<JSArray<${el}>>`) return `Array(${this.iterable(x.expression)}).flatMap { $0.storage }`;
+            throw this.error(x, 'a spread of arrays of another element type into concat');
+          });
+          return `${t}.concat(spread: ${parts.join(' + ')})`;
+        }
         if (e.arguments.some(ts.isSpreadElement)) return `${t}.concat(spread: ${this.packed(e.arguments, `JSArray<${el}>`)}.storage)`;
         return `${t}.concat(${e.arguments.map((x) => (!this.isArray(x) ? `[${this.coerce(x, el)}]` : this.typeOf(x).replace(/[?!]$/, '') === `JSArray<${el}>` ? this.expr(x) : this.coerce(x, `JSArray<${el}>`))).join(', ')})`;
       case 'map': case 'filter': case 'find': case 'findIndex': case 'findLast': case 'findLastIndex': case 'some': case 'every': case 'forEach': case 'flatMap': {
