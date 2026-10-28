@@ -20,8 +20,8 @@ EMITTING = r'this\.(?:expr|coerce|coerceTyped|tryPrefix|fromAny|fromAnyCode|conv
 PATTERNS = [
     ('regex', re.compile(r'\.(?:test|exec)\((?:' + EMITTING + r'|' + CODE + r')\)')),
     ('string', re.compile(r'(?<![\w.])' + CODE + r'\.(?:startsWith|endsWith|includes|indexOf|match|slice\(4\)|replace\(/\^try)')),
-    ('helper', re.compile(r'\b(?:THROWING_CODE|throwsOutside|outsideClosures|singleTry|tryAssigned|alreadyAs|balanced|inert|plainRead'
-                          r'|isAsserted|unasserted|wrapsWhole|postfixable|oneExpression|mentions|openSwiftChain|withoutRedundantImplicit'
+    ('helper', re.compile(r'\b(?:THROWING_CODE|throwsOutside|outsideClosures|singleTry|tryAssigned|alreadyAs|balanced'
+                          r'|wrapsWhole|postfixable|oneExpression|mentions|openSwiftChain|withoutRedundantImplicit'
                           r'|withoutAvailableBlocks|namesHeldOptional)\b(?:\.test)?\(')),
 ]
 # Formatting, not conversion: the text's shape (balanced parentheses, a whole wrapped expression), its lines, names it uses.
@@ -30,8 +30,14 @@ ALLOWED = [
     re.compile(r'@Suppress|#available|#sourceLocation|sourceLocation|\\n|startsWith\([\'"]//'),
     # Names a statement's code no longer mentions, so their bindings are dropped.
     re.compile(r'new RegExp\(`\\\\b\$\{'),
+    re.compile(r'const uses = \(name: string\) => new RegExp'),
+    # Kotlin spelling: a line marker; a callable reference (`::f`) parenthesized before `.let` or called as `f()`; a
+    # generated `when` arm split at its arrow.
+    re.compile(r"startsWith\('/\*@ns:'\)|includes\('::'\)|startsWith\('::'\)|indexOf\(' -> '\)"),
+    # Keys already written, not code.
+    re.compile(r'written\.includes\(k\)'),
 ]
-ALLOWED_METHODS = {'balanced', 'wrapsWhole', 'postfixable', 'oneExpression', 'mentions', 'indented', 'withoutRedundantImplicit',
+ALLOWED_METHODS = {'balanced', 'wrapsWhole', 'branch', 'postfixable', 'oneExpression', 'mentions', 'indented', 'withoutRedundantImplicit',
                    'withoutAvailableBlocks', 'outsideClosures',
                    # Whole Swift files parsed for their declarations (kit sources, a hoisted extension), not a value's code.
                    'namesHeldOptional', 'staticsHeldOptional', 'kitFunctionThrows', 'injectableExtension', 'namespaceDecl'}
