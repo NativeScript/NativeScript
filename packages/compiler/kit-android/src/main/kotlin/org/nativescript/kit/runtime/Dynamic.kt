@@ -393,9 +393,14 @@ class JavaMethodRef(private val target: Any?, private val cls: Class<*>, private
     }
 }
 
-/** A Java package read untyped (`(<any>androidx).core.view`): its classes and packages by name, as NativeScript's runtime gives them. */
+/**
+ * A Java package read untyped (`(<any>androidx).core.view`): its classes and packages by name. A capitalized name with
+ * no class is undefined, so `?.` can test a class is there; the JVM can't list packages, so any other name is one.
+ */
 class JSJavaPackage(val name: String) : JSDynamic {
-    override fun jsGet(key: String): Any? = try { Class.forName("$name.$key") } catch (_: ClassNotFoundException) { JSJavaPackage("$name.$key") }
+    override fun jsGet(key: String): Any? = try { Class.forName("$name.$key") } catch (_: ClassNotFoundException) {
+        if (key.firstOrNull()?.isUpperCase() == true) null else JSJavaPackage("$name.$key")
+    }
     override fun jsSet(key: String, value: Any?) {}
     override val jsKeys: List<String> get() = listOf()
     override val jsClassName: String? get() = null
