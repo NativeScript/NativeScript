@@ -127,6 +127,12 @@ public struct JSLiteralKeys {
         if value == nil { unset = (unset ?? []).union([key]) }
         return value
     }
+
+    /// A typed value, whose nil is null.
+    public mutating func nulled<V>(_ key: String, _ value: V?) -> V? {
+        if value == nil { nulls = (nulls ?? []).union([key]) }
+        return value
+    }
 }
 
 /// A class with its own `toString()`, which JavaScript's string conversion calls.

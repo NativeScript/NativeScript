@@ -1,6 +1,6 @@
 import { dirname, join } from 'node:path';
 import ts from 'typescript';
-import { alwaysEnds, givenBy, heldDowncasts, implementedInterfaceDeclarations, isTemplateMethod, LooseSlots, nothingGiven, nullishSlots, nullSetFields, originOf, ownSlot, reassigned, scriptCalledFunction, slotOf, slotType, type NullishSlots, type TrustScope } from './lang.ts';
+import { admitsUndefined, alwaysEnds, givenBy, heldDowncasts, implementedInterfaceDeclarations, isTemplateMethod, LooseSlots, nothingGiven, nullishSlots, nullSetFields, originOf, ownSlot, reassigned, scriptCalledFunction, slotOf, slotType, type NullishSlots, type TrustScope } from './lang.ts';
 import { type Form, Forms, isGeneric, representation } from './forms.ts';
 import { isAsync, isStatic } from './throws.ts';
 import { shadowForms } from './forms-shadow.ts';
@@ -396,9 +396,10 @@ export class ValueStates {
     const bare = ts.skipOuterExpressions(e);
     if (b.lenientApp && (this.nullResult(bare) || (ts.isIdentifier(bare) && this.nullVars.has(b.resolve(bare)!)))) return true;
     if (bare.kind === ts.SyntaxKind.NullKeyword || !onlyNull(this.checker.getTypeAtLocation(e)) || this.heldNullish(bare)) return false;
+    if (this.nullBranches(bare)) return false;
     if (ts.isPropertyAccessExpression(bare)) {
       const d = this.checker.getSymbolAtLocation(bare.name)?.valueDeclaration;
-      if (d && ((ts.isPropertyDeclaration(d) && !d.initializer) || this.nullish().fields.has(d))) return false;
+      if (d && ((ts.isPropertyDeclaration(d) && !d.initializer) || this.nullish().fields.has(d) || (this.widenedField(d) && this.forms().formOfSlot(d).undefined))) return false;
     }
     return true;
   }
@@ -426,6 +427,20 @@ export class ValueStates {
     return this.backend.nulledEntry(e, code);
   }
 
+  /**
+   * A conditional whose one branch gives null and whose other may give an undefined its type doesn't say
+   * (`i < 0 ? null : NAMES[i]`): its one nil can't tell them apart, so each branch is converted, or noted, on its own.
+   */
+  nullBranches(e: ts.Expression): { cond: ts.ConditionalExpression; nulls: ts.Expression[] } | null {
+    const b = this.backend;
+    if (b.lenient || b.library || this.plugin(e)) return null;
+    const bare = ts.skipOuterExpressions(e);
+    if (!ts.isConditionalExpression(bare)) return null;
+    const branches = [bare.whenTrue, bare.whenFalse];
+    const nulls = branches.filter((x) => ts.skipOuterExpressions(x).kind === ts.SyntaxKind.NullKeyword || this.nilIsNull(x));
+    return nulls.length && branches.some((x) => !nulls.includes(x) && !admitsUndefined(this.checker.getTypeAtLocation(x)) && this.forms().formOf(x).undefined) ? { cond: bare, nulls } : null;
+  }
+
   /** A typed value whose untyped read tells null from undefined, where its optional alone does not. */
   nullDistinct(e: ts.Expression): boolean {
     return this.nilIsNull(e) || !!this.nullishRead(e) || this.nullishElementRead(e) || !!this.nullableEntry(e, () => this.backend.untypedCode(e));
@@ -441,7 +456,7 @@ export class ValueStates {
   nullishMember(e: ts.PropertyAccessExpression, write = false): boolean {
     if (e.questionDotToken || e.expression.kind === ts.SyntaxKind.SuperKeyword) return false;
     const d = this.checker.getSymbolAtLocation(e.name)?.valueDeclaration;
-    if (d && ts.isPropertySignature(d) && this.nullish().fields.has(d)) return true;
+    if (d && ts.isPropertySignature(d) && (this.nullish().fields.has(d) || (this.widenedField(d) && this.forms().formOfSlot(d).null))) return true;
     const parts = ((t) => (t.isUnion() ? t.types : [t]))(this.checker.getTypeAtLocation(e));
     return parts.some((x) => x.flags & ts.TypeFlags.Null) && (write || parts.some((x) => x.flags & ts.TypeFlags.Undefined)) && !!d && (ts.isPropertySignature(d) || ts.isPropertyAssignment(d) || ts.isShorthandPropertyAssignment(d));
   }
@@ -883,7 +898,7 @@ export class ValueStates {
     if (found) {
       const declared = forms.declaredForm(d), form = forms.formOfSlot(d);
       const t = this.checker.getTypeAtLocation(d);
-      found = form.absent && !declared.null && !declared.undefined && !declared.foreign && !form.foreign && !(t.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown)) && !mentionsTypeParameter(this.checker, t) && ((form.null && !declared.null) || (form.undefined && !declared.undefined));
+      found = form.absent && !declared.foreign && !form.foreign && !(t.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown)) && !mentionsTypeParameter(this.checker, t) && ((form.null && !declared.null) || (form.undefined && !declared.undefined));
     }
     for (const m of group) if (fieldLike(m)) this.widenedFieldSet.set(m, found);
     this.widenedFieldSet.set(d, found);

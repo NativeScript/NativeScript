@@ -101,6 +101,12 @@ class JSLiteralKeys(var nulls: MutableSet<String>? = null, var unset: MutableSet
         if (value == null) unset = (unset ?: mutableSetOf()).also { it.add(key) }
         return value
     }
+
+    /** A typed value, whose null is null. */
+    fun <T> nulled(key: String, value: T): T {
+        if (value == null) nulls = (nulls ?: mutableSetOf()).also { it.add(key) }
+        return value
+    }
 }
 
 /**

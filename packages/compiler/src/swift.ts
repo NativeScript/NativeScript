@@ -8450,7 +8450,7 @@ ${members.join('\n')}
       // A Promise executor's resolve held untyped: a function resolving the promise.
       const resolvers = ts.isIdentifier(bare) ? this.resolvers.get(this.resolve(bare)!) : undefined;
       if (resolvers) return `({ (__a: [Any?]) throws -> Any? in ${resolvers.name}.resolve(${resolvers.type === 'Void' ? '' : this.fromAnyCode('jsArg(__a, 0)', resolvers.type, true)}); return nil } as JSFunction)`;
-      if (ts.isConditionalExpression(bare) && [bare.whenTrue, bare.whenFalse].some((x) => x.kind === ts.SyntaxKind.NullKeyword)) {
+      if (ts.isConditionalExpression(bare) && ([bare.whenTrue, bare.whenFalse].some((x) => x.kind === ts.SyntaxKind.NullKeyword) || this.states.nullBranches(bare))) {
         return `(${this.cond(bare.condition)} ? ${this.coerce(bare.whenTrue, 'Any?')} : ${this.coerce(bare.whenFalse, 'Any?')})`;
       }
       const maybe = this.maybeUndefined(e);
@@ -13946,10 +13946,15 @@ ${members.join('\n')}
     const keyed = new Set(notesKeys ? order.filter((f) => f.type.endsWith('?') && /[?!]$/.test(this.shapeHeld(f)) && !hasTopLevelArrow(this.shapeHeld(f))).map((f) => f.name) : []);
     const unsetKeys: string[] = [], keyNotes: string[] = [];
     let keysVar: string | null = null;
-    const noteKey = (key: string, value: ts.Expression, code: () => string): string => {
+    const noteKey = (key: string, value: ts.Expression, code: () => string, want?: string): string => {
       const f = order.find((x) => x.name === key);
       // Null given as such is noted with the literal's other nulls.
       if (!f || !keyed.has(key) || ts.skipOuterExpressions(value).kind === ts.SyntaxKind.NullKeyword) return code();
+      const split = want ? this.states.nullBranches(value) : null;
+      if (split) {
+        const k = keysVar ??= this.fresh('__keys');
+        return this.ternary(split.cond, want!, (x) => (split.nulls.includes(x) ? `${k}.nulled(${swiftString(key)}, ${this.coerce(x, want!)})` : this.coerce(x, want!)));
+      }
       const t = this.checker.getTypeAtLocation(value);
       if (onlyUndefined(t)) { unsetKeys.push(key); return code(); }
       if (ts.isObjectLiteralExpression(ts.skipOuterExpressions(value)) || ts.isArrayLiteralExpression(ts.skipOuterExpressions(value))) return code();
@@ -13979,7 +13984,7 @@ ${members.join('\n')}
         const key = literalKey(p.name, this.checker) ?? p.name.getText();
         const field = order.find((f) => f.name === key)?.type ?? 'Any?';
         const want = loose(field) ? optionalType(field) : field;
-        given.set(key, self && thisFunction(p) ? this.withThis(p.initializer as ts.FunctionExpression, `${self}!`, false, () => this.coerce(p.initializer, want)) : noteKey(key, p.initializer, () => this.coerce(p.initializer, want)));
+        given.set(key, self && thisFunction(p) ? this.withThis(p.initializer as ts.FunctionExpression, `${self}!`, false, () => this.coerce(p.initializer, want)) : noteKey(key, p.initializer, () => this.coerce(p.initializer, want), want));
       } else if (ts.isGetAccessorDeclaration(p) || ts.isSetAccessorDeclaration(p)) {
         const key = literalKey(p.name, this.checker) ?? p.name.getText();
         const f = order.find((x) => x.name === key) as ShapeField | undefined;
