@@ -4186,9 +4186,14 @@ ${members.join('\n')}
    * An untyped one is given its default in the body, where an explicit undefined (nil) takes it too and null does not.
    */
   private constantDefault(p: ts.ParameterDeclaration): boolean {
-    return !!p.initializer && this.isConstant(p.initializer) && !this.optionalDefaults.has(p) && !this.familyDefaultsDiffer(p) && this.typeOf(p.name) !== 'Any?';
+    return !!p.initializer && this.isConstant(p.initializer) && !this.optionalDefaults.has(p) && !this.familyDefaultsDiffer(p) && this.typeOf(p.name) !== 'Any?' && !this.states.defaultTakesUndefined(p);
   }
   private optionalDefaults = new Set<ts.ParameterDeclaration>();
+
+  /** An app parameter whose default its body applies (`paramPrelude`): an argument is given as the optional it may be. */
+  private filledDefault(d: ts.Declaration | undefined): boolean {
+    return !this.library && !!d && ts.isParameter(d) && !!d.initializer && !d.dotDotDotToken && !this.templateParams && !d.getSourceFile().isDeclarationFile && !this.constantDefault(d);
+  }
 
   /**
    * A method parameter whose default some other method of its override family does not share: Swift picks a default
@@ -11120,7 +11125,8 @@ ${members.join('\n')}
         const held = this.typeOf(a.expression);
         const code = this.expr(a.expression);
         tuple.forEach((el, i) => {
-          const at = this.type(this.checker.getTypeOfSymbolAtLocation(params[k + i], e), e);
+          const given = this.type(this.checker.getTypeOfSymbolAtLocation(params[k + i], e), e);
+          const at = this.filledDefault(params[k + i].valueDeclaration) ? optionalType(given) : given;
           out.push(held.startsWith('(') && !functionParts(held) ? this.convert(`${code}.${i}`, this.type(el, e), at) : this.presentFromAny(`jsArg(${this.coerce(a.expression, 'JSArray<Any?>')}.storage, ${i})`, at, true));
         });
         break;
@@ -11163,7 +11169,7 @@ ${members.join('\n')}
       if (raw) { out.push(raw); continue; }
       // A parameter its group's form widens takes undefined and null as they are, as every member of the group spells it.
       const widened = !emitted && !erased && !!decl && ts.isParameter(decl) && this.states.widened(decl) && !isOptional(at) && at !== 'Any?';
-      const to = emitted ?? (omissible || widened ? optionalType(at) : erased ? this.inFile(decl!.getSourceFile().fileName, () => this.paramType(decl as ts.ParameterDeclaration)) : at === 'Never' ? this.type(this.checker.getTypeOfSymbol(p), e) : at);
+      const to = emitted ?? (omissible || widened || this.filledDefault(decl) ? optionalType(at) : erased ? this.inFile(decl!.getSourceFile().fileName, () => this.paramType(decl as ts.ParameterDeclaration)) : at === 'Never' ? this.type(this.checker.getTypeOfSymbol(p), e) : at);
       out.push(this.coerce(a, to));
     }
     if (restAt >= 0 && appDeclared && out.length <= restAt) out.push(`${this.restType(params[restAt])}()`);

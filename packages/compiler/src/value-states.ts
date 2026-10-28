@@ -828,6 +828,19 @@ export class ValueStates {
   }
 
   /**
+   * An app's defaulted parameter the program may give undefined (`Forms.defaultGivenUndefined`): its default is applied
+   * in the body, where undefined takes it too, not by the native signature, which only an omitted argument reaches.
+   */
+  defaultTakesUndefined(p: ts.ParameterDeclaration): boolean {
+    const b = this.backend;
+    if (b.lenient || b.library || !p.initializer || p.getSourceFile().isDeclarationFile || this.plugin(p)) return false;
+    let found = this.defaultsGiven.get(p);
+    if (found === undefined) this.defaultsGiven.set(p, found = !this.forms().fixedSlot(p) && this.forms().defaultGivenUndefined(p));
+    return found;
+  }
+  private readonly defaultsGiven = new Map<ts.ParameterDeclaration, boolean>();
+
+  /**
    * A parameter whose native type takes an empty value its declared type leaves out. An app's parameter takes what its
    * group's form holds (`formDecides`), whether or not its code is checked with strictNullChecks. A plugin's is an
    * entry point, its code checked without them: callers pass null and undefined for an object parameter (core's

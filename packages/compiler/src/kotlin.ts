@@ -2511,7 +2511,7 @@ export class Translator implements AsyncTranslator {
    * parameter otherwise: Kotlin overrides take the root's default, where JavaScript applies the default of the method that runs.
    */
   private constantDefault(p: ts.ParameterDeclaration): boolean {
-    return !!p.initializer && this.isConstant(p.initializer) && !this.familyDefaultsDiffer(p);
+    return !!p.initializer && this.isConstant(p.initializer) && !this.familyDefaultsDiffer(p) && !this.states.defaultTakesUndefined(p);
   }
 
   private familyDefaultsDiffer(p: ts.ParameterDeclaration): boolean {
