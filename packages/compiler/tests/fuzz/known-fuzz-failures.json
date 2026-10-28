@@ -17159,7 +17159,14 @@
 		"99-assign-spread|3:47:arg|'text'": "compile: cannot convert value of type '…' to expected argument type '…'",
 		"99-assign-spread|3:47:arg|{}": "compile: cannot convert value of type '…' to expected argument type '…'",
 		"99-assign-spread|3:47:arg|null": "compile: cannot convert value of type '…' to expected argument type '…'",
-		"99-assign-spread|3:47:arg|undefined": "compile: cannot convert value of type '…' to expected argument type '…'"
+		"99-assign-spread|3:47:arg|undefined": "compile: cannot convert value of type '…' to expected argument type '…'",
+		"37-untyped-updates|129:70:arg|{ unrelated: 1 }": "S3-4b library checked convert: other value: TypeError thrown in the promise callback (its log line never prints)",
+		"48-declared-undefined|17:22:field|[]": "S3-4b library checked convert: throws (Node does not): TypeError: an array is not a boolean",
+		"48-declared-undefined|14:19:arg|{ unrelated: 1 }": "S3-4b library checked convert: throws (Node does not): TypeError: an object is not a string",
+		"48-declared-undefined|25:27:field|{}": "S3-4b library checked convert: throws (Node does not): TypeError: an object is not a boolean",
+		"90-declared-undefined-array|6:36:arg|{}": "S3-4b library checked convert: throws (Node does not): TypeError: an object is not a string",
+		"261-adapted-callback-identity|160:21:arg|{}": "S3-4b library checked convert: throws (Node does not): TypeError: an object is not a number",
+		"31-object-model|123:24:arg|[]": "S3-4b library checked convert: throws (Node does not): TypeError: an array is not a string"
 	},
 	"kotlin": {
 		"01-events-and-callbacks|24:12:return|[]": "compile: <path>:N:N: error: no value passed for parameter '…'",

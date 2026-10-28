@@ -139,7 +139,9 @@ function fromForeign(to: Slot, entry: Entry, cell: (s: Step, throws?: boolean, b
   if (to.rep === 'foreign') return cell('identity');
   if (to.rep === 'nullish') return cell('nullishOfAny', true);
   switch (entry) {
-    case 'library': return cell('converted');
+    // Core's own code: a string, number or boolean converts as String(), Number() and Boolean() do, any object is a
+    // TypeError; other kinds still convert unchecked.
+    case 'library': return PRIMITIVE.has(to.type.kind) ? cell('checked', true) : cell('converted');
     case 'narrowed': return cell('narrowed', true);
     // Lenient code reads a missing primitive as its zero, but an object where one must be present is still a TypeError.
     case 'lenient': return cell('lenient', to.rep === 'present' && !PRIMITIVE.has(to.type.kind) && to.type.kind !== 'any');

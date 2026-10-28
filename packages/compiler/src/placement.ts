@@ -21,11 +21,14 @@ export interface StateCells {
   nulled(code: string): string;
   /** F → P/U with a checked entry (§2.3b M6, `foreignPlacement`), or null where the slot's type has no checked convert. */
   checked(e: ts.Expression, target: string): string | null;
+  /** An empty marker's value as it is made (`emptyMarkers`), registered so that checked converts read it as an empty value. */
+  marker(code: string): string;
 }
 
 /** What `place` reads of a translator. */
 export interface PlacementBackend {
   readonly checker: ts.TypeChecker;
+  readonly sourceFiles: readonly ts.SourceFile[];
   readonly library: unknown;
   readonly states: ValueStates;
   readonly cells: StateCells;
@@ -59,6 +62,11 @@ export interface PlacementBackend {
 
 /** `e` where the backend needs a value of `target`. */
 export function place(b: PlacementBackend, e: ts.Expression, target: string): string {
+  const code = placed(b, e, target);
+  return b.library && ts.isVariableDeclaration(e.parent) && e.parent.initializer === e && emptyMarkers(b).has(e.parent) ? b.cells.marker(code) : code;
+}
+
+function placed(b: PlacementBackend, e: ts.Expression, target: string): string {
   const early = b.before?.(e, target);
   if (early != null) return early;
   const nullish = nullishPlacement(b, e, target);
@@ -104,6 +112,42 @@ export function nullishPlacement(b: PlacementBackend, e: ts.Expression, target: 
   if (entry) return b.cells.nullishOfAny(target, into, entry, true);
   const code = b.coerce(e, b.optionalType(into));
   return b.cells.nullishOf(target, into, code, b.states.nilIsNull(e));
+}
+
+const MARKERS = new WeakMap<ts.TypeChecker, Set<ts.VariableDeclaration>>();
+const EQUALITY = new Set([ts.SyntaxKind.EqualsEqualsEqualsToken, ts.SyntaxKind.EqualsEqualsToken, ts.SyntaxKind.ExclamationEqualsEqualsToken, ts.SyntaxKind.ExclamationEqualsToken]);
+
+/**
+ * Core's empty markers: module constants made only to be told apart by identity (`unsetValue = new Object()`,
+ * `resetSymbol = Symbol(…)`) and compared with one somewhere. Core writes one where a value is reset, typed slots
+ * included (`view[name] = unsetValue`), so a checked convert reads one as an empty value, not as a value of another type.
+ */
+export function emptyMarkers(b: Pick<PlacementBackend, 'checker' | 'sourceFiles'>): Set<ts.VariableDeclaration> {
+  let found = MARKERS.get(b.checker);
+  if (found) return found;
+  const marks = found = new Set();
+  MARKERS.set(b.checker, marks);
+  const made = (d: ts.Declaration | undefined): d is ts.VariableDeclaration => {
+    if (!d || !ts.isVariableDeclaration(d) || !d.initializer || !(d.parent.flags & ts.NodeFlags.Const) || !ts.isSourceFile(d.parent.parent.parent)) return false;
+    const init = ts.skipOuterExpressions(d.initializer);
+    const callee = ts.isNewExpression(init) || ts.isCallExpression(init) ? init.expression : undefined;
+    if (!callee || !ts.isIdentifier(callee)) return false;
+    return ts.isNewExpression(init) ? callee.text === 'Object' && !init.arguments?.length : callee.text === 'Symbol';
+  };
+  const visit = (n: ts.Node): void => {
+    if (ts.isBinaryExpression(n) && EQUALITY.has(n.operatorToken.kind)) {
+      for (const side of [n.left, n.right]) {
+        const x = ts.skipOuterExpressions(side);
+        let sym = ts.isIdentifier(x) ? b.checker.getSymbolAtLocation(x) : undefined;
+        if (sym && sym.flags & ts.SymbolFlags.Alias) sym = b.checker.getAliasedSymbol(sym);
+        const d = sym?.valueDeclaration;
+        if (made(d)) marks.add(d);
+      }
+    }
+    ts.forEachChild(n, visit);
+  };
+  for (const f of b.sourceFiles) if (!f.isDeclarationFile) visit(f);
+  return marks;
 }
 
 /** App code: an app enum named as a value (`Color`, `Shapes.Kind`), which is the object JavaScript makes of it. */

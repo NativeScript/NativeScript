@@ -2358,10 +2358,10 @@ export class Translator implements AsyncTranslator {
 
   fromAnyCode(code: string, type: string, orZero = false): string {
     const zero = this.zero(type);
-    if (orZero && type === 'Double') return `jsNumberOrZero(${code})`;
-    // Library mode: another primitive converts, as JavaScript reads it where it is used.
-    if (orZero && this.library && type === 'String') return `jsStringOrEmpty(${code})`;
-    if (orZero && this.library && type === 'Boolean') return `jsBooleanOrFalse(${code})`;
+    // Library mode: another primitive converts, as JavaScript reads it where it is used, and an object is a TypeError.
+    if (orZero && type === 'Double') return `${this.library ? 'jsConvertedNumberOrZero' : 'jsNumberOrZero'}(${code})`;
+    if (orZero && this.library && type === 'String') return `jsConvertedStringOrEmpty(${code})`;
+    if (orZero && this.library && type === 'Boolean') return `jsConvertedBooleanOrFalse(${code})`;
     // App code: an untyped string or boolean is converted as JavaScript converts it where it is used, never refused.
     if (orZero && (type === 'String' || type === 'Boolean')) return this.fromAny(code, type);
     if (orZero && zero && zero !== 'null' && !type.endsWith('?')) return `(${safeCast(code, type)} ?: ${zero})`;
@@ -2413,9 +2413,9 @@ export class Translator implements AsyncTranslator {
     const promised = /^JSPromise<(.*)>$/.exec(base);
     if (promised) return type.endsWith('?') ? `jsUnlessNullish(${code}) { jsPromiseOf<${promised[1]}>(it) }` : `jsPromiseOf<${promised[1]}>(${code})`;
     // Library mode: JavaScript's null where an object goes (`cond ? entry.fragment : null`) is Kotlin's.
-    // A string, number or boolean slot given another primitive converts it (a binding's 5 for a string is "5"); given an
-    // object (core's `unsetValue` for a css variable), it holds none.
-    if (this.library && /^(String|Double|Boolean)\?$/.test(type)) return `${({ 'String?': 'jsStringOrNull', 'Double?': 'jsNumberOrNull', 'Boolean?': 'jsBooleanOrNull' } as Record<string, string>)[type]}(${code})`;
+    // A string, number or boolean slot given another primitive converts it (a binding's 5 for a string is "5"); an empty
+    // marker (`unsetValue`) holds none, and any object is a TypeError.
+    if (this.library && /^(String|Double|Boolean)\?$/.test(type)) return `${({ 'String?': 'jsConvertedStringOrNull', 'Double?': 'jsConvertedNumberOrNull', 'Boolean?': 'jsConvertedBooleanOrNull' } as Record<string, string>)[type]}(${code}${name ? `, ${kotlinString(name)}` : ''})`;
     // App code: an untyped string, number or boolean is converted as JavaScript converts it where it is used; undefined and null stay null.
     if (/^(String|Double|Boolean)\?$/.test(type)) return `${({ 'String?': 'jsAssertedStringOrNull', 'Double?': 'jsAssertedNumberOrNull', 'Boolean?': 'jsAssertedBooleanOrNull' } as Record<string, string>)[type]}(${code})`;
     // JavaScript's null (JSNull in an untyped object) where a nullable slot goes is Kotlin's.
@@ -6122,6 +6122,7 @@ export class Translator implements AsyncTranslator {
     const t = this;
     return this.placementSet ??= {
       get checker() { return t.checker; },
+      get sourceFiles() { return t.sourceFiles; },
       get library() { return t.library; },
       get states() { return t.states; },
       cells: {
@@ -6132,6 +6133,7 @@ export class Translator implements AsyncTranslator {
         empty: (isNull) => (isNull ? 'JSNullish.Null' : 'JSNullish.Undefined'),
         nulled: (code) => `jsNulled(${code})`,
         checked: (e, target) => this.checkedPlacement(e, target),
+        marker: (code) => `jsEmptyMarker(${code})`,
       },
       typeOf: (n) => this.typeOf(n),
       expr: (e) => this.expr(e),

@@ -184,7 +184,7 @@ function classify(code: string, input: string | undefined, to: Representation): 
     [/\.jsAny$/, 'jsAny'],
     [/\.optional$/, 'optional'],
     [/^jsNulled(?:Entry)?\(/, 'nulled'],
-    [/^(?:jsChecked\w*|jsCast(?:Present)?|jsCheckedCast|jsErrorOf)[(<]/, 'checked'],
+    [/^(?:jsChecked\w*|jsCast(?:Present)?|jsCheckedCast|jsErrorOf|jsConverted(?:String|Number|Bool|Boolean)\w*)[(<]/, 'checked'],
     [/^jsUnchecked</, 'converted'],
     [/\bjsFlat\(|\(jsObject: /, 'lenient'],
     [/^(?:jsConverted\w*|jsNumberOrZero|jsStringOrEmpty|jsBooleanOrFalse)[(<]/, 'converted'],
