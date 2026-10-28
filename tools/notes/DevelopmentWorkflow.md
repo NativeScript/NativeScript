@@ -73,16 +73,8 @@ npx nx run apps-automated:android
 
 # Documentation API reference
 
-The following will build the API reference pages in `bin/dist/apiref`:
+The following will build the API reference pages in `dist/api-reference`:
 
 ```bash
-npm run typedoc
+npx nx build core-api-docs
 ```
-
-If you want to improve on the documentation you can also build and start up dev web server:
-
-```bash
-npm run dev-typedoc
-```
-
-The terminal will point the address you can open in your web browser.
