@@ -10,7 +10,7 @@ import { assignedValues, openSpreadType, spreadsArrays, initializedNull, interse
 import { memberName } from './stable-names.ts';
 import { shadowConversions } from './conversion-shadow.ts';
 import { parseNativeType, plan, type Slot, type Value } from './conversion.ts';
-import { argumentEntry, argumentOf, argumentSlot, isEnumObject, place, resultSlot, returnCell, type ParamSlot, type PlacementBackend, type ResultSlot, type ReturnBackend, type ReturnCell, type Store, type StoreSlot, assignedTo, storeEntry, storeOf, storeSlot } from './placement.ts';
+import { argumentEntry, argumentOf, argumentSlot, isEnumObject, place, resultSlot, returnCell, type ParamSlot, type PlacementBackend, type ResultSlot, type ReturnBackend, type ReturnCell, type Store, type StoreSlot, assignedTo, codeStoreSlot, placeCode, storeEntry, storeOf, storeSlot } from './placement.ts';
 import { castCode, elementOf, helper, implicitOf, isPure, isUnwrap, markOf, marked, memberOf, orNil, pureCode, tried, tryCode, unwrapInner, unwrappedCode, unwrappedIf, valueOf } from './swift-marks.ts';
 import { convertedRead, onlyNull, ValueStates, type StateBackend } from './value-states.ts';
 import type { Form } from './forms.ts';
@@ -3165,7 +3165,7 @@ ${members.join('\n')}
    * `defined`: fields `Object.defineProperty` may give a descriptor (`JSDefinable`). `expandoAbove`: a program base keeps
    * the object's expando, whose keys come after every class's fields, as JavaScript defines fields before script adds keys.
    */
-  private dynamicMembers(fields: { name: string; type: string }[], className: string | null, override: boolean, methods: { name: string; type: string; available?: number; length?: number }[] = [], symbols: { key: string; member: string; type: string }[] = [], expando = false, raw = new Set<string>(), accessors: { name: string; get: string | null; set: string | null }[] = [], symbolKeyedBase = false, extra = false, nulls = new Set<string>(), classNameMember = true, nilNull = new Set<string>(), keyed: KeyedMembers | null = null, rewritten = new Set<string>(), defined = new Set<string>(), expandoAbove = false, byName?: { receiver: string; inherits: boolean }): string[] {
+  private dynamicMembers(fields: { name: string; type: string; at?: ts.PropertyDeclaration }[], className: string | null, override: boolean, methods: { name: string; type: string; available?: number; length?: number }[] = [], symbols: { key: string; member: string; type: string }[] = [], expando = false, raw = new Set<string>(), accessors: { name: string; get: string | null; set: string | null }[] = [], symbolKeyedBase = false, extra = false, nulls = new Set<string>(), classNameMember = true, nilNull = new Set<string>(), keyed: KeyedMembers | null = null, rewritten = new Set<string>(), defined = new Set<string>(), expandoAbove = false, byName?: { receiver: string; inherits: boolean }): string[] {
     const o = override ? 'override ' : '';
     const ownNames = byName ? new Set([...this.instanceKeys()].flatMap((d) => (ts.isMethodDeclaration(d) ? [d.name.getText()] : []))) : new Set<string>();
     if (!keyed?.ordered || !keyed.appBase) this.declare('jsKeys', { kind: 'var', mods: o, type: '[String]' });
@@ -3215,7 +3215,7 @@ ${members.join('\n')}
         // A null is noted after the store, whose observer reads the key's state from before it; a field written through to
         // its source (`rewritten`) is written again once the null is noted.
         ...fields.map((f) => {
-          const store = raw.has(f.name) ? `jsExpandoSet(self, ${swiftString(f.name)}, newValue)` : this.storeFromAny(`self.${ident(f.name)}`, f.type, f.name);
+          const store = raw.has(f.name) ? `jsExpandoSet(self, ${swiftString(f.name)}, newValue)` : this.storeFromAny(`self.${ident(f.name)}`, f.type, f.name, false, f.at);
           // An object field that holds null is implicitly unwrapped: null and undefined both store nil, which `jsNulls` tells apart.
           const nullable = nulls.has(f.name) && !raw.has(f.name) && /^[A-Z][\w.]*$/.test(f.type) && !['Double', 'String', 'Bool'].includes(f.type) && !this.native.isStructType(f.type);
           const write = nullable ? `if jsIsNullish(newValue) { self.${ident(f.name)} = nil } else { ${store} }` : store;
@@ -3271,7 +3271,9 @@ ${members.join('\n')}
    * `lhs = newValue` in a dynamic setter (`obj[key] = v`, a binding's write): a value the field's type cannot
    * hold is refused, and `jsSet` throws the TypeError, where a cast would trap.
    */
-  private storeFromAny(lhs: string, type: string, key: string, symbol = false): string {
+  private storeFromAny(lhs: string, type: string, key: string, symbol = false, at?: ts.PropertyDeclaration): string {
+    const checked = placeCode(this.placement, 'newValue', codeStoreSlot(this.placement, type, at));
+    if (checked) return `jsStoring { ${lhs} = ${checked} }`;
     // A symbol-keyed field is held as `deferred` declares it: an array or a string present, its zero for undefined.
     const saved = this.shapeStore;
     this.shapeStore = this.inShape;
@@ -3678,18 +3680,36 @@ ${members.join('\n')}
   /** An untyped value placed where its slot holds its declared type (`foreignPlacement`): converted checked, or null. */
   private checkedPlacement(a: ts.Expression, to: string, code?: string, slot?: ParamSlot | StoreSlot): string | null {
     const entry = slot ? this.checkedEntry(a, slot.checked) : this.checkedPlacementEntry(a);
-    const base = to.replace(/[?!]$/, '');
-    if (!entry || this.type(entry.type, a) !== base) return null;
-    const value = code ?? this.expr(a);
-    return this.checkedConvert(value, entry, a, base !== to) ?? (base !== to && this.appClass(entry.type) ? `(try jsCast(${value}, ${base}.self))` : null);
+    return entry ? this.checkedCell(() => code ?? this.expr(a), entry, a, to) : null;
   }
 
   /** A variable a pattern binds from an untyped value (`foreignBinding`): its value `code` converted checked, or null. */
   private checkedBinding(el: ts.BindingElement, code: string, to: string): string | null {
     if (this.lenient || this.library) return null;
-    const entry = this.states.foreignBinding(el), base = to.replace(/[?!]$/, '');
-    if (!entry || this.type(entry.type, el) !== base) return null;
-    return this.checkedConvert(code, entry, el, base !== to) ?? (base !== to && this.appClass(entry.type) ? `(try jsCast(${code}, ${base}.self))` : null);
+    const entry = this.states.foreignBinding(el);
+    return entry ? this.checkedCell(() => code, entry, el, to) : null;
+  }
+
+  /** A call's untyped result `code`, of the program's type `to`: checked where its slot takes a foreign value (`foreignResult`), else converted leniently. */
+  private untypedResult(e: ts.CallExpression, code: string, to: string): string {
+    const entry = this.lenient || this.library ? null : this.states.foreignResult(e);
+    return (entry && this.checkedCell(() => code, entry, e, to)) ?? this.fromAnyCode(code, to, true);
+  }
+
+  /** An untyped value only Swift's code has, stored in a field `slot` (`placeCode`): converted checked, or null. */
+  private checkedCode(code: string, slot: StoreSlot): string | null {
+    const base = slot.target.replace(/[?!]$/, '');
+    // A class's field refuses a value of another class itself (`storeFromAny`).
+    if (base === slot.target && this.appClass(slot.checked!.type) && !this.checkedConvert('', slot.checked!, slot.at)) return null;
+    return this.checkedCell(() => code, slot.checked!, slot.at, slot.target);
+  }
+
+  /** The checked convert of an untyped value into `to`, the slot's type, entering as `entry`: an app class's instance too; null where it has none. */
+  private checkedCell(code: () => string, entry: Form, at: ts.Node, to: string): string | null {
+    const base = to.replace(/[?!]$/, '');
+    if (this.type(entry.type, at) !== base) return null;
+    const value = code();
+    return this.checkedConvert(value, entry, at, base !== to) ?? (this.appClass(entry.type) ? `(try ${base !== to ? 'jsCast' : 'jsCastPresent'}(${value}, ${base}.self))` : null);
   }
 
   private checkedPlacementEntry(a: ts.Expression): Form | null {
@@ -5674,7 +5694,7 @@ ${members.join('\n')}
     const ctor = cls.members.find((m): m is ts.ConstructorDeclaration => ts.isConstructorDeclaration(m) && !!m.body);
     const paramProps = (ctor?.parameters ?? []).filter((p) => ts.canHaveModifiers(p) && ts.getModifiers(p)?.some((m) => [ts.SyntaxKind.PublicKeyword, ts.SyntaxKind.PrivateKeyword, ts.SyntaxKind.ProtectedKeyword, ts.SyntaxKind.ReadonlyKeyword].includes(m.kind)));
     const fieldInits: string[] = [];
-    const fields: { name: string; type: string }[] = [];
+    const fields: { name: string; type: string; at?: ts.PropertyDeclaration }[] = [];
     this.indent = '    ';
     const paramPropValues = new Map<ts.ParameterDeclaration, string>();
     for (const p of paramProps) {
@@ -5836,7 +5856,7 @@ ${members.join('\n')}
         continue;
       }
       // A field of its own beside the kit's property of its name: script reads the property by that name, the kit's.
-      const own = this.kitRedeclared(m) ? undefined : { name: n, type: t };
+      const own = this.kitRedeclared(m) ? undefined : { name: n, type: t, at: m };
       if (own) fields.push(own);
       // A field held implicitly unwrapped where its type has a zero (a non-strict app's array): undefined is stored as nil.
       const heldAs = (h: string) => { if (own && h === `${t}!` && this.zero(t) !== null) own.type = optionalType(t); return h; };
@@ -8252,6 +8272,7 @@ ${members.join('\n')}
           return inner !== null ? tryCode(`jsNulled(${inner})`) : `jsNulled(${code})`;
         },
         checked: (e, target, slot) => this.checkedPlacement(e, target, undefined, slot),
+        checkedCode: (code, slot) => this.checkedCode(code, slot),
         marker: (code) => `jsEmptyMarker(${code})`,
       },
       typeOf: (n) => this.typeOf(n),
@@ -9659,7 +9680,8 @@ ${members.join('\n')}
       // A record's entry reads back optional, though TypeScript types it as the value.
       const entry = ts.isElementAccessExpression(e.left) && this.typeOf(e.left.expression).replace(/\?$/, '').startsWith('JSRecord<') && t !== 'Any?' && !isOptional(t);
       const read = /\[jsKey: [^\]]+\]$/.test(target) && t !== 'Any?' ? this.fromAnyCode(target, t, true) : assigned || entry ? unwrappedCode(target) : target;
-      return `({ () ${tp ? 'throws ' : ''}-> ${t} in ${tp}${this.binary(e)}; return ${this.tryPrefix(e.left)}${read} }())`;
+      const write = this.binary(e);
+      return `({ () ${tp ? 'throws ' : ''}-> ${t} in ${write.startsWith('if ') ? write : tp + write}; return ${this.tryPrefix(e.left)}${read} }())`;
     }
     if (ts.isNumericLiteral(e)) return pureCode(numberLiteral(e.text));
     if (ts.isBigIntLiteral(e)) return `JSBigInt(literal: ${swiftString(e.text.replace(/n$/, ''))})`;
@@ -11687,9 +11709,9 @@ ${members.join('\n')}
       const target = callee.expression;
       const owner = this.symbolName(target);
       const signalValue = () => this.typeOf(target).replace(/^Signal<(.*)>$/, '$1');
-      if ((owner === 'Writable' || owner === 'WritableSignal') && method === 'set') return `${this.expr(target)}.value = ${this.signalWrite(target, e.arguments[0], signalValue(), false)}`;
+      if ((owner === 'Writable' || owner === 'WritableSignal') && method === 'set') return `${this.expr(target)}.value = ${this.signalWrite(target, e.arguments[0], signalValue(), true, e)}`;
       // A prop (`this.x`) reads as its value: the signal itself is the field.
-      if (owner === 'InputSignal' && method === '$assign') return `${ts.isPropertyAccessExpression(target) && this.isSelf(target.expression) && this.props.has(target.name.text) ? `self.${ident(target.name.text)}` : this.expr(target)}.value = ${this.signalWrite(target, e.arguments[0], signalValue(), false)}`;
+      if (owner === 'InputSignal' && method === '$assign') return `${ts.isPropertyAccessExpression(target) && this.isSelf(target.expression) && this.props.has(target.name.text) ? `self.${ident(target.name.text)}` : this.expr(target)}.value = ${this.signalWrite(target, e.arguments[0], signalValue(), true, e)}`;
       if ((owner === 'Writable' || owner === 'WritableSignal') && method === 'update') return `${this.expr(target)}.update(${this.closure(e.arguments[0] as ts.ArrowFunction)})`;
       if (owner === 'WritableSignal' && method === '$write') {
         // Solid's setter: a function updates, anything else is the new value.
@@ -11760,7 +11782,7 @@ ${members.join('\n')}
         // An untyped receiver of a typed interface (`value: IColor` with no protocol): the result as the interface types it.
         const t = this.typeOf(e);
         if (t === 'Any?' || t === 'Void' || this.rawOptional.has(e)) return code;
-        return callee.questionDotToken ? this.undefinedAs(this.fromAny(code, optionalType(t)), t) : this.fromAnyCode(code, t, true);
+        return callee.questionDotToken ? this.undefinedAs(this.fromAny(code, optionalType(t)), t) : this.untypedResult(e, code, t);
       }
       // A field holding a function untyped (`private _resolve;`): called with the object as `this`.
       const field = this.resolve(callee.name)?.valueDeclaration;
@@ -13654,7 +13676,7 @@ ${members.join('\n')}
       const kept = t !== declared || this.recordEntry(e.left) ? unwrappedCode(read) : read;
       // Held as the right side's own type where the target is untyped: the write converts it as `=` does.
       const vt = t === 'Any?' && !['Void', 'Any?'].includes(this.typeOf(e.right)) ? this.typeOf(e.right) : t;
-      const given = `${this.tryPrefix(e.right)}${this.stored(e.right, e.left, vt, false)}`, current = `${this.tryPrefix(e.left)}${this.expr(e.left)}`;
+      const given = `${this.tryPrefix(e.right)}${this.stored(e.right, e.left, vt)}`, current = `${this.tryPrefix(e.left)}${this.expr(e.left)}`;
       this.subst.set(e.right, value);
       this.heldValues.set(e.right, vt);
       try {
@@ -13714,7 +13736,8 @@ ${members.join('\n')}
   /** `left = right` (also the assignment `??=` and `||=` make). */
   private assignment(e: ts.BinaryExpression): string {
     const left = e.left, right = e.right;
-    const checks = assignedTo(left, right);
+    // A right side the translation converted already (`subst`) is not given again.
+    const checks = assignedTo(left, right) && !this.subst.has(right);
     const fnObject = ts.isPropertyAccessExpression(left) ? this.functionObjectOf(left) : null;
     if (fnObject && e.operatorToken.kind === ts.SyntaxKind.EqualsToken) return `${fnObject}[jsKey: ${swiftString((left as ts.PropertyAccessExpression).name.text)}] = ${this.stored(right, left, 'Any?', checks)}`;
     if (fnObject) throw this.error(e, `${ts.tokenToString(e.operatorToken.kind)} on a function's property`);
@@ -13839,12 +13862,12 @@ ${members.join('\n')}
       case K.QuestionQuestionEqualsToken:
         if (this.isAny(e.left)) return `if ${this.tryPrefix(e.left)}jsIsNullish(${l()}) { ${this.tryPrefix(e)}${this.assignment(e)} }`;
         // A variable held optional while undefined: assigned only while it is.
-        if (ts.isIdentifier(e.left) && this.undefinedVars.has(this.resolve(e.left)!)) return `if ${target()} == nil { ${this.tryPrefix(e.right)}${target()} = ${this.stored(e.right, e.left, this.typeOf(e.left).replace(/\?$/, ''), false)} }`;
+        if (ts.isIdentifier(e.left) && this.undefinedVars.has(this.resolve(e.left)!)) return `if ${target()} == nil { ${this.tryPrefix(e.right)}${target()} = ${this.stored(e.right, e.left, this.typeOf(e.left).replace(/\?$/, ''))} }`;
         // A slot held optional takes a fallback that may be undefined as it is (`this._appearance ??= lookup()` of null).
-        if (readWrite(e, this.checker)?.stored ?? true) return `${target()} = ${l()} ?? ${(isOptional(this.declaredTypeOf(e.left) ?? this.typeOf(e.left)) ? this.maybeUndefined(e.right) : null) ?? this.stored(e.right, e.left, this.typeOf(e.left).replace(/\?$/, ''), false)}`;
-        return `if ${this.tryPrefix(e.left)}jsIsNullish(${l()}) { ${this.tryPrefix(e.right)}${target()} = ${(isOptional(this.declaredTypeOf(e.left) ?? this.typeOf(e.left)) ? this.maybeUndefined(e.right) : null) ?? this.stored(e.right, e.left, this.typeOf(e.left).replace(/\?$/, ''), false)} }`;
-      case K.BarBarEqualsToken: return `if !jsTruthy(${this.tryPrefix(e.left)}${l()}) { ${this.tryPrefix(e)}${target()} = ${this.stored(e.right, e.left, this.typeOf(e.left), false)} }`;
-      case K.AmpersandAmpersandEqualsToken: return `if jsTruthy(${this.tryPrefix(e.left)}${l()}) { ${this.tryPrefix(e)}${target()} = ${this.stored(e.right, e.left, this.typeOf(e.left), false)} }`;
+        if (readWrite(e, this.checker)?.stored ?? true) return `${target()} = ${l()} ?? ${(isOptional(this.declaredTypeOf(e.left) ?? this.typeOf(e.left)) ? this.maybeUndefined(e.right) : null) ?? this.stored(e.right, e.left, this.typeOf(e.left).replace(/\?$/, ''))}`;
+        return `if ${this.tryPrefix(e.left)}jsIsNullish(${l()}) { ${this.tryPrefix(e.right)}${target()} = ${(isOptional(this.declaredTypeOf(e.left) ?? this.typeOf(e.left)) ? this.maybeUndefined(e.right) : null) ?? this.stored(e.right, e.left, this.typeOf(e.left).replace(/\?$/, ''))} }`;
+      case K.BarBarEqualsToken: return `if !jsTruthy(${this.tryPrefix(e.left)}${l()}) { ${this.tryPrefix(e)}${target()} = ${this.stored(e.right, e.left, this.typeOf(e.left))} }`;
+      case K.AmpersandAmpersandEqualsToken: return `if jsTruthy(${this.tryPrefix(e.left)}${l()}) { ${this.tryPrefix(e)}${target()} = ${this.stored(e.right, e.left, this.typeOf(e.left))} }`;
       case K.PlusToken: {
         if (this.isString(e.left) || this.isString(e.right)) return `${this.concatOperand(e.left)} + ${this.concatOperand(e.right)}`;
         if (this.isAny(e.left) || this.isAny(e.right)) return `jsAdd(${this.coerce(e.left, 'Any?')}, ${this.coerce(e.right, 'Any?')})`;
@@ -14351,12 +14374,12 @@ ${members.join('\n')}
         const valueSym = this.checker.getShorthandAssignmentValueSymbol(p);
         const undefinedVar = !!valueSym && this.undefinedVars.has(valueSym) && !!want && !isOptional(want) && want !== 'Any?';
         if (loose(want) && !actual) {
-          given.set(p.name.text, variable === 'Any?' || this.typeOf(p.name) === 'Any?' ? this.fromAny(code, optionalType(want!)) : code);
+          given.set(p.name.text, variable === 'Any?' || this.typeOf(p.name) === 'Any?' ? this.checkedPlacement(p.name, optionalType(want!), code, this.storeSlot(p.name, optionalType(want!), p)) ?? this.fromAny(code, optionalType(want!)) : code);
           continue;
         }
         // An untyped variable for a typed field (`{ tint }`, tint untyped): converted as script reads it there.
         if (!actual && want && want !== 'Any?' && (variable === 'Any?' || this.typeOf(p.name) === 'Any?')) {
-          given.set(p.name.text, this.fromAny(code, want));
+          given.set(p.name.text, this.checkedPlacement(p.name, want, code, this.storeSlot(p.name, want, p)) ?? this.fromAny(code, want));
           continue;
         }
         given.set(p.name.text, actual && want && functionParts(want) && actual !== want ? this.convert(code, actual, want) : undefinedVar ? this.undefinedAs(code, want!) : unwrap && !isUnwrap(code) ? unwrappedCode(code) : want === 'Any?' && this.states.nilIsNull(p.name) ? `jsNulled(${code})` : code);
