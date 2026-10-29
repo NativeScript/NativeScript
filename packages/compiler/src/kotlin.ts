@@ -8,8 +8,8 @@ import { assignedValues, openSpreadType, spreadsArrays, definitelyAssignedFields
 import { memberName } from './stable-names.ts';
 import { shadowConversions } from './conversion-shadow.ts';
 import { parseNativeType, type Mark, type Value } from './conversion.ts';
-import { argumentSlot, awaitSlot, conditionCell, type ConditionBackend, negatedCell, type AwaitSlot, isEnumObject, place, resultSlot, returnCell, type ParamSlot, type PlacementBackend, type ResultSlot, type ReturnBackend, type ReturnCell, type Store, type StoreSlot, assignedTo, codeStoreSlot, placeCode, storeSlot, emptyComparison, observerSlot, scriptComparison } from './placement.ts';
-import { convertedRead, onlyNull, ValueStates, type StateBackend } from './value-states.ts';
+import { argumentSlot, awaitSlot, conditionCell, type ConditionBackend, negatedCell, type AwaitSlot, isEnumObject, place, resultSlot, returnCell, type ParamSlot, type PlacementBackend, type ResultSlot, type ReturnBackend, type ReturnCell, type Store, type StoreSlot, assignedTo, codeStoreSlot, placeCode, storeSlot, emptyComparison, observerSlot, scriptComparison, type ElementStore, elementStoreOf, bindingSlot } from './placement.ts';
+import { convertedRead, onlyNull, ValueStates, type StateBackend, type NulledRead } from './value-states.ts';
 import type { Form } from './forms.ts';
 import { isCoreDeclaration } from './core.ts';
 import { nonVirtualName } from './swift.ts';
@@ -939,8 +939,7 @@ export class Translator implements AsyncTranslator {
       looseObjectType: (type) => !isNullable(type) && !isFunctionType(type) && !['Any', 'Unit', 'Nothing'].includes(type) && this.isObjectType(type),
       resultHoldsNull: (d) => this.isObjectType(this.returnTypeOf(d)) && !['String', 'Double', 'Boolean'].includes(this.returnTypeOf(d)),
       nullableParameter: (type) => !type.endsWith('?') && !['Double', 'Boolean', 'Unit', 'Nothing'].includes(type) && !isFunctionType(type) && (type === 'String' || this.isObjectType(type)),
-      nulledEntry: (e, code) => this.nulledEntry(e, code),
-      untypedCode: (e) => this.coerceTyped(e, 'Any?'),
+      nulledEntry: (read, code) => this.nulledEntry(read, code),
       optionalShapeField: (e) => this.optionalShapeField(e),
       heldOptional: (x) => {
         const sym = ts.isIdentifier(x) ? this.resolve(x) : undefined;
@@ -5634,7 +5633,8 @@ export class Translator implements AsyncTranslator {
         const literal = ts.isVariableDeclaration(name.parent) && name.parent.initializer && ts.isObjectLiteralExpression(name.parent.initializer) ? name.parent.initializer : undefined;
         const built = literal && this.checker.getContextualType(literal)?.getProperty(key);
         if (this.library && built && t !== 'Any?' && this.type(this.checker.getTypeOfSymbolAtLocation(built, literal!), literal) === 'Any?') read = this.fromAnyCode(read, t, true);
-      } else if (tuple) read = (type === 'Any?' && ts.isIdentifier(el.name) && !el.initializer && this.checkedBinding(el, `jsField(${value}, "${k}")`, elementType(k))) || tupleField(k);
+      } else if (tuple && type === 'Any?' && !ts.isIdentifier(el.name) && !this.isAny(el.name)) read = `jsField(${value}, "${k}")`;
+      else if (tuple) read = (type === 'Any?' && ts.isIdentifier(el.name) && !el.initializer && this.checkedBinding(el, `jsField(${value}, "${k}")`, elementType(k))) || tupleField(k);
       else if (type === 'Any?') read = `jsGet(${value}, "${k}")`;
       else {
         // An array pattern past the array's end binds undefined.
@@ -5663,7 +5663,9 @@ export class Translator implements AsyncTranslator {
         lines.push(declare(el.name, t, fromAny));
       } else {
         const tmp = this.fresh('__d');
-        lines.push(`${i}val ${tmp} = ${read}`, this.bindTo(el.name, tmp, '', mutable));
+        // A typed pattern's part of an untyped value is untyped too.
+        const untypedPart = (this.isAny(name) || type === 'Any?') && !this.isAny(el.name);
+        lines.push(`${i}val ${tmp} = ${read}`, this.bindTo(el.name, tmp, untypedPart ? 'Any?' : '', mutable));
       }
     });
     return lines.join('\n');
@@ -5682,7 +5684,7 @@ export class Translator implements AsyncTranslator {
     else {
       const want = this.typeOf(to);
       const from = typed ? this.type(iterated!, to) : 'Any?';
-      assigns.push(`${this.lvalue(to)} = ${from === 'Any?' ? this.fromAnyCode(item, want, true) : this.convert(item, from, want)}`);
+      assigns.push(`${this.lvalue(to)} = ${from === 'Any?' ? this.checkedBinding(to, item, want) ?? this.fromAnyCode(item, want, true) : this.convert(item, from, want)}`);
     }
     return this.loopBody(() => {
       const label = this.takeLabel();
@@ -6046,7 +6048,10 @@ export class Translator implements AsyncTranslator {
       const want = this.typeOf(to);
       let code: string;
       const untypedRead = (c: string) => (['String', 'Double', 'Boolean'].includes(want) ? this.fromAnyCode(c, want, true) : this.fromAny(c, want));
-      if (read.type === 'Any?') code = untypedRead(init ? `(${read.code} ?: ${this.coerce(init, 'Any?')})` : read.code);
+      if (read.type === 'Any?') {
+        const c = init ? `(${read.code} ?: ${this.coerce(init, 'Any?')})` : read.code;
+        code = this.checkedBinding(to, c, want) ?? untypedRead(c);
+      }
       else if (init && isNullable(read.type)) code = `(${this.convert(read.code, read.type, optionalType(want))} ?: ${this.coerce(init, want)})`;
       else if (read.type === optionalType(want) && read.type !== want) code = this.undefinedAs(read.code, want);
       else code = this.convert(read.code, read.type, want);
@@ -6282,26 +6287,12 @@ export class Translator implements AsyncTranslator {
     try { return this.expr(e); } finally { this.nullishCalls.delete(e); }
   }
 
-  /** `nullableEntry`'s read: `jsNulledEntry` of the map value, `jsNulledElement` of the element, or the field by key. */
-  private nulledEntry(e: ts.Expression, code: () => string): string | null {
-    const bare = ts.skipOuterExpressions(e);
-    const valueType = (t: ts.Type, k: number) => (this.checker.getTypeArguments(t as ts.TypeReference) ?? [])[k];
-    if (ts.isCallExpression(bare) && ts.isPropertyAccessExpression(bare.expression) && !bare.expression.questionDotToken && bare.expression.name.text === 'get' && bare.arguments.length === 1) {
-      const map = this.checker.getTypeAtLocation(bare.expression.expression);
-      const held = map.getSymbol()?.name === 'Map' ? valueType(map, 1) : undefined;
-      const entry = held && onlyNull(held) ? this.markOf(code()) : undefined;
-      if (entry?.op === 'entry' && /^JSMap</.test(this.typeOf(bare.expression.expression))) return `jsNulledEntry(${entry.of.code}, ${entry.key.code})`;
-      return null;
-    }
-    if (ts.isElementAccessExpression(bare) && !bare.questionDotToken && this.checker.isArrayType(this.checker.getTypeAtLocation(bare.expression))) {
-      const held = valueType(this.checker.getTypeAtLocation(bare.expression), 0);
-      if (held && onlyNull(held) && /^JSArray</.test(this.typeOf(bare.expression))) return `jsNulledElement(${this.expr(bare.expression)}, ${this.toNumber(bare.argumentExpression)})`;
-      return null;
-    }
-    if (notedField(this.states, bare) && !isWriteTarget(bare)) return `${this.expr(bare.expression)}.jsGet(${kotlinString(bare.name.text)})`;
-    // An optional field that may hold null or undefined: the literal's shape notes which (`jsNulls`), read by key.
-    const f = ts.isPropertyAccessExpression(bare) && !isWriteTarget(bare) ? this.states.nullishShapeField(bare) : null;
-    return f ? `${this.expr((bare as ts.PropertyAccessExpression).expression)}.jsGet(${kotlinString(f)})` : null;
+  /** `nullableEntry`'s read: `jsNulledEntry` of the Map value `code` reads, `jsNulledElement` of the element, or the field by its key. */
+  private nulledEntry(read: NulledRead, code: () => string): string | null {
+    if (read.kind === 'field') return `${this.expr(read.read.expression)}.jsGet(${kotlinString(read.name)})`;
+    if (read.kind === 'element') return `jsNulledElement(${this.expr(read.read.expression)}, ${this.toNumber(read.read.argumentExpression)})`;
+    const entry = this.markOf(code());
+    return entry?.op === 'entry' ? `jsNulledEntry(${entry.of.code}, ${entry.key.code})` : null;
   }
 
   /** `nullishShapeField`'s field: one of a shape or interface object class whose Kotlin type is nullable and not a function. */
@@ -8024,11 +8015,11 @@ export class Translator implements AsyncTranslator {
     return this.type(entry.type, slot.at) === slot.target.replace(/\?$/, '') ? this.checkedConvert(code, entry, slot.at, isNullable(slot.target)) : null;
   }
 
-  /** A variable a pattern binds from an untyped value (`foreignBinding`): its value `code` converted checked, or null. */
-  private checkedBinding(el: ts.BindingElement, code: string, to: string): string | null {
-    const entry = this.lenient || this.library ? null : this.states.foreignBinding(el);
-    if (!entry || this.type(entry.type, el) !== to.replace(/\?$/, '')) return null;
-    return this.checkedConvert(code, entry, el, isNullable(to));
+  /** A variable a pattern binds or assigns from an untyped value (`bindingSlot`): its value `code` converted checked, or null. */
+  private checkedBinding(at: ts.BindingElement | ts.Expression, code: string, to: string): string | null {
+    const entry = this.lenient || this.library ? null : bindingSlot(this, to, at).checked;
+    if (!entry || this.type(entry.type, at) !== to.replace(/\?$/, '')) return null;
+    return this.checkedConvert(code, entry, at, isNullable(to));
   }
 
   /** An undefined-or-value as the TypeScript type reads it: NaN, "undefined" and false are what undefined converts to. */
@@ -8251,12 +8242,22 @@ export class Translator implements AsyncTranslator {
     return args.map((a) => `, ${place(this.placement, a, slot(a))}`).join('');
   }
 
-  /** The slot of each argument `call` gives a rest parameter (`decl`), or an untyped callee: one `element` each, placed with no declared parameter's cell. */
-  /** An argument of `call` with no declared parameter's cell, as `element`: a built-in's (`push`, `Math.max`) or one an untyped callee takes. */
+  /** An argument of `call` with no declared parameter's cell, as `element`: a built-in's (`Math.max`) or one an untyped callee takes. */
   private restArgument(call: ts.CallExpression | ts.NewExpression, a: ts.Expression, element: string): string {
     return place(this.placement, a, this.restSlot(call, element)(a));
   }
 
+  /** The slot of each value `at` stores as a container's element (`elementStoreOf`), held as `element`. */
+  private elementSlot(at: ElementStore, element: string): (a: ts.Expression) => StoreSlot {
+    return (a) => storeSlot(this.placement, element, at, a);
+  }
+
+  /** A value `call` stores as an element of its receiver (`push`'s, `add`'s), held as `element`. */
+  private elementArgument(call: ts.CallExpression, a: ts.Expression, element: string): string {
+    return place(this.placement, a, this.elementSlot(call, element)(a));
+  }
+
+  /** The slot of each argument `call` gives a rest parameter (`decl`), or an untyped callee: one `element` each, placed with no declared parameter's cell. */
   private restSlot(call: ts.CallExpression | ts.NewExpression, element: string, decl?: ts.Declaration): (a: ts.Expression) => ParamSlot {
     return (a) => {
       const k = call.arguments?.indexOf(a) ?? -1;
@@ -8265,7 +8266,7 @@ export class Translator implements AsyncTranslator {
   }
 
   /** Arguments (spreads included) as one `JSArray` of `arrayType`; `slot` places each element where they are a call's. */
-  packed(items: readonly ts.Expression[], arrayType: string, slot?: (a: ts.Expression) => ParamSlot): string {
+  packed(items: readonly ts.Expression[], arrayType: string, slot?: (a: ts.Expression) => ParamSlot | StoreSlot): string {
     const el = arrayType.replace(/^JSArray<(.*)>$/, '$1');
     const placed = (x: ts.Expression) => (slot ? place(this.placement, x, slot(x)) : this.coerce(x, el));
     const parts: string[] = [];
@@ -9390,18 +9391,18 @@ export class Translator implements AsyncTranslator {
     const element = elOf();
     switch (name) {
       case 'push': case 'unshift':
-        if (e.arguments.some(ts.isSpreadElement)) return `${t}.${name}All(${this.packed(e.arguments, `JSArray<${element}>`, this.restSlot(e, element))})`;
-        return `${t}.${name}(${e.arguments.map((x) => this.restArgument(e, x, element)).join(', ')})`;
+        if (e.arguments.some(ts.isSpreadElement)) return `${t}.${name}All(${this.packed(e.arguments, `JSArray<${element}>`, this.elementSlot(e, element))})`;
+        return `${t}.${name}(${e.arguments.map((x) => this.elementArgument(e, x, element)).join(', ')})`;
       case 'pop': case 'shift': case 'reverse': case 'keys': case 'entries': case 'values': return `${t}.${name}()`;
       case 'toLocaleString': if (!e.arguments.length) return `${t}.toLocaleString()`; break;
       case 'toString': return `${t}.join()`;
       case 'flat': return e.arguments.length || !/^JSArray<JSArray</.test(this.typeOf(target)) ? `${t}.flatAny(${e.arguments[0] ? this.toNumber(e.arguments[0]) : ''})` : `${t}.flat()`;
       case 'splice': {
-        if (e.arguments.slice(2).some(ts.isSpreadElement)) return `${t}.spliceAll(${e.arguments.slice(0, 2).map((x) => this.toNumber(x)).join(', ')}, ${this.packed(e.arguments.slice(2), `JSArray<${element}>`, this.restSlot(e, element))}.storage)`;
-        const parts = [...e.arguments.slice(0, 2).map((x) => this.toNumber(x)), ...e.arguments.slice(2).map((x) => this.restArgument(e, x, element))];
+        if (e.arguments.slice(2).some(ts.isSpreadElement)) return `${t}.spliceAll(${e.arguments.slice(0, 2).map((x) => this.toNumber(x)).join(', ')}, ${this.packed(e.arguments.slice(2), `JSArray<${element}>`, this.elementSlot(e, element))}.storage)`;
+        const parts = [...e.arguments.slice(0, 2).map((x) => this.toNumber(x)), ...e.arguments.slice(2).map((x) => this.elementArgument(e, x, element))];
         return `${t}.splice(${parts.join(', ')})`;
       }
-      case 'fill': return `${t}.fill(${[this.restArgument(e, e.arguments[0], element), ...e.arguments.slice(1).map((x) => this.toNumber(x))].join(', ')})`;
+      case 'fill': return `${t}.fill(${[this.elementArgument(e, e.arguments[0], element), ...e.arguments.slice(1).map((x) => this.toNumber(x))].join(', ')})`;
       case 'slice': case 'at': return `${t}.${name}(${e.arguments.map((x) => this.toNumber(x)).join(', ')})`;
       case 'indexOf': case 'lastIndexOf': case 'includes': return `${t}.${name}(${[this.restArgument(e, e.arguments[0], element.startsWith('JSNullish<') ? element : optionalType(element)),...e.arguments.slice(1).map((x) => this.toNumber(x))].join(', ')})`;
       case 'join': return `${t}.join(${e.arguments[0] ? (this.library ? this.str(e.arguments[0]) : this.expr(e.arguments[0])) : ''})`;
@@ -9656,9 +9657,10 @@ export class Translator implements AsyncTranslator {
     const type = this.typeOf(target).replace(/\?$/, '');
     const [k, v] = (() => { const m = /^JSMap<(.*)>$/.exec(type); if (m) return splitTopLevel(m[1]); return [/^JSSet<(.*)>$/.exec(type)?.[1] ?? 'Any?', '']; })();
     // Library mode: a value or key that may be null where the collection's type says not (`cache.set(key, null)`), stored as script stores it.
+    const given = (n: number, as: string) => (elementStoreOf(this.checker, e.arguments[n]) ? this.elementArgument(e, e.arguments[n], as) : this.restArgument(e, e.arguments[n], as));
     const arg = (n: number, as: string) => this.library && this.isObjectType(as) && !isNullable(as) && !['String', 'Double', 'Boolean'].includes(as) && !isFunctionType(as)
       && (isNullable(this.declaredTypeOf(e.arguments[n]) ?? this.typeOf(e.arguments[n])) || !!this.maybeUndefined(e.arguments[n]))
-      ? this.unchecked(as, this.restArgument(e, e.arguments[n], optionalType(as))) : this.restArgument(e, e.arguments[n], as);
+      ? this.unchecked(as, given(n, optionalType(as))) : given(n, as);
     switch (name) {
       case 'get': {
         const key = arg(0, k);
@@ -10532,7 +10534,8 @@ export class Translator implements AsyncTranslator {
     if (nulled) throw this.error(nulled, `the null a non-strict function may give, in an array of ${el}`);
     if (!e.elements.some(ts.isSpreadElement)) {
       if (e.elements.some(ts.isOmittedExpression)) throw this.error(e, 'an array hole');
-      return this.marked(`jsArrayOf<${el}>(${e.elements.map((x) => this.coerce(x, el)).join(', ')})`, { op: 'array', element: el });
+      const slot = this.elementSlot(e, el);
+      return this.marked(`jsArrayOf<${el}>(${e.elements.map((x) => place(this.placement, x, slot(x))).join(', ')})`, { op: 'array', element: el });
     }
     const parts: string[] = [];
     let run: string[] = [];
@@ -10543,7 +10546,7 @@ export class Translator implements AsyncTranslator {
         // Library mode: an array of untyped values (`const cssClasses = []`) spread where the literal's elements are typed.
         parts.push(this.library && el !== 'Any?' && this.elementTypeOf(x.expression) === 'Any?' ? `${items}.map { ${this.fromAny('it', el)} }` : items);
       } else if (ts.isOmittedExpression(x)) throw this.error(x, 'an array hole');
-      else run.push(this.coerce(x, el));
+      else run.push(place(this.placement, x, this.elementSlot(e, el)(x)));
     }
     if (run.length) parts.push(`listOf<${el}>(${run.join(', ')})`);
     return `${t}(${parts.join(' + ')})`;

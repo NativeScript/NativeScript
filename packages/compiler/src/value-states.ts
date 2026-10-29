@@ -4,7 +4,8 @@ import { admitsUndefined, alwaysEnds, givenBy, heldDowncasts, implementedInterfa
 import { type Form, Forms, isGeneric, ONE_ELEMENT, representation } from './forms.ts';
 import { isAsync, isStatic } from './throws.ts';
 import { shadowForms } from './forms-shadow.ts';
-import { storeOf, type Store } from './placement.ts';
+import { containerKind, elementStoreOf, isElementStore, storeOf, type ElementStore, type Store, patternSource } from './placement.ts';
+import { notedField } from './shapes.ts';
 
 const COMPILER = dirname(import.meta.dirname);
 /** Sources the compiler ships to be compiled with an app: plugin bindings and ports of libraries. */
@@ -50,10 +51,8 @@ export interface StateBackend {
   resultHoldsNull(d: ts.FunctionDeclaration | ts.MethodDeclaration): boolean;
   /** A plugin parameter's native type that must take nil though its declared type has no empty value. */
   nullableParameter(t: string): boolean;
-  /** `nullableEntry`'s emission once the shared gate passes. */
-  nulledEntry(e: ts.Expression, code: () => string): string | null;
-  /** The value read untyped, as `nullDistinct` reads it. */
-  untypedCode(e: ts.Expression): string;
+  /** `read` read untyped, from `code`, the read's own untyped translation; null where that is no such read. */
+  nulledEntry(read: NulledRead, code: () => string): string | null;
   /** The keyed field a member read whose type holds null and undefined is noted under (`jsNulls`), or null. */
   optionalShapeField(e: ts.PropertyAccessExpression): string | null;
   /** A string, number or boolean read by name or call that the backend holds optional though its type says present. */
@@ -91,6 +90,12 @@ export function onlyNull(t: ts.Type): boolean {
   const parts = t.isUnion() ? t.types : [t];
   return parts.some((x) => x.flags & ts.TypeFlags.Null) && !parts.some((x) => x.flags & (ts.TypeFlags.Undefined | ts.TypeFlags.Void | ts.TypeFlags.Any | ts.TypeFlags.Unknown));
 }
+
+/** `ValueStates.nulledRead`'s read: an array's element, a Map's value (`m.get(k)`), or a field by the key it is noted under. */
+export type NulledRead =
+  | { kind: 'element'; read: ts.ElementAccessExpression }
+  | { kind: 'entry'; read: ts.CallExpression }
+  | { kind: 'field'; read: ts.PropertyAccessExpression; name: string };
 
 export class ValueStates {
   /** A non-strict app's variables given only a null result (`nullResult`) or a value: their empty value is null. The backends note them as they declare them. */
@@ -431,13 +436,37 @@ export class ValueStates {
   }
 
   /**
-   * An array element or map value of strict code's `T | null` values, or a field noted null, read untyped: missing is
-   * undefined, an empty value held null. `code` builds the value's untyped translation; call it only when needed, since
+   * `nulledRead`'s value read untyped. `code` builds the value's untyped translation; call it only when needed, since
    * building it changes how later reads compile.
    */
   nullableEntry(e: ts.Expression, code: () => string): string | null {
-    if (this.backend.lenient || this.backend.library || this.plugin(e)) return null;
-    return this.backend.nulledEntry(e, code);
+    const read = this.nulledRead(e);
+    return read && this.backend.nulledEntry(read, code);
+  }
+
+  /**
+   * An array element or Map value of strict code's `T | null` values, or a field noted null, whose untyped read tells
+   * null from undefined, where its optional alone does not: missing is undefined, an empty value held null.
+   */
+  nulledRead(e: ts.Expression): NulledRead | null {
+    const b = this.backend;
+    if (b.lenient || b.library || this.plugin(e)) return null;
+    const bare = ts.skipOuterExpressions(e);
+    const held = (t: ts.Type, k: number): ts.Type | undefined => this.checker.getTypeArguments(t as ts.TypeReference)?.[k];
+    if (ts.isElementAccessExpression(bare)) {
+      const t = this.checker.getTypeAtLocation(bare.expression), el = !bare.questionDotToken && this.checker.isArrayType(t) ? held(t, 0) : undefined;
+      return el && onlyNull(el) ? { kind: 'element', read: bare } : null;
+    }
+    if (ts.isCallExpression(bare)) {
+      const callee = bare.expression;
+      if (!ts.isPropertyAccessExpression(callee) || callee.questionDotToken || callee.name.text !== 'get' || bare.arguments.length !== 1) return null;
+      const t = this.checker.getTypeAtLocation(callee.expression), value = t.getSymbol()?.name === 'Map' ? held(t, 1) : undefined;
+      return value && onlyNull(value) ? { kind: 'entry', read: bare } : null;
+    }
+    if (!ts.isPropertyAccessExpression(bare) || isWriteTarget(bare)) return null;
+    // An optional field that may hold null or undefined: the literal's shape notes which (`jsNulls`), read by key.
+    const name = notedField(this, bare) ? bare.name.text : this.nullishShapeField(bare);
+    return name ? { kind: 'field', read: bare, name } : null;
   }
 
   /**
@@ -456,7 +485,7 @@ export class ValueStates {
 
   /** A typed value whose untyped read tells null from undefined, where its optional alone does not. */
   nullDistinct(e: ts.Expression): boolean {
-    return this.nilIsNull(e) || !!this.nullishRead(e) || this.nullishElementRead(e) || !!this.nullableEntry(e, () => this.backend.untypedCode(e));
+    return this.nilIsNull(e) || !!this.nullishRead(e) || this.nullishElementRead(e) || !!this.nulledRead(e);
   }
 
   /**
@@ -1150,6 +1179,8 @@ export class ValueStates {
     while (ts.isParenthesizedExpression(x.parent)) x = x.parent;
     const p = x.parent;
     const slot = (d: ts.Declaration | undefined) => this.declaredSlot(d);
+    const element = elementStoreOf(this.checker, a);
+    if (element) return this.storeForm(element);
     if ((ts.isCallExpression(p) || ts.isNewExpression(p)) && p.expression !== x) return this.argumentForm(p, p.arguments!.indexOf(x as ts.Expression));
     if (ts.isReturnStatement(p) || (ts.isArrowFunction(p) && p.body === x)) {
       const fn = ts.isArrowFunction(p) ? p : ts.getContainingFunction(p);
@@ -1167,6 +1198,7 @@ export class ValueStates {
   /** The form of the slot of the app's own code `at` stores a value in, if it is one M6 checks. */
   private storeForm(at: Store): Form | null {
     const slot = (d: ts.Declaration | undefined) => this.declaredSlot(d);
+    if (isElementStore(this.checker, at)) return this.elementForm(at);
     if (ts.isVariableDeclaration(at)) return ts.isIdentifier(at.name) ? slot(at) : null;
     if (ts.isPropertyDeclaration(at) || (ts.isPropertySignature(at) && this.strictCode(at))) return this.fieldSlot(at, slot);
     if (ts.isPropertyAssignment(at) || (ts.isShorthandPropertyAssignment(at) && this.strictCode(at))) {
@@ -1198,7 +1230,7 @@ export class ValueStates {
     return { ...form, foreign: form.foreign || this.forms().fixedSlot(d), type: this.checker.getNonNullableType(this.checker.getTypeAtLocation((d as ts.NamedDeclaration).name ?? d)) };
   }
 
-  /** The form of the `k`th argument's slot of `call`, if it is one M6 checks: the app's parameter, or an element a collection method adds. */
+  /** The form of the `k`th argument's slot of `call`, if it is one M6 checks: the app's parameter. */
   private argumentForm(call: ts.CallExpression | ts.NewExpression, k: number): Form | null {
     if (ts.isCallExpression(call) && k === 0 && ts.isPropertyAccessExpression(call.expression) && call.arguments.length === 1) {
       const kind = this.signalKind(call.expression.expression), method = call.expression.name.text;
@@ -1206,24 +1238,33 @@ export class ValueStates {
       if (kind) return t && this.strictCode(call) ? this.signalForm(t) : null;
     }
     const sig = this.checker.getResolvedSignature(call)?.getDeclaration();
-    if (sig && !ts.isJSDocSignature(sig) && !sig.getSourceFile().isDeclarationFile) {
-      const param = sig.parameters[k];
-      return param && !param.dotDotDotToken && ts.isIdentifier(param.name) && !ts.isParameterPropertyDeclaration(param, param.parent) ? this.declaredSlot(param) : null;
-    }
-    return ts.isCallExpression(call) ? this.elementPlacement(call, k) : null;
+    if (!sig || ts.isJSDocSignature(sig) || sig.getSourceFile().isDeclarationFile) return null;
+    const param = sig.parameters[k];
+    return param && !param.dotDotDotToken && ts.isIdentifier(param.name) && !ts.isParameterPropertyDeclaration(param, param.parent) ? this.declaredSlot(param) : null;
   }
 
   /**
-   * A variable a destructuring pattern binds from an untyped value (`const { a }: { a: string } = raw`), named by a
-   * pattern whose type says what it holds: the form its value enters as, as `foreignPlacement` gives a placement's.
+   * A variable a destructuring pattern binds from an untyped value (`const { a }: { a: string } = raw`, nested parts
+   * too), named by a pattern whose type says what it holds, or a variable a destructuring assignment or a `for…of` over
+   * existing variables writes from one (`({ a } = raw)`): the form its value enters as, as `foreignPlacement` gives a
+   * placement's.
    */
-  foreignBinding(el: ts.BindingElement): Form | null {
-    const b = this.backend, pattern = el.parent, holder = pattern.parent;
-    if (b.library || b.lenient || el.dotDotDotToken || !ts.isIdentifier(el.name) || !this.appCode(el) || this.nullish().held.has(el)) return null;
-    if (!ts.isVariableDeclaration(holder) || !holder.initializer || !holder.type || !this.untypedValue(holder.initializer)) return null;
-    const form = this.forms().formOfSlot(el), type = this.checker.getNonNullableType(this.checker.getTypeAtLocation(el.name));
-    if (!form.foreign || type.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown) || isGeneric(type)) return null;
-    return this.withElements({ ...form, type }, false);
+  foreignBinding(at: ts.BindingElement | ts.Expression): Form | null {
+    const b = this.backend;
+    if (b.library || b.lenient || !this.appCode(at)) return null;
+    const source = patternSource(at);
+    if (!source || !this.untypedValue(source.whole)) return null;
+    let form: Form | null;
+    if (ts.isBindingElement(at)) {
+      if (at.dotDotDotToken || !ts.isIdentifier(at.name) || this.nullish().held.has(at) || source.iterated || !source.declaration?.type) return null;
+      form = { ...this.forms().formOfSlot(at), type: this.checker.getNonNullableType(this.checker.getTypeAtLocation(at.name)) };
+    } else {
+      // A shorthand target's own symbol is the literal's property, not the variable it writes.
+      const short = ts.isIdentifier(at) && ts.isShorthandPropertyAssignment(at.parent) && at.parent.name === at ? this.checker.getShorthandAssignmentValueSymbol(at.parent)?.valueDeclaration ?? null : undefined;
+      form = short === undefined ? this.storeForm(at) : short && (ts.isVariableDeclaration(short) || ts.isParameter(short)) ? this.declaredSlot(short) : null;
+    }
+    if (!form || !form.foreign || form.type.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown) || isGeneric(form.type)) return null;
+    return this.withElements(form, false);
   }
 
   /** The kind of signal `e` is, as the backends hold it (`Signal<T>`): Angular's and Svelte's writable ones, Angular's input, Vue's ref. */
@@ -1249,12 +1290,10 @@ export class ValueStates {
     return d && (ts.isPropertyDeclaration(d) || ts.isPropertySignature(d)) && ts.isIdentifier(d.name) ? slot(d) : null;
   }
 
-  /** `xs.push(v)`, `xs.unshift(v)`, `set.add(v)`, `map.set(k, v)`: the element form `v` enters, its receiver's. */
-  private elementPlacement(call: ts.CallExpression, k: number): Form | null {
-    if (!ts.isPropertyAccessExpression(call.expression)) return null;
-    const method = call.expression.name.text, kind = this.collection(call.expression.expression);
-    const places = (kind === 'Array' && (method === 'push' || method === 'unshift')) || (kind === 'Set' && method === 'add' && k === 0) || (kind === 'Map' && method === 'set' && k === 1);
-    return places ? this.forms().formOf(call.expression.expression).element ?? null : null;
+  /** The element form a value stored by `at` (`elementStoreOf`) enters: its receiver's, where `push`, `unshift`, `add` or `set` stores it. */
+  private elementForm(at: ElementStore): Form | null {
+    if (!ts.isCallExpression(at) || !ts.isPropertyAccessExpression(at.expression) || !['push', 'unshift', 'add', 'set'].includes(at.expression.name.text)) return null;
+    return this.collection(at.expression.expression) ? this.forms().formOf(at.expression.expression).element ?? null : null;
   }
 
   /** Whether a receiver of the app's own code (a variable, parameter or field) is an array, Set or Map. */
@@ -1265,10 +1304,7 @@ export class ValueStates {
       const d = name && this.checker.getSymbolAtLocation(name)?.valueDeclaration;
       if (!d || d.getSourceFile().isDeclarationFile || !this.appCode(d)) return null;
     }
-    const t = this.checker.getNonNullableType(this.checker.getTypeAtLocation(e));
-    if (this.checker.isArrayType(t)) return 'Array';
-    const kind = t.getSymbol()?.name;
-    return kind === 'Set' || kind === 'Map' ? kind : null;
+    return containerKind(this.checker, e);
   }
 
   /** A value of no type the program knows: typed `any` or `unknown`, or read from a slot held untyped for its foreign value. */

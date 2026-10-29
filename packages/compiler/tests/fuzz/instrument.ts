@@ -113,7 +113,7 @@ export function findSites(checker: ts.TypeChecker, sf: ts.SourceFile): Site[] {
       const kind: SiteKind = callbackCallee(n.expression) ? 'callback-arg' : 'arg';
       for (const a of n.arguments) add(a, kind, 'contextual');
     }
-    if (ts.isPropertyAssignment(n) && ts.isObjectLiteralExpression(n.parent) && !ts.isComputedPropertyName(n.name)) add(n.initializer, 'literal-field', 'contextual');
+    if (ts.isPropertyAssignment(n) && ts.isObjectLiteralExpression(n.parent) && !ts.isComputedPropertyName(n.name) && !isAssignmentTarget(n.parent)) add(n.initializer, 'literal-field', 'contextual');
     if (ts.isShorthandPropertyAssignment(n) && !n.objectAssignmentInitializer && !isAssignmentTarget(n.parent)) add(n.name, 'literal-field', 'contextual', `${n.name.text}: `);
     if (ts.isPropertyDeclaration(n) && n.initializer && !(ts.getCombinedModifierFlags(n) & (ts.ModifierFlags.Ambient | ts.ModifierFlags.Abstract))) add(n.initializer, 'field', n.type ?? 'own');
     if (ts.isBinaryExpression(n) && n.operatorToken.kind === ts.SyntaxKind.EqualsToken && (ts.isPropertyAccessExpression(n.left) || ts.isElementAccessExpression(n.left))) add(n.right, 'field', 'contextual');
@@ -141,8 +141,16 @@ function skipParens(e: ts.Expression): ts.Expression {
   return e;
 }
 
+/** A literal that is a destructuring target, or nested in one: its fields are places, and a guard around one is a syntax error. */
 function isAssignmentTarget(n: ts.Node): boolean {
-  return ts.isBinaryExpression(n.parent) && n.parent.left === n && n.parent.operatorToken.kind === ts.SyntaxKind.EqualsToken;
+  for (;;) {
+    const p = n.parent;
+    if ((ts.isPropertyAssignment(p) && p.initializer === n) || ts.isSpreadAssignment(p)) n = p.parent;
+    else if (ts.isArrayLiteralExpression(p) || ts.isSpreadElement(p) || ts.isParenthesizedExpression(p)) n = p;
+    else break;
+  }
+  const p = n.parent;
+  return (ts.isBinaryExpression(p) && p.left === n && p.operatorToken.kind === ts.SyntaxKind.EqualsToken) || (ts.isForOfStatement(p) && p.initializer === n);
 }
 
 /**
