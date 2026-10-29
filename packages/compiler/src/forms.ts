@@ -50,6 +50,7 @@ export function representation(f: Form): Representation {
 }
 
 const U = 1, N = 2, H = 4, F = 8;
+const LOGICAL_ASSIGNMENT = new Set([ts.SyntaxKind.QuestionQuestionEqualsToken, ts.SyntaxKind.BarBarEqualsToken, ts.SyntaxKind.AmpersandAmpersandEqualsToken]);
 /** `Form.missing`, carried beside U: whatever keeps or drops U keeps or drops it with it (`withMissing`). */
 const M = 16;
 /** `Form.absent`, carried beside U and N: kept by masks that keep either, dropped where both are. */
@@ -135,6 +136,10 @@ export class Forms {
   private readonly flows = new Map<ts.Node, Flow>();
   private readonly edges: [Slot, Slot, number][] = [];
   private readonly aliases: [Slot, Slot][] = [];
+  /** Calls whose own slot takes their receiver's foreign state (`call`). */
+  private readonly receiverResults = new Set<ts.CallExpression>();
+  /** Edges that carry states forward only: what their target's value is tested for says nothing of their source's. */
+  private readonly forwardOnly = new WeakSet<[Slot, Slot, number]>();
   /** The edges `share` added between a concrete slot and a type parameter's, by source. */
   private readonly crossed = new Map<Slot, Set<Slot>>();
   /** Values something tells null from undefined in, and slots whose readers do (§2.3b M1'), before the fixpoint. */
@@ -808,8 +813,9 @@ export class Forms {
   private propagateTypeObserved(): void {
     for (const e of this.typeObservedValues) for (const [s, keep] of this.flow(e).from) if (keep & F) this.find(s).typeObserved = true;
     const into = new Map<Slot, Slot[]>();
-    for (const [from, to, keep] of this.edges) {
-      if (!(keep & F)) continue;
+    for (const edge of this.edges) {
+      const [from, to, keep] = edge;
+      if (!(keep & F) || this.forwardOnly.has(edge)) continue;
       const x = this.find(from), y = this.find(to);
       if (x === y) continue;
       const list = into.get(y);
@@ -902,7 +908,7 @@ export class Forms {
       if (d && declarationFile(d) && this.unseenReader(d)) this.observe(e);
       return;
     }
-    if (ts.isBinaryExpression(p) && p.right === x && p.operatorToken.kind === ts.SyntaxKind.QuestionQuestionEqualsToken) {
+    if (ts.isBinaryExpression(p) && p.right === x && LOGICAL_ASSIGNMENT.has(p.operatorToken.kind)) {
       const d = this.declarationOf(ts.isPropertyAccessExpression(p.left) ? p.left.name : p.left);
       if (d) this.place(e, this.slotFor(d));
       return;
@@ -1563,7 +1569,18 @@ export class Forms {
     if (!d || ts.isJSDocSignature(d)) return { states: this.unknownStates(e) | optional, from: [] };
     if (declarationFile(d)) return { states: this.libraryStates(e, d) | optional, from: [] };
     if ((d as ts.FunctionLikeDeclaration).asteriskToken || ts.isConstructorDeclaration(d)) return { states: optional, from: [] };
-    return { states: optional, from: [[this.slotFor(d), ~0]] };
+    if (!ts.isPropertyAccessExpression(e.expression) || !(ts.isMethodDeclaration(d) || ts.isMethodSignature(d))) return { states: optional, from: [[this.slotFor(d), ~0]] };
+    // A method of a foreign receiver is whatever function the value holds by that name: its result is foreign too.
+    const own = this.slotFor(e);
+    if (!this.receiverResults.has(e)) {
+      this.receiverResults.add(e);
+      for (const [s, keep] of this.flow(e.expression.expression).from) {
+        const edge: [Slot, Slot, number] = [s, own, keep & F];
+        this.edges.push(edge);
+        this.forwardOnly.add(edge);
+      }
+    }
+    return { states: optional, from: [[this.slotFor(d), ~0], [own, ~0]] };
   }
 
   /** A read of `slot` at `e`: less what narrowing proves absent there, and a default's value for a missing one. */

@@ -8,7 +8,7 @@ import { assignedValues, openSpreadType, spreadsArrays, definitelyAssignedFields
 import { memberName } from './stable-names.ts';
 import { shadowConversions } from './conversion-shadow.ts';
 import { parseNativeType, type Mark, type Value } from './conversion.ts';
-import { argumentSlot, isEnumObject, place, resultSlot, returnCell, type ParamSlot, type PlacementBackend, type ResultSlot, type ReturnBackend, type ReturnCell, type Store, type StoreSlot, assignedTo, storeSlot } from './placement.ts';
+import { argumentSlot, isEnumObject, place, resultSlot, returnCell, type ParamSlot, type PlacementBackend, type ResultSlot, type ReturnBackend, type ReturnCell, type Store, type StoreSlot, assignedTo, codeStoreSlot, placeCode, storeSlot } from './placement.ts';
 import { convertedRead, onlyNull, ValueStates, type StateBackend } from './value-states.ts';
 import type { Form } from './forms.ts';
 import { isCoreDeclaration } from './core.ts';
@@ -2282,7 +2282,7 @@ export class Translator implements AsyncTranslator {
    * `defined`: fields `Object.defineProperty` may give a descriptor (`JSDefinable`). `expandoAbove`: a program base keeps
    * the object's expando, whose keys come after every class's fields, as JavaScript defines fields before script adds keys.
    */
-  private dynamicMembers(fields: { name: string; type: string }[], className: string | null, inherits: boolean, fallbackGet = 'null', fallbackSet = '', symbols: { key: string; member: string; type: string }[] = [], methods: { name: string; key?: string; params: string[]; ret: string }[] = [], expando = false, accessors: { name: string; type: string; readable: boolean; settable: boolean; set?: string }[] = [], superclass?: string, nulls = new Set<string>(), nilNull = new Set<string>(), keyed: KeyedMembers | null = null, rewritten = new Set<string>(), defined = new Set<string>(), expandoAbove = false, receiver?: string): string[] {
+  private dynamicMembers(fields: { name: string; type: string; at?: ts.PropertyDeclaration }[], className: string | null, inherits: boolean, fallbackGet = 'null', fallbackSet = '', symbols: { key: string; member: string; type: string }[] = [], methods: { name: string; key?: string; params: string[]; ret: string }[] = [], expando = false, accessors: { name: string; type: string; readable: boolean; settable: boolean; set?: string }[] = [], superclass?: string, nulls = new Set<string>(), nilNull = new Set<string>(), keyed: KeyedMembers | null = null, rewritten = new Set<string>(), defined = new Set<string>(), expandoAbove = false, receiver?: string): string[] {
     accessors = accessors.filter((a) => !fields.some((f) => f.name === a.name) && !methods.some((m) => m.name === a.name));
     const members = [...new Set([...accessors.map((a) => accessorKey(a.name)), ...methods.filter((m) => !m.key).map((m) => m.name)])];
     const at = (n: string) => { const k = keyed?.order.indexOf(n) ?? -1; return k < 0 ? Infinity : k; };
@@ -2333,7 +2333,7 @@ export class Translator implements AsyncTranslator {
       // A registered property's accessor is the prototype's, which converts what script sets (`col = "1"`): the value as it is.
       // A null is noted after the store, whose setter reads the key's state from before it; a field written through to its
       // source (`rewritten`) is written again once the null is noted.
-      ...fields.map((f) => withDefined(f, `            ${kotlinString(f.name)} -> ${(f as { expando?: boolean }).expando ? `jsExpandoSet(this, ${kotlinString(f.name)}, value)` : nulls.has(f.name) ? `{ this.${ident(f.name)} = ${isNullable(f.type) ? this.fromAny(pure('value'), f.type, f.name) : `if (jsIsNullish(value)) jsUncheckedNull<${f.type}>() else ${this.fromAny(pure('value'), f.type, f.name)}`}; jsNulls = jsNoteNull(jsNulls, ${kotlinString(f.name)}, value)${rewritten.has(f.name) ? `; jsWriteThrough(${kotlinString(f.name)})` : ''} }` : `this.${ident(f.name)} = ${this.fromAny(pure('value'), f.type, f.name)}`}`, definedSet)),
+      ...fields.map((f) => withDefined(f, `            ${kotlinString(f.name)} -> ${(f as { expando?: boolean }).expando ? `jsExpandoSet(this, ${kotlinString(f.name)}, value)` : nulls.has(f.name) ? `{ this.${ident(f.name)} = ${isNullable(f.type) ? this.storeFromAny(f) : `if (jsIsNullish(value)) jsUncheckedNull<${f.type}>() else ${this.storeFromAny(f)}`}; jsNulls = jsNoteNull(jsNulls, ${kotlinString(f.name)}, value)${rewritten.has(f.name) ? `; jsWriteThrough(${kotlinString(f.name)})` : ''} }` : `this.${ident(f.name)} = ${this.storeFromAny(f)}`}`, definedSet)),
       // A setter takes what script gives it (`textWrap = "true"`): as JavaScript reads it as the setter's type.
       ...accessors.filter((a) => a.settable).map((a) => `            ${kotlinString(accessorKey(a.name))} -> ${a.set ?? `this.${ident(a.name)} = ${a.type === 'Boolean' ? 'jsTruthy(value)' : a.type === 'Double' ? 'jsToNumber(value)' : this.fromAnyCode('value', a.type, true)}`}`),
       ...symbols.map((f) => `            ${f.key} -> this.${f.member} = ${this.fromAny('value', f.type)}`),
@@ -2343,6 +2343,11 @@ export class Translator implements AsyncTranslator {
       // `key in object` of a member its class declares (an accessor, a method), not only of its own keys.
       ...(members.length ? [`    override fun jsHasMember(key: String): Boolean = when (key) { ${members.map(kotlinString).join(', ')} -> true; else -> ${inherits && superclass ? `super<${superclass}>.jsHasMember(key)` : 'false'} }`] : []),
     ];
+  }
+
+  /** A dynamic setter's `value` (`obj[key] = v`, a binding's write) where Kotlin holds the field `f`. */
+  private storeFromAny(f: { name: string; type: string; at?: ts.PropertyDeclaration }): string {
+    return placeCode(this.placement, pure('value'), codeStoreSlot(this.placement, f.type, f.at)) ?? this.fromAny(pure('value'), f.type, f.name);
   }
 
   fromAnyCode(code: string, type: string, orZero = false): string {
@@ -3318,7 +3323,7 @@ export class Translator implements AsyncTranslator {
     const mods = (n: string, member = true) => (overridden.has(n) ? 'override ' : member ? memberOpen : '');
     const ctor = cls.members.find((m): m is ts.ConstructorDeclaration => ts.isConstructorDeclaration(m) && !!m.body);
     const paramProps = (ctor?.parameters ?? []).filter((p) => ts.canHaveModifiers(p) && ts.getModifiers(p)?.some((m) => [ts.SyntaxKind.PublicKeyword, ts.SyntaxKind.PrivateKeyword, ts.SyntaxKind.ProtectedKeyword, ts.SyntaxKind.ReadonlyKeyword].includes(m.kind)));
-    const fields: { name: string; type: string; expando?: boolean }[] = [];
+    const fields: { name: string; type: string; expando?: boolean; at?: ts.PropertyDeclaration }[] = [];
     // Before the fields: a constructor's writes note into it, which a later initializer would reset.
     const lines: string[] = [];
     const keyedInfo = isError ? null : this.keyedMembers(cls, !!appBase, lines, supertypes);
@@ -3481,11 +3486,11 @@ export class Translator implements AsyncTranslator {
       if ((plugin || readEarly || lateSetter || (!m.initializer && chainedThrough(cls, n))) && (nullInit || !m.initializer) && !isNullable(t) && t !== 'Any?' && t !== 'Unit') {
         // Unset (or `null`) in code checked without strictNullChecks: nullable, unwrapped where it is read.
         if (sym) this.nullableDecls.add(sym);
-        fields.push({ name: n, type: optionalType(t) });
+        fields.push({ name: n, type: optionalType(t), at: m });
         lines.push(`    ${fieldMods}var ${ident(n)}: ${optionalType(t)} = null`, ...setter);
         continue;
       }
-      fields.push({ name: n, type: t });
+      fields.push({ name: n, type: t, at: m });
       // Read early by a base class's constructor: null (undefined) until the class's own initialization sets it.
       if (m.initializer && fieldMods !== '@JvmField ' && this.earlyField(m)) {
         const backing = earlyBacking(n);
@@ -6184,6 +6189,7 @@ export class Translator implements AsyncTranslator {
         empty: (isNull) => (isNull ? 'JSNullish.Null' : 'JSNullish.Undefined'),
         nulled: (code) => `jsNulled(${code})`,
         checked: (e, target, slot) => this.checkedPlacement(e, target, undefined, slot),
+        checkedCode: (code, slot) => this.checkedCode(code, slot),
         marker: (code) => `jsEmptyMarker(${code})`,
       },
       typeOf: (n) => this.typeOf(n),
@@ -6779,7 +6785,7 @@ export class Translator implements AsyncTranslator {
       const op = e.operatorToken.kind;
       const test = op === ts.SyntaxKind.AmpersandAmpersandEqualsToken ? `jsTruthy(${read})` : op === ts.SyntaxKind.BarBarEqualsToken ? `!jsTruthy(${read})` : `jsIsNullish(${read})`;
       const target = this.declaredTypeOf(e.left) ?? this.typeOf(e.left);
-      const assigned = `val ${value} = ${this.stored(e.right, e.left, target, false)}`;
+      const assigned = `val ${value} = ${this.stored(e.right, e.left, target)}`;
       const kept = isNullable(target) ? this.undefinedAs(read, this.typeOf(e)) : read;
       this.subst.set(e.right, value);
       try {
@@ -6871,7 +6877,7 @@ export class Translator implements AsyncTranslator {
       if (wider) return this.fromAny(this.expr(e.expression), isNullable(to) ? optionalType(wider) : wider);
       // The assertion is erased in JavaScript: where Kotlin needs the type, the value is converted as script converts it there.
       const entry = from === 'Any?' && !this.library && !this.lenient ? this.states.foreignEntry(e) : null;
-      const checked = entry && this.type(entry.type, e) === to ? this.checkedConvert(this.expr(e.expression), entry, e) : null;
+      const checked = entry && this.type(entry.type, e) === to.replace(/\?$/, '') ? this.checkedConvert(this.expr(e.expression), entry, e, isNullable(to)) : null;
       if (checked) return checked;
       if (!this.library && from === 'Any?' && ['String', 'Double', 'Boolean'].includes(to)) return `jsAsserted${to === 'Double' ? 'Number' : to}(${this.expr(e.expression)})`;
       if (from === 'Any?' && to !== 'Any?') {
@@ -7976,6 +7982,18 @@ export class Translator implements AsyncTranslator {
     return this.checkedConvert(code ?? this.expr(a), entry, a, isNullable(to));
   }
 
+  /** A call's untyped result `code`, of the program's type `to`: checked where its slot takes a foreign value (`foreignPlacement`), else asserted. */
+  private untypedResult(e: ts.CallExpression, code: string, to: string): string {
+    const entry = this.lenient || this.library ? null : this.states.foreignPlacement(e);
+    return (entry && this.type(entry.type, e) === to.replace(/\?$/, '') ? this.checkedConvert(code, entry, e, isNullable(to)) : null) ?? this.fromAnyCode(code, to, true);
+  }
+
+  /** An untyped value only Kotlin's code has, stored in a field `slot` (`placeCode`): converted checked, or null. */
+  private checkedCode(code: string, slot: StoreSlot): string | null {
+    const entry = slot.checked!;
+    return this.type(entry.type, slot.at) === slot.target.replace(/\?$/, '') ? this.checkedConvert(code, entry, slot.at, isNullable(slot.target)) : null;
+  }
+
   /** A variable a pattern binds from an untyped value (`foreignBinding`): its value `code` converted checked, or null. */
   private checkedBinding(el: ts.BindingElement, code: string, to: string): string | null {
     const entry = this.lenient || this.library ? null : this.states.foreignBinding(el);
@@ -8386,9 +8404,9 @@ export class Translator implements AsyncTranslator {
       }
       const owner = this.symbolName(target);
       const signalValue = () => this.typeOf(target).replace(/^Signal<(.*)>$/, '$1');
-      if ((owner === 'Writable' || owner === 'WritableSignal') && method === 'set') return `${this.expr(target)}.value = ${this.signalWrite(target, e.arguments[0], signalValue(), false)}`;
+      if ((owner === 'Writable' || owner === 'WritableSignal') && method === 'set') return `${this.expr(target)}.value = ${this.signalWrite(target, e.arguments[0], signalValue(), true, e)}`;
       // A prop (`this.x`) reads as its value: the signal itself is the field.
-      if (owner === 'InputSignal' && method === '$assign') return `${ts.isPropertyAccessExpression(target) && this.isSelf(target.expression) && this.props.has(target.name.text) ? `this.${ident(target.name.text)}` : this.expr(target)}.value = ${this.signalWrite(target, e.arguments[0], signalValue(), false)}`;
+      if (owner === 'InputSignal' && method === '$assign') return `${ts.isPropertyAccessExpression(target) && this.isSelf(target.expression) && this.props.has(target.name.text) ? `this.${ident(target.name.text)}` : this.expr(target)}.value = ${this.signalWrite(target, e.arguments[0], signalValue(), true, e)}`;
       if ((owner === 'Writable' || owner === 'WritableSignal') && method === 'update') return `${this.expr(target)}.update(${this.closure(e.arguments[0] as ts.ArrowFunction, `(${signalValue()}) -> ${signalValue()}`)})`;
       if (owner === 'WritableSignal' && method === '$write') {
         const a = e.arguments[0];
@@ -8467,7 +8485,7 @@ export class Translator implements AsyncTranslator {
       if ((this.isAny(target) && !staticOwn) || (!this.library && this.isGlobalObject(target))) {
         const code = `${callee.questionDotToken ? 'jsCallMethodIfPresent' : 'jsCallMethod'}(${this.isGlobalObject(target) ? 'jsGlobalThis' : this.expr(target)}, ${kotlinString(method)}${this.untypedArgs(e)})`;
         const rt = this.typeOf(e);
-        return rt === 'Any?' || rt === 'Unit' ? code : callee.questionDotToken ? (this.library ? this.fromAnyCode(code, optionalType(rt), true) : code) : this.fromAnyCode(code, rt, true);
+        return rt === 'Any?' || rt === 'Unit' ? code : callee.questionDotToken ? (this.library ? this.fromAnyCode(code, optionalType(rt), true) : code) : this.untypedResult(e, code, rt);
       }
       // An untyped field holding a function (`private _resolve;`, `_loader: Function`), called as script calls it.
       const untypedField = this.library || this.holdsFunctionObject(callee) || this.typeOf(callee) === 'Any?' ? this.checker.getSymbolAtLocation(callee.name)?.valueDeclaration : undefined;
@@ -10104,7 +10122,7 @@ export class Translator implements AsyncTranslator {
       const test = op === K.AmpersandAmpersandEqualsToken ? `jsTruthy(${read})` : op === K.BarBarEqualsToken ? `!jsTruthy(${read})` : `jsIsNullish(${read})`;
       const target = this.declaredTypeOf(e.left) ?? this.typeOf(e.left);
       const t = this.typeOf(e.left) === 'Any?' ? 'Any?' : this.typeOf(e);
-      const assigned = `val ${value} = ${this.stored(e.right, e.left, t === 'Any?' ? 'Any?' : target, false)}`;
+      const assigned = `val ${value} = ${this.stored(e.right, e.left, t === 'Any?' ? 'Any?' : target)}`;
       const kept = isNullable(target) && t !== 'Any?' ? this.undefinedAs(read, t) : this.recordEntry(e.left) ? this.asserted(read) : read;
       this.subst.set(e.right, value);
       try {
@@ -10140,7 +10158,8 @@ export class Translator implements AsyncTranslator {
 
   /** `left = right` (also the assignment `??=` and `||=` make). */
   private assignment(left: ts.Expression, right: ts.Expression): string {
-    const checks = assignedTo(left, right);
+    // A right side the translation converted already (`subst`) is not given again.
+    const checks = assignedTo(left, right) && !this.subst.has(right);
     const nullish = ts.isIdentifier(left) ? this.states.nullishRead(left) : null;
     if (nullish) return `${this.refName(left as ts.Identifier)} = ${this.stored(right, left, this.nullishSlotType(nullish), checks)}`;
     if (this.states.nullField(left)) return `${this.expr(left.expression)}.jsSet(${kotlinString(left.name.text)}, ${this.stored(right, left, 'Any?', checks)})`;

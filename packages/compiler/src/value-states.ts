@@ -1127,6 +1127,20 @@ export class ValueStates {
     return this.withElements(form, false);
   }
 
+  /**
+   * A field of the app's own code (its declaration `at`) written by name (`obj[key] = v`, a binding's write), where
+   * only the backend's code has the value, untyped: the form it enters as, as `foreignStore` gives a stored value's.
+   * Only a field forms already see a foreign value reach is checked: XML attribute strings, two-way bindings and
+   * `Object.assign` from JSON write the rest by name by design.
+   */
+  foreignCodeStore(at: ts.PropertyDeclaration | ts.PropertySignature | ts.PropertyAssignment): Form | null {
+    const b = this.backend;
+    if (b.library || b.lenient || !ts.isIdentifier(at.name)) return null;
+    const form = this.declaredSlot(at);
+    if (!form || !form.foreign || form.type.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown) || isGeneric(form.type)) return null;
+    return this.withElements({ ...form, foreign: true }, false);
+  }
+
   /** The form of the slot of the app's own code `a` is placed in by its parent, if it is one M6 checks. */
   private placementForm(a: ts.Expression): Form | null {
     let x: ts.Node = a;
@@ -1151,18 +1165,20 @@ export class ValueStates {
   private storeForm(at: Store): Form | null {
     const slot = (d: ts.Declaration | undefined) => this.declaredSlot(d);
     if (ts.isVariableDeclaration(at)) return ts.isIdentifier(at.name) ? slot(at) : null;
-    if (ts.isPropertyDeclaration(at)) return this.fieldSlot(at, slot);
-    if (ts.isPropertyAssignment(at)) {
+    if (ts.isPropertyDeclaration(at) || ts.isPropertySignature(at)) return this.fieldSlot(at, slot);
+    if (ts.isPropertyAssignment(at) || ts.isShorthandPropertyAssignment(at)) {
       const literal = ts.isObjectLiteralExpression(at.parent) && this.checker.getContextualType(at.parent);
       const name = ts.isIdentifier(at.name) || ts.isStringLiteral(at.name) ? at.name.text : null;
       return literal && name ? this.fieldSlot(this.checker.getNonNullableType(literal).getProperty(name)?.valueDeclaration, slot) : null;
     }
     if (ts.isParameter(at)) return null;
+    if (ts.isCallExpression(at)) return this.argumentForm(at, 0);
     const left = ts.skipOuterExpressions(at, ts.OuterExpressionKinds.Parentheses);
     if (ts.isIdentifier(left)) {
       const d = this.checker.getSymbolAtLocation(left)?.valueDeclaration;
       return d && (ts.isVariableDeclaration(d) || (ts.isParameter(d) && !ts.isParameterPropertyDeclaration(d, d.parent))) ? slot(d) : null;
     }
+    if (ts.isPropertyAccessExpression(left) && left.name.text === 'value' && this.signalKind(left.expression) === 'ref') return this.signalForm(this.checker.getTypeAtLocation(left));
     if (ts.isPropertyAccessExpression(left)) return this.fieldSlot(this.checker.getSymbolAtLocation(left.name)?.valueDeclaration, slot);
     if (ts.isElementAccessExpression(left) && this.collection(left.expression) === 'Array' && this.checker.getTypeAtLocation(left.argumentExpression).flags & ts.TypeFlags.NumberLike) return this.forms().formOf(left.expression).element ?? null;
     return null;
@@ -1181,6 +1197,11 @@ export class ValueStates {
 
   /** The form of the `k`th argument's slot of `call`, if it is one M6 checks: the app's parameter, or an element a collection method adds. */
   private argumentForm(call: ts.CallExpression | ts.NewExpression, k: number): Form | null {
+    if (ts.isCallExpression(call) && k === 0 && ts.isPropertyAccessExpression(call.expression) && call.arguments.length === 1) {
+      const kind = this.signalKind(call.expression.expression), method = call.expression.name.text;
+      const t = (kind === 'writable' && method === 'set') || (kind === 'input' && method === '$assign') ? this.checker.getContextualType(call.arguments[0]) : undefined;
+      if (kind) return t ? this.signalForm(t) : null;
+    }
     const sig = this.checker.getResolvedSignature(call)?.getDeclaration();
     if (sig && !ts.isJSDocSignature(sig) && !sig.getSourceFile().isDeclarationFile) {
       const param = sig.parameters[k];
@@ -1200,6 +1221,17 @@ export class ValueStates {
     const form = this.forms().formOfSlot(el), type = this.checker.getNonNullableType(this.checker.getTypeAtLocation(el.name));
     if (!form.foreign || type.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown) || isGeneric(type)) return null;
     return this.withElements({ ...form, type }, false);
+  }
+
+  /** The kind of signal `e` is, as the backends hold it (`Signal<T>`): Angular's and Svelte's writable ones, Angular's input, Vue's ref. */
+  private signalKind(e: ts.Expression): 'writable' | 'input' | 'ref' | null {
+    const t = this.checker.getTypeAtLocation(e), name = (t.aliasSymbol ?? t.getSymbol())?.getName();
+    return name === 'WritableSignal' || name === 'Writable' ? 'writable' : name === 'InputSignal' ? 'input' : name === 'VueRef' ? 'ref' : null;
+  }
+
+  /** The value of type `t` a signal holds, as the slot a write (`s.set(v)`, `ref.value = v`) stores in: no form tracks it, so a foreign one. */
+  private signalForm(t: ts.Type): Form {
+    return { type: this.checker.getNonNullableType(t), undefined: false, null: false, hole: false, foreign: true, missing: false, absent: false, observed: false, typeObserved: false };
   }
 
   private fieldSlot(d: ts.Declaration | undefined, slot: (d: ts.Declaration | undefined) => Form | null): Form | null {
@@ -1234,7 +1266,9 @@ export class ValueStates {
     if (x.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(x) && x.text === 'undefined')) return false;
     if (this.checker.getTypeAtLocation(x).flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown)) return true;
     if (this.narrowedRead(x)) return false;
-    if (ts.isPropertyAccessExpression(x)) return this.heldMember(x.name);
+    // A member read or method call on an untyped value is the value's own, read by name: untyped too.
+    if (ts.isCallExpression(x) && ts.isPropertyAccessExpression(x.expression) && !x.questionDotToken && this.untypedValue(x.expression.expression)) return true;
+    if (ts.isPropertyAccessExpression(x)) return this.heldMember(x.name) || this.untypedValue(x.expression);
     const d = ts.isIdentifier(x) ? this.checker.getSymbolAtLocation(x)?.valueDeclaration : ts.isCallExpression(x) ? this.checker.getResolvedSignature(x)?.getDeclaration() : undefined;
     return !!d && !ts.isJSDocSignature(d) && this.nullish().held.has(d) && this.forms().formOfSlot(d).foreign;
   }
