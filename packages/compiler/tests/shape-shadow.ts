@@ -4,13 +4,14 @@
 //
 //   node tests/shape-shadow.ts summarize <records.jsonl ...>
 //       disagreements by site and kind, per backend, with examples; classes the two backends decide differently
+//       (`nulls`: a class's field null notes against its plan's and its fields' forms)
 import { existsSync, readFileSync } from 'node:fs';
 
 const [command, ...rest] = process.argv.slice(2);
 if (command === 'summarize') summarize(rest);
 else { console.error('usage: shape-shadow.ts summarize <records.jsonl ...>'); process.exit(2); }
 
-interface Record { backend: string; site: string; mode: string; at: string; name?: string; diffs?: [string, unknown, unknown][]; error?: string; on?: boolean; flagged?: string; keys?: unknown; tracks?: boolean; notes?: boolean }
+interface Record { backend: string; site: string; mode: string; at: string; name?: string; diffs?: [string, unknown, unknown][]; error?: string; on?: boolean; keyed?: boolean; noted?: string; nil?: string; declares?: boolean; flagged?: string; keys?: unknown; tracks?: boolean; notes?: boolean }
 
 function summarize(files: string[]) {
   const records = new Map<string, Record>();
@@ -26,26 +27,26 @@ function summarize(files: string[]) {
   for (const backend of ['swift', 'kotlin']) {
     const mine = all.filter((r) => r.backend === backend);
     console.log(`\n== ${backend}: ${mine.length} decisions`);
-    for (const site of ['class', 'hierarchy', 'literal']) {
+    for (const site of ['class', 'hierarchy', 'literal', 'nulls']) {
       const at = mine.filter((r) => r.site === site);
       const by = (mode: string) => at.filter((r) => r.mode === mode).length;
       const differing = at.filter((r) => r.diffs?.length);
       const errors = at.filter((r) => r.error);
-      const extra = site === 'class' ? `, keyed ${at.filter((r) => r.on).length}` : site === 'literal' ? `, null notes on ${at.filter((r) => r.tracks).length}, unset notes on ${at.filter((r) => r.notes).length}` : '';
+      const extra = site === 'class' ? `, keyed ${at.filter((r) => r.on).length}` : site === 'literal' ? `, null notes on ${at.filter((r) => r.tracks).length}, unset notes on ${at.filter((r) => r.notes).length}` : site === 'nulls' ? `, keyed ${at.filter((r) => r.keyed).length}, noting ${at.filter((r) => r.noted).length} (keyed ${at.filter((r) => r.noted && r.keyed).length}), nil-null ${at.filter((r) => r.nil).length}, declaring jsNulls ${at.filter((r) => r.declares).length}` : '';
       console.log(`${site}: ${at.length} (app ${by('app')}, lenient ${by('lenient')}, library ${by('library')}${extra}); differ ${differing.length}${errors.length ? `; errors ${errors.length} (${errors[0].error})` : ''}`);
       const kinds = new Map<string, Record[]>();
       for (const r of differing) for (const d of r.diffs!) {
-        const k = `${d[0]}${site === 'literal' ? ` (${d[2]})` : ''}`;
+        const k = `${d[0]}${site === 'literal' || (site === 'nulls' && d[0] !== 'no plan' && d[0] !== 'plan nulls') ? ` (${d[2]})` : ''}`;
         if (!kinds.has(k)) kinds.set(k, []);
         kinds.get(k)!.push(r);
       }
       for (const [k, rs] of [...kinds].sort((a, b) => b[1].length - a[1].length)) {
         const distinct = [...new Set(rs)];
         const sample = distinct.slice(0, 3).map((r) => {
-          const ds = r.diffs!.filter((x) => `${x[0]}${site === 'literal' ? ` (${x[2]})` : ''}` === k);
-          return `${r.at}${r.name ? ` ${r.name}` : ''}: ${site === 'literal' ? `keys ${ds.map((d) => d[1]).join(', ')}` : `plan ${JSON.stringify(ds[0][1])} / backend ${JSON.stringify(ds[0][2])}`}`;
+          const ds = r.diffs!.filter((x) => `${x[0]}${site === 'literal' || (site === 'nulls' && x[0] !== 'no plan' && x[0] !== 'plan nulls') ? ` (${x[2]})` : ''}` === k);
+          return `${r.at}${r.name ? ` ${r.name}` : ''}: ${site === 'literal' || (site === 'nulls' && ds[0][0] !== 'no plan' && ds[0][0] !== 'plan nulls') ? `keys ${ds.map((d) => d[1]).join(', ')}` : `plan ${JSON.stringify(ds[0][1])} / backend ${JSON.stringify(ds[0][2])}`}`;
         });
-        console.log(`  ${rs.length} ${k}${site === 'literal' ? ` in ${distinct.length} literals` : ''}\n      ${sample.join('\n      ')}`);
+        console.log(`  ${rs.length} ${k}${site === 'literal' ? ` in ${distinct.length} literals` : site === 'nulls' ? ` in ${distinct.length} classes` : ''}\n      ${sample.join('\n      ')}`);
       }
     }
   }

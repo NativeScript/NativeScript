@@ -62,6 +62,8 @@ function flush(): void {
     for (const cls of planned.classes) safe('class', cls, () => classRecord(cls, legacyClassKeys(cls, r.states, facts, legacy), r.states, facts));
     for (const root of planned.roots) safe('hierarchy', root, () => hierarchyRecord(root, legacyHierarchy(root, r.states, facts, legacy), r.states, facts));
     for (const [e, k] of r.literals) safe('literal', e, () => literalRecord(e, k, r.states));
+    const b = r.states.backend;
+    if (!b.lenient && !b.library) for (const cls of allClasses(r.states)) safe('nulls', cls, () => nullsRecord(cls, r.states, facts));
   }
   if (lines.length) appendFileSync(out, lines.join('\n') + '\n');
 }
@@ -167,3 +169,38 @@ function literalRecord(e: ts.ObjectLiteralExpression, k: LiteralKeys, states: Va
   if (order.join() !== k.written.join()) diffs.push(['order', order.join(), k.written.join()]);
   return { tracks: k.tracks, notes: k.notes, keys: plan.keys.length, diffs };
 }
+
+function allClasses(states: ValueStates): ts.ClassLikeDeclaration[] {
+  const out: ts.ClassLikeDeclaration[] = [];
+  const visit = (n: ts.Node): void => { if (ts.isClassLike(n)) out.push(n); ts.forEachChild(n, visit); };
+  for (const f of states.backend.sourceFiles) if (!f.isDeclarationFile && !states.backend.pluginFiles.has(f.fileName)) visit(f);
+  return out;
+}
+
+/**
+ * A class's field null notes against the plan's, and against the fields' forms: a field held optional whose form holds
+ * null and undefined both that nothing notes, or a noted one whose form never holds null.
+ */
+function nullsRecord(cls: ts.ClassLikeDeclaration, states: ValueStates, facts: ShapeFacts): object {
+  const noted = states.nullFields(cls), nil = states.nullFieldsTyped(cls);
+  const declares = noted.size > 0 && !states.baseKeepsNulls(cls);
+  const plan = shapePlanOfClass(cls, states, facts);
+  const diffs: Diff[] = [];
+  const legacy = (n: string) => (noted.has(n) ? (nil.has(n) ? 'noted+nil' : 'noted') : nil.has(n) ? 'nil' : 'none');
+  if (plan) {
+    for (const k of plan.keys) if (k.nulls !== legacy(k.name).replace(/\+nil$/, '')) diffs.push(['plan nulls', `${k.name}:${k.nulls}`, legacy(k.name)]);
+  } else if (noted.size || nil.size) diffs.push(['no plan', null, [...noted, ...nil].map(legacy).join(',')]);
+  const forms = states.forms(), b = states.backend;
+  const ctor = cls.members.find(ts.isConstructorDeclaration);
+  const slots = [...cls.members.filter((m): m is ts.PropertyDeclaration => ts.isPropertyDeclaration(m) && !hasStaticModifier(m)), ...(ctor?.parameters.filter((p) => ts.isParameterPropertyDeclaration(p, ctor)) ?? [])];
+  for (const m of slots) {
+    if (!ts.isIdentifier(m.name)) continue;
+    const n = m.name.text, form = forms.formOfSlot(m), h = held(b.typeOf(m.name));
+    if (h !== 'optional') continue;
+    if (form.null && form.undefined && !noted.has(n) && !nil.has(n)) diffs.push(['null unnoted', n, h]);
+    else if (!form.null && noted.has(n)) diffs.push(['noted, form never null', n, h]);
+  }
+  return { name: cls.name?.text ?? '(anonymous)', keyed: !!plan, noted: names(noted), nil: names(nil), declares, diffs };
+}
+
+const hasStaticModifier = (m: ts.PropertyDeclaration) => !!m.modifiers?.some((x) => x.kind === ts.SyntaxKind.StaticKeyword);
