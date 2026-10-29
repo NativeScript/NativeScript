@@ -1,4 +1,5 @@
 import ts from 'typescript';
+import { patternSource, patternTargets } from './placement.ts';
 import { alwaysEnds, definitelyAssignedFields, isTemplateMethod, LIB_FILE, literalKey, regexpMayLeaveGroupUnset, slotOf } from './lang.ts';
 
 // One value form per slot (review/DESIGN-VALUE-MODEL.md §2): which of JavaScript's empty states a slot may hold, decided
@@ -835,6 +836,8 @@ export class Forms {
     }
     if (ts.isVariableDeclaration(n) && n.parent && ts.isCatchClause(n.parent)) this.seed(this.slotFor(n), F | U | N);
     if (ts.isBindingElement(n) && ts.isIdentifier(n.name)) this.placeBinding(n);
+    if (ts.isBinaryExpression(n) && n.operatorToken.kind === ts.SyntaxKind.EqualsToken && (ts.isArrayLiteralExpression(n.left) || ts.isObjectLiteralExpression(n.left))) this.placeAssignedParts(n.left, n.right, false);
+    if (ts.isForOfStatement(n) && !ts.isVariableDeclarationList(n.initializer)) this.placeAssignedParts(n.initializer, n.expression, true);
     if (ts.isPropertyDeclaration(n) && !n.initializer && ts.isClassLike(n.parent) && !(ts.getCombinedModifierFlags(n) & (ts.ModifierFlags.Ambient | ts.ModifierFlags.Abstract))) {
       if (n.questionToken || hasStatic(n) || !definitelyAssigned(n.parent).has(n)) this.seed(this.slotFor(n), U);
     }
@@ -1114,14 +1117,24 @@ export class Forms {
     if (t.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown)) this.seed(target, F | U | N);
   }
 
+  /** The variables a destructuring assignment's pattern (or a `for…of`'s target) writes from an untyped value: whatever it holds there. */
+  private placeAssignedParts(pattern: ts.Expression, whole: ts.Expression, iterated: boolean): void {
+    if (!(this.checker.getTypeAtLocation(whole).flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown))) return;
+    for (const t of iterated ? patternTargets(pattern) : patternTargets(pattern).filter((t) => t !== pattern)) {
+      const short = ts.isShorthandPropertyAssignment(t.parent) && t.parent.name === t ? t.parent : null;
+      const d = ts.isIdentifier(t) ? (short ? this.checker.getShorthandAssignmentValueSymbol(short) : this.checker.getSymbolAtLocation(t))?.valueDeclaration : undefined;
+      if (d && (ts.isVariableDeclaration(d) || ts.isParameter(d)) && !declarationFile(d)) this.seed(this.slotFor(d), F);
+    }
+  }
+
   private placeBinding(b: ts.BindingElement): void {
     const slot = this.slotFor(b);
     if (b.initializer) this.place(b.initializer, slot);
     const keep = b.initializer ? ~(U | M) : ~0;
     const pattern = b.parent;
     // What a pattern reads from an untyped value is whatever that value holds there, whatever the pattern's type says.
-    const whole = ts.isVariableDeclaration(pattern.parent) ? pattern.parent.initializer : undefined;
-    if (whole && this.checker.getTypeAtLocation(whole).flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown)) this.seed(slot, F);
+    const whole = patternSource(b);
+    if (whole && !whole.iterated && this.checker.getTypeAtLocation(whole.whole).flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown)) this.seed(slot, F);
     if (ts.isObjectBindingPattern(pattern)) {
       if (b.dotDotDotToken) return;
       const key = b.propertyName ? literalKey(b.propertyName, this.checker) : (b.name as ts.Identifier).text;

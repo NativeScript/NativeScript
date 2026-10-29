@@ -10,7 +10,7 @@ import { assignedValues, openSpreadType, spreadsArrays, initializedNull, interse
 import { memberName } from './stable-names.ts';
 import { shadowConversions } from './conversion-shadow.ts';
 import { parseNativeType, plan, type Slot, type Value } from './conversion.ts';
-import { argumentEntry, awaitSlot, type AwaitSlot, argumentOf, argumentSlot, isEnumObject, place, resultSlot, returnCell, type ParamSlot, type PlacementBackend, type ResultSlot, type ReturnBackend, type ReturnCell, type Store, type StoreSlot, assignedTo, codeStoreSlot, placeCode, storeEntry, storeOf, storeSlot } from './placement.ts';
+import { argumentEntry, awaitSlot, type AwaitSlot, argumentOf, argumentSlot, isEnumObject, place, resultSlot, returnCell, type ParamSlot, type PlacementBackend, type ResultSlot, type ReturnBackend, type ReturnCell, type Store, type StoreSlot, assignedTo, bindingSlot, codeStoreSlot, placeCode, storeEntry, storeOf, storeSlot } from './placement.ts';
 import { castCode, elementOf, helper, implicitOf, isPure, isUnwrap, markOf, marked, memberOf, orNil, pureCode, tried, tryCode, unwrapInner, unwrappedCode, unwrappedIf, valueOf } from './swift-marks.ts';
 import { convertedRead, onlyNull, ValueStates, type StateBackend } from './value-states.ts';
 import type { Form } from './forms.ts';
@@ -3683,11 +3683,11 @@ ${members.join('\n')}
     return entry ? this.checkedCell(() => code ?? this.expr(a), entry, a, to) : null;
   }
 
-  /** A variable a pattern binds from an untyped value (`foreignBinding`): its value `code` converted checked, or null. */
-  private checkedBinding(el: ts.BindingElement, code: string, to: string): string | null {
+  /** A variable a pattern binds or assigns from an untyped value (`bindingSlot`): its value `code` converted checked, or null. */
+  private checkedBinding(at: ts.BindingElement | ts.Expression, code: string, to: string): string | null {
     if (this.lenient || this.library) return null;
-    const entry = this.states.foreignBinding(el);
-    return entry ? this.checkedCell(() => code, entry, el, to) : null;
+    const slot = bindingSlot(this, to, at);
+    return slot.checked ? this.checkedCell(() => code, slot.checked, at, to) : null;
   }
 
   /** A call's untyped result `code`, of the program's type `to`: checked where its slot takes a foreign value (`foreignResult`), else converted leniently. */
@@ -7626,9 +7626,11 @@ ${members.join('\n')}
         lines.push(declare(el.name, t, fromAny));
       } else {
         const tmp = this.fresh('__d');
+        // A typed pattern's part of an untyped value is untyped too.
+        const untypedPart = (this.isAny(name) || _type === 'Any?') && !this.isAny(el.name);
         // Typed: an implicitly unwrapped field read into an untyped constant is an optional.
-        const part = el.initializer ? null : this.partType(name, el, k, source, _type);
-        lines.push(`${i}let ${tmp}${part && part !== 'Any?' ? `: ${part}` : ''} = ${read}`, this.bindTo(el.name, tmp, '', mutable));
+        const part = el.initializer || untypedPart ? null : this.partType(name, el, k, source, _type);
+        lines.push(`${i}let ${tmp}${part && part !== 'Any?' ? `: ${part}` : ''} = ${read}`, this.bindTo(el.name, tmp, untypedPart ? 'Any?' : '', mutable));
       }
     });
     return lines.join('\n');
@@ -7964,7 +7966,7 @@ ${members.join('\n')}
     if (ts.isArrayLiteralExpression(bare) || ts.isObjectLiteralExpression(bare)) this.assignParts(bare, item, itemType, part, lines);
     else {
       const want = this.declaredTypeOf(bare) ?? this.typeOf(bare);
-      lines.push(`${this.lvalue(bare)} = ${itemType === 'Any?' && want !== 'Any?' ? this.fromAnyCode(item, want, true) : this.convert(item, itemType, want)}`);
+      lines.push(`${this.lvalue(bare)} = ${itemType === 'Any?' && want !== 'Any?' ? this.checkedBinding(bare, item, want) ?? this.fromAnyCode(item, want, true) : this.convert(item, itemType, want)}`);
     }
     return this.loopBody(() => {
       const label = this.takeLabel();
@@ -8011,7 +8013,7 @@ ${members.join('\n')}
       const member = this.untypedMember(target);
       if (member) { lines.push(tryCode(`jsSet(${member.object}, ${member.key}, ${this.convert(read, readType, 'Any?')})`)); return; }
       const want = this.declaredTypeOf(target) ?? this.typeOf(target);
-      const code = readType === want ? read : readType === 'Any?' ? this.fromAnyCode(read, want, true) : readType === optionalType(want) && !isOptional(want) ? this.undefinedAs(read, want) : this.convert(read, readType, want);
+      const code = readType === want ? read : readType === 'Any?' ? this.checkedBinding(target, read, want) ?? this.fromAnyCode(read, want, true) : readType === optionalType(want) && !isOptional(want) ? this.undefinedAs(read, want) : this.convert(read, readType, want);
       lines.push(`${this.lvalue(target)} = ${code}`);
     };
     if (ts.isArrayLiteralExpression(pattern)) {
@@ -8067,7 +8069,7 @@ ${members.join('\n')}
     {
       let x = e;
       while (ts.isParenthesizedExpression(x)) x = x.expression;
-      if (ts.isBinaryExpression(x) && x.operatorToken.kind === ts.SyntaxKind.EqualsToken && (ts.isObjectLiteralExpression(x.left) || (ts.isArrayLiteralExpression(x.left) && x.left.elements.some((t) => !ts.isIdentifier(t) && !ts.isPropertyAccessExpression(t) && !ts.isElementAccessExpression(t) && !ts.isOmittedExpression(t))))) {
+      if (ts.isBinaryExpression(x) && x.operatorToken.kind === ts.SyntaxKind.EqualsToken && (ts.isObjectLiteralExpression(x.left) || (ts.isArrayLiteralExpression(x.left) && this.isAny(x.right)) || (ts.isArrayLiteralExpression(x.left) && x.left.elements.some((t) => !ts.isIdentifier(t) && !ts.isPropertyAccessExpression(t) && !ts.isElementAccessExpression(t) && !ts.isOmittedExpression(t))))) {
         return this.patternAssignment(x.left, x.right);
       }
     }
