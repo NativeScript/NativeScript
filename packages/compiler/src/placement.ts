@@ -1,5 +1,6 @@
 import ts from 'typescript';
-import { parseNativeType, type NativeType } from './conversion.ts';
+import { parseNativeType, type Entry, type NativeType } from './conversion.ts';
+import type { Form } from './forms.ts';
 import type { ValueStates } from './value-states.ts';
 
 // A value placed in a slot (review/S3-PLAN.md §2): the front both translators share, deciding which cell of the state
@@ -19,8 +20,11 @@ export interface StateCells {
   empty(isNull: boolean): string;
   /** N → F: a value whose nil is null, read untyped. */
   nulled(code: string): string;
-  /** F → P/U with a checked entry (§2.3b M6, `foreignPlacement`), or null where the slot's type has no checked convert. */
-  checked(e: ts.Expression, target: string): string | null;
+  /**
+   * F → P/U with a checked entry (§2.3b M6), or null where the slot's type has no checked convert: the form an argument's
+   * `slot` decided, else `foreignPlacement`'s.
+   */
+  checked(e: ts.Expression, target: string, slot?: ParamSlot): string | null;
   /** An empty marker's value as it is made (`emptyMarkers`), registered so that checked converts read it as an empty value. */
   marker(code: string): string;
 }
@@ -30,6 +34,7 @@ export interface PlacementBackend {
   readonly checker: ts.TypeChecker;
   readonly sourceFiles: readonly ts.SourceFile[];
   readonly library: unknown;
+  readonly lenient: boolean;
   readonly states: ValueStates;
   readonly cells: StateCells;
   typeOf(n: ts.Node): string;
@@ -66,18 +71,18 @@ export interface PlacementBackend {
 
 /** `e` where the backend needs a value of `target`, the value a function gives back in its result `slot`, or an argument in its parameter's. */
 export function place(b: PlacementBackend, e: ts.Expression, to: string | ResultSlot | ParamSlot): string {
-  if (typeof to !== 'string') return (to.kind === 'return' ? b.result?.(e, to) : b.argument?.(e, to)) ?? place(b, e, to.target);
+  if (typeof to !== 'string') return to.kind === 'return' ? b.result?.(e, to) ?? place(b, e, to.target) : b.argument?.(e, to) ?? placed(b, e, to.target, to);
   const target = to;
   const code = placed(b, e, target);
   return b.library && ts.isVariableDeclaration(e.parent) && e.parent.initializer === e && emptyMarkers(b).has(e.parent) ? b.cells.marker(code) : code;
 }
 
-function placed(b: PlacementBackend, e: ts.Expression, target: string): string {
+function placed(b: PlacementBackend, e: ts.Expression, target: string, slot?: ParamSlot): string {
   const early = b.before?.(e, target);
   if (early != null) return early;
   const nullish = nullishPlacement(b, e, target);
   if (nullish !== null) return nullish;
-  const checked = b.cells.checked(e, target);
+  const checked = b.cells.checked(e, target, slot);
   if (checked) return checked;
   const own = b.after?.(e, target);
   if (own != null) return own;
@@ -205,11 +210,30 @@ export interface ParamSlot {
   constantDefault?: boolean;
   /** Kotlin: a package's parameter called from outside the package, its type as the package declares it. */
   packaged?: boolean;
+  /** How the argument comes in; `checked` where it is: the form its untyped value enters as (`ValueStates.foreignArgument`). */
+  entry: Entry;
+  checked?: Form;
+  /** An element of a rest parameter's array, an argument past the declared parameters or to an untyped callee: no declared parameter's cell. */
+  rest?: boolean;
+  /**
+   * A parameter the call leaves out, given as `empty` (a function value takes every parameter: the slot's empty value) or
+   * as `undefined` reads in the slot's type (a required parameter of an app function).
+   */
+  missing?: 'empty' | 'undefined';
 }
 
-/** The slot of a parameter the backend has as `target` at a call. */
-export function argumentSlot(target: string, decl?: ts.Declaration, facts: Pick<ParamSlot, 'nullish' | 'asIs' | 'constantDefault' | 'packaged'> = {}): ParamSlot {
-  return { kind: 'argument', target, type: parseNativeType(target), decl, ...facts };
+type SlotFacts = Pick<ParamSlot, 'nullish' | 'asIs' | 'constantDefault' | 'packaged' | 'rest' | 'missing'>;
+
+/** The slot of a parameter the backend has as `target` at the call `at`, taking its `k`th argument `a` (none where the call leaves it out or a spread gives it). */
+export function argumentSlot(b: Pick<PlacementBackend, 'library' | 'lenient' | 'states'>, target: string, decl: ts.Declaration | undefined, at: { call: ts.CallExpression | ts.NewExpression; k: number; a?: ts.Expression }, facts: SlotFacts = {}): ParamSlot {
+  return { kind: 'argument', target, type: parseNativeType(target), decl, ...argumentEntry(b, at.call, at.k, at.a), ...facts };
+}
+
+function argumentEntry(b: Pick<PlacementBackend, 'library' | 'lenient' | 'states'>, call: ts.CallExpression | ts.NewExpression, k: number, a?: ts.Expression): Pick<ParamSlot, 'entry' | 'checked'> {
+  let checked: Form | null = null;
+  // A value the forms throw on enters unchecked.
+  try { checked = a ? b.states.foreignArgument(call, k, a) : null; } catch { checked = null; }
+  return checked ? { entry: 'checked', checked } : { entry: b.library ? 'library' : b.lenient ? 'lenient' : 'typed' };
 }
 
 /** One cell of a `return`-kind slot. */
