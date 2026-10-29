@@ -130,13 +130,20 @@ private fun jsIsEmptyMarker(value: Any?): Boolean = value != null && jsEmptyMark
 
 private fun jsUnmarked(value: Any?): Any? = if (jsIsEmptyMarker(value)) null else value
 
-/** `value` as an instance of `type`, JavaScript's null and undefined as null. */
+/** `value` as an instance of `type`, JavaScript's null and undefined, and an empty marker, as null. */
 fun <T : Any> jsCast(value: Any?, type: Class<T>): T? {
     if (value == null || value === JSNull || value === Unit) return null
     @Suppress("UNCHECKED_CAST")
     if (type.isInstance(value)) return value as T
+    if (jsIsEmptyMarker(value)) return null
     throw jsNotA(value, jsTypeName(type))
 }
+
+/**
+ * As jsCast, where Kotlin's type has no null but core's code, unchecked for null, may give one: the null is carried
+ * into the non-null type, as script carries it, and only an instance of another class is refused.
+ */
+fun <T : Any> jsCastCarried(value: Any?, type: Class<T>): T = jsUnchecked(jsCast(value, type))
 
 /** As jsCast, where the declared type has no null either: undefined and null are refused too. */
 fun <T : Any> jsCastPresent(value: Any?, type: Class<T>): T = jsCast(value, type) ?: throw jsNotA(value, jsTypeName(type))
