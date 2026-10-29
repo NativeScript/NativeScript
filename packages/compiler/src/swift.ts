@@ -10,7 +10,7 @@ import { assignedValues, openSpreadType, spreadsArrays, initializedNull, interse
 import { memberName } from './stable-names.ts';
 import { shadowConversions } from './conversion-shadow.ts';
 import { parseNativeType, plan, type Slot, type Value } from './conversion.ts';
-import { argumentEntry, awaitSlot, type AwaitSlot, argumentOf, argumentSlot, isEnumObject, place, resultSlot, returnCell, type ParamSlot, type PlacementBackend, type ResultSlot, type ReturnBackend, type ReturnCell, type Store, type StoreSlot, assignedTo, codeStoreSlot, placeCode, storeEntry, storeOf, storeSlot } from './placement.ts';
+import { argumentEntry, awaitSlot, emptyComparison, observerSlot, scriptComparison, type AwaitSlot, argumentOf, argumentSlot, isEnumObject, place, resultSlot, returnCell, type ParamSlot, type PlacementBackend, type ResultSlot, type ReturnBackend, type ReturnCell, type Store, type StoreSlot, assignedTo, codeStoreSlot, placeCode, storeEntry, storeOf, storeSlot } from './placement.ts';
 import { castCode, elementOf, helper, implicitOf, isPure, isUnwrap, markOf, marked, memberOf, orNil, pureCode, tried, tryCode, unwrapInner, unwrappedCode, unwrappedIf, valueOf } from './swift-marks.ts';
 import { convertedRead, onlyNull, ValueStates, type StateBackend } from './value-states.ts';
 import type { Form } from './forms.ts';
@@ -8323,6 +8323,7 @@ ${members.join('\n')}
       branches: (bare, target) => this.ternary(bare, target, (x) => this.coerce(x, target)),
       result: (e, slot) => this.resultRead(e, slot),
       argument: (e, slot) => (slot.native ? (slot.rest ? this.expr(e) : this.native.toSwift(e, slot.target)) : this.argumentRead(e, slot)),
+      observed: (e) => this.observed(e),
     };
   }
 
@@ -11060,9 +11061,12 @@ ${members.join('\n')}
 
   /** A `missingObject` read Swift holds optional, as it is held; null where Swift holds it present. */
   private heldMissing(e: ts.Expression): string | null {
-    const code = this.expr(e), m = markOf(code);
-    if (m?.op === 'unwrap') return m.of.code;
-    return this.looseObjectRead(e) || this.widenedParameterRead(e) || /[?!]$/.test(this.declaredTypeOf(e) ?? '') ? code : null;
+    return isUnwrap(this.expr(e)) || this.looseObjectRead(e) || this.widenedParameterRead(e) || /[?!]$/.test(this.declaredTypeOf(e) ?? '') ? this.observe(e, 'asIs') : null;
+  }
+
+  /** `x` read by an equality or `typeof` (`ObserverSlot`). */
+  private observe(x: ts.Expression, read: 'untyped' | 'asIs' = 'untyped'): string {
+    return place(this.placement, x, observerSlot(read));
   }
 
   /** A read `observedAsIs` (`instanceof`'s left): the optional it may be, never unwrapped. */
@@ -13437,9 +13441,9 @@ ${members.join('\n')}
     if (absent !== undefined) return absent;
     const [t, lit] = ts.isTypeOfExpression(e.left) ? [e.left, e.right] : ts.isTypeOfExpression(e.right) ? [e.right, e.left] : [null, null];
     if (!t || !lit || !ts.isStringLiteral(lit)) return undefined;
-    const known = /^"(\w+)"$/.exec(this.typeofExpr(t))?.[1];
-    if (!known || this.maybeUndefined(t.expression)) return undefined;
-    const same = known === lit.text;
+    const c = this.typeofCell(t);
+    if (c.cell !== 'known' || this.maybeUndefined(t.expression)) return undefined;
+    const same = c.type === lit.text;
     return e.operatorToken.kind === ts.SyntaxKind.EqualsEqualsEqualsToken || e.operatorToken.kind === ts.SyntaxKind.EqualsEqualsToken ? same : !same;
   }
 
@@ -13592,47 +13596,54 @@ ${members.join('\n')}
   }
 
   private typeofExpr(e: ts.TypeOfExpression): string {
+    const c = this.typeofCell(e);
+    return c.cell === 'known' ? swiftString(c.type) : c.cell === 'presence' ? `(${c.tested} == nil ? "undefined" : ${swiftString(c.type)})` : c.code;
+  }
+
+  private typeofCell(e: ts.TypeOfExpression): TypeofCell {
+    const known = (type: string): TypeofCell => ({ cell: 'known', type });
+    const code = (code: string): TypeofCell => ({ cell: 'code', code });
     // One of the app's own Swift classes: a class, as NativeScript's runtime exposes it.
-    if (this.appNativeOf(e.expression)) return '"function"';
-    if (neverDefined(e.expression, this.checker)) return '"undefined"';
+    if (this.appNativeOf(e.expression)) return known('function');
+    if (neverDefined(e.expression, this.checker)) return known('undefined');
     // A member of an untyped object is whatever script put there, whatever its declared type says.
     const read = ts.skipOuterExpressions(e.expression, ts.OuterExpressionKinds.Parentheses);
-    if (ts.isPropertyAccessExpression(read) && !ts.isOptionalChain(read) && this.isAny(read.expression) && !this.isAny(read)) return `jsTypeof(jsGet(${this.expr(read.expression)}, ${swiftString(read.name.text)}))`;
+    if (ts.isPropertyAccessExpression(read) && !ts.isOptionalChain(read) && this.isAny(read.expression) && !this.isAny(read)) return code(`jsTypeof(jsGet(${this.expr(read.expression)}, ${swiftString(read.name.text)}))`);
     const newer = this.native.introducedAfterDeployment(e.expression);
-    if (newer) return `(jsOSAtLeast(${newer}) ? "function" : "undefined")`;
+    if (newer) return code(`(jsOSAtLeast(${newer}) ? "function" : "undefined")`);
     // A constructor or function of the language's library (`Symbol`, `Map`, `Promise`), which the kit always has.
     const lib = ts.isIdentifier(e.expression) ? this.resolve(e.expression)?.declarations : undefined;
     const callable = this.checker.getTypeAtLocation(e.expression);
-    if (lib?.length && lib.every((d) => /[\\/]lib\.[\w.]*\.d\.ts$/.test(d.getSourceFile().fileName)) && (callable.getConstructSignatures().length || callable.getCallSignatures().length)) return '"function"';
-    if (this.states.nullDistinct(e.expression)) return `jsTypeof(${this.coerce(e.expression, 'Any?')})`;
+    if (lib?.length && lib.every((d) => /[\\/]lib\.[\w.]*\.d\.ts$/.test(d.getSourceFile().fileName)) && (callable.getConstructSignatures().length || callable.getCallSignatures().length)) return known('function');
+    if (this.states.nullDistinct(e.expression)) return code(`jsTypeof(${this.observe(e.expression)})`);
     const t = this.typeOf(e.expression);
     // A variable held untyped and narrowed (`val: string | string[]` past `Array.isArray(val)`): the narrowing does not exclude undefined.
-    if (ts.isIdentifier(read) && t !== 'Any?' && !this.subst.has(read) && this.declaredTypeOf(read) === 'Any?') return `jsTypeof(${this.refName(read)})`;
+    if (ts.isIdentifier(read) && t !== 'Any?' && !this.subst.has(read) && this.declaredTypeOf(read) === 'Any?') return code(`jsTypeof(${this.refName(read)})`);
     // A class, held by its name or typed as one (`typeof View`): a constructor, which is a function.
-    if (!(callable.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown)) && callable.getConstructSignatures().length && t !== 'Any?' && !t.endsWith('?')) return '"function"';
+    if (!(callable.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown)) && callable.getConstructSignatures().length && t !== 'Any?' && !t.endsWith('?')) return known('function');
     const base = t.replace(/\?$/, '');
-    if (base === 'Void') return '"undefined"';
-    const known = base === 'Double' ? 'number' : base === 'String' ? 'string' : base === 'Bool' ? 'boolean' : base === 'JSSymbol' ? 'symbol' : base === 'JSBigInt' ? 'bigint' : base.includes('->') ? 'function' : base === 'Any' ? null : 'object';
+    if (base === 'Void') return known('undefined');
+    const type = base === 'Double' ? 'number' : base === 'String' ? 'string' : base === 'Bool' ? 'boolean' : base === 'JSSymbol' ? 'symbol' : base === 'JSBigInt' ? 'bigint' : base.includes('->') ? 'function' : base === 'Any' ? null : 'object';
     const generic = this.checker.getTypeAtLocation(e.expression).flags & ts.TypeFlags.TypeParameter;
-    if (t === 'Any?' || !known || generic) return `jsTypeof(${this.expr(e.expression)})`;
+    if (t === 'Any?' || !type || generic) return code(`jsTypeof(${this.expr(e.expression)})`);
     const maybe = this.maybeUndefined(e.expression);
     const held = ts.isIdentifier(e.expression) ? this.resolve(e.expression) : undefined;
-    if (maybe && held && this.undefinedVars.get(held) === 'Any?') return `jsTypeof(${maybe})`;
+    if (maybe && held && this.undefinedVars.get(held) === 'Any?') return code(`jsTypeof(${maybe})`);
     // Lenient code reads an undefined number as NaN (an omitted `atIndex`), the only value typeof can tell it by; an optional one is undefined either way.
-    const absent = (code: string) => (this.lenient && known === 'number' ? `((${code}).map { $0.isNaN } ?? true)` : `${code} == nil`);
-    if (maybe) return `(${absent(maybe)} ? "undefined" : ${swiftString(known)})`;
-    if (t.endsWith('?')) return `(${absent(this.expr(e.expression))} ? "undefined" : ${swiftString(known)})`;
-    const missing = known === 'object' && this.states.missingObject(read) ? this.heldMissing(read) : null;
-    if (missing) return `(${missing} == nil ? "undefined" : "object")`;
-    if (this.lenient && known === 'number' && ts.isIdentifier(e.expression)) return `(${this.expr(e.expression)}.isNaN ? "undefined" : "number")`;
+    const absent = (tested: string): TypeofCell => (this.lenient && type === 'number' ? code(`(((${tested}).map { $0.isNaN } ?? true) ? "undefined" : "number")`) : { cell: 'presence', tested, type });
+    if (maybe) return absent(maybe);
+    if (t.endsWith('?')) return absent(this.expr(e.expression));
+    const missing = type === 'object' && this.states.missingObject(read) ? this.heldMissing(read) : null;
+    if (missing) return { cell: 'presence', tested: missing, type };
+    if (this.lenient && type === 'number' && ts.isIdentifier(e.expression)) return code(`(${this.expr(e.expression)}.isNaN ? "undefined" : "number")`);
     // Lenient code holds an object implicitly unwrapped: undefined until assigned.
-    if ((this.lenient || this.lenientAppOptional(read)) && known === 'object') return `((${this.expr(e.expression)} as Any?) == nil ? "undefined" : ${swiftString(known)})`;
+    if ((this.lenient || this.lenientAppOptional(read)) && type === 'object') return { cell: 'presence', tested: `(${this.expr(e.expression)} as Any?)`, type };
     // Lenient code holds a function variable, parameter or field optional too; a function or method declared is always there.
     const d = this.resolve(ts.isPropertyAccessExpression(read) ? read.name : read)?.valueDeclaration;
-    if (this.lenient && known === 'function' && d && (ts.isVariableDeclaration(d) || ts.isParameter(d) || ts.isPropertyDeclaration(d) || ts.isPropertySignature(d)) && this.lenientRef(t) !== t) {
-      return `((${this.expr(e.expression)} as Any?) == nil ? "undefined" : "function")`;
+    if (this.lenient && type === 'function' && d && (ts.isVariableDeclaration(d) || ts.isParameter(d) || ts.isPropertyDeclaration(d) || ts.isPropertySignature(d)) && this.lenientRef(t) !== t) {
+      return { cell: 'presence', tested: `(${this.expr(e.expression)} as Any?)`, type };
     }
-    return swiftString(known);
+    return known(type);
   }
 
   private prefix(e: ts.PrefixUnaryExpression): string {
@@ -14103,10 +14114,10 @@ ${members.join('\n')}
     const [l, r] = [strip(e.left), strip(e.right)];
     const [t, lit] = ts.isTypeOfExpression(l) && ts.isStringLiteralLike(r) ? [l, r] : ts.isTypeOfExpression(r) && ts.isStringLiteralLike(l) ? [r, l] : [null, null];
     if (!t || !lit) return null;
-    const m = /^\((.+) == nil \? "undefined" : "(\w+)"\)$/s.exec(this.typeofExpr(t));
-    if (!m || !balanced(m[1]) || (lit.text !== 'undefined' && lit.text !== m[2])) return null;
+    const c = this.typeofCell(t);
+    if (c.cell !== 'presence' || (lit.text !== 'undefined' && lit.text !== c.type)) return null;
     const negate = e.operatorToken.kind === ts.SyntaxKind.ExclamationEqualsEqualsToken || e.operatorToken.kind === ts.SyntaxKind.ExclamationEqualsToken;
-    return `${m[1]} ${(lit.text === 'undefined') !== negate ? '==' : '!='} nil`;
+    return `${c.tested} ${(lit.text === 'undefined') !== negate ? '==' : '!='} nil`;
   }
 
   private equality(e: ts.BinaryExpression): string {
@@ -14132,18 +14143,15 @@ ${members.join('\n')}
       return this.pure(nothing) ? String(result) : `jsUndefined(${this.expr(nothing)}) ${result ? '==' : '!='} nil`;
     }
     // A `T | null` value compared strictly with undefined, or a `T | undefined` one with null: never the same.
-    if (strict && (isNullish(a) !== isNullish(b))) {
-      const [x, n] = isNullish(b) ? [a, b] : [b, a];
-      if (n.kind !== K.NullKeyword ? this.states.nullDistinct(x) : this.states.nullishRead(x) || this.states.nullishElementRead(x) || this.states.nullableEntry(x, () => this.coerceTyped(x, 'Any?'))) return `${negate ? '!' : ''}jsStrictEquals(${this.coerce(x, 'Any?')}, ${n.kind === K.NullKeyword ? 'jsNull' : 'nil'})`;
-      if (n.kind === K.NullKeyword && this.states.nilIsUndefined(x)) return `${negate ? '!' : ''}jsStrictEquals(${this.coerce(x, 'Any?')}, jsNull)`;
-    }
+    const empty = emptyComparison(this.placement, e);
+    if (empty?.cell === 'empty') return `${negate ? '!' : ''}jsStrictEquals(${this.observe(empty.x)}, ${empty.isNull ? 'jsNull' : 'nil'})`;
     // Comparing a typed optional with null or undefined.
     const maybe = isNullish(b) ? this.maybeUndefined(a) : isNullish(a) ? this.maybeUndefined(b) : null;
     if (maybe) return `${maybe} ${negate ? '!=' : '=='} nil`;
     // A member of an untyped object compared with null or undefined: the value as read, before any conversion to the declared type.
     const untypedRead = (x: ts.Expression) => (ts.isElementAccessExpression(x) || ts.isPropertyAccessExpression(x)) && this.isAny(x.expression) && this.typeOf(x) !== 'Any?';
     const raw = (x: ts.Expression) => {
-      if (!untypedRead(x)) return this.coerce(x, 'Any?');
+      if (!untypedRead(x)) return this.observe(x);
       const target = (x as ts.PropertyAccessExpression | ts.ElementAccessExpression).expression;
       const key = ts.isElementAccessExpression(x) ? this.propertyKey(x.argumentExpression) : swiftString((x as ts.PropertyAccessExpression).name.text);
       return `${ts.isOptionalChain(x) ? 'jsGetIfPresent' : 'jsGet'}(${this.expr(target)}, ${key})`;
@@ -14153,11 +14161,11 @@ ${members.join('\n')}
       const ca = this.functionOperand(a, lt), cb = this.functionOperand(b, rt);
       if (ca && cb) return `${negate ? '!' : ''}jsSameFunction(${ca}, ${cb})`;
       // One side untyped: as script values, the typed one boxed as the one function object it stands for.
-      return `${negate ? '!' : ''}jsStrictEquals(${this.coerce(a, 'Any?')}, ${this.coerce(b, 'Any?')})`;
+      return `${negate ? '!' : ''}jsStrictEquals(${this.observe(a)}, ${this.observe(b)})`;
     }
     if ((isNullish(b) && untypedRead(a)) || (isNullish(a) && untypedRead(b))) {
       const [x, n] = isNullish(b) ? [a, b] : [b, a];
-      return `${negate ? '!' : ''}${strict ? `jsStrictEquals(${raw(x)}, ${this.coerce(n, 'Any?')})` : `jsIsNullish(${raw(x)})`}`;
+      return `${negate ? '!' : ''}${strict ? `jsStrictEquals(${raw(x)}, ${this.observe(n)})` : `jsIsNullish(${raw(x)})`}`;
     }
     // A member of an untyped object compared with a value: the comparison JavaScript makes, which a missing member fails.
     if (untypedRead(a) || untypedRead(b)) return `${negate ? '!' : ''}${strict ? 'jsStrictEquals' : 'jsLooseEquals'}(${raw(a)}, ${raw(b)})`;
@@ -14173,14 +14181,12 @@ ${members.join('\n')}
       return `${this.expr(b.kind === K.NullKeyword ? a : b)} ${negate ? '!=' : '=='} nil`;
     }
     // An optional the read unwraps (a native property TypeScript declares non-null) is compared as it is.
-    const tested = (x: ts.Expression) => this.expr(x).replace(/!$/, '');
+    const tested = (x: ts.Expression) => { const code = this.expr(x); return unwrapInner(code) ?? code; };
     if (isNullish(b) && lt !== 'Any?') return `${tested(a)} ${negate ? '!=' : '=='} nil`;
     if (isNullish(a) && rt !== 'Any?') return `${tested(b)} ${negate ? '!=' : '=='} nil`;
-    if (lt === 'Any?' || rt === 'Any?' || (lt !== rt && lt.replace(/\?$/, '') !== rt.replace(/\?$/, '')) || this.unboundGeneric(a) || this.unboundGeneric(b)) {
-      if (!strict && (isNullish(a) || isNullish(b))) return `${negate ? '!' : ''}jsIsNullish(${this.coerce(isNullish(a) ? b : a, 'Any?')})`;
-      const fn = strict ? 'jsStrictEquals' : 'jsLooseEquals';
-      return `${negate ? '!' : ''}${fn}(${this.coerce(a, 'Any?')}, ${this.coerce(b, 'Any?')})`;
-    }
+    const script = scriptComparison(this.placement, e, (x) => this.unboundGeneric(x));
+    if (script?.cell === 'nullish') return `${negate ? '!' : ''}jsIsNullish(${this.observe(script.x)})`;
+    if (script) return `${negate ? '!' : ''}${strict ? 'jsStrictEquals' : 'jsLooseEquals'}(${this.observe(a)}, ${this.observe(b)})`;
     if (this.isObjectRef(a) && this.isObjectRef(b)) return `${tested(a)} ${negate ? '!==' : '==='} ${tested(b)}`;
     // Swift's comparisons do not associate: an operand that is one is parenthesized (`flag !== n > 0`).
     const K2 = ts.SyntaxKind;
@@ -14708,6 +14714,12 @@ const LIB_CONSTANTS: Record<string, string> = {
 for (const v of Object.values(LIB_CONSTANTS)) if (/^[\w.]+$/.test(v)) pureCode(v);
 
 /** A field of an object literal's class; an accessor runs closures the literal gives. */
+/**
+ * What `typeof x` gives: one type always (`known`), the type or "undefined" as `tested` is there (`presence`, which a
+ * comparison with either reads as a nil test), or what script code computes (`code`).
+ */
+type TypeofCell = { cell: 'known'; type: string } | { cell: 'presence'; tested: string; type: string } | { cell: 'code'; code: string };
+
 interface IteratorMethod { name: string; params: number; param?: string; ret: string; throws: boolean }
 /** A type with null among its values and no undefined (nor any or unknown, which may be either). */
 /** An app class's keys in `dynamicMembers`: in plan order, each present by `present` (null: always). */
