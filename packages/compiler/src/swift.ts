@@ -12809,7 +12809,7 @@ ${members.join('\n')}
       case 'splice':
         if (e.arguments.slice(2).some(ts.isSpreadElement)) return `${t}.splice(${e.arguments.slice(0, 2).map((x) => this.restArgument(e, x, 'Double')).join(', ')}, contentsOf: ${this.packed(e.arguments.slice(2), `JSArray<${el}>`, this.elementSlot(e, el))}.storage)`;
         return `${t}.splice(${[...a().slice(0, 2), ...e.arguments.slice(2).map((x) => this.elementArgument(e, x, el))].join(', ')})`;
-      case 'fill': return `${t}.fill(${a().join(', ')})`;
+      case 'fill': return `${t}.fill(${[this.elementArgument(e, e.arguments[0], el), ...a().slice(1)].join(', ')})`;
       // An array holding functions as function objects (`heldType`) is searched for the one the function is.
       case 'indexOf': case 'lastIndexOf': case 'includes': if ((el === 'Any?' || el === 'String?' || el.startsWith('JSNullish<')) && e.arguments[0] && !ts.isSpreadElement(e.arguments[0])) return `${t}.${name}(${[this.restArgument(e, e.arguments[0], el), ...a().slice(1)].join(', ')})`;
       // falls through

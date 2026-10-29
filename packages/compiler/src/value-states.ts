@@ -1290,9 +1290,18 @@ export class ValueStates {
     return d && (ts.isPropertyDeclaration(d) || ts.isPropertySignature(d)) && ts.isIdentifier(d.name) ? slot(d) : null;
   }
 
-  /** The element form a value stored by `at` (`elementStoreOf`) enters: its receiver's, where `push`, `unshift`, `add` or `set` stores it. */
+  /**
+   * The element form a value stored by `at` (`elementStoreOf`) enters: the receiver's, or an array literal's, typed by
+   * the array type the literal is given for.
+   */
   private elementForm(at: ElementStore): Form | null {
-    if (!ts.isCallExpression(at) || !ts.isPropertyAccessExpression(at.expression) || !['push', 'unshift', 'add', 'set'].includes(at.expression.name.text)) return null;
+    if (ts.isArrayLiteralExpression(at)) {
+      const element = this.forms().formOf(at).element, context = this.checker.getContextualType(at);
+      const t = context && this.checker.getNonNullableType(context);
+      const el = t && this.checker.isArrayType(t) ? this.checker.getTypeArguments(t as ts.TypeReference)[0] : undefined;
+      return element && el ? { ...element, type: this.checker.getNonNullableType(el) } : null;
+    }
+    if (!ts.isPropertyAccessExpression(at.expression)) return null;
     return this.collection(at.expression.expression) ? this.forms().formOf(at.expression.expression).element ?? null : null;
   }
 
