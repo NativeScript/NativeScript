@@ -784,7 +784,7 @@ export function ownSlot(d: ts.Declaration, checker: ts.TypeChecker, implemented:
   return (ts.isVariableDeclaration(d) || ts.isPropertyDeclaration(d) || ts.isBindingElement(d)) && ts.isIdentifier(d.name);
 }
 
-function hasStatic(d: ts.Declaration): boolean {
+export function hasStatic(d: ts.Declaration): boolean {
   return !!ts.canHaveModifiers(d) && !!ts.getModifiers(d)?.some((m) => m.kind === ts.SyntaxKind.StaticKeyword);
 }
 
@@ -796,152 +796,6 @@ export function admitsUndefined(t: ts.Type): boolean {
 /** Whether a value is undefined whatever it runs as (`undefined`, `void 0`). */
 export function onlyUndefined(t: ts.Type): boolean {
   return !t.isUnion() && !!(t.flags & (ts.TypeFlags.Undefined | ts.TypeFlags.Void));
-}
-
-/**
- * A class's own instance keys and the order its constructor makes them (Node's, for one level of a hierarchy: a subclass's
- * keys follow everything its base's constructor made).
- * - `always`: keys once the class's level of the constructor starts: parameter properties and initialized fields, or every
- *   declared field where the app's configuration defines class fields (`useDefineForClassFields`).
- * - `sure`: fields without an initializer the constructor assigns on every path before anything else can run (`walked`).
- * - `written`: the others, each a key at its first write, undefined too.
- * - `order`: `always` (parameter properties first), then the fields in the order the walk first writes them, then the rest
- *   as declared. A key made out of this order (a `written` field's first write anywhere but `walked`) is noted as it runs.
- * - `walked`: the constructor's `this.f = v` writes up to the first statement that could run other code with `this` (a base
- *   class's constructor may have let `this` out, so there any call ends the walk too); `first`: the path's first write of `f`.
- */
-export interface ClassKeyPlan { order: string[]; always: Set<string>; sure: Set<string>; written: ts.PropertyDeclaration[]; walked: Map<ts.Node, { field: string; first: boolean }> }
-
-export function classKeyPlan(cls: ts.ClassLikeDeclaration, defines: boolean): ClassKeyPlan {
-  const always = new Set<string>(), written: ts.PropertyDeclaration[] = [], order: string[] = [];
-  const sure = new Set<string>(), walked = new Map<ts.Node, { field: string; first: boolean }>();
-  const ctor = cls.members.find((m): m is ts.ConstructorDeclaration => ts.isConstructorDeclaration(m) && !!m.body);
-  for (const p of ctor?.parameters ?? []) if (ts.isParameterPropertyDeclaration(p, ctor!) && ts.isIdentifier(p.name)) { always.add(p.name.text); order.push(p.name.text); }
-  const fields = new Map<string, ts.PropertyDeclaration>();
-  for (const m of cls.members) {
-    if (!ts.isPropertyDeclaration(m) || hasStatic(m) || !ts.isIdentifier(m.name)) continue;
-    if (ts.getModifiers(m)?.some((x) => x.kind === ts.SyntaxKind.DeclareKeyword || x.kind === ts.SyntaxKind.AbstractKeyword)) continue;
-    if (always.has(m.name.text)) continue;
-    if (defines || m.initializer) { always.add(m.name.text); order.push(m.name.text); }
-    else fields.set(m.name.text, m);
-  }
-  const based = !!cls.heritageClauses?.some((h) => h.token === ts.SyntaxKind.ExtendsKeyword);
-  const stmts = ctor ? [...ctor.body!.statements] : [];
-  const superAt = stmts.findIndex((s) => ts.isExpressionStatement(s) && ts.isCallExpression(s.expression) && s.expression.expression.kind === ts.SyntaxKind.SuperKeyword);
-  // A field holding a function that uses `this` (`onTap = () => this.x = 1`) lets it out when read; any other initializer
-  // using it lets it out at once.
-  const holdsThis = new Set<string>();
-  let initializerEscapes = false;
-  for (const m of cls.members) {
-    if (!ts.isPropertyDeclaration(m) || hasStatic(m) || !m.initializer) continue;
-    const init = ts.skipOuterExpressions(m.initializer);
-    if ((ts.isArrowFunction(init) || ts.isFunctionExpression(init)) && ts.isIdentifier(m.name) && !(based && runsCode(init))) { if (containsThis(init) || ts.isFunctionExpression(init)) holdsThis.add(m.name.text); }
-    else if (containsThis(m.initializer) || (based && runsCode(m.initializer))) initializerEscapes = true;
-  }
-  if (fields.size && ctor && (!based || superAt >= 0) && !initializerEscapes) {
-    const plain = new Set<string>();
-    for (const m of cls.members) if (ts.isPropertyDeclaration(m) && !hasStatic(m) && ts.isIdentifier(m.name)) plain.add(m.name.text);
-    for (const p of ctor.parameters) if (ts.isIdentifier(p.name) && ts.getModifiers(p)?.length) plain.add(p.name.text);
-    const isThis = (n: ts.Node) => n.kind === ts.SyntaxKind.ThisKeyword;
-    // Whether `n` may make a key: `this` used other than to read a field or write one that is a key already, or (below a
-    // base) any call.
-    const escapes = (n: ts.Node): boolean => {
-      let escaped = false;
-      const visit = (x: ts.Node) => {
-        if (escaped) return;
-        if (ts.isFunctionLike(x) || ts.isClassLike(x)) { if (containsThis(x)) escaped = true; return; }
-        if (based && runsCode(x, false)) { escaped = true; return; }
-        if (ts.isPropertyAccessExpression(x) && isThis(x.expression)) {
-          const p = ts.walkUpParenthesizedExpressions(x.parent);
-          const written = (ts.isBinaryExpression(p) && p.left === ts.skipOuterExpressions(x) && p.operatorToken.kind >= ts.SyntaxKind.FirstAssignment && p.operatorToken.kind <= ts.SyntaxKind.LastAssignment)
-            || ts.isPrefixUnaryExpression(p) || ts.isPostfixUnaryExpression(p) || ts.isDeleteExpression(p);
-          if (!ts.isIdentifier(x.name) || !plain.has(x.name.text) || holdsThis.has(x.name.text) || (ts.isCallExpression(p) && p.expression === x) || (written && fields.has(x.name.text))) escaped = true;
-          return;
-        }
-        if (isThis(x) || x.kind === ts.SyntaxKind.SuperKeyword) { escaped = true; return; }
-        ts.forEachChild(x, visit);
-      };
-      visit(n);
-      return escaped;
-    };
-    type State = { assigned: Set<string>; firsts: string[]; done: boolean };
-    const all = () => new Set(fields.keys());
-    // Each path's first writes must run in `order`: a branch that writes them otherwise ends the walk before its `if`.
-    const inOrder = (firsts: string[]) => firsts.every((f, k) => k === 0 || order.indexOf(firsts[k - 1]) < order.indexOf(f));
-    const walk = (list: readonly ts.Statement[], s: State): State => {
-      for (const st of list) {
-        if (s.done) return s;
-        if (ts.isExpressionStatement(st) && ts.isBinaryExpression(st.expression) && st.expression.operatorToken.kind === ts.SyntaxKind.EqualsToken) {
-          const left = ts.skipOuterExpressions(st.expression.left);
-          const f = ts.isPropertyAccessExpression(left) && isThis(left.expression) && ts.isIdentifier(left.name) && fields.has(left.name.text) ? left.name.text : null;
-          if (f !== null) {
-            if (escapes(st.expression.right)) return { ...s, done: true };
-            const first = !s.assigned.has(f) && !s.firsts.includes(f);
-            walked.set(st.expression, { field: f, first });
-            if (!order.includes(f)) order.push(f);
-            s = { assigned: new Set([...s.assigned, f]), firsts: first ? [...s.firsts, f] : s.firsts, done: false };
-            continue;
-          }
-        }
-        if (ts.isIfStatement(st)) {
-          if (escapes(st.expression)) return { ...s, done: true };
-          const before = { order: order.length, walked: new Map(walked) };
-          const branch = (b: ts.Statement | undefined) => (b ? walk(ts.isBlock(b) ? b.statements : [b], { assigned: new Set(s.assigned), firsts: [...s.firsts], done: false }) : { assigned: new Set(s.assigned), firsts: [...s.firsts], done: false });
-          const a = branch(st.thenStatement), b = branch(st.elseStatement);
-          if (!inOrder(a.firsts) || !inOrder(b.firsts)) {
-            order.length = before.order;
-            walked.clear();
-            for (const [n, w] of before.walked) walked.set(n, w);
-            return { ...s, done: true };
-          }
-          const ends = (x: State, br: ts.Statement | undefined) => !!br && !x.done && alwaysThrows(br);
-          const left = ends(a, st.thenStatement) ? all() : a.assigned, right = ends(b, st.elseStatement) ? all() : b.assigned;
-          s = { assigned: new Set([...left].filter((f) => right.has(f))), firsts: [...a.firsts, ...b.firsts.filter((f) => !a.firsts.includes(f))].sort((x, y) => order.indexOf(x) - order.indexOf(y)), done: a.done || b.done };
-          continue;
-        }
-        if (ts.isBlock(st)) { s = walk(st.statements, s); continue; }
-        if (ts.isThrowStatement(st)) return { ...s, assigned: all(), done: true };
-        // Any other statement that can't make a key or leave the constructor (a loop filling an array field) changes nothing.
-        if (!escapes(st) && !mayLeave(st)) continue;
-        return { ...s, done: true };
-      }
-      return s;
-    };
-    const end = walk(stmts.slice(superAt + 1), { assigned: new Set(), firsts: [], done: false });
-    for (const f of end.assigned) if (fields.has(f)) sure.add(f);
-  }
-  for (const [name, m] of fields) {
-    if (!order.includes(name)) order.push(name);
-    if (!sure.has(name)) written.push(m);
-  }
-  return { order, always, sure, written, walked };
-}
-
-/** Whether a statement may end its function early (`return`, `throw`), outside the functions it declares. */
-function mayLeave(st: ts.Statement): boolean {
-  let found = false;
-  const visit = (x: ts.Node) => {
-    if (found || ts.isFunctionLike(x) || ts.isClassLike(x)) return;
-    if (ts.isReturnStatement(x) || ts.isThrowStatement(x)) { found = true; return; }
-    ts.forEachChild(x, visit);
-  };
-  visit(st);
-  return found;
-}
-
-/** Whether evaluating `n` may run code beyond reading values: a call, `new`, a tagged template, `await`, `yield` or iteration. */
-function runsCode(n: ts.Node, deep = true): boolean {
-  const at = (x: ts.Node) => ts.isCallExpression(x) || ts.isNewExpression(x) || ts.isTaggedTemplateExpression(x) || ts.isAwaitExpression(x) || ts.isYieldExpression(x)
-    || ts.isForOfStatement(x) || ts.isSpreadElement(x) || ts.isArrayBindingPattern(x);
-  if (!deep) return at(n);
-  let found = false;
-  const visit = (x: ts.Node) => {
-    if (found || ts.isFunctionLike(x) || ts.isClassLike(x)) return;
-    if (at(x)) { found = true; return; }
-    ts.forEachChild(x, visit);
-  };
-  visit(n);
-  return found;
 }
 
 /** The program's interfaces a class implements, whose fields its classes declare as well. */
@@ -1091,7 +945,7 @@ export function definitelyAssignedFields(cls: ts.ClassLikeDeclaration): Set<ts.P
   return out;
 }
 
-function containsThis(n: ts.Node): boolean {
+export function containsThis(n: ts.Node): boolean {
   let found = false;
   const visit = (x: ts.Node) => {
     if (found) return;
@@ -1104,7 +958,7 @@ function containsThis(n: ts.Node): boolean {
   return found;
 }
 
-function alwaysThrows(st: ts.Statement): boolean {
+export function alwaysThrows(st: ts.Statement): boolean {
   if (ts.isThrowStatement(st)) return true;
   if (ts.isBlock(st)) return st.statements.some((s) => ts.isThrowStatement(s));
   return false;
@@ -1364,7 +1218,7 @@ export function nullishSlots(checker: ts.TypeChecker, files: readonly ts.SourceF
     if (ts.canHaveDecorators(fn) && ts.getDecorators(fn)?.length) { refuseBoth(fn, 'a decorated member'); continue; }
     for (const p of fn.parameters) {
       if (!named(p)) continue;
-      // A parameter property's field is held as a field (`ValueStates.nullFields`); its parameter only by its form.
+      // A parameter property's field is held as a field (`KeyState.nulls`); its parameter only by its form.
       if (ts.isConstructorDeclaration(fn) && ts.isParameterPropertyDeclaration(p, fn)) { const t = typeOf(p); if (formHeld(p, t) || (both(t) && oneKind(t) && value(t) && formBoth(p))) held.add(p); continue; }
       hold(p, typeOf(p));
     }

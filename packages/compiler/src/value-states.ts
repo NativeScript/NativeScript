@@ -4,7 +4,8 @@ import { admitsUndefined, alwaysEnds, givenBy, heldDowncasts, implementedInterfa
 import { type Form, Forms, isGeneric, ONE_ELEMENT, representation } from './forms.ts';
 import { isAsync, isStatic } from './throws.ts';
 import { shadowForms } from './forms-shadow.ts';
-import { containerKind, elementStoreOf, storeOf, type ElementStore, type Store } from './placement.ts';
+import { containerKind, elementStoreOf, isElementStore, storeOf, type ElementStore, type Store } from './placement.ts';
+import { notedField } from './shapes.ts';
 
 const COMPILER = dirname(import.meta.dirname);
 /** Sources the compiler ships to be compiled with an app: plugin bindings and ports of libraries. */
@@ -464,7 +465,7 @@ export class ValueStates {
     }
     if (!ts.isPropertyAccessExpression(bare) || isWriteTarget(bare)) return null;
     // An optional field that may hold null or undefined: the literal's shape notes which (`jsNulls`), read by key.
-    const name = this.nullField(bare) ? bare.name.text : this.nullishShapeField(bare);
+    const name = notedField(this, bare) ? bare.name.text : this.nullishShapeField(bare);
     return name ? { kind: 'field', read: bare, name } : null;
   }
 
@@ -538,6 +539,7 @@ export class ValueStates {
   /**
    * A non-strict app's fields its code sets to null (`colors: string[] = null`, `this.indices = h.length ? h : null`): the
    * native empty value is undefined, so the class notes which hold null (`jsNulls`), and they are written by name, which notes it.
+   * The class plan's null states read it (shapes.ts `KeyState.nulls`); backends read the plan.
    */
   nullFields(cls: ts.ClassLikeDeclaration): Set<string> {
     let set = this.nullFieldSets.get(cls);
@@ -554,12 +556,6 @@ export class ValueStates {
     return set;
   }
 
-  /** One `jsNulls` per object: a class whose program base keeps one declares none of its own. */
-  baseKeepsNulls(cls: ts.ClassLikeDeclaration): boolean {
-    for (let base = this.backend.programBase(cls); base; base = this.backend.programBase(base)) if (this.nullFields(base).size) return true;
-    return false;
-  }
-
   /** Strict code's fields typed `T | null` that start with a value (an initializer, a constructor parameter's): an empty value in them is null. */
   nullFieldsTyped(cls: ts.ClassLikeDeclaration): Set<string> {
     const set = new Set<string>();
@@ -569,14 +565,6 @@ export class ValueStates {
     const given = [...cls.members.filter((m): m is ts.PropertyDeclaration => ts.isPropertyDeclaration(m) && !!m.initializer && !isStatic(m)), ...(ctor?.parameters.filter((p) => ts.isParameterPropertyDeclaration(p, ctor)) ?? [])];
     for (const m of given) if (ts.isIdentifier(m.name) && onlyNull(this.checker.getTypeAtLocation(m.name))) set.add(m.name.text);
     return set;
-  }
-
-  /** A read or write of a field `nullFields` notes. */
-  nullField(e: ts.Expression): e is ts.PropertyAccessExpression {
-    if (!ts.isPropertyAccessExpression(e) || e.questionDotToken || e.expression.kind === ts.SyntaxKind.SuperKeyword) return false;
-    const d = this.checker.getSymbolAtLocation(e.name)?.valueDeclaration;
-    const cls = d && (ts.isPropertyDeclaration(d) ? d.parent : ts.isParameter(d) && ts.isParameterPropertyDeclaration(d, d.parent) ? d.parent.parent : null);
-    return !!cls && ts.isClassLike(cls) && this.nullFields(cls).has(e.name.text);
   }
 
   /**
@@ -1137,6 +1125,22 @@ export class ValueStates {
     return this.foreignForm(a, () => this.placementForm(a));
   }
 
+  /**
+   * `foreignPlacement` of a call's untyped result: also a strict file's call of the program's own method on an untyped
+   * receiver, whatever function the value holds by that name, checked where its slot holds its declared type though no
+   * form sees a foreign value reach that slot.
+   */
+  foreignResult(e: ts.CallExpression): Form | null {
+    const found = this.foreignPlacement(e);
+    if (found || this.backend.lenientApp || !this.backend.trust.strictFile(e.getSourceFile()) || this.checker.getTypeAtLocation(e).flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown)) return found;
+    const d = this.checker.getResolvedSignature(e)?.getDeclaration();
+    if (!d || ts.isJSDocSignature(d) || d.getSourceFile().isDeclarationFile || !(ts.isMethodDeclaration(d) || ts.isMethodSignature(d))) return null;
+    if (!ts.isPropertyAccessExpression(e.expression) || e.questionDotToken || !this.appCode(e) || !this.untypedValue(e.expression.expression)) return null;
+    const form = this.placementForm(e);
+    if (!form || form.type.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown) || isGeneric(form.type)) return null;
+    return this.withElements(form, false);
+  }
+
   /** `foreignPlacement` of `a` given as the `k`th argument of `call`, decided from the call and its parameter. */
   foreignArgument(call: ts.CallExpression | ts.NewExpression, k: number, a: ts.Expression): Form | null {
     return this.foreignForm(a, () => this.argumentForm(call, k));
@@ -1149,10 +1153,24 @@ export class ValueStates {
 
   private foreignForm(a: ts.Expression, slotForm: () => Form | null): Form | null {
     const b = this.backend;
-    if (b.library || b.lenient || !this.appCode(a) || !this.untypedValue(a)) return null;
+    if (b.library || b.lenient || !this.appCode(a) || !this.untypedValue(a) || (!this.strictCode(a) && strictOnlyRoute(a))) return null;
     const form = slotForm();
     if (!form || !form.foreign || form.type.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown) || isGeneric(form.type)) return null;
     return this.withElements(form, false);
+  }
+
+  /**
+   * A field of the app's own code (its declaration `at`) written by name (`obj[key] = v`, a binding's write), where
+   * only the backend's code has the value, untyped: the form it enters as, as `foreignStore` gives a stored value's.
+   * Only a field forms already see a foreign value reach is checked: XML attribute strings, two-way bindings and
+   * `Object.assign` from JSON write the rest by name by design.
+   */
+  foreignCodeStore(at: ts.PropertyDeclaration | ts.PropertySignature | ts.PropertyAssignment): Form | null {
+    const b = this.backend;
+    if (b.library || b.lenient || !ts.isIdentifier(at.name) || b.lenientApp || !b.trust.strictFile(at.getSourceFile())) return null;
+    const form = this.declaredSlot(at);
+    if (!form || !form.foreign || form.type.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown) || isGeneric(form.type)) return null;
+    return this.withElements({ ...form, foreign: true }, false);
   }
 
   /** The form of the slot of the app's own code `a` is placed in by its parent, if it is one M6 checks. */
@@ -1180,20 +1198,22 @@ export class ValueStates {
   /** The form of the slot of the app's own code `at` stores a value in, if it is one M6 checks. */
   private storeForm(at: Store): Form | null {
     const slot = (d: ts.Declaration | undefined) => this.declaredSlot(d);
-    if (ts.isCallExpression(at) || ts.isArrayLiteralExpression(at)) return this.elementForm(at);
+    if (isElementStore(this.checker, at)) return this.elementForm(at);
     if (ts.isVariableDeclaration(at)) return ts.isIdentifier(at.name) ? slot(at) : null;
-    if (ts.isPropertyDeclaration(at)) return this.fieldSlot(at, slot);
-    if (ts.isPropertyAssignment(at)) {
+    if (ts.isPropertyDeclaration(at) || (ts.isPropertySignature(at) && this.strictCode(at))) return this.fieldSlot(at, slot);
+    if (ts.isPropertyAssignment(at) || (ts.isShorthandPropertyAssignment(at) && this.strictCode(at))) {
       const literal = ts.isObjectLiteralExpression(at.parent) && this.checker.getContextualType(at.parent);
       const name = ts.isIdentifier(at.name) || ts.isStringLiteral(at.name) ? at.name.text : null;
       return literal && name ? this.fieldSlot(this.checker.getNonNullableType(literal).getProperty(name)?.valueDeclaration, slot) : null;
     }
     if (ts.isParameter(at)) return null;
+    if (ts.isCallExpression(at)) return this.strictCode(at) ? this.argumentForm(at, 0) : null;
     const left = ts.skipOuterExpressions(at, ts.OuterExpressionKinds.Parentheses);
     if (ts.isIdentifier(left)) {
       const d = this.checker.getSymbolAtLocation(left)?.valueDeclaration;
       return d && (ts.isVariableDeclaration(d) || (ts.isParameter(d) && !ts.isParameterPropertyDeclaration(d, d.parent))) ? slot(d) : null;
     }
+    if (ts.isPropertyAccessExpression(left) && left.name.text === 'value' && this.signalKind(left.expression) === 'ref') return !this.strictCode(at) ? null : this.signalForm(this.checker.getTypeAtLocation(left));
     if (ts.isPropertyAccessExpression(left)) return this.fieldSlot(this.checker.getSymbolAtLocation(left.name)?.valueDeclaration, slot);
     if (ts.isElementAccessExpression(left) && this.collection(left.expression) === 'Array' && this.checker.getTypeAtLocation(left.argumentExpression).flags & ts.TypeFlags.NumberLike) return this.forms().formOf(left.expression).element ?? null;
     return null;
@@ -1212,6 +1232,11 @@ export class ValueStates {
 
   /** The form of the `k`th argument's slot of `call`, if it is one M6 checks: the app's parameter. */
   private argumentForm(call: ts.CallExpression | ts.NewExpression, k: number): Form | null {
+    if (ts.isCallExpression(call) && k === 0 && ts.isPropertyAccessExpression(call.expression) && call.arguments.length === 1) {
+      const kind = this.signalKind(call.expression.expression), method = call.expression.name.text;
+      const t = (kind === 'writable' && method === 'set') || (kind === 'input' && method === '$assign') ? this.checker.getContextualType(call.arguments[0]) : undefined;
+      if (kind) return t && this.strictCode(call) ? this.signalForm(t) : null;
+    }
     const sig = this.checker.getResolvedSignature(call)?.getDeclaration();
     if (!sig || ts.isJSDocSignature(sig) || sig.getSourceFile().isDeclarationFile) return null;
     const param = sig.parameters[k];
@@ -1229,6 +1254,25 @@ export class ValueStates {
     const form = this.forms().formOfSlot(el), type = this.checker.getNonNullableType(this.checker.getTypeAtLocation(el.name));
     if (!form.foreign || type.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown) || isGeneric(type)) return null;
     return this.withElements({ ...form, type }, false);
+  }
+
+  /** The kind of signal `e` is, as the backends hold it (`Signal<T>`): Angular's and Svelte's writable ones, Angular's input, Vue's ref. */
+  private signalKind(e: ts.Expression): 'writable' | 'input' | 'ref' | null {
+    const t = this.checker.getTypeAtLocation(e), name = (t.aliasSymbol ?? t.getSymbol())?.getName();
+    return name === 'WritableSignal' || name === 'Writable' ? 'writable' : name === 'InputSignal' ? 'input' : name === 'VueRef' ? 'ref' : null;
+  }
+
+  /** The value of type `t` a signal holds, as the slot a write (`s.set(v)`, `ref.value = v`) stores in: no form tracks it, so a foreign one. */
+  private signalForm(t: ts.Type): Form {
+    return { type: this.checker.getNonNullableType(t), undefined: false, null: false, hole: false, foreign: true, missing: false, absent: false, observed: false, typeObserved: false };
+  }
+
+  /**
+   * A strict file's code. A non-strict app's keeps its lenient entry at a shape's or shorthand field, a signal's write,
+   * `strictOnlyRoute`'s stores, a member of an untyped value and an optional assertion.
+   */
+  strictCode(n: ts.Node): boolean {
+    return !this.backend.lenientApp && this.backend.trust.strictFile(n.getSourceFile());
   }
 
   private fieldSlot(d: ts.Declaration | undefined, slot: (d: ts.Declaration | undefined) => Form | null): Form | null {
@@ -1258,7 +1302,9 @@ export class ValueStates {
     if (x.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(x) && x.text === 'undefined')) return false;
     if (this.checker.getTypeAtLocation(x).flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown)) return true;
     if (this.narrowedRead(x)) return false;
-    if (ts.isPropertyAccessExpression(x)) return this.heldMember(x.name);
+    // A member read or method call on an untyped value is the value's own, read by name: untyped too.
+    if (ts.isCallExpression(x) && ts.isPropertyAccessExpression(x.expression) && !x.questionDotToken && this.strictCode(x) && this.untypedValue(x.expression.expression)) return true;
+    if (ts.isPropertyAccessExpression(x)) return this.heldMember(x.name) || (this.strictCode(x) && this.untypedValue(x.expression));
     const d = ts.isIdentifier(x) ? this.checker.getSymbolAtLocation(x)?.valueDeclaration : ts.isCallExpression(x) ? this.checker.getResolvedSignature(x)?.getDeclaration() : undefined;
     return !!d && !ts.isJSDocSignature(d) && this.nullish().held.has(d) && this.forms().formOfSlot(d).foreign;
   }
@@ -1471,4 +1517,16 @@ function fieldLike(d: ts.Declaration): boolean {
   if (ts.isPropertyDeclaration(d)) return ts.isIdentifier(d.name) && !isStatic(d) && ts.isClassLike(d.parent);
   if (ts.isPropertySignature(d)) return ts.isIdentifier(d.name) && (ts.isInterfaceDeclaration(d.parent) || ts.isTypeLiteralNode(d.parent));
   return ts.isParameter(d) && ts.isIdentifier(d.name) && ts.isParameterPropertyDeclaration(d, d.parent);
+}
+
+/** Whether `a` reaches its store (`storeOf`) through a conditional's branch, a shorthand field or a logical assignment. */
+function strictOnlyRoute(a: ts.Expression): boolean {
+  let x: ts.Node = a, branch = false;
+  for (;;) {
+    if (ts.isParenthesizedExpression(x.parent)) x = x.parent;
+    else if (ts.isConditionalExpression(x.parent) && x.parent.condition !== x) { x = x.parent; branch = true; }
+    else break;
+  }
+  const p = x.parent;
+  return branch || ts.isShorthandPropertyAssignment(p) || (ts.isBinaryExpression(p) && p.right === x && p.operatorToken.kind !== ts.SyntaxKind.EqualsToken);
 }

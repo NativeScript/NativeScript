@@ -50,6 +50,7 @@ export function representation(f: Form): Representation {
 }
 
 const U = 1, N = 2, H = 4, F = 8;
+const LOGICAL_ASSIGNMENT = new Set([ts.SyntaxKind.QuestionQuestionEqualsToken, ts.SyntaxKind.BarBarEqualsToken, ts.SyntaxKind.AmpersandAmpersandEqualsToken]);
 /** `Form.missing`, carried beside U: whatever keeps or drops U keeps or drops it with it (`withMissing`). */
 const M = 16;
 /** `Form.absent`, carried beside U and N: kept by masks that keep either, dropped where both are. */
@@ -902,7 +903,7 @@ export class Forms {
       if (d && declarationFile(d) && this.unseenReader(d)) this.observe(e);
       return;
     }
-    if (ts.isBinaryExpression(p) && p.right === x && p.operatorToken.kind === ts.SyntaxKind.QuestionQuestionEqualsToken) {
+    if (ts.isBinaryExpression(p) && p.right === x && LOGICAL_ASSIGNMENT.has(p.operatorToken.kind)) {
       const d = this.declarationOf(ts.isPropertyAccessExpression(p.left) ? p.left.name : p.left);
       if (d) this.place(e, this.slotFor(d));
       return;

@@ -45,9 +45,7 @@ pending @nativescript/core/text.text-common.ts | conditional cast from 'JSArrayB
 pending @nativescript/core/text.text-common.ts | no calls to throwing functions occur within 'try' expression
 pending @nativescript/core/ui.core.control-state-change.index.ios.ts | conditional cast from 'ObserverClass' to 'ObserverClass' always succeeds
 pending @nativescript/core/ui.core.properties.index.ts | comparing non-optional value of type 'String' to 'nil' always returns true
-pending @nativescript/core/ui.core.view.index.ios.ts | conditional cast from 'View' to 'View' always succeeds
 pending @nativescript/core/ui.frame.frame-common.ts | comparing non-optional value of type 'Bool' to 'nil' always returns true
-pending @nativescript/core/ui.frame.frame-common.ts | conditional downcast from 'Page?' to 'ViewCommon' is equivalent to an implicit conversion to an optional 'ViewCommon'
 pending @nativescript/core/ui.frame.index.ios.ts | comparing non-optional value of type 'Bool' to 'nil' always returns true
 pending @nativescript/core/ui.frame.index.ios.ts | conditional cast from 'UINavigationControllerImpl' to 'UINavigationControllerImpl' always succeeds
 pending @nativescript/core/ui.frame.index.ios.ts | result of call to closure returning 'Any?' is unused
@@ -75,7 +73,6 @@ pending @nativescript/core/ui.styling.style.index.ts | conditional downcast from
 pending @nativescript/core/ui.switch.index.ios.ts | cast from 'Color?' to unrelated type 'UIColor' always fails
 pending @nativescript/core/ui.switch.index.ios.ts | left side of nil coalescing operator '??' has non-optional type 'Any?', so the right side is never used
 pending @nativescript/core/ui.tab-view.index.ios.ts | comparing non-optional value of type 'UITabBarAppearance' to 'nil' always returns false
-pending @nativescript/core/ui.text-base.formatted-string.ts | conditional downcast from 'Span?' to 'ViewBase' is equivalent to an implicit conversion to an optional 'ViewBase'
 pending @nativescript/core/ui.text-field.index.ios.ts | comparing non-optional value of type 'String' to 'nil' always returns false
 pending @nativescript/core/ui.transition.shared-transition-helper.ios.ts | no calls to throwing functions occur within 'try' expression
 pending @nativescript/core/xhr.index.ts | conditional cast from 'JSArrayBuffer' to 'JSArrayBuffer' always succeeds

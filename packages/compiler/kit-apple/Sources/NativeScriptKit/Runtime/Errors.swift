@@ -170,13 +170,15 @@ public func jsUnavailable(_ version: Double) -> JSException {
     JSException(JSTypeError("This needs iOS \(jsNumberToString(version)) or newer"))
 }
 
-/// `value` as an instance of `type`, JavaScript's undefined and null as nil: a TypeError where it is another value.
-/// A cast TypeScript asserts (`view as Button`) lets any object through in JavaScript; the compiled code checks it.
+/// `value` as an instance of `type`, JavaScript's undefined and null, and an empty marker (`jsEmptyMarker`), as nil: a
+/// TypeError where it is another value. A cast TypeScript asserts (`view as Button`) lets any object through in
+/// JavaScript; the compiled code checks it.
 @inline(__always)
 public func jsCast<T>(_ value: Any?, _ type: T.Type = T.self) throws -> T? {
     if let same = value as? T { return same }
     if jsIsNullish(value) { return nil }
     if let same = jsFlat(value) as? T { return same }
+    if jsIsEmptyMarker(value) { return nil }
     throw jsNotA(value, String(describing: T.self))
 }
 

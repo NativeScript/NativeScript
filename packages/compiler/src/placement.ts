@@ -25,6 +25,8 @@ export interface StateCells {
    * or a store's `slot` decided, else `foreignPlacement`'s.
    */
   checked(e: ts.Expression, target: string, slot?: ParamSlot | StoreSlot): string | null;
+  /** F → P/U with a checked entry for a value only the backend's code has (`placeCode`), or null where the slot's type has none. */
+  checkedCode(code: string, slot: StoreSlot): string | null;
   /** An empty marker's value as it is made (`emptyMarkers`), registered so that checked converts read it as an empty value. */
   marker(code: string): string;
 }
@@ -258,10 +260,11 @@ export function argumentOf(a: ts.Expression): { call: ts.CallExpression | ts.New
 }
 
 /**
- * Where a value is stored: a variable's declaration, a class's field, an object literal's field, a parameter (its
- * default), an assignment's target (a variable, a member, an element), or a container's element (`ElementStore`).
+ * Where a value is stored: a variable's declaration, a class's or a shape's field, an object literal's field (`{ a }`
+ * too), a parameter (its default), an assignment's target (a variable, a member, an element), a signal's write
+ * (`s.set(v)`), or a container's element (`ElementStore`).
  */
-export type Store = ts.VariableDeclaration | ts.PropertyDeclaration | ts.PropertyAssignment | ts.ParameterDeclaration | ts.Expression;
+export type Store = ts.VariableDeclaration | ts.PropertyDeclaration | ts.PropertySignature | ts.PropertyAssignment | ts.ShorthandPropertyAssignment | ts.ParameterDeclaration | ts.Expression;
 
 /** What stores its arguments or its elements as a container's elements: an array literal, or a call adding to an array, Set or Map. */
 export type ElementStore = ts.CallExpression | ts.ArrayLiteralExpression;
@@ -284,7 +287,22 @@ export interface StoreSlot {
  * as it is (a compound assignment's operand, a signal's `set`), which enters unchecked.
  */
 export function storeSlot(b: Pick<PlacementBackend, 'library' | 'lenient' | 'states'>, target: string, at: Store, a: ts.Expression, checks = true): StoreSlot {
-  return { kind: storeKind(at), target, type: parseNativeType(target), at, ...storeEntry(b, at, a, checks) };
+  return { kind: storeKind(b.states.backend.checker, at), target, type: parseNativeType(target), at, ...storeEntry(b, at, a, checks) };
+}
+
+/**
+ * The slot of a field (`at`, its declaration) a value only the backend's code has is stored in, untyped (a dynamic
+ * setter's `newValue`), the backend having it as `target`; no `at` where the backend's field has no one declaration.
+ */
+export function codeStoreSlot(b: Pick<PlacementBackend, 'library' | 'lenient' | 'states'>, target: string, at?: ts.PropertyDeclaration | ts.PropertySignature | ts.PropertyAssignment): StoreSlot | null {
+  if (!at) return null;
+  const checked = b.states.foreignCodeStore(at);
+  return { kind: storeKind(b.states.backend.checker, at), target, type: parseNativeType(target), at, ...(checked ? { entry: 'checked', checked } : { entry: b.library ? 'library' : b.lenient ? 'lenient' : 'typed' }) };
+}
+
+/** An untyped value only the backend's code has (`code`), stored in `slot`: its checked cell where the slot's entry is checked, else null for the backend's own conversion. */
+export function placeCode(b: PlacementBackend, code: string, slot: StoreSlot | null): string | null {
+  return slot?.entry === 'checked' ? b.cells.checkedCode(code, slot) : null;
 }
 
 /** How `a`, stored by `at`, comes in, as its slot has it (`storeSlot`). */
@@ -295,22 +313,29 @@ export function storeEntry(b: Pick<PlacementBackend, 'library' | 'lenient' | 'st
   return checked ? { entry: 'checked', checked } : { entry: b.library ? 'library' : b.lenient ? 'lenient' : 'typed' };
 }
 
-function storeKind(at: Store): StoreSlot['kind'] {
-  if (ts.isCallExpression(at) || ts.isArrayLiteralExpression(at)) return 'element';
+function storeKind(checker: ts.TypeChecker, at: Store): StoreSlot['kind'] {
+  if (isElementStore(checker, at)) return 'element';
   if (ts.isVariableDeclaration(at) || ts.isParameter(at)) return 'variable';
-  if (ts.isPropertyDeclaration(at)) return 'field';
-  if (ts.isPropertyAssignment(at)) return 'literalField';
+  if (ts.isPropertyDeclaration(at) || ts.isPropertySignature(at) || ts.isCallExpression(at)) return 'field';
+  if (ts.isPropertyAssignment(at) || ts.isShorthandPropertyAssignment(at)) return 'literalField';
   const target = ts.skipOuterExpressions(at, ts.OuterExpressionKinds.Parentheses);
   return ts.isIdentifier(target) ? 'variable' : ts.isElementAccessExpression(target) ? 'element' : 'field';
 }
 
-/** The store `a` is the value of, past parentheses: a variable's or a field's initializer, an object literal's field, an assignment's right side. Null where `a` is none. */
+const STORING = new Set([ts.SyntaxKind.EqualsToken, ts.SyntaxKind.QuestionQuestionEqualsToken, ts.SyntaxKind.BarBarEqualsToken, ts.SyntaxKind.AmpersandAmpersandEqualsToken]);
+
+/**
+ * The store `a` is the value of, past parentheses and the branches of a conditional: a variable's or a field's
+ * initializer, an object literal's field (`{ a }` too), the right side of an assignment (`=`, `??=`, `||=`, `&&=`).
+ * Null where `a` is none.
+ */
 export function storeOf(a: ts.Expression): Store | null {
   let x: ts.Node = a;
-  while (ts.isParenthesizedExpression(x.parent)) x = x.parent;
+  while (ts.isParenthesizedExpression(x.parent) || (ts.isConditionalExpression(x.parent) && x.parent.condition !== x)) x = x.parent;
   const p = x.parent;
   if ((ts.isVariableDeclaration(p) || ts.isPropertyDeclaration(p) || ts.isPropertyAssignment(p)) && p.initializer === x) return p;
-  return ts.isBinaryExpression(p) && p.operatorToken.kind === ts.SyntaxKind.EqualsToken && p.right === x ? p.left : null;
+  if (ts.isShorthandPropertyAssignment(p) && p.name === x) return p;
+  return ts.isBinaryExpression(p) && STORING.has(p.operatorToken.kind) && p.right === x ? p.left : null;
 }
 
 /**
@@ -331,6 +356,11 @@ export function elementStoreOf(checker: ts.TypeChecker, a: ts.Expression): Eleme
   return stores ? p : null;
 }
 
+/** Whether `at` is a container's store (`elementStoreOf`), not a signal's write (`s.set(v)`), which is a call too. */
+export function isElementStore(checker: ts.TypeChecker, at: Store): at is ElementStore {
+  return ts.isArrayLiteralExpression(at) || (ts.isCallExpression(at) && ts.isPropertyAccessExpression(at.expression) && !!containerKind(checker, at.expression.expression));
+}
+
 /** Whether `e` is an array, a Set or a Map, by its type. */
 export function containerKind(checker: ts.TypeChecker, e: ts.Expression): 'Array' | 'Set' | 'Map' | null {
   const t = checker.getNonNullableType(checker.getTypeAtLocation(e));
@@ -339,7 +369,7 @@ export function containerKind(checker: ts.TypeChecker, e: ts.Expression): 'Array
   return kind === 'Set' || kind === 'Map' ? kind : null;
 }
 
-/** Whether `a` is the value an `=` assigns to `left`, past parentheses: a compound assignment's operand, or one of an assignment the translation made from another, is not. */
+/** Whether `a` is the value an assignment stores in `left` as it is (`storeOf`): a compound assignment's operand, or one of an assignment the translation made from another, is not. */
 export function assignedTo(left: ts.Expression, a: ts.Expression): boolean {
   return storeOf(a) === left;
 }
@@ -412,4 +442,29 @@ function voidOperand(e: ts.Expression): ts.Expression | null {
   let x = e.expression;
   while (ts.isParenthesizedExpression(x)) x = x.expression;
   return ts.isLiteralExpression(x) || ts.isIdentifier(x) ? null : e.expression;
+}
+
+/**
+ * The value an `await` resumes its continuation with (`kind: 'await'`), where the promise may resolve with nothing its
+ * type has (a non-strict app's async call): held optional as `raw`, the continuation's parameter. Reads of the await
+ * place that held value (U), so a member read of it is JavaScript's TypeError where nothing came.
+ */
+export interface AwaitSlot {
+  kind: 'await';
+  /** The continuation parameter's type: the optional of the await's type. */
+  target: string;
+  type: NativeType;
+  a: ts.AwaitExpression;
+  raw: string;
+  /** The async function gives only null where it gives nothing (`nullResult`): its empty is null, not undefined. */
+  isNull: boolean;
+}
+
+/** `a`'s await slot where its operand is a non-strict app's async call (`lenientAsyncCall`) of a type `holds`, else null. */
+export function awaitSlot(b: Pick<PlacementBackend, 'states' | 'typeOf' | 'optionalType'>, a: ts.AwaitExpression, raw: string, holds: (type: string) => boolean): AwaitSlot | null {
+  if (!b.states.lenientAsyncCall(a.expression)) return null;
+  const type = b.typeOf(a);
+  if (!holds(type)) return null;
+  const target = b.optionalType(type);
+  return { kind: 'await', target, type: parseNativeType(target), a, raw, isNull: b.states.nullResult(a) };
 }
