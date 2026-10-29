@@ -8751,7 +8751,7 @@ ${members.join('\n')}
     }
     if (/^JSPromise<(Any\?|JSArray<Any\?>)>$/.test(source) && /^JSPromise<.*>[?!]?$/.test(target) && source !== target.replace(/[?!]$/, '')) {
       const all = ts.isCallExpression(bare) && ts.isPropertyAccessExpression(bare.expression) && bare.expression.name.text === 'all' && ts.isIdentifier(bare.expression.expression) && bare.expression.expression.text === 'Promise' && this.isLibGlobal(bare.expression.expression) && bare.arguments.length === 1 && !ts.isArrayLiteralExpression(bare.arguments[0]) ? bare : null;
-      return all ? this.untypedAll(all.arguments[0], target) : this.promiseAs(this.expr(e), source, target);
+      return all ? this.untypedAll(all.arguments[0], target) : this.convert(this.expr(e), source, target);
     }
     // A map of typed values where a map of any value is wanted: its entries, in a new map of them.
     const typedMap = /^JSMap<(.+)>$/.exec(source)?.[1], anyMap = /^JSMap<(.+)>[?!]?$/.exec(target)?.[1];
@@ -12624,7 +12624,7 @@ ${members.join('\n')}
           // An array of untyped values (`const toClose = []`): the dynamic combinator, its result read as TypeScript types it.
           const code = `JSPromise<Any?>.${method}(${this.coerce(src, 'JSArray<Any?>')})`;
           const made = method === 'all' ? 'JSPromise<JSArray<Any?>>' : method === 'allSettled' ? 'JSPromise<JSArray<JSObject>>' : 'JSPromise<Any?>';
-          return t === made ? code : method === 'all' ? this.untypedAll(src, t) : this.promiseAs(code, made, t);
+          return t === made ? code : method === 'all' ? this.untypedAll(src, t) : this.convert(code, made, t);
         }
         break;
       }
@@ -12693,13 +12693,6 @@ ${members.join('\n')}
     const to = result.replace(/[?!]$/, '').slice(10, -1);
     const value = to === 'JSArray<Void>' ? 'JSArray<Void>(Array(repeating: (), count: __v.count))' : to === 'JSArray<Any?>' ? 'JSArray<Any?>(__v)' : this.fromAny('(JSArray<Any?>(__v) as Any?)', to);
     return `JSPromise<Any?>.all(${this.coerce(src, 'JSArray<Any?>')}, as: { (__v: [Any?]) -> ${to} in ${value} })`;
-  }
-
-  /** A promise of untyped values read as a promise of a type (`Promise<any[]>` returned as `Promise<void[]>`): its value converted when it settles. */
-  private promiseAs(code: string, from: string, to: string): string {
-    const f = from.replace(/[?!]$/, '').slice(10, -1), t = to.replace(/[?!]$/, '').slice(10, -1);
-    const value = t === 'JSArray<Void>' ? 'JSArray<Void>(Array(repeating: (), count: Int(jsToNumber(try jsGet(__v as Any?, "length")))))' : t === 'Void' ? '()' : this.presentFromAny('(__v as Any?)', t);
-    return `${code}.then { (__v: ${f}) throws -> ${t} in ${value} }`;
   }
 
   /** `Promise.all([a, b])` and friends over a literal list, which TypeScript types as a tuple. */
