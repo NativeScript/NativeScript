@@ -16,7 +16,8 @@
 		"952-regexp-unset-group-object-values": "Silent wrong value: an unset group's split element read back through Object.values of an object literal (`Object.values({ p: s.split(re) })`) is \"\", not undefined (the literal's field is typed string[]).",
 		"953-replace-function-string-pattern-refused": "Refused (build error): replace/replaceAll given a replacement that may be a function (or is untyped) for a pattern that may be a string (typed string, `string | RegExp`, untyped, or asserted from untyped); a RegExp pattern takes a function (lang.ts unsupportedPattern).",
 		"994-nullish-elements-untyped-refused": "Refused (build error): an array, Map or Set whose elements are held apart as null and undefined (`JSNullish<T>`, observed) placed where script holds it untyped (an `any`/`unknown` slot, a field or element no type reads, an unknown callee's argument), which may write any value into it; typed↔untyped containers are S5 (value-states.ts nullish, Forms.untypedPlacements).",
-		"1031-map-key-nullish-refused": "Refused (build error): a Map key that may be null or undefined both, which no form holds apart (`Form.element` is a Map's value only; lang.ts nullishSlots checkNested)."
+		"1031-map-key-nullish-refused": "Refused (build error): a Map key that may be null or undefined both, which no form holds apart (`Form.element` is a Map's value only; lang.ts nullishSlots checkNested).",
+		"1046-library-symbol-converts": "Swift's library code makes `Symbol(desc)` an untyped value as its property-key string (`jsSymbol(String)` → \"@@desc#n\"), so its typeof is \"string\" and String() prints the key; only a slot typed `symbol` holds a JSSymbol. Kotlin matches Node."
 	},
 	"kotlin": {
 		"252-prototype-method-calls": "A built-in's prototype method called with call or apply (`Array.prototype.slice.call(list, 1)`) is refused, test262 cluster 2 (Kotlin translator).",

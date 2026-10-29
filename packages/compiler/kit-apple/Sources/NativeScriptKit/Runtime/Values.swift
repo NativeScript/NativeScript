@@ -1196,6 +1196,57 @@ public func jsCheckedStringOrNil(_ value: Any?) throws -> String? { jsIsNullish(
 public func jsCheckedNumberOrNil(_ value: Any?) throws -> Double? { jsIsNullish(value) ? nil : try jsCheckedNumber(value) }
 public func jsCheckedBoolOrNil(_ value: Any?) throws -> Bool? { jsIsNullish(value) ? nil : try jsCheckedBool(value) }
 
+/// Core's own code (the kit) given an untyped value where it declares a string, number or boolean: a value of the type
+/// passes, another primitive converts as `String()`, `Number()` and `Boolean()` do (`Number()` of a symbol is its
+/// TypeError), undefined, null and an empty marker (`jsEmptyMarker`) read as `jsLenientString`, `jsLenientNumber` and
+/// `jsLenientBool` read them, and any other value is JavaScript's TypeError there.
+public func jsConvertedString(_ value: Any?) throws -> String {
+    if let s = value as? String { return s }
+    let v = try jsCorePrimitive(value, "string")
+    return jsIsNullish(v) ? "" : jsToString(v)
+}
+public func jsConvertedNumber(_ value: Any?) throws -> Double {
+    if let d = value as? Double { return d }
+    let v = try jsCorePrimitive(value, "number")
+    if v is JSSymbol { throw JSException(JSTypeError("Cannot convert a Symbol value to a number")) }
+    return jsToNumber(v)
+}
+public func jsConvertedBool(_ value: Any?) throws -> Bool {
+    if let b = value as? Bool { return b }
+    return jsIsTruthy(try jsCorePrimitive(value, "boolean"))
+}
+public func jsConvertedStringOrNil(_ value: Any?) throws -> String? { jsIsNullish(value) || jsIsEmptyMarker(value) ? nil : try jsConvertedString(value) }
+public func jsConvertedNumberOrNil(_ value: Any?) throws -> Double? { jsIsNullish(value) || jsIsEmptyMarker(value) ? nil : try jsConvertedNumber(value) }
+public func jsConvertedBoolOrNil(_ value: Any?) throws -> Bool? { jsIsNullish(value) || jsIsEmptyMarker(value) ? nil : try jsConvertedBool(value) }
+
+/// The value `jsConverted*` converts: an empty marker as undefined, a primitive as it is, anything else a TypeError.
+@inline(never)
+private func jsCorePrimitive(_ value: Any?, _ type: String) throws -> Any? {
+    guard let v = jsFlat(value), !(v is JSNull) else { return jsFlat(value) }
+    if jsIsEmptyMarker(v) { return nil }
+    switch jsTypeof(v) {
+    case "string", "number", "boolean", "bigint", "symbol": return v
+    case "undefined": return nil
+    default: throw jsNotA(v, type)
+    }
+}
+
+enum JSEmptyMarkers {
+    nonisolated(unsafe) static var all: [AnyObject] = []
+}
+
+/// A value core makes only to be told apart by identity (`unsetValue`), which its checked converts read as an empty value.
+public func jsEmptyMarker<T>(_ value: T) -> T {
+    if let v = jsFlat(value), Swift.type(of: v) is AnyClass { JSEmptyMarkers.all.append(v as AnyObject) }
+    return value
+}
+
+func jsIsEmptyMarker(_ value: Any?) -> Bool {
+    guard !JSEmptyMarkers.all.isEmpty, let v = jsFlat(value), Swift.type(of: v) is AnyClass else { return false }
+    let object = v as AnyObject
+    return JSEmptyMarkers.all.contains { $0 === object }
+}
+
 /// An untyped value asserted to an array of strings, numbers or booleans (§2.3b M6): an array's elements each checked by
 /// `element`, an empty state read as `jsArrayOf` reads it, and any other value JavaScript's TypeError there.
 public func jsCheckedArray<T>(_ value: Any?, _ element: (Any?) throws -> T) throws -> JSArray<T> {

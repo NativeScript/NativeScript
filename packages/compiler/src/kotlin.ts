@@ -8,6 +8,7 @@ import { assignedValues, openSpreadType, spreadsArrays, definitelyAssignedFields
 import { memberName } from './stable-names.ts';
 import { shadowConversions } from './conversion-shadow.ts';
 import { parseNativeType, type Mark, type Value } from './conversion.ts';
+import { isEnumObject, place, type PlacementBackend } from './placement.ts';
 import { convertedRead, onlyNull, ValueStates, type StateBackend } from './value-states.ts';
 import type { Form } from './forms.ts';
 import { isCoreDeclaration } from './core.ts';
@@ -2344,10 +2345,10 @@ export class Translator implements AsyncTranslator {
 
   fromAnyCode(code: string, type: string, orZero = false): string {
     const zero = this.zero(type);
-    if (orZero && type === 'Double') return `jsNumberOrZero(${code})`;
-    // Library mode: another primitive converts, as JavaScript reads it where it is used.
-    if (orZero && this.library && type === 'String') return `jsStringOrEmpty(${code})`;
-    if (orZero && this.library && type === 'Boolean') return `jsBooleanOrFalse(${code})`;
+    // Library mode: another primitive converts, as JavaScript reads it where it is used, and an object is a TypeError.
+    if (orZero && type === 'Double') return `${this.library ? 'jsConvertedNumberOrZero' : 'jsNumberOrZero'}(${code})`;
+    if (orZero && this.library && type === 'String') return `jsConvertedStringOrEmpty(${code})`;
+    if (orZero && this.library && type === 'Boolean') return `jsConvertedBooleanOrFalse(${code})`;
     // App code: an untyped string or boolean is converted as JavaScript converts it where it is used, never refused.
     if (orZero && (type === 'String' || type === 'Boolean')) return this.fromAny(code, type);
     if (orZero && zero && zero !== 'null' && !type.endsWith('?')) return `(${safeCast(code, type)} ?: ${zero})`;
@@ -2399,9 +2400,9 @@ export class Translator implements AsyncTranslator {
     const promised = /^JSPromise<(.*)>$/.exec(base);
     if (promised) return type.endsWith('?') ? `jsUnlessNullish(${code}) { jsPromiseOf<${promised[1]}>(it) }` : `jsPromiseOf<${promised[1]}>(${code})`;
     // Library mode: JavaScript's null where an object goes (`cond ? entry.fragment : null`) is Kotlin's.
-    // A string, number or boolean slot given another primitive converts it (a binding's 5 for a string is "5"); given an
-    // object (core's `unsetValue` for a css variable), it holds none.
-    if (this.library && /^(String|Double|Boolean)\?$/.test(type)) return `${({ 'String?': 'jsStringOrNull', 'Double?': 'jsNumberOrNull', 'Boolean?': 'jsBooleanOrNull' } as Record<string, string>)[type]}(${code})`;
+    // A string, number or boolean slot given another primitive converts it (a binding's 5 for a string is "5"); an empty
+    // marker (`unsetValue`) holds none, and any object is a TypeError.
+    if (this.library && /^(String|Double|Boolean)\?$/.test(type)) return `${({ 'String?': 'jsConvertedStringOrNull', 'Double?': 'jsConvertedNumberOrNull', 'Boolean?': 'jsConvertedBooleanOrNull' } as Record<string, string>)[type]}(${code}${name ? `, ${kotlinString(name)}` : ''})`;
     // App code: an untyped string, number or boolean is converted as JavaScript converts it where it is used; undefined and null stay null.
     if (/^(String|Double|Boolean)\?$/.test(type)) return `${({ 'String?': 'jsAssertedStringOrNull', 'Double?': 'jsAssertedNumberOrNull', 'Boolean?': 'jsAssertedBooleanOrNull' } as Record<string, string>)[type]}(${code})`;
     // JavaScript's null (JSNull in an untyped object) where a nullable slot goes is Kotlin's.
@@ -6098,61 +6099,58 @@ export class Translator implements AsyncTranslator {
 
   /** App code: an app enum named as a value (`Color`, `Shapes.Kind`), which is the object JavaScript makes of it. */
   private isEnumObject(e: ts.Expression): boolean {
-    if (this.library) return false;
-    const bare = ts.skipOuterExpressions(e);
-    if (!ts.isIdentifier(bare) && !ts.isPropertyAccessExpression(bare)) return false;
-    const sym = this.resolve(ts.isPropertyAccessExpression(bare) ? bare.name : bare);
-    const decl = sym && sym.flags & ts.SymbolFlags.Alias ? this.checker.getAliasedSymbol(sym).valueDeclaration : sym?.valueDeclaration;
-    return !!decl && ts.isEnumDeclaration(decl) && !decl.getSourceFile().isDeclarationFile && !hasModifier(decl, ts.SyntaxKind.ConstKeyword);
+    return isEnumObject(this.placement, e);
   }
 
   /** An expression where Kotlin needs a value of `target`. */
   coerce(e: ts.Expression, target: string): string {
-    const nullish = this.nullishConversion(e, target);
-    if (nullish !== null) return nullish;
-    const checked = this.checkedPlacement(e, target);
-    if (checked) return checked;
-    if (/^JSArray<String>\??$/.test(target) && ((this.typeOf(e) === 'JSArray<String?>' && this.unsetGroups(e)) || this.unsetMatch(e))) {
-      throw this.error(e, 'strings a pattern\'s unset group may leave undefined, given where `string[]` is declared (declare it `(string | undefined)[]`)');
-    }
-    // An enum's object held as a record (`const names: Record<string, string | number> = Color`): an untyped object.
-    if (target.startsWith('JSRecord<') && this.isEnumObject(e)) return this.fromAnyCode(this.expr(e), target);
-    const code = this.coerceTyped(e, target);
-    if (target !== 'Any?') return code;
-    const entry = this.states.nullableEntry(e, () => code);
-    if (entry) return entry;
-    return this.states.nilIsNull(e) && code !== 'jsNull' ? `jsNulled(${code})` : code;
+    return place(this.placement, e, target);
   }
 
-  /**
-   * A value placed in or read from a `JSNullish<T>` slot (`ValueStates.nullishHeld`), which keeps null apart from
-   * undefined: the one conversion to and from its other forms. Null if neither side is one.
-   */
-  private nullishConversion(e: ts.Expression, target: string): string | null {
-    const held = this.states.nullishRead(e);
-    const bare = ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses);
-    const name = held && this.nullishCode(bare);
-    const into = /^JSNullish<(.*)>$/.exec(target)?.[1];
-    if (!into && target === 'Any?' && this.states.nullishElementRead(e)) return `jsBox(${this.expr(e)})`;
-    if (target === 'Any?' && !held) {
-      const adapted = this.nullishFunction(e);
-      if (adapted) return adapted;
-    }
-    if (!into) return name && target === 'Any?' ? `${name}.jsAny` : null;
-    const own = held && this.nullishSlotType(held);
-    if (name) return own === target ? name : `JSNullish.of(${this.convert(`${name}.optional`, optionalType(own!.slice('JSNullish<'.length, -1)), optionalType(into))})`;
-    if (bare.kind === ts.SyntaxKind.NullKeyword) return 'JSNullish.Null';
-    if ((ts.isIdentifier(bare) && bare.text === 'undefined') || ts.isVoidExpression(bare)) return 'JSNullish.Undefined';
-    if (ts.isConditionalExpression(bare)) {
-      const fixed = this.staticTruth(bare.condition);
-      if (fixed !== undefined) return this.coerce(fixed ? bare.whenTrue : bare.whenFalse, target);
-      return `(if (${this.cond(bare.condition)}) ${branch(this.coerce(bare.whenTrue, target))} else ${branch(this.coerce(bare.whenFalse, target))})`;
-    }
-    if (this.typeOf(e) === 'Any?') return this.nullishOfAny(this.expr(e), into);
-    const entry = this.states.nullishElementRead(e) ? this.coerce(e, 'Any?') : this.states.nullableEntry(e, () => this.coerceTyped(e, 'Any?'));
-    if (entry) return this.nullishOfAny(entry, into);
-    const code = this.coerce(e, optionalType(into));
-    return `JSNullish.${this.states.nilIsNull(e) ? 'ofNull' : 'of'}<${into}>(${code})`;
+  private placementSet?: PlacementBackend;
+
+  /** What the shared placement front (placement.ts) reads of this translator, and Kotlin's spelling of its cells. */
+  private get placement(): PlacementBackend {
+    const t = this;
+    return this.placementSet ??= {
+      get checker() { return t.checker; },
+      get sourceFiles() { return t.sourceFiles; },
+      get library() { return t.library; },
+      get states() { return t.states; },
+      cells: {
+        jsAny: (name) => `${name}.jsAny`,
+        type: (_target, _into, code) => `JSNullish.of(${code})`,
+        nullishOf: (_target, into, code, isNull) => `JSNullish.${isNull ? 'ofNull' : 'of'}<${into}>(${code})`,
+        nullishOfAny: (_target, into, code) => this.nullishOfAny(code, into),
+        empty: (isNull) => (isNull ? 'JSNullish.Null' : 'JSNullish.Undefined'),
+        nulled: (code) => `jsNulled(${code})`,
+        checked: (e, target) => this.checkedPlacement(e, target),
+        marker: (code) => `jsEmptyMarker(${code})`,
+      },
+      typeOf: (n) => this.typeOf(n),
+      expr: (e) => this.expr(e),
+      resolve: (n) => this.resolve(n),
+      error: (n, what) => this.error(n, what),
+      optionalType,
+      coerce: (e, target) => this.coerce(e, target),
+      coerceTyped: (e, target) => this.coerceTyped(e, target),
+      convert: (code, from, to) => this.convert(code, from, to),
+      fromAnyCode: (code, type) => this.fromAnyCode(code, type),
+      unsetGroups: (n) => this.unsetGroups(n),
+      unsetMatch: (e) => this.unsetMatch(e),
+      nullishCode: (e) => this.nullishCode(e),
+      nullishSlotType: (d) => this.nullishSlotType(d),
+      nullishBefore: (e, target, held) => {
+        if (target !== 'Any?') return null;
+        if (this.states.nullishElementRead(e)) return `jsBox(${this.expr(e)})`;
+        return held ? null : this.nullishFunction(e);
+      },
+      branches: (bare, target) => {
+        const fixed = this.staticTruth(bare.condition);
+        if (fixed !== undefined) return this.coerce(fixed ? bare.whenTrue : bare.whenFalse, target);
+        return `(if (${this.cond(bare.condition)}) ${branch(this.coerce(bare.whenTrue, target))} else ${branch(this.coerce(bare.whenFalse, target))})`;
+      },
+    };
   }
 
   /** An untyped value into `JSNullish<into>`: its present value converted as an untyped value into `into` is (a TypeError where it isn't one). */

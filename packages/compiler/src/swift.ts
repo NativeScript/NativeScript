@@ -10,6 +10,7 @@ import { assignedValues, openSpreadType, spreadsArrays, initializedNull, interse
 import { memberName } from './stable-names.ts';
 import { shadowConversions } from './conversion-shadow.ts';
 import { parseNativeType, plan, type Slot, type Value } from './conversion.ts';
+import { isEnumObject, place, type PlacementBackend } from './placement.ts';
 import { castCode, elementOf, helper, implicitOf, isPure, isUnwrap, markOf, marked, memberOf, orNil, pureCode, tried, tryCode, unwrapInner, unwrappedCode, unwrappedIf, valueOf } from './swift-marks.ts';
 import { convertedRead, onlyNull, ValueStates, type StateBackend } from './value-states.ts';
 import type { Form } from './forms.ts';
@@ -122,7 +123,17 @@ export function swiftString(text: string): string {
 
 /** `T?`, keeping an already optional type and parenthesizing a function type. */
 /** Code that throws: a `try`, or a check written without one because the statement's `try` covers it. */
-export const THROWING_CODE = /\btry\b|\bjs(Unwrap|ObjectRequired|Callable|Iterated|CastPresent|ForeignPresent|Destructured)\(|\bFunctionCell_\w+\.present\(/;
+export const THROWING_CODE = /\btry\b|\bjs(Unwrap|ObjectRequired|Callable|Iterated|CastPresent|ForeignPresent|Destructured|Converted(?:String|Number|Bool)(?:OrNil)?)\(|\bFunctionCell_\w+\.present\(/;
+
+/** An operand `try` can't lead in Swift: an operator's right side, a conditional's branch, a prefix operator's operand. */
+function rightOperand(n: ts.Node): boolean {
+  let x = n;
+  // `try` before a receiver covers the chain it heads, so the chain's position decides.
+  while (ts.isParenthesizedExpression(x.parent) || ((ts.isPropertyAccessExpression(x.parent) || ts.isElementAccessExpression(x.parent) || ts.isCallExpression(x.parent)) && x.parent.expression === x)) x = x.parent;
+  const p = x.parent;
+  return (ts.isBinaryExpression(p) && p.right === x && p.operatorToken.kind !== ts.SyntaxKind.EqualsToken) || (ts.isConditionalExpression(p) && p.condition !== x)
+    || ts.isPrefixUnaryExpression(p) || ts.isPostfixUnaryExpression(p) || ts.isTypeOfExpression(p) || ts.isAsExpression(p) || ts.isNonNullExpression(p);
+}
 
 /** `(x = v)` as a value: what it gives is what was assigned, checked where it is read. */
 function assignmentValue(e: ts.Node): boolean {
@@ -242,9 +253,10 @@ const mapEntry = (code: string): boolean => {
   const c = markOf(code), read = c?.op === 'try' ? c.of.mark : c;
   return read?.op === 'entry' && !read.element;
 };
-/** A lenient read of a string, number or boolean member (`jsLenientNumber(try jsGet(o, "k"))`): the member read, else null. */
+/** A lenient or library read of a string, number or boolean member (`jsLenientNumber(try jsGet(o, "k"))`): the member read, else null. */
 const lenientGet = (code: string): Value | null => {
-  const c = markOf(code), read = c?.op === 'lenient' ? c.of : undefined;
+  const m = markOf(code), c = m?.op === 'try' && m.of.mark?.op === 'converted' ? m.of.mark : m;
+  const read = c?.op === 'lenient' || c?.op === 'converted' ? c.of : undefined;
   const get = read?.mark?.op === 'try' ? read.mark.of : read;
   return get?.mark?.op === 'member' && get.mark.dynamic ? read! : null;
 };
@@ -2002,7 +2014,8 @@ export class Translator implements AsyncTranslator {
         : params.map((p, k) => {
           const t = localType(p);
           // A rest parameter takes the arguments from its position on.
-          const value = p.dotDotDotToken ? `${t}(__a.dropFirst(${k}).map { ${this.fromAnyCode('$0', t.replace(/^JSArray<(.*)>$/, '$1'), true)} })` : this.presentFromAny(`jsArg(__a, ${k})`, t.replace(/!$/, '?'), true, true);
+          const read = this.throwingConverts(() => this.presentFromAnyValue(`jsArg(__a, ${k})`, t.replace(/!$/, '?'), true, true));
+          const value = p.dotDotDotToken ? `${t}(__a.dropFirst(${k}).map { ${this.fromAnyCode('$0', t.replace(/^JSArray<(.*)>$/, '$1'), true)} })` : read.throws && read.mark?.op !== 'try' ? `try ${read.code}` : read.code;
           return `let ${ident((p.name as ts.Identifier).text)}: ${t} = ${value}`;
         })),
     ];
@@ -3242,10 +3255,11 @@ ${members.join('\n')}
    */
   private storeFromAny(lhs: string, type: string, key: string, symbol = false): string {
     // A symbol-keyed field is held as `deferred` declares it: an array or a string present, its zero for undefined.
-    const value = symbol && this.lenient && this.zero(type) !== null && !isOptional(type) ? this.fromAnyOrZeroValue('newValue', type) : this.fromAnyValue('newValue', this.lenient ? this.lenientRef(type) : type);
+    const value = symbol && this.lenient && this.zero(type) !== null && !isOptional(type) ? this.fromAnyOrZeroValue('newValue', type) : this.fromAnyChecked('newValue', this.lenient ? this.lenientRef(type) : type, !!this.library);
     const code = value.code;
     // A conversion that can throw (an array holding undefined where its elements are objects): `jsSet` throws it.
     if (value.mark?.op === 'try') return `jsStoring { ${lhs} = ${code} }`;
+    if (value.throws) return `jsStoring { try ${lhs} = ${code} }`;
     const forced = value.mark?.op === 'cast' && value.mark.of.code === 'newValue' && !value.mark.optional && !value.mark.implicit;
     if (!forced || CF_CLASSES.has(type)) return `${lhs} = ${code}`;
     return `if let __v = jsConverted(newValue, to: ${type}.self) { ${lhs} = __v } else { jsRefuseSet(newValue, ${swiftString(key)}, ${swiftString(type)}) }`;
@@ -3287,6 +3301,29 @@ ${members.join('\n')}
   private throwingCast = false;
 
   /**
+   * Core's own code: set while conversions are written where a `try` may stand (`throwingConverts`): `covered` where the
+   * statement's own `try` covers them (the throws analysis counts the value as throwing), `own` where they lead with
+   * their own, `operand` where that `try` is parenthesized (an operator's right side, which `try` can't lead).
+   */
+  private libraryChecked: false | 'covered' | 'own' | 'operand' = false;
+
+  /** `f`'s conversion of `e`'s value (its code `code`, written first): checked where `libraryThrowsHere`. */
+  private readConverts(e: ts.Node, f: (code: string) => string, code: string): string {
+    return this.throwingConverts(() => f(code), this.libraryThrowsHere(e), e);
+  }
+
+  /**
+   * `f`'s conversions, written where they may throw (inside a throwing closure, or `libraryThrowsHere`): core's library
+   * cell checked. `at`: the value converted, whose statement's `try` covers the conversion where it throws itself.
+   */
+  private throwingConverts<T>(f: () => T, here = true, at?: ts.Node): T {
+    if (!this.library || !here) return f();
+    const saved = this.libraryChecked;
+    this.libraryChecked = !at ? 'operand' : this.throwsInfo.expr(at) ? 'covered' : rightOperand(at) ? 'operand' : 'own';
+    try { return f(); } finally { this.libraryChecked = saved; }
+  }
+
+  /**
    * Set while a conversion `castThrows` approved is written: the value's outermost cast throws
    * a TypeError (`jsChecked`) rather than trapping. The conversions nested in closures stay unchecked.
    */
@@ -3301,7 +3338,7 @@ ${members.join('\n')}
 
   /** A getter's conversion that may throw (an array holding undefined where its elements are objects): reported, the getter giving undefined. */
   private reportedRead(v: Value): string {
-    return v.mark?.op === 'try' ? orNil(`jsReported { ${v.code} }`) : v.code;
+    return v.mark?.op === 'try' ? orNil(`jsReported { ${v.code} }`) : v.throws && v.mark?.op === 'converted' ? orNil(`jsReported { try ${v.code} }`) : v.code;
   }
 
   /** An untyped array as an array of `element`, each converted: a new array unless it already is one of them. */
@@ -3322,12 +3359,12 @@ ${members.join('\n')}
 
   private fromAnyValue(code: string | Value, type: string): Value {
     type = type.replace(/^@escaping /, '');
-    const checked = this.checkedCast, throwing = this.throwingCast;
-    this.checkedCast = this.throwingCast = false;
+    const checked = this.checkedCast, throwing = this.throwingCast, inThrowing = this.libraryChecked;
+    this.checkedCast = this.throwingCast = this.libraryChecked = false;
     try {
-      const made = this.fromAnyUnchecked(valued(code), type, checked, throwing);
+      const made = this.fromAnyUnchecked(valued(code), type, checked || !!inThrowing, throwing, inThrowing || 'operand');
       return typeof made === 'string' ? valued(made) : made;
-    } finally { this.checkedCast = checked; this.throwingCast = throwing; }
+    } finally { this.checkedCast = checked; this.throwingCast = throwing; this.libraryChecked = inThrowing; }
   }
 
   /** `fromAny` where Swift needs the value present (a function's argument or result, an array's element): lenient code's missing object throws. */
@@ -3342,9 +3379,11 @@ ${members.join('\n')}
     return present.code === read.code ? read : tried(present.code);
   }
 
-  private fromAnyUnchecked(input: Value, type: string, checked: boolean, throwing = false): string | Value {
+  private fromAnyUnchecked(input: Value, type: string, checked: boolean, throwing = false, placed: 'covered' | 'own' | 'operand' = 'operand'): string | Value {
     const code = input.code;
     if (type === 'Any?') return input;
+    // Core's own code reads a class unchecked still: `checked` is the library cell's for strings, numbers and booleans there.
+    const appChecked = checked && !this.library;
     // `void` (an array of results nothing reads): any value read is none.
     if (type === 'Void' || type === '()') return `(_ = ${code})`;
     // An Error held untyped (a caught or rejected value): the error, or a view of what was thrown instead.
@@ -3410,14 +3449,22 @@ ${members.join('\n')}
     // A Core Foundation class casts unconditionally: `as?` to one is not a test Swift allows.
     if (/^(CG|CT|CF)[A-Z]\w*$/.test(base) && CF_CLASSES.has(base)) {
       if (type.endsWith('?')) return helper('jsForeign', code, `, ${base}.self`);
-      return checked || throwing ? `(try jsForeignPresent(${code}, ${base}.self))` : castCode(code, base, 'as!');
+      return appChecked || throwing ? `(try jsForeignPresent(${code}, ${base}.self))` : castCode(code, base, 'as!');
     }
     // A type parameter may stand for an interface: an object read untyped becomes one (`JSON.parse` of a cached `T[]`).
-    if (this.genericNames.has(base)) return type.endsWith('?') ? `jsConverted(${code}, to: ${base}.self)` : checked ? `(try jsChecked(${code}, ${base}.self))` : unwrappedCode(`jsConverted(${code}, to: ${base}.self)`);
+    if (this.genericNames.has(base)) return type.endsWith('?') ? `jsConverted(${code}, to: ${base}.self)` : appChecked ? `(try jsChecked(${code}, ${base}.self))` : unwrappedCode(`jsConverted(${code}, to: ${base}.self)`);
     // A native enum or option set read untyped (`textView.returnKeyType`): the number script holds, as that type's raw value.
     if (this.native.isEnumType(base)) return type.endsWith('?') ? `jsUnlessNullish(${code}, { ${this.native.enumFromNumber('jsToNumber($0)', base)} })` : this.native.enumFromNumber(`jsToNumber(${code})`, base);
     // A geometry struct the runtime gives script as an object (`{ origin, size }`): the struct again.
     if (['CGRect', 'CGSize', 'CGPoint', 'UIEdgeInsets'].includes(base)) return type.endsWith('?') ? `jsNativeStruct(${code}, ${base}.self)` : `jsNativeStructPresent(${code}, ${base}.self)`;
+    // Core's own code: the library cell, checked, where the function around the placement throws (`libraryThrowsHere`),
+    // the value's own read throws, or the store reports what it throws (`jsStoring`). Elsewhere it stays lenient.
+    if (this.library && (checked || throwing || input.throws) && ['String', 'Double', 'Bool'].includes(base) && (type === base || type === `${base}?`)) {
+      const made = marked(`jsConverted${base === 'Double' ? 'Number' : base}${type === base ? '' : 'OrNil'}(${code})`, { op: 'converted', of: input });
+      if (placed === 'operand') return marked(`(try ${made})`, { op: 'try', of: valueOf(made) });
+      if (placed === 'own') return tried(made);
+      return { code: made, throws: true, pure: false, mark: { op: 'converted', of: input } };
+    }
     if (['String?', 'Double?', 'Bool?'].includes(type)) return `jsLenient${base === 'Double' ? 'Number' : base}OrNil(${code})`;
     if (type.endsWith('?')) return castCode(code, base, 'as?');
     // An untyped value read as a string, number or boolean is converted as JavaScript would where it is used
@@ -3429,7 +3476,7 @@ ${members.join('\n')}
     if (plain) return implicitOf(`jsShaped(${code}) { ${plain.throws ? 'try ' : ''}${this.appModule ? `${this.appModule}.` : ''}${type}() }`);
     // Lenient code holds a native collection implicitly unwrapped too (`sceneManifest = bundle.objectForInfoDictionaryKey(…)`): nil where it is missing.
     if (this.lenientRef(type) !== type || (this.lenient && /^\[.*\]$/.test(type))) return alreadyAs(code, type) ? code : castCode(code, type, 'as?', true);
-    if (checked || throwing) return `(try jsChecked(${code}, ${type}.self))`;
+    if (appChecked || throwing) return `(try jsChecked(${code}, ${type}.self))`;
     return this.forcedCast(input, type);
   }
 
@@ -3459,6 +3506,21 @@ ${members.join('\n')}
     let known = this.castDecisions.get(n);
     if (known === undefined) this.castDecisions.set(n, known = this.decideCast(n));
     return known;
+  }
+
+  /**
+   * Core's own code: whether the library cell's checked convert may throw at `n`, where the function around it throws
+   * already. The throws analysis is not asked to count these, so no kit signature changes; a conversion where nothing
+   * may throw (a default argument, a stored initializer, a function that doesn't throw, an object literal's closure,
+   * whose `throws` the analysis decides) stays lenient.
+   */
+  private libraryThrowsHere(n: ts.Node): boolean {
+    if (!this.library) return false;
+    for (let x: ts.Node = n.parent; x; x = x.parent) {
+      if (ts.isParameter(x) || ts.isPropertyDeclaration(x) || ts.isDecorator(x) || ts.isClassLike(x) || ts.isSourceFile(x) || ts.isObjectLiteralExpression(x)) return false;
+      if (ts.isFunctionLike(x)) return 'body' in x && !!x.body && this.throwsInfo.fn(x);
+    }
+    return false;
   }
 
   private castDecisions = new WeakMap<ts.Node, boolean>();
@@ -3834,7 +3896,7 @@ ${members.join('\n')}
     // Lenient code: the function's own declaration may give undefined for an object.
     if (this.lenientRef(fn.result) !== fn.result) fn = functionParts(`(${fn.params.join(', ')}) throws -> ${optionalType(fn.result)}`)!;
     // Inside the `try` of the call: an argument of a type the parameter cannot hold is a TypeError.
-    const args = fn.params.map((p, k) => k === restAt ? `${p}(__a.dropFirst(${k}).map { ${this.fromAnyCode('$0', p.replace(/^JSArray<(.*)>$/, '$1'), true)} })` : this.presentFromAny(`jsArg(__a, ${k})`, p.replace(/^@escaping /, ''), true, true));
+    const args = fn.params.map((p, k) => k === restAt ? `${p}(__a.dropFirst(${k}).map { ${this.fromAnyCode('$0', p.replace(/^JSArray<(.*)>$/, '$1'), true)} })` : this.throwingConverts(() => this.presentFromAny(`jsArg(__a, ${k})`, p.replace(/^@escaping /, ''), true, true)));
     const result = (call: string) => (fn.result === 'Void' ? `${call}; return nil` : `return ${this.convert(call, fn.result, 'Any?')}`);
     // Called with fewer arguments, a function whose last parameters have defaults is called by name, which gives them.
     const fewer = trailing ? Array.from({ length: fn.params.length - trailing.from }, (_, k) => trailing.from + k).map((n) => `if __a.count <= ${n} { ${result(`try ${trailing.ref}(${args.slice(0, n).join(', ')})`)} }; `).join('') : '';
@@ -5993,7 +6055,7 @@ ${members.join('\n')}
       lines.push(`    ${expando ? '' : 'override '}func jsSymbolMethod(_ key: String) -> JSMethod? {`);
       this.declare('jsSymbolMethod', { kind: 'func', mods: expando ? '' : 'override ', params: '_ key: String', type: 'JSMethod?' });
       for (const sm of symbolMethods) {
-        const args = sm.params.map((p, k) => this.presentFromAny(`jsArg(__a, ${k})`, p, true, true));
+        const args = sm.params.map((p, k) => this.throwingConverts(() => this.presentFromAny(`jsArg(__a, ${k})`, p, true, true)));
         const call = tryCode(`(jsCastPresent(__this) as ${ident(name)}).${sm.method}(${args.join(', ')})`);
         lines.push(`        if key == ${sm.key} { return { __this, __a in ${sm.ret === 'Void' ? `${call}; return nil` : `return ${this.convert(call, sm.ret, 'Any?')}`} } }`);
       }
@@ -8085,66 +8147,71 @@ ${members.join('\n')}
 
   /** App code: an app enum named as a value (`Color`, `Shapes.Kind`), which is the object JavaScript makes of it. */
   private isEnumObject(e: ts.Expression): boolean {
-    if (this.library) return false;
-    const bare = ts.skipOuterExpressions(e);
-    if (!ts.isIdentifier(bare) && !ts.isPropertyAccessExpression(bare)) return false;
-    const sym = this.resolve(ts.isPropertyAccessExpression(bare) ? bare.name : bare);
-    const decl = sym && sym.flags & ts.SymbolFlags.Alias ? this.checker.getAliasedSymbol(sym).valueDeclaration : sym?.valueDeclaration;
-    return !!decl && ts.isEnumDeclaration(decl) && !decl.getSourceFile().isDeclarationFile && !hasModifier(decl, ts.SyntaxKind.ConstKeyword);
+    return isEnumObject(this.placement, e);
   }
 
   /** An expression where Swift needs a value of `target`. */
   coerce(e: ts.Expression, target: string): string {
-    const held = this.heldValues.get(e);
-    if (held !== undefined) return this.convert(this.subst.get(e)!, held, target);
-    const nullish = this.nullishConversion(e, target);
-    if (nullish !== null) return nullish;
-    const checked = this.checkedPlacement(e, target);
-    if (checked) return checked;
-    this.checkFieldsMet(e, target);
-    this.checkAnyArgument(e, target);
-    if (/^JSArray<String>[?!]?$/.test(target) && ((this.typeOf(e) === 'JSArray<String?>' && this.unsetGroups(e)) || this.unsetMatch(e))) {
-      throw this.error(e, 'strings a pattern\'s unset group may leave undefined, given where `string[]` is declared (declare it `(string | undefined)[]`)');
-    }
-    if (target === 'JSArray<String?>' && /^JSMatch[?!]?$/.test(this.typeOf(e))) return this.convert(this.expr(e), this.typeOf(e), target);
-    // An enum's object held as a record (`const names: Record<string, string | number> = Color`): an untyped object.
-    if (target.startsWith('JSRecord<') && this.isEnumObject(e)) return this.fromAnyCode(this.expr(e), target);
-    const bare = ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses);
-    if (ts.isVoidExpression(bare) && target !== 'Any?' && isOptional(target)) {
-      const tp = this.throwsInfo.expr(bare.expression) ? 'try ' : '';
-      return `{ () ${tp ? 'throws ' : ''}-> ${target} in _ = ${tp}${this.expr(bare.expression)}; return nil }()`;
-    }
-    const code = this.coerceTyped(e, target);
-    if (target !== 'Any?') return code;
-    const entry = this.states.nullableEntry(e, () => code);
-    if (entry) return entry;
-    if (!this.states.nilIsNull(e) || code === 'jsNull') return code;
-    const inner = afterTry(code);
-    return inner !== null ? tryCode(`jsNulled(${inner})`) : `jsNulled(${code})`;
+    return place(this.placement, e, target);
   }
 
-  /**
-   * A value placed in or read from a `JSNullish<T>` slot (`ValueStates.nullishHeld`), which keeps null apart from
-   * undefined: the one conversion to and from its other forms. Null if neither side is one.
-   */
-  private nullishConversion(e: ts.Expression, target: string): string | null {
-    const held = this.states.nullishRead(e);
-    const bare = ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses);
-    const name = held && this.nullishCode(bare);
-    const into = /^JSNullish<(.*)>$/.exec(target)?.[1];
-    if (!into) return name && target === 'Any?' ? `${name}.jsAny` : null;
-    const own = held && this.nullishSlotType(held);
-    if (name) return own === target ? name : `${target}(${this.convert(`${name}.optional`, optionalType(own!.slice('JSNullish<'.length, -1)), optionalType(into))})`;
-    if (bare.kind === ts.SyntaxKind.NullKeyword) return '.null';
-    if ((ts.isIdentifier(bare) && bare.text === 'undefined') || ts.isVoidExpression(bare)) return '.undefined';
-    if (ts.isConditionalExpression(bare)) return this.ternary(bare, target, (x) => this.coerce(x, target));
-    const from = this.typeOf(e);
-    // `castThrows` counts these conversions as throwing (`nullishPlaced`).
-    if (from === 'Any?') return tryCode(`${target}(any: ${this.expr(e)})`);
-    const entry = this.states.nullishElementRead(e) ? this.coerce(e, 'Any?') : this.states.nullableEntry(e, () => this.coerceTyped(e, 'Any?'));
-    if (entry) return tryCode(`${target}(any: ${afterTry(entry) ?? entry})`);
-    const code = this.coerce(e, optionalType(into));
-    return this.states.nilIsNull(e) ? `${target}(null: ${code})` : `${target}(${code})`;
+  private placementSet?: PlacementBackend;
+
+  /** What the shared placement front (placement.ts) reads of this translator, and Swift's spelling of its cells. */
+  private get placement(): PlacementBackend {
+    const t = this;
+    return this.placementSet ??= {
+      get checker() { return t.checker; },
+      get sourceFiles() { return t.sourceFiles; },
+      get library() { return t.library; },
+      get states() { return t.states; },
+      cells: {
+        jsAny: (name) => `${name}.jsAny`,
+        type: (target, _into, code) => `${target}(${code})`,
+        nullishOf: (target, _into, code, isNull) => (isNull ? `${target}(null: ${code})` : `${target}(${code})`),
+        // `castThrows` counts these conversions as throwing (`nullishPlaced`).
+        nullishOfAny: (target, _into, code, entry) => tryCode(`${target}(any: ${entry ? afterTry(code) ?? code : code})`),
+        empty: (isNull) => (isNull ? '.null' : '.undefined'),
+        nulled: (code) => {
+          const inner = afterTry(code);
+          return inner !== null ? tryCode(`jsNulled(${inner})`) : `jsNulled(${code})`;
+        },
+        checked: (e, target) => this.checkedPlacement(e, target),
+        marker: (code) => `jsEmptyMarker(${code})`,
+      },
+      typeOf: (n) => this.typeOf(n),
+      expr: (e) => this.expr(e),
+      resolve: (n) => this.resolve(n),
+      error: (n, what) => this.error(n, what),
+      optionalType,
+      coerce: (e, target) => this.coerce(e, target),
+      coerceTyped: (e, target) => this.coerceTyped(e, target),
+      convert: (code, from, to) => this.convert(code, from, to),
+      fromAnyCode: (code, type) => this.fromAnyCode(code, type),
+      unsetGroups: (n) => this.unsetGroups(n),
+      unsetMatch: (e) => this.unsetMatch(e),
+      nullishCode: (e) => this.nullishCode(e),
+      nullishSlotType: (d) => this.nullishSlotType(d),
+      before: (e, target) => {
+        const held = this.heldValues.get(e);
+        return held !== undefined ? this.convert(this.subst.get(e)!, held, target) : null;
+      },
+      after: (e, target) => {
+        this.checkFieldsMet(e, target);
+        this.checkAnyArgument(e, target);
+        return null;
+      },
+      shortcut: (e, target) => {
+        if (target === 'JSArray<String?>' && /^JSMatch[?!]?$/.test(this.typeOf(e))) return this.convert(this.expr(e), this.typeOf(e), target);
+        const bare = ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses);
+        if (ts.isVoidExpression(bare) && target !== 'Any?' && isOptional(target)) {
+          const tp = this.throwsInfo.expr(bare.expression) ? 'try ' : '';
+          return `{ () ${tp ? 'throws ' : ''}-> ${target} in _ = ${tp}${this.expr(bare.expression)}; return nil }()`;
+        }
+        return null;
+      },
+      branches: (bare, target) => this.ternary(bare, target, (x) => this.coerce(x, target)),
+    };
   }
 
   /** Calls of a `JSNullish` result being written as they are, not read as the optional. */
@@ -8605,7 +8672,8 @@ ${members.join('\n')}
     }
     if (source === 'Any?' && target !== 'Void') {
       if (ts.isArrowFunction(e) || ts.isFunctionExpression(e)) return this.expr(e);
-      return this.fromAnyChecked(this.expr(e), target, this.castThrows(e)).code;
+      const code = this.expr(e);
+      return this.throwingConverts(() => this.fromAnyChecked(code, target, this.castThrows(e)).code, this.libraryThrowsHere(e), e);
     }
     // Library mode: an object of a literal's shape where a class object literals are typed as goes (`{ ...args, delay: undefined }` as AnimationInfo): one made of its fields.
     const make = !(ts.isObjectLiteralExpression(bare) && this.literalClassOf(bare)) ? this.shapeToClass(source.replace(/[?!]$/, ''), target.replace(/[?!]$/, '')) : null;
@@ -9558,7 +9626,10 @@ ${members.join('\n')}
       // The assertion is erased in JavaScript: where Swift needs the type, the value is converted as script converts it there.
       if (!this.library && from === 'Any?' && ['String', 'Double', 'Bool'].includes(to)) return `jsLenient${to === 'Double' ? 'Number' : to}(${this.expr(e.expression)})`;
       if (from === 'Any?' && to !== 'Any?' && /^\w+\?$/.test(to) && this.checkedClassAssertion(e)) return `(try jsCast(${this.expr(e.expression)}, ${to.slice(0, -1)}.self))`;
-      if (from === 'Any?' && to !== 'Any?') return this.fromAnyChecked(this.expr(e.expression), to, this.castThrows(e.expression)).code;
+      if (from === 'Any?' && to !== 'Any?') {
+        const code = this.expr(e.expression);
+        return this.throwingConverts(() => this.fromAnyChecked(code, to, this.castThrows(e.expression)).code, this.libraryThrowsHere(e), e.expression);
+      }
       // `x as string` of a string that may be undefined: the value as JavaScript then reads it as one.
       if (['String', 'Double', 'Bool'].includes(to) && from === `${to}?`) return this.undefinedAs(this.expr(e.expression), to);
       // A typed function asserted to `any` (`<any>callback`): a script function, which any caller can call.
@@ -10454,8 +10525,8 @@ ${members.join('\n')}
       const read = `${fnObject}[jsKey: ${swiftString(name)}]`;
       const t = this.typeOf(e);
       if (t === 'Any?') return read;
-      if (isOptional(t) || ['String', 'Double', 'Bool'].includes(t)) return this.undefinedAs(this.fromAny(read, optionalType(t)), t);
-      return `jsUnwrap(${this.fromAny(read, optionalType(t))}, ${swiftString(name)})`;
+      if (isOptional(t) || ['String', 'Double', 'Bool'].includes(t)) return this.undefinedAs(this.readConverts(e, (c) => this.fromAny(c, optionalType(t)), read), t);
+      return `jsUnwrap(${this.readConverts(e, (c) => this.fromAny(c, optionalType(t)), read)}, ${swiftString(name)})`;
     }
     if (this.assertedRead(e)) {
       let r = target;
@@ -10463,16 +10534,16 @@ ${members.join('\n')}
       const read = `jsGet(${this.expr((r as ts.AsExpression).expression)}, ${swiftString(name)})`;
       const t = this.typeOf(e);
       if (t === 'Any?') return read;
-      if (isOptional(t) || ['String', 'Double', 'Bool'].includes(t)) return this.undefinedAs(this.fromAny(read, optionalType(t)), t);
-      return `jsUnwrap(${this.fromAny(read, optionalType(t))}, ${swiftString(name)})`;
+      if (isOptional(t) || ['String', 'Double', 'Bool'].includes(t)) return this.undefinedAs(this.readConverts(e, (c) => this.fromAny(c, optionalType(t)), read), t);
+      return `jsUnwrap(${this.readConverts(e, (c) => this.fromAny(c, optionalType(t)), read)}, ${swiftString(name)})`;
     }
     if (this.isNativeExpando(e)) {
       const t = this.typeOf(e);
       const read = `jsNativeExpando(${this.expr(target)}, ${swiftString(name)})`;
-      return t === 'Any?' ? read : this.lenientRef(t) !== t ? castCode(read, t, 'as?', true) : this.fromAnyCode(read, t, true);
+      return t === 'Any?' ? read : this.lenientRef(t) !== t ? castCode(read, t, 'as?', true) : this.readConverts(e, (c) => this.fromAnyCode(c, t, true), read);
     }
     // A dynamic object (an allSettled result, a lookup table): its field read by name, as its type says.
-    if (this.typeOf(target).replace(/[?!]$/, '') === 'JSObject' && !e.questionDotToken) return this.fromAnyCode(`jsField(${this.expr(target)}, ${swiftString(name)})`, this.typeOf(e), true);
+    if (this.typeOf(target).replace(/[?!]$/, '') === 'JSObject' && !e.questionDotToken) return this.readConverts(e, (c) => this.fromAnyCode(c, this.typeOf(e), true), `jsField(${this.expr(target)}, ${swiftString(name)})`);
     if (this.isSelf(target) && this.props.has(name)) return `self.${ident(name)}.value`;
     if (name === 'raw' && this.symbolName(target) === 'TemplateStringsArray') return `jsTemplateRaw(${this.expr(target)})`;
     if (name === 'description' && this.typeOf(target) === 'JSSymbol') return `${this.expr(target)}.jsDescription`;
@@ -10528,12 +10599,12 @@ ${members.join('\n')}
     if (this.isAddedMember(e)) {
       const t = this.typeOf(e);
       const code = `jsField(${this.expr(target)}, ${swiftString(name)})`;
-      return t === 'Any?' ? code : this.undefinedAs(this.fromAny(code, optionalType(t)), t);
+      return t === 'Any?' ? code : this.undefinedAs(this.readConverts(e, (c) => this.fromAny(c, optionalType(t)), code), t);
     }
     if (this.isExpando(e)) {
       const t = this.typeOf(e);
       const code = `jsGet(${this.expr(target)}, ${swiftString(name)})`;
-      return t === 'Any?' || isWriteTarget(e) ? code : this.fromAnyCode(code, t, true);
+      return t === 'Any?' || isWriteTarget(e) ? code : this.readConverts(e, (c) => this.fromAnyCode(c, t, true), code);
     }
     const native = this.native.property(e);
     if (native) return native;
@@ -10556,7 +10627,7 @@ ${members.join('\n')}
       const p = e.parent;
       const chained = ts.isPropertyAccessExpression(p) && p.expression === e && !!p.questionDotToken && !hasTopLevelArrow(t);
       // A declared string read so (`token.content?.length`) is empty where the object has none: what the chain reads of it is as falsy.
-      return t === 'Any?' || isWriteTarget(e) ? code : chained && t === 'String' ? `(${this.fromAny(code, 'String?')} ?? "")` : chained ? `(${this.fromAny(code, optionalType(t))})` : this.fromAny(code, t);
+      return t === 'Any?' || isWriteTarget(e) ? code : chained && t === 'String' ? `(${this.readConverts(e, (c) => this.fromAny(c, 'String?'), code)} ?? "")` : chained ? `(${this.readConverts(e, (c) => this.fromAny(c, optionalType(t)), code)})` : this.readConverts(e, (c) => this.fromAny(c, t), code);
     }
     const base = this.typeOf(target);
     if (base.replace(/\?$/, '').startsWith('JSRecord<')) {
@@ -10579,17 +10650,17 @@ ${members.join('\n')}
     if (base === 'EventData' && !(this.library ? ['eventName', 'object'] : ['value', 'item', 'eventName', 'object', 'index', 'view', 'type', 'state', 'deltaX', 'deltaY', 'scale', 'rotation', 'direction', 'action', 'scrollX', 'scrollY', 'newValue']).includes(name)) {
       const t = this.typeOf(e);
       const code = `${this.expr(target)}[jsKey: ${swiftString(name)}]`;
-      return t === 'Any?' ? code : this.fromAnyCode(code, t, true);
+      return t === 'Any?' ? code : this.readConverts(e, (c) => this.fromAnyCode(c, t, true), code);
     }
     // An event's data: the value's type is the one the handler declared.
     // `ref.value` of an `interop.Reference<number>`: the cell's value as the type argument reads it.
     if (base === 'InteropReference' && name === 'value' && !isWriteTarget(e)) {
       const t = this.typeOf(e);
-      return t === 'Any?' ? `${this.expr(target)}.value` : this.fromAnyCode(`${this.expr(target)}.value`, t, true);
+      return t === 'Any?' ? `${this.expr(target)}.value` : this.readConverts(e, (c) => this.fromAnyCode(c, t, true), `${this.expr(target)}.value`);
     }
     if (base === 'EventData' && (name === 'value' || name === 'item' || name === 'newValue')) {
       const t = this.typeOf(e);
-      return t === 'Any?' ? `${this.expr(target)}.${name}` : this.fromAny(`${this.expr(target)}.${name}`, t);
+      return t === 'Any?' ? `${this.expr(target)}.${name}` : this.readConverts(e, (c) => this.fromAny(c, t), `${this.expr(target)}.${name}`);
     }
     if (/^JS(Iterator|Generator)</.test(base.replace(/[?!]$/, '')) && (name === 'return' || name === 'throw') && !isWriteTarget(e)) {
       const has = name === 'return' ? 'jsHasReturn' : 'jsHasThrow';
@@ -10608,7 +10679,7 @@ ${members.join('\n')}
       const read = memberOf(asserted ? this.assertedOptional(asserted) : `(${this.expr(target)} as ${optionalType(tt)})`, '?.', ident(name));
       // A field redeclared over its base's untyped one (`viewController: UIViewController`): read as the redeclaration types it.
       const own = this.typeOf(e);
-      const code = this.declaredTypeOf(e) === 'Any?' && own !== 'Any?' && !isWriteTarget(e) ? `(${this.fromAny(read, optionalType(own))})` : read;
+      const code = this.declaredTypeOf(e) === 'Any?' && own !== 'Any?' && !isWriteTarget(e) ? `(${this.readConverts(e, (c) => this.fromAny(c, optionalType(own)), read)})` : read;
       // The chain goes on (`a?.b?.c`): it reads the optional.
       if (ts.isOptionalChain(e.parent) && (e.parent as ts.PropertyAccessExpression).expression === e && (e.parent as ts.PropertyAccessExpression).questionDotToken) return code;
       if (ts.isOptionalChain(e.parent) && (e.parent as ts.PropertyAccessExpression).expression === e) return `${this.expr(target)}.${ident(name)}`;

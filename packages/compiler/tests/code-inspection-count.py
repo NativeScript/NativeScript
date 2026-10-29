@@ -51,7 +51,7 @@ ALLOWED_METHODS = {'balanced', 'wrapsWhole', 'branch', 'postfixable', 'oneExpres
 # The try-placement helpers themselves: every line of theirs is one.
 TRY_METHODS = {'tryAssigned', 'singleTry', 'throwsOutside'}
 FILES = {'swift': ['swift.ts'], 'swift native-calls': ['native-calls.ts'], 'swift kit-gen': ['kit-gen.ts'], 'kotlin': ['kotlin.ts'],
-         'shared': ['lang.ts', 'value-states.ts', 'forms.ts', 'conversion.ts']}
+         'shared': ['lang.ts', 'value-states.ts', 'forms.ts', 'conversion.ts', 'placement.ts']}
 # A variable assigned a rendered type in the method (`const receiver = this.typeOf(x)`): tests on it read types, not code.
 TYPE_VAR = re.compile(r'\b(?:const|let) (\w+) = this\.(?:typeOf|type|declaredTypeOf|returnTypeOf|computedType)\(')
 DEFINITION = re.compile(r'^  (?!(?:if|for|while|switch|catch|return|else|do|try)\b)(?:private |public |protected |readonly )*(?:static )?(?:async )?([A-Za-z_]\w*)\s*(?:<[^>]*>)?\(')
