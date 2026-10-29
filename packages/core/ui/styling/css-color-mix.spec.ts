@@ -29,8 +29,7 @@ describe('css-color-mix', () => {
 		expect(color.toRgbString()).toBe('rgba(247, 112, 125, 1.00)');
 	});
 
-	it('color-mix(in --swop5c, red, blue)', () => {
-		const color = new Color('color-mix(in --swop5c, red, blue)');
-		expect(color.toRgbString()).toBe('rgba(0, 0, 255, 0.00)');
+	it.each(['color-mix(in --swop5c, red, blue)', 'color-mix(in srgb, unset 35%, transparent)', 'color-mix(in srgb, notacolor, red)', 'color-mix(red, blue)'])('throws for malformed %s', (value) => {
+		expect(() => new Color(value)).toThrow(`Invalid color: ${value}`);
 	});
 });
