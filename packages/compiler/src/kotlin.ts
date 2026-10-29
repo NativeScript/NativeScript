@@ -8,7 +8,7 @@ import { assignedValues, openSpreadType, spreadsArrays, definitelyAssignedFields
 import { memberName } from './stable-names.ts';
 import { shadowConversions } from './conversion-shadow.ts';
 import { parseNativeType, type Mark, type Value } from './conversion.ts';
-import { argumentSlot, awaitSlot, type AwaitSlot, isEnumObject, place, resultSlot, returnCell, type ParamSlot, type PlacementBackend, type ResultSlot, type ReturnBackend, type ReturnCell, type Store, type StoreSlot, assignedTo, codeStoreSlot, placeCode, storeSlot } from './placement.ts';
+import { argumentSlot, awaitSlot, type AwaitSlot, isEnumObject, place, resultSlot, returnCell, type ParamSlot, type PlacementBackend, type ResultSlot, type ReturnBackend, type ReturnCell, type Store, type StoreSlot, assignedTo, bindingSlot, codeStoreSlot, placeCode, storeSlot } from './placement.ts';
 import { convertedRead, onlyNull, ValueStates, type StateBackend } from './value-states.ts';
 import type { Form } from './forms.ts';
 import { isCoreDeclaration } from './core.ts';
@@ -5634,7 +5634,8 @@ export class Translator implements AsyncTranslator {
         const literal = ts.isVariableDeclaration(name.parent) && name.parent.initializer && ts.isObjectLiteralExpression(name.parent.initializer) ? name.parent.initializer : undefined;
         const built = literal && this.checker.getContextualType(literal)?.getProperty(key);
         if (this.library && built && t !== 'Any?' && this.type(this.checker.getTypeOfSymbolAtLocation(built, literal!), literal) === 'Any?') read = this.fromAnyCode(read, t, true);
-      } else if (tuple) read = (type === 'Any?' && ts.isIdentifier(el.name) && !el.initializer && this.checkedBinding(el, `jsField(${value}, "${k}")`, elementType(k))) || tupleField(k);
+      } else if (tuple && type === 'Any?' && !ts.isIdentifier(el.name) && !this.isAny(el.name)) read = `jsField(${value}, "${k}")`;
+      else if (tuple) read = (type === 'Any?' && ts.isIdentifier(el.name) && !el.initializer && this.checkedBinding(el, `jsField(${value}, "${k}")`, elementType(k))) || tupleField(k);
       else if (type === 'Any?') read = `jsGet(${value}, "${k}")`;
       else {
         // An array pattern past the array's end binds undefined.
@@ -5663,7 +5664,9 @@ export class Translator implements AsyncTranslator {
         lines.push(declare(el.name, t, fromAny));
       } else {
         const tmp = this.fresh('__d');
-        lines.push(`${i}val ${tmp} = ${read}`, this.bindTo(el.name, tmp, '', mutable));
+        // A typed pattern's part of an untyped value is untyped too.
+        const untypedPart = (this.isAny(name) || type === 'Any?') && !this.isAny(el.name);
+        lines.push(`${i}val ${tmp} = ${read}`, this.bindTo(el.name, tmp, untypedPart ? 'Any?' : '', mutable));
       }
     });
     return lines.join('\n');
@@ -5682,7 +5685,7 @@ export class Translator implements AsyncTranslator {
     else {
       const want = this.typeOf(to);
       const from = typed ? this.type(iterated!, to) : 'Any?';
-      assigns.push(`${this.lvalue(to)} = ${from === 'Any?' ? this.fromAnyCode(item, want, true) : this.convert(item, from, want)}`);
+      assigns.push(`${this.lvalue(to)} = ${from === 'Any?' ? this.checkedBinding(to, item, want) ?? this.fromAnyCode(item, want, true) : this.convert(item, from, want)}`);
     }
     return this.loopBody(() => {
       const label = this.takeLabel();
@@ -6046,7 +6049,10 @@ export class Translator implements AsyncTranslator {
       const want = this.typeOf(to);
       let code: string;
       const untypedRead = (c: string) => (['String', 'Double', 'Boolean'].includes(want) ? this.fromAnyCode(c, want, true) : this.fromAny(c, want));
-      if (read.type === 'Any?') code = untypedRead(init ? `(${read.code} ?: ${this.coerce(init, 'Any?')})` : read.code);
+      if (read.type === 'Any?') {
+        const c = init ? `(${read.code} ?: ${this.coerce(init, 'Any?')})` : read.code;
+        code = this.checkedBinding(to, c, want) ?? untypedRead(c);
+      }
       else if (init && isNullable(read.type)) code = `(${this.convert(read.code, read.type, optionalType(want))} ?: ${this.coerce(init, want)})`;
       else if (read.type === optionalType(want) && read.type !== want) code = this.undefinedAs(read.code, want);
       else code = this.convert(read.code, read.type, want);
@@ -8012,11 +8018,11 @@ export class Translator implements AsyncTranslator {
     return this.type(entry.type, slot.at) === slot.target.replace(/\?$/, '') ? this.checkedConvert(code, entry, slot.at, isNullable(slot.target)) : null;
   }
 
-  /** A variable a pattern binds from an untyped value (`foreignBinding`): its value `code` converted checked, or null. */
-  private checkedBinding(el: ts.BindingElement, code: string, to: string): string | null {
-    const entry = this.lenient || this.library ? null : this.states.foreignBinding(el);
-    if (!entry || this.type(entry.type, el) !== to.replace(/\?$/, '')) return null;
-    return this.checkedConvert(code, entry, el, isNullable(to));
+  /** A variable a pattern binds or assigns from an untyped value (`bindingSlot`): its value `code` converted checked, or null. */
+  private checkedBinding(at: ts.BindingElement | ts.Expression, code: string, to: string): string | null {
+    const entry = this.lenient || this.library ? null : bindingSlot(this, to, at).checked;
+    if (!entry || this.type(entry.type, at) !== to.replace(/\?$/, '')) return null;
+    return this.checkedConvert(code, entry, at, isNullable(to));
   }
 
   /** An undefined-or-value as the TypeScript type reads it: NaN, "undefined" and false are what undefined converts to. */
