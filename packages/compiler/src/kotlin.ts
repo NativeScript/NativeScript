@@ -8,7 +8,7 @@ import { assignedValues, openSpreadType, spreadsArrays, definitelyAssignedFields
 import { memberName } from './stable-names.ts';
 import { shadowConversions } from './conversion-shadow.ts';
 import { parseNativeType, type Mark, type Value } from './conversion.ts';
-import { argumentSlot, isEnumObject, place, resultSlot, returnCell, type ParamSlot, type PlacementBackend, type ResultSlot, type ReturnBackend, type ReturnCell, type Store, type StoreSlot, assignedTo, codeStoreSlot, placeCode, storeSlot } from './placement.ts';
+import { argumentSlot, awaitSlot, type AwaitSlot, isEnumObject, place, resultSlot, returnCell, type ParamSlot, type PlacementBackend, type ResultSlot, type ReturnBackend, type ReturnCell, type Store, type StoreSlot, assignedTo, codeStoreSlot, placeCode, storeSlot } from './placement.ts';
 import { convertedRead, onlyNull, ValueStates, type StateBackend } from './value-states.ts';
 import type { Form } from './forms.ts';
 import { isCoreDeclaration } from './core.ts';
@@ -5740,17 +5740,26 @@ export class Translator implements AsyncTranslator {
   private ownSignatures = new Map<ts.Node, boolean>();
 
   heldAwait(a: ts.AwaitExpression, v: string): [string, string] | undefined {
-    if (!this.states.lenientAsyncCall(a.expression)) return undefined;
-    const t = this.typeOf(a);
-    if (!['String', 'Double', 'Boolean'].includes(t)) return undefined;
-    this.awaitedRaw.set(a, v);
-    if (!this.states.nullResult(a)) return [optionalType(t), this.undefinedAs(v, t)];
-    return [optionalType(t), `(${v} ?: ${t === 'Double' ? '0.0' : t === 'String' ? '"null"' : 'false'})`];
+    // Objects are held as their type says (an unchecked null): only strings, numbers and booleans are nullable.
+    const slot = awaitSlot(this.placement, a, v, (t) => ['String', 'Double', 'Boolean'].includes(t));
+    if (!slot) return undefined;
+    this.awaitSlots.set(a, slot);
+    return [slot.target, this.awaitedValue(slot)];
   }
-  /** A lenient async call's awaited string, number or boolean as its continuation holds it, nullable. */
-  private readonly awaitedRaw = new Map<ts.Node, string>();
-  private rawAwait(e: ts.Expression): string | undefined {
-    return this.awaitedRaw.get(ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses));
+  /** The await's value read from its slot (U → P by kind): a null-only body's nothing reads as null does. */
+  private awaitedValue(slot: AwaitSlot): string {
+    const t = this.typeOf(slot.a);
+    if (!slot.isNull) return this.undefinedAs(slot.raw, t);
+    return `(${slot.raw} ?: ${t === 'Double' ? '0.0' : t === 'String' ? '"null"' : 'false'})`;
+  }
+  private readonly awaitSlots = new Map<ts.Node, AwaitSlot>();
+  /** The slot of the await `e` is, where its continuation holds the value nullable. */
+  private awaited(e: ts.Expression): AwaitSlot | undefined {
+    return this.awaitSlots.get(ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses));
+  }
+  /** U → receiver: a member `key` of what the await gives, JavaScript's TypeError where it gives nothing. */
+  private awaitedReceiver(slot: AwaitSlot, key: string): string {
+    return `(${slot.raw} ?: ${slot.isNull ? 'jsCannotReadNull' : 'jsCannotRead'}(${kotlinString(key)}))`;
   }
   private noteNullVar(d: ts.VariableDeclaration): void {
     const init = d.initializer && ts.skipOuterExpressions(d.initializer, ts.OuterExpressionKinds.Parentheses);
@@ -6762,9 +6771,8 @@ export class Translator implements AsyncTranslator {
   expr(e: ts.Expression): string {
     if (this.heldParts.has(e)) return this.subst.get(e)!;
     if (ts.isCallExpression(e) && !this.nullishCalls.has(e) && !this.subst.has(e) && this.states.nullishRead(e)) return `${this.nullishCode(e)}${this.lenientApp ? '.jsAny' : '.optional'}`;
-    const raw = this.awaitedRaw.get(e), key = raw ? readKeyOf(e) : null;
-    // A member of what the await gives: JavaScript's TypeError where it gives nothing.
-    if (raw && key !== null) return `(${raw} ?: ${this.states.nullResult(e) ? 'jsCannotReadNull' : 'jsCannotRead'}(${kotlinString(key)}))`;
+    const awaited = this.awaitSlots.get(e), key = awaited ? readKeyOf(e) : null;
+    if (awaited && key !== null) return this.awaitedReceiver(awaited, key);
     const s = this.subst.get(e);
     if (s) return s;
     const narrowed = this.narrowedHeld(e);
@@ -7605,8 +7613,8 @@ export class Translator implements AsyncTranslator {
 
   /** A receiver that can be missing though its type says not (`x!`, `items[i]`): JavaScript's TypeError when it is. */
   private receiver(target: ts.Expression, key: string): string | null {
-    const awaited = this.rawAwait(target);
-    if (awaited && !(ts.isPropertyAccessExpression(target.parent) && target.parent.questionDotToken)) return `(${awaited} ?: ${this.states.nullResult(ts.skipOuterExpressions(target, ts.OuterExpressionKinds.Parentheses)) ? 'jsCannotReadNull' : 'jsCannotRead'}(${kotlinString(key)}))`;
+    const awaited = this.awaited(target);
+    if (awaited && !(ts.isPropertyAccessExpression(target.parent) && target.parent.questionDotToken)) return this.awaitedReceiver(awaited, key);
     if (this.uncheckedMatch(target)) return `(${this.expr(target)} ?: jsCannotReadNull(${kotlinString(key)}))`;
     const kind = unsafeReceiver(target, this.checker) ?? this.states.missingAtRead(target);
     if (!kind) return null;
@@ -7800,8 +7808,8 @@ export class Translator implements AsyncTranslator {
     if (assertion) return this.assertedOptional(assertion);
     // Library mode: `<T[]>record[key]`, an assertion of the type the read has: the read.
     if (this.library && (ts.isAsExpression(e) || ts.isTypeAssertionExpression(e)) && !this.subst.has(e) && this.typeOf(e) === this.typeOf(e.expression)) return this.maybeUndefined(e.expression);
-    const awaited = this.rawAwait(e);
-    if (awaited) return awaited;
+    const awaited = this.awaited(e);
+    if (awaited) return awaited.raw;
     if (this.subst.has(e)) return null;
     // A call of a function Kotlin declares to give a nullable string, number or boolean (`'dark' | 'light' | null`): as it gives it.
     if (ts.isCallExpression(e) && (['String', 'Double', 'Boolean'].includes(this.typeOf(e)) || this.widenedObjectCall(e)) && this.unwrapsResult(e)) {

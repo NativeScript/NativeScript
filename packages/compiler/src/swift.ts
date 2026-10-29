@@ -10,7 +10,7 @@ import { assignedValues, openSpreadType, spreadsArrays, initializedNull, interse
 import { memberName } from './stable-names.ts';
 import { shadowConversions } from './conversion-shadow.ts';
 import { parseNativeType, plan, type Slot, type Value } from './conversion.ts';
-import { argumentEntry, argumentOf, argumentSlot, isEnumObject, place, resultSlot, returnCell, type ParamSlot, type PlacementBackend, type ResultSlot, type ReturnBackend, type ReturnCell, type Store, type StoreSlot, assignedTo, codeStoreSlot, placeCode, storeEntry, storeOf, storeSlot } from './placement.ts';
+import { argumentEntry, awaitSlot, type AwaitSlot, argumentOf, argumentSlot, isEnumObject, place, resultSlot, returnCell, type ParamSlot, type PlacementBackend, type ResultSlot, type ReturnBackend, type ReturnCell, type Store, type StoreSlot, assignedTo, codeStoreSlot, placeCode, storeEntry, storeOf, storeSlot } from './placement.ts';
 import { castCode, elementOf, helper, implicitOf, isPure, isUnwrap, markOf, marked, memberOf, orNil, pureCode, tried, tryCode, unwrapInner, unwrappedCode, unwrappedIf, valueOf } from './swift-marks.ts';
 import { convertedRead, onlyNull, ValueStates, type StateBackend } from './value-states.ts';
 import type { Form } from './forms.ts';
@@ -4471,16 +4471,25 @@ ${members.join('\n')}
   }
 
   heldAwait(a: ts.AwaitExpression, v: string): [string, string] | undefined {
-    if (!this.lenientApp || !this.states.lenientAsyncCall(a.expression)) return undefined;
-    const t = this.typeOf(a);
-    this.awaitedRaw.set(a, v);
-    if (!this.states.nullResult(a)) return [optionalType(t), this.undefinedAs(v, t, optionalType(t))];
-    return [optionalType(t), t === 'Double' ? `(${v} ?? 0)` : t === 'String' ? `(${v} ?? "null")` : this.undefinedAs(v, t, optionalType(t))];
+    const slot = this.lenientApp ? awaitSlot(this.placement, a, v, () => true) : null;
+    if (!slot) return undefined;
+    this.awaitSlots.set(a, slot);
+    return [slot.target, this.awaitedValue(slot)];
   }
-  /** A lenient async call's awaited value as its continuation holds it, optional. */
-  private readonly awaitedRaw = new Map<ts.Node, string>();
-  private rawAwait(e: ts.Expression): string | undefined {
-    return this.awaitedRaw.get(ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses));
+  /** The await's value read from its slot (U → P by kind): a null-only body's nothing reads as null does. */
+  private awaitedValue(slot: AwaitSlot): string {
+    const t = this.typeOf(slot.a);
+    if (slot.isNull && (t === 'Double' || t === 'String')) return t === 'Double' ? `(${slot.raw} ?? 0)` : `(${slot.raw} ?? "null")`;
+    return this.undefinedAs(slot.raw, t, slot.target);
+  }
+  private readonly awaitSlots = new Map<ts.Node, AwaitSlot>();
+  /** The slot of the await `e` is, where its continuation holds the value optional. */
+  private awaited(e: ts.Expression): AwaitSlot | undefined {
+    return this.awaitSlots.get(ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses));
+  }
+  /** U → receiver: a member `key` of what the await gives, JavaScript's TypeError where it gives nothing. */
+  private awaitedReceiver(slot: AwaitSlot, key: string): string {
+    return `jsUnwrap(${slot.raw}, ${swiftString(key)}${slot.isNull ? ', null: true' : ''})`;
   }
 
   /** A local Swift holds optional though its type says a value (`const x = f()` of a call that may give nothing). */
@@ -4490,9 +4499,10 @@ ${members.join('\n')}
     return !!sym && this.undefinedVars.get(sym) === optionalType(type);
   }
 
+  /** An await whose continuation will hold its value optional (`heldAwait`), decided before the lowering made its slot. */
   private lenientAwait(e: ts.Expression): boolean {
     e = ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses);
-    return ts.isAwaitExpression(e) && this.lenientApp && this.states.lenientAsyncCall(e.expression);
+    return ts.isAwaitExpression(e) && this.lenientApp && !!awaitSlot(this.placement, e, '', () => true);
   }
 
   /** A call (or an await of one) Swift holds optional where its type says a value, as the function may give nothing. */
@@ -8400,8 +8410,8 @@ ${members.join('\n')}
   private coerceTyped(e: ts.Expression, target: string): string {
     const stored = this.storedLiterals.get(e);
     if (stored && (target === 'Any?' || target.replace(/[?!]$/, '') === stored.type)) return stored.code;
-    const awaited = this.rawAwait(e);
-    if (awaited && (target === 'Any?' || optionalType(this.typeOf(e)) === target)) return target === 'Any?' ? castCode(awaited, 'Any', 'as') : awaited;
+    const awaited = this.awaited(e);
+    if (awaited && (target === 'Any?' || awaited.target === target)) return target === 'Any?' ? castCode(awaited.raw, 'Any', 'as') : awaited.raw;
     if (target === 'Any?') {
       const chain = this.chainRead(e);
       if (chain) return castCode(chain, 'Any', 'as');
@@ -9633,9 +9643,8 @@ ${members.join('\n')}
   }
 
   private exprOf(e: ts.Expression): string {
-    const raw = this.awaitedRaw.get(e), key = raw ? readKeyOf(e) : null;
-    // A member of what the await gives: JavaScript's TypeError where it gives nothing.
-    if (raw && key !== null) return `jsUnwrap(${raw}, ${swiftString(key)}${this.states.nullResult(e) ? ', null: true' : ''})`;
+    const awaited = this.awaitSlots.get(e), key = awaited ? readKeyOf(e) : null;
+    if (awaited && key !== null) return this.awaitedReceiver(awaited, key);
     const s = this.subst.get(e);
     if (s) return s;
     const rw = readWrite(e, this.checker);
@@ -10863,8 +10872,8 @@ ${members.join('\n')}
     while (ts.isParenthesizedExpression(x)) x = x.expression;
     const access = target.parent;
     const chained = (ts.isPropertyAccessExpression(access) || ts.isElementAccessExpression(access)) && !!access.questionDotToken;
-    const awaited = this.rawAwait(x);
-    if (awaited && !chained) return `jsUnwrap(${awaited}, ${swiftString(key)}${this.states.nullResult(x) ? ', null: true' : ''})`;
+    const awaited = this.awaited(x);
+    if (awaited && !chained) return this.awaitedReceiver(awaited, key);
     if (!chained && this.definiteReceiver(x)) return `jsUnwrap(${this.expr(x)}, ${swiftString(key)})`;
     if (!chained && uncheckedMatch(x, this.checker)) return `jsUnwrap(${this.expr(x)}, ${swiftString(key)}, null: true)`;
     if (!chained && this.widenedParameterRead(x)) return `jsUnwrap(${this.expr(x)}, ${swiftString(key)})`;
@@ -11058,8 +11067,8 @@ ${members.join('\n')}
 
   maybeUndefined(e: ts.Expression): string | null {
     while (ts.isParenthesizedExpression(e)) e = e.expression;
-    const awaited = this.rawAwait(e);
-    if (awaited) return awaited;
+    const awaited = this.awaited(e);
+    if (awaited) return awaited.raw;
     const asserted = this.assertedUntyped(e);
     // An object variable (`const v = x as View`) is held as Swift's type says, the value checked there; one declared optional takes it unchecked.
     if (asserted && (['String', 'Double', 'Bool'].includes(this.typeOf(asserted)) || !ts.isVariableDeclaration(ts.walkUpParenthesizedExpressions(asserted.parent)))) return this.assertedOptional(asserted);
