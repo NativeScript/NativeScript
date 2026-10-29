@@ -69,10 +69,13 @@ export interface PlacementBackend {
   result?(e: ts.Expression, slot: ResultSlot): string | null;
   /** Its own cells of an argument, before the shared front (Swift's optional read given as it is, Kotlin's constant defaults). */
   argument?(e: ts.Expression, slot: ParamSlot): string | null;
+  /** An `asIs` observer slot's read: the optional the value may be, never unwrapped nor required present. */
+  observed(e: ts.Expression): string;
 }
 
-/** `e` where the backend needs a value of `target`: the value a function gives back in its result `slot`, an argument in its parameter's, or a value stored in a variable or field. */
-export function place(b: PlacementBackend, e: ts.Expression, to: string | ResultSlot | ParamSlot | StoreSlot): string {
+/** `e` where the backend needs a value of `target`: the value a function gives back in its result `slot`, an argument in its parameter's, a value stored in a variable or field, or an operand an observer reads. */
+export function place(b: PlacementBackend, e: ts.Expression, to: string | ResultSlot | ParamSlot | StoreSlot | ObserverSlot): string {
+  if (typeof to !== 'string' && to.kind === 'observer') return to.read === 'asIs' ? b.observed(e) : place(b, e, to.target);
   if (typeof to !== 'string' && to.kind === 'return') return b.result?.(e, to) ?? place(b, e, to.target);
   if (typeof to !== 'string' && to.kind === 'argument') return b.argument?.(e, to) ?? placed(b, e, to.target, to);
   const slot = typeof to === 'string' ? undefined : to;
@@ -517,4 +520,108 @@ export function awaitSlot(b: Pick<PlacementBackend, 'states' | 'typeOf' | 'optio
   if (!holds(type)) return null;
   const target = b.optionalType(type);
   return { kind: 'await', target, type: parseNativeType(target), a, raw, isNull: b.states.nullResult(a) };
+}
+
+/**
+ * How a value's truthiness is tested where the backend needs its boolean: the cells of a `condition`-kind slot
+ * (`SlotKind`), an `if`'s, a loop's or a conditional's test, and the operands of `!`, `&&` and `||` so tested.
+ * Operands are tested in their own condition slot, each decided as the backend spells the one before.
+ */
+export type ConditionCell =
+  /** The types decide it: nothing is evaluated. */
+  | { step: 'fixed'; value: boolean }
+  /** `a && b`, `a || b` of operands not both booleans: whether both (either) are truthy. */
+  | { step: 'logical'; e: ts.BinaryExpression; and: boolean }
+  /** `!a`: `a` tested, negated. */
+  | { step: 'not'; e: ts.Expression }
+  /** A read that may be missing (`maybeUndefined`), tested as the value it stands for: `code` is that read. */
+  | { step: 'missing'; e: ts.Expression; code: string }
+  /** A boolean, read as it is. */
+  | { step: 'bool'; e: ts.Expression }
+  /** Any other value: the backend's truthiness test of it. */
+  | { step: 'value'; e: ts.Expression };
+
+/** What `conditionCell` reads of a translator. */
+export interface ConditionBackend {
+  isBool(n: ts.Node): boolean;
+  maybeUndefined(e: ts.Expression): string | null;
+  /** The truth a whole condition always has where the types decide it, spelled as that truth; absent where the backend tests it anyway. */
+  fixed?(e: ts.Expression): boolean | undefined;
+  /** Of `a && b` or `a || b`, the operand whose truth alone is the condition's where the other's is decided, or null. */
+  decided(e: ts.BinaryExpression): ts.Expression | null;
+  /** The operators are looked for inside parentheses, and `!a` is a test of `a` (without: `!a` is a boolean value). */
+  readonly bare: boolean;
+}
+
+/** `e` tested for its truthiness. */
+export function conditionCell(b: ConditionBackend, e: ts.Expression): ConditionCell {
+  const fixed = b.fixed?.(e);
+  if (fixed !== undefined) return { step: 'fixed', value: fixed };
+  let x = e;
+  while (b.bare && ts.isParenthesizedExpression(x)) x = x.expression;
+  if (ts.isBinaryExpression(x) && (x.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken || x.operatorToken.kind === ts.SyntaxKind.BarBarToken)) {
+    const one = b.decided(x);
+    if (one) return conditionCell(b, one);
+    if (!(b.isBool(x.left) && b.isBool(x.right))) return { step: 'logical', e: x, and: x.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken };
+  }
+  if (b.bare && ts.isPrefixUnaryExpression(x) && x.operator === ts.SyntaxKind.ExclamationToken) return { step: 'not', e: x.operand };
+  const code = b.maybeUndefined(e);
+  if (code) return { step: 'missing', e, code };
+  return b.isBool(e) ? { step: 'bool', e } : { step: 'value', e };
+}
+
+/** The operand of `!`: a boolean that cannot be missing is read as it is, anything else tested. */
+export function negatedCell(b: ConditionBackend, e: ts.Expression): ConditionCell {
+  return b.isBool(e) && !b.maybeUndefined(e) ? { step: 'bool', e } : conditionCell(b, e);
+}
+
+/**
+ * An operand an observer reads (`ValueStates.observedAsIs`: an equality's or `typeof`'s), as JavaScript takes it,
+ * missing or not (`kind: 'observer'`). `untyped`: placed as a script value; `asIs`: the optional the backend holds it
+ * as, never unwrapped nor required present (`PlacementBackend.observed`).
+ */
+export interface ObserverSlot {
+  kind: 'observer';
+  target: string;
+  type: NativeType;
+  read: 'untyped' | 'asIs';
+}
+
+const OBSERVERS = {
+  untyped: { kind: 'observer', target: 'Any?', type: parseNativeType('Any?'), read: 'untyped' },
+  asIs: { kind: 'observer', target: '', type: parseNativeType(''), read: 'asIs' },
+} as const satisfies Record<ObserverSlot['read'], ObserverSlot>;
+
+export function observerSlot(read: ObserverSlot['read'] = 'untyped'): ObserverSlot {
+  return OBSERVERS[read];
+}
+
+/** The cell of an equality or identity comparison the shared front decides; null where the backend's own cells decide. */
+export type EqualityCell =
+  /** A value whose null and undefined differ, compared strictly with one of them (`isNull`): as script values. */
+  | { cell: 'empty'; x: ts.Expression; isNull: boolean }
+  /** Loosely with null or undefined, a value of no one present type: whether it is either. */
+  | { cell: 'nullish'; x: ts.Expression }
+  /** Operands of different present types, or one untyped or generic: compared as script values. */
+  | { cell: 'script' };
+
+const literalEmpty = (x: ts.Expression) => x.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(x) && x.text === 'undefined');
+
+/** `e`'s comparison with null or undefined where the value tells them apart, which comes before the backend's own reads of a missing value. */
+export function emptyComparison(b: Pick<PlacementBackend, 'states'>, e: ts.BinaryExpression): EqualityCell | null {
+  const K = ts.SyntaxKind, op = e.operatorToken.kind;
+  if ((op !== K.EqualsEqualsEqualsToken && op !== K.ExclamationEqualsEqualsToken) || literalEmpty(e.left) === literalEmpty(e.right)) return null;
+  const [x, n] = literalEmpty(e.right) ? [e.left, e.right] : [e.right, e.left];
+  const isNull = n.kind === K.NullKeyword, s = b.states;
+  if (!isNull ? s.nullDistinct(x) : s.nullishRead(x) || s.nullishElementRead(x) || s.nulledRead(x)) return { cell: 'empty', x, isNull };
+  return isNull && s.nilIsUndefined(x) ? { cell: 'empty', x, isNull } : null;
+}
+
+/** `e`'s comparison as script values where its operands' present types differ (`generic`: a type parameter's), once neither is tested for emptiness on its own. */
+export function scriptComparison(b: Pick<PlacementBackend, 'typeOf'>, e: ts.BinaryExpression, generic: (x: ts.Expression, type: string) => boolean): EqualityCell | null {
+  const K = ts.SyntaxKind, op = e.operatorToken.kind, [a, c] = [e.left, e.right];
+  const [lt, rt] = [b.typeOf(a), b.typeOf(c)];
+  if (!(lt === 'Any?' || rt === 'Any?' || generic(a, lt) || generic(c, rt) || (lt !== rt && lt.replace(/\?$/, '') !== rt.replace(/\?$/, '')))) return null;
+  const strict = op === K.EqualsEqualsEqualsToken || op === K.ExclamationEqualsEqualsToken;
+  return !strict && (literalEmpty(a) || literalEmpty(c)) ? { cell: 'nullish', x: literalEmpty(a) ? c : a } : { cell: 'script' };
 }
