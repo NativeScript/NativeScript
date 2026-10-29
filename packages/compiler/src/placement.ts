@@ -60,11 +60,13 @@ export interface PlacementBackend {
   branches(e: ts.ConditionalExpression, target: string): string;
   /** Its own reads of a value a `return` gives back, before the shared front (Swift's undefined reads of a call's result). */
   result?(e: ts.Expression, slot: ResultSlot): string | null;
+  /** Its own cells of an argument, before the shared front (Swift's optional read given as it is, Kotlin's constant defaults). */
+  argument?(e: ts.Expression, slot: ParamSlot): string | null;
 }
 
-/** `e` where the backend needs a value of `target`, or the value a function gives back in its result `slot`. */
-export function place(b: PlacementBackend, e: ts.Expression, to: string | ResultSlot): string {
-  if (typeof to !== 'string') return b.result?.(e, to) ?? place(b, e, to.target);
+/** `e` where the backend needs a value of `target`, the value a function gives back in its result `slot`, or an argument in its parameter's. */
+export function place(b: PlacementBackend, e: ts.Expression, to: string | ResultSlot | ParamSlot): string {
+  if (typeof to !== 'string') return (to.kind === 'return' ? b.result?.(e, to) : b.argument?.(e, to)) ?? place(b, e, to.target);
   const target = to;
   const code = placed(b, e, target);
   return b.library && ts.isVariableDeclaration(e.parent) && e.parent.initializer === e && emptyMarkers(b).has(e.parent) ? b.cells.marker(code) : code;
@@ -185,6 +187,29 @@ export interface ResultSlot {
 /** The result slot of a function giving back `target`. */
 export function resultSlot(target: string, fn?: ts.SignatureDeclaration, lowered = false): ResultSlot {
   return { kind: 'return', target, type: parseNativeType(target ?? ''), lowered, fn };
+}
+
+/** A parameter as the slot a call's argument is placed in, as the backend has the parameter at that call. */
+export interface ParamSlot {
+  kind: 'argument';
+  /** The backend's spelling of the parameter's type at the call. */
+  target: string;
+  type: NativeType;
+  /** The parameter; none past the declared ones. */
+  decl?: ts.Declaration;
+  /** Held `JSNullish<T>` (`ValueStates.nullishHeld`): the value placed in it, no other cell. */
+  nullish?: boolean;
+  /** Takes a missing value as it is: an argument the backend holds optional is given as that optional; `declared` is the parameter's type before it was made optional. */
+  asIs?: { declared: string };
+  /** Kotlin: the parameter's default is a constant its declaration has, which a possibly missing argument falls back to. */
+  constantDefault?: boolean;
+  /** Kotlin: a package's parameter called from outside the package, its type as the package declares it. */
+  packaged?: boolean;
+}
+
+/** The slot of a parameter the backend has as `target` at a call. */
+export function argumentSlot(target: string, decl?: ts.Declaration, facts: Pick<ParamSlot, 'nullish' | 'asIs' | 'constantDefault' | 'packaged'> = {}): ParamSlot {
+  return { kind: 'argument', target, type: parseNativeType(target), decl, ...facts };
 }
 
 /** One cell of a `return`-kind slot. */

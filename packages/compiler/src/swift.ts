@@ -10,7 +10,7 @@ import { assignedValues, openSpreadType, spreadsArrays, initializedNull, interse
 import { memberName } from './stable-names.ts';
 import { shadowConversions } from './conversion-shadow.ts';
 import { parseNativeType, plan, type Slot, type Value } from './conversion.ts';
-import { isEnumObject, place, resultSlot, returnCell, type PlacementBackend, type ResultSlot, type ReturnBackend, type ReturnCell } from './placement.ts';
+import { argumentSlot, isEnumObject, place, resultSlot, returnCell, type ParamSlot, type PlacementBackend, type ResultSlot, type ReturnBackend, type ReturnCell } from './placement.ts';
 import { castCode, elementOf, helper, implicitOf, isPure, isUnwrap, markOf, marked, memberOf, orNil, pureCode, tried, tryCode, unwrapInner, unwrappedCode, unwrappedIf, valueOf } from './swift-marks.ts';
 import { convertedRead, onlyNull, ValueStates, type StateBackend } from './value-states.ts';
 import type { Form } from './forms.ts';
@@ -8267,6 +8267,7 @@ ${members.join('\n')}
       },
       branches: (bare, target) => this.ternary(bare, target, (x) => this.coerce(x, target)),
       result: (e, slot) => this.resultRead(e, slot),
+      argument: (e, slot) => this.argumentRead(e, slot),
     };
   }
 
@@ -11237,6 +11238,44 @@ ${members.join('\n')}
     return marked(`(${code} ?? ${zero})`, { op: 'undefinedAs', to: parseNativeType(type), of: valueOf(code) });
   }
 
+  /** The slot the parameter `p`, the `k`th, is at call `e`: Swift's type of it there, and how it takes a missing value. */
+  private paramSlot(e: ts.CallExpression | ts.NewExpression, p: ts.Symbol, k: number): ParamSlot {
+    const decl = p.valueDeclaration;
+    // A method or constructor of a generic class Swift has erased: the parameter's type as the method declares it.
+    const erased = (!!decl && ts.isParameter(decl) && ts.isClassLike(decl.parent.parent) && !!decl.parent.parent.typeParameters?.length && this.erasesGenerics(decl.parent.parent))
+      // A method of an app's generic interface, whose protocol erases the interface's type parameters.
+      || (!!decl && ts.isParameter(decl) && ts.isMethodSignature(decl.parent) && this.erasingProtocol(decl.parent))
+      // A program function's type parameter Swift erases (`U extends { root: View }`, any of a plugin's): the parameter as declared, the argument's type erased with it.
+      || (!!decl && ts.isParameter(decl) && !!decl.type && !decl.getSourceFile().isDeclarationFile && !!(decl.parent as ts.SignatureDeclaration).typeParameters?.some((tp) => (erasedTypeParameter(tp) || (!this.library && this.erasesGenerics(decl.parent))) && new RegExp(`\\b${tp.name.text}\\b`).test(decl.type!.getText())));
+    // In code the checker finds unreachable a parameter's type is never: its declared type.
+    const at = decl && this.states.nullish().held.has(decl) ? 'Any?' : decl && this.states.nullishHeld(decl) ? nullishType(this.type(this.checker.getTypeOfSymbolAtLocation(p, e), e)) : this.heldElements(decl && ts.isParameter(decl) ? decl : e, this.type(this.checker.getTypeOfSymbolAtLocation(p, e), e));
+    // A parameter property's parameter held `JSNullish` while its field is loose: the parameter's form, not the field's.
+    if (decl && this.states.nullishHeld(decl)) return argumentSlot(at, decl, { nullish: true });
+    // A function where the program's parameter is a bare type parameter: the function object, which Swift binds the parameter to (`heldRead`).
+    if (decl && ts.isParameter(decl) && decl.type && !decl.getSourceFile().isDeclarationFile && at !== 'Any?' && heldType(at) === 'Any?' && (this.isBareTypeParameter(decl.type) || this.heldParameter(decl))) return argumentSlot('Any?', decl);
+    // A function where the parameter's type is computed from type parameters (`handler: Delegate[K]`, core's too): Swift
+    // declares it untyped, so the argument must be a function object script can call, not the instantiation's closure.
+    if (decl && ts.isParameter(decl) && decl.type && at !== 'Any?' && heldType(at) === 'Any?' && this.untypedGeneric(decl.type)) return argumentSlot('Any?', decl);
+    // An override emitted with its root's signature: the parameter as Swift has it.
+    const method = decl && ts.isParameter(decl) && ts.isMethodDeclaration(decl.parent) && !isStatic(decl.parent) && !decl.getSourceFile().isDeclarationFile ? decl.parent : null;
+    const emitted = method && this.baseMethod(method) ? this.emittedSignature(method).params[k]?.type.replace(/!$/, '?') : undefined;
+    // An optional parameter of the program's (`cssFileName?: string`, `namespace: string | undefined`) takes undefined as it is.
+    const omissible = !emitted && !erased && decl && ts.isParameter(decl) && (!!decl.questionToken || this.declaredUndefined(decl) || this.states.looseDeclaration(decl) || this.familyDefaultsDiffer(decl)) && !decl.getSourceFile().isDeclarationFile && (['String', 'Double', 'Bool'].includes(at) || (this.states.looseDeclaration(decl) && this.looseObjectType(at)));
+    // An object parameter the program's code takes optional or implicitly unwrapped: a value Swift holds optional is given as it is (`argument`).
+    const asIs = !emitted && !erased && decl && ts.isParameter(decl) && !decl.getSourceFile().isDeclarationFile && (this.states.mayBeNull(decl) || (!!decl.questionToken && !['String', 'Double', 'Bool'].includes(at))) ? { declared: at } : undefined;
+    // A parameter its group's form widens takes undefined and null as they are, as every member of the group spells it.
+    const widened = !emitted && !erased && !!decl && ts.isParameter(decl) && this.states.widened(decl) && !isOptional(at) && at !== 'Any?';
+    const to = emitted ?? (omissible || widened || this.filledDefault(decl) ? optionalType(at) : erased ? this.inFile(decl!.getSourceFile().fileName, () => this.paramType(decl as ts.ParameterDeclaration)) : at === 'Never' ? this.type(this.checker.getTypeOfSymbol(p), e) : at);
+    return argumentSlot(to, decl, { asIs });
+  }
+
+  /** An argument in a slot taking a missing value as it is (`ParamSlot.asIs`): a result Swift holds optional, read as that optional; null for any other value. */
+  private argumentRead(a: ts.Expression, slot: ParamSlot): string | null {
+    if (!slot.asIs) return null;
+    const fn = (slot.decl as ts.ParameterDeclaration).parent as ts.FunctionLikeDeclaration;
+    return this.givesUndefined(a) || (this.lenientApp && !!fn.body && this.heldOptional(a, slot.asIs.declared)) ? this.maybeUndefined(a) || null : null;
+  }
+
   args(e: ts.CallExpression | ts.NewExpression, count?: number): string[] {
     const all = e.arguments ?? ts.factory.createNodeArray();
     const list = count === undefined ? all : all.slice(0, count);
@@ -11295,39 +11334,7 @@ ${members.join('\n')}
         out.push(this.coerce(a, pt));
         continue;
       }
-      // A method or constructor of a generic class Swift has erased: the parameter's type as the method declares it.
-      const erased = (!!decl && ts.isParameter(decl) && ts.isClassLike(decl.parent.parent) && !!decl.parent.parent.typeParameters?.length && this.erasesGenerics(decl.parent.parent))
-        // A method of an app's generic interface, whose protocol erases the interface's type parameters.
-        || (!!decl && ts.isParameter(decl) && ts.isMethodSignature(decl.parent) && this.erasingProtocol(decl.parent))
-        // A program function's type parameter Swift erases (`U extends { root: View }`, any of a plugin's): the parameter as declared, the argument's type erased with it.
-        || (!!decl && ts.isParameter(decl) && !!decl.type && !decl.getSourceFile().isDeclarationFile && !!(decl.parent as ts.SignatureDeclaration).typeParameters?.some((tp) => (erasedTypeParameter(tp) || (!this.library && this.erasesGenerics(decl.parent))) && new RegExp(`\\b${tp.name.text}\\b`).test(decl.type!.getText())));
-      // In code the checker finds unreachable a parameter's type is never: its declared type.
-      const at = decl && this.states.nullish().held.has(decl) ? 'Any?' : decl && this.states.nullishHeld(decl) ? nullishType(this.type(this.checker.getTypeOfSymbolAtLocation(p, e), e)) : this.heldElements(decl && ts.isParameter(decl) ? decl : e, this.type(this.checker.getTypeOfSymbolAtLocation(p, e), e));
-      // A parameter property's parameter held `JSNullish` while its field is loose: the parameter's form, not the field's.
-      if (decl && this.states.nullishHeld(decl)) { out.push(this.coerce(a, at)); continue; }
-      // A function where the program's parameter is a bare type parameter: the function object, which Swift binds the parameter to (`heldRead`).
-      if (decl && ts.isParameter(decl) && decl.type && !decl.getSourceFile().isDeclarationFile && at !== 'Any?' && heldType(at) === 'Any?' && (this.isBareTypeParameter(decl.type) || this.heldParameter(decl))) {
-        out.push(this.coerce(a, 'Any?'));
-        continue;
-      }
-      // A function where the parameter's type is computed from type parameters (`handler: Delegate[K]`, core's too): Swift
-      // declares it untyped, so the argument must be a function object script can call, not the instantiation's closure.
-      if (decl && ts.isParameter(decl) && decl.type && at !== 'Any?' && heldType(at) === 'Any?' && this.untypedGeneric(decl.type)) {
-        out.push(this.coerce(a, 'Any?'));
-        continue;
-      }
-      // An override emitted with its root's signature: the parameter as Swift has it.
-      const method = decl && ts.isParameter(decl) && ts.isMethodDeclaration(decl.parent) && !isStatic(decl.parent) && !decl.getSourceFile().isDeclarationFile ? decl.parent : null;
-      const emitted = method && this.baseMethod(method) ? this.emittedSignature(method).params[k]?.type.replace(/!$/, '?') : undefined;
-      // An optional parameter of the program's (`cssFileName?: string`, `namespace: string | undefined`) takes undefined as it is.
-      const omissible = !emitted && !erased && decl && ts.isParameter(decl) && (!!decl.questionToken || this.declaredUndefined(decl) || this.states.looseDeclaration(decl) || this.familyDefaultsDiffer(decl)) && !decl.getSourceFile().isDeclarationFile && (['String', 'Double', 'Bool'].includes(at) || (this.states.looseDeclaration(decl) && this.looseObjectType(at)));
-      // A result Swift has as optional, given to an object parameter the program's code takes optional or implicitly unwrapped: as it is.
-      const raw = !emitted && !erased && decl && ts.isParameter(decl) && !decl.getSourceFile().isDeclarationFile && (this.states.mayBeNull(decl) || (!!decl.questionToken && !['String', 'Double', 'Bool'].includes(at))) && (this.givesUndefined(a) || (this.lenientApp && !!(decl.parent as ts.FunctionLikeDeclaration).body && this.heldOptional(a, at))) ? this.maybeUndefined(a) : null;
-      if (raw) { out.push(raw); continue; }
-      // A parameter its group's form widens takes undefined and null as they are, as every member of the group spells it.
-      const widened = !emitted && !erased && !!decl && ts.isParameter(decl) && this.states.widened(decl) && !isOptional(at) && at !== 'Any?';
-      const to = emitted ?? (omissible || widened || this.filledDefault(decl) ? optionalType(at) : erased ? this.inFile(decl!.getSourceFile().fileName, () => this.paramType(decl as ts.ParameterDeclaration)) : at === 'Never' ? this.type(this.checker.getTypeOfSymbol(p), e) : at);
-      out.push(this.coerce(a, to));
+      out.push(place(this.placement, a, this.paramSlot(e, p, k)));
     }
     if (restAt >= 0 && appDeclared && out.length <= restAt) out.push(`${this.restType(params[restAt])}()`);
     // A function declaring `this`, called plainly: its `this` is undefined.

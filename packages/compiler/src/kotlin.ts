@@ -8,7 +8,7 @@ import { assignedValues, openSpreadType, spreadsArrays, definitelyAssignedFields
 import { memberName } from './stable-names.ts';
 import { shadowConversions } from './conversion-shadow.ts';
 import { parseNativeType, type Mark, type Value } from './conversion.ts';
-import { isEnumObject, place, resultSlot, returnCell, type PlacementBackend, type ResultSlot, type ReturnBackend, type ReturnCell } from './placement.ts';
+import { argumentSlot, isEnumObject, place, resultSlot, returnCell, type ParamSlot, type PlacementBackend, type ResultSlot, type ReturnBackend, type ReturnCell } from './placement.ts';
 import { convertedRead, onlyNull, ValueStates, type StateBackend } from './value-states.ts';
 import type { Form } from './forms.ts';
 import { isCoreDeclaration } from './core.ts';
@@ -6192,6 +6192,7 @@ export class Translator implements AsyncTranslator {
         if (this.states.nullishElementRead(e)) return `jsBox(${this.expr(e)})`;
         return held ? null : this.nullishFunction(e);
       },
+      argument: (e, slot) => this.argumentCell(e, slot),
       branches: (bare, target) => {
         const fixed = this.staticTruth(bare.condition);
         if (fixed !== undefined) return this.coerce(fixed ? bare.whenTrue : bare.whenFalse, target);
@@ -7977,6 +7978,59 @@ export class Translator implements AsyncTranslator {
     return zero ? this.marked(`(${code} ?: ${zero})`, { op: 'undefinedAs', to: parseNativeType(type), of: this.valueOf(code) }) : this.asserted(code);
   }
 
+  /** The slot the `k`th parameter of `call` is at call `e`: Kotlin's type of it there; `a` is the argument given there, absent for an element a spread gives. */
+  private paramSlot(e: ts.CallExpression | ts.NewExpression, call: CallParams, k: number, a?: ts.Expression): ParamSlot {
+    const { sig, impl, params, appDeclared } = call;
+    const p = params[Math.min(k, params.length - 1)];
+    const decl = p?.valueDeclaration;
+    if (decl && this.states.nullishHeld(decl)) return argumentSlot(nullishType(this.type(this.checker.getTypeOfSymbolAtLocation(p, e), e)), decl, { nullish: true });
+    let pt = decl && this.states.nullish().held.has(decl) ? 'Any?' : this.heldElements(decl && ts.isParameter(decl) ? decl : e, this.type(this.checker.getTypeOfSymbolAtLocation(p, e), e));
+    // A generic implementation's parameter is not instantiated by an overload's call: the overload's, as this call instantiates it.
+    const implTypes = impl && impl !== sig?.getDeclaration() ? impl.typeParameters?.map((t) => t.name.text) ?? [] : [];
+    const resolved = sig?.getParameters()[k];
+    if (resolved && implTypes.some((t) => new RegExp(`\\b${t}\\b`).test(pt))) pt = this.type(this.checker.getTypeOfSymbolAtLocation(resolved, e), e);
+    // Library mode: a generic function's parameter is its declaration's Kotlin type, the type parameters erased.
+    // So is any parameter whose type reads otherwise here (an alias of a union resolving apart at the call).
+    const generic = this.library && appDeclared && decl && ts.isParameter(decl) && (!!(decl.parent as ts.SignatureDeclaration).typeParameters?.length || (ts.isClassLike(decl.parent.parent) && !!decl.parent.parent.typeParameters?.length) || pt === 'Any?');
+    // So is a parameter of a package's source called from outside it (`new FormArray(controls)`), its class's type parameters erased.
+    const packageParam = !this.library && !!decl && ts.isParameter(decl) && this.pluginFiles.has(decl.getSourceFile().fileName) && !this.pluginFiles.has(e.getSourceFile().fileName);
+    if (generic || packageParam) pt = this.typeOf((decl as ts.ParameterDeclaration).name);
+    // A parameter typed from type parameters (`handler: Delegate[K]`, core's too) is untyped in Kotlin, whatever this call instantiates.
+    else if (decl && ts.isParameter(decl) && decl.type && pt !== 'Any?' && this.untypedGeneric(decl.type)) pt = 'Any?';
+    // Library mode: an override's parameter is the topmost declaration's, which Kotlin's signature has (`appOverride`).
+    const root = this.library && decl && ts.isParameter(decl) && ts.isMethodDeclaration(decl.parent) ? this.rootMethod(decl.parent) : null;
+    if (root && root !== decl.parent && root.parameters[k] && !root.parameters[k].dotDotDotToken) pt = this.paramType(root.parameters[k]);
+    // A plugin's object parameter is nullable in Kotlin: what is passed needs no unwrap.
+    if (decl && ts.isParameter(decl) && appDeclared && ((!!(decl.parent as ts.FunctionLikeDeclaration).body && this.states.mayBeNull(decl)) || this.states.widened(decl))) pt = optionalType(pt);
+    // Library mode: a parameter the method declares nullable in Kotlin takes what may be missing as it is.
+    else if (this.library && !isNullable(pt) && pt !== 'Any?' && !!a && this.nullableArgument(a)) pt = optionalType(pt);
+    // So does a local function's parameter its body tests (`params`).
+    else if (this.library && !isNullable(pt) && decl && ts.isParameter(decl) && ts.isVariableDeclaration(decl.parent.parent) && ts.isIdentifier(decl.name) && (this.nullableDecls.has(p) || (isNullable(this.typeOf(decl.name)) && this.truthTested(decl.name)))) pt = optionalType(pt);
+    // So does one the compiled function declares nullable (`toString(settings: …[] | null)`), whatever the checker strips.
+    else if (this.library && appDeclared && !isNullable(pt) && this.isObjectType(pt) && !['String', 'Double', 'Boolean'].includes(pt) && decl && ts.isParameter(decl) && ts.isIdentifier(decl.name) && !decl.questionToken && !decl.initializer
+      && ts.isFunctionDeclaration(decl.parent) && !decl.getSourceFile().isDeclarationFile && isNullable(this.paramType(decl))
+      && ts.isCallExpression(e) && (ts.isIdentifier(e.expression) || (ts.isPropertyAccessExpression(e.expression) && !!this.namespaceMember(e.expression)))) pt = optionalType(pt);
+    const constantDefault = !!decl && ts.isParameter(decl) && this.constantDefault(decl) && appDeclared && !this.templateParams;
+    if (decl && ts.isParameter(decl) && ['String', 'Double', 'Boolean'].includes(pt) && this.states.undefinedParameter(decl)) pt = optionalType(pt);
+    if (decl && ts.isParameter(decl) && (decl.questionToken || decl.initializer) && appDeclared && !constantDefault) pt = optionalType(pt);
+    return argumentSlot(pt, decl, { constantDefault, packaged: packageParam });
+  }
+
+  /** Kotlin's own cells of an argument, before the shared front; null where it is placed in the slot's type. */
+  private argumentCell(a: ts.Expression, slot: ParamSlot): string | null {
+    const pt = slot.target, decl = slot.decl;
+    if (slot.nullish) return this.coerce(a, pt);
+    // An argument that may be undefined where Kotlin's parameter has the constant default JavaScript would use.
+    if (slot.constantDefault && this.typeOf(a) === optionalType(pt)) return `(${this.coerce(a, optionalType(pt))} ?: ${this.coerce((decl as ts.ParameterDeclaration).initializer!, pt)})`;
+    // Library mode: a value a library collection holds (`cache.set(key, result)` with a null result), as script stores it.
+    if (this.library && decl && isLibDeclaration(decl) && this.isObjectType(pt) && !isNullable(pt) && !['String', 'Double', 'Boolean'].includes(pt) && !isFunctionType(pt)
+        && (isNullable(this.declaredTypeOf(a) ?? this.typeOf(a)) || this.maybeUndefined(a))) return this.unchecked(pt, this.coerce(a, optionalType(pt)));
+    // An object or a record of other values where a package's parameter takes a record of any: as script passes it.
+    const record = slot.packaged ? /^JSRecord<(.*)>(\??)$/.exec(pt) : null;
+    if (record && this.typeOf(a).replace(/\?$/, '') !== pt.replace(/\?$/, '')) return `${record[2] ? 'jsRecordOrNull' : 'jsRecord'}<${record[1]}>(${this.expr(a)})`;
+    return (pt === 'Any?' && this.untypedArrow(a)) || null;
+  }
+
   args(e: ts.CallExpression | ts.NewExpression, count?: number): string[] {
     const all = e.arguments ?? ts.factory.createNodeArray();
     const list = count === undefined ? all : all.slice(0, count);
@@ -7996,42 +8050,8 @@ export class Translator implements AsyncTranslator {
     const restAt = params.findIndex((p) => p.valueDeclaration && ts.isParameter(p.valueDeclaration) && p.valueDeclaration.dotDotDotToken);
     // A function type's rest parameter too (`bind`'s `(...args: A) => R`): Kotlin's function type takes it as one array.
     const appDeclared = (!!sig?.getDeclaration() && !sig!.getDeclaration().getSourceFile().isDeclarationFile) || (!!impl && !impl.getSourceFile().isDeclarationFile) || (!this.library && !!sig?.getDeclaration() && ts.isFunctionTypeNode(sig!.getDeclaration()));
-    // The Kotlin type parameter k takes at this call; `a` is the argument given there, absent for an element a spread gives.
-    const slot = (k: number, a?: ts.Expression): { pt: string; held: boolean; constantDefault: boolean; packageParam: boolean } => {
-      const p = params[Math.min(k, params.length - 1)];
-      const decl = p?.valueDeclaration;
-      if (decl && this.states.nullishHeld(decl)) return { pt: nullishType(this.type(this.checker.getTypeOfSymbolAtLocation(p, e), e)), held: true, constantDefault: false, packageParam: false };
-      let pt = decl && this.states.nullish().held.has(decl) ? 'Any?' : this.heldElements(decl && ts.isParameter(decl) ? decl : e, this.type(this.checker.getTypeOfSymbolAtLocation(p, e), e));
-      // A generic implementation's parameter is not instantiated by an overload's call: the overload's, as this call instantiates it.
-      const implTypes = impl && impl !== sig?.getDeclaration() ? impl.typeParameters?.map((t) => t.name.text) ?? [] : [];
-      const resolved = sig?.getParameters()[k];
-      if (resolved && implTypes.some((t) => new RegExp(`\\b${t}\\b`).test(pt))) pt = this.type(this.checker.getTypeOfSymbolAtLocation(resolved, e), e);
-      // Library mode: a generic function's parameter is its declaration's Kotlin type, the type parameters erased.
-      // So is any parameter whose type reads otherwise here (an alias of a union resolving apart at the call).
-      const generic = this.library && appDeclared && decl && ts.isParameter(decl) && (!!(decl.parent as ts.SignatureDeclaration).typeParameters?.length || (ts.isClassLike(decl.parent.parent) && !!decl.parent.parent.typeParameters?.length) || pt === 'Any?');
-      // So is a parameter of a package's source called from outside it (`new FormArray(controls)`), its class's type parameters erased.
-      const packageParam = !this.library && !!decl && ts.isParameter(decl) && this.pluginFiles.has(decl.getSourceFile().fileName) && !this.pluginFiles.has(e.getSourceFile().fileName);
-      if (generic || packageParam) pt = this.typeOf((decl as ts.ParameterDeclaration).name);
-      // A parameter typed from type parameters (`handler: Delegate[K]`, core's too) is untyped in Kotlin, whatever this call instantiates.
-      else if (decl && ts.isParameter(decl) && decl.type && pt !== 'Any?' && this.untypedGeneric(decl.type)) pt = 'Any?';
-      // Library mode: an override's parameter is the topmost declaration's, which Kotlin's signature has (`appOverride`).
-      const root = this.library && decl && ts.isParameter(decl) && ts.isMethodDeclaration(decl.parent) ? this.rootMethod(decl.parent) : null;
-      if (root && root !== decl.parent && root.parameters[k] && !root.parameters[k].dotDotDotToken) pt = this.paramType(root.parameters[k]);
-      // A plugin's object parameter is nullable in Kotlin: what is passed needs no unwrap.
-      if (decl && ts.isParameter(decl) && appDeclared && ((!!(decl.parent as ts.FunctionLikeDeclaration).body && this.states.mayBeNull(decl)) || this.states.widened(decl))) pt = optionalType(pt);
-      // Library mode: a parameter the method declares nullable in Kotlin takes what may be missing as it is.
-      else if (this.library && !isNullable(pt) && pt !== 'Any?' && !!a && this.nullableArgument(a)) pt = optionalType(pt);
-      // So does a local function's parameter its body tests (`params`).
-      else if (this.library && !isNullable(pt) && decl && ts.isParameter(decl) && ts.isVariableDeclaration(decl.parent.parent) && ts.isIdentifier(decl.name) && (this.nullableDecls.has(p) || (isNullable(this.typeOf(decl.name)) && this.truthTested(decl.name)))) pt = optionalType(pt);
-      // So does one the compiled function declares nullable (`toString(settings: …[] | null)`), whatever the checker strips.
-      else if (this.library && appDeclared && !isNullable(pt) && this.isObjectType(pt) && !['String', 'Double', 'Boolean'].includes(pt) && decl && ts.isParameter(decl) && ts.isIdentifier(decl.name) && !decl.questionToken && !decl.initializer
-        && ts.isFunctionDeclaration(decl.parent) && !decl.getSourceFile().isDeclarationFile && isNullable(this.paramType(decl))
-        && ts.isCallExpression(e) && (ts.isIdentifier(e.expression) || (ts.isPropertyAccessExpression(e.expression) && !!this.namespaceMember(e.expression)))) pt = optionalType(pt);
-      const constantDefault = !!decl && ts.isParameter(decl) && this.constantDefault(decl) && appDeclared && !this.templateParams;
-      if (decl && ts.isParameter(decl) && ['String', 'Double', 'Boolean'].includes(pt) && this.states.undefinedParameter(decl)) pt = optionalType(pt);
-      if (decl && ts.isParameter(decl) && (decl.questionToken || decl.initializer) && appDeclared && !constantDefault) pt = optionalType(pt);
-      return { pt, held: false, constantDefault, packageParam };
-    };
+    const call: CallParams = { sig, impl, params, appDeclared };
+    const slot = (k: number, a?: ts.Expression) => this.paramSlot(e, call, k, a);
     let covered = list.length;
     for (let k = 0; k < list.length; k++) {
       const a = list[k];
@@ -8054,17 +8074,7 @@ export class Translator implements AsyncTranslator {
         out.push(this.coerce(a, pt));
         continue;
       }
-      const { pt, held, constantDefault, packageParam } = slot(k, a);
-      if (held) { out.push(this.coerce(a, pt)); continue; }
-      // An argument that may be undefined where Kotlin's parameter has the constant default JavaScript would use.
-      if (constantDefault && this.typeOf(a) === optionalType(pt)) { out.push(`(${this.coerce(a, optionalType(pt))} ?: ${this.coerce((decl as ts.ParameterDeclaration).initializer!, pt)})`); continue; }
-      // Library mode: a value a library collection holds (`cache.set(key, result)` with a null result), as script stores it.
-      if (this.library && decl && isLibDeclaration(decl) && this.isObjectType(pt) && !isNullable(pt) && !['String', 'Double', 'Boolean'].includes(pt) && !isFunctionType(pt)
-          && (isNullable(this.declaredTypeOf(a) ?? this.typeOf(a)) || this.maybeUndefined(a))) { out.push(this.unchecked(pt, this.coerce(a, optionalType(pt)))); continue; }
-      // An object or a record of other values where a package's parameter takes a record of any: as script passes it.
-      const record = packageParam ? /^JSRecord<(.*)>(\??)$/.exec(pt) : null;
-      if (record && this.typeOf(a).replace(/\?$/, '') !== pt.replace(/\?$/, '')) { out.push(`${record[2] ? 'jsRecordOrNull' : 'jsRecord'}<${record[1]}>(${this.expr(a)})`); continue; }
-      out.push((pt === 'Any?' && this.untypedArrow(a)) || this.coerce(a, pt));
+      out.push(place(this.placement, a, slot(k, a)));
     }
     if (restAt >= 0 && appDeclared && covered <= restAt) out.push(`${this.restType(params[restAt])}()`);
     const decl = sig?.getDeclaration();
@@ -8125,7 +8135,7 @@ export class Translator implements AsyncTranslator {
    * array; null for any other spread.
    */
   private spreadArgs(e: ts.CallExpression | ts.NewExpression, a: ts.SpreadElement, k: number, params: ts.Symbol[], restAt: number, appDeclared: boolean,
-      slot: (k: number) => { pt: string; held: boolean; constantDefault: boolean }): string[] | null {
+      slot: (k: number) => ParamSlot): string[] | null {
     const x = a.expression;
     if (!ts.isIdentifier(x)) return null;
     const st = this.checker.getTypeAtLocation(x);
@@ -8147,16 +8157,16 @@ export class Translator implements AsyncTranslator {
     for (let i = 0; k + i < (restAt >= 0 ? restAt : k + length!); i++) {
       const s = slot(k + i);
       const el = read(i);
-      if (s.held) return null;
+      if (s.nullish) return null;
       if (!el) {
-        if (!isNullable(s.pt) && s.pt !== 'Any?') return null;
+        if (!isNullable(s.target) && s.target !== 'Any?') return null;
         out.push('null');
         continue;
       }
       const decl = params[k + i].valueDeclaration as ts.ParameterDeclaration;
-      if (s.constantDefault && isNullable(el.type)) out.push(`(${this.convert(el.code, el.type, optionalType(s.pt))} ?: ${this.coerce(decl.initializer!, s.pt)})`);
-      else if (isNullable(el.type) && !isNullable(s.pt) && s.pt !== 'Any?' && el.type !== 'Any?') return null;
-      else out.push(this.convert(el.code, el.type, s.pt));
+      if (s.constantDefault && isNullable(el.type)) out.push(`(${this.convert(el.code, el.type, optionalType(s.target))} ?: ${this.coerce(decl.initializer!, s.target)})`);
+      else if (isNullable(el.type) && !isNullable(s.target) && s.target !== 'Any?' && el.type !== 'Any?') return null;
+      else out.push(this.convert(el.code, el.type, s.target));
     }
     if (restAt < 0) return out;
     const rest = this.restType(params[restAt]), element = rest.replace(/^JSArray<(.*)>$/, '$1');
@@ -11349,6 +11359,8 @@ function returnsNull(body: ts.Node): boolean {
 
 /** A field of an object literal's class; an accessor runs functions the literal gives. */
 /** An app class's keys in `dynamicMembers`: in plan order, each present by `present` (null: always). */
+/** A call's parameters as `args` reads them: the signature it resolves to, an overload's implementation, and whether the program declares them. */
+interface CallParams { sig: ts.Signature | undefined; impl: ts.FunctionLikeDeclaration | null | undefined; params: ts.Symbol[]; appDeclared: boolean }
 interface KeyedMembers { order: string[]; present: (name: string) => string | null; ordered: boolean; appBase: boolean }
 interface KeyHierarchy { ordered: boolean; gated: boolean; expando: boolean; noted: string }
 /** An app class's keys: see `classKeys`. */
