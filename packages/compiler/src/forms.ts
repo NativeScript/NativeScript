@@ -1207,6 +1207,7 @@ export class Forms {
     if (kind === 'Array') {
       if (name === 'push' || name === 'unshift') for (const s of recvSlots()) for (const a of args) this.place(a, this.child(s, 'element'));
       if (name === 'splice') for (const s of recvSlots()) for (const a of args.slice(2)) this.place(a, this.child(s, 'element'));
+      if (name === 'fill' && args[0]) for (const s of recvSlots()) this.place(args[0], this.child(s, 'element'));
       if (name === 'concat') for (const a of args) {
         const into = this.child(this.slotFor(call), 'element'), at = c.getNonNullableType(c.getTypeAtLocation(a));
         if (c.isArrayType(at) || c.isTupleType(at)) this.placeElements(a, into, 'element', true);
