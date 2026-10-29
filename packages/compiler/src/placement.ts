@@ -2,6 +2,7 @@ import ts from 'typescript';
 import { parseNativeType, type Entry, type NativeType } from './conversion.ts';
 import type { Form } from './forms.ts';
 import type { ValueStates } from './value-states.ts';
+import { unsafeReceiver } from './lang.ts';
 
 // A value placed in a slot (review/S3-PLAN.md §2): the front both translators share, deciding which cell of the state
 // step a placement is from the value-states, before the backend's own type step. Each backend spells the cells.
@@ -492,6 +493,69 @@ function voidOperand(e: ts.Expression): ts.Expression | null {
   let x = e.expression;
   while (ts.isParenthesizedExpression(x)) x = x.expression;
   return ts.isLiteralExpression(x) || ts.isIdentifier(x) ? null : e.expression;
+}
+
+/**
+ * A member read's, call's or index's receiver as the slot it is placed in (`kind: 'receiver'`): present where the
+ * read needs it (U → P). `x` is `target` past its parentheses; `chained` where the read is `?.` of it.
+ */
+export interface ReceiverSlot {
+  kind: 'receiver';
+  target: ts.Expression;
+  x: ts.Expression;
+  key: string;
+  chained: boolean;
+}
+
+/** The receiver slot of the read of `key` that `target` is the receiver of. */
+export function receiverSlot(target: ts.Expression, key: string): ReceiverSlot {
+  let x = target;
+  while (ts.isParenthesizedExpression(x)) x = x.expression;
+  const access = target.parent;
+  const chained = (ts.isPropertyAccessExpression(access) || ts.isElementAccessExpression(access)) && !!access.questionDotToken;
+  return { kind: 'receiver', target, x, key, chained };
+}
+
+/** One cell of a `receiver`-kind slot. */
+export type ReceiverCell =
+  /** Read as the access reads it. */
+  | { cell: 'asIs' }
+  /** `code`, the receiver as it is held, made present: JavaScript's TypeError naming the key where it is missing (`isNull`: it is null there). */
+  | { cell: 'present'; code: string; isNull: boolean };
+
+/** The receiver cell of what the await `a` gives: its held value, JavaScript's TypeError where it gives nothing. */
+export function awaitedCell(a: AwaitSlot): ReceiverCell {
+  return { cell: 'present', code: a.raw, isNull: a.isNull };
+}
+
+/** What `receiverCell` reads of a translator. */
+export interface ReceiverBackend {
+  readonly checker: ts.TypeChecker;
+  readonly states: ValueStates;
+  expr(e: ts.Expression): string;
+  /** The value as it is held where it may be the program's own missing value, else null. */
+  maybeUndefined(e: ts.Expression): string | null;
+  awaited(e: ts.Expression): AwaitSlot | undefined;
+  /** A receiver the backend holds optional though its type says present, read as it is held; null where it holds it present. */
+  held(x: ts.Expression): string | null;
+  /** The backend's own cells before the shared ones. */
+  receiverBefore?(slot: ReceiverSlot): ReceiverCell | null;
+}
+
+/**
+ * `slot`'s cell: an await's held value; a receiver its type lets through though it can be missing (`unsafeReceiver`:
+ * `x!`, an array's object element) or the program may leave missing at this read (`missingAtRead`), read as it is
+ * held; else as it is.
+ */
+export function receiverCell(b: ReceiverBackend, slot: ReceiverSlot): ReceiverCell {
+  const own = b.receiverBefore?.(slot);
+  if (own) return own;
+  const { target, x, chained } = slot;
+  const awaited = chained ? undefined : b.awaited(x);
+  if (awaited) return awaitedCell(awaited);
+  const kind = unsafeReceiver(target, b.checker) ?? (chained ? null : b.states.missingAtRead(target));
+  const code = !kind ? null : ts.isNonNullExpression(x) ? (b.maybeUndefined(x.expression) ?? b.expr(x.expression)) : (b.maybeUndefined(x) ?? b.held(x));
+  return code ? { cell: 'present', code, isNull: kind === 'null' } : { cell: 'asIs' };
 }
 
 /**
