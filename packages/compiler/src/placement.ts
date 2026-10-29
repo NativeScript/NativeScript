@@ -408,3 +408,28 @@ function voidOperand(e: ts.Expression): ts.Expression | null {
   while (ts.isParenthesizedExpression(x)) x = x.expression;
   return ts.isLiteralExpression(x) || ts.isIdentifier(x) ? null : e.expression;
 }
+
+/**
+ * The value an `await` resumes its continuation with (`kind: 'await'`), where the promise may resolve with nothing its
+ * type has (a non-strict app's async call): held optional as `raw`, the continuation's parameter. Reads of the await
+ * place that held value (U), so a member read of it is JavaScript's TypeError where nothing came.
+ */
+export interface AwaitSlot {
+  kind: 'await';
+  /** The continuation parameter's type: the optional of the await's type. */
+  target: string;
+  type: NativeType;
+  a: ts.AwaitExpression;
+  raw: string;
+  /** The async function gives only null where it gives nothing (`nullResult`): its empty is null, not undefined. */
+  isNull: boolean;
+}
+
+/** `a`'s await slot where its operand is a non-strict app's async call (`lenientAsyncCall`) of a type `holds`, else null. */
+export function awaitSlot(b: Pick<PlacementBackend, 'states' | 'typeOf' | 'optionalType'>, a: ts.AwaitExpression, raw: string, holds: (type: string) => boolean): AwaitSlot | null {
+  if (!b.states.lenientAsyncCall(a.expression)) return null;
+  const type = b.typeOf(a);
+  if (!holds(type)) return null;
+  const target = b.optionalType(type);
+  return { kind: 'await', target, type: parseNativeType(target), a, raw, isNull: b.states.nullResult(a) };
+}
