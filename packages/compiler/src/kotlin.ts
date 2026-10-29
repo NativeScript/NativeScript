@@ -8,7 +8,7 @@ import { assignedValues, openSpreadType, spreadsArrays, definitelyAssignedFields
 import { memberName } from './stable-names.ts';
 import { shadowConversions } from './conversion-shadow.ts';
 import { parseNativeType, type Mark, type Value } from './conversion.ts';
-import { argumentSlot, awaitSlot, conditionCell, type ConditionBackend, negatedCell, type AwaitSlot, isEnumObject, place, resultSlot, returnCell, type ParamSlot, type PlacementBackend, type ResultSlot, type ReturnBackend, type ReturnCell, type Store, type StoreSlot, assignedTo, codeStoreSlot, placeCode, storeSlot } from './placement.ts';
+import { argumentSlot, awaitSlot, conditionCell, type ConditionBackend, negatedCell, type AwaitSlot, isEnumObject, place, resultSlot, returnCell, type ParamSlot, type PlacementBackend, type ResultSlot, type ReturnBackend, type ReturnCell, type Store, type StoreSlot, assignedTo, codeStoreSlot, placeCode, storeSlot, emptyComparison, observerSlot, scriptComparison } from './placement.ts';
 import { convertedRead, onlyNull, ValueStates, type StateBackend } from './value-states.ts';
 import type { Form } from './forms.ts';
 import { isCoreDeclaration } from './core.ts';
@@ -6230,6 +6230,7 @@ export class Translator implements AsyncTranslator {
         return held ? null : this.nullishFunction(e);
       },
       argument: (e, slot) => this.argumentCell(e, slot),
+      observed: (e) => this.observed(e),
       branches: (bare, target) => {
         const fixed = this.staticTruth(bare.condition);
         if (fixed !== undefined) return this.coerce(fixed ? bare.whenTrue : bare.whenFalse, target);
@@ -7803,6 +7804,11 @@ export class Translator implements AsyncTranslator {
     if (this.library) return null;
     const holder = ts.findAncestor(e.parent, (p) => !ts.isParenthesizedExpression(p));
     return holder && ts.isVariableDeclaration(holder) ? this.widerAsserted(holder) : null;
+  }
+
+  /** `x` read by an equality or `typeof` (`ObserverSlot`). */
+  private observe(x: ts.Expression, read: 'untyped' | 'asIs' = 'untyped'): string {
+    return place(this.placement, x, observerSlot(read));
   }
 
   /**
@@ -10047,7 +10053,7 @@ export class Translator implements AsyncTranslator {
     // A parameter callers give other values than its type (`typeTested`): what it holds, never its declared type's.
     const tested = ts.isIdentifier(e.expression) ? this.resolve(e.expression)?.valueDeclaration : undefined;
     if (tested && ts.isParameter(tested) && (this.typeTested(tested) || this.untypedNarrowed(tested))) return `jsTypeof(${ident((e.expression as ts.Identifier).text)})`;
-    if (this.states.nullDistinct(e.expression)) return `jsTypeof(${this.coerce(e.expression, 'Any?')})`;
+    if (this.states.nullDistinct(e.expression)) return `jsTypeof(${this.observe(e.expression)})`;
     const t = this.typeOf(e.expression);
     const base = t.replace(/\?$/, '');
     if (base === 'Unit') return '"undefined"';
@@ -10063,7 +10069,7 @@ export class Translator implements AsyncTranslator {
     // A value that may be missing: the runtime's typeof, as a test before it may already prove it present.
     if (maybe) return `jsTypeof(${maybe})`;
     if (!t.endsWith('?') && this.heldNullable(e.expression, t)) return this.rawTypeof(e.expression);
-    if (!t.endsWith('?') && this.states.missingObject(e.expression)) return `jsTypeof(${this.observed(e.expression)})`;
+    if (!t.endsWith('?') && this.states.missingObject(e.expression)) return `jsTypeof(${this.observe(e.expression, 'asIs')})`;
     return t.endsWith('?') ? `jsTypeof(${this.expr(e.expression)})` : kotlinString(known);
   }
 
@@ -10471,11 +10477,8 @@ export class Translator implements AsyncTranslator {
     const lt = this.typeOf(a);
     const rt = this.typeOf(b);
     // A `T | null` value compared strictly with undefined, or a `T | undefined` one with null: never the same.
-    if (strict && isNullish(a) !== isNullish(b)) {
-      const [x, n] = isNullish(b) ? [a, b] : [b, a];
-      if (n.kind !== K.NullKeyword ? this.states.nullDistinct(x) : this.states.nullishRead(x) || this.states.nullishElementRead(x) || this.states.nullableEntry(x, () => this.coerceTyped(x, 'Any?'))) return `${negate ? '!' : ''}jsStrictEquals(${this.coerce(x, 'Any?')}, ${n.kind === K.NullKeyword ? 'jsNull' : 'null'})`;
-      if (n.kind === K.NullKeyword && this.states.nilIsUndefined(x)) return `${negate ? '!' : ''}jsStrictEquals(${this.coerce(x, 'Any?')}, jsNull)`;
-    }
+    const empty = emptyComparison(this.placement, e);
+    if (empty?.cell === 'empty') return `${negate ? '!' : ''}jsStrictEquals(${this.observe(empty.x)}, ${empty.isNull ? 'jsNull' : 'null'})`;
     const maybe = isNullish(b) ? this.maybeUndefined(a) : isNullish(a) ? this.maybeUndefined(b) : null;
     if (maybe) return `${maybe} ${negate ? '!=' : '=='} null`;
     // A value its type calls present that script may still leave out (a field core never set): tested as it is.
@@ -10488,15 +10491,12 @@ export class Translator implements AsyncTranslator {
     };
     if (isNullish(b) && lt !== 'Any?') return absent(a, lt);
     if (isNullish(a) && rt !== 'Any?') return absent(b, rt);
-    const generic = (x: string) => /^[A-Z]\??$/.test(x);
-    if (lt === 'Any?' || rt === 'Any?' || generic(lt) || generic(rt) || (lt !== rt && lt.replace(/\?$/, '') !== rt.replace(/\?$/, ''))) {
-      if (!strict && (isNullish(a) || isNullish(b))) return `${negate ? '!' : ''}jsIsNullish(${this.coerce(isNullish(a) ? b : a, 'Any?')})`;
-      const fn = strict ? 'jsStrictEquals' : 'jsLooseEquals';
-      return `${negate ? '!' : ''}${fn}(${this.coerce(a, 'Any?')}, ${this.coerce(b, 'Any?')})`;
-    }
+    const script = scriptComparison(this.placement, e, (_, t) => /^[A-Z]\??$/.test(t));
+    if (script?.cell === 'nullish') return `${negate ? '!' : ''}jsIsNullish(${this.observe(script.x)})`;
+    if (script) return `${negate ? '!' : ''}${strict ? 'jsStrictEquals' : 'jsLooseEquals'}(${this.observe(a)}, ${this.observe(b)})`;
     // A function reference (`::fn`) is made where it is read, equal to every other of its function: compared by equality.
     const fnType = (t: string) => isFunctionType(t.replace(/^\((.*)\)\?$/, '$1'));
-    if (this.isObjectRef(a) && this.isObjectRef(b) && !fnType(lt) && !fnType(rt)) return `${this.observed(a)} ${negate ? '!==' : '==='} ${this.observed(b)}`;
+    if (this.isObjectRef(a) && this.isObjectRef(b) && !fnType(lt) && !fnType(rt)) return `${this.observe(a, 'asIs')} ${negate ? '!==' : '==='} ${this.observe(b, 'asIs')}`;
     // An adaptation (`JSAdapted`) is its original either way round, which `==` on the original does not see.
     if (fnType(lt) || fnType(rt)) return `${negate ? '!' : ''}jsStrictEquals(${this.expr(a)}, ${this.expr(b)})`;
     return `${this.expr(a)} ${negate ? '!=' : '=='} ${this.expr(b)}`;
