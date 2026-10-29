@@ -261,12 +261,15 @@ export function argumentOf(a: ts.Expression): { call: ts.CallExpression | ts.New
 
 /**
  * Where a value is stored: a variable's declaration, a class's or a shape's field, an object literal's field (`{ a }`
- * too), a parameter (its default), an assignment's target (a variable, a member, an element), or a signal's write
- * (`s.set(v)`).
+ * too), a parameter (its default), an assignment's target (a variable, a member, an element), a signal's write
+ * (`s.set(v)`), or a container's element (`ElementStore`).
  */
 export type Store = ts.VariableDeclaration | ts.PropertyDeclaration | ts.PropertySignature | ts.PropertyAssignment | ts.ShorthandPropertyAssignment | ts.ParameterDeclaration | ts.BindingElement | ts.Expression;
 
-/** A variable, a field, an object literal's field or an array's element as the slot a value is stored in. */
+/** What stores its arguments or its elements as a container's elements: an array literal, or a call adding to an array, Set or Map. */
+export type ElementStore = ts.CallExpression | ts.ArrayLiteralExpression;
+
+/** A variable, a field, an object literal's field or a container's element as the slot a value is stored in. */
 export interface StoreSlot {
   kind: 'variable' | 'field' | 'literalField' | 'element';
   /** The backend's spelling of the slot's type where the value is stored. */
@@ -284,7 +287,7 @@ export interface StoreSlot {
  * as it is (a compound assignment's operand, a signal's `set`), which enters unchecked.
  */
 export function storeSlot(b: Pick<PlacementBackend, 'library' | 'lenient' | 'states'>, target: string, at: Store, a: ts.Expression, checks = true): StoreSlot {
-  return { kind: storeKind(at), target, type: parseNativeType(target), at, ...storeEntry(b, at, a, checks) };
+  return { kind: storeKind(b.states.backend.checker, at), target, type: parseNativeType(target), at, ...storeEntry(b, at, a, checks) };
 }
 
 /**
@@ -294,7 +297,7 @@ export function storeSlot(b: Pick<PlacementBackend, 'library' | 'lenient' | 'sta
 export function codeStoreSlot(b: Pick<PlacementBackend, 'library' | 'lenient' | 'states'>, target: string, at?: ts.PropertyDeclaration | ts.PropertySignature | ts.PropertyAssignment): StoreSlot | null {
   if (!at) return null;
   const checked = b.states.foreignCodeStore(at);
-  return { kind: storeKind(at), target, type: parseNativeType(target), at, ...(checked ? { entry: 'checked', checked } : { entry: b.library ? 'library' : b.lenient ? 'lenient' : 'typed' }) };
+  return { kind: storeKind(b.states.backend.checker, at), target, type: parseNativeType(target), at, ...(checked ? { entry: 'checked', checked } : { entry: b.library ? 'library' : b.lenient ? 'lenient' : 'typed' }) };
 }
 
 /** An untyped value only the backend's code has (`code`), stored in `slot`: its checked cell where the slot's entry is checked, else null for the backend's own conversion. */
@@ -309,7 +312,7 @@ export function placeCode(b: PlacementBackend, code: string, slot: StoreSlot | n
  */
 export function bindingSlot(b: Pick<PlacementBackend, 'library' | 'lenient' | 'states'>, target: string, at: ts.BindingElement | ts.Expression): StoreSlot {
   const checked = b.states.foreignBinding(at);
-  return { kind: storeKind(at), target, type: parseNativeType(target), at, ...(checked ? { entry: 'checked', checked } : { entry: b.library ? 'library' : b.lenient ? 'lenient' : 'typed' }) };
+  return { kind: storeKind(b.states.backend.checker, at), target, type: parseNativeType(target), at, ...(checked ? { entry: 'checked', checked } : { entry: b.library ? 'library' : b.lenient ? 'lenient' : 'typed' }) };
 }
 
 /**
@@ -360,7 +363,8 @@ export function storeEntry(b: Pick<PlacementBackend, 'library' | 'lenient' | 'st
   return checked ? { entry: 'checked', checked } : { entry: b.library ? 'library' : b.lenient ? 'lenient' : 'typed' };
 }
 
-function storeKind(at: Store): StoreSlot['kind'] {
+function storeKind(checker: ts.TypeChecker, at: Store): StoreSlot['kind'] {
+  if (isElementStore(checker, at)) return 'element';
   if (ts.isVariableDeclaration(at) || ts.isParameter(at) || ts.isBindingElement(at)) return 'variable';
   if (ts.isPropertyDeclaration(at) || ts.isPropertySignature(at) || ts.isCallExpression(at)) return 'field';
   if (ts.isPropertyAssignment(at) || ts.isShorthandPropertyAssignment(at)) return 'literalField';
@@ -382,6 +386,37 @@ export function storeOf(a: ts.Expression): Store | null {
   if ((ts.isVariableDeclaration(p) || ts.isPropertyDeclaration(p) || ts.isPropertyAssignment(p)) && p.initializer === x) return p;
   if (ts.isShorthandPropertyAssignment(p) && p.name === x) return p;
   return ts.isBinaryExpression(p) && STORING.has(p.operatorToken.kind) && p.right === x ? p.left : null;
+}
+
+/**
+ * The array literal or call that stores `a`, past parentheses, as an element of a container: the literal's element,
+ * `push`/`unshift`'s arguments, `splice`'s items, `fill`'s value, a Set's `add` or a Map's `set` value. Null where `a`
+ * is none.
+ */
+export function elementStoreOf(checker: ts.TypeChecker, a: ts.Expression): ElementStore | null {
+  let x: ts.Node = a;
+  while (ts.isParenthesizedExpression(x.parent)) x = x.parent;
+  const p = x.parent;
+  if (ts.isArrayLiteralExpression(p)) return p;
+  if (!ts.isCallExpression(p) || p.expression === x || !ts.isPropertyAccessExpression(p.expression)) return null;
+  const k = p.arguments.indexOf(x as ts.Expression), method = p.expression.name.text;
+  const kind = containerKind(checker, p.expression.expression);
+  const stores = kind === 'Array' ? method === 'push' || method === 'unshift' || (method === 'splice' && k >= 2) || (method === 'fill' && k === 0)
+    : kind === 'Set' ? method === 'add' && k === 0 : kind === 'Map' && method === 'set' && k === 1;
+  return stores ? p : null;
+}
+
+/** Whether `at` is a container's store (`elementStoreOf`), not a signal's write (`s.set(v)`), which is a call too. */
+export function isElementStore(checker: ts.TypeChecker, at: Store): at is ElementStore {
+  return ts.isArrayLiteralExpression(at) || (ts.isCallExpression(at) && ts.isPropertyAccessExpression(at.expression) && !!containerKind(checker, at.expression.expression));
+}
+
+/** Whether `e` is an array, a Set or a Map, by its type. */
+export function containerKind(checker: ts.TypeChecker, e: ts.Expression): 'Array' | 'Set' | 'Map' | null {
+  const t = checker.getNonNullableType(checker.getTypeAtLocation(e));
+  if (checker.isArrayType(t)) return 'Array';
+  const kind = t.getSymbol()?.name;
+  return kind === 'Set' || kind === 'Map' ? kind : null;
 }
 
 /** Whether `a` is the value an assignment stores in `left` as it is (`storeOf`): a compound assignment's operand, or one of an assignment the translation made from another, is not. */
