@@ -14,6 +14,7 @@ import { profile } from './styling-profile';
 import { Keyframes, KeyframeAnimationInfo, KeyframeAnimation } from '../animation/keyframe-animation';
 
 import { CssAnimationParser } from './css-animation-parser';
+import { evaluateSupportsCondition } from './css-supports';
 import { sanitizeModuleName } from '../../utils/common';
 import { resolveModuleName } from '../../module-name-resolver';
 import { cssTreeParse } from '../../css/css-tree-parser';
@@ -447,6 +448,11 @@ export function _populateRules(nodes: ReworkCSS.Node[], rulesets: RuleSet[], key
 			}
 
 			_populateRules(node.rules, rulesets, keyframes, compositeMediaQuery);
+		} else if (isSupports(node)) {
+			// Flattened in place so the rules keep their source order against the rest of the sheet.
+			if (evaluateSupportsCondition(node.supports)) {
+				_populateRules(node.rules, rulesets, keyframes, mediaQueryString);
+			}
 		} else if (isRule(node)) {
 			const ruleset = fromAstNode(node);
 			ruleset.mediaQueryString = mediaQueryString;
@@ -1461,6 +1467,10 @@ function isParentDirectory(uriPart: string): boolean {
 
 function isMedia(node: ReworkCSS.Node): node is ReworkCSS.Media {
 	return node.type === 'media';
+}
+
+function isSupports(node: ReworkCSS.Node): node is ReworkCSS.Supports {
+	return node.type === 'supports';
 }
 
 function isKeyframe(node: ReworkCSS.Node): node is ReworkCSS.Keyframes {

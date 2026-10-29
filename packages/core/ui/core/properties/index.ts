@@ -14,6 +14,8 @@ export { unsetValue } from './property-shared';
 const cssPropertyNames: string[] = [];
 const cssShorthandConverters = new Map<string, (value: string) => [any, any][]>();
 const cssShorthandLonghands = new Map<string, string[]>();
+/** Value converter of every `CssProperty` by css name; `undefined` when the value is taken as-is. */
+const cssValueConverters = new Map<string, ((value: string) => any) | undefined>();
 const HAS_OWN = Object.prototype.hasOwnProperty;
 const symbolPropertyMap = {};
 const cssSymbolPropertyMap = {};
@@ -192,6 +194,44 @@ export function _expandCssShorthand(cssName: string, value: string): [string, an
 		Trace.write(`Failed to expand shorthand [${cssName}] with value [${value}]. ${e}`, Trace.categories.Style, Trace.messageType.warn);
 
 		return undefined;
+	}
+}
+
+/**
+ * Whether a `@supports` declaration test passes: core knows the css property and
+ * its converter accepts the value. `undefined` when the property is unknown.
+ */
+export function _isCssDeclarationSupported(cssName: string, value: string): boolean | undefined {
+	if (isCssVariable(cssName)) {
+		return true;
+	}
+
+	let converter: ((value: string) => any) | undefined;
+	if (cssValueConverters.has(cssName)) {
+		converter = cssValueConverters.get(cssName);
+	} else if (cssShorthandConverters.has(cssName)) {
+		converter = cssShorthandConverters.get(cssName);
+	} else {
+		const animationProperty = CssAnimationProperty._getByCssName(cssName);
+		if (!animationProperty) {
+			return undefined;
+		}
+
+		converter = animationProperty._valueConverter;
+	}
+
+	// var() and calc() only resolve per view, so they cannot be rejected up front.
+	if (!converter || isCssWideKeyword(value) || isCssVariableExpression(value) || isCssCalcExpression(value)) {
+		return true;
+	}
+
+	try {
+		const converted = converter(value);
+
+		// Some numeric converters are a bare parseFloat.
+		return !(typeof converted === 'number' && isNaN(converted));
+	} catch {
+		return false;
 	}
 }
 
@@ -761,6 +801,9 @@ export class CssProperty<T extends Style, U> {
 		let valueChanged = options.valueChanged;
 		let valueConverter = options.valueConverter;
 		let overrideConverter = false;
+		if (options.cssName) {
+			cssValueConverters.set(options.cssName, valueConverter);
+		}
 
 		this.overrideHandlers = function (options: CssPropertyOptions<T, U>) {
 			if (typeof options.equalityComparer !== 'undefined') {
@@ -775,6 +818,9 @@ export class CssProperty<T extends Style, U> {
 			if (typeof options.valueConverter !== 'undefined') {
 				valueConverter = options.valueConverter;
 				overrideConverter = true;
+				if (property.cssLocalName) {
+					cssValueConverters.set(property.cssLocalName, valueConverter);
+				}
 			}
 		};
 
@@ -1255,6 +1301,9 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
 			if (typeof options.valueConverter !== 'undefined') {
 				valueConverter = options.valueConverter;
 				overrideConverter = true;
+				if (property.cssLocalName) {
+					cssValueConverters.set(property.cssLocalName, valueConverter);
+				}
 			}
 		};
 

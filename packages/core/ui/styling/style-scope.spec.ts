@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 
-import { StyleScope, applyInlineStyle, addTaggedAdditionalCSS, removeTaggedAdditionalCSS } from './style-scope';
+import { StyleScope, applyInlineStyle, addTaggedAdditionalCSS, removeTaggedAdditionalCSS, _populateRules } from './style-scope';
+import { parse as parseRework } from '../../css/lib/parse';
 import { StackLayout } from '../layouts/stack-layout';
 import { Label } from '../label';
 
@@ -242,6 +243,53 @@ describe('CssState.setPropertyValues', () => {
 		view._cssState.onLoaded();
 
 		expect(view.style.color.toString()).toBe('#FF0000');
+	});
+});
+
+describe('@supports', () => {
+	function colorOf(css: string): string {
+		const { view } = styled(css);
+		view._cssState.onLoaded();
+
+		return view.style.color?.toString();
+	}
+
+	it('lets a supported block override the fallback before it', () => {
+		expect(colorOf('label { color: red; } @supports (color: color-mix(in srgb, blue 50%, blue)) { label { color: blue; } }')).toBe('#0000FF');
+	});
+
+	it('keeps the source position of the block, so a later rule still wins', () => {
+		expect(colorOf('@supports (color: red) { label { color: blue; } } label { color: red; }')).toBe('#FF0000');
+	});
+
+	it('drops the rules of an unsupported block', () => {
+		expect(colorOf('label { color: red; } @supports (display: grid) { label { color: blue; } }')).toBe('#FF0000');
+	});
+
+	it('applies a negated unsupported block', () => {
+		expect(colorOf('label { color: red; } @supports not (display: grid) { label { color: blue; } }')).toBe('#0000FF');
+	});
+
+	it('evaluates blocks nested in @media and @media nested in blocks', () => {
+		expect(colorOf('label { color: red; } @media (min-width: 0) { @supports (color: red) { label { color: blue; } } }')).toBe('#0000FF');
+		expect(colorOf('label { color: red; } @supports (color: red) { @media (min-width: 0) { label { color: blue; } } }')).toBe('#0000FF');
+		expect(colorOf('label { color: red; } @supports (color: red) { @supports (display: grid) { label { color: blue; } } }')).toBe('#FF0000');
+	});
+
+	it('collects keyframes declared inside a supported block', () => {
+		const { scope } = styled('@supports (color: red) { @keyframes fade { from { opacity: 0; } to { opacity: 1; } } }');
+		scope.ensureSelectors();
+
+		expect(scope.getKeyframeAnimationWithName('fade')).toBeTruthy();
+	});
+
+	it('evaluates the rework AST shape', () => {
+		const rulesets = [];
+		const keyframes = [];
+		const ast = parseRework('label { color: red; } @supports (color: red) { label { color: blue; } } @supports (display: grid) { label { color: green; } }', {});
+		_populateRules(ast.stylesheet.rules, rulesets, keyframes);
+
+		expect(rulesets.map((r) => r.declarations[0].value)).toEqual(['red', 'blue']);
 	});
 });
 
