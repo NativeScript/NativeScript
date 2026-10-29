@@ -51,22 +51,30 @@ export interface ShapePlan {
   spread: boolean;
   /** The constructor's writes the walk predicts. */
   walked: Map<ts.Node, { field: string; first: boolean }>;
+  /**
+   * The keys an object tracks with a flag of its own (`__has_`): made at their first write, or deleted. Written fields
+   * first, then deleted ones, each in declared order, which is the order the flags are declared in.
+   */
+  flagged: ReadonlySet<string>;
 }
 
-/** What a class's plan still asks its backend (S4-1 moves these into the plan). */
+/** What a class's plan asks its backend: how it writes a class, which its own tables know. */
 export interface ShapeFacts {
   /** Fields are defined as the class starts (`useDefineForClassFields`), not assigned. */
-  defines: boolean;
-  /** The class is written with its members by name, its hierarchy rooted in none but core's. */
-  keyed(cls: ts.ClassLikeDeclaration): boolean;
+  readonly defines: boolean;
+  /** The class is written with its members by name: no component, mixin target or service only the injector makes. */
+  byName(cls: ts.ClassDeclaration): boolean;
+  /** The class's base, outside the program, is a class of core's kit and no error. */
+  kitBased(cls: ts.ClassDeclaration): boolean;
   /** A field core's property or the kit's class holds. */
   kitHeld(cls: ts.ClassLikeDeclaration, m: ts.PropertyDeclaration): boolean;
-  /** The program root keeps what script adds to its objects. */
-  expando(root: ts.ClassLikeDeclaration): boolean;
+  /** The class keeps what script adds to its objects (`JSExpando`). */
+  expando(cls: ts.ClassLikeDeclaration): boolean;
 }
 
-interface ClassKeysOf { keys: KeyState[]; depth: number; walked: ShapePlan['walked'] }
+interface ClassKeysOf { keys: KeyState[]; depth: number; walked: ShapePlan['walked']; flagged: ShapePlan['flagged'] }
 
+const plans = new WeakMap<ValueStates, Map<ts.ClassLikeDeclaration, ShapePlan | null>>();
 const ownKeys = new WeakMap<ValueStates, Map<ts.ClassLikeDeclaration, ClassKeysOf | null>>();
 const hierarchies = new WeakMap<ValueStates, Map<ts.ClassLikeDeclaration, Pick<ShapePlan, 'ordered' | 'gated' | 'noted' | 'expando'>>>();
 const deletions = new WeakMap<ValueStates, Set<ts.Declaration>>();
@@ -77,11 +85,44 @@ const classLists = new WeakMap<ValueStates, ts.ClassLikeDeclaration[]>();
  * not written by name): its keys are then its declared fields, as the backend lists them.
  */
 export function shapePlanOfClass(cls: ts.ClassLikeDeclaration, states: ValueStates, facts: ShapeFacts): ShapePlan | null {
+  let cache = plans.get(states);
+  if (!cache) plans.set(states, (cache = new Map()));
+  if (cache.has(cls)) return cache.get(cls)!;
   const own = classKeysOf(cls, states, facts);
-  if (!own) return null;
   const root = rootOf(cls, states);
-  return { kind: 'class', ...own, ...shapeHierarchy(root, states, facts), spread: false, ...(root !== cls ? { root: shapePlanOfClass(root, states, facts) ?? undefined } : {}) };
+  const plan: ShapePlan | null = own && { kind: 'class', ...own, ...shapeHierarchy(root, states, facts), spread: false, ...(root !== cls ? { root: shapePlanOfClass(root, states, facts) ?? undefined } : {}) };
+  cache.set(cls, plan);
+  return plan;
 }
+
+/** A key of a plan, by name. */
+export function keyOf(plan: ShapePlan, name: string): KeyState | undefined {
+  return plan.keys.find((k) => k.name === name);
+}
+
+/** The classes and hierarchy roots whose plans have been asked for (the shadow's records). */
+export function plannedClasses(states: ValueStates): { classes: ts.ClassLikeDeclaration[]; roots: ts.ClassLikeDeclaration[] } {
+  return { classes: [...ownKeys.get(states)?.keys() ?? []], roots: [...hierarchies.get(states)?.keys() ?? []] };
+}
+
+/** A class the class path writes with its members by name, its hierarchy rooted in none but core's: no error, component, service, mixin or native subclass. */
+export function keyedClass(cls: ts.ClassLikeDeclaration, states: ValueStates, facts: ShapeFacts): boolean {
+  const b = states.backend;
+  for (let c: ts.ClassLikeDeclaration | undefined = cls; c; c = b.programBase(c)) {
+    if (!ts.isClassDeclaration(c) || !c.name || !facts.byName(c)) return false;
+    if (extendsAny(c) && !b.programBase(c) && !facts.kitBased(c)) return false;
+  }
+  return true;
+}
+
+/** Whether the program class at the root of the class's program hierarchy keeps what script adds to its objects. */
+export function rootKeepsExpando(cls: ts.ClassLikeDeclaration, states: ValueStates, facts: ShapeFacts): boolean {
+  if (states.backend.library) return false;
+  const root = rootOf(cls, states);
+  return !extendsAny(root) && facts.expando(root);
+}
+
+const extendsAny = (c: ts.ClassLikeDeclaration) => !!c.heritageClauses?.some((h) => h.token === ts.SyntaxKind.ExtendsKeyword);
 
 function classKeysOf(cls: ts.ClassLikeDeclaration, states: ValueStates, facts: ShapeFacts): ClassKeysOf | null {
   let cache = ownKeys.get(states);
@@ -89,7 +130,7 @@ function classKeysOf(cls: ts.ClassLikeDeclaration, states: ValueStates, facts: S
   if (cache.has(cls)) return cache.get(cls)!;
   cache.set(cls, null);
   const b = states.backend, file = cls.getSourceFile();
-  if (b.lenient || b.library || file.isDeclarationFile || b.pluginFiles.has(file.fileName) || !facts.keyed(cls)) return null;
+  if (b.lenient || b.library || file.isDeclarationFile || b.pluginFiles.has(file.fileName) || !keyedClass(cls, states, facts)) return null;
   const plan = classKeyPlan(cls, facts.defines);
   const ctor = cls.members.find(ts.isConstructorDeclaration);
   const decls = new Map<string, ts.PropertyDeclaration | ts.ParameterDeclaration>();
@@ -98,18 +139,22 @@ function classKeysOf(cls: ts.ClassLikeDeclaration, states: ValueStates, facts: S
   const nulls = new Set([...states.nullFields(cls), ...states.nullFieldsTyped(cls)]);
   const deleted = deletedFields(states);
   const forms = states.forms();
+  // `kitHeld` spells field types on the way: it is asked only of the fields that may be flagged.
+  const held = new Map(plan.written.map((m) => [m, facts.kitHeld(cls, m)]));
+  const kitHeld = (d: ts.PropertyDeclaration) => held.get(d) ?? facts.kitHeld(cls, d);
   const keys = plan.order.map((name): KeyState => {
     const d = decls.get(name)!;
     const form = forms.formOfSlot(d);
-    const kitHeld = ts.isPropertyDeclaration(d) && facts.kitHeld(cls, d);
     // A field core holds is listed where the walk would have it written, never flagged.
-    const presence = plan.always.has(name) ? 'always' : plan.sure.has(name) || kitHeld ? 'sure' : 'written';
-    const deletes = !kitHeld && ts.isPropertyDeclaration(d) && deleted.has(d) && form.undefined;
+    const presence = plan.always.has(name) ? 'always' : plan.sure.has(name) || held.get(d as ts.PropertyDeclaration) ? 'sure' : 'written';
+    const deletes = ts.isPropertyDeclaration(d) && deleted.has(d) && form.undefined && !kitHeld(d);
     return { name, form, presence, deleted: deletes, nulls: nulls.has(name) ? 'noted' : 'none' };
   });
+  const flags = (n: string) => keys.some((k) => k.name === n && (k.presence === 'written' || k.deleted));
+  const flagged = new Set([...plan.written.map((m) => m.name.getText()), ...cls.members.flatMap((m) => (ts.isPropertyDeclaration(m) && ts.isIdentifier(m.name) ? [m.name.text] : []))].filter(flags));
   let depth = 0;
   for (let x = b.programBase(cls); x; x = b.programBase(x)) depth++;
-  const own = { keys, depth, walked: plan.walked };
+  const own = { keys, depth, walked: plan.walked, flagged };
   cache.set(cls, own);
   return own;
 }
@@ -121,9 +166,8 @@ export function shapeHierarchy(root: ts.ClassLikeDeclaration, states: ValueState
   const known = cache.get(root);
   if (known) return known;
   const members = [root, ...classesOf(states).filter((c) => c !== root && rootOf(c, states) === root)].flatMap((c) => classKeysOf(c, states, facts) ?? []);
-  const expando = !!classKeysOf(root, states, facts) && facts.expando(root);
-  const flagged = (k: KeyState) => k.presence === 'written' || k.deleted;
-  const ordered = members.some((m) => m.keys.some(flagged) || (expando && m.depth > 0 && m.keys.length > 0));
+  const expando = !!classKeysOf(root, states, facts) && rootKeepsExpando(root, states, facts);
+  const ordered = members.some((m) => m.flagged.size > 0 || (expando && m.depth > 0 && m.keys.length > 0));
   const gated = ordered && members.some((m) => m.depth > 0 && m.keys.some((k) => k.presence !== 'written'));
   const h = { ordered, gated, expando: ordered && expando, noted: ordered ? (expando ? 'keys' as const : 'order' as const) : null };
   cache.set(root, h);
@@ -146,7 +190,7 @@ function classesOf(states: ValueStates): ts.ClassLikeDeclaration[] {
 }
 
 /** The fields some code deletes (`delete o.field`). */
-function deletedFields(states: ValueStates): Set<ts.Declaration> {
+export function deletedFields(states: ValueStates): Set<ts.Declaration> {
   let out = deletions.get(states);
   if (out) return out;
   deletions.set(states, (out = new Set()));
@@ -193,7 +237,7 @@ export function shapePlanOfLiteral(e: ts.ObjectLiteralExpression, states: ValueS
     put({ name, form, presence: 'always', deleted: false, nulls: nulls(form), ...(accessor ? { accessor } : {}) });
   }
   const order = jsKeyOrder([...keys.keys()]);
-  return { kind: 'literal', keys: order.map((n) => keys.get(n)!), depth: 0, ordered: false, gated: false, noted: null, expando: false, spread, walked: new Map() };
+  return { kind: 'literal', keys: order.map((n) => keys.get(n)!), depth: 0, ordered: false, gated: false, noted: null, expando: false, spread, walked: new Map(), flagged: new Set() };
 }
 
 /**

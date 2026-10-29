@@ -1,13 +1,13 @@
 import { appendFileSync } from 'node:fs';
 import { relative } from 'node:path';
 import ts from 'typescript';
-import { type KeyState, type ShapeFacts, shapeHierarchy, shapePlanOfClass, shapePlanOfLiteral } from './shapes.ts';
+import { classKeyPlan, deletedFields, keyedClass, type KeyState, plannedClasses, rootKeepsExpando, type ShapeFacts, shapeHierarchy, shapePlanOfClass, shapePlanOfLiteral } from './shapes.ts';
 import type { ValueStates } from './value-states.ts';
 
-// Shadow mode (NS_SHAPE_SHADOW=<file>): each key decision a backend made (`classKeys`, `keyHierarchy`, an object
-// literal's key notes in `object()`) against the key plan shapes.ts gives the same class or literal, one JSONL record
-// per decision. It only observes: the plans, which ask the checker and the forms, are made once the process ends,
-// after every translation has run.
+// Shadow mode (NS_SHAPE_SHADOW=<file>): each key decision against the key plan shapes.ts gives the same class or
+// literal, one JSONL record per decision. A class's keys and hierarchy are checked against the decision the backends
+// made from field type strings before they read the plans (`legacyClassKeys`); a literal's against what `object()`
+// decided. It only observes: the records are made once the process ends, after every translation has run.
 
 /** What `object()` decided for a literal's keys, in its own variables. */
 export interface LiteralKeys {
@@ -57,35 +57,49 @@ function flush(): void {
       try { lines.push(JSON.stringify({ backend, site, mode, at: at(n), ...f() })); }
       catch (err) { lines.push(JSON.stringify({ backend, site, mode, at: at(n), error: (err as Error).message.slice(0, 200) })); }
     };
-    const facts = factsOf(r.translator);
-    const classKeys = r.translator.classKeySets as Map<ts.ClassLikeDeclaration, BackendClassKeys> | undefined;
-    for (const [cls, k] of classKeys ?? []) safe('class', cls, () => classRecord(cls, k, r.states, facts));
-    const hierarchies = r.translator.keyHierarchies as Map<ts.ClassLikeDeclaration, BackendHierarchy> | undefined;
-    for (const [root, h] of hierarchies ?? []) safe('hierarchy', root, () => hierarchyRecord(root, h, r.states, facts));
+    const facts = (r.translator.shapeFacts as () => ShapeFacts).call(r.translator);
+    const planned = plannedClasses(r.states), legacy = new Map<ts.ClassLikeDeclaration, BackendClassKeys>();
+    for (const cls of planned.classes) safe('class', cls, () => classRecord(cls, legacyClassKeys(cls, r.states, facts, legacy), r.states, facts));
+    for (const root of planned.roots) safe('hierarchy', root, () => hierarchyRecord(root, legacyHierarchy(root, r.states, facts, legacy), r.states, facts));
     for (const [e, k] of r.literals) safe('literal', e, () => literalRecord(e, k, r.states));
   }
   if (lines.length) appendFileSync(out, lines.join('\n') + '\n');
 }
 
-/** The backend's facts, read from its own members as `classKeys` reads them. */
-function factsOf(t: Record<string, unknown>): ShapeFacts {
-  const call = <R>(name: string, ...args: unknown[]) => (t[name] as (...a: unknown[]) => R).apply(t, args);
-  return {
-    defines: !t.assignFields,
-    keyed: (cls) => call<boolean>('keyedClass', cls),
-    kitHeld: (cls, m) => {
-      const kitRoot = call<ts.ClassLikeDeclaration | undefined>('kitRootOf', cls);
-      const core = t.core as { isKitView(c: ts.ClassLikeDeclaration): unknown } | null | undefined;
-      const properties = t.properties as { isRegistered(c: ts.ClassLikeDeclaration, n: string): boolean } | null | undefined;
-      return !!call('kitRedeclared', m) || (!!kitRoot && !!core?.isKitView(kitRoot) && !!properties?.isRegistered(cls, m.name.getText()));
-    },
-    expando: (root) => call<boolean>('appRootKeepsExpando', root),
-  };
-}
-
 interface BackendClassKeys { on: boolean; order: string[]; always: Set<string>; sure: Set<string>; written: Set<string>; flagged: Set<string>; depth: number }
 interface BackendHierarchy { ordered: boolean; gated: boolean; expando: boolean; noted: string }
 type Diff = [what: string, plan: unknown, backend: unknown];
+
+/** A class's keys as the backends decided them before they read the plan, a deleted field flagged by its type's spelling. */
+function legacyClassKeys(cls: ts.ClassLikeDeclaration, states: ValueStates, facts: ShapeFacts, memo: Map<ts.ClassLikeDeclaration, BackendClassKeys>): BackendClassKeys {
+  const known = memo.get(cls);
+  if (known) return known;
+  const b = states.backend, file = cls.getSourceFile();
+  const k: BackendClassKeys = { on: false, order: [], always: new Set(), sure: new Set(), written: new Set(), flagged: new Set(), depth: 0 };
+  memo.set(cls, k);
+  if (b.lenient || b.library || file.isDeclarationFile || b.pluginFiles.has(file.fileName) || !keyedClass(cls, states, facts)) return k;
+  const plan = classKeyPlan(cls, facts.defines);
+  Object.assign(k, { on: true, order: plan.order, always: plan.always, sure: plan.sure });
+  for (const m of plan.written) if (!facts.kitHeld(cls, m)) { k.written.add(m.name.getText()); k.flagged.add(m.name.getText()); }
+  const optional = (t: string) => t.endsWith('?') && (b.name === 'swift' || !b.functionType(t));
+  for (const m of cls.members) if (ts.isPropertyDeclaration(m) && ts.isIdentifier(m.name) && deletedFields(states).has(m) && optional(b.typeOf(m.name)) && !facts.kitHeld(cls, m)) k.flagged.add(m.name.text);
+  for (let x = b.programBase(cls); x; x = b.programBase(x)) k.depth++;
+  return k;
+}
+
+function legacyHierarchy(root: ts.ClassLikeDeclaration, states: ValueStates, facts: ShapeFacts, memo: Map<ts.ClassLikeDeclaration, BackendClassKeys>): BackendHierarchy {
+  const b = states.backend;
+  const rootOf = (c: ts.ClassLikeDeclaration) => { let r = c; for (let x = b.programBase(r); x; x = b.programBase(x)) r = x; return r; };
+  const classes: ts.ClassLikeDeclaration[] = [];
+  const visit = (n: ts.Node): void => { if (ts.isClassLike(n)) classes.push(n); ts.forEachChild(n, visit); };
+  for (const f of b.sourceFiles) if (!f.isDeclarationFile) visit(f);
+  const of = (c: ts.ClassLikeDeclaration) => legacyClassKeys(c, states, facts, memo);
+  const members = [root, ...classes.filter((c) => c !== root && rootOf(c) === root)].filter((c) => of(c).on);
+  const expando = members.includes(root) && rootKeepsExpando(root, states, facts);
+  const ordered = members.some((c) => of(c).flagged.size > 0 || (expando && of(c).depth > 0 && of(c).order.length > 0));
+  const gated = ordered && members.some((c) => of(c).depth > 0 && of(c).order.some((n) => !of(c).written.has(n)));
+  return { ordered, gated, expando: ordered && expando, noted: ordered && expando ? 'jsKeysNoted' : 'jsOrder' };
+}
 
 const names = (s: Iterable<string>) => [...s].sort().join(',');
 
@@ -101,6 +115,7 @@ function classRecord(cls: ts.ClassLikeDeclaration, k: BackendClassKeys, states: 
     compare('always', of((s) => s.presence === 'always'), k.always);
     compare('written', of((s) => s.presence === 'written'), k.written);
     compare('flagged', of((s) => s.presence === 'written' || s.deleted), k.flagged);
+    if ([...plan.flagged].join() !== [...k.flagged].join()) diffs.push(['flag order', [...plan.flagged].join(), [...k.flagged].join()]);
     if (plan.depth !== k.depth) diffs.push(['depth', plan.depth, k.depth]);
   }
   return { name, on: k.on, flagged: names(k.flagged), keys: plan?.keys.map((s) => `${s.name}:${s.presence}${s.deleted ? ':deleted' : ''}${s.nulls === 'noted' ? ':null' : ''}`).join(',') ?? null, diffs };
