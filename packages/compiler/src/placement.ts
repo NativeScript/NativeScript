@@ -225,7 +225,9 @@ export function returnCell(b: ReturnBackend, e: ts.Expression | undefined, slot:
   const plain = !given.optional && !given.implicit;
   const call = ts.isCallExpression(e);
   if (!body && call && plain && given.kind === 'never') return { step: 'never', e };
+  const effect = voidOperand(e);
   if (slot.type.kind === 'void' && !slot.type.optional) {
+    if (effect) return { step: 'drop', e: effect };
     const code = isNullishLiteral(e) ? b.emptyReturn(e, slot) : null;
     return code !== null ? { step: 'empty', code, e } : { step: 'drop', e };
   }
@@ -235,7 +237,7 @@ export function returnCell(b: ReturnBackend, e: ts.Expression | undefined, slot:
   }
   if (!body && isNullishLiteral(e)) {
     const code = b.emptyReturn(e, slot);
-    if (code !== null) return { step: 'empty', code, e };
+    if (code !== null) return effect ? { step: 'voidCall', e: effect, empty: code } : { step: 'empty', code, e };
   }
   return { step: 'value', e };
 }
@@ -244,4 +246,13 @@ export function returnCell(b: ReturnBackend, e: ts.Expression | undefined, slot:
 export function isNullishLiteral(e: ts.Expression): boolean {
   while (ts.isParenthesizedExpression(e)) e = e.expression;
   return e.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(e) && e.text === 'undefined') || ts.isVoidExpression(e);
+}
+
+/** The operand of `void x` where evaluating it may do something (not a literal or a name), else null. */
+function voidOperand(e: ts.Expression): ts.Expression | null {
+  while (ts.isParenthesizedExpression(e)) e = e.expression;
+  if (!ts.isVoidExpression(e)) return null;
+  let x = e.expression;
+  while (ts.isParenthesizedExpression(x)) x = x.expression;
+  return ts.isLiteralExpression(x) || ts.isIdentifier(x) ? null : e.expression;
 }
