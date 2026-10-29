@@ -21,15 +21,31 @@ export interface KeyState {
   presence: 'always' | 'sure' | 'written' | 'maybe';
   /** Some code deletes it (`delete o.f`), which may end the key whatever its presence. */
   deleted: boolean;
-  /** `noted`: its nil may be null, which the shape notes beside it (`jsNulls`). `nullish` is S4-2's Q2 (b), unused. */
-  nulls: 'none' | 'noted' | 'nullish';
+  /**
+   * `noted`: its nil may be null, which the shape notes beside it (`jsNulls`). `nil`: its nil is null (strict code's
+   * `T | null` field that starts with a value). `noted+nil`: both, where each renderer keeps its own order of the two.
+   * `nullish` is S4-2's Q2 (b), unused.
+   */
+  nulls: Nulls;
   /** A descriptor `Object.defineProperty` may give it (S4-5). */
   defined?: 'accessor' | 'readonly' | 'hidden' | 'fixed' | 'any';
   accessor?: { get: boolean; set: boolean };
 }
 
+export type Nulls = 'none' | 'noted' | 'nil' | 'noted+nil' | 'nullish';
+
+/** The shape notes the key's null beside it (`jsNulls`). */
+export const notesNull = (n: Nulls | undefined): boolean => n === 'noted' || n === 'noted+nil';
+/** The key's nil reads as null. */
+export const nilIsNull = (n: Nulls | undefined): boolean => n === 'nil' || n === 'noted+nil';
+
 export interface ShapePlan {
   kind: 'class' | 'literal' | 'interface';
+  /**
+   * A class's keys are rendered from the plan. An unkeyed class's plan holds its declared fields for their null state
+   * only: its presence, order and flags mean nothing, and no key reader may see it.
+   */
+  keyed: boolean;
   /** In the order JavaScript makes them: the constructor's walk for a class; spreads' keys, then new ones, for a literal. */
   keys: KeyState[];
   /** A class's program bases. */
@@ -56,6 +72,10 @@ export interface ShapePlan {
    * first, then deleted ones, each in declared order, which is the order the flags are declared in.
    */
   flagged: ReadonlySet<string>;
+  /** Every declared field's null state by name, keys or not: a static or `declare` field is no key but may be noted. */
+  fieldNulls: ReadonlyMap<string, Nulls>;
+  /** The class declares its objects' `jsNulls`: it notes a field and no program base does (one `jsNulls` per object). */
+  declaresNulls: boolean;
 }
 
 /** What a class's plan asks its backend: how it writes a class, which its own tables know. */
@@ -81,18 +101,70 @@ const deletions = new WeakMap<ValueStates, Set<ts.Declaration>>();
 const classLists = new WeakMap<ValueStates, ts.ClassLikeDeclaration[]>();
 
 /**
- * An app class's key plan, or null where the class has none (library, lenient or plugin code, a declaration, a class
- * not written by name): its keys are then its declared fields, as the backend lists them.
+ * An app class's plan, or null for library, lenient or plugin code and declarations. A class not written by name gets
+ * an unkeyed plan (`keyed: false`): its keys are its declared fields, as the backend lists them.
  */
 export function shapePlanOfClass(cls: ts.ClassLikeDeclaration, states: ValueStates, facts: ShapeFacts): ShapePlan | null {
   let cache = plans.get(states);
   if (!cache) plans.set(states, (cache = new Map()));
   if (cache.has(cls)) return cache.get(cls)!;
+  const b = states.backend, file = cls.getSourceFile();
+  if (b.lenient || b.library || file.isDeclarationFile || b.pluginFiles.has(file.fileName)) { cache.set(cls, null); return null; }
   const own = classKeysOf(cls, states, facts);
   const root = rootOf(cls, states);
-  const plan: ShapePlan | null = own && { kind: 'class', ...own, ...shapeHierarchy(root, states, facts), spread: false, ...(root !== cls ? { root: shapePlanOfClass(root, states, facts) ?? undefined } : {}) };
+  const nulls = { fieldNulls: classNulls(cls, states), declaresNulls: declaresNulls(cls, states) };
+  const plan: ShapePlan = own
+    ? { kind: 'class', keyed: true, ...own, ...shapeHierarchy(root, states, facts), spread: false, ...nulls, ...(root !== cls ? { root: shapePlanOfClass(root, states, facts) ?? undefined } : {}) }
+    : { kind: 'class', keyed: false, keys: unkeyedFields(cls, states, nulls.fieldNulls), depth: 0, ordered: false, gated: false, noted: null, expando: false, spread: false, walked: new Map(), flagged: new Set(), ...nulls };
   cache.set(cls, plan);
   return plan;
+}
+
+/** An unkeyed class's declared fields: parameter properties, then instance fields, in declared order. */
+function unkeyedFields(cls: ts.ClassLikeDeclaration, states: ValueStates, nulls: ReadonlyMap<string, Nulls>): KeyState[] {
+  const ctor = cls.members.find(ts.isConstructorDeclaration);
+  const decls = [...(ctor?.parameters.filter((p) => ts.isParameterPropertyDeclaration(p, ctor)) ?? []), ...cls.members.filter((m): m is ts.PropertyDeclaration => ts.isPropertyDeclaration(m) && !hasStatic(m))];
+  const forms = states.forms();
+  return decls.flatMap((d): KeyState[] => (ts.isIdentifier(d.name) ? [{ name: d.name.text, form: forms.formOfSlot(d), presence: 'always', deleted: false, nulls: nulls.get(d.name.text) ?? 'none' }] : []));
+}
+
+const nullTables = new WeakMap<ValueStates, Map<ts.ClassLikeDeclaration, ReadonlyMap<string, Nulls>>>();
+
+/** A class's fields' null states: `ValueStates.nullFields` noted, `nullFieldsTyped` nil. */
+function classNulls(cls: ts.ClassLikeDeclaration, states: ValueStates): ReadonlyMap<string, Nulls> {
+  let cache = nullTables.get(states);
+  if (!cache) nullTables.set(states, (cache = new Map()));
+  const known = cache.get(cls);
+  if (known) return known;
+  const out = new Map<string, Nulls>();
+  const noted = states.nullFields(cls), nil = states.nullFieldsTyped(cls);
+  for (const n of noted) out.set(n, nil.has(n) ? 'noted+nil' : 'noted');
+  for (const n of nil) if (!noted.has(n)) out.set(n, 'nil');
+  cache.set(cls, out);
+  return out;
+}
+
+function declaresNulls(cls: ts.ClassLikeDeclaration, states: ValueStates): boolean {
+  const b = states.backend;
+  if (!states.nullFields(cls).size) return false;
+  for (let base = b.programBase(cls); base; base = b.programBase(base)) if (states.nullFields(base).size) return false;
+  return true;
+}
+
+/**
+ * A read or write of a field its class's plan notes the null of. It reads the table the plan takes its null states
+ * from, without making the plan: a read site may come before the backend tables a key plan asks (`ShapeFacts`) are full.
+ */
+export function notedField(states: ValueStates, e: ts.Expression): e is ts.PropertyAccessExpression {
+  if (!ts.isPropertyAccessExpression(e) || e.questionDotToken || e.expression.kind === ts.SyntaxKind.SuperKeyword) return false;
+  const d = states.backend.checker.getSymbolAtLocation(e.name)?.valueDeclaration;
+  const cls = d && (ts.isPropertyDeclaration(d) ? d.parent : ts.isParameter(d) && ts.isParameterPropertyDeclaration(d, d.parent) ? d.parent.parent : null);
+  return !!cls && ts.isClassLike(cls) && notesNull(classNulls(cls, states).get(e.name.text));
+}
+
+/** The names of a plan's fields whose null state passes `test`. */
+export function nullNames(plan: ShapePlan | null, test: (n: Nulls) => boolean): Set<string> {
+  return new Set(plan ? [...plan.fieldNulls].filter(([, n]) => test(n)).map(([name]) => name) : []);
 }
 
 /** A key of a plan, by name. */
@@ -136,7 +208,7 @@ function classKeysOf(cls: ts.ClassLikeDeclaration, states: ValueStates, facts: S
   const decls = new Map<string, ts.PropertyDeclaration | ts.ParameterDeclaration>();
   for (const p of ctor?.parameters ?? []) if (ts.isParameterPropertyDeclaration(p, ctor!) && ts.isIdentifier(p.name)) decls.set(p.name.text, p);
   for (const m of cls.members) if (ts.isPropertyDeclaration(m) && ts.isIdentifier(m.name) && !hasStatic(m) && !decls.has(m.name.text)) decls.set(m.name.text, m);
-  const nulls = new Set([...states.nullFields(cls), ...states.nullFieldsTyped(cls)]);
+  const nulls = classNulls(cls, states);
   const deleted = deletedFields(states);
   const forms = states.forms();
   // `kitHeld` spells field types on the way: it is asked only of the fields that may be flagged.
@@ -148,7 +220,7 @@ function classKeysOf(cls: ts.ClassLikeDeclaration, states: ValueStates, facts: S
     // A field core holds is listed where the walk would have it written, never flagged.
     const presence = plan.always.has(name) ? 'always' : plan.sure.has(name) || held.get(d as ts.PropertyDeclaration) ? 'sure' : 'written';
     const deletes = ts.isPropertyDeclaration(d) && deleted.has(d) && form.undefined && !kitHeld(d);
-    return { name, form, presence, deleted: deletes, nulls: nulls.has(name) ? 'noted' : 'none' };
+    return { name, form, presence, deleted: deletes, nulls: nulls.get(name) ?? 'none' };
   });
   const flags = (n: string) => keys.some((k) => k.name === n && (k.presence === 'written' || k.deleted));
   const flagged = new Set([...plan.written.map((m) => m.name.getText()), ...cls.members.flatMap((m) => (ts.isPropertyDeclaration(m) && ts.isIdentifier(m.name) ? [m.name.text] : []))].filter(flags));
@@ -213,7 +285,7 @@ export function deletedFields(states: ValueStates): Set<ts.Declaration> {
 export function shapePlanOfLiteral(e: ts.ObjectLiteralExpression, states: ValueStates): ShapePlan {
   const checker = states.backend.checker, forms = states.forms();
   const keys = new Map<string, KeyState>();
-  const nulls = (form: Form | null): KeyState['nulls'] => (form && (form.null || form.foreign) ? 'noted' : 'none');
+  const nulls = (form: Form | null): Nulls => (form && (form.null || form.foreign) ? 'noted' : 'none');
   const put = (k: KeyState) => {
     const before = keys.get(k.name);
     // A spread object may lack an optional key, which leaves the earlier value.
@@ -237,7 +309,7 @@ export function shapePlanOfLiteral(e: ts.ObjectLiteralExpression, states: ValueS
     put({ name, form, presence: 'always', deleted: false, nulls: nulls(form), ...(accessor ? { accessor } : {}) });
   }
   const order = jsKeyOrder([...keys.keys()]);
-  return { kind: 'literal', keys: order.map((n) => keys.get(n)!), depth: 0, ordered: false, gated: false, noted: null, expando: false, spread, walked: new Map(), flagged: new Set() };
+  return { kind: 'literal', keyed: true, keys: order.map((n) => keys.get(n)!), depth: 0, ordered: false, gated: false, noted: null, expando: false, spread, walked: new Map(), flagged: new Set(), fieldNulls: new Map(), declaresNulls: false };
 }
 
 /**

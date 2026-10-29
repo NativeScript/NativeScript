@@ -1218,7 +1218,7 @@ export function nullishSlots(checker: ts.TypeChecker, files: readonly ts.SourceF
     if (ts.canHaveDecorators(fn) && ts.getDecorators(fn)?.length) { refuseBoth(fn, 'a decorated member'); continue; }
     for (const p of fn.parameters) {
       if (!named(p)) continue;
-      // A parameter property's field is held as a field (`ValueStates.nullFields`); its parameter only by its form.
+      // A parameter property's field is held as a field (`KeyState.nulls`); its parameter only by its form.
       if (ts.isConstructorDeclaration(fn) && ts.isParameterPropertyDeclaration(p, fn)) { const t = typeOf(p); if (formHeld(p, t) || (both(t) && oneKind(t) && value(t) && formBoth(p))) held.add(p); continue; }
       hold(p, typeOf(p));
     }

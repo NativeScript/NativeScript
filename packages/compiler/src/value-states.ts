@@ -510,6 +510,7 @@ export class ValueStates {
   /**
    * A non-strict app's fields its code sets to null (`colors: string[] = null`, `this.indices = h.length ? h : null`): the
    * native empty value is undefined, so the class notes which hold null (`jsNulls`), and they are written by name, which notes it.
+   * The class plan's null states read it (shapes.ts `KeyState.nulls`); backends read the plan.
    */
   nullFields(cls: ts.ClassLikeDeclaration): Set<string> {
     let set = this.nullFieldSets.get(cls);
@@ -526,12 +527,6 @@ export class ValueStates {
     return set;
   }
 
-  /** One `jsNulls` per object: a class whose program base keeps one declares none of its own. */
-  baseKeepsNulls(cls: ts.ClassLikeDeclaration): boolean {
-    for (let base = this.backend.programBase(cls); base; base = this.backend.programBase(base)) if (this.nullFields(base).size) return true;
-    return false;
-  }
-
   /** Strict code's fields typed `T | null` that start with a value (an initializer, a constructor parameter's): an empty value in them is null. */
   nullFieldsTyped(cls: ts.ClassLikeDeclaration): Set<string> {
     const set = new Set<string>();
@@ -541,14 +536,6 @@ export class ValueStates {
     const given = [...cls.members.filter((m): m is ts.PropertyDeclaration => ts.isPropertyDeclaration(m) && !!m.initializer && !isStatic(m)), ...(ctor?.parameters.filter((p) => ts.isParameterPropertyDeclaration(p, ctor)) ?? [])];
     for (const m of given) if (ts.isIdentifier(m.name) && onlyNull(this.checker.getTypeAtLocation(m.name))) set.add(m.name.text);
     return set;
-  }
-
-  /** A read or write of a field `nullFields` notes. */
-  nullField(e: ts.Expression): e is ts.PropertyAccessExpression {
-    if (!ts.isPropertyAccessExpression(e) || e.questionDotToken || e.expression.kind === ts.SyntaxKind.SuperKeyword) return false;
-    const d = this.checker.getSymbolAtLocation(e.name)?.valueDeclaration;
-    const cls = d && (ts.isPropertyDeclaration(d) ? d.parent : ts.isParameter(d) && ts.isParameterPropertyDeclaration(d, d.parent) ? d.parent.parent : null);
-    return !!cls && ts.isClassLike(cls) && this.nullFields(cls).has(e.name.text);
   }
 
   /**

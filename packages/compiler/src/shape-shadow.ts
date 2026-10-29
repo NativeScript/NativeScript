@@ -1,7 +1,7 @@
 import { appendFileSync } from 'node:fs';
 import { relative } from 'node:path';
 import ts from 'typescript';
-import { classKeyPlan, deletedFields, keyedClass, type KeyState, plannedClasses, rootKeepsExpando, type ShapeFacts, shapeHierarchy, shapePlanOfClass, shapePlanOfLiteral } from './shapes.ts';
+import { classKeyPlan, deletedFields, keyedClass, type KeyState, nilIsNull, notesNull, plannedClasses, rootKeepsExpando, type ShapeFacts, shapeHierarchy, shapePlanOfClass, shapePlanOfLiteral } from './shapes.ts';
 import type { ValueStates } from './value-states.ts';
 
 // Shadow mode (NS_SHAPE_SHADOW=<file>): each key decision against the key plan shapes.ts gives the same class or
@@ -62,6 +62,8 @@ function flush(): void {
     for (const cls of planned.classes) safe('class', cls, () => classRecord(cls, legacyClassKeys(cls, r.states, facts, legacy), r.states, facts));
     for (const root of planned.roots) safe('hierarchy', root, () => hierarchyRecord(root, legacyHierarchy(root, r.states, facts, legacy), r.states, facts));
     for (const [e, k] of r.literals) safe('literal', e, () => literalRecord(e, k, r.states));
+    const b = r.states.backend;
+    if (!b.lenient && !b.library) for (const cls of allClasses(r.states)) safe('nulls', cls, () => nullsRecord(cls, r.states, facts));
   }
   if (lines.length) appendFileSync(out, lines.join('\n') + '\n');
 }
@@ -107,8 +109,8 @@ function classRecord(cls: ts.ClassLikeDeclaration, k: BackendClassKeys, states: 
   const plan = shapePlanOfClass(cls, states, facts);
   const diffs: Diff[] = [];
   const name = cls.name?.text ?? '(anonymous)';
-  if (!!plan !== k.on) diffs.push(['on', !!plan, k.on]);
-  if (plan && k.on) {
+  if (!!plan?.keyed !== k.on) diffs.push(['on', !!plan?.keyed, k.on]);
+  if (plan?.keyed && k.on) {
     const of = (p: (s: KeyState) => boolean) => plan.keys.filter(p).map((s) => s.name);
     const compare = (what: string, mine: string[], theirs: Iterable<string>) => { if (names(mine) !== names(theirs)) diffs.push([what, names(mine), names(theirs)]); };
     if (plan.keys.map((s) => s.name).join() !== k.order.join()) diffs.push(['order', plan.keys.map((s) => s.name).join(), k.order.join()]);
@@ -118,7 +120,7 @@ function classRecord(cls: ts.ClassLikeDeclaration, k: BackendClassKeys, states: 
     if ([...plan.flagged].join() !== [...k.flagged].join()) diffs.push(['flag order', [...plan.flagged].join(), [...k.flagged].join()]);
     if (plan.depth !== k.depth) diffs.push(['depth', plan.depth, k.depth]);
   }
-  return { name, on: k.on, flagged: names(k.flagged), keys: plan?.keys.map((s) => `${s.name}:${s.presence}${s.deleted ? ':deleted' : ''}${s.nulls === 'noted' ? ':null' : ''}`).join(',') ?? null, diffs };
+  return { name, on: k.on, flagged: names(k.flagged), keys: plan?.keyed ? plan.keys.map((s) => `${s.name}:${s.presence}${s.deleted ? ':deleted' : ''}${notesNull(s.nulls) ? ':null' : ''}${nilIsNull(s.nulls) ? ':nil' : ''}`).join(',') : null, diffs };
 }
 
 function hierarchyRecord(root: ts.ClassLikeDeclaration, h: BackendHierarchy, states: ValueStates, facts: ShapeFacts): object {
@@ -167,3 +169,42 @@ function literalRecord(e: ts.ObjectLiteralExpression, k: LiteralKeys, states: Va
   if (order.join() !== k.written.join()) diffs.push(['order', order.join(), k.written.join()]);
   return { tracks: k.tracks, notes: k.notes, keys: plan.keys.length, diffs };
 }
+
+function allClasses(states: ValueStates): ts.ClassLikeDeclaration[] {
+  const out: ts.ClassLikeDeclaration[] = [];
+  const visit = (n: ts.Node): void => { if (ts.isClassLike(n)) out.push(n); ts.forEachChild(n, visit); };
+  for (const f of states.backend.sourceFiles) if (!f.isDeclarationFile && !states.backend.pluginFiles.has(f.fileName)) visit(f);
+  return out;
+}
+
+/**
+ * A class's field null notes against the plan's, and against the fields' forms: a field held optional whose form holds
+ * null and undefined both that nothing notes, or a noted one whose form never holds null. The backends' former decision
+ * is `ValueStates.nullFields`/`nullFieldsTyped` read directly, and a program base's notes for `jsNulls`.
+ */
+function nullsRecord(cls: ts.ClassLikeDeclaration, states: ValueStates, facts: ShapeFacts): object {
+  const noted = states.nullFields(cls), nil = states.nullFieldsTyped(cls);
+  let declares = noted.size > 0;
+  for (let base = states.backend.programBase(cls); base && declares; base = states.backend.programBase(base)) if (states.nullFields(base).size) declares = false;
+  const plan = shapePlanOfClass(cls, states, facts);
+  const diffs: Diff[] = [];
+  const legacy = (n: string) => (noted.has(n) ? (nil.has(n) ? 'noted+nil' : 'noted') : nil.has(n) ? 'nil' : 'none');
+  if (plan) {
+    for (const n of new Set([...noted, ...nil, ...plan.fieldNulls.keys()])) if ((plan.fieldNulls.get(n) ?? 'none') !== legacy(n)) diffs.push(['plan nulls', `${n}:${plan.fieldNulls.get(n) ?? 'none'}`, legacy(n)]);
+    for (const k of plan.keys) if (k.nulls !== legacy(k.name)) diffs.push(['key nulls', `${k.name}:${k.nulls}`, legacy(k.name)]);
+    if (plan.declaresNulls !== declares) diffs.push(['declares jsNulls', plan.declaresNulls, declares]);
+  } else if (noted.size || nil.size) diffs.push(['no plan', null, [...noted, ...nil].map(legacy).join(',')]);
+  const forms = states.forms(), b = states.backend;
+  const ctor = cls.members.find(ts.isConstructorDeclaration);
+  const slots = [...cls.members.filter((m): m is ts.PropertyDeclaration => ts.isPropertyDeclaration(m) && !hasStaticModifier(m)), ...(ctor?.parameters.filter((p) => ts.isParameterPropertyDeclaration(p, ctor)) ?? [])];
+  for (const m of slots) {
+    if (!ts.isIdentifier(m.name)) continue;
+    const n = m.name.text, form = forms.formOfSlot(m), h = held(b.typeOf(m.name));
+    if (h !== 'optional') continue;
+    if (form.null && form.undefined && !noted.has(n) && !nil.has(n)) diffs.push(['null unnoted', n, h]);
+    else if (!form.null && noted.has(n)) diffs.push(['noted, form never null', n, h]);
+  }
+  return { name: cls.name?.text ?? '(anonymous)', keyed: !!plan?.keyed, noted: names(noted), nil: names(nil), declares, diffs };
+}
+
+const hasStaticModifier = (m: ts.PropertyDeclaration) => !!m.modifiers?.some((x) => x.kind === ts.SyntaxKind.StaticKeyword);
