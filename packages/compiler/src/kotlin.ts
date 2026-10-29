@@ -6106,7 +6106,7 @@ export class Translator implements AsyncTranslator {
   }
 
   /** An expression where Kotlin needs a value of `target`. */
-  coerce(e: ts.Expression, target: string): string {
+  coerce(e: ts.Expression, target: string | ResultSlot): string {
     return place(this.placement, e, target);
   }
 
@@ -6168,10 +6168,14 @@ export class Translator implements AsyncTranslator {
     if (cell.code !== undefined) return `${i}return ${cell.code}`;
     if (a) {
       if (a.generator === 'async') return `${i}${this.lowering.returnIn(a, e)}\n${i}return`;
-      const isPromise = this.isPromiseType(this.typeOf(e));
-      return `${i}${a.ret(isPromise ? this.expr(e) : place(this.placement, e, slot), isPromise)}\n${i}return`;
+      return `${i}${a.ret(...this.loweredReturn(e, slot))}\n${i}return`;
     }
     return `${i}return ${place(this.placement, e, slot)}`;
+  }
+
+  loweredReturn(e: ts.Expression, slot: ResultSlot): [string, boolean] {
+    const isPromise = this.isPromiseType(this.typeOf(e));
+    return [isPromise ? this.expr(e) : place(this.placement, e, slot), isPromise];
   }
 
   /** An expression body's cell, as Kotlin writes it. */

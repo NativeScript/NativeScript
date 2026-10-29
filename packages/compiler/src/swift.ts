@@ -8157,7 +8157,7 @@ ${members.join('\n')}
   }
 
   /** An expression where Swift needs a value of `target`. */
-  coerce(e: ts.Expression, target: string): string {
+  coerce(e: ts.Expression, target: string | ResultSlot): string {
     return place(this.placement, e, target);
   }
 
@@ -8212,14 +8212,18 @@ ${members.join('\n')}
     if (cell.code !== undefined) return `${i}return ${cell.code}`;
     if (a) {
       if (a.generator === 'async') return `${i}${this.lowering.returnIn(a, e)}\n${i}return`;
-      const isPromise = this.typeOf(e).startsWith('JSPromise<');
-      // A promise of another type than the function's (`Promise<[Status, boolean]>` returned where `Promise<any>` is): its value converted.
-      const own = this.typeOf(e).replace(/[?!]$/, '');
-      const adopted = isPromise && own !== `JSPromise<${a.result}>` ? this.convert(this.expr(e), own, `JSPromise<${a.result}>`) : this.expr(e);
-      // The `try` marks the value: a return through a finally holds it in a block, which a `try` cannot mark.
-      return `${i}${a.ret(this.tryPrefix(e) + (isPromise ? adopted : place(this.placement, e, slot)), isPromise)}\n${i}return`;
+      return `${i}${a.ret(...this.loweredReturn(e, slot))}\n${i}return`;
     }
     return `${i}return ${this.tryPrefix(e)}${place(this.placement, e, slot)}`;
+  }
+
+  loweredReturn(e: ts.Expression, slot: ResultSlot): [string, boolean] {
+    const own = this.typeOf(e).replace(/[?!]$/, ''), promise = `JSPromise<${slot.target}>`;
+    // The `try` marks the value: a return through a finally holds it in a block, which a `try` cannot mark.
+    if (!own.startsWith('JSPromise<')) return [this.tryPrefix(e) + place(this.placement, e, slot), false];
+    // A promise of another type than the function's (`Promise<[Status, boolean]>` returned where `Promise<any>` is): its value converted.
+    const adopted = own !== promise ? this.convert(this.expr(e), own, promise) : this.expr(e);
+    return [this.tryPrefix(e) + adopted, true];
   }
 
   /** A returned value's reads before the shared placement front, as Swift reads a value that may be undefined. */
