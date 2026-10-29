@@ -8,7 +8,7 @@ import { assignedValues, openSpreadType, spreadsArrays, definitelyAssignedFields
 import { memberName } from './stable-names.ts';
 import { shadowConversions } from './conversion-shadow.ts';
 import { parseNativeType, type Mark, type Value } from './conversion.ts';
-import { argumentSlot, awaitSlot, type AwaitSlot, isEnumObject, place, resultSlot, returnCell, type ParamSlot, type PlacementBackend, type ResultSlot, type ReturnBackend, type ReturnCell, type Store, type StoreSlot, assignedTo, codeStoreSlot, placeCode, storeSlot } from './placement.ts';
+import { argumentSlot, awaitSlot, conditionCell, type ConditionBackend, negatedCell, type AwaitSlot, isEnumObject, place, resultSlot, returnCell, type ParamSlot, type PlacementBackend, type ResultSlot, type ReturnBackend, type ReturnCell, type Store, type StoreSlot, assignedTo, codeStoreSlot, placeCode, storeSlot } from './placement.ts';
 import { convertedRead, onlyNull, ValueStates, type StateBackend } from './value-states.ts';
 import type { Form } from './forms.ts';
 import { isCoreDeclaration } from './core.ts';
@@ -6747,31 +6747,37 @@ export class Translator implements AsyncTranslator {
   }
 
   /** A condition: Kotlin needs a Boolean where JavaScript tests truthiness. */
-  cond(e: ts.Expression): string {
-    const fixed = this.staticTruth(e);
-    if (fixed !== undefined) return String(fixed);
-    let x = e;
-    while (ts.isParenthesizedExpression(x)) x = x.expression;
-    if (ts.isBinaryExpression(x) && [ts.SyntaxKind.AmpersandAmpersandToken, ts.SyntaxKind.BarBarToken].includes(x.operatorToken.kind)) {
-      // An operand the types decide: the other alone, as the operator would give it.
-      const and = x.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken;
-      if (this.staticTruth(x.left) === and) return this.cond(x.right);
-      if (this.staticTruth(x.right) === and && this.pure(x.left)) return this.cond(x.left);
+  cond(e: ts.Expression, c = conditionCell(this.conditions, e)): string {
+    switch (c.step) {
+      case 'fixed': return String(c.value);
+      case 'logical': {
+        const l = this.cond(c.e.left), r = this.cond(c.e.right);
+        return l === r ? l : `(${l} ${c.and ? '&&' : '||'} ${r})`;
+      }
+      case 'not': return `!(${this.cond(c.e)})`;
+      case 'missing': return `jsTruthy(${c.code})`;
+      case 'bool': return this.expr(c.e);
     }
-    if (ts.isBinaryExpression(x) && [ts.SyntaxKind.AmpersandAmpersandToken, ts.SyntaxKind.BarBarToken].includes(x.operatorToken.kind) && !(this.isBool(x.left) && this.isBool(x.right))) {
-      const l = this.cond(x.left), r = this.cond(x.right);
-      return l === r ? l : `(${l} ${x.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken ? '&&' : '||'} ${r})`;
-    }
-    if (ts.isPrefixUnaryExpression(x) && x.operator === ts.SyntaxKind.ExclamationToken) return `!(${this.cond(x.operand)})`;
-    const maybe = this.maybeUndefined(e);
-    if (maybe) return `jsTruthy(${maybe})`;
-    if (this.isBool(e)) return this.expr(e);
-    const code = this.expr(e);
+    const code = this.expr(c.e);
     // A missing string read as "undefined" (a match's unmatched group) is falsy as the value it stands for.
     const m = this.markOf(code);
     const raw = m?.op === 'undefinedAs' && m.to.kind === 'string' ? m.of.code : undefined;
     return `jsTruthy(${raw && wrapsWhole(raw) ? raw : code})`;
   }
+
+  private get conditions(): ConditionBackend {
+    return this.conditionSet ??= {
+      bare: true,
+      isBool: (n) => this.isBool(n),
+      maybeUndefined: (e) => this.maybeUndefined(e),
+      fixed: (e) => this.staticTruth(e),
+      decided: (e) => {
+        const and = e.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken;
+        return this.staticTruth(e.left) === and ? e.right : this.staticTruth(e.right) === and && this.pure(e.left) ? e.left : null;
+      },
+    };
+  }
+  private conditionSet?: ConditionBackend;
 
   // ---- Expressions -----------------------------------------------------------------------------
 
@@ -10082,8 +10088,8 @@ export class Translator implements AsyncTranslator {
     const K = ts.SyntaxKind;
     switch (e.operator) {
       case K.ExclamationToken: {
-        const operand = this.isBool(e.operand) && !this.maybeUndefined(e.operand) ? this.expr(e.operand) : this.cond(e.operand);
-        return `!(${operand})`;
+        const cell = negatedCell(this.conditions, e.operand);
+        return `!(${cell.step === 'bool' ? this.expr(cell.e) : this.cond(e.operand, cell)})`;
       }
       case K.MinusToken:
         if (this.typeOf(e.operand) === 'JSBigInt') return `(-${this.expr(e.operand)})`;

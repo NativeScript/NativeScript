@@ -10,7 +10,7 @@ import { assignedValues, openSpreadType, spreadsArrays, initializedNull, interse
 import { memberName } from './stable-names.ts';
 import { shadowConversions } from './conversion-shadow.ts';
 import { parseNativeType, plan, type Slot, type Value } from './conversion.ts';
-import { argumentEntry, awaitSlot, type AwaitSlot, argumentOf, argumentSlot, isEnumObject, place, resultSlot, returnCell, type ParamSlot, type PlacementBackend, type ResultSlot, type ReturnBackend, type ReturnCell, type Store, type StoreSlot, assignedTo, codeStoreSlot, placeCode, storeEntry, storeOf, storeSlot } from './placement.ts';
+import { argumentEntry, awaitSlot, conditionCell, type ConditionBackend, type ConditionCell, negatedCell, type AwaitSlot, argumentOf, argumentSlot, isEnumObject, place, resultSlot, returnCell, type ParamSlot, type PlacementBackend, type ResultSlot, type ReturnBackend, type ReturnCell, type Store, type StoreSlot, assignedTo, codeStoreSlot, placeCode, storeEntry, storeOf, storeSlot } from './placement.ts';
 import { castCode, elementOf, helper, implicitOf, isPure, isUnwrap, markOf, marked, memberOf, orNil, pureCode, tried, tryCode, unwrapInner, unwrappedCode, unwrappedIf, valueOf } from './swift-marks.ts';
 import { convertedRead, onlyNull, ValueStates, type StateBackend } from './value-states.ts';
 import type { Form } from './forms.ts';
@@ -9058,26 +9058,34 @@ ${members.join('\n')}
   }
 
   /** A condition: Swift needs a Bool where JavaScript tests truthiness. */
-  cond(e: ts.Expression): string {
-    const code = this.condition(e);
+  cond(e: ts.Expression, cell = conditionCell(this.conditions, e)): string {
+    const code = this.truthy(cell);
     // A closure called in place (`{ () -> Bool in … }()`) would be read as an `if`'s or `while`'s body.
     return code.startsWith('{') ? `(${code})` : code;
   }
 
-  private condition(e: ts.Expression): string {
-    // An operand the translation decides (`a && x instanceof C` of a C): the test is the other's.
-    if (ts.isBinaryExpression(e) && [ts.SyntaxKind.AmpersandAmpersandToken, ts.SyntaxKind.BarBarToken].includes(e.operatorToken.kind)) {
-      const and = e.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken;
-      if (this.staticTypeof(e.right) === and) return this.cond(e.left);
-      if (this.staticTypeof(e.left) === and && this.pure(e.left)) return this.cond(e.right);
+  private get conditions(): ConditionBackend {
+    return this.conditionSet ??= {
+      bare: false,
+      isBool: (n) => this.isBool(n),
+      maybeUndefined: (e) => this.maybeUndefined(e),
+      decided: (e) => {
+        const and = e.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken;
+        return this.staticTypeof(e.right) === and ? e.left : this.staticTypeof(e.left) === and && this.pure(e.left) ? e.right : null;
+      },
+    };
+  }
+  private conditionSet?: ConditionBackend;
+
+  private truthy(c: ConditionCell): string {
+    switch (c.step) {
+      case 'fixed': return String(c.value);
+      case 'logical': return `(${this.cond(c.e.left)} ${c.e.operatorToken.getText()} ${this.cond(c.e.right)})`;
+      case 'not': return `!(${this.cond(c.e)})`;
+      case 'missing': return `jsTruthy(${c.code} as Any?)`;
+      case 'bool': return this.expr(c.e);
     }
-    // `a && b` as a condition is whether both are truthy, whatever values the operands have.
-    if (ts.isBinaryExpression(e) && [ts.SyntaxKind.AmpersandAmpersandToken, ts.SyntaxKind.BarBarToken].includes(e.operatorToken.kind) && !(this.isBool(e.left) && this.isBool(e.right))) {
-      return `(${this.cond(e.left)} ${e.operatorToken.getText()} ${this.cond(e.right)})`;
-    }
-    const maybe = this.maybeUndefined(e);
-    if (maybe) return `jsTruthy(${maybe} as Any?)`;
-    if (this.isBool(e)) return this.expr(e);
+    const e = c.e;
     // A member of an untyped value is tested as read, before any conversion to its declared type (`!!descriptor.set`).
     if ((ts.isPropertyAccessExpression(e) || ts.isElementAccessExpression(e)) && !e.questionDotToken && this.isAny(e.expression) && !this.isAny(e) && !this.plainHelper(e)) {
       return `jsTruthy(jsGet(${this.expr(e.expression)}, ${ts.isPropertyAccessExpression(e) ? swiftString(e.name.text) : this.propertyKey(e.argumentExpression)}))`;
@@ -13639,7 +13647,8 @@ ${members.join('\n')}
     const K = ts.SyntaxKind;
     switch (e.operator) {
       case K.ExclamationToken: {
-        const operand = this.isBool(e.operand) && !this.maybeUndefined(e.operand) ? this.expr(e.operand) : this.cond(e.operand);
+        const cell = negatedCell(this.conditions, e.operand);
+        const operand = cell.step === 'bool' ? this.expr(cell.e) : this.cond(e.operand, cell);
         return operand.startsWith('!') ? `!(${operand})` : `!${operand}`;
       }
       // `-0` is negative zero; Swift reads the literal `-0` as an integer zero.

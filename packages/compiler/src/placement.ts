@@ -433,3 +433,56 @@ export function awaitSlot(b: Pick<PlacementBackend, 'states' | 'typeOf' | 'optio
   const target = b.optionalType(type);
   return { kind: 'await', target, type: parseNativeType(target), a, raw, isNull: b.states.nullResult(a) };
 }
+
+/**
+ * How a value's truthiness is tested where the backend needs its boolean: the cells of a `condition`-kind slot
+ * (`SlotKind`), an `if`'s, a loop's or a conditional's test, and the operands of `!`, `&&` and `||` so tested.
+ * Operands are tested in their own condition slot, each decided as the backend spells the one before.
+ */
+export type ConditionCell =
+  /** The types decide it: nothing is evaluated. */
+  | { step: 'fixed'; value: boolean }
+  /** `a && b`, `a || b` of operands not both booleans: whether both (either) are truthy. */
+  | { step: 'logical'; e: ts.BinaryExpression; and: boolean }
+  /** `!a`: `a` tested, negated. */
+  | { step: 'not'; e: ts.Expression }
+  /** A read that may be missing (`maybeUndefined`), tested as the value it stands for: `code` is that read. */
+  | { step: 'missing'; e: ts.Expression; code: string }
+  /** A boolean, read as it is. */
+  | { step: 'bool'; e: ts.Expression }
+  /** Any other value: the backend's truthiness test of it. */
+  | { step: 'value'; e: ts.Expression };
+
+/** What `conditionCell` reads of a translator. */
+export interface ConditionBackend {
+  isBool(n: ts.Node): boolean;
+  maybeUndefined(e: ts.Expression): string | null;
+  /** The truth a whole condition always has where the types decide it, spelled as that truth; absent where the backend tests it anyway. */
+  fixed?(e: ts.Expression): boolean | undefined;
+  /** Of `a && b` or `a || b`, the operand whose truth alone is the condition's where the other's is decided, or null. */
+  decided(e: ts.BinaryExpression): ts.Expression | null;
+  /** The operators are looked for inside parentheses, and `!a` is a test of `a` (without: `!a` is a boolean value). */
+  readonly bare: boolean;
+}
+
+/** `e` tested for its truthiness. */
+export function conditionCell(b: ConditionBackend, e: ts.Expression): ConditionCell {
+  const fixed = b.fixed?.(e);
+  if (fixed !== undefined) return { step: 'fixed', value: fixed };
+  let x = e;
+  while (b.bare && ts.isParenthesizedExpression(x)) x = x.expression;
+  if (ts.isBinaryExpression(x) && (x.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken || x.operatorToken.kind === ts.SyntaxKind.BarBarToken)) {
+    const one = b.decided(x);
+    if (one) return conditionCell(b, one);
+    if (!(b.isBool(x.left) && b.isBool(x.right))) return { step: 'logical', e: x, and: x.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken };
+  }
+  if (b.bare && ts.isPrefixUnaryExpression(x) && x.operator === ts.SyntaxKind.ExclamationToken) return { step: 'not', e: x.operand };
+  const code = b.maybeUndefined(e);
+  if (code) return { step: 'missing', e, code };
+  return b.isBool(e) ? { step: 'bool', e } : { step: 'value', e };
+}
+
+/** The operand of `!`: a boolean that cannot be missing is read as it is, anything else tested. */
+export function negatedCell(b: ConditionBackend, e: ts.Expression): ConditionCell {
+  return b.isBool(e) && !b.maybeUndefined(e) ? { step: 'bool', e } : conditionCell(b, e);
+}
