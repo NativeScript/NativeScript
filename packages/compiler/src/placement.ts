@@ -1,5 +1,6 @@
 import ts from 'typescript';
-import { parseNativeType, type NativeType } from './conversion.ts';
+import { parseNativeType, type Entry, type NativeType } from './conversion.ts';
+import type { Form } from './forms.ts';
 import type { ValueStates } from './value-states.ts';
 
 // A value placed in a slot (review/S3-PLAN.md §2): the front both translators share, deciding which cell of the state
@@ -19,8 +20,11 @@ export interface StateCells {
   empty(isNull: boolean): string;
   /** N → F: a value whose nil is null, read untyped. */
   nulled(code: string): string;
-  /** F → P/U with a checked entry (§2.3b M6, `foreignPlacement`), or null where the slot's type has no checked convert. */
-  checked(e: ts.Expression, target: string): string | null;
+  /**
+   * F → P/U with a checked entry (§2.3b M6), or null where the slot's type has no checked convert: the form an argument's
+   * `slot` decided, else `foreignPlacement`'s.
+   */
+  checked(e: ts.Expression, target: string, slot?: ParamSlot): string | null;
   /** An empty marker's value as it is made (`emptyMarkers`), registered so that checked converts read it as an empty value. */
   marker(code: string): string;
 }
@@ -30,6 +34,7 @@ export interface PlacementBackend {
   readonly checker: ts.TypeChecker;
   readonly sourceFiles: readonly ts.SourceFile[];
   readonly library: unknown;
+  readonly lenient: boolean;
   readonly states: ValueStates;
   readonly cells: StateCells;
   typeOf(n: ts.Node): string;
@@ -58,20 +63,26 @@ export interface PlacementBackend {
   shortcut?(e: ts.Expression, target: string): string | null;
   /** A conditional placed in a `JSNullish` slot, each branch placed on its own. */
   branches(e: ts.ConditionalExpression, target: string): string;
+  /** Its own reads of a value a `return` gives back, before the shared front (Swift's undefined reads of a call's result). */
+  result?(e: ts.Expression, slot: ResultSlot): string | null;
+  /** Its own cells of an argument, before the shared front (Swift's optional read given as it is, Kotlin's constant defaults). */
+  argument?(e: ts.Expression, slot: ParamSlot): string | null;
 }
 
-/** `e` where the backend needs a value of `target`. */
-export function place(b: PlacementBackend, e: ts.Expression, target: string): string {
+/** `e` where the backend needs a value of `target`, the value a function gives back in its result `slot`, or an argument in its parameter's. */
+export function place(b: PlacementBackend, e: ts.Expression, to: string | ResultSlot | ParamSlot): string {
+  if (typeof to !== 'string') return to.kind === 'return' ? b.result?.(e, to) ?? place(b, e, to.target) : b.argument?.(e, to) ?? placed(b, e, to.target, to);
+  const target = to;
   const code = placed(b, e, target);
   return b.library && ts.isVariableDeclaration(e.parent) && e.parent.initializer === e && emptyMarkers(b).has(e.parent) ? b.cells.marker(code) : code;
 }
 
-function placed(b: PlacementBackend, e: ts.Expression, target: string): string {
+function placed(b: PlacementBackend, e: ts.Expression, target: string, slot?: ParamSlot): string {
   const early = b.before?.(e, target);
   if (early != null) return early;
   const nullish = nullishPlacement(b, e, target);
   if (nullish !== null) return nullish;
-  const checked = b.cells.checked(e, target);
+  const checked = b.cells.checked(e, target, slot);
   if (checked) return checked;
   const own = b.after?.(e, target);
   if (own != null) return own;
@@ -164,8 +175,9 @@ function hasConst(d: ts.EnumDeclaration): boolean {
   return !!ts.getModifiers(d)?.some((m) => m.kind === ts.SyntaxKind.ConstKeyword);
 }
 
-/** A function's result as the slot its `return`s and its expression body are placed in (`SlotKind` 'return'). */
+/** A function's result as the slot its `return`s and its expression body are placed in. */
 export interface ResultSlot {
+  kind: 'return';
   /** The backend's spelling: in an async function or a generator, the value its continuation takes. */
   target: string;
   type: NativeType;
@@ -173,6 +185,55 @@ export interface ResultSlot {
   lowered: boolean;
   /** The function the slot is the result of. */
   fn?: ts.SignatureDeclaration;
+  /** False where what gives the value cannot throw (a synthesized getter or initializer): a conversion's TypeError is reported there, the value empty. */
+  throws?: false;
+}
+
+/** The result slot of a function giving back `target`. */
+export function resultSlot(target: string, fn?: ts.SignatureDeclaration, lowered = false): ResultSlot {
+  return { kind: 'return', target, type: parseNativeType(target ?? ''), lowered, fn };
+}
+
+/** A parameter as the slot a call's argument is placed in, as the backend has the parameter at that call. */
+export interface ParamSlot {
+  kind: 'argument';
+  /** The backend's spelling of the parameter's type at the call. */
+  target: string;
+  type: NativeType;
+  /** The parameter; none past the declared ones. */
+  decl?: ts.Declaration;
+  /** Held `JSNullish<T>` (`ValueStates.nullishHeld`): the value placed in it, no other cell. */
+  nullish?: boolean;
+  /** Takes a missing value as it is: an argument the backend holds optional is given as that optional; `declared` is the parameter's type before it was made optional. */
+  asIs?: { declared: string };
+  /** Kotlin: the parameter's default is a constant its declaration has, which a possibly missing argument falls back to. */
+  constantDefault?: boolean;
+  /** Kotlin: a package's parameter called from outside the package, its type as the package declares it. */
+  packaged?: boolean;
+  /** How the argument comes in; `checked` where it is: the form its untyped value enters as (`ValueStates.foreignArgument`). */
+  entry: Entry;
+  checked?: Form;
+  /** An element of a rest parameter's array, an argument past the declared parameters or to an untyped callee: no declared parameter's cell. */
+  rest?: boolean;
+  /**
+   * A parameter the call leaves out, given as `empty` (a function value takes every parameter: the slot's empty value) or
+   * as `undefined` reads in the slot's type (a required parameter of an app function).
+   */
+  missing?: 'empty' | 'undefined';
+}
+
+type SlotFacts = Pick<ParamSlot, 'nullish' | 'asIs' | 'constantDefault' | 'packaged' | 'rest' | 'missing'>;
+
+/** The slot of a parameter the backend has as `target` at the call `at`, taking its `k`th argument `a` (none where the call leaves it out or a spread gives it). */
+export function argumentSlot(b: Pick<PlacementBackend, 'library' | 'lenient' | 'states'>, target: string, decl: ts.Declaration | undefined, at: { call: ts.CallExpression | ts.NewExpression; k: number; a?: ts.Expression }, facts: SlotFacts = {}): ParamSlot {
+  return { kind: 'argument', target, type: parseNativeType(target), decl, ...argumentEntry(b, at.call, at.k, at.a), ...facts };
+}
+
+function argumentEntry(b: Pick<PlacementBackend, 'library' | 'lenient' | 'states'>, call: ts.CallExpression | ts.NewExpression, k: number, a?: ts.Expression): Pick<ParamSlot, 'entry' | 'checked'> {
+  let checked: Form | null = null;
+  // A value the forms throw on enters unchecked.
+  try { checked = a ? b.states.foreignArgument(call, k, a) : null; } catch { checked = null; }
+  return checked ? { entry: 'checked', checked } : { entry: b.library ? 'library' : b.lenient ? 'lenient' : 'typed' };
 }
 
 /** One cell of a `return`-kind slot. */
@@ -213,7 +274,9 @@ export function returnCell(b: ReturnBackend, e: ts.Expression | undefined, slot:
   const plain = !given.optional && !given.implicit;
   const call = ts.isCallExpression(e);
   if (!body && call && plain && given.kind === 'never') return { step: 'never', e };
+  const effect = voidOperand(e);
   if (slot.type.kind === 'void' && !slot.type.optional) {
+    if (effect) return { step: 'drop', e: effect };
     const code = isNullishLiteral(e) ? b.emptyReturn(e, slot) : null;
     return code !== null ? { step: 'empty', code, e } : { step: 'drop', e };
   }
@@ -223,7 +286,7 @@ export function returnCell(b: ReturnBackend, e: ts.Expression | undefined, slot:
   }
   if (!body && isNullishLiteral(e)) {
     const code = b.emptyReturn(e, slot);
-    if (code !== null) return { step: 'empty', code, e };
+    if (code !== null) return effect ? { step: 'voidCall', e: effect, empty: code } : { step: 'empty', code, e };
   }
   return { step: 'value', e };
 }
@@ -232,4 +295,13 @@ export function returnCell(b: ReturnBackend, e: ts.Expression | undefined, slot:
 export function isNullishLiteral(e: ts.Expression): boolean {
   while (ts.isParenthesizedExpression(e)) e = e.expression;
   return e.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(e) && e.text === 'undefined') || ts.isVoidExpression(e);
+}
+
+/** The operand of `void x` where evaluating it may do something (not a literal or a name), else null. */
+function voidOperand(e: ts.Expression): ts.Expression | null {
+  while (ts.isParenthesizedExpression(e)) e = e.expression;
+  if (!ts.isVoidExpression(e)) return null;
+  let x = e.expression;
+  while (ts.isParenthesizedExpression(x)) x = x.expression;
+  return ts.isLiteralExpression(x) || ts.isIdentifier(x) ? null : e.expression;
 }

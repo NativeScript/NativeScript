@@ -1105,9 +1105,18 @@ export class ValueStates {
    * such one: a slot whose type is tested but whose group can't be held (§2.3b M7) converts checked too.
    */
   foreignPlacement(a: ts.Expression): Form | null {
+    return this.foreignForm(a, () => this.placementForm(a));
+  }
+
+  /** `foreignPlacement` of `a` given as the `k`th argument of `call`, decided from the call and its parameter. */
+  foreignArgument(call: ts.CallExpression | ts.NewExpression, k: number, a: ts.Expression): Form | null {
+    return this.foreignForm(a, () => this.argumentForm(call, k));
+  }
+
+  private foreignForm(a: ts.Expression, slotForm: () => Form | null): Form | null {
     const b = this.backend;
     if (b.library || b.lenient || !this.appCode(a) || !this.untypedValue(a)) return null;
-    const form = this.placementForm(a);
+    const form = slotForm();
     if (!form || !form.foreign || form.type.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown) || isGeneric(form.type)) return null;
     return this.withElements(form, false);
   }
@@ -1117,22 +1126,8 @@ export class ValueStates {
     let x: ts.Node = a;
     while (ts.isParenthesizedExpression(x.parent)) x = x.parent;
     const p = x.parent;
-    // A group's form is typed by one of its members; the slot holds its own declared type. One sharing a declaration file's
-    // form (§2.3b M7: not held) takes an untyped value as that declaration's type, checked.
-    const slot = (d: ts.Declaration | undefined) => {
-      if (!d || d.getSourceFile().isDeclarationFile || !this.appCode(d) || this.nullish().held.has(d)) return null;
-      const form = this.forms().formOfSlot(d);
-      return { ...form, foreign: form.foreign || this.forms().fixedSlot(d), type: this.checker.getNonNullableType(this.checker.getTypeAtLocation((d as ts.NamedDeclaration).name ?? d)) };
-    };
-    if ((ts.isCallExpression(p) || ts.isNewExpression(p)) && p.expression !== x) {
-      const k = p.arguments!.indexOf(x as ts.Expression);
-      const sig = this.checker.getResolvedSignature(p)?.getDeclaration();
-      if (sig && !ts.isJSDocSignature(sig) && !sig.getSourceFile().isDeclarationFile) {
-        const param = sig.parameters[k];
-        return param && !param.dotDotDotToken && ts.isIdentifier(param.name) && !ts.isParameterPropertyDeclaration(param, param.parent) ? slot(param) : null;
-      }
-      return ts.isCallExpression(p) ? this.elementPlacement(p, k) : null;
-    }
+    const slot = (d: ts.Declaration | undefined) => this.declaredSlot(d);
+    if ((ts.isCallExpression(p) || ts.isNewExpression(p)) && p.expression !== x) return this.argumentForm(p, p.arguments!.indexOf(x as ts.Expression));
     if (ts.isReturnStatement(p) || (ts.isArrowFunction(p) && p.body === x)) {
       const fn = ts.isArrowFunction(p) ? p : ts.getContainingFunction(p);
       if (!fn || fn.asteriskToken || ts.isConstructorDeclaration(fn) || ts.isSetAccessorDeclaration(fn)) return null;
@@ -1160,6 +1155,27 @@ export class ValueStates {
       return literal && name ? this.fieldSlot(this.checker.getNonNullableType(literal).getProperty(name)?.valueDeclaration, slot) : null;
     }
     return null;
+  }
+
+  /**
+   * The form of a slot of the app's own code. A group's form is typed by one of its members; the slot holds its own
+   * declared type. One sharing a declaration file's form (§2.3b M7: not held) takes an untyped value as that
+   * declaration's type, checked.
+   */
+  private declaredSlot(d: ts.Declaration | undefined): Form | null {
+    if (!d || d.getSourceFile().isDeclarationFile || !this.appCode(d) || this.nullish().held.has(d)) return null;
+    const form = this.forms().formOfSlot(d);
+    return { ...form, foreign: form.foreign || this.forms().fixedSlot(d), type: this.checker.getNonNullableType(this.checker.getTypeAtLocation((d as ts.NamedDeclaration).name ?? d)) };
+  }
+
+  /** The form of the `k`th argument's slot of `call`, if it is one M6 checks: the app's parameter, or an element a collection method adds. */
+  private argumentForm(call: ts.CallExpression | ts.NewExpression, k: number): Form | null {
+    const sig = this.checker.getResolvedSignature(call)?.getDeclaration();
+    if (sig && !ts.isJSDocSignature(sig) && !sig.getSourceFile().isDeclarationFile) {
+      const param = sig.parameters[k];
+      return param && !param.dotDotDotToken && ts.isIdentifier(param.name) && !ts.isParameterPropertyDeclaration(param, param.parent) ? this.declaredSlot(param) : null;
+    }
+    return ts.isCallExpression(call) ? this.elementPlacement(call, k) : null;
   }
 
   /**
