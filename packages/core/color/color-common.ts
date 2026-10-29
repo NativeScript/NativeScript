@@ -27,7 +27,11 @@ export class ColorBase implements IColor {
 					this._name = arg;
 					this._argb = argb;
 				} else if (isCssColorMixExpression(lowered)) {
-					this._argb = argbFromColorMix(lowered);
+					const argb = argbFromColorMix(lowered);
+					if (argb === null) {
+						throw new Error('Invalid color: ' + arg);
+					}
+					this._argb = argb;
 				} else if (arg[0].charAt(0) === '#' && (arg.length === 4 || arg.length === 5 || arg.length === 7 || arg.length === 9)) {
 					// we dont use the regexp as it is quite slow. Instead we expect it to be a valid hex format
 					// strange that it would not be. And if it is not a thrown error seems best

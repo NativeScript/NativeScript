@@ -22,6 +22,8 @@ const cssSymbolPropertyMap = {};
 const CSS_VARIABLE_NAME_RE = /^--[^,\s]+?$/;
 const DIP_RE = /([0-9]+(\.[0-9]+)?)dip\b/g;
 const UNSET_RE = /unset/g;
+/** Stands in for an unresolved var() until the whole value is known; a NUL never occurs in css. */
+const UNRESOLVED_VAR = '\u0000';
 const INFINITY_RE = /infinity/g;
 
 const inheritableProperties = new Array<InheritedProperty<any, any>>();
@@ -246,14 +248,16 @@ export function _evaluateCssVariableExpression(view: ViewBase, cssName: string, 
 			cssVariableValue = _evaluateCssVariableExpression(view, cssName, fallback);
 		}
 
-		if (!cssVariableValue) {
-			cssVariableValue = 'unset';
+		if (!cssVariableValue || cssVariableValue === 'unset') {
+			cssVariableValue = UNRESOLVED_VAR;
 		}
 
 		output = `${output.substring(0, idx)}${cssVariableValue}${output.substring(endIdx + 1)}`;
 	}
 
-	return output;
+	// An unresolved var() invalidates the whole declaration, wherever it is nested,
+	// unless it sat in the fallback of a var() that resolved.
+	return output.includes(UNRESOLVED_VAR) ? 'unset' : output;
 }
 
 function findClosingParenthesis(value: string, openIdx: number): number {

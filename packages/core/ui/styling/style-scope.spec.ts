@@ -243,6 +243,15 @@ describe('CssState.setPropertyValues', () => {
 		expect(view.style.marginTop).toEqual(styled('').view.style.marginTop);
 	});
 
+	it('unsets a color whose nested variable cannot be resolved', () => {
+		const { view } = styled('label { color: red; } label:highlighted { color: color-mix(in srgb, var(--missing) 35%, transparent); }');
+		view._cssState.onLoaded();
+		expect(view.style.color.toString()).toBe('#FF0000');
+
+		view.addPseudoClass('highlighted');
+		expect(view.style.color).toBeUndefined();
+	});
+
 	it('applies an inline shorthand holding a variable', () => {
 		const { view } = styled('label { --m: 6; }');
 		view._cssState.onLoaded();
