@@ -10,7 +10,7 @@ import { assignedValues, openSpreadType, spreadsArrays, initializedNull, interse
 import { memberName } from './stable-names.ts';
 import { shadowConversions } from './conversion-shadow.ts';
 import { parseNativeType, plan, type Slot, type Value } from './conversion.ts';
-import { isEnumObject, place, type PlacementBackend } from './placement.ts';
+import { isEnumObject, place, returnCell, type PlacementBackend, type ResultSlot, type ReturnBackend, type ReturnCell } from './placement.ts';
 import { castCode, elementOf, helper, implicitOf, isPure, isUnwrap, markOf, marked, memberOf, orNil, pureCode, tried, tryCode, unwrapInner, unwrappedCode, unwrappedIf, valueOf } from './swift-marks.ts';
 import { convertedRead, onlyNull, ValueStates, type StateBackend } from './value-states.ts';
 import type { Form } from './forms.ts';
@@ -4840,10 +4840,7 @@ ${members.join('\n')}
         }
         else {
           const e = fn.body as ts.Expression;
-          const none = this.typeOf(e) === 'Void' && ret !== 'Void' && ts.isCallExpression(e) ? (isOptional(ret) || ret === 'Any?' ? 'nil' : this.zero(ret)) : null;
-          const logical = ret === 'Void' ? this.voidLogical(e) : null;
-          lines = [...this.paramPrelude(fn), ret === 'Void' && isNullish(e) ? '' : logical ? this.indent + logical : ret === 'Void' || none ? this.indent + this.tryPrefix(e) + this.exprStatement(e) : `${this.indent}return ${this.tryPrefix(e)}${this.coerce(e, ret)}`];
-          if (none) lines.push(`${this.indent}return ${none}`);
+          lines = [...this.paramPrelude(fn), this.bodyReturned(returnCell(this.returns, e, this.resultSlot(e), true))];
         }
         return `{\n${lines.filter(Boolean).join('\n')}\n${base}}`;
       } finally { this.indent = saved; }
@@ -7151,55 +7148,8 @@ ${members.join('\n')}
       return i + (code.startsWith('{') ? `do { ${assigned} }` : assigned) + (note ? `\n${i}${note}` : '');
     }
     if (ts.isReturnStatement(s)) {
-      if (a) {
-        const e = s.expression;
-        if (!e) return `${i}${a.ret(null, false)}\n${i}return`;
-        if (a.generator === 'async') return `${i}${this.lowering.returnIn(a, e)}\n${i}return`;
-        const isPromise = this.typeOf(e).startsWith('JSPromise<');
-        // A promise of another type than the function's (`Promise<[Status, boolean]>` returned where `Promise<any>` is): its value converted.
-        const own = this.typeOf(e).replace(/[?!]$/, '');
-        const adopted = isPromise && own !== `JSPromise<${a.result}>` ? this.convert(this.expr(e), own, `JSPromise<${a.result}>`) : this.expr(e);
-        // The `try` marks the value: a return through a finally holds it in a block, which a `try` cannot mark.
-        return `${i}${a.ret(this.tryPrefix(e) + (isPromise ? adopted : this.coerce(e, a.result)), isPromise)}\n${i}return`;
-      }
-      if (s.expression && ts.isIdentifier(s.expression) && this.holeyArrays.has(this.resolve(s.expression)!)) return `${i}return jsFilled(${this.refName(s.expression)})`;
-      // A value returned where nothing is (a Promise executor's `return p.then(…)`): evaluated, then dropped.
-      if (s.expression && this.returnType === 'Void' && this.typeOf(s.expression) !== 'Never' && !isNullish(s.expression)) return `${i}${tryAssigned(this.tryPrefix(s.expression), `_ = ${this.expr(s.expression)}`)}\n${i}return`;
-      // `return log(x)` of a function returning nothing: the call, then undefined.
-      if (s.expression && this.returnType && this.returnType !== 'Void' && this.typeOf(s.expression) === 'Void' && ts.isCallExpression(s.expression)) {
-        const none = isOptional(this.returnType) || this.returnType === 'Any?' ? 'nil' : this.zero(this.returnType);
-        if (none) return `${i}${this.tryPrefix(s.expression)}${this.exprStatement(s.expression)}\n${i}return ${none}`;
-      }
-      // Code checked without strictNullChecks returns undefined from a function of a value type: read as the type's zero, as its fields are.
-      if (s.expression && this.returnType.endsWith('?') && this.returnType !== 'Any?') {
-        const maybe = this.maybeUndefined(s.expression);
-        if (maybe) return `${i}return ${this.tryPrefix(s.expression)}${maybe}`;
-      }
-      // A value returned where nothing is (a Promise executor's `return promise.then(…)`): evaluated, then nothing returned.
-      if (s.expression && this.returnType === 'Void' && this.typeOf(s.expression) !== 'Void' && !isNullish(s.expression)) return `${i}${tryAssigned(this.tryPrefix(s.expression), `_ = ${this.expr(s.expression)}`)}\n${i}return`;
-      const missing = !s.expression || ((this.lenient || this.lenientApp) && isNullish(s.expression) && !this.returnType.endsWith('?') && this.returnType !== 'Any?');
-      // Declared `T[] | undefined` (held `JSArray<…>!`): callers test the result (`if (expanded)`), which a zero value would pass.
-      if (missing && this.lenient && /^JS(Array|Map|Set|Object)\b/.test(this.returnType) && declaresUndefined(ts.findAncestor(s, ts.isFunctionLike))) return `${i}return nil`;
-      if (missing && (this.lenient || this.lenientApp) && this.returnType !== 'Void' && !this.returnType.endsWith('?') && this.zero(this.returnType) !== null) return `${i}return ${this.zero(this.returnType)}`;
-      // A native struct has no undefined: its zero value.
-      if (missing && this.lenient && this.native.isStructType(this.returnType)) return `${i}return ${this.returnType}()`;
-      // `return undefined` from a function returning nothing.
-      if (this.returnType === 'Void' && s.expression && isNullish(s.expression)) return `${i}return`;
-      // A library call that may give undefined (`map.get(key)`) returned where a value type is declared: as such a slot reads undefined.
-      const holder = ts.findAncestor(s.parent, ts.isFunctionLike);
-      if (s.expression && !isOptional(this.returnType) && this.returnType !== 'Any?' && this.returnType !== 'Void' && ts.isCallExpression(s.expression) && !(holder && this.states.nullishHeld(holder))) {
-        const maybe = this.maybeUndefined(s.expression);
-        if (maybe && /^JSMatch[?!]?$/.test(this.typeOf(s.expression)) && /^JSArray<String>[?!]?$/.test(this.returnType)) return `${i}return ${this.tryPrefix(s.expression)}${this.coerce(s.expression, this.returnType)}`;
-        if (maybe) {
-          const value = this.undefinedAs(maybe, this.returnType, this.calledType(s.expression));
-          // Lenient code's closure typed to give an object, giving undefined: a TypeError, Swift's closure giving none.
-          const present = this.lenient && !this.looseTolerated(s.expression) ? this.presentCode(value, this.returnType) : value;
-          return `${i}return ${this.tryPrefix(s.expression)}${present}`;
-        }
-      }
-      // A call that never returns (`return this.raise(…)`) ends the function itself.
-      if (s.expression && this.typeOf(s.expression) === 'Never' && ts.isCallExpression(s.expression)) return `${i}${this.tryPrefix(s.expression)}${this.expr(s.expression)}`;
-      return i + (s.expression ? `return ${this.tryPrefix(s.expression)}${this.coerce(s.expression, this.returnType)}` : this.returnType?.endsWith('?') ? 'return nil' : 'return');
+      const slot = this.resultSlot(s);
+      return this.returned(returnCell(this.returns, s.expression, slot), slot);
     }
     if (ts.isIfStatement(s)) {
       // A condition the parameters' constant values decide: only the branch that runs.
@@ -8153,6 +8103,90 @@ ${members.join('\n')}
   /** An expression where Swift needs a value of `target`. */
   coerce(e: ts.Expression, target: string): string {
     return place(this.placement, e, target);
+  }
+
+  /** The result slot of the function being translated, where `at` (a `return`, an expression body) gives its value. */
+  private resultSlot(at: ts.Node): ResultSlot {
+    const target = this.asyncCtx ? this.asyncCtx.result : this.returnType;
+    return { target, type: parseNativeType(target ?? ''), lowered: !!this.asyncCtx, fn: ts.findAncestor(at.parent, ts.isFunctionLike) };
+  }
+
+  private returnsSet?: ReturnBackend;
+
+  /** What the shared `return` cells (placement.ts) read of this translator. */
+  private get returns(): ReturnBackend {
+    const t = this;
+    return this.returnsSet ??= {
+      typeOf: (n) => t.typeOf(n),
+      emptyReturn: (e, slot) => {
+        const ret = slot.target;
+        if (ret === 'Void') return '';
+        // Lenient code returning undefined from a function of a value type: read as the type's zero, as its fields are.
+        if (e && !((t.lenient || t.lenientApp) && !ret.endsWith('?') && ret !== 'Any?')) return null;
+        // Declared `T[] | undefined` (held `JSArray<…>!`): callers test the result (`if (expanded)`), which a zero value would pass.
+        if (t.lenient && /^JS(Array|Map|Set|Object)\b/.test(ret) && declaresUndefined(slot.fn)) return 'nil';
+        if ((t.lenient || t.lenientApp) && ret !== 'Void' && !ret.endsWith('?') && t.zero(ret) !== null) return t.zero(ret);
+        // A native struct has no undefined: its zero value.
+        if (t.lenient && t.native.isStructType(ret)) return `${ret}()`;
+        return e ? null : ret?.endsWith('?') ? 'nil' : '';
+      },
+      voidValue: (e, slot) => (!ts.isCallExpression(e) ? null : isOptional(slot.target) || slot.target === 'Any?' ? 'nil' : t.zero(slot.target)),
+      returnBefore: (e) => (ts.isIdentifier(e) && t.holeyArrays.has(t.resolve(e)!) ? { step: 'value', e, code: `jsFilled(${t.refName(e)})` } : null),
+    };
+  }
+
+  /** A `return` statement's cell, as Swift writes it. */
+  private returned(cell: ReturnCell, slot: ResultSlot): string {
+    const i = this.indent, a = this.asyncCtx, ret = slot.target;
+    switch (cell.step) {
+      case 'empty': return a ? `${i}${a.ret(null, false)}\n${i}return` : `${i}return${cell.code ? ` ${cell.code}` : ''}`;
+      case 'drop': return `${i}${tryAssigned(this.tryPrefix(cell.e), `_ = ${this.expr(cell.e)}`)}\n${i}return`;
+      case 'never': return `${i}${this.tryPrefix(cell.e)}${this.expr(cell.e)}`;
+      case 'voidCall': return `${i}${this.tryPrefix(cell.e)}${this.exprStatement(cell.e)}\n${i}return ${cell.empty}`;
+    }
+    const e = cell.e;
+    if (cell.code !== undefined) return `${i}return ${cell.code}`;
+    if (a) {
+      if (a.generator === 'async') return `${i}${this.lowering.returnIn(a, e)}\n${i}return`;
+      const isPromise = this.typeOf(e).startsWith('JSPromise<');
+      // A promise of another type than the function's (`Promise<[Status, boolean]>` returned where `Promise<any>` is): its value converted.
+      const own = this.typeOf(e).replace(/[?!]$/, '');
+      const adopted = isPromise && own !== `JSPromise<${a.result}>` ? this.convert(this.expr(e), own, `JSPromise<${a.result}>`) : this.expr(e);
+      // The `try` marks the value: a return through a finally holds it in a block, which a `try` cannot mark.
+      return `${i}${a.ret(this.tryPrefix(e) + (isPromise ? adopted : this.coerce(e, a.result)), isPromise)}\n${i}return`;
+    }
+    // Code checked without strictNullChecks returns undefined from a function of a value type: read as the type's zero, as its fields are.
+    if (ret.endsWith('?') && ret !== 'Any?') {
+      const maybe = this.maybeUndefined(e);
+      if (maybe) return `${i}return ${this.tryPrefix(e)}${maybe}`;
+    }
+    // A library call that may give undefined (`map.get(key)`) returned where a value type is declared: as such a slot reads undefined.
+    if (!isOptional(ret) && ret !== 'Any?' && ret !== 'Void' && ts.isCallExpression(e) && !(slot.fn && this.states.nullishHeld(slot.fn))) {
+      const maybe = this.maybeUndefined(e);
+      if (maybe && /^JSMatch[?!]?$/.test(this.typeOf(e)) && /^JSArray<String>[?!]?$/.test(ret)) return `${i}return ${this.tryPrefix(e)}${this.coerce(e, ret)}`;
+      if (maybe) {
+        const value = this.undefinedAs(maybe, ret, this.calledType(e));
+        // Lenient code's closure typed to give an object, giving undefined: a TypeError, Swift's closure giving none.
+        const present = this.lenient && !this.looseTolerated(e) ? this.presentCode(value, ret) : value;
+        return `${i}return ${this.tryPrefix(e)}${present}`;
+      }
+    }
+    return `${i}return ${this.tryPrefix(e)}${this.coerce(e, ret)}`;
+  }
+
+  /** An expression body's cell, as Swift writes it. */
+  private bodyReturned(cell: ReturnCell): string {
+    const i = this.indent;
+    switch (cell.step) {
+      case 'empty': return '';
+      case 'drop': {
+        const logical = this.voidLogical(cell.e);
+        return logical ? i + logical : i + this.tryPrefix(cell.e) + this.exprStatement(cell.e);
+      }
+      case 'voidCall': return `${i}${this.tryPrefix(cell.e)}${this.exprStatement(cell.e)}\n${i}return ${cell.empty}`;
+      case 'never': throw new Error('unreachable: an expression body never ends the function by its call');
+    }
+    return cell.code !== undefined ? `${i}return ${cell.code}` : `${i}return ${this.tryPrefix(cell.e)}${this.coerce(cell.e, this.returnType)}`;
   }
 
   private placementSet?: PlacementBackend;
