@@ -51,9 +51,9 @@ export interface Value {
 export type Mark =
   /**
    * `unchecked`: Kotlin's `jsUnchecked<T>(x)`, which passes any value for a `T`, or `jsCastCarried(x, …)`, which passes null for one. `spelled`: the type as the code names it.
-   * `up`: Swift's `x as T?`, which cannot fail. `implicit`: Swift's `jsImplicit(x as? T)`.
+   * `up`: Swift's `x as T?`, which cannot fail. `implicit`: Swift's `jsImplicit(x as? T)`. `checked`: Swift's `jsCast(x, T.self)` in its place, as written.
    */
-  | { op: 'cast'; to: NativeType; optional: boolean; implicit: boolean; of: Value; unchecked?: boolean; spelled?: string; up?: boolean }
+  | { op: 'cast'; to: NativeType; optional: boolean; implicit: boolean; of: Value; unchecked?: boolean; spelled?: string; up?: boolean; checked?: string }
   /** Swift's `jsImplicit(x)`, or a function cell's own (`cell`: `FunctionCell_X.implicit(x)`; `via`: another static, `fromScriptOrNil`; `chained`: `jsImplicit(x)?`, a chain going on). */
   | { op: 'implicit'; of: Value; cell?: string; via?: string; chained?: boolean }
   /** Swift's `jsForeign(x, …)`, `jsArrayOrNil(x, …)`, `jsObjectRequired(x)`, `jsUnwrap(x, …)`: the kit's helper around the value, its other arguments `rest`. */
