@@ -6877,7 +6877,7 @@ export class Translator implements AsyncTranslator {
       if (wider) return this.fromAny(this.expr(e.expression), isNullable(to) ? optionalType(wider) : wider);
       // The assertion is erased in JavaScript: where Kotlin needs the type, the value is converted as script converts it there.
       const entry = from === 'Any?' && !this.library && !this.lenient ? this.states.foreignEntry(e) : null;
-      const checked = entry && this.type(entry.type, e) === to.replace(/\?$/, '') ? this.checkedConvert(this.expr(e.expression), entry, e, isNullable(to)) : null;
+      const checked = entry && this.type(entry.type, e) === to ? this.checkedConvert(this.expr(e.expression), entry, e) : null;
       if (checked) return checked;
       if (!this.library && from === 'Any?' && ['String', 'Double', 'Boolean'].includes(to)) return `jsAsserted${to === 'Double' ? 'Number' : to}(${this.expr(e.expression)})`;
       if (from === 'Any?' && to !== 'Any?') {
@@ -7982,9 +7982,9 @@ export class Translator implements AsyncTranslator {
     return this.checkedConvert(code ?? this.expr(a), entry, a, isNullable(to));
   }
 
-  /** A call's untyped result `code`, of the program's type `to`: checked where its slot takes a foreign value (`foreignPlacement`), else asserted. */
+  /** A call's untyped result `code`, of the program's type `to`: checked where its slot takes a foreign value (`foreignResult`), else asserted. */
   private untypedResult(e: ts.CallExpression, code: string, to: string): string {
-    const entry = this.lenient || this.library ? null : this.states.foreignPlacement(e);
+    const entry = this.lenient || this.library ? null : this.states.foreignResult(e);
     return (entry && this.type(entry.type, e) === to.replace(/\?$/, '') ? this.checkedConvert(code, entry, e, isNullable(to)) : null) ?? this.fromAnyCode(code, to, true);
   }
 

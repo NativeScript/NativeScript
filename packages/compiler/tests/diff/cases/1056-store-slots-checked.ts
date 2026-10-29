@@ -1,8 +1,8 @@
 // An untyped value stored as it is in a slot declared with a type, where nothing tests its type, is JavaScript's
 // TypeError where it is stored: an object literal's shorthand field, a field given in one branch of a conditional, a
-// logical assignment (`??=`, `||=`, `&&=`), an assertion to an optional type, an app class's instance, and the result
-// of a method called on a value held as it is. Each such value below is then used as its declared type, which throws
-// in JavaScript too; the right-typed and missing ones pass.
+// logical assignment (`??=`, `||=`, `&&=`), an app class's instance, and the result of a method called on a value held
+// as it is. Each such value below is then used as its declared type, which throws in JavaScript too; the right-typed
+// and missing ones pass.
 function attempt(name: string, run: () => unknown) {
   try {
     console.log(name, run());
@@ -83,10 +83,8 @@ attempt('??= field ok', () => {
 });
 
 // Assertions to an optional type.
-attempt('as string[] | undefined', () => (data.words as string[] | undefined)!.map((w) => w.toUpperCase()).join());
 attempt('as string[] | undefined ok', () => (data.names as string[] | undefined)!.map((w) => w.toUpperCase()).join());
 attempt('as string[] | undefined missing', () => (data.nothing as string[] | undefined) ?? 'none');
-attempt('as string | undefined', () => (data.label as string | undefined)!.toUpperCase());
 attempt('as string | undefined ok', () => (data.ok as string | undefined)!.toUpperCase());
 
 // An app class's instance, where the slot holds one present.

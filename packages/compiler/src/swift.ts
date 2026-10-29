@@ -3638,9 +3638,9 @@ ${members.join('\n')}
     return entry ? this.checkedCell(() => code, entry, el, to) : null;
   }
 
-  /** A call's untyped result `code`, of the program's type `to`: checked where its slot takes a foreign value (`foreignPlacement`), else converted leniently. */
+  /** A call's untyped result `code`, of the program's type `to`: checked where its slot takes a foreign value (`foreignResult`), else converted leniently. */
   private untypedResult(e: ts.CallExpression, code: string, to: string): string {
-    const entry = this.lenient || this.library ? null : this.states.foreignPlacement(e);
+    const entry = this.lenient || this.library ? null : this.states.foreignResult(e);
     return (entry && this.checkedCell(() => code, entry, e, to)) ?? this.fromAnyCode(code, to, true);
   }
 
@@ -3694,8 +3694,8 @@ ${members.join('\n')}
     if (this.lenient || this.library) return null;
     try {
       if (this.typeOf(e.expression) !== 'Any?') return null;
-      const entry = this.states.foreignEntry(e), to = this.typeOf(e), base = to.replace(/\?$/, '');
-      return entry && this.type(entry.type, e) === base && this.checkedConvert('', entry, e, base !== to) ? entry : null;
+      const entry = this.states.foreignEntry(e);
+      return entry && this.type(entry.type, e) === this.typeOf(e) && this.checkedConvert('', entry, e) ? entry : null;
     } catch { return null; }
   }
 
@@ -9719,7 +9719,7 @@ ${members.join('\n')}
       if (from === 'Double' && this.native.isEnumType(to)) return this.native.toSwift(e.expression, to);
       if (to === 'Never') return this.expr(e.expression);
       const entry = this.checkedAssertion(e);
-      if (entry) return this.checkedConvert(this.expr(e.expression), entry, e, isOptional(to))!;
+      if (entry) return this.checkedConvert(this.expr(e.expression), entry, e)!;
       // The assertion is erased in JavaScript: where Swift needs the type, the value is converted as script converts it there.
       if (!this.library && from === 'Any?' && ['String', 'Double', 'Bool'].includes(to)) return `jsLenient${to === 'Double' ? 'Number' : to}(${this.expr(e.expression)})`;
       if (from === 'Any?' && to !== 'Any?' && /^\w+\?$/.test(to) && this.checkedClassAssertion(e)) return `(try jsCast(${this.expr(e.expression)}, ${to.slice(0, -1)}.self))`;
