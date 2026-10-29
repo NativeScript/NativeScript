@@ -58,10 +58,14 @@ export interface PlacementBackend {
   shortcut?(e: ts.Expression, target: string): string | null;
   /** A conditional placed in a `JSNullish` slot, each branch placed on its own. */
   branches(e: ts.ConditionalExpression, target: string): string;
+  /** Its own reads of a value a `return` gives back, before the shared front (Swift's undefined reads of a call's result). */
+  result?(e: ts.Expression, slot: ResultSlot): string | null;
 }
 
-/** `e` where the backend needs a value of `target`. */
-export function place(b: PlacementBackend, e: ts.Expression, target: string): string {
+/** `e` where the backend needs a value of `target`, or the value a function gives back in its result `slot`. */
+export function place(b: PlacementBackend, e: ts.Expression, to: string | ResultSlot): string {
+  if (typeof to !== 'string') return b.result?.(e, to) ?? place(b, e, to.target);
+  const target = to;
   const code = placed(b, e, target);
   return b.library && ts.isVariableDeclaration(e.parent) && e.parent.initializer === e && emptyMarkers(b).has(e.parent) ? b.cells.marker(code) : code;
 }
@@ -164,8 +168,9 @@ function hasConst(d: ts.EnumDeclaration): boolean {
   return !!ts.getModifiers(d)?.some((m) => m.kind === ts.SyntaxKind.ConstKeyword);
 }
 
-/** A function's result as the slot its `return`s and its expression body are placed in (`SlotKind` 'return'). */
+/** A function's result as the slot its `return`s and its expression body are placed in. */
 export interface ResultSlot {
+  kind: 'return';
   /** The backend's spelling: in an async function or a generator, the value its continuation takes. */
   target: string;
   type: NativeType;
@@ -173,6 +178,13 @@ export interface ResultSlot {
   lowered: boolean;
   /** The function the slot is the result of. */
   fn?: ts.SignatureDeclaration;
+  /** False where what gives the value cannot throw (a synthesized getter or initializer): a conversion's TypeError is reported there, the value empty. */
+  throws?: false;
+}
+
+/** The result slot of a function giving back `target`. */
+export function resultSlot(target: string, fn?: ts.SignatureDeclaration, lowered = false): ResultSlot {
+  return { kind: 'return', target, type: parseNativeType(target ?? ''), lowered, fn };
 }
 
 /** One cell of a `return`-kind slot. */

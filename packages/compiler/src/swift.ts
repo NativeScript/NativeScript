@@ -10,7 +10,7 @@ import { assignedValues, openSpreadType, spreadsArrays, initializedNull, interse
 import { memberName } from './stable-names.ts';
 import { shadowConversions } from './conversion-shadow.ts';
 import { parseNativeType, plan, type Slot, type Value } from './conversion.ts';
-import { isEnumObject, place, returnCell, type PlacementBackend, type ResultSlot, type ReturnBackend, type ReturnCell } from './placement.ts';
+import { isEnumObject, place, resultSlot, returnCell, type PlacementBackend, type ResultSlot, type ReturnBackend, type ReturnCell } from './placement.ts';
 import { castCode, elementOf, helper, implicitOf, isPure, isUnwrap, markOf, marked, memberOf, orNil, pureCode, tried, tryCode, unwrapInner, unwrappedCode, unwrappedIf, valueOf } from './swift-marks.ts';
 import { convertedRead, onlyNull, ValueStates, type StateBackend } from './value-states.ts';
 import type { Form } from './forms.ts';
@@ -3028,7 +3028,8 @@ ${members.join('\n')}
     lines.push('    convenience init(jsObject: Any?) {');
     this.declareInit('jsObject: Any?', false);
     // A field the object lacks, or holds of another type (JSON without an optional field), reads as JavaScript converts it where used.
-    const field = (f: ShapeField) => ['String', 'Double', 'Bool'].includes(f.type) ? `jsLenient${f.type === 'Double' ? 'Number' : f.type}(jsField(jsObject, ${swiftString(f.name)}))` : this.reportedRead(this.fromAnyValue(`jsField(jsObject, ${swiftString(f.name)})`, this.lenient ? held(f).replace(/^\((.*)\)!$/, '($1)?') : held(f).endsWith('!') ? optionalType(f.type) : f.type));
+    const fieldType = (f: ShapeField) => (this.lenient ? held(f).replace(/^\((.*)\)!$/, '($1)?') : held(f).endsWith('!') ? optionalType(f.type) : f.type);
+    const field = (f: ShapeField) => ['String', 'Double', 'Bool'].includes(f.type) ? `jsLenient${f.type === 'Double' ? 'Number' : f.type}(jsField(jsObject, ${swiftString(f.name)}))` : this.reportedRead(this.fromAnyValue(`jsField(jsObject, ${swiftString(f.name)})`, fieldType(f)), this.getterSlot(fieldType(f)));
     const nulls = nullable.length ? [`jsNulls: jsNullKeys(jsObject, [${nullable.map((f) => swiftString(f.name)).join(', ')}])`] : [];
     lines.push(`        self.init(${[...fields.map((f) => `${label(f.name)}: ${field(f)}`), 'jsOrder: (jsObject as? JSDynamic)?.jsKeys', ...nulls].join(', ')})`);
     if (optional.length) lines.push(`        jsUnset = jsUnsetKeys(jsObject, [${optional.map((f) => swiftString(f.name)).join(', ')}])`);
@@ -3336,9 +3337,18 @@ ${members.join('\n')}
     try { return this.fromAnyValue(code, type); } finally { this.checkedCast = saved; }
   }
 
-  /** A getter's conversion that may throw (an array holding undefined where its elements are objects): reported, the getter giving undefined. */
-  private reportedRead(v: Value): string {
+  /**
+   * `v` given back in `slot`. Where the slot's context cannot throw (a synthesized getter or initializer), a conversion
+   * that may (an array holding undefined where its elements are objects) is reported, the slot given undefined.
+   */
+  private reportedRead(v: Value, slot: ResultSlot): string {
+    if (slot.throws !== false) return v.code;
     return v.mark?.op === 'try' ? orNil(`jsReported { ${v.code} }`) : v.throws && v.mark?.op === 'converted' ? orNil(`jsReported { try ${v.code} }`) : v.code;
+  }
+
+  /** The result slot of a synthesized getter or initializer giving back `type`, which cannot throw. */
+  private getterSlot(type: string): ResultSlot {
+    return { ...resultSlot(type), throws: false };
   }
 
   /** An untyped array as an array of `element`, each converted: a new array unless it already is one of them. */
@@ -4840,7 +4850,8 @@ ${members.join('\n')}
         }
         else {
           const e = fn.body as ts.Expression;
-          lines = [...this.paramPrelude(fn), this.bodyReturned(returnCell(this.returns, e, this.resultSlot(e), true))];
+          const slot = this.resultSlot(e);
+          lines = [...this.paramPrelude(fn), this.bodyReturned(returnCell(this.returns, e, slot, true), slot)];
         }
         return `{\n${lines.filter(Boolean).join('\n')}\n${base}}`;
       } finally { this.indent = saved; }
@@ -5083,7 +5094,7 @@ ${members.join('\n')}
   closure(fn: ts.ArrowFunction | ts.FunctionExpression, pad: string[] = []): string {
     if (this.library && ts.isFunctionExpression(fn) && (isMethodValue(fn) || this.readsArguments(fn))) return this.methodValue(fn);
     // A callback whose slot returns void returns nothing, whatever its expression body evaluates to.
-    const ret = this.closureReturn(fn);
+    const ret = this.closureResult(fn).target;
     const throws = !isAsync(fn) && this.throwsInfo.fn(fn) ? 'throws ' : '';
     // A function expression's name is only for itself: one that never refers to itself is an anonymous function.
     if (fn.name && refersTo(fn.body, this.checker.getSymbolAtLocation(fn.name), this.checker)) throw this.error(fn, 'a named function expression');
@@ -5177,7 +5188,12 @@ ${members.join('\n')}
     return context ? this.checker.getNonNullableType(context).getCallSignatures()[0] : undefined;
   }
 
-  /** What a closure literal returns in Swift: nothing where its slot returns void, else its own type. */
+  /** A closure literal's result slot in Swift: nothing where its slot returns void, else its own type. */
+  private closureResult(fn: ts.ArrowFunction | ts.FunctionExpression): ResultSlot {
+    return resultSlot(this.closureReturn(fn), fn);
+  }
+
+  /** `closureResult`'s spelling. */
   private closureReturn(fn: ts.ArrowFunction | ts.FunctionExpression): string {
     const slot = this.slotOf(fn);
     const voidSlot = !!slot && !!(slot.getReturnType().flags & ts.TypeFlags.Void) && !isAsync(fn);
@@ -5201,8 +5217,8 @@ ${members.join('\n')}
   private closureType(fn: ts.ArrowFunction | ts.FunctionExpression): string {
     const params = fn.parameters.filter((p) => !(ts.isIdentifier(p.name) && p.name.text === 'this'));
     const own = params.map((p) => escapingParam(p.questionToken || this.states.mayBeNull(p) || nullableTypeNode(p.type) ? optionalType(this.typeOf(p.name)) : this.typeOf(p.name)));
-    if (this.takesRestArray(fn)) return `(JSArray<Any?>) throws -> ${this.closureReturn(fn)}`;
-    return `(${[...own, ...(this.library && ts.isFunctionExpression(fn) && (isMethodValue(fn) || this.readsArguments(fn)) ? [] : this.unusedParameters(fn))].join(', ')}) throws -> ${this.closureReturn(fn)}`;
+    if (this.takesRestArray(fn)) return `(JSArray<Any?>) throws -> ${this.closureResult(fn).target}`;
+    return `(${[...own, ...(this.library && ts.isFunctionExpression(fn) && (isMethodValue(fn) || this.readsArguments(fn)) ? [] : this.unusedParameters(fn))].join(', ')}) throws -> ${this.closureResult(fn).target}`;
   }
 
   /** A callback for an API that does not take throwing closures (a timer): what it throws is reported. */
@@ -5763,7 +5779,7 @@ ${members.join('\n')}
         const stored = isOptional(t) || (z && !isOptional(vt)) ? t : optionalType(t);
         const read = `JSPrototypes.value(type(of: self), ${swiftString(n)}, self)`;
         const own = `__own_${n.replace(/\W/g, '_')}`;
-        const inherited = this.reportedRead(z ? this.fromAnyCodeValue(read, t, true) : this.fromAnyValue(read, stored));
+        const inherited = this.reportedRead(z ? this.fromAnyCodeValue(read, t, true) : this.fromAnyValue(read, stored), this.getterSlot(z ? t : stored));
         this.declare(own, { kind: 'var', type: `Optional<${stored}>` });
         this.declare(n, { kind: 'var', type: vt });
         lines.push(`    var ${own}: Optional<${stored}> = nil`, `    var ${ident(n)}: ${vt} {`, `        get { if let v = ${own} { return v }; return ${z && inherited.startsWith('(jsReported') ? `${inherited} ?? ${z}` : inherited} }`, `        set { ${own} = .some(newValue) }`, '    }');
@@ -5777,7 +5793,7 @@ ${members.join('\n')}
         const unset = !t.endsWith('?') && !t.endsWith('!') && (this.zero(t) === null || /^JS(Array|Map|Set)</.test(t)) && !isFunctionType(t);
         const vt = unset ? optionalType(t) : t;
         this.declare(n, { kind: 'var', type: unset && this.lenient ? this.lenientRef(t) : vt });
-        lines.push(`    var ${ident(n)}: ${unset && this.lenient ? this.lenientRef(t) : vt} {`, `        get { ${this.reportedRead(this.fromAnyCodeValue(`jsExpandoGet(self, ${swiftString(n)})`, vt, true))} }`, `        set { jsExpandoSet(self, ${swiftString(n)}, ${this.convert('newValue', vt, 'Any?')}) }`, '    }');
+        lines.push(`    var ${ident(n)}: ${unset && this.lenient ? this.lenientRef(t) : vt} {`, `        get { ${this.reportedRead(this.fromAnyCodeValue(`jsExpandoGet(self, ${swiftString(n)})`, vt, true), this.getterSlot(vt))} }`, `        set { jsExpandoSet(self, ${swiftString(n)}, ${this.convert('newValue', vt, 'Any?')}) }`, '    }');
         if (m.initializer) {
           this.indent = '        ';
           fieldInits.push(`        self.${ident(n)} = ${this.tryPrefix(m.initializer)}${this.coerce(m.initializer, t)}`);
@@ -8107,8 +8123,7 @@ ${members.join('\n')}
 
   /** The result slot of the function being translated, where `at` (a `return`, an expression body) gives its value. */
   private resultSlot(at: ts.Node): ResultSlot {
-    const target = this.asyncCtx ? this.asyncCtx.result : this.returnType;
-    return { target, type: parseNativeType(target ?? ''), lowered: !!this.asyncCtx, fn: ts.findAncestor(at.parent, ts.isFunctionLike) };
+    return resultSlot(this.asyncCtx ? this.asyncCtx.result : this.returnType, ts.findAncestor(at.parent, ts.isFunctionLike), !!this.asyncCtx);
   }
 
   private returnsSet?: ReturnBackend;
@@ -8137,7 +8152,7 @@ ${members.join('\n')}
 
   /** A `return` statement's cell, as Swift writes it. */
   private returned(cell: ReturnCell, slot: ResultSlot): string {
-    const i = this.indent, a = this.asyncCtx, ret = slot.target;
+    const i = this.indent, a = this.asyncCtx;
     switch (cell.step) {
       case 'empty': return a ? `${i}${a.ret(null, false)}\n${i}return` : `${i}return${cell.code ? ` ${cell.code}` : ''}`;
       case 'drop': return `${i}${tryAssigned(this.tryPrefix(cell.e), `_ = ${this.expr(cell.e)}`)}\n${i}return`;
@@ -8153,29 +8168,35 @@ ${members.join('\n')}
       const own = this.typeOf(e).replace(/[?!]$/, '');
       const adopted = isPromise && own !== `JSPromise<${a.result}>` ? this.convert(this.expr(e), own, `JSPromise<${a.result}>`) : this.expr(e);
       // The `try` marks the value: a return through a finally holds it in a block, which a `try` cannot mark.
-      return `${i}${a.ret(this.tryPrefix(e) + (isPromise ? adopted : this.coerce(e, a.result)), isPromise)}\n${i}return`;
+      return `${i}${a.ret(this.tryPrefix(e) + (isPromise ? adopted : place(this.placement, e, slot)), isPromise)}\n${i}return`;
     }
+    return `${i}return ${this.tryPrefix(e)}${place(this.placement, e, slot)}`;
+  }
+
+  /** A returned value's reads before the shared placement front, as Swift reads a value that may be undefined. */
+  private resultRead(e: ts.Expression, slot: ResultSlot): string | null {
+    const ret = slot.target;
+    if (slot.lowered) return null;
     // Code checked without strictNullChecks returns undefined from a function of a value type: read as the type's zero, as its fields are.
     if (ret.endsWith('?') && ret !== 'Any?') {
       const maybe = this.maybeUndefined(e);
-      if (maybe) return `${i}return ${this.tryPrefix(e)}${maybe}`;
+      if (maybe) return maybe;
     }
     // A library call that may give undefined (`map.get(key)`) returned where a value type is declared: as such a slot reads undefined.
     if (!isOptional(ret) && ret !== 'Any?' && ret !== 'Void' && ts.isCallExpression(e) && !(slot.fn && this.states.nullishHeld(slot.fn))) {
       const maybe = this.maybeUndefined(e);
-      if (maybe && /^JSMatch[?!]?$/.test(this.typeOf(e)) && /^JSArray<String>[?!]?$/.test(ret)) return `${i}return ${this.tryPrefix(e)}${this.coerce(e, ret)}`;
+      if (maybe && /^JSMatch[?!]?$/.test(this.typeOf(e)) && /^JSArray<String>[?!]?$/.test(ret)) return null;
       if (maybe) {
         const value = this.undefinedAs(maybe, ret, this.calledType(e));
         // Lenient code's closure typed to give an object, giving undefined: a TypeError, Swift's closure giving none.
-        const present = this.lenient && !this.looseTolerated(e) ? this.presentCode(value, ret) : value;
-        return `${i}return ${this.tryPrefix(e)}${present}`;
+        return this.lenient && !this.looseTolerated(e) ? this.presentCode(value, ret) : value;
       }
     }
-    return `${i}return ${this.tryPrefix(e)}${this.coerce(e, ret)}`;
+    return null;
   }
 
-  /** An expression body's cell, as Swift writes it. */
-  private bodyReturned(cell: ReturnCell): string {
+  /** An expression body's cell, as Swift writes it: its value placed by the slot's type alone, without `resultRead`. */
+  private bodyReturned(cell: ReturnCell, slot: ResultSlot): string {
     const i = this.indent;
     switch (cell.step) {
       case 'empty': return '';
@@ -8186,7 +8207,7 @@ ${members.join('\n')}
       case 'voidCall': return `${i}${this.tryPrefix(cell.e)}${this.exprStatement(cell.e)}\n${i}return ${cell.empty}`;
       case 'never': throw new Error('unreachable: an expression body never ends the function by its call');
     }
-    return cell.code !== undefined ? `${i}return ${cell.code}` : `${i}return ${this.tryPrefix(cell.e)}${this.coerce(cell.e, this.returnType)}`;
+    return cell.code !== undefined ? `${i}return ${cell.code}` : `${i}return ${this.tryPrefix(cell.e)}${this.coerce(cell.e, slot.target)}`;
   }
 
   private placementSet?: PlacementBackend;
@@ -8245,6 +8266,7 @@ ${members.join('\n')}
         return null;
       },
       branches: (bare, target) => this.ternary(bare, target, (x) => this.coerce(x, target)),
+      result: (e, slot) => this.resultRead(e, slot),
     };
   }
 
@@ -8937,7 +8959,7 @@ ${members.join('\n')}
       if (decl && ts.isMethodDeclaration(decl) && (ts.isArrowFunction(value) || ts.isFunctionExpression(value))) {
         const slot = this.slotOf(value)?.getParameters() ?? [];
         const params = [...value.parameters.map((q) => this.typeOf(q.name)), ...slot.slice(value.parameters.length).map((q) => this.type(this.checker.getTypeOfSymbolAtLocation(q, value), value))];
-        return `jsExpandoSet(${o}, ${swiftString(key)}, ${this.boxFunction(this.expr(value), `(${params.join(', ')}) throws -> ${this.closureReturn(value)}`)})`;
+        return `jsExpandoSet(${o}, ${swiftString(key)}, ${this.boxFunction(this.expr(value), `(${params.join(', ')}) throws -> ${this.closureResult(value).target}`)})`;
       }
       return `jsExpandoSet(${o}, ${swiftString(key)}, ${this.tryPrefix(value)}${this.coerce(value, 'Any?')})`;
     };
@@ -12982,11 +13004,11 @@ ${members.join('\n')}
         const own = f && !adopt && !ts.isArrowFunction(f) && !ts.isFunctionExpression(f) ? functionParts(this.typeOf(f).replace(/^\((.*)\)!$/, '$1')) : null;
         if (own && (own.rest >= 0 || (value === 'Void' && own.params.length && own.params[0] !== 'Void'))) onFulfilled = this.coerce(f, `(${value}) throws -> ${own.result}`);
         // A handler giving nothing where the chain is of any value (`const p: Promise<unknown> = q.then(() => {})`): undefined.
-        if (f && !adopt && (ts.isArrowFunction(f) || ts.isFunctionExpression(f)) && this.closureReturn(f) === 'Void' && /^JSPromise<Any\?>[?!]?$/.test(this.typeOf(e))) {
+        if (f && !adopt && (ts.isArrowFunction(f) || ts.isFunctionExpression(f)) && this.closureResult(f).target === 'Void' && /^JSPromise<Any\?>[?!]?$/.test(this.typeOf(e))) {
           onFulfilled = `{ (__v: ${value}) throws -> Any? in try (${onFulfilled})(${ignores || f.parameters.length ? '__v' : ''}); return nil }`;
         }
         // A handler giving a promise on one path and nothing on another (`if (video) return load()`): undefined where it gives none.
-        const maybe = f && adopt && (ts.isArrowFunction(f) || ts.isFunctionExpression(f)) ? /^JSPromise<(.*)>\?$/.exec(this.closureReturn(f))?.[1] : undefined;
+        const maybe = f && adopt && (ts.isArrowFunction(f) || ts.isFunctionExpression(f)) ? /^JSPromise<(.*)>\?$/.exec(this.closureResult(f).target)?.[1] : undefined;
         if (maybe !== undefined) {
           // The promise is then of the value or undefined: one of a value Swift holds optional, unless it is undefined already.
           const held = maybe === 'Void' || isOptional(maybe) ? maybe : optionalType(maybe);
@@ -12995,14 +13017,14 @@ ${members.join('\n')}
           onFulfilled = `{ (__v: ${value}) throws -> JSPromise<${held}> in ${given} }`;
         }
         // A handler's promise of a value where the chain is of any value (`promise = promise.then(() => animate())` on a `Promise<any>`): its value untyped.
-        const gives = f && adopt && maybe === undefined && !g && (ts.isArrowFunction(f) || ts.isFunctionExpression(f)) ? /^JSPromise<(.*)>$/.exec(this.closureReturn(f))?.[1] : undefined;
+        const gives = f && adopt && maybe === undefined && !g && (ts.isArrowFunction(f) || ts.isFunctionExpression(f)) ? /^JSPromise<(.*)>$/.exec(this.closureResult(f).target)?.[1] : undefined;
         if (gives !== undefined && gives !== 'Any?' && /^JSPromise<Any\?>[?!]?$/.test(this.typeOf(e))) {
           const call = tryCode(`(${onFulfilled})(${ignores || (f as ts.ArrowFunction).parameters.length ? '__v' : ''})`);
           onFulfilled = `{ (__v: ${value}) throws -> JSPromise<Any?> in (${call}).then { (__r: ${gives}) -> Any? in ${gives === 'Void' ? 'nil' : this.convert('__r', gives, 'Any?')} } }`;
         }
         // A handler that only throws (`() => { throw new Error(…) }`) beside a rejection handler giving a value: typed as that one.
         const other = g && (ts.isArrowFunction(g) || ts.isFunctionExpression(g)) ? this.returnTypeOf(g) : undefined;
-        if (!adopt && f && (ts.isArrowFunction(f) || ts.isFunctionExpression(f)) && this.closureReturn(f) === 'Never' && other && other !== 'Never') {
+        if (!adopt && f && (ts.isArrowFunction(f) || ts.isFunctionExpression(f)) && this.closureResult(f).target === 'Never' && other && other !== 'Never') {
           onFulfilled = `{ (__v: ${value}) throws -> ${other} in try (${onFulfilled})(${ignores || f.parameters.length ? '__v' : ''}) }`;
         }
         return `${t}.${adopt ? 'thenAdopt' : 'then'}(${[onFulfilled, hasRejected && this.rejectionHandler(g, f && !nullFulfilled && (ts.isArrowFunction(f) || ts.isFunctionExpression(f)) ? this.returnTypeOf(f) : nullFulfilled ? value : undefined)].filter(Boolean).join(', ')})`;
@@ -14374,7 +14396,7 @@ ${members.join('\n')}
         const own = p.parameters.filter((q) => !(ts.isIdentifier(q.name) && q.name.text === 'this'));
         return { code: this.closure(p as unknown as ts.FunctionExpression), type: `(${own.map((q) => this.typeOf(q.name)).join(', ')}) throws -> ${this.returnTypeOf(p)}`, params: own.length };
       }
-      if (ts.isPropertyAssignment(p) && (ts.isArrowFunction(p.initializer) || ts.isFunctionExpression(p.initializer))) return { code: this.closure(p.initializer), type: `(${p.initializer.parameters.map((q) => this.typeOf(q.name)).join(', ')}) throws -> ${this.closureReturn(p.initializer)}`, params: p.initializer.parameters.length };
+      if (ts.isPropertyAssignment(p) && (ts.isArrowFunction(p.initializer) || ts.isFunctionExpression(p.initializer))) return { code: this.closure(p.initializer), type: `(${p.initializer.parameters.map((q) => this.typeOf(q.name)).join(', ')}) throws -> ${this.closureResult(p.initializer).target}`, params: p.initializer.parameters.length };
       throw this.error(p, 'this member of an iterator object');
     };
     for (const p of e.properties) {

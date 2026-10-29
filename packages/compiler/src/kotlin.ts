@@ -8,7 +8,7 @@ import { assignedValues, openSpreadType, spreadsArrays, definitelyAssignedFields
 import { memberName } from './stable-names.ts';
 import { shadowConversions } from './conversion-shadow.ts';
 import { parseNativeType, type Mark, type Value } from './conversion.ts';
-import { isEnumObject, place, returnCell, type PlacementBackend, type ResultSlot, type ReturnBackend, type ReturnCell } from './placement.ts';
+import { isEnumObject, place, resultSlot, returnCell, type PlacementBackend, type ResultSlot, type ReturnBackend, type ReturnCell } from './placement.ts';
 import { convertedRead, onlyNull, ValueStates, type StateBackend } from './value-states.ts';
 import type { Form } from './forms.ts';
 import { isCoreDeclaration } from './core.ts';
@@ -2658,7 +2658,8 @@ export class Translator implements AsyncTranslator {
           }
         } else {
           const e = fn.body as ts.Expression;
-          lines = [...this.paramPrelude(fn), this.bodyReturned(returnCell(this.returns, e, this.resultSlot(e), true))];
+          const slot = this.resultSlot(e);
+          lines = [...this.paramPrelude(fn), this.bodyReturned(returnCell(this.returns, e, slot, true), slot)];
         }
         return `{\n${lines.filter(Boolean).join('\n')}\n${base}}`;
       } catch (e) { throw this.located(e, fn); } finally { this.indent = saved; }
@@ -2746,16 +2747,23 @@ export class Translator implements AsyncTranslator {
       const call = `__f(${args.join(', ')})`;
       return `run { val __f = ${this.closure(fn)}; fun(${params.join(', ')})${slotParts.ret === 'Unit' ? ` { ${call} }` : `: ${slotParts.ret} = ${call}`} }`;
     }
-    const voidSlot = (!!contextual && !!(contextual.getReturnType().flags & ts.TypeFlags.Void) && !isAsync(fn)) || slotRet === 'Unit';
-    let ret = voidSlot ? 'Unit' : slotRet ?? this.returnTypeOf(fn);
-    // Library mode: a function returning null where TypeScript (unchecked for null) infers an object: nullable.
-    if (this.library && !slotRet && !voidSlot && this.isObjectType(ret) && !isNullable(ret) && fn.body && returnsNull(fn.body)) ret = optionalType(ret);
+    const ret = this.closureResult(fn, slotRet).target;
     if (!ts.isMethodDeclaration(fn) && fn.name && fn.body && refersTo(fn.body, this.checker.getSymbolAtLocation(fn.name), this.checker)) throw this.error(fn, 'a named function expression');
     let params = this.params(fn, true);
     // A slot's function type may take more parameters than the literal declares (JavaScript ignores extras).
     const slotParams = slot ? functionTypeParts(slot)?.params ?? [] : [];
     for (let k = fn.parameters.length; k < slotParams.length; k++) params += `${params ? ', ' : ''}__u${k}: ${slotParams[k]}`;
     return this.asLambda(fn, params, ret) ?? `fun(${params})${ret === 'Unit' ? '' : `: ${ret}`} ${this.functionBody(fn, ret, this.indent)}`;
+  }
+
+  /** A function literal's result slot, where `slotRet` is the result of the function type it is given as: nothing where that returns void, else its own type. */
+  private closureResult(fn: ts.ArrowFunction | ts.FunctionExpression | ts.MethodDeclaration, slotRet: string | undefined): ResultSlot {
+    const contextual = this.checker.getContextualType(fn)?.getCallSignatures()[0];
+    const voidSlot = (!!contextual && !!(contextual.getReturnType().flags & ts.TypeFlags.Void) && !isAsync(fn)) || slotRet === 'Unit';
+    let ret = voidSlot ? 'Unit' : slotRet ?? this.returnTypeOf(fn);
+    // Library mode: a function returning null where TypeScript (unchecked for null) infers an object: nullable.
+    if (this.library && !slotRet && !voidSlot && this.isObjectType(ret) && !isNullable(ret) && fn.body && returnsNull(fn.body)) ret = optionalType(ret);
+    return resultSlot(ret, fn);
   }
 
   /**
@@ -6082,8 +6090,7 @@ export class Translator implements AsyncTranslator {
 
   /** The result slot of the function being translated, where `at` (a `return`, an expression body) gives its value. */
   private resultSlot(at: ts.Node): ResultSlot {
-    const target = this.asyncCtx ? this.asyncCtx.result : this.returnType;
-    return { target, type: parseNativeType(target), lowered: !!this.asyncCtx, fn: ts.findAncestor(at.parent, ts.isFunctionLike) };
+    return resultSlot(this.asyncCtx ? this.asyncCtx.result : this.returnType, ts.findAncestor(at.parent, ts.isFunctionLike), !!this.asyncCtx);
   }
 
   private returnsSet?: ReturnBackend;
@@ -6131,20 +6138,20 @@ export class Translator implements AsyncTranslator {
     if (a) {
       if (a.generator === 'async') return `${i}${this.lowering.returnIn(a, e)}\n${i}return`;
       const isPromise = this.isPromiseType(this.typeOf(e));
-      return `${i}${a.ret(isPromise ? this.expr(e) : this.coerce(e, a.result), isPromise)}\n${i}return`;
+      return `${i}${a.ret(isPromise ? this.expr(e) : place(this.placement, e, slot), isPromise)}\n${i}return`;
     }
-    return `${i}return ${this.coerce(e, slot.target)}`;
+    return `${i}return ${place(this.placement, e, slot)}`;
   }
 
   /** An expression body's cell, as Kotlin writes it. */
-  private bodyReturned(cell: ReturnCell): string {
+  private bodyReturned(cell: ReturnCell, slot: ResultSlot): string {
     const i = this.indent, back = this.returnKeyword();
     switch (cell.step) {
       case 'empty': case 'drop': return i + this.exprStatement(cell.e!);
       case 'voidCall': return `${i}${this.exprStatement(cell.e)}\n${i}${back} ${cell.empty}`;
       case 'never': throw new Error('unreachable: an expression body never ends the function by its call');
     }
-    return `${i}${back} ${cell.code ?? this.coerce(cell.e, this.returnType)}`;
+    return `${i}${back} ${cell.code ?? place(this.placement, cell.e, slot)}`;
   }
 
   private placementSet?: PlacementBackend;
