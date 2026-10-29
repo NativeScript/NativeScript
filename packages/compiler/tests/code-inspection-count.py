@@ -22,10 +22,10 @@ import sys
 # Variables and calls holding emitted code, as the translators name them.
 CODE = (r'(?:code|made|made2|inner|read|text|receiver|holder|value|raw|chain|call|body|ms|out|arg|lhs|written|line|lines'
         r'|init|steps|vals|binds|implicit|emitted|converted|left|right|cast\[1\]|up\[1\])')
-EMITTING = r'this\.(?:expr|coerce|coerceTyped|tryPrefix|fromAny|fromAnyCode|convert)\([^)]*\)|code\(\)'
+EMITTING = r'this\.(?:expr|typeofExpr|coerce|coerceTyped|tryPrefix|fromAny|fromAnyCode|convert)\([^)]*\)|code\(\)'
 PATTERNS = [
     ('regex', re.compile(r'\.(?:test|exec)\((?:' + EMITTING + r'|' + CODE + r')\)')),
-    ('string', re.compile(r'(?<![\w.])' + CODE + r'\.(?:startsWith|endsWith|includes|indexOf|match|slice\(4\)|replace\(/\^try)')),
+    ('string', re.compile(r'(?:(?<![\w.])' + CODE + r'|' + EMITTING + r')\.(?:startsWith|endsWith|includes|indexOf|match|slice\(4\)|replace\(/\^try|replace\(/!)')),
     ('helper', re.compile(r'\b(?:THROWING_CODE|throwsOutside|outsideClosures|singleTry|tryAssigned|balanced'
                           r'|wrapsWhole|postfixable|oneExpression|mentions|openSwiftChain|withoutRedundantImplicit'
                           r'|withoutAvailableBlocks|namesHeldOptional)\b(?:\.test)?\(')),
