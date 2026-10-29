@@ -4,6 +4,7 @@ import { admitsUndefined, alwaysEnds, givenBy, heldDowncasts, implementedInterfa
 import { type Form, Forms, isGeneric, ONE_ELEMENT, representation } from './forms.ts';
 import { isAsync, isStatic } from './throws.ts';
 import { shadowForms } from './forms-shadow.ts';
+import { storeOf, type Store } from './placement.ts';
 
 const COMPILER = dirname(import.meta.dirname);
 /** Sources the compiler ships to be compiled with an app: plugin bindings and ports of libraries. */
@@ -1100,6 +1101,11 @@ export class ValueStates {
     return this.foreignForm(a, () => this.argumentForm(call, k));
   }
 
+  /** `foreignPlacement` of `a` stored by `at` (a declaration, an object literal's field, an assignment's target), decided from the store. */
+  foreignStore(at: Store, a: ts.Expression): Form | null {
+    return this.foreignForm(a, () => this.storeForm(at));
+  }
+
   private foreignForm(a: ts.Expression, slotForm: () => Form | null): Form | null {
     const b = this.backend;
     if (b.library || b.lenient || !this.appCode(a) || !this.untypedValue(a)) return null;
@@ -1124,23 +1130,28 @@ export class ValueStates {
       const awaited = this.checker.getAwaitedType(result);
       return form.element && awaited && !ts.isArrowFunction(fn) && !ts.isFunctionExpression(fn) ? { ...form.element, type: this.checker.getNonNullableType(awaited) } : null;
     }
-    if (ts.isVariableDeclaration(p) && p.initializer === x) return ts.isIdentifier(p.name) ? slot(p) : null;
-    if (ts.isBinaryExpression(p) && p.operatorToken.kind === ts.SyntaxKind.EqualsToken && p.right === x) {
-      const left = ts.skipOuterExpressions(p.left, ts.OuterExpressionKinds.Parentheses);
-      if (ts.isIdentifier(left)) {
-        const d = this.checker.getSymbolAtLocation(left)?.valueDeclaration;
-        return d && (ts.isVariableDeclaration(d) || (ts.isParameter(d) && !ts.isParameterPropertyDeclaration(d, d.parent))) ? slot(d) : null;
-      }
-      if (ts.isPropertyAccessExpression(left)) return this.fieldSlot(this.checker.getSymbolAtLocation(left.name)?.valueDeclaration, slot);
-      if (ts.isElementAccessExpression(left) && this.collection(left.expression) === 'Array' && this.checker.getTypeAtLocation(left.argumentExpression).flags & ts.TypeFlags.NumberLike) return this.forms().formOf(left.expression).element ?? null;
-      return null;
-    }
-    if (ts.isPropertyDeclaration(p) && p.initializer === x) return this.fieldSlot(p, slot);
-    if (ts.isPropertyAssignment(p) && p.initializer === x && ts.isObjectLiteralExpression(p.parent)) {
-      const literal = this.checker.getContextualType(p.parent);
-      const name = ts.isIdentifier(p.name) || ts.isStringLiteral(p.name) ? p.name.text : null;
+    const store = storeOf(a);
+    return store ? this.storeForm(store) : null;
+  }
+
+  /** The form of the slot of the app's own code `at` stores a value in, if it is one M6 checks. */
+  private storeForm(at: Store): Form | null {
+    const slot = (d: ts.Declaration | undefined) => this.declaredSlot(d);
+    if (ts.isVariableDeclaration(at)) return ts.isIdentifier(at.name) ? slot(at) : null;
+    if (ts.isPropertyDeclaration(at)) return this.fieldSlot(at, slot);
+    if (ts.isPropertyAssignment(at)) {
+      const literal = ts.isObjectLiteralExpression(at.parent) && this.checker.getContextualType(at.parent);
+      const name = ts.isIdentifier(at.name) || ts.isStringLiteral(at.name) ? at.name.text : null;
       return literal && name ? this.fieldSlot(this.checker.getNonNullableType(literal).getProperty(name)?.valueDeclaration, slot) : null;
     }
+    if (ts.isParameter(at)) return null;
+    const left = ts.skipOuterExpressions(at, ts.OuterExpressionKinds.Parentheses);
+    if (ts.isIdentifier(left)) {
+      const d = this.checker.getSymbolAtLocation(left)?.valueDeclaration;
+      return d && (ts.isVariableDeclaration(d) || (ts.isParameter(d) && !ts.isParameterPropertyDeclaration(d, d.parent))) ? slot(d) : null;
+    }
+    if (ts.isPropertyAccessExpression(left)) return this.fieldSlot(this.checker.getSymbolAtLocation(left.name)?.valueDeclaration, slot);
+    if (ts.isElementAccessExpression(left) && this.collection(left.expression) === 'Array' && this.checker.getTypeAtLocation(left.argumentExpression).flags & ts.TypeFlags.NumberLike) return this.forms().formOf(left.expression).element ?? null;
     return null;
   }
 

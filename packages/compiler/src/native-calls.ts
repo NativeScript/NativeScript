@@ -1,6 +1,7 @@
 import ts from 'typescript';
 import { implementedInterfaces } from './lang.ts';
 import { isStatic } from './throws.ts';
+import { argumentSlot, place } from './placement.ts';
 import { castCode, implicitOf, markOf, tryCode, unwrappedCode, unwrappedIf } from './swift-marks.ts';
 import { balanced, CF_CLASSES, functionParts, ident, isWriteTarget, NONISOLATED_DEINIT, optionalType, rootImplicit, splitTopLevel, THROWING_CODE, type Translator } from './swift.ts';
 import {
@@ -703,7 +704,7 @@ export class NativeAPI {
       if (f.kind === 'property') return this.fromSwift(`${selfCode(args[f.self!])}.${f.swift}`, f.returns, e);
       if (f.kind === 'staticProperty') return this.fromSwift(`${f.owner}.${f.swift}`, f.returns, e);
       const self = f.self !== undefined ? args.splice(f.self, 1)[0] : undefined;
-      const list = this.argList(args, f.labels, f.params);
+      const list = this.argList(e, args, f.labels, f.params);
       const code = f.kind === 'init' ? `${f.owner}(${list})`
         : f.kind === 'method' ? `${selfCode(self!)}.${f.swift}(${list})`
         : f.kind === 'staticMethod' ? `${f.owner}.${f.swift}(${list})`
@@ -732,7 +733,7 @@ export class NativeAPI {
       if (!init) throw this.t.error(e, `${r.name}.alloc().${name}() (no Swift initializer)`);
       const args = [...e.arguments];
       if (init.errorParam !== undefined) args.splice(init.errorParam, 1);
-      return this.errorCall(`${made}(${this.argList(args, init.labels, init.params)})`, init, e);
+      return this.errorCall(`${made}(${this.argList(e, args, init.labels, init.params)})`, init, e);
     }
     const own = this.t.resolve(callee.expression);
     const ownDecl = own?.valueDeclaration;
@@ -788,7 +789,7 @@ export class NativeAPI {
     if (m.errorParam !== undefined) args.splice(m.errorParam, 1);
     const defaults = (m as NativeMethod & { defaults?: string[] }).defaults ?? [];
     const out = this.errorOut(m, args.length);
-    const list = [this.argList(args, m.labels, m.params), ...defaults, ...(out ? [out] : [])].filter(Boolean).join(', ');
+    const list = [this.argList(e, args, m.labels, m.params), ...defaults, ...(out ? [out] : [])].filter(Boolean).join(', ');
     const target = r.isStatic ? this.className(cls!) : recv;
     // An optional requirement called through its protocol: the method where the object has one, a TypeError where not.
     const optionalCall = m.kind === 'method' && (m as NativeMethod).optional && !r.isStatic && lookupClass(r.module, r.name)?.kind === 'protocol' ? '!' : '';
@@ -813,7 +814,7 @@ export class NativeAPI {
     this.checkAvailable(m, e, `${native.name}.${name}()`);
     if (m.errorParam !== undefined && args.length > m.errorParam) throw this.t.error(args[m.errorParam], 'an NSError out-parameter');
     const out = this.errorOut(m, args.length);
-    const list = [this.argList(args, m.labels, m.params), ...(out ? [out] : [])].filter(Boolean).join(', ');
+    const list = [this.argList(e, args, m.labels, m.params), ...(out ? [out] : [])].filter(Boolean).join(', ');
     const receiver = castCode(this.t.expr(object), cls.kind === 'protocol' ? `any ${this.className(cls)}` : this.className(cls), 'as!');
     const called = `${receiver}.${m.swift}(${list})`;
     const code = out ? withErrorOut(called, m.returns) : called;
@@ -865,7 +866,7 @@ export class NativeAPI {
         if (args.length > m.errorParam) throw this.t.error(args[m.errorParam], 'an NSError out-parameter');
       }
       const out = this.errorOut(m, args.length);
-      const list = [this.argList(args, m.labels, m.params), ...(out ? [out] : [])].filter(Boolean).join(', ');
+      const list = [this.argList(e, args, m.labels, m.params), ...(out ? [out] : [])].filter(Boolean).join(', ');
       const called = `__o.${m.swift}(${list})`;
       const code = out ? withErrorOut(called, m.returns) : called;
       const value = this.fromSwift(code, m.returns, e);
@@ -1073,7 +1074,7 @@ export class NativeAPI {
       const p = o.properties.find((x) => x.name!.getText() === k)!;
       return ts.isPropertyAssignment(p) ? p.initializer : (p as ts.ShorthandPropertyAssignment).name;
     });
-    return this.fromSwift(`${this.className(cls)}(${this.argList(values, init.labels, init.params)})`, init.returns, e);
+    return this.fromSwift(`${this.className(cls)}(${this.argList(e, values, init.labels, init.params)})`, init.returns, e);
   }
 
   /** A native constant or enum-like global (`UIFontWeightBold`), or null. */
@@ -1129,17 +1130,23 @@ export class NativeAPI {
 
   // ---- Conversions --------------------------------------------------------------------------
 
-  private argList(args: readonly ts.Expression[], labels: (string | null)[], params: SwiftType[]): string {
+  private argList(call: ts.CallExpression | ts.NewExpression, args: readonly ts.Expression[], labels: (string | null)[], params: SwiftType[]): string {
     const out: string[] = [];
     let next = 0;
     params.forEach((type, k) => {
       const label = labels[k];
       // A `()` parameter (`init(toMemory: ())`) takes no JavaScript argument.
-      const value = type === '()' ? '()' : next < args.length ? this.toSwift(args[next++], type) : null;
+      const value = type === '()' ? '()' : next < args.length ? this.argument(call, args[next++], type) : null;
       if (value !== null) out.push(label ? `${label}: ${value}` : value);
     });
-    for (; next < args.length; next++) out.push(this.t.expr(args[next]));
+    for (; next < args.length; next++) out.push(this.argument(call, args[next], 'Any?', true));
     return out.join(', ');
+  }
+
+  /** `a` in the slot of a native parameter of `call` Swift types `type`, or past the parameters (`rest`), given as it is. */
+  private argument(call: ts.CallExpression | ts.NewExpression, a: ts.Expression, type: SwiftType, rest = false): string {
+    const k = call.arguments?.indexOf(a) ?? -1;
+    return place(this.t.placement, a, argumentSlot(this.t.placement, type, undefined, { call, k, a: k < 0 ? undefined : a }, rest ? { native: {}, rest } : { native: {} }));
   }
 
   /** A TypeScript value where a Swift API takes `target`. */

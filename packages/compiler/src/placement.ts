@@ -22,9 +22,9 @@ export interface StateCells {
   nulled(code: string): string;
   /**
    * F → P/U with a checked entry (§2.3b M6), or null where the slot's type has no checked convert: the form an argument's
-   * `slot` decided, else `foreignPlacement`'s.
+   * or a store's `slot` decided, else `foreignPlacement`'s.
    */
-  checked(e: ts.Expression, target: string, slot?: ParamSlot): string | null;
+  checked(e: ts.Expression, target: string, slot?: ParamSlot | StoreSlot): string | null;
   /** An empty marker's value as it is made (`emptyMarkers`), registered so that checked converts read it as an empty value. */
   marker(code: string): string;
 }
@@ -69,15 +69,17 @@ export interface PlacementBackend {
   argument?(e: ts.Expression, slot: ParamSlot): string | null;
 }
 
-/** `e` where the backend needs a value of `target`, the value a function gives back in its result `slot`, or an argument in its parameter's. */
-export function place(b: PlacementBackend, e: ts.Expression, to: string | ResultSlot | ParamSlot): string {
-  if (typeof to !== 'string') return to.kind === 'return' ? b.result?.(e, to) ?? place(b, e, to.target) : b.argument?.(e, to) ?? placed(b, e, to.target, to);
-  const target = to;
-  const code = placed(b, e, target);
+/** `e` where the backend needs a value of `target`: the value a function gives back in its result `slot`, an argument in its parameter's, or a value stored in a variable or field. */
+export function place(b: PlacementBackend, e: ts.Expression, to: string | ResultSlot | ParamSlot | StoreSlot): string {
+  if (typeof to !== 'string' && to.kind === 'return') return b.result?.(e, to) ?? place(b, e, to.target);
+  if (typeof to !== 'string' && to.kind === 'argument') return b.argument?.(e, to) ?? placed(b, e, to.target, to);
+  const slot = typeof to === 'string' ? undefined : to;
+  const target = slot ? slot.target : to as string;
+  const code = placed(b, e, target, slot);
   return b.library && ts.isVariableDeclaration(e.parent) && e.parent.initializer === e && emptyMarkers(b).has(e.parent) ? b.cells.marker(code) : code;
 }
 
-function placed(b: PlacementBackend, e: ts.Expression, target: string, slot?: ParamSlot): string {
+function placed(b: PlacementBackend, e: ts.Expression, target: string, slot?: ParamSlot | StoreSlot): string {
   const early = b.before?.(e, target);
   if (early != null) return early;
   const nullish = nullishPlacement(b, e, target);
@@ -220,20 +222,96 @@ export interface ParamSlot {
    * as `undefined` reads in the slot's type (a required parameter of an app function).
    */
   missing?: 'empty' | 'undefined';
+  /** A native API's parameter (`.d.ts`): the backend's conversion to the native type `target` names, no other cell. */
+  native?: NativeParam;
 }
 
-type SlotFacts = Pick<ParamSlot, 'nullish' | 'asIs' | 'constantDefault' | 'packaged' | 'rest' | 'missing'>;
+/** What a native parameter's conversion reads besides its type: Kotlin's `target` is the Java descriptor, with the nullness and generic signature the class file gives. */
+export interface NativeParam {
+  nullable?: boolean;
+  nonNull?: boolean;
+  signature?: string;
+  typeVar?: (name: string) => string;
+}
+
+type SlotFacts = Pick<ParamSlot, 'nullish' | 'asIs' | 'constantDefault' | 'packaged' | 'rest' | 'missing' | 'native'>;
 
 /** The slot of a parameter the backend has as `target` at the call `at`, taking its `k`th argument `a` (none where the call leaves it out or a spread gives it). */
 export function argumentSlot(b: Pick<PlacementBackend, 'library' | 'lenient' | 'states'>, target: string, decl: ts.Declaration | undefined, at: { call: ts.CallExpression | ts.NewExpression; k: number; a?: ts.Expression }, facts: SlotFacts = {}): ParamSlot {
   return { kind: 'argument', target, type: parseNativeType(target), decl, ...argumentEntry(b, at.call, at.k, at.a), ...facts };
 }
 
-function argumentEntry(b: Pick<PlacementBackend, 'library' | 'lenient' | 'states'>, call: ts.CallExpression | ts.NewExpression, k: number, a?: ts.Expression): Pick<ParamSlot, 'entry' | 'checked'> {
+/** How the `k`th argument `a` of `call` comes in, as its slot has it (`argumentSlot`). */
+export function argumentEntry(b: Pick<PlacementBackend, 'library' | 'lenient' | 'states'>, call: ts.CallExpression | ts.NewExpression, k: number, a?: ts.Expression): Pick<ParamSlot, 'entry' | 'checked'> {
   let checked: Form | null = null;
   // A value the forms throw on enters unchecked.
   try { checked = a ? b.states.foreignArgument(call, k, a) : null; } catch { checked = null; }
   return checked ? { entry: 'checked', checked } : { entry: b.library ? 'library' : b.lenient ? 'lenient' : 'typed' };
+}
+
+/** The call `a` is an argument of, past parentheses, and its position there; null where `a` is no call's argument. */
+export function argumentOf(a: ts.Expression): { call: ts.CallExpression | ts.NewExpression; k: number } | null {
+  let x: ts.Node = a;
+  while (ts.isParenthesizedExpression(x.parent)) x = x.parent;
+  const p = x.parent;
+  return (ts.isCallExpression(p) || ts.isNewExpression(p)) && p.expression !== x ? { call: p, k: p.arguments!.indexOf(x as ts.Expression) } : null;
+}
+
+/**
+ * Where a value is stored: a variable's declaration, a class's field, an object literal's field, a parameter (its
+ * default), or an assignment's target (a variable, a member, an element).
+ */
+export type Store = ts.VariableDeclaration | ts.PropertyDeclaration | ts.PropertyAssignment | ts.ParameterDeclaration | ts.Expression;
+
+/** A variable, a field, an object literal's field or an array's element as the slot a value is stored in. */
+export interface StoreSlot {
+  kind: 'variable' | 'field' | 'literalField' | 'element';
+  /** The backend's spelling of the slot's type where the value is stored. */
+  target: string;
+  type: NativeType;
+  /** The declaration or the assignment's target the value is stored by. */
+  at: Store;
+  /** How the value comes in; `checked` where it is: the form its untyped value enters as (`ValueStates.foreignStore`). */
+  entry: Entry;
+  checked?: Form;
+}
+
+/**
+ * The slot `a` is stored in by `at`, the backend having it as `target`. `checks` false: a value the store does not give
+ * as it is (a compound assignment's operand, a signal's `set`), which enters unchecked.
+ */
+export function storeSlot(b: Pick<PlacementBackend, 'library' | 'lenient' | 'states'>, target: string, at: Store, a: ts.Expression, checks = true): StoreSlot {
+  return { kind: storeKind(at), target, type: parseNativeType(target), at, ...storeEntry(b, at, a, checks) };
+}
+
+/** How `a`, stored by `at`, comes in, as its slot has it (`storeSlot`). */
+export function storeEntry(b: Pick<PlacementBackend, 'library' | 'lenient' | 'states'>, at: Store, a: ts.Expression, checks = true): Pick<StoreSlot, 'entry' | 'checked'> {
+  let checked: Form | null = null;
+  // A value the forms throw on enters unchecked.
+  try { checked = checks ? b.states.foreignStore(at, a) : null; } catch { checked = null; }
+  return checked ? { entry: 'checked', checked } : { entry: b.library ? 'library' : b.lenient ? 'lenient' : 'typed' };
+}
+
+function storeKind(at: Store): StoreSlot['kind'] {
+  if (ts.isVariableDeclaration(at) || ts.isParameter(at)) return 'variable';
+  if (ts.isPropertyDeclaration(at)) return 'field';
+  if (ts.isPropertyAssignment(at)) return 'literalField';
+  const target = ts.skipOuterExpressions(at, ts.OuterExpressionKinds.Parentheses);
+  return ts.isIdentifier(target) ? 'variable' : ts.isElementAccessExpression(target) ? 'element' : 'field';
+}
+
+/** The store `a` is the value of, past parentheses: a variable's or a field's initializer, an object literal's field, an assignment's right side. Null where `a` is none. */
+export function storeOf(a: ts.Expression): Store | null {
+  let x: ts.Node = a;
+  while (ts.isParenthesizedExpression(x.parent)) x = x.parent;
+  const p = x.parent;
+  if ((ts.isVariableDeclaration(p) || ts.isPropertyDeclaration(p) || ts.isPropertyAssignment(p)) && p.initializer === x) return p;
+  return ts.isBinaryExpression(p) && p.operatorToken.kind === ts.SyntaxKind.EqualsToken && p.right === x ? p.left : null;
+}
+
+/** Whether `a` is the value an `=` assigns to `left`, past parentheses: a compound assignment's operand, or one of an assignment the translation made from another, is not. */
+export function assignedTo(left: ts.Expression, a: ts.Expression): boolean {
+  return storeOf(a) === left;
 }
 
 /** One cell of a `return`-kind slot. */
