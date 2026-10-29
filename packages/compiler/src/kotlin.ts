@@ -198,6 +198,8 @@ export interface KotlinNative {
   /** The nearest class `from` extends that is also a `to`, when `from` is not one itself. */
   sharedClass(from: string, to: string): string | null;
   toNumber(e: ts.Expression, t: string): string | null;
+  /** A value where a Java parameter of descriptor `desc` takes it. */
+  toJava(e: ts.Expression, desc: string, nullableParam?: boolean, nonNullParam?: boolean, signature?: string, typeVar?: (name: string) => string): string;
 }
 
 /** What the kit generated from core leaves out of core's modules, or implements itself. */
@@ -3536,7 +3538,7 @@ export class Translator implements AsyncTranslator {
       });
       this.indent = '            ';
       const helperBody = this.inFunction('Unit', () => [...this.paramPrelude(ctor), ...this.statements(pre)]);
-      const superArgs = superCall.arguments.map((a) => this.coerce(a, 'Any?'));
+      const superArgs = superCall.arguments.map((a) => this.restArgument(superCall, a, 'Any?'));
       statics.push(`        private fun ${helper}(${this.params(ctor, true)}): Array<Any?> {`, ...helperBody, `            return arrayOf(${[...superArgs, ...names, ...locals.map((n) => ident(n.text))].join(', ')})`, '        }');
       this.indent = '        ';
       const restBody = this.inFunction('Unit', () => {
@@ -4836,7 +4838,7 @@ export class Translator implements AsyncTranslator {
     const self = recv.kind === ts.SyntaxKind.ThisKeyword;
     const recvCode = this.expr(recv);
     const o = self ? recvCode : this.fresh('__o'), own = this.fresh('__own');
-    const args = e.arguments.some(ts.isSpreadElement) ? [`*${this.packed(e.arguments, 'JSArray<Any?>')}.storage.toTypedArray()`] : e.arguments.map((a) => this.coerce(a, 'Any?'));
+    const args = e.arguments.some(ts.isSpreadElement) ? [`*${this.packed(e.arguments, 'JSArray<Any?>', this.restSlot(e, 'Any?'))}.storage.toTypedArray()`] : e.arguments.map((a) => this.restArgument(e, a, 'Any?'));
     this.ownCalls.add(e);
     if (!self) this.subst.set(recv, o);
     let plain: string;
@@ -6168,7 +6170,7 @@ export class Translator implements AsyncTranslator {
   private placementSet?: PlacementBackend;
 
   /** What the shared placement front (placement.ts) reads of this translator, and Kotlin's spelling of its cells. */
-  private get placement(): PlacementBackend {
+  get placement(): PlacementBackend {
     const t = this;
     return this.placementSet ??= {
       get checker() { return t.checker; },
@@ -8042,6 +8044,8 @@ export class Translator implements AsyncTranslator {
   /** Kotlin's own cells of an argument, before the shared front; null where it is placed in the slot's type. */
   private argumentCell(a: ts.Expression, slot: ParamSlot): string | null {
     const pt = slot.target, decl = slot.decl;
+    const native = slot.native;
+    if (native) return this.native!.toJava(a, pt, native.nullable, native.nonNull, native.signature, native.typeVar);
     if (slot.rest) return null;
     if (slot.nullish) return this.coerce(a, pt);
     // An argument that may be undefined where Kotlin's parameter has the constant default JavaScript would use.
@@ -8202,6 +8206,11 @@ export class Translator implements AsyncTranslator {
   }
 
   /** The slot of each argument `call` gives a rest parameter (`decl`), or an untyped callee: one `element` each, placed with no declared parameter's cell. */
+  /** An argument of `call` with no declared parameter's cell, as `element`: a built-in's (`push`, `Math.max`) or one an untyped callee takes. */
+  private restArgument(call: ts.CallExpression | ts.NewExpression, a: ts.Expression, element: string): string {
+    return place(this.placement, a, this.restSlot(call, element)(a));
+  }
+
   private restSlot(call: ts.CallExpression | ts.NewExpression, element: string, decl?: ts.Declaration): (a: ts.Expression) => ParamSlot {
     return (a) => {
       const k = call.arguments?.indexOf(a) ?? -1;
@@ -8353,7 +8362,7 @@ export class Translator implements AsyncTranslator {
       return this.library ? this.fromPluginCall(e, call) : call;
     }
     const intl = intlConstructor(callee, this.checker);
-    if (intl) return `JS${intl}(${e.arguments.map((a) => this.coerce(a, 'Any?')).join(', ')})`;
+    if (intl) return `JS${intl}(${e.arguments.map((a) => this.restArgument(e, a, 'Any?')).join(', ')})`;
     if (isObjectToStringCall(callee, this.checker)) return `jsObjectToString(${e.arguments[0] ? this.coerce(e.arguments[0], 'Any?') : 'null'})`;
     if (ts.isPropertyAccessExpression(callee) && this.isSelf(callee.expression) && this.props.has(callee.name.text)) {
       const fn = `this.${ident(callee.name.text)}.value`;
@@ -8514,7 +8523,7 @@ export class Translator implements AsyncTranslator {
       if (t === 'String' && q === '?' && this.typeOf(target).endsWith('?')) return `${this.expr(target)}?.let { __s -> ${this.stringMethod(method, target, e, '__s')} }`;
       if (t === 'String') return this.stringMethod(method, target, e);
       if (t === 'Double') return this.numberMethod(method, target, e);
-      if (t === 'JSBigInt' && method === 'toLocaleString') return `jsBigIntToLocaleString(${[this.expr(target), ...e.arguments.map((x) => this.coerce(x, 'Any?'))].join(', ')})`;
+      if (t === 'JSBigInt' && method === 'toLocaleString') return `jsBigIntToLocaleString(${[this.expr(target), ...e.arguments.map((x) => this.restArgument(e, x, 'Any?'))].join(', ')})`;
       // A typed array's predicate, which the library types `unknown`: a Boolean, as the kit's overloads take it.
       const predicate = e.arguments[0];
       if (/^JS(Int8|Uint8|Uint8Clamped|Int16|Uint16|Int32|Uint32|Float32|Float64)Array$/.test(t) && ['some', 'every', 'find', 'findIndex', 'findLast', 'findLastIndex', 'filter'].includes(method) && e.arguments.length === 1 && predicate && (ts.isArrowFunction(predicate) || ts.isFunctionExpression(predicate))) {
@@ -8612,7 +8621,7 @@ export class Translator implements AsyncTranslator {
       if (property && !this.library && holder && ts.isClassDeclaration(holder) && !holder.getSourceFile().isDeclarationFile && !declares(holder)) {
         return `jsCallMethod(${this.coerce(callee.expression, 'Any?')}, (${this.expr(callee.argumentExpression)} as JSSymbol).key${this.untypedArgs(e)})`;
       }
-      if (property) return `${this.expr(callee.expression)}.__setNative_${property}(${e.arguments.map((a) => this.coerce(a, 'Any?')).join(', ')})`;
+      if (property) return `${this.expr(callee.expression)}.__setNative_${property}(${e.arguments.map((a) => this.restArgument(e, a, 'Any?')).join(', ')})`;
       // `obj[key](…)`: a method call, the object its `this`.
       if (this.typeOf(callee) === 'Any?' && !this.library && !ts.isOptionalChain(e) && this.checker.getTypeAtLocation(callee.argumentExpression).flags & ts.TypeFlags.StringLike && callee.expression.kind !== ts.SyntaxKind.SuperKeyword) {
         return `jsCallMethod(${this.coerce(callee.expression, 'Any?')}, ${this.str(callee.argumentExpression)}${this.untypedArgs(e)})`;
@@ -8824,7 +8833,7 @@ export class Translator implements AsyncTranslator {
     if (mixed) return mixed.map((c) => `__install_${c.name!.text}()`).join('; ');
     const declFile = this.resolve(callee)?.declarations?.[0]?.getSourceFile().fileName ?? '';
     // Library mode: a function returning its last argument (`zonedCallback(fn)`).
-    if (this.library?.identities.has(callee.text) && e.arguments.length && (this.resolve(callee)?.declarations ?? []).every((d) => d.getSourceFile().isDeclarationFile)) return this.coerce(e.arguments[e.arguments.length - 1], this.typeOf(e));
+    if (this.library?.identities.has(callee.text) && e.arguments.length && (this.resolve(callee)?.declarations ?? []).every((d) => d.getSourceFile().isDeclarationFile)) return this.restArgument(e, e.arguments[e.arguments.length - 1], this.typeOf(e));
     // NativeScript's `gc()`: the JVM's collector.
     if (callee.text === 'gc' && !e.arguments.length && (this.resolve(callee)?.declarations ?? []).every((d) => d.getSourceFile().isDeclarationFile) && !!declFile) return 'java.lang.System.gc()';
     // NativeScript's `float(n)`, `long(n)`: a number the native call converts to its parameter's Java type.
@@ -8866,7 +8875,7 @@ export class Translator implements AsyncTranslator {
     if (['$signal', 'ref', '$ref', 'signal', 'model', 'writable', '$writable'].includes(name) && lib) {
       const t = this.typeOf(e).replace(/^Signal<(.*)>$/, '$1');
       const kind = name === 'ref' || name === '$ref' ? 'vue' : name === '$signal' || name === 'writable' ? 'svelte' : 'identity';
-      return this.newSignal(t, arg(0) ? this.coerce(arg(0), t) : 'null', kind);
+      return this.newSignal(t, arg(0) ? this.restArgument(e, arg(0), t) : 'null', kind);
     }
     if (name === 'linkedSignal' && lib) {
       const t = this.typeOf(e).replace(/^Signal<(.*)>$/, '$1');
@@ -8879,15 +8888,15 @@ export class Translator implements AsyncTranslator {
       const fn = arg(1);
       if (fn && (ts.isArrowFunction(fn) || ts.isFunctionExpression(fn))) {
         const t = this.typeOf(e);
-        return `Injector.runInContext(${this.coerce(arg(0), 'Any?')}, ${this.closure(fn, `() -> ${t}`)})`;
+        return `Injector.runInContext(${this.restArgument(e, arg(0), 'Any?')}, ${this.closure(fn, `() -> ${t}`)})`;
       }
-      const raw = `Injector.runInContext(${this.coerce(arg(0), 'Any?')}) { jsCall(${this.coerce(arg(1), 'Any?')}) }`;
+      const raw = `Injector.runInContext(${this.restArgument(e, arg(0), 'Any?')}) { jsCall(${this.restArgument(e, arg(1), 'Any?')}) }`;
       const t = this.typeOf(e);
       return t === 'Any?' || t === 'Unit' ? raw : this.fromAny(raw, t);
     }
     if ((name === 'forwardRef' || name === 'resolveForwardRef') && lib) {
       if (arg(0) && (ts.isArrowFunction(arg(0)) || ts.isFunctionExpression(arg(0))) && !ts.isBlock(arg(0).body)) return this.expr(arg(0).body);
-      return `resolveForwardRef(${arg(0) ? this.coerce(arg(0), 'Any?') : 'null'})`;
+      return `resolveForwardRef(${arg(0) ? this.restArgument(e, arg(0), 'Any?') : 'null'})`;
     }
     if (name === 'isDevMode' && lib) return 'false';
     const shimmed = decl && ts.isFunctionDeclaration(decl) && decl.getSourceFile().fileName.startsWith('/__shims__/') ? decl.name?.text : undefined;
@@ -8909,14 +8918,14 @@ export class Translator implements AsyncTranslator {
       const builtin = ['RouterExtensions', 'ActivatedRoute', 'Page', 'DestroyRef', 'ChangeDetectorRef', 'ElementRef', 'NativeDialogRef', 'NativeDialogService', 'Router', 'HttpClient', 'Injector', 'EnvironmentInjector', 'NgZone', 'ErrorHandler', 'Location', 'ViewContainerRef', 'ApplicationRef'].includes(token);
       const appService = this.isInjectableClass(tokenDecl);
       if (builtin || appService) return injected(token);
-      const raw = `Injector.inject(${this.coerce(rawArg0, 'Any?')}${arg(1) ? `, ${this.coerce(arg(1), 'Any?')}` : ''})`;
+      const raw = `Injector.inject(${this.coerce(rawArg0, 'Any?')}${arg(1) ? `, ${this.restArgument(e, arg(1), 'Any?')}` : ''})`;
       const t = this.typeOf(e);
       return t === 'Any?' ? raw : this.fromAny(raw, t);
     }
     if (name === 'firstValueFrom' && lib) return `rxFirstValueFrom(${this.expr(arg(0))})`;
     if (name === '$navigateTo' && lib) return this.navigate(e);
     if (name === '$showModal' && lib) return this.showModal(e);
-    if (name === '$closeModal' && lib) return `Modal.close(${arg(0) ? this.coerce(arg(0), 'Any?') : ''})`;
+    if (name === '$closeModal' && lib) return `Modal.close(${arg(0) ? this.restArgument(e, arg(0), 'Any?') : ''})`;
     if (lib) {
       switch (name) {
         case 'String': return arg(0) ? this.str(arg(0)) : '""';
@@ -8937,10 +8946,10 @@ export class Translator implements AsyncTranslator {
           }
           return `${timer}(${this.callback(arg(0))}, ${ms})`;
         }
-        case 'clearTimeout': case 'clearInterval': return `js${name[0].toUpperCase()}${name.slice(1)}(${arg(0) ? this.coerce(arg(0), 'Double?') : 'null'})`;
+        case 'clearTimeout': case 'clearInterval': return `js${name[0].toUpperCase()}${name.slice(1)}(${arg(0) ? this.restArgument(e, arg(0), 'Double?') : 'null'})`;
         case 'queueMicrotask': return `jsQueueMicrotask(${this.callback(arg(0))})`;
         case 'Symbol': return `jsSymbol(${arg(0) ? this.str(arg(0)) : 'null'})`;
-        case 'BigInt': return `JSBigInt.convert(${this.coerce(arg(0), 'Any?')})`;
+        case 'BigInt': return `JSBigInt.convert(${this.restArgument(e, arg(0), 'Any?')})`;
         case 'unescape': return `jsUnescape(${this.str(arg(0))})`;
         case 'atob': case 'btoa': return `js${name[0].toUpperCase()}${name.slice(1)}(${this.str(arg(0))})`;
         case 'encodeURIComponent': case 'encodeURI': case 'decodeURIComponent': case 'decodeURI':
@@ -8956,8 +8965,8 @@ export class Translator implements AsyncTranslator {
     const resolvers = this.resolvers.get(this.resolve(callee)!);
     if (resolvers) {
       if (!arg(0)) return `${resolvers.name}.resolve(${resolvers.type === 'Unit' ? 'Unit' : 'null'})`;
-      if (this.isPromiseType(this.typeOf(arg(0)))) return `${resolvers.name}.resolvePromise(${this.coerce(arg(0), `JSPromise<${resolvers.type}>`)})`;
-      return `${resolvers.name}.resolve(${this.coerce(arg(0), resolvers.type)})`;
+      if (this.isPromiseType(this.typeOf(arg(0)))) return `${resolvers.name}.resolvePromise(${this.restArgument(e, arg(0), `JSPromise<${resolvers.type}>`)})`;
+      return `${resolvers.name}.resolve(${this.restArgument(e, arg(0), resolvers.type)})`;
     }
     const declared = this.checker.getResolvedSignature(e)?.getDeclaration();
     const isFunctionValue = !declared || ts.isJSDocSignature(declared) || !('body' in declared && declared.body) || ts.isArrowFunction(declared) || ts.isFunctionExpression(declared);
@@ -9075,15 +9084,15 @@ export class Translator implements AsyncTranslator {
       case 'Math': return this.math(method, e);
       case 'console': {
         const fn = ['warn', 'error'].includes(method) ? 'jsError' : 'jsLog';
-        if (e.arguments.some(ts.isSpreadElement)) return `${fn}(*${this.packed(e.arguments, 'JSArray<Any?>')}.storage.toTypedArray())`;
-        return `${fn}(${e.arguments.map((x) => this.coerce(x, 'Any?')).join(', ')})`;
+        if (e.arguments.some(ts.isSpreadElement)) return `${fn}(*${this.packed(e.arguments, 'JSArray<Any?>', this.restSlot(e, 'Any?'))}.storage.toTypedArray())`;
+        return `${fn}(${e.arguments.map((x) => this.restArgument(e, x, 'Any?')).join(', ')})`;
       }
       case 'JSON':
-        if (method === 'parse') return `jsJSONParse(${this.str(arg(0))}${arg(1) ? `, ${this.coerce(arg(1), 'Any?')}` : ''})`;
+        if (method === 'parse') return `jsJSONParse(${this.str(arg(0))}${arg(1) ? `, ${this.restArgument(e, arg(1), 'Any?')}` : ''})`;
         // Undefined, a function or a symbol stringifies to undefined.
         if (method === 'stringify') {
-          const replacer = arg(1) && arg(1).kind !== ts.SyntaxKind.NullKeyword && !(ts.isIdentifier(arg(1)) && arg(1).getText() === 'undefined') ? `, replacer = ${this.coerce(arg(1), 'Any?')}` : '';
-          return this.undefinedAs(`jsJSONStringify(${this.coerce(arg(0), 'Any?')}${arg(2) ? `, ${this.coerce(arg(2), 'Any?')}` : ''}${replacer})`, T());
+          const replacer = arg(1) && arg(1).kind !== ts.SyntaxKind.NullKeyword && !(ts.isIdentifier(arg(1)) && arg(1).getText() === 'undefined') ? `, replacer = ${this.restArgument(e, arg(1), 'Any?')}` : '';
+          return this.undefinedAs(`jsJSONStringify(${this.restArgument(e, arg(0), 'Any?')}${arg(2) ? `, ${this.restArgument(e, arg(2), 'Any?')}` : ''}${replacer})`, T());
         }
         break;
       case 'Object': {
@@ -9102,7 +9111,7 @@ export class Translator implements AsyncTranslator {
         if (method === 'freeze') return `jsFreeze(${this.expr(arg(0))})`;
         if (method === 'seal' || method === 'preventExtensions') return `jsRestrict(${this.expr(arg(0))}, ${method === 'seal'})`;
         const untyped: Record<string, string> = { isFrozen: 'jsIsFrozen', isSealed: 'jsIsSealed', isExtensible: 'jsIsExtensible', getOwnPropertySymbols: 'jsOwnPropertySymbols', getOwnPropertyNames: 'jsOwnPropertyNames' };
-        if (untyped[method]) return `${untyped[method]}(${this.coerce(arg(0), 'Any?')})`;
+        if (untyped[method]) return `${untyped[method]}(${this.restArgument(e, arg(0), 'Any?')})`;
         // A declared function by its reference, which every read of it gives (its properties are keyed by it).
         const definedOn = (x: ts.Expression) => (ts.isIdentifier(x) && this.resolve(x)?.valueDeclaration && ts.isFunctionDeclaration(this.resolve(x)!.valueDeclaration!) ? this.functionValue(x) : this.coerce(x, 'Any?'));
         if (method === 'getOwnPropertyDescriptor') return `jsOwnPropertyDescriptor(${definedOn(arg(0))}, ${this.propertyKey(arg(1))})`;
@@ -9119,16 +9128,16 @@ export class Translator implements AsyncTranslator {
         }
         if (method === 'assign') {
           // The target is an open JavaScript object: a literal there is untyped, so the sources' keys all land.
-          const target = ts.isObjectLiteralExpression(arg(0)) ? this.dynamicObject(arg(0) as ts.ObjectLiteralExpression) : this.coerce(arg(0), 'Any?');
+          const target = ts.isObjectLiteralExpression(arg(0)) ? this.dynamicObject(arg(0) as ts.ObjectLiteralExpression) : this.restArgument(e, arg(0), 'Any?');
           const sources = e.arguments.slice(1);
           const code = sources.some(ts.isSpreadElement)
             ? `jsAssign(${target}, *${this.packed(sources, 'JSArray<Any?>')}.storage.toTypedArray())`
             : `jsAssign(${[target, ...sources.map((x) => this.coerce(x, 'Any?'))].join(', ')})`;
           return T() === 'Any?' || ts.isExpressionStatement(e.parent) ? code : this.fromAnyCode(code, T(), true);
         }
-        if (method === 'hasOwn') return `jsHasOwn(${this.coerce(arg(0), 'Any?')}, ${this.propertyKey(arg(1))})`;
-        if (method === 'is') return `jsSameValue(${this.coerce(arg(0), 'Any?')}, ${this.coerce(arg(1), 'Any?')})`;
-        if (method === 'getPrototypeOf') return `jsGetPrototypeOf(${this.coerce(arg(0), 'Any?')})`;
+        if (method === 'hasOwn') return `jsHasOwn(${this.restArgument(e, arg(0), 'Any?')}, ${this.propertyKey(arg(1))})`;
+        if (method === 'is') return `jsSameValue(${this.restArgument(e, arg(0), 'Any?')}, ${this.restArgument(e, arg(1), 'Any?')})`;
+        if (method === 'getPrototypeOf') return `jsGetPrototypeOf(${this.restArgument(e, arg(0), 'Any?')})`;
         if (method === 'defineProperties') {
           const d = arg(1);
           if (!ts.isObjectLiteralExpression(d)) this.checkFieldDefinition(arg(0), undefined, d);
@@ -9143,7 +9152,7 @@ export class Translator implements AsyncTranslator {
           const native = this.native?.call(e);
           if (native) return native;
         }
-        if (method === 'isArray') return `JSArray.isArray(${this.coerce(arg(0), 'Any?')})`;
+        if (method === 'isArray') return `JSArray.isArray(${this.restArgument(e, arg(0), 'Any?')})`;
         if (method === 'from' && e.arguments.length === 1) return `JSArray(${this.iterable(arg(0))}.toList())`;
         if (method === 'from' && e.arguments.length === 2 && ts.isObjectLiteralExpression(arg(0))) {
           const length = (arg(0) as ts.ObjectLiteralExpression).properties.find((p) => p.name?.getText() === 'length');
@@ -9159,7 +9168,7 @@ export class Translator implements AsyncTranslator {
         if (method === 'of') return `jsArrayOf<${T().replace(/^JSArray<(.*)>$/, '$1')}>(${a().join(', ')})`;
         // `Array.apply(thisArg, list)`: `Array(...list)`, a length when the list is one number.
         if (method === 'apply' && e.arguments.length === 2) {
-          const made = `jsArrayConstruct(${this.coerce(arg(1), 'JSArray<Any?>')}.storage)`;
+          const made = `jsArrayConstruct(${this.restArgument(e, arg(1), 'JSArray<Any?>')}.storage)`;
           return T() === 'JSArray<Any?>' ? made : this.fromAny(made, T());
         }
         break;
@@ -9193,8 +9202,8 @@ export class Translator implements AsyncTranslator {
         const t = T();
         if (method === 'withResolvers') return `${t}()`;
         const v = t.replace(/^JSPromise<(.*)>$/, '$1');
-        if (method === 'resolve') return arg(0) ? (this.isPromiseType(this.typeOf(arg(0))) ? this.expr(arg(0)) : `JSPromise.resolve<${v}>(${this.coerce(arg(0), v)})`) : `JSPromise.resolve<Unit>(Unit)`;
-        if (method === 'reject') return `JSPromise.reject<${v}>(${arg(0) ? this.coerce(arg(0), 'Any?') : 'null'})`;
+        if (method === 'resolve') return arg(0) ? (this.isPromiseType(this.typeOf(arg(0))) ? this.expr(arg(0)) : `JSPromise.resolve<${v}>(${this.restArgument(e, arg(0), v)})`) : `JSPromise.resolve<Unit>(Unit)`;
+        if (method === 'reject') return `JSPromise.reject<${v}>(${arg(0) ? this.restArgument(e, arg(0), 'Any?') : 'null'})`;
         if (['all', 'allSettled', 'race', 'any'].includes(method)) {
           const src = arg(0);
           if (ts.isArrayLiteralExpression(src)) return this.promiseCombinator(method, src, t);
@@ -9334,26 +9343,26 @@ export class Translator implements AsyncTranslator {
     const element = elOf();
     switch (name) {
       case 'push': case 'unshift':
-        if (e.arguments.some(ts.isSpreadElement)) return `${t}.${name}All(${this.packed(e.arguments, `JSArray<${element}>`)})`;
-        return `${t}.${name}(${e.arguments.map((x) => this.coerce(x, element)).join(', ')})`;
+        if (e.arguments.some(ts.isSpreadElement)) return `${t}.${name}All(${this.packed(e.arguments, `JSArray<${element}>`, this.restSlot(e, element))})`;
+        return `${t}.${name}(${e.arguments.map((x) => this.restArgument(e, x, element)).join(', ')})`;
       case 'pop': case 'shift': case 'reverse': case 'keys': case 'entries': case 'values': return `${t}.${name}()`;
       case 'toLocaleString': if (!e.arguments.length) return `${t}.toLocaleString()`; break;
       case 'toString': return `${t}.join()`;
       case 'flat': return e.arguments.length || !/^JSArray<JSArray</.test(this.typeOf(target)) ? `${t}.flatAny(${e.arguments[0] ? this.toNumber(e.arguments[0]) : ''})` : `${t}.flat()`;
       case 'splice': {
-        if (e.arguments.slice(2).some(ts.isSpreadElement)) return `${t}.spliceAll(${e.arguments.slice(0, 2).map((x) => this.toNumber(x)).join(', ')}, ${this.packed(e.arguments.slice(2), `JSArray<${element}>`)}.storage)`;
-        const parts = [...e.arguments.slice(0, 2).map((x) => this.toNumber(x)), ...e.arguments.slice(2).map((x) => this.coerce(x, element))];
+        if (e.arguments.slice(2).some(ts.isSpreadElement)) return `${t}.spliceAll(${e.arguments.slice(0, 2).map((x) => this.toNumber(x)).join(', ')}, ${this.packed(e.arguments.slice(2), `JSArray<${element}>`, this.restSlot(e, element))}.storage)`;
+        const parts = [...e.arguments.slice(0, 2).map((x) => this.toNumber(x)), ...e.arguments.slice(2).map((x) => this.restArgument(e, x, element))];
         return `${t}.splice(${parts.join(', ')})`;
       }
-      case 'fill': return `${t}.fill(${[this.coerce(e.arguments[0], element), ...e.arguments.slice(1).map((x) => this.toNumber(x))].join(', ')})`;
+      case 'fill': return `${t}.fill(${[this.restArgument(e, e.arguments[0], element), ...e.arguments.slice(1).map((x) => this.toNumber(x))].join(', ')})`;
       case 'slice': case 'at': return `${t}.${name}(${e.arguments.map((x) => this.toNumber(x)).join(', ')})`;
-      case 'indexOf': case 'lastIndexOf': case 'includes': return `${t}.${name}(${[this.coerce(e.arguments[0], element.startsWith('JSNullish<') ? element : optionalType(element)),...e.arguments.slice(1).map((x) => this.toNumber(x))].join(', ')})`;
+      case 'indexOf': case 'lastIndexOf': case 'includes': return `${t}.${name}(${[this.restArgument(e, e.arguments[0], element.startsWith('JSNullish<') ? element : optionalType(element)),...e.arguments.slice(1).map((x) => this.toNumber(x))].join(', ')})`;
       case 'join': return `${t}.join(${e.arguments[0] ? (this.library ? this.str(e.arguments[0]) : this.expr(e.arguments[0])) : ''})`;
       case 'concat':
         // Arrays spread as arguments are concatenated, which the runtime tells apart from elements as script does.
-        if (e.arguments.some((x) => ts.isSpreadElement(x) && spreadsArrays(x.expression, this.checker))) return `${t}.concatSpread(${this.unchecked(`List<${element}>`, `${this.packed(e.arguments, 'JSArray<Any?>')}.storage`)})`;
-        if (e.arguments.some(ts.isSpreadElement)) return `${t}.concatSpread(${this.packed(e.arguments, `JSArray<${element}>`)}.storage)`;
-        return `${t}.concat(${e.arguments.map((x) => (this.isArray(x) ? this.coerce(x, `JSArray<${element}>`) : `jsArrayOf<${element}>(${this.coerce(x, element)})`)).join(', ')})`;
+        if (e.arguments.some((x) => ts.isSpreadElement(x) && spreadsArrays(x.expression, this.checker))) return `${t}.concatSpread(${this.unchecked(`List<${element}>`, `${this.packed(e.arguments, 'JSArray<Any?>', this.restSlot(e, 'Any?'))}.storage`)})`;
+        if (e.arguments.some(ts.isSpreadElement)) return `${t}.concatSpread(${this.packed(e.arguments, `JSArray<${element}>`, this.restSlot(e, element))}.storage)`;
+        return `${t}.concat(${e.arguments.map((x) => (this.isArray(x) ? this.restArgument(e, x, `JSArray<${element}>`) : `jsArrayOf<${element}>(${this.restArgument(e, x, element)})`)).join(', ')})`;
       case 'map': case 'filter': case 'find': case 'findIndex': case 'findLast': case 'findLastIndex': case 'some': case 'every': case 'forEach': case 'flatMap': {
         const f = e.arguments[0];
         const arity = ts.isArrowFunction(f) || ts.isFunctionExpression(f) ? Math.max(1, f.parameters.length) : this.functionArity(f);
@@ -9376,10 +9385,10 @@ export class Translator implements AsyncTranslator {
       case 'toReversed': return `${t}.toReversed()`;
       case 'toSpliced': {
         if (!e.arguments.length) return `${t}.toSpliced(0.0, 0.0)`;
-        if (e.arguments.slice(2).some(ts.isSpreadElement)) return `${t}.toSplicedAll(${e.arguments.slice(0, 2).map((x) => this.toNumber(x)).join(', ')}, ${this.packed(e.arguments.slice(2), `JSArray<${element}>`)}.storage)`;
-        return `${t}.toSpliced(${[...e.arguments.slice(0, 2).map((x) => this.toNumber(x)), ...e.arguments.slice(2).map((x) => this.coerce(x, element))].join(', ')})`;
+        if (e.arguments.slice(2).some(ts.isSpreadElement)) return `${t}.toSplicedAll(${e.arguments.slice(0, 2).map((x) => this.toNumber(x)).join(', ')}, ${this.packed(e.arguments.slice(2), `JSArray<${element}>`, this.restSlot(e, element))}.storage)`;
+        return `${t}.toSpliced(${[...e.arguments.slice(0, 2).map((x) => this.toNumber(x)), ...e.arguments.slice(2).map((x) => this.restArgument(e, x, element))].join(', ')})`;
       }
-      case 'with': return `${t}.with(${this.toNumber(e.arguments[0])}, ${this.coerce(e.arguments[1], element)})`;
+      case 'with': return `${t}.with(${this.toNumber(e.arguments[0])}, ${this.restArgument(e, e.arguments[1], element)})`;
       case 'reduce': case 'reduceRight': {
         const init = e.arguments[1];
         const f = e.arguments[0];
@@ -9533,7 +9542,7 @@ export class Translator implements AsyncTranslator {
     const a = e.arguments.map((x) => this.toNumber(x));
     switch (name) {
       case 'toFixed': return `jsToFixed(${t}${a[0] ? `, ${a[0]}` : ''})`;
-      case 'toLocaleString': return `jsNumberToLocaleString(${[t, ...e.arguments.map((x) => this.coerce(x, 'Any?'))].join(', ')})`;
+      case 'toLocaleString': return `jsNumberToLocaleString(${[t, ...e.arguments.map((x) => this.restArgument(e, x, 'Any?'))].join(', ')})`;
       case 'toPrecision': return a[0] ? `jsToPrecision(${t}, ${a[0]})` : `js(${t})`;
       case 'toExponential': return `jsToExponential(${t}${a[0] ? `, ${a[0]}` : ''})`;
       case 'toString': return a[0] ? `jsNumberToString(${t}, ${a[0]})` : `js(${t})`;
@@ -9602,7 +9611,7 @@ export class Translator implements AsyncTranslator {
     // Library mode: a value or key that may be null where the collection's type says not (`cache.set(key, null)`), stored as script stores it.
     const arg = (n: number, as: string) => this.library && this.isObjectType(as) && !isNullable(as) && !['String', 'Double', 'Boolean'].includes(as) && !isFunctionType(as)
       && (isNullable(this.declaredTypeOf(e.arguments[n]) ?? this.typeOf(e.arguments[n])) || !!this.maybeUndefined(e.arguments[n]))
-      ? this.unchecked(as, this.coerce(e.arguments[n], optionalType(as))) : this.coerce(e.arguments[n], as);
+      ? this.unchecked(as, this.restArgument(e, e.arguments[n], optionalType(as))) : this.restArgument(e, e.arguments[n], as);
     switch (name) {
       case 'get': {
         const key = arg(0, k);
