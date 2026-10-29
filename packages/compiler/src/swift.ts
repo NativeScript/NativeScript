@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import { KIT_APPLE_SOURCES } from './paths.ts';
 import { Throws, digitsLiteral, isArrayLengthLiteral, isArrayLengthWrite, isAsync, isStatic } from './throws.ts';
 import { assignedMembers } from './sharing.ts';
-import { assignedValues, openSpreadType, spreadsArrays, initializedNull, intersectionAliasMembers, intlConstructor, literalPattern, literalFlags, patternGroups, regexpMayLeaveGroupUnset, isRegExpProtocol, assertedPattern, unsupportedPattern, isObjectToStringCall, isStringRaw, leadingNeverRead, forwardedSetter, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, uncheckedMatch, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, slotOf, slotType, definitelyAssignedFields, type TrustScope, classesHeldUntyped, unsetGroupTyping, type UnsetGroupTyping, admitsUndefined, classKeyPlan, onlyUndefined, keysDefinedUntyped, SWIFT_NATIVE_TYPES, runtimeTypeName, definesRunTimeKey, readKeyOf, givenBy, onlyNullOrPresent, isTemplateMethod, statementLevel, readWrite, asOperation, assignmentOf, type ReadWrite } from './lang.ts';
+import { assignedValues, openSpreadType, spreadsArrays, initializedNull, intersectionAliasMembers, intlConstructor, literalPattern, literalFlags, patternGroups, regexpMayLeaveGroupUnset, isRegExpProtocol, assertedPattern, unsupportedPattern, isObjectToStringCall, isStringRaw, leadingNeverRead, forwardedSetter, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, uncheckedMatch, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, slotOf, slotType, definitelyAssignedFields, type TrustScope, classesHeldUntyped, unsetGroupTyping, type UnsetGroupTyping, admitsUndefined, onlyUndefined, keysDefinedUntyped, SWIFT_NATIVE_TYPES, runtimeTypeName, definesRunTimeKey, readKeyOf, givenBy, onlyNullOrPresent, isTemplateMethod, statementLevel, readWrite, asOperation, assignmentOf, type ReadWrite } from './lang.ts';
 import { memberName } from './stable-names.ts';
 import { shadowConversions } from './conversion-shadow.ts';
 import { parseNativeType, plan, type Slot, type Value } from './conversion.ts';
@@ -19,6 +19,8 @@ import { CoreAPI, isCoreDeclaration, packageOf } from './core.ts';
 import type { KitMember } from './kit-index.ts';
 import type { KitDeclarations, RecordedMember } from './kit-manifest.ts';
 import type { Properties } from './properties.ts';
+import { keyOf, rootKeepsExpando, type ShapeFacts, type ShapePlan, shapePlanOfClass } from './shapes.ts';
+import { shadowLiteral, shadowShapes } from './shape-shadow.ts';
 import { recognizePatterns, type Patterns } from './patterns.ts';
 import { DEPLOYMENT, NativeAPI, enteredGuard, onMainThread, tested, typedCollection } from './native-calls.ts';
 import { lookupClass, lookupMember, type NativeMethod } from './natives/symbols.ts';
@@ -863,6 +865,7 @@ export class Translator implements AsyncTranslator {
     this.sourceFiles = files;
     this.states = new ValueStates(this.stateBackend());
     if (process.env.NS_CONVERSION_SHADOW) shadowConversions(this, this.states);
+    if (process.env.NS_SHAPE_SHADOW) shadowShapes(this, this.states);
     this.lowering = new AsyncLowering(this);
     this.core = new CoreAPI(this);
     this.native = new NativeAPI(this);
@@ -3745,127 +3748,80 @@ ${members.join('\n')}
     return { rep: t.kind === 'any' ? 'foreign' : t.optional || t.implicit ? 'undefined' : 'present', type: t, kind: 'variable' };
   }
 
-  private classKeySets = new Map<ts.ClassLikeDeclaration, ClassKeys>();
   /** The constructor being written's notes after its statements that make keys (`initKeyNotes`). */
   private keyNotes: Map<ts.Statement, string> | null = null;
+  private shapeFactSet: ShapeFacts | null = null;
 
-  /**
-   * An app class's keys (`classKeyPlan`), and its fields `flagged` with a `__has_` flag: those that are keys only once
-   * written, and those some code deletes. A hierarchy with any is `ordered` (`keyHierarchy`).
-   */
-  private classKeys(cls: ts.ClassLikeDeclaration): ClassKeys {
-    let k = this.classKeySets.get(cls);
-    if (k) return k;
-    k = { on: false, order: [], always: new Set(), sure: new Set(), written: new Set(), flagged: new Set(), walked: new Map(), depth: 0 };
-    this.classKeySets.set(cls, k);
-    if (this.lenient || this.library || cls.getSourceFile().isDeclarationFile || this.pluginFiles.has(cls.getSourceFile().fileName)) return k;
-    if (!this.keyedClass(cls)) return k;
-    const plan = classKeyPlan(cls, !this.assignFields);
-    Object.assign(k, { on: true, order: plan.order, always: plan.always, sure: plan.sure, walked: plan.walked });
-    // A field core's property or the kit's class holds is no key of the object's own.
-    const kitRoot = this.kitRootOf(cls);
-    const kitHeld = (m: ts.PropertyDeclaration) => !!this.kitRedeclared(m) || (!!kitRoot && !!this.core.isKitView(kitRoot) && !!this.properties?.isRegistered(cls, m.name.getText()));
-    for (const m of plan.written) if (!kitHeld(m)) { k.written.add(m.name.getText()); k.flagged.add(m.name.getText()); }
-    for (const m of cls.members) if (ts.isPropertyDeclaration(m) && ts.isIdentifier(m.name) && this.deletedFields().has(m) && this.typeOf(m.name).endsWith('?') && !kitHeld(m)) k.flagged.add(m.name.text);
-    for (let b = this.programBase(cls); b; b = this.programBase(b)) k.depth++;
-    return k;
-  }
-
-  private keyHierarchies = new Map<ts.ClassLikeDeclaration, KeyHierarchy>();
-
-  /**
-   * A keyed class's hierarchy. `ordered`: some class has flagged fields, or the root keeps an expando below which a subclass
-   * has keys, so a key may be made out of the plans' order; the root keeps `jsOrder` (nil until that happens) and each class
-   * lists its present keys in plan order (`jsFieldKeys`), the expando's after them (`jsAddedKeys`). `gated`: a subclass has
-   * keys from its level of the constructor on, which wait for it (`jsLevel`): its base's constructor runs first. `noted`: the
-   * test for whether a key made now must be noted, as the plans' order no longer places it.
-   */
-  private keyHierarchy(cls: ts.ClassLikeDeclaration): KeyHierarchy {
-    const rootOf = (c: ts.ClassLikeDeclaration) => { let r = c; for (let b = this.programBase(r); b; b = this.programBase(b)) r = b; return r; };
-    const root = rootOf(cls);
-    let h = this.keyHierarchies.get(root);
-    if (h) return h;
-    const members = [root, ...this.allClasses().filter((c) => c !== root && rootOf(c) === root)].filter((c) => this.classKeys(c).on);
-    const expando = members.includes(root) && this.appRootKeepsExpando(root);
-    const ordered = members.some((c) => this.classKeys(c).flagged.size > 0 || (expando && this.classKeys(c).depth > 0 && this.classKeys(c).order.length > 0));
-    h = { ordered, gated: ordered && members.some((c) => this.classKeys(c).depth > 0 && this.classKeys(c).order.some((n) => !this.classKeys(c).written.has(n))), expando: ordered && expando, noted: ordered && expando ? 'jsKeysNoted' : 'jsOrder != nil' };
-    this.keyHierarchies.set(root, h);
-    return h;
-  }
-
-  private deletedDecls: Set<ts.Declaration> | null = null;
-
-  /** The fields some code deletes (`delete o.field`). */
-  private deletedFields(): Set<ts.Declaration> {
-    if (this.deletedDecls) return this.deletedDecls;
-    const out = this.deletedDecls = new Set<ts.Declaration>();
-    const visit = (n: ts.Node): void => {
-      if (ts.isDeleteExpression(n) && ts.isPropertyAccessExpression(n.expression)) {
-        const d = this.checker.getSymbolAtLocation(n.expression.name)?.valueDeclaration;
-        if (d) out.add(d);
-      }
-      ts.forEachChild(n, visit);
+  /** How this backend writes a class, which the key plans ask (shapes.ts). */
+  private shapeFacts(): ShapeFacts {
+    return this.shapeFactSet ??= {
+      defines: !this.assignFields,
+      byName: (c) => !this.isComponentClass(c) && !this.patterns.mixinTarget(c) && !((ts.getDecorators(c) ?? []).some((d) => d.expression.getText().startsWith('Injectable')) && !this.isBasedService(c)),
+      kitBased: (c) => !ERRORS[c.heritageClauses!.find((x) => x.token === ts.SyntaxKind.ExtendsKeyword)!.types[0].expression.getText()] && !!this.kitRootOf(c),
+      kitHeld: (c, m) => {
+        const kitRoot = this.kitRootOf(c);
+        return !!this.kitRedeclared(m) || (!!kitRoot && !!this.core.isKitView(kitRoot) && !!this.properties?.isRegistered(c, m.name.getText()));
+      },
+      expando: (c) => this.pluginFiles.has(c.getSourceFile().fileName) || this.givenUndeclared().has(c),
     };
-    for (const f of this.sourceFiles) if (!f.isDeclarationFile) visit(f);
-    return out;
+  }
+
+  /** An app class's key plan, or null where its keys are its declared fields. */
+  private keyPlan(cls: ts.ClassLikeDeclaration): ShapePlan | null {
+    return shapePlanOfClass(cls, this.states, this.shapeFacts());
+  }
+
+  /** The test of whether a key made now must be noted, as the plans' order no longer places it. */
+  private keysNoted(plan: ShapePlan): string {
+    return plan.noted === 'keys' ? 'jsKeysNoted' : 'jsOrder != nil';
   }
 
   /** A flagged field's observer, which notes its key when a write makes it (Swift runs none in the class's own initializer: `initKeyNotes`). */
   private keyObservers(cls: ts.ClassLikeDeclaration, n: string): string {
-    return this.classKeys(cls).flagged.has(n) && this.keyHierarchy(cls).ordered ? ` { didSet { if !__has_${n} { __has_${n} = true; jsKeyMade(${swiftString(n)}${this.earlyKey(cls)}) } } }` : '';
+    const p = this.keyPlan(cls);
+    return p?.flagged.has(n) && p.ordered ? ` { didSet { if !__has_${n} { __has_${n} = true; jsKeyMade(${swiftString(n)}${this.earlyKey(p)}) } } }` : '';
   }
 
   /**
    * A subclass's field made by its base's constructor (a method it overrides) goes before the keys of the subclass's own
    * level, which its static place is after: `jsKeyMade`'s `early` argument.
    */
-  private earlyKey(cls: ts.ClassLikeDeclaration): string {
-    const k = this.classKeys(cls);
-    return k.depth > 0 && this.keyHierarchy(cls).gated ? `, early: jsLevel < ${k.depth}` : '';
+  private earlyKey(p: ShapePlan): string {
+    return p.depth > 0 && p.gated ? `, early: jsLevel < ${p.depth}` : '';
   }
 
-  /** A class the class path writes with its members by name, its hierarchy rooted in none but core's: no error, component, service, mixin or native subclass. */
-  private keyedClass(cls: ts.ClassLikeDeclaration): boolean {
-    for (let c: ts.ClassLikeDeclaration | undefined = cls; c; c = this.programBase(c)) {
-      if (!ts.isClassDeclaration(c) || !c.name || this.isComponentClass(c) || this.patterns.mixinTarget(c)) return false;
-      if ((ts.getDecorators(c) ?? []).some((d) => d.expression.getText().startsWith('Injectable')) && !this.isBasedService(c)) return false;
-      const h = c.heritageClauses?.find((x) => x.token === ts.SyntaxKind.ExtendsKeyword)?.types[0];
-      if (h && !this.programBase(c) && (ERRORS[h.expression.getText()] || !this.kitRootOf(c))) return false;
-    }
-    return true;
-  }
-
-  /** A keyed class's keys for `dynamicMembers`, declaring the state they read (`classKeys`): its flags, and in the root `jsOrder` and `jsLevel`. */
+  /** A keyed class's keys for `dynamicMembers`, declaring the state they read: its flags, and in the root `jsOrder` and `jsLevel`. */
   private keyedMembers(cls: ts.ClassLikeDeclaration, appBase: boolean, lines: string[], conformances: string[]): KeyedMembers | null {
-    const k = this.classKeys(cls);
-    if (!k.on) return null;
-    const { ordered, gated } = this.keyHierarchy(cls);
+    const p = this.keyPlan(cls);
+    if (!p) return null;
+    const { ordered, gated } = p;
+    const written = (n: string) => keyOf(p, n)?.presence === 'written';
     if (ordered) {
-      for (const n of k.flagged) lines.push(`    var __has_${n} = ${!k.written.has(n)}`);
+      for (const n of p.flagged) lines.push(`    var __has_${n} = ${!written(n)}`);
       if (!appBase) {
         lines.push('    var jsOrder: [String]?');
         if (gated) lines.push('    var jsLevel = 0');
-        if (this.keyHierarchy(cls).expando) lines.push('    var jsAddedKeys: [String] { jsExpando?.jsKeys ?? [] }');
+        if (p.expando) lines.push('    var jsAddedKeys: [String] { jsExpando?.jsKeys ?? [] }');
         conformances.push('JSKeyOrdered');
       }
     }
-    const gate = gated && k.depth > 0 ? `jsLevel >= ${k.depth}` : '';
+    const gate = gated && p.depth > 0 ? `jsLevel >= ${p.depth}` : '';
     const present = (n: string) => {
-      const own = k.flagged.has(n) ? `__has_${n}` : '';
-      return [k.written.has(n) ? '' : gate, own].filter(Boolean).join(' && ') || null;
+      const own = p.flagged.has(n) ? `__has_${n}` : '';
+      return [written(n) ? '' : gate, own].filter(Boolean).join(' && ') || null;
     };
-    return { order: k.order, present, ordered, appBase };
+    return { order: p.keys.map((k) => k.name), present, ordered, appBase };
   }
 
   /** The notes after the statements of a constructor that write keys, which run no observer there; a write elsewhere in it is refused. */
   private initKeyNotes(cls: ts.ClassLikeDeclaration, ctor: ts.ConstructorDeclaration): Map<ts.Statement, string> {
     const notes = new Map<ts.Statement, string>();
-    const k = this.classKeys(cls);
-    if (!k.on || !this.keyHierarchy(cls).ordered || !ctor.body) return notes;
+    const p = this.keyPlan(cls);
+    if (!p?.ordered || !ctor.body) return notes;
     // Below a base, whose constructor may have made keys out of order, a key the walk predicts goes after them all the same.
     const based = !!cls.heritageClauses?.some((h) => h.token === ts.SyntaxKind.ExtendsKeyword);
     const made = (n: string) => `jsKeyMade(${swiftString(n)})`;
-    const { noted } = this.keyHierarchy(cls);
+    const noted = this.keysNoted(p);
     const visit = (x: ts.Node): void => {
       if (ts.isFunctionLike(x) || ts.isClassLike(x)) return;
       const target = ts.isBinaryExpression(x) && x.operatorToken.kind >= ts.SyntaxKind.FirstAssignment && x.operatorToken.kind <= ts.SyntaxKind.LastAssignment ? x.left
@@ -3873,11 +3829,11 @@ ${members.join('\n')}
       const left = target && ts.skipOuterExpressions(target);
       if (left && ts.isPropertyAccessExpression(left) && left.expression.kind === ts.SyntaxKind.ThisKeyword && ts.isIdentifier(left.name)) {
         const n = left.name.text;
-        const walked = k.walked.get(x);
+        const walked = p.walked.get(x);
         const st = ts.walkUpParenthesizedExpressions(x.parent);
-        if (k.flagged.has(n) || (walked?.first && based)) {
+        if (p.flagged.has(n) || (walked?.first && based)) {
           if (!ts.isExpressionStatement(st)) throw this.error(x, 'a write that makes a key, inside an expression of its class\'s constructor');
-          const note = !k.flagged.has(n) ? `if ${noted} { ${made(n)} }`
+          const note = !p.flagged.has(n) ? `if ${noted} { ${made(n)} }`
             : walked ? (based ? `if !__has_${n} { __has_${n} = true; if ${noted} { ${made(n)} } }` : `__has_${n} = true`)
             : `if !__has_${n} { __has_${n} = true; ${made(n)} }`;
           notes.set(st, note);
@@ -3891,19 +3847,10 @@ ${members.join('\n')}
 
   /** A subclass's start of its level of the constructor: its keys from there on (`jsLevel`), and its keys made now. */
   private levelStart(cls: ts.ClassLikeDeclaration): string[] {
-    const k = this.classKeys(cls);
-    if (!k.on || k.depth === 0 || !this.keyHierarchy(cls).gated) return [];
-    const now = k.order.filter((n) => k.always.has(n));
-    return [`        jsLevel = ${k.depth}`, ...(now.length ? [`        if ${this.keyHierarchy(cls).noted} { ${now.map((n) => `jsKeyMade(${swiftString(n)})`).join('; ')} }`] : [])];
-  }
-
-  /** Whether the program class at the root of the class's program hierarchy keeps what script adds to its objects (`JSExpando`). */
-  private appRootKeepsExpando(cls: ts.ClassLikeDeclaration): boolean {
-    if (this.library) return false;
-    let root = cls;
-    for (let b = this.programBase(cls); b; b = this.programBase(b)) root = b;
-    if (root.heritageClauses?.some((h) => h.token === ts.SyntaxKind.ExtendsKeyword)) return false;
-    return this.pluginFiles.has(root.getSourceFile().fileName) || this.givenUndeclared().has(root);
+    const p = this.keyPlan(cls);
+    if (!p || p.depth === 0 || !p.gated) return [];
+    const now = p.keys.filter((k) => k.presence === 'always').map((k) => k.name);
+    return [`        jsLevel = ${p.depth}`, ...(now.length ? [`        if ${this.keysNoted(p)} { ${now.map((n) => `jsKeyMade(${swiftString(n)})`).join('; ')} }`] : [])];
   }
 
   private programBase(cls: ts.ClassLikeDeclaration): ts.ClassLikeDeclaration | undefined {
@@ -6236,7 +6183,7 @@ ${members.join('\n')}
         lines.push(`    var jsNulls: Set<String>?${initial.length ? ` = [${initial.map((m) => swiftString(m.name.getText())).join(', ')}]` : ''}`);
       }
       const definable = this.definableNames(cls).filter((n) => fields.some((f) => f.name === n));
-      lines.push(...this.dynamicMembers(fields, cls.name?.text ?? name, !!appBase || !!kitRoot, dynMethods, symbolFields, expando, raw, dynAccessors, symbolKeyedBase, false, nulls, true, this.states.nullFieldsTyped(cls), this.keyedMembers(cls, !!appBase, lines, conformances), undefined, new Set(definable), !!appBase && this.appRootKeepsExpando(cls), byName));
+      lines.push(...this.dynamicMembers(fields, cls.name?.text ?? name, !!appBase || !!kitRoot, dynMethods, symbolFields, expando, raw, dynAccessors, symbolKeyedBase, false, nulls, true, this.states.nullFieldsTyped(cls), this.keyedMembers(cls, !!appBase, lines, conformances), undefined, new Set(definable), !!appBase && rootKeepsExpando(cls, this.states, this.shapeFacts()), byName));
       if (definable.length) {
         let inherited = false;
         for (let b = this.programBase(cls); b && !inherited; b = this.programBase(b)) inherited = this.definableNames(b).length > 0;
@@ -9871,7 +9818,7 @@ ${members.join('\n')}
       if (ts.isPropertyAccessExpression(target) && !(this.isSelf(target.expression) && this.props.has(target.name.text))) {
         const decl = this.checker.getSymbolAtLocation(target.name)?.valueDeclaration;
         const field = decl && ts.isPropertyDeclaration(decl) && ts.isClassLike(decl.parent) && !decl.getSourceFile().isDeclarationFile && !isStatic(decl) ? this.declaredTypeOf(target) : null;
-        if (field?.endsWith('?') && ts.isClassLike(decl!.parent) && this.classKeys(decl!.parent).flagged.has(target.name.text)) {
+        if (field?.endsWith('?') && ts.isClassLike(decl!.parent) && this.keyPlan(decl!.parent)?.flagged.has(target.name.text)) {
           if (!ts.isIdentifier(target.expression) && target.expression.kind !== ts.SyntaxKind.ThisKeyword && !this.pure(target.expression)) throw this.error(e, 'delete of a field of an object this expression makes');
           const o = this.expr(target.expression);
           return `{ () -> Bool in if ${o}.__has_${target.name.text} { ${this.lvalue(target)} = nil; ${o}.__has_${target.name.text} = false }; return true }()`;
@@ -14479,6 +14426,7 @@ ${members.join('\n')}
     const nulled = keysVar ? `${holdsNulls ? `, jsNulls: ${keysVar}.nulls` : ''}, jsUnset: ${keysVar}.unset`
       : (untypedKeys.length ? `, jsNulls: jsNullKeysOf([${nullKeys.map(swiftString).join(', ')}], [${untypedKeys.join(', ')}])` : nullKeys.length ? `, jsNulls: [${nullKeys.map(swiftString).join(', ')}]` : '')
         + (unsetKeys.length ? `, jsUnset: [${unsetKeys.map(swiftString).join(', ')}]` : '');
+    if (process.env.NS_SHAPE_SHADOW) shadowLiteral(this, e, { fields: order, tracks: !order.some((f) => (f as ShapeField).accessor || (f as ShapeField).symbol), notes: notesKeys, nullKeys, unsetKeys, untypedKeys, runtime: keysVar ? [...given.values(), ...keyNotes] : [], written: inOrder });
     const made = `${target}(${args}${args && reorder ? reorder : reorder.slice(2)}${args || reorder ? nulled : nulled.slice(2)})`;
     if (!spreadTemps.length && !self) return made;
     const throws = this.throwsInfo.expr(e) || [...spreadTemps, made].some((x) => THROWING_CODE.test(outsideClosures(x)));
@@ -14722,9 +14670,6 @@ interface IteratorMethod { name: string; params: number; param?: string; ret: st
 /** A type with null among its values and no undefined (nor any or unknown, which may be either). */
 /** An app class's keys in `dynamicMembers`: in plan order, each present by `present` (null: always). */
 interface KeyedMembers { order: string[]; present: (name: string) => string | null; ordered: boolean; appBase: boolean }
-interface KeyHierarchy { ordered: boolean; gated: boolean; expando: boolean; noted: string }
-/** An app class's keys: see `classKeys`. */
-interface ClassKeys { on: boolean; order: string[]; always: Set<string>; sure: Set<string>; written: Set<string>; flagged: Set<string>; walked: Map<ts.Node, { field: string; first: boolean }>; depth: number }
 interface ShapeField { name: string; type: string; accessor?: { get: boolean; set: boolean; throws: boolean; value: string }; symbol?: boolean }
 
 /** The `this` nodes of a function, and of the arrow functions inside it. */
