@@ -100,10 +100,10 @@ function classRecord(cls: ts.ClassLikeDeclaration, k: BackendClassKeys, states: 
     if (plan.keys.map((s) => s.name).join() !== k.order.join()) diffs.push(['order', plan.keys.map((s) => s.name).join(), k.order.join()]);
     compare('always', of((s) => s.presence === 'always'), k.always);
     compare('written', of((s) => s.presence === 'written'), k.written);
-    compare('flagged', of((s) => s.presence === 'written' || s.presence === 'deleted'), k.flagged);
+    compare('flagged', of((s) => s.presence === 'written' || s.deleted), k.flagged);
     if (plan.depth !== k.depth) diffs.push(['depth', plan.depth, k.depth]);
   }
-  return { name, on: k.on, flagged: names(k.flagged), keys: plan?.keys.map((s) => `${s.name}:${s.presence}${s.nulls === 'noted' ? ':null' : ''}`).join(',') ?? null, diffs };
+  return { name, on: k.on, flagged: names(k.flagged), keys: plan?.keys.map((s) => `${s.name}:${s.presence}${s.deleted ? ':deleted' : ''}${s.nulls === 'noted' ? ':null' : ''}`).join(',') ?? null, diffs };
 }
 
 function hierarchyRecord(root: ts.ClassLikeDeclaration, h: BackendHierarchy, states: ValueStates, facts: ShapeFacts): object {
@@ -137,15 +137,16 @@ function literalRecord(e: ts.ObjectLiteralExpression, k: LiteralKeys, states: Va
   for (const s of plan.keys) {
     const h = held(field.get(s.name));
     if (h === 'none' || h === 'any' || h === 'function' || !s.form) continue;
-    const mayNull = s.form.null || s.form.foreign, mayUnset = s.form.undefined || s.form.foreign;
-    if (k.tracks) {
-      if (mayNull && !nullNoted(s.name)) diffs.push([`null ${h === 'present' ? 'unheld' : 'unnoted'}`, s.name, h]);
-      else if (!mayNull && nullNoted(s.name)) diffs.push(['null noted, form never null', s.name, h]);
-    }
-    if (k.notes) {
-      if (mayUnset && !unsetNoted(s.name)) diffs.push([`unset ${h === 'present' ? 'unheld' : 'unnoted'}`, s.name, h]);
-      else if (!mayUnset && unsetNoted(s.name)) diffs.push(['unset noted, form never undefined', s.name, h]);
-    }
+    // A foreign value only may be empty: into a field held present, its conversion (S3) decides, not the key.
+    const may = (state: boolean) => (state ? '' : s.form!.foreign ? ' (foreign)' : null);
+    const check = (what: 'null' | 'unset', on: boolean, state: boolean, noted: boolean) => {
+      if (!on) return;
+      const why = may(state);
+      if (why !== null && !noted && !(h === 'present' && why)) diffs.push([`${what} ${h === 'present' ? 'unheld' : 'unnoted'}${why}`, s.name, h]);
+      else if (why === null && noted) diffs.push([`${what} noted, form never ${what === 'null' ? 'null' : 'undefined'}`, s.name, h]);
+    };
+    check('null', k.tracks, s.form.null, nullNoted(s.name));
+    check('unset', k.notes, s.form.undefined, unsetNoted(s.name));
   }
   const order = plan.keys.map((s) => s.name).filter((n) => field.has(n));
   if (order.join() !== k.written.join()) diffs.push(['order', order.join(), k.written.join()]);

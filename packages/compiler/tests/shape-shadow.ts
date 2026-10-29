@@ -40,11 +40,12 @@ function summarize(files: string[]) {
         kinds.get(k)!.push(r);
       }
       for (const [k, rs] of [...kinds].sort((a, b) => b[1].length - a[1].length)) {
-        const sample = rs.slice(0, 3).map((r) => {
-          const d = r.diffs!.find((x) => `${x[0]}${site === 'literal' ? ` (${x[2]})` : ''}` === k)!;
-          return `${r.at}${r.name ? ` ${r.name}` : ''}: plan ${JSON.stringify(d[1])} / backend ${JSON.stringify(d[2])}`;
+        const distinct = [...new Set(rs)];
+        const sample = distinct.slice(0, 3).map((r) => {
+          const ds = r.diffs!.filter((x) => `${x[0]}${site === 'literal' ? ` (${x[2]})` : ''}` === k);
+          return `${r.at}${r.name ? ` ${r.name}` : ''}: ${site === 'literal' ? `keys ${ds.map((d) => d[1]).join(', ')}` : `plan ${JSON.stringify(ds[0][1])} / backend ${JSON.stringify(ds[0][2])}`}`;
         });
-        console.log(`  ${rs.length} ${k}\n      ${sample.join('\n      ')}`);
+        console.log(`  ${rs.length} ${k}${site === 'literal' ? ` in ${distinct.length} literals` : ''}\n      ${sample.join('\n      ')}`);
       }
     }
   }

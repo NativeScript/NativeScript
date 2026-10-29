@@ -16,9 +16,11 @@ export interface KeyState {
   /**
    * When it is a key: `always` from its class's level of the constructor on (or as the literal is made); `sure` once
    * the constructor's walk has written it, or a field core holds (`ShapeFacts.kitHeld`); `written` at its first write;
-   * `deleted` a field some code deletes, a key until then; `maybe` a key only if a spread object has it.
+   * `maybe` a key only if a spread object has it.
    */
-  presence: 'always' | 'sure' | 'written' | 'deleted' | 'maybe';
+  presence: 'always' | 'sure' | 'written' | 'maybe';
+  /** Some code deletes it (`delete o.f`), which may end the key whatever its presence. */
+  deleted: boolean;
   /** `noted`: its nil may be null, which the shape notes beside it (`jsNulls`). `nullish` is S4-2's Q2 (b), unused. */
   nulls: 'none' | 'noted' | 'nullish';
   /** A descriptor `Object.defineProperty` may give it (S4-5). */
@@ -102,8 +104,8 @@ function classKeysOf(cls: ts.ClassLikeDeclaration, states: ValueStates, facts: S
     const kitHeld = ts.isPropertyDeclaration(d) && facts.kitHeld(cls, d);
     // A field core holds is listed where the walk would have it written, never flagged.
     const presence = plan.always.has(name) ? 'always' : plan.sure.has(name) || kitHeld ? 'sure' : 'written';
-    const deletes = presence !== 'written' && !kitHeld && ts.isPropertyDeclaration(d) && deleted.has(d) && form.undefined;
-    return { name, form, presence: deletes ? 'deleted' : presence, nulls: nulls.has(name) ? 'noted' : 'none' };
+    const deletes = !kitHeld && ts.isPropertyDeclaration(d) && deleted.has(d) && form.undefined;
+    return { name, form, presence, deleted: deletes, nulls: nulls.has(name) ? 'noted' : 'none' };
   });
   let depth = 0;
   for (let x = b.programBase(cls); x; x = b.programBase(x)) depth++;
@@ -120,7 +122,7 @@ export function shapeHierarchy(root: ts.ClassLikeDeclaration, states: ValueState
   if (known) return known;
   const members = [root, ...classesOf(states).filter((c) => c !== root && rootOf(c, states) === root)].flatMap((c) => classKeysOf(c, states, facts) ?? []);
   const expando = !!classKeysOf(root, states, facts) && facts.expando(root);
-  const flagged = (k: KeyState) => k.presence === 'written' || k.presence === 'deleted';
+  const flagged = (k: KeyState) => k.presence === 'written' || k.deleted;
   const ordered = members.some((m) => m.keys.some(flagged) || (expando && m.depth > 0 && m.keys.length > 0));
   const gated = ordered && members.some((m) => m.depth > 0 && m.keys.some((k) => k.presence !== 'written'));
   const h = { ordered, gated, expando: ordered && expando, noted: ordered ? (expando ? 'keys' as const : 'order' as const) : null };
@@ -179,7 +181,7 @@ export function shapePlanOfLiteral(e: ts.ObjectLiteralExpression, states: ValueS
       spread = true;
       for (const s of checker.getTypeAtLocation(p.expression).getProperties()) {
         const form = s.valueDeclaration ? forms.formOfSlot(s.valueDeclaration) : null;
-        put({ name: s.name, form, presence: s.flags & ts.SymbolFlags.Optional ? 'maybe' : 'always', nulls: nulls(form) });
+        put({ name: s.name, form, presence: s.flags & ts.SymbolFlags.Optional ? 'maybe' : 'always', deleted: false, nulls: nulls(form) });
       }
       continue;
     }
@@ -188,7 +190,7 @@ export function shapePlanOfLiteral(e: ts.ObjectLiteralExpression, states: ValueS
     const form = ts.isPropertyAssignment(p) ? forms.formOf(p.initializer) : ts.isShorthandPropertyAssignment(p) ? forms.formOf(p.name) : null;
     const accessor = ts.isGetAccessorDeclaration(p) || ts.isSetAccessorDeclaration(p)
       ? { get: ts.isGetAccessorDeclaration(p) || !!keys.get(name)?.accessor?.get, set: ts.isSetAccessorDeclaration(p) || !!keys.get(name)?.accessor?.set } : undefined;
-    put({ name, form, presence: 'always', nulls: nulls(form), ...(accessor ? { accessor } : {}) });
+    put({ name, form, presence: 'always', deleted: false, nulls: nulls(form), ...(accessor ? { accessor } : {}) });
   }
   const order = jsKeyOrder([...keys.keys()]);
   return { kind: 'literal', keys: order.map((n) => keys.get(n)!), depth: 0, ordered: false, gated: false, noted: null, expando: false, spread, walked: new Map() };
