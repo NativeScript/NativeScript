@@ -50,7 +50,7 @@ export interface Value {
 /** The outermost operation of a value's code. */
 export type Mark =
   /**
-   * `unchecked`: Kotlin's `jsUnchecked<T>(x)`, which passes any value for a `T`. `spelled`: the type as the code names it.
+   * `unchecked`: Kotlin's `jsUnchecked<T>(x)`, which passes any value for a `T`, or `jsCastCarried(x, …)`, which passes null for one. `spelled`: the type as the code names it.
    * `up`: Swift's `x as T?`, which cannot fail. `implicit`: Swift's `jsImplicit(x as? T)`.
    */
   | { op: 'cast'; to: NativeType; optional: boolean; implicit: boolean; of: Value; unchecked?: boolean; spelled?: string; up?: boolean }
