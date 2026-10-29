@@ -220,20 +220,39 @@ export interface ParamSlot {
    * as `undefined` reads in the slot's type (a required parameter of an app function).
    */
   missing?: 'empty' | 'undefined';
+  /** A native API's parameter (`.d.ts`): the backend's conversion to the native type `target` names, no other cell. */
+  native?: NativeParam;
 }
 
-type SlotFacts = Pick<ParamSlot, 'nullish' | 'asIs' | 'constantDefault' | 'packaged' | 'rest' | 'missing'>;
+/** What a native parameter's conversion reads besides its type: Kotlin's `target` is the Java descriptor, with the nullness and generic signature the class file gives. */
+export interface NativeParam {
+  nullable?: boolean;
+  nonNull?: boolean;
+  signature?: string;
+  typeVar?: (name: string) => string;
+}
+
+type SlotFacts = Pick<ParamSlot, 'nullish' | 'asIs' | 'constantDefault' | 'packaged' | 'rest' | 'missing' | 'native'>;
 
 /** The slot of a parameter the backend has as `target` at the call `at`, taking its `k`th argument `a` (none where the call leaves it out or a spread gives it). */
 export function argumentSlot(b: Pick<PlacementBackend, 'library' | 'lenient' | 'states'>, target: string, decl: ts.Declaration | undefined, at: { call: ts.CallExpression | ts.NewExpression; k: number; a?: ts.Expression }, facts: SlotFacts = {}): ParamSlot {
   return { kind: 'argument', target, type: parseNativeType(target), decl, ...argumentEntry(b, at.call, at.k, at.a), ...facts };
 }
 
-function argumentEntry(b: Pick<PlacementBackend, 'library' | 'lenient' | 'states'>, call: ts.CallExpression | ts.NewExpression, k: number, a?: ts.Expression): Pick<ParamSlot, 'entry' | 'checked'> {
+/** How the `k`th argument `a` of `call` comes in, as its slot has it (`argumentSlot`). */
+export function argumentEntry(b: Pick<PlacementBackend, 'library' | 'lenient' | 'states'>, call: ts.CallExpression | ts.NewExpression, k: number, a?: ts.Expression): Pick<ParamSlot, 'entry' | 'checked'> {
   let checked: Form | null = null;
   // A value the forms throw on enters unchecked.
   try { checked = a ? b.states.foreignArgument(call, k, a) : null; } catch { checked = null; }
   return checked ? { entry: 'checked', checked } : { entry: b.library ? 'library' : b.lenient ? 'lenient' : 'typed' };
+}
+
+/** The call `a` is an argument of, past parentheses, and its position there; null where `a` is no call's argument. */
+export function argumentOf(a: ts.Expression): { call: ts.CallExpression | ts.NewExpression; k: number } | null {
+  let x: ts.Node = a;
+  while (ts.isParenthesizedExpression(x.parent)) x = x.parent;
+  const p = x.parent;
+  return (ts.isCallExpression(p) || ts.isNewExpression(p)) && p.expression !== x ? { call: p, k: p.arguments!.indexOf(x as ts.Expression) } : null;
 }
 
 /** One cell of a `return`-kind slot. */
