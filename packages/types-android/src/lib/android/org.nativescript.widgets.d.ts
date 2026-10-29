@@ -1,6 +1,6 @@
-﻿declare module org {
-    module nativescript {
-        module widgets {
+﻿declare namespace org {
+    namespace nativescript {
+        namespace widgets {
             export class BoxShadowDrawable {
                 public constructor(drawable: android.graphics.drawable.Drawable, values: number[]);
                 public getWrappedDrawable(): android.graphics.drawable.Drawable;
@@ -12,7 +12,7 @@
                 public setResetOnTransitionEnd(resetOnTransitionEnd: boolean): void;
                 public getTransitionName(): string;
             }
-            export module Async {
+            export namespace Async {
                 export class CompleteCallback {
                     constructor(implementation: ICompleteCallback);
                     onComplete(result: Object, context: Object): void;
@@ -24,11 +24,11 @@
                     onError(error: string, context: Object): void;
                 }
 
-                export module Image {
+                export namespace Image {
                     export function download(url: string, callback: CompleteCallback, context: any);
                 }
 
-                export module File {
+                export namespace File {
                     export function copySync(src: string, dest: string, context: android.content.Context): boolean;
                     export function copy(src: java.io.InputStream, dest: java.io.OutputStream, callback: org.nativescript.widgets.Async.CompleteCallback, context: any): void;
 					export function copySync(src: java.io.InputStream, dest: java.io.OutputStream, context: any): boolean;
@@ -44,7 +44,7 @@
                     export function appendText(path: string, content: string, encoding: string, callback: CompleteCallback, context: any);
                 }
 
-                export module Http {
+                export namespace Http {
                     export class KeyValuePair {
                         public key: string;
                         public value: string;
@@ -277,7 +277,7 @@
                 public setPassThroughParent(value: boolean): void;
             }
 
-            export module LayoutBase {
+            export namespace LayoutBase {
                 	export class WindowInsetListener {
 					public constructor(implementation: {
 						onApplyWindowInsets(param0: java.nio.ByteBuffer): void;
@@ -720,9 +720,9 @@
     }
 }
 
-declare module org {
-	export module nativescript {
-		export module widgets {
+declare namespace org {
+	export namespace nativescript {
+		export namespace widgets {
 			export class FileHelper {
                 public static class: java.lang.Class<org.nativescript.widgets.FileHelper>;
 				public appendSync(param0: globalAndroid.content.Context, param1: androidNative.Array<number>, param2: org.nativescript.widgets.FileHelper.Callback): void;
@@ -758,7 +758,7 @@ declare module org {
 				public appendText(param0: globalAndroid.content.Context, param1: string, param2: string, param3: org.nativescript.widgets.FileHelper.Callback): void;
 				public getLastModified(): number;
 			}
-			export module FileHelper {
+			export namespace FileHelper {
 				export class Callback {
 					public static class: java.lang.Class<org.nativescript.widgets.FileHelper.Callback>;
 					/**
@@ -777,9 +777,9 @@ declare module org {
 	}
 }
 
-declare module org {
-	export module nativescript {
-		export module widgets {
+declare namespace org {
+	export namespace nativescript {
+		export namespace widgets {
 			export class Utils {
 				public static class: java.lang.Class<org.nativescript.widgets.Utils>;
                 public static getBitmapFromDrawable(param0: globalAndroid.graphics.drawable.Drawable): globalAndroid.graphics.Bitmap;
@@ -802,7 +802,7 @@ declare module org {
                 public static ignoreEdgeToEdgeOnOlderDevices: boolean;
 				public constructor();
 			}
-			export module Utils {
+			export namespace Utils {
 				export class AsyncImageCallback {
 					public static class: java.lang.Class<org.nativescript.widgets.Utils.AsyncImageCallback>;
 					/**

@@ -128,6 +128,7 @@ function hasNativeClassDecorator(node) {
 function emitDownleveledClass(node) {
 	// Preserve leading trivia (including possible preceding import statements separated earlier by bundler) only remove the decorator itself.
 	const stripped = node.getText().replace(/@NativeClass(?:\((?:.|\n)*?\))?\s*/gm, '');
+	// TS 6+ emits a "use strict" prologue for snippets without imports/exports; it must not be spliced into the host file.
 	const downleveled = ts
 		.transpileModule(stripped, {
 compilerOptions: {
@@ -139,7 +140,8 @@ emitDecoratorMetadata: false,
 useDefineForClassFields: false,
 },
 })
-		.outputText.replace(/(Object\.defineProperty\(.*?{.*?)(enumerable:\s*false)(.*?}\))/gs, '$1enumerable: true$3');
+		.outputText.replace(/^\s*(['"])use strict\1;?\s*/, '')
+		.replace(/(Object\.defineProperty\(.*?{.*?)(enumerable:\s*false)(.*?}\))/gs, '$1enumerable: true$3');
 
 	const helperSource = ts.createSourceFile(
 		(node.getSourceFile()?.fileName ?? 'NativeClass.ts') + '.helper.js',
