@@ -4,7 +4,7 @@ import { dirname as pathDirname, resolve as pathResolve } from 'node:path';
 import { AsyncLowering, usedBefore, type AsyncCtx, type AsyncSyntax, type AsyncTranslator } from './async.ts';
 import { isAsync, isStatic } from './throws.ts';
 import { assignedMembers } from './sharing.ts';
-import { assignedValues, openSpreadType, spreadsArrays, definitelyAssignedFields, forwardedSetter, initializedNull, intersectionAliasMembers, isRegExpProtocol, assertedPattern, unsupportedPattern, intlConstructor, isObjectToStringCall, isStringRaw, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, classesHeldUntyped, type TrustScope, literalPattern, patternGroups, unsetGroupTyping, type UnsetGroupTyping, admitsUndefined, classKeyPlan, onlyUndefined, keysDefinedUntyped, KOTLIN_NATIVE_TYPES, runtimeTypeName, definesRunTimeKey, readKeyOf, reassigned, givenBy, onlyNullOrPresent, statementLevel, readWrite, asOperation, type ReadWrite } from './lang.ts';
+import { assignedValues, openSpreadType, spreadsArrays, definitelyAssignedFields, forwardedSetter, initializedNull, intersectionAliasMembers, isRegExpProtocol, assertedPattern, unsupportedPattern, intlConstructor, isObjectToStringCall, isStringRaw, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, classesHeldUntyped, type TrustScope, literalPattern, patternGroups, unsetGroupTyping, type UnsetGroupTyping, admitsUndefined, onlyUndefined, keysDefinedUntyped, KOTLIN_NATIVE_TYPES, runtimeTypeName, definesRunTimeKey, readKeyOf, reassigned, givenBy, onlyNullOrPresent, statementLevel, readWrite, asOperation, type ReadWrite } from './lang.ts';
 import { memberName } from './stable-names.ts';
 import { shadowConversions } from './conversion-shadow.ts';
 import { parseNativeType, type Mark, type Value } from './conversion.ts';
@@ -14,6 +14,8 @@ import type { Form } from './forms.ts';
 import { isCoreDeclaration } from './core.ts';
 import { nonVirtualName } from './swift.ts';
 import type { Properties } from './properties.ts';
+import { classKeyPlan } from './shapes.ts';
+import { shadowLiteral, shadowShapes } from './shape-shadow.ts';
 import { recognizePatterns, type Patterns } from './patterns.ts';
 import type { Reach } from './reach.ts';
 import { allowedDeprecation, calledOnAnyThread } from './android-deprecations.ts';
@@ -411,6 +413,7 @@ export class Translator implements AsyncTranslator {
     this.sourceFiles = files;
     this.states = new ValueStates(this.stateBackend());
     if (process.env.NS_CONVERSION_SHADOW) shadowConversions(this, this.states);
+    if (process.env.NS_SHAPE_SHADOW) shadowShapes(this, this.states);
     this.pluginFiles = new Set(options.pluginFiles ?? []);
     this.reach = options.reach ?? null;
     this.properties = options.properties ?? null;
@@ -10650,6 +10653,7 @@ export class Translator implements AsyncTranslator {
     const noted = keysVar ? `.also { it.jsNulls = ${keysVar}.nulls; it.jsUnset = ${keysVar}.unset }`
       : untypedKeys.length ? `.also { it.jsNulls = jsNullKeysOf(listOf(${nullKeys.map(kotlinString).join(', ')}), ${untypedKeys.join(', ')})${unsetKeys.length ? `; it.jsUnset = ${keySet(unsetKeys)}` : ''} }`
       : nullKeys.length || unsetKeys.length ? `.also { ${[...(nullKeys.length ? [`it.jsNulls = ${keySet(nullKeys)}`] : []), ...(unsetKeys.length ? [`it.jsUnset = ${keySet(unsetKeys)}`] : [])].join('; ')} }` : '';
+    if (process.env.NS_SHAPE_SHADOW) shadowLiteral(this, e, { fields: nullFields ?? order, tracks: tracksNulls && !this.library, notes: notesKeys, nullKeys, unsetKeys, untypedKeys, runtime: keysVar ? [...given.values(), ...keyNotes] : [], written: inOrder });
     const made = `${target}(${[...args, reorder].filter(Boolean).join(', ')})${noted}`;
     const built = self ? `run { lateinit var ${self}: ${target}; val __made = ${made}; ${self} = __made; __made }` : made;
     return spreadTemps.length ? `run { ${spreadTemps.join('; ')}; ${built} }` : built;

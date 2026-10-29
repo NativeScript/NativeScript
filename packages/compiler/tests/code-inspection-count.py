@@ -8,6 +8,10 @@ apart: they shape the text, not the conversion. Swift's try-placement scans (whe
 throwing helper, so that what holds it is marked `try` or `throws`) are counted on their own line until the AST throws
 analysis replaces them (review/S3-PLAN.md, S3-12).
 
+The key-state line (review/S4-S5-PLAN.md §4) counts what S4's key plan replaces: tests on a rendered type string that
+decide a key's state (`f.type.endsWith('?')`, `isOptional(f.type)`, `held(f)`) in the methods that decide keys, one per
+line, and the key-state methods each backend still has its own copy of.
+
   python3 tests/code-inspection-count.py [--sites] [src-dir]
 """
 import collections
@@ -51,11 +55,37 @@ ALLOWED_METHODS = {'balanced', 'wrapsWhole', 'branch', 'postfixable', 'oneExpres
 # The try-placement helpers themselves: every line of theirs is one.
 TRY_METHODS = {'tryAssigned', 'singleTry', 'throwsOutside'}
 FILES = {'swift': ['swift.ts'], 'swift native-calls': ['native-calls.ts'], 'swift kit-gen': ['kit-gen.ts'], 'kotlin': ['kotlin.ts'],
-         'shared': ['lang.ts', 'value-states.ts', 'forms.ts', 'conversion.ts', 'placement.ts']}
+         'shared': ['lang.ts', 'value-states.ts', 'forms.ts', 'conversion.ts', 'placement.ts', 'shapes.ts']}
 # A variable assigned a rendered type in the method (`const receiver = this.typeOf(x)`): tests on it read types, not code.
 TYPE_VAR = re.compile(r'\b(?:const|let) (\w+) = this\.(?:typeOf|type|declaredTypeOf|returnTypeOf|computedType)\(')
 DEFINITION = re.compile(r'^  (?!(?:if|for|while|switch|catch|return|else|do|try)\b)(?:private |public |protected |readonly )*(?:static )?(?:async )?([A-Za-z_]\w*)\s*(?:<[^>]*>)?\(')
 TOP = re.compile(r'^(?:export )?(?:function|const) ([A-Za-z_]\w*)')
+
+
+# The methods that decide an object's keys from field type strings, in either backend.
+KEY_METHODS = {'shape', 'object', 'objectClassCode', 'objectClass', 'accessorClass', 'shapeProtocols', 'structuralCopy', 'dynamicMembers', 'classKeys'}
+KEY_TYPE_TEST = re.compile(r"""(?:\.type|typeOf\([^)]*\)|shapeHeld\([^)]*\)|\bpt)\.endsWith\('\?'\)|isOptional\([^)]*\btype\b[^)]*\)|isNullable\([^)]*\)"""
+                           r"""|/\[\?!\]\$/\.test\([^)]*\)|\.type [!=]== 'Any\?'|isFunctionType\(f\.type\)|hasTopLevelArrow\(this\.shapeHeld""")
+# Key-state methods each backend writes its own copy of (S4-1 and S4-5 make them one plan).
+TWIN_KEY_METHODS = {'classKeys', 'keyHierarchy', 'deletedFields', 'keyedClass', 'keyedMembers', 'levelStart', 'initKeyNotes', 'appRootKeepsExpando',
+                    'definedKeys', 'definableNames', 'definedField', 'definedAccess', 'isExpando', 'givenUndeclared', 'instanceKeys'}
+
+
+def key_state(path):
+    """Type-string tests deciding key state (line, method, text), and the twin key methods' (name, lines)."""
+    tests, extents, method, start = [], {}, None, 0
+    lines = open(path).read().split('\n')
+    for no, line in enumerate(lines, 1):
+        m = DEFINITION.match(line)
+        if m and line.rstrip().endswith('{'):
+            if method in TWIN_KEY_METHODS:
+                extents[method] = no - start
+            method, start = m.group(1), no
+        if method in KEY_METHODS and not line.strip().startswith(('//', '*', '/*')) and KEY_TYPE_TEST.search(line):
+            tests.append((no, method, line.strip()))
+    if method in TWIN_KEY_METHODS:
+        extents[method] = len(lines) + 1 - start
+    return tests, extents
 
 
 def sites(path):
@@ -117,6 +147,13 @@ def main():
             if show:
                 for s in placed:
                     print('    ' + s)
+        if backend in ('swift', 'kotlin'):
+            tests, twins = key_state(os.path.join(src, files[0]))
+            print(f'{backend}: key-state: {len(tests)} type-string tests in {len({m for _, m, _ in tests})} methods; '
+                  f'{len(twins)} twin key methods ({sum(twins.values())} lines)')
+            if show:
+                for no, method, text in tests:
+                    print(f'    {files[0]}:{no}\t{method}\t{text[:150]}')
 
 
 main()
