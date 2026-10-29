@@ -240,7 +240,7 @@ const alreadyAs = (code: string, type: string): boolean => castTo(code, type);
 const implicitInner = (code: string): string | null => {
   const c = markOf(code);
   if (c?.op === 'implicit' && !c.via) return c.of.code;
-  return c?.op === 'cast' && c.implicit ? `${c.of.code} ${c.up ? 'as' : c.optional ? 'as?' : 'as!'} ${c.spelled}${c.up ? '?' : ''}` : null;
+  return c?.op === 'cast' && c.implicit ? c.checked ?? `${c.of.code} ${c.up ? 'as' : c.optional ? 'as?' : 'as!'} ${c.spelled}${c.up ? '?' : ''}` : null;
 };
 /** An array's element read where undefined goes, boxed (`((xs.element(i) ?? nil) as Any?)`): the element read, else undefined. */
 const boxedElement = (code: string): string | undefined => {
@@ -3257,10 +3257,10 @@ ${members.join('\n')}
   private storeFromAny(lhs: string, type: string, key: string, symbol = false): string {
     // A symbol-keyed field is held as `deferred` declares it: an array or a string present, its zero for undefined.
     const value = symbol && this.lenient && this.zero(type) !== null && !isOptional(type) ? this.fromAnyOrZeroValue('newValue', type) : this.fromAnyChecked('newValue', this.lenient ? this.lenientRef(type) : type, !!this.library);
-    const code = value.code;
+    const code = value.code, cast = this.checkedCastIn(value);
     // A conversion that can throw (an array holding undefined where its elements are objects): `jsSet` throws it.
-    if (value.mark?.op === 'try') return `jsStoring { ${lhs} = ${code} }`;
-    if (value.throws) return `jsStoring { try ${lhs} = ${code} }`;
+    if (cast.mark?.op === 'try') return `jsStoring { ${lhs} = ${code} }`;
+    if (cast.throws) return `jsStoring { try ${lhs} = ${code} }`;
     const forced = value.mark?.op === 'cast' && value.mark.of.code === 'newValue' && !value.mark.optional && !value.mark.implicit;
     if (!forced || CF_CLASSES.has(type)) return `${lhs} = ${code}`;
     return `if let __v = jsConverted(newValue, to: ${type}.self) { ${lhs} = __v } else { jsRefuseSet(newValue, ${swiftString(key)}, ${swiftString(type)}) }`;
@@ -3343,7 +3343,8 @@ ${members.join('\n')}
    */
   private reportedRead(v: Value, slot: ResultSlot): string {
     if (slot.throws !== false) return v.code;
-    return v.mark?.op === 'try' ? orNil(`jsReported { ${v.code} }`) : v.throws && v.mark?.op === 'converted' ? orNil(`jsReported { try ${v.code} }`) : v.code;
+    const c = this.checkedCastIn(v);
+    return c.mark?.op === 'try' ? orNil(`jsReported { ${v.code} }`) : c.throws && (c.mark?.op === 'converted' || (c.mark?.op === 'cast' && c.mark.checked)) ? orNil(`jsReported { try ${v.code} }`) : v.code;
   }
 
   /** The result slot of a synthesized getter or initializer giving back `type`, which cannot throw. */
@@ -3399,7 +3400,7 @@ ${members.join('\n')}
     // An Error held untyped (a caught or rejected value): the error, or a view of what was thrown instead.
     if (type === 'JSError' && !this.lenient) return `jsErrorOf(${code})`;
     // An implicitly unwrapped class (`tabView: TabView!`): the value as it, missing where it is none.
-    if (/^[A-Z][\w.]*!$/.test(type) && !this.native.isStructType(type.slice(0, -1)) && !['Double', 'String', 'Bool'].includes(type.slice(0, -1))) return castCode(code, type.slice(0, -1), 'as?');
+    if (/^[A-Z][\w.]*!$/.test(type) && !this.native.isStructType(type.slice(0, -1)) && !['Double', 'String', 'Bool'].includes(type.slice(0, -1))) return this.libraryClassCast(input, type.slice(0, -1), false, checked || throwing, placed) ?? castCode(code, type.slice(0, -1), 'as?');
     if (input.mark?.op === 'empty') {
       // Null where code checked without strictNullChecks declares a string, number or boolean: the type's zero, falsy as null is.
       if (type === 'String') return '""';
@@ -3476,7 +3477,7 @@ ${members.join('\n')}
       return { code: made, throws: true, pure: false, mark: { op: 'converted', of: input } };
     }
     if (['String?', 'Double?', 'Bool?'].includes(type)) return `jsLenient${base === 'Double' ? 'Number' : base}OrNil(${code})`;
-    if (type.endsWith('?')) return castCode(code, base, 'as?');
+    if (type.endsWith('?')) return this.libraryClassCast(input, base, false, checked || throwing, placed) ?? castCode(code, base, 'as?');
     // An untyped value read as a string, number or boolean is converted as JavaScript would where it is used
     // (`textWrap = "true"` tests true); undefined is the type's zero.
     if (['String', 'Double', 'Bool'].includes(type)) return marked(`jsLenient${type === 'Double' ? 'Number' : type}(${code})`, { op: 'lenient', of: input });
@@ -3485,9 +3486,37 @@ ${members.join('\n')}
     // Module-qualified: inside an object of the program's that holds the class under its name (`{ Declaration }`), the bare name is that field.
     if (plain) return implicitOf(`jsShaped(${code}) { ${plain.throws ? 'try ' : ''}${this.appModule ? `${this.appModule}.` : ''}${type}() }`);
     // Lenient code holds a native collection implicitly unwrapped too (`sceneManifest = bundle.objectForInfoDictionaryKey(…)`): nil where it is missing.
-    if (this.lenientRef(type) !== type || (this.lenient && /^\[.*\]$/.test(type))) return alreadyAs(code, type) ? code : castCode(code, type, 'as?', true);
+    if (this.lenientRef(type) !== type || (this.lenient && /^\[.*\]$/.test(type))) return alreadyAs(code, type) ? code : this.libraryClassCast(input, type, true, checked || throwing, placed) ?? castCode(code, type, 'as?', true);
     if (appChecked || throwing) return `(try jsChecked(${code}, ${type}.self))`;
     return this.forcedCast(input, type);
+  }
+
+  /**
+   * Core's own code: an untyped value cast to one of core's classes, where a `try` may stand (`checked`, or the value's
+   * own read throws), is `jsCast`: an instance of another class is JavaScript's TypeError there (§2.3b M6), as Kotlin's
+   * `jsCastCarried`; null, undefined and an empty marker stay nil. Null for native classes, which stay conditional casts.
+   */
+  private libraryClassCast(input: Value, type: string, implicit: boolean, checked: boolean, placed: 'covered' | 'own' | 'operand'): Value | null {
+    if (!this.library || !(checked || input.throws) || !this.coreClass(type)) return null;
+    const call = `jsCast(${input.code}, ${type}.self)`;
+    const mark = { op: 'cast', to: parseNativeType(type), optional: true, implicit, of: input, spelled: type } as const;
+    const cast: Value = placed === 'operand' ? valueOf(marked(`(try ${call})`, { op: 'try', of: valueOf(call) })) : placed === 'own' ? tried(call) : valueOf(marked(call, { ...mark, checked: call }));
+    if (placed === 'covered') cast.throws = true;
+    if (!implicit) return cast;
+    const v = valueOf(marked(`jsImplicit(${cast.code})`, { ...mark, checked: cast.code }));
+    v.throws = cast.throws;
+    return v;
+  }
+
+  /** The checked cast `jsImplicit` holds where `v` is one (`libraryClassCast`), else `v`: what decides how its `try` is placed. */
+  private checkedCastIn(v: Value): Value {
+    return v.mark?.op === 'cast' && v.mark.implicit && v.mark.checked ? valueOf(v.mark.checked) : v;
+  }
+
+  /** A class core declares, by its Swift name: not generic, and with no native base. */
+  private coreClass(type: string): boolean {
+    const cls = this.classNamed(type.replace(/^NativeScriptKit\./, ''));
+    return !!cls?.name && ts.isClassDeclaration(cls) && !cls.typeParameters?.length && !this.native.extendsNative(this.checker.getTypeAtLocation(cls.name));
   }
 
   /**
@@ -8799,7 +8828,10 @@ ${members.join('\n')}
     if (!this.lenient || !ts.isPropertyAccessExpression(e) || e.questionDotToken || !this.isObjectRef(e)) return null;
     // Still read from the text: its receiver of at most one level of parentheses decides the core kit's output, where the
     // read's mark would also take `jsGet((xs.element(i) ?? nil), "k")`.
-    const raw = /^jsImplicit\(((?:try )?jsGet\([^()]*(?:\([^()]*\)[^()]*)*\)) as\? [\w.]+\)$/.exec(this.expr(e));
+    const m = markOf(this.expr(e));
+    // A checked cast is read as the conditional cast it stands for.
+    const code = m?.op === 'cast' && m.checked && m.implicit ? `jsImplicit(${m.of.code} as? ${m.spelled})` : this.expr(e);
+    const raw = /^jsImplicit\(((?:try )?jsGet\([^()]*(?:\([^()]*\)[^()]*)*\)) as\? [\w.]+\)$/.exec(code);
     return raw ? (raw[1].startsWith('try ') ? `(${raw[1]})` : raw[1]) : null;
   }
 
@@ -10596,7 +10628,7 @@ ${members.join('\n')}
     if (this.isNativeExpando(e)) {
       const t = this.typeOf(e);
       const read = `jsNativeExpando(${this.expr(target)}, ${swiftString(name)})`;
-      return t === 'Any?' ? read : this.lenientRef(t) !== t ? castCode(read, t, 'as?', true) : this.readConverts(e, (c) => this.fromAnyCode(c, t, true), read);
+      return t === 'Any?' ? read : this.lenientRef(t) !== t && !(this.library && this.coreClass(t)) ? castCode(read, t, 'as?', true) : this.readConverts(e, (c) => this.lenientRef(t) !== t ? this.fromAny(c, t) : this.fromAnyCode(c, t, true), read);
     }
     // A dynamic object (an allSettled result, a lookup table): its field read by name, as its type says.
     if (this.typeOf(target).replace(/[?!]$/, '') === 'JSObject' && !e.questionDotToken) return this.readConverts(e, (c) => this.fromAnyCode(c, this.typeOf(e), true), `jsField(${this.expr(target)}, ${swiftString(name)})`);
@@ -14973,7 +15005,7 @@ export function withoutRedundantImplicit(code: string, optionalStatics: Readonly
     const after = code.slice(i, i + 1);
     const alone = (/(?:\bjsUnwrap\(|\bjsImplicit\()\s*$/.test(before) && /^[,)]$/.test(after)) || (/\b(?:let|var) `?\w+`? *: *[^=\n]+\? *= *(?:try )?$/.test(before) && /^[\n;}]?$/.test(after));
     const name = /^`?(\w+)`?$/.exec(arg.trim())?.[1] ?? (optionalStatics.has(arg.trim()) ? arg.trim() : undefined);
-    const optional = alone || /^[^\s]+ as\? [\w.]+(<[\w.<>, ?]*>)?$/.test(top) || /^[^\s]*\?\.\w+$/.test(top) || (!!name && (optionalNames.has(name) || optionalStatics.has(name)));
+    const optional = alone || /^[^\s]+ as\? [\w.]+(<[\w.<>, ?]*>)?$/.test(top) || /^(?:try )?jsCast_$/.test(top) || /^[^\s]*\?\.\w+$/.test(top) || (!!name && (optionalNames.has(name) || optionalStatics.has(name)));
     if (!optional) continue;
     const inner = withoutRedundantImplicit(arg, optionalStatics, optionalNames);
     out.push(code.slice(at, m.index!), alone || name ? inner : `(${inner})`);

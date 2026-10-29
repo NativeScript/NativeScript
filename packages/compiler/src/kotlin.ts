@@ -2411,7 +2411,12 @@ export class Translator implements AsyncTranslator {
     if (!this.library && type === 'JSDate') return `jsDateFrom(${code})`;
     if (!this.library && type === 'JSRegExp') return `jsRegExpFrom(${code})`;
     // An object slot its declarations call non-null may still get null (`getAncestor` finding none), which JavaScript passes on.
-    if (this.isObjectType(type) && !/^(String|Double|Boolean)$/.test(type)) return this.unchecked(type, `jsJavaArgument(${code})`);
+    // Core's own code: null is carried so, and an instance of another class is a TypeError (§2.3b M6).
+    if (this.isObjectType(type) && !/^(String|Double|Boolean)$/.test(type)) {
+      const cls = this.library && !['JSError', 'JSDate'].includes(type) ? this.castClass(type) : null;
+      if (cls) return this.marked(`jsCastCarried(${code}, ${cls})`, { op: 'cast', to: parseNativeType(type), optional: false, implicit: false, of: this.valueOf(code), unchecked: true });
+      return this.unchecked(type, `jsJavaArgument(${code})`);
+    }
     const converted = this.library ? ({ String: 'jsConvertedString', Double: 'jsConvertedNumber', Boolean: 'jsConvertedBoolean' } as Record<string, string>)[type] : undefined;
     if (converted) return `${converted}(${code}${name ? `, ${kotlinString(name)}` : ''})`;
     return this.checkedCast(code, type, name);
@@ -2425,10 +2430,16 @@ export class Translator implements AsyncTranslator {
     // A string, number or boolean is converted as JavaScript converts it where it is used, never refused.
     const primitive = this.library ? ({ String: 'jsAsString', Double: 'jsAsNumber', Boolean: 'jsAsBoolean' } as Record<string, string>)[type] : ({ String: 'jsAssertedString', Double: 'jsAssertedNumber', Boolean: 'jsAssertedBoolean' } as Record<string, string>)[type];
     if (primitive) return this.library ? `${primitive}(${code}${name ? `, ${kotlinString(name)}` : ''})` : `${primitive}(${code})`;
-    const base = type.replace(/\?$/, '');
-    if (!/^[A-Za-z_][\w.]*$/.test(base) || this.isTypeParameterName(base) || ['Any', 'Unit', 'Nothing'].includes(base)) return cast(isNullable(type) ? `jsJavaArgument(${code})` : code, type);
-    const cls = ['Double', 'Boolean', 'Int', 'Long', 'Float', 'Short', 'Byte', 'Char'].includes(base) ? `${base}::class.javaObjectType` : `${base}::class.java`;
+    const cls = this.castClass(type);
+    if (!cls) return cast(isNullable(type) ? `jsJavaArgument(${code})` : code, type);
     return `${isNullable(type) ? 'jsCast' : 'jsCastPresent'}(${code}, ${cls})`;
+  }
+
+  /** The class `jsCast` tests a value of `type` against, or null where Kotlin has none to test (generics, `Any`). */
+  private castClass(type: string): string | null {
+    const base = type.replace(/\?$/, '');
+    if (!/^[A-Za-z_][\w.]*$/.test(base) || this.isTypeParameterName(base) || ['Any', 'Unit', 'Nothing'].includes(base)) return null;
+    return ['Double', 'Boolean', 'Int', 'Long', 'Float', 'Short', 'Byte', 'Char'].includes(base) ? `${base}::class.javaObjectType` : `${base}::class.java`;
   }
 
   private enumDecl(e: ts.EnumDeclaration, merged: string[] = []): string {
