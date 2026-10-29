@@ -5,8 +5,22 @@ import { tokenize } from '@csstools/css-tokenizer';
 
 export const HEX_REGEX = /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)|(^#[0-9A-F]{8}$)|(^#[0-9A-F]{4}$)/i;
 
+const CSS_COLOR_FUNCTION_REGEX = /^(?:oklch|oklab|lab|lch|hwb|color)\(/;
+
 export function isCssColorMixExpression(value: string) {
 	return value.includes('color-mix(');
+}
+
+export function isCssColorFunction(value: string) {
+	return CSS_COLOR_FUNCTION_REGEX.test(value);
+}
+
+export function isModernRgbOrHsl(value: string) {
+	return value.includes('/') || value.includes('none') || value.includes('from ') || (value.startsWith('rgb') && value.includes('%'));
+}
+
+export function argbFromCssColor(value: string): number | null {
+	return argbFromColorMix(value);
 }
 
 export function argbFromColorMix(value: string): number | null {
