@@ -1,5 +1,5 @@
 import ts from 'typescript';
-import { parseNativeType } from './conversion.ts';
+import { parseNativeType, type NativeType } from './conversion.ts';
 import type { ValueStates } from './value-states.ts';
 
 // A value placed in a slot (review/S3-PLAN.md §2): the front both translators share, deciding which cell of the state
@@ -162,4 +162,74 @@ export function isEnumObject(b: Pick<PlacementBackend, 'library' | 'resolve' | '
 
 function hasConst(d: ts.EnumDeclaration): boolean {
   return !!ts.getModifiers(d)?.some((m) => m.kind === ts.SyntaxKind.ConstKeyword);
+}
+
+/** A function's result as the slot its `return`s and its expression body are placed in (`SlotKind` 'return'). */
+export interface ResultSlot {
+  /** The backend's spelling: in an async function or a generator, the value its continuation takes. */
+  target: string;
+  type: NativeType;
+  /** Async and generator bodies give the value to their continuation instead of returning it. */
+  lowered: boolean;
+  /** The function the slot is the result of. */
+  fn?: ts.SignatureDeclaration;
+}
+
+/** One cell of a `return`-kind slot. */
+export type ReturnCell =
+  /** No value (`return;`), or a missing value the slot reads as its empty: `code` is what is returned ('' for nothing). */
+  | { step: 'empty'; code: string; e?: ts.Expression }
+  /** A value where the slot holds nothing: evaluated, then nothing returned. */
+  | { step: 'drop'; e: ts.Expression }
+  /** A call that never returns: the statement's end itself. */
+  | { step: 'never'; e: ts.Expression }
+  /** A value giving nothing (a void call) where the slot holds one: evaluated, then `empty`. */
+  | { step: 'voidCall'; e: ts.Expression; empty: string }
+  /** The value placed in the slot; `code` where the backend's own step placed it already. */
+  | { step: 'value'; e: ts.Expression; code?: string };
+
+/** What `returnCell` reads of a translator. */
+export interface ReturnBackend {
+  typeOf(n: ts.Node): string;
+  /**
+   * What a missing value (`e`: a nullish literal; none: `return;`) returns in `slot` where the backend reads it as the
+   * slot's empty (lenient code's zeros; '' for nothing), or null where it is placed as a value (in a slot holding
+   * nothing: evaluated). With no `e`, always an answer.
+   */
+  emptyReturn(e: ts.Expression | undefined, slot: ResultSlot): string | null;
+  /** The value `e`, giving nothing (a void call), leaves in `slot`, or null where it is placed as a value. */
+  voidValue(e: ts.Expression, slot: ResultSlot, body: boolean): string | null;
+  /** The backend's own cells before the shared ones. */
+  returnBefore?(e: ts.Expression, slot: ResultSlot): ReturnCell | null;
+}
+
+/** `e` given back from a function whose result is `slot`: by a `return` statement, or as an arrow's expression `body`. */
+export function returnCell(b: ReturnBackend, e: ts.Expression | undefined, slot: ResultSlot, body = false): ReturnCell {
+  if (!e) return { step: 'empty', code: slot.lowered ? '' : b.emptyReturn(undefined, slot) ?? '' };
+  if (slot.lowered) return { step: 'value', e };
+  const own = b.returnBefore?.(e, slot);
+  if (own) return own;
+  const given = parseNativeType(b.typeOf(e));
+  const plain = !given.optional && !given.implicit;
+  const call = ts.isCallExpression(e);
+  if (!body && call && plain && given.kind === 'never') return { step: 'never', e };
+  if (slot.type.kind === 'void' && !slot.type.optional) {
+    const code = isNullishLiteral(e) ? b.emptyReturn(e, slot) : null;
+    return code !== null ? { step: 'empty', code, e } : { step: 'drop', e };
+  }
+  if (plain && given.kind === 'void') {
+    const empty = b.voidValue(e, slot, body);
+    if (empty) return { step: 'voidCall', e, empty };
+  }
+  if (!body && isNullishLiteral(e)) {
+    const code = b.emptyReturn(e, slot);
+    if (code !== null) return { step: 'empty', code, e };
+  }
+  return { step: 'value', e };
+}
+
+/** `null`, `undefined` or `void x`, parenthesized or not. */
+export function isNullishLiteral(e: ts.Expression): boolean {
+  while (ts.isParenthesizedExpression(e)) e = e.expression;
+  return e.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(e) && e.text === 'undefined') || ts.isVoidExpression(e);
 }

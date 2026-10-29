@@ -8,7 +8,7 @@ import { assignedValues, openSpreadType, spreadsArrays, definitelyAssignedFields
 import { memberName } from './stable-names.ts';
 import { shadowConversions } from './conversion-shadow.ts';
 import { parseNativeType, type Mark, type Value } from './conversion.ts';
-import { isEnumObject, place, type PlacementBackend } from './placement.ts';
+import { isEnumObject, place, returnCell, type PlacementBackend, type ResultSlot, type ReturnBackend, type ReturnCell } from './placement.ts';
 import { convertedRead, onlyNull, ValueStates, type StateBackend } from './value-states.ts';
 import type { Form } from './forms.ts';
 import { isCoreDeclaration } from './core.ts';
@@ -2658,10 +2658,7 @@ export class Translator implements AsyncTranslator {
           }
         } else {
           const e = fn.body as ts.Expression;
-          // A void expression (`(err) => sig.set(x)`) where a value is wanted (`then`'s onRejected): undefined.
-          const voidValue = ret !== 'Unit' && isNullable(ret) && this.typeOf(e) === 'Unit';
-          const back = this.returnKeyword();
-          lines = [...this.paramPrelude(fn), ret === 'Unit' ? this.indent + this.exprStatement(e) : voidValue ? `${this.indent}${this.exprStatement(e)}\n${this.indent}${back} null` : `${this.indent}${back} ${this.coerce(e, ret)}`];
+          lines = [...this.paramPrelude(fn), this.bodyReturned(returnCell(this.returns, e, this.resultSlot(e), true))];
         }
         return `{\n${lines.filter(Boolean).join('\n')}\n${base}}`;
       } catch (e) { throw this.located(e, fn); } finally { this.indent = saved; }
@@ -5245,32 +5242,8 @@ export class Translator implements AsyncTranslator {
       return this.isPure(code) ? '' : i + code;
     }
     if (ts.isReturnStatement(s)) {
-      if (a) {
-        const e = s.expression;
-        if (!e) return `${i}${a.ret(null, false)}\n${i}return`;
-        if (a.generator === 'async') return `${i}${this.lowering.returnIn(a, e)}\n${i}return`;
-        const isPromise = this.isPromiseType(this.typeOf(e));
-        return `${i}${a.ret(isPromise ? this.expr(e) : this.coerce(e, a.result), isPromise)}\n${i}return`;
-      }
-      // A call that never returns (`return this.raise(…)`) is the statement's end itself.
-      if (s.expression && ts.isCallExpression(s.expression) && this.typeOf(s.expression) === 'Nothing') return `${i}${this.exprStatement(s.expression)}`;
-      // Lenient code returning nothing from a function of a string, number or boolean: its zero value, as Swift's kit gives.
-      if (!s.expression && this.returnLabel) return `${i}return@${this.returnLabel}`;
-      if (!s.expression && this.lenient && ['String', 'Double', 'Boolean'].includes(this.returnType)) return `${i}return ${this.zero(this.returnType)}`;
-      if (!s.expression) return this.returnType.endsWith('?') ? `${i}return null` : `${i}return`;
-      if (this.returnType === 'Unit') {
-        const code = this.exprStatement(s.expression);
-        return this.isPure(code) ? `${i}return` : `${i}${code}\n${i}return`;
-      }
-      // App mode: undefined or null where a type parameter or a string, number or boolean is declared (`ios<T>(f): T`, this
-      // platform's half of `__APPLE__ ? f : undefined`): no value of it, which callers test for.
-      const nothing = s.expression.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(s.expression) && s.expression.text === 'undefined');
-      if (!this.library && nothing && /^[A-Z]\w*$/.test(this.returnType)) {
-        const fn = ts.findAncestor(s, ts.isFunctionLike);
-        if (fn && fn.typeParameters?.some((p) => p.name.text === this.returnType)) return `${i}return jsUnchecked<${this.returnType}>(null)`;
-      }
-      if (!this.library && nothing && ['String', 'Double', 'Boolean'].includes(this.returnType)) return `${i}return ${this.zero(this.returnType)}`;
-      return `${i}return ${this.coerce(s.expression, this.returnType)}`;
+      const slot = this.resultSlot(s);
+      return this.returned(returnCell(this.returns, s.expression, slot), slot);
     }
     if (ts.isIfStatement(s)) {
       // A condition the parameters' constant values decide: only the branch that runs.
@@ -6105,6 +6078,73 @@ export class Translator implements AsyncTranslator {
   /** An expression where Kotlin needs a value of `target`. */
   coerce(e: ts.Expression, target: string): string {
     return place(this.placement, e, target);
+  }
+
+  /** The result slot of the function being translated, where `at` (a `return`, an expression body) gives its value. */
+  private resultSlot(at: ts.Node): ResultSlot {
+    const target = this.asyncCtx ? this.asyncCtx.result : this.returnType;
+    return { target, type: parseNativeType(target), lowered: !!this.asyncCtx, fn: ts.findAncestor(at.parent, ts.isFunctionLike) };
+  }
+
+  private returnsSet?: ReturnBackend;
+
+  /** What the shared `return` cells (placement.ts) read of this translator. */
+  private get returns(): ReturnBackend {
+    const t = this;
+    return this.returnsSet ??= {
+      typeOf: (n) => t.typeOf(n),
+      emptyReturn: (e, slot) => {
+        const ret = slot.target;
+        const primitive = ['String', 'Double', 'Boolean'].includes(ret);
+        if (!e) {
+          if (t.returnLabel) return '';
+          // Lenient code returning nothing from a function of a string, number or boolean: its zero value, as Swift's kit gives.
+          if (t.lenient && primitive) return t.zero(ret);
+          return ret.endsWith('?') ? 'null' : '';
+        }
+        // App mode: undefined or null where a type parameter or a string, number or boolean is declared (`ios<T>(f): T`, this
+        // platform's half of `__APPLE__ ? f : undefined`): no value of it, which callers test for.
+        const nothing = e.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(e) && e.text === 'undefined');
+        if (t.library || !nothing) return null;
+        if (/^[A-Z]\w*$/.test(ret) && slot.fn?.typeParameters?.some((p) => p.name.text === ret)) return `jsUnchecked<${ret}>(null)`;
+        return primitive ? t.zero(ret) : null;
+      },
+      // A void expression body (`(err) => sig.set(x)`) where a value is wanted (`then`'s onRejected): undefined.
+      voidValue: (_e, slot, body) => (body && isNullable(slot.target) ? 'null' : null),
+    };
+  }
+
+  /** A `return` statement's cell, as Kotlin writes it. */
+  private returned(cell: ReturnCell, slot: ResultSlot): string {
+    const i = this.indent, a = this.asyncCtx;
+    switch (cell.step) {
+      case 'empty': return a ? `${i}${a.ret(null, false)}\n${i}return` : cell.code ? `${i}return ${cell.code}` : this.returnLabel ? `${i}return@${this.returnLabel}` : `${i}return`;
+      case 'drop': {
+        const code = this.exprStatement(cell.e);
+        return this.isPure(code) ? `${i}return` : `${i}${code}\n${i}return`;
+      }
+      case 'never': return `${i}${this.exprStatement(cell.e)}`;
+      case 'voidCall': return `${i}${this.exprStatement(cell.e)}\n${i}return ${cell.empty}`;
+    }
+    const e = cell.e;
+    if (cell.code !== undefined) return `${i}return ${cell.code}`;
+    if (a) {
+      if (a.generator === 'async') return `${i}${this.lowering.returnIn(a, e)}\n${i}return`;
+      const isPromise = this.isPromiseType(this.typeOf(e));
+      return `${i}${a.ret(isPromise ? this.expr(e) : this.coerce(e, a.result), isPromise)}\n${i}return`;
+    }
+    return `${i}return ${this.coerce(e, slot.target)}`;
+  }
+
+  /** An expression body's cell, as Kotlin writes it. */
+  private bodyReturned(cell: ReturnCell): string {
+    const i = this.indent, back = this.returnKeyword();
+    switch (cell.step) {
+      case 'empty': case 'drop': return i + this.exprStatement(cell.e!);
+      case 'voidCall': return `${i}${this.exprStatement(cell.e)}\n${i}${back} ${cell.empty}`;
+      case 'never': throw new Error('unreachable: an expression body never ends the function by its call');
+    }
+    return `${i}${back} ${cell.code ?? this.coerce(cell.e, this.returnType)}`;
   }
 
   private placementSet?: PlacementBackend;
