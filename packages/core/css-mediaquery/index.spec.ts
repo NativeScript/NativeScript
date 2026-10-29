@@ -87,9 +87,23 @@ describe('css-mediaquery', () => {
 				expect(
 					matchQuery('not screen and (orientation: portrait)', {
 						type: MediaQueryType.screen,
-						orientation: 'landscape',
+						orientation: 'portrait',
 					}),
 				).toBe(false);
+			});
+
+			it('should return true when the features of a `not` query do not match', () => {
+				expect(
+					matchQuery('not screen and (orientation: portrait)', {
+						type: MediaQueryType.screen,
+						orientation: 'landscape',
+					}),
+				).toBe(true);
+				expect(matchQuery('not all and (min-width: 600)', { type: MediaQueryType.screen, width: 400 })).toBe(true);
+			});
+
+			it('should return true when the type of a `not` query does not match', () => {
+				expect(matchQuery('not print and (min-width: 100)', { type: MediaQueryType.screen, width: 800 })).toBe(true);
 			});
 
 			it('should not disrupt an OR query', () => {
