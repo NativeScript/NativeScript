@@ -2995,8 +2995,22 @@ ${members.join('\n')}
 
   /** A plain JavaScript object of a known shape: a final class with a memberwise init, readable as a dynamic object. */
   private objectClass(name: string, allFields: ShapeField[], className: string | null): string {
-    return this.declaring(name, 'class', null, () => this.objectClassCode(name, allFields, className));
+    return this.declaring(name, 'class', null, () => {
+      const saved = this.inShape;
+      this.inShape = true;
+      try { return this.objectClassCode(name, allFields, className); } finally { this.inShape = saved; }
+    });
   }
+
+  /** Set while a shape's class is written. */
+  private inShape = false;
+  /**
+   * Set while a shape's dynamic setter converts the value it stores. TypeScript writes a shape's field through any view
+   * of the object it allows (`data.object = data.object || this` where `data` is a `T extends Optional<EventData,
+   * 'object'>`), whose field may be a class unrelated to the one the shape's literal gave it, so the store's cast to one
+   * of core's classes stays conditional.
+   */
+  private shapeStore = false;
 
   private objectClassCode(name: string, allFields: ShapeField[], className: string | null): string {
     if (allFields.some((f) => f.accessor)) return this.accessorClass(name, allFields);
@@ -3255,7 +3269,12 @@ ${members.join('\n')}
    */
   private storeFromAny(lhs: string, type: string, key: string, symbol = false): string {
     // A symbol-keyed field is held as `deferred` declares it: an array or a string present, its zero for undefined.
-    const value = symbol && this.lenient && this.zero(type) !== null && !isOptional(type) ? this.fromAnyOrZeroValue('newValue', type) : this.fromAnyChecked('newValue', this.lenient ? this.lenientRef(type) : type, !!this.library);
+    const saved = this.shapeStore;
+    this.shapeStore = this.inShape;
+    let value: Value;
+    try {
+      value = symbol && this.lenient && this.zero(type) !== null && !isOptional(type) ? this.fromAnyOrZeroValue('newValue', type) : this.fromAnyChecked('newValue', this.lenient ? this.lenientRef(type) : type, !!this.library);
+    } finally { this.shapeStore = saved; }
     const code = value.code, cast = this.checkedCastIn(value);
     // A conversion that can throw (an array holding undefined where its elements are objects): `jsSet` throws it.
     if (cast.mark?.op === 'try') return `jsStoring { ${lhs} = ${code} }`;
@@ -3484,10 +3503,11 @@ ${members.join('\n')}
   /**
    * Core's own code: an untyped value cast to one of core's classes, where a `try` may stand (`checked`, or the value's
    * own read throws), is `jsCast`: an instance of another class is JavaScript's TypeError there (§2.3b M6), as Kotlin's
-   * `jsCastCarried`; null, undefined and an empty marker stay nil. Null for native classes, which stay conditional casts.
+   * `jsCastCarried`; null, undefined and an empty marker stay nil. Null for native classes and a shape's stores
+   * (`shapeStore`), which stay conditional casts.
    */
   private libraryClassCast(input: Value, type: string, implicit: boolean, checked: boolean, placed: 'covered' | 'own' | 'operand'): Value | null {
-    if (!this.library || !(checked || input.throws) || !this.coreClass(type)) return null;
+    if (!this.library || this.shapeStore || !(checked || input.throws) || !this.coreClass(type)) return null;
     const call = `jsCast(${input.code}, ${type}.self)`;
     const mark = { op: 'cast', to: parseNativeType(type), optional: true, implicit, of: input, spelled: type } as const;
     const cast: Value = placed === 'operand' ? valueOf(marked(`(try ${call})`, { op: 'try', of: valueOf(call) })) : placed === 'own' ? tried(call) : valueOf(marked(call, { ...mark, checked: call }));
