@@ -4,7 +4,7 @@ import { admitsUndefined, alwaysEnds, givenBy, heldDowncasts, implementedInterfa
 import { type Form, Forms, isGeneric, ONE_ELEMENT, representation } from './forms.ts';
 import { isAsync, isStatic } from './throws.ts';
 import { shadowForms } from './forms-shadow.ts';
-import { containerKind, elementStoreOf, isElementStore, storeOf, type ElementStore, type Store } from './placement.ts';
+import { containerKind, elementStoreOf, isElementStore, storeOf, type ElementStore, type Store, patternSource } from './placement.ts';
 import { notedField } from './shapes.ts';
 
 const COMPILER = dirname(import.meta.dirname);
@@ -1244,16 +1244,27 @@ export class ValueStates {
   }
 
   /**
-   * A variable a destructuring pattern binds from an untyped value (`const { a }: { a: string } = raw`), named by a
-   * pattern whose type says what it holds: the form its value enters as, as `foreignPlacement` gives a placement's.
+   * A variable a destructuring pattern binds from an untyped value (`const { a }: { a: string } = raw`, nested parts
+   * too), named by a pattern whose type says what it holds, or a variable a destructuring assignment or a `for…of` over
+   * existing variables writes from one (`({ a } = raw)`): the form its value enters as, as `foreignPlacement` gives a
+   * placement's.
    */
-  foreignBinding(el: ts.BindingElement): Form | null {
-    const b = this.backend, pattern = el.parent, holder = pattern.parent;
-    if (b.library || b.lenient || el.dotDotDotToken || !ts.isIdentifier(el.name) || !this.appCode(el) || this.nullish().held.has(el)) return null;
-    if (!ts.isVariableDeclaration(holder) || !holder.initializer || !holder.type || !this.untypedValue(holder.initializer)) return null;
-    const form = this.forms().formOfSlot(el), type = this.checker.getNonNullableType(this.checker.getTypeAtLocation(el.name));
-    if (!form.foreign || type.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown) || isGeneric(type)) return null;
-    return this.withElements({ ...form, type }, false);
+  foreignBinding(at: ts.BindingElement | ts.Expression): Form | null {
+    const b = this.backend;
+    if (b.library || b.lenient || !this.appCode(at)) return null;
+    const source = patternSource(at);
+    if (!source || !this.untypedValue(source.whole)) return null;
+    let form: Form | null;
+    if (ts.isBindingElement(at)) {
+      if (at.dotDotDotToken || !ts.isIdentifier(at.name) || this.nullish().held.has(at) || source.iterated || !source.declaration?.type) return null;
+      form = { ...this.forms().formOfSlot(at), type: this.checker.getNonNullableType(this.checker.getTypeAtLocation(at.name)) };
+    } else {
+      // A shorthand target's own symbol is the literal's property, not the variable it writes.
+      const short = ts.isIdentifier(at) && ts.isShorthandPropertyAssignment(at.parent) && at.parent.name === at ? this.checker.getShorthandAssignmentValueSymbol(at.parent)?.valueDeclaration ?? null : undefined;
+      form = short === undefined ? this.storeForm(at) : short && (ts.isVariableDeclaration(short) || ts.isParameter(short)) ? this.declaredSlot(short) : null;
+    }
+    if (!form || !form.foreign || form.type.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown) || isGeneric(form.type)) return null;
+    return this.withElements(form, false);
   }
 
   /** The kind of signal `e` is, as the backends hold it (`Signal<T>`): Angular's and Svelte's writable ones, Angular's input, Vue's ref. */

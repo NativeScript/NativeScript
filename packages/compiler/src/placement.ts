@@ -264,7 +264,7 @@ export function argumentOf(a: ts.Expression): { call: ts.CallExpression | ts.New
  * too), a parameter (its default), an assignment's target (a variable, a member, an element), a signal's write
  * (`s.set(v)`), or a container's element (`ElementStore`).
  */
-export type Store = ts.VariableDeclaration | ts.PropertyDeclaration | ts.PropertySignature | ts.PropertyAssignment | ts.ShorthandPropertyAssignment | ts.ParameterDeclaration | ts.Expression;
+export type Store = ts.VariableDeclaration | ts.PropertyDeclaration | ts.PropertySignature | ts.PropertyAssignment | ts.ShorthandPropertyAssignment | ts.ParameterDeclaration | ts.BindingElement | ts.Expression;
 
 /** What stores its arguments or its elements as a container's elements: an array literal, or a call adding to an array, Set or Map. */
 export type ElementStore = ts.CallExpression | ts.ArrayLiteralExpression;
@@ -305,6 +305,56 @@ export function placeCode(b: PlacementBackend, code: string, slot: StoreSlot | n
   return slot?.entry === 'checked' ? b.cells.checkedCode(code, slot) : null;
 }
 
+/**
+ * The slot a destructuring pattern's part is bound or assigned to (`at`: a binding element, or the target of a
+ * destructuring assignment or of a `for…of` over existing variables), the backend having it as `target`, its value only
+ * the backend's code has, read untyped from the pattern's value (`ValueStates.foreignBinding`).
+ */
+export function bindingSlot(b: Pick<PlacementBackend, 'library' | 'lenient' | 'states'>, target: string, at: ts.BindingElement | ts.Expression): StoreSlot {
+  const checked = b.states.foreignBinding(at);
+  return { kind: storeKind(b.states.backend.checker, at), target, type: parseNativeType(target), at, ...(checked ? { entry: 'checked', checked } : { entry: b.library ? 'library' : b.lenient ? 'lenient' : 'typed' }) };
+}
+
+/**
+ * The value a destructuring pattern's part `at` takes apart, past nested patterns and defaults: a variable's
+ * initializer (`declaration`), an assignment's right side, or a `for…of`'s iterated value (`iterated`). Null for a
+ * parameter's pattern, or where `at` is no pattern's part.
+ */
+export function patternSource(at: ts.BindingElement | ts.Expression): { whole: ts.Expression; iterated: boolean; declaration?: ts.VariableDeclaration } | null {
+  if (ts.isBindingElement(at)) {
+    let holder: ts.Node = at.parent.parent;
+    while (ts.isBindingElement(holder)) holder = holder.parent.parent;
+    if (!ts.isVariableDeclaration(holder)) return null;
+    const loop = holder.parent.parent;
+    if (ts.isForOfStatement(loop) && loop.initializer === holder.parent) return { whole: loop.expression, iterated: true, declaration: holder };
+    return holder.initializer ? { whole: holder.initializer, iterated: false, declaration: holder } : null;
+  }
+  let x: ts.Node = at, part = false;
+  for (;;) {
+    const p: ts.Node = x.parent;
+    if (ts.isForOfStatement(p) && p.initializer === x) return { whole: p.expression, iterated: true };
+    if (ts.isBinaryExpression(p) && p.operatorToken.kind === ts.SyntaxKind.EqualsToken && p.left === x) {
+      if (ts.isArrayLiteralExpression(p.parent) || (ts.isPropertyAssignment(p.parent) && p.parent.initializer === p)) { x = p; continue; }
+      return part ? { whole: p.right, iterated: false } : null;
+    }
+    if (ts.isArrayLiteralExpression(p) || ts.isObjectLiteralExpression(p)) part = true;
+    else if (!(ts.isParenthesizedExpression(p) || ts.isSpreadElement(p) || ts.isSpreadAssignment(p) || (ts.isPropertyAssignment(p) && p.initializer === x) || (ts.isShorthandPropertyAssignment(p) && p.name === x))) return null;
+    x = p;
+  }
+}
+
+/** The variables and members a destructuring assignment's pattern (or a `for…of`'s target) writes, past nested patterns and defaults. */
+export function patternTargets(pattern: ts.Expression): ts.Expression[] {
+  const x = ts.skipOuterExpressions(pattern, ts.OuterExpressionKinds.Parentheses);
+  if (ts.isBinaryExpression(x) && x.operatorToken.kind === ts.SyntaxKind.EqualsToken) return patternTargets(x.left);
+  if (ts.isSpreadElement(x)) return patternTargets(x.expression);
+  if (ts.isArrayLiteralExpression(x)) return x.elements.flatMap((e) => (ts.isOmittedExpression(e) ? [] : patternTargets(e)));
+  if (ts.isObjectLiteralExpression(x)) {
+    return x.properties.flatMap((p) => (ts.isPropertyAssignment(p) ? patternTargets(p.initializer) : ts.isShorthandPropertyAssignment(p) ? [p.name] : ts.isSpreadAssignment(p) ? patternTargets(p.expression) : []));
+  }
+  return [x];
+}
+
 /** How `a`, stored by `at`, comes in, as its slot has it (`storeSlot`). */
 export function storeEntry(b: Pick<PlacementBackend, 'library' | 'lenient' | 'states'>, at: Store, a: ts.Expression, checks = true): Pick<StoreSlot, 'entry' | 'checked'> {
   let checked: Form | null = null;
@@ -315,7 +365,7 @@ export function storeEntry(b: Pick<PlacementBackend, 'library' | 'lenient' | 'st
 
 function storeKind(checker: ts.TypeChecker, at: Store): StoreSlot['kind'] {
   if (isElementStore(checker, at)) return 'element';
-  if (ts.isVariableDeclaration(at) || ts.isParameter(at)) return 'variable';
+  if (ts.isVariableDeclaration(at) || ts.isParameter(at) || ts.isBindingElement(at)) return 'variable';
   if (ts.isPropertyDeclaration(at) || ts.isPropertySignature(at) || ts.isCallExpression(at)) return 'field';
   if (ts.isPropertyAssignment(at) || ts.isShorthandPropertyAssignment(at)) return 'literalField';
   const target = ts.skipOuterExpressions(at, ts.OuterExpressionKinds.Parentheses);
