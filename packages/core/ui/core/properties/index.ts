@@ -231,20 +231,21 @@ export function _evaluateCssVariableExpression(view: ViewBase, cssName: string, 
 			continue;
 		}
 
-		const endIdx = output.indexOf(')', idx);
+		const endIdx = findClosingParenthesis(output, idx + 3);
 		if (endIdx === -1) {
 			continue;
 		}
 
-		const matched = output
-			.substring(idx + 4, endIdx)
-			.split(',')
-			.map((v) => v.trim())
-			.filter((v) => !!v);
-		const cssVariableName = matched.shift();
+		const body = output.substring(idx + 4, endIdx);
+		const commaIdx = body.indexOf(',');
+		const cssVariableName = (commaIdx === -1 ? body : body.substring(0, commaIdx)).trim();
+		const fallback = commaIdx === -1 ? '' : body.substring(commaIdx + 1).trim();
 		let cssVariableValue = view.style.getCssVariable(cssVariableName);
-		if (cssVariableValue === null && matched.length) {
-			cssVariableValue = _evaluateCssVariableExpression(view, cssName, matched.join(', ')).split(',')[0];
+		if (typeof cssVariableValue === 'string' && cssVariableValue.trim() === 'initial') {
+			cssVariableValue = null;
+		}
+		if (cssVariableValue === null && fallback) {
+			cssVariableValue = _evaluateCssVariableExpression(view, cssName, fallback);
 		}
 
 		if (!cssVariableValue || cssVariableValue === 'unset') {
@@ -257,6 +258,20 @@ export function _evaluateCssVariableExpression(view: ViewBase, cssName: string, 
 	// An unresolved var() invalidates the whole declaration, wherever it is nested,
 	// unless it sat in the fallback of a var() that resolved.
 	return output.includes(UNRESOLVED_VAR) ? 'unset' : output;
+}
+
+function findClosingParenthesis(value: string, openIdx: number): number {
+	let depth = 0;
+	for (let i = openIdx; i < value.length; i++) {
+		const ch = value[i];
+		if (ch === '(') {
+			depth++;
+		} else if (ch === ')' && --depth === 0) {
+			return i;
+		}
+	}
+
+	return -1;
 }
 
 export function _evaluateCssCalcExpression(value: string) {

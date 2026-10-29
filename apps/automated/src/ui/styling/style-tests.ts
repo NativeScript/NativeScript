@@ -1997,7 +1997,7 @@ export function test_css_variable_fallback() {
 		},
 		{
 			className: 'undefined-css-variable-with-multiple-fallbacks',
-			expectedColor: limeColor,
+			expectedColor: undefined,
 		},
 		{
 			className: 'undefined-css-variable-with-missing-fallback-value',
@@ -2038,7 +2038,7 @@ export function test_css_variable_fallback() {
 
     .undefined-css-variable-with-multiple-fallbacks {
         --my-fallback-var: lime;
-        color: var(--undefined-var, var(--my-fallback-var), yellow); /* resolved as color: lime; */
+        color: var(--undefined-var, var(--my-fallback-var), yellow); /* resolved as color: unset; */
     }
 
     .undefined-css-variable-with-missing-fallback-value {
