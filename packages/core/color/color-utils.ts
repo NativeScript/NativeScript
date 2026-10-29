@@ -19,24 +19,18 @@ export function isModernRgbOrHsl(value: string) {
 	return value.includes('/') || value.includes('none') || value.includes('from ') || (value.startsWith('rgb') && value.includes('%'));
 }
 
-export function argbFromCssColor(value: string): number {
+export function argbFromCssColor(value: string): number | null {
 	return argbFromColorMix(value);
 }
 
-export function argbFromColorMix(value: string): number {
+export function argbFromColorMix(value: string): number | null {
 	const astComponentValue = parseComponentValue(tokenize({ css: value }));
 	const colorData = color(astComponentValue);
-
-	let argb: number;
-
-	if (colorData) {
-		const serialized = serializeRGB(colorData);
-		argb = argbFromRgbOrRgba(serialized.toString());
-	} else {
-		argb = -1;
+	if (!colorData) {
+		return null;
 	}
 
-	return argb;
+	return argbFromRgbOrRgba(serializeRGB(colorData).toString());
 }
 
 export function fromArgbToRgba(argb: number): { a: number; r: number; g: number; b: number } {

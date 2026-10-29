@@ -2,6 +2,8 @@ import { describe, it, expect } from 'vitest';
 
 import { Label } from '../label';
 import { Color } from '../../color';
+import { StackLayout } from '../layouts/stack-layout';
+import { StyleScope } from './style-scope';
 
 describe('border-color shorthand', () => {
 	it('applies a function color with nested arguments to all sides', () => {
@@ -59,5 +61,48 @@ describe('corner-shape', () => {
 		const label = new Label();
 
 		expect(() => (label.style.cornerShape = 'bevel' as any)).toThrow();
+	});
+});
+
+describe('background shorthand', () => {
+	it('none makes the background transparent and removes the image', () => {
+		const label = new Label();
+		label.style.backgroundColor = new Color('red');
+		label.style.backgroundImage = 'res://logo';
+
+		label.style.background = 'none' as any;
+
+		expect(label.style.backgroundColor).toEqual(new Color('transparent'));
+		expect(label.style.backgroundImage).toBeUndefined();
+	});
+
+	it('none applies from CSS', () => {
+		const scope = new StyleScope();
+		scope.css = 'Label { background-color: red; } .reset { background: none; }';
+		const root: any = new StackLayout();
+		root._styleScope = scope;
+		const label: any = new Label();
+		label.className = 'reset';
+		root.addChild(label);
+		label._styleScope = scope;
+		label._cssState.onLoaded();
+
+		expect(label.style.backgroundColor).toEqual(new Color('transparent'));
+	});
+
+	it('none keeps a color given with it', () => {
+		const label = new Label();
+		label.style.background = 'none #00ff00' as any;
+
+		expect(label.style.backgroundColor).toEqual(new Color('#00ff00'));
+		expect(label.style.backgroundImage).toBeUndefined();
+	});
+
+	it('an image without a color still leaves the color unset', () => {
+		const label = new Label();
+		label.style.background = 'url(res://logo) no-repeat' as any;
+
+		expect(label.style.backgroundColor).toBeUndefined();
+		expect(label.style.backgroundImage).toBe('res://logo');
 	});
 });

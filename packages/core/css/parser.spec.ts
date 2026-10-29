@@ -126,6 +126,9 @@ describe('css', () => {
 						size: { x: { value: 100, unit: 'px' }, y: { value: 100, unit: 'px' } },
 					},
 				});
+				test(parseBackground, 'none', { start: 0, end: 4, value: { image: 'none' } });
+				test(parseBackground, ' #00ff00 none no-repeat ', { start: 0, end: 24, value: { color: new Color('#00ff00'), image: 'none', repeat: 'no-repeat' } });
+				test(parseBackground, 'nonesuch', null);
 				test(parseBackground, '  linear-gradient(to right top) ', {
 					start: 0,
 					end: 32,

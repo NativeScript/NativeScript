@@ -192,8 +192,7 @@ export function installHttpCoreCssSupport(coreModule: any, verbose?: boolean): H
 
 		g.__NS_HMR_APPLY_CSS__ = applyCss;
 
-		// Device CSS applier for the fallback HTTP-bootloader path (the native
-		// dev-session path installs the same one from `hmr/client`). Per-tag
+		// Device CSS applier for `.css` modules and component styles. Per-tag
 		// remove+add keeps each source independently replaceable on hot-update.
 		const registerCss = (tag: string, cssText: string) => {
 			if (typeof cssText !== 'string' || !cssText.length) {
@@ -260,10 +259,9 @@ export function installHttpCoreCssSupport(coreModule: any, verbose?: boolean): H
 
 			if (cssApplied) {
 				g.__NS_HMR_HTTP_APP_CSS_APPLIED__ = true;
-				// On the http-bootloader path this install runs BEFORE the app
-				// mounts, so no refresh is needed. On the dev-session path the
-				// bootstrap installs this lazily AFTER boot completes — views
-				// are already mounted with stale (empty) styling, so re-style.
+				// Normally installed before the app mounts, so no refresh is
+				// needed. A late install finds views already mounted with
+				// stale (empty) styling, so re-style.
 				if (g.__NS_HMR_BOOT_COMPLETE__) {
 					refreshRootViews();
 				}

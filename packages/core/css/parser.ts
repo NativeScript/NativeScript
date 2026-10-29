@@ -614,6 +614,11 @@ export function parseBackground(text: string, start = 0): Parsed<Background> {
 			end = url.end;
 			continue;
 		}
+		if (keyword && keyword.value.toLowerCase() === 'none') {
+			value.image = 'none';
+			end = keyword.end;
+			continue;
+		}
 		const gradient = parseLinearGradient(text, end);
 		if (gradient) {
 			value.image = gradient.value;
