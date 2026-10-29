@@ -34,6 +34,13 @@ export function isStringRaw(tag: ts.Expression, checker: ts.TypeChecker): boolea
  * does not declare on one of its globals (`Reflect.metadata`, which a shim
  * adds): nothing defines it at run time, so `typeof` reads it as undefined.
  */
+/** A spread argument every element of which is an array (`a.concat(...lists)`): `concat` adds each one's elements. */
+export function spreadsArrays(e: ts.Expression, checker: ts.TypeChecker): boolean {
+  const t = checker.getTypeAtLocation(e);
+  const elements = checker.isTupleType(t) ? checker.getTypeArguments(t as ts.TypeReference) : [checker.getIndexTypeOfType(t, ts.IndexKind.Number)];
+  return elements.length > 0 && elements.every((el) => !!el && (el.isUnion() ? el.types : [el]).every((u) => checker.isArrayType(u) || checker.isTupleType(u)));
+}
+
 export function neverDefined(e: ts.Expression, checker: ts.TypeChecker): boolean {
   if (ts.isPropertyAccessExpression(e) && ts.isIdentifier(e.expression)) {
     const decls = checker.getSymbolAtLocation(e.expression)?.declarations;

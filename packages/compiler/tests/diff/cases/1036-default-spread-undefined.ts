@@ -1,6 +1,4 @@
-// @swift
 // Arguments spread from a tuple into defaulted parameters: an undefined element takes the default, as an omitted one does.
-// (Kotlin refuses spread arguments.)
 function pair(a = 1, b = 2): string {
   return `${a},${b}`;
 }
