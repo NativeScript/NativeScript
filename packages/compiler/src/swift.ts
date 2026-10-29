@@ -10,9 +10,9 @@ import { assignedValues, openSpreadType, spreadsArrays, initializedNull, interse
 import { memberName } from './stable-names.ts';
 import { shadowConversions } from './conversion-shadow.ts';
 import { parseNativeType, plan, type Slot, type Value } from './conversion.ts';
-import { argumentEntry, argumentOf, argumentSlot, isEnumObject, place, resultSlot, returnCell, type ParamSlot, type PlacementBackend, type ResultSlot, type ReturnBackend, type ReturnCell, type Store, type StoreSlot, assignedTo, storeEntry, storeOf, storeSlot } from './placement.ts';
+import { argumentEntry, argumentOf, argumentSlot, isEnumObject, place, resultSlot, returnCell, type ParamSlot, type PlacementBackend, type ResultSlot, type ReturnBackend, type ReturnCell, type ElementStore, type Store, type StoreSlot, assignedTo, elementStoreOf, storeEntry, storeOf, storeSlot } from './placement.ts';
 import { castCode, elementOf, helper, implicitOf, isPure, isUnwrap, markOf, marked, memberOf, orNil, pureCode, tried, tryCode, unwrapInner, unwrappedCode, unwrappedIf, valueOf } from './swift-marks.ts';
-import { convertedRead, onlyNull, ValueStates, type StateBackend } from './value-states.ts';
+import { convertedRead, onlyNull, ValueStates, type NulledRead, type StateBackend } from './value-states.ts';
 import type { Form } from './forms.ts';
 import { AsyncLowering, type AsyncCtx, type AsyncSyntax, type AsyncTranslator } from './async.ts';
 import { CoreAPI, isCoreDeclaration, packageOf } from './core.ts';
@@ -3543,7 +3543,7 @@ ${members.join('\n')}
       try { if (this.typeOf(n) === 'Any?') return true; } catch { return false; }
     }
     if ((ts.isAsExpression(n) || ts.isTypeAssertionExpression(n)) && (this.downcasts(n) || this.checkedAssertion(n))) return true;
-    const argument = argumentOf(n), store = argument ? null : storeOf(n);
+    const element = elementStoreOf(this.checker, n), argument = element ? null : argumentOf(n), store = argument ? null : element ?? storeOf(n);
     const entry = argument ? argumentEntry(this.placement, argument.call, argument.k, n).checked : store ? storeEntry(this.placement, store, n).checked : undefined;
     if ((argument || store ? this.checkedEntry(n, entry) : this.checkedPlacementEntry(n)) || this.narrowedHeld(n)) return true;
     if ((ts.isAsExpression(n) || ts.isTypeAssertionExpression(n)) && this.checkedClassAssertion(n)) {
@@ -6976,8 +6976,7 @@ ${members.join('\n')}
       resultHoldsNull: (d) => this.mayReturnUndefined(d) && this.returnTypeOf(d).endsWith('?'),
       nullableParameter: (type) => !type.endsWith('?') && !type.endsWith('!') && !['Double', 'String', 'Bool', 'Void', 'Never'].includes(type) && !hasTopLevelArrow(type) && !type.startsWith('(')
         && !this.native.isEnumType(type) && !this.native.isStructType(type),
-      nulledEntry: (e, code) => this.nulledEntry(e, code),
-      untypedCode: (e) => this.coerceTyped(e, 'Any?'),
+      nulledEntry: (read, code) => this.nulledEntry(read, code),
       optionalShapeField: (e) => this.optionalShapeField(e),
       heldOptional: (x) => this.typeOf(x).endsWith('?') || this.optionalResult(x) || (ts.isIdentifier(x) && (this.unsetLenientVariable(x) || this.declaredOptional(x))),
       declaredOptional: (x) => this.declaredOptional(x),
@@ -8336,29 +8335,17 @@ ${members.join('\n')}
     }
   }
 
-  /** `nullableEntry`'s read: `jsNulledEntry` of the element or map value, or the field by key. */
-  private nulledEntry(e: ts.Expression, code: () => string): string | null {
-    const bare = ts.skipOuterExpressions(e);
-    const text = ts.isElementAccessExpression(bare) || ts.isCallExpression(bare) ? code() : '';
-    const element = ts.isElementAccessExpression(bare) && !bare.questionDotToken ? boxedElement(text) : undefined;
-    const valueType = (t: ts.Type) => (this.checker.getTypeArguments(t as ts.TypeReference) ?? [])[ts.isElementAccessExpression(bare) ? 0 : 1];
-    let held: ts.Type | undefined;
-    if (element && /^JSArray<.+\?>$/.test(this.typeOf((bare as ts.ElementAccessExpression).expression))) {
-      held = this.checker.isArrayType(this.checker.getTypeAtLocation((bare as ts.ElementAccessExpression).expression)) ? valueType(this.checker.getTypeAtLocation((bare as ts.ElementAccessExpression).expression)) : undefined;
-      if (held && onlyNull(held)) return `jsNulledEntry(${element})`;
-      return null;
+  /** `nullableEntry`'s read: `jsNulledEntry` of the element or Map value `code` reads, or the field by its key. */
+  private nulledEntry(read: NulledRead, code: () => string): string | null {
+    if (read.kind === 'field') return `${this.expr(read.read.expression)}[jsKey: ${swiftString(read.name)}]`;
+    const text = code();
+    if (read.kind === 'element') {
+      const element = boxedElement(text);
+      return element ? `jsNulledEntry(${element})` : null;
     }
-    if (ts.isCallExpression(bare) && ts.isPropertyAccessExpression(bare.expression) && !bare.expression.questionDotToken && bare.expression.name.text === 'get'
-      && /^JSMap<.+\?>$/.test(this.typeOf(bare.expression.expression)) && mapEntry(text)) {
-      const map = this.checker.getTypeAtLocation(bare.expression.expression);
-      held = map.getSymbol()?.name === 'Map' ? valueType(map) : undefined;
-      const inner = afterTry(text);
-      if (held && onlyNull(held)) return inner !== null ? tryCode(`jsNulledEntry(${inner})`) : `jsNulledEntry(${text})`;
-    }
-    if (this.states.nullField(bare) && !isWriteTarget(bare)) return `${this.expr(bare.expression)}[jsKey: ${swiftString(bare.name.text)}]`;
-    // An optional field that may hold null or undefined: the literal's shape notes which (`jsNulls`), read by key.
-    const f = ts.isPropertyAccessExpression(bare) && !isWriteTarget(bare) ? this.states.nullishShapeField(bare) : null;
-    return f ? `${this.expr((bare as ts.PropertyAccessExpression).expression)}[jsKey: ${swiftString(f)}]` : null;
+    if (!mapEntry(text)) return null;
+    const inner = afterTry(text);
+    return inner !== null ? tryCode(`jsNulledEntry(${inner})`) : `jsNulledEntry(${text})`;
   }
 
   /** `nullishShapeField`'s field: one of a shape or interface object class whose Swift type is optional. */
@@ -11478,12 +11465,22 @@ ${members.join('\n')}
     return args.map((a) => `, ${place(this.placement, a, slot(a))}`).join('');
   }
 
-  /** The slot of each argument `call` gives a rest parameter (`decl`), or an untyped callee: one `element` each, placed with no declared parameter's cell. */
-  /** An argument of `call` with no declared parameter's cell, as `element`: a built-in's (`push`, `Math.max`) or one an untyped callee takes. */
+  /** An argument of `call` with no declared parameter's cell, as `element`: a built-in's (`Math.max`) or one an untyped callee takes. */
   private restArgument(call: ts.CallExpression | ts.NewExpression, a: ts.Expression, element: string): string {
     return place(this.placement, a, this.restSlot(call, element)(a));
   }
 
+  /** The slot of each value `at` stores as a container's element (`elementStoreOf`), held as `element`. */
+  private elementSlot(at: ElementStore, element: string): (a: ts.Expression) => StoreSlot {
+    return (a) => storeSlot(this.placement, element, at, a);
+  }
+
+  /** A value `call` stores as an element of its receiver (`push`'s, `add`'s), held as `element`. */
+  private elementArgument(call: ts.CallExpression, a: ts.Expression, element: string): string {
+    return place(this.placement, a, this.elementSlot(call, element)(a));
+  }
+
+  /** The slot of each argument `call` gives a rest parameter (`decl`), or an untyped callee: one `element` each, placed with no declared parameter's cell. */
   private restSlot(call: ts.CallExpression | ts.NewExpression, element: string, decl?: ts.Declaration): (a: ts.Expression) => ParamSlot {
     return (a) => {
       const k = call.arguments?.indexOf(a) ?? -1;
@@ -11492,7 +11489,7 @@ ${members.join('\n')}
   }
 
   /** Arguments (spreads included) as one `JSArray` of `arrayType`; `slot` places each element where they are a call's. */
-  packed(items: readonly ts.Expression[], arrayType: string, slot?: (a: ts.Expression) => ParamSlot): string {
+  packed(items: readonly ts.Expression[], arrayType: string, slot?: (a: ts.Expression) => ParamSlot | StoreSlot): string {
     const el = arrayType.replace(/^JSArray<(.*)>$/, '$1');
     const placed = (x: ts.Expression) => (slot ? place(this.placement, x, slot(x)) : this.coerce(x, el));
     const parts: string[] = [];
@@ -12751,8 +12748,8 @@ ${members.join('\n')}
     const el = held.replace(/[?!]$/, '') === 'JSMatch' ? this.matchElement(target, name) : held.replace(/\?$/, '').replace(/^JSArray<(.*)>$/, '$1');
     switch (name) {
       case 'push': case 'unshift':
-        if (e.arguments.some(ts.isSpreadElement)) return `${t}.${name}(contentsOf: ${this.packed(e.arguments, `JSArray<${el}>`, this.restSlot(e, el))})`;
-        return `${t}.${name}(${e.arguments.map((x) => this.restArgument(e, x, el)).join(', ')})`;
+        if (e.arguments.some(ts.isSpreadElement)) return `${t}.${name}(contentsOf: ${this.packed(e.arguments, `JSArray<${el}>`, this.elementSlot(e, el))})`;
+        return `${t}.${name}(${e.arguments.map((x) => this.elementArgument(e, x, el)).join(', ')})`;
       // An untyped array's element taken out is one undefined, not an optional of one.
       case 'pop': case 'shift': return el === 'Any?' && !q ? orNil(`${t}.${name}()`) : `${t}.${name}()`;
       case 'reverse': case 'toString': case 'keys': case 'entries': case 'values': return `${t}.${name}()`;
@@ -12768,8 +12765,8 @@ ${members.join('\n')}
       }
       case 'toLocaleString': if (!e.arguments.length) return `${t}.toLocaleString()`; break;
       case 'splice':
-        if (e.arguments.slice(2).some(ts.isSpreadElement)) return `${t}.splice(${e.arguments.slice(0, 2).map((x) => this.restArgument(e, x, 'Double')).join(', ')}, contentsOf: ${this.packed(e.arguments.slice(2), `JSArray<${el}>`, this.restSlot(e, el))}.storage)`;
-        return `${t}.splice(${[...a().slice(0, 2), ...e.arguments.slice(2).map((x) => this.restArgument(e, x, el))].join(', ')})`;
+        if (e.arguments.slice(2).some(ts.isSpreadElement)) return `${t}.splice(${e.arguments.slice(0, 2).map((x) => this.restArgument(e, x, 'Double')).join(', ')}, contentsOf: ${this.packed(e.arguments.slice(2), `JSArray<${el}>`, this.elementSlot(e, el))}.storage)`;
+        return `${t}.splice(${[...a().slice(0, 2), ...e.arguments.slice(2).map((x) => this.elementArgument(e, x, el))].join(', ')})`;
       case 'fill': return `${t}.fill(${a().join(', ')})`;
       // An array holding functions as function objects (`heldType`) is searched for the one the function is.
       case 'indexOf': case 'lastIndexOf': case 'includes': if ((el === 'Any?' || el === 'String?' || el.startsWith('JSNullish<')) && e.arguments[0] && !ts.isSpreadElement(e.arguments[0])) return `${t}.${name}(${[this.restArgument(e, e.arguments[0], el), ...a().slice(1)].join(', ')})`;
@@ -13134,8 +13131,8 @@ ${members.join('\n')}
     switch (name) {
       case 'get': { const key = arg(0, k), read = marked(`${t}.get(${key})`, { op: 'entry', of: valueOf(t), key: valueOf(key) }); return v === 'Any?' && !q ? orNil(read) : read; }
       case 'has': case 'delete': return `${t}.${name}(${arg(0, k)})`;
-      case 'set': return `${t}.set(${arg(0, k)}, ${arg(1, v)})`;
-      case 'add': return `${t}.add(${arg(0, k)})`;
+      case 'set': return `${t}.set(${arg(0, k)}, ${this.elementArgument(e, e.arguments[1], v)})`;
+      case 'add': return `${t}.add(${this.elementArgument(e, e.arguments[0], k)})`;
       case 'clear': case 'keys': case 'values': case 'entries': return `${t}.${name}()`;
       case 'forEach': {
         const f = e.arguments[0];
@@ -14093,7 +14090,7 @@ ${members.join('\n')}
     // A `T | null` value compared strictly with undefined, or a `T | undefined` one with null: never the same.
     if (strict && (isNullish(a) !== isNullish(b))) {
       const [x, n] = isNullish(b) ? [a, b] : [b, a];
-      if (n.kind !== K.NullKeyword ? this.states.nullDistinct(x) : this.states.nullishRead(x) || this.states.nullishElementRead(x) || this.states.nullableEntry(x, () => this.coerceTyped(x, 'Any?'))) return `${negate ? '!' : ''}jsStrictEquals(${this.coerce(x, 'Any?')}, ${n.kind === K.NullKeyword ? 'jsNull' : 'nil'})`;
+      if (n.kind !== K.NullKeyword ? this.states.nullDistinct(x) : this.states.nullishRead(x) || this.states.nullishElementRead(x) || this.states.nulledRead(x)) return `${negate ? '!' : ''}jsStrictEquals(${this.coerce(x, 'Any?')}, ${n.kind === K.NullKeyword ? 'jsNull' : 'nil'})`;
       if (n.kind === K.NullKeyword && this.states.nilIsUndefined(x)) return `${negate ? '!' : ''}jsStrictEquals(${this.coerce(x, 'Any?')}, jsNull)`;
     }
     // Comparing a typed optional with null or undefined.
@@ -14192,7 +14189,7 @@ ${members.join('\n')}
         throw this.error(x, `null or undefined in an array of ${el}, whose type leaves both out (declare the element type \`${el} | null\`)`);
       } else if (this.lenientApp && !isOptional(el) && el !== 'Any?' && this.zero(el) === null && this.heldOptionalResult(x)) {
         throw this.error(x, `a value a non-strict function may give as null or undefined, in an array of ${el}`);
-      } else run.push(this.coerce(x, el));
+      } else run.push(place(this.placement, x, this.elementSlot(e, el)(x)));
     }
     if (run.length) parts.push(`[${run.join(', ')}]`);
     return `${t}(${parts.join(' + ')})`;

@@ -259,11 +259,14 @@ export function argumentOf(a: ts.Expression): { call: ts.CallExpression | ts.New
 
 /**
  * Where a value is stored: a variable's declaration, a class's field, an object literal's field, a parameter (its
- * default), or an assignment's target (a variable, a member, an element).
+ * default), an assignment's target (a variable, a member, an element), or a container's element (`ElementStore`).
  */
 export type Store = ts.VariableDeclaration | ts.PropertyDeclaration | ts.PropertyAssignment | ts.ParameterDeclaration | ts.Expression;
 
-/** A variable, a field, an object literal's field or an array's element as the slot a value is stored in. */
+/** What stores its arguments or its elements as a container's elements: an array literal, or a call adding to an array, Set or Map. */
+export type ElementStore = ts.CallExpression | ts.ArrayLiteralExpression;
+
+/** A variable, a field, an object literal's field or a container's element as the slot a value is stored in. */
 export interface StoreSlot {
   kind: 'variable' | 'field' | 'literalField' | 'element';
   /** The backend's spelling of the slot's type where the value is stored. */
@@ -293,6 +296,7 @@ export function storeEntry(b: Pick<PlacementBackend, 'library' | 'lenient' | 'st
 }
 
 function storeKind(at: Store): StoreSlot['kind'] {
+  if (ts.isCallExpression(at) || ts.isArrayLiteralExpression(at)) return 'element';
   if (ts.isVariableDeclaration(at) || ts.isParameter(at)) return 'variable';
   if (ts.isPropertyDeclaration(at)) return 'field';
   if (ts.isPropertyAssignment(at)) return 'literalField';
@@ -307,6 +311,32 @@ export function storeOf(a: ts.Expression): Store | null {
   const p = x.parent;
   if ((ts.isVariableDeclaration(p) || ts.isPropertyDeclaration(p) || ts.isPropertyAssignment(p)) && p.initializer === x) return p;
   return ts.isBinaryExpression(p) && p.operatorToken.kind === ts.SyntaxKind.EqualsToken && p.right === x ? p.left : null;
+}
+
+/**
+ * The array literal or call that stores `a`, past parentheses, as an element of a container: the literal's element,
+ * `push`/`unshift`'s arguments, `splice`'s items, `fill`'s value, a Set's `add` or a Map's `set` value. Null where `a`
+ * is none.
+ */
+export function elementStoreOf(checker: ts.TypeChecker, a: ts.Expression): ElementStore | null {
+  let x: ts.Node = a;
+  while (ts.isParenthesizedExpression(x.parent)) x = x.parent;
+  const p = x.parent;
+  if (ts.isArrayLiteralExpression(p)) return p;
+  if (!ts.isCallExpression(p) || p.expression === x || !ts.isPropertyAccessExpression(p.expression)) return null;
+  const k = p.arguments.indexOf(x as ts.Expression), method = p.expression.name.text;
+  const kind = containerKind(checker, p.expression.expression);
+  const stores = kind === 'Array' ? method === 'push' || method === 'unshift' || (method === 'splice' && k >= 2) || (method === 'fill' && k === 0)
+    : kind === 'Set' ? method === 'add' && k === 0 : kind === 'Map' && method === 'set' && k === 1;
+  return stores ? p : null;
+}
+
+/** Whether `e` is an array, a Set or a Map, by its type. */
+export function containerKind(checker: ts.TypeChecker, e: ts.Expression): 'Array' | 'Set' | 'Map' | null {
+  const t = checker.getNonNullableType(checker.getTypeAtLocation(e));
+  if (checker.isArrayType(t)) return 'Array';
+  const kind = t.getSymbol()?.name;
+  return kind === 'Set' || kind === 'Map' ? kind : null;
 }
 
 /** Whether `a` is the value an `=` assigns to `left`, past parentheses: a compound assignment's operand, or one of an assignment the translation made from another, is not. */
