@@ -39,7 +39,7 @@ export class ColorBase implements IColor {
 					this._argb = this._argbFromString(arg);
 				} else if (isCssColorFunction(lowered) || isRgbOrRgba(lowered) || isHslOrHsla(lowered)) {
 					const argb = argbFromCssColor(lowered);
-					if (argb === -1) {
+					if (argb === null) {
 						throw new Error('Invalid color: ' + arg);
 					}
 					this._argb = argb >>> 0;
