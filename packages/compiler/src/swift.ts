@@ -19,7 +19,7 @@ import { CoreAPI, isCoreDeclaration, packageOf } from './core.ts';
 import type { KitMember } from './kit-index.ts';
 import type { KitDeclarations, RecordedMember } from './kit-manifest.ts';
 import type { Properties } from './properties.ts';
-import { keyOf, rootKeepsExpando, type ShapeFacts, type ShapePlan, shapePlanOfClass } from './shapes.ts';
+import { keyOf, nilIsNull, notedField, notesNull, nullNames, rootKeepsExpando, type ShapeFacts, type ShapePlan, shapePlanOfClass } from './shapes.ts';
 import { shadowLiteral, shadowShapes } from './shape-shadow.ts';
 import { recognizePatterns, type Patterns } from './patterns.ts';
 import { DEPLOYMENT, NativeAPI, enteredGuard, onMainThread, tested, typedCollection } from './native-calls.ts';
@@ -3717,6 +3717,12 @@ ${members.join('\n')}
 
   /** An app class's key plan, or null where its keys are its declared fields. */
   private keyPlan(cls: ts.ClassLikeDeclaration): ShapePlan | null {
+    const plan = this.classPlan(cls);
+    return plan?.keyed ? plan : null;
+  }
+
+  /** An app class's plan, keyed or not: its fields' null states. */
+  private classPlan(cls: ts.ClassLikeDeclaration): ShapePlan | null {
     return shapePlanOfClass(cls, this.states, this.shapeFacts());
   }
 
@@ -3815,7 +3821,7 @@ ${members.join('\n')}
    */
   untypedWrite(left: ts.Expression, right: ts.Expression): left is ts.PropertyAccessExpression {
     if (this.lenient || this.library || !ts.isPropertyAccessExpression(left) || left.questionDotToken) return false;
-    if (this.states.nullField(left)) return true;
+    if (notedField(this.states, left)) return true;
     if (this.checkedPlacementEntry(right)) return false;
     try {
       if (this.typeOf(right) !== 'Any?' || this.typeOf(left) === 'Any?' || this.isAny(left.expression)) return false;
@@ -5824,7 +5830,7 @@ ${members.join('\n')}
         const superAt = stmts.findIndex((s) => ts.isExpressionStatement(s) && ts.isCallExpression(s.expression) && s.expression.expression.kind === ts.SyntaxKind.SuperKeyword);
         const own = () => [...paramProps.flatMap((p) => {
           const n = (p.name as ts.Identifier).text;
-          const note = this.states.nullishHeld(p) && this.states.nullFields(cls).has(n) ? [`        jsNoteNull(&jsNulls, ${swiftString(n)}, ${ident(n)}.jsAny)`] : [];
+          const note = this.states.nullishHeld(p) && notesNull(this.classPlan(cls)?.fieldNulls.get(n)) ? [`        jsNoteNull(&jsNulls, ${swiftString(n)}, ${ident(n)}.jsAny)`] : [];
           return [`        self.${ident(n)} = ${paramPropValues.get(p)}`, ...note];
         }), ...fieldInits];
         const notes = this.keyNotes;
@@ -6126,13 +6132,13 @@ ${members.join('\n')}
     if (byName && !byName.inherits) conformances.push('JSMemberKeyed');
     if (isError) lines.push(...this.dynamicMembers(fields, null, true, dynMethods, symbolFields, false, raw, dynAccessors, false, false, new Set(), false, undefined, undefined, undefined, undefined, undefined, byName).filter((l) => !l.includes(' var jsClassName: ')));
     else {
-      const nulls = this.states.nullFields(cls);
-      if (nulls.size && !this.states.baseKeepsNulls(cls)) {
+      const plan = this.classPlan(cls), nulls = nullNames(plan, notesNull);
+      if (plan?.declaresNulls) {
         const initial = cls.members.filter((m): m is ts.PropertyDeclaration => ts.isPropertyDeclaration(m) && nulls.has(m.name.getText()) && initializedNull(m));
         lines.push(`    var jsNulls: Set<String>?${initial.length ? ` = [${initial.map((m) => swiftString(m.name.getText())).join(', ')}]` : ''}`);
       }
       const definable = this.definableNames(cls).filter((n) => fields.some((f) => f.name === n));
-      lines.push(...this.dynamicMembers(fields, cls.name?.text ?? name, !!appBase || !!kitRoot, dynMethods, symbolFields, expando, raw, dynAccessors, symbolKeyedBase, false, nulls, true, this.states.nullFieldsTyped(cls), this.keyedMembers(cls, !!appBase, lines, conformances), undefined, new Set(definable), !!appBase && rootKeepsExpando(cls, this.states, this.shapeFacts()), byName));
+      lines.push(...this.dynamicMembers(fields, cls.name?.text ?? name, !!appBase || !!kitRoot, dynMethods, symbolFields, expando, raw, dynAccessors, symbolKeyedBase, false, nulls, true, nullNames(plan, nilIsNull), this.keyedMembers(cls, !!appBase, lines, conformances), undefined, new Set(definable), !!appBase && rootKeepsExpando(cls, this.states, this.shapeFacts()), byName));
       if (definable.length) {
         let inherited = false;
         for (let b = this.programBase(cls); b && !inherited; b = this.programBase(b)) inherited = this.definableNames(b).length > 0;
@@ -8291,7 +8297,7 @@ ${members.join('\n')}
       const inner = afterTry(text);
       if (held && onlyNull(held)) return inner !== null ? tryCode(`jsNulledEntry(${inner})`) : `jsNulledEntry(${text})`;
     }
-    if (this.states.nullField(bare) && !isWriteTarget(bare)) return `${this.expr(bare.expression)}[jsKey: ${swiftString(bare.name.text)}]`;
+    if (notedField(this.states, bare) && !isWriteTarget(bare)) return `${this.expr(bare.expression)}[jsKey: ${swiftString(bare.name.text)}]`;
     // An optional field that may hold null or undefined: the literal's shape notes which (`jsNulls`), read by key.
     const f = ts.isPropertyAccessExpression(bare) && !isWriteTarget(bare) ? this.states.nullishShapeField(bare) : null;
     return f ? `${this.expr((bare as ts.PropertyAccessExpression).expression)}[jsKey: ${swiftString(f)}]` : null;
@@ -8320,7 +8326,7 @@ ${members.join('\n')}
     if (target === 'Any?') {
       const chain = this.chainRead(e);
       if (chain) return castCode(chain, 'Any', 'as');
-      if (this.states.nullField(e) && !isWriteTarget(e)) return `${this.expr(e.expression)}[jsKey: ${swiftString(e.name.text)}]`;
+      if (notedField(this.states, e) && !isWriteTarget(e)) return `${this.expr(e.expression)}[jsKey: ${swiftString(e.name.text)}]`;
       const asserted = this.assertedUntyped(e);
       if (asserted && this.typeOf(asserted.expression) === 'Any?') return this.expr(asserted.expression);
     } else if (target.endsWith('?') && optionalType(this.typeOf(e)) === target) {
@@ -10313,7 +10319,7 @@ ${members.join('\n')}
     while (ts.isAsExpression(inner) || ts.isTypeAssertionExpression(inner) || ts.isNonNullExpression(inner) || ts.isParenthesizedExpression(inner)) inner = inner.expression;
     if (inner.kind === ts.SyntaxKind.NullKeyword) return '"null"';
     if (inner !== e && /\?$/.test(this.typeOf(inner)) && this.typeOf(e) === 'String') return `jsToString(${this.expr(inner)} as Any?)`;
-    if (this.states.nullField(e)) return `jsToString(${this.coerce(e, 'Any?')})`;
+    if (notedField(this.states, e)) return `jsToString(${this.coerce(e, 'Any?')})`;
     const maybe = this.maybeUndefined(e);
     if (maybe) return `jsToString(${this.states.nilIsNull(e) ? `jsNulled(${maybe} as Any?)` : `${maybe} as Any?`})`;
     const chain = this.chainRead(e);
@@ -13687,7 +13693,7 @@ ${members.join('\n')}
     if (ts.isElementAccessExpression(left) && this.typeOf(left.expression).replace(/[?!]$/, '').startsWith('JSArray<') && this.typeOf(left.argumentExpression) !== 'Double') return `jsSet(${this.expr(left.expression)}, ${this.propertyKey(left.argumentExpression)}, ${this.coerce(right, 'Any?')})`;
     if (ts.isElementAccessExpression(left) && this.isAny(left.expression)) return `jsSet(${this.expr(left.expression)}, ${this.propertyKey(left.argumentExpression)}, ${this.coerce(right, 'Any?')})`;
     if (this.library && this.holdsMethods(left) && this.carriesMethod(right)) return `${this.lvalue(left)} = ${this.expr(right)}`;
-    if (this.untypedWrite(left, right)) return `jsSet(${this.expr(left.expression)}, ${swiftString(left.name.text)}, ${this.states.nullField(left) ? this.coerce(right, 'Any?') : this.expr(right)})`;
+    if (this.untypedWrite(left, right)) return `jsSet(${this.expr(left.expression)}, ${swiftString(left.name.text)}, ${notedField(this.states, left) ? this.coerce(right, 'Any?') : this.expr(right)})`;
     const keyed = ts.isPropertyAccessExpression(left) && !this.lenient && !this.library ? this.states.nullishShapeField(left, true) : null;
     if (keyed) return `jsSet(${this.expr((left as ts.PropertyAccessExpression).expression)}, ${swiftString(keyed)}, ${this.coerce(right, 'Any?')})`;
     if (isArrayLengthWrite(left, right, this.checker)) return `${this.expr(left.expression)}.jsSetLength(checked: ${this.toNumber(right)})`;

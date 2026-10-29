@@ -36,15 +36,15 @@ function summarize(files: string[]) {
       console.log(`${site}: ${at.length} (app ${by('app')}, lenient ${by('lenient')}, library ${by('library')}${extra}); differ ${differing.length}${errors.length ? `; errors ${errors.length} (${errors[0].error})` : ''}`);
       const kinds = new Map<string, Record[]>();
       for (const r of differing) for (const d of r.diffs!) {
-        const k = `${d[0]}${site === 'literal' || (site === 'nulls' && d[0] !== 'no plan' && d[0] !== 'plan nulls') ? ` (${d[2]})` : ''}`;
+        const k = `${d[0]}${site === 'literal' || (site === 'nulls' && (d[0].startsWith('null') || d[0].startsWith('noted'))) ? ` (${d[2]})` : ''}`;
         if (!kinds.has(k)) kinds.set(k, []);
         kinds.get(k)!.push(r);
       }
       for (const [k, rs] of [...kinds].sort((a, b) => b[1].length - a[1].length)) {
         const distinct = [...new Set(rs)];
         const sample = distinct.slice(0, 3).map((r) => {
-          const ds = r.diffs!.filter((x) => `${x[0]}${site === 'literal' || (site === 'nulls' && x[0] !== 'no plan' && x[0] !== 'plan nulls') ? ` (${x[2]})` : ''}` === k);
-          return `${r.at}${r.name ? ` ${r.name}` : ''}: ${site === 'literal' || (site === 'nulls' && ds[0][0] !== 'no plan' && ds[0][0] !== 'plan nulls') ? `keys ${ds.map((d) => d[1]).join(', ')}` : `plan ${JSON.stringify(ds[0][1])} / backend ${JSON.stringify(ds[0][2])}`}`;
+          const ds = r.diffs!.filter((x) => `${x[0]}${site === 'literal' || (site === 'nulls' && (x[0].startsWith('null') || x[0].startsWith('noted'))) ? ` (${x[2]})` : ''}` === k);
+          return `${r.at}${r.name ? ` ${r.name}` : ''}: ${site === 'literal' || (site === 'nulls' && (ds[0][0].startsWith('null') || ds[0][0].startsWith('noted'))) ? `keys ${ds.map((d) => d[1]).join(', ')}` : `plan ${JSON.stringify(ds[0][1])} / backend ${JSON.stringify(ds[0][2])}`}`;
         });
         console.log(`  ${rs.length} ${k}${site === 'literal' ? ` in ${distinct.length} literals` : site === 'nulls' ? ` in ${distinct.length} classes` : ''}\n      ${sample.join('\n      ')}`);
       }

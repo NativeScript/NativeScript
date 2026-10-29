@@ -14,7 +14,7 @@ import type { Form } from './forms.ts';
 import { isCoreDeclaration } from './core.ts';
 import { nonVirtualName } from './swift.ts';
 import type { Properties } from './properties.ts';
-import { keyOf, rootKeepsExpando, type ShapeFacts, type ShapePlan, shapePlanOfClass } from './shapes.ts';
+import { keyOf, nilIsNull, notedField, notesNull, nullNames, rootKeepsExpando, type ShapeFacts, type ShapePlan, shapePlanOfClass } from './shapes.ts';
 import { shadowLiteral, shadowShapes } from './shape-shadow.ts';
 import { recognizePatterns, type Patterns } from './patterns.ts';
 import type { Reach } from './reach.ts';
@@ -3564,7 +3564,7 @@ export class Translator implements AsyncTranslator {
         const own = paramProps.flatMap((p) => {
           const n = ident((p.name as ts.Identifier).text);
           if (!this.states.nullishHeld(p)) return [`        this.${n} = ${narrowedParams.has(p) ? `(${n} as ${narrowedParams.get(p)})` : n}`];
-          const note = this.states.nullFields(cls).has((p.name as ts.Identifier).text) ? [`        jsNulls = jsNoteNull(jsNulls, ${kotlinString((p.name as ts.Identifier).text)}, ${n}.jsAny)`] : [];
+          const note = notesNull(this.classPlan(cls)?.fieldNulls.get((p.name as ts.Identifier).text)) ? [`        jsNulls = jsNoteNull(jsNulls, ${kotlinString((p.name as ts.Identifier).text)}, ${n}.jsAny)`] : [];
           return [`        this.${n} = ${n}.${this.typeOf(p.name) === 'Any?' ? 'jsAny' : 'optional'}`, ...note];
         });
         const notes = this.keyNotes;
@@ -3845,13 +3845,13 @@ export class Translator implements AsyncTranslator {
         dynMethods.push({ name: n, params: root.parameters.map((p) => this.paramType(p)), ret: this.returnTypeOf(root) });
       }
     }
-    const nulls = isError ? new Set<string>() : this.states.nullFields(cls);
-    if (nulls.size && !this.states.baseKeepsNulls(cls)) {
+    const plan = this.classPlan(cls), nulls = isError ? new Set<string>() : nullNames(plan, notesNull);
+    if (!isError && plan?.declaresNulls) {
       const initial = cls.members.filter((m): m is ts.PropertyDeclaration => ts.isPropertyDeclaration(m) && nulls.has(m.name.getText()) && initializedNull(m));
       lines.push(`    var jsNulls: MutableSet<String>? = ${initial.length ? `mutableSetOf(${initial.map((m) => kotlinString(m.name.getText())).join(', ')})` : 'null'}`);
     }
     const definable = isError ? [] : this.definableNames(cls).filter((n) => fields.some((f) => f.name === n));
-    if (!isError) lines.push(...this.dynamicMembers(fields, this.scriptClassName(cls) ?? name, !!appBase || !!kitRoot, expando ? 'jsExpandoGet(this, key)' : 'null', expando ? 'jsExpandoSet(this, key, value)' : '', symbolFields, dynMethods, expando, dynAccessors, base?.replace(/<.*$/, ''), nulls, this.states.nullFieldsTyped(cls), keyedInfo, undefined, new Set(definable), !!appBase && rootKeepsExpando(cls, this.states, this.shapeFacts()), this.states.byNameClass(cls) ? name.replace(/<.*$/, '') : undefined));
+    if (!isError) lines.push(...this.dynamicMembers(fields, this.scriptClassName(cls) ?? name, !!appBase || !!kitRoot, expando ? 'jsExpandoGet(this, key)' : 'null', expando ? 'jsExpandoSet(this, key, value)' : '', symbolFields, dynMethods, expando, dynAccessors, base?.replace(/<.*$/, ''), nulls, nullNames(plan, nilIsNull), keyedInfo, undefined, new Set(definable), !!appBase && rootKeepsExpando(cls, this.states, this.shapeFacts()), this.states.byNameClass(cls) ? name.replace(/<.*$/, '') : undefined));
     // An error's own fields by name, after JSError's `name`/`message`/`stack`; what script adds to it comes after the fields, and it prints as an error, not as `Name { … }`.
     else lines.push(...this.dynamicMembers(fields, name, true, 'null', '', symbolFields, dynMethods, false, dynAccessors, base!.replace(/<.*$/, ''))
       .filter((l) => !l.startsWith('    override val jsClassName'))
@@ -6267,7 +6267,7 @@ export class Translator implements AsyncTranslator {
       if (held && onlyNull(held) && /^JSArray</.test(this.typeOf(bare.expression))) return `jsNulledElement(${this.expr(bare.expression)}, ${this.toNumber(bare.argumentExpression)})`;
       return null;
     }
-    if (this.states.nullField(bare) && !isWriteTarget(bare)) return `${this.expr(bare.expression)}.jsGet(${kotlinString(bare.name.text)})`;
+    if (notedField(this.states, bare) && !isWriteTarget(bare)) return `${this.expr(bare.expression)}.jsGet(${kotlinString(bare.name.text)})`;
     // An optional field that may hold null or undefined: the literal's shape notes which (`jsNulls`), read by key.
     const f = ts.isPropertyAccessExpression(bare) && !isWriteTarget(bare) ? this.states.nullishShapeField(bare) : null;
     return f ? `${this.expr((bare as ts.PropertyAccessExpression).expression)}.jsGet(${kotlinString(f)})` : null;
@@ -6289,7 +6289,7 @@ export class Translator implements AsyncTranslator {
   }
 
   private coerceTyped(e: ts.Expression, target: string): string {
-    if (target === 'Any?' && this.states.nullField(e) && !isWriteTarget(e)) return `${this.expr(e.expression)}.jsGet(${kotlinString(e.name.text)})`;
+    if (target === 'Any?' && notedField(this.states, e) && !isWriteTarget(e)) return `${this.expr(e.expression)}.jsGet(${kotlinString(e.name.text)})`;
     // An erased assertion where the place takes undefined: the value as it is, or the nullable it may be.
     const assertion = this.assertedUntyped(e);
     if (assertion && target === 'Any?' && this.typeOf(assertion.expression) === 'Any?') return this.expr(assertion.expression);
@@ -7315,7 +7315,7 @@ export class Translator implements AsyncTranslator {
 
   /** A value as JavaScript converts it to a string (`String(x)`, `${x}`, `'' + x`). */
   str(e: ts.Expression): string {
-    if (this.states.nullField(e) || this.states.nullDistinct(e)) return `jsToString(${this.coerce(e, 'Any?')})`;
+    if (notedField(this.states, e) || this.states.nullDistinct(e)) return `jsToString(${this.coerce(e, 'Any?')})`;
     const maybe = this.maybeUndefined(e);
     if (maybe) return `jsToString(${maybe})`;
     // An app's `a?.b` typed present: Kotlin's chain gives a nullable, undefined where it stops.
@@ -10129,7 +10129,7 @@ export class Translator implements AsyncTranslator {
   private assignment(left: ts.Expression, right: ts.Expression): string {
     const nullish = ts.isIdentifier(left) ? this.states.nullishRead(left) : null;
     if (nullish) return `${this.refName(left as ts.Identifier)} = ${this.coerce(right, this.nullishSlotType(nullish))}`;
-    if (this.states.nullField(left)) return `${this.expr(left.expression)}.jsSet(${kotlinString(left.name.text)}, ${this.coerce(right, 'Any?')})`;
+    if (notedField(this.states, left)) return `${this.expr(left.expression)}.jsSet(${kotlinString(left.name.text)}, ${this.coerce(right, 'Any?')})`;
     const keyed = ts.isPropertyAccessExpression(left) && !this.lenient && !this.library ? this.states.nullishShapeField(left, true) : null;
     if (keyed) return `${this.expr((left as ts.PropertyAccessExpression).expression)}.jsSet(${kotlinString(keyed)}, ${this.coerce(right, 'Any?')})`;
     if (ts.isPropertyAccessExpression(left) && this.symbolName(left.expression) === 'VueRef' && left.name.text === 'value') return `${this.lvalue(left)} = ${this.signalWrite(left.expression, right, this.typeOf(left))}`;
@@ -10894,6 +10894,12 @@ export class Translator implements AsyncTranslator {
 
   /** An app class's key plan, or null where its keys are its declared fields. */
   private keyPlan(cls: ts.ClassLikeDeclaration): ShapePlan | null {
+    const plan = this.classPlan(cls);
+    return plan?.keyed ? plan : null;
+  }
+
+  /** An app class's plan, keyed or not: its fields' null states. */
+  private classPlan(cls: ts.ClassLikeDeclaration): ShapePlan | null {
     return shapePlanOfClass(cls, this.states, this.shapeFacts());
   }
 

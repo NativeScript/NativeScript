@@ -1,7 +1,7 @@
 import { appendFileSync } from 'node:fs';
 import { relative } from 'node:path';
 import ts from 'typescript';
-import { classKeyPlan, deletedFields, keyedClass, type KeyState, plannedClasses, rootKeepsExpando, type ShapeFacts, shapeHierarchy, shapePlanOfClass, shapePlanOfLiteral } from './shapes.ts';
+import { classKeyPlan, deletedFields, keyedClass, type KeyState, nilIsNull, notesNull, plannedClasses, rootKeepsExpando, type ShapeFacts, shapeHierarchy, shapePlanOfClass, shapePlanOfLiteral } from './shapes.ts';
 import type { ValueStates } from './value-states.ts';
 
 // Shadow mode (NS_SHAPE_SHADOW=<file>): each key decision against the key plan shapes.ts gives the same class or
@@ -109,8 +109,8 @@ function classRecord(cls: ts.ClassLikeDeclaration, k: BackendClassKeys, states: 
   const plan = shapePlanOfClass(cls, states, facts);
   const diffs: Diff[] = [];
   const name = cls.name?.text ?? '(anonymous)';
-  if (!!plan !== k.on) diffs.push(['on', !!plan, k.on]);
-  if (plan && k.on) {
+  if (!!plan?.keyed !== k.on) diffs.push(['on', !!plan?.keyed, k.on]);
+  if (plan?.keyed && k.on) {
     const of = (p: (s: KeyState) => boolean) => plan.keys.filter(p).map((s) => s.name);
     const compare = (what: string, mine: string[], theirs: Iterable<string>) => { if (names(mine) !== names(theirs)) diffs.push([what, names(mine), names(theirs)]); };
     if (plan.keys.map((s) => s.name).join() !== k.order.join()) diffs.push(['order', plan.keys.map((s) => s.name).join(), k.order.join()]);
@@ -120,7 +120,7 @@ function classRecord(cls: ts.ClassLikeDeclaration, k: BackendClassKeys, states: 
     if ([...plan.flagged].join() !== [...k.flagged].join()) diffs.push(['flag order', [...plan.flagged].join(), [...k.flagged].join()]);
     if (plan.depth !== k.depth) diffs.push(['depth', plan.depth, k.depth]);
   }
-  return { name, on: k.on, flagged: names(k.flagged), keys: plan?.keys.map((s) => `${s.name}:${s.presence}${s.deleted ? ':deleted' : ''}${s.nulls === 'noted' ? ':null' : ''}`).join(',') ?? null, diffs };
+  return { name, on: k.on, flagged: names(k.flagged), keys: plan?.keyed ? plan.keys.map((s) => `${s.name}:${s.presence}${s.deleted ? ':deleted' : ''}${notesNull(s.nulls) ? ':null' : ''}${nilIsNull(s.nulls) ? ':nil' : ''}`).join(',') : null, diffs };
 }
 
 function hierarchyRecord(root: ts.ClassLikeDeclaration, h: BackendHierarchy, states: ValueStates, facts: ShapeFacts): object {
@@ -179,16 +179,20 @@ function allClasses(states: ValueStates): ts.ClassLikeDeclaration[] {
 
 /**
  * A class's field null notes against the plan's, and against the fields' forms: a field held optional whose form holds
- * null and undefined both that nothing notes, or a noted one whose form never holds null.
+ * null and undefined both that nothing notes, or a noted one whose form never holds null. The backends' former decision
+ * is `ValueStates.nullFields`/`nullFieldsTyped` read directly, and a program base's notes for `jsNulls`.
  */
 function nullsRecord(cls: ts.ClassLikeDeclaration, states: ValueStates, facts: ShapeFacts): object {
   const noted = states.nullFields(cls), nil = states.nullFieldsTyped(cls);
-  const declares = noted.size > 0 && !states.baseKeepsNulls(cls);
+  let declares = noted.size > 0;
+  for (let base = states.backend.programBase(cls); base && declares; base = states.backend.programBase(base)) if (states.nullFields(base).size) declares = false;
   const plan = shapePlanOfClass(cls, states, facts);
   const diffs: Diff[] = [];
   const legacy = (n: string) => (noted.has(n) ? (nil.has(n) ? 'noted+nil' : 'noted') : nil.has(n) ? 'nil' : 'none');
   if (plan) {
-    for (const k of plan.keys) if (k.nulls !== legacy(k.name).replace(/\+nil$/, '')) diffs.push(['plan nulls', `${k.name}:${k.nulls}`, legacy(k.name)]);
+    for (const n of new Set([...noted, ...nil, ...plan.fieldNulls.keys()])) if ((plan.fieldNulls.get(n) ?? 'none') !== legacy(n)) diffs.push(['plan nulls', `${n}:${plan.fieldNulls.get(n) ?? 'none'}`, legacy(n)]);
+    for (const k of plan.keys) if (k.nulls !== legacy(k.name)) diffs.push(['key nulls', `${k.name}:${k.nulls}`, legacy(k.name)]);
+    if (plan.declaresNulls !== declares) diffs.push(['declares jsNulls', plan.declaresNulls, declares]);
   } else if (noted.size || nil.size) diffs.push(['no plan', null, [...noted, ...nil].map(legacy).join(',')]);
   const forms = states.forms(), b = states.backend;
   const ctor = cls.members.find(ts.isConstructorDeclaration);
@@ -200,7 +204,7 @@ function nullsRecord(cls: ts.ClassLikeDeclaration, states: ValueStates, facts: S
     if (form.null && form.undefined && !noted.has(n) && !nil.has(n)) diffs.push(['null unnoted', n, h]);
     else if (!form.null && noted.has(n)) diffs.push(['noted, form never null', n, h]);
   }
-  return { name: cls.name?.text ?? '(anonymous)', keyed: !!plan, noted: names(noted), nil: names(nil), declares, diffs };
+  return { name: cls.name?.text ?? '(anonymous)', keyed: !!plan?.keyed, noted: names(noted), nil: names(nil), declares, diffs };
 }
 
 const hasStaticModifier = (m: ts.PropertyDeclaration) => !!m.modifiers?.some((x) => x.kind === ts.SyntaxKind.StaticKeyword);
