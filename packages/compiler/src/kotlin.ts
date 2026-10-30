@@ -1374,7 +1374,8 @@ export class Translator implements AsyncTranslator {
         const setter = p.declarations?.find((d) => ts.isSetAccessorDeclaration(d) && d.parent === literal);
         if (getter || setter) return { name: memberName(p, this.checker), type: getter ? pt : optionalType(pt), accessor: { get: !!getter, set: !!setter, value: pt } };
         // Library mode: a Java object a literal holds may be missing (unchecked for null, `savedInstanceState` on a fresh start).
-        return { name: memberName(p, this.checker), type: p.flags & ts.SymbolFlags.Optional || (this.library && /^[a-z]\w*[._][\w.]*[A-Z]\w*$/.test(pt)) ? optionalType(pt) : pt };
+        const own = !this.library && !!p.valueDeclaration && !p.valueDeclaration.getSourceFile().isDeclarationFile && !this.states.packaged(p.valueDeclaration);
+        return { name: memberName(p, this.checker), type: p.flags & ts.SymbolFlags.Optional || (this.library && /^[a-z]\w*[._][\w.]*[A-Z]\w*$/.test(pt)) ? optionalType(pt) : pt, ...(own ? { own } : {}) };
       });
       const key = fields.map((f) => `${f.name}:${f.type}${f.accessor ? `:${f.accessor.get ? 'get' : ''}${f.accessor.set ? 'set' : ''}` : ''}`).sort().join(',');
       let s = this.shapes.get(key);
@@ -2330,7 +2331,7 @@ export class Translator implements AsyncTranslator {
       `    override fun jsGet(key: String): Any? = when (key) {`,
       // A field Kotlin declares `lateinit` (an object type, unset): undefined until set.
       ...fields.map((f) => withDefined(f, noted(f.name) ? `        ${kotlinString(f.name)} -> jsNullable(jsUnsetIsUndefined { this.${ident(f.name)} }, jsNulls, ${kotlinString(f.name)})`
-        : !this.library && !holdsNil(heldOf(f.type)) && this.zero(f.type) === null && f.type !== 'Unit' && !this.isTypeParameterName(f.type) ? `        ${kotlinString(f.name)} -> jsUnsetIsUndefined { this.${ident(f.name)} }` : `        ${kotlinString(f.name)} -> ${nilNull(f.name) ? `jsNulled(this.${ident(f.name)})` : `this.${ident(f.name)}`}`, definedGet)),
+        : !this.library && !holdsNil(heldOf(f.type)) && this.zero(f.type) === null && f.type !== 'Unit' && !this.isTypeParameterName(f.type) ? `        ${kotlinString(f.name)} -> jsUnsetIsUndefined { ${f.own ? this.scriptFunctionRead(`this.${ident(f.name)}`, f.type) : `this.${ident(f.name)}`} }` : `        ${kotlinString(f.name)} -> ${nilNull(f.name) ? `jsNulled(this.${ident(f.name)})` : f.own ? this.scriptFunctionRead(`this.${ident(f.name)}`, f.type) : `this.${ident(f.name)}`}`, definedGet)),
       ...accessors.filter((a) => a.readable).map((a) => `        ${kotlinString(accessorKey(a.name))} -> this.${ident(a.name)}`),
       ...symbols.map((f) => `        ${f.key} -> this.${f.member}`),
       ...methods.filter((m) => !fields.some((f) => f.name === m.name)).map(method),
@@ -6365,6 +6366,10 @@ export class Translator implements AsyncTranslator {
         return this.untypedFunction(decl, fn.includes('::') ? `(${fn})` : fn);
       }
     }
+    if (target === 'Any?' && !isWriteTarget(e)) {
+      const adapted = this.untypedFunctionValue(e);
+      if (adapted) return adapted;
+    }
     // A conditional's branches each placed in a shape slot: a class's object is read into the shape by itself, and
     // neither branch is held untyped on the way.
     if (ts.isConditionalExpression(bare) && this.isShapeType(target.replace(/\?$/, '')) && [bare.whenTrue, bare.whenFalse].some((x) => this.typeOf(x).replace(/\?$/, '') !== target.replace(/\?$/, ''))) {
@@ -8177,14 +8182,55 @@ export class Translator implements AsyncTranslator {
     while (ts.isParenthesizedExpression(bare)) bare = bare.expression;
     if (this.library || !ts.isArrowFunction(bare) || bare.parameters.length > 4 || this.readsArguments(bare) || bare.parameters.some((q) => q.dotDotDotToken || isThisParameter(q) || !ts.isIdentifier(q.name))) return null;
     const types = bare.parameters.map((q) => this.paramType(q));
-    // A string, number or boolean arrives as the type it has, but null as script's.
-    const primitive = (t: string) => t === 'Any?' || /^(Double|String|Boolean)\??$/.test(t);
-    if (!types.some((t) => !primitive(t) || (t.endsWith('?') && t !== 'Any?'))) return null;
-    const read = (t: string, x: string) => (t === 'Any?' ? x : !primitive(t) ? this.fromAny(x, t) : t.endsWith('?') ? `(if (jsIsNullish(${x})) null else jsUnchecked<${t}>(${x}))` : this.unchecked(t, x));
+    if (!types.some((t) => !scriptPrimitive(t) || (t.endsWith('?') && t !== 'Any?'))) return null;
     const ret = this.returnTypeOf(bare);
+    return `run<Any?> { val __f = ${this.closure(bare, `(${types.join(', ')}) -> ${ret}`)}; ${this.scriptArguments(types, ret)} }`;
+  }
+
+  /** `__f`, a function of `types`, as one taking script's arguments as it holds them: equal to `__f`. */
+  private scriptArguments(types: string[], ret: string): string {
+    // A string, number or boolean arrives as the type it has, but null as script's.
+    const read = (t: string, x: string) => (t === 'Any?' ? x : !scriptPrimitive(t) ? this.fromAny(x, t) : t.endsWith('?') ? `(if (jsIsNullish(${x})) null else jsUnchecked<${t}>(${x}))` : this.unchecked(t, x));
     const names = types.map((_, k) => pure(`__u${k}`));
     const call = `__f(${types.map((t, k) => read(t, names[k])).join(', ')})`;
-    return `run<Any?> { val __f = ${this.closure(bare, `(${types.join(', ')}) -> ${ret}`)}; jsAdapt${types.length}<${[...types.map(() => 'Any?'), ret].join(', ')}>(__f) { ${names.map((n) => `${n}: Any?`).join(', ')} -> ${call} } }`;
+    return `jsAdapt${types.length}<${[...types.map(() => 'Any?'), ret].join(', ')}>(__f) { ${names.map((n) => `${n}: Any?`).join(', ')} -> ${call} }`;
+  }
+
+  /**
+   * App code: a function value placed untyped, its Kotlin parameters typed: script calls it with what it holds (its
+   * null and undefined included), read as the parameters' types; null when it needs no reading.
+   */
+  private untypedFunctionValue(e: ts.Expression): string | null {
+    // Compared, the function is itself already (an adapter is equal to it); packaged code keeps its own signatures.
+    if (this.library || isCompared(e) || this.states.packaged(e)) return null;
+    let bare = e;
+    while (ts.isParenthesizedExpression(bare)) bare = bare.expression;
+    const literal = ts.isArrowFunction(bare) || ts.isFunctionExpression(bare) ? bare : undefined;
+    if (literal && (this.readsArguments(literal) || literal.parameters.some((q) => q.dotDotDotToken || isThisParameter(q) || !ts.isIdentifier(q.name)))) return null;
+    const sigs = this.checker.getTypeAtLocation(e).getNonNullableType().getCallSignatures();
+    if (sigs.length !== 1 || sigs[0].typeParameters?.length || sigs[0].getDeclaration()?.parameters.some((q) => q.dotDotDotToken)) return null;
+    const source = this.typeOf(e);
+    const parts = this.scriptReadParts(source);
+    if (!parts) return null;
+    if (literal) return `run<Any?> { val __f = ${this.closure(literal, source)}; ${this.scriptArguments(parts.params, parts.ret)} }`;
+    return `${this.expr(e)}${source.endsWith('?') ? '?' : ''}.let { __f -> ${this.scriptArguments(parts.params, parts.ret)} }`;
+  }
+
+  /** The parameters and result of a function type `scriptArguments` reads for, or null where script's values need no reading. */
+  private scriptReadParts(type: string): { params: string[]; ret: string } | null {
+    const parts = functionTypeParts(/^\(.*\)\?$/.test(type) ? type.slice(1, -2) : type);
+    if (!parts || parts.params.length > 4 || [...parts.params, parts.ret].some((t) => t.includes('JSNullish<') || this.isTypeParameterName(t.replace(/\?$/, '')))) return null;
+    return parts.params.some((t) => !scriptPrimitive(t) || (t.endsWith('?') && t !== 'Any?')) ? parts : null;
+  }
+
+  /**
+   * App code: a function field's `code` of `type` read by name, as script calls it (`untypedFunctionValue`); `code` itself
+   * where that needs no reading. A rest parameter's function has an array parameter here, which script's arguments are not.
+   */
+  private scriptFunctionRead(code: string, type: string): string {
+    const parts = this.library ? null : this.scriptReadParts(type);
+    if (parts?.params.some((t) => t.startsWith('JSArray<'))) return code;
+    return parts ? `${code}${type.endsWith('?') ? '?' : ''}.let { __f -> ${this.scriptArguments(parts.params, parts.ret)} }` : code;
   }
 
   /** A parameter type computed from type parameters (indexed access, conditional), which Kotlin has as `Any?`. */
@@ -11440,7 +11486,11 @@ interface DynamicMembers {
   /** An app class's methods see the object they are called on as `this` when it is one of this class's. */
   receiver?: string;
 }
-interface ShapeField { name: string; type: string; label?: string; accessor?: { get: boolean; set: boolean; value: string }; symbol?: boolean }
+interface ShapeField {
+  name: string; type: string; label?: string; accessor?: { get: boolean; set: boolean; value: string }; symbol?: boolean;
+  /** Declared in app code: a function it holds, read by name, takes script's arguments (`scriptFunctionRead`). */
+  own?: boolean;
+}
 
 /** `Symbol.iterator`, as the library declares `Symbol`. */
 function isSymbolIterator(e: ts.Expression, checker: ts.TypeChecker): boolean {
@@ -11669,6 +11719,11 @@ function typeofName(type: string): string | null {
 }
 
 /** A Kotlin function type's parameter types and result type. */
+/** A Kotlin type script's values of which are held as they are (`Any?`, a string, number or boolean). */
+function scriptPrimitive(t: string): boolean {
+  return t === 'Any?' || /^(Double|String|Boolean)\??$/.test(t);
+}
+
 export function functionTypeParts(t: string): { params: string[]; ret: string } | null {
   if (!t.startsWith('(')) return null;
   let depth = 0;
