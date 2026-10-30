@@ -19,7 +19,7 @@ import { CoreAPI, isCoreDeclaration, packageOf } from './core.ts';
 import type { KitMember } from './kit-index.ts';
 import type { KitDeclarations, RecordedMember } from './kit-manifest.ts';
 import type { Properties } from './properties.ts';
-import { type Held, holdsNil, holdsNilOrUnwrapped, isFunctionHeld, keyOf, nilIsNull, notedField, notesNull, nullNames, rootKeepsExpando, literalNotes, type ShapeFacts, type ShapePlan, shapePlanOfClass, shapePlanOfLiteral, spelledOptional } from './shapes.ts';
+import { type Held, holdsNil, holdsNilOrUnwrapped, isFunctionHeld, keyOf, nilIsNull, notedField, notesNull, type Nulls, nullNames, rootKeepsExpando, literalNotes, type ShapeFacts, type ShapePlan, shapePlanOfClass, shapePlanOfLiteral, spelledOptional } from './shapes.ts';
 import { shadowLiteral, shadowShapes } from './shape-shadow.ts';
 import { recognizePatterns, type Patterns } from './patterns.ts';
 import { DEPLOYMENT, NativeAPI, enteredGuard, onMainThread, tested, typedCollection } from './native-calls.ts';
@@ -3028,7 +3028,7 @@ ${members.join('\n')}
     lines.push('        self.jsOrder = jsOrder', ...(nullable.length ? ['        self.jsNulls = jsNulls'] : []), ...(optional.length ? ['        self.jsUnset = jsUnset'] : []), '    }');
     // Keys beyond the type's: those of the untyped object it was read from (a cast of JSON.parse), in its order, and those set on it later (`o[key] = v`).
     lines.push('    private var jsExtra: JSDynamic?');
-    if (symbolic.length) { lines.push(...this.dynamicMembers(fields, className, false), '}'); return lines.join('\n'); }
+    if (symbolic.length) { lines.push(...this.dynamicMembers({}, { fields, className }), '}'); return lines.join('\n'); }
     lines.push('    convenience init(jsObject: Any?) {');
     this.declareInit('jsObject: Any?', false);
     // A field the object lacks, or holds of another type (JSON without an optional field), reads as JavaScript converts it where used.
@@ -3039,7 +3039,7 @@ ${members.join('\n')}
     if (optional.length) lines.push(`        jsUnset = jsUnsetKeys(jsObject, [${optional.map((f) => swiftString(f.name)).join(', ')}])`);
     lines.push('        jsExtra = jsObject as? JSDynamic', ...(through.size ? ['        jsSourced = jsExtra != nil'] : []), '    }');
     if (through.size) lines.push('    private var jsSourced = false', '    private func jsWriteThrough(_ key: String) { if jsSourced { jsExtra?[jsKey: key] = self[jsKey: key] } }');
-    const members = this.dynamicMembers(fields, className, false, [], [], false, new Set(), [], false, true, new Set(nullable.map((f) => f.name)), undefined, undefined, undefined, through);
+    const members = this.dynamicMembers({ nulls: new Map(nullable.map((f) => [f.name, 'noted'])), rewritten: through, extra: true }, { fields, className });
     const present = (f: ShapeField) => `${ident(f.name)} != nil${nullable.includes(f) ? ` || jsNulls?.contains(${swiftString(f.name)}) == true` : ''} || jsUnset?.contains(${swiftString(f.name)}) == true`;
     const declared = `[${fields.map((f) => swiftString(f.name)).join(', ')}]`;
     if (optional.length) {
@@ -3147,12 +3147,11 @@ ${members.join('\n')}
     return false;
   }
 
-  /** `JSDynamic`: the object's keys and members by name, for printing, JSON and untyped access. */
-  /**
-   * `defined`: fields `Object.defineProperty` may give a descriptor (`JSDefinable`). `expandoAbove`: a program base keeps
-   * the object's expando, whose keys come after every class's fields, as JavaScript defines fields before script adds keys.
-   */
-  private dynamicMembers(fields: { name: string; type: string; at?: ts.PropertyDeclaration }[], className: string | null, override: boolean, methods: { name: string; type: string; available?: number; length?: number }[] = [], symbols: { key: string; member: string; type: string }[] = [], expando = false, raw = new Set<string>(), accessors: { name: string; get: string | null; set: string | null }[] = [], symbolKeyedBase = false, extra = false, nulls = new Set<string>(), classNameMember = true, nilNull = new Set<string>(), keyed: KeyedMembers | null = null, rewritten = new Set<string>(), defined = new Set<string>(), expandoAbove = false, byName?: { receiver: string; inherits: boolean }): string[] {
+  /** `JSDynamic`: the object's keys (`plan`, its plan's state) and members by name, for printing, JSON and untyped access. */
+  private dynamicMembers(plan: MemberKeys, members: DynamicMembers): string[] {
+    const { fields, className, override = false, methods = [], symbols = [], raw = new Set<string>(), accessors = [], symbolKeyedBase = false, classNameMember = true, byName } = members;
+    const { keyed = null, rewritten = new Set<string>(), defined = new Set<string>(), expando = false, expandoAbove = false, extra = false } = plan;
+    const noted = (n: string) => notesNull(plan.nulls?.get(n)), nilNull = (n: string) => nilIsNull(plan.nulls?.get(n));
     const o = override ? 'override ' : '';
     const ownNames = byName ? new Set([...this.instanceKeys()].flatMap((d) => (ts.isMethodDeclaration(d) ? [d.name.getText()] : []))) : new Set<string>();
     if (!keyed?.ordered || !keyed.appBase) this.declare('jsKeys', { kind: 'var', mods: o, type: '[String]' });
@@ -3162,11 +3161,11 @@ ${members.join('\n')}
     this.declare('subscript', { kind: 'subscript', mods: o, params: 'jsKey key: String', type: 'Any?' });
     if (this.declOwner) this.declarations?.names(this.declOwner, [...fields.map((f) => f.name), ...accessors.map((a) => a.name), ...methods.map((m) => m.name)]);
     // Absent: nil, apart from null.
-    const absent = (f: { name: string }) => `self.${ident(f.name)} == nil${nulls.has(f.name) ? ` && jsNulls?.contains(${swiftString(f.name)}) != true` : ''}`;
+    const absent = (f: { name: string }) => `self.${ident(f.name)} == nil${noted(f.name) ? ` && jsNulls?.contains(${swiftString(f.name)}) != true` : ''}`;
     const at = (n: string) => { const k = keyed?.order.indexOf(n) ?? -1; return k < 0 ? Infinity : k; };
     const sorted = keyed ? [...fields].sort((a, b) => at(a.name) - at(b.name)) : fields;
     const keys = sorted.map((f) => {
-      if (!keyed) return spelledOptional(heldOf(f.type)) && !nilNull.has(f.name) ? `(${absent(f)} ? [] : [${swiftString(f.name)}])` : `[${swiftString(f.name)}]`;
+      if (!keyed) return spelledOptional(heldOf(f.type)) && !nilNull(f.name) ? `(${absent(f)} ? [] : [${swiftString(f.name)}])` : `[${swiftString(f.name)}]`;
       const present = keyed.present(f.name);
       return present ? `(${present} ? [${swiftString(f.name)}] : [])` : `[${swiftString(f.name)}]`;
     }).map((k, i) => (defined.has(sorted[i].name) ? `jsDefinedKeys(self, ${swiftString(sorted[i].name)}, ${k})` : k));
@@ -3186,7 +3185,7 @@ ${members.join('\n')}
       `    ${o}subscript(jsKey key: String) -> Any? {`,
       '        get {',
       ...this.keySwitch([
-        ...fields.map((f) => ({ name: f.name, code: `${definedGet(f)}return ${raw.has(f.name) ? `jsExpandoGet(self, ${swiftString(f.name)})` : isFunctionType(f.type.replace(/^\((.*)\)[?!]$/, '$1')) ? (nilNull.has(f.name) ? `jsNulled(${this.boxedField(`self.${ident(f.name)}`, f.type)})` : this.boxedField(`self.${ident(f.name)}`, f.type)) : nulls.has(f.name) ? `jsNullable(${this.untypedEnum(`self.${ident(f.name)}`, f.type)}, jsNulls, ${swiftString(f.name)})` : nilNull.has(f.name) ? `jsNulled(${this.untypedEnum(`self.${ident(f.name)}`, f.type)})` : this.untypedEnum(`self.${ident(f.name)}`, f.type)}` })),
+        ...fields.map((f) => ({ name: f.name, code: `${definedGet(f)}return ${raw.has(f.name) ? `jsExpandoGet(self, ${swiftString(f.name)})` : isFunctionType(f.type.replace(/^\((.*)\)[?!]$/, '$1')) ? (nilNull(f.name) ? `jsNulled(${this.boxedField(`self.${ident(f.name)}`, f.type)})` : this.boxedField(`self.${ident(f.name)}`, f.type)) : noted(f.name) ? `jsNullable(${this.untypedEnum(`self.${ident(f.name)}`, f.type)}, jsNulls, ${swiftString(f.name)})` : nilNull(f.name) ? `jsNulled(${this.untypedEnum(`self.${ident(f.name)}`, f.type)})` : this.untypedEnum(`self.${ident(f.name)}`, f.type)}` })),
         ...accessors.map((a) => ({ name: a.name, code: `return ${a.get ?? 'nil'}` })),
         ...methods.filter((m) => !fields.some((f) => f.name === m.name)).map((m) => {
           // An app class's method sees the object it is called on as `this` when that is one of the class's (`obj[k].call(other)`).
@@ -3204,9 +3203,9 @@ ${members.join('\n')}
         ...fields.map((f) => {
           const store = raw.has(f.name) ? `jsExpandoSet(self, ${swiftString(f.name)}, newValue)` : this.storeFromAny(`self.${ident(f.name)}`, f.type, f.name, false, f.at);
           // An object field that holds null is implicitly unwrapped: null and undefined both store nil, which `jsNulls` tells apart.
-          const nullable = nulls.has(f.name) && !raw.has(f.name) && /^[A-Z][\w.]*$/.test(f.type) && !['Double', 'String', 'Bool'].includes(f.type) && !this.native.isStructType(f.type);
+          const nullable = noted(f.name) && !raw.has(f.name) && /^[A-Z][\w.]*$/.test(f.type) && !['Double', 'String', 'Bool'].includes(f.type) && !this.native.isStructType(f.type);
           const write = nullable ? `if jsIsNullish(newValue) { self.${ident(f.name)} = nil } else { ${store} }` : store;
-          return { name: f.name, code: `${definedSet(f)}${write}${nulls.has(f.name) ? `; jsNoteNull(&jsNulls, ${swiftString(f.name)}, newValue)${rewritten.has(f.name) ? `; jsWriteThrough(${swiftString(f.name)})` : ''}` : ''}; return` };
+          return { name: f.name, code: `${definedSet(f)}${write}${noted(f.name) ? `; jsNoteNull(&jsNulls, ${swiftString(f.name)}, newValue)${rewritten.has(f.name) ? `; jsWriteThrough(${swiftString(f.name)})` : ''}` : ''}; return` };
         }),
         ...accessors.filter((a) => a.set).map((a) => ({ name: a.name, code: `${a.set}; return` })),
       ], symbols.map((f) => `            case ${f.key}: ${this.storeFromAny(f.member, f.type, f.member, true)}`), override ? 'super[jsKey: key] = newValue' : expando ? 'jsExpandoSet(self, key, newValue)' : extra ? 'if jsExtra == nil { jsExtra = JSObject() }; jsExtra?[jsKey: key] = newValue' : 'break'),
@@ -3215,10 +3214,10 @@ ${members.join('\n')}
     ];
     if (byName) {
       // `key in object` of a member its class declares (an accessor, a method), which is no own key.
-      const members = [...new Set([...accessors.map((a) => a.name), ...methods.map((m) => m.name)])].filter((n) => !fields.some((f) => f.name === n));
+      const hasMembers = [...new Set([...accessors.map((a) => a.name), ...methods.map((m) => m.name)])].filter((n) => !fields.some((f) => f.name === n));
       const mods = byName.inherits ? 'override ' : '';
       const rest = byName.inherits ? 'super.jsHasMember(key)' : 'false';
-      lines.push(`    ${mods}func jsHasMember(_ key: String) -> Bool { ${members.length ? `switch key { case ${members.map(swiftString).join(', ')}: return true; default: return ${rest} }` : `${rest}`} }`);
+      lines.push(`    ${mods}func jsHasMember(_ key: String) -> Bool { ${hasMembers.length ? `switch key { case ${hasMembers.map(swiftString).join(', ')}: return true; default: return ${rest} }` : `${rest}`} }`);
       this.declare('jsHasMember', { kind: 'func', mods, params: '_ key: String', type: 'Bool' });
     }
     return lines;
@@ -6195,7 +6194,7 @@ ${members.join('\n')}
     // An Error subclass keeps JSError's class name, which is the error's `name`.
     const byName = this.states.byNameClass(cls) ? { receiver: name, inherits: !!appBase && this.states.byNameClass(appBase) } : undefined;
     if (byName && !byName.inherits) conformances.push('JSMemberKeyed');
-    if (isError) lines.push(...this.dynamicMembers(fields, null, true, dynMethods, symbolFields, false, raw, dynAccessors, false, false, new Set(), false, undefined, undefined, undefined, undefined, undefined, byName).filter((l) => !l.includes(' var jsClassName: ')));
+    if (isError) lines.push(...this.dynamicMembers({}, { fields, className: null, override: true, methods: dynMethods, symbols: symbolFields, raw, accessors: dynAccessors, classNameMember: false, byName }).filter((l) => !l.includes(' var jsClassName: ')));
     else {
       const plan = this.classPlan(cls), nulls = nullNames(plan, notesNull);
       if (plan?.declaresNulls) {
@@ -6203,7 +6202,8 @@ ${members.join('\n')}
         lines.push(`    var jsNulls: Set<String>?${initial.length ? ` = [${initial.map((m) => swiftString(m.name.getText())).join(', ')}]` : ''}`);
       }
       const definable = this.definableNames(cls).filter((n) => fields.some((f) => f.name === n));
-      lines.push(...this.dynamicMembers(fields, cls.name?.text ?? name, !!appBase || !!kitRoot, dynMethods, symbolFields, expando, raw, dynAccessors, symbolKeyedBase, false, nulls, true, nullNames(plan, nilIsNull), this.keyedMembers(cls, !!appBase, lines, conformances), undefined, new Set(definable), !!appBase && rootKeepsExpando(cls, this.states, this.shapeFacts()), byName));
+      const keys: MemberKeys = { nulls: plan?.fieldNulls, keyed: this.keyedMembers(cls, !!appBase, lines, conformances), defined: new Set(definable), expando, expandoAbove: !!appBase && rootKeepsExpando(cls, this.states, this.shapeFacts()) };
+      lines.push(...this.dynamicMembers(keys, { fields, className: cls.name?.text ?? name, override: !!appBase || !!kitRoot, methods: dynMethods, symbols: symbolFields, raw, accessors: dynAccessors, symbolKeyedBase, byName }));
       if (definable.length) {
         let inherited = false;
         for (let b = this.programBase(cls); b && !inherited; b = this.programBase(b)) inherited = this.definableNames(b).length > 0;
@@ -10511,7 +10511,7 @@ ${members.join('\n')}
         else fields.push({ name: m.name.text, type });
       }
     }
-    return [`extension ${name}: ${implemented.join(', ')} {`, ...witnesses, ...this.dynamicMembers(fields, cls.name?.text ?? name, false, [], [], false, new Set(), readOnly), '}'].join('\n');
+    return [`extension ${name}: ${implemented.join(', ')} {`, ...witnesses, ...this.dynamicMembers({}, { fields, className: cls.name?.text ?? name, accessors: readOnly }), '}'].join('\n');
   }
 
   /**
@@ -14714,6 +14714,38 @@ interface IteratorMethod { name: string; params: number; param?: string; ret: st
 /** A type with null among its values and no undefined (nor any or unknown, which may be either). */
 /** An app class's keys in `dynamicMembers`: in plan order, each present by `present` (null: always). */
 interface KeyedMembers { order: string[]; present: (name: string) => string | null; ordered: boolean; appBase: boolean }
+/** The key state `dynamicMembers` spells: a class's from its plan, a shape class's from its fields. */
+interface MemberKeys {
+  /** Each field's null state; a field it lacks is `none`. */
+  nulls?: ReadonlyMap<string, Nulls>;
+  keyed?: KeyedMembers | null;
+  /** Fields written through to their source once a null is noted (`jsWriteThrough`). */
+  rewritten?: ReadonlySet<string>;
+  /** Fields `Object.defineProperty` may give a descriptor (`JSDefinable`). */
+  defined?: ReadonlySet<string>;
+  /** Keys script adds are kept in the object's expando. */
+  expando?: boolean;
+  /** A program base keeps the object's expando, whose keys come after every class's fields, as JavaScript defines fields before script adds keys. */
+  expandoAbove?: boolean;
+  /** Keys beyond the shape's are kept in `jsExtra`. */
+  extra?: boolean;
+}
+/** What `dynamicMembers` reads and writes by name besides the keys' state. */
+interface DynamicMembers {
+  fields: { name: string; type: string; at?: ts.PropertyDeclaration }[];
+  className: string | null;
+  /** Below a class that has these members: its keys come first and its members take the rest. */
+  override?: boolean;
+  methods?: { name: string; type: string; available?: number; length?: number }[];
+  symbols?: { key: string; member: string; type: string }[];
+  /** Library mode: registered properties, read and written through the expando. */
+  raw?: ReadonlySet<string>;
+  accessors?: { name: string; get: string | null; set: string | null }[];
+  symbolKeyedBase?: boolean;
+  /** Declares `jsClassName` (an error keeps JSError's). */
+  classNameMember?: boolean;
+  byName?: { receiver: string; inherits: boolean };
+}
 interface ShapeField { name: string; type: string; accessor?: { get: boolean; set: boolean; throws: boolean; value: string }; symbol?: boolean }
 
 /** The `this` nodes of a function, and of the arrow functions inside it. */
