@@ -8205,15 +8205,36 @@ export class Translator implements AsyncTranslator {
     if (this.library || isCompared(e) || this.states.packaged(e)) return null;
     let bare = e;
     while (ts.isParenthesizedExpression(bare)) bare = bare.expression;
+    // Each branch placed untyped by itself: Kotlin types the two branches' functions apart.
+    if (ts.isConditionalExpression(bare)) {
+      if (![bare.whenTrue, bare.whenFalse].some((x) => this.typedFunctionValue(x))) return null;
+      return `(if (${this.cond(bare.condition)}) ${branch(this.coerce(bare.whenTrue, 'Any?'))} else ${branch(this.coerce(bare.whenFalse, 'Any?'))})`;
+    }
+    const value = this.typedFunctionValue(e);
+    if (!value) return null;
+    const { literal, source, parts } = value;
+    if (literal) return `run<Any?> { val __f = ${this.closure(literal, source)}; ${this.scriptArguments(parts.params, parts.ret)} }`;
+    const fn = this.expr(e);
+    const held = this.declaredTypeOf(bare);
+    return `${fn.includes('::') ? `(${fn})` : fn}${source.endsWith('?') || held?.endsWith('?') ? '?' : ''}.let { __f -> ${this.scriptArguments(parts.params, parts.ret)} }`;
+  }
+
+  /**
+   * A function literal, or a function read by name, whose Kotlin parameters `untypedFunctionValue` reads script's
+   * arguments into. Any other expression (an assertion through `any`, a call's result) holds what script gave it,
+   * which its type need not describe.
+   */
+  private typedFunctionValue(e: ts.Expression): { literal?: ts.ArrowFunction | ts.FunctionExpression; source: string; parts: { params: string[]; ret: string } } | null {
+    let bare = e;
+    while (ts.isParenthesizedExpression(bare)) bare = bare.expression;
     const literal = ts.isArrowFunction(bare) || ts.isFunctionExpression(bare) ? bare : undefined;
+    if (!literal && !ts.isIdentifier(bare) && !ts.isPropertyAccessExpression(bare)) return null;
     if (literal && (this.readsArguments(literal) || literal.parameters.some((q) => q.dotDotDotToken || isThisParameter(q) || !ts.isIdentifier(q.name)))) return null;
     const sigs = this.checker.getTypeAtLocation(e).getNonNullableType().getCallSignatures();
     if (sigs.length !== 1 || sigs[0].typeParameters?.length || sigs[0].getDeclaration()?.parameters.some((q) => q.dotDotDotToken)) return null;
     const source = this.typeOf(e);
     const parts = this.scriptReadParts(source);
-    if (!parts) return null;
-    if (literal) return `run<Any?> { val __f = ${this.closure(literal, source)}; ${this.scriptArguments(parts.params, parts.ret)} }`;
-    return `${this.expr(e)}${source.endsWith('?') ? '?' : ''}.let { __f -> ${this.scriptArguments(parts.params, parts.ret)} }`;
+    return parts ? { literal, source, parts } : null;
   }
 
   /** The parameters and result of a function type `scriptArguments` reads for, or null where script's values need no reading. */
