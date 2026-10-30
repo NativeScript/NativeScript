@@ -93,6 +93,11 @@ export function typeStep(from: NativeType, to: NativeType, entry: Entry = 'check
   return step('reshape', composite(t, facts));
 }
 
+/** The step of a value spelled `from` held untyped. */
+export function boxStep(from: string, entry: Entry = 'checked', facts: TypeFacts = {}): TypeStep {
+  return typeStep(parseNativeType(from), parseNativeType('Any?'), entry, facts);
+}
+
 /** A box's or unbox's inner steps: each element to or from any value; a function's parameters the other way round. */
 function inner(f: NativeType, t: NativeType, kind: 'box' | 'unbox'): TypeStep[] {
   const typed = kind === 'box' ? f : t, any = parseNativeType('Any?');
