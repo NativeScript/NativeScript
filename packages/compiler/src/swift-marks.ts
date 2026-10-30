@@ -41,6 +41,16 @@ export function tried(code: string): Value {
   return v;
 }
 
+/** `target = value`, a statement. */
+export function assignedCode(target: string, value: string, targetThrows = false): string {
+  return marked(`${target} = ${value}`, { op: 'assign', target, value: valueOf(value), targetThrows });
+}
+
+/** A statement that is its own block (`if c { … }`, `do { … }`), placing inside it the `try`s it needs. */
+export function blockCode(code: string): string {
+  return marked(code, { op: 'block' });
+}
+
 /** `try code`, as code. */
 export function tryCode(code: string): string {
   return tried(code).code;

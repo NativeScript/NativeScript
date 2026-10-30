@@ -2,7 +2,7 @@ import ts from 'typescript';
 import { implementedInterfaces } from './lang.ts';
 import { isStatic } from './throws.ts';
 import { argumentSlot, place } from './placement.ts';
-import { castCode, implicitOf, markOf, tryCode, unwrappedCode, unwrappedIf } from './swift-marks.ts';
+import { assignedCode, castCode, implicitOf, markOf, tryCode, unwrappedCode, unwrappedIf } from './swift-marks.ts';
 import { balanced, CF_CLASSES, functionParts, ident, isWriteTarget, NONISOLATED_DEINIT, optionalType, rootImplicit, splitTopLevel, THROWING_CODE, type Translator } from './swift.ts';
 import {
   categoryModule, conformsTo, conformsToSwift, isSubframework, lookupClass, lookupConstant, lookupConstructor, lookupEnum, lookupFunction, lookupInit, lookupMember, lookupStruct, lookupTypealias, moduleOfDeclaration, nativeTable, unavailableReason,
@@ -667,7 +667,7 @@ export class NativeAPI {
     if (struct) {
       const field = struct.fields[left.name.text];
       if (!field) throw this.t.error(left, `${r.name}.${left.name.text} (not a field of ${struct.swift})`);
-      return `${this.t.expr(left.expression)}.${left.name.text} = ${this.toSwift(value, field)}`;
+      return assignedCode(`${this.t.expr(left.expression)}.${left.name.text}`, this.toSwift(value, field), this.t.receiverThrows(left.expression));
     }
     const m = this.found(lookupMember(r.module, r.name, left.name.text, r.isStatic));
     if (!m || m.kind !== 'property') throw this.t.error(left, `${r.name}.${left.name.text} (no settable Swift property)`);
@@ -681,7 +681,7 @@ export class NativeAPI {
     if (m.optional && !r.isStatic && !cast && lookupClass(r.module, r.name)?.kind === 'protocol') {
       return `jsSetOptionalNativeProperty(${target}, ${JSON.stringify(left.name.text)}, ${this.toSwift(value, m.type)})`;
     }
-    return `${target}.${m.swift} = ${this.toSwift(value, m.type)}`;
+    return assignedCode(`${target}.${m.swift}`, this.toSwift(value, m.type), !r.isStatic && this.t.receiverThrows(left.expression));
   }
 
   /** A call of a native method, class method, `alloc().initWith…()`, `new()`, or global function. */
