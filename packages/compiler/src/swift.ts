@@ -22,7 +22,7 @@ import type { Properties } from './properties.ts';
 import { type Held, holdsNil, holdsNilOrUnwrapped, isFunctionHeld, keyOf, nilIsNull, notedField, notesNull, type Nulls, nullNames, rootKeepsExpando, literalNotes, type ShapeFacts, type ShapePlan, shapePlanOfClass, shapePlanOfLiteral, spelledOptional } from './shapes.ts';
 import { shadowLiteral, shadowShapes } from './shape-shadow.ts';
 import { shadowTypeSteps } from './type-step-shadow.ts';
-import { type TypeStep, boxStep } from './type-step.ts';
+import { type TypeFacts, type TypeStep, boxStep, unboxStep } from './type-step.ts';
 import { recognizePatterns, type Patterns } from './patterns.ts';
 import { DEPLOYMENT, NativeAPI, enteredGuard, onMainThread, tested, typedCollection } from './native-calls.ts';
 import { lookupClass, lookupMember, type NativeMethod } from './natives/symbols.ts';
@@ -3407,6 +3407,7 @@ ${members.join('\n')}
   private fromAnyUnchecked(input: Value, type: string, checked: boolean, throwing = false, placed: 'covered' | 'own' | 'operand' = 'operand'): string | Value {
     const code = input.code;
     if (type === 'Any?') return input;
+    const unbox = this.unboxStep(type);
     // Core's own code reads a class unchecked still: `checked` is the library cell's for strings, numbers and booleans there.
     const appChecked = checked && !this.library;
     // `void` (an array of results nothing reads): any value read is none.
@@ -3422,7 +3423,7 @@ ${members.join('\n')}
       if (type === 'Bool') return 'false';
       return 'nil';
     }
-    const m = /^JSArray<(.*)>$/.exec(type);
+    const m = unbox.composite === 'array' ? /^JSArray<(.*)>$/.exec(type) : null;
     // Lenient code: undefined where an array is declared stays undefined (`let result: string[] = cache[key]; if (result) …`).
     if (m) {
       const el = this.arrayElementFromAny(m[1]);
@@ -3430,17 +3431,17 @@ ${members.join('\n')}
       return el.mark?.op === 'try' ? tried(made) : made;
     }
     // A promise held untyped (core's `animate()` gives its AnimationPromise as `any`): itself, or one adopting it.
-    const pm = /^JSPromise<(.*)>$/.exec(type);
+    const pm = unbox.composite === 'promise' ? /^JSPromise<(.*)>$/.exec(type) : null;
     if (pm) return `jsPromiseOf(${code}) { ${pm[1] === 'Void' ? '_ in ()' : this.presentFromAny('$0', pm[1])} }`;
     if (type === 'JSDate') return `jsDateOf(${code})`;
     if (type === 'JSDate?') return `jsDateOrNil(${code})`;
-    const om = /^JSArray<(.*)>\?$/.exec(type);
+    const om = unbox.composite === 'array' ? /^JSArray<(.*)>\?$/.exec(type) : null;
     if (om) {
       const el = this.arrayElementFromAny(om[1]);
       const made = helper('jsArrayOrNil', code, `${typedElement('JSArray', om[1])}, { ${el.code} }`);
       return el.mark?.op === 'try' ? tried(made) : made;
     }
-    const r = /^JSRecord<(.*)>\??$/.exec(type);
+    const r = unbox.composite === 'record' ? /^JSRecord<(.*)>\??$/.exec(type) : null;
     // A record's values are read as its type says where they have it (a gesture's extraData holds arrays beside its numbers).
     if (r) {
       const el = this.presentFromAnyValue('$0', r[1], true);
@@ -3452,7 +3453,7 @@ ${members.join('\n')}
       // A tuple type reads an untyped array's elements.
       return `{ (__a: Any?) -> ${type} in (${parts.map((t, k) => ['String', 'Double', 'Bool'].includes(t) ? `jsLenient${t === 'Double' ? 'Number' : t}(jsField(__a, "${k}"))` : this.fromAny(`jsField(__a, "${k}")`, t)).join(', ')}) }(${code})`;
     }
-    const whole = hasTopLevelArrow(type) ? functionParts(type) : null;
+    const whole = unbox.composite === 'function' && hasTopLevelArrow(type) ? functionParts(type) : null;
     // Lenient code: undefined where a function is declared stays undefined (`if (valueConverter) …`).
     if (whole && this.lenient && this.functionCell(whole.text)) return this.unboxFunction(code, whole, true);
     if (whole && this.lenient) return this.implicit(`{ (__f: Any?) -> (${type})? in jsIsNullish(__f) ? nil : ${this.unboxFunction('__f', whole)} }(${code})`, type);
@@ -3468,7 +3469,7 @@ ${members.join('\n')}
       // An object of the interface's class already is the object read (a receiver `call` passes); any other is read by its keys.
       return type.endsWith('?') ? `jsUnlessNullish(${code}, { (jsFlat($0) as? ${base}) ?? ${base}(jsObject: $0) })` : `{ (__o: Any?) -> ${base} in (jsFlat(__o) as? ${base}) ?? ${base}(jsObject: __o) }(${code})`;
     }
-    const fn = functionParts(/^\(.*\)$/.test(base) && hasTopLevelArrow(base.slice(1, -1)) ? base.slice(1, -1) : base);
+    const fn = unbox.composite === 'function' ? functionParts(/^\(.*\)$/.test(base) && hasTopLevelArrow(base.slice(1, -1)) ? base.slice(1, -1) : base) : null;
     if (fn && (type.endsWith('?') || type.endsWith(')?')) && this.functionCell(fn.text)) return this.unboxFunction(code, fn, true);
     if (fn) return type.endsWith('?') || type.endsWith(')?') ? `{ (__f: Any?) -> ${type} in jsIsNullish(__f) ? nil : ${this.unboxFunction('__f', fn)} }(${code})` : this.unboxFunction(code, fn);
     // A Core Foundation class casts unconditionally: `as?` to one is not a test Swift allows.
@@ -3479,7 +3480,7 @@ ${members.join('\n')}
     // A type parameter may stand for an interface: an object read untyped becomes one (`JSON.parse` of a cached `T[]`).
     if (this.genericNames.has(base)) return type.endsWith('?') ? `jsConverted(${code}, to: ${base}.self)` : appChecked ? ownTried(`(try jsChecked(${code}, ${base}.self))`) : unwrappedCode(`jsConverted(${code}, to: ${base}.self)`);
     // A native enum or option set read untyped (`textView.returnKeyType`): the number script holds, as that type's raw value.
-    if (this.native.isEnumType(base)) return type.endsWith('?') ? `jsUnlessNullish(${code}, { ${this.native.enumFromNumber('jsToNumber($0)', base)} })` : this.native.enumFromNumber(`jsToNumber(${code})`, base);
+    if (unbox.composite === 'enum') return type.endsWith('?') ? `jsUnlessNullish(${code}, { ${this.native.enumFromNumber('jsToNumber($0)', base)} })` : this.native.enumFromNumber(`jsToNumber(${code})`, base);
     // A geometry struct the runtime gives script as an object (`{ origin, size }`): the struct again.
     if (['CGRect', 'CGSize', 'CGPoint', 'UIEdgeInsets'].includes(base)) return type.endsWith('?') ? `jsNativeStruct(${code}, ${base}.self)` : `jsNativeStructPresent(${code}, ${base}.self)`;
     // Core's own code: the library cell, checked, where the function around the placement throws (`libraryThrowsHere`),
@@ -4230,7 +4231,16 @@ ${members.join('\n')}
   /** A native enum's or option set's value held untyped: its number, as the runtime marshals it; '' (from no code) when the type is neither. */
   /** The step of a value of `from` held untyped: what its box is, which the `'Any?'` paths of `convert` and `coerced` spell. */
   private boxStep(from: string): TypeStep {
-    return boxStep(from, this.library ? 'library' : this.lenient ? 'lenient' : 'checked', { enumType: (n) => this.native.isEnumType(n), shape: (n) => this.isObjectShape(n) });
+    return boxStep(from, this.library ? 'library' : this.lenient ? 'lenient' : 'checked', this.typeFacts());
+  }
+
+  /** The step of an untyped value read as `to`: which composite `fromAnyUnchecked` reads it into. */
+  private unboxStep(to: string): TypeStep {
+    return unboxStep(to, this.library ? 'library' : this.lenient ? 'lenient' : 'checked', this.typeFacts());
+  }
+
+  private typeFacts(): TypeFacts {
+    return { enumType: (n) => this.native.isEnumType(n), shape: (n) => this.isObjectShape(n) };
   }
 
   private untypedEnum(code: string, type: string): string {

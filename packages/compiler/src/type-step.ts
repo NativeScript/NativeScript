@@ -71,7 +71,7 @@ export function functionSignature(t: NativeType): { params: NativeType[]; result
 export function typeStep(from: NativeType, to: NativeType, entry: Entry = 'checked', facts: TypeFacts = {}): TypeStep {
   const step = (kind: TypeStepKind, c: TypeComposite, children: TypeStep[] = [], carried: number[] = []): TypeStep => {
     const throws = kind === 'unbox' ? plan({ rep: 'foreign', type: from, kind: 'untyped' }, { rep: spelledRepresentation(to), type: to, kind: 'untyped' }, entry).throws : false;
-    const s: TypeStep = { kind, composite: c, from, to, identity: keepsIdentity(c), throws, children, carried };
+    const s: TypeStep = { kind, composite: c, from, to, identity: keepsIdentity(c) && !(kind === 'unbox' && c === 'array'), throws, children, carried };
     const erased = kind !== 'identity' && (children.some((x) => x.refuse) || ((c === 'function' || CONTAINERS.has(c)) && [from, to].some(nestedTypeParameter)));
     if (erased) s.refuse = 'a type parameter under a container or function type, which the native type erases';
     return s;
@@ -96,6 +96,12 @@ export function typeStep(from: NativeType, to: NativeType, entry: Entry = 'check
 /** The step of a value spelled `from` held untyped. */
 export function boxStep(from: string, entry: Entry = 'checked', facts: TypeFacts = {}): TypeStep {
   return typeStep(parseNativeType(from), parseNativeType('Any?'), entry, facts);
+}
+
+/** The step of an untyped value read as `to`. An array read so is a copy of its converted elements (Q9), not one
+ * array shared by the typed and untyped sides, where script could write any value into the typed one. */
+export function unboxStep(to: string, entry: Entry = 'checked', facts: TypeFacts = {}): TypeStep {
+  return typeStep(parseNativeType('Any?'), parseNativeType(to), entry, facts);
 }
 
 /** A box's or unbox's inner steps: each element to or from any value; a function's parameters the other way round. */
