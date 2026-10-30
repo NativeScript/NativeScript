@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import { KIT_APPLE_SOURCES } from './paths.ts';
 import { Throws, digitsLiteral, isArrayLengthLiteral, isArrayLengthWrite, isAsync, isStatic } from './throws.ts';
 import { assignedMembers } from './sharing.ts';
-import { assignedValues, openSpreadType, spreadsArrays, initializedNull, intersectionAliasMembers, intlConstructor, literalPattern, literalFlags, patternGroups, regexpMayLeaveGroupUnset, isRegExpProtocol, assertedPattern, unsupportedPattern, isObjectToStringCall, isStringRaw, leadingNeverRead, forwardedSetter, redeclaredBeside, iteratedType, iterationThrows, literalKey, neverDefined, templateParts, uncheckedMatch, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, slotOf, slotType, definitelyAssignedFields, type TrustScope, classesHeldUntyped, unsetGroupTyping, type UnsetGroupTyping, keysDefinedUntyped, SWIFT_NATIVE_TYPES, runtimeTypeName, definesRunTimeKey, readKeyOf, givenBy, onlyNullOrPresent, isTemplateMethod, statementLevel, readWrite, asOperation, assignmentOf, type ReadWrite } from './lang.ts';
+import { assignedValues, openSpreadType, spreadsArrays, initializedNull, intersectionAliasMembers, intlConstructor, literalPattern, literalFlags, patternGroups, regexpMayLeaveGroupUnset, isRegExpProtocol, assertedPattern, unsupportedPattern, isObjectToStringCall, isStringRaw, leadingNeverRead, forwardedSetter, redeclaredBeside, iteratedType, iterationThrows, literalKey, neverDefined, templateParts, uncheckedMatch, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, slotOf, slotType, definitelyAssignedFields, type TrustScope, classesHeldUntyped, unsetGroupTyping, type UnsetGroupTyping, SWIFT_NATIVE_TYPES, runtimeTypeName, definesRunTimeKey, readKeyOf, givenBy, onlyNullOrPresent, isTemplateMethod, statementLevel, readWrite, asOperation, assignmentOf, type ReadWrite } from './lang.ts';
 import { memberName } from './stable-names.ts';
 import { shadowConversions } from './conversion-shadow.ts';
 import { parseNativeType, plan, type Slot, type Value } from './conversion.ts';
@@ -19,7 +19,7 @@ import { CoreAPI, isCoreDeclaration, packageOf } from './core.ts';
 import type { KitMember } from './kit-index.ts';
 import type { KitDeclarations, RecordedMember } from './kit-manifest.ts';
 import type { Properties } from './properties.ts';
-import { type Held, holdsNil, holdsNilOrUnwrapped, isFunctionHeld, keyOf, nilIsNull, notedField, notesNull, type Nulls, nullNames, rootKeepsExpando, literalNotes, type ShapeFacts, type ShapePlan, shapePlanOfClass, shapePlanOfLiteral, spelledOptional } from './shapes.ts';
+import { type DefinedKeys, definedFieldNames, definedKeysOf, definesDuringConstruction, type Held, holdsNil, holdsNilOrUnwrapped, isFunctionHeld, keyOf, nilIsNull, notedField, notesNull, type Nulls, nullNames, restrictsField, rootKeepsExpando, literalNotes, type ShapeFacts, type ShapePlan, shapePlanOfClass, shapePlanOfLiteral, spelledOptional } from './shapes.ts';
 import { shadowLiteral, shadowShapes } from './shape-shadow.ts';
 import { shadowTypeSteps } from './type-step-shadow.ts';
 import { recognizePatterns, type Patterns } from './patterns.ts';
@@ -1353,23 +1353,21 @@ export class Translator implements AsyncTranslator {
     return (this.undeclaredRoots = roots);
   }
 
-  private definedKeySet: Set<string> | null = null;
-  /** App mode: the keys `Object.defineProperty` names on untyped objects, which a program class's field of that name keeps a descriptor for. */
-  private definedKeys(): Set<string> {
-    return (this.definedKeySet ??= this.library ? new Set() : keysDefinedUntyped(this.sourceFiles, this.checker));
+  private definedKeySet: DefinedKeys | null = null;
+  /** App mode: the fields `Object.defineProperty` may give a descriptor; none in a library. */
+  private definedKeys(): DefinedKeys {
+    return (this.definedKeySet ??= this.library ? { untyped: new Set(), fields: new Set(), names: new Set() } : definedKeysOf(this.sourceFiles, this.checker));
   }
 
   /** The class's own fields whose objects `Object.defineProperty` may give a descriptor (`JSDefinable`). */
   private definableNames(cls: ts.ClassLikeDeclaration): string[] {
-    if (this.library || !this.definedKeys().size || cls.getSourceFile().isDeclarationFile || this.pluginFiles.has(cls.getSourceFile().fileName) || this.errorBased(cls)) return [];
-    const ctor = cls.members.find(ts.isConstructorDeclaration);
-    const own = [...cls.members.filter((m) => ts.isPropertyDeclaration(m) && !isStatic(m) && ts.isIdentifier(m.name)), ...(ctor?.parameters.filter((p) => ts.isParameterPropertyDeclaration(p, ctor)) ?? [])];
-    return own.map((m) => (m.name as ts.Identifier).text).filter((n) => this.definedKeys().has(n));
+    if (this.library || !this.definedKeys().names.size || cls.getSourceFile().isDeclarationFile || this.pluginFiles.has(cls.getSourceFile().fileName) || this.errorBased(cls)) return [];
+    return definedFieldNames(cls, this.definedKeys());
   }
 
   /** The field `definableNames` lists that `key` of the object names, if any (`const { field } = obj`, `obj['field']`). */
   private definedField(object: ts.Node, key: string): ts.NamedDeclaration | undefined {
-    if (this.library || !this.definedKeys().has(key)) return undefined;
+    if (this.library || !this.definedKeys().names.has(key)) return undefined;
     const d = this.checker.getNonNullableType(this.checker.getTypeAtLocation(object)).getProperty(key)?.valueDeclaration;
     const cls = d && (ts.isPropertyDeclaration(d) ? d.parent : ts.isParameter(d) && ts.isConstructorDeclaration(d.parent) ? d.parent.parent : undefined);
     return cls && ts.isClassLike(cls) && this.definableNames(cls).includes(key) ? (d as ts.NamedDeclaration) : undefined;
@@ -12670,20 +12668,18 @@ ${members.join('\n')}
     if (this.library) return;
     const cls = this.checker.getNonNullableType(this.checker.getTypeAtLocation(target)).getSymbol()?.valueDeclaration;
     if (!cls || !ts.isClassLike(cls) || cls.getSourceFile().isDeclarationFile || this.pluginFiles.has(cls.getSourceFile().fileName)) return;
-    const restricts = !ts.isObjectLiteralExpression(descriptor) || descriptor.properties.some((p) => {
-      const name = p.name && !ts.isComputedPropertyName(p.name) ? p.name.getText().replace(/^['"]|['"]$/g, '') : undefined;
-      if (name === 'get' || name === 'set') return true;
-      if (name === 'value') return false;
-      if (name === 'writable' || name === 'enumerable' || name === 'configurable') return !ts.isPropertyAssignment(p) || p.initializer.kind !== ts.SyntaxKind.TrueKeyword;
-      return !name;
-    });
-    if (!restricts) return;
+    if (!restrictsField(descriptor)) return;
     const keyText = key && (ts.isStringLiteralLike(key) || ts.isIdentifier(key) || ts.isNumericLiteral(key)) ? key.text : undefined;
     const field = keyText !== undefined ? this.checker.getTypeAtLocation(target).getProperty(keyText)?.valueDeclaration : undefined;
     const declared = !!field && (ts.isPropertyDeclaration(field) || ts.isParameter(field)) && !field.getSourceFile().isDeclarationFile;
     if (keyText !== undefined && !declared) return;
-    throw this.error(key ?? target, keyText === undefined ? 'Object.defineProperty with a key known only at run time on a class instance, with a descriptor that may restrict a declared field' : `Object.defineProperty making a class's declared field (${keyText}) an accessor, read-only, hidden or fixed`);
+    const during = keyText !== undefined && definesDuringConstruction(target);
+    if (keyText !== undefined && !during && this.definedField(target, keyText)) return;
+    throw this.error(key ?? target, keyText === undefined ? 'Object.defineProperty with a key known only at run time on a class instance, with a descriptor that may restrict a declared field'
+      : during ? `Object.defineProperty on \`this\` while its class constructs it, making a declared field (${keyText}) an accessor, read-only, hidden or fixed: the constructor and field initializers read the Swift field directly; define it after \`new\` returns`
+      : `Object.defineProperty making a declared field (${keyText}) of a class whose objects keep no descriptor for it (an Error subclass's) an accessor, read-only, hidden or fixed`);
   }
+
 
   private defineProperties(target: ts.Expression, map: ts.ObjectLiteralExpression): string {
     // An object with effects (`this.parent`) is evaluated once.
@@ -12705,7 +12701,7 @@ ${members.join('\n')}
       if (!ts.isPropertyAssignment(p) || !ts.isObjectLiteralExpression(p.initializer) || ts.isComputedPropertyName(p.name)) throw this.error(p, 'a property of Object.defineProperties other than a literal descriptor');
       const key = literalKey(p.name, this.checker) ?? p.name.getText();
       const field = type.getProperty(key)?.valueDeclaration;
-      if (field && ts.isPropertyDeclaration(field) && !field.getSourceFile().isDeclarationFile && !this.isAny(target)) {
+      if (field && ts.isPropertyDeclaration(field) && !field.getSourceFile().isDeclarationFile && !this.isAny(target) && !this.definedField(target, key)) {
         const value = p.initializer.properties.find((q): q is ts.PropertyAssignment => ts.isPropertyAssignment(q) && q.name.getText() === 'value');
         return value ? `${tryBefore(this.tryPrefix(value.initializer), this.expr(target))}.${ident(key)} = ${this.coerce(value.initializer, this.typeOf(field.name))}` : '';
       }
