@@ -6,7 +6,7 @@
 //   node tests/forms-shadow.ts apps <out> [--core <dist/packages/core>]
 //       translates Guitar, openjs, gallery-angular and xml-ts for iOS and Android into <out>/<app>-<platform>; openjs
 //       takes the given core build, as regress.sh's realapp gives it the branch's. Records go to $NS_FORMS_SHADOW with
-//       the app's name before its extension, as each app's paths are relative to its own folder
+//       the app's name before its extension, as each app's paths are relative to its own folder (NS_CONVERSION_SHADOW too)
 //   node tests/forms-shadow.ts summarize <records.jsonl ...>
 //       disagreements by decider, site kind and backend, with examples and the known failures they fall in
 import { execFileSync, spawn } from 'node:child_process';
@@ -87,7 +87,7 @@ function apps() {
       const target = join(out, `${app.name}-${platform}`);
       const start = Date.now();
       try {
-        const shadow = process.env.NS_FORMS_SHADOW ? { NS_FORMS_SHADOW: process.env.NS_FORMS_SHADOW.replace(/(\.\w+)?$/, `-${app.name}$1`) } : {};
+        const shadow = Object.fromEntries(['NS_FORMS_SHADOW', 'NS_CONVERSION_SHADOW'].filter((k) => process.env[k]).map((k) => [k, process.env[k]!.replace(/(\.\w+)?$/, `-${app.name}$1`)]));
         execFileSync('node', [cli, dir, '--platform', platform, '--out', target, '--name', app.name.replace(/\W/g, ''), '--bundle', app.id], { cwd: dir, env: { ...process.env, ...shadow }, stdio: ['ignore', 'ignore', 'pipe'], maxBuffer: 1 << 28 });
         console.log(`${app.name} ${platform}: translated in ${((Date.now() - start) / 1000).toFixed(0)} s`);
       } catch (e) {

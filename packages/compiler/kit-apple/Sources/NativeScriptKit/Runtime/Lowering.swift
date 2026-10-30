@@ -115,10 +115,10 @@ public func jsHasKey(_ object: Any?, _ key: String) -> Bool {
         return (v as? AnyClass).map { JSPrototypes.staticMember($0, key) != nil } ?? false
     }
     // A typed object's `jsKeys` lists every field anew; a symbol key is never a field's.
-    if let expando = jsFlat(object) as? JSExpando { return jsExpandoHas(expando, key) || (!jsIsSymbolKey(key) && expando.jsKeys.contains(key)) }
+    if let expando = jsFlat(object) as? JSExpando { return jsExpandoHas(expando, key) || (!jsIsSymbolKey(key) && (expando.jsKeys.contains(key) || (expando as? JSMemberKeyed)?.jsHasMember(key) == true)) }
     if jsIsSymbolKey(key) { return (jsFlat(object) as? JSSymbolKeyed)?.jsSymbolKeys.contains(key) ?? false }
     if let dynamic = object as? JSDynamic {
-        if dynamic.jsKeys.contains(key) { return true }
+        if dynamic.jsKeys.contains(key) || (dynamic as? JSMemberKeyed)?.jsHasMember(key) == true { return true }
         // Accessors are the prototype's, as `in` finds them in JavaScript.
         return JSPrototypes.holder(type(of: dynamic) as AnyClass, key) != nil
     }
@@ -311,6 +311,10 @@ public func jsStringAt(_ s: String, _ index: Double) -> String? {
 }
 
 public func jsFromCharCode(_ codes: Double...) -> String {
+    jsFromCharCode(codes: codes)
+}
+
+public func jsFromCharCode(codes: [Double]) -> String {
     string(codes.map { UInt16(truncatingIfNeeded: Int64(jsToUint32Bits($0))) }[...])
 }
 

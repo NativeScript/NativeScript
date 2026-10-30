@@ -63,34 +63,87 @@ fun jsAsBoolean(value: Any?): Boolean = value as? Boolean ?: throw jsNotA(value,
 fun jsAsBoolean(value: Any?, name: String): Boolean = value as? Boolean ?: throw jsCannotAssign(value, name, "boolean")
 
 // Core's own code (the kit) given another primitive where it declares a string, number or boolean (a binding's number
-// for a string field) converts it as String(), Number() and Boolean() do, as JavaScript reads it where it is used.
-// Anything else is still a TypeError.
+// for a string field) converts it as String(), Number() and Boolean() do, as JavaScript reads it where it is used; an
+// empty marker (`jsEmptyMarker`) is the type's empty value ("", NaN, false). Anything else is a TypeError.
 
-fun jsConvertedString(value: Any?): String = jsPrimitiveString(value) ?: throw jsNotA(value, "string")
+fun jsConvertedString(value: Any?): String = if (jsIsEmptyMarker(value)) "" else jsPrimitiveString(value) ?: throw jsNotA(value, "string")
 
-fun jsConvertedString(value: Any?, name: String): String = jsPrimitiveString(value) ?: throw jsCannotAssign(value, name, "string")
+fun jsConvertedString(value: Any?, name: String): String = if (jsIsEmptyMarker(value)) "" else jsPrimitiveString(value) ?: throw jsCannotAssign(value, name, "string")
 
-fun jsConvertedNumber(value: Any?): Double = jsNumberOrNull(value) ?: throw jsNotA(value, "number")
+fun jsConvertedNumber(value: Any?): Double = if (jsIsEmptyMarker(value)) Double.NaN else jsPrimitiveNumber(value) ?: throw jsNotA(value, "number")
 
-fun jsConvertedNumber(value: Any?, name: String): Double = jsNumberOrNull(value) ?: throw jsCannotAssign(value, name, "number")
+fun jsConvertedNumber(value: Any?, name: String): Double = if (jsIsEmptyMarker(value)) Double.NaN else jsPrimitiveNumber(value) ?: throw jsCannotAssign(value, name, "number")
 
-fun jsConvertedBoolean(value: Any?): Boolean = jsBooleanOrNull(value) ?: throw jsNotA(value, "boolean")
+fun jsConvertedBoolean(value: Any?): Boolean = if (jsIsEmptyMarker(value)) false else jsPrimitiveBoolean(value) ?: throw jsNotA(value, "boolean")
 
-fun jsConvertedBoolean(value: Any?, name: String): Boolean = jsBooleanOrNull(value) ?: throw jsCannotAssign(value, name, "boolean")
+fun jsConvertedBoolean(value: Any?, name: String): Boolean = if (jsIsEmptyMarker(value)) false else jsPrimitiveBoolean(value) ?: throw jsCannotAssign(value, name, "boolean")
+
+// As the three above where the place takes undefined: undefined, null and an empty marker are null.
+
+fun jsConvertedStringOrNull(value: Any?): String? = if (jsIsNullish(jsUnmarked(value))) null else jsConvertedString(value)
+
+fun jsConvertedStringOrNull(value: Any?, name: String): String? = if (jsIsNullish(jsUnmarked(value))) null else jsConvertedString(value, name)
+
+fun jsConvertedNumberOrNull(value: Any?): Double? = if (jsIsNullish(jsUnmarked(value))) null else jsConvertedNumber(value)
+
+fun jsConvertedNumberOrNull(value: Any?, name: String): Double? = if (jsIsNullish(jsUnmarked(value))) null else jsConvertedNumber(value, name)
+
+fun jsConvertedBooleanOrNull(value: Any?): Boolean? = if (jsIsNullish(jsUnmarked(value))) null else jsConvertedBoolean(value)
+
+fun jsConvertedBooleanOrNull(value: Any?, name: String): Boolean? = if (jsIsNullish(jsUnmarked(value))) null else jsConvertedBoolean(value, name)
+
+// Where the place reads undefined as its type's zero (an argument of a method called by name): "", 0 and false.
+
+fun jsConvertedStringOrEmpty(value: Any?): String = if (jsIsNullish(jsUnmarked(value))) "" else jsConvertedString(value)
+
+fun jsConvertedNumberOrZero(value: Any?): Double = if (jsIsNullish(jsUnmarked(value))) 0.0 else jsConvertedNumber(value)
+
+fun jsConvertedBooleanOrFalse(value: Any?): Boolean = if (jsIsNullish(jsUnmarked(value))) false else jsConvertedBoolean(value)
 
 private fun jsPrimitiveString(value: Any?): String? = when (value) {
     is String -> value
-    is Double, is Boolean -> jsToString(value)
+    is Double, is Boolean, is JSSymbol, is JSBigInt -> jsToString(value)
     else -> null
 }
 
-/** `value` as an instance of `type`, JavaScript's null and undefined as null. */
+private fun jsPrimitiveNumber(value: Any?): Double? = when (value) {
+    is JSSymbol -> throw JSException(JSTypeError("Cannot convert a Symbol value to a number"))
+    is JSBigInt -> value.toDouble()
+    else -> jsNumberOrNull(value)
+}
+
+private fun jsPrimitiveBoolean(value: Any?): Boolean? = when (value) {
+    is JSSymbol -> true
+    is JSBigInt -> !value.isZero
+    else -> jsBooleanOrNull(value)
+}
+
+private val jsEmptyMarkers = java.util.concurrent.CopyOnWriteArrayList<Any>()
+
+/** A value core makes only to be told apart by identity (`unsetValue`), which its checked converts read as an empty value. */
+fun <T> jsEmptyMarker(value: T): T {
+    if (value != null) jsEmptyMarkers.add(value)
+    return value
+}
+
+private fun jsIsEmptyMarker(value: Any?): Boolean = value != null && jsEmptyMarkers.any { it === value }
+
+private fun jsUnmarked(value: Any?): Any? = if (jsIsEmptyMarker(value)) null else value
+
+/** `value` as an instance of `type`, JavaScript's null and undefined, and an empty marker, as null. */
 fun <T : Any> jsCast(value: Any?, type: Class<T>): T? {
     if (value == null || value === JSNull || value === Unit) return null
     @Suppress("UNCHECKED_CAST")
     if (type.isInstance(value)) return value as T
+    if (jsIsEmptyMarker(value)) return null
     throw jsNotA(value, jsTypeName(type))
 }
+
+/**
+ * As jsCast, where Kotlin's type has no null but core's code, unchecked for null, may give one: the null is carried
+ * into the non-null type, as script carries it, and only an instance of another class is refused.
+ */
+fun <T : Any> jsCastCarried(value: Any?, type: Class<T>): T = jsUnchecked(jsCast(value, type))
 
 /** As jsCast, where the declared type has no null either: undefined and null are refused too. */
 fun <T : Any> jsCastPresent(value: Any?, type: Class<T>): T = jsCast(value, type) ?: throw jsNotA(value, jsTypeName(type))
@@ -347,9 +400,14 @@ class JavaMethodRef(private val target: Any?, private val cls: Class<*>, private
     }
 }
 
-/** A Java package read untyped (`(<any>androidx).core.view`): its classes and packages by name, as NativeScript's runtime gives them. */
+/**
+ * A Java package read untyped (`(<any>androidx).core.view`): its classes and packages by name. A capitalized name with
+ * no class is undefined, so `?.` can test a class is there; the JVM can't list packages, so any other name is one.
+ */
 class JSJavaPackage(val name: String) : JSDynamic {
-    override fun jsGet(key: String): Any? = try { Class.forName("$name.$key") } catch (_: ClassNotFoundException) { JSJavaPackage("$name.$key") }
+    override fun jsGet(key: String): Any? = try { Class.forName("$name.$key") } catch (_: ClassNotFoundException) {
+        if (key.firstOrNull()?.isUpperCase() == true) null else JSJavaPackage("$name.$key")
+    }
     override fun jsSet(key: String, value: Any?) {}
     override val jsKeys: List<String> get() = listOf()
     override val jsClassName: String? get() = null

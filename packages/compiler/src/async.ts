@@ -1,4 +1,5 @@
 import ts from 'typescript';
+import { resultSlot, type ResultSlot } from './placement.ts';
 
 /**
  * Async functions as continuations over spec-exact promises, for either
@@ -99,7 +100,9 @@ export interface AsyncTranslator {
   paramPrelude(fn: ts.SignatureDeclaration): string[];
   typeOf(n: ts.Node): string;
   tryPrefix(e: ts.Node): string;
-  coerce(e: ts.Expression, target: string): string;
+  coerce(e: ts.Expression, target: string | ResultSlot): string;
+  /** A lowered `return e`'s value in `slot`, and whether it is a promise the function's adopts. */
+  loweredReturn(e: ts.Expression, slot: ResultSlot): [value: string, isPromise: boolean];
   expr(e: ts.Expression): string;
   exprStatement(e: ts.Expression): string;
   cond(e: ts.Expression): string;
@@ -199,7 +202,7 @@ export class AsyncLowering {
     if (e && ctx.generator === 'async') {
       // `return value` in an async generator awaits the value before finally blocks run.
       const v = t.fresh('__rv');
-      return this.s.awaitCall(`${t.tryPrefix(e)}${t.coerce(e, 'Any?')}`, false, this.closure([[v, 'Any?']], [`${t.indent}    ${ctx.ret(v, false)}`], ctx.onError), ctx.onError);
+      return this.s.awaitCall(`${t.tryPrefix(e)}${t.coerce(e, this.slot(ctx, e))}`, false, this.closure([[v, 'Any?']], [`${t.indent}    ${ctx.ret(v, false)}`], ctx.onError), ctx.onError);
     }
     return this.plainReturn(ctx, e);
   }
@@ -207,9 +210,11 @@ export class AsyncLowering {
   private plainReturn(ctx: AsyncCtx, e: ts.Expression | undefined): string {
     const t = this.t;
     if (!e) return ctx.ret(null, false);
-    const isPromise = t.isPromiseType(t.typeOf(e));
-    // The `try` marks the value: a return through a finally holds it in a block, which a `try` cannot mark.
-    return ctx.ret(t.tryPrefix(e) + (isPromise ? t.expr(e) : t.coerce(e, ctx.result)), isPromise);
+    return ctx.ret(...t.loweredReturn(e, this.slot(ctx, e)));
+  }
+
+  private slot(ctx: AsyncCtx, e: ts.Expression): ResultSlot {
+    return resultSlot(ctx.result, ts.findAncestor(e.parent, ts.isFunctionLike), true);
   }
 
   /** A statement list, its tail moved into a continuation at the first statement that awaits. */

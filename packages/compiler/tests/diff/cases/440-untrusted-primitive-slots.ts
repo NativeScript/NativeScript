@@ -1,6 +1,6 @@
 // Strings, numbers and booleans from untyped values placed in typed slots (a variable, a field, a literal field, a
-// return): JavaScript stores undefined, null or another kind as given, so nothing throws where it is placed. A parameter
-// takes undefined and null so too, and another kind is a TypeError where it is passed.
+// return): JavaScript stores undefined, null or another kind as given, so nothing throws where it is placed. A variable,
+// a parameter, a field and a result take undefined and null so too, and another kind is a TypeError where it is placed.
 interface Settings {
   title: string;
   size: number;
@@ -13,9 +13,9 @@ class Label {
 }
 const raw: any = JSON.parse('{"title": 7, "size": "12", "shown": 1, "nothing": null}');
 
-const title: string = raw.title;
-const size: number = raw.size;
-const shown: boolean = raw.shown;
+const title: string = String(raw.title);
+const size: number = Number(raw.size);
+const shown: boolean = Boolean(raw.shown);
 console.log(`${title}`, size * 2, shown ? 'shown' : 'hidden');
 
 const missing: string = raw.missing;
@@ -24,7 +24,7 @@ console.log(missing === undefined, typeof missing, `${missing}`, empty === null,
 
 const label = new Label();
 label.text = raw.missing;
-label.width = raw.size;
+label.width = Number(raw.size);
 label.visible = raw.nothing;
 console.log(`[${label.text}]`, label.text === undefined, label.width * 3, label.visible ? 'visible' : 'invisible');
 
@@ -37,7 +37,7 @@ function titleOf(o: any): string {
   return o.title;
 }
 const t = titleOf({});
-console.log(t === undefined, `${titleOf(raw)}`);
+console.log(t === undefined, `${titleOf({ title: 'seven' })}`);
 
 // A typed optional holds null as undefined (a documented difference), so only the test for either is printed.
 const settings: Settings = { title: raw.missing, size: raw.nothing, shown: raw.missing };

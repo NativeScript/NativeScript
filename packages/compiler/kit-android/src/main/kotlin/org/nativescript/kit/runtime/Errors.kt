@@ -183,6 +183,9 @@ fun jsCannotSet(key: String): Nothing = throw JSException(JSTypeError("Cannot se
 /** Undefined where code goes on with an object its type promised: V8's TypeError for an object missing. */
 fun jsObjectRequired(): Nothing = throw JSException(JSTypeError("Cannot convert undefined or null to object"))
 
+/** Undefined given to a field Kotlin holds present (`name`): a TypeError naming it, never a value made up for it. */
+fun <T : Any> jsRequired(value: T?, name: String): T = value ?: throw JSException(JSTypeError("$name is undefined"))
+
 /**
  * A destructured parameter's value, `key` its pattern's first property or null for an array pattern: undefined or
  * null is V8's TypeError. Past it, Kotlin knows the value present.

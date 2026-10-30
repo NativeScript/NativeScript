@@ -101,6 +101,12 @@ class JSLiteralKeys(var nulls: MutableSet<String>? = null, var unset: MutableSet
         if (value == null) unset = (unset ?: mutableSetOf()).also { it.add(key) }
         return value
     }
+
+    /** A typed value, whose null is null. */
+    fun <T> nulled(key: String, value: T): T {
+        if (value == null) nulls = (nulls ?: mutableSetOf()).also { it.add(key) }
+        return value
+    }
 }
 
 /**
@@ -510,7 +516,7 @@ fun jsHasKey(target: Any?, key: String): Boolean = when (target) {
     is JSArray<*> -> key == "length" || (jsArrayIndex(key)?.let { it < target.size && target.jsHoles?.get(it.toInt()) != true } ?: (target.jsProperties?.has(key) == true))
     null, JSNull, is String, is Number, is Boolean, is Function<*>, is JSFunction -> false
     // A Java object (a native view): its methods and fields, as NativeScript's runtime exposes them.
-    else -> !jsIsSymbolKey(key) && !target.javaClass.name.startsWith("org.nativescript.kit.") && jsJavaHas(target, key)
+    else -> !jsIsSymbolKey(key) && ((target is Class<*> && JSPrototypes.staticMember(target, key) != null) || (!target.javaClass.name.startsWith("org.nativescript.kit.") && jsJavaHas(target, key)))
 }
 
 /** A member of an untyped object, or undefined; reading a typed object from JSON never throws. */
@@ -769,6 +775,15 @@ fun jsCheckedStringOrNull(value: Any?): String? = if (jsIsNullish(value)) null e
 fun jsCheckedNumberOrNull(value: Any?): Double? = if (jsIsNullish(value)) null else jsCheckedNumber(value)
 
 fun jsCheckedBooleanOrNull(value: Any?): Boolean? = if (jsIsNullish(value)) null else jsCheckedBoolean(value)
+
+/**
+ * An untyped value asserted to an array of strings, numbers or booleans (§2.3b M6): an array's elements each checked by
+ * `element`, an empty state read as `jsArrayFrom` reads it, and any other value JavaScript's TypeError there.
+ */
+fun <T> jsCheckedArray(value: Any?, element: (Any?) -> T): JSArray<T> {
+    if (jsIsNullish(value) || value is JSArray<*> || value!!.javaClass.isArray) return jsArrayFrom(value, element)
+    throw JSException(JSTypeError("${jsTypeof(value)} is not an array"))
+}
 
 private fun jsCheckedFailure(value: Any?, type: String): Nothing = throw JSException(JSTypeError("${jsTypeof(value)} is not a $type"))
 
