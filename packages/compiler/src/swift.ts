@@ -4062,7 +4062,7 @@ ${members.join('\n')}
     const sigFrom = /^Signal<(.+)>[?!]?$/.exec(from)?.[1], sigTo = /^Signal<(.+)>[?!]?$/.exec(to)?.[1];
     if (sigFrom && sigTo && sigFrom !== sigTo) {
       const read = this.convert('__s.value', sigFrom, sigTo);
-      return `{ (__s: Signal<${sigFrom}>) -> Signal<${sigTo}> in Signal<${sigTo}>(computing: { ${plan(this.typeSlot(sigFrom), this.typeSlot(sigTo), this.lenient ? 'lenient' : 'checked').throws && !read.startsWith('try ') ? `try ${read}` : read} }) }(${code})`;
+      return `{ (__s: Signal<${sigFrom}>) -> Signal<${sigTo}> in Signal<${sigTo}>(computing: { ${plan(this.typeSlot(sigFrom), this.typeSlot(sigTo), this.lenient ? 'lenient' : 'checked').throws && markOf(read)?.op !== 'try' ? `try ${read}` : read} }) }(${code})`;
     }
     // A promise of a value where a promise of any value is wanted (`unzip(): Promise<any>` returning a `Promise<string>`): the same settlement.
     const settles = /^JSPromise<(.+)>([?!]?)$/.exec(from);
@@ -13796,7 +13796,7 @@ ${members.join('\n')}
       while (ts.isParenthesizedExpression(bare)) bare = bare.expression;
       if (ts.isObjectLiteralExpression(bare)) throw this.error(left, 'a destructuring assignment of an object literal used as a value');
       const code = this.patternAssignment(left, right, true);
-      if (/\btry\b/.test(code)) throw this.error(left, 'a destructuring assignment used as a value, reading what may throw');
+      if (this.throwsInfo.expr(e)) throw this.error(left, 'a destructuring assignment used as a value, reading what may throw');
       return code;
     }
     // Lenient code: null assigned to a local of a native struct declared without a value, which Swift holds implicitly unwrapped, is no struct.
