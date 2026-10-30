@@ -1,6 +1,6 @@
 {
   "name": "@nativescript/compiler",
-  "version": "9.2.0-alpha.1",
+  "version": "9.2.0-alpha.2",
   "description": "Compiles a NativeScript app written with Vue, Angular, Svelte, React, Solid or Octane into a native iOS or Android app with no JavaScript runtime.",
   "license": "Apache-2.0",
   "homepage": "https://docs.nativescript.org/guide/publishing/compiled",
@@ -48,7 +48,7 @@
     "typescript": "~5.9.0"
   },
   "peerDependencies": {
-    "@nativescript/core": "9.2.0-alpha.1"
+    "@nativescript/core": "9.2.0-alpha.2"
   },
   "peerDependenciesMeta": {
     "@nativescript/core": {
