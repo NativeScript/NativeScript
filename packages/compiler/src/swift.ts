@@ -11,7 +11,7 @@ import { memberName } from './stable-names.ts';
 import { shadowConversions } from './conversion-shadow.ts';
 import { parseNativeType, plan, type Slot, type Value } from './conversion.ts';
 import { argumentEntry, awaitSlot, conditionCell, type ConditionBackend, type ConditionCell, negatedCell, type AwaitSlot, argumentOf, argumentSlot, isEnumObject, place, resultSlot, returnCell, type ParamSlot, type PlacementBackend, type ResultSlot, type ReturnBackend, type ReturnCell, type Store, type StoreSlot, assignedTo, codeStoreSlot, placeCode, storeEntry, storeOf, storeSlot, emptyComparison, observerSlot, scriptComparison, type ElementStore, elementStoreOf, bindingSlot } from './placement.ts';
-import { castCode, elementOf, helper, implicitOf, isPure, isUnwrap, markOf, marked, memberOf, orNil, pureCode, tried, tryCode, unwrapInner, unwrappedCode, unwrappedIf, valueOf } from './swift-marks.ts';
+import { assignedCode, blockCode, castCode, elementOf, helper, implicitOf, isPure, isUnwrap, markOf, marked, memberOf, orNil, pureCode, tried, tryCode, unwrapInner, unwrappedCode, unwrappedIf, valueOf } from './swift-marks.ts';
 import { convertedRead, onlyNull, ValueStates, type NulledRead, type StateBackend } from './value-states.ts';
 import type { Form } from './forms.ts';
 import { AsyncLowering, type AsyncCtx, type AsyncSyntax, type AsyncTranslator } from './async.ts';
@@ -4065,7 +4065,7 @@ ${members.join('\n')}
     const sigFrom = /^Signal<(.+)>[?!]?$/.exec(from)?.[1], sigTo = /^Signal<(.+)>[?!]?$/.exec(to)?.[1];
     if (sigFrom && sigTo && sigFrom !== sigTo) {
       const read = this.convert('__s.value', sigFrom, sigTo);
-      return `{ (__s: Signal<${sigFrom}>) -> Signal<${sigTo}> in Signal<${sigTo}>(computing: { ${plan(this.typeSlot(sigFrom), this.typeSlot(sigTo), this.lenient ? 'lenient' : 'checked').throws && !read.startsWith('try ') ? `try ${read}` : read} }) }(${code})`;
+      return `{ (__s: Signal<${sigFrom}>) -> Signal<${sigTo}> in Signal<${sigTo}>(computing: { ${plan(this.typeSlot(sigFrom), this.typeSlot(sigTo), this.lenient ? 'lenient' : 'checked').throws && markOf(read)?.op !== 'try' ? `try ${read}` : read} }) }(${code})`;
     }
     // A promise of a value where a promise of any value is wanted (`unzip(): Promise<any>` returning a `Promise<string>`): the same settlement.
     const settles = /^JSPromise<(.+)>([?!]?)$/.exec(from);
@@ -7179,11 +7179,11 @@ ${members.join('\n')}
       // An awaited value already settled (`await p;`, its continuation given the value) has nothing left to do.
       if (ts.isAwaitExpression(s.expression) && this.subst.has(s.expression)) return '';
       // A discarded value needs no stand-in for undefined (`_ = (xs.pop() ?? nil)`).
-      const code = this.exprStatement(s.expression).replace(/^_ = \((.*) \?\? (?:nil|\.nan)\)$/s, (all, value: string) => (balanced(value) ? `_ = ${value}` : all));
+      const code = this.exprStatement(s.expression).replace(/^_ = \((.*) \?\? (?:nil|\.nan)\)$/s, (all, value: string) => (balanced(value) ? assignedCode('_', value) : all));
       // `s = String(s)` of a string: the same value, which Swift refuses to assign to itself.
       const self = /^([\w.]+) = (.+)$/.exec(code);
       if (self && self[1] === self[2]) return '';
-      const assigned = code.startsWith('do {') || code.startsWith('if ') ? code : tryAssigned(this.tryPrefix(s.expression), code);
+      const assigned = triedStatement(this.tryPrefix(s.expression), code);
       const note = this.keyNotes?.get(s);
       return i + (code.startsWith('{') ? `do { ${assigned} }` : assigned) + (note ? `\n${i}${note}` : '');
     }
@@ -7932,7 +7932,7 @@ ${members.join('\n')}
     while (ts.isParenthesizedExpression(x)) x = x.expression;
     if (!ts.isBinaryExpression(x) || (x.operatorToken.kind !== ts.SyntaxKind.AmpersandAmpersandToken && x.operatorToken.kind !== ts.SyntaxKind.BarBarToken) || this.typeOf(x.right) !== 'Void') return null;
     const test = this.cond(x.left);
-    return `if ${this.tryPrefix(x.left)}${x.operatorToken.kind === ts.SyntaxKind.BarBarToken ? `!(${test})` : test} { ${this.tryPrefix(x.right)}${this.exprStatement(x.right)} }`;
+    return blockCode(`if ${this.tryPrefix(x.left)}${x.operatorToken.kind === ts.SyntaxKind.BarBarToken ? `!(${test})` : test} { ${this.tryPrefix(x.right)}${this.exprStatement(x.right)} }`);
   }
 
   /** `for (x of list)`, `for ([key, value] of entries)`: each value assigned to existing targets, as `x = value` would. */
@@ -7974,7 +7974,7 @@ ${members.join('\n')}
     const type = untyped ? 'Any?' : literal ? this.typeOf(bare) : this.typeOf(right);
     const lines = [untyped ? `let ${value}: Any? = ${this.tryPrefix(right)}${this.dynamicObject(bare as ts.ObjectLiteralExpression)}` : literal ? `let ${value} = ${this.tryPrefix(right)}${this.expr(bare)}` : `let ${value}: ${type} = ${this.tryPrefix(right)}${this.coerce(right, type)}`];
     this.assignParts(pattern, value, type, this.checker.getTypeAtLocation(right), lines);
-    return asValue ? `{ () -> ${type} in ${lines.join('; ')}; return ${value} }()` : `do { ${lines.join('; ')} }`;
+    return asValue ? `{ () -> ${type} in ${lines.join('; ')}; return ${value} }()` : blockCode(`do { ${lines.join('; ')} }`);
   }
 
   private assignParts(pattern: ts.ArrayLiteralExpression | ts.ObjectLiteralExpression, value: string, type: string, source: ts.Type, lines: string[]): void {
@@ -8070,7 +8070,7 @@ ${members.join('\n')}
         return member ? tryCode(`jsSet(${member.object}, ${member.key}, ${value})`) : `${this.lvalue(target)} = ${value}`;
       }).filter(Boolean);
       // Typed as the tuple, so a literal takes its element's type (`[start, length] = [center, 0]`: 0 as a Double, not an Int).
-      return `do { let ${tmp}${tuple ? `: ${this.typeOf(e.right)}` : ''} = ${this.tryPrefix(e.right)}${this.expr(e.right)}; ${assigns.join('; ')} }`;
+      return blockCode(`do { let ${tmp}${tuple ? `: ${this.typeOf(e.right)}` : ''} = ${this.tryPrefix(e.right)}${this.expr(e.right)}; ${assigns.join('; ')} }`);
     }
     if (ts.isPostfixUnaryExpression(e) || ts.isPrefixUnaryExpression(e)) {
       const step = e.operator === ts.SyntaxKind.PlusPlusToken ? '+' : e.operator === ts.SyntaxKind.MinusMinusToken ? '-' : null;
@@ -8079,7 +8079,8 @@ ${members.join('\n')}
       if (member) return `jsPostUpdate(${member.object}, ${member.key}, ${step}1)`;
       if (step && this.recordEntry(e.operand)) {
         const v = this.readWriteValue(e), tp = this.tryPrefix(e);
-        return `_ = ${tp}({ () ${tp ? 'throws ' : ''}-> ${v.type} in ${v.code} }())`;
+        const call = `({ () ${tp ? 'throws ' : ''}-> ${v.type} in ${v.code} }())`;
+        return assignedCode('_', tp ? tryCode(call) : call);
       }
       if (step && (this.isAny(e.operand) || this.declaredTypeOf(e.operand) === 'Any?')) return `${this.lvalue(e.operand)} = jsToNumber(${this.expr(e.operand)}) ${step} 1`;
       // A number declared without a value (`let i: number; for (i = 0; …; i++)`) is optional until assigned; undefined steps to NaN.
@@ -8111,20 +8112,20 @@ ${members.join('\n')}
           this.subst.set(a, ts.isIdentifier(a.left) ? this.expr(a.left) : held ? tmp : this.expr(value));
         }
       } finally { for (const r of [...read, ...chain]) this.subst.delete(r); }
-      return `do { ${out.join('; ')} }`;
+      return blockCode(`do { ${out.join('; ')} }`);
     }
     // `i = 0, l = n`: each in turn.
     if (ts.isBinaryExpression(e) && e.operatorToken.kind === ts.SyntaxKind.CommaToken) return `${this.exprStatement(e.left)}; ${this.tryPrefix(e.right)}${this.exprStatement(e.right)}`;
-    if (ts.isAwaitExpression(e) && this.subst.has(e)) return `_ = ${this.subst.get(e)}`;
+    if (ts.isAwaitExpression(e) && this.subst.has(e)) return assignedCode('_', this.subst.get(e)!);
     if (ts.isBinaryExpression(e) && e.operatorToken.kind === ts.SyntaxKind.EqualsToken && !this.subst.has(e)) return this.binary(e);
     const code = this.expr(e);
     if (ts.isBinaryExpression(e) && e.operatorToken.kind >= ts.SyntaxKind.FirstAssignment && e.operatorToken.kind <= ts.SyntaxKind.LastAssignment) return code;
     // A call whose result is unused (`arr.push(x)` returns the length in JavaScript), as Swift types it where the program declares the function.
     if (ts.isCallExpression(e)) {
       const declared = this.calledType(e);
-      return (declared ?? this.typeOf(e)) === 'Void' || this.typeOf(e) === 'Never' ? code : `_ = ${code}`;
+      return (declared ?? this.typeOf(e)) === 'Void' || this.typeOf(e) === 'Never' ? code : assignedCode('_', code);
     }
-    return `_ = ${code}`;
+    return assignedCode('_', code);
   }
 
   /** `try ` when evaluating `e` can throw. */
@@ -8190,7 +8191,7 @@ ${members.join('\n')}
     const i = this.indent, a = this.asyncCtx;
     switch (cell.step) {
       case 'empty': return a ? `${i}${a.ret(null, false)}\n${i}return` : `${i}return${cell.code ? ` ${cell.code}` : ''}`;
-      case 'drop': return `${i}${tryAssigned(this.tryPrefix(cell.e), `_ = ${this.expr(cell.e)}`)}\n${i}return`;
+      case 'drop': return `${i}${triedStatement(this.tryPrefix(cell.e), assignedCode('_', this.expr(cell.e)))}\n${i}return`;
       case 'never': return `${i}${this.tryPrefix(cell.e)}${this.expr(cell.e)}`;
       case 'voidCall': return `${i}${this.tryPrefix(cell.e)}${this.exprStatement(cell.e)}\n${i}return ${cell.empty}`;
     }
@@ -9597,7 +9598,7 @@ ${members.join('\n')}
   }
 
   /** Whether a member read's receiver, as `expr` writes it, throws: its own evaluation, or the check of a loose receiver (`jsUnwrap(x, key)`). */
-  private receiverThrows(e: ts.Expression): boolean {
+  receiverThrows(e: ts.Expression): boolean {
     return this.throwsInfo.expr(e) || this.looseReceiverKey(e) !== null;
   }
 
@@ -9682,7 +9683,7 @@ ${members.join('\n')}
       const entry = ts.isElementAccessExpression(e.left) && this.typeOf(e.left.expression).replace(/\?$/, '').startsWith('JSRecord<') && t !== 'Any?' && !isOptional(t);
       const read = /\[jsKey: [^\]]+\]$/.test(target) && t !== 'Any?' ? this.fromAnyCode(target, t, true) : assigned || entry ? unwrappedCode(target) : target;
       const write = this.binary(e);
-      return `({ () ${tp ? 'throws ' : ''}-> ${t} in ${write.startsWith('if ') ? write : tp + write}; return ${this.tryPrefix(e.left)}${read} }())`;
+      return `({ () ${tp ? 'throws ' : ''}-> ${t} in ${markOf(write)?.op === 'block' ? write : tp + write}; return ${this.tryPrefix(e.left)}${read} }())`;
     }
     if (ts.isNumericLiteral(e)) return pureCode(numberLiteral(e.text));
     if (ts.isBigIntLiteral(e)) return `JSBigInt(literal: ${swiftString(e.text.replace(/n$/, ''))})`;
@@ -10345,21 +10346,26 @@ ${members.join('\n')}
 
   /** An assignable place: a component prop is its signal's value. */
   private lvalue(e: ts.Expression): string {
-    if (ts.isPropertyAccessExpression(e) && this.isSelf(e.expression) && this.props.has(e.name.text)) return `self.${ident(e.name.text)}.value`;
+    return this.place(e).code;
+  }
+
+  /** An assignable place, and whether evaluating it can throw (a Swift setter cannot; an element's place, but a symbol-keyed field, is taken to throw). */
+  private place(e: ts.Expression): { code: string; throws: boolean } {
+    if (ts.isPropertyAccessExpression(e) && this.isSelf(e.expression) && this.props.has(e.name.text)) return { code: `self.${ident(e.name.text)}.value`, throws: false };
     if (ts.isPropertyAccessExpression(e)) {
       const ns = this.namespaceMember(e);
-      if (ns) return ns;
+      if (ns) return { code: ns, throws: false };
       // Writing a member of an object Swift holds as optional (`this._webglContext._type = …` just after making it): JavaScript's TypeError where it is missing.
       // An element that may be missing (`items[i].x = …`): JavaScript's TypeError where it is.
       const checked = !e.questionDotToken ? this.receiver(e.expression, e.name.text) : null;
-      if (checked) return `${checked}.${this.memberName(e)}`;
+      if (checked) return { code: `${checked}.${this.memberName(e)}`, throws: true };
       const receiver = this.typeOf(e.expression);
       const unwrap = receiver.endsWith('?') && receiver !== 'Any?' && this.isObjectRef(e.expression) && !e.questionDotToken ? '!' : '';
-      return `${this.expr(e.expression)}${unwrap}.${this.memberName(e)}`;
+      return { code: `${this.expr(e.expression)}${unwrap}.${this.memberName(e)}`, throws: this.receiverThrows(e.expression) };
     }
-    if (ts.isElementAccessExpression(e)) return this.elementAccess(e);
-    if (ts.isIdentifier(e)) return this.globalAlias(e) ?? this.refName(e);
-    return this.expr(e);
+    if (ts.isElementAccessExpression(e)) return { code: this.elementAccess(e), throws: !this.symbolField(e) || this.receiverThrows(e.expression) };
+    if (ts.isIdentifier(e)) return { code: this.globalAlias(e) ?? this.refName(e), throws: false };
+    return { code: this.expr(e), throws: true };
   }
 
   private escapeInterpolated(text: string): string {
@@ -10893,6 +10899,15 @@ ${members.join('\n')}
     };
   }
 
+  /** The member a symbol key names on a type declaring it (`this[messages_]`), which Swift holds as a field. */
+  private symbolField(e: ts.ElementAccessExpression): ts.Symbol | undefined {
+    const key = e.argumentExpression;
+    return ts.isIdentifier(key) && this.typeOf(key) === 'JSSymbol' ? this.checker.getTypeAtLocation(e.expression).getProperties().find((p) => {
+      const n = p.valueDeclaration && (p.valueDeclaration as ts.NamedDeclaration).name;
+      return !!n && ts.isComputedPropertyName(n) && this.resolve(n.expression) === this.resolve(key);
+    }) : undefined;
+  }
+
   private elementAccess(e: ts.ElementAccessExpression): string {
     const target = this.expr(e.expression);
     const key = e.argumentExpression;
@@ -10975,10 +10990,7 @@ ${members.join('\n')}
       if (!q) return this.fromAnyCode(`${target}[jsKey: ${swiftString(key.text)}]`, this.typeOf(e), true);
     }
     if (ts.isStringLiteral(key) && declared) return `${target}${q}.${ident(key.text)}`;
-    const keyed = ts.isIdentifier(key) && this.typeOf(key) === 'JSSymbol' ? this.checker.getTypeAtLocation(e.expression).getProperties().find((p) => {
-      const n = p.valueDeclaration && (p.valueDeclaration as ts.NamedDeclaration).name;
-      return !!n && ts.isComputedPropertyName(n) && this.resolve(n.expression) === this.resolve(key);
-    }) : undefined;
+    const keyed = this.symbolField(e);
     if (keyed) return `${target}${q}.__symbol_${(key as ts.Identifier).text}`;
     // `x[Symbol.toStringTag]` on a class declaring it (a field or a getter).
     const tag = ts.isPropertyAccessExpression(key) && key.name.text === 'toStringTag' && ts.isIdentifier(key.expression) && key.expression.text === 'Symbol' && this.isLibGlobal(key.expression);
@@ -11736,15 +11748,15 @@ ${members.join('\n')}
       const target = callee.expression;
       const owner = this.symbolName(target);
       const signalValue = () => this.typeOf(target).replace(/^Signal<(.*)>$/, '$1');
-      if ((owner === 'Writable' || owner === 'WritableSignal') && method === 'set') return `${this.expr(target)}.value = ${this.signalWrite(target, e.arguments[0], signalValue(), true, e)}`;
+      if ((owner === 'Writable' || owner === 'WritableSignal') && method === 'set') return assignedCode(`${this.expr(target)}.value`, this.signalWrite(target, e.arguments[0], signalValue(), true, e), this.receiverThrows(target));
       // A prop (`this.x`) reads as its value: the signal itself is the field.
-      if (owner === 'InputSignal' && method === '$assign') return `${ts.isPropertyAccessExpression(target) && this.isSelf(target.expression) && this.props.has(target.name.text) ? `self.${ident(target.name.text)}` : this.expr(target)}.value = ${this.signalWrite(target, e.arguments[0], signalValue(), true, e)}`;
+      if (owner === 'InputSignal' && method === '$assign') return assignedCode(`${ts.isPropertyAccessExpression(target) && this.isSelf(target.expression) && this.props.has(target.name.text) ? `self.${ident(target.name.text)}` : this.expr(target)}.value`, this.signalWrite(target, e.arguments[0], signalValue(), true, e), this.receiverThrows(target));
       if ((owner === 'Writable' || owner === 'WritableSignal') && method === 'update') return `${this.expr(target)}.update(${this.closure(e.arguments[0] as ts.ArrowFunction)})`;
       if (owner === 'WritableSignal' && method === '$write') {
         // Solid's setter: a function updates, anything else is the new value.
         const a = e.arguments[0];
         if (ts.isArrowFunction(a) || ts.isFunctionExpression(a)) return `${this.expr(target)}.update(${this.closure(a)})`;
-        return `${this.expr(target)}.value = ${this.coerce(a, signalValue())}`;
+        return assignedCode(`${this.expr(target)}.value`, this.coerce(a, signalValue()), this.receiverThrows(target));
       }
       if ((owner === 'OutputEmitterRef' || owner === 'EventEmitter') && (method === 'emit' || method === 'next')) return `${this.expr(target)}.emit(${e.arguments[0] ? this.expr(e.arguments[0]) : ''})`;
       if (owner === 'Injector' && method === 'get' && e.arguments[0]) {
@@ -13684,7 +13696,7 @@ ${members.join('\n')}
       const code = body ? body.code : this.exprStatement(e);
       const lost = names.find((n) => !new RegExp(`\\b${n}\\b`).test(code));
       if (lost) throw this.error(e, `a compound assignment whose target the translation evaluates apart from its parts (${lost})`);
-      if (!body) return `do { ${[...binds, code.startsWith('do {') || code.startsWith('if ') ? code : tryAssigned(this.tryPrefix(e), code)].join('; ')} }`;
+      if (!body) return blockCode(`do { ${[...binds, triedStatement(this.tryPrefix(e), code)].join('; ')} }`);
       const tp = this.tryPrefix(e);
       return `({ () ${tp ? 'throws ' : ''}-> ${body.type} in ${[...binds, code].join('; ')} }())`;
     } finally {
@@ -13770,7 +13782,7 @@ ${members.join('\n')}
     if (fnObject && e.operatorToken.kind === ts.SyntaxKind.EqualsToken) return `${fnObject}[jsKey: ${swiftString((left as ts.PropertyAccessExpression).name.text)}] = ${this.stored(right, left, 'Any?', checks)}`;
     if (fnObject) throw this.error(e, `${ts.tokenToString(e.operatorToken.kind)} on a function's property`);
     const nullish = e.operatorToken.kind === ts.SyntaxKind.EqualsToken && ts.isIdentifier(left) ? this.states.nullishRead(left) : null;
-    if (nullish) return `${this.refName(left as ts.Identifier)} = ${this.stored(right, left, this.nullishSlotType(nullish), checks)}`;
+    if (nullish) return assignedCode(this.refName(left as ts.Identifier), this.stored(right, left, this.nullishSlotType(nullish), checks));
     // App mode: `Button.prototype.recycleNativeView = 'never'`: the class's prototype object's, which script reads through.
     if (!this.library && ts.isPropertyAccessExpression(left) && ts.isPropertyAccessExpression(left.expression) && left.expression.name.text === 'prototype') {
       const sym = this.resolve(left.expression.expression);
@@ -13779,7 +13791,7 @@ ${members.join('\n')}
         return `JSPrototypes.of(${cls}.self)[${swiftString(left.name.text)}] = ${this.stored(right, left, 'Any?', checks)}`;
       }
     }
-    if (ts.isPropertyAccessExpression(left) && this.symbolName(left.expression) === 'VueRef' && left.name.text === 'value') return `${this.lvalue(left)} = ${this.signalWrite(left.expression, right, this.typeOf(left), checks, left)}`;
+    if (ts.isPropertyAccessExpression(left) && this.symbolName(left.expression) === 'VueRef' && left.name.text === 'value') { const place = this.place(left); return assignedCode(place.code, this.signalWrite(left.expression, right, this.typeOf(left), checks, left), place.throws); }
     const takesAny = ts.isPropertyAccessExpression(left) && (this.checker.getSymbolAtLocation(left.name)?.declarations ?? [])
       .some((d) => ts.isSetAccessorDeclaration(d) && !d.getSourceFile().isDeclarationFile && this.setterTakesAny(d));
     // `super.style = value` over the kit's `__set_style`: the kit's body, since its property calls this class's override.
@@ -13797,13 +13809,13 @@ ${members.join('\n')}
       while (ts.isParenthesizedExpression(bare)) bare = bare.expression;
       if (ts.isObjectLiteralExpression(bare)) throw this.error(left, 'a destructuring assignment of an object literal used as a value');
       const code = this.patternAssignment(left, right, true);
-      if (/\btry\b/.test(code)) throw this.error(left, 'a destructuring assignment used as a value, reading what may throw');
+      if (this.throwsInfo.expr(e)) throw this.error(left, 'a destructuring assignment used as a value, reading what may throw');
       return code;
     }
     // Lenient code: null assigned to a local of a native struct declared without a value, which Swift holds implicitly unwrapped, is no struct.
     if (this.lenient && isNullish(right) && ts.isIdentifier(left) && this.native.isStructType(this.typeOf(left))) {
       const d = this.resolve(left)?.valueDeclaration;
-      if (d && ts.isVariableDeclaration(d) && !d.initializer && !ts.isSourceFile(d.parent.parent.parent)) return `${this.expr(left)} = nil`;
+      if (d && ts.isVariableDeclaration(d) && !d.initializer && !ts.isSourceFile(d.parent.parent.parent)) return assignedCode(this.expr(left), 'nil');
     }
     if (ts.isPropertyAccessExpression(left) && this.isAddedMember(left)) return `(${this.expr(left.expression)} as JSDynamic)[jsKey: ${swiftString(left.name.text)}] = ${this.stored(right, left, 'Any?', checks)}`;
     if (ts.isPropertyAccessExpression(left) && this.isNativeExpando(left)) return `jsSetNativeExpando(${this.expr(left.expression)}, ${swiftString(left.name.text)}, ${this.stored(right, left, 'Any?', checks)})`;
@@ -13817,13 +13829,14 @@ ${members.join('\n')}
     // An array written at a key that may be no index (`frames[time]`, time untyped): as script writes it.
     if (ts.isElementAccessExpression(left) && this.typeOf(left.expression).replace(/[?!]$/, '').startsWith('JSArray<') && this.typeOf(left.argumentExpression) !== 'Double') return `jsSet(${this.expr(left.expression)}, ${this.propertyKey(left.argumentExpression)}, ${this.stored(right, left, 'Any?', checks)})`;
     if (ts.isElementAccessExpression(left) && this.isAny(left.expression)) return `jsSet(${this.expr(left.expression)}, ${this.propertyKey(left.argumentExpression)}, ${this.stored(right, left, 'Any?', checks)})`;
-    if (this.library && this.holdsMethods(left) && this.carriesMethod(right)) return `${this.lvalue(left)} = ${this.expr(right)}`;
+    if (this.library && this.holdsMethods(left) && this.carriesMethod(right)) { const place = this.place(left); return assignedCode(place.code, this.expr(right), place.throws); }
     if (this.untypedWrite(left, right)) return `jsSet(${this.expr(left.expression)}, ${swiftString(left.name.text)}, ${notedField(this.states, left) ? this.stored(right, left, 'Any?', checks) : this.expr(right)})`;
     const keyed = ts.isPropertyAccessExpression(left) && !this.lenient && !this.library ? this.states.nullishShapeField(left, true) : null;
     if (keyed) return `jsSet(${this.expr((left as ts.PropertyAccessExpression).expression)}, ${swiftString(keyed)}, ${this.stored(right, left, 'Any?', checks)})`;
     if (isArrayLengthWrite(left, right, this.checker)) return `${this.expr(left.expression)}.jsSetLength(checked: ${this.toNumber(right)})`;
     const element = ts.isElementAccessExpression(left) && this.states.nullishElements(left.expression) ? this.elementTypeOf(left.expression) : null;
-    return `${this.lvalue(left)} = ${this.stored(right, left, element ?? this.declaredTypeOf(left) ?? this.typeOf(left), checks)}`;
+    const place = this.place(left);
+    return assignedCode(place.code, this.stored(right, left, element ?? this.declaredTypeOf(left) ?? this.typeOf(left), checks), place.throws);
   }
 
   private binary(e: ts.BinaryExpression): string {
@@ -13832,6 +13845,7 @@ ${members.join('\n')}
     const l = () => this.expr(e.left);
     const r = () => this.expr(e.right);
     const target = () => this.lvalue(e.left);
+    const assigned = (value: () => string) => { const place = this.place(e.left); return assignedCode(place.code, value(), place.throws); };
     const bit: Partial<Record<ts.SyntaxKind, string>> = {
       [K.AmpersandToken]: 'jsBitAnd', [K.BarToken]: 'jsBitOr', [K.CaretToken]: 'jsBitXor',
       [K.LessThanLessThanToken]: 'jsShiftLeft', [K.GreaterThanGreaterThanToken]: 'jsShiftRight', [K.GreaterThanGreaterThanGreaterThanToken]: 'jsShiftRightUnsigned',
@@ -13861,41 +13875,41 @@ ${members.join('\n')}
       const make = arithmetic[op];
       if (make) return this.untypedUpdate(member, make('__old', op === K.PlusEqualsToken ? '' : this.toNumber(e.right)), this.throwsInfo.expr(e.right));
       if (op === K.BarBarEqualsToken || op === K.AmpersandAmpersandEqualsToken) {
-        return `if ${op === K.BarBarEqualsToken ? '!' : ''}jsTruthy(${this.tryPrefix(e.left)}${l()}) { ${this.tryPrefix(e)}${this.assignment(e)} }`;
+        return blockCode(`if ${op === K.BarBarEqualsToken ? '!' : ''}jsTruthy(${this.tryPrefix(e.left)}${l()}) { ${this.tryPrefix(e)}${this.assignment(e)} }`);
       }
     }
     if (compound[op]) {
       const value = `${bit[compound[op]!]}(${this.toNumber(e.left)}, ${this.toNumber(e.right)})`;
       // `options |= UIMenuOptions.Destructive` on a native option set: the set of the combined raw value.
       const lt = this.declaredTypeOf(e.left) ?? this.typeOf(e.left);
-      return `${target()} = ${this.native.isEnumType(lt.replace(/\?$/, '')) ? this.native.enumFromNumber(value, lt) : value}`;
+      return assigned(() => (this.native.isEnumType(lt.replace(/\?$/, '')) ? this.native.enumFromNumber(value, lt) : value));
     }
     // A number variable lenient code may read before it is assigned (held optional): the operation on what it holds, NaN when undefined.
     const arithmetic: Partial<Record<ts.SyntaxKind, string>> = { [K.PlusEqualsToken]: '+', [K.MinusEqualsToken]: '-', [K.AsteriskEqualsToken]: '*', [K.SlashEqualsToken]: '/' };
     const held = ts.isIdentifier(e.left) ? this.resolve(e.left) : undefined;
-    if (arithmetic[op] && held && this.undefinedVars.get(held) === 'Double?' && !this.isString(e.right)) return `${target()} = (${target()} ?? .nan) ${arithmetic[op]} (${this.toNumber(e.right)})`;
+    if (arithmetic[op] && held && this.undefinedVars.get(held) === 'Double?' && !this.isString(e.right)) return assigned(() => `(${target()} ?? .nan) ${arithmetic[op]} (${this.toNumber(e.right)})`);
     switch (op) {
       case K.EqualsToken: return this.assignment(e);
       // An untyped variable holds whatever the operation gives: a string, or a number.
       case K.PlusEqualsToken:
-        if (this.isAny(e.left)) return `${target()} = jsAdd(${l()}, ${this.coerce(e.right, 'Any?')})`;
+        if (this.isAny(e.left)) return assigned(() => `jsAdd(${l()}, ${this.coerce(e.right, 'Any?')})`);
         // A string that may be undefined is converted as JavaScript adds it (`undefined + 'x'` is "undefinedx").
-        if (this.typeOf(e.left) === 'String?' || this.declaredTypeOf(e.left) === 'String?') return `${target()} = ${this.states.nilIsNull(e.left) ? this.str(e.left) : `jsToString(${this.expr(e.left)} as Any?)`} + ${this.str(e.right)}`;
+        if (this.typeOf(e.left) === 'String?' || this.declaredTypeOf(e.left) === 'String?') return assigned(() => `${this.states.nilIsNull(e.left) ? this.str(e.left) : `jsToString(${this.expr(e.left)} as Any?)`} + ${this.str(e.right)}`);
         return this.isString(e.left) ? `${target()} += ${this.str(e.right)}` : `${target()} += ${this.toNumber(e.right)}`;
-      case K.MinusEqualsToken: return this.isAny(e.left) ? `${target()} = ${this.toNumber(e.left)} - (${this.toNumber(e.right)})` : `${target()} -= ${this.toNumber(e.right)}`;
-      case K.AsteriskEqualsToken: return this.isAny(e.left) ? `${target()} = ${this.toNumber(e.left)} * (${this.toNumber(e.right)})` : `${target()} *= ${this.toNumber(e.right)}`;
-      case K.SlashEqualsToken: return this.isAny(e.left) ? `${target()} = ${this.toNumber(e.left)} / (${this.toNumber(e.right)})` : `${target()} /= ${this.toNumber(e.right)}`;
-      case K.PercentEqualsToken: return `${target()} = jsMod(${l()}, ${this.toNumber(e.right)})`;
-      case K.AsteriskAsteriskEqualsToken: return `${target()} = jsPow(${l()}, ${this.toNumber(e.right)})`;
+      case K.MinusEqualsToken: return this.isAny(e.left) ? assigned(() => `${this.toNumber(e.left)} - (${this.toNumber(e.right)})`) : `${target()} -= ${this.toNumber(e.right)}`;
+      case K.AsteriskEqualsToken: return this.isAny(e.left) ? assigned(() => `${this.toNumber(e.left)} * (${this.toNumber(e.right)})`) : `${target()} *= ${this.toNumber(e.right)}`;
+      case K.SlashEqualsToken: return this.isAny(e.left) ? assigned(() => `${this.toNumber(e.left)} / (${this.toNumber(e.right)})`) : `${target()} /= ${this.toNumber(e.right)}`;
+      case K.PercentEqualsToken: return assigned(() => `jsMod(${l()}, ${this.toNumber(e.right)})`);
+      case K.AsteriskAsteriskEqualsToken: return assigned(() => `jsPow(${l()}, ${this.toNumber(e.right)})`);
       case K.QuestionQuestionEqualsToken:
-        if (this.isAny(e.left)) return `if ${this.tryPrefix(e.left)}jsIsNullish(${l()}) { ${this.tryPrefix(e)}${this.assignment(e)} }`;
+        if (this.isAny(e.left)) return blockCode(`if ${this.tryPrefix(e.left)}jsIsNullish(${l()}) { ${this.tryPrefix(e)}${this.assignment(e)} }`);
         // A variable held optional while undefined: assigned only while it is.
-        if (ts.isIdentifier(e.left) && this.undefinedVars.has(this.resolve(e.left)!)) return `if ${target()} == nil { ${this.tryPrefix(e.right)}${target()} = ${this.stored(e.right, e.left, this.typeOf(e.left).replace(/\?$/, ''))} }`;
+        if (ts.isIdentifier(e.left) && this.undefinedVars.has(this.resolve(e.left)!)) return blockCode(`if ${target()} == nil { ${this.tryPrefix(e.right)}${target()} = ${this.stored(e.right, e.left, this.typeOf(e.left).replace(/\?$/, ''))} }`);
         // A slot held optional takes a fallback that may be undefined as it is (`this._appearance ??= lookup()` of null).
-        if (readWrite(e, this.checker)?.stored ?? true) return `${target()} = ${l()} ?? ${(isOptional(this.declaredTypeOf(e.left) ?? this.typeOf(e.left)) ? this.maybeUndefined(e.right) : null) ?? this.stored(e.right, e.left, this.typeOf(e.left).replace(/\?$/, ''))}`;
-        return `if ${this.tryPrefix(e.left)}jsIsNullish(${l()}) { ${this.tryPrefix(e.right)}${target()} = ${(isOptional(this.declaredTypeOf(e.left) ?? this.typeOf(e.left)) ? this.maybeUndefined(e.right) : null) ?? this.stored(e.right, e.left, this.typeOf(e.left).replace(/\?$/, ''))} }`;
-      case K.BarBarEqualsToken: return `if !jsTruthy(${this.tryPrefix(e.left)}${l()}) { ${this.tryPrefix(e)}${target()} = ${this.stored(e.right, e.left, this.typeOf(e.left))} }`;
-      case K.AmpersandAmpersandEqualsToken: return `if jsTruthy(${this.tryPrefix(e.left)}${l()}) { ${this.tryPrefix(e)}${target()} = ${this.stored(e.right, e.left, this.typeOf(e.left))} }`;
+        if (readWrite(e, this.checker)?.stored ?? true) return assigned(() => `${l()} ?? ${(isOptional(this.declaredTypeOf(e.left) ?? this.typeOf(e.left)) ? this.maybeUndefined(e.right) : null) ?? this.stored(e.right, e.left, this.typeOf(e.left).replace(/\?$/, ''))}`);
+        return blockCode(`if ${this.tryPrefix(e.left)}jsIsNullish(${l()}) { ${this.tryPrefix(e.right)}${target()} = ${(isOptional(this.declaredTypeOf(e.left) ?? this.typeOf(e.left)) ? this.maybeUndefined(e.right) : null) ?? this.stored(e.right, e.left, this.typeOf(e.left).replace(/\?$/, ''))} }`);
+      case K.BarBarEqualsToken: return blockCode(`if !jsTruthy(${this.tryPrefix(e.left)}${l()}) { ${this.tryPrefix(e)}${target()} = ${this.stored(e.right, e.left, this.typeOf(e.left))} }`);
+      case K.AmpersandAmpersandEqualsToken: return blockCode(`if jsTruthy(${this.tryPrefix(e.left)}${l()}) { ${this.tryPrefix(e)}${target()} = ${this.stored(e.right, e.left, this.typeOf(e.left))} }`);
       case K.PlusToken: {
         if (this.isString(e.left) || this.isString(e.right)) return `${this.concatOperand(e.left)} + ${this.concatOperand(e.right)}`;
         if (this.isAny(e.left) || this.isAny(e.right)) return `jsAdd(${this.coerce(e.left, 'Any?')}, ${this.coerce(e.right, 'Any?')})`;
@@ -14074,7 +14088,7 @@ ${members.join('\n')}
       [K.BarEqualsToken]: K.BarToken, [K.CaretEqualsToken]: K.CaretToken, [K.LessThanLessThanEqualsToken]: K.LessThanLessThanToken, [K.GreaterThanGreaterThanEqualsToken]: K.GreaterThanGreaterThanToken,
     };
     if (both && ops[op]) return ops[op]!(l(), r());
-    if (both && compound[op]) return `${this.lvalue(e.left)} = ${ops[compound[op]!]!(l(), r())}`;
+    if (both && compound[op]) { const place = this.place(e.left); return assignedCode(place.code, ops[compound[op]!]!(l(), r()), place.throws); }
     const comparison: Partial<Record<ts.SyntaxKind, string>> = { [K.LessThanToken]: '<', [K.GreaterThanToken]: '>', [K.LessThanEqualsToken]: '<=', [K.GreaterThanEqualsToken]: '>=' };
     if (comparison[op]) {
       if (both) return `(${l()} ${comparison[op]} ${r()})`;
@@ -15117,10 +15131,12 @@ function namesHeldOptional(source: string): Set<string> {
   return new Set([...optional].filter((n) => !other.has(n)));
 }
 
-/** `try` before an assignment to a name or a member path, which cannot throw: on its value instead (`x = try f()`). */
-function tryAssigned(t: string, code: string): string {
-  const m = t ? /^(_|[A-Za-z_]\w*(?:\.[A-Za-z_]\w*)*) = (?!=)/s.exec(code) : null;
-  return m ? `${m[0]}${t}${code.slice(m[0].length)}` : t + code;
+/** `try` before a statement that needs one: on an assignment's value where evaluating its target cannot throw (`x = try f()`); none before a block placing its own. */
+function triedStatement(t: string, code: string): string {
+  const m = markOf(code);
+  if (m?.op === 'block') return code;
+  if (!t || m?.op !== 'assign' || m.targetThrows) return t + code;
+  return m.value.mark?.op === 'try' ? code : `${m.target} = ${t}${m.value.code}`;
 }
 
 /** `rest`: the parameter a `JSRest` type marks as a rest parameter (spelled `JSArray` in `params`), else -1. */

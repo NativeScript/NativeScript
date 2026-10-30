@@ -73,7 +73,11 @@ export type Mark =
   /** A member read off the value (`x.name`; `optional`: Swift's `x?.name`; `dynamic`: Swift's `jsGet(x, "name")`). */
   | { op: 'member'; of: Value; name: string; optional?: boolean; dynamic?: boolean }
   /** Swift's `try` before the code of `of`. */
-  | { op: 'try'; of: Value };
+  | { op: 'try'; of: Value }
+  /** Swift's `target = value` (`_` for a value discarded); `targetThrows`: evaluating the target can throw, so a `try` for the value cannot go after the `=`. */
+  | { op: 'assign'; target: string; value: Value; targetThrows: boolean }
+  /** A Swift statement that is its own block (`if c { … }`, `do { … }`), its `try`s inside it. */
+  | { op: 'block' };
 
 /** What one cell does to the value. */
 export type Step =
