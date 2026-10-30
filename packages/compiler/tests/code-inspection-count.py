@@ -22,7 +22,9 @@ import sys
 # Variables and calls holding emitted code, as the translators name them.
 CODE = (r'(?:code|made|made2|inner|read|text|receiver|holder|value|raw|chain|call|body|ms|out|arg|lhs|written|line|lines'
         r'|init|steps|vals|binds|implicit|emitted|converted|left|right|cast\[1\]|up\[1\])')
-EMITTING = r'this\.(?:expr|typeofExpr|coerce|coerceTyped|tryPrefix|fromAny|fromAnyCode|convert)\([^)]*\)|code\(\)'
+# Arguments to two levels of nested parentheses: a test on a call inside them (`this.fromAny(`${this.typeOf(x).endsWith('?')…`) is not on emitted code.
+ARGS = r'\((?:[^()]|\((?:[^()]|\([^()]*\))*\))*\)'
+EMITTING = r'this\.(?:expr|typeofExpr|coerce|coerceTyped|tryPrefix|fromAny|fromAnyCode|convert)' + ARGS + r'|code\(\)'
 PATTERNS = [
     ('regex', re.compile(r'\.(?:test|exec)\((?:' + EMITTING + r'|' + CODE + r')\)')),
     ('string', re.compile(r'(?:(?<![\w.])' + CODE + r'|' + EMITTING + r')\.(?:startsWith|endsWith|includes|indexOf|match|slice\(4\)|replace\(/\^try|replace\(/!)')),

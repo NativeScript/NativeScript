@@ -3,7 +3,7 @@ import { implementedInterfaces } from './lang.ts';
 import { isStatic } from './throws.ts';
 import { argumentSlot, place } from './placement.ts';
 import { assignedCode, castCode, implicitOf, leading, markOf, tryCode, unwrappedCode, unwrappedIf } from './swift-marks.ts';
-import { balanced, CF_CLASSES, functionParts, ident, isWriteTarget, NONISOLATED_DEINIT, optionalType, rootImplicit, splitTopLevel, THROWING_CODE, type Translator } from './swift.ts';
+import { balanced, CF_CLASSES, functionParts, ident, isWriteTarget, NONISOLATED_DEINIT, optionalType, rootImplicit, splitTopLevel, type Translator } from './swift.ts';
 import {
   categoryModule, conformsTo, conformsToSwift, isSubframework, lookupClass, lookupConstant, lookupConstructor, lookupEnum, lookupFunction, lookupInit, lookupMember, lookupStruct, lookupTypealias, moduleOfDeclaration, nativeTable, unavailableReason,
   type NativeClass, type NativeMethod, type NativeProperty, type SwiftType,
@@ -426,7 +426,7 @@ export class NativeAPI {
     const target = r.isStatic ? this.className(lookupClass(r.module, r.name)!) : this.unwrapped(e.expression);
     if (absent) {
       const read = this.fromSwift(`${target}.${m.swift}`, m.type, e);
-      const throws = THROWING_CODE.test(read);
+      const throws = !r.isStatic && this.t.receiverThrows(e.expression);
       return `${throws ? '(try ' : ''}{ () ${throws ? 'throws ' : ''}-> ${this.t.typeOf(e)} in if #available(iOS ${newer}, *) { return ${read} } else { return ${absent} } }()${throws ? ')' : ''}`;
     }
     if (m.kind === 'property') return this.fromSwift(`${target}.${m.swift}`, m.type, e);
