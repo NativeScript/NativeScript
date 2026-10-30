@@ -12,7 +12,18 @@ export class ApplicationSettingsKeyValueProvider implements KeyValueProvider {
 		return ApplicationSettings.getAllKeys();
 	}
 	getValue(key: string) {
-		return ApplicationSettings.getString(key);
+		// Android's typed getters throw ClassCastException when the stored value has a different type.
+		const readers = [() => ApplicationSettings.getString(key), () => ApplicationSettings.getBoolean(key), () => ApplicationSettings.getNumber(key)];
+		for (const read of readers) {
+			try {
+				const value = read();
+				return value === undefined ? undefined : String(value);
+			} catch {
+				// try the next type
+			}
+		}
+
+		return undefined;
 	}
 	setValue(key: string, value: string) {
 		ApplicationSettings.setString(key, value);
