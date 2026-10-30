@@ -124,7 +124,34 @@ export class Throws {
     return found;
   }
 
+  /** Whether running `nodes` can throw out of them: a `throw`, or what throws outside a `try` that catches and the functions they create. */
+  statements(nodes: readonly ts.Node[]): boolean {
+    return nodes.some((n) => this.runThrows(n, null));
+  }
+
+  /** Whether `n`'s own operation throws, its operands aside (an assignment's conversion, a member read on an untyped value). */
+  own(n: ts.Node): boolean {
+    return this.nodeThrows(n);
+  }
+
   private bodyThrows(fn: Fn): boolean {
+    let found = !!fn.body && this.runThrows(fn.body, fn);
+    for (const p of fn.parameters) {
+      if (p.initializer && this.runThrows(p.initializer, fn)) found = true;
+      // Destructuring an untyped argument reads its members, which throws on undefined and null.
+      if ((ts.isObjectBindingPattern(p.name) || ts.isArrayBindingPattern(p.name)) && this.untyped(p.name)) found = true;
+    }
+    if (ts.isConstructorDeclaration(fn)) {
+      for (const m of fn.parent.members) if (ts.isPropertyDeclaration(m) && m.initializer && !isStatic(m) && this.runThrows(m.initializer, fn)) found = true;
+      if (ts.isClassDeclaration(fn.parent) && ts.getDecorators(fn.parent)?.some((d) => /^Injectable\b/.test(d.expression.getText()))) {
+        for (const p of fn.parameters) if (this.injects(p)) found = true;
+      }
+    }
+    return found;
+  }
+
+  /** Whether running `root` throws out of it; `fn` is the function whose body it is, the one function-like node it enters. */
+  private runThrows(root: ts.Node, fn: ts.Node | null): boolean {
     let found = false;
     const visit = (n: ts.Node) => {
       if (found || (n !== fn && (ts.isFunctionLike(n) || ts.isClassLike(n))) || this.quiet(n)) return;
@@ -137,18 +164,7 @@ export class Throws {
       if (ts.isThrowStatement(n) || this.nodeThrows(n)) { found = true; return; }
       ts.forEachChild(n, visit);
     };
-    if (fn.body) visit(fn.body);
-    for (const p of fn.parameters) {
-      if (p.initializer) visit(p.initializer);
-      // Destructuring an untyped argument reads its members, which throws on undefined and null.
-      if ((ts.isObjectBindingPattern(p.name) || ts.isArrayBindingPattern(p.name)) && this.untyped(p.name)) found = true;
-    }
-    if (ts.isConstructorDeclaration(fn)) {
-      for (const m of fn.parent.members) if (ts.isPropertyDeclaration(m) && m.initializer && !isStatic(m)) visit(m.initializer);
-      if (ts.isClassDeclaration(fn.parent) && ts.getDecorators(fn.parent)?.some((d) => /^Injectable\b/.test(d.expression.getText()))) {
-        for (const p of fn.parameters) if (this.parameterInjectThrows(p)) found = true;
-      }
-    }
+    visit(root);
     return found;
   }
 
@@ -335,9 +351,10 @@ export class Throws {
   /** The services `injectThrows` is working out, so that services injecting each other end. */
   private injecting = new Set<ts.Node>();
 
-  private parameterInjectThrows(p: ts.ParameterDeclaration): boolean {
+  /** Whether injecting a constructor parameter (Angular's `@Inject(token)`, or its type) can throw. */
+  injects(p: ts.ParameterDeclaration): boolean {
     let injectArg: ts.Expression | undefined;
-    let optional = false;
+    let optional = !!(p.questionToken || p.initializer);
     let skipSelf = false;
     for (const d of ts.getDecorators(p) ?? []) {
       const e = d.expression;
