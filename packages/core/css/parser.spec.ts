@@ -50,6 +50,10 @@ describe('css', () => {
 				test(parseColor, '  rgba(255, 8, 128, 0.5) ', { start: 0, end: 24, value: new Color(0x80ff0880) });
 				test(parseColor, '  hsl(330.9, 100%, 51.6%) ', { start: 0, end: 25, value: new Color(0xffff0880) });
 				test(parseColor, '  hsla(330.9, 100%, 51.6%, 0.5) ', { start: 0, end: 31, value: new Color(0x80ff0880) });
+				test(parseColor, '  rgb(0 0 0 / 15%) ', { start: 0, end: 18, value: new Color(0x26000000) });
+				test(parseColor, '  oklch(0.6 0.2 250) ', { start: 0, end: 20, value: new Color(0xff0083e0) });
+				test(parseColor, '  color-mix(in srgb, rgb(255 0 0), blue) ', { start: 0, end: 40, value: new Color('color-mix(in srgb, rgb(255 0 0), blue)') });
+				test(parseColor, '  oklch(0.6 0.2 250 ', 0, null);
 				test(parseColor, '#FF0000 url(lucky.gif)', 8, null);
 				test(parseColor, 'url(lucky.gif) #FF0000 repeat', 15, { start: 15, end: 23, value: new Color(0xffff0000) });
 			});
