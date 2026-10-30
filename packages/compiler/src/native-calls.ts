@@ -2,8 +2,8 @@ import ts from 'typescript';
 import { implementedInterfaces } from './lang.ts';
 import { isStatic } from './throws.ts';
 import { argumentSlot, place } from './placement.ts';
-import { assignedCode, castCode, implicitOf, markOf, tryCode, unwrappedCode, unwrappedIf } from './swift-marks.ts';
-import { balanced, CF_CLASSES, functionParts, ident, isWriteTarget, NONISOLATED_DEINIT, optionalType, rootImplicit, splitTopLevel, THROWING_CODE, type Translator } from './swift.ts';
+import { assignedCode, castCode, implicitOf, leading, markOf, tryCode, unwrappedCode, unwrappedIf } from './swift-marks.ts';
+import { balanced, CF_CLASSES, functionParts, ident, isWriteTarget, NONISOLATED_DEINIT, optionalType, rootImplicit, splitTopLevel, type Translator } from './swift.ts';
 import {
   categoryModule, conformsTo, conformsToSwift, isSubframework, lookupClass, lookupConstant, lookupConstructor, lookupEnum, lookupFunction, lookupInit, lookupMember, lookupStruct, lookupTypealias, moduleOfDeclaration, nativeTable, unavailableReason,
   type NativeClass, type NativeMethod, type NativeProperty, type SwiftType,
@@ -426,7 +426,7 @@ export class NativeAPI {
     const target = r.isStatic ? this.className(lookupClass(r.module, r.name)!) : this.unwrapped(e.expression);
     if (absent) {
       const read = this.fromSwift(`${target}.${m.swift}`, m.type, e);
-      const throws = THROWING_CODE.test(read);
+      const throws = !r.isStatic && this.t.receiverThrows(e.expression);
       return `${throws ? '(try ' : ''}{ () ${throws ? 'throws ' : ''}-> ${this.t.typeOf(e)} in if #available(iOS ${newer}, *) { return ${read} } else { return ${absent} } }()${throws ? ')' : ''}`;
     }
     if (m.kind === 'property') return this.fromSwift(`${target}.${m.swift}`, m.type, e);
@@ -667,7 +667,8 @@ export class NativeAPI {
     if (struct) {
       const field = struct.fields[left.name.text];
       if (!field) throw this.t.error(left, `${r.name}.${left.name.text} (not a field of ${struct.swift})`);
-      return assignedCode(`${this.t.expr(left.expression)}.${left.name.text}`, this.toSwift(value, field), this.t.receiverThrows(left.expression));
+      const recv = this.t.expr(left.expression);
+      return assignedCode(leading(`${recv}.${left.name.text}`, recv), this.toSwift(value, field), this.t.receiverThrows(left.expression));
     }
     const m = this.found(lookupMember(r.module, r.name, left.name.text, r.isStatic));
     if (!m || m.kind !== 'property') throw this.t.error(left, `${r.name}.${left.name.text} (no settable Swift property)`);
@@ -677,11 +678,12 @@ export class NativeAPI {
     const held = this.t.typeOf(left.expression);
     const unwrap = !r.isStatic && !cast && held.endsWith('?') && held !== 'Any?' && !left.questionDotToken ? '!' : '';
     const erased = !r.isStatic && !cast && held === 'Any?' ? this.erasedReceiver(left.expression, this.t.expr(left.expression)) : null;
-    const target = r.isStatic ? this.className(lookupClass(r.module, r.name)!) : cast ? castCode(this.t.expr(left.expression), cast, 'as!') : erased ?? `${this.t.expr(left.expression)}${unwrap}`;
+    const recv = r.isStatic || cast || erased ? '' : this.t.expr(left.expression);
+    const target = r.isStatic ? this.className(lookupClass(r.module, r.name)!) : cast ? castCode(this.t.expr(left.expression), cast, 'as!') : erased ?? leading(`${recv}${unwrap}`, recv);
     if (m.optional && !r.isStatic && !cast && lookupClass(r.module, r.name)?.kind === 'protocol') {
       return `jsSetOptionalNativeProperty(${target}, ${JSON.stringify(left.name.text)}, ${this.toSwift(value, m.type)})`;
     }
-    return assignedCode(`${target}.${m.swift}`, this.toSwift(value, m.type), !r.isStatic && this.t.receiverThrows(left.expression));
+    return assignedCode(leading(`${target}.${m.swift}`, target), this.toSwift(value, m.type), !r.isStatic && this.t.receiverThrows(left.expression));
   }
 
   /** A call of a native method, class method, `alloc().initWith…()`, `new()`, or global function. */
