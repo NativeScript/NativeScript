@@ -99,6 +99,7 @@ const ownKeys = new WeakMap<ValueStates, Map<ts.ClassLikeDeclaration, ClassKeysO
 const hierarchies = new WeakMap<ValueStates, Map<ts.ClassLikeDeclaration, Pick<ShapePlan, 'ordered' | 'gated' | 'noted' | 'expando'>>>();
 const deletions = new WeakMap<ValueStates, Set<ts.Declaration>>();
 const classLists = new WeakMap<ValueStates, ts.ClassLikeDeclaration[]>();
+const literalPlans = new WeakMap<ValueStates, Map<ts.ObjectLiteralExpression, ShapePlan>>();
 
 /**
  * An app class's plan, or null for library, lenient or plugin code and declarations. A class not written by name gets
@@ -283,6 +284,14 @@ export function deletedFields(states: ValueStates): Set<ts.Declaration> {
  * overwritten key keeps its place and takes the later value), each in the state its value's form gives.
  */
 export function shapePlanOfLiteral(e: ts.ObjectLiteralExpression, states: ValueStates): ShapePlan {
+  let byLiteral = literalPlans.get(states);
+  if (!byLiteral) literalPlans.set(states, (byLiteral = new Map()));
+  let plan = byLiteral.get(e);
+  if (!plan) byLiteral.set(e, (plan = literalPlan(e, states)));
+  return plan;
+}
+
+function literalPlan(e: ts.ObjectLiteralExpression, states: ValueStates): ShapePlan {
   const checker = states.backend.checker, forms = states.forms();
   const keys = new Map<string, KeyState>();
   const nulls = (form: Form | null): Nulls => (form && (form.null || form.foreign) ? 'noted' : 'none');
