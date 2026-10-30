@@ -22,6 +22,7 @@ import type { Properties } from './properties.ts';
 import { type DefinedKeys, definedFieldNames, definedKeysOf, definesDuringConstruction, type Held, holdsNil, holdsNilOrUnwrapped, isFunctionHeld, keyOf, nilIsNull, notedField, notesNull, type Nulls, nullNames, restrictsField, rootKeepsExpando, literalNotes, type ShapeFacts, type ShapePlan, shapePlanOfClass, shapePlanOfLiteral, spelledOptional } from './shapes.ts';
 import { shadowLiteral, shadowShapes } from './shape-shadow.ts';
 import { shadowTypeSteps } from './type-step-shadow.ts';
+import { type TypeStep, boxStep } from './type-step.ts';
 import { recognizePatterns, type Patterns } from './patterns.ts';
 import { DEPLOYMENT, NativeAPI, enteredGuard, onMainThread, tested, typedCollection } from './native-calls.ts';
 import { lookupClass, lookupMember, type NativeMethod } from './natives/symbols.ts';
@@ -4085,8 +4086,10 @@ ${members.join('\n')}
       return isOptional(from) || from.endsWith('!') ? unwrappedIf(`(${code}).map { ${toShape}(jsObject: $0) }`, !(isOptional(to) || to.endsWith('!'))) : `${toShape}(jsObject: ${code})`;
     }
     if (to === 'Any?') {
-      if (from === 'Void') return `jsUndefined(${code})`;
-      if (this.untypedEnum('', from)) return this.untypedEnum(code, from);
+      const box = this.boxStep(from);
+      if (box.composite === 'void') return from === 'Void' ? `jsUndefined(${code})` : code;
+      if (box.composite === 'enum') return this.untypedEnum(code, from);
+      if (box.composite !== 'function') return code;
       // Lenient code holds a function implicitly unwrapped (`_itemTemplateSelector` before it is set): nil as an optional one is.
       const opt = isOptional(from) || /^\(.*\)!$/.test(from);
       const fn = functionParts(opt ? from.replace(/^\((.*)\)[?!]$/, '$1') : from);
@@ -4218,6 +4221,11 @@ ${members.join('\n')}
   // ---- Functions -----------------------------------------------------------------------------
 
   /** A native enum's or option set's value held untyped: its number, as the runtime marshals it; '' (from no code) when the type is neither. */
+  /** The step of a value of `from` held untyped: what its box is, which the `'Any?'` paths of `convert` and `coerced` spell. */
+  private boxStep(from: string): TypeStep {
+    return boxStep(from, this.library ? 'library' : this.lenient ? 'lenient' : 'checked', { enumType: (n) => this.native.isEnumType(n), shape: (n) => this.isObjectShape(n) });
+  }
+
   private untypedEnum(code: string, type: string): string {
     const base = type.replace(/\?$/, '');
     if (!this.native.isEnumType(base)) return code;
@@ -8635,15 +8643,16 @@ ${members.join('\n')}
       const maybe = this.maybeUndefined(e);
       if (maybe) return maybe;
     }
-    if (target === 'Any?' && this.untypedEnum('', source)) return this.untypedEnum(this.expr(e), source);
-    const timer = target === 'Any?' ? this.timerFunction(bare) : null;
+    const box = target === 'Any?' ? this.boxStep(source) : null;
+    if (box?.composite === 'enum') return this.untypedEnum(this.expr(e), source);
+    const timer = box ? this.timerFunction(bare) : null;
     if (timer) return timer;
-    if (target === 'Any?') {
+    if (box) {
       // Null kept as untyped values hold it, apart from undefined.
       if (bare.kind === ts.SyntaxKind.NullKeyword) return 'jsNull';
-      if (source === 'Void' && !isNullish(bare)) return `jsUndefined(${this.expr(e)})`;
+      if (box.composite === 'void' && source === 'Void' && !isNullish(bare)) return `jsUndefined(${this.expr(e)})`;
       // A function with a rest parameter (`function count(...args)`) held untyped: called by script, it takes the rest of the arguments.
-      const fnType = !source.endsWith('?') && hasTopLevelArrow(source) ? functionParts(source.replace(/^\((.*)\)!?$/, '$1')) : null;
+      const fnType = box.composite === 'function' && !source.endsWith('?') && hasTopLevelArrow(source) ? functionParts(source.replace(/^\((.*)\)!?$/, '$1')) : null;
       if (fnType && (ts.isIdentifier(bare) || ts.isPropertyAccessExpression(bare))) {
         const signature = this.checker.getSignaturesOfType(this.checker.getNonNullableType(this.checker.getTypeAtLocation(bare)), ts.SignatureKind.Call)[0];
         const restAt = signature?.getParameters().findIndex((p) => !!p.valueDeclaration && ts.isParameter(p.valueDeclaration) && !!p.valueDeclaration.dotDotDotToken) ?? -1;
@@ -8676,7 +8685,7 @@ ${members.join('\n')}
         const rest = e.parameters.findIndex((p) => p.dotDotDotToken);
         return rest < 0 ? this.convert(this.expr(e), this.closureType(e), 'Any?') : this.boxFunction(this.expr(e), this.closureType(e), rest);
       }
-      if (functionParts(unwrapFunction(source, false))) {
+      if (box.composite === 'function' && functionParts(unwrapFunction(source, false))) {
         const d = ts.isIdentifier(bare) ? this.resolve(bare)?.valueDeclaration : undefined;
         if (d && ts.isFunctionDeclaration(d) && d.body && !d.getSourceFile().isDeclarationFile && !takesThis(d)) return this.boxDeclared(this.expr(e), d);
         return this.convert(this.expr(e), d ? this.boxedGeneric(d, ts.isFunctionDeclaration(d) && d.body && !d.getSourceFile().isDeclarationFile ? escapingFunction(functionParts(this.functionValueType(d))!) : source) : source, 'Any?');

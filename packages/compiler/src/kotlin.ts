@@ -17,6 +17,7 @@ import type { Properties } from './properties.ts';
 import { type DefinedKeys, definedFieldNames, definedKeysOf, definesDuringConstruction, type Held, holdsNil, isFunctionHeld, keyOf, nilIsNull, notedField, notesNull, type Nulls, nullNames, restrictsField, rootKeepsExpando, literalNotes, type ShapeFacts, type ShapePlan, shapePlanOfClass, shapePlanOfLiteral, spelledOptional } from './shapes.ts';
 import { shadowLiteral, shadowShapes } from './shape-shadow.ts';
 import { shadowTypeSteps } from './type-step-shadow.ts';
+import { type TypeStep, boxStep } from './type-step.ts';
 import { recognizePatterns, type Patterns } from './patterns.ts';
 import type { Reach } from './reach.ts';
 import { awaitedCell, receiverCell, receiverSlot, type ReceiverBackend, type ReceiverCell } from './placement.ts';
@@ -6353,7 +6354,7 @@ export class Translator implements AsyncTranslator {
       this.nullOk.add(x);
     }
     // An app function held untyped (a page module's export, which core's Builder calls by name): its arguments read as it types them.
-    if (!this.library && target === 'Any?' && ts.isIdentifier(e) && !(ts.isCallExpression(e.parent) && e.parent.expression === e)) {
+    if (!this.library && target === 'Any?' && ts.isIdentifier(e) && !(ts.isCallExpression(e.parent) && e.parent.expression === e) && this.boxStep(this.typeOf(e)).composite === 'function') {
       const decl = this.resolve(e)?.valueDeclaration;
       if (decl && ts.isFunctionDeclaration(decl) && decl.body && !decl.getSourceFile().isDeclarationFile && !decl.parameters.some((p) => p.dotDotDotToken || isThisParameter(p)) && !this.implicitThis(decl)) {
         const fn = this.functionValue(e);
@@ -6431,6 +6432,7 @@ export class Translator implements AsyncTranslator {
       if (maybe) return maybe;
     }
     if (target === 'Any?') {
+      const box = this.boxStep(source);
       // Null kept as untyped values hold it, apart from undefined.
       let bare = e;
       while (ts.isParenthesizedExpression(bare)) bare = bare.expression;
@@ -6478,7 +6480,7 @@ export class Translator implements AsyncTranslator {
       }
       const maybe = this.maybeUndefined(e);
       if (maybe) return maybe;
-      if (source === 'Unit' && !(ts.isIdentifier(e) && e.text === 'undefined')) return `jsBox(${this.expr(e)})`;
+      if (box.composite === 'void' && source === 'Unit' && !(ts.isIdentifier(e) && e.text === 'undefined')) return `jsBox(${this.expr(e)})`;
       // Library mode: a Java method's object result held untyped (`line = reader.readLine()`): Java's null is script's null.
       if (this.library && ts.isCallExpression(bare) && this.javaObjectResult(bare)) return `(${this.expr(e)} ?: JSNull)`;
       return this.expr(e);
@@ -10800,6 +10802,11 @@ export class Translator implements AsyncTranslator {
   }
 
   /** An interface's or object shape's Kotlin class. */
+  /** The step of a value of `from` held untyped: what its box is, which `coerceTyped`'s `'Any?'` path spells. */
+  private boxStep(from: string): TypeStep {
+    return boxStep(from, this.library ? 'library' : this.lenient ? 'lenient' : 'checked');
+  }
+
   private isShapeType(name: string): boolean {
     return this.interfaces.has(name) || [...this.shapes.values()].some((s) => s.name === name);
   }
