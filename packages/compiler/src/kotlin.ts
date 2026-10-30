@@ -16,6 +16,7 @@ import { nonVirtualName } from './swift.ts';
 import type { Properties } from './properties.ts';
 import { type Held, holdsNil, isFunctionHeld, keyOf, nilIsNull, notedField, notesNull, type Nulls, nullNames, rootKeepsExpando, literalNotes, type ShapeFacts, type ShapePlan, shapePlanOfClass, shapePlanOfLiteral, spelledOptional } from './shapes.ts';
 import { shadowLiteral, shadowShapes } from './shape-shadow.ts';
+import { shadowTypeSteps } from './type-step-shadow.ts';
 import { recognizePatterns, type Patterns } from './patterns.ts';
 import type { Reach } from './reach.ts';
 import { awaitedCell, receiverCell, receiverSlot, type ReceiverBackend, type ReceiverCell } from './placement.ts';
@@ -424,6 +425,7 @@ export class Translator implements AsyncTranslator {
     this.states = new ValueStates(this.stateBackend());
     if (process.env.NS_CONVERSION_SHADOW) shadowConversions(this, this.states);
     if (process.env.NS_SHAPE_SHADOW) shadowShapes(this, this.states);
+    if (process.env.NS_TYPESTEP_SHADOW) shadowTypeSteps(this, this.states);
     this.pluginFiles = new Set(options.pluginFiles ?? []);
     this.reach = options.reach ?? null;
     this.properties = options.properties ?? null;
