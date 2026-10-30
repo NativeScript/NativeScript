@@ -105,8 +105,10 @@ export class View extends ViewCommon {
 			nativeView.setNeedsLayout();
 		}
 
-		if (this.viewController && this.viewController.view !== nativeView) {
-			this.viewController.view.setNeedsLayout();
+		// Layout invalidation must not load controllers before UIApplicationMain.
+		const controllerView = this.viewController?.viewIfLoaded;
+		if (controllerView && controllerView !== nativeView) {
+			controllerView.setNeedsLayout();
 		}
 
 		if (!requestedThisTurn) {
