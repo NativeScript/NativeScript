@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import { KIT_APPLE_SOURCES } from './paths.ts';
 import { Throws, digitsLiteral, isArrayLengthLiteral, isArrayLengthWrite, isAsync, isStatic } from './throws.ts';
 import { assignedMembers } from './sharing.ts';
-import { assignedValues, openSpreadType, spreadsArrays, initializedNull, intersectionAliasMembers, intlConstructor, literalPattern, literalFlags, patternGroups, regexpMayLeaveGroupUnset, isRegExpProtocol, assertedPattern, unsupportedPattern, isObjectToStringCall, isStringRaw, leadingNeverRead, forwardedSetter, redeclaredBeside, iteratedType, iterationThrows, literalKey, neverDefined, templateParts, uncheckedMatch, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, slotOf, slotType, definitelyAssignedFields, type TrustScope, classesHeldUntyped, unsetGroupTyping, type UnsetGroupTyping, admitsUndefined, onlyUndefined, keysDefinedUntyped, SWIFT_NATIVE_TYPES, runtimeTypeName, definesRunTimeKey, readKeyOf, givenBy, onlyNullOrPresent, isTemplateMethod, statementLevel, readWrite, asOperation, assignmentOf, type ReadWrite } from './lang.ts';
+import { assignedValues, openSpreadType, spreadsArrays, initializedNull, intersectionAliasMembers, intlConstructor, literalPattern, literalFlags, patternGroups, regexpMayLeaveGroupUnset, isRegExpProtocol, assertedPattern, unsupportedPattern, isObjectToStringCall, isStringRaw, leadingNeverRead, forwardedSetter, redeclaredBeside, iteratedType, iterationThrows, literalKey, neverDefined, templateParts, uncheckedMatch, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, slotOf, slotType, definitelyAssignedFields, type TrustScope, classesHeldUntyped, unsetGroupTyping, type UnsetGroupTyping, keysDefinedUntyped, SWIFT_NATIVE_TYPES, runtimeTypeName, definesRunTimeKey, readKeyOf, givenBy, onlyNullOrPresent, isTemplateMethod, statementLevel, readWrite, asOperation, assignmentOf, type ReadWrite } from './lang.ts';
 import { memberName } from './stable-names.ts';
 import { shadowConversions } from './conversion-shadow.ts';
 import { parseNativeType, plan, type Slot, type Value } from './conversion.ts';
@@ -19,7 +19,7 @@ import { CoreAPI, isCoreDeclaration, packageOf } from './core.ts';
 import type { KitMember } from './kit-index.ts';
 import type { KitDeclarations, RecordedMember } from './kit-manifest.ts';
 import type { Properties } from './properties.ts';
-import { keyOf, nilIsNull, notedField, notesNull, nullNames, rootKeepsExpando, type ShapeFacts, type ShapePlan, shapePlanOfClass, shapePlanOfLiteral } from './shapes.ts';
+import { type Held, holdsNil, holdsNilOrUnwrapped, isFunctionHeld, keyOf, nilIsNull, notedField, notesNull, nullNames, rootKeepsExpando, literalNotes, type ShapeFacts, type ShapePlan, shapePlanOfClass, shapePlanOfLiteral, spelledOptional } from './shapes.ts';
 import { shadowLiteral, shadowShapes } from './shape-shadow.ts';
 import { recognizePatterns, type Patterns } from './patterns.ts';
 import { DEPLOYMENT, NativeAPI, enteredGuard, onMainThread, tested, typedCollection } from './native-calls.ts';
@@ -233,6 +233,13 @@ export const CF_CLASSES = new Set(['CGPath', 'CGMutablePath', 'CGColor', 'CGImag
 
 /** An optional value type: `T?`, `(…)?`, but not a function returning an optional. */
 const isOptional = (t: string) => t.endsWith('?') && !hasTopLevelArrow(t);
+
+/** How a Swift type holds a value (`ShapeFacts.held`). Swift has no implicitly unwrapped function result. */
+function heldOf(t: string): Held {
+  if (t === 'Any?') return 'any';
+  if (hasTopLevelArrow(t)) return t.endsWith('?') ? 'optional-result' : 'function';
+  return t.endsWith('?') ? 'optional' : t.endsWith('!') ? 'unwrapped' : 'present';
+}
 /**
  * Whether code is already a cast to `type` (`jsImplicit(x as? T)`, `(x as! T)`): converting it again is the same value.
  * The cast must be the code's last, enclosing operation.
@@ -2152,7 +2159,7 @@ export class Translator implements AsyncTranslator {
         const init = p.declarations?.find(ts.isPropertyAssignment)?.initializer;
         let bare = init;
         while (bare && (ts.isAsExpression(bare) || ts.isParenthesizedExpression(bare) || ts.isTypeAssertionExpression(bare))) bare = bare.expression;
-        if (bare && bare !== init && isNullish(bare) && !/[?!]$/.test(pt) && /^[A-Z][\w.]*(<.*>)?$/.test(pt) && !['Double', 'String', 'Bool'].includes(pt)) pt = `${pt}!`;
+        if (bare && bare !== init && isNullish(bare) && /^[A-Z][\w.]*(<.*>)?$/.test(pt) && !['Double', 'String', 'Bool'].includes(pt)) pt = `${pt}!`;
         return { name: memberName(p, this.checker), type: p.flags & ts.SymbolFlags.Optional ? optionalType(pt) : pt };
       });
       const key = fields.map((f) => `${f.name}:${f.type}${f.accessor ? `:${f.accessor.get ? 'get' : ''}${f.accessor.set ? 'set' : ''}` : ''}`).sort().join(',');
@@ -3017,7 +3024,7 @@ ${members.join('\n')}
     // A field the program writes, on an object read from another (an event's data), writes that object too.
     const through = new Set(this.library || symbolic.length ? [] : fields.filter((f) => this.membersWritten().has(f.name)).map((f) => f.name));
     // Only a field Swift holds as optional can be missing.
-    const optional = symbolic.length ? [] : fields.filter((f) => f.type.endsWith('?') && /[?!]$/.test(held(f)) && !hasTopLevelArrow(held(f)));
+    const optional = symbolic.length ? [] : fields.filter((f) => spelledOptional(heldOf(f.type)) && holdsNilOrUnwrapped(heldOf(held(f))));
     const observer = (f: ShapeField) => [...(optional.includes(f) ? [`jsWrote(${swiftString(f.name)}, oldValue != nil, ${ident(f.name)} == nil)`] : []), ...(through.has(f.name) ? [`jsWriteThrough(${swiftString(f.name)})`] : [])].join('; ');
     for (const f of fields) { lines.push(`    var ${ident(f.name)}: ${held(f)}${observer(f) ? ` { didSet { ${observer(f)} } }` : ''}`); this.declare(f.name, { kind: 'var', type: held(f) }); }
     for (const f of symbolic) { lines.push(`    var ${f.name}: ${f.type}`); this.declare(f.name, { kind: 'var', type: f.type }); }
@@ -3025,9 +3032,9 @@ ${members.join('\n')}
     // Keys in the order the literal that made this object wrote them, when not the declared order; a key a write adds comes last.
     lines.push(`    private ${optional.length ? 'var' : 'let'} jsOrder: [String]?`);
     // The optional fields set to null rather than left undefined, which Swift holds as one nil.
-    const nullable = symbolic.length ? [] : fields.filter((f) => isOptional(f.type) && f.type !== 'Any?');
+    const nullable = symbolic.length ? [] : fields.filter((f) => heldOf(f.type) === 'optional');
     if (nullable.length) lines.push('    private var jsNulls: Set<String>?');
-    const memberwise = [...[...fields, ...symbolic].map((f) => `${f.name === 'self' ? '`self` __self' : ident(f.name)}: ${isFunctionType(held(f)) ? '@escaping ' : ''}${held(f)}${isOptional(f.type) ? ' = nil' : ''}`), 'jsOrder: [String]? = nil', ...(nullable.length ? ['jsNulls: Set<String>? = nil'] : []), ...(optional.length ? ['jsUnset: Set<String>? = nil'] : [])].join(', ');
+    const memberwise = [...[...fields, ...symbolic].map((f) => `${f.name === 'self' ? '`self` __self' : ident(f.name)}: ${isFunctionHeld(heldOf(held(f))) ? '@escaping ' : ''}${held(f)}${holdsNil(heldOf(f.type)) ? ' = nil' : ''}`), 'jsOrder: [String]? = nil', ...(nullable.length ? ['jsNulls: Set<String>? = nil'] : []), ...(optional.length ? ['jsUnset: Set<String>? = nil'] : [])].join(', ');
     lines.push(`    init(${memberwise}) {`);
     this.declareInit(memberwise, false);
     for (const f of [...fields, ...symbolic]) lines.push(`        self.${ident(f.name)} = ${f.name === 'self' ? '__self' : ident(f.name)}`);
@@ -3076,7 +3083,7 @@ ${members.join('\n')}
       if (!f.accessor) {
         lines.push(`    var ${n}: ${f.type}`);
         this.declare(f.name, { kind: 'var', type: f.type });
-        params.push(`${f.name === 'self' ? '`self` __self' : n}: ${isFunctionType(f.type) ? '@escaping ' : ''}${f.type}${isOptional(f.type) ? ' = nil' : ''}`);
+        params.push(`${f.name === 'self' ? '`self` __self' : n}: ${isFunctionHeld(heldOf(f.type)) ? '@escaping ' : ''}${f.type}${holdsNil(heldOf(f.type)) ? ' = nil' : ''}`);
         inits.push(`        self.${n} = ${f.name === 'self' ? '__self' : n}`);
         continue;
       }
@@ -3115,7 +3122,7 @@ ${members.join('\n')}
   private shapeProtocols(fields: ShapeField[]): { conformance: string; lines: string[]; members: [string, RecordedMember][] }[] {
     const out: { conformance: string; lines: string[]; members: [string, RecordedMember][] }[] = [];
     const fn = (n: string) => {
-      const f = fields.find((x) => x.name === n && !x.accessor && !isOptional(x.type));
+      const f = fields.find((x) => x.name === n && !x.accessor && !holdsNil(heldOf(x.type)));
       const parts = f && functionParts(f.type.replace(/^\((.*)\)\?$/, '$1'));
       return f && parts ? { name: n, params: parts.params.length, param: parts.params[0], ret: parts.result, throws: true } : undefined;
     };
@@ -3123,9 +3130,9 @@ ${members.join('\n')}
     const protocol = this.iteratorProtocol(methods);
     if (protocol) out.push(protocol);
     // A literal's own valueOf and toString, in the order OrdinaryToPrimitive tries them for the hint.
-    const own = (n: string) => fields.some((f) => f.name === n && !f.accessor && !isOptional(f.type) && functionParts(f.type)?.params.length === 0);
+    const own = (n: string) => fields.some((f) => f.name === n && !f.accessor && !holdsNil(heldOf(f.type)) && functionParts(f.type)?.params.length === 0);
     // A literal's own `[Symbol.toPrimitive]`, held as a closure field of the protocol method's name: the key path names the field.
-    const toPrimitive = fields.find((f) => f.symbol && f.name === 'jsToPrimitive' && !f.accessor && !isOptional(f.type));
+    const toPrimitive = fields.find((f) => f.symbol && f.name === 'jsToPrimitive' && !f.accessor && !holdsNil(heldOf(f.type)));
     const takes = toPrimitive && functionParts(toPrimitive.type)?.params;
     if (takes && takes.length <= 1 && (!takes.length || takes[0] === 'String')) {
       out.push({ conformance: 'JSToPrimitive', lines: [`    func jsToPrimitive(_ hint: String) throws -> Any? { try self[keyPath: \\Self.jsToPrimitive](${takes.length ? 'hint' : ''}) }`], members: [] });
@@ -3172,7 +3179,7 @@ ${members.join('\n')}
     const at = (n: string) => { const k = keyed?.order.indexOf(n) ?? -1; return k < 0 ? Infinity : k; };
     const sorted = keyed ? [...fields].sort((a, b) => at(a.name) - at(b.name)) : fields;
     const keys = sorted.map((f) => {
-      if (!keyed) return f.type.endsWith('?') && !nilNull.has(f.name) ? `(${absent(f)} ? [] : [${swiftString(f.name)}])` : `[${swiftString(f.name)}]`;
+      if (!keyed) return spelledOptional(heldOf(f.type)) && !nilNull.has(f.name) ? `(${absent(f)} ? [] : [${swiftString(f.name)}])` : `[${swiftString(f.name)}]`;
       const present = keyed.present(f.name);
       return present ? `(${present} ? [${swiftString(f.name)}] : [])` : `[${swiftString(f.name)}]`;
     }).map((k, i) => (defined.has(sorted[i].name) ? `jsDefinedKeys(self, ${swiftString(sorted[i].name)}, ${k})` : k));
@@ -3776,6 +3783,8 @@ ${members.join('\n')}
         return !!this.kitRedeclared(m) || (!!kitRoot && !!this.core.isKitView(kitRoot) && !!this.properties?.isRegistered(c, m.name.getText()));
       },
       expando: (c) => this.pluginFiles.has(c.getSourceFile().fileName) || this.givenUndeclared().has(c),
+      held: heldOf,
+      typeOf: (e) => this.typeOf(e),
     };
   }
 
@@ -8390,10 +8399,10 @@ ${members.join('\n')}
       const d = this.checker.getSymbolAtLocation(e.name)?.valueDeclaration;
       if (!d || !ts.isPropertySignature(d) || !ts.isInterfaceDeclaration(d.parent) || d.parent.name.text !== held || !this.interfaces.has(held) || this.protocols.has(held)) return null;
       const t = this.typeOf(d);
-      return (d.questionToken || isOptional(t)) && t !== 'Any?' ? e.name.text : null;
+      return (d.questionToken || holdsNil(heldOf(t))) && heldOf(t) !== 'any' ? e.name.text : null;
     }
     const f = shape.fields.find((x) => x.name === e.name.text);
-    return f && isOptional(f.type) && f.type !== 'Any?' && !shape.fields.some((x) => x.symbol || x.accessor) ? f.name : null;
+    return f && heldOf(f.type) === 'optional' && !shape.fields.some((x) => x.symbol || x.accessor) ? f.name : null;
   }
 
   private coerceTyped(e: ts.Expression, target: string): string {
@@ -14316,26 +14325,23 @@ ${members.join('\n')}
     // An optional field given undefined is a key all the same, as one given null is: the shape notes which (`jsUnset`,
     // `jsNulls`), from the value's type, or as it runs (`JSLiteralKeys`) where only the run tells.
     const notesKeys = !this.lenient && !this.library && !this.pluginFiles.has(e.getSourceFile().fileName) && (target === name || (target === `${name}Object` && this.protocols.has(name) && !isCoreDeclaration(decl!))) && !order.some((f) => (f as ShapeField).accessor || (f as ShapeField).symbol);
-    const keyed = new Set(notesKeys ? order.filter((f) => f.type.endsWith('?') && /[?!]$/.test(this.shapeHeld(f)) && !hasTopLevelArrow(this.shapeHeld(f))).map((f) => f.name) : []);
+    const tracks = !order.some((f) => (f as ShapeField).accessor || (f as ShapeField).symbol);
+    const notes = literalNotes(e, this.states, this.shapeFacts(), { fields: order.map((f) => ({ name: f.name, type: f.type, holds: this.shapeHeld(f) })), tracks, notes: notesKeys, wholeLiterals: true });
     const unsetKeys: string[] = [], keyNotes: string[] = [];
     let keysVar: string | null = null;
-    const noteKey = (key: string, value: ts.Expression, code: () => string): string => {
-      const f = order.find((x) => x.name === key);
-      // Null given as such is noted with the literal's other nulls.
-      if (!f || !keyed.has(key) || ts.skipOuterExpressions(value).kind === ts.SyntaxKind.NullKeyword) return code();
+    const noteKey = (p: ts.ObjectLiteralElementLike, key: string, value: ts.Expression, code: () => string): string => {
+      const noting = notes.get(p)?.unset;
+      if (noting !== 'run' && noting !== 'given') return code();
+      const f = order.find((x) => x.name === key)!;
       const split = this.states.nullBranches(value);
       if (split) {
         const k = keysVar ??= this.fresh('__keys');
         const want = loose(f.type) ? optionalType(f.type) : f.type;
         return this.ternary(split.cond, want, (x) => (split.nulls.includes(x) ? `${k}.nulled(${swiftString(key)}, ${this.coerce(x, want)})` : this.coerce(x, want)));
       }
-      const t = this.checker.getTypeAtLocation(value);
-      if (onlyUndefined(t)) { unsetKeys.push(key); return code(); }
-      if (ts.isObjectLiteralExpression(ts.skipOuterExpressions(value)) || ts.isArrayLiteralExpression(ts.skipOuterExpressions(value))) return code();
-      const untyped = this.typeOf(value) === 'Any?';
-      if (!untyped && !admitsUndefined(t)) return code();
+      if (noting === 'given') { unsetKeys.push(key); return code(); }
       const k = keysVar ??= this.fresh('__keys');
-      const how = untyped && f.type !== 'Any?' ? 'untyped' : 'typed';
+      const how = this.typeOf(value) === 'Any?' && heldOf(f.type) !== 'any' ? 'untyped' : 'typed';
       if (ts.isIdentifier(value)) { keyNotes.push(`${k}.${how}(${swiftString(key)}, ${this.expr(value)})`); return code(); }
       const wrap = (x: string) => { const inner = afterTry(x); return inner !== null ? tryCode(`${k}.${how}(${swiftString(key)}, ${inner})`) : `${k}.${how}(${swiftString(key)}, ${x})`; };
       if (how === 'typed') return wrap(code());
@@ -14358,7 +14364,7 @@ ${members.join('\n')}
         const key = literalKey(p.name, this.checker) ?? p.name.getText();
         const field = order.find((f) => f.name === key)?.type ?? 'Any?';
         const want = loose(field) ? optionalType(field) : field;
-        given.set(key, self && thisFunction(p) ? this.withThis(p.initializer as ts.FunctionExpression, unwrappedCode(self), false, () => this.stored(p.initializer, p, want)) : noteKey(key, p.initializer, () => this.stored(p.initializer, p, want)));
+        given.set(key, self && thisFunction(p) ? this.withThis(p.initializer as ts.FunctionExpression, unwrappedCode(self), false, () => this.stored(p.initializer, p, want)) : noteKey(p, key, p.initializer, () => this.stored(p.initializer, p, want)));
       } else if (ts.isGetAccessorDeclaration(p) || ts.isSetAccessorDeclaration(p)) {
         const key = literalKey(p.name, this.checker) ?? p.name.getText();
         const f = order.find((x) => x.name === key) as ShapeField | undefined;
@@ -14374,7 +14380,7 @@ ${members.join('\n')}
           given.set(`__set_${key}`, `{ (__this: ${target}, ${ident(v.text)}: ${f.accessor.value}) -> Void in${body.slice(1)}`);
         }
       } else if (ts.isShorthandPropertyAssignment(p)) {
-        noteKey(p.name.text, p.name, () => '');
+        noteKey(p, p.name.text, p.name, () => '');
         const held = this.checker.getShorthandAssignmentValueSymbol(p);
         const fn = (held && held.flags & ts.SymbolFlags.Alias ? this.checker.getAliasedSymbol(held) : held)?.valueDeclaration;
         const code = fn && (ts.isClassDeclaration(fn) || ts.isModuleDeclaration(fn)) ? `${identPath(this.topNames().get(fn) ?? p.name.text)}.self` : this.narrowed(p.name, this.shorthandValue(p));
@@ -14405,10 +14411,10 @@ ${members.join('\n')}
           for (const f of order) {
             const field = `jsField(${tmp}, ${swiftString(f.name)})`;
             // A field the class holds present takes lenient code's value as its zero, or checked where it has none: JavaScript's TypeError where it is missing.
-            const strict = this.lenient && this.shapeHeld(f) === f.type && !isOptional(f.type) && f.type !== 'Any?';
+            const strict = this.lenient && this.shapeHeld(f) === f.type && !holdsNil(heldOf(f.type));
             const present = strict && this.spreadChecked(f.type) ? this.presentFromAny(field, f.type, true) : null;
             const read = present?.startsWith('try ') ? `(${present})` : present ?? (strict ? this.fromAnyOrZero(field, f.type) : this.fromAnyCode(field, f.type, true));
-            const prev = given.get(f.name) ?? (f.type.endsWith('?') ? 'nil' : this.zero(f.type));
+            const prev = given.get(f.name) ?? (spelledOptional(heldOf(f.type)) ? 'nil' : this.zero(f.type));
             // A field no other key gives and no zero fills (`device: GPUDevice`): only the spread can.
             given.set(f.name, prev === null ? read : `(jsHasKey(${tmp}, ${swiftString(f.name)}) ? ${read} : ${prev})`);
           }
@@ -14419,7 +14425,7 @@ ${members.join('\n')}
         const missing = this.loose(p.expression);
         for (const f of order) {
           if (!fields.has(f.name)) continue;
-          const prev = missing ? given.get(f.name) ?? (isOptional(f.type) || this.lenientRef(f.type) !== f.type ? 'nil' : this.zero(f.type)) : null;
+          const prev = missing ? given.get(f.name) ?? (holdsNil(heldOf(f.type)) || this.lenientRef(f.type) !== f.type ? 'nil' : this.zero(f.type)) : null;
           given.set(f.name, prev ? `(jsImplicit(${src})?.${ident(f.name)} ?? ${prev})` : `${src}.${ident(f.name)}`);
         }
       } else if (ts.isMethodDeclaration(p)) {
@@ -14449,21 +14455,16 @@ ${members.join('\n')}
       return given.has(f.name) ? [`${label((f as { label?: string }).label ?? f.name)}: ${given.get(f.name)}`] : [];
     }).join(', ');
     // A field the literal sets to null, which the shape holds as nil, is kept as null (JSON, keys, untyped reads).
-    const nullKeys = !order.some((f) => (f as ShapeField).accessor || (f as ShapeField).symbol) ? e.properties.filter((p): p is ts.PropertyAssignment | ts.ShorthandPropertyAssignment => (ts.isPropertyAssignment(p) && (ts.skipOuterExpressions(p.initializer).kind === ts.SyntaxKind.NullKeyword || this.states.nilIsNull(p.initializer))) || (ts.isShorthandPropertyAssignment(p) && this.states.nilIsNull(p.name)))
-      .map((p) => literalKey(p.name, this.checker) ?? p.name.getText()).filter((k) => order.some((f) => f.name === k && isOptional(f.type) && f.type !== 'Any?')) : [];
+    const nullKeys = e.properties.filter((p): p is ts.PropertyAssignment | ts.ShorthandPropertyAssignment => !!notes.get(p)?.null).map((p) => literalKey(p.name, this.checker) ?? p.name.getText());
     // An untyped value may be null, which only the run can tell.
-    const untypedKeys = !notesKeys && (nullKeys.length || !order.some((f) => (f as ShapeField).accessor || (f as ShapeField).symbol)) ? e.properties.flatMap((p) => {
-      const value = ts.isPropertyAssignment(p) ? p.initializer : ts.isShorthandPropertyAssignment(p) ? p.name : null;
-      const k = value && p.name ? literalKey(p.name, this.checker) ?? p.name.getText() : null;
-      if (!value || !k || nullKeys.includes(k) || !ts.isIdentifier(value) || this.typeOf(value) !== 'Any?' || !order.some((f) => f.name === k && isOptional(f.type) && f.type !== 'Any?')) return [];
-      return [`(${swiftString(k)}, ${this.expr(value)})`];
-    }) : [];
-    const holdsNulls = order.some((f) => isOptional(f.type) && f.type !== 'Any?');
+    const untypedKeys = e.properties.filter((p): p is ts.PropertyAssignment | ts.ShorthandPropertyAssignment => notes.get(p)?.unset === 'untyped')
+      .map((p) => `(${swiftString(literalKey(p.name, this.checker) ?? p.name.getText())}, ${this.expr(ts.isPropertyAssignment(p) ? p.initializer : p.name)})`);
+    const holdsNulls = order.some((f) => heldOf(f.type) === 'optional');
     if (keysVar) spreadTemps.unshift(`var ${keysVar} = JSLiteralKeys(${[...(nullKeys.length ? [`nulls: [${nullKeys.map(swiftString).join(', ')}]`] : []), ...(unsetKeys.length ? [`unset: [${unsetKeys.map(swiftString).join(', ')}]`] : [])].join(', ')})`, ...keyNotes);
     const nulled = keysVar ? `${holdsNulls ? `, jsNulls: ${keysVar}.nulls` : ''}, jsUnset: ${keysVar}.unset`
       : (untypedKeys.length ? `, jsNulls: jsNullKeysOf([${nullKeys.map(swiftString).join(', ')}], [${untypedKeys.join(', ')}])` : nullKeys.length ? `, jsNulls: [${nullKeys.map(swiftString).join(', ')}]` : '')
         + (unsetKeys.length ? `, jsUnset: [${unsetKeys.map(swiftString).join(', ')}]` : '');
-    if (process.env.NS_SHAPE_SHADOW) shadowLiteral(this, e, { fields: order, tracks: !order.some((f) => (f as ShapeField).accessor || (f as ShapeField).symbol), notes: notesKeys, nullKeys, unsetKeys, untypedKeys, runtime: keysVar ? [...given.values(), ...keyNotes] : [], written: inOrder });
+    if (process.env.NS_SHAPE_SHADOW) shadowLiteral(this, e, { fields: order, tracks, notes: notesKeys, nullKeys, unsetKeys, untypedKeys, runtime: keysVar ? [...given.values(), ...keyNotes] : [], written: inOrder });
     const made = `${target}(${args}${args && reorder ? reorder : reorder.slice(2)}${args || reorder ? nulled : nulled.slice(2)})`;
     if (!spreadTemps.length && !self) return made;
     const throws = this.throwsInfo.expr(e) || [...spreadTemps, made].some((x) => THROWING_CODE.test(outsideClosures(x)));

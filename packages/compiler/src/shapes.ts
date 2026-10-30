@@ -1,6 +1,6 @@
 import ts from 'typescript';
 import type { Form } from './forms.ts';
-import { alwaysThrows, containsThis, hasStatic, jsKeyOrder, literalKey } from './lang.ts';
+import { admitsUndefined, alwaysThrows, containsThis, hasStatic, jsKeyOrder, literalKey, onlyUndefined } from './lang.ts';
 import type { ValueStates } from './value-states.ts';
 
 // One key plan per object shape (review/DESIGN-VALUE-MODEL.md §2.5): which keys an object of a class or an object
@@ -78,6 +78,21 @@ export interface ShapePlan {
   declaresNulls: boolean;
 }
 
+/**
+ * How a backend holds a value of a type it spells: `optional` (`T?`) and `any` (`Any?`) hold nil, `unwrapped` (Swift's
+ * `T!`) holds it implicitly unwrapped, and a function type is `function`, or `optional-result` where its spelling ends
+ * in its result's `?`.
+ */
+export type Held = 'present' | 'optional' | 'unwrapped' | 'any' | 'function' | 'optional-result';
+
+/** The type holds nil as its value: `T?`, `Any?`. */
+export const holdsNil = (h: Held): boolean => h === 'optional' || h === 'any';
+/** The spelling ends in `?`, a function's result's included. */
+export const spelledOptional = (h: Held): boolean => holdsNil(h) || h === 'optional-result';
+/** The type holds nil, implicitly unwrapped or not. */
+export const holdsNilOrUnwrapped = (h: Held): boolean => holdsNil(h) || h === 'unwrapped';
+export const isFunctionHeld = (h: Held): boolean => h === 'function' || h === 'optional-result';
+
 /** What a class's plan asks its backend: how it writes a class, which its own tables know. */
 export interface ShapeFacts {
   /** Fields are defined as the class starts (`useDefineForClassFields`), not assigned. */
@@ -90,6 +105,58 @@ export interface ShapeFacts {
   kitHeld(cls: ts.ClassLikeDeclaration, m: ts.PropertyDeclaration): boolean;
   /** The class keeps what script adds to its objects (`JSExpando`). */
   expando(cls: ts.ClassLikeDeclaration): boolean;
+  /** How the backend holds a field of the type it spells. */
+  held(type: string): Held;
+  /** The type the backend spells for a value. */
+  typeOf(e: ts.Expression): string;
+}
+
+/** How an object literal's key tells apart the null or undefined its shape's field holds as nil. */
+export interface KeyNoting {
+  /** Its value is null: the literal notes it as made (`jsNulls`). */
+  null: boolean;
+  /**
+   * Its value may be undefined: `given` by its type (`jsUnset`); `run` as it runs (`JSLiteralKeys`), where the shape
+   * notes its keys; `untyped` as it runs from an untyped value, beside the literal's nulls, where it notes nulls only.
+   */
+  unset: 'given' | 'run' | 'untyped' | null;
+}
+
+/** The shape an object literal makes, as `literalNotes` asks it. */
+export interface LiteralTarget {
+  /** Each field's type, and the type its class holds it as. */
+  fields: readonly { name: string; type: string; holds: string }[];
+  /** The shape notes its fields' nulls. */
+  tracks: boolean;
+  /** The shape notes its keys given undefined too. */
+  notes: boolean;
+  /** A nested object or array literal is converted whole: none of its keys' undefined is told. */
+  wholeLiterals: boolean;
+}
+
+/** Each key of an object literal (a property or shorthand assignment), and how it notes its value's nil. */
+export function literalNotes(e: ts.ObjectLiteralExpression, states: ValueStates, facts: ShapeFacts, target: LiteralTarget): Map<ts.ObjectLiteralElementLike, KeyNoting> {
+  const checker = states.backend.checker;
+  const field = (k: string) => target.fields.find((f) => f.name === k);
+  const optional = (k: string) => { const f = field(k); return !!f && facts.held(f.type) === 'optional'; };
+  const isNull = (v: ts.Expression) => ts.skipOuterExpressions(v).kind === ts.SyntaxKind.NullKeyword;
+  const values = e.properties.flatMap((p): { p: ts.ObjectLiteralElementLike; key: string; value: ts.Expression }[] => ts.isPropertyAssignment(p) ? [{ p, key: literalKey(p.name, checker) ?? p.name.getText(), value: p.initializer }]
+    : ts.isShorthandPropertyAssignment(p) ? [{ p, key: p.name.text, value: p.name as ts.Expression }] : []);
+  const nulls = new Set(target.tracks ? values.filter(({ p, key, value }) => (ts.isPropertyAssignment(p) ? isNull(value) || states.nilIsNull(value) : states.nilIsNull(value)) && optional(key)).map(({ p }) => p) : []);
+  const nullKeys = new Set(values.filter(({ p }) => nulls.has(p)).map(({ key }) => key));
+  const unset = (key: string, value: ts.Expression): KeyNoting['unset'] => {
+    const untyped = () => facts.held(facts.typeOf(value)) === 'any';
+    if (!target.notes) return target.tracks && !nullKeys.has(key) && ts.isIdentifier(value) && untyped() && optional(key) ? 'untyped' : null;
+    const f = field(key);
+    if (!f || !(spelledOptional(facts.held(f.type)) && holdsNilOrUnwrapped(facts.held(f.holds))) || isNull(value)) return null;
+    if (states.nullBranches(value)) return 'run';
+    const t = checker.getTypeAtLocation(value);
+    if (onlyUndefined(t)) return 'given';
+    const bare = ts.skipOuterExpressions(value);
+    if (target.wholeLiterals && (ts.isObjectLiteralExpression(bare) || ts.isArrayLiteralExpression(bare))) return null;
+    return untyped() || admitsUndefined(t) ? 'run' : null;
+  };
+  return new Map(values.map(({ p, key, value }) => [p, { null: nulls.has(p), unset: unset(key, value) }]));
 }
 
 interface ClassKeysOf { keys: KeyState[]; depth: number; walked: ShapePlan['walked']; flagged: ShapePlan['flagged'] }

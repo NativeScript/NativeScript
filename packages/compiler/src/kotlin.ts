@@ -4,7 +4,7 @@ import { dirname as pathDirname, resolve as pathResolve } from 'node:path';
 import { AsyncLowering, usedBefore, type AsyncCtx, type AsyncSyntax, type AsyncTranslator } from './async.ts';
 import { isAsync, isStatic } from './throws.ts';
 import { assignedMembers } from './sharing.ts';
-import { assignedValues, openSpreadType, spreadsArrays, definitelyAssignedFields, forwardedSetter, initializedNull, intersectionAliasMembers, isRegExpProtocol, assertedPattern, unsupportedPattern, intlConstructor, isObjectToStringCall, isStringRaw, redeclaredBeside, iteratedType, iterationThrows, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, classesHeldUntyped, type TrustScope, literalPattern, patternGroups, unsetGroupTyping, type UnsetGroupTyping, admitsUndefined, onlyUndefined, keysDefinedUntyped, KOTLIN_NATIVE_TYPES, runtimeTypeName, definesRunTimeKey, readKeyOf, reassigned, givenBy, onlyNullOrPresent, statementLevel, readWrite, asOperation, type ReadWrite } from './lang.ts';
+import { assignedValues, openSpreadType, spreadsArrays, definitelyAssignedFields, forwardedSetter, initializedNull, intersectionAliasMembers, isRegExpProtocol, assertedPattern, unsupportedPattern, intlConstructor, isObjectToStringCall, isStringRaw, redeclaredBeside, iteratedType, iterationThrows, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, classesHeldUntyped, type TrustScope, literalPattern, patternGroups, unsetGroupTyping, type UnsetGroupTyping, keysDefinedUntyped, KOTLIN_NATIVE_TYPES, runtimeTypeName, definesRunTimeKey, readKeyOf, reassigned, givenBy, onlyNullOrPresent, statementLevel, readWrite, asOperation, type ReadWrite } from './lang.ts';
 import { memberName } from './stable-names.ts';
 import { shadowConversions } from './conversion-shadow.ts';
 import { parseNativeType, type Mark, type Value } from './conversion.ts';
@@ -14,7 +14,7 @@ import type { Form } from './forms.ts';
 import { isCoreDeclaration } from './core.ts';
 import { nonVirtualName } from './swift.ts';
 import type { Properties } from './properties.ts';
-import { keyOf, nilIsNull, notedField, notesNull, nullNames, rootKeepsExpando, type ShapeFacts, type ShapePlan, shapePlanOfClass, shapePlanOfLiteral } from './shapes.ts';
+import { type Held, holdsNil, isFunctionHeld, keyOf, nilIsNull, notedField, notesNull, nullNames, rootKeepsExpando, literalNotes, type ShapeFacts, type ShapePlan, shapePlanOfClass, shapePlanOfLiteral, spelledOptional } from './shapes.ts';
 import { shadowLiteral, shadowShapes } from './shape-shadow.ts';
 import { recognizePatterns, type Patterns } from './patterns.ts';
 import type { Reach } from './reach.ts';
@@ -157,6 +157,13 @@ function nullishElementsType(t: string): string {
 
 /** A nullable Kotlin type (`T?`, `((A) -> B)?`), not a function returning one. */
 const isNullable = (t: string) => t.endsWith('?') && !isFunctionType(t);
+
+/** How a Kotlin type holds a value (`ShapeFacts.held`). */
+function heldOf(t: string): Held {
+  if (t === 'Any?') return 'any';
+  if (isFunctionType(t)) return t.endsWith('?') ? 'optional-result' : 'function';
+  return t.endsWith('?') ? 'optional' : 'present';
+}
 
 /** A Kotlin function type (`(A) -> B`), not a nullable one or a generic of one. */
 export const isFunctionType = (t: string) => /^\(.*\) -> /.test(t) && !/^\(.*\)\?$/.test(t) && topLevelArrow(t);
@@ -2160,18 +2167,18 @@ export class Translator implements AsyncTranslator {
     const firsts = new Map<string, number>();
     for (const f of fields) { const k = f.name[0].toLowerCase() + f.name.slice(1); firsts.set(k, (firsts.get(k) ?? 0) + 1); }
     const jvmField = (f: ShapeField) => !overrides?.has(f.name) && (firsts.get(f.name[0].toLowerCase() + f.name.slice(1)) ?? 0) > 1;
-    const optional = fields.filter((f) => f.type.endsWith('?') && !isFunctionType(f.type));
+    const optional = fields.filter((f) => holdsNil(heldOf(f.type)));
     // An optional member set after the object is made becomes its last key, as a property JavaScript adds does.
     const symbolic = allFields.some((f) => f.symbol);
     const tracked = new Set(symbolic ? [] : optional.filter((f) => (!overrides?.has(f.name) || !this.library) && !jvmField(f)).map((f) => f.name));
     const modifiers = (f: ShapeField) => (overrides?.has(f.name) ? 'override ' : jvmField(f) ? '@JvmField ' : '');
     // A literal stores what it is given, undefined included (`{ …, view } as ItemEventData` before the view exists). Kotlin
     // checks a non-null constructor parameter at the call, so such a field is set from a nullable one inside the class.
-    const loose = (f: ShapeField) => !this.library && !tracked.has(f.name) && !isNullable(f.type) && this.zero(f.type) === null && f.type !== 'Unit' && !this.isTypeParameterName(f.type);
+    const loose = (f: ShapeField) => !this.library && !tracked.has(f.name) && !holdsNil(heldOf(f.type)) && this.zero(f.type) === null && f.type !== 'Unit' && !this.isTypeParameterName(f.type);
     // A field the program writes, on an object read from another (an event's data), writes that object too.
     const through = new Set(this.library || symbolic ? [] : fields.filter((f) => !jvmField(f) && this.membersSetLater().has(f.name)).map((f) => f.name));
     const own = (f: ShapeField) => tracked.has(f.name) || through.has(f.name);
-    const params = [...fields, ...allFields.filter((f) => f.symbol)].map((f) => (loose(f) ? `${ident(f.name)}: ${optionalType(f.type)}` : `${own(f) ? '' : `${modifiers(f)}var `}${ident(f.name)}: ${f.type}${isNullable(f.type) ? ' = null' : ''}`));
+    const params = [...fields, ...allFields.filter((f) => f.symbol)].map((f) => (loose(f) ? `${ident(f.name)}: ${optionalType(f.type)}` : `${own(f) ? '' : `${modifiers(f)}var `}${ident(f.name)}: ${f.type}${holdsNil(heldOf(f.type)) ? ' = null' : ''}`));
     const lines = [`class ${name}(${[...params, `${tracked.size ? '' : 'private val '}jsOrder: List<String>? = null`].join(', ')}) : ${[implementing ?? 'JSDynamic', ...protocols.map((x) => x.conformance)].join(', ')} {`];
     const writes = (f: ShapeField) => (through.has(f.name) ? `; jsWriteThrough(${kotlinString(f.name)})` : '');
     for (const f of [...fields, ...allFields.filter((f) => f.symbol)]) if (loose(f)) lines.push(`    ${modifiers(f)}var ${ident(f.name)}: ${f.type} = jsUnchecked(${ident(f.name)})`, ...(through.has(f.name) ? [`        set(value) { field = value${writes(f)} }`] : []));
@@ -2228,7 +2235,7 @@ export class Translator implements AsyncTranslator {
     for (const f of fields) {
       const n = ident(f.name);
       const a = f.accessor;
-      if (!a) { params.push(`var ${n}: ${f.type}${f.type.endsWith('?') ? ' = null' : ''}`); continue; }
+      if (!a) { params.push(`var ${n}: ${f.type}${spelledOptional(heldOf(f.type)) ? ' = null' : ''}`); continue; }
       if (a.get) params.push(`private val __get_${f.name}: (${name}) -> ${f.type}`);
       if (a.set) params.push(`private val __set_${f.name}: (${name}, ${a.value}) -> Unit`);
       body.push(`    ${a.set ? 'var' : 'val'} ${n}: ${f.type}`, `        get() = ${a.get ? `__get_${f.name}(this)` : 'null'}`);
@@ -2283,7 +2290,7 @@ export class Translator implements AsyncTranslator {
     const at = (n: string) => { const k = keyed?.order.indexOf(n) ?? -1; return k < 0 ? Infinity : k; };
     const sorted = keyed ? [...fields].sort((a, b) => at(a.name) - at(b.name)) : fields;
     const fieldKeys = sorted.map((f) => {
-      if (!keyed) return isNullable(f.type) && !nilNull.has(f.name) ? `(if (${ident(f.name)} == null${nulls.has(f.name) ? ` && jsNulls?.contains(${kotlinString(f.name)}) != true` : ''}) listOf() else listOf(${kotlinString(f.name)}))` : `listOf(${kotlinString(f.name)})`;
+      if (!keyed) return holdsNil(heldOf(f.type)) && !nilNull.has(f.name) ? `(if (${ident(f.name)} == null${nulls.has(f.name) ? ` && jsNulls?.contains(${kotlinString(f.name)}) != true` : ''}) listOf() else listOf(${kotlinString(f.name)}))` : `listOf(${kotlinString(f.name)})`;
       const present = keyed.present(f.name);
       return present ? `(if (${present}) listOf(${kotlinString(f.name)}) else listOf())` : `listOf(${kotlinString(f.name)})`;
     }).map((k, i) => (defined.has(sorted[i].name) ? `jsDefinedKeys(this, ${kotlinString(sorted[i].name)}, ${k})` : k));
@@ -2317,7 +2324,7 @@ export class Translator implements AsyncTranslator {
       `    override fun jsGet(key: String): Any? = when (key) {`,
       // A field Kotlin declares `lateinit` (an object type, unset): undefined until set.
       ...fields.map((f) => withDefined(f, nulls.has(f.name) ? `        ${kotlinString(f.name)} -> jsNullable(jsUnsetIsUndefined { this.${ident(f.name)} }, jsNulls, ${kotlinString(f.name)})`
-        : !this.library && !isNullable(f.type) && this.zero(f.type) === null && f.type !== 'Unit' && !this.isTypeParameterName(f.type) ? `        ${kotlinString(f.name)} -> jsUnsetIsUndefined { this.${ident(f.name)} }` : `        ${kotlinString(f.name)} -> ${nilNull.has(f.name) ? `jsNulled(this.${ident(f.name)})` : `this.${ident(f.name)}`}`, definedGet)),
+        : !this.library && !holdsNil(heldOf(f.type)) && this.zero(f.type) === null && f.type !== 'Unit' && !this.isTypeParameterName(f.type) ? `        ${kotlinString(f.name)} -> jsUnsetIsUndefined { this.${ident(f.name)} }` : `        ${kotlinString(f.name)} -> ${nilNull.has(f.name) ? `jsNulled(this.${ident(f.name)})` : `this.${ident(f.name)}`}`, definedGet)),
       ...accessors.filter((a) => a.readable).map((a) => `        ${kotlinString(accessorKey(a.name))} -> this.${ident(a.name)}`),
       ...symbols.map((f) => `        ${f.key} -> this.${f.member}`),
       ...methods.filter((m) => !fields.some((f) => f.name === m.name)).map(method),
@@ -2328,7 +2335,7 @@ export class Translator implements AsyncTranslator {
       // A registered property's accessor is the prototype's, which converts what script sets (`col = "1"`): the value as it is.
       // A null is noted after the store, whose setter reads the key's state from before it; a field written through to its
       // source (`rewritten`) is written again once the null is noted.
-      ...fields.map((f) => withDefined(f, `            ${kotlinString(f.name)} -> ${(f as { expando?: boolean }).expando ? `jsExpandoSet(this, ${kotlinString(f.name)}, value)` : nulls.has(f.name) ? `{ this.${ident(f.name)} = ${isNullable(f.type) ? this.storeFromAny(f) : `if (jsIsNullish(value)) jsUncheckedNull<${f.type}>() else ${this.storeFromAny(f)}`}; jsNulls = jsNoteNull(jsNulls, ${kotlinString(f.name)}, value)${rewritten.has(f.name) ? `; jsWriteThrough(${kotlinString(f.name)})` : ''} }` : `this.${ident(f.name)} = ${this.storeFromAny(f)}`}`, definedSet)),
+      ...fields.map((f) => withDefined(f, `            ${kotlinString(f.name)} -> ${(f as { expando?: boolean }).expando ? `jsExpandoSet(this, ${kotlinString(f.name)}, value)` : nulls.has(f.name) ? `{ this.${ident(f.name)} = ${holdsNil(heldOf(f.type)) ? this.storeFromAny(f) : `if (jsIsNullish(value)) jsUncheckedNull<${f.type}>() else ${this.storeFromAny(f)}`}; jsNulls = jsNoteNull(jsNulls, ${kotlinString(f.name)}, value)${rewritten.has(f.name) ? `; jsWriteThrough(${kotlinString(f.name)})` : ''} }` : `this.${ident(f.name)} = ${this.storeFromAny(f)}`}`, definedSet)),
       // A setter takes what script gives it (`textWrap = "true"`): as JavaScript reads it as the setter's type.
       ...accessors.filter((a) => a.settable).map((a) => `            ${kotlinString(accessorKey(a.name))} -> ${a.set ?? `this.${ident(a.name)} = ${a.type === 'Boolean' ? 'jsTruthy(value)' : a.type === 'Double' ? 'jsToNumber(value)' : this.fromAnyCode('value', a.type, true)}`}`),
       ...symbols.map((f) => `            ${f.key} -> this.${f.member} = ${this.fromAny('value', f.type)}`),
@@ -6297,10 +6304,11 @@ export class Translator implements AsyncTranslator {
       const d = this.checker.getSymbolAtLocation(e.name)?.valueDeclaration;
       if (!d || !ts.isPropertySignature(d) || !ts.isInterfaceDeclaration(d.parent) || d.parent.name.text !== held) return null;
       const t = this.typeOf(d);
-      return (d.questionToken || t.endsWith('?')) && t !== 'Any?' && !isFunctionType(t) ? e.name.text : null;
+      const h = heldOf(t);
+      return (d.questionToken || spelledOptional(h)) && h !== 'any' && !isFunctionHeld(h) ? e.name.text : null;
     }
     const f = shape.fields.find((x) => x.name === e.name.text);
-    return f && f.type.endsWith('?') && f.type !== 'Any?' && !isFunctionType(f.type) && !shape.fields.some((x) => x.symbol || x.accessor) ? f.name : null;
+    return f && heldOf(f.type) === 'optional' && !shape.fields.some((x) => x.symbol || x.accessor) ? f.name : null;
   }
 
   private coerceTyped(e: ts.Expression, target: string): string {
@@ -10622,25 +10630,22 @@ export class Translator implements AsyncTranslator {
     // An optional field given undefined is a key all the same, as one given null is: the shape notes which (`jsUnset`,
     // `jsNulls`), from the value's type, or as it runs (`JSLiteralKeys`) where only the run tells.
     const notesKeys = tracksNulls && !this.lenient && !this.library && !this.pluginFiles.has(e.getSourceFile().fileName);
-    const keyed = new Set(notesKeys ? nullFields!.filter((f) => f.type.endsWith('?') && !isFunctionType(f.type)).map((f) => f.name) : []);
+    const notes = literalNotes(e, this.states, this.shapeFacts(), { fields: (nullFields ?? []).map((f) => ({ name: f.name, type: f.type, holds: f.type })), tracks: tracksNulls && !this.library, notes: notesKeys, wholeLiterals: false });
     const unsetKeys: string[] = [], keyNotes: string[] = [];
     let keysVar: string | null = null;
-    const noteKey = (key: string, value: ts.Expression, code: () => string): string => {
-      const f = order.find((x) => x.name === key);
-      // Null given as such is noted with the literal's other nulls.
-      if (!f || !keyed.has(key) || ts.skipOuterExpressions(value).kind === ts.SyntaxKind.NullKeyword) return code();
+    const noteKey = (p: ts.ObjectLiteralElementLike, key: string, value: ts.Expression, code: () => string): string => {
+      const noting = notes.get(p)?.unset;
+      if (noting !== 'run' && noting !== 'given') return code();
+      const f = order.find((x) => x.name === key)!;
       const split = this.states.nullBranches(value);
       if (split) {
         const k = keysVar ??= this.fresh('__keys');
         const branch = (x: ts.Expression) => (split.nulls.includes(x) ? `${k}.nulled(${kotlinString(key)}, ${this.coerce(x, f.type)})` : this.coerce(x, f.type));
         return `(if (${this.cond(split.cond.condition)}) ${branch(split.cond.whenTrue)} else ${branch(split.cond.whenFalse)})`;
       }
-      const t = this.checker.getTypeAtLocation(value);
-      if (onlyUndefined(t)) { unsetKeys.push(key); return code(); }
-      const untyped = this.typeOf(value) === 'Any?';
-      if (!untyped && !admitsUndefined(t)) return code();
+      if (noting === 'given') { unsetKeys.push(key); return code(); }
       const k = keysVar ??= this.fresh('__keys');
-      const how = untyped && f.type !== 'Any?' ? 'untyped' : 'typed';
+      const how = this.typeOf(value) === 'Any?' && heldOf(f.type) !== 'any' ? 'untyped' : 'typed';
       if (ts.isIdentifier(value)) { keyNotes.push(`${k}.${how}(${kotlinString(key)}, ${this.expr(value)})`); return code(); }
       if (how === 'typed') return `${k}.typed(${kotlinString(key)}, ${code()})`;
       // Null and undefined apart before the value is converted to the field's type, which holds both as null.
@@ -10673,9 +10678,9 @@ export class Translator implements AsyncTranslator {
       if (ts.isPropertyAssignment(p)) {
         const key = literalKey(p.name, this.checker) ?? p.name.getText();
         const want = order.find((f) => f.name === key)?.type ?? 'Any?';
-        given.set(key, self && thisFunction(p) ? this.withThis(p.initializer, self, false, () => this.stored(p.initializer, p, want)) : noteKey(key, p.initializer, () => this.stored(p.initializer, p, want)));
+        given.set(key, self && thisFunction(p) ? this.withThis(p.initializer, self, false, () => this.stored(p.initializer, p, want)) : noteKey(p, key, p.initializer, () => this.stored(p.initializer, p, want)));
       } else if (ts.isShorthandPropertyAssignment(p)) {
-        noteKey(p.name.text, p.name, () => '');
+        noteKey(p, p.name.text, p.name, () => '');
         const ft = order.find((f) => f.name === p.name.text)?.type ?? 'Any?';
         // A class (`{ MyComponent }`, a module's exports): its Java class, as a class held as a value is.
         const classDecl = this.checker.getShorthandAssignmentValueSymbol(p)?.valueDeclaration;
@@ -10688,7 +10693,7 @@ export class Translator implements AsyncTranslator {
           const tmp = this.fresh('__spread');
           spreadTemps.push(`val ${tmp}: Any? = ${src}`);
           for (const f of order) {
-            const prev = given.get(f.name) ?? (f.type.endsWith('?') ? 'null' : this.zero(f.type) ?? 'null');
+            const prev = given.get(f.name) ?? (spelledOptional(heldOf(f.type)) ? 'null' : this.zero(f.type) ?? 'null');
             given.set(f.name, `(if (jsHasKey(${tmp}, ${kotlinString(f.name)})) ${this.fromAnyCode(`jsField(${tmp}, ${kotlinString(f.name)})`, f.type, true)} else ${prev})`);
           }
           continue;
@@ -10713,15 +10718,10 @@ export class Translator implements AsyncTranslator {
       if (a) return [...(a.get ? [`__get_${f.name} = ${given.get(`__get_${f.name}`)}`] : []), ...(a.set ? [`__set_${f.name} = ${given.get(`__set_${f.name}`)}`] : [])];
       return given.has(f.name) ? [`${ident(f.label ?? f.name)} = ${given.get(f.name)}`] : [];
     });
-    const nullKeys = !tracksNulls || this.library ? [] : e.properties.filter((p): p is ts.PropertyAssignment | ts.ShorthandPropertyAssignment => (ts.isPropertyAssignment(p) && (ts.skipOuterExpressions(p.initializer).kind === ts.SyntaxKind.NullKeyword || this.states.nilIsNull(p.initializer))) || (ts.isShorthandPropertyAssignment(p) && this.states.nilIsNull(p.name)))
-      .map((p) => literalKey(p.name, this.checker) ?? p.name.getText()).filter((k) => nullFields!.some((f) => f.name === k && f.type.endsWith('?') && f.type !== 'Any?' && !isFunctionType(f.type)));
+    const nullKeys = e.properties.filter((p): p is ts.PropertyAssignment | ts.ShorthandPropertyAssignment => !!notes.get(p)?.null).map((p) => literalKey(p.name, this.checker) ?? p.name.getText());
     // An untyped value may be null, which only the run can tell.
-    const untypedKeys = !tracksNulls || this.library || notesKeys ? [] : e.properties.flatMap((p) => {
-      const value = ts.isPropertyAssignment(p) ? p.initializer : ts.isShorthandPropertyAssignment(p) ? p.name : null;
-      const k = value && p.name ? literalKey(p.name, this.checker) ?? p.name.getText() : null;
-      if (!value || !k || nullKeys.includes(k) || !ts.isIdentifier(value) || this.typeOf(value) !== 'Any?' || !nullFields!.some((f) => f.name === k && f.type.endsWith('?') && f.type !== 'Any?' && !isFunctionType(f.type))) return [];
-      return [`${kotlinString(k)} to ${this.expr(value)}`];
-    });
+    const untypedKeys = e.properties.filter((p): p is ts.PropertyAssignment | ts.ShorthandPropertyAssignment => notes.get(p)?.unset === 'untyped')
+      .map((p) => `${kotlinString(literalKey(p.name, this.checker) ?? p.name.getText())} to ${this.expr(ts.isPropertyAssignment(p) ? p.initializer : p.name)}`);
     const keySet = (keys: string[]) => `mutableSetOf(${keys.map(kotlinString).join(', ')})`;
     if (keysVar) spreadTemps.unshift(`val ${keysVar} = JSLiteralKeys(${[...(nullKeys.length ? [`nulls = ${keySet(nullKeys)}`] : []), ...(unsetKeys.length ? [`unset = ${keySet(unsetKeys)}`] : [])].join(', ')})`, ...keyNotes);
     const noted = keysVar ? `.also { it.jsNulls = ${keysVar}.nulls; it.jsUnset = ${keysVar}.unset }`
@@ -10817,9 +10817,9 @@ export class Translator implements AsyncTranslator {
       for (const k of [...this.shapes.keys()]) if (!known.has(k)) this.shapes.delete(k);
     }
     const fields = props.map((p) => `${ident(p.name)} = __s.${ident(p.name)}`).join(', ');
-    const notesNulls = (n: string) => [...this.shapes.values()].some((s) => s.name === n && !s.fields.some((f) => f.symbol || f.accessor) && s.fields.some((f) => f.type.endsWith('?') && !isFunctionType(f.type)));
+    const notesNulls = (n: string) => [...this.shapes.values()].some((s) => s.name === n && !s.fields.some((f) => f.symbol || f.accessor) && s.fields.some((f) => holdsNil(heldOf(f.type))));
     const nulls = notesNulls(from) && notesNulls(to) ? '.also { it.jsNulls = __s.jsNulls?.toMutableSet() }' : '';
-    return `(${this.expr(e)})${isNullable(source) ? '?' : ''}.let { __s -> ${to}(${fields})${nulls} }`;
+    return `(${this.expr(e)})${holdsNil(heldOf(source)) ? '?' : ''}.let { __s -> ${to}(${fields})${nulls} }`;
   }
 
   dynamicObject(e: ts.ObjectLiteralExpression): string {
@@ -10937,6 +10937,8 @@ export class Translator implements AsyncTranslator {
         return !!this.kitRedeclared(m) || (!!kitRoot && !!this.core?.isKitView(kitRoot) && !!this.properties?.isRegistered(c, m.name.getText()));
       },
       expando: (c) => this.givenUndeclared().has(c),
+      held: heldOf,
+      typeOf: (e) => this.typeOf(e),
     };
   }
 
