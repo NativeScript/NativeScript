@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import { KIT_APPLE_SOURCES } from './paths.ts';
 import { Throws, digitsLiteral, isArrayLengthLiteral, isArrayLengthWrite, isAsync, isStatic } from './throws.ts';
 import { assignedMembers } from './sharing.ts';
-import { assignedValues, openSpreadType, spreadsArrays, initializedNull, intersectionAliasMembers, intlConstructor, literalPattern, literalFlags, patternGroups, regexpMayLeaveGroupUnset, isRegExpProtocol, assertedPattern, unsupportedPattern, isObjectToStringCall, isStringRaw, leadingNeverRead, forwardedSetter, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, uncheckedMatch, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, slotOf, slotType, definitelyAssignedFields, type TrustScope, classesHeldUntyped, unsetGroupTyping, type UnsetGroupTyping, admitsUndefined, onlyUndefined, keysDefinedUntyped, SWIFT_NATIVE_TYPES, runtimeTypeName, definesRunTimeKey, readKeyOf, givenBy, onlyNullOrPresent, isTemplateMethod, statementLevel, readWrite, asOperation, assignmentOf, type ReadWrite } from './lang.ts';
+import { assignedValues, openSpreadType, spreadsArrays, initializedNull, intersectionAliasMembers, intlConstructor, literalPattern, literalFlags, patternGroups, regexpMayLeaveGroupUnset, isRegExpProtocol, assertedPattern, unsupportedPattern, isObjectToStringCall, isStringRaw, leadingNeverRead, forwardedSetter, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, uncheckedMatch, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, slotOf, slotType, definitelyAssignedFields, type TrustScope, classesHeldUntyped, unsetGroupTyping, type UnsetGroupTyping, admitsUndefined, onlyUndefined, keysDefinedUntyped, SWIFT_NATIVE_TYPES, runtimeTypeName, definesRunTimeKey, readKeyOf, givenBy, onlyNullOrPresent, isTemplateMethod, statementLevel, readWrite, asOperation, assignmentOf, type ReadWrite } from './lang.ts';
 import { memberName } from './stable-names.ts';
 import { shadowConversions } from './conversion-shadow.ts';
 import { parseNativeType, plan, type Slot, type Value } from './conversion.ts';
@@ -25,6 +25,7 @@ import { recognizePatterns, type Patterns } from './patterns.ts';
 import { DEPLOYMENT, NativeAPI, enteredGuard, onMainThread, tested, typedCollection } from './native-calls.ts';
 import { lookupClass, lookupMember, type NativeMethod } from './natives/symbols.ts';
 import type { Reach } from './reach.ts';
+import { awaitedCell, receiverCell, receiverSlot, type ReceiverBackend, type ReceiverCell } from './placement.ts';
 
 /**
  * TypeScript to Swift, typed by the checker, with JavaScript's semantics
@@ -4488,10 +4489,6 @@ ${members.join('\n')}
   /** The slot of the await `e` is, where its continuation holds the value optional. */
   private awaited(e: ts.Expression): AwaitSlot | undefined {
     return this.awaitSlots.get(ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses));
-  }
-  /** U → receiver: a member `key` of what the await gives, JavaScript's TypeError where it gives nothing. */
-  private awaitedReceiver(slot: AwaitSlot, key: string): string {
-    return `jsUnwrap(${slot.raw}, ${swiftString(key)}${slot.isNull ? ', null: true' : ''})`;
   }
 
   /** A local Swift holds optional though its type says a value (`const x = f()` of a call that may give nothing). */
@@ -9651,7 +9648,7 @@ ${members.join('\n')}
 
   private exprOf(e: ts.Expression): string {
     const awaited = this.awaitSlots.get(e), key = awaited ? readKeyOf(e) : null;
-    if (awaited && key !== null) return this.awaitedReceiver(awaited, key);
+    if (awaited && key !== null) return this.receiverCode(awaitedCell(awaited), key)!;
     const s = this.subst.get(e);
     if (s) return s;
     const rw = readWrite(e, this.checker);
@@ -10874,20 +10871,33 @@ ${members.join('\n')}
 
   /** A receiver that can be missing though its type says not (`x!`, `items[i]`): JavaScript's TypeError when it is. */
   private receiver(target: ts.Expression, key: string): string | null {
-    if (this.loose(target) && !uncheckedMatch(target, this.checker)) return null;
-    let x = target;
-    while (ts.isParenthesizedExpression(x)) x = x.expression;
-    const access = target.parent;
-    const chained = (ts.isPropertyAccessExpression(access) || ts.isElementAccessExpression(access)) && !!access.questionDotToken;
-    const awaited = this.awaited(x);
-    if (awaited && !chained) return this.awaitedReceiver(awaited, key);
-    if (!chained && this.definiteReceiver(x)) return `jsUnwrap(${this.expr(x)}, ${swiftString(key)})`;
-    if (!chained && uncheckedMatch(x, this.checker)) return `jsUnwrap(${this.expr(x)}, ${swiftString(key)}, null: true)`;
-    if (!chained && this.widenedParameterRead(x)) return `jsUnwrap(${this.expr(x)}, ${swiftString(key)})`;
-    const kind = unsafeReceiver(target, this.checker) ?? (chained ? null : this.states.missingAtRead(target));
-    if (!kind) return null;
-    const value = ts.isNonNullExpression(x) ? (this.maybeUndefined(x.expression) ?? this.expr(x.expression)) : this.maybeUndefined(x) ?? (this.typeOf(x).endsWith('?') || this.optionalResult(x) ? this.expr(x) : null);
-    return value ? `jsUnwrap(${value}, ${swiftString(key)}${kind === 'null' ? ', null: true' : ''})` : null;
+    return this.receiverCode(receiverCell(this.receivers, receiverSlot(target, key)), key);
+  }
+
+  /** A receiver cell as Swift writes it: null where the access reads it as it is. */
+  private receiverCode(c: ReceiverCell, key: string): string | null {
+    return c.cell === 'asIs' ? null : `jsUnwrap(${c.code}, ${swiftString(key)}${c.isNull ? ', null: true' : ''})`;
+  }
+
+  private receiversSet?: ReceiverBackend;
+
+  /** What the shared receiver cells (placement.ts) read of this translator. */
+  private get receivers(): ReceiverBackend {
+    const t = this;
+    return this.receiversSet ??= {
+      checker: t.checker,
+      states: t.states,
+      expr: (e) => t.expr(e),
+      maybeUndefined: (e) => t.maybeUndefined(e),
+      awaited: (e) => t.awaited(e),
+      held: (x) => (t.typeOf(x).endsWith('?') || t.optionalResult(x) ? t.expr(x) : null),
+      receiverBefore: ({ target, x, chained }) => {
+        if (t.loose(target) && !uncheckedMatch(target, t.checker)) return { cell: 'asIs' };
+        if (chained) return null;
+        if (t.definiteReceiver(x) || t.widenedParameterRead(x)) return { cell: 'present', code: t.expr(x), isNull: false };
+        return uncheckedMatch(x, t.checker) ? { cell: 'present', code: t.expr(x), isNull: true } : null;
+      },
+    };
   }
 
   private elementAccess(e: ts.ElementAccessExpression): string {

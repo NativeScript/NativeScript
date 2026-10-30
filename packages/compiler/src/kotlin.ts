@@ -4,7 +4,7 @@ import { dirname as pathDirname, resolve as pathResolve } from 'node:path';
 import { AsyncLowering, usedBefore, type AsyncCtx, type AsyncSyntax, type AsyncTranslator } from './async.ts';
 import { isAsync, isStatic } from './throws.ts';
 import { assignedMembers } from './sharing.ts';
-import { assignedValues, openSpreadType, spreadsArrays, definitelyAssignedFields, forwardedSetter, initializedNull, intersectionAliasMembers, isRegExpProtocol, assertedPattern, unsupportedPattern, intlConstructor, isObjectToStringCall, isStringRaw, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, unsafeReceiver, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, classesHeldUntyped, type TrustScope, literalPattern, patternGroups, unsetGroupTyping, type UnsetGroupTyping, admitsUndefined, onlyUndefined, keysDefinedUntyped, KOTLIN_NATIVE_TYPES, runtimeTypeName, definesRunTimeKey, readKeyOf, reassigned, givenBy, onlyNullOrPresent, statementLevel, readWrite, asOperation, type ReadWrite } from './lang.ts';
+import { assignedValues, openSpreadType, spreadsArrays, definitelyAssignedFields, forwardedSetter, initializedNull, intersectionAliasMembers, isRegExpProtocol, assertedPattern, unsupportedPattern, intlConstructor, isObjectToStringCall, isStringRaw, redeclaredBeside, iteratedType, iterationThrows, jsKeyOrder, literalKey, neverDefined, templateParts, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, classesHeldUntyped, type TrustScope, literalPattern, patternGroups, unsetGroupTyping, type UnsetGroupTyping, admitsUndefined, onlyUndefined, keysDefinedUntyped, KOTLIN_NATIVE_TYPES, runtimeTypeName, definesRunTimeKey, readKeyOf, reassigned, givenBy, onlyNullOrPresent, statementLevel, readWrite, asOperation, type ReadWrite } from './lang.ts';
 import { memberName } from './stable-names.ts';
 import { shadowConversions } from './conversion-shadow.ts';
 import { parseNativeType, type Mark, type Value } from './conversion.ts';
@@ -18,6 +18,7 @@ import { keyOf, nilIsNull, notedField, notesNull, nullNames, rootKeepsExpando, t
 import { shadowLiteral, shadowShapes } from './shape-shadow.ts';
 import { recognizePatterns, type Patterns } from './patterns.ts';
 import type { Reach } from './reach.ts';
+import { awaitedCell, receiverCell, receiverSlot, type ReceiverBackend, type ReceiverCell } from './placement.ts';
 import { allowedDeprecation, calledOnAnyThread } from './android-deprecations.ts';
 import type { ModuleThread } from './threading.ts';
 
@@ -5765,10 +5766,6 @@ export class Translator implements AsyncTranslator {
   private awaited(e: ts.Expression): AwaitSlot | undefined {
     return this.awaitSlots.get(ts.skipOuterExpressions(e, ts.OuterExpressionKinds.Parentheses));
   }
-  /** U → receiver: a member `key` of what the await gives, JavaScript's TypeError where it gives nothing. */
-  private awaitedReceiver(slot: AwaitSlot, key: string): string {
-    return `(${slot.raw} ?: ${slot.isNull ? 'jsCannotReadNull' : 'jsCannotRead'}(${kotlinString(key)}))`;
-  }
   private noteNullVar(d: ts.VariableDeclaration): void {
     const init = d.initializer && ts.skipOuterExpressions(d.initializer, ts.OuterExpressionKinds.Parentheses);
     const sym = ts.isIdentifier(d.name) ? this.resolve(d.name) : undefined;
@@ -6780,7 +6777,7 @@ export class Translator implements AsyncTranslator {
     if (this.heldParts.has(e)) return this.subst.get(e)!;
     if (ts.isCallExpression(e) && !this.nullishCalls.has(e) && !this.subst.has(e) && this.states.nullishRead(e)) return `${this.nullishCode(e)}${this.lenientApp ? '.jsAny' : '.optional'}`;
     const awaited = this.awaitSlots.get(e), key = awaited ? readKeyOf(e) : null;
-    if (awaited && key !== null) return this.awaitedReceiver(awaited, key);
+    if (awaited && key !== null) return this.receiverCode(awaitedCell(awaited), key)!;
     const s = this.subst.get(e);
     if (s) return s;
     const narrowed = this.narrowedHeld(e);
@@ -7621,15 +7618,28 @@ export class Translator implements AsyncTranslator {
 
   /** A receiver that can be missing though its type says not (`x!`, `items[i]`): JavaScript's TypeError when it is. */
   private receiver(target: ts.Expression, key: string): string | null {
-    const awaited = this.awaited(target);
-    if (awaited && !(ts.isPropertyAccessExpression(target.parent) && target.parent.questionDotToken)) return this.awaitedReceiver(awaited, key);
-    if (this.uncheckedMatch(target)) return `(${this.expr(target)} ?: jsCannotReadNull(${kotlinString(key)}))`;
-    const kind = unsafeReceiver(target, this.checker) ?? this.states.missingAtRead(target);
-    if (!kind) return null;
-    let x = target;
-    while (ts.isParenthesizedExpression(x)) x = x.expression;
-    const value = ts.isNonNullExpression(x) ? (this.maybeUndefined(x.expression) ?? this.expr(x.expression)) : this.maybeUndefined(x) ?? this.optionalRead(x) ?? this.heldResult(x);
-    return value ? `(${value} ?: ${kind === 'null' ? 'jsCannotReadNull' : 'jsCannotRead'}(${kotlinString(key)}))` : null;
+    return this.receiverCode(receiverCell(this.receivers, receiverSlot(target, key)), key);
+  }
+
+  /** A receiver cell as Kotlin writes it: null where the access reads it as it is. */
+  private receiverCode(c: ReceiverCell, key: string): string | null {
+    return c.cell === 'asIs' ? null : `(${c.code} ?: ${c.isNull ? 'jsCannotReadNull' : 'jsCannotRead'}(${kotlinString(key)}))`;
+  }
+
+  private receiversSet?: ReceiverBackend;
+
+  /** What the shared receiver cells (placement.ts) read of this translator. */
+  private get receivers(): ReceiverBackend {
+    const t = this;
+    return this.receiversSet ??= {
+      checker: t.checker,
+      states: t.states,
+      expr: (e) => t.expr(e),
+      maybeUndefined: (e) => t.maybeUndefined(e),
+      awaited: (e) => t.awaited(e),
+      held: (x) => t.optionalRead(x) ?? t.heldResult(x),
+      receiverBefore: ({ target }) => (t.uncheckedMatch(target) ? { cell: 'present', code: t.expr(target), isNull: true } : null),
+    };
   }
 
   /** A call whose result Kotlin holds nullable though its type says present, read as it is held. */
@@ -7641,6 +7651,8 @@ export class Translator implements AsyncTranslator {
 
   /** A parameter or member Kotlin declares optional, read as it is held. */
   private optionalRead(x: ts.Expression): string | null {
+    // Library code reads its own interfaces' members by key (`jsGet`): they have no Kotlin field to read as held.
+    if (ts.isPropertyAccessExpression(x) && this.library && this.resolve(x.name)?.declarations?.some((d) => ts.isPropertySignature(d) && !isLibDeclaration(d))) return null;
     if (ts.isPropertyAccessExpression(x)) return this.optionalMember(x) || (!this.typeOf(x).endsWith('?') && !!this.declaredTypeOf(x)?.endsWith('?')) ? `${this.expr(x.expression)}.${ident(x.name.text)}` : null;
     const d = ts.isIdentifier(x) ? this.resolve(x)?.valueDeclaration : undefined;
     if (!d || !(ts.isParameter(d) || ts.isVariableDeclaration(d)) || !this.declaredTypeOf(x)?.endsWith('?')) return null;
