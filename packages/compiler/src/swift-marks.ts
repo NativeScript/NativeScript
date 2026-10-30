@@ -52,14 +52,24 @@ export function tryIf(yes: boolean | undefined, code: string): string {
   return own;
 }
 
-/** Code that begins with `operand`'s (`(x as? T)`, `x!`, `x.name`): it leads with a `try` where the operand does. */
+/** Code that begins with `operand`, after any `(`s (`(x as? T)`, `x!`, `x.name`): it leads with a `try` where the operand does. */
 export function leading(code: string, operand: string): string {
   const inner = untriedCodes.get(operand);
-  if (inner !== undefined) {
-    const at = code.indexOf(operand);
+  const at = code.indexOf(operand);
+  if (inner !== undefined && at >= 0 && /^\(*$/.test(code.slice(0, at))) {
     untriedCodes.set(code, code.slice(0, at) + inner + code.slice(at + operand.length));
   }
   return code;
+}
+
+/** `(code)`. */
+export function parens(code: string): string {
+  return leading(`(${code})`, code);
+}
+
+/** `left op right`. */
+export function infix(left: string, op: string, right: string): string {
+  return leading(`${left} ${op} ${right}`, left);
 }
 
 export function leadsWithTry(code: string): boolean {
@@ -82,7 +92,7 @@ export function tryBefore(t: string, code: string): string {
 
 /** `target = value`, a statement. */
 export function assignedCode(target: string, value: string, targetThrows = false): string {
-  return marked(`${target} = ${value}`, { op: 'assign', target, value: valueOf(value), targetThrows });
+  return leading(marked(`${target} = ${value}`, { op: 'assign', target, value: valueOf(value), targetThrows }), target);
 }
 
 /** A statement that is its own block (`if c { … }`, `do { … }`), placing inside it the `try`s it needs. */

@@ -11,7 +11,7 @@ import { memberName } from './stable-names.ts';
 import { shadowConversions } from './conversion-shadow.ts';
 import { parseNativeType, plan, type Slot, type Value } from './conversion.ts';
 import { argumentEntry, awaitSlot, conditionCell, type ConditionBackend, type ConditionCell, negatedCell, type AwaitSlot, argumentOf, argumentSlot, isEnumObject, place, resultSlot, returnCell, type ParamSlot, type PlacementBackend, type ResultSlot, type ReturnBackend, type ReturnCell, type Store, type StoreSlot, assignedTo, codeStoreSlot, placeCode, storeEntry, storeOf, storeSlot, emptyComparison, observerSlot, scriptComparison, type ElementStore, elementStoreOf, bindingSlot } from './placement.ts';
-import { assignedCode, blockCode, castCode, elementOf, helper, implicitOf, isPure, isUnwrap, leading, leadsWithTry, markOf, marked, memberOf, orNil, pureCode, ownTried, tried, tryBefore, tryCode, tryIf, unwrapInner, unwrappedCode, unwrappedIf, valueOf } from './swift-marks.ts';
+import { assignedCode, blockCode, castCode, elementOf, helper, implicitOf, infix, isPure, parens, isUnwrap, leading, leadsWithTry, markOf, marked, memberOf, orNil, pureCode, ownTried, tried, tryBefore, tryCode, tryIf, unwrapInner, unwrappedCode, unwrappedIf, valueOf } from './swift-marks.ts';
 import { convertedRead, onlyNull, ValueStates, type NulledRead, type StateBackend } from './value-states.ts';
 import type { Form } from './forms.ts';
 import { AsyncLowering, type AsyncCtx, type AsyncSyntax, type AsyncTranslator } from './async.ts';
@@ -149,11 +149,6 @@ const FOREIGN_SLOT: Slot = { rep: 'foreign', type: parseNativeType('Any?'), kind
 /** Code given as text: what its producer recorded of it, a `try` it leads with included. */
 function valued(code: string | Value): Value {
   return typeof code === 'string' ? { ...valueOf(code), throws: leadsWithTry(code) } : code;
-}
-
-/** A statement's `try` before a check that carries its own: one `try`, as Swift warns of the outer one; a `try!` or `try?` inside stays. */
-export function singleTry(code: string): string {
-  return code.replace(/\btry(\s+\(*)try\b(?![!?])/g, 'try$1').replace(/\btry ((?:_ |self\.[\w.]+ |[\w.]+ )= )try /g, 'try $1');
 }
 
 /** V8's TypeError for iterating `e` where it is undefined. */
@@ -2251,7 +2246,7 @@ export class Translator implements AsyncTranslator {
       const refused = this.states.nullish().refused.filter(([n]) => n.getSourceFile() === sf).sort(([a], [b]) => a.getStart() - b.getStart())[0];
       if (refused) throw this.error(refused[0], refused[1]);
       const { code, init } = this.moduleOf(sf);
-      return { code: singleTry(code), init: init.map(singleTry) };
+      return { code, init };
     } finally { this.currentFile = outer; this.freshCounts = counts; this.declOwner = owner; }
   }
 
@@ -2860,7 +2855,7 @@ ${members.join('\n')}
     for (const x of this.extendedRecords) this.declaring(x.name, 'class', x.base, () => { for (const [n, m] of x.members) this.declare(n, m); });
     for (const [alias, type] of this.globalAliasTypes) this.declarations?.global(alias, { kind: 'var', type });
     for (const site of this.templateSites) this.declarations?.global(site, { kind: 'var', type: 'JSArray<String>' });
-    return singleTry([...shapes, ...this.globalAliases.values(), ...this.templateObjects, ...this.extendedClasses, ...(cells ? this.cellsCode().map((c) => c.code) : [])].join('\n\n'));
+    return [...shapes, ...this.globalAliases.values(), ...this.templateObjects, ...this.extendedClasses, ...(cells ? this.cellsCode().map((c) => c.code) : [])].join('\n\n');
   }
 
   /** The struct of each function type's cell, with the number of parameters the type takes. After `shapesCode`, whose classes can add cells. */
@@ -2874,7 +2869,7 @@ ${members.join('\n')}
         this.declare('present', { kind: 'func', mods: 'static ', params: `_ value: (${type})?`, throws: true, type });
         return functionParts(type)?.params.length ?? 0;
       }, needs(type) || undefined),
-      code: singleTry(`${needs(type) ? `@available(iOS ${needs(type)}, *)\n` : ''}struct ${name}${this.cellGenerics(type)} {\n    let f: ${type}\n    static func implicit(_ value: (${type})?) -> (${type})? { value }\n    static func present(_ value: (${type})?) throws -> ${type} { guard let value else { throw jsNoObject() }; return value }\n${this.cellStaticCode(name, type, needs).map((l) => l + '\n').join('')}}`),
+      code: `${needs(type) ? `@available(iOS ${needs(type)}, *)\n` : ''}struct ${name}${this.cellGenerics(type)} {\n    let f: ${type}\n    static func implicit(_ value: (${type})?) -> (${type})? { value }\n    static func present(_ value: (${type})?) throws -> ${type} { guard let value else { throw jsNoObject() }; return value }\n${this.cellStaticCode(name, type, needs).map((l) => l + '\n').join('')}}`,
     }));
   }
 
@@ -8915,7 +8910,7 @@ ${members.join('\n')}
     if (fa && ta && fa !== ta && related(fa, ta)) {
       const up = this.isSubclassOf(fa, ta);
       // Lenient code's array may be missing, which stays undefined; an element of another class is a TypeError.
-      if (this.lenient) return `${up ? '' : 'try '}jsImplicit(${code}).map { JSArray<${ta}>(${up ? '' : 'try '}$0.storage.map { ${up ? `$0 as ${ta}` : `try (jsCastPresent($0) as ${ta})`} }) }`;
+      if (this.lenient) return tryIf(!up, `jsImplicit(${code}).map { JSArray<${ta}>(${up ? '' : 'try '}$0.storage.map { ${up ? `$0 as ${ta}` : `try (jsCastPresent($0) as ${ta})`} }) }`);
       const map = `JSArray<${ta}>(${code}${/[?!]$/.test(from) ? '!' : ''}.storage.map { $0 as${up ? '' : '!'} ${ta} })`;
       return isOptional(from) && isOptional(to) ? `(${code}).map { JSArray<${ta}>($0.storage.map { $0 as${up ? '' : '!'} ${ta} }) }` : map;
     }
@@ -9743,7 +9738,7 @@ ${members.join('\n')}
       }
       // `<Array<View>>views` of a ViewBase[]: Swift's arrays of the two are distinct types, so the elements are read as the asserted one, in a copy unless the array already is one.
       const fromArray = /^JSArray<(.+)>[?!]?$/.exec(from), toArray = /^JSArray<(.+)>[?!]?$/.exec(to);
-      if (fromArray && toArray && fromArray[1] !== toArray[1] && toArray[1] !== 'Any?') return `(${this.arrayOf(this.expr(e.expression), toArray[1])} as JSArray<${toArray[1]}>)`;
+      if (fromArray && toArray && fromArray[1] !== toArray[1] && toArray[1] !== 'Any?') { const copy = this.arrayOf(this.expr(e.expression), toArray[1]); return leading(`(${copy} as JSArray<${toArray[1]}>)`, copy); }
       if (from !== to && from.replace(/[?!]$/, '') !== to.replace(/[?!]$/, '') && this.isObjectRef(e) && this.isObjectRef(e.expression)) {
         // An object of another shape asserted to an interface (`cur as ICalEvent`): the interface's class read from it.
         const target = this.checker.getTypeAtLocation(e).getSymbol();
@@ -10360,7 +10355,8 @@ ${members.join('\n')}
       if (checked) return { code: `${checked}.${this.memberName(e)}`, throws: true };
       const receiver = this.typeOf(e.expression);
       const unwrap = receiver.endsWith('?') && receiver !== 'Any?' && this.isObjectRef(e.expression) && !e.questionDotToken ? '!' : '';
-      return { code: `${this.expr(e.expression)}${unwrap}.${this.memberName(e)}`, throws: this.receiverThrows(e.expression) };
+      const recv = this.expr(e.expression);
+      return { code: leading(`${recv}${unwrap}.${this.memberName(e)}`, recv), throws: this.receiverThrows(e.expression) };
     }
     if (ts.isElementAccessExpression(e)) return { code: this.elementAccess(e), throws: !this.symbolField(e) || this.receiverThrows(e.expression) };
     if (ts.isIdentifier(e)) return { code: this.globalAlias(e) ?? this.refName(e), throws: false };
@@ -10793,7 +10789,7 @@ ${members.join('\n')}
       if (ts.isOptionalChain(e.parent) && (e.parent as ts.PropertyAccessExpression).expression === e) return `${this.expr(target)}.${ident(name)}`;
       const rt = this.typeOf(e);
       if (this.optionalReads.has(e) && !rt.endsWith('?') && rt !== 'Any?') { this.optionalReads.set(e, true); return code; }
-      return rt.endsWith('?') || rt === 'Any?' ? code : this.undefinedAs(`(${code})`, rt, code === read ? this.declaredTypeOf(e) ?? undefined : own);
+      return rt.endsWith('?') || rt === 'Any?' ? code : this.undefinedAs(parens(code), rt, code === read ? this.declaredTypeOf(e) ?? undefined : own);
     }
     // A read continuing an optional chain after a call (`xs?.filter(f).length`): part of the chain, as a call continuing one is.
     if (ts.isCallExpression(target) && ts.isOptionalChain(target) && !e.questionDotToken && (this.typeOf(target).endsWith('?') || this.implicitChain(target))) {
@@ -11855,9 +11851,10 @@ ${members.join('\n')}
       if (t.startsWith('JSArray<')) {
         // `observers?.find(…)` on an array TypeScript types as present, which lenient code may hold as undefined: cast to optional, valid either way.
         if (!callee.questionDotToken || q || !this.lenient) return this.arrayMethod(method, target, e, q);
-        const code = this.arrayMethod(method, target, e, '', `(${this.expr(target)} as ${optionalType(receiverType)})?`);
+        const x = this.expr(target);
+        const code = this.arrayMethod(method, target, e, '', leading(`(${x} as ${optionalType(receiverType)})?`, x));
         const rt = this.typeOf(e);
-        return rt.endsWith('?') || rt === 'Any?' || rt === 'Void' || ts.isExpressionStatement(e.parent) || comparedToNullish(e) || this.rawOptional.has(e) ? code : this.undefinedAs(`(${code})`, rt);
+        return rt.endsWith('?') || rt === 'Any?' || rt === 'Void' || ts.isExpressionStatement(e.parent) || comparedToNullish(e) || this.rawOptional.has(e) ? code : this.undefinedAs(parens(code), rt);
       }
       if (t === 'JSMatch' && method !== 'toString') {
         this.subst.set(target, `${this.expr(target)}${q}.${this.matchElement(target, method) === 'String' ? 'jsStrings' : 'values'}`);
@@ -11914,7 +11911,7 @@ ${members.join('\n')}
         if (!callee.questionDotToken || q) return this.collectionMethod(method, target, e, q);
         const code = this.collectionMethod(method, target, e, '', `(${this.expr(target)} as ${optionalType(receiverType)})?`);
         const rt = this.typeOf(e);
-        return rt.endsWith('?') || rt === 'Any?' || rt === 'Void' || ts.isExpressionStatement(e.parent) || comparedToNullish(e) || this.rawOptional.has(e) ? code : this.undefinedAs(`(${code})`, rt);
+        return rt.endsWith('?') || rt === 'Any?' || rt === 'Void' || ts.isExpressionStatement(e.parent) || comparedToNullish(e) || this.rawOptional.has(e) ? code : this.undefinedAs(parens(code), rt);
       }
       // `this.method.bind(this)`: the method, which Swift binds to its object already.
       if (method === 'bind' && e.arguments.length === 1 && e.arguments[0].kind === ts.SyntaxKind.ThisKeyword && ts.isPropertyAccessExpression(target) && target.expression.kind === ts.SyntaxKind.ThisKeyword) {
@@ -11928,14 +11925,17 @@ ${members.join('\n')}
       const tt = this.typeOf(target);
       if (callee.questionDotToken && !tt.endsWith('?') && !tt.endsWith('!') && !hasTopLevelArrow(tt) && !ts.isOptionalChain(target) && !(ts.isCallExpression(target) && this.maybeUndefined(target))) {
         const asserted = this.assertedUntyped(target);
-        const code = `${asserted ? this.assertedOptional(asserted) : `(${this.expr(target)} as ${optionalType(tt)})`}?.${ident(method)}${optionalFn ? '!' : ''}(${this.args(e, this.arity(e)).join(', ')})`;
+        const x = asserted ? '' : this.expr(target);
+        const recv = asserted ? this.assertedOptional(asserted) : leading(`(${x} as ${optionalType(tt)})`, x);
+        const code = leading(`${recv}?.${ident(method)}${optionalFn ? '!' : ''}(${this.args(e, this.arity(e)).join(', ')})`, recv);
         const rt = this.typeOf(e);
-        return rt.endsWith('?') || rt === 'Any?' || rt === 'Void' || ts.isExpressionStatement(e.parent) || this.rawOptional.has(e) ? code : this.undefinedAs(`(${code})`, rt);
+        return rt.endsWith('?') || rt === 'Any?' || rt === 'Void' || ts.isExpressionStatement(e.parent) || this.rawOptional.has(e) ? code : this.undefinedAs(parens(code), rt);
       }
       // A method Optional also declares (`series.map(f)`), on a value held implicitly unwrapped: the class's, not Optional's.
       const own = !this.library && !checked && !q && ['map', 'flatMap'].includes(method) && /^[\w.]+(<.*>)?$/.test(tt) ? `(${this.expr(target)} as ${tt})` : null;
-      const member = `${checked ?? own ?? `${this.expr(target)}${q}`}.${ident(method)}`;
-      const plain = `${this.heldFunctionCall(e) ? `jsCallable(${member}, ${swiftString(callee.getText().replace(/\s+/g, ' '))})` : member}(${this.args(e, this.arity(e)).join(', ')})`;
+      const recv = checked ?? own ?? this.expr(target);
+      const member = `${recv}${checked ?? own ? '' : q}.${ident(method)}`;
+      const plain = leading(`${this.heldFunctionCall(e) ? `jsCallable(${member}, ${swiftString(callee.getText().replace(/\s+/g, ' '))})` : member}(${this.args(e, this.arity(e)).join(', ')})`, recv);
       // An override emitted with its base's signature gives what the base's result type holds.
       const decl = this.checker.getResolvedSignature(e)?.getDeclaration();
       if (decl && ts.isMethodDeclaration(decl) && decl.body && !decl.getSourceFile().isDeclarationFile && !isStatic(decl) && this.baseMethod(decl)) {
@@ -12800,11 +12800,18 @@ ${members.join('\n')}
   }
 
   private arrayMethod(name: string, target: ts.Expression, e: ts.CallExpression, q: string, receiver?: string): string {
+    const recv = { code: '' };
+    return leading(this.arrayMethodOf(name, target, e, q, receiver, recv), recv.code);
+  }
+
+  /** `recv`: given the receiver's own code, which the method's code may begin with. */
+  private arrayMethodOf(name: string, target: ts.Expression, e: ts.CallExpression, q: string, receiver: string | undefined, recv: { code: string }): string {
     const typedCallback = this.unset.typedCallback(e);
     if (typedCallback) throw this.error(typedCallback, 'a function whose element parameter is declared to hold no undefined, given strings a pattern\'s unset group may leave undefined (declare the parameter `string | undefined`)');
     const held = this.typeOf(target);
     // Lenient code holds arrays implicitly unwrapped, where `map` and `flatMap` would be Optional's.
-    const t = receiver ?? (!q && this.lenient && ['map', 'flatMap'].includes(name) && /^JSArray<.*>$/.test(held) ? `(${this.expr(target)} as ${held})` : `${this.expr(target)}${q}`);
+    const x = recv.code = receiver ?? this.expr(target);
+    const t = receiver ?? (!q && this.lenient && ['map', 'flatMap'].includes(name) && /^JSArray<.*>$/.test(held) ? `(${x} as ${held})` : `${x}${q}`);
     const a = () => this.args(e);
     const el = held.replace(/[?!]$/, '') === 'JSMatch' ? this.matchElement(target, name) : held.replace(/\?$/, '').replace(/^JSArray<(.*)>$/, '$1');
     switch (name) {
@@ -12954,6 +12961,10 @@ ${members.join('\n')}
 
   private stringMethod(name: string, target: ts.Expression, e: ts.CallExpression): string {
     const t = this.expr(target);
+    return leading(this.stringMethodOf(name, target, e, t), t);
+  }
+
+  private stringMethodOf(name: string, target: ts.Expression, e: ts.CallExpression, t: string): string {
     const first = e.arguments[0];
     const unsupported = unsupportedPattern(name, e, this.checker);
     if (unsupported) throw this.error(first, unsupported);
@@ -13055,6 +13066,10 @@ ${members.join('\n')}
 
   private numberMethod(name: string, target: ts.Expression, e: ts.CallExpression): string {
     const t = this.expr(target);
+    return leading(this.numberMethodOf(name, e, t), t);
+  }
+
+  private numberMethodOf(name: string, e: ts.CallExpression, t: string): string {
     const a = this.args(e);
     switch (name) {
       case 'toFixed': { const n = digitsLiteral(e.arguments[0], 0, 100, 0); return n !== null ? `jsToFixed(${t}, digits: ${n})` : `jsToFixed(${t}, ${a[0]})`; }
@@ -13910,14 +13925,14 @@ ${members.join('\n')}
       case K.BarBarEqualsToken: return blockCode(`if !jsTruthy(${this.tryPrefix(e.left)}${l()}) { ${this.tryPrefix(e)}${target()} = ${this.stored(e.right, e.left, this.typeOf(e.left))} }`);
       case K.AmpersandAmpersandEqualsToken: return blockCode(`if jsTruthy(${this.tryPrefix(e.left)}${l()}) { ${this.tryPrefix(e)}${target()} = ${this.stored(e.right, e.left, this.typeOf(e.left))} }`);
       case K.PlusToken: {
-        if (this.isString(e.left) || this.isString(e.right)) return `${this.concatOperand(e.left)} + ${this.concatOperand(e.right)}`;
+        if (this.isString(e.left) || this.isString(e.right)) return infix(this.concatOperand(e.left), '+', this.concatOperand(e.right));
         if (this.isAny(e.left) || this.isAny(e.right)) return `jsAdd(${this.coerce(e.left, 'Any?')}, ${this.coerce(e.right, 'Any?')})`;
-        return `${this.toNumber(e.left)} + ${this.toNumber(e.right)}`;
+        return infix(this.toNumber(e.left), '+', this.toNumber(e.right));
       }
-      case K.MinusToken: return `${this.toNumber(e.left)} - ${this.toNumber(e.right)}`;
-      case K.AsteriskToken: return `${this.toNumber(e.left)} * ${this.toNumber(e.right)}`;
+      case K.MinusToken: return infix(this.toNumber(e.left), '-', this.toNumber(e.right));
+      case K.AsteriskToken: return infix(this.toNumber(e.left), '*', this.toNumber(e.right));
       // Integer literals on both sides would divide as Int where no operand pins Double (`Double(1 / 8)`, `js(16 / 9)`).
-      case K.SlashToken: return numericLiteralOnly(e.left) && numericLiteralOnly(e.right) ? `(${this.expr(e.left)} as Double) / ${this.expr(e.right)}` : `${this.toNumber(e.left)} / ${this.toNumber(e.right)}`;
+      case K.SlashToken: return numericLiteralOnly(e.left) && numericLiteralOnly(e.right) ? `(${this.expr(e.left)} as Double) / ${this.expr(e.right)}` : infix(this.toNumber(e.left), '/', this.toNumber(e.right));
       case K.PercentToken: return `jsMod(${this.toNumber(e.left)}, ${this.toNumber(e.right)})`;
       case K.AsteriskAsteriskToken: return `jsPow(${this.toNumber(e.left)}, ${this.toNumber(e.right)})`;
       case K.EqualsEqualsEqualsToken: case K.ExclamationEqualsEqualsToken: case K.EqualsEqualsToken: case K.ExclamationEqualsToken:
@@ -13931,7 +13946,7 @@ ${members.join('\n')}
           return op === K.LessThanToken ? `(jsLessThan(${a}, ${b}) == true)` : op === K.GreaterThanToken ? `(jsGreaterThan(${a}, ${b}) == true)`
             : op === K.LessThanEqualsToken ? `(jsGreaterThan(${a}, ${b}) == false)` : `(jsLessThan(${a}, ${b}) == false)`;
         }
-        return `${this.toNumber(e.left)} ${sym} ${this.toNumber(e.right)}`;
+        return infix(this.toNumber(e.left), sym, this.toNumber(e.right));
       }
       case K.QuestionQuestionToken: {
         const t = this.typeOf(e);
@@ -13947,7 +13962,7 @@ ${members.join('\n')}
           this.optionalReads.set(left, false);
           try {
             const code = this.expr(left);
-            if (this.optionalReads.get(left)) return `(${code} ?? ${this.coerce(e.right, t)})`;
+            if (this.optionalReads.get(left)) return leading(`(${code} ?? ${this.coerce(e.right, t)})`, code);
           } finally { this.optionalReads.delete(left); }
         }
         // A call Swift declares to give a value it never lacks: the fallback never applies.
@@ -13958,7 +13973,7 @@ ${members.join('\n')}
           const code = l();
           let read = code;
           for (let m; (m = /^\((.*) \?\? (?:\.nan|"undefined"|false)\)$/.exec(read)) && balanced(m[1]);) read = m[1];
-          if (read !== code) return `(${read} ?? ${this.coerce(e.right, t)})`;
+          if (read !== code) return leading(`(${read} ?? ${this.coerce(e.right, t)})`, read);
         }
         if (this.missingObjectType(e) && this.states.observedAsIs(e)) {
           const missing = this.maybeUndefined(e);
@@ -13971,14 +13986,16 @@ ${members.join('\n')}
         if (maybe) {
           const right = t === 'String' && this.typeOf(e.right) !== 'String' ? this.str(e.right) : this.coerce(e.right, t);
           const checked = requiredOf(right);
-          return checked ? tryCode(helper('jsObjectRequired', `((${maybe}) ?? ${checked})`)) : `((${maybe}) ?? ${right})`;
+          return checked ? tryCode(helper('jsObjectRequired', `((${maybe}) ?? ${checked})`)) : leading(`((${maybe}) ?? ${right})`, maybe);
         }
         if (this.isAny(e.left) && t !== 'Any?' && this.states.heldNullish(left)) return `(${this.fromAny(l(), optionalType(t))} ?? ${this.coerce(e.right, t)})`;
         if (this.isAny(e.left)) return `jsNullishCoalesce(${l()}, ${this.coerce(e.right, 'Any?')})`;
         // A left side Swift holds as no optional is never missing.
         if (!isOptional(lt) && !lt.endsWith('!') && lt !== 'Any?' && lt === t && !inOptionalChain(e.left) && this.definitelyPresent(e.left)) return l();
         const right = this.coerce(e.right, t), checked = requiredOf(right);
-        return checked ? tryCode(helper('jsObjectRequired', `(${l()} ?? ${checked})`)) : `(${l()} ?? ${right})`;
+        if (checked) return tryCode(helper('jsObjectRequired', `(${l()} ?? ${checked})`));
+        const lc = l();
+        return leading(`(${lc} ?? ${right})`, lc);
       }
       case K.AmpersandAmpersandToken: case K.BarBarToken: {
         const sym = op === K.AmpersandAmpersandToken ? '&&' : '||';
@@ -14029,9 +14046,9 @@ ${members.join('\n')}
         // `a || b` of objects of one class: an object is truthy exactly when it is there.
         const sameObject = op === K.BarBarToken && this.isObjectRef(left) && this.isObjectRef(e.right) && !isFunctionType(t.replace(/^\((.*)\)[?!]$/, '$1'))
           && leftType.replace(/[?!]$/, '') === t.replace(/[?!]$/, '') && !leftCode.startsWith('try ');
-        if (sameObject && ((leftValue === `jsPresent(${v})` && leftType === optionalType(t)) || (leftValue === v && t.endsWith('?')))) return `(${leftCode} ?? ${right})`;
+        if (sameObject && ((leftValue === `jsPresent(${v})` && leftType === optionalType(t)) || (leftValue === v && t.endsWith('?')))) return leading(`(${leftCode} ?? ${right})`, leftCode);
         // Lenient code: `a || b` of objects is undefined when both are (`span.style.backgroundColor || parent.backgroundColor`).
-        if (sameObject && /[?!]$/.test(leftType) && this.lenient && t !== 'Any?' && this.lenientRef(t) !== t && !t.endsWith('!')) return `((${leftCode} ?? ${right}) as ${optionalType(t)})`;
+        if (sameObject && /[?!]$/.test(leftType) && this.lenient && t !== 'Any?' && this.lenientRef(t) !== t && !t.endsWith('!')) return leading(`((${leftCode} ?? ${right}) as ${optionalType(t)})`, leftCode);
         if (this.lenient && op === K.BarBarToken && t !== 'Any?' && this.lenientRef(t) !== t && !t.endsWith('!')) {
           return implicitOf(`({ () ${throws}-> ${optionalType(t)} in let ${v} = ${tryBefore(lt, leftCode)}; return jsTruthy(${v}) ? ${leftValue} : ${rt}${right} }())`);
         }
