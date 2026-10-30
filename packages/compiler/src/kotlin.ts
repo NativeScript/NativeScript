@@ -17,7 +17,7 @@ import type { Properties } from './properties.ts';
 import { type DefinedKeys, definedFieldNames, definedKeysOf, definesDuringConstruction, type Held, holdsNil, isFunctionHeld, keyOf, nilIsNull, notedField, notesNull, type Nulls, nullNames, restrictsField, rootKeepsExpando, literalNotes, type ShapeFacts, type ShapePlan, shapePlanOfClass, shapePlanOfLiteral, spelledOptional } from './shapes.ts';
 import { shadowLiteral, shadowShapes } from './shape-shadow.ts';
 import { shadowTypeSteps } from './type-step-shadow.ts';
-import { type TypeStep, boxStep } from './type-step.ts';
+import { type TypeStep, boxStep, unboxStep } from './type-step.ts';
 import { recognizePatterns, type Patterns } from './patterns.ts';
 import type { Reach } from './reach.ts';
 import { awaitedCell, receiverCell, receiverSlot, type ReceiverBackend, type ReceiverCell } from './placement.ts';
@@ -2380,13 +2380,14 @@ export class Translator implements AsyncTranslator {
     // A call's value read as nothing: the call still runs.
     if (type === 'Unit') return this.isPure(code) ? pure('Unit') : this.marked(`run { ${code}; Unit }`, { op: 'discarded', of: this.valueOf(code) });
     if (code === 'null' && type.endsWith('?')) return 'null';
-    const m = /^JSArray<(.*)>(\??)$/.exec(type);
+    const unbox = this.unboxStep(type);
+    const m = unbox.composite === 'array' ? /^JSArray<(.*)>(\??)$/.exec(type) : null;
     if (m) {
       const read = (x: string) => `jsArrayFrom(${x}) { ${this.fromAny('it', m[1])} }`;
       if (!m[2]) return read(code);
       return this.isPure(code) ? `(if (jsIsNullish(${code})) null else ${read(code)})` : `jsUnlessNullish(${code}) { ${read('it')} }`;
     }
-    const record = /^JSRecord<(.*)>(\??)$/.exec(type);
+    const record = unbox.composite === 'record' ? /^JSRecord<(.*)>(\??)$/.exec(type) : null;
     if (record) return `${record[2] ? 'jsRecordOrNull' : 'jsRecord'}<${record[1]}>(${code})`;
     const pair = /^(Pair|Triple)<(.*)>$/.exec(type);
     if (pair) {
@@ -2406,13 +2407,13 @@ export class Translator implements AsyncTranslator {
       if (reified) return reified;
     }
     // A function held untyped (a script function, a method read by name): callable as the typed function.
-    const fn = functionTypeParts(type.replace(/^\((.*)\)\?$/, '$1'));
+    const fn = unbox.composite === 'function' ? functionTypeParts(type.replace(/^\((.*)\)\?$/, '$1')) : null;
     if (fn && fn.params.length <= 7) {
       const typed = `jsFunction${fn.params.length}<${[...fn.params, fn.ret].join(', ')}>`;
       return /\)\?$/.test(type) ? `jsUnlessNullish(${code}) { ${typed}(it) }` : `${typed}(${code})`;
     }
     // A promise its type promises may be any thenable: adopted, as awaiting it or `Promise.resolve` would.
-    const promised = /^JSPromise<(.*)>$/.exec(base);
+    const promised = unbox.composite === 'promise' ? /^JSPromise<(.*)>$/.exec(base) : null;
     if (promised) return type.endsWith('?') ? `jsUnlessNullish(${code}) { jsPromiseOf<${promised[1]}>(it) }` : `jsPromiseOf<${promised[1]}>(${code})`;
     // Library mode: JavaScript's null where an object goes (`cond ? entry.fragment : null`) is Kotlin's.
     // A string, number or boolean slot given another primitive converts it (a binding's 5 for a string is "5"); an empty
@@ -10805,6 +10806,11 @@ export class Translator implements AsyncTranslator {
   /** The step of a value of `from` held untyped: what its box is, which `coerceTyped`'s `'Any?'` path spells. */
   private boxStep(from: string): TypeStep {
     return boxStep(from, this.library ? 'library' : this.lenient ? 'lenient' : 'checked');
+  }
+
+  /** The step of an untyped value read as `to`: which composite `fromAny` reads it into. */
+  private unboxStep(to: string): TypeStep {
+    return unboxStep(to, this.library ? 'library' : this.lenient ? 'lenient' : 'checked');
   }
 
   private isShapeType(name: string): boolean {
