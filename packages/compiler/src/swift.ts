@@ -21,6 +21,7 @@ import type { KitDeclarations, RecordedMember } from './kit-manifest.ts';
 import type { Properties } from './properties.ts';
 import { type Held, holdsNil, holdsNilOrUnwrapped, isFunctionHeld, keyOf, nilIsNull, notedField, notesNull, type Nulls, nullNames, rootKeepsExpando, literalNotes, type ShapeFacts, type ShapePlan, shapePlanOfClass, shapePlanOfLiteral, spelledOptional } from './shapes.ts';
 import { shadowLiteral, shadowShapes } from './shape-shadow.ts';
+import { shadowTypeSteps } from './type-step-shadow.ts';
 import { recognizePatterns, type Patterns } from './patterns.ts';
 import { DEPLOYMENT, NativeAPI, enteredGuard, onMainThread, tested, typedCollection } from './native-calls.ts';
 import { lookupClass, lookupMember, type NativeMethod } from './natives/symbols.ts';
@@ -860,6 +861,7 @@ export class Translator implements AsyncTranslator {
     this.states = new ValueStates(this.stateBackend());
     if (process.env.NS_CONVERSION_SHADOW) shadowConversions(this, this.states);
     if (process.env.NS_SHAPE_SHADOW) shadowShapes(this, this.states);
+    if (process.env.NS_TYPESTEP_SHADOW) shadowTypeSteps(this, this.states);
     this.lowering = new AsyncLowering(this);
     this.core = new CoreAPI(this);
     this.native = new NativeAPI(this);
