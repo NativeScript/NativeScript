@@ -6384,8 +6384,6 @@ export class Translator implements AsyncTranslator {
     // nullable, optional parameters) apart from the slot's: adapted.
     const fnRef = this.library ? this.functionRefAdapter(e, target) : null;
     if (fnRef) return fnRef;
-    // Library mode: a Java object where core's code declares a string (`input.getText()`, an Editable): its text.
-    if (this.library && /^String\??$/.test(target) && /^[a-z]\w*(\.\w+)+$/.test(source.replace(/\?$/, ''))) return `jsToString(${this.expr(e)})`;
     // Library mode: a string where core's code declares a number (`toString(eventNames)` of GestureTypes), as script's operators read it.
     if (this.library && target === 'Double' && /^String\??$/.test(this.declaredTypeOf(e) ?? source)) return `jsToNumber(${this.expr(e)})`;
     if (!this.library && source.replace(/\?$/, '') === 'JSMatch' && /^JSArray<String\?>\??$/.test(target)) return `${this.expr(e)}${source.endsWith('?') ? '?' : ''}.values`;
@@ -6415,8 +6413,6 @@ export class Translator implements AsyncTranslator {
         return `(${this.expr(e)}).takeUnless { it.isNaN() }`;
       }
     }
-    // Library mode: a value Kotlin holds nullable where a string, number or boolean goes: as script reads it, undefined.
-    if (this.library && ['String', 'Double', 'Boolean'].includes(target) && source === optionalType(target)) return this.undefinedAs(this.expr(e), target);
     // Library mode: a Java enum's constant where core's code declares a number (its typings' enums are numbers): its ordinal.
     if (this.library && target === 'Double' && source !== 'Double' && this.checker.getTypeAtLocation(e).flags & ts.TypeFlags.EnumLike && this.native?.type(this.checker.getTypeAtLocation(e))) return `(${this.expr(e)}).ordinal.toDouble()`;
     // Library mode: a typed record or array where an untyped one goes (`Record<string, unknown>` set from a `Record<string, string>`).
@@ -6508,12 +6504,6 @@ export class Translator implements AsyncTranslator {
       const typed = this.library || tupleAsArray || kitSlot ? declared : null;
       // Its parameters as the closure declares them (`typeTested` ones untyped).
       const own = typed && { ...typed, params: typed.params.map((p, k) => (e.parameters[k] && this.typeTested(e.parameters[k]) ? 'Any?' : p)) };
-      // A function reading `arguments` takes them as one list: what the slot passes, packed.
-      if (this.library && want && this.readsArguments(e)) {
-        const names = want.params.map((_, k) => pure(`__a${k}`));
-        const call = `__f(jsArrayOf<Any?>(${names.join(', ')}))`;
-        return `run<(${want.params.join(', ')}) -> ${want.ret}> { val __f = ${this.closure(e, `(JSArray<Any?>) -> ${want.ret}`)}; { ${want.params.map((p, k) => `${names[k]}: ${p}`).join(', ')} -> ${call} } }`;
-      }
       if (own && want && own.params.length <= want.params.length && ((kitSlot && own.params.length < want.params.length) || own.params.some((p, k) => p !== want.params[k] && this.convert('x', want.params[k], p) !== 'x'))) {
         const names = want.params.map((_, k) => pure(`__a${k}`));
         const call = `__f(${own.params.map((p, k) => this.convert(names[k], want.params[k], p)).join(', ')})`;

@@ -4101,8 +4101,6 @@ ${members.join('\n')}
     if (fromShape !== toShape && this.isObjectShape(fromShape) && this.isObjectShape(toShape)) {
       return isOptional(from) || from.endsWith('!') ? unwrappedIf(`(${code}).map { ${toShape}(jsObject: $0) }`, !(isOptional(to) || to.endsWith('!'))) : `${toShape}(jsObject: ${code})`;
     }
-    // Library mode: an object literal of an event type (`{ eventName, object, value }`) is core's EventData over it, its other keys read by name.
-    if (this.library && from === 'JSObject' && to.replace(/[?!]$/, '') === 'EventData') return `EventData(jsObject: ${code})`;
     if (to === 'Any?') {
       if (from === 'Void') return `jsUndefined(${code})`;
       if (this.untypedEnum('', from)) return this.untypedEnum(code, from);
