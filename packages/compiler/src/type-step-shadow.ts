@@ -106,7 +106,7 @@ export function shadowTypeSteps(translator: object, states: ValueStates): void {
       defer(() => {
         try {
           const from = r.from ?? (n && fn === 'closureReturn' ? null : n ? t.typeOf.call(translator, n) : null);
-          return record({ backend, fn, site, nested, at, mode, from, to: r.to ?? null, input: r.input, code: value, facts });
+          return record({ backend, fn, site, nested, at, mode, from, to: r.to ?? null, input: r.input, code: value, facts, literal: !!n && functionLiteral(n) });
         } catch (err) {
           return JSON.stringify({ backend, fn, site, at, error: (err as Error).message.slice(0, 200) });
         }
@@ -117,7 +117,7 @@ export function shadowTypeSteps(translator: object, states: ValueStates): void {
   }
 }
 
-interface Observed { backend: string; fn: string; site: string; nested: boolean; at: string | null; mode: string; from: string | null; to: string | null; input?: string; code: string; facts: TypeFacts }
+interface Observed { backend: string; fn: string; site: string; nested: boolean; at: string | null; mode: string; from: string | null; to: string | null; input?: string; code: string; facts: TypeFacts; literal: boolean }
 
 function record(o: Observed): string | null {
   const base = { backend: o.backend, fn: o.fn, site: o.site, nested: o.nested, at: o.at, mode: o.mode, from: o.from, to: o.to, code: clip(o.code) };
@@ -148,7 +148,7 @@ function describe(s: TypeStep): string {
 function written(code: string, input: string | undefined): string {
   if (input !== undefined && code === input) return 'unchanged';
   const c = code.replace(/^\(*try[?!]? /, '');
-  if (/FunctionCell_\w+\.\w+|jsBoxedFunction|jsIdentified|JSFunctionAlias|jsAdapt|JSAdapted/.test(c)) return 'cell';
+  if (/FunctionCell_\w+\.\w+|jsBoxedFunction|jsIdentified|JSFunctionAlias|jsAdapt|JSAdapted|\bjsFunction\(\d+, [^)]/.test(c)) return 'cell';
   if (/\bjsFunction\w*\(/.test(c)) return 'function-object';
   if (/\(jsFlat\(__f\) as\? /.test(c)) return 'closure-unless-same';
   if (/\{ \(__\w+|\{ \(\)|\{ __\w+(?:, __\w+)* ->|\{ \w+: [\w<>?]+ ->/.test(c)) return 'closure';
@@ -163,7 +163,8 @@ function written(code: string, input: string | undefined): string {
 function disagreements(s: TypeStep, w: string, from: NativeType, to: NativeType, o: Observed): string[] {
   const out: string[] = [];
   if (s.refuse) out.push('erasure not refused (Q10)');
-  if (s.identity && (s.composite === 'function' || s.kind === 'function') && ['closure', 'function-object', 'closure-unless-same'].includes(w)) out.push('function identity lost');
+  // A function literal written in place is its first value: there is no identity to lose.
+  if (s.identity && (s.composite === 'function' || s.kind === 'function') && !o.literal && ['closure', 'function-object', 'closure-unless-same'].includes(w)) out.push('function identity lost');
   if (s.identity && s.kind === 'element' && w === 'copy') out.push('container copied');
   if (s.identity && (s.kind === 'box' || s.kind === 'unbox') && s.composite !== 'function' && w === 'copy') out.push('container copied');
   // A boxed function's parameters are read from script's arguments: null where one is held present is carried (Q7).
@@ -180,6 +181,12 @@ function disagreements(s: TypeStep, w: string, from: NativeType, to: NativeType,
 /** A parameter type whose held value can't be null or undefined, which reads an empty argument as a TypeError. */
 function rejectsEmpty(t: NativeType): boolean {
   return !t.optional && !t.implicit && !/^JSRest</.test(t.name) && t.kind !== 'any' && t.kind !== 'nullish' && t.kind !== 'void' && !['string', 'number', 'boolean'].includes(t.kind);
+}
+
+/** An arrow or function expression, or a conditional whose every branch is one. */
+function functionLiteral(n: ts.Node): boolean {
+  const b = ts.isExpression(n) ? ts.skipOuterExpressions(n) : n;
+  return ts.isArrowFunction(b) || ts.isFunctionExpression(b) || (ts.isConditionalExpression(b) && functionLiteral(b.whenTrue) && functionLiteral(b.whenFalse));
 }
 
 const clip = (s: string) => (s.length > 160 ? s.slice(0, 160) + '…' : s);

@@ -6356,7 +6356,7 @@ export class Translator implements AsyncTranslator {
     if (!this.library && target === 'Any?' && ts.isIdentifier(e) && !(ts.isCallExpression(e.parent) && e.parent.expression === e)) {
       const decl = this.resolve(e)?.valueDeclaration;
       if (decl && ts.isFunctionDeclaration(decl) && decl.body && !decl.getSourceFile().isDeclarationFile && !decl.parameters.some((p) => p.dotDotDotToken || isThisParameter(p)) && !this.implicitThis(decl)) {
-        const fn = this.expr(e);
+        const fn = this.functionValue(e);
         return this.untypedFunction(decl, fn.includes('::') ? `(${fn})` : fn);
       }
     }
@@ -6700,7 +6700,7 @@ export class Translator implements AsyncTranslator {
     const lead = g.params.slice(0, n).map((t, k) => (t === 'Any?' ? pure(`__a.getOrNull(${k})`) : this.fromAnyCode(pure(`__a.getOrNull(${k})`), t, true)));
     const packed = `JSArray<Any?>(ArrayList(__a.drop(${n})))`;
     const call = `__f(${[...lead, g.params[n] === 'JSArray<Any?>' ? packed : this.fromAnyCode(packed, g.params[n], true)].join(', ')})`;
-    const fn = `jsFunction(${n}) { __a -> ${g.ret === 'Unit' ? `${call}; null` : call} }`;
+    const fn = `jsFunction(${n}, __f) { __a -> ${g.ret === 'Unit' ? `${call}; null` : call} }`;
     // A variable narrowed to its function is still held nullable when declared so.
     const sym = ts.isIdentifier(bare) ? this.resolve(bare) : undefined;
     const declared = sym?.valueDeclaration ? this.checker.getTypeOfSymbol(sym) : undefined;
@@ -11299,7 +11299,7 @@ export class Translator implements AsyncTranslator {
     if (this.implicitThis(decl)) return `JSMethod(${arity < 0 ? decl.parameters.length : arity}) ${lambda(['__self', '__a'], `${name}${generic}(${['__self', ...args].join(', ')})${this.returnTypeOf(decl) === 'Unit' ? '; null' : ''}`)}`;
     const call = `${name}${generic}(${args.join(', ')})`;
     // The function's own reference keys what script sets on it, as each wrapper is made where it is read.
-    const original = !generic ? /^\((\S*::[\w`]+)\)$/.exec(name)?.[1] : undefined;
+    const original = generic ? undefined : /^\((\S*::[\w`]+)\)$/.exec(name)?.[1] ?? /^(?:([\w`.]+)\.)?([\w`]+)$/.exec(name)?.slice(1).map((x) => x ?? '').join('::');
     return `jsFunction(${arity < 0 ? decl.parameters.length : arity}${original ? `, ${original}` : ''}) ${lambda(['__a'], this.returnTypeOf(decl) === 'Unit' ? `${call}; null` : call)}`;
   }
 
