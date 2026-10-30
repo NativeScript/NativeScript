@@ -147,10 +147,12 @@ function literalRecord(e: ts.ObjectLiteralExpression, k: LiteralKeys, states: Va
   const field = new Map(k.fields.map((f) => [f.name, f.type]));
   const quoted = (s: string) => /^"((?:[^"\\]|\\.)*)"/.exec(s)?.[1] ?? /^\("((?:[^"\\]|\\.)*)"/.exec(s)?.[1] ?? s;
   const untyped = new Set(k.untypedKeys.map(quoted));
+  // `typed` notes undefined only, `nulled` null only, `untyped` either.
   const runtime = new Set<string>();
-  for (const code of k.runtime) for (const m of code.matchAll(/__keys\d*\.(?:typed|untyped|nulled)\("((?:[^"\\]|\\.)*)"/g)) runtime.add(m[1]);
-  const nullNoted = (n: string) => k.nullKeys.includes(n) || untyped.has(n) || runtime.has(n);
-  const unsetNoted = (n: string) => k.unsetKeys.includes(n) || runtime.has(n);
+  for (const code of k.runtime) for (const m of code.matchAll(/__keys\d*\.(typed|untyped|nulled)\("((?:[^"\\]|\\.)*)"/g)) runtime.add(`${m[1]} ${m[2]}`);
+  const ran = (n: string, ...how: string[]) => how.some((h) => runtime.has(`${h} ${n}`));
+  const nullNoted = (n: string) => k.nullKeys.includes(n) || untyped.has(n) || ran(n, 'untyped', 'nulled');
+  const unsetNoted = (n: string) => k.unsetKeys.includes(n) || ran(n, 'typed', 'untyped');
   for (const s of plan.keys) {
     const h = held(field.get(s.name));
     if (h === 'none' || h === 'any' || h === 'function' || !s.form) continue;

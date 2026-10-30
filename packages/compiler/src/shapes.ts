@@ -136,7 +136,7 @@ export interface LiteralTarget {
 
 /** Each key of an object literal (a property or shorthand assignment), and how it notes its value's nil. */
 export function literalNotes(e: ts.ObjectLiteralExpression, states: ValueStates, facts: ShapeFacts, target: LiteralTarget): Map<ts.ObjectLiteralElementLike, KeyNoting> {
-  const checker = states.backend.checker;
+  const checker = states.backend.checker, plan = shapePlanOfLiteral(e, states);
   const field = (k: string) => target.fields.find((f) => f.name === k);
   const optional = (k: string) => { const f = field(k); return !!f && facts.held(f.type) === 'optional'; };
   const isNull = (v: ts.Expression) => ts.skipOuterExpressions(v).kind === ts.SyntaxKind.NullKeyword;
@@ -154,7 +154,10 @@ export function literalNotes(e: ts.ObjectLiteralExpression, states: ValueStates,
     if (onlyUndefined(t)) return 'given';
     const bare = ts.skipOuterExpressions(value);
     if (target.wholeLiterals && (ts.isObjectLiteralExpression(bare) || ts.isArrayLiteralExpression(bare))) return null;
-    return untyped() || admitsUndefined(t) ? 'run' : null;
+    // A missing value its type doesn't say (`NAMES[i]`) leaves the key undefined; where the form may hold null too,
+    // a typed nil can't tell which, so only the type's undefined is noted.
+    const form = keyOf(plan, key)?.form;
+    return untyped() || admitsUndefined(t) || (!!form?.undefined && !form.null) ? 'run' : null;
   };
   return new Map(values.map(({ p, key, value }) => [p, { null: nulls.has(p), unset: unset(key, value) }]));
 }
