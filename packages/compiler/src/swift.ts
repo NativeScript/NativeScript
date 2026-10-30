@@ -362,20 +362,6 @@ export function throwsOutside(code: string): boolean {
   return false;
 }
 
-/** Swift code with its closures' bodies left out: what runs where it stands. */
-function outsideClosures(code: string): string {
-  let out = '', depth = 0, quoted = false;
-  for (let k = 0; k < code.length; k++) {
-    const ch = code[k];
-    if (quoted) { if (ch === '\\') k++; else if (ch === '"') quoted = false; continue; }
-    if (ch === '"') { quoted = true; continue; }
-    if (ch === '{') depth++;
-    else if (ch === '}') depth--;
-    else if (depth === 0) out += ch;
-  }
-  return out;
-}
-
 /**
  * The container type passed to `jsArrayOf`, `jsArrayOrNil` or `jsRecordOf` where Swift would otherwise infer an optional
  * element: from a write through the result (`jsRecordOf(values) { $0 }[key] = value`), or from a class element's
@@ -4078,7 +4064,7 @@ ${members.join('\n')}
     const sigFrom = /^Signal<(.+)>[?!]?$/.exec(from)?.[1], sigTo = /^Signal<(.+)>[?!]?$/.exec(to)?.[1];
     if (sigFrom && sigTo && sigFrom !== sigTo) {
       const read = this.convert('__s.value', sigFrom, sigTo);
-      return `{ (__s: Signal<${sigFrom}>) -> Signal<${sigTo}> in Signal<${sigTo}>(computing: { ${THROWING_CODE.test(read) && !read.startsWith('try ') ? `try ${read}` : read} }) }(${code})`;
+      return `{ (__s: Signal<${sigFrom}>) -> Signal<${sigTo}> in Signal<${sigTo}>(computing: { ${plan(this.typeSlot(sigFrom), this.typeSlot(sigTo), this.lenient ? 'lenient' : 'checked').throws && !read.startsWith('try ') ? `try ${read}` : read} }) }(${code})`;
     }
     // A promise of a value where a promise of any value is wanted (`unzip(): Promise<any>` returning a `Promise<string>`): the same settlement.
     const settles = /^JSPromise<(.+)>([?!]?)$/.exec(from);
@@ -5384,10 +5370,10 @@ ${members.join('\n')}
     this.indent = '    ';
     const ctor = cls.members.find((m): m is ts.ConstructorDeclaration => ts.isConstructorDeclaration(m) && !!m.body);
     const ctorInjectVals: string[] = [];
-    let convenienceZeroArg = false;
+    let convenienceZeroArg = false, fieldThrows = false;
     if (ctor?.parameters.length && !props.length) {
       const vals = ctor.parameters.map((p) => this.parameterInject(p));
-      const anyThrows = vals.some((v) => THROWING_CODE.test(v));
+      const anyThrows = ctor.parameters.some((p) => this.throwsInfo.injects(p));
       convenienceZeroArg = anyThrows;
       ctor.parameters.forEach((p, idx) => {
         const pName = (p.name as ts.Identifier).text;
@@ -5482,6 +5468,7 @@ ${members.join('\n')}
         if (late) lines.push(`    var ${ident(name)}: ${isFunctionType(t) ? `(${t})!` : t.endsWith('?') ? t : `${t}!`}`);
         else lines.push(`    ${reassigned ? 'var' : 'let'} ${ident(name)}: ${t}`);
         this.indent = '        ';
+        if (this.throwsInfo.expr(m.initializer)) fieldThrows = true;
         inits.push(`        self.${ident(name)} = ${this.tryPrefix(m.initializer)}${this.stored(m.initializer, m, t)}`);
         this.indent = '    ';
         continue;
@@ -5530,10 +5517,10 @@ ${members.join('\n')}
     if (ctor?.body?.statements.length) {
       this.indent = '            ';
       const body = this.statements([...ctor.body.statements]);
-      inits.push(`        ${body.some((l) => THROWING_CODE.test(l)) ? 'jsReport' : 'do'} {\n${body.join('\n')}\n        }`);
+      inits.push(`        ${this.throwsInfo.statements(ctor.body.statements) ? 'jsReport' : 'do'} {\n${body.join('\n')}\n        }`);
     }
     this.indent = '';
-    const throws = (convenienceZeroArg || inits.some((l) => THROWING_CODE.test(l) && !l.startsWith('        jsReport {'))) ? ' throws' : '';
+    const throws = convenienceZeroArg || fieldThrows ? ' throws' : '';
     if (throws && cls.name) this.throwingInits.add(cls.name.text);
     lines.push(`    init(${propParams.join(', ')})${throws} {`, ...inits, '    }');
     if (convenienceZeroArg) {
@@ -5605,7 +5592,7 @@ ${members.join('\n')}
     const name = ts.isModuleBlock(cls.parent) ? cls.name!.text : this.topName(cls, cls.name!.text);
     const ctor = cls.members.find((m): m is ts.ConstructorDeclaration => ts.isConstructorDeclaration(m) && !!m.body);
     const args = (ctor?.parameters ?? []).map((p) => this.parameterInject(p));
-    const throwsInit = /^\s*(?:override )?(?:convenience )?init\(.*\) throws/m.test(code) || args.some((a) => THROWING_CODE.test(a));
+    const throwsInit = /^\s*(?:override )?(?:convenience )?init\(.*\) throws/m.test(code) || (ctor?.parameters ?? []).some((p) => this.throwsInfo.injects(p));
     const make = `${throwsInit ? 'try ' : ''}${name}(${args.join(', ')})`;
     return [
       `extension ${name}: JSInjectableType {`,
@@ -7884,7 +7871,7 @@ ${members.join('\n')}
     let code: string;
     const block = s.catchClause ? this.block(s.tryBlock) : '';
     // A catch whose try block cannot throw never runs: the block alone.
-    if (s.catchClause && !this.throwsInfo.expr(s.tryBlock) && !throwsOutside(block.slice(1, -1))) {
+    if (s.catchClause && !this.throwsInfo.statements([s.tryBlock])) {
       this.catchless.add(s.tryBlock);
       code = `${i}do ${block}`;
     } else if (s.catchClause) {
@@ -8118,7 +8105,7 @@ ${members.join('\n')}
         for (const a of [...chain].reverse()) {
           // The value is read once, before: only what this target's own write does can throw.
           const code = this.expr(a);
-          out.push(`${this.throwsInfo.expr(a.left) || THROWING_CODE.test(code) ? 'try ' : ''}${code}`);
+          out.push(`${this.throwsInfo.expr(a.left) || this.throwsInfo.own(a) || this.castThrows(a.right) || this.checkedThrows(a.right) ? 'try ' : ''}${code}`);
           // The next target reads what this one now holds, as its own type has it (`x = elem = opened`).
           this.subst.set(a, ts.isIdentifier(a.left) ? this.expr(a.left) : held ? tmp : this.expr(value));
         }
@@ -9608,6 +9595,11 @@ ${members.join('\n')}
     return ts.isStringLiteralLike(k) || ts.isNumericLiteral(k) ? k.text : k.getText();
   }
 
+  /** Whether a member read's receiver, as `expr` writes it, throws: its own evaluation, or the check of a loose receiver (`jsUnwrap(x, key)`). */
+  private receiverThrows(e: ts.Expression): boolean {
+    return this.throwsInfo.expr(e) || this.looseReceiverKey(e) !== null;
+  }
+
   looseReceiverKey(e: ts.Expression): string | null {
     const p = e.parent;
     if (!p || !(ts.isPropertyAccessExpression(p) || ts.isElementAccessExpression(p)) || p.expression !== e || !this.loose(e) || uncheckedMatch(e, this.checker)) return null;
@@ -10848,7 +10840,7 @@ ${members.join('\n')}
     // A method an instance can replace (see `instanceKeys`): its own value when it holds one, as a call reads it.
     const held = this.fresh('__held'), own = this.fresh('__own');
     const receiver = missing ? tryCode(missing) : `${this.tryPrefix(e.expression)}${this.expr(e.expression)}`;
-    return `({ () ${THROWING_CODE.test(receiver) ? 'throws ' : ''}-> ${fn.text} in let ${held}: ${receiverType} = ${receiver}; if let ${own} = jsOwnProperty(${held}, ${swiftString(name)})${this.library ? '' : `, ${own} != nil`} { return ${this.fromAnyCode(own, fn.text, true)} }; return ${methodValue(held)} }())`;
+    return `({ () ${missing || this.throwsInfo.expr(e.expression) ? 'throws ' : ''}-> ${fn.text} in let ${held}: ${receiverType} = ${receiver}; if let ${own} = jsOwnProperty(${held}, ${swiftString(name)})${this.library ? '' : `, ${own} != nil`} { return ${this.fromAnyCode(own, fn.text, true)} }; return ${methodValue(held)} }())`;
   }
 
   /** A program class's static method read as a value (`Validators.required`): one closure for good, as a module's function is. */
@@ -11673,7 +11665,7 @@ ${members.join('\n')}
       const o = this.fresh('__o'), key = swiftString(callee.name.text);
       const call = tryCode(`jsCallMethod(${[o, key, ...e.arguments.map((a) => this.restArgument(e, a, 'Any?'))].join(', ')})`);
       const receiver = this.coerce(callee.expression, 'Any?');
-      const value = `({ () throws -> Any? in let ${o}: Any? = ${this.tryPrefix(callee.expression) || (THROWING_CODE.test(receiver) ? 'try ' : '')}${receiver}; return ${e.questionDotToken || callee.questionDotToken ? `jsIsNullish(${callee.questionDotToken ? o : `try jsGet(${o}, ${key})`}) ? nil : ` : ''}${call} }())`;
+      const value = `({ () throws -> Any? in let ${o}: Any? = ${this.receiverThrows(callee.expression) ? 'try ' : ''}${receiver}; return ${e.questionDotToken || callee.questionDotToken ? `jsIsNullish(${callee.questionDotToken ? o : `try jsGet(${o}, ${key})`}) ? nil : ` : ''}${call} }())`;
       const t = this.typeOf(e);
       return t === 'Void' || t === 'Any?' || statementLevel(e) ? value : this.fromAnyCode(value, t, true);
     }
@@ -11699,7 +11691,7 @@ ${members.join('\n')}
         const args = e.arguments.some(ts.isSpreadElement) ? `${this.packed(e.arguments, 'JSArray<Any?>', this.restSlot(e, 'Any?'))}.storage` : `[${e.arguments.map((a) => this.restArgument(e, a, 'Any?')).join(', ')}]`;
         const ownCall = tryCode(`jsCallValue(${own}, this: ${this.coerce(callee.expression, 'Any?')}, optional: ${!!e.questionDotToken || !!callee.questionDotToken}, ${args})`);
         const holder = this.coerce(callee.expression, 'Any?');
-        const read = `${THROWING_CODE.test(holder) ? 'try ' : ''}jsOwnProperty(${holder}, ${swiftString(callee.name.text)})`;
+        const read = `${this.receiverThrows(callee.expression) ? 'try ' : ''}jsOwnProperty(${holder}, ${swiftString(callee.name.text)})`;
         const cond = `if let ${own} = ${read}${this.library ? '' : `, ${own} != nil`}`;
         if (t === 'Void') return `({ () throws -> Void in ${bound}${cond} { ${ownCall} } else { ${this.tryPrefix(e)}${this.call(e)} } }())`;
         return `({ () throws -> ${t} in ${bound}${cond} { return ${t === 'Any?' ? ownCall : this.fromAnyCode({ code: `(${ownCall})`, throws: true, pure: false }, t, true)} }; return ${this.tryPrefix(e)}${this.call(e)} }())`;
@@ -12369,7 +12361,7 @@ ${members.join('\n')}
           const binds = e.arguments.slice(2, 2 + params.length).map((a, k) => `let __t${k}: ${params[k]} = ${this.tryPrefix(a)}${this.coerce(a, params[k])}`);
           const args = params.map((p, k) => (k < binds.length ? `__t${k}` : p === 'Void' ? '()' : 'nil'));
           const body = `${[...binds, `let __f = ${this.expr(f)}`].join('; ')}; return ${timer}({ jsReport { _ = try __f(${args.join(', ')}) } }, ${ms})`;
-          return binds.some((b) => THROWING_CODE.test(b)) || THROWING_CODE.test(ms) ? `(try { () throws -> Double in ${body} }())` : `{ () -> Double in ${body} }()`;
+          return e.arguments.slice(1, 2 + params.length).some((a) => this.throwsInfo.expr(a)) ? `(try { () throws -> Double in ${body} }())` : `{ () -> Double in ${body} }()`;
         }
         case 'clearTimeout': case 'clearInterval': return `js${name[0].toUpperCase()}${name.slice(1)}(${arg(0) ? this.restArgument(e, arg(0), 'Double?') : 'nil'})`;
         case 'queueMicrotask': return `jsQueueMicrotask(${this.callback(arg(0))})`;
@@ -13179,7 +13171,7 @@ ${members.join('\n')}
     // Lenient code: a key that may be missing finds nothing, as undefined finds nothing a program stored by object.
     if (this.missingKeyLookup(e)) {
       const k = /^JSMap<.*>$/.test(type) ? splitTopLevel(type.slice(6, -1))[0] : /^JSSet<(.*)>$/.exec(type)![1];
-      const call = `${THROWING_CODE.test(t) ? 'try ' : ''}${t}.${name}($0)`;
+      const call = `${this.receiverThrows(target) ? 'try ' : ''}${t}.${name}($0)`;
       const held = `(${arg(0, optionalType(k))} as ${optionalType(k)})`;
       // An untyped value's entry reads back doubly optional, which one optional holds as undefined.
       if (name === 'get') return v === 'Any?' ? orNil(`${held}.map { ${call} ?? nil }`) : `${held}.flatMap { ${call} }`;
@@ -14475,8 +14467,8 @@ ${members.join('\n')}
     if (process.env.NS_SHAPE_SHADOW) shadowLiteral(this, e, { fields: order, tracks, notes: notesKeys, nullKeys, unsetKeys, untypedKeys, runtime: keysVar ? [...given.values(), ...keyNotes] : [], written: inOrder });
     const made = `${target}(${args}${args && reorder ? reorder : reorder.slice(2)}${args || reorder ? nulled : nulled.slice(2)})`;
     if (!spreadTemps.length && !self) return made;
-    const throws = this.throwsInfo.expr(e) || [...spreadTemps, made].some((x) => THROWING_CODE.test(outsideClosures(x)));
-    const made2 = `${(this.throwsInfo.expr(e) || THROWING_CODE.test(outsideClosures(made))) && markOf(made)?.op !== 'try' ? 'try ' : ''}${made}`;
+    const throws = this.throwsInfo.expr(e);
+    const made2 = `${throws && markOf(made)?.op !== 'try' ? 'try ' : ''}${made}`;
     if (self) return `{ () ${throws ? 'throws ' : ''}-> ${target} in ${spreadTemps.map((x) => x + '; ').join('')}weak var ${self}: ${target}?; let __made = ${made2}; ${self} = __made; return __made }()`;
     return `{ () ${throws ? 'throws ' : ''}-> ${target} in ${spreadTemps.join('; ')}; return ${made2} }()`;
   }
