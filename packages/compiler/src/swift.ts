@@ -11,7 +11,7 @@ import { memberName } from './stable-names.ts';
 import { shadowConversions } from './conversion-shadow.ts';
 import { parseNativeType, plan, type Slot, type Value } from './conversion.ts';
 import { argumentEntry, awaitSlot, conditionCell, type ConditionBackend, type ConditionCell, negatedCell, type AwaitSlot, argumentOf, argumentSlot, isEnumObject, place, resultSlot, returnCell, type ParamSlot, type PlacementBackend, type ResultSlot, type ReturnBackend, type ReturnCell, type Store, type StoreSlot, assignedTo, codeStoreSlot, placeCode, storeEntry, storeOf, storeSlot, emptyComparison, observerSlot, scriptComparison, type ElementStore, elementStoreOf, bindingSlot } from './placement.ts';
-import { assignedCode, blockCode, castCode, elementOf, helper, implicitOf, isPure, isUnwrap, markOf, marked, memberOf, orNil, pureCode, tried, tryCode, unwrapInner, unwrappedCode, unwrappedIf, valueOf } from './swift-marks.ts';
+import { assignedCode, blockCode, castCode, elementOf, helper, implicitOf, isPure, isUnwrap, leading, leadsWithTry, markOf, marked, memberOf, orNil, pureCode, ownTried, tried, tryCode, tryIf, unwrapInner, unwrappedCode, unwrappedIf, valueOf } from './swift-marks.ts';
 import { convertedRead, onlyNull, ValueStates, type NulledRead, type StateBackend } from './value-states.ts';
 import type { Form } from './forms.ts';
 import { AsyncLowering, type AsyncCtx, type AsyncSyntax, type AsyncTranslator } from './async.ts';
@@ -146,9 +146,9 @@ function assignmentValue(e: ts.Node): boolean {
 
 const FOREIGN_SLOT: Slot = { rep: 'foreign', type: parseNativeType('Any?'), kind: 'untyped' };
 
-/** Code given as text: what its producer recorded of it; it throws where it leads with its own `try` (a try-placement scan). */
+/** Code given as text: what its producer recorded of it, a `try` it leads with included. */
 function valued(code: string | Value): Value {
-  return typeof code === 'string' ? { ...valueOf(code), throws: /^\(*try\b/.test(code) } : code;
+  return typeof code === 'string' ? { ...valueOf(code), throws: leadsWithTry(code) } : code;
 }
 
 /** A statement's `try` before a check that carries its own: one `try`, as Swift warns of the outer one; a `try!` or `try?` inside stays. */
@@ -3079,7 +3079,7 @@ ${members.join('\n')}
       const setType = `(${name}, ${a.value}) -> Void`;
       if (a.get) { lines.push(`    private let __get_${f.name}: ${getType}`); params.push(`__get_${f.name}: @escaping ${getType}`); inits.push(`        self.__get_${f.name} = __get_${f.name}`); }
       if (a.set) { lines.push(`    private let __set_${f.name}: ${setType}`); params.push(`__set_${f.name}: @escaping ${setType}`); inits.push(`        self.__set_${f.name} = __set_${f.name}`); }
-      const get = a.get ? `${a.throws ? 'try ' : ''}__get_${f.name}(self)` : 'nil';
+      const get = a.get ? tryIf(a.throws, `__get_${f.name}(self)`) : 'nil';
       if (a.set) lines.push(`    var ${n}: ${f.type} {`, `        get { ${get} }`, `        set { __set_${f.name}(self, newValue${a.get ? '' : '!'}) }`, '    }');
       else lines.push(`    var ${n}: ${f.type} {`, `        get${a.throws ? ' throws' : ''} { ${get} }`, '    }');
       this.declare(f.name, { kind: 'var', type: f.type, throws: !a.set && !!a.throws });
@@ -3288,7 +3288,7 @@ ${members.join('\n')}
     if (orZero && /^JSArray<.*>$/.test(type)) return this.fromAnyValue(input, type);
     // An untyped string, number or boolean is converted as JavaScript converts it where it is used, never refused.
     if (orZero && ['String', 'Double', 'Bool'].includes(type)) return this.fromAnyValue(input, type);
-    if (orZero && zero && zero !== 'nil' && !type.endsWith('?')) return valued(`((${code} as? ${type}) ?? ${zero})`);
+    if (orZero && zero && zero !== 'nil' && !type.endsWith('?')) return valued(leading(`((${code} as? ${type}) ?? ${zero})`, code));
     // Lenient code converts a string, number or boolean as JavaScript would; a cast to any other type still throws where it fails.
     const saved = this.throwingCast;
     this.throwingCast = checked && this.lenient;
@@ -3365,7 +3365,7 @@ ${members.join('\n')}
   /** An untyped array as an array of `element`, each converted: a new array unless it already is one of them. */
   arrayOf(code: string, element: string): string {
     const el = this.arrayElementFromAny(element);
-    return `${el.mark?.op === 'try' ? 'try ' : ''}jsArrayOf(${code}) { ${el.code} }`;
+    return tryIf(el.mark?.op === 'try', `jsArrayOf(${code}) { ${el.code} }`);
   }
 
   /** An untyped array's element read as `type` (`$0`): lenient code's object elements are checked present, as Swift's array holds no undefined. */
@@ -3470,10 +3470,10 @@ ${members.join('\n')}
     // A Core Foundation class casts unconditionally: `as?` to one is not a test Swift allows.
     if (/^(CG|CT|CF)[A-Z]\w*$/.test(base) && CF_CLASSES.has(base)) {
       if (type.endsWith('?')) return helper('jsForeign', code, `, ${base}.self`);
-      return appChecked || throwing ? `(try jsForeignPresent(${code}, ${base}.self))` : castCode(code, base, 'as!');
+      return appChecked || throwing ? ownTried(`(try jsForeignPresent(${code}, ${base}.self))`) : castCode(code, base, 'as!');
     }
     // A type parameter may stand for an interface: an object read untyped becomes one (`JSON.parse` of a cached `T[]`).
-    if (this.genericNames.has(base)) return type.endsWith('?') ? `jsConverted(${code}, to: ${base}.self)` : appChecked ? `(try jsChecked(${code}, ${base}.self))` : unwrappedCode(`jsConverted(${code}, to: ${base}.self)`);
+    if (this.genericNames.has(base)) return type.endsWith('?') ? `jsConverted(${code}, to: ${base}.self)` : appChecked ? ownTried(`(try jsChecked(${code}, ${base}.self))`) : unwrappedCode(`jsConverted(${code}, to: ${base}.self)`);
     // A native enum or option set read untyped (`textView.returnKeyType`): the number script holds, as that type's raw value.
     if (this.native.isEnumType(base)) return type.endsWith('?') ? `jsUnlessNullish(${code}, { ${this.native.enumFromNumber('jsToNumber($0)', base)} })` : this.native.enumFromNumber(`jsToNumber(${code})`, base);
     // A geometry struct the runtime gives script as an object (`{ origin, size }`): the struct again.
@@ -3497,7 +3497,7 @@ ${members.join('\n')}
     if (plain) return implicitOf(`jsShaped(${code}) { ${plain.throws ? 'try ' : ''}${this.appModule ? `${this.appModule}.` : ''}${type}() }`);
     // Lenient code holds a native collection implicitly unwrapped too (`sceneManifest = bundle.objectForInfoDictionaryKey(…)`): nil where it is missing.
     if (this.lenientRef(type) !== type || (this.lenient && /^\[.*\]$/.test(type))) return alreadyAs(code, type) ? code : this.libraryClassCast(input, type, true, checked || throwing, placed) ?? castCode(code, type, 'as?', true);
-    if (appChecked || throwing) return `(try jsChecked(${code}, ${type}.self))`;
+    if (appChecked || throwing) return ownTried(`(try jsChecked(${code}, ${type}.self))`);
     return this.forcedCast(input, type);
   }
 
@@ -3540,7 +3540,7 @@ ${members.join('\n')}
     if (this.lenient && castTo(code, type, true)) return code;
     // A read with no closure in its code that may throw (or reads dynamically) is cast where it throws, under a `try` where it leads with its own.
     const throws = this.lenient && !code.includes('{') ? (input.throws ? 'try ' : THROWING_CODE.test(code) || code.startsWith('jsGet(') ? '' : null) : null;
-    if (throws !== null) return throws ? `(try jsCastPresent(${code}) as ${type})` : `(jsCastPresent(${code}) as ${type})`;
+    if (throws !== null) return throws ? ownTried(`(try jsCastPresent(${code}) as ${type})`) : `(jsCastPresent(${code}) as ${type})`;
     return castCode(code, type, 'as!');
   }
 
@@ -3657,10 +3657,10 @@ ${members.join('\n')}
   private checkedConvert(code: string, to: Form, at: ts.Node, optional = false): string | null {
     const checked: Record<string, string> = { String: 'jsCheckedString', Double: 'jsCheckedNumber', Bool: 'jsCheckedBool' };
     const t = this.type(to.type, at), fn = checked[t];
-    if (fn) return `(try ${fn}${optional ? 'OrNil' : ''}(${code}))`;
+    if (fn) return ownTried(`(try ${fn}${optional ? 'OrNil' : ''}(${code}))`);
     const element = /^JSArray<(\w+)>$/.exec(t)?.[1];
     if (!element || !checked[element] || !to.element?.foreign || to.element.typeObserved) return null;
-    return optional ? `(try jsUnlessNullish(${code}) { try jsCheckedArray($0) { try ${checked[element]}($0) } })` : `(try jsCheckedArray(${code}) { try ${checked[element]}($0) })`;
+    return optional ? ownTried(`(try jsUnlessNullish(${code}) { try jsCheckedArray($0) { try ${checked[element]}($0) } })`) : ownTried(`(try jsCheckedArray(${code}) { try ${checked[element]}($0) })`);
   }
 
   /** An untyped value placed where its slot holds its declared type (`foreignPlacement`): converted checked, or null. */
@@ -3695,7 +3695,7 @@ ${members.join('\n')}
     const base = to.replace(/[?!]$/, '');
     if (this.type(entry.type, at) !== base) return null;
     const value = code();
-    return this.checkedConvert(value, entry, at, base !== to) ?? (this.appClass(entry.type) ? `(try ${base !== to ? 'jsCast' : 'jsCastPresent'}(${value}, ${base}.self))` : null);
+    return this.checkedConvert(value, entry, at, base !== to) ?? (this.appClass(entry.type) ? ownTried(`(try ${base !== to ? 'jsCast' : 'jsCastPresent'}(${value}, ${base}.self))`) : null);
   }
 
   private checkedPlacementEntry(a: ts.Expression): Form | null {
@@ -3927,7 +3927,7 @@ ${members.join('\n')}
     const args = fn.params.map((p, k) => k === restAt ? `${p}(__a.dropFirst(${k}).map { ${this.fromAnyCode('$0', p.replace(/^JSArray<(.*)>$/, '$1'), true)} })` : this.throwingConverts(() => this.presentFromAny(`jsArg(__a, ${k})`, p.replace(/^@escaping /, ''), true, true)));
     const result = (call: string) => (fn.result === 'Void' ? `${call}; return nil` : `return ${this.convert(call, fn.result, 'Any?')}`);
     // Called with fewer arguments, a function whose last parameters have defaults is called by name, which gives them.
-    const fewer = trailing ? Array.from({ length: fn.params.length - trailing.from }, (_, k) => trailing.from + k).map((n) => `if __a.count <= ${n} { ${result(`try ${trailing.ref}(${args.slice(0, n).join(', ')})`)} }; `).join('') : '';
+    const fewer = trailing ? Array.from({ length: fn.params.length - trailing.from }, (_, k) => trailing.from + k).map((n) => `if __a.count <= ${n} { ${result(tryCode(`${trailing.ref}(${args.slice(0, n).join(', ')})`))} }; `).join('') : '';
     const body = fewer + result(tryCode(`__f(${args.join(', ')})`));
     const arity = length ?? (restAt >= 0 ? restAt : fn.params.length);
     const cell = this.functionCell(fn.text);
@@ -4790,7 +4790,7 @@ ${members.join('\n')}
     const counterpart = this.memberCounterpart(fn) ?? this.functionCounterpart(fn);
     if (counterpart) {
       const args = [...(ts.isFunctionDeclaration(fn) ? [] : ['self']), ...fn.parameters.map((p) => ident((p.name as ts.Identifier).text))];
-      const call = `${this.throwsInfo.fn(fn) ? 'try ' : ''}${counterpart}(${args.join(', ')})`;
+      const call = tryIf(this.throwsInfo.fn(fn), `${counterpart}(${args.join(', ')})`);
       return `{\n${base}    ${ret === 'Void' ? call : `return ${call}`}\n${base}}`;
     }
     this.lenientParams(fn);
@@ -5106,7 +5106,7 @@ ${members.join('\n')}
     const omittable = (k: number) => { const p = root.parameters[k]; return base.params[k].type.endsWith('?') && (!p || !!p.questionToken || !!p.initializer); };
     const params = base.params.map((p, k) => `_ __b${k}: ${p.decl.slice(p.decl.indexOf(':') + 1).trim()}${omittable(k) && !/=/.test(p.decl) ? ' = nil' : ''}`).join(', ');
     const body = this.functionBody(fn, ret, pad);
-    const call = `${throws ? 'try ' : ''}{ () ${throws ? 'throws ' : ''}-> ${ret} in${body.slice(1)}()`;
+    const call = tryIf(throws, `{ () ${throws ? 'throws ' : ''}-> ${ret} in${body.slice(1)}()`);
     const result = base.ret === 'Void' ? `${pad}_ = ${call}` : `${pad}let __result: ${ret} = ${call}\n${pad}return ${this.convert('__result', plain(ret), plain(base.ret))}`;
     this.lastSignature = { kind: 'func', mods: modifiers, params, throws, type: base.ret };
     return `${modifiers}func ${name}(${params})${throws ? ' throws' : ''}${base.ret === 'Void' ? '' : ` -> ${base.ret}`} {\n${[...binds, result].join('\n')}\n${this.indent}}`;
@@ -5332,7 +5332,7 @@ ${members.join('\n')}
       const tokenDecl = this.resolve(target)?.declarations?.[0];
       if (builtins.includes(token) || this.isInjectableClass(tokenDecl)) {
         const throws = token === 'Page' || (token === 'ActivatedRoute' && tokenDecl?.getSourceFile().fileName.endsWith('/runtime/angular-rx.ts')) || (tokenDecl && ts.isClassDeclaration(tokenDecl) && !tokenDecl.getSourceFile().fileName.endsWith('/runtime/angular-rx.ts') && this.throwsInfo.initThrows(tokenDecl));
-        return `${throws ? 'try ' : ''}${injected(token)}`;
+        return tryIf(throws, `${injected(token)}`);
       }
       const raw = `Injector.inject(${this.coerce(injectArg, 'Any?')}${optional ? ', JSObject(["optional": true])' : ''})`;
       return pt === 'Any?' ? raw : this.fromAny(raw, pt);
@@ -5347,7 +5347,7 @@ ${members.join('\n')}
       const tokenDecl = this.resolve(ref.typeName)?.declarations?.[0];
       if (builtins.includes(token) || this.isInjectableClass(tokenDecl)) {
         const throws = token === 'Page' || (token === 'ActivatedRoute' && tokenDecl?.getSourceFile().fileName.endsWith('/runtime/angular-rx.ts')) || (tokenDecl && ts.isClassDeclaration(tokenDecl) && !tokenDecl.getSourceFile().fileName.endsWith('/runtime/angular-rx.ts') && this.throwsInfo.initThrows(tokenDecl));
-        return `${throws ? 'try ' : ''}${injected(token)}`;
+        return tryIf(throws, `${injected(token)}`);
       }
       if (tokenDecl && ts.isClassDeclaration(tokenDecl)) {
         const raw = `Injector.inject(${token}.self${optional ? ', JSObject(["optional": true])' : ''})`;
@@ -5592,7 +5592,7 @@ ${members.join('\n')}
     const ctor = cls.members.find((m): m is ts.ConstructorDeclaration => ts.isConstructorDeclaration(m) && !!m.body);
     const args = (ctor?.parameters ?? []).map((p) => this.parameterInject(p));
     const throwsInit = /^\s*(?:override )?(?:convenience )?init\(.*\) throws/m.test(code) || (ctor?.parameters ?? []).some((p) => this.throwsInfo.injects(p));
-    const make = `${throwsInit ? 'try ' : ''}${name}(${args.join(', ')})`;
+    const make = tryIf(throwsInit, `${name}(${args.join(', ')})`);
     return [
       `extension ${name}: JSInjectableType {`,
       throwsInit ? `    static var shared: ${name} { get throws { try Injector.root(${name}.self) { ${make} } } }` : `    static var shared: ${name} { Injector.root(${name}.self, making: { ${make} }) }`,
@@ -6051,7 +6051,7 @@ ${members.join('\n')}
         const ret = this.returnTypeOf(m);
         const throws = this.throwsInfo.fn(m);
         lines.push('    ' + this.memberFunc(m, '__symbol_toPrimitive'));
-        const call = `${throws ? 'try ' : ''}__symbol_toPrimitive(${m.parameters.length ? 'hint' : ''})`;
+        const call = tryIf(throws, `__symbol_toPrimitive(${m.parameters.length ? 'hint' : ''})`);
         lines.push(`    func jsToPrimitive(_ hint: String) throws -> Any? { ${ret === 'Void' ? `${call}; return nil` : `return ${this.convert(call, ret, 'Any?')}`} }`);
         this.declare('jsToPrimitive', { kind: 'func', params: '_ hint: String', throws: true, type: 'Any?' });
         conformances.push('JSToPrimitive');
@@ -6062,7 +6062,7 @@ ${members.join('\n')}
         const async = keyed.member === 'jsSymbolAsyncIterator';
         this.declare(async ? 'jsAnyAsyncIterator' : 'jsAnyIterator', { kind: 'func', params: '', throws: true, type: async ? 'JSAsyncIteratorProtocol' : 'JSIteratorProtocol' });
         conformances.push(async ? 'JSAsyncIterableValue' : 'JSIterableValue');
-        lines.push(async ? `    func jsAnyAsyncIterator() throws -> JSAsyncIteratorProtocol { ${this.throwsInfo.fn(m) ? 'try ' : ''}jsSymbolAsyncIterator() }` : `    func jsAnyIterator() throws -> JSIteratorProtocol { ${this.lenient ? `try jsIterated(${this.throwsInfo.fn(m) ? 'try ' : ''}jsSymbolIterator(), "Result of the Symbol.iterator method is not an object")` : `${this.throwsInfo.fn(m) ? 'try ' : ''}jsSymbolIterator()`} }`);
+        lines.push(async ? `    func jsAnyAsyncIterator() throws -> JSAsyncIteratorProtocol { ${this.throwsInfo.fn(m) ? 'try ' : ''}jsSymbolAsyncIterator() }` : `    func jsAnyIterator() throws -> JSIteratorProtocol { ${this.lenient ? `try jsIterated(${this.throwsInfo.fn(m) ? 'try ' : ''}jsSymbolIterator(), "Result of the Symbol.iterator method is not an object")` : tryIf(this.throwsInfo.fn(m), `jsSymbolIterator()`)} }`);
         continue;
       }
       if (keyed?.key) { lines.push('    ' + this.memberFunc(m, keyed.member)); continue; }
@@ -6244,7 +6244,7 @@ ${members.join('\n')}
     const next = methods.find((m) => m.name === 'next');
     if (!next || next.params > 1 || next.ret === 'Void') return null;
     // A method declaring its parameter's type takes the protocol's untyped value as that type.
-    const call = (m: IteratorMethod, arg: string) => `${m.throws ? 'try ' : ''}${ident(m.name)}(${m.params ? (m.param ? this.fromAny(arg, m.param.replace(/!$/, '?')) : arg) : ''})`;
+    const call = (m: IteratorMethod, arg: string) => tryIf(m.throws, `${ident(m.name)}(${m.params ? (m.param ? this.fromAny(arg, m.param.replace(/!$/, '?')) : arg) : ''})`);
     const ret = methods.find((m) => m.name === 'return'), thr = methods.find((m) => m.name === 'throw');
     if (next.ret.startsWith('JSPromise<')) {
       const promise = (m: IteratorMethod, arg: string) => {
@@ -6568,7 +6568,7 @@ ${members.join('\n')}
         const n = a.member;
         const t = (a.get && this.narrowedFrom(a.get)) ?? (a.get ? this.returnTypeOf(a.get) : optionalType(this.typeOf(a.set!.parameters[0].name)));
         const self = `guard let __o = __this as? ${name} else { throw JSException(JSTypeError("Illegal invocation")) }`;
-        const get = a.get ? `{ (__this: Any?) throws -> Any? in ${self}; return ${this.convert(`${this.throwsInfo.fn(a.get) && !this.reportedGetter(a.get) ? 'try ' : ''}__o.${ident(n)}`, t, 'Any?')} }` : 'nil';
+        const get = a.get ? `{ (__this: Any?) throws -> Any? in ${self}; return ${this.convert(tryIf(this.throwsInfo.fn(a.get) && !this.reportedGetter(a.get), `__o.${ident(n)}`), t, 'Any?')} }` : 'nil';
         const forward = a.set ? forwardedSetter(a.set) : null;
         const set = !a.set ? 'nil'
           // `set color(value) { this.style.color = value; }`: the value script gives (a string the style converts) goes on as it is.
@@ -6720,7 +6720,7 @@ ${members.join('\n')}
       const name = ident(m.name.getText());
       const declared = this.memberFunc(m, name, overridesProgram ? 'override ' : '');
       const args = m.parameters.map((p, k) => parsed[k] ? this.convert(`__k${k}`, parsed[k].type, this.typeOf(p.name)) : (this.zero(this.typeOf(p.name)) ?? 'nil'));
-      const call = `${throws ? 'try ' : ''}self.${name}(${args.join(', ')})`;
+      const call = tryIf(throws, `self.${name}(${args.join(', ')})`);
       const forward = ret === 'Void' ? `        ${tsRet === 'Void' ? call : `_ = ${call}`}` : `        return ${this.convert(call, tsRet, ret)}`;
       return [`    ${declared}`, `    override func ${name}(${parsed.map((p) => p.decl).join(', ')})${kit.throws ? ' throws' : ''}${ret === 'Void' ? '' : ` -> ${ret}`} {`, forward, '    }'].join('\n');
     }
@@ -6737,7 +6737,7 @@ ${members.join('\n')}
     // A kit method that throws passes on what the override throws, as core's caller catches it.
     const result = ret === 'Void'
       ? (throws ? (kit.throws ? `        _ = try ${call}` : `        jsReport { _ = try ${call} }`) : `        _ = ${call}`)
-      : `        let __result: ${tsRet} = ${throws && !kit.throws ? `jsReportedOrZero { () throws -> ${tsRet} in${body.slice(1)}` : `${throws ? 'try ' : ''}${call}`}\n        return ${this.convert('__result', tsRet, ret)}`;
+      : `        let __result: ${tsRet} = ${throws && !kit.throws ? `jsReportedOrZero { () throws -> ${tsRet} in${body.slice(1)}` : tryIf(throws, `${call}`)}\n        return ${this.convert('__result', tsRet, ret)}`;
     return [`    override func ${ident(m.name.getText())}(${parsed.map((p) => p.decl).join(', ')})${kit.throws ? ' throws' : ''}${ret === 'Void' ? '' : ` -> ${ret}`} {`, ...binds, result, '    }'].join('\n');
   }
 
@@ -7580,18 +7580,18 @@ ${members.join('\n')}
         const key = (el.propertyName ?? el.name).getText();
         const record = /^JSRecord<(.*)>$/.exec(this.typeOf(name).replace(/\?$/, ''));
         const defined = this.definedField(name, key);
-        read = this.isAny(name) || _type === 'Any?' ? `(try jsGet(${value}, ${swiftString(key)}))`
+        read = this.isAny(name) || _type === 'Any?' ? ownTried(`(try jsGet(${value}, ${swiftString(key)}))`)
           : defined ? this.fromAnyCode(`${value}[jsKey: ${swiftString(key)}]`, this.typeOf(defined.name!), true)
           : record ? this.undefinedAs(`${value}[${swiftString(key)}]`, ts.isIdentifier(el.name) ? this.typeOf(el.name) : record[1])
-          : `${this.getterThrows(source, key) ? 'try ' : ''}${value}.${ident(key)}`;
-      } else if (_type === 'Any?') read = `(try jsGet(${value}, "${k}"))`;
+          : tryIf(this.getterThrows(source, key), `${value}.${ident(key)}`);
+      } else if (_type === 'Any?') read = ownTried(`(try jsGet(${value}, "${k}"))`);
       else if (matchValue) read = this.undefinedAs(orNil(elementOf(value, k, '.values')), ts.isIdentifier(el.name) ? this.typeOf(el.name) : 'Any?');
       else if (this.checker.isTupleType(source) && !arrayValue) read = `${value}.${k}`;
       // Past the end is undefined.
-      else if (this.isAny(name)) read = `(try jsGet(${value}, "${k}"))`;
+      else if (this.isAny(name)) read = ownTried(`(try jsGet(${value}, "${k}"))`);
       else if (arrayValue && /^JSArray<Any\?>[?!]?$/.test(_type) && ts.isIdentifier(el.name)) read = orNil(elementOf(value, k));
       else read = arrayValue && ts.isIdentifier(el.name) && (!el.initializer || /[?!]$/.test(this.typeOf(el.name))) ? this.undefinedAs(elementOf(value, k), this.typeOf(el.name)) : arrayValue && el.initializer ? elementOf(value, k) : `${value}[${k}]`;
-      if (el.initializer) read = `(${read} ?? ${this.coerce(el.initializer, ts.isIdentifier(el.name) ? this.typeOf(el.name) : this.partType(name, el, k, source, _type) ?? this.typeOf(el.name))})`;
+      if (el.initializer) read = leading(`(${read} ?? ${this.coerce(el.initializer, ts.isIdentifier(el.name) ? this.typeOf(el.name) : this.partType(name, el, k, source, _type) ?? this.typeOf(el.name))})`, read);
       if (ts.isIdentifier(el.name)) {
         const t = this.typeOf(el.name);
         if (matchValue && !el.initializer && /^(Double|String|Bool)$/.test(t)) {
@@ -7984,7 +7984,7 @@ ${members.join('\n')}
       while (ts.isParenthesizedExpression(target)) target = target.expression;
       if (dflt) {
         const base = readType === 'Any?' ? 'Any?' : readType.replace(/\?$/, '');
-        read = readType === base && base !== 'Any?' ? read : `(${read} ?? ${this.coerce(dflt, base)})`;
+        read = readType === base && base !== 'Any?' ? read : leading(`(${read} ?? ${this.coerce(dflt, base)})`, read);
         readType = base;
       }
       if (ts.isArrayLiteralExpression(target) || ts.isObjectLiteralExpression(target)) {
@@ -8015,10 +8015,10 @@ ${members.join('\n')}
             write(target.expression, `${restType}([${tuple.slice(k).map((t, n) => this.convert(`${value}.${k + n}`, t, each)).join(', ')}])`, restType, undefined);
             return;
           }
-          write(target.expression, untyped ? `(try jsCallMethod(${value}, "slice", Double(${k})))` : `${value}.slice(${k})`, untyped ? 'Any?' : type.replace(/\?$/, ''), source);
+          write(target.expression, untyped ? ownTried(`(try jsCallMethod(${value}, "slice", Double(${k})))`) : `${value}.slice(${k})`, untyped ? 'Any?' : type.replace(/\?$/, ''), source);
           return;
         }
-        if (untyped) write(target, `(try jsGet(${value}, "${k}"))`, 'Any?', undefined);
+        if (untyped) write(target, ownTried(`(try jsGet(${value}, "${k}"))`), 'Any?', undefined);
         else if (tuple) write(target, `${value}.${k}`, tuple[k], parts?.[k]);
         else write(target, element === 'Any?' ? orNil(elementOf(value, k)) : elementOf(value, k), element === 'Any?' ? 'Any?' : optionalType(element!), elementPart);
       });
@@ -8040,9 +8040,9 @@ ${members.join('\n')}
         : p.initializer;
       const part = source.getProperty(key) && this.checker.getTypeOfSymbolAtLocation(source.getProperty(key)!, pattern);
       const record = /^JSRecord<(.*)>\??$/.exec(type)?.[1];
-      if (untyped || !part) write(target, `(try jsGet(${value}, ${swiftString(key)}))`, 'Any?', part);
+      if (untyped || !part) write(target, ownTried(`(try jsGet(${value}, ${swiftString(key)}))`), 'Any?', part);
       else if (record) write(target, `${value}[${swiftString(key)}]`, optionalType(record), part);
-      else write(target, `${this.getterThrows(source, key) ? 'try ' : ''}${value}.${ident(key)}`, this.type(part, pattern), part);
+      else write(target, tryIf(this.getterThrows(source, key), `${value}.${ident(key)}`), this.type(part, pattern), part);
     }
   }
 
@@ -8106,7 +8106,7 @@ ${members.join('\n')}
         for (const a of [...chain].reverse()) {
           // The value is read once, before: only what this target's own write does can throw.
           const code = this.expr(a);
-          out.push(`${this.throwsInfo.expr(a.left) || this.throwsInfo.own(a) || this.castThrows(a.right) || this.checkedThrows(a.right) ? 'try ' : ''}${code}`);
+          out.push(tryIf(this.throwsInfo.expr(a.left) || this.throwsInfo.own(a) || this.castThrows(a.right) || this.checkedThrows(a.right), `${code}`));
           // The next target reads what this one now holds, as its own type has it (`x = elem = opened`).
           this.subst.set(a, ts.isIdentifier(a.left) ? this.expr(a.left) : held ? tmp : this.expr(value));
         }
@@ -8821,7 +8821,7 @@ ${members.join('\n')}
       return `${ident(f.name)}: { (${params.join(', ')}) throws -> ${fn.result} in ${fn.result === 'Void' ? '' : 'return '}try __o.${ident(f.name)}(${args.join(', ')}) }`;
     });
     const make = `{ (__o: ${from}) throws -> ${to} in ${to}(${fields.join(', ')}) }`;
-    return source.endsWith('?') ? unwrappedIf(`(try (${this.expr(e)}).map(${make}))`, !target.endsWith('?')) : `(try ${make}(${this.expr(e)}))`;
+    return source.endsWith('?') ? unwrappedIf(ownTried(`(try (${this.expr(e)}).map(${make}))`), !target.endsWith('?')) : ownTried(`(try ${make}(${this.expr(e)}))`);
   }
 
   /** An object member of an untyped object (`componentModule.component`, declared a View, an ActionItem too) where any value goes: the value itself, not cast to the class declared. */
@@ -9085,7 +9085,7 @@ ${members.join('\n')}
       this.rawHeld.add(e);
       try {
         const raw = this.expr(e);
-        return this.checkedConvert(raw, narrowed, e) ?? `(try jsCastPresent(${raw}, ${this.type(narrowed.type, e)}.self))`;
+        return this.checkedConvert(raw, narrowed, e) ?? ownTried(`(try jsCastPresent(${raw}, ${this.type(narrowed.type, e)}.self))`);
       } finally { this.rawHeld.delete(e); }
     }
     if (ts.isCallExpression(e) && !this.nullishCalls.has(e) && !this.subst.has(e) && this.states.nullishRead(e)) return `${this.nullishCode(e)}${this.lenientApp ? '.jsAny' : '.optional'}`;
@@ -9655,7 +9655,7 @@ ${members.join('\n')}
       const tp = this.tryPrefix(a);
       return `({ () ${tp ? 'throws ' : ''}-> ${t} in ${tp}${this.binary(a)}; return ${this.expr(a.left)} }())`;
     }
-    if (ts.isParenthesizedExpression(e)) return `(${this.expr(e.expression)})`;
+    if (ts.isParenthesizedExpression(e)) { const inner = this.expr(e.expression); return leading(`(${inner})`, inner); }
     // `(info.name = v)` as a value: the value assigned, evaluated once (Swift's assignment has none).
     if (ts.isBinaryExpression(e) && e.operatorToken.kind === ts.SyntaxKind.EqualsToken && !statementLevel(e) && !ts.isArrayLiteralExpression(e.left) && !this.subst.has(e.right)) {
       const stored = this.storedLiteralType(e);
@@ -9728,7 +9728,7 @@ ${members.join('\n')}
       if (entry) return this.checkedConvert(this.expr(e.expression), entry, e)!;
       // The assertion is erased in JavaScript: where Swift needs the type, the value is converted as script converts it there.
       if (!this.library && from === 'Any?' && ['String', 'Double', 'Bool'].includes(to)) return `jsLenient${to === 'Double' ? 'Number' : to}(${this.expr(e.expression)})`;
-      if (from === 'Any?' && to !== 'Any?' && /^\w+\?$/.test(to) && this.checkedClassAssertion(e)) return `(try jsCast(${this.expr(e.expression)}, ${to.slice(0, -1)}.self))`;
+      if (from === 'Any?' && to !== 'Any?' && /^\w+\?$/.test(to) && this.checkedClassAssertion(e)) return ownTried(`(try jsCast(${this.expr(e.expression)}, ${to.slice(0, -1)}.self))`);
       if (from === 'Any?' && to !== 'Any?') {
         const code = this.expr(e.expression);
         return this.throwingConverts(() => this.fromAnyChecked(code, to, this.castThrows(e.expression)).code, this.libraryThrowsHere(e), e.expression);
@@ -9761,7 +9761,7 @@ ${members.join('\n')}
         // `args.object as Button` of another class: a TypeError, catchable as script's failure on a member it lacks would be.
         const made = this.madeClass(e.expression);
         if (made && sameClass(made, to)) return this.expr(e.expression);
-        return this.castThrows(e) ? `(try jsChecked(${this.expr(e.expression)}, ${to}.self))` : castCode(this.expr(e.expression), to, 'as!');
+        return this.castThrows(e) ? ownTried(`(try jsChecked(${this.expr(e.expression)}, ${to}.self))`) : castCode(this.expr(e.expression), to, 'as!');
       }
       // A non-strict app's assertion of a value that may be missing (`<UITableViewCell>table.cellForRow(…)`): unwrapped where used.
       if (this.lenientApp && from === optionalType(to) && to !== 'Any?' && !isFunctionType(to)) return unwrappedCode(this.expr(e.expression));
@@ -9908,7 +9908,7 @@ ${members.join('\n')}
       const params = declared ? thisFn.parameters.slice(1) : [...thisFn.parameters];
       const args = params.map((p, k) => this.fromAnyCode(`jsArg(__a, ${k})`, this.paramType(p), true));
       const self = declared ? this.paramType(thisFn.parameters[0]) : 'Any?';
-      const call = `${this.throwsInfo.fn(thisFn) ? 'try ' : ''}${this.refName(e)}(${[self === 'Any?' ? '__this' : this.fromAnyCode('__this', self, true), ...args].join(', ')})`;
+      const call = tryIf(this.throwsInfo.fn(thisFn), `${this.refName(e)}(${[self === 'Any?' ? '__this' : this.fromAnyCode('__this', self, true), ...args].join(', ')})`);
       const ret = this.returnTypeOf(thisFn);
       const method = `{ (__this: Any?, __a: [Any?]) throws -> Any? in ${ret === 'Void' ? `${call}; return nil` : `return ${this.convert(call, ret, 'Any?')}`} }`;
       return this.library ? `(${method} as JSMethod)` : `jsMethodFunction(${swiftString(thisFn.name!.text)}, ${scriptLength(thisFn)}, ${method})`;
@@ -10575,7 +10575,7 @@ ${members.join('\n')}
       const byResult = want.every((t, k) => t === have[k]);
       if (byResult && !typeParameter(ownRet)) return false;
       const args = want.map((_, k) => `__p${k}`);
-      const call = tryCode(`self.${ident(name)}(${args.map((a, k) => (have[k] === want[k] ? a : erased(have[k], k) ? `(try jsChecked(${a}, ${have[k]}.self))` : `${a} as Any?`)).join(', ')})`);
+      const call = tryCode(`self.${ident(name)}(${args.map((a, k) => (have[k] === want[k] ? a : erased(have[k], k) ? ownTried(`(try jsChecked(${a}, ${have[k]}.self))`) : `${a} as Any?`)).join(', ')})`);
       const body = ret === 'Void' ? call : ownRet === 'Void' ? `${call}; return nil` : byResult ? `let __r: ${ownRet} = ${call}; return __r` : `return ${call}`;
       added.push(`    func ${ident(name)}(${want.map((t, k) => `_ ${args[k]}: ${t}`).join(', ')}) throws${ret === 'Void' ? '' : ` -> ${ret}`} { ${body} }`);
       this.declare(name, { kind: 'func', params: want.map((t, k) => `_ ${args[k]}: ${t}`).join(', '), throws: true, type: ret });
@@ -10838,7 +10838,7 @@ ${members.join('\n')}
     const params = fn.params.map((t, k) => `__p${k}: ${t}`);
     const bare = `__r.${this.memberName(e)}(${fn.params.map((_, k) => `__p${k}`).join(', ')})`;
     // Lenient code's method may give undefined where the function type promises an object.
-    const call = fn.result !== 'Void' && this.lenient && this.nullableRef(fn.result) !== fn.result ? tryCode(helper('jsObjectRequired', bare)) : `${this.throwsInfo.fn(decl) ? 'try ' : ''}${bare}`;
+    const call = fn.result !== 'Void' && this.lenient && this.nullableRef(fn.result) !== fn.result ? tryCode(helper('jsObjectRequired', bare)) : tryIf(this.throwsInfo.fn(decl), `${bare}`);
     const body = fn.result !== 'Void' ? `return ${call}` : this.returnTypeOf(decl) === 'Void' ? call : `_ = ${call}`;
     const closure = `{ [weak __r] (${params.join(', ')}) throws -> ${fn.result} in guard let __r else { throw jsReleasedReceiver(${swiftString(name)}) }; ${this.keeping('__i', body, fn.result)} }`;
     const methodValue = (receiver: string) => `jsMethodValue(${receiver}, ${swiftString(name)}) { __r, __i in ${cell}(f: ${closure}) }.f`;
@@ -11052,7 +11052,7 @@ ${members.join('\n')}
     const entry = this.checkedAssertion(e);
     if (entry) return this.checkedConvert(code, entry, e, true)!;
     if (['String', 'Double', 'Bool'].includes(t)) return `jsLenient${t === 'Double' ? 'Number' : t}OrNil(${code})`;
-    if (this.checkedClassAssertion(e)) return `(try jsCast(${code}, ${t}.self))`;
+    if (this.checkedClassAssertion(e)) return ownTried(`(try jsCast(${code}, ${t}.self))`);
     return this.fromAny(code, optionalType(t));
   }
 
@@ -11114,7 +11114,7 @@ ${members.join('\n')}
     // A string, number or boolean read by key from an untyped object (`map[symbol] ?? fallback`): undefined where it has no such key.
     if (ts.isElementAccessExpression(e) && !isWriteTarget(e) && ['String', 'Double', 'Bool'].includes(this.typeOf(e))) {
       const holder = this.typeOf(e.expression).replace(/[?!]$/, '');
-      if (holder === 'Any' || holder === 'JSObject') return this.fromAny({ code: `(try jsGet(${this.expr(e.expression)}, ${this.propertyKey(e.argumentExpression)}))`, throws: true, pure: false }, optionalType(this.typeOf(e)));
+      if (holder === 'Any' || holder === 'JSObject') return this.fromAny({ code: ownTried(`(try jsGet(${this.expr(e.expression)}, ${this.propertyKey(e.argumentExpression)}))`), throws: true, pure: false }, optionalType(this.typeOf(e)));
     }
     // A string's character past its end is undefined, though TypeScript types the read `string`.
     if (ts.isElementAccessExpression(e) && !isWriteTarget(e) && !e.questionDotToken && this.typeOf(e.expression) === 'String' && this.typeOf(e) === 'String') {
@@ -11308,7 +11308,7 @@ ${members.join('\n')}
 
   /** `(code ?? zero)`: undefined read as `type` reads it. */
   private undefinedRead(code: string, zero: string, type: string): string {
-    return marked(`(${code} ?? ${zero})`, { op: 'undefinedAs', to: parseNativeType(type), of: valueOf(code) });
+    return leading(marked(`(${code} ?? ${zero})`, { op: 'undefinedAs', to: parseNativeType(type), of: valueOf(code) }), code);
   }
 
   /** The slot the parameter `p`, the `k`th, is at call `e` given `a`: Swift's type of it there, and how it takes a missing value. */
@@ -11703,10 +11703,10 @@ ${members.join('\n')}
         const args = e.arguments.some(ts.isSpreadElement) ? `${this.packed(e.arguments, 'JSArray<Any?>', this.restSlot(e, 'Any?'))}.storage` : `[${e.arguments.map((a) => this.restArgument(e, a, 'Any?')).join(', ')}]`;
         const ownCall = tryCode(`jsCallValue(${own}, this: ${this.coerce(callee.expression, 'Any?')}, optional: ${!!e.questionDotToken || !!callee.questionDotToken}, ${args})`);
         const holder = this.coerce(callee.expression, 'Any?');
-        const read = `${this.receiverThrows(callee.expression) ? 'try ' : ''}jsOwnProperty(${holder}, ${swiftString(callee.name.text)})`;
+        const read = tryIf(this.receiverThrows(callee.expression), `jsOwnProperty(${holder}, ${swiftString(callee.name.text)})`);
         const cond = `if let ${own} = ${read}${this.library ? '' : `, ${own} != nil`}`;
         if (t === 'Void') return `({ () throws -> Void in ${bound}${cond} { ${ownCall} } else { ${this.tryPrefix(e)}${this.call(e)} } }())`;
-        return `({ () throws -> ${t} in ${bound}${cond} { return ${t === 'Any?' ? ownCall : this.fromAnyCode({ code: `(${ownCall})`, throws: true, pure: false }, t, true)} }; return ${this.tryPrefix(e)}${this.call(e)} }())`;
+        return `({ () throws -> ${t} in ${bound}${cond} { return ${t === 'Any?' ? ownCall : this.fromAnyCode({ code: ownTried(`(${ownCall})`), throws: true, pure: false }, t, true)} }; return ${this.tryPrefix(e)}${this.call(e)} }())`;
       } finally { this.ownCalls.delete(e); this.subst.delete(recv); }
     }
     // `callback?.(x)` of a parameter declared present: Swift has it as non-optional, and the call is a plain one.
@@ -12373,7 +12373,7 @@ ${members.join('\n')}
           const binds = e.arguments.slice(2, 2 + params.length).map((a, k) => `let __t${k}: ${params[k]} = ${this.tryPrefix(a)}${this.coerce(a, params[k])}`);
           const args = params.map((p, k) => (k < binds.length ? `__t${k}` : p === 'Void' ? '()' : 'nil'));
           const body = `${[...binds, `let __f = ${this.expr(f)}`].join('; ')}; return ${timer}({ jsReport { _ = try __f(${args.join(', ')}) } }, ${ms})`;
-          return e.arguments.slice(1, 2 + params.length).some((a) => this.throwsInfo.expr(a)) ? `(try { () throws -> Double in ${body} }())` : `{ () -> Double in ${body} }()`;
+          return e.arguments.slice(1, 2 + params.length).some((a) => this.throwsInfo.expr(a)) ? ownTried(`(try { () throws -> Double in ${body} }())`) : `{ () -> Double in ${body} }()`;
         }
         case 'clearTimeout': case 'clearInterval': return `js${name[0].toUpperCase()}${name.slice(1)}(${arg(0) ? this.restArgument(e, arg(0), 'Double?') : 'nil'})`;
         case 'queueMicrotask': return `jsQueueMicrotask(${this.callback(arg(0))})`;
@@ -12880,7 +12880,7 @@ ${members.join('\n')}
           if (held?.params.length === 1 && (held.params[0] !== el || held.result !== want)) {
             // Throwing only as the function it calls does: a call given a throwing closure throws, and is tried.
             const throwing = isLiteral ? this.throwsInfo.fn(callback) : this.valueThrows(callback);
-            return `${t}.${name}({ (__e: ${el}) ${throwing ? 'throws ' : ''}-> ${want} in ${held.result === 'Void' ? '' : 'return '}${this.convert(`${throwing ? 'try ' : ''}(${this.fn(callback)})(${el === 'Any?' && heldType(held.params[0].replace(/^@escaping /, '')) === 'Any?' && !isOptional(held.params[0]) ? this.presentFromAny('__e', held.params[0].replace(/^@escaping /, '')) : this.convert('__e', el, held.params[0])})`, held.result, want!)} })`;
+            return `${t}.${name}({ (__e: ${el}) ${throwing ? 'throws ' : ''}-> ${want} in ${held.result === 'Void' ? '' : 'return '}${this.convert(tryIf(throwing, `(${this.fn(callback)})(${el === 'Any?' && heldType(held.params[0].replace(/^@escaping /, '')) === 'Any?' && !isOptional(held.params[0]) ? this.presentFromAny('__e', held.params[0].replace(/^@escaping /, '')) : this.convert('__e', el, held.params[0])})`), held.result, want!)} })`;
           }
           return `${t}.${name}(${this.fn(callback)})`;
         };
@@ -12924,7 +12924,7 @@ ${members.join('\n')}
         const acc = init ? this.typeOf(e) : el;
         if (held?.params.length === 2 && (held.params[0] !== acc || held.params[1] !== el || held.result !== acc)) {
           const throwing = this.valueThrows(callback);
-          f = `{ (__a: ${acc}, __e: ${el}) ${throwing ? 'throws ' : ''}-> ${acc} in ${this.convert(`${throwing ? 'try ' : ''}(${this.expr(callback)})(${this.convert('__a', acc, held.params[0])}, ${this.convert('__e', el, held.params[1])})`, held.result, acc)} }`;
+          f = `{ (__a: ${acc}, __e: ${el}) ${throwing ? 'throws ' : ''}-> ${acc} in ${this.convert(tryIf(throwing, `(${this.expr(callback)})(${this.convert('__a', acc, held.params[0])}, ${this.convert('__e', el, held.params[1])})`), held.result, acc)} }`;
         }
         return init ? `${t}.${name}(${f}, ${this.coerce(init, this.typeOf(e))})` : `${t}.${name}(${f})`;
       }
@@ -13183,7 +13183,7 @@ ${members.join('\n')}
     // Lenient code: a key that may be missing finds nothing, as undefined finds nothing a program stored by object.
     if (this.missingKeyLookup(e)) {
       const k = /^JSMap<.*>$/.test(type) ? splitTopLevel(type.slice(6, -1))[0] : /^JSSet<(.*)>$/.exec(type)![1];
-      const call = `${this.receiverThrows(target) ? 'try ' : ''}${t}.${name}($0)`;
+      const call = tryIf(this.receiverThrows(target), `${t}.${name}($0)`);
       const held = `(${arg(0, optionalType(k))} as ${optionalType(k)})`;
       // An untyped value's entry reads back doubly optional, which one optional holds as undefined.
       if (name === 'get') return v === 'Any?' ? orNil(`${held}.map { ${call} ?? nil }`) : `${held}.flatMap { ${call} }`;
@@ -14482,7 +14482,7 @@ ${members.join('\n')}
     const made = `${target}(${args}${args && reorder ? reorder : reorder.slice(2)}${args || reorder ? nulled : nulled.slice(2)})`;
     if (!spreadTemps.length && !self) return made;
     const throws = this.throwsInfo.expr(e);
-    const made2 = `${throws && markOf(made)?.op !== 'try' ? 'try ' : ''}${made}`;
+    const made2 = tryIf(throws && markOf(made)?.op !== 'try', `${made}`);
     if (self) return `{ () ${throws ? 'throws ' : ''}-> ${target} in ${spreadTemps.map((x) => x + '; ').join('')}weak var ${self}: ${target}?; let __made = ${made2}; ${self} = __made; return __made }()`;
     return `{ () ${throws ? 'throws ' : ''}-> ${target} in ${spreadTemps.join('; ')}; return ${made2} }()`;
   }
