@@ -3224,7 +3224,7 @@ export class Translator implements AsyncTranslator {
       if (name && ts.isPropertySignature(req) && !hasModifier(req, ts.SyntaxKind.ReadonlyKeyword) && this.typeOf(req) === 'Any?') {
         const field = m ?? cls.members.find(ts.isConstructorDeclaration)?.parameters.find((p) => ts.isIdentifier(p.name) && p.name.text === name && ts.getModifiers(p)?.length);
         const t = field && (ts.isPropertyDeclaration(field) || ts.isParameter(field) || ts.isGetAccessorDeclaration(field) || ts.isSetAccessorDeclaration(field)) ? this.checker.getTypeAtLocation(field.name) : undefined;
-        if (t && t.flags & ts.TypeFlags.TypeParameter && t.symbol?.declarations?.[0]?.parent === cls) throw this.error(field, 'a field typed by a generic class\'s type parameter, met as a generic interface\'s field');
+        if (t && t.flags & ts.TypeFlags.TypeParameter && t.symbol?.declarations?.[0]?.parent === cls) throw this.limit(field, 'a field typed by a generic class\'s type parameter, met as a generic interface\'s writable field', 'the interface\'s field is erased to any value, which the class\'s field can\'t override', 'declare the interface\'s field with a concrete type, or read it through a method');
       }
       if (!name || !m || !ts.isMethodSignature(req)) continue;
       if (!ts.isMethodDeclaration(m)) return false;
@@ -11349,6 +11349,13 @@ export class Translator implements AsyncTranslator {
     const sf = n.getSourceFile();
     const { line, character } = sf.getLineAndCharacterOfPosition(n.getStart());
     return new Error(`${sf.fileName}:${line + 1}:${character + 1}: ${what} is not supported in a release build yet: ${n.getText().slice(0, 80)}`);
+  }
+
+  /** A declared limit of release builds (generic erasure, Q10): refused with why and how to write it instead. */
+  limit(n: ts.Node, what: string, why: string, rewrite: string): Error {
+    const sf = n.getSourceFile();
+    const { line, character } = sf.getLineAndCharacterOfPosition(n.getStart());
+    return new Error(`${sf.fileName}:${line + 1}:${character + 1}: ${what} is a declared limit of release builds (${why}); rewrite: ${rewrite}: ${n.getText().slice(0, 80)}`);
   }
 }
 

@@ -8364,7 +8364,7 @@ ${members.join('\n')}
     if (!have || have[1] !== want[1] || have[2] === want[2]) return;
     const cls = this.checker.getNonNullableType(this.checker.getTypeAtLocation(e)).getSymbol()?.valueDeclaration;
     if (!cls || !ts.isClassLike(cls) || !cls.typeParameters?.length || cls.getSourceFile().isDeclarationFile) return;
-    throw this.error(e, `an app generic class's instance held with \`any\` as its type argument (${have[0]} as ${target})`);
+    throw this.limit(e, `an app generic class's instance held with \`any\` as its type argument (${have[0]} as ${target})`, 'Swift holds a generic class\'s type argument, which `any` does not erase', `hold it with its own type argument (${have[0]}); an overload implementation types its parameters and result as its overloads do`);
   }
 
   /** A generic class's instance given where its generic interface is wanted, which `fieldByOwnParameter` keeps it from conforming to. */
@@ -8376,7 +8376,7 @@ ${members.join('\n')}
     for (const i of implementedInterfaces(this.checker, cls)) {
       const iface = this.checker.getTypeAtLocation(i).getSymbol()?.declarations?.find(ts.isInterfaceDeclaration);
       if (iface && this.topName(iface, iface.name.text) === want && iface.members.some((m) => this.fieldByOwnParameter(cls, m))) {
-        throw this.error(e, `a generic class whose field typed by its type parameter meets a generic interface's field, held as the interface (${want})`);
+        throw this.limit(e, `a generic class whose field typed by its type parameter meets a generic interface's field, held as the interface (${want})`, 'Swift can\'t overload a property by its type', 'declare the interface\'s field with a concrete type, or read it through a method');
       }
     }
   }
@@ -14631,6 +14631,13 @@ ${members.join('\n')}
     const sf = n.getSourceFile();
     const { line, character } = sf.getLineAndCharacterOfPosition(n.getStart());
     return new Error(`${sf.fileName}:${line + 1}:${character + 1}: ${what} is not supported in a release build yet: ${n.getText().slice(0, 80)}`);
+  }
+
+  /** A declared limit of release builds (generic erasure, Q10): refused with why and how to write it instead. */
+  limit(n: ts.Node, what: string, why: string, rewrite: string): Error {
+    const sf = n.getSourceFile();
+    const { line, character } = sf.getLineAndCharacterOfPosition(n.getStart());
+    return new Error(`${sf.fileName}:${line + 1}:${character + 1}: ${what} is a declared limit of release builds (${why}); rewrite: ${rewrite}: ${n.getText().slice(0, 80)}`);
   }
 }
 
