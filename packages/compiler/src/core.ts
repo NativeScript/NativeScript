@@ -4,7 +4,7 @@ import { dirname, join } from 'node:path';
 import { KIT_GLOBALS, kitExtends, kitIndex, kitMember, type KitMember, type KitType } from './kit-index.ts';
 import { optionalType, splitTopLevel, type Translator } from './swift.ts';
 import { KIT_APPLE_SOURCES } from './paths.ts';
-import { memberOf, tryCode, unwrappedCode } from './swift-marks.ts';
+import { assignedCode, memberOf, tryCode, unwrappedCode } from './swift-marks.ts';
 
 export const KIT = KIT_APPLE_SOURCES;
 
@@ -483,15 +483,16 @@ export class CoreAPI {
     }
     if (!owner.isStatic && this.ownPropertyOnly(owner.name, left.name)) return `${recv}[jsKey: ${JSON.stringify(name)}] = ${t.coerce(value, 'Any?')}`;
     const m = this.member(owner.name, name, left);
+    const assigned = (code: string) => assignedCode(`${recv}.${name}`, code, !owner.isStatic && (t.receiverThrows(left.expression) || this.optionalKitValue(left.expression)));
     // A kit member typed `Any?` holds what core reads as a plain script object (`TouchManager.animations`).
-    if (m.type.trim() === 'Any?') return `${recv}.${name} = ${this.scriptValue(value)}`;
+    if (m.type.trim() === 'Any?') return assigned(this.scriptValue(value));
     // Undefined where the kit holds a string, number or boolean: its zero, as core's own code assigning it was compiled.
     const zero = ({ String: '""', Double: '0', Bool: 'false' } as Record<string, string>)[m.type.trim()];
     const nullish = value.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(value) && value.text === 'undefined');
-    if (zero && nullish) return `${recv}.${name} = ${zero}`;
+    if (zero && nullish) return assigned(zero);
     // Null where the kit holds an object maybe missing (`view.backgroundColor = null`): none.
-    if (nullish && /[?!]$/.test(m.type.trim())) return `${recv}.${name} = nil`;
-    return `${recv}.${name} = ${this.toKit(t.coerce(value, t.typeOf(left)), m.type)}`;
+    if (nullish && /[?!]$/.test(m.type.trim())) return assigned('nil');
+    return assigned(this.toKit(t.coerce(value, t.typeOf(left)), m.type));
   }
 
   /** A core member read through a class of the app or a plugin that extends a core class (`this.isPassThroughParentEnabled` in a GridLayout subclass). */
