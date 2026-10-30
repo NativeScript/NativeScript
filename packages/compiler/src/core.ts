@@ -4,7 +4,7 @@ import { dirname, join } from 'node:path';
 import { KIT_GLOBALS, kitExtends, kitIndex, kitMember, type KitMember, type KitType } from './kit-index.ts';
 import { optionalType, splitTopLevel, type Translator } from './swift.ts';
 import { KIT_APPLE_SOURCES } from './paths.ts';
-import { assignedCode, memberOf, tryCode, unwrappedCode } from './swift-marks.ts';
+import { assignedCode, memberOf, tryCode, tryIf, unwrappedCode } from './swift-marks.ts';
 
 export const KIT = KIT_APPLE_SOURCES;
 
@@ -834,7 +834,7 @@ export class CoreAPI {
     const m = kitMember(this.index, owner, name)!;
     const params = (m.params ?? '').trim() ? splitParams(m.params!).map(kitParamType) : [];
     const args = e.arguments.map((a, k) => this.t.coerce(a, (params[k] ?? 'Any?').replace(/^@escaping /, '').replace(/!$/, '?')));
-    return this.fromKit(`${m.throws ? 'try ' : ''}${owner}.${name}(${args.join(', ')})`, m.type, this.t.typeOf(e));
+    return this.fromKit(tryIf(m.throws, `${owner}.${name}(${args.join(', ')})`), m.type, this.t.typeOf(e));
   }
 
   /** The parameter types of a kit class's method (`Frame.on`: `String`, `(EventData?) throws -> Void`, …), or null. */

@@ -7,9 +7,11 @@ import { parseNativeType, type Mark, type Value } from './conversion.ts';
 
 const made = new Map<string, Value>();
 const pureCodes = new Set<string>();
+const triedCodes = new Set<string>();
 
 /** Code, recorded with its outermost operation. */
 export function marked(code: string, mark: Mark): string {
+  if (mark.op === 'try') triedCodes.add(code);
   made.set(code, { code, throws: false, pure: pureCodes.has(code), mark });
   return code;
 }
@@ -34,10 +36,32 @@ export function isPure(code: string): boolean {
   return pureCodes.has(code);
 }
 
+/** Code that leads with its own `try` (`(try jsGet(x, "k"))`, `try f()`): it throws where it stands. */
+export function ownTried(code: string): string {
+  triedCodes.add(code);
+  return code;
+}
+
+/** `try code` where `yes`, else code. */
+export function tryIf(yes: boolean | undefined, code: string): string {
+  return yes ? ownTried(`try ${code}`) : code;
+}
+
+/** Code that begins with `operand`'s (`(x as? T)`, `x!`, `x.name`): it leads with a `try` where the operand does. */
+export function leading(code: string, operand: string): string {
+  if (triedCodes.has(operand)) triedCodes.add(code);
+  return code;
+}
+
+export function leadsWithTry(code: string): boolean {
+  return triedCodes.has(code);
+}
+
 /** `try code`. */
 export function tried(code: string): Value {
   const v: Value = { code: `try ${code}`, throws: true, pure: false, mark: { op: 'try', of: valueOf(code) } };
   made.set(v.code, v);
+  triedCodes.add(v.code);
   return v;
 }
 
@@ -59,7 +83,8 @@ export function tryCode(code: string): string {
 /** `(code as? T)`, `(code as! T)`, `(code as T?)`, or lenient code's `jsImplicit(code as? T)`. */
 export function castCode(code: string, type: string, how: 'as?' | 'as!' | 'as', implicit = false): string {
   const text = how === 'as' ? `${code} as ${type}?` : `${code} ${how} ${type}`;
-  return marked(implicit ? `jsImplicit(${text})` : `(${text})`, { op: 'cast', to: parseNativeType(type), optional: how !== 'as!', implicit, of: valueOf(code), spelled: type, up: how === 'as' });
+  const made = marked(implicit ? `jsImplicit(${text})` : `(${text})`, { op: 'cast', to: parseNativeType(type), optional: how !== 'as!', implicit, of: valueOf(code), spelled: type, up: how === 'as' });
+  return implicit ? made : leading(made, code);
 }
 
 /** `jsImplicit(code)`, or a function cell's `implicit` (`cell`), or another of its statics that may give nil (`via`). */
@@ -69,7 +94,7 @@ export function implicitOf(code: string, cell?: string, via = 'implicit'): strin
 
 /** `code!`. */
 export function unwrappedCode(code: string): string {
-  return marked(`${code}!`, { op: 'unwrap', of: valueOf(code) });
+  return leading(marked(`${code}!`, { op: 'unwrap', of: valueOf(code) }), code);
 }
 
 /** `code!` where `yes`, else code. */
@@ -84,17 +109,17 @@ export function helper(name: 'jsForeign' | 'jsArrayOrNil' | 'jsObjectRequired' |
 
 /** A member read (`dot`: `.` or `?.`). */
 export function memberOf(receiver: string, dot: string, name: string): string {
-  return marked(`${receiver}${dot}${name}`, { op: 'member', of: valueOf(receiver), name, ...(dot === '?.' ? { optional: true } : {}) });
+  return leading(marked(`${receiver}${dot}${name}`, { op: 'member', of: valueOf(receiver), name, ...(dot === '?.' ? { optional: true } : {}) }), receiver);
 }
 
 /** `(code ?? nil)`: an optional read where undefined goes, its nil the missing value. */
 export function orNil(code: string): string {
-  return marked(`(${code} ?? nil)`, { op: 'undefinedAs', to: parseNativeType('Any?'), of: valueOf(code) });
+  return leading(marked(`(${code} ?? nil)`, { op: 'undefinedAs', to: parseNativeType('Any?'), of: valueOf(code) }), code);
 }
 
 /** An array's element read, nil past its end (`xs.element(i)`; `via`: what comes between, `?.values`). */
 export function elementOf(receiver: string, index: string | number, via = ''): string {
-  return marked(`${receiver}${via}.element(${index})`, { op: 'entry', of: valueOf(receiver), key: valueOf(String(index)), element: true });
+  return leading(marked(`${receiver}${via}.element(${index})`, { op: 'entry', of: valueOf(receiver), key: valueOf(String(index)), element: true }), receiver);
 }
 
 export function isUnwrap(code: string): boolean {
