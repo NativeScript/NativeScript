@@ -114,6 +114,8 @@ public func jsHasKey(_ object: Any?, _ key: String) -> Bool {
         if let cls = v as? JSStaticKeyed.Type { return cls.jsStaticKeys.contains(key) }
         return (v as? AnyClass).map { JSPrototypes.staticMember($0, key) != nil } ?? false
     }
+    // A field given a descriptor is the object's own even where hidden from `jsKeys`.
+    if let definable = jsFlat(object) as? JSDefinable, !jsIsSymbolKey(key), jsSideProperties(definable, create: false)?.has(key) == true { return true }
     // A typed object's `jsKeys` lists every field anew; a symbol key is never a field's.
     if let expando = jsFlat(object) as? JSExpando { return jsExpandoHas(expando, key) || (!jsIsSymbolKey(key) && (expando.jsKeys.contains(key) || (expando as? JSMemberKeyed)?.jsHasMember(key) == true)) }
     if jsIsSymbolKey(key) { return (jsFlat(object) as? JSSymbolKeyed)?.jsSymbolKeys.contains(key) ?? false }

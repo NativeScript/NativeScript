@@ -4,7 +4,7 @@ import { dirname as pathDirname, resolve as pathResolve } from 'node:path';
 import { AsyncLowering, usedBefore, type AsyncCtx, type AsyncSyntax, type AsyncTranslator } from './async.ts';
 import { isAsync, isStatic } from './throws.ts';
 import { assignedMembers } from './sharing.ts';
-import { assignedValues, openSpreadType, spreadsArrays, definitelyAssignedFields, forwardedSetter, initializedNull, intersectionAliasMembers, isRegExpProtocol, assertedPattern, unsupportedPattern, intlConstructor, isObjectToStringCall, isStringRaw, redeclaredBeside, iteratedType, iterationThrows, literalKey, neverDefined, templateParts, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, classesHeldUntyped, type TrustScope, literalPattern, patternGroups, unsetGroupTyping, type UnsetGroupTyping, keysDefinedUntyped, KOTLIN_NATIVE_TYPES, runtimeTypeName, definesRunTimeKey, readKeyOf, reassigned, givenBy, onlyNullOrPresent, statementLevel, readWrite, asOperation, type ReadWrite } from './lang.ts';
+import { assignedValues, openSpreadType, spreadsArrays, definitelyAssignedFields, forwardedSetter, initializedNull, intersectionAliasMembers, isRegExpProtocol, assertedPattern, unsupportedPattern, intlConstructor, isObjectToStringCall, isStringRaw, redeclaredBeside, iteratedType, iterationThrows, literalKey, neverDefined, templateParts, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, classesHeldUntyped, type TrustScope, literalPattern, patternGroups, unsetGroupTyping, type UnsetGroupTyping, KOTLIN_NATIVE_TYPES, runtimeTypeName, definesRunTimeKey, readKeyOf, reassigned, givenBy, onlyNullOrPresent, statementLevel, readWrite, asOperation, type ReadWrite } from './lang.ts';
 import { memberName } from './stable-names.ts';
 import { shadowConversions } from './conversion-shadow.ts';
 import { parseNativeType, type Mark, type Value } from './conversion.ts';
@@ -14,7 +14,7 @@ import type { Form } from './forms.ts';
 import { isCoreDeclaration } from './core.ts';
 import { nonVirtualName } from './swift.ts';
 import type { Properties } from './properties.ts';
-import { type Held, holdsNil, isFunctionHeld, keyOf, nilIsNull, notedField, notesNull, type Nulls, nullNames, rootKeepsExpando, literalNotes, type ShapeFacts, type ShapePlan, shapePlanOfClass, shapePlanOfLiteral, spelledOptional } from './shapes.ts';
+import { type DefinedKeys, definedFieldNames, definedKeysOf, definesDuringConstruction, type Held, holdsNil, isFunctionHeld, keyOf, nilIsNull, notedField, notesNull, type Nulls, nullNames, restrictsField, rootKeepsExpando, literalNotes, type ShapeFacts, type ShapePlan, shapePlanOfClass, shapePlanOfLiteral, spelledOptional } from './shapes.ts';
 import { shadowLiteral, shadowShapes } from './shape-shadow.ts';
 import { shadowTypeSteps } from './type-step-shadow.ts';
 import { type TypeStep, boxStep, unboxStep } from './type-step.ts';
@@ -3097,20 +3097,18 @@ export class Translator implements AsyncTranslator {
     if (this.library) return;
     const cls = this.checker.getNonNullableType(this.checker.getTypeAtLocation(target)).getSymbol()?.valueDeclaration;
     if (!cls || !ts.isClassLike(cls) || cls.getSourceFile().isDeclarationFile || this.pluginFiles.has(cls.getSourceFile().fileName)) return;
-    const restricts = !ts.isObjectLiteralExpression(descriptor) || descriptor.properties.some((p) => {
-      const name = p.name && !ts.isComputedPropertyName(p.name) ? p.name.getText().replace(/^['"]|['"]$/g, '') : undefined;
-      if (name === 'get' || name === 'set') return true;
-      if (name === 'value') return false;
-      if (name === 'writable' || name === 'enumerable' || name === 'configurable') return !ts.isPropertyAssignment(p) || p.initializer.kind !== ts.SyntaxKind.TrueKeyword;
-      return !name;
-    });
-    if (!restricts) return;
+    if (!restrictsField(descriptor)) return;
     const keyText = key && (ts.isStringLiteralLike(key) || ts.isIdentifier(key) || ts.isNumericLiteral(key)) ? key.text : undefined;
     const field = keyText !== undefined ? this.checker.getTypeAtLocation(target).getProperty(keyText)?.valueDeclaration : undefined;
     const declared = !!field && (ts.isPropertyDeclaration(field) || ts.isParameter(field)) && !field.getSourceFile().isDeclarationFile;
     if (keyText !== undefined && !declared) return;
-    throw this.error(key ?? target, keyText === undefined ? 'Object.defineProperty with a key known only at run time on a class instance, with a descriptor that may restrict a declared field' : `Object.defineProperty making a class's declared field (${keyText}) an accessor, read-only, hidden or fixed`);
+    const during = keyText !== undefined && definesDuringConstruction(target);
+    if (keyText !== undefined && !during && this.definedField(target, keyText)) return;
+    throw this.error(key ?? target, keyText === undefined ? 'Object.defineProperty with a key known only at run time on a class instance, with a descriptor that may restrict a declared field'
+      : during ? `Object.defineProperty on \`this\` while its class constructs it, making a declared field (${keyText}) an accessor, read-only, hidden or fixed: the constructor and field initializers read the Kotlin field directly; define it after \`new\` returns`
+      : `Object.defineProperty making a declared field (${keyText}) of a class whose objects keep no descriptor for it (an Error subclass's) an accessor, read-only, hidden or fixed`);
   }
+
 
   /** A method of an app's generic interface that is a Kotlin interface, which holds the interface's type parameters as `Any?`. */
   private erasingInterface(m: ts.MethodSignature): boolean {
@@ -4864,27 +4862,25 @@ export class Translator implements AsyncTranslator {
     return `run { ${self ? '' : `val ${o} = ${recvCode}; `}val ${own} = jsOwnProperty(${o}, ${kotlinString(callee.name.text)}); if (${own} != null) ${value} else ${plain} }`;
   }
 
-  private definedKeySet: Set<string> | null = null;
-  /** App mode: the keys `Object.defineProperty` names on untyped objects, which a program class's field of that name keeps a descriptor for. */
-  private definedKeys(): Set<string> {
-    return (this.definedKeySet ??= this.library ? new Set() : keysDefinedUntyped(this.sourceFiles, this.checker));
+  private definedKeySet: DefinedKeys | null = null;
+  /** App mode: the fields `Object.defineProperty` may give a descriptor; none in a library. */
+  private definedKeys(): DefinedKeys {
+    return (this.definedKeySet ??= this.library ? { untyped: new Set(), fields: new Set(), names: new Set() } : definedKeysOf(this.sourceFiles, this.checker));
   }
 
   /** The class's own fields whose objects `Object.defineProperty` may give a descriptor (`JSDefinable`). */
   private definableNames(cls: ts.ClassLikeDeclaration): string[] {
-    if (this.library || !this.definedKeys().size || cls.getSourceFile().isDeclarationFile || this.pluginFiles.has(cls.getSourceFile().fileName)) return [];
+    if (this.library || !this.definedKeys().names.size || cls.getSourceFile().isDeclarationFile || this.pluginFiles.has(cls.getSourceFile().fileName)) return [];
     let root = cls;
     for (let b = this.baseClassOf(cls); b; b = this.baseClassOf(b)) root = b;
     const h = root.heritageClauses?.find((x) => x.token === ts.SyntaxKind.ExtendsKeyword)?.types[0];
     if (h && ERRORS[h.expression.getText()]) return [];
-    const ctor = cls.members.find(ts.isConstructorDeclaration);
-    const own = [...cls.members.filter((m) => ts.isPropertyDeclaration(m) && !isStatic(m) && ts.isIdentifier(m.name)), ...(ctor?.parameters.filter((p) => ts.isParameterPropertyDeclaration(p, ctor)) ?? [])];
-    return own.map((m) => (m.name as ts.Identifier).text).filter((n) => this.definedKeys().has(n));
+    return definedFieldNames(cls, this.definedKeys());
   }
 
   /** The field `definableNames` lists that `key` of the object names, if any (`const { field } = obj`, `obj['field']`). */
   private definedField(object: ts.Node, key: string): ts.NamedDeclaration | undefined {
-    if (this.library || !this.definedKeys().has(key)) return undefined;
+    if (this.library || !this.definedKeys().names.has(key)) return undefined;
     const d = this.checker.getNonNullableType(this.checker.getTypeAtLocation(object)).getProperty(key)?.valueDeclaration;
     const cls = d && (ts.isPropertyDeclaration(d) ? d.parent : ts.isParameter(d) && ts.isConstructorDeclaration(d.parent) ? d.parent.parent : undefined);
     return cls && ts.isClassLike(cls) && this.definableNames(cls).includes(key) ? (d as ts.NamedDeclaration) : undefined;

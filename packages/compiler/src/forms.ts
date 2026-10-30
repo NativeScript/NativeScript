@@ -128,6 +128,8 @@ export interface FormsOptions {
   nativeNil?: (d: ts.Declaration) => boolean;
   /** Whether a node is the program's own code, not a package's: only its reads and returns make a form `absent`. */
   ownCode?: (n: ts.Node) => boolean;
+  /** Script's calls of a function may give null for any parameter, which the function's body then sees (Q7). */
+  scriptGivesNull?: boolean;
 }
 
 export class Forms {
@@ -176,6 +178,7 @@ export class Forms {
   private readonly native: (d: ts.Declaration) => boolean;
   private readonly nativeNil: (d: ts.Declaration) => boolean;
   private readonly ownCode: (n: ts.Node) => boolean;
+  private readonly scriptGivesNull: boolean;
 
   constructor(files: readonly ts.SourceFile[], checker: ts.TypeChecker, strictFile: (f: ts.SourceFile) => boolean, options: FormsOptions = {}) {
     this.files = files;
@@ -184,6 +187,7 @@ export class Forms {
     this.library = options.library ?? false;
     this.native = options.native ?? (() => false);
     this.ownCode = options.ownCode ?? (() => true);
+    this.scriptGivesNull = options.scriptGivesNull ?? false;
     const nil = options.nativeNil ?? (() => false), known = new Map<ts.Declaration, boolean>();
     this.nativeNil = (d) => {
       let found = known.get(d);
@@ -1321,7 +1325,7 @@ export class Forms {
       } else states = this.strict(p) ? 0 : this.openStates(p);
       const q = platform?.[k];
       if (q && this.nativeNil(q)) states |= N;
-      if (caller.script && !p.dotDotDotToken) states |= U | (this.primitive(p) ? F : 0);
+      if (caller.script && !p.dotDotDotToken) states |= U | (this.scriptGivesNull ? N : 0) | (this.primitive(p) ? F : 0);
       if (states) this.seed(p.dotDotDotToken ? this.child(this.slotFor(p), 'element') : this.slotFor(p), states);
     });
   }

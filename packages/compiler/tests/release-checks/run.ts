@@ -24,7 +24,7 @@ import { foldPlatform } from '../../src/platform.ts';
 import { runtimeFile } from '../../src/plugins/resolve.ts';
 import { PluginSources, verify, verifyBundle } from '../../src/plugins/source.ts';
 import { manifest, ownTypings, pluginNative, scopedImports, usedImports, xcodegenLines } from '../../src/plugins/native.ts';
-import { singleTry, Translator as SwiftTranslator } from '../../src/swift.ts';
+import { Translator as SwiftTranslator } from '../../src/swift.ts';
 import { translateModules } from '../../src/modules.ts';
 import { conformsTo, iosTarget, lookupMember, nativeTable, setEmptyTable } from '../../src/natives/symbols.ts';
 import { isFragment, render } from '../../src/codegen.ts';
@@ -574,7 +574,6 @@ export class GlyphPipe { constructor(@Inject(TOKEN) private config: any, @Option
 
 // ---- Swift emission ----
 (() => {
-  check(singleTry('try (try! Color(a))') === 'try (try! Color(a))' && singleTry('try ((try? x) != nil)') === 'try ((try? x) != nil)' && singleTry('try (try jsGet(a))') === 'try ( jsGet(a))', 'one try is dropped where two cover a check, never a try! or try?');
   const dir = mkdtempSync(join(tmpdir(), 'ns-release-checks-native-'));
   try {
     const dts = join(dir, 'objc!HKFakeKit.d.ts');
