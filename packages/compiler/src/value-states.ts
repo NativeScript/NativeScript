@@ -669,11 +669,12 @@ export class ValueStates {
    * missing at this read though its type says present: JavaScript's TypeError there (`reading 'k'`). Answered from the
    * read's kind and the value's form: an array's element or a string's character, a record's entry, `Map.get`,
    * `pop`/`shift`/`find`/`findLast`/`at`, `x!`, a non-strict optional parameter or member, and a name or call the backend
-   * holds optional. An over-answer costs a check that passes.
+   * holds optional. An over-answer costs a check that passes. Answered in library code and the app's strict code, not
+   * in a lenient app's: its conversions can leave missing a value JavaScript has (a wrong-class object).
    */
   missingAtRead(target: ts.Expression): 'undefined' | 'null' | null {
     const b = this.backend, c = this.checker;
-    if (b.library || b.lenient || !this.appCode(target)) return null;
+    if (!b.library && (b.lenient || !this.appCode(target))) return null;
     let outer: ts.Node = target;
     while (ts.isParenthesizedExpression(outer.parent)) outer = outer.parent;
     const p = outer.parent;
@@ -705,6 +706,11 @@ export class ValueStates {
       if (given) return given;
     }
     if (!primitive(t) || empty(t) || x.flags & ts.NodeFlags.OptionalChain) return null;
+    // A name declared untyped reads as a string, number or boolean only past a test of its type.
+    if (ts.isIdentifier(x)) {
+      const sym = c.getSymbolAtLocation(x);
+      if (sym && c.getTypeOfSymbol(sym).flags & untyped) return null;
+    }
     const form = this.forms().formOf(x);
     if (!form.undefined) return null;
     if (ts.isElementAccessExpression(x)) {

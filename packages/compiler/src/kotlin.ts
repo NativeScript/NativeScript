@@ -7644,6 +7644,8 @@ export class Translator implements AsyncTranslator {
 
   /** A parameter or member Kotlin declares optional, read as it is held. */
   private optionalRead(x: ts.Expression): string | null {
+    // Library code reads its own interfaces' members by key (`jsGet`): they have no Kotlin field to read as held.
+    if (ts.isPropertyAccessExpression(x) && this.library && this.resolve(x.name)?.declarations?.some((d) => ts.isPropertySignature(d) && !isLibDeclaration(d))) return null;
     if (ts.isPropertyAccessExpression(x)) return this.optionalMember(x) || (!this.typeOf(x).endsWith('?') && !!this.declaredTypeOf(x)?.endsWith('?')) ? `${this.expr(x.expression)}.${ident(x.name.text)}` : null;
     const d = ts.isIdentifier(x) ? this.resolve(x)?.valueDeclaration : undefined;
     if (!d || !(ts.isParameter(d) || ts.isVariableDeclaration(d)) || !this.declaredTypeOf(x)?.endsWith('?')) return null;
