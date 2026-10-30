@@ -37,6 +37,7 @@ Repository skills live in `.agent/skills/<skill-name>/SKILL.md` — each is a wo
 - [fix](.agent/skills/fix/SKILL.md) — debug and fix a bug end-to-end (trace → root cause → fix → test → PR).
 - [refactor](.agent/skills/refactor/SKILL.md) — restructure code without changing behavior.
 - [unit-testing](.agent/skills/unit-testing/SKILL.md) — running and writing Vitest specs.
+- [issue-sweep](.agent/skills/issue-sweep/SKILL.md) — sweep the issue backlog oldest-first: classify with evidence, close only what the maintainer approves.
 
 Conventions and how-to knowledge live as docs in `tools/notes/` (see [Key Documentation](#key-documentation)) — the single source of truth. A skill references the docs it depends on through relative symlinks in its `references/` folder, created with:
 

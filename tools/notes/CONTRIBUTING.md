@@ -69,7 +69,7 @@ git checkout -b <my-fix-branch> main
 
 5. Before you submit your PR:
     - Rebase your changes to the latest main: `git pull --rebase upstream main`.
-    - Ensure all unit test are green for Android and iOS. Check [running unit tests](DevelopmentWorkflow.md#running-unit-tests).
+    - Ensure all unit test are green for Android and iOS. Check [running unit tests](DevelopmentWorkflow.md#unit-testing).
 
 6. Push your fork. If you have rebased you might have to use force-push your branch:
 ```
