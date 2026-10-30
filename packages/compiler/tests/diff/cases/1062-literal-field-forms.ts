@@ -17,6 +17,13 @@ console.log(missing, JSON.stringify(missing), { ...missing, more: 1 });
 for (const k in missing) console.log('key', k);
 const half: Look = { name: NAMES[1], width: WIDTHS[NAMES[1]] };
 console.log(Object.entries(half), JSON.stringify(half));
+function lookShort(i: number): Look {
+  const name = NAMES[i];
+  const width = WIDTHS[name];
+  return { name, width };
+}
+const short = lookShort(7);
+console.log(Object.keys(short), 'width' in short, JSON.stringify(short), short.width === undefined);
 
 const o: { list: (string | null | undefined)[] } = { list: ['a', null, undefined] };
 console.log(o.list.length, o.list[1] === null, o.list[2] === undefined, o.list.includes(null), o.list.indexOf(undefined));

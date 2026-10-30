@@ -14351,7 +14351,8 @@ ${members.join('\n')}
       if (noting === 'given') { unsetKeys.push(key); return code(); }
       const k = keysVar ??= this.fresh('__keys');
       const how = this.typeOf(value) === 'Any?' && heldOf(f.type) !== 'any' ? 'untyped' : 'typed';
-      if (ts.isIdentifier(value)) { keyNotes.push(`${k}.${how}(${swiftString(key)}, ${this.expr(value)})`); return code(); }
+      // The value as the field takes it: `expr` would hold it to its checker type (`?? .nan`), never nil.
+      if (ts.isIdentifier(value)) { keyNotes.push(`${k}.${how}(${swiftString(key)}, ${how === 'typed' && f.type !== 'Any?' ? this.coerce(value, optionalType(f.type)) : this.expr(value)})`); return code(); }
       const wrap = (x: string) => { const inner = afterTry(x); return inner !== null ? tryCode(`${k}.${how}(${swiftString(key)}, ${inner})`) : `${k}.${how}(${swiftString(key)}, ${x})`; };
       if (how === 'typed') return wrap(code());
       // Null and undefined apart before the value is converted to the field's type, which holds both as nil.
@@ -14392,8 +14393,10 @@ ${members.join('\n')}
         noteKey(p, p.name.text, p.name, () => '');
         const held = this.checker.getShorthandAssignmentValueSymbol(p);
         const fn = (held && held.flags & ts.SymbolFlags.Alias ? this.checker.getAliasedSymbol(held) : held)?.valueDeclaration;
-        const code = fn && (ts.isClassDeclaration(fn) || ts.isModuleDeclaration(fn)) ? `${identPath(this.topNames().get(fn) ?? p.name.text)}.self` : this.narrowed(p.name, this.shorthandValue(p));
         const want = order.find((f) => f.name === p.name.text)?.type;
+        // A variable held optional as it may be undefined, for a field held the same: its nil is the field's undefined.
+        const asHeld = !!want && isOptional(want) && !!held && this.undefinedVars.get(held) === want;
+        const code = fn && (ts.isClassDeclaration(fn) || ts.isModuleDeclaration(fn)) ? `${identPath(this.topNames().get(fn) ?? p.name.text)}.self` : asHeld ? this.shorthandValue(p) : this.narrowed(p.name, this.shorthandValue(p));
         const actual = fn && ts.isFunctionDeclaration(fn) ? this.functionValueType(fn) : null;
         // A variable Swift holds optional that the checker narrowed (`{ chord }` after `if (!chord) continue`), for a field that is not.
         const variable = fn && (ts.isVariableDeclaration(fn) || ts.isParameter(fn)) && ts.isIdentifier(fn.name) ? this.typeOf(fn.name) : null;

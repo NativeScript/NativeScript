@@ -10649,7 +10649,8 @@ export class Translator implements AsyncTranslator {
       if (noting === 'given') { unsetKeys.push(key); return code(); }
       const k = keysVar ??= this.fresh('__keys');
       const how = this.typeOf(value) === 'Any?' && heldOf(f.type) !== 'any' ? 'untyped' : 'typed';
-      if (ts.isIdentifier(value)) { keyNotes.push(`${k}.${how}(${kotlinString(key)}, ${this.expr(value)})`); return code(); }
+      // The value as the field takes it: `expr` would hold it to its narrowed type (`?: jsObjectRequired()`), never nil.
+      if (ts.isIdentifier(value)) { keyNotes.push(`${k}.${how}(${kotlinString(key)}, ${how === 'typed' && f.type !== 'Any?' ? this.coerce(value, f.type) : this.expr(value)})`); return code(); }
       if (how === 'typed') return `${k}.typed(${kotlinString(key)}, ${code()})`;
       // Null and undefined apart before the value is converted to the field's type, which holds both as null.
       this.subst.set(value, `${k}.untyped(${kotlinString(key)}, ${this.expr(value)})`);
