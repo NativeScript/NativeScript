@@ -3539,9 +3539,9 @@ ${members.join('\n')}
     const input = valued(given), code = input.code;
     // Cast already, held optional as lenient code holds it (see `narrowCast`).
     if (this.lenient && castTo(code, type, true)) return code;
-    // A read with no closure in its code that may throw (or reads dynamically) is cast where it throws, under a `try` where it leads with its own.
-    const throws = this.lenient && !code.includes('{') ? (input.throws ? 'try ' : THROWING_CODE.test(code) || code.startsWith('jsGet(') ? '' : null) : null;
-    if (throws !== null) return throws ? ownTried(`(try jsCastPresent(${code}) as ${type})`) : `(jsCastPresent(${code}) as ${type})`;
+    // A value that leads with its own `try`, or a dynamic read (under the statement's), is cast where it throws.
+    if (this.lenient && input.throws) return ownTried(`(try jsCastPresent(${code}) as ${type})`);
+    if (this.lenient && input.mark?.op === 'member' && input.mark.dynamic) return `(jsCastPresent(${code}) as ${type})`;
     return castCode(code, type, 'as!');
   }
 
