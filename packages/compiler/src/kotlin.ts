@@ -14,7 +14,7 @@ import type { Form } from './forms.ts';
 import { isCoreDeclaration } from './core.ts';
 import { nonVirtualName } from './swift.ts';
 import type { Properties } from './properties.ts';
-import { type Held, holdsNil, isFunctionHeld, keyOf, nilIsNull, notedField, notesNull, nullNames, rootKeepsExpando, literalNotes, type ShapeFacts, type ShapePlan, shapePlanOfClass, shapePlanOfLiteral, spelledOptional } from './shapes.ts';
+import { type Held, holdsNil, isFunctionHeld, keyOf, nilIsNull, notedField, notesNull, type Nulls, nullNames, rootKeepsExpando, literalNotes, type ShapeFacts, type ShapePlan, shapePlanOfClass, shapePlanOfLiteral, spelledOptional } from './shapes.ts';
 import { shadowLiteral, shadowShapes } from './shape-shadow.ts';
 import { recognizePatterns, type Patterns } from './patterns.ts';
 import type { Reach } from './reach.ts';
@@ -2185,7 +2185,7 @@ export class Translator implements AsyncTranslator {
     for (const f of [...fields, ...allFields.filter((f) => f.symbol)]) if (loose(f)) lines.push(`    ${modifiers(f)}var ${ident(f.name)}: ${f.type} = jsUnchecked(${ident(f.name)})`, ...(through.has(f.name) ? [`        set(value) { field = value${writes(f)} }`] : []));
     for (const x of protocols) lines.push(...x.lines);
     if (symbolic) {
-      lines.push(...this.dynamicMembers(fields, className, false), '}');
+      lines.push(...this.dynamicMembers({}, { fields, className }), '}');
       return lines.join('\n');
     }
     const declared = `listOf(${fields.map((f) => kotlinString(f.name)).join(', ')})`;
@@ -2221,7 +2221,7 @@ export class Translator implements AsyncTranslator {
     lines.push(`    override val jsKeys: List<String>`);
     lines.push(`        get() = (jsOrder ?: ${declared}).let { order -> order + (jsExtra?.jsKeys ?: listOf()).filter { it !in order } }${optional.length ? '.filter(::jsHas)' : ''}`);
     // Keys set beyond the type's (`Object.assign(shape, more)`) are kept with the extra ones.
-    lines.push(...this.dynamicMembers(fields, className, false, 'jsExtra?.jsGet(key)', '(jsExtra ?: JSObject().also { jsExtra = it }).jsSet(key, value)', [], [], false, [], undefined, new Set(optional.map((f) => f.name)), undefined, undefined, through).slice(1));
+    lines.push(...this.dynamicMembers({ nulls: new Map(optional.map((f) => [f.name, 'noted'])), rewritten: through, extra: true }, { fields, className }).slice(1));
     lines.push('}');
     return lines.join('\n');
   }
@@ -2280,18 +2280,19 @@ export class Translator implements AsyncTranslator {
     return out;
   }
 
-  /** `JSDynamic`: the object's keys and members by name, for printing, JSON and untyped access. */
-  /**
-   * `defined`: fields `Object.defineProperty` may give a descriptor (`JSDefinable`). `expandoAbove`: a program base keeps
-   * the object's expando, whose keys come after every class's fields, as JavaScript defines fields before script adds keys.
-   */
-  private dynamicMembers(fields: { name: string; type: string; at?: ts.PropertyDeclaration }[], className: string | null, inherits: boolean, fallbackGet = 'null', fallbackSet = '', symbols: { key: string; member: string; type: string }[] = [], methods: { name: string; key?: string; params: string[]; ret: string }[] = [], expando = false, accessors: { name: string; type: string; readable: boolean; settable: boolean; set?: string }[] = [], superclass?: string, nulls = new Set<string>(), nilNull = new Set<string>(), keyed: KeyedMembers | null = null, rewritten = new Set<string>(), defined = new Set<string>(), expandoAbove = false, receiver?: string): string[] {
-    accessors = accessors.filter((a) => !fields.some((f) => f.name === a.name) && !methods.some((m) => m.name === a.name));
-    const members = [...new Set([...accessors.map((a) => accessorKey(a.name)), ...methods.filter((m) => !m.key).map((m) => m.name)])];
+  /** `JSDynamic`: the object's keys (`plan`, its plan's state) and members by name, for printing, JSON and untyped access. */
+  private dynamicMembers(plan: MemberKeys, members: DynamicMembers): string[] {
+    const { fields, className, inherits = false, symbols = [], methods = [], superclass, receiver } = members;
+    const { keyed = null, rewritten = new Set<string>(), defined = new Set<string>(), expando = false, expandoAbove = false, extra = false } = plan;
+    const noted = (n: string) => notesNull(plan.nulls?.get(n)), nilNull = (n: string) => nilIsNull(plan.nulls?.get(n));
+    const fallbackGet = expando ? 'jsExpandoGet(this, key)' : extra ? 'jsExtra?.jsGet(key)' : 'null';
+    const fallbackSet = expando ? 'jsExpandoSet(this, key, value)' : extra ? '(jsExtra ?: JSObject().also { jsExtra = it }).jsSet(key, value)' : '';
+    const accessors = (members.accessors ?? []).filter((a) => !fields.some((f) => f.name === a.name) && !methods.some((m) => m.name === a.name));
+    const hasMembers = [...new Set([...accessors.map((a) => accessorKey(a.name)), ...methods.filter((m) => !m.key).map((m) => m.name)])];
     const at = (n: string) => { const k = keyed?.order.indexOf(n) ?? -1; return k < 0 ? Infinity : k; };
     const sorted = keyed ? [...fields].sort((a, b) => at(a.name) - at(b.name)) : fields;
     const fieldKeys = sorted.map((f) => {
-      if (!keyed) return holdsNil(heldOf(f.type)) && !nilNull.has(f.name) ? `(if (${ident(f.name)} == null${nulls.has(f.name) ? ` && jsNulls?.contains(${kotlinString(f.name)}) != true` : ''}) listOf() else listOf(${kotlinString(f.name)}))` : `listOf(${kotlinString(f.name)})`;
+      if (!keyed) return holdsNil(heldOf(f.type)) && !nilNull(f.name) ? `(if (${ident(f.name)} == null${noted(f.name) ? ` && jsNulls?.contains(${kotlinString(f.name)}) != true` : ''}) listOf() else listOf(${kotlinString(f.name)}))` : `listOf(${kotlinString(f.name)})`;
       const present = keyed.present(f.name);
       return present ? `(if (${present}) listOf(${kotlinString(f.name)}) else listOf())` : `listOf(${kotlinString(f.name)})`;
     }).map((k, i) => (defined.has(sorted[i].name) ? `jsDefinedKeys(this, ${kotlinString(sorted[i].name)}, ${k})` : k));
@@ -2324,8 +2325,8 @@ export class Translator implements AsyncTranslator {
       `    override val jsClassName: String? get() = ${className ? kotlinString(className) : 'null'}`,
       `    override fun jsGet(key: String): Any? = when (key) {`,
       // A field Kotlin declares `lateinit` (an object type, unset): undefined until set.
-      ...fields.map((f) => withDefined(f, nulls.has(f.name) ? `        ${kotlinString(f.name)} -> jsNullable(jsUnsetIsUndefined { this.${ident(f.name)} }, jsNulls, ${kotlinString(f.name)})`
-        : !this.library && !holdsNil(heldOf(f.type)) && this.zero(f.type) === null && f.type !== 'Unit' && !this.isTypeParameterName(f.type) ? `        ${kotlinString(f.name)} -> jsUnsetIsUndefined { this.${ident(f.name)} }` : `        ${kotlinString(f.name)} -> ${nilNull.has(f.name) ? `jsNulled(this.${ident(f.name)})` : `this.${ident(f.name)}`}`, definedGet)),
+      ...fields.map((f) => withDefined(f, noted(f.name) ? `        ${kotlinString(f.name)} -> jsNullable(jsUnsetIsUndefined { this.${ident(f.name)} }, jsNulls, ${kotlinString(f.name)})`
+        : !this.library && !holdsNil(heldOf(f.type)) && this.zero(f.type) === null && f.type !== 'Unit' && !this.isTypeParameterName(f.type) ? `        ${kotlinString(f.name)} -> jsUnsetIsUndefined { this.${ident(f.name)} }` : `        ${kotlinString(f.name)} -> ${nilNull(f.name) ? `jsNulled(this.${ident(f.name)})` : `this.${ident(f.name)}`}`, definedGet)),
       ...accessors.filter((a) => a.readable).map((a) => `        ${kotlinString(accessorKey(a.name))} -> this.${ident(a.name)}`),
       ...symbols.map((f) => `        ${f.key} -> this.${f.member}`),
       ...methods.filter((m) => !fields.some((f) => f.name === m.name)).map(method),
@@ -2336,7 +2337,7 @@ export class Translator implements AsyncTranslator {
       // A registered property's accessor is the prototype's, which converts what script sets (`col = "1"`): the value as it is.
       // A null is noted after the store, whose setter reads the key's state from before it; a field written through to its
       // source (`rewritten`) is written again once the null is noted.
-      ...fields.map((f) => withDefined(f, `            ${kotlinString(f.name)} -> ${(f as { expando?: boolean }).expando ? `jsExpandoSet(this, ${kotlinString(f.name)}, value)` : nulls.has(f.name) ? `{ this.${ident(f.name)} = ${holdsNil(heldOf(f.type)) ? this.storeFromAny(f) : `if (jsIsNullish(value)) jsUncheckedNull<${f.type}>() else ${this.storeFromAny(f)}`}; jsNulls = jsNoteNull(jsNulls, ${kotlinString(f.name)}, value)${rewritten.has(f.name) ? `; jsWriteThrough(${kotlinString(f.name)})` : ''} }` : `this.${ident(f.name)} = ${this.storeFromAny(f)}`}`, definedSet)),
+      ...fields.map((f) => withDefined(f, `            ${kotlinString(f.name)} -> ${(f as { expando?: boolean }).expando ? `jsExpandoSet(this, ${kotlinString(f.name)}, value)` : noted(f.name) ? `{ this.${ident(f.name)} = ${holdsNil(heldOf(f.type)) ? this.storeFromAny(f) : `if (jsIsNullish(value)) jsUncheckedNull<${f.type}>() else ${this.storeFromAny(f)}`}; jsNulls = jsNoteNull(jsNulls, ${kotlinString(f.name)}, value)${rewritten.has(f.name) ? `; jsWriteThrough(${kotlinString(f.name)})` : ''} }` : `this.${ident(f.name)} = ${this.storeFromAny(f)}`}`, definedSet)),
       // A setter takes what script gives it (`textWrap = "true"`): as JavaScript reads it as the setter's type.
       ...accessors.filter((a) => a.settable).map((a) => `            ${kotlinString(accessorKey(a.name))} -> ${a.set ?? `this.${ident(a.name)} = ${a.type === 'Boolean' ? 'jsTruthy(value)' : a.type === 'Double' ? 'jsToNumber(value)' : this.fromAnyCode('value', a.type, true)}`}`),
       ...symbols.map((f) => `            ${f.key} -> this.${f.member} = ${this.fromAny('value', f.type)}`),
@@ -2344,7 +2345,7 @@ export class Translator implements AsyncTranslator {
       '        }',
       '    }',
       // `key in object` of a member its class declares (an accessor, a method), not only of its own keys.
-      ...(members.length ? [`    override fun jsHasMember(key: String): Boolean = when (key) { ${members.map(kotlinString).join(', ')} -> true; else -> ${inherits && superclass ? `super<${superclass}>.jsHasMember(key)` : 'false'} }`] : []),
+      ...(hasMembers.length ? [`    override fun jsHasMember(key: String): Boolean = when (key) { ${hasMembers.map(kotlinString).join(', ')} -> true; else -> ${inherits && superclass ? `super<${superclass}>.jsHasMember(key)` : 'false'} }`] : []),
     ];
   }
 
@@ -3197,7 +3198,7 @@ export class Translator implements AsyncTranslator {
         else fields.push({ name: m.name.text, type });
       }
     }
-    return { supertypes, overrides, lines: [...witnesses, ...this.dynamicMembers(fields, cls.name?.text ?? null, false, 'null', '', [], [], false, accessors)] };
+    return { supertypes, overrides, lines: [...witnesses, ...this.dynamicMembers({}, { fields, className: cls.name?.text ?? null, accessors })] };
   }
 
   /**
@@ -3858,9 +3859,12 @@ export class Translator implements AsyncTranslator {
       lines.push(`    var jsNulls: MutableSet<String>? = ${initial.length ? `mutableSetOf(${initial.map((m) => kotlinString(m.name.getText())).join(', ')})` : 'null'}`);
     }
     const definable = isError ? [] : this.definableNames(cls).filter((n) => fields.some((f) => f.name === n));
-    if (!isError) lines.push(...this.dynamicMembers(fields, this.scriptClassName(cls) ?? name, !!appBase || !!kitRoot, expando ? 'jsExpandoGet(this, key)' : 'null', expando ? 'jsExpandoSet(this, key, value)' : '', symbolFields, dynMethods, expando, dynAccessors, base?.replace(/<.*$/, ''), nulls, nullNames(plan, nilIsNull), keyedInfo, undefined, new Set(definable), !!appBase && rootKeepsExpando(cls, this.states, this.shapeFacts()), this.states.byNameClass(cls) ? name.replace(/<.*$/, '') : undefined));
+    if (!isError) {
+      const keys: MemberKeys = { nulls: plan?.fieldNulls, keyed: keyedInfo, defined: new Set(definable), expando, expandoAbove: !!appBase && rootKeepsExpando(cls, this.states, this.shapeFacts()) };
+      lines.push(...this.dynamicMembers(keys, { fields, className: this.scriptClassName(cls) ?? name, inherits: !!appBase || !!kitRoot, symbols: symbolFields, methods: dynMethods, accessors: dynAccessors, superclass: base?.replace(/<.*$/, ''), receiver: this.states.byNameClass(cls) ? name.replace(/<.*$/, '') : undefined }));
+    }
     // An error's own fields by name, after JSError's `name`/`message`/`stack`; what script adds to it comes after the fields, and it prints as an error, not as `Name { … }`.
-    else lines.push(...this.dynamicMembers(fields, name, true, 'null', '', symbolFields, dynMethods, false, dynAccessors, base!.replace(/<.*$/, ''))
+    else lines.push(...this.dynamicMembers({}, { fields, className: name, inherits: true, symbols: symbolFields, methods: dynMethods, accessors: dynAccessors, superclass: base!.replace(/<.*$/, '') })
       .filter((l) => !l.startsWith('    override val jsClassName'))
       .map((l) => (l.startsWith('    override val jsKeys') && l.includes('super.jsKeys + ') ? l.replace('super.jsKeys + ', '') + ' + super.jsKeys' : l)));
     if (definable.length) {
@@ -11395,6 +11399,36 @@ function returnsNull(body: ts.Node): boolean {
 /** A call's parameters as `args` reads them: the signature it resolves to, an overload's implementation, and whether the program declares them. */
 interface CallParams { sig: ts.Signature | undefined; impl: ts.FunctionLikeDeclaration | null | undefined; params: ts.Symbol[]; appDeclared: boolean }
 interface KeyedMembers { order: string[]; present: (name: string) => string | null; ordered: boolean; appBase: boolean }
+/** The key state `dynamicMembers` spells: a class's from its plan, a shape class's from its fields. */
+interface MemberKeys {
+  /** Each field's null state; a field it lacks is `none`. */
+  nulls?: ReadonlyMap<string, Nulls>;
+  keyed?: KeyedMembers | null;
+  /** Fields written through to their source once a null is noted (`jsWriteThrough`). */
+  rewritten?: ReadonlySet<string>;
+  /** Fields `Object.defineProperty` may give a descriptor (`JSDefinable`). */
+  defined?: ReadonlySet<string>;
+  /** Keys script adds are kept in the object's expando. */
+  expando?: boolean;
+  /** A program base keeps the object's expando, whose keys come after every class's fields, as JavaScript defines fields before script adds keys. */
+  expandoAbove?: boolean;
+  /** Keys beyond the shape's are kept in `jsExtra`. */
+  extra?: boolean;
+}
+/** What `dynamicMembers` reads and writes by name besides the keys' state. */
+interface DynamicMembers {
+  fields: { name: string; type: string; at?: ts.PropertyDeclaration }[];
+  className: string | null;
+  /** Below a class that has these members: its keys come first and its members take the rest. */
+  inherits?: boolean;
+  symbols?: { key: string; member: string; type: string }[];
+  methods?: { name: string; key?: string; params: string[]; ret: string }[];
+  accessors?: { name: string; type: string; readable: boolean; settable: boolean; set?: string }[];
+  /** The base whose `jsHasMember` takes the rest. */
+  superclass?: string;
+  /** An app class's methods see the object they are called on as `this` when it is one of this class's. */
+  receiver?: string;
+}
 interface ShapeField { name: string; type: string; label?: string; accessor?: { get: boolean; set: boolean; value: string }; symbol?: boolean }
 
 /** `Symbol.iterator`, as the library declares `Symbol`. */
