@@ -2149,6 +2149,7 @@ export class Translator implements AsyncTranslator {
         const ptype = this.checker.getTypeOfSymbolAtLocation(p, where ?? p.valueDeclaration!);
         // A field of a type parameter (`{ at, data: T }`): shared by every instantiation, it holds any value.
         let pt = ptype.flags & ts.TypeFlags.TypeParameter || (p.valueDeclaration && this.states.nullish().held.has(p.valueDeclaration)) ? 'Any?' : this.type(ptype, where);
+        if (p.valueDeclaration && ts.isPropertySignature(p.valueDeclaration)) pt = this.heldElements(p.valueDeclaration, pt);
         const symbolic = wellKnownMember(p.name);
         if (symbolic) return { name: symbolic, type: pt, symbol: true };
         if (pt === 'Void' || pt === 'Never') pt = 'Any?';

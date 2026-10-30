@@ -1361,6 +1361,7 @@ export class Translator implements AsyncTranslator {
       const fields = props.map((p): ShapeField => {
         const ptype = this.checker.getTypeOfSymbolAtLocation(p, where ?? p.valueDeclaration!);
         let pt = this.type(ptype, where);
+        if (p.valueDeclaration && ts.isPropertySignature(p.valueDeclaration)) pt = this.heldElements(p.valueDeclaration, pt);
         // A class as a value (`{ MyComponent }`, a module's exports): its Java class, untyped.
         if (pt === 'Unit' || (!this.library && pt !== 'ComponentFactory' && ptype.getConstructSignatures().length && (ptype.getSymbol()?.flags ?? 0) & ts.SymbolFlags.Class)) pt = 'Any?';
         const symbolic = wellKnownMember(p.name);

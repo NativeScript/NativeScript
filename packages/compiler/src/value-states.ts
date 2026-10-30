@@ -259,6 +259,10 @@ export class ValueStates {
     if (ts.isBinaryExpression(p) && p.operatorToken.kind === ts.SyntaxKind.EqualsToken && p.right === x) return p.left;
     if (ts.isReturnStatement(p)) return ts.findAncestor(p, ts.isFunctionLike) ?? null;
     if (ts.isArrowFunction(p) && p.body === x) return p;
+    if (ts.isPropertyAssignment(p) && p.initializer === x && ts.isObjectLiteralExpression(p.parent)) {
+      const d = this.checker.getContextualType(p.parent)?.getProperty(p.name.getText())?.valueDeclaration;
+      return d && ts.isPropertySignature(d) && !d.getSourceFile().isDeclarationFile ? d : null;
+    }
     if ((ts.isCallExpression(p) || ts.isNewExpression(p)) && p.expression !== x) {
       const k = p.arguments!.indexOf(x as ts.Expression);
       if (ts.isNewExpression(p) && k === 0 && ts.isIdentifier(p.expression) && p.expression.text === 'Set') return p;
