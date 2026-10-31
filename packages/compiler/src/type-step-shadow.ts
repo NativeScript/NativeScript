@@ -190,9 +190,9 @@ function disagreements(s: TypeStep, w: string, from: NativeType, to: NativeType,
   const out: string[] = [];
   if (s.refuse) out.push('erasure not refused (Q10)');
   // A function literal written in place is its first value: there is no identity to lose.
-  if (s.identity && (s.composite === 'function' || s.kind === 'function') && !o.literal && ['closure', 'function-object', 'closure-unless-same'].includes(w)) out.push('function identity lost');
-  if (s.identity && s.kind === 'element' && w === 'copy') out.push('container copied');
-  if (s.identity && (s.kind === 'box' || s.kind === 'unbox') && s.composite !== 'function' && w === 'copy') out.push('container copied');
+  if (s.keepsIdentity && (s.composite === 'function' || s.kind === 'function') && !o.literal && ['closure', 'function-object', 'closure-unless-same'].includes(w)) out.push('function identity lost');
+  if (s.keepsIdentity && s.kind === 'element' && w === 'copy') out.push('container copied');
+  if (s.keepsIdentity && (s.kind === 'box' || s.kind === 'unbox') && s.composite !== 'function' && w === 'copy') out.push('container copied');
   // A boxed function's parameters are read from script's arguments: null where one is held present is carried (Q7).
   if (s.kind === 'box' && s.composite === 'function') {
     const rejects = s.children.slice(0, -1).filter((p) => p.kind === 'unbox' && rejectsEmpty(p.to)).length;

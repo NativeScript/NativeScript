@@ -1,9 +1,9 @@
-import { type Entry, type NativeType, parseNativeType, plan, spelledRepresentation } from './conversion.ts';
+import { type Entry, type NativeType, keepsIdentity, parseNativeType, plan, spelledRepresentation } from './conversion.ts';
 
 // The composite step of a conversion (review/S4-S5-PLAN.md §2): a typed value given to an untyped slot (box), an
 // untyped value read as a type (unbox), or one function type given where another is wanted (function). It recurses on
 // the element of a container and on a function's parameters (contravariant) and result (covariant), and answers
-// identity with one predicate for both backends. It decides; the backends spell.
+// identity with one predicate for both backends (conversion.ts `keepsIdentity`). It decides; the backends spell.
 
 export type TypeComposite = 'array' | 'record' | 'map' | 'set' | 'promise' | 'shape' | 'class' | 'function' | 'enum'
   | 'primitive' | 'value' | 'any' | 'void';
@@ -17,7 +17,7 @@ export interface TypeStep {
   from: NativeType;
   to: NativeType;
   /** The value after the step is the value before it to `===`: one JavaScript object, however each backend holds it. */
-  identity: boolean;
+  keepsIdentity: boolean;
   /** The step itself may throw JavaScript's TypeError; a function's parameter and result steps throw when it is called. */
   throws: boolean;
   /** Elements, or a function's parameters then its result. */
@@ -49,11 +49,6 @@ export function composite(t: NativeType, facts: TypeFacts = {}): TypeComposite {
   return facts.shape?.(t.name) ? 'shape' : 'class';
 }
 
-/** One JavaScript value on both sides of any step: functions, containers and objects are references in JavaScript. */
-export function keepsIdentity(c: TypeComposite): boolean {
-  return c !== 'primitive' && c !== 'void' && c !== 'value' && c !== 'enum';
-}
-
 /** A function type's parameters and result, from either backend's spelling (`(A, B) throws -> R`, `(A, B) -> R`). */
 export function functionSignature(t: NativeType): { params: NativeType[]; result: NativeType } | null {
   if (t.kind !== 'function') return null;
@@ -74,7 +69,7 @@ export function functionSignature(t: NativeType): { params: NativeType[]; result
 export function typeStep(from: NativeType, to: NativeType, entry: Entry = 'checked', facts: TypeFacts = {}): TypeStep {
   const step = (kind: TypeStepKind, c: TypeComposite, children: TypeStep[] = [], carried: number[] = []): TypeStep => {
     const throws = kind === 'unbox' ? plan({ rep: 'foreign', type: from, kind: 'untyped' }, { rep: spelledRepresentation(to), type: to, kind: 'untyped' }, entry).throws : false;
-    const s: TypeStep = { kind, composite: c, from, to, identity: keepsIdentity(c) && !(kind === 'unbox' && c === 'array'), throws, children, carried };
+    const s: TypeStep = { kind, composite: c, from, to, keepsIdentity: keepsIdentity(c) && !(kind === 'unbox' && c === 'array'), throws, children, carried };
     const erased = kind !== 'identity' && (children.some((x) => x.refuse) || ((c === 'function' || CONTAINERS.has(c)) && [from, to].some((x) => nestedTypeParameter(x, facts))));
     if (erased) s.refuse = 'a type parameter not bound in scope under a container or function type, which the native type erases';
     return s;
