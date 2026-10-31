@@ -128,8 +128,6 @@ export interface FormsOptions {
   nativeNil?: (d: ts.Declaration) => boolean;
   /** Whether a node is the program's own code, not a package's: only its reads and returns make a form `absent`. */
   ownCode?: (n: ts.Node) => boolean;
-  /** Script's calls of a function may give null for any parameter, which the function's body then sees (Q7). */
-  scriptGivesNull?: boolean;
 }
 
 export class Forms {
@@ -178,7 +176,6 @@ export class Forms {
   private readonly native: (d: ts.Declaration) => boolean;
   private readonly nativeNil: (d: ts.Declaration) => boolean;
   private readonly ownCode: (n: ts.Node) => boolean;
-  private readonly scriptGivesNull: boolean;
 
   constructor(files: readonly ts.SourceFile[], checker: ts.TypeChecker, strictFile: (f: ts.SourceFile) => boolean, options: FormsOptions = {}) {
     this.files = files;
@@ -187,7 +184,6 @@ export class Forms {
     this.library = options.library ?? false;
     this.native = options.native ?? (() => false);
     this.ownCode = options.ownCode ?? (() => true);
-    this.scriptGivesNull = options.scriptGivesNull ?? false;
     const nil = options.nativeNil ?? (() => false), known = new Map<ts.Declaration, boolean>();
     this.nativeNil = (d) => {
       let found = known.get(d);
@@ -551,6 +547,8 @@ export class Forms {
         }
       }
     }
+    this.findByName();
+    this.openEscaped();
     const out = new Map<Slot, [Slot, number][]>();
     for (const [from, to, keep] of this.edges) {
       const x = this.find(from), y = this.find(to);
@@ -1023,8 +1021,14 @@ export class Forms {
    * A type parameter reached so reaches the classes of the arguments its function is called with.
    */
   byNameClasses(): ReadonlySet<ts.ClassLikeDeclaration> {
-    if (this.byName) return this.byName;
     this.build();
+    return this.byName!;
+  }
+
+  /** The program's object literals script reaches by name, as `byNameClasses` finds a class's instances. */
+  private readonly byNameLiterals = new Set<ts.ObjectLiteralExpression>();
+
+  private findByName(): void {
     const c = this.checker, found = new Set<ts.ClassLikeDeclaration>(), statics = this.byNameStatic;
     const generic = new Set<ts.Symbol>(), calls: (ts.CallExpression | ts.NewExpression)[] = [];
     const classOf = (e: ts.Expression) => {
@@ -1036,7 +1040,10 @@ export class Forms {
       }
       for (const part of t.isUnionOrIntersection() ? t.types : [t]) {
         const into = part.getConstructSignatures().length ? statics : found;
-        for (const d of part.getSymbol()?.declarations ?? []) if (ts.isClassLike(d) && !declarationFile(d)) into.add(d);
+        for (const d of part.getSymbol()?.declarations ?? []) {
+          if (ts.isClassLike(d) && !declarationFile(d)) into.add(d);
+          else if (ts.isObjectLiteralExpression(d)) this.byNameLiterals.add(d);
+        }
       }
     };
     for (const [x, slots] of this.placed) {
@@ -1087,7 +1094,25 @@ export class Forms {
       return depth < 32 && t.isClassOrInterface() && c.getBaseTypes(t).some((b) => { const d = own(b); return !!d && (found.has(d) || derived(d, depth + 1)); });
     };
     for (const cls of this.classes) if (!found.has(cls) && derived(cls)) found.add(cls);
-    return this.byName = found;
+    this.byName = found;
+  }
+
+  /**
+   * The methods of an app object script holds (`byNameClasses`, `byNameLiterals`) are script's to call (Q7): any
+   * parameter may be given null or nothing. An override of a declaration file's method keeps its form (a fixed slot).
+   */
+  private openEscaped(): void {
+    if (this.library) return;
+    const open = (members: readonly (ts.ClassElement | ts.ObjectLiteralElementLike)[], statics: boolean) => {
+      for (const m of members) {
+        if (!this.ownCode(m) || hasStatic(m) !== statics) continue;
+        const fn = ts.isMethodDeclaration(m) ? m : ts.isPropertyAssignment(m) || ts.isPropertyDeclaration(m) ? m.initializer && this.functionDeclarationOf(m.initializer) : null;
+        if (fn && fn.body) this.openParameters(fn, { escaped: true });
+      }
+    };
+    for (const cls of this.byName!) open(cls.members, false);
+    for (const cls of this.byNameStatic) open(cls.members, true);
+    for (const o of this.byNameLiterals) open(o.properties, false);
   }
 
   /** The program's classes whose statics script reaches by name: the class itself held untyped, or indexed by a key the program doesn't spell. */
@@ -1304,9 +1329,10 @@ export class Forms {
    * The parameters of a function whose callers the program can't see (§2.3a): in strict code what their declared types
    * admit, which their slots hold already; in other code `openStates`. JavaScript's built-ins (`lib`) give what their
    * declarations say; a platform's binding may give nil; script (a function reached through an untyped slot) may give
-   * fewer arguments, and anything for a primitive (§2.3b M2).
+   * fewer arguments, null (Q7), and anything for a primitive (§2.3b M2); an escaped object's method (`openEscaped`)
+   * fewer arguments or null.
    */
-  private openParameters(fn: ts.SignatureDeclaration, caller: { lib?: ts.SignatureDeclaration; platform?: ts.SignatureDeclaration; script?: boolean } = {}): void {
+  private openParameters(fn: ts.SignatureDeclaration, caller: { lib?: ts.SignatureDeclaration; platform?: ts.SignatureDeclaration; script?: boolean; escaped?: boolean } = {}): void {
     const lib = caller.lib && valueParameters(caller.lib), platform = caller.platform && valueParameters(caller.platform);
     const rest = lib?.at(-1)?.dotDotDotToken ? lib.at(-1) : undefined;
     valueParameters(fn).forEach((p, k) => {
@@ -1325,7 +1351,10 @@ export class Forms {
       } else states = this.strict(p) ? 0 : this.openStates(p);
       const q = platform?.[k];
       if (q && this.nativeNil(q)) states |= N;
-      if (caller.script && !p.dotDotDotToken) states |= U | (this.scriptGivesNull ? N : 0) | (this.primitive(p) ? F : 0);
+      // Q7 carries script's null into app code only: library parameters keep their declared types.
+      const scriptNull = this.library || !this.ownCode(fn) ? 0 : N;
+      if (caller.script && !p.dotDotDotToken) states |= U | scriptNull | (this.primitive(p) ? F : 0);
+      if (caller.escaped && !p.dotDotDotToken) states |= U | scriptNull;
       if (states) this.seed(p.dotDotDotToken ? this.child(this.slotFor(p), 'element') : this.slotFor(p), states);
     });
   }

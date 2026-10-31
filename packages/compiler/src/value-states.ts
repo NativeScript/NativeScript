@@ -72,8 +72,6 @@ export interface StateRules {
   readonly optionalParametersTakeUndefined: boolean;
   /** Swift: `looseDeclaration` is asked of reads and declarations both, and answers for the declaration they name. */
   readonly looseReads: boolean;
-  /** Swift: a function script calls takes the null it is given into any parameter (Q7); Kotlin's adapters don't carry it yet. */
-  readonly scriptGivesNull?: boolean;
   /**
    * Kotlin: a parameter's checks throw for a null its type leaves out, so `mayBeNull` counts every way an empty value
    * reaches one, with these analyses of the backend's; and a string an unset regexp group may leave undefined is loose.
@@ -219,7 +217,7 @@ export class ValueStates {
   /** The program's value forms (review/DESIGN-VALUE-MODEL.md §2), built when first asked. */
   forms(): Forms {
     const b = this.backend;
-    return this.formSet ??= new Forms(b.sourceFiles, b.checker, (f) => b.trust.strictFile(f), { library: !!b.library, native: (d) => b.trust.nativeDeclaration(d), nativeNil: (d) => !!b.native?.holdsNil?.(d), ownCode: (n) => !this.packaged(n), scriptGivesNull: !!b.rules.scriptGivesNull });
+    return this.formSet ??= new Forms(b.sourceFiles, b.checker, (f) => b.trust.strictFile(f), { library: !!b.library, native: (d) => b.trust.nativeDeclaration(d), nativeNil: (d) => !!b.native?.holdsNil?.(d), ownCode: (n) => !this.packaged(n) });
   }
 
   /**

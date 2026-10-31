@@ -22,7 +22,6 @@
 	"kotlin": {
 		"1031-map-key-nullish-refused": "Refused (build error): a Map key that may be null or undefined both, which no form holds apart (`Form.element` is a Map's value only; lang.ts nullishSlots checkNested).",
 		"1064-define-property-during-construction-refused": "Refused (build error): Object.defineProperty on `this` in its class's constructor making a declared field an accessor, read-only, hidden or fixed: the constructor and field initializers read the Kotlin field directly (Q4: literal keys after construction only).",
-		"1070-null-into-typed-callback": "Throws where JavaScript carries null: script calling a function typed to take an object with null; Kotlin's function adapters don't carry it yet (S5-4, Q7).",
 		"252-prototype-method-calls": "A built-in's prototype method called with call or apply (`Array.prototype.slice.call(list, 1)`) is refused, test262 cluster 2 (Kotlin translator).",
 		"254-destructuring-assignment": "A rest element in a destructuring assignment (`[first, ...others] = list`) is refused, test262 cluster 8 (Kotlin translator).",
 		"620-interface-identity": "Refused: an untyped object converted to an interface's class (a copy) where the code compares it by identity, looks it up as a key, or a callee keeps it (preflight, src/sharing.ts).",
