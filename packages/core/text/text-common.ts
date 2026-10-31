@@ -71,7 +71,7 @@ export class TextDecoder {
 		if (Object_prototype_toString.call(buffer) !== ArrayBufferString) {
 			throw Error("Failed to execute 'decode' on 'TextDecoder': The provided value is not of type '(ArrayBuffer or ArrayBufferView)'");
 		}
-		const inputAs8 = new Uint8Array(buffer);
+		const inputAs8 = ArrayBuffer.isView(input) ? new Uint8Array(input.buffer, input.byteOffset, input.byteLength) : new Uint8Array(buffer);
 		let resultingString = '';
 		for (let index = 0, len = inputAs8.length | 0; index < len; index = (index + 32768) | 0) {
 			resultingString += String.fromCharCode.apply(0, inputAs8.slice(index, (index + 32768) | 0));

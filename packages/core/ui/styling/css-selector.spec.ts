@@ -2,6 +2,7 @@ import { parse } from '../../css/reworkcss.js';
 import { Screen } from '../../platform';
 import { createSelector, RuleSet, StyleSheetSelectorScope, SelectorTier, fromAstNode, Node, Changes, matchSelectorCandidates } from './css-selector';
 import { _populateRules } from './style-scope';
+import { CssProperty, ShorthandProperty } from '../core/properties';
 
 describe('css-selector', () => {
 	it('button[attr]', () => {
@@ -445,6 +446,62 @@ describe('css-selector', () => {
 		expect(rule.declarations.map((d) => String(d.value))).toEqual(['var(--m)', 'var(--m)', 'var(--m)', 'var(--m)']);
 		// One placeholder shared by every longhand, so it is only resolved once.
 		expect(new Set(rule.declarations.map((d) => d.value)).size).toBe(1);
+	});
+
+	describe('shorthands registered after parsing', () => {
+		// Plugins usually load after the app CSS has been parsed.
+		function registerLateShorthand(prefix: string) {
+			const start = new CssProperty<any, string>({ name: `${prefix}Start`, cssName: `${prefix}-start` });
+			const end = new CssProperty<any, string>({ name: `${prefix}End`, cssName: `${prefix}-end` });
+			new ShorthandProperty<any, string>({
+				name: `${prefix}Sides`,
+				cssName: `${prefix}-sides`,
+				getter: () => '',
+				converter: (value) => {
+					const [a, b = a] = String(value).split(' ');
+					return [
+						[start, a],
+						[end, b],
+					];
+				},
+			});
+		}
+
+		it('expands them in place on first use, once', () => {
+			const rule = createOne(`button { color: red; lateone-sides: 1 2; lateone-end: 5; }`);
+			expect(rule.declarations.map((d) => d.property)).toEqual(['color', 'lateone-sides', 'lateone-end']);
+
+			registerLateShorthand('lateone');
+			rule.expandLateShorthands();
+			expect(rule.declarations).toEqual([
+				{ property: 'color', value: 'red' },
+				{ property: 'lateone-start', value: '1' },
+				{ property: 'lateone-end', value: '2' },
+				{ property: 'lateone-end', value: '5' },
+			]);
+
+			const expanded = rule.declarations;
+			rule.expandLateShorthands();
+			expect(rule.declarations).toBe(expanded);
+		});
+
+		it('keeps a variable value pending per longhand', () => {
+			const rule = createOne(`button { latetwo-sides: var(--s); }`);
+			registerLateShorthand('latetwo');
+			rule.expandLateShorthands();
+
+			expect(rule.declarations.map((d) => d.property)).toEqual(['latetwo-start', 'latetwo-end']);
+			expect(rule.declarations.map((d) => String(d.value))).toEqual(['var(--s)', 'var(--s)']);
+		});
+
+		it('leaves rules without them untouched', () => {
+			const rule = createOne(`button { margin: 4; color: red; }`);
+			const declarations = rule.declarations;
+			registerLateShorthand('latethree');
+			rule.expandLateShorthands();
+
+			expect(rule.declarations).toBe(declarations);
+		});
 	});
 
 	it('strips the unsupported !important flag while parsing', () => {

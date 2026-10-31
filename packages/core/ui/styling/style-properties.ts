@@ -1201,6 +1201,10 @@ export const fontScaleInternalProperty = new InheritedCssProperty<Style, number>
 });
 fontScaleInternalProperty.register(Style);
 
+function parseFontSize(value: string): number {
+	return typeof value === 'string' && value.trim().endsWith('rem') ? <number>Length.parse(value) : parseFloat(value);
+}
+
 export const fontSizeProperty = new InheritedCssProperty<Style, number>({
 	name: 'fontSize',
 	cssName: 'font-size',
@@ -1215,7 +1219,7 @@ export const fontSizeProperty = new InheritedCssProperty<Style, number>({
 			target.fontInternal = Font.equals(Font.default, newFont) ? unsetValue : newFont;
 		}
 	},
-	valueConverter: (v) => parseFloat(v),
+	valueConverter: parseFontSize,
 });
 fontSizeProperty.register(Style);
 
@@ -1267,7 +1271,7 @@ const fontProperty = new ShorthandProperty<Style, string>({
 			];
 		} else {
 			const font = parseFont(value);
-			const fontSize = parseFloat(font.fontSize);
+			const fontSize = parseFontSize(font.fontSize);
 
 			return [
 				[fontStyleProperty, font.fontStyle],
