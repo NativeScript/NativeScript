@@ -41,7 +41,7 @@ export type { DialogOptions, CancelableOptions, AlertOptions, PromptResult, Prom
 export * from './editable-text-base';
 export { isEmbedded } from './embedding';
 export { Frame, setActivityCallbacks, NavigationType } from './frame';
-export type { NavigationEntry, NavigationContext, NavigationTransition, BackstackEntry, ViewEntry, AndroidActivityCallbacks, NavigationData } from './frame';
+export type { FrameBackPreview, FrameBackPreviewOptions, NavigationEntry, NavigationContext, NavigationTransition, BackstackEntry, ViewEntry, AndroidActivityCallbacks, NavigationData } from './frame';
 
 export { GesturesObserver, TouchAction, GestureTypes, GestureStateTypes, SwipeDirection, GestureEvents, TouchManager } from './gestures';
 export type { GestureEventData, GestureEventDataWithState, TapGestureEventData, PanGestureEventData, PinchGestureEventData, RotationGestureEventData, SwipeGestureEventData, TouchGestureEventData, TouchAnimationOptions, VisionHoverOptions } from './gestures';
