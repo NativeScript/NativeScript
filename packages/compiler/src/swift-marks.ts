@@ -7,11 +7,12 @@ import { parseNativeType, type Mark, type Value } from './conversion.ts';
 
 const made = new Map<string, Value>();
 const pureCodes = new Set<string>();
-const triedCodes = new Set<string>();
+// Code that leads with its own `try`, to that code without it (`(try x)` to `(x)`).
+const untriedCodes = new Map<string, string>();
 
 /** Code, recorded with its outermost operation. */
 export function marked(code: string, mark: Mark): string {
-  if (mark.op === 'try') triedCodes.add(code);
+  if (mark.op === 'try') untriedCodes.set(code, code === `try ${mark.of.code}` ? mark.of.code : `(${mark.of.code})`);
   made.set(code, { code, throws: false, pure: pureCodes.has(code), mark });
   return code;
 }
@@ -36,38 +37,62 @@ export function isPure(code: string): boolean {
   return pureCodes.has(code);
 }
 
-/** Code that leads with its own `try` (`(try jsGet(x, "k"))`, `try f()`): it throws where it stands. */
+/** `(try code)`: code that throws where it stands, an operand of its own. */
 export function ownTried(code: string): string {
-  triedCodes.add(code);
-  return code;
+  const own = `(try ${code})`;
+  untriedCodes.set(own, `(${code})`);
+  return own;
 }
 
 /** `try code` where `yes`, else code. */
 export function tryIf(yes: boolean | undefined, code: string): string {
-  return yes ? ownTried(`try ${code}`) : code;
+  if (!yes) return code;
+  const own = `try ${code}`;
+  untriedCodes.set(own, code);
+  return own;
 }
 
-/** Code that begins with `operand`'s (`(x as? T)`, `x!`, `x.name`): it leads with a `try` where the operand does. */
+/** Code that begins with `operand`, after any `(`s (`(x as? T)`, `x!`, `x.name`): it leads with a `try` where the operand does. */
 export function leading(code: string, operand: string): string {
-  if (triedCodes.has(operand)) triedCodes.add(code);
+  const inner = untriedCodes.get(operand);
+  const at = code.indexOf(operand);
+  if (inner !== undefined && at >= 0 && /^\(*$/.test(code.slice(0, at))) {
+    untriedCodes.set(code, code.slice(0, at) + inner + code.slice(at + operand.length));
+  }
   return code;
 }
 
-export function leadsWithTry(code: string): boolean {
-  return triedCodes.has(code);
+/** `(code)`. */
+export function parens(code: string): string {
+  return leading(`(${code})`, code);
 }
 
-/** `try code`. */
+/** `left op right`. */
+export function infix(left: string, op: string, right: string): string {
+  return leading(`${left} ${op} ${right}`, left);
+}
+
+export function leadsWithTry(code: string): boolean {
+  return untriedCodes.has(code);
+}
+
+/** `try code`, a `try` code leads with folded into this one (`try (x).y`, not `try (try x).y`). */
 export function tried(code: string): Value {
-  const v: Value = { code: `try ${code}`, throws: true, pure: false, mark: { op: 'try', of: valueOf(code) } };
+  const inner = untriedCodes.get(code) ?? code;
+  const v: Value = { code: `try ${inner}`, throws: true, pure: false, mark: { op: 'try', of: valueOf(inner) } };
   made.set(v.code, v);
-  triedCodes.add(v.code);
+  untriedCodes.set(v.code, inner);
   return v;
+}
+
+/** A statement's `try` (`t`: `try ` or none) before code, one `try` where code leads with its own. */
+export function tryBefore(t: string, code: string): string {
+  return t ? `try ${untriedCodes.get(code) ?? code}` : code;
 }
 
 /** `target = value`, a statement. */
 export function assignedCode(target: string, value: string, targetThrows = false): string {
-  return marked(`${target} = ${value}`, { op: 'assign', target, value: valueOf(value), targetThrows });
+  return leading(marked(`${target} = ${value}`, { op: 'assign', target, value: valueOf(value), targetThrows }), target);
 }
 
 /** A statement that is its own block (`if c { … }`, `do { … }`), placing inside it the `try`s it needs. */

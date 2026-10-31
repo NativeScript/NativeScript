@@ -17,6 +17,9 @@ const partsText = (x: unknown): string => (x && typeof x === 'object' && 'text' 
 const nodeOf = (x: unknown): ts.Node | undefined => (x && typeof x === 'object' && 'kind' in x && 'pos' in x ? x as ts.Node : undefined);
 const COMPOSITE_TARGET = /^(?:JSArray|JSRecord|JSMap|JSSet|JSPromise|Promise|Deferred)<|^\(.*\)\s*(?:throws\s+)?->|^FunctionCell_|^\[/;
 
+/** The translators' methods that emit a statement, expression or declaration, whose node bounds the scope. */
+const SCOPES = /^(?:stmt|expr|classDecl(?:Code)?|func(?:Code)?|functionBody)$/;
+
 /** The writers recorded per backend, and how each one's arguments name the two types. */
 const WRITERS: Record<'swift' | 'kotlin', Record<string, Read>> = {
   swift: {
@@ -47,7 +50,7 @@ interface CallSite { getFunctionName(): string | null; getMethodName(): string |
 function callers(wrapper: (...args: never[]) => unknown, fn: string, writers: Record<string, Read>): { site: string; nested: boolean } {
   const prepare = Error.prepareStackTrace, limit = Error.stackTraceLimit;
   Error.prepareStackTrace = (_, frames) => frames;
-  Error.stackTraceLimit = 8;
+  Error.stackTraceLimit = 24;
   const holder = {} as { stack: CallSite[] };
   Error.captureStackTrace(holder, wrapper);
   const frames = holder.stack;
@@ -56,7 +59,7 @@ function callers(wrapper: (...args: never[]) => unknown, fn: string, writers: Re
   for (const f of frames) {
     const name = f.getMethodName() ?? f.getFunctionName()?.replace(/^.*\./, '');
     // An arrow property of the same name forwarding to the writer (Kotlin's `coerceTyped: (e, t) => this.coerceTyped(e, t)`) is no caller.
-    if (!name || !f.getFileName()?.includes('/src/') || name === 'shadowed' || (name === fn && f.getTypeName() === 'Object')) continue;
+    if (!name || !f.getFileName()?.includes('/src/') || f.getFileName()!.endsWith('/type-step-shadow.ts') || name === 'shadowed' || (name === fn && f.getTypeName() === 'Object')) continue;
     return { site: name, nested: name in writers };
   }
   return { site: '?', nested: false };
@@ -77,6 +80,19 @@ export function shadowTypeSteps(translator: object, states: ValueStates): void {
     shape: (n) => { try { return !!t.isObjectShape?.call(translator, n); } catch { return false; } },
     enumType: (n) => { try { return !!t.untypedEnum?.call(translator, '', n); } catch { return false; } },
   };
+  // The nodes being translated, innermost last: the type parameters bound where a writer is called.
+  const within: ts.Node[] = [];
+  const proto = Object.getPrototypeOf(translator) as Record<string, unknown>;
+  for (const fn of Object.getOwnPropertyNames(proto)) {
+    const original = Object.getOwnPropertyDescriptor(proto, fn)?.value;
+    if (!SCOPES.test(fn) || fn in writers || typeof original !== 'function') continue;
+    methods[fn] = function (this: unknown, ...given: unknown[]): unknown {
+      const n = given.find((x) => nodeOf(x)?.parent) as ts.Node | undefined;
+      if (!n) return original.apply(this, given);
+      within.push(n);
+      try { return original.apply(this, given); } finally { within.pop(); }
+    };
+  }
   const seen = new Set<string>();
   const pending: (() => string | null)[] = [];
   const flush = () => {
@@ -103,10 +119,11 @@ export function shadowTypeSteps(translator: object, states: ValueStates): void {
       if (seen.has(key)) return value;
       seen.add(key);
       const mode = t.library ? 'library' : t.lenient ? 'lenient' : 'strict';
+      const bound = boundTypeParameters(n ?? within.at(-1));
       defer(() => {
         try {
           const from = r.from ?? (n && fn === 'closureReturn' ? null : n ? t.typeOf.call(translator, n) : null);
-          return record({ backend, fn, site, nested, at, mode, from, to: r.to ?? null, input: r.input, code: value, facts, literal: !!n && functionLiteral(n) });
+          return record({ backend, fn, site, nested, at, mode, from, to: r.to ?? null, input: r.input, code: value, facts: { ...facts, bound: (x) => bound.has(x) }, literal: !!n && functionLiteral(n) });
         } catch (err) {
           return JSON.stringify({ backend, fn, site, at, error: (err as Error).message.slice(0, 200) });
         }
@@ -115,6 +132,15 @@ export function shadowTypeSteps(translator: object, states: ValueStates): void {
     };
     methods[fn] = shadowed;
   }
+}
+
+/** The type parameters of the declarations enclosing `n`, its own included. */
+function boundTypeParameters(n: ts.Node | undefined): Set<string> {
+  const names = new Set<string>();
+  for (let p = n; p; p = p.parent) {
+    for (const tp of (p as { typeParameters?: ts.NodeArray<ts.TypeParameterDeclaration> }).typeParameters ?? []) names.add(tp.name.text);
+  }
+  return names;
 }
 
 interface Observed { backend: string; fn: string; site: string; nested: boolean; at: string | null; mode: string; from: string | null; to: string | null; input?: string; code: string; facts: TypeFacts; literal: boolean }

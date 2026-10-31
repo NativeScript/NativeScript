@@ -507,8 +507,8 @@ fun <T : JSDynamic> jsObjectAssign(target: T, vararg sources: Any?): T {
     return target
 }
 
-/** `key in object`. */
-fun jsHasKey(target: Any?, key: String): Boolean = when (target) {
+/** `key in object`. A field given a descriptor is the object's own even where hidden from `jsKeys`. */
+fun jsHasKey(target: Any?, key: String): Boolean = if (target is JSDefinable && !jsIsSymbolKey(key) && target.jsDefined?.has(key) == true) true else when (target) {
     is JSObject -> target.has(key)
     // A symbol is no key a class declares: only its own symbol-keyed members (methods its `jsGet` gives) and what was set on it have one (reading `jsKeys` runs accessors).
     is JSExpando -> if (jsIsSymbolKey(key)) ((target as? JSSymbolKeyed)?.jsSymbolKeys?.contains(key) ?: false) || jsExpandoHas(target, key) || target.jsGet(key) != null else jsExpandoHas(target, key) || key in target.jsKeys || target.jsHasMember(key)

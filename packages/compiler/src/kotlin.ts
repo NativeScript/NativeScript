@@ -4,7 +4,7 @@ import { dirname as pathDirname, resolve as pathResolve } from 'node:path';
 import { AsyncLowering, usedBefore, type AsyncCtx, type AsyncSyntax, type AsyncTranslator } from './async.ts';
 import { isAsync, isStatic } from './throws.ts';
 import { assignedMembers } from './sharing.ts';
-import { assignedValues, openSpreadType, spreadsArrays, definitelyAssignedFields, forwardedSetter, initializedNull, intersectionAliasMembers, isRegExpProtocol, assertedPattern, unsupportedPattern, intlConstructor, isObjectToStringCall, isStringRaw, redeclaredBeside, iteratedType, iterationThrows, literalKey, neverDefined, templateParts, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, classesHeldUntyped, type TrustScope, literalPattern, patternGroups, unsetGroupTyping, type UnsetGroupTyping, keysDefinedUntyped, KOTLIN_NATIVE_TYPES, runtimeTypeName, definesRunTimeKey, readKeyOf, reassigned, givenBy, onlyNullOrPresent, statementLevel, readWrite, asOperation, type ReadWrite } from './lang.ts';
+import { assignedValues, openSpreadType, spreadsArrays, definitelyAssignedFields, forwardedSetter, initializedNull, intersectionAliasMembers, isRegExpProtocol, assertedPattern, unsupportedPattern, intlConstructor, isObjectToStringCall, isStringRaw, redeclaredBeside, iteratedType, iterationThrows, literalKey, neverDefined, templateParts, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, classesHeldUntyped, type TrustScope, literalPattern, patternGroups, unsetGroupTyping, type UnsetGroupTyping, KOTLIN_NATIVE_TYPES, runtimeTypeName, definesRunTimeKey, readKeyOf, reassigned, givenBy, onlyNullOrPresent, statementLevel, readWrite, asOperation, type ReadWrite } from './lang.ts';
 import { memberName } from './stable-names.ts';
 import { shadowConversions } from './conversion-shadow.ts';
 import { parseNativeType, type Mark, type Value } from './conversion.ts';
@@ -14,10 +14,10 @@ import type { Form } from './forms.ts';
 import { isCoreDeclaration } from './core.ts';
 import { nonVirtualName } from './swift.ts';
 import type { Properties } from './properties.ts';
-import { type Held, holdsNil, isFunctionHeld, keyOf, nilIsNull, notedField, notesNull, type Nulls, nullNames, rootKeepsExpando, literalNotes, type ShapeFacts, type ShapePlan, shapePlanOfClass, shapePlanOfLiteral, spelledOptional } from './shapes.ts';
+import { type DefinedKeys, definedFieldNames, definedKeysOf, definesDuringConstruction, type Held, holdsNil, isFunctionHeld, keyOf, nilIsNull, notedField, notesNull, type Nulls, nullNames, restrictsField, rootKeepsExpando, literalNotes, type ShapeFacts, type ShapePlan, shapePlanOfClass, shapePlanOfLiteral, spelledOptional } from './shapes.ts';
 import { shadowLiteral, shadowShapes } from './shape-shadow.ts';
 import { shadowTypeSteps } from './type-step-shadow.ts';
-import { type TypeStep, boxStep } from './type-step.ts';
+import { type TypeStep, boxStep, unboxStep } from './type-step.ts';
 import { recognizePatterns, type Patterns } from './patterns.ts';
 import type { Reach } from './reach.ts';
 import { awaitedCell, receiverCell, receiverSlot, type ReceiverBackend, type ReceiverCell } from './placement.ts';
@@ -2381,13 +2381,14 @@ export class Translator implements AsyncTranslator {
     // A call's value read as nothing: the call still runs.
     if (type === 'Unit') return this.isPure(code) ? pure('Unit') : this.marked(`run { ${code}; Unit }`, { op: 'discarded', of: this.valueOf(code) });
     if (code === 'null' && type.endsWith('?')) return 'null';
-    const m = /^JSArray<(.*)>(\??)$/.exec(type);
+    const unbox = this.unboxStep(type);
+    const m = unbox.composite === 'array' ? /^JSArray<(.*)>(\??)$/.exec(type) : null;
     if (m) {
       const read = (x: string) => `jsArrayFrom(${x}) { ${this.fromAny('it', m[1])} }`;
       if (!m[2]) return read(code);
       return this.isPure(code) ? `(if (jsIsNullish(${code})) null else ${read(code)})` : `jsUnlessNullish(${code}) { ${read('it')} }`;
     }
-    const record = /^JSRecord<(.*)>(\??)$/.exec(type);
+    const record = unbox.composite === 'record' ? /^JSRecord<(.*)>(\??)$/.exec(type) : null;
     if (record) return `${record[2] ? 'jsRecordOrNull' : 'jsRecord'}<${record[1]}>(${code})`;
     const pair = /^(Pair|Triple)<(.*)>$/.exec(type);
     if (pair) {
@@ -2407,13 +2408,13 @@ export class Translator implements AsyncTranslator {
       if (reified) return reified;
     }
     // A function held untyped (a script function, a method read by name): callable as the typed function.
-    const fn = functionTypeParts(type.replace(/^\((.*)\)\?$/, '$1'));
+    const fn = unbox.composite === 'function' ? functionTypeParts(type.replace(/^\((.*)\)\?$/, '$1')) : null;
     if (fn && fn.params.length <= 7) {
       const typed = `jsFunction${fn.params.length}<${[...fn.params, fn.ret].join(', ')}>`;
       return /\)\?$/.test(type) ? `jsUnlessNullish(${code}) { ${typed}(it) }` : `${typed}(${code})`;
     }
     // A promise its type promises may be any thenable: adopted, as awaiting it or `Promise.resolve` would.
-    const promised = /^JSPromise<(.*)>$/.exec(base);
+    const promised = unbox.composite === 'promise' ? /^JSPromise<(.*)>$/.exec(base) : null;
     if (promised) return type.endsWith('?') ? `jsUnlessNullish(${code}) { jsPromiseOf<${promised[1]}>(it) }` : `jsPromiseOf<${promised[1]}>(${code})`;
     // Library mode: JavaScript's null where an object goes (`cond ? entry.fragment : null`) is Kotlin's.
     // A string, number or boolean slot given another primitive converts it (a binding's 5 for a string is "5"); an empty
@@ -3097,20 +3098,18 @@ export class Translator implements AsyncTranslator {
     if (this.library) return;
     const cls = this.checker.getNonNullableType(this.checker.getTypeAtLocation(target)).getSymbol()?.valueDeclaration;
     if (!cls || !ts.isClassLike(cls) || cls.getSourceFile().isDeclarationFile || this.pluginFiles.has(cls.getSourceFile().fileName)) return;
-    const restricts = !ts.isObjectLiteralExpression(descriptor) || descriptor.properties.some((p) => {
-      const name = p.name && !ts.isComputedPropertyName(p.name) ? p.name.getText().replace(/^['"]|['"]$/g, '') : undefined;
-      if (name === 'get' || name === 'set') return true;
-      if (name === 'value') return false;
-      if (name === 'writable' || name === 'enumerable' || name === 'configurable') return !ts.isPropertyAssignment(p) || p.initializer.kind !== ts.SyntaxKind.TrueKeyword;
-      return !name;
-    });
-    if (!restricts) return;
+    if (!restrictsField(descriptor)) return;
     const keyText = key && (ts.isStringLiteralLike(key) || ts.isIdentifier(key) || ts.isNumericLiteral(key)) ? key.text : undefined;
     const field = keyText !== undefined ? this.checker.getTypeAtLocation(target).getProperty(keyText)?.valueDeclaration : undefined;
     const declared = !!field && (ts.isPropertyDeclaration(field) || ts.isParameter(field)) && !field.getSourceFile().isDeclarationFile;
     if (keyText !== undefined && !declared) return;
-    throw this.error(key ?? target, keyText === undefined ? 'Object.defineProperty with a key known only at run time on a class instance, with a descriptor that may restrict a declared field' : `Object.defineProperty making a class's declared field (${keyText}) an accessor, read-only, hidden or fixed`);
+    const during = keyText !== undefined && definesDuringConstruction(target);
+    if (keyText !== undefined && !during && this.definedField(target, keyText)) return;
+    throw this.error(key ?? target, keyText === undefined ? 'Object.defineProperty with a key known only at run time on a class instance, with a descriptor that may restrict a declared field'
+      : during ? `Object.defineProperty on \`this\` while its class constructs it, making a declared field (${keyText}) an accessor, read-only, hidden or fixed: the constructor and field initializers read the Kotlin field directly; define it after \`new\` returns`
+      : `Object.defineProperty making a declared field (${keyText}) of a class whose objects keep no descriptor for it (an Error subclass's) an accessor, read-only, hidden or fixed`);
   }
+
 
   /** A method of an app's generic interface that is a Kotlin interface, which holds the interface's type parameters as `Any?`. */
   private erasingInterface(m: ts.MethodSignature): boolean {
@@ -3224,7 +3223,7 @@ export class Translator implements AsyncTranslator {
       if (name && ts.isPropertySignature(req) && !hasModifier(req, ts.SyntaxKind.ReadonlyKeyword) && this.typeOf(req) === 'Any?') {
         const field = m ?? cls.members.find(ts.isConstructorDeclaration)?.parameters.find((p) => ts.isIdentifier(p.name) && p.name.text === name && ts.getModifiers(p)?.length);
         const t = field && (ts.isPropertyDeclaration(field) || ts.isParameter(field) || ts.isGetAccessorDeclaration(field) || ts.isSetAccessorDeclaration(field)) ? this.checker.getTypeAtLocation(field.name) : undefined;
-        if (t && t.flags & ts.TypeFlags.TypeParameter && t.symbol?.declarations?.[0]?.parent === cls) throw this.error(field, 'a field typed by a generic class\'s type parameter, met as a generic interface\'s field');
+        if (t && t.flags & ts.TypeFlags.TypeParameter && t.symbol?.declarations?.[0]?.parent === cls) throw this.limit(field, 'a field typed by a generic class\'s type parameter, met as a generic interface\'s writable field', 'the interface\'s field is erased to any value, which the class\'s field can\'t override', 'declare the interface\'s field with a concrete type, or read it through a method');
       }
       if (!name || !m || !ts.isMethodSignature(req)) continue;
       if (!ts.isMethodDeclaration(m)) return false;
@@ -4864,27 +4863,25 @@ export class Translator implements AsyncTranslator {
     return `run { ${self ? '' : `val ${o} = ${recvCode}; `}val ${own} = jsOwnProperty(${o}, ${kotlinString(callee.name.text)}); if (${own} != null) ${value} else ${plain} }`;
   }
 
-  private definedKeySet: Set<string> | null = null;
-  /** App mode: the keys `Object.defineProperty` names on untyped objects, which a program class's field of that name keeps a descriptor for. */
-  private definedKeys(): Set<string> {
-    return (this.definedKeySet ??= this.library ? new Set() : keysDefinedUntyped(this.sourceFiles, this.checker));
+  private definedKeySet: DefinedKeys | null = null;
+  /** App mode: the fields `Object.defineProperty` may give a descriptor; none in a library. */
+  private definedKeys(): DefinedKeys {
+    return (this.definedKeySet ??= this.library ? { untyped: new Set(), fields: new Set(), names: new Set() } : definedKeysOf(this.sourceFiles, this.checker));
   }
 
   /** The class's own fields whose objects `Object.defineProperty` may give a descriptor (`JSDefinable`). */
   private definableNames(cls: ts.ClassLikeDeclaration): string[] {
-    if (this.library || !this.definedKeys().size || cls.getSourceFile().isDeclarationFile || this.pluginFiles.has(cls.getSourceFile().fileName)) return [];
+    if (this.library || !this.definedKeys().names.size || cls.getSourceFile().isDeclarationFile || this.pluginFiles.has(cls.getSourceFile().fileName)) return [];
     let root = cls;
     for (let b = this.baseClassOf(cls); b; b = this.baseClassOf(b)) root = b;
     const h = root.heritageClauses?.find((x) => x.token === ts.SyntaxKind.ExtendsKeyword)?.types[0];
     if (h && ERRORS[h.expression.getText()]) return [];
-    const ctor = cls.members.find(ts.isConstructorDeclaration);
-    const own = [...cls.members.filter((m) => ts.isPropertyDeclaration(m) && !isStatic(m) && ts.isIdentifier(m.name)), ...(ctor?.parameters.filter((p) => ts.isParameterPropertyDeclaration(p, ctor)) ?? [])];
-    return own.map((m) => (m.name as ts.Identifier).text).filter((n) => this.definedKeys().has(n));
+    return definedFieldNames(cls, this.definedKeys());
   }
 
   /** The field `definableNames` lists that `key` of the object names, if any (`const { field } = obj`, `obj['field']`). */
   private definedField(object: ts.Node, key: string): ts.NamedDeclaration | undefined {
-    if (this.library || !this.definedKeys().has(key)) return undefined;
+    if (this.library || !this.definedKeys().names.has(key)) return undefined;
     const d = this.checker.getNonNullableType(this.checker.getTypeAtLocation(object)).getProperty(key)?.valueDeclaration;
     const cls = d && (ts.isPropertyDeclaration(d) ? d.parent : ts.isParameter(d) && ts.isConstructorDeclaration(d.parent) ? d.parent.parent : undefined);
     return cls && ts.isClassLike(cls) && this.definableNames(cls).includes(key) ? (d as ts.NamedDeclaration) : undefined;
@@ -10878,6 +10875,11 @@ export class Translator implements AsyncTranslator {
     return boxStep(from, this.library ? 'library' : this.lenient ? 'lenient' : 'checked');
   }
 
+  /** The step of an untyped value read as `to`: which composite `fromAny` reads it into. */
+  private unboxStep(to: string): TypeStep {
+    return unboxStep(to, this.library ? 'library' : this.lenient ? 'lenient' : 'checked');
+  }
+
   private isShapeType(name: string): boolean {
     return this.interfaces.has(name) || [...this.shapes.values()].some((s) => s.name === name);
   }
@@ -11410,6 +11412,13 @@ export class Translator implements AsyncTranslator {
     const sf = n.getSourceFile();
     const { line, character } = sf.getLineAndCharacterOfPosition(n.getStart());
     return new Error(`${sf.fileName}:${line + 1}:${character + 1}: ${what} is not supported in a release build yet: ${n.getText().slice(0, 80)}`);
+  }
+
+  /** A declared limit of release builds (generic erasure, Q10): refused with why and how to write it instead. */
+  limit(n: ts.Node, what: string, why: string, rewrite: string): Error {
+    const sf = n.getSourceFile();
+    const { line, character } = sf.getLineAndCharacterOfPosition(n.getStart());
+    return new Error(`${sf.fileName}:${line + 1}:${character + 1}: ${what} is a declared limit of release builds (${why}); rewrite: ${rewrite}: ${n.getText().slice(0, 80)}`);
   }
 }
 

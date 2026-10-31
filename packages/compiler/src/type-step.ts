@@ -24,7 +24,8 @@ export interface TypeStep {
   children: TypeStep[];
   /** A function's parameters where a null or undefined the given function's type lacks may arrive: carried, as JavaScript does (Q7). */
   carried: number[];
-  /** A declared limit, refused at build time: a type parameter under a container or function type, which erasure loses (Q10). */
+  /** A declared limit, refused at build time: a type parameter not bound where the step is written, under a container or
+   * function type, which erasure loses (Q10). The enclosing generic's own parameters are bound at run time. */
   refuse?: string;
 }
 
@@ -32,6 +33,8 @@ export interface TypeStep {
 export interface TypeFacts {
   shape?(name: string): boolean;
   enumType?(name: string): boolean;
+  /** A type parameter bound where the step is written; none is when the scope isn't given. */
+  bound?(name: string): boolean;
 }
 
 const CONTAINERS: ReadonlySet<string> = new Set(['array', 'record', 'map', 'set', 'promise']);
@@ -71,15 +74,15 @@ export function functionSignature(t: NativeType): { params: NativeType[]; result
 export function typeStep(from: NativeType, to: NativeType, entry: Entry = 'checked', facts: TypeFacts = {}): TypeStep {
   const step = (kind: TypeStepKind, c: TypeComposite, children: TypeStep[] = [], carried: number[] = []): TypeStep => {
     const throws = kind === 'unbox' ? plan({ rep: 'foreign', type: from, kind: 'untyped' }, { rep: spelledRepresentation(to), type: to, kind: 'untyped' }, entry).throws : false;
-    const s: TypeStep = { kind, composite: c, from, to, identity: keepsIdentity(c), throws, children, carried };
-    const erased = kind !== 'identity' && (children.some((x) => x.refuse) || ((c === 'function' || CONTAINERS.has(c)) && [from, to].some(nestedTypeParameter)));
-    if (erased) s.refuse = 'a type parameter under a container or function type, which the native type erases';
+    const s: TypeStep = { kind, composite: c, from, to, identity: keepsIdentity(c) && !(kind === 'unbox' && c === 'array'), throws, children, carried };
+    const erased = kind !== 'identity' && (children.some((x) => x.refuse) || ((c === 'function' || CONTAINERS.has(c)) && [from, to].some((x) => nestedTypeParameter(x, facts))));
+    if (erased) s.refuse = 'a type parameter not bound in scope under a container or function type, which the native type erases';
     return s;
   };
   const f = present(from), t = present(to);
   if (f.name === t.name) return step('identity', composite(t, facts));
-  if (t.kind === 'any') return step('box', composite(f, facts), inner(f, t, 'box'));
-  if (f.kind === 'any') return step('unbox', composite(t, facts), inner(f, t, 'unbox'));
+  if (t.kind === 'any') return step('box', composite(f, facts), inner(f, t, 'box', facts));
+  if (f.kind === 'any') return step('unbox', composite(t, facts), inner(f, t, 'unbox', facts));
   if (f.kind === 'function' && t.kind === 'function') {
     const fs = functionSignature(f), gs = functionSignature(t);
     if (!fs || !gs) return step('function', 'function');
@@ -98,26 +101,34 @@ export function boxStep(from: string, entry: Entry = 'checked', facts: TypeFacts
   return typeStep(parseNativeType(from), parseNativeType('Any?'), entry, facts);
 }
 
+/** The step of an untyped value read as `to`. An array read so is a copy of its converted elements (Q9), not one
+ * array shared by the typed and untyped sides, where script could write any value into the typed one. */
+export function unboxStep(to: string, entry: Entry = 'checked', facts: TypeFacts = {}): TypeStep {
+  return typeStep(parseNativeType('Any?'), parseNativeType(to), entry, facts);
+}
+
 /** A box's or unbox's inner steps: each element to or from any value; a function's parameters the other way round. */
-function inner(f: NativeType, t: NativeType, kind: 'box' | 'unbox'): TypeStep[] {
+function inner(f: NativeType, t: NativeType, kind: 'box' | 'unbox', facts: TypeFacts): TypeStep[] {
   const typed = kind === 'box' ? f : t, any = parseNativeType('Any?');
+  // The backend's shape and enum facts stay out: the inner steps are answered from their spellings alone.
+  const scope: TypeFacts = { bound: facts.bound };
   const sig = functionSignature(typed);
   if (sig) {
-    const params = sig.params.map((p) => (kind === 'box' ? typeStep(any, p) : typeStep(p, any)));
-    return [...params, kind === 'box' ? typeStep(sig.result, any) : typeStep(any, sig.result)];
+    const params = sig.params.map((p) => (kind === 'box' ? typeStep(any, p, 'checked', scope) : typeStep(p, any, 'checked', scope)));
+    return [...params, kind === 'box' ? typeStep(sig.result, any, 'checked', scope) : typeStep(any, sig.result, 'checked', scope)];
   }
   if (!CONTAINERS.has(typed.kind)) return [];
-  return typed.args.map((a) => (kind === 'box' ? typeStep(a, any) : typeStep(any, a)));
+  return typed.args.map((a) => (kind === 'box' ? typeStep(a, any, 'checked', scope) : typeStep(any, a, 'checked', scope)));
 }
 
 function present(t: NativeType): NativeType {
   return t.kind === 'nullish' && t.args[0] ? present(t.args[0]) : t;
 }
 
-function nestedTypeParameter(t: NativeType): boolean {
+function nestedTypeParameter(t: NativeType, facts: TypeFacts): boolean {
   const sig = functionSignature(t);
   const parts = sig ? [...sig.params, sig.result] : t.args;
-  return parts.some((p) => /^[A-Z]\d?$/.test(p.name) || nestedTypeParameter(p));
+  return parts.some((p) => (/^[A-Z]\d?$/.test(p.name) && !facts.bound?.(p.name)) || nestedTypeParameter(p, facts));
 }
 
 function topLevel(s: string): string[] {

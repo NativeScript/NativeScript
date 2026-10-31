@@ -4,7 +4,7 @@ import { dirname, join } from 'node:path';
 import { KIT_GLOBALS, kitExtends, kitIndex, kitMember, type KitMember, type KitType } from './kit-index.ts';
 import { optionalType, splitTopLevel, type Translator } from './swift.ts';
 import { KIT_APPLE_SOURCES } from './paths.ts';
-import { assignedCode, memberOf, tryCode, tryIf, unwrappedCode } from './swift-marks.ts';
+import { assignedCode, leading, memberOf, tryCode, tryIf, unwrappedCode } from './swift-marks.ts';
 
 export const KIT = KIT_APPLE_SOURCES;
 
@@ -687,9 +687,9 @@ export class CoreAPI {
       while (args.length < held.params.length && /[?!]$/.test(held.params[args.length])) args.push('nil');
       // Held optional (core assigns it later): V8's "is not a function" where it is missing.
       const fn = /[?!]$/.test(m.type.trim()) ? `jsCallable(${recv}.${name}, ${JSON.stringify(e.expression.getText().replace(/\s+/g, ' '))})` : `${recv}.${name}`;
-      return this.fromKit(`${fn}(${args.join(', ')})`, held.result, t.typeOf(e));
+      return this.fromKit(leading(`${fn}(${args.join(', ')})`, recv), held.result, t.typeOf(e));
     }
-    return this.fromKit(`${recv}.${name}(${args.join(', ')})`, chained && m.type !== 'Void' ? m.type.replace(/\??$/, '?') : m.type, t.typeOf(e));
+    return this.fromKit(leading(`${recv}.${name}(${args.join(', ')})`, recv), chained && m.type !== 'Void' ? m.type.replace(/\??$/, '?') : m.type, t.typeOf(e));
   }
 
   /**
