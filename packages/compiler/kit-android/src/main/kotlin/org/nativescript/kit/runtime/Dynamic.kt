@@ -194,29 +194,32 @@ fun <A, B, R> jsAdapt2(original: Any, body: (A, B) -> R): (A, B) -> R = JSAdapte
 fun <A, B, C, R> jsAdapt3(original: Any, body: (A, B, C) -> R): (A, B, C) -> R = JSAdapted3(original, body)
 fun <A, B, C, D, R> jsAdapt4(original: Any, body: (A, B, C, D) -> R): (A, B, C, D) -> R = JSAdapted4(original, body)
 
+/** The function an untyped wrapper stands for (`jsFunction(n, ::f)`), so that it reads back typed as that function. */
+private fun jsWrapped(f: Any?): Any? = (f as? JSFunction)?.original ?: f
+
 // A function value held untyped, as the Kotlin function type its TypeScript declaration gives. A Kotlin function's
 // parameter and result types are erased: the declaration is the contract, as it is in script.
 @Suppress("UNCHECKED_CAST")
-fun <R> jsFunction0(f: Any?): () -> R = (if (f is JSMethod) JSMethodAs0(f) else f as? Function0<Any?> ?: { jsCall(f) }) as () -> R
+fun <R> jsFunction0(f: Any?): () -> R = (if (f is JSMethod) JSMethodAs0(f) else jsWrapped(f) as? Function0<Any?> ?: { jsCall(f) }) as () -> R
 @Suppress("UNCHECKED_CAST")
-fun <A, R> jsFunction1(f: Any?): (A) -> R = (if (f is JSMethod) JSMethodAs1(f) else f as? Function1<Any?, Any?> ?: { a: Any? -> jsCall(f, a) }) as (A) -> R
+fun <A, R> jsFunction1(f: Any?): (A) -> R = (if (f is JSMethod) JSMethodAs1(f) else jsWrapped(f) as? Function1<Any?, Any?> ?: { a: Any? -> jsCall(f, a) }) as (A) -> R
 @Suppress("UNCHECKED_CAST")
-fun <A, B, R> jsFunction2(f: Any?): (A, B) -> R = (if (f is JSMethod) JSMethodAs2(f) else f as? Function2<Any?, Any?, Any?> ?: { a: Any?, b: Any? -> jsCall(f, a, b) }) as (A, B) -> R
+fun <A, B, R> jsFunction2(f: Any?): (A, B) -> R = (if (f is JSMethod) JSMethodAs2(f) else jsWrapped(f) as? Function2<Any?, Any?, Any?> ?: { a: Any?, b: Any? -> jsCall(f, a, b) }) as (A, B) -> R
 @Suppress("UNCHECKED_CAST")
 fun <A, B, C, R> jsFunction3(f: Any?): (A, B, C) -> R =
-    (f as? Function3<Any?, Any?, Any?, Any?> ?: { a: Any?, b: Any?, c: Any? -> jsCall(f, a, b, c) }) as (A, B, C) -> R
+    (jsWrapped(f) as? Function3<Any?, Any?, Any?, Any?> ?: { a: Any?, b: Any?, c: Any? -> jsCall(f, a, b, c) }) as (A, B, C) -> R
 @Suppress("UNCHECKED_CAST")
 fun <A, B, C, D, R> jsFunction4(f: Any?): (A, B, C, D) -> R =
-    (f as? Function4<Any?, Any?, Any?, Any?, Any?> ?: { a: Any?, b: Any?, c: Any?, d: Any? -> jsCall(f, a, b, c, d) }) as (A, B, C, D) -> R
+    (jsWrapped(f) as? Function4<Any?, Any?, Any?, Any?, Any?> ?: { a: Any?, b: Any?, c: Any?, d: Any? -> jsCall(f, a, b, c, d) }) as (A, B, C, D) -> R
 @Suppress("UNCHECKED_CAST")
 fun <A, B, C, D, E, R> jsFunction5(f: Any?): (A, B, C, D, E) -> R =
-    (f as? Function5<Any?, Any?, Any?, Any?, Any?, Any?> ?: { a: Any?, b: Any?, c: Any?, d: Any?, e: Any? -> jsCall(f, a, b, c, d, e) }) as (A, B, C, D, E) -> R
+    (jsWrapped(f) as? Function5<Any?, Any?, Any?, Any?, Any?, Any?> ?: { a: Any?, b: Any?, c: Any?, d: Any?, e: Any? -> jsCall(f, a, b, c, d, e) }) as (A, B, C, D, E) -> R
 @Suppress("UNCHECKED_CAST")
 fun <A, B, C, D, E, F, R> jsFunction6(f: Any?): (A, B, C, D, E, F) -> R =
-    (f as? Function6<Any?, Any?, Any?, Any?, Any?, Any?, Any?> ?: { a: Any?, b: Any?, c: Any?, d: Any?, e: Any?, g: Any? -> jsCall(f, a, b, c, d, e, g) }) as (A, B, C, D, E, F) -> R
+    (jsWrapped(f) as? Function6<Any?, Any?, Any?, Any?, Any?, Any?, Any?> ?: { a: Any?, b: Any?, c: Any?, d: Any?, e: Any?, g: Any? -> jsCall(f, a, b, c, d, e, g) }) as (A, B, C, D, E, F) -> R
 @Suppress("UNCHECKED_CAST")
 fun <A, B, C, D, E, F, G, R> jsFunction7(f: Any?): (A, B, C, D, E, F, G) -> R =
-    (f as? Function7<Any?, Any?, Any?, Any?, Any?, Any?, Any?, Any?> ?: { a: Any?, b: Any?, c: Any?, d: Any?, e: Any?, g: Any?, h: Any? -> jsCall(f, a, b, c, d, e, g, h) }) as (A, B, C, D, E, F, G) -> R
+    (jsWrapped(f) as? Function7<Any?, Any?, Any?, Any?, Any?, Any?, Any?, Any?> ?: { a: Any?, b: Any?, c: Any?, d: Any?, e: Any?, g: Any?, h: Any? -> jsCall(f, a, b, c, d, e, g, h) }) as (A, B, C, D, E, F, G) -> R
 
 /**
  * A method (`Object.prototype.hasOwnProperty`) held as a typed function: called as one, its `this` is undefined, and
