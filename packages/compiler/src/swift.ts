@@ -10829,7 +10829,8 @@ ${members.join('\n')}
 
   /**
    * A program class's method read as a value (`source.on('tap', this.onTap, this)`): the one
-   * closure of that receiver and method (`jsMethodValue`), holding the receiver weakly. Null for
+   * closure of that receiver and method (`jsMethodValue`), holding the receiver weakly, or strongly and uncached
+   * where the receiver is a `new` or call expression (nothing else holds it). Null for
    * any other read, and for a method called (`obj.m()`) or called by name (`namedCall`).
    */
   private methodValueRead(e: ts.PropertyAccessExpression): string | null {
@@ -10856,8 +10857,12 @@ ${members.join('\n')}
     // Lenient code's method may give undefined where the function type promises an object.
     const call = fn.result !== 'Void' && this.lenient && this.nullableRef(fn.result) !== fn.result ? tryCode(helper('jsObjectRequired', bare)) : tryIf(this.throwsInfo.fn(decl), `${bare}`);
     const body = fn.result !== 'Void' ? `return ${call}` : this.returnTypeOf(decl) === 'Void' ? call : `_ = ${call}`;
-    const closure = `{ [weak __r] (${params.join(', ')}) throws -> ${fn.result} in guard let __r else { throw jsReleasedReceiver(${swiftString(name)}) }; ${this.keeping('__i', body, fn.result)} }`;
-    const methodValue = (receiver: string) => `jsMethodValue(${receiver}, ${swiftString(name)}) { __r, __i in ${cell}(f: ${closure}) }.f`;
+    const read = ts.skipOuterExpressions(e.expression, ts.OuterExpressionKinds.Parentheses);
+    const temporary = ts.isNewExpression(read) || ts.isCallExpression(read);
+    const closure = temporary
+      ? `{ (${params.join(', ')}) throws -> ${fn.result} in ${this.keeping('__i', body, fn.result)} }`
+      : `{ [weak __r] (${params.join(', ')}) throws -> ${fn.result} in guard let __r else { throw jsReleasedReceiver(${swiftString(name)}) }; ${this.keeping('__i', body, fn.result)} }`;
+    const methodValue = (receiver: string) => `jsMethodValue(${temporary ? 'temporary: ' : ''}${receiver}, ${swiftString(name)}) { __r, __i in ${cell}(f: ${closure}) }.f`;
     if (!this.isInstanceMethod(e.name)) return methodValue(missing ? tryCode(missing) : this.expr(e.expression));
     // A method an instance can replace (see `instanceKeys`): its own value when it holds one, as a call reads it.
     const held = this.fresh('__held'), own = this.fresh('__own');
