@@ -7,7 +7,7 @@ private fun jsSameKey(a: Any?, b: Any?): Boolean {
     if (a === b) return true
     if (a == null || b == null) return false
     if (a is JSNullish<*> || b is JSNullish<*>) return a is JSNullish<*> && b is JSNullish<*> && jsSameKey(a.jsAny, b.jsAny)
-    if (a is JSAdapted || b is JSAdapted) return jsUnadapted(a) === jsUnadapted(b)
+    if (a.isFunctionKey() || b.isFunctionKey()) return jsSameFunction(jsKeyFunction(a), jsKeyFunction(b))
     if (a is String) return b is String && a == b
     if (a is Double && b is Double) {
         val x: Double = a
@@ -22,11 +22,19 @@ private fun jsSameKey(a: Any?, b: Any?): Boolean {
     return false
 }
 
+private fun Any.isFunctionKey(): Boolean = this is JSAdapted || this is JSFunction || this is kotlin.reflect.KCallable<*>
+
+/** The function a key stands for: an adapter's or an untyped wrapper's original. References to one function are equal, not identical. */
+private fun jsKeyFunction(f: Any): Any {
+    var g = f
+    while (true) g = when (g) { is JSAdapted -> g.original; is JSFunction -> g.original ?: return g; else -> return g }
+}
+
 /** A hash agreeing with jsSameKey. */
 private fun jsKeyHash(key: Any?): Int = when (key) {
     null -> 0
     is JSNullish<*> -> jsKeyHash(key.jsAny)
-    is JSAdapted -> System.identityHashCode(jsUnadapted(key))
+    is JSAdapted, is JSFunction, is kotlin.reflect.KCallable<*> -> jsKeyFunction(key).let { if (it is kotlin.reflect.KCallable<*>) it.hashCode() else System.identityHashCode(it) }
     is String -> key.hashCode()
     is Double -> { val d: Double = key; if (d == 0.0) 0 else d.hashCode() }
     is Boolean, is JSBigInt -> key.hashCode()

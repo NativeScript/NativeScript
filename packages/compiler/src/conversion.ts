@@ -1,4 +1,6 @@
+import ts from 'typescript';
 import type { Form, Representation } from './forms.ts';
+import type { TypeComposite } from './type-step.ts';
 
 // One conversion between slots (review/S3-PLAN.md §2): which of the 5×5 representation cells a placement is, decided
 // from the two slots' forms and how the value enters, for both translators. It decides; the backends spell.
@@ -212,4 +214,50 @@ function splitTop(s: string): string[] {
   }
   out.push(s.slice(from));
   return out.map((x) => x.trim()).filter(Boolean);
+}
+
+/**
+ * Whether `===` can tell the value after a step from the value before it, for both backends (each spells keeping it:
+ * Swift a function object, Kotlin a `JSAdapted`). Functions, containers and objects are one JavaScript value across
+ * any step. At a function literal written in place there is none to keep: it is its first value. At a function-typed
+ * parameter, a method's always matters (an override shares its signature), a function's only when its body does more
+ * with it than call or test it (stores, compares, passes or returns it).
+ */
+export function keepsIdentity(c: TypeComposite, at?: ts.Node): boolean {
+  if (c === 'primitive' || c === 'void' || c === 'value' || c === 'enum') return false;
+  if (!at) return true;
+  if (ts.isArrowFunction(at) || ts.isFunctionExpression(at)) return false;
+  return ts.isParameter(at) ? escapingParameter(at) : true;
+}
+
+function escapingParameter(p: ts.ParameterDeclaration): boolean {
+  const fn = p.parent;
+  if (!ts.isFunctionDeclaration(fn) || !fn.body || !ts.isIdentifier(p.name)) return true;
+  const name = p.name.text;
+  let escapes = false;
+  const visit = (n: ts.Node): void => {
+    if (escapes) return;
+    if (ts.isIdentifier(n) && n.text === name && !(ts.isPropertyAccessExpression(n.parent) && n.parent.name === n) && !(ts.isPropertyAssignment(n.parent) && n.parent.name === n)) {
+      const at = n.parent;
+      const called = (ts.isCallExpression(at) && at.expression === n) || (ts.isPropertyAccessExpression(at) && at.expression === n);
+      const tested = ts.isTypeOfExpression(at) || (ts.isPrefixUnaryExpression(at) && at.operator === ts.SyntaxKind.ExclamationToken) || ((ts.isIfStatement(at) || ts.isWhileStatement(at)) && at.expression === n) || (ts.isBinaryExpression(at) && at.left === n && [ts.SyntaxKind.AmpersandAmpersandToken, ts.SyntaxKind.BarBarToken].includes(at.operatorToken.kind));
+      if (!called && !tested) escapes = true;
+    }
+    ts.forEachChild(n, visit);
+  };
+  visit(fn.body);
+  return escapes;
+}
+
+/** A function type, or an array or Set of them, optionally with null or undefined: a type whose values `keepsIdentity` asks about as functions. */
+export function functionShaped(t: ts.TypeNode): boolean {
+  if (ts.isParenthesizedTypeNode(t)) return functionShaped(t.type);
+  if (ts.isFunctionTypeNode(t)) return true;
+  if (ts.isArrayTypeNode(t)) return functionShaped(t.elementType);
+  if (ts.isUnionTypeNode(t)) {
+    const present = t.types.filter((u) => u.kind !== ts.SyntaxKind.UndefinedKeyword && !(ts.isLiteralTypeNode(u) && u.literal.kind === ts.SyntaxKind.NullKeyword));
+    return present.length === 1 && functionShaped(present[0]);
+  }
+  if (ts.isTypeReferenceNode(t) && ts.isIdentifier(t.typeName) && ['Array', 'ReadonlyArray', 'Set', 'ReadonlySet'].includes(t.typeName.text) && t.typeArguments?.length === 1) return functionShaped(t.typeArguments[0]);
+  return false;
 }

@@ -9,7 +9,7 @@ import { assignedMembers } from './sharing.ts';
 import { assignedValues, openSpreadType, spreadsArrays, initializedNull, intersectionAliasMembers, intlConstructor, literalPattern, literalFlags, patternGroups, regexpMayLeaveGroupUnset, isRegExpProtocol, assertedPattern, unsupportedPattern, isObjectToStringCall, isStringRaw, leadingNeverRead, forwardedSetter, redeclaredBeside, iteratedType, iterationThrows, literalKey, neverDefined, templateParts, uncheckedMatch, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, slotOf, slotType, definitelyAssignedFields, type TrustScope, classesHeldUntyped, unsetGroupTyping, type UnsetGroupTyping, SWIFT_NATIVE_TYPES, runtimeTypeName, definesRunTimeKey, readKeyOf, givenBy, onlyNullOrPresent, isTemplateMethod, statementLevel, readWrite, asOperation, assignmentOf, type ReadWrite } from './lang.ts';
 import { memberName } from './stable-names.ts';
 import { shadowConversions } from './conversion-shadow.ts';
-import { parseNativeType, plan, type Slot, type Value } from './conversion.ts';
+import { functionShaped, keepsIdentity, parseNativeType, plan, type Slot, type Value } from './conversion.ts';
 import { argumentEntry, awaitSlot, conditionCell, type ConditionBackend, type ConditionCell, negatedCell, type AwaitSlot, argumentOf, argumentSlot, isEnumObject, place, resultSlot, returnCell, type ParamSlot, type PlacementBackend, type ResultSlot, type ReturnBackend, type ReturnCell, type Store, type StoreSlot, assignedTo, codeStoreSlot, placeCode, storeEntry, storeOf, storeSlot, emptyComparison, observerSlot, scriptComparison, type ElementStore, elementStoreOf, bindingSlot } from './placement.ts';
 import { assignedCode, blockCode, castCode, elementOf, helper, implicitOf, infix, isPure, parens, isUnwrap, leading, leadsWithTry, markOf, marked, memberOf, orNil, pureCode, ownTried, tried, tryBefore, tryCode, tryIf, unwrapInner, unwrappedCode, unwrappedIf, valueOf } from './swift-marks.ts';
 import { convertedRead, onlyNull, ValueStates, type NulledRead, type StateBackend } from './value-states.ts';
@@ -212,7 +212,7 @@ function hasTopLevelArrow(t: string): boolean {
  * as a generic parameter (an element, a key) is a new thunk at each conversion in or out, another function to `===`.
  */
 function heldType(t: string): string {
-  return functionParts(unwrapFunction(t, false)) ? 'Any?' : t;
+  return functionParts(unwrapFunction(t, false)) && keepsIdentity('function') ? 'Any?' : t;
 }
 
 /** A function type with an enclosing `(...)?` or `(...)!` removed, leaving one returning an optional function intact. */
@@ -1482,7 +1482,7 @@ export class Translator implements AsyncTranslator {
    * generic parameter at each call, and `off(fn)` would never find what `on(fn)` stored.
    */
   private heldParameter(d: ts.Node | undefined): boolean {
-    return !this.library && !!d && ts.isParameter(d) && !!d.type && !d.dotDotDotToken && !d.getSourceFile().isDeclarationFile && this.genericFunctionType(d.type) && keepsIdentity(d);
+    return !this.library && !!d && ts.isParameter(d) && !!d.type && !d.dotDotDotToken && !d.getSourceFile().isDeclarationFile && this.genericFunctionType(d.type) && keepsIdentity('function', d);
   }
 
   /** A function or method of the program returning a held parameter (`heldParameter`) as a function of its type parameters: the function object. */
@@ -10091,7 +10091,7 @@ ${members.join('\n')}
     const decl = ts.isPropertyDeclaration(n) || ts.isPropertySignature(n) ? n
       : ts.isIdentifier(n) && n.parent && (ts.isPropertyDeclaration(n.parent) || ts.isPropertySignature(n.parent)) && n.parent.name === n ? n.parent
       : ts.isPropertyAccessExpression(n) ? this.checker.getSymbolAtLocation(n.name)?.valueDeclaration : undefined;
-    return !!decl && this.functionObjectFields().has(decl);
+    return !!decl && this.functionObjectFields().has(decl) && keepsIdentity('function', decl);
   }
 
   private functionObjectFieldSet?: Set<ts.Node>;
@@ -10829,7 +10829,8 @@ ${members.join('\n')}
 
   /**
    * A program class's method read as a value (`source.on('tap', this.onTap, this)`): the one
-   * closure of that receiver and method (`jsMethodValue`), holding the receiver weakly. Null for
+   * closure of that receiver and method (`jsMethodValue`), holding the receiver weakly, or strongly and uncached
+   * where the receiver is a `new` or call expression (nothing else holds it). Null for
    * any other read, and for a method called (`obj.m()`) or called by name (`namedCall`).
    */
   private methodValueRead(e: ts.PropertyAccessExpression): string | null {
@@ -10856,8 +10857,12 @@ ${members.join('\n')}
     // Lenient code's method may give undefined where the function type promises an object.
     const call = fn.result !== 'Void' && this.lenient && this.nullableRef(fn.result) !== fn.result ? tryCode(helper('jsObjectRequired', bare)) : tryIf(this.throwsInfo.fn(decl), `${bare}`);
     const body = fn.result !== 'Void' ? `return ${call}` : this.returnTypeOf(decl) === 'Void' ? call : `_ = ${call}`;
-    const closure = `{ [weak __r] (${params.join(', ')}) throws -> ${fn.result} in guard let __r else { throw jsReleasedReceiver(${swiftString(name)}) }; ${this.keeping('__i', body, fn.result)} }`;
-    const methodValue = (receiver: string) => `jsMethodValue(${receiver}, ${swiftString(name)}) { __r, __i in ${cell}(f: ${closure}) }.f`;
+    const read = ts.skipOuterExpressions(e.expression, ts.OuterExpressionKinds.Parentheses);
+    const temporary = ts.isNewExpression(read) || ts.isCallExpression(read);
+    const closure = temporary
+      ? `{ (${params.join(', ')}) throws -> ${fn.result} in ${this.keeping('__i', body, fn.result)} }`
+      : `{ [weak __r] (${params.join(', ')}) throws -> ${fn.result} in guard let __r else { throw jsReleasedReceiver(${swiftString(name)}) }; ${this.keeping('__i', body, fn.result)} }`;
+    const methodValue = (receiver: string) => `jsMethodValue(${temporary ? 'temporary: ' : ''}${receiver}, ${swiftString(name)}) { __r, __i in ${cell}(f: ${closure}) }.f`;
     if (!this.isInstanceMethod(e.name)) return methodValue(missing ? tryCode(missing) : this.expr(e.expression));
     // A method an instance can replace (see `instanceKeys`): its own value when it holds one, as a call reads it.
     const held = this.fresh('__held'), own = this.fresh('__own');
@@ -15328,7 +15333,7 @@ function erasedTypeParameter(p: ts.TypeParameterDeclaration): boolean {
   const named = new RegExp(`\\b${p.name.text}\\b`);
   // Named only inside function types (`fn: (v: T) => void`, `list: ((v: T) => void)[]`): as a Swift generic, each closure
   // passed would be reabstracted at the call, so the function's identity would not survive it.
-  return !fn.parameters.some((q) => q.type && named.test(q.type.getText()) && !(functionShaped(q.type) && (!functionTypeNode(q.type) || keepsIdentity(q))));
+  return !fn.parameters.some((q) => q.type && named.test(q.type.getText()) && !(functionShaped(q.type) && (!functionTypeNode(q.type) || keepsIdentity('function', q))));
 }
 
 /** A function type, with null or undefined. */
@@ -15341,38 +15346,3 @@ function functionTypeNode(t: ts.TypeNode): ts.FunctionTypeNode | null {
   return ts.isFunctionTypeNode(t) ? t : null;
 }
 
-/**
- * Whether a function-typed parameter's identity can matter: a method's always (an override shares its signature),
- * a function's when its body does more with it than call or test it (stores, compares, passes or returns it).
- */
-function keepsIdentity(p: ts.ParameterDeclaration): boolean {
-  const fn = p.parent;
-  if (!ts.isFunctionDeclaration(fn) || !fn.body || !ts.isIdentifier(p.name)) return true;
-  const name = p.name.text;
-  let escapes = false;
-  const visit = (n: ts.Node): void => {
-    if (escapes) return;
-    if (ts.isIdentifier(n) && n.text === name && !(ts.isPropertyAccessExpression(n.parent) && n.parent.name === n) && !(ts.isPropertyAssignment(n.parent) && n.parent.name === n)) {
-      const at = n.parent;
-      const called = (ts.isCallExpression(at) && at.expression === n) || (ts.isPropertyAccessExpression(at) && at.expression === n);
-      const tested = ts.isTypeOfExpression(at) || (ts.isPrefixUnaryExpression(at) && at.operator === ts.SyntaxKind.ExclamationToken) || ((ts.isIfStatement(at) || ts.isWhileStatement(at)) && at.expression === n) || (ts.isBinaryExpression(at) && at.left === n && [ts.SyntaxKind.AmpersandAmpersandToken, ts.SyntaxKind.BarBarToken].includes(at.operatorToken.kind));
-      if (!called && !tested) escapes = true;
-    }
-    ts.forEachChild(n, visit);
-  };
-  visit(fn.body);
-  return escapes;
-}
-
-/** A function type, or an array, Set or Map of them, optionally with null or undefined. */
-function functionShaped(t: ts.TypeNode): boolean {
-  if (ts.isParenthesizedTypeNode(t)) return functionShaped(t.type);
-  if (ts.isFunctionTypeNode(t)) return true;
-  if (ts.isArrayTypeNode(t)) return functionShaped(t.elementType);
-  if (ts.isUnionTypeNode(t)) {
-    const present = t.types.filter((u) => u.kind !== ts.SyntaxKind.UndefinedKeyword && !(ts.isLiteralTypeNode(u) && u.literal.kind === ts.SyntaxKind.NullKeyword));
-    return present.length === 1 && functionShaped(present[0]);
-  }
-  if (ts.isTypeReferenceNode(t) && ts.isIdentifier(t.typeName) && ['Array', 'ReadonlyArray', 'Set', 'ReadonlySet'].includes(t.typeName.text) && t.typeArguments?.length === 1) return functionShaped(t.typeArguments[0]);
-  return false;
-}

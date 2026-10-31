@@ -7,7 +7,7 @@ import { assignedMembers } from './sharing.ts';
 import { assignedValues, openSpreadType, spreadsArrays, definitelyAssignedFields, forwardedSetter, initializedNull, intersectionAliasMembers, isRegExpProtocol, assertedPattern, unsupportedPattern, intlConstructor, isObjectToStringCall, isStringRaw, redeclaredBeside, iteratedType, iterationThrows, literalKey, neverDefined, templateParts, wellKnownMember, WELL_KNOWN_MEMBERS, ignoresThisArg, implementedInterfaces, undeclaredMemberOf, classesGivenUndeclaredMembers, classesHeldUntyped, type TrustScope, literalPattern, patternGroups, unsetGroupTyping, type UnsetGroupTyping, KOTLIN_NATIVE_TYPES, runtimeTypeName, definesRunTimeKey, readKeyOf, reassigned, givenBy, onlyNullOrPresent, statementLevel, readWrite, asOperation, type ReadWrite } from './lang.ts';
 import { memberName } from './stable-names.ts';
 import { shadowConversions } from './conversion-shadow.ts';
-import { parseNativeType, type Mark, type Value } from './conversion.ts';
+import { keepsIdentity, parseNativeType, type Mark, type Value } from './conversion.ts';
 import { argumentSlot, awaitSlot, conditionCell, type ConditionBackend, negatedCell, type AwaitSlot, isEnumObject, place, resultSlot, returnCell, type ParamSlot, type PlacementBackend, type ResultSlot, type ReturnBackend, type ReturnCell, type Store, type StoreSlot, assignedTo, codeStoreSlot, placeCode, storeSlot, emptyComparison, observerSlot, scriptComparison, type ElementStore, elementStoreOf, bindingSlot } from './placement.ts';
 import { convertedRead, onlyNull, ValueStates, type StateBackend, type NulledRead } from './value-states.ts';
 import type { Form } from './forms.ts';
@@ -6561,7 +6561,7 @@ export class Translator implements AsyncTranslator {
         const param = sig && !ts.isJSDocSignature(sig) ? sig.parameters[outer!.arguments.indexOf(e)] : undefined;
         const optional = !!member && (ts.isPropertySignature(member) || ts.isPropertyDeclaration(member)) && !!member.questionToken && (/\)\?$/.test(target) || !!param?.questionToken || !!param?.initializer);
         // The function as it is now, equal to its other adaptations and to itself (a listener added and later removed).
-        if (g.params.length <= 4 && !ts.isArrowFunction(e) && !ts.isFunctionExpression(e)) {
+        if (g.params.length <= 4 && keepsIdentity('function', e)) {
           const held = adapter.replace(`${fn.includes('::') ? `(${fn})` : fn}${unwrap}(`, '__f(');
           const adapt = `jsAdapt${g.params.length}<${[...g.params, g.ret].join(', ')}>(__f) ${held}`;
           if (/\)\?$/.test(source) || unwrap || optional) {
@@ -6584,7 +6584,7 @@ export class Translator implements AsyncTranslator {
       // A function value whose result a void slot ignores.
       const params = functionTypeParts(source)!.params;
       const names = params.map((_, k) => pure(`__a${k}`));
-      if (params.length <= 4 && !ts.isArrowFunction(e) && !ts.isFunctionExpression(e)) {
+      if (params.length <= 4 && keepsIdentity('function', e)) {
         const fn = this.functionValue(e);
         return `${fn.includes('::') ? `(${fn})` : fn}.let { __f -> jsAdapt${params.length}<${[...params, 'Unit'].join(', ')}>(__f) { ${params.map((p, k) => `${names[k]}: ${p}`).join(', ')} -> __f(${names.join(', ')}) } }`;
       }
@@ -8210,7 +8210,7 @@ export class Translator implements AsyncTranslator {
     const value = this.typedFunctionValue(e);
     if (!value) return null;
     const { literal, source, parts } = value;
-    if (literal) return `run<Any?> { val __f = ${this.closure(literal, source)}; ${this.scriptArguments(parts.params, parts.ret)} }`;
+    if (literal && !keepsIdentity('function', literal)) return `run<Any?> { val __f = ${this.closure(literal, source)}; ${this.scriptArguments(parts.params, parts.ret)} }`;
     const fn = this.expr(e);
     const held = this.declaredTypeOf(bare);
     return `${fn.includes('::') ? `(${fn})` : fn}${source.endsWith('?') || held?.endsWith('?') ? '?' : ''}.let { __f -> ${this.scriptArguments(parts.params, parts.ret)} }`;

@@ -288,6 +288,14 @@ public func jsMethodValue<Receiver: AnyObject, Cell>(_ receiver: Receiver, _ nam
     return cell
 }
 
+/// A method read off a receiver nothing else holds (`items.sort(new Cmp().compare)`): `make`'s closure holds
+/// the receiver strongly, as nothing else keeps it alive, so the value is not cached (the cache would then keep
+/// every such receiver). To `===` it is still the class's method, as `jsMethodValue`'s are.
+public func jsMethodValue<Receiver: AnyObject, Cell>(temporary receiver: Receiver, _ name: String, _ make: (Receiver, JSFunctionAlias) -> Cell) -> Cell {
+    let alias = JSFunctionAlias(method: JSMethodValues.identity(type(of: receiver), name))
+    return jsIdentified(make(receiver, alias), alias)
+}
+
 /// What calling a method value does once its receiver is gone: what calling the method with an
 /// undefined `this` does in JavaScript.
 public func jsReleasedReceiver(_ name: String) -> JSException {
