@@ -780,8 +780,8 @@ const ANDROID_GLOBALS = `
   interface MessageEvent<T = any> { readonly data: T }
   interface ErrorEvent { readonly message: string }
   interface Worker {
-    onmessage: ((this: Worker, ev: MessageEvent) => any) | null;
-    onerror: ((this: Worker, ev: ErrorEvent) => any) | null;
+    onmessage: ((ev: MessageEvent) => any) | null;
+    onerror: ((ev: ErrorEvent) => any) | null;
     postMessage(message: any, transfer?: any[]): void;
     terminate(): void;
   }
