@@ -91,7 +91,7 @@
 		"parse-css": "git+https://github.com/tabatkins/parse-css.git",
 		"parserlib": "^1.1.1",
 		"plist": "^5.0.0",
-		"postcss": "^8.0.0",
+		"postcss": "^8.5.32",
 		"postcss-import": "^16.0.0",
 		"postcss-loader": "^8.0.0",
 		"prettier": "^3.2.5",
