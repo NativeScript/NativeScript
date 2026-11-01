@@ -256,6 +256,11 @@ function convertToTransform(value: string): [CssAnimationProperty<any, any>, any
 	];
 }
 
+/** True for a view that applies its own padding, borders and backgrounds, so core skips the state it derives from them. */
+function skipsDerivedBoxStyle(style: Style): boolean {
+	return style.viewRef?.get()?._appliesOwnBoxStyle === true;
+}
+
 export const minWidthProperty = new CssProperty<Style, CoreTypes.LengthType>({
 	name: 'minWidth',
 	cssName: 'min-width',
@@ -437,6 +442,9 @@ export const paddingLeftProperty = new CssProperty<Style, CoreTypes.LengthType>(
 	affectsLayout: __APPLE__,
 	equalityComparer: Length.equals,
 	valueChanged: (target, oldValue, newValue) => {
+		if (skipsDerivedBoxStyle(target)) {
+			return;
+		}
 		const view = target.viewRef.get();
 		if (view) {
 			view.effectivePaddingLeft = paddingLeftProperty.isSet(target) ? Length.toDevicePixels(newValue, 0) : null;
@@ -456,6 +464,9 @@ export const paddingRightProperty = new CssProperty<Style, CoreTypes.LengthType>
 	affectsLayout: __APPLE__,
 	equalityComparer: Length.equals,
 	valueChanged: (target, oldValue, newValue) => {
+		if (skipsDerivedBoxStyle(target)) {
+			return;
+		}
 		const view = target.viewRef.get();
 		if (view) {
 			view.effectivePaddingRight = paddingRightProperty.isSet(target) ? Length.toDevicePixels(newValue, 0) : null;
@@ -475,6 +486,9 @@ export const paddingTopProperty = new CssProperty<Style, CoreTypes.LengthType>({
 	affectsLayout: __APPLE__,
 	equalityComparer: Length.equals,
 	valueChanged: (target, oldValue, newValue) => {
+		if (skipsDerivedBoxStyle(target)) {
+			return;
+		}
 		const view = target.viewRef.get();
 		if (view) {
 			view.effectivePaddingTop = paddingTopProperty.isSet(target) ? Length.toDevicePixels(newValue, 0) : null;
@@ -494,6 +508,9 @@ export const paddingBottomProperty = new CssProperty<Style, CoreTypes.LengthType
 	affectsLayout: __APPLE__,
 	equalityComparer: Length.equals,
 	valueChanged: (target, oldValue, newValue) => {
+		if (skipsDerivedBoxStyle(target)) {
+			return;
+		}
 		const view = target.viewRef.get();
 		if (view) {
 			view.effectivePaddingBottom = paddingBottomProperty.isSet(target) ? Length.toDevicePixels(newValue, 0) : null;
@@ -691,6 +708,9 @@ export const backgroundImageProperty = new CssProperty<Style, string | LinearGra
 	name: 'backgroundImage',
 	cssName: 'background-image',
 	valueChanged: (target, oldValue, newValue) => {
+		if (skipsDerivedBoxStyle(target)) {
+			return;
+		}
 		target.backgroundInternal = target.backgroundInternal.withImage(newValue);
 	},
 	equalityComparer: (value1, value2) => {
@@ -717,6 +737,9 @@ export const backgroundColorProperty = new CssAnimationProperty<Style, Color>({
 	name: 'backgroundColor',
 	cssName: 'background-color',
 	valueChanged: (target, oldValue, newValue) => {
+		if (skipsDerivedBoxStyle(target)) {
+			return;
+		}
 		target.backgroundInternal = target.backgroundInternal.withColor(newValue);
 	},
 	equalityComparer: Color.equals,
@@ -729,6 +752,9 @@ export const backgroundRepeatProperty = new CssProperty<Style, CoreTypes.Backgro
 	cssName: 'background-repeat',
 	valueConverter: CoreTypes.BackgroundRepeat.parse,
 	valueChanged: (target, oldValue, newValue) => {
+		if (skipsDerivedBoxStyle(target)) {
+			return;
+		}
 		target.backgroundInternal = target.backgroundInternal.withRepeat(newValue);
 	},
 });
@@ -738,6 +764,9 @@ export const backgroundSizeProperty = new CssProperty<Style, string>({
 	name: 'backgroundSize',
 	cssName: 'background-size',
 	valueChanged: (target, oldValue, newValue) => {
+		if (skipsDerivedBoxStyle(target)) {
+			return;
+		}
 		target.backgroundInternal = target.backgroundInternal.withSize(newValue);
 	},
 });
@@ -747,6 +776,9 @@ export const backgroundPositionProperty = new CssProperty<Style, string>({
 	name: 'backgroundPosition',
 	cssName: 'background-position',
 	valueChanged: (target, oldValue, newValue) => {
+		if (skipsDerivedBoxStyle(target)) {
+			return;
+		}
 		target.backgroundInternal = target.backgroundInternal.withPosition(newValue);
 	},
 });
@@ -789,6 +821,9 @@ export const borderTopColorProperty = new CssProperty<Style, Color>({
 	name: 'borderTopColor',
 	cssName: 'border-top-color',
 	valueChanged: (target, oldValue, newValue) => {
+		if (skipsDerivedBoxStyle(target)) {
+			return;
+		}
 		target.backgroundInternal = target.backgroundInternal.withBorderTopColor(newValue);
 	},
 	equalityComparer: Color.equals,
@@ -800,6 +835,9 @@ export const borderRightColorProperty = new CssProperty<Style, Color>({
 	name: 'borderRightColor',
 	cssName: 'border-right-color',
 	valueChanged: (target, oldValue, newValue) => {
+		if (skipsDerivedBoxStyle(target)) {
+			return;
+		}
 		target.backgroundInternal = target.backgroundInternal.withBorderRightColor(newValue);
 	},
 	equalityComparer: Color.equals,
@@ -811,6 +849,9 @@ export const borderBottomColorProperty = new CssProperty<Style, Color>({
 	name: 'borderBottomColor',
 	cssName: 'border-bottom-color',
 	valueChanged: (target, oldValue, newValue) => {
+		if (skipsDerivedBoxStyle(target)) {
+			return;
+		}
 		target.backgroundInternal = target.backgroundInternal.withBorderBottomColor(newValue);
 	},
 	equalityComparer: Color.equals,
@@ -822,6 +863,9 @@ export const borderLeftColorProperty = new CssProperty<Style, Color>({
 	name: 'borderLeftColor',
 	cssName: 'border-left-color',
 	valueChanged: (target, oldValue, newValue) => {
+		if (skipsDerivedBoxStyle(target)) {
+			return;
+		}
 		target.backgroundInternal = target.backgroundInternal.withBorderLeftColor(newValue);
 	},
 	equalityComparer: Color.equals,
@@ -869,6 +913,9 @@ export const borderTopWidthProperty = new CssProperty<Style, CoreTypes.LengthTyp
 	affectsLayout: __APPLE__,
 	equalityComparer: Length.equals,
 	valueChanged: (target, oldValue, newValue) => {
+		if (skipsDerivedBoxStyle(target)) {
+			return;
+		}
 		const value = Length.toDevicePixels(newValue, 0);
 		if (!isNonNegativeFiniteNumber(value)) {
 			throw new Error(`border-top-width should be Non-Negative Finite number. Value: ${value}`);
@@ -893,6 +940,9 @@ export const borderRightWidthProperty = new CssProperty<Style, CoreTypes.LengthT
 	affectsLayout: __APPLE__,
 	equalityComparer: Length.equals,
 	valueChanged: (target, oldValue, newValue) => {
+		if (skipsDerivedBoxStyle(target)) {
+			return;
+		}
 		const value = Length.toDevicePixels(newValue, 0);
 		if (!isNonNegativeFiniteNumber(value)) {
 			throw new Error(`border-right-width should be Non-Negative Finite number. Value: ${value}`);
@@ -917,6 +967,9 @@ export const borderBottomWidthProperty = new CssProperty<Style, CoreTypes.Length
 	affectsLayout: __APPLE__,
 	equalityComparer: Length.equals,
 	valueChanged: (target, oldValue, newValue) => {
+		if (skipsDerivedBoxStyle(target)) {
+			return;
+		}
 		const value = Length.toDevicePixels(newValue, 0);
 		if (!isNonNegativeFiniteNumber(value)) {
 			throw new Error(`border-bottom-width should be Non-Negative Finite number. Value: ${value}`);
@@ -941,6 +994,9 @@ export const borderLeftWidthProperty = new CssProperty<Style, CoreTypes.LengthTy
 	affectsLayout: __APPLE__,
 	equalityComparer: Length.equals,
 	valueChanged: (target, oldValue, newValue) => {
+		if (skipsDerivedBoxStyle(target)) {
+			return;
+		}
 		const value = Length.toDevicePixels(newValue, 0);
 		if (!isNonNegativeFiniteNumber(value)) {
 			throw new Error(`border-left-width should be Non-Negative Finite number. Value: ${value}`);
@@ -997,6 +1053,9 @@ export const borderTopLeftRadiusProperty = new CssProperty<Style, CoreTypes.Leng
 	defaultValue: 0,
 	affectsLayout: __APPLE__,
 	valueChanged: (target, oldValue, newValue) => {
+		if (skipsDerivedBoxStyle(target)) {
+			return;
+		}
 		const value = Length.toDevicePixels(newValue, 0);
 		if (!isNonNegativeFiniteNumber(value)) {
 			throw new Error(`border-top-left-radius should be Non-Negative Finite number. Value: ${value}`);
@@ -1014,6 +1073,9 @@ export const borderTopRightRadiusProperty = new CssProperty<Style, CoreTypes.Len
 	defaultValue: 0,
 	affectsLayout: __APPLE__,
 	valueChanged: (target, oldValue, newValue) => {
+		if (skipsDerivedBoxStyle(target)) {
+			return;
+		}
 		const value = Length.toDevicePixels(newValue, 0);
 		if (!isNonNegativeFiniteNumber(value)) {
 			throw new Error(`border-top-right-radius should be Non-Negative Finite number. Value: ${value}`);
@@ -1031,6 +1093,9 @@ export const borderBottomRightRadiusProperty = new CssProperty<Style, CoreTypes.
 	defaultValue: 0,
 	affectsLayout: __APPLE__,
 	valueChanged: (target, oldValue, newValue) => {
+		if (skipsDerivedBoxStyle(target)) {
+			return;
+		}
 		const value = Length.toDevicePixels(newValue, 0);
 		if (!isNonNegativeFiniteNumber(value)) {
 			throw new Error(`border-bottom-right-radius should be Non-Negative Finite number. Value: ${value}`);
@@ -1048,6 +1113,9 @@ export const borderBottomLeftRadiusProperty = new CssProperty<Style, CoreTypes.L
 	defaultValue: 0,
 	affectsLayout: __APPLE__,
 	valueChanged: (target, oldValue, newValue) => {
+		if (skipsDerivedBoxStyle(target)) {
+			return;
+		}
 		const value = Length.toDevicePixels(newValue, 0);
 		if (!isNonNegativeFiniteNumber(value)) {
 			throw new Error(`border-bottom-left-radius should be Non-Negative Finite number. Value: ${value}`);
@@ -1065,6 +1133,9 @@ export const cornerShapeProperty = new CssProperty<Style, CoreTypes.CornerShapeT
 	defaultValue: CoreTypes.CornerShape.round,
 	valueConverter: CoreTypes.CornerShape.parse,
 	valueChanged: (target, oldValue, newValue) => {
+		if (skipsDerivedBoxStyle(target)) {
+			return;
+		}
 		target.backgroundInternal = target.backgroundInternal.withCornerShape(newValue);
 	},
 });
@@ -1074,6 +1145,9 @@ const boxShadowProperty = new CssProperty<Style, ShadowCSSValues[]>({
 	name: 'boxShadow',
 	cssName: 'box-shadow',
 	valueChanged: (target, _oldValue, newValue) => {
+		if (skipsDerivedBoxStyle(target)) {
+			return;
+		}
 		target.backgroundInternal = target.backgroundInternal.withBoxShadows(
 			newValue?.length
 				? newValue.map((v) => {
@@ -1110,6 +1184,9 @@ export const clipPathProperty = new CssProperty<Style, string | ClipPathFunction
 	name: 'clipPath',
 	cssName: 'clip-path',
 	valueChanged: (target, oldValue, newValue) => {
+		if (skipsDerivedBoxStyle(target)) {
+			return;
+		}
 		target.backgroundInternal = target.backgroundInternal.withClipPath(newValue);
 	},
 	equalityComparer: (value1, value2) => {
