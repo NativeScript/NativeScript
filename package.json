@@ -114,7 +114,7 @@
 		"vite-plugin-static-copy": "^4.1.1",
 		"vitest": "4.0.9",
 		"vue-loader": "^15.0.0 <= 15.9.8",
-		"vue-tsc": "^3.2.5",
+		"vue-tsc": "^3.3.14",
 		"webpack-bundle-analyzer": "^4.0.0",
 		"webpack-chain": "^6.0.0",
 		"webpack-merge": "^6.0.0",
