@@ -95,7 +95,7 @@
 		"postcss-import": "^16.0.0",
 		"postcss-loader": "^8.0.0",
 		"prettier": "^3.2.5",
-		"react-reconciler": "^0.33.0",
+		"react-reconciler": "^0.34.0",
 		"sass": "^1.72.0",
 		"sass-loader": "^16.0.0",
 		"shady-css-parser": "^0.1.0",
