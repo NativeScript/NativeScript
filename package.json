@@ -50,7 +50,7 @@
 		"@swc/core": "1.15.8",
 		"@swc/helpers": "0.5.19",
 		"@types/jest": "30.0.0",
-		"@types/node": "^20.0.0",
+		"@types/node": "^20.19.43",
 		"@types/ws": "^8.18.1",
 		"@typescript-eslint/eslint-plugin": "^8.46.4",
 		"@typescript-eslint/parser": "^8.46.4",
