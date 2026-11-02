@@ -57,9 +57,9 @@ export function matchQuery(mediaQuery: string, values: MediaQueryEnvironmentPara
 		// equal for a match.
 		const typeMatch = query.type === 'all' || values.type === query.type;
 
-		// Quit early when `type` doesn't match, but take "not" into account
-		if ((typeMatch && inverse) || !(typeMatch || inverse)) {
-			return false;
+		// `not` negates the whole query, the type included.
+		if (!typeMatch) {
+			return inverse;
 		}
 
 		const expressionsMatch = features.every((feature) => {
@@ -114,7 +114,7 @@ export function matchQuery(mediaQuery: string, values: MediaQueryEnvironmentPara
 			}
 		});
 
-		return (expressionsMatch && !inverse) || (!expressionsMatch && inverse);
+		return inverse ? !expressionsMatch : expressionsMatch;
 	});
 }
 
